@@ -3,6 +3,9 @@ NeuTu
 
 Software package for neuron reconstruction and visualization
 
+Download
+
+git clone -b public https://github.com/janelia-flyem/NeuTu.git NeuTu
 
 Build
 
