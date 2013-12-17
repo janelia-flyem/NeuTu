@@ -70,9 +70,9 @@ include(add_itk.pri)
 #Qt5
 isEqual(QT_MAJOR_VERSION,5) | greaterThan(QT_MAJOR_VERSION,5) {
 message("Qt 5")
-QT += opengl xml concurrent
+    QT += opengl xml concurrent
 } else {
-QT += opengl xml
+    QT += opengl xml
 }
 
 #QT += webkit
