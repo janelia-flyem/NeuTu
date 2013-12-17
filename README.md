@@ -3,16 +3,27 @@ NeuTu
 
 Software package for neuron reconstruction and visualization
 
-Download
+## Download
 
-git clone -b public https://github.com/janelia-flyem/NeuTu.git NeuTu
+    git clone -b public https://github.com/janelia-flyem/NeuTu.git NeuTu
 
-Build
+## Build
 
-Linux and Mac
+### Linux and Mac
 
-1. Make sure you have Qt4.8.1+ installed on the computer
-2. Go to the NeuTu directory
-3. Run 
-  sh build.sh \<qmake_path\> \<qmake_spec_path\>
+1. Make sure you have installed Qt 4.8.1+ (Qt 4.8.5 recommended)
+2. Go to the NeuTu directory and run
 
+####
+
+    sh build.sh <qmake_path> <qmake_spec_path>
+    
+by specifying the qmake command path and the corresponding spec path.
+
+### Windows
+
+To be added
+
+## Need help?
+
+Contact tingzhao@gmail.com (Ting Zhao)
