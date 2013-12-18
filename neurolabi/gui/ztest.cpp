@@ -9995,7 +9995,7 @@ void ZTest::test(MainWindow *host)
   json_dump_file(bigObj, (dataPath + "/500k_100k.json").c_str(), JSON_INDENT(2));
 #endif
 
-#if 1
+#if 0
   ZMatrix mat;
   mat.importTextFile(GET_DATA_DIR + "/test/subtree/cluster_feature.txt");
 
@@ -10036,5 +10036,39 @@ void ZTest::test(MainWindow *host)
   std::cout << goodCount << " / " << nsample;
   confusionMatrix.exportCsv(GET_DATA_DIR + "/test.csv");
 
+#endif
+
+#if 1 //Finding holes
+  QDir dir((GET_DATA_DIR + "/flyem/FIB/skeletonization/session19/bodies/500k+").c_str());
+  std::string outDir = (dir.absolutePath() + "/hole").toStdString();
+  QStringList nameFilters;
+  nameFilters << "*.sobj";
+  QFileInfoList fileList = dir.entryInfoList(nameFilters);
+  std::cout << fileList.size() << " objects found." << std::endl;
+
+  //For each object file
+  foreach (QFileInfo file, fileList) {
+    std::string outFile =
+        outDir + "/" + file.baseName().toStdString() + ".sobj";
+
+    if (!fexist(outFile.c_str())) {
+      //Load the object
+      std::cout << "Loading " << file.baseName().toStdString() << " ..." << std::endl;
+      ZObject3dScan obj;
+      obj.load(file.absoluteFilePath().toStdString());
+
+      //Find the hole object
+      std::cout << "Extracting holes ..." << std::endl;
+      ZObject3dScan holeObj = obj.findHoleObject();
+
+      //Save the hole object
+      if (!holeObj.isEmpty()) {
+        std::cout << "Saving holes ..." << std::endl;
+
+        holeObj.save(outFile);
+        std::cout << outFile << " saved." << std::endl;
+      }
+    }
+  }
 #endif
 }
