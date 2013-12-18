@@ -65,6 +65,7 @@ then
   ./configure --enable-shared=no --prefix=${libdir}/png
   make
   make install
+  cd ..
 fi
 
 if [ ! -f hdf5/lib/libhdf5.a ]
@@ -79,5 +80,6 @@ then
   ./configure --enable-shared=no --prefix=${libdir}/hdf5
   make
   make install
+  cd ..
 fi
 
