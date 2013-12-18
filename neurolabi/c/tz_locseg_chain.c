@@ -50,6 +50,13 @@
 #include "private/tz_locseg_chain_p.h"
 #include "private/tzp_locseg_chain.c"
 
+static void print_trace_message(const char *msg)
+{
+#ifdef _DEBUG_
+  printf("%s", msg);
+#endif
+}
+
 Locseg_Chain* Copy_Locseg_Chain(Locseg_Chain *chain)
 {
 #ifdef _MSC_VER
@@ -465,6 +472,7 @@ int Locseg_Chain_Trace_Test(void *argv[])
   return TRACE_NORMAL;
 }
 
+
 #define RECORD_TRACE_SCORE(record, fit_workspace)			\
   record.fs.scores[0] = fit_workspace->sws->fs.scores[0];		\
   record.fs.scores[1] = fit_workspace->sws->fs.scores[fit_workspace->sws->fs.n-1];
@@ -500,25 +508,25 @@ int Locseg_Chain_Trace_Test(void *argv[])
 */
 
 #define LOCSEG_CHAIN_REFIT(refit_locseg, list_end, end_index)		\
-  printf("refitting ...\n");						\
+  print_trace_message("refitting ...\n");				\
   nrefit++;								\
   Locseg_Node *p = current_ends[end_index];				\
   ASSERT(Trace_Record_Fit_Height(p->tr, end_index) != 1, "bug found");	\
   LOCSEG_CHAIN_BEGIN_FIT(p->locseg, list_end);				\
-  printf("  Adjust the height of the current chain end.\n");		\
+  print_trace_message("  Adjust the height of the current chain end.\n");		\
   /*Local_Neuroseg_Height_Search_E(p->locseg, 2, stack, z_scale);*/	\
   Local_Neuroseg_Height_Search_W(p->locseg, stack, z_scale, fit_ws->sws); \
-  printf("  Label it as height adjusted.\n");				\
+  print_trace_message("  Label it as height adjusted.\n");				\
   Trace_Record_Set_Fit_Height(p->tr, end_index, 1);			\
   LOCSEG_CHAIN_END_FIT(p->locseg, list_end);				\
   cur_end_status = TRACE_NORMAL;					\
   while ((p->locseg->seg.h < NEUROSEG_DEFAULT_H / 3.0)			\
       && (i > 1)) { /* requires improvement */				\
-    printf("  The current end is too short after adjustment, remove it.\n"); \
+    print_trace_message("  The current end is too short after adjustment, remove it.\n"); \
     Locseg_Chain_Remove_End(chain, list_end);				\
     i--;								\
     Locseg_Chain_Iterator_Start(chain, list_end);			\
-    printf("  Update the current end.");				\
+    print_trace_message("  Update the current end.");				\
     if (list_end == DL_HEAD) {						\
       current_ends[end_index] = Locseg_Chain_Next(chain);		\
       p = current_ends[end_index];					\
@@ -527,19 +535,19 @@ int Locseg_Chain_Trace_Test(void *argv[])
       p = current_ends[end_index];					\
     }									\
     if (dmax2(Neuroseg_Rx(&(p->locseg->seg), NEUROSEG_CENTER), Neuroseg_Ry(&(p->locseg->seg), NEUROSEG_CENTER)) >= NEUROSEG_DEFAULT_H / 2.0) { \
-      printf("  Too large for refit");					\
+      print_trace_message("  Too large for refit");					\
       cur_end_status = TRACE_TOO_LARGE;					\
     } else {								\
       if (Trace_Record_Fit_Height(p->tr, end_index) == 0) {		\
 	LOCSEG_CHAIN_BEGIN_FIT(p->locseg, list_end);			\
-	printf("  Adjust the height of the current end.\n");		\
+	print_trace_message("  Adjust the height of the current end.\n");		\
 	/*Local_Neuroseg_Height_Search_E(p->locseg, 2, stack, z_scale);*/ \
 	Local_Neuroseg_Height_Search_W(p->locseg, stack, z_scale, fit_ws->sws);	\
-	printf("  Label it as height adjusted.\n");			\
+	print_trace_message("  Label it as height adjusted.\n");			\
 	Trace_Record_Set_Fit_Height(p->tr, end_index, 1);		\
 	LOCSEG_CHAIN_END_FIT(p->locseg, list_end);			\
       } else {								\
-	printf("  Trace repeated because the current end had been height adjusted before.\n"); \
+	print_trace_message("  Trace repeated because the current end had been height adjusted before.\n"); \
 	cur_end_status = TRACE_REPEATED;				\
       }									\
     }									\
@@ -548,7 +556,7 @@ int Locseg_Chain_Trace_Test(void *argv[])
   if (dmax2(Neuroseg_Rx(&(p->locseg->seg), NEUROSEG_CENTER),		\
 	    Neuroseg_Ry(&(p->locseg->seg), NEUROSEG_CENTER))		\
       >= NEUROSEG_DEFAULT_H / 2.0) {					\
-    printf("  Too large for refit\n");					\
+    print_trace_message("  Too large for refit\n");					\
     cur_end_status = TRACE_TOO_LARGE;					\
   }									\
 									\
@@ -584,7 +592,7 @@ int Locseg_Chain_Trace_Test(void *argv[])
 	pos_step = t - refit_locseg->seg.h / p->locseg->seg.h;		\
       }									\
       LOCSEG_CHAIN_BEGIN_FIT(p->locseg, list_end);			\
-      printf("  Extend current end as current_locseg\n");		\
+      print_trace_message("  Extend current end as current_locseg\n");		\
       Next_Local_Neuroseg(p->locseg, refit_locseg, pos_step);		\
       /*Print_Local_Neuroseg(p->locseg);*/				\
       /*LOCSEG_CHAIN_BEGIN_FIT(refit_locseg, list_end);*/		\
@@ -593,19 +601,19 @@ int Locseg_Chain_Trace_Test(void *argv[])
       /*Local_Neuroseg_Score_P(refit_locseg, stack, z_scale, &(tr.fs));*/ \
       /*printf("score: %g\n", tr.fs.scores[1]);*/			\
       /*Print_Local_Neuroseg(refit_locseg);*/				\
-      printf("  Search the orientation of current_locseg.\n");		\
+      print_trace_message("  Search the orientation of current_locseg.\n");		\
       Local_Neuroseg_Orientation_Search_B(refit_locseg, stack, z_scale, &ort_fs); \
       if (Neuropos_Reference == NEUROSEG_CENTER) {			\
-	printf("  Adjust the position of current_locseg.\n");		\
+	print_trace_message("  Adjust the position of current_locseg.\n");		\
 	Local_Neuroseg_Position_Adjust(refit_locseg, stack, z_scale);	\
       }									\
       /*Local_Neuroseg_Orientation_Adjust(refit_locseg, stack, z_scale);*/ \
       /*Fit_Local_Neuroseg_P(refit_locseg, stack, var_index_o, nvar_o, var_link, z_scale, &(tr.fs)); */	\
-      printf("  Fit current_locseg.\n");				\
+      print_trace_message("  Fit current_locseg.\n");				\
       /*Fit_Local_Neuroseg_P(refit_locseg, stack, var_index, nvar, var_link, z_scale, &(tr.fs));*/ \
       LOCSEG_CHAIN_FIT(refit_locseg);					\
       if (Local_Neuroseg_Good_Score(refit_locseg, tr.fs.scores[1], tw->min_score) == FALSE) { \
-	printf("  The score is too low, adjust its height.\n");		\
+	print_trace_message("  The score is too low, adjust its height.\n");		\
 	/*Local_Neuroseg_Height_Search_P(refit_locseg, stack, z_scale);*/ \
 	Local_Neuroseg_Height_Search_W(p->locseg, stack, z_scale, fit_ws->sws);	\
 	/*Local_Neuroseg_Score_P(refit_locseg, stack, z_scale, &(tr.fs));*/ \
@@ -627,29 +635,29 @@ int Locseg_Chain_Trace_Test(void *argv[])
     if (cur_end_status == TRACE_NORMAL) {				\
       prev_locseg = current_locseg;					\
       LOCSEG_CHAIN_BEGIN_FIT(prev_locseg, list_end);			\
-      printf("Extend current end as current_locseg.\n");		\
+      print_trace_message("Extend current end as current_locseg.\n");		\
       current_locseg = Next_Local_Neuroseg(prev_locseg, NULL, trace_step); \
       if (Neuropos_Reference == NEUROSEG_CENTER) {			\
-        printf("Adjust the position of current_locseg.\n");		\
+        print_trace_message("Adjust the position of current_locseg.\n");		\
         Local_Neuroseg_Position_Adjust(current_locseg, stack, z_scale);	\
       }									\
       /*LOCSEG_CHAIN_BEGIN_FIT(current_locseg, list_end);*/		\
       /*Local_Neuroseg_Orientation_Adjust(current_locseg, stack, z_scale);*/ \
-      printf("Fit current_locseg.\n");					\
+      print_trace_message("Fit current_locseg.\n");					\
       /*Fit_Local_Neuroseg_P(current_locseg, stack, var_index, nvar, var_link, z_scale, &(tr.fs));*/ \
       LOCSEG_CHAIN_FIT(current_locseg);					\
       /* test height */							\
       if (tr.fs.scores[1] < fit_height_threshold) {			\
-        printf("The score is a bit low, reset current_locseg to the extend of current end.\n"); \
+        print_trace_message("The score is a bit low, reset current_locseg to the extend of current end.\n"); \
         Next_Local_Neuroseg(prev_locseg, current_locseg, trace_step);	\
-        printf("Fit current_locseg including height.\n");		\
+        print_trace_message("Fit current_locseg including height.\n");		\
         /*Fit_Local_Neuroseg_P(current_locseg, stack, var_index_h, nvar_h, var_link, z_scale, &(tr.fs));*/ \
         LOCSEG_CHAIN_FIT_H(current_locseg);				\
         /* current_locseg->seg.h /= 2.0; */				\
-        printf("Fit current_locseg again without height change.\n");	\
+        print_trace_message("Fit current_locseg again without height change.\n");	\
         /*Fit_Local_Neuroseg_P(current_locseg, stack, var_index, nvar, var_link, z_scale, &(tr.fs));*/ \
         LOCSEG_CHAIN_FIT(current_locseg);				\
-        printf("Chop the overlap part of prev_locseg.\n");		\
+        print_trace_message("Chop the overlap part of prev_locseg.\n");		\
         prev_locseg->seg.h *= trace_step;				\
       }									\
       /*********/							\
@@ -670,12 +678,12 @@ int Locseg_Chain_Trace_Test(void *argv[])
     }									\
     \
     if (cur_end_status == TRACE_REFIT) {				\
-      printf("Refit required.\n");					\
+      print_trace_message("Refit required.\n");					\
       LOCSEG_CHAIN_REFIT(current_locseg, list_end, end_index);		\
-      printf("current_locseg refit done. label it by refit flag.\n");	\
+      print_trace_message("current_locseg refit done. label it by refit flag.\n");	\
       Trace_Record_Set_Refit(&tr, 1);					\
       if (nrefit > i + 1) {						\
-        printf("too much refit: %d.\n", nrefit);			\
+        print_trace_message("too much refit\n");			\
         cur_end_status = TRACE_OVER_REFIT;				\
       }									\
     }									\
@@ -691,9 +699,9 @@ int Locseg_Chain_Trace_Test(void *argv[])
       hit_count[end_index] = 0;						\
       break;								\
       case TRACE_HIT_MARK:	/*hit traced region*/			\
-      printf("current_locseg hits traced or marked region.\n");		\
+      print_trace_message("current_locseg hits traced or marked region.\n");		\
       if (hit_count[end_index] == -1) {	/* allow multiple hits */				\
-        printf("First-time hit, add current_locseg to the chain.\n");	\
+        print_trace_message("First-time hit, add current_locseg to the chain.\n");	\
         current_node = Make_Locseg_Node(current_locseg, Copy_Trace_Record(&tr)); \
         Locseg_Chain_Add_Node(chain, current_node, list_end);		\
         i++;								\
@@ -701,7 +709,7 @@ int Locseg_Chain_Trace_Test(void *argv[])
         hit_count[end_index]++;						\
       } else {								\
         if (hit_count[end_index] <= 0 && tw->add_hit) {				\
-          printf("Add current_locseg to the chain.\n");			\
+          print_trace_message("Add current_locseg to the chain.\n");			\
           current_node = Make_Locseg_Node(current_locseg, Copy_Trace_Record(&tr)); \
           Locseg_Chain_Add_Node(chain, current_node, list_end);		\
           i++;								\
@@ -710,7 +718,7 @@ int Locseg_Chain_Trace_Test(void *argv[])
           Delete_Local_Neuroseg(current_locseg);			\
         }								\
         /*Locseg_Chain_Add(chain, current_locseg, NULL, list_end);*/	\
-        printf("Stop tracing at this direction.\n");			\
+        print_trace_message("Stop tracing at this direction.\n");			\
         tw->trace_status[end_index] = cur_end_status;			\
         current_locseg = NULL;						\
       }									\
@@ -726,12 +734,12 @@ int Locseg_Chain_Trace_Test(void *argv[])
       break;								\
       default:								\
       if (0) { /* for testing */					\
-        printf("Last seg added\n");					\
+        print_trace_message("Last seg added\n");					\
         Print_Local_Neuroseg(current_locseg);				\
         current_node = Make_Locseg_Node(current_locseg, Copy_Trace_Record(&tr)); \
         Locseg_Chain_Add_Node(chain, current_node, list_end);		\
       } else {								\
-        printf("Stop tracing at this direction.\n");			\
+        print_trace_message("Stop tracing at this direction.\n");			\
         Delete_Local_Neuroseg(current_locseg);				\
       }									\
       current_locseg = NULL;						\
@@ -870,7 +878,7 @@ void Trace_Locseg(const Stack *stack, double z_scale, Locseg_Chain *chain,
   int nrefit = 0;
   if (tw->fit_first == TRUE) {
     if (tw->trace_status[1] == TRACE_NORMAL) {
-      printf("Fit the forward seed segment\n");
+      print_trace_message("Fit the forward seed segment\n");
       //Fit_Local_Neuroseg_P(forward_locseg, stack, var_index, nvar, var_link, z_scale, &(tr.fs));
       LOCSEG_CHAIN_FIT(forward_locseg);
 
@@ -880,7 +888,7 @@ void Trace_Locseg(const Stack *stack, double z_scale, Locseg_Chain *chain,
     }
     
     if (tw->trace_status[0] == TRACE_NORMAL) {
-      printf("Fit the backward seed segment.\n");
+      print_trace_message("Fit the backward seed segment.\n");
       Flip_Local_Neuroseg(backward_locseg);
       //Fit_Local_Neuroseg_P(backward_locseg, stack, var_index, nvar, var_link, z_scale, &(tr.fs));
       LOCSEG_CHAIN_FIT(backward_locseg);
@@ -967,7 +975,9 @@ void Trace_Locseg(const Stack *stack, double z_scale, Locseg_Chain *chain,
 
     /* Backward tracing */
     if (TRACING_BACKWARD_POSSIBLE) {
+#ifdef _DEBUG_
       printf("Trace backward...\n");
+#endif
       Reset_Trace_Record(&tr);
       Trace_Record_Set_Direction(&tr, DL_BACKWARD);
       Trace_Record_Set_Fix_Point(&tr, 1.0);
@@ -976,7 +986,9 @@ void Trace_Locseg(const Stack *stack, double z_scale, Locseg_Chain *chain,
 
     /* Forward tracing */
     if (TRACING_FORWARD_POSSIBLE) {
+#ifdef _DEBUG_
       printf("Trace forward...\n");
+#endif
       Reset_Trace_Record(&tr);
       Trace_Record_Set_Direction(&tr, DL_FORWARD);
       Trace_Record_Set_Fix_Point(&tr, 0.0);

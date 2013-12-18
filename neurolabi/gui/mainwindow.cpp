@@ -4089,5 +4089,6 @@ void MainWindow::on_actionSparse_objects_triggered()
     ZStackFrame *frame = new ZStackFrame;
     frame->importSobj(fileList);
     addStackFrame(frame);
+    presentStackFrame(frame);
   }
 }

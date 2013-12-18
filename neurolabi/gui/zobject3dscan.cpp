@@ -1047,6 +1047,7 @@ void ZObject3dScan::canonize()
       }
     }
 
+
     //m_stripeArray = newStripeArray;
     m_stripeArray.swap(newStripeArray);
   }

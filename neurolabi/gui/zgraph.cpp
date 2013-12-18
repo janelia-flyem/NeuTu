@@ -45,14 +45,16 @@ ZGraph::ZGraph(Graph *graph)
 
 ZGraph::~ZGraph()
 {
-  if (m_graph != NULL) {
-    Kill_Graph(m_graph);
-    m_graph = NULL;
-  }
+  deprecate(ALL_COMPONENT);
 
   if (m_workspace != NULL) {
     Kill_Graph_Workspace(m_workspace);
     m_workspace = NULL;
+  }
+
+  if (m_graph != NULL) {
+    Kill_Graph(m_graph);
+    m_graph = NULL;
   }
 }
 
