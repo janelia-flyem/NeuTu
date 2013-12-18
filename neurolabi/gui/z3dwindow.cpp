@@ -1792,6 +1792,36 @@ void Z3DWindow::keyPressEvent(QKeyEvent *event)
     }
 #endif
     break;
+  case Qt::Key_Equal: // increase swc size scale
+  {
+    if (event->modifiers() == Qt::ControlModifier) {
+      getSwcFilter()->setSizeScale(getSwcFilter()->getSizeScale() + .1);
+    }
+  }
+    break;
+  case Qt::Key_Minus:  // decrease swc size scale
+  {
+    if (event->modifiers() == Qt::ControlModifier) {
+      getSwcFilter()->setSizeScale(std::max(.1, getSwcFilter()->getSizeScale() - .1));
+    }
+  }
+    break;
+  case Qt::Key_M:  // change swc display mode
+  {
+    if (event->modifiers() == Qt::ControlModifier) {
+      ZOptionParameter<QString> *sm = dynamic_cast<ZOptionParameter<QString>*>(getSwcFilter()->getParameter("Rendering Primitive"));
+      sm->selectNext();
+    }
+  }
+    break;
+  case Qt::Key_Comma:
+  case Qt::Key_Q:
+    getDocument()->executeSwcNodeChangeSizeCommand(-0.5);
+    break;
+  case Qt::Key_Period:
+  case Qt::Key_E:
+    getDocument()->executeSwcNodeChangeSizeCommand(0.5);
+    break;
   default:
     break;
   }

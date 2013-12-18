@@ -5,6 +5,7 @@
 #include "zcombobox.h"
 #include <QList>
 #include <QString>
+#include <cassert>
 #include "QsLog.h"
 
 
@@ -21,6 +22,7 @@ public:
   virtual ~ZOptionParameter() {}
 
   void select(const T& value);
+  void selectNext();
   bool isSelected(const T& value) const;
   bool isEmpty() const { return m_options.empty(); }
 
@@ -197,6 +199,23 @@ template<class T, class T2>
 void ZOptionParameter<T, T2>::select(const T &value)
 {
   this->set(value);
+}
+
+template<class T, class T2>
+void ZOptionParameter<T, T2>::selectNext()
+{
+  if (m_options.size() < 2)
+    return;
+  if (!m_dataIsValid) {
+    select(m_options[0]);
+    m_dataIsValid = true;
+  } else {
+    int index = m_options.indexOf(this->m_value);
+    assert(index >= 0);
+    if (++index >= m_options.size())
+      index = 0;
+    select(m_options[index]);
+  }
 }
 
 template<class T, class T2>
