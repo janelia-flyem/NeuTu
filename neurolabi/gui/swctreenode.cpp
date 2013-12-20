@@ -1358,3 +1358,25 @@ std::map<Swc_Tree_Node*, Swc_Tree_Node*> SwcTreeNode::crossoverMatch(
 
   return matching;
 }
+
+double SwcTreeNode::computeCurvature(
+    const Swc_Tree_Node *tn1, const Swc_Tree_Node *tn2, const Swc_Tree_Node *tn3)
+{
+  if (!isRegular(tn1) || !isRegular(tn2) || !isRegular(tn3)) {
+    return 0.0;
+  }
+
+  double curvature = 0.0;
+
+  double a = SwcTreeNode::distance(tn2, tn1);
+  double b = SwcTreeNode::distance(tn2, tn3);
+  double c = SwcTreeNode::distance(tn1, tn3);
+  if (a > 0.0 && b > 0.0 && c > 0.0) {
+    double u = b + c - a;
+    double v = a + c - b;
+    double w = a + b - c;
+    if (u > 0.0 && v > 0.0 && w > 0.0) {
+      curvature = sqrt(a + b + c) / a * sqrt(u) / b * sqrt(v) / c * sqrt(w);
+    }
+  }
+}

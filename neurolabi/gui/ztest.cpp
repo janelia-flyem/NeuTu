@@ -10038,7 +10038,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1 //Finding holes
+#if 0 //Finding holes
   QDir dir((GET_DATA_DIR + "/flyem/FIB/skeletonization/session19/bodies/500k+").c_str());
   std::string outDir = (dir.absolutePath() + "/hole").toStdString();
   QStringList nameFilters;
@@ -10070,5 +10070,19 @@ void ZTest::test(MainWindow *host)
       }
     }
   }
+#endif
+
+#if 1
+  ZDendrogram dendrogram;
+
+  ZMatrix Z;
+  Z.importTextFile(GET_DATA_DIR + "/Z.txt");
+  for (int i = 0; i < Z.getRowNumber(); ++i) {
+    dendrogram.addLink(Z.at(i, 0), Z.at(i, 1), Z.at(i, 2) * 10 - 4);
+  }
+  std::string svgString = dendrogram.toSvgString(20.0);
+
+  ZSvgGenerator svgGenerator(-500, 100, 800, 5000);
+  svgGenerator.write((GET_DATA_DIR + "/test.svg").c_str(), svgString);
 #endif
 }

@@ -373,7 +373,9 @@ HEADERS += mainwindow.h \
     zqslogmessagereporter.h \
     flyem/zflyemneuronfilter.h \
     flyem/zflyemneuronfilterfactory.h \
-    flyemgeofilterdialog.h
+    flyemgeofilterdialog.h \
+    zactionactivator.h \
+    zswccurvaturefeatureanalyzer.h
 
 FORMS += settingdialog.ui \
     frameinfodialog.ui \
@@ -578,4 +580,6 @@ SOURCES += main.cpp \
     zflyemqueryview.cpp \
     flyemgeosearchdialog.cpp \
     zqslogmessagereporter.cpp \
-    flyemgeofilterdialog.cpp
+    flyemgeofilterdialog.cpp \
+    zactionactivator.cpp \
+    zswccurvaturefeatureanalyzer.cpp

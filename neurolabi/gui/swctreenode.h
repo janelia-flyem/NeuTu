@@ -379,6 +379,17 @@ inline std::vector<std::string>& clipboard() {
 bool hasOverlap(const Swc_Tree_Node *tn1, const Swc_Tree_Node *tn2);
 bool isTurn(const Swc_Tree_Node *tn1, const Swc_Tree_Node *tn2,
             const Swc_Tree_Node *tn3);
+
+/*!
+ * \brief The curvature presented by three nodes
+ *
+ * Curvature of tn1 - tn2 - tn3
+ *
+ * \return 0 if any of the node is not regular
+ */
+double computeCurvature(const Swc_Tree_Node *tn1, const Swc_Tree_Node *tn2,
+                        const Swc_Tree_Node *tn3);
+
 /*!
  * \return true iff \a tn1 is completely within \a tn2. It returns false if
  *         either \a tn1 or \a tn2 is not regular.

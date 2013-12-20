@@ -201,6 +201,8 @@ MainWindow::MainWindow(QWidget *parent) :
   m_frameCount = 0;
 
   createActionMap();
+  setActionActivity();
+  updateAction();
 }
 
 MainWindow::~MainWindow()
@@ -453,6 +455,70 @@ void MainWindow::createActions()
   //customizeActions();
 }
 
+void MainWindow::setActionActivity()
+{
+  m_stackActionActivator.registerAction(noTraceAction, true);
+  m_stackActionActivator.registerAction(fitsegAction, true);
+  m_stackActionActivator.registerAction(traceTubeAction, true);
+  m_stackActionActivator.registerAction(expandAction, true);
+
+  m_stackActionActivator.registerAction(m_ui->actionMake_Projection, true);
+
+  m_stackActionActivator.registerAction(m_ui->actionAddSWC, true);
+
+  m_stackActionActivator.registerAction(m_ui->actionTree_Preview, true);
+
+  m_stackActionActivator.registerAction(m_ui->actionAutomatic, true);
+  m_stackActionActivator.registerAction(m_ui->actionAutomatic_Axon, true);
+
+  m_stackActionActivator.registerAction(m_ui->menuLoad_into->menuAction(), true);
+
+  m_stackActionActivator.registerAction(noMarkPunctaAction, true);
+  m_stackActionActivator.registerAction(markPunctaAction, true);
+  //autoDetectPunctaAction->setEnabled(b);
+
+  m_stackActionActivator.registerAction(bnImportAction, true);
+  m_stackActionActivator.registerAction(swcImportAction, true);
+  m_stackActionActivator.registerAction(gtImportAction, true);
+  m_stackActionActivator.registerAction(btImportAction, true);
+  m_stackActionActivator.registerAction(connImportAction, true);
+  m_stackActionActivator.registerAction(punctaImportAction, true);
+
+  m_stackActionActivator.registerAction(swcExportAction, true);
+  m_stackActionActivator.registerAction(svgExportAction, true);
+  m_stackActionActivator.registerAction(vrmlExportAction, true);
+  m_stackActionActivator.registerAction(bnExportAction, true);
+  m_stackActionActivator.registerAction(nsExportAction, true);
+  m_stackActionActivator.registerAction(nsMultipleSwcExportAction, true);
+  m_stackActionActivator.registerAction(connExportAction, true);
+  m_stackActionActivator.registerAction(connFeatExportAction, true);
+  m_stackActionActivator.registerAction(chainSourceExportAction, true);
+  m_stackActionActivator.registerAction(punctaExportAction, true);
+
+  //objectViewHideAction->setEnabled(b);
+  m_stackActionActivator.registerAction(objectViewNormalAction, true);
+  m_stackActionActivator.registerAction(objectViewSolidAction, true);
+  m_stackActionActivator.registerAction(objectViewSurfaceAction, true);
+  m_stackActionActivator.registerAction(objectViewSkeletonAction, true);
+
+  m_stackActionActivator.registerAction(settingAction, true);
+
+  m_stackActionActivator.registerAction(m_ui->actionMask_SWC, true);
+  m_stackActionActivator.registerAction(m_ui->actionOpen_3D_View_Without_Volume, true);
+  m_stackActionActivator.registerAction(m_ui->actionMask, true);
+
+  m_stackActionActivator.registerAction(m_ui->actionBinarize, true);
+  m_stackActionActivator.registerAction(m_ui->actionInvert, true);
+  m_stackActionActivator.registerAction(m_ui->actionExtract_Channel, true);
+  m_stackActionActivator.registerAction(m_ui->actionBinary_SWC, true);
+  m_stackActionActivator.registerAction(m_ui->actionUpdate, true);
+
+  m_stackActionActivator.registerAction(m_ui->menuFilter->menuAction(), true);
+  m_stackActionActivator.registerAction(m_ui->menuBinary_Morphology->menuAction(), true);
+  m_stackActionActivator.registerAction(m_ui->menuEdge_Detection->menuAction(), true);
+  m_stackActionActivator.registerAction(m_ui->menuSegmentation->menuAction(), true);
+}
+
 void MainWindow::customizeActions()
 {
   const NeutubeConfig& config = NeutubeConfig::getInstance();
@@ -461,16 +527,16 @@ void MainWindow::customizeActions()
   m_ui->actionTrace_Tube->setVisible(isTracingOn);
   m_ui->actionDisable->setChecked(!isTracingOn);
   m_ui->actionDisable->setVisible(isTracingOn);
-  m_ui->actionTree_Preview->setVisible(isTracingOn);
+  m_ui->actionTree_Preview->setVisible(false);
   m_ui->actionTracing_result->setVisible(isTracingOn);
-  m_ui->actionFit_Segment->setVisible(isTracingOn);
+  m_ui->actionFit_Segment->setVisible(false);
   m_ui->actionAutomatic->setVisible(isTracingOn);
   m_ui->actionAutomatic_Axon->setVisible(isTracingOn);
-  m_ui->actionFrom_SWC->setVisible(isTracingOn);
-  m_ui->menuTube->menuAction()->setVisible(isTracingOn);
+  m_ui->actionFrom_SWC->setVisible(false);
+  m_ui->menuTube->menuAction()->setVisible(false);
   m_ui->menuTrace_Project->menuAction()->setVisible(isTracingOn);
   m_ui->actionSave_SWC->setVisible(isTracingOn);
-  this->buildConnAction->setVisible(isTracingOn);
+  this->buildConnAction->setVisible(false);
 
   bool isSwcEditOn = config.getMainWindowConfig().isSwcEditOn();
   m_ui->menuSwc->menuAction()->setVisible(isSwcEditOn);
@@ -684,11 +750,12 @@ void MainWindow::updateAction()
 {
   ZStackFrame *frame = currentStackFrame();
 
+
+
   m_writeActionGroup->setDisabled(frame == NULL);
   m_viewActionGroup->setDisabled(frame == NULL);
   viewMode->setDisabled(frame == NULL);
   manageObjsAction->setDisabled(activeStackFrame() == NULL);
-
 
   if (frame != NULL) {
     if (frame->presenter() != NULL) {
@@ -696,13 +763,15 @@ void MainWindow::updateAction()
       redoAction = frame->document()->getRedoAction();
     }
   }
+
+  m_stackActionActivator.update(frame);
 }
 
 void MainWindow::updateMenu()
 {
   updateAction();
   if (frameNumber() == 0) {
-    enableStackActions(false);
+    //enableStackActions(false);
   } else {
     ZStackFrame *frame = currentStackFrame();
     if (frame != NULL) {
@@ -711,7 +780,7 @@ void MainWindow::updateMenu()
         m_ui->menuEdit->addAction(undoAction);
         m_ui->menuEdit->addAction(redoAction);
 
-        enableStackActions(true);
+        //enableStackActions(true);
 
         updateViewMenu(frame->presenter()->interactiveContext().viewMode());
 
@@ -766,10 +835,10 @@ void MainWindow::updateMenu()
           }
         }
       } else {
-        enableStackActions(false);
+        //enableStackActions(false);
       }
     } else {
-      enableStackActions(false);
+      //enableStackActions(false);
     }
   }
 }
