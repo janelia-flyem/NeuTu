@@ -291,6 +291,8 @@ private slots:
 
   void on_actionSparse_objects_triggered();
 
+  void on_actionDendrogram_triggered();
+
 private:
   void createActions();
   void customizeActions();

@@ -4161,3 +4161,40 @@ void MainWindow::on_actionSparse_objects_triggered()
     presentStackFrame(frame);
   }
 }
+
+void MainWindow::on_actionDendrogram_triggered()
+{
+  QProcess::execute("/Applications/MATLAB.app/bin/matlab < "
+                    "/Users/zhaot/Work/SLAT/matlab/SLAT/run/flyem/tz_run_flyem_dendrogram_command.m "
+                    "-nodesktop -nosplash");
+
+  //Create name file
+  std::string neuronNameFilePath = GET_DATA_DIR + "/flyem/TEM/neuron_name.txt";
+  ZFlyEmDataBundle bundle;
+  bundle.loadJsonFile(GET_DATA_DIR + "/flyem/TEM/data_release/bundle1/data_bundle.json");
+
+  std::vector<ZFlyEmNeuron> neuronArray = bundle.getNeuronArray();
+
+  std::ofstream stream(neuronNameFilePath.c_str());
+  for (std::vector<ZFlyEmNeuron>::const_iterator iter = neuronArray.begin();
+       iter != neuronArray.end(); ++iter) {
+    const ZFlyEmNeuron &neuron = *iter;
+    stream << neuron.getName() << std::endl;
+  }
+  stream.close();
+
+  ZDendrogram dendrogram;
+
+  ZMatrix Z;
+  Z.importTextFile(GET_DATA_DIR + "/Z.txt");
+  for (int i = 0; i < Z.getRowNumber(); ++i) {
+    dendrogram.addLink(Z.at(i, 0), Z.at(i, 1), Z.at(i, 2) - 0.5);
+  }
+  dendrogram.loadLeafName(GET_DATA_DIR + "/flyem/TEM/neuron_name.txt");
+  std::string svgString = dendrogram.toSvgString(15.0);
+
+  ZSvgGenerator svgGenerator(0, 0, 1000, 6000);
+  svgGenerator.write((GET_DATA_DIR + "/flyem/TEM/cluster.svg").c_str(), svgString);
+
+  std::cout << GET_DATA_DIR + "/flyem/TEM/cluster.svg" << std::endl;
+}
