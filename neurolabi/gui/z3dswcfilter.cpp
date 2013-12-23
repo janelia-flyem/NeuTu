@@ -13,6 +13,8 @@
 #include "swctreenode.h"
 #include "tz_geometry.h"
 #include "neutubeconfig.h"
+#include <QMessageBox>
+#include <QApplication>
 
 Z3DSwcFilter::Z3DSwcFilter()
   : Z3DGeometryFilter()
@@ -591,6 +593,10 @@ void Z3DSwcFilter::addSelectionBox(
   float bRadius = n1->node.d * m_rendererBase->getSizeScale();
   float tRadius = n2->node.d * m_rendererBase->getSizeScale();
   glm::vec3 axis = tPos - bPos;
+  if (glm::length(axis) < std::numeric_limits<float>::epsilon() * 1e2) {
+    LWARN() << "node and parent node too close";
+    return;
+  }
   // vector perpendicular to axis
   glm::vec3 v1, v2;
   glm::getOrthogonalVectors(axis, v1, v2);
@@ -827,10 +833,22 @@ void Z3DSwcFilter::prepareData()
   int yMax = std::numeric_limits<int>::min();
   int zMin = std::numeric_limits<int>::max();
   int zMax = std::numeric_limits<int>::min();
+
+  bool checkRadius = m_renderingPrimitive.isSelected("Normal") ||
+      m_renderingPrimitive.isSelected("Cylinder");
   for (size_t i=0; i<m_decompsedNodePairs.size(); i++) {
     for (size_t j=0; j<m_decompsedNodePairs[i].size(); j++) {
       Swc_Tree_Node *n1 = m_decompsedNodePairs[i][j].first;
       Swc_Tree_Node *n2 = m_decompsedNodePairs[i][j].second;
+
+      if (checkRadius && n1->node.d < std::numeric_limits<double>::epsilon() &&
+          n2->node.d < std::numeric_limits<double>::epsilon()) {
+        checkRadius = false;
+        QMessageBox::information(QApplication::activeWindow(), "zero radius swc node",
+                                 "Swc render mode will be changed to 'Line' to show otherwise invisible zero radius nodes.");
+        m_renderingPrimitive.select("Line");
+      }
+
       glm::vec4 baseAndbRadius, axisAndtRadius;
       // make sure base has smaller radius.
       if (Swc_Tree_Node_Const_Data(n1)->d <= Swc_Tree_Node_Const_Data(n2)->d) {
