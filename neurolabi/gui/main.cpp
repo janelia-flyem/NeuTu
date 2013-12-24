@@ -17,6 +17,51 @@
 #include "neutubeconfig.h"
 
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
+#include <QStack>
+#include <QPointer>
+// thanks to Daniel Price for this workaround
+struct MacEventFilter : public QObject
+{
+  QStack<QPointer<QWidget> > m_activationstack; // stack of widgets to re-active on dialog close.
+
+  explicit MacEventFilter(QObject *parent = NULL)
+    : QObject(parent)
+  {}
+
+  virtual bool eventFilter(QObject *anObject, QEvent *anEvent)
+  {
+    switch (anEvent->type()) {
+    case QEvent::Show: {
+      if ((anObject->inherits("QDialog") || anObject->inherits("QDockWidget")) && qApp->activeWindow()) {
+        // Workaround for Qt bug where opened QDialogs do not re-activate previous window
+        // when accepted or rejected. We cannot rely on the parent pointers so push the previous
+        // active window onto a stack before the dialog is shown.
+        // We have to use a stack in case a dialog opens another dialog.
+        // NOTE: It's important to use QPointers so that any widgets deleted by Qt do not lead to
+        // hanging pointers in the stack.
+        m_activationstack.push(qApp->activeWindow());
+      }
+      break;
+    }
+    case QEvent::Hide: {
+      if ((anObject->inherits("QDialog") || anObject->inherits("QDockWidget")) && !m_activationstack.isEmpty()) {
+        QPointer<QWidget> widget = m_activationstack.pop();
+        if (widget) {
+          // Re-acivate widgets in the order as dialogs are closed. See Show case above.
+          widget->activateWindow();
+          widget->raise();
+        }
+      }
+      break;
+    }
+    default:
+      break;
+    }
+
+    return QObject::eventFilter(anObject, anEvent);
+  }
+};
+
 void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QString &msg)
 {
   switch (type) {
@@ -127,6 +172,10 @@ int main(int argc, char *argv[])
 
 #if defined __APPLE__ && (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))
     app.setGraphicsSystem("raster");
+#endif
+
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
+    qApp->installEventFilter(new MacEventFilter(qApp));
 #endif
 
     // init 3D

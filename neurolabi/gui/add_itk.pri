@@ -47,7 +47,7 @@ exists(/usr/local/include/ITK-4.4) {
   ITK_INCLUDE_PATH = /usr/local/include/ITK-4.4
     DEFINES += _USE_ITK_
     INCLUDEPATH += $$ITK_INCLUDE_PATH
-    LIBS += -lITKCommon-4.4 \
+    LIBS += -L/usr/local/lib -lITKCommon-4.4 \
       -litkv3p_lsqr-4.4 \
       -lITKVNLInstantiation-4.4 \
       -litkvnl_algo-4.4 \
@@ -112,5 +112,6 @@ exists(/usr/local/include/opencv/cv.h) {
 
 exists(../lib/hdf5/lib/libhdf5.a) {
     DEFINES += _ENABLE_HDF5_
+    INCLUDEPATH += ../lib/hdf5/include
     LIBS += -L../lib/hdf5/lib -lhdf5 -lz
 }
