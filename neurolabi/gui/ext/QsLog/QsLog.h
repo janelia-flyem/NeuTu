@@ -38,14 +38,14 @@ namespace QsLogging
 class Destination;
 class LoggerImpl; // d pointer
 
-class Logger
+class QSLOG_SHARED_OBJECT Logger
 {
 public:
-    static Logger& instance()
-    {
-        static Logger staticLog;
-        return staticLog;
-    }
+    static Logger& instance();
+    static void destroyInstance();
+    static Level levelFromLogMessage(const QString& logMessage, bool* conversionSucceeded = 0);
+
+    ~Logger();
 
     //! Adds a log message destination. Don't add null destinations.
     void addDestination(DestinationPtr destination);
@@ -57,7 +57,7 @@ public:
 
     //! The helper forwards the streaming to QDebug and builds the final
     //! log message.
-    class Helper
+    class QSLOG_SHARED_OBJECT Helper
     {
     public:
         explicit Helper(Level logLevel) :
@@ -76,9 +76,8 @@ public:
 
 private:
     Logger();
-    Logger(const Logger&);
-    Logger& operator=(const Logger&);
-    ~Logger();
+    Logger(const Logger&);            // not available
+    Logger& operator=(const Logger&); // not available
 
     void enqueueWrite(const QString& message, Level level);
     void write(const QString& message, Level level);
