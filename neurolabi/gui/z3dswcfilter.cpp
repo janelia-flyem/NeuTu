@@ -844,8 +844,12 @@ void Z3DSwcFilter::prepareData()
       if (checkRadius && n1->node.d < std::numeric_limits<double>::epsilon() &&
           n2->node.d < std::numeric_limits<double>::epsilon()) {
         checkRadius = false;
-        QMessageBox::information(QApplication::activeWindow(), "zero radius swc node",
-                                 "Swc render mode will be changed to 'Line' to show otherwise invisible zero radius nodes.");
+        QMessageBox::information(QApplication::activeWindow(),
+                                 "Reset SWC Rendering Mode",
+                                 "SWC contains segments with zero radius. "
+                                 "The geometrical primitive of SWC rendering "
+                                 "will be set to 'Line' to "
+                                 "make those segments visible.");
         m_renderingPrimitive.select("Line");
       }
 

@@ -5866,11 +5866,16 @@ bool ZStackDoc::executeSwcNodeExtendCommand(const ZPoint &center, double radius)
 
 bool ZStackDoc::executeSwcNodeSmartExtendCommand(const ZPoint &center)
 {
-  QUndoCommand *command = NULL;
+//  QUndoCommand *command = NULL;
   std::set<Swc_Tree_Node*> *nodeSet = selectedSwcTreeNodes();
   if (!nodeSet->empty()) {
     Swc_Tree_Node *prevNode = *(nodeSet->begin());
     if (prevNode != NULL) {
+      return executeSwcNodeSmartExtendCommand(
+            center, SwcTreeNode::radius(prevNode));
+    }
+  }
+#if 0
       if (center[0] >= 0 && center[1] >= 0 && center[2] >= 0) {
         ZNeuronTracer tracer;
         tracer.setIntensityField(stack()->c_stack());
@@ -5920,9 +5925,11 @@ bool ZStackDoc::executeSwcNodeSmartExtendCommand(const ZPoint &center)
     deprecateTraceMask();
     return true;
   }
+#endif
 
   return false;
 }
+
 
 bool ZStackDoc::executeSwcNodeSmartExtendCommand(
     const ZPoint &center, double radius)
@@ -5962,6 +5969,10 @@ bool ZStackDoc::executeSwcNodeSmartExtendCommand(
 
             command = new ZStackDocCommand::SwcEdit::CompositeCommand(this);
             new ZStackDocCommand::SwcEdit::AddSwcNode(this, begin, command);
+            std::set<Swc_Tree_Node*> nodeSet;
+            nodeSet.insert(leaf);
+            new ZStackDocCommand::SwcEdit::SetSwcNodeSeletion(
+                  this, nodeSet, command);
             new ZStackDocCommand::SwcEdit::SetParent(
                   this, begin, prevNode, command);
             new ZStackDocCommand::SwcEdit::RemoveEmptyTree(this, command);

@@ -244,6 +244,22 @@ private:
   Swc_Tree_Node *m_prevSibling;
 };
 
+class SetSwcNodeSeletion : public QUndoCommand
+{
+public:
+  SetSwcNodeSeletion(ZStackDoc *doc, const std::set<Swc_Tree_Node*> nodeSet,
+                     QUndoCommand *parent = NULL);
+  virtual ~SetSwcNodeSeletion();
+
+  void undo();
+  void redo();
+
+private:
+  ZStackDoc *m_doc;
+  std::set<Swc_Tree_Node*> m_nodeSet;
+  std::set<Swc_Tree_Node*> m_oldNodeSet;
+};
+
 class RemoveSubtree : public CompositeCommand
 {
 public:

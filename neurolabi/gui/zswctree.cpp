@@ -491,9 +491,10 @@ void ZSwcTree::display(QPainter &painter, int n, ZStackDrawable::Display_Style s
     style = SOLID;
   }
 
-  QColor rootColor(164, 164, 255);
-  QColor branchPointColor(164, 255, 164);
-  QColor nodeColor(255, 164, 164);
+  QColor rootColor(164, 164, 255, 164);
+  QColor branchPointColor(164, 255, 164, 164);
+  QColor nodeColor(255, 164, 164, 164);
+  QColor planeSkeletonColor(255, 128, 128, 128);
 
   QColor rootFocusColor(0, 0, 255);
   QColor branchPointFocusColor(0, 255, 0);
@@ -525,6 +526,12 @@ void ZSwcTree::display(QPainter &painter, int n, ZStackDrawable::Display_Style s
           visible = true;
         }
 
+        if (!SwcTreeNode::isRoot(tn)) {
+          painter.setPen(QPen(planeSkeletonColor, strokeWidth / 2.0));
+          painter.drawLine(QPointF(SwcTreeNode::x(tn), SwcTreeNode::y(tn)),
+                           QPointF(SwcTreeNode::x(SwcTreeNode::parent(tn)),
+                                   SwcTreeNode::y(SwcTreeNode::parent(tn))));
+        }
 
         if (visible) {
           QColor lineTerminalColor(255, 255, 0);
@@ -623,24 +630,11 @@ void ZSwcTree::display(QPainter &painter, int n, ZStackDrawable::Display_Style s
 
           if (focused) {
             color.setAlpha(16);
-            //painter.setBrush(QBrush(color));
             painter.setPen(QPen(focusColor, strokeWidth));
           } else {
             painter.setPen(QPen(color, strokeWidth));
-            //painter.setBrush(Qt::NoBrush);
           }
-          /*
-          QPainterPath circlePath;
-          circlePath.addEllipse(QPointF(SwcTreeNode::x(tn), SwcTreeNode::y(tn)),
-                                r, r);
-          painter.drawPath(circlePath);
-          */
-          /*
-          painter.drawArc(SwcTreeNode::x(tn) - r, SwcTreeNode::y(tn) - r,
-                          r * 2, r * 2, 0, 16*360);
-                          */
 
-          //painter.setRenderHint(QPainter::Antialiasing);
           double adjustedRadius = r + m_defaultPenWidth * 0.5;
           painter.drawEllipse(QPointF(Swc_Tree_Node_Const_Data(tn)->x,
                                       Swc_Tree_Node_Const_Data(tn)->y),
