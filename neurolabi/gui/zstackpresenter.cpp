@@ -160,9 +160,15 @@ void ZStackPresenter::createDocDependentActions()
   //  m_swcSelectAllNodeAction = new QAction(tr("Select All Nodes"), this);
   //  connect(m_swcSelectAllNodeAction, SIGNAL(triggered()), this,
   //          SLOT(selectAllSwcTreeNode()));
+  /*
   m_selectSwcNodeDownstreamAction = new QAction("Select Downstream", this);
   connect(m_selectSwcNodeDownstreamAction, SIGNAL(triggered()), this,
           SLOT(selectDownstreamNode()));
+          */
+
+  m_selectSwcNodeDownstreamAction =
+      buddyDocument()->getAction(ZStackDoc::ACTION_SELECT_DOWNSTREAM);
+
 
   /*
   std::cout << "Connecting m_selectSwcNodeDownstreamAction - slotTest" << std::endl;
@@ -690,7 +696,9 @@ ZStackPresenter::processMouseReleaseForSwc(
     if (m_interactiveContext.isContextMenuActivated()) {
       buddyView()->rightMenu()->clear();
       addSwcEditFunctionToRightMenu();
-      buddyView()->popRightMenu(event->pos());
+      //buddyView()->popRightMenu(event->pos());
+      buddyView()->showContextMenu(
+            buddyDocument()->getSwcContextMenu(), event->pos());
       status = CONTEXT_MENU_POPPED;
     } else {
       if (isStrokeOn()) {

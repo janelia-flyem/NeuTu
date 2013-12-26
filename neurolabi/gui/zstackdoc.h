@@ -18,6 +18,7 @@
 #include <QUndoCommand>
 #include <QMap>
 #include <string>
+#include <QMenu>
 
 #include "neutube.h"
 #include "zcurve.h"
@@ -150,6 +151,10 @@ public: //attributes
   void createActions();
   inline QAction* getAction(EActionItem item) {
     return m_actionMap[item];
+  }
+
+  inline QMenu* getSwcContextMenu() {
+    return m_swcContextMenu;
   }
 
   bool isUndoClean();
@@ -636,6 +641,9 @@ private:
 
   //  Action map
   QMap<EActionItem, QAction*> m_actionMap;
+
+  //Context menu
+  QMenu *m_swcContextMenu;
 
   //obsolete fields
   QList<ZLocsegChain*> m_chainList;

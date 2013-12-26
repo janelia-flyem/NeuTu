@@ -476,6 +476,13 @@ void ZImageWidget::popRightMenu(const QPoint &pos)
   m_rightButtonMenu->popup(mapToGlobal(pos));
 }
 
+void ZImageWidget::showContextMenu(QMenu *menu, const QPoint &pos)
+{
+  if (menu != NULL) {
+    menu->popup(mapToGlobal(pos));
+  }
+}
+
 void ZImageWidget::mouseReleaseEvent(QMouseEvent *event)
 {
   emit mouseReleased(event);

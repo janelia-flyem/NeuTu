@@ -120,6 +120,8 @@ ZStackDoc::ZStackDoc(ZStack *stack)
     connect(timer, SIGNAL(timeout()), this, SLOT(autoSave()));
   }
 
+  m_swcContextMenu = new QMenu(NULL);
+
   createActions();
 }
 
@@ -160,6 +162,7 @@ ZStackDoc::~ZStackDoc()
   */
 
   delete m_undoStack;
+  delete m_swcContextMenu;
 
   destroyReporter();
   //delete m_stackMask;
@@ -193,7 +196,7 @@ void ZStackDoc::connectSignalSlot()
 
 void ZStackDoc::createActions()
 {
-  QAction *action = new QAction("Select Downstream", this);
+  QAction *action = new QAction("Downstream", NULL);
   connect(action, SIGNAL(triggered()), this, SLOT(selectDownstreamNode()));
   m_actionMap[ACTION_SELECT_DOWNSTREAM] = action;
 
@@ -215,6 +218,8 @@ void ZStackDoc::createActions()
           this, SLOT(executeRemoveTurnCommand()));
   m_actionMap[ACTION_REMOVE_TURN] = action;
 
+  m_swcContextMenu->addAction(getAction(ACTION_SELECT_DOWNSTREAM));
+  m_swcContextMenu->addAction(getAction(ACTION_SELECT_UPSTREAM));
 }
 
 void ZStackDoc::autoSave()
