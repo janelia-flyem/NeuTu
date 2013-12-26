@@ -604,8 +604,8 @@ void Z3DWindow::createContextMenu()
   contextMenu->addAction(m_translateSwcNodeAction);
   contextMenu->addAction(m_changeSwcNodeSizeAction);
   contextMenu->addAction(m_removeSelectedObjectsAction);
-  contextMenu->addAction(m_toogleExtendSelectedSwcNodeAction);
   contextMenu->addAction(m_toogleSmartExtendSelectedSwcNodeAction);
+  contextMenu->addAction(m_toogleExtendSelectedSwcNodeAction);
   contextMenu->addAction(m_toogleAddSwcNodeModeAction);
   contextMenu->addAction(m_toogleMoveSelectedObjectsAction);
   contextMenu->addAction(m_removeSwcTurnAction);
@@ -1232,6 +1232,17 @@ void Z3DWindow::pointInVolumeLeftClicked(QPoint pt, glm::ivec3 pos)
 
 void Z3DWindow::show3DViewContextMenu(QPoint pt)
 {
+  if (m_toogleAddSwcNodeModeAction->isChecked()) {
+    m_toogleAddSwcNodeModeAction->setChecked(false);
+    return;
+  } else if (m_toogleExtendSelectedSwcNodeAction->isChecked()) {
+    m_toogleExtendSelectedSwcNodeAction->setChecked(false);
+    return;
+  } else if (m_toogleSmartExtendSelectedSwcNodeAction->isChecked()) {
+    m_toogleSmartExtendSelectedSwcNodeAction->setChecked(false);
+    return;
+  }
+
   QList<QAction*> actions;
 
   if (m_doc->selectedSwcTreeNodes()->size() > 0) {

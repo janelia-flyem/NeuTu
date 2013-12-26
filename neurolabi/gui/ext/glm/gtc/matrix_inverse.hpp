@@ -35,12 +35,12 @@
 ///////////////////////////////////////////////////////////////////////////////////
 
 #ifndef GLM_GTC_matrix_inverse
-#define GLM_GTC_matrix_inverse GLM_VERSION
+#define GLM_GTC_matrix_inverse
 
-// Dependency:
-#include "../glm.hpp"
+// Dependencies
+#include "../detail/setup.hpp"
 
-#if(defined(GLM_MESSAGES) && !defined(glm_ext))
+#if(defined(GLM_MESSAGES) && !defined(GLM_EXT_INCLUDED))
 #	pragma message("GLM: GLM_GTC_matrix_inverse extension included")
 #endif
 
@@ -55,7 +55,7 @@ namespace glm
 	/// @tparam genType Squared floating-point matrix: half, float or double. Inverse of matrix based of half-precision floating point value is highly innacurate.
 	/// @see gtc_matrix_inverse
 	template <typename genType> 
-	genType affineInverse(genType const & m);
+	GLM_FUNC_QUALIFIER genType affineInverse(genType const & m);
 
 	/// Compute the inverse transpose of a matrix.
 	/// 

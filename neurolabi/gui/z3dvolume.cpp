@@ -30,7 +30,7 @@ Z3DVolume::Z3DVolume(Stack *stack, const glm::vec3 &downsampleSpacing, const glm
   , m_volColor(1.f,1.f,1.f)
   , m_histogramThread(NULL)
 {
-  m_dimensions = glm::svec3(m_stack->width, m_stack->height, m_stack->depth);
+  m_dimensions = glm::uvec3(m_stack->width, m_stack->height, m_stack->depth);
   m_detailVolumeDimensions = glm::round(glm::vec3(m_dimensions) * downsampleSpacing);
   m_parentVolumeDimensions = m_detailVolumeDimensions;
   m_parentVolumeOffset = offset;

@@ -26,18 +26,14 @@
 /// @author Christophe Riccio
 ///////////////////////////////////////////////////////////////////////////////////
 
+#include <limits>
+
 namespace glm
 {
 	template <typename genType>
 	GLM_FUNC_QUALIFIER genType epsilon()
 	{
 		return std::numeric_limits<genType>::epsilon();
-	}
-
-	template <>
-	GLM_FUNC_QUALIFIER half epsilon()
-	{
-		return half(1.19209290e-007);
 	}
 
 	template <typename genType>
