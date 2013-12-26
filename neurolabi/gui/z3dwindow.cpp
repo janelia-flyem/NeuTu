@@ -443,9 +443,14 @@ void Z3DWindow::createActions()
   m_selectSwcNodeUpstreamAction =
       m_doc->getAction(ZStackDoc::ACTION_SELECT_UPSTREAM);
 
+  /*
   m_selectSwcNodeBranchAction = new QAction("Branch", this);
   connect(m_selectSwcNodeBranchAction, SIGNAL(triggered()), m_doc.get(),
           SLOT(selectBranchNode()));
+          */
+  m_selectSwcNodeBranchAction =
+      m_doc->getAction(ZStackDoc::ACTION_SELECT_SWC_BRANCH);
+
 
   m_selectSwcNodeTreeAction = new QAction("Tree", this);
   connect(m_selectSwcNodeTreeAction, SIGNAL(triggered()), m_doc.get(),
@@ -511,13 +516,23 @@ void Z3DWindow::createActions()
   connect(m_refreshTraceMaskAction, SIGNAL(triggered()), this,
           SLOT(refreshTraceMask()));
 
+    /*
   m_removeSwcTurnAction = new QAction("Remove turn", this);
   connect(m_removeSwcTurnAction, SIGNAL(triggered()),
           this, SLOT(removeSwcTurn()));
 
+
   m_resolveCrossoverAction = new QAction("Resolve crossover", this);
   connect(m_resolveCrossoverAction, SIGNAL(triggered()),
           m_doc.get(), SLOT(executeResolveCrossoverCommand()));
+          */
+
+  m_removeSwcTurnAction =
+      m_doc->getAction(ZStackDoc::ACTION_REMOVE_TURN);
+
+  m_resolveCrossoverAction =
+      m_doc->getAction(ZStackDoc::ACTION_RESOLVE_CROSSOVER);
+
 }
 
 void Z3DWindow::createMenus()

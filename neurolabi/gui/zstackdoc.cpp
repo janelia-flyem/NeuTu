@@ -200,6 +200,21 @@ void ZStackDoc::createActions()
   action = new QAction("Select Upstream", this);
   connect(action, SIGNAL(triggered()), this, SLOT(selectUpstreamNode()));
   m_actionMap[ACTION_SELECT_UPSTREAM] = action;
+
+  action = new QAction("Select SWC branch", this);
+  connect(action, SIGNAL(triggered()), this, SLOT(selectBranchNode()));
+  m_actionMap[ACTION_SELECT_SWC_BRANCH] = action;
+
+  action = new QAction("Resolve crossover", this);
+  connect(action, SIGNAL(triggered()),
+          this, SLOT(executeResolveCrossoverCommand()));
+  m_actionMap[ACTION_RESOLVE_CROSSOVER] = action;
+
+  action = new QAction("Remove turn", this);
+  connect(action, SIGNAL(triggered()),
+          this, SLOT(executeRemoveTurnCommand()));
+  m_actionMap[ACTION_REMOVE_TURN] = action;
+
 }
 
 void ZStackDoc::autoSave()
@@ -532,12 +547,12 @@ void ZStackDoc::selectBranchNode()
   for (std::set<Swc_Tree_Node*>::iterator iter = nodeSet->begin();
        iter != nodeSet->end(); ++iter) {
     Swc_Tree_Node* tn = *iter;
-    while (tn != NULL && !Swc_Tree_Node_Is_Branch_Point_S(tn)) {
+    while (SwcTreeNode::isRegular(tn) && !Swc_Tree_Node_Is_Branch_Point_S(tn)) {
       branchNodes.insert(tn);
       tn = tn->parent;
     }
     tn = *iter;
-    while (tn != NULL && !Swc_Tree_Node_Is_Branch_Point_S(tn)) {
+    while (SwcTreeNode::isRegular(tn) && !Swc_Tree_Node_Is_Branch_Point_S(tn)) {
       branchNodes.insert(tn);
       tn = tn->first_child;
     }
