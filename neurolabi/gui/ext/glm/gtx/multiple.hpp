@@ -37,12 +37,12 @@
 ///////////////////////////////////////////////////////////////////////////////////
 
 #ifndef GLM_GTX_multiple
-#define GLM_GTX_multiple GLM_VERSION
+#define GLM_GTX_multiple
 
 // Dependency:
 #include "../glm.hpp"
 
-#if(defined(GLM_MESSAGES) && !defined(glm_ext))
+#if(defined(GLM_MESSAGES) && !defined(GLM_EXT_INCLUDED))
 #	pragma message("GLM: GLM_GTX_multiple extension included")
 #endif
 
@@ -51,18 +51,28 @@ namespace glm
 	/// @addtogroup gtx_multiple
 	/// @{
 
-	//! Higher Multiple number of Source.
-	//! From GLM_GTX_multiple extension.
-	template <typename genType> 
+	/// Higher multiple number of Source.
+	///
+	/// @tparam genType Floating-point or integer scalar or vector types.
+	/// @param Source 
+	/// @param Multiple Must be a null or positive value
+	///
+	/// @see gtx_multiple
+	template <typename genType>
 	genType higherMultiple(
-		genType const & Source, 
+		genType const & Source,
 		genType const & Multiple);
 
-	//! Lower Multiple number of Source.
-	//! From GLM_GTX_multiple extension.
-	template <typename genType> 
+	/// Lower multiple number of Source.
+	///
+	/// @tparam genType Floating-point or integer scalar or vector types.
+	/// @param Source 
+	/// @param Multiple Must be a null or positive value
+	///
+	/// @see gtx_multiple
+	template <typename genType>
 	genType lowerMultiple(
-		genType const & Source, 
+		genType const & Source,
 		genType const & Multiple);
 
 	/// @}

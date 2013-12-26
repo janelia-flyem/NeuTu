@@ -32,10 +32,10 @@ public:
   QString getRenderToImageError() const;
 
   template<typename T>
-  glm::detail::tvec4<T>* readBGRAColorBuffer(Z3DEye eye);
+  glm::detail::tvec4<T,glm::highp>* readBGRAColorBuffer(Z3DEye eye);
 
   template<typename T>
-  glm::detail::tvec3<T>* readRGBColorBuffer(Z3DEye eye);
+  glm::detail::tvec3<T,glm::highp>* readRGBColorBuffer(Z3DEye eye);
 
 protected slots:
   void onCanvasResized(int w, int h);
@@ -63,7 +63,7 @@ protected:
 };
 
 template<typename T>
-glm::detail::tvec4<T> *Z3DCanvasRenderer::readBGRAColorBuffer(Z3DEye eye)
+glm::detail::tvec4<T, glm::highp> *Z3DCanvasRenderer::readBGRAColorBuffer(Z3DEye eye)
 {
   if (!getImageColorTexture(eye)) {
     //LERROR() << "no texture to read";
@@ -90,7 +90,7 @@ glm::detail::tvec4<T> *Z3DCanvasRenderer::readBGRAColorBuffer(Z3DEye eye)
   CHECK_GL_ERROR;
 
   if (pixels)
-    return reinterpret_cast<glm::detail::tvec4<T>*>(pixels);
+    return reinterpret_cast<glm::detail::tvec4<T,glm::highp>*>(pixels);
   else {
     //LERROR() << "failed to download texture";
     //return NULL;
@@ -99,7 +99,7 @@ glm::detail::tvec4<T> *Z3DCanvasRenderer::readBGRAColorBuffer(Z3DEye eye)
 }
 
 template<typename T>
-glm::detail::tvec3<T>* Z3DCanvasRenderer::readRGBColorBuffer(Z3DEye eye)
+glm::detail::tvec3<T,glm::highp>* Z3DCanvasRenderer::readRGBColorBuffer(Z3DEye eye)
 {
   if (!getImageColorTexture(eye)) {
     //LERROR() << "no texture to read";
@@ -126,7 +126,7 @@ glm::detail::tvec3<T>* Z3DCanvasRenderer::readRGBColorBuffer(Z3DEye eye)
   CHECK_GL_ERROR;
 
   if (pixels)
-    return reinterpret_cast<glm::detail::tvec3<T>*>(pixels);
+    return reinterpret_cast<glm::detail::tvec3<T,glm::highp>*>(pixels);
   else {
     //    LERROR() << "failed to download texture";
     //    return NULL;

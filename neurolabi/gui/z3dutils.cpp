@@ -5,10 +5,6 @@
 
 namespace {
 
-typedef glm::detail::tvec2<int64_t>    i64vec2;
-typedef glm::detail::tvec3<int64_t>    i64vec3;
-typedef glm::detail::tvec4<int64_t>    i64vec4;
-
 //----------------------------------------------------------------------------
 // A helper class to quickly locate an edge, given the endpoint ids.
 // It uses an stl map rather than a table partitioning scheme, since
@@ -288,7 +284,7 @@ typedef std::vector<int64_t> vtkCCSPolyEdges;
 // by originalEdges.  If scalars is not null, then add a scalar for
 // each triangle.
 void vtkCCSInsertTriangle(
-    std::vector<i64vec3> &polys, const std::vector<int64_t> &poly, const size_t trids[3],
+    std::vector<glm::i64vec3> &polys, const std::vector<int64_t> &poly, const size_t trids[3],
     const std::vector<int64_t> &polyEdges, std::vector<std::vector<int64_t> > &originalEdges)
 {
   static const size_t nextVert[3] = { 1, 2, 0 };
@@ -322,7 +318,7 @@ void vtkCCSInsertTriangle(
   if (edgeCount == 0)
   {
     // No special edge handling, so just do one triangle
-    polys.push_back(i64vec3(poly[trids[0]], poly[trids[1]], poly[trids[2]]));
+    polys.push_back(glm::i64vec3(poly[trids[0]], poly[trids[1]], poly[trids[2]]));
   }
   else
   {
@@ -396,7 +392,7 @@ void vtkCCSInsertTriangle(
 
         for (int k = m; k < n; k++)
         {
-          polys.push_back(i64vec3(edgePts[side][k], edgePts[side][k+1], tailPtIds[side]));
+          polys.push_back(glm::i64vec3(edgePts[side][k], edgePts[side][k+1], tailPtIds[side]));
         }
       }
     }
@@ -945,7 +941,7 @@ bool TriangulatePolygon2(const std::vector<int64_t> &poly, const std::vector<glm
 bool vtkCCSTriangulate(
     const std::vector<int64_t> &poly, const std::vector<glm::dvec3> &vertices,
     const std::vector<int64_t> &polyEdges, std::vector<std::vector<int64_t> > &originalEdges,
-    std::vector<i64vec3> &triangles)
+    std::vector<glm::i64vec3> &triangles)
 {
   int triangulationFailure = false;
   size_t n = poly.size();
@@ -998,7 +994,7 @@ bool vtkCCSTriangulate(
 // Here is the code for creating polygons from line segments.
 // Take a set of lines, join them tip-to-tail to create polygons
 void vtkCCSMakePolysFromLines(
-    std::vector<i64vec2> &lines,
+    std::vector<glm::i64vec2> &lines,
     std::vector<std::vector<int64_t> > &newPolys,
     std::vector<size_t> &incompletePolys)
 {
@@ -1041,7 +1037,7 @@ void vtkCCSMakePolysFromLines(
 
 
 
-      i64vec2 endPts, reverseEndPts;
+      glm::i64vec2 endPts, reverseEndPts;
 
       // For both open ends of the polygon
       for (int endIdx = 0; endIdx < 2; endIdx++)
@@ -2500,8 +2496,8 @@ int vtkCCSCutHoleyPolys(
 //#define VTK_CCS_SHOW_FAILED_POLYS
 
 void MakePolysFromContours(
-    std::vector<i64vec2> &lines, std::vector<glm::dvec3> &vertices,
-    std::vector<i64vec3> &triangles, const glm::dvec3 normal)
+    std::vector<glm::i64vec2> &lines, std::vector<glm::dvec3> &vertices,
+    std::vector<glm::i64vec3> &triangles, const glm::dvec3 normal)
 {
   // If no cut lines were generated, there's nothing to do
   if (lines.empty())
@@ -2595,7 +2591,7 @@ void MakePolysFromContours(
 }
 
 // ---------------------------------------------------
-bool TriangulatePolygon(std::vector<int64_t> &polygon, std::vector<glm::dvec3> &vertices, std::vector<i64vec3> &triangles)
+bool TriangulatePolygon(std::vector<int64_t> &polygon, std::vector<glm::dvec3> &vertices, std::vector<glm::i64vec3> &triangles)
 {
   std::vector<std::vector<int64_t> > polys(1);
   std::vector<int64_t> &poly = polys[0];
@@ -2619,8 +2615,8 @@ bool TriangulatePolygon(std::vector<int64_t> &polygon, std::vector<glm::dvec3> &
 void ClipAndContourPolys(
     std::vector<glm::dvec3> &vertices, std::vector<double> &vertexDists,
     vtkCCSEdgeLocator *edgeLocator,
-    std::vector<i64vec3> &inputTriangles,
-    std::vector<i64vec3> &outputTriangles, std::vector<i64vec2> &outputLines,
+    std::vector<glm::i64vec3> &inputTriangles,
+    std::vector<glm::i64vec3> &outputTriangles, std::vector<glm::i64vec2> &outputLines,
     double epsilon = 1e-6)
 {
   std::vector<int64_t> polygon;
@@ -2628,7 +2624,7 @@ void ClipAndContourPolys(
   // Go through all triangles and clip them.
   for (size_t triangleIdx = 0; triangleIdx < inputTriangles.size(); triangleIdx++)
   {
-    i64vec3 triangle = inputTriangles[triangleIdx];
+    glm::i64vec3 triangle = inputTriangles[triangleIdx];
     polygon.clear();
 
     int64_t i1 = triangle[2];
@@ -2640,7 +2636,7 @@ void ClipAndContourPolys(
     int64_t j1 = 0;
 
     // To store the ids of the contour line
-    i64vec2 linePts(0,0);
+    glm::i64vec2 linePts(0,0);
 
     for (int i = 0; i < 3; i++)
     {
@@ -2700,7 +2696,7 @@ void ClipAndContourPolys(
     else if (numPoints == 3)
     {
       // Insert the polygon without triangulating it
-      outputTriangles.push_back(i64vec3(polygon[0], polygon[1], polygon[2]));
+      outputTriangles.push_back(glm::i64vec3(polygon[0], polygon[1], polygon[2]));
     }
 
     // Insert the contour line if one was created
@@ -2717,16 +2713,16 @@ void ClipAndContourPolys(
 Z3DTriangleList Z3DUtils::clipClosedSurface(const Z3DTriangleList &mesh, std::vector<glm::vec4> clipPlanes, double epsilon)
 {
   std::vector<glm::dvec3> vertices = mesh.getDoubleVertices();
-  std::vector<glm::detail::tvec3<size_t> > tris = mesh.getTriangleIndices();
-  std::vector<i64vec3> inputTriangles;
+  std::vector<glm::uvec3> tris = mesh.getTriangleIndices();
+  std::vector<glm::i64vec3> inputTriangles;
   vtkCCSEdgeLocator *edgeLocator = vtkCCSEdgeLocator::New();
   for (size_t i=0; i<tris.size(); i++)
-    inputTriangles.push_back(i64vec3(tris[i]));
+    inputTriangles.push_back(glm::i64vec3(tris[i]));
 
   bool clipped = false;
 
   for (size_t i=0; i<clipPlanes.size(); i++) {
-    std::vector<i64vec3> outputTriangles;
+    std::vector<glm::i64vec3> outputTriangles;
     glm::dvec4 plane = glm::dvec4(clipPlanes[i]);
     std::vector<double> vertexDists;
     bool needClip2 = false;
@@ -2738,7 +2734,7 @@ Z3DTriangleList Z3DUtils::clipClosedSurface(const Z3DTriangleList &mesh, std::ve
 
     if (needClip2) {
       edgeLocator->Initialize();
-      std::vector<i64vec2> outputLines;
+      std::vector<glm::i64vec2> outputLines;
       ClipAndContourPolys(vertices, vertexDists, edgeLocator, inputTriangles, outputTriangles, outputLines, epsilon);
       MakePolysFromContours(outputLines, vertices, outputTriangles, plane.xyz());
       inputTriangles.swap(outputTriangles);

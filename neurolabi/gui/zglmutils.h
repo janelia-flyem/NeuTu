@@ -4,6 +4,9 @@
 // This file includes some commonly used headers from glm and defines some useful functions
 // for glm
 
+#define GLM_FORCE_SSE2
+#define GLM_FORCE_SIZE_T_LENGTH
+#define GLM_MESSAGES
 #define GLM_SWIZZLE
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
@@ -16,44 +19,41 @@
 #include <QDebug>
 
 namespace glm {
-typedef detail::tvec2<size_t> svec2;
-typedef detail::tvec3<size_t> svec3;
-typedef detail::tvec4<size_t> svec4;
-typedef detail::tvec3<unsigned char> col3;
-typedef detail::tvec4<unsigned char> col4;
+typedef detail::tvec3<unsigned char, highp> col3;
+typedef detail::tvec4<unsigned char, highp> col4;
 
 // apply transform matrix
-template<typename T>
-detail::tvec3<T> applyMatrix(const detail::tmat4x4<T> &mat, const detail::tvec3<T> &vec)
+template<typename T, precision P>
+detail::tvec3<T,P> applyMatrix(const detail::tmat4x4<T,P> &mat, const detail::tvec3<T,P> &vec)
 {
-  detail::tvec4<T> res = mat * detail::tvec4<T>(vec, T(1));
-  return detail::tvec3<T>(res / res.w);
+  detail::tvec4<T,P> res = mat * detail::tvec4<T,P>(vec, T(1));
+  return detail::tvec3<T,P>(res / res.w);
 }
 
 // given vec, get normalized vector e1 and e2 to make (e1,e2,vec) orthogonal to each other
-// returned e1 and e2 is undefined if vec is zero
-template<typename T>
-void getOrthogonalVectors(const detail::tvec3<T> &vec, detail::tvec3<T> &e1, detail::tvec3<T> &e2)
+// **crash** if vec is zero
+template<typename T, precision P>
+void getOrthogonalVectors(const detail::tvec3<T,P> &vec, detail::tvec3<T,P> &e1, detail::tvec3<T,P> &e2)
 {
-  GLM_STATIC_ASSERT(detail::type<T>::is_float, "'normalize' only accept floating-point inputs");
+  GLM_STATIC_ASSERT(std::numeric_limits<T>::is_iec559, "'getOrthogonalVectors' only accept floating-point inputs");
   T eps = std::numeric_limits<T>::epsilon() * 1e2;
 
-  e1 = cross(vec, detail::tvec3<T>(T(1), T(0), T(0)));
+  e1 = cross(vec, detail::tvec3<T,P>(T(1), T(0), T(0)));
   if (dot(e1, e1) < eps)
-    e1 = cross(vec, detail::tvec3<T>(T(0), T(1), T(0)));
+    e1 = cross(vec, detail::tvec3<T,P>(T(0), T(1), T(0)));
   e1 = normalize(e1);
   e2 = normalize(cross(e1, vec));
 }
 
 }
 
-template<typename T>
+template<typename T, glm::precision P>
 class Vec2Compare
 {
   bool less;
 public:
   Vec2Compare(bool less = true) : less(less) {}
-  bool operator() (const glm::detail::tvec2<T>& lhs, const glm::detail::tvec2<T>& rhs) const
+  bool operator() (const glm::detail::tvec2<T,P>& lhs, const glm::detail::tvec2<T,P>& rhs) const
   {
     if (less) {
       if (lhs.y != rhs.y)
@@ -67,13 +67,13 @@ public:
   }
 };
 
-template<typename T>
+template<typename T, glm::precision P>
 class Vec3Compare
 {
   bool less;
 public:
   Vec3Compare(bool less = true) : less(less) {}
-  bool operator() (const glm::detail::tvec3<T>& lhs, const glm::detail::tvec3<T>& rhs) const
+  bool operator() (const glm::detail::tvec3<T,P>& lhs, const glm::detail::tvec3<T,P>& rhs) const
   {
     if (less) {
       if (lhs.z != rhs.z)
@@ -91,13 +91,13 @@ public:
   }
 };
 
-template<typename T>
+template<typename T, glm::precision P>
 class Vec4Compare
 {
   bool less;
 public:
   Vec4Compare(bool less = true) : less(less) {}
-  bool operator() (const glm::detail::tvec4<T>& lhs, const glm::detail::tvec4<T>& rhs) const
+  bool operator() (const glm::detail::tvec4<T,P>& lhs, const glm::detail::tvec4<T,P>& rhs) const
   {
     if (less) {
       if (lhs.w != rhs.w)
@@ -122,70 +122,70 @@ public:
 //-------------------------------------------------------------------------------------------------------------------------
 // std iostream print
 
-template<typename T>
-std::ostream& operator << (std::ostream& s, const glm::detail::tvec2<T>& v)
+template<typename T, glm::precision P>
+std::ostream& operator << (std::ostream& s, const glm::detail::tvec2<T,P>& v)
 {
   return (s << "(" << v[0] << " " << v[1] << ")");
 }
 
-template<typename T>
-std::ostream& operator << (std::ostream& s, const glm::detail::tvec3<T>& v)
+template<typename T, glm::precision P>
+std::ostream& operator << (std::ostream& s, const glm::detail::tvec3<T,P>& v)
 {
   return (s << "(" << v[0] << " " << v[1] << " " << v[2] << ")");
 }
 
-template<typename T>
-std::ostream& operator << (std::ostream& s, const glm::detail::tvec4<T>& v)
+template<typename T, glm::precision P>
+std::ostream& operator << (std::ostream& s, const glm::detail::tvec4<T,P>& v)
 {
   return (s << "(" << v[0] << " " << v[1] << " " << v[2] << " " << v[3] << ")");
 }
 
 template<>
-inline std::ostream& operator << <unsigned char>(std::ostream& s, const glm::detail::tvec2<unsigned char>& v)
+inline std::ostream& operator << <unsigned char,glm::highp>(std::ostream& s, const glm::detail::tvec2<unsigned char,glm::highp>& v)
 {
-  return (s << glm::detail::tvec2<int>(v));
+  return (s << glm::detail::tvec2<int,glm::highp>(v));
 }
 
 template<>
-inline std::ostream& operator << <unsigned char>(std::ostream& s, const glm::detail::tvec3<unsigned char>& v)
+inline std::ostream& operator << <unsigned char,glm::highp>(std::ostream& s, const glm::detail::tvec3<unsigned char,glm::highp>& v)
 {
-  return (s << glm::detail::tvec3<int>(v));
+  return (s << glm::detail::tvec3<int,glm::highp>(v));
 }
 
 template<>
-inline std::ostream& operator << <unsigned char>(std::ostream& s, const glm::detail::tvec4<unsigned char>& v)
+inline std::ostream& operator << <unsigned char,glm::highp>(std::ostream& s, const glm::detail::tvec4<unsigned char,glm::highp>& v)
 {
-  return (s << glm::detail::tvec4<int>(v));
+  return (s << glm::detail::tvec4<int,glm::highp>(v));
 }
 
 template<>
-inline std::ostream& operator << <char>(std::ostream& s, const glm::detail::tvec2<char>& v)
+inline std::ostream& operator << <char,glm::highp>(std::ostream& s, const glm::detail::tvec2<char,glm::highp>& v)
 {
-  return (s << glm::detail::tvec2<int>(v));
+  return (s << glm::detail::tvec2<int,glm::highp>(v));
 }
 
 template<>
-inline std::ostream& operator << <char>(std::ostream& s, const glm::detail::tvec3<char>& v)
+inline std::ostream& operator << <char,glm::highp>(std::ostream& s, const glm::detail::tvec3<char,glm::highp>& v)
 {
-  return (s << glm::detail::tvec3<int>(v));
+  return (s << glm::detail::tvec3<int,glm::highp>(v));
 }
 
 template<>
-inline std::ostream& operator << <char>(std::ostream& s, const glm::detail::tvec4<char>& v)
+inline std::ostream& operator << <char,glm::highp>(std::ostream& s, const glm::detail::tvec4<char,glm::highp>& v)
 {
-  return (s << glm::detail::tvec4<int>(v));
+  return (s << glm::detail::tvec4<int,glm::highp>(v));
 }
 
-template<typename T>
-std::ostream& operator << (std::ostream& s, const glm::detail::tmat2x2<T>& m)
+template<typename T, glm::precision P>
+std::ostream& operator << (std::ostream& s, const glm::detail::tmat2x2<T,P>& m)
 {
   return (s
           << "| " << m[0][0] << " " << m[1][0] << " |" << std::endl
           << "| " << m[0][1] << " " << m[1][1] << " |" << std::endl);
 }
 
-template<typename T>
-std::ostream& operator << (std::ostream& s, const glm::detail::tmat3x3<T>& m)
+template<typename T, glm::precision P>
+std::ostream& operator << (std::ostream& s, const glm::detail::tmat3x3<T,P>& m)
 {
   return (s
           << "| " << m[0][0] << " " << m[1][0] << " " << m[2][0] << " |" << std::endl
@@ -193,8 +193,8 @@ std::ostream& operator << (std::ostream& s, const glm::detail::tmat3x3<T>& m)
           << "| " << m[0][2] << " " << m[1][2] << " " << m[2][2] << " |" << std::endl);
 }
 
-template<typename T>
-std::ostream& operator << (std::ostream& s, const glm::detail::tmat4x4<T>& m)
+template<typename T, glm::precision P>
+std::ostream& operator << (std::ostream& s, const glm::detail::tmat4x4<T,P>& m)
 {
   return (s
           << "| " << m[0][0] << " " << m[1][0] << " " << m[2][0] << " " << m[3][0] << " |" << std::endl
@@ -206,8 +206,8 @@ std::ostream& operator << (std::ostream& s, const glm::detail::tmat4x4<T>& m)
 //-------------------------------------------------------------------------------------------------------------------------
 // qDebug print
 
-template<typename T>
-QDebug& operator << (QDebug s, const glm::detail::tvec2<T>& v)
+template<typename T, glm::precision P>
+QDebug& operator << (QDebug s, const glm::detail::tvec2<T,P>& v)
 {
   std::ostringstream oss;
   oss << v;
@@ -215,8 +215,8 @@ QDebug& operator << (QDebug s, const glm::detail::tvec2<T>& v)
   return s.space();
 }
 
-template<typename T>
-QDebug& operator << (QDebug s, const glm::detail::tvec3<T>& v)
+template<typename T, glm::precision P>
+QDebug& operator << (QDebug s, const glm::detail::tvec3<T,P>& v)
 {
   std::ostringstream oss;
   oss << v;
@@ -224,8 +224,8 @@ QDebug& operator << (QDebug s, const glm::detail::tvec3<T>& v)
   return s.space();
 }
 
-template<typename T>
-QDebug& operator << (QDebug s, const glm::detail::tvec4<T>& v)
+template<typename T, glm::precision P>
+QDebug& operator << (QDebug s, const glm::detail::tvec4<T,P>& v)
 {
   std::ostringstream oss;
   oss << v;
@@ -233,8 +233,8 @@ QDebug& operator << (QDebug s, const glm::detail::tvec4<T>& v)
   return s.space();
 }
 
-template<typename T>
-QDebug& operator << (QDebug s, const glm::detail::tmat2x2<T>& m)
+template<typename T, glm::precision P>
+QDebug& operator << (QDebug s, const glm::detail::tmat2x2<T,P>& m)
 {
   std::ostringstream oss;
   oss << m;
@@ -242,8 +242,8 @@ QDebug& operator << (QDebug s, const glm::detail::tmat2x2<T>& m)
   return s.space();
 }
 
-template<typename T>
-QDebug& operator << (QDebug& s, const glm::detail::tmat3x3<T>& m)
+template<typename T, glm::precision P>
+QDebug& operator << (QDebug& s, const glm::detail::tmat3x3<T,P>& m)
 {
   std::ostringstream oss;
   oss << m;
@@ -251,8 +251,8 @@ QDebug& operator << (QDebug& s, const glm::detail::tmat3x3<T>& m)
   return s.space();
 }
 
-template<typename T>
-QDebug& operator << (QDebug s, const glm::detail::tmat4x4<T>& m)
+template<typename T, glm::precision P>
+QDebug& operator << (QDebug s, const glm::detail::tmat4x4<T,P>& m)
 {
   std::ostringstream oss;
   oss << m;

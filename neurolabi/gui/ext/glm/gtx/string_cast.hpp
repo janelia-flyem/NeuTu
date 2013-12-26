@@ -39,16 +39,15 @@
 ///////////////////////////////////////////////////////////////////////////////////
 
 #ifndef GLM_GTX_string_cast
-#define GLM_GTX_string_cast GLM_VERSION
+#define GLM_GTX_string_cast
 
 // Dependency:
 #include "../glm.hpp"
-#include "../gtc/half_float.hpp"
 #include "../gtx/integer.hpp"
 #include "../gtx/quaternion.hpp"
 #include <string>
 
-#if(defined(GLM_MESSAGES) && !defined(glm_ext))
+#if(defined(GLM_MESSAGES) && !defined(GLM_EXT_INCLUDED))
 #	pragma message("GLM: GLM_GTX_string_cast extension included")
 #endif
 
@@ -58,7 +57,7 @@ namespace glm
 	/// @{
 
 	/// Create a string from a GLM type value.
-	/// From GLM_GTX_string_cast extension.
+	/// @see gtx_string_cast extension.
 	template <typename genType> 
 	std::string to_string(genType const & x);
 

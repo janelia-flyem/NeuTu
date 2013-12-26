@@ -324,7 +324,7 @@ void Z3DVolumeRaycaster::process(Z3DEye eye)
   bool is2DImage = (volume->is2DData());
 
   if (m_volumes.hasChanged()) {
-    glm::svec3 volDim = volume->getOriginalDimensions();
+    glm::uvec3 volDim = volume->getOriginalDimensions();
     m_xCut.setRange(0, volDim.x - 1);
     m_xCut.setLowerValue(0);
     m_xCut.setUpperValue(volDim.x - 1);
@@ -431,7 +431,7 @@ void Z3DVolumeRaycaster::process(Z3DEye eye)
   bool renderSlice = m_showZSlice.get() || m_showXSlice.get() || m_showYSlice.get()
       || m_showXSlice2.get() || m_showYSlice2.get() || m_showZSlice2.get();
   if (renderSlice) {
-    glm::svec3 volDim = volume->getOriginalDimensions();
+    glm::uvec3 volDim = volume->getOriginalDimensions();
     glm::vec3 coordLuf = volume->getPhysicalLUF();
     glm::vec3 coordRdb = volume->getPhysicalRDB();
 
@@ -794,7 +794,7 @@ void Z3DVolumeRaycaster::prepareDataForRaycaster(Z3DVolume *volume, Z3DEye eye)
 
   glm::vec3 coordLuf = volume->getPhysicalLUF();
   glm::vec3 coordRdb = volume->getPhysicalRDB();
-  glm::svec3 volDim = volume->getOriginalDimensions();
+  glm::uvec3 volDim = volume->getOriginalDimensions();
 
   float xTexCoordStart = m_xCut.lowerValue() / static_cast<float>(volDim.x-1);
   float xTexCoordEnd = m_xCut.upperValue() / static_cast<float>(volDim.x-1);
@@ -988,8 +988,8 @@ void Z3DVolumeRaycaster::updateCubeSerieSlices()
 
   glm::vec3 coordLuf = volume->getPhysicalLUF();
   glm::vec3 coordRdb = volume->getPhysicalRDB();
-  glm::svec3 volDim = volume->getOriginalDimensions();
-  glm::svec3 dim = volume->getDimensions();
+  glm::uvec3 volDim = volume->getOriginalDimensions();
+  glm::uvec3 dim = volume->getDimensions();
 
   float xTexCoordStart = m_xCut.lowerValue() / static_cast<float>(volDim.x-1);
   float xTexCoordEnd = m_xCut.upperValue() / static_cast<float>(volDim.x-1);

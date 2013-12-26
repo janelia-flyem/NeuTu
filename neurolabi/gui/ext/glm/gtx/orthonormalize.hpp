@@ -37,12 +37,12 @@
 ///////////////////////////////////////////////////////////////////////////////////
 
 #ifndef GLM_GTX_orthonormalize
-#define GLM_GTX_orthonormalize GLM_VERSION
+#define GLM_GTX_orthonormalize
 
 // Dependency:
 #include "../glm.hpp"
 
-#if(defined(GLM_MESSAGES) && !defined(glm_ext))
+#if(defined(GLM_MESSAGES) && !defined(GLM_EXT_INCLUDED))
 #	pragma message("GLM: GLM_GTX_orthonormalize extension included")
 #endif
 
@@ -53,16 +53,16 @@ namespace glm
 
 	//! Returns the orthonormalized matrix of m.
 	//! From GLM_GTX_orthonormalize extension.
-	template <typename T> 
-	detail::tmat3x3<T> orthonormalize(
-		const detail::tmat3x3<T>& m);
+	template <typename T, precision P> 
+	detail::tmat3x3<T, P> orthonormalize(
+		const detail::tmat3x3<T, P>& m);
 		
     //! Orthonormalizes x according y.
 	//! From GLM_GTX_orthonormalize extension.
-	template <typename T> 
-	detail::tvec3<T> orthonormalize(
-		const detail::tvec3<T>& x, 
-		const detail::tvec3<T>& y);
+	template <typename T, precision P> 
+	detail::tvec3<T, P> orthonormalize(
+		const detail::tvec3<T, P>& x, 
+		const detail::tvec3<T, P>& y);
 
 	/// @}
 }//namespace glm
