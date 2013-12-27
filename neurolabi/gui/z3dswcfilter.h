@@ -80,6 +80,7 @@ public:
   bool isNodeRendering() const { return m_renderingPrimitive.isSelected("Sphere"); }
 
   void setInteractionMode(InteractionMode mode) { m_interactionMode = mode; }
+  inline InteractionMode getInteractionMode() { return m_interactionMode; }
 
 
 signals:
