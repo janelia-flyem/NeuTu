@@ -15,6 +15,7 @@
 
 #include "QsLog.h"
 
+#include "informationdialog.h"
 #include "tz_image_io.h"
 #include "tz_math.h"
 #include "zstackdoc.h"
@@ -84,7 +85,7 @@
 
 using namespace std;
 
-ZStackDoc::ZStackDoc(ZStack *stack)
+ZStackDoc::ZStackDoc(ZStack *stack, QObject *parent) : QObject(parent)
 {
   m_stack = stack;
   m_parentFrame = NULL;
@@ -110,6 +111,8 @@ ZStackDoc::ZStackDoc(ZStack *stack)
   m_redoAction->setIcon(QIcon(":/images/redo.png"));
   m_redoAction->setShortcuts(QKeySequence::Redo);
 
+  m_swcNodeContextMenu = NULL;
+
   connectSignalSlot();
 
   setReporter(new ZQtMessageReporter());
@@ -120,9 +123,8 @@ ZStackDoc::ZStackDoc(ZStack *stack)
     connect(timer, SIGNAL(timeout()), this, SLOT(autoSave()));
   }
 
-  m_swcContextMenu = new QMenu(NULL);
-
   createActions();
+  createContextMenu();
 }
 
 ZStackDoc::~ZStackDoc()
@@ -162,7 +164,7 @@ ZStackDoc::~ZStackDoc()
   */
 
   delete m_undoStack;
-  delete m_swcContextMenu;
+  delete m_swcNodeContextMenu;
 
   destroyReporter();
   //delete m_stackMask;
@@ -196,17 +198,25 @@ void ZStackDoc::connectSignalSlot()
 
 void ZStackDoc::createActions()
 {
-  QAction *action = new QAction("Downstream", NULL);
+  QAction *action = new QAction("Downstream", this);
   connect(action, SIGNAL(triggered()), this, SLOT(selectDownstreamNode()));
   m_actionMap[ACTION_SELECT_DOWNSTREAM] = action;
 
-  action = new QAction("Select Upstream", this);
+  action = new QAction("Upstream", this);
   connect(action, SIGNAL(triggered()), this, SLOT(selectUpstreamNode()));
   m_actionMap[ACTION_SELECT_UPSTREAM] = action;
 
-  action = new QAction("Select SWC branch", this);
+  action = new QAction("SWC branch", this);
   connect(action, SIGNAL(triggered()), this, SLOT(selectBranchNode()));
   m_actionMap[ACTION_SELECT_SWC_BRANCH] = action;
+
+  action = new QAction("All connected nodes", this);
+  connect(action, SIGNAL(triggered()), this, SLOT(selectConnectedNode()));
+  m_actionMap[ACTION_SELECT_CONNECTED_SWC_NODE] = action;
+
+  action = new QAction("All nodes", this);
+  connect(action, SIGNAL(triggered()), this, SLOT(selectAllSwcTreeNode()));
+  m_actionMap[ACTION_SELECT_ALL_SWC_NODE] = action;
 
   action = new QAction("Resolve crossover", this);
   connect(action, SIGNAL(triggered()),
@@ -218,8 +228,67 @@ void ZStackDoc::createActions()
           this, SLOT(executeRemoveTurnCommand()));
   m_actionMap[ACTION_REMOVE_TURN] = action;
 
-  m_swcContextMenu->addAction(getAction(ACTION_SELECT_DOWNSTREAM));
-  m_swcContextMenu->addAction(getAction(ACTION_SELECT_UPSTREAM));
+  action = new QAction("Path length", this);
+  connect(action, SIGNAL(triggered()), this, SLOT(showSeletedSwcNodeLength()));
+  m_actionMap[ACTION_MEASURE_SWC_NODE_LENGTH] = action;
+
+  action = new QAction("Delete selected nodes", this);
+  connect(action, SIGNAL(triggered()), this, SLOT(executeDeleteSwcNodeCommand()));
+  m_actionMap[ACTION_DELETE_SWC_NODE] = action;
+
+  action = new QAction("Break connections", this);
+  connect(action, SIGNAL(triggered()), this, SLOT(executeBreakSwcConnectionCommand()));
+  m_actionMap[ACTION_BREAK_SWC_NODE] = action;
+
+  action = new QAction("Connect", this);
+  connect(action, SIGNAL(triggered()), this, SLOT(executeConnectSwcNodeCommand()));
+  m_actionMap[ACTION_CONNECT_SWC_NODE] = action;
+
+  action = new QAction("Merge", this);
+  connect(action, SIGNAL(triggered()), this, SLOT(executeMergeSwcNodeCommand()));
+  m_actionMap[ACTION_MERGE_SWC_NODE] = action;
+
+  m_singleSwcNodeActionActivator.registerAction(
+        m_actionMap[ACTION_MEASURE_SWC_NODE_LENGTH], false);
+  m_singleSwcNodeActionActivator.registerAction(
+        m_actionMap[ACTION_BREAK_SWC_NODE], false);
+  m_singleSwcNodeActionActivator.registerAction(
+        m_actionMap[ACTION_CONNECT_SWC_NODE], false);
+  m_singleSwcNodeActionActivator.registerAction(
+        m_actionMap[ACTION_MERGE_SWC_NODE], false);
+}
+
+void ZStackDoc::updateSwcNodeAction()
+{
+  m_singleSwcNodeActionActivator.update(this);
+}
+
+void ZStackDoc::createContextMenu()
+{
+  m_swcNodeContextMenu = new QMenu(NULL);
+
+  m_swcNodeContextMenu->addAction(getAction(ACTION_DELETE_SWC_NODE));
+  m_swcNodeContextMenu->addAction(getAction(ACTION_BREAK_SWC_NODE));
+  m_swcNodeContextMenu->addAction(getAction(ACTION_CONNECT_SWC_NODE));
+  m_swcNodeContextMenu->addAction(getAction(ACTION_MERGE_SWC_NODE));
+
+  QMenu *submenu = new QMenu("Select", m_swcNodeContextMenu);
+  submenu->addAction(getAction(ACTION_SELECT_DOWNSTREAM));
+  submenu->addAction(getAction(ACTION_SELECT_UPSTREAM));
+  submenu->addAction(getAction(ACTION_SELECT_SWC_BRANCH));
+  submenu->addAction(getAction(ACTION_SELECT_CONNECTED_SWC_NODE));
+  submenu->addAction(getAction(ACTION_SELECT_ALL_SWC_NODE));
+  m_swcNodeContextMenu->addMenu(submenu);
+
+  submenu = new QMenu("Advanced Editing", m_swcNodeContextMenu);
+  submenu->addAction(getAction(ACTION_REMOVE_TURN));
+  submenu->addAction(getAction(ACTION_RESOLVE_CROSSOVER));
+  m_swcNodeContextMenu->addMenu(submenu);
+
+  submenu = new QMenu("Information", m_swcNodeContextMenu);
+  submenu->addAction(getAction(ACTION_SWC_SUMMARIZE));
+  submenu->addAction(getAction(ACTION_MEASURE_SWC_NODE_LENGTH));
+  m_swcNodeContextMenu->addMenu(submenu);
 }
 
 void ZStackDoc::autoSave()
@@ -6919,4 +6988,28 @@ void ZStackDoc::updateModelData(EDocumentDataType type)
   default:
     break;
   }
+}
+
+void ZStackDoc::showSeletedSwcNodeLength()
+{
+  double length = SwcTreeNode::segmentLength(*selectedSwcTreeNodes());
+
+  InformationDialog dlg;
+
+  std::ostringstream textStream;
+
+  textStream << "<p>Overall length of selected branches: " << length << "</p>";
+
+  if (selectedSwcTreeNodes()->size() == 2) {
+    std::set<Swc_Tree_Node*>::const_iterator iter =
+        selectedSwcTreeNodes()->begin();
+    Swc_Tree_Node *tn1 = *iter;
+    ++iter;
+    Swc_Tree_Node *tn2 = *iter;
+    textStream << "<p>Straight line distance between the two selected nodes: "
+               << SwcTreeNode::distance(tn1, tn2) << "</p>";
+  }
+
+  dlg.setText(textStream.str());
+  dlg.exec();
 }

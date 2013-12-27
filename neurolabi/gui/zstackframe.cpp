@@ -78,7 +78,7 @@ void ZStackFrame::detach3DWindow()
 
 void ZStackFrame::createDocument()
 {
-  setDocument(tr1::shared_ptr<ZStackDoc>(new ZStackDoc));
+  setDocument(tr1::shared_ptr<ZStackDoc>(new ZStackDoc(NULL, NULL)));
 }
 
 void ZStackFrame::createPresenter()

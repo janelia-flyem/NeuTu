@@ -60,6 +60,7 @@
 #include "zpunctumio.h"
 #include "zswcglobalfeatureanalyzer.h"
 #include "misc/miscutility.h"
+#include "zstackdocmenufactory.h"
 
 class Sleeper : public QThread
 {
@@ -585,32 +586,33 @@ void Z3DWindow::createContextMenu()
 
   //Swc node
   contextMenu = new QMenu(this);
-  QMenu *selectMenu = new QMenu("Select", contextMenu);
+  //QMenu *selectMenu = new QMenu("Select", contextMenu);
   contextMenu->addAction(m_changeSwcNodeTypeAction);
   contextMenu->addAction(m_setSwcRootAction);
-  contextMenu->addAction(m_breakSwcConnectionAction);
+  //contextMenu->addAction(m_breakSwcConnectionAction);
   contextMenu->addAction(m_connectToSwcNodeAction);
-  contextMenu->addAction(m_connectSwcNodeAction);
-  contextMenu->addAction(m_mergeSwcNodeAction);
-  selectMenu->addAction(m_selectSwcNodeDownstreamAction);
-  selectMenu->addAction(m_selectSwcConnectionAction);
-  selectMenu->addAction(m_selectSwcNodeUpstreamAction);
-  selectMenu->addAction(m_selectSwcNodeBranchAction);
-  selectMenu->addAction(m_selectSwcNodeTreeAction);
-  selectMenu->addAction(m_selectAllConnectedSwcNodeAction);
-  selectMenu->addAction(m_selectAllSwcNodeAction);
-  contextMenu->addMenu(selectMenu);
+  //contextMenu->addAction(m_connectSwcNodeAction);
+  //contextMenu->addAction(m_mergeSwcNodeAction);
+  //selectMenu->addAction(m_selectSwcNodeDownstreamAction);
+  //selectMenu->addAction(m_selectSwcConnectionAction);
+  //selectMenu->addAction(m_selectSwcNodeUpstreamAction);
+  //selectMenu->addAction(m_selectSwcNodeBranchAction);
+  contextMenu->addAction(m_selectSwcNodeTreeAction);
+  //selectMenu->addAction(m_selectAllConnectedSwcNodeAction);
+  //selectMenu->addAction(m_selectAllSwcNodeAction);
+  //contextMenu->addMenu(selectMenu);
   contextMenu->addAction(m_locateSwcNodeIn2DAction);
   contextMenu->addAction(m_translateSwcNodeAction);
   contextMenu->addAction(m_changeSwcNodeSizeAction);
-  contextMenu->addAction(m_removeSelectedObjectsAction);
+  //contextMenu->addAction(m_removeSelectedObjectsAction);
   contextMenu->addAction(m_toogleSmartExtendSelectedSwcNodeAction);
   contextMenu->addAction(m_toogleExtendSelectedSwcNodeAction);
   contextMenu->addAction(m_toogleAddSwcNodeModeAction);
   contextMenu->addAction(m_toogleMoveSelectedObjectsAction);
-  contextMenu->addAction(m_removeSwcTurnAction);
-  contextMenu->addAction(m_resolveCrossoverAction);
-  contextMenu->addAction(m_swcNodeLengthAction);
+  //contextMenu->addAction(m_removeSwcTurnAction);
+  //contextMenu->addAction(m_resolveCrossoverAction);
+  //contextMenu->addAction(m_swcNodeLengthAction);
+  ZStackDocMenuFactory::makeSwcNodeContextMenu(getDocument(), contextMenu);
   m_contextMenuGroup["swcnode"] = contextMenu;
 
   contextMenu = new QMenu(this);
@@ -1921,7 +1923,7 @@ void Z3DWindow::updateContextMenu(const QString &group)
     m_contextMenuGroup["volume"]->addAction(m_refreshTraceMaskAction);
   }
   if (group == "swcnode") {
-
+    getDocument()->updateSwcNodeAction();
   }
   if (group == "puncta") {
     m_saveSelectedPunctaAsAction->setEnabled(!m_doc->selectedPuncta()->empty());

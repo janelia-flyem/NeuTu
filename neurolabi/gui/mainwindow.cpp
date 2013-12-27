@@ -3353,7 +3353,7 @@ void MainWindow::on_actionTem_Paper_Volume_Rendering_triggered()
       fclose(fp);
 
       std::tr1::shared_ptr<ZStackDoc> academy =
-          std::tr1::shared_ptr<ZStackDoc>(new ZStackDoc);
+          std::tr1::shared_ptr<ZStackDoc>(new ZStackDoc(NULL, NULL));
 
       academy->loadFile((*inputIter).c_str());
 

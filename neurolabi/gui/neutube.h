@@ -29,6 +29,10 @@ enum EColor {
   RED, GREEN, BLUE
 };
 
+enum EWindowConfig {
+  WINDOW_2D, WINDOW_3D
+};
+
 ZMessageReporter *getMessageReporter();
 ZLogMessageReporter* getLogMessageReporter();
 

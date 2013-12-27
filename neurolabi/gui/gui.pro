@@ -174,7 +174,6 @@ HEADERS += mainwindow.h \
     zstackview.h \
     zimage.h \
     zstackframe.h \
-    zstackdoc.h \
     zstackpresenter.h \
     zslider.h \
     settingdialog.h \
@@ -375,7 +374,10 @@ HEADERS += mainwindow.h \
     flyem/zflyemneuronfilterfactory.h \
     flyemgeofilterdialog.h \
     zactionactivator.h \
-    zswccurvaturefeatureanalyzer.h
+    zswccurvaturefeatureanalyzer.h \
+    zstackdoc.h \
+    zstackdocmenustore.h \
+    zstackdocmenufactory.h
 
 FORMS += settingdialog.ui \
     frameinfodialog.ui \
@@ -582,4 +584,6 @@ SOURCES += main.cpp \
     zqslogmessagereporter.cpp \
     flyemgeofilterdialog.cpp \
     zactionactivator.cpp \
-    zswccurvaturefeatureanalyzer.cpp
+    zswccurvaturefeatureanalyzer.cpp \
+    zstackdocmenustore.cpp \
+    zstackdocmenufactory.cpp
