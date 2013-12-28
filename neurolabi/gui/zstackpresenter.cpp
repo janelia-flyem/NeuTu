@@ -1080,20 +1080,11 @@ void ZStackPresenter::processMouseMoveEvent(QMouseEvent *event)
           m_stroke.setFilled(false);
         }
         turnOnStroke();
+#ifdef _DEBUG_2
+        qDebug() << "Stroke on";
+#endif
         //buddyView()->paintActiveDecoration();
       }
-      /*
-      if (m_interactiveContext.strokeEditMode() ==
-          ZInteractiveContext::STROKE_DRAW) {
-        m_stroke.set(pos);
-        buddyView()->paintActiveDecoration();
-      } else if (m_interactiveContext.swcEditMode() ==
-                 ZInteractiveContext::SWC_EDIT_ADD_NODE) {
-        m_stroke.set(pos);
-        m_stroke.setFilled(false);
-        buddyView()->paintActiveDecoration();
-      }
-      */
     }
     break;
   }
@@ -1448,6 +1439,7 @@ void ZStackPresenter::processKeyPressEvent(QKeyEvent *event)
   case Qt::Key_Escape:
     m_interactiveContext.setSwcEditMode(ZInteractiveContext::SWC_EDIT_SELECT);
     m_interactiveContext.setTubeEditMode(ZInteractiveContext::TUBE_EDIT_OFF);
+    turnOffStroke();
     updateCursor();
     break;
 

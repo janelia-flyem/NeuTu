@@ -111,8 +111,10 @@ bool ZSwcTree::hasRegularNode()
 
 void ZSwcTree::setDataFromNode(Swc_Tree_Node *node, ESetDataOption option)
 {
-  if (node->parent != NULL) {
-    Swc_Tree_Node_Detach_Parent(node);
+  if (node != NULL) {
+    if (SwcTreeNode::parent(node) != NULL) {
+      SwcTreeNode::detachParent(node);
+    }
   }
 
   switch (option) {

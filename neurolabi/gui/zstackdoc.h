@@ -87,7 +87,8 @@ public:
   enum EActionItem {
     ACTION_MEASURE_SWC_NODE_LENGTH, ACTION_SWC_SUMMARIZE,
     ACTION_CHNAGE_SWC_NODE_SIZE, ACTION_TRANSLATE_SWC_NODE,
-    ACTION_SET_SWC_ROOT,
+    ACTION_SET_SWC_ROOT, ACTION_INSERT_SWC_NODE,
+    ACTION_RESET_BRANCH_POINT, ACTION_SET_BRANCH_POINT,
     ACTION_DELETE_SWC_NODE, ACTION_CONNECT_SWC_NODE,
     ACTION_MERGE_SWC_NODE, ACTION_BREAK_SWC_NODE,
     ACTION_SELECT_DOWNSTREAM, ACTION_SELECT_UPSTREAM,
@@ -535,6 +536,8 @@ public slots: //undoable commands
   bool executeSetRootCommand();
   bool executeRemoveTurnCommand();
   bool executeResolveCrossoverCommand();
+  bool executeInsertSwcNode();
+  bool executeSetBranchPoint();
 
   bool executeBinarizeCommand(int thre);
   bool executeBwsolidCommand();
@@ -559,6 +562,8 @@ public slots:
 
   void hideSelectedPuncta();
   void showSelectedPuncta();
+
+  void emptySlot();
 
 /*
 public:

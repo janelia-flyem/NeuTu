@@ -21,6 +21,7 @@ QMenu* ZStackDocMenuFactory::makeSwcNodeContextMenu(
   menu->addAction(doc->getAction(ZStackDoc::ACTION_BREAK_SWC_NODE));
   menu->addAction(doc->getAction(ZStackDoc::ACTION_CONNECT_SWC_NODE));
   menu->addAction(doc->getAction(ZStackDoc::ACTION_MERGE_SWC_NODE));
+  menu->addAction(doc->getAction(ZStackDoc::ACTION_INSERT_SWC_NODE));
 
   QMenu *submenu = new QMenu("Select", menu);
   submenu->addAction(doc->getAction(ZStackDoc::ACTION_SELECT_DOWNSTREAM));
@@ -39,6 +40,11 @@ QMenu* ZStackDocMenuFactory::makeSwcNodeContextMenu(
   submenu->addAction(doc->getAction(ZStackDoc::ACTION_TRANSLATE_SWC_NODE));
   submenu->addAction(doc->getAction(ZStackDoc::ACTION_CHANGE_SWC_SIZE));
   submenu->addAction(doc->getAction(ZStackDoc::ACTION_SET_SWC_ROOT));
+  menu->addMenu(submenu);
+
+  submenu = new QMenu("Topology", menu);
+  submenu->addAction(doc->getAction(ZStackDoc::ACTION_SET_BRANCH_POINT));
+  submenu->addAction(doc->getAction(ZStackDoc::ACTION_RESET_BRANCH_POINT));
   menu->addMenu(submenu);
 
   submenu = new QMenu("Information", menu);

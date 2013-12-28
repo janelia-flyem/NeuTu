@@ -1420,7 +1420,7 @@ void ZStackFrame::loadRoi(const QString &filePath)
 
     obj->loadStack(mask);
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
     obj->save(GET_TEST_DATA_DIR + "/test.sobj");
 #endif
 
