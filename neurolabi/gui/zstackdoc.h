@@ -86,8 +86,9 @@ public:
 
   enum EActionItem {
     ACTION_MEASURE_SWC_NODE_LENGTH, ACTION_SWC_SUMMARIZE,
+    ACTION_CHNAGE_SWC_NODE_SIZE, ACTION_TRANSLATE_SWC_NODE,
+    ACTION_SET_SWC_ROOT,
     ACTION_DELETE_SWC_NODE, ACTION_CONNECT_SWC_NODE,
-    ACTION_CONNECT_TO_SWC_NODE, ACTION_ADD_SWC_NODE,
     ACTION_MERGE_SWC_NODE, ACTION_BREAK_SWC_NODE,
     ACTION_SELECT_DOWNSTREAM, ACTION_SELECT_UPSTREAM,
     ACTION_SELECT_SWC_BRANCH, ACTION_SELECT_CONNECTED_SWC_NODE,
@@ -518,8 +519,10 @@ public slots: //undoable commands
   bool executeSwcNodeChangeZCommand(double z);
   bool executeSwcNodeEstimateRadiusCommand();
   bool executeMoveSwcNodeCommand(double dx, double dy, double dz);
+  bool executeTranslateSelectedSwcNode();
   bool executeDeleteSwcNodeCommand();
   bool executeConnectSwcNodeCommand();
+  bool executeChangeSelectedSwcNodeSize();
   bool executeConnectSwcNodeCommand(Swc_Tree_Node *tn);
   bool executeConnectSwcNodeCommand(Swc_Tree_Node *tn1, Swc_Tree_Node *tn2);
   bool executeBreakSwcConnectionCommand();

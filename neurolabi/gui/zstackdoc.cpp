@@ -82,6 +82,8 @@
 #include "biocytin/biocytin.h"
 #include "zpunctumio.h"
 #include "biocytin/zbiocytinfilenameparser.h"
+#include "swcskeletontransformdialog.h"
+#include "swcsizedialog.h"
 
 using namespace std;
 
@@ -232,7 +234,7 @@ void ZStackDoc::createActions()
   connect(action, SIGNAL(triggered()), this, SLOT(showSeletedSwcNodeLength()));
   m_actionMap[ACTION_MEASURE_SWC_NODE_LENGTH] = action;
 
-  action = new QAction("Delete selected nodes", this);
+  action = new QAction("Delete", this);
   connect(action, SIGNAL(triggered()), this, SLOT(executeDeleteSwcNodeCommand()));
   m_actionMap[ACTION_DELETE_SWC_NODE] = action;
 
@@ -248,6 +250,20 @@ void ZStackDoc::createActions()
   connect(action, SIGNAL(triggered()), this, SLOT(executeMergeSwcNodeCommand()));
   m_actionMap[ACTION_MERGE_SWC_NODE] = action;
 
+  action = new QAction("Translate", this);
+  connect(action, SIGNAL(triggered()),
+          this, SLOT(executeTranslateSelectedSwcNode()));
+  m_actionMap[ACTION_TRANSLATE_SWC_NODE] = action;
+
+  action = new QAction("Change size", this);
+  connect(action, SIGNAL(triggered()),
+          this, SLOT(executeChangeSelectedSwcNodeSize()));
+  m_actionMap[ACTION_CHANGE_SWC_SIZE] = action;
+
+  action = new QAction("Set as root", this);
+  connect(action, SIGNAL(triggered()), this, SLOT(executeSetRootCommand()));
+  m_actionMap[ACTION_SET_SWC_ROOT] = action;
+
   m_singleSwcNodeActionActivator.registerAction(
         m_actionMap[ACTION_MEASURE_SWC_NODE_LENGTH], false);
   m_singleSwcNodeActionActivator.registerAction(
@@ -256,6 +272,8 @@ void ZStackDoc::createActions()
         m_actionMap[ACTION_CONNECT_SWC_NODE], false);
   m_singleSwcNodeActionActivator.registerAction(
         m_actionMap[ACTION_MERGE_SWC_NODE], false);
+  m_singleSwcNodeActionActivator.registerAction(
+        m_actionMap[ACTION_SET_SWC_ROOT], true);
 }
 
 void ZStackDoc::updateSwcNodeAction()
@@ -6135,6 +6153,84 @@ bool ZStackDoc::executeMoveSwcNodeCommand(double dx, double dy, double dz)
     }
 
     return true;
+  }
+
+  return false;
+}
+
+bool ZStackDoc::executeTranslateSelectedSwcNode()
+{
+  std::set<Swc_Tree_Node*> *nodeSet = selectedSwcTreeNodes();
+
+  if (!nodeSet->empty()) {
+    SwcSkeletonTransformDialog dlg(NULL);
+    if (SwcTreeNode::clipboard().size() >= 2) {
+      Swc_Tree_Node node[2];
+      for (size_t i = 0; i < 2; ++i) {
+        SwcTreeNode::paste(node + i, i);
+      }
+
+      ZPoint offset = SwcTreeNode::pos(node + 1) - SwcTreeNode::pos(node);
+      dlg.setTranslateValue(offset.x(), offset.y(), offset.z());
+    }
+    if (dlg.exec()) {
+      double dx = dlg.getTranslateValue(SwcSkeletonTransformDialog::X);
+      double dy = dlg.getTranslateValue(SwcSkeletonTransformDialog::Y);
+      double dz = dlg.getTranslateValue(SwcSkeletonTransformDialog::Z);
+
+      double sx = dlg.getScaleValue(SwcSkeletonTransformDialog::X);
+      double sy = dlg.getScaleValue(SwcSkeletonTransformDialog::Y);
+      double sz = dlg.getScaleValue(SwcSkeletonTransformDialog::Z);
+
+      ZStackDocCommand::SwcEdit::CompositeCommand *allCommand =
+          new ZStackDocCommand::SwcEdit::CompositeCommand(this);
+
+      for (std::set<Swc_Tree_Node*>::iterator iter = nodeSet->begin();
+           iter != nodeSet->end(); ++iter) {
+        Swc_Tree_Node newNode = *(*iter);
+        if (dlg.isTranslateFirst()) {
+          SwcTreeNode::translate(&newNode, dx, dy, dz);
+        }
+
+        SwcTreeNode::setPos(&newNode, SwcTreeNode::x(&newNode) * sx,
+                            SwcTreeNode::y(&newNode) * sy,
+                            SwcTreeNode::z(&newNode) * sz);
+        if (!dlg.isTranslateFirst()) {
+          SwcTreeNode::translate(&newNode, dx, dy, dz);
+        }
+
+        new ZStackDocCommand::SwcEdit::ChangeSwcNode(
+              this, *iter, newNode, allCommand);
+      }
+      pushUndoCommand(allCommand);
+      return true;
+    }
+  }
+
+  return false;
+}
+
+bool ZStackDoc::executeChangeSelectedSwcNodeSize()
+{
+  std::set<Swc_Tree_Node*> *nodeSet = selectedSwcTreeNodes();
+
+  if (!nodeSet->empty()) {
+    SwcSizeDialog dlg(NULL);
+    if (dlg.exec()) {
+      ZStackDocCommand::SwcEdit::CompositeCommand *allCommand =
+          new ZStackDocCommand::SwcEdit::CompositeCommand(this);
+
+      for (std::set<Swc_Tree_Node*>::iterator iter = nodeSet->begin();
+           iter != nodeSet->end(); ++iter) {
+        Swc_Tree_Node newNode = *(*iter);
+        SwcTreeNode::changeRadius(&newNode, dlg.getAddValue(), dlg.getMulValue());
+        new ZStackDocCommand::SwcEdit::ChangeSwcNode(
+              this, *iter, newNode, allCommand);
+      }
+
+      pushUndoCommand(allCommand);
+      return true;
+    }
   }
 
   return false;

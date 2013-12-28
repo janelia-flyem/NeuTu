@@ -381,7 +381,7 @@ void Z3DWindow::createActions()
   connect(m_locateSwcNodeIn2DAction, SIGNAL(triggered()), this,
           SLOT(locateSwcNodeIn2DView()));
 
-  m_toogleAddSwcNodeModeAction = new QAction("Click to add swc node", this);
+  m_toogleAddSwcNodeModeAction = new QAction("Add swc node", this);
   m_toogleAddSwcNodeModeAction->setCheckable(true);
   connect(m_toogleAddSwcNodeModeAction, SIGNAL(toggled(bool)), this,
           SLOT(toogleAddSwcNodeMode(bool)));
@@ -391,13 +391,13 @@ void Z3DWindow::createActions()
   connect(m_toogleMoveSelectedObjectsAction, SIGNAL(toggled(bool)), this,
           SLOT(toogleMoveSelectedObjectsMode(bool)));
 
-  m_toogleExtendSelectedSwcNodeAction = new QAction("Click to extend selected node", this);
+  m_toogleExtendSelectedSwcNodeAction = new QAction("Extend selected node", this);
   m_toogleExtendSelectedSwcNodeAction->setCheckable(true);
   connect(m_toogleExtendSelectedSwcNodeAction, SIGNAL(toggled(bool)), this,
           SLOT(toogleExtendSelectedSwcNodeMode(bool)));
   m_singleSwcNodeActionActivator.registerAction(m_toogleExtendSelectedSwcNodeAction, true);
 
-  m_toogleSmartExtendSelectedSwcNodeAction = new QAction("Click to smart extend selected node", this);
+  m_toogleSmartExtendSelectedSwcNodeAction = new QAction("Smart extension", this);
   m_toogleSmartExtendSelectedSwcNodeAction->setCheckable(true);
   connect(m_toogleSmartExtendSelectedSwcNodeAction, SIGNAL(toggled(bool)), this,
           SLOT(toogleSmartExtendSelectedSwcNodeMode(bool)));
@@ -599,8 +599,7 @@ void Z3DWindow::createContextMenu()
   //Swc node
   contextMenu = new QMenu(this);
   //QMenu *selectMenu = new QMenu("Select", contextMenu);
-  contextMenu->addAction(m_changeSwcNodeTypeAction);
-  contextMenu->addAction(m_setSwcRootAction);
+  //contextMenu->addAction(m_setSwcRootAction);
   //contextMenu->addAction(m_breakSwcConnectionAction);
   contextMenu->addAction(m_connectToSwcNodeAction);
   //contextMenu->addAction(m_connectSwcNodeAction);
@@ -609,7 +608,7 @@ void Z3DWindow::createContextMenu()
   //selectMenu->addAction(m_selectSwcConnectionAction);
   //selectMenu->addAction(m_selectSwcNodeUpstreamAction);
   //selectMenu->addAction(m_selectSwcNodeBranchAction);
-  qDebug() << m_selectSwcNodeTreeAction;
+  //qDebug() << m_selectSwcNodeTreeAction;
 
   contextMenu->addAction(m_selectSwcNodeTreeAction);
   //selectMenu->addAction(m_selectAllConnectedSwcNodeAction);
@@ -617,8 +616,9 @@ void Z3DWindow::createContextMenu()
   //contextMenu->addMenu(selectMenu);
 
   contextMenu->addAction(m_locateSwcNodeIn2DAction);
-  contextMenu->addAction(m_translateSwcNodeAction);
-  contextMenu->addAction(m_changeSwcNodeSizeAction);
+  contextMenu->addAction(m_changeSwcNodeTypeAction);
+  //contextMenu->addAction(m_translateSwcNodeAction);
+  //contextMenu->addAction(m_changeSwcNodeSizeAction);
   //contextMenu->addAction(m_removeSelectedObjectsAction);
   contextMenu->addAction(m_toogleSmartExtendSelectedSwcNodeAction);
   contextMenu->addAction(m_toogleExtendSelectedSwcNodeAction);

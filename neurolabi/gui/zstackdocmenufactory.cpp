@@ -35,6 +35,12 @@ QMenu* ZStackDocMenuFactory::makeSwcNodeContextMenu(
   submenu->addAction(doc->getAction(ZStackDoc::ACTION_RESOLVE_CROSSOVER));
   menu->addMenu(submenu);
 
+  submenu = new QMenu("Change property", menu);
+  submenu->addAction(doc->getAction(ZStackDoc::ACTION_TRANSLATE_SWC_NODE));
+  submenu->addAction(doc->getAction(ZStackDoc::ACTION_CHANGE_SWC_SIZE));
+  submenu->addAction(doc->getAction(ZStackDoc::ACTION_SET_SWC_ROOT));
+  menu->addMenu(submenu);
+
   submenu = new QMenu("Information", menu);
   submenu->addAction(doc->getAction(ZStackDoc::ACTION_SWC_SUMMARIZE));
   submenu->addAction(doc->getAction(ZStackDoc::ACTION_MEASURE_SWC_NODE_LENGTH));
