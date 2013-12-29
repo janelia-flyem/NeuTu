@@ -1122,7 +1122,7 @@ double Swc_Tree_Node_Dot(const Swc_Tree_Node *tn1, const Swc_Tree_Node *tn2,
     Swc_Tree_Node_Const_Data(tn3)->x;
   vec2[1] = Swc_Tree_Node_Const_Data(tn2)->y - 
     Swc_Tree_Node_Const_Data(tn3)->y;
-  vec2[2] = Swc_Tree_Node_Const_Data(tn3)->z - 
+  vec2[2] = Swc_Tree_Node_Const_Data(tn2)->z - 
     Swc_Tree_Node_Const_Data(tn3)->z;
 
   Coordinate_3d_Unitize(vec1);

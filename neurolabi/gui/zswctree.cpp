@@ -1164,6 +1164,33 @@ Swc_Tree_Node* ZSwcTree::hitTest(double x, double y, double z)
   return NULL;
 }
 
+Swc_Tree_Node* ZSwcTree::hitTest(double x, double y, double z, double margin)
+{
+  const std::vector<Swc_Tree_Node *> &nodeArray = getSwcTreeNodeArray();
+
+  const Swc_Tree_Node *hit = NULL;
+  double mindist = Infinity;
+
+  static const double Regularize_Number = 0.1;
+
+  for (std::vector<Swc_Tree_Node *>::const_iterator iter = nodeArray.begin();
+       iter != nodeArray.end(); ++iter) {
+    const Swc_Tree_Node *tn = *iter;
+    if (ZCircle::isCuttingPlane(SwcTreeNode::z(tn), SwcTreeNode::radius(tn), z)) {
+      double dist = SwcTreeNode::distance(tn, x, y, z);
+      if (dist < SwcTreeNode::radius(tn) + margin) {
+        dist /= SwcTreeNode::radius(tn) + Regularize_Number;
+        if (dist < mindist) {
+          mindist = dist;
+          hit = tn;
+        }
+      }
+    }
+  }
+
+  return const_cast<Swc_Tree_Node*>(hit);
+}
+
 Swc_Tree_Node* ZSwcTree::hitTest(double x, double y)
 {
   if (data() != NULL) {
@@ -2723,7 +2750,9 @@ const std::vector<Swc_Tree_Node *> &ZSwcTree::getSwcTreeNodeArray(
     if (isDeprecated(DEPTH_FIRST_ARRAY)) {
       updateIterator(SWC_TREE_ITERATOR_DEPTH_FIRST);
       for (Swc_Tree_Node *tn = begin(); tn != end(); tn = next()) {
-        m_depthFirstArray.push_back(tn);
+        if (SwcTreeNode::isRegular(tn)) {
+          m_depthFirstArray.push_back(tn);
+        }
       }
     }
     return m_depthFirstArray;
@@ -2731,7 +2760,9 @@ const std::vector<Swc_Tree_Node *> &ZSwcTree::getSwcTreeNodeArray(
     if (isDeprecated(BREADTH_FIRST_ARRAY)) {
       updateIterator(SWC_TREE_ITERATOR_BREADTH_FIRST);
       for (Swc_Tree_Node *tn = begin(); tn != end(); tn = next()) {
-        m_breadthFirstArray.push_back(tn);
+        if (SwcTreeNode::isRegular(tn)) {
+          m_breadthFirstArray.push_back(tn);
+        }
       }
     }
     return m_breadthFirstArray;

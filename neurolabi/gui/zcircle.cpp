@@ -41,6 +41,18 @@ void ZCircle::display(QPainter &painter, int n,
 #endif
 }
 
+bool ZCircle::isCuttingPlane(double z, double r, double n)
+{
+  double h = fabs(z - n);
+  if (r > h) {
+    return true;
+  } else if (iround(z) == iround(n)) {
+    return true;
+  }
+
+  return false;
+}
+
 void ZCircle::display(QPainter *painter, int n, Display_Style style) const
 {
   UNUSED_PARAMETER(style);
@@ -50,17 +62,18 @@ void ZCircle::display(QPainter *painter, int n, Display_Style style) const
     painter->drawEllipse(QPointF(m_center.x(), m_center.y()),
                          adjustedRadius, adjustedRadius);
   } else {
-    double h = fabs(m_center.z() - n);
-    if (m_r > h) {
-      double r = sqrt(m_r * m_r - h * h);
-      double adjustedRadius = r + m_defaultPenWidth * 0.5;
-      painter->drawEllipse(QPointF(m_center.x(), m_center.y()), adjustedRadius,
-                           adjustedRadius);
-      /*
-      if (r >= 0.5) {
-        painter->drawEllipse(QPointF(m_center.x(), m_center.y()), r, r);
+    if (isCuttingPlane(m_center.z(), m_r, n)) {
+      double h = fabs(m_center.z() - n);
+      if (m_r > h) {
+        double r = sqrt(m_r * m_r - h * h);
+        double adjustedRadius = r + m_defaultPenWidth * 0.5;
+        painter->drawEllipse(QPointF(m_center.x(), m_center.y()), adjustedRadius,
+                             adjustedRadius);
+      } else { //too small, show at least one plane
+        double adjustedRadius = m_defaultPenWidth * 0.5;
+        painter->drawEllipse(QPointF(m_center.x(), m_center.y()), adjustedRadius,
+                             adjustedRadius);
       }
-      */
     }
   }
 #endif

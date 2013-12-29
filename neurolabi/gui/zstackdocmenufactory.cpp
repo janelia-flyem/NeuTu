@@ -26,6 +26,7 @@ QMenu* ZStackDocMenuFactory::makeSwcNodeContextMenu(
   QMenu *submenu = new QMenu("Select", menu);
   submenu->addAction(doc->getAction(ZStackDoc::ACTION_SELECT_DOWNSTREAM));
   submenu->addAction(doc->getAction(ZStackDoc::ACTION_SELECT_UPSTREAM));
+  submenu->addAction(doc->getAction(ZStackDoc::ACTION_SELECT_NEIGHBOR_SWC_NODE));
   submenu->addAction(doc->getAction(ZStackDoc::ACTION_SELECT_SWC_BRANCH));
   submenu->addAction(doc->getAction(ZStackDoc::ACTION_SELECT_CONNECTED_SWC_NODE));
   submenu->addAction(doc->getAction(ZStackDoc::ACTION_SELECT_ALL_SWC_NODE));

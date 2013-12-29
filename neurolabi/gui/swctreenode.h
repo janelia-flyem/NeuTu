@@ -320,6 +320,21 @@ enum EDistanceType {
 double distance(const Swc_Tree_Node *tn1, const Swc_Tree_Node *tn2,
                 EDistanceType distType = EUCLIDEAN);
 
+/*!
+ * \brief Distance between a node an point
+ *
+ * It supports two distance options:
+ *   SwcTreeNode::EUCLIDEAN - distance from (\a x, \a y, \a z) to the center of
+ *     \a tn.
+ *   SwcTreeNode::EUCLIDEAN_SURFACE - distance from (\a x, \a y, \a z) to the
+ *     surface of \a tn.
+ *
+ * It returns 0 for other options. It returns 0 when \a tn is not a regular
+ *   node.
+ */
+double distance(const Swc_Tree_Node *tn, double x, double y, double z,
+                EDistanceType distType = EUCLIDEAN);
+
 Swc_Tree_Node*
 furthestNode(Swc_Tree_Node *tn, EDistanceType distType = EUCLIDEAN);
 
@@ -340,6 +355,11 @@ bool connect(const std::set<Swc_Tree_Node*> &nodeSet);
 Swc_Tree_Node* findClosestNode(const std::set<Swc_Tree_Node*> &nodeSet,
                                const Swc_Tree_Node *seeker);
 
+/*!
+ * \brief Get neighbors of a node
+ *
+ * Only regular nodes are included.
+ */
 std::vector<Swc_Tree_Node*> neighborArray(const Swc_Tree_Node *tn);
 
 ZPoint centroid(const std::set<Swc_Tree_Node*> &nodeSet);
@@ -377,8 +397,25 @@ inline std::vector<std::string>& clipboard() {
 
 //Relations
 bool hasOverlap(const Swc_Tree_Node *tn1, const Swc_Tree_Node *tn2);
+
+/*!
+ * \brief Test if two nodes have significant overlap
+ *
+ * \return true iff the center of \a tn1 is in \a tn2 or \a tn2 is in \a tn1.
+ *   It always returns false if \a tn1 or \a tn2 is not a regular node.
+ */
+bool hasSignificantOverlap(const Swc_Tree_Node *tn1, const Swc_Tree_Node *tn2);
+
 bool isTurn(const Swc_Tree_Node *tn1, const Swc_Tree_Node *tn2,
             const Swc_Tree_Node *tn3);
+
+/*!
+ * \brief Normalized dot product between two node edges
+ *
+ * The normalized dot product between tn1->tn2 and tn2->tn3.
+ */
+double normalizedDot(const Swc_Tree_Node *tn1, const Swc_Tree_Node *tn2,
+                     const Swc_Tree_Node *tn3);
 
 /*!
  * \brief The curvature presented by three nodes

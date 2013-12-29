@@ -213,7 +213,11 @@ void ZStackDoc::createActions()
   connect(action, SIGNAL(triggered()), this, SLOT(selectUpstreamNode()));
   m_actionMap[ACTION_SELECT_UPSTREAM] = action;
 
-  action = new QAction("SWC branch", this);
+  action = new QAction("Neighbors", this);
+  connect(action, SIGNAL(triggered()), this, SLOT(selectNeighborSwcNode()));
+  m_actionMap[ACTION_SELECT_NEIGHBOR_SWC_NODE] = action;
+
+  action = new QAction("Host branch", this);
   connect(action, SIGNAL(triggered()), this, SLOT(selectBranchNode()));
   m_actionMap[ACTION_SELECT_SWC_BRANCH] = action;
 
@@ -247,7 +251,7 @@ void ZStackDoc::createActions()
   connect(action, SIGNAL(triggered()), this, SLOT(executeInsertSwcNode()));
   m_actionMap[ACTION_INSERT_SWC_NODE] = action;
 
-  action = new QAction("Break connections", this);
+  action = new QAction("Break", this);
   connect(action, SIGNAL(triggered()), this, SLOT(executeBreakSwcConnectionCommand()));
   m_actionMap[ACTION_BREAK_SWC_NODE] = action;
 
@@ -278,7 +282,7 @@ void ZStackDoc::createActions()
   m_actionMap[ACTION_SET_BRANCH_POINT] = action;
 
   action = new QAction("Reset branch point", this);
-  connect(action, SIGNAL(triggered()), this, SLOT(emptySlot()));
+  connect(action, SIGNAL(triggered()), this, SLOT(executeResetBranchPoint()));
   m_actionMap[ACTION_RESET_BRANCH_POINT] = action;
 
   m_singleSwcNodeActionActivator.registerAction(
@@ -713,6 +717,29 @@ void ZStackDoc::selectConnectedNode()
       treeNodes.push_back(tn);
   }
   setSwcTreeNodeSelected(treeNodes.begin(), treeNodes.end(), true);
+}
+
+void ZStackDoc::selectNeighborSwcNode()
+{
+  QList<Swc_Tree_Node*> selected;
+  //QList<Swc_Tree_Node*> deselected;
+  for (std::set<Swc_Tree_Node*>::const_iterator
+       iter = selectedSwcTreeNodes()->begin();
+       iter != selectedSwcTreeNodes()->end(); ++iter) {
+    const Swc_Tree_Node *tn = *iter;
+    std::vector<Swc_Tree_Node*> neighborArray = SwcTreeNode::neighborArray(tn);
+    for (std::vector<Swc_Tree_Node*>::iterator nbrIter = neighborArray.begin();
+         nbrIter != neighborArray.end(); ++nbrIter) {
+      selected.append(*nbrIter);
+    }
+  }
+
+#ifdef _DEBUG_
+  qDebug() << selected.size() << "Neighbor selected";
+#endif
+
+  setSwcTreeNodeSelected(selected.begin(), selected.end(), true);
+  //emit swcTreeNodeSelectionChanged(selected, deselected);
 }
 
 void ZStackDoc::hideSelectedPuncta()
@@ -5624,12 +5651,15 @@ bool ZStackDoc::isDeprecated(EComponent component)
 Swc_Tree_Node* ZStackDoc::swcHitTest(int x, int y, int z)
 {
   Swc_Tree_Node *selected = NULL;
+  const double Margin = 0.5;
+
   for (QList<ZSwcTree*>::iterator iter = m_swcList.begin();
        iter != m_swcList.end(); ++iter) {
+    ZSwcTree *tree = *iter;
     if (z < 0) {
-      selected = (*iter)->hitTest(x, y);
+      selected = tree->hitTest(x, y);
     } else {
-      selected = (*iter)->hitTest(x, y, z);
+      selected = tree->hitTest(x, y, z, Margin);
     }
 
     if (selected != NULL) {
@@ -6865,6 +6895,29 @@ bool ZStackDoc::executeTraceSwcBranchCommand(
                            branchRoot);
     }
 
+    Swc_Tree_Node *loop = conn.second;
+    Swc_Tree_Node *hook = conn.first;
+
+    if (hook != NULL) {
+      //Adjust the branch point
+      std::vector<Swc_Tree_Node*> neighborArray =
+          SwcTreeNode::neighborArray(loop);
+      for (std::vector<Swc_Tree_Node*>::iterator iter = neighborArray.begin();
+           iter != neighborArray.end(); ++iter) {
+        Swc_Tree_Node *tn = *iter;
+        if (SwcTreeNode::hasSignificantOverlap(tn, hook)) {
+          loop = tn;
+          Swc_Tree_Node *newHook = hook;
+          newHook = SwcTreeNode::firstChild(hook);
+          SwcTreeNode::detachParent(newHook);
+          SwcTreeNode::kill(hook);
+          hook = newHook;
+          branchRoot = hook;
+        }
+      }
+    }
+
+
     ZSwcTree *tree = new ZSwcTree();
     tree->setDataFromNode(branchRoot);
 
@@ -6895,7 +6948,7 @@ bool ZStackDoc::executeTraceSwcBranchCommand(
 
     if (conn.first != NULL) {
       new ZStackDocCommand::SwcEdit::SetParent(
-            this, conn.first, conn.second, command);
+            this, hook, loop, command);
       new ZStackDocCommand::SwcEdit::RemoveEmptyTree(this, command);
     }
 
@@ -7150,6 +7203,7 @@ bool ZStackDoc::executeInsertSwcNode()
     }
     if (command->childCount() > 0) {
       pushUndoCommand(command);
+      deprecateTraceMask();
       return true;
     } else {
       delete command;
@@ -7205,7 +7259,53 @@ bool ZStackDoc::executeSetBranchPoint()
             this, closestNode, branchPoint, command);
 
       pushUndoCommand(command);
+      deprecateTraceMask();
       return true;
+    }
+  }
+
+  return false;
+}
+
+bool ZStackDoc::executeResetBranchPoint()
+{
+  if (selectedSwcTreeNodes()->size() == 1) {
+    Swc_Tree_Node *loop = *(selectedSwcTreeNodes()->begin());
+    std::vector<Swc_Tree_Node*> neighborArray = SwcTreeNode::neighborArray(loop);
+    for (std::vector<Swc_Tree_Node*>::iterator iter = neighborArray.begin();
+         iter != neighborArray.end(); ++iter) {
+      Swc_Tree_Node *tn = *iter;
+      if (SwcTreeNode::isBranchPoint(tn)) {
+        std::vector<Swc_Tree_Node*> candidateHookArray =
+            SwcTreeNode::neighborArray(tn);
+        Swc_Tree_Node *hook = NULL;
+        double minDot = Infinity;
+        for (std::vector<Swc_Tree_Node*>::iterator iter = candidateHookArray.begin();
+             iter != candidateHookArray.end(); ++iter) {
+          Swc_Tree_Node *hookCandidate = *iter;
+          if (hookCandidate != loop && SwcTreeNode::isRegular(hookCandidate)) {
+            double dot = SwcTreeNode::normalizedDot(hookCandidate, tn, loop);
+            if (dot < minDot) {
+              minDot = dot;
+              hook = hookCandidate;
+            }
+          }
+        }
+
+        if (hook != NULL) {
+          QUndoCommand *command =
+              new ZStackDocCommand::SwcEdit::CompositeCommand(this);
+          new ZStackDocCommand::SwcEdit::SetParent(this, hook, NULL, command);
+          if (SwcTreeNode::parent(hook) != tn) {
+            new ZStackDocCommand::SwcEdit::SetRoot(this, hook, command);
+          }
+
+          new ZStackDocCommand::SwcEdit::SetParent(this, hook, loop, command);
+          pushUndoCommand(command);
+          deprecateTraceMask();
+        }
+        break;
+      }
     }
   }
 

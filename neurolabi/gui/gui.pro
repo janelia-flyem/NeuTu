@@ -42,7 +42,7 @@ unix {
 LIBS += -L$${PWD}/../c/lib
 CONFIG(debug, debug|release) {
     DEFINES += _DEBUG_ _ADVANCED_ PROJECT_PATH=\"\\\"$$PWD\\\"\"
-    LIBS += -lneurolabi
+    LIBS += -lneurolabi_debug
     TARGET = neuTube_d
 } else {
     DEFINES += _ADVANCED_

@@ -298,6 +298,16 @@ public:
   Swc_Tree_Node* hitTest(double x, double y, double z);
 
   /*!
+   * \brief Hit a node within an expanded region
+   *
+   * It is similart to hitTest except that the hitting is positive when the
+   * point within a node with size expanded by margin (radius + \a margin).
+   *
+   * \return The closest node. Returns NULL if no node is hit.
+   */
+  Swc_Tree_Node* hitTest(double x, double y, double z, double margin);
+
+  /*!
    * \brief Plane hit test
    *
    * It tests if a point (\a x, \a y) hits the X-Y projection of the tree.
@@ -454,6 +464,11 @@ public:
     BRANCH_POINT_ITERATOR, Z_SORT_ITERATOR
   };
 
+  /*!
+   * \brief Get the node array under a certain condition.
+   *
+   * Only regular nodes are included.
+   */
   const std::vector<Swc_Tree_Node*>& getSwcTreeNodeArray(
       EIteratorOption iteratorOption = DEPTH_FIRST_ITERATOR) const;
 

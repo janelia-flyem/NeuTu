@@ -92,6 +92,7 @@ public:
     ACTION_DELETE_SWC_NODE, ACTION_CONNECT_SWC_NODE,
     ACTION_MERGE_SWC_NODE, ACTION_BREAK_SWC_NODE,
     ACTION_SELECT_DOWNSTREAM, ACTION_SELECT_UPSTREAM,
+    ACTION_SELECT_NEIGHBOR_SWC_NODE,
     ACTION_SELECT_SWC_BRANCH, ACTION_SELECT_CONNECTED_SWC_NODE,
     ACTION_SELECT_ALL_SWC_NODE,
     ACTION_CHANGE_SWC_TYPE, ACTION_CHANGE_SWC_SIZE, ACTION_REMOVE_TURN,
@@ -538,6 +539,7 @@ public slots: //undoable commands
   bool executeResolveCrossoverCommand();
   bool executeInsertSwcNode();
   bool executeSetBranchPoint();
+  bool executeResetBranchPoint();
 
   bool executeBinarizeCommand(int thre);
   bool executeBwsolidCommand();
@@ -557,6 +559,13 @@ public slots:
   void selectBranchNode();
   void selectTreeNode();
   void selectConnectedNode();
+
+  /*!
+   * \brief Select neighboring swc nodes.
+   *
+   * Add the neighbors of the current selected nodes into the selection set.
+   */
+  void selectNeighborSwcNode();
 
   void showSeletedSwcNodeLength();
 
