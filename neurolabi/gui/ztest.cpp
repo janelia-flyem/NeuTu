@@ -9815,7 +9815,6 @@ void ZTest::test(MainWindow *host)
   json_object_set(obj, "metadata", metaObj);
 
   json_dump_file(obj, (dataPath + "/test.json").c_str(), JSON_INDENT(2));
-
 #endif
 
 #if 0

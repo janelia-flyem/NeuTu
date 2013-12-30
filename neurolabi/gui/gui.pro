@@ -13,42 +13,18 @@ neurolabi.commands = @echo "building neurolabi"; cd $${PWD}/../c; make release V
 QMAKE_EXTRA_TARGETS += neurolabi
 ###################
 
-DEPENDPATH += . ../c ../c/include
-INCLUDEPATH += . \
-    ../lib/xml/include/libxml2 \
-    ../lib/fftw3/include \
-    ../lib/png/include \
-    ../lib/jansson/include \
-    ../c \
-    ../c/include \
-    ../lib/genelib/src ../gui/ext
+NEUROLABI_DIR = $${PWD}/..
+EXTLIB_DIR = $${NEUROLABI_DIR}/lib
 
-#Self-contained libraries
-unix {
-    LIBS += -L../lib/xml/lib -L../lib/fftw3/lib -L../lib/png/lib -L../lib/jansson/lib \
-        -lfftw3 \
-        -lfftw3f \
-        -lxml2 \
-        -lpng \
-        -ljansson
-}
-
-#System libraries
-unix {
-    LIBS += -ldl -lz
-}
+include(extlib.pri)
 
 #neurolabi
-LIBS += -L$${PWD}/../c/lib
 CONFIG(debug, debug|release) {
-    DEFINES += _DEBUG_ _ADVANCED_ PROJECT_PATH=\"\\\"$$PWD\\\"\"
-    LIBS += -lneurolabi_debug
     TARGET = neuTube_d
 } else {
-    DEFINES += _ADVANCED_
-    LIBS += -lneurolabi
     TARGET = neuTube
 }
+
 
 # suppress warnings from 3rd party library, works for gcc and clang
 QMAKE_CXXFLAGS += -isystem ../gui/ext
@@ -587,3 +563,6 @@ SOURCES += main.cpp \
     zswccurvaturefeatureanalyzer.cpp \
     zstackdocmenustore.cpp \
     zstackdocmenufactory.cpp
+
+OTHER_FILES += \
+    extlib.pri
