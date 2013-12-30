@@ -164,11 +164,13 @@ public: //attributes
 
   void updateSwcNodeAction();
 
+  /*
   void createContextMenu();
 
   inline QMenu* getSwcNodeContextMenu() {
     return m_swcNodeContextMenu;
   }
+  */
 
   bool isUndoClean();
 
@@ -673,7 +675,7 @@ private:
   QMap<EActionItem, QAction*> m_actionMap;
 
   //Context menu
-  QMenu *m_swcNodeContextMenu;
+  //QMenu *m_swcNodeContextMenu;
 
   ZSingleSwcNodeActionActivator m_singleSwcNodeActionActivator;
 

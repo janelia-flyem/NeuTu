@@ -113,7 +113,7 @@ ZStackDoc::ZStackDoc(ZStack *stack, QObject *parent) : QObject(parent)
   m_redoAction->setIcon(QIcon(":/images/redo.png"));
   m_redoAction->setShortcuts(QKeySequence::Redo);
 
-  m_swcNodeContextMenu = NULL;
+  //m_swcNodeContextMenu = NULL;
 
   connectSignalSlot();
 
@@ -126,7 +126,7 @@ ZStackDoc::ZStackDoc(ZStack *stack, QObject *parent) : QObject(parent)
   }
 
   createActions();
-  createContextMenu();
+  //createContextMenu();
 }
 
 ZStackDoc::~ZStackDoc()
@@ -166,7 +166,7 @@ ZStackDoc::~ZStackDoc()
   */
 
   delete m_undoStack;
-  delete m_swcNodeContextMenu;
+  //delete m_swcNodeContextMenu;
 
   destroyReporter();
   //delete m_stackMask;
@@ -305,13 +305,15 @@ void ZStackDoc::createActions()
         m_actionMap[ACTION_SET_BRANCH_POINT], true);
   m_singleSwcNodeActionActivator.registerAction(
         m_actionMap[ACTION_RESET_BRANCH_POINT], true);
+  m_singleSwcNodeActionActivator.registerAction(
+        m_actionMap[ACTION_CONNECTED_ISOLATED_SWC], true);
 }
 
 void ZStackDoc::updateSwcNodeAction()
 {
   m_singleSwcNodeActionActivator.update(this);
 }
-
+/*
 void ZStackDoc::createContextMenu()
 {
   m_swcNodeContextMenu = new QMenu(NULL);
@@ -339,6 +341,7 @@ void ZStackDoc::createContextMenu()
   submenu->addAction(getAction(ACTION_MEASURE_SWC_NODE_LENGTH));
   m_swcNodeContextMenu->addMenu(submenu);
 }
+*/
 
 void ZStackDoc::autoSave()
 {
