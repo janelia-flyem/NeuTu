@@ -1,5 +1,6 @@
 #include "miscutility.h"
 #include <iostream>
+#include <cmath>
 #include "zerror.h"
 #include "c_stack.h"
 #include "tz_math.h"
