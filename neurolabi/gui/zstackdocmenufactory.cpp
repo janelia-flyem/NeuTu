@@ -35,6 +35,9 @@ QMenu* ZStackDocMenuFactory::makeSwcNodeContextMenu(
   submenu = new QMenu("Advanced Editing", menu);
   submenu->addAction(doc->getAction(ZStackDoc::ACTION_REMOVE_TURN));
   submenu->addAction(doc->getAction(ZStackDoc::ACTION_RESOLVE_CROSSOVER));
+  submenu->addAction(doc->getAction((ZStackDoc::ACTION_SET_BRANCH_POINT)));
+  submenu->addAction(doc->getAction(ZStackDoc::ACTION_CONNECTED_ISOLATED_SWC));
+  submenu->addAction(doc->getAction(ZStackDoc::ACTION_RESET_BRANCH_POINT));
   menu->addMenu(submenu);
 
   submenu = new QMenu("Change property", menu);
@@ -43,11 +46,12 @@ QMenu* ZStackDocMenuFactory::makeSwcNodeContextMenu(
   submenu->addAction(doc->getAction(ZStackDoc::ACTION_SET_SWC_ROOT));
   menu->addMenu(submenu);
 
+  /*
   submenu = new QMenu("Topology", menu);
   submenu->addAction(doc->getAction(ZStackDoc::ACTION_SET_BRANCH_POINT));
   submenu->addAction(doc->getAction(ZStackDoc::ACTION_RESET_BRANCH_POINT));
   menu->addMenu(submenu);
-
+*/
   submenu = new QMenu("Information", menu);
   submenu->addAction(doc->getAction(ZStackDoc::ACTION_SWC_SUMMARIZE));
   submenu->addAction(doc->getAction(ZStackDoc::ACTION_MEASURE_SWC_NODE_LENGTH));

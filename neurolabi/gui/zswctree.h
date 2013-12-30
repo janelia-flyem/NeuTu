@@ -351,7 +351,17 @@ public:
   double distanceTo(ZSwcTree *tree, Swc_Tree_Node **source = NULL,
                     Swc_Tree_Node **target = NULL);
 
-  double distanceTo(double x, double y, double z, double zScale, Swc_Tree_Node **node = NULL) const;
+  /*!
+   * \brief Compute distance to a node
+   *
+   * \param target The pointer to store closest node
+   *
+   * \return The surface distance. It returns 0 if \a is not regular.
+   */
+  double distanceTo(Swc_Tree_Node *source, Swc_Tree_Node **target = NULL) const;
+
+  double distanceTo(
+      double x, double y, double z, double zScale, Swc_Tree_Node **node = NULL) const;
 
   ZSwcForest* toSwcTreeArray();
 

@@ -1372,6 +1372,26 @@ double ZSwcTree::distanceTo(ZSwcTree *tree, Swc_Tree_Node **source,
   return mindist;
 }
 
+double ZSwcTree::distanceTo(Swc_Tree_Node *source, Swc_Tree_Node **target) const
+{
+  updateIterator(SWC_TREE_ITERATOR_DEPTH_FIRST, false);
+  double mindist = Infinity;
+  for (Swc_Tree_Node *tn = begin(); tn != end(); tn = next()) {
+    if (Swc_Tree_Node_Is_Regular(tn)) {
+      double dist = SwcTreeNode::distance(
+            tn, source, SwcTreeNode::EUCLIDEAN_SURFACE);
+      if (dist < mindist) {
+        mindist = dist;
+        if (target != NULL) {
+          *target = tn;
+        }
+      }
+    }
+  }
+
+  return mindist;
+}
+
 double ZSwcTree::distanceTo(double x, double y, double z, double zScale, Swc_Tree_Node **node) const
 {
   return Point_Tree_Distance(x, y, z, m_tree, zScale, node);

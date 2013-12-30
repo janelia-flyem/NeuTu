@@ -277,9 +277,13 @@ void ZStackDoc::createActions()
   connect(action, SIGNAL(triggered()), this, SLOT(executeSetRootCommand()));
   m_actionMap[ACTION_SET_SWC_ROOT] = action;
 
-  action = new QAction("Set branch point", this);
+  action = new QAction("Join isolated branch", this);
   connect(action, SIGNAL(triggered()), this, SLOT(executeSetBranchPoint()));
   m_actionMap[ACTION_SET_BRANCH_POINT] = action;
+
+  action = new QAction("Join isolated brach (across trees)", this);
+  connect(action, SIGNAL(triggered()), this, SLOT(executeConnectIsolatedSwc()));
+  m_actionMap[ACTION_CONNECTED_ISOLATED_SWC] = action;
 
   action = new QAction("Reset branch point", this);
   connect(action, SIGNAL(triggered()), this, SLOT(executeResetBranchPoint()));
@@ -7257,6 +7261,75 @@ bool ZStackDoc::executeSetBranchPoint()
       }
       new ZStackDocCommand::SwcEdit::SetParent(
             this, closestNode, branchPoint, command);
+
+      pushUndoCommand(command);
+      deprecateTraceMask();
+      return true;
+    }
+  }
+
+  return false;
+}
+
+bool ZStackDoc::executeConnectIsolatedSwc()
+{
+  if (selectedSwcTreeNodes()->size() == 1) {
+    Swc_Tree_Node *branchPoint = *(selectedSwcTreeNodes()->begin());
+    Swc_Tree_Node *hostRoot = SwcTreeNode::regularRoot(branchPoint);
+    Swc_Tree_Node *masterRoot = SwcTreeNode::parent(hostRoot);
+
+    if (SwcTreeNode::childNumber(masterRoot) > 1 || swcList()->size() > 1) {
+      QUndoCommand *command =
+          new ZStackDocCommand::SwcEdit::CompositeCommand(this);
+
+      ZSwcTree tree;
+      tree.setDataFromNode(masterRoot);
+
+      tree.updateIterator(SWC_TREE_ITERATOR_DEPTH_FIRST);
+      bool isConnected = false;
+      double minDist = Infinity;
+      Swc_Tree_Node *closestNode = NULL;
+      for (Swc_Tree_Node *tn = tree.begin(); tn != NULL; tn = tree.next()) {
+        if (SwcTreeNode::isRegular(tn)) {
+          if (SwcTreeNode::isRoot(tn)) {
+            if (tn == hostRoot) {
+              isConnected = false;
+            } else {
+              isConnected = true;
+            }
+          }
+
+          if (isConnected) {
+            double dist = SwcTreeNode::distance(
+                  tn, branchPoint, SwcTreeNode::EUCLIDEAN_SURFACE);
+            if (dist < minDist) {
+              minDist = dist;
+              closestNode = tn;
+            }
+          }
+        }
+      }
+      tree.setDataFromNode(NULL, ZSwcTree::LEAVE_ALONE);
+
+      foreach (ZSwcTree *buddyTree, *swcList()) {
+        if (buddyTree->root() != masterRoot) {
+          Swc_Tree_Node *tn = NULL;
+          double dist = buddyTree->distanceTo(branchPoint, &tn);
+          if (dist < minDist) {
+            minDist = dist;
+            closestNode = tn;
+          }
+        }
+      }
+
+      if (closestNode != NULL) {
+        if (!SwcTreeNode::isRoot(closestNode)) {
+          new ZStackDocCommand::SwcEdit::SetRoot(this, closestNode, command);
+        }
+        new ZStackDocCommand::SwcEdit::SetParent(
+              this, closestNode, branchPoint, command);
+        new ZStackDocCommand::SwcEdit::RemoveEmptyTree(this, command);
+      }
 
       pushUndoCommand(command);
       deprecateTraceMask();
