@@ -1215,6 +1215,8 @@ void mylib::Set_Array_Value(mylib::Array *M(a), mylib::Coordinate *coord, Value 
       case mylib::FLOAT64_TYPE:
         AFLOAT64(a)[p] = (mylib::float64) v.fval;
         break;
+      default:
+        break;
   }
 }
 
@@ -1946,6 +1948,8 @@ mylib::Array *G(mylib::Make_Array_From_Slice)(Slice *slice)
             a[r++] = d[p];
           break;
         }
+      default:
+        break;
   }
 
   return (target);
@@ -9563,6 +9567,8 @@ mylib::Array *G(mylib::Make_Array_From_Frame)(Frame *framer)
                   d[j] = v[j];
                 break;
               }
+          default:
+            break;
         }
       }
   }
