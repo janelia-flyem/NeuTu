@@ -8,7 +8,7 @@
 #ifdef _USE_GTEST_
 TEST(ZStackDoc, Basic)
 {
-  ZStackDoc doc;
+  ZStackDoc doc(NULL, NULL);
   EXPECT_TRUE(doc.isEmpty());
   EXPECT_FALSE(doc.hasStackData());
   EXPECT_FALSE(doc.hasStackMask());
@@ -19,7 +19,7 @@ TEST(ZStackDoc, Basic)
 
 TEST(ZStackDoc, Swc)
 {
-  ZStackDoc doc;
+  ZStackDoc doc(NULL, NULL);
   doc.readSwc((GET_TEST_DATA_DIR + "/benchmark/bundle1/swc/1.swc").c_str());
   doc.saveSwc(GET_TEST_DATA_DIR + "/test1.swc");
   ASSERT_EQ(1, doc.getSwcList().size());

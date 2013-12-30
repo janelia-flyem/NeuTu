@@ -9,13 +9,13 @@
 
 namespace glm
 {
-	template <typename T>
-	GLM_FUNC_QUALIFIER detail::tmat3x3<T> orthonormalize
+	template <typename T, precision P>
+	GLM_FUNC_QUALIFIER detail::tmat3x3<T, P> orthonormalize
 	(
-		const detail::tmat3x3<T>& m
+		const detail::tmat3x3<T, P>& m
 	)
 	{
-		detail::tmat3x3<T> r = m;
+		detail::tmat3x3<T, P> r = m;
 
 		r[0] = normalize(r[0]);
 
@@ -31,11 +31,11 @@ namespace glm
 		return r;
 	}
 
-	template <typename T> 
-	GLM_FUNC_QUALIFIER detail::tvec3<T> orthonormalize
+	template <typename T, precision P> 
+	GLM_FUNC_QUALIFIER detail::tvec3<T, P> orthonormalize
 	(
-		const detail::tvec3<T>& x, 
-		const detail::tvec3<T>& y
+		const detail::tvec3<T, P>& x, 
+		const detail::tvec3<T, P>& y
 	)
 	{
 		return normalize(x - y * dot(y, x));

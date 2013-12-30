@@ -77,6 +77,7 @@ void Clean_Graph(Graph *graph)
 
   graph->edge_capacity = 0;
   graph->nvertex = 0;
+  graph->nedge = 0;
 }
 
 Graph* Make_Graph(int nvertex, int edge_capacity, BOOL weighted)

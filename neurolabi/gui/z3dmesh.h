@@ -55,8 +55,8 @@ public:
   size_t getNumVertices() const { return m_vertices.size(); }
   size_t getNumTriangles() const;
   std::vector<glm::vec3> getTriangleVertices(size_t index) const;
-  std::vector<glm::svec3> getTriangleIndices() const;
-  glm::svec3 getTriangleIndices(size_t index) const;
+  std::vector<glm::uvec3> getTriangleIndices() const;
+  glm::uvec3 getTriangleIndices(size_t index) const;
   glm::vec3 getTriangleVertex(size_t triangleIndex, size_t vertexIndex) const;
   size_t getNumColors() const { return m_colors.size(); }
   size_t getNumNormals() const { return m_normals.size(); }
@@ -122,7 +122,7 @@ public:
       glm::vec3 texlast = glm::vec3(1.f, 1.f, 1.f));
 
 private:
-  void appendTriangle(const Z3DTriangleList &mesh, glm::svec3 triangle);
+  void appendTriangle(const Z3DTriangleList &mesh, glm::uvec3 triangle);
 
 private:
   GLenum m_type;

@@ -36,12 +36,12 @@
 ///////////////////////////////////////////////////////////////////////////////////
 
 #ifndef GLM_GTX_closest_point
-#define GLM_GTX_closest_point GLM_VERSION
+#define GLM_GTX_closest_point
 
 // Dependency:
 #include "../glm.hpp"
 
-#if(defined(GLM_MESSAGES) && !defined(glm_ext))
+#if(defined(GLM_MESSAGES) && !defined(GLM_EXT_INCLUDED))
 #	pragma message("GLM: GLM_GTX_closest_point extension included")
 #endif
 
@@ -52,11 +52,11 @@ namespace glm
 
 	/// Find the point on a straight line which is the closet of a point. 
 	/// @see gtx_closest_point
-	template <typename T> 
-	detail::tvec3<T> closestPointOnLine(
-		detail::tvec3<T> const & point, 
-		detail::tvec3<T> const & a, 
-		detail::tvec3<T> const & b);
+	template <typename T, precision P>
+	detail::tvec3<T, P> closestPointOnLine(
+		detail::tvec3<T, P> const & point,
+		detail::tvec3<T, P> const & a, 
+		detail::tvec3<T, P> const & b);
 
 	/// @}
 }// namespace glm

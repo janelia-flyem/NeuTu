@@ -883,6 +883,11 @@ void ZStackView::popRightMenu(const QPoint &pos)
   m_imageWidget->popRightMenu(pos);
 }
 
+void ZStackView::showContextMenu(QMenu *menu, const QPoint &pos)
+{
+  m_imageWidget->showContextMenu(menu, pos);
+}
+
 QStringList ZStackView::toStringList() const
 {
   QStringList list;

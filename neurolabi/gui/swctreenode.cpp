@@ -454,6 +454,30 @@ double SwcTreeNode::distance(const Swc_Tree_Node *tn1, const Swc_Tree_Node *tn2,
   return dist;
 }
 
+double SwcTreeNode::distance(const Swc_Tree_Node *tn, double x, double y,
+                             double z, EDistanceType distType)
+{
+  if (!isRegular(tn)) {
+    return 0.0;
+  }
+
+  double dist = 0.0;
+  switch (distType) {
+  case SwcTreeNode::EUCLIDEAN:
+    dist = Geo3d_Dist(SwcTreeNode::x(tn), SwcTreeNode::y(tn), SwcTreeNode::z(tn),
+                      x, y, z);
+    break;
+  case SwcTreeNode::EUCLIDEAN_SURFACE:
+    dist = distance(tn, x, y, z, SwcTreeNode::EUCLIDEAN) - radius(tn);
+    break;
+  default:
+    TZ_WARN(ERROR_DATA_TYPE);
+    break;
+  }
+
+  return dist;
+}
+
 Swc_Tree_Node*
 SwcTreeNode::furthestNode(Swc_Tree_Node *tn, EDistanceType distType)
 {
@@ -1207,6 +1231,18 @@ bool SwcTreeNode::hasOverlap(const Swc_Tree_Node *tn1, const Swc_Tree_Node *tn2)
   return dist < radius(tn1) + radius(tn2);
 }
 
+bool SwcTreeNode::hasSignificantOverlap(
+    const Swc_Tree_Node *tn1, const Swc_Tree_Node *tn2)
+{
+  if (!isRegular(tn1) || !isRegular(tn2)) {
+    return false;
+  }
+
+  double dist = distance(tn1, tn2);
+
+  return (dist < radius(tn1)) || (dist < radius(tn2));
+}
+
 bool SwcTreeNode::isTurn(const Swc_Tree_Node *tn1,
                          const Swc_Tree_Node *tn2, const Swc_Tree_Node *tn3)
 {
@@ -1215,6 +1251,31 @@ bool SwcTreeNode::isTurn(const Swc_Tree_Node *tn1,
   }
 
   return Swc_Tree_Node_Forming_Turn(tn1, tn2, tn3);
+}
+
+double SwcTreeNode::normalizedDot(
+    const Swc_Tree_Node *tn1, const Swc_Tree_Node *tn2, const Swc_Tree_Node *tn3)
+{
+  if (!isRegular(tn1) || !isRegular(tn2) || !isRegular(tn3)) {
+    return 0.0;
+  }
+
+  double vec1[3], vec2[3];
+  vec1[0] = x(tn1) - x(tn2);
+  vec1[1] = y(tn1) - y(tn2);
+  vec1[2] = z(tn1) - z(tn2);
+
+  vec2[0] = x(tn2) - x(tn3);
+  vec2[1] = y(tn2) - y(tn3);
+  vec2[2] = z(tn2) - z(tn3);
+
+  Coordinate_3d_Unitize(vec1);
+  Coordinate_3d_Unitize(vec2);
+
+  double d =
+    Geo3d_Dot_Product(vec1[0], vec1[1], vec1[2], vec2[0], vec2[1], vec2[2]);
+
+  return d;
 }
 
 bool SwcTreeNode::isWithin(const Swc_Tree_Node *tn1, const Swc_Tree_Node *tn2)
@@ -1357,4 +1418,28 @@ std::map<Swc_Tree_Node*, Swc_Tree_Node*> SwcTreeNode::crossoverMatch(
   }
 
   return matching;
+}
+
+double SwcTreeNode::computeCurvature(
+    const Swc_Tree_Node *tn1, const Swc_Tree_Node *tn2, const Swc_Tree_Node *tn3)
+{
+  if (!isRegular(tn1) || !isRegular(tn2) || !isRegular(tn3)) {
+    return 0.0;
+  }
+
+  double curvature = 0.0;
+
+  double a = SwcTreeNode::distance(tn2, tn1);
+  double b = SwcTreeNode::distance(tn2, tn3);
+  double c = SwcTreeNode::distance(tn1, tn3);
+  if (a > 0.0 && b > 0.0 && c > 0.0) {
+    double u = b + c - a;
+    double v = a + c - b;
+    double w = a + b - c;
+    if (u > 0.0 && v > 0.0 && w > 0.0) {
+      curvature = sqrt(a + b + c) / a * sqrt(u) / b * sqrt(v) / c * sqrt(w);
+    }
+  }
+
+  return curvature;
 }

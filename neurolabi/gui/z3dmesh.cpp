@@ -58,17 +58,17 @@ std::vector<glm::dvec3> Z3DTriangleList::getDoubleVertices() const
   return result;
 }
 
-std::vector<glm::svec3> Z3DTriangleList::getTriangleIndices() const
+std::vector<glm::uvec3> Z3DTriangleList::getTriangleIndices() const
 {
-  std::vector<glm::detail::tvec3<size_t> > result;
+  std::vector<glm::uvec3> result;
   if (m_indices.empty()) {
     if (m_type == GL_TRIANGLES) {
       for (size_t i=0; i<m_vertices.size()-2; i+=3) {
-        result.push_back(glm::detail::tvec3<size_t>(i,i+1,i+2));
+        result.push_back(glm::uvec3(i,i+1,i+2));
       }
     } else if (m_type == GL_TRIANGLE_STRIP) {
       for (size_t i=0; i<m_vertices.size()-2; ++i) {
-        glm::detail::tvec3<size_t> triangle;
+        glm::uvec3 triangle;
         if (i%2 == 0) {
           triangle[0] = i;
           triangle[1] = i+1;
@@ -81,17 +81,17 @@ std::vector<glm::svec3> Z3DTriangleList::getTriangleIndices() const
       }
     } else /*(m_type == GL_TRIANGLE_FAN)*/ {
       for (size_t i=1; i<m_vertices.size()-1; ++i) {
-        result.push_back(glm::detail::tvec3<size_t>(0,i,i+1));
+        result.push_back(glm::uvec3(0,i,i+1));
       }
     }
   } else {
     if (m_type == GL_TRIANGLES) {
       for (size_t i=0; i<m_indices.size()-2; i+=3) {
-        result.push_back(glm::detail::tvec3<size_t>(m_indices[i],m_indices[i+1],m_indices[i+2]));
+        result.push_back(glm::uvec3(m_indices[i],m_indices[i+1],m_indices[i+2]));
       }
     } else if (m_type == GL_TRIANGLE_STRIP) {
       for (size_t i=0; i<m_indices.size()-2; ++i) {
-        glm::detail::tvec3<size_t> triangle;
+        glm::uvec3 triangle;
         if (i%2 == 0) {
           triangle[0] = m_indices[i];
           triangle[1] = m_indices[i+1];
@@ -104,7 +104,7 @@ std::vector<glm::svec3> Z3DTriangleList::getTriangleIndices() const
       }
     } else /*(m_type == GL_TRIANGLE_FAN)*/ {
       for (size_t i=1; i<m_indices.size()-1; ++i) {
-        result.push_back(glm::detail::tvec3<size_t>(m_indices[0],m_indices[i],m_indices[i+1]));
+        result.push_back(glm::uvec3(m_indices[0],m_indices[i],m_indices[i+1]));
       }
     }
   }
@@ -125,7 +125,7 @@ QString Z3DTriangleList::getTriangleListTypeAsString() const
 
 void Z3DTriangleList::interpolate(const Z3DTriangleList &ref)
 {
-  std::vector<glm::detail::tvec3<size_t> > triIdxs = ref.getTriangleIndices();
+  std::vector<glm::uvec3> triIdxs = ref.getTriangleIndices();
   if (!ref.m_1DTextureCoordinates.empty())
     m_1DTextureCoordinates.clear();
   if (!ref.m_2DTextureCoordinates.empty())
@@ -152,7 +152,7 @@ void Z3DTriangleList::interpolate(const Z3DTriangleList &ref)
     }
     // no vertice match, interpolate
     for (size_t j=0; !match && j<triIdxs.size(); j++) {
-      glm::detail::tvec3<size_t> triIdx = triIdxs[j];
+      glm::uvec3 triIdx = triIdxs[j];
       double s, t;
       if (Z3DUtils::vertexTriangleSquaredDistance(glm::dvec3(m_vertices[i]), glm::dvec3(ref.m_vertices[triIdx[0]]),
                                                   glm::dvec3(ref.m_vertices[triIdx[1]]), glm::dvec3(ref.m_vertices[triIdx[2]]),
@@ -228,16 +228,16 @@ size_t Z3DTriangleList::getNumTriangles() const
 std::vector<glm::vec3> Z3DTriangleList::getTriangleVertices(size_t index) const
 {
   std::vector<glm::vec3> triangle;
-  glm::svec3 tIs = getTriangleIndices(index);
+  glm::uvec3 tIs = getTriangleIndices(index);
   triangle.push_back(m_vertices[tIs[0]]);
   triangle.push_back(m_vertices[tIs[1]]);
   triangle.push_back(m_vertices[tIs[2]]);
   return triangle;
 }
 
-glm::svec3 Z3DTriangleList::getTriangleIndices(size_t index) const
+glm::uvec3 Z3DTriangleList::getTriangleIndices(size_t index) const
 {
-  glm::svec3 triangle;
+  glm::uvec3 triangle;
   index = std::min(getNumTriangles()-1, index);
   if (m_indices.empty()) {
     if (m_type == GL_TRIANGLES) {
@@ -317,7 +317,7 @@ void Z3DTriangleList::generateNormals(bool useAreaWeight)
     m_normals[i] = glm::vec3(0.f);
 
   for (size_t i=0; i<getNumTriangles(); ++i) {
-    glm::svec3 tri = getTriangleIndices(i);
+    glm::uvec3 tri = getTriangleIndices(i);
     // get the three vertices that make the faces
     glm::vec3 p1 = m_vertices[tri[0]];
     glm::vec3 p2 = m_vertices[tri[1]];
@@ -526,7 +526,7 @@ Z3DTriangleList Z3DTriangleList::createCubeSerieSlices(int numSlices, int alongD
   return quad;
 }
 
-void Z3DTriangleList::appendTriangle(const Z3DTriangleList &mesh, glm::svec3 triangle)
+void Z3DTriangleList::appendTriangle(const Z3DTriangleList &mesh, glm::uvec3 triangle)
 {
   if (!m_indices.empty() || m_type != GL_TRIANGLES)
     return;

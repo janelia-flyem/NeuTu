@@ -13,6 +13,10 @@
 #include "zjsonobject.h"
 #include "tz_error.h"
 #include "flyem/zflyemqualityanalyzer.h"
+#include "zfiletype.h"
+#include "flyem/zflyemdatabundle.h"
+
+using namespace std;
 
 ZCommandLine::ZCommandLine() : m_ravelerHeight(2599), m_zStart(1490)
 {
@@ -298,13 +302,34 @@ int ZCommandLine::runSynapseObjectList()
   return 0;
 }
 
+int ZCommandLine::runOutputClassList()
+{
+  if (ZFileType::fileType(m_input[0]) == ZFileType::JSON_FILE) {
+    ZFlyEmDataBundle bundle;
+    bundle.loadJsonFile(m_input[0]);
+    std::map<string, int> classMap = bundle.getClassIdMap();
+    std::ofstream stream(m_output.c_str());
+
+    for (map<string, int>::const_iterator iter = classMap.begin();
+         iter != classMap.end(); ++iter) {
+      stream << iter->first << std::endl;
+    }
+
+    stream.close();
+
+    return 0;
+  }
+
+  return 1;
+}
+
 int ZCommandLine::run(int argc, char *argv[])
 {
   static const char *Spec[] = {
     "--command",  "[--unit_test]", "[<input:string> ...] [-o <string>]",
     "[--sobj_marker]", "[--boundary_orphan <string>]", "[--config <string>]",
     "[--sobj_overlap]", "[--intv <int> <int> <int>]", "[--fulloverlap_screen]",
-    "[--synapse_object]", 0
+    "[--synapse_object]", "[--classlist]", 0
   };
 
   ZArgumentProcessor::processArguments(
@@ -369,6 +394,10 @@ int ZCommandLine::run(int argc, char *argv[])
     command = SYNAPSE_OBJECT;
     m_input.push_back(ZArgumentProcessor::getStringArg("input", 0));
     m_output = ZArgumentProcessor::getStringArg("-o");
+  } else if (ZArgumentProcessor::isArgMatched("--classlist")) {
+    command = CLASS_LIST;
+    m_input.push_back(ZArgumentProcessor::getStringArg("input", 0));
+    m_output = ZArgumentProcessor::getStringArg("-o");
   }
 
   switch (command) {
@@ -380,6 +409,8 @@ int ZCommandLine::run(int argc, char *argv[])
     return runObjectOverlap();
   case SYNAPSE_OBJECT:
     return runSynapseObjectList();
+  case CLASS_LIST:
+    return runOutputClassList();
   default:
     std::cout << "Unknown command" << std::endl;
     return 1;

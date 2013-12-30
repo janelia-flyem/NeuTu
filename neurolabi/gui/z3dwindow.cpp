@@ -60,6 +60,7 @@
 #include "zpunctumio.h"
 #include "zswcglobalfeatureanalyzer.h"
 #include "misc/miscutility.h"
+#include "zstackdocmenufactory.h"
 
 class Sleeper : public QThread
 {
@@ -351,6 +352,9 @@ void Z3DWindow::setWindowSize()
 
 void Z3DWindow::createActions()
 {
+#ifdef _DEBUG_
+  qDebug() << "Create actions";
+#endif
   /*
   m_undoAction = m_doc->undoStack()->createUndoAction(this, tr("&Undo"));
   m_undoAction->setIcon(QIcon(":/images/undo.png"));
@@ -377,7 +381,7 @@ void Z3DWindow::createActions()
   connect(m_locateSwcNodeIn2DAction, SIGNAL(triggered()), this,
           SLOT(locateSwcNodeIn2DView()));
 
-  m_toogleAddSwcNodeModeAction = new QAction("Click to add swc node", this);
+  m_toogleAddSwcNodeModeAction = new QAction("Add swc node", this);
   m_toogleAddSwcNodeModeAction->setCheckable(true);
   connect(m_toogleAddSwcNodeModeAction, SIGNAL(toggled(bool)), this,
           SLOT(toogleAddSwcNodeMode(bool)));
@@ -387,15 +391,17 @@ void Z3DWindow::createActions()
   connect(m_toogleMoveSelectedObjectsAction, SIGNAL(toggled(bool)), this,
           SLOT(toogleMoveSelectedObjectsMode(bool)));
 
-  m_toogleExtendSelectedSwcNodeAction = new QAction("Click to extend selected node", this);
+  m_toogleExtendSelectedSwcNodeAction = new QAction("Extend selected node", this);
   m_toogleExtendSelectedSwcNodeAction->setCheckable(true);
   connect(m_toogleExtendSelectedSwcNodeAction, SIGNAL(toggled(bool)), this,
           SLOT(toogleExtendSelectedSwcNodeMode(bool)));
+  m_singleSwcNodeActionActivator.registerAction(m_toogleExtendSelectedSwcNodeAction, true);
 
-  m_toogleSmartExtendSelectedSwcNodeAction = new QAction("Click to smart extend selected node", this);
+  m_toogleSmartExtendSelectedSwcNodeAction = new QAction("Smart extension", this);
   m_toogleSmartExtendSelectedSwcNodeAction->setCheckable(true);
   connect(m_toogleSmartExtendSelectedSwcNodeAction, SIGNAL(toggled(bool)), this,
           SLOT(toogleSmartExtendSelectedSwcNodeMode(bool)));
+  m_singleSwcNodeActionActivator.registerAction(m_toogleSmartExtendSelectedSwcNodeAction, true);
 
   m_changeSwcNodeTypeAction = new QAction("Change type", this);
   connect(m_changeSwcNodeTypeAction, SIGNAL(triggered()),
@@ -404,24 +410,27 @@ void Z3DWindow::createActions()
   m_setSwcRootAction = new QAction("Set as root", this);
   connect(m_setSwcRootAction, SIGNAL(triggered()),
           this, SLOT(setRootAsSelectedSwcNode()));
+  m_singleSwcNodeActionActivator.registerAction(m_setSwcRootAction, true);
 
   m_breakSwcConnectionAction = new QAction("Break", this);
   connect(m_breakSwcConnectionAction, SIGNAL(triggered()), this,
           SLOT(breakSelectedSwcNode()));
+  m_singleSwcNodeActionActivator.registerAction(m_breakSwcConnectionAction, false);
 
   m_connectSwcNodeAction = new QAction("Connect", this);
   connect(m_connectSwcNodeAction, SIGNAL(triggered()), this,
           SLOT(connectSelectedSwcNode()));
+  m_singleSwcNodeActionActivator.registerAction(m_connectSwcNodeAction, false);
 
   m_connectToSwcNodeAction = new QAction("Connect to", this);
   connect(m_connectToSwcNodeAction, SIGNAL(triggered()), this,
           SLOT(startConnectingSwcNode()));
+  m_singleSwcNodeActionActivator.registerAction(m_connectToSwcNodeAction, true);
 
   m_mergeSwcNodeAction = new QAction("Merge", this);
   connect(m_mergeSwcNodeAction, SIGNAL(triggered()), this,
           SLOT(mergeSelectedSwcNode()));
-
-
+  m_singleSwcNodeActionActivator.registerAction(m_mergeSwcNodeAction, false);
 
   m_selectSwcConnectionAction = new QAction("Select Connection", this);
   connect(m_selectSwcConnectionAction, SIGNAL(triggered()), m_doc.get(),
@@ -443,9 +452,14 @@ void Z3DWindow::createActions()
   m_selectSwcNodeUpstreamAction =
       m_doc->getAction(ZStackDoc::ACTION_SELECT_UPSTREAM);
 
+  /*
   m_selectSwcNodeBranchAction = new QAction("Branch", this);
   connect(m_selectSwcNodeBranchAction, SIGNAL(triggered()), m_doc.get(),
           SLOT(selectBranchNode()));
+          */
+  m_selectSwcNodeBranchAction =
+      m_doc->getAction(ZStackDoc::ACTION_SELECT_SWC_BRANCH);
+
 
   m_selectSwcNodeTreeAction = new QAction("Tree", this);
   connect(m_selectSwcNodeTreeAction, SIGNAL(triggered()), m_doc.get(),
@@ -511,13 +525,23 @@ void Z3DWindow::createActions()
   connect(m_refreshTraceMaskAction, SIGNAL(triggered()), this,
           SLOT(refreshTraceMask()));
 
+    /*
   m_removeSwcTurnAction = new QAction("Remove turn", this);
   connect(m_removeSwcTurnAction, SIGNAL(triggered()),
           this, SLOT(removeSwcTurn()));
 
+
   m_resolveCrossoverAction = new QAction("Resolve crossover", this);
   connect(m_resolveCrossoverAction, SIGNAL(triggered()),
           m_doc.get(), SLOT(executeResolveCrossoverCommand()));
+          */
+
+  m_removeSwcTurnAction =
+      m_doc->getAction(ZStackDoc::ACTION_REMOVE_TURN);
+
+  m_resolveCrossoverAction =
+      m_doc->getAction(ZStackDoc::ACTION_RESOLVE_CROSSOVER);
+
 }
 
 void Z3DWindow::createMenus()
@@ -568,34 +592,42 @@ void Z3DWindow::createContextMenu()
   contextMenu->addAction(m_toogleMoveSelectedObjectsAction);
   m_contextMenuGroup["puncta"] = contextMenu;
 
+#ifdef _DEBUG_
+  qDebug() << "Create swc node menu";
+#endif
+
   //Swc node
   contextMenu = new QMenu(this);
-  QMenu *selectMenu = new QMenu("Select", contextMenu);
-  contextMenu->addAction(m_changeSwcNodeTypeAction);
-  contextMenu->addAction(m_setSwcRootAction);
-  contextMenu->addAction(m_breakSwcConnectionAction);
+  //QMenu *selectMenu = new QMenu("Select", contextMenu);
+  //contextMenu->addAction(m_setSwcRootAction);
+  //contextMenu->addAction(m_breakSwcConnectionAction);
   contextMenu->addAction(m_connectToSwcNodeAction);
-  contextMenu->addAction(m_connectSwcNodeAction);
-  contextMenu->addAction(m_mergeSwcNodeAction);
-  selectMenu->addAction(m_selectSwcNodeDownstreamAction);
-  selectMenu->addAction(m_selectSwcConnectionAction);
-  selectMenu->addAction(m_selectSwcNodeUpstreamAction);
-  selectMenu->addAction(m_selectSwcNodeBranchAction);
-  selectMenu->addAction(m_selectSwcNodeTreeAction);
-  selectMenu->addAction(m_selectAllConnectedSwcNodeAction);
-  selectMenu->addAction(m_selectAllSwcNodeAction);
-  contextMenu->addMenu(selectMenu);
+  //contextMenu->addAction(m_connectSwcNodeAction);
+  //contextMenu->addAction(m_mergeSwcNodeAction);
+  //selectMenu->addAction(m_selectSwcNodeDownstreamAction);
+  //selectMenu->addAction(m_selectSwcConnectionAction);
+  //selectMenu->addAction(m_selectSwcNodeUpstreamAction);
+  //selectMenu->addAction(m_selectSwcNodeBranchAction);
+  //qDebug() << m_selectSwcNodeTreeAction;
+
+  contextMenu->addAction(m_selectSwcNodeTreeAction);
+  //selectMenu->addAction(m_selectAllConnectedSwcNodeAction);
+  //selectMenu->addAction(m_selectAllSwcNodeAction);
+  //contextMenu->addMenu(selectMenu);
+
   contextMenu->addAction(m_locateSwcNodeIn2DAction);
-  contextMenu->addAction(m_translateSwcNodeAction);
-  contextMenu->addAction(m_changeSwcNodeSizeAction);
-  contextMenu->addAction(m_removeSelectedObjectsAction);
-  contextMenu->addAction(m_toogleExtendSelectedSwcNodeAction);
+  contextMenu->addAction(m_changeSwcNodeTypeAction);
+  //contextMenu->addAction(m_translateSwcNodeAction);
+  //contextMenu->addAction(m_changeSwcNodeSizeAction);
+  //contextMenu->addAction(m_removeSelectedObjectsAction);
   contextMenu->addAction(m_toogleSmartExtendSelectedSwcNodeAction);
+  contextMenu->addAction(m_toogleExtendSelectedSwcNodeAction);
   contextMenu->addAction(m_toogleAddSwcNodeModeAction);
   contextMenu->addAction(m_toogleMoveSelectedObjectsAction);
-  contextMenu->addAction(m_removeSwcTurnAction);
-  contextMenu->addAction(m_resolveCrossoverAction);
-  contextMenu->addAction(m_swcNodeLengthAction);
+  //contextMenu->addAction(m_removeSwcTurnAction);
+  //contextMenu->addAction(m_resolveCrossoverAction);
+  //contextMenu->addAction(m_swcNodeLengthAction);
+  ZStackDocMenuFactory::makeSwcNodeContextMenu(getDocument(), contextMenu);
   m_contextMenuGroup["swcnode"] = contextMenu;
 
   contextMenu = new QMenu(this);
@@ -1217,6 +1249,21 @@ void Z3DWindow::pointInVolumeLeftClicked(QPoint pt, glm::ivec3 pos)
 
 void Z3DWindow::show3DViewContextMenu(QPoint pt)
 {
+  if (m_toogleAddSwcNodeModeAction->isChecked()) {
+    m_toogleAddSwcNodeModeAction->setChecked(false);
+    return;
+  } else if (m_toogleExtendSelectedSwcNodeAction->isChecked()) {
+    m_toogleExtendSelectedSwcNodeAction->setChecked(false);
+    return;
+  } else if (m_toogleSmartExtendSelectedSwcNodeAction->isChecked()) {
+    m_toogleSmartExtendSelectedSwcNodeAction->setChecked(false);
+    return;
+  } else if (getSwcFilter()->getInteractionMode() == Z3DSwcFilter::ConnectSwcNode) {
+    getSwcFilter()->setInteractionMode(Z3DSwcFilter::Select);
+    m_canvas->setCursor(Qt::ArrowCursor);
+    return;
+  }
+
   QList<QAction*> actions;
 
   if (m_doc->selectedSwcTreeNodes()->size() > 0) {
@@ -1895,7 +1942,8 @@ void Z3DWindow::updateContextMenu(const QString &group)
     m_contextMenuGroup["volume"]->addAction(m_refreshTraceMaskAction);
   }
   if (group == "swcnode") {
-
+    getDocument()->updateSwcNodeAction();
+    m_singleSwcNodeActionActivator.update(this);
   }
   if (group == "puncta") {
     m_saveSelectedPunctaAsAction->setEnabled(!m_doc->selectedPuncta()->empty());

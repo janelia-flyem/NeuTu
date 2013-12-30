@@ -36,12 +36,12 @@
 ///////////////////////////////////////////////////////////////////////////////////
 
 #ifndef GLM_GTX_mixed_product
-#define GLM_GTX_mixed_product GLM_VERSION
+#define GLM_GTX_mixed_product
 
 // Dependency:
 #include "../glm.hpp"
 
-#if(defined(GLM_MESSAGES) && !defined(glm_ext))
+#if(defined(GLM_MESSAGES) && !defined(GLM_EXT_INCLUDED))
 #	pragma message("GLM: GLM_GTX_mixed_product extension included")
 #endif
 
@@ -51,11 +51,11 @@ namespace glm
 	/// @{
 
 	/// @brief Mixed product of 3 vectors (from GLM_GTX_mixed_product extension)
-	template <typename valType> 
-	valType mixedProduct(
-		detail::tvec3<valType> const & v1, 
-		detail::tvec3<valType> const & v2, 
-		detail::tvec3<valType> const & v3);
+	template <typename T, precision P> 
+	T mixedProduct(
+		detail::tvec3<T, P> const & v1, 
+		detail::tvec3<T, P> const & v2, 
+		detail::tvec3<T, P> const & v3);
 
 	/// @}
 }// namespace glm

@@ -14,6 +14,7 @@
 #include "zmessagereporter.h"
 #include "moviedialog.h"
 #include "autosaveswclistdialog.h"
+#include "zactionactivator.h"
 
 class ZStackFrame;
 class QMdiArea;
@@ -64,6 +65,8 @@ private:
 
   QProgressDialog* getProgressDialog();
   QProgressBar* getProgressBar();
+
+  void setActionActivity();
 
 protected:
   //a virtual function from QWidget. It is called when the window is closed.
@@ -288,6 +291,8 @@ private slots:
 
   void on_actionSparse_objects_triggered();
 
+  void on_actionDendrogram_triggered();
+
 private:
   void createActions();
   void customizeActions();
@@ -426,6 +431,8 @@ private:
   QAction *testAction;
 
   QAction *openTraceAction;
+
+  ZStackActionActivator m_stackActionActivator;
 
   FrameInfoDialog m_frameInfoDlg;
   QProgressDialog *m_progress;

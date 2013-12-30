@@ -10,11 +10,13 @@
 #include <QSize>
 #include <QObject>
 #include <vector>
+#include <QMap>
 
 #include "zstackdrawable.h"
 #include "zinteractivecontext.h"
 #include "zstroke2d.h"
 #include "swctreenode.h"
+#include "zactionactivator.h"
 
 class ZStackView;
 class ZStackDoc;
@@ -42,6 +44,12 @@ public:
   enum EMouseEventProcessStatus {
     MOUSE_EVENT_PASSED, CONTEXT_MENU_POPPED, MOUSE_HIT_OBJECT,
     MOUSE_COMMAND_EXECUTED, MOUSE_EVENT_CAPTURED
+  };
+
+  enum EActionItem {
+    ACTION_EXTEND_SWC_NODE, ACTION_SMART_EXTEND_SWC_NODE,
+    ACTION_CONNECT_TO_SWC_NODE, ACTION_ADD_SWC_NODE,
+    ACTION_LOCK_SWC_NODE_FOCUS, ACTION_ESTIMATE_SWC_NODE_RADIUS
   };
 
   inline double greyScale(int c = 0) const {return m_greyScale[c];}
@@ -83,6 +91,13 @@ public:
   void createSwcActions();
   void createTubeActions();
   void createDocDependentActions();
+
+  inline QAction* getAction(EActionItem item) const {
+    return m_actionMap[item];
+  }
+
+  void createSwcNodeContextMenu();
+  QMenu* getSwcNodeContextMenu();
 
   void setStackBc(double scale, double offset, int c = 0);
 
@@ -283,6 +298,10 @@ private:
   QAction *m_selectAllConnectedSwcNodeAction;
   QAction *m_selectAllSwcNodeAction;
 
+  //  Action map
+  QMap<EActionItem, QAction*> m_actionMap;
+
+  QMenu *m_swcNodeContextMenu;
 
   //recorded information
   int m_mouseMovePosition[3];
@@ -295,6 +314,8 @@ private:
 
   ZStroke2d m_stroke;
   bool m_isStrokeOn;
+
+  ZSingleSwcNodeActionActivator m_singleSwcNodeActionActivator;
 
 signals:
   void viewModeChanged();

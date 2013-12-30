@@ -325,7 +325,7 @@ void ZImageWidget::paintEvent(QPaintEvent * /*event*/)
     if (m_paintBundle) {
       double zoomRatio = size.width() * 1.0 / m_viewPort.width();
       QPainter painter1(this);
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
       std::cout << x() - parentWidget()->x() << " "
                 << y() - parentWidget()->y()
                 << 0.5 - m_viewPort.x() << std::endl;
@@ -474,6 +474,13 @@ void ZImageWidget::popLeftMenu(const QPoint &pos)
 void ZImageWidget::popRightMenu(const QPoint &pos)
 {
   m_rightButtonMenu->popup(mapToGlobal(pos));
+}
+
+void ZImageWidget::showContextMenu(QMenu *menu, const QPoint &pos)
+{
+  if (menu != NULL) {
+    menu->popup(mapToGlobal(pos));
+  }
 }
 
 void ZImageWidget::mouseReleaseEvent(QMouseEvent *event)

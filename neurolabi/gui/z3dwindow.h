@@ -15,6 +15,7 @@
 #include "znumericparameter.h"
 #include "zglmutils.h"
 #include "z3dcameraparameter.h"
+#include "zactionactivator.h"
 
 class ZStackDoc;
 class Z3DTrackballInteractionHandler;
@@ -79,7 +80,7 @@ public:
   /*!
    * \brief Get the document associated with the window
    */
-  inline ZStackDoc* getDocument() { return m_doc.get(); }
+  inline ZStackDoc* getDocument() const { return m_doc.get(); }
 
 protected:
 
@@ -298,6 +299,10 @@ private:
   QMenu *m_volumeContextMenu;
   QMenu *m_swcContextMenu;
 */
+
+  ZSingleSwcNodeActionActivator m_singleSwcNodeActionActivator;
+
+
   std::tr1::shared_ptr<ZStackDoc> m_doc;
 
   Z3DNetworkEvaluator *m_networkEvaluator;

@@ -69,7 +69,7 @@ public:
   virtual ~Z3DVolume();
 
   // by default same as dimension.
-  void setParentVolumeDimensions(const glm::svec3 &dim) { m_parentVolumeDimensions = dim; }
+  void setParentVolumeDimensions(const glm::uvec3 &dim) { m_parentVolumeDimensions = dim; }
   // by default same as current offset
   void setParentVolumeOffset(const glm::vec3 &of) { m_parentVolumeOffset  = of; }
 
@@ -77,11 +77,11 @@ public:
   bool isDownsampledVolume() const { return m_detailVolumeDimensions != m_dimensions; }
 
   // actual data dimension of current stack
-  glm::svec3 getDimensions() const { return m_dimensions; }
+  glm::uvec3 getDimensions() const { return m_dimensions; }
   // detail stack dimension, current stack might be downsampled from detail stack
-  glm::svec3 getOriginalDimensions() const { return m_detailVolumeDimensions; }
+  glm::uvec3 getOriginalDimensions() const { return m_detailVolumeDimensions; }
   // parent stack dimension, detailed stack might be cropped form parent stack
-  glm::svec3 getParentVolumeDimensions() const { return m_parentVolumeDimensions; }
+  glm::uvec3 getParentVolumeDimensions() const { return m_parentVolumeDimensions; }
 
   int getBitsStored() const;
   size_t getNumVoxels() const;
@@ -250,10 +250,10 @@ private:
 protected:
   Stack *m_stack;
   Image_Array m_data;
-  glm::svec3 m_dimensions;
-  glm::svec3 m_parentVolumeDimensions;
+  glm::uvec3 m_dimensions;
+  glm::uvec3 m_parentVolumeDimensions;
   glm::vec3 m_parentVolumeOffset;
-  glm::svec3 m_detailVolumeDimensions;
+  glm::uvec3 m_detailVolumeDimensions;
   double m_minValue;
   double m_maxValue;
   glm::vec3 m_scaleSpacing;

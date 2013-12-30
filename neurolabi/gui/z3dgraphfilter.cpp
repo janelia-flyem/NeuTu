@@ -239,7 +239,7 @@ void Z3DGraphFilter::prepareColor()
    // m_lineStartColors[i] = startColor;
     //m_lineEndColors[i] = endColor;
 
-    m_arrowStartColors[i] = startColor * 0.4 + endColor * 0.6;
+    m_arrowStartColors[i] = startColor * 0.4f + endColor * 0.6f;
     m_arrowStartColors[i][3] *= 0.5;
     m_arrowEndColors[i] = m_arrowStartColors[i];
   }

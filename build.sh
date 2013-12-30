@@ -31,12 +31,21 @@ cd build
 $QMAKE -spec $QMAKE_SPEC CONFIG+=release CONFIG+=x86_64 -o Makefile ../gui/gui.pro
 make
 
-if [ -d neuTube.app ]
-then
-  cd ..
-  sh gui/deploy_neutube.sh `pwd`/build
-  cp -r build/neuTube.app ../
-else
-  mv neuTube ../../
-fi
+#echo "Deploying ..."
+
+#if [ -d neuTube.app ]
+#then
+#  qtbin_dir=`dirname $QMAKE`
+#  cd ..
+#  if [ -f $qtbin_dir/macdeployqt ]
+#  then
+#    $qtbin_dir/macdeployqt `pwd`/build/neuTube.app -no-plugins
+#  else
+#    sh gui/deploy_neutube.sh `pwd`/build
+#  fi
+#  echo "build/neuTube.app deployed."
+#else
+#  echo "neuTube deployed."
+  #mv neuTube ../../
+#fi
 

@@ -220,14 +220,14 @@ void Z3DVolumeSource::readSubVolumes(int left, int top, int front, int width,
       if (subStack->kind == GREY) {
         Z3DVolume *vh = new Z3DVolume(subStack, downsampleSpacing, scaleSpacing, offset,
                                       getVolume(0)->getPhysicalToWorldMatrix());
-        vh->setParentVolumeDimensions(glm::svec3(stack->width, stack->height, stack->depth));
+        vh->setParentVolumeDimensions(glm::uvec3(stack->width, stack->height, stack->depth));
         vh->setParentVolumeOffset(getVolume(0)->getOffset());
         m_zoomInVolumes.push_back(vh);
       } else {
         Translate_Stack(subStack, GREY, 1);
         Z3DVolume *vh = new Z3DVolume(subStack, downsampleSpacing, scaleSpacing, offset,
                                       getVolume(0)->getPhysicalToWorldMatrix());
-        vh->setParentVolumeDimensions(glm::svec3(stack->width, stack->height, stack->depth));
+        vh->setParentVolumeDimensions(glm::uvec3(stack->width, stack->height, stack->depth));
         vh->setParentVolumeOffset(getVolume(0)->getOffset());
         m_zoomInVolumes.push_back(vh);
       }

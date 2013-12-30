@@ -10038,7 +10038,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1 //Finding holes
+#if 0 //Finding holes
   QDir dir((GET_DATA_DIR + "/flyem/FIB/skeletonization/session19/bodies/500k+").c_str());
   std::string outDir = (dir.absolutePath() + "/hole").toStdString();
   QStringList nameFilters;
@@ -10071,4 +10071,51 @@ void ZTest::test(MainWindow *host)
     }
   }
 #endif
+
+#if 0
+  ZDendrogram dendrogram;
+
+  ZMatrix Z;
+  Z.importTextFile(GET_DATA_DIR + "/Z.txt");
+  for (int i = 0; i < Z.getRowNumber(); ++i) {
+    dendrogram.addLink(Z.at(i, 0), Z.at(i, 1), Z.at(i, 2) - 0.5);
+  }
+  dendrogram.loadLeafName(GET_DATA_DIR + "/flyem/TEM/neuron_name.txt");
+  std::string svgString = dendrogram.toSvgString(10.0);
+
+  ZSvgGenerator svgGenerator(0, 0, 800, 5000);
+
+
+  svgGenerator.write((GET_DATA_DIR + "/test.svg").c_str(), svgString);
+#endif
+
+#if 0
+  ZDendrogram dendrogram;
+  dendrogram.addLink(1, 2, 1);
+  dendrogram.addLink(3, 4, 1);
+  dendrogram.addLink(7, 8, 2);
+  dendrogram.addLink(5, 9, 3);
+  dendrogram.addLink(6, 10, 4);
+  std::string svgString = dendrogram.toSvgString(20.0);
+
+  ZSvgGenerator svgGenerator;
+  svgGenerator.write((GET_DATA_DIR + "/test.svg").c_str(), svgString);
+#endif
+
+#if 1
+  std::string neuronNameFilePath = GET_DATA_DIR + "/flyem/TEM/class_name.txt";
+  ZFlyEmDataBundle bundle;
+  bundle.loadJsonFile(GET_DATA_DIR + "/flyem/TEM/data_release/bundle1/data_bundle.json");
+
+  std::vector<ZFlyEmNeuron> neuronArray = bundle.getNeuronArray();
+
+  std::ofstream stream(neuronNameFilePath.c_str());
+  for (std::vector<ZFlyEmNeuron>::const_iterator iter = neuronArray.begin();
+       iter != neuronArray.end(); ++iter) {
+    const ZFlyEmNeuron &neuron = *iter;
+    stream << neuron.getName() << std::endl;
+  }
+  stream.close();
+#endif
+
 }

@@ -984,6 +984,11 @@ void ZFlyEmDataFrame::process()
       int correctCount = 0;
       int count = 0;
 
+#ifdef _DEBUG_
+      std::map<string, int> classMap = m_dataArray[0]->getClassIdMap();
+      ZMatrix confusionMatrix(classMap.size(), classMap.size());
+#endif
+
       for (size_t i = 0; i < m_sourceIdArray.size(); ++i) {
         const ZFlyEmNeuron *neuron = getNeuron(m_sourceIdArray[i]);
         QVector<const ZFlyEmNeuron*> topMatch = getTopMatch(neuron);
@@ -994,10 +999,20 @@ void ZFlyEmDataFrame::process()
           if (topMatch[0]->getClass() == neuron->getClass()) {
             ++correctCount;
           }
+
+#ifdef _DEBUG_
+          int predClass = classMap[topMatch[0]->getClass()];
+          int trueClass = classMap[neuron->getClass()];
+          confusionMatrix.addValue(trueClass - 1, predClass - 1, 1);
+#endif
         }
         dump(QString("Accuracy: %1 / %2 = %3").arg(correctCount).arg(count).
              arg((double) correctCount / count));
       }
+
+#ifdef _DEBUG_
+      confusionMatrix.exportCsv(GET_DATA_DIR + "/test/confmat.csv");
+#endif
     }
       break;
     default:

@@ -33,11 +33,7 @@ class QString;
 class QsDebugOutput
 {
 public:
-#if defined(Q_OS_WIN)
-   static void output( const QString& message );
-#else
    static void output(const QString& a_message, QsLogging::Level level);
-#endif
 };
 
 namespace QsLogging

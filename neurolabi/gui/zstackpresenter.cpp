@@ -19,6 +19,7 @@
 #include "zcursorstore.h"
 #include "zstroke2d.h"
 #include "tz_geo3d_utils.h"
+#include "zstackdocmenufactory.h"
 
 ZStackPresenter::ZStackPresenter(ZStackFrame *parent) : QObject(parent),
   m_parent(parent),
@@ -51,6 +52,7 @@ ZStackPresenter::ZStackPresenter(ZStackFrame *parent) : QObject(parent),
 
   m_activeDecorationList.push_back(&m_stroke);
 
+  m_swcNodeContextMenu = NULL;
   createActions();
 }
 
@@ -157,18 +159,6 @@ void ZStackPresenter::createTubeActions()
 void ZStackPresenter::createDocDependentActions()
 {
   assert(buddyDocument());
-  //  m_swcSelectAllNodeAction = new QAction(tr("Select All Nodes"), this);
-  //  connect(m_swcSelectAllNodeAction, SIGNAL(triggered()), this,
-  //          SLOT(selectAllSwcTreeNode()));
-  m_selectSwcNodeDownstreamAction = new QAction("Select Downstream", this);
-  connect(m_selectSwcNodeDownstreamAction, SIGNAL(triggered()), this,
-          SLOT(selectDownstreamNode()));
-
-  /*
-  std::cout << "Connecting m_selectSwcNodeDownstreamAction - slotTest" << std::endl;
-  connect(m_selectSwcNodeDownstreamAction, SIGNAL(triggered()), this,
-          SLOT(slotTest()));
-*/
 
   m_selectSwcConnectionAction = new QAction("Select Connection", this);
   connect(m_selectSwcConnectionAction, SIGNAL(triggered()), this,
@@ -197,17 +187,27 @@ void ZStackPresenter::createDocDependentActions()
 
 void ZStackPresenter::createSwcActions()
 {
+  /*
+  QAction *action = new QAction(tr("Add swc node"), this);
+  connect(action, SIGNAL(triggered()),
+          this, SLOT(trySwcAddNodeMode(double, double)));
+  m_actionMap[ACTION_ADD_SWC_NODE] = action;
+  */
+
   m_swcConnectToAction = new QAction(tr("Connect to"), this);
   connect(m_swcConnectToAction, SIGNAL(triggered()),
           this, SLOT(enterSwcConnectMode()));
+  m_actionMap[ACTION_CONNECT_TO_SWC_NODE] = m_swcConnectToAction;
 
   m_swcExtendAction = new QAction(tr("Extend"), this);
   connect(m_swcExtendAction, SIGNAL(triggered()),
           this, SLOT(enterSwcExtendMode()));
+  m_actionMap[ACTION_EXTEND_SWC_NODE] = m_swcExtendAction;
 
   m_swcSmartExtendAction = new QAction(tr("Smart extension"), this);
   connect(m_swcSmartExtendAction, SIGNAL(triggered()),
           this, SLOT(enterSwcSmartExtendMode()));
+  m_actionMap[ACTION_SMART_EXTEND_SWC_NODE] = m_swcSmartExtendAction;
 
   m_swcDeleteAction = new  QAction(tr("Delete"), this);
   connect(m_swcDeleteAction, SIGNAL(triggered()),
@@ -224,10 +224,19 @@ void ZStackPresenter::createSwcActions()
   m_swcLockFocusAction = new QAction(tr("Lock Focus"), this);
   connect(m_swcLockFocusAction, SIGNAL(triggered()),
           this, SLOT(lockSelectedSwcNodeFocus()));
+  m_actionMap[ACTION_LOCK_SWC_NODE_FOCUS] = m_swcLockFocusAction;
 
   m_swcEstimateRadiusAction = new QAction(tr("Estimate Radius"), this);
   connect(m_swcEstimateRadiusAction, SIGNAL(triggered()),
           this, SLOT(estimateSelectedSwcRadius()));
+  m_actionMap[ACTION_ESTIMATE_SWC_NODE_RADIUS] = m_swcEstimateRadiusAction;
+
+  m_singleSwcNodeActionActivator.registerAction(
+        m_actionMap[ACTION_EXTEND_SWC_NODE], true);
+  m_singleSwcNodeActionActivator.registerAction(
+        m_actionMap[ACTION_SMART_EXTEND_SWC_NODE], true);
+  m_singleSwcNodeActionActivator.registerAction(
+        m_actionMap[ACTION_CONNECT_TO_SWC_NODE], true);
 }
 
 void ZStackPresenter::createActions()
@@ -254,6 +263,26 @@ void ZStackPresenter::createActions()
   createTubeActions();
 }
 
+void ZStackPresenter::createSwcNodeContextMenu()
+{
+  if (m_swcNodeContextMenu == NULL) {
+    m_swcNodeContextMenu = ZStackDocMenuFactory::makeSwcNodeContextMenu(this);
+    ZStackDocMenuFactory::makeSwcNodeContextMenu(buddyDocument(), m_swcNodeContextMenu);
+  }
+}
+
+QMenu* ZStackPresenter::getSwcNodeContextMenu()
+{
+  if (m_swcNodeContextMenu == NULL) {
+    createSwcNodeContextMenu();
+  }
+
+  buddyDocument()->updateSwcNodeAction();
+  m_singleSwcNodeActionActivator.update(buddyDocument());
+
+  return m_swcNodeContextMenu;
+}
+
 ZStackPresenter::~ZStackPresenter()
 {
   foreach(ZStackDrawable *decoration, m_decorationList) {
@@ -261,6 +290,8 @@ ZStackPresenter::~ZStackPresenter()
   }
 
   m_decorationList.clear();
+
+  delete m_swcNodeContextMenu;
 }
 
 void ZStackPresenter::turnOnStroke()
@@ -372,7 +403,8 @@ void ZStackPresenter::prepareView()
   createDocDependentActions();
   updateLeftMenu(m_traceAction);
   buddyView()->rightMenu()->clear();
-  addSwcEditFunctionToRightMenu();
+  //addSwcEditFunctionToRightMenu();
+  //createContextMenu();
 }
 
 void ZStackPresenter::updateLeftMenu(QAction *action, bool clear)
@@ -689,9 +721,13 @@ ZStackPresenter::processMouseReleaseForSwc(
   if (event->button() == Qt::RightButton) {
     if (m_interactiveContext.isContextMenuActivated()) {
       buddyView()->rightMenu()->clear();
-      addSwcEditFunctionToRightMenu();
-      buddyView()->popRightMenu(event->pos());
-      status = CONTEXT_MENU_POPPED;
+      //addSwcEditFunctionToRightMenu();
+      //buddyView()->popRightMenu(event->pos());
+
+      if (buddyDocument()->hasSelectedSwcNode()) {
+        buddyView()->showContextMenu(getSwcNodeContextMenu(), event->pos());
+        status = CONTEXT_MENU_POPPED;
+      }
     } else {
       if (isStrokeOn()) {
         turnOffStroke();
@@ -1044,20 +1080,11 @@ void ZStackPresenter::processMouseMoveEvent(QMouseEvent *event)
           m_stroke.setFilled(false);
         }
         turnOnStroke();
+#ifdef _DEBUG_2
+        qDebug() << "Stroke on";
+#endif
         //buddyView()->paintActiveDecoration();
       }
-      /*
-      if (m_interactiveContext.strokeEditMode() ==
-          ZInteractiveContext::STROKE_DRAW) {
-        m_stroke.set(pos);
-        buddyView()->paintActiveDecoration();
-      } else if (m_interactiveContext.swcEditMode() ==
-                 ZInteractiveContext::SWC_EDIT_ADD_NODE) {
-        m_stroke.set(pos);
-        m_stroke.setFilled(false);
-        buddyView()->paintActiveDecoration();
-      }
-      */
     }
     break;
   }
@@ -1412,6 +1439,7 @@ void ZStackPresenter::processKeyPressEvent(QKeyEvent *event)
   case Qt::Key_Escape:
     m_interactiveContext.setSwcEditMode(ZInteractiveContext::SWC_EDIT_SELECT);
     m_interactiveContext.setTubeEditMode(ZInteractiveContext::TUBE_EDIT_OFF);
+    turnOffStroke();
     updateCursor();
     break;
 

@@ -141,6 +141,15 @@ TEST(SwcTreeNode, Geometry)
   SwcTreeNode::setParent(tn1, tn2);
   dist = SwcTreeNode::distance(tn1, tn2, SwcTreeNode::GEODESIC);
   EXPECT_DOUBLE_EQ(0.0, dist);
+
+  dist = SwcTreeNode::distance(tn1, 0, 0, 0, SwcTreeNode::EUCLIDEAN_SURFACE);
+  EXPECT_DOUBLE_EQ(-1.0, dist);
+
+  dist = SwcTreeNode::distance(tn1, 0, 0, 0);
+  EXPECT_DOUBLE_EQ(0.0, dist);
+
+  dist = SwcTreeNode::distance(tn1, 1, 0, 0);
+  EXPECT_DOUBLE_EQ(1.0, dist);
 }
 
 TEST(SwcTreeNode, Crossover)

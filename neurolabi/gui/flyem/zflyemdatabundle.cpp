@@ -557,7 +557,8 @@ std::map<string, int> ZFlyEmDataBundle::getClassIdMap() const
   for (std::vector<ZFlyEmNeuron>::const_iterator iter = neuronArray.begin();
        iter != neuronArray.end(); ++iter) {
     if (classMap.count(iter->getClass()) == 0) {
-      classMap[iter->getClass()] = classMap.size() + 1;
+      int newClassId = classMap.size() + 1;
+      classMap[iter->getClass()] = newClassId;
     }
   }
 

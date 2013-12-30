@@ -11,7 +11,7 @@ public:
 
   enum ECommand {
     OBJECT_MARKER, BOUNDARY_ORPHAN, OBJECT_OVERLAP,
-    SYNAPSE_OBJECT, UNKNOWN_COMMAND
+    SYNAPSE_OBJECT, CLASS_LIST, UNKNOWN_COMMAND
   };
 
   int run(int argc, char *argv[]);
@@ -23,6 +23,7 @@ private:
   int runBoundaryOrphan();
   int runObjectOverlap();
   int runSynapseObjectList();
+  int runOutputClassList();
 
 private:
   std::vector<std::string> m_input;

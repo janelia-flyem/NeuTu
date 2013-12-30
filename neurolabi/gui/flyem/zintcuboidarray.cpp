@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <math.h>
+#include <algorithm>
 #include "zstring.h"
 #include "zcuboid.h"
 #include "zswctree.h"

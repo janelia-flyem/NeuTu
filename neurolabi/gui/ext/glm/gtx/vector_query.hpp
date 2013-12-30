@@ -36,14 +36,14 @@
 ///////////////////////////////////////////////////////////////////////////////////
 
 #ifndef GLM_GTX_vector_query
-#define GLM_GTX_vector_query GLM_VERSION
+#define GLM_GTX_vector_query
 
 // Dependency:
 #include "../glm.hpp"
 #include <cfloat>
 #include <limits>
 
-#if(defined(GLM_MESSAGES) && !defined(glm_ext))
+#if(defined(GLM_MESSAGES) && !defined(GLM_EXT_INCLUDED))
 #	pragma message("GLM: GLM_GTX_vector_query extension included")
 #endif
 
@@ -53,56 +53,56 @@ namespace glm
 	/// @{
 
 	//! Check whether two vectors are collinears.
-	//! From GLM_GTX_vector_query extensions.
-	template <typename genType> 
+	/// @see gtx_vector_query extensions.
+	template <typename genType>
 	bool areCollinear(
-		genType const & v0, 
-		genType const & v1, 
-		typename genType::value_type const & epsilon/* = std::numeric_limits<typename genType::value_type>::epsilon()*/);
+		genType const & v0,
+		genType const & v1,
+		typename genType::T const & epsilon);
 		
-    //! Check whether two vectors are orthogonals.
-	//! From GLM_GTX_vector_query extensions.
-	template <typename genType> 
+	//! Check whether two vectors are orthogonals.
+	/// @see gtx_vector_query extensions.
+	template <typename genType>
 	bool areOrthogonal(
-		genType const & v0, 
-		genType const & v1, 
-		typename genType::value_type const & epsilon/* = std::numeric_limits<typename genType::value_type>::epsilon()*/);
+		genType const & v0,
+		genType const & v1,
+		typename genType::T const & epsilon);
 
 	//! Check whether a vector is normalized.
-	//! From GLM_GTX_vector_query extensions.
-	template <typename genType, template <typename> class vecType> 
+	/// @see gtx_vector_query extensions.
+	template <typename genType, precision P, template <typename, precision> class vecType>
 	bool isNormalized(
-		vecType<genType> const & v, 
-		genType const & epsilon/* = std::numeric_limits<genType>::epsilon()*/);
+		vecType<genType, P> const & v,
+		genType const & epsilon);
 		
 	//! Check whether a vector is null.
-	//! From GLM_GTX_vector_query extensions.
-	template <typename valType> 
+	/// @see gtx_vector_query extensions.
+	template <typename T, precision P>
 	bool isNull(
-		detail::tvec2<valType> const & v, 
-		valType const & epsilon/* = std::numeric_limits<typename genType::value_type>::epsilon()*/);
+		detail::tvec2<T, P> const & v,
+		T const & epsilon);
 
 	//! Check whether a vector is null.
-	//! From GLM_GTX_vector_query extensions.
-	template <typename valType> 
+	/// @see gtx_vector_query extensions.
+	template <typename T, precision P>
 	bool isNull(
-		detail::tvec3<valType> const & v, 
-		valType const & epsilon/* = std::numeric_limits<typename genType::value_type>::epsilon()*/);
+		detail::tvec3<T, P> const & v,
+		T const & epsilon);
 
 	//! Check whether a vector is null.
-	//! From GLM_GTX_vector_query extensions.
-	template <typename valType> 
+	/// @see gtx_vector_query extensions.
+	template <typename T, precision P>
 	bool isNull(
-		detail::tvec4<valType> const & v, 
-		valType const & epsilon/* = std::numeric_limits<typename genType::value_type>::epsilon()*/);
+		detail::tvec4<T, P> const & v,
+		T const & epsilon);
 
 	//! Check whether two vectors are orthonormal.
-	//! From GLM_GTX_vector_query extensions.
+	/// @see gtx_vector_query extensions.
 	template <typename genType>
 	bool areOrthonormal(
-		genType const & v0, 
-		genType const & v1, 
-		typename genType::value_type const & epsilon/* = std::numeric_limits<typename genType::value_type>::epsilon()*/);
+		genType const & v0,
+		genType const & v1,
+		typename genType::T const & epsilon);
 
 	/// @}
 }// namespace glm

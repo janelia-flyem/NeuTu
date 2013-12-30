@@ -218,7 +218,9 @@ string ZXmlNode::getAttribute(const char *attribute) const
 #if defined(HAVE_LIBXML2)
   if (m_node != NULL) {
     xmlChar *prop = xmlGetProp(m_node, CONST_XML_STRING(attribute));
-    attributeValue = Xml_String_To_String(prop);
+    char *tmpStr = Xml_String_To_String(prop);
+    attributeValue = tmpStr;
+    free(tmpStr);
   }
 #endif
   return attributeValue;

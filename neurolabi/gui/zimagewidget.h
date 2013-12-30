@@ -65,6 +65,8 @@ public:
   void popLeftMenu(const QPoint &pos);
   void popRightMenu(const QPoint &pos);
 
+  void showContextMenu(QMenu *menu, const QPoint &pos);
+
   QMenu* leftMenu();
   QMenu* rightMenu();
 

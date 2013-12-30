@@ -18,6 +18,7 @@
 #include <QUndoCommand>
 #include <QMap>
 #include <string>
+#include <QMenu>
 
 #include "neutube.h"
 #include "zcurve.h"
@@ -33,6 +34,7 @@
 #include "biocytin/zstackprojector.h"
 #include "zstackreadthread.h"
 #include "zstackfile.h"
+#include "zactionactivator.h"
 
 class ZStackFrame;
 class ZInterface;
@@ -59,7 +61,7 @@ class ZStackDoc : public QObject, public ZReportable, public ZProgressable
   Q_OBJECT
 
 public:
-  ZStackDoc(ZStack *stack = 0);
+  ZStackDoc(ZStack *stack, QObject *parent);
   virtual ~ZStackDoc();
 
   enum TubeImportOption {
@@ -84,7 +86,16 @@ public:
 
   enum EActionItem {
     ACTION_MEASURE_SWC_NODE_LENGTH, ACTION_SWC_SUMMARIZE,
+    ACTION_CHNAGE_SWC_NODE_SIZE, ACTION_TRANSLATE_SWC_NODE,
+    ACTION_SET_SWC_ROOT, ACTION_INSERT_SWC_NODE,
+    ACTION_RESET_BRANCH_POINT, ACTION_SET_BRANCH_POINT,
+    ACTION_CONNECTED_ISOLATED_SWC,
+    ACTION_DELETE_SWC_NODE, ACTION_CONNECT_SWC_NODE,
+    ACTION_MERGE_SWC_NODE, ACTION_BREAK_SWC_NODE,
     ACTION_SELECT_DOWNSTREAM, ACTION_SELECT_UPSTREAM,
+    ACTION_SELECT_NEIGHBOR_SWC_NODE,
+    ACTION_SELECT_SWC_BRANCH, ACTION_SELECT_CONNECTED_SWC_NODE,
+    ACTION_SELECT_ALL_SWC_NODE,
     ACTION_CHANGE_SWC_TYPE, ACTION_CHANGE_SWC_SIZE, ACTION_REMOVE_TURN,
     ACTION_RESOLVE_CROSSOVER
   };
@@ -147,9 +158,19 @@ public: //attributes
   //void setStackMask(ZStack *stack);
 
   void createActions();
-  inline QAction* getAction(EActionItem item) {
+  inline QAction* getAction(EActionItem item) const {
     return m_actionMap[item];
   }
+
+  void updateSwcNodeAction();
+
+  /*
+  void createContextMenu();
+
+  inline QMenu* getSwcNodeContextMenu() {
+    return m_swcNodeContextMenu;
+  }
+  */
 
   bool isUndoClean();
 
@@ -503,8 +524,10 @@ public slots: //undoable commands
   bool executeSwcNodeChangeZCommand(double z);
   bool executeSwcNodeEstimateRadiusCommand();
   bool executeMoveSwcNodeCommand(double dx, double dy, double dz);
+  bool executeTranslateSelectedSwcNode();
   bool executeDeleteSwcNodeCommand();
   bool executeConnectSwcNodeCommand();
+  bool executeChangeSelectedSwcNodeSize();
   bool executeConnectSwcNodeCommand(Swc_Tree_Node *tn);
   bool executeConnectSwcNodeCommand(Swc_Tree_Node *tn1, Swc_Tree_Node *tn2);
   bool executeBreakSwcConnectionCommand();
@@ -517,6 +540,10 @@ public slots: //undoable commands
   bool executeSetRootCommand();
   bool executeRemoveTurnCommand();
   bool executeResolveCrossoverCommand();
+  bool executeInsertSwcNode();
+  bool executeSetBranchPoint();
+  bool executeConnectIsolatedSwc();
+  bool executeResetBranchPoint();
 
   bool executeBinarizeCommand(int thre);
   bool executeBwsolidCommand();
@@ -537,8 +564,19 @@ public slots:
   void selectTreeNode();
   void selectConnectedNode();
 
+  /*!
+   * \brief Select neighboring swc nodes.
+   *
+   * Add the neighbors of the current selected nodes into the selection set.
+   */
+  void selectNeighborSwcNode();
+
+  void showSeletedSwcNodeLength();
+
   void hideSelectedPuncta();
   void showSelectedPuncta();
+
+  void emptySlot();
 
 /*
 public:
@@ -635,6 +673,11 @@ private:
 
   //  Action map
   QMap<EActionItem, QAction*> m_actionMap;
+
+  //Context menu
+  //QMenu *m_swcNodeContextMenu;
+
+  ZSingleSwcNodeActionActivator m_singleSwcNodeActionActivator;
 
   //obsolete fields
   QList<ZLocsegChain*> m_chainList;

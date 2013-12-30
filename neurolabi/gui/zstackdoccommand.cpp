@@ -688,6 +688,30 @@ void ZStackDocCommand::SwcEdit::SetParent::undo()
   }
 }
 
+////////////////////////////////
+ZStackDocCommand::SwcEdit::SetSwcNodeSeletion::SetSwcNodeSeletion(
+    ZStackDoc *doc, const std::set<Swc_Tree_Node *> nodeSet,
+    QUndoCommand *parent) : QUndoCommand(parent), m_doc(doc), m_nodeSet(nodeSet)
+{
+}
+
+ZStackDocCommand::SwcEdit::SetSwcNodeSeletion::~SetSwcNodeSeletion()
+{
+}
+
+void ZStackDocCommand::SwcEdit::SetSwcNodeSeletion::redo()
+{
+  m_oldNodeSet = *(m_doc->selectedSwcTreeNodes());
+  m_doc->selectedSwcTreeNodes()->clear();
+  m_doc->setSwcTreeNodeSelected(m_nodeSet.begin(), m_nodeSet.end(), true);
+}
+
+void ZStackDocCommand::SwcEdit::SetSwcNodeSeletion::undo()
+{
+  m_doc->selectedSwcTreeNodes()->clear();
+  m_doc->setSwcTreeNodeSelected(m_oldNodeSet.begin(), m_oldNodeSet.end(), true);
+}
+
 //////////////
 ZStackDocCommand::SwcEdit::SwcTreeLabeTraceMask::SwcTreeLabeTraceMask(
     ZStackDoc *doc, Swc_Tree *tree, QUndoCommand *parent) :

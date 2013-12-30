@@ -16,7 +16,7 @@
    </font>
   </property>
   <property name="windowTitle">
-   <string>neuTube 0.77</string>
+   <string>neuTube 0.78</string>
   </property>
   <widget class="QWidget" name="centralwidget"/>
   <widget class="QMenuBar" name="menubar">
@@ -274,6 +274,7 @@
       </property>
       <addaction name="actionSynapse"/>
       <addaction name="actionSimilarity_Matrix"/>
+      <addaction name="actionDendrogram"/>
      </widget>
      <addaction name="actionExtract_Neuron"/>
      <addaction name="actionSkeletonization"/>
@@ -983,6 +984,11 @@
   <action name="actionSparse_objects">
    <property name="text">
     <string>Sparse objects</string>
+   </property>
+  </action>
+  <action name="actionDendrogram">
+   <property name="text">
+    <string>Dendrogram</string>
    </property>
   </action>
  </widget>
