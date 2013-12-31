@@ -125,6 +125,7 @@
 #include "tz_cuboid_i.h"
 #include "zswcglobalfeatureanalyzer.h"
 #include "zlogmessagereporter.h"
+#include "flyem/zflyembodyanalyzer.h"
 #include "swc/zswcresampler.h"
 #include "misc/miscutility.h"
 #include "test/zjsontest.h"
@@ -10101,7 +10102,7 @@ void ZTest::test(MainWindow *host)
   svgGenerator.write((GET_DATA_DIR + "/test.svg").c_str(), svgString);
 #endif
 
-#if 1
+#if 0
   std::string neuronNameFilePath = GET_DATA_DIR + "/flyem/TEM/class_name.txt";
   ZFlyEmDataBundle bundle;
   bundle.loadJsonFile(GET_DATA_DIR + "/flyem/TEM/data_release/bundle1/data_bundle.json");
@@ -10117,4 +10118,39 @@ void ZTest::test(MainWindow *host)
   stream.close();
 #endif
 
+#if 0
+  ZFlyEmBodyAnalyzer bodyAnalyzer;
+  ZObject3dScan obj;
+  obj.load(GET_DATA_DIR + "/flyem/FIB/skeletonization/session19/bodies/500k+/29.sobj");
+
+
+  //obj.downsampleMax(1, 1, 0);
+  //obj.save(GET_DATA_DIR + "/test.sobj");
+  bodyAnalyzer.setDownsampleInterval(1, 1, 0);
+
+  ZPointArray pts = bodyAnalyzer.computeHoleCenter(obj);
+  ZCuboid box = obj.getBoundBox();
+  ZPoint corner = box.firstCorner();
+  corner *= -1;
+  pts.translate(corner);
+  pts.exportSwcFile(GET_DATA_DIR + "/test.swc", 3.0);
+
+  pts.print();
+#endif
+
+#if 1
+  ZFlyEmBodyAnalyzer bodyAnalyzer;
+  ZObject3dScan obj;
+  obj.load(GET_DATA_DIR + "/flyem/FIB/skeletonization/session19/bodies/500k+/29.sobj");
+  bodyAnalyzer.setDownsampleInterval(1, 1, 1);
+
+  ZPointArray pts = bodyAnalyzer.computeTerminalPoint(obj);
+
+  ZCuboid box = obj.getBoundBox();
+  ZPoint corner = box.firstCorner();
+  corner *= -1;
+  pts.translate(corner);
+
+  pts.exportSwcFile(GET_DATA_DIR + "/test.swc", 3.0);
+#endif
 }

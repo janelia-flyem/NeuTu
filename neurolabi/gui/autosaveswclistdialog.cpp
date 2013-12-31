@@ -42,10 +42,10 @@ void AutosaveSwcListDialog::viewSwc(const QModelIndex &index)
 
     if (frame->readStack(fileName.toStdString().c_str()) == SUCCESS) {
       frame->open3DWindow(this->parentWidget());
-      delete frame;
     } else {
       std::cerr << "Cannot open " << fileName.toStdString() << std::endl;
     }
+    delete frame;
   }
 }
 

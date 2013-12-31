@@ -5940,6 +5940,7 @@ void ZStackDoc::bwthin()
       C_Stack::copyValue(out, stack()->c_stack(0));
       C_Stack::kill(out);
       m_progressReporter->advance(0.3);
+      stack()->deprecateSingleChannelView(0);
       emit stackModified();
     }
 
