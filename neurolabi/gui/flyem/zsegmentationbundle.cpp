@@ -26,21 +26,21 @@ void FlyEm::ZGalaPredictionEntry::loadJsonObject(json_t *obj)
   const char *key;
   json_t *value;
   json_object_foreach(obj, key, value) {
-    if (strcmp(key, "preserve") == 0) {
+    if (eqstr(key, "preserve")) {
       m_preserve = ZJsonParser::booleanValue(value);
-    } else if (strcmp(key, "false_edge") == 0) {
+    } else if (eqstr(key, "false_edge")) {
       m_falseEdge = ZJsonParser::booleanValue(value);
-    } else if (strcmp(key, "weight") == 0) {
+    } else if (eqstr(key, "weight")) {
       m_weight = ZJsonParser::numberValue(value);
-    } else if (strcmp(key, "size1") == 0) {
+    } else if (eqstr(key, "size1")) {
       m_size1 = ZJsonParser::integerValue(value);
-    } else if (strcmp(key, "size2") == 0) {
+    } else if (eqstr(key, "size2")) {
       m_size2 = ZJsonParser::integerValue(value);
-    } else if (strcmp(key, "node1") == 0) {
+    } else if (eqstr(key, "node1")) {
       m_node1 = ZJsonParser::integerValue(value);
-    } else if (strcmp(key, "node2") == 0) {
+    } else if (eqstr(key, "node2")) {
       m_node2 = ZJsonParser::integerValue(value);
-    } else if (strcmp(key, "location") == 0) {
+    } else if (eqstr(key, "location")) {
       for (int k = 0; k < 3; ++k) {
         m_location[k] = ZJsonParser::integerValue(value, k);
       }
@@ -210,7 +210,7 @@ void FlyEm::ZSegmentationBundle::compressBodyId(int startId)
 
 bool FlyEm::ZSegmentationBundle::isDeprecated(EComponent component) const
 {
-  bool state;
+  bool state = false;
 
   switch (component) {
   case GREY_SCALE_STACK:
@@ -1054,7 +1054,7 @@ const vector<double>& FlyEm::ZSegmentationBundle::getGalaProbability()
     json_t *value;
 
     ZJsonObject_foreach(rootObject, key, value) {
-      if (strcmp(key, "edge_list") == 0) {
+      if (eqstr(key, "edge_list")) {
         size_t edgeNumber = ZJsonParser::arraySize(value);
         m_galaProbability.resize(bodyGraph->size(), 0.0);
         for (size_t i = 0; i < edgeNumber; ++i) {
