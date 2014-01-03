@@ -1757,4 +1757,10 @@ std::vector<ZObject3dScan> ZObject3dScan::findHoleObjectArray()
   return objArray;
 }
 
+void ZObject3dScan::fillHole()
+{
+  ZObject3dScan holeObj = findHoleObject();
+  unify(holeObj);
+}
+
 ZINTERFACE_DEFINE_CLASS_NAME(ZObject3dScan)

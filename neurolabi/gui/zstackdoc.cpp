@@ -5832,7 +5832,7 @@ bool ZStackDoc::watershed()
   return false;
 }
 
-int ZStackDoc::findLoop()
+int ZStackDoc::findLoop(int minLoopSize)
 {
   int loopNumber = 0;
 
@@ -5844,8 +5844,12 @@ int ZStackDoc::findLoop()
     m_progressReporter->advance(0.1);
 
     Stack_Binarize(data);
+    Stack *filled = Stack_Fill_Hole_N(data, NULL, 1, 6, NULL);
+
     m_progressReporter->advance(0.1);
-    Stack *shrinked = Stack_Bwpeel(data, REMOVE_ARC, NULL);
+    Stack *shrinked = Stack_Bwpeel(filled, REMOVE_ARC, NULL);
+    C_Stack::kill(filled);
+
     m_progressReporter->advance(0.2);
 #ifdef _DEBUG_2
     const NeutubeConfig &config = NeutubeConfig::getInstance();
@@ -5855,7 +5859,7 @@ int ZStackDoc::findLoop()
     //m_progressReporter->update(40);
 
     ZStackGraph stackGraph;
-    ZGraph *graph = stackGraph.buildGraph(shrinked);
+    ZGraph *graph = stackGraph.buildForegroundGraph(shrinked);
 
     graph->setProgressReporter(m_progressReporter);
     m_progressReporter->advance(0.1);
@@ -5870,7 +5874,10 @@ int ZStackDoc::findLoop()
     graph->setProgressReporter(m_progressReporter);
     for (size_t i = 0; i < cycleArray.size(); ++i) {
       vector<int> path = cycleArray[i];
-      if (path.size() > 100) {
+#ifdef _DEBUG_
+      cout << "Cycle size: " << path.size() << endl;
+#endif
+      if ((int) path.size() >= minLoopSize) {
         ZObject3d *obj = new ZObject3d;
         for (vector<int>::const_iterator iter = path.begin(); iter != path.end();
              ++iter) {

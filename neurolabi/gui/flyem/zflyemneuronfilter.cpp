@@ -5,6 +5,7 @@
 #include "swctreenode.h"
 #include "zjsonarray.h"
 #include "zjsonparser.h"
+#include "tz_error.h"
 #include "swc/zswcterminalsurfacemetric.h"
 #include "swc/zswcterminalanglemetric.h"
 
@@ -136,21 +137,26 @@ bool ZFlyEmNeuronLayerFilter::isPassed(const ZFlyEmNeuron &neuron) const
     double topZ = getLayerStart(m_top);
     double bottomZ = getLayerEnd(m_bottom);
     const std::vector<Swc_Tree_Node*>& nodeArray = tree->getSwcTreeNodeArray();
-    for (std::vector<Swc_Tree_Node*>::const_iterator iter = nodeArray.begin();
-         iter != nodeArray.end(); ++iter) {
-      if (SwcTreeNode::z(*iter) >= topZ && SwcTreeNode::z(*iter) <= bottomZ) {
-        if (!m_isExclusive) {
-          return true;
+
+    if (!nodeArray.empty()) {
+      for (std::vector<Swc_Tree_Node*>::const_iterator
+           iter = REGULAR_SWC_NODE_BEGIN(nodeArray[0], nodeArray.begin());
+           iter != nodeArray.end(); ++iter) {
+        TZ_ASSERT(SwcTreeNode::isRegular(*iter), "Unexpected virtual node");
+        if (SwcTreeNode::z(*iter) >= topZ && SwcTreeNode::z(*iter) <= bottomZ) {
+          if (!m_isExclusive) {
+            return true;
+          }
+        }
+        if (m_isExclusive) {
+          if (SwcTreeNode::z(*iter) < topZ || SwcTreeNode::z(*iter) > bottomZ) {
+            return false;
+          }
         }
       }
       if (m_isExclusive) {
-        if (SwcTreeNode::z(*iter) < topZ || SwcTreeNode::z(*iter) > bottomZ) {
-          return false;
-        }
+        return true;
       }
-    }
-    if (m_isExclusive) {
-      return true;
     }
   }
 

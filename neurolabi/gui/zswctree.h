@@ -37,7 +37,7 @@ class ZSwcTrunkAnalyzer;
  *In neuTube, any node with negative ID will be treated as virtual. A virtual
  *node is not considered as a part of the tree model. It is introduced to
  *facilitate hosting multiple trees or handling specific data structure such as
- *binary trees. All normal operations should assume that only the root node can
+ *binary trees. All normal operations should assume that ONLY the root node can
  *be virtual. The children of a virtual root are called regular roots, because
  *each of them is the root of a real SWC tree.
 */
@@ -477,7 +477,7 @@ public:
   /*!
    * \brief Get the node array under a certain condition.
    *
-   * Only regular nodes are included.
+   * Only regular nodes are included for the Z_SORT_ITERATOR option.
    */
   const std::vector<Swc_Tree_Node*>& getSwcTreeNodeArray(
       EIteratorOption iteratorOption = DEPTH_FIRST_ITERATOR) const;
@@ -518,5 +518,8 @@ private:
   mutable std::vector<Swc_Tree_Node*> m_branchPointArray;
   mutable std::vector<Swc_Tree_Node*> m_zSortedArray;
 };
+
+#define REGULAR_SWC_NODE_BEGIN(tn, start) \
+  (Swc_Tree_Node_Is_Regular(tn) ? (start) : ((start) + 1))
 
 #endif /* _ZSWCTREE_H_ */

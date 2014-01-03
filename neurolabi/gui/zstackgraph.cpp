@@ -88,6 +88,22 @@ ZGraph* ZStackGraph::buildGraph(const Stack *stack)
   return graph;
 }
 
+ZGraph* ZStackGraph::buildForegroundGraph(const Stack *stack)
+{
+  if (stack == NULL) {
+    return NULL;
+  }
+
+  Stack *oldMask = m_workspace.signal_mask;
+
+  m_workspace.signal_mask = const_cast<Stack*>(stack);
+  ZGraph *graph = new ZGraph(Stack_Graph_W(stack, &m_workspace));
+
+  m_workspace.signal_mask = oldMask;
+
+  return graph;
+}
+
 std::vector<int> ZStackGraph::computeShortestPath(
     const Stack *stack, int startIndex, int endIndex)
 {

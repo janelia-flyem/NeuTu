@@ -146,7 +146,7 @@ void ZStackFile::retrieveAttribute(
 
 void ZStackFile::import(const string &filePath)
 {
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
   cout << "Importing " << filePath << endl;
 #endif
 

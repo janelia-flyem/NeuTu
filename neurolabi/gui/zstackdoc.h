@@ -276,7 +276,7 @@ public:
   bool enhanceLine();
   bool watershed();
   bool invert();
-  int findLoop();
+  int findLoop(int minLoopSize = 100);
   void bwthin();
 
   int maxIntesityDepth(int x, int y);

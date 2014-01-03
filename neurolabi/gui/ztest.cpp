@@ -9843,7 +9843,7 @@ void ZTest::test(MainWindow *host)
 #endif
 
 
-#if 0
+#if 1
   ZFlyEmDataBundle bundle;
   bundle.loadJsonFile(
         dataPath + "/flyem/TEM/data_release/bundle1/data_bundle.json");
@@ -9887,7 +9887,6 @@ void ZTest::test(MainWindow *host)
       subtree.setDataFromNode(root);
 
       if (subtree.length() * 2.0 > analyzer.getMinLength()) { //ignore small subtrees
-        /*
         ZString subtreePath = GET_DATA_DIR + "/test/subtree/decomposed/";
         subtreePath.appendNumber(++count, 5);
         subtreePath += "_";
@@ -9895,7 +9894,6 @@ void ZTest::test(MainWindow *host)
         subtreePath += ".swc";
         subtree.resortId();
         subtree.save(subtreePath);
-        */
 
         ZDoubleVector feature =
             ZSwcGlobalFeatureAnalyzer::computeFeatureSet(
@@ -10138,7 +10136,7 @@ void ZTest::test(MainWindow *host)
   pts.print();
 #endif
 
-#if 1
+#if 0
   ZFlyEmBodyAnalyzer bodyAnalyzer;
   ZObject3dScan obj;
   obj.load(GET_DATA_DIR + "/flyem/FIB/skeletonization/session19/bodies/500k+/29.sobj");

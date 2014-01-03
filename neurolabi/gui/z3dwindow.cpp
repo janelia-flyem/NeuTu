@@ -61,6 +61,7 @@
 #include "zswcglobalfeatureanalyzer.h"
 #include "misc/miscutility.h"
 #include "zstackdocmenufactory.h"
+#include "swc/zswcsubtreeanalyzer.h"
 
 class Sleeper : public QThread
 {
@@ -2268,6 +2269,17 @@ void Z3DWindow::changeSelectedSwcType()
           }
         }
         break;
+      case SwcTypeDialog::SUBTREE:
+      {
+        ZSwcSubtreeAnalyzer analyzer;
+        analyzer.setMinLength(10000.0);
+        for (std::set<ZSwcTree*>::iterator iter = treeSet->begin();
+             iter != treeSet->end(); ++iter) {
+          ZSwcTree *tree = *iter;
+          analyzer.decompose(tree);
+          tree->setTypeByLabel();
+        }
+      }
       default:
         break;
       }

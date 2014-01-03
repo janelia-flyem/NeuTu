@@ -292,6 +292,11 @@ public:
    */
   std::vector<ZObject3dScan> findHoleObjectArray();
 
+  /*!
+   * \brief Fill the holes of the object
+   */
+  void fillHole();
+
 private:
   std::vector<ZObject3dStripe> m_stripeArray;
   /*
