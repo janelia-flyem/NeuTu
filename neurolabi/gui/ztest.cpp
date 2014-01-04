@@ -125,6 +125,7 @@
 #include "tz_cuboid_i.h"
 #include "zswcglobalfeatureanalyzer.h"
 #include "zlogmessagereporter.h"
+#include "zerror.h"
 #include "flyem/zflyembodyanalyzer.h"
 #include "swc/zswcresampler.h"
 #include "misc/miscutility.h"
@@ -9843,7 +9844,7 @@ void ZTest::test(MainWindow *host)
 #endif
 
 
-#if 1
+#if 0
   ZFlyEmDataBundle bundle;
   bundle.loadJsonFile(
         dataPath + "/flyem/TEM/data_release/bundle1/data_bundle.json");
@@ -10150,5 +10151,10 @@ void ZTest::test(MainWindow *host)
   pts.translate(corner);
 
   pts.exportSwcFile(GET_DATA_DIR + "/test.swc", 3.0);
+#endif
+
+#if 1
+  RECORD_INFORMATION("Info test");
+  RECORD_WARNING_UNCOND("Warning test");
 #endif
 }

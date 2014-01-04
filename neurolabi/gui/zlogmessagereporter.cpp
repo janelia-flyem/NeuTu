@@ -22,12 +22,12 @@ void ZLogMessageReporter::report(
       break;
     case Warning:
       if (m_warnStream.is_open()) {
-        ZMessageReporter::report(m_infoStream, title, message, msgType);
+        ZMessageReporter::report(m_warnStream, title, message, msgType);
       }
       break;
     case Error:
       if (m_errorStream.is_open()) {
-        ZMessageReporter::report(m_infoStream, title, message, msgType);
+        ZMessageReporter::report(m_errorStream, title, message, msgType);
       }
       break;
     default:
