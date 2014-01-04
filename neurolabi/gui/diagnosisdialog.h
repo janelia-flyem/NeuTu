@@ -17,6 +17,9 @@ public:
 
   void scrollToBottom();
 
+public slots:
+  void scrollToBottom(int index);
+
 private:
   void loadErrorFile();
   void loadWarnFile();

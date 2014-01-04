@@ -1,35 +1,47 @@
 #include "zlogmessagereporter.h"
 #include <fstream>
 #include <iostream>
+#include "tz_utilities.h"
 
 ZLogMessageReporter::ZLogMessageReporter()
 {
+  m_maxFileSize = 1000000;
 }
 
 void ZLogMessageReporter::report(
     const std::string &title, const std::string &message, EMessageType msgType)
 {
-  std::ofstream stream;
-
   if (msgType == Debug) {
     ZMessageReporter::report(std::cout, title, message, msgType);
   } else {
     switch (msgType) {
     case Information:
-      stream.open(m_infoFile.c_str(), std::ios_base::out);
+      if (m_infoStream.is_open()) {
+        ZMessageReporter::report(m_infoStream, title, message, msgType);
+      }
       break;
     case Warning:
-      stream.open(m_warnFile.c_str(), std::ios_base::out | std::ios_base::app);
+      if (m_warnStream.is_open()) {
+        ZMessageReporter::report(m_infoStream, title, message, msgType);
+      }
       break;
     case Error:
-      stream.open(m_errorFile.c_str(), std::ios_base::out | std::ios_base::app);
+      if (m_errorStream.is_open()) {
+        ZMessageReporter::report(m_infoStream, title, message, msgType);
+      }
       break;
     default:
       break;
     }
-
-    ZMessageReporter::report(stream, title, message, msgType);
-
-     stream.close();
   }
 }
+
+void ZLogMessageReporter::setInfoFile(const std::string &f)
+{
+   m_infoFile = f;
+   if (fsize(f.c_str()) > m_maxFileSize) {
+     m_infoStream.open(m_infoFile.c_str(), std::ios_base::out);
+   } else {
+     m_infoStream.open(m_infoFile.c_str(), std::ios_base::app);
+   }
+ }

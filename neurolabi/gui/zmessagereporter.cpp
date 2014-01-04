@@ -43,7 +43,8 @@ void ZMessageReporter::report(std::ostream &stream,
                               EMessageType msgType)
 {
   time_t timer;
-  stream << "=====" << time(&timer) << "=====" << endl;
+  time(&timer);
+  stream << "========" << asctime(localtime(&timer));
   stream << "#" << m_count << ": ";
 
   switch (msgType) {

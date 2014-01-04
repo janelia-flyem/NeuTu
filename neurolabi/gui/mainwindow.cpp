@@ -48,7 +48,7 @@
 #include "regionexpanddialog.h"
 #include "neuroniddialog.h"
 #include "zcircle.h"
-
+#include "zerror.h"
 #include "tz_sp_grow.h"
 #include "tz_stack_bwmorph.h"
 #include "tz_stack_stat.h"
@@ -123,7 +123,8 @@ MainWindow::MainWindow(QWidget *parent) :
     m_frameInfoDlg(this),
     m_autosaveSwcDialog(this)
 {
-  std::cout << "Creating mainwindow ..." << std::endl;
+  //std::cout << "Creating mainwindow ..." << std::endl;
+  RECORD_INFORMATION("Creating mainwindow ...");
 
 #ifdef _DEBUG_2
   std::cout << NeutubeConfig::getInstance().getPath(NeutubeConfig::AUTO_SAVE)
@@ -161,14 +162,18 @@ MainWindow::MainWindow(QWidget *parent) :
   createUndoView();
 
   //create the rest of the window
-  std::cout << "Creating menus ..." << std::endl;
+  //std::cout << "Creating actions ..." << std::endl;
+  RECORD_INFORMATION("Creating actions ...");
   createActions();
-  std::cout << "Creating menus ......" << std::endl;
+  //std::cout << "Creating menus ......" << std::endl;
+  RECORD_INFORMATION("Creating menus ...");
   createMenus();
-  std::cout << "Creating menus ........." << std::endl;
+  RECORD_INFORMATION("Creating context menus ...");
+  //std::cout << "Creating menus ........." << std::endl;
   createContextMenu();
 
-  std::cout << "Creating toolbars ..." << std::endl;
+  //std::cout << "Creating toolbars ..." << std::endl;
+  RECORD_INFORMATION("Creating toolbars ...");
   createToolBars();
   createStatusBar();
 
@@ -189,6 +194,7 @@ MainWindow::MainWindow(QWidget *parent) :
   setAcceptDrops(true);
 
   // init openGL context
+  RECORD_INFORMATION("Initializing OpenGL context ...");
   QGLFormat format = QGLFormat();
   format.setAlpha(true);
   format.setDepth(true);
@@ -200,6 +206,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
   m_frameCount = 0;
 
+  RECORD_INFORMATION("Updating actions ...");
   createActionMap();
   setActionActivity();
   updateAction();
@@ -1704,12 +1711,15 @@ void MainWindow::setCurrentFile(const QString &fileName)
 void MainWindow::createAutoSaveDir()
 {
   if (NeutubeConfig::getInstance().isAutoSaveEnabled()) {
+#ifdef _DEBUG_
     std::cout << "Create autsave dir" << std::endl;
+#endif
 
     QString autoSaveDir =
         NeutubeConfig::getInstance().getPath(NeutubeConfig::AUTO_SAVE).c_str();
-
+#ifdef _DEBUG_
     std::cout << autoSaveDir.toStdString() << std::endl;
+#endif
 
     QDir dir(autoSaveDir);
     if (!dir.exists()) {
@@ -1725,6 +1735,7 @@ void MainWindow::createAutoSaveDir()
                    "Cannot create " + dlg.getAutosaveDir().toStdString() +
                    "Autosave will be disabled.",
                    ZMessageReporter::Information);
+            RECORD_WARNING_UNCOND("Faile to Create Autosave Directory");
           }
         }
 
@@ -3271,12 +3282,11 @@ void MainWindow::on_actionUpdate_Configuration_triggered()
 {
   NeutubeConfig &config = NeutubeConfig::getInstance();
   if (config.load(config.getConfigPath()) == false) {
-    std::cout << "Unable to load configuration: "
-              << config.getConfigPath() << std::endl;
+    RECORD_WARNING_UNCOND("Unable to load configuration: " + config.getConfigPath());
   } else {
     customizeActions();
   }
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
   config.print();
 #endif
 }
