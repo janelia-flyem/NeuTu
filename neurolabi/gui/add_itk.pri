@@ -76,8 +76,3 @@ CONFIG(debug, debug|release) {
     }
 }
 
-exists(../lib/hdf5/lib/libhdf5.a) {
-    DEFINES += _ENABLE_HDF5_
-    INCLUDEPATH += ../lib/hdf5/include
-    LIBS += -L../lib/hdf5/lib -lhdf5 -lz
-}
