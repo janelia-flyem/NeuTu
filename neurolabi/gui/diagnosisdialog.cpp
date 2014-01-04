@@ -16,6 +16,7 @@ DiagnosisDialog::DiagnosisDialog(QWidget *parent) :
   loadErrorFile();
   loadWarnFile();
   loadInfoFile();
+  connect(ui->tabWidget, SIGNAL(currentChanged(int)), SLOT(scrollToBottom(int)));
 }
 
 DiagnosisDialog::~DiagnosisDialog()
@@ -47,6 +48,26 @@ void DiagnosisDialog::loadInfoFile()
   if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
     ui->infoTextBrowser->setPlainText(QTextStream(&file).readAll());
     file.close();
+  }
+}
+
+void DiagnosisDialog::scrollToBottom(int index)
+{
+  switch (index) {
+  case 0:
+    ui->errorTextBrowser->verticalScrollBar()->setValue(
+          ui->errorTextBrowser->verticalScrollBar()->maximum());
+    break;
+  case 1:
+    ui->warnTextBrowser->verticalScrollBar()->setValue(
+          ui->warnTextBrowser->verticalScrollBar()->maximum());
+    break;
+  case 2:
+    ui->infoTextBrowser->verticalScrollBar()->setValue(
+          ui->infoTextBrowser->verticalScrollBar()->maximum());
+    break;
+  default:
+    break;
   }
 }
 
