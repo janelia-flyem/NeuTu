@@ -94,7 +94,8 @@ unix:!macx {
       -lpthread \
       -lGL -lrt -lGLU
 
-  exists(/usr/include/gnu/stubs-64.h) {
+  ARCH = $$system(uname -a | sed 's/.*x86_64.*/x86_64/')
+  contains($$ARCH, x86_64) {
     QMAKE_CXXFLAGS += -m64
   }
   RC_FILE = images/app.icns
