@@ -1,3 +1,4 @@
+#include "zglew.h"
 #include "z3dtexture.h"
 #include "QsLog.h"
 #include "z3dgpuinfo.h"

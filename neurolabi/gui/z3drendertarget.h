@@ -1,9 +1,11 @@
 #ifndef Z3DRENDERTARGET_H
 #define Z3DRENDERTARGET_H
 
-#include "z3dtexture.h"
 #include <map>
 #include <set>
+#include "z3dgl.h"
+
+class Z3DTexture;
 
 class Z3DRenderTarget
 {

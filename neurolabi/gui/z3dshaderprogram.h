@@ -1,7 +1,6 @@
 #ifndef Z3DSHADERPROGRAM_H
 #define Z3DSHADERPROGRAM_H
 
-#include "z3dgl.h"
 #include <QGLShaderProgram>
 #include "zglmutils.h"
 #include "z3dtexture.h"

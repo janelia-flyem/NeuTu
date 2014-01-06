@@ -1,7 +1,6 @@
 #ifndef Z3DGPUINFO_H
 #define Z3DGPUINFO_H
 
-#include "z3dgl.h"
 #include <QString>
 
 // This class provides information about the GPU

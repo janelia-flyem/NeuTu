@@ -15,6 +15,7 @@
 
 #include "z3dpickingmanager.h"
 
+#include "z3dtexture.h"
 #include "QsLog.h"
 #include "z3drendertarget.h"
 #include <QApplication>

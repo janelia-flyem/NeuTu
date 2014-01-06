@@ -1,3 +1,4 @@
+#include "zglew.h"
 #include "z3dfontrenderer.h"
 #include "z3dapplication.h"
 #include <QDir>
