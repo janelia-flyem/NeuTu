@@ -299,7 +299,8 @@ void NeutubeConfig::MainWindowConfig::loadXmlNode(const ZXmlNode *node)
 
 NeutubeConfig::Z3DWindowConfig::Z3DWindowConfig() : m_isUtilsOn(true),
   m_isVolumeOn(true), m_isGraphOn(true), m_isSwcsOn(true), m_isTubesOn(true),
-  m_isPunctaOn(true), m_isMeshOn(true), m_isTensorOn(true), m_isAxisOn(true)
+  m_isPunctaOn(true), m_isMeshOn(true), m_isTensorOn(true), m_isAxisOn(true),
+  m_isBackgroundOn(true)
 {
 }
 
@@ -360,6 +361,20 @@ void NeutubeConfig::Z3DWindowConfig::loadXmlNode(const ZXmlNode *node)
     enableMesh(childNode.getAttribute("status") != "off");
   } else {
     enableMesh(true);
+  }
+
+  childNode = node->queryNode("Background");
+  if (!childNode.empty()) {
+    enableBackground(childNode.getAttribute("status") != "off");
+  } else {
+    enableBackground(true);
+  }
+
+  childNode = node->queryNode("Axis");
+  if (!childNode.empty()) {
+    enableAxis(childNode.getAttribute("status") != "off");
+  } else {
+    enableAxis(true);
   }
 }
 

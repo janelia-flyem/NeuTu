@@ -1179,6 +1179,9 @@ Z3DWindow* ZStackFrame::open3DWindow(QWidget *parent, Z3DWindow::EInitMode mode)
       if (NeutubeConfig::getInstance().getApplication() == "Biocytin") {
         m_3dWindow->getCompositor()->setBackgroundFirstColor(glm::vec3(1, 1, 1));
         m_3dWindow->getCompositor()->setBackgroundSecondColor(glm::vec3(1, 1, 1));
+        if (!NeutubeConfig::getInstance().getZ3DWindowConfig().isBackgroundOn()) {
+          m_3dWindow->getCompositor()->setShowBackground(false);
+        }
       }
     }
 
