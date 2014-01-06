@@ -2172,8 +2172,11 @@ void ZStackPresenter::updateCursor()
     buddyView()->setScreenCursor(Qt::SizeBDiagCursor);
   } else if (this->interactiveContext().strokeEditMode() ==
              ZInteractiveContext::STROKE_DRAW) {
+    buddyView()->setScreenCursor(Qt::CrossCursor);
+    /*
     buddyView()->setScreenCursor(
           ZCursorStore::getInstance().getSmallCrossCursor());
+          */
     //buddyView()->setScreenCursor(Qt::PointingHandCursor);
   } else {
     buddyView()->setScreenCursor(Qt::CrossCursor);
