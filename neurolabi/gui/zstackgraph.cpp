@@ -105,12 +105,18 @@ ZGraph* ZStackGraph::buildForegroundGraph(const Stack *stack)
 }
 
 std::vector<int> ZStackGraph::computeShortestPath(
-    const Stack *stack, int startIndex, int endIndex)
+    const Stack *stack, int startIndex, int endIndex, bool fgOnly)
 {
   updateRange(startIndex, endIndex, C_Stack::width(stack),
               C_Stack::height(stack), C_Stack::depth(stack));
 
-  ZGraph *graph = buildGraph(stack);
+  ZGraph *graph = NULL;
+
+  if (fgOnly) {
+    graph = buildForegroundGraph(stack);
+  } else {
+    graph = buildGraph(stack);
+  }
 
   int swidth = m_workspace.range[1] - m_workspace.range[0] + 1;
   int sarea = swidth * (m_workspace.range[3] - m_workspace.range[2] + 1);

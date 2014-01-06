@@ -59,7 +59,7 @@ void ZSwcPositionAdjuster::adjustPosition(ZSwcPath &swcPath)
     }
 
     std::vector<int> path = stackGraph.computeShortestPath(
-          m_signal, sourceIndex, targetIndex);
+          m_signal, sourceIndex, targetIndex, true);
 
     if (path.size() > 1) {
       ZVoxelArray voxelArray;
