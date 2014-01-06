@@ -127,6 +127,8 @@ ZStackDoc::ZStackDoc(ZStack *stack, QObject *parent) : QObject(parent)
 
   createActions();
   //createContextMenu();
+
+  setTag(NeuTube::Document::NORMAL);
 }
 
 ZStackDoc::~ZStackDoc()

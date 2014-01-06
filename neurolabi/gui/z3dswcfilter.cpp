@@ -47,7 +47,7 @@ Z3DSwcFilter::Z3DSwcFilter()
 
 
   // rendering primitive
-  m_renderingPrimitive.addOptions("Normal", "Line", "Sphere", "Cylinder");
+  m_renderingPrimitive.addOptions("Normal", "Line", "Sphere");
   m_renderingPrimitive.select("Sphere");
 
   const NeutubeConfig::Z3DWindowConfig::SwcTabConfig &config =
