@@ -468,6 +468,10 @@ public: /* puncta related methods */
   void updateModelData(EDocumentDataType type);
 
 public:
+  inline NeuTube::Document::ETag getTag() const { return m_tag; }
+  inline void setTag(NeuTube::Document::ETag tag) { m_tag = tag; }
+
+public:
   inline void deprecateTraceMask() { m_isTraceMaskObsolete = true; }
   void updateTraceWorkspace(int traceEffort, bool traceMasked,
                             double xRes, double yRes, double zRes);
@@ -685,6 +689,8 @@ private:
   std::set<ZLocsegChain*> m_selectedChains;
   ZLocsegChain *m_masterChain;
   QString m_badChainScreen;
+
+  NeuTube::Document::ETag m_tag;
 };
 
 //   template  //

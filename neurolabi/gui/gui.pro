@@ -353,7 +353,8 @@ HEADERS += mainwindow.h \
     zswccurvaturefeatureanalyzer.h \
     zstackdoc.h \
     zstackdocmenustore.h \
-    zstackdocmenufactory.h
+    zstackdocmenufactory.h \
+    zglew.h
 
 FORMS += settingdialog.ui \
     frameinfodialog.ui \

@@ -1,3 +1,4 @@
+#include "zglew.h"
 #include "z3dcompositor.h"
 
 #include "z3dtexture.h"

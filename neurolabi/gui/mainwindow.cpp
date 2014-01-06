@@ -1,6 +1,5 @@
 #include "mainwindow.h"
 
-#include "z3dgl.h"
 #include <QtGui>
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
 #include <QtWidgets>
@@ -3895,6 +3894,7 @@ void MainWindow::on_actionMake_Projection_triggered()
         ZStackFrame *newFrame = new ZStackFrame;
         newFrame->setParentFrame(frame);
         newFrame->loadStack(stack);
+        newFrame->document()->setTag(NeuTube::Document::BIOCYTIN_PROJECTION);
         addStackFrame(newFrame);
         //stretchStackFrame(newFrame);
         presentStackFrame(newFrame);

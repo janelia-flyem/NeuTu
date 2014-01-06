@@ -53,6 +53,7 @@ ZStackPresenter::ZStackPresenter(ZStackFrame *parent) : QObject(parent),
   m_activeDecorationList.push_back(&m_stroke);
 
   m_swcNodeContextMenu = NULL;
+  m_strokePaintContextMenu = NULL;
   createActions();
 }
 
@@ -239,6 +240,22 @@ void ZStackPresenter::createSwcActions()
         m_actionMap[ACTION_CONNECT_TO_SWC_NODE], true);
 }
 
+void ZStackPresenter::createStrokeActions()
+{
+  m_paintStrokeAction = new QAction(tr("Paint Mask"), this);
+  m_paintStrokeAction->setShortcut(tr("Ctrl+R"));
+  connect(m_paintStrokeAction, SIGNAL(triggered()),
+          this, SLOT(tryPaintStrokeMode()));
+  m_actionMap[ACTION_PAINT_STROKE] = m_paintStrokeAction;
+
+  m_eraseStrokeAction = new QAction(tr("Erase Mask"), this);
+  m_eraseStrokeAction->setShortcut(tr("Ctrl+E"));
+  connect(m_eraseStrokeAction, SIGNAL(triggered()),
+          this, SLOT(tryEraseStrokeMode()));
+  m_actionMap[ACTION_ERASE_STROKE] = m_eraseStrokeAction;
+
+}
+
 void ZStackPresenter::createActions()
 {
   m_deleteSelectedAction = new QAction(tr("Delete Selected Object"), this);
@@ -261,6 +278,7 @@ void ZStackPresenter::createActions()
   createSwcActions();
   createTraceActions();
   createTubeActions();
+  createStrokeActions();
 }
 
 void ZStackPresenter::createSwcNodeContextMenu()
@@ -283,6 +301,23 @@ QMenu* ZStackPresenter::getSwcNodeContextMenu()
   return m_swcNodeContextMenu;
 }
 
+void ZStackPresenter::createStrokeContextMenu()
+{
+  if (m_strokePaintContextMenu == NULL) {
+    m_strokePaintContextMenu =
+        ZStackDocMenuFactory::makeSrokePaintContextMenu(this);
+  }
+}
+
+QMenu* ZStackPresenter::getStrokeContextMenu()
+{
+  if (m_strokePaintContextMenu == NULL) {
+    createStrokeContextMenu();
+  }
+
+  return m_strokePaintContextMenu;
+}
+
 ZStackPresenter::~ZStackPresenter()
 {
   foreach(ZStackDrawable *decoration, m_decorationList) {
@@ -292,6 +327,7 @@ ZStackPresenter::~ZStackPresenter()
   m_decorationList.clear();
 
   delete m_swcNodeContextMenu;
+  delete m_strokePaintContextMenu;
 }
 
 void ZStackPresenter::turnOnStroke()
@@ -727,6 +763,11 @@ ZStackPresenter::processMouseReleaseForSwc(
       if (buddyDocument()->hasSelectedSwcNode()) {
         buddyView()->showContextMenu(getSwcNodeContextMenu(), event->pos());
         status = CONTEXT_MENU_POPPED;
+      } else {
+        if (buddyDocument()->getTag() == NeuTube::Document::BIOCYTIN_PROJECTION) {
+          buddyView()->showContextMenu(getStrokeContextMenu(), event->pos());
+          status = CONTEXT_MENU_POPPED;
+        }
       }
     } else {
       if (isStrokeOn()) {
@@ -1208,7 +1249,9 @@ bool ZStackPresenter::processKeyPressEventForSwc(QKeyEvent *event)
 #endif
 
     if (isStrokeOff()) {
-      taken = buddyDocument()->executeSwcNodeChangeSizeCommand(-0.5);
+      if (event->modifiers() != Qt::ControlModifier) {
+        taken = buddyDocument()->executeSwcNodeChangeSizeCommand(-0.5);
+      }
     }
 
     break;
@@ -1229,7 +1272,9 @@ bool ZStackPresenter::processKeyPressEventForSwc(QKeyEvent *event)
     }
 #endif
     if (isStrokeOff()) {
-      taken = buddyDocument()->executeSwcNodeChangeSizeCommand(0.5);
+      if (event->modifiers() != Qt::ControlModifier) {
+        taken = buddyDocument()->executeSwcNodeChangeSizeCommand(0.5);
+      }
     }
     break;
   default:
@@ -1261,10 +1306,14 @@ bool ZStackPresenter::processKeyPressEventForStroke(QKeyEvent *event)
     }
     break;
 #endif
+#if 1
   case Qt::Key_R:
     if (event->modifiers() == Qt::ControlModifier) {
-      QPoint pos = mapFromGlobalToStack(QCursor::pos());
-      tryDrawStrokeMode(pos.x(), pos.y(), false);
+      if (m_paintStrokeAction->isEnabled()) {
+        m_paintStrokeAction->trigger();
+      }
+      //QPoint pos = mapFromGlobalToStack(QCursor::pos());
+      //tryDrawStrokeMode(pos.x(), pos.y(), false);
       /*
       if (interactiveContext().swcEditMode() == ZInteractiveContext::SWC_EDIT_OFF ||
           interactiveContext().swcEditMode() == ZInteractiveContext::SWC_EDIT_SELECT ||
@@ -1278,8 +1327,11 @@ bool ZStackPresenter::processKeyPressEventForStroke(QKeyEvent *event)
     break;
   case Qt::Key_E:
     if (event->modifiers() == Qt::ControlModifier) {
-      QPoint pos = mapFromGlobalToStack(QCursor::pos());
-      tryDrawStrokeMode(pos.x(), pos.y(), true);
+      if (m_eraseStrokeAction->isEnabled()) {
+        m_eraseStrokeAction->trigger();
+      }
+      //QPoint pos = mapFromGlobalToStack(QCursor::pos());
+      //tryDrawStrokeMode(pos.x(), pos.y(), true);
       /*
       if (interactiveContext().swcEditMode() == ZInteractiveContext::SWC_EDIT_OFF ||
           interactiveContext().swcEditMode() == ZInteractiveContext::SWC_EDIT_SELECT ||
@@ -1291,6 +1343,7 @@ bool ZStackPresenter::processKeyPressEventForStroke(QKeyEvent *event)
       */
     }
     break;
+#endif
   default:
     break;
   }
@@ -1439,7 +1492,8 @@ void ZStackPresenter::processKeyPressEvent(QKeyEvent *event)
   case Qt::Key_Escape:
     m_interactiveContext.setSwcEditMode(ZInteractiveContext::SWC_EDIT_SELECT);
     m_interactiveContext.setTubeEditMode(ZInteractiveContext::TUBE_EDIT_OFF);
-    turnOffStroke();
+    //turnOffStroke();
+    exitStrokeEdit();
     updateCursor();
     break;
 
@@ -1892,6 +1946,7 @@ void ZStackPresenter::enterSwcExtendMode()
     m_stroke.set(SwcTreeNode::x(tn), SwcTreeNode::y(tn));
     m_stroke.setWidth(SwcTreeNode::radius(tn) * 2.0);
     turnOnStroke();
+    m_stroke.setTarget(ZStackDrawable::WIDGET);
     interactiveContext().setSwcEditMode(ZInteractiveContext::SWC_EDIT_EXTEND);
     updateCursor();
   }
@@ -1905,6 +1960,7 @@ void ZStackPresenter::enterSwcSmartExtendMode()
     m_stroke.set(SwcTreeNode::x(tn), SwcTreeNode::y(tn));
     m_stroke.setWidth(SwcTreeNode::radius(tn) * 2.0);
     turnOnStroke();
+    m_stroke.setTarget(ZStackDrawable::WIDGET);
     interactiveContext().setSwcEditMode(ZInteractiveContext::SWC_EDIT_SMART_EXTEND);
     updateCursor();
   }
@@ -1930,6 +1986,18 @@ void ZStackPresenter::trySwcAddNodeMode(double x, double y)
       ZInteractiveContext::STROKE_DRAW) {
     enterSwcAddNodeMode(x, y);
   }
+}
+
+void ZStackPresenter::tryPaintStrokeMode()
+{
+  QPoint pos = mapFromGlobalToStack(QCursor::pos());
+  tryDrawStrokeMode(pos.x(), pos.y(), false);
+}
+
+void ZStackPresenter::tryEraseStrokeMode()
+{
+  QPoint pos = mapFromGlobalToStack(QCursor::pos());
+  tryDrawStrokeMode(pos.x(), pos.y(), true);
 }
 
 void ZStackPresenter::tryDrawStrokeMode(double x, double y, bool isEraser)

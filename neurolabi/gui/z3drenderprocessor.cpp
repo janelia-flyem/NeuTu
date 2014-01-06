@@ -1,3 +1,4 @@
+#include "zglew.h"
 #include "z3drenderprocessor.h"
 
 #include "z3dshaderprogram.h"
