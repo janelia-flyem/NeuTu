@@ -6,9 +6,9 @@ TEMPLATE = app
 #Build neurolabi
 neurolabi.target = neurolabi
 CONFIG(debug, debug|release) {
-neurolabi.commands = @echo "building neurolabi"; cd $${PWD}/../c; make lib VERSION=
+    neurolabi.commands = @echo "building neurolabi"; cd $${PWD}/../c; make lib VERSION=
 } else {
-neurolabi.commands = @echo "building neurolabi"; cd $${PWD}/../c; make release VERSION=
+    neurolabi.commands = @echo "building neurolabi"; cd $${PWD}/../c; make release VERSION=
 }
 QMAKE_EXTRA_TARGETS += neurolabi
 ###################
