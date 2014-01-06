@@ -91,7 +91,8 @@ public:
 
   //untested
   std::vector<int> computeShortestPath(const Stack *stack,
-                                       int startIndex, int endIndex);
+                                       int startIndex, int endIndex,
+                                       bool fgOnly = false);
 
   //untested
   void updateRange(size_t startIndex, size_t endIndex,

@@ -3946,7 +3946,6 @@ void MainWindow::on_actionMask_SWC_triggered()
         progressDlg->setLabelText("Making SWC ...");
         progressDlg->setRange(0, 100);
         QProgressBar *bar = getProgressBar();
-
         ZQtBarProgressReporter reporter;
         reporter.setProgressBar(bar);
 
