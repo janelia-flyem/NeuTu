@@ -2163,8 +2163,11 @@ void ZStackPresenter::updateCursor()
     buddyView()->setScreenCursor(Qt::ClosedHandCursor);
   } else if (interactiveContext().swcEditMode() ==
              ZInteractiveContext::SWC_EDIT_ADD_NODE){
+    buddyView()->setScreenCursor(Qt::CrossCursor);
+    /*
     buddyView()->setScreenCursor(
           ZCursorStore::getInstance().getSmallCrossCursor());
+          */
   } else if (this->interactiveContext().tubeEditMode() ==
              ZInteractiveContext::TUBE_EDIT_HOOK ||
              interactiveContext().swcEditMode() ==
