@@ -319,6 +319,10 @@ void Z3DWindow::init(EInitMode mode)
   connect(getInteractionHandler(), SIGNAL(objectsMoved(double,double,double)), this,
           SLOT(moveSelectedObjects(double,double,double)));
 
+  if (!NeutubeConfig::getInstance().getZ3DWindowConfig().isAxisOn()) {
+    m_axis->setVisible(false);
+  }
+
   //  // if have image, try black background
   //  if (channelNumber() > 0) {
   //    m_background->setFirstColor(glm::vec3(0.f));

@@ -68,6 +68,7 @@ public:
   inline Z3DGraphFilter* getGraphFilter() { return m_graphFilter; }
   inline Z3DCompositor* getCompositor() { return m_compositor; }
   inline Z3DVolumeSource *getVolumeSource() { return m_volumeSource; }
+  inline Z3DAxis *getAxis() { return m_axis; }
   const std::vector<double>& getBoundBox() const { return m_boundBox; }
 
   void updateVolumeBoundBox();
