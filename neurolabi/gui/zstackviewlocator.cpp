@@ -22,7 +22,7 @@ int ZStackViewLocator::getZoomRatio(int viewPortWidth, int viewPortHeight) const
   int zoomRatio = 1;
 
   if (viewPortWidth > 0 && viewPortHeight > 0) {
-    std::min(m_canvasSize.width() / viewPortWidth,
+    zoomRatio = std::min(m_canvasSize.width() / viewPortWidth,
              m_canvasSize.height() / viewPortHeight);
     if (zoomRatio == 0) {
       zoomRatio = 1;
