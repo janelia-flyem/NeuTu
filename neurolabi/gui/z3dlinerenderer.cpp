@@ -1,3 +1,4 @@
+#include "zglew.h"
 #include "z3dlinerenderer.h"
 #include "z3dgpuinfo.h"
 

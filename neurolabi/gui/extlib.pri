@@ -12,7 +12,7 @@ INCLUDEPATH += $${NEUROLABI_DIR}/gui \
 LIBS += -L$${NEUROLABI_DIR}/c/lib
 CONFIG(debug, debug|release) {
     DEFINES += _DEBUG_ _ADVANCED_ PROJECT_PATH=\"\\\"$$PWD\\\"\"
-    LIBS += -lneurolabi_debug
+    LIBS += -lneurolabi
 } else {
     DEFINES += _ADVANCED_
     LIBS += -lneurolabi

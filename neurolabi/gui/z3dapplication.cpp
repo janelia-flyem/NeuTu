@@ -1,5 +1,6 @@
 #include "z3dapplication.h"
 
+#include "zglew.h"
 #include "QsLog.h"
 #include "z3dshaderprogram.h"
 #include "z3dgpuinfo.h"

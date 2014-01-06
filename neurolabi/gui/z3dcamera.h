@@ -1,8 +1,8 @@
 #ifndef Z3DCAMERA_H
 #define Z3DCAMERA_H
 
-#include "zglmutils.h"
 #include "z3dgl.h"
+#include "zglmutils.h"
 #include <map>
 #include <QFlags>
 

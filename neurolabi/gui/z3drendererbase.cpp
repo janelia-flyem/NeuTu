@@ -1,3 +1,4 @@
+#include "zglew.h"
 #include "z3drendererbase.h"
 
 #include "z3dprimitiverenderer.h"
