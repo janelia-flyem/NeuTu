@@ -100,6 +100,7 @@ void ZProcessProgressBase::registerOperation(void *reporter, double weight)
   m_processToProgress[reporter] = 0.0;
 }
 
+
 #ifdef _USE_ITK_
 void ZProcessProgressBase::registerOperation(itk::ProcessObject *filter, double weight)
 {

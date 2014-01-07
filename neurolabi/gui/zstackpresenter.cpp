@@ -609,8 +609,12 @@ ZStackPresenter::processMouseReleaseForTube(
 
   EMouseEventProcessStatus status = MOUSE_EVENT_PASSED;
 
+#if 1
+  /*
   int id = buddyDocument()->pickLocsegChainId(positionInStack[0],
       positionInStack[1], positionInStack[2]);
+  */
+  int id = -1;
 
   if (id >= 0) {
     bool showProfile = false;
@@ -734,6 +738,7 @@ ZStackPresenter::processMouseReleaseForTube(
       }
     }
   }
+#endif
 
   return status;
 }
