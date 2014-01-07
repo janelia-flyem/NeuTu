@@ -27,6 +27,18 @@ void ZPointArray::exportSwcFile(const std::string &filePath, double radius) cons
   stream.close();
 }
 
+void ZPointArray::exportTxtFile(const std::string &filePath) const
+{
+    std::ofstream stream(filePath.c_str());
+
+    for (size_t i = 0; i < size(); ++i) {
+        const ZPoint &pt = (*this)[i];
+        stream << pt.x() << " " << pt.y() << " " << pt.z() << std::endl;
+    }
+
+    stream.close();
+}
+
 void ZPointArray::print() const
 {
   for (size_t i = 0; i < size(); ++i) {

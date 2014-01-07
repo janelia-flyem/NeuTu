@@ -3014,13 +3014,13 @@ Stack *Stack_Bwpeel(const Stack *stack, Stack_Bwpeel_Option_t option,
   int changed = 6; /* six borders */
   while (changed) { /* any border has been changed */
     changed = 6;
-    list_length = 0;
     int border;
     int twice_width = out->width * 2;
     for (border = 0; border < 6; ++border) {
       /* For each voxel in the stack */
       size_t index = area + out->width + 1;
       int x, y, z;
+      list_length = 0;
       for (z = 1; z < cdepth; ++z) {
         for (y = 1; y < cheight; ++y) {
           for (x = 1; x <cwidth; ++x) {
@@ -3028,6 +3028,9 @@ Stack *Stack_Bwpeel(const Stack *stack, Stack_Bwpeel_Option_t option,
             if (stack_bwthin_is_candidate_voxel(out, index, x, y, z, border, 
                   option)) {
               checklist[list_length++] = index;
+#ifdef _DEBUG_2
+              printf("list length: %d\n", (int) list_length);
+#endif
             }
 
             ++index;
@@ -3078,11 +3081,12 @@ Stack *Stack_Bwpeel(const Stack *stack, Stack_Bwpeel_Option_t option,
     }
   }
 
+  /* free <checklist> */
+  free(checklist);
+
   Stack *out2 = Crop_Stack(out, 1, 1, 1, stack->width, stack->height, 
       stack->depth, NULL); 
 
-  /* free <checklist> */
-  free(checklist);
   Kill_Stack(out);
 
   return out2;

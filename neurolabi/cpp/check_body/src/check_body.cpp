@@ -139,8 +139,21 @@ int main(int argc, char *argv[])
           pts.translate(corner);
         }
 
-        pts.exportSwcFile(ZArgumentProcessor::getStringArg("-o"), 3.0);
-        cout << ZArgumentProcessor::getStringArg("-o") << " saved." << endl;
+        std::string output = ZArgumentProcessor::getStringArg("-o");
+        switch (ZFileType::fileType(output)) {
+        case ZFileType::SWC_FILE:
+            pts.exportSwcFile(output, 3.0);
+            break;
+        case ZFileType::JSON_FILE:
+            pts.exportJsonFile(output);
+            break;
+        default:
+            cout << "Unknown output format. Saved as csv file" << endl;
+            pts.exportCsvFile(output);
+            break;
+        }
+
+        cout << output << " saved." << endl;
       } else {
         cout << "No landmark found." << endl;
         return 0;
