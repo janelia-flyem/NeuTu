@@ -9994,7 +9994,7 @@ void ZTest::test(MainWindow *host)
   json_dump_file(bigObj, (dataPath + "/500k_100k.json").c_str(), JSON_INDENT(2));
 #endif
 
-#if 1
+#if 0
   ZMatrix mat;
   mat.importTextFile(GET_DATA_DIR + "/test/subtree/fuzzy_cluster_feature.txt");
 
@@ -10156,5 +10156,17 @@ void ZTest::test(MainWindow *host)
 #if 0
   RECORD_INFORMATION("Info test");
   RECORD_WARNING_UNCOND("Warning test");
+#endif
+
+#if 1
+  ZSwcTree tree;
+  tree.load(GET_DATA_DIR + "/biocytin/bug_source1.swc");
+  ZSwcResampler resampler;
+
+  resampler.optimalDownsample(&tree);
+
+  tree.resortId();
+  //resampler.optimalDownsample(&tree);
+  tree.save(GET_DATA_DIR + "/test.swc");
 #endif
 }

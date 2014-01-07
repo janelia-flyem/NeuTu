@@ -4026,6 +4026,7 @@ void MainWindow::on_actionMask_SWC_triggered()
 
           skeletonizer.setConnectingBranch(true);
           skeletonizer.reconnect(wholeTree);
+
 #endif
           ZStackFrame *swcFrame = frame->getParentFrame();
           if (swcFrame == NULL) {
@@ -4056,10 +4057,17 @@ void MainWindow::on_actionMask_SWC_triggered()
             Biocytin::SwcProcessor::smoothRadius(wholeTree);
           }
 
+#ifdef _DEBUG_2
+        wholeTree->save(GET_DATA_DIR + "/test2.swc");
+#endif
+
           ZSwcResampler resampler;
           resampler.optimalDownsample(wholeTree);
           swcFrame->document()->blockSignals(false);
 
+#ifdef _DEBUG_2
+        wholeTree->save(GET_DATA_DIR + "/test3.swc");
+#endif
           swcFrame->document()->notifySwcModified();
 
           swcFrame->open3DWindow(this, Z3DWindow::EXCLUDE_VOLUME);
