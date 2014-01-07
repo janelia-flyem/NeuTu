@@ -1,3 +1,3 @@
 #include "zstackdrawable.h"
 
-const double ZStackDrawable::m_defaultPenWidth = 0.5;
+double ZStackDrawable::m_defaultPenWidth = 0.5;

@@ -146,12 +146,20 @@ public:
     return getAlpha() == 255;
   }
 
+  inline static void setDefaultPenWidth(double width) {
+      m_defaultPenWidth = width;
+  }
+
+  inline static double getDefaultPenWidth() {
+      return m_defaultPenWidth;
+  }
+
 protected:
   bool m_isVisible;
   Display_Style m_style;
   QColor m_color;
   ETarget m_target;
-  static const double m_defaultPenWidth;
+  static double m_defaultPenWidth;
 };
 
 #endif

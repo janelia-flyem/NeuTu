@@ -308,13 +308,19 @@ void ZSwcTree::display(QPainter &painter, int n, ZStackDrawable::Display_Style s
   const QColor branchPointFocusColor(0, 255, 0);
   const QColor nodeFocusColor(255, 0, 0);
 
-  painter.setPen(QPen(nodeFocusColor, strokeWidth));
+  QPen pen;
+  pen.setColor(nodeFocusColor);
+  pen.setWidth(strokeWidth);
+  //pen.setCosmetic(true);
+  painter.setPen(pen);
   painter.setBrush(Qt::NoBrush);
 
   //Draw skeletons
   for (const Swc_Tree_Node *tn = begin(); tn != end(); tn = next()) {
     if (!SwcTreeNode::isRoot(tn)) {
-      painter.setPen(QPen(planeSkeletonColor, strokeWidth / 2.0));
+      pen.setColor(planeSkeletonColor);
+      pen.setWidthF(strokeWidth / 2.0);
+      painter.setPen(pen);
       painter.drawLine(QPointF(SwcTreeNode::x(tn), SwcTreeNode::y(tn)),
                        QPointF(SwcTreeNode::x(SwcTreeNode::parent(tn)),
                                SwcTreeNode::y(SwcTreeNode::parent(tn))));
@@ -369,10 +375,13 @@ void ZSwcTree::display(QPainter &painter, int n, ZStackDrawable::Display_Style s
       if (visible) {
         const QColor lineTerminalColor(255, 255, 0, 164);
         const QColor lineColor(255, 0, 0, 164);
-        if (SwcTreeNode::isLeaf(tn) || SwcTreeNode::isRegularRoot(tn->parent))
-          painter.setPen(QPen(lineTerminalColor, strokeWidth));
-        else
-          painter.setPen(QPen(lineColor, strokeWidth));
+        pen.setWidthF(strokeWidth);
+        if (SwcTreeNode::isLeaf(tn) || SwcTreeNode::isRegularRoot(tn->parent)) {
+          pen.setColor(lineTerminalColor);
+        } else {
+          pen.setColor(lineColor);
+        }
+        painter.setPen(pen);
 
         painter.drawLine(lineStart, lineEnd);
       }
@@ -399,30 +408,29 @@ void ZSwcTree::display(QPainter &painter, int n, ZStackDrawable::Display_Style s
       }
     }
 
-    QPen nodePen;
-    nodePen.setWidthF(strokeWidth);
+    pen.setWidthF(strokeWidth);
 
     if (visible) {
       if (SwcTreeNode::isRoot(tn)) {
         if (focused) {
-          nodePen.setColor(rootFocusColor);
+          pen.setColor(rootFocusColor);
         } else {
-          nodePen.setColor(rootColor);
+          pen.setColor(rootColor);
         }
       } else if (SwcTreeNode::isBranchPoint(tn)) {
         if (focused) {
-          nodePen.setColor(branchPointFocusColor);
+          pen.setColor(branchPointFocusColor);
         } else {
-          nodePen.setColor(branchPointColor);
+          pen.setColor(branchPointColor);
         }
       } else {
         if (focused) {
-          nodePen.setColor(nodeFocusColor);
+          pen.setColor(nodeFocusColor);
         } else {
-          nodePen.setColor(nodeColor);
+          pen.setColor(nodeColor);
         }
       }
-      painter.setPen(nodePen);
+      painter.setPen(pen);
 
       switch (style) {
       case BOUNDARY:

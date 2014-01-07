@@ -356,7 +356,8 @@ HEADERS += mainwindow.h \
     zstackdoc.h \
     zstackdocmenustore.h \
     zstackdocmenufactory.h \
-    zglew.h
+    zglew.h \
+    penwidthdialog.h
 
 FORMS += settingdialog.ui \
     frameinfodialog.ui \
@@ -394,7 +395,8 @@ FORMS += settingdialog.ui \
     diagnosisdialog.ui \
     flyemdataexportdialog.ui \
     flyemgeosearchdialog.ui \
-    flyemgeofilterdialog.ui
+    flyemgeofilterdialog.ui \
+    penwidthdialog.ui
 SOURCES += main.cpp \
     mainwindow.cpp \
     zstackview.cpp \
@@ -565,7 +567,8 @@ SOURCES += main.cpp \
     zactionactivator.cpp \
     zswccurvaturefeatureanalyzer.cpp \
     zstackdocmenustore.cpp \
-    zstackdocmenufactory.cpp
+    zstackdocmenufactory.cpp \
+    penwidthdialog.cpp
 
 OTHER_FILES += \
     extlib.pri

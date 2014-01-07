@@ -1183,31 +1183,34 @@ bool ZStackPresenter::processKeyPressEventForSwc(QKeyEvent *event)
     taken = buddyDocument()->executeDeleteSwcNodeCommand();
     break;
   case Qt::Key_W:
-  {
-    double dy = -1;
-    if (event->modifiers() == Qt::ShiftModifier) {
-      dy *= 10;
+    if (event->modifiers() == Qt::NoModifier ||
+        event->modifiers() == Qt::ShiftModifier) {
+      double dy = -1;
+      if (event->modifiers() == Qt::ShiftModifier) {
+        dy *= 10;
+      }
+      taken = buddyDocument()->executeMoveSwcNodeCommand(0, dy, 0);
     }
-    taken = buddyDocument()->executeMoveSwcNodeCommand(0, dy, 0);
-  }
     break;
   case Qt::Key_A:
-  {
-    double dx = -1;
-    if (event->modifiers() == Qt::ShiftModifier) {
-      dx *= 10;
+    if (event->modifiers() == Qt::NoModifier ||
+        event->modifiers() == Qt::ShiftModifier) {
+      double dx = -1;
+      if (event->modifiers() == Qt::ShiftModifier) {
+        dx *= 10;
+      }
+      taken = buddyDocument()->executeMoveSwcNodeCommand(dx, 0, 0);
     }
-    taken = buddyDocument()->executeMoveSwcNodeCommand(dx, 0, 0);
-  }
     break;
   case Qt::Key_S:
-  {
-    double dy = 1;
-    if (event->modifiers() == Qt::ShiftModifier) {
-      dy *= 10;
+    if (event->modifiers() == Qt::NoModifier ||
+        event->modifiers() == Qt::ShiftModifier) {
+      double dy = 1;
+      if (event->modifiers() == Qt::ShiftModifier) {
+        dy *= 10;
+      }
+      taken = buddyDocument()->executeMoveSwcNodeCommand(0, dy, 0);
     }
-    taken = buddyDocument()->executeMoveSwcNodeCommand(0, dy, 0);
-  }
     break;
   case Qt::Key_D:
   {

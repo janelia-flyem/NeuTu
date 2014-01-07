@@ -110,6 +110,7 @@
 #include "diagnosisdialog.h"
 #include "swc/zswcresampler.h"
 #include "biocytin/zbiocytinfilenameparser.h"
+#include "penwidthdialog.h"
 
 #include "ztest.h"
 
@@ -189,6 +190,12 @@ MainWindow::MainWindow(QWidget *parent) :
 
   m_helpDlg = new HelpDialog(this);
   m_DiagnosisDlg = new DiagnosisDialog(this);
+  m_penWidthDialog = new PenWidthDialog(this);
+
+  if (GET_APPLICATION_NAME == "Biocytin") {
+    ZStackDrawable::setDefaultPenWidth(1.0);
+  }
+  m_penWidthDialog->setPenWidth(ZStackDrawable::getDefaultPenWidth());
 
   setAcceptDrops(true);
 
@@ -4206,4 +4213,17 @@ void MainWindow::on_actionDendrogram_triggered()
   svgGenerator.write((GET_DATA_DIR + "/flyem/TEM/cluster.svg").c_str(), svgString);
 
   std::cout << GET_DATA_DIR + "/flyem/TEM/cluster.svg" << std::endl;
+}
+
+void MainWindow::on_actionPen_Width_for_SWC_Display_triggered()
+{
+  if (m_penWidthDialog->exec()) {
+    ZStackDrawable::setDefaultPenWidth(m_penWidthDialog->getPenWidth());
+    foreach (QMdiSubWindow *subwindow, mdiArea->subWindowList()) {
+      ZStackFrame *frame = dynamic_cast<ZStackFrame*>(subwindow);
+      if (frame != NULL) {
+        frame->updateView();
+      }
+    }
+  }
 }
