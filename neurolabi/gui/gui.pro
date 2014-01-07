@@ -34,7 +34,7 @@ CONFIG += rtti exceptions
 CONFIG += static_glew
 CONFIG += static_gtest
 
-DEFINES += _QT_APPLICATION_ _QT_GUI_USED_ _NEUTUBE_ HAVE_CONFIG_H _ENABLE_DDP_ _ENABLE_WAVG_ GL_GLEXT_PROTOTYPES
+DEFINES += _QT_APPLICATION_ _QT_GUI_USED_ _NEUTUBE_ HAVE_CONFIG_H _ENABLE_DDP_ _ENABLE_WAVG_
 
 #Machine information
 HOSTNAME = $$system(echo $HOSTNAME)
@@ -85,8 +85,8 @@ CONFIG(debug, debug|release) {
 } # static gtest
 
 unix:!macx {
-  QMAKE_CXXFLAGS += -D_LINUX_
-  LIBS += -lQtGui -lQtCore \
+    QMAKE_CXXFLAGS += -D_LINUX_
+    LIBS += -lQtGui -lQtCore \
       -lQtOpenGL -lQtNetwork \
       -lQtGui \
       -lQtCore -lXt -lSM -lICE \
@@ -94,47 +94,47 @@ unix:!macx {
       -lpthread \
       -lGL -lrt -lGLU
 
-  ARCH = $$system(uname -a | sed 's/.*x86_64.*/x86_64/')
-  eval($$ARCH = x86_64) {
-    system(echo $$ARCH)
-    QMAKE_CXXFLAGS += -m64
-  }
-  RC_FILE = images/app.icns
+    message(Checking arch...)
+    contains(QMAKE_HOST.arch, x86_64) {
+        message($$QMAKE_HOST.arch)
+        QMAKE_CXXFLAGS += -m64
+    }
+    RC_FILE = images/app.icns
 }
 
 macx {
 #INCLUDEPATH += /usr/X11/include
 
-LIBS += -framework AppKit -framework IOKit \
-    -framework ApplicationServices \
-    -framework CoreFoundation
+    LIBS += -framework AppKit -framework IOKit \
+        -framework ApplicationServices \
+        -framework CoreFoundation
 
-ICON = images/app.icns
-QMAKE_INFO_PLIST = images/Info.plist
-QMAKE_CXXFLAGS += -m64
+    ICON = images/app.icns
+    QMAKE_INFO_PLIST = images/Info.plist
+    QMAKE_CXXFLAGS += -m64
 
-doc.files = doc
-doc.path = Contents/MacOS
-QMAKE_BUNDLE_DATA += doc
+    doc.files = doc
+    doc.path = Contents/MacOS
+    QMAKE_BUNDLE_DATA += doc
 
-config.files = config.xml
-config.path = Contents/MacOS
-QMAKE_BUNDLE_DATA += config
+    config.files = config.xml
+    config.path = Contents/MacOS
+    QMAKE_BUNDLE_DATA += config
 }
 
 win32 {
-INCLUDEPATH += C:/Mingw/include \
-    C:/Mingw/include/libxml2 \
-    C:/Qt/2010.05/mingw/include/libxml2
+    INCLUDEPATH += C:/Mingw/include \
+        C:/Mingw/include/libxml2 \
+        C:/Qt/2010.05/mingw/include/libxml2
 
-LIBS += -LC:/Mingw/lib \
-    -lfftw3 \
-    -lfftw3f \
-    -lxml2 \
-    -lpng \
-    -mwin32 -mthreads -lpcreposix -lpcre -ljansson -lpthread
+    LIBS += -LC:/Mingw/lib \
+        -lfftw3 \
+        -lfftw3f \
+        -lxml2 \
+        -lpng \
+        -mwin32 -mthreads -lpcreposix -lpcre -ljansson -lpthread
 
-RC_FILE = images/app.rc
+    RC_FILE = images/app.rc
 }
 
 QMAKE_CXXFLAGS += -Wno-deprecated
