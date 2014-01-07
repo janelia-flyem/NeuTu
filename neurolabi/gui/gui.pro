@@ -34,7 +34,7 @@ CONFIG += rtti exceptions
 CONFIG += static_glew
 CONFIG += static_gtest
 
-DEFINES += _QT_APPLICATION_ _QT_GUI_USED_ _NEUTUBE_ HAVE_CONFIG_H _ENABLE_DDP_ _ENABLE_WAVG_
+DEFINES += _QT_APPLICATION_ _QT_GUI_USED_ _NEUTUBE_ HAVE_CONFIG_H _ENABLE_DDP_ _ENABLE_WAVG_ GL_GLEXT_PROTOTYPES
 
 #Machine information
 HOSTNAME = $$system(echo $HOSTNAME)
@@ -96,6 +96,7 @@ unix:!macx {
 
   ARCH = $$system(uname -a | sed 's/.*x86_64.*/x86_64/')
   eval($$ARCH = x86_64) {
+    system(echo $$ARCH)
     QMAKE_CXXFLAGS += -m64
   }
   RC_FILE = images/app.icns
