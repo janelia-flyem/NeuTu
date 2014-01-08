@@ -762,8 +762,6 @@ ZStackPresenter::processMouseReleaseForSwc(
   if (event->button() == Qt::RightButton) {
     if (m_interactiveContext.isContextMenuActivated()) {
       buddyView()->rightMenu()->clear();
-      //addSwcEditFunctionToRightMenu();
-      //buddyView()->popRightMenu(event->pos());
 
       if (buddyDocument()->hasSelectedSwcNode()) {
         buddyView()->showContextMenu(getSwcNodeContextMenu(), event->pos());
@@ -778,15 +776,6 @@ ZStackPresenter::processMouseReleaseForSwc(
       if (isStrokeOn()) {
         turnOffStroke();
       }
-      /*
-      if (m_interactiveContext.swcEditMode() ==
-          ZInteractiveContext::SWC_EDIT_ADD_NODE ||
-          m_interactiveContext.swcEditMode() ==
-          ZInteractiveContext::SWC_EDIT_EXTEND) {
-        m_stroke.clear();
-        buddyView()->paintActiveDecoration();
-      }
-      */
       enterSwcSelectMode();
     }
   } else if (event->button() == Qt::LeftButton) {
@@ -844,6 +833,7 @@ ZStackPresenter::processMouseReleaseForSwc(
       break;
     case ZInteractiveContext::SWC_EDIT_EXTEND:
     {
+      bool isExtensionCanceled = false;
       if (event->modifiers() == Qt::ControlModifier ||
           event->modifiers() == Qt::ShiftModifier) {
         if (buddyDocument()->selectSwcTreeNode(
@@ -854,19 +844,32 @@ ZStackPresenter::processMouseReleaseForSwc(
           }
           buddyDocument()->notifySwcModified();
           exitSwcExtendMode();
+           isExtensionCanceled = true;
         }
-      } else {
-        if (buddyDocument()->executeSwcNodeExtendCommand(
-              ZPoint(positionInStack[0], positionInStack[1], positionInStack[2]),
-              m_stroke.getWidth() / 2.0)) {
-          status = MOUSE_COMMAND_EXECUTED;
+      }
+
+      if (!isExtensionCanceled){
+        if (event->modifiers() == Qt::ControlModifier) {
+          if (buddyDocument()->executeSwcNodeExtendCommand(
+                ZPoint(positionInStack[0], positionInStack[1], positionInStack[2]),
+                m_stroke.getWidth() / 2.0)) {
+            status = MOUSE_COMMAND_EXECUTED;
+          }
+        } else {
+          if (buddyDocument()->executeSwcNodeSmartExtendCommand(
+                ZPoint(positionInStack[0], positionInStack[1], positionInStack[2]),
+                m_stroke.getWidth() / 2.0)) {
+            status = MOUSE_COMMAND_EXECUTED;
+          }
         }
       }
       //m_interactiveContext.setSwcEditMode(ZInteractiveContext::SWC_EDIT_SELECT);
     }
       break;
+#if 0
     case ZInteractiveContext::SWC_EDIT_SMART_EXTEND:
     {
+      bool isExtensionCanceled = false;
       if (event->modifiers() == Qt::ControlModifier ||
           event->modifiers() == Qt::ShiftModifier) {
         if (buddyDocument()->selectSwcTreeNode(
@@ -877,8 +880,11 @@ ZStackPresenter::processMouseReleaseForSwc(
           }
           buddyDocument()->notifySwcModified();
           exitSwcExtendMode();
+          isExtensionCanceled = true;
         }
-      } else {
+      }
+
+      if (!isExtensionCanceled) {
         if (buddyDocument()->executeSwcNodeSmartExtendCommand(
               ZPoint(positionInStack[0], positionInStack[1], positionInStack[2]),
               m_stroke.getWidth() / 2.0)) {
@@ -888,6 +894,7 @@ ZStackPresenter::processMouseReleaseForSwc(
       //m_interactiveContext.setSwcEditMode(ZInteractiveContext::SWC_EDIT_SELECT);
     }
       break;
+#endif
     case ZInteractiveContext::SWC_EDIT_ADD_NODE:
     {
       //double radius = m_cursorRadius / buddyView()->getZoomRatio();

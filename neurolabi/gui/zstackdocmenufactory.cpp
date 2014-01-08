@@ -67,7 +67,7 @@ QMenu* ZStackDocMenuFactory::makeSwcNodeContextMenu(
     menu = new QMenu(NULL);
   }
 
-  menu->addAction(presenter->getAction(ZStackPresenter::ACTION_SMART_EXTEND_SWC_NODE));
+  //menu->addAction(presenter->getAction(ZStackPresenter::ACTION_SMART_EXTEND_SWC_NODE));
   menu->addAction(presenter->getAction(ZStackPresenter::ACTION_EXTEND_SWC_NODE));
   menu->addAction(presenter->getAction(ZStackPresenter::ACTION_CONNECT_TO_SWC_NODE));
 
