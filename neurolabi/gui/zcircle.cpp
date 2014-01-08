@@ -6,12 +6,13 @@
 #include "zcircle.h"
 #include "tz_math.h"
 
-ZCircle::ZCircle()
+ZCircle::ZCircle() : m_visualEffect(NO_VISUAL_EFFECT)
 {
   set(0, 0, 0, 1);
 }
 
-ZCircle::ZCircle(double x, double y, double z, double r)
+ZCircle::ZCircle(double x, double y, double z, double r) :
+  m_visualEffect(NO_VISUAL_EFFECT)
 {
   set(x, y, z, r);
 }
@@ -36,7 +37,17 @@ void ZCircle::display(QPainter &painter, int n,
 {
   UNUSED_PARAMETER(style);
 #if _QT_GUI_USED_
-  painter.setPen(QPen(m_color, m_defaultPenWidth));
+  QPen pen(m_color, m_defaultPenWidth);
+  switch (m_visualEffect) {
+  case DASH_PATTERN:
+    pen.setStyle(Qt::DotLine);
+    break;
+  default:
+    break;
+  }
+
+  painter.setPen(pen);
+
   display(&painter, n, style);
 #endif
 }

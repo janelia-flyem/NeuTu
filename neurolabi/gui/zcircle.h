@@ -20,8 +20,11 @@ public:
 
   virtual const std::string& className() const;
 
-public:
+  enum EVisualEffect {
+    NO_VISUAL_EFFECT, DASH_PATTERN, BOUND_BOX
+  };
 
+public:
   virtual void display(QPainter &painter, int z = 0,
                        Display_Style option = NORMAL) const;
 
@@ -35,9 +38,14 @@ public:
    */
   static bool isCuttingPlane(double z, double r, double n);
 
+  inline void setVisualEffect(EVisualEffect effect) {
+    m_visualEffect = effect;
+  }
+
 private:
   ZPoint m_center;
   double m_r;
+  EVisualEffect m_visualEffect;
 };
 
 #endif // ZCIRCLE_H
