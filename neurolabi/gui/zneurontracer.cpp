@@ -104,11 +104,17 @@ void ZNeuronTracer::setConnWorkspace(Connection_Test_Workspace *workspace)
   m_connWorkspace = workspace;
 }
 
+#define MAX_P2P_TRACE_VOLUME 140000
+
 Swc_Tree* ZNeuronTracer::trace(double x1, double y1, double z1, double r1,
                                double x2, double y2, double z2, double r2)
 {
   if (x1 < 0 || y1 < 0 || z1 < 0 || x1 >= C_Stack::width(m_stack) ||
       y1 >= C_Stack::height(m_stack) || z1 >= C_Stack::depth(m_stack)) {
+    return NULL;
+  }
+
+  if (fabs(x2- x1) * fabs(y2 - y1) * fabs(z2 - z1) > MAX_P2P_TRACE_VOLUME) {
     return NULL;
   }
 
