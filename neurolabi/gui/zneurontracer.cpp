@@ -104,7 +104,7 @@ void ZNeuronTracer::setConnWorkspace(Connection_Test_Workspace *workspace)
   m_connWorkspace = workspace;
 }
 
-#define MAX_P2P_TRACE_VOLUME 140000
+#define MAX_P2P_TRACE_DISTANCE 100
 
 Swc_Tree* ZNeuronTracer::trace(double x1, double y1, double z1, double r1,
                                double x2, double y2, double z2, double r2)
@@ -114,7 +114,7 @@ Swc_Tree* ZNeuronTracer::trace(double x1, double y1, double z1, double r1,
     return NULL;
   }
 
-  if (fabs(x2- x1) * fabs(y2 - y1) * fabs(z2 - z1) > MAX_P2P_TRACE_VOLUME) {
+  if (ZPoint(x1, y1, z1).distanceTo(x2, y2, z2) > MAX_P2P_TRACE_DISTANCE) {
     return NULL;
   }
 
