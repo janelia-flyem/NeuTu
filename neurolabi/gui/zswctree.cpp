@@ -2092,7 +2092,7 @@ void ZSwcTree::merge(ZSwcTree *tree, bool freeInput)
   }
 }
 
-void ZSwcTree::setLabel(int v)
+void ZSwcTree::setLabel(int v) const
 {
   Swc_Tree_Set_Label(data(), v);
 }

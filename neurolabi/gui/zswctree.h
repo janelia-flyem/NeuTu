@@ -401,7 +401,7 @@ public:
   void merge(Swc_Tree *tree, bool freeInput = false);
   void merge(ZSwcTree *tree, bool freeInput = false);
 
-  void setLabel(int v);
+  void setLabel(int v) const;
   void setType(int type);
 
   void translate(const ZPoint& offset);
