@@ -177,6 +177,7 @@ public slots:
 
   void enterSwcConnectMode();
   void enterSwcExtendMode();
+  void exitSwcExtendMode();
   void enterSwcSmartExtendMode();
   void enterSwcAddNodeMode(double x, double y);
   void enterSwcSelectMode();

@@ -853,7 +853,7 @@ ZStackPresenter::processMouseReleaseForSwc(
             buddyDocument()->selectSwcNodeConnection();
           }
           buddyDocument()->notifySwcModified();
-          enterSwcSelectMode();
+          exitSwcExtendMode();
         }
       } else {
         if (buddyDocument()->executeSwcNodeExtendCommand(
@@ -876,7 +876,7 @@ ZStackPresenter::processMouseReleaseForSwc(
             buddyDocument()->selectSwcNodeConnection();
           }
           buddyDocument()->notifySwcModified();
-          enterSwcSelectMode();
+          exitSwcExtendMode();
         }
       } else {
         if (buddyDocument()->executeSwcNodeSmartExtendCommand(
@@ -1972,6 +1972,15 @@ void ZStackPresenter::enterSwcSmartExtendMode()
     m_stroke.setTarget(ZStackDrawable::WIDGET);
     interactiveContext().setSwcEditMode(ZInteractiveContext::SWC_EDIT_SMART_EXTEND);
     updateCursor();
+  }
+}
+
+void ZStackPresenter::exitSwcExtendMode()
+{
+  if (interactiveContext().swcEditMode() == ZInteractiveContext::SWC_EDIT_EXTEND ||
+      interactiveContext().swcEditMode() == ZInteractiveContext::SWC_EDIT_SMART_EXTEND) {
+    interactiveContext().setSwcEditMode(ZInteractiveContext::SWC_EDIT_SELECT);
+    exitStrokeEdit();
   }
 }
 
