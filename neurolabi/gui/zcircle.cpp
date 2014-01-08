@@ -6,13 +6,19 @@
 #include "zcircle.h"
 #include "tz_math.h"
 
-ZCircle::ZCircle() : m_visualEffect(NO_VISUAL_EFFECT)
+
+const ZCircle::TVisualEffect ZCircle::VE_NONE = 0;
+const ZCircle::TVisualEffect ZCircle::VE_DASH_PATTERN = 1;
+const ZCircle::TVisualEffect ZCircle::VE_BOUND_BOX = 2;
+const ZCircle::TVisualEffect ZCircle::VE_NO_CIRCLE = 4;
+
+ZCircle::ZCircle() : m_visualEffect(ZCircle::VE_NONE)
 {
   set(0, 0, 0, 1);
 }
 
 ZCircle::ZCircle(double x, double y, double z, double r) :
-  m_visualEffect(NO_VISUAL_EFFECT)
+  m_visualEffect(ZCircle::VE_NONE)
 {
   set(x, y, z, r);
 }
@@ -38,12 +44,8 @@ void ZCircle::display(QPainter &painter, int n,
   UNUSED_PARAMETER(style);
 #if _QT_GUI_USED_
   QPen pen(m_color, m_defaultPenWidth);
-  switch (m_visualEffect) {
-  case DASH_PATTERN:
+  if (hasVisualEffect(VE_DASH_PATTERN)) {
     pen.setStyle(Qt::DotLine);
-    break;
-  default:
-    break;
   }
 
   painter.setPen(pen);
@@ -68,23 +70,41 @@ void ZCircle::display(QPainter *painter, int n, Display_Style style) const
 {
   UNUSED_PARAMETER(style);
 #if defined(_QT_GUI_USED_)
+  double adjustedRadius = m_r + m_defaultPenWidth * 0.5;
+  QRectF rect;
+  if (hasVisualEffect(VE_BOUND_BOX)) {
+    rect.setLeft(m_center.x() - adjustedRadius);
+    rect.setTop(m_center.y() - adjustedRadius);
+    rect.setWidth(adjustedRadius + adjustedRadius);
+    rect.setHeight(adjustedRadius + adjustedRadius);
+  }
+
+  bool visible = false;
+
   if (n == -1) {
-    double adjustedRadius = m_r + m_defaultPenWidth * 0.5;
-    painter->drawEllipse(QPointF(m_center.x(), m_center.y()),
-                         adjustedRadius, adjustedRadius);
+    visible = true;
   } else {
     if (isCuttingPlane(m_center.z(), m_r, n)) {
       double h = fabs(m_center.z() - n);
       if (m_r > h) {
         double r = sqrt(m_r * m_r - h * h);
-        double adjustedRadius = r + m_defaultPenWidth * 0.5;
-        painter->drawEllipse(QPointF(m_center.x(), m_center.y()), adjustedRadius,
-                             adjustedRadius);
+        adjustedRadius = r + m_defaultPenWidth * 0.5;
+        visible = true;
       } else { //too small, show at least one plane
-        double adjustedRadius = m_defaultPenWidth * 0.5;
-        painter->drawEllipse(QPointF(m_center.x(), m_center.y()), adjustedRadius,
-                             adjustedRadius);
+        adjustedRadius = m_defaultPenWidth * 0.5;
+        visible = true;
       }
+    }
+  }
+
+  if (visible) {
+    if (hasVisualEffect(VE_BOUND_BOX)) {
+      painter->drawRect(rect);
+    }
+
+    if (!hasVisualEffect(VE_NO_CIRCLE)) {
+      painter->drawEllipse(QPointF(m_center.x(), m_center.y()),
+                           adjustedRadius, adjustedRadius);
     }
   }
 #endif

@@ -129,6 +129,7 @@ ZStackDoc::ZStackDoc(ZStack *stack, QObject *parent) : QObject(parent)
   //createContextMenu();
 
   setTag(NeuTube::Document::NORMAL);
+  setStackBackground(NeuTube::IMAGE_BACKGROUND_DARK);
 }
 
 ZStackDoc::~ZStackDoc()
@@ -6118,6 +6119,7 @@ bool ZStackDoc::executeSwcNodeSmartExtendCommand(
     if (prevNode != NULL) {
       if (center[0] >= 0 && center[1] >= 0 && center[2] >= 0) {
         ZNeuronTracer tracer;
+        tracer.setBackgroundType(getStackBackground());
         tracer.setIntensityField(stack()->c_stack());
         tracer.setTraceWorkspace(m_traceWorkspace);
         if (m_traceWorkspace->trace_mask == NULL) {

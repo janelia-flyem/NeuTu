@@ -9,8 +9,7 @@ source_dir=$1
 
 if [ ! -d $source_dir ]
 then
-  echo "$source_dir does not exist"
-  exit 1
+  /opt/bin/git clone /groups/flyem/home/zhaot/Work/neutube_ws/.git $source_dir
 fi
 
 build_dir=$source_dir/neurolabi/build

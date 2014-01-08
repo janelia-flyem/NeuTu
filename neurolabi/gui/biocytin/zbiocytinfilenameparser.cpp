@@ -71,3 +71,8 @@ int ZBiocytinFileNameParser::getTileIndex(const string &path)
 
   return abs(index);
 }
+
+std::string ZBiocytinFileNameParser::getSwcEditPath(const string &path)
+{
+  return getCoreName(path) + getSuffix(EDIT) + ".swc";
+}

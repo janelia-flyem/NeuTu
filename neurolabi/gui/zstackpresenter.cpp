@@ -1213,13 +1213,14 @@ bool ZStackPresenter::processKeyPressEventForSwc(QKeyEvent *event)
     }
     break;
   case Qt::Key_D:
-  {
-    double dx = 1;
-    if (event->modifiers() == Qt::ShiftModifier) {
-      dx *= 10;
+    if (event->modifiers() == Qt::NoModifier ||
+        event->modifiers() == Qt::ShiftModifier){
+      double dx = 1;
+      if (event->modifiers() == Qt::ShiftModifier) {
+        dx *= 10;
+      }
+      taken = buddyDocument()->executeMoveSwcNodeCommand(dx, 0, 0);
     }
-    taken = buddyDocument()->executeMoveSwcNodeCommand(dx, 0, 0);
-  }
     break;
   case Qt::Key_G:
     if (event->modifiers() == Qt::ControlModifier) {

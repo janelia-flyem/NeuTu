@@ -1133,6 +1133,9 @@ void MainWindow::openFile(const QString &fileName)
       setCurrentFile(fileName);
       if (ZFileType::isImageFile(fileType)) {
         addStackFrame(frame, false);
+        if (GET_APPLICATION_NAME == "Biocytin") {
+          frame->document()->setStackBackground(NeuTube::IMAGE_BACKGROUND_BRIGHT);
+        }
       } else {
         m_progress->reset();
         frame->open3DWindow(this);

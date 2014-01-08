@@ -62,6 +62,7 @@
 #include "misc/miscutility.h"
 #include "zstackdocmenufactory.h"
 #include "swc/zswcsubtreeanalyzer.h"
+#include "biocytin/zbiocytinfilenameparser.h"
 
 class Sleeper : public QThread
 {
@@ -2709,6 +2710,11 @@ void Z3DWindow::saveSelectedSwc()
 
   if (fileName.isEmpty()) {
     fileName = "untitled.swc";
+  }
+
+  if (GET_APPLICATION_NAME == "Biocytin") {
+    fileName =
+        ZBiocytinFileNameParser::getSwcEditPath(fileName.toStdString()).c_str();
   }
 
   fileName =

@@ -8,7 +8,8 @@
 #include "zvoxelarray.h"
 
 ZNeuronTracer::ZNeuronTracer() : m_stack(NULL), m_traceWorkspace(NULL),
-  m_connWorkspace(NULL), m_swcConnector(NULL)
+  m_connWorkspace(NULL), m_swcConnector(NULL),
+  m_backgroundType(NeuTube::IMAGE_BACKGROUND_DARK)
 {
   m_swcConnector = new ZSwcConnector;
 }
@@ -111,6 +112,7 @@ Swc_Tree* ZNeuronTracer::trace(double x1, double y1, double z1, double r1,
     return NULL;
   }
 
+  /*
   int start[3];
   int end[3];
 
@@ -120,9 +122,15 @@ Swc_Tree* ZNeuronTracer::trace(double x1, double y1, double z1, double r1,
   end[0] = iround(x2);
   end[1] = iround(y2);
   end[2] = iround(z2);
+  */
 
   ZStackGraph stackGraph;
-  stackGraph.setWeightFunction(Stack_Voxel_Weight_S);
+  if (m_backgroundType == NeuTube::IMAGE_BACKGROUND_BRIGHT) {
+    stackGraph.setWeightFunction(Stack_Voxel_Weight);
+  } else {
+    stackGraph.setWeightFunction(Stack_Voxel_Weight_S);
+  }
+
   stackGraph.inferWeightParameter(m_stack);
 
   int startIndex = C_Stack::indexFromCoord(x1, y1, z1, C_Stack::width(m_stack),
