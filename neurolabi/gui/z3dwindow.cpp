@@ -1806,6 +1806,11 @@ void Z3DWindow::keyPressEvent(QKeyEvent *event)
     removeSelectedObject();
   }
     break;
+  case Qt::Key_A:
+    if (event->modifiers() == Qt::ControlModifier) {
+      getDocument()->selectAllSwcTreeNode();
+    }
+    break;
   case Qt::Key_C:
   {
     if (event->modifiers() == Qt::ControlModifier) {
@@ -1817,6 +1822,8 @@ void Z3DWindow::keyPressEvent(QKeyEvent *event)
            iter != nodeSet->end(); ++iter) {
         SwcTreeNode::addToClipboard(*iter);
       }
+    } else if (event->modifiers() == Qt::NoModifier) {
+      m_doc->executeConnectSwcNodeCommand();
     }
   }
     break;
@@ -1835,7 +1842,7 @@ void Z3DWindow::keyPressEvent(QKeyEvent *event)
     }
     break;
   case Qt::Key_B:
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
     if (event->modifiers() == Qt::ControlModifier) {
       QList<ZSwcTree*> *treeList = m_doc->swcList();
       foreach (ZSwcTree *tree, *treeList) {
@@ -1844,6 +1851,9 @@ void Z3DWindow::keyPressEvent(QKeyEvent *event)
       }
     }
 #endif
+    if (event->modifiers() == Qt::NoModifier) {
+      m_doc->executeBreakSwcConnectionCommand();
+    }
     break;
   case Qt::Key_Equal: // increase swc size scale
   {
@@ -1874,6 +1884,21 @@ void Z3DWindow::keyPressEvent(QKeyEvent *event)
   case Qt::Key_Period:
   case Qt::Key_E:
     getDocument()->executeSwcNodeChangeSizeCommand(0.5);
+    break;
+  case Qt::Key_X:
+    if (event->modifiers() == Qt::NoModifier) {
+      getDocument()->executeDeleteSwcNodeCommand();
+    }
+    break;
+  case Qt::Key_N:
+    if (event->modifiers() == Qt::NoModifier) {
+      getDocument()->executeConnectIsolatedSwc();
+    }
+    break;
+  case Qt::Key_Z:
+    if (event->modifiers() == Qt::NoModifier) {
+      locateSwcNodeIn2DView();
+    }
     break;
   default:
     break;
@@ -2130,6 +2155,8 @@ void Z3DWindow::locateSwcNodeIn2DView()
 {
   if (!m_doc->selectedSwcTreeNodes()->empty()) {
     if (m_doc->getParentFrame() != NULL) {
+      m_doc->getParentFrame()->zoomToSelectedSwcNodes();
+      /*
       ZCuboid cuboid = SwcTreeNode::boundBox(*m_doc->selectedSwcTreeNodes());
       int cx, cy, cz;
       ZPoint center = cuboid.center();
@@ -2138,6 +2165,7 @@ void Z3DWindow::locateSwcNodeIn2DView()
       cz = iround(center.z());
       int radius = iround(std::max(cuboid.width(), cuboid.height()) / 2.0);
       m_doc->getParentFrame()->viewRoi(cx, cy, cz, radius);
+      */
     }
   }
 }

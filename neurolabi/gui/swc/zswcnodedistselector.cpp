@@ -1,12 +1,12 @@
-#include "zswcnodeselector.h"
+#include "zswcnodedistselector.h"
 
 #include "zswctree.h"
 
-ZSwcNodeSelector::ZSwcNodeSelector()
+ZSwcNodeDistSelector::ZSwcNodeDistSelector()
 {
 }
 
-ZSwcTreeNodeArray ZSwcNodeSelector::select(const ZSwcTree &tree) const
+ZSwcTreeNodeArray ZSwcNodeDistSelector::select(const ZSwcTree &tree) const
 {
   tree.setLabel(0);
 

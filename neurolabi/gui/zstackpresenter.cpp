@@ -1207,6 +1207,8 @@ bool ZStackPresenter::processKeyPressEventForSwc(QKeyEvent *event)
         dx *= 10;
       }
       taken = buddyDocument()->executeMoveSwcNodeCommand(dx, 0, 0);
+    } else if (event->modifiers() == Qt::ControlModifier) {
+      buddyDocument()->selectAllSwcTreeNode();
     }
     break;
   case Qt::Key_S:
@@ -1291,6 +1293,26 @@ bool ZStackPresenter::processKeyPressEventForSwc(QKeyEvent *event)
       if (event->modifiers() != Qt::ControlModifier) {
         taken = buddyDocument()->executeSwcNodeChangeSizeCommand(0.5);
       }
+    }
+    break;
+  case Qt::Key_C:
+    if (event->modifiers() == Qt::NoModifier) {
+      buddyDocument()->executeConnectSwcNodeCommand();
+    }
+    break;
+  case Qt::Key_B:
+    if (event->modifiers() == Qt::NoModifier) {
+      buddyDocument()->executeBreakSwcConnectionCommand();
+    }
+    break;
+  case Qt::Key_N:
+    if (event->modifiers() == Qt::NoModifier) {
+      buddyDocument()->executeConnectIsolatedSwc();
+    }
+    break;
+  case Qt::Key_Z:
+    if (event->modifiers() == Qt::NoModifier) {
+      m_parent->zoomToSelectedSwcNodes();
     }
     break;
   default:

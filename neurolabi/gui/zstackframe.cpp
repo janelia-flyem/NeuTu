@@ -1441,3 +1441,17 @@ void ZStackFrame::loadRoi(const QString &filePath)
     delete stack;
   }
 }
+
+void ZStackFrame::zoomToSelectedSwcNodes()
+{
+  if (!document()->selectedSwcTreeNodes()->empty()) {
+    ZCuboid cuboid = SwcTreeNode::boundBox(*document()->selectedSwcTreeNodes());
+    int cx, cy, cz;
+    ZPoint center = cuboid.center();
+    cx = iround(center.x());
+    cy = iround(center.y());
+    cz = iround(center.z());
+    int radius = iround(std::max(cuboid.width(), cuboid.height()) / 2.0);
+    viewRoi(cx, cy, cz, radius);
+  }
+}

@@ -318,7 +318,6 @@ HEADERS += mainwindow.h \
     zswcrangeanalyzer.h \
     zellipsoid.h \
     informationdialog.h \
-    zswcnodeselector.h \
     zswcnodezrangeselector.h \
     zswcnodecompositeselector.h \
     zswcnodeellipsoidrangeselector.h \

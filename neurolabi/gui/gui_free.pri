@@ -153,7 +153,7 @@ HEADERS +=$${PWD}/zstackprocessor.h \
    $${PWD}/swc/zswcsubtreeanalyzer.h \
    $${PWD}/zswctreenodearray.h \
    $${PWD}/flyem/zflyembodyanalyzer.h \
-    swc/zswcnodedistselector.h
+   $${PWD}/swc/zswcnodedistselector.h
 
 SOURCES +=$${PWD}/zstackprocessor.cpp \
    $${PWD}/zstack.cxx \
@@ -293,4 +293,4 @@ SOURCES +=$${PWD}/zstackprocessor.cpp \
    $${PWD}/swc/zswcsubtreeanalyzer.cpp \
    $${PWD}/zswctreenodearray.cpp \
    $${PWD}/flyem/zflyembodyanalyzer.cpp \
-    swc/zswcnodedistselector.cpp
+   $${PWD}/swc/zswcnodedistselector.cpp

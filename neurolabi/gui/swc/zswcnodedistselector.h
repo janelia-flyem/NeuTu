@@ -1,5 +1,5 @@
-#ifndef ZSWCNODESELECTOR_H
-#define ZSWCNODESELECTOR_H
+#ifndef ZSWCNODEDISTSELECTOR_H
+#define ZSWCNODEDISTSELECTOR_H
 
 #include <vector>
 #include "zswctreenodearray.h"
@@ -11,12 +11,16 @@ class ZSwcTree;
  *
  * Still a prototype.
  */
-class ZSwcNodeSelector
+class ZSwcNodeDistSelector
 {
 public:
-  ZSwcNodeSelector();
+  ZSwcNodeDistSelector();
 
   ZSwcTreeNodeArray select(const ZSwcTree &tree) const;
+
+  inline void setMinDistance(double dist) {
+    m_minDistance = dist;
+  }
 
 private:
   double m_minDistance;

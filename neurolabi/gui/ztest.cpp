@@ -128,6 +128,7 @@
 #include "zerror.h"
 #include "flyem/zflyembodyanalyzer.h"
 #include "swc/zswcresampler.h"
+#include "swc/zswcnodedistselector.h"
 #include "misc/miscutility.h"
 #include "test/zjsontest.h"
 #include "test/zswctreetest.h"
@@ -10158,7 +10159,7 @@ void ZTest::test(MainWindow *host)
   RECORD_WARNING_UNCOND("Warning test");
 #endif
 
-#if 1
+#if 0
   ZSwcTree tree;
   tree.load(GET_DATA_DIR + "/biocytin/bug_source1.swc");
   ZSwcResampler resampler;
@@ -10169,4 +10170,44 @@ void ZTest::test(MainWindow *host)
   //resampler.optimalDownsample(&tree);
   tree.save(GET_DATA_DIR + "/test.swc");
 #endif
+
+#if 0
+  ZSwcTree tree;
+  tree.load()
+#endif
+
+
+#if 0
+  ZFlyEmDataBundle bundle;
+  bundle.loadJsonFile(dataPath + "/flyem/TEM/data_bundle2.json");
+
+  ZSwcTree *tree = bundle.getModel(209);
+  double length = tree->length();
+  double minDist = length / 100.0;
+
+  ZSwcNodeDistSelector selector;
+  selector.setMinDistance(minDist);
+
+  ZSwcTreeNodeArray nodeArray = selector.select(*tree);
+
+  tree->setTypeByLabel();
+  tree->save(GET_DATA_DIR + "/test.swc");
+
+  std::cout << nodeArray.size() << " selected" << std::endl;
+
+  double shollRange = minDist * 2.0;
+
+  ZSwcShollFeatureAnalyzer analyzer;
+  analyzer.setShollStart(shollRange / 10.0);
+  analyzer.setShollEnd(shollRange);
+  analyzer.setShollRadius(shollRange / 10.0);
+
+  std::vector<double> feature;
+
+  for (ZSwcTreeNodeArray::const_iterator iter = nodeArray.begin();
+       iter != nodeArray.end(); ++iter) {
+    feature = analyzer.computeFeature(*iter);
+  }
+#endif
+
 }

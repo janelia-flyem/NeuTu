@@ -20,6 +20,7 @@ public:
 private:
   double m_sceneRatio; //0 to 1
   QSize m_canvasSize;
+  int m_minZoomRatio;
 };
 
 #endif // ZSTACKVIEWLOCATOR_H
