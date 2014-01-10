@@ -1192,6 +1192,12 @@ bool ZStackPresenter::processKeyPressEventForSwc(QKeyEvent *event)
   case Qt::Key_Delete:
   case Qt::Key_X:
     taken = buddyDocument()->executeDeleteSwcNodeCommand();
+    if (taken) {
+      if (m_interactiveContext.swcEditMode() ==
+          ZInteractiveContext::SWC_EDIT_EXTEND) {
+        exitSwcExtendMode();
+      }
+    }
     break;
   case Qt::Key_W:
     if (event->modifiers() == Qt::NoModifier ||
