@@ -15,7 +15,7 @@ enum EDocumentableType {
 
 namespace Document {
 enum ETag {
-  NORMAL, BIOCYTIN_PROJECTION
+  NORMAL, BIOCYTIN_PROJECTION, BIOCYTIN_STACK
 };
 }
 

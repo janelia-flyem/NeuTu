@@ -24,6 +24,11 @@ public:
 
   void sort(Swc_Tree_Node_Compare_B compare);
 
+  /*!
+   * \brief Print the nodes into the standard output
+   */
+  void print() const;
+
 };
 
 #endif // ZSWCTREENODEARRAY_H

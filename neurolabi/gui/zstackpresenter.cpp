@@ -947,13 +947,17 @@ ZStackPresenter::processMouseReleaseForStroke(
                 end[0], end[1], end[2]) / 2;
             double cx = ((double) (start[0] + end[0])) / 2;
             double cy = ((double) (start[1] + end[1])) / 2;
-            double cz = ((double) (start[2] + end[2])) / 2;
+            //double cz = ((double) (start[2] + end[2])) / 2;
             int x0 = (int) (cx - pointDistance);
             int x1 = (int) (cx + pointDistance);
             int y0 = (int) (cy - pointDistance);
             int y1 = (int) (cy + pointDistance);
-            int z0 = (int) (cz - pointDistance);
-            int z1 = (int) (cz + pointDistance);
+            //int z0 = (int) (cz - pointDistance);
+            //int z1 = (int) (cz + pointDistance);
+            int z0 = buddyView()->sliceIndex();
+            int z1 = z0;
+            start[2] = z0;
+            end[2] = z1;
 
             Stack_Graph_Workspace_Set_Range(sgw, x0, x1, y0, y1, z0, z1);
             Stack_Graph_Workspace_Validate_Range(

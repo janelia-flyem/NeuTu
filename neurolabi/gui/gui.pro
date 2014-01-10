@@ -89,7 +89,7 @@ unix:!macx {
     LIBS += -lQtGui -lQtCore \
       -lQtOpenGL -lQtNetwork \
       -lQtGui \
-      -lQtCore -lXt -lSM -lICE \
+      -lXt -lSM -lICE \
       -lX11 -lm \
       -lpthread \
       -lGL -lrt -lGLU

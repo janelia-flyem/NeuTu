@@ -156,7 +156,7 @@ public:
                         double z_scale = 1.0);
   virtual void swcExport(const char *filePath);
 
-  void print(int iterOption = SWC_TREE_ITERATOR_DEPTH_FIRST);
+  void print(int iterOption = SWC_TREE_ITERATOR_DEPTH_FIRST) const;
 
   inline std::string source() const { return m_source; }
 

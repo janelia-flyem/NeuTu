@@ -727,7 +727,7 @@ void ZSwcTree::swcExport(const char *filePath)
   save(filePath);
 }
 
-void ZSwcTree::print(int iterOption)
+void ZSwcTree::print(int iterOption) const
 {
   if (m_tree == NULL) {
     cout << "Empty tree." << endl;

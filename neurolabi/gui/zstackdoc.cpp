@@ -6337,20 +6337,26 @@ bool ZStackDoc::executeSwcNodeChangeSizeCommand(double dr)
   return false;
 }
 
-void ZStackDoc::estimateSwcRadius()
+void ZStackDoc::estimateSwcRadius(ZSwcTree *tree)
 {
-  foreach (ZSwcTree *tree, m_swcList){
+  if (tree != NULL) {
     startProgress();
     int count = tree->updateIterator(SWC_TREE_ITERATOR_DEPTH_FIRST);
     double step = 1.0 / count;
     for (Swc_Tree_Node *tn = tree->begin(); tn != NULL; tn = tree->next()) {
       if (SwcTreeNode::isRegular(tn)) {
-        SwcTreeNode::fitSignal(tn, stack()->c_stack(),
-                               NeuTube::IMAGE_BACKGROUND_BRIGHT);
+        SwcTreeNode::fitSignal(tn, stack()->c_stack(), getStackBackground());
       }
       advanceProgress(step);
     }
     endProgress();
+  }
+}
+
+void ZStackDoc::estimateSwcRadius()
+{
+  foreach (ZSwcTree *tree, m_swcList){
+    estimateSwcRadius(tree);
   }
 }
 

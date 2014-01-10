@@ -17,32 +17,32 @@ FlyEmSkeletonizationDialog::~FlyEmSkeletonizationDialog()
   delete ui;
 }
 
-int FlyEmSkeletonizationDialog::lengthThreshold()
+int FlyEmSkeletonizationDialog::lengthThreshold() const
 {
   return ui->lengthSpinBox->value();
 }
 
-int FlyEmSkeletonizationDialog::distanceThreshold()
+int FlyEmSkeletonizationDialog::distanceThreshold() const
 {
   return ui->distThreSpinBox->value();
 }
 
-int FlyEmSkeletonizationDialog::sizeThreshold()
+int FlyEmSkeletonizationDialog::sizeThreshold() const
 {
   return ui->objSizeSpinBox->value();
 }
 
-bool FlyEmSkeletonizationDialog::isConnectingAll()
+bool FlyEmSkeletonizationDialog::isConnectingAll() const
 {
   return ui->connectCheckBox->isChecked();
 }
 
-bool FlyEmSkeletonizationDialog::isExcludingSmallObj()
+bool FlyEmSkeletonizationDialog::isExcludingSmallObj() const
 {
   return ui->objSizeCheckBox->isChecked();
 }
 
-bool FlyEmSkeletonizationDialog::isKeepingShortObject()
+bool FlyEmSkeletonizationDialog::isKeepingShortObject() const
 {
   return ui->shortObjectCheckBox->isChecked();
 }
@@ -57,12 +57,12 @@ void FlyEmSkeletonizationDialog::enableSizeThreshold()
   ui->objSizeSpinBox->setEnabled(ui->objSizeCheckBox->isChecked());
 }
 
-bool FlyEmSkeletonizationDialog::isLevelChecked()
+bool FlyEmSkeletonizationDialog::isLevelChecked() const
 {
   return ui->greyToBinaryCheckBox->isChecked();
 }
 
-int FlyEmSkeletonizationDialog::level()
+int FlyEmSkeletonizationDialog::level() const
 {
   return ui->levelSpinBox->value();
 }

@@ -10007,6 +10007,12 @@ void ZTest::test(MainWindow *host)
 
   ZMatrix confusionMatrix(89, 89);
 
+  ZMatrix simMat(nsample + 1, nsample);
+
+  for (int i = 0; i < nsample; ++i) {
+    simMat.set(0, i, mat.getValue(i, 0));
+  }
+
   double goodCount = 0;
   for (int i = 0; i < nsample; ++i) {
     mat.copyRowValue(i, 1, nfeat, &(hist1[0]));
@@ -10017,10 +10023,13 @@ void ZTest::test(MainWindow *host)
         mat.copyRowValue(j, 1, nfeat, &(hist2[0]));
         int classId = iround(mat.getValue(j, 0));
         double dist = ZHistogram::computeJsDivergence(hist1, hist2);
+        simMat.set(i, j, 1.0 / (1.0 + dist));
         if (predicted < 0 || minDist > dist) {
           minDist = dist;
           predicted = classId;
         }
+      } else {
+        simMat.set(i, j, 1.0);
       }
     }
 
@@ -10033,8 +10042,9 @@ void ZTest::test(MainWindow *host)
     confusionMatrix.addValue(realClass - 1, predicted - 1, 1);
   }
 
+  simMat.exportCsv(GET_DATA_DIR + "/flyem/TEM/simmat_subtree.txt");
   std::cout << goodCount << " / " << nsample;
-  confusionMatrix.exportCsv(GET_DATA_DIR + "/test.csv");
+  confusionMatrix.exportCsv(GET_DATA_DIR + "/fuzzy_confmat.csv");
 
 #endif
 
@@ -10078,13 +10088,17 @@ void ZTest::test(MainWindow *host)
   ZMatrix Z;
   Z.importTextFile(GET_DATA_DIR + "/Z.txt");
   for (int i = 0; i < Z.getRowNumber(); ++i) {
-    dendrogram.addLink(Z.at(i, 0), Z.at(i, 1), Z.at(i, 2) - 0.5);
+    //dendrogram.addLink(Z.at(i, 0), Z.at(i, 1), Z.at(i, 2) - 0.5); //for matching simmat
+
+    dendrogram.addLink(Z.at(i, 0), Z.at(i, 1), Z.at(i, 2) - 0.38);
   }
   dendrogram.loadLeafName(GET_DATA_DIR + "/flyem/TEM/neuron_name.txt");
-  std::string svgString = dendrogram.toSvgString(10.0);
+  std::string svgString = dendrogram.toSvgString(15.0);
 
-  ZSvgGenerator svgGenerator(0, 0, 800, 5000);
+  //std::string svgString = dendrogram.toSvgString(10.0);//for matching simmat
+  //ZSvgGenerator svgGenerator(0, 0, 800, 5000);//for matching simmat
 
+  ZSvgGenerator svgGenerator(0, 0, 1000, 6000);
 
   svgGenerator.write((GET_DATA_DIR + "/test.svg").c_str(), svgString);
 #endif
@@ -10173,7 +10187,19 @@ void ZTest::test(MainWindow *host)
 
 #if 0
   ZSwcTree tree;
-  tree.load()
+  tree.load(GET_DATA_DIR + "/benchmark/swc/compare/compare1.swc");
+  tree.setType(0);
+
+  ZSwcNodeDistSelector selector;
+  selector.setMinDistance(100);
+  ZSwcTreeNodeArray nodeArray = selector.select(tree);
+
+  nodeArray.print();
+
+  tree.setTypeByLabel();
+  tree.print();
+  tree.save(GET_DATA_DIR + "/test.swc");
+
 #endif
 
 
@@ -10183,7 +10209,7 @@ void ZTest::test(MainWindow *host)
 
   ZSwcTree *tree = bundle.getModel(209);
   double length = tree->length();
-  double minDist = length / 100.0;
+  double minDist = length / 500.0;
 
   ZSwcNodeDistSelector selector;
   selector.setMinDistance(minDist);

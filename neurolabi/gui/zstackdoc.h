@@ -195,6 +195,7 @@ public: //swc tree edit
   void deleteSelectedSwcNode();
   void addSizeForSelectedSwcNode(double dr);
 
+  void estimateSwcRadius(ZSwcTree *tree);
   void estimateSwcRadius();
 
 public: //swc selection

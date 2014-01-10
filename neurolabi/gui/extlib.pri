@@ -29,10 +29,10 @@ unix {
         -ljansson
 }
 
-exists(../lib/hdf5/lib/libhdf5.a) {
+exists($${EXTLIB_DIR}/hdf5/lib/libhdf5.a) {
     DEFINES += _ENABLE_HDF5_
-    INCLUDEPATH += ../lib/hdf5/include
-    LIBS += -L../lib/hdf5/lib -lhdf5
+    INCLUDEPATH += $${EXTLIB_DIR}/hdf5/include
+    LIBS += -L$${EXTLIB_DIR}/hdf5/lib -lhdf5
 }
 
 #System libraries
