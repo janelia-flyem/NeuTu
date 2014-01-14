@@ -180,6 +180,11 @@ public:
    */
   bool importDvidObject(const std::string &filePath);
 
+  /*!
+   * \brief Import object from a byte array
+   */
+  bool importDvidObject(const char *byteArray, size_t byteNumber);
+
   template<class T>
   int scanArray(const T *array, int x, int y, int z, int width);
 
