@@ -1870,4 +1870,66 @@ bool ZObject3dScan::importDvidObject(const std::string &filePath)
   return true;
 }
 
+#define READ_BYTE_BUFFER(target, type) \
+  target = *(const type*)(byteArray + currentIndex); \
+  currentIndex += sizeof(type);
+
+bool ZObject3dScan::importDvidObject(const char *byteArray, size_t byteNumber)
+{
+  clear();
+
+  if (byteArray == NULL || byteNumber <= 12) {
+    RECORD_ERROR_UNCOND("Invalid byte buffer");
+    return false;
+  }
+
+  size_t currentIndex = 0;
+  tz_uint8 flag = 0;
+  READ_BYTE_BUFFER(flag, tz_uint8);
+
+
+  tz_uint8 numberOfDimensions = 0;
+  READ_BYTE_BUFFER(numberOfDimensions, tz_uint8);
+
+  if (numberOfDimensions != 3) {
+    RECORD_ERROR_UNCOND("Current version only supports 3D");
+    return false;
+  }
+
+  tz_uint8 dimOfRun = 0;
+  READ_BYTE_BUFFER(dimOfRun, tz_uint8);
+  if (dimOfRun != 0) {
+    RECORD_ERROR_UNCOND("Unspported run dimension");
+    return false;
+  }
+
+  //tz_uint8 reserved = *static_cast<tz_uint8*>(byteArray + currentIndex);
+  ++currentIndex;
+
+  //tz_uint32 numberOfVoxels = *static_cast<tz_uint32*>(byteArray + currentIndex);
+  currentIndex += 4;
+
+  tz_uint32 numberOfSpans = 0;
+  READ_BYTE_BUFFER(numberOfSpans, tz_uint32);
+
+  for (tz_uint32 span = 0; span < numberOfSpans; ++span) {
+    tz_int32 coord[3];
+    for (int i = 0; i < 3; ++i) {
+      READ_BYTE_BUFFER(coord[i], tz_int32);
+    }
+
+    tz_int32 runLength = 0;
+    READ_BYTE_BUFFER(runLength, tz_int32);
+
+    if (runLength <= 0) {
+      RECORD_ERROR_UNCOND("Invalid run length");
+      return false;
+    }
+
+    addSegment(coord[2], coord[1], coord[0], coord[0] + runLength);
+  }
+
+  return true;
+}
+
 ZINTERFACE_DEFINE_CLASS_NAME(ZObject3dScan)
