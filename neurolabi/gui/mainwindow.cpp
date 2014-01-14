@@ -1,6 +1,5 @@
 #include "mainwindow.h"
 
-#include "z3dgl.h"
 #include <QtGui>
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
 #include <QtWidgets>
@@ -48,7 +47,7 @@
 #include "regionexpanddialog.h"
 #include "neuroniddialog.h"
 #include "zcircle.h"
-
+#include "zerror.h"
 #include "tz_sp_grow.h"
 #include "tz_stack_bwmorph.h"
 #include "tz_stack_stat.h"
@@ -111,6 +110,9 @@
 #include "diagnosisdialog.h"
 #include "swc/zswcresampler.h"
 #include "biocytin/zbiocytinfilenameparser.h"
+#include "penwidthdialog.h"
+#include "dvid/zdvidclient.h"
+#include "dvidobjectdialog.h"
 
 #include "ztest.h"
 
@@ -123,7 +125,8 @@ MainWindow::MainWindow(QWidget *parent) :
     m_frameInfoDlg(this),
     m_autosaveSwcDialog(this)
 {
-  std::cout << "Creating mainwindow ..." << std::endl;
+  //std::cout << "Creating mainwindow ..." << std::endl;
+  RECORD_INFORMATION("Creating mainwindow ...");
 
 #ifdef _DEBUG_2
   std::cout << NeutubeConfig::getInstance().getPath(NeutubeConfig::AUTO_SAVE)
@@ -161,14 +164,18 @@ MainWindow::MainWindow(QWidget *parent) :
   createUndoView();
 
   //create the rest of the window
-  std::cout << "Creating menus ..." << std::endl;
+  //std::cout << "Creating actions ..." << std::endl;
+  RECORD_INFORMATION("Creating actions ...");
   createActions();
-  std::cout << "Creating menus ......" << std::endl;
+  //std::cout << "Creating menus ......" << std::endl;
+  RECORD_INFORMATION("Creating menus ...");
   createMenus();
-  std::cout << "Creating menus ........." << std::endl;
+  RECORD_INFORMATION("Creating context menus ...");
+  //std::cout << "Creating menus ........." << std::endl;
   createContextMenu();
 
-  std::cout << "Creating toolbars ..." << std::endl;
+  //std::cout << "Creating toolbars ..." << std::endl;
+  RECORD_INFORMATION("Creating toolbars ...");
   createToolBars();
   createStatusBar();
 
@@ -185,10 +192,17 @@ MainWindow::MainWindow(QWidget *parent) :
 
   m_helpDlg = new HelpDialog(this);
   m_DiagnosisDlg = new DiagnosisDialog(this);
+  m_penWidthDialog = new PenWidthDialog(this);
+
+  if (GET_APPLICATION_NAME == "Biocytin") {
+    ZStackDrawable::setDefaultPenWidth(1.0);
+  }
+  m_penWidthDialog->setPenWidth(ZStackDrawable::getDefaultPenWidth());
 
   setAcceptDrops(true);
 
   // init openGL context
+  RECORD_INFORMATION("Initializing OpenGL context ...");
   QGLFormat format = QGLFormat();
   format.setAlpha(true);
   format.setDepth(true);
@@ -200,9 +214,14 @@ MainWindow::MainWindow(QWidget *parent) :
 
   m_frameCount = 0;
 
+  RECORD_INFORMATION("Updating actions ...");
   createActionMap();
   setActionActivity();
   updateAction();
+
+  m_dvidClient = new ZDvidClient("http://emdata1.int.janelia.org", this);
+  m_dvidObjectDlg = new DvidObjectDialog(this);
+  m_dvidObjectDlg->setAddress(m_dvidClient->getServer());
 }
 
 MainWindow::~MainWindow()
@@ -1120,6 +1139,10 @@ void MainWindow::openFile(const QString &fileName)
       setCurrentFile(fileName);
       if (ZFileType::isImageFile(fileType)) {
         addStackFrame(frame, false);
+        if (GET_APPLICATION_NAME == "Biocytin") {
+          frame->document()->setStackBackground(NeuTube::IMAGE_BACKGROUND_BRIGHT);
+          frame->document()->setTag(NeuTube::Document::BIOCYTIN_STACK);
+        }
       } else {
         m_progress->reset();
         frame->open3DWindow(this);
@@ -1704,12 +1727,15 @@ void MainWindow::setCurrentFile(const QString &fileName)
 void MainWindow::createAutoSaveDir()
 {
   if (NeutubeConfig::getInstance().isAutoSaveEnabled()) {
+#ifdef _DEBUG_
     std::cout << "Create autsave dir" << std::endl;
+#endif
 
     QString autoSaveDir =
         NeutubeConfig::getInstance().getPath(NeutubeConfig::AUTO_SAVE).c_str();
-
+#ifdef _DEBUG_
     std::cout << autoSaveDir.toStdString() << std::endl;
+#endif
 
     QDir dir(autoSaveDir);
     if (!dir.exists()) {
@@ -1725,6 +1751,7 @@ void MainWindow::createAutoSaveDir()
                    "Cannot create " + dlg.getAutosaveDir().toStdString() +
                    "Autosave will be disabled.",
                    ZMessageReporter::Information);
+            RECORD_WARNING_UNCOND("Faile to Create Autosave Directory");
           }
         }
 
@@ -3271,12 +3298,11 @@ void MainWindow::on_actionUpdate_Configuration_triggered()
 {
   NeutubeConfig &config = NeutubeConfig::getInstance();
   if (config.load(config.getConfigPath()) == false) {
-    std::cout << "Unable to load configuration: "
-              << config.getConfigPath() << std::endl;
+    RECORD_WARNING_UNCOND("Unable to load configuration: " + config.getConfigPath());
   } else {
     customizeActions();
   }
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
   config.print();
 #endif
 }
@@ -3885,6 +3911,7 @@ void MainWindow::on_actionMake_Projection_triggered()
         ZStackFrame *newFrame = new ZStackFrame;
         newFrame->setParentFrame(frame);
         newFrame->loadStack(stack);
+        newFrame->document()->setTag(NeuTube::Document::BIOCYTIN_PROJECTION);
         addStackFrame(newFrame);
         //stretchStackFrame(newFrame);
         presentStackFrame(newFrame);
@@ -3919,139 +3946,188 @@ QProgressBar* MainWindow::getProgressBar()
   */
 }
 
+static void setSkeletonizer(
+    ZStackSkeletonizer &skeletonizer,
+    const FlyEmSkeletonizationDialog &dlg)
+{
+  skeletonizer.setRebase(true);
+  if (dlg.isExcludingSmallObj()) {
+    skeletonizer.setMinObjSize(dlg.sizeThreshold());
+  } else {
+    skeletonizer.setMinObjSize(0);
+  }
+
+  double distThre = -1.0;
+  if (!dlg.isConnectingAll()) {
+    distThre = dlg.distanceThreshold();
+  }
+  skeletonizer.setDistanceThreshold(distThre);
+
+  skeletonizer.setLengthThreshold(dlg.lengthThreshold());
+  skeletonizer.setKeepingSingleObject(dlg.isKeepingShortObject());
+
+  if (dlg.isLevelChecked()) {
+    skeletonizer.setLevel(dlg.level());
+  }
+
+  if (NeutubeConfig::getInstance().getApplication() == "Biocytin") {
+    skeletonizer.setResolution(1.0, NeutubeConfig::getInstance().
+                               getZ3DWindowConfig().getSwcTabConfig().
+                               getZScale());
+    skeletonizer.setConnectingBranch(false);
+  }
+}
+
 void MainWindow::on_actionMask_SWC_triggered()
 {
   FlyEmSkeletonizationDialog dlg;
   if (dlg.exec() == QDialog::Accepted) {
     ZStackFrame *frame = currentStackFrame();
     if (frame != NULL) {
-      //ZStack *stack = frame->getStrokeMask();
-      ZStack *stack = frame->getObjectMask(NeuTube::RED);
-      if (stack != NULL) {
-        Stack *stackData = stack->c_stack();
+      ZStack *mask = NULL;
+      if (frame->document()->getTag() == NeuTube::Document::BIOCYTIN_PROJECTION) {
+        mask = frame->getObjectMask(NeuTube::RED);
+      } else {
+        mask = frame->getStrokeMask();
+      }
 
-        ZStackSkeletonizer skeletonizer;
-        QProgressDialog *progressDlg = getProgressDialog();
-        //progressDlg->setCancelButton(NULL);
-        progressDlg->setLabelText("Making SWC ...");
-        progressDlg->setRange(0, 100);
-        QProgressBar *bar = getProgressBar();
+      if (mask == NULL) {
+        report("Skeletonization Failed", "No mask found. No SWC generated",
+               ZMessageReporter::Warning);
+        return;
+      }
 
-        ZQtBarProgressReporter reporter;
-        reporter.setProgressBar(bar);
+      Stack *maskData = mask->c_stack();
 
-        skeletonizer.setProgressReporter(&reporter);
 
-        progressDlg->open();
+      QProgressDialog *progressDlg = getProgressDialog();
+      //progressDlg->setCancelButton(NULL);
+      progressDlg->setLabelText("Making SWC ...");
+      progressDlg->setRange(0, 100);
+      QProgressBar *bar = getProgressBar();
+      ZQtBarProgressReporter reporter;
+      reporter.setProgressBar(bar);
 
-        reporter.start();
+      ZStackSkeletonizer skeletonizer;
+      skeletonizer.setProgressReporter(&reporter);
+      ::setSkeletonizer(skeletonizer, dlg);
 
-        skeletonizer.setRebase(true);
-        if (dlg.isExcludingSmallObj()) {
-          skeletonizer.setMinObjSize(dlg.sizeThreshold());
+      progressDlg->open();
+
+      reporter.start();
+
+      reporter.startSubprogress(0.5);
+
+      //skeletonizer.setRebase(false);
+
+      ZSwcTree *wholeTree = skeletonizer.makeSkeleton(maskData);
+      reporter.endSubprogress(0.5);
+
+      if (wholeTree != NULL) {
+        ZStackFrame *stackFrame = frame;
+        if (frame->document()->getTag() == NeuTube::Document::BIOCYTIN_PROJECTION) {
+          stackFrame = frame->getParentFrame();
+        }
+        if (stackFrame != NULL) {
+          ZSwcPositionAdjuster adjuster;
+          adjuster.setProgressReporter(&reporter);
+          adjuster.setSignal(
+                stackFrame->document()->stack()->c_stack(0),
+                stackFrame->document()->getStackBackground());
+
+          adjuster.getProgressReporter()->startSubprogress(0.3);
+          adjuster.adjustPosition(*wholeTree);
+          adjuster.getProgressReporter()->endSubprogress(0.3);
         } else {
-          skeletonizer.setMinObjSize(0);
-        }
-
-        double distThre = -1.0;
-        if (!dlg.isConnectingAll()) {
-          distThre = dlg.distanceThreshold();
-        }
-        skeletonizer.setDistanceThreshold(distThre);
-
-        skeletonizer.setLengthThreshold(dlg.lengthThreshold());
-        skeletonizer.setKeepingSingleObject(dlg.isKeepingShortObject());
-
-        if (dlg.isLevelChecked()) {
-          skeletonizer.setLevel(dlg.level());
-        }
-
-        if (NeutubeConfig::getInstance().getApplication() == "Biocytin") {
-          skeletonizer.setResolution(1.0, NeutubeConfig::getInstance().
-                                     getZ3DWindowConfig().getSwcTabConfig().
-                                     getZScale());
-          skeletonizer.setConnectingBranch(false);
-        }
-
-        reporter.startSubprogress(0.5);
-
-        //skeletonizer.setRebase(false);
-
-        ZSwcTree *wholeTree = skeletonizer.makeSkeleton(stackData);
-        reporter.endSubprogress(0.5);
-
-        if (wholeTree != NULL) {
-#if 1
-          if (frame->getParentFrame() != NULL) {
-            ZSwcPositionAdjuster adjuster;
-            adjuster.setProgressReporter(&reporter);
-            adjuster.setSignal(
-                  frame->getParentFrame()->document()->stack()->c_stack(0),
-                  NeuTube::IMAGE_BACKGROUND_BRIGHT);
-            adjuster.getProgressReporter()->startSubprogress(0.3);
-            tic();
-            adjuster.adjustPosition(*wholeTree);
-            ptoc();
-            adjuster.getProgressReporter()->endSubprogress(0.3);
-          } else {
-            if (frame->document()->stack()->channelNumber() == 2) {
-              Stack *depthData = frame->document()->stack()->c_stack(1);
-              if (depthData != NULL) {
-                Biocytin::SwcProcessor::assignZ(wholeTree, *depthData);
-              }
+          if (frame->document()->stack()->channelNumber() == 2) {
+            report("Mask Choice",
+                   "No stack data found. The second channel of the current image is used as a depth mask.",
+                   ZMessageReporter::Warning);
+            Stack *depthData = frame->document()->stack()->c_stack(1);
+            if (depthData != NULL) {
+              Biocytin::SwcProcessor::assignZ(wholeTree, *depthData);
             }
           }
-
-          Biocytin::SwcProcessor::breakZJump(wholeTree, 5.0);
-
-          Biocytin::SwcProcessor::removeOrphan(wholeTree);
-          Biocytin::SwcProcessor::smoothZ(wholeTree);
-          reporter.advance(0.1);
-
-          skeletonizer.setConnectingBranch(true);
-          skeletonizer.reconnect(wholeTree);
-#endif
-          ZStackFrame *swcFrame = frame->getParentFrame();
-          if (swcFrame == NULL) {
-            swcFrame = new ZStackFrame;
-            swcFrame->createDocument();
-          }
-
-          reporter.advance(0.1);
-
-          reporter.end();
-
-          progressDlg->reset();
-
-          if (NeutubeConfig::getInstance().getApplication() == "Biocytin") {
-            wholeTree->setType(
-                  ZBiocytinFileNameParser::getTileIndex(
-                    frame->getParentFrame()->document()->stack()->sourcePath()));
-          }
-
-
-          swcFrame->document()->blockSignals(true);
-          swcFrame->document()->addSwcTree(wholeTree);
-
-          if (frame->getParentFrame() == NULL) {
-            delete swcFrame;
-          } else {
-            swcFrame->document()->estimateSwcRadius();
-            Biocytin::SwcProcessor::smoothRadius(wholeTree);
-          }
-
-          ZSwcResampler resampler;
-          resampler.optimalDownsample(wholeTree);
-          swcFrame->document()->blockSignals(false);
-
-          swcFrame->document()->notifySwcModified();
-
-          swcFrame->open3DWindow(this, Z3DWindow::EXCLUDE_VOLUME);
-        } else {
-          progressDlg->reset();
-          report("Skeletonization failed", "No SWC tree generated.",
-                 ZMessageReporter::Error);
         }
+
+        Biocytin::SwcProcessor::breakZJump(wholeTree, 5.0);
+        Biocytin::SwcProcessor::removeOrphan(wholeTree);
+        Biocytin::SwcProcessor::smoothZ(wholeTree);
+        reporter.advance(0.1);
+
+        skeletonizer.setConnectingBranch(true);
+        skeletonizer.reconnect(wholeTree);
+
+        ZStackFrame *swcFrame = stackFrame;
+        if (swcFrame == NULL) {
+          swcFrame = new ZStackFrame;
+          swcFrame->createDocument();
+        }
+
+        reporter.advance(0.1);
+
+        reporter.end();
+
+        progressDlg->reset();
+
+        if (NeutubeConfig::getInstance().getApplication() == "Biocytin") {
+          std::string source;
+
+          if (stackFrame != NULL) {
+            source = stackFrame->document()->stack()->sourcePath();
+          } else {
+            source = frame->document()->stack()->sourcePath();
+          }
+
+          wholeTree->setType(ZBiocytinFileNameParser::getTileIndex(source));
+        }
+
+
+        swcFrame->document()->blockSignals(true);
+/*
+        if (stackFrame != NULL) {
+          stackFrame->document()->estimateSwcRadius();
+        }
+*/
+        if (stackFrame != NULL) {
+          swcFrame->document()->estimateSwcRadius(wholeTree);
+          Biocytin::SwcProcessor::smoothRadius(wholeTree);
+        }
+
+#ifdef _DEBUG_2
+        wholeTree->save(GET_DATA_DIR + "/test2.swc");
+#endif
+
+        ZSwcResampler resampler;
+        resampler.optimalDownsample(wholeTree);
+
+        if (stackFrame != swcFrame) {
+          swcFrame->document()->addSwcTree(wholeTree);
+        } else {
+          QUndoCommand *command = new QUndoCommand;
+          new ZStackDocCommand::SwcEdit::AddSwc(
+                stackFrame->document().get(), wholeTree, command);
+          if (frame == stackFrame) { //Remove strokes if the mask in the stack frame
+            for (int i = 0; i < stackFrame->document()->getStrokeList().size(); ++i) {
+              new ZStackDocCommand::StrokeEdit::RemoveTopStroke(
+                    stackFrame->document().get(), command);
+            }
+          }
+          stackFrame->document()->pushUndoCommand(command);
+        }
+
+        swcFrame->document()->blockSignals(false);
+        swcFrame->document()->notifyStrokeModified();
+        swcFrame->document()->notifySwcModified();
+
+        if (swcFrame != stackFrame) {
+          swcFrame->open3DWindow(this, Z3DWindow::EXCLUDE_VOLUME);
+          delete swcFrame;
+        }
+      } else {
+        progressDlg->reset();
+        report("Skeletonization failed", "No SWC tree generated.",
+               ZMessageReporter::Error);
       }
     }
   }
@@ -4197,4 +4273,26 @@ void MainWindow::on_actionDendrogram_triggered()
   svgGenerator.write((GET_DATA_DIR + "/flyem/TEM/cluster.svg").c_str(), svgString);
 
   std::cout << GET_DATA_DIR + "/flyem/TEM/cluster.svg" << std::endl;
+}
+
+void MainWindow::on_actionPen_Width_for_SWC_Display_triggered()
+{
+  if (m_penWidthDialog->exec()) {
+    ZStackDrawable::setDefaultPenWidth(m_penWidthDialog->getPenWidth());
+    foreach (QMdiSubWindow *subwindow, mdiArea->subWindowList()) {
+      ZStackFrame *frame = dynamic_cast<ZStackFrame*>(subwindow);
+      if (frame != NULL) {
+        frame->updateView();
+      }
+    }
+  }
+}
+
+void MainWindow::on_actionDVID_Object_triggered()
+{
+  if (m_dvidObjectDlg->exec()) {
+    m_dvidClient->setServer(m_dvidObjectDlg->getAddress());
+    m_dvidClient->postRequest(ZDvidClient::DVID_GET_OBJECT,
+                              QVariant(m_dvidObjectDlg->getBodyId()));
+  }
 }

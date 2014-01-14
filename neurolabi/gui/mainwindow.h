@@ -31,6 +31,9 @@ class ZFlyEmDataFrame;
 class HelpDialog;
 class QProgressBar;
 class DiagnosisDialog;
+class PenWidthDialog;
+class ZDvidClient;
+class DvidObjectDialog;
 
 namespace Ui {
     class MainWindow;
@@ -293,6 +296,10 @@ private slots:
 
   void on_actionDendrogram_triggered();
 
+  void on_actionPen_Width_for_SWC_Display_triggered();
+
+  void on_actionDVID_Object_triggered();
+
 private:
   void createActions();
   void customizeActions();
@@ -454,7 +461,12 @@ private:
   MovieDialog m_movieDlg;
   AutosaveSwcListDialog m_autosaveSwcDialog;
 
+  PenWidthDialog *m_penWidthDialog;
+
   QMap<QString, QAction*> m_actionMap;
+
+  ZDvidClient *m_dvidClient;
+  DvidObjectDialog *m_dvidObjectDlg;
 };
 
 #endif // MAINWINDOW_H

@@ -25,8 +25,14 @@ int ZSwcResampler::suboptimalDownsample(ZSwcTree *tree)
       Swc_Tree_Node *child = SwcTreeNode::firstChild(tn);
 
       bool redundant = false;
+      //bool mergingToChild = false;
       if (SwcTreeNode::isWithin(tn, parent) || SwcTreeNode::isWithin(tn, child)) {
         redundant = true;
+        /*
+        if (SwcTreeNode::isWithin(tn, child)) {
+          mergingToChild = true;
+        }
+        */
       }
 
       if (!redundant) {
@@ -35,6 +41,12 @@ int ZSwcResampler::suboptimalDownsample(ZSwcTree *tree)
 
       if (redundant) {
         next = next->next;
+        /*
+        if (mergingToChild) {
+          SwcTreeNode::copyProperty(tn, parent);
+        }
+        */
+
         SwcTreeNode::mergeToParent(tn);
         ++count;
       }

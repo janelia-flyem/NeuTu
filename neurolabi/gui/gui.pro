@@ -6,49 +6,25 @@ TEMPLATE = app
 #Build neurolabi
 neurolabi.target = neurolabi
 CONFIG(debug, debug|release) {
-neurolabi.commands = @echo "building neurolabi"; cd $${PWD}/../c; make lib VERSION=
+    neurolabi.commands = @echo "building neurolabi"; cd $${PWD}/../c; make lib VERSION=
 } else {
-neurolabi.commands = @echo "building neurolabi"; cd $${PWD}/../c; make release VERSION=
+    neurolabi.commands = @echo "building neurolabi"; cd $${PWD}/../c; make release VERSION=
 }
 QMAKE_EXTRA_TARGETS += neurolabi
 ###################
 
-DEPENDPATH += . ../c ../c/include
-INCLUDEPATH += . \
-    ../lib/xml/include/libxml2 \
-    ../lib/fftw3/include \
-    ../lib/png/include \
-    ../lib/jansson/include \
-    ../c \
-    ../c/include \
-    ../lib/genelib/src ../gui/ext
+NEUROLABI_DIR = $${PWD}/..
+EXTLIB_DIR = $${NEUROLABI_DIR}/lib
 
-#Self-contained libraries
-unix {
-    LIBS += -L../lib/xml/lib -L../lib/fftw3/lib -L../lib/png/lib -L../lib/jansson/lib \
-        -lfftw3 \
-        -lfftw3f \
-        -lxml2 \
-        -lpng \
-        -ljansson
-}
-
-#System libraries
-unix {
-    LIBS += -ldl -lz
-}
+include(extlib.pri)
 
 #neurolabi
-LIBS += -L$${PWD}/../c/lib
 CONFIG(debug, debug|release) {
-    DEFINES += _DEBUG_ _ADVANCED_ PROJECT_PATH=\"\\\"$$PWD\\\"\"
-    LIBS += -lneurolabi_debug
     TARGET = neuTube_d
 } else {
-    DEFINES += _ADVANCED_
-    LIBS += -lneurolabi
     TARGET = neuTube
 }
+
 
 # suppress warnings from 3rd party library, works for gcc and clang
 QMAKE_CXXFLAGS += -isystem ../gui/ext
@@ -68,11 +44,10 @@ HOME = $$system(echo $HOME)
 include(add_itk.pri)
 
 #Qt5
+QT += opengl xml network
 isEqual(QT_MAJOR_VERSION,5) | greaterThan(QT_MAJOR_VERSION,5) {
 message("Qt 5")
-    QT += opengl xml concurrent
-} else {
-    QT += opengl xml
+    QT += concurrent
 }
 
 #QT += webkit
@@ -109,54 +84,56 @@ CONFIG(debug, debug|release) {
 } # static gtest
 
 unix:!macx {
-  QMAKE_CXXFLAGS += -D_LINUX_
-  LIBS += -lQtGui -lQtCore \
+    QMAKE_CXXFLAGS += -D_LINUX_
+    LIBS += -lQtGui -lQtCore \
       -lQtOpenGL -lQtNetwork \
       -lQtGui \
-      -lQtCore -lXt -lSM -lICE \
+      -lXt -lSM -lICE \
       -lX11 -lm \
       -lpthread \
       -lGL -lrt -lGLU
 
-  exists(/usr/include/gnu/stubs-64.h) {
-    QMAKE_CXXFLAGS += -m64
-  }
-  RC_FILE = images/app.icns
+    message(Checking arch...)
+    contains(QMAKE_HOST.arch, x86_64) {
+        message($$QMAKE_HOST.arch)
+        QMAKE_CXXFLAGS += -m64
+    }
+    RC_FILE = images/app.icns
 }
 
 macx {
 #INCLUDEPATH += /usr/X11/include
 
-LIBS += -framework AppKit -framework IOKit \
-    -framework ApplicationServices \
-    -framework CoreFoundation
+    LIBS += -framework AppKit -framework IOKit \
+        -framework ApplicationServices \
+        -framework CoreFoundation
 
-ICON = images/app.icns
-QMAKE_INFO_PLIST = images/Info.plist
-QMAKE_CXXFLAGS += -m64
+    ICON = images/app.icns
+    QMAKE_INFO_PLIST = images/Info.plist
+    QMAKE_CXXFLAGS += -m64
 
-doc.files = doc
-doc.path = Contents/MacOS
-QMAKE_BUNDLE_DATA += doc
+    doc.files = doc
+    doc.path = Contents/MacOS
+    QMAKE_BUNDLE_DATA += doc
 
-config.files = config.xml
-config.path = Contents/MacOS
-QMAKE_BUNDLE_DATA += config
+    config.files = config.xml
+    config.path = Contents/MacOS
+    QMAKE_BUNDLE_DATA += config
 }
 
 win32 {
-INCLUDEPATH += C:/Mingw/include \
-    C:/Mingw/include/libxml2 \
-    C:/Qt/2010.05/mingw/include/libxml2
+    INCLUDEPATH += C:/Mingw/include \
+        C:/Mingw/include/libxml2 \
+        C:/Qt/2010.05/mingw/include/libxml2
 
-LIBS += -LC:/Mingw/lib \
-    -lfftw3 \
-    -lfftw3f \
-    -lxml2 \
-    -lpng \
-    -mwin32 -mthreads -lpcreposix -lpcre -ljansson -lpthread
+    LIBS += -LC:/Mingw/lib \
+        -lfftw3 \
+        -lfftw3f \
+        -lxml2 \
+        -lpng \
+        -mwin32 -mthreads -lpcreposix -lpcre -ljansson -lpthread
 
-RC_FILE = images/app.rc
+    RC_FILE = images/app.rc
 }
 
 QMAKE_CXXFLAGS += -Wno-deprecated
@@ -340,7 +317,6 @@ HEADERS += mainwindow.h \
     zswcrangeanalyzer.h \
     zellipsoid.h \
     informationdialog.h \
-    zswcnodeselector.h \
     zswcnodezrangeselector.h \
     zswcnodecompositeselector.h \
     zswcnodeellipsoidrangeselector.h \
@@ -377,7 +353,11 @@ HEADERS += mainwindow.h \
     zswccurvaturefeatureanalyzer.h \
     zstackdoc.h \
     zstackdocmenustore.h \
-    zstackdocmenufactory.h
+    zstackdocmenufactory.h \
+    zglew.h \
+    penwidthdialog.h \
+    dvid/zdvidclient.h \
+    dvidobjectdialog.h
 
 FORMS += settingdialog.ui \
     frameinfodialog.ui \
@@ -415,7 +395,9 @@ FORMS += settingdialog.ui \
     diagnosisdialog.ui \
     flyemdataexportdialog.ui \
     flyemgeosearchdialog.ui \
-    flyemgeofilterdialog.ui
+    flyemgeofilterdialog.ui \
+    penwidthdialog.ui \
+    dvidobjectdialog.ui
 SOURCES += main.cpp \
     mainwindow.cpp \
     zstackview.cpp \
@@ -586,4 +568,10 @@ SOURCES += main.cpp \
     zactionactivator.cpp \
     zswccurvaturefeatureanalyzer.cpp \
     zstackdocmenustore.cpp \
-    zstackdocmenufactory.cpp
+    zstackdocmenufactory.cpp \
+    penwidthdialog.cpp \
+    dvid/zdvidclient.cpp \
+    dvidobjectdialog.cpp
+
+OTHER_FILES += \
+    extlib.pri

@@ -585,7 +585,7 @@ int* Stack_Graph_Shortest_Path(const Stack *stack, int start[], int end[],
   int i, j;
 
   for (i = 0; i < nvoxel; i++) {
-    dist[i] = INFINITY;
+    dist[i] = Infinity;
     path[i] = -1;
     checked[i] = 0;
   }

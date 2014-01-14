@@ -49,7 +49,8 @@ public:
   enum EActionItem {
     ACTION_EXTEND_SWC_NODE, ACTION_SMART_EXTEND_SWC_NODE,
     ACTION_CONNECT_TO_SWC_NODE, ACTION_ADD_SWC_NODE,
-    ACTION_LOCK_SWC_NODE_FOCUS, ACTION_ESTIMATE_SWC_NODE_RADIUS
+    ACTION_LOCK_SWC_NODE_FOCUS, ACTION_ESTIMATE_SWC_NODE_RADIUS,
+    ACTION_PAINT_STROKE, ACTION_ERASE_STROKE
   };
 
   inline double greyScale(int c = 0) const {return m_greyScale[c];}
@@ -90,6 +91,7 @@ public:
   void createPunctaActions();
   void createSwcActions();
   void createTubeActions();
+  void createStrokeActions();
   void createDocDependentActions();
 
   inline QAction* getAction(EActionItem item) const {
@@ -98,6 +100,9 @@ public:
 
   void createSwcNodeContextMenu();
   QMenu* getSwcNodeContextMenu();
+
+  void createStrokeContextMenu();
+  QMenu* getStrokeContextMenu();
 
   void setStackBc(double scale, double offset, int c = 0);
 
@@ -172,6 +177,7 @@ public slots:
 
   void enterSwcConnectMode();
   void enterSwcExtendMode();
+  void exitSwcExtendMode();
   void enterSwcSmartExtendMode();
   void enterSwcAddNodeMode(double x, double y);
   void enterSwcSelectMode();
@@ -187,6 +193,8 @@ public slots:
   void selectAllSwcTreeNode();
 
   void trySwcAddNodeMode(double x, double y);
+  void tryPaintStrokeMode();
+  void tryEraseStrokeMode();
   void tryDrawStrokeMode(double x, double y, bool isEraser);
 
   void selectDownstreamNode();
@@ -298,10 +306,14 @@ private:
   QAction *m_selectAllConnectedSwcNodeAction;
   QAction *m_selectAllSwcNodeAction;
 
+  QAction *m_paintStrokeAction;
+  QAction *m_eraseStrokeAction;
+
   //  Action map
   QMap<EActionItem, QAction*> m_actionMap;
 
   QMenu *m_swcNodeContextMenu;
+  QMenu *m_strokePaintContextMenu;
 
   //recorded information
   int m_mouseMovePosition[3];

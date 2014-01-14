@@ -531,14 +531,16 @@ bool ZFlyEmDataBundle::hitsLayer(
     const std::vector<Swc_Tree_Node*>& nodeArray = tree->getSwcTreeNodeArray();
     for (std::vector<Swc_Tree_Node*>::const_iterator iter = nodeArray.begin();
          iter != nodeArray.end(); ++iter) {
-      if (SwcTreeNode::z(*iter) >= topZ && SwcTreeNode::z(*iter) <= bottomZ) {
-        if (!isExclusive) {
-          return true;
+      if (SwcTreeNode::isRegular(*iter)) {
+        if (SwcTreeNode::z(*iter) >= topZ && SwcTreeNode::z(*iter) <= bottomZ) {
+          if (!isExclusive) {
+            return true;
+          }
         }
-      }
-      if (isExclusive) {
-        if (SwcTreeNode::z(*iter) < topZ || SwcTreeNode::z(*iter) > bottomZ) {
-          return false;
+        if (isExclusive) {
+          if (SwcTreeNode::z(*iter) < topZ || SwcTreeNode::z(*iter) > bottomZ) {
+            return false;
+          }
         }
       }
     }

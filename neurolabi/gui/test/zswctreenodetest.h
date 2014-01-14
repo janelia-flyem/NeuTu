@@ -175,6 +175,64 @@ TEST(SwcTreeNode, Crossover)
   }
 }
 
+TEST(SwcTreeNode, neighbor)
+{
+  Swc_Tree_Node *center = SwcTreeNode::makePointer(0, 0, 0, 1);
+  Swc_Tree_Node *tn1 = SwcTreeNode::makePointer(10, 0, 0, 1);
+  SwcTreeNode::setParent(center, tn1);
+  Swc_Tree_Node *tn2 =SwcTreeNode::makePointer(20, 0, 0, 1);
+  SwcTreeNode::setParent(tn1, tn2);
+  Swc_Tree_Node *tn3 = SwcTreeNode::makePointer(30, 0, 0, 1);
+  SwcTreeNode::setParent(tn2, tn3);
+
+  Swc_Tree_Node *tn = SwcTreeNode::continuousAncestor(center, 25.0);
+  ASSERT_EQ(tn, tn3);
+  tn = SwcTreeNode::continuousAncestor(center, 5.0);
+  ASSERT_EQ(tn, tn1);
+
+  tn = SwcTreeNode::continuousDescendent(tn1, 5.0);
+  ASSERT_EQ(tn, center);
+
+  tn = SwcTreeNode::continuousAncestor(center, 25.0);
+  ASSERT_EQ(tn, tn3);
+  tn = SwcTreeNode::continuousDescendent(tn3, 25.0);
+  ASSERT_EQ(tn, center);
+
+  tn = SwcTreeNode::continuousAncestor(center, 35.0);
+  ASSERT_TRUE(tn == NULL);
+
+  Swc_Tree_Node *tn4 = SwcTreeNode::makePointer(30, 10, 0, 1);
+  SwcTreeNode::setParent(tn4, tn3);
+  tn = SwcTreeNode::continuousAncestor(center, 25.0);
+  ASSERT_EQ(tn, tn3);
+
+  tn = SwcTreeNode::continuousAncestor(center, 35.0);
+  ASSERT_TRUE(tn == NULL);
+
+  Swc_Tree_Node *tn5 = SwcTreeNode::makePointer(20, 10, 0, 1);
+  SwcTreeNode::setParent(tn5, tn2);
+  tn = SwcTreeNode::continuousAncestor(center, 25.0);
+  ASSERT_TRUE(tn == NULL);
+
+  Swc_Tree_Node *tn6 = SwcTreeNode::makePointer(0, 0, 10, 1);
+  Swc_Tree_Node *tn7 = SwcTreeNode::makePointer(0, 0, 20, 1);
+  Swc_Tree_Node *tn8 = SwcTreeNode::makePointer(0, 0, 30, 1);
+  Swc_Tree_Node *tn9 = SwcTreeNode::makePointer(0, 0, 40, 1);
+  Swc_Tree_Node *tn10 = SwcTreeNode::makePointer(0, 0, 50, 1);
+
+  SwcTreeNode::setParent(tn6, center);
+  SwcTreeNode::setParent(tn7, tn6);
+  SwcTreeNode::setParent(tn8, tn7);
+  SwcTreeNode::setParent(tn9, tn8);
+  SwcTreeNode::setParent(tn10, tn8);
+
+  tn = SwcTreeNode::continuousDescendent(center, 25.0);
+  ASSERT_EQ(tn, tn8);
+
+  tn = SwcTreeNode::continuousDescendent(center, 35.0);
+  ASSERT_TRUE(tn == NULL);
+}
+
 #endif
 
 

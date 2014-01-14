@@ -423,6 +423,34 @@ double SwcTreeNode::pathLength(const Swc_Tree_Node *tn1,
   return dist;
 }
 
+double SwcTreeNode::planePathLength(const Swc_Tree_Node *tn1,
+                               const Swc_Tree_Node *tn2)
+{
+  double dist = Infinity;
+
+  const Swc_Tree_Node *ancestor = SwcTreeNode::commonAncestor(tn1, tn2);
+  if (SwcTreeNode::isRegular(ancestor)) {
+    dist = 0.0;
+    const Swc_Tree_Node *tn = tn1;
+    while (tn != ancestor) {
+      double dx = x(tn) - x(parent(tn));
+      double dy = y(tn) - y(parent(tn));
+      dist += sqrt(dx * dx + dy * dy);
+      tn = tn->parent;
+    }
+
+    tn = tn2;
+    while (tn != ancestor) {
+      double dx = x(tn) - x(parent(tn));
+      double dy = y(tn) - y(parent(tn));
+      dist += sqrt(dx * dx + dy * dy);
+      tn = tn->parent;
+    }
+  }
+
+  return dist;
+}
+
 double SwcTreeNode::distance(const Swc_Tree_Node *tn1, const Swc_Tree_Node *tn2,
                              SwcTreeNode::EDistanceType distType)
 {
@@ -775,6 +803,49 @@ ZWeightedPointArray SwcTreeNode::localSegment(const Swc_Tree_Node *tn, int exten
   }
 
   return segment;
+}
+
+Swc_Tree_Node* SwcTreeNode::continuousAncestor(
+    const Swc_Tree_Node *tn, double minDist)
+{
+  Swc_Tree_Node *target = NULL;
+  Swc_Tree_Node *parent = SwcTreeNode::parent(tn);
+  double dist = 0.0;
+  while (SwcTreeNode::isRegular(parent)) {
+    dist += SwcTreeNode::length(tn);
+    if (dist >= minDist) {
+      target = parent;
+      break;
+    }
+    tn = parent;
+    if (!isContinuation(tn)) {
+      break;
+    }
+    parent = SwcTreeNode::parent(tn);
+  }
+
+  return target;
+}
+
+Swc_Tree_Node *SwcTreeNode::continuousDescendent(
+    const Swc_Tree_Node *tn, double minDist)
+{
+  Swc_Tree_Node *target = NULL;
+  Swc_Tree_Node *child = SwcTreeNode::firstChild(tn);
+  double dist = 0.0;
+  while (SwcTreeNode::isRegular(child)) {
+    dist += SwcTreeNode::length(child);
+    if (dist >= minDist) {
+      target = child;
+      break;
+    }
+    if (!isContinuation(child)) {
+      break;
+    }
+    child = SwcTreeNode::firstChild(child);
+  }
+
+  return target;
 }
 
 Swc_Tree_Node *SwcTreeNode::thickestChild(Swc_Tree_Node *tn)

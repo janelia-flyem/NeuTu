@@ -61,6 +61,8 @@
 #include "zswcglobalfeatureanalyzer.h"
 #include "misc/miscutility.h"
 #include "zstackdocmenufactory.h"
+#include "swc/zswcsubtreeanalyzer.h"
+#include "biocytin/zbiocytinfilenameparser.h"
 
 class Sleeper : public QThread
 {
@@ -317,6 +319,10 @@ void Z3DWindow::init(EInitMode mode)
   connect(getInteractionHandler(), SIGNAL(cameraMoved()), this, SLOT(resetCameraClippingRange()));
   connect(getInteractionHandler(), SIGNAL(objectsMoved(double,double,double)), this,
           SLOT(moveSelectedObjects(double,double,double)));
+
+  if (!NeutubeConfig::getInstance().getZ3DWindowConfig().isAxisOn()) {
+    m_axis->setVisible(false);
+  }
 
   //  // if have image, try black background
   //  if (channelNumber() > 0) {
@@ -1800,6 +1806,11 @@ void Z3DWindow::keyPressEvent(QKeyEvent *event)
     removeSelectedObject();
   }
     break;
+  case Qt::Key_A:
+    if (event->modifiers() == Qt::ControlModifier) {
+      getDocument()->selectAllSwcTreeNode();
+    }
+    break;
   case Qt::Key_C:
   {
     if (event->modifiers() == Qt::ControlModifier) {
@@ -1811,6 +1822,8 @@ void Z3DWindow::keyPressEvent(QKeyEvent *event)
            iter != nodeSet->end(); ++iter) {
         SwcTreeNode::addToClipboard(*iter);
       }
+    } else if (event->modifiers() == Qt::NoModifier) {
+      m_doc->executeConnectSwcNodeCommand();
     }
   }
     break;
@@ -1829,7 +1842,7 @@ void Z3DWindow::keyPressEvent(QKeyEvent *event)
     }
     break;
   case Qt::Key_B:
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
     if (event->modifiers() == Qt::ControlModifier) {
       QList<ZSwcTree*> *treeList = m_doc->swcList();
       foreach (ZSwcTree *tree, *treeList) {
@@ -1838,6 +1851,9 @@ void Z3DWindow::keyPressEvent(QKeyEvent *event)
       }
     }
 #endif
+    if (event->modifiers() == Qt::NoModifier) {
+      m_doc->executeBreakSwcConnectionCommand();
+    }
     break;
   case Qt::Key_Equal: // increase swc size scale
   {
@@ -1868,6 +1884,21 @@ void Z3DWindow::keyPressEvent(QKeyEvent *event)
   case Qt::Key_Period:
   case Qt::Key_E:
     getDocument()->executeSwcNodeChangeSizeCommand(0.5);
+    break;
+  case Qt::Key_X:
+    if (event->modifiers() == Qt::NoModifier) {
+      getDocument()->executeDeleteSwcNodeCommand();
+    }
+    break;
+  case Qt::Key_N:
+    if (event->modifiers() == Qt::NoModifier) {
+      getDocument()->executeConnectIsolatedSwc();
+    }
+    break;
+  case Qt::Key_Z:
+    if (event->modifiers() == Qt::NoModifier) {
+      locateSwcNodeIn2DView();
+    }
     break;
   default:
     break;
@@ -2124,6 +2155,8 @@ void Z3DWindow::locateSwcNodeIn2DView()
 {
   if (!m_doc->selectedSwcTreeNodes()->empty()) {
     if (m_doc->getParentFrame() != NULL) {
+      m_doc->getParentFrame()->zoomToSelectedSwcNodes();
+      /*
       ZCuboid cuboid = SwcTreeNode::boundBox(*m_doc->selectedSwcTreeNodes());
       int cx, cy, cz;
       ZPoint center = cuboid.center();
@@ -2132,6 +2165,7 @@ void Z3DWindow::locateSwcNodeIn2DView()
       cz = iround(center.z());
       int radius = iround(std::max(cuboid.width(), cuboid.height()) / 2.0);
       m_doc->getParentFrame()->viewRoi(cx, cy, cz, radius);
+      */
     }
   }
 }
@@ -2268,6 +2302,17 @@ void Z3DWindow::changeSelectedSwcType()
           }
         }
         break;
+      case SwcTypeDialog::SUBTREE:
+      {
+        ZSwcSubtreeAnalyzer analyzer;
+        analyzer.setMinLength(10000.0);
+        for (std::set<ZSwcTree*>::iterator iter = treeSet->begin();
+             iter != treeSet->end(); ++iter) {
+          ZSwcTree *tree = *iter;
+          analyzer.decompose(tree);
+          tree->setTypeByLabel();
+        }
+      }
       default:
         break;
       }
@@ -2693,6 +2738,11 @@ void Z3DWindow::saveSelectedSwc()
 
   if (fileName.isEmpty()) {
     fileName = "untitled.swc";
+  }
+
+  if (GET_APPLICATION_NAME == "Biocytin") {
+    fileName =
+        ZBiocytinFileNameParser::getSwcEditPath(fileName.toStdString()).c_str();
   }
 
   fileName =

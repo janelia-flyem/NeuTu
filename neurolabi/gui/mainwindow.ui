@@ -16,7 +16,7 @@
    </font>
   </property>
   <property name="windowTitle">
-   <string>neuTube 0.78</string>
+   <string>neuTube 0.84</string>
   </property>
   <widget class="QWidget" name="centralwidget"/>
   <widget class="QMenuBar" name="menubar">
@@ -59,6 +59,7 @@
      </property>
      <addaction name="actionImage_Sequence"/>
      <addaction name="actionSparse_objects"/>
+     <addaction name="actionDVID_Object"/>
     </widget>
     <widget class="QMenu" name="menuExport">
      <property name="title">
@@ -91,6 +92,7 @@
       <string>Adjust</string>
      </property>
      <addaction name="actionBrightnessContrast"/>
+     <addaction name="actionPen_Width_for_SWC_Display"/>
     </widget>
     <addaction name="actionNormal"/>
     <addaction name="actionProject"/>
@@ -989,6 +991,16 @@
   <action name="actionDendrogram">
    <property name="text">
     <string>Dendrogram</string>
+   </property>
+  </action>
+  <action name="actionPen_Width_for_SWC_Display">
+   <property name="text">
+    <string>Pen Width for SWC Display</string>
+   </property>
+  </action>
+  <action name="actionDVID_Object">
+   <property name="text">
+    <string>DVID Object</string>
    </property>
   </action>
  </widget>

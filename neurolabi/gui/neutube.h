@@ -13,6 +13,12 @@ enum EDocumentableType {
   Documentable_STROKE, Documentable_LOCSEG_CHAIN, Documentable_CONN
 };
 
+namespace Document {
+enum ETag {
+  NORMAL, BIOCYTIN_PROJECTION, BIOCYTIN_STACK
+};
+}
+
 enum EImageBackground {
   IMAGE_BACKGROUND_BRIGHT, IMAGE_BACKGROUND_DARK
 };

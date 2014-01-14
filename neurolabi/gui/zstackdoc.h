@@ -97,7 +97,7 @@ public:
     ACTION_SELECT_SWC_BRANCH, ACTION_SELECT_CONNECTED_SWC_NODE,
     ACTION_SELECT_ALL_SWC_NODE,
     ACTION_CHANGE_SWC_TYPE, ACTION_CHANGE_SWC_SIZE, ACTION_REMOVE_TURN,
-    ACTION_RESOLVE_CROSSOVER
+    ACTION_RESOLVE_CROSSOVER, ACTION_SWC_Z_INTERPOLATION
   };
 
 public: //attributes
@@ -195,6 +195,7 @@ public: //swc tree edit
   void deleteSelectedSwcNode();
   void addSizeForSelectedSwcNode(double dr);
 
+  void estimateSwcRadius(ZSwcTree *tree);
   void estimateSwcRadius();
 
 public: //swc selection
@@ -276,7 +277,7 @@ public:
   bool enhanceLine();
   bool watershed();
   bool invert();
-  int findLoop();
+  int findLoop(int minLoopSize = 100);
   void bwthin();
 
   int maxIntesityDepth(int x, int y);
@@ -468,6 +469,16 @@ public: /* puncta related methods */
   void updateModelData(EDocumentDataType type);
 
 public:
+  inline NeuTube::Document::ETag getTag() const { return m_tag; }
+  inline void setTag(NeuTube::Document::ETag tag) { m_tag = tag; }
+  inline void setStackBackground(NeuTube::EImageBackground bg) {
+    m_stackBackground = bg;
+  }
+  inline NeuTube::EImageBackground getStackBackground() const {
+    return m_stackBackground;
+  }
+
+public:
   inline void deprecateTraceMask() { m_isTraceMaskObsolete = true; }
   void updateTraceWorkspace(int traceEffort, bool traceMasked,
                             double xRes, double yRes, double zRes);
@@ -535,6 +546,7 @@ public slots: //undoable commands
   bool executeSwcNodeChangeSizeCommand(double dr);
   bool executeMergeSwcNodeCommand();
   bool executeTraceSwcBranchCommand(double x, double y, double z, int c = 0);
+  bool executeInterpolateSwcZCommand();
   bool executeBreakForestCommand();
   bool executeGroupSwcCommand();
   bool executeSetRootCommand();
@@ -685,6 +697,9 @@ private:
   std::set<ZLocsegChain*> m_selectedChains;
   ZLocsegChain *m_masterChain;
   QString m_badChainScreen;
+
+  NeuTube::Document::ETag m_tag;
+  NeuTube::EImageBackground m_stackBackground;
 };
 
 //   template  //

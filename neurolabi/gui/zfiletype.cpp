@@ -66,6 +66,8 @@ ZFileType::EFileType ZFileType::fileType(const std::string &filePath)
     return OBJECT_SCAN_FILE;
   } else if (str.endsWith(".jpg", ZString::CASE_INSENSITIVE)) {
     return JPG_FILE;
+  } else if (str.endsWith(".dvid", ZString::CASE_INSENSITIVE)) {
+    return DVID_OBJECT_FILE;
   }
 
   return UNIDENTIFIED_FILE;
@@ -116,7 +118,7 @@ bool ZFileType::isImageFile(EFileType type)
   return (type == TIFF_FILE) || (type == LSM_FILE) || (type == PNG_FILE) ||
       (type == V3D_RAW_FILE) || (type == V3D_PBD_FILE) ||
       (type == MYERS_NSP_FILE) || (type == OBJECT_SCAN_FILE) ||
-      (type == JPG_FILE);
+      (type == JPG_FILE) || (type == DVID_OBJECT_FILE);
 }
 
 bool ZFileType::isImageFile(const std::string &filePath)

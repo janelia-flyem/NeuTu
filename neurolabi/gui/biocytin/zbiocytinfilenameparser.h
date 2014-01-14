@@ -13,10 +13,12 @@ public:
     EDIT, PROJECTION, MASK, ROI, ORIGINAL
   };
 
+  static std::string getCorePath(const std::string &path);
   static std::string getCoreName(const std::string &path);
   static ESuffixRole getRole(const std::string &path);
   static std::string getSuffix(ESuffixRole role);
   static int getTileIndex(const std::string &path);
+  static std::string getSwcEditPath(const std::string &path);
 
   typedef std::map<ESuffixRole, std::string> TSuffixMap;
 

@@ -127,6 +127,9 @@ ZStackDoc::ZStackDoc(ZStack *stack, QObject *parent) : QObject(parent)
 
   createActions();
   //createContextMenu();
+
+  setTag(NeuTube::Document::NORMAL);
+  setStackBackground(NeuTube::IMAGE_BACKGROUND_DARK);
 }
 
 ZStackDoc::~ZStackDoc()
@@ -288,6 +291,10 @@ void ZStackDoc::createActions()
   action = new QAction("Reset branch point", this);
   connect(action, SIGNAL(triggered()), this, SLOT(executeResetBranchPoint()));
   m_actionMap[ACTION_RESET_BRANCH_POINT] = action;
+
+  action = new QAction("Z Interpolation", this);
+  connect(action, SIGNAL(triggered()), this, SLOT(executeInterpolateSwcZCommand()));
+  m_actionMap[ACTION_SWC_Z_INTERPOLATION] = action;
 
   m_singleSwcNodeActionActivator.registerAction(
         m_actionMap[ACTION_MEASURE_SWC_NODE_LENGTH], false);
@@ -5832,7 +5839,7 @@ bool ZStackDoc::watershed()
   return false;
 }
 
-int ZStackDoc::findLoop()
+int ZStackDoc::findLoop(int minLoopSize)
 {
   int loopNumber = 0;
 
@@ -5844,8 +5851,12 @@ int ZStackDoc::findLoop()
     m_progressReporter->advance(0.1);
 
     Stack_Binarize(data);
+    Stack *filled = Stack_Fill_Hole_N(data, NULL, 1, 6, NULL);
+
     m_progressReporter->advance(0.1);
-    Stack *shrinked = Stack_Bwpeel(data, REMOVE_ARC, NULL);
+    Stack *shrinked = Stack_Bwpeel(filled, REMOVE_ARC, NULL);
+    C_Stack::kill(filled);
+
     m_progressReporter->advance(0.2);
 #ifdef _DEBUG_2
     const NeutubeConfig &config = NeutubeConfig::getInstance();
@@ -5855,7 +5866,7 @@ int ZStackDoc::findLoop()
     //m_progressReporter->update(40);
 
     ZStackGraph stackGraph;
-    ZGraph *graph = stackGraph.buildGraph(shrinked);
+    ZGraph *graph = stackGraph.buildForegroundGraph(shrinked);
 
     graph->setProgressReporter(m_progressReporter);
     m_progressReporter->advance(0.1);
@@ -5870,7 +5881,10 @@ int ZStackDoc::findLoop()
     graph->setProgressReporter(m_progressReporter);
     for (size_t i = 0; i < cycleArray.size(); ++i) {
       vector<int> path = cycleArray[i];
-      if (path.size() > 100) {
+#ifdef _DEBUG_
+      cout << "Cycle size: " << path.size() << endl;
+#endif
+      if ((int) path.size() >= minLoopSize) {
         ZObject3d *obj = new ZObject3d;
         for (vector<int>::const_iterator iter = path.begin(); iter != path.end();
              ++iter) {
@@ -5940,6 +5954,7 @@ void ZStackDoc::bwthin()
       C_Stack::copyValue(out, stack()->c_stack(0));
       C_Stack::kill(out);
       m_progressReporter->advance(0.3);
+      stack()->deprecateSingleChannelView(0);
       emit stackModified();
     }
 
@@ -6108,12 +6123,16 @@ bool ZStackDoc::executeSwcNodeSmartExtendCommand(
     if (prevNode != NULL) {
       if (center[0] >= 0 && center[1] >= 0 && center[2] >= 0) {
         ZNeuronTracer tracer;
+        tracer.setBackgroundType(getStackBackground());
         tracer.setIntensityField(stack()->c_stack());
         tracer.setTraceWorkspace(m_traceWorkspace);
         if (m_traceWorkspace->trace_mask == NULL) {
           m_traceWorkspace->trace_mask =
               C_Stack::make(GREY, stack()->width(), stack()->height(),
                             stack()->depth());
+        }
+        if (GET_APPLICATION_NAME == "Biocytin") {
+          tracer.setResolution(1, 1, 10);
         }
 
         Swc_Tree *branch = tracer.trace(
@@ -6156,6 +6175,57 @@ bool ZStackDoc::executeSwcNodeSmartExtendCommand(
   if (command != NULL) {
     pushUndoCommand(command);
     deprecateTraceMask();
+    return true;
+  }
+
+  return false;
+}
+
+bool ZStackDoc::executeInterpolateSwcZCommand()
+{
+  if (!m_selectedSwcTreeNodes.empty()) {
+    ZStackDocCommand::SwcEdit::CompositeCommand *allCommand =
+        new ZStackDocCommand::SwcEdit::CompositeCommand(this);
+    for (set<Swc_Tree_Node*>::iterator iter = m_selectedSwcTreeNodes.begin();
+         iter != m_selectedSwcTreeNodes.end(); ++iter) {
+      if (SwcTreeNode::isContinuation(*iter)) {
+        Swc_Tree_Node *upEnd = SwcTreeNode::parent(*iter);
+        while (SwcTreeNode::isContinuation(upEnd) &&
+               m_selectedSwcTreeNodes.count(upEnd) == 1) { /* continuation and selected*/
+          upEnd = SwcTreeNode::parent(upEnd);
+        }
+
+        Swc_Tree_Node *downEnd = SwcTreeNode::firstChild(*iter);
+        while (SwcTreeNode::isContinuation(downEnd) &&
+               m_selectedSwcTreeNodes.count(downEnd) == 1) { /* continuation and selected*/
+          downEnd = SwcTreeNode::firstChild(downEnd);
+        }
+
+        double dist1 = SwcTreeNode::planePathLength(*iter, upEnd);
+        double dist2 = SwcTreeNode::planePathLength(*iter, downEnd);
+
+        double z = SwcTreeNode::z(*iter);
+        if (dist1 == 0.0 && dist2 == 0.0) {
+          z = SwcTreeNode::z(upEnd);
+        } else {
+          double lambda = dist1 / (dist1 + dist2);
+          z = SwcTreeNode::z(upEnd) * (1.0 - lambda) +
+              SwcTreeNode::z(downEnd) * lambda;
+        }
+
+        new ZStackDocCommand::SwcEdit::ChangeSwcNodeZ(
+              this, *iter, z, allCommand);
+      }
+    }
+
+    if (allCommand->childCount() > 0) {
+      allCommand->setText(QObject::tr("Z Interpolation"));
+      pushUndoCommand(allCommand);
+      deprecateTraceMask();
+    } else {
+      delete allCommand;
+    }
+
     return true;
   }
 
@@ -6325,20 +6395,26 @@ bool ZStackDoc::executeSwcNodeChangeSizeCommand(double dr)
   return false;
 }
 
-void ZStackDoc::estimateSwcRadius()
+void ZStackDoc::estimateSwcRadius(ZSwcTree *tree)
 {
-  foreach (ZSwcTree *tree, m_swcList){
+  if (tree != NULL) {
     startProgress();
     int count = tree->updateIterator(SWC_TREE_ITERATOR_DEPTH_FIRST);
     double step = 1.0 / count;
     for (Swc_Tree_Node *tn = tree->begin(); tn != NULL; tn = tree->next()) {
       if (SwcTreeNode::isRegular(tn)) {
-        SwcTreeNode::fitSignal(tn, stack()->c_stack(),
-                               NeuTube::IMAGE_BACKGROUND_BRIGHT);
+        SwcTreeNode::fitSignal(tn, stack()->c_stack(), getStackBackground());
       }
       advanceProgress(step);
     }
     endProgress();
+  }
+}
+
+void ZStackDoc::estimateSwcRadius()
+{
+  foreach (ZSwcTree *tree, m_swcList){
+    estimateSwcRadius(tree);
   }
 }
 
@@ -6799,6 +6875,7 @@ bool ZStackDoc::executeRemoveObjectCommand()
     ZStackDocCommand::ObjectEdit::RemoveSelected *command = new
         ZStackDocCommand::ObjectEdit::RemoveSelected(this);
     pushUndoCommand(command);
+    deprecateTraceMask();
     return true;
   }
 

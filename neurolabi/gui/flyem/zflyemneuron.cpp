@@ -9,6 +9,7 @@
 #include "zobject3dscan.h"
 #include "swctreenode.h"
 #include "c_json.h"
+#include "tz_error.h"
 
 using namespace std;
 
@@ -511,30 +512,34 @@ ZFlyEmNeuronAxis ZFlyEmNeuron::getAxis() const
 
     //Get all nodes sorted by z
     const std::vector<Swc_Tree_Node *> &nodeArray = tree->getSwcTreeNodeArray(
-        ZSwcTree::Z_SORT_ITERATOR);
+          ZSwcTree::Z_SORT_ITERATOR);
 
-    //Build axis
-    ZPoint center;
-    double currentZ = SwcTreeNode::z(nodeArray[0]);
-    double weight = 0.0;
-    for (size_t i = 0; i < nodeArray.size(); ++i) {
-      double z = SwcTreeNode::z(nodeArray[i]);
-      if (z >= currentZ - dz && z < currentZ + dz) {
-        double decay = (z - currentZ) / dz;
-        double v = SwcTreeNode::radius(nodeArray[i]) *
-            SwcTreeNode::radius(nodeArray[i]) *
-            SwcTreeNode::radius(nodeArray[i]) * exp(-(decay * decay));
-        center += SwcTreeNode::pos(nodeArray[i]) * v;
-        weight += v;
-      } else {
-        if (weight > 0.0) {
-          center /= weight;
-          center.setZ(currentZ);
-          axis.setCenter(center);
+    if (!nodeArray.empty()) {
+      TZ_ASSERT(SwcTreeNode::isRegular(nodeArray[0]), "Unexpected virtual node");
+
+      //Build axis
+      ZPoint center;
+      double currentZ = SwcTreeNode::z(nodeArray[0]);
+      double weight = 0.0;
+      for (size_t i = 0; i < nodeArray.size(); ++i) {
+        double z = SwcTreeNode::z(nodeArray[i]);
+        if (z >= currentZ - dz && z < currentZ + dz) {
+          double decay = (z - currentZ) / dz;
+          double v = SwcTreeNode::radius(nodeArray[i]) *
+              SwcTreeNode::radius(nodeArray[i]) *
+              SwcTreeNode::radius(nodeArray[i]) * exp(-(decay * decay));
+          center += SwcTreeNode::pos(nodeArray[i]) * v;
+          weight += v;
+        } else {
+          if (weight > 0.0) {
+            center /= weight;
+            center.setZ(currentZ);
+            axis.setCenter(center);
+          }
+          center.set(0, 0, 0);
+          weight = 0.0;
+          currentZ += dz * 2.0;
         }
-        center.set(0, 0, 0);
-        weight = 0.0;
-        currentZ += dz * 2.0;
       }
     }
   }

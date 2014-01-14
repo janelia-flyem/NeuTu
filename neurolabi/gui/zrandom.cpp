@@ -26,9 +26,15 @@ ZRandom::ZRandom()
 
 ZRandom &ZRandom::getInstance()
 {
-  // should be thread local, use qt or use boost thread_specific_ptr or wait for c++11 thread_local keyword
+#if (QT_VERSION >= QT_VERSION_CHECK(4, 8, 0))
+  // should be thread local,
+  // use qt or use boost thread_specific_ptr or wait for c++11 thread_local keyword
   static QThreadStorage<ZRandom> globalZRandom;
   return globalZRandom.localData();
+#else
+  static ZRandom random;
+  return random;
+#endif
 }
 
 void ZRandom::uniqueRandInit(int maxValue, int minValue)

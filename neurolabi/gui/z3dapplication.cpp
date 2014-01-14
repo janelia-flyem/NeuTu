@@ -1,8 +1,10 @@
 #include "z3dapplication.h"
 
+#include "zglew.h"
 #include "QsLog.h"
 #include "z3dshaderprogram.h"
 #include "z3dgpuinfo.h"
+#include "zerror.h"
 
 #if !defined(Q_OS_WIN) && !defined(Q_OS_DARWIN)
 #include <sys/utsname.h> // for uname
@@ -253,17 +255,22 @@ bool Z3DApplication::initializeGL()
   if (err != GLEW_OK) {
     m_errorMsg = "glewInit failed, error: ";
     m_errorMsg += reinterpret_cast<const char*>(glewGetErrorString(err));
-    LERROR() << m_errorMsg;
-    LWARN() << "3D functions will be disabled.";
+    RECORD_WARNING_UNCOND(m_errorMsg.toStdString());
+    RECORD_WARNING_UNCOND("3D functions will be disabled.");
+    //LERROR() << m_errorMsg;
+    //LWARN() << "3D functions will be disabled.";
     return false;
   } else {
     //LINFO() << "GLEW version:" << (const char*)(glewGetString(GLEW_VERSION));
+    RECORD_TITLED_INFORMATION(
+          "GLEW version:", (const char*)(glewGetString(GLEW_VERSION)));
     Z3DGpuInfoInstance.logGpuInfo();
     if (Z3DGpuInfoInstance.isSupported()) {
       m_glInitialized = true;
       return m_glInitialized;
     } else {
       m_errorMsg = Z3DGpuInfoInstance.getNotSupportedReason();
+      RECORD_WARNING_UNCOND(m_errorMsg.toStdString());
       m_glInitialized = false;
       return m_glInitialized;
     }
@@ -326,9 +333,11 @@ void Z3DApplication::detectOS()
   case QSysInfo::MV_10_6:
     m_osString = "Mac OS X SNOW LEOPARD";
     break;
+#if (QT_VERSION >= QT_VERSION_CHECK(4, 8, 0))
   case QSysInfo::MV_10_7:
     m_osString = "Mac OS X LION";
     break;
+#endif
 #if (QT_VERSION > QT_VERSION_CHECK(4, 8, 1))
   case QSysInfo::MV_10_8:
     m_osString = "Mac OS X MOUNTAIN LION";

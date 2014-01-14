@@ -120,6 +120,9 @@ ZSwcTree* ZStackSkeletonizer::makeSkeleton(const Stack *stack)
 
       cout << "Shortest path grow ..." << endl;
       Sp_Grow_Workspace *sgw = New_Sp_Grow_Workspace();
+      sgw->resolution[0] = m_resolution[0];
+      sgw->resolution[1] = m_resolution[1];
+      sgw->resolution[2] = m_resolution[2];
       sgw->wf = Stack_Voxel_Weight_I;
       size_t max_index;
       Stack_Max(tmpdist, &max_index);

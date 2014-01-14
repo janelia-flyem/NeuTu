@@ -1,3 +1,4 @@
+#include "zglew.h"
 #include "z3dtexturecoordinaterenderer.h"
 
 #include "z3dmesh.h"

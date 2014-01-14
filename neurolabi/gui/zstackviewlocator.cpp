@@ -1,8 +1,11 @@
 #include "zstackviewlocator.h"
+
+#include <algorithm>
+
 #include "tz_utilities.h"
 #include "tz_math.h"
 
-ZStackViewLocator::ZStackViewLocator() : m_sceneRatio(0.1)
+ZStackViewLocator::ZStackViewLocator() : m_sceneRatio(0.1), m_minZoomRatio(2)
 {
 }
 
@@ -22,10 +25,10 @@ int ZStackViewLocator::getZoomRatio(int viewPortWidth, int viewPortHeight) const
   int zoomRatio = 1;
 
   if (viewPortWidth > 0 && viewPortHeight > 0) {
-    std::min(m_canvasSize.width() / viewPortWidth,
+    zoomRatio = std::min(m_canvasSize.width() / viewPortWidth,
              m_canvasSize.height() / viewPortHeight);
-    if (zoomRatio == 0) {
-      zoomRatio = 1;
+    if (zoomRatio < m_minZoomRatio) {
+      zoomRatio = m_minZoomRatio;
     }
   }
 

@@ -125,7 +125,10 @@
 #include "tz_cuboid_i.h"
 #include "zswcglobalfeatureanalyzer.h"
 #include "zlogmessagereporter.h"
+#include "zerror.h"
+#include "flyem/zflyembodyanalyzer.h"
 #include "swc/zswcresampler.h"
+#include "swc/zswcnodedistselector.h"
 #include "misc/miscutility.h"
 #include "test/zjsontest.h"
 #include "test/zswctreetest.h"
@@ -9815,7 +9818,6 @@ void ZTest::test(MainWindow *host)
   json_object_set(obj, "metadata", metaObj);
 
   json_dump_file(obj, (dataPath + "/test.json").c_str(), JSON_INDENT(2));
-
 #endif
 
 #if 0
@@ -9887,7 +9889,6 @@ void ZTest::test(MainWindow *host)
       subtree.setDataFromNode(root);
 
       if (subtree.length() * 2.0 > analyzer.getMinLength()) { //ignore small subtrees
-        /*
         ZString subtreePath = GET_DATA_DIR + "/test/subtree/decomposed/";
         subtreePath.appendNumber(++count, 5);
         subtreePath += "_";
@@ -9895,7 +9896,6 @@ void ZTest::test(MainWindow *host)
         subtreePath += ".swc";
         subtree.resortId();
         subtree.save(subtreePath);
-        */
 
         ZDoubleVector feature =
             ZSwcGlobalFeatureAnalyzer::computeFeatureSet(
@@ -9997,7 +9997,7 @@ void ZTest::test(MainWindow *host)
 
 #if 0
   ZMatrix mat;
-  mat.importTextFile(GET_DATA_DIR + "/test/subtree/cluster_feature.txt");
+  mat.importTextFile(GET_DATA_DIR + "/test/subtree/fuzzy_cluster_feature.txt");
 
   int nsample = mat.getRowNumber();
   int nfeat = mat.getColumnNumber() - 1;
@@ -10006,6 +10006,12 @@ void ZTest::test(MainWindow *host)
   std::vector<double> hist2(nfeat);
 
   ZMatrix confusionMatrix(89, 89);
+
+  ZMatrix simMat(nsample + 1, nsample);
+
+  for (int i = 0; i < nsample; ++i) {
+    simMat.set(0, i, mat.getValue(i, 0));
+  }
 
   double goodCount = 0;
   for (int i = 0; i < nsample; ++i) {
@@ -10017,10 +10023,13 @@ void ZTest::test(MainWindow *host)
         mat.copyRowValue(j, 1, nfeat, &(hist2[0]));
         int classId = iround(mat.getValue(j, 0));
         double dist = ZHistogram::computeJsDivergence(hist1, hist2);
+        simMat.set(i, j, 1.0 / (1.0 + dist));
         if (predicted < 0 || minDist > dist) {
           minDist = dist;
           predicted = classId;
         }
+      } else {
+        simMat.set(i, j, 1.0);
       }
     }
 
@@ -10033,8 +10042,9 @@ void ZTest::test(MainWindow *host)
     confusionMatrix.addValue(realClass - 1, predicted - 1, 1);
   }
 
+  simMat.exportCsv(GET_DATA_DIR + "/flyem/TEM/simmat_subtree.txt");
   std::cout << goodCount << " / " << nsample;
-  confusionMatrix.exportCsv(GET_DATA_DIR + "/test.csv");
+  confusionMatrix.exportCsv(GET_DATA_DIR + "/fuzzy_confmat.csv");
 
 #endif
 
@@ -10078,13 +10088,17 @@ void ZTest::test(MainWindow *host)
   ZMatrix Z;
   Z.importTextFile(GET_DATA_DIR + "/Z.txt");
   for (int i = 0; i < Z.getRowNumber(); ++i) {
-    dendrogram.addLink(Z.at(i, 0), Z.at(i, 1), Z.at(i, 2) - 0.5);
+    //dendrogram.addLink(Z.at(i, 0), Z.at(i, 1), Z.at(i, 2) - 0.5); //for matching simmat
+
+    dendrogram.addLink(Z.at(i, 0), Z.at(i, 1), Z.at(i, 2) - 0.38);
   }
   dendrogram.loadLeafName(GET_DATA_DIR + "/flyem/TEM/neuron_name.txt");
-  std::string svgString = dendrogram.toSvgString(10.0);
+  std::string svgString = dendrogram.toSvgString(15.0);
 
-  ZSvgGenerator svgGenerator(0, 0, 800, 5000);
+  //std::string svgString = dendrogram.toSvgString(10.0);//for matching simmat
+  //ZSvgGenerator svgGenerator(0, 0, 800, 5000);//for matching simmat
 
+  ZSvgGenerator svgGenerator(0, 0, 1000, 6000);
 
   svgGenerator.write((GET_DATA_DIR + "/test.svg").c_str(), svgString);
 #endif
@@ -10102,7 +10116,7 @@ void ZTest::test(MainWindow *host)
   svgGenerator.write((GET_DATA_DIR + "/test.svg").c_str(), svgString);
 #endif
 
-#if 1
+#if 0
   std::string neuronNameFilePath = GET_DATA_DIR + "/flyem/TEM/class_name.txt";
   ZFlyEmDataBundle bundle;
   bundle.loadJsonFile(GET_DATA_DIR + "/flyem/TEM/data_release/bundle1/data_bundle.json");
@@ -10116,6 +10130,117 @@ void ZTest::test(MainWindow *host)
     stream << neuron.getName() << std::endl;
   }
   stream.close();
+#endif
+
+#if 0
+  ZFlyEmBodyAnalyzer bodyAnalyzer;
+  ZObject3dScan obj;
+  obj.load(GET_DATA_DIR + "/flyem/FIB/skeletonization/session19/bodies/500k+/29.sobj");
+
+
+  //obj.downsampleMax(1, 1, 0);
+  //obj.save(GET_DATA_DIR + "/test.sobj");
+  bodyAnalyzer.setDownsampleInterval(1, 1, 0);
+
+  ZPointArray pts = bodyAnalyzer.computeHoleCenter(obj);
+  ZCuboid box = obj.getBoundBox();
+  ZPoint corner = box.firstCorner();
+  corner *= -1;
+  pts.translate(corner);
+  pts.exportSwcFile(GET_DATA_DIR + "/test.swc", 3.0);
+
+  pts.print();
+#endif
+
+#if 0
+  ZFlyEmBodyAnalyzer bodyAnalyzer;
+  ZObject3dScan obj;
+  obj.load(GET_DATA_DIR + "/flyem/FIB/skeletonization/session19/bodies/500k+/29.sobj");
+  bodyAnalyzer.setDownsampleInterval(1, 1, 1);
+
+  ZPointArray pts = bodyAnalyzer.computeTerminalPoint(obj);
+
+  ZCuboid box = obj.getBoundBox();
+  ZPoint corner = box.firstCorner();
+  corner *= -1;
+  pts.translate(corner);
+
+  pts.exportSwcFile(GET_DATA_DIR + "/test.swc", 3.0);
+#endif
+
+#if 0
+  RECORD_INFORMATION("Info test");
+  RECORD_WARNING_UNCOND("Warning test");
+#endif
+
+#if 0
+  ZSwcTree tree;
+  tree.load(GET_DATA_DIR + "/biocytin/bug_source1.swc");
+  ZSwcResampler resampler;
+
+  resampler.optimalDownsample(&tree);
+
+  tree.resortId();
+  //resampler.optimalDownsample(&tree);
+  tree.save(GET_DATA_DIR + "/test.swc");
+#endif
+
+#if 0
+  ZSwcTree tree;
+  tree.load(GET_DATA_DIR + "/benchmark/swc/compare/compare1.swc");
+  tree.setType(0);
+
+  ZSwcNodeDistSelector selector;
+  selector.setMinDistance(100);
+  ZSwcTreeNodeArray nodeArray = selector.select(tree);
+
+  nodeArray.print();
+
+  tree.setTypeByLabel();
+  tree.print();
+  tree.save(GET_DATA_DIR + "/test.swc");
+
+#endif
+
+
+#if 0
+  ZFlyEmDataBundle bundle;
+  bundle.loadJsonFile(dataPath + "/flyem/TEM/data_bundle2.json");
+
+  ZSwcTree *tree = bundle.getModel(209);
+  double length = tree->length();
+  double minDist = length / 500.0;
+
+  ZSwcNodeDistSelector selector;
+  selector.setMinDistance(minDist);
+
+  ZSwcTreeNodeArray nodeArray = selector.select(*tree);
+
+  tree->setTypeByLabel();
+  tree->save(GET_DATA_DIR + "/test.swc");
+
+  std::cout << nodeArray.size() << " selected" << std::endl;
+
+  double shollRange = minDist * 2.0;
+
+  ZSwcShollFeatureAnalyzer analyzer;
+  analyzer.setShollStart(shollRange / 10.0);
+  analyzer.setShollEnd(shollRange);
+  analyzer.setShollRadius(shollRange / 10.0);
+
+  std::vector<double> feature;
+
+  for (ZSwcTreeNodeArray::const_iterator iter = nodeArray.begin();
+       iter != nodeArray.end(); ++iter) {
+    feature = analyzer.computeFeature(*iter);
+  }
+#endif
+
+#if 1
+  ZObject3dScan obj;
+  obj.importDvidObject(GET_DATA_DIR + "/1.dvid");
+
+  std::cout << obj.getVoxelNumber() << std::endl;
 #endif
 
 }
