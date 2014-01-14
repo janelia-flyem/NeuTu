@@ -111,6 +111,8 @@
 #include "swc/zswcresampler.h"
 #include "biocytin/zbiocytinfilenameparser.h"
 #include "penwidthdialog.h"
+#include "dvid/zdvidclient.h"
+#include "dvidobjectdialog.h"
 
 #include "ztest.h"
 
@@ -216,6 +218,10 @@ MainWindow::MainWindow(QWidget *parent) :
   createActionMap();
   setActionActivity();
   updateAction();
+
+  m_dvidClient = new ZDvidClient("http://emdata1.int.janelia.org", this);
+  m_dvidObjectDlg = new DvidObjectDialog(this);
+  m_dvidObjectDlg->setAddress(m_dvidClient->getServer());
 }
 
 MainWindow::~MainWindow()
@@ -4114,9 +4120,8 @@ void MainWindow::on_actionMask_SWC_triggered()
         swcFrame->document()->notifyStrokeModified();
         swcFrame->document()->notifySwcModified();
 
-        swcFrame->open3DWindow(this, Z3DWindow::EXCLUDE_VOLUME);
-
         if (swcFrame != stackFrame) {
+          swcFrame->open3DWindow(this, Z3DWindow::EXCLUDE_VOLUME);
           delete swcFrame;
         }
       } else {
@@ -4280,5 +4285,14 @@ void MainWindow::on_actionPen_Width_for_SWC_Display_triggered()
         frame->updateView();
       }
     }
+  }
+}
+
+void MainWindow::on_actionDVID_Object_triggered()
+{
+  if (m_dvidObjectDlg->exec()) {
+    m_dvidClient->setServer(m_dvidObjectDlg->getAddress());
+    m_dvidClient->postRequest(ZDvidClient::DVID_GET_OBJECT,
+                              QVariant(m_dvidObjectDlg->getBodyId()));
   }
 }

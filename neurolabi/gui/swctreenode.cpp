@@ -423,6 +423,34 @@ double SwcTreeNode::pathLength(const Swc_Tree_Node *tn1,
   return dist;
 }
 
+double SwcTreeNode::planePathLength(const Swc_Tree_Node *tn1,
+                               const Swc_Tree_Node *tn2)
+{
+  double dist = Infinity;
+
+  const Swc_Tree_Node *ancestor = SwcTreeNode::commonAncestor(tn1, tn2);
+  if (SwcTreeNode::isRegular(ancestor)) {
+    dist = 0.0;
+    const Swc_Tree_Node *tn = tn1;
+    while (tn != ancestor) {
+      double dx = x(tn) - x(parent(tn));
+      double dy = y(tn) - y(parent(tn));
+      dist += sqrt(dx * dx + dy * dy);
+      tn = tn->parent;
+    }
+
+    tn = tn2;
+    while (tn != ancestor) {
+      double dx = x(tn) - x(parent(tn));
+      double dy = y(tn) - y(parent(tn));
+      dist += sqrt(dx * dx + dy * dy);
+      tn = tn->parent;
+    }
+  }
+
+  return dist;
+}
+
 double SwcTreeNode::distance(const Swc_Tree_Node *tn1, const Swc_Tree_Node *tn2,
                              SwcTreeNode::EDistanceType distType)
 {

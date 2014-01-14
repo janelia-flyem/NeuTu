@@ -21,6 +21,8 @@
 #include "c_stack.h"
 #include "tz_stack_stat.h"
 #include "tz_stack_math.h"
+#include "include/tz_stdint.h"
+#include "zfiletype.h"
 
 using namespace std;
 
@@ -923,6 +925,10 @@ void ZObject3dScan::print() const
 
 bool ZObject3dScan::load(const string &filePath)
 {
+  if (ZFileType::fileType(filePath) == ZFileType::DVID_OBJECT_FILE) {
+    return importDvidObject(filePath);
+  }
+
   FILE *fp = fopen(filePath.c_str(), "rb");
   if (fp != NULL) {
     int stripeNumber = 0;
@@ -1761,6 +1767,107 @@ void ZObject3dScan::fillHole()
 {
   ZObject3dScan holeObj = findHoleObject();
   unify(holeObj);
+}
+
+#define READ_TEST(real, expected, action) \
+  if (real != expected) { \
+    action; \
+    fclose(fp); \
+    return false; \
+  }
+
+bool ZObject3dScan::importDvidObject(const std::string &filePath)
+{
+  clear();
+
+  FILE *fp = fopen(filePath.c_str(), "r");
+  if (fp != NULL) {
+    tz_uint8 flag = 0;
+    size_t n = fread(&flag, 1, 1, fp);
+    READ_TEST(n, 1, RECORD_ERROR_UNCOND("Reading error"));
+
+    tz_uint8 numberOfDimensions = 0;
+    n = fread(&numberOfDimensions, 1, 1, fp);
+    if (n != 1) {
+      fclose(fp);
+      return false;
+    }
+
+    if (numberOfDimensions != 3) {
+      RECORD_ERROR_UNCOND("Current version only supports 3D");
+      fclose(fp);
+      return false;
+    }
+
+    tz_uint8 dimOfRun = 0;
+    n = fread(&dimOfRun, 1, 1, fp);
+    if (n != 1) {
+      fclose(fp);
+      return false;
+    }
+
+    if (dimOfRun != 0) {
+      RECORD_ERROR_UNCOND("Unspported run dimension");
+      fclose(fp);
+      return false;
+    }
+
+    tz_uint8 reserved = 0;
+    n = fread(&reserved, 1, 1, fp);
+    if (n != 1) {
+      fclose(fp);
+      return false;
+    }
+
+    tz_uint32 numberOfVoxels = 0;
+    n = fread(&numberOfVoxels, 4, 1, fp);
+    if (n != 1) {
+      fclose(fp);
+      return false;
+    }
+
+    tz_uint32 numberOfSpans = 0;
+    n = fread(&numberOfSpans, 4, 1, fp);
+    READ_TEST(n, 1, RECORD_ERROR_UNCOND("Failed to read number of spans"));
+
+    tz_uint32 readSegmentNumber = 0;
+    while (!feof(fp)) {
+      tz_int32 coord[3];
+      n = fread(coord, 4, 3, fp);
+      READ_TEST(n, 3, RECORD_ERROR_UNCOND("Failed to read span"));
+
+      if (feof(fp)) {
+        RECORD_ERROR_UNCOND("Reading error. File ends prematurely")
+      }
+
+      tz_int32 runLength;
+      n = fread(&runLength, 4, 1, fp);
+      READ_TEST(n, 1, RECORD_ERROR_UNCOND("Failed to read run length"));
+      if (runLength <= 0) {
+        fclose(fp);
+        RECORD_ERROR_UNCOND("Invalid run length");
+        return false;
+      }
+
+      addSegment(coord[2], coord[1], coord[0], coord[0] + runLength);
+      ++readSegmentNumber;
+      if (readSegmentNumber == numberOfSpans) {
+        break;
+      }
+    }
+
+    if (readSegmentNumber != numberOfSpans) {
+      RECORD_ERROR_UNCOND("Unmatched numbers of spans");
+      fclose(fp);
+      return false;
+    }
+  } else {
+    RECORD_ERROR_UNCOND("Unable to open file");
+    return false;
+  }
+
+  fclose(fp);
+  return true;
 }
 
 ZINTERFACE_DEFINE_CLASS_NAME(ZObject3dScan)

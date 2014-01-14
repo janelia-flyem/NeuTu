@@ -10236,4 +10236,11 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
+#if 1
+  ZObject3dScan obj;
+  obj.importDvidObject(GET_DATA_DIR + "/1.dvid");
+
+  std::cout << obj.getVoxelNumber() << std::endl;
+#endif
+
 }

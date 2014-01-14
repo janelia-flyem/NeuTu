@@ -44,11 +44,10 @@ HOME = $$system(echo $HOME)
 include(add_itk.pri)
 
 #Qt5
+QT += opengl xml network
 isEqual(QT_MAJOR_VERSION,5) | greaterThan(QT_MAJOR_VERSION,5) {
 message("Qt 5")
-    QT += opengl xml concurrent
-} else {
-    QT += opengl xml
+    QT += concurrent
 }
 
 #QT += webkit
@@ -356,7 +355,9 @@ HEADERS += mainwindow.h \
     zstackdocmenustore.h \
     zstackdocmenufactory.h \
     zglew.h \
-    penwidthdialog.h
+    penwidthdialog.h \
+    dvid/zdvidclient.h \
+    dvidobjectdialog.h
 
 FORMS += settingdialog.ui \
     frameinfodialog.ui \
@@ -395,7 +396,8 @@ FORMS += settingdialog.ui \
     flyemdataexportdialog.ui \
     flyemgeosearchdialog.ui \
     flyemgeofilterdialog.ui \
-    penwidthdialog.ui
+    penwidthdialog.ui \
+    dvidobjectdialog.ui
 SOURCES += main.cpp \
     mainwindow.cpp \
     zstackview.cpp \
@@ -567,7 +569,9 @@ SOURCES += main.cpp \
     zswccurvaturefeatureanalyzer.cpp \
     zstackdocmenustore.cpp \
     zstackdocmenufactory.cpp \
-    penwidthdialog.cpp
+    penwidthdialog.cpp \
+    dvid/zdvidclient.cpp \
+    dvidobjectdialog.cpp
 
 OTHER_FILES += \
     extlib.pri

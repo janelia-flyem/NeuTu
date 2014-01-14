@@ -103,6 +103,8 @@ public:
   //untested
   void inferWeightParameter(const Stack *stack);
 
+  void setResolution(const double *res);
+
 private:
   void initRange(const Stack *stack, int *range);
 

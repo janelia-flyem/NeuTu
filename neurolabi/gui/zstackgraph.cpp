@@ -359,3 +359,10 @@ ZGraph* ZStackGraph::buildGraph(const Stack *stack, const Stack *mask)
   return new ZGraph(graph);
 }
 #endif
+
+void ZStackGraph::setResolution(const double *res)
+{
+  for (int i = 0; i < 3; ++i) {
+    m_workspace.resolution[i] = res[i];
+  }
+}

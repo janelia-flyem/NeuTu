@@ -12,6 +12,9 @@ ZNeuronTracer::ZNeuronTracer() : m_stack(NULL), m_traceWorkspace(NULL),
   m_backgroundType(NeuTube::IMAGE_BACKGROUND_DARK)
 {
   m_swcConnector = new ZSwcConnector;
+  m_resolution[0] = 1.0;
+  m_resolution[1] = 1.0;
+  m_resolution[2] = 1.0;
 }
 
 ZNeuronTracer::~ZNeuronTracer()
@@ -131,6 +134,7 @@ Swc_Tree* ZNeuronTracer::trace(double x1, double y1, double z1, double r1,
   */
 
   ZStackGraph stackGraph;
+  stackGraph.setResolution(m_resolution);
   if (m_backgroundType == NeuTube::IMAGE_BACKGROUND_BRIGHT) {
     stackGraph.setWeightFunction(Stack_Voxel_Weight);
   } else {

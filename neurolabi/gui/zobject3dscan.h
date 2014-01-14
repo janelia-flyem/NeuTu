@@ -157,6 +157,29 @@ public:
   void save(const std::string &filePath) const;
   bool load(const std::string &filePath);
 
+  /*!
+   * \brief Import a dvid object
+   *
+   * byte     Payload descriptor:
+                   Bit 0 (LSB) - 8-bit grayscale
+                   Bit 1 - 16-bit grayscale
+                   Bit 2 - 16-bit normal
+                   ...
+        uint8    Number of dimensions
+        uint8    Dimension of run (typically 0 = X)
+        byte     Reserved (to be used later)
+        uint32    # Voxels [TODO.  0 for now]
+        uint32    # Spans
+        Repeating unit of:
+            int32   Coordinate of run start (dimension 0)
+            int32   Coordinate of run start (dimension 1)
+            int32   Coordinate of run start (dimension 2)
+              ...
+            int32   Length of run
+            bytes   Optional payload dependent on first byte descriptor
+   */
+  bool importDvidObject(const std::string &filePath);
+
   template<class T>
   int scanArray(const T *array, int x, int y, int z, int width);
 

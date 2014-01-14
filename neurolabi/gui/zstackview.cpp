@@ -1571,10 +1571,12 @@ ZStack* ZStackView::getObjectMask(NeuTube::EColor color, uint8_t maskValue)
 void ZStackView::exportObjectMask(const string &filePath)
 {
   if (m_objectCanvas != NULL) {
-    m_objectCanvas->save(filePath.c_str());
+    //m_objectCanvas->save(filePath.c_str());
     ZStack *stack = getObjectMask(255);
-    stack->save(filePath);
-    delete stack;
+    if (stack != NULL) {
+      stack->save(filePath);
+      delete stack;
+    }
   }
 }
 
@@ -1582,9 +1584,11 @@ void ZStackView::exportObjectMask(
     NeuTube::EColor color, const string &filePath)
 {
   if (m_objectCanvas != NULL) {
-    m_objectCanvas->save(filePath.c_str());
+    //m_objectCanvas->save(filePath.c_str());
     ZStack *stack = getObjectMask(color, 255);
-    stack->save(filePath);
-    delete stack;
+    if (stack != NULL) {
+      stack->save(filePath);
+      delete stack;
+    }
   }
 }

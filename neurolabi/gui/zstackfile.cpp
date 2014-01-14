@@ -160,6 +160,7 @@ void ZStackFile::import(const string &filePath)
   case ZFileType::V3D_PBD_FILE:
   case ZFileType::MYERS_NSP_FILE:
   case ZFileType::OBJECT_SCAN_FILE:
+  case ZFileType::DVID_OBJECT_FILE:
   case ZFileType::JPG_FILE:
 #ifdef _DEBUG_2
     cout << filePath << endl;
@@ -498,7 +499,9 @@ ZStack* ZStackFile::readStack(ZStack *data)
       Mc_Stack *stack = NULL;
       int offset[3] = {0, 0, 0};
       if (ZFileType::fileType(m_urlList[0].c_str()) ==
-          ZFileType::OBJECT_SCAN_FILE) {
+          ZFileType::OBJECT_SCAN_FILE ||
+          ZFileType::fileType(m_urlList[0].c_str()) ==
+                    ZFileType::DVID_OBJECT_FILE) {
         ZObject3dScan obj;
         if (obj.load(m_urlList[0])) {
           ZObject3d *obj3d = obj.toObject3d();

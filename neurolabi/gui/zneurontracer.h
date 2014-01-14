@@ -31,12 +31,19 @@ public:
     m_backgroundType = bg;
   }
 
+  inline void setResolution(double x, double y, double z) {
+    m_resolution[0] = x;
+    m_resolution[1] = y;
+    m_resolution[2] = z;
+  }
+
 private:
   Stack *m_stack;
   Trace_Workspace *m_traceWorkspace;
   Connection_Test_Workspace *m_connWorkspace;
   ZSwcConnector *m_swcConnector;
   NeuTube::EImageBackground m_backgroundType;
+  double m_resolution[3];
 };
 
 #endif // ZNEURONTRACER_H

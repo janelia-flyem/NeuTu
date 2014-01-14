@@ -333,9 +333,11 @@ void Z3DApplication::detectOS()
   case QSysInfo::MV_10_6:
     m_osString = "Mac OS X SNOW LEOPARD";
     break;
+#if (QT_VERSION >= QT_VERSION_CHECK(4, 8, 0))
   case QSysInfo::MV_10_7:
     m_osString = "Mac OS X LION";
     break;
+#endif
 #if (QT_VERSION > QT_VERSION_CHECK(4, 8, 1))
   case QSysInfo::MV_10_8:
     m_osString = "Mac OS X MOUNTAIN LION";

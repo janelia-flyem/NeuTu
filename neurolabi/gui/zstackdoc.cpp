@@ -292,6 +292,10 @@ void ZStackDoc::createActions()
   connect(action, SIGNAL(triggered()), this, SLOT(executeResetBranchPoint()));
   m_actionMap[ACTION_RESET_BRANCH_POINT] = action;
 
+  action = new QAction("Z Interpolation", this);
+  connect(action, SIGNAL(triggered()), this, SLOT(executeInterpolateSwcZCommand()));
+  m_actionMap[ACTION_SWC_Z_INTERPOLATION] = action;
+
   m_singleSwcNodeActionActivator.registerAction(
         m_actionMap[ACTION_MEASURE_SWC_NODE_LENGTH], false);
   m_singleSwcNodeActionActivator.registerAction(
@@ -6127,6 +6131,9 @@ bool ZStackDoc::executeSwcNodeSmartExtendCommand(
               C_Stack::make(GREY, stack()->width(), stack()->height(),
                             stack()->depth());
         }
+        if (GET_APPLICATION_NAME == "Biocytin") {
+          tracer.setResolution(1, 1, 10);
+        }
 
         Swc_Tree *branch = tracer.trace(
               SwcTreeNode::x(prevNode), SwcTreeNode::y(prevNode),
@@ -6168,6 +6175,57 @@ bool ZStackDoc::executeSwcNodeSmartExtendCommand(
   if (command != NULL) {
     pushUndoCommand(command);
     deprecateTraceMask();
+    return true;
+  }
+
+  return false;
+}
+
+bool ZStackDoc::executeInterpolateSwcZCommand()
+{
+  if (!m_selectedSwcTreeNodes.empty()) {
+    ZStackDocCommand::SwcEdit::CompositeCommand *allCommand =
+        new ZStackDocCommand::SwcEdit::CompositeCommand(this);
+    for (set<Swc_Tree_Node*>::iterator iter = m_selectedSwcTreeNodes.begin();
+         iter != m_selectedSwcTreeNodes.end(); ++iter) {
+      if (SwcTreeNode::isContinuation(*iter)) {
+        Swc_Tree_Node *upEnd = SwcTreeNode::parent(*iter);
+        while (SwcTreeNode::isContinuation(upEnd) &&
+               m_selectedSwcTreeNodes.count(upEnd) == 1) { /* continuation and selected*/
+          upEnd = SwcTreeNode::parent(upEnd);
+        }
+
+        Swc_Tree_Node *downEnd = SwcTreeNode::firstChild(*iter);
+        while (SwcTreeNode::isContinuation(downEnd) &&
+               m_selectedSwcTreeNodes.count(downEnd) == 1) { /* continuation and selected*/
+          downEnd = SwcTreeNode::firstChild(downEnd);
+        }
+
+        double dist1 = SwcTreeNode::planePathLength(*iter, upEnd);
+        double dist2 = SwcTreeNode::planePathLength(*iter, downEnd);
+
+        double z = SwcTreeNode::z(*iter);
+        if (dist1 == 0.0 && dist2 == 0.0) {
+          z = SwcTreeNode::z(upEnd);
+        } else {
+          double lambda = dist1 / (dist1 + dist2);
+          z = SwcTreeNode::z(upEnd) * (1.0 - lambda) +
+              SwcTreeNode::z(downEnd) * lambda;
+        }
+
+        new ZStackDocCommand::SwcEdit::ChangeSwcNodeZ(
+              this, *iter, z, allCommand);
+      }
+    }
+
+    if (allCommand->childCount() > 0) {
+      allCommand->setText(QObject::tr("Z Interpolation"));
+      pushUndoCommand(allCommand);
+      deprecateTraceMask();
+    } else {
+      delete allCommand;
+    }
+
     return true;
   }
 
@@ -6817,6 +6875,7 @@ bool ZStackDoc::executeRemoveObjectCommand()
     ZStackDocCommand::ObjectEdit::RemoveSelected *command = new
         ZStackDocCommand::ObjectEdit::RemoveSelected(this);
     pushUndoCommand(command);
+    deprecateTraceMask();
     return true;
   }
 

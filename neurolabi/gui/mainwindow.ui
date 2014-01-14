@@ -59,6 +59,7 @@
      </property>
      <addaction name="actionImage_Sequence"/>
      <addaction name="actionSparse_objects"/>
+     <addaction name="actionDVID_Object"/>
     </widget>
     <widget class="QMenu" name="menuExport">
      <property name="title">
@@ -995,6 +996,11 @@
   <action name="actionPen_Width_for_SWC_Display">
    <property name="text">
     <string>Pen Width for SWC Display</string>
+   </property>
+  </action>
+  <action name="actionDVID_Object">
+   <property name="text">
+    <string>DVID Object</string>
    </property>
   </action>
  </widget>

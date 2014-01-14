@@ -320,6 +320,10 @@ void setPathType(Swc_Tree_Node *tn1, Swc_Tree_Node *tn2, int type);
 void addPathType(Swc_Tree_Node *tn1, Swc_Tree_Node *tn2, int type);
 void addPathLabel(Swc_Tree_Node *tn1, Swc_Tree_Node *tn2, int type);
 double pathLength(const Swc_Tree_Node *tn1, const Swc_Tree_Node *tn2);
+/*!
+ * \brief length of project path on the XY plane
+ */
+double planePathLength(const Swc_Tree_Node *tn1, const Swc_Tree_Node *tn2);
 
 enum EDistanceType {
   GEODESIC, EUCLIDEAN, EUCLIDEAN_SURFACE

@@ -1,4 +1,7 @@
 #include "zstackviewlocator.h"
+
+#include <algorithm>
+
 #include "tz_utilities.h"
 #include "tz_math.h"
 
