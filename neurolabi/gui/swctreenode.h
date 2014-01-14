@@ -204,6 +204,30 @@ bool isAncestor(const Swc_Tree_Node *ancestor, const Swc_Tree_Node *tn);
 
 Swc_Tree_Node *thickestChild(Swc_Tree_Node *tn);
 
+/*!
+ * \brief Continuous descendent
+ *
+ * The target node is the first descendent >= minDist away
+ * on the continuous path of \a tn.
+ *
+ * \param tn The source node.
+ * \param minDist The minimal path distance of the target node
+ * \return The descendent of the node or NULL if no node satifies the conditions.
+ */
+Swc_Tree_Node* continuousDescendent(const Swc_Tree_Node *tn, double minDist);
+
+/*!
+ * \brief Continuous ancestor
+ *
+ * The target node is the first ancestor >= minDist away
+ * on the continuous path of \a tn.
+ *
+ * \param tn The source node.
+ * \param minDist The minimal path distance of the target node
+ * \return The ancestor of the node or NULL if no node satifies the conditions.
+ */
+Swc_Tree_Node* continuousAncestor(const Swc_Tree_Node *tn, double minDist);
+
 //Returns true iff one node is the parent of the other.
 //It returns false if either <tn1> or <tn2> is NULL.
 bool isConnected(const Swc_Tree_Node *tn1, const Swc_Tree_Node *tn2);

@@ -44,15 +44,7 @@ public:
           ++m_listIdx;
         }
         if (m_listIdx == m_bundle->m_objLists.size()) {
-          if (m_swcNodeIter != m_bundle->m_swcNodes->end()) {
-            if ((iround(SwcTreeNode::z(*m_swcNodeIter)) == m_bundle->m_sliceIndex) || (m_bundle->m_sliceIndex == -1)) {
-              m_nodeAdaptor.setColor(255, 255, 0);
-            } else {
-              m_nodeAdaptor.setColor(128, 128, 64);
-            }
-            m_nodeAdaptor.set(SwcTreeNode::x(*m_swcNodeIter), SwcTreeNode::y(*m_swcNodeIter),
-                              SwcTreeNode::z(*m_swcNodeIter), SwcTreeNode::radius(*m_swcNodeIter));
-          }
+          setSwcNodeAdaptor();
         }
       } else if (pos == End) {
         m_listIdx = m_bundle->m_objLists.size();
@@ -97,28 +89,12 @@ private:
           ++m_listIdx;
         }
         if (m_listIdx == m_bundle->m_objLists.size()) { // move out of list, return first item of node set
-          if (m_swcNodeIter != m_bundle->m_swcNodes->end()) {
-            if ((iround(SwcTreeNode::z(*m_swcNodeIter)) == m_bundle->m_sliceIndex) || (m_bundle->m_sliceIndex == -1)) {
-              m_nodeAdaptor.setColor(255, 255, 0);
-            } else {
-              m_nodeAdaptor.setColor(128, 128, 64);
-            }
-            m_nodeAdaptor.set(SwcTreeNode::x(*m_swcNodeIter), SwcTreeNode::y(*m_swcNodeIter),
-                              SwcTreeNode::z(*m_swcNodeIter), SwcTreeNode::radius(*m_swcNodeIter));
-          }
+          setSwcNodeAdaptor();
         }
       }
     } else if (m_swcNodeIter != m_bundle->m_swcNodes->end()) { // inside node set, move to next
       ++m_swcNodeIter;
-      if (m_swcNodeIter != m_bundle->m_swcNodes->end()) { // update ZCircle
-        if ((iround(SwcTreeNode::z(*m_swcNodeIter)) == m_bundle->m_sliceIndex) || (m_bundle->m_sliceIndex == -1)) {
-          m_nodeAdaptor.setColor(255, 255, 0);
-        } else {
-          m_nodeAdaptor.setColor(128, 128, 64);
-        }
-        m_nodeAdaptor.set(SwcTreeNode::x(*m_swcNodeIter), SwcTreeNode::y(*m_swcNodeIter),
-                          SwcTreeNode::z(*m_swcNodeIter), SwcTreeNode::radius(*m_swcNodeIter));
-      }
+      setSwcNodeAdaptor();
     }
   }
 
@@ -126,6 +102,20 @@ private:
   {
     return m_listIdx < m_bundle->m_objLists.size() ? m_bundle->m_objLists[m_listIdx]->at(m_drawableIdx) :
                                                      (ZStackDrawable*)(&m_nodeAdaptor);
+  }
+
+  void setSwcNodeAdaptor()
+  {
+    if (m_swcNodeIter != m_bundle->m_swcNodes->end()) { // update ZCircle
+      if ((iround(SwcTreeNode::z(*m_swcNodeIter)) == m_bundle->m_sliceIndex) || (m_bundle->m_sliceIndex == -1)) {
+        m_nodeAdaptor.setColor(255, 255, 0);
+      } else {
+        m_nodeAdaptor.setColor(164, 164, 0);
+      }
+      m_nodeAdaptor.set(SwcTreeNode::x(*m_swcNodeIter), SwcTreeNode::y(*m_swcNodeIter),
+                        SwcTreeNode::z(*m_swcNodeIter), SwcTreeNode::radius(*m_swcNodeIter));
+      m_nodeAdaptor.setVisualEffect(ZCircle::VE_BOUND_BOX | ZCircle::VE_DASH_PATTERN);
+    }
   }
 
   TPaintBundle* m_bundle;

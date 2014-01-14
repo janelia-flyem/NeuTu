@@ -67,7 +67,7 @@ QMenu* ZStackDocMenuFactory::makeSwcNodeContextMenu(
     menu = new QMenu(NULL);
   }
 
-  menu->addAction(presenter->getAction(ZStackPresenter::ACTION_SMART_EXTEND_SWC_NODE));
+  //menu->addAction(presenter->getAction(ZStackPresenter::ACTION_SMART_EXTEND_SWC_NODE));
   menu->addAction(presenter->getAction(ZStackPresenter::ACTION_EXTEND_SWC_NODE));
   menu->addAction(presenter->getAction(ZStackPresenter::ACTION_CONNECT_TO_SWC_NODE));
 
@@ -77,6 +77,19 @@ QMenu* ZStackDocMenuFactory::makeSwcNodeContextMenu(
     menu->addAction(presenter->getAction(
                       ZStackPresenter::ACTION_ESTIMATE_SWC_NODE_RADIUS));
   }
+
+  return menu;
+}
+
+QMenu* ZStackDocMenuFactory::makeSrokePaintContextMenu(
+    const ZStackPresenter *presenter, QMenu *menu)
+{
+  if (menu == NULL) {
+    menu = new QMenu(NULL);
+  }
+
+  menu->addAction(presenter->getAction(ZStackPresenter::ACTION_PAINT_STROKE));
+  menu->addAction(presenter->getAction(ZStackPresenter::ACTION_ERASE_STROKE));
 
   return menu;
 }

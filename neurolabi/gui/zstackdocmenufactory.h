@@ -20,6 +20,8 @@ public:
   static QMenu* makeSwcNodeContextMenu(const ZStackDoc *doc, QMenu *menu = NULL);
   static QMenu* makeSwcNodeContextMenu(
       const ZStackPresenter *presenter, QMenu *menu = NULL);
+  static QMenu* makeSrokePaintContextMenu(
+      const ZStackPresenter *presenter, QMenu *menu = NULL);
 };
 
 #endif // ZSTACKDOCMENUFACTORY_H

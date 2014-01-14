@@ -777,6 +777,49 @@ ZWeightedPointArray SwcTreeNode::localSegment(const Swc_Tree_Node *tn, int exten
   return segment;
 }
 
+Swc_Tree_Node* SwcTreeNode::continuousAncestor(
+    const Swc_Tree_Node *tn, double minDist)
+{
+  Swc_Tree_Node *target = NULL;
+  Swc_Tree_Node *parent = SwcTreeNode::parent(tn);
+  double dist = 0.0;
+  while (SwcTreeNode::isRegular(parent)) {
+    dist += SwcTreeNode::length(tn);
+    if (dist >= minDist) {
+      target = parent;
+      break;
+    }
+    tn = parent;
+    if (!isContinuation(tn)) {
+      break;
+    }
+    parent = SwcTreeNode::parent(tn);
+  }
+
+  return target;
+}
+
+Swc_Tree_Node *SwcTreeNode::continuousDescendent(
+    const Swc_Tree_Node *tn, double minDist)
+{
+  Swc_Tree_Node *target = NULL;
+  Swc_Tree_Node *child = SwcTreeNode::firstChild(tn);
+  double dist = 0.0;
+  while (SwcTreeNode::isRegular(child)) {
+    dist += SwcTreeNode::length(child);
+    if (dist >= minDist) {
+      target = child;
+      break;
+    }
+    if (!isContinuation(child)) {
+      break;
+    }
+    child = SwcTreeNode::firstChild(child);
+  }
+
+  return target;
+}
+
 Swc_Tree_Node *SwcTreeNode::thickestChild(Swc_Tree_Node *tn)
 {
   Swc_Tree_Node *result = NULL;

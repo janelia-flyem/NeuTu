@@ -26,13 +26,9 @@ ZBiocytinFileNameParser::ZBiocytinFileNameParser()
 {
 }
 
-string ZBiocytinFileNameParser::getCoreName(const string &path)
+string ZBiocytinFileNameParser::getCorePath(const string &path)
 {
-#ifdef _DEBUG_
-  std::cout << m_suffixMap.size() << std::endl;
-#endif
-
-  ZString name = ZString::removeFileExt(ZString::getBaseName(path));
+  ZString name = ZString::removeFileExt(path);
 
   for (TSuffixMap::const_iterator iter = m_suffixMap.begin();
        iter != m_suffixMap.end(); ++iter) {
@@ -43,6 +39,11 @@ string ZBiocytinFileNameParser::getCoreName(const string &path)
   }
 
   return name;
+}
+
+string ZBiocytinFileNameParser::getCoreName(const string &path)
+{
+  return getCorePath(ZString::getBaseName(path));
 }
 
 ZBiocytinFileNameParser::ESuffixRole
@@ -70,4 +71,9 @@ int ZBiocytinFileNameParser::getTileIndex(const string &path)
   int index = ZString(path).lastInteger();
 
   return abs(index);
+}
+
+std::string ZBiocytinFileNameParser::getSwcEditPath(const string &path)
+{
+  return getCorePath(path) + getSuffix(EDIT) + ".swc";
 }

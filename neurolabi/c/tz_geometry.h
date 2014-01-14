@@ -44,6 +44,12 @@ double Ellipse_Point_Distance(double x, double y, double a, double b,
  */
 BOOL Point_In_Ellipse(double x, double y, double a, double b);
 
+/**@brief Get uniformly distributed sphere point.
+ *
+ * n stores the number of points returned if it is not NULL.
+ */
+const double* Get_Uniform_Sphere_Point(int *n);
+
 __END_DECLS
 
 #endif

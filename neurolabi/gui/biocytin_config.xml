@@ -48,6 +48,7 @@
     <Mesh status="off"></Mesh>
     <Tensor status="off"></Tensor>
     <Axis status="off"></Axis>
+    <Background status="off"></Background>
     <PunctaManager status="off"></PunctaManager>
     <ChainManager status="off"></ChainManager>
   </Z3DWindow>

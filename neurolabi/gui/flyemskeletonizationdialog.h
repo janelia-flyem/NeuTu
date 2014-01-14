@@ -15,14 +15,14 @@ public:
   explicit FlyEmSkeletonizationDialog(QWidget *parent = 0);
   ~FlyEmSkeletonizationDialog();
   
-  int lengthThreshold();
-  int distanceThreshold();
-  int sizeThreshold();
-  bool isConnectingAll();
-  bool isKeepingShortObject();
-  bool isExcludingSmallObj();
-  bool isLevelChecked();
-  int level();
+  int lengthThreshold() const;
+  int distanceThreshold() const;
+  int sizeThreshold() const;
+  bool isConnectingAll() const;
+  bool isKeepingShortObject() const;
+  bool isExcludingSmallObj() const;
+  bool isLevelChecked() const;
+  int level() const;
 
 public slots:
   void enableDistanceThreshold();

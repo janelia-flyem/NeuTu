@@ -2,6 +2,7 @@
 #define ZLOGMESSAGEREPORTER_H
 
 #include <string>
+#include <fstream>
 #include "zmessagereporter.h"
 
 class ZLogMessageReporter : public ZMessageReporter
@@ -11,16 +12,16 @@ public:
   void report(const std::string &title, const std::string &message,
               EMessageType msgType);
 
-  virtual void setInfoFile(const std::string &f) {
-    m_infoFile = f;
-  }
+  virtual void setInfoFile(const std::string &f);
 
   virtual void setWarnFile(const std::string &f) {
     m_warnFile = f;
+    m_warnStream.open(m_warnFile.c_str(), std::ios_base::out | std::ios_base::app);
   }
 
   virtual void setErrorFile(const std::string &f) {
     m_errorFile = f;
+    m_errorStream.open(m_errorFile.c_str(), std::ios_base::out | std::ios_base::app);
   }
 
   inline const std::string& getInfoFile() const {
@@ -37,8 +38,12 @@ public:
 
 private:
   std::string m_infoFile;
+  std::ofstream m_infoStream;
   std::string m_warnFile;
+  std::ofstream m_warnStream;
   std::string m_errorFile;
+  std::ofstream m_errorStream;
+  size_t m_maxFileSize;
 };
 
 #endif // ZLOGMESSAGEREPORTER_H

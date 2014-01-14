@@ -504,7 +504,7 @@ double** Graph_Weight_Matrix(const Graph *graph, Graph_Workspace *gw)
       if (i == j) {
 	gw->weight[i][j] = 0;
       } else {
-	gw->weight[i][j] = INFINITY;
+	gw->weight[i][j] = Infinity;
       }
     }
   }
@@ -843,7 +843,7 @@ int* Graph_Shortest_Path(const Graph *graph, int start, Graph_Workspace *gw)
   }
 
   for (i = 0; i < gw->nvertex; i++) {
-    dist[i] = INFINITY;
+    dist[i] = Infinity;
     path[i] = -1;
     checked[i] = 0;
   }
@@ -970,7 +970,7 @@ int* Graph_Shortest_Path_E(const Graph *graph, int start, int end,
   }
 
   for (i = 0; i < gw->nvertex; i++) {
-    dist[i] = INFINITY;
+    dist[i] = Infinity;
     path[i] = -1;
     checked[i] = 0;
   }
@@ -1088,7 +1088,7 @@ int* Graph_Shortest_Path_Maxmin(const Graph *graph, int start, int end,
   }
 
   for (i = 0; i < gw->nvertex; i++) {
-    dist[i] = INFINITY;
+    dist[i] = Infinity;
     path[i] = -1;
     checked[i] = 0;
   }
@@ -1742,7 +1742,7 @@ void Graph_Clean_Root(Graph *graph, int root, Graph_Workspace *gw)
   
   int i;
   for (i = 0; i < gw->nvertex; i++) {
-    if (gw->dlist[i] == INFINITY) {
+    if (gw->dlist[i] == Infinity) {
       gw->dlist[i] = -1.0;
     }
   }

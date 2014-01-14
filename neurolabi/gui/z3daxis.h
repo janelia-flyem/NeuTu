@@ -17,6 +17,8 @@ public:
 
   virtual bool isReady(Z3DEye eye) const;
 
+  void setVisible(bool visible);
+
   // caller should clean up this (by delete parent of this zwidgetgroup)
   ZWidgetsGroup *getWidgetsGroup();
 

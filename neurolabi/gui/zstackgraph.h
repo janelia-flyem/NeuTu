@@ -33,6 +33,16 @@ public:
    */
   ZGraph* buildGraph(const Stack *stack);
 
+  /*!
+   * \brief Build a graph of the foreground of the stack
+   *
+   * This function only checks pixels with intensity greater than 0. It also
+   * ignores the current signal mask.
+   *
+   * \param stack Input stack
+   */
+  ZGraph* buildForegroundGraph(const Stack *stack);
+
 
   /*!
    * \brief Set the mask of the signal
@@ -81,7 +91,8 @@ public:
 
   //untested
   std::vector<int> computeShortestPath(const Stack *stack,
-                                       int startIndex, int endIndex);
+                                       int startIndex, int endIndex,
+                                       bool fgOnly = false);
 
   //untested
   void updateRange(size_t startIndex, size_t endIndex,

@@ -2,8 +2,8 @@
 #define ZHDF5_HEADER_H
 
 #if defined(_ENABLE_HDF5_)
-#include "hdf5.h"
-#include "hdf5_hl.h"
+#include <hdf5.h>
+#include <hdf5_hl.h>
 #else
 typedef int hid_t;
 typedef int herr_t;

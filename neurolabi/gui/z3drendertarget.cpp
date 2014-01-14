@@ -1,5 +1,7 @@
+#include "zglew.h"
 #include "z3drendertarget.h"
 
+#include "z3dtexture.h"
 #include "QsLog.h"
 #include "zbenchtimer.h"
 

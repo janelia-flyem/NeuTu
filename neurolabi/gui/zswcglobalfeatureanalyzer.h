@@ -14,7 +14,8 @@ public:
           //average radius, radius variance, lateral/vertical ratio
           //Average curvature
     NGF2,
-    NGF3
+    NGF3,
+    UNDEFINED_NGF
   };
 
 public:

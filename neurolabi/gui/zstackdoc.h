@@ -195,6 +195,7 @@ public: //swc tree edit
   void deleteSelectedSwcNode();
   void addSizeForSelectedSwcNode(double dr);
 
+  void estimateSwcRadius(ZSwcTree *tree);
   void estimateSwcRadius();
 
 public: //swc selection
@@ -276,7 +277,7 @@ public:
   bool enhanceLine();
   bool watershed();
   bool invert();
-  int findLoop();
+  int findLoop(int minLoopSize = 100);
   void bwthin();
 
   int maxIntesityDepth(int x, int y);
@@ -466,6 +467,16 @@ public: /* puncta related methods */
   bool getLastStrokePoint(int *x, int *y) const;
 
   void updateModelData(EDocumentDataType type);
+
+public:
+  inline NeuTube::Document::ETag getTag() const { return m_tag; }
+  inline void setTag(NeuTube::Document::ETag tag) { m_tag = tag; }
+  inline void setStackBackground(NeuTube::EImageBackground bg) {
+    m_stackBackground = bg;
+  }
+  inline NeuTube::EImageBackground getStackBackground() const {
+    return m_stackBackground;
+  }
 
 public:
   inline void deprecateTraceMask() { m_isTraceMaskObsolete = true; }
@@ -685,6 +696,9 @@ private:
   std::set<ZLocsegChain*> m_selectedChains;
   ZLocsegChain *m_masterChain;
   QString m_badChainScreen;
+
+  NeuTube::Document::ETag m_tag;
+  NeuTube::EImageBackground m_stackBackground;
 };
 
 //   template  //

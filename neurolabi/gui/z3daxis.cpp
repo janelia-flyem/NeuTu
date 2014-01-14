@@ -38,6 +38,11 @@ bool Z3DAxis::isReady(Z3DEye eye) const
   return Z3DGeometryFilter::isReady(eye) && m_showAxis.get();
 }
 
+void Z3DAxis::setVisible(bool visible)
+{
+  m_showAxis.setValue(visible);
+}
+
 ZWidgetsGroup *Z3DAxis::getWidgetsGroup()
 {
   if (!m_widgetsGroup) {

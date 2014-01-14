@@ -1909,6 +1909,39 @@ void ZStackDocCommand::StrokeEdit::AddStroke::undo()
   m_doc->notifyStrokeModified();
 }
 
+
+ZStackDocCommand::StrokeEdit::RemoveTopStroke::RemoveTopStroke(
+    ZStackDoc *doc, QUndoCommand *parent) :
+  QUndoCommand(parent), m_doc(doc), m_stroke(NULL), m_isInDoc(true)
+{
+}
+
+ZStackDocCommand::StrokeEdit::RemoveTopStroke::~RemoveTopStroke()
+{
+  if (!m_isInDoc) {
+    delete m_stroke;
+  }
+}
+
+void ZStackDocCommand::StrokeEdit::RemoveTopStroke::redo()
+{
+  m_stroke = m_doc->getStrokeList().front();
+  if (m_stroke != NULL) {
+    m_doc->removeObject(m_doc->getStrokeList().front(), false);
+    m_isInDoc = false;
+    m_doc->notifyStrokeModified();
+  }
+}
+
+void ZStackDocCommand::StrokeEdit::RemoveTopStroke::undo()
+{
+  if (m_stroke != NULL) {
+    m_doc->addStroke(m_stroke);
+    m_doc->notifyStrokeModified();
+    m_isInDoc = true;
+  }
+}
+
 ZStackDocCommand::StackProcess::Binarize::Binarize(
     ZStackDoc *doc, int thre, QUndoCommand *parent)
   :QUndoCommand(parent), doc(doc), zstack(NULL), thre(thre), success(false)

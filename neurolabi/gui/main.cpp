@@ -6,7 +6,7 @@
 #include "QsLog/QsLog.h"
 #include "QsLog/QsLogDest.h"
 #include "zcommandline.h"
-
+#include "zerror.h"
 #include "z3dapplication.h"
 
 #if !defined(QT_NO_DEBUG)
@@ -101,6 +101,7 @@ void myMessageOutput(QtMsgType type, const char *msg)
 
 int main(int argc, char *argv[])
 {
+
 #ifndef _FLYEM_
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
   qInstallMessageHandler(myMessageOutput);
@@ -138,7 +139,9 @@ int main(int argc, char *argv[])
     std::cout << "Unable to load configuration: "
               << config.getConfigPath() << std::endl;
   }
-  config.print();
+  //config.print();
+
+  RECORD_INFORMATION("************* Start ******************");
 
   if (debugging == false && runCommandLine == false) {
 #if defined __APPLE__        //use macdeployqt
@@ -179,7 +182,8 @@ int main(int argc, char *argv[])
 #endif
 
     // init 3D
-    std::cout << "Initializing 3D ..." << std::endl;
+    //std::cout << "Initializing 3D ..." << std::endl;
+    RECORD_INFORMATION("Initializing 3D ...");
     Z3DApplication z3dApp(QCoreApplication::applicationDirPath());
     z3dApp.initialize();
 

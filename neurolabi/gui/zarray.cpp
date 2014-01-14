@@ -71,6 +71,8 @@ void ZArray::printInfo()
         std::cout << "  single float" << std::endl;
       case mylib::FLOAT64_TYPE:
         std::cout << "  double float" << std::endl;
+      default:
+          std::cout << "  unknown type" << std::endl;
       }
     }
   }

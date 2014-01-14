@@ -127,6 +127,9 @@ ZStackDoc::ZStackDoc(ZStack *stack, QObject *parent) : QObject(parent)
 
   createActions();
   //createContextMenu();
+
+  setTag(NeuTube::Document::NORMAL);
+  setStackBackground(NeuTube::IMAGE_BACKGROUND_DARK);
 }
 
 ZStackDoc::~ZStackDoc()
@@ -5832,7 +5835,7 @@ bool ZStackDoc::watershed()
   return false;
 }
 
-int ZStackDoc::findLoop()
+int ZStackDoc::findLoop(int minLoopSize)
 {
   int loopNumber = 0;
 
@@ -5844,8 +5847,12 @@ int ZStackDoc::findLoop()
     m_progressReporter->advance(0.1);
 
     Stack_Binarize(data);
+    Stack *filled = Stack_Fill_Hole_N(data, NULL, 1, 6, NULL);
+
     m_progressReporter->advance(0.1);
-    Stack *shrinked = Stack_Bwpeel(data, REMOVE_ARC, NULL);
+    Stack *shrinked = Stack_Bwpeel(filled, REMOVE_ARC, NULL);
+    C_Stack::kill(filled);
+
     m_progressReporter->advance(0.2);
 #ifdef _DEBUG_2
     const NeutubeConfig &config = NeutubeConfig::getInstance();
@@ -5855,7 +5862,7 @@ int ZStackDoc::findLoop()
     //m_progressReporter->update(40);
 
     ZStackGraph stackGraph;
-    ZGraph *graph = stackGraph.buildGraph(shrinked);
+    ZGraph *graph = stackGraph.buildForegroundGraph(shrinked);
 
     graph->setProgressReporter(m_progressReporter);
     m_progressReporter->advance(0.1);
@@ -5870,7 +5877,10 @@ int ZStackDoc::findLoop()
     graph->setProgressReporter(m_progressReporter);
     for (size_t i = 0; i < cycleArray.size(); ++i) {
       vector<int> path = cycleArray[i];
-      if (path.size() > 100) {
+#ifdef _DEBUG_
+      cout << "Cycle size: " << path.size() << endl;
+#endif
+      if ((int) path.size() >= minLoopSize) {
         ZObject3d *obj = new ZObject3d;
         for (vector<int>::const_iterator iter = path.begin(); iter != path.end();
              ++iter) {
@@ -5940,6 +5950,7 @@ void ZStackDoc::bwthin()
       C_Stack::copyValue(out, stack()->c_stack(0));
       C_Stack::kill(out);
       m_progressReporter->advance(0.3);
+      stack()->deprecateSingleChannelView(0);
       emit stackModified();
     }
 
@@ -6108,6 +6119,7 @@ bool ZStackDoc::executeSwcNodeSmartExtendCommand(
     if (prevNode != NULL) {
       if (center[0] >= 0 && center[1] >= 0 && center[2] >= 0) {
         ZNeuronTracer tracer;
+        tracer.setBackgroundType(getStackBackground());
         tracer.setIntensityField(stack()->c_stack());
         tracer.setTraceWorkspace(m_traceWorkspace);
         if (m_traceWorkspace->trace_mask == NULL) {
@@ -6325,20 +6337,26 @@ bool ZStackDoc::executeSwcNodeChangeSizeCommand(double dr)
   return false;
 }
 
-void ZStackDoc::estimateSwcRadius()
+void ZStackDoc::estimateSwcRadius(ZSwcTree *tree)
 {
-  foreach (ZSwcTree *tree, m_swcList){
+  if (tree != NULL) {
     startProgress();
     int count = tree->updateIterator(SWC_TREE_ITERATOR_DEPTH_FIRST);
     double step = 1.0 / count;
     for (Swc_Tree_Node *tn = tree->begin(); tn != NULL; tn = tree->next()) {
       if (SwcTreeNode::isRegular(tn)) {
-        SwcTreeNode::fitSignal(tn, stack()->c_stack(),
-                               NeuTube::IMAGE_BACKGROUND_BRIGHT);
+        SwcTreeNode::fitSignal(tn, stack()->c_stack(), getStackBackground());
       }
       advanceProgress(step);
     }
     endProgress();
+  }
+}
+
+void ZStackDoc::estimateSwcRadius()
+{
+  foreach (ZSwcTree *tree, m_swcList){
+    estimateSwcRadius(tree);
   }
 }
 

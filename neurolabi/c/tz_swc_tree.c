@@ -2433,6 +2433,10 @@ BOOL Swc_Tree_Iterator_Is_Active(int option)
 
 int Swc_Tree_Iterator_Start(Swc_Tree *tree, int option, BOOL indexing)
 {
+  if (tree == NULL) {
+    return 0;
+  }
+
   if (tree->root == NULL) {
     tree->iterator = NULL;
     tree->begin = NULL;

@@ -571,6 +571,20 @@ private:
   ZStroke2d *m_stroke;
   bool m_isInDoc;
 };
+
+class RemoveTopStroke : public QUndoCommand
+{
+public:
+  RemoveTopStroke(ZStackDoc *doc, QUndoCommand *parent = NULL);
+  virtual ~RemoveTopStroke();
+  void undo();
+  void redo();
+
+private:
+  ZStackDoc *m_doc;
+  ZStroke2d *m_stroke;
+  bool m_isInDoc;
+};
 }
 
 namespace StackProcess {

@@ -1099,6 +1099,10 @@ void ZObject3dScan::downsample(int xintv, int yintv, int zintv)
 
 void ZObject3dScan::downsampleMax(int xintv, int yintv, int zintv)
 {
+  if (xintv == 0 && yintv == 0 && zintv == 0) {
+    return;
+  }
+
   if (yintv > 0 || zintv > 0) {
     for (vector<ZObject3dStripe>::iterator iter = m_stripeArray.begin();
          iter != m_stripeArray.end(); ++iter) {
@@ -1728,6 +1732,35 @@ ZObject3dScan ZObject3dScan::findHoleObject()
   }
 
   return obj;
+}
+
+std::vector<ZObject3dScan> ZObject3dScan::findHoleObjectArray()
+{
+  std::vector<ZObject3dScan> objArray;
+
+  ZObject3dScan compObj = getComplementObject();
+  std::vector<ZObject3dScan> objList = compObj.getConnectedComponent();
+
+  Cuboid_I boundBox;
+  getBoundBox(&boundBox);
+  for (std::vector<ZObject3dScan>::iterator iter = objList.begin();
+       iter != objList.end(); ++iter) {
+    ZObject3dScan &subobj = *iter;
+    Cuboid_I subbox;
+    subobj.getBoundBox(&subbox);
+    if (Cuboid_I_Hit_Internal(&boundBox, subbox.cb[0], subbox.cb[1], subbox.cb[2]) &&
+        Cuboid_I_Hit_Internal(&boundBox, subbox.ce[0], subbox.ce[1], subbox.ce[2])) {
+      objArray.push_back(subobj);
+    }
+  }
+
+  return objArray;
+}
+
+void ZObject3dScan::fillHole()
+{
+  ZObject3dScan holeObj = findHoleObject();
+  unify(holeObj);
 }
 
 ZINTERFACE_DEFINE_CLASS_NAME(ZObject3dScan)

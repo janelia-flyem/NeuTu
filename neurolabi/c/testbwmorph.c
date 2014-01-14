@@ -278,6 +278,12 @@ int main(int argc, char *argv[])
   printf("Simple point number: %d\n", Stack_Bwthin_Count_Simple_Point());
 #endif
 
+#if 0
+  Stack *stack = Read_Stack("../data/test.tif");
+  Stack_Bwpeel(stack, NORMAL_THINNING, NULL);
+
+#endif
+
   printf("Done.\n");
 
   return 0;

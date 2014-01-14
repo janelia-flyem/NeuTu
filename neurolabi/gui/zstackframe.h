@@ -212,6 +212,7 @@ public slots:
   void changeWindowTitle(bool clean);
   void detach3DWindow();
   void setupDisplay();
+  void zoomToSelectedSwcNodes();
 
 signals:
   void infoChanged();

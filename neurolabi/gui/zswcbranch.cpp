@@ -5,6 +5,7 @@
 #include "tz_geo3d_utils.h"
 #include "tz_math.h"
 #include "swctreenode.h"
+#include "zerror.h"
 
 using namespace std;
 
@@ -39,7 +40,8 @@ ZSwcBranch::ZSwcBranch(Swc_Tree_Node *begin, Swc_Tree_Node *end)
     }
   }
 
-  TZ_ASSERT(success, "Ininalization failed");
+  PROCESS_ERROR(!success, "Initialization failed", return);
+  //TZ_ASSERT(success, "Ininalization failed");
 
   if (success) {
     m_begin = root;

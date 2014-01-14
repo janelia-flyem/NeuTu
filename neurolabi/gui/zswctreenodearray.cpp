@@ -27,3 +27,8 @@ void ZSwcTreeNodeArray::sort(Swc_Tree_Node_Compare_B compare)
 {
   std::sort(begin(), end(), compare);
 }
+
+void ZSwcTreeNodeArray::print() const
+{
+  for_each(begin(), end(), Print_Swc_Tree_Node);
+}

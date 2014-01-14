@@ -156,6 +156,7 @@ public:
     inline bool isMeshOn() const { return m_isMeshOn; }
     inline bool isTensorOn() const { return m_isTensorOn; }
     inline bool isAxisOn() const { return m_isAxisOn; }
+    inline bool isBackgroundOn() const { return m_isBackgroundOn; }
 
     inline void enableUtils(bool on) { m_isUtilsOn = on; }
     inline void enableVolume(bool on) { m_isVolumeOn = on; }
@@ -166,6 +167,7 @@ public:
     inline void enableTensor(bool on) { m_isTensorOn = on; }
     inline void enableMesh(bool on) { m_isMeshOn = on; }
     inline void enableAxis(bool on) { m_isAxisOn = on; }
+    inline void enableBackground(bool on) { m_isBackgroundOn = on; }
 
     class SwcTabConfig {
     public:
@@ -196,6 +198,7 @@ public:
     bool m_isMeshOn;
     bool m_isTensorOn;
     bool m_isAxisOn;
+    bool m_isBackgroundOn;
     SwcTabConfig m_swcTabConfig;
   };
 

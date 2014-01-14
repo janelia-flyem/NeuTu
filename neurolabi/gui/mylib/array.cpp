@@ -375,9 +375,11 @@ static inline mylib::Array *new_array(int nsize, mylib::int64  dsize, int tsize,
   return (array);
 }
 
+#define NCC(str) const_cast<char*>(str)
+
 static inline mylib::Array *copy_array(mylib::Array *array)
 { mylib::Array *copy = new_array(array_nsize(array),array_dsize(array),
-                                 array_tsize(array),"Copy_Array");
+                                 array_tsize(array), NCC("Copy_Array"));
   void *_dims = copy->dims;
   void *_data = copy->data;
   void *_text = copy->text;
@@ -547,23 +549,23 @@ static inline mylib::Array *read_array(FILE *input)
   fread(name,5,1,input);
   if (strncmp(name,"Array",5) != 0)
     return (NULL);
-  obj = new_array(0,0,0,"Read_Array");
+  obj = new_array(0,0,0,NCC("Read_Array"));
   if (obj == NULL) return (NULL);
   read = *obj;
   if (fread(obj,sizeof(mylib::Array),1,input) == 0) goto error;
   obj->dims = read.dims;
   if (array_nsize(obj) != 0)
-    { if (allocate_array_dims(obj,array_nsize(obj),"Read_Array")) goto error;
+    { if (allocate_array_dims(obj,array_nsize(obj),NCC("Read_Array"))) goto error;
       if (fread(obj->dims,(size_t) array_nsize(obj),1,input) == 0) goto error;
     }
   obj->data = read.data;
   if (array_dsize(obj) != 0)
-    { if (allocate_array_data(obj,array_dsize(obj),"Read_Array")) goto error;
+    { if (allocate_array_data(obj,array_dsize(obj),NCC("Read_Array"))) goto error;
       if (fread(obj->data,(size_t) array_dsize(obj),1,input) == 0) goto error;
     }
   obj->text = read.text;
   if (array_tsize(obj) != 0)
-    { if (allocate_array_text(obj,array_tsize(obj),"Read_Array")) goto error;
+    { if (allocate_array_text(obj,array_tsize(obj),NCC("Read_Array"))) goto error;
       if (fread(obj->text,(size_t) array_tsize(obj),1,input) == 0) goto error;
     }
   return (obj);
@@ -633,9 +635,9 @@ static mylib::Array *make_shape(mylib::Array_Kind kind, mylib::Value_Type type,
 mylib::Array *G(mylib::Make_Array)(mylib::Array_Kind kind, mylib::Value_Type type, int ndims, mylib::Dimn_Type *dims)
 { mylib::Array *a;
 
-  a = make_shape(kind,type,ndims,dims,"Make_Array");
+  a = make_shape(kind,type,ndims,dims,NCC("Make_Array"));
 
-  allocate_array_data(a,array_dsize(a),"Make_Array");
+  allocate_array_data(a,array_dsize(a),NCC("Make_Array"));
 
   return (a);
 }
@@ -645,9 +647,9 @@ mylib::Array *G(mylib::Make_Array_With_Shape)(mylib::Array_Kind kind,
                                               mylib::Coordinate *F(shape))
 { mylib::Array *a;
 
-  a = make_shape(kind,type,shape->dims[0],ADIMN(shape),"Make_Array_With_Shape");
+  a = make_shape(kind,type,shape->dims[0],ADIMN(shape),NCC("Make_Array_With_Shape"));
 
-  allocate_array_data(a,array_dsize(a),"Make_Array_With_Shape");
+  allocate_array_data(a,array_dsize(a),NCC("Make_Array_With_Shape"));
 
   Free_Array(shape);
 
@@ -659,7 +661,7 @@ mylib::Array *G(mylib::Make_Array_Of_Data)(mylib::Array_Kind kind,
                                     mylib::Dimn_Type *dims, void *data)
 { mylib::Array *a;
 
-  a = make_shape(kind,type,ndims,dims,"Make_Array_Of_Data");
+  a = make_shape(kind,type,ndims,dims,NCC("Make_Array_Of_Data"));
 
   { _Array *object = (_Array *) (((char *) a) - Array_Offset);
     if (object->dsize > 0)
@@ -708,7 +710,7 @@ mylib::Array *G(mylib::Make_Array_From_Arrays)(mylib::Array_Kind kind, int n,
   dsize = array_dsize(arrays[0]);
   ndims = a0->ndims;
 
-  a = new_array(SIZEOF(int)*(ndims+1),n*dsize,1,"Make_Array_From_Arrays");
+  a = new_array(SIZEOF(int)*(ndims+1),n*dsize,1,NCC("Make_Array_From_Arrays"));
 
   a->type    = a0->type;
   a->kind    = kind;
@@ -902,6 +904,9 @@ void mylib::Print_Coord(FILE *file, mylib::Coordinate *point)
             fprintf(file,",%g",d[i]);
           break;
         }
+  default:
+    printf("Unknown type.");
+    break;
   }
 
   mylib::Free_Array(point);
@@ -1044,7 +1049,7 @@ mylib::Indx_Type mylib::Coord2IdxA(mylib::Array *a, mylib::Coordinate *F(point))
 mylib::Coordinate *mylib::AppendCoord(Dimn_Type d, mylib::Coordinate *R(M(c)))
 { mylib::Dimn_Type n;
   n = c->dims[0];
-  allocate_array_data(c,(n+1)*SIZEOF(mylib::Dimn_Type),"AppendCoord");
+  allocate_array_data(c,(n+1)*SIZEOF(mylib::Dimn_Type),NCC("AppendCoord"));
   c->dims[0]  = n+1;
   c->size     = n+1;
   ADIMN(c)[n] = d;
@@ -1057,7 +1062,7 @@ mylib::Coordinate *mylib::PrependCoord(Coordinate *R(M(c)), mylib::Dimn_Type d)
   int        i;
 
   n = c->dims[0];
-  allocate_array_data(c,(n+1)*SIZEOF(mylib::Dimn_Type),"PrependCoord");
+  allocate_array_data(c,(n+1)*SIZEOF(mylib::Dimn_Type),NCC("PrependCoord"));
   c->dims[0]  = n+1;
   c->size     = n+1;
   for (i = n; i > 0; i--)
@@ -1095,13 +1100,13 @@ mylib::Coordinate *G(mylib::Idx2Coord)(Indx_Type idx)
       exit (1);
     }
   pthread_mutex_lock(&Coord_Mutex);
-  p = coord4idx(Coord_Ndim,Coord_Dims,idx,"Idx2Coord");
+  p = coord4idx(Coord_Ndim,Coord_Dims,idx,NCC("Idx2Coord"));
   pthread_mutex_unlock(&Coord_Mutex);
   return (p);
 }
 
 mylib::Coordinate *G(mylib::Idx2CoordA)(mylib::Array *a, mylib::Indx_Type idx)
-{ return (coord4idx(a->ndims,a->dims,idx,"Idx2CoordA")); }
+{ return (coord4idx(a->ndims,a->dims,idx,NCC("Idx2CoordA"))); }
 
 mylib::Coordinate *G(mylib::Idx2Core)(Indx_Type idx)
 { mylib::Dimn_Type  *d;
@@ -1123,7 +1128,7 @@ mylib::Coordinate *G(mylib::Idx2Core)(Indx_Type idx)
       idx /= kind_size[Coord_Kind];
     }
 
-  p = coord4idx(n,d,idx,"Idx2Core");
+  p = coord4idx(n,d,idx,NCC("Idx2Core"));
   pthread_mutex_unlock(&Coord_Mutex);
   return (p);
 }
@@ -1141,7 +1146,7 @@ mylib::Coordinate *G(mylib::Idx2CoreA)(mylib::Array *a, mylib::Indx_Type idx)
       idx /= kind_size[a->kind];
     }
 
-  return (coord4idx(n,d,idx,"Idx2CoreA"));
+  return (coord4idx(n,d,idx,NCC("Idx2CoreA")));
 }
 
 Value mylib::Get_Array_Value(mylib::Array *a, mylib::Coordinate *coord)
@@ -1178,6 +1183,10 @@ Value mylib::Get_Array_Value(mylib::Array *a, mylib::Coordinate *coord)
       case mylib::FLOAT64_TYPE:
         v.fval = AFLOAT64(a)[p];
         break;
+  default:
+    fprintf(stderr, "Unknown type\n");
+    v.uval = 0;
+    break;
   }
   return (v);
 }

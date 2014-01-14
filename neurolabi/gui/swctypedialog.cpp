@@ -24,6 +24,7 @@ SwcTypeDialog::SwcTypeDialog(ZSwcTree::ESelectionMode selected, QWidget *parent)
     ui->trafficRadioButton->show();
     ui->trunkLevelRadioButton->show();
     ui->rootRadioButton->show();
+    ui->subtreeRadioButton->show();
     break;
 
   case ZSwcTree::SWC_NODE:
@@ -33,6 +34,7 @@ SwcTypeDialog::SwcTypeDialog(ZSwcTree::ESelectionMode selected, QWidget *parent)
     ui->trafficRadioButton->hide();
     ui->trunkLevelRadioButton->hide();
     ui->rootRadioButton->hide();
+    ui->subtreeRadioButton->hide();
     break;
 
   default:
@@ -92,6 +94,10 @@ SwcTypeDialog::EPickingMode SwcTypeDialog::pickingMode()
 
   if (ui->branchLevelRadioButton->isChecked()) {
     mode = BRANCH_LEVEL;
+  }
+
+  if (ui->subtreeRadioButton->isChecked()) {
+    mode = SUBTREE;
   }
 
 #ifdef _DEBUG_

@@ -4,6 +4,7 @@
 #include "zswcpath.h"
 #include "tz_trace_defs.h"
 #include "tz_trace_utils.h"
+#include "neutube.h"
 
 class ZStack;
 class ZSwcTree;
@@ -26,11 +27,16 @@ public:
   Swc_Tree* trace(double x1, double y1, double z1, double r1,
                  double x2, double y2, double z2, double r2);
 
+  inline void setBackgroundType(NeuTube::EImageBackground bg) {
+    m_backgroundType = bg;
+  }
+
 private:
   Stack *m_stack;
   Trace_Workspace *m_traceWorkspace;
   Connection_Test_Workspace *m_connWorkspace;
   ZSwcConnector *m_swcConnector;
+  NeuTube::EImageBackground m_backgroundType;
 };
 
 #endif // ZNEURONTRACER_H

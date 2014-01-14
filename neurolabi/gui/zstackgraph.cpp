@@ -88,13 +88,35 @@ ZGraph* ZStackGraph::buildGraph(const Stack *stack)
   return graph;
 }
 
+ZGraph* ZStackGraph::buildForegroundGraph(const Stack *stack)
+{
+  if (stack == NULL) {
+    return NULL;
+  }
+
+  Stack *oldMask = m_workspace.signal_mask;
+
+  m_workspace.signal_mask = const_cast<Stack*>(stack);
+  ZGraph *graph = new ZGraph(Stack_Graph_W(stack, &m_workspace));
+
+  m_workspace.signal_mask = oldMask;
+
+  return graph;
+}
+
 std::vector<int> ZStackGraph::computeShortestPath(
-    const Stack *stack, int startIndex, int endIndex)
+    const Stack *stack, int startIndex, int endIndex, bool fgOnly)
 {
   updateRange(startIndex, endIndex, C_Stack::width(stack),
               C_Stack::height(stack), C_Stack::depth(stack));
 
-  ZGraph *graph = buildGraph(stack);
+  ZGraph *graph = NULL;
+
+  if (fgOnly) {
+    graph = buildForegroundGraph(stack);
+  } else {
+    graph = buildGraph(stack);
+  }
 
   int swidth = m_workspace.range[1] - m_workspace.range[0] + 1;
   int sarea = swidth * (m_workspace.range[3] - m_workspace.range[2] + 1);

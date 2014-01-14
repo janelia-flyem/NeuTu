@@ -7,6 +7,7 @@
 
 #include "zqtheader.h"
 
+#include "include/tz_stdint.h"
 #include "zpoint.h"
 #include "zdocumentable.h"
 #include "zstackdrawable.h"
@@ -20,8 +21,14 @@ public:
 
   virtual const std::string& className() const;
 
-public:
+  typedef uint32_t TVisualEffect;
 
+  const static TVisualEffect VE_NONE;
+  const static TVisualEffect VE_DASH_PATTERN;
+  const static TVisualEffect VE_BOUND_BOX;
+  const static TVisualEffect VE_NO_CIRCLE;
+
+public:
   virtual void display(QPainter &painter, int z = 0,
                        Display_Style option = NORMAL) const;
 
@@ -35,9 +42,18 @@ public:
    */
   static bool isCuttingPlane(double z, double r, double n);
 
+  inline void setVisualEffect(TVisualEffect effect) {
+    m_visualEffect = effect;
+  }
+
+  inline bool hasVisualEffect(TVisualEffect effect) const {
+    return (effect & m_visualEffect) > 0;
+  }
+
 private:
   ZPoint m_center;
   double m_r;
+  TVisualEffect m_visualEffect;
 };
 
 #endif // ZCIRCLE_H

@@ -1,3 +1,4 @@
+#include "zglew.h"
 #include "z3dgl.h"
 #include "QsLog.h"
 
