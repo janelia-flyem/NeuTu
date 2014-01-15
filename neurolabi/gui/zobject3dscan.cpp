@@ -1849,7 +1849,7 @@ bool ZObject3dScan::importDvidObject(const std::string &filePath)
         return false;
       }
 
-      addSegment(coord[2], coord[1], coord[0], coord[0] + runLength);
+      addSegment(coord[2], coord[1], coord[0], coord[0] + runLength, false);
       ++readSegmentNumber;
       if (readSegmentNumber == numberOfSpans) {
         break;
@@ -1871,10 +1871,16 @@ bool ZObject3dScan::importDvidObject(const std::string &filePath)
 }
 
 #define READ_BYTE_BUFFER(target, type) \
+  if (byteNumber < sizeof(type)) { \
+    RECORD_ERROR_UNCOND("Buffer ended prematurely."); \
+    return false; \
+  } \
   target = *(const type*)(byteArray + currentIndex); \
-  currentIndex += sizeof(type);
+  currentIndex += sizeof(type); \
+  byteNumber -= sizeof(type);
 
-bool ZObject3dScan::importDvidObject(const char *byteArray, size_t byteNumber)
+bool ZObject3dScan::importDvidObject(
+    const char *byteArray, size_t byteNumber)
 {
   clear();
 
@@ -1926,7 +1932,7 @@ bool ZObject3dScan::importDvidObject(const char *byteArray, size_t byteNumber)
       return false;
     }
 
-    addSegment(coord[2], coord[1], coord[0], coord[0] + runLength);
+    addSegment(coord[2], coord[1], coord[0], coord[0] + runLength, false);
   }
 
   return true;

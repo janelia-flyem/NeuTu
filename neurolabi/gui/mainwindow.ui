@@ -999,6 +999,10 @@
    </property>
   </action>
   <action name="actionDVID_Object">
+   <property name="icon">
+    <iconset resource="gui.qrc">
+     <normaloff>:/images/open_dvid.png</normaloff>:/images/open_dvid.png</iconset>
+   </property>
    <property name="text">
     <string>DVID Object</string>
    </property>

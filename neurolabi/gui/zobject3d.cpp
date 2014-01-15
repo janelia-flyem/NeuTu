@@ -301,7 +301,7 @@ void ZObject3d::print()
   }
 }
 
-Stack* ZObject3d::toStack(int *offset)
+Stack* ZObject3d::toStack(int *offset) const
 {
   Object_3d *obj = c_obj();
 
@@ -418,7 +418,7 @@ double ZObject3d::getRadius() const
   return radius;
 }
 
-bool ZObject3d::isEmpty()
+bool ZObject3d::isEmpty() const
 {
   return m_voxelArray.empty();
 }

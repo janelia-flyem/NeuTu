@@ -1183,6 +1183,10 @@ Z3DWindow* ZStackFrame::open3DWindow(QWidget *parent, Z3DWindow::EInitMode mode)
           m_3dWindow->getCompositor()->setShowBackground(false);
         }
       }
+      if (document()->getTag() == NeuTube::Document::FLYEM_BODY) {
+        m_3dWindow->getVolumeRaycasterRenderer()->setCompositeMode(
+              "Direct Volume Rendering");
+      }
     }
 
     QRect screenRect = QApplication::desktop()->screenGeometry();

@@ -49,6 +49,12 @@ public:
     m_resolution[2] = zRes;
   }
 
+  inline void setDownsampleInterval(int xintv, int yintv, int zintv) {
+    m_downsampleInterval[0] = xintv;
+    m_downsampleInterval[1] = yintv;
+    m_downsampleInterval[2] = zintv;
+  }
+
   ZSwcTree* makeSkeleton(const Stack *stack);
 
   void reconnect(ZSwcTree *tree);
@@ -67,6 +73,7 @@ private:
   int m_level;
   bool m_connectingBranch;
   double m_resolution[3];
+  int m_downsampleInterval[3];
 };
 
 #endif // ZSTACKSKELETONIZER_H

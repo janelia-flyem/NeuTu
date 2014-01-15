@@ -16,6 +16,7 @@
 #include "zglmutils.h"
 #include "z3dcameraparameter.h"
 #include "zactionactivator.h"
+#include "z3dvolumeraycasterrenderer.h"
 
 class ZStackDoc;
 class Z3DTrackballInteractionHandler;
@@ -36,7 +37,6 @@ class ZWidgetsGroup;
 class Z3DCanvas;
 class Z3DNetworkEvaluator;
 class Z3DProcessorNetwork;
-class Z3DVolumeRaycasterRenderer;
 class Z3DTriangleList;
 
 class Z3DWindow : public QMainWindow

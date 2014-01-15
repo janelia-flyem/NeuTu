@@ -5706,13 +5706,15 @@ void Swc_Tree_Erase_Stack(Swc_Tree *tree, Stack *stack, double scale,
 
 void Swc_Tree_Translate(Swc_Tree *tree, double x, double y, double z)
 {
-  Swc_Tree_Iterator_Start(tree, 1, FALSE);
-  Swc_Tree_Node *tn = tree->root;
-  while ((tn = Swc_Tree_Next(tree)) != NULL) {
-    if (Swc_Tree_Node_Is_Regular(tn)) {
-      Swc_Tree_Node_Data(tn)->x += x;
-      Swc_Tree_Node_Data(tn)->y += y;
-      Swc_Tree_Node_Data(tn)->z += z;
+  if (tree != NULL) {
+    Swc_Tree_Iterator_Start(tree, 1, FALSE);
+    Swc_Tree_Node *tn = tree->root;
+    while ((tn = Swc_Tree_Next(tree)) != NULL) {
+      if (Swc_Tree_Node_Is_Regular(tn)) {
+        Swc_Tree_Node_Data(tn)->x += x;
+        Swc_Tree_Node_Data(tn)->y += y;
+        Swc_Tree_Node_Data(tn)->z += z;
+      }
     }
   }
 }

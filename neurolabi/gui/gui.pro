@@ -83,6 +83,7 @@ CONFIG(debug, debug|release) {
 
 } # static gtest
 
+LIBS += -lstdc++
 unix:!macx {
     QMAKE_CXXFLAGS += -D_LINUX_
     LIBS += -lQtGui -lQtCore \

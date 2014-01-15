@@ -506,12 +506,18 @@ ZStack* ZStackFile::readStack(ZStack *data)
         if (obj.load(m_urlList[0])) {
           ZObject3d *obj3d = obj.toObject3d();
 
-          Stack *tmpstack = obj3d->toStack(offset);
-          stack = C_Stack::make(
-                GREY, C_Stack::width(tmpstack), C_Stack::height(tmpstack),
-                C_Stack::depth(tmpstack), 1);
-          C_Stack::copyChannelValue(stack, 0, tmpstack);
-          C_Stack::kill(tmpstack);
+          Stack *tmpstack = NULL;
+          if (obj3d != NULL) {
+            tmpstack = obj3d->toStack(offset);
+            delete obj3d;
+          }
+          if (tmpstack != NULL) {
+            stack = C_Stack::make(
+                  GREY, C_Stack::width(tmpstack), C_Stack::height(tmpstack),
+                  C_Stack::depth(tmpstack), 1);
+            C_Stack::copyChannelValue(stack, 0, tmpstack);
+            C_Stack::kill(tmpstack);
+          }
         }
       } else {
         stack = C_Stack::read(m_urlList[0].c_str(), m_channel);

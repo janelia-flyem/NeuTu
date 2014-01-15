@@ -1919,9 +1919,21 @@ void Downsample_Stack_Max_Size(int width, int height, int depth,
   *dd = kd + (rd > 0);
 }
 
-Stack* Downsample_Stack_Max(Stack* stack,int wintv,int hintv,int dintv, 
+Stack* Downsample_Stack_Max(const Stack* stack,int wintv,int hintv,int dintv, 
     Stack *out)
 {
+  if (wintv == 0 && hintv == 0 && dintv == 0) {
+    if (out == NULL) {
+      out = Copy_Stack_T(stack);
+    } else {
+      out->width = stack->width;
+      out->height = stack->height;
+      out->depth = stack->depth;
+      out->kind = stack->kind;
+      Copy_Stack_Array(out, stack);
+    }
+  }
+
   double s;
   int kw,kh,kd,rw,rh,rd;
   int i,j,k,ri,rj,rk;

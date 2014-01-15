@@ -105,6 +105,11 @@ void ZStack::setData(Mc_Stack *stack, C_Stack::Mc_Stack_Deallocator *delloc)
   m_delloc = delloc;
 }
 
+void ZStack::consumeData(Stack *stack)
+{
+  load(stack, true);
+}
+
 /*
 ZStack::ZStack(const ZStack &src)
   : m_isLSMFile(false)

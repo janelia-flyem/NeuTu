@@ -21,15 +21,17 @@ ZStackSkeletonizer::ZStackSkeletonizer() : m_lengthThreshold(15.0),
   m_removingBorder(false), m_minObjSize(0), m_keepingSingleObject(false),
   m_level(0), m_connectingBranch(true)
 {
-  m_resolution[0] = 1.0;
-  m_resolution[1] = 1.0;
-  m_resolution[2] = 1.0;
+  for (int i = 0; i < 3; ++i) {
+    m_resolution[i] = 1.0;
+    m_downsampleInterval[i] = 1;
+  }
 }
 
 ZSwcTree* ZStackSkeletonizer::makeSkeleton(const Stack *stack)
 {
   startProgress();
-  Stack *stackData = C_Stack::clone(stack);
+  Stack *stackData = Downsample_Stack_Max(stack, m_downsampleInterval[0],
+      m_downsampleInterval[1], m_downsampleInterval[2], NULL);
 
   if (m_level > 0) {
     Stack_Level_Mask(stackData, m_level);
@@ -245,6 +247,13 @@ ZSwcTree* ZStackSkeletonizer::makeSkeleton(const Stack *stack)
   if (Swc_Tree_Regular_Root(tree) != NULL) {
     wholeTree = new ZSwcTree;
     wholeTree->setData(tree);
+
+    if (m_downsampleInterval[0] > 0 || m_downsampleInterval[1] > 0 ||
+        m_downsampleInterval[2] > 0) {
+      wholeTree->rescale(m_downsampleInterval[0] + 1,
+          m_downsampleInterval[1] + 1, m_downsampleInterval[2] + 1);
+    }
+
     wholeTree->resortId();
     if (m_connectingBranch) {
       reconnect(wholeTree);
@@ -252,6 +261,7 @@ ZSwcTree* ZStackSkeletonizer::makeSkeleton(const Stack *stack)
   }
 
   advanceProgress(0.05);
+
   endProgress();
 
   return wholeTree;

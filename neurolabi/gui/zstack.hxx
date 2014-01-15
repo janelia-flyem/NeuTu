@@ -93,9 +93,19 @@ public: /* attributes */
   inline Mc_Stack* data() { return mc_stack(); }
   inline const Mc_Stack* data() const { return mc_stack(); }
 
-  //! Set stack data
+  /*!
+   * \brief Set stack data
+   */
   void setData(Mc_Stack *stack,
                C_Stack::Mc_Stack_Deallocator *delloc = C_Stack::kill);
+
+  /*!
+   * \brief Set data from stack
+   *
+   * \a stack will be destroyed after function call. It does nothing if \a stack
+   * is NULL.
+   */
+  void consumeData(Stack *stack);
 
   //! Get the C-compatible data
   /*!

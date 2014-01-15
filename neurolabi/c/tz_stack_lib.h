@@ -141,7 +141,7 @@ Stack* Downsample_Stack_Mean_F(Stack *stack,int wintv,int hintv,int dintv,
     Stack *stack2);
 void Downsample_Stack_Max_Size(int width, int height, int depth, 
     int wintv,int hintv,int dintv, int *wd, int *hd, int *dd);
-Stack* Downsample_Stack_Max(Stack* stack,int wintv,int hintv,int dintv,
+Stack* Downsample_Stack_Max(const Stack* stack,int wintv,int hintv,int dintv,
     Stack *out);
 
 Stack* Upsample_Stack(const Stack *stack, int wintv, int hintv, int dintv,

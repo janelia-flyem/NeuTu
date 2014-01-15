@@ -222,6 +222,8 @@ MainWindow::MainWindow(QWidget *parent) :
   m_dvidClient = new ZDvidClient("http://emdata1.int.janelia.org", this);
   m_dvidObjectDlg = new DvidObjectDialog(this);
   m_dvidObjectDlg->setAddress(m_dvidClient->getServer());
+  connect(m_dvidClient, SIGNAL(objectRetrieved()),
+          this, SLOT(createDvidFrame()));
 }
 
 MainWindow::~MainWindow()
@@ -705,6 +707,7 @@ void MainWindow::createToolBars()
 
   if (NeutubeConfig::getInstance().getApplication() == "FlyEM") {
     m_ui->toolBar->addAction(m_ui->actionImportFlyEmDatabase);
+    m_ui->toolBar->addAction(m_ui->actionDVID_Object);
   }
 
   m_ui->toolBar->addAction(expandAction);
@@ -1224,8 +1227,9 @@ void MainWindow::addStackFrame(ZStack *stack)
 
 void MainWindow::addStackFrame(ZStackFrame *frame, bool /*isReady*/)
 {
+#if 0 //causing crash
   QApplication::processEvents();
-
+#endif
   if (!mdiArea->findChildren<ZStackFrame*>().contains(frame)) {
     mdiArea->addSubWindow(frame);
   }
@@ -2736,6 +2740,8 @@ void MainWindow::on_actionSkeletonization_triggered()
       Stack *stackData = stack->c_stack();
 
       ZStackSkeletonizer skeletonizer;
+      skeletonizer.setDownsampleInterval(dlg.getXInterval(), dlg.getYInterval(),
+                                         dlg.getZInterval());
       skeletonizer.setProgressReporter(frame->document()->getProgressReporter());
       skeletonizer.setRebase(true);
       if (dlg.isExcludingSmallObj()) {
@@ -2752,6 +2758,7 @@ void MainWindow::on_actionSkeletonization_triggered()
 
       skeletonizer.setLengthThreshold(dlg.lengthThreshold());
       skeletonizer.setKeepingSingleObject(dlg.isKeepingShortObject());
+
 
       if (dlg.isLevelChecked()) {
         skeletonizer.setLevel(dlg.level());
@@ -3884,6 +3891,23 @@ void MainWindow::on_actionShortcut_triggered()
   m_helpDlg->raise();
 }
 
+ZStackFrame *MainWindow::createStackFrame(
+    ZStack *stack, NeuTube::Document::ETag tag, ZStackFrame *parentFrame)
+{
+  if (stack != NULL) {
+    ZStackFrame *newFrame = new ZStackFrame;
+    newFrame->setParentFrame(parentFrame);
+    newFrame->loadStack(stack);
+    newFrame->document()->setTag(tag);
+    addStackFrame(newFrame);
+    presentStackFrame(newFrame);
+
+    return newFrame;
+  }
+
+  return NULL;
+}
+
 void MainWindow::on_actionMake_Projection_triggered()
 {
   ZStackFrame *frame = currentStackFrame();
@@ -3908,13 +3932,7 @@ void MainWindow::on_actionMake_Projection_triggered()
 
       ZStack *stack = frame->document()->projectBiocytinStack(projector);
       if (stack != NULL) {
-        ZStackFrame *newFrame = new ZStackFrame;
-        newFrame->setParentFrame(frame);
-        newFrame->loadStack(stack);
-        newFrame->document()->setTag(NeuTube::Document::BIOCYTIN_PROJECTION);
-        addStackFrame(newFrame);
-        //stretchStackFrame(newFrame);
-        presentStackFrame(newFrame);
+        createStackFrame(stack, NeuTube::Document::BIOCYTIN_PROJECTION, frame);
       }
       frame->document()->setProgressReporter(oldReporter);
 
@@ -4120,7 +4138,7 @@ void MainWindow::on_actionMask_SWC_triggered()
         swcFrame->document()->notifyStrokeModified();
         swcFrame->document()->notifySwcModified();
 
-        if (swcFrame != stackFrame) {
+        if (frame != stackFrame) {
           swcFrame->open3DWindow(this, Z3DWindow::EXCLUDE_VOLUME);
           delete swcFrame;
         }
@@ -4288,9 +4306,61 @@ void MainWindow::on_actionPen_Width_for_SWC_Display_triggered()
   }
 }
 
+void MainWindow::createDvidFrame()
+{
+  QProgressDialog *progressDlg = getProgressDialog();
+  progressDlg->reset();
+  progressDlg->setLabelText("Loading dvid object ...");
+  progressDlg->setRange(0, 100);
+  QProgressBar *bar = getProgressBar();
+  ZQtBarProgressReporter reporter;
+  reporter.setProgressBar(bar);
+  progressDlg->open();
+  reporter.start();
+  reporter.advance(0.1);
+
+  const ZObject3dScan &obj = m_dvidClient->getObject();
+  if (!obj.isEmpty()) {
+    int offset[3];
+    Stack *stack = obj.toStack(offset);
+    ZStack *docStack = new ZStack;
+    docStack->consumeData(stack);
+    docStack->setOffset(offset[0], offset[1], offset[2]);
+    ZStackFrame *frame =
+        createStackFrame(docStack, NeuTube::Document::FLYEM_BODY);
+
+    if (m_dvidObjectDlg->generatingSkeleton()) {
+      progressDlg->setLabelText("Creating skeleton ...");
+      progressDlg->open();
+      ZStackSkeletonizer skeletonizer;
+      skeletonizer.setDownsampleInterval(3, 3, 3);
+      skeletonizer.setLengthThreshold(15);
+      skeletonizer.setKeepingSingleObject(true);
+
+      skeletonizer.setProgressReporter(&reporter);
+
+      ZSwcTree *wholeTree = skeletonizer.makeSkeleton(docStack->c_stack());
+      progressDlg->reset();
+
+      if (wholeTree != NULL) {
+        frame->executeAddObjectCommand(wholeTree, NeuTube::Documentable_SWC);
+        frame->open3DWindow(this, Z3DWindow::EXCLUDE_VOLUME);
+      } else {
+        report("Skeletonization failed", "No SWC tree generated.",
+               ZMessageReporter::Error);
+      }
+    }
+  }
+}
+
 void MainWindow::on_actionDVID_Object_triggered()
 {
   if (m_dvidObjectDlg->exec()) {
+    QProgressDialog *progressDlg = getProgressDialog();
+    progressDlg->setLabelText("Downloading dvid object ...");
+    progressDlg->setRange(0, 0);
+    progressDlg->open();
+
     m_dvidClient->setServer(m_dvidObjectDlg->getAddress());
     m_dvidClient->postRequest(ZDvidClient::DVID_GET_OBJECT,
                               QVariant(m_dvidObjectDlg->getBodyId()));

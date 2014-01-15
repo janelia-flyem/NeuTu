@@ -63,6 +63,11 @@ public slots:
   void updateMenu();
   void updateStatusBar();
 
+  ZStackFrame* createStackFrame(
+      ZStack *stack,NeuTube::Document::ETag tag = NeuTube::Document::NORMAL,
+      ZStackFrame *parentFrame = NULL);
+  void createDvidFrame();
+
 private:
   Ui::MainWindow *m_ui;
 
