@@ -33,11 +33,11 @@ int Stack_Threshold(Stack *stack,int thre)
   }
 
   int is_changed = 0;
-  int voxel_number = Stack_Voxel_Number(stack);
+  size_t voxel_number = Stack_Voxel_Number(stack);
 
   DEFINE_SCALAR_ARRAY_ALL(array, stack);
 
-  int i;  
+  size_t i;  
   switch(Stack_Kind(stack)) {
   case GREY:
     if (thre > 0) {
@@ -76,11 +76,11 @@ void Stack_Threshold_Binarize(Stack *stack, int thre)
     return;
   }
 
-  int voxel_number = Stack_Voxel_Number(stack);
+  size_t voxel_number = Stack_Voxel_Number(stack);
 
   DEFINE_SCALAR_ARRAY_ALL(array, stack);
 
-  int i;  
+  size_t i;  
   switch(Stack_Kind(stack)) {
   case GREY:
     STACK_THRESHOLD_BINARIZE(array_grey);

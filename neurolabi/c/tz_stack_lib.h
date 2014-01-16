@@ -55,7 +55,7 @@ void Copy_Stack_Array(Stack *dst, const Stack *src);
  * be NULL. The text field was added later to the structure and has caused
  * compatability problems because it does not support NULL text.
  */
-Stack* Copy_Stack_T(Stack *stack);
+Stack* Copy_Stack_T(const Stack *stack);
 
 /**@brief Convert a stack into a binary matrix.
  *

@@ -23,7 +23,7 @@ ZStackSkeletonizer::ZStackSkeletonizer() : m_lengthThreshold(15.0),
 {
   for (int i = 0; i < 3; ++i) {
     m_resolution[i] = 1.0;
-    m_downsampleInterval[i] = 1;
+    m_downsampleInterval[i] = 0;
   }
 }
 
@@ -35,14 +35,21 @@ ZSwcTree* ZStackSkeletonizer::makeSkeleton(const Stack *stack)
 
   if (m_level > 0) {
     Stack_Level_Mask(stackData, m_level);
-    Translate_Stack(stackData, GREY, 1);
   }
   advanceProgress(0.05);
 
-  if (Stack_Max(stackData, NULL) != 1) {
+  double maxMaskIntensity = Stack_Max(stackData, NULL);
+  if (maxMaskIntensity > 1.0) {
+    Stack_Binarize(stackData);
+  } else if (maxMaskIntensity == 0.0) {
     cout << "Not a binary image. No skeleton generated." << endl;
     return NULL;
   }
+
+  if (C_Stack::kind(stackData) != GREY) {
+    Translate_Stack(stackData, GREY, 1);
+  }
+
   advanceProgress(0.05);
 
   Stack *out = stackData;
@@ -72,7 +79,7 @@ ZSwcTree* ZStackSkeletonizer::makeSkeleton(const Stack *stack)
   //int nobj = Stack_Label_Objects_N(stackData, NULL, 1, 2, 26);
   if (nobj == 0) {
     cout << "No object found in the image. No skeleton generated." << endl;
-    Kill_Stack(stackData);
+    C_Stack::kill(stackData);
     return NULL;
   }
 
@@ -80,7 +87,7 @@ ZSwcTree* ZStackSkeletonizer::makeSkeleton(const Stack *stack)
 
   if (nobj > 65533) {
     cout << "Too many objects ( > 65533). No skeleton generated." << endl;
-    Kill_Stack(stackData);
+    C_Stack::kill(stackData);
     return NULL;
   }
 

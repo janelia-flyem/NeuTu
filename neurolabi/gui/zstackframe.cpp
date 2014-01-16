@@ -240,25 +240,27 @@ void ZStackFrame::loadStack(Stack *stack, bool isOwner)
 {
   Q_ASSERT(m_doc != NULL);
   m_doc->loadStack(stack, isOwner);
-  m_presenter->optimizeStackBc();
-  m_view->reset();
+  prepareDisplay();
 }
 
 void ZStackFrame::loadStack(ZStack *stack)
 {
   Q_ASSERT(m_doc != NULL);
   m_doc->loadStack(stack);
-  m_presenter->optimizeStackBc();
-  m_view->reset();
-  setWindowTitle(stack->sourcePath());
+  prepareDisplay();
 }
 
-void ZStackFrame::setupDisplay()
+void ZStackFrame::prepareDisplay()
 {
   setWindowTitle(document()->stackSourcePath());
   m_statusInfo =  QString("%1 loaded").arg(document()->stackSourcePath());
   m_presenter->optimizeStackBc();
   m_view->reset();
+}
+
+void ZStackFrame::setupDisplay()
+{
+  prepareDisplay();
 
   qDebug() << "ready(this) emitted";
 

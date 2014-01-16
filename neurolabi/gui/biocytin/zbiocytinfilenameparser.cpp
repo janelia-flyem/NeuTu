@@ -1,6 +1,6 @@
 #include "zbiocytinfilenameparser.h"
 #include <iostream>
-#include <cmath>
+#include <cstdlib>
 
 #include "zstring.h"
 

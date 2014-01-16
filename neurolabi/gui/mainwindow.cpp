@@ -1818,11 +1818,11 @@ void MainWindow::about()
   }
   QMessageBox::about(this, tr("About neuTube"),
                      title +
-                     "<p>neuTube is a software application "
+                     "<p>neuTube is software "
                      "for neuron tracing and visualization. "
                      "It was originally developed by Ting Zhao "
                      "in Myers Lab "
-                     "at Howard Hughes Medical Institute, Janelia Farm Research Campus.</p>"
+                     "at Howard Hughes Medical Institute.</p>"
                      "<p>Current developers: </p>"
                      "<ul>"
                      "<li>Ting Zhao</li>"
@@ -1837,6 +1837,12 @@ void MainWindow::about()
                      "for a particular purpose, or non-infringement.</p>"
                      "<p>For any regarded question or feedback, please mail to "
                      "<a href=mailto:tingzhao@gmail.com>tingzhao@gmail.com</a></p>"
+                     "<p>Source code: "
+                     "<a href=\"https://github.com/janelia-flyem/NeuTu\">"
+                     "https://github.com/janelia-flyem/NeuTu</a></p>"
+                     "<p>Reference: <a href=\"http://www.nature.com/nmeth/journal/v9/n1/full/nmeth.1784.html\">"
+                     "mGRASP enables mapping mammalian synaptic connectivity with light microscopy</a>, "
+                     "<i>Nature Methods</i> 9 (1), 96-102</p>"
                      );
 }
 
@@ -3897,7 +3903,14 @@ ZStackFrame *MainWindow::createStackFrame(
   if (stack != NULL) {
     ZStackFrame *newFrame = new ZStackFrame;
     newFrame->setParentFrame(parentFrame);
+    //debug
+    //tic();
+
     newFrame->loadStack(stack);
+
+    //debug
+    //std::cout << toc() <<std::endl;
+
     newFrame->document()->setTag(tag);
     addStackFrame(newFrame);
     presentStackFrame(newFrame);
@@ -3994,6 +4007,11 @@ static void setSkeletonizer(
                                getZScale());
     skeletonizer.setConnectingBranch(false);
   }
+
+  if (dlg.isDownsampleChecked()) {
+    skeletonizer.setDownsampleInterval(dlg.getXInterval(), dlg.getYInterval(),
+                                       dlg.getZInterval());
+  }
 }
 
 void MainWindow::on_actionMask_SWC_triggered()
@@ -4016,7 +4034,6 @@ void MainWindow::on_actionMask_SWC_triggered()
       }
 
       Stack *maskData = mask->c_stack();
-
 
       QProgressDialog *progressDlg = getProgressDialog();
       //progressDlg->setCancelButton(NULL);
@@ -4059,7 +4076,8 @@ void MainWindow::on_actionMask_SWC_triggered()
         } else {
           if (frame->document()->stack()->channelNumber() == 2) {
             report("Mask Choice",
-                   "No stack data found. The second channel of the current image is used as a depth mask.",
+                   "No stack data found. "
+                   "The second channel of the current image is used as a depth mask.",
                    ZMessageReporter::Warning);
             Stack *depthData = frame->document()->stack()->c_stack(1);
             if (depthData != NULL) {
@@ -4140,7 +4158,9 @@ void MainWindow::on_actionMask_SWC_triggered()
 
         if (frame != stackFrame) {
           swcFrame->open3DWindow(this, Z3DWindow::EXCLUDE_VOLUME);
-          delete swcFrame;
+          if (swcFrame != stackFrame) {
+            delete swcFrame;
+          }
         }
       } else {
         progressDlg->reset();

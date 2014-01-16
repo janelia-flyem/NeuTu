@@ -206,6 +206,8 @@ public:
   void setSizeHintOption(NeuTube::ESizeHintOption option);
   void loadRoi(const QString &filePath);
 
+  void prepareDisplay();
+
 public slots:
   void setLocsegChainInfo(ZLocsegChain *chain, QString prefix = "",
                           QString suffix = "");

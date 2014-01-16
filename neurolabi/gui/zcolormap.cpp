@@ -1,5 +1,6 @@
 #include "zcolormap.h"
 #include <limits>
+#include <algorithm>
 #include <QWidget>
 #include "QsLog.h"
 

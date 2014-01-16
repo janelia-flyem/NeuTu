@@ -1032,6 +1032,9 @@ bool ZStack::isSwc()
 
 void ZStack::bcAdjustHint(double *scale, double *offset, int c)
 {
+  //debug
+  std::cout << "Bc adjust hing" << std::endl;
+
   singleChannelStack(c)->bcAdjustHint(scale, offset);
   /*
   if (isDeprecated(STACK_STAT)) {
