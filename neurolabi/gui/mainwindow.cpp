@@ -675,7 +675,10 @@ void MainWindow::createMenus()
   m_ui->menuTools->addAction(manageObjsAction);
 
 #ifndef _ADVANCED_
-  m_ui->menuProcess->setEnabled(false);
+  m_ui->menuFilter->menuAction()->setVisible(false);
+  m_ui->menuBinary_Morphology->menuAction()->setVisible(false);
+  m_ui->menuSegmentation->menuAction()->setVisible(false);
+  m_ui->menuEdge_Detection->menuAction()->setVisible(false);
 #endif
 
   m_ui->menuOptions->addAction(settingAction);
