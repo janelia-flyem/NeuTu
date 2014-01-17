@@ -56,6 +56,12 @@ class ZStroke2d;
 class QWidget;
 class ZSwcNodeObjsModel;
 
+/*!
+ * \brief The class of stack document
+ *
+ * Each document has at most one main stack, which defines some context of other
+ * data (e.g. resolution).
+ */
 class ZStackDoc : public QObject, public ZReportable, public ZProgressable
 {
   Q_OBJECT
@@ -129,6 +135,12 @@ public: //attributes
   virtual void deprecateDependent(EComponent component);
   virtual void deprecate(EComponent component);
   virtual bool isDeprecated(EComponent component);
+
+
+  /*!
+   * \brief The offset from stack space to data space
+   */
+  ZPoint getStackOffset();
 
   // Prefix for tracing project.
   const char *tubePrefix() const;

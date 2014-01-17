@@ -358,7 +358,8 @@ HEADERS += mainwindow.h \
     zglew.h \
     penwidthdialog.h \
     dvid/zdvidclient.h \
-    dvidobjectdialog.h
+    dvidobjectdialog.h \
+    zpainter.h
 
 FORMS += settingdialog.ui \
     frameinfodialog.ui \
@@ -572,7 +573,8 @@ SOURCES += main.cpp \
     zstackdocmenufactory.cpp \
     penwidthdialog.cpp \
     dvid/zdvidclient.cpp \
-    dvidobjectdialog.cpp
+    dvidobjectdialog.cpp \
+    zpainter.cpp
 
 OTHER_FILES += \
     extlib.pri

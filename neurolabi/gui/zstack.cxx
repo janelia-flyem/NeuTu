@@ -1489,3 +1489,9 @@ void ZStack::logLSMInfo()
   LINFO() << "End LSM Info for" << sourcePath();
 }
 #endif
+
+bool ZStack::hasOffset() const
+{
+  return (m_offset.x() != 0.0) || (m_offset.y() != 0.0) ||
+      (m_offset.z() != 0.0);
+}

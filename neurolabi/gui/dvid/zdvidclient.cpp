@@ -7,7 +7,9 @@
 
 ZDvidClient::ZDvidClient(const QString &server, QObject *parent) :
   QObject(parent), m_serverAddress(server),
-  m_networkReply(NULL), m_targetDirectory("/tmp"), m_file(NULL)
+  m_networkReply(NULL), m_targetDirectory("/tmp"),
+  m_tmpDirectory("/tmp"), m_file(NULL),
+  m_uploadStream(NULL)
 {
   m_networkManager = new QNetworkAccessManager(this);
 }
@@ -24,13 +26,41 @@ bool ZDvidClient::postRequest(EDvidRequest request, const QVariant &parameter)
     qDebug() << m_serverAddress;
     qDebug() << requestUrl.toString();
     break;
+  case DVID_UPLOAD_SWC:
+    requestUrl.setUrl(QString("%1/api/node/f1/skeletons/%2.swc").
+                      arg(m_serverAddress).arg(parameter.toInt()));
+    qDebug() << requestUrl.toString();
+    break;
   default:
     RECORD_ERROR_UNCOND("Invalid request");
     return false;
+  }
+
+  switch (request) {
+  case DVID_GET_OBJECT:
+  case DVID_SAVE_OBJECT:
+    m_networkReply = m_networkManager->get(QNetworkRequest(requestUrl));
+    break;
+  case DVID_UPLOAD_SWC:
+    m_uploadStream = new QFile(QString("%1/%2.swc").arg(m_tmpDirectory).
+                               arg(parameter.toInt()));
+    if (!m_uploadStream->open(QIODevice::ReadOnly)) {
+      RECORD_ERROR_UNCOND("Unable to open swc port");
+      delete m_uploadStream;
+      m_uploadStream = NULL;
+      return false;
+    }
+    QNetworkRequest request(requestUrl);
+    request.setHeader(QNetworkRequest::ContentTypeHeader,
+                      QVariant("application/octet-stream"));
+    m_networkReply = m_networkManager->post(request, m_uploadStream);
     break;
   }
 
-  m_networkReply = m_networkManager->get(QNetworkRequest(requestUrl));
+  if (m_networkReply == NULL) {
+    RECORD_ERROR_UNCOND("No reply");
+    return false;
+  }
 
   switch (request) {
   case DVID_SAVE_OBJECT:
@@ -51,6 +81,11 @@ bool ZDvidClient::postRequest(EDvidRequest request, const QVariant &parameter)
   case DVID_GET_OBJECT:
     connect(m_networkReply, SIGNAL(finished()), this, SLOT(finishRequest()));
     connect(m_networkReply, SIGNAL(readyRead()), this, SLOT(readObject()));
+    break;
+  case DVID_UPLOAD_SWC:
+    connect(m_networkReply, SIGNAL(finished()), this, SLOT(finishRequest()));
+    connect(m_networkReply, SIGNAL(error(QNetworkReply::NetworkError)),
+            this, SLOT(finishRequest()));
     break;
   }
 
@@ -87,15 +122,26 @@ void ZDvidClient::finishRequest()
     m_file->close();
   }
 
-  if (m_networkReply->error()) {
-      m_file->remove();
-      RECORD_ERROR_UNCOND(std::string("Unable to finish operation: ") +
-                          m_networkReply->errorString().toStdString());
-      m_buffer.clear();
+  if (m_uploadStream != NULL) {
+    qDebug() << "File uploaded";
+    m_uploadStream->close();
+    delete m_uploadStream;
+    m_uploadStream = NULL;
   }
 
-  m_obj.importDvidObject(m_buffer.constData(), m_buffer.size());
-  emit objectRetrieved();
+  if (m_networkReply->error()) {
+    if (m_file != NULL) {
+      m_file->remove();
+    }
+    RECORD_ERROR_UNCOND(std::string("Unable to finish operation: ") +
+                        m_networkReply->errorString().toStdString());
+    m_buffer.clear();
+  }
+
+  if (!m_buffer.isEmpty()) {
+    m_obj.importDvidObject(m_buffer.constData(), m_buffer.size());
+    emit objectRetrieved();
+  }
 
   m_networkReply->deleteLater();
   m_networkReply = NULL;

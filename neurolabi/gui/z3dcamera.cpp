@@ -265,7 +265,7 @@ bool Z3DCamera::operator !=(const Z3DCamera &rhs) const
 
 void Z3DCamera::dolly(float value)
 {
-  if (value <= 0.f || (m_centerDist < .01f && value > 1.f))
+  if (value <= 0.f || (m_centerDist < 1.0f && value > 1.f))
     return;
   glm::vec3 pos = m_center - m_viewVector * (m_centerDist / value);
   float maxV = 1e15;

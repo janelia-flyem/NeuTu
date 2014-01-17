@@ -2775,6 +2775,8 @@ void MainWindow::on_actionSkeletonization_triggered()
 
       ZSwcTree *wholeTree = skeletonizer.makeSkeleton(stackData);
 
+      wholeTree->translate(frame->document()->getStackOffset());
+
       if (wholeTree != NULL) {
         frame->executeAddObjectCommand(wholeTree, NeuTube::Documentable_SWC);
         frame->open3DWindow(this, Z3DWindow::EXCLUDE_VOLUME);
@@ -4372,6 +4374,13 @@ void MainWindow::createDvidFrame()
         report("Skeletonization failed", "No SWC tree generated.",
                ZMessageReporter::Error);
       }
+
+      wholeTree->save(
+            QString("%1/%2.swc").arg(m_dvidClient->getTmpDirectory()).
+            arg(m_dvidObjectDlg->getBodyId()).toStdString());
+
+      m_dvidClient->postRequest(ZDvidClient::DVID_UPLOAD_SWC,
+                                QVariant(m_dvidObjectDlg->getBodyId()));
     }
   }
 }

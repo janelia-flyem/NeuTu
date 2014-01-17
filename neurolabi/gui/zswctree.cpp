@@ -2132,7 +2132,9 @@ vector<Swc_Tree_Node*> ZSwcTree::extractLeaf(Swc_Tree_Node *start)
 
 void ZSwcTree::translate(double x, double y, double z)
 {
-  Swc_Tree_Translate(data(), x, y, z);
+  if (x != 0.0 || y != 0.0 || z != 0.0) {
+    Swc_Tree_Translate(data(), x, y, z);
+  }
 }
 
 void ZSwcTree::translate(const ZPoint &offset)

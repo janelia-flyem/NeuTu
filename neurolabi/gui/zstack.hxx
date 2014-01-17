@@ -344,7 +344,14 @@ public: /* operations */
   void copyValue(const void *buffer, size_t length, void *loc);
 
   void setOffset(double dx, double dy, double dz);
-  inline ZPoint getOffset() { return m_offset; }
+  inline const ZPoint& getOffset() const { return m_offset; }
+
+  /*!
+   * \brief Test if a stack has non-zero offset
+   *
+   * \return true iff the offset of any dimension is not zero
+   */
+  bool hasOffset() const;
 
 public: /* processing routines */
   bool binarize(int threshold = 0);

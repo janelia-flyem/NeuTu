@@ -2,8 +2,11 @@
 #define ZQTHEADER_H
 
 #ifndef _QT_GUI_USED_
+class QObject {
+  QObject(QObject *parent = NULL) {}
+};
 class QImage {};
-class QPainter {};
+class QPainter{};
 class QPointF {};
 class QString{};
 class QStringList{};

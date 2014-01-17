@@ -22,7 +22,7 @@ public:
   ZDvidClient(const QString &server, QObject *parent = NULL);
 
   enum EDvidRequest {
-    DVID_GET_OBJECT, DVID_SAVE_OBJECT
+    DVID_GET_OBJECT, DVID_SAVE_OBJECT, DVID_UPLOAD_SWC
   };
 
   inline void setServer(const QString &server) {
@@ -30,6 +30,10 @@ public:
   }
   inline const QString &getServer() {
     return m_serverAddress;
+  }
+
+  inline const QString& getTmpDirectory() {
+    return m_tmpDirectory;
   }
 
   /*!
@@ -52,10 +56,13 @@ private:
   QNetworkAccessManager *m_networkManager;
   QNetworkReply *m_networkReply;
   QString m_targetDirectory;
+  QString m_tmpDirectory;
   QFile *m_file;
 
   ZObject3dScan m_obj;
   QByteArray m_buffer;
+
+  QIODevice *m_uploadStream;
 };
 
 #endif // ZDVIDCLIENT_H
