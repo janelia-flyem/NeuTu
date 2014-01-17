@@ -139,7 +139,7 @@ public:
 
 public:
 
-  virtual void display(QPainter &painter, int z = 0, Display_Style option = NORMAL) const;
+  virtual void display(ZPainter &painter, int z = 0, Display_Style option = NORMAL) const;
 
   /*!
    * \brief save Save swc

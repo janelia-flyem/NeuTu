@@ -17,6 +17,7 @@ class ZProgrogressReporter;
 class ZStack;
 class ZStroke2d;
 class ZStackDoc;
+class ZDocumentable;
 
 namespace ZStackDocCommand {
 namespace SwcEdit {

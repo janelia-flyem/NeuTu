@@ -284,13 +284,16 @@ void ZSwcTree::load(const char *filePath)
   deprecate(ALL_COMPONENT);
 }
 
-void ZSwcTree::display(QPainter &painter, int n, ZStackDrawable::Display_Style style) const
+void ZSwcTree::display(
+    ZPainter &painter, int stackFocus, ZStackDrawable::Display_Style style) const
 {
   if (!isVisible()) {
     return;
   }
 
 #if defined(_QT_GUI_USED_)
+  double dataFocus = stackFocus - painter.getOffset().z();
+
   const double strokeWidth = m_defaultPenWidth;
 
   updateIterator(SWC_TREE_ITERATOR_DEPTH_FIRST);
@@ -331,10 +334,10 @@ void ZSwcTree::display(QPainter &painter, int n, ZStackDrawable::Display_Style s
 
       QPointF lineStart, lineEnd;
 
-      double upperZ = n + 0.5;
-      double lowerZ = n - 0.5;
+      double upperZ = dataFocus + 0.5;
+      double lowerZ = dataFocus - 0.5;
 
-      if ((n == -1) ||
+      if ((stackFocus == -1) ||
           (IS_IN_OPEN_RANGE(SwcTreeNode::z(lowerTn), lowerZ, upperZ) &&
            IS_IN_OPEN_RANGE(SwcTreeNode::z(upperTn), lowerZ, upperZ))) {
         visible = true;
@@ -351,7 +354,7 @@ void ZSwcTree::display(QPainter &painter, int n, ZStackDrawable::Display_Style s
         if (SwcTreeNode::z(lowerTn) < upperZ && SwcTreeNode::z(upperTn) > lowerZ) {
           visible = true;
           double dz = SwcTreeNode::z(upperTn) - SwcTreeNode::z(lowerTn);
-          double lambda1 = (SwcTreeNode::z(upperTn) - n - 0.5) / dz;
+          double lambda1 = (SwcTreeNode::z(upperTn) - dataFocus - 0.5) / dz;
           double lambda2 = lambda1 + 1.0 / dz;
           if (lambda1 < 0.0) {
             lambda1 = 0.0;
@@ -396,16 +399,16 @@ void ZSwcTree::display(QPainter &painter, int n, ZStackDrawable::Display_Style s
     double r = SwcTreeNode::radius(tn);
     bool visible = false;
     bool focused = false;
-    if ((iround(SwcTreeNode::z(tn)) == n) || (n == -1)) {
+    if (fabs(SwcTreeNode::z(tn) - dataFocus) <= 0.5) {
+      focused = true;
+    }
+    if (focused || (stackFocus == -1)) {
       visible = true;
       focused = true;
-    } else if (fabs(SwcTreeNode::z(tn) - n) < r) {
-      r = sqrt(r * r - (SwcTreeNode::z(tn) - n) *
-               (SwcTreeNode::z(tn) - n));
+    } else if (fabs(SwcTreeNode::z(tn) - dataFocus) < r) {
+      r = sqrt(r * r - (SwcTreeNode::z(tn) - dataFocus) *
+               (SwcTreeNode::z(tn) - dataFocus));
       visible = true;
-      if (fabs(SwcTreeNode::z(tn) - n) <= 0.5) {
-        focused = true;
-      }
     }
 
     pen.setWidthF(strokeWidth);
@@ -437,14 +440,14 @@ void ZSwcTree::display(QPainter &painter, int n, ZStackDrawable::Display_Style s
         if (SwcTreeNode::isRoot(tn) || SwcTreeNode::isBranchPoint(tn)) {
           ZCircle circle(SwcTreeNode::x(tn), SwcTreeNode::y(tn), SwcTreeNode::z(tn),
                          SwcTreeNode::radius(tn));
-          circle.display(&painter, n, style);
+          circle.display(&painter, stackFocus, style);
         }
         break;
       case SOLID:
       {
         ZCircle circle(SwcTreeNode::x(tn), SwcTreeNode::y(tn), SwcTreeNode::z(tn),
                        SwcTreeNode::radius(tn));
-        circle.display(&painter, n, style);
+        circle.display(&painter, stackFocus, style);
         }
         break;
       case SKELETON:

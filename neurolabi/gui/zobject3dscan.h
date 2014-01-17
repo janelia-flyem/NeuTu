@@ -259,7 +259,7 @@ public:
   ZObject3dScan getSlice(int z) const;
   ZObject3dScan getSlice(int minZ, int maxZ) const;
 
-  virtual void display(QPainter &painter, int z = 0, Display_Style option = NORMAL)
+  virtual void display(ZPainter &painter, int z = 0, Display_Style option = NORMAL)
   const;
   virtual const std::string& className() const;
 

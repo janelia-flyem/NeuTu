@@ -10236,11 +10236,44 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
-#if 1
+#if 0
   ZObject3dScan obj;
   obj.importDvidObject(GET_DATA_DIR + "/1.dvid");
 
   std::cout << obj.getVoxelNumber() << std::endl;
 #endif
 
+#if 0
+  ZObject3dScan obj;
+  obj.addSegment(0, 1, 1, 1);
+  obj.addSegment(1, 1, 0, 2);
+  obj.addSegment(2, 0, 1, 1);
+  obj.addSegment(2, 1, 0, 2);
+  obj.addSegment(2, 2, 1, 1);
+  obj.save(GET_DATA_DIR + "/benchmark/tower3.sobj");
+#endif
+
+#if 0
+  ZObject3dScan obj;
+  obj.addSegment(1, 2, 2, 2);
+  obj.addSegment(2, 2, 1, 3);
+  obj.addSegment(3, 1, 2, 2);
+  obj.addSegment(3, 2, 1, 3);
+  obj.addSegment(3, 3, 2, 2);
+  obj.save(GET_DATA_DIR + "/benchmark/tower5.sobj");
+#endif
+
+#if 1
+  ZObject3dScan obj;
+  obj.addSegment(1, 16, 16, 16);
+  obj.addSegment(2, 16, 5, 32);
+  for (int y = 5; y < 16; ++y) {
+    obj.addSegment(3, y, 16, 16);
+  }
+  obj.addSegment(3, 16, 5, 32);
+  for (int y = 17; y < 33; ++y) {
+    obj.addSegment(3, y, 16, 16);
+  }
+  obj.save(GET_DATA_DIR + "/benchmark/pile.sobj");
+#endif
 }

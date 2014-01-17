@@ -1350,6 +1350,9 @@ void ZStackFrame::importMask(const QString &filePath)
       ZObject3d *obj = new ZObject3d;
       obj->setColor(QColor(255, 0, 0, 128));
       if (obj->loadStack(stack->c_stack(0))) {
+        obj->translate(iround(document()->getStackOffset().x()),
+                       iround(document()->getStackOffset().y()),
+                       iround(document()->getStackOffset().z()));
         executeAddObjectCommand(obj, NeuTube::Documentable_OBJ3D);
       } else {
         delete obj;

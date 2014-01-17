@@ -41,7 +41,7 @@ ZLocalNeuroseg::~ZLocalNeuroseg()
   }
 }
 
-void ZLocalNeuroseg::display(QPainter &painter, int z, Display_Style option,
+void ZLocalNeuroseg::display(ZPainter &painter, int z, Display_Style option,
                              const QColor &color) const
 { //todo
 #if 0
@@ -451,7 +451,7 @@ void ZLocalNeuroseg::display(QImage *image, int n, Palette_Color color,
 }
 
 
-void ZLocalNeuroseg::display(QPainter &/*painter*/, int /*z*/, Display_Style /*option*/) const
+void ZLocalNeuroseg::display(ZPainter &/*painter*/, int /*z*/, Display_Style /*option*/) const
 {
 #if 0
   display(painter, z, option, RED);

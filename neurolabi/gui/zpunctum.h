@@ -28,7 +28,7 @@ public:
 
 public:
 
-  virtual void display(QPainter &painter, int n = 0, Display_Style style = NORMAL) const;
+  virtual void display(ZPainter &painter, int n = 0, Display_Style style = NORMAL) const;
 
 public: // I/O functions
   virtual inline void save(const char *filePath) {Q_UNUSED(filePath)}

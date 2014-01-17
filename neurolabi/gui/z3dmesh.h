@@ -18,7 +18,7 @@ public:
   void setTriangleType(GLenum type);
 
   virtual const std::string& className() const;
-  virtual void display(QPainter &, int, Display_Style) const {}
+  virtual void display(ZPainter &, int, Display_Style) const {}
 
   std::vector<double> getBoundBox() const;
 

@@ -128,7 +128,7 @@ public:
 
   void setViewPortCenter(int x, int y, int z);
 
-  const QPoint dataPositionFromMouse(MouseButtonAction mba);
+  const QPoint stackPositionFromMouse(MouseButtonAction mba);
 
   QStringList toStringList() const;
 

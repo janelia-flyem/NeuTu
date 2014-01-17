@@ -193,7 +193,8 @@ double Stack_Voxel_Weight(void *argv)
   double v2 = ((double*) argv)[2];
   double d = ((double*) argv)[0];
   
-  return (v1 + v2) * (v1 + v2) * d;
+  double v = v1 + v2 + 0.1;
+  return v * v * d;
 }
 
 double Stack_Voxel_Weight_I(void *argv)

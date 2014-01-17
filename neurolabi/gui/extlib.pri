@@ -13,9 +13,11 @@ LIBS += -L$${NEUROLABI_DIR}/c/lib
 CONFIG(debug, debug|release) {
     DEFINES += _DEBUG_ _ADVANCED_ PROJECT_PATH=\"\\\"$$PWD\\\"\"
     LIBS += -lneurolabi_debug
+    PRE_TARGETDEPS += $${NEUROLABI_DIR}/c/lib/libneurolabi_debug.a
 } else {
     #DEFINES += _ADVANCED_
     LIBS += -lneurolabi
+    PRE_TARGETDEPS += $${NEUROLABI_DIR}/c/lib/libneurolabi.a
 }
 
 #Self-contained libraries

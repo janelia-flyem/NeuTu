@@ -7,11 +7,17 @@ class QObject {
 };
 class QImage {};
 class QPainter{};
-class QPointF {};
+class QPointF {
+  QPointF(double, double) {}
+};
+class QPaintDevice{};
 class QString{};
 class QStringList{};
 class QList{};
 class QColor{};
+class QRectF{};
+class QRect{};
+typedef double qreal;
 #endif
 
 #endif // ZQTHEADER_H

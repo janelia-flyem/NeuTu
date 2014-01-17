@@ -847,6 +847,11 @@ ZStack*& ZStackDoc::stackRef()
   return m_stack;
 }
 
+const ZStack* ZStackDoc::stackRef() const
+{
+  return m_stack;
+}
+
 void ZStackDoc::loadStack(Stack *stack, bool isOwner)
 {
   if (stack == NULL)
@@ -1738,6 +1743,10 @@ void ZStackDoc::addStroke(ZStroke2d *obj)
   m_objs.prepend(obj);
   m_strokeList.prepend(obj);
   m_drawableList.prepend(obj);
+#ifdef _DEBUG_2
+  std::cout << "New stroke added" << std::endl;
+  obj->print();
+#endif
 }
 
 void ZStackDoc::addLocsegChainConn(ZLocsegChainConn *obj)
@@ -4088,8 +4097,15 @@ QString ZStackDoc::dataInfo(int x, int y, int z) const
         info += QString(")");
       }
     }
+
+    if (stack()->hasOffset()) {
+      info += QString("; Data coordinates: (%1, %2, %3)").
+          arg(getStackOffset().x() + x).arg(getStackOffset().y() + y).
+          arg(getStackOffset().z() + z);
+    }
   }
 
+/*
   if (m_traceWorkspace != NULL) {
     if (m_traceWorkspace->trace_mask != NULL) {
       int id = pickLocsegChainId(x, y, z);
@@ -4099,6 +4115,7 @@ QString ZStackDoc::dataInfo(int x, int y, int z) const
       }
     }
   }
+  */
 
   return info;
 }
@@ -6573,6 +6590,17 @@ bool ZStackDoc::getLastStrokePoint(int *x, int *y) const
   return false;
 }
 
+bool ZStackDoc::getLastStrokePoint(double *x, double *y) const
+{
+  if (!m_strokeList.empty()) {
+    if (!m_strokeList[0]->isEmpty()) {
+      return m_strokeList[0]->getLastPoint(x, y);
+    }
+  }
+
+  return false;
+}
+
 bool ZStackDoc::hasSelectedSwc() const
 {
   return !selectedSwcs()->empty();
@@ -6821,11 +6849,60 @@ bool ZStackDoc::executeResetBranchPoint()
   return false;
 }
 
-ZPoint ZStackDoc::getStackOffset()
+ZPoint ZStackDoc::getStackOffset() const
 {
   if (hasStackData()) {
     return stackRef()->getOffset();
   }
 
   return ZPoint(0, 0, 0);
+}
+
+ZPoint ZStackDoc::getDataCoord(const ZPoint &pt)
+{
+  return pt + getStackOffset();
+}
+
+ZPoint ZStackDoc::getDataCoord(double x, double y, double z)
+{
+  return ZPoint(x + getStackOffset().x(), y + getStackOffset().y(),
+                z + getStackOffset().z());
+}
+
+void ZStackDoc::mapToDataCoord(ZPoint *pt)
+{
+  if (pt != NULL) {
+    *pt += getStackOffset();
+  }
+}
+
+void ZStackDoc::mapToDataCoord(double *x, double *y, double *z)
+{
+  if (x != NULL) {
+    *x += getStackOffset().x();
+  }
+
+  if (y != NULL) {
+    *y += getStackOffset().y();
+  }
+
+  if (z != NULL) {
+    *z += getStackOffset().z();
+  }
+}
+
+void ZStackDoc::mapToStackCoord(ZPoint *pt)
+{
+  if (pt != NULL) {
+    *pt -= getStackOffset();
+  }
+}
+
+void ZStackDoc::mapToStackCoord(double *x, double *y, double *z)
+{
+  if (x != NULL && y != NULL && z != NULL) {
+    *x -= getStackOffset().x();
+    *y -= getStackOffset().y();
+    *z -= getStackOffset().z();
+  }
 }

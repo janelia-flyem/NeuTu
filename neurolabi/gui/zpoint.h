@@ -8,18 +8,12 @@
 #include <iostream>
 #include <string>
 
-#include "zqtheader.h"
-#include "zdocumentable.h"
-#include "zstackdrawable.h"
-
-class ZPoint : public ZDocumentable, public ZStackDrawable {
+class ZPoint {
 public:
   ZPoint();
   ZPoint(double x, double y, double z);
   ZPoint(const double *pt);
   ZPoint(const ZPoint &pt);
-
-  virtual const std::string& className() const;
 
 public:
   inline void set(double x, double y, double z) {
@@ -81,7 +75,7 @@ public:
   }
 
 public:
-  virtual void display(QPainter &painter, int n = 0, Display_Style style = NORMAL) const;
+  //virtual void display(ZPainter &painter, int n = 0, Display_Style style = NORMAL) const;
 
   virtual void save(const char *filePath);
   virtual void load(const char *filePath);

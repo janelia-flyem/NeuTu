@@ -3,6 +3,7 @@
 #include "tz_rastergeom.h"
 #include "zimagewidget.h"
 #include <cmath>
+#include "zpainter.h"
 #include "zpaintbundle.h"
 
 ZImageWidget::ZImageWidget(QWidget *parent, QImage *image) : QWidget(parent)
@@ -304,7 +305,7 @@ void ZImageWidget::zoom(int zoomRatio)
 void ZImageWidget::paintEvent(QPaintEvent * /*event*/)
 {
   if (m_image != NULL) {
-    QPainter painter(this);
+    ZPainter painter(this);
     painter.setRenderHint(QPainter::Antialiasing, false);
 
     //zoom(m_zoomRatio);
@@ -324,7 +325,7 @@ void ZImageWidget::paintEvent(QPaintEvent * /*event*/)
 
     if (m_paintBundle) {
       double zoomRatio = size.width() * 1.0 / m_viewPort.width();
-      QPainter painter1(this);
+      ZPainter painter1(this);
 #ifdef _DEBUG_2
       std::cout << x() - parentWidget()->x() << " "
                 << y() - parentWidget()->y()
@@ -338,6 +339,7 @@ void ZImageWidget::paintEvent(QPaintEvent * /*event*/)
       transform.scale(zoomRatio, zoomRatio);
       painter1.setTransform(transform);
 
+      painter1.setStackOffset(m_paintBundle->getStackOffset());
       for (ZPaintBundle::const_iterator it = m_paintBundle->begin();
            it != m_paintBundle->end(); ++it) {
         if ((*it)->getTarget() == ZStackDrawable::WIDGET) {

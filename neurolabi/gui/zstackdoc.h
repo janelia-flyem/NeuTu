@@ -140,7 +140,26 @@ public: //attributes
   /*!
    * \brief The offset from stack space to data space
    */
-  ZPoint getStackOffset();
+  ZPoint getStackOffset() const;
+
+  /*!
+   * \brief Get the data space coordinates of stack coordinates
+   */
+  ZPoint getDataCoord(const ZPoint &pt);
+  ZPoint getDataCoord(double x, double y, double z);
+
+  /*!
+   * \brief Map stack coodinates to data space
+   */
+  void mapToDataCoord(ZPoint *pt);
+  void mapToDataCoord(double *x, double *y, double *z);
+
+  /*!
+   * \brief Data coordinates to stack coordinates
+   */
+  void mapToStackCoord(ZPoint *pt);
+  void mapToStackCoord(double *x, double *y, double *z);
+
 
   // Prefix for tracing project.
   const char *tubePrefix() const;
@@ -223,6 +242,7 @@ public:
   virtual void loadStack(Stack *stack, bool isOwner = true);
   virtual void loadStack(ZStack *zstack);
   virtual ZStack*& stackRef();
+  virtual const ZStack *stackRef() const;
 
   void readStack(const char *filePath);
   void readSwc(const char *filePath);
@@ -477,6 +497,7 @@ public: /* puncta related methods */
 
   std::vector<ZSwcTree*> getSwcArray() const;
   bool getLastStrokePoint(int *x, int *y) const;
+  bool getLastStrokePoint(double *x, double *y) const;
 
   void updateModelData(EDocumentDataType type);
 

@@ -29,11 +29,11 @@ public:
                       Display_Style style = NORMAL, int label = 0);
 
 public:
-  virtual void display(QPainter &painter, int z = 0, Display_Style option = NORMAL)
+  virtual void display(ZPainter &painter, int z = 0, Display_Style option = NORMAL)
   const;
   virtual void display(QImage *image, int n, Palette_Color color,
                        Display_Style style = NORMAL, int label = 0) const;
-  virtual void display(QPainter &painter, int z, Display_Style option,
+  virtual void display(ZPainter &painter, int z, Display_Style option,
                        const QColor &color) const;
 
   virtual void save(const char *filePath);

@@ -121,7 +121,7 @@ void ZObject3d::load(const char *filePath)
   UNUSED_PARAMETER(filePath);
 }
 
-void ZObject3d::display(QPainter &painter, int z, Display_Style option) const
+void ZObject3d::display(ZPainter &painter, int z, Display_Style option) const
 {  
   UNUSED_PARAMETER(option);
 #if _QT_GUI_USED_

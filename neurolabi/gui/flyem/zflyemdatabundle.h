@@ -1,6 +1,7 @@
 #ifndef ZFLYEMDATABUNDLE_H
 #define ZFLYEMDATABUNDLE_H
 
+#include <QColor>
 #include <vector>
 #include <string>
 #include <map>

@@ -1458,7 +1458,7 @@ void ZObject3dScan::duplicateAcrossZ(int depth)
   deprecate(ALL_COMPONENT);
 }
 
-void ZObject3dScan::display(QPainter &painter, int z, Display_Style style) const
+void ZObject3dScan::display(ZPainter &painter, int z, Display_Style style) const
 {
   UNUSED_PARAMETER(style);
 #if _QT_GUI_USED_

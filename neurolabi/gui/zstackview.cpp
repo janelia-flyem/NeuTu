@@ -702,6 +702,9 @@ void ZStackView::updateImageScreen()
 {
   m_paintBundle.unsetSwcNodeList();
   m_paintBundle.clearAllDrawableLists();
+  if (buddyDocument() != NULL) {
+    m_paintBundle.setStackOffset(buddyDocument()->getStackOffset());
+  }
 
   int slice = m_depthControl->value();
   if (buddyPresenter()->interactiveContext().isProjectView()) {
@@ -860,7 +863,6 @@ void ZStackView::redraw()
 
 void ZStackView::prepareDocument()
 {
-
 }
 
 QMenu* ZStackView::leftMenu()
@@ -1310,7 +1312,8 @@ void ZStackView::paintObjectBuffer()
       slice = -1;
     }
 
-    QPainter painter(m_objectCanvas);
+    ZPainter painter(m_objectCanvas);
+    painter.setStackOffset(buddyDocument()->getStackOffset());
 
     if (buddyDocument()->hasDrawable()) {
       QList<ZStackDrawable*> *objs = buddyDocument()->drawableList();
@@ -1424,10 +1427,14 @@ void ZStackView::paintActiveDecorationBuffer()
   const QList<ZStackDrawable*>& drawableList =
       buddyPresenter()->getActiveDecorationList();
 
-  foreach (ZStackDrawable *obj, drawableList) {
-    if (obj->getTarget() == ZStackDrawable::OBJECT_CANVAS) {
-      QPainter painter(m_activeDecorationCanvas);
-      obj->display(painter, sliceIndex());
+  if (!drawableList.isEmpty()) {
+    ZPainter painter(m_activeDecorationCanvas);
+    painter.setStackOffset(buddyDocument()->getStackOffset());
+
+    foreach (ZStackDrawable *obj, drawableList) {
+      if (obj->getTarget() == ZStackDrawable::OBJECT_CANVAS) {
+        obj->display(painter, sliceIndex());
+      }
     }
   }
 #endif
@@ -1484,7 +1491,8 @@ ZStack* ZStackView::getStrokeMask(uint8_t maskValue)
       }
 
       foreach (ZStroke2d *obj, buddyDocument()->getStrokeList()) {
-        QPainter painter(m_objectCanvas);
+        ZPainter painter(m_objectCanvas);
+        painter.setStackOffset(buddyDocument()->getStackOffset());
         obj->display(painter, slice, buddyPresenter()->objectStyle());
       }
     }

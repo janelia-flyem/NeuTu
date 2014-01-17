@@ -32,13 +32,13 @@ ZPoint::ZPoint(const double *pt)
   set(pt[0], pt[1], pt[2]);
 }
 
-ZPoint::ZPoint(const ZPoint &pt) :
-  ZInterface(pt), ZDocumentable(pt), ZStackDrawable(pt)
+ZPoint::ZPoint(const ZPoint &pt)
 {
   set(pt.m_x, pt.m_y, pt.m_z);
 }
 
-void ZPoint::display(QPainter &painter, int n, Display_Style style) const
+#if 0
+void ZPoint::display(ZPainter &painter, int n, Display_Style style) const
 {
   UNUSED_PARAMETER(style);
 #if defined(_QT_GUI_USED_)
@@ -52,6 +52,7 @@ void ZPoint::display(QPainter &painter, int n, Display_Style style) const
   UNUSED_PARAMETER(style);
 #endif
 }
+#endif
 
 void ZPoint::save(const char *filePath)
 {
@@ -252,6 +253,4 @@ std::string ZPoint::toJsonString() const
 
   return stream.str();
 }
-
-ZINTERFACE_DEFINE_CLASS_NAME(ZPoint)
 

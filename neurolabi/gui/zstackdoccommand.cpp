@@ -15,6 +15,7 @@
 #include "zstackdoc.h"
 #include "zswcconnector.h"
 #include "zgraph.h"
+#include "zdocumentable.h"
 
 using namespace std;
 

@@ -29,13 +29,13 @@ public:
   const static TVisualEffect VE_NO_CIRCLE;
 
 public:
-  virtual void display(QPainter &painter, int z = 0,
+  virtual void display(ZPainter &painter, int z = 0,
                        Display_Style option = NORMAL) const;
 
   virtual void save(const char *filePath);
   virtual void load(const char *filePath);
 
-  void display(QPainter *painter, int n, Display_Style style) const;
+  void display(ZPainter *painter, int n, Display_Style style) const;
 
   /*!
    * \brief Test if a circle is cut by a plane.

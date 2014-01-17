@@ -35,7 +35,7 @@ public:
 
   virtual void save(const char *filePath);
   virtual void load(const char *filePath);
-  virtual void display(QPainter &painter, int z = 0, Display_Style option = NORMAL)
+  virtual void display(ZPainter &painter, int z = 0, Display_Style option = NORMAL)
   const;
 
 public:
