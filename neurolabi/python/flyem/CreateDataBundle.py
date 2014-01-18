@@ -82,7 +82,7 @@ def CreateDataBundle(config):
                 neuron["volume"] = (config["objDir"] + "/" + os.path.basename(f)).replace('.swc', '.obj');
             dataBundle["neuron"].append(neuron);
             
-    otherFields = ["image_resolution", "synapse_scale", "synapse", "source_offset", "source_dimension"];
+    otherFields = ["image_resolution", "synapse_scale", "synapse", "source_offset", "source_dimension", "swc_resolution", "image_resolution"];
     for field in otherFields:
         if config.has_key(field):
             dataBundle[field] = config[field];

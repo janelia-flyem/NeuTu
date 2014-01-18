@@ -1,6 +1,10 @@
 #ifndef Z3DGL_H
 #define Z3DGL_H
 
+#if defined(_WINDOWS_)
+#  include "zglew.h"
+#endif
+
 #ifdef __APPLE__
     #include <OpenGL/gl.h>
 #else

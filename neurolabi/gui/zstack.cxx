@@ -1195,8 +1195,25 @@ const char* ZStack::sourcePath() const
   return m_source.firstUrl().c_str();
 }
 
+bool ZStack::isEmpty() const
+{
+  if (m_stack == NULL) {
+    return true;
+  }
+
+  if ((m_stack->width  == 0) && (m_stack->height == 0) && (m_stack->depth == 0)) {
+    return true;
+  }
+
+  return false;
+}
+
 bool ZStack::isVirtual() const
 {
+  if (isEmpty()) {
+    return false;
+  }
+
   return m_stack->array == NULL;
 }
 

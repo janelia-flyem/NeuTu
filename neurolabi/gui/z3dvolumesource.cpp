@@ -90,7 +90,10 @@ void Z3DVolumeSource::readVolumes()
       Stack *stack = m_doc->stack()->c_stack(i);
 
       //Under deveopment
-      ZPoint offset = ZPoint(0, 0, 0); //m_doc->stack()->getOffset() * ;
+      ZPoint offset = m_doc->stack()->getOffset();
+      offset.set(offset.x() * m_xScale.get(),
+                 offset.y() * m_yScale.get(),
+                 offset.z() * m_zScale.get());
       if (m_doc->stack()->getVoxelNumber() * nchannel > m_maxVoxelNumber) { //Downsample big stack
         m_isVolumeDownsampled.set(true);
         double scale = std::sqrt((m_maxVoxelNumber*1.0) /

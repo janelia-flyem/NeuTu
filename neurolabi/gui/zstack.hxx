@@ -117,16 +117,20 @@ public: /* attributes */
   const ZSingleChannelStack* singleChannelStack(int c = 0) const;
 
   //! Width of the stack.
-  inline int width() const { return C_Stack::width(mc_stack()); }
+  inline int width() const {
+    return mc_stack() == NULL ? 0 : C_Stack::width(mc_stack()); }
   //! Height of the stack.
-  inline int height() const { return C_Stack::height(mc_stack()); }
+  inline int height() const {
+    return mc_stack() == NULL ? 0 : C_Stack::height(mc_stack()); }
   //! Number of slices of the stack.
-  inline int depth() const { return C_Stack::depth(mc_stack()); }
+  inline int depth() const {
+    return mc_stack() == NULL ? 0 : C_Stack::depth(mc_stack()); }
   //! Voxel type of the stack.
-  inline int kind() const { return C_Stack::kind(mc_stack()); }
+  inline int kind() const {
+    return mc_stack() == NULL ? 0 : C_Stack::kind(mc_stack()); }
   //! Channel number of the stack.
   inline int channelNumber() const {
-    return C_Stack::channelNumber(m_stack);
+    return mc_stack() == NULL ? 0 : C_Stack::channelNumber(m_stack);
   }
 
   //! Component of the stack
@@ -233,7 +237,18 @@ public: /* attributes */
   //for anisotropic operations
   inline double preferredZScale() const { return m_preferredZScale; }
 
-  /* A stack is virtual if its data array is null */
+  /*!
+   * \brief Test if a stack is empty
+   *
+   * \return true iff the size is 0.
+   */
+  bool isEmpty() const;
+
+  /*!
+   * \brief Test if a stack is virtual.
+   * \return A stack is virtual iff the stack is not empty and its data array
+   * is null
+   */
   bool isVirtual() const;
 
   // return voxelnumber or dataByteCount of all channels. Obsolete

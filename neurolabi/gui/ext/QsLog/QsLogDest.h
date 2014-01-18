@@ -31,10 +31,14 @@
 #include <QtGlobal>
 class QString;
 
-#ifdef QSLOG_IS_SHARED_LIBRARY
-#define QSLOG_SHARED_OBJECT Q_DECL_EXPORT
+#if defined(_BUILD_QS_LOG_OBJECT_)
+#  define QSLOG_SHARED_OBJECT
 #else
-#define QSLOG_SHARED_OBJECT Q_DECL_IMPORT
+#  ifdef QSLOG_IS_SHARED_LIBRARY
+#    define QSLOG_SHARED_OBJECT Q_DECL_EXPORT
+#  else
+#    define QSLOG_SHARED_OBJECT Q_DECL_IMPORT
+#  endif
 #endif
 
 namespace QsLogging

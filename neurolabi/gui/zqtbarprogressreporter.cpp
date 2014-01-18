@@ -28,7 +28,7 @@ void ZQtBarProgressReporter::close()
 void ZQtBarProgressReporter::push()
 {
   m_progressBar->setValue(iround(m_progress * 100.0));
-  QApplication::processEvents();
+  QApplication::processEvents(QEventLoop::AllEvents);
 }
 
 void ZQtBarProgressReporter::pull()

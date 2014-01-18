@@ -155,12 +155,11 @@
 #include "test/zflyemneuronfiltertest.h"
 #include "test/zswcmetrictest.h"
 #include "test/zmatrixtest.h"
-
+#include "test/zstacktest.h"
 
 using namespace std;
 
 ostream& ZTest::m_failureStream = cerr;
-
 
 ZTest::ZTest()
 {
@@ -184,6 +183,7 @@ bool ZTest::testTreeIterator(ZSwcTree &tree,
     count = tree.updateIterator(config.option, config.start, *(config.blocker),
                                 TRUE);
   }
+
 
 #ifdef _USE_GTEST_
   EXPECT_EQ(count, truthCount) << "Unmatched node number";

@@ -69,10 +69,10 @@ else:exists(../lib/ITK/lib/libITKCommon.a) {
 }
 
 CONFIG(debug, debug|release) {
-    exists(/usr/local/include/opencv/cv.h) {
+    exists(../lib/opencv) {
         DEFINES += _USE_OPENCV_
-        INCLUDEPATH += /usr/local/include/opencv
-        LIBS += -lopencv_core -lopencv_ml
+        INCLUDEPATH += ../lib/opencv/include
+        LIBS += -L ../lib/opencv/lib -lopencv_core -lopencv_ml
     }
 }
 

@@ -1,12 +1,28 @@
 DEPENDPATH += . $${NEUROLABI_DIR}/c $${NEUROLABI_DIR}/c/include
 INCLUDEPATH += $${NEUROLABI_DIR}/gui \
-    $${EXTLIB_DIR}/xml/include/libxml2 \
-    $${EXTLIB_DIR}/fftw3/include \
-    $${EXTLIB_DIR}/png/include \
-    $${EXTLIB_DIR}/jansson/include \
     $${NEUROLABI_DIR}/c \
     $${NEUROLABI_DIR}/c/include \
     $${EXTLIB_DIR}/genelib/src $${NEUROLABI_DIR}/gui/ext
+
+unix {
+    INCLUDEPATH += $${EXTLIB_DIR}/xml/include/libxml2 \
+        $${EXTLIB_DIR}/fftw3/include \
+        $${EXTLIB_DIR}/png/include \
+        $${EXTLIB_DIR}/jansson/include
+}
+
+win32 {
+    INCLUDEPATH += C:/Mingw/include \
+        C:/Mingw/include/libxml2 \
+        C:/Qt/2010.05/mingw/include/libxml2
+
+    LIBS += -LC:/Mingw/lib \
+        -lfftw3 \
+        -lfftw3f \
+        -lxml2 \
+        -lpng \
+        -mwin32 -mthreads -lpcreposix -lpcre -ljansson -lpthread
+}
 
 #neurolabi
 LIBS += -L$${NEUROLABI_DIR}/c/lib

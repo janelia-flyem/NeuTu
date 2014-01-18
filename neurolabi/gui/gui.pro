@@ -85,7 +85,7 @@ CONFIG(debug, debug|release) {
 
 LIBS += -lstdc++
 unix:!macx {
-    QMAKE_CXXFLAGS += -D_LINUX_
+    DEFINES += _LINUX_
     LIBS += -lQtGui -lQtCore \
       -lQtOpenGL -lQtNetwork \
       -lQtGui \
@@ -123,16 +123,7 @@ macx {
 }
 
 win32 {
-    INCLUDEPATH += C:/Mingw/include \
-        C:/Mingw/include/libxml2 \
-        C:/Qt/2010.05/mingw/include/libxml2
-
-    LIBS += -LC:/Mingw/lib \
-        -lfftw3 \
-        -lfftw3f \
-        -lxml2 \
-        -lpng \
-        -mwin32 -mthreads -lpcreposix -lpcre -ljansson -lpthread
+    DEFINES += _WINDOWS_
 
     RC_FILE = images/app.rc
 }
