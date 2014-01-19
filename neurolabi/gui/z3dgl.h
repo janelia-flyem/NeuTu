@@ -1,7 +1,7 @@
 #ifndef Z3DGL_H
 #define Z3DGL_H
 
-#if defined(_WINDOWS_)
+#if defined(_NEUTUBE_WINDOWS_)
 #  include "zglew.h"
 #endif
 

@@ -305,6 +305,8 @@ private slots:
 
   void on_actionDVID_Object_triggered();
 
+  void on_actionDvid_Object_triggered();
+
 private:
   void createActions();
   void customizeActions();

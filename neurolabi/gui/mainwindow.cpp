@@ -549,13 +549,13 @@ void MainWindow::customizeActions()
   m_ui->actionDisable->setChecked(!isTracingOn);
   m_ui->actionDisable->setVisible(isTracingOn);
   m_ui->actionTree_Preview->setVisible(false);
-  m_ui->actionTracing_result->setVisible(isTracingOn);
+  m_ui->actionTracing_result->setVisible(false);
   m_ui->actionFit_Segment->setVisible(false);
   m_ui->actionAutomatic->setVisible(isTracingOn);
   m_ui->actionAutomatic_Axon->setVisible(isTracingOn);
   m_ui->actionFrom_SWC->setVisible(false);
   m_ui->menuTube->menuAction()->setVisible(false);
-  m_ui->menuTrace_Project->menuAction()->setVisible(isTracingOn);
+  m_ui->menuTrace_Project->menuAction()->setVisible(false);
   m_ui->actionSave_SWC->setVisible(isTracingOn);
   this->buildConnAction->setVisible(false);
 
@@ -710,7 +710,7 @@ void MainWindow::createToolBars()
 
   if (NeutubeConfig::getInstance().getApplication() == "FlyEM") {
     m_ui->toolBar->addAction(m_ui->actionImportFlyEmDatabase);
-    m_ui->toolBar->addAction(m_ui->actionDVID_Object);
+    m_ui->toolBar->addAction(m_ui->actionDvid_Object);
   }
 
   m_ui->toolBar->addAction(expandAction);
@@ -4386,6 +4386,11 @@ void MainWindow::createDvidFrame()
 }
 
 void MainWindow::on_actionDVID_Object_triggered()
+{
+
+}
+
+void MainWindow::on_actionDvid_Object_triggered()
 {
   if (m_dvidObjectDlg->exec()) {
     QProgressDialog *progressDlg = getProgressDialog();

@@ -123,7 +123,7 @@ macx {
 }
 
 win32 {
-    DEFINES += _WINDOWS_
+    DEFINES += _NEUTUBE_WINDOWS_
 
     RC_FILE = images/app.rc
 }

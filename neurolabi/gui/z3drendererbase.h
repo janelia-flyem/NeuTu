@@ -4,6 +4,9 @@
 #include <QObject>
 #include <vector>
 #include <map>
+#if defined(_NEUTUBE_WINDOWS_)
+#  include "zglew.h"
+#endif
 #include "znumericparameter.h"
 #include "zoptionparameter.h"
 #include "z3dshaderprogram.h"
