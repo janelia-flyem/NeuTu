@@ -46,6 +46,11 @@ public:
    */
   void createAction();
 
+  /*!
+   * \brief Update the view of query table
+   */
+  void updateQueryTable();
+
 signals:
   void showSummaryTriggered();
   void processTriggered();

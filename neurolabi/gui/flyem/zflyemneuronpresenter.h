@@ -25,8 +25,12 @@ public:
   virtual QVector<const ZFlyEmNeuron*> getNeuronArray(
       const ZFlyEmNeuron &neuron, int index) const;
 
+  inline void setPresentingBundleIndex(bool enabled) {
+    presentingBundleIndex = enabled;
+  }
+
 protected:
-  static QString getIdString(const ZFlyEmNeuron &neuron);
+  QString getIdString(const ZFlyEmNeuron &neuron) const;
 
 signals:
 
@@ -34,6 +38,7 @@ public slots:
 
 protected:
   QVector<QString> m_fieldList;
+  bool presentingBundleIndex;
 };
 
 class ZFlyEmNeuronInfoPresenter : public ZFlyEmNeuronPresenter

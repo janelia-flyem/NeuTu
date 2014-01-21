@@ -69,6 +69,13 @@ public:
   void predictClass(ZFlyEmNeuron *neuron);
 
   /*!
+   * \brief Reassign classes to neurons
+   * \param classFile The list of class names in the same order how the neurons
+   *        are listed in the bundles.
+   */
+  void assignClass(const std::string &classFile);
+
+  /*!
    * \brief Export unnormalized similarity matrix
    *
    * The first row is a list of IDs. The simarity between the same neuron is

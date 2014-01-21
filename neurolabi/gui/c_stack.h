@@ -161,6 +161,10 @@ inline size_t elementNumber(const Mc_Stack *stack) {
       channelNumber(stack);
 }
 
+inline size_t allByteNumber(const Mc_Stack *stack) {
+  return volumeByteNumber(stack) * kind(stack);
+}
+
 void setAttribute(Mc_Stack *stack, int kind, int width, int height, int depth,
                   int channel);
 
@@ -195,6 +199,10 @@ Stack* extractChannel(const Stack *stack, int c);
 
 void setStackValue(Stack *stack, const std::vector<size_t> &indexArray,
                    double value);
+/*!
+ * \brief Set all voxel values of a stack to zero
+ */
+void setZero(Mc_Stack *stack);
 
 std::vector<size_t> getNeighborIndices(
     const Stack *stack, const std::vector<size_t> &indexArray,

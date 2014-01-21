@@ -341,6 +341,14 @@ void ZFlyEmNeuronListModel::notifyDataChanged (
   emit dataChanged(topLeft, bottomRight);
 }
 
+void ZFlyEmNeuronListModel::notifyAllDataChanged()
+{
+  QModelIndex topLeft = createIndex(0, 0);
+  QModelIndex bottomRight = createIndex(rowCount() - 1, columnCount() - 1);
+
+  emit dataChanged(topLeft, bottomRight);
+}
+
 void ZFlyEmNeuronListModel::notifyRowDataChanged(int row)
 {
   QModelIndex topLeft = createIndex(row, 0);

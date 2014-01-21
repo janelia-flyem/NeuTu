@@ -40,6 +40,15 @@ TEST(ZStack, Basic)
   ASSERT_EQ(stack3.depth(), 30);
 }
 
+TEST(ZStack, DataPoint)
+{
+  ZStack stack(GREY, 10, 20, 30, 2);
+
+  stack.setZero();
+
+  ASSERT_EQ(0.0, stack.max());
+}
+
 #endif
 
 #endif // ZSTACKTEST_H

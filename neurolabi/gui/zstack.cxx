@@ -1512,3 +1512,10 @@ bool ZStack::hasOffset() const
   return (m_offset.x() != 0.0) || (m_offset.y() != 0.0) ||
       (m_offset.z() != 0.0);
 }
+
+void ZStack::setZero()
+{
+  if (!isEmpty() && ! isVirtual()) {
+    C_Stack::setZero(m_stack);
+  }
+}

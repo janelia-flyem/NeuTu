@@ -237,18 +237,23 @@ void ZFlyEmDataFrame::updatePresenter(EDataForm target)
 {
   switch (target) {
   case SUMMARY:
+    m_infoPresenter->setPresentingBundleIndex(m_dataArray.size() > 1);
     getMainWidget()->setPresenter(m_infoPresenter);
     break;
   case FEATURE:
+    m_featurePresenter->setPresentingBundleIndex(m_dataArray.size() > 1);
     getMainWidget()->setPresenter(m_featurePresenter);
     break;
   case CONNECTION:
+    m_connectionPresenter->setPresentingBundleIndex(m_dataArray.size() > 1);
     getMainWidget()->setPresenter(m_connectionPresenter);
     break;
   case VOLUME:
+    m_volumePresenter->setPresentingBundleIndex(m_dataArray.size() > 1);
     getMainWidget()->setPresenter(m_volumePresenter);
     break;
   case TOP_MATCH:
+    m_topMatchPresenter->setPresentingBundleIndex(m_dataArray.size() > 1);
     getMainWidget()->setPresenter(m_topMatchPresenter);
     break;
   default:
@@ -1792,4 +1797,31 @@ bool ZFlyEmDataFrame::exportSimilarityMatrix(
   endProgress();
 
   return true;
+}
+
+void ZFlyEmDataFrame::assignClass(const string &classFile)
+{
+  std::vector<std::string> classArray;
+
+  ZString line;
+  FILE *fp = fopen(classFile.c_str(), "r");
+  while (line.readLine(fp)) {
+    line.trim();
+    if (!line.empty()) {
+      classArray.push_back(line);
+    }
+  }
+  fclose(fp);
+
+  foreach (ZFlyEmDataBundle *dataBundle, m_dataArray) {
+    int index = 0;
+    std::vector<ZFlyEmNeuron> &neuronArray = dataBundle->getNeuronArray();
+    for (std::vector<ZFlyEmNeuron>::iterator iter = neuronArray.begin();
+         iter != neuronArray.end(); ++iter) {
+      ZFlyEmNeuron &neuron = *iter;
+      neuron.setClass(classArray[index++]);
+    }
+  }
+
+  getMainWidget()->updateQueryTable();
 }

@@ -307,6 +307,8 @@ private slots:
 
   void on_actionDvid_Object_triggered();
 
+  void on_actionAssign_Clustering_triggered();
+
 private:
   void createActions();
   void customizeActions();

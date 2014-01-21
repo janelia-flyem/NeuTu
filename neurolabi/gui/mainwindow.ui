@@ -16,7 +16,7 @@
    </font>
   </property>
   <property name="windowTitle">
-   <string>neuTube 0.85b</string>
+   <string>neuTube 0.85c</string>
   </property>
   <widget class="QWidget" name="centralwidget"/>
   <widget class="QMenuBar" name="menubar">
@@ -277,6 +277,7 @@
       <addaction name="actionSynapse"/>
       <addaction name="actionSimilarity_Matrix"/>
       <addaction name="actionDendrogram"/>
+      <addaction name="actionAssign_Clustering"/>
      </widget>
      <addaction name="actionExtract_Neuron"/>
      <addaction name="actionSkeletonization"/>
@@ -1014,6 +1015,11 @@
    </property>
    <property name="text">
     <string>DVID Object</string>
+   </property>
+  </action>
+  <action name="actionAssign_Clustering">
+   <property name="text">
+    <string>Assign Clustering</string>
    </property>
   </action>
  </widget>

@@ -114,6 +114,14 @@ void C_Stack::setZero(Stack *stack)
   Zero_Stack(stack);
 }
 
+void C_Stack::setZero(Mc_Stack *stack)
+{
+  if (stack != NULL) {
+    size_t length = allByteNumber(stack);
+    bzero(stack->array, length);
+  }
+}
+
 ssize_t C_Stack::offset(int x, int y, int z, int width, int height, int depth)
 {
   return Stack_Util_Offset(x, y, z, width, height, depth);

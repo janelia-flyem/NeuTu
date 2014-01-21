@@ -49,6 +49,8 @@ public:
 
   void notifyRowDataChanged(int row);
 
+  void notifyAllDataChanged();
+
   /*!
    * \brief Test if the current index if the key of the neuron.
    *

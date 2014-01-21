@@ -3,7 +3,7 @@
 #include "zflyemdataframe.h"
 
 ZFlyEmNeuronPresenter::ZFlyEmNeuronPresenter(QObject *parent) :
-  QObject(parent)
+  QObject(parent), presentingBundleIndex(true)
 {
 }
 
@@ -49,9 +49,13 @@ QVector<const ZFlyEmNeuron*> ZFlyEmNeuronPresenter::getNeuronArray(
   return neuronArray;
 }
 
-QString ZFlyEmNeuronPresenter::getIdString(const ZFlyEmNeuron &neuron)
+QString ZFlyEmNeuronPresenter::getIdString(const ZFlyEmNeuron &neuron) const
 {
-  return QString("%1 (#%2)").arg(neuron.getId()).arg(neuron.getSourceId() + 1);
+  if (presentingBundleIndex) {
+    return QString("%1 (#%2)").arg(neuron.getId()).arg(neuron.getSourceId() + 1);
+  }
+
+  return QString("%1").arg(neuron.getId());
 }
 
 ZFlyEmNeuronInfoPresenter::ZFlyEmNeuronInfoPresenter(QObject *parent) :

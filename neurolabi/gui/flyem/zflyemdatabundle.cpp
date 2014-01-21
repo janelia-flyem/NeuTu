@@ -245,6 +245,31 @@ string ZFlyEmDataBundle::toDetailString() const
     stream << "  " << getSynapseAnnotation()->getPsdNumber() << " PSDs" << endl;
   }
 
+  int count[4] = {0, 0, 0, 0};
+
+  const vector<ZFlyEmNeuron> neuronArray = getNeuronArray();
+  for (vector<ZFlyEmNeuron>::const_iterator iter = neuronArray.begin();
+       iter != neuronArray.end(); ++iter) {
+    const ZFlyEmNeuron &neuron = *iter;
+    double length = neuron.getModel()->length();
+    if (length >= 1000000.0) {
+      count[0]++;
+    } else if (length >= 500000.0) {
+      count[1]++;
+    } else if (length >= 100000.0) {
+      count[2]++;
+    } else {
+      count[3]++;
+    }
+  }
+
+  stream << "Length distribution: " << endl;
+  stream << "  >=1000000: " << count[0] << endl;
+  stream << "  >= 500000: " << count[1] << endl;
+  stream << "  >= 100000: " << count[2] << endl;
+  stream << "  <  100000: " << count[3] << endl;
+
+
   return stream.str();
 }
 

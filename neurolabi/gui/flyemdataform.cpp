@@ -384,3 +384,8 @@ void FlyEmDataForm::showNearbyNeuron()
     }
   }
 }
+
+void FlyEmDataForm::updateQueryTable()
+{
+  m_neuronList->notifyAllDataChanged();
+}

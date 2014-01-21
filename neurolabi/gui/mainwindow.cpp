@@ -4403,3 +4403,32 @@ void MainWindow::on_actionDvid_Object_triggered()
                               QVariant(m_dvidObjectDlg->getBodyId()));
   }
 }
+
+void MainWindow::on_actionAssign_Clustering_triggered()
+{
+  ZFlyEmDataFrame *frame =
+      dynamic_cast<ZFlyEmDataFrame*>(mdiArea->currentSubWindow());
+
+  if (frame != NULL) {
+    QString simmatFile = getOpenFileName("Similarity Matrix", "*.txt");
+    if (!simmatFile.isEmpty()) {
+      QString targetFilePath((GET_DATA_DIR + "/tmp/simmat.txt").c_str());
+      QFile targetFile(targetFilePath);
+      if (targetFile.exists()) {
+        targetFile.remove();
+      }
+
+      if (QFile::copy(simmatFile, targetFilePath)) {
+        QProcess::execute(
+              "/Applications/MATLAB.app/bin/matlab < "
+              "/Users/zhaot/Work/SLAT/matlab/SLAT/run/flyem/tz_run_flyem_clustering_command.m "
+              "-nodesktop -nosplash");
+
+        frame->assignClass(GET_DATA_DIR + "/tmp/labels.txt");
+      } else {
+        report("Unable to generate similarity matrix",
+               "Unable to generate similarity matrix", ZMessageReporter::Error);
+      }
+    }
+  }
+}

@@ -546,6 +546,8 @@ bool ZFlyEmStackFrame::evaluateBodyConnectionClassifier(
   }
 
   cout << "done" << endl;
+#else
+  UNUSED_PARAMETER(&threshold);
 #endif
 
   return true;

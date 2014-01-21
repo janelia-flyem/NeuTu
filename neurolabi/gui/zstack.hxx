@@ -279,8 +279,12 @@ public: /* attributes */
   bool equalColor(size_t index, size_t channelOffset,
                   const uint8_t *co, size_t length) const;
 
-
   void setValue(size_t index, int c, double value);
+
+  /*!
+   * \brief Set all voxel values to 0.
+   */
+  void setZero();
 
   //Maximum voxel value along a z-parallel line passing (<x>, <y>).
   int maxIntensityDepth(int x, int y, int c = 0) const;
