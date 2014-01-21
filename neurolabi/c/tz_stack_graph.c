@@ -595,7 +595,7 @@ int* Stack_Graph_Shortest_Path(const Stack *stack, int start[], int end[],
   path[start_index] = -1;
   checked[start_index] = 1;
   
-  int prev_vertex = start_index;
+  //int prev_vertex = start_index;
   int cur_vertex = start_index;
   int updating_vertex;
   double tmpdist;
@@ -621,7 +621,7 @@ int* Stack_Graph_Shortest_Path(const Stack *stack, int start[], int end[],
   argv[2] = &d;
 
   for (i = 1; i < nvoxel; i++) {
-    prev_vertex = cur_vertex;
+    //prev_vertex = cur_vertex;
     nbound = Stack_Neighbor_Bound_Test_I(sgw->conn, cwidth, cheight, cdepth, 
 					 cur_vertex, is_in_bound);
     

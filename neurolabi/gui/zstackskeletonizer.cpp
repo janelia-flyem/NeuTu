@@ -13,6 +13,7 @@
 #include "zswcforest.h"
 #include "swctreenode.h"
 #include "zswcgenerator.h"
+#include "tz_error.h"
 
 using namespace std;
 
@@ -192,7 +193,6 @@ ZSwcTree* ZStackSkeletonizer::makeSkeleton(const Stack *stack)
         branchWrapper->setData(branch, ZSwcTree::LEAVE_ALONE);
 
         //branch = (*iter).toSwcTree();
-#if 1
         if (SwcTreeNode::firstChild(branch->root) != NULL) {
           if (SwcTreeNode::radius(branch->root) * 2.0 <
               SwcTreeNode::radius(SwcTreeNode::firstChild(branch->root))) {
@@ -219,18 +219,31 @@ ZSwcTree* ZStackSkeletonizer::makeSkeleton(const Stack *stack)
 
         Swc_Tree_Node *tn = Swc_Tree_Connect_Branch(subtree, branch->root);
 
+#ifdef _DEBUG_
+        if (SwcTreeNode::length(branch->root) > 100) {
+          std::cout << "Potential bug." << std::endl;
+        }
+#endif
+
         if (SwcTreeNode::isRegular(SwcTreeNode::parent(tn))) {
           if (SwcTreeNode::hasOverlap(tn, SwcTreeNode::parent(tn))) {
             SwcTreeNode::mergeToParent(tn);
           }
         }
-#else
-
-        SwcTreeNode::setParent(branch->root, subtree->root);
-#endif
 
         branch->root = NULL;
         Kill_Swc_Tree(branch);
+
+#ifdef _DEBUG_
+        Swc_Tree_Iterator_Start(subtree, SWC_TREE_ITERATOR_DEPTH_FIRST, false);
+        Swc_Tree_Node *tmptn = NULL;
+        while ((tmptn = Swc_Tree_Next(subtree)) != NULL) {
+          if (!SwcTreeNode::isRoot(tmptn)) {
+            TZ_ASSERT(SwcTreeNode::length(tmptn) > 0.0, "duplicating nodes");
+          }
+        }
+
+#endif
       }
 
       Kill_Stack(mask);
@@ -268,7 +281,6 @@ ZSwcTree* ZStackSkeletonizer::makeSkeleton(const Stack *stack)
   }
 
   advanceProgress(0.05);
-
   endProgress();
 
   return wholeTree;

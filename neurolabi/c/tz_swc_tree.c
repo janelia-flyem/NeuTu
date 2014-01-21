@@ -1545,6 +1545,7 @@ void Swc_Tree_Node_Connect(Swc_Tree_Node *tn, Swc_Tree_Node *tn2)
   }
 }
 
+#define SWC_LOCSEG_MINIMAL_HEIGHT 0.001
 Local_Neuroseg* Swc_Tree_Node_To_Locseg(const Swc_Tree_Node *tn,
 					Local_Neuroseg *locseg)
 {
@@ -1573,8 +1574,13 @@ Local_Neuroseg* Swc_Tree_Node_To_Locseg(const Swc_Tree_Node *tn,
   Local_Neuroseg_Change_Top(locseg, top);
   locseg->seg.r1 = Swc_Tree_Node_Const_Data(tn->parent)->d;
   locseg->seg.scale = 1.0;
-  locseg->seg.c = (Swc_Tree_Node_Const_Data(tn)->d - locseg->seg.r1) / 
-    (locseg->seg.h - 1.0);
+  double adjustedHeight = locseg->seg.h - 1.0;
+  if (adjustedHeight < SWC_LOCSEG_MINIMAL_HEIGHT) {
+      locseg->seg.c = 1.0;
+  } else {
+      locseg->seg.c = (Swc_Tree_Node_Const_Data(tn)->d - locseg->seg.r1) /
+              adjustedHeight;
+  }
   locseg->seg.alpha = 0;
   locseg->seg.curvature = 0;
 
@@ -2977,6 +2983,7 @@ void Swc_Tree_Connect_Node(Swc_Tree *tree, Swc_Tree_Node *tn)
 {
   TZ_ASSERT(tree != NULL, "Null pointer.");
   TZ_ASSERT(tn != NULL, "Null pointer.");
+  TZ_ASSERT(Swc_Tree_Node_Is_Regular(tn), "Virtual node not allowed");
 
   double eps = 0.05;
 

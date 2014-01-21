@@ -198,7 +198,6 @@ int main(int argc, char *argv[])
   skeletonizer.setMinObjSize(minObjSize);
   skeletonizer.setDistanceThreshold(maxDist);
   skeletonizer.setLengthThreshold(minLen);
-
   if (ZArgumentProcessor::isArgMatched("--keep_short")) {
     skeletonizer.setKeepingSingleObject(true);
   } else {
