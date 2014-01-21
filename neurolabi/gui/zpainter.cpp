@@ -59,7 +59,7 @@ void ZPainter::drawRect(const QRectF & rectangle)
 {
 #if _QT_GUI_USED_
   QRectF rect = rectangle;
-  rect.moveCenter(QPointF(m_offset.x(), m_offset.y()));
+  rect.moveCenter(QPointF(m_offset.x(), m_offset.y()) + rectangle.center());
   QPainter::drawRect(rect);
 #endif
 }
