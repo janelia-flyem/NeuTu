@@ -4365,6 +4365,7 @@ void MainWindow::createDvidFrame()
       skeletonizer.setProgressReporter(&reporter);
 
       ZSwcTree *wholeTree = skeletonizer.makeSkeleton(docStack->c_stack());
+      wholeTree->translate(docStack->getOffset());
       progressDlg->reset();
 
       if (wholeTree != NULL) {

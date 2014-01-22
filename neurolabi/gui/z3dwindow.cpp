@@ -2470,7 +2470,7 @@ void Z3DWindow::transformSelectedSwc()
       ZPoint offset = SwcTreeNode::pos(node + 1) - SwcTreeNode::pos(node);
       dlg.setTranslateValue(offset.x(), offset.y(), offset.z());
     } else {
-      ZPoint offset = getDocument()->stack()->getOffset();
+      ZPoint offset = getDocument()->getStackOffset();
       dlg.setTranslateValue(-offset[0], -offset[1], -offset[2]);
     }
     if (dlg.exec()) {

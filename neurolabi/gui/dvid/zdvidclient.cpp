@@ -1,6 +1,7 @@
 #include "zdvidclient.h"
 #include <QFileInfo>
 #include <QNetworkReply>
+#include <QProcess>
 #include <QDebug>
 
 #include "zerror.h"
@@ -42,6 +43,12 @@ bool ZDvidClient::postRequest(EDvidRequest request, const QVariant &parameter)
     m_networkReply = m_networkManager->get(QNetworkRequest(requestUrl));
     break;
   case DVID_UPLOAD_SWC:
+    QString command = QString(
+          "curl -X POST http://emdata1.int.janelia.org/api/node/f1/skeletons/"
+          "%1.swc --data-binary @%2/%3.swc").arg(parameter.toInt()).
+        arg(m_tmpDirectory).arg(parameter.toInt());
+    QProcess::execute(command);
+#if 0
     m_uploadStream = new QFile(QString("%1/%2.swc").arg(m_tmpDirectory).
                                arg(parameter.toInt()));
     if (!m_uploadStream->open(QIODevice::ReadOnly)) {
@@ -50,10 +57,19 @@ bool ZDvidClient::postRequest(EDvidRequest request, const QVariant &parameter)
       m_uploadStream = NULL;
       return false;
     }
+    QByteArray data;
     QNetworkRequest request(requestUrl);
+    QString crlf;
+    crlf = 0x0d;
+    crlf.append(0x0a);
+    data.append(crlf + "Content-Type: application/octet-stream" + crlf + crlf);
+    data.append(m_uploadStream->readAll());
+
     request.setHeader(QNetworkRequest::ContentTypeHeader,
                       QVariant("application/octet-stream"));
-    m_networkReply = m_networkManager->post(request, m_uploadStream);
+    m_networkReply = m_networkManager->post(request, data);
+    qDebug() << m_networkReply->errorString();
+#endif
     break;
   }
 
