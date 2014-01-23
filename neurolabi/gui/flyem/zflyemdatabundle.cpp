@@ -245,6 +245,7 @@ string ZFlyEmDataBundle::toDetailString() const
     stream << "  " << getSynapseAnnotation()->getPsdNumber() << " PSDs" << endl;
   }
 
+  /*
   int count[4] = {0, 0, 0, 0};
 
   const vector<ZFlyEmNeuron> neuronArray = getNeuronArray();
@@ -268,7 +269,7 @@ string ZFlyEmDataBundle::toDetailString() const
   stream << "  >= 500000: " << count[1] << endl;
   stream << "  >= 100000: " << count[2] << endl;
   stream << "  <  100000: " << count[3] << endl;
-
+*/
 
   return stream.str();
 }

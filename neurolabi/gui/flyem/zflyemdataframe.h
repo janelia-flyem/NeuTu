@@ -85,6 +85,10 @@ public:
    */
   bool exportSimilarityMatrix(const QString &fileName, int bundleIndex = 0);
 
+  inline ZFlyEmDataBundle* getDataBundle(int index = 0) {
+    return (index < m_dataArray.size()) ? m_dataArray[index] : NULL;
+  }
+
 signals:
   void volumeTriggered(const QString &path);
   

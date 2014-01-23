@@ -23,4 +23,5 @@
     <PunctaManager status="off"></PunctaManager>
     <ChainManager status="off"></ChainManager>
   </Z3DWindow>
+  <Application>General</Application>
 </neutube>

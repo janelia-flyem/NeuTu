@@ -43,12 +43,13 @@ bool ZDvidClient::postRequest(EDvidRequest request, const QVariant &parameter)
     m_networkReply = m_networkManager->get(QNetworkRequest(requestUrl));
     break;
   case DVID_UPLOAD_SWC:
+#if 0
     QString command = QString(
           "curl -X POST http://emdata1.int.janelia.org/api/node/f1/skeletons/"
           "%1.swc --data-binary @%2/%3.swc").arg(parameter.toInt()).
         arg(m_tmpDirectory).arg(parameter.toInt());
     QProcess::execute(command);
-#if 0
+#else
     m_uploadStream = new QFile(QString("%1/%2.swc").arg(m_tmpDirectory).
                                arg(parameter.toInt()));
     if (!m_uploadStream->open(QIODevice::ReadOnly)) {

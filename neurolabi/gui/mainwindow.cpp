@@ -3898,8 +3898,24 @@ void MainWindow::on_actionMask_triggered()
 
 void MainWindow::on_actionShortcut_triggered()
 {
-  m_helpDlg->show();
-  m_helpDlg->raise();
+  if (GET_APPLICATION_NAME == "Biocytin") {
+    m_helpDlg->show();
+    m_helpDlg->raise();
+  } else if (GET_APPLICATION_NAME == "General") {
+    QString title = "<h2>neuTube Help</h2>";
+    if (!NeutubeConfig::getInstance().getApplication().empty()) {
+      title += QString("<p>") +
+          NeutubeConfig::getInstance().getApplication().c_str() + " Edition" +
+          "</p>";
+    }
+    QMessageBox::about(this, tr("neuTube"),
+                       title + "<p>Please check</p>"
+                       "<p><a href=\"https://sites.google.com/site/neurontracing\">"
+                       "online documentation</a></p>"
+                       );
+  } else {
+    QMessageBox::information(this, "Sorry", "No help is available for this edition.");
+  }
 }
 
 ZStackFrame *MainWindow::createStackFrame(
@@ -4283,39 +4299,63 @@ void MainWindow::on_actionSparse_objects_triggered()
 
 void MainWindow::on_actionDendrogram_triggered()
 {
-  QProcess::execute("/Applications/MATLAB.app/bin/matlab < "
-                    "/Users/zhaot/Work/SLAT/matlab/SLAT/run/flyem/tz_run_flyem_dendrogram_command.m "
-                    "-nodesktop -nosplash");
+  ZFlyEmDataFrame *frame =
+      dynamic_cast<ZFlyEmDataFrame*>(mdiArea->currentSubWindow());
 
-  //Create name file
-  std::string neuronNameFilePath = GET_DATA_DIR + "/flyem/TEM/neuron_name.txt";
-  ZFlyEmDataBundle bundle;
-  bundle.loadJsonFile(GET_DATA_DIR + "/flyem/TEM/data_release/bundle1/data_bundle.json");
+  if (frame != NULL) {
+    QString simmatFile = getOpenFileName("Similarity Matrix", "*.txt");
+    if (!simmatFile.isEmpty()) {
+      QString targetFilePath((GET_DATA_DIR + "/tmp/simmat.txt").c_str());
+      QFile targetFile(targetFilePath);
+      if (targetFile.exists()) {
+        targetFile.remove();
+      }
 
-  std::vector<ZFlyEmNeuron> neuronArray = bundle.getNeuronArray();
+      if (QFile::copy(simmatFile, targetFilePath)) {
+        QString output = getSaveFileName("SVG Export", "*.svg");
 
-  std::ofstream stream(neuronNameFilePath.c_str());
-  for (std::vector<ZFlyEmNeuron>::const_iterator iter = neuronArray.begin();
-       iter != neuronArray.end(); ++iter) {
-    const ZFlyEmNeuron &neuron = *iter;
-    stream << neuron.getName() << std::endl;
+        if (!output.isEmpty()) {
+          QProcess::execute("/Applications/MATLAB.app/bin/matlab < "
+                            "/Users/zhaot/Work/SLAT/matlab/SLAT/run/flyem/tz_run_flyem_dendrogram_command.m "
+                            "-nodesktop -nosplash");
+
+          //Create name file
+          std::string neuronNameFilePath = GET_DATA_DIR + "/tmp/neuron_name.txt";
+          ZFlyEmDataBundle *bundle = frame->getDataBundle();
+          //bundle.loadJsonFile(GET_DATA_DIR + "/flyem/TEM/data_release/bundle1/data_bundle.json");
+
+          std::vector<ZFlyEmNeuron> neuronArray = bundle->getNeuronArray();
+
+          std::ofstream stream(neuronNameFilePath.c_str());
+          for (std::vector<ZFlyEmNeuron>::const_iterator iter = neuronArray.begin();
+               iter != neuronArray.end(); ++iter) {
+            const ZFlyEmNeuron &neuron = *iter;
+            stream << neuron.getName() << std::endl;
+          }
+          stream.close();
+
+          ZDendrogram dendrogram;
+
+          ZMatrix Z;
+          Z.importTextFile(GET_DATA_DIR + "/tmp/Z.txt");
+          for (int i = 0; i < Z.getRowNumber(); ++i) {
+            dendrogram.addLink(Z.at(i, 0), Z.at(i, 1), Z.at(i, 2) - 0.5);
+          }
+          dendrogram.loadLeafName(neuronNameFilePath);
+          std::string svgString = dendrogram.toSvgString(15.0);
+
+          ZSvgGenerator svgGenerator(0, 0, 1000, 6000);
+          svgGenerator.write(output.toStdString().c_str(), svgString);
+
+          report("Dendrogram Generated", output.toStdString() + " saved.",
+                 ZMessageReporter::Information);
+        }
+      } else {
+        report("Command Failure", "Unable to process similarity matrix.",
+               ZMessageReporter::Error);
+      }
+    }
   }
-  stream.close();
-
-  ZDendrogram dendrogram;
-
-  ZMatrix Z;
-  Z.importTextFile(GET_DATA_DIR + "/Z.txt");
-  for (int i = 0; i < Z.getRowNumber(); ++i) {
-    dendrogram.addLink(Z.at(i, 0), Z.at(i, 1), Z.at(i, 2) - 0.5);
-  }
-  dendrogram.loadLeafName(GET_DATA_DIR + "/flyem/TEM/neuron_name.txt");
-  std::string svgString = dendrogram.toSvgString(15.0);
-
-  ZSvgGenerator svgGenerator(0, 0, 1000, 6000);
-  svgGenerator.write((GET_DATA_DIR + "/flyem/TEM/cluster.svg").c_str(), svgString);
-
-  std::cout << GET_DATA_DIR + "/flyem/TEM/cluster.svg" << std::endl;
 }
 
 void MainWindow::on_actionPen_Width_for_SWC_Display_triggered()

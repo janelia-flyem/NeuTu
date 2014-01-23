@@ -70,14 +70,32 @@ def CreateDataBundle(config):
                     if tokens[3] == "unknown":
                         neuronClass[int(tokens[1])] = tokens[3] + " " + tokens[4];
 
+    neuronName = {};
+    if "bodyAnnotation" in config:
+        bodyAnnotationPath = config["bodyAnnotation"];
+        f = open(bodyAnnotationPath);
+        bodyAnnotation = json.load(f);
+        f.close();
+
+        for body in bodyAnnotation["data"]:
+            if "name" in body:
+                bodyId = body["body ID"];
+                neuronName[bodyId] = body["name"];
+        
     for f in swcFileList:
         if f.endswith('.swc'):
 #             print f;
             bodyId = f.split('.')[0];
             neuron = {"id": int(bodyId), "name": "FIB_" + bodyId, 
                       "model": swcPath + "/" + f};
+                      
             if (config["addingClass"]):
                 neuron["class"] = neuronClass[int(bodyId)];
+                
+            if (config["addingName"]):
+                if int(bodyId) in neuronName:
+                    neuron["name"] = neuronName[int(bodyId)];
+                
             if config.has_key("objDir"):
                 neuron["volume"] = (config["objDir"] + "/" + os.path.basename(f)).replace('.swc', '.obj');
             dataBundle["neuron"].append(neuron);

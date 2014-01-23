@@ -1181,9 +1181,9 @@ Z3DWindow* ZStackFrame::open3DWindow(QWidget *parent, Z3DWindow::EInitMode mode)
       if (NeutubeConfig::getInstance().getApplication() == "Biocytin") {
         m_3dWindow->getCompositor()->setBackgroundFirstColor(glm::vec3(1, 1, 1));
         m_3dWindow->getCompositor()->setBackgroundSecondColor(glm::vec3(1, 1, 1));
-        if (!NeutubeConfig::getInstance().getZ3DWindowConfig().isBackgroundOn()) {
-          m_3dWindow->getCompositor()->setShowBackground(false);
-        }
+      }
+      if (!NeutubeConfig::getInstance().getZ3DWindowConfig().isBackgroundOn()) {
+        m_3dWindow->getCompositor()->setShowBackground(false);
       }
       if (document()->getTag() == NeuTube::Document::FLYEM_BODY) {
         m_3dWindow->getVolumeRaycasterRenderer()->setCompositeMode(
@@ -1457,6 +1457,7 @@ void ZStackFrame::zoomToSelectedSwcNodes()
     ZCuboid cuboid = SwcTreeNode::boundBox(*document()->selectedSwcTreeNodes());
     int cx, cy, cz;
     ZPoint center = cuboid.center();
+    center -= document()->getStackOffset();
     cx = iround(center.x());
     cy = iround(center.y());
     cz = iround(center.z());
