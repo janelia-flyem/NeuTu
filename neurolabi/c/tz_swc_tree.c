@@ -2100,7 +2100,12 @@ Swc_Tree* Swc_Tree_Parse_String(char *swc_string)
   
   const char *sep = "\n\r";
   char *line = NULL;
+#if defined(_WIN64) || defined(_WIN32)
+  while ((line = strtok(swc_string, sep)) != NULL) {
+    swc_string = NULL;
+#else
   while ((line = strsep(&swc_string, sep)) != NULL) {
+#endif
     strtrim(line);
     if (strlen(line) > 0) {
       int field_number;
