@@ -668,7 +668,7 @@ void Fprint_File_Binary(FILE *fp, size_t n, FILE *out)
 
 size_t fsize(const char *filename)
 {
-#ifdef HAVE_SYS_STAT_H
+#ifdef HAVE_SYS_STAT_H_
   struct stat buf;
   stat(filename, &buf);
   return buf.st_size;

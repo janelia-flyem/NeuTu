@@ -2291,7 +2291,7 @@ Swc_Tree* Read_Swc_Tree_E(const char *file_path)
 {
   size_t s = fsize(file_path);
 
-  FILE *fp = fopen(file_path, "r");
+  FILE *fp = fopen(file_path, "rb");
   char *swcString = (char*) malloc(s+2);
   size_t actual_read = fread(swcString, 1, s, fp);
   if (actual_read != s) {
