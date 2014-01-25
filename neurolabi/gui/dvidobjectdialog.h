@@ -19,7 +19,8 @@ public:
   QString getAddress() const;
   int getBodyId() const;
 
-  bool generatingSkeleton() const;
+  bool retrievingObject() const;
+  bool retrievingSkeleton() const;
 
 private:
   Ui::DvidObjectDialog *ui;

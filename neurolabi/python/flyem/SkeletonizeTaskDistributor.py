@@ -61,7 +61,8 @@ class SkeletonizeTaskDistributor:
         index = 0;
         while index < len(self.bodyList):
             for i in range(0, jobNumber):
-                swcFile = self.swcDir + '/' + str(self.bodyList[index]) + '.swc';
+                bodyId = self.bodyList[index];
+                swcFile = self.swcDir + '/' + str(bodyId) + '.swc';
                 subscriptFile[i].write('touch ' + swcFile + '.process\n');
                 subscriptFile[i].write('if [ ! -f ' + swcFile + ' ]; then\n');
                 subscriptFile[i].write('  ' + self.getFullCommand(index) + '\n');

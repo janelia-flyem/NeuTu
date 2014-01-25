@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <utilities.h>
+#include <string.h>
 #include "tz_constant.h"
 #include "tz_swc_cell.h"
 #include "tz_geo3d_utils.h"
@@ -1595,7 +1596,7 @@ int main(int argc, char *argv[])
   Write_Swc_Tree("../data/test.swc", tree2);
 #endif
 
-#if 1
+#if 0
   Swc_Tree *tree = Read_Swc_Tree_E("../data/flyem/skeletonization/session3/len15/adjusted2/Mi1_215.swc");
   Swc_Tree_Node_Label_Workspace workspace;
   Default_Swc_Tree_Node_Label_Workspace(&workspace);
@@ -1621,6 +1622,51 @@ int main(int argc, char *argv[])
   Write_Image("../data/test2.tif", image);
 #endif
 
+#if 0
+  const char *file_path = "../data/benchmark/swc/tree1.swc";
+  size_t s = fsize(file_path);
+
+  FILE *fp = fopen(file_path, "r");
+  char *swcString = (char*) malloc(s+2);
+  fread(swcString, 1, s, fp);
+  swcString[s - 2] = '\n';
+  swcString[s - 1] = '\0';
+
+  const char *sep = "\n\r";
+  char *word;
+  while ((word = strsep(&swcString, sep)) != NULL) {
+    strtrim(word);
+    if (strlen(word) > 0) {
+      printf("%s", word);
+      printf("\n");
+    }
+  }
+
+  free(swcString);
+  fclose(fp);
+
+#endif
+
+#if 1
+  const char *file_path = "../data/benchmark/swc/tree1.swc";
+  //const char *file_path = "/Users/zhaot/Work/neutube/neurolabi/data/system/mouse_neuron_single/stack/graph_d.swc";
+  size_t s = fsize(file_path);
+
+  FILE *fp = fopen(file_path, "r");
+  char *swcString = (char*) malloc(s+2);
+  fread(swcString, 1, s, fp);
+  swcString[s - 2] = '\n';
+  swcString[s - 1] = '\0';
+
+  Swc_Tree *tree = Swc_Tree_Parse_String(swcString);
+  Print_Swc_Tree(tree);
+
+  free(swcString);
+  fclose(fp);
+
+  tree = Read_Swc_Tree_E(file_path);
+  Print_Swc_Tree(tree);
+#endif
 
   return 0;
 }

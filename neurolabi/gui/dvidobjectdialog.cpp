@@ -28,7 +28,12 @@ int DvidObjectDialog::getBodyId() const
   return ui->bodySpinBox->value();
 }
 
-bool DvidObjectDialog::generatingSkeleton() const
+bool DvidObjectDialog::retrievingSkeleton() const
 {
-  return ui->skeletonCheckBox->isChecked();
+  return ui->retrieveSkeletonCheckBox->isChecked();
+}
+
+bool DvidObjectDialog::retrievingObject() const
+{
+  return ui->retrieveObjectCheckBox->isChecked();
 }

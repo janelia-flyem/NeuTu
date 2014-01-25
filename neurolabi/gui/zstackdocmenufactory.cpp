@@ -71,10 +71,10 @@ QMenu* ZStackDocMenuFactory::makeSwcNodeContextMenu(
   //menu->addAction(presenter->getAction(ZStackPresenter::ACTION_SMART_EXTEND_SWC_NODE));
   menu->addAction(presenter->getAction(ZStackPresenter::ACTION_EXTEND_SWC_NODE));
   menu->addAction(presenter->getAction(ZStackPresenter::ACTION_CONNECT_TO_SWC_NODE));
+  menu->addAction(presenter->getAction(
+                    ZStackPresenter::ACTION_LOCK_SWC_NODE_FOCUS));
 
   if (GET_APPLICATION_NAME == "Biocytin") {
-    menu->addAction(presenter->getAction(
-                      ZStackPresenter::ACTION_LOCK_SWC_NODE_FOCUS));
     menu->addAction(presenter->getAction(
                       ZStackPresenter::ACTION_ESTIMATE_SWC_NODE_RADIUS));
   }

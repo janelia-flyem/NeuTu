@@ -711,6 +711,10 @@ Swc_Tree* Read_Swc_Tree_E(const char *file_path);
 BOOL Write_Swc_Tree(const char *file_path, Swc_Tree *tree);
 BOOL Write_Swc_Tree_E(const char *file_path, Swc_Tree *tree);
 
+/**@brief Create swc from memory.
+ */
+Swc_Tree* Swc_Tree_Parse_String(char *swc_string);
+
 void Print_Swc_Tree(Swc_Tree *tree);
 
 /**@brief Copy an SWC tree.

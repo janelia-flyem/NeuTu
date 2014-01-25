@@ -46,6 +46,8 @@ ZStackFrame::ZStackFrame(QWidget *parent, bool preparingModel) :
 
   //m_presenter = new ZStackPresenter(this);
   //m_view = new ZStackView(this);
+  m_presenter = NULL;
+  m_view = NULL;
   if (preparingModel) {
     constructFrame();
   }

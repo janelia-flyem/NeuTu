@@ -1,13 +1,12 @@
 #include "zdvidclient.h"
 #include <QFileInfo>
-#include <QNetworkReply>
 #include <QProcess>
 #include <QDebug>
 
 #include "zerror.h"
 
 ZDvidClient::ZDvidClient(const QString &server, QObject *parent) :
-  QObject(parent), m_serverAddress(server),
+  QObject(parent), m_serverAddress(server), m_dataPath("api/node/62"),
   m_networkReply(NULL), m_targetDirectory("/tmp"),
   m_tmpDirectory("/tmp"), m_file(NULL),
   m_uploadStream(NULL)
@@ -22,30 +21,33 @@ bool ZDvidClient::postRequest(EDvidRequest request, const QVariant &parameter)
   switch (request) {
   case DVID_GET_OBJECT:
   case DVID_SAVE_OBJECT:
-    requestUrl.setUrl(QString("%1/api/node/f1/sp2body/sparsevol/%2").
-                      arg(m_serverAddress).arg(parameter.toInt()));
-    qDebug() << m_serverAddress;
-    qDebug() << requestUrl.toString();
+    requestUrl.setUrl(QString("%1/%2/sp2body/sparsevol/%3").
+                      arg(m_serverAddress).arg(m_dataPath).
+                      arg(parameter.toInt()));
     break;
+  case DVID_GET_SWC:
   case DVID_UPLOAD_SWC:
-    requestUrl.setUrl(QString("%1/api/node/f1/skeletons/%2.swc").
-                      arg(m_serverAddress).arg(parameter.toInt()));
-    qDebug() << requestUrl.toString();
+    requestUrl.setUrl(QString("%1/%2/skeletons/%3.swc").
+                      arg(m_serverAddress).arg(m_dataPath).
+                      arg(parameter.toInt()));
     break;
   default:
     RECORD_ERROR_UNCOND("Invalid request");
     return false;
   }
 
+  qDebug() << requestUrl.toString();
+
   switch (request) {
   case DVID_GET_OBJECT:
   case DVID_SAVE_OBJECT:
+  case DVID_GET_SWC:
     m_networkReply = m_networkManager->get(QNetworkRequest(requestUrl));
     break;
   case DVID_UPLOAD_SWC:
-#if 0
+#if 1
     QString command = QString(
-          "curl -X POST http://emdata1.int.janelia.org/api/node/f1/skeletons/"
+          "curl -X POST http://emdata1.int.janelia.org/api/node/62/skeletons/"
           "%1.swc --data-binary @%2/%3.swc").arg(parameter.toInt()).
         arg(m_tmpDirectory).arg(parameter.toInt());
     QProcess::execute(command);
@@ -99,19 +101,29 @@ bool ZDvidClient::postRequest(EDvidRequest request, const QVariant &parameter)
     connect(m_networkReply, SIGNAL(finished()), this, SLOT(finishRequest()));
     connect(m_networkReply, SIGNAL(readyRead()), this, SLOT(readObject()));
     break;
+  case DVID_GET_SWC:
+    connect(m_networkReply, SIGNAL(finished()), this, SLOT(finishRequest()));
+    connect(m_networkReply, SIGNAL(readyRead()), this, SLOT(readSwc()));
+    break;
   case DVID_UPLOAD_SWC:
     connect(m_networkReply, SIGNAL(finished()), this, SLOT(finishRequest()));
-    connect(m_networkReply, SIGNAL(error(QNetworkReply::NetworkError)),
-            this, SLOT(finishRequest()));
     break;
   }
+
+  connect(m_networkReply, SIGNAL(error(QNetworkReply::NetworkError)),
+          this, SLOT(finishRequest(QNetworkReply::NetworkError)));
 
   return true;
 }
 
 void ZDvidClient::readObject()
 {
-  m_buffer.append(m_networkReply->readAll());
+  m_objectBuffer.append(m_networkReply->readAll());
+}
+
+void ZDvidClient::readSwc()
+{
+  m_swcBuffer.append(m_networkReply->readAll());
 }
 
 bool ZDvidClient::writeObject()
@@ -132,32 +144,39 @@ bool ZDvidClient::writeObject()
   return false;
 }
 
-void ZDvidClient::finishRequest()
+void ZDvidClient::finishRequest(QNetworkReply::NetworkError error)
 {
   if (m_file != NULL) {
     m_file->flush();
     m_file->close();
   }
 
-  if (m_uploadStream != NULL) {
-    qDebug() << "File uploaded";
-    m_uploadStream->close();
-    delete m_uploadStream;
-    m_uploadStream = NULL;
-  }
-
-  if (m_networkReply->error()) {
+  if (error != QNetworkReply::NoError) {
     if (m_file != NULL) {
       m_file->remove();
     }
     RECORD_ERROR_UNCOND(std::string("Unable to finish operation: ") +
                         m_networkReply->errorString().toStdString());
-    m_buffer.clear();
+    m_objectBuffer.clear();
+    m_swcBuffer.clear();
+  } else {
+    if (!m_objectBuffer.isEmpty()) {
+      m_obj.importDvidObject(m_objectBuffer.constData(), m_objectBuffer.size());
+      emit objectRetrieved();
+    }
+
+    if (!m_swcBuffer.isEmpty()) {
+      m_swcBuffer.append('\n');
+      m_swcBuffer.append('\0');
+      m_swcTree.loadFromBuffer(m_swcBuffer.constData());
+      emit swcRetrieved();
+    }
   }
 
-  if (!m_buffer.isEmpty()) {
-    m_obj.importDvidObject(m_buffer.constData(), m_buffer.size());
-    emit objectRetrieved();
+  if (m_uploadStream != NULL) {
+    m_uploadStream->close();
+    delete m_uploadStream;
+    m_uploadStream = NULL;
   }
 
   m_networkReply->deleteLater();
@@ -168,6 +187,7 @@ void ZDvidClient::finishRequest()
     m_file = NULL;
   }
 
-  m_buffer.clear();
+  m_objectBuffer.clear();
+  m_swcBuffer.clear();
 }
 

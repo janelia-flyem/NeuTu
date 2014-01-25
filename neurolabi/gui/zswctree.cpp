@@ -173,6 +173,17 @@ void ZSwcTree::save(const string &filePath)
   save(filePath.c_str());
 }
 
+void ZSwcTree::loadFromBuffer(const char *buffer)
+{
+  if (m_tree != NULL) {
+    Kill_Swc_Tree(m_tree);
+  }
+
+  char *newBuffer = strdup(buffer);
+  m_tree = Swc_Tree_Parse_String(newBuffer);
+  free(newBuffer);
+}
+
 void ZSwcTree::load(const char *filePath)
 {
   if (m_tree != NULL) {

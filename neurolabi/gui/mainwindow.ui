@@ -16,7 +16,7 @@
    </font>
   </property>
   <property name="windowTitle">
-   <string>neuTube 0.85d</string>
+   <string>neuTube 0.86</string>
   </property>
   <widget class="QWidget" name="centralwidget"/>
   <widget class="QMenuBar" name="menubar">
@@ -65,6 +65,7 @@
       <string>Export</string>
      </property>
      <addaction name="actionMask"/>
+     <addaction name="actionSWC_Rescaling"/>
     </widget>
     <addaction name="actionOpen"/>
     <addaction name="menuLoad_into"/>
@@ -1020,6 +1021,11 @@
   <action name="actionAssign_Clustering">
    <property name="text">
     <string>Assign Clustering</string>
+   </property>
+  </action>
+  <action name="actionSWC_Rescaling">
+   <property name="text">
+    <string>Rescaled SWC</string>
    </property>
   </action>
  </widget>

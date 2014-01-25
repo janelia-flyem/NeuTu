@@ -7,8 +7,10 @@
 #include <QUrl>
 #include <QFile>
 #include <QVariant>
+#include <QNetworkReply>
 
 #include "zobject3dscan.h"
+#include "zswctree.h"
 #include "zprogressable.h"
 
 /*!
@@ -22,7 +24,7 @@ public:
   ZDvidClient(const QString &server, QObject *parent = NULL);
 
   enum EDvidRequest {
-    DVID_GET_OBJECT, DVID_SAVE_OBJECT, DVID_UPLOAD_SWC
+    DVID_GET_OBJECT, DVID_SAVE_OBJECT, DVID_UPLOAD_SWC, DVID_GET_SWC
   };
 
   inline void setServer(const QString &server) {
@@ -45,14 +47,17 @@ public:
 
 signals:
   void objectRetrieved();
+  void swcRetrieved();
 
 private slots:
   bool writeObject();
-  void finishRequest();
+  void finishRequest(QNetworkReply::NetworkError error = QNetworkReply::NoError);
   void readObject();
+  void readSwc();
 
 private:
   QString m_serverAddress; //Server address
+  QString m_dataPath;
   QNetworkAccessManager *m_networkManager;
   QNetworkReply *m_networkReply;
   QString m_targetDirectory;
@@ -60,7 +65,9 @@ private:
   QFile *m_file;
 
   ZObject3dScan m_obj;
-  QByteArray m_buffer;
+  ZSwcTree m_swcTree;
+  QByteArray m_objectBuffer;
+  QByteArray m_swcBuffer;
 
   QIODevice *m_uploadStream;
 };

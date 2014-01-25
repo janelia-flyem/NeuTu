@@ -492,6 +492,10 @@ void ZFlyEmDataBundle::exportJsonFile(const string &path) const
     neuronArrayWrapper.append(iter->makeJsonObject());
   }
 
+#ifdef _DEBUG_
+  neuronArrayWrapper.print();
+#endif
+
   jsonObj.setEntry(m_neuronKey, neuronArray);
 
   //Set meta data
@@ -511,6 +515,10 @@ void ZFlyEmDataBundle::exportJsonFile(const string &path) const
   jsonObj.setEntry(m_sourceDimensionKey, m_sourceDimension, 3);
   jsonObj.setEntry(m_imageResolutionKey, m_imageResolution, 3);
   jsonObj.setEntry(m_swcResolutionKey, m_swcResolution, 3);
+
+#ifdef _DEBUG_
+  jsonObj.print();
+#endif
 
   jsonObj.dump(path);
 }

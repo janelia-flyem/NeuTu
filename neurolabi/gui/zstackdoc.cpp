@@ -398,6 +398,21 @@ string ZStackDoc::getSwcSource() const
   return swcSource;
 }
 
+ZSwcTree* ZStackDoc::getMergedSwc()
+{
+  ZSwcTree *tree = NULL;
+
+  if (!swcList()->empty()) {
+    tree = new ZSwcTree;
+    foreach (ZSwcTree *treeItem, m_swcList) {
+      tree->merge(Copy_Swc_Tree(treeItem->data()), true);
+    }
+    tree->resortId();
+  }
+
+  return tree;
+}
+
 bool ZStackDoc::saveSwc(const string &filePath)
 {
   if (!swcList()->empty()) {

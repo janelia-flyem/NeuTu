@@ -350,7 +350,8 @@ HEADERS += mainwindow.h \
     penwidthdialog.h \
     dvid/zdvidclient.h \
     dvidobjectdialog.h \
-    zpainter.h
+    zpainter.h \
+    resolutiondialog.h
 
 FORMS += settingdialog.ui \
     frameinfodialog.ui \
@@ -390,7 +391,8 @@ FORMS += settingdialog.ui \
     flyemgeosearchdialog.ui \
     flyemgeofilterdialog.ui \
     penwidthdialog.ui \
-    dvidobjectdialog.ui
+    dvidobjectdialog.ui \
+    resolutiondialog.ui
 SOURCES += main.cpp \
     mainwindow.cpp \
     zstackview.cpp \
@@ -565,7 +567,8 @@ SOURCES += main.cpp \
     penwidthdialog.cpp \
     dvid/zdvidclient.cpp \
     dvidobjectdialog.cpp \
-    zpainter.cpp
+    zpainter.cpp \
+    resolutiondialog.cpp
 
 OTHER_FILES += \
     extlib.pri

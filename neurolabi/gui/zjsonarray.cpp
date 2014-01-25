@@ -10,7 +10,7 @@ ZJsonArray::ZJsonArray() : ZJsonValue()
 ZJsonArray::ZJsonArray(json_t *data, bool asNew)
 {
   if (json_is_array(data)) {
-    ZJsonValue(data, asNew);
+    set(data, asNew);
   } else {
     m_data = NULL;
   }

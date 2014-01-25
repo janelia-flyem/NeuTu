@@ -113,6 +113,7 @@
 #include "penwidthdialog.h"
 #include "dvid/zdvidclient.h"
 #include "dvidobjectdialog.h"
+#include "resolutiondialog.h"
 
 #include "ztest.h"
 
@@ -193,6 +194,7 @@ MainWindow::MainWindow(QWidget *parent) :
   m_helpDlg = new HelpDialog(this);
   m_DiagnosisDlg = new DiagnosisDialog(this);
   m_penWidthDialog = new PenWidthDialog(this);
+  m_resDlg = new ResolutionDialog(this);
 
   if (GET_APPLICATION_NAME == "Biocytin") {
     ZStackDrawable::setDefaultPenWidth(1.0);
@@ -222,6 +224,8 @@ MainWindow::MainWindow(QWidget *parent) :
   m_dvidClient = new ZDvidClient("http://emdata1.int.janelia.org", this);
   m_dvidObjectDlg = new DvidObjectDialog(this);
   m_dvidObjectDlg->setAddress(m_dvidClient->getServer());
+  m_dvidFrame = NULL;
+  connect(m_dvidClient, SIGNAL(swcRetrieved()), this, SLOT(createDvidFrame()));
   connect(m_dvidClient, SIGNAL(objectRetrieved()),
           this, SLOT(createDvidFrame()));
 }
@@ -1644,12 +1648,21 @@ QStringList MainWindow::getOpenFileNames(
   return fileNameList;
 }
 
-QString MainWindow::getSaveFileName(const QString &caption, const QString &filter)
+QString MainWindow::getSaveFileName(
+    const QString &caption, const QString &filter, bool usingOldFileName)
 {
-  QString fileName = QFileDialog::getSaveFileName(
-        this, caption, m_lastOpenedFilePath, filter, NULL,
-        /*QFileDialog::DontUseNativeDialog |*/ QFileDialog::DontConfirmOverwrite);
+  QString fileName;
 
+  if (usingOldFileName) {
+    fileName = QFileDialog::getSaveFileName(
+          this, caption, m_lastOpenedFilePath, filter, NULL,
+          /*QFileDialog::DontUseNativeDialog |*/
+          QFileDialog::DontConfirmOverwrite);
+  } else {
+    fileName = QFileDialog::getSaveFileName(
+          this, caption, QFileInfo(fileName).absoluteDir().canonicalPath(),
+          filter, NULL, QFileDialog::DontConfirmOverwrite);
+  }
   if (!fileName.isEmpty()) {
     QFileInfo fInfo(fileName);
     recordLastOpenPath(fInfo.absoluteDir().absolutePath());
@@ -4391,10 +4404,20 @@ void MainWindow::createDvidFrame()
     ZStack *docStack = new ZStack;
     docStack->consumeData(stack);
     docStack->setOffset(offset[0], offset[1], offset[2]);
+    /*
     ZStackFrame *frame =
         createStackFrame(docStack, NeuTube::Document::FLYEM_BODY);
+        */
+    m_dvidFrame->loadStack(docStack);
+    if (!mdiArea->children().contains(m_dvidFrame)) {
+      addStackFrame(m_dvidFrame);
+      presentStackFrame(m_dvidFrame);
+    }
 
-    if (m_dvidObjectDlg->generatingSkeleton()) {
+    if (m_dvidObjectDlg->retrievingSkeleton()) {
+      m_dvidClient->postRequest(ZDvidClient::DVID_GET_SWC,
+                                QVariant(m_dvidObjectDlg->getBodyId()));
+#if 0
       progressDlg->setLabelText("Creating skeleton ...");
       progressDlg->open();
       ZStackSkeletonizer skeletonizer;
@@ -4409,8 +4432,8 @@ void MainWindow::createDvidFrame()
       progressDlg->reset();
 
       if (wholeTree != NULL) {
-        frame->executeAddObjectCommand(wholeTree, NeuTube::Documentable_SWC);
-        frame->open3DWindow(this, Z3DWindow::EXCLUDE_VOLUME);
+        m_dvidFrame->executeAddObjectCommand(wholeTree, NeuTube::Documentable_SWC);
+        m_dvidFrame->open3DWindow(this, Z3DWindow::EXCLUDE_VOLUME);
       } else {
         report("Skeletonization failed", "No SWC tree generated.",
                ZMessageReporter::Error);
@@ -4422,7 +4445,10 @@ void MainWindow::createDvidFrame()
 
       m_dvidClient->postRequest(ZDvidClient::DVID_UPLOAD_SWC,
                                 QVariant(m_dvidObjectDlg->getBodyId()));
+#endif
     }
+
+    m_dvidFrame = NULL;
   }
 }
 
@@ -4439,6 +4465,13 @@ void MainWindow::on_actionDvid_Object_triggered()
     progressDlg->setRange(0, 0);
     progressDlg->open();
 
+    if (m_dvidFrame != NULL) {
+      delete m_dvidFrame;
+      m_dvidFrame = NULL;
+    }
+
+    m_dvidFrame =  new ZStackFrame;
+    m_dvidFrame->document()->setTag(NeuTube::Document::FLYEM_BODY);
     m_dvidClient->setServer(m_dvidObjectDlg->getAddress());
     m_dvidClient->postRequest(ZDvidClient::DVID_GET_OBJECT,
                               QVariant(m_dvidObjectDlg->getBodyId()));
@@ -4469,6 +4502,47 @@ void MainWindow::on_actionAssign_Clustering_triggered()
       } else {
         report("Unable to generate similarity matrix",
                "Unable to generate similarity matrix", ZMessageReporter::Error);
+      }
+    }
+  }
+}
+
+void MainWindow::on_actionSWC_Rescaling_triggered()
+{
+  ZStackFrame *frame= currentStackFrame();
+  if (frame != NULL) {
+    if (m_resDlg->exec()) {
+      if (m_resDlg->getXYScale() == 0.0 || m_resDlg->getZScale() == 0.0) {
+        report("Invalid Parameter", "A scale value is 0. No SWC is saved",
+               ZMessageReporter::Warning);
+      } else {
+        if (frame->document()->hasSwc()) {
+          if (!m_lastOpenedFilePath.endsWith(".swc")) {
+            m_lastOpenedFilePath += ".swc";
+          }
+          QString fileName = getSaveFileName(tr("Export neuron as SWC"),
+                                             tr("SWC file (*.swc) "), false);
+          if (!fileName.isEmpty()) {
+            ZSwcTree *tree = frame->document()->getMergedSwc();
+            if (tree != NULL) {
+              /*
+              std::string swcSource = frame->document()->getSwcSource();
+              if (swcSource.empty()) {
+                swcSource = "./untitled.swc";
+              }
+              */
+              tree->rescale(m_resDlg->getXYScale(), m_resDlg->getXYScale(),
+                            m_resDlg->getZScale());
+              tree->save(fileName.toStdString());
+              delete tree;
+            } else {
+              report("Empty tree", "No neuron structure is obtained.",
+                     ZMessageReporter::Warning);
+            }
+          }
+        } else {
+          m_reporter->report("Warning", "No SWC found", ZMessageReporter::Warning);
+        }
       }
     }
   }

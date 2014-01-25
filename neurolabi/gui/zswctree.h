@@ -152,6 +152,15 @@ public:
   void save(const std::string &filePath);
   void load(const std::string &filePath);
 
+  /*!
+   * \brief Load swc from buffer
+   *
+   * It does not support extended json style sheet.
+   *
+   * \param buffer It must end with '\0'.
+   */
+  void loadFromBuffer(const char *buffer);
+
   virtual int swcFprint(FILE *fp, int start_id = 0, int parent_id = -1,
                         double z_scale = 1.0);
   virtual void swcExport(const char *filePath);

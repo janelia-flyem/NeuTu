@@ -501,6 +501,13 @@ public: /* puncta related methods */
 
   void updateModelData(EDocumentDataType type);
 
+  /*!
+   * \brief Get all swc trees from the document in a single tree
+   *
+   * \return The user is responsible of freeing the returned object.
+   */
+  ZSwcTree *getMergedSwc();
+
 public:
   inline NeuTube::Document::ETag getTag() const { return m_tag; }
   inline void setTag(NeuTube::Document::ETag tag) { m_tag = tag; }

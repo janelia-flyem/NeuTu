@@ -28,11 +28,12 @@ void strtrim(char *str)
     else
       break;
 
-  if(end<length)
+  if(end<length || end == 0)
     str[end] = '\0';
 
-  if(start>0)
+  if(start>0 && end > 0) {
     memmove(str,str+start,end-start+1);  
+  }
 }
 
 void strrmspc(char *str)

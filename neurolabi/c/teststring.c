@@ -5,6 +5,7 @@
 
 #include <stdio.h>
 #include <regex.h>
+#include <string.h>
 #include "tz_string.h"
 #include "tz_utilities.h"
 #include "tz_iarray.h"
@@ -12,6 +13,73 @@
 #include "tz_stack_lib.h"
 #include "tz_math.h"
 #include "tz_error.h"
+
+static int test_strrmspc()
+{
+  char *str = strdup("  test  \n\r");
+  strrmspc(str);
+  if (!eqstr(str, "test")) {
+    PRINT_EXCEPTION("Bug?", "unexpected string value.");
+    return 1;
+  }
+  free(str);
+
+  str = strdup("  t e s t  \n\r");
+  strrmspc(str);
+  if (!eqstr(str, "test")) {
+    PRINT_EXCEPTION("Bug?", "unexpected string value.");
+    return 1;
+  }
+  free(str);
+
+  str = strdup("  \n\r");
+  strrmspc(str);
+  if (strlen(str) != 0) {
+    PRINT_EXCEPTION("Bug?", "unexpected string value.");
+    return 1;
+  }
+  free(str);
+
+  str = strdup("  t e s\n t  ");
+  strrmspc(str);
+  if (!eqstr(str, "test")) {
+    PRINT_EXCEPTION("Bug?", "unexpected string value.");
+    return 1;
+  }
+  free(str);
+
+  return 0;
+}
+
+static int test_strsplit()
+{
+  char *str = strdup("test here");
+  char *str2 = strsplit(str, ' ', 1);
+  if (!eqstr(str, "test") || !eqstr(str2, "here")) {
+    PRINT_EXCEPTION("Bug?", "unexpected string value.");
+    return 1;
+  }
+  free(str);
+
+  str = strdup("test here");
+  str2 = strsplit(str, ' ', -1);
+  if (!eqstr(str, "test") || !eqstr(str2, "here")) {
+    PRINT_EXCEPTION("Bug?", "unexpected string value.");
+    return 1;
+  }
+  free(str);
+
+  str = strdup("test here too");
+  str2 = strsplit(str, ' ', -1);
+  if (!eqstr(str, "test here") || !eqstr(str2, "too")) {
+    PRINT_EXCEPTION("Bug?", "unexpected string value.");
+    return 1;
+  }
+  free(str);
+
+  return 0;
+}
+
 
 int main(int argc, char *argv[])
 {
@@ -50,6 +118,38 @@ int main(int argc, char *argv[])
       return 1;
     }
 
+    char *str = strdup("  test  \n\r");
+    strtrim(str);
+    if (!eqstr(str, "test")) {
+      PRINT_EXCEPTION("Bug?", "unexpected string value.");
+      return 1;
+    }
+    free(str);
+
+    str = strdup("  t e s t  \n\r");
+    strtrim(str);
+    if (!eqstr(str, "t e s t")) {
+      PRINT_EXCEPTION("Bug?", "unexpected string value.");
+      return 1;
+    }
+    free(str);
+
+    str = strdup("  \n\r");
+    strtrim(str);
+    if (strlen(str) != 0) {
+      PRINT_EXCEPTION("Bug?", "unexpected string value.");
+      return 1;
+    }
+    free(str);
+
+    str = strdup("  t e s\n t  ");
+    strtrim(str);
+    if (!eqstr(str, "t e s\n t")) {
+      PRINT_EXCEPTION("Bug?", "unexpected string value.");
+      return 1;
+    }
+    free(str);
+
     int n;
     int *array = String_To_Integer_Array("100 - - -101 frea-w2 13", NULL, &n);
 
@@ -63,6 +163,13 @@ int main(int argc, char *argv[])
       return 1;
     }
 
+    if (test_strrmspc() != 0) {
+      return 1;
+    }
+
+    if (test_strsplit() != 0) {
+      return 1;
+    }
 
     printf(":) Testing passed.\n");
 
@@ -256,7 +363,7 @@ int main(int argc, char *argv[])
   fclose(fp);
 #endif
 
-#if 1
+#if 0
   printf("double number: %d\n", count_double(".9 3.4 e +3.3e-3 4"));
   printf("double number: %d\n", count_double(".9-.9.9.9.9"));
 

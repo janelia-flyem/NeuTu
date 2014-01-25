@@ -34,6 +34,7 @@ class DiagnosisDialog;
 class PenWidthDialog;
 class ZDvidClient;
 class DvidObjectDialog;
+class ResolutionDialog;
 
 namespace Ui {
     class MainWindow;
@@ -88,7 +89,8 @@ protected:
   QStringList getOpenFileNames(const QString &caption,
                                const QString &filter = QString());
   QString getSaveFileName(const QString &caption,
-                          const QString &filter = QString());
+                          const QString &filter = QString(),
+                          bool usingOldFileName = true);
   void createActionMap();
 
 private slots:
@@ -309,6 +311,8 @@ private slots:
 
   void on_actionAssign_Clustering_triggered();
 
+  void on_actionSWC_Rescaling_triggered();
+
 private:
   void createActions();
   void customizeActions();
@@ -455,6 +459,8 @@ private:
   BcAdjustDialog *m_bcDlg;
   HelpDialog *m_helpDlg;
   DiagnosisDialog *m_DiagnosisDlg;
+  ResolutionDialog *m_resDlg;
+
 
   // undo redo
   QUndoGroup *m_undoGroup;
@@ -475,6 +481,7 @@ private:
   QMap<QString, QAction*> m_actionMap;
 
   ZDvidClient *m_dvidClient;
+  ZStackFrame *m_dvidFrame;
   DvidObjectDialog *m_dvidObjectDlg;
 };
 

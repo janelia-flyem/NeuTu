@@ -34,7 +34,7 @@ void strrmspc(char *str);
  * strsplit() splits <str> at the <pos>th occurence of <delim>. If <pos> is
  * negative, its counted backwards. It returns the string next to the
  * located <delim>. The location will become the end of <str>.
- * If there is no <delim>, it returns NULL.
+ * If there is no <delim> or pos is 0, it returns NULL.
  */
 char* strsplit(char *str, char delim, int pos);
 
