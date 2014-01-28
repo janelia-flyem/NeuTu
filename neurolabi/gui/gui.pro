@@ -351,7 +351,9 @@ HEADERS += mainwindow.h \
     dvid/zdvidclient.h \
     dvidobjectdialog.h \
     zpainter.h \
-    resolutiondialog.h
+    resolutiondialog.h \
+    dvid/zdvidbuffer.h \
+    dvid/zdvidrequest.h
 
 FORMS += settingdialog.ui \
     frameinfodialog.ui \
@@ -568,7 +570,9 @@ SOURCES += main.cpp \
     dvid/zdvidclient.cpp \
     dvidobjectdialog.cpp \
     zpainter.cpp \
-    resolutiondialog.cpp
+    resolutiondialog.cpp \
+    dvid/zdvidbuffer.cpp \
+    dvid/zdvidrequest.cpp
 
 OTHER_FILES += \
     extlib.pri

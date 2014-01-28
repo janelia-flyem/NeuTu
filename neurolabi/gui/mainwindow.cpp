@@ -112,6 +112,7 @@
 #include "biocytin/zbiocytinfilenameparser.h"
 #include "penwidthdialog.h"
 #include "dvid/zdvidclient.h"
+#include "dvid/zdvidbuffer.h"
 #include "dvidobjectdialog.h"
 #include "resolutiondialog.h"
 
@@ -225,9 +226,13 @@ MainWindow::MainWindow(QWidget *parent) :
   m_dvidObjectDlg = new DvidObjectDialog(this);
   m_dvidObjectDlg->setAddress(m_dvidClient->getServer());
   m_dvidFrame = NULL;
+  connect(m_dvidClient, SIGNAL(noRequestLeft()), this, SLOT(createDvidFrame()));
+  connect(this, SIGNAL(dvidRequestCanceled()), m_dvidClient, SLOT(cancelRequest()));
+  /*
   connect(m_dvidClient, SIGNAL(swcRetrieved()), this, SLOT(createDvidFrame()));
   connect(m_dvidClient, SIGNAL(objectRetrieved()),
           this, SLOT(createDvidFrame()));
+          */
 }
 
 MainWindow::~MainWindow()
@@ -4388,6 +4393,7 @@ void MainWindow::createDvidFrame()
 {
   QProgressDialog *progressDlg = getProgressDialog();
   progressDlg->reset();
+  progressDlg->setCancelButton(0);
   progressDlg->setLabelText("Loading dvid object ...");
   progressDlg->setRange(0, 100);
   QProgressBar *bar = getProgressBar();
@@ -4397,6 +4403,31 @@ void MainWindow::createDvidFrame()
   reporter.start();
   reporter.advance(0.1);
 
+  ZDvidBuffer *dvidBuffer = m_dvidClient->getDvidBuffer();
+  const QVector<ZObject3dScan>& bodyArray = dvidBuffer->getBodyArray();
+  int offset[3];
+  Stack *stack = ZObject3dScan::makeStack(bodyArray.begin(), bodyArray.end(),
+                                          offset);
+  if (stack != NULL) {
+    ZStack *docStack = new ZStack;
+    docStack->consumeData(stack);
+    docStack->setOffset(offset[0], offset[1], offset[2]);
+    ZStackFrame *frame =
+        createStackFrame(docStack, NeuTube::Document::FLYEM_BODY);
+    addStackFrame(frame);
+    presentStackFrame(frame);
+
+    foreach (ZSwcTree* tree, dvidBuffer->getSwcTreeArray()) {
+      frame->document()->addSwcTree(tree, false);
+    }
+  } else {
+    report("No data retrieved", "No data retrieved from DVID",
+           ZMessageReporter::Warning);
+  }
+  dvidBuffer->clear();
+
+
+#if 0
   const ZObject3dScan &obj = m_dvidClient->getObject();
   if (!obj.isEmpty()) {
     int offset[3];
@@ -4450,11 +4481,21 @@ void MainWindow::createDvidFrame()
 
     m_dvidFrame = NULL;
   }
+#endif
 }
 
 void MainWindow::on_actionDVID_Object_triggered()
 {
 
+}
+
+void MainWindow::cancelDvidRequest()
+{
+  emit dvidRequestCanceled();
+
+  disconnect(getProgressDialog(), SIGNAL(canceled()),
+             this, SLOT(cancelDvidRequest()));
+  getProgressDialog()->setCancelButton(0);
 }
 
 void MainWindow::on_actionDvid_Object_triggered()
@@ -4464,7 +4505,10 @@ void MainWindow::on_actionDvid_Object_triggered()
     progressDlg->setLabelText("Downloading dvid object ...");
     progressDlg->setRange(0, 0);
     progressDlg->open();
+    progressDlg->setCancelButtonText("Cancel");
+    connect(progressDlg, SIGNAL(canceled()), this, SLOT(cancelDvidRequest()));
 
+#if 0
     if (m_dvidFrame != NULL) {
       delete m_dvidFrame;
       m_dvidFrame = NULL;
@@ -4472,9 +4516,30 @@ void MainWindow::on_actionDvid_Object_triggered()
 
     m_dvidFrame =  new ZStackFrame;
     m_dvidFrame->document()->setTag(NeuTube::Document::FLYEM_BODY);
+#endif
+    m_dvidClient->reset();
     m_dvidClient->setServer(m_dvidObjectDlg->getAddress());
-    m_dvidClient->postRequest(ZDvidClient::DVID_GET_OBJECT,
+    std::vector<int> bodyArray = m_dvidObjectDlg->getBodyId();
+    for (size_t i = 0; i < bodyArray.size(); ++i) {
+      ZDvidRequest request;
+      request.setGetObjectRequest(bodyArray[i]);
+      m_dvidClient->appendRequest(request);
+      if (m_dvidObjectDlg->retrievingSkeleton()) {
+        request.setGetSwcRequest(bodyArray[i]);
+        m_dvidClient->appendRequest(request);
+      }
+    }
+#ifdef _DEBUG_2
+    request.setGetObjectRequest(2);
+    m_dvidClient->appendRequest(request);
+    request.setGetObjectRequest(3);
+    m_dvidClient->appendRequest(request);
+#endif
+    m_dvidClient->postNextRequest();
+    /*
+    m_dvidClient->postRequest(ZDvidRequest::DVID_GET_OBJECT,
                               QVariant(m_dvidObjectDlg->getBodyId()));
+                              */
   }
 }
 

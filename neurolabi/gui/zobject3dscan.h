@@ -325,6 +325,13 @@ public:
    */
   void fillHole();
 
+  /*!
+   * \brief Make a stack from a list of objects
+   */
+  template<class InputIterator>
+  static Stack* makeStack(InputIterator startObject, InputIterator endObject,
+                          int offset[3]);
+
 private:
   std::vector<ZObject3dStripe> m_stripeArray;
   /*
@@ -406,6 +413,48 @@ std::map<int, ZObject3dScan*>* ZObject3dScan::extractAllObject(
   }
 
   return bodySet;
+}
+
+template<class InputIterator>
+Stack* ZObject3dScan::makeStack(InputIterator startObject,
+                                InputIterator endObject, int offset[3])
+{
+  if (startObject != endObject) {
+    Cuboid_I boundBox;
+    startObject->getBoundBox(&boundBox);
+
+    InputIterator iter = startObject;
+    ++iter;
+    //Get Bound box
+    for (; iter != endObject; ++iter) {
+      Cuboid_I subBoundBox;
+      iter->getBoundBox(&subBoundBox);
+      Cuboid_I_Union(&boundBox, &subBoundBox, &boundBox);
+    }
+
+    int width, height, depth;
+    Cuboid_I_Size(&boundBox, &width, &height, &depth);
+    //Create stack
+    Stack *stack = C_Stack::make(GREY, width, height, depth);
+    C_Stack::setZero(stack);
+
+    for (int i = 0; i < 3; ++i) {
+      offset[i] = -boundBox.cb[i];
+    }
+
+    int v = 1;
+    for (iter = startObject; iter != endObject; ++iter) {
+      iter->drawStack(stack, v++, offset);
+    }
+
+    for (int i = 0; i < 3; ++i) {
+      offset[i] = boundBox.cb[i];
+    }
+
+    return stack;
+  }
+
+  return NULL;
 }
 
 #endif // ZOBJECT3DSCAN_H

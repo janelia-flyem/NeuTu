@@ -55,6 +55,9 @@ public: /* frame operation */
   void initOpenglContext();
   void config();
 
+signals:
+  void dvidRequestCanceled();
+
 public slots:
   void addStackFrame(ZStackFrame *frame, bool isReady = true);
   void presentStackFrame(ZStackFrame *frame);
@@ -68,6 +71,8 @@ public slots:
       ZStack *stack,NeuTube::Document::ETag tag = NeuTube::Document::NORMAL,
       ZStackFrame *parentFrame = NULL);
   void createDvidFrame();
+
+  void cancelDvidRequest();
 
 private:
   Ui::MainWindow *m_ui;

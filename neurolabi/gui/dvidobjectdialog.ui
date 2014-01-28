@@ -65,12 +65,9 @@
          </widget>
         </item>
         <item>
-         <widget class="QSpinBox" name="bodySpinBox">
-          <property name="minimum">
-           <number>1</number>
-          </property>
-          <property name="maximum">
-           <number>999999999</number>
+         <widget class="QLineEdit" name="bodyLineEdit">
+          <property name="toolTip">
+           <string>A list of body IDs</string>
           </property>
          </widget>
         </item>
@@ -95,6 +92,9 @@
      <widget class="QCheckBox" name="retrieveObjectCheckBox">
       <property name="text">
        <string>Retrieve object</string>
+      </property>
+      <property name="checked">
+       <bool>true</bool>
       </property>
      </widget>
     </item>

@@ -8,10 +8,15 @@
 #include <QFile>
 #include <QVariant>
 #include <QNetworkReply>
+#include <QVector>
+#include <QQueue>
 
 #include "zobject3dscan.h"
 #include "zswctree.h"
 #include "zprogressable.h"
+#include "zdvidrequest.h"
+
+class ZDvidBuffer;
 
 /*!
  * \brief The class if DVID client
@@ -22,10 +27,6 @@ class ZDvidClient : public QObject, ZProgressable
 
 public:
   ZDvidClient(const QString &server, QObject *parent = NULL);
-
-  enum EDvidRequest {
-    DVID_GET_OBJECT, DVID_SAVE_OBJECT, DVID_UPLOAD_SWC, DVID_GET_SWC
-  };
 
   inline void setServer(const QString &server) {
     m_serverAddress = server;
@@ -41,19 +42,36 @@ public:
   /*!
    * \brief Send a request to DVID
    */
-  bool postRequest(EDvidRequest request, const QVariant &parameter);
+  bool postRequest(ZDvidRequest::EDvidRequest request, const QVariant &parameter);
 
   inline const ZObject3dScan& getObject() const { return m_obj; }
+  inline const ZSwcTree& getSwcTree() const { return m_swcTree; }
+
+  inline ZDvidBuffer* getDvidBuffer() const { return m_dvidBuffer; }
+
+  void appendRequest(ZDvidRequest request);
+
+  //Make ready for making new requests
+  void reset();
 
 signals:
   void objectRetrieved();
   void swcRetrieved();
+  void noRequestLeft();
+
+public slots:
+  void postNextRequest();
 
 private slots:
   bool writeObject();
   void finishRequest(QNetworkReply::NetworkError error = QNetworkReply::NoError);
   void readObject();
   void readSwc();
+  void cancelRequest();
+
+private:
+  void createConnection();
+  inline bool isCanceling() { return m_isCanceling; }
 
 private:
   QString m_serverAddress; //Server address
@@ -70,6 +88,12 @@ private:
   QByteArray m_swcBuffer;
 
   QIODevice *m_uploadStream;
+
+  ZDvidBuffer *m_dvidBuffer;
+  QQueue<ZDvidRequest> m_requestQueue;
+
+  bool m_isCanceling;
+  //int m_requestIndex;
 };
 
 #endif // ZDVIDCLIENT_H

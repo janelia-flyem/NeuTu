@@ -70,7 +70,8 @@ BOOL Is_Space(const char *str);
 /**@brief Test if a string ends with a given string
  *
  * String_Ends_With() returns TRUE if and only if the ending characters of 
- * <str> matches <end> exactly. It returns FALSE if either <str> or <end> is
+ * <str> matches <end> exactly. It always returns TRUE if <end> is an empty
+ * string and <str> is not NULL. It returns FALSE if either <str> or <end> is
  * NULL.
  */
 BOOL String_Ends_With(const char *str, const char *end);
@@ -78,7 +79,8 @@ BOOL String_Ends_With(const char *str, const char *end);
 /**@brief Test if a string starts with a given string
  *
  * String_Starts_With() returns TRUE if and only if the starting characters of 
- * <str> matches <start> exactly. It returns FALSE if either <str> or <start> is
+ * <str> matches <start> exactly. It always returns TRUE if <start> is an empty
+ * string and <str> is not NULL. It returns FALSE if either <str> or <start> is
  * NULL.
  */
 BOOL String_Starts_With(const char *str, const char *start);

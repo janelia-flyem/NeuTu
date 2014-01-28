@@ -48,6 +48,8 @@ FlyEmDataForm::FlyEmDataForm(QWidget *parent) :
 
   m_specialProgressReporter.setProgressBar(ui->progressBar);
   setProgressReporter(&m_specialProgressReporter);
+
+  setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 }
 
 FlyEmDataForm::~FlyEmDataForm()

@@ -80,6 +80,166 @@ static int test_strsplit()
   return 0;
 }
 
+static int test_string_match()
+{
+  if (String_Ends_With("", "") == FALSE) {
+    PRINT_EXCEPTION("Bug?", "unexpected value.");
+    return 1;
+  }
+
+  if (String_Starts_With("", "") == FALSE) {
+    PRINT_EXCEPTION("Bug?", "unexpected value.");
+    return 1;
+  }
+
+  if (String_Ends_With("test.here", "ere") == FALSE) {
+    PRINT_EXCEPTION("Bug?", "unexpected value.");
+    return 1;
+  }
+
+  if (String_Starts_With("test.here", "test") == FALSE) {
+    PRINT_EXCEPTION("Bug?", "unexpected value.");
+    return 1;
+  }
+
+
+  return 0;
+}
+
+static int test_read_word()
+{
+  char word[500];
+  const char *test_file = "../data/benchmark/strtest.txt";
+  FILE *fp = fopen(test_file, "r");
+  if (fp != NULL) {
+    int n = Read_Word(fp, word, 100);
+    if (n != 3) {
+      PRINT_EXCEPTION("Bug?", "unexpected value.");
+      return 1;
+    }
+
+    if (!eqstr(word, "#if")) {
+      PRINT_EXCEPTION("Bug?", "unexpected value.");
+      return 1;
+    }
+
+    n = Read_Word(fp, word, 100);
+    if (n != 1) {
+      PRINT_EXCEPTION("Bug?", "unexpected value.");
+      return 1;
+    }
+
+    if (!eqstr(word, "0")) {
+      PRINT_EXCEPTION("Bug?", "unexpected value.");
+      return 1;
+    }
+
+    n = Read_Word(fp, word, 100);
+    if (n != 3) {
+      PRINT_EXCEPTION("Bug?", "unexpected value.");
+      return 1;
+    }
+
+    if (!eqstr(word, "int")) {
+      PRINT_EXCEPTION("Bug?", "unexpected value.");
+      return 1;
+    }
+
+    n = Read_Word(fp, word, 100);
+    n = Read_Word(fp, word, 3);
+    if (n != 3) {
+      PRINT_EXCEPTION("Bug?", "unexpected value.");
+      return 1;
+    }
+
+    if (!eqstr(word, "dou")) {
+      PRINT_EXCEPTION("Bug?", "unexpected value.");
+      return 1;
+    }
+
+    n = Read_Word(fp, word, 100);
+    if (n != 3) {
+      PRINT_EXCEPTION("Bug?", "unexpected value.");
+      return 1;
+    }
+
+    if (!eqstr(word, "ble")) {
+      PRINT_EXCEPTION("Bug?", "unexpected value.");
+      return 1;
+    }
+
+    n = Read_Word(fp, word, 0);
+    if (n != 6) {
+      PRINT_EXCEPTION("Bug?", "unexpected value.");
+      return 1;
+    }
+
+    if (!eqstr(word, "*array")) {
+      PRINT_EXCEPTION("Bug?", "unexpected value.");
+      return 1;
+    }
+    
+    n = Read_Word_D(fp, word, 0, tz_islinebreak);
+    if (n != 2) {
+      printf("%d\n", n);
+      PRINT_EXCEPTION("Bug?", "unexpected value.");
+      return 1;
+    }
+
+    if (!eqstr(word, "= ")) {
+      PRINT_EXCEPTION("Bug?", "unexpected value.");
+      return 1;
+    }
+
+    n = Read_Word_D(fp, word, 0, tz_islinebreak);
+    if (!eqstr(word, "  String_To_Double_Array(\" -345.4, -.23, --2.324, - nubmer, hello - 3.0, .10 ,\", NULL, &n);")) {
+      PRINT_EXCEPTION("Bug?", "unexpected value.");
+      return 1;
+    }
+
+    fclose(fp);
+
+    n = Count_Word_D("test here", tz_isspace);
+    if (n != 2) {
+      PRINT_EXCEPTION("Bug?", "unexpected value.");
+      return 1;
+    }
+
+    n = Count_Word_D(" ", tz_isspace);
+    if (n != 0) {
+      PRINT_EXCEPTION("Bug?", "unexpected value.");
+      return 1;
+    }
+
+    n = Count_Word_D(" ", tz_isspace);
+    if (n != 0) {
+      PRINT_EXCEPTION("Bug?", "unexpected value.");
+      return 1;
+    }
+
+    n = Count_Word_D("test\nhere ", tz_islinebreak);
+    if (n != 2) {
+      PRINT_EXCEPTION("Bug?", "unexpected value.");
+      return 1;
+    }
+
+    n = Count_Word_D("test\nhere\n", tz_islinebreak);
+    if (n != 2) {
+      PRINT_EXCEPTION("Bug?", "unexpected value.");
+      return 1;
+    }
+
+    n = Count_Word_P("22 faf", tz_isspace, Is_Integer);
+    if (n != 1) {
+      PRINT_EXCEPTION("Bug?", "unexpected value.");
+      return 1;
+    }
+  } else {
+    printf("%s does not exist.", test_file);
+  }
+
+  return 0;
+}
 
 int main(int argc, char *argv[])
 {
@@ -168,6 +328,14 @@ int main(int argc, char *argv[])
     }
 
     if (test_strsplit() != 0) {
+      return 1;
+    }
+
+    if (test_string_match() != 0) {
+      return 1;
+    }
+
+    if (test_read_word() != 0) {
       return 1;
     }
 

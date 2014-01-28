@@ -7,8 +7,14 @@
     <x>0</x>
     <y>0</y>
     <width>798</width>
-    <height>672</height>
+    <height>677</height>
    </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
   </property>
   <property name="windowTitle">
    <string>FlyEM</string>
@@ -237,7 +243,11 @@
        </layout>
       </item>
       <item>
-       <widget class="ZFlyEmQueryView" name="queryView"/>
+       <widget class="ZFlyEmQueryView" name="queryView">
+        <property name="focusPolicy">
+         <enum>Qt::StrongFocus</enum>
+        </property>
+       </widget>
       </item>
      </layout>
     </item>
