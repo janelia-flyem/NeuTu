@@ -4836,7 +4836,20 @@ bool ZStackDoc::bwsolid()
 {
   ZStack *mainStack = stack();
   if (mainStack != NULL) {
-    if (mainStack->bwsolid()) {
+    if (mainStack->bwperim()) {
+      emit stackModified();
+      return true;
+    }
+  }
+
+  return false;
+}
+
+bool ZStackDoc::bwperim()
+{
+  ZStack *mainStack = stack();
+  if (mainStack != NULL) {
+    if (mainStack->bwperim()) {
       emit stackModified();
       return true;
     }
@@ -6106,6 +6119,102 @@ bool ZStackDoc::executeConnectSwcNodeCommand(
   new ZStackDocCommand::SwcEdit::SetRoot(this, tn2, command);
   new ZStackDocCommand::SwcEdit::SetParent(this, tn2, tn1, command);
   new ZStackDocCommand::SwcEdit::RemoveEmptyTree(this, command);
+
+  pushUndoCommand(command);
+  deprecateTraceMask();
+
+  notifySwcModified();
+
+  return true;
+}
+
+bool ZStackDoc::executeSmartConnectSwcNodeCommand()
+{
+  if (selectedSwcTreeNodes()->size() == 2) {
+    std::set<Swc_Tree_Node*>::iterator first = selectedSwcTreeNodes()->begin();
+    std::set<Swc_Tree_Node*>::iterator second = first;
+    ++second;
+    return executeSmartConnectSwcNodeCommand(*first, *second);
+  }
+
+  return false;
+}
+
+bool ZStackDoc::executeSmartConnectSwcNodeCommand(
+    Swc_Tree_Node *tn1, Swc_Tree_Node *tn2)
+{
+  if (!SwcTreeNode::isRegular(tn1) || !SwcTreeNode::isRegular(tn2)) {
+    return false;
+  }
+
+  if (SwcTreeNode::isRegular(SwcTreeNode::commonAncestor(tn1, tn2))) {
+    return false;
+  }
+
+  QUndoCommand *command =
+      new ZStackDocCommand::SwcEdit::CompositeCommand(this);
+
+  ZNeuronTracer tracer;
+  if (getTag() == NeuTube::Document::FLYEM_BODY) {
+    tracer.setVertexOption(ZStackGraph::VO_SURFACE);
+  }
+  tracer.setBackgroundType(getStackBackground());
+  tracer.setIntensityField(stack()->c_stack());
+  tracer.setTraceWorkspace(m_traceWorkspace);
+  if (m_traceWorkspace->trace_mask == NULL) {
+    m_traceWorkspace->trace_mask =
+        C_Stack::make(GREY, stack()->width(), stack()->height(),
+                      stack()->depth());
+  }
+  if (GET_APPLICATION_NAME == "Biocytin") {
+    tracer.setResolution(1, 1, 10);
+  }
+
+  ZPoint offset = getStackOffset();
+
+  Swc_Tree *branch = tracer.trace(
+        SwcTreeNode::x(tn1) - offset.x(), SwcTreeNode::y(tn1) - offset.y(),
+        SwcTreeNode::z(tn1) - offset.z(), SwcTreeNode::radius(tn1),
+        SwcTreeNode::x(tn2) - offset.x(), SwcTreeNode::y(tn2) - offset.y(),
+        SwcTreeNode::z(tn2) - offset.z(), SwcTreeNode::radius(tn2));
+
+  Swc_Tree_Translate(branch, offset.x(), offset.y(), offset.z());
+
+  if (branch != NULL) {
+    if (Swc_Tree_Has_Branch(branch)) {
+      //tracer.updateMask(branch);
+      Swc_Tree_Node *root = Swc_Tree_Regular_Root(branch);
+      Swc_Tree_Node *begin = SwcTreeNode::firstChild(root);
+
+      Swc_Tree_Node *leaf = begin;
+      while (SwcTreeNode::firstChild(leaf) != NULL) {
+        leaf = SwcTreeNode::firstChild(leaf);
+      }
+
+      if (leaf == begin || begin == NULL) { //Less than three nodes
+        Kill_Swc_Tree(branch);
+        branch = NULL;
+      }
+
+      command = new ZStackDocCommand::SwcEdit::CompositeCommand(this);
+      new ZStackDocCommand::SwcEdit::SetRoot(this, tn2, command);
+
+      if (branch != NULL) {
+        SwcTreeNode::detachParent(begin);
+        Kill_Swc_Tree(branch);
+
+        Swc_Tree_Node *terminal = SwcTreeNode::parent(leaf);
+        SwcTreeNode::detachParent(leaf);
+        SwcTreeNode::kill(leaf);
+        //ZSwcPath path(begin, terminal);
+        new ZStackDocCommand::SwcEdit::SetParent(this, tn2, terminal, command);
+        new ZStackDocCommand::SwcEdit::SetParent(this, begin, tn1, command);
+      } else {
+        new ZStackDocCommand::SwcEdit::SetParent(this, tn2, tn1, command);
+      }
+      new ZStackDocCommand::SwcEdit::RemoveEmptyTree(this, command);
+    }
+  }
 
   pushUndoCommand(command);
   deprecateTraceMask();

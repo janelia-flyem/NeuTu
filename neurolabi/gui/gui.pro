@@ -353,7 +353,8 @@ HEADERS += mainwindow.h \
     zpainter.h \
     resolutiondialog.h \
     dvid/zdvidbuffer.h \
-    dvid/zdvidrequest.h
+    dvid/zdvidrequest.h \
+    zmatlabprocess.h
 
 FORMS += settingdialog.ui \
     frameinfodialog.ui \
@@ -572,7 +573,8 @@ SOURCES += main.cpp \
     zpainter.cpp \
     resolutiondialog.cpp \
     dvid/zdvidbuffer.cpp \
-    dvid/zdvidrequest.cpp
+    dvid/zdvidrequest.cpp \
+    zmatlabprocess.cpp
 
 OTHER_FILES += \
     extlib.pri

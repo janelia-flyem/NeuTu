@@ -40,7 +40,7 @@ json_t* ZJsonObject::operator[] (const char *key)
   return const_cast<json_t*>(static_cast<const ZJsonObject&>(*this)[key]);
 }
 
-bool ZJsonObject::isEmpty()
+bool ZJsonObject::isEmpty() const
 {
   if (m_data == NULL) {
     return true;

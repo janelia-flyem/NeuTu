@@ -129,7 +129,16 @@ void ZJsonValue::decodeString(const char *str)
   m_data = json_loads(str, JSON_DECODE_ANY, &m_error);
 }
 
-void ZJsonValue::print()
+void ZJsonValue::clear()
+{
+  if (m_data != NULL) {
+    json_decref(m_data);
+  }
+
+  m_data = NULL;
+}
+
+void ZJsonValue::print() const
 {
   ZJsonParser::print(NULL, m_data, 0);
 }

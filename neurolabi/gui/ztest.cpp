@@ -126,6 +126,7 @@
 #include "zswcglobalfeatureanalyzer.h"
 #include "zlogmessagereporter.h"
 #include "zerror.h"
+#include "zmatlabprocess.h"
 #include "flyem/zflyembodyanalyzer.h"
 #include "swc/zswcresampler.h"
 #include "swc/zswcnodedistselector.h"
@@ -10263,7 +10264,7 @@ void ZTest::test(MainWindow *host)
   obj.save(GET_DATA_DIR + "/benchmark/tower5.sobj");
 #endif
 
-#if 1
+#if 0
   ZObject3dScan obj;
   obj.addSegment(1, 16, 16, 16);
   obj.addSegment(2, 16, 5, 32);
@@ -10276,4 +10277,16 @@ void ZTest::test(MainWindow *host)
   }
   obj.save(GET_DATA_DIR + "/benchmark/pile.sobj");
 #endif
+
+#if 1
+  ZMatlabProcess matlabProcess;
+  if (matlabProcess.findMatlab()) {
+    matlabProcess.setWorkDir("/tmp/matlab");
+    matlabProcess.setScript("/Users/zhaot/Work/SLAT/matlab/SLAT/run/flyem/tz_run_flyem_clustering_command.m");
+    matlabProcess.run();
+
+    matlabProcess.printOutputSummary();
+  }
+#endif
+
 }

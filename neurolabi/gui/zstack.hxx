@@ -375,6 +375,7 @@ public: /* operations */
 public: /* processing routines */
   bool binarize(int threshold = 0);
   bool bwsolid();
+  bool bwperim();
   bool enhanceLine();
   void extractChannel(int c);
   Stack* copyChannel(int c);

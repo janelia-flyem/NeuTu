@@ -104,6 +104,29 @@ Stack* C_Stack::boundCrop(const Stack *stack, int margin)
   return Stack_Bound_Crop(stack, margin);
 }
 
+Stack* C_Stack::boundCrop(const Stack *stack, int margin, int *offset)
+{
+  Cuboid_I bound_box;
+  Stack_Bound_Box(stack, &bound_box);
+
+  int width = 0;
+  int height = 0;
+  int depth = 0;
+  Cuboid_I_Size(&bound_box, &width, &height, &depth);
+
+  Stack *out =  Crop_Stack(stack, bound_box.cb[0] - margin,
+      bound_box.cb[1] - margin, bound_box.cb[2] - margin,
+      width + margin * 2, height + margin * 2, depth + margin * 2, NULL);
+
+  if (offset != NULL) {
+    for (int i = 0; i < 3; ++i) {
+      offset[i] = bound_box.cb[i] - margin;
+    }
+  }
+
+  return out;
+}
+
 int* C_Stack::hist(const Stack* stack)
 {
   return Stack_Hist(stack);

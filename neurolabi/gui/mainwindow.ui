@@ -132,6 +132,7 @@
       <addaction name="actionErode"/>
       <addaction name="actionSolidify"/>
       <addaction name="actionDistance_Map"/>
+      <addaction name="actionSurface_detection"/>
       <addaction name="actionShortest_Path_Flow"/>
       <addaction name="actionExpand_Region"/>
       <addaction name="actionMorphological_Thinning"/>
@@ -1026,6 +1027,11 @@
   <action name="actionSWC_Rescaling">
    <property name="text">
     <string>Rescaled SWC</string>
+   </property>
+  </action>
+  <action name="actionSurface_detection">
+   <property name="text">
+    <string>Surface Detection</string>
    </property>
   </action>
  </widget>

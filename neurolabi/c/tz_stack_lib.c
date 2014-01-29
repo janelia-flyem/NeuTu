@@ -3792,6 +3792,7 @@ Stack* Stack_Median_Filter_N(const Stack *stack, int conn, Stack *out)
 void Stack_Bound_Box(const Stack *stack, Cuboid_I *bound_box)
 {
   TZ_ASSERT(bound_box != NULL, "null pointer");
+  TZ_ASSERT(stack->kind == GREY, "Only GREY stack supported.");
 
   int i, j, k;
   size_t offset = 0;

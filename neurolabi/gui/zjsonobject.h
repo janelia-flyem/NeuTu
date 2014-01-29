@@ -25,7 +25,7 @@ public:
    *
    * An object is empty iff no key exists.
    */
-  bool isEmpty();
+  bool isEmpty() const;
 
 public:
   bool load(std::string filePath);

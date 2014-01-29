@@ -105,8 +105,20 @@ ZSwcTree* ZStackSkeletonizer::makeSkeleton(const Stack *stack)
 
     Stack *objstack = Copy_Stack(stackData);
     size_t objSize = Stack_Level_Mask(objstack, 3 + objIndex);
+
+    Translate_Stack(objstack, GREY, 1);
+
+    int objectOffset[3];
+    Stack *croppedObjStack = C_Stack::boundCrop(objstack, 0, objectOffset);
+
+    /*
     if (C_Stack::kind(objstack) == GREY16) {
       Translate_Stack(objstack, GREY, 1);
+    }
+    */
+
+    if (C_Stack::kind(croppedObjStack) == GREY16) {
+      Translate_Stack(croppedObjStack, GREY, 1);
     }
 
     if (objSize == 1) {
@@ -115,18 +127,20 @@ ZSwcTree* ZStackSkeletonizer::makeSkeleton(const Stack *stack)
         int y = 0;
         int z = 0;
         for (size_t offset = 0; offset < voxelNumber; ++offset) {
-          if (objstack->array[offset] == 1) {
-            C_Stack::indexToCoord(offset, C_Stack::width(objstack),
-                                  C_Stack::height(objstack), &x, &y, &z);
+          if (croppedObjStack->array[offset] == 1) {
+            C_Stack::indexToCoord(offset, C_Stack::width(croppedObjStack),
+                                  C_Stack::height(croppedObjStack), &x, &y, &z);
             break;
           }
         }
-        Swc_Tree_Node *tn = SwcTreeNode::makePointer(x, y, z, 1.0);
+        Swc_Tree_Node *tn = SwcTreeNode::makePointer(
+              x + objectOffset[0], y + objectOffset[1],
+            z + objectOffset[2], 1.0);
         SwcTreeNode::setParent(tn, subtree->root);
       }
     } else {
       cout << "Build distance map ..." << endl;
-      Stack *tmpdist = Stack_Bwdist_L_U16P(objstack, NULL, 0);
+      Stack *tmpdist = Stack_Bwdist_L_U16P(croppedObjStack, NULL, 0);
 
       cout << "Shortest path grow ..." << endl;
       Sp_Grow_Workspace *sgw = New_Sp_Grow_Workspace();
@@ -142,10 +156,10 @@ ZSwcTree* ZStackSkeletonizer::makeSkeleton(const Stack *stack)
                                Stack_Depth(tmpdist));
       Zero_Stack(mask);
 
-      size_t nvoxel = Stack_Voxel_Number(stackData);
+      size_t nvoxel = Stack_Voxel_Number(croppedObjStack);
       size_t i;
       for (i = 0; i < nvoxel; i++) {
-        if (objstack->array[i] == 0) {
+        if (croppedObjStack->array[i] == 0) {
           mask->array[i] = SP_GROW_BARRIER;
         }
       }
@@ -191,6 +205,8 @@ ZSwcTree* ZStackSkeletonizer::makeSkeleton(const Stack *stack)
             ZSwcGenerator::createSwc(*iter, ZSwcGenerator::NO_PROCESS);
         Swc_Tree *branch  = branchWrapper->data();
         branchWrapper->setData(branch, ZSwcTree::LEAVE_ALONE);
+        branchWrapper->translate(objectOffset[0], objectOffset[1],
+            objectOffset[2]);
 
         //branch = (*iter).toSwcTree();
         if (SwcTreeNode::firstChild(branch->root) != NULL) {
@@ -250,6 +266,7 @@ ZSwcTree* ZStackSkeletonizer::makeSkeleton(const Stack *stack)
       Kill_Stack(tmpdist);
     }
 
+    C_Stack::kill(croppedObjStack);
     C_Stack::kill(objstack);
 
     if (Swc_Tree_Regular_Root(subtree) != NULL) {

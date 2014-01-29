@@ -12,6 +12,7 @@
 #include "tz_math.h"
 #include "tz_int_histogram.h"
 #include "tz_stack_threshold.h"
+#include "tz_stack_bwmorph.h"
 
 ZStackGraph::ZStackGraph()
 {
@@ -104,18 +105,42 @@ ZGraph* ZStackGraph::buildForegroundGraph(const Stack *stack)
   return graph;
 }
 
+ZGraph* ZStackGraph::buildSurfaceGraph(const Stack *stack)
+{
+  if (stack == NULL) {
+    return NULL;
+  }
+
+  Stack *oldMask = m_workspace.signal_mask;
+
+  m_workspace.signal_mask = Stack_Perimeter(stack, NULL, 26);
+  ZGraph *graph = new ZGraph(Stack_Graph_W(stack, &m_workspace));
+
+  C_Stack::kill(m_workspace.signal_mask);
+  m_workspace.signal_mask = oldMask;
+
+  return graph;
+}
+
+
 std::vector<int> ZStackGraph::computeShortestPath(
-    const Stack *stack, int startIndex, int endIndex, bool fgOnly)
+    const Stack *stack, int startIndex, int endIndex, EVertexOption option)
 {
   updateRange(startIndex, endIndex, C_Stack::width(stack),
               C_Stack::height(stack), C_Stack::depth(stack));
 
   ZGraph *graph = NULL;
 
-  if (fgOnly) {
+  switch (option) {
+  case VO_FOREGROUND:
     graph = buildForegroundGraph(stack);
-  } else {
+    break;
+  case VO_SURFACE:
+    graph = buildSurfaceGraph(stack);
+    break;
+  default:
     graph = buildGraph(stack);
+    break;
   }
 
   int swidth = m_workspace.range[1] - m_workspace.range[0] + 1;
@@ -142,9 +167,11 @@ std::vector<int> ZStackGraph::computeShortestPath(
     }
   }
 
+  /*
   if (m_workspace.signal_mask == NULL) {
     return indexPath;
   }
+  */
 
   std::vector<int> cleanedPath;
   for (size_t i = 0; i < path.size(); ++i) {

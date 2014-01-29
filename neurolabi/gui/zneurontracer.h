@@ -5,6 +5,7 @@
 #include "tz_trace_defs.h"
 #include "tz_trace_utils.h"
 #include "neutube.h"
+#include "zstackgraph.h"
 
 class ZStack;
 class ZSwcTree;
@@ -37,12 +38,17 @@ public:
     m_resolution[2] = z;
   }
 
+  inline void setVertexOption(ZStackGraph::EVertexOption vertexOption) {
+    m_vertexOption = vertexOption;
+  }
+
 private:
   Stack *m_stack;
   Trace_Workspace *m_traceWorkspace;
   Connection_Test_Workspace *m_connWorkspace;
   ZSwcConnector *m_swcConnector;
   NeuTube::EImageBackground m_backgroundType;
+  ZStackGraph::EVertexOption m_vertexOption;
   double m_resolution[3];
 };
 

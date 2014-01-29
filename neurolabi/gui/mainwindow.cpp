@@ -95,6 +95,7 @@
 #include "zstackskeletonizer.h"
 #include "flyem/zflyemdataframe.h"
 #include "zmoviescript.h"
+#include "zmatlabprocess.h"
 #include "zmoviemaker.h"
 #include "z3dvolumeraycaster.h"
 #include "zstackdoccommand.h"
@@ -2129,19 +2130,22 @@ void MainWindow::autoBcAdjust()
 void MainWindow::updateBcDlg(const ZStackFrame *frame)
 {
   if (frame != NULL) {
-    int nChannel = frame->presenter()->buddyDocument()->stack()->channelNumber();
-    m_bcDlg->setNumOfChannel(nChannel);
-    for (int i=0; i<std::min(nChannel, m_bcDlg->getMaxNumOfChannel()); i++) {
-      m_bcDlg->setRange(frame->document()->stack()->min(i),
-                        frame->document()->stack()->max(i), i);
-      qDebug() << frame->document()->stack()->min(i) <<
-                  ' ' << frame->document()->stack()->max(i) << "\n";
+    ZStack *stack = frame->presenter()->buddyDocument()->stack();
+    if (stack != NULL) {
+      int nChannel = stack->channelNumber();
+      m_bcDlg->setNumOfChannel(nChannel);
+      for (int i=0; i<std::min(nChannel, m_bcDlg->getMaxNumOfChannel()); i++) {
+        m_bcDlg->setRange(frame->document()->stack()->min(i),
+                          frame->document()->stack()->max(i), i);
+        qDebug() << frame->document()->stack()->min(i) <<
+                    ' ' << frame->document()->stack()->max(i) << "\n";
 
-      m_bcDlg->setValue(iround(frame->displayGreyMin(i)),
-                        iround(frame->displayGreyMax(i)), i);
+        m_bcDlg->setValue(iround(frame->displayGreyMin(i)),
+                          iround(frame->displayGreyMax(i)), i);
 
-      qDebug() << frame->displayGreyMin(i) << ' ' <<
-                  iround(frame->displayGreyMax(i)) << "\n";
+        qDebug() << frame->displayGreyMin(i) << ' ' <<
+                    iround(frame->displayGreyMax(i)) << "\n";
+      }
     }
   }
 }
@@ -4408,6 +4412,7 @@ void MainWindow::createDvidFrame()
   int offset[3];
   Stack *stack = ZObject3dScan::makeStack(bodyArray.begin(), bodyArray.end(),
                                           offset);
+  ZStackFrame *frame = NULL;
   if (stack != NULL) {
     ZStack *docStack = new ZStack;
     docStack->consumeData(stack);
@@ -4416,14 +4421,28 @@ void MainWindow::createDvidFrame()
         createStackFrame(docStack, NeuTube::Document::FLYEM_BODY);
     addStackFrame(frame);
     presentStackFrame(frame);
+  }
+
+  if (!dvidBuffer->getSwcTreeArray().isEmpty()) {
+    if (frame == NULL) {
+      frame = createStackFrame(NULL);
+    }
 
     foreach (ZSwcTree* tree, dvidBuffer->getSwcTreeArray()) {
       frame->document()->addSwcTree(tree, false);
     }
-  } else {
+
+    if (!frame->document()->hasStackData()) {
+      frame->open3DWindow(this);
+      delete frame;
+    }
+  }
+
+  if (frame == NULL) {
     report("No data retrieved", "No data retrieved from DVID",
            ZMessageReporter::Warning);
   }
+
   dvidBuffer->clear();
 
 
@@ -4558,12 +4577,39 @@ void MainWindow::on_actionAssign_Clustering_triggered()
       }
 
       if (QFile::copy(simmatFile, targetFilePath)) {
+        ZMatlabProcess process;
+        if (process.findMatlab()) {
+          process.setScript("/Users/zhaot/Work/SLAT/matlab/SLAT/run/flyem/tz_run_flyem_clustering_command.m");
+          if (process.run()) {
+            const ZJsonObject &output = process.getOutput();
+            if (output.hasKey("label_file")) {
+              const char *outputFile = ZJsonParser::stringValue(output["label_file"]);
+              if (outputFile != NULL) {
+                frame->assignClass(outputFile);
+              } else {
+                report("Error Output", "Cannot finish the task for unknown reasons.",
+                       ZMessageReporter::Warning);
+              }
+            } else {
+              report("Error Output", "No output key found.",
+                    ZMessageReporter::Warning);
+            }
+          } else {
+            report("Task Failed", "Cannot finish the task for unknown reasons.",
+                   ZMessageReporter::Warning);
+          }
+        } else {
+          report("No Matlab", "No Matlab found. This function requires Matlab.",
+                 ZMessageReporter::Warning);
+        }
+        /*
         QProcess::execute(
               "/Applications/MATLAB.app/bin/matlab < "
               "/Users/zhaot/Work/SLAT/matlab/SLAT/run/flyem/tz_run_flyem_clustering_command.m "
               "-nodesktop -nosplash");
 
         frame->assignClass(GET_DATA_DIR + "/tmp/labels.txt");
+        */
       } else {
         report("Unable to generate similarity matrix",
                "Unable to generate similarity matrix", ZMessageReporter::Error);
@@ -4610,5 +4656,13 @@ void MainWindow::on_actionSWC_Rescaling_triggered()
         }
       }
     }
+  }
+}
+
+void MainWindow::on_actionSurface_detection_triggered()
+{
+  ZStackFrame *frame = currentStackFrame();
+  if (frame != NULL) {
+    frame->document()->bwperim();
   }
 }

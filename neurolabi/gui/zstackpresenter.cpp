@@ -1334,6 +1334,8 @@ bool ZStackPresenter::processKeyPressEventForSwc(QKeyEvent *event)
   case Qt::Key_C:
     if (event->modifiers() == Qt::NoModifier) {
       buddyDocument()->executeConnectSwcNodeCommand();
+    } else if (event->modifiers() == Qt::ShiftModifier) {
+      buddyDocument()->executeSmartConnectSwcNodeCommand();
     }
     break;
   case Qt::Key_B:
@@ -2031,7 +2033,11 @@ void ZStackPresenter::exitSwcExtendMode()
 void ZStackPresenter::enterSwcAddNodeMode(double x, double y)
 {
   interactiveContext().setSwcEditMode(ZInteractiveContext::SWC_EDIT_ADD_NODE);
-  m_stroke.setWidth(6.0);
+  if (GET_APPLICATION_NAME == "FlyEM") {
+    m_stroke.setWidth(1.0);
+  } else {
+    m_stroke.setWidth(6.0);
+  }
   buddyDocument()->mapToDataCoord(&x, &y, NULL);
   m_stroke.set(x, y);
   m_stroke.setEraser(false);

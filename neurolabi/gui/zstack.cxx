@@ -1161,6 +1161,19 @@ bool ZStack::bwsolid()
   return isChanged;
 }
 
+bool ZStack::bwperim()
+{
+  bool isChanged = false;
+  if (isBinary()) {
+    isChanged = singleChannelStack(0)->bwperim();
+    if (isChanged) {
+      deprecateDependent(MC_STACK);
+    }
+  }
+
+  return isChanged;
+}
+
 bool ZStack::enhanceLine()
 {
   bool isChanged = false;

@@ -4,12 +4,12 @@
 #include "c_stack.h"
 #include "zswcconnector.h"
 #include "tz_math.h"
-#include "zstackgraph.h"
 #include "zvoxelarray.h"
 
 ZNeuronTracer::ZNeuronTracer() : m_stack(NULL), m_traceWorkspace(NULL),
   m_connWorkspace(NULL), m_swcConnector(NULL),
-  m_backgroundType(NeuTube::IMAGE_BACKGROUND_DARK)
+  m_backgroundType(NeuTube::IMAGE_BACKGROUND_DARK),
+  m_vertexOption(ZStackGraph::VO_ALL)
 {
   m_swcConnector = new ZSwcConnector;
   m_resolution[0] = 1.0;
@@ -135,10 +135,15 @@ Swc_Tree* ZNeuronTracer::trace(double x1, double y1, double z1, double r1,
 
   ZStackGraph stackGraph;
   stackGraph.setResolution(m_resolution);
-  if (m_backgroundType == NeuTube::IMAGE_BACKGROUND_BRIGHT) {
-    stackGraph.setWeightFunction(Stack_Voxel_Weight);
+
+  if (m_vertexOption == ZStackGraph::VO_SURFACE) {
+    stackGraph.setWeightFunction(Stack_Voxel_Weight_I);
   } else {
-    stackGraph.setWeightFunction(Stack_Voxel_Weight_S);
+    if (m_backgroundType == NeuTube::IMAGE_BACKGROUND_BRIGHT) {
+      stackGraph.setWeightFunction(Stack_Voxel_Weight);
+    } else {
+      stackGraph.setWeightFunction(Stack_Voxel_Weight_S);
+    }
   }
 
   stackGraph.inferWeightParameter(m_stack);
@@ -150,8 +155,8 @@ Swc_Tree* ZNeuronTracer::trace(double x1, double y1, double z1, double r1,
                                          C_Stack::height(m_stack),
                                          C_Stack::depth(m_stack));
 
-  std::vector<int> path =
-      stackGraph.computeShortestPath(m_stack, startIndex, endIndex);
+  std::vector<int> path = stackGraph.computeShortestPath(
+        m_stack, startIndex, endIndex, m_vertexOption);
 
   ZVoxelArray voxelArray;
   for (size_t i = path.size(); i > 0; --i) {

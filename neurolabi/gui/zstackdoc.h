@@ -311,6 +311,7 @@ public:
   bool invert();
   int findLoop(int minLoopSize = 100);
   void bwthin();
+  bool bwperim();
 
   int maxIntesityDepth(int x, int y);
   ZStack* projectBiocytinStack(Biocytin::ZStackProjector &projector);
@@ -581,6 +582,8 @@ public slots: //undoable commands
   bool executeChangeSelectedSwcNodeSize();
   bool executeConnectSwcNodeCommand(Swc_Tree_Node *tn);
   bool executeConnectSwcNodeCommand(Swc_Tree_Node *tn1, Swc_Tree_Node *tn2);
+  bool executeSmartConnectSwcNodeCommand(Swc_Tree_Node *tn1, Swc_Tree_Node *tn2);
+  bool executeSmartConnectSwcNodeCommand();
   bool executeBreakSwcConnectionCommand();
   bool executeAddSwcNodeCommand(const ZPoint &center, double radius);
   bool executeSwcNodeChangeSizeCommand(double dr);

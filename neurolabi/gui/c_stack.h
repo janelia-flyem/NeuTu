@@ -114,6 +114,14 @@ Stack* crop(const Stack *stack, const Cuboid_I &box, Stack *desstack);
 //Crop a stack using its bound box
 Stack* boundCrop(const Stack *stack, int margin = 0);
 
+/*!
+ * \brief Crop a stack using its bound box
+ *
+ * It stores the offset to the original stack in \a offset if \a offset is not
+ * NULL.
+ */
+Stack* boundCrop(const Stack *stack, int margin, int *offset);
+
 Stack* resize(const Stack* stack,int width,int height,int depth);
 Stack* translate(Stack *stack, int kind, int in_place);
 

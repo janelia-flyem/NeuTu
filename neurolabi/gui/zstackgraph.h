@@ -45,6 +45,13 @@ public:
 
 
   /*!
+   * \brief Build a graph of the surface of the objects in the stack
+   * \param stack Must be binary stack. The function does check it.
+   *
+   */
+  ZGraph* buildSurfaceGraph(const Stack *stack);
+
+  /*!
    * \brief Set the mask of the signal
    *
    * The function copies \a mask without owning it.
@@ -90,9 +97,13 @@ public:
   void setWeightFunction(Weight_Func_t f);
 
   //untested
+  enum EVertexOption {
+    VO_ALL, VO_FOREGROUND, VO_SURFACE
+  };
+
   std::vector<int> computeShortestPath(const Stack *stack,
                                        int startIndex, int endIndex,
-                                       bool fgOnly = false);
+                                       EVertexOption option = VO_ALL);
 
   //untested
   void updateRange(size_t startIndex, size_t endIndex,

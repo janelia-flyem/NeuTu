@@ -53,8 +53,9 @@ public:
 
   void set(json_t *data, bool asNew);
   void decodeString(const char *str);
+  void clear();
 
-  void print();
+  void print() const;
 
   /*!
    * \brief Get elements of a JSON array

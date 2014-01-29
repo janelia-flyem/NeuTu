@@ -318,6 +318,8 @@ private slots:
 
   void on_actionSWC_Rescaling_triggered();
 
+  void on_actionSurface_detection_triggered();
+
 private:
   void createActions();
   void customizeActions();
