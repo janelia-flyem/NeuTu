@@ -23,6 +23,7 @@ public:
   static double computeLateralVerticalRatio(const ZSwcTree &tree);
   static std::vector<double> computeFeatureSet(ZSwcTree &tree,
                                                EFeatureSet setName);
+  static int getFeatureNumber(EFeatureSet setName);
 };
 
 #endif // ZSWCGLOBALFEATUREANALYZER_H

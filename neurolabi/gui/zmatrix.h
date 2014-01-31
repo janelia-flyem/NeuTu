@@ -23,6 +23,13 @@ public:
    */
   void clear();
 
+  /*!
+   * \brief Test if the matrix has any element
+   *
+   * \return true iff there is no element in the matrix
+   */
+  bool isEmpty() const;
+
   void setConstant(double value);
   inline void set(int i, int j, double value) { m_data[i][j] = value; }
 
@@ -70,7 +77,39 @@ public:
    *
    * \a return Actual number of values copied.
    */
-  int copyRowValue(int row, int columnStart, int columnEnd, double *data);
+  int copyRowValue(int row, int columnStart, int columnEnd, double *dst);
+
+  /*!
+   * \brief Set the value of a certain row
+   *
+   * Set the row at \a row by the values in \a rowValue, which must have the
+   * same size as the row number.
+   *
+   * \return true iff the row is set successfully.
+   */
+  bool setRowValue(int row, const std::vector<double> &rowValue);
+
+  /*!
+   * \brief Set the value of a certain row
+   *
+   * \param row The target row
+   * \param columnStart Starting position of the row. No negative value is allowed.
+   * \param rowValue Row values. The size must match the number of columns to fill.
+   * \return true if the row is set successfully.
+   */
+  bool setRowValue(int row, int columnStart,
+                   const std::vector<double> &rowValue);
+
+#if 0
+  /*!
+   * \brief Append a row to the end of the matrix
+   *
+   * \param The row of values, which must have the same size as the row number.
+   *
+   * \return true iff the row is appended successfully.
+   */
+  bool appendRow(const std::vector<double> rowValue);
+#endif
 
   /*!
    * \brief Load double array from a file

@@ -50,6 +50,7 @@ public:
 public: /* frame operation */
   ZStackFrame* activeStackFrame();
   ZStackFrame* currentStackFrame();
+  ZFlyEmDataFrame* currentFlyEmDataFrame();
   int frameNumber();
   inline QUndoGroup* undoGroup() const { return m_undoGroup; }
   void initOpenglContext();
@@ -319,6 +320,8 @@ private slots:
   void on_actionSWC_Rescaling_triggered();
 
   void on_actionSurface_detection_triggered();
+
+  void on_actionMorphological_Features_triggered();
 
 private:
   void createActions();

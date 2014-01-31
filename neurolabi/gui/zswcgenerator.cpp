@@ -3,6 +3,7 @@
 #include "swctreenode.h"
 #include "swc/zswcresampler.h"
 #include "flyem/zflyemneuronrangecompare.h"
+#include "zdoublevector.h"
 
 ZSwcGenerator::ZSwcGenerator()
 {
@@ -165,6 +166,31 @@ ZSwcTree* ZSwcGenerator::createRangeCompareSwc(
   return tree;
 }
 
+ZSwcTree* ZSwcGenerator::createSwcByRegionSampling(const ZVoxelArray &voxelArray)
+{
+  size_t startIndex = 0;
+  size_t endIndex = voxelArray.size() - 1;
+
+  Swc_Tree *tree = New_Swc_Tree();
+#if 0
+  ZDoubleVector voxelSizeArray(voxelArray.size());
+
+  //Retrieve voxel size
+
+  std::vector<size_t> indexArray;
+  voxelSizeArray.sort(indexArray);
+
+  for (size_t i = 0; i < voxelSizeArray.size(); ++i) {
+
+  }
+#endif
+
+  ZSwcTree *treeWrapper = new ZSwcTree;
+  treeWrapper->setData(tree);
+
+  return treeWrapper;
+}
+
 ZSwcTree* ZSwcGenerator::createSwc(
     const ZVoxelArray &voxelArray, ZSwcGenerator::EPostProcess option)
 {
@@ -183,9 +209,12 @@ ZSwcTree* ZSwcGenerator::createSwc(
 
   for (size_t i = startIndex + 1; i < endIndex; i++) {
     double dist = voxelArray[i].distanceTo(prevVoxel);
-    bool sampling = false;
-    if (dist > prevVoxel.value()) {
-      sampling = true;
+    bool sampling = true;
+
+    if (option == SPARSE_SAMPLING) {
+      if (dist < prevVoxel.value()) {
+        sampling = false;
+      }
     }
 
     if (sampling) {

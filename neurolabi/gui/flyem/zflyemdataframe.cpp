@@ -30,6 +30,7 @@
 #include "zpunctaobjsmodel.h"
 #include "zflyemneuronpresenter.h"
 #include "zswcnodebufferfeatureanalyzer.h"
+#include "zswcglobalfeatureanalyzer.h"
 #include "mainwindow.h"
 #include <fstream>
 #include "swc/zswcterminalsurfacemetric.h"
@@ -1824,4 +1825,54 @@ void ZFlyEmDataFrame::assignClass(const string &classFile)
   }
 
   getMainWidget()->updateQueryTable();
+}
+
+bool ZFlyEmDataFrame::saveNeuronFeature(
+    const QString &path, bool includingLabel)
+{
+  startProgress();
+  int columnNumber = ZSwcGlobalFeatureAnalyzer::getFeatureNumber(
+        ZSwcGlobalFeatureAnalyzer::NGF1);
+  int columnStart = 0;
+  if (includingLabel) {
+    ++columnNumber;
+    columnStart = 1;
+  }
+
+  ZMatrix featureMatrix(getNeuronNumber(), columnNumber);
+  int row = 0;
+  foreach (ZFlyEmDataBundle *dataBundle, m_dataArray) {
+    std::map<string, int> classIdMap = dataBundle->getClassIdMap();
+    std::vector<ZFlyEmNeuron> &neuronArray = dataBundle->getNeuronArray();
+    for (std::vector<ZFlyEmNeuron>::iterator iter = neuronArray.begin();
+         iter != neuronArray.end(); ++iter) {
+      ZFlyEmNeuron &neuron = *iter;
+      int classLabel = -1;
+      if (classIdMap.count(neuron.getClass()) > 0) {
+        classLabel = classIdMap[neuron.getClass()];
+      }
+      std::vector<double> featureArray =
+          ZSwcGlobalFeatureAnalyzer::computeFeatureSet(
+            *neuron.getModel(), ZSwcGlobalFeatureAnalyzer::NGF1);
+      if (includingLabel) {
+        featureMatrix.set(row, 0, classLabel);
+        columnStart = 0;
+      }
+      if (!featureMatrix.setRowValue(row++, columnStart, featureArray)) {
+        endProgress();
+        return false;
+      }
+      advanceProgress(1.0 / featureMatrix.getRowNumber());
+    }
+  }
+
+  if (!featureMatrix.isEmpty()) {
+    featureMatrix.exportCsv(path.toStdString());
+    endProgress();
+    dump(path + " saved.");
+    return true;
+  }
+
+  endProgress();
+  return false;
 }

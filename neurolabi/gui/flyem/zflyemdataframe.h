@@ -89,6 +89,14 @@ public:
     return (index < m_dataArray.size()) ? m_dataArray[index] : NULL;
   }
 
+  /*!
+   * \brief Compute and save morphological features of all the neurons
+   *
+   * \param includingLabel Add the class label as the first column
+   * \return true iff the file is saved.
+   */
+  bool saveNeuronFeature(const QString &path, bool includingLabel);
+
 signals:
   void volumeTriggered(const QString &path);
   

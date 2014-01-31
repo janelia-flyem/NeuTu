@@ -1661,13 +1661,13 @@ QString MainWindow::getSaveFileName(
 
   if (usingOldFileName) {
     fileName = QFileDialog::getSaveFileName(
-          this, caption, m_lastOpenedFilePath, filter, NULL,
+          this, caption, m_lastOpenedFilePath, filter, NULL
           /*QFileDialog::DontUseNativeDialog |*/
-          QFileDialog::DontConfirmOverwrite);
+          /*QFileDialog::DontConfirmOverwrite*/);
   } else {
     fileName = QFileDialog::getSaveFileName(
           this, caption, QFileInfo(fileName).absoluteDir().canonicalPath(),
-          filter, NULL, QFileDialog::DontConfirmOverwrite);
+          filter, NULL);
   }
   if (!fileName.isEmpty()) {
     QFileInfo fInfo(fileName);
@@ -4291,6 +4291,11 @@ void MainWindow::on_actionSave_SWC_triggered()
   }
 }
 
+ZFlyEmDataFrame* MainWindow::currentFlyEmDataFrame()
+{
+  return dynamic_cast<ZFlyEmDataFrame*>(mdiArea->currentSubWindow());
+}
+
 void MainWindow::on_actionSimilarity_Matrix_triggered()
 {
   ZFlyEmDataFrame *frame =
@@ -4664,5 +4669,19 @@ void MainWindow::on_actionSurface_detection_triggered()
   ZStackFrame *frame = currentStackFrame();
   if (frame != NULL) {
     frame->document()->bwperim();
+  }
+}
+
+void MainWindow::on_actionMorphological_Features_triggered()
+{
+  ZFlyEmDataFrame *frame = currentFlyEmDataFrame();
+  if (frame != NULL) {
+    QString featureFile = getSaveFileName("Save Features", "*.csv", false);
+    if (!featureFile.isEmpty()) {
+      if (!frame->saveNeuronFeature(featureFile, true)) {
+        report("Save Failed", "Unable to save the features.",
+               ZMessageReporter::Warning);
+      }
+    }
   }
 }

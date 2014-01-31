@@ -14,7 +14,7 @@ public:
   ZSwcGenerator();
 
   enum EPostProcess {
-    OPTIMAL_SAMPLING, NO_PROCESS
+    OPTIMAL_SAMPLING, SPARSE_SAMPLING, REGION_SAMPLING, NO_PROCESS
   };
 
   static ZSwcTree* createVirtualRootSwc();
@@ -28,6 +28,9 @@ public:
 
   static ZSwcTree* createSwc(const ZVoxelArray &voxelArray,
                              EPostProcess option = NO_PROCESS);
+
+private:
+  static ZSwcTree* createSwcByRegionSampling(const ZVoxelArray &voxelArray);
 };
 
 #endif // ZSWCGENERATOR_H

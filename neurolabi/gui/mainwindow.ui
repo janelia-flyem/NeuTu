@@ -280,6 +280,7 @@
       <addaction name="actionSimilarity_Matrix"/>
       <addaction name="actionDendrogram"/>
       <addaction name="actionAssign_Clustering"/>
+      <addaction name="actionMorphological_Features"/>
      </widget>
      <addaction name="actionExtract_Neuron"/>
      <addaction name="actionSkeletonization"/>
@@ -1032,6 +1033,11 @@
   <action name="actionSurface_detection">
    <property name="text">
     <string>Surface Detection</string>
+   </property>
+  </action>
+  <action name="actionMorphological_Features">
+   <property name="text">
+    <string>Morphological Features</string>
    </property>
   </action>
  </widget>

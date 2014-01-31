@@ -16,6 +16,18 @@ double ZSwcGlobalFeatureAnalyzer::computeLateralVerticalRatio(
       box.depth();
 }
 
+int ZSwcGlobalFeatureAnalyzer::getFeatureNumber(EFeatureSet setName)
+{
+  switch (setName) {
+  case NGF1:
+    return 9;
+  default:
+    return 0;
+  }
+
+  return 0;
+}
+
 //Number of leaves, number of branch points,
 //box volume, maximum segment length, maximum path length
 //average radius
