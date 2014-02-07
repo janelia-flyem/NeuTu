@@ -64,7 +64,7 @@ ZStack::ZStack(Mc_Stack *stack, C_Stack::Mc_Stack_Deallocator *dealloc)
 
 ZStack::~ZStack()
 {
-  clean();
+  clear();
 }
 
 size_t ZStack::getByteNumber(EStackUnit unit) const
@@ -400,7 +400,7 @@ bool ZStack::isDeprecated(EComponent component) const
   return false;
 }
 
-void ZStack::clean()
+void ZStack::clear()
 {
   deprecate(ZStack::MC_STACK);
 
@@ -466,22 +466,6 @@ void ZStack::removeChannel(int c)
   }
 }
 
-/*
-void ZStack::cleanChannel(int c)
-{
-  if (m_singleChannelStackVector[c] != NULL) {
-    delete m_singleChannelStackVector[c];
-    m_singleChannelStackVector[c] = NULL;
-  }
-}
-
-void ZStack::removeChannel(int c)
-{
-  cleanChannel(c);
-  m_singleChannelStackVector.erase(m_singleChannelStackVector.begin()+c);
-}
-*/
-
 bool ZStack::load(Stack *stack, bool isOwner)
 {
   deprecate(MC_STACK);
@@ -515,24 +499,6 @@ bool ZStack::load(Stack *stack, bool isOwner)
     }
   }
 
-  /*
-  clean();
-  if (stack->kind == COLOR) {
-    init(3);
-    Stack *stack0 = Stack_Channel_Extraction(stack, 0, NULL);
-    m_singleChannelStackVector[0] = new ZSingleChannelStack(stack0, true);
-    Stack *stack1 = Stack_Channel_Extraction(stack, 1, NULL);
-    m_singleChannelStackVector[1] = new ZSingleChannelStack(stack1, true);
-    Stack *stack2 = Stack_Channel_Extraction(stack, 2, NULL);
-    m_singleChannelStackVector[2] = new ZSingleChannelStack(stack2, true);
-    if (isOwner) {
-      Kill_Stack(stack);
-    }
-  } else {
-    init(1);
-    m_singleChannelStackVector[0] = new ZSingleChannelStack(stack, isOwner);
-  }
-  */
   return true;
 }
 
@@ -548,31 +514,6 @@ bool ZStack::load(const string &filepath)
     res->setSource(filepath);
 
   return res;
-
-  /*
-  if (!filepath.empty()) {
-    clean();
-    int nchannel = getChannelNumber(filepath.c_str());
-    if (nchannel > 0) {
-      init(nchannel);
-      for (int i=0; i<nchannel; i++) {
-        Stack *stack = Read_Sc_Stack(filepath.c_str(), i);
-        m_singleChannelStackVector[i] = new ZSingleChannelStack(stack, true);
-      }
-      setSource(filepath);
-    } else { //try other method
-      Stack *stack = Read_Stack_U(filepath.c_str());
-      if (stack != NULL) {
-        load(stack, true);
-        setSource(filepath);
-      } else {
-        return false;
-      }
-    }
-    getLSMInfo(QString::fromStdString(filepath));
-    return true;
-  }
-*/
 }
 
 bool ZStack::load(const Stack *ch1, const Stack *ch2, const Stack *ch3)
@@ -631,16 +572,6 @@ void ZStack::setSource(Stack_Document *stackDoc)
 
 void ZStack::setResolution(double x, double y, double z, char unit)
 {
-  /*
-  if (m_source == NULL) {
-    m_source = New_Stack_Document();
-  }
-
-  m_source->resolution[0] = x;
-  m_source->resolution[1] = y;
-  m_source->resolution[2] = z;
-  m_source->unit = unit;
-  */
   m_resolution.setVoxelSize(x, y, z);
   m_resolution.setUnit(unit);
   m_preferredZScale = z / (.5 * (x + y));
@@ -1205,9 +1136,9 @@ Stack *ZStack::copyChannel(int c)
   return out;
 }
 
-const char* ZStack::sourcePath() const
+std::string ZStack::sourcePath() const
 {
-  return m_source.firstUrl().c_str();
+  return m_source.firstUrl();
 }
 
 bool ZStack::isEmpty() const
@@ -1286,6 +1217,7 @@ ZStack* ZStack::clone() const
   stack->m_resolution = m_resolution;
   stack->m_preferredZScale = m_preferredZScale;
   stack->m_source = m_source;
+  stack->m_offset = m_offset;
 
   return stack;
 }

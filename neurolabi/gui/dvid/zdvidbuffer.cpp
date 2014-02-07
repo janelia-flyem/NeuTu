@@ -9,7 +9,7 @@ ZDvidBuffer::ZDvidBuffer(ZDvidClient *parent) :
 
 ZDvidBuffer::~ZDvidBuffer()
 {
-
+  clear();
 }
 
 void ZDvidBuffer::importSparseObject()
@@ -31,8 +31,27 @@ void ZDvidBuffer::importSwcTree()
   }
 }
 
+void ZDvidBuffer::importImage()
+{
+  if (m_dvidClient != NULL) {
+    ZStack *image = m_dvidClient->getImage().clone();
+    m_imageArray.append(image);
+
+    qDebug() << "Emitting dataTransfered from importImage()";
+    emit dataTransfered();
+  }
+}
+
 void ZDvidBuffer::clear()
 {
   m_bodyArray.clear();
+  foreach (ZSwcTree *tree, m_swcTreeArray) {
+    delete tree;
+  }
   m_swcTreeArray.clear();
+
+  foreach (ZStack *stack, m_imageArray) {
+    delete stack;
+  }
+  m_imageArray.clear();
 }

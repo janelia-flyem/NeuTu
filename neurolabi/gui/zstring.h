@@ -79,6 +79,12 @@ public:
   static bool isAbsolutePath(const std::string &path);
   static std::string absolutePath(const std::string &dir,
                                   const std::string &relative);
+  /*!
+   * \brief Get the relative path
+   */
+  static std::string relativePath(
+      const std::string &path, const std::string &reference);
+
   static std::string fullPath(const std::string &dir, const std::string &fname,
                               const std::string &ext);
   static std::string fullPath(const std::vector<std::string> &parts);
@@ -87,6 +93,15 @@ public:
 
   ZString absolutePath(const std::string &dir) const;
   std::vector<std::string> fileParts() const;
+
+  /*!
+   * \brief Decompose a file path into node parts
+   *
+   * Example: "/home/test/data/test.tif" is decomposed into
+   * {"/", "home", "test", "data", "test.tif"}
+   */
+  std::vector<std::string> decomposePath() const;
+
   ZString toFileExt();
   ZString toFileName();
 

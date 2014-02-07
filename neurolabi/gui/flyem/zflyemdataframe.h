@@ -171,8 +171,10 @@ private:
   QProgressBar* getProgressBar();
 
 private:
+  //Main data
   QVector<ZFlyEmDataBundle*> m_dataArray;
   
+  //View
   FlyEmDataForm *m_centralWidget;
 
   //parsing results

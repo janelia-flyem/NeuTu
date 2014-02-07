@@ -89,6 +89,7 @@
 #include "zpunctum.h"
 #include "zswcsizetrunkanalyzer.h"
 #include "zswcweighttrunkanalyzer.h"
+#include "zstackbinarizer.h"
 #include "zdebug.h"
 #include "tz_color.h"
 #include "zhdf5reader.h"
@@ -157,10 +158,13 @@
 #include "test/zswcmetrictest.h"
 #include "test/zmatrixtest.h"
 #include "test/zstacktest.h"
+#include "zswcgenerator.h"
+#include "test/zswcgeneratortest.h"
 
 using namespace std;
 
 ostream& ZTest::m_failureStream = cerr;
+
 
 ZTest::ZTest()
 {
@@ -10278,7 +10282,7 @@ void ZTest::test(MainWindow *host)
   obj.save(GET_DATA_DIR + "/benchmark/pile.sobj");
 #endif
 
-#if 1
+#if 0
   ZMatlabProcess matlabProcess;
   if (matlabProcess.findMatlab()) {
     matlabProcess.setWorkDir("/tmp/matlab");
@@ -10289,4 +10293,45 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
+#if 0
+  ZStackBinarizer binarizer;
+  binarizer.setThreshold(8);
+  binarizer.setMethod(ZStackBinarizer::BM_ONE_SIGMA);
+  binarizer.setRetryCount(3);
+  binarizer.setMinObjectSize(5);
+
+  Stack *stack = C_Stack::readSc(GET_DATA_DIR + "/system/mouse_neuron_single/stack.tif");
+  if (!binarizer.binarize(stack)) {
+    std::cout << "Binarization failed" << std::endl;
+  }
+  C_Stack::write(GET_DATA_DIR + "/test.tif", stack);
+#endif
+
+#if 0
+   Stack *stack = C_Stack::readSc(GET_DATA_DIR + "/system/mouse_neuron_single/stack.tif");
+   std::cout << Stack_Var(stack) << std::endl;
+#endif
+
+#if 0
+  ZString str("data/testffa/test.tif/");
+  std::vector<std::string> parts = str.decomposePath();
+  for (size_t i = 0; i < parts.size(); ++i) {
+    std::cout << parts[i] << " || ";
+  }
+  std::cout << std::endl;
+#endif
+
+#if 0
+  std::cout << ZString::relativePath(GET_DATA_DIR + "/test/test.tif", GET_DATA_DIR + "/benchmark")
+               << std::endl;
+#endif
+
+#if 1
+  ZSwcTree tree;
+  tree.load(GET_DATA_DIR + "/test.swc");
+  ZStack stack(GREY, 512, 512, 60, 1);
+  stack.setZero();
+  tree.labelStack(stack.c_stack());
+  stack.save(GET_DATA_DIR + "/test.tif");
+#endif
 }

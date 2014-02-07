@@ -35,6 +35,9 @@ class PenWidthDialog;
 class ZDvidClient;
 class DvidObjectDialog;
 class ResolutionDialog;
+class DvidImageDialog;
+class TileManagerDialog;
+class ZTiledStackFrame;
 
 namespace Ui {
     class MainWindow;
@@ -51,6 +54,7 @@ public: /* frame operation */
   ZStackFrame* activeStackFrame();
   ZStackFrame* currentStackFrame();
   ZFlyEmDataFrame* currentFlyEmDataFrame();
+  ZTiledStackFrame* currentTiledStackFrame();
   int frameNumber();
   inline QUndoGroup* undoGroup() const { return m_undoGroup; }
   void initOpenglContext();
@@ -323,6 +327,14 @@ private slots:
 
   void on_actionMorphological_Features_triggered();
 
+  void on_actionFeature_Selection_triggered();
+
+  void on_actionGet_Grayscale_triggered();
+
+  void on_actionTile_Manager_2_triggered();
+
+  void on_actionTiles_triggered();
+
 private:
   void createActions();
   void customizeActions();
@@ -493,6 +505,8 @@ private:
   ZDvidClient *m_dvidClient;
   ZStackFrame *m_dvidFrame;
   DvidObjectDialog *m_dvidObjectDlg;
+  DvidImageDialog *m_dvidImageDlg;
+  TileManagerDialog *m_tileDlg;
 };
 
 #endif // MAINWINDOW_H

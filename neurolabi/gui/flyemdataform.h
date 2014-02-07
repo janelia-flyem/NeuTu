@@ -3,6 +3,7 @@
 
 #include <QWidget>
 #include <QProgressBar>
+#include <QImage>
 
 #include "flyem/zflyemneuronlistmodel.h"
 #include "zprogressable.h"
@@ -11,6 +12,9 @@
 class ZFlyEmNeuronPresenter;
 class QStatusBar;
 class QMenu;
+class ZFlyEmDataFrame;
+class ZFlyEmQueryView;
+class ZImageWidget;
 
 namespace Ui {
 class FlyEmDataForm;
@@ -36,6 +40,8 @@ public:
 
   inline void setStatusBar(QStatusBar *bar) { m_statusBar = bar; }
 
+  ZFlyEmDataFrame* getParentFrame() const;
+
   /*!
    * \brief Create all context menus
    */
@@ -50,6 +56,8 @@ public:
    * \brief Update the view of query table
    */
   void updateQueryTable();
+
+  void updateSlaveQueryTable();
 
 signals:
   void showSummaryTriggered();
@@ -84,6 +92,8 @@ private slots:
   void viewModel(const QModelIndex &index);
   void showSelectedModel();
   void showNearbyNeuron();
+  void updateSlaveQuery(const QModelIndex &index);
+  void showSecondarySelectedModel();
 
   /*!
    * \brief Change class of selected neurons
@@ -108,8 +118,12 @@ private slots:
   void on_exportPushButton_clicked();
 
 private:
+  void showViewSelectedModel(ZFlyEmQueryView *view);
+
+private:
   Ui::FlyEmDataForm *ui;
   ZFlyEmNeuronListModel *m_neuronList;
+  ZFlyEmNeuronListModel *m_secondaryNeuronList;
   QStatusBar *m_statusBar;
 
   QMenu *m_neuronContextMenu;
@@ -117,7 +131,13 @@ private:
   QAction *m_changeClassAction;
   QAction *m_neighborSearchAction;
 
+  QMenu *m_secondaryNeuronContextMenu;
+  QAction *m_showSecondarySelectedModelAction;
+
   ZQtBarProgressReporter m_specialProgressReporter;
+
+  QImage *m_thumbnailImage;
+  ZImageWidget *m_thumbnailWidget;
 };
 
 #endif // FLYEMDATAFORM_H

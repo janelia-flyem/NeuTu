@@ -180,3 +180,23 @@ Swc_Tree* ZNeuronTracer::trace(double x1, double y1, double z1, double r1,
 
   return voxelArray.toSwcTree();
 }
+
+ZSwcTree* ZNeuronTracer::trace(Stack *stack)
+{
+  ZSwcTree *tree = NULL;
+
+  //Extract seeds
+
+  //Trace each seed
+
+  //Subtract skeleton mask
+
+  //If there is any skeleton signal left
+    //Trace again without position adjust
+
+  //Post process
+
+  //Create neuron structure
+
+  return tree;
+}

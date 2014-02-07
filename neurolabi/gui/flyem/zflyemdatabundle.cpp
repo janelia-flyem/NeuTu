@@ -486,10 +486,13 @@ void ZFlyEmDataBundle::exportJsonFile(const string &path) const
   json_t *neuronArray = C_Json::makeArray();
   ZJsonArray neuronArrayWrapper(neuronArray, false);
 
+  string exportDir = ZString::dirPath(path);
+
   //Add each neuron
   for (std::vector<ZFlyEmNeuron>::const_iterator iter = m_neuronArray.begin();
        iter != m_neuronArray.end(); ++iter) {
-    neuronArrayWrapper.append(iter->makeJsonObject());
+    const ZFlyEmNeuron &neuron = *iter;
+    neuronArrayWrapper.append(neuron.makeJsonObject(exportDir));
   }
 
 #ifdef _DEBUG_

@@ -16,6 +16,7 @@
 #include "ui_flyemdataform.h"
 #include "flyem/zflyemdataframe.h"
 #include "flyem/zflyemstackframe.h"
+#include "zimagewidget.h"
 
 FlyEmDataForm::FlyEmDataForm(QWidget *parent) :
   QWidget(parent),
@@ -24,12 +25,18 @@ FlyEmDataForm::FlyEmDataForm(QWidget *parent) :
   m_neuronContextMenu(NULL),
   m_showSelectedModelAction(NULL),
   m_changeClassAction(NULL),
-  m_neighborSearchAction(NULL)
+  m_neighborSearchAction(NULL),
+  m_secondaryNeuronContextMenu(NULL),
+  m_showSecondarySelectedModelAction(NULL)
 {
   ui->setupUi(this);
+  ui->slaveQueryView->setParent(ui->InformationTab->widget(1));
+
   ui->progressBar->hide();
   m_neuronList = new ZFlyEmNeuronListModel(this);
   ui->queryView->setModel(m_neuronList);
+  m_secondaryNeuronList = new ZFlyEmNeuronListModel(this);
+  ui->slaveQueryView->setModel(m_secondaryNeuronList);
   ui->queryView->setSelectionMode(QAbstractItemView::ExtendedSelection);
   connect(ui->queryView, SIGNAL(doubleClicked(QModelIndex)),
           this, SLOT(assignClass(QModelIndex)));
@@ -37,6 +44,8 @@ FlyEmDataForm::FlyEmDataForm(QWidget *parent) :
           this, SLOT(updateStatusBar(QModelIndex)));
   connect(ui->queryView, SIGNAL(clicked(QModelIndex)),
           this, SLOT(updateInfoWindow(QModelIndex)));
+  connect(ui->queryView, SIGNAL(clicked(QModelIndex)),
+          this, SLOT(updateSlaveQuery(QModelIndex)));
 
   //customize
   ui->testPushButton->hide();
@@ -45,15 +54,24 @@ FlyEmDataForm::FlyEmDataForm(QWidget *parent) :
   createAction();
   createContextMenu();
   ui->queryView->setContextMenu(m_neuronContextMenu);
+  ui->slaveQueryView->setContextMenu(m_secondaryNeuronContextMenu);
 
   m_specialProgressReporter.setProgressBar(ui->progressBar);
   setProgressReporter(&m_specialProgressReporter);
 
   setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+
+  m_thumbnailImage = new QImage;
+  m_thumbnailImage->load(":/images/hideobj.png");
+  m_thumbnailWidget = new ZImageWidget(ui->thumnailContainer, m_thumbnailImage);
+  m_thumbnailWidget->setProjRegion(
+        QRect(QPoint(0, 0), ui->thumnailContainer->size()));
+
 }
 
 FlyEmDataForm::~FlyEmDataForm()
 {
+  delete m_thumbnailImage;
   delete ui;
 }
 
@@ -166,6 +184,33 @@ void FlyEmDataForm::updateInfoWindow(const QModelIndex &index)
   }
 }
 
+ZFlyEmDataFrame* FlyEmDataForm::getParentFrame() const
+{
+  return dynamic_cast<ZFlyEmDataFrame*>(this->parentWidget());
+}
+
+void FlyEmDataForm::updateSlaveQuery(const QModelIndex &index)
+{
+  ZFlyEmDataFrame *frame = getParentFrame();
+  if (frame != NULL) {
+    if (m_neuronList->getColumnName(index.column()) == "Class") {
+      const ZFlyEmNeuron *neuron = m_neuronList->getNeuron(index.row());
+      if (neuron->hasClass()) {
+        m_secondaryNeuronList->clear();
+        ZFlyEmDataBundle *bundle = frame->getDataBundle();
+        std::vector<ZFlyEmNeuron> &neuronArray = bundle->getNeuronArray();
+        for (std::vector<ZFlyEmNeuron>::iterator iter = neuronArray.begin();
+             iter != neuronArray.end(); ++iter) {
+          ZFlyEmNeuron &buddyNeuron = *iter;
+          if (buddyNeuron.getClass() == neuron->getClass()) {
+            m_secondaryNeuronList->append(&buddyNeuron);
+          }
+        }
+      }
+    }
+  }
+}
+
 void FlyEmDataForm::assignClass(const QModelIndex &index)
 {
   if (index.row() > m_neuronList->rowCount()) {
@@ -250,13 +295,13 @@ void FlyEmDataForm::viewModel(const QModelIndex &index)
   ui->progressBar->hide();
 }
 
-void FlyEmDataForm::showSelectedModel()
+void FlyEmDataForm::showViewSelectedModel(ZFlyEmQueryView *view)
 {
   ui->progressBar->setValue(50);
   ui->progressBar->show();
   QApplication::processEvents();
 
-  QItemSelectionModel *sel = ui->queryView->selectionModel();
+  QItemSelectionModel *sel = view->selectionModel();
 
 #ifdef _DEBUG_2
   appendOutput(QString("%1 rows selected").arg(sel->selectedIndexes().size()).toStdString());
@@ -264,7 +309,7 @@ void FlyEmDataForm::showSelectedModel()
 
   ZStackFrame *frame = new ZStackFrame;
 
-  m_neuronList->retrieveModel(sel->selectedIndexes(), frame->document().get());
+  view->getModel()->retrieveModel(sel->selectedIndexes(), frame->document().get());
   ui->progressBar->setValue(75);
   QApplication::processEvents();
 
@@ -272,6 +317,16 @@ void FlyEmDataForm::showSelectedModel()
   delete frame;
 
   ui->progressBar->hide();
+}
+
+void FlyEmDataForm::showSelectedModel()
+{
+  showViewSelectedModel(ui->queryView);
+}
+
+void FlyEmDataForm::showSecondarySelectedModel()
+{
+  showViewSelectedModel(ui->slaveQueryView);
 }
 
 void FlyEmDataForm::on_showModelPushButton_clicked()
@@ -350,6 +405,11 @@ void FlyEmDataForm::createContextMenu()
     m_neuronContextMenu->addAction(m_changeClassAction);
     m_neuronContextMenu->addAction(m_neighborSearchAction);
   }
+
+  if (m_secondaryNeuronContextMenu == NULL) {
+    m_secondaryNeuronContextMenu = new QMenu(this);
+    m_secondaryNeuronContextMenu->addAction(m_showSecondarySelectedModelAction);
+  }
 }
 
 void FlyEmDataForm::createAction()
@@ -358,6 +418,12 @@ void FlyEmDataForm::createAction()
     m_showSelectedModelAction = new QAction("Show Model", this);
     connect(m_showSelectedModelAction, SIGNAL(triggered()),
             this, SLOT(showSelectedModel()));
+  }
+
+  if (m_showSecondarySelectedModelAction == NULL) {
+    m_showSecondarySelectedModelAction = new QAction("Show Model", this);
+    connect(m_showSecondarySelectedModelAction, SIGNAL(triggered()),
+            this, SLOT(showSecondarySelectedModel()));
   }
 
   if (m_changeClassAction == NULL) {
@@ -390,4 +456,9 @@ void FlyEmDataForm::showNearbyNeuron()
 void FlyEmDataForm::updateQueryTable()
 {
   m_neuronList->notifyAllDataChanged();
+}
+
+void FlyEmDataForm::updateSlaveQueryTable()
+{
+  m_secondaryNeuronList->notifyAllDataChanged();
 }

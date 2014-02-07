@@ -3,6 +3,7 @@
 #include <iostream>
 #include <QMenu>
 #include <QContextMenuEvent>
+#include "flyem/zflyemneuronlistmodel.h"
 
 ZFlyEmQueryView::ZFlyEmQueryView(QWidget *parent) :
   QTableView(parent), m_contextMenu(NULL)
@@ -25,4 +26,9 @@ void ZFlyEmQueryView::mousePressEvent(QMouseEvent *event)
   if(event->button() == Qt::LeftButton) {
     QTableView::mousePressEvent(event);
   }
+}
+
+ZFlyEmNeuronListModel* ZFlyEmQueryView::getModel() const
+{
+  return dynamic_cast<ZFlyEmNeuronListModel*>(model());
 }

@@ -15,6 +15,7 @@
 #include "zswctree.h"
 #include "zprogressable.h"
 #include "zdvidrequest.h"
+#include "zstack.hxx"
 
 class ZDvidBuffer;
 
@@ -46,6 +47,7 @@ public:
 
   inline const ZObject3dScan& getObject() const { return m_obj; }
   inline const ZSwcTree& getSwcTree() const { return m_swcTree; }
+  inline const ZStack& getImage() const { return m_image; }
 
   inline ZDvidBuffer* getDvidBuffer() const { return m_dvidBuffer; }
 
@@ -57,6 +59,7 @@ public:
 signals:
   void objectRetrieved();
   void swcRetrieved();
+  void imageRetrieved();
   void noRequestLeft();
 
 public slots:
@@ -67,6 +70,7 @@ private slots:
   void finishRequest(QNetworkReply::NetworkError error = QNetworkReply::NoError);
   void readObject();
   void readSwc();
+  void readImage();
   void cancelRequest();
 
 private:
@@ -84,13 +88,16 @@ private:
 
   ZObject3dScan m_obj;
   ZSwcTree m_swcTree;
+  ZStack m_image;
   QByteArray m_objectBuffer;
   QByteArray m_swcBuffer;
+  QByteArray m_imageBuffer;
 
   QIODevice *m_uploadStream;
 
   ZDvidBuffer *m_dvidBuffer;
   QQueue<ZDvidRequest> m_requestQueue;
+  QVariant m_currentRequestParameter;
 
   bool m_isCanceling;
   //int m_requestIndex;

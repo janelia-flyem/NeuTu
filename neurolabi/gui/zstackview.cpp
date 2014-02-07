@@ -828,7 +828,7 @@ void ZStackView::mouseRolledInImageWidget(QWheelEvent *event)
           (newPos <= m_depthControl->maximum())) {
         m_depthControl->setValue(newPos);
       }
-      QPoint pos = imageWidget()->canvasCoordinate(event->pos());
+      QPointF pos = imageWidget()->canvasCoordinate(event->pos());
       int z = sliceIndex();
       if (buddyPresenter()->interactiveContext().isProjectView()) {
         z = -1;

@@ -57,7 +57,9 @@ ZFlyEmDataFrame::ZFlyEmDataFrame(QWidget *parent) :
     form->setStatusBar(mainWindow->statusBar());
   }
 
+  //The parent of form becomes this
   setWidget(form);
+
   connect(form, SIGNAL(showSummaryTriggered()), this, SLOT(showSummary()));
   connect(form, SIGNAL(saveBundleTriggered(int,QString)),
           this, SLOT(saveBundle(int, QString)));
@@ -1856,7 +1858,6 @@ bool ZFlyEmDataFrame::saveNeuronFeature(
             *neuron.getModel(), ZSwcGlobalFeatureAnalyzer::NGF1);
       if (includingLabel) {
         featureMatrix.set(row, 0, classLabel);
-        columnStart = 0;
       }
       if (!featureMatrix.setRowValue(row++, columnStart, featureArray)) {
         endProgress();

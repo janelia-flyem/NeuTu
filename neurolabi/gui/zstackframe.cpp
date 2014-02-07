@@ -30,6 +30,8 @@
 #include "zobject3dscan.h"
 #include "tz_stack_math.h"
 #include "z3dcompositor.h"
+#include "zstring.h"
+#include "biocytin/zbiocytinfilenameparser.h"
 
 using namespace std;
 
@@ -254,8 +256,8 @@ void ZStackFrame::loadStack(ZStack *stack)
 
 void ZStackFrame::prepareDisplay()
 {
-  setWindowTitle(document()->stackSourcePath());
-  m_statusInfo =  QString("%1 loaded").arg(document()->stackSourcePath());
+  setWindowTitle(document()->stackSourcePath().c_str());
+  m_statusInfo =  QString("%1 loaded").arg(document()->stackSourcePath().c_str());
   m_presenter->optimizeStackBc();
   m_view->reset();
 }
@@ -632,7 +634,8 @@ QString ZStackFrame::briefInfo() const
 QString ZStackFrame::info() const
 {
   if ((document() != NULL) && view() != NULL) {
-    QString info = document()->stack()->sourcePath() +
+    QString info = document()->stack()->sourcePath().c_str();
+    info +=
       QString("\n %1 x %2 => %3 x %4").arg(document()->stack()->width()).
       arg(document()->stack()->height()).
       arg(view()->imageWidget()->screenSize().width()).
@@ -1410,6 +1413,32 @@ void ZStackFrame::autoBcAdjust()
   }
   document()->endProgress();
   updateView();
+}
+
+void ZStackFrame::loadRoi()
+{
+  if (!document()->stackSourcePath().empty()) {
+    ZString sourcePath = document()->stackSourcePath();
+
+    ZString suffix =
+        ZBiocytinFileNameParser::getSuffix(ZBiocytinFileNameParser::ROI);
+
+    sourcePath = sourcePath.dirPath() + ZString::FileSeparator +
+        ZBiocytinFileNameParser::getCoreName(sourcePath);
+
+    QFileInfo fileInfo((sourcePath + suffix + ".tif").c_str());
+    if (!fileInfo.exists()) {
+      fileInfo.setFile(
+            (sourcePath + static_cast<const ZString&>(suffix).toLower() + ".tif").c_str());
+    } else if (!fileInfo.exists()) {
+      fileInfo.setFile(
+            (sourcePath + static_cast<const ZString&>(suffix).toUpper() + ".tif").c_str());
+    }
+
+    if (fileInfo.exists()) {
+      loadRoi(fileInfo.absoluteFilePath());
+    }
+  }
 }
 
 void ZStackFrame::loadRoi(const QString &filePath)

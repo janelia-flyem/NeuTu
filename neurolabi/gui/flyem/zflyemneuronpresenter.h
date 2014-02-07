@@ -29,6 +29,8 @@ public:
     presentingBundleIndex = enabled;
   }
 
+  const QString& getColumnName(int index) const;
+
 protected:
   QString getIdString(const ZFlyEmNeuron &neuron) const;
 
@@ -38,6 +40,7 @@ public slots:
 
 protected:
   QVector<QString> m_fieldList;
+  QString m_emptyField;
   bool presentingBundleIndex;
 };
 

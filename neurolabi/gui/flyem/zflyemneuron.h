@@ -46,6 +46,13 @@ public:
    */
   json_t* makeJsonObject() const;
 
+  /*!
+   * \brief Make a json object from the neuron.
+   *
+   * The file paths associated with the neuron are converted into relative path.
+   */
+  json_t* makeJsonObject(const std::string &bundleDir) const;
+
   inline void setId(int id) {
     m_id = id;
   }
@@ -67,6 +74,12 @@ public:
     return m_class;
   }
 
+  /*!
+   * \brief hasClass
+   * \return true if the neuron has been assigned to a class
+   */
+  bool hasClass() const;
+
   void setId(const std::string &str);
 
   inline int getId() const { return m_id; }
@@ -83,6 +96,10 @@ public:
 
   inline const std::string& getVolumePath() const {
     return m_volumePath;
+  }
+
+  inline const std::string& getThumbnailPath() const {
+    return m_thumbnailPath;
   }
 
   ZSwcTree *getModel(const std::string &bundleSource = "") const;
@@ -190,6 +207,7 @@ private:
   std::string m_class;
   std::string m_modelPath;
   std::string m_volumePath;
+  std::string m_thumbnailPath;
   double m_resolution[3]; //Resolution of the swc file saved as m_modelPath
                           //The swc file and volume file must have the same
                           //resolution

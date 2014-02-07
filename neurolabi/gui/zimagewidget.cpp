@@ -437,16 +437,18 @@ QSize ZImageWidget::canvasSize() const
 }
 
 
-QPoint ZImageWidget::canvasCoordinate(QPoint widgetCoord) const
+QPointF ZImageWidget::canvasCoordinate(QPoint widgetCoord) const
 {
   QSize csize = projectSize();
   //QSize isize = canvasSize();
 
-  QPoint pt;
+  QPointF pt;
 
   if (csize.width() > 0 && csize.height() > 0) {
-    pt.setX(widgetCoord.x() * (m_viewPort.width())/ (csize.width()) + m_viewPort.left());
-    pt.setY(widgetCoord.y() * (m_viewPort.height())/ (csize.height()) + m_viewPort.top());
+    pt.setX(static_cast<double>(widgetCoord.x() * (m_viewPort.width()))/
+            (csize.width()) + m_viewPort.left() - 0.5);
+    pt.setY(static_cast<double>(widgetCoord.y() * (m_viewPort.height()))/
+            (csize.height()) + m_viewPort.top() - 0.5);
   }
   /*
   pt.setX(Raster_Linear_Map(widgetCoord.x(), 0, csize.width(),
@@ -539,4 +541,9 @@ double ZImageWidget::getActualOffsetY() const
   return static_cast<double>(
         m_viewPort.top() * m_projRegion.bottom() -
         m_viewPort.bottom() * m_projRegion.top()) / m_viewPort.height();
+}
+
+void ZImageWidget::updateView()
+{
+  update(QRect(QPoint(0, 0), screenSize()));
 }

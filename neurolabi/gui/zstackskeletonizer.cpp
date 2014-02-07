@@ -202,7 +202,7 @@ ZSwcTree* ZStackSkeletonizer::makeSkeleton(const Stack *stack)
         //(*iter).labelStack(stackData, 255.0);
 
         ZSwcTree *branchWrapper =
-            ZSwcGenerator::createSwc(*iter, ZSwcGenerator::SPARSE_SAMPLING);
+            ZSwcGenerator::createSwc(*iter, ZSwcGenerator::REGION_SAMPLING);
         Swc_Tree *branch  = branchWrapper->data();
         branchWrapper->setData(branch, ZSwcTree::LEAVE_ALONE);
         branchWrapper->translate(objectOffset[0], objectOffset[1],

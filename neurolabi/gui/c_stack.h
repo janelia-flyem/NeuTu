@@ -69,7 +69,6 @@ inline void cppDelete(Stack *stack) { delete stack; }
  */
 Stack* clone(const Stack *stack);
 
-//Copy is essentially the same as <clone>. But <clone> is preferred.
 //Stack* copy(const Stack *stack);
 void copyValue(const Stack *src, Stack *dst);
 void copyPlaneValue(Stack *stack, void *array, int slice);
@@ -95,6 +94,10 @@ inline size_t area(const Stack *stack) {
 
 size_t voxelNumber(const Stack *stack);
 
+inline size_t allByteNumber(const Stack *stack) {
+  return planeByteNumber(stack) * depth(stack) * kind(stack);
+}
+
 //Voxel access
 inline uint8_t* array8(const Stack *stack) { return (uint8_t*) stack->array; }
 double value(const Stack *stack, size_t index);
@@ -103,6 +106,17 @@ void setPixel(Stack *stack, int x, int y, int z, int c, double v);
 void setZero(Stack *stack);
 Stack sliceView(const Stack *stack, int slice);
 Stack* channelExtraction(const Stack *stack, int channel);
+/*!
+ * \brief Set values of a stack by memory copying
+ *
+ * \param stack Target stack.
+ * \param offset Start of the stack buffer for assignment
+ * \param buffer Source buffer
+ * \param length Size of the source buffer
+ *
+ * \return true if the values are set successfully
+ */
+bool setValue(Stack *stack, size_t offset, const void *buffer, size_t length);
 
 //Stack manipulation
 //Crop a stack
@@ -170,7 +184,7 @@ inline size_t elementNumber(const Mc_Stack *stack) {
 }
 
 inline size_t allByteNumber(const Mc_Stack *stack) {
-  return volumeByteNumber(stack) * kind(stack);
+  return volumeByteNumber(stack);
 }
 
 void setAttribute(Mc_Stack *stack, int kind, int width, int height, int depth,

@@ -513,7 +513,7 @@ bool ZStackPresenter::hasObjectToShow() const
   return false;
 }
 
-const QPoint ZStackPresenter::stackPositionFromMouse(MouseButtonAction mba)
+const QPointF ZStackPresenter::stackPositionFromMouse(MouseButtonAction mba)
 {
   int x, y;
   switch (mba) {
@@ -551,8 +551,7 @@ const QPoint ZStackPresenter::stackPositionFromMouse(MouseButtonAction mba)
 
 //Status: 0 no response; 1: right menu popup; 2: left menu popup; 3: select
 ZStackPresenter::EMouseEventProcessStatus
-ZStackPresenter::processMouseReleaseForPuncta(
-    QMouseEvent *event, int *positionInStack)
+ZStackPresenter::processMouseReleaseForPuncta(QMouseEvent *event, double *positionInStack)
 {
   if (!isPointInStack(positionInStack[0], positionInStack[1])) {
     return MOUSE_EVENT_PASSED;
@@ -600,8 +599,7 @@ ZStackPresenter::processMouseReleaseForPuncta(
 }
 
 ZStackPresenter::EMouseEventProcessStatus
-ZStackPresenter::processMouseReleaseForTube(
-    QMouseEvent *event, int *positionInStack)
+ZStackPresenter::processMouseReleaseForTube(QMouseEvent *event, double *positionInStack)
 {
   if (!isPointInStack(positionInStack[0], positionInStack[1])) {
     return MOUSE_EVENT_PASSED;
@@ -754,8 +752,7 @@ const Swc_Tree_Node* ZStackPresenter::getSelectedSwcNode() const
 }
 
 ZStackPresenter::EMouseEventProcessStatus
-ZStackPresenter::processMouseReleaseForSwc(
-    QMouseEvent *event, int *positionInStack)
+ZStackPresenter::processMouseReleaseForSwc(QMouseEvent *event, double *positionInStack)
 {
   ZPoint positionInData(
         positionInStack[0], positionInStack[1], positionInStack[2]);
@@ -915,7 +912,7 @@ bool ZStackPresenter::isPointInStack(double x, double y)
 
 ZStackPresenter::EMouseEventProcessStatus
 ZStackPresenter::processMouseReleaseForStroke(
-    QMouseEvent *event, int */*positionInStack*/)
+    QMouseEvent *event, double */*positionInStack*/)
 {
   EMouseEventProcessStatus status = MOUSE_EVENT_PASSED;
 
@@ -1015,7 +1012,7 @@ ZStackPresenter::processMouseReleaseForStroke(
 void ZStackPresenter::processMouseReleaseEvent(
     QMouseEvent *event, int sliceIndex)
 {
-  QPoint pos;
+  QPointF pos;
 
   if (event->button() == Qt::LeftButton) {
     m_mouseLeftReleasePosition[0] = event->x();
@@ -1031,7 +1028,7 @@ void ZStackPresenter::processMouseReleaseEvent(
     pos = stackPositionFromMouse(RIGHT_RELEASE);
   }
 
-  int positionInStack[3];
+  double positionInStack[3];
   positionInStack[0] = pos.x();
   positionInStack[1] = pos.y();
   positionInStack[2] = sliceIndex;
@@ -1124,7 +1121,7 @@ void ZStackPresenter::processMouseMoveEvent(QMouseEvent *event)
     if (m_mouseLeftButtonPressed == true){
       if (m_interactiveContext.strokeEditMode() ==
           ZInteractiveContext::STROKE_DRAW) {
-        QPoint pos = buddyView()->imageWidget()->
+        QPointF pos = buddyView()->imageWidget()->
                      canvasCoordinate(QPoint(event->x(), event->y()));
         double dataX = pos.x();
         double dataY = pos.y();
@@ -1141,7 +1138,7 @@ void ZStackPresenter::processMouseMoveEvent(QMouseEvent *event)
         }
       }
     } else {
-      QPoint pos = buddyView()->imageWidget()->
+      QPointF pos = buddyView()->imageWidget()->
                    canvasCoordinate(QPoint(event->x(), event->y()));
       int z = buddyView()->sliceIndex();
       if (interactiveContext().isProjectView()) {
@@ -1169,12 +1166,12 @@ void ZStackPresenter::processMouseMoveEvent(QMouseEvent *event)
   }
 }
 
-QPoint ZStackPresenter::mapFromWidgetToStack(const QPoint &pos)
+QPointF ZStackPresenter::mapFromWidgetToStack(const QPoint &pos)
 {
   return buddyView()->imageWidget()->canvasCoordinate(pos);
 }
 
-QPoint ZStackPresenter::mapFromGlobalToStack(const QPoint &pos)
+QPointF ZStackPresenter::mapFromGlobalToStack(const QPoint &pos)
 {
   return mapFromWidgetToStack(buddyView()->imageWidget()->mapFromGlobal(pos));
 }
@@ -1189,7 +1186,7 @@ void ZStackPresenter::processMousePressEvent(QMouseEvent *event)
 
     if (m_interactiveContext.strokeEditMode() ==
         ZInteractiveContext::STROKE_DRAW) {
-      QPoint pos = mapFromWidgetToStack(event->pos());
+      QPointF pos = mapFromWidgetToStack(event->pos());
       double x = pos.rx();
       double y = pos.ry();
       buddyDocument()->mapToDataCoord(&x, &y, NULL);
@@ -1269,7 +1266,7 @@ bool ZStackPresenter::processKeyPressEventForSwc(QKeyEvent *event)
     break;
   case Qt::Key_G:
     if (event->modifiers() == Qt::ControlModifier) {
-      QPoint pos = mapFromGlobalToStack(QCursor::pos());
+      QPointF pos = mapFromGlobalToStack(QCursor::pos());
       trySwcAddNodeMode(pos.x(), pos.y());
       /*
       if (interactiveContext().swcEditMode() == ZInteractiveContext::SWC_EDIT_OFF ||
@@ -1536,7 +1533,7 @@ void ZStackPresenter::processKeyPressEvent(QKeyEvent *event)
     if (m_interactiveContext.isNormalView()) {
       if (interactiveContext().markPuncta() && buddyDocument()->hasStackData() &&
           (!buddyDocument()->stack()->isVirtual())) {
-        QPoint dataPos = stackPositionFromMouse(MOVE);
+        QPointF dataPos = stackPositionFromMouse(MOVE);
         buddyDocument()->markPunctum(dataPos.x(), dataPos.y(),
                                      buddyView()->sliceIndex());
       }
@@ -1582,7 +1579,7 @@ void ZStackPresenter::processMouseDoubleClickEvent(QMouseEvent *event,
   m_mouseLeftReleasePosition[2] = sliceIndex;
   m_mouseLeftButtonPressed = false;
 
-  QPoint pos = stackPositionFromMouse(LEFT_RELEASE);
+  QPointF pos = stackPositionFromMouse(LEFT_RELEASE);
 
   if (interactiveContext().isProjectView()) {
     Swc_Tree_Node *tn = buddyDocument()->swcHitTest(pos.x(), pos.y(), -1);
@@ -1639,7 +1636,7 @@ void ZStackPresenter::processMouseDoubleClickEvent(QMouseEvent *event,
   } else {
     if (interactiveContext().isProjectView()) {
       if (buddyDocument()->hasStackData()) {
-        QPoint pos = stackPositionFromMouse(LEFT_RELEASE);
+        QPointF pos = stackPositionFromMouse(LEFT_RELEASE);
         int sliceIndex =
             buddyDocument()->maxIntesityDepth(pos.x(), pos.y());
         buddyView()->setSliceIndex(sliceIndex);
@@ -1772,7 +1769,7 @@ void ZStackPresenter::autoTrace()
 
 void ZStackPresenter::traceTube()
 {
-  QPoint dataPos = stackPositionFromMouse(LEFT_RELEASE);
+  QPointF dataPos = stackPositionFromMouse(LEFT_RELEASE);
   buddyView()->setImageWidgetCursor(Qt::WaitCursor);
   if (buddyDocument()->stack()->channelNumber() == 1) {
 //  if (buddyDocument()->stack()->depth() == 1) {
@@ -1813,7 +1810,7 @@ void ZStackPresenter::traceTube()
 
 void ZStackPresenter::fitSegment()
 {
-  QPoint dataPos = stackPositionFromMouse(LEFT_RELEASE);
+  QPointF dataPos = stackPositionFromMouse(LEFT_RELEASE);
   /*
   buddyDocument()->fitseg(dataPos.x(), dataPos.y(),
                           m_mouseLeftReleasePosition[2]);
@@ -1829,21 +1826,21 @@ void ZStackPresenter::fitSegment()
 
 void ZStackPresenter::fitEllipse()
 {
-  QPoint dataPos = stackPositionFromMouse(LEFT_RELEASE);
+  QPointF dataPos = stackPositionFromMouse(LEFT_RELEASE);
   buddyDocument()->fitEllipse(dataPos.x(), dataPos.y(),
                               m_mouseLeftReleasePosition[2]);
 }
 
 void ZStackPresenter::markPuncta()
 {
-  QPoint dataPos = stackPositionFromMouse(LEFT_RELEASE);
+  QPointF dataPos = stackPositionFromMouse(LEFT_RELEASE);
   buddyDocument()->markPunctum(dataPos.x(), dataPos.y(),
                           m_mouseLeftReleasePosition[2]);
 }
 
 void ZStackPresenter::dropSegment()
 {
-  QPoint dataPos = stackPositionFromMouse(LEFT_RELEASE);
+  QPointF dataPos = stackPositionFromMouse(LEFT_RELEASE);
   buddyDocument()->dropseg(dataPos.x(), dataPos.y(),
                            m_mouseLeftReleasePosition[2]);
 }
@@ -2058,13 +2055,13 @@ void ZStackPresenter::trySwcAddNodeMode(double x, double y)
 
 void ZStackPresenter::tryPaintStrokeMode()
 {
-  QPoint pos = mapFromGlobalToStack(QCursor::pos());
+  QPointF pos = mapFromGlobalToStack(QCursor::pos());
   tryDrawStrokeMode(pos.x(), pos.y(), false);
 }
 
 void ZStackPresenter::tryEraseStrokeMode()
 {
-  QPoint pos = mapFromGlobalToStack(QCursor::pos());
+  QPointF pos = mapFromGlobalToStack(QCursor::pos());
   tryDrawStrokeMode(pos.x(), pos.y(), true);
 }
 

@@ -168,32 +168,65 @@ ZSwcTree* ZSwcGenerator::createRangeCompareSwc(
 
 ZSwcTree* ZSwcGenerator::createSwcByRegionSampling(const ZVoxelArray &voxelArray)
 {
-  size_t startIndex = 0;
-  size_t endIndex = voxelArray.size() - 1;
+#ifdef _DEBUG_
+  voxelArray.print();
+#endif
 
-  Swc_Tree *tree = New_Swc_Tree();
-#if 0
   ZDoubleVector voxelSizeArray(voxelArray.size());
 
   //Retrieve voxel size
+  for (size_t i = 0; i < voxelSizeArray.size(); ++i) {
+    voxelSizeArray[i] = -voxelArray[i].value();
+  }
 
-  std::vector<size_t> indexArray;
+  std::vector<int> indexArray;
   voxelSizeArray.sort(indexArray);
 
-  for (size_t i = 0; i < voxelSizeArray.size(); ++i) {
+  std::vector<bool> sampled(voxelArray.size(), true);
 
+  for (size_t i = 1; i < voxelArray.size(); ++i) {
+    size_t currentVoxelIndex = indexArray[i];
+    const ZVoxel &currentVoxel = voxelArray[currentVoxelIndex];
+    for (size_t j = 0; j < i; ++j) {
+      size_t prevVoxelIndex = indexArray[j];
+      if (sampled[prevVoxelIndex]) {
+        const ZVoxel &prevVoxel = voxelArray[prevVoxelIndex];
+        double dist = currentVoxel.distanceTo(prevVoxel);
+        if (dist < prevVoxel.value()) {
+          sampled[currentVoxelIndex] = false;
+          break;
+        }
+      }
+    }
   }
-#endif
 
-  ZSwcTree *treeWrapper = new ZSwcTree;
-  treeWrapper->setData(tree);
+  Swc_Tree_Node *prevTn = NULL;
 
-  return treeWrapper;
+  for (size_t i = 0; i < voxelArray.size(); ++i) {
+    if (sampled[i]) {
+      Swc_Tree_Node *tn = SwcTreeNode::makePointer();
+      SwcTreeNode::setPos(
+            tn, voxelArray[i].x(), voxelArray[i].y(), voxelArray[i].z());
+      SwcTreeNode::setRadius(
+            tn, voxelArray[i].value());
+      Swc_Tree_Node_Set_Parent(tn, prevTn);
+      prevTn = tn;
+    }
+  }
+
+  ZSwcTree *tree = new ZSwcTree;
+  tree->setDataFromNodeRoot(prevTn);
+
+  return tree;
 }
 
 ZSwcTree* ZSwcGenerator::createSwc(
     const ZVoxelArray &voxelArray, ZSwcGenerator::EPostProcess option)
 {
+  if (option == REGION_SAMPLING) {
+    return createSwcByRegionSampling(voxelArray);
+  }
+
   size_t startIndex = 0;
   size_t endIndex = voxelArray.size() - 1;
 

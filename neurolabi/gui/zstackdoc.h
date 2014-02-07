@@ -183,7 +183,7 @@ public: //attributes
     return &m_selectedSwcTreeNodes;}
   inline ZSwcNetwork* swcNetwork() { return m_swcNetwork; }
   ZResolution stackResolution() const;
-  QString stackSourcePath() const;
+  std::string stackSourcePath() const;
   bool hasChainList();
 
   //void setStackMask(ZStack *stack);
@@ -226,7 +226,7 @@ public: //swc tree edit
   void deleteSelectedSwcNode();
   void addSizeForSelectedSwcNode(double dr);
 
-  void estimateSwcRadius(ZSwcTree *tree);
+  void estimateSwcRadius(ZSwcTree *tree, int maxIter = 1);
   void estimateSwcRadius();
 
 public: //swc selection
@@ -244,7 +244,7 @@ public:
   virtual ZStack*& stackRef();
   virtual const ZStack *stackRef() const;
 
-  void readStack(const char *filePath);
+  void readStack(const char *filePath, bool newThread = true);
   void readSwc(const char *filePath);
 
   void saveSwc(QWidget *parentWidget);
@@ -293,7 +293,7 @@ public:
 
   QString toString();
   QStringList toStringList() const;
-  virtual QString dataInfo(int x, int y, int z) const;
+  virtual QString dataInfo(double cx, double cy, int z) const;
 
   ZCurve locsegProfileCurve(int option) const;
 

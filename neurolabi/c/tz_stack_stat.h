@@ -32,6 +32,8 @@ int Stack_Common_Intensity(Stack *stack, int low, int high);
 double Stack_Sum(const Stack *stack);
 double Stack_Mean(const Stack *stack);
 
+double Stack_Var(const Stack *stack);
+
 /*
  * Stack_Fgarea() returns the foreground area of a stack. Only voxels with
  * intensity 0 are considered as background.

@@ -2,6 +2,9 @@
 #include <QFileInfo>
 #include <QProcess>
 #include <QDebug>
+#include <QBuffer>
+#include <QImage>
+#include <QImageReader>
 
 #include "zerror.h"
 #include "zdvidbuffer.h"
@@ -23,6 +26,7 @@ void ZDvidClient::createConnection()
           this, SLOT(postNextRequest()));
   connect(this, SIGNAL(objectRetrieved()), m_dvidBuffer, SLOT(importSparseObject()));
   connect(this, SIGNAL(swcRetrieved()), m_dvidBuffer, SLOT(importSwcTree()));
+  connect(this, SIGNAL(imageRetrieved()), m_dvidBuffer, SLOT(importImage()));
 }
 
 bool ZDvidClient::postRequest(
@@ -43,6 +47,17 @@ bool ZDvidClient::postRequest(
                       arg(m_serverAddress).arg(m_dataPath).
                       arg(parameter.toInt()));
     break;
+  case ZDvidRequest::DVID_GET_GRAY_SCALE:
+  {
+    QList<QVariant> parameterList = parameter.toList();
+    requestUrl.setUrl(
+          QString("%1/%2/grayscale8/xy/%3_%4/%5_%6_%7").arg(m_serverAddress).
+          arg(m_dataPath).
+          arg(parameterList[3].toInt()).arg(parameterList[4].toInt()).
+        arg(parameterList[0].toInt()).arg(parameterList[1].toInt()).
+        arg(parameterList[2].toInt()));
+  }
+    break;
   default:
     RECORD_ERROR_UNCOND("Invalid request");
     return false;
@@ -54,6 +69,7 @@ bool ZDvidClient::postRequest(
   case ZDvidRequest::DVID_GET_OBJECT:
   case ZDvidRequest::DVID_SAVE_OBJECT:
   case ZDvidRequest::DVID_GET_SWC:
+  case ZDvidRequest::DVID_GET_GRAY_SCALE:
     m_networkReply = m_networkManager->get(QNetworkRequest(requestUrl));
     break;
   case ZDvidRequest::DVID_UPLOAD_SWC:
@@ -122,6 +138,10 @@ bool ZDvidClient::postRequest(
     connect(m_networkReply, SIGNAL(finished()), this, SLOT(finishRequest()));
     connect(m_networkReply, SIGNAL(readyRead()), this, SLOT(readSwc()));
     break;
+  case ZDvidRequest::DVID_GET_GRAY_SCALE:
+    connect(m_networkReply, SIGNAL(finished()), this, SLOT(finishRequest()));
+    connect(m_networkReply, SIGNAL(readyRead()), this, SLOT(readImage()));
+    break;
   case ZDvidRequest::DVID_UPLOAD_SWC:
     connect(m_networkReply, SIGNAL(finished()), this, SLOT(finishRequest()));
     break;
@@ -144,6 +164,11 @@ void ZDvidClient::readObject()
 void ZDvidClient::readSwc()
 {
   m_swcBuffer.append(m_networkReply->readAll());
+}
+
+void ZDvidClient::readImage()
+{
+  m_imageBuffer.append(m_networkReply->readAll());
 }
 
 bool ZDvidClient::writeObject()
@@ -175,6 +200,7 @@ void ZDvidClient::finishRequest(QNetworkReply::NetworkError error)
 
   bool objectRetrievalDone = false;
   bool swcRetrievalDone = false;
+  bool imageRetrievalDone = false;
 
   if (error != QNetworkReply::NoError) {
     if (m_file != NULL) {
@@ -196,6 +222,33 @@ void ZDvidClient::finishRequest(QNetworkReply::NetworkError error)
       m_swcTree.loadFromBuffer(m_swcBuffer.constData());
       swcRetrievalDone = true;
     }
+
+    if (!m_imageBuffer.isEmpty()) {
+      QImage image;
+      QBuffer buffer(&m_imageBuffer);
+      QImageReader imageReader(&buffer);
+      imageReader.setFormat("png");
+      imageReader.read(&image);
+
+      qDebug() << image.width() << " " << image.width() << " " << image.format();
+
+      if (m_image.width() != image.width() || m_image.height() != image.height()) {
+        int width = m_currentRequestParameter.toList().at(3).toInt();
+        int height = m_currentRequestParameter.toList().at(4).toInt();
+        m_image.setData(C_Stack::make(GREY, width, height, 1, 1));
+      }
+
+      for (int y = 0; y < m_image.height(); ++y) {
+        C_Stack::setValue(m_image.c_stack(), m_image.kind() * y * m_image.width(),
+                          image.scanLine(y), image.width());
+      }
+
+      m_image.setOffset(m_currentRequestParameter.toList().at(0).toInt(),
+                        m_currentRequestParameter.toList().at(1).toInt(),
+                        m_currentRequestParameter.toList().at(2).toInt());
+
+      imageRetrievalDone = true;
+    }
   }
 
   if (m_uploadStream != NULL) {
@@ -214,6 +267,7 @@ void ZDvidClient::finishRequest(QNetworkReply::NetworkError error)
 
   m_objectBuffer.clear();
   m_swcBuffer.clear();
+  m_imageBuffer.clear();
 
   if (objectRetrievalDone) {
     emit objectRetrieved();
@@ -221,6 +275,10 @@ void ZDvidClient::finishRequest(QNetworkReply::NetworkError error)
 
   if (swcRetrievalDone) {
     emit swcRetrieved();
+  }
+
+  if (imageRetrievalDone) {
+    emit imageRetrieved();
   }
 }
 
@@ -232,6 +290,7 @@ void ZDvidClient::postNextRequest()
       emit noRequestLeft();
     } else {
       ZDvidRequest request = m_requestQueue.dequeue();
+      m_currentRequestParameter = request.getParameter();
       qDebug() << "Posting next request: " << request.getParameter();
       postRequest(request.getType(), request.getParameter());
     }
@@ -268,6 +327,7 @@ void ZDvidClient::cancelRequest()
 
   m_objectBuffer.clear();
   m_swcBuffer.clear();
+  m_imageBuffer.clear();
 
   if (m_uploadStream != NULL) {
     m_uploadStream->close();

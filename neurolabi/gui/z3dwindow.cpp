@@ -98,7 +98,7 @@ Z3DWindow::Z3DWindow(std::tr1::shared_ptr<ZStackDoc> doc, Z3DWindow::EInitMode i
   , m_isStereoView(stereoView)
 {
   if (m_doc->stack() != NULL) {
-    setWindowTitle(m_doc->stack()->sourcePath());
+    setWindowTitle(m_doc->stackSourcePath().c_str());
   }
   setAttribute(Qt::WA_DeleteOnClose);
   setFocusPolicy(Qt::StrongFocus);
@@ -2733,7 +2733,7 @@ void Z3DWindow::saveSelectedSwc()
   }
 
   if (fileName.isEmpty()) {
-    ZString stackSource = m_doc->stackSourcePath().toStdString();
+    ZString stackSource = m_doc->stackSourcePath();
     if (!stackSource.empty()) {
       fileName = stackSource.changeExt("Edit.swc").c_str();
     }

@@ -4,6 +4,7 @@
 #include <QObject>
 #include "zobject3dscan.h"
 #include "zswctree.h"
+#include "zstack.hxx"
 
 class ZDvidClient;
 
@@ -20,6 +21,7 @@ signals:
 public slots:
   void importSwcTree();
   void importSparseObject();
+  void importImage();
 
   inline const QVector<ZObject3dScan>& getBodyArray() const {
     return m_bodyArray;
@@ -29,11 +31,16 @@ public slots:
     return m_swcTreeArray;
   }
 
+  inline const QVector<ZStack*>& getImageArray() const {
+    return m_imageArray;
+  }
+
   void clear();
 
 private:
   QVector<ZObject3dScan> m_bodyArray;
   QVector<ZSwcTree*> m_swcTreeArray;
+  QVector<ZStack*> m_imageArray;
 
   ZDvidClient *m_dvidClient;
 };

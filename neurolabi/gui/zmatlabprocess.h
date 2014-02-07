@@ -48,6 +48,10 @@ public:
     return m_output;
   }
 
+  ZJsonObject &getOutput() {
+    return m_output;
+  }
+
 public slots:
   void parseMatlabOutput();
 

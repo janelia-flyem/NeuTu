@@ -24,6 +24,15 @@ int ZFlyEmNeuronPresenter::columnCount() const
   return m_fieldList.size();
 }
 
+const QString& ZFlyEmNeuronPresenter::getColumnName(int index) const
+{
+  if (index < 0 || index >= m_fieldList.size()) {
+    return m_emptyField;
+  }
+
+  return m_fieldList[index];
+}
+
 const ZFlyEmNeuron* ZFlyEmNeuronPresenter::getNeuron(
     const ZFlyEmNeuron &neuron, int index) const
 {

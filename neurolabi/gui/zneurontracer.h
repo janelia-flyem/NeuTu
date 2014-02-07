@@ -42,6 +42,16 @@ public:
     m_vertexOption = vertexOption;
   }
 
+  /*!
+   * \brief Auto trace
+   */
+  ZSwcTree* trace(Stack *stack);
+
+private:
+  //Helper functions
+
+
+
 private:
   Stack *m_stack;
   Trace_Workspace *m_traceWorkspace;

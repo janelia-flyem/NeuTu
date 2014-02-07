@@ -13,7 +13,7 @@ TEST(ZStackDoc, Basic)
   EXPECT_FALSE(doc.hasStackData());
   EXPECT_FALSE(doc.hasStackMask());
 
-  EXPECT_TRUE(doc.stackSourcePath().isEmpty());
+  EXPECT_TRUE(doc.stackSourcePath().empty());
 
 }
 

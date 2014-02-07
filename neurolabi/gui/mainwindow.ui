@@ -16,7 +16,7 @@
    </font>
   </property>
   <property name="windowTitle">
-   <string>neuTube 0.86</string>
+   <string>neuTube 0.87</string>
   </property>
   <widget class="QWidget" name="centralwidget"/>
   <widget class="QMenuBar" name="menubar">
@@ -59,6 +59,7 @@
      </property>
      <addaction name="actionImage_Sequence"/>
      <addaction name="actionSparse_objects"/>
+     <addaction name="actionTiles"/>
     </widget>
     <widget class="QMenu" name="menuExport">
      <property name="title">
@@ -206,6 +207,8 @@
     <addaction name="menuPuncta"/>
     <addaction name="menuSwc"/>
     <addaction name="menuQuery"/>
+    <addaction name="separator"/>
+    <addaction name="actionTile_Manager_2"/>
    </widget>
    <widget class="QMenu" name="menuOptions">
     <property name="title">
@@ -281,6 +284,13 @@
       <addaction name="actionDendrogram"/>
       <addaction name="actionAssign_Clustering"/>
       <addaction name="actionMorphological_Features"/>
+      <addaction name="actionFeature_Selection"/>
+     </widget>
+     <widget class="QMenu" name="menuDVID">
+      <property name="title">
+       <string>DVID</string>
+      </property>
+      <addaction name="actionGet_Grayscale"/>
      </widget>
      <addaction name="actionExtract_Neuron"/>
      <addaction name="actionSkeletonization"/>
@@ -289,6 +299,7 @@
      <addaction name="actionFlyEmClone"/>
      <addaction name="menuTEM_Paper"/>
      <addaction name="menuStatistics"/>
+     <addaction name="menuDVID"/>
     </widget>
     <addaction name="menuFLy_EM"/>
    </widget>
@@ -1038,6 +1049,37 @@
   <action name="actionMorphological_Features">
    <property name="text">
     <string>Morphological Features</string>
+   </property>
+  </action>
+  <action name="actionFeature_Selection">
+   <property name="text">
+    <string>Feature Selection</string>
+   </property>
+   <property name="toolTip">
+    <string>Select morphological features</string>
+   </property>
+   <property name="statusTip">
+    <string>Select a morphological features for disinguishing neuron classes. The features are sorted by discriminant power.</string>
+   </property>
+  </action>
+  <action name="actionGet_Grayscale">
+   <property name="text">
+    <string>Get Grayscale</string>
+   </property>
+  </action>
+  <action name="actionTile_Manager">
+   <property name="text">
+    <string>Tile Manager</string>
+   </property>
+  </action>
+  <action name="actionTile_Manager_2">
+   <property name="text">
+    <string>Tile Manager</string>
+   </property>
+  </action>
+  <action name="actionTiles">
+   <property name="text">
+    <string>Tiles</string>
    </property>
   </action>
  </widget>

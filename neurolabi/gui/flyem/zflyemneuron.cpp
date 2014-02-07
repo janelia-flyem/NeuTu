@@ -189,6 +189,11 @@ void ZFlyEmNeuron::loadJsonObject(ZJsonObject &obj, const string &source)
     m_volumePath = getAbsolutePath(m_volumePath, source);
   }
 
+  m_thumbnailPath = ZJsonParser::stringValue(obj["thumbnail"]);
+  if (!m_volumePath.empty()) {
+    m_volumePath = getAbsolutePath(m_thumbnailPath, source);
+  }
+
   deprecate(ALL_COMPONENT);
 }
 
@@ -217,6 +222,35 @@ json_t* ZFlyEmNeuron::makeJsonObject() const
 
   return obj;
 }
+
+json_t* ZFlyEmNeuron::makeJsonObject(const std::string &bundleDir) const
+{
+  json_t *obj = C_Json::makeObject();
+
+  ZJsonObject objWrapper(obj, false);
+
+  objWrapper.setEntry(m_idKey, m_id);
+  if (!m_name.empty()) {
+    objWrapper.setEntry(m_nameKey, m_name);
+  }
+
+  if (!m_class.empty()) {
+    objWrapper.setEntry(m_classKey, m_class);
+  }
+
+  if (!m_modelPath.empty()) {
+    objWrapper.setEntry(
+          m_modelKey, ZString::relativePath(m_modelPath, bundleDir));
+  }
+
+  if (!m_volumePath.empty()) {
+    objWrapper.setEntry(
+          m_volumeKey, ZString::relativePath(m_volumePath, bundleDir));
+  }
+
+  return obj;
+}
+
 
 void ZFlyEmNeuron::print() const
 {
@@ -580,4 +614,9 @@ ZFlyEmNeuronRange ZFlyEmNeuron::getRange(double xyRes, double zRes) const
   }
 
   return range;
+}
+
+bool ZFlyEmNeuron::hasClass() const
+{
+  return !getClass().empty();
 }

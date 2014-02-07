@@ -539,12 +539,12 @@ ZResolution ZStackDoc::stackResolution() const
     return ZResolution();
 }
 
-QString ZStackDoc::stackSourcePath() const
+std::string ZStackDoc::stackSourcePath() const
 {
   if (hasStackData())
     return m_stack->sourcePath();
   else
-    return QString();
+    return "";
 }
 
 bool ZStackDoc::hasChainList()
@@ -942,23 +942,20 @@ void ZStackDoc::selectDownstreamNode()
   }
 }
 
-void ZStackDoc::readStack(const char *filePath)
+void ZStackDoc::readStack(const char *filePath, bool newThread)
 {
   m_stackSource.import(filePath);
+  if (newThread) {
+    m_reader.setStackFile(&m_stackSource);
+    m_reader.start();
+  } else {
+    deprecate(STACK);
 
-  m_reader.setStackFile(&m_stackSource);
-  m_reader.start();
+    ZStack*& mainStack = stackRef();
+    mainStack = m_stackSource.readStack();
 
-  /*
-  deprecate(STACK);
-
-  ZStack*& mainStack = stackRef();
-  ZStackFile file;
-  file.import(filePath);
-  mainStack = file.readStack();
-
-  emit stackLoaded();
-*/
+    emit stackModified();
+  }
 }
 
 bool ZStackDoc::importImageSequence(const char *filePath)
@@ -1668,7 +1665,14 @@ int ZStackDoc::autoThreshold()
     Int_Histogram_Range(hist, &low, &high);
     m_progressReporter->advance(0.1);
 
-    thre = Int_Histogram_Triangle_Threshold(hist, low, high - 1);
+    if (high > low) {
+      thre = Int_Histogram_Triangle_Threshold(hist, low, high - 1);
+    } else {
+      free(hist);
+      hist = Stack_Hist(stack);
+      Int_Histogram_Range(hist, &low, &high);
+      thre = Int_Histogram_Rc_Threshold(hist, low, high);
+    }
     m_progressReporter->advance(0.1);
     free(hist);
 
@@ -4069,68 +4073,60 @@ void ZStackDoc::mergeAllChain()
    }
 }
 
-QString ZStackDoc::dataInfo(int x, int y, int z) const
+QString ZStackDoc::dataInfo(double cx, double cy, int z) const
 {
+  int x = iround(cx);
+  int y = iround(cy);
+
   QString info = QString("%1, %2").arg(x).arg(y);
+  if (x >= 0 && y >= 0) {
+    if (z < 0) {
+      info += " (MIP): ";
+    } else {
+      info += QString(", %3: ").arg(z);
+    }
 
-  if (z < 0) {
-    info += " (MIP): ";
-  } else {
-    info += QString(", %3: ").arg(z);
-  }
-
-  if (stack() != NULL) {
-    if (!stack()->isVirtual()) {
-      if (stack()->channelNumber() == 1) {
-        info += QString("%4").arg(stack()->value(x, y, z));
-      } else {
-        info += QString("(");
-        for (int i=0; i<stack()->channelNumber(); i++) {
-          if (i==0) {
-            info += QString("%1").arg(stack()->value(x, y, z, i));
-          } else {
-            info += QString(", %1").arg(stack()->value(x, y, z, i));
+    if (stack() != NULL) {
+      if (!stack()->isVirtual()) {
+        if (stack()->channelNumber() == 1) {
+          info += QString("%4").arg(stack()->value(x, y, z));
+        } else {
+          info += QString("(");
+          for (int i=0; i<stack()->channelNumber(); i++) {
+            if (i==0) {
+              info += QString("%1").arg(stack()->value(x, y, z, i));
+            } else {
+              info += QString(", %1").arg(stack()->value(x, y, z, i));
+            }
           }
+          info += QString(")");
         }
-        info += QString(")");
       }
-    }
 
-    if (stackMask() != NULL) {
-      info += " | Mask: ";
-      if (stackMask()->channelNumber() == 1) {
-        info += QString("%4").arg(stackMask()->value(x, y, z));
-      } else {
-        info += QString("(");
-        for (int i=0; i<stackMask()->channelNumber(); i++) {
-          if (i==0) {
-            info += QString("%1").arg(stackMask()->value(x, y, z, i));
-          } else {
-            info += QString(", %1").arg(stackMask()->value(x, y, z, i));
+      if (stackMask() != NULL) {
+        info += " | Mask: ";
+        if (stackMask()->channelNumber() == 1) {
+          info += QString("%4").arg(stackMask()->value(x, y, z));
+        } else {
+          info += QString("(");
+          for (int i=0; i<stackMask()->channelNumber(); i++) {
+            if (i==0) {
+              info += QString("%1").arg(stackMask()->value(x, y, z, i));
+            } else {
+              info += QString(", %1").arg(stackMask()->value(x, y, z, i));
+            }
           }
+          info += QString(")");
         }
-        info += QString(")");
       }
-    }
 
-    if (stack()->hasOffset()) {
-      info += QString("; Data coordinates: (%1, %2, %3)").
-          arg(getStackOffset().x() + x).arg(getStackOffset().y() + y).
-          arg(getStackOffset().z() + z);
-    }
-  }
-
-/*
-  if (m_traceWorkspace != NULL) {
-    if (m_traceWorkspace->trace_mask != NULL) {
-      int id = pickLocsegChainId(x, y, z);
-
-      if (id >= 0) {
-        info += QString("; Chain ID: %1").arg(id);
+      if (stack()->hasOffset()) {
+        info += QString("; Data coordinates: (%1, %2, %3)").
+            arg(getStackOffset().x() + x).arg(getStackOffset().y() + y).
+            arg(getStackOffset().z() + z);
       }
     }
   }
-  */
 
   return info;
 }
@@ -4836,7 +4832,7 @@ bool ZStackDoc::bwsolid()
 {
   ZStack *mainStack = stack();
   if (mainStack != NULL) {
-    if (mainStack->bwperim()) {
+    if (mainStack->bwsolid()) {
       emit stackModified();
       return true;
     }
@@ -5131,7 +5127,7 @@ void ZStackDoc::updateStackFromSource()
   ZStack *mainStack = stack();
   if (mainStack != NULL) {
     if (mainStack->isSwc()) {
-      readSwc(mainStack->sourcePath());
+      readSwc(mainStack->sourcePath().c_str());
       emit stackModified();
     } else {
       if (mainStack->updateFromSource()) {
@@ -5796,17 +5792,20 @@ bool ZStackDoc::executeSwcNodeChangeSizeCommand(double dr)
   return false;
 }
 
-void ZStackDoc::estimateSwcRadius(ZSwcTree *tree)
+void ZStackDoc::estimateSwcRadius(ZSwcTree *tree, int maxIter)
 {
   if (tree != NULL) {
     startProgress();
     int count = tree->updateIterator(SWC_TREE_ITERATOR_DEPTH_FIRST);
-    double step = 1.0 / count;
-    for (Swc_Tree_Node *tn = tree->begin(); tn != NULL; tn = tree->next()) {
-      if (SwcTreeNode::isRegular(tn)) {
-        SwcTreeNode::fitSignal(tn, stack()->c_stack(), getStackBackground());
+    double step = 1.0 / count / maxIter;
+
+    for (int iter = 0; iter < maxIter; ++iter) {
+      for (Swc_Tree_Node *tn = tree->begin(); tn != NULL; tn = tree->next()) {
+        if (SwcTreeNode::isRegular(tn)) {
+          SwcTreeNode::fitSignal(tn, stack()->c_stack(), getStackBackground());
+        }
+        advanceProgress(step);
       }
-      advanceProgress(step);
     }
     endProgress();
   }
@@ -6615,7 +6614,7 @@ void ZStackDoc::saveSwc(QWidget *parentWidget)
         tree->resortId();
         tree->save(tree->source().c_str());
       } else {
-        ZString stackSource = stackSourcePath().toStdString();
+        ZString stackSource = stackSourcePath();
         QString fileName;
         if (!stackSource.empty()) {
           fileName = stackSource.changeExt("Edit.swc").c_str();

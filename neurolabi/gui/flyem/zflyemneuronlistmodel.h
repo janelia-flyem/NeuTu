@@ -58,6 +58,8 @@ public:
    */
   static bool isNeuronKey(const QModelIndex &index);
 
+  QString getColumnName(int col) const;
+
 signals:
 
 public slots:

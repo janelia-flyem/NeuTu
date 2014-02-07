@@ -354,7 +354,15 @@ HEADERS += mainwindow.h \
     resolutiondialog.h \
     dvid/zdvidbuffer.h \
     dvid/zdvidrequest.h \
-    zmatlabprocess.h
+    zmatlabprocess.h \
+    zneuronseed.h \
+    dvidimagedialog.h \
+    ztiledstackframe.h \
+    ztilemanager.h \
+    ztilemanagerview.h \
+    ztilegraphicsitem.h \
+    ztileinfo.h \
+    tilemanagerdialog.h
 
 FORMS += settingdialog.ui \
     frameinfodialog.ui \
@@ -395,7 +403,9 @@ FORMS += settingdialog.ui \
     flyemgeofilterdialog.ui \
     penwidthdialog.ui \
     dvidobjectdialog.ui \
-    resolutiondialog.ui
+    resolutiondialog.ui \
+    dvidimagedialog.ui \
+    tilemanagerdialog.ui
 SOURCES += main.cpp \
     mainwindow.cpp \
     zstackview.cpp \
@@ -574,7 +584,15 @@ SOURCES += main.cpp \
     resolutiondialog.cpp \
     dvid/zdvidbuffer.cpp \
     dvid/zdvidrequest.cpp \
-    zmatlabprocess.cpp
+    zmatlabprocess.cpp \
+    zneuronseed.cpp \
+    dvidimagedialog.cpp \
+    ztiledstackframe.cpp \
+    ztilemanager.cpp \
+    ztilemanagerview.cpp \
+    ztilegraphicsitem.cpp \
+    ztileinfo.cpp \
+    tilemanagerdialog.cpp
 
 OTHER_FILES += \
     extlib.pri

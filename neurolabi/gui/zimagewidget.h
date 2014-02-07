@@ -58,7 +58,7 @@ public:
   inline QSize projectSize() const { return m_projRegion.size(); }
   inline const QRect& viewPort() const { return m_viewPort; }
 
-  QPoint canvasCoordinate(QPoint widgetCoord) const;
+  QPointF canvasCoordinate(QPoint widgetCoord) const;
 
   void paintEvent(QPaintEvent *event);
 
@@ -99,6 +99,9 @@ public:
   virtual void mousePressEvent(QMouseEvent *event);
   virtual void mouseDoubleClickEvent(QMouseEvent *event);
   virtual void wheelEvent(QWheelEvent *event);
+
+public slots:
+  void updateView();
 
 signals:
   void mouseReleased(QMouseEvent*);

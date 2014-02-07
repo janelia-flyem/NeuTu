@@ -2,6 +2,19 @@
 #include "zswctreenodearray.h"
 #include "swctreenode.h"
 #include "zswcdisttrunkanalyzer.h"
+#include "zvectorgenerator.h"
+
+std::vector<std::string> ZSwcGlobalFeatureAnalyzer::m_ngf1FeatureName =
+    ZVectorGenerator<std::string>() << "Number of leaves"
+                                  << "number of branch points"
+                                  << "box volume, maximum segment length"
+                                  << "maximum path length"
+                                  << "average radius"
+                                  << "radius variance"
+                                  << "lateral/vertical ratio"
+                                  << "Average curvature";
+
+std::string ZSwcGlobalFeatureAnalyzer::m_emptyFeatureName = "";
 
 ZSwcGlobalFeatureAnalyzer::ZSwcGlobalFeatureAnalyzer()
 {
@@ -125,4 +138,25 @@ std::vector<double> ZSwcGlobalFeatureAnalyzer::computeFeatureSet(
   }
 
   return featureSet;
+}
+
+const std::string& ZSwcGlobalFeatureAnalyzer::getFeatureName(
+    EFeatureSet setName, int index)
+{
+  if (index < 0) {
+    return m_emptyFeatureName;
+  }
+
+  switch (setName) {
+  case NGF1:
+    if (index >= (int) m_ngf1FeatureName.size()) {
+      return m_emptyFeatureName;
+    } else {
+      return m_ngf1FeatureName[index];
+    }
+  default:
+    break;
+  }
+
+  return m_emptyFeatureName;
 }

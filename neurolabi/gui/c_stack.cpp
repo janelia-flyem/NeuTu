@@ -180,6 +180,21 @@ Stack* C_Stack::channelExtraction(const Stack *stack, int channel)
   return Stack_Channel_Extraction(stack, channel, NULL);
 }
 
+bool C_Stack::setValue(
+    Stack *stack, size_t offset, const void *buffer, size_t length)
+{
+  if (stack != NULL) {
+    uint8_t *stackBuffer = array8(stack);
+    if (stackBuffer != NULL && allByteNumber(stack) >= offset + length) {
+      memcpy(stackBuffer + offset, buffer, length);
+
+      return true;
+    }
+  }
+
+  return false;
+}
+
 Stack* C_Stack::resize(const Stack *stack, int width, int height, int depth)
 {
   return Resize_Stack(stack, width, height, depth);

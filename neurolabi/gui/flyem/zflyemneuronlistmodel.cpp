@@ -361,3 +361,8 @@ bool ZFlyEmNeuronListModel::isNeuronKey(const QModelIndex &index)
 {
   return index.column() == 0;
 }
+
+QString ZFlyEmNeuronListModel::getColumnName(int col) const
+{
+  return m_presenter->getColumnName(col);
+}

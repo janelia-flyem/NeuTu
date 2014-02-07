@@ -1,6 +1,9 @@
 #ifndef ZSWCGLOBALFEATUREANALYZER_H
 #define ZSWCGLOBALFEATUREANALYZER_H
 
+#include <map>
+#include <vector>
+#include <string>
 #include "zswctree.h"
 
 class ZSwcGlobalFeatureAnalyzer
@@ -24,6 +27,12 @@ public:
   static std::vector<double> computeFeatureSet(ZSwcTree &tree,
                                                EFeatureSet setName);
   static int getFeatureNumber(EFeatureSet setName);
+
+  static const std::string& getFeatureName(EFeatureSet setName, int index);
+
+private:
+  static std::vector<std::string> m_ngf1FeatureName;
+  static std::string m_emptyFeatureName;
 };
 
 #endif // ZSWCGLOBALFEATUREANALYZER_H

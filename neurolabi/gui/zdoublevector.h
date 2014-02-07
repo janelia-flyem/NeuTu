@@ -8,6 +8,7 @@ class ZDoubleVector : public std::vector<double>
 {
 public:
   ZDoubleVector();
+  ZDoubleVector(size_t n);
   ZDoubleVector(size_t n, double val);
   ZDoubleVector(const double *data, std::size_t start,
                 std::size_t end, std::size_t stride);
@@ -28,6 +29,13 @@ public:
    * the file. All values in the orignal buffer are cleared before the reading.
    */
   void importTextFile(const std::string &filePath);
+
+  /*!
+   * \brief Sort the double array.
+   *
+   * \param indexArray The variable to store the sorted element indices
+   */
+  void sort(std::vector<int> &indexArray);
 
   template <class T>
   static std::vector<std::vector<double> > reshape(std::vector<T> vec,

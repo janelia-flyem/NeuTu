@@ -230,7 +230,7 @@ public: /* attributes */
 
   //Source of the stack. Usually it is the file where the image is originally read
   //from.
-  const char* sourcePath() const;
+  std::string sourcePath() const;
   //inline Stack_Document* source() const { return m_source; }
 
   //Preferred z scale is the preferred scale ratio between z-axis and xy-plane
@@ -308,7 +308,7 @@ public: /* attributes */
 
 public: /* data operation */
   //Clean all associated memory except the source
-  void clean();
+  void clear();
   void cleanChannel(int c = 0);   //remove content of this channel
   void removeChannel(int c = 0); //remove channel
   //Load stack from Stack, split channel if necessary

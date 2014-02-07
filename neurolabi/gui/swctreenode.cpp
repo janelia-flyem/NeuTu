@@ -463,6 +463,14 @@ double SwcTreeNode::distance(const Swc_Tree_Node *tn1, const Swc_Tree_Node *tn2,
   case SwcTreeNode::EUCLIDEAN:
     dist = Swc_Tree_Node_Dist(tn1, tn2);
     break;
+  case SwcTreeNode::PLANE_EUCLIDEAN:
+  {
+    double dx = x(tn1) - x(tn2);
+    double dy = y(tn1) - y(tn2);
+    dist = sqrt(dx * dx + dy * dy);
+    break;
+  }
+    break;
   case SwcTreeNode::GEODESIC:
     dist = SwcTreeNode::pathLength(tn1, tn2);
     break;

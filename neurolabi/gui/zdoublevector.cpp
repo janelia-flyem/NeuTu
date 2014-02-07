@@ -12,6 +12,10 @@ ZDoubleVector::ZDoubleVector()
 {
 }
 
+ZDoubleVector::ZDoubleVector(size_t n) : std::vector<double>(n)
+{
+}
+
 ZDoubleVector::ZDoubleVector(size_t n, double val) : std::vector<double>(n, val)
 {
 }
@@ -117,3 +121,11 @@ void ZDoubleVector::importTextFile(const string &filePath)
   }
 }
 
+void ZDoubleVector::sort(std::vector<int> &indexArray)
+{
+  indexArray.resize(size());
+
+  if (!empty()) {
+    darray_qsort(&((*this)[0]), &(indexArray[0]), size());
+  }
+}

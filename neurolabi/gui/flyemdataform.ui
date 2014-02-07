@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>798</width>
+    <width>1084</width>
     <height>677</height>
    </rect>
   </property>
@@ -25,7 +25,7 @@
      <x>10</x>
      <y>9</y>
      <width>191</width>
-     <height>651</height>
+     <height>661</height>
     </rect>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -178,97 +178,148 @@
     </item>
    </layout>
   </widget>
-  <widget class="QWidget" name="layoutWidget">
+  <widget class="QSplitter" name="splitter">
    <property name="geometry">
     <rect>
-     <x>217</x>
-     <y>10</y>
-     <width>571</width>
-     <height>651</height>
+     <x>218</x>
+     <y>11</y>
+     <width>579</width>
+     <height>661</height>
     </rect>
    </property>
-   <layout class="QVBoxLayout" name="verticalLayout_5">
-    <item>
-     <layout class="QVBoxLayout" name="verticalLayout_4">
+   <property name="orientation">
+    <enum>Qt::Vertical</enum>
+   </property>
+   <widget class="QWidget" name="layoutWidget">
+    <layout class="QVBoxLayout" name="verticalLayout_4">
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_2">
+       <item>
+        <widget class="QLabel" name="label_3">
+         <property name="text">
+          <string>Query output</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="showModelPushButton">
+         <property name="text">
+          <string>Show Model</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="savePushButton">
+         <property name="text">
+          <string>Export CSV</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="saveSwcPushButton">
+         <property name="text">
+          <string>Export SWC</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="exportPushButton">
+         <property name="text">
+          <string>Export</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer_2">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <widget class="ZFlyEmQueryView" name="queryView">
+       <property name="focusPolicy">
+        <enum>Qt::StrongFocus</enum>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+   <widget class="QTabWidget" name="InformationTab">
+    <property name="currentIndex">
+     <number>0</number>
+    </property>
+    <widget class="QWidget" name="tab">
+     <attribute name="title">
+      <string>Information</string>
+     </attribute>
+     <layout class="QVBoxLayout" name="verticalLayout_6">
       <item>
-       <layout class="QHBoxLayout" name="horizontalLayout_2">
-        <item>
-         <widget class="QLabel" name="label_3">
-          <property name="text">
-           <string>Query output</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="showModelPushButton">
-          <property name="text">
-           <string>Show Model</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="savePushButton">
-          <property name="text">
-           <string>Export CSV</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="saveSwcPushButton">
-          <property name="text">
-           <string>Export SWC</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="exportPushButton">
-          <property name="text">
-           <string>Export</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <spacer name="horizontalSpacer_2">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>40</width>
-            <height>20</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-       </layout>
-      </item>
-      <item>
-       <widget class="ZFlyEmQueryView" name="queryView">
-        <property name="focusPolicy">
-         <enum>Qt::StrongFocus</enum>
+       <widget class="QTextEdit" name="infoWindow">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
         </property>
        </widget>
       </item>
      </layout>
-    </item>
-    <item>
-     <widget class="QLabel" name="label_4">
-      <property name="text">
-       <string>^^^ Details</string>
-      </property>
-     </widget>
-    </item>
-    <item>
-     <widget class="QTextEdit" name="infoWindow">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-     </widget>
-    </item>
-   </layout>
+    </widget>
+    <widget class="QWidget" name="tab_2">
+     <attribute name="title">
+      <string>Neuron List</string>
+     </attribute>
+     <layout class="QVBoxLayout" name="verticalLayout_5">
+      <item>
+       <widget class="ZFlyEmQueryView" name="slaveQueryView">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </widget>
+  </widget>
+  <widget class="QLabel" name="label_4">
+   <property name="geometry">
+    <rect>
+     <x>210</x>
+     <y>30</y>
+     <width>21</width>
+     <height>41</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>30</pointsize>
+    </font>
+   </property>
+   <property name="text">
+    <string>[</string>
+   </property>
+  </widget>
+  <widget class="QWidget" name="thumnailContainer" native="true">
+   <property name="geometry">
+    <rect>
+     <x>820</x>
+     <y>10</y>
+     <width>211</width>
+     <height>171</height>
+    </rect>
+   </property>
   </widget>
  </widget>
  <customwidgets>

@@ -780,6 +780,8 @@ ZStack* ZStackFile::readStack(ZStack *data)
     return NULL;
   }
 
+  data->setSource(*this);
+
   return data;
 }
 

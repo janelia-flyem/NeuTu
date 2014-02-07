@@ -205,6 +205,7 @@ public:
 
   void setSizeHintOption(NeuTube::ESizeHintOption option);
   void loadRoi(const QString &filePath);
+  void loadRoi();
 
   void prepareDisplay();
 
