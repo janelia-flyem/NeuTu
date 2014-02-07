@@ -63,10 +63,13 @@ FlyEmDataForm::FlyEmDataForm(QWidget *parent) :
 
   m_thumbnailImage = new QImage;
   m_thumbnailImage->load(":/images/hideobj.png");
+  /*
   m_thumbnailWidget = new ZImageWidget(ui->thumnailContainer, m_thumbnailImage);
   m_thumbnailWidget->setProjRegion(
         QRect(QPoint(0, 0), ui->thumnailContainer->size()));
+        */
 
+  setLayout(ui->overallLayout);
 }
 
 FlyEmDataForm::~FlyEmDataForm()
