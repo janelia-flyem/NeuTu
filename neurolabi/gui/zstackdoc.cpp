@@ -6436,8 +6436,9 @@ bool ZStackDoc::executeTraceSwcBranchCommand(
         swcConnector.identifyConnection(branch, getSwcArray());
 
     Swc_Tree_Node *branchRoot = branch.front();
-    bool needAdjust = false;
+
     if (conn.first != NULL) {
+      bool needAdjust = false;
       if (!SwcTreeNode::isRoot(conn.first)) {
         SwcTreeNode::setAsRoot(conn.first);
         branchRoot = conn.first;
@@ -6451,7 +6452,27 @@ bool ZStackDoc::executeTraceSwcBranchCommand(
           needAdjust = true;
         }
       }
+      if (needAdjust) {
+        SwcTreeNode::average(branchRoot, SwcTreeNode::firstChild(branchRoot),
+                             branchRoot);
+      }
     } else {
+      if (SwcTreeNode::isRegular(SwcTreeNode::firstChild(branchRoot))) {
+        Swc_Tree_Node *rootNeighbor = SwcTreeNode::firstChild(branchRoot);
+        ZPoint rootCenter = SwcTreeNode::pos(branchRoot);
+        ZPoint nbrCenter = SwcTreeNode::pos(rootNeighbor);
+
+        double lambda = ZNeuronTracer::findBestTerminalBreak(
+              rootCenter, SwcTreeNode::radius(branchRoot),
+              nbrCenter, SwcTreeNode::radius(rootNeighbor),
+              stack()->c_stack());
+
+        if (lambda < 1.0) {
+          SwcTreeNode::interpolate(
+                branchRoot, rootNeighbor, lambda, branchRoot);
+        }
+      }
+#if 0
       if (SwcTreeNode::isRegular(SwcTreeNode::firstChild(branchRoot))) {
         Swc_Tree_Node *rootNeighbor = SwcTreeNode::firstChild(branchRoot);
         ZPoint rootCenter = SwcTreeNode::pos(branchRoot);
@@ -6468,11 +6489,7 @@ bool ZStackDoc::executeTraceSwcBranchCommand(
           }
         }
       }
-    }
-
-    if (needAdjust) {
-      SwcTreeNode::average(branchRoot, SwcTreeNode::firstChild(branchRoot),
-                           branchRoot);
+#endif
     }
 
     Swc_Tree_Node *loop = conn.second;
@@ -6506,6 +6523,16 @@ bool ZStackDoc::executeTraceSwcBranchCommand(
       Swc_Tree_Node *terminalNeighbor = SwcTreeNode::parent(tree->firstLeaf());
       ZPoint terminalCenter = SwcTreeNode::pos(terminal);
       ZPoint nbrCenter = SwcTreeNode::pos(terminalNeighbor);
+
+      double lambda = ZNeuronTracer::findBestTerminalBreak(
+            terminalCenter, SwcTreeNode::radius(terminal),
+            nbrCenter, SwcTreeNode::radius(terminalNeighbor),
+            stack()->c_stack());
+
+      if (lambda < 1.0) {
+        SwcTreeNode::interpolate(terminal, terminalNeighbor, lambda, terminal);
+      }
+#if 0
       double terminalIntensity = Stack_Point_Sampling(
             stack()->c_stack(), terminalCenter.x(), terminalCenter.y(), terminalCenter.z());
       if (terminalIntensity == 0.0) {
@@ -6517,6 +6544,7 @@ bool ZStackDoc::executeTraceSwcBranchCommand(
           SwcTreeNode::average(terminal, terminalNeighbor, terminal);
         }
       }
+#endif
     }
 
     QUndoCommand *command =

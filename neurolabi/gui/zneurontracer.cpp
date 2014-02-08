@@ -5,6 +5,7 @@
 #include "zswcconnector.h"
 #include "tz_math.h"
 #include "zvoxelarray.h"
+#include "tz_stack_sampling.h"
 
 ZNeuronTracer::ZNeuronTracer() : m_stack(NULL), m_traceWorkspace(NULL),
   m_connWorkspace(NULL), m_swcConnector(NULL),
@@ -199,4 +200,37 @@ ZSwcTree* ZNeuronTracer::trace(Stack *stack)
   //Create neuron structure
 
   return tree;
+}
+
+double ZNeuronTracer::findBestTerminalBreak(
+    const ZPoint &terminalCenter, double terminalRadius,
+    const ZPoint &innerCenter, double innerRadius, const Stack *stack)
+{
+  double d = terminalCenter.distanceTo(innerCenter);
+  if (d < 0.5) {
+    return 1.0;
+  }
+
+  ZPoint dvec = terminalCenter - innerCenter;
+  dvec.normalize();
+
+  double innerIntensity = Stack_Point_Sampling(
+        stack, innerCenter.x(), innerCenter.y(), innerCenter.z());
+
+  if (innerIntensity == 0.0) {
+    return 1.0;
+  }
+
+  double lambda = 1.0;
+  for (lambda = 1.0; lambda >= 0.3; lambda -= 0.1) {
+    double radius = terminalRadius * lambda + innerRadius * (1 - lambda);
+    ZPoint currentEnd = innerCenter + dvec * (d * lambda + radius);
+    double terminalIntensity = Stack_Point_Sampling(
+          stack, currentEnd.x(), currentEnd.y(), currentEnd.z());
+    if (terminalIntensity / innerIntensity > 0.3) {
+      break;
+    }
+  }
+
+  return lambda;
 }
