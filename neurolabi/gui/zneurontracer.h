@@ -47,9 +47,14 @@ public:
    */
   ZSwcTree* trace(Stack *stack);
 
+  //Helper functions
+  static double findBestTerminalBreak(
+      const ZPoint &terminalCenter, double terminalRadius,
+      const ZPoint &innerCenter, double innerRadius,
+      const Stack *stack);
+
 private:
   //Helper functions
-
 
 
 private:
