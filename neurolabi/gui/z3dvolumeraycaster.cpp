@@ -12,6 +12,7 @@
 #include "QsLog.h"
 #include "zbenchtimer.h"
 #include "z3dutils.h"
+#include <QApplication>
 
 const size_t Z3DVolumeRaycaster::m_maxNumOfFullResolutionVolumeSlice = 6;
 
@@ -932,7 +933,15 @@ void Z3DVolumeRaycaster::leftMouseButtonPressed(QMouseEvent *e, int w, int h)
   if (e->type() == QEvent::MouseButtonRelease) {
     if (std::abs(e->x() - m_startCoord.x) < 2 && std::abs(m_startCoord.y - e->y()) < 2) {
       bool success;
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
+      glm::vec3 pos3D = getFirstHit3DPosition(e->x() * qApp->devicePixelRatio(),
+                                              e->y() * qApp->devicePixelRatio(),
+                                              w * qApp->devicePixelRatio(),
+                                              h * qApp->devicePixelRatio(),
+                                              success);
+#else
       glm::vec3 pos3D = getFirstHit3DPosition(e->x(), e->y(), w, h, success);
+#endif
       if (success) {
         emit pointInVolumeLeftClicked(e->pos(), glm::ivec3(pos3D));
         e->accept();

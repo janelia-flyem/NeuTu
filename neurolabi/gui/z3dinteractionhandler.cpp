@@ -284,6 +284,8 @@ void Z3DTrackballInteractionHandler::wheelEvent(QWheelEvent *e, int, int)
 {
   e->ignore();
 
+  if (e->delta() == 0)
+    return;
   if (m_state == DOLLY) {
     float factor = m_mouseMotionFactor * 0.2f * m_mouseWheelMotionFactor;
     bool dollyIn = ( m_mouseWheelUpDollyIn && (e->delta() > 0)) ||
