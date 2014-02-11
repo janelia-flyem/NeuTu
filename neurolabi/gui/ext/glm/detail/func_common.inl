@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////////
 /// OpenGL Mathematics (glm.g-truc.net)
 ///
-/// Copyright (c) 2005 - 2013 G-Truc Creation (www.g-truc.net)
+/// Copyright (c) 2005 - 2014 G-Truc Creation (www.g-truc.net)
 /// Permission is hereby granted, free of charge, to any person obtaining a copy
 /// of this software and associated documentation files (the "Software"), to deal
 /// in the Software without restriction, including without limitation the rights
@@ -37,13 +37,13 @@ namespace glm{
 namespace detail
 {
 	template <typename genFIType, bool /*signed*/>
-	struct Abs_
+	struct compute_abs
 	{};
 
 	template <typename genFIType>
-	struct Abs_<genFIType, true>
+	struct compute_abs<genFIType, true>
 	{
-		GLM_FUNC_QUALIFIER static genFIType get(genFIType const & x)
+		GLM_FUNC_QUALIFIER static genFIType call(genFIType const & x)
 		{
 			GLM_STATIC_ASSERT(
 				std::numeric_limits<genFIType>::is_iec559 || std::numeric_limits<genFIType>::is_signed,
@@ -54,14 +54,77 @@ namespace detail
 	};
 
 	template <typename genFIType>
-	struct Abs_<genFIType, false>
+	struct compute_abs<genFIType, false>
 	{
-		GLM_FUNC_QUALIFIER static genFIType get(genFIType const & x)
+		GLM_FUNC_QUALIFIER static genFIType call(genFIType const & x)
 		{
 			GLM_STATIC_ASSERT(
 				!std::numeric_limits<genFIType>::is_signed && std::numeric_limits<genFIType>::is_integer,
 				"'abs' only accept floating-point and integer scalar or vector inputs");
 			return x;
+		}
+	};
+
+	template <typename T, typename U, precision P, template <class, precision> class vecType>
+	struct compute_mix_vector
+	{
+		GLM_FUNC_QUALIFIER static vecType<T, P> call(vecType<T, P> const & x, vecType<T, P> const & y, vecType<U, P> const & a)
+		{
+			GLM_STATIC_ASSERT(std::numeric_limits<U>::is_iec559, "'mix' only accept floating-point inputs for the interpolator a");
+
+			return vecType<T, P>(vecType<U, P>(x) + a * vecType<U, P>(y - x));
+		}
+	};
+
+	template <typename T, precision P, template <class, precision> class vecType>
+	struct compute_mix_vector<T, bool, P, vecType>
+	{
+		GLM_FUNC_QUALIFIER static vecType<T, P> call(vecType<T, P> const & x, vecType<T, P> const & y, vecType<bool, P> const & a)
+		{
+			vecType<T, P> Result;
+			for(length_t i = 0; i < x.length(); ++i)
+				Result[i] = a[i] ? y[i] : x[i];
+			return Result;
+		}
+	};
+
+	template <typename T, typename U, precision P, template <class, precision> class vecType>
+	struct compute_mix_scalar
+	{
+		GLM_FUNC_QUALIFIER static vecType<T, P> call(vecType<T, P> const & x, vecType<T, P> const & y, U const & a)
+		{
+			GLM_STATIC_ASSERT(std::numeric_limits<U>::is_iec559, "'mix' only accept floating-point inputs for the interpolator a");
+
+			return vecType<T, P>(vecType<U, P>(x) + a * vecType<U, P>(y - x));
+		}
+	};
+
+	template <typename T, precision P, template <class, precision> class vecType>
+	struct compute_mix_scalar<T, bool, P, vecType>
+	{
+		GLM_FUNC_QUALIFIER static vecType<T, P> call(vecType<T, P> const & x, vecType<T, P> const & y, bool const & a)
+		{
+			return a ? y : x;
+		}
+	};
+
+	template <typename T, typename U>
+	struct compute_mix
+	{
+		GLM_FUNC_QUALIFIER static T call(T const & x, T const & y, U const & a)
+		{
+			GLM_STATIC_ASSERT(std::numeric_limits<U>::is_iec559, "'mix' only accept floating-point inputs for the interpolator a");
+
+			return static_cast<T>(static_cast<U>(x) + a * static_cast<U>(y - x));
+		}
+	};
+
+	template <typename T>
+	struct compute_mix<T, bool>
+	{
+		GLM_FUNC_QUALIFIER static T call(T const & x, T const & y, bool const & a)
+		{
+			return a ? y : x;
 		}
 	};
 }//namespace detail
@@ -73,7 +136,7 @@ namespace detail
 		genFIType const & x
 	)
 	{
-		return detail::Abs_<genFIType, std::numeric_limits<genFIType>::is_signed>::get(x);
+		return detail::compute_abs<genFIType, std::numeric_limits<genFIType>::is_signed>::call(x);
 	}
 
 	VECTORIZE_VEC(abs)
@@ -88,7 +151,7 @@ namespace detail
 	{
 		GLM_STATIC_ASSERT(
 			std::numeric_limits<genFIType>::is_iec559 ||
-			std::numeric_limits<genFIType>::is_signed && std::numeric_limits<genFIType>::is_integer, "'sign' only accept signed inputs");
+			(std::numeric_limits<genFIType>::is_signed && std::numeric_limits<genFIType>::is_integer), "'sign' only accept signed inputs");
 
 		genFIType result;
 		if(x > genFIType(0))
@@ -459,250 +522,37 @@ namespace detail
 			clamp(x.w, minVal.w, maxVal.w));
 	}
 
-	// mix
-	template <typename genType>
-	GLM_FUNC_QUALIFIER genType mix
+	template <typename T, typename U, precision P, template <typename, precision> class vecType>
+	GLM_FUNC_QUALIFIER vecType<T, P> mix
 	(
-		genType const & x,
-		genType const & y,
-		genType const & a
+		vecType<T, P> const & x,
+		vecType<T, P> const & y,
+		vecType<U, P> const & a
 	)
 	{
-		GLM_STATIC_ASSERT(
-			std::numeric_limits<genType>::is_iec559,
-			"'mix' only accept floating-point inputs");
-
-		return x + a * (y - x);
+		return detail::compute_mix_vector<T, U, P, vecType>::call(x, y, a);
 	}
 
-	template <typename T, precision P>
-	GLM_FUNC_QUALIFIER detail::tvec2<T, P> mix
+	template <typename T, typename U, precision P, template <typename, precision> class vecType>
+	GLM_FUNC_QUALIFIER vecType<T, P> mix
 	(
-		detail::tvec2<T, P> const & x,
-		detail::tvec2<T, P> const & y,
-		T const & a
+		vecType<T, P> const & x,
+		vecType<T, P> const & y,
+		U const & a
 	)
 	{
-		GLM_STATIC_ASSERT(
-			std::numeric_limits<T>::is_iec559,
-			"'mix' only accept floating-point inputs");
-
-		return x + a * (y - x);
+		return detail::compute_mix_scalar<T, U, P, vecType>::call(x, y, a);
 	}
 
-	template <typename T, precision P>
-	GLM_FUNC_QUALIFIER detail::tvec3<T, P> mix
+	template <typename genTypeT, typename genTypeU>
+	GLM_FUNC_QUALIFIER genTypeT mix
 	(
-		detail::tvec3<T, P> const & x,
-		detail::tvec3<T, P> const & y,
-		T const & a
+		genTypeT const & x,
+		genTypeT const & y,
+		genTypeU const & a
 	)
 	{
-		GLM_STATIC_ASSERT(
-			std::numeric_limits<T>::is_iec559,
-			"'mix' only accept floating-point inputs");
-
-		return x + a * (y - x);
-	}
-
-	template <typename T, precision P>
-	GLM_FUNC_QUALIFIER detail::tvec4<T, P> mix
-	(
-		detail::tvec4<T, P> const & x,
-		detail::tvec4<T, P> const & y,
-		T const & a
-	)
-	{
-		GLM_STATIC_ASSERT(
-			std::numeric_limits<T>::is_iec559,
-			"'mix' only accept floating-point inputs");
-
-		return x + a * (y - x);
-	}
-
-	template <typename T, precision P>
-	GLM_FUNC_QUALIFIER detail::tvec2<T, P> mix
-	(
-		detail::tvec2<T, P> const & x,
-		detail::tvec2<T, P> const & y,
-		detail::tvec2<T, P> const & a
-	)
-	{
-		GLM_STATIC_ASSERT(
-			std::numeric_limits<T>::is_iec559,
-			"'mix' only accept floating-point inputs");
-
-		return x + a * (y - x);
-	}
-
-	template <typename T, precision P>
-	GLM_FUNC_QUALIFIER detail::tvec3<T, P> mix
-	(
-		detail::tvec3<T, P> const & x,
-		detail::tvec3<T, P> const & y,
-		detail::tvec3<T, P> const & a
-	)
-	{
-		GLM_STATIC_ASSERT(
-			std::numeric_limits<T>::is_iec559,
-			"'mix' only accept floating-point inputs");
-
-		return x + a * (y - x);
-	}
-
-	template <typename T, precision P>
-	GLM_FUNC_QUALIFIER detail::tvec4<T, P> mix
-	(
-		detail::tvec4<T, P> const & x,
-		detail::tvec4<T, P> const & y,
-		detail::tvec4<T, P> const & a
-	)
-	{
-		GLM_STATIC_ASSERT(
-			std::numeric_limits<T>::is_iec559,
-			"'mix' only accept floating-point inputs");
-
-		return x + a * (y - x);
-	}
-
-	//template <typename genTypeT>
-	//GLM_FUNC_QUALIFIER genTypeT mix
-	//(
-	//	genTypeT const & x, 
-	//	genTypeT const & y, 
-	//	float const & a
-	//)
-	//{
-	//	// It could be a vector too
-	//	//GLM_STATIC_ASSERT(
-	//	//	detail::type<genTypeT>::is_float && 
-	//	//	detail::type<genTypeU>::is_float);
-
-	//	return x + a * (y - x);
-	//}
-
-	template <>
-	GLM_FUNC_QUALIFIER float mix
-	(
-		float const & x,
-		float const & y,
-		bool const & a
-	)
-	{
-		return a ? y : x;
-	}
-
-	template <>
-	GLM_FUNC_QUALIFIER double mix
-	(
-		double const & x,
-		double const & y,
-		bool const & a
-	)
-	{
-		return a ? y : x;
-	}
-
-	template <typename T, precision P>
-	GLM_FUNC_QUALIFIER detail::tvec2<T, P> mix
-	(
-		detail::tvec2<T, P> const & x,
-		detail::tvec2<T, P> const & y,
-		bool a
-	)
-	{
-		GLM_STATIC_ASSERT(
-			std::numeric_limits<T>::is_iec559,
-			"'mix' only accept floating-point inputs");
-
-		return a ? y : x;
-	}
-
-	template <typename T, precision P>
-	GLM_FUNC_QUALIFIER detail::tvec3<T, P> mix
-	(
-		detail::tvec3<T, P> const & x,
-		detail::tvec3<T, P> const & y,
-		bool a
-	)
-	{
-		GLM_STATIC_ASSERT(
-			std::numeric_limits<T>::is_iec559,
-			"'mix' only accept floating-point inputs");
-
-		return a ? y : x;
-	}
-
-	template <typename T, precision P>
-	GLM_FUNC_QUALIFIER detail::tvec4<T, P> mix
-	(
-		detail::tvec4<T, P> const & x,
-		detail::tvec4<T, P> const & y,
-		bool a
-	)
-	{
-		GLM_STATIC_ASSERT(
-			std::numeric_limits<T>::is_iec559,
-			"'mix' only accept floating-point inputs");
-
-		return a ? y : x;
-	}
-
-	template <typename T, precision P>
-	GLM_FUNC_QUALIFIER detail::tvec2<T, P> mix
-	(
-		detail::tvec2<T, P> const & x,
-		detail::tvec2<T, P> const & y,
-		typename detail::tvec2<T, P>::bool_type a
-	)
-	{
-		GLM_STATIC_ASSERT(
-			std::numeric_limits<T>::is_iec559,
-			"'mix' only accept floating-point inputs");
-
-		detail::tvec2<T, P> result;
-		for(int i = 0; i < x.length(); ++i)
-			result[i] = a[i] ? y[i] : x[i];
-
-		return result;
-	}
-
-	template <typename T, precision P>
-	GLM_FUNC_QUALIFIER detail::tvec3<T, P> mix
-	(
-		detail::tvec3<T, P> const & x,
-		detail::tvec3<T, P> const & y,
-		typename detail::tvec3<T, P>::bool_type a
-	)
-	{
-		GLM_STATIC_ASSERT(
-			std::numeric_limits<T>::is_iec559,
-			"'mix' only accept floating-point inputs");
-
-		detail::tvec3<T, P> result;
-		for(int i = 0; i < x.length(); ++i)
-			result[i] = a[i] ? y[i] : x[i];
-
-		return result;
-	}
-
-	template <typename T, precision P>
-	GLM_FUNC_QUALIFIER detail::tvec4<T, P> mix
-	(
-		detail::tvec4<T, P> const & x,
-		detail::tvec4<T, P> const & y,
-		typename detail::tvec4<T, P>::bool_type a
-	)
-	{
-		GLM_STATIC_ASSERT(
-			std::numeric_limits<T>::is_iec559,
-			"'mix' only accept floating-point inputs");
-
-		detail::tvec4<T, P> result;
-		for(int i = 0; i < x.length(); ++i)
-			result[i] = a[i] ? y[i] : x[i];
-
-		return result;
+		return detail::compute_mix<genTypeT, genTypeU>::call(x, y, a);
 	}
 
 	// step

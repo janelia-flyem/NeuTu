@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////////
 /// OpenGL Mathematics (glm.g-truc.net)
 ///
-/// Copyright (c) 2005 - 2013 G-Truc Creation (www.g-truc.net)
+/// Copyright (c) 2005 - 2014 G-Truc Creation (www.g-truc.net)
 /// Permission is hereby granted, free of charge, to any person obtaining a copy
 /// of this software and associated documentation files (the "Software"), to deal
 /// in the Software without restriction, including without limitation the rights
@@ -129,43 +129,8 @@ namespace detail
 		this->value[1] = v1;
 	}
 
-#if(GLM_HAS_INITIALIZER_LISTS)
-	template <typename T, precision P>
-	template <typename U>
-	GLM_FUNC_QUALIFIER tmat2x2<T, P>::tmat2x2(std::initializer_list<U> l)
-	{
-		assert(l.size() == this->length() * this->value[0].length());
-		
-		typename std::initializer_list<U>::iterator p = l.begin();
-
-		this->value[0] = tvec2<T, P>(*(p +  0), *(p +  1));
-		this->value[1] = tvec2<T, P>(*(p +  2), *(p +  3));
-	}
-
-	template <typename T, precision P>
-	GLM_FUNC_QUALIFIER tmat2x2<T, P>::tmat2x2(std::initializer_list<tvec2<T, P> > l)
-	{
-		assert(l.size() == this->length());
-
-		this->value[0] = l.begin()[0];
-		this->value[1] = l.begin()[1];
-	}
-#endif//GLM_HAS_INITIALIZER_LISTS
-
 	//////////////////////////////////////
 	// Conversion constructors
-	template <typename T, precision P>
-	template <typename U>
-	GLM_FUNC_QUALIFIER tmat2x2<T, P>::tmat2x2
-	(
-		U const & s
-	)
-	{
-		value_type const Zero(0);
-		this->value[0] = tvec2<T, P>(static_cast<T>(s), Zero);
-		this->value[1] = tvec2<T, P>(Zero, value_type(s));
-	}
-	
 	template <typename T, precision P>
 	template <typename X1, typename Y1, typename X2, typename Y2>
 	GLM_FUNC_QUALIFIER tmat2x2<T, P>::tmat2x2
@@ -284,19 +249,6 @@ namespace detail
 		this->value[1] = col_type(m[1]);
 	}
 
-	template <typename T, precision P> 
-	GLM_FUNC_QUALIFIER tmat2x2<T, P> tmat2x2<T, P>::_inverse() const
-	{
-		typename tmat2x2<T, P>::value_type Determinant = this->value[0][0] * this->value[1][1] - this->value[1][0] * this->value[0][1];
-
-		tmat2x2<T, P> Inverse(
-			+ this->value[1][1] / Determinant,
-			- this->value[0][1] / Determinant,
-			- this->value[1][0] / Determinant,
-			+ this->value[0][0] / Determinant);
-		return Inverse;
-	}
-
 	//////////////////////////////////////////////////////////////
 	// mat2x2 operators
 
@@ -383,7 +335,7 @@ namespace detail
 	template <typename U>
 	GLM_FUNC_QUALIFIER tmat2x2<T, P>& tmat2x2<T, P>::operator/= (tmat2x2<U, P> const & m)
 	{
-		return (*this = *this * m._inverse());
+		return (*this = *this * detail::compute_inverse<detail::tmat2x2, T, P>::call(m));
 	}
 
 	template <typename T, precision P>
@@ -417,6 +369,25 @@ namespace detail
 		--*this;
 		return Result;
 	}
+
+	template <typename T, precision P>
+	struct compute_inverse<detail::tmat2x2, T, P>
+	{
+		GLM_FUNC_QUALIFIER static detail::tmat2x2<T, P> call(detail::tmat2x2<T, P> const & m)
+		{
+			T OneOverDeterminant = static_cast<T>(1) / (
+				+ m[0][0] * m[1][1]
+				- m[1][0] * m[0][1]);
+
+			detail::tmat2x2<T, P> Inverse(
+				+ m[1][1] * OneOverDeterminant,
+				- m[0][1] * OneOverDeterminant,
+				- m[1][0] * OneOverDeterminant,
+				+ m[0][0] * OneOverDeterminant);
+
+			return Inverse;
+		}
+	};
 
 	//////////////////////////////////////////////////////////////
 	// Binary operators
@@ -620,7 +591,7 @@ namespace detail
 		typename tmat2x2<T, P>::row_type & v
 	)
 	{
-		return m._inverse() * v;
+		return detail::compute_inverse<detail::tmat2x2, T, P>::call(m) * v;
 	}
 
 	template <typename T, precision P>
@@ -630,7 +601,7 @@ namespace detail
 		tmat2x2<T, P> const & m
 	)
 	{
-		return v * m._inverse();
+		return v * detail::compute_inverse<detail::tmat2x2, T, P>::call(m);
 	}
 
 	template <typename T, precision P>

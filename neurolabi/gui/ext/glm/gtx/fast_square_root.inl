@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-// OpenGL Mathematics Copyright (c) 2005 - 2013 G-Truc Creation (www.g-truc.net)
+// OpenGL Mathematics Copyright (c) 2005 - 2014 G-Truc Creation (www.g-truc.net)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Created : 2006-01-04
 // Updated : 2011-10-14
@@ -24,13 +24,25 @@ namespace glm
 	VECTORIZE_VEC(fastSqrt)
 
 	// fastInversesqrt
-	template <typename genType>
-	GLM_FUNC_QUALIFIER genType fastInverseSqrt
+	template <>
+	GLM_FUNC_QUALIFIER float fastInverseSqrt<float>(float const & x)
+	{
+		return detail::compute_inversesqrt<detail::tvec1, float, lowp>::call(detail::tvec1<float, lowp>(x)).x;
+	}
+
+	template <>
+	GLM_FUNC_QUALIFIER double fastInverseSqrt<double>(double const & x)
+	{
+		return detail::compute_inversesqrt<detail::tvec1, double, lowp>::call(detail::tvec1<double, lowp>(x)).x;
+	}
+
+	template <template <class, precision> class vecType, typename T, precision P>
+	GLM_FUNC_QUALIFIER vecType<T, P> fastInverseSqrt
 	(
-		genType const & x
+		vecType<T, P> const & x
 	)
 	{
-		return detail::fastInversesqrt<genType, uint>(x);
+		return detail::compute_inversesqrt<vecType, T, P>::call(x);
 	}
 
 	VECTORIZE_VEC(fastInverseSqrt)

@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////////
 /// OpenGL Mathematics (glm.g-truc.net)
 ///
-/// Copyright (c) 2005 - 2013 G-Truc Creation (www.g-truc.net)
+/// Copyright (c) 2005 - 2014 G-Truc Creation (www.g-truc.net)
 /// Permission is hereby granted, free of charge, to any person obtaining a copy
 /// of this software and associated documentation files (the "Software"), to deal
 /// in the Software without restriction, including without limitation the rights
@@ -85,19 +85,6 @@ namespace detail
 		z(z),
 		w(w)
 	{}
-
-#if(GLM_HAS_INITIALIZER_LISTS)
-	template <typename T, precision P>
-	template <typename U>
-	GLM_FUNC_QUALIFIER tquat<T, P>::tquat(std::initializer_list<U> l) :
-		x(static_cast<T>(l.begin()[0])),
-		y(static_cast<T>(l.begin()[1])),
-		z(static_cast<T>(l.begin()[2])),
-		w(static_cast<T>(l.begin()[3]))
-	{
-		assert(l.size() >= this->length());
-	}
-#endif//GLM_HAS_INITIALIZER_LISTS
 
 	//////////////////////////////////////////////////////////////
 	// tquat conversions
@@ -457,7 +444,7 @@ namespace detail
 	(
 		detail::tquat<T, P> const & x, 
 		detail::tquat<T, P> const & y, 
-		typename detail::tquat<T, P>::T const & a
+		T const & a
 	)
 	{
 		if(a <= T(0)) return x;
@@ -617,7 +604,7 @@ namespace detail
 	GLM_FUNC_QUALIFIER detail::tquat<T, P> rotate
 	(
 		detail::tquat<T, P> const & q,
-		typename detail::tquat<T, P>::T const & angle,
+		T const & angle,
 		detail::tvec3<T, P> const & v
 	)
 	{
@@ -636,6 +623,7 @@ namespace detail
 #ifdef GLM_FORCE_RADIANS
 		T const AngleRad(angle);
 #else
+#		pragma message("GLM: rotate function taking degrees as a parameter is deprecated. #define GLM_FORCE_RADIANS before including GLM headers to remove this message.")
 		T const AngleRad = radians(angle);
 #endif
 		T const Sin = sin(AngleRad * T(0.5));
@@ -660,8 +648,9 @@ namespace detail
 	)
 	{
 #ifdef GLM_FORCE_RADIANS
-		return T(atan2(T(2) * (q.x * q.y + q.w * q.z), q.w * q.w + q.x * q.x - q.y * q.y - q.z * q.z));
+		return T(atan(T(2) * (q.x * q.y + q.w * q.z), q.w * q.w + q.x * q.x - q.y * q.y - q.z * q.z));
 #else
+#		pragma message("GLM: roll function returning degrees is deprecated. #define GLM_FORCE_RADIANS before including GLM headers to remove this message.")
 		return glm::degrees(atan(T(2) * (q.x * q.y + q.w * q.z), q.w * q.w + q.x * q.x - q.y * q.y - q.z * q.z));
 #endif
 	}
@@ -673,8 +662,9 @@ namespace detail
 	)
 	{
 #ifdef GLM_FORCE_RADIANS
-		return T(atan2(T(2) * (q.y * q.z + q.w * q.x), q.w * q.w - q.x * q.x - q.y * q.y + q.z * q.z));
+		return T(atan(T(2) * (q.y * q.z + q.w * q.x), q.w * q.w - q.x * q.x - q.y * q.y + q.z * q.z));
 #else
+#		pragma message("GLM: pitch function returning degrees is deprecated. #define GLM_FORCE_RADIANS before including GLM headers to remove this message.")
 		return glm::degrees(atan(T(2) * (q.y * q.z + q.w * q.x), q.w * q.w - q.x * q.x - q.y * q.y + q.z * q.z));
 #endif
 	}
@@ -688,6 +678,7 @@ namespace detail
 #ifdef GLM_FORCE_RADIANS
 		return asin(T(-2) * (q.x * q.z - q.w * q.y));
 #else
+#		pragma message("GLM: yaw function returning degrees is deprecated. #define GLM_FORCE_RADIANS before including GLM headers to remove this message.")
 		return glm::degrees(asin(T(-2) * (q.x * q.z - q.w * q.y)));
 #endif
 	}
@@ -817,6 +808,7 @@ namespace detail
 #ifdef GLM_FORCE_RADIANS
 		return acos(x.w) * T(2);
 #else
+#		pragma message("GLM: angle function returning degrees is deprecated. #define GLM_FORCE_RADIANS before including GLM headers to remove this message.")
 		return glm::degrees(acos(x.w) * T(2));
 #endif
 	}
@@ -846,6 +838,7 @@ namespace detail
 #ifdef GLM_FORCE_RADIANS
 		T const a(angle);
 #else
+#		pragma message("GLM: angleAxis function taking degrees as a parameter is deprecated. #define GLM_FORCE_RADIANS before including GLM headers to remove this message.")
 		T const a(glm::radians(angle));
 #endif
 		T s = glm::sin(a * T(0.5));

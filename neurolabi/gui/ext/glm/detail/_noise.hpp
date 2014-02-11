@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////////
 /// OpenGL Mathematics (glm.g-truc.net)
 ///
-/// Copyright (c) 2005 - 2013 G-Truc Creation (www.g-truc.net)
+/// Copyright (c) 2005 - 2014 G-Truc Creation (www.g-truc.net)
 /// Permission is hereby granted, free of charge, to any person obtaining a copy
 /// of this software and associated documentation files (the "Software"), to deal
 /// in the Software without restriction, including without limitation the rights
@@ -35,31 +35,31 @@ namespace detail
 	template <typename T>
 	GLM_FUNC_QUALIFIER T mod289(T const & x)
 	{
-		return x - floor(x * T(1.0 / 289.0)) * T(289.0);
+		return x - floor(x * static_cast<T>(1.0) / static_cast<T>(289.0)) * static_cast<T>(289.0);
 	}
 
 	template <typename T>
 	GLM_FUNC_QUALIFIER T permute(T const & x)
 	{
-		return mod289(((x * T(34)) + T(1)) * x);
+		return mod289(((x * static_cast<T>(34)) + static_cast<T>(1)) * x);
 	}
 
 	template <typename T, precision P>
 	GLM_FUNC_QUALIFIER tvec2<T, P> permute(tvec2<T, P> const & x)
 	{
-		return mod289(((x * T(34)) + T(1)) * x);
+		return mod289(((x * static_cast<T>(34)) + static_cast<T>(1)) * x);
 	}
 	
 	template <typename T, precision P>
 	GLM_FUNC_QUALIFIER tvec3<T, P> permute(tvec3<T, P> const & x)
 	{
-		return mod289(((x * T(34)) + T(1)) * x);
+		return mod289(((x * static_cast<T>(34)) + static_cast<T>(1)) * x);
 	}
 	
 	template <typename T, precision P>
 	GLM_FUNC_QUALIFIER tvec4<T, P> permute(tvec4<T, P> const & x)
 	{
-		return mod289(((x * T(34)) + T(1)) * x);
+		return mod289(((x * static_cast<T>(34)) + static_cast<T>(1)) * x);
 	}
 /*
 	template <typename T, precision P, template<typename> class vecType>
