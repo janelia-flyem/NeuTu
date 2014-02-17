@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////////
 /// OpenGL Mathematics (glm.g-truc.net)
 ///
-/// Copyright (c) 2005 - 2013 G-Truc Creation (www.g-truc.net)
+/// Copyright (c) 2005 - 2014 G-Truc Creation (www.g-truc.net)
 /// Permission is hereby granted, free of charge, to any person obtaining a copy
 /// of this software and associated documentation files (the "Software"), to deal
 /// in the Software without restriction, including without limitation the rights
@@ -140,19 +140,6 @@ namespace detail
 	//////////////////////////////////////
 	// Conversion constructors
 	template <typename T, precision P>
-	template <typename U>
-	GLM_FUNC_QUALIFIER tmat3x4<T, P>::tmat3x4
-	(
-		U const & s
-	)
-	{
-		value_type const Zero(0);
-		this->value[0] = tvec4<T, P>(static_cast<T>(s), Zero, Zero, Zero);
-		this->value[1] = tvec4<T, P>(Zero, value_type(s), Zero, Zero);
-		this->value[2] = tvec4<T, P>(Zero, Zero, value_type(s), Zero);
-	}
-	
-	template <typename T, precision P>
 	template <
 		typename X1, typename Y1, typename Z1, typename W1,
 		typename X2, typename Y2, typename Z2, typename W2,
@@ -182,31 +169,6 @@ namespace detail
 		this->value[1] = col_type(v2);
 		this->value[2] = col_type(v3);
 	}
-
-#if(GLM_HAS_INITIALIZER_LISTS)
-	template <typename T, precision P>
-	template <typename U>
-	GLM_FUNC_QUALIFIER tmat3x4<T, P>::tmat3x4(std::initializer_list<U> l)
-	{
-		assert(l.size() == this->length() * this->value[0].length());
-
-		typename std::initializer_list<U>::iterator p = l.begin();
-
-		this->value[0] = tvec4<T, P>(*(p +  0), *(p +  1), *(p +  2), *(p +  3));
-		this->value[1] = tvec4<T, P>(*(p +  4), *(p +  5), *(p +  6), *(p +  7));
-		this->value[2] = tvec4<T, P>(*(p +  8), *(p +  9), *(p + 10), *(p + 11));
-	}
-
-	template <typename T, precision P>
-	GLM_FUNC_QUALIFIER tmat3x4<T, P>::tmat3x4(std::initializer_list<tvec4<T, P> > l)
-	{
-		assert(l.size() == this->length());
-
-		this->value[0] = l.begin()[0];
-		this->value[1] = l.begin()[1];
-		this->value[2] = l.begin()[2];
-	}
-#endif//GLM_HAS_INITIALIZER_LISTS
 	
 	// Conversion
 	template <typename T, precision P>
@@ -566,7 +528,7 @@ namespace detail
 		const T SrcB31 = m2[3][1];
 		const T SrcB32 = m2[3][2];
 
-		tmat4x4<T, P> Result(tmat4x4<T, P>::null);
+		tmat4x4<T, P> Result(tmat4x4<T, P>::_null);
 		Result[0][0] = SrcA00 * SrcB00 + SrcA10 * SrcB01 + SrcA20 * SrcB02;
 		Result[0][1] = SrcA01 * SrcB00 + SrcA11 * SrcB01 + SrcA21 * SrcB02;
 		Result[0][2] = SrcA02 * SrcB00 + SrcA12 * SrcB01 + SrcA22 * SrcB02;

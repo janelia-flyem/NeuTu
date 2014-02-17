@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////////
 /// OpenGL Mathematics (glm.g-truc.net)
 ///
-/// Copyright (c) 2005 - 2013 G-Truc Creation (www.g-truc.net)
+/// Copyright (c) 2005 - 2014 G-Truc Creation (www.g-truc.net)
 /// Permission is hereby granted, free of charge, to any person obtaining a copy
 /// of this software and associated documentation files (the "Software"), to deal
 /// in the Software without restriction, including without limitation the rights
@@ -74,17 +74,6 @@ namespace detail
 		y(v.y)
 	{}
 
-#if(GLM_HAS_INITIALIZER_LISTS)
-	template <typename T, precision P>
-	template <typename U>
-	GLM_FUNC_QUALIFIER tvec2<T, P>::tvec2(std::initializer_list<U> const & v) :
-		x(static_cast<T>(v.begin()[0])),
-		y(static_cast<T>(v.begin()[1]))
-	{
-		assert(v.size() == this->length());
-	}
-#endif//GLM_HAS_INITIALIZER_LISTS
-
 	//////////////////////////////////////
 	// Explicit basic constructors
 
@@ -110,16 +99,6 @@ namespace detail
 
 	//////////////////////////////////////
 	// Conversion scalar constructors
-		
-	template <typename T, precision P>
-	template <typename U>
-	GLM_FUNC_QUALIFIER tvec2<T, P>::tvec2
-	(
-		U const & x
-	) :
-		x(static_cast<T>(x)),
-		y(static_cast<T>(x))
-	{}
 
 	template <typename T, precision P>
 	template <typename U, typename V>

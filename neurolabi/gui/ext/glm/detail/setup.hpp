@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////////
 /// OpenGL Mathematics (glm.g-truc.net)
 ///
-/// Copyright (c) 2005 - 2013 G-Truc Creation (www.g-truc.net)
+/// Copyright (c) 2005 - 2014 G-Truc Creation (www.g-truc.net)
 /// Permission is hereby granted, free of charge, to any person obtaining a copy
 /// of this software and associated documentation files (the "Software"), to deal
 /// in the Software without restriction, including without limitation the rights
@@ -38,7 +38,7 @@
 #define GLM_VERSION_MAJOR			0
 #define GLM_VERSION_MINOR			9
 #define GLM_VERSION_PATCH			5
-#define GLM_VERSION_REVISION		1
+#define GLM_VERSION_REVISION		2
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Platform
@@ -566,33 +566,11 @@
 #	define GLM_ARCH (GLM_ARCH_SSE3 | GLM_ARCH_SSE2)
 #elif(defined(GLM_FORCE_SSE2))
 #	define GLM_ARCH (GLM_ARCH_SSE2)
-#elif((GLM_COMPILER & GLM_COMPILER_VC) && (defined(_M_IX86) || defined(_M_X64)))
-#	if(GLM_PLATFORM == GLM_PLATFORM_WINCE)
-#		define GLM_ARCH GLM_ARCH_PURE
-#	elif(defined(_M_CEE_PURE))
-#		define GLM_ARCH GLM_ARCH_PURE
-/* TODO: Explore auto detection of instruction set support
-#	elif(defined(_M_IX86_FP))
-#		if(_M_IX86_FP >= 3)
-#			define GLM_ARCH (GLM_ARCH_AVX | GLM_ARCH_SSE3 | GLM_ARCH_SSE2)
-#		elif(_M_IX86_FP >= 2)
-#			define GLM_ARCH (GLM_ARCH_SSE2)
-#		else
-#			define GLM_ARCH GLM_ARCH_PURE
-#		endif
-*/
-#	elif(GLM_COMPILER >= GLM_COMPILER_VC11)
+#elif(GLM_COMPILER & GLM_COMPILER_VC)
+#	if _M_IX86_FP == 2 && defined(__AVX__)
 #		define GLM_ARCH (GLM_ARCH_AVX | GLM_ARCH_SSE3 | GLM_ARCH_SSE2)
-#	elif(GLM_COMPILER >= GLM_COMPILER_VC10)
-#		if(_MSC_FULL_VER >= 160031118) //160031118: VC2010 SP1 beta full version
-#			define GLM_ARCH (GLM_ARCH_AVX | GLM_ARCH_SSE3 | GLM_ARCH_SSE2)//GLM_ARCH_AVX (Require SP1)
-#		else
-#			define GLM_ARCH (GLM_ARCH_SSE3 | GLM_ARCH_SSE2)
-#		endif
-#	elif(GLM_COMPILER >= GLM_COMPILER_VC9) 
-#		define GLM_ARCH (GLM_ARCH_SSE3 | GLM_ARCH_SSE2)
-#	elif(GLM_COMPILER >= GLM_COMPILER_VC8)
-#		define GLM_ARCH GLM_ARCH_SSE2
+#	elif _M_IX86_FP == 2
+#		define GLM_ARCH (GLM_ARCH_SSE2)
 #	else
 #		define GLM_ARCH GLM_ARCH_PURE
 #	endif
@@ -644,7 +622,7 @@
 #if(defined(GLM_MESSAGES) && !defined(GLM_MESSAGE_ARCH_DISPLAYED))
 #	define GLM_MESSAGE_ARCH_DISPLAYED
 #	if(GLM_ARCH == GLM_ARCH_PURE)
-#		pragma message("GLM: Platform independent")
+#		pragma message("GLM: Platform independent code")
 #	elif(GLM_ARCH & GLM_ARCH_SSE2)
 #		pragma message("GLM: SSE2 instruction set")
 #	elif(GLM_ARCH & GLM_ARCH_SSE3)

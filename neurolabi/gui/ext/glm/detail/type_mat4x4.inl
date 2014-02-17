@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////////
 /// OpenGL Mathematics (glm.g-truc.net)
 ///
-/// Copyright (c) 2005 - 2013 G-Truc Creation (www.g-truc.net)
+/// Copyright (c) 2005 - 2014 G-Truc Creation (www.g-truc.net)
 /// Permission is hereby granted, free of charge, to any person obtaining a copy
 /// of this software and associated documentation files (the "Software"), to deal
 /// in the Software without restriction, including without limitation the rights
@@ -66,8 +66,8 @@ namespace detail
 	template <typename T, precision P>
 	GLM_FUNC_QUALIFIER tmat4x4<T, P>::tmat4x4()
 	{
-		value_type Zero(0);
-		value_type One(1);
+		T Zero(0);
+		T One(1);
 		this->value[0] = col_type(One, Zero, Zero, Zero);
 		this->value[1] = col_type(Zero, One, Zero, Zero);
 		this->value[2] = col_type(Zero, Zero, One, Zero);
@@ -80,10 +80,10 @@ namespace detail
 		tmat4x4<T, P> const & m
 	)
 	{
-		this->value[0] = m.value[0];
-		this->value[1] = m.value[1];
-		this->value[2] = m.value[2];
-		this->value[3] = m.value[3];
+		this->value[0] = m[0];
+		this->value[1] = m[1];
+		this->value[2] = m[2];
+		this->value[3] = m[3];
 	}
 
 	template <typename T, precision P>
@@ -93,10 +93,10 @@ namespace detail
 		tmat4x4<T, Q> const & m
 	)
 	{
-		this->value[0] = m.value[0];
-		this->value[1] = m.value[1];
-		this->value[2] = m.value[2];
-		this->value[3] = m.value[3];
+		this->value[0] = m[0];
+		this->value[1] = m[1];
+		this->value[2] = m[2];
+		this->value[3] = m[3];
 	}
 
 	template <typename T, precision P>
@@ -162,51 +162,8 @@ namespace detail
 		this->value[3] = col_type(m[3]);
 	}
 
-#if(GLM_HAS_INITIALIZER_LISTS)
-	template <typename T, precision P>
-	template <typename U>
-	GLM_FUNC_QUALIFIER tmat4x4<T, P>::tmat4x4(std::initializer_list<U> l)
-	{
-		assert(l.size() == this->length() * this->value[0].length());
-
-		typename std::initializer_list<U>::iterator p = l.begin();
-
-		this->value[0] = tvec4<T, P>(*(p +  0), *(p +  1), *(p +  2), *(p +  3));
-		this->value[1] = tvec4<T, P>(*(p +  4), *(p +  5), *(p +  6), *(p +  7));
-		this->value[2] = tvec4<T, P>(*(p +  8), *(p +  9), *(p + 10), *(p + 11));
-		this->value[3] = tvec4<T, P>(*(p + 12), *(p + 13), *(p + 14), *(p + 15));
-	}
-
-	template <typename T, precision P>
-	GLM_FUNC_QUALIFIER tmat4x4<T, P>::tmat4x4(std::initializer_list<tvec4<T, P> > l)
-	{
-		assert(l.size() == this->length());
-
-		this->value[0] = l.begin()[0];
-		this->value[1] = l.begin()[1];
-		this->value[2] = l.begin()[2];
-		this->value[3] = l.begin()[3];
-	}
-#endif//GLM_HAS_INITIALIZER_LISTS
-
 	//////////////////////////////////////
 	// Conversion constructors
-	template <typename T, precision P>
-	template <typename U>
-	GLM_FUNC_QUALIFIER tmat4x4<T, P>::tmat4x4
-	(
-		U const & s
-	)
-	{
-		GLM_STATIC_ASSERT(std::numeric_limits<U>::is_iec559 || std::numeric_limits<U>::is_integer, "*mat4x4 constructor only takes float and integer types");
-
-		value_type const Zero(0);
-		this->value[0] = tvec4<T, P>(static_cast<T>(s), Zero, Zero, Zero);
-		this->value[1] = tvec4<T, P>(Zero, value_type(s), Zero, Zero);
-		this->value[2] = tvec4<T, P>(Zero, Zero, value_type(s), Zero);
-		this->value[3] = tvec4<T, P>(Zero, Zero, Zero, value_type(s));
-	}
-	
 	template <typename T, precision P> 
 	template <
 		typename X1, typename Y1, typename Z1, typename W1,
@@ -477,7 +434,7 @@ namespace detail
 	template <typename U>
 	GLM_FUNC_QUALIFIER tmat4x4<T, P> & tmat4x4<T, P>::operator/= (tmat4x4<U, P> const & m)
 	{
-		return (*this = *this * m._inverse());
+		return (*this = *this * detail::compute_inverse<detail::tmat4x4, T, P>::call(m));
 	}
 
 	template <typename T, precision P>
@@ -517,80 +474,65 @@ namespace detail
 	}
 
 	template <typename T, precision P>
-	GLM_FUNC_QUALIFIER tmat4x4<T, P> tmat4x4<T, P>::_inverse() const
+	struct compute_inverse<detail::tmat4x4, T, P>
 	{
-		// Calculate all mat2 determinants
-		value_type SubFactor00 = this->value[2][2] * this->value[3][3] - this->value[3][2] * this->value[2][3];
-		value_type SubFactor01 = this->value[2][1] * this->value[3][3] - this->value[3][1] * this->value[2][3];
-		value_type SubFactor02 = this->value[2][1] * this->value[3][2] - this->value[3][1] * this->value[2][2];
-		value_type SubFactor03 = this->value[2][0] * this->value[3][3] - this->value[3][0] * this->value[2][3];
-		value_type SubFactor04 = this->value[2][0] * this->value[3][2] - this->value[3][0] * this->value[2][2];
-		value_type SubFactor05 = this->value[2][0] * this->value[3][1] - this->value[3][0] * this->value[2][1];
-		value_type SubFactor06 = this->value[1][2] * this->value[3][3] - this->value[3][2] * this->value[1][3];
-		value_type SubFactor07 = this->value[1][1] * this->value[3][3] - this->value[3][1] * this->value[1][3];
-		value_type SubFactor08 = this->value[1][1] * this->value[3][2] - this->value[3][1] * this->value[1][2];
-		value_type SubFactor09 = this->value[1][0] * this->value[3][3] - this->value[3][0] * this->value[1][3];
-		value_type SubFactor10 = this->value[1][0] * this->value[3][2] - this->value[3][0] * this->value[1][2];
-		value_type SubFactor11 = this->value[1][1] * this->value[3][3] - this->value[3][1] * this->value[1][3];
-		value_type SubFactor12 = this->value[1][0] * this->value[3][1] - this->value[3][0] * this->value[1][1];
-		value_type SubFactor13 = this->value[1][2] * this->value[2][3] - this->value[2][2] * this->value[1][3];
-		value_type SubFactor14 = this->value[1][1] * this->value[2][3] - this->value[2][1] * this->value[1][3];
-		value_type SubFactor15 = this->value[1][1] * this->value[2][2] - this->value[2][1] * this->value[1][2];
-		value_type SubFactor16 = this->value[1][0] * this->value[2][3] - this->value[2][0] * this->value[1][3];
-		value_type SubFactor17 = this->value[1][0] * this->value[2][2] - this->value[2][0] * this->value[1][2];
-		value_type SubFactor18 = this->value[1][0] * this->value[2][1] - this->value[2][0] * this->value[1][1];
-/*
-		tmat4x4<T, P> Inverse(
-			+ (this->value[1][1] * SubFactor00 - this->value[1][2] * SubFactor01 + this->value[1][3] * SubFactor02),
-			- (this->value[1][0] * SubFactor00 - this->value[1][2] * SubFactor03 + this->value[1][3] * SubFactor04),
-			+ (this->value[1][0] * SubFactor01 - this->value[1][1] * SubFactor03 + this->value[1][3] * SubFactor05),
-			- (this->value[1][0] * SubFactor02 - this->value[1][1] * SubFactor04 + this->value[1][2] * SubFactor05),
+		static detail::tmat4x4<T, P> call(detail::tmat4x4<T, P> const & m)
+		{
+			T Coef00 = m[2][2] * m[3][3] - m[3][2] * m[2][3];
+			T Coef02 = m[1][2] * m[3][3] - m[3][2] * m[1][3];
+			T Coef03 = m[1][2] * m[2][3] - m[2][2] * m[1][3];
 
-			- (this->value[0][1] * SubFactor00 - this->value[0][2] * SubFactor01 + this->value[0][3] * SubFactor02),
-			+ (this->value[0][0] * SubFactor00 - this->value[0][2] * SubFactor03 + this->value[0][3] * SubFactor04),
-			- (this->value[0][0] * SubFactor01 - this->value[0][1] * SubFactor03 + this->value[0][3] * SubFactor05),
-			+ (this->value[0][0] * SubFactor02 - this->value[0][1] * SubFactor04 + this->value[0][2] * SubFactor05),
+			T Coef04 = m[2][1] * m[3][3] - m[3][1] * m[2][3];
+			T Coef06 = m[1][1] * m[3][3] - m[3][1] * m[1][3];
+			T Coef07 = m[1][1] * m[2][3] - m[2][1] * m[1][3];
 
-			+ (this->value[0][1] * SubFactor06 - this->value[0][2] * SubFactor07 + this->value[0][3] * SubFactor08),
-			- (this->value[0][0] * SubFactor06 - this->value[0][2] * SubFactor09 + this->value[0][3] * SubFactor10),
-			+ (this->value[0][0] * SubFactor11 - this->value[0][1] * SubFactor09 + this->value[0][3] * SubFactor12),
-			- (this->value[0][0] * SubFactor08 - this->value[0][1] * SubFactor10 + this->value[0][2] * SubFactor12),
+			T Coef08 = m[2][1] * m[3][2] - m[3][1] * m[2][2];
+			T Coef10 = m[1][1] * m[3][2] - m[3][1] * m[1][2];
+			T Coef11 = m[1][1] * m[2][2] - m[2][1] * m[1][2];
 
-			- (this->value[0][1] * SubFactor13 - this->value[0][2] * SubFactor14 + this->value[0][3] * SubFactor15),
-			+ (this->value[0][0] * SubFactor13 - this->value[0][2] * SubFactor16 + this->value[0][3] * SubFactor17),
-			- (this->value[0][0] * SubFactor14 - this->value[0][1] * SubFactor16 + this->value[0][3] * SubFactor18),
-			+ (this->value[0][0] * SubFactor15 - this->value[0][1] * SubFactor17 + this->value[0][2] * SubFactor18));
-*/
-		tmat4x4<T, P> Inverse(
-			+ this->value[1][1] * SubFactor00 - this->value[1][2] * SubFactor01 + this->value[1][3] * SubFactor02,
-			- this->value[1][0] * SubFactor00 + this->value[1][2] * SubFactor03 - this->value[1][3] * SubFactor04,
-			+ this->value[1][0] * SubFactor01 - this->value[1][1] * SubFactor03 + this->value[1][3] * SubFactor05,
-			- this->value[1][0] * SubFactor02 + this->value[1][1] * SubFactor04 - this->value[1][2] * SubFactor05,
+			T Coef12 = m[2][0] * m[3][3] - m[3][0] * m[2][3];
+			T Coef14 = m[1][0] * m[3][3] - m[3][0] * m[1][3];
+			T Coef15 = m[1][0] * m[2][3] - m[2][0] * m[1][3];
 
-			- this->value[0][1] * SubFactor00 + this->value[0][2] * SubFactor01 - this->value[0][3] * SubFactor02,
-			+ this->value[0][0] * SubFactor00 - this->value[0][2] * SubFactor03 + this->value[0][3] * SubFactor04,
-			- this->value[0][0] * SubFactor01 + this->value[0][1] * SubFactor03 - this->value[0][3] * SubFactor05,
-			+ this->value[0][0] * SubFactor02 - this->value[0][1] * SubFactor04 + this->value[0][2] * SubFactor05,
+			T Coef16 = m[2][0] * m[3][2] - m[3][0] * m[2][2];
+			T Coef18 = m[1][0] * m[3][2] - m[3][0] * m[1][2];
+			T Coef19 = m[1][0] * m[2][2] - m[2][0] * m[1][2];
 
-			+ this->value[0][1] * SubFactor06 - this->value[0][2] * SubFactor07 + this->value[0][3] * SubFactor08,
-			- this->value[0][0] * SubFactor06 + this->value[0][2] * SubFactor09 - this->value[0][3] * SubFactor10,
-			+ this->value[0][0] * SubFactor11 - this->value[0][1] * SubFactor09 + this->value[0][3] * SubFactor12,
-			- this->value[0][0] * SubFactor08 + this->value[0][1] * SubFactor10 - this->value[0][2] * SubFactor12,
+			T Coef20 = m[2][0] * m[3][1] - m[3][0] * m[2][1];
+			T Coef22 = m[1][0] * m[3][1] - m[3][0] * m[1][1];
+			T Coef23 = m[1][0] * m[2][1] - m[2][0] * m[1][1];
 
-			- this->value[0][1] * SubFactor13 + this->value[0][2] * SubFactor14 - this->value[0][3] * SubFactor15,
-			+ this->value[0][0] * SubFactor13 - this->value[0][2] * SubFactor16 + this->value[0][3] * SubFactor17,
-			- this->value[0][0] * SubFactor14 + this->value[0][1] * SubFactor16 - this->value[0][3] * SubFactor18,
-			+ this->value[0][0] * SubFactor15 - this->value[0][1] * SubFactor17 + this->value[0][2] * SubFactor18);
+			detail::tvec4<T, P> Fac0(Coef00, Coef00, Coef02, Coef03);
+			detail::tvec4<T, P> Fac1(Coef04, Coef04, Coef06, Coef07);
+			detail::tvec4<T, P> Fac2(Coef08, Coef08, Coef10, Coef11);
+			detail::tvec4<T, P> Fac3(Coef12, Coef12, Coef14, Coef15);
+			detail::tvec4<T, P> Fac4(Coef16, Coef16, Coef18, Coef19);
+			detail::tvec4<T, P> Fac5(Coef20, Coef20, Coef22, Coef23);
 
-		T Determinant = static_cast<T>(
-			+ this->value[0][0] * Inverse[0][0]
-			+ this->value[0][1] * Inverse[1][0]
-			+ this->value[0][2] * Inverse[2][0]
-			+ this->value[0][3] * Inverse[3][0]);
+			detail::tvec4<T, P> Vec0(m[1][0], m[0][0], m[0][0], m[0][0]);
+			detail::tvec4<T, P> Vec1(m[1][1], m[0][1], m[0][1], m[0][1]);
+			detail::tvec4<T, P> Vec2(m[1][2], m[0][2], m[0][2], m[0][2]);
+			detail::tvec4<T, P> Vec3(m[1][3], m[0][3], m[0][3], m[0][3]);
 
-		Inverse /= Determinant;
-		return Inverse;
-	}
+			detail::tvec4<T, P> Inv0(Vec1 * Fac0 - Vec2 * Fac1 + Vec3 * Fac2);
+			detail::tvec4<T, P> Inv1(Vec0 * Fac0 - Vec2 * Fac3 + Vec3 * Fac4);
+			detail::tvec4<T, P> Inv2(Vec0 * Fac1 - Vec1 * Fac3 + Vec3 * Fac5);
+			detail::tvec4<T, P> Inv3(Vec0 * Fac2 - Vec1 * Fac4 + Vec2 * Fac5);
+
+			detail::tvec4<T, P> SignA(+1, -1, +1, -1);
+			detail::tvec4<T, P> SignB(-1, +1, -1, +1);
+			detail::tmat4x4<T, P> Inverse(Inv0 * SignA, Inv1 * SignB, Inv2 * SignA, Inv3 * SignB);
+
+			detail::tvec4<T, P> Row0(Inverse[0][0], Inverse[1][0], Inverse[2][0], Inverse[3][0]);
+
+			detail::tvec4<T, P> Dot0(m[0] * Row0);
+			T Dot1 = (Dot0.x + Dot0.y) + (Dot0.z + Dot0.w);
+
+			T OneOverDeterminant = static_cast<T>(1) / Dot1;
+
+			return Inverse * OneOverDeterminant;
+		}
+	};
 
 	// Binary operators
 	template <typename T, precision P>
@@ -867,7 +809,7 @@ namespace detail
 		typename tmat4x4<T, P>::row_type const & v
 	)
 	{
-		return m._inverse() * v;
+		return detail::compute_inverse<detail::tmat4x4, T, P>::call(m) * v;
 	}
 
 	template <typename T, precision P>
@@ -877,7 +819,7 @@ namespace detail
 		tmat4x4<T, P> const & m
 	)
 	{
-		return v * m._inverse();
+		return v * detail::compute_inverse<detail::tmat4x4, T, P>::call(m);
 	}
 
 	template <typename T, precision P>
@@ -913,10 +855,10 @@ namespace detail
 	)
 	{
 		return tmat4x4<T, P>(
-			m[0] + typename tmat4x4<T, P>::value_type(1),
-			m[1] + typename tmat4x4<T, P>::value_type(1),
-			m[2] + typename tmat4x4<T, P>::value_type(1),
-			m[3] + typename tmat4x4<T, P>::value_type(1));
+			m[0] + static_cast<T>(1),
+			m[1] + static_cast<T>(1),
+			m[2] + static_cast<T>(1),
+			m[3] + static_cast<T>(1));
 	}
 
 	template <typename T, precision P>
@@ -927,10 +869,10 @@ namespace detail
 	)
 	{
 		return tmat4x4<T, P>(
-			m[0] - typename tmat4x4<T, P>::value_type(1),
-			m[1] - typename tmat4x4<T, P>::value_type(1),
-			m[2] - typename tmat4x4<T, P>::value_type(1),
-			m[3] - typename tmat4x4<T, P>::value_type(1));
+			m[0] - static_cast<T>(1),
+			m[1] - static_cast<T>(1),
+			m[2] - static_cast<T>(1),
+			m[3] - static_cast<T>(1));
 	}
 
 	//////////////////////////////////////

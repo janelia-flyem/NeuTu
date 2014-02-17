@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////////
 /// OpenGL Mathematics (glm.g-truc.net)
 ///
-/// Copyright (c) 2005 - 2013 G-Truc Creation (www.g-truc.net)
+/// Copyright (c) 2005 - 2014 G-Truc Creation (www.g-truc.net)
 /// Permission is hereby granted, free of charge, to any person obtaining a copy
 /// of this software and associated documentation files (the "Software"), to deal
 /// in the Software without restriction, including without limitation the rights
@@ -140,49 +140,9 @@ namespace detail
 		this->value[3] = v3;
 	}
 
-#if(GLM_HAS_INITIALIZER_LISTS)
-	template <typename T, precision P>
-	template <typename U>
-	GLM_FUNC_QUALIFIER tmat4x3<T, P>::tmat4x3(std::initializer_list<U> l)
-	{
-		assert(l.size() == this->length() * this->value[0].length());
-
-		typename std::initializer_list<U>::iterator p = l.begin();
-
-		this->value[0] = tvec3<T, P>(*(p +  0), *(p +  1), *(p +  2));
-		this->value[1] = tvec3<T, P>(*(p +  3), *(p +  4), *(p +  5));
-		this->value[2] = tvec3<T, P>(*(p +  6), *(p +  7), *(p +  8));
-		this->value[3] = tvec3<T, P>(*(p +  9), *(p + 10), *(p + 11));
-	}
-
-	template <typename T, precision P>
-	GLM_FUNC_QUALIFIER tmat4x3<T, P>::tmat4x3(std::initializer_list<tvec3<T, P> > l)
-	{
-		assert(l.size() == this->length());
-
-		this->value[0] = l.begin()[0];
-		this->value[1] = l.begin()[1];
-		this->value[2] = l.begin()[2];
-		this->value[3] = l.begin()[3];
-	}
-#endif//GLM_HAS_INITIALIZER_LISTS
-
 	//////////////////////////////////////
 	// Conversion constructors
-	template <typename T, precision P> 
-	template <typename U> 
-	GLM_FUNC_QUALIFIER tmat4x3<T, P>::tmat4x3
-	(
-		U const & s
-	)
-	{
-		value_type const Zero(0);
-		this->value[0] = tvec3<T, P>(static_cast<T>(s), Zero, Zero);
-		this->value[1] = tvec3<T, P>(Zero, value_type(s), Zero);
-		this->value[2] = tvec3<T, P>(Zero, Zero, value_type(s));
-		this->value[3] = tvec3<T, P>(Zero, Zero, Zero);
-	}
-	
+
 	template <typename T, precision P> 
 	template <
 		typename X1, typename Y1, typename Z1,
@@ -195,7 +155,7 @@ namespace detail
 		X2 const & x2, Y2 const & y2, Z2 const & z2,
 		X3 const & x3, Y3 const & y3, Z3 const & z3,
 		X4 const & x4, Y4 const & y4, Z4 const & z4
-	)		
+	)
 	{
 		this->value[0] = col_type(static_cast<T>(x1), value_type(y1), value_type(z1));
 		this->value[1] = col_type(static_cast<T>(x2), value_type(y2), value_type(z2));
@@ -596,7 +556,7 @@ namespace detail
 		T const SrcB22 = m2[2][2];
 		T const SrcB23 = m2[2][3];
 
-		tmat3x3<T, P> Result(tmat3x3<T, P>::null);
+		tmat3x3<T, P> Result(tmat3x3<T, P>::_null);
 		Result[0][0] = SrcA00 * SrcB00 + SrcA10 * SrcB01 + SrcA20 * SrcB02 + SrcA30 * SrcB03;
 		Result[0][1] = SrcA01 * SrcB00 + SrcA11 * SrcB01 + SrcA21 * SrcB02 + SrcA31 * SrcB03;
 		Result[0][2] = SrcA02 * SrcB00 + SrcA12 * SrcB01 + SrcA22 * SrcB02 + SrcA32 * SrcB03;
