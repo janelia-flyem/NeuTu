@@ -987,6 +987,10 @@ int* Graph_Shortest_Path_E(const Graph *graph, int start, int end,
   PROGRESS_BEGIN("Finding shortest path");
 
   Int_Arraylist *heap = Int_Arraylist_New(1, 0);
+#ifdef _DEBUG_2
+  Print_Graph(graph);
+#endif
+
 
   for (i = 1; i < gw->nvertex; i++) {
     PROGRESS_STATUS(i * 100 / gw->nvertex);
@@ -1000,6 +1004,8 @@ int* Graph_Shortest_Path_E(const Graph *graph, int start, int end,
 	if (graph->weights != NULL) {
 	  tmpdist = graph->weights[gw->idx[cur_vertex][j]] + dist[cur_vertex];
 #ifdef _DEBUG_2
+          printf("%d: weight: %g\n", gw->idx[cur_vertex][j],
+              graph->weights[gw->idx[cur_vertex][j]]);
           printf("tmpdist: %g\n", tmpdist);
 #endif
 	} else {
@@ -1497,7 +1503,9 @@ Arrayqueue Graph_Traverse_Lbfs(Graph *graph, Graph_Workspace *gw)
   }
   sigma->data = (unipointer_t) start_set;
 
+#ifdef _DEBUG_2
   int count = 0;
+#endif
 
   /* While the sequence Sigma is not empty */
   while (sigma != NULL) {
@@ -1516,7 +1524,7 @@ Arrayqueue Graph_Traverse_Lbfs(Graph *graph, Graph_Workspace *gw)
 
     int v = Int_Arraylist_Take_Last(s);
     Arrayqueue_Enqueue(&aq, v);
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
     printf("%d / %d\n", ++count, graph->nvertex);
 #endif
   
@@ -1897,7 +1905,7 @@ int construct_edge_loop(BOOL **conn, int nvertex, int i, int j, int *loop)
     for (k = 0; k < nvertex; k++) {
       opening = FALSE;
       if (conn[j][k] == TRUE) {
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
 	if (j == 202 && k == 1110) {
 	  printf("debug here\n");
 	}

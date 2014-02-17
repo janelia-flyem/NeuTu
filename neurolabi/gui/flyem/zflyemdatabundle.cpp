@@ -479,6 +479,20 @@ double ZFlyEmDataBundle::getSwcResolution(NeuTube::EAxis axis)
   return 1.0;
 }
 
+int ZFlyEmDataBundle::getSourceDimension(NeuTube::EAxis axis) const
+{
+  switch (axis) {
+  case NeuTube::X_AXIS:
+    return m_sourceDimension[0];
+  case NeuTube::Y_AXIS:
+    return m_sourceDimension[1];
+  case NeuTube::Z_AXIS:
+    return m_sourceDimension[2];
+  }
+
+  return 0;
+}
+
 void ZFlyEmDataBundle::exportJsonFile(const string &path) const
 {
   ZJsonObject jsonObj(C_Json::makeObject(), true);
@@ -495,7 +509,7 @@ void ZFlyEmDataBundle::exportJsonFile(const string &path) const
     neuronArrayWrapper.append(neuron.makeJsonObject(exportDir));
   }
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
   neuronArrayWrapper.print();
 #endif
 
@@ -518,8 +532,9 @@ void ZFlyEmDataBundle::exportJsonFile(const string &path) const
   jsonObj.setEntry(m_sourceDimensionKey, m_sourceDimension, 3);
   jsonObj.setEntry(m_imageResolutionKey, m_imageResolution, 3);
   jsonObj.setEntry(m_swcResolutionKey, m_swcResolution, 3);
+  jsonObj.setEntry(m_sourceOffsetKey, m_sourceOffset, 3);
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
   jsonObj.print();
 #endif
 
@@ -602,4 +617,30 @@ std::map<string, int> ZFlyEmDataBundle::getClassIdMap() const
   }
 
   return classMap;
+}
+
+void ZFlyEmDataBundle::setVolume(const string &volumeDir)
+{
+  std::vector<ZFlyEmNeuron> &neuronArray = getNeuronArray();
+  for (std::vector<ZFlyEmNeuron>::iterator iter = neuronArray.begin();
+       iter != neuronArray.end(); ++iter) {
+    ZFlyEmNeuron &neuron = *iter;
+    ZString volumePath = volumeDir + "/";
+    volumePath.appendNumber(neuron.getId());
+    volumePath.append(".sobj");
+    neuron.setVolumePath(volumePath);
+  }
+}
+
+void ZFlyEmDataBundle::setThumbnail(const std::string &thumbnailDir)
+{
+  std::vector<ZFlyEmNeuron> &neuronArray = getNeuronArray();
+  for (std::vector<ZFlyEmNeuron>::iterator iter = neuronArray.begin();
+       iter != neuronArray.end(); ++iter) {
+    ZFlyEmNeuron &neuron = *iter;
+    ZString thumbnailPath = thumbnailDir + "/";
+    thumbnailPath.appendNumber(neuron.getId());
+    thumbnailPath.append(".tif");
+    neuron.setThumbnailPath(thumbnailPath);
+  }
 }

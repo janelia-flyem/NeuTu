@@ -274,8 +274,33 @@ void translate(Swc_Tree_Node *tn, double dx, double dy, double dz);
 void rotate(Swc_Tree_Node *tn, double theta, double psi, const ZPoint &center);
 void rotate(Swc_Tree_Node *tn, double theta, double psi);
 
+/*!
+ *
+ * \a tn1 * \a lambda + \a tn2 * (1 - \a lambda);
+ */
 void interpolate(Swc_Tree_Node *tn1, Swc_Tree_Node *tn2, double lambda,
                 double *x, double *y, double *z, double *r);
+
+/*!
+ * \brief Length ratio between two path.
+ *
+ * \return L(\a tn1, \a tn) / L(\a tn2, \a tn). It returns 0.5 if: there is no
+ * path from \a tn to \a tn1, and from \a tn to \a tn2; or both paths are 0.
+ * It returns 1.0 if there is no path from \a tn to \a tn1, but the path from
+ * \a tn to \a tn2 exists.
+ */
+double pathLengthRatio(
+    Swc_Tree_Node *tn1, Swc_Tree_Node *tn2, Swc_Tree_Node *tn);
+
+
+/*!
+ * \brief Interpolate a node.
+ *
+ * Set \a tn to the interplation of \a tn1 and \a tn2. The lambda is the
+ * path length ratio from \a tn to \a tn1. Nothing is done if \a tn1, \a tn2
+ * or \a tn is virtual.
+ */
+void interpolate(Swc_Tree_Node *tn1, Swc_Tree_Node *tn2, Swc_Tree_Node *tn);
 
 //Elementary operations (do not validate structures)
 enum EKnowingLink {

@@ -194,6 +194,12 @@ public:
     m_volumePath = path;
   }
 
+  /*!
+   * \brief Set thumbnail path
+   */
+  inline void setThumbnailPath(const std::string &path) {
+    m_thumbnailPath = path;
+  }
 
   static const int TopMatchCapacity;
 
@@ -230,6 +236,7 @@ private:
   static const char *m_classKey;
   static const char *m_modelKey;
   static const char *m_volumeKey;
+  static const char *m_thumbnailKey;
 };
 
 template <typename InputIterator>

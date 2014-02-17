@@ -23,6 +23,7 @@ const char *ZFlyEmNeuron::m_nameKey = "name";
 const char *ZFlyEmNeuron::m_classKey = "class";
 const char *ZFlyEmNeuron::m_modelKey = "model";
 const char *ZFlyEmNeuron::m_volumeKey = "volume";
+const char *ZFlyEmNeuron::m_thumbnailKey = "thumbnail";
 
 ZFlyEmNeuron::ZFlyEmNeuron() : CONSTRUCTOR_INIT
 {
@@ -175,23 +176,27 @@ string ZFlyEmNeuron::getAbsolutePath(const ZString &path, const string &source)
 
 void ZFlyEmNeuron::loadJsonObject(ZJsonObject &obj, const string &source)
 {
-  m_id = ZJsonParser::integerValue(obj["id"]);
-  m_name = ZJsonParser::stringValue(obj["name"]);
-  m_class = ZJsonParser::stringValue(obj["class"]);
+  m_id = ZJsonParser::integerValue(obj[m_idKey]);
+  m_name = ZJsonParser::stringValue(obj[m_nameKey]);
+  m_class = ZJsonParser::stringValue(obj[m_classKey]);
 
-  m_modelPath = ZJsonParser::stringValue(obj["model"]);
+  m_modelPath = ZJsonParser::stringValue(obj[m_modelKey]);
   if (!m_modelPath.empty()) {
     m_modelPath = getAbsolutePath(m_modelPath, source);
   }
 
-  m_volumePath = ZJsonParser::stringValue(obj["volume"]);
+  m_volumePath = ZJsonParser::stringValue(obj[m_volumeKey]);
   if (!m_volumePath.empty()) {
     m_volumePath = getAbsolutePath(m_volumePath, source);
   }
 
-  m_thumbnailPath = ZJsonParser::stringValue(obj["thumbnail"]);
-  if (!m_volumePath.empty()) {
-    m_volumePath = getAbsolutePath(m_thumbnailPath, source);
+#ifdef _DEBUG_2
+  std::cout << m_volumePath << std::endl;
+#endif
+
+  m_thumbnailPath = ZJsonParser::stringValue(obj[m_thumbnailKey]);
+  if (!m_thumbnailPath.empty()) {
+    m_thumbnailPath = getAbsolutePath(m_thumbnailPath, source);
   }
 
   deprecate(ALL_COMPONENT);
@@ -248,6 +253,11 @@ json_t* ZFlyEmNeuron::makeJsonObject(const std::string &bundleDir) const
           m_volumeKey, ZString::relativePath(m_volumePath, bundleDir));
   }
 
+  if (!m_thumbnailPath.empty()) {
+    objWrapper.setEntry(
+          m_thumbnailKey, ZString::relativePath(m_thumbnailPath, bundleDir));
+  }
+
   return obj;
 }
 
@@ -264,6 +274,7 @@ void ZFlyEmNeuron::print(ostream &stream) const
   stream << "  Name: " << m_name << endl;
   stream << "  Class: " << m_class << endl;
   stream << "  Model: " << m_modelPath << endl;
+  stream << "  Thumbnail: " << m_thumbnailPath << endl;
 }
 
 void ZFlyEmNeuron::setId(const string &str)

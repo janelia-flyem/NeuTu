@@ -44,7 +44,7 @@ ZLocalNeuroseg::~ZLocalNeuroseg()
 void ZLocalNeuroseg::display(ZPainter &painter, int z, Display_Style option,
                              const QColor &color) const
 { //todo
-#if 0
+#if defined(_QT_GUI_USED_)
   if (option == ZStackDrawable::NORMAL) {
     option = ZStackDrawable::SOLID;
   }
@@ -110,12 +110,15 @@ void ZLocalNeuroseg::display(ZPainter &painter, int z, Display_Style option,
         offset = (z - region_corner[2]) * area;
         for (j = 0; j < m_filterStack->height; j++) {
           point[1] = region_corner[1] + j;
-          uchar *line = widget->scanLine(point[1]);
+          //uchar *line = widget->scanLine(point[1]);
           for (i = 0; i < m_filterStack->width; i++) {
             point[0] = region_corner[0] + i;
+            /*
             if ((point[0] >= 0) && (point[0] < widget->width()) &&
                 (point[1] >= 0) && (point[1] < widget->height()) &&
                 (m_filterStack->array[offset] > 0)) {
+                */
+            if (m_filterStack->array[offset] > 0) {
               if (option == ZStackDrawable::BOUNDARY) {
                 int k = z - region_corner[2];
                 if (IS_IN_OPEN_RANGE3(i, j, k, 0, m_filterStack->width-1,
@@ -128,8 +131,10 @@ void ZLocalNeuroseg::display(ZPainter &painter, int z, Display_Style option,
                 }
               }
 
-              uchar *pixel = line + 4 * point[0];
               int v = m_filterStack->array[offset];
+#if 0
+              uchar *pixel = line + 4 * point[0];
+
 //              pixel[RED] = color.red() * v / 255;
 //              pixel[BLUE] = color.blue() * v / 255;
 //              pixel[GREEN] = color.green() * v / 255;
@@ -138,6 +143,11 @@ void ZLocalNeuroseg::display(ZPainter &painter, int z, Display_Style option,
               pixel[BLUE] = color.blue() * v / 255;
               pixel[GREEN] = color.green() * v / 255;
               pixel[3] = color.alpha();
+#endif
+
+              painter.setPen(QColor(color.red() * v / 255, color.green() * v / 255,
+                                    color.blue() * v / 255, color.alpha()));
+              painter.drawPoint(QPointF(point[0], point[1]));
 
             }
             offset++;
@@ -148,11 +158,13 @@ void ZLocalNeuroseg::display(ZPainter &painter, int z, Display_Style option,
         offset = 0;
         for (j = 0; j < m_filterStack->height; j++) {
           point[1] = region_corner[1] + j;
-          uchar *line = widget->scanLine(point[1]);
+          //uchar *line = widget->scanLine(point[1]);
           for (i = 0; i < m_filterStack->width; i++) {
             point[0] = region_corner[0] + i;
-            if ((point[0] >= 0) && (point[0] < widget->width()) &&
+            /*if ((point[0] >= 0) && (point[0] < widget->width()) &&
                 (point[1] >= 0) && (point[1] < widget->height())) {
+                */
+            if (1) {
               int v = m_filterStack->array[offset];
               int new_offset = offset;
               for (k = 1; k < m_filterStack->depth; k++) {
@@ -195,11 +207,17 @@ void ZLocalNeuroseg::display(ZPainter &painter, int z, Display_Style option,
                 }
               }
               if (v > 0) {
+                painter.setPen(QColor(color.red() * v / 255, color.green() * v / 255,
+                                      color.blue() * v / 255, color.alpha()));
+                painter.drawPoint(QPointF(point[0], point[1]));
+
+                /*
                 uchar *pixel = line + 4 * point[0];
                 pixel[RED] = color.red() * v / 255;
                 pixel[BLUE] = color.blue() * v / 255;
                 pixel[GREEN] = color.green() * v / 255;
                 pixel[3] = color.alpha();
+                */
               }
             }
             offset++;
@@ -222,6 +240,7 @@ void ZLocalNeuroseg::display(ZPainter &painter, int z, Display_Style option,
       Object_3d *obj = Line_To_Object_3d(start, end);
 
       for (size_t i = 0; i < obj->size; i++) {
+        /*
         if (((obj->voxels[i][2] == z) || (z < 0))&&
             IS_IN_CLOSE_RANGE(obj->voxels[i][0], 0, widget->width() - 1) &&
             IS_IN_CLOSE_RANGE(obj->voxels[i][1], 0, widget->height() - 1)){
@@ -232,6 +251,7 @@ void ZLocalNeuroseg::display(ZPainter &painter, int z, Display_Style option,
           pixel[GREEN] = color.green();
           pixel[3] = color.alpha();
         }
+        */
       }
 
       Kill_Object_3d(obj);

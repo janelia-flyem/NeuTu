@@ -16,9 +16,35 @@ public:
 
 public:
   inline double* dataArray() { return &((*this)[0]); }
-  double sum();
+  inline const double* dataArray() const { return &((*this)[0]); }
+  double sum() const;
   double min(size_t *index = 0);
   double max(size_t *index = 0);
+
+  /*!
+   * \brief Weighted sum of the indices
+   */
+  double indexSum() const;
+
+  /*!
+   * \brief Weighted mean of the indices
+   */
+  double indexMean() const;
+
+  /*!
+   * \brief Weighted sum of the quare of indices
+   */
+  double squaredIndexSum() const;
+
+  /*!
+   * \brief Weighted mean of the quare of indices
+   */
+  double squaredIndexMean() const;
+
+  /*!
+   * \brief Weighted variance of the indices
+   */
+  double indexVar() const;
 
   bool operator== (const ZDoubleVector &vec);
 

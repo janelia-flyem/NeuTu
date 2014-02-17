@@ -232,9 +232,9 @@ void ZStackGraph::updateRange(int x1, int y1, int z1, int x2, int y2, int z2,
   if (m_workspace.range == NULL) {
     double dist = Geo3d_Dist(x1, y1, z1, x2, y2, z2);
     int margin[3];
-    margin[0] = iround(dist - abs(x2 - x1 + 1));
-    margin[1] = iround(dist - abs(y2 - y1 + 1));
-    margin[2] = iround(dist - abs(z2 - z1 + 1));
+    margin[0] = iround(dist / 2.0 - abs(x2 - x1 + 1));
+    margin[1] = iround(dist / 2.0 - abs(y2 - y1 + 1));
+    margin[2] = iround(dist / 4.0 - abs(z2 - z1 + 1));
     for (int i = 0; i < 3; ++i) {
       if (margin[i] < 0) {
         margin[i] = 0;

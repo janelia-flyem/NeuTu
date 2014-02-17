@@ -23,6 +23,8 @@
 #include "tz_stack_math.h"
 #include "include/tz_stdint.h"
 #include "zfiletype.h"
+#include "zeigensolver.h"
+#include "zdoublevector.h"
 
 using namespace std;
 
@@ -480,6 +482,12 @@ bool ZObject3dStripe::equalsLiterally(const ZObject3dStripe &stripe) const
   return true;
 }
 
+void ZObject3dStripe::switchYZ()
+{
+  int tmp;
+  SWAP2(m_y, m_z, tmp);
+}
+
 void ZObject3dStripe::dilate()
 {
   for (size_t i = 0; i < m_segmentArray.size(); i += 2) {
@@ -930,6 +938,9 @@ bool ZObject3dScan::load(const string &filePath)
   }
 
   FILE *fp = fopen(filePath.c_str(), "rb");
+#ifdef _DEBUG_
+  std::cout << filePath << std::endl;
+#endif
   if (fp != NULL) {
     int stripeNumber = 0;
     fread(&stripeNumber, sizeof(int), 1, fp);
@@ -1607,6 +1618,25 @@ ZObject3dScan ZObject3dScan::makeZProjection() const
   return proj;
 }
 
+ZObject3dScan ZObject3dScan::makeYProjection() const
+{
+  ZObject3dScan proj;
+  for (size_t i = 0; i < getStripeNumber(); ++i) {
+    proj.addStripe(0, m_stripeArray[i].getZ());
+    int nseg = m_stripeArray[i].getSegmentNumber();
+    for (int j = 0; j < nseg; ++j) {
+      int x1 = m_stripeArray[i].getSegmentStart(j);
+      int x2 = m_stripeArray[i].getSegmentEnd(j);
+      proj.addSegment(x1, x2, false);
+    }
+  }
+
+  proj.canonize();
+
+  return proj;
+}
+
+
 int ZObject3dScan::getMinZ() const
 {
   int minZ = 0;
@@ -1936,6 +1966,81 @@ bool ZObject3dScan::importDvidObject(
   }
 
   return true;
+}
+
+void ZObject3dScan::switchYZ()
+{
+  for (size_t i = 0; i < m_stripeArray.size(); ++i) {
+    m_stripeArray[i].switchYZ();
+  }
+  m_isCanonized = false;
+}
+
+std::vector<double> ZObject3dScan::getPlaneCov() const
+{
+  std::vector<double> cov(3, 0.0);
+
+  if (!isEmpty()) {
+    Cuboid_I boundBox;
+    getBoundBox(&boundBox);
+
+    double xMean = 0.0;
+    double yMean = 0.0;
+    double xSquareMean = 0.0;
+    double ySquareMean = 0.0;
+    double xyCorr = 0.0;
+
+    size_t count = 0;
+    for (vector<ZObject3dStripe>::const_iterator iter = m_stripeArray.begin();
+         iter != m_stripeArray.end(); ++iter) {
+      int y = iter->getY();
+      int nseg = iter->getSegmentNumber();
+      for (int i = 0; i < nseg; ++i) {
+        const int *seg = iter->getSegment(i);
+        for (int x = seg[0]; x <= seg[1]; ++x) {
+          xMean += x;
+          xSquareMean += x * x;
+          yMean += y;
+          ySquareMean += y * y;
+          xyCorr += x * y;
+          ++count;
+        }
+      }
+    }
+
+    xMean /= count;
+    yMean /= count;
+    xSquareMean /= count;
+    ySquareMean /= count;
+    xyCorr /= count;
+
+#ifdef _DEBUG_2
+    std::cout << count << std::endl;
+#endif
+
+    double factor = 1.0;
+    if (count > 1) {
+      factor = static_cast<double>(count) / (count - 1);
+    }
+
+    cov[0] = (xSquareMean - xMean * xMean) * factor;
+    cov[1] = (ySquareMean - yMean * yMean) * factor;
+    cov[2] = (xyCorr - xMean * yMean) * factor;
+  }
+
+  return cov;
+}
+
+double ZObject3dScan::getSpread(int z) const
+{
+  ZObject3dScan objSlice = getSlice(z, z);
+  const std::vector<double> cov = objSlice.getPlaneCov();
+  ZEigenSolver solver;
+  if (solver.solveCovEigen(cov)) {
+    return sqrt(solver.getEigenValue(0) * solver.getEigenValue(1)) * 2.0;
+  }
+
+  return 0.0;
 }
 
 ZINTERFACE_DEFINE_CLASS_NAME(ZObject3dScan)

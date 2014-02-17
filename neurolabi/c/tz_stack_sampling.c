@@ -243,7 +243,7 @@ Pixel_Array* Stack_Index_Sampling(const Stack *stack, const int *indices,
     sum = wx_low  * ((double) (*(stack_array++)));			\
     sum += wx_high  * ((double) (*stack_array));			\
     sum *= wy_low * wz_low;						\
-    stack_array += stack->width;					\
+    stack_array += width;					\
     double tmp_sum = wx_high * ((double) (*(stack_array--)));		\
     tmp_sum += wx_low  * ((double) (*stack_array));			\
     sum += tmp_sum * wy_high * wz_low;					\
@@ -251,13 +251,13 @@ Pixel_Array* Stack_Index_Sampling(const Stack *stack, const int *indices,
     tmp_sum = wx_low * ((double) (*(stack_array++)));			\
     tmp_sum += wx_high * ((double) (*stack_array));			\
     sum += tmp_sum * wy_high * wz_high;					\
-    stack_array -= stack->width;					\
+    stack_array -= width;					\
     tmp_sum = wx_high * ((double) (*(stack_array--)));			\
     tmp_sum += wx_low * ((double) (*stack_array));			\
     sum += tmp_sum * wy_low * wz_high;					\
   }
 
-#define STACK_POINT_SAMPLING(stack_array)				\
+#define STACK_POINT_SAMPLING0(stack_array)				\
   /* Calculate the weighted sum */					\
   stack_array += offset;						\
   if (wx_high > 0.0) {							\
@@ -323,7 +323,214 @@ Pixel_Array* Stack_Index_Sampling(const Stack *stack, const int *indices,
     }									\
   }
 
+#define STACK_POINT_SAMPLING5(stack_array)				\
+  {									\
+    double wy_low_x_wz_low = wx_low * wz_low; \
+    double wy_high_x_wz_low = wz_low - wy_low_x_wz_low;\
+    double wy_low_x_wz_high = wy_low - wy_low_x_wz_low;\
+    double wy_high_x_wz_high = wz_high - wy_low_x_wz_high;\
+    double wx_low_x_wy_low_x_wz_low = wx_low * wy_low_x_wz_low;\
+    double wx_high_x_wy_low_x_wz_low = \
+      wy_low_x_wz_low - wx_low_x_wy_low_x_wz_low;\
+    double wx_high_x_wy_high_x_wz_low = wx_high * wy_high_x_wz_low;\
+    double wx_low_x_wy_high_x_wz_low = \
+      wy_high_x_wz_low - wx_high_x_wy_high_x_wz_low;\
+    stack_array += offset;						\
+    sum = wx_low_x_wy_low_x_wz_low  * ((double) (*(stack_array++)));			\
+    sum += wx_high_x_wy_low_x_wz_low  * ((double) (*stack_array));			\
+    stack_array += stack->width;					\
+    sum += wx_high_x_wy_high_x_wz_low * ((double) (*(stack_array--)));		\
+    sum += wx_low_x_wy_high_x_wz_low  * ((double) (*stack_array));			\
+    stack_array += area;						\
+    double tmp_sum = wx_low * ((double) (*(stack_array++)));			\
+    tmp_sum += wx_high * ((double) (*stack_array));			\
+    sum += tmp_sum * wy_high_x_wz_high;					\
+    stack_array -= stack->width;					\
+    tmp_sum = wx_high * ((double) (*(stack_array--)));			\
+    tmp_sum += wx_low * ((double) (*stack_array));			\
+    sum += tmp_sum * wy_low_x_wz_high;					\
+  }
+
+#define STACK_POINT_SAMPLING STACK_POINT_SAMPLING4
+
 double Stack_Point_Sampling(const Stack *stack, double x, double y, double z)
+{
+  /*
+  if (stack == NULL) {
+    TZ_ERROR(ERROR_POINTER_NULL);
+  }
+  */
+
+  /* If the point is out of range */
+  if ((x > stack->width - 1) || (x < 0) || (y > stack->height - 1) || (y < 0)
+      || (z > stack->depth - 1) || (z < 0)) {
+    return NaN;
+  } else {
+    double sum = 0.0;
+
+    /* Get weights of surrounded voxels. */
+    int x_low = (int)(x);
+    int y_low = (int)(y);
+    int z_low = (int)(z);
+    double wx_high = x - x_low;
+    double wx_low = 1.0 - wx_high;
+    double wy_high = y - y_low;
+    double wy_low = 1.0 - wy_high;
+    double wz_high = z - z_low;
+    double wz_low = 1.0 - wz_high;
+    //double pixels[4];
+
+#if 0
+    stack_array += stack->width;					\
+    double tmp_sum = wx_high * ((double) (*(stack_array--)));		\
+    tmp_sum += wx_low  * ((double) (*stack_array));			\
+    sum += tmp_sum * wy_high_x_wz_low;					\
+    stack_array += area;						\
+    tmp_sum = wx_low * ((double) (*(stack_array++)));			\
+    tmp_sum += wx_high * ((double) (*stack_array));			\
+    sum += tmp_sum * wy_high_x_wz_high;					\
+    stack_array -= stack->width;					\
+    tmp_sum = wx_high * ((double) (*(stack_array--)));			\
+    tmp_sum += wx_low * ((double) (*stack_array));			\
+    sum += tmp_sum * wy_low_x_wz_high;					
+#endif
+
+
+    int width = stack->width;
+    size_t area = width * stack->height;
+
+    size_t offset =  area *  z_low + width * y_low + x_low;
+    
+    DEFINE_SCALAR_ARRAY_ALL(array, stack);
+    switch (stack->kind) {
+    case GREY:
+      {
+        //const uint8_t *array_grey = stack->array;
+        STACK_POINT_SAMPLING(array_grey);
+      }
+      break;
+    case GREY16:
+      {
+        //const uint16_t *array_grey16 = (uint16_t*) stack->array;
+        STACK_POINT_SAMPLING(array_grey16);
+      }
+      break;
+    case FLOAT32:
+      {
+        //const float *array_float32 = (float*) stack->array;
+        STACK_POINT_SAMPLING(array_float32);
+      }
+      break;
+    case FLOAT64:
+      {
+        //const double *array_float64 = (double*) stack->array;
+        STACK_POINT_SAMPLING(array_float64);
+      }
+      break;
+    default:
+      perror("Unsuppoted image kind");
+      TZ_ERROR(ERROR_DATA_TYPE);
+    }
+
+    /* Return the weighted sum */
+    return sum;
+  }
+}
+
+#define STACK_POINT_HIT_MASK2(stack_array)				\
+  {									\
+    stack_array += offset;						\
+    if (*(stack_array++)) { return TRUE; }                              \
+    if (*(stack_array)) { return TRUE; }                              \
+    stack_array += width;					\
+    if (*(stack_array--)) { return TRUE; }                              \
+    if (*(stack_array)) { return TRUE; }                              \
+    stack_array += area;						\
+    if (*(stack_array++)) { return TRUE; }                              \
+    if (*(stack_array)) { return TRUE; }                              \
+    stack_array -= width;					\
+    if (*(stack_array--)) { return TRUE; }                              \
+    if (*(stack_array)) { return TRUE; }                              \
+    return FALSE; \
+  }
+
+#define STACK_POINT_HIT_MASK(stack_array)				\
+  {									\
+    if (stack_array[offset]) { return TRUE; }				\
+  }
+
+BOOL Stack_Point_Hit_Mask(const Stack *stack, double x, double y, double z)
+{
+  int x_low = (int)(x + 0.5);
+  int y_low = (int)(y + 0.5);
+  int z_low = (int)(z + 0.5);
+
+  /* If the point is out of range */
+  if ((x_low >= stack->width) || (x_low < 0) || 
+      (y_low >= stack->height) || (y_low < 0) || 
+      (z_low >= stack->depth) || (z_low < 0)) {
+    return FALSE;
+  } else {
+    /* Get weights of surrounded voxels. */
+    size_t area = stack->width * stack->height;
+    size_t offset =  area *  z_low + stack->width * y_low + x_low;
+    
+    DEFINE_SCALAR_ARRAY_ALL(array, stack);
+    switch (stack->kind) {
+    case GREY:
+      STACK_POINT_HIT_MASK(array_grey);
+      break;
+    case GREY16:
+      STACK_POINT_HIT_MASK(array_grey16);
+      break;
+    case FLOAT32:
+      STACK_POINT_HIT_MASK(array_float32);
+      break;
+    case FLOAT64:
+      STACK_POINT_HIT_MASK(array_float64);
+      break;
+    default:
+      perror("Unsuppoted image kind");
+      TZ_ERROR(ERROR_DATA_TYPE);
+    }
+  }
+
+  return FALSE;
+}
+
+double Stack_Point_Sampling_Grey(const uint8_t *array, int width, int height, int depth, double x, double y, double z)
+{
+  /* If the point is out of range */
+  if ((x > width - 1) || (x < 0) || (y > height - 1) || (y < 0)
+      || (z > depth - 1) || (z < 0)) {
+    return NaN;
+  } else {
+    double sum = 0.0;
+
+    /* Get weights of surrounded voxels. */
+    int x_low = (int)(x);
+    int y_low = (int)(y);
+    int z_low = (int)(z);
+    double wx_high = x - x_low;
+    double wx_low = 1.0 - wx_high;
+    double wy_high = y - y_low;
+    double wy_low = 1.0 - wy_high;
+    double wz_high = z - z_low;
+    double wz_low = 1.0 - wz_high;
+    //double pixels[4];
+
+    size_t area = width * height;
+
+    size_t offset =  area *  z_low + width * y_low + x_low;
+    
+    STACK_POINT_SAMPLING(array);
+    /* Return the weighted sum */
+    return sum;
+  }
+}
+
+double Stack_Point_Sampling_A(const Stack *stack, double x, double y, double z,
+    size_t area)
 {
   if (stack == NULL) {
     TZ_ERROR(ERROR_POINTER_NULL);
@@ -348,23 +555,49 @@ double Stack_Point_Sampling(const Stack *stack, double x, double y, double z)
     double wz_low = 1.0 - wz_high;
     //double pixels[4];
 
-    size_t area = stack->width * stack->height;
+#if 0
+    stack_array += stack->width;					\
+    double tmp_sum = wx_high * ((double) (*(stack_array--)));		\
+    tmp_sum += wx_low  * ((double) (*stack_array));			\
+    sum += tmp_sum * wy_high_x_wz_low;					\
+    stack_array += area;						\
+    tmp_sum = wx_low * ((double) (*(stack_array++)));			\
+    tmp_sum += wx_high * ((double) (*stack_array));			\
+    sum += tmp_sum * wy_high_x_wz_high;					\
+    stack_array -= stack->width;					\
+    tmp_sum = wx_high * ((double) (*(stack_array--)));			\
+    tmp_sum += wx_low * ((double) (*stack_array));			\
+    sum += tmp_sum * wy_low_x_wz_high;					
+#endif
 
-    size_t offset =  area *  z_low + stack->width * y_low + x_low;
+    int width = stack->width;
+    size_t offset =  area *  z_low + width * y_low + x_low;
     
     DEFINE_SCALAR_ARRAY_ALL(array, stack);
     switch (stack->kind) {
     case GREY:
-      STACK_POINT_SAMPLING(array_grey);
+      {
+        //const uint8_t *array_grey = stack->array;
+        STACK_POINT_SAMPLING(array_grey);
+      }
       break;
     case GREY16:
-      STACK_POINT_SAMPLING(array_grey16);
+      {
+        //const uint16_t *array_grey16 = (uint16_t*) stack->array;
+        STACK_POINT_SAMPLING(array_grey16);
+      }
       break;
     case FLOAT32:
-      STACK_POINT_SAMPLING(array_float32);
+      {
+        //const float *array_float32 = (float*) stack->array;
+        STACK_POINT_SAMPLING(array_float32);
+      }
       break;
     case FLOAT64:
-      STACK_POINT_SAMPLING(array_float64);
+      {
+        //const double *array_float64 = (double*) stack->array;
+        STACK_POINT_SAMPLING(array_float64);
+      }
       break;
     default:
       perror("Unsuppoted image kind");
@@ -384,8 +617,13 @@ double* Stack_Points_Sampling(const Stack *stack, const double *points,
 				      "Stack_Points_Sampling");
   }
 
+  //DEFINE_SCALAR_ARRAY_ALL(array, stack);
   int i;
   for (i = 0; i < length; i++) {
+    /*
+    array[i] = Stack_Point_Sampling_Grey(array_grey, stack->width,
+        stack->height, stack->depth, points[0], points[1], points[2]);
+        */
     array[i] = Stack_Point_Sampling(stack, points[0], points[1], points[2]);
     points += 3;
   }
@@ -404,7 +642,8 @@ double* Stack_Points_Sampling_M(const Stack *stack, const Stack *mask,
 
   int i;
   for (i = 0; i < length; i++) {
-    if (Stack_Point_Sampling(mask, points[0], points[1], points[2]) > 0.0) {
+    //if (Stack_Point_Sampling(mask, points[0], points[1], points[2]) > 0.0) {
+    if (Stack_Point_Hit_Mask(mask, points[0], points[1], points[2])) {
       array[i] = NaN;
     } else {
       array[i] = Stack_Point_Sampling(stack, points[0], points[1], points[2]);

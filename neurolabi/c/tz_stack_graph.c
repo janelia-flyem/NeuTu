@@ -46,6 +46,8 @@ void Default_Stack_Graph_Workspace(Stack_Graph_Workspace *sgw)
     sgw->resolution[2] = 1.0;
     sgw->sp_option = 0;
     sgw->intensity = NULL;
+    sgw->virtualVertex = -1;
+    sgw->including_signal_border = FALSE;
   }
 }
 
@@ -465,18 +467,34 @@ Graph* Stack_Graph_W(const Stack *stack, Stack_Graph_Workspace *sgw)
         }
 #endif
 
-	if (nbound == sgw->conn) {
-	  STACK_GRAPH_ADD_EDGE((scan_mask[i] == 1) && 
-              (sgw->signal_mask == NULL ? 1 : 
-               ((sgw->signal_mask->array[offset2] > 0) &&
-                (sgw->signal_mask->array[offset2+org_neighbor[i]] > 0))))
-	} else {
-	  STACK_GRAPH_ADD_EDGE((scan_mask[i] == 1) && is_in_bound[i] && 
-	      (sgw->signal_mask == NULL ? 1 : 
-	       ((sgw->signal_mask->array[offset2] > 0) &&
-		(sgw->signal_mask->array[offset2+org_neighbor[i]]) >
-		0)))
-	}
+        if (sgw->including_signal_border == TRUE) {
+          if (nbound == sgw->conn) {
+            STACK_GRAPH_ADD_EDGE((scan_mask[i] == 1) && 
+                (sgw->signal_mask == NULL ? 1 : 
+                 ((sgw->signal_mask->array[offset2] > 0) ||
+                  (sgw->signal_mask->array[offset2+org_neighbor[i]] > 0))))
+          } else {
+            STACK_GRAPH_ADD_EDGE((scan_mask[i] == 1) && is_in_bound[i] && 
+                (sgw->signal_mask == NULL ? 1 : 
+                 ((sgw->signal_mask->array[offset2] > 0) ||
+                  (sgw->signal_mask->array[offset2+org_neighbor[i]]) >
+                  0)))
+          }
+        } else {
+          if (nbound == sgw->conn) {
+            STACK_GRAPH_ADD_EDGE((scan_mask[i] == 1) && 
+                (sgw->signal_mask == NULL ? 1 : 
+                 ((sgw->signal_mask->array[offset2] > 0) &&
+                  (sgw->signal_mask->array[offset2+org_neighbor[i]] > 0))))
+          } else {
+            STACK_GRAPH_ADD_EDGE((scan_mask[i] == 1) && is_in_bound[i] && 
+                (sgw->signal_mask == NULL ? 1 : 
+                 ((sgw->signal_mask->array[offset2] > 0) &&
+                  (sgw->signal_mask->array[offset2+org_neighbor[i]]) >
+                  0)))
+          }
+        }
+
 	if (sgw->group_mask != NULL) {
           int groupId = sgw->group_mask->array[offset2];
 	  if (groupId > 0) {
@@ -736,11 +754,18 @@ Int_Arraylist *Stack_Route(const Stack *stack, int start[], int end[],
   ASSERT(start_index >= 0, "Invalid starting index.");
   ASSERT(end_index >= 0, "Invalid ending index.");
 
+#ifdef _DEBUG_
   tic();
+#endif
   Graph *graph = Stack_Graph_W(stack, sgw);
+#ifdef _DEBUG_
   ptoc();
+#endif
 
+#ifdef _DEBUG_
   tic();
+#endif
+
   int *path = NULL;
   
   switch (sgw->sp_option) {
@@ -810,7 +835,9 @@ Int_Arraylist *Stack_Route(const Stack *stack, int start[], int end[],
   ASSERT(org_end == offset_path->array[offset_path->length - 1], 
   	 "Wrong path tail.");
 
+#ifdef _DEBUG_
   ptoc();
+#endif
 
   return offset_path;
 }

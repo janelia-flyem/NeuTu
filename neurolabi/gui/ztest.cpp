@@ -130,6 +130,7 @@
 #include "zmatlabprocess.h"
 #include "flyem/zflyembodyanalyzer.h"
 #include "swc/zswcresampler.h"
+#include "flyem/zflyemneuronfeatureanalyzer.h"
 #include "swc/zswcnodedistselector.h"
 #include "misc/miscutility.h"
 #include "test/zjsontest.h"
@@ -160,6 +161,8 @@
 #include "test/zstacktest.h"
 #include "zswcgenerator.h"
 #include "test/zswcgeneratortest.h"
+#include "test/zflyemneuronimagefactorytest.h"
+
 
 using namespace std;
 
@@ -10326,12 +10329,32 @@ void ZTest::test(MainWindow *host)
                << std::endl;
 #endif
 
-#if 1
+
+#if 0
   ZSwcTree tree;
   tree.load(GET_DATA_DIR + "/test.swc");
   ZStack stack(GREY, 512, 512, 60, 1);
   stack.setZero();
   tree.labelStack(stack.c_stack());
   stack.save(GET_DATA_DIR + "/test.tif");
+#endif
+
+#if 0
+  Stack *stack =C_Stack::readSc(GET_DATA_DIR + "/benchmark/ball.tif");
+  stack = C_Stack::boundCrop(stack, 0);
+  Stack *out = misc::computeNormal(stack, NeuTube::Z_AXIS);
+  C_Stack::write(GET_DATA_DIR + "/test.tif", out);
+#endif
+
+#if 1
+  ZFlyEmDataBundle bundle;
+  bundle.loadJsonFile(
+        GET_DATA_DIR + "/flyem/TEM/data_release/bundle1/data_bundle.json");
+  ZFlyEmNeuron *neuron = bundle.getNeuron(515936);
+  ZFlyEmNeuronFeatureAnalyzer analyzer;
+  int layer = analyzer.computeMostSpreadedLayer(*neuron);
+  double radius = analyzer.computeSpreadRadius(*neuron, layer);
+  std::cout << "Most spreaded layer: " << layer << std::endl;
+  std::cout << "Radius: " << radius << std::endl;
 #endif
 }

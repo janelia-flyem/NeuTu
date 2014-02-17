@@ -575,8 +575,10 @@ void MainWindow::customizeActions()
   m_ui->actionAutomatic->setVisible(isTracingOn);
   m_ui->actionAutomatic_Axon->setVisible(isTracingOn);
   m_ui->actionFrom_SWC->setVisible(false);
+#if !defined(_DEBUG_)
   m_ui->menuTube->menuAction()->setVisible(false);
   m_ui->menuTrace_Project->menuAction()->setVisible(false);
+#endif
   m_ui->actionSave_SWC->setVisible(isTracingOn);
   this->buildConnAction->setVisible(false);
 
@@ -1671,19 +1673,20 @@ QStringList MainWindow::getOpenFileNames(
 }
 
 QString MainWindow::getSaveFileName(
-    const QString &caption, const QString &filter, bool usingOldFileName)
+    const QString &caption, const QString &filter, bool usingOldFileName,
+    QFileDialog::Options options)
 {
   QString fileName;
 
   if (usingOldFileName) {
     fileName = QFileDialog::getSaveFileName(
-          this, caption, m_lastOpenedFilePath, filter, NULL
+          this, caption, m_lastOpenedFilePath, filter, NULL, options
           /*QFileDialog::DontUseNativeDialog |*/
           /*QFileDialog::DontConfirmOverwrite*/);
   } else {
     fileName = QFileDialog::getSaveFileName(
           this, caption, QFileInfo(fileName).absoluteDir().canonicalPath(),
-          filter, NULL);
+          filter, NULL, options);
   }
   if (!fileName.isEmpty()) {
     QFileInfo fInfo(fileName);
@@ -1692,6 +1695,21 @@ QString MainWindow::getSaveFileName(
 
   return fileName;
 }
+
+QString MainWindow::getDirectory(const QString &caption)
+{
+  QString fileName;
+  fileName = QFileDialog::getExistingDirectory(
+        this, caption, m_lastOpenedFilePath);
+
+  if (!fileName.isEmpty()) {
+    QFileInfo fInfo(fileName);
+    recordLastOpenPath(fInfo.absoluteDir().absolutePath());
+  }
+
+  return fileName;
+}
+
 
 void MainWindow::importImageSequence()
 {
@@ -4724,6 +4742,8 @@ void MainWindow::on_actionFeature_Selection_triggered()
   if (frame != NULL) {
     std::string featureFile = GET_DATA_DIR + "/tmp/feature.csv";
     frame->saveNeuronFeature(featureFile.c_str(), true);
+    std::vector<std::string> featureName = frame->getNeuronFeatureName();
+
     ZMatlabProcess process;
     if (process.findMatlab()) {
       process.setScript("/Users/zhaot/Work/SLAT/matlab/SLAT/run/flyem/tz_run_flyem_featsel_command.m");
@@ -4735,9 +4755,8 @@ void MainWindow::on_actionFeature_Selection_triggered()
           size_t featureNumber = featureArray.size();
 
           for (size_t i = 0; i < featureNumber; ++i) {
-            featureList += ZSwcGlobalFeatureAnalyzer::getFeatureName(
-                  ZSwcGlobalFeatureAnalyzer::NGF1,
-                  ZJsonParser::integerValue(featureArray.at(i))) + ", ";
+            featureList +=
+                featureName[ZJsonParser::integerValue(featureArray.at(i)) - 1] + ", ";
           }
         }
 
@@ -4813,5 +4832,89 @@ void MainWindow::on_actionTiles_triggered()
       presentStackFrame(frame);
     }
     progressDlg->reset();
+  }
+}
+
+void MainWindow::showStackFrame(
+    const QStringList &fileList, bool opening3DWindow)
+{
+  if (!fileList.isEmpty()) {
+    QProgressDialog *progressDlg = getProgressDialog();
+    progressDlg->setLabelText("Loading files ...");
+    progressDlg->setRange(0, 0);
+    progressDlg->open();
+
+    ZStackFrame *frame = new ZStackFrame;
+    bool hasImageFile;
+    bool hasSwcFile;
+    foreach (QString file, fileList) {
+      if (ZFileType::fileType(file.toStdString()) == ZFileType::TIFF_FILE) {
+        hasImageFile = true;
+        frame->document()->readStack(file.toStdString().c_str(), false);
+      } else if (ZFileType::fileType(file.toStdString()) == ZFileType::SWC_FILE) {
+        frame->document()->loadSwc(file);
+        hasSwcFile = true;
+      }
+    }
+
+    if (hasImageFile || hasSwcFile) {
+      if (hasImageFile) {
+        addStackFrame(frame);
+        presentStackFrame(frame);
+      } else {
+        opening3DWindow = true;
+      }
+
+      if (opening3DWindow) {
+        frame->open3DWindow(this);
+      }
+
+      if (!hasImageFile) {
+        delete frame;
+      }
+    }
+
+    progressDlg->reset();
+  }
+}
+
+void MainWindow::on_actionThumbnails_triggered()
+{
+  ZFlyEmDataFrame *frame = currentFlyEmDataFrame();
+  if (frame != NULL) {
+    frame->exportThumbnail();
+  }
+}
+
+void MainWindow::on_actionBundle_triggered()
+{
+  ZFlyEmDataFrame *frame = currentFlyEmDataFrame();
+  if (frame != NULL) {
+    QString fileName = getSaveFileName("Export Bundle", "*.json");
+    if (!fileName.isEmpty()) {
+      frame->exportBundle(fileName);
+    }
+  }
+}
+
+void MainWindow::on_actionVolume_field_triggered()
+{
+  ZFlyEmDataFrame *frame = currentFlyEmDataFrame();
+  if (frame != NULL) {
+    QString dirName = getDirectory("Add Volume");
+    if (!dirName.isEmpty()) {
+      frame->setVolume(dirName);
+    }
+  }
+}
+
+void MainWindow::on_actionThumbnails_2_triggered()
+{
+  ZFlyEmDataFrame *frame = currentFlyEmDataFrame();
+  if (frame != NULL) {
+    QString dirName = getDirectory("Add Thumbnails");
+    if (!dirName.isEmpty()) {
+      frame->setThumbnail(dirName);
+    }
   }
 }

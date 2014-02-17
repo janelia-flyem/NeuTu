@@ -6,6 +6,8 @@
 #include "neutubeconfig.h"
 #include "zgraph.h"
 #include "tz_iarray.h"
+#include "zdebug.h"
+#include "zdoublevector.h"
 
 #ifdef _USE_GTEST_
 
@@ -972,6 +974,54 @@ TEST(Object3dScanTest, findHole)
   ASSERT_EQ(2, (int) hole.getVoxelNumber());
 
   C_Stack::kill(stack);
+}
+
+TEST(ZObject3dScan, Cov)
+{
+  ZObject3dScan obj;
+  obj.addSegment(0, 0, 1, 1);
+  std::vector<double> cov = obj.getPlaneCov();
+  ASSERT_DOUBLE_EQ(0.0, cov[0]);
+  ASSERT_DOUBLE_EQ(0.0, cov[1]);
+  ASSERT_DOUBLE_EQ(0.0, cov[2]);
+
+  obj.addSegment(0, 0, 1, 2);
+  cov = obj.getPlaneCov();
+  ASSERT_DOUBLE_EQ(0.5, cov[0]);
+  ASSERT_DOUBLE_EQ(0.0, cov[1]);
+  ASSERT_DOUBLE_EQ(0.0, cov[2]);
+
+  obj.addSegment(0, 0, 1, 3);
+  obj.addSegment(0, 1, 1, 3);
+  cov = obj.getPlaneCov();
+  ASSERT_DOUBLE_EQ(0.8, cov[0]);
+  ASSERT_DOUBLE_EQ(0.3, cov[1]);
+  ASSERT_DOUBLE_EQ(0.0, cov[2]);
+
+
+  obj.addSegment(0, 0, 1, 3);
+  obj.addSegment(0, 1, 1, 3);
+  obj.addSegment(0, 2, 3, 6);
+  cov = obj.getPlaneCov();
+  ASSERT_DOUBLE_EQ(2.666666666666667, cov[0]);
+  ASSERT_DOUBLE_EQ(0.76666666666666639, cov[1]);
+  ASSERT_DOUBLE_EQ(1.0, cov[2]);
+
+  obj.clear();
+  obj.addSegment(0, 0, 1, 3);
+  obj.addSegment(1, 1, 1, 3);
+  obj.addSegment(2, 2, 3, 6);
+  cov = obj.getPlaneCov();
+  ASSERT_DOUBLE_EQ(2.666666666666667, cov[0]);
+  ASSERT_DOUBLE_EQ(0.76666666666666639, cov[1]);
+  ASSERT_DOUBLE_EQ(1.0, cov[2]);
+
+  obj.clear();
+  obj.addSegment(0, 0, 1, 5);
+  obj.addSegment(0, 1, 1, 5);
+  obj.addSegment(0, 2, 1, 5);
+  std::cout << obj.getSpread(0) << std::endl;
+  //ZDebugPrintDoubleArray(cov, 0, 2);
 }
 
 #endif

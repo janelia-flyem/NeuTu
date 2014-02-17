@@ -7,7 +7,8 @@
 std::vector<std::string> ZSwcGlobalFeatureAnalyzer::m_ngf1FeatureName =
     ZVectorGenerator<std::string>() << "Number of leaves"
                                   << "number of branch points"
-                                  << "box volume, maximum segment length"
+                                  << "box volume"
+                                  << "maximum segment length"
                                   << "maximum path length"
                                   << "average radius"
                                   << "radius variance"

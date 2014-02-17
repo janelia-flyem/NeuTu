@@ -34,6 +34,7 @@ ZLocsegChain::ZLocsegChain(const ZLocsegChain &zlocseg)
   m_oddColor = zlocseg.m_oddColor;
   m_evenColor = zlocseg.m_evenColor;
   m_endColor = zlocseg.m_endColor;
+  m_target = zlocseg.m_target;
 }
 
 void ZLocsegChain::init(Locseg_Chain *chain)
@@ -51,6 +52,7 @@ void ZLocsegChain::init(Locseg_Chain *chain)
   m_endColor.setRgb(0, 0, 255, 255);
 
   m_source = "traced";
+  setTarget(ZStackDrawable::OBJECT_CANVAS);
 }
 
 ZLocsegChain::~ZLocsegChain()

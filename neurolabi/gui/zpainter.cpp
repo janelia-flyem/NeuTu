@@ -9,6 +9,11 @@ ZPainter::ZPainter(QPaintDevice *device) : QPainter(device)
 {
 }
 
+void ZPainter::drawPoint(const QPointF &pt)
+{
+  QPainter::drawPoint(pt + QPointF(m_offset.x(), m_offset.y()));
+}
+
 void ZPainter::drawLine(int x1, int y1, int x2, int y2)
 {
   drawLine(QPointF(x1, y1), QPointF(x2, y2));

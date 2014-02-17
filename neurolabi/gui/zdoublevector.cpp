@@ -37,7 +37,7 @@ ZDoubleVector::ZDoubleVector(const std::vector<double> &array)
   copy(array.begin(), array.end(), begin());
 }
 
-double ZDoubleVector::sum()
+double ZDoubleVector::sum() const
 {
   return darray_sum(dataArray(), size());
 }
@@ -50,6 +50,57 @@ double ZDoubleVector::max(size_t *index)
 double ZDoubleVector::min(size_t *index)
 {
   return darray_min(dataArray(), size(), index);
+}
+
+double ZDoubleVector::indexSum() const
+{
+  double s = 0.0;
+  size_t index = 0;
+  for (const_iterator iter = begin(); iter != end(); ++iter, ++index) {
+    s += *iter * index;
+  }
+
+  return s;
+}
+
+double ZDoubleVector::indexMean() const
+{
+  double s = sum();
+
+  if (s == 0.0) {
+    return 0.0;
+  }
+
+  return indexSum() / sum();
+}
+
+double ZDoubleVector::squaredIndexSum() const
+{
+  double s = 0.0;
+  size_t index = 0;
+  for (const_iterator iter = begin(); iter != end(); ++iter, ++index) {
+    s += *iter * index * index;
+  }
+
+  return s;
+}
+
+double ZDoubleVector::squaredIndexMean() const
+{
+  double s = sum();
+
+  if (s == 0.0) {
+    return 0.0;
+  }
+
+  return squaredIndexSum() / sum();
+}
+
+double ZDoubleVector::indexVar() const
+{
+  double mu = indexMean();
+
+  return squaredIndexMean() - mu * mu;
 }
 
 bool ZDoubleVector::operator ==(const ZDoubleVector &vec)

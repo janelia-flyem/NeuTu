@@ -76,6 +76,11 @@ public:
   double getSwcResolution(NeuTube::EAxis axis);
 
   /*!
+   * \brief Get source dimension.
+   */
+  int getSourceDimension(NeuTube::EAxis axis) const;
+
+  /*!
    * \brief Export the bundle into a json file
    */
   void exportJsonFile(const std::string &path) const;
@@ -116,6 +121,24 @@ public:
    * Each class is assigned to a unique integer number.
    */
   std::map<std::string, int> getClassIdMap() const;
+
+  /*!
+   * \brief Set volume entries based on a directory
+   *
+   * The volume entry is set even the corresponding body file does not exist.
+   *
+   * \param volumeDir The volume directory path.
+   */
+  void setVolume(const std::string &volumeDir);
+
+  /*!
+   * \brief Set thumbnail entries based on a directory
+   *
+   * The thumbnail entry is set even the corresponding body file does not exist.
+   *
+   * \param thumbnailDir The thumbnail directory path.
+   */
+  void setThumbnail(const std::string &thumbnailDir);
 
 private:
   std::vector<ZFlyEmNeuron> m_neuronArray;

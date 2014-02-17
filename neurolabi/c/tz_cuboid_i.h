@@ -35,6 +35,10 @@ BOOL Cuboid_I_Is_Valid(const Cuboid_I *cuboid);
  */
 void Cuboid_I_Size(const Cuboid_I *cuboid, int *width, int *height, int *depth);
 
+int Cuboid_I_Width(const Cuboid_I *cuboid);
+int Cuboid_I_Height(const Cuboid_I *cuboid);
+int Cuboid_I_Depth(const Cuboid_I *cuboid);
+
 /**@brief Set a cuboid.
  *
  * Cuboid_I_Set_S() sets the first corner of <cuboid> to (<x>, <y>, <z>) and its

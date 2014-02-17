@@ -470,9 +470,15 @@ double <2t>_dot_n(const <1t> *d1, const <1t> *d2, size_t length)
   size_t i;
   double d = 0.0;
   for (i = 0; i < length; i++) {
+    double p = d1[i] * d2[i];
+    if (!isnan(p)) {
+      d += p;
+    }
+    /*
     if (!(isnan(d1[i]) || isnan(d2[i]))) {
       d += d1[i] * d2[i];
     }
+    */
   }
 
   return d;

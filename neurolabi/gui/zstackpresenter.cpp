@@ -1350,6 +1350,9 @@ bool ZStackPresenter::processKeyPressEventForSwc(QKeyEvent *event)
       m_parent->zoomToSelectedSwcNodes();
     }
     break;
+  case Qt::Key_I:
+    buddyDocument()->executeInsertSwcNode();
+    break;
   default:
     break;
   }
@@ -1451,6 +1454,7 @@ void ZStackPresenter::processKeyPressEvent(QKeyEvent *event)
 
   case Qt::Key_Equal:
   case Qt::Key_Up:
+  case Qt::Key_2:
     //    if (m_zoomRatio < 16) {
     //      m_zoomRatio += 1;
     //      buddyView()->imageWidget()->setZoomRatio(m_zoomRatio);
@@ -1461,6 +1465,7 @@ void ZStackPresenter::processKeyPressEvent(QKeyEvent *event)
 
   case Qt::Key_Minus:
   case Qt::Key_Down:
+  case Qt::Key_1:
     //    if (m_zoomRatio > 1) {
     //      m_zoomRatio -= 1;
     //      buddyView()->imageWidget()->setZoomRatio(m_zoomRatio);
@@ -1561,6 +1566,9 @@ void ZStackPresenter::processKeyPressEvent(QKeyEvent *event)
       m_stroke.addWidth(1.0);
       buddyView()->paintActiveDecoration();
     }
+    break;
+  case Qt::Key_R:
+    buddyDocument()->executeResetBranchPoint();
     break;
   default:
     break;

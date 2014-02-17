@@ -810,30 +810,39 @@ bool ZStackView::isDepthChangable()
 
 void ZStackView::mouseRolledInImageWidget(QWheelEvent *event)
 {
-  if (isDepthChangable()) {
-    int numSteps = event->delta();
-    //for strange mighty mouse response in Qt 4.6.2
-    if ((abs(numSteps) > 0) && (abs(numSteps) < 120)) {
-      if (numSteps > 0) {
-        numSteps = 1;
-      } else {
-        numSteps = -1;
-      }
+  int numSteps = event->delta();
+  if ((abs(numSteps) > 0) && (abs(numSteps) < 120)) {
+    if (numSteps > 0) {
+      numSteps = 1;
     } else {
-      numSteps /= 120;
+      numSteps = -1;
     }
-    if (numSteps != 0) {
-      int newPos = m_depthControl->value() + numSteps;
-      if ((newPos >= m_depthControl->minimum()) &&
-          (newPos <= m_depthControl->maximum())) {
-        m_depthControl->setValue(newPos);
+  } else {
+    numSteps /= 120;
+  }
+
+  if (event->modifiers() == Qt::NoModifier) {
+    if (isDepthChangable()) {
+      //for strange mighty mouse response in Qt 4.6.2
+      if (numSteps != 0) {
+        int newPos = m_depthControl->value() + numSteps;
+        if ((newPos >= m_depthControl->minimum()) &&
+            (newPos <= m_depthControl->maximum())) {
+          m_depthControl->setValue(newPos);
+        }
+        QPointF pos = imageWidget()->canvasCoordinate(event->pos());
+        int z = sliceIndex();
+        if (buddyPresenter()->interactiveContext().isProjectView()) {
+          z = -1;
+        }
+        setInfo(buddyDocument()->dataInfo(pos.x(), pos.y(), z));
       }
-      QPointF pos = imageWidget()->canvasCoordinate(event->pos());
-      int z = sliceIndex();
-      if (buddyPresenter()->interactiveContext().isProjectView()) {
-        z = -1;
-      }
-      setInfo(buddyDocument()->dataInfo(pos.x(), pos.y(), z));
+    }
+  } else if (event->modifiers() == Qt::ShiftModifier) {
+    if (numSteps > 0) {
+      m_imageWidget->increaseZoomRatio();
+    } else if (numSteps < 0) {
+      m_imageWidget->decreaseZoomRatio();
     }
   }
 }

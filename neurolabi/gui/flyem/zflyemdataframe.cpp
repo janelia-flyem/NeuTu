@@ -37,6 +37,10 @@
 #include "flyemgeosearchdialog.h"
 #include "flyemgeofilterdialog.h"
 #include "flyem/zflyemneuronfilter.h"
+#include "zobject3dscan.h"
+#include "flyem/zflyemneuronimagefactory.h"
+#include "flyemneuronthumbnaildialog.h"
+#include "flyem/zflyemneuronfeatureanalyzer.h"
 
 using namespace std;
 
@@ -124,6 +128,7 @@ ZFlyEmDataFrame::ZFlyEmDataFrame(QWidget *parent) :
   setProgressReporter(&m_specialProgressReporter);
 
   m_geoSearchDlg = new FlyEmGeoFilterDialog(this);
+  m_thumbnailDlg = new FlyEmNeuronThumbnailDialog(this);
 }
 
 ZFlyEmDataFrame::~ZFlyEmDataFrame()
@@ -427,7 +432,7 @@ void ZFlyEmDataFrame::updateSource(
                     className[7] = ' ';
                   }
                 }
-              };
+              }
 
               if (neuronIter->getClass() == className) {
                 m_sourceIdArray.push_back(pair<int, int>(neuronIter->getId(),
@@ -1829,12 +1834,16 @@ void ZFlyEmDataFrame::assignClass(const string &classFile)
   getMainWidget()->updateQueryTable();
 }
 
+const std::vector<std::string>& ZFlyEmDataFrame::getNeuronFeatureName()
+{
+  return ZFlyEmNeuronFeatureAnalyzer::getFeatureName();
+}
+
 bool ZFlyEmDataFrame::saveNeuronFeature(
     const QString &path, bool includingLabel)
 {
   startProgress();
-  int columnNumber = ZSwcGlobalFeatureAnalyzer::getFeatureNumber(
-        ZSwcGlobalFeatureAnalyzer::NGF1);
+  int columnNumber = ZFlyEmNeuronFeatureAnalyzer::getFeatureNumber();
   int columnStart = 0;
   if (includingLabel) {
     ++columnNumber;
@@ -1854,8 +1863,7 @@ bool ZFlyEmDataFrame::saveNeuronFeature(
         classLabel = classIdMap[neuron.getClass()];
       }
       std::vector<double> featureArray =
-          ZSwcGlobalFeatureAnalyzer::computeFeatureSet(
-            *neuron.getModel(), ZSwcGlobalFeatureAnalyzer::NGF1);
+          ZFlyEmNeuronFeatureAnalyzer::computeFeatureSet(neuron);
       if (includingLabel) {
         featureMatrix.set(row, 0, classLabel);
       }
@@ -1876,4 +1884,120 @@ bool ZFlyEmDataFrame::saveNeuronFeature(
 
   endProgress();
   return false;
+}
+
+void ZFlyEmDataFrame::exportThumbnail()
+{
+  m_thumbnailDlg->setOutputDirectory(getDataBundleSource(), "thumbnails");
+  if (m_thumbnailDlg->exec()) {
+    QString fileName = m_thumbnailDlg->getOutputDirectory();
+    if (!fileName.isEmpty()) {
+      ZFlyEmNeuronImageFactory imageFactory;
+      imageFactory.setSizePolicy(ZFlyEmNeuronImageFactory::SIZE_BOUND_BOX,
+                                 ZFlyEmNeuronImageFactory::SIZE_BOUND_BOX,
+                                 ZFlyEmNeuronImageFactory::SIZE_SOURCE);
+      imageFactory.setDownsampleInterval(
+            m_thumbnailDlg->getXIntv(), m_thumbnailDlg->getYIntv(),
+            m_thumbnailDlg->getZIntv());
+
+      imageFactory.setSourceDimension(
+            m_dataArray[0]->getSourceDimension(NeuTube::X_AXIS),
+          m_dataArray[0]->getSourceDimension(NeuTube::Y_AXIS),
+          m_dataArray[0]->getSourceDimension(NeuTube::Z_AXIS)
+          );
+
+      exportThumbnail(fileName, m_thumbnailDlg->updatingDataBundle(),
+                      imageFactory);
+    }
+  }
+}
+
+void ZFlyEmDataFrame::exportThumbnail(
+    const QString &saveDir, bool thumbnailUpdate,
+    const ZFlyEmNeuronImageFactory &imageFactory)
+{
+  std::vector<ZFlyEmNeuron>& neuronArray = m_dataArray[0]->getNeuronArray();
+
+  startProgress();
+  for (std::vector<ZFlyEmNeuron>::iterator iter = neuronArray.begin();
+       iter != neuronArray.end(); ++iter) {
+    advanceProgress(1.0 / neuronArray.size());
+    ZFlyEmNeuron &neuron = *iter;
+    QString outputPath = QString("%1/%2.tif").arg(saveDir).arg(neuron.getId()).
+        toStdString().c_str();
+    Stack *stack = imageFactory.createImage(neuron);
+    C_Stack::write(outputPath.toStdString(), stack);
+    C_Stack::kill(stack);
+
+    if (thumbnailUpdate) {
+      neuron.setThumbnailPath(outputPath.toStdString());
+    }
+
+    //Stack *stack = m_dataArray[0]->createThumbnail()
+  }
+
+  endProgress();
+
+  /*
+  const std::vector<ZFlyEmNeuron>& neuronArray =
+      m_dataArray[0]->getNeuronArray();
+  startProgress();
+  for (std::vector<ZFlyEmNeuron>::const_iterator iter = neuronArray.begin();
+       iter != neuronArray.end(); ++iter) {
+    advanceProgress(1.0 / neuronArray.size());
+    const ZFlyEmNeuron &neuron = *iter;
+    const ZObject3dScan *obj = neuron.getBody();
+    if (obj != NULL) {
+      ZObject3dScan yProj = obj->makeYProjection();
+      yProj.downsampleMax(5, 2, 0);
+      int offset[3];
+      Stack *stack = yProj.toStack(offset);
+      for (int i = 0; i < 3; ++i) {
+        offset[i] = -offset[i];
+      }
+      yProj.drawStack(stack, 255, offset);
+      C_Stack::write(
+            QString("%1/%2.tif").arg(saveDir).arg(neuron.getId()).
+            toStdString().c_str(),
+            stack);
+      C_Stack::kill(stack);
+    }
+  }
+  endProgress();
+  */
+}
+
+void ZFlyEmDataFrame::exportBundle(const QString &savePath)
+{
+  if (!savePath.isEmpty()) {
+    m_dataArray[0]->exportJsonFile(savePath.toStdString());
+  }
+}
+
+void ZFlyEmDataFrame::setVolume(const QString &dirName)
+{
+  if (!dirName.isEmpty()) {
+    m_dataArray[0]->setVolume(dirName.toStdString());
+  }
+}
+
+void ZFlyEmDataFrame::setThumbnail(const QString &dirName)
+{
+  if (!dirName.isEmpty()) {
+    m_dataArray[0]->setThumbnail(dirName.toStdString());
+  }
+}
+
+bool ZFlyEmDataFrame::isDataBundleIndexValid(int index) const
+{
+  return (index >= 0) && (index < m_dataArray.size());
+}
+
+const QString ZFlyEmDataFrame::getDataBundleSource(int index) const
+{
+  if (!isDataBundleIndexValid(index)) {
+    return "";
+  }
+
+  return m_dataArray[index]->getSource().c_str();
 }

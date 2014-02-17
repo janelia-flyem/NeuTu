@@ -32,7 +32,7 @@
 
 INIT_EXCEPTION_MAIN(e)
 
-#if 0
+#if 1
 static void draw_sphere(Stack *stack, int r1, int r2, int cx, int cy, int cz)
 {
   int i, j, k;
@@ -1677,7 +1677,7 @@ int main(int argc, char *argv[])
   Write_Stack("/Users/zhaot/Work/neutube/neurolabi/data/flyem/TEM/movie/actor/colored_slice.tif", out);
 #endif
 
-#if 1
+#if 0
   Stack *stack = Make_Stack(GREY, 5, 5, 1);
   Zero_Stack(stack);
   int i;
@@ -1685,6 +1685,12 @@ int main(int argc, char *argv[])
     stack->array[i] = i * 10;
   }
   Write_Stack("../data/test.tif", stack);
+#endif
+
+#if 1
+  Stack *stack = Make_Stack(GREY, 100, 100, 100);
+  draw_sphere(stack, 0, 30, 50, 50, 50);
+  Write_Stack("../data/benchmark/ball.tif", stack);
 #endif
 
   return 0;

@@ -192,6 +192,22 @@ private:
   double m_backup;
 };
 
+class ChangeSwcNodeRadius : public QUndoCommand
+{
+public:
+  ChangeSwcNodeRadius(ZStackDoc *doc, Swc_Tree_Node* node, double radius,
+                QUndoCommand *parent = NULL);
+  virtual ~ChangeSwcNodeRadius();
+  void undo();
+  void redo();
+
+private:
+  ZStackDoc *m_doc;
+  Swc_Tree_Node *m_node;
+  double m_radius;
+  double m_backup;
+};
+
 class ChangeSwcNode : public QUndoCommand
 {
 public:

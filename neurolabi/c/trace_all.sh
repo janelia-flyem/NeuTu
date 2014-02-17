@@ -120,16 +120,16 @@ else
       if [ $recompile -eq 1 ]
       then
 	echo 'compiling ...'
-	make PROG=imbinarize
-	make PROG=bwsolid
-	make PROG=rmsobj
-	make PROG=extract_line
-	make PROG=imexpr
-	make PROG=trace_seed
-	make PROG=sort_seed
-	make PROG=drawmask
-	make PROG=$traceprog
-	make PROG=reconstruct_neuron
+	make release PROG=imbinarize
+	make release PROG=bwsolid
+	make release PROG=rmsobj
+	make release PROG=extract_line
+	make release PROG=imexpr
+	make release PROG=trace_seed
+	make release PROG=sort_seed
+	make release PROG=drawmask
+	make release PROG=$traceprog
+	make release PROG=reconstruct_neuron
       fi
 
       if [ $retrace -ge 1 ]

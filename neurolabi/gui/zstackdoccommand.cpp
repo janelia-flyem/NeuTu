@@ -490,6 +490,39 @@ void ZStackDocCommand::SwcEdit::ChangeSwcNodeZ::undo()
   }
 }
 
+//////////////////
+ZStackDocCommand::SwcEdit::ChangeSwcNodeRadius::ChangeSwcNodeRadius(
+    ZStackDoc *doc, Swc_Tree_Node *node, double radius, QUndoCommand *parent) :
+  QUndoCommand(parent), m_doc(doc), m_node(node), m_radius(radius), m_backup(0.0)
+{
+  setText(QObject::tr("Change Radius of Selected Swc Node"));
+}
+
+ZStackDocCommand::SwcEdit::ChangeSwcNodeRadius::~ChangeSwcNodeRadius()
+{
+
+}
+
+void ZStackDocCommand::SwcEdit::ChangeSwcNodeRadius::redo()
+{
+  if (m_node != NULL) {
+    m_backup = SwcTreeNode::radius(m_node);
+    SwcTreeNode::setRadius(m_node, m_radius);
+    m_doc->notifySwcModified();
+  }
+}
+
+void ZStackDocCommand::SwcEdit::ChangeSwcNodeRadius::undo()
+{
+  if (m_node != NULL) {
+    SwcTreeNode::setRadius(m_node, m_backup);
+    m_doc->notifySwcModified();
+  }
+}
+
+
+/////////////////////////
+
 ZStackDocCommand::SwcEdit::ChangeSwcNode::ChangeSwcNode(
     ZStackDoc *doc, Swc_Tree_Node *node, const Swc_Tree_Node &newNode,
     QUndoCommand *parent) : QUndoCommand(parent), m_doc(doc), m_node(node)

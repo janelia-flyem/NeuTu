@@ -26,6 +26,8 @@ class FlyEmDataForm;
 class QStatusBar;
 class FlyEmGeoSearchDialog;
 class FlyEmGeoFilterDialog;
+class FlyEmNeuronThumbnailDialog;
+class ZFlyEmNeuronImageFactory;
 
 class ZFlyEmDataFrame : public QMdiSubWindow, ZProgressable
 {
@@ -96,6 +98,39 @@ public:
    * \return true iff the file is saved.
    */
   bool saveNeuronFeature(const QString &path, bool includingLabel);
+
+  const std::vector<std::string>& getNeuronFeatureName();
+
+  /*!
+   * \brief Export thumbnails into a directory
+   * \param Target directory
+   */
+  void exportThumbnail(const QString &saveDir, bool thumbnailUpdate,
+                       const ZFlyEmNeuronImageFactory &imageFactory);
+
+  void exportThumbnail();
+
+  void exportBundle(const QString &savePath);
+
+  /*!
+   * \brief Set volume entries based on a directory
+   *
+   * The volume entry is set even the corresponding body file does not exist.
+   * It only applies to the first bundle.
+   *
+   * \param dirName The volume directory path.
+   */
+  void setVolume(const QString &dirName);
+
+  /*!
+   * \brief Set thumbnails based on a directory
+   *
+   * The thumnal entry is set even the corresponding file does not exist.
+   * It only applies to the first bundle.
+   *
+   * \param dirName The thumbnail directory path.
+   */
+  void setThumbnail(const QString &dirName);
 
 signals:
   void volumeTriggered(const QString &path);
@@ -170,6 +205,15 @@ private:
 
   QProgressBar* getProgressBar();
 
+  /*!
+   * \brief Get the source path of a data bundle
+   *
+   * \return It returns empty string if \a index is out of range.
+   */
+  const QString getDataBundleSource(int index = 0) const;
+
+  bool isDataBundleIndexValid(int index) const;
+
 private:
   //Main data
   QVector<ZFlyEmDataBundle*> m_dataArray;
@@ -205,6 +249,7 @@ private:
   ZQtBarProgressReporter m_specialProgressReporter;
 
   FlyEmGeoFilterDialog *m_geoSearchDlg;
+  FlyEmNeuronThumbnailDialog *m_thumbnailDlg;
 };
 
 #endif // ZFLYEMDATAFRAME_H

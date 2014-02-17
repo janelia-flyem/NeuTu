@@ -29,6 +29,7 @@ public:
 
   inline const ZPoint& getOffset() { return m_offset; }
 
+  void drawPoint(const QPointF &pt);
   void drawLine(int x1, int y1, int x2, int y2);
   void drawLine(const QPointF &pt1, const QPointF &pt2);
   void	drawEllipse(const QRectF & rectangle);

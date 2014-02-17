@@ -7,6 +7,7 @@
 
 #include <QMainWindow>
 #include <QMap>
+#include <QFileDialog>
 
 #include "tz_image_lib_defs.h"
 #include "frameinfodialog.h"
@@ -15,6 +16,7 @@
 #include "moviedialog.h"
 #include "autosaveswclistdialog.h"
 #include "zactionactivator.h"
+#include "flyemneuronthumbnaildialog.h"
 
 class ZStackFrame;
 class QMdiArea;
@@ -75,6 +77,8 @@ public slots:
   ZStackFrame* createStackFrame(
       ZStack *stack,NeuTube::Document::ETag tag = NeuTube::Document::NORMAL,
       ZStackFrame *parentFrame = NULL);
+  void showStackFrame(
+      const QStringList &fileList, bool opening3DWindow = false);
   void createDvidFrame();
 
   void cancelDvidRequest();
@@ -100,7 +104,9 @@ protected:
                                const QString &filter = QString());
   QString getSaveFileName(const QString &caption,
                           const QString &filter = QString(),
-                          bool usingOldFileName = true);
+                          bool usingOldFileName = true,
+                          QFileDialog::Options options = 0);
+  QString getDirectory(const QString &caption);
   void createActionMap();
 
 private slots:
@@ -335,6 +341,14 @@ private slots:
 
   void on_actionTiles_triggered();
 
+  void on_actionThumbnails_triggered();
+
+  void on_actionBundle_triggered();
+
+  void on_actionVolume_field_triggered();
+
+  void on_actionThumbnails_2_triggered();
+
 private:
   void createActions();
   void customizeActions();
@@ -507,6 +521,7 @@ private:
   DvidObjectDialog *m_dvidObjectDlg;
   DvidImageDialog *m_dvidImageDlg;
   TileManagerDialog *m_tileDlg;
+  //FlyEmNeuronThumbnailDialog *m_thumbnailDlg;
 };
 
 #endif // MAINWINDOW_H

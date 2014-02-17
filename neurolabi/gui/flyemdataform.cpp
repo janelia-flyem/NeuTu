@@ -8,6 +8,7 @@
 #include <QStatusBar>
 #include <QMenu>
 #include <QMessageBox>
+#include <QGraphicsPixmapItem>
 
 #include "neutubeconfig.h"
 #include "tz_error.h"
@@ -38,14 +39,20 @@ FlyEmDataForm::FlyEmDataForm(QWidget *parent) :
   m_secondaryNeuronList = new ZFlyEmNeuronListModel(this);
   ui->slaveQueryView->setModel(m_secondaryNeuronList);
   ui->queryView->setSelectionMode(QAbstractItemView::ExtendedSelection);
+#ifdef _DEBUG_
   connect(ui->queryView, SIGNAL(doubleClicked(QModelIndex)),
           this, SLOT(assignClass(QModelIndex)));
+#endif
   connect(ui->queryView, SIGNAL(clicked(QModelIndex)),
           this, SLOT(updateStatusBar(QModelIndex)));
   connect(ui->queryView, SIGNAL(clicked(QModelIndex)),
           this, SLOT(updateInfoWindow(QModelIndex)));
   connect(ui->queryView, SIGNAL(clicked(QModelIndex)),
           this, SLOT(updateSlaveQuery(QModelIndex)));
+  connect(ui->queryView, SIGNAL(clicked(QModelIndex)),
+          this, SLOT(updateThumbnail(QModelIndex)));
+  connect(ui->slaveQueryView, SIGNAL(clicked(QModelIndex)),
+          this, SLOT(updateThumbnailSecondary(QModelIndex)));
 
   //customize
   ui->testPushButton->hide();
@@ -61,21 +68,28 @@ FlyEmDataForm::FlyEmDataForm(QWidget *parent) :
 
   setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
-  m_thumbnailImage = new QImage;
-  m_thumbnailImage->load(":/images/hideobj.png");
+  //m_thumbnailImage = new QImage;
+  //m_thumbnailImage->load(":/images/hideobj.png");
+  m_thumbnailScene = new QGraphicsScene;
+  ui->thumbnailView->setScene(m_thumbnailScene);
   /*
   m_thumbnailWidget = new ZImageWidget(ui->thumnailContainer, m_thumbnailImage);
   m_thumbnailWidget->setProjRegion(
         QRect(QPoint(0, 0), ui->thumnailContainer->size()));
         */
 
+  ui->overallLayout->setMargin(10);
+  ui->thumbnailView->resize(256, ui->thumbnailView->height());
+  ui->outputTextEdit->resize(190, ui->outputTextEdit->height());
   setLayout(ui->overallLayout);
+
 }
 
 FlyEmDataForm::~FlyEmDataForm()
 {
-  delete m_thumbnailImage;
+  //delete m_thumbnailImage;
   delete ui;
+  delete m_thumbnailScene;
 }
 
 QSize FlyEmDataForm::sizeHint() const
@@ -464,4 +478,30 @@ void FlyEmDataForm::updateQueryTable()
 void FlyEmDataForm::updateSlaveQueryTable()
 {
   m_secondaryNeuronList->notifyAllDataChanged();
+}
+
+void FlyEmDataForm::updateThumbnail(const QModelIndex &index)
+{
+  m_thumbnailScene->clear();
+  ZFlyEmNeuron *neuron = m_neuronList->getNeuron(index);
+  if (neuron != NULL) {
+    if (!neuron->getThumbnailPath().empty()) {
+      QGraphicsPixmapItem *thumbnailItem = new QGraphicsPixmapItem;
+      thumbnailItem->setPixmap(QPixmap(neuron->getThumbnailPath().c_str()));
+      m_thumbnailScene->addItem(thumbnailItem);
+    }
+  }
+}
+
+void FlyEmDataForm::updateThumbnailSecondary(const QModelIndex &index)
+{
+  m_thumbnailScene->clear();
+  ZFlyEmNeuron *neuron = m_secondaryNeuronList->getNeuron(index);
+  if (neuron != NULL) {
+    if (!neuron->getThumbnailPath().empty()) {
+      QGraphicsPixmapItem *thumbnailItem = new QGraphicsPixmapItem;
+      thumbnailItem->setPixmap(QPixmap(neuron->getThumbnailPath().c_str()));
+      m_thumbnailScene->addItem(thumbnailItem);
+    }
+  }
 }

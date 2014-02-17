@@ -39,6 +39,7 @@ typedef struct _Stack_Graph_Workspace {
   double *intensity; /**< intensity array */
   double value; /**< to save some real-value result */
   int virtualVertex; /**< the starting virtual vertex */
+  BOOL including_signal_border; /**< Include background voxel touching the foreground*/
 } Stack_Graph_Workspace;
 
 Stack_Graph_Workspace* New_Stack_Graph_Workspace();

@@ -16,7 +16,7 @@
    </font>
   </property>
   <property name="windowTitle">
-   <string>neuTube 0.88</string>
+   <string>neuTube 0.89</string>
   </property>
   <widget class="QWidget" name="centralwidget"/>
   <widget class="QMenuBar" name="menubar">
@@ -244,6 +244,8 @@
       <addaction name="actionAxon_Export"/>
       <addaction name="actionImportFlyEmDatabase"/>
       <addaction name="actionDvid_Object"/>
+      <addaction name="actionVolume_field"/>
+      <addaction name="actionThumbnails_2"/>
      </widget>
      <widget class="QMenu" name="menuQuality_Control">
       <property name="title">
@@ -292,9 +294,17 @@
       </property>
       <addaction name="actionGet_Grayscale"/>
      </widget>
+     <widget class="QMenu" name="menuExport_2">
+      <property name="title">
+       <string>Export</string>
+      </property>
+      <addaction name="actionBundle"/>
+      <addaction name="actionThumbnails"/>
+     </widget>
      <addaction name="actionExtract_Neuron"/>
      <addaction name="actionSkeletonization"/>
      <addaction name="menuFlyEmOpen"/>
+     <addaction name="menuExport_2"/>
      <addaction name="menuQuality_Control"/>
      <addaction name="actionFlyEmClone"/>
      <addaction name="menuTEM_Paper"/>
@@ -823,7 +833,7 @@
   </action>
   <action name="actionAxon_Export">
    <property name="text">
-    <string>Axon Export</string>
+    <string>Axon</string>
    </property>
   </action>
   <action name="actionExtract_body">
@@ -1080,6 +1090,26 @@
   <action name="actionTiles">
    <property name="text">
     <string>Tiles</string>
+   </property>
+  </action>
+  <action name="actionThumbnails">
+   <property name="text">
+    <string>Thumbnails</string>
+   </property>
+  </action>
+  <action name="actionBundle">
+   <property name="text">
+    <string>Bundle</string>
+   </property>
+  </action>
+  <action name="actionVolume_field">
+   <property name="text">
+    <string>Volume Entry</string>
+   </property>
+  </action>
+  <action name="actionThumbnails_2">
+   <property name="text">
+    <string>Thumbnails</string>
    </property>
   </action>
  </widget>

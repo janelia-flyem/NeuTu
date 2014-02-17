@@ -103,7 +103,9 @@ public:
     ACTION_SELECT_SWC_BRANCH, ACTION_SELECT_CONNECTED_SWC_NODE,
     ACTION_SELECT_ALL_SWC_NODE,
     ACTION_CHANGE_SWC_TYPE, ACTION_CHANGE_SWC_SIZE, ACTION_REMOVE_TURN,
-    ACTION_RESOLVE_CROSSOVER, ACTION_SWC_Z_INTERPOLATION
+    ACTION_RESOLVE_CROSSOVER, ACTION_SWC_Z_INTERPOLATION,
+    ACTION_SWC_RADIUS_INTERPOLATION, ACTION_SWC_POSITION_INTERPOLATION,
+    ACTION_SWC_INTERPOLATION
   };
 
 public: //attributes
@@ -590,6 +592,9 @@ public slots: //undoable commands
   bool executeMergeSwcNodeCommand();
   bool executeTraceSwcBranchCommand(double x, double y, double z, int c = 0);
   bool executeInterpolateSwcZCommand();
+  bool executeInterpolateSwcRadiusCommand();
+  bool executeInterpolateSwcPositionCommand();
+  bool executeInterpolateSwcCommand();
   bool executeBreakForestCommand();
   bool executeGroupSwcCommand();
   bool executeSetRootCommand();

@@ -307,22 +307,21 @@ void ZImageWidget::paintEvent(QPaintEvent * /*event*/)
   if (m_image != NULL) {
     ZPainter painter(this);
     painter.setRenderHint(QPainter::Antialiasing, false);
-
     //zoom(m_zoomRatio);
     setView(m_zoomRatio, m_viewPort.topLeft());
 
     QSize size = projectSize();
-    painter.drawImage(QRectF(0, 0, size.width(), size.height()), *m_image,
+    painter.drawImage(m_projRegion, *m_image,
                       m_viewPort);
 
     for (int i = 0; i < m_mask.size(); ++i) {
       if (m_mask[i] != NULL) {
-        painter.drawImage(QRectF(0, 0, size.width(), size.height()),
+        painter.drawImage(QRect(0, 0, size.width(), size.height()),
                             *(m_mask[i]), m_viewPort);
       }
     }
     painter.end();
-
+#if 1
     if (m_paintBundle) {
       double zoomRatio = size.width() * 1.0 / m_viewPort.width();
       ZPainter painter1(this);
@@ -365,6 +364,7 @@ void ZImageWidget::paintEvent(QPaintEvent * /*event*/)
       painter.drawRect(ratio * m_viewPort.left(), ratio * m_viewPort.top(),
                        ratio * m_viewPort.width(), ratio * m_viewPort.height());
     }
+#endif
   }
 }
 

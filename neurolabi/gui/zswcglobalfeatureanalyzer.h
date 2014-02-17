@@ -16,8 +16,8 @@ public:
           //box volume, maximum segment length, maximum path length
           //average radius, radius variance, lateral/vertical ratio
           //Average curvature
-    NGF2, //NGF1, dentritic arbor spread, average brancing angle,
-          // most spreaded layer
+    NGF2, //NGF1, most spreaded layer, dentritic arbor spread,
+          //average brancing angle,
     NGF3,
     UNDEFINED_NGF
   };

@@ -47,6 +47,21 @@ void Cuboid_I_Size(const Cuboid_I *cuboid, int *width, int *height, int *depth)
   }
 }
 
+int Cuboid_I_Width(const Cuboid_I *cuboid)
+{
+  return cuboid->ce[0] - cuboid->cb[0] + 1;
+}
+
+int Cuboid_I_Height(const Cuboid_I *cuboid)
+{
+  return cuboid->ce[1] - cuboid->cb[1] + 1;
+}
+
+int Cuboid_I_Depth(const Cuboid_I *cuboid)
+{
+  return cuboid->ce[2] - cuboid->cb[2] + 1;
+}
+
 void Cuboid_I_Set_S(Cuboid_I *cuboid, int x, int y, int z, int width, 
 		    int height, int depth)
 {

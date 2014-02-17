@@ -561,14 +561,12 @@ int main(int argc, char *argv[])
 			   NEUROCOMP_TYPE_LOCSEG_CHAIN, tmpchain);
       chain_number++;
     } else {
-#ifdef _DEBUG_
       printf("chain%d is excluded.\n", i);
       /*
       char tmpfile[500];
       sprintf(tmpfile, "../data/diadem_c1/bad_chain/chain%d.tb", i);
       Write_Locseg_Chain(tmpfile, chain);
       */
-#endif
     }
   }
 
@@ -663,8 +661,6 @@ int main(int argc, char *argv[])
     }
   }
   
-  Locseg_Chain_Comp_Neurostruct_W(ns, signal, z_scale, ctw);
-
   if (tube_offset != NULL) {
     for (i = 0; i < chain_number; i++) {
       Locseg_Chain_Translate(NEUROCOMP_LOCSEG_CHAIN(chain_array_c + i), 
@@ -682,7 +678,7 @@ int main(int argc, char *argv[])
   int start_id = 1;
 
   for (i = 0; i < chain_number; i++) {
-    int node_type = i % 10;
+    int node_type = i;
     int n = Locseg_Chain_Swc_Fprint_T(tube_fp, 
 				      NEUROCOMP_LOCSEG_CHAIN(chain_array_c + i), 
 				      node_type, start_id, 
@@ -690,6 +686,8 @@ int main(int argc, char *argv[])
     start_id += n;
   }
   fclose(tube_fp);
+
+  Locseg_Chain_Comp_Neurostruct_W(ns, signal, z_scale, ctw);
 
   //Neuron_Structure_To_Swc_File(ns, full_path(dir, "tube.swc"));
   /*

@@ -114,6 +114,8 @@ int main(int argc, char *argv[])
   bool unitTest = false;
   bool runCommandLine = false;
 
+  QStringList fileList;
+
 #ifndef QT_NO_DEBUG
   if (argc > 1) {
     if (strcmp(argv[1], "d") == 0) {
@@ -125,6 +127,12 @@ int main(int argc, char *argv[])
     }
     if (strcmp(argv[1], "--command") == 0) {
       runCommandLine = true;
+    }
+
+    if (strcmp(argv[1], "--load") == 0) {
+      for (int i = 2; i < argc; ++i) {
+        fileList << argv[i];
+      }
     }
   }
 #endif
@@ -191,6 +199,10 @@ int main(int argc, char *argv[])
     mainWin->config();
     mainWin->show();
     mainWin->initOpenglContext();
+
+    if (!fileList.isEmpty()) {
+      mainWin->showStackFrame(fileList, true);
+    }
 
     int result =  app.exec();
 

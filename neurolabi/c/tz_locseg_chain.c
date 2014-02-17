@@ -21,6 +21,7 @@
 #include <utilities.h>
 #include "tz_constant.h"
 #include "tz_error.h"
+#define FORCE_PROGRESS
 #include "tz_interface.h"
 #include "tz_stack_sampling.h"
 #include "tz_trace_utils.h"
@@ -1429,6 +1430,7 @@ BOOL Locseg_Chain_Connection_Test(Locseg_Chain *chain1, Locseg_Chain *chain2,
       //		   Locseg_Chain_Min_Seg_Signal(chain2, stack, z_scale));
 
       sgw->signal_mask = ctw->mask;
+      sgw->including_signal_border = TRUE;
       Int_Arraylist *path = Locseg_Chain_Shortest_Path(chain1, chain2,
 						       stack, z_scale, sgw);
       sgw->signal_mask = NULL;

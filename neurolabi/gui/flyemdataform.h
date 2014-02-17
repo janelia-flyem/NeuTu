@@ -15,6 +15,7 @@ class QMenu;
 class ZFlyEmDataFrame;
 class ZFlyEmQueryView;
 class ZImageWidget;
+class QGraphicsScene;
 
 namespace Ui {
 class FlyEmDataForm;
@@ -94,6 +95,8 @@ private slots:
   void showNearbyNeuron();
   void updateSlaveQuery(const QModelIndex &index);
   void showSecondarySelectedModel();
+  void updateThumbnail(const QModelIndex &index);
+  void updateThumbnailSecondary(const QModelIndex &index);
 
   /*!
    * \brief Change class of selected neurons
@@ -136,8 +139,11 @@ private:
 
   ZQtBarProgressReporter m_specialProgressReporter;
 
+  /*
   QImage *m_thumbnailImage;
   ZImageWidget *m_thumbnailWidget;
+  */
+  QGraphicsScene *m_thumbnailScene;
 };
 
 #endif // FLYEMDATAFORM_H

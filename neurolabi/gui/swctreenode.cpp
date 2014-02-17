@@ -402,6 +402,10 @@ void SwcTreeNode::rotate(Swc_Tree_Node *tn, double theta, double psi)
 double SwcTreeNode::pathLength(const Swc_Tree_Node *tn1,
                                const Swc_Tree_Node *tn2)
 {
+  if (tn1 == tn2) {
+    return 0.0;
+  }
+
   double dist = Infinity;
 
   const Swc_Tree_Node *ancestor = SwcTreeNode::commonAncestor(tn1, tn2);
@@ -1421,6 +1425,41 @@ void SwcTreeNode::interpolate(
       *r = SwcTreeNode::radius(tn1) * lambda + SwcTreeNode::radius(tn2) * (1 - lambda);
     }
   }
+}
+
+double SwcTreeNode::pathLengthRatio(
+    Swc_Tree_Node *tn1, Swc_Tree_Node *tn2, Swc_Tree_Node *tn)
+{
+  double d1 = pathLength(tn1, tn);
+  double d2 = pathLength(tn2, tn);
+
+  if (d1 == 0.0 && d2 == 0.0) {
+    return 0.5;
+  } else if (d1 == 0.0) {
+    return 0.0;
+  }
+
+
+  if (tz_isinf(d1) && tz_isinf(d2)) {
+    return 0.5;
+  } else if (tz_isinf(d1)) {
+    return 1.0;
+  } else if (tz_isinf(d2)) {
+    return 0.0;
+  }
+
+  return d1 / (d1 + d2);
+}
+
+void SwcTreeNode::interpolate(
+    Swc_Tree_Node *tn1, Swc_Tree_Node *tn2, Swc_Tree_Node *tn)
+{
+  if (!isRegular(tn1) || !isRegular(tn2) || !isRegular(tn)) {
+    return;
+  }
+
+  double lambda = pathLengthRatio(tn2, tn1, tn);
+  interpolate(tn1, tn2, lambda, tn);
 }
 
 std::vector<Swc_Tree_Node*> SwcTreeNode::neighborArray(const Swc_Tree_Node *tn)

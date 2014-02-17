@@ -4,6 +4,8 @@
 #include <vector>
 #include "zhistogram.h"
 #include "zstack.hxx"
+#include "zobject3dscan.h"
+#include "neutube.h"
 
 namespace misc {
 
@@ -12,6 +14,10 @@ void paintRadialHistogram(const ZHistogram hist, double cx, double cy, int z,
 void paintRadialHistogram2D(const std::vector<ZHistogram> hist,
                             double cx, int startZ, Stack *stack);
 
+/*!
+ * \brief Y normal of a binary stack
+ */
+Stack* computeNormal(const Stack *stack, NeuTube::EAxis axis);
 }
 
 namespace {

@@ -95,20 +95,48 @@ int main(int argc, char *argv[])
     }
 
     Geo3d_Coord_Orientation(1, 0, 0, &theta, &psi);
+    double in[3] = {0, 0, 1};
+    double out[3] = {0, 0, 0};
+    Rotate_XZ(in, out, 1, theta, psi, 0);
+
+    if (fabs(out[0] - 1.0) > 0.01 || fabs(out[1]) > 0.01 || 
+	fabs(out[2]) > 0.01) {
+      printf("%g, %g, %g\n", out[0], out[1], out[2]);
+      printf("%g, %g\n", theta, psi);
+      PRINT_EXCEPTION(":( Bug?", "Unexpected orientation values.");
+      return 1; 
+    }
+    /*
     if (fabs(theta - TZ_PI_2) > 0.01 || 
 	fabs(Normalize_Radian(psi) - TZ_PI_2) > 0.01) {
       printf("%g, %g\n", theta, psi);
       PRINT_EXCEPTION(":( Bug?", "Unexpected orientation values.");
       return 1; 
     }
+    */
 
     Geo3d_Coord_Orientation(5, 0, 0, &theta, &psi);
+    {
+    double in[3] = {0, 0, 5};
+    double out[3] = {0, 0, 0};
+    Rotate_XZ(in, out, 1, theta, psi, 0);
+
+    if (fabs(out[0] - 5.0) > 0.01 || fabs(out[1]) > 0.01 || 
+	fabs(out[2]) > 0.01) {
+      printf("%g, %g, %g\n", out[0], out[1], out[2]);
+      printf("%g, %g\n", theta, psi);
+      PRINT_EXCEPTION(":( Bug?", "Unexpected orientation values.");
+      return 1; 
+    }
+    }
+    /*
     if (fabs(theta - TZ_PI_2) > 0.01 || 
 	fabs(Normalize_Radian(psi) - TZ_PI_2) > 0.01) {
       printf("%g, %g\n", theta, psi);
       PRINT_EXCEPTION(":( Bug?", "Unexpected orientation values.");
       return 1; 
     }
+    */
 
     /* Rotate the orientation. */
     theta = TZ_PI_2;
@@ -474,14 +502,14 @@ int main(int argc, char *argv[])
   printf("%g\n", dist);
 #endif
 
-#if 0
+#if 1
   double *d = Unifrnd_Double_Array(12000000, NULL);
   double *d2 = Unifrnd_Double_Array(12000000, NULL);
   tic();
-  Rotate_XZ2(d, d, 4000000, 0.1, 0.2, 1);
+  Rotate_XZ(d, d, 4000000, 0.1, 0.2, 1);
   printf("%llu\n", toc());
   tic();
-  Rotate_XZ(d, d, 4000000, 0.1, 0.2, 0);
+  Rotate_XZ2(d, d, 4000000, 0.1, 0.2, 0);
   printf("%llu\n", toc());
 
 #endif
@@ -614,7 +642,7 @@ int main(int argc, char *argv[])
   Geo3d_Coord_Orientation(x, y, z, &theta, &psi);
 #endif
 
-#if 1
+#if 0
   double theta = Vector_Angle2(0, 1, 1, 0, TRUE);
   printf("angle: %g\n", theta);
 

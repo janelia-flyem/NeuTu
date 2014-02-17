@@ -156,7 +156,8 @@ HEADERS +=$${PWD}/zstackprocessor.h \
    $${PWD}/swc/zswcnodedistselector.h \
    $${PWD}/zstackbinarizer.h \
    $${PWD}/zvectorgenerator.h \
-   $${PWD}/zstackfactory.h
+   $${PWD}/zstackfactory.h \
+   $${PWD}/zeigensolver.h
 
 SOURCES +=$${PWD}/zstackprocessor.cpp \
    $${PWD}/zstack.cxx \
@@ -299,4 +300,5 @@ SOURCES +=$${PWD}/zstackprocessor.cpp \
    $${PWD}/swc/zswcnodedistselector.cpp \
    $${PWD}/zstackbinarizer.cpp \
    $${PWD}/zvectorgenerator.cpp \
-   $${PWD}/zstackfactory.cpp
+   $${PWD}/zstackfactory.cpp \
+   $${PWD}/zeigensolver.cpp

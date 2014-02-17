@@ -22,9 +22,15 @@ QMenu* ZStackDocMenuFactory::makeSwcNodeContextMenu(
   menu->addAction(doc->getAction(ZStackDoc::ACTION_CONNECT_SWC_NODE));
   menu->addAction(doc->getAction(ZStackDoc::ACTION_MERGE_SWC_NODE));
   menu->addAction(doc->getAction(ZStackDoc::ACTION_INSERT_SWC_NODE));
-  menu->addAction(doc->getAction(ZStackDoc::ACTION_SWC_Z_INTERPOLATION));
 
-  QMenu *submenu = new QMenu("Select", menu);
+  QMenu *submenu = new QMenu("Intepolate", menu);
+  submenu->addAction(doc->getAction(ZStackDoc::ACTION_SWC_INTERPOLATION));
+  submenu->addAction(doc->getAction(ZStackDoc::ACTION_SWC_Z_INTERPOLATION));
+  submenu->addAction(doc->getAction(ZStackDoc::ACTION_SWC_POSITION_INTERPOLATION));
+  submenu->addAction(doc->getAction(ZStackDoc::ACTION_SWC_RADIUS_INTERPOLATION));
+  menu->addMenu(submenu);
+
+  submenu = new QMenu("Select", menu);
   submenu->addAction(doc->getAction(ZStackDoc::ACTION_SELECT_DOWNSTREAM));
   submenu->addAction(doc->getAction(ZStackDoc::ACTION_SELECT_UPSTREAM));
   submenu->addAction(doc->getAction(ZStackDoc::ACTION_SELECT_NEIGHBOR_SWC_NODE));

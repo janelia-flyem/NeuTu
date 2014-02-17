@@ -362,7 +362,10 @@ HEADERS += mainwindow.h \
     ztilemanagerview.h \
     ztilegraphicsitem.h \
     ztileinfo.h \
-    tilemanagerdialog.h
+    tilemanagerdialog.h \
+    flyem/zflyemneuronimagefactory.h \
+    flyem/zflyemneuronfeatureanalyzer.h \
+    flyemneuronthumbnaildialog.h
 
 FORMS += settingdialog.ui \
     frameinfodialog.ui \
@@ -405,7 +408,8 @@ FORMS += settingdialog.ui \
     dvidobjectdialog.ui \
     resolutiondialog.ui \
     dvidimagedialog.ui \
-    tilemanagerdialog.ui
+    tilemanagerdialog.ui \
+    flyemneuronthumbnaildialog.ui
 SOURCES += main.cpp \
     mainwindow.cpp \
     zstackview.cpp \
@@ -592,7 +596,10 @@ SOURCES += main.cpp \
     ztilemanagerview.cpp \
     ztilegraphicsitem.cpp \
     ztileinfo.cpp \
-    tilemanagerdialog.cpp
+    tilemanagerdialog.cpp \
+    flyem/zflyemneuronimagefactory.cpp \
+    flyem/zflyemneuronfeatureanalyzer.cpp \
+    flyemneuronthumbnaildialog.cpp
 
 OTHER_FILES += \
     extlib.pri

@@ -88,6 +88,8 @@ public:
 
   inline void setCanonized(bool canonized) { m_isCanonized = canonized; }
 
+  void switchYZ();
+
 private:
   std::vector<int> m_segmentArray;
   int m_y;
@@ -279,6 +281,8 @@ public:
   ZObject3dScan makeZProjection() const;
   ZObject3dScan makeZProjection(int minZ, int maxZ);
 
+  ZObject3dScan makeYProjection() const;
+
   /*!
    * \brief Get minimal Z
    *
@@ -331,6 +335,21 @@ public:
   template<class InputIterator>
   static Stack* makeStack(InputIterator startObject, InputIterator endObject,
                           int offset[3]);
+
+  /*!
+   * \brief Switch the Y and Z axis
+   */
+  void switchYZ();
+
+  /*!
+   * \brief Get the ~95% spread area of the object at a centain slice
+   */
+  double getSpread(int z) const;
+
+  /*!
+   * Compute the plane covariance
+   */
+  std::vector<double> getPlaneCov() const;
 
 private:
   std::vector<ZObject3dStripe> m_stripeArray;

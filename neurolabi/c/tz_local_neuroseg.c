@@ -2239,7 +2239,7 @@ Geo3d_Scalar_Field* Local_Neuroseg_Field_S(const Local_Neuroseg *locseg,
 					   Neuroseg_Field_f field_func,
 					   Geo3d_Scalar_Field *field)
 {
-  field = Neuroseg_Field_S(&(locseg->seg), field_func, field);
+  field = Neuroseg_Field_S_Fast(&(locseg->seg), field_func, field);
 
   double offset[3];
   local_neuroseg_field_shift(locseg, offset);
