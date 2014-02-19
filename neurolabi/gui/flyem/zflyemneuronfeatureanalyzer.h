@@ -2,6 +2,7 @@
 #define ZFLYEMNEURONFEATUREANALYZER_H
 
 #include "zflyemneuron.h"
+#include "zflyemneuronfeature.h"
 
 class ZFlyEmNeuronFeatureAnalyzer
 {
@@ -17,6 +18,14 @@ public:
     return m_featureName;
   }
   static inline int getFeatureNumber() { return m_featureName.size(); }
+
+  static std::vector<ZFlyEmNeuronFeature> computeFullFeatureSet(
+      const ZFlyEmNeuron &neuron);
+
+  void computeFeatureSet(
+      const ZFlyEmNeuron &neuron, std::vector<ZFlyEmNeuronFeature> &featureSet);
+
+  bool computeFeature(const ZFlyEmNeuron &neuron, ZFlyEmNeuronFeature &feature);
 
 private:
   static std::vector<std::string> m_featureName;

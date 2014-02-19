@@ -157,7 +157,9 @@ HEADERS +=$${PWD}/zstackprocessor.h \
    $${PWD}/zstackbinarizer.h \
    $${PWD}/zvectorgenerator.h \
    $${PWD}/zstackfactory.h \
-   $${PWD}/zeigensolver.h
+   $${PWD}/zeigensolver.h \
+   $${PWD}/zmapgenerator.h \
+   $${PWD}/flyem/zflyemneuronfeatureset.h
 
 SOURCES +=$${PWD}/zstackprocessor.cpp \
    $${PWD}/zstack.cxx \
@@ -301,4 +303,6 @@ SOURCES +=$${PWD}/zstackprocessor.cpp \
    $${PWD}/zstackbinarizer.cpp \
    $${PWD}/zvectorgenerator.cpp \
    $${PWD}/zstackfactory.cpp \
-   $${PWD}/zeigensolver.cpp
+   $${PWD}/zeigensolver.cpp \
+   $${PWD}/zmapgenerator.cpp \
+   $${PWD}/flyem/zflyemneuronfeatureset.cpp

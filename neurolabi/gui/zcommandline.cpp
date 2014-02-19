@@ -15,6 +15,8 @@
 #include "flyem/zflyemqualityanalyzer.h"
 #include "zfiletype.h"
 #include "flyem/zflyemdatabundle.h"
+#include "flyem/zflyemneuronfeatureanalyzer.h"
+#include "flyem/zflyemneuronfeatureset.h"
 
 using namespace std;
 
@@ -30,6 +32,10 @@ ZCommandLine::ECommand ZCommandLine::getCommand(const char *cmd)
 
   if (eqstr(cmd, "boundary_orphan")) {
     return BOUNDARY_ORPHAN;
+  }
+
+  if (eqstr(cmd, "flyem_neuron_feature")) {
+    return FLYEM_NEURON_FEATURE;
   }
 
   return UNKNOWN_COMMAND;
@@ -323,13 +329,46 @@ int ZCommandLine::runOutputClassList()
   return 1;
 }
 
+int ZCommandLine::runComputeFlyEmNeuronFeature()
+{
+  ZFlyEmDataBundle bundle;
+  bundle.loadJsonFile(m_input[0]);
+
+  std::ofstream stream(m_output.c_str());
+
+  ZFlyEmNeuronFeatureSet featureSet;
+  featureSet << ZFlyEmNeuronFeature::OVERALL_LENGTH
+             << ZFlyEmNeuronFeature::BRANCH_NUMBER
+             << ZFlyEmNeuronFeature::TBAR_NUMBER
+             << ZFlyEmNeuronFeature::PSD_NUMBER
+             << ZFlyEmNeuronFeature::CENTROID_X
+             << ZFlyEmNeuronFeature::CENTROID_Y;
+
+  ZFlyEmNeuronFeatureAnalyzer featureAnalyzer;
+  const std::vector<ZFlyEmNeuron>& neuronArray = bundle.getNeuronArray();
+  for (std::vector<ZFlyEmNeuron>::const_iterator iter = neuronArray.begin();
+       iter != neuronArray.end(); ++iter) {
+    const ZFlyEmNeuron &neuron = *iter;
+    featureAnalyzer.computeFeatureSet(neuron, featureSet);
+    stream << neuron.getId();
+    for (size_t i = 0; i < featureSet.size(); ++i) {
+      stream << ", " << featureSet[i].getValue();
+    }
+    stream << endl;
+  }
+
+  stream.close();
+
+  return 0;
+}
+
 int ZCommandLine::run(int argc, char *argv[])
 {
   static const char *Spec[] = {
     "--command",  "[--unit_test]", "[<input:string> ...] [-o <string>]",
     "[--sobj_marker]", "[--boundary_orphan <string>]", "[--config <string>]",
     "[--sobj_overlap]", "[--intv <int> <int> <int>]", "[--fulloverlap_screen]",
-    "[--synapse_object]", "[--classlist]", 0
+    "[--synapse_object]", "[--flyem_neuron_feature]", "[--classlist]", 0
   };
 
   ZArgumentProcessor::processArguments(
@@ -398,6 +437,10 @@ int ZCommandLine::run(int argc, char *argv[])
     command = CLASS_LIST;
     m_input.push_back(ZArgumentProcessor::getStringArg("input", 0));
     m_output = ZArgumentProcessor::getStringArg("-o");
+  } else if (ZArgumentProcessor::isArgMatched("--flyem_neuron_feature")) {
+    command = FLYEM_NEURON_FEATURE;
+    m_input.push_back(ZArgumentProcessor::getStringArg("input", 0));
+    m_output = ZArgumentProcessor::getStringArg("-o");
   }
 
   switch (command) {
@@ -411,6 +454,8 @@ int ZCommandLine::run(int argc, char *argv[])
     return runSynapseObjectList();
   case CLASS_LIST:
     return runOutputClassList();
+  case FLYEM_NEURON_FEATURE:
+    return runComputeFlyEmNeuronFeature();
   default:
     std::cout << "Unknown command" << std::endl;
     return 1;

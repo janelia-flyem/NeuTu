@@ -10,6 +10,7 @@
 #include "c_json.h"
 #include "zswctree.h"
 #include "swctreenode.h"
+#include "zerror.h"
 
 using namespace std;
 
@@ -95,6 +96,10 @@ bool ZFlyEmDataBundle::loadJsonFile(const std::string &filePath)
 {
   m_neuronArray.clear();
   deprecate(ALL_COMPONENT);
+
+  if (!fexist(filePath.c_str())) {
+    RECORD_WARNING_UNCOND(filePath + " does not exist.");
+  }
 
   m_source = filePath;
   ZJsonObject bundleObject;
