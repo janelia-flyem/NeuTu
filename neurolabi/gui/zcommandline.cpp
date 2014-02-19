@@ -2,6 +2,7 @@
 
 #include <QFileInfoList>
 #include <QDir>
+#include <QFileInfo>
 #include <ostream>
 #include <fstream>
 #include <set>
@@ -332,7 +333,10 @@ int ZCommandLine::runOutputClassList()
 int ZCommandLine::runComputeFlyEmNeuronFeature()
 {
   ZFlyEmDataBundle bundle;
-  bundle.loadJsonFile(m_input[0]);
+
+  QFileInfo fileInfo(m_input[0].c_str());
+  QString input = fileInfo.absoluteFilePath();
+  bundle.loadJsonFile(input.toStdString());
 
   std::ofstream stream(m_output.c_str());
 
@@ -350,9 +354,10 @@ int ZCommandLine::runComputeFlyEmNeuronFeature()
        iter != neuronArray.end(); ++iter) {
     const ZFlyEmNeuron &neuron = *iter;
     featureAnalyzer.computeFeatureSet(neuron, featureSet);
-    stream << neuron.getId();
+    stream << "\"" << neuron.getId() << "\"," << "\""
+           << neuron.getClass() << "\"";
     for (size_t i = 0; i < featureSet.size(); ++i) {
-      stream << ", " << featureSet[i].getValue();
+      stream << "," << featureSet[i].getValue();
     }
     stream << endl;
   }
