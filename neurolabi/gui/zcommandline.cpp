@@ -123,7 +123,7 @@ int ZCommandLine::runBoundaryOrphan()
     //std::cout << objFile.absoluteFilePath().toStdString().c_str() << std::endl;
     ZObject3dScan obj;
     obj.load(objFile.absoluteFilePath().toStdString());
-    if (obj.getVoxelNumber() < 100000) {
+    if (obj.getVoxelNumber() <= 100000) {
       if (obj.isEmpty()) {
         std::cout << "Empty object: "
                   << objFile.absoluteFilePath().toStdString().c_str() << std::endl;
