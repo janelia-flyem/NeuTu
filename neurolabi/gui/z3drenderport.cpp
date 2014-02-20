@@ -218,11 +218,11 @@ Z3DRenderInputPort::~Z3DRenderInputPort()
 {
 }
 
-int Z3DRenderInputPort::getNumOfValidInputs() const
+size_t Z3DRenderInputPort::getNumOfValidInputs() const
 {
-  int res = 0;
+  size_t res = 0;
   for (size_t i=0; i<m_connectedOutputPorts.size(); ++i) {
-    const Z3DRenderOutputPort* p = dynamic_cast<const Z3DRenderOutputPort*>(m_connectedOutputPorts[0]);
+    const Z3DRenderOutputPort* p = dynamic_cast<const Z3DRenderOutputPort*>(m_connectedOutputPorts[i]);
     assert(p);
     if (p->hasValidData())
       ++res;
@@ -230,7 +230,7 @@ int Z3DRenderInputPort::getNumOfValidInputs() const
   return res;
 }
 
-glm::ivec2 Z3DRenderInputPort::getSize(int idx) const
+glm::ivec2 Z3DRenderInputPort::getSize(size_t idx) const
 {
   if (getRenderTarget(idx))
     return getRenderTarget(idx)->getSize();
@@ -238,7 +238,7 @@ glm::ivec2 Z3DRenderInputPort::getSize(int idx) const
     return glm::ivec2(0);
 }
 
-const Z3DTexture *Z3DRenderInputPort::getColorTexture(int idx) const
+const Z3DTexture *Z3DRenderInputPort::getColorTexture(size_t idx) const
 {
   if (getRenderTarget(idx))
     return getRenderTarget(idx)->getAttachment(GL_COLOR_ATTACHMENT0);
@@ -246,7 +246,7 @@ const Z3DTexture *Z3DRenderInputPort::getColorTexture(int idx) const
     return NULL;
 }
 
-const Z3DTexture *Z3DRenderInputPort::getDepthTexture(int idx) const
+const Z3DTexture *Z3DRenderInputPort::getDepthTexture(size_t idx) const
 {
   if (getRenderTarget(idx))
     return getRenderTarget(idx)->getAttachment(GL_DEPTH_ATTACHMENT);
@@ -266,13 +266,13 @@ void Z3DRenderInputPort::setProcessor(Z3DProcessor *p)
   }
 }
 
-const Z3DRenderTarget *Z3DRenderInputPort::getRenderTarget(int idx) const
+const Z3DRenderTarget *Z3DRenderInputPort::getRenderTarget(size_t idx) const
 {
-  if (idx < 0 || idx > getNumOfValidInputs() - 1)
+  if (idx >= getNumOfValidInputs())
     return NULL;
-  int res = 0;
+  size_t res = 0;
   for (size_t i=0; i<m_connectedOutputPorts.size(); ++i) {
-    const Z3DRenderOutputPort* p = dynamic_cast<const Z3DRenderOutputPort*>(m_connectedOutputPorts[0]);
+    const Z3DRenderOutputPort* p = dynamic_cast<const Z3DRenderOutputPort*>(m_connectedOutputPorts[i]);
     assert(p);
     if (p->hasValidData())
       ++res;

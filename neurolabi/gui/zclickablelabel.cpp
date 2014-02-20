@@ -2,7 +2,7 @@
 #include "zclickablelabel.h"
 #include "zcolormap.h"
 #include <QtGui>
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
+#ifdef _QT5_
 #include <QtWidgets>
 #endif
 #include "z3dtransferfunction.h"

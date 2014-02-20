@@ -79,7 +79,7 @@ const void* Z3DPickingManager::getObjectFromColor(glm::col4 col)
 
 const void* Z3DPickingManager::getObjectAtWidgetPos(glm::ivec2 pos)
 {
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
+#ifdef _QT5_
   pos[0] = pos[0] * qApp->devicePixelRatio();
   pos[1] = pos[1] * qApp->devicePixelRatio();
 #endif

@@ -47,7 +47,8 @@ include(add_itk.pri)
 QT += opengl xml network
 isEqual(QT_MAJOR_VERSION,5) | greaterThan(QT_MAJOR_VERSION,5) {
 message("Qt 5")
-    QT += concurrent
+    QT += concurrent gui
+    DEFINES += _QT5_
 }
 
 #QT += webkit

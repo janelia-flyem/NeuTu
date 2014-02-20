@@ -60,7 +60,7 @@ public:
   virtual void dragEnterEvent(QDragEnterEvent *event);
   virtual void dropEvent(QDropEvent *event);
 
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
+#ifdef _QT5_
   void setCursor(const QCursor &c) { viewport()->setCursor(c); }
 #endif
 

@@ -933,7 +933,7 @@ void Z3DVolumeRaycaster::leftMouseButtonPressed(QMouseEvent *e, int w, int h)
   if (e->type() == QEvent::MouseButtonRelease) {
     if (std::abs(e->x() - m_startCoord.x) < 2 && std::abs(m_startCoord.y - e->y()) < 2) {
       bool success;
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
+#ifdef _QT5_
       glm::vec3 pos3D = getFirstHit3DPosition(e->x() * qApp->devicePixelRatio(),
                                               e->y() * qApp->devicePixelRatio(),
                                               w * qApp->devicePixelRatio(),

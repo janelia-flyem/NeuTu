@@ -6,7 +6,7 @@
 #include <numeric>
 #include <cassert>
 #include <QList>
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
+#ifdef _QT5_
 #include <QtConcurrent/QtConcurrentMap>
 #else
 #include <QtConcurrentMap>
