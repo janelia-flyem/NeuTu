@@ -10346,7 +10346,7 @@ void ZTest::test(MainWindow *host)
   C_Stack::write(GET_DATA_DIR + "/test.tif", out);
 #endif
 
-#if 1
+#if 0
   ZFlyEmDataBundle bundle;
   bundle.loadJsonFile(
         GET_DATA_DIR + "/flyem/TEM/data_release/bundle1/data_bundle.json");
@@ -10356,5 +10356,22 @@ void ZTest::test(MainWindow *host)
   double radius = analyzer.computeSpreadRadius(*neuron, layer);
   std::cout << "Most spreaded layer: " << layer << std::endl;
   std::cout << "Radius: " << radius << std::endl;
+#endif
+
+#if 1
+  FlyEm::ZIntCuboidArray blockArray;
+  blockArray.loadSubstackList(dataPath + "/flyem/FIB/block_13layer.txt");
+  Cuboid_I boundBox = blockArray.getBoundBox();
+  std::cout << "Offset: " << boundBox.cb[0] << " " << boundBox.cb[1] << std::endl;
+  blockArray.translate(-boundBox.cb[0], -boundBox.cb[1], -boundBox.cb[2]);
+  blockArray.translate(10, 10, 10);
+
+  blockArray.exportSwc(dataPath + "/flyem/FIB/orphan_body_check_block_13layer.swc");
+
+  FlyEm::ZIntCuboidArray blockArray2;
+  blockArray2.loadSubstackList(dataPath + "/flyem/FIB/block_layer12_13.txt");
+  blockArray2.translate(-boundBox.cb[0], -boundBox.cb[1], -boundBox.cb[2]);
+  blockArray2.translate(10, 10, 10);
+  blockArray2.exportSwc(dataPath + "/flyem/FIB/orphan_body_check_block_layer12_13.swc");
 #endif
 }

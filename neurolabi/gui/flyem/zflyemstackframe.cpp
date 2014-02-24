@@ -325,7 +325,6 @@ bool ZFlyEmStackFrame::trainBodyConnection()
 
   delete featureMatrix;
 
-
   vector<int> &groundLabel = testSegBundle.getGroundLabel();
 
   if (groundLabel.empty()) {

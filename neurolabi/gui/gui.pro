@@ -135,6 +135,14 @@ include(ext/libqxt.pri)
 include (gui_free.pri)
 include(test/test.pri)
 
+CONFIG(debug, debug|release) {
+    exists(../lib/opencv) {
+        system(echo 'opencv found')
+        DEFINES += _USE_OPENCV_
+        INCLUDEPATH += ../lib/opencv/include ../lib/opencv/include/opencv
+        LIBS += -L../lib/opencv/lib -lopencv_core -lopencv_ml
+    }
+}
 
 # Input
 RESOURCES = gui.qrc

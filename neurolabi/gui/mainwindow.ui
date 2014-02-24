@@ -16,7 +16,7 @@
    </font>
   </property>
   <property name="windowTitle">
-   <string>neuTube 0.89</string>
+   <string>neuTube 0.90</string>
   </property>
   <widget class="QWidget" name="centralwidget"/>
   <widget class="QMenuBar" name="menubar">
@@ -68,12 +68,19 @@
      <addaction name="actionMask"/>
      <addaction name="actionSWC_Rescaling"/>
     </widget>
+    <widget class="QMenu" name="menuOpen_Recent">
+     <property name="title">
+      <string>Open Recent</string>
+     </property>
+    </widget>
     <addaction name="actionOpen"/>
+    <addaction name="menuOpen_Recent"/>
     <addaction name="menuLoad_into"/>
     <addaction name="menuTrace_Project"/>
+    <addaction name="menuImport"/>
+    <addaction name="separator"/>
     <addaction name="actionSave_Stack"/>
     <addaction name="actionSave_SWC"/>
-    <addaction name="menuImport"/>
     <addaction name="menuExport"/>
    </widget>
    <widget class="QMenu" name="menuEdit">

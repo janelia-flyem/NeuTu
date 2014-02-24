@@ -31,9 +31,12 @@ private:
   std::vector<std::string> m_input;
   std::string m_output;
   std::string m_blockFile;
+  std::string m_referenceBlockFile;
+  std::string m_synapseFile;
   int m_ravelerHeight;
   int m_zStart;
   int m_intv[3];
+  int m_blockOffset[3];
   bool m_fullOverlapScreen;
 };
 

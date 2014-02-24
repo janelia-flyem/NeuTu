@@ -86,6 +86,12 @@ public:
   void exportJsonFile(const std::string &path) const;
 
   /*!
+   * \brief Get number of layers
+   * \return
+   */
+  int getLayerNumber() const;
+
+  /*!
    * \brief Get the Z coordinate of the start of a layer
    *
    * \a layer must be in [1, layer number].
@@ -151,6 +157,7 @@ private:
   int m_sourceOffset[3];
   int m_sourceDimension[3];
   double m_synapseScale;
+  std::vector<double> m_layerRatio;
 
   std::string m_source;
   std::map<std::string, double> m_matchThreshold;
@@ -171,7 +178,7 @@ private:
   static const char *m_matchThresholdKey;
 
   const static int m_layerNumber;
-  const static double m_layerRatio[11];
+  //const static double m_layerRatio[11];
 };
 
 #endif // ZFLYEMDATABUNDLE_H

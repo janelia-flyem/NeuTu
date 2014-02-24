@@ -226,6 +226,8 @@ MainWindow::MainWindow(QWidget *parent) :
   RECORD_INFORMATION("Updating actions ...");
   createActionMap();
   setActionActivity();
+  m_actionActivatorList.append(&m_stackActionActivator);
+  //m_actionActivatorList.append(&m_swcActionActivator); //Need to monitor swc modification signal
   updateAction();
 
   m_dvidClient = new ZDvidClient("http://emdata1.int.janelia.org", this);
@@ -559,6 +561,9 @@ void MainWindow::setActionActivity()
   m_stackActionActivator.registerAction(m_ui->menuBinary_Morphology->menuAction(), true);
   m_stackActionActivator.registerAction(m_ui->menuEdge_Detection->menuAction(), true);
   m_stackActionActivator.registerAction(m_ui->menuSegmentation->menuAction(), true);
+
+  m_swcActionActivator.registerAction(m_ui->actionSWC_Rescaling, true);
+  m_swcActionActivator.registerAction(m_ui->actionRescale_Swc, true);
 }
 
 void MainWindow::customizeActions()
@@ -631,6 +636,7 @@ void MainWindow::customizeActions()
     m_ui->menuQuery->menuAction()->setVisible(false);
     m_ui->menuOptions->menuAction()->setVisible(false);
     punctaExportAction->setVisible(false);
+    m_ui->actionSparse_objects->setVisible(false);
   } else {
     expandAction->setVisible(false);
     m_ui->actionAddMask->setVisible(false);
@@ -670,7 +676,7 @@ void MainWindow::createMenus()
 
   separatorAction = m_ui->menuFile->addSeparator();
   for (int i = 0; i < MaxRecentFiles; ++i) {
-    m_ui->menuFile->addAction(recentFileActions[i]);
+    m_ui->menuOpen_Recent->addAction(recentFileActions[i]);
   }
   m_ui->menuFile->addSeparator();
   m_ui->menuFile->addAction(exitAction);
@@ -813,7 +819,9 @@ void MainWindow::updateAction()
     }
   }
 
-  m_stackActionActivator.update(frame);
+  foreach (ZActionActivator *actionActivator, m_actionActivatorList) {
+    actionActivator->update(frame);
+  }
 }
 
 void MainWindow::updateMenu()
@@ -3989,6 +3997,10 @@ ZStackFrame *MainWindow::createStackFrame(
     //std::cout << toc() <<std::endl;
 
     newFrame->document()->setTag(tag);
+    if (parentFrame != NULL) {
+      newFrame->document()->setStackBackground(
+            parentFrame->document()->getStackBackground());
+    }
     addStackFrame(newFrame);
     presentStackFrame(newFrame);
 
@@ -4857,6 +4869,7 @@ void MainWindow::showStackFrame(
       }
     }
 
+
     if (hasImageFile || hasSwcFile) {
       if (hasImageFile) {
         addStackFrame(frame);
@@ -4873,10 +4886,10 @@ void MainWindow::showStackFrame(
         delete frame;
       }
     }
-
     progressDlg->reset();
   }
 }
+
 
 void MainWindow::on_actionThumbnails_triggered()
 {

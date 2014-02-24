@@ -60,6 +60,8 @@ public:
 
   void updateSlaveQueryTable();
 
+  void dump(const QString &message);
+
 signals:
   void showSummaryTriggered();
   void processTriggered();
@@ -122,6 +124,7 @@ private slots:
 
 private:
   void showViewSelectedModel(ZFlyEmQueryView *view);
+  void updateThumbnail(ZFlyEmNeuron *neuron);
 
 private:
   Ui::FlyEmDataForm *ui;

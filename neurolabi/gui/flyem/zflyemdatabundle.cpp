@@ -27,9 +27,10 @@ const char *ZFlyEmDataBundle::m_swcResolutionKey = "swc_resolution";
 const char *ZFlyEmDataBundle::m_matchThresholdKey = "match_threshold";
 
 const int ZFlyEmDataBundle::m_layerNumber = 10;
+/*
 const double ZFlyEmDataBundle::m_layerRatio[11] = {
   0.0, 0.1, 0.2, 0.3, 0.35, 0.43, 0.54, 0.66, 0.73, 0.91, 1.0};
-
+*/
 ZFlyEmDataBundle::ZFlyEmDataBundle() : m_synapseScale(10.0),
   m_synaseAnnotation(NULL), m_colorMap(NULL)
 {
@@ -180,6 +181,9 @@ bool ZFlyEmDataBundle::loadJsonFile(const std::string &filePath)
       }
     }
     m_source = filePath;
+
+    ZJsonArray array(bundleObject["layer"], false);
+    m_layerRatio = array.toNumberArray();
 
     updateNeuronConnection();
 
@@ -546,9 +550,14 @@ void ZFlyEmDataBundle::exportJsonFile(const string &path) const
   jsonObj.dump(path);
 }
 
+int ZFlyEmDataBundle::getLayerNumber() const
+{
+  return m_layerRatio.size() - 1;
+}
+
 double ZFlyEmDataBundle::getLayerStart(int layer)
 {
-  if (layer >= 1 && layer <= m_layerNumber) {
+  if (layer >= 1 && layer <= getLayerNumber()) {
     return m_layerRatio[layer - 1] * m_sourceDimension[2] * m_imageResolution[2];
   }
 
@@ -557,7 +566,7 @@ double ZFlyEmDataBundle::getLayerStart(int layer)
 
 double ZFlyEmDataBundle::getLayerEnd(int layer)
 {
-  if (layer >= 1 && layer <= m_layerNumber) {
+  if (layer >= 1 && layer <= getLayerNumber()) {
     return m_layerRatio[layer] * m_sourceDimension[2] * m_imageResolution[2];
   }
 

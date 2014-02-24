@@ -549,7 +549,9 @@ int main(int argc, char *argv[])
   printf("%s saved.\n", file_path);
   Write_Stack(file_path, tw->trace_mask);
 
-  Kill_Stack(leftover);
+  if (leftover != NULL) {
+    Kill_Stack(leftover);
+  }
   leftover = Read_Stack(fullpath(dir, Get_String_Arg("-mask"), NULL));
   Stack_Binarize(tw->trace_mask);
   Translate_Stack(tw->trace_mask, GREY, 1);
