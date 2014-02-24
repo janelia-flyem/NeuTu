@@ -98,7 +98,6 @@ private:
   glm::vec3 get3DPosition(glm::ivec2 pos2D, int width, int height, Z3DRenderOutputPort &port);
   //get 3D position from 2D screen position and depth
   glm::vec3 get3DPosition(glm::ivec2 pos2D, double depth, int width, int height);
-  bool posIsInVolume(glm::vec3 pos3D) const;
   void clearFRVolumeSlices();
 
   // based on context, prepare minimum necessary data and send to raycasterrenderer
