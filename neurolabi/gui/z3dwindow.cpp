@@ -63,6 +63,7 @@
 #include "zstackdocmenufactory.h"
 #include "swc/zswcsubtreeanalyzer.h"
 #include "biocytin/zbiocytinfilenameparser.h"
+#include <QApplication>
 
 class Sleeper : public QThread
 {
@@ -1224,7 +1225,6 @@ void Z3DWindow::punctaDoubleClicked(ZPunctum *p)
 void Z3DWindow::pointInVolumeLeftClicked(QPoint pt, glm::ivec3 pos)
 {
   glm::vec3 fpos = glm::vec3(pos);
-  fpos /= glm::vec3(m_volumeSource->getXScale(), m_volumeSource->getYScale(), m_volumeSource->getZScale());
   m_lastClickedPosInVolume = glm::ivec3(fpos);
   LDEBUG() << "Point in volume left clicked" << fpos;
   // only do tracing when we are not editing swc nodes or the preconditions for editing swc node are not met
@@ -1339,12 +1339,15 @@ void Z3DWindow::show3DViewContextMenu(QPoint pt)
     // first see if pt hit any position in volume
     if (channelNumber() > 0) {
       bool success;
-      glm::vec3 fpos = m_volumeRaycaster->getFirstHit3DPosition(
+#ifdef _QT5_
+      glm::vec3 fpos = m_volumeRaycaster->get3DPosition(
+            pt.x() * qApp->devicePixelRatio(), pt.y() * qApp->devicePixelRatio(),
+            m_canvas->width() * qApp->devicePixelRatio(), m_canvas->height() * qApp->devicePixelRatio(), success);
+#else
+      glm::vec3 fpos = m_volumeRaycaster->get3DPosition(
             pt.x(), pt.y(), m_canvas->width(), m_canvas->height(), success);
+#endif
       if (success) {
-        fpos /= glm::vec3(m_volumeSource->getXScale(),
-                          m_volumeSource->getYScale(),
-                          m_volumeSource->getZScale());
         m_lastClickedPosInVolume = glm::ivec3(fpos);
         updateContextMenu("volume");
         //m_contextMenuGroup["volume"]->popup(m_canvas->mapToGlobal(pt));

@@ -88,6 +88,7 @@ public:
   }
 
   void setCompositeMode(const QString &option);
+  QString getCompositeMode() const;
   void setTextureFilterMode(const QString &option);
 
 signals:
@@ -117,8 +118,7 @@ protected:
   ZFloatParameter m_isoValue;  // The used isovalue, when isosurface raycasting is enabled
   ZFloatParameter m_localMIPThreshold;
 
-  ZOptionParameter<QString> m_gradientMode;   // What type of calculation should be used for on-the-fly gradients
-  ZOptionParameter<QString> m_compositingMode;  // What compositing mode should be applied
+  ZOptionParameter<QString> m_compositingMode;
 
   ZBoolParameter m_channel1Visible;
   ZBoolParameter m_channel2Visible;
