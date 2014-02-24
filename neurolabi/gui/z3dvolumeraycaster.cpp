@@ -287,28 +287,18 @@ ZWidgetsGroup *Z3DVolumeRaycaster::getWidgetsGroup()
   return m_widgetsGroup;
 }
 
-glm::vec3 Z3DVolumeRaycaster::getFirstHit3DPosition(int x, int y, int width, int height,
-                                                    bool &success)
+void Z3DVolumeRaycaster::hideBoundBox()
 {
-  glm::vec3 res(-1);
-  success = false;
-  if (m_volumeRaycasterRenderer->hasVisibleRendering() &&
-      (m_outport.hasValidData() || m_rightEyeOutport.hasValidData())) {
-    glm::ivec2 pos2D = glm::ivec2(x, height - y);
-    Z3DRenderOutputPort &port = m_outport.hasValidData() ? m_outport : m_rightEyeOutport;
-    if (port.getSize() == port.getExpectedSize() / m_interactionDownsample.get()) {
-      pos2D /= m_interactionDownsample.get();
-      width /= m_interactionDownsample.get();
-      height /= m_interactionDownsample.get();
-    }
-    glm::vec3 fpos3D = get3DPosition(pos2D, width, height, port);
-    glm::vec3 pos3D = glm::round(glm::applyMatrix(m_volumes.getFirstValidData()->getWorldToPhysicalMatrix(), fpos3D));
-    if (posIsInVolume(pos3D)) {
-      res = pos3D;
-      success = true;
-    }
+  m_showBoundBox.setValue(false);
+}
+
+glm::vec3 Z3DVolumeRaycaster::get3DPosition(int x, int y, int width, int height, bool &success)
+{
+  if (m_volumeRaycasterRenderer->getCompositeMode() == "Direct Volume Rendering") {
+    return getMaxInten3DPositionUnderScreenPoint(x, y, width, height, success);
+  } else {
+    return getFirstHit3DPosition(x, y, width, height, success);
   }
-  return res;
 }
 
 void Z3DVolumeRaycaster::process(Z3DEye eye)
@@ -743,6 +733,95 @@ void Z3DVolumeRaycaster::adjustWidget()
   m_boundBoxLineColor.setVisible(m_showBoundBox.get());
 }
 
+glm::vec3 Z3DVolumeRaycaster::getFirstHit3DPosition(int x, int y, int width, int height,
+                                                    bool &success)
+{
+  glm::vec3 res(-1);
+  success = false;
+  ZStack *stack = m_stackInputPort.getFirstValidData();
+  if (m_volumeRaycasterRenderer->hasVisibleRendering() &&
+      (m_outport.hasValidData() || m_rightEyeOutport.hasValidData())) {
+    glm::ivec2 pos2D = glm::ivec2(x, height - y);
+    Z3DRenderOutputPort &port = m_outport.hasValidData() ? m_outport : m_rightEyeOutport;
+    if (port.getSize() == port.getExpectedSize() / m_interactionDownsample.get()) {
+      pos2D /= m_interactionDownsample.get();
+      width /= m_interactionDownsample.get();
+      height /= m_interactionDownsample.get();
+    }
+    glm::vec3 fpos3D = get3DPosition(pos2D, width, height, port);
+    glm::vec3 pos3D = glm::applyMatrix(m_volumes.getFirstValidData()->getWorldToPhysicalMatrix(), fpos3D);
+    res = glm::round(pos3D / m_volumes.getFirstValidData()->getScaleSpacing());
+    if (res.x >= 0 && res.x < stack->width() &&
+        res.y >= 0 && res.y < stack->height() &&
+        res.z >= 0 && res.z < stack->depth()) {
+      success = true;
+    }
+  }
+  return res;
+}
+
+glm::vec3 Z3DVolumeRaycaster::getMaxInten3DPositionUnderScreenPoint(int x, int y, int width, int height, bool &success)
+{
+  glm::vec3 res(-1);
+  glm::vec3 des(-1);
+  success = false;
+  ZStack *stack = m_stackInputPort.getFirstValidData();
+  if (m_volumeRaycasterRenderer->hasVisibleRendering() &&
+      (m_outport.hasValidData() || m_rightEyeOutport.hasValidData())) {
+    glm::ivec2 pos2D = glm::ivec2(x, height - y);
+    Z3DRenderOutputPort &port = m_outport.hasValidData() ? m_outport : m_rightEyeOutport;
+    if (port.getSize() == port.getExpectedSize() / m_interactionDownsample.get()) {
+      pos2D /= m_interactionDownsample.get();
+      width /= m_interactionDownsample.get();
+      height /= m_interactionDownsample.get();
+    }
+    glm::vec3 fpos3D = get3DPosition(pos2D, width, height, port);
+    glm::vec3 pos3D = glm::applyMatrix(m_volumes.getFirstValidData()->getWorldToPhysicalMatrix(), fpos3D);
+    res = glm::round(pos3D / m_volumes.getFirstValidData()->getScaleSpacing());
+    //LWARN() << pos3D;
+    if (res.x >= 0 && res.x < stack->width() &&
+        res.y >= 0 && res.y < stack->height() &&
+        res.z >= 0 && res.z < stack->depth()) {
+      success = true;
+    }
+
+    if (success) {
+      fpos3D = get3DPosition(pos2D, 1.0, width, height);
+      pos3D = glm::applyMatrix(m_volumes.getFirstValidData()->getWorldToPhysicalMatrix(), fpos3D);
+      des = glm::round(pos3D / m_volumes.getFirstValidData()->getScaleSpacing());
+      //LWARN() << "start" << res << "to" << des;
+      if (glm::length(des - res) <= 1.f) {  // res is last pixel along current ray direction
+        return res;
+      }
+    }
+  }
+
+  // find maximum intensity voxel start from res along des direction
+  if (success) {
+    double maxInten = stack->value(res.x, res.y, res.z);
+    glm::vec3 p = res;
+    glm::vec3 d = des - res;
+    float N = std::max(std::max(std::abs(d.x), std::abs(d.y)), std::abs(d.z));
+    glm::vec3 stepSize = d / N;
+    while (true) {
+      p = p + stepSize;
+      glm::vec3 roundP = glm::round(p);
+      if (roundP.x < 0 || roundP.x >= stack->width() ||
+          roundP.y < 0 || roundP.y >= stack->height() ||
+          roundP.z < 0 || roundP.z >= stack->depth()) {
+        break;
+      }
+      double inten = stack->value(roundP.x, roundP.y, roundP.z);
+      if (inten > maxInten) {
+        maxInten = inten;
+        res = roundP;
+      }
+    }
+    //LWARN() << "res" << res << "maxInten" << maxInten;
+  }
+  return res;
+}
+
 glm::vec3 Z3DVolumeRaycaster::get3DPosition(glm::ivec2 pos2D, int width, int height, Z3DRenderOutputPort &port)
 {
   glm::mat4 projection = m_camera.get().getProjectionMatrix(CenterEye);
@@ -767,15 +846,21 @@ glm::vec3 Z3DVolumeRaycaster::get3DPosition(glm::ivec2 pos2D, int width, int hei
   return pos;
 }
 
-bool Z3DVolumeRaycaster::posIsInVolume(glm::vec3 pos3D) const
+glm::vec3 Z3DVolumeRaycaster::get3DPosition(glm::ivec2 pos2D, double depth, int width, int height)
 {
-  glm::vec3 luf = m_volumes.getFirstValidData()->getPhysicalLUF();
-  glm::vec3 rdb = m_volumes.getFirstValidData()->getPhysicalRDB();
-  if (pos3D.x >= luf.x && pos3D.x <= rdb.x && pos3D.y >= luf.y && pos3D.y <= rdb.y && pos3D.z >= luf.z && pos3D.z <= rdb.z) {
-    return true;
-  } else {
-    return false;
-  }
+  glm::mat4 projection = m_camera.get().getProjectionMatrix(CenterEye);
+  glm::mat4 modelview = m_camera.get().getViewMatrix(CenterEye);
+
+  glm::ivec4 viewport;
+  viewport[0] = 0;
+  viewport[1] = 0;
+  viewport[2] = width;
+  viewport[3] = height;
+
+  glm::vec3 pos = glm::unProject(glm::vec3(pos2D.x, pos2D.y, depth), modelview,
+                                 projection, viewport);
+
+  return pos;
 }
 
 void Z3DVolumeRaycaster::clearFRVolumeSlices()
@@ -933,14 +1018,14 @@ void Z3DVolumeRaycaster::leftMouseButtonPressed(QMouseEvent *e, int w, int h)
   if (e->type() == QEvent::MouseButtonRelease) {
     if (std::abs(e->x() - m_startCoord.x) < 2 && std::abs(m_startCoord.y - e->y()) < 2) {
       bool success;
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
-      glm::vec3 pos3D = getFirstHit3DPosition(e->x() * qApp->devicePixelRatio(),
-                                              e->y() * qApp->devicePixelRatio(),
-                                              w * qApp->devicePixelRatio(),
-                                              h * qApp->devicePixelRatio(),
-                                              success);
+#ifdef _QT5_
+      glm::vec3 pos3D = get3DPosition(e->x() * qApp->devicePixelRatio(),
+                                      e->y() * qApp->devicePixelRatio(),
+                                      w * qApp->devicePixelRatio(),
+                                      h * qApp->devicePixelRatio(),
+                                      success);
 #else
-      glm::vec3 pos3D = getFirstHit3DPosition(e->x(), e->y(), w, h, success);
+      glm::vec3 pos3D = get3DPosition(e->x(), e->y(), w, h, success);
 #endif
       if (success) {
         emit pointInVolumeLeftClicked(e->pos(), glm::ivec3(pos3D));
@@ -1059,9 +1144,4 @@ void Z3DVolumeRaycaster::invalidateAllFRVolumeSlices()
 {
   m_FRVolumeSlicesValidState.clear();
   m_FRVolumeSlicesValidState.resize(m_maxNumOfFullResolutionVolumeSlice, false);
-}
-
-void Z3DVolumeRaycaster::hideBoundBox()
-{
-  m_showBoundBox.setValue(false);
 }

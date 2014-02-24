@@ -16,7 +16,7 @@
 #include "tz_utilities.h"
 #include "neutubeconfig.h"
 
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
+#ifdef _QT5_
 #include <QStack>
 #include <QPointer>
 // thanks to Daniel Price for this workaround
@@ -103,7 +103,7 @@ int main(int argc, char *argv[])
 {
 
 #ifndef _FLYEM_
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
+#ifdef _QT5_
   qInstallMessageHandler(myMessageOutput);
 #else
   qInstallMsgHandler(myMessageOutput);
@@ -181,11 +181,11 @@ int main(int argc, char *argv[])
     logger.setLoggingLevel(QsLogging::InfoLevel);
 #endif
 
-#if defined __APPLE__ && (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))
+#if (defined __APPLE__) && !(defined _QT5_)
     app.setGraphicsSystem("raster");
 #endif
 
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
+#ifdef _QT5_
     qApp->installEventFilter(new MacEventFilter(qApp));
 #endif
 

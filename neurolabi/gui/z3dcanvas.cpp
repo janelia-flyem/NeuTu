@@ -5,7 +5,7 @@
 #include "z3dcanvaseventlistener.h"
 #include "z3dscene.h"
 #include "QsLog/QsLog.h"
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
+#ifdef _QT5_
 #include <QWindow>
 #endif
 
@@ -177,7 +177,7 @@ void Z3DCanvas::broadcastEvent(QEvent *e, int w, int h)
 
 double Z3DCanvas::getDevicePixelRatio()
 {
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
+#ifdef _QT5_
   return (window() && window()->windowHandle()) ?
         window()->windowHandle()->devicePixelRatio() : 1.0;
 #else
