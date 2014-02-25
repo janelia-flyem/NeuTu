@@ -233,6 +233,10 @@ Swc_Tree_Node* continuousAncestor(const Swc_Tree_Node *tn, double minDist);
 bool isConnected(const Swc_Tree_Node *tn1, const Swc_Tree_Node *tn2);
 
 //Attribute modifiers
+
+void setNode(Swc_Tree_Node *tn, int id, int type, double x, double y, double z,
+         double radius, int parentId);
+
 void setPos(Swc_Tree_Node *tn, double x, double y, double z);
 inline void setX(Swc_Tree_Node *tn, double x) {
   tn->node.x = x;

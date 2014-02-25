@@ -23,6 +23,9 @@ using namespace std;
 
 ZCommandLine::ZCommandLine() : m_ravelerHeight(2599), m_zStart(1490)
 {
+  for (int i = 0; i < 3; ++i) {
+    m_blockOffset[i] = 0;
+  }
 }
 
 ZCommandLine::ECommand ZCommandLine::getCommand(const char *cmd)
@@ -88,31 +91,43 @@ int ZCommandLine::runObjectMarker()
 int ZCommandLine::runBoundaryOrphan()
 {
   FlyEm::ZIntCuboidArray blockArray;
-  blockArray.loadSubstackList(ZArgumentProcessor::getStringArg("--boundary_orphan"));
-  Cuboid_I boundBox = blockArray.getBoundBox();
-  std::cout << "Offset: " << boundBox.cb[0] << " " << boundBox.cb[1] << std::endl;
-  int zStart = boundBox.cb[2] - 10;
-  int ravelerHeight = boundBox.cb[1] - boundBox.ce[1] - 1 + 20;
+  blockArray.loadSubstackList(m_blockFile);
 
-  if (zStart != m_zStart || ravelerHeight != m_ravelerHeight) {
-    std::cout << "Inconsistent values" << std::endl;
-    std::cout << "z: " << zStart << "; H: " << ravelerHeight << std::endl;
-    std::cout << "Abort" << std::endl;
+  int bodyOffset[3] = {0, 0, 0};
+  Cuboid_I blockBoundBox = blockArray.getBoundBox();
 
-    return 1;
+  bodyOffset[2] += blockBoundBox.cb[2];
+
+  if (!m_referenceBlockFile.empty()) {
+    FlyEm::ZIntCuboidArray blockReference;
+    blockReference.loadSubstackList(m_referenceBlockFile);
+    Cuboid_I refBoundBox = blockReference.getBoundBox();
+    std::cout << "Offset: " << refBoundBox.cb[0] << " " << refBoundBox.cb[1] << std::endl;
+
+    int zStart = refBoundBox.cb[2] - 10;
+    int ravelerHeight = refBoundBox.ce[1] - refBoundBox.cb[1] + 1 + 20;
+
+    if (zStart != m_zStart || ravelerHeight != m_ravelerHeight) {
+      std::cout << "Inconsistent values" << std::endl;
+      std::cout << "z: " << zStart << "; H: " << ravelerHeight << std::endl;
+      std::cout << "Abort" << std::endl;
+
+      return 1;
+    }
+
+    blockArray.translate(-refBoundBox.cb[0], -refBoundBox.cb[1], -refBoundBox.cb[2]);
+    blockArray.translate(10, 10, 10);
   }
 
-  blockArray.translate(-boundBox.cb[0], -boundBox.cb[1], -boundBox.cb[2]);
-  blockArray.translate(10, 10, 10);
-
-  //blockArray.exportSwc(dataPath + "/flyem/FIB/orphan_body_check_block_12layer.swc");
+  blockArray.translate(m_blockOffset[0], m_blockOffset[1], m_blockOffset[2]);
+  blockArray.exportSwc(m_output + ".swc");
 
   ZFlyEmQualityAnalyzer qc;
   qc.setSubstackRegion(blockArray);
 
   QStringList filters;
   filters << "*.sobj";
-  QDir dir(ZArgumentProcessor::getStringArg("input"));
+  QDir dir(m_input[0].c_str());
   QFileInfoList fileList = dir.entryInfoList(filters, QDir::Files);
 
   //QVector<ZObject3dScan> objList(fileList.size());
@@ -120,21 +135,39 @@ int ZCommandLine::runBoundaryOrphan()
   json_t *obj = json_object();
   json_t *dataObj = json_array();
 
+  std::vector<int> synapseCount;
+  if (!m_synapseFile.empty()) {
+    FlyEm::ZSynapseAnnotationArray synapseAnnotation;
+    synapseAnnotation.loadJson(m_synapseFile);
+    synapseCount = synapseAnnotation.countSynapse();
+  }
+
   foreach (QFileInfo objFile, fileList) {
     //std::cout << objFile.absoluteFilePath().toStdString().c_str() << std::endl;
     ZObject3dScan obj;
     obj.load(objFile.absoluteFilePath().toStdString());
-    if (obj.getVoxelNumber() < 100000) {
+    if (obj.getVoxelNumber() <= 100000) {
       if (obj.isEmpty()) {
         std::cout << "Empty object: "
                   << objFile.absoluteFilePath().toStdString().c_str() << std::endl;
       }
 
-      if (qc.isStitchedOrphanBody(obj)) {
+      ZString bodyPath = objFile.absoluteFilePath().toStdString();
+      int bodyId = bodyPath.lastInteger();
+
+      bool isCandidate = true;
+      if (bodyId < (int) synapseCount.size()) {
+        if (synapseCount[bodyId] == 0) {
+          isCandidate = false;
+        }
+      }
+
+      if (isCandidate && qc.isStitchedOrphanBody(obj)) {
         std::cout << "Orphan: "
                   << ZString::lastInteger(objFile.absoluteFilePath().toStdString())
                   << std::endl;
         ZVoxel voxel = obj.getMarker();
+        voxel.translate(bodyOffset[0], bodyOffset[1], bodyOffset[2]);
         std::cout << voxel.x() << " " << voxel.y() << " " << voxel.z() << std::endl;
         json_t *arrayObj = json_array();
 
@@ -142,7 +175,7 @@ int ZCommandLine::runBoundaryOrphan()
 
         json_array_append(arrayObj, json_integer(voxel.x()));
         json_array_append(arrayObj, json_integer(m_ravelerHeight - 1 - voxel.y()));
-        json_array_append(arrayObj, json_integer(voxel.z() + m_zStart));
+        json_array_append(arrayObj, json_integer(voxel.z()));
         json_array_append(dataObj, arrayObj);
       }
     }
@@ -157,7 +190,7 @@ int ZCommandLine::runBoundaryOrphan()
 
   json_object_set(obj, "metadata", metaObj);
 
-  json_dump_file(obj, ZArgumentProcessor::getStringArg("-o"), JSON_INDENT(2));
+  json_dump_file(obj, m_output.c_str(), JSON_INDENT(2));
 
   return 0;
 }
@@ -372,6 +405,7 @@ int ZCommandLine::run(int argc, char *argv[])
   static const char *Spec[] = {
     "--command",  "[--unit_test]", "[<input:string> ...] [-o <string>]",
     "[--sobj_marker]", "[--boundary_orphan <string>]", "[--config <string>]",
+    "[--no_block_adjust]",
     "[--sobj_overlap]", "[--intv <int> <int> <int>]", "[--fulloverlap_screen]",
     "[--synapse_object]", "[--flyem_neuron_feature]", "[--classlist]", 0
   };
@@ -397,6 +431,9 @@ int ZCommandLine::run(int argc, char *argv[])
     command = getCommand(ZJsonParser::stringValue(obj["command"]));
     m_input.push_back(ZJsonParser::stringValue(obj["input"]));
     m_output = ZJsonParser::stringValue(obj["output"]);
+    if (obj.hasKey("synapse")) {
+      m_synapseFile = ZJsonParser::stringValue(obj["synapse"]);
+    }
 
     if (obj.hasKey("raveler_height")) {
       m_ravelerHeight = ZJsonParser::integerValue(obj["raveler_height"]);
@@ -406,7 +443,14 @@ int ZCommandLine::run(int argc, char *argv[])
       m_zStart = ZJsonParser::integerValue(obj["z_start"]);
     }
 
-    m_blockFile = ZJsonParser::integerValue(obj["block_file"]);
+    if (obj.hasKey("block_offset")) {
+      for (int i = 0; i < 3; ++i) {
+        m_blockOffset[i] = ZJsonParser::numberValue(obj["block_offset"], i);
+      }
+    }
+
+    m_blockFile = ZJsonParser::stringValue(obj["block_file"]);
+    m_referenceBlockFile = ZJsonParser::stringValue(obj["block_reference"]);
   } else if (ZArgumentProcessor::isArgMatched("--sobj_marker")) {
     command = OBJECT_MARKER;
     m_input.push_back(ZArgumentProcessor::getStringArg("input", 0));

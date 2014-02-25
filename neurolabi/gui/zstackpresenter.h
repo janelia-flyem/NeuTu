@@ -238,6 +238,8 @@ private:
   QPointF mapFromWidgetToStack(const QPoint &pos);
   QPointF mapFromGlobalToStack(const QPoint &pos);
 
+  bool estimateActiveStrokeWidth();
+
 private:
   ZStackFrame *m_parent;
   QList<ZStackDrawable*> m_decorationList;

@@ -84,6 +84,16 @@ double SwcTreeNode::z(const Swc_Tree_Node *tn)
   return tn->node.z;
 }
 
+void SwcTreeNode::setNode(Swc_Tree_Node *tn, int id, int type, double x,
+                          double y, double z, double radius, int parentId)
+{
+  setId(tn, id);
+  setType(tn, type);
+  setRadius(tn, radius);
+  setParentId(tn, parentId);
+  setPos(tn, x, y, z);
+}
+
 void SwcTreeNode::setPos(Swc_Tree_Node *tn, double x, double y, double z)
 {
   tn->node.x = x;
@@ -1243,6 +1253,10 @@ bool SwcTreeNode::fitSignal(Swc_Tree_Node *tn, const Stack *stack,
   }
 
   int cz = iround(z(tn));
+
+  if (cz >= C_Stack::depth(stack)) {
+    return false;
+  }
 
   Stack *slice = Crop_Stack(stack, x1, y1, cz, x2 - x1 + 1, y2 - y1 + 1, 1, NULL);
 

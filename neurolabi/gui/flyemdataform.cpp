@@ -18,6 +18,8 @@
 #include "flyem/zflyemdataframe.h"
 #include "flyem/zflyemstackframe.h"
 #include "zimagewidget.h"
+#include "zfiletype.h"
+#include "zimage.h"
 
 FlyEmDataForm::FlyEmDataForm(QWidget *parent) :
   QWidget(parent),
@@ -482,26 +484,50 @@ void FlyEmDataForm::updateSlaveQueryTable()
 
 void FlyEmDataForm::updateThumbnail(const QModelIndex &index)
 {
-  m_thumbnailScene->clear();
   ZFlyEmNeuron *neuron = m_neuronList->getNeuron(index);
+  updateThumbnail(neuron);
+}
+
+void FlyEmDataForm::updateThumbnailSecondary(const QModelIndex &index)
+{ 
+  ZFlyEmNeuron *neuron = m_secondaryNeuronList->getNeuron(index);
+  updateThumbnail(neuron);
+}
+
+void FlyEmDataForm::updateThumbnail(ZFlyEmNeuron *neuron)
+{
+  m_thumbnailScene->clear();
   if (neuron != NULL) {
     if (!neuron->getThumbnailPath().empty()) {
       QGraphicsPixmapItem *thumbnailItem = new QGraphicsPixmapItem;
-      thumbnailItem->setPixmap(QPixmap(neuron->getThumbnailPath().c_str()));
+      QPixmap pixmap;
+      if (!pixmap.load(neuron->getThumbnailPath().c_str())) {
+        if (ZFileType::fileType(neuron->getThumbnailPath()) ==
+            ZFileType::TIFF_FILE) {
+          Stack *stack = C_Stack::readSc(neuron->getThumbnailPath().c_str());
+          if (stack != NULL) {
+            ZImage image(C_Stack::width(stack), C_Stack::height(stack));
+            image.setData(C_Stack::array8(stack));
+#ifdef _DEBUG_2
+            image.save((GET_DATA_DIR + "/test.png").c_str());
+#endif
+            if (!pixmap.convertFromImage(image)) {
+              dump("Failed to load the thumbnail.");
+            }
+            C_Stack::kill(stack);
+          } else {
+            dump("Failed to load the thumbnail.");
+          }
+        }
+      }
+      thumbnailItem->setPixmap(pixmap);
       m_thumbnailScene->addItem(thumbnailItem);
     }
   }
 }
 
-void FlyEmDataForm::updateThumbnailSecondary(const QModelIndex &index)
+void FlyEmDataForm::dump(const QString &message)
 {
-  m_thumbnailScene->clear();
-  ZFlyEmNeuron *neuron = m_secondaryNeuronList->getNeuron(index);
-  if (neuron != NULL) {
-    if (!neuron->getThumbnailPath().empty()) {
-      QGraphicsPixmapItem *thumbnailItem = new QGraphicsPixmapItem;
-      thumbnailItem->setPixmap(QPixmap(neuron->getThumbnailPath().c_str()));
-      m_thumbnailScene->addItem(thumbnailItem);
-    }
-  }
+  appendOutput("<p>" + message + "</p>");
+  QApplication::processEvents();
 }

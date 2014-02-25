@@ -489,6 +489,8 @@ private:
   QAction *openTraceAction;
 
   ZStackActionActivator m_stackActionActivator;
+  ZSwcActionActivator m_swcActionActivator;
+  QVector<ZActionActivator*> m_actionActivatorList;
 
   FrameInfoDialog m_frameInfoDlg;
   QProgressDialog *m_progress;

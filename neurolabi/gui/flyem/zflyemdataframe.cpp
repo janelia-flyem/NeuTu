@@ -5,6 +5,7 @@
 #include <QMap>
 #include <QMainWindow>
 #include <QStatusBar>
+#include <QDir>
 #include <iostream>
 #include <sstream>
 #include <map>
@@ -1518,8 +1519,7 @@ void ZFlyEmDataFrame::dump(const QString &message) const
 {
   FlyEmDataForm *form = getMainWidget();
   if (form != NULL) {
-    form->appendOutput("<p>" + message + "</p>");
-    QApplication::processEvents();
+    form->dump(message);
   }
 }
 
@@ -1916,6 +1916,21 @@ void ZFlyEmDataFrame::exportThumbnail(
     const QString &saveDir, bool thumbnailUpdate,
     const ZFlyEmNeuronImageFactory &imageFactory)
 {
+  QDir dir(saveDir);
+  if (!dir.exists()) {
+    int ret = QMessageBox::warning(this, "Create directory?",
+                                   saveDir + " does not exist. "
+                                      "Do you want to create it?",
+                                   QMessageBox::Yes | QMessageBox::No);
+
+    if (ret == QMessageBox::Yes) {
+      dir.mkpath(saveDir);
+    } else {
+      QMessageBox::information(this, "Abort Export", "No thumbnail is generated");
+      return;
+    }
+  }
+
   std::vector<ZFlyEmNeuron>& neuronArray = m_dataArray[0]->getNeuronArray();
 
   startProgress();

@@ -122,7 +122,7 @@ public: //attributes
   // hasObject() returns true iff it has an object.
   bool hasObject();
   // hasSwc() returns true iff it has an SWC object.
-  bool hasSwc();
+  bool hasSwc() const;
   // hasDrawable() returns true iff it has a drawable object.
   bool hasDrawable();
 
@@ -206,6 +206,7 @@ public: //attributes
   */
 
   bool isUndoClean();
+  bool isSwcSavingRequired();
 
   /*
   void setProgressReporter(ZProgressReporter *reporter);

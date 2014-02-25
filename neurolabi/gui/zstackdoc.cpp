@@ -339,36 +339,38 @@ void ZStackDoc::updateSwcNodeAction()
 
 void ZStackDoc::autoSave()
 {
-  qDebug() << "Auto save triggered in " << this;
-  if (!swcList()->empty()) {
-    std::string autoSaveDir = NeutubeConfig::getInstance().getPath(
-          NeutubeConfig::AUTO_SAVE);
-    QDir dir(autoSaveDir.c_str());
-    if (dir.exists()) {
-      ostringstream stream;
-      stream << this;
-      std::string autoSavePath =
-          autoSaveDir + ZString::FileSeparator;
-      if (NeutubeConfig::getInstance().getApplication() == "Biocytin") {
-        autoSavePath +=
-            ZBiocytinFileNameParser::getCoreName(stack()->sourcePath()) +
-            ".autosave.swc";
-      } else {
-        autoSavePath += "~" + stream.str() + ".swc";
-      }
-
-      FILE *fp = fopen(autoSavePath.c_str(), "w");
-      if (fp != NULL) {
-        fclose(fp);
-        ZSwcTree *tree = new ZSwcTree;
-        foreach (ZSwcTree *treeItem, m_swcList) {
-          tree->merge(Copy_Swc_Tree(treeItem->data()), true);
+  if (isSwcSavingRequired()) {
+    qDebug() << "Auto save triggered in " << this;
+    if (!swcList()->empty()) {
+      std::string autoSaveDir = NeutubeConfig::getInstance().getPath(
+            NeutubeConfig::AUTO_SAVE);
+      QDir dir(autoSaveDir.c_str());
+      if (dir.exists()) {
+        ostringstream stream;
+        stream << this;
+        std::string autoSavePath =
+            autoSaveDir + ZString::FileSeparator;
+        if (NeutubeConfig::getInstance().getApplication() == "Biocytin") {
+          autoSavePath +=
+              ZBiocytinFileNameParser::getCoreName(stack()->sourcePath()) +
+              ".autosave.swc";
+        } else {
+          autoSavePath += "~" + stream.str() + ".swc";
         }
-        tree->resortId();
-        tree->save(autoSavePath.c_str());
-        qDebug() << autoSavePath.c_str();
 
-        delete tree;
+        FILE *fp = fopen(autoSavePath.c_str(), "w");
+        if (fp != NULL) {
+          fclose(fp);
+          ZSwcTree *tree = new ZSwcTree;
+          foreach (ZSwcTree *treeItem, m_swcList) {
+            tree->merge(Copy_Swc_Tree(treeItem->data()), true);
+          }
+          tree->resortId();
+          tree->save(autoSavePath.c_str());
+          qDebug() << autoSavePath.c_str();
+
+          delete tree;
+        }
       }
     }
   }
@@ -506,7 +508,7 @@ bool ZStackDoc::hasObject()
   return !m_objs.isEmpty();
 }
 
-bool ZStackDoc::hasSwc()
+bool ZStackDoc::hasSwc() const
 {
   return !m_swcList.isEmpty();
   //return !m_swcObjects.isEmpty();
@@ -541,6 +543,11 @@ bool ZStackDoc::hasChainList()
 bool ZStackDoc::isUndoClean()
 {
   return m_undoStack->isClean();
+}
+
+bool ZStackDoc::isSwcSavingRequired()
+{
+  return !m_swcList.empty() && isUndoClean();
 }
 
 void ZStackDoc::swcTreeTranslateRootTo(double x, double y, double z)
@@ -5992,7 +5999,7 @@ bool ZStackDoc::executeSwcNodeEstimateRadiusCommand()
          iter != m_selectedSwcTreeNodes.end(); ++iter) {
       Swc_Tree_Node newNode = *(*iter);
       if (SwcTreeNode::fitSignal(&newNode,  stack()->c_stack(),
-                                 NeuTube::IMAGE_BACKGROUND_BRIGHT)) {
+                                 getStackBackground())) {
         new ZStackDocCommand::SwcEdit::ChangeSwcNode(
               this, *iter, newNode, allCommand);
         advanceProgress(step);

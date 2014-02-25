@@ -13,14 +13,23 @@ public:
   virtual ~ZJsonArray();
 
 public:
-  ::size_t size();
+  ::size_t size() const;
   json_t* at(::size_t index);
+  const json_t* at(::size_t index) const;
 
   /*!
    * \brief Append an element.
    * \param obj The element to be appended. Nothing is done if it is NULL.
    */
   void append(json_t *obj);
+
+  /*!
+   * \brief Get a number array from the json array.
+   *
+   * \return Returns an empty array if the object can not be converted into a
+   *         number array.
+   */
+  std::vector<double> toNumberArray() const;
 };
 
 #endif // ZJSONARRAY_H

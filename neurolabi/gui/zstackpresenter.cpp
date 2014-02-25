@@ -954,10 +954,10 @@ ZStackPresenter::processMouseReleaseForStroke(
             double cx = (start.x() + end.x()) / 2;
             double cy = (start.y() + end.y()) / 2;
             //double cz = ((double) (start[2] + end[2])) / 2;
-            int x0 = (int) (cx - pointDistance);
-            int x1 = (int) (cx + pointDistance);
-            int y0 = (int) (cy - pointDistance);
-            int y1 = (int) (cy + pointDistance);
+            int x0 = (int) (cx - pointDistance) - 2; //expand by 2 to deal with rouding error
+            int x1 = (int) (cx + pointDistance) + 2;
+            int y0 = (int) (cy - pointDistance) - 2;
+            int y1 = (int) (cy + pointDistance) + 2;
             //int z0 = (int) (cz - pointDistance);
             //int z1 = (int) (cz + pointDistance);
 
@@ -1413,6 +1413,28 @@ void ZStackPresenter::setZoomRatio(int ratio)
   buddyView()->imageWidget()->setZoomRatio(ratio);
 }
 
+bool ZStackPresenter::estimateActiveStrokeWidth()
+{
+  //Automatic adjustment
+  int x = 0;
+  int y = 0;
+  int width = m_stroke.getWidth();
+  m_stroke.getLastPoint(&x, &y);
+
+  Swc_Tree_Node tn;
+  SwcTreeNode::setNode(
+        &tn, 1, 2, x, y, buddyView()->sliceIndex(), width / 2.0, -1);
+
+  if (SwcTreeNode::fitSignal(&tn, buddyDocument()->stack()->c_stack(),
+                             buddyDocument()->getStackBackground())) {
+    m_stroke.setWidth(SwcTreeNode::radius(&tn) * 2.0);
+
+    return true;
+  }
+
+  return false;
+}
+
 void ZStackPresenter::processKeyPressEvent(QKeyEvent *event)
 {
   if (processKeyPressEventForSwc(event)) {
@@ -1563,8 +1585,14 @@ void ZStackPresenter::processKeyPressEvent(QKeyEvent *event)
   case Qt::Key_Period:
   case Qt::Key_E:
     if (isStrokeOn()) {
-      m_stroke.addWidth(1.0);
-      buddyView()->paintActiveDecoration();
+      if (event->modifiers() == Qt::NoModifier) {
+        m_stroke.addWidth(1.0);
+        buddyView()->paintActiveDecoration();
+      } else {
+        if (estimateActiveStrokeWidth()) {
+          buddyView()->paintActiveDecoration();
+        }
+      }
     }
     break;
   case Qt::Key_R:
