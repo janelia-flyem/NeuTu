@@ -252,12 +252,12 @@ public: /* attributes */
   bool isVirtual() const;
 
   // return voxelnumber or dataByteCount of all channels. Obsolete
-  size_t voxelNumber() const;
-  size_t dataByteCount() const;
+  //size_t voxelNumber() const;
+  //size_t dataByteCount() const;
 
   // return voxelnumber of dataByteCount of 1 channel. Obsolete
-  size_t voxelNumber(int ch) const;
-  size_t dataByteCount(int ch) const;
+  //size_t voxelNumber(int ch) const;
+  //size_t dataByteCount(int ch) const;
 
   //Minimal value of the stack.
   double min();
@@ -309,16 +309,16 @@ public: /* attributes */
 public: /* data operation */
   //Clean all associated memory except the source
   void clear();
-  void cleanChannel(int c = 0);   //remove content of this channel
+  //void cleanChannel(int c = 0);   //remove content of this channel
   void removeChannel(int c = 0); //remove channel
   //Load stack from Stack, split channel if necessary
   bool load(Stack *stack, bool isOwner = true);
 
   //Load stack from a file
   bool load(const std::string &filepath);
-  bool loadImageSequence(const char *filePath);
+  //bool loadImageSequence(const char *filePath);
 
-  bool importJsonFile(const std::string &filePath);
+  //bool importJsonFile(const std::string &filePath);
 
   //Load stack from several single channel stack, stack can be null
   bool load(const Stack *ch1, const Stack *ch2, const Stack *ch3);

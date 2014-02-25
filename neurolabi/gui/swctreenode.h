@@ -271,7 +271,7 @@ inline void addType(Swc_Tree_Node *tn, int type) { tn->node.type += type; }
 void setLabel(Swc_Tree_Node *tn, int label);
 void addLabel(Swc_Tree_Node *tn, int label);
 void copyProperty(const Swc_Tree_Node *src, Swc_Tree_Node *dst);
-void toVirtual(Swc_Tree_Node *tn);
+//void toVirtual(Swc_Tree_Node *tn);
 void setDownstreamType(Swc_Tree_Node *tn, int type);
 void setUpstreamType(Swc_Tree_Node *tn, int type, Swc_Tree_Node *stop = NULL);
 void translate(Swc_Tree_Node *tn, double dx, double dy, double dz);

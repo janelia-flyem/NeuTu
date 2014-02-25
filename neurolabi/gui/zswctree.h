@@ -436,7 +436,7 @@ public:
    */
   void addLabelSubtree(Swc_Tree_Node *tn, int label);
 
-  void labelTrunk(int flag, int setLabel, Swc_Tree_Node *start);
+  //void labelTrunk(int flag, int setLabel, Swc_Tree_Node *start);
   void labelTrunkLevel(ZSwcTrunkAnalyzer *trunkAnalyzer);
 
   int regularDepth();
@@ -449,7 +449,7 @@ public:
 
   std::vector<ZSwcPath> getBranchArray();
 
-  void labelBusyLevel();
+  //void labelBusyLevel();
 
   void setTypeByLabel();
   void moveToSurface(double *x, double *y, double *z);

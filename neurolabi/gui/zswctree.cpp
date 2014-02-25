@@ -745,10 +745,12 @@ void ZSwcTree::print(int iterOption) const
 {
   if (m_tree == NULL) {
     cout << "Empty tree." << endl;
+    return;
   }
 
   if (m_tree->root == NULL) {
     cout << "Empty tree." << endl;
+    return;
   }
 
   updateIterator(iterOption);

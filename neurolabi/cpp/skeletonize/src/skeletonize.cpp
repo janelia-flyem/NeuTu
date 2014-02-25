@@ -37,6 +37,7 @@
 #include "zargumentprocessor.h"
 #include "tz_math.h"
 #include "swc/zswcresampler.h"
+#include "zjsonparser.h"
 
 using namespace std;
 

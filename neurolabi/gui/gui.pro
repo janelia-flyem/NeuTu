@@ -347,8 +347,6 @@ HEADERS += mainwindow.h \
     zflyemqueryview.h \
     flyemgeosearchdialog.h \
     zqslogmessagereporter.h \
-    flyem/zflyemneuronfilter.h \
-    flyem/zflyemneuronfilterfactory.h \
     flyemgeofilterdialog.h \
     zactionactivator.h \
     zswccurvaturefeatureanalyzer.h \
@@ -374,9 +372,7 @@ HEADERS += mainwindow.h \
     tilemanagerdialog.h \
     flyem/zflyemneuronimagefactory.h \
     flyem/zflyemneuronfeatureanalyzer.h \
-    flyemneuronthumbnaildialog.h \
-    flyem/zflyemneuronfeature.h \
-    flyem/zflyemneuronfeaturefactory.h
+    flyemneuronthumbnaildialog.h
 
 FORMS += settingdialog.ui \
     frameinfodialog.ui \
@@ -610,9 +606,7 @@ SOURCES += main.cpp \
     tilemanagerdialog.cpp \
     flyem/zflyemneuronimagefactory.cpp \
     flyem/zflyemneuronfeatureanalyzer.cpp \
-    flyemneuronthumbnaildialog.cpp \
-    flyem/zflyemneuronfeature.cpp \
-    flyem/zflyemneuronfeaturefactory.cpp
+    flyemneuronthumbnaildialog.cpp
 
 OTHER_FILES += \
     extlib.pri

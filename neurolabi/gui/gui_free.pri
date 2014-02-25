@@ -146,8 +146,6 @@ HEADERS +=$${PWD}/zstackprocessor.h \
    $${PWD}/swc/zswcterminalsurfacemetric.h \
    $${PWD}/zapclustering.h \
    $${PWD}/swc/zswcterminalanglemetric.h \
-   $${PWD}/flyem/zflyemneuronfilter.h \
-   $${PWD}/flyem/zflyemneuronfilterfactory.h \
    $${PWD}/swc/zswcdeepanglemetric.h \
    $${PWD}/zswcsubtreefeatureanalyzer.h \
    $${PWD}/swc/zswcsubtreeanalyzer.h \
@@ -159,7 +157,11 @@ HEADERS +=$${PWD}/zstackprocessor.h \
    $${PWD}/zstackfactory.h \
    $${PWD}/zeigensolver.h \
    $${PWD}/zmapgenerator.h \
-   $${PWD}/flyem/zflyemneuronfeatureset.h
+   $${PWD}/flyem/zflyemneuronfeatureset.h \
+   $${PWD}/flyem/zflyemneuronfilter.h \
+   $${PWD}/flyem/zflyemneuronfilterfactory.h \
+   $${PWD}/flyem/zflyemneuronfeature.h \
+   $${PWD}/flyem/zflyemneuronfeaturefactory.h
 
 SOURCES +=$${PWD}/zstackprocessor.cpp \
    $${PWD}/zstack.cxx \
@@ -292,8 +294,6 @@ SOURCES +=$${PWD}/zstackprocessor.cpp \
    $${PWD}/swc/zswcterminalsurfacemetric.cpp \
    $${PWD}/zapclustering.cpp \
    $${PWD}/swc/zswcterminalanglemetric.cpp \
-   $${PWD}/flyem/zflyemneuronfilter.cpp \
-   $${PWD}/flyem/zflyemneuronfilterfactory.cpp \
    $${PWD}/swc/zswcdeepanglemetric.cpp \
    $${PWD}/zswcsubtreefeatureanalyzer.cpp \
    $${PWD}/swc/zswcsubtreeanalyzer.cpp \
@@ -305,4 +305,8 @@ SOURCES +=$${PWD}/zstackprocessor.cpp \
    $${PWD}/zstackfactory.cpp \
    $${PWD}/zeigensolver.cpp \
    $${PWD}/zmapgenerator.cpp \
-   $${PWD}/flyem/zflyemneuronfeatureset.cpp
+   $${PWD}/flyem/zflyemneuronfeatureset.cpp \
+   $${PWD}/flyem/zflyemneuronfilter.cpp \
+   $${PWD}/flyem/zflyemneuronfilterfactory.cpp \
+   $${PWD}/flyem/zflyemneuronfeature.cpp \
+   $${PWD}/flyem/zflyemneuronfeaturefactory.cpp
