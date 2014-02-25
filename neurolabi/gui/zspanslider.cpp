@@ -68,8 +68,7 @@ void ZSpanSliderWithSpinBox::createWidget(int lowerValue, int upperValue, int mi
 {
   m_slider = new QxtSpanSlider(Qt::Horizontal);
   m_slider->setRange(min, max);
-  m_slider->setLowerValue(lowerValue);
-  m_slider->setUpperValue(upperValue);
+  m_slider->setSpan(lowerValue, upperValue);
   m_slider->setSingleStep(singleStep);
   m_slider->setTracking(tracking);
   m_slider->setHandleMovementMode(QxtSpanSlider::NoCrossing);
@@ -167,7 +166,7 @@ void ZDoubleSpanSliderWithSpinBox::valueChangedFromUpperSpinBox(double u)
   m_upperValue = u;
   int sliderPos = static_cast<int>((m_upperValue - m_min) / (m_max - m_min) * m_sliderMaxValue);
   m_slider->blockSignals(true);
-  m_slider->setLowerValue(sliderPos);
+  m_slider->setUpperValue(sliderPos);
   m_slider->blockSignals(false);
   emit upperValueChanged(m_upperValue);
 }
@@ -176,8 +175,8 @@ void ZDoubleSpanSliderWithSpinBox::createWidget()
 {
   m_slider = new QxtSpanSlider(Qt::Horizontal);
   m_slider->setRange(0, m_sliderMaxValue);
-  m_slider->setLowerValue(static_cast<int>((m_lowerValue - m_min) / (m_max - m_min) * m_sliderMaxValue));
-  m_slider->setUpperValue(static_cast<int>((m_upperValue - m_min) / (m_max - m_min) * m_sliderMaxValue));
+  m_slider->setSpan(static_cast<int>((m_lowerValue - m_min) / (m_max - m_min) * m_sliderMaxValue),
+                    static_cast<int>((m_upperValue - m_min) / (m_max - m_min) * m_sliderMaxValue));
   m_slider->setSingleStep(std::max(1, static_cast<int>(m_step*m_sliderMaxValue/(m_max-m_min))));
   m_slider->setTracking(m_tracking);
   m_slider->setHandleMovementMode(QxtSpanSlider::NoCrossing);
