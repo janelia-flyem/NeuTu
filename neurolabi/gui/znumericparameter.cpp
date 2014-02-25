@@ -1595,7 +1595,7 @@ void ZFloatSpanParameter::beforeChange(glm::vec2 &value)
 
 QWidget *ZFloatSpanParameter::actualCreateWidget(QWidget *parent)
 {
-  ZDoubleSpanSliderWithSpinBox *spanSlider = new ZDoubleSpanSliderWithSpinBox(m_value[0], m_value[1], m_min, m_max, m_step, m_tracking, parent);
+  ZDoubleSpanSliderWithSpinBox *spanSlider = new ZDoubleSpanSliderWithSpinBox(m_value[0], m_value[1], m_min, m_max, m_step, m_decimal, m_tracking, parent);
   connect(spanSlider, SIGNAL(lowerValueChanged(double)), this, SLOT(setLowerValue(double)));
   connect(spanSlider, SIGNAL(upperValueChanged(double)), this, SLOT(setUpperValue(double)));
   connect(this, SIGNAL(lowerValueChanged(double)), spanSlider, SLOT(setLowerValue(double)));
@@ -1637,7 +1637,7 @@ void ZDoubleSpanParameter::beforeChange(glm::dvec2 &value)
 
 QWidget *ZDoubleSpanParameter::actualCreateWidget(QWidget *parent)
 {
-  ZDoubleSpanSliderWithSpinBox *spanSlider = new ZDoubleSpanSliderWithSpinBox(m_value[0], m_value[1], m_min, m_max, m_step, m_tracking, parent);
+  ZDoubleSpanSliderWithSpinBox *spanSlider = new ZDoubleSpanSliderWithSpinBox(m_value[0], m_value[1], m_min, m_max, m_step, m_decimal, m_tracking, parent);
   connect(spanSlider, SIGNAL(lowerValueChanged(double)), this, SLOT(setLowerValue(double)));
   connect(spanSlider, SIGNAL(upperValueChanged(double)), this, SLOT(setUpperValue(double)));
   connect(this, SIGNAL(lowerValueChanged(double)), spanSlider, SLOT(setLowerValue(double)));

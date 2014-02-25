@@ -151,7 +151,7 @@ QLayout *ZWidgetsGroup::createLayout(QMainWindow *mainWin, bool createBasic)
     label->setWordWrap(true);
     hbl->addWidget(label);
     QWidget* wg = m_parameter->createWidget();
-    wg->setMinimumWidth(125);
+    wg->setMinimumWidth(175);
     wg->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
     hbl->addWidget(wg);
 
