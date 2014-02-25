@@ -98,7 +98,11 @@ ZDoubleSpanSliderWithSpinBox::ZDoubleSpanSliderWithSpinBox(double lowerValue, do
   : QWidget(parent), m_lowerValue(lowerValue), m_upperValue(upperValue), m_min(min),
     m_max(max), m_step(singleStep), m_decimal(decimal), m_tracking(tracking)
 {
-  m_sliderMaxValue = static_cast<int>(std::max(500000.0, (m_max-m_min)/m_step));
+  double sliderMaxValue = (m_max-m_min)/m_step;
+  if (sliderMaxValue > std::numeric_limits<int>::max())
+    m_sliderMaxValue = std::numeric_limits<int>::max();
+  else
+    m_sliderMaxValue = static_cast<int>(sliderMaxValue);
   createWidget();
 }
 
@@ -121,7 +125,11 @@ void ZDoubleSpanSliderWithSpinBox::setDataRange(double min, double max)
 {
   m_min = min;
   m_max = max;
-  m_sliderMaxValue = static_cast<int>(std::max(50000.0, (m_max-m_min)/m_step));
+  double sliderMaxValue = (m_max-m_min)/m_step;
+  if (sliderMaxValue > std::numeric_limits<int>::max())
+    m_sliderMaxValue = std::numeric_limits<int>::max();
+  else
+    m_sliderMaxValue = static_cast<int>(sliderMaxValue);
   m_slider->setRange(0, m_sliderMaxValue);
   double l = m_slider->lowerValue() / (double)m_sliderMaxValue * (m_max-m_min) + m_min;
   double u = m_slider->upperValue() / (double)m_sliderMaxValue * (m_max-m_min) + m_min;
