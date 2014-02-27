@@ -231,6 +231,19 @@ ZPoint SwcTreeNode::pos(const Swc_Tree_Node *tn)
   return ZPoint(tn->node.x, tn->node.y, tn->node.z);
 }
 
+std::string SwcTreeNode::toSwcLine(const Swc_Tree_Node *tn)
+{
+  std::ostringstream stream;
+  if (isRegular(tn)) {
+    stream << SwcTreeNode::id(tn) << ' ' << SwcTreeNode::type(tn) << ' '
+           << SwcTreeNode::x(tn) << ' ' << SwcTreeNode::y(tn) << ' '
+           << SwcTreeNode::z(tn) << ' ' << SwcTreeNode::radius(tn) << ' '
+           << SwcTreeNode::parentId(tn) << std::endl;
+  }
+
+  return stream.str();
+}
+
 std::string SwcTreeNode::toString(const Swc_Tree_Node *tn)
 {
   std::ostringstream stream;

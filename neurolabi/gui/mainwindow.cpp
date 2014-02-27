@@ -4479,6 +4479,7 @@ void MainWindow::createDvidFrame()
     Stack *stack = ZObject3dScan::makeStack(bodyArray.begin(), bodyArray.end(),
                                             offset);
     if (stack != NULL) {
+      docStack = new ZStack;
       docStack->consumeData(stack);
       docStack->setOffset(offset[0], offset[1], offset[2]);
       frame = createStackFrame(docStack, NeuTube::Document::FLYEM_BODY);
@@ -4496,8 +4497,13 @@ void MainWindow::createDvidFrame()
     }
 
     foreach (ZSwcTree* tree, dvidBuffer->getSwcTreeArray()) {
+#ifdef _DEBUG_2
+      tree->print();
+      std::cout << (ZStackDrawable*) tree << std::endl;
+#endif
       frame->document()->addSwcTree(tree, false);
     }
+    dvidBuffer->getSwcTreeArray().clear(); //Remove the ownership
 
     if (!frame->document()->hasStackData()) {
       frame->open3DWindow(this);

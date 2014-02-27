@@ -499,6 +499,8 @@ bool ZStack::load(Stack *stack, bool isOwner)
     }
   }
 
+  initChannelColors();
+
   return true;
 }
 

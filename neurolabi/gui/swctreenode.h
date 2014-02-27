@@ -343,6 +343,7 @@ void mergeToParent(Swc_Tree_Node *tn);
 void killSubtree(Swc_Tree_Node *tn);
 
 std::string toString(const Swc_Tree_Node *tn);
+std::string toSwcLine(const Swc_Tree_Node *tn);
 
 //Path routines
 void setPathType(Swc_Tree_Node *tn1, Swc_Tree_Node *tn2, int type);

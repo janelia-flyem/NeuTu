@@ -30,6 +30,13 @@ public:
    *         number array.
    */
   std::vector<double> toNumberArray() const;
+
+  /*!
+   * \brief Get an integer array from the json array.
+   *
+   * Any json array element that is not integer will be ignored.
+   */
+  std::vector<int> toIntegerArray() const;
 };
 
 #endif // ZJSONARRAY_H

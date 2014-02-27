@@ -41,7 +41,8 @@ public:
       if (pos == Begin) {
         m_listIdx = 0;
         m_swcNodeIter = m_bundle->m_swcNodes->begin();
-        while (m_listIdx < m_bundle->m_objLists.size() && m_drawableIdx >= m_bundle->m_objLists[m_listIdx]->size()) {
+        while (m_listIdx < m_bundle->m_objLists.size() &&
+               m_drawableIdx >= m_bundle->m_objLists[m_listIdx]->size()) {
           ++m_listIdx;
         }
         if (m_listIdx == m_bundle->m_objLists.size()) {

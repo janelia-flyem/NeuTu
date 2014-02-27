@@ -27,6 +27,7 @@ public:
   File_Bundle_S toFileBundleS() const;
   ZFileList *toFileList() const;
   void import(const std::string &filePath);
+  void import(const char *filePath);
   void importImageSeries(const std::string &filePath);
   void importSobjList(const std::vector<std::string> &fileList);
 

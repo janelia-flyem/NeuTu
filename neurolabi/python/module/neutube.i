@@ -7,7 +7,18 @@
 #include "zstackskeletonizer.h"
 #include "zswctree.h"
 #include "swctreenode.h"
+#include "zobject3dscan.h"
+#include "zstackfile.h"
+#include "tz_darray.h"
 %}
+
+%include "std_vector.i"
+
+namespace std {
+  %template(Double_Array) vector<double>;
+  %template(Byte_Array) vector<uint8_t>;
+  %template(Char_Array) vector<char>;
+}
 
 %inline %{
   struct PStack {
@@ -26,12 +37,37 @@
 
     return out;
   }
+
+  void DeleteStackObject(ZStack *stack) {
+    delete stack;
+  }
+
+  void DeleteObject3dScan(ZObject3dScan *obj) {
+    delete obj;
+  }
+
+  void PrintDoubleArray(const std::vector<double> &array) {
+    darray_print(&(array[0]), array.size());
+  }
+
+  void PrintCharArray(const std::vector<char> &array) {
+    printf("%c\n", array[0]);
+  }
+
+  std::vector<char> CharArrayTest() {
+    std::vector<char> array(2);
+    array[0] = 'h';
+    array[1] = 'w';
+    return array;
+  }
 %}
 
 %include stack_io.i
 %include stack_attribute.i
 %include zstack.hxx
 %include zstackdrawable.h
-%include zswctree.h
+%include zswctree.i
 %include zstackskeletonizer.h
-%include swctreenode.h
+%include zobject3dscan.h
+%include darray.i
+%include zstackfile.h

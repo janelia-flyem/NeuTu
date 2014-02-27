@@ -166,6 +166,7 @@ public:
   virtual void swcExport(const char *filePath);
 
   void print(int iterOption = SWC_TREE_ITERATOR_DEPTH_FIRST) const;
+  std::string toString(int iterOption = SWC_TREE_ITERATOR_DEPTH_FIRST) const;
 
   inline std::string source() const { return m_source; }
 

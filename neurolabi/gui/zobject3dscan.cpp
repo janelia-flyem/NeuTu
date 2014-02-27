@@ -25,6 +25,7 @@
 #include "zfiletype.h"
 #include "zeigensolver.h"
 #include "zdoublevector.h"
+#include "zstack.hxx"
 
 using namespace std;
 
@@ -976,6 +977,11 @@ bool ZObject3dScan::load(const string &filePath)
   return false;
 }
 
+void ZObject3dScan::save(const char *filePath) const
+{
+  save(string(filePath));
+}
+
 void ZObject3dScan::save(const string &filePath) const
 {
   FILE *fp = fopen(filePath.c_str(), "wb");
@@ -1169,6 +1175,21 @@ Stack* ZObject3dScan::toStack(int *offset) const
   drawStack(stack, 1, drawingOffet);
 
   return stack;
+}
+
+ZStack* ZObject3dScan::toStackObject() const
+{
+  int offset[3] = {0, 0, 0};
+  Stack *stack = toStack(offset);
+
+  ZStack *stackObject = new ZStack;
+
+  if (stack != NULL) {
+    stackObject->load(stack);
+    stackObject->setOffset(offset[0], offset[1], offset[2]);
+  }
+
+  return stackObject;
 }
 
 ZCuboid ZObject3dScan::getBoundBox() const
@@ -1966,6 +1987,11 @@ bool ZObject3dScan::importDvidObject(
   }
 
   return true;
+}
+
+bool ZObject3dScan::importDvidObject(const std::vector<char> &byteArray)
+{
+  return importDvidObject(&(byteArray[0]), byteArray.size());
 }
 
 void ZObject3dScan::switchYZ()

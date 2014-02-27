@@ -16,6 +16,7 @@
 
 class ZObject3d;
 class ZGraph;
+class ZStack;
 
 class ZObject3dStripe {
 public:
@@ -156,6 +157,7 @@ public:
 
   void print() const;
 
+  void save(const char *filePath) const;
   void save(const std::string &filePath) const;
   bool load(const std::string &filePath);
 
@@ -186,6 +188,8 @@ public:
    * \brief Import object from a byte array
    */
   bool importDvidObject(const char *byteArray, size_t byteNumber);
+
+  bool importDvidObject(const std::vector<char> &byteArray);
 
   template<class T>
   int scanArray(const T *array, int x, int y, int z, int width);
@@ -220,6 +224,8 @@ public:
   void downsampleMax(int xintv, int yintv, int zintv);
 
   Stack* toStack(int *offset = NULL) const;
+  ZStack* toStackObject() const;
+
   ZCuboid getBoundBox() const;
   void getBoundBox(Cuboid_I *box) const;
 

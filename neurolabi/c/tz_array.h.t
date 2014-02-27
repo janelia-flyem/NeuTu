@@ -181,11 +181,11 @@ double <2t>_cov(<1t> *d1, <1t> *d2, size_t length);
 <1t>* <2t>_copy(<1t>* d1,size_t length);
 void <2t>_clean_edge3(<1t>* d1,int width,int height,int depth,int margin);
 
-void <2t>_printf(<1t> *d1, size_t length, const char *format);
-void <2t>_print2(<1t>* d1,int width,int height);
-void <2t>_print(<1t>* d1, size_t length);
-void <2t>_printf2(FILE *fp, <1t>* d1,int width,int height);
-void <2t>_print3(<1t> *d1,int width,int height,int depth);
+void <2t>_printf(const <1t> *d1, size_t length, const char *format);
+void <2t>_print2(const <1t>* d1,int width,int height);
+void <2t>_print(const <1t>* d1, size_t length);
+void <2t>_printf2(FILE *fp, const <1t>* d1,int width,int height);
+void <2t>_print3(const <1t> *d1,int width,int height,int depth);
 
 /**
  * Those binary reading and writing function operate on array size with integer

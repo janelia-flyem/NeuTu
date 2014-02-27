@@ -61,6 +61,7 @@ signals:
   void swcRetrieved();
   void imageRetrieved();
   void noRequestLeft();
+  void requestFailed();
 
 public slots:
   void postNextRequest();

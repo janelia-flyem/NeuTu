@@ -5,11 +5,16 @@
 #include "zprogressable.h"
 
 class ZSwcTree;
+class ZStack;
+class ZObject3dScan;
+class ZJsonObject;
 
 class ZStackSkeletonizer : public ZProgressable
 {
 public:
   ZStackSkeletonizer();
+
+  void init(const ZJsonObject &config);
 
   inline void setLengthThreshold(double threshold) {
     m_lengthThreshold = threshold;
@@ -56,6 +61,8 @@ public:
   }
 
   ZSwcTree* makeSkeleton(const Stack *stack);
+  ZSwcTree* makeSkeleton(const ZStack &stack);
+  ZSwcTree* makeSkeleton(const ZObject3dScan &obj);
 
   void reconnect(ZSwcTree *tree);
   inline void setConnectingBranch(bool conn) {

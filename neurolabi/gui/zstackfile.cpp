@@ -144,6 +144,11 @@ void ZStackFile::retrieveAttribute(
   }
 }
 
+void ZStackFile::import(const char *filePath)
+{
+  import(string(filePath));
+}
+
 void ZStackFile::import(const string &filePath)
 {
 #ifdef _DEBUG_2
@@ -504,6 +509,8 @@ ZStack* ZStackFile::readStack(ZStack *data)
                     ZFileType::DVID_OBJECT_FILE) {
         ZObject3dScan obj;
         if (obj.load(m_urlList[0])) {
+          data = obj.toStackObject();
+          /*
           ZObject3d *obj3d = obj.toObject3d();
 
           Stack *tmpstack = NULL;
@@ -518,23 +525,24 @@ ZStack* ZStackFile::readStack(ZStack *data)
             C_Stack::copyChannelValue(stack, 0, tmpstack);
             C_Stack::kill(tmpstack);
           }
+          */
         }
       } else {
         stack = C_Stack::read(m_urlList[0].c_str(), m_channel);
-      }
 
-      if (stack == NULL) {
-        failed = true;
-      } else {
-        if (data == NULL) {
-          data = new ZStack();
-        }
-        data->setData(stack);
-        data->setOffset(offset[0], offset[1], offset[2]);
-        data->initChannelColors();
+        if (stack == NULL) {
+          failed = true;
+        } else {
+          if (data == NULL) {
+            data = new ZStack();
+          }
+          data->setData(stack);
+          data->setOffset(offset[0], offset[1], offset[2]);
+          data->initChannelColors();
 #ifdef _NEUTUBE_
-        data->getLSMInfo(m_urlList[0].c_str());
+          data->getLSMInfo(m_urlList[0].c_str());
 #endif
+        }
       }
     }
       break;

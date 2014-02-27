@@ -31,6 +31,10 @@ public slots:
     return m_swcTreeArray;
   }
 
+  inline QVector<ZSwcTree*>& getSwcTreeArray() {
+    return m_swcTreeArray;
+  }
+
   inline const QVector<ZStack*>& getImageArray() const {
     return m_imageArray;
   }

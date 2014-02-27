@@ -741,6 +741,20 @@ void ZSwcTree::swcExport(const char *filePath)
   save(filePath);
 }
 
+std::string ZSwcTree::toString(int iterOption) const
+{
+  std::string str;
+
+  if (!isEmpty()) {
+    updateIterator(iterOption);
+    for (Swc_Tree_Node *tn = begin(); tn != end(); tn = next()) {
+      str += SwcTreeNode::toSwcLine(tn);
+    }
+  }
+
+  return str;
+}
+
 void ZSwcTree::print(int iterOption) const
 {
   if (m_tree == NULL) {

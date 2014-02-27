@@ -14,6 +14,9 @@
 #include "swctreenode.h"
 #include "zswcgenerator.h"
 #include "tz_error.h"
+#include "zstack.hxx"
+#include "zobject3dscan.h"
+#include "zerror.h"
 
 using namespace std;
 
@@ -26,6 +29,28 @@ ZStackSkeletonizer::ZStackSkeletonizer() : m_lengthThreshold(15.0),
     m_resolution[i] = 1.0;
     m_downsampleInterval[i] = 0;
   }
+}
+
+ZSwcTree* ZStackSkeletonizer::makeSkeleton(const ZStack &stack)
+{
+  ZSwcTree *tree = makeSkeleton(stack.c_stack());
+  if (tree != NULL) {
+    const ZPoint &pt = stack.getOffset();
+    tree->translate(pt.x(), pt.y(), pt.z());
+  }
+
+  return tree;
+}
+
+ZSwcTree* ZStackSkeletonizer::makeSkeleton(const ZObject3dScan &obj)
+{
+  ZSwcTree *tree = NULL;
+  if (!obj.isEmpty()) {
+    ZStack *stack = obj.toStackObject();
+    tree = makeSkeleton(*stack);
+  }
+
+  return tree;
 }
 
 ZSwcTree* ZStackSkeletonizer::makeSkeleton(const Stack *stack)
@@ -313,5 +338,31 @@ void ZStackSkeletonizer::reconnect(ZSwcTree *tree)
     Swc_Tree_Reconnect(tree->data(), z_scale,
                        m_distanceThreshold / m_resolution[0]);
     tree->resortId();
+  }
+}
+
+void ZStackSkeletonizer::init(const ZJsonObject &config)
+{
+  ZJsonArray array(const_cast<json_t*>(config["downsampleInterval"]), false);
+  std::vector<int> interval = array.toIntegerArray();
+  if (interval.size() == 3) {
+    setDownsampleInterval(interval[0], interval[1], interval[2]);
+  } else {
+    RECORD_WARNING_UNCOND("Invalid downsample parameter");
+  }
+
+  const json_t *value = config["minimalLength"];
+  if (ZJsonParser::isNumber(value)) {
+    setLengthThreshold(ZJsonParser::numberValue(value));
+  }
+
+  value = config["keepingSingleObject"];
+  if (ZJsonParser::isBoolean(value)) {
+    setKeepingSingleObject(ZJsonParser::booleanValue(value));
+  }
+
+  value = config["rebase"];
+  if (ZJsonParser::isBoolean(value)) {
+    setRebase(ZJsonParser::booleanValue(value));
   }
 }

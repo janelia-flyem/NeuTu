@@ -57,3 +57,18 @@ std::vector<double> ZJsonArray::toNumberArray() const
 
   return array;
 }
+
+std::vector<int> ZJsonArray::toIntegerArray() const
+{
+  std::vector<int> array;
+  if (m_data != NULL) {
+    for (size_t i = 0; i < size(); ++i) {
+      const json_t *value = at(i);
+      if (json_is_integer(value)) {
+        array.push_back(json_integer_value(value));
+      }
+    }
+  }
+
+  return array;
+}
