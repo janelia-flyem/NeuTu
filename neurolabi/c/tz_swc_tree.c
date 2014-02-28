@@ -12,7 +12,9 @@
 #define getpid _getpid
 #endif
 #include <utilities.h>
-#define __USE_BSD
+#ifndef __USE_BSD
+#  define __USE_BSD
+#endif
 #include <string.h>
 #include <ctype.h>
 #include "tz_error.h"

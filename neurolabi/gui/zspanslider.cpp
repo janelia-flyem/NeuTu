@@ -1,4 +1,5 @@
 #include "zspanslider.h"
+#include <limits>
 #include <QBoxLayout>
 
 ZSpanSliderWithSpinBox::ZSpanSliderWithSpinBox(int lowerValue, int upperValue, int min, int max,

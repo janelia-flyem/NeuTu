@@ -9382,6 +9382,8 @@ static void setup_value_compute(Framer *frame)
               }
               break;
             }
+      default:
+        break;
       }
 
       if (ndims > 10)

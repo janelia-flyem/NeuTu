@@ -1,4 +1,5 @@
 #include "zspinboxwithslider.h"
+#include <limits>
 #include <QHBoxLayout>
 #include "zspinbox.h"
 #include <QEvent>
