@@ -8,7 +8,7 @@
 #include "tz_constant.h"
 #include "tz_geometry.h"
 
-const static Sphere_Point_30[90] = {
+const static double Sphere_Point_30[90] = {
   0.7474,0.1036,-0.6563
     ,0.8032,-0.0633,0.5923
     ,0.1574,0.9494,-0.2718

@@ -7,6 +7,7 @@
 #include <sstream>
 #include <queue>
 #include <limits.h>
+#include <string.h>
 #include "tz_error.h"
 #include "zswctree.h"
 #include "tz_voxel_graphics.h"
