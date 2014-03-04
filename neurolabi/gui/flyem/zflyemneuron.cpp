@@ -39,6 +39,10 @@ ZFlyEmNeuron::ZFlyEmNeuron(const ZFlyEmNeuron &neuron) : CONSTRUCTOR_INIT
   m_name = neuron.m_name;
   m_class = neuron.m_class;
   m_modelPath = neuron.m_modelPath;
+  m_volumePath = neuron.m_volumePath;
+  m_thumbnailPath = neuron.m_thumbnailPath;
+  m_synapseScale = neuron.m_synapseScale;
+  m_synapseAnnotation = neuron.m_synapseAnnotation;
   for (int i = 0; i < 3; ++i) {
     m_resolution[i] = neuron.m_resolution[i];
   }

@@ -28,7 +28,7 @@ public:
   int getMaxX() const;
   inline size_t getSize() const { return m_segmentArray.size() / 2; }
   inline int getSegmentNumber() const { return getSize(); }
-  int getVoxelNumber() const;
+  size_t getVoxelNumber() const;
 
   inline void setY(int y) { m_y = y; }
   inline void setZ(int z) { m_z = z; }
@@ -134,7 +134,7 @@ public:
    */
   std::vector<size_t> getSlicewiseVoxelNumber() const;
 
-  ZObject3dStripe getStripe(size_t index) const;
+  const ZObject3dStripe& getStripe(size_t index) const;
 
   /*
   const int* getFirstStripe() const;

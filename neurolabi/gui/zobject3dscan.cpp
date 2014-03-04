@@ -77,9 +77,9 @@ void ZObject3dStripe::addSegment(int x1, int x2, bool canonizing)
    }
  }
 
-int ZObject3dStripe::getVoxelNumber() const
+size_t ZObject3dStripe::getVoxelNumber() const
 {
-  int voxelNumber = 0;
+  size_t voxelNumber = 0;
   size_t segmentNumber = m_segmentArray.size();
   for (size_t i = 0; i < segmentNumber; i += 2) {
     voxelNumber += m_segmentArray[i + 1] - m_segmentArray[i] + 1;
@@ -670,7 +670,7 @@ std::vector<size_t> ZObject3dScan::getSlicewiseVoxelNumber() const
   return voxelNumber;
 }
 
-ZObject3dStripe ZObject3dScan::getStripe(size_t index) const
+const ZObject3dStripe &ZObject3dScan::getStripe(size_t index) const
 {
   return m_stripeArray[index];
 }
@@ -1728,6 +1728,7 @@ ZVoxel ZObject3dScan::getMarker() const
 
         voxel.set(x + offset[0], y + offset[1], z, v);
       }
+      Kill_Stack(dist);
       Kill_Stack(stack);
     }
   }

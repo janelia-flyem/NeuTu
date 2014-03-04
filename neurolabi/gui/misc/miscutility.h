@@ -6,6 +6,7 @@
 #include "zstack.hxx"
 #include "zobject3dscan.h"
 #include "neutube.h"
+#include "flyem/zintcuboidarray.h"
 
 namespace misc {
 
@@ -18,6 +19,8 @@ void paintRadialHistogram2D(const std::vector<ZHistogram> hist,
  * \brief Y normal of a binary stack
  */
 Stack* computeNormal(const Stack *stack, NeuTube::EAxis axis);
+
+int computeRavelerHeight(const FlyEm::ZIntCuboidArray &blockArray, int margin);
 }
 
 namespace {
