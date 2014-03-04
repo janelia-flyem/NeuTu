@@ -128,6 +128,8 @@
 #include "zlogmessagereporter.h"
 #include "zerror.h"
 #include "zmatlabprocess.h"
+#include "flyem/zflyemneuronexporter.h"
+#include "flyem/zflyemneuronarray.h"
 #include "flyem/zflyembodyanalyzer.h"
 #include "swc/zswcresampler.h"
 #include "flyem/zflyemneuronfeatureanalyzer.h"
@@ -10358,7 +10360,7 @@ void ZTest::test(MainWindow *host)
   std::cout << "Radius: " << radius << std::endl;
 #endif
 
-#if 1
+#if 0
   FlyEm::ZIntCuboidArray blockArray;
   blockArray.loadSubstackList(dataPath + "/flyem/FIB/block_13layer.txt");
   Cuboid_I boundBox = blockArray.getBoundBox();
@@ -10373,5 +10375,264 @@ void ZTest::test(MainWindow *host)
   blockArray2.translate(-boundBox.cb[0], -boundBox.cb[1], -boundBox.cb[2]);
   blockArray2.translate(10, 10, 10);
   blockArray2.exportSwc(dataPath + "/flyem/FIB/orphan_body_check_block_layer12_13.swc");
+#endif
+
+#if 0
+  FlyEm::ZIntCuboidArray blockArray;
+  blockArray.loadSubstackList(dataPath + "/flyem/FIB/block_13layer.txt");
+  ZFlyEmQualityAnalyzer::SubstackRegionCalbration calbr;
+  calbr.setBounding(true, true, false);
+  calbr.setMargin(10, 10, 0);
+  blockArray.print();
+  calbr.calibrate(blockArray);
+  //blockArray.print();
+  Cuboid_I boundBox = blockArray.getBoundBox();
+  Print_Cuboid_I(&boundBox);
+
+  blockArray.exportSwc(GET_DATA_DIR + "/test.swc");
+#endif
+
+#if 1
+  FlyEm::ZIntCuboidArray blockArray;
+  blockArray.loadSubstackList(dataPath + "/flyem/FIB/block_13layer.txt");
+  std::cout << misc::computeRavelerHeight(blockArray, 10) << std::endl;
+#endif
+
+#if 0 //Get all bodies within a certain body range
+  ZFlyEmNeuronArray neuronArray;
+  neuronArray.importBodyDir(
+        GET_DATA_DIR + "/flyem/FIB/skeletonization/session26/100k_500k/stacked");
+  std::cout << neuronArray.size() << std::endl;
+
+  FlyEm::ZSynapseAnnotationArray synapseAnnotation;
+  synapseAnnotation.loadJson(
+        GET_DATA_DIR + "/flyem/FIB/skeletonization/session26/annotations-synapse.json");
+  neuronArray.setSynapseAnnotation(&synapseAnnotation);
+
+  ZFlyEmNeuronExporter exporter;
+  exporter.exportIdPosition(neuronArray, GET_DATA_DIR + "/test.json");
+
+  /*
+  for (size_t i = 0; i < neuronArray.size(); ++i) {
+
+  }
+  */
+#endif
+
+#if 0
+  FlyEm::ZSynapseAnnotationArray synapseArray;
+  synapseArray.loadJson(
+        dataPath + "/flyem/FIB/skeletonization/session27/annotations-synapse.json");
+
+  std::vector<int> psdCount = synapseArray.countPsd();
+  std::vector<int> tbarCount = synapseArray.countTBar();
+
+  size_t maxId = std::max(psdCount.size(), tbarCount.size());
+
+  int bodyCount = 0;
+  for (size_t i = 0; i < maxId; ++i) {
+    if (psdCount[i] > 0 || tbarCount[i] > 0) {
+      ++bodyCount;
+    }
+  }
+
+  std::cout << bodyCount << " bodies have synapses" << std::endl;
+#endif
+
+#if 0
+  FlyEm::ZSynapseAnnotationArray synapseArray;
+  synapseArray.loadJson(
+        dataPath + "/flyem/FIB/skeletonization/session27/annotations-synapse.json");
+
+  std::vector<int> psdCount = synapseArray.countPsd();
+  std::vector<int> tbarCount = synapseArray.countTBar();
+
+  std::cout << psdCount.size() << std::endl;
+  std::cout << tbarCount.size() << std::endl;
+#endif
+
+#if 0
+  ZFlyEmNeuronArray neuronArray;
+  neuronArray.importBodyDir(
+        GET_DATA_DIR + "/flyem/FIB/skeletonization/session27/100k_le_2/stacked");
+  std::cout << neuronArray.size() << std::endl;
+
+  FlyEm::ZSynapseAnnotationArray synapseArray;
+  synapseArray.loadJson(
+        dataPath + "/flyem/FIB/skeletonization/session27/annotations-synapse.json");
+
+  std::vector<int> allPsdCount = synapseArray.countPsd();
+  std::vector<int> allTbarCount = synapseArray.countTBar();
+
+  FlyEm::ZIntCuboidArray blockArray;
+  blockArray.loadSubstackList(dataPath + "/flyem/FIB/block_13layer.txt");
+  ZFlyEmQualityAnalyzer::SubstackRegionCalbration calbr;
+  calbr.setBounding(true, true, false);
+  calbr.setMargin(10, 10, 0);
+  //blockArray.print();
+  //calbr.calibrate(blockArray);
+
+  ZFlyEmQualityAnalyzer analyzer;
+  analyzer.setSubstackRegion(blockArray, calbr);
+
+  json_t *rootObj = json_object();
+
+  json_t *neuronArrayObj = json_array();
+  for (ZFlyEmNeuronArray::const_iterator
+       iter = neuronArray.begin(); iter != neuronArray.end(); ++iter) {
+
+    const ZFlyEmNeuron &neuron = *iter;
+    int psdCount = 0;
+    int tbarCount = 0;
+
+    if ((size_t) neuron.getId() < allPsdCount.size()) {
+      psdCount = allPsdCount[neuron.getId()];
+    }
+    if ((size_t) neuron.getId() < allTbarCount.size()) {
+      tbarCount = allTbarCount[neuron.getId()];
+    }
+    if (psdCount > 0 || tbarCount > 0) {
+      std::cout << "Neuron: " << neuron.getId() << ": "
+                << tbarCount << " " << psdCount << std::endl;
+      json_t *neuronObj = json_object();
+      json_object_set_new(neuronObj, "id", json_integer(neuron.getId()));
+      if (analyzer.touchingGlobalBoundary(*neuron.getBody())) {
+        json_object_set_new(neuronObj, "boundary", json_true());
+      } else {
+        json_object_set_new(neuronObj, "boundary", json_false());
+      }
+      json_object_set_new(neuronObj, "tbar",
+                          json_integer(tbarCount));
+
+      json_object_set_new(neuronObj, "psd",
+                          json_integer(psdCount));
+      json_array_append_new(neuronArrayObj, neuronObj);
+    }
+  }
+  json_object_set_new(rootObj, "data", neuronArrayObj);
+
+  json_dump_file(rootObj, (GET_DATA_DIR + "/small_body.json").c_str(),
+                 JSON_INDENT(2));
+
+#endif
+
+#if 0 //Sort large bodies
+  ZFlyEmNeuronArray neuronArray;
+  neuronArray.importBodyDir(
+        GET_DATA_DIR + "/flyem/FIB/skeletonization/session27/100k_5m/stacked");
+  std::cout << neuronArray.size() << std::endl;
+
+  for (ZFlyEmNeuronArray::const_iterator
+       iter = neuronArray.begin(); iter != neuronArray.end(); ++iter) {
+  }
+
+  ZFlyEmNeuronExporter exporter;
+  int ravelerHeight = 2599;
+  exporter.setRavelerHeight(ravelerHeight);
+  exporter.useRavelerCoordinate(true);
+
+  ZFlyEmNeuronBodySizeFilter sizeFilter;
+  sizeFilter.setSizeRange(100000, 1000000);
+  exporter.setNeuronFilter(&sizeFilter);
+  exporter.exportIdPosition(neuronArray, GET_DATA_DIR + "/100k_1m.json");
+
+  sizeFilter.setSizeRange(1000000, 5000000);
+  exporter.exportIdPosition(neuronArray, GET_DATA_DIR + "/1m_5m.json");
+#endif
+
+#if 0
+  ZFlyEmNeuronArray neuronArray;
+  neuronArray.importBodyDir(
+        GET_DATA_DIR + "/flyem/FIB/skeletonization/session27/100k_1m/stacked");
+
+  int ravelerHeight = 2599;
+  json_t *rootObj = json_object();
+  json_t *neuronArrayObj = json_array();
+
+  for (ZFlyEmNeuronArray::iterator iter = neuronArray.begin();
+       iter != neuronArray.end(); ++iter) {
+    ZFlyEmNeuron &neuron = *iter;
+    bool isSelected = true;
+    if (isSelected) {
+      ZObject3dScan *obj = neuron.getBody();
+      if (obj != NULL) {
+        ZVoxel voxel = obj->getMarker();
+
+        json_t *neuronObj = json_object();
+        json_t *idObj = json_integer(neuron.getId());
+        json_object_set_new(neuronObj, "id", idObj);
+
+
+        //voxel.translate(bodyOffset[0], bodyOffset[1], bodyOffset[2]);
+        //std::cout << voxel.x() << " " << voxel.y() << " " << voxel.z() << std::endl;
+        json_t *arrayObj = json_array();
+
+        json_array_append_new(arrayObj, json_integer(voxel.x()));
+
+        int y = voxel.y();
+        y = ravelerHeight - 1 - voxel.y();
+        json_array_append_new(arrayObj, json_integer(y));
+        json_array_append_new(arrayObj, json_integer(voxel.z()));
+
+        json_object_set_new(neuronObj, "position", arrayObj);
+
+        json_array_append_new(neuronArrayObj, neuronObj);
+      }
+      neuron.deprecate(ZFlyEmNeuron::BODY);
+    }
+  }
+
+  json_object_set_new(rootObj, "data", neuronArrayObj);
+  json_dump_file(rootObj, (GET_DATA_DIR + "/100k_1m.json").c_str(), JSON_INDENT(2));
+
+  json_decref(rootObj);
+#endif
+
+#if 0
+  ZFlyEmNeuronArray neuronArray;
+  neuronArray.importBodyDir(
+        GET_DATA_DIR + "/flyem/FIB/skeletonization/session27/1m_5m/stacked");
+
+  int ravelerHeight = 2599;
+  json_t *rootObj = json_object();
+  json_t *neuronArrayObj = json_array();
+
+  for (ZFlyEmNeuronArray::iterator iter = neuronArray.begin();
+       iter != neuronArray.end(); ++iter) {
+    ZFlyEmNeuron &neuron = *iter;
+    bool isSelected = true;
+    if (isSelected) {
+      ZObject3dScan *obj = neuron.getBody();
+      if (obj != NULL) {
+        ZVoxel voxel = obj->getMarker();
+
+        json_t *neuronObj = json_object();
+        json_t *idObj = json_integer(neuron.getId());
+        json_object_set_new(neuronObj, "id", idObj);
+
+
+        //voxel.translate(bodyOffset[0], bodyOffset[1], bodyOffset[2]);
+        //std::cout << voxel.x() << " " << voxel.y() << " " << voxel.z() << std::endl;
+        json_t *arrayObj = json_array();
+
+        json_array_append_new(arrayObj, json_integer(voxel.x()));
+
+        int y = voxel.y();
+        y = ravelerHeight - 1 - voxel.y();
+        json_array_append_new(arrayObj, json_integer(y));
+        json_array_append_new(arrayObj, json_integer(voxel.z()));
+
+        json_object_set_new(neuronObj, "position", arrayObj);
+
+        json_array_append_new(neuronArrayObj, neuronObj);
+      }
+      neuron.deprecate(ZFlyEmNeuron::BODY);
+    }
+  }
+
+  json_object_set_new(rootObj, "data", neuronArrayObj);
+  json_dump_file(rootObj, (GET_DATA_DIR + "/1m_5m.json").c_str(), JSON_INDENT(2));
+
+  json_decref(rootObj);
 #endif
 }

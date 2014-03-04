@@ -372,7 +372,8 @@ HEADERS += mainwindow.h \
     tilemanagerdialog.h \
     flyem/zflyemneuronimagefactory.h \
     flyem/zflyemneuronfeatureanalyzer.h \
-    flyemneuronthumbnaildialog.h
+    flyemneuronthumbnaildialog.h \
+    flyem/zflyemneuronexporter.h
 
 FORMS += settingdialog.ui \
     frameinfodialog.ui \
@@ -606,7 +607,8 @@ SOURCES += main.cpp \
     tilemanagerdialog.cpp \
     flyem/zflyemneuronimagefactory.cpp \
     flyem/zflyemneuronfeatureanalyzer.cpp \
-    flyemneuronthumbnaildialog.cpp
+    flyemneuronthumbnaildialog.cpp \
+    flyem/zflyemneuronexporter.cpp
 
 OTHER_FILES += \
     extlib.pri

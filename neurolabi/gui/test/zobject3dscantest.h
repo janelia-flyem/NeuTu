@@ -59,14 +59,14 @@ TEST(TestObject3dStripe, TestGetProperty) {
   EXPECT_EQ((int) stripe.getSize(), 2);
   EXPECT_EQ(stripe.getY(), 3);
   EXPECT_EQ(stripe.getZ(), 5);
-  EXPECT_EQ(stripe.getVoxelNumber(), 5);
+  EXPECT_EQ((int) stripe.getVoxelNumber(), 5);
 
   createStripe2(&stripe);
   EXPECT_EQ(stripe.getSegmentNumber(), 2);
   EXPECT_EQ((int) stripe.getSize(), 2);
   EXPECT_EQ(stripe.getY(), 3);
   EXPECT_EQ(stripe.getZ(), 5);
-  EXPECT_EQ(stripe.getVoxelNumber(), 7);
+  EXPECT_EQ((int) stripe.getVoxelNumber(), 7);
 
   stripe.canonize();
   EXPECT_EQ(stripe.getMinX(), 0);
@@ -75,7 +75,7 @@ TEST(TestObject3dStripe, TestGetProperty) {
   EXPECT_EQ((int) stripe.getSize(), 1);
   EXPECT_EQ(stripe.getY(), 3);
   EXPECT_EQ(stripe.getZ(), 5);
-  EXPECT_EQ(stripe.getVoxelNumber(), 6);
+  EXPECT_EQ((int) stripe.getVoxelNumber(), 6);
 
   createStripe3(&stripe);
   EXPECT_EQ(stripe.getMinX(), 0);
@@ -84,7 +84,7 @@ TEST(TestObject3dStripe, TestGetProperty) {
   EXPECT_EQ((int) stripe.getSize(), 1);
   EXPECT_EQ(stripe.getY(), 3);
   EXPECT_EQ(stripe.getZ(), 5);
-  EXPECT_EQ(stripe.getVoxelNumber(), 6);
+  EXPECT_EQ((int) stripe.getVoxelNumber(), 6);
 
   createStripe4(&stripe);
   EXPECT_EQ(stripe.getSegmentNumber(), 3);
@@ -99,7 +99,7 @@ TEST(TestObject3dStripe, TestGetProperty) {
   EXPECT_EQ((int) stripe.getSize(), 1);
   EXPECT_EQ(stripe.getY(), 3);
   EXPECT_EQ(stripe.getZ(), 5);
-  EXPECT_EQ(stripe.getVoxelNumber(), 6);
+  EXPECT_EQ((int) stripe.getVoxelNumber(), 6);
 }
 
 TEST(TestObject3dStripe, TestUnify) {
@@ -119,14 +119,14 @@ TEST(TestObject3dStripe, TestUnify) {
   EXPECT_EQ(1, stripe.getSegmentNumber());
   EXPECT_EQ(3, stripe.getMinX());
   EXPECT_EQ(7, stripe.getMaxX());
-  EXPECT_EQ(5, stripe.getVoxelNumber());
+  EXPECT_EQ(5, (int) stripe.getVoxelNumber());
 
   stripe2.setY(4);
   EXPECT_FALSE(stripe.unify(stripe2));
   EXPECT_EQ(1, stripe.getSegmentNumber());
   EXPECT_EQ(3, stripe.getMinX());
   EXPECT_EQ(7, stripe.getMaxX());
-  EXPECT_EQ(5, stripe.getVoxelNumber());
+  EXPECT_EQ(5, (int) stripe.getVoxelNumber());
 
   stripe2.setY(3);
   stripe2.setZ(4);
@@ -134,7 +134,7 @@ TEST(TestObject3dStripe, TestUnify) {
   EXPECT_EQ(1, stripe.getSegmentNumber());
   EXPECT_EQ(3, stripe.getMinX());
   EXPECT_EQ(7, stripe.getMaxX());
-  EXPECT_EQ(5, stripe.getVoxelNumber());
+  EXPECT_EQ(5, (int) stripe.getVoxelNumber());
 
   stripe2.clearSegment();
   stripe2.setY(3);
@@ -144,7 +144,7 @@ TEST(TestObject3dStripe, TestUnify) {
   EXPECT_EQ(1, stripe.getSegmentNumber());
   EXPECT_EQ(1, stripe.getMinX());
   EXPECT_EQ(7, stripe.getMaxX());
-  EXPECT_EQ(7, stripe.getVoxelNumber());
+  EXPECT_EQ(7, (int) stripe.getVoxelNumber());
 
   stripe2.clearSegment();
   stripe2.setY(3);
@@ -154,7 +154,7 @@ TEST(TestObject3dStripe, TestUnify) {
   EXPECT_EQ(2, stripe.getSegmentNumber());
   EXPECT_EQ(1, stripe.getMinX());
   EXPECT_EQ(10, stripe.getMaxX());
-  EXPECT_EQ(9, stripe.getVoxelNumber());
+  EXPECT_EQ(9, (int) stripe.getVoxelNumber());
 }
 
 TEST(TestObject3dStripe, TestIO) {
@@ -271,7 +271,7 @@ TEST(TestObject3dStripe, TestCanonize) {
   stripe.addSegment(19, 15, false);
   EXPECT_TRUE(stripe.isCanonized());
   EXPECT_EQ(2, stripe.getSegmentNumber());
-  EXPECT_EQ(15, stripe.getVoxelNumber());
+  EXPECT_EQ(15, (int) stripe.getVoxelNumber());
 }
 
 static void createObject(ZObject3dScan *obj)

@@ -161,7 +161,8 @@ HEADERS +=$${PWD}/zstackprocessor.h \
    $${PWD}/flyem/zflyemneuronfilter.h \
    $${PWD}/flyem/zflyemneuronfilterfactory.h \
    $${PWD}/flyem/zflyemneuronfeature.h \
-   $${PWD}/flyem/zflyemneuronfeaturefactory.h
+   $${PWD}/flyem/zflyemneuronfeaturefactory.h \
+   $${PWD}/flyem/zflyemneuronarray.h
 
 SOURCES +=$${PWD}/zstackprocessor.cpp \
    $${PWD}/zstack.cxx \
@@ -309,4 +310,5 @@ SOURCES +=$${PWD}/zstackprocessor.cpp \
    $${PWD}/flyem/zflyemneuronfilter.cpp \
    $${PWD}/flyem/zflyemneuronfilterfactory.cpp \
    $${PWD}/flyem/zflyemneuronfeature.cpp \
-   $${PWD}/flyem/zflyemneuronfeaturefactory.cpp
+   $${PWD}/flyem/zflyemneuronfeaturefactory.cpp \
+   $${PWD}/flyem/zflyemneuronarray.cpp

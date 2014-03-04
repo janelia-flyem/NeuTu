@@ -151,7 +151,7 @@ bool ZFlyEmQualityAnalyzer::isStitchedOrphanBody(const ZObject3dScan &obj)
     ZObject3dScan tmpObj = obj;
     tmpObj.dilate();
     for (size_t i = 0; i < tmpObj.getStripeNumber(); ++i) {
-      ZObject3dStripe stripe = tmpObj.getStripe(i);
+      const ZObject3dStripe &stripe = tmpObj.getStripe(i);
 
       for (int j = 0; j < stripe.getSegmentNumber(); ++j) {
         if (m_substackRegion.hitTest(stripe.getSegmentStart(j), stripe.getY(),
@@ -175,6 +175,13 @@ void ZFlyEmQualityAnalyzer::setSubstackRegion(const FlyEm::ZIntCuboidArray &roi)
   m_substackRegion = roi;
 }
 
+void ZFlyEmQualityAnalyzer::setSubstackRegion(
+    const FlyEm::ZIntCuboidArray &roi, const SubstackRegionCalbration &calbr)
+{
+  m_substackRegion = roi;
+  calbr.calibrate(m_substackRegion);
+}
+
 void ZFlyEmQualityAnalyzer::labelSwcNodeOutOfRange(
     const ZFlyEmNeuron &neuron, const ZFlyEmNeuronRange &range, int label)
 {
@@ -194,3 +201,85 @@ void ZFlyEmQualityAnalyzer::labelSwcNodeOutOfRange(
     }
   }
 }
+
+bool ZFlyEmQualityAnalyzer::touchingGlobalBoundary(const ZObject3dScan &obj)
+{
+  //Expand bottom blocks
+  /*
+  Cuboid_I objBox;
+  obj.getBoundBox(&objBox);
+  */
+
+  Cuboid_I boundBox = m_substackRegion.getBoundBox();
+
+  //Test if the body touches the boundary
+  ZObject3dScan tmpObj = obj;
+  tmpObj.dilate();
+  for (size_t i = 0; i < tmpObj.getStripeNumber(); ++i) {
+    const ZObject3dStripe &stripe = tmpObj.getStripe(i);
+
+    if (stripe.getZ() < boundBox.cb[2]) {
+      return true;
+    }
+
+    if (stripe.getZ() > boundBox.ce[2]) {
+      return true;
+    }
+
+    for (int j = 0; j < stripe.getSegmentNumber(); ++j) {
+      if (m_substackRegion.hitTest(stripe.getSegmentStart(j), stripe.getY(),
+                                   stripe.getZ()) < 0) {
+        return true;
+      }
+
+      if (m_substackRegion.hitTest(stripe.getSegmentEnd(j), stripe.getY(),
+                                   stripe.getZ()) < 0) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
+ZFlyEmQualityAnalyzer::SubstackRegionCalbration::SubstackRegionCalbration()
+{
+  for (int i = 0; i < 3; i++) {
+    m_margin[i] = 0;
+    m_bounding[i] = true;
+  }
+}
+
+void ZFlyEmQualityAnalyzer::SubstackRegionCalbration::setMargin(
+    int x, int y, int z)
+{
+  m_margin[0] = x;
+  m_margin[1] = y;
+  m_margin[2] = z;
+}
+
+void ZFlyEmQualityAnalyzer::SubstackRegionCalbration::setBounding(
+    bool x, bool y, bool z)
+{
+  m_bounding[0] = x;
+  m_bounding[1] = y;
+  m_bounding[2] = z;
+}
+
+void ZFlyEmQualityAnalyzer::SubstackRegionCalbration::calibrate(
+    FlyEm::ZIntCuboidArray &roi) const
+{
+  Cuboid_I boundBox = roi.getBoundBox();
+
+  int m_offset[3] = {0, 0, 0};
+  for (int i = 0; i < 3; i++) {
+    m_offset[i] = m_margin[i];
+    if (m_bounding[i]) {
+      m_offset[i] -= boundBox.cb[i];
+    }
+  }
+
+  roi.translate(m_offset[0], m_offset[1], m_offset[2]);
+}
+
+

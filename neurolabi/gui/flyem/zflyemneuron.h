@@ -149,7 +149,18 @@ public:
     m_synapseAnnotation = annotation;
   }
 
+  /*!
+   * \brief Get the number of TBars on the neuron
+   *
+   * It returns 0 if the synapse annotation is not available
+   */
   int getTBarNumber() const;
+
+  /*!
+   * \brief Get the number of PSDs on the neuron
+   *
+   * It returns 0 if the synapse annotation is not available
+   */
   int getPsdNumber() const;
 
   int getInputNeuronNumber() const;

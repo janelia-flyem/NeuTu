@@ -17,7 +17,22 @@ public:
 
   bool isOrphanBody(const ZObject3dScan &obj);
 
+  class SubstackRegionCalbration {
+  public:
+    SubstackRegionCalbration();
+
+    void setMargin(int x, int y, int z);
+    void setBounding(bool x, bool y, bool z);
+    void calibrate(FlyEm::ZIntCuboidArray &roi) const;
+
+  private:
+    int m_margin[3];
+    bool m_bounding[3];
+  };
+
   void setSubstackRegion(const FlyEm::ZIntCuboidArray &roi);
+  void setSubstackRegion(const FlyEm::ZIntCuboidArray &roi,
+                         const SubstackRegionCalbration &calbr);
 
   /*!
    * \brief Label SWC node that is out of range.
@@ -27,6 +42,16 @@ public:
    */
   static void labelSwcNodeOutOfRange(const ZFlyEmNeuron &neuron,
                                      const ZFlyEmNeuronRange &range, int label);
+
+  /*!
+   * \brief Test if a body touching global boundary
+   *
+   * NOTE: This function assumes that at least a part \a obj is in the substack
+   *       region.
+   *
+   * \return true iff \a obj touches the global boundary
+   */
+  bool touchingGlobalBoundary(const ZObject3dScan &obj);
 
 private:
   FlyEm::ZIntCuboidArray m_substackRegion;

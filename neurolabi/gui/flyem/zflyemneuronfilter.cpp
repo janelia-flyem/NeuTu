@@ -6,6 +6,7 @@
 #include "zjsonarray.h"
 #include "zjsonparser.h"
 #include "tz_error.h"
+#include "zobject3dscan.h"
 #include "swc/zswcterminalsurfacemetric.h"
 #include "swc/zswcterminalanglemetric.h"
 
@@ -28,6 +29,10 @@ void ZFlyEmNeuronFilter::appendFilter(ZFlyEmNeuronFilter */*filter*/)
 
 }
 
+bool ZFlyEmNeuronFilter::isPassed(const ZFlyEmNeuron& /*neuron*/) const
+{
+  return true;
+}
 
 std::vector<ZFlyEmNeuron*> ZFlyEmNeuronFilter::filter(
     const std::vector<ZFlyEmNeuron *> input) const
@@ -378,4 +383,59 @@ void ZFlyEmNeuronDeepAngleFilter::print(int indent) const
     std::cout << std::setfill(' ') << std::setw(indent + 2) << "";
     std::cout << "No reference neuron" << std::endl;
   }
+}
+
+////////////////ZFlyEmNeuronBodySizeFilter/////////////
+ZFlyEmNeuronBodySizeFilter::ZFlyEmNeuronBodySizeFilter() :
+  m_minSize(0), m_maxSize(0)
+{
+}
+
+bool ZFlyEmNeuronBodySizeFilter::isPassed(const ZFlyEmNeuron &neuron) const
+{
+  ZObject3dScan *obj = neuron.getBody();
+  if (obj == NULL) {
+    return false;
+  }
+
+  size_t volume = obj->getVoxelNumber();
+
+  return (volume >= m_minSize && volume >= m_maxSize);
+}
+
+bool ZFlyEmNeuronBodySizeFilter::configure(ZJsonValue &config)
+{
+  ZJsonObject obj(config.getValue(), false);
+  if (!obj.isEmpty()) {
+    if (obj.hasKey("min_size")) {
+      m_minSize = ZJsonParser::integerValue(obj["min_size"]);
+    }
+    if (obj.hasKey("max_size")) {
+      m_maxSize = ZJsonParser::integerValue(obj["max_size"]);
+    }
+
+    return true;
+  }
+
+  return false;
+}
+
+void ZFlyEmNeuronBodySizeFilter::print(int indent) const
+{
+  std::cout << std::setfill(' ') << std::setw(indent) << "";
+  std::cout << "Body size filter:" << std::endl;
+  std::cout << std::setfill(' ') << std::setw(indent + 2) << "";
+  std::cout << "Min size: " << m_minSize << std::endl;
+  std::cout << std::setfill(' ') << std::setw(indent + 2) << "";
+  std::cout << "Max size: " << m_maxSize << std::endl;
+  if (m_refNeuron == NULL) {
+    std::cout << std::setfill(' ') << std::setw(indent + 2) << "";
+    std::cout << "No reference neuron" << std::endl;
+  }
+}
+
+void ZFlyEmNeuronBodySizeFilter::setSizeRange(size_t minSize, size_t maxSize)
+{
+  m_minSize = minSize;
+  m_maxSize = maxSize;
 }
