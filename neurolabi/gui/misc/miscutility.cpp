@@ -6,6 +6,7 @@
 #include "tz_math.h"
 #include "tz_stack_bwmorph.h"
 #include "tz_stack_math.h"
+#include "flyem/zflyemqualityanalyzer.h"
 
 using namespace std;
 
@@ -271,4 +272,20 @@ Stack* misc::computeNormal(const Stack *stack, NeuTube::EAxis axis)
   C_Stack::kill(outerDist);
 
   return out;
+}
+
+int misc::computeRavelerHeight(
+    const FlyEm::ZIntCuboidArray &blockArray, int margin)
+{
+  ZFlyEmQualityAnalyzer::SubstackRegionCalbration calbr;
+  calbr.setBounding(true, true, false);
+  calbr.setMargin(margin, margin, 0);
+
+  FlyEm::ZIntCuboidArray calibratedBlockArray = blockArray;
+
+  calbr.calibrate(calibratedBlockArray);
+
+  Cuboid_I boundBox = calibratedBlockArray.getBoundBox();
+
+  return Cuboid_I_Height(&boundBox) + margin;
 }
