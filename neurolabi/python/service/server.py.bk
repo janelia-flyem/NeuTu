@@ -1,0 +1,92 @@
+from bottle import route, run, get, post, request, static_file, abort
+import json
+import subprocess
+import sys
+
+sys.path.append('..')
+sys.path.append('module')
+sys.path.append('flyem')
+
+import skeletonize as skl
+
+@route('/hello')
+def hello():
+    return "Hello world!"
+
+@get('/login')
+def login():
+    return '''
+        <form action="/login" method="post">
+            Username: <input name="username" type="text"/>
+            Password: <input name="password" type="password"/>
+            <input value="Login" type="submit"/>
+        </form>
+    '''
+    
+@post('/login')
+def do_login():
+    username = request.forms.get('username')
+    password = request.forms.get('password')
+    if check_login(username, password):
+        return "<p>Your login information was correct.</p>"
+    else:
+        return "<p>Login failed.</p>"
+
+def check_login(username, password):
+    return True
+
+@get('/skeletonize')
+def skeletonize():
+    return '''
+        <form action="/skeletonize" method="post">
+            Body ID: <input name="bodyId" type="text"/>
+            Source: <input name="source" type="text"/>
+            <input value="Submit" type="submit"/>
+        </form>
+    '''
+
+@post('/skeletonize')
+def do_skeletonize():
+    skl.Skeletonize(request.forms.get('bodyId'), 'dvid')
+    
+    #bodyId = int(request.forms.get('bodyId'))
+    #source = request.forms.get('source')
+    #binDir = '/Users/zhaot/Work/neutube/neurolabi/cpp/skeletonize_Debug'
+    #process = subprocess.Popen(
+    #    [binDir + '/skeletonize',
+    #     '/Users/zhaot/Work/neutube/neurolabi/data/flyem/FIB/4.sobj',
+    #     '-o', '/Users/zhaot/Work/neutube/neurolabi/data/test.swc'],
+    #    stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    #output, error = process.communicate()
+    
+    response = '<p>Result:</p>'
+    #if output:
+    #    response += '<p>' + output + '</p>'
+    #if error:
+    #    response += '<p>' + error + '</p>'
+        
+    return response
+
+@get('/skeleton/<bodyId>')
+def retrieveSkeleton(bodyId):
+    return static_file(str(bodyId) + '.swc',
+                       root='/Users/zhaot/Work/neutube/neurolabi/data/flyem/TEM/data_release/bundle1/swc')
+
+@get('/thumbnail/<bodyId>')
+def retrieveThumbnail(bodyId):
+    return static_file(str(bodyId) + '.tif',
+                       root='/Users/zhaot/Work/neutube/neurolabi/data/flyem/FIB/skeletonization/session25/500k+/len40_100k+/thumbnails')
+
+
+def get_json_post():
+    try:
+        return json.load(request.body)
+    except ValueError:
+        abort(400, 'Bad request: Could not decode request body (expected JSON).')
+        
+@post('/json')
+def parseJson():
+    data = get_json_post()
+    return '<p>' + data['head'] + '</p>'
+
+run(host='localhost', port=8080, debug=True)
