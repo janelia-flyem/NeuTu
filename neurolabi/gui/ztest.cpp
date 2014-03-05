@@ -10392,7 +10392,7 @@ void ZTest::test(MainWindow *host)
   blockArray.exportSwc(GET_DATA_DIR + "/test.swc");
 #endif
 
-#if 1
+#if 0
   FlyEm::ZIntCuboidArray blockArray;
   blockArray.loadSubstackList(dataPath + "/flyem/FIB/block_13layer.txt");
   std::cout << misc::computeRavelerHeight(blockArray, 10) << std::endl;
@@ -10634,5 +10634,18 @@ void ZTest::test(MainWindow *host)
   json_dump_file(rootObj, (GET_DATA_DIR + "/1m_5m.json").c_str(), JSON_INDENT(2));
 
   json_decref(rootObj);
+#endif
+
+#if 1
+  FlyEm::ZIntCuboidArray blockArray;
+  blockArray.loadSubstackList(dataPath + "/flyem/FIB/block_13layer.txt");
+
+  ZFlyEmQualityAnalyzer::SubstackRegionCalbration calbr;
+  calbr.setBounding(true, true, false);
+  calbr.setMargin(10, 10, 0);
+  blockArray.print();
+  calbr.calibrate(blockArray);
+
+  blockArray.exportSwc(dataPath + "/flyem/FIB/orphan_body_check_block_13layer.swc");
 #endif
 }
