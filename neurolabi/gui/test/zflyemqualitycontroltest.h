@@ -166,8 +166,77 @@ TEST(ZFlyEmQualityAnalyzer, touchingGlobalBoundary) {
 
   obj.addSegment(99, 10, 10, 150);
   ASSERT_TRUE(analyzer.touchingGlobalBoundary(obj));
+
+  obj.clear();
+  obj.addSegment(0, 1, 1, 1);
+  ASSERT_TRUE(analyzer.touchingGlobalBoundary(obj));
+
+  obj.clear();
+  obj.addSegment(200, 50, 50, 50);
+  ASSERT_TRUE(analyzer.touchingGlobalBoundary(obj));
 }
 
+TEST(ZFlyEmQualityAnalyzer, touchingSideBoundary) {
+  FlyEm::ZIntCuboidArray blockArray;
+  blockArray.append(0, 0, 0, 100, 100, 100);
+  blockArray.append(100, 0, 0, 100, 100, 100);
+  blockArray.append(0, 100, 0, 100, 100, 100);
+  //blockArray.append(100, 100, 0, 100, 100, 100);
+  blockArray.append(50, 50, 100, 100, 100, 100);
+
+  //blockArray.exportSwc(GET_TEST_DATA_DIR + "/test.swc");
+
+  ZFlyEmQualityAnalyzer analyzer;
+  analyzer.setSubstackRegion(blockArray);
+
+  ZObject3dScan obj;
+  obj.addSegment(0, 0, 0, 0);
+  ASSERT_TRUE(analyzer.touchingSideBoundary(obj));
+
+  obj.clear();
+  obj.addSegment(1, 1, 1, 1);
+  ASSERT_FALSE(analyzer.touchingSideBoundary(obj));
+
+  obj.addSegment(1, 99, 99, 99);
+  ASSERT_FALSE(analyzer.touchingSideBoundary(obj));
+
+  obj.addSegment(1, 99, 100, 100);
+  ASSERT_TRUE(analyzer.touchingSideBoundary(obj));
+
+  obj.clear();
+  obj.addSegment(99, 99, 99, 99);
+  ASSERT_FALSE(analyzer.touchingSideBoundary(obj));
+
+  obj.addSegment(100, 100, 99, 99);
+  ASSERT_FALSE(analyzer.touchingSideBoundary(obj));
+
+  obj.addSegment(99, 100, 99, 99);
+  ASSERT_TRUE(analyzer.touchingSideBoundary(obj));
+
+  obj.clear();
+  obj.addSegment(100, 100, 100, 100);
+  ASSERT_TRUE(analyzer.touchingSideBoundary(obj));
+
+  obj.clear();
+  obj.addSegment(100, 10, 10, 10);
+  ASSERT_TRUE(analyzer.touchingSideBoundary(obj));
+
+  obj.clear();
+  obj.addSegment(10, 10, 10, 150);
+  //obj.print();
+  ASSERT_FALSE(analyzer.touchingSideBoundary(obj));
+
+  obj.addSegment(99, 10, 10, 150);
+  ASSERT_TRUE(analyzer.touchingSideBoundary(obj));
+
+  obj.clear();
+  obj.addSegment(0, 1, 1, 1);
+  ASSERT_FALSE(analyzer.touchingSideBoundary(obj));
+
+  obj.clear();
+  obj.addSegment(200, 50, 50, 50);
+  ASSERT_FALSE(analyzer.touchingSideBoundary(obj));
+}
 
 
 #endif

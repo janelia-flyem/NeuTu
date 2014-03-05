@@ -12,7 +12,10 @@ public:
   ZFlyEmNeuronExporter();
 
   void exportIdPosition(const ZFlyEmNeuronArray &neuronArray,
-                        const std::string filePath);
+                        const std::string &filePath);
+
+  void exportIdVolume(const ZFlyEmNeuronArray &neuronArray,
+                      const std::string &filePath);
 
   inline void setNeuronFilter(ZFlyEmNeuronFilter *filter) {
     m_neuronFilter = filter;
