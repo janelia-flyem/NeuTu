@@ -53,6 +53,8 @@ public:
    */
   bool touchingGlobalBoundary(const ZObject3dScan &obj);
 
+  bool touchingSideBoundary(const ZObject3dScan &obj);
+
 private:
   FlyEm::ZIntCuboidArray m_substackRegion;
 

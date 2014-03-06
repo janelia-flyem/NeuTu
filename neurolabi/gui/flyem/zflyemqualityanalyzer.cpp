@@ -242,6 +242,40 @@ bool ZFlyEmQualityAnalyzer::touchingGlobalBoundary(const ZObject3dScan &obj)
   return false;
 }
 
+bool ZFlyEmQualityAnalyzer::touchingSideBoundary(const ZObject3dScan &obj)
+{
+  Cuboid_I boundBox = m_substackRegion.getBoundBox();
+
+  //Test if the body touches the side boundary
+  ZObject3dScan tmpObj = obj;
+  tmpObj.dilate();
+  for (size_t i = 0; i < tmpObj.getStripeNumber(); ++i) {
+    const ZObject3dStripe &stripe = tmpObj.getStripe(i);
+
+    if (stripe.getZ() < boundBox.cb[2]) { //Skip the stripe if it's above the top
+      continue;
+    }
+
+    if (stripe.getZ() > boundBox.ce[2]) { //Skpe the stripe if it's below the bottom
+      continue;
+    }
+
+    for (int j = 0; j < stripe.getSegmentNumber(); ++j) {
+      if (m_substackRegion.hitTest(stripe.getSegmentStart(j), stripe.getY(),
+                                   stripe.getZ()) < 0) {
+        return true;
+      }
+
+      if (m_substackRegion.hitTest(stripe.getSegmentEnd(j), stripe.getY(),
+                                   stripe.getZ()) < 0) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
 ZFlyEmQualityAnalyzer::SubstackRegionCalbration::SubstackRegionCalbration()
 {
   for (int i = 0; i < 3; i++) {

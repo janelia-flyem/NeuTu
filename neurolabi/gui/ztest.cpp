@@ -10646,6 +10646,45 @@ void ZTest::test(MainWindow *host)
   blockArray.print();
   calbr.calibrate(blockArray);
 
+  Print_Cuboid_I(&(blockArray.getBoundBox()));
+
   blockArray.exportSwc(dataPath + "/flyem/FIB/orphan_body_check_block_13layer.swc");
+#endif
+
+#if 0
+  ZFlyEmNeuronArray neuronArray;
+  neuronArray.importBodyDir(
+        GET_TEST_DATA_DIR + "/flyem/FIB/skeletonization/session27/100k_le/stacked");
+
+  FlyEm::ZSynapseAnnotationArray synapseArray;
+  synapseArray.loadJson(
+        GET_TEST_DATA_DIR + "/flyem/FIB/skeletonization/session27/annotations-synapse.json");
+
+  FlyEm::ZIntCuboidArray blockArray;
+  blockArray.loadSubstackList(GET_TEST_DATA_DIR + "/flyem/FIB/block_13layer.txt");
+  ZFlyEmQualityAnalyzer::SubstackRegionCalbration calbr;
+  calbr.setBounding(true, true, false);
+  calbr.setMargin(10, 10, 0);
+  ZFlyEmQualityAnalyzer analyzer;
+  analyzer.setSubstackRegion(blockArray, calbr);
+
+  std::vector<int> allSynapseCount = synapseArray.countSynapse();
+
+  ZFlyEmNeuronArray selectedNeuronArray;
+  for (ZFlyEmNeuronArray::const_iterator iter = neuronArray.begin();
+       iter != neuronArray.end(); ++iter) {
+    const ZFlyEmNeuron &neuron = *iter;
+    if ((size_t) neuron.getId() < allSynapseCount.size()) {
+      if (allSynapseCount[neuron.getId()] > 0) {
+        if (analyzer.touchingSideBoundary(*neuron.getBody())) {
+          selectedNeuronArray.push_back(neuron);
+        }
+      }
+    }
+  }
+
+  ZFlyEmNeuronExporter exporter;
+  exporter.exportIdVolume(selectedNeuronArray, GET_TEST_DATA_DIR + "/test2.json");
+
 #endif
 }
