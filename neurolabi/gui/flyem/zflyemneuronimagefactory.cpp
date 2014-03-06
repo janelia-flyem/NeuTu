@@ -127,6 +127,8 @@ Stack *ZFlyEmNeuronImageFactory::createSurfaceImage(const ZObject3dScan &obj) co
     int offset[3] = { 0, 0, 0 };
     tmpObj.switchYZ();
     Stack *objStack = tmpObj.toStack(offset);
+    offset[1] -= 1500 / (m_downsampleInterval[2] + 1); //hard-coded calibration, need modification later
+
     stack = misc::computeNormal(objStack, NeuTube::Z_AXIS);
     C_Stack::kill(objStack);
 
