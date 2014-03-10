@@ -1,5 +1,7 @@
 #include "mainwindow.h"
 
+#include "zglew.h"
+
 #include <QtGui>
 #ifdef _QT5_
 #include <QtWidgets>

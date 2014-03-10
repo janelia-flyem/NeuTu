@@ -25,11 +25,10 @@ unix {
 }
 
 win32 {
-    INCLUDEPATH += C:/Mingw/include \
-        C:/Mingw/include/libxml2 \
-        C:/Qt/2010.05/mingw/include/libxml2
+    INCLUDEPATH += E:/Qt/extlibs/include \
+        E:/Qt/extlibs/include/libxml2
 
-    LIBS += -LC:/Mingw/lib \
+    LIBS += -LE:/Qt/extlibs/lib \
         -lfftw3 \
         -lfftw3f \
         -lxml2 \
