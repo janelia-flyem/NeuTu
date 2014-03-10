@@ -21,7 +21,7 @@ endif(PNG_STATIC_LIBRARY)
 
 # additional hints
 if(MINGW)
-  set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} C:/Mingw)
+  set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} E:/Qt/extlibs)
 endif(MINGW)
 
 if(MSVC)
