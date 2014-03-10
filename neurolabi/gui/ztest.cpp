@@ -10636,14 +10636,31 @@ void ZTest::test(MainWindow *host)
   json_decref(rootObj);
 #endif
 
+#if 0
+  FlyEm::ZIntCuboidArray blockArray;
+  blockArray.loadSubstackList(dataPath + "/flyem/FIB/block_13layer.txt");
+
+  ZFlyEmQualityAnalyzer::SubstackRegionCalbration calbr;
+  calbr.setBounding(true, true, false);
+  calbr.setMargin(10, 10, 0);
+  blockArray.print();
+  calbr.calibrate(blockArray);
+
+  Print_Cuboid_I(&(blockArray.getBoundBox()));
+
+  blockArray.exportSwc(dataPath + "/flyem/FIB/orphan_body_check_block_13layer.swc");
+#endif
+
 #if 1
   ZFlyEmNeuronArray neuronArray;
   neuronArray.importBodyDir(
-        GET_TEST_DATA_DIR + "/flyem/FIB/skeletonization/session27/100k_le/stacked");
+        GET_TEST_DATA_DIR +
+        "/flyem/FIB/skeletonization/session28/100k+/stacked");
 
   FlyEm::ZSynapseAnnotationArray synapseArray;
   synapseArray.loadJson(
-        GET_TEST_DATA_DIR + "/flyem/FIB/skeletonization/session27/annotations-synapse.json");
+        GET_TEST_DATA_DIR +
+        "/flyem/FIB/skeletonization/session28/annotations-synapse.json");
 
   FlyEm::ZIntCuboidArray blockArray;
   blockArray.loadSubstackList(GET_TEST_DATA_DIR + "/flyem/FIB/block_13layer.txt");

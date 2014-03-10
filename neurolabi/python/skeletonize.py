@@ -10,47 +10,76 @@ import json
 from LoadDvidObject import LoadDvidObject
 import httplib
 
-def Skeletonize(source, target,
-                configPath = os.path.join(baseDir, '../../json/skeletonize.json')):
-    if source.isdigit():
-      sparseObj = LoadDvidObject(int(source))
-      stack = sparseObj.toStackObject()
+def Skeletonize(source, target, config = None):
+    dvidServer = None
+    uuid = None
+    if target == 'dvid':        
+        if not config:
+            raise Exception('Server configuration must be specified for DVID target.')
+        else:
+            if not config.has_key('dvid-server'):
+                raise Exception('Server address must be specified for DVID target.')
+            elif not config.has_key('uuid'):
+                raise Exception('UUID must be specified for DVID target.')
+        
+        dvidServer = config['dvid-server']
+        uuid = config['uuid']
+    
+    if isinstance(source, int):
+        sparseObj = LoadDvidObject(source, dvidServer, uuid)
+        stack = sparseObj.toStackObject()
+    elif source.isdigit():
+        sparseObj = LoadDvidObject(int(source), dvidServer, uuid)
+        stack = sparseObj.toStackObject()
     else:
-      stack = neutube.ZStack()
-      stackFile = neutube.ZStackFile()
-      stackFile._import(source)
-      stack = stackFile.readStack();
+        stack = neutube.ZStack()
+        stackFile = neutube.ZStackFile()
+        stackFile._import(source)
+        stack = stackFile.readStack();
 
     skeletonizer = neutube.ZStackSkeletonizer()
-
-    if os.path.exists(configPath):
-        configFile = open(configPath);
-
+    
+    if not config:
+        print 'null config'
+        config = {'description': 'skeletonize configuration'}
+    
+    print config
+    
+    if not config.has_key('args'):
+        configPath = os.path.join(baseDir, '../json/skeletonize.json')
+        configFile = None
+        print '********************'
+        print configPath
+        if os.path.exists(configPath):
+            configFile = open(configPath);
         if configFile:
-            config = json.load(configFile)
-            if config.has_key('downsampleInterval'):
-                skeletonizer.setDownsampleInterval(config['downsampleInterval'][0],
-                                                   config['downsampleInterval'][1],
-                                                   config['downsampleInterval'][2])
-            
-            if config.has_key('minimalLength'):
-                skeletonizer.setLengthThreshold(config['minimalLength'])
-            
-            if config.has_key('keepingSingleObject'):
-                skeletonizer.setKeepingSingleObject(config['keepingSingleObject'])
-                
-            if config.has_key('rebase'):
-                skeletonizer.setRebase(config['rebase'])
-            
+            config['args'] = json.load(configFile)
             configFile.close()
+    
 
+    if config['args'].has_key('downsampleInterval'):
+        skeletonizer.setDownsampleInterval(config['args']['downsampleInterval'][0],
+                                           config['args']['downsampleInterval'][1],
+                                           config['args']['downsampleInterval'][2])
+            
+        if config['args'].has_key('minimalLength'):
+            skeletonizer.setLengthThreshold(config['args']['minimalLength'])
+            
+        if config['args'].has_key('keepingSingleObject'):
+            skeletonizer.setKeepingSingleObject(config['args']['keepingSingleObject'])
+                
+        if config['args'].has_key('rebase'):
+            skeletonizer.setRebase(config['args']['rebase'])
+            
     tree = skeletonizer.makeSkeleton(stack)
     
+        
     if target == 'dvid':
-        conn = httplib.HTTPConnection('emdata1.int.janelia.org')
+        conn = httplib.HTTPConnection(dvidServer)
         array = neutube.EncodeSwcTree(tree)
-        conn.request('POST', '/api/node/339/skeletons/' + source + '.swc',
-                     ''.join(array))
+        dvidRequest = '/api/node/' + uuid + '/skeletons/' + str(source) + '.swc'
+        print dvidRequest
+        conn.request('POST', dvidRequest, ''.join(array))
         response = conn.getresponse()
         print 'Uploaded into dvid'
         print response.status, response.reason
@@ -68,7 +97,11 @@ if __name__ == '__main__':
                       default="../json/skeletonize.json");
     (options, args) = parser.parse_args();
     
-    Skeletonize(options.input, options.output, options.config)
+    configFile = open(options.config);
+    config = { 'args': json.load(configFile) }    
+    configFile.close()
+        
+    Skeletonize(options.input, options.output, config)
     
     print options.input
     print 'done'
