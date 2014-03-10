@@ -1,0 +1,8 @@
+{
+  "downsampleInterval": [1, 1, 1],
+  "minimalLength": 15,
+  "keepingSingleObject": true,
+  "rebase": true
+}
+
+
