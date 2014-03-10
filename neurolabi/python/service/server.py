@@ -4,12 +4,22 @@ import subprocess
 import sys
 import socket
 import jsonschema
+import httplib
+import socket
 
 sys.path.append('..')
 sys.path.append('module')
 sys.path.append('flyem')
 
+socket.setdefaulttimeout(1000)
+
 import skeletonize as skl
+
+def getDefaultDvidServer():
+    return 'emdata1.int.janelia.org:7000'
+
+def getDefaultUuid():
+    return 'dcf'
 
 def getSchema(service, method):
     with open('interface.raml') as f:
@@ -59,6 +69,8 @@ def skeletonize():
 def do_skeletonize():
     print request.content_type
     bodyArray = [];
+    dvidServer = getDefaultDvidServer()
+    uuid = getDefaultUuid()
     if request.content_type == 'application/x-www-form-urlencoded':
         bodyIdStr = request.forms.get('bodyId')
         bodyArray = [int(bodyId) for bodyId in bodyIdStr.split()]
@@ -71,13 +83,32 @@ def do_skeletonize():
             print 'Invalid json input'
             print inst
             return '<p>Skeletonization for ' + str(bodyArray) + ' failed.</p>'
+        uuid = jsonObj['uuid']
+        if jsonObj.has_key('dvid-server'):
+            dvidServer = jsonObj['dvid-server']
         bodyArray = jsonObj['bodies']
     
     output = {}
+    config = {'dvid-server': dvidServer, 'uuid': uuid}
+
+    print '********'
+    print config
+    
     for bodyId in bodyArray:
-        skl.Skeletonize(bodyId, 'dvid')
-        output[str(bodyId)] = 'http://emdata1.int.janelia.org' + '/api/node/339/skeletons/' + str(bodyId) + '.swc'
-        
+        conn = httplib.HTTPConnection(dvidServer)
+        bodyLink = '/api/node/' + uuid + '/skeletons/' + str(bodyId) + '.swc'
+        print '************', bodyLink
+        conn.request("GET", bodyLink)
+
+        r1 = conn.getresponse()
+        if not r1.status == 200:
+            try:
+                skl.Skeletonize(bodyId, 'dvid', config)
+                output[str(bodyId)] = dvidServer + bodyLink
+            except Exception as inst:
+                return '<p>' + str(inst) + '</p>'
+        else:
+            output[str(bodyId)] = dvidServer + bodyLink
     
     return json.dumps(output, sort_keys = False)
 #     return '<p>Skeletonization for ' + str(bodyArray) + ' is completed.</p>'

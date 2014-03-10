@@ -11,11 +11,25 @@ from LoadDvidObject import LoadDvidObject
 import httplib
 
 def Skeletonize(source, target, config = None):
+    dvidServer = None
+    uuid = None
+    if target == 'dvid':        
+        if not config:
+            raise Exception('Server configuration must be specified for DVID target.')
+        else:
+            if not config.has_key('dvid-server'):
+                raise Exception('Server address must be specified for DVID target.')
+            elif not config.has_key('uuid'):
+                raise Exception('UUID must be specified for DVID target.')
+        
+        dvidServer = config['dvid-server']
+        uuid = config['uuid']
+    
     if isinstance(source, int):
-        sparseObj = LoadDvidObject(source)
+        sparseObj = LoadDvidObject(source, dvidServer, uuid)
         stack = sparseObj.toStackObject()
     elif source.isdigit():
-        sparseObj = LoadDvidObject(int(source))
+        sparseObj = LoadDvidObject(int(source), dvidServer, uuid)
         stack = sparseObj.toStackObject()
     else:
         stack = neutube.ZStack()
@@ -61,18 +75,11 @@ def Skeletonize(source, target, config = None):
     
         
     if target == 'dvid':
-        dvidServer = 'emdata1.int.janelia.org'
-        if config.has_key('dvid-server'):
-            dvidServer = config['dvid-server']
-        
-        uuid = '339'
-        if config.has_key('uuid'):
-            uuid = config['uuid']
-            
         conn = httplib.HTTPConnection(dvidServer)
         array = neutube.EncodeSwcTree(tree)
-        conn.request('POST', '/api/node/' + uuid + ' /skeletons/' + str(source) + '.swc',
-                     ''.join(array))
+        dvidRequest = '/api/node/' + uuid + '/skeletons/' + str(source) + '.swc'
+        print dvidRequest
+        conn.request('POST', dvidRequest, ''.join(array))
         response = conn.getresponse()
         print 'Uploaded into dvid'
         print response.status, response.reason

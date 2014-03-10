@@ -7,16 +7,21 @@ import json
 import os
 import httplib
 
-def LoadDvidObject(bodyId):
-    conn = httplib.HTTPConnection('emdata1.int.janelia.org')
-    conn.request("GET", '/api/node/339/sp2body/sparsevol/' + str(bodyId))
+def LoadDvidObject(bodyId, dvidServer, uuid):
+    print dvidServer
+    conn = httplib.HTTPConnection(dvidServer)
+    
+    dvidRequest = '/api/node/' + uuid +'/sp2body/sparsevol/' + str(bodyId)
+    print dvidRequest
+    
+    print '**********Response:'
+    conn.request("GET", dvidRequest)
     r1 = conn.getresponse()
     
+    print '**********'
+    print r1
+    
     data = r1.read();
-    
-    print len(data)
-    print type(data)
-    
     dataArray = neutube.Char_Array()
     dataArray = data
     
