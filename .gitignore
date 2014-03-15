@@ -11,7 +11,7 @@
 *.pro.user*
 .DS_Store
 
-!/neurolabi/gui/ext/win/lib/win64/*.a
+!/neurolabi/lib/Mingw/*.zip
 
 # qtcreator c project file
 /neurolabi/c/clib.*
@@ -49,6 +49,7 @@ neurolabi/lib/libpng-1.6.7/
 neurolabi/lib/libxml2-2.9.1/
 neurolabi/lib/png/
 neurolabi/lib/xml/
+neurolabi/lib/Mingw/64/
 
 /neurolabi/gui/gui.pro.user*
 /neurolabi/c/c_lib.creator.user*
