@@ -4,15 +4,11 @@ import numpy as np;
 
 def CreateDataBundle(config):
 #     dataPath = config["dataPath"]; #'/Users/zhaot/Work/neutube/neurolabi/data';
-    sessionPath = config["sessionPath"]; #dataPath + '/flyem/FIB/skeletonization/session11';
-    if config.has_key("swcDir"):
-        swcPath = config['swcDir']; #sessionPath + '/' + config['swcDir'];
-    else:
-        swcPath = sessionPath + '/swc/adjusted';
+    swcPath = config['swcDir']; #sessionPath + '/' + config['swcDir'];
     
     swcFileList = list();
     if config.has_key("minBodySize") | config.has_key("maxBodySize"):
-        data = np.loadtxt(sessionPath + '/bodies/bodysize.txt', delimiter=',');
+        data = np.loadtxt(config['bundlePath'] + '/bodysize.txt', delimiter=',');
         bodyList = data[:, 0];
         bodySize = data[:, 1];
         lowerThreshold = -1;
