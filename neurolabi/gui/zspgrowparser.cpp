@@ -293,3 +293,25 @@ Stack* ZSpGrowParser::createDistanceStack()
 
   return stack;
 }
+
+Stack* ZSpGrowParser::createEuclideanDistanceStack()
+{
+  Stack *stack = NULL;
+
+  if (m_workspace != NULL) {
+    if (m_workspace->length != NULL) {
+      size_t nvoxel = m_workspace->size;
+
+      for (size_t i = 0; i < nvoxel; i++) {
+        if (tz_isinf(m_workspace->dist[i])) {
+          m_workspace->length[i] = 0.0;
+        }
+      }
+      stack = Scale_Double_Stack(m_workspace->length, m_workspace->width,
+                                 m_workspace->height, m_workspace->depth,
+                                 GREY);
+    }
+  }
+
+  return stack;
+}

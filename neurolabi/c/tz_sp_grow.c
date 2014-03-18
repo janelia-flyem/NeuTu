@@ -38,6 +38,7 @@ void Default_Sp_Grow_Workspace(Sp_Grow_Workspace *sgw)
   sgw->width = 0;
   sgw->height = 0;
   sgw->depth = 0;
+  sgw->lengthBufferEnabled = FALSE;
 }
 
 void Clean_Sp_Grow_Workspace(Sp_Grow_Workspace *sgw)
@@ -58,6 +59,17 @@ void Print_Sp_Grow_Workspace(Sp_Grow_Workspace *sgw)
 void Sp_Grow_Workspace_Set_Mask(Sp_Grow_Workspace *sgw, uint8_t *mask)
 {
   sgw->mask = mask;
+}
+
+void Sp_Grow_Workspace_Enable_Eucdist_Buffer(Sp_Grow_Workspace *sgw)
+{
+  sgw->lengthBufferEnabled = TRUE;
+}
+
+void Sp_Grow_Workspace_Disable_Eucdist_Buffer(Sp_Grow_Workspace *sgw)
+{
+  sgw->lengthBufferEnabled = FALSE;
+  OBJECT_SAFE_FREE(sgw->length, free);
 }
 
 /* check the neighbor and update the heap if necessary */
@@ -146,6 +158,10 @@ Int_Arraylist* Stack_Sp_Grow(const Stack *stack, const size_t *seeds,
 					  "Stack_Sp_Grow");
     sgw->flag = (uint8_t*) Guarded_Realloc(sgw->flag, sizeof(uint8_t) * nvoxel,
 					  "Stack_Sp_Grow");
+    if (sgw->lengthBufferEnabled) {
+      sgw->length = (double*) Guarded_Realloc(
+          sgw->length, sizeof(double) * nvoxel, "Stack_Sp_Grow");
+    }
   } else {
     if (sgw->dist == NULL) {
       sgw->dist = (double*) Guarded_Malloc(sizeof(double) * nvoxel,
@@ -162,6 +178,11 @@ Int_Arraylist* Stack_Sp_Grow(const Stack *stack, const size_t *seeds,
     if (sgw->flag == NULL) {
       sgw->flag = (uint8_t*) Guarded_Malloc(sizeof(uint8_t) * nvoxel,
 					   "Stack_Sp_Grow");    
+    }
+
+    if (sgw->lengthBufferEnabled) {
+      sgw->length = (double*) Guarded_Malloc(
+          sizeof(double) * nvoxel, "Stack_Sp_Grow");
     }
   }
 

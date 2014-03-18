@@ -649,6 +649,10 @@ void MainWindow::customizeActions()
     //m_ui->menuHelp->menuAction()->setVisible(false);
   }
 
+  if (NeutubeConfig::getInstance().getApplication() != "FlyEM") {
+    m_ui->actionJSON_Point_List->setVisible(false);
+  }
+
 #ifdef _DEBUG_
   testAction->setVisible(
         NeutubeConfig::getInstance().getApplication() != "Biocytin");
@@ -1153,7 +1157,7 @@ void MainWindow::openFile(const QString &fileName)
     m_progress->open();
     m_progress->setLabelText(QString("Loading " + fileName + " ..."));
 
-   m_progress->setValue(++currentProgress);
+    m_progress->setValue(++currentProgress);
 
     ZStackFrame *frame = NULL;
     if (ZFileType::isImageFile(fileType)) {
@@ -1165,36 +1169,41 @@ void MainWindow::openFile(const QString &fileName)
       frame->setViewInfo("Loading data ...");
     } else {
       frame = new ZStackFrame;
-    }
 
-
-    m_progress->setValue(++currentProgress);
-    //qApp->processEvents();
-    m_progress->show();
-    //QApplication::processEvents();
-
-    if (fileType == ZFileType::JSON_FILE) {
-      frame->document()->setAdditionalSource(fileName.toStdString());
-      m_progress->reset();
-      frame->open3DWindow(this);
-      delete frame;
-    } else if (frame->readStack(fileName.toStdString().c_str()) == SUCCESS) {
-      setCurrentFile(fileName);
-      if (ZFileType::isImageFile(fileType)) {
-        addStackFrame(frame, false);
-        if (GET_APPLICATION_NAME == "Biocytin") {
-          frame->document()->setStackBackground(NeuTube::IMAGE_BACKGROUND_BRIGHT);
-          frame->document()->setTag(NeuTube::Document::BIOCYTIN_STACK);
-        }
-      } else {
+      if (fileType == ZFileType::JSON_FILE) {
+        frame->document()->setAdditionalSource(fileName.toStdString());
         m_progress->reset();
         frame->open3DWindow(this);
         delete frame;
+        frame = NULL;
       }
-    } else {
-      delete frame;
-      m_progress->reset();
-      reportFileOpenProblem(fileName);
+    }
+
+
+    if (frame != NULL) {
+      m_progress->setValue(++currentProgress);
+      m_progress->show();
+
+      if (frame->readStack(fileName.toStdString().c_str()) == SUCCESS) {
+        setCurrentFile(fileName);
+        if (ZFileType::isImageFile(fileType)) {
+          addStackFrame(frame, false);
+          if (GET_APPLICATION_NAME == "Biocytin") {
+            frame->document()->setStackBackground(NeuTube::IMAGE_BACKGROUND_BRIGHT);
+            frame->document()->setTag(NeuTube::Document::BIOCYTIN_STACK);
+          }
+        } else { //Not an image, no need to show the 2D window
+          m_progress->reset();
+          frame->open3DWindow(this);
+          delete frame;
+          frame = NULL;
+        }
+      } else {
+        delete frame;
+        frame = NULL;
+        m_progress->reset();
+        reportFileOpenProblem(fileName);
+      }
     }
 
     //m_progress->reset();
@@ -4937,5 +4946,14 @@ void MainWindow::on_actionThumbnails_2_triggered()
     if (!dirName.isEmpty()) {
       frame->setThumbnail(dirName);
     }
+  }
+}
+
+void MainWindow::on_actionJSON_Point_List_triggered()
+{
+  ZStackFrame *frame = currentStackFrame();
+  if (frame != NULL) {
+    QString fileName = getOpenFileName("Import Point List", "*.json");
+    frame->importPointList(fileName);
   }
 }

@@ -6,6 +6,8 @@
 #include "flyem/zflyemneuronrange.h"
 #include "flyem/zflyemneuron.h"
 
+class ZPointArray;
+
 class ZFlyEmQualityAnalyzer
 {
 public:
@@ -54,6 +56,9 @@ public:
   bool touchingGlobalBoundary(const ZObject3dScan &obj);
 
   bool touchingSideBoundary(const ZObject3dScan &obj);
+
+  ZPointArray computeHotSpot(const ZFlyEmNeuron &neuron);
+  ZPointArray computeHotSpot(const ZFlyEmNeuron *neuron);
 
 private:
   FlyEm::ZIntCuboidArray m_substackRegion;

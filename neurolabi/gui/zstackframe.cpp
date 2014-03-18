@@ -32,6 +32,7 @@
 #include "z3dcompositor.h"
 #include "zstring.h"
 #include "biocytin/zbiocytinfilenameparser.h"
+#include "zpunctumio.h"
 
 using namespace std;
 
@@ -1390,6 +1391,17 @@ void ZStackFrame::importSobj(const QStringList &fileList)
 
   ZStack *stack = stackFile.readStack();
   loadStack(stack);
+}
+
+void ZStackFrame::importPointList(const QString &filePath)
+{
+  QList<ZPunctum*> puncta = ZPunctumIO::load(filePath);
+  if (!puncta.isEmpty()) {
+    foreach (ZPunctum* punctum, puncta) {
+      document()->addPunctum(punctum);
+    }
+    document()->notifyPunctumModified();
+  }
 }
 
 void ZStackFrame::autoBcAdjust()

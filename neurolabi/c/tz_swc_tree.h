@@ -838,7 +838,7 @@ void Swc_Tree_To_Dot_File(Swc_Tree *tree, const char *file_path);
  * Swc_Tree_Resort_Id() sorts the Ids of all nodes of <tree> so that they 
  * conform to the SWC format.
  */
-void Swc_Tree_Resort_Id(Swc_Tree *tree);
+int Swc_Tree_Resort_Id(Swc_Tree *tree);
 
 /**@brief Remove zigzags in a tree.
  *

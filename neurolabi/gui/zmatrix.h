@@ -14,7 +14,7 @@ class ZMatrix
 public:
   ZMatrix();
   ZMatrix(int rowNumber, int columnNumber);
-  ~ZMatrix();
+  virtual ~ZMatrix();
 
   /*!
    * \brief Clear matrix buffer.

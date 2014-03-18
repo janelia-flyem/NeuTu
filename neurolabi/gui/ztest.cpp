@@ -164,17 +164,17 @@
 #include "zswcgenerator.h"
 #include "test/zswcgeneratortest.h"
 #include "test/zflyemneuronimagefactorytest.h"
-
+#include "test/zspgrowtest.h"
+#include "test/zflyemneuronmatchtest.h"
 
 using namespace std;
 
 ostream& ZTest::m_failureStream = cerr;
 
-
 ZTest::ZTest()
 {
-
 }
+
 
 bool ZTest::testTreeIterator(ZSwcTree &tree,
                              const ZTestSwcTreeIteratorConfig &config,
@@ -233,6 +233,7 @@ bool ZTest::testTreeIterator(ZSwcTree &tree,
 
   return true;
 }
+
 
 bool ZTest::testTreeIterator()
 {
@@ -10651,7 +10652,7 @@ void ZTest::test(MainWindow *host)
   blockArray.exportSwc(dataPath + "/flyem/FIB/orphan_body_check_block_13layer.swc");
 #endif
 
-#if 1
+#if 0
   ZFlyEmNeuronArray neuronArray;
   neuronArray.importBodyDir(
         GET_TEST_DATA_DIR +
@@ -10673,14 +10674,15 @@ void ZTest::test(MainWindow *host)
   std::vector<int> allSynapseCount = synapseArray.countSynapse();
 
   ZFlyEmNeuronArray selectedNeuronArray;
-  for (ZFlyEmNeuronArray::const_iterator iter = neuronArray.begin();
+  for (ZFlyEmNeuronArray::iterator iter = neuronArray.begin();
        iter != neuronArray.end(); ++iter) {
-    const ZFlyEmNeuron &neuron = *iter;
+    ZFlyEmNeuron &neuron = *iter;
     if ((size_t) neuron.getId() < allSynapseCount.size()) {
       if (allSynapseCount[neuron.getId()] > 0) {
         if (analyzer.touchingSideBoundary(*neuron.getBody())) {
           selectedNeuronArray.push_back(neuron);
         }
+        neuron.deprecate(ZFlyEmNeuron::BODY);
       }
     }
   }
@@ -10688,5 +10690,68 @@ void ZTest::test(MainWindow *host)
   ZFlyEmNeuronExporter exporter;
   exporter.exportIdVolume(selectedNeuronArray, GET_TEST_DATA_DIR + "/test2.json");
 
+#endif
+
+#if 0
+  ZFlyEmDataBundle dataBundle;
+  dataBundle.loadJsonFile(
+        GET_DATA_DIR + "/flyem/FIB/data_release/test/data_bundle.json");
+
+  std::vector<ZFlyEmNeuron>& neuronArray = dataBundle.getNeuronArray();
+  ZFlyEmQualityAnalyzer analyzer;
+
+  FlyEm::ZIntCuboidArray blockArray;
+  blockArray.loadSubstackList(GET_TEST_DATA_DIR + "/flyem/FIB/block_13layer.txt");
+  ZFlyEmQualityAnalyzer::SubstackRegionCalbration calbr;
+  calbr.setBounding(true, true, false);
+  calbr.setMargin(10, 10, 0);
+  analyzer.setSubstackRegion(blockArray, calbr);
+
+  ZPointArray pointArray = analyzer.computeHotSpot(neuronArray[0]);
+
+  std::cout << "Number of hotspots: " << pointArray.size() << std::endl;
+
+  ZSwcTree *tree = ZSwcGenerator::createSwc(pointArray, 20);
+
+  tree->save(GET_DATA_DIR + "/test.swc");
+
+  delete tree;
+
+  //misc::exportPointList(GET_DATA_DIR + "/test.json", pointArray);
+#endif
+
+#if 0
+  ZPointArray pointArray;
+  pointArray.append(1, 2, 3);
+  pointArray.append(4, 5, 6);
+  pointArray.append(4, 5, 6.5);
+
+  std::cout << pointArray.toJsonString() << std::endl;
+#endif
+
+#if 0
+  ZJsonArray jsonArray;
+  jsonArray << 1 << 2 << 3.5;
+  std::cout << json_dumps(jsonArray.getValue(), JSON_INDENT(2)) << std::endl;
+#endif
+
+#if 1
+  ZSwcPruner pruner;
+  pruner.setMinLength(18.0);
+
+  ZSwcTree tree;
+  tree.load(GET_TEST_DATA_DIR + "/benchmark/swc/fork2.swc");
+  pruner.prune(&tree);
+  tree.save(GET_TEST_DATA_DIR + "/test.swc");
+
+  pruner.setMinLength(100.0);
+  tree.load(GET_TEST_DATA_DIR + "/benchmark/swc/compare/compare1.swc");
+  pruner.prune(&tree);
+  tree.save(GET_TEST_DATA_DIR + "/test.swc");
+
+  pruner.setMinLength(5000.0);
+  tree.load(GET_TEST_DATA_DIR + "/209.swc");
+  pruner.prune(&tree);
+  tree.save(GET_TEST_DATA_DIR + "/test.swc");
 #endif
 }

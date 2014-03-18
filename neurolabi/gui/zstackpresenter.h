@@ -80,8 +80,6 @@ public:
 */
   void processMouseReleaseEvent(QMouseEvent *event, int sliceIndex);
   void processKeyPressEvent(QKeyEvent *event);
-  bool processKeyPressEventForSwc(QKeyEvent *event);
-  bool processKeyPressEventForStroke(QKeyEvent *event);
   void processMouseMoveEvent(QMouseEvent *event);
   void processMousePressEvent(QMouseEvent *event);
   void processMouseDoubleClickEvent(QMouseEvent *eventint, int sliceIndex);
@@ -234,6 +232,10 @@ private:
       QMouseEvent *event, double *positionInStack);
   EMouseEventProcessStatus processMouseReleaseForStroke(
       QMouseEvent *event, double *positionInStack);
+
+  bool processKeyPressEventForSwc(QKeyEvent *event);
+  bool processKeyPressEventForStroke(QKeyEvent *event);
+
   bool isPointInStack(double x, double y);
   QPointF mapFromWidgetToStack(const QPoint &pos);
   QPointF mapFromGlobalToStack(const QPoint &pos);

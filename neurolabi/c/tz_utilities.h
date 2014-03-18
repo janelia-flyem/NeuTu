@@ -328,6 +328,10 @@ int tz_isnan(double x);
  */
 int tz_isinf(double x);
 
+/**@brief Test if the value of a real number is an integer.
+ */
+BOOL Is_Integer_Value(double x);
+
 /* in case fgetln is not defined externally */
 extern char* fgetln(FILE *stream, size_t *len);
 

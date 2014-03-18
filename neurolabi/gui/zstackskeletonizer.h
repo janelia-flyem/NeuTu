@@ -69,6 +69,8 @@ public:
     m_connectingBranch = conn;
   }
 
+  void print() const;
+
 private:
   double m_lengthThreshold;
   double m_distanceThreshold;

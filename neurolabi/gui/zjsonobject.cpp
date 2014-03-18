@@ -83,7 +83,19 @@ bool ZJsonObject::load(string filePath)
   return false;
 }
 
-string ZJsonObject::toString()
+string ZJsonObject::dumpString()
+{
+  string str;
+  if (!isEmpty()) {
+    char *cstr = json_dumps(getValue(), JSON_INDENT(2));
+    str = cstr;
+    free(cstr);
+  }
+
+  return str;
+}
+
+string ZJsonObject::summary()
 {
   ostringstream stream;
 
@@ -94,14 +106,14 @@ string ZJsonObject::toString()
     json_object_foreach(m_data, key, value) {
       if (json_is_object(value)) {
         ZJsonObject obj(value, false);
-        stream << obj.toString();
+        stream << obj.summary();
       } else if (json_is_array(value)) {
         stream << key << " : " << "Array " << endl;
         for (size_t i = 0; i < json_array_size(value); i++) {
           json_t *element = json_array_get(value, i);
           if (json_is_object(element)) {
             ZJsonObject obj(element, false);
-            stream << obj.toString();
+            stream << obj.summary();
           } else {
             stream << "Element : " << "Type " << json_typeof(element) << endl;
           }
@@ -164,13 +176,18 @@ bool ZJsonObject::isValidKey(const char *key)
   return true;
 }
 
-void ZJsonObject::setEntryWithoutKeyCheck(const char *key, json_t *obj)
+void ZJsonObject::setEntryWithoutKeyCheck(
+    const char *key, json_t *obj, bool asNew)
 {
   if (obj != NULL) {
     if (m_data == NULL) {
       m_data = C_Json::makeObject();
     }
-    json_object_set(m_data, key, obj);
+    if (asNew) {
+      json_object_set_new(m_data, key, obj);
+    } else {
+      json_object_set(m_data, key, obj);
+    }
   }
 }
 
@@ -181,6 +198,18 @@ void ZJsonObject::setEntry(const char *key, json_t *obj)
   }
 
   setEntryWithoutKeyCheck(key, obj);
+}
+
+void ZJsonObject::consumeEntry(const char *key, json_t *obj)
+{
+  if (!isValidKey(key)) {
+    if (obj != NULL) {
+      json_decref(obj);
+    }
+    return;
+  }
+
+  setEntryWithoutKeyCheck(key, obj, true);
 }
 
 void ZJsonObject::setEntry(const char *key, const string &value)

@@ -2966,7 +2966,7 @@ void Swc_Tree_To_Dot_File(Swc_Tree *tree, const char *file_path)
   fclose(fp);
 }
 
-void Swc_Tree_Resort_Id(Swc_Tree *tree)
+int Swc_Tree_Resort_Id(Swc_Tree *tree)
 {
   Swc_Tree_Iterator_Start(tree, 2, FALSE);
   int id = 1;
@@ -2983,6 +2983,8 @@ void Swc_Tree_Resort_Id(Swc_Tree *tree)
       Swc_Tree_Node_Set_Parent_Id(tn, -1);
     }
   }
+
+  return id - 1;
 }
 
 void Swc_Tree_Node_Pos(const Swc_Tree_Node *tn, double *pos)

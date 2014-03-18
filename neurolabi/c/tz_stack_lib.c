@@ -693,7 +693,7 @@ Stack* Crop_Stack(const Stack* stack,int left,int top,int front,
 }
 
 
-void Print_Stack_Value(Stack* stack) 
+void Print_Stack_Value(const Stack* stack) 
 {
   if (stack == NULL) {
     printf("Null stack.\n");

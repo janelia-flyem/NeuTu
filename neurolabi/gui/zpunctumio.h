@@ -25,6 +25,7 @@ private:
   static bool writeV3DApoFile(const QString &file, InputIterator begin, InputIterator end);
   static void readV3DMarkerFile(const QString &file, QList<ZPunctum*> &punctaList);
   static void readRavelerBookmarkFile(const QString &file, QList<ZPunctum*> &punctaList);
+  static void readJsonFile(const QString &file, QList<ZPunctum*> &punctaList);
   static void punctaFprint(FILE *fp, const ZPunctum &p, int id);
 };
 

@@ -175,6 +175,11 @@ void C_Stack::print(const Stack *stack)
   Print_Stack(stack);
 }
 
+void C_Stack::printValue(const Stack *stack)
+{
+  Print_Stack_Value(stack);
+}
+
 Stack* C_Stack::channelExtraction(const Stack *stack, int channel)
 {
   return Stack_Channel_Extraction(stack, channel, NULL);

@@ -489,6 +489,26 @@ void ZObject3dStripe::switchYZ()
   SWAP2(m_y, m_z, tmp);
 }
 
+bool ZObject3dStripe::containsX(int x) const
+{
+  for (size_t i = 0; i < m_segmentArray.size(); i += 2) {
+    if ((x >= m_segmentArray[i]) && (x <= m_segmentArray[i + 1])) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+bool ZObject3dStripe::contains(int x, int y, int z) const
+{
+  if (getY() == y && getZ() == z) {
+    return containsX(x);
+  }
+
+  return false;
+}
+
 void ZObject3dStripe::dilate()
 {
   for (size_t i = 0; i < m_segmentArray.size(); i += 2) {
@@ -1931,7 +1951,7 @@ bool ZObject3dScan::importDvidObject(const std::string &filePath)
   currentIndex += sizeof(type); \
   byteNumber -= sizeof(type);
 
-bool ZObject3dScan::importDvidObject(
+bool ZObject3dScan::importDvidObjectBuffer(
     const char *byteArray, size_t byteNumber)
 {
   clear();
@@ -1990,9 +2010,9 @@ bool ZObject3dScan::importDvidObject(
   return true;
 }
 
-bool ZObject3dScan::importDvidObject(const std::vector<char> &byteArray)
+bool ZObject3dScan::importDvidObjectBuffer(const std::vector<char> &byteArray)
 {
-  return importDvidObject(&(byteArray[0]), byteArray.size());
+  return importDvidObjectBuffer(&(byteArray[0]), byteArray.size());
 }
 
 void ZObject3dScan::switchYZ()
@@ -2068,6 +2088,39 @@ double ZObject3dScan::getSpread(int z) const
   }
 
   return 0.0;
+}
+
+bool ZObject3dScan::contains(int x, int y, int z)
+{
+  canonize();
+
+  //Binary search
+  size_t lowIndex = 0;
+  size_t highIndex = getStripeNumber();
+
+  while (highIndex >= lowIndex) {
+    size_t medIndex = (lowIndex + highIndex) / 2;
+    ZObject3dStripe &stripe = m_stripeArray[medIndex];
+    if (stripe.getZ() == z && stripe.getY() == y) {
+      return stripe.containsX(x);
+    } else {
+      //On the left side
+      if (stripe.getZ() > z || (stripe.getZ() == z && stripe.getY() > y)) {
+        if (medIndex == 0) {
+          if (highIndex == 1) {
+            return m_stripeArray[highIndex].contains(x, y, z);
+          }
+          return false;
+        } else {
+          highIndex = medIndex - 1;
+        }
+      } else { //On the right side
+        lowIndex = medIndex + 1;
+      }
+    }
+  }
+
+  return false;
 }
 
 ZINTERFACE_DEFINE_CLASS_NAME(ZObject3dScan)

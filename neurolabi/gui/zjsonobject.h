@@ -29,8 +29,13 @@ public:
 
 public:
   bool load(std::string filePath);
-  std::string toString();
+  std::string summary();
   std::map<std::string, json_t*> toEntryMap(bool recursive = true) const;
+
+  /*!
+   * \brief Dump the object to a string.
+   */
+  std::string dumpString();
 
   /*!
    * \brief Test if a key is valid
@@ -38,10 +43,16 @@ public:
    * \return true iff \a key is valid.
    */
   static bool isValidKey(const char *key);
+
   /*!
    * \brief Set an entry of the object
    */
   void setEntry(const char *key, json_t *obj);
+
+  /*!
+   * \brief Set an entry without increasing the reference count
+   */
+  void consumeEntry(const char *key, json_t *obj);
 
   /*!
    * \brief Set an entry of the object with string value
@@ -98,7 +109,7 @@ public:
   bool hasKey(const char *key) const;
 
 private:
-  void setEntryWithoutKeyCheck(const char *key, json_t *obj);
+  void setEntryWithoutKeyCheck(const char *key, json_t *obj, bool asNew = false);
 
 private:
   static void appendEntries(const char *key, json_t *obj,

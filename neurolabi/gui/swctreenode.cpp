@@ -299,7 +299,15 @@ bool SwcTreeNode::isLeaf(const Swc_Tree_Node *tn)
 
 bool SwcTreeNode::isBranchPoint(const Swc_Tree_Node *tn)
 {
-  return Swc_Tree_Node_Is_Branch_Point(tn);
+  if (isRegularRoot(tn)) {
+    if (childNumber(tn) > 2) {
+      return true;
+    }
+  } else {
+    return Swc_Tree_Node_Is_Branch_Point(tn);
+  }
+
+  return false;
 }
 
 bool SwcTreeNode::isTerminal(const Swc_Tree_Node *tn)
@@ -1504,6 +1512,23 @@ std::vector<Swc_Tree_Node*> SwcTreeNode::neighborArray(const Swc_Tree_Node *tn)
   }
 
   return neighborArray;
+}
+
+int SwcTreeNode::regularNeighborNumber(const Swc_Tree_Node *tn)
+{
+  int count = 0;
+  if (isRegular(tn)) {
+    if (isRegular(parent(tn))) {
+      ++count;
+    }
+    Swc_Tree_Node *child = firstChild(tn);
+    while (child != NULL) {
+      ++count;
+      child = nextSibling(child);
+    }
+  }
+
+  return count;
 }
 
 std::map<Swc_Tree_Node*, Swc_Tree_Node*> SwcTreeNode::crossoverMatch(

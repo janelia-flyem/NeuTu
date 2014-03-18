@@ -7,6 +7,9 @@
 #include "zstring.h"
 #include <QFile>
 #include "QsLog.h"
+#include "zjsonobject.h"
+#include "zjsonparser.h"
+#include "zjsonarray.h"
 
 //using namespace Eigen;
 
@@ -27,6 +30,8 @@ QList<ZPunctum*> ZPunctumIO::load(const QString &file)
   case ZFileType::RAVELER_BOOKMARK:
     readRavelerBookmarkFile(file, punctaList);
     break;
+  case ZFileType::JSON_FILE:
+    readJsonFile(file, punctaList);
   default:
     LWARN() << "Not supported puncta file type:" << file;
     break;
@@ -181,6 +186,30 @@ void ZPunctumIO::readRavelerBookmarkFile(const QString &file, QList<ZPunctum *> 
   }
   fclose(fp);
 }
+
+void ZPunctumIO::readJsonFile(const QString &file, QList<ZPunctum *> &punctaList)
+{
+  ZJsonObject rootObj;
+  rootObj.load(file.toStdString());
+  ZJsonArray pointList(rootObj["point-list"], false);
+
+  if (!pointList.isEmpty()) {
+    for (size_t i = 0; i < pointList.size(); ++i) {
+      ZJsonArray pointObj(pointList.at(i), false);
+      std::vector<int> coordinates = pointObj.toIntegerArray();
+      if (coordinates.size() == 3) {
+        ZPunctum* punctum = new ZPunctum();
+        punctum->setX(coordinates[0]);
+        punctum->setY(coordinates[1]);
+        punctum->setZ(coordinates[2]);
+        punctum->setRadius(20);
+        punctum->setSource(file);
+        punctaList.push_back(punctum);
+      }
+    }
+  }
+}
+
 
 void ZPunctumIO::punctaFprint(FILE *fp, const ZPunctum &p, int id)
 {

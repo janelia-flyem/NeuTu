@@ -37,6 +37,8 @@ public:
    * Any json array element that is not integer will be ignored.
    */
   std::vector<int> toIntegerArray() const;
+
+  ZJsonArray& operator << (double e);
 };
 
 #endif // ZJSONARRAY_H

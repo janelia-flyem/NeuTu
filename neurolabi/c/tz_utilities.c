@@ -508,6 +508,11 @@ int tz_isinf(double x)
   return (x == Infinity) || (x == -Infinity);
 }
 
+BOOL Is_Integer_Value(double x)
+{
+  return x == (double) (int) x;
+}
+
 #ifndef HAVE_FGETLN
 char *fgetln(FILE *stream, size_t *len)
 {

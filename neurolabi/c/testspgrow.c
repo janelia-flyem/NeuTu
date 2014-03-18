@@ -677,7 +677,7 @@ int main(int argc, char *argv[])
   Stack *stack = Read_Stack("../data/test.tif");
   Sp_Grow_Workspace *sgw = New_Sp_Grow_Workspace();
   sgw->wf = Stack_Voxel_Weight_I;
-  int max_index;
+  size_t max_index;
   Stack_Max(stack, &max_index);
 
   Stack *mask = Copy_Stack(stack);

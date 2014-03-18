@@ -57,7 +57,7 @@ FlyEmDataForm::FlyEmDataForm(QWidget *parent) :
           this, SLOT(updateThumbnailSecondary(QModelIndex)));
 
   //customize
-  ui->testPushButton->hide();
+  //ui->testPushButton->hide();
   ui->generalPushButton->hide();
 
   createAction();

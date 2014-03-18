@@ -10,14 +10,17 @@
 #include "zobject3dscan.h"
 #include "zstackfile.h"
 #include "tz_darray.h"
+#include "zpoint.h"
 %}
 
 %include "std_vector.i"
+%include "std_string.i"
 
 namespace std {
   %template(Double_Array) vector<double>;
   %template(Byte_Array) vector<uint8_t>;
   %template(Char_Array) vector<char>;
+  %template(Point_Array) vector<ZPoint>;
 }
 
 %inline %{
@@ -42,10 +45,6 @@ namespace std {
     delete stack;
   }
 
-  void DeleteObject3dScan(ZObject3dScan *obj) {
-    delete obj;
-  }
-
   void PrintDoubleArray(const std::vector<double> &array) {
     darray_print(&(array[0]), array.size());
   }
@@ -68,6 +67,9 @@ namespace std {
 %include zstackdrawable.h
 %include zswctree.i
 %include zstackskeletonizer.h
-%include zobject3dscan.h
+%include zobject3dscan.i
 %include darray.i
 %include zstackfile.h
+%include zpointarray.i
+%include zflyemneuron.i
+%include zflyemqualityanalyzer.i

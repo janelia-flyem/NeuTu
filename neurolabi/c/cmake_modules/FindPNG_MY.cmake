@@ -21,12 +21,8 @@ endif(PNG_STATIC_LIBRARY)
 
 # additional hints
 if(MINGW)
-  set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} E:/Qt/extlibs)
+  set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${CMAKE_SOURCE_DIR}/../lib/Mingw/64)
 endif(MINGW)
-
-if(MSVC)
-  set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} D:/devlib/vc/libpng)
-endif(MSVC)
 
 # Include dir
 find_path(PNG_INCLUDE_DIR

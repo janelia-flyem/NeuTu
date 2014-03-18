@@ -366,3 +366,21 @@ void ZStackSkeletonizer::init(const ZJsonObject &config)
     setRebase(ZJsonParser::booleanValue(value));
   }
 }
+
+void ZStackSkeletonizer::print() const
+{
+  std::cout << "Minimal length: " << m_lengthThreshold << std::endl;
+  std::cout << "Minimal distance: " << m_distanceThreshold << std::endl;
+  std::cout << "Rebase: " << m_rebase << std::endl;
+  std::cout << "Intepolate: " << m_interpolating << std::endl;
+  std::cout << "Remove border: " << m_removingBorder << std::endl;
+  std::cout << "Minimal object size: " << m_minObjSize << std::endl;
+  std::cout << "Keep short object: " << m_keepingSingleObject << std::endl;
+  std::cout << "Level: " << m_level << std::endl;
+  std::cout << "Connect branch: " << m_connectingBranch << std::endl;
+  std::cout << "Resolution: " << "(" << m_resolution[0] << ", "
+            << m_resolution[1] << ", " << m_resolution[2] << ")" << std::endl;
+  std::cout << "Downsample interval: (" << m_downsampleInterval[0] << ", "
+            << m_downsampleInterval[1] << ", " << m_downsampleInterval[2]
+            << ")" << std::endl;
+}

@@ -375,7 +375,7 @@ public:
 
   ZSwcForest* toSwcTreeArray();
 
-  void resortId();
+  int resortId();
 
   void flipY(double height);
 
@@ -396,6 +396,8 @@ public:
   ZSwcBranch *extractBranch(int setLabel);
   ZSwcBranch *extractLongestBranch();
   ZSwcBranch *extractFurthestBranch();
+
+  ZSwcPath getLongestPath();
 
   std::vector<Swc_Tree_Node*> extractLeaf(Swc_Tree_Node *start);
 
@@ -459,7 +461,7 @@ public:
   inline void deactivateIterator() { m_iteratorReady = true; }
   inline void activateIterator() { m_iteratorReady = false; }
 
-  void forceVirtualRoot();
+  Swc_Tree_Node* forceVirtualRoot();
 
   void setBranchSizeWeight();
 

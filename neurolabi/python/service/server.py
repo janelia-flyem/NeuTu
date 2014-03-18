@@ -22,7 +22,7 @@ def getDefaultUuid():
     return 'dcf'
 
 def getSchema(service, method):
-    with open('interface.raml') as f:
+    with open(service  + '/interface.raml') as f:
         content = f.readlines()
     f.close()
     
@@ -112,6 +112,62 @@ def do_skeletonize():
     
     return json.dumps(output, sort_keys = False)
 #     return '<p>Skeletonization for ' + str(bodyArray) + ' is completed.</p>'
+
+@get('/hotspot')
+def skeletonize():
+    return '''
+        <form action="/hotspot" method="post">
+            Body ID: <input name="bodyId" type="text"/>
+            <input value="Submit" type="submit"/>
+        </form>
+    '''
+
+@post('/hotspot')
+def compute_hotspot():
+    print request.content_type
+    bodyArray = [];
+    dvidServer = getDefaultDvidServer()
+    uuid = getDefaultUuid()
+    if request.content_type == 'application/x-www-form-urlencoded':
+        bodyIdStr = request.forms.get('bodyId')
+        bodyArray = [int(bodyId) for bodyId in bodyIdStr.split()]
+    elif request.content_type == 'application/json':
+        print request.json
+        jsonObj = request.json
+        try:
+            jsonschema.validate(jsonObj, json.loads(getSchema('skeletonize', 'post')))
+        except jsonschema.exceptions.ValidationError as inst:
+            print 'Invalid json input'
+            print inst
+            return '<p>Skeletonization for ' + str(bodyArray) + ' failed.</p>'
+        uuid = jsonObj['uuid']
+        if jsonObj.has_key('dvid-server'):
+            dvidServer = jsonObj['dvid-server']
+        bodyArray = jsonObj['bodies']
+    
+    output = {}
+    config = {'dvid-server': dvidServer, 'uuid': uuid}
+
+    print '********'
+    print config
+    
+    for bodyId in bodyArray:
+        conn = httplib.HTTPConnection(dvidServer)
+        bodyLink = '/api/node/' + uuid + '/skeletons/' + str(bodyId) + '.swc'
+        print '************', bodyLink
+        conn.request("GET", bodyLink)
+
+        r1 = conn.getresponse()
+        if not r1.status == 200:
+            try:
+                skl.Skeletonize(bodyId, 'dvid', config)
+                output[str(bodyId)] = dvidServer + bodyLink
+            except Exception as inst:
+                return '<p>' + str(inst) + '</p>'
+        else:
+            output[str(bodyId)] = dvidServer + bodyLink
+    
+    return json.dumps(output, sort_keys = False)
 
 @get('/skeleton/<bodyId>')
 def retrieveSkeleton(bodyId):

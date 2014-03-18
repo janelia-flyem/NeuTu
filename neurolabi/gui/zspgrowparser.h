@@ -17,6 +17,14 @@ public:
 public:
   size_t voxelNumber();
   Stack* createDistanceStack();
+
+  /*!
+   * \brief Create the stack for euclidean distance
+   *
+   * It returns NULL if the distance is not available
+   */
+  Stack* createEuclideanDistanceStack();
+
   ZVoxelArray extractPath(ssize_t index);
   ZVoxelArray extractLongestPath(double *length);
   int pathSize(ssize_t index);

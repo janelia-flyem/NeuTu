@@ -373,7 +373,8 @@ HEADERS += mainwindow.h \
     flyem/zflyemneuronimagefactory.h \
     flyem/zflyemneuronfeatureanalyzer.h \
     flyemneuronthumbnaildialog.h \
-    flyem/zflyemneuronexporter.h
+    flyem/zflyemneuronexporter.h \
+    flyem/zswctreebatchmatcher.h
 
 FORMS += settingdialog.ui \
     frameinfodialog.ui \
@@ -608,7 +609,8 @@ SOURCES += main.cpp \
     flyem/zflyemneuronimagefactory.cpp \
     flyem/zflyemneuronfeatureanalyzer.cpp \
     flyemneuronthumbnaildialog.cpp \
-    flyem/zflyemneuronexporter.cpp
+    flyem/zflyemneuronexporter.cpp \
+    flyem/zswctreebatchmatcher.cpp
 
 OTHER_FILES += \
     extlib.pri
