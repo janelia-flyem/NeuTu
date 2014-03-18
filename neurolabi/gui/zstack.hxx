@@ -208,9 +208,24 @@ public: /* attributes */
   inline uint8_t value8(size_t index) const {
     return ((uint8_t*) rawChannelData())[index];
   }
+
   inline uint8_t value8(size_t index, int c) const {
     return ((uint8_t*) rawChannelData(c))[index];
   }
+
+  /*!
+   * \brief Test if a stack is empty
+   *
+   * \return true iff the size is 0.
+   */
+  bool isEmpty() const;
+
+  /*!
+   * \brief Test if a stack is virtual.
+   * \return A stack is virtual iff the stack is not empty and its data array
+   * is null
+   */
+  bool isVirtual() const;
 
   void deprecateDependent(EComponent component);
   void deprecateSingleChannelView(int channel);
@@ -237,19 +252,7 @@ public: /* attributes */
   //for anisotropic operations
   inline double preferredZScale() const { return m_preferredZScale; }
 
-  /*!
-   * \brief Test if a stack is empty
-   *
-   * \return true iff the size is 0.
-   */
-  bool isEmpty() const;
 
-  /*!
-   * \brief Test if a stack is virtual.
-   * \return A stack is virtual iff the stack is not empty and its data array
-   * is null
-   */
-  bool isVirtual() const;
 
   // return voxelnumber or dataByteCount of all channels. Obsolete
   //size_t voxelNumber() const;
@@ -382,13 +385,6 @@ public: /* processing routines */
   bool watershed(int c = 0);
   inline const ZResolution& resolution() const { return m_resolution; }
 
-private:
-  ZStack(const ZStack &src); //uncopyable
-
-  void init();
-  bool canMerge(const Stack *s1, const Stack *s2);
-  void setChannelNumber(int nchannel);
-
 public:
   void initChannelColors();
 
@@ -400,6 +396,14 @@ public:
   void logLSMInfo();
   void setChannelColor(int ch, double r, double g, double b);
 #endif
+
+private:
+  ZStack(const ZStack &src); //uncopyable
+
+  void init();
+  bool canMerge(const Stack *s1, const Stack *s2);
+  void setChannelNumber(int nchannel);
+
 
 private:
   Mc_Stack *m_stack; //Master data

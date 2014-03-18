@@ -32,6 +32,14 @@ ZFlyEmNeuron::ZFlyEmNeuron() : CONSTRUCTOR_INIT
   }
 }
 
+ZFlyEmNeuron::ZFlyEmNeuron(int id, ZSwcTree *model, ZObject3dScan *body) :
+  CONSTRUCTOR_INIT
+{
+  m_id = id;
+  m_model = model;
+  m_body = body;
+}
+
 ZFlyEmNeuron::ZFlyEmNeuron(const ZFlyEmNeuron &neuron) : CONSTRUCTOR_INIT
 {
   m_sourceId = neuron.m_sourceId;
@@ -69,7 +77,7 @@ bool ZFlyEmNeuron::isDeprecated(EComponent comp) const
   return false;
 }
 
-void ZFlyEmNeuron::deprecate(EComponent comp)
+void ZFlyEmNeuron::deprecate(EComponent comp) const
 {
   deprecateDependent(comp);
 
@@ -96,7 +104,7 @@ void ZFlyEmNeuron::deprecate(EComponent comp)
   }
 }
 
-void ZFlyEmNeuron::deprecateDependent(EComponent comp)
+void ZFlyEmNeuron::deprecateDependent(EComponent comp) const
 {
   switch (comp) {
   case MODEL:
@@ -116,6 +124,15 @@ ZSwcTree* ZFlyEmNeuron::getResampleBuddyModel(double rs) const
       m_buddyModel->resample(rs);
       m_buddyModel->setLabel(0);
     }
+  }
+
+  return m_buddyModel;
+}
+
+ZSwcTree* ZFlyEmNeuron::getResampleBuddyModel() const
+{
+  if (isDeprecated(BUDDY_MODEL)) {
+    return NULL;
   }
 
   return m_buddyModel;
@@ -278,6 +295,7 @@ void ZFlyEmNeuron::print(ostream &stream) const
   stream << "  Name: " << m_name << endl;
   stream << "  Class: " << m_class << endl;
   stream << "  Model: " << m_modelPath << endl;
+  stream << "  Volume: " << m_volumePath << endl;
   stream << "  Thumbnail: " << m_thumbnailPath << endl;
 }
 
@@ -634,4 +652,14 @@ ZFlyEmNeuronRange ZFlyEmNeuron::getRange(double xyRes, double zRes) const
 bool ZFlyEmNeuron::hasClass() const
 {
   return !getClass().empty();
+}
+
+void ZFlyEmNeuron::releaseBody()
+{
+  m_body = NULL;
+}
+
+void ZFlyEmNeuron::releaseModel()
+{
+  m_model = NULL;
 }

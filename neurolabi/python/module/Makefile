@@ -1,4 +1,5 @@
-SOURCE = neutube.i stack_io.i stack_attribute.i
+SOURCE = neutube.i $(shell ./parsedep)
+#stack_io.i stack_attribute.i zobject3dscan.i zpointarray.i
 UNAME := $(shell uname)
 SHARE_FLAG = shared
 ifeq ($(UNAME), Darwin)

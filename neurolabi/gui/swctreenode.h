@@ -168,7 +168,17 @@ int childNumber(const Swc_Tree_Node *tn);
  */
 int minChildLabel(const Swc_Tree_Node *tn);
 
+/*!
+ * \brief Test if a node is a branch point
+ *
+ * \return It returns true iff \a tn is regular and it has more than two regular
+ *        neighbors
+ */
 bool isBranchPoint(const Swc_Tree_Node *tn);
+
+/*!
+ * \brief Test if a node is a leaf
+ */
 bool isLeaf(const Swc_Tree_Node *tn);
 
 /*!
@@ -419,6 +429,11 @@ Swc_Tree_Node* findClosestNode(const std::set<Swc_Tree_Node*> &nodeSet,
  * Only regular nodes are included.
  */
 std::vector<Swc_Tree_Node*> neighborArray(const Swc_Tree_Node *tn);
+
+/*!
+ * \brief Get the number of neighbors
+ */
+int regularNeighborNumber(const Swc_Tree_Node *tn);
 
 ZPoint centroid(const std::set<Swc_Tree_Node*> &nodeSet);
 double maxRadius(const std::set<Swc_Tree_Node*> &nodeSet);

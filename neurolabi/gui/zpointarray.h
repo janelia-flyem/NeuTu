@@ -17,6 +17,12 @@ public:
   void exportTxtFile(const std::string &filePath) const;
   void print() const;
 
+  /*!
+   * \brief Append a point
+   */
+  void append(double x, double y, double z);
+
+  std::string toJsonString() const;
 };
 
 #endif // ZPOINTARRAY_H

@@ -289,3 +289,36 @@ int misc::computeRavelerHeight(
 
   return Cuboid_I_Height(&boundBox) + margin;
 }
+
+bool misc::exportPointList(
+    const string &filePath, const ZPointArray &pointArray)
+{
+  if (!pointArray.empty()) {
+    //alloc rootObj
+    json_t *rootObj = json_object();
+    json_t *pointListObj = json_array();
+    json_object_set_new(rootObj, "point-list", pointListObj);
+    for (ZPointArray::const_iterator iter = pointArray.begin();
+         iter != pointArray.end(); ++iter) {
+      const ZPoint &pt = *iter;
+      json_t *pointObj = json_array();
+      json_array_append_new(pointObj, json_integer(iround(pt.x())));
+      json_array_append_new(pointObj, json_integer(iround(pt.y())));
+      json_array_append_new(pointObj, json_integer(iround(pt.z())));
+
+      json_array_append_new(pointListObj, pointObj);
+    }
+    json_dump_file(rootObj, filePath.c_str(), JSON_INDENT(2));
+
+    //free rootObj
+    json_decref(rootObj);
+
+#ifdef _DEBUG_
+    std::cout << filePath << " saved." << std::endl;
+#endif
+
+    return true;
+  }
+
+  return false;
+}

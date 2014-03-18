@@ -23,6 +23,7 @@ class ZFlyEmNeuron
 {
 public:
   ZFlyEmNeuron();
+  ZFlyEmNeuron(int id, ZSwcTree *model, ZObject3dScan *body);
   ~ZFlyEmNeuron();
 
   ZFlyEmNeuron(const ZFlyEmNeuron &neuron);
@@ -32,8 +33,8 @@ public:
   };
 
   bool isDeprecated(EComponent comp) const;
-  void deprecate(EComponent comp);
-  void deprecateDependent(EComponent comp);
+  void deprecate(EComponent comp) const;
+  void deprecateDependent(EComponent comp) const;
 
   void loadJsonObject(ZJsonObject &obj, const std::string &source);
 
@@ -113,6 +114,17 @@ public:
    * \return The buddy model.
    */
   ZSwcTree *getResampleBuddyModel(double rs) const;
+
+  /*!
+   * \brief Get the buddy model from resampling
+   *
+   * The function will always return the buffered buddy model no matter where
+   * the model is from and it does not trigger model calculation. It returns
+   * NULL if the model is deprecated;
+   *
+   * \return The buddy model.
+   */
+  ZSwcTree *getResampleBuddyModel() const;
 
   /*!
    * \brief Get medical axis of the model along z.
@@ -212,7 +224,16 @@ public:
     m_thumbnailPath = path;
   }
 
+  inline const double *getSwcResolution() const {
+    return m_resolution;
+  }
+
   static const int TopMatchCapacity;
+
+  //Interfaces for SWIG. Do not use them in native applications
+  void releaseBody();
+  void releaseModel();
+  /**************************SWIG End***************/
 
 private:
   std::string getAbsolutePath(const ZString &path, const std::string &source);

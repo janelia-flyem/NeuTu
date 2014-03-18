@@ -1024,6 +1024,58 @@ TEST(ZObject3dScan, Cov)
   //ZDebugPrintDoubleArray(cov, 0, 2);
 }
 
+TEST(ZObject3dScan, contains)
+{
+  ZObject3dStripe stripe;
+  stripe.setY(0);
+  stripe.setZ(0);
+  stripe.addSegment(0, 1);
+
+  ASSERT_TRUE(stripe.containsX(0));
+  ASSERT_FALSE(stripe.containsX(2));
+
+  stripe.addSegment(3, 4);
+  stripe.addSegment(6, 9);
+  ASSERT_TRUE(stripe.containsX(0));
+  ASSERT_FALSE(stripe.containsX(2));
+  ASSERT_TRUE(stripe.containsX(7));
+  ASSERT_FALSE(stripe.containsX(10));
+
+  ZObject3dScan obj;
+  obj.addSegment(0, 0, 0, 1);
+  ASSERT_TRUE(obj.contains(0, 0, 0));
+  ASSERT_FALSE(obj.contains(2, 0, 0));
+
+  obj.addSegment(0, 0, 3, 4);
+  obj.addSegment(0, 0, 6, 9);
+  ASSERT_TRUE(obj.contains(7, 0, 0));
+  ASSERT_FALSE(obj.contains(10, 0, 0));
+
+  obj.addSegment(0, 1, 0, 1);
+  ASSERT_TRUE(obj.contains(0, 1, 0));
+  ASSERT_FALSE(obj.contains(0, 0, 1));
+
+  obj.addSegment(3, 4, 0, 10);
+  obj.addSegment(6, 8, 1, 10);
+  ASSERT_TRUE(obj.contains(0, 4, 3));
+  ASSERT_FALSE(obj.contains(0, 8, 6));
+
+  obj.clear();
+  obj.load(GET_TEST_DATA_DIR + "/benchmark/tower3.sobj");
+  ASSERT_TRUE(obj.contains(1, 1, 0));
+  ASSERT_FALSE(obj.contains(0, 0, 0));
+  ASSERT_FALSE(obj.contains(0, 0, 2));
+  ASSERT_TRUE(obj.contains(1, 0, 2));
+  ASSERT_TRUE(obj.contains(1, 1, 1));
+  ASSERT_FALSE(obj.contains(2, 0, 1));
+  ASSERT_TRUE(obj.contains(2, 1, 2));
+  ASSERT_TRUE(obj.contains(1, 2, 2));
+  ASSERT_FALSE(obj.contains(2, 2, 2));
+
+//  obj.addSegment(0, 0, 3, 4);
+//  obj.addSegment(0, 0, 6, 9);
+}
+
 #endif
 
 #endif // ZOBJECT3DSCANTEST_H

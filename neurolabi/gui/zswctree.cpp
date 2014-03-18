@@ -1246,9 +1246,13 @@ double ZSwcTree::distanceTo(double x, double y, double z, double zScale, Swc_Tre
   return Point_Tree_Distance(x, y, z, m_tree, zScale, node);
 }
 
-void ZSwcTree::resortId()
+int ZSwcTree::resortId()
 {
-  Swc_Tree_Resort_Id(m_tree);
+  if (isEmpty()) {
+    return 0;
+  }
+
+  return Swc_Tree_Resort_Id(m_tree);
 }
 
 void ZSwcTree::flipY(double height)
@@ -1653,6 +1657,47 @@ ZSwcBranch* ZSwcTree::extractLongestBranch()
 
   return branch;
 }
+
+ZSwcPath ZSwcTree::getLongestPath()
+{
+  TZ_ASSERT(regularRootNumber() == 1, "multiple trees not supported yet");
+
+  const std::vector<Swc_Tree_Node*> leafArray =
+      getSwcTreeNodeArray(ZSwcTree::TERMINAL_ITERATOR);
+
+  Swc_Tree_Node *leaf1 = NULL;
+  Swc_Tree_Node *leaf2 = NULL;
+  double maxLength = -1.0;
+
+  //Calculate the distance of all the node to the regular root
+  updateIterator(SWC_TREE_ITERATOR_DEPTH_FIRST, true);
+
+  double *distanceArray = Swc_Tree_Accm_Length(data(), NULL);
+
+  //Calculate distances for each pair of leaves
+  for (size_t i = 0; i < leafArray.size(); i++) {
+    for (size_t j = 0; j < leafArray.size(); j++) {
+      if (leafArray[i] != leafArray[j]) {
+        //Find the common ancestor of the leaves
+        Swc_Tree_Node *ancestor = SwcTreeNode::commonAncestor(leafArray[i],
+                                                              leafArray[j]);
+        double length = distanceArray[SwcTreeNode::index(leafArray[i])] +
+            distanceArray[SwcTreeNode::index(leafArray[j])] -
+            2.0 * distanceArray[SwcTreeNode::index(ancestor)];
+        if (length > maxLength) {
+          maxLength = length;
+          leaf1 = leafArray[i];
+          leaf2 = leafArray[j];
+        }
+      }
+    }
+  }
+
+  free(distanceArray);
+
+  return ZSwcPath(leaf1, leaf2);
+}
+
 
 ZSwcBranch* ZSwcTree::extractFurthestBranch()
 {
@@ -2446,7 +2491,7 @@ void ZSwcTree::addRegularRoot(Swc_Tree_Node *tn)
   }
 }
 
-void ZSwcTree::forceVirtualRoot()
+Swc_Tree_Node *ZSwcTree::forceVirtualRoot()
 {
   if (m_tree == NULL) {
     m_tree = New_Swc_Tree();
@@ -2463,6 +2508,8 @@ void ZSwcTree::forceVirtualRoot()
   }
 
   deprecate(ALL_COMPONENT);
+
+  return m_tree->root;
 }
 
 void ZSwcTree::setBranchSizeWeight()

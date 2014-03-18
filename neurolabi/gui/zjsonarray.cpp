@@ -1,5 +1,6 @@
 #include "zjsonarray.h"
 #include "c_json.h"
+#include "tz_utilities.h"
 
 using namespace std;
 
@@ -71,4 +72,19 @@ std::vector<int> ZJsonArray::toIntegerArray() const
   }
 
   return array;
+}
+
+ZJsonArray& ZJsonArray::operator << (double e)
+{
+  if (m_data == NULL) {
+    m_data = C_Json::makeArray();
+  }
+
+  if (Is_Integer_Value(e)) {
+    C_Json::appendArray(m_data, json_integer(e));
+  } else {
+    C_Json::appendArray(m_data, json_real(e));
+  }
+
+  return *this;
 }

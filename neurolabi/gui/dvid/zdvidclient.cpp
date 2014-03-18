@@ -10,7 +10,7 @@
 #include "zdvidbuffer.h"
 
 ZDvidClient::ZDvidClient(const QString &server, QObject *parent) :
-  QObject(parent), m_serverAddress(server), m_dataPath("api/node/339"),
+  QObject(parent), m_serverAddress(server), m_dataPath("api/node/240a"),
   m_networkReply(NULL), m_targetDirectory("/tmp"),
   m_tmpDirectory("/tmp"), m_file(NULL),
   m_uploadStream(NULL), m_isCanceling(false)
@@ -77,8 +77,9 @@ bool ZDvidClient::postRequest(
   {
 #if 1
     QString command = QString(
-          "curl -X POST http://emdata1.int.janelia.org/api/node/339/skeletons/"
-          "%1.swc --data-binary @%2/%3.swc").arg(parameter.toInt()).
+          "curl -X POST http://emdata1.int.janelia.org/%1/skeletons/"
+          "%2.swc --data-binary @%3/%4.swc").arg(m_dataPath).
+        arg(parameter.toInt()).
         arg(m_tmpDirectory).arg(parameter.toInt());
     QProcess::execute(command);
 #else
@@ -165,6 +166,8 @@ void ZDvidClient::readObject()
 void ZDvidClient::readSwc()
 {
   m_swcBuffer.append(m_networkReply->readAll());
+
+  //qDebug() << m_swcBuffer;
 }
 
 void ZDvidClient::readImage()
@@ -215,7 +218,8 @@ void ZDvidClient::finishRequest(QNetworkReply::NetworkError error)
     emit requestFailed();
   } else {
     if (!m_objectBuffer.isEmpty()) {
-      m_obj.importDvidObject(m_objectBuffer.constData(), m_objectBuffer.size());
+      m_obj.importDvidObjectBuffer(
+            m_objectBuffer.constData(), m_objectBuffer.size());
       objectRetrievalDone = true;
     }
 

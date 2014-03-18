@@ -91,6 +91,8 @@ public:
 
   void importSobj(const QStringList &fileList);
 
+  void importPointList(const QString &filePath);
+
   void exportVrml(const QString &filePath);
   void exportTube(const QString &filePath);
   void exportChainFileList(const QString &filePath);

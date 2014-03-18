@@ -4,6 +4,7 @@
 #include "swc/zswcresampler.h"
 #include "flyem/zflyemneuronrangecompare.h"
 #include "zdoublevector.h"
+#include "zpointarray.h"
 
 ZSwcGenerator::ZSwcGenerator()
 {
@@ -286,4 +287,26 @@ ZSwcTree* ZSwcGenerator::createSwc(
   }
 
   return treeWrapper;
+}
+
+ZSwcTree* ZSwcGenerator::createSwc(
+    const ZPointArray &pointArray, double radius)
+{
+  ZSwcTree *tree = new ZSwcTree;
+
+  Swc_Tree_Node *root = tree->forceVirtualRoot();
+
+  for (ZPointArray::const_iterator iter = pointArray.begin();
+       iter != pointArray.end(); ++iter) {
+    const ZPoint &pt = *iter;
+    Swc_Tree_Node *tn = New_Swc_Tree_Node();
+
+    SwcTreeNode::setPos(tn, pt.x(), pt.y(), pt.z());
+    SwcTreeNode::setRadius(tn, radius);
+    SwcTreeNode::setParent(tn, root);
+  }
+
+  tree->resortId();
+
+  return tree;
 }

@@ -1,6 +1,8 @@
 #include "zpointarray.h"
 #include <fstream>
 #include <iostream>
+#include "zjsonobject.h"
+#include "zjsonparser.h"
 
 ZPointArray::ZPointArray()
 {
@@ -57,4 +59,42 @@ void ZPointArray::scale(double sx, double sy, double sz)
       pt.setZ(pt.z() * sz);
     }
   }
+}
+
+void ZPointArray::append(double x, double y, double z)
+{
+  push_back(ZPoint(x, y, z));
+}
+
+std::string ZPointArray::toJsonString() const
+{
+  std::string str;
+
+  if (!empty()) {
+    ZJsonObject obj(json_object(), true);
+
+    //json_t *rootObj = obj.getValue();
+    json_t *pointListObj = json_array();
+    obj.consumeEntry("point-list", pointListObj);
+    //json_object_set_new(rootObj, "point-list", pointListObj);
+    for (ZPointArray::const_iterator iter = begin(); iter != end(); ++iter) {
+      const ZPoint &pt = *iter;
+
+      ZJsonArray pointObj;
+      pointObj << pt.x() << pt.y() << pt.z();
+      json_array_append(pointListObj, pointObj.getValue());
+      /*
+      json_t *pointObj = json_array();
+      json_array_append_new(pointObj, json_real(pt.x()));
+      json_array_append_new(pointObj, json_real(pt.y()));
+      json_array_append_new(pointObj, json_real(pt.z()));
+
+      json_array_append_new(pointListObj, pointObj);
+      */
+    }
+
+    str = obj.dumpString();
+  }
+
+  return str;
 }

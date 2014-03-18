@@ -18,6 +18,7 @@
 #include "zinttree.h"
 #include "zswcfeatureanalyzer.h"
 #include "zswcdisttrunkanalyzer.h"
+#include "zswcglobalfeatureanalyzer.h"
 
 using namespace std;
 
@@ -823,4 +824,27 @@ ZSwcTree* ZSwcTreeMatcher::exportResultAsSwc(EResultExportOption option)
   matchingSwc->resortId();
 
   return matchingSwc;
+}
+
+bool ZSwcTreeMatcher::isGoodLateralVerticalMatch(
+    ZSwcTree &tree1, ZSwcTree &tree2, bool checkOrientation)
+{
+  double ratio1 =
+      ZSwcGlobalFeatureAnalyzer::computeLateralVerticalRatio(tree1);
+  double ratio2 =
+      ZSwcGlobalFeatureAnalyzer::computeLateralVerticalRatio(tree2);
+  bool goodMatch = true;
+  if (checkOrientation) {
+    if (min(ratio1, ratio2) < 1.0) {
+      if (max(ratio1, ratio2) > 3.0) {
+        goodMatch = false;
+      }
+    } else {
+      if (max(ratio1, ratio2) / min(ratio1, ratio2) > 3.0) {
+        goodMatch = false;
+      }
+    }
+  }
+
+  return goodMatch;
 }

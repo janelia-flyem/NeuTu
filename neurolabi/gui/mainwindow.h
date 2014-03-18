@@ -349,6 +349,8 @@ private slots:
 
   void on_actionThumbnails_2_triggered();
 
+  void on_actionJSON_Point_List_triggered();
+
 private:
   void createActions();
   void customizeActions();

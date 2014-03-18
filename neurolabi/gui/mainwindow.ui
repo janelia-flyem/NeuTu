@@ -51,7 +51,7 @@
      <addaction name="actionAddNeuron_Network"/>
      <addaction name="actionTracing_result"/>
      <addaction name="actionV3D_Apo"/>
-     <addaction name="actionV3D_Marker"/>
+     <addaction name="actionJSON_Point_List"/>
     </widget>
     <widget class="QMenu" name="menuImport">
      <property name="title">
@@ -1117,6 +1117,11 @@
   <action name="actionThumbnails_2">
    <property name="text">
     <string>Thumbnails</string>
+   </property>
+  </action>
+  <action name="actionJSON_Point_List">
+   <property name="text">
+    <string>JSON Point List</string>
    </property>
   </action>
  </widget>

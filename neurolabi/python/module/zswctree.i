@@ -12,6 +12,10 @@
     return array;
   }
 
+  ZSwcTree* CreateSwcTree() {
+    return new ZSwcTree;
+  }
+
   void DeleteSwcTree(ZSwcTree *tree) {
     delete tree;
   }

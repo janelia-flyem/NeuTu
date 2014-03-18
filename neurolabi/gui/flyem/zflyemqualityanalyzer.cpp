@@ -1,7 +1,9 @@
 #include "zflyemqualityanalyzer.h"
 #include "neutubeconfig.h"
 #include "zswctree.h"
+#include "tz_math.h"
 #include "swctreenode.h"
+#include "zpointarray.h"
 
 ZFlyEmQualityAnalyzer::ZFlyEmQualityAnalyzer()
 {
@@ -316,4 +318,61 @@ void ZFlyEmQualityAnalyzer::SubstackRegionCalbration::calibrate(
   roi.translate(m_offset[0], m_offset[1], m_offset[2]);
 }
 
+ZPointArray ZFlyEmQualityAnalyzer::computeHotSpot(const ZFlyEmNeuron *neuron)
+{
+  return computeHotSpot(*neuron);
+}
 
+ZPointArray ZFlyEmQualityAnalyzer::computeHotSpot(const ZFlyEmNeuron &neuron)
+{
+  neuron.print();
+  ZSwcTree *tree = neuron.getModel();
+  ZPointArray pointArray;
+  const double *resolution = neuron.getSwcResolution();
+
+#ifdef _DEBUG_
+  std::cout << "Computing hot spot ..." << std::endl;
+#endif
+
+  if (tree != NULL) {
+    ZSwcTree *tmpTree = tree->clone();
+    Swc_Tree_Remove_Terminal_Branch(tmpTree->data(), 100 * resolution[0]);
+    const std::vector<Swc_Tree_Node *> terminalArray =
+        tmpTree->getSwcTreeNodeArray(ZSwcTree::TERMINAL_ITERATOR);
+    for (std::vector<Swc_Tree_Node *>::const_iterator iter =
+         terminalArray.begin(); iter != terminalArray.end(); ++iter) {
+      Swc_Tree_Node *tn = *iter;
+
+      ZObject3dScan *obj = neuron.getBody();
+      while (tn != NULL) {
+        int x = iround(SwcTreeNode::x(tn) / resolution[0]);
+        int y = iround(SwcTreeNode::y(tn) / resolution[1]);
+        int z = iround(SwcTreeNode::z(tn) / resolution[2]);
+
+        if (!m_substackRegion.empty()) {
+          if (m_substackRegion.hitTest(x, y, z) < 0) {
+            break;
+          }
+        }
+        if (obj != NULL) {
+          if (obj->contains(x, y, z)) {
+            pointArray.append(x, y, z);
+            break;
+          }
+        } else {
+          pointArray.append(x, y, z);
+          break;
+        }
+        tn = SwcTreeNode::parent(tn);
+      }
+    }
+  } else {
+#ifdef _DEBUG_
+    std::cout << "Null tree. Failed." << std::endl;
+#endif
+  }
+
+  //pointArray.print();
+
+  return pointArray;
+}

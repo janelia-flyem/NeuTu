@@ -130,6 +130,12 @@ ZFlyEmDataFrame::ZFlyEmDataFrame(QWidget *parent) :
 
   m_geoSearchDlg = new FlyEmGeoFilterDialog(this);
   m_thumbnailDlg = new FlyEmNeuronThumbnailDialog(this);
+  m_batchMatcher = new ZSwcTreeBatchMatcher(this);
+  //m_batchMatcher->setTrunkAnalyzer(m_trunkAnalyzer);
+  //m_batchMatcher->setFeatureAnalyzer(m_featureAnalyzer);
+  connect(m_batchMatcher, SIGNAL(finished()),
+          this, SLOT(updateClassPrediction()));
+  m_batchMatcher->setProgressReporter(&m_specialProgressReporter);
 }
 
 ZFlyEmDataFrame::~ZFlyEmDataFrame()
@@ -678,21 +684,10 @@ std::vector<double> ZFlyEmDataFrame::getMatchingScore(
           }
 
           if (needFurtherMatch) {
-            /*
-            ZSwcTree *tree2ForMatch = tree2->clone();
-
-            tree2ForMatch->resample(m_resampleStep);
-            */
-
             ZSwcTree *tree2ForMatch =
                 neuronIter->getResampleBuddyModel(m_resampleStep);
 
             m_matcher.matchAllG(*tree1ForMatch, *tree2ForMatch, matchingLevel);
-            /*
-        ostringstream stream;
-        stream << neuronIter->getName() << " Matching score: " << m_matcher.matchingScore();
-        dump(stream.str());
-        */
             getProgressBar()->setValue(index + 1);
             QApplication::processEvents();
 
@@ -915,6 +910,12 @@ void ZFlyEmDataFrame::predictClass(ZFlyEmNeuron *neuron)
   displayQueryOutput(neuron, true);
 }
 
+void ZFlyEmDataFrame::updateClassPrediction()
+{
+  ZFlyEmNeuron *neuron = m_batchMatcher->getSourceNeuron();
+  displayQueryOutput(neuron, true);
+}
+
 void ZFlyEmDataFrame::process()
 {
   //ParameterDialog dlg;
@@ -998,7 +999,7 @@ void ZFlyEmDataFrame::process()
       int correctCount = 0;
       int count = 0;
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
       std::map<string, int> classMap = m_dataArray[0]->getClassIdMap();
       ZMatrix confusionMatrix(classMap.size(), classMap.size());
 #endif
@@ -1014,7 +1015,7 @@ void ZFlyEmDataFrame::process()
             ++correctCount;
           }
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
           int predClass = classMap[topMatch[0]->getClass()];
           int trueClass = classMap[neuron->getClass()];
           confusionMatrix.addValue(trueClass - 1, predClass - 1, 1);
@@ -1024,7 +1025,7 @@ void ZFlyEmDataFrame::process()
              arg((double) correctCount / count));
       }
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
       confusionMatrix.exportCsv(GET_DATA_DIR + "/test/confmat.csv");
 #endif
     }
@@ -1546,6 +1547,15 @@ void ZFlyEmDataFrame::displayQueryOutput(
 void ZFlyEmDataFrame::test()
 {
 #if 1
+  updatePresenter(TOP_MATCH);
+  m_batchMatcher->setDataBundle(m_dataArray[0]);
+  m_batchMatcher->setResampleStep(m_resampleStep);
+  m_batchMatcher->setSourceNeuron(209);
+  m_batchMatcher->prepare(3);
+  m_batchMatcher->process();
+#endif
+
+#if 0
   //Calculate matching matrix
   std::ofstream stream((GET_DATA_DIR + "/score.txt").c_str());
   foreach (ZFlyEmDataBundle *data, m_dataArray) {

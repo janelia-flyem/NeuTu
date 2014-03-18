@@ -24,18 +24,6 @@ def Skeletonize(source, target, config = None):
         
         dvidServer = config['dvid-server']
         uuid = config['uuid']
-    
-    if isinstance(source, int):
-        sparseObj = LoadDvidObject(source, dvidServer, uuid)
-        stack = sparseObj.toStackObject()
-    elif source.isdigit():
-        sparseObj = LoadDvidObject(int(source), dvidServer, uuid)
-        stack = sparseObj.toStackObject()
-    else:
-        stack = neutube.ZStack()
-        stackFile = neutube.ZStackFile()
-        stackFile._import(source)
-        stack = stackFile.readStack();
 
     skeletonizer = neutube.ZStackSkeletonizer()
     
@@ -56,6 +44,23 @@ def Skeletonize(source, target, config = None):
             config['args'] = json.load(configFile)
             configFile.close()
     
+    if isinstance(source, int):
+        sparseObj = LoadDvidObject(source, dvidServer, uuid)
+        if config['args'].has_key('fillingHole'):
+            if config['args']['fillingHole']:
+                sparseObj.fillHole()
+        stack = sparseObj.toStackObject()
+    elif source.isdigit():
+        sparseObj = LoadDvidObject(int(source), dvidServer, uuid)
+        if config['args'].has_key('fillingHole'):
+            if config['args']['fillingHole']:
+                sparseObj.fillHole()
+        stack = sparseObj.toStackObject()
+    else:
+        stack = neutube.ZStack()
+        stackFile = neutube.ZStackFile()
+        stackFile._import(source)
+        stack = stackFile.readStack();
 
     if config['args'].has_key('downsampleInterval'):
         skeletonizer.setDownsampleInterval(config['args']['downsampleInterval'][0],
@@ -65,12 +70,17 @@ def Skeletonize(source, target, config = None):
         if config['args'].has_key('minimalLength'):
             skeletonizer.setLengthThreshold(config['args']['minimalLength'])
             
+        if config['args'].has_key('minimalObjectSize'):
+            skeletonizer.setMinObjSize(config['args']['minimalObjectSize'])
+            
         if config['args'].has_key('keepingSingleObject'):
             skeletonizer.setKeepingSingleObject(config['args']['keepingSingleObject'])
                 
         if config['args'].has_key('rebase'):
             skeletonizer.setRebase(config['args']['rebase'])
             
+    skeletonizer._print()
+    
     tree = skeletonizer.makeSkeleton(stack)
     
         
@@ -101,6 +111,8 @@ if __name__ == '__main__':
     config = { 'args': json.load(configFile) }    
     configFile.close()
         
+    config['dvid-server'] = 'emdata1.int.janelia.org'
+    config['uuid'] = '240a'
     Skeletonize(options.input, options.output, config)
     
     print options.input

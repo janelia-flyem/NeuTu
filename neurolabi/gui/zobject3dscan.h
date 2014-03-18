@@ -91,6 +91,20 @@ public:
 
   void switchYZ();
 
+  /*!
+   * \brief Test if an X is within the range of the segments
+   *
+   * \return true iff \a x is on one of the segments.
+   */
+  bool containsX(int x) const;
+
+  /*!
+   * \brief Test the stripe contains a point
+   *
+   * \return true iff (\a x, \a y, \a z) is on the stripe.
+   */
+  bool contains(int x, int y, int z) const;
+
 private:
   std::vector<int> m_segmentArray;
   int m_y;
@@ -187,9 +201,9 @@ public:
   /*!
    * \brief Import object from a byte array
    */
-  bool importDvidObject(const char *byteArray, size_t byteNumber);
+  bool importDvidObjectBuffer(const char *byteArray, size_t byteNumber);
 
-  bool importDvidObject(const std::vector<char> &byteArray);
+  bool importDvidObjectBuffer(const std::vector<char> &byteArray);
 
   template<class T>
   int scanArray(const T *array, int x, int y, int z, int width);
@@ -288,6 +302,13 @@ public:
   ZObject3dScan makeZProjection(int minZ, int maxZ);
 
   ZObject3dScan makeYProjection() const;
+
+  /*!
+   * \brief Test if the object contains a voxel
+   *
+   * \return true iff (\a x, \a y, \a z) is a part of the object.
+   */
+  bool contains(int x, int y, int z);
 
   /*!
    * \brief Get minimal Z

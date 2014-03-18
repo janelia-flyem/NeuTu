@@ -33,6 +33,7 @@ typedef struct _Sp_Grow_Workspace {
   int width;
   int height;
   int depth;
+  BOOL lengthBufferEnabled;
 } Sp_Grow_Workspace;
 
 enum {SP_GROW_TARGET = 1, SP_GROW_SOURCE, SP_GROW_BARRIER, SP_GROW_CONDUCTOR};
@@ -44,6 +45,9 @@ DECLARE_ZOBJECT_INTERFACE(Sp_Grow_Workspace)
  * Sp_Grow_Workspace_Set_Mask() 
  */
 void Sp_Grow_Workspace_Set_Mask(Sp_Grow_Workspace *sgw, uint8_t *mask);
+
+void Sp_Grow_Workspace_Enable_Eucdist_Buffer(Sp_Grow_Workspace *sgw);
+void Sp_Grow_Workspace_Disable_Eucdist_Buffer(Sp_Grow_Workspace *sgw);
 
 Int_Arraylist* Stack_Sp_Grow(const Stack *stack, const size_t *seeds, 
 			     int nseed, const size_t *target, int ntarget, 

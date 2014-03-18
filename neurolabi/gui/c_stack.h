@@ -142,6 +142,11 @@ Stack* translate(Stack *stack, int kind, int in_place);
 
 void print(const Stack *stack);
 
+/*!
+ * \brief Print the voxel values of a stack
+ */
+void printValue(const Stack *stack);
+
 //Stack statistics
 double min(const Stack *stack);
 double max(const Stack *stack);

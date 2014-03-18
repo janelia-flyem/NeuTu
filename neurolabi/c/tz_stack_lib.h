@@ -107,7 +107,7 @@ Stack* Flip_Stack_Y(const Stack *stack, Stack *out);
  *
  * Note: Print_Stack_Value() is obsoleted by Print_Stack().
  */
-void Print_Stack_Value(Stack* stack);
+void Print_Stack_Value(const Stack* stack);
 
 double Stack_Array_Value(const Stack *stack, size_t index);
 

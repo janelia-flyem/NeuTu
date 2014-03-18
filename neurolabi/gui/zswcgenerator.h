@@ -7,6 +7,7 @@
 #include "zvoxelarray.h"
 
 class ZSwcTree;
+class ZPointArray;
 
 class ZSwcGenerator
 {
@@ -28,6 +29,8 @@ public:
 
   static ZSwcTree* createSwc(const ZVoxelArray &voxelArray,
                              EPostProcess option = NO_PROCESS);
+
+  static ZSwcTree* createSwc(const ZPointArray &pointArray, double radius);
 
 private:
   static ZSwcTree* createSwcByRegionSampling(const ZVoxelArray &voxelArray);

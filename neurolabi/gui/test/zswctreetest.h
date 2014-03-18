@@ -13,6 +13,7 @@
 #include "swc/zswcsubtreeanalyzer.h"
 #include "zswcglobalfeatureanalyzer.h"
 #include "zdoublevector.h"
+#include "swc/zswcpruner.h"
 
 #ifdef _USE_GTEST_
 
@@ -365,6 +366,53 @@ TEST(SwcTree, Subtree)
   ASSERT_EQ(0, SwcTreeNode::label(nodeArray[6]));
 }
 
+TEST(SwcTree, getNodeArray)
+{
+  ZSwcTree tree;
+  tree.load(GET_TEST_DATA_DIR + "/benchmark/swc/long_fork.swc");
+  ASSERT_EQ(1, (int) tree.getSwcTreeNodeArray(ZSwcTree::BRANCH_POINT_ITERATOR).size());
+  ASSERT_EQ(2, (int) tree.getSwcTreeNodeArray(ZSwcTree::LEAF_ITERATOR).size());
+  ASSERT_EQ(3, (int) tree.getSwcTreeNodeArray(ZSwcTree::TERMINAL_ITERATOR).size());
+
+  tree.load(GET_TEST_DATA_DIR + "/benchmark/swc/forest2.swc");
+  ASSERT_EQ(3, (int) tree.getSwcTreeNodeArray(ZSwcTree::BRANCH_POINT_ITERATOR).size());
+  ASSERT_EQ(11, (int) tree.getSwcTreeNodeArray(ZSwcTree::LEAF_ITERATOR).size());
+  ASSERT_EQ(15, (int) tree.getSwcTreeNodeArray(ZSwcTree::TERMINAL_ITERATOR).size());
+}
+
+TEST(SwcTree, getLongestPath)
+{
+  ZSwcTree tree;
+  tree.load(GET_TEST_DATA_DIR + "/benchmark/swc/long_fork.swc");
+
+  ZSwcPath path = tree.getLongestPath();
+  ASSERT_EQ(24, (int) path.size());
+  ASSERT_EQ(1, SwcTreeNode::id(*path.begin()));
+  ASSERT_EQ(31, SwcTreeNode::id(path.at(23)));
+
+  tree.load(GET_TEST_DATA_DIR + "/benchmark/swc/compare/compare5.swc");
+  path = tree.getLongestPath();
+  ASSERT_EQ(9, (int) path.size());
+  ASSERT_EQ(14, SwcTreeNode::id(*path.begin()));
+  ASSERT_EQ(8, SwcTreeNode::id(path.at(8)));
+//  path.print();
+}
+
+TEST(SwcTree, Prune)
+{
+  ZSwcPruner pruner;
+  pruner.setMinLength(18.0);
+
+  ZSwcTree tree;
+  tree.load(GET_TEST_DATA_DIR + "/benchmark/swc/fork2.swc");
+
+  ASSERT_EQ(1, pruner.prune(&tree));
+
+  pruner.setMinLength(100.0);
+  tree.load(GET_TEST_DATA_DIR + "/benchmark/swc/compare/compare1.swc");
+
+  ASSERT_EQ(4 , pruner.prune(&tree));
+}
 
 #endif
 

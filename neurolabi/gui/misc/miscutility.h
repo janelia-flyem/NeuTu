@@ -2,11 +2,13 @@
 #define MISCUTILITY_H
 
 #include <vector>
+#include <string>
 #include "zhistogram.h"
 #include "zstack.hxx"
 #include "zobject3dscan.h"
 #include "neutube.h"
 #include "flyem/zintcuboidarray.h"
+#include "zpointarray.h"
 
 namespace misc {
 
@@ -21,6 +23,9 @@ void paintRadialHistogram2D(const std::vector<ZHistogram> hist,
 Stack* computeNormal(const Stack *stack, NeuTube::EAxis axis);
 
 int computeRavelerHeight(const FlyEm::ZIntCuboidArray &blockArray, int margin);
+
+bool exportPointList(const std::string &filePath, const ZPointArray &pointArray);
+
 }
 
 namespace {

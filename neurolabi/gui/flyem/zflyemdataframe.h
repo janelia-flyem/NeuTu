@@ -14,6 +14,7 @@
 #include "flyemdataprocessdialog.h"
 #include "zprogressable.h"
 #include "zqtbarprogressreporter.h"
+#include "zswctreebatchmatcher.h"
 
 class ZSwcTrunkAnalyzer;
 class ZSwcFeatureAnalyzer;
@@ -153,6 +154,8 @@ public slots:
 
   void showNearbyNeuron(const ZFlyEmNeuron *neuron);
 
+  void updateClassPrediction();
+
 private:
   FlyEm::ZSynapseAnnotationArray *getSynapseAnnotation();
   std::string getName(int bodyId) const;
@@ -250,6 +253,7 @@ private:
 
   FlyEmGeoFilterDialog *m_geoSearchDlg;
   FlyEmNeuronThumbnailDialog *m_thumbnailDlg;
+  ZSwcTreeBatchMatcher *m_batchMatcher;
 };
 
 #endif // ZFLYEMDATAFRAME_H

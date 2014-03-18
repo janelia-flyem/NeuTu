@@ -82,6 +82,7 @@ void ZFlyEmNeuronExporter::exportIdVolume(
 
         json_array_append_new(neuronArrayObj, neuronObj);
       }
+      neuron.deprecate(ZFlyEmNeuron::BODY);
     }
   }
 
