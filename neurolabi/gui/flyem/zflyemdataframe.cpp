@@ -1551,7 +1551,7 @@ void ZFlyEmDataFrame::test()
   m_batchMatcher->setDataBundle(m_dataArray[0]);
   m_batchMatcher->setResampleStep(m_resampleStep);
   m_batchMatcher->setSourceNeuron(209);
-  m_batchMatcher->prepare(3);
+  m_batchMatcher->prepare(7);
   m_batchMatcher->process();
 #endif
 
