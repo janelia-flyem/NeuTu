@@ -72,6 +72,7 @@ signals:
   void volumeTriggered(const QString&);
   void saveBundleTriggered(int, const QString&);
   void showNearbyNeuronTriggered(const ZFlyEmNeuron *neuron);
+  void searchNeighborNeuronTriggered(const ZFlyEmNeuron *neuron);
 
 private slots:
   void on_pushButton_clicked();
@@ -95,6 +96,7 @@ private slots:
   void viewModel(const QModelIndex &index);
   void showSelectedModel();
   void showNearbyNeuron();
+  void searchNeighborNeuron();
   void updateSlaveQuery(const QModelIndex &index);
   void showSecondarySelectedModel();
   void updateThumbnail(const QModelIndex &index);

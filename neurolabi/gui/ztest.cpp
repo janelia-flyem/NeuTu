@@ -77,6 +77,7 @@
 #include "zstack.hxx"
 #include "flyem/zsegmentationanalyzer.h"
 #include "flyem/zsegmentationbundle.h"
+#include "flyem/zflyemneuronmatchtaskmanager.h"
 #include "zstackblender.h"
 #include "zgraph.h"
 #include "zarray.h"
@@ -134,6 +135,7 @@
 #include "swc/zswcresampler.h"
 #include "flyem/zflyemneuronfeatureanalyzer.h"
 #include "swc/zswcnodedistselector.h"
+#include "zmultitaskmanager.h"
 #include "misc/miscutility.h"
 #include "test/zjsontest.h"
 #include "test/zswctreetest.h"
@@ -10735,7 +10737,7 @@ void ZTest::test(MainWindow *host)
   std::cout << json_dumps(jsonArray.getValue(), JSON_INDENT(2)) << std::endl;
 #endif
 
-#if 1
+#if 0
   ZSwcPruner pruner;
   pruner.setMinLength(18.0);
 
@@ -10753,5 +10755,45 @@ void ZTest::test(MainWindow *host)
   tree.load(GET_TEST_DATA_DIR + "/209.swc");
   pruner.prune(&tree);
   tree.save(GET_TEST_DATA_DIR + "/test.swc");
+#endif
+
+#if 0
+  ZSquareTaskManager *taskManager = new ZSquareTaskManager;
+  for (int i = 0; i < 100; ++i) {
+    ZSquareTask *task = new ZSquareTask;
+    task->setValue(i + 1);
+    taskManager->addTask(task);
+  }
+
+  tic();
+  taskManager->start();
+  taskManager->waitForDone();
+  ptoc();
+
+  taskManager->deleteLater();
+#endif
+
+#if 0
+  ZFlyEmNeuronMatchTaskManager *taskManager = new ZFlyEmNeuronMatchTaskManager;
+  ZFlyEmDataBundle bundle;
+  bundle.loadJsonFile(
+        GET_TEST_DATA_DIR + "/flyem/TEM/data_release/bundle1/data_bundle.json");
+
+  ZFlyEmNeuron *source = bundle.getNeuron(209);
+  for (std::vector<ZFlyEmNeuron>::iterator iter = bundle.getNeuronArray().begin();
+       iter != bundle.getNeuronArray().end(); ++iter) {
+    ZFlyEmNeuron *neuron = &(*iter);
+    if (neuron != source) {
+      ZFlyEmNeuronMatchTask *task = new ZFlyEmNeuronMatchTask;
+      task->setSource(source);
+      task->setTarget(neuron);
+      taskManager->addTask(task);
+    }
+  }
+
+  taskManager->start();
+  taskManager->waitForDone();
+
+  taskManager->deleteLater();
 #endif
 }

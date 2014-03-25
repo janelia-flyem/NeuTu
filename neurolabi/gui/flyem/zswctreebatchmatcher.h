@@ -4,6 +4,7 @@
 #include <QThread>
 #include <QMap>
 #include <QVector>
+#include <QRunnable>
 #include "zflyemdatabundle.h"
 #include "zswctreematcher.h"
 #include "zflyemdatabundle.h"
@@ -59,6 +60,16 @@ private:
   ZFlyEmNeuron *m_target;
   ZFlyEmNeuronLayerMatcher m_matcher;
 };
+/*
+class ZFlyEmNeuronMatchTask : public QObject, public QRunnable
+{
+  Q_OBJECT
+
+public:
+  ZFlyEmNeuronMatchTask(QObject *parent);
+
+};
+*/
 
 class ZSwcTreeBatchMatcher : public QObject, public ZProgressable
 {

@@ -184,7 +184,7 @@ public:
 
   enum EComponent {
     DEPTH_FIRST_ARRAY, BREADTH_FIRST_ARRAY, LEAF_ARRAY, TERMINAL_ARRAY,
-    BRANCH_POINT_ARRAY, Z_SORTED_ARRAY, ALL_COMPONENT
+    BRANCH_POINT_ARRAY, Z_SORTED_ARRAY, BOUND_BOX, ALL_COMPONENT
   };
 
   bool isDeprecated(EComponent component) const;
@@ -300,7 +300,7 @@ public:
    *
    * \return The bound box.
    */
-  ZCuboid boundBox() const;
+  const ZCuboid& getBoundBox() const;
 
   static ZSwcTree* createCuboidSwc(const ZCuboid &box);
   ZSwcTree* createBoundBoxSwc(double margin = 0.0);
@@ -529,6 +529,7 @@ private:
   mutable std::vector<Swc_Tree_Node*> m_terminalArray;
   mutable std::vector<Swc_Tree_Node*> m_branchPointArray;
   mutable std::vector<Swc_Tree_Node*> m_zSortedArray;
+  mutable ZCuboid m_boundBox;
 };
 
 #define REGULAR_SWC_NODE_BEGIN(tn, start) \

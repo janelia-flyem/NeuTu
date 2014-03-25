@@ -24,7 +24,7 @@ ZSwcGlobalFeatureAnalyzer::ZSwcGlobalFeatureAnalyzer()
 double ZSwcGlobalFeatureAnalyzer::computeLateralVerticalRatio(
     const ZSwcTree &tree)
 {
-  ZCuboid box =tree.boundBox();
+  ZCuboid box =tree.getBoundBox();
 
   return sqrt(box.width() * box.width() + box.height() * box.height()) /
       box.depth();
@@ -106,7 +106,7 @@ std::vector<double> ZSwcGlobalFeatureAnalyzer::computeFeatureSet(
     averageRadius /= count;
     radiusVariance = radiusVariance / count - averageRadius * averageRadius;
 
-    ZCuboid box = tree.boundBox();
+    ZCuboid box = tree.getBoundBox();
     boxVolume = box.volume();
 
     ZSwcDistTrunkAnalyzer trunkAnalyzer;

@@ -40,11 +40,16 @@ void ZCuboid::set(const double *corner)
   set(corner[0], corner[1], corner[2], corner[3], corner[4], corner[5]);
 }
 
-bool ZCuboid::isValid()
+bool ZCuboid::isValid() const
 {
   return (m_lastCorner.x() > m_firstCorner.x()) &&
       (m_lastCorner.y() > m_firstCorner.y()) &&
       (m_lastCorner.z() > m_firstCorner.z());
+}
+
+void ZCuboid::invalidate()
+{
+  m_firstCorner.setX(m_lastCorner.x());
 }
 
 double ZCuboid::width()

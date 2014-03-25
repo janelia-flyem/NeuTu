@@ -937,6 +937,7 @@ void ZSwcTree::boundBox(double *corner) const
   Swc_Tree_Bound_Box(m_tree, corner);
 }
 
+#if 0
 ZCuboid ZSwcTree::boundBox() const
 {
   ZCuboid box;
@@ -954,6 +955,18 @@ ZCuboid ZSwcTree::boundBox() const
   //box[1].set(corner[3], corner[4], corner[5]);
 
   return box;
+}
+#endif
+
+const ZCuboid& ZSwcTree::getBoundBox() const
+{
+  if (isDeprecated(BOUND_BOX)) {
+    double corner[6];
+    boundBox(corner);
+    m_boundBox.set(corner);
+  }
+
+  return m_boundBox;
 }
 
 ZSwcTree* ZSwcTree::createCuboidSwc(const ZCuboid &box)
@@ -2605,6 +2618,11 @@ bool ZSwcTree::isDeprecated(EComponent component) const
     return m_branchPointArray.empty();
   case Z_SORTED_ARRAY:
     return m_zSortedArray.empty();
+  case BOUND_BOX:
+#ifdef _DEBUG_2
+    std::cout << "isDeprecated: " << m_boundBox.isValid() << std::endl;
+#endif
+    return !m_boundBox.isValid();
   default:
     break;
   }
@@ -2651,9 +2669,13 @@ void ZSwcTree::deprecate(EComponent component)
   case Z_SORTED_ARRAY:
     m_zSortedArray.clear();
     break;
+  case BOUND_BOX:
+    m_boundBox.invalidate();
+    break;
   case ALL_COMPONENT:
     deprecate(DEPTH_FIRST_ARRAY);
     deprecate(BREADTH_FIRST_ARRAY);
+    deprecate(BOUND_BOX);
     break;
   default:
     break;

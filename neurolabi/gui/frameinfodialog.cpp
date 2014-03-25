@@ -24,6 +24,12 @@ FrameInfoDialog::FrameInfoDialog(QWidget *parent) : QDialog(parent)
     curveComboBox->setVisible(false);
     curveTypeLabel->setVisible(false);
   }
+
+#ifndef _DEBUG_
+  m_curveWidget->setVisible(false);
+  curveComboBox->setVisible(false);
+  curveTypeLabel->setVisible(false);
+#endif
 }
 
 FrameInfoDialog::~FrameInfoDialog()

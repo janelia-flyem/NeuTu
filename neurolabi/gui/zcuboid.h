@@ -30,7 +30,18 @@ public:
   void set(double x1, double y1, double z1, double x2, double y2, double z2);
   void set(const double *corner);
 
-  bool isValid();
+  /*!
+   * \brief Test if the bound box is valid
+   *
+   * \return true iff the locations of corners conform to the definition.
+   */
+  bool isValid() const;
+
+  /*!
+   * \brief Make the cuboid invalid
+   */
+  void invalidate();
+
   double width();
   double height();
   double depth();

@@ -14,7 +14,7 @@ std::vector<ZEllipsoid> ZSwcRangeAnalyzer::computeLayerRange(const ZSwcTree &tre
 {
   std::vector<ZEllipsoid> range;
 
-  ZCuboid treeBound = tree.boundBox();
+  ZCuboid treeBound = tree.getBoundBox();
 
   double zStart = treeBound.firstCorner().z();
   double zEnd = treeBound.lastCorner().z();
@@ -41,7 +41,7 @@ std::vector<ZPoint> ZSwcRangeAnalyzer::computerLayerCentroid(const ZSwcTree &tre
 {
   std::vector<ZPoint> centroidArray;
 
-  ZCuboid treeBound = tree.boundBox();
+  ZCuboid treeBound = tree.getBoundBox();
 
   double zStart = treeBound.firstCorner().z();
   double zEnd = treeBound.lastCorner().z();

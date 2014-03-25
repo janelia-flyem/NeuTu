@@ -268,7 +268,7 @@ void FlyEmDataForm::viewModel(const QModelIndex &index)
 
   ui->progressBar->setValue(50);
   ui->progressBar->show();
-  QApplication::processEvents();
+  //QApplication::processEvents();
 
   //const ZFlyEmNeuron *neuron = m_neuronList->getNeuron(index);
   QVector<const ZFlyEmNeuron*> neuronArray =
@@ -318,7 +318,7 @@ void FlyEmDataForm::showViewSelectedModel(ZFlyEmQueryView *view)
 {
   ui->progressBar->setValue(50);
   ui->progressBar->show();
-  QApplication::processEvents();
+  //QApplication::processEvents();
 
   QItemSelectionModel *sel = view->selectionModel();
 
@@ -330,7 +330,7 @@ void FlyEmDataForm::showViewSelectedModel(ZFlyEmQueryView *view)
 
   view->getModel()->retrieveModel(sel->selectedIndexes(), frame->document().get());
   ui->progressBar->setValue(75);
-  QApplication::processEvents();
+  //QApplication::processEvents();
 
   frame->open3DWindow(this->parentWidget());
   delete frame;
@@ -454,7 +454,7 @@ void FlyEmDataForm::createAction()
   if (m_neighborSearchAction == NULL) {
     m_neighborSearchAction = new QAction("Search neighbor", this);
     connect(m_neighborSearchAction, SIGNAL(triggered()),
-            this, SLOT(showNearbyNeuron()));
+            this, SLOT(searchNeighborNeuron()));
   }
 }
 
@@ -467,6 +467,20 @@ void FlyEmDataForm::showNearbyNeuron()
   foreach (QModelIndex index, indexList) {
     if (m_neuronList->isNeuronKey(index)) {
       emit showNearbyNeuronTriggered(m_neuronList->getNeuron(index));
+      break;
+    }
+  }
+}
+
+void FlyEmDataForm::searchNeighborNeuron()
+{
+  QItemSelectionModel *sel = ui->queryView->selectionModel();
+
+  QModelIndexList indexList = sel->selectedIndexes();
+
+  foreach (QModelIndex index, indexList) {
+    if (m_neuronList->isNeuronKey(index)) {
+      emit searchNeighborNeuronTriggered(m_neuronList->getNeuron(index));
       break;
     }
   }
@@ -529,5 +543,5 @@ void FlyEmDataForm::updateThumbnail(ZFlyEmNeuron *neuron)
 void FlyEmDataForm::dump(const QString &message)
 {
   appendOutput("<p>" + message + "</p>");
-  QApplication::processEvents();
+  //QApplication::processEvents();
 }

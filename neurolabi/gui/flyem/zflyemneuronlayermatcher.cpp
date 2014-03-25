@@ -4,6 +4,7 @@
 #include "zobject3dscan.h"
 #include "zflyemneuron.h"
 #include "tz_utilities.h"
+#include "zswctreematcher.h"
 
 ZFlyEmLayerFeatureSequence::ZFlyEmLayerFeatureSequence()
 {
@@ -36,11 +37,14 @@ double ZFlyEmNeuronLayerMatcher::match(
   m_matchingResult.clear();
   double score = 0.0;
 
-  ZFlyEmLayerFeatureSequence layerSequence1 = computeLayerFeature(neuron1);
-  ZFlyEmLayerFeatureSequence layerSequence2 = computeLayerFeature(neuron2);
-  score = match(layerSequence1, layerSequence2);
+  if (ZSwcTreeMatcher::isGoodLateralVerticalMatch(
+        *(neuron1->getModel()), *(neuron2->getModel()))) {
+    ZFlyEmLayerFeatureSequence layerSequence1 = computeLayerFeature(neuron1);
+    ZFlyEmLayerFeatureSequence layerSequence2 = computeLayerFeature(neuron2);
+    score = match(layerSequence1, layerSequence2);
 
-  m_matchingScore = score;
+    m_matchingScore = score;
+  }
 
   return score;
 }
@@ -48,6 +52,8 @@ double ZFlyEmNeuronLayerMatcher::match(
 double ZFlyEmNeuronLayerMatcher::computeSimilarity(
     double layer1, double value1, double layer2, double value2) const
 {
+  value1 = sqrt(value1);
+  value2 = sqrt(value2);
   double layerDiff = fabs(layer1 - layer2);
 
   double s2 = dmax2(value1, value2);
@@ -62,6 +68,46 @@ double ZFlyEmNeuronLayerMatcher::computeSimilarity(
 double ZFlyEmNeuronLayerMatcher::match(const ZFlyEmLayerFeatureSequence &seq1,
                                        const ZFlyEmLayerFeatureSequence &seq2)
 {
+  double layerStart = 5.0;
+  double layerInterval = 5.0;
+  ZHistogram hist1(layerStart, layerInterval);
+  ZHistogram hist2(layerStart, layerInterval);
+
+  for (size_t i = 0; i < seq1.getLayerNumber(); ++i) {
+    hist1.addCount(seq1.getLayer(i), seq1.getValue(i));
+  }
+
+  for (size_t i = 0; i < seq2.getLayerNumber(); ++i) {
+    hist2.addCount(seq2.getLayer(i), seq2.getValue(i));
+  }
+
+  double layerEnd = hist2.getUpperBound();
+
+  std::vector<double> m_layerArray1;
+  std::vector<double> m_valueArray1;
+  for (double layer = layerStart; layer <= layerEnd; layer += layerInterval) {
+    m_layerArray1.push_back(layer);
+    m_valueArray1.push_back(hist1.getCount(layer));
+  }
+
+  std::vector<double> m_layerArray2;
+  std::vector<double> m_valueArray2;
+  for (double layer = layerStart; layer <= layerEnd; layer += layerInterval) {
+    m_layerArray2.push_back(layer);
+    m_valueArray2.push_back(hist2.getCount(layer));
+  }
+
+  ZMatrix simMat(m_layerArray1.size(), m_layerArray2.size());
+  for (size_t i = 0; i < m_layerArray1.size(); ++i) {
+    for (size_t j = 0; j < m_layerArray2.size(); ++j) {
+      if (m_valueArray1[i] > 0.0 && m_valueArray2[j] > 0.0) {
+        simMat.set(i, j, computeSimilarity(m_layerArray1[i], m_valueArray1[i],
+                                           m_layerArray2[j], m_valueArray2[j]));
+      }
+    }
+  }
+
+#if 0
   ZMatrix simMat(seq1.getLayerNumber(), seq2.getLayerNumber());
 
   for (size_t i = 0; i < seq1.getLayerNumber(); ++i) {
@@ -73,6 +119,7 @@ double ZFlyEmNeuronLayerMatcher::match(const ZFlyEmLayerFeatureSequence &seq1,
       simMat.set(i, j, computeSimilarity(layer1, value1, layer2, value2));
     }
   }
+#endif
 
 #ifdef _DEBUG_2
   simMat.debugOutput();
@@ -106,6 +153,18 @@ ZFlyEmLayerFeatureSequence ZFlyEmNeuronLayerMatcher::computeLayerFeature(
 {
   ZFlyEmLayerFeatureSequence feature;
   ZObject3dScan *body = neuron->getBody();
+
+  if (body != NULL) {
+    std::map<int, size_t> &slicewiseVoxelNumber =
+        body->getSlicewiseVoxelNumber();
+    for (std::map<int, size_t>::const_iterator iter = slicewiseVoxelNumber.begin();
+         iter != slicewiseVoxelNumber.end(); ++iter) {
+      if (iter->second > 0) {
+        feature.append(iter->first, iter->second);
+      }
+    }
+  }
+  /*
   if (body != NULL) {
     TZ_ASSERT(body->isCanonized(), "Uncanonized body is not accpetable");
     int minZ = body->getMinZ();
@@ -117,6 +176,7 @@ ZFlyEmLayerFeatureSequence ZFlyEmNeuronLayerMatcher::computeLayerFeature(
       }
     }
   }
+  */
 
   return feature;
 }

@@ -21,6 +21,7 @@ include(extlib.pri)
 #neurolabi
 CONFIG(debug, debug|release) {
     TARGET = neuTube_d
+    DEFINES += _DEBUG_ _ADVANCED_ PROJECT_PATH=\"\\\"$$PWD\\\"\"
 } else {
     TARGET = neuTube
 }
@@ -135,6 +136,7 @@ include(ext/QsLog/QsLog.pri)
 include(ext/libqxt.pri)
 include (gui_free.pri)
 include(test/test.pri)
+
 
 CONFIG(debug, debug|release) {
     exists(../lib/opencv) {
@@ -374,7 +376,10 @@ HEADERS += mainwindow.h \
     flyem/zflyemneuronfeatureanalyzer.h \
     flyemneuronthumbnaildialog.h \
     flyem/zflyemneuronexporter.h \
-    flyem/zswctreebatchmatcher.h
+    flyem/zswctreebatchmatcher.h \
+    zmultitaskmanager.h \
+    flyem/zflyemneuronmatchtaskmanager.h \
+    flyem/zflyemneuronfiltertaskmanager.h
 
 FORMS += settingdialog.ui \
     frameinfodialog.ui \
@@ -610,7 +615,10 @@ SOURCES += main.cpp \
     flyem/zflyemneuronfeatureanalyzer.cpp \
     flyemneuronthumbnaildialog.cpp \
     flyem/zflyemneuronexporter.cpp \
-    flyem/zswctreebatchmatcher.cpp
+    flyem/zswctreebatchmatcher.cpp \
+    zmultitaskmanager.cpp \
+    flyem/zflyemneuronmatchtaskmanager.cpp \
+    flyem/zflyemneuronfiltertaskmanager.cpp
 
 OTHER_FILES += \
     extlib.pri

@@ -414,6 +414,15 @@ TEST(SwcTree, Prune)
   ASSERT_EQ(4 , pruner.prune(&tree));
 }
 
+TEST(SwcTree, boundBox)
+{
+  ZSwcTree tree;
+  tree.load(GET_TEST_DATA_DIR + "/benchmark/swc/fork2.swc");
+
+  ASSERT_TRUE(tree.isDeprecated(ZSwcTree::BOUND_BOX));
+  ASSERT_TRUE(tree.getBoundBox().isValid());
+}
+
 #endif
 
 #endif // ZSWCTREETEST_H

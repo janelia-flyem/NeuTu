@@ -487,6 +487,8 @@ void ZObject3dStripe::switchYZ()
 {
   int tmp;
   SWAP2(m_y, m_z, tmp);
+
+  m_isCanonized = false;
 }
 
 bool ZObject3dStripe::containsX(int x) const
@@ -587,6 +589,18 @@ void ZObject3dStripe::print() const
   }
 }
 
+///////////////////////////////////////////////////
+
+const ZObject3dScan::TEvent ZObject3dScan::EVENT_NULL = 0;
+const ZObject3dScan::TEvent ZObject3dScan::EVENT_OBJECT_VIEW_CHANGED = 0x1;
+const ZObject3dScan::TEvent ZObject3dScan::EVENT_OBJECT_MODEL_CHANGED =
+    0x2 | ZObject3dScan::EVENT_OBJECT_VIEW_CHANGED;
+const ZObject3dScan::TEvent ZObject3dScan::EVENT_OBJECT_UNCANONIZED =
+    0x4 | ZObject3dScan::EVENT_OBJECT_VIEW_CHANGED;
+const ZObject3dScan::TEvent ZObject3dScan::EVENT_OBJECT_CANONIZED =
+    0x8 | ZObject3dScan::EVENT_OBJECT_VIEW_CHANGED;
+
+
 ZObject3dScan::ZObject3dScan() : m_isCanonized(true)
 {
 }
@@ -605,6 +619,8 @@ bool ZObject3dScan::isDeprecated(EComponent comp) const
     return m_indexSegmentMap.empty();
   case ACCUMULATED_STRIPE_NUMBER:
     return m_accNumberArray.empty();
+  case SLICEWISE_VOXEL_NUMBER:
+    return m_slicewiseVoxelNumber.empty();
   default:
     break;
   }
@@ -626,10 +642,14 @@ void ZObject3dScan::deprecate(EComponent comp)
   case ACCUMULATED_STRIPE_NUMBER:
     m_accNumberArray.clear();
     break;
+  case SLICEWISE_VOXEL_NUMBER:
+    m_slicewiseVoxelNumber.clear();
+    break;
   case ALL_COMPONENT:
     deprecate(STRIPE_INDEX_MAP);
     deprecate(INDEX_SEGMENT_MAP);
     deprecate(ACCUMULATED_STRIPE_NUMBER);
+    deprecate(SLICEWISE_VOXEL_NUMBER);
     break;
   }
 }
@@ -675,19 +695,28 @@ size_t ZObject3dScan::getVoxelNumber(int z) const
   return voxelNumber;
 }
 
-std::vector<size_t> ZObject3dScan::getSlicewiseVoxelNumber() const
+const std::map<int, size_t> &ZObject3dScan::getSlicewiseVoxelNumber() const
 {
-  std::vector<size_t> voxelNumber;
-  size_t stripeNumber = getStripeNumber();
-  for (size_t i = 0; i < stripeNumber; ++i) {
-    int z = m_stripeArray[i].getZ();
-    if (z >= (int) voxelNumber.size()) {
-      voxelNumber.resize(z + 1, 0);
+  if (isDeprecated(SLICEWISE_VOXEL_NUMBER)) {
+    //std::vector<size_t> voxelNumber;
+    size_t stripeNumber = getStripeNumber();
+    for (size_t i = 0; i < stripeNumber; ++i) {
+      int z = m_stripeArray[i].getZ();
+      if (m_slicewiseVoxelNumber.count(z) == 0) {
+        m_slicewiseVoxelNumber[z] = m_stripeArray[i].getVoxelNumber();
+      } else {
+        m_slicewiseVoxelNumber[z] += m_stripeArray[i].getVoxelNumber();
+      }
     }
-    voxelNumber[z] += m_stripeArray[i].getVoxelNumber();
   }
 
-  return voxelNumber;
+  return m_slicewiseVoxelNumber;
+}
+
+std::map<int, size_t> &ZObject3dScan::getSlicewiseVoxelNumber()
+{
+  return const_cast<std::map<int, size_t>&>(
+        static_cast<const ZObject3dScan&>(*this).getSlicewiseVoxelNumber());
 }
 
 const ZObject3dStripe &ZObject3dScan::getStripe(size_t index) const
@@ -718,15 +747,19 @@ void ZObject3dScan::addStripe(const ZObject3dStripe &stripe, bool canonizing)
 {
   bool lastStripeMergable = false;
 
+  TEvent event = EVENT_NULL;
+
   if (!m_stripeArray.empty()) {
     if (stripe.getY() != m_stripeArray.back().getY() ||
         stripe.getZ() != m_stripeArray.back().getZ()) {
       if (m_isCanonized) {
         if (stripe.getZ() < m_stripeArray.back().getZ()) {
-          m_isCanonized = false;
+          //m_isCanonized = false;
+          event = EVENT_OBJECT_UNCANONIZED;
         } else if (stripe.getZ() == m_stripeArray.back().getZ()) {
           if (stripe.getY() < m_stripeArray.back().getY()) {
-            m_isCanonized = false;
+            //m_isCanonized = false;
+            event |= EVENT_OBJECT_UNCANONIZED;
           }
         }
       }
@@ -744,23 +777,38 @@ void ZObject3dScan::addStripe(const ZObject3dStripe &stripe, bool canonizing)
     m_stripeArray.push_back(stripe);
   }
 
-  if (canonizing && !m_isCanonized) {
+  event |= EVENT_OBJECT_MODEL_CHANGED;
+
+  processEvent(event);
+
+  if (canonizing) {
     canonize();
   }
 
-  deprecate(ALL_COMPONENT);
+  //deprecate(ALL_COMPONENT);
 }
 
 void ZObject3dScan::addSegment(int x1, int x2, bool canonizing)
 {
   if (!isEmpty()) {
+    TEvent event = EVENT_NULL;
+
     m_stripeArray.back().addSegment(x1, x2, canonizing);
+    event |= EVENT_OBJECT_MODEL_CHANGED;
+
     if (!m_stripeArray.back().isCanonized()) {
-      m_isCanonized = false;
+      //m_isCanonized = false;
+      if (isCanonized()) {
+        event |= EVENT_OBJECT_UNCANONIZED;
+      }
     }
 
+    /*
     deprecate(INDEX_SEGMENT_MAP);
     deprecate(ACCUMULATED_STRIPE_NUMBER);
+    */
+
+    processEvent(event);
 
     if (canonizing) {
       canonize();
@@ -857,8 +905,8 @@ ZObject3dScan::getIndexSegmentMap() const
     for (size_t stripeIndex = 0; stripeIndex < getStripeNumber(); ++stripeIndex) {
       size_t segmentNumber = m_stripeArray[stripeIndex].getSegmentNumber();
       for (size_t segIndex = 0; segIndex < segmentNumber; ++segIndex) {
-        m_indexSegmentMap[currentIndex++] = std::pair<size_t, size_t>(stripeIndex,
-                                                                    segIndex);
+        m_indexSegmentMap[currentIndex++] =
+            std::pair<size_t, size_t>(stripeIndex, segIndex);
       }
     }
   }
@@ -1071,7 +1119,8 @@ void ZObject3dScan::sort()
   if (!isEmpty()) {
     qsort(&m_stripeArray[0], m_stripeArray.size(), sizeof(ZObject3dStripe),
         ZObject3dStripeCompare);
-    deprecate(ALL_COMPONENT);
+    //deprecate(ALL_COMPONENT);
+    processEvent(EVENT_OBJECT_VIEW_CHANGED);
   }
 }
 
@@ -1093,6 +1142,9 @@ void ZObject3dScan::canonize()
 
     //m_stripeArray = newStripeArray;
     m_stripeArray.swap(newStripeArray);
+
+    //m_isCanonized = true;
+    processEvent(EVENT_OBJECT_CANONIZED);
   }
 }
 
@@ -1106,12 +1158,15 @@ void ZObject3dScan::concat(const ZObject3dScan &obj)
 {
   m_stripeArray.insert(m_stripeArray.end(), obj.m_stripeArray.begin(),
                        obj.m_stripeArray.end());
-  m_isCanonized = false;
-  deprecate(ALL_COMPONENT);
+  //m_isCanonized = false;
+  processEvent(EVENT_OBJECT_MODEL_CHANGED | EVENT_OBJECT_UNCANONIZED);
+  //deprecate(ALL_COMPONENT);
 }
 
 void ZObject3dScan::downsample(int xintv, int yintv, int zintv)
 {
+  TEvent event = EVENT_NULL;
+
   if (yintv > 0 || zintv > 0) {
     vector<ZObject3dStripe> newStripeArray;
     for (vector<ZObject3dStripe>::const_iterator iter = m_stripeArray.begin();
@@ -1122,7 +1177,8 @@ void ZObject3dScan::downsample(int xintv, int yintv, int zintv)
       }
     }
     m_stripeArray = newStripeArray;
-    m_isCanonized = false;
+    //m_isCanonized = false;
+    event |= EVENT_OBJECT_UNCANONIZED;
   }
 
   if (xintv > 0) {
@@ -1132,12 +1188,16 @@ void ZObject3dScan::downsample(int xintv, int yintv, int zintv)
       iter->setY(iter->getY() / (yintv + 1));
       iter->setZ(iter->getZ() / (zintv + 1));
     }
-    m_isCanonized = false;
+    //m_isCanonized = false;
+    event |= EVENT_OBJECT_UNCANONIZED;
   }
 
   if (xintv > 0 || yintv > 0 || zintv > 0) {
-    deprecate(ALL_COMPONENT);
+    //deprecate(ALL_COMPONENT);
+    event |= EVENT_OBJECT_MODEL_CHANGED;
   }
+
+  processEvent(event);
 }
 
 void ZObject3dScan::downsampleMax(int xintv, int yintv, int zintv)
@@ -1146,13 +1206,16 @@ void ZObject3dScan::downsampleMax(int xintv, int yintv, int zintv)
     return;
   }
 
+  TEvent event = EVENT_NULL;
+
   if (yintv > 0 || zintv > 0) {
     for (vector<ZObject3dStripe>::iterator iter = m_stripeArray.begin();
          iter != m_stripeArray.end(); ++iter) {
       iter->setY(iter->getY() / (yintv + 1));
       iter->setZ(iter->getZ() / (zintv + 1));
     }
-    m_isCanonized = false;
+    //m_isCanonized = false;
+    event |= EVENT_OBJECT_UNCANONIZED;
   }
 
   if (xintv > 0) {
@@ -1160,12 +1223,15 @@ void ZObject3dScan::downsampleMax(int xintv, int yintv, int zintv)
          iter != m_stripeArray.end(); ++iter) {
       iter->downsampleMax(xintv);
     }
-    m_isCanonized = false;
+    //m_isCanonized = false;
+    event |= EVENT_OBJECT_UNCANONIZED;
   }
+
+  processEvent(event);
 
   canonize();
 
-  deprecate(ALL_COMPONENT);
+  //deprecate(ALL_COMPONENT);
 }
 
 Stack* ZObject3dScan::toStack(int *offset) const
@@ -1380,6 +1446,10 @@ std::vector<size_t> ZObject3dScan::getConnectedObjectSize()
     sizeArray.resize(objArray.size());
     for (size_t i = 0; i < objArray.size(); ++i) {
       sizeArray[i] = objArray[i].getVoxelNumber();
+#if _DEBUG_2
+      std::cout << "Sub object:" << std::endl;
+      objArray[i].print();
+#endif
     }
   }
 #endif
@@ -1453,6 +1523,8 @@ void ZObject3dScan::translate(int dx, int dy, int dz)
   for (size_t i = 0; i < getStripeNumber(); ++i) {
     m_stripeArray[i].translate(dx, dy, dz);
   }
+
+  processEvent(EVENT_OBJECT_MODEL_CHANGED);
 }
 
 void ZObject3dScan::addZ(int dz)
@@ -1460,6 +1532,8 @@ void ZObject3dScan::addZ(int dz)
   for (size_t i = 0; i < getStripeNumber(); ++i) {
     m_stripeArray[i].addZ(dz);
   }
+
+  processEvent(EVENT_OBJECT_MODEL_CHANGED);
 }
 
 bool ZObject3dScan::isCanonizedActually()
@@ -1507,7 +1581,8 @@ void ZObject3dScan::duplicateAcrossZ(int depth)
       addStripe(stripe, false);
     }
   }
-  deprecate(ALL_COMPONENT);
+  //deprecate(ALL_COMPONENT);
+  processEvent(EVENT_OBJECT_MODEL_CHANGED);
 }
 
 void ZObject3dScan::display(ZPainter &painter, int z, Display_Style style) const
@@ -1557,6 +1632,8 @@ void ZObject3dScan::dilate()
 
   setCanonized(false);
   canonize();
+
+  processEvent(EVENT_OBJECT_MODEL_CHANGED);
 }
 
 ZObject3dScan ZObject3dScan::getSlice(int z) const
@@ -2020,7 +2097,8 @@ void ZObject3dScan::switchYZ()
   for (size_t i = 0; i < m_stripeArray.size(); ++i) {
     m_stripeArray[i].switchYZ();
   }
-  m_isCanonized = false;
+
+  processEvent(EVENT_OBJECT_MODEL_CHANGED | EVENT_OBJECT_UNCANONIZED);
 }
 
 std::vector<double> ZObject3dScan::getPlaneCov() const
@@ -2121,6 +2199,27 @@ bool ZObject3dScan::contains(int x, int y, int z)
   }
 
   return false;
+}
+
+void ZObject3dScan::processEvent(TEvent event)
+{
+  if (event & EVENT_OBJECT_MODEL_CHANGED & ~EVENT_OBJECT_VIEW_CHANGED) {
+    deprecate(ACCUMULATED_STRIPE_NUMBER);
+    deprecate(SLICEWISE_VOXEL_NUMBER);
+  }
+
+  if (event & EVENT_OBJECT_UNCANONIZED & ~EVENT_OBJECT_VIEW_CHANGED) {
+    setCanonized(false);
+  }
+
+  if (event & EVENT_OBJECT_CANONIZED & ~EVENT_OBJECT_VIEW_CHANGED) {
+    setCanonized(true);
+  }
+
+  if (event & EVENT_OBJECT_VIEW_CHANGED) {
+    deprecate(STRIPE_INDEX_MAP);
+    deprecate(INDEX_SEGMENT_MAP);
+  }
 }
 
 ZINTERFACE_DEFINE_CLASS_NAME(ZObject3dScan)
