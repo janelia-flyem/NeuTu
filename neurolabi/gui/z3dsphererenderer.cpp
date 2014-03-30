@@ -209,7 +209,7 @@ void Z3DSphereRenderer::renderPickingUsingOpengl()
   gluDeleteQuadric(quadric);
 }
 
-void Z3DSphereRenderer::renderUsingGLSL(Z3DEye eye)
+void Z3DSphereRenderer::render(Z3DEye eye)
 {
   if (!m_initialized)
     return;
@@ -386,7 +386,7 @@ void Z3DSphereRenderer::renderUsingGLSL(Z3DEye eye)
   m_sphereShaderGrp.release();
 }
 
-void Z3DSphereRenderer::renderPickingUsingGLSL(Z3DEye eye)
+void Z3DSphereRenderer::renderPicking(Z3DEye eye)
 {
   if (!m_initialized)
     return;

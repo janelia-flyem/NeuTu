@@ -105,8 +105,8 @@ public:
   inline float getOpacity() const {return m_opacity.get();}
   inline float getSizeScale() const {return m_sizeScale.get();}
 
-  virtual void render(Z3DEye eye);
-  virtual void renderPicking(Z3DEye eye);
+  void render(Z3DEye eye);
+  void renderPicking(Z3DEye eye);
 
   inline void setShaderHookType(ShaderHookType t) { m_shaderHookType = t; }
   inline ShaderHookType getShaderHookType() const { return m_shaderHookType; }
@@ -114,10 +114,10 @@ public:
 
 protected:
 
-  virtual void generateDisplayList();
-  virtual void generatePickingDisplayList();
+  void generateDisplayList();
+  void generatePickingDisplayList();
 
-  virtual void adjustWidgets();
+  void adjustWidgets();
 
   void renderInstant();
   void renderPickingInstant();

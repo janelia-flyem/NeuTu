@@ -35,16 +35,7 @@ void Z3DTextureCoordinateRenderer::deinitialize()
   Z3DPrimitiveRenderer::deinitialize();
 }
 
-void Z3DTextureCoordinateRenderer::renderUsingOpengl()
-{
-  //renderUsingGLSL();
-}
-
-void Z3DTextureCoordinateRenderer::renderPickingUsingOpengl()
-{
-}
-
-void Z3DTextureCoordinateRenderer::renderUsingGLSL(Z3DEye eye)
+void Z3DTextureCoordinateRenderer::render(Z3DEye eye)
 {
   if (!m_initialized)
     return;
@@ -129,6 +120,6 @@ void Z3DTextureCoordinateRenderer::renderUsingGLSL(Z3DEye eye)
   m_renderTextureCoordinateShader.release();
 }
 
-void Z3DTextureCoordinateRenderer::renderPickingUsingGLSL(Z3DEye)
+void Z3DTextureCoordinateRenderer::renderPicking(Z3DEye)
 {
 }

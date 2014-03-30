@@ -1,9 +1,18 @@
+#if GLSL_VERSION >= 130
+in vec4 attr_vertex_radius;
+#ifdef DYNAMIC_MATERIAL_PROPERTY
+in vec4 attr_specular_shininess;
+#endif
+in vec4 attr_color;
+in float attr_flags;
+#else
 attribute vec4 attr_vertex_radius;
 #ifdef DYNAMIC_MATERIAL_PROPERTY
 attribute vec4 attr_specular_shininess;
 #endif
 attribute vec4 attr_color;
 attribute float attr_flags;
+#endif
 
 uniform vec3 pos_scale = vec3(1.0, 1.0, 1.0);
 uniform float size_scale = 1.0;
@@ -14,6 +23,16 @@ uniform mat4 projection_view_matrix;
 uniform vec4 clip_planes[CLIP_PLANE_COUNT];
 #endif
 
+#if GLSL_VERSION >= 130
+out vec4 color;
+out vec3 sphere_center;
+out vec3 point;
+out float radius2;
+#ifdef DYNAMIC_MATERIAL_PROPERTY
+out float va_material_shininess;
+out vec4 va_material_specular;
+#endif
+#else
 varying vec4 color;
 varying vec3 sphere_center;
 varying vec3 point;
@@ -21,6 +40,7 @@ varying float radius2;
 #ifdef DYNAMIC_MATERIAL_PROPERTY
 varying float va_material_shininess;
 varying vec4 va_material_specular;
+#endif
 #endif
 
 void main(void)

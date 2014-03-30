@@ -45,7 +45,7 @@ public:
   bool isReal();
   bool isNumber();
   bool isBoolean();
-  virtual bool isEmpty();
+  virtual bool isEmpty() const;
 
   int getInteger();
   double getReal();

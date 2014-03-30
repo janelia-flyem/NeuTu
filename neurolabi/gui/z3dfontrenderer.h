@@ -26,11 +26,8 @@ protected:
   virtual std::vector<glm::vec4>* getColors();
   virtual QString generateHeader();
 
-  virtual void renderUsingOpengl();
-  virtual void renderPickingUsingOpengl();
-
-  virtual void renderUsingGLSL(Z3DEye eye);
-  virtual void renderPickingUsingGLSL(Z3DEye);
+  virtual void render(Z3DEye eye);
+  virtual void renderPicking(Z3DEye);
 
   void prepareFontShaderData(Z3DEye eye);
 

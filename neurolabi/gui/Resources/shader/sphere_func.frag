@@ -7,6 +7,16 @@ uniform float material_shininess;
 uniform float alpha;
 uniform mat4 projection_matrix;
 
+#if GLSL_VERSION >= 130
+in vec4 color;
+in vec3 sphere_center;
+in float radius2;
+in vec3 point;
+#ifdef DYNAMIC_MATERIAL_PROPERTY
+in float va_material_shininess;
+in vec4 va_material_specular;
+#endif
+#else
 varying vec4 color;
 varying vec3 sphere_center;
 varying float radius2;
@@ -14,6 +24,7 @@ varying vec3 point;
 #ifdef DYNAMIC_MATERIAL_PROPERTY
 varying float va_material_shininess;
 varying vec4 va_material_specular;
+#endif
 #endif
 
 vec4 apply_lighting_and_fog(const in vec4 sceneAmbient,

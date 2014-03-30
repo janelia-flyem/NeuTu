@@ -133,7 +133,7 @@ void Z3DBackgroundRenderer::renderPickingUsingOpengl()
   // do nothing
 }
 
-void Z3DBackgroundRenderer::renderUsingGLSL(Z3DEye eye)
+void Z3DBackgroundRenderer::render(Z3DEye eye)
 {
   m_backgroundShaderGrp.bind();
   Z3DShaderProgram &shader = m_backgroundShaderGrp.get();
@@ -169,7 +169,7 @@ void Z3DBackgroundRenderer::renderUsingGLSL(Z3DEye eye)
   m_backgroundShaderGrp.release();
 }
 
-void Z3DBackgroundRenderer::renderPickingUsingGLSL(Z3DEye)
+void Z3DBackgroundRenderer::renderPicking(Z3DEye)
 {
   // do nothing
 }

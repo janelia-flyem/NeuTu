@@ -1,4 +1,10 @@
 -------------------
+QsLog version 2.0b3
+
+Changes:
+* added functor logging destination (thanks to Omar Carey for providing a patch)
+
+-------------------
 QsLog version 2.0b2
 
 Changes:

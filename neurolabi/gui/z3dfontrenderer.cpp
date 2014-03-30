@@ -173,16 +173,7 @@ QString Z3DFontRenderer::generateHeader()
   return headerSource;
 }
 
-void Z3DFontRenderer::renderUsingOpengl()
-{
-  //renderUsingGLSL();
-}
-
-void Z3DFontRenderer::renderPickingUsingOpengl()
-{
-}
-
-void Z3DFontRenderer::renderUsingGLSL(Z3DEye eye)
+void Z3DFontRenderer::render(Z3DEye eye)
 {
   if (m_allFontNames.isEmpty()) {
     LERROR() << "Can not find any font.";
@@ -290,7 +281,7 @@ void Z3DFontRenderer::renderUsingGLSL(Z3DEye eye)
   }
 }
 
-void Z3DFontRenderer::renderPickingUsingGLSL(Z3DEye)
+void Z3DFontRenderer::renderPicking(Z3DEye)
 {
   if (m_allFontNames.isEmpty()) {
     LERROR() << "Can not find any font.";

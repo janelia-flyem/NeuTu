@@ -191,7 +191,7 @@ void Z3DLineRenderer::renderPickingUsingOpengl()
   glPointSize(1.0);
 }
 
-void Z3DLineRenderer::renderUsingGLSL(Z3DEye eye)
+void Z3DLineRenderer::render(Z3DEye eye)
 {
   if (!m_initialized)
     return;
@@ -293,7 +293,7 @@ void Z3DLineRenderer::renderUsingGLSL(Z3DEye eye)
   m_lineShaderGrp.release();
 }
 
-void Z3DLineRenderer::renderPickingUsingGLSL(Z3DEye eye)
+void Z3DLineRenderer::renderPicking(Z3DEye eye)
 {
   if (!m_linesPt || m_linesPt->empty())
     return;

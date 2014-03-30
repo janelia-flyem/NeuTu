@@ -185,16 +185,7 @@ QString Z3DImage2DRenderer::generateHeader()
   return headerSource;
 }
 
-void Z3DImage2DRenderer::renderUsingOpengl()
-{
-  //renderUsingGLSL();
-}
-
-void Z3DImage2DRenderer::renderPickingUsingOpengl()
-{
-}
-
-void Z3DImage2DRenderer::renderUsingGLSL(Z3DEye eye)
+void Z3DImage2DRenderer::render(Z3DEye eye)
 {
   if (!m_initialized)
     return;
@@ -214,7 +205,7 @@ void Z3DImage2DRenderer::renderUsingGLSL(Z3DEye eye)
   m_image2DShader.release();
 }
 
-void Z3DImage2DRenderer::renderPickingUsingGLSL(Z3DEye)
+void Z3DImage2DRenderer::renderPicking(Z3DEye)
 {
 }
 

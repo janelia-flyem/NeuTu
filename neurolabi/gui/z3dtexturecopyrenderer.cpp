@@ -30,16 +30,7 @@ void Z3DTextureCopyRenderer::deinitialize()
   Z3DPrimitiveRenderer::deinitialize();
 }
 
-void Z3DTextureCopyRenderer::renderUsingOpengl()
-{
-  //renderUsingGLSL();
-}
-
-void Z3DTextureCopyRenderer::renderPickingUsingOpengl()
-{
-}
-
-void Z3DTextureCopyRenderer::renderUsingGLSL(Z3DEye eye)
+void Z3DTextureCopyRenderer::render(Z3DEye eye)
 {
   if (!m_initialized)
     return;
@@ -60,6 +51,6 @@ void Z3DTextureCopyRenderer::renderUsingGLSL(Z3DEye eye)
   m_copyTextureShader.release();
 }
 
-void Z3DTextureCopyRenderer::renderPickingUsingGLSL(Z3DEye)
+void Z3DTextureCopyRenderer::renderPicking(Z3DEye)
 {
 }

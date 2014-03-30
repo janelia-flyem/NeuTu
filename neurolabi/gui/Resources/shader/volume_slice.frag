@@ -20,7 +20,11 @@ uniform VolumeStruct volume_struct_4;
 uniform VolumeStruct volume_struct_5;
 #endif
 
+#if GLSL_VERSION >= 130
+in vec3 texCoord0;
+#else
 varying vec3 texCoord0;
+#endif
 
 #if GLSL_VERSION < 130
 #define texture texture3D

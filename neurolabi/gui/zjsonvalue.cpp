@@ -102,7 +102,7 @@ bool ZJsonValue::isBoolean()
   return json_is_boolean(m_data) > 0;
 }
 
-bool ZJsonValue::isEmpty()
+bool ZJsonValue::isEmpty() const
 {
   return m_data == NULL;
 }

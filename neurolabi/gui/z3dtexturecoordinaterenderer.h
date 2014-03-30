@@ -25,11 +25,8 @@ protected:
   virtual void initialize();
   virtual void deinitialize();
 
-  virtual void renderUsingOpengl();
-  virtual void renderPickingUsingOpengl();
-
-  virtual void renderUsingGLSL(Z3DEye eye);
-  virtual void renderPickingUsingGLSL(Z3DEye);
+  virtual void render(Z3DEye eye);
+  virtual void renderPicking(Z3DEye);
 
   const Z3DTriangleList *m_mesh;
 
