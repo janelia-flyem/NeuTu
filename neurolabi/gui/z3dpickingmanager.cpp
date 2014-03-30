@@ -13,6 +13,7 @@
  * "LICENSE.txt" along with this file. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "zglew.h"
 #include "z3dpickingmanager.h"
 
 #include "z3dtexture.h"

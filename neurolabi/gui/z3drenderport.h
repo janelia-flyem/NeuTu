@@ -24,6 +24,13 @@ class Z3DRenderTarget;
 
 class Z3DRenderInputPort;
 
+#ifndef GL_DEPTH_COMPONENT24
+#define GL_DEPTH_COMPONENT24 0x81A6
+#endif
+#ifndef GL_RGBA16
+#define GL_RGBA16 0x805B
+#endif
+
 class Z3DRenderOutputPort : public Z3DOutputPortBase
 {
   friend class Z3DRenderProcessor;

@@ -13,6 +13,7 @@
  * "LICENSE.txt" along with this file. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "zglew.h"
 #include "z3drenderport.h"
 #include "z3drenderprocessor.h"
 #include "z3drendertarget.h"

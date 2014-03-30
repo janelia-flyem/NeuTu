@@ -6,7 +6,7 @@
 
 #define GLM_FORCE_SSE2
 #define GLM_FORCE_SIZE_T_LENGTH
-#define GLM_MESSAGES
+//#define GLM_MESSAGES
 #define GLM_SWIZZLE
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
