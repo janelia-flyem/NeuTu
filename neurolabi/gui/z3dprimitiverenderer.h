@@ -63,11 +63,11 @@ protected:
   virtual void initialize();
   virtual void deinitialize();
 
-  virtual void renderUsingOpengl() = 0;
-  virtual void renderPickingUsingOpengl() = 0;
+  virtual void renderUsingOpengl() {}
+  virtual void renderPickingUsingOpengl() {}
 
-  virtual void renderUsingGLSL(Z3DEye) = 0;
-  virtual void renderPickingUsingGLSL(Z3DEye) = 0;
+  virtual void render(Z3DEye) = 0;
+  virtual void renderPicking(Z3DEye) = 0;
 
   void addParameter(ZParameter &para);
   void addParameter(ZParameter *para);

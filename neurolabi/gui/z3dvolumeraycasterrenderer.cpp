@@ -329,16 +329,7 @@ QString Z3DVolumeRaycasterRenderer::generateHeader()
   return headerSource;
 }
 
-void Z3DVolumeRaycasterRenderer::renderUsingOpengl()
-{
-  //renderUsingGLSL();
-}
-
-void Z3DVolumeRaycasterRenderer::renderPickingUsingOpengl()
-{
-}
-
-void Z3DVolumeRaycasterRenderer::renderUsingGLSL(Z3DEye eye)
+void Z3DVolumeRaycasterRenderer::render(Z3DEye eye)
 {
   if (!m_initialized)
     return;
@@ -417,7 +408,7 @@ void Z3DVolumeRaycasterRenderer::renderUsingGLSL(Z3DEye eye)
   CHECK_GL_ERROR;
 }
 
-void Z3DVolumeRaycasterRenderer::renderPickingUsingGLSL(Z3DEye)
+void Z3DVolumeRaycasterRenderer::renderPicking(Z3DEye)
 {
 }
 

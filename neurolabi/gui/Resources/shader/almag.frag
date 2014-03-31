@@ -11,8 +11,13 @@ uniform vec4 outline_color;
 uniform vec4 shadow_color;
 #endif
 
+#if GLSL_VERSION >= 130
+in vec2 texCoord0;
+in vec4 color;
+#else
 varying vec2 texCoord0;
 varying vec4 color;
+#endif
 
 #if GLSL_VERSION < 130
 #define texture texture2D

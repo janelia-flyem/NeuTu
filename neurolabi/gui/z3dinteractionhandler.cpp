@@ -49,7 +49,7 @@ Z3DTrackballInteractionHandler::Z3DTrackballInteractionHandler(const QString &na
   , m_mouseWheelUpDollyIn(true)
   , m_mouseWheelUpRollLeft(true)
   , m_mouseMotionFactor(10.f)
-  , m_keyPressAngle(10.f)
+  , m_keyPressAngle(glm::radians(10.f))
   , m_keyPressDistance(10.f)
   , m_moveObjects(false)
 {
@@ -325,8 +325,8 @@ void Z3DTrackballInteractionHandler::rotate(glm::ivec2 mouseStart, glm::ivec2 mo
 {
   glm::ivec2 dPos = mouseEnd - mouseStart;
 
-  double delta_elevation = -36.0 / h;
-  double delta_azimuth = -36.0 / w;
+  double delta_elevation = -0.2 * M_PI / h;
+  double delta_azimuth = -0.2 * M_PI / w;
 
   double rxf = dPos.x * delta_azimuth * m_mouseMotionFactor;
   double ryf = dPos.y * delta_elevation * m_mouseMotionFactor;
@@ -338,8 +338,8 @@ void Z3DTrackballInteractionHandler::rotate(glm::ivec2 mouseStart, glm::ivec2 mo
 void Z3DTrackballInteractionHandler::roll(glm::ivec2 mouseStart, glm::ivec2 mouseEnd, int w, int h)
 {
   glm::dvec2 center(w/2., h/2.);
-  double newAngle = glm::degrees(std::atan2(mouseEnd.y - center.y, mouseEnd.x - center.x));
-  double oldAngle = glm::degrees(std::atan2(mouseStart.y - center.y, mouseStart.x - center.x));
+  double newAngle = std::atan2(mouseEnd.y - center.y, mouseEnd.x - center.x);
+  double oldAngle = std::atan2(mouseStart.y - center.y, mouseStart.x - center.x);
 
   m_camera->roll(newAngle - oldAngle);
 }

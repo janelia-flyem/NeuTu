@@ -31,7 +31,7 @@
 #include <QDebug>
 #include <QString>
 
-#define QS_LOG_VERSION "2.0b1"
+#define QS_LOG_VERSION "2.0b3"
 
 namespace QsLogging
 {
@@ -253,6 +253,10 @@ QDebug& operator << (QDebug s, const std::basic_string<wchar_t>& m);
   if (!(condition)) {} \
   else LOG(severity)
 
+#define VLOG_IF(n, condition) \
+  if (!(condition)) {} \
+  else VLOG(n)
+
 // ---------------------------- CHECK macros ---------------------------------
 
 // Check for a given boolean condition.
@@ -343,7 +347,7 @@ T& CheckNotNull(const char *file, int line, const char *names, T& t) {
 
 template<class IteratorType>
 void logContainer(QsLogging::Level severity, const IteratorType &begin, const IteratorType &end,
-                  int numberPerLine, const QString &name = "")
+                  int numberPerLine, const QString &name = "", const QString &delimiter = "")
 {
   if (QsLogging::Logger::instance().loggingLevel() > severity)
     return;
@@ -356,7 +360,7 @@ void logContainer(QsLogging::Level severity, const IteratorType &begin, const It
     QsLogging::Logger::Helper helper(severity);
     int num = 0;
     while (num < numberPerLine && it != end) {
-      helper.stream() << *it;
+      helper.stream() << qPrintable(QString("%1%2").arg(*it).arg(delimiter));
       ++it;
       ++num;
     }

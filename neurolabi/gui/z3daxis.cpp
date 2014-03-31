@@ -182,11 +182,11 @@ void Z3DAxis::setupCamera()
 {
   Z3DCamera camera;
   glm::vec3 center(0.f);
-  camera.setFieldOfView(10.f);
+  camera.setFieldOfView(glm::radians(10.f));
 
   float radius = 300.f;
 
-  float distance = radius/std::sin(glm::radians(camera.getFieldOfView())*0.5);
+  float distance = radius/std::sin(camera.getFieldOfView()*0.5);
   glm::vec3 vn(0, 0, 1);     //plane normal
   glm::vec3 position = center + vn * distance;
   camera.setCamera(position, center, glm::vec3(0.0, 1.0, 0.0));

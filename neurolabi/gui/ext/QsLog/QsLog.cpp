@@ -259,7 +259,7 @@ void Logger::write(const QString& message, Level level)
 // support std string
 QDebug& operator << (QDebug s, const std::string& m)
 {
-  s.nospace() << QString::fromStdString(m);
+  s.nospace() << QString::fromLocal8Bit(m.c_str());
   return s.space();
 }
 

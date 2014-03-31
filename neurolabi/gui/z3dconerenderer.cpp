@@ -299,7 +299,7 @@ void Z3DConeRenderer::renderPickingUsingOpengl()
   gluDeleteQuadric(quadric);
 }
 
-void Z3DConeRenderer::renderUsingGLSL(Z3DEye eye)
+void Z3DConeRenderer::render(Z3DEye eye)
 {
   if (!m_initialized)
     return;
@@ -433,7 +433,7 @@ void Z3DConeRenderer::renderUsingGLSL(Z3DEye eye)
   m_coneShaderGrp.release();
 }
 
-void Z3DConeRenderer::renderPickingUsingGLSL(Z3DEye eye)
+void Z3DConeRenderer::renderPicking(Z3DEye eye)
 {
   if (!m_initialized)
     return;

@@ -444,6 +444,11 @@ void Z3DTextureUnitManager::activateCurrentUnit()
   CHECK_GL_ERROR;
 }
 
+GLenum Z3DTextureUnitManager::getCurrentUnitEnum() const
+{
+  return GL_TEXTURE0 + m_currentUnitNumber;
+}
+
 GLint Z3DTextureUnitManager::getActiveTextureUnit()
 {
   GLint i;

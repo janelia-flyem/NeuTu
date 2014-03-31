@@ -134,7 +134,9 @@ Z3DRendererBase::Z3DRendererBase(QObject *parent)
   addParameter(m_coordYScale);
   addParameter(m_coordZScale);
   addParameter(m_sizeScale);
-  //addParameter(m_renderMethod);
+#ifdef _DEBUG_
+  addParameter(m_renderMethod);
+#endif
   addParameter(m_opacity);
 
   m_materialAmbient.setStyle("COLOR");
@@ -538,6 +540,7 @@ void Z3DRendererBase::compile()
 
 void Z3DRendererBase::render(Z3DEye eye)
 {
+#ifdef _DEBUG_
   if (m_renderMethod.isSelected("Old openGL")) {
     glMatrixMode(GL_PROJECTION);
     glPushMatrix();
@@ -577,10 +580,14 @@ void Z3DRendererBase::render(Z3DEye eye)
   } else {
     renderUsingGLSL(eye);
   }
+#else
+  renderUsingGLSL(eye);
+#endif
 }
 
 void Z3DRendererBase::renderPicking(Z3DEye eye)
 {
+#ifdef _DEBUG_
   if (m_renderMethod.isSelected("Old openGL")) {
     glMatrixMode(GL_PROJECTION);
     glPushMatrix();
@@ -617,6 +624,9 @@ void Z3DRendererBase::renderPicking(Z3DEye eye)
   } else {
     renderPickingUsingGLSL(eye);
   }
+#else
+  renderPickingUsingGLSL(eye);
+#endif
 }
 
 void Z3DRendererBase::generateDisplayList()
@@ -788,7 +798,7 @@ void Z3DRendererBase::renderUsingGLSL(Z3DEye eye)
   for (m_renderersIt = m_renderers.begin(); m_renderersIt != m_renderers.end();
        ++m_renderersIt) {
     if (m_renderersIt->second) {
-      m_renderersIt->first->renderUsingGLSL(eye);
+      m_renderersIt->first->render(eye);
     }
   }
   deactivateClipPlanesGLSL();
@@ -804,7 +814,7 @@ void Z3DRendererBase::renderPickingUsingGLSL(Z3DEye eye)
   for (m_renderersIt = m_renderers.begin(); m_renderersIt != m_renderers.end();
        ++m_renderersIt) {
     if (m_renderersIt->second) {
-      m_renderersIt->first->renderPickingUsingGLSL(eye);
+      m_renderersIt->first->renderPicking(eye);
     }
   }
   deactivateClipPlanesGLSL();
