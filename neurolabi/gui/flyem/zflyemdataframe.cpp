@@ -42,6 +42,8 @@
 #include "flyem/zflyemneuronimagefactory.h"
 #include "flyemneuronthumbnaildialog.h"
 #include "flyem/zflyemneuronfeatureanalyzer.h"
+#include "flyem/zflyemqualityanalyzer.h"
+#include "flyemhotspotdialog.h"
 
 using namespace std;
 
@@ -132,6 +134,7 @@ ZFlyEmDataFrame::ZFlyEmDataFrame(QWidget *parent) :
 
   m_geoSearchDlg = new FlyEmGeoFilterDialog(this);
   m_thumbnailDlg = new FlyEmNeuronThumbnailDialog(this);
+  m_hotSpotDlg = new FlyEmHotSpotDialog(this);
 
   m_matchManager = new ZFlyEmNeuronMatchTaskManager(this);
   connect(m_matchManager, SIGNAL(finished()),
@@ -2200,4 +2203,22 @@ const QString ZFlyEmDataFrame::getDataBundleSource(int index) const
   }
 
   return m_dataArray[index]->getSource().c_str();
+}
+
+void ZFlyEmDataFrame::identifyHotSpot() const
+{
+  if (m_hotSpotDlg->exec()) {
+    int id = m_hotSpotDlg->getId();
+    identifyHotSpot(id);
+  }
+}
+
+void ZFlyEmDataFrame::identifyHotSpot(int id) const
+{
+  ZFlyEmNeuron *neuron = m_dataArray[0]->getNeuron(id);
+  if (neuron != NULL) {
+    ZFlyEmQualityAnalyzer analyzer;
+    FlyEm::ZHotSpotArray hotspotArray = analyzer.computeHotSpot(neuron);
+    dump(hotspotArray.toString().c_str());
+  }
 }

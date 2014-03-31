@@ -44,12 +44,12 @@ static void dt1d_first_m_mu16(uint16 *d, const long int n, uint16 *f, int *v, fl
 
   float s;
   
-  for (q = v[0] + 1; q <= n - 1; q++) {
+  for (q = v[0] + 1; q < n; q++) {
     if (f[q] == 0) {  
-      s = (float)(q + v[k]) / 2.0;
+      s = (float)(q + v[k]) * 0.5;
       while (s <= z[k]) {
 	k--;
-	s = (float)(q + v[k]) / 2.0;
+	s = (float)(q + v[k]) * 0.5;
       } /* pop seeds */
       
       k++;
@@ -60,13 +60,15 @@ static void dt1d_first_m_mu16(uint16 *d, const long int n, uint16 *f, int *v, fl
   }
 
   k = 0;
-  for (q = 0; q <= n - 1; q++) {
-    while (z[k+1] < q) {
-      k++;
-    }
+  for (q = 0; q < n; q++) {
+    if (d[q] > 0) {
+      while (z[k+1] < q) {
+        k++;
+      }
 
-    if (f[q] > 0) {
-      d[q] = abs(q-v[k]);
+      if (f[q] > 0) {
+        d[q] = abs(q-v[k]);
+      }
     }
   }
 }
@@ -92,7 +94,7 @@ static void dt1d_second_m_mu16(uint16 *f, const long int n, uint16 *d, int *v, f
 
   float s;
 
-  for (q = v[0] + 1; q <= n - 1; q++) {
+  for (q = v[0] + 1; q < n; q++) {
     if (m[q] == 0) {     
       s = f[q] - f[v[k]];
       if (sqr_field == 0) {
@@ -118,21 +120,19 @@ static void dt1d_second_m_mu16(uint16 *f, const long int n, uint16 *d, int *v, f
   k = 0;
   int df;
   for (q = 0; q <= n - 1; q++) {
-    while (z[k+1] < q) {
-      k++;
-    }
-
     if (f[q] > 0) {
+      while (z[++k] < q);
+      --k;
       df = q-v[k];
       if (sqr_field == 0) {
-	df = df * df + f[v[k]] * f[v[k]];
+        df = df * df + f[v[k]] * f[v[k]];
       } else {
-	df = df * df + f[v[k]];
+        df = df * df + f[v[k]];
       }
       if (df > UINT16_INF) {
-	d[q] = UINT16_INF - 1;
+        d[q] = UINT16_INF - 1;
       } else {
-	d[q] = df;
+        d[q] = df;
       }
     } else {
       d[q] = 0;
@@ -391,6 +391,18 @@ void dt3d_binary_mu16(uint16 *data, const long int *sz, int pad)
 
 void dt3d_binary_mu16_p(uint16 *data, const long int *sz, int pad) 
 {
+
+  size_t length = (size_t) sz[0] * sz[1] * sz[2];
+  size_t i;
+  for (i = 0; i < length; ++i) {
+    if (data[i] > 0) {
+      data[i] = UINT16_INF;
+    } else {
+      data[i] = 0;
+    }
+  }
+    
+#if 0
   long int i,j,k;
   uint16 *ptr;
   long int tmp_k, tmp_j;
@@ -415,6 +427,7 @@ void dt3d_binary_mu16_p(uint16 *data, const long int *sz, int pad)
 	    }
 	}
     }
+#endif
 	
   dt3d_mu16_p(data, sz, pad);
 	

@@ -167,9 +167,10 @@ ZSwcTree* ZSwcGenerator::createRangeCompareSwc(
   return tree;
 }
 
-ZSwcTree* ZSwcGenerator::createSwcByRegionSampling(const ZVoxelArray &voxelArray)
+ZSwcTree* ZSwcGenerator::createSwcByRegionSampling(
+    const ZVoxelArray &voxelArray, double radiusAdjustment)
 {
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
   voxelArray.print();
 #endif
 
@@ -209,7 +210,7 @@ ZSwcTree* ZSwcGenerator::createSwcByRegionSampling(const ZVoxelArray &voxelArray
       SwcTreeNode::setPos(
             tn, voxelArray[i].x(), voxelArray[i].y(), voxelArray[i].z());
       SwcTreeNode::setRadius(
-            tn, voxelArray[i].value());
+            tn, voxelArray[i].value() + radiusAdjustment);
       Swc_Tree_Node_Set_Parent(tn, prevTn);
       prevTn = tn;
     }

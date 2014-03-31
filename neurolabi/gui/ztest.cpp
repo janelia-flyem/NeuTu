@@ -105,6 +105,9 @@
 #include "z3dmesh.h"
 #include "zstackdoc.h"
 #include "z3dwindow.h"
+#include "flyem/zhotspot.h"
+#include "flyem/zhotspotarray.h"
+#include "flyem/zhotspotfactory.h"
 #include "z3dswcfilter.h"
 #include "z3dinteractionhandler.h"
 #include "z3dcompositor.h"
@@ -168,6 +171,7 @@
 #include "test/zflyemneuronimagefactorytest.h"
 #include "test/zspgrowtest.h"
 #include "test/zflyemneuronmatchtest.h"
+#include "ztextlinecompositer.h"
 
 using namespace std;
 
@@ -10795,5 +10799,57 @@ void ZTest::test(MainWindow *host)
   taskManager->waitForDone();
 
   taskManager->deleteLater();
+#endif
+
+#if 0
+  ZTextLineCompositer compositer;
+  compositer.appendLine("Title");
+  compositer.appendLine("Headline 1", 1);
+  compositer.appendLine("Headline 1.1", 2);
+  compositer.appendLine("Headline 2", 1);
+  compositer.appendLine("Title 2");
+  std::cout << compositer.toString(4) << std::endl;
+
+  ZTextLineCompositer compositer2;
+  compositer2.appendLine("All");
+  compositer2.appendLine(compositer, 1);
+  compositer2.setLevel(1);
+  compositer2.print(2);
+#endif
+
+#if 0
+  FlyEm::ZHotSpot *hotSpot =
+      FlyEm::ZHotSpotFactory::createPointHotSpot(1, 2, 3);
+  hotSpot->print();
+
+  delete hotSpot;
+#endif
+
+#if 0
+  ZSwcDeepAngleMetric metric;
+  metric.setLevel(3);
+  metric.setMinDist(100);
+
+  ZSwcTree tree1;
+  ZSwcTree tree2;
+
+  tree1.load(GET_TEST_DATA_DIR + "/flyem/FIB/data_release/bundle5/swc/538772.swc");
+  tree2.load(GET_TEST_DATA_DIR + "/flyem/FIB/data_release/bundle5/swc/622288.swc");
+
+  //tree1.load(GET_TEST_DATA_DIR + "/benchmark/swc/dist/angle/tree3.swc");
+  //tree2.load(GET_TEST_DATA_DIR + "/benchmark/swc/dist/angle/tree4.swc");
+
+  /*
+  Swc_Tree_Node *root = tree2.queryNode(1);
+  SwcTreeNode::setAsRoot(root);
+  tree2.setDataFromNode(root, ZSwcTree::FREE_WRAPPER);
+  */
+
+  double dist = metric.measureDistance(&tree1, &tree2);
+
+  Print_Swc_Tree_Node(metric.getFirstNode());
+  Print_Swc_Tree_Node(metric.getSecondNode());
+
+  std::cout << "Distance: " << dist << std::endl;
 #endif
 }

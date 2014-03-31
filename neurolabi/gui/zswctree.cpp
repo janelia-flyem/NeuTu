@@ -1098,9 +1098,12 @@ void ZSwcTree::rescale(double scaleX, double scaleY, double scaleZ)
         Swc_Tree_Node_Data(tn)->y *= scaleY;
         Swc_Tree_Node_Data(tn)->z *= scaleZ;
         double dScale = sqrt(scaleX * scaleY);
+        Swc_Tree_Node_Data(tn)->d *=  dScale;
+#if 0
         if (dScale >= 1.9) { //heuristic
           Swc_Tree_Node_Data(tn)->d *=  dScale - 0.5;
         }
+#endif
       }
     }
   }

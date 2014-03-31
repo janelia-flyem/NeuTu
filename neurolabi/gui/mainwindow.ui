@@ -16,7 +16,7 @@
    </font>
   </property>
   <property name="windowTitle">
-   <string>neuTube 0.90</string>
+   <string>neuTube 0.91</string>
   </property>
   <widget class="QWidget" name="centralwidget"/>
   <widget class="QMenuBar" name="menubar">
@@ -278,6 +278,7 @@
       <addaction name="actionClear_Decoration"/>
       <addaction name="actionExtract_body"/>
       <addaction name="actionLoop_Analysis"/>
+      <addaction name="actionIdentify_Hot_Spot"/>
      </widget>
      <widget class="QMenu" name="menuTEM_Paper">
       <property name="title">
@@ -1128,6 +1129,11 @@
   <action name="actionJSON_Point_List">
    <property name="text">
     <string>JSON Point List</string>
+   </property>
+  </action>
+  <action name="actionIdentify_Hot_Spot">
+   <property name="text">
+    <string>Identify Hot Spot</string>
    </property>
   </action>
  </widget>

@@ -4,6 +4,7 @@
 #include "tz_math.h"
 #include "swctreenode.h"
 #include "zpointarray.h"
+#include "flyem/zhotspotfactory.h"
 
 ZFlyEmQualityAnalyzer::ZFlyEmQualityAnalyzer()
 {
@@ -318,16 +319,20 @@ void ZFlyEmQualityAnalyzer::SubstackRegionCalbration::calibrate(
   roi.translate(m_offset[0], m_offset[1], m_offset[2]);
 }
 
-ZPointArray ZFlyEmQualityAnalyzer::computeHotSpot(const ZFlyEmNeuron *neuron)
+FlyEm::ZHotSpotArray
+ZFlyEmQualityAnalyzer::computeHotSpot(const ZFlyEmNeuron *neuron)
 {
   return computeHotSpot(*neuron);
 }
 
-ZPointArray ZFlyEmQualityAnalyzer::computeHotSpot(const ZFlyEmNeuron &neuron)
+FlyEm::ZHotSpotArray
+ZFlyEmQualityAnalyzer::computeHotSpot(const ZFlyEmNeuron &neuron)
 {
   neuron.print();
   ZSwcTree *tree = neuron.getModel();
-  ZPointArray pointArray;
+  //ZPointArray pointArray;
+  FlyEm::ZHotSpotArray hotSpotArray;
+
   const double *resolution = neuron.getSwcResolution();
 
 #ifdef _DEBUG_
@@ -344,7 +349,7 @@ ZPointArray ZFlyEmQualityAnalyzer::computeHotSpot(const ZFlyEmNeuron &neuron)
       Swc_Tree_Node *tn = *iter;
 
       ZObject3dScan *obj = neuron.getBody();
-      while (tn != NULL) {
+      while (SwcTreeNode::isRegular(tn)) {
         int x = iround(SwcTreeNode::x(tn) / resolution[0]);
         int y = iround(SwcTreeNode::y(tn) / resolution[1]);
         int z = iround(SwcTreeNode::z(tn) / resolution[2]);
@@ -354,15 +359,24 @@ ZPointArray ZFlyEmQualityAnalyzer::computeHotSpot(const ZFlyEmNeuron &neuron)
             break;
           }
         }
+        FlyEm::ZHotSpot *hotSpot = NULL;
+
         if (obj != NULL) {
           if (obj->contains(x, y, z)) {
-            pointArray.append(x, y, z);
-            break;
+            //pointArray.append(x, y, z);
+            //hotSpotArray.append(hotSpot);
+            hotSpot = FlyEm::ZHotSpotFactory::createPointHotSpot(x, y, z);
           }
         } else {
-          pointArray.append(x, y, z);
+          //hotSpotArray.append(hotSpot);
+          //pointArray.append(x, y, z);
+          hotSpot = FlyEm::ZHotSpotFactory::createPointHotSpot(x, y, z);
+        }
+        if (hotSpot != NULL) {
+          hotSpotArray.append(hotSpot);
           break;
         }
+
         tn = SwcTreeNode::parent(tn);
       }
     }
@@ -374,5 +388,5 @@ ZPointArray ZFlyEmQualityAnalyzer::computeHotSpot(const ZFlyEmNeuron &neuron)
 
   //pointArray.print();
 
-  return pointArray;
+  return hotSpotArray;
 }

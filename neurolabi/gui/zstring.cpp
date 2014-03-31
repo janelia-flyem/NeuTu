@@ -62,6 +62,11 @@ ZString::~ZString()
   }
 }
 
+int ZString::firstInteger(const string &str)
+{
+  return String_First_Integer(str.c_str());
+}
+
 int ZString::firstInteger()
 {
   return String_First_Integer(c_str());

@@ -397,11 +397,14 @@ private:
   bool m_isCanonized;
   //mutable int *m_lastStripe;
 
+  //SWIG has some problem recognizing const static type
+#ifndef SWIG
   const static TEvent EVENT_OBJECT_MODEL_CHANGED; //Note that change of model implies change of view
   const static TEvent EVENT_OBJECT_UNCANONIZED;
   const static TEvent EVENT_OBJECT_CANONIZED;
   const static TEvent EVENT_OBJECT_VIEW_CHANGED;
   const static TEvent EVENT_NULL;
+#endif
 };
 
 

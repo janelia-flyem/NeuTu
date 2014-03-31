@@ -620,12 +620,6 @@ void MainWindow::customizeActions()
   m_ui->actionAutomatic_Axon->setVisible(isTracingOn);
   m_ui->actionFrom_SWC->setVisible(false);
 
-#if !defined(_DEBUG_)
-  m_ui->menuTube->menuAction()->setVisible(false);
-  m_ui->menuTrace_Project->menuAction()->setVisible(false);
-  m_ui->actionAutomatic_Axon->setVisible(false);
-  m_ui->actionDisable->setVisible(false);
-#endif
   m_ui->actionSave_SWC->setVisible(isTracingOn);
   this->buildConnAction->setVisible(false);
 
@@ -696,6 +690,16 @@ void MainWindow::customizeActions()
 #ifdef _DEBUG_
   testAction->setVisible(
         NeutubeConfig::getInstance().getApplication() != "Biocytin");
+#endif
+
+#if !defined(_DEBUG_)
+  m_ui->menuTube->menuAction()->setVisible(false);
+  m_ui->menuTrace_Project->menuAction()->setVisible(false);
+  m_ui->actionAutomatic_Axon->setVisible(false);
+  m_ui->actionDisable->setVisible(false);
+  m_ui->menuPuncta->menuAction()->setVisible(false);
+  m_ui->menuSwc->menuAction()->setVisible(false);
+  m_ui->menuQuery->menuAction()->setVisible(false);
 #endif
 }
 
@@ -5041,5 +5045,13 @@ void MainWindow::on_actionJSON_Point_List_triggered()
   if (frame != NULL) {
     QString fileName = getOpenFileName("Import Point List", "*.json");
     frame->importPointList(fileName);
+  }
+}
+
+void MainWindow::on_actionIdentify_Hot_Spot_triggered()
+{
+  ZFlyEmDataFrame *frame = currentFlyEmDataFrame();
+  if (frame != NULL) {
+    frame->identifyHotSpot();
   }
 }

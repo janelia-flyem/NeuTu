@@ -58,10 +58,10 @@ double ZSwcDeepAngleMetric::computeDeepAngle(
   for (size_t i = 0; i < s1; ++i) {
     for (size_t j = 0; j < s2; ++j) {
       if (SwcTreeNode::distance(
-            nodeArray1[i], nodeArray2[i], SwcTreeNode::EUCLIDEAN_SURFACE) <=
+            nodeArray1[i], nodeArray2[j], SwcTreeNode::EUCLIDEAN_SURFACE) <=
           m_minDist) {
         double dist = computeAngle(nodeArray1[i + 1], nodeArray1[i],
-            nodeArray2[i], nodeArray2[i + 1]);
+            nodeArray2[j], nodeArray2[j + 1]);
         if (dist < minDist) {
           minDist = dist;
         }

@@ -41,9 +41,39 @@
 
 using namespace std;
 
+static int help(int argc, char *argv[], char *spec[])
+{
+  if (argc == 2) {
+    if (strcmp(argv[1], "--help") == 0) {
+      printf("\nskeletonize ");
+      Print_Argument_Spec(spec);
+
+      printf("\nDetails\n");
+      printf("input: Input image file.\n");
+      printf("-o: Output skeleton file (swc).\n");
+      printf("--intv: Downsample interval for intermediate process. The final skeleton is always in the orignal scale.\n");
+      printf("--minlen: Minimal length of a branch. This is not an absolute contraint, i.e. the final skeleton may still have a branch shorter than this number. \n");
+      printf("--maxdist: Maximum distance of a gap to be connected (adjusted to the original scale in the case of downsample).\n");
+      printf("--keep_short: Keep isolated object even if it is shorter or smaller than the threshold.\n");
+      printf("--save_offset (Obsolete): Save the offset to the orignal stack.\n");
+      printf("--interpolate: Slice-wise interpolation of the image.\n");
+      printf("--rmborder: Remove border of boder caused by the segmentation pipeline. Ignore it if you don't know what it is.\n"); 
+      printf("--rebase: Reset the start point to presever the longest branch.");
+      printf("--level: Gray scale of the object to skeletonize");
+      printf("--fill_hole: Fill the hole of the object before skeletonization.");
+
+      return 1;
+    }
+  }
+}
+
 int main(int argc, char *argv[])
 {
-  if (Show_Version(argc, argv, "1.4") == 1) {
+  if (Show_Version(argc, argv, "1.5") == 1) {
+    return 0;
+  }
+
+  if (help(argc, argv, Spec) == 1) {
     return 0;
   }
 

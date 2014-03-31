@@ -17,8 +17,8 @@ __BEGIN_DECLS
 
 typedef struct _Sp_Grow_Workspace {
   size_t size; /* number of voxels */
-  double *dist; /* buffer for distances */
-  double *length; /* buffer of path length */
+  double *dist; /* buffer for geodesic distances */
+  double *length; /* buffer of euclidean path length */
   int *path; /* buffer for paths */
   int *checked; /* buffer for growing status */
   uint8_t *flag; /* buffer for voxel properties */

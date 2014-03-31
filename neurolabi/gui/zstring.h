@@ -38,6 +38,7 @@ public:
 
   inline void init() { m_workspace = New_String_Workspace(); }
 
+  static int firstInteger(const std::string &str);
   int firstInteger();
   int lastInteger();
   /*!

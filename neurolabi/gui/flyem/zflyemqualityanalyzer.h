@@ -5,6 +5,8 @@
 #include "zobject3dscan.h"
 #include "flyem/zflyemneuronrange.h"
 #include "flyem/zflyemneuron.h"
+#include "flyem/zhotspot.h"
+#include "flyem/zhotspotarray.h"
 
 class ZPointArray;
 
@@ -57,8 +59,8 @@ public:
 
   bool touchingSideBoundary(const ZObject3dScan &obj);
 
-  ZPointArray computeHotSpot(const ZFlyEmNeuron &neuron);
-  ZPointArray computeHotSpot(const ZFlyEmNeuron *neuron);
+  FlyEm::ZHotSpotArray computeHotSpot(const ZFlyEmNeuron &neuron);
+  FlyEm::ZHotSpotArray computeHotSpot(const ZFlyEmNeuron *neuron);
 
 private:
   FlyEm::ZIntCuboidArray m_substackRegion;

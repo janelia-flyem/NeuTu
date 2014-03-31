@@ -77,10 +77,12 @@ void ZActionActivator::update(const Z3DWindow *window)
 
 void ZActionActivator::registerAction(QAction *action, bool positive)
 {
-  if (positive) {
-    m_postiveActionList.insert(action);
-  } else {
-    m_negativeActionList.insert(action);
+  if (action != NULL) {
+    if (positive) {
+      m_postiveActionList.insert(action);
+    } else {
+      m_negativeActionList.insert(action);
+    }
   }
 }
 

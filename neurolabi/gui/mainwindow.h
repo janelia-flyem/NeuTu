@@ -352,6 +352,8 @@ private slots:
 
   void on_actionJSON_Point_List_triggered();
 
+  void on_actionIdentify_Hot_Spot_triggered();
+
 private:
   void createActions();
   void createFileActions();

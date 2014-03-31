@@ -379,7 +379,9 @@ HEADERS += mainwindow.h \
     flyem/zswctreebatchmatcher.h \
     zmultitaskmanager.h \
     flyem/zflyemneuronmatchtaskmanager.h \
-    flyem/zflyemneuronfiltertaskmanager.h
+    flyem/zflyemneuronfiltertaskmanager.h \
+    zinteractionevent.h \
+    flyemhotspotdialog.h
 
 FORMS += settingdialog.ui \
     frameinfodialog.ui \
@@ -423,7 +425,8 @@ FORMS += settingdialog.ui \
     resolutiondialog.ui \
     dvidimagedialog.ui \
     tilemanagerdialog.ui \
-    flyemneuronthumbnaildialog.ui
+    flyemneuronthumbnaildialog.ui \
+    flyemhotspotdialog.ui
 SOURCES += main.cpp \
     mainwindow.cpp \
     zstackview.cpp \
@@ -618,7 +621,9 @@ SOURCES += main.cpp \
     flyem/zswctreebatchmatcher.cpp \
     zmultitaskmanager.cpp \
     flyem/zflyemneuronmatchtaskmanager.cpp \
-    flyem/zflyemneuronfiltertaskmanager.cpp
+    flyem/zflyemneuronfiltertaskmanager.cpp \
+    zinteractionevent.cpp \
+    flyemhotspotdialog.cpp
 
 OTHER_FILES += \
     extlib.pri

@@ -31,6 +31,7 @@ class FlyEmGeoSearchDialog;
 class FlyEmGeoFilterDialog;
 class FlyEmNeuronThumbnailDialog;
 class ZFlyEmNeuronImageFactory;
+class FlyEmHotSpotDialog;
 
 class ZFlyEmDataFrame : public QMdiSubWindow, ZProgressable
 {
@@ -135,6 +136,9 @@ public:
    * \param dirName The thumbnail directory path.
    */
   void setThumbnail(const QString &dirName);
+
+  void identifyHotSpot() const;
+  void identifyHotSpot(int id) const;
 
 signals:
   void volumeTriggered(const QString &path);
@@ -262,6 +266,7 @@ private:
 
   FlyEmGeoFilterDialog *m_geoSearchDlg;
   FlyEmNeuronThumbnailDialog *m_thumbnailDlg;
+  FlyEmHotSpotDialog *m_hotSpotDlg;
 
   ZFlyEmNeuronMatchTaskManager *m_matchManager;
   ZFlyEmNeuronFilterTaskManager *m_filterManager;
