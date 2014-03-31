@@ -1579,7 +1579,7 @@ void Z3DWindow::takeSeriesScreenShot(const QDir &dir, const QString &namePrefix,
   QProgressDialog progress(title, "Cancel", 0, numFrame, this);
   progress.setWindowModality(Qt::WindowModal);
   progress.show();
-  double rAngle = 360.0 / numFrame;
+  double rAngle = M_PI * 2. / numFrame;
   for (int i=0; i<numFrame; i++) {
     progress.setValue(i);
     if (progress.wasCanceled())
@@ -1609,7 +1609,7 @@ void Z3DWindow::takeSeriesScreenShot(const QDir &dir, const QString &namePrefix,
   QProgressDialog progress(title, "Cancel", 0, numFrame, this);
   progress.setWindowModality(Qt::WindowModal);
   progress.show();
-  double rAngle = 360.0 / numFrame;
+  double rAngle = M_PI * 2. / numFrame;
   for (int i=0; i<numFrame; i++) {
     progress.setValue(i);
     if (progress.wasCanceled())

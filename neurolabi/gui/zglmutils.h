@@ -6,6 +6,7 @@
 
 #define GLM_FORCE_SSE2
 #define GLM_FORCE_SIZE_T_LENGTH
+#define GLM_FORCE_RADIANS
 //#define GLM_MESSAGES
 #define GLM_SWIZZLE
 #include <glm/glm.hpp>

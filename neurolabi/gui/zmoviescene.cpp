@@ -213,7 +213,7 @@ void ZMovieScene::updateCamera(Z3DWindow *stage, double t)
                    rotation.getAxis().z());
     //stage->getInteractionHandler()->getTrackball()->rotate(
     //      axis, rotation.getAngle() * t);
-    stage->getCamera()->rotate(glm::degrees(rotation.getAngle() * t),
+    stage->getCamera()->rotate(rotation.getAngle() * t,
                                stage->getCamera()->vectorEyeToWorld(
                                  glm::normalize(axis)));
   }

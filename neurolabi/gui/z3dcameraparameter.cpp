@@ -6,19 +6,19 @@
 Z3DCameraParameter::Z3DCameraParameter(const QString &name, const Z3DCamera &value, QObject *parent)
   : ZSingleValueParameter<Z3DCamera>(name, value, parent)
   , m_projectionType("Projection Type")
-  , m_eye("Eye Position", value.getEye(), glm::vec3(-std::numeric_limits<float>::max()),
+  , m_eye("Eye Position", m_value.getEye(), glm::vec3(-std::numeric_limits<float>::max()),
           glm::vec3(std::numeric_limits<float>::max()))
-  , m_center("Center Position", value.getCenter(), glm::vec3(-std::numeric_limits<float>::max()),
+  , m_center("Center Position", m_value.getCenter(), glm::vec3(-std::numeric_limits<float>::max()),
              glm::vec3(std::numeric_limits<float>::max()))
-  , m_upVector("Up Vector", value.getUpVector(), glm::vec3(-1.f), glm::vec3(1.f))
-  , m_eyeSeparationAngle("Eye Separation Angle", value.getEyeSeparationAngle(), 1.f, 80.f)
-  , m_fieldOfView("Field of View", value.getFieldOfView(), 10.f, 170.f)
-  , m_nearDist("Near Distance", value.getNearDist(), 1e-10, std::numeric_limits<float>::max())
-  , m_farDist("Far Distance", value.getFarDist(), 1e-10, std::numeric_limits<float>::max())
+  , m_upVector("Up Vector", m_value.getUpVector(), glm::vec3(-1.f), glm::vec3(1.f))
+  , m_eyeSeparationAngle("Eye Separation Angle", glm::degrees(m_value.getEyeSeparationAngle()), 1.f, 80.f)
+  , m_fieldOfView("Field of View", glm::degrees(m_value.getFieldOfView()), 10.f, 170.f)
+  , m_nearDist("Near Distance", m_value.getNearDist(), 1e-10, std::numeric_limits<float>::max())
+  , m_farDist("Far Distance", m_value.getFarDist(), 1e-10, std::numeric_limits<float>::max())
   , m_receiveWidgetSignal(true)
 {
   m_projectionType.addOptions("Perspective", "Orthographic");
-  if (value.isPerspectiveProjection())
+  if (m_value.isPerspectiveProjection())
     m_projectionType.select("Perspective");
   else
     m_projectionType.select("Orthographic");
@@ -52,13 +52,13 @@ Z3DCameraParameter::Z3DCameraParameter(const QString &name, const Z3DCamera &val
   m_nearDist.setSingleStep(1e-10);
   m_nearDist.setDecimal(10);
   m_nearDist.setStyle("SPINBOX");
-  m_nearDist.setRange(1e-10, value.getFarDist());
+  m_nearDist.setRange(1e-10, m_value.getFarDist());
   connect(&m_nearDist, SIGNAL(valueChanged()), this, SLOT(updateNearDist()));
 
   m_farDist.setSingleStep(1e-10);
   m_farDist.setDecimal(10);
   m_farDist.setStyle("SPINBOX");
-  m_farDist.setRange(value.getNearDist(), std::numeric_limits<float>::max());
+  m_farDist.setRange(m_value.getNearDist(), std::numeric_limits<float>::max());
   connect(&m_farDist, SIGNAL(valueChanged()), this, SLOT(updateFarDist()));
 }
 
@@ -115,7 +115,7 @@ void Z3DCameraParameter::updateUpVector()
 void Z3DCameraParameter::updateEyeSeparationAngle()
 {
   if (m_receiveWidgetSignal) {
-    m_value.setEyeSeparationAngle(m_eyeSeparationAngle.get());
+    m_value.setEyeSeparationAngle(glm::radians(m_eyeSeparationAngle.get()));
     emit valueChanged();
   }
 }
@@ -123,7 +123,7 @@ void Z3DCameraParameter::updateEyeSeparationAngle()
 void Z3DCameraParameter::updateFieldOfView()
 {
   if (m_receiveWidgetSignal) {
-    m_value.setFieldOfView(m_fieldOfView.get());
+    m_value.setFieldOfView(glm::radians(m_fieldOfView.get()));
     emit valueChanged();
   }
 }
@@ -185,8 +185,8 @@ void Z3DCameraParameter::updateWidget(Z3DCamera &value)
     m_projectionType.select("Perspective");
   else
     m_projectionType.select("Orthographic");
-  m_eyeSeparationAngle.set(value.getEyeSeparationAngle());
-  m_fieldOfView.set(value.getFieldOfView());
+  m_eyeSeparationAngle.set(glm::degrees(value.getEyeSeparationAngle()));
+  m_fieldOfView.set(glm::degrees(value.getFieldOfView()));
   m_nearDist.set(value.getNearDist());
   m_farDist.set(value.getFarDist());
   m_nearDist.setRange(1e-10, value.getFarDist());
