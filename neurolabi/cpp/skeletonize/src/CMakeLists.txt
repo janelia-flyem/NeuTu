@@ -10,6 +10,7 @@ SET(EXTLIB_DIR ${NeurolabiDir}/lib)
 #SET(jsonLib jansson)
 set(CMAKE_PREFIX_PATH ${EXTLIB_DIR}/jansson)
 find_library(jsonLib LIBRARY NAMES jansson)
+
 set(CMAKE_PREFIX_PATH ${EXTLIB_DIR}/fftw3)
 find_library(fftw3Lib LIBRARY NAMES fftw3)
 find_library(fftw3fLib LIBRARY NAMES fftw3f)
@@ -48,13 +49,13 @@ include_directories(
   ${EXTLIB_DIR}/png/include
   ${EXTLIB_DIR}/jansson/include
   ${EXTLIB_DIR}/hdf5/include
-)
+  )
 
 add_executable(skeletonize skeletonize.cpp)
 TARGET_LINK_LIBRARIES(skeletonize 
   ${neutubeLib} ${neuLib} ${jsonLib} ${fftw3Lib} ${fftw3fLib} ${xmlLib} 
   ${pngLib} ${zLib} ${dlLib} ${hdfLib}
-)
+  )
 
 
 
