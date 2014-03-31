@@ -21,7 +21,9 @@ cd lib
 sh build.sh
 cd ..
 
+echo 'Building libneurolabi ...'
 ./update_library --release 
+
 if [ ! -d build ]
 then
   mkdir build

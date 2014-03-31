@@ -9,13 +9,14 @@ namespace FlyEm {
 
 class ZGeometry {
 public:
+  virtual ~ZGeometry() {}
   void print() const;
   virtual ZTextLineCompositer toLineCompositer() const = 0;
 };
 
 class ZPointGeometry : public ZGeometry {
-
 public:
+  ~ZPointGeometry() {}
   void setCenter(double x, double y, double z);
   ZTextLineCompositer toLineCompositer() const;
 
