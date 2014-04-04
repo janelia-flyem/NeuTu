@@ -10,6 +10,7 @@
 #else
 #include <memory>
 #endif
+#include "zcuboid.h"
 
 #ifdef _USE_GTEST_
 
@@ -191,8 +192,18 @@ TEST(ZIntCuboidComposition, hitTest)
   EXPECT_FALSE(comp3->hitTest(1, 1, 1));
   EXPECT_FALSE(comp3->hitTest(2, 2, 2));
   EXPECT_FALSE(comp3->hitTest(3, 3, 3));
+}
 
+TEST(ZCuboid, distance) {
+  ZCuboid box1;
+  box1.set(0, 0, 0, 10, 20, 30);
+  ZCuboid box2;
+  box2.set(10, 20, 40, 20, 30, 50);
 
+  ASSERT_DOUBLE_EQ(box1.computeDistance(box2), 10.0);
+
+  box2.set(10, 20, 30, 20, 30, 50);
+  ASSERT_DOUBLE_EQ(box1.computeDistance(box2), 0.0);
 }
 
 #endif

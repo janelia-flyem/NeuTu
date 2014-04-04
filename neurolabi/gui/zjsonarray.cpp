@@ -39,9 +39,17 @@ const json_t* ZJsonArray::at(size_t index) const
 
 void ZJsonArray::append(json_t *obj)
 {
-  if (m_data != NULL && obj != NULL) {
+  if (obj != NULL) {
+    if (m_data == NULL) {
+      m_data = json_array();
+    }
     C_Json::appendArray(m_data, obj);
   }
+}
+
+void ZJsonArray::append(ZJsonValue &obj)
+{
+  append(obj.getValue());
 }
 
 std::vector<double> ZJsonArray::toNumberArray() const

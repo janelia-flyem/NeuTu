@@ -95,6 +95,11 @@ public:
   void setEntry(const char *key, double v);
 
   /*!
+   * \brief setEntry Set an entry of the object
+   */
+  void setEntry(const char *key, ZJsonValue &value);
+
+  /*!
    * \brief Save the json object into a file
    *
    * \return true iff write succeeds.

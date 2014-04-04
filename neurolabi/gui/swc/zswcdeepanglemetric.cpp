@@ -87,6 +87,14 @@ double ZSwcDeepAngleMetric::measureDistance(
     return 0.0;
   }
 
+#if 1
+  const ZCuboid &box1 = tree1->getBoundBox();
+  const ZCuboid &box2 = tree2->getBoundBox();
+  if (box1.computeDistance(box2) > m_minDist) {
+    return Infinity;
+  }
+#endif
+
   const std::vector<Swc_Tree_Node*> &leafArray1 =
       tree1->getSwcTreeNodeArray(ZSwcTree::TERMINAL_ITERATOR);
 

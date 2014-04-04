@@ -17,6 +17,7 @@
 #include "zswctreebatchmatcher.h"
 #include "flyem/zflyemneuronmatchtaskmanager.h"
 #include "flyem/zflyemneuronfiltertaskmanager.h"
+#include "flyem/zflyemqualityanalyzertaskmanager.h"
 
 class ZSwcTrunkAnalyzer;
 class ZSwcFeatureAnalyzer;
@@ -137,8 +138,8 @@ public:
    */
   void setThumbnail(const QString &dirName);
 
-  void identifyHotSpot() const;
-  void identifyHotSpot(int id) const;
+  void identifyHotSpot();
+  void identifyHotSpot(int id);
 
 signals:
   void volumeTriggered(const QString &path);
@@ -164,6 +165,7 @@ public slots:
 
   void updateClassPrediction();
   void updateSearchResult();
+  void updateQualityControl();
 
 private:
   FlyEm::ZSynapseAnnotationArray *getSynapseAnnotation();
@@ -270,6 +272,7 @@ private:
 
   ZFlyEmNeuronMatchTaskManager *m_matchManager;
   ZFlyEmNeuronFilterTaskManager *m_filterManager;
+  ZFlyEmQualityAnalyzerTaskManager *m_qualityManager;
   //ZSwcTreeBatchMatcher *m_batchMatcher;
 
   QVector<ZFlyEmNeuron*> m_foregroundNeuronArray;

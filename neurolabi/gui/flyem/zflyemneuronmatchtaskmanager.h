@@ -56,20 +56,6 @@ class ZFlyEmNeuronMatchTaskManager : public ZMultiTaskManager
 public:
   ZFlyEmNeuronMatchTaskManager(QObject *parent = NULL);
 
-  /*
-  inline const QVector<ZFlyEmNeuron*>& getSource() const {
-    return m_sourceNeuronArray;
-  }
-  */
-
-  /*
-  inline void addSourceNeuron(ZFlyEmNeuron *neuron) {
-    if (neuron != NULL) {
-      m_sourceNeuronArray.append(neuron);
-    }
-  }
-  */
-
 protected:
   virtual void prepare();
   virtual void postProcess();
