@@ -1,6 +1,8 @@
 #include "zhotspotarray.h"
 #include "ztextlinearray.h"
 #include "zstring.h"
+#include "zjsonobject.h"
+#include "zjsonparser.h"
 
 FlyEm::ZHotSpotArray::ZHotSpotArray()
 {
@@ -36,4 +38,31 @@ ZTextLineCompositer FlyEm::ZHotSpotArray::toLineCompositer() const
 std::string FlyEm::ZHotSpotArray::toString() const
 {
   return toLineCompositer().toString(2);
+}
+
+void FlyEm::ZHotSpotArray::concat(FlyEm::ZHotSpotArray *spotArray)
+{
+#ifdef _DEBUG_
+  std::cout << spotArray->toString() << std::endl;
+#endif
+  if (spotArray != NULL) {
+    insert(end(), spotArray->begin(), spotArray->end());
+    spotArray->clear();
+  }
+}
+
+bool FlyEm::ZHotSpotArray::exportJsonFile(const std::string &filePath)
+{
+  ZJsonObject obj;
+  ZJsonArray arrayObj;
+  for (FlyEm::ZHotSpotArray::const_iterator iter = begin(); iter != end();
+       ++iter) {
+    ZHotSpot *hotSpot = *iter;
+    ZJsonObject spotObj = hotSpot->toJsonObject();
+    arrayObj.append(spotObj);
+  }
+
+  obj.setEntry("hot_spot", arrayObj);
+
+  return obj.dump(filePath);
 }

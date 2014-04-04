@@ -145,6 +145,11 @@ ZFlyEmDataFrame::ZFlyEmDataFrame(QWidget *parent) :
   connect(m_filterManager, SIGNAL(finished()),
           this, SLOT(updateSearchResult()));
   m_filterManager->setProgressReporter(&m_specialProgressReporter);
+
+  m_qualityManager = new ZFlyEmQualityAnalyzerTaskManager(this);
+  connect(m_qualityManager, SIGNAL(finished()),
+          this, SLOT(updateQualityControl()));
+  m_qualityManager->setProgressReporter(&m_specialProgressReporter);
 }
 
 ZFlyEmDataFrame::~ZFlyEmDataFrame()
@@ -1863,6 +1868,7 @@ void ZFlyEmDataFrame::searchNeighborNeuron(const ZFlyEmNeuron *neuron)
       if (tree1 != NULL) {
         tree1->getSwcTreeNodeArray(ZSwcTree::TERMINAL_ITERATOR);
         tree1->getSwcTreeNodeArray(ZSwcTree::DEPTH_FIRST_ITERATOR);
+        tree1->getBoundBox();
         m_geoSearchDlg->setDataBundleWidget(m_dataArray);
         if (m_geoSearchDlg->exec()) {
           int index = 0;
@@ -1878,6 +1884,7 @@ void ZFlyEmDataFrame::searchNeighborNeuron(const ZFlyEmNeuron *neuron)
                      ++iter) {
                   if (neuron != &(*iter)) {
                     ZSwcTree *tree2 = iter->getModel();
+                    tree2->getBoundBox();
                     tree2->getSwcTreeNodeArray(ZSwcTree::TERMINAL_ITERATOR);
                     tree2->getSwcTreeNodeArray(ZSwcTree::DEPTH_FIRST_ITERATOR);
                     ZFlyEmNeuronFilterTask *task = new ZFlyEmNeuronFilterTask;
@@ -2205,20 +2212,48 @@ const QString ZFlyEmDataFrame::getDataBundleSource(int index) const
   return m_dataArray[index]->getSource().c_str();
 }
 
-void ZFlyEmDataFrame::identifyHotSpot() const
+void ZFlyEmDataFrame::identifyHotSpot()
 {
-  if (m_hotSpotDlg->exec()) {
-    int id = m_hotSpotDlg->getId();
-    identifyHotSpot(id);
+  if (initTaskManager(m_qualityManager)) {
+    if (m_hotSpotDlg->exec()) {
+      int id = m_hotSpotDlg->getId();
+      identifyHotSpot(id);
+    }
   }
 }
 
-void ZFlyEmDataFrame::identifyHotSpot(int id) const
+void ZFlyEmDataFrame::identifyHotSpot(int id)
 {
-  ZFlyEmNeuron *neuron = m_dataArray[0]->getNeuron(id);
-  if (neuron != NULL) {
-    ZFlyEmQualityAnalyzer analyzer;
-    FlyEm::ZHotSpotArray hotspotArray = analyzer.computeHotSpot(neuron);
-    dump(hotspotArray.toString().c_str());
+  if (id == 0) {
+    dump("Finding hot spots ...");
+    std::vector<ZFlyEmNeuron> &neuronArray = m_dataArray[0]->getNeuronArray();
+    for (std::vector<ZFlyEmNeuron>::iterator iter = neuronArray.begin();
+         iter != neuronArray.end(); ++iter) {
+      ZFlyEmNeuron &neuron = *iter;
+      ZFlyEmQualityAnalyzerTask *task = new ZFlyEmQualityAnalyzerTask;
+      task->setSource(&neuron);
+      task->setDataBundle(m_dataArray[0]);
+      m_qualityManager->addTask(task);
+    }
+    m_qualityManager->start();
+  } else {
+    ZFlyEmNeuron *neuron = m_dataArray[0]->getNeuron(id);
+    if (neuron != NULL) {
+      dump("Finding hot spots ...");
+      ZFlyEmQualityAnalyzerTask *task = new ZFlyEmQualityAnalyzerTask;
+      task->setSource(neuron);
+      task->setDataBundle(m_dataArray[0]);
+      m_qualityManager->addTask(task);
+      m_qualityManager->start();
+    }
   }
+}
+
+void ZFlyEmDataFrame::updateQualityControl()
+{
+  dump(m_qualityManager->getHotSpot().toString().c_str());
+
+#ifdef _DEBUG_
+  m_qualityManager->getHotSpot().exportJsonFile(GET_DATA_DIR + "/test.json");
+#endif
 }

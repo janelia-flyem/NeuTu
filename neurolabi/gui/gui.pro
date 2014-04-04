@@ -381,7 +381,8 @@ HEADERS += mainwindow.h \
     flyem/zflyemneuronmatchtaskmanager.h \
     flyem/zflyemneuronfiltertaskmanager.h \
     zinteractionevent.h \
-    flyemhotspotdialog.h
+    flyemhotspotdialog.h \
+    flyem/zflyemqualityanalyzertaskmanager.h
 
 FORMS += settingdialog.ui \
     frameinfodialog.ui \
@@ -623,7 +624,8 @@ SOURCES += main.cpp \
     flyem/zflyemneuronmatchtaskmanager.cpp \
     flyem/zflyemneuronfiltertaskmanager.cpp \
     zinteractionevent.cpp \
-    flyemhotspotdialog.cpp
+    flyemhotspotdialog.cpp \
+    flyem/zflyemqualityanalyzertaskmanager.cpp
 
 OTHER_FILES += \
     extlib.pri

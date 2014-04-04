@@ -5,6 +5,8 @@
 #include "swctreenode.h"
 #include "zpointarray.h"
 #include "flyem/zhotspotfactory.h"
+#include "swc/zswcdeepanglemetric.h"
+#include "zflyemdatabundle.h"
 
 ZFlyEmQualityAnalyzer::ZFlyEmQualityAnalyzer()
 {
@@ -319,19 +321,20 @@ void ZFlyEmQualityAnalyzer::SubstackRegionCalbration::calibrate(
   roi.translate(m_offset[0], m_offset[1], m_offset[2]);
 }
 
-FlyEm::ZHotSpotArray
+FlyEm::ZHotSpotArray&
 ZFlyEmQualityAnalyzer::computeHotSpot(const ZFlyEmNeuron *neuron)
 {
   return computeHotSpot(*neuron);
 }
 
-FlyEm::ZHotSpotArray
+FlyEm::ZHotSpotArray&
 ZFlyEmQualityAnalyzer::computeHotSpot(const ZFlyEmNeuron &neuron)
 {
+  m_hotSpotArray.clear();
+
   neuron.print();
   ZSwcTree *tree = neuron.getModel();
   //ZPointArray pointArray;
-  FlyEm::ZHotSpotArray hotSpotArray;
 
   const double *resolution = neuron.getSwcResolution();
 
@@ -373,7 +376,7 @@ ZFlyEmQualityAnalyzer::computeHotSpot(const ZFlyEmNeuron &neuron)
           hotSpot = FlyEm::ZHotSpotFactory::createPointHotSpot(x, y, z);
         }
         if (hotSpot != NULL) {
-          hotSpotArray.append(hotSpot);
+          m_hotSpotArray.append(hotSpot);
           break;
         }
 
@@ -388,5 +391,51 @@ ZFlyEmQualityAnalyzer::computeHotSpot(const ZFlyEmNeuron &neuron)
 
   //pointArray.print();
 
-  return hotSpotArray;
+  return m_hotSpotArray;
+}
+
+FlyEm::ZHotSpotArray &ZFlyEmQualityAnalyzer::computeHotSpot(const ZFlyEmNeuron *neuron,
+                                      const ZFlyEmDataBundle &dataBundle)
+{
+  return computeHotSpot(*neuron, dataBundle);
+}
+
+FlyEm::ZHotSpotArray&
+ZFlyEmQualityAnalyzer::computeHotSpot(const ZFlyEmNeuron &neuron,
+                                      const ZFlyEmDataBundle &dataBundle)
+{
+  m_hotSpotArray.clear();
+
+  ZSwcDeepAngleMetric metric;
+  metric.setLevel(3);
+  metric.setMinDist(100.0);
+  /*
+  ZFlyEmDataBundle dataBundle;
+  dataBundle.loadJsonFile(GET_TEST_DATA_DIR + "/flyem/FIB/data_release/bundle5/data_bundle.json");
+  ZFlyEmNeuron *neuron = dataBundle.getNeuron(538772);
+  */
+  const std::vector<ZFlyEmNeuron>& neuronArray = dataBundle.getNeuronArray();
+  for (size_t i = 0; i < neuronArray.size(); ++i) {
+    const ZFlyEmNeuron &buddyNeuron = neuronArray[i];
+    if (neuron.getId() != buddyNeuron.getId()) {
+      double dist =
+          metric.measureDistance(neuron.getModel(), buddyNeuron.getModel());
+      if (dist < 1.0) {
+        const Swc_Tree_Node *tn = metric.getFirstNode();
+        FlyEm::ZHotSpot *hotSpot = new FlyEm::ZHotSpot;
+        FlyEm::ZPointGeometry *geometry = new FlyEm::ZPointGeometry;
+        geometry->setCenter(
+              SwcTreeNode::x(tn), SwcTreeNode::y(tn), SwcTreeNode::z(tn));
+        FlyEm::ZStructureInfo *structure = new FlyEm::ZStructureInfo;
+        structure->setSource(neuron.getId());
+        structure->addTarget(buddyNeuron.getId());
+        hotSpot->setGeometry(geometry);
+        hotSpot->setStructure(structure);
+        hotSpot->setConfidence(1.0 - dist);
+        m_hotSpotArray.append(hotSpot);
+      }
+    }
+  }
+
+  return m_hotSpotArray;
 }

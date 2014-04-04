@@ -7,10 +7,12 @@
 #include "flyem/zflyemneuron.h"
 #include "flyem/zhotspot.h"
 #include "flyem/zhotspotarray.h"
+#include "zprogressable.h"
 
 class ZPointArray;
+class ZFlyEmDataBundle;
 
-class ZFlyEmQualityAnalyzer
+class ZFlyEmQualityAnalyzer : public ZProgressable
 {
 public:
   ZFlyEmQualityAnalyzer();
@@ -59,11 +61,17 @@ public:
 
   bool touchingSideBoundary(const ZObject3dScan &obj);
 
-  FlyEm::ZHotSpotArray computeHotSpot(const ZFlyEmNeuron &neuron);
-  FlyEm::ZHotSpotArray computeHotSpot(const ZFlyEmNeuron *neuron);
+  FlyEm::ZHotSpotArray& computeHotSpot(const ZFlyEmNeuron &neuron);
+  FlyEm::ZHotSpotArray& computeHotSpot(const ZFlyEmNeuron *neuron);
+
+  FlyEm::ZHotSpotArray& computeHotSpot(const ZFlyEmNeuron &neuron,
+                                      const ZFlyEmDataBundle &dataBundle);
+  FlyEm::ZHotSpotArray& computeHotSpot(const ZFlyEmNeuron *neuron,
+                                      const ZFlyEmDataBundle &dataBundle);
 
 private:
   FlyEm::ZIntCuboidArray m_substackRegion;
+  FlyEm::ZHotSpotArray m_hotSpotArray;
 
 };
 

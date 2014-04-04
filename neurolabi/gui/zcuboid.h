@@ -74,6 +74,12 @@ public:
   inline ZPoint firstCorner() const { return m_firstCorner; }
   inline ZPoint lastCorner() const { return m_lastCorner; }
 
+  double computeDistance(const ZCuboid &box) const;
+
+private:
+  static double computeDistance(double minX1, double maxX1,
+                                double minX2, double maxX2);
+
 private:
   ZPoint m_firstCorner;
   ZPoint m_lastCorner;

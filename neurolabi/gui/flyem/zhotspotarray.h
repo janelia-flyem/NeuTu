@@ -16,8 +16,11 @@ public:
 
 public:
   void append(ZHotSpot *hotSpot);
+  void concat(ZHotSpotArray *spotArray);
   std::string toString() const;
   ZTextLineCompositer toLineCompositer() const;
+
+  bool exportJsonFile(const std::string &filePath);
 };
 
 }

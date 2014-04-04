@@ -23,6 +23,18 @@ ZTextLineCompositer FlyEm::ZPointGeometry::toLineCompositer() const
   return compositer;
 }
 
+ZJsonObject FlyEm::ZPointGeometry::toJsonObject() const
+{
+  ZJsonObject obj;
+  double coords[3];
+  coords[0] = m_center.x();
+  coords[1] = m_center.y();
+  coords[2] = m_center.z();
+  obj.setEntry("center", coords, 3);
+
+  return obj;
+}
+
 void FlyEm::ZStructureInfo::print() const
 {
   std::cout << toLineCompositer().toString(2) << std::endl;
@@ -46,6 +58,30 @@ ZTextLineCompositer FlyEm::ZStructureInfo::toLineCompositer() const
   compositer.appendLine(stream2.str(), 1);
 
   return compositer;
+}
+
+std::string FlyEm::ZStructureInfo::getTypeString() const
+{
+  switch (m_type) {
+  case TYPE_MERGE:
+    return "merge";
+  case TYPE_SPLIT:
+    return "split";
+  case TYPE_UNKNOWN:
+    return "unknown";
+  }
+
+  return "";
+}
+
+ZJsonObject FlyEm::ZStructureInfo::toJsonObject() const
+{
+  ZJsonObject obj;
+  obj.setEntry("type", getTypeString());
+  obj.setEntry("source", m_sourceBody);
+  obj.setEntry("target", &(m_targetBodyArray[0]), m_targetBodyArray.size());
+
+  return obj;
 }
 
 FlyEm::ZHotSpot::ZHotSpot() :
@@ -94,4 +130,40 @@ void FlyEm::ZHotSpot::setGeometry(FlyEm::ZGeometry *geometry)
   }
 
   m_geometry = geometry;
+}
+
+void FlyEm::ZHotSpot::setStructure(ZStructureInfo *structure)
+{
+  if (m_structInfo != NULL) {
+    delete m_structInfo;
+  }
+
+  m_structInfo = structure;
+}
+
+std::string FlyEm::ZHotSpot::getTypeString() const
+{
+  switch (m_type) {
+  case TYPE_POINT:
+    return "point";
+  case TYPE_REGION:
+    return "region";
+  case TYPE_SURFACE:
+    return "surface";
+  }
+
+  return "";
+}
+
+ZJsonObject FlyEm::ZHotSpot::toJsonObject() const
+{
+  ZJsonObject obj;
+  obj.setEntry("Confidence", m_confidence);
+  obj.setEntry("Type", getTypeString());
+  ZJsonObject geometryObject = m_geometry->toJsonObject();
+  obj.setEntry("Geometry", geometryObject);
+  ZJsonObject structObject = m_structInfo->toJsonObject();
+  obj.setEntry("Structure", structObject);
+
+  return obj;
 }

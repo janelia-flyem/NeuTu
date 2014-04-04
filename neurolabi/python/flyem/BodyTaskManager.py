@@ -64,7 +64,7 @@ class ExtractBodyTaskManager:
         
         return command;
         
-    def generateScript(self, outputDir):
+    def generateScript(self, outputPath):
         script = self.output
         scriptFile = open(script, 'w')
         if scriptFile:
