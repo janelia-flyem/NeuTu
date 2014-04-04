@@ -14,6 +14,7 @@ sys.path.append('flyem')
 socket.setdefaulttimeout(1000)
 
 import skeletonize as skl
+import quality_analyzer as qa
 
 def getDefaultDvidServer():
     return 'emdata1.int.janelia.org:7000'
@@ -114,7 +115,7 @@ def do_skeletonize():
 #     return '<p>Skeletonization for ' + str(bodyArray) + ' is completed.</p>'
 
 @get('/hotspot')
-def skeletonize():
+def computing_hotspot():
     return '''
         <form action="/hotspot" method="post">
             Body ID: <input name="bodyId" type="text"/>
@@ -139,7 +140,7 @@ def compute_hotspot():
         except jsonschema.exceptions.ValidationError as inst:
             print 'Invalid json input'
             print inst
-            return '<p>Skeletonization for ' + str(bodyArray) + ' failed.</p>'
+            return '<p>Hotspot computation for ' + str(bodyArray) + ' failed.</p>'
         uuid = jsonObj['uuid']
         if jsonObj.has_key('dvid-server'):
             dvidServer = jsonObj['dvid-server']
@@ -159,15 +160,9 @@ def compute_hotspot():
 
         r1 = conn.getresponse()
         if not r1.status == 200:
-            try:
-                skl.Skeletonize(bodyId, 'dvid', config)
-                output[str(bodyId)] = dvidServer + bodyLink
-            except Exception as inst:
-                return '<p>' + str(inst) + '</p>'
-        else:
-            output[str(bodyId)] = dvidServer + bodyLink
+            qa.computeHotSpot(bodyId, 'dvid', config)
     
-    return json.dumps(output, sort_keys = False)
+    return qa.getHotSpotJsonString()
 
 @get('/skeleton/<bodyId>')
 def retrieveSkeleton(bodyId):

@@ -23,6 +23,7 @@ class ExtractBodyTaskManager:
         self.output = ''
         self.bodysizeFile = ''
         self.jobNumber = 5
+        self.skipFileFlag = None
         
     def setCommandPath(self, path):
         self.commandPath = path;
@@ -51,6 +52,9 @@ class ExtractBodyTaskManager:
         
     def useCluster(self, using):
         self.usingCluster = using;
+
+    def setSkipFileFlag(self, flag):
+        self.skipFileFlag = flag
         
     def getFullCommand(self):
         command = self.commandPath + ' ' + self.bodyMapDir + ' -o ' + self.output + \
@@ -64,11 +68,15 @@ class ExtractBodyTaskManager:
         
         return command;
         
-    def generateScript(self, outputDir):
-        script = self.output
+    def generateScript(self, script):
         scriptFile = open(script, 'w')
         if scriptFile:
+            if self.skipFileFlag:
+                scriptFile.write('if [ ! -f "' + self.skipFileFlag + '" ]; then\n')
             scriptFile.write(self.getFullCommand())
+            scriptFile.write('\n')
+            if self.skipFileFlag:
+                scriptFile.write('fi\n')
         scriptFile.close()
 
 if __name__ == '__main__':
