@@ -53,6 +53,10 @@ namespace std {
     printf("%c\n", array[0]);
   }
 
+  void PrintString(const std::string &str) {
+    printf("%s\n", str.c_str());
+  }
+
   std::vector<char> CharArrayTest() {
     std::vector<char> array(2);
     array[0] = 'h';
@@ -73,3 +77,4 @@ namespace std {
 %include zpointarray.i
 %include zflyemneuron.i
 %include zflyemqualityanalyzer.i
+%include zflyemhotspot.i

@@ -66,3 +66,38 @@ bool FlyEm::ZHotSpotArray::exportJsonFile(const std::string &filePath)
 
   return obj.dump(filePath);
 }
+
+std::string FlyEm::ZHotSpotArray::toJsonString() const
+{
+  ZJsonObject obj;
+  ZJsonArray arrayObj;
+  for (FlyEm::ZHotSpotArray::const_iterator iter = begin(); iter != end();
+       ++iter) {
+    ZHotSpot *hotSpot = *iter;
+    ZJsonObject spotObj = hotSpot->toJsonObject();
+    arrayObj.append(spotObj);
+  }
+
+  obj.setEntry("hot_spot", arrayObj);
+
+  return obj.dumpString();
+}
+
+bool FlyEm::ZHotSpotArray::exportRavelerBookmark(
+    const std::string &filePath,
+    const double *resolution,
+    const int *imageSize)
+{
+  ZJsonObject obj;
+  ZJsonArray arrayObj;
+  for (FlyEm::ZHotSpotArray::const_iterator iter = begin(); iter != end();
+       ++iter) {
+    ZHotSpot *hotSpot = *iter;
+    ZJsonObject spotObj = hotSpot->toRavelerJsonObject(resolution, imageSize);
+    arrayObj.append(spotObj);
+  }
+
+  obj.setEntry("data", arrayObj);
+
+  return obj.dump(filePath);
+}

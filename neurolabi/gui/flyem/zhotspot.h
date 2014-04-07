@@ -20,6 +20,7 @@ class ZPointGeometry : public ZGeometry {
 public:
   ~ZPointGeometry() {}
   void setCenter(double x, double y, double z);
+  inline const ZPoint& getCenter() const { return m_center; }
   ZTextLineCompositer toLineCompositer() const;
   ZJsonObject toJsonObject() const;
 
@@ -40,6 +41,8 @@ public:
   inline void setType(EType type) { m_type = type; }
   inline void setSource(int id) { m_sourceBody = id; }
   inline void addTarget(int id) { m_targetBodyArray.push_back(id); }
+
+  inline int getSource() { return m_sourceBody; }
 
   std::string getTypeString() const;
 
@@ -74,6 +77,8 @@ public:
   ZTextLineCompositer toLineCompositer() const;
 
   ZJsonObject toJsonObject() const;
+  ZJsonObject toRavelerJsonObject(const double *resolution,
+                                  const int *imageSize) const;
 
   std::string getTypeString() const;
 

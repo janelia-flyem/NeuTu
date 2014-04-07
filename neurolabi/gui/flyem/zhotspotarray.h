@@ -15,12 +15,16 @@ public:
   ~ZHotSpotArray();
 
 public:
-  void append(ZHotSpot *hotSpot);
+  void append(FlyEm::ZHotSpot *hotSpot);
   void concat(ZHotSpotArray *spotArray);
   std::string toString() const;
   ZTextLineCompositer toLineCompositer() const;
 
+  std::string toJsonString() const;
   bool exportJsonFile(const std::string &filePath);
+  bool exportRavelerBookmark(const std::string &filePath,
+                             const double *resolution,
+                             const int *imageSize);
 };
 
 }

@@ -6,6 +6,7 @@ import socket
 import jsonschema
 import httplib
 import socket
+import os
 
 sys.path.append('..')
 sys.path.append('module')
@@ -15,6 +16,9 @@ socket.setdefaulttimeout(1000)
 
 import skeletonize as skl
 import quality_analyzer as qa
+
+qualityAnalyzer = qa.QualityAnalyzer()
+qualityAnalyzer.loadDataBundle(os.path.join(os.getcwd(), '../../data/flyem/FIB/data_release/bundle5/data_bundle.json'))
 
 def getDefaultDvidServer():
     return 'emdata1.int.janelia.org:7000'
@@ -152,17 +156,18 @@ def compute_hotspot():
     print '********'
     print config
     
+    global qualityAnalyzer
+
     for bodyId in bodyArray:
-        conn = httplib.HTTPConnection(dvidServer)
+        #conn = httplib.HTTPConnection(dvidServer)
         bodyLink = '/api/node/' + uuid + '/skeletons/' + str(bodyId) + '.swc'
         print '************', bodyLink
-        conn.request("GET", bodyLink)
+        #conn.request("GET", bodyLink)
 
-        r1 = conn.getresponse()
-        if not r1.status == 200:
-            qa.computeHotSpot(bodyId, 'dvid', config)
-    
-    return qa.getHotSpotJsonString()
+        #r1 = conn.getresponse()
+        #if not r1.status == 200:
+        #    return qualityAnalyzer.computeHotSpot(bodyId).toJsonString()
+        return qualityAnalyzer.computeHotSpot(bodyId)
 
 @get('/skeleton/<bodyId>')
 def retrieveSkeleton(bodyId):

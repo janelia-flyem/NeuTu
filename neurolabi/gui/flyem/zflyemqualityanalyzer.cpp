@@ -6,7 +6,6 @@
 #include "zpointarray.h"
 #include "flyem/zhotspotfactory.h"
 #include "swc/zswcdeepanglemetric.h"
-#include "zflyemdatabundle.h"
 
 ZFlyEmQualityAnalyzer::ZFlyEmQualityAnalyzer()
 {
@@ -322,6 +321,65 @@ void ZFlyEmQualityAnalyzer::SubstackRegionCalbration::calibrate(
 }
 
 FlyEm::ZHotSpotArray&
+ZFlyEmQualityAnalyzer::computeHotSpot(
+    const ZSwcTree *tree, ZObject3dScan *obj,
+    double xRes, double yRes, double zRes, double lengthThre)
+{
+  m_hotSpotArray.clear();
+#ifdef _DEBUG_
+  std::cout << "Computing hot spot ..." << std::endl;
+#endif
+
+  if (tree != NULL) {
+    ZSwcTree *tmpTree = tree->clone();
+    Swc_Tree_Remove_Terminal_Branch(tmpTree->data(), lengthThre);
+    const std::vector<Swc_Tree_Node *> terminalArray =
+        tmpTree->getSwcTreeNodeArray(ZSwcTree::TERMINAL_ITERATOR);
+    for (std::vector<Swc_Tree_Node *>::const_iterator iter =
+         terminalArray.begin(); iter != terminalArray.end(); ++iter) {
+      Swc_Tree_Node *tn = *iter;
+
+      while (SwcTreeNode::isRegular(tn)) {
+        int x = iround(SwcTreeNode::x(tn) / xRes);
+        int y = iround(SwcTreeNode::y(tn) / yRes);
+        int z = iround(SwcTreeNode::z(tn) / zRes);
+
+        if (!m_substackRegion.empty()) {
+          if (m_substackRegion.hitTest(x, y, z) < 0) {
+            break;
+          }
+        }
+        FlyEm::ZHotSpot *hotSpot = NULL;
+
+        if (obj != NULL) {
+          if (obj->contains(x, y, z)) {
+            //pointArray.append(x, y, z);
+            //hotSpotArray.append(hotSpot);
+            hotSpot = FlyEm::ZHotSpotFactory::createPointHotSpot(x, y, z);
+          }
+        } else {
+          //hotSpotArray.append(hotSpot);
+          //pointArray.append(x, y, z);
+          hotSpot = FlyEm::ZHotSpotFactory::createPointHotSpot(x, y, z);
+        }
+        if (hotSpot != NULL) {
+          m_hotSpotArray.append(hotSpot);
+          break;
+        }
+
+        tn = SwcTreeNode::parent(tn);
+      }
+    }
+  } else {
+#ifdef _DEBUG_
+    std::cout << "Null tree. Failed." << std::endl;
+#endif
+  }
+
+  return m_hotSpotArray;
+}
+
+FlyEm::ZHotSpotArray&
 ZFlyEmQualityAnalyzer::computeHotSpot(const ZFlyEmNeuron *neuron)
 {
   return computeHotSpot(*neuron);
@@ -395,14 +453,14 @@ ZFlyEmQualityAnalyzer::computeHotSpot(const ZFlyEmNeuron &neuron)
 }
 
 FlyEm::ZHotSpotArray &ZFlyEmQualityAnalyzer::computeHotSpot(const ZFlyEmNeuron *neuron,
-                                      const ZFlyEmDataBundle &dataBundle)
+                                      std::vector<ZFlyEmNeuron> &neuronArray)
 {
-  return computeHotSpot(*neuron, dataBundle);
+  return computeHotSpot(*neuron, neuronArray);
 }
 
 FlyEm::ZHotSpotArray&
 ZFlyEmQualityAnalyzer::computeHotSpot(const ZFlyEmNeuron &neuron,
-                                      const ZFlyEmDataBundle &dataBundle)
+                                      std::vector<ZFlyEmNeuron> &neuronArray)
 {
   m_hotSpotArray.clear();
 
@@ -414,7 +472,6 @@ ZFlyEmQualityAnalyzer::computeHotSpot(const ZFlyEmNeuron &neuron,
   dataBundle.loadJsonFile(GET_TEST_DATA_DIR + "/flyem/FIB/data_release/bundle5/data_bundle.json");
   ZFlyEmNeuron *neuron = dataBundle.getNeuron(538772);
   */
-  const std::vector<ZFlyEmNeuron>& neuronArray = dataBundle.getNeuronArray();
   for (size_t i = 0; i < neuronArray.size(); ++i) {
     const ZFlyEmNeuron &buddyNeuron = neuronArray[i];
     if (neuron.getId() != buddyNeuron.getId()) {
