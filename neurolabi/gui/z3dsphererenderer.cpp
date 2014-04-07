@@ -2,6 +2,7 @@
 #include "z3dsphererenderer.h"
 
 #include "z3dgpuinfo.h"
+#include "zglmutils.h"
 
 Z3DSphereRenderer::Z3DSphereRenderer(QObject *parent)
   : Z3DPrimitiveRenderer(parent)
@@ -227,7 +228,7 @@ void Z3DSphereRenderer::render(Z3DEye eye)
   shader.setUniformValue("lighting_enabled", m_needLighting);
   shader.setUniformValue("pos_scale", getCoordScales());
 
-  float fovy = m_rendererBase->getCamera().getFieldOfView();
+  float fovy = glm::degrees(m_rendererBase->getCamera().getFieldOfView());
   float adj;
   if (fovy <= 90.f){
     adj = 1.0027+0.000111*fovy+0.000098*fovy*fovy;
