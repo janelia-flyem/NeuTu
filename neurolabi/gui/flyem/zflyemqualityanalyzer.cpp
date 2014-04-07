@@ -4,6 +4,9 @@
 #include "tz_math.h"
 #include "swctreenode.h"
 #include "zpointarray.h"
+#include "flyem/zhotspotfactory.h"
+#include "swc/zswcdeepanglemetric.h"
+#include "zflyemdatabundle.h"
 
 ZFlyEmQualityAnalyzer::ZFlyEmQualityAnalyzer()
 {
@@ -318,16 +321,21 @@ void ZFlyEmQualityAnalyzer::SubstackRegionCalbration::calibrate(
   roi.translate(m_offset[0], m_offset[1], m_offset[2]);
 }
 
-ZPointArray ZFlyEmQualityAnalyzer::computeHotSpot(const ZFlyEmNeuron *neuron)
+FlyEm::ZHotSpotArray&
+ZFlyEmQualityAnalyzer::computeHotSpot(const ZFlyEmNeuron *neuron)
 {
   return computeHotSpot(*neuron);
 }
 
-ZPointArray ZFlyEmQualityAnalyzer::computeHotSpot(const ZFlyEmNeuron &neuron)
+FlyEm::ZHotSpotArray&
+ZFlyEmQualityAnalyzer::computeHotSpot(const ZFlyEmNeuron &neuron)
 {
+  m_hotSpotArray.clear();
+
   neuron.print();
   ZSwcTree *tree = neuron.getModel();
-  ZPointArray pointArray;
+  //ZPointArray pointArray;
+
   const double *resolution = neuron.getSwcResolution();
 
 #ifdef _DEBUG_
@@ -344,7 +352,7 @@ ZPointArray ZFlyEmQualityAnalyzer::computeHotSpot(const ZFlyEmNeuron &neuron)
       Swc_Tree_Node *tn = *iter;
 
       ZObject3dScan *obj = neuron.getBody();
-      while (tn != NULL) {
+      while (SwcTreeNode::isRegular(tn)) {
         int x = iround(SwcTreeNode::x(tn) / resolution[0]);
         int y = iround(SwcTreeNode::y(tn) / resolution[1]);
         int z = iround(SwcTreeNode::z(tn) / resolution[2]);
@@ -354,15 +362,24 @@ ZPointArray ZFlyEmQualityAnalyzer::computeHotSpot(const ZFlyEmNeuron &neuron)
             break;
           }
         }
+        FlyEm::ZHotSpot *hotSpot = NULL;
+
         if (obj != NULL) {
           if (obj->contains(x, y, z)) {
-            pointArray.append(x, y, z);
-            break;
+            //pointArray.append(x, y, z);
+            //hotSpotArray.append(hotSpot);
+            hotSpot = FlyEm::ZHotSpotFactory::createPointHotSpot(x, y, z);
           }
         } else {
-          pointArray.append(x, y, z);
+          //hotSpotArray.append(hotSpot);
+          //pointArray.append(x, y, z);
+          hotSpot = FlyEm::ZHotSpotFactory::createPointHotSpot(x, y, z);
+        }
+        if (hotSpot != NULL) {
+          m_hotSpotArray.append(hotSpot);
           break;
         }
+
         tn = SwcTreeNode::parent(tn);
       }
     }
@@ -374,5 +391,51 @@ ZPointArray ZFlyEmQualityAnalyzer::computeHotSpot(const ZFlyEmNeuron &neuron)
 
   //pointArray.print();
 
-  return pointArray;
+  return m_hotSpotArray;
+}
+
+FlyEm::ZHotSpotArray &ZFlyEmQualityAnalyzer::computeHotSpot(const ZFlyEmNeuron *neuron,
+                                      const ZFlyEmDataBundle &dataBundle)
+{
+  return computeHotSpot(*neuron, dataBundle);
+}
+
+FlyEm::ZHotSpotArray&
+ZFlyEmQualityAnalyzer::computeHotSpot(const ZFlyEmNeuron &neuron,
+                                      const ZFlyEmDataBundle &dataBundle)
+{
+  m_hotSpotArray.clear();
+
+  ZSwcDeepAngleMetric metric;
+  metric.setLevel(3);
+  metric.setMinDist(100.0);
+  /*
+  ZFlyEmDataBundle dataBundle;
+  dataBundle.loadJsonFile(GET_TEST_DATA_DIR + "/flyem/FIB/data_release/bundle5/data_bundle.json");
+  ZFlyEmNeuron *neuron = dataBundle.getNeuron(538772);
+  */
+  const std::vector<ZFlyEmNeuron>& neuronArray = dataBundle.getNeuronArray();
+  for (size_t i = 0; i < neuronArray.size(); ++i) {
+    const ZFlyEmNeuron &buddyNeuron = neuronArray[i];
+    if (neuron.getId() != buddyNeuron.getId()) {
+      double dist =
+          metric.measureDistance(neuron.getModel(), buddyNeuron.getModel());
+      if (dist < 1.0) {
+        const Swc_Tree_Node *tn = metric.getFirstNode();
+        FlyEm::ZHotSpot *hotSpot = new FlyEm::ZHotSpot;
+        FlyEm::ZPointGeometry *geometry = new FlyEm::ZPointGeometry;
+        geometry->setCenter(
+              SwcTreeNode::x(tn), SwcTreeNode::y(tn), SwcTreeNode::z(tn));
+        FlyEm::ZStructureInfo *structure = new FlyEm::ZStructureInfo;
+        structure->setSource(neuron.getId());
+        structure->addTarget(buddyNeuron.getId());
+        hotSpot->setGeometry(geometry);
+        hotSpot->setStructure(structure);
+        hotSpot->setConfidence(1.0 - dist);
+        m_hotSpotArray.append(hotSpot);
+      }
+    }
+  }
+
+  return m_hotSpotArray;
 }

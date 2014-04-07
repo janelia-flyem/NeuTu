@@ -77,6 +77,7 @@
 #include "zstack.hxx"
 #include "flyem/zsegmentationanalyzer.h"
 #include "flyem/zsegmentationbundle.h"
+#include "flyem/zflyemneuronmatchtaskmanager.h"
 #include "zstackblender.h"
 #include "zgraph.h"
 #include "zarray.h"
@@ -104,6 +105,9 @@
 #include "z3dmesh.h"
 #include "zstackdoc.h"
 #include "z3dwindow.h"
+#include "flyem/zhotspot.h"
+#include "flyem/zhotspotarray.h"
+#include "flyem/zhotspotfactory.h"
 #include "z3dswcfilter.h"
 #include "z3dinteractionhandler.h"
 #include "z3dcompositor.h"
@@ -134,6 +138,7 @@
 #include "swc/zswcresampler.h"
 #include "flyem/zflyemneuronfeatureanalyzer.h"
 #include "swc/zswcnodedistselector.h"
+#include "zmultitaskmanager.h"
 #include "misc/miscutility.h"
 #include "test/zjsontest.h"
 #include "test/zswctreetest.h"
@@ -166,6 +171,7 @@
 #include "test/zflyemneuronimagefactorytest.h"
 #include "test/zspgrowtest.h"
 #include "test/zflyemneuronmatchtest.h"
+#include "ztextlinecompositer.h"
 
 using namespace std;
 
@@ -10735,7 +10741,7 @@ void ZTest::test(MainWindow *host)
   std::cout << json_dumps(jsonArray.getValue(), JSON_INDENT(2)) << std::endl;
 #endif
 
-#if 1
+#if 0
   ZSwcPruner pruner;
   pruner.setMinLength(18.0);
 
@@ -10753,5 +10759,126 @@ void ZTest::test(MainWindow *host)
   tree.load(GET_TEST_DATA_DIR + "/209.swc");
   pruner.prune(&tree);
   tree.save(GET_TEST_DATA_DIR + "/test.swc");
+#endif
+
+#if 0
+  ZSquareTaskManager *taskManager = new ZSquareTaskManager;
+  for (int i = 0; i < 100; ++i) {
+    ZSquareTask *task = new ZSquareTask;
+    task->setValue(i + 1);
+    taskManager->addTask(task);
+  }
+
+  tic();
+  taskManager->start();
+  taskManager->waitForDone();
+  ptoc();
+
+  taskManager->deleteLater();
+#endif
+
+#if 0
+  ZFlyEmNeuronMatchTaskManager *taskManager = new ZFlyEmNeuronMatchTaskManager;
+  ZFlyEmDataBundle bundle;
+  bundle.loadJsonFile(
+        GET_TEST_DATA_DIR + "/flyem/TEM/data_release/bundle1/data_bundle.json");
+
+  ZFlyEmNeuron *source = bundle.getNeuron(209);
+  for (std::vector<ZFlyEmNeuron>::iterator iter = bundle.getNeuronArray().begin();
+       iter != bundle.getNeuronArray().end(); ++iter) {
+    ZFlyEmNeuron *neuron = &(*iter);
+    if (neuron != source) {
+      ZFlyEmNeuronMatchTask *task = new ZFlyEmNeuronMatchTask;
+      task->setSource(source);
+      task->setTarget(neuron);
+      taskManager->addTask(task);
+    }
+  }
+
+  taskManager->start();
+  taskManager->waitForDone();
+
+  taskManager->deleteLater();
+#endif
+
+#if 0
+  ZTextLineCompositer compositer;
+  compositer.appendLine("Title");
+  compositer.appendLine("Headline 1", 1);
+  compositer.appendLine("Headline 1.1", 2);
+  compositer.appendLine("Headline 2", 1);
+  compositer.appendLine("Title 2");
+  std::cout << compositer.toString(4) << std::endl;
+
+  ZTextLineCompositer compositer2;
+  compositer2.appendLine("All");
+  compositer2.appendLine(compositer, 1);
+  compositer2.setLevel(1);
+  compositer2.print(2);
+#endif
+
+#if 0
+  FlyEm::ZHotSpot *hotSpot =
+      FlyEm::ZHotSpotFactory::createPointHotSpot(1, 2, 3);
+  hotSpot->print();
+
+  delete hotSpot;
+#endif
+
+#if 0
+  ZSwcDeepAngleMetric metric;
+  metric.setLevel(3);
+  metric.setMinDist(100);
+
+  ZSwcTree tree1;
+  ZSwcTree tree2;
+
+  tree1.load(GET_TEST_DATA_DIR + "/flyem/FIB/data_release/bundle5/swc/538772.swc");
+  tree2.load(GET_TEST_DATA_DIR + "/flyem/FIB/data_release/bundle5/swc/622288.swc");
+
+  //tree1.load(GET_TEST_DATA_DIR + "/benchmark/swc/dist/angle/tree3.swc");
+  //tree2.load(GET_TEST_DATA_DIR + "/benchmark/swc/dist/angle/tree4.swc");
+
+  /*
+  Swc_Tree_Node *root = tree2.queryNode(1);
+  SwcTreeNode::setAsRoot(root);
+  tree2.setDataFromNode(root, ZSwcTree::FREE_WRAPPER);
+  */
+
+  double dist = metric.measureDistance(&tree1, &tree2);
+
+  Print_Swc_Tree_Node(metric.getFirstNode());
+  Print_Swc_Tree_Node(metric.getSecondNode());
+
+  std::cout << "Distance: " << dist << std::endl;
+#endif
+
+#if 1
+  ZSwcDeepAngleMetric metric;
+  metric.setLevel(3);
+  metric.setMinDist(100.0);
+  ZFlyEmDataBundle dataBundle;
+  dataBundle.loadJsonFile(GET_TEST_DATA_DIR + "/flyem/FIB/data_release/bundle5/data_bundle.json");
+  ZFlyEmNeuron *neuron = dataBundle.getNeuron(538772);
+  const std::vector<ZFlyEmNeuron>& neuronArray = dataBundle.getNeuronArray();
+  FlyEm::ZHotSpotArray hotSpotArray;
+  for (size_t i = 0; i < neuronArray.size(); ++i) {
+    const ZFlyEmNeuron &buddyNeuron = neuronArray[i];
+    if (neuron->getId() != buddyNeuron.getId()) {
+      double dist =
+          metric.measureDistance(neuron->getModel(), buddyNeuron.getModel());
+      if (dist < 1.0) {
+        const Swc_Tree_Node *tn = metric.getFirstNode();
+        FlyEm::ZHotSpot *hotSpot = new FlyEm::ZHotSpot;
+        FlyEm::ZPointGeometry *geometry = new FlyEm::ZPointGeometry;
+        geometry->setCenter(
+              SwcTreeNode::x(tn), SwcTreeNode::y(tn), SwcTreeNode::z(tn));
+        hotSpot->setGeometry(geometry);
+        hotSpotArray.append(hotSpot);
+      }
+    }
+  }
+
+  std::cout << hotSpotArray.toString() << std::endl;
 #endif
 }

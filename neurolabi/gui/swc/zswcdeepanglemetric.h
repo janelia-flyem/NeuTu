@@ -7,7 +7,12 @@
 
 class ZSwcTree;
 
-class ZSwcDeepAngleMetric : ZSwcMetric
+/*!
+ * \brief The class measuring the angles between two SWC trees
+ *
+ *
+ */
+class ZSwcDeepAngleMetric : public ZSwcMetric
 {
 public:
   ZSwcDeepAngleMetric();

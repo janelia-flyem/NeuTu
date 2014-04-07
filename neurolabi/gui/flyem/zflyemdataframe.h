@@ -15,6 +15,9 @@
 #include "zprogressable.h"
 #include "zqtbarprogressreporter.h"
 #include "zswctreebatchmatcher.h"
+#include "flyem/zflyemneuronmatchtaskmanager.h"
+#include "flyem/zflyemneuronfiltertaskmanager.h"
+#include "flyem/zflyemqualityanalyzertaskmanager.h"
 
 class ZSwcTrunkAnalyzer;
 class ZSwcFeatureAnalyzer;
@@ -29,6 +32,7 @@ class FlyEmGeoSearchDialog;
 class FlyEmGeoFilterDialog;
 class FlyEmNeuronThumbnailDialog;
 class ZFlyEmNeuronImageFactory;
+class FlyEmHotSpotDialog;
 
 class ZFlyEmDataFrame : public QMdiSubWindow, ZProgressable
 {
@@ -70,6 +74,7 @@ public:
   void setStatusBar(QStatusBar *bar);
 
   void predictClass(ZFlyEmNeuron *neuron);
+  void predictClass(const QVector<ZFlyEmNeuron*> &neuronArray);
 
   /*!
    * \brief Reassign classes to neurons
@@ -133,6 +138,9 @@ public:
    */
   void setThumbnail(const QString &dirName);
 
+  void identifyHotSpot();
+  void identifyHotSpot(int id);
+
 signals:
   void volumeTriggered(const QString &path);
   
@@ -153,8 +161,11 @@ public slots:
   void saveBundle(int index, const QString &path);
 
   void showNearbyNeuron(const ZFlyEmNeuron *neuron);
+  void searchNeighborNeuron(const ZFlyEmNeuron *neuron);
 
   void updateClassPrediction();
+  void updateSearchResult();
+  void updateQualityControl();
 
 private:
   FlyEm::ZSynapseAnnotationArray *getSynapseAnnotation();
@@ -163,6 +174,7 @@ private:
   std::string getName(const std::pair<int, int> &bodyId) const;
 
   const ZFlyEmNeuron* getNeuron(int id, int bundleIndex = -1) const;
+  ZFlyEmNeuron* getNeuron(int id, int bundleIndex = -1);
   const ZFlyEmNeuron* getNeuron(const std::pair<int, int> &bodyId) const;
 
   const ZFlyEmNeuron *getNeuronFromIndex(size_t idx, int *bundleIndex) const;
@@ -173,6 +185,9 @@ private:
   const QColor* getColor(const std::pair<int, int> &bodyId) const;
 
   FlyEmDataForm *getMainWidget() const;
+  void prepareClassPrediction(ZFlyEmNeuron *neuron);
+
+  bool initTaskManager(ZMultiTaskManager *taskManager);
 
 private:
   void parseCommand(const std::string &command);
@@ -253,7 +268,14 @@ private:
 
   FlyEmGeoFilterDialog *m_geoSearchDlg;
   FlyEmNeuronThumbnailDialog *m_thumbnailDlg;
-  ZSwcTreeBatchMatcher *m_batchMatcher;
+  FlyEmHotSpotDialog *m_hotSpotDlg;
+
+  ZFlyEmNeuronMatchTaskManager *m_matchManager;
+  ZFlyEmNeuronFilterTaskManager *m_filterManager;
+  ZFlyEmQualityAnalyzerTaskManager *m_qualityManager;
+  //ZSwcTreeBatchMatcher *m_batchMatcher;
+
+  QVector<ZFlyEmNeuron*> m_foregroundNeuronArray;
 };
 
 #endif // ZFLYEMDATAFRAME_H

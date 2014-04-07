@@ -1859,10 +1859,12 @@ void Z3DWindow::keyPressEvent(QKeyEvent *event)
     }
   }
     break;
-  case Qt::Key_M:  // change swc display mode
+  case Qt::Key_G:  // change swc display mode
   {
     if (event->modifiers() == Qt::ControlModifier) {
-      ZOptionParameter<QString> *sm = dynamic_cast<ZOptionParameter<QString>*>(getSwcFilter()->getParameter("Rendering Primitive"));
+      ZOptionParameter<QString> *sm =
+          dynamic_cast<ZOptionParameter<QString>*>(
+            getSwcFilter()->getParameter("Rendering Primitive"));
       sm->selectNext();
     }
   }

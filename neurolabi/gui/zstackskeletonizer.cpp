@@ -42,6 +42,11 @@ ZSwcTree* ZStackSkeletonizer::makeSkeleton(const ZStack &stack)
   return tree;
 }
 
+static double AdjustedDistanceWeight(double v)
+{
+  return dmax2(0.1, sqrt(v) - 0.5);
+}
+
 ZSwcTree* ZStackSkeletonizer::makeSkeleton(const ZObject3dScan &obj)
 {
   ZSwcTree *tree = NULL;
@@ -169,6 +174,7 @@ ZSwcTree* ZStackSkeletonizer::makeSkeleton(const Stack *stack)
 
       cout << "Shortest path grow ..." << endl;
       Sp_Grow_Workspace *sgw = New_Sp_Grow_Workspace();
+      Sp_Grow_Workspace_Enable_Eucdist_Buffer(sgw);
       sgw->resolution[0] = m_resolution[0];
       sgw->resolution[1] = m_resolution[1];
       sgw->resolution[2] = m_resolution[2];
@@ -197,7 +203,7 @@ ZSwcTree* ZStackSkeletonizer::makeSkeleton(const Stack *stack)
 
       if (m_rebase) {
         cout << "Replacing start point ..." << endl;
-        ZVoxelArray path = parser.extractLongestPath(NULL);
+        ZVoxelArray path = parser.extractLongestPath(NULL, false);
         for (i = 0; i < nvoxel; i++) {
           if (mask->array[i] != SP_GROW_BARRIER) {
             mask->array[i] = 0;
@@ -217,13 +223,13 @@ ZSwcTree* ZStackSkeletonizer::makeSkeleton(const Stack *stack)
           parser.extractAllPath(lengthThreshold, tmpdist);
 
       if (pathArray.empty() && m_keepingSingleObject) {
-        pathArray.push_back(parser.extractLongestPath(NULL));
+        pathArray.push_back(parser.extractLongestPath(NULL, false));
       }
 
       //Make a subtree from a single object
       for (std::vector<ZVoxelArray>::iterator iter = pathArray.begin();
            iter != pathArray.end(); ++iter) {
-        (*iter).sample(tmpdist, sqrt);
+        (*iter).sample(tmpdist, AdjustedDistanceWeight);
         //(*iter).labelStack(stackData, 255.0);
 
         ZSwcTree *branchWrapper =

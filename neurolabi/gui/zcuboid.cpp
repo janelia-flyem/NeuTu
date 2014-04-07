@@ -6,6 +6,7 @@
 
 #include "zpoint.h"
 #include "tz_error.h"
+#include "tz_utilities.h"
 
 #ifndef NULL
 #  define NULL 0x0
@@ -40,11 +41,16 @@ void ZCuboid::set(const double *corner)
   set(corner[0], corner[1], corner[2], corner[3], corner[4], corner[5]);
 }
 
-bool ZCuboid::isValid()
+bool ZCuboid::isValid() const
 {
   return (m_lastCorner.x() > m_firstCorner.x()) &&
       (m_lastCorner.y() > m_firstCorner.y()) &&
       (m_lastCorner.z() > m_firstCorner.z());
+}
+
+void ZCuboid::invalidate()
+{
+  m_firstCorner.setX(m_lastCorner.x());
 }
 
 double ZCuboid::width()
@@ -288,4 +294,30 @@ void ZCuboid::joinZ(double z)
   } else if (m_lastCorner.z() < z) {
     m_lastCorner.setZ(z);
   }
+}
+
+double ZCuboid::computeDistance(
+    double minX1, double maxX1, double minX2, double maxX2)
+{
+  double dist = 0.0;
+  //on the right
+  if (maxX1 < minX2) {
+    dist = minX2 - maxX1;
+  } else if (minX1 > maxX2) {
+    dist = minX1 - maxX2;
+  }
+
+  return dist;
+}
+
+double ZCuboid::computeDistance(const ZCuboid &box) const
+{
+  double xDist = computeDistance(firstCorner().x(), lastCorner().x(),
+                                 box.firstCorner().x(), box.lastCorner().x());
+  double yDist = computeDistance(firstCorner().y(), lastCorner().y(),
+                                 box.firstCorner().y(), box.lastCorner().y());
+  double zDist = computeDistance(firstCorner().z(), lastCorner().z(),
+                                 box.firstCorner().z(), box.lastCorner().z());
+
+  return sqrt(xDist * xDist + yDist * yDist + zDist * zDist);
 }

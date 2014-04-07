@@ -121,8 +121,10 @@ public:
 
   enum EComponent {
     STRIPE_INDEX_MAP, INDEX_SEGMENT_MAP, ACCUMULATED_STRIPE_NUMBER,
-    ALL_COMPONENT
+    SLICEWISE_VOXEL_NUMBER, ALL_COMPONENT
   };
+
+  typedef int TEvent;
 
   bool isDeprecated(EComponent comp) const;
   void deprecate(EComponent comp);
@@ -146,7 +148,8 @@ public:
    * \brief Get the voxel number on each slice
    * \return The ith element is the #voxel at slice i.
    */
-  std::vector<size_t> getSlicewiseVoxelNumber() const;
+  const std::map<int, size_t>& getSlicewiseVoxelNumber() const;
+  std::map<int, size_t>& getSlicewiseVoxelNumber();
 
   const ZObject3dStripe& getStripe(size_t index) const;
 
@@ -378,6 +381,8 @@ public:
    */
   std::vector<double> getPlaneCov() const;
 
+  void processEvent(TEvent event);
+
 private:
   std::vector<ZObject3dStripe> m_stripeArray;
   /*
@@ -386,10 +391,20 @@ private:
   */
 
   mutable std::vector<size_t> m_accNumberArray;
+  mutable std::map<int, size_t> m_slicewiseVoxelNumber;
   mutable std::map<std::pair<int, int>, size_t> m_stripeMap;
   mutable std::map<size_t, std::pair<size_t, size_t> > m_indexSegmentMap;
   bool m_isCanonized;
   //mutable int *m_lastStripe;
+
+  //SWIG has some problem recognizing const static type
+#ifndef SWIG
+  const static TEvent EVENT_OBJECT_MODEL_CHANGED; //Note that change of model implies change of view
+  const static TEvent EVENT_OBJECT_UNCANONIZED;
+  const static TEvent EVENT_OBJECT_CANONIZED;
+  const static TEvent EVENT_OBJECT_VIEW_CHANGED;
+  const static TEvent EVENT_NULL;
+#endif
 };
 
 

@@ -289,7 +289,7 @@ void MainWindow::createUndoView()
 //  m_undoView->setAttribute(Qt::WA_QuitOnClose, false);
 }
 
-void MainWindow::createActions()
+void MainWindow::createFileActions()
 {
   openAction = m_ui->actionOpen;
 
@@ -396,7 +396,10 @@ void MainWindow::createActions()
   exitAction->setShortcut(tr("Ctrl+Q"));
   exitAction->setStatusTip(tr("Exit the application"));
   connect(exitAction, SIGNAL(triggered()), this, SLOT(close()));
+}
 
+void MainWindow::createEditActions()
+{
   undoAction = m_undoGroup->createUndoAction(this, tr("&Undo"));
   undoAction->setIcon(QIcon(":/images/undo.png"));
   undoAction->setShortcuts(QKeySequence::Undo);
@@ -404,7 +407,10 @@ void MainWindow::createActions()
   redoAction = m_undoGroup->createRedoAction(this, tr("&Redo"));
   redoAction->setIcon(QIcon(":/images/redo.png"));
   redoAction->setShortcuts(QKeySequence::Redo);
+}
 
+void MainWindow::createViewActions()
+{
   m_viewActionGroup = new QActionGroup(this);
   m_viewActionGroup->addAction(m_ui->action3DView);
 
@@ -453,8 +459,12 @@ void MainWindow::createActions()
   screenshotAction->setStatusTip("Take screenshot");
   screenshotAction->setIcon(QIcon(":/images/screenshot_toolbar.png"));
   connect(screenshotAction, SIGNAL(triggered()), this, SLOT(takeScreenshot()));
+}
 
+void MainWindow::createTraceActions()
+{
   interactiveTrace = new QActionGroup(this);
+  interactiveTrace->setExclusive(false);
   interactiveTrace->addAction(m_ui->actionDisable);
   interactiveTrace->addAction(m_ui->actionFit_Segment);
   interactiveTrace->addAction(m_ui->actionTrace_Tube);
@@ -462,6 +472,33 @@ void MainWindow::createActions()
 
   connect(interactiveTrace, SIGNAL(triggered(QAction*)),
     this, SLOT(activateInteractiveTrace(QAction*)));
+}
+
+void MainWindow::createToolActions()
+{
+  createTraceActions();
+}
+
+void MainWindow::updateActionGroup(
+    QActionGroup *group, QAction *triggeredAction)
+{
+  if (triggeredAction->isChecked()) {
+    QList<QAction*> actionList = group->actions();
+    foreach (QAction *action, actionList) {
+      if (action != triggeredAction) {
+        action->setChecked(false);
+      }
+    }
+  }
+}
+
+void MainWindow::createActions()
+{
+  createFileActions();
+  createEditActions();
+  createViewActions();
+  createToolActions();
+
   //traceTubeAction->setChecked(true);
 
   interactiveMarkPuncta = new QActionGroup(this);
@@ -580,10 +617,7 @@ void MainWindow::customizeActions()
   m_ui->actionAutomatic->setVisible(isTracingOn);
   m_ui->actionAutomatic_Axon->setVisible(isTracingOn);
   m_ui->actionFrom_SWC->setVisible(false);
-#if !defined(_DEBUG_)
-  m_ui->menuTube->menuAction()->setVisible(false);
-  m_ui->menuTrace_Project->menuAction()->setVisible(false);
-#endif
+
   m_ui->actionSave_SWC->setVisible(isTracingOn);
   this->buildConnAction->setVisible(false);
 
@@ -654,6 +688,16 @@ void MainWindow::customizeActions()
 #ifdef _DEBUG_
   testAction->setVisible(
         NeutubeConfig::getInstance().getApplication() != "Biocytin");
+#endif
+
+#if !defined(_DEBUG_)
+  m_ui->menuTube->menuAction()->setVisible(false);
+  m_ui->menuTrace_Project->menuAction()->setVisible(false);
+  m_ui->actionAutomatic_Axon->setVisible(false);
+  m_ui->actionDisable->setVisible(false);
+  m_ui->menuPuncta->menuAction()->setVisible(false);
+  m_ui->menuSwc->menuAction()->setVisible(false);
+  m_ui->menuQuery->menuAction()->setVisible(false);
 #endif
 }
 
@@ -1022,6 +1066,20 @@ void MainWindow::checkViewAction(QAction *action)
   }
 }
 
+void MainWindow::checkTraceAction(QAction *action)
+{
+  if (action != NULL) {
+    action->setChecked(true);
+  }
+
+  QList<QAction*> traceActions = interactiveTrace->actions();
+  foreach (QAction *actionElement, traceActions) {
+    if (actionElement != action) {
+      actionElement->setChecked(false);
+    }
+  }
+}
+
 void MainWindow::takeScreenshot()
 {
   ZStackFrame *frame = currentStackFrame();
@@ -1047,11 +1105,6 @@ void MainWindow::updateViewMode(QAction *action)
   if (frame != NULL) {
     if (action == m_ui->actionNormal) {
       frame->setViewMode(ZInteractiveContext::VIEW_NORMAL);
-      //frame->presenter()->setMode(ZStackPresenter::NORMAL_MODE);
-      /*
-      frame->presenter()->interactiveContext().
-          setViewMode(ZInteractiveContext::VIEW_NORMAL);
-          */
       frame->updateView();
     } else if (action == m_ui->actionProject) {
       qDebug() << action->isChecked();
@@ -1073,22 +1126,29 @@ void MainWindow::updateViewMenu(ZInteractiveContext::ViewMode viewMode)
   }
 }
 
+void MainWindow::updateObjectDisplayStyle(ZStackFrame *frame, QAction *action)
+{
+  if (frame != NULL) {
+    if (action == objectViewNormalAction) {
+      frame->setObjectDisplayStyle(ZStackDrawable::NORMAL);
+    } else if (action == objectViewSolidAction) {
+      frame->setObjectDisplayStyle(ZStackDrawable::SOLID);
+    } else if (action == objectViewSurfaceAction) {
+      frame->setObjectDisplayStyle(ZStackDrawable::BOUNDARY);
+    } else if (action == objectViewSkeletonAction) {
+      frame->setObjectDisplayStyle(ZStackDrawable::SKELETON);
+    }
+  }
+}
+
 void MainWindow::viewObject(QAction *action)
 {
   ZStackFrame *frame = activeStackFrame();
   if (frame != NULL) {
+    updateActionGroup(objectView, action);
     if (action->isChecked()) {
+      updateObjectDisplayStyle(frame, action);
       frame->showObject();
-      checkViewAction(action);
-      if (action == objectViewNormalAction) {
-        frame->setObjectDisplayStyle(ZStackDrawable::NORMAL);
-      } else if (action == objectViewSolidAction) {
-        frame->setObjectDisplayStyle(ZStackDrawable::SOLID);
-      } else if (action == objectViewSurfaceAction) {
-        frame->setObjectDisplayStyle(ZStackDrawable::BOUNDARY);
-      } else if (action == objectViewSkeletonAction) {
-        frame->setObjectDisplayStyle(ZStackDrawable::SKELETON);
-      }
     } else {
       frame->hideObject();
     }
@@ -1945,11 +2005,36 @@ void MainWindow::readSettings()
   }
 }
 
+void MainWindow::updateTraceMode(ZStackFrame *frame, QAction *action)
+{
+  if (frame != NULL) {
+    ZInteractiveContext::TraceMode traceMode;
+    if (action->isChecked()) {
+      if (action == noTraceAction) {
+        traceMode = ZInteractiveContext::TRACE_OFF;
+      } else if (action == fitsegAction) {
+        traceMode = ZInteractiveContext::TRACE_SINGLE;
+      } else if (action == traceTubeAction) {
+        traceMode = ZInteractiveContext::TRACE_TUBE;
+      }
+    } else {
+      traceMode = ZInteractiveContext::TRACE_OFF;
+    }
+    frame->presenter()->interactiveContext().setTraceMode(traceMode);
+    frame->presenter()->updateLeftMenu();
+  }
+}
+
 void MainWindow::activateInteractiveTrace(QAction *action)
 {
   ZStackFrame *frame = currentStackFrame();
+  if (frame != NULL) {
+    updateActionGroup(interactiveTrace, action);
+    updateTraceMode(frame, action);
+  }
 
   if (frame != NULL) {
+#if 0
     if (action == m_ui->actionTree_Preview) {
       /*
       frame->presenter()->interactiveContext().
@@ -1962,10 +2047,13 @@ void MainWindow::activateInteractiveTrace(QAction *action)
       if (frame->presenter()->interactiveContext().isReconPreview()) {
         switchedFromPreview = true;
       }
+      ZInteractiveContext::TraceMode traceMode;
       if (action == noTraceAction) {
+        traceMode = ZInteractiveContext::TRACE_OFF;
+        /*
         frame->presenter()->interactiveContext().
             setTraceMode(ZInteractiveContext::TRACE_OFF);
-        frame->presenter()->updateLeftMenu();
+        frame->presenter()->updateLeftMenu();*/
       } else if (action == fitsegAction) {
         frame->presenter()->interactiveContext().
             setTraceMode(ZInteractiveContext::TRACE_SINGLE);
@@ -1978,7 +2066,9 @@ void MainWindow::activateInteractiveTrace(QAction *action)
       if (switchedFromPreview) {
         frame->updateView();
       }
+
     }
+#endif
   }
 }
 
@@ -4953,5 +5043,13 @@ void MainWindow::on_actionJSON_Point_List_triggered()
   if (frame != NULL) {
     QString fileName = getOpenFileName("Import Point List", "*.json");
     frame->importPointList(fileName);
+  }
+}
+
+void MainWindow::on_actionIdentify_Hot_Spot_triggered()
+{
+  ZFlyEmDataFrame *frame = currentFlyEmDataFrame();
+  if (frame != NULL) {
+    frame->identifyHotSpot();
   }
 }

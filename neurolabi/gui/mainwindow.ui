@@ -16,7 +16,7 @@
    </font>
   </property>
   <property name="windowTitle">
-   <string>neuTube 0.90</string>
+   <string>neuTube 0.91</string>
   </property>
   <widget class="QWidget" name="centralwidget"/>
   <widget class="QMenuBar" name="menubar">
@@ -69,6 +69,9 @@
      <addaction name="actionSWC_Rescaling"/>
     </widget>
     <widget class="QMenu" name="menuOpen_Recent">
+     <property name="statusTip">
+      <string>Open a recently visited file</string>
+     </property>
      <property name="title">
       <string>Open Recent</string>
      </property>
@@ -275,6 +278,7 @@
       <addaction name="actionClear_Decoration"/>
       <addaction name="actionExtract_body"/>
       <addaction name="actionLoop_Analysis"/>
+      <addaction name="actionIdentify_Hot_Spot"/>
      </widget>
      <widget class="QMenu" name="menuTEM_Paper">
       <property name="title">
@@ -354,8 +358,11 @@
    <property name="text">
     <string>Open</string>
    </property>
+   <property name="toolTip">
+    <string>Open a file</string>
+   </property>
    <property name="statusTip">
-    <string>Open a stack (.tif or .lsm)</string>
+    <string>Open a file (.tif, .lsm or .swc)</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+O</string>
@@ -442,10 +449,10 @@
      <normaloff>:/images/tracetube.png</normaloff>:/images/tracetube.png</iconset>
    </property>
    <property name="text">
-    <string>Trace Tube</string>
+    <string>Trace A Branch</string>
    </property>
    <property name="statusTip">
-    <string>Trace a tube</string>
+    <string>Activiate the function of tracing a branch with mouse click</string>
    </property>
   </action>
   <action name="actionUpdate">
@@ -1122,6 +1129,11 @@
   <action name="actionJSON_Point_List">
    <property name="text">
     <string>JSON Point List</string>
+   </property>
+  </action>
+  <action name="actionIdentify_Hot_Spot">
+   <property name="text">
+    <string>Identify Hot Spot</string>
    </property>
   </action>
  </widget>

@@ -31,23 +31,49 @@ title: Skeletonization Service
           application/json:
             schema: |
               { "$schema": "http://json-schema.org/schema#",
-                "title": "Provides the coordinates of the hot spots",
+                "title": "Provides the information of the hot spots",
                 "type": "object",
                 "properties": {
-                  "point-list": {
+                  "hot_spot": {
                     "description" : "List of coordinates of the hot spots",
                     "type": "array",
                     "minItems": 0,
                     "items": {
-                      "type": "array"
-                      "minItems": 3,
-                      "maxItems": 3,
-                      "items": {
-                        "type": "integer"
+                      "type": "object"
+                      "properties": {
+                        "type": "string",
+                        "confidence" {"type": "number"},
+                        "geometry": {
+                          "type": "object",
+                          "properties": {
+                            "type": "string",
+                            "center" {
+                              "type": "array",
+                              "minItems": 3,
+                              "maxItems": 3,
+                              "items": {"type": "number"}
+                            }
+                          }
+                        },
+                        "structure": {
+                          "type": "object",
+                          "properties": {
+                            "type": "string"
+                            "source": {"type": "integer", "minimum": 1},
+                            "target": {
+                              "type": "array",
+                              "items": {
+                                "type": "integer",
+                                "minimum": 1
+                              }
+                            }
+                          }
+                        },
+                        "required": ["type"]
                       }
                     }
                   },
-                "required" : ["point-list"]
+                  "required" : ["hot_spot"]
                 }
               }
 /interface/interface.raml:

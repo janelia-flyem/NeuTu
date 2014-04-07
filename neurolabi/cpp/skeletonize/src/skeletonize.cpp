@@ -41,9 +41,43 @@
 
 using namespace std;
 
+static int help(int argc, char *argv[], const char *spec[])
+{
+  if (argc == 2) {
+    if (strcmp(argv[1], "--help") == 0) {
+      printf("\nskeletonize ");
+      Print_Argument_Spec(spec);
+
+      printf("\nDetails\n\n");
+      printf("input: Input image file.\n\n");
+      printf("-o: Output skeleton file (swc).\n\n");
+      printf("--intv: Downsample interval for intermediate process. "
+             "The final skeleton is always in the orignal scale.\n\n");
+      printf("--minlen: Minimal length of a branch. This is not an absolute "
+             "contraint, i.e. the final skeleton may still have a branch "
+             "shorter than this number. \n\n");
+      printf("--maxdist: Maximum distance of a gap to be connected "
+             "(adjusted to the original scale in the case of downsample).\n\n");
+      printf("--keep_short: Keep isolated object even if it is shorter or "
+             "smaller than the threshold.\n\n");
+      printf("--save_offset (Obsolete): Save the offset to the orignal stack.\n\n");
+      printf("--interpolate: Slice-wise interpolation of the image.\n\n");
+      printf("--rmborder: Remove border of boder caused by the segmentation "
+             "pipeline. Ignore it if you don't know what it is.\n\n");
+      printf("--rebase: Reset the start point to presever the longest branch.\n\n");
+      printf("--level: Gray scale of the object to skeletonize.\n\n");
+      printf("--fill_hole: Fill the hole of the object before skeletonization.\n\n");
+
+      return 1;
+    }
+  }
+
+  return 0;
+}
+
 int main(int argc, char *argv[])
 {
-  if (Show_Version(argc, argv, "1.4") == 1) {
+  if (Show_Version(argc, argv, "1.5") == 1) {
     return 0;
   }
 
@@ -56,6 +90,10 @@ int main(int argc, char *argv[])
                                "[--rebase]", "[--level <int>]",
                                "[--fill_hole]",
                                NULL};
+
+  if (help(argc, argv, Spec) == 1) {
+    return 0;
+  }
 
   ZArgumentProcessor::processArguments(argc, argv, Spec);
 

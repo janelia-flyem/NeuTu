@@ -181,6 +181,7 @@ private slots:
   void viewObject(QAction *action);
   void showFrameInfo();
   void checkViewAction(QAction *action);
+  void checkTraceAction(QAction *action);
   void takeScreenshot();
 
   // slots for 'Tools' menu
@@ -351,8 +352,20 @@ private slots:
 
   void on_actionJSON_Point_List_triggered();
 
+  void on_actionIdentify_Hot_Spot_triggered();
+
 private:
   void createActions();
+  void createFileActions();
+  void createEditActions();
+  void createViewActions();
+  void createToolActions();
+  void createTraceActions();
+
+  void updateActionGroup(QActionGroup *group, QAction *triggeredAction);
+  void updateObjectDisplayStyle(ZStackFrame *frame, QAction *action);
+  void updateTraceMode(ZStackFrame *frame, QAction *action);
+
   void customizeActions();
   void createMenus();
   void createContextMenu();

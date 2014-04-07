@@ -30,7 +30,18 @@ public:
   void set(double x1, double y1, double z1, double x2, double y2, double z2);
   void set(const double *corner);
 
-  bool isValid();
+  /*!
+   * \brief Test if the bound box is valid
+   *
+   * \return true iff the locations of corners conform to the definition.
+   */
+  bool isValid() const;
+
+  /*!
+   * \brief Make the cuboid invalid
+   */
+  void invalidate();
+
   double width();
   double height();
   double depth();
@@ -62,6 +73,12 @@ public:
 
   inline ZPoint firstCorner() const { return m_firstCorner; }
   inline ZPoint lastCorner() const { return m_lastCorner; }
+
+  double computeDistance(const ZCuboid &box) const;
+
+private:
+  static double computeDistance(double minX1, double maxX1,
+                                double minX2, double maxX2);
 
 private:
   ZPoint m_firstCorner;

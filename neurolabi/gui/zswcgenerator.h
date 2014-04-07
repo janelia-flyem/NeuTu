@@ -33,7 +33,8 @@ public:
   static ZSwcTree* createSwc(const ZPointArray &pointArray, double radius);
 
 private:
-  static ZSwcTree* createSwcByRegionSampling(const ZVoxelArray &voxelArray);
+  static ZSwcTree* createSwcByRegionSampling(const ZVoxelArray &voxelArray,
+                                             double radiusAdjustment = 0.0);
 };
 
 #endif // ZSWCGENERATOR_H

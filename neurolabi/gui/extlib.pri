@@ -8,7 +8,6 @@ INCLUDEPATH += $${NEUROLABI_DIR}/gui \
 #neurolabi
 LIBS += -L$${NEUROLABI_DIR}/c/lib
 CONFIG(debug, debug|release) {
-    DEFINES += _DEBUG_ _ADVANCED_ PROJECT_PATH=\"\\\"$$PWD\\\"\"
     LIBS += -lneurolabi_debug
     PRE_TARGETDEPS += $${NEUROLABI_DIR}/c/lib/libneurolabi_debug.a
 } else {

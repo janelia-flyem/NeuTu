@@ -24,6 +24,11 @@ public:
   void append(json_t *obj);
 
   /*!
+   * \brief Append an element
+   */
+  void append(ZJsonValue &obj);
+
+  /*!
    * \brief Get a number array from the json array.
    *
    * \return Returns an empty array if the object can not be converted into a

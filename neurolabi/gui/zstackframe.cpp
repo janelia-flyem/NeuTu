@@ -1509,3 +1509,10 @@ void ZStackFrame::zoomToSelectedSwcNodes()
     viewRoi(cx, cy, cz, radius);
   }
 }
+
+void ZStackFrame::notifyUser(const QString &message)
+{
+  m_statusInfo = message;
+
+  emit infoChanged();
+}

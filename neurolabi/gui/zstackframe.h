@@ -10,6 +10,7 @@
 #include <QString>
 #include <QStringList>
 #include <QUrl>
+#include <QStatusBar>
 #ifdef __GLIBCXX__
 #include <tr1/memory>
 #else
@@ -210,6 +211,8 @@ public:
   void loadRoi();
 
   void prepareDisplay();
+
+  void notifyUser(const QString &message);
 
 public slots:
   void setLocsegChainInfo(ZLocsegChain *chain, QString prefix = "",

@@ -25,6 +25,7 @@ class QMouseEvent;
 class QKeyEvent;
 class QAction;
 class QMenu;
+class ZInteractionEvent;
 
 class ZStackPresenter : public QObject {
   Q_OBJECT
@@ -176,7 +177,7 @@ public slots:
   void enterSwcConnectMode();
   void enterSwcExtendMode();
   void exitSwcExtendMode();
-  void enterSwcSmartExtendMode();
+  //void enterSwcSmartExtendMode();
   void enterSwcAddNodeMode(double x, double y);
   void enterSwcSelectMode();
   void enterDrawStrokeMode(double x, double y);
@@ -242,6 +243,8 @@ private:
 
   bool estimateActiveStrokeWidth();
 
+  void processEvent(const ZInteractionEvent &event);
+
 private:
   ZStackFrame *m_parent;
   QList<ZStackDrawable*> m_decorationList;
@@ -293,7 +296,7 @@ private:
 
   QAction *m_swcConnectToAction;
   QAction *m_swcExtendAction;
-  QAction *m_swcSmartExtendAction;
+  //QAction *m_swcSmartExtendAction;
   QAction *m_swcDeleteAction;
   QAction *m_swcConnectSelectedAction;
   QAction *m_swcSelectConnectionAction;

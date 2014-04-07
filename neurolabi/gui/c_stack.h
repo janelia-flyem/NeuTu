@@ -75,9 +75,37 @@ void copyPlaneValue(Stack *stack, void *array, int slice);
 ///@}
 
 //Attributes of a stack
+/*!
+ * \brief Width of the stack
+ *
+ * \a stack shouldn't be NULL.
+ */
 inline int width(const Stack *stack) { return stack->width; }
+
+/*!
+ * \brief Height of the stack
+ *
+ * \a stack shouldn't be NULL.
+ */
 inline int height(const Stack *stack) { return stack->height; }
+
+/*!
+ * \brief Depth (number of planes) of the stack
+ *
+ * \a stack shouldn't be NULL.
+ */
 inline int depth(const Stack *stack) { return stack->depth; }
+
+/*!
+ * \brief Pixel data kind of the stack
+ *
+ *  \a stack shouldn't be NULL. The kind can be:
+ *    GREY: unsigned 8-bit
+ *    GREY16: unsigned 16-bit
+ *    COLOR: 24-bit RGB
+ *    FLOAT32: single-precision float
+ *    FLOAT64: double-predision float
+ */
 inline int kind(const Stack *stack) { return stack->kind; }
 
 inline void setWidth(Stack *stack, int width) { stack->width = width; }
@@ -99,13 +127,34 @@ inline size_t allByteNumber(const Stack *stack) {
 }
 
 //Voxel access
+/*!
+ * \brief Pointer to the raw data
+ */
 inline uint8_t* array8(const Stack *stack) { return (uint8_t*) stack->array; }
+
+/*!
+ * \brief Voxel value at a certain index
+ *
+ * It returns the value in the first channel for COLOR kind.
+ */
 double value(const Stack *stack, size_t index);
-double value(const Stack *stack, int x, int y, int z, int c);
+
+/*!
+ * \brief Voxel value at a certain position
+ *
+ * \param stack Source stack
+ * \param x X coordinate
+ * \param y Y coordinate
+ * \param z Z coordinate
+ * \param c Color channel
+ */
+double value(const Stack *stack, int x, int y, int z, int c = 0);
+
 void setPixel(Stack *stack, int x, int y, int z, int c, double v);
 void setZero(Stack *stack);
 Stack sliceView(const Stack *stack, int slice);
 Stack* channelExtraction(const Stack *stack, int channel);
+
 /*!
  * \brief Set values of a stack by memory copying
  *

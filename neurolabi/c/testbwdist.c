@@ -9,12 +9,12 @@
 #include "tz_stack_draw.h"
 #include "tz_image_lib.h"
 #include "tz_stack_io.h"
-#include "tz_stack_bwdist.h"
 #include "tz_stack_bwmorph.h"
 #include "tz_stack_attribute.h"
 #include "tz_int_histogram.h"
 #include "tz_stack_utils.h"
 #include "tz_stack_math.h"
+#include "tz_stack_relation.h"
 
 INIT_EXCEPTION_MAIN(e)
 
@@ -43,7 +43,7 @@ int main(int argc, char* argv[])
   Write_Stack("../data/test.tif", out);
 #endif 
 
-#if 1
+#if 0
   Stack *stack = Read_Stack("../data/benchmark/sphere_bw.tif");
   //Stack *stack = Read_Stack("../data/sphere_data.tif");
   //Stack_Not(stack, stack);
@@ -116,6 +116,26 @@ int main(int argc, char* argv[])
   Kill_Stack(out);
   Kill_Stack(out2);
 #endif
+
+#if 1
+  Stack *stack = Read_Stack("../data/system/29.tif");
+  Print_Stack_Info(stack);
+
+  tic();
+  Stack *out = Stack_Bwdist_L_U16P(stack, NULL, 0);
+  ptoc();
+
+  Stack *golden = Read_Stack("../data/system/29_dist2.tif");
+
+  printf("Checking result ...\n");
+  if (Stack_Identical(out, golden) == FALSE) {
+    printf("Result unmatched.\n");
+  } else {
+    printf("Good.\n");
+  }
+
+#endif
+
 
   return 0;
 }

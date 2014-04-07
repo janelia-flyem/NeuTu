@@ -118,7 +118,7 @@ public: //fake public routines
     ZSwcTree *exportResultAsSwc(
         EResultExportOption option = EXPORT_CRITICAL_MATCHING);
 
-    bool isGoodLateralVerticalMatch(ZSwcTree &tree1, ZSwcTree &tree2,
+    static bool isGoodLateralVerticalMatch(ZSwcTree &tree1, ZSwcTree &tree2,
                                     bool checkOrientation = true);
 
 private:

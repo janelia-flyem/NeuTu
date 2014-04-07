@@ -9,6 +9,7 @@
 #include "zflyemneuron.h"
 #include "flyem/zsynapseannotationarray.h"
 #include "neutube.h"
+#include "zswctree.h"
 
 class ZFlyEmDataBundle
 {
@@ -146,6 +147,8 @@ public:
    */
   void setThumbnail(const std::string &thumbnailDir);
 
+  inline const ZSwcTree& getBoundBox() const { return m_boundBox; }
+
 private:
   std::vector<ZFlyEmNeuron> m_neuronArray;
   std::string m_synapseAnnotationFile;
@@ -158,6 +161,7 @@ private:
   int m_sourceDimension[3];
   double m_synapseScale;
   std::vector<double> m_layerRatio;
+  ZSwcTree m_boundBox;
 
   std::string m_source;
   std::map<std::string, double> m_matchThreshold;
@@ -176,6 +180,8 @@ private:
   static const char *m_neuronKey;
   static const char *m_swcResolutionKey;
   static const char *m_matchThresholdKey;
+  static const char *m_layerKey;
+  static const char *m_boundBoxKey;
 
   const static int m_layerNumber;
   //const static double m_layerRatio[11];

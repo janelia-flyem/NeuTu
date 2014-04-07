@@ -165,7 +165,12 @@ HEADERS +=$${PWD}/zstackprocessor.h \
    $${PWD}/flyem/zflyemneuronarray.h \
    $${PWD}/swc/zswcpruner.h \
    $${PWD}/flyem/zflyemneuronlayermatcher.h \
-   $${PWD}/zdynamicprogrammer.h
+   $${PWD}/zdynamicprogrammer.h \
+   $${PWD}/flyem/zhotspot.h \
+   $${PWD}/ztextlinearray.h \
+   $${PWD}/flyem/zhotspotarray.h \
+   $${PWD}/flyem/zhotspotfactory.h \
+   $${PWD}/ztextlinecompositer.h
 
 SOURCES +=$${PWD}/zstackprocessor.cpp \
    $${PWD}/zstack.cxx \
@@ -317,4 +322,9 @@ SOURCES +=$${PWD}/zstackprocessor.cpp \
    $${PWD}/flyem/zflyemneuronarray.cpp \
    $${PWD}/swc/zswcpruner.cpp \
    $${PWD}/flyem/zflyemneuronlayermatcher.cpp \
-   $${PWD}/zdynamicprogrammer.cpp
+   $${PWD}/zdynamicprogrammer.cpp \
+   $${PWD}/flyem/zhotspot.cpp \
+   $${PWD}/ztextlinearray.cpp \
+   $${PWD}/flyem/zhotspotarray.cpp \
+   $${PWD}/flyem/zhotspotfactory.cpp \
+   $${PWD}/ztextlinecompositer.cpp

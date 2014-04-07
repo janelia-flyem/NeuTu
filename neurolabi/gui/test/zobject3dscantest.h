@@ -455,8 +455,9 @@ TEST(TestObject3dScan, TestDownsample) {
   EXPECT_EQ(3, (int) obj.getVoxelNumber());
 
   createObject(&obj);
+  obj.print();
   obj.downsampleMax(1, 1, 1);
-  //obj.print();
+  obj.print();
   EXPECT_EQ(1, (int) obj.getStripeNumber());
   EXPECT_EQ(5, (int) obj.getVoxelNumber());
 }
@@ -468,6 +469,7 @@ TEST(TestObject3dScan, TestObjectSize){
   EXPECT_TRUE(sizeArray.empty());
 
   createObject(&obj);
+  obj.print();
   sizeArray = obj.getConnectedObjectSize();
   EXPECT_EQ(2, (int) sizeArray.size());
   EXPECT_EQ(8, (int) sizeArray[0]);
@@ -1074,6 +1076,43 @@ TEST(ZObject3dScan, contains)
 
 //  obj.addSegment(0, 0, 3, 4);
 //  obj.addSegment(0, 0, 6, 9);
+}
+
+TEST(ZObject3dScan, component)
+{
+  ZObject3dScan obj;
+  obj.addSegment(0, 0, 1, 1);
+
+  std::map<int, size_t> &vs = obj.getSlicewiseVoxelNumber();
+  ASSERT_EQ(1, (int) vs[0]);
+  ASSERT_EQ(0, (int) vs.count(2));
+
+  obj.addSegment(0, 0, 1, 2);
+  vs = obj.getSlicewiseVoxelNumber();
+  ASSERT_EQ(2, (int) vs[0]);
+  ASSERT_EQ(0, (int) vs.count(2));
+
+  vs = obj.getSlicewiseVoxelNumber();
+  ASSERT_EQ(2, (int) vs[0]);
+  ASSERT_EQ(0, (int) vs.count(2));
+
+  obj.addSegment(1, 1, 2, 4);
+  vs = obj.getSlicewiseVoxelNumber();
+  ASSERT_EQ(2, (int) vs[0]);
+  ASSERT_EQ(3, (int) vs[1]);
+  ASSERT_EQ(0, (int) vs.count(2));
+
+  obj.addSegment(5, 1, 0, 4);
+  vs = obj.getSlicewiseVoxelNumber();
+  ASSERT_EQ(2, (int) vs[0]);
+  ASSERT_EQ(3, (int) vs[1]);
+  ASSERT_EQ(5, (int) vs[5]);
+  ASSERT_EQ(0, (int) vs.count(2));
+
+  ASSERT_EQ(2, (int) vs[0]);
+  ASSERT_EQ(3, (int) vs[1]);
+  ASSERT_EQ(5, (int) vs[5]);
+  ASSERT_EQ(0, (int) vs.count(2));
 }
 
 #endif

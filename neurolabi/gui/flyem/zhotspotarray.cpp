@@ -1,0 +1,68 @@
+#include "zhotspotarray.h"
+#include "ztextlinearray.h"
+#include "zstring.h"
+#include "zjsonobject.h"
+#include "zjsonparser.h"
+
+FlyEm::ZHotSpotArray::ZHotSpotArray()
+{
+}
+
+FlyEm::ZHotSpotArray::~ZHotSpotArray()
+{
+  for (iterator iter = begin(); iter != end(); ++iter) {
+    delete *iter;
+  }
+}
+
+void FlyEm::ZHotSpotArray::append(ZHotSpot *hotSpot)
+{
+  push_back(hotSpot);
+}
+
+ZTextLineCompositer FlyEm::ZHotSpotArray::toLineCompositer() const
+{
+  ZTextLineCompositer text;
+  ZString line;
+  line.appendNumber(size());
+  line += " hot spots:";
+  text.appendLine(line);
+
+  for (const_iterator iter = begin(); iter != end(); ++iter) {
+    text.appendLine((*iter)->toLineCompositer(), 1);
+  }
+
+  return text;
+}
+
+std::string FlyEm::ZHotSpotArray::toString() const
+{
+  return toLineCompositer().toString(2);
+}
+
+void FlyEm::ZHotSpotArray::concat(FlyEm::ZHotSpotArray *spotArray)
+{
+#ifdef _DEBUG_
+  std::cout << spotArray->toString() << std::endl;
+#endif
+  if (spotArray != NULL) {
+    insert(end(), spotArray->begin(), spotArray->end());
+    spotArray->clear();
+  }
+}
+
+bool FlyEm::ZHotSpotArray::exportJsonFile(const std::string &filePath)
+{
+  ZJsonObject obj;
+  ZJsonArray arrayObj;
+  for (FlyEm::ZHotSpotArray::const_iterator iter = begin(); iter != end();
+       ++iter) {
+    ZHotSpot *hotSpot = *iter;
+    ZJsonObject spotObj = hotSpot->toJsonObject();
+    arrayObj.append(spotObj);
+  }
+
+  obj.setEntry("hot_spot", arrayObj);
+
+  return obj.dump(filePath);
+}

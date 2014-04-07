@@ -10038,6 +10038,8 @@ void mylib::Print_Array(AForm *o, FILE *output, int indent, string format)
   switch (kind) {
       case PLAIN_KIND:
         switch (a->type) {
+        case mylib::UNKNOWN_TYPE:
+          break;
             case mylib::UINT8_TYPE:
               { mylib::uint8 *v;
 
@@ -10522,6 +10524,8 @@ void mylib::Print_Array(AForm *o, FILE *output, int indent, string format)
         break;
       case RGB_KIND:
         switch (a->type) {
+        case mylib::UNKNOWN_TYPE:
+          break;
             case mylib::UINT8_TYPE:
               { mylib::uint8 *v;
                 mylib::uint8 *w, *x;
@@ -11116,6 +11120,8 @@ void mylib::Print_Array(AForm *o, FILE *output, int indent, string format)
         break;
       case RGBA_KIND:
         switch (a->type) {
+        case mylib::UNKNOWN_TYPE:
+          break;
             case mylib::UINT8_TYPE:
               { mylib::uint8 *v;
                 mylib::uint8 *w, *x;
@@ -11750,6 +11756,8 @@ void mylib::Print_Array(AForm *o, FILE *output, int indent, string format)
         break;
       case COMPLEX_KIND:
         switch (a->type) {
+        case mylib::UNKNOWN_TYPE:
+          break;
             case mylib::UINT8_TYPE:
               { mylib::uint8 *v;
 
@@ -48579,6 +48587,8 @@ void expand_array(mylib::Array *target, AForm *source, mylib::Size_Type size,
                 }
               break;
             }
+      case mylib::UNKNOWN_TYPE:
+        break;
       }
     }
 
@@ -48914,6 +48924,8 @@ void expand_array(mylib::Array *target, AForm *source, mylib::Size_Type size,
               }
               break;
             }
+      case mylib::UNKNOWN_TYPE:
+        break;
       }
 
       if (ndims > 10)
@@ -49346,6 +49358,8 @@ static double inner_product_arrays(AForm *o1, AForm *o2)
               }
               break;
             }
+      case mylib::UNKNOWN_TYPE:
+        break;
        }
     }
 
@@ -49593,6 +49607,8 @@ static double sum_array(AForm *o)
               break;
           }
         }
+  case mylib::UNKNOWN_TYPE:
+    break;
   }
   return (t);
 }

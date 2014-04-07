@@ -25,6 +25,8 @@ const char *ZFlyEmDataBundle::m_imageResolutionKey = "image_resolution";
 const char *ZFlyEmDataBundle::m_neuronKey = "neuron";
 const char *ZFlyEmDataBundle::m_swcResolutionKey = "swc_resolution";
 const char *ZFlyEmDataBundle::m_matchThresholdKey = "match_threshold";
+const char *ZFlyEmDataBundle::m_layerKey = "layer";
+const char *ZFlyEmDataBundle::m_boundBoxKey = "bound_box";
 
 const int ZFlyEmDataBundle::m_layerNumber = 10;
 /*
@@ -105,17 +107,20 @@ bool ZFlyEmDataBundle::loadJsonFile(const std::string &filePath)
   m_source = filePath;
   ZJsonObject bundleObject;
   if (bundleObject.load(filePath)) {
-    m_synapseAnnotationFile = ZJsonParser::stringValue(bundleObject["synapse"]);
-    m_grayScalePath = ZJsonParser::stringValue(bundleObject["gray_scale"]);
+    m_synapseAnnotationFile =
+        ZJsonParser::stringValue(bundleObject[ZFlyEmDataBundle::m_synapseKey]);
+    m_grayScalePath =
+        ZJsonParser::stringValue(bundleObject[ZFlyEmDataBundle::m_grayScaleKey]);
     //m_configFile = ZJsonParser::stringValue(bundleObject["config"]);
-    m_neuronColorFile = ZJsonParser::stringValue(bundleObject["neuron_color"]);
+    m_neuronColorFile =
+        ZJsonParser::stringValue(bundleObject[ZFlyEmDataBundle::m_neuronColorKey]);
 
-    json_t *obj = bundleObject["synapse_scale"];
+    json_t *obj = bundleObject[ZFlyEmDataBundle::m_synapseScaleKey];
     if (obj != NULL) {
       m_synapseScale = ZJsonParser::numberValue(obj);
     }
 
-    json_t *sourceOffsetObj = bundleObject["source_offset"];
+    json_t *sourceOffsetObj = bundleObject[ZFlyEmDataBundle::m_sourceOffsetKey];
     if (sourceOffsetObj != NULL) {
       if (ZJsonParser::isArray(sourceOffsetObj)) {
         for (size_t i = 0; i < 3; ++i) {
@@ -124,7 +129,8 @@ bool ZFlyEmDataBundle::loadJsonFile(const std::string &filePath)
       }
     }
 
-    json_t *sourceDimensionObj = bundleObject["source_dimension"];
+    json_t *sourceDimensionObj =
+        bundleObject[ZFlyEmDataBundle::m_sourceDimensionKey];
     if (sourceDimensionObj != NULL) {
       if (ZJsonParser::isArray(sourceDimensionObj)) {
         for (size_t i = 0; i < 3; ++i) {
@@ -133,7 +139,7 @@ bool ZFlyEmDataBundle::loadJsonFile(const std::string &filePath)
       }
     }
 
-    json_t *imgResObj = bundleObject["image_resolution"];
+    json_t *imgResObj = bundleObject[ZFlyEmDataBundle::m_imageResolutionKey];
     if (imgResObj != NULL) {
       if (ZJsonParser::isArray(imgResObj)) {
         for (size_t i = 0; i < 3; ++i) {
@@ -143,7 +149,7 @@ bool ZFlyEmDataBundle::loadJsonFile(const std::string &filePath)
     }
 
     ZJsonArray neuronJsonArray;
-    neuronJsonArray.set(bundleObject["neuron"], false);
+    neuronJsonArray.set(bundleObject[ZFlyEmDataBundle::m_neuronKey], false);
 
     m_neuronArray.resize(neuronJsonArray.size());
     for (size_t i = 0; i < neuronJsonArray.size(); ++i) {
@@ -155,19 +161,19 @@ bool ZFlyEmDataBundle::loadJsonFile(const std::string &filePath)
 
 
 
-    json_t *swcResObj = bundleObject["swc_resolution"];
+    json_t *swcResObj = bundleObject[ZFlyEmDataBundle::m_swcResolutionKey];
     if (swcResObj != NULL) {
       TZ_ASSERT(ZJsonParser::isArray(swcResObj), "Array object expected.");
       for (size_t i = 0; i < 3; ++i) {
-        m_swcResolution[i] =
-            ZJsonParser::numberValue(bundleObject["swc_resolution"], i);
+        m_swcResolution[i] = ZJsonParser::numberValue(
+              bundleObject[ZFlyEmDataBundle::m_swcResolutionKey], i);
       }
       for (size_t i = 0; i < neuronJsonArray.size(); ++i) {
         m_neuronArray[i].setResolution(m_swcResolution);
       }
     }
 
-    json_t *matchThreObj = bundleObject["match_threshold"];
+    json_t *matchThreObj = bundleObject[ZFlyEmDataBundle::m_matchThresholdKey];
     if (matchThreObj != NULL) {
       FILE *fp = fopen(ZJsonParser::stringValue(matchThreObj), "r");
       if (fp != NULL) {
@@ -182,8 +188,19 @@ bool ZFlyEmDataBundle::loadJsonFile(const std::string &filePath)
     }
     m_source = filePath;
 
-    ZJsonArray array(bundleObject["layer"], false);
+    ZJsonArray array(bundleObject[ZFlyEmDataBundle::m_layerKey], false);
     m_layerRatio = array.toNumberArray();
+
+    json_t *boundBoxObj = bundleObject[ZFlyEmDataBundle::m_boundBoxKey];
+    if (boundBoxObj != NULL) {
+      ZString path = ZJsonParser::stringValue(boundBoxObj);
+      if (!path.isAbsolutePath()) {
+        path = ZString::absolutePath(ZString(m_source).dirPath(), path);
+      }
+      m_boundBox.load(path);
+      m_boundBox.rescale(
+            m_swcResolution[0], m_swcResolution[1], m_swcResolution[2]);
+    }
 
     updateNeuronConnection();
 
