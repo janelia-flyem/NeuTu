@@ -80,10 +80,12 @@ bool ZStackBinarizer::binarize(Stack *stack)
     break;
   case BM_LOCMAX:
     threshold = Int_Histogram_Triangle_Threshold(hist, low, high - 1);
+    /*
     if (threshold <= Int_Histogram_Quantile(hist, 0.5)) {
       BINARIZE_CLEAN
       return false;
     }
+    */
     threshold = refineLocmaxThreshold(refStack, threshold, hist, high);
     break;
   case BM_MEAN:

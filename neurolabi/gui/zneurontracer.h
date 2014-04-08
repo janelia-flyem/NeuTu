@@ -55,7 +55,9 @@ public:
 
 private:
   //Helper functions
-
+  Stack* binarize(const Stack *stack);
+  Stack* bwsolid(Stack *stack);
+  Stack* enhanceLine(const Stack *stack);
 
 private:
   Stack *m_stack;

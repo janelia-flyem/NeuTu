@@ -6,6 +6,10 @@
 #include "tz_math.h"
 #include "zvoxelarray.h"
 #include "tz_stack_sampling.h"
+#include "zstackbinarizer.h"
+#include "tz_stack_bwmorph.h"
+#include "tz_stack_math.h"
+#include "tz_fimage_lib.h"
 
 ZNeuronTracer::ZNeuronTracer() : m_stack(NULL), m_traceWorkspace(NULL),
   m_connWorkspace(NULL), m_swcConnector(NULL),
@@ -182,11 +186,87 @@ Swc_Tree* ZNeuronTracer::trace(double x1, double y1, double z1, double r1,
   return voxelArray.toSwcTree();
 }
 
+Stack *ZNeuronTracer::binarize(const Stack *stack)
+{
+  Stack *out = C_Stack::clone(stack);
+
+  ZStackBinarizer binarizer;
+  binarizer.setMethod(ZStackBinarizer::BM_LOCMAX);
+  binarizer.setRetryCount(3);
+  if (binarizer.binarize(out) == false) {
+    std::cout << "Thresholding failed" << std::endl;
+    C_Stack::kill(out);
+    out = NULL;
+  }
+
+  return out;
+}
+
+Stack* ZNeuronTracer::bwsolid(Stack *stack)
+{
+  Stack *clear_stack = NULL;
+
+  const static int mnbr = 4;
+  clear_stack = Stack_Majority_Filter_R(stack, NULL, 26, mnbr);
+
+  Struct_Element *se = Make_Cuboid_Se(3, 3, 3);
+  Stack *dilate_stack = Stack_Dilate_Fast(clear_stack, NULL, se);
+  C_Stack::kill(clear_stack);
+  Stack *fill_stack = dilate_stack;
+
+  Stack *mask = Stack_Erode_Fast(fill_stack, NULL, se);
+  C_Stack::kill(fill_stack);
+
+  return mask;
+}
+
+Stack* ZNeuronTracer::enhanceLine(const Stack *stack)
+{
+  double sigma[] = {1.0, 1.0, 1.0};
+  FMatrix *result = NULL;
+
+  if (stack->width * stack->height * stack->depth > 1024 * 1024 * 100) {
+    result = El_Stack_L_F(stack, sigma, NULL);
+  } else {
+    result = El_Stack_F(stack, sigma, NULL);
+  }
+
+  Stack *out = Scale_Float_Stack(result->array, result->dim[0], result->dim[1],
+      result->dim[2], GREY16);
+
+  Kill_FMatrix(result);
+
+  return out;
+}
+
 ZSwcTree* ZNeuronTracer::trace(Stack *stack)
 {
   ZSwcTree *tree = NULL;
 
   //Extract seeds
+  //First mask
+  Stack *bw = binarize(stack);
+  Stack *mask = bwsolid(bw);
+  C_Stack::kill(bw);
+
+  //Thin line mask
+  Stack *line = enhanceLine(stack);
+  Stack *mask2 = C_Stack::clone(line);
+
+  ZStackBinarizer binarizer;
+  binarizer.setMethod(ZStackBinarizer::BM_LOCMAX);
+  binarizer.setRetryCount(5);
+  binarizer.setMinObjectSize(27);
+  if (binarizer.binarize(mask2) == false) {
+    std::cout << "Thresholding failed" << std::endl;
+    C_Stack::kill(mask2);
+    mask2 = NULL;
+  }
+
+  if (mask2 != NULL) {
+    Stack_Or(mask, mask2, mask);
+    C_Stack::kill(mask2);
+  }
 
   //Trace each seed
 
