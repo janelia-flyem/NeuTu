@@ -132,6 +132,8 @@ protected:
   int m_keyPressDistance;
 
   bool m_moveObjects;
+
+  int m_delta;
 };
 
 #endif // Z3DINTERACTIONHANDLER_H

@@ -52,6 +52,7 @@ Z3DTrackballInteractionHandler::Z3DTrackballInteractionHandler(const QString &na
   , m_keyPressAngle(glm::radians(10.f))
   , m_keyPressDistance(10.f)
   , m_moveObjects(false)
+  , m_delta(0)
 {
   m_rotateEvent = new ZEventListenerParameter(name + " Rotate");
   m_rotateEvent->listenTo("rotate", Qt::LeftButton, Qt::NoModifier, QEvent::MouseButtonPress);
@@ -284,6 +285,36 @@ void Z3DTrackballInteractionHandler::wheelEvent(QWheelEvent *e, int, int)
 {
   e->ignore();
 
+#ifdef _QT5_
+  if (m_delta > 0 && e->delta() < 0)
+    m_delta = e->delta();
+  else if (m_delta < 0 && e->delta() > 0)
+    m_delta = e->delta();
+  else
+    m_delta += e->delta();
+  if (m_delta > -120 && m_delta < 120)
+    return;
+  if (m_state == DOLLY) {
+    float factor = m_mouseMotionFactor * 0.2f * m_mouseWheelMotionFactor * std::abs(m_delta / 120);
+    factor = std::min(8.f, factor);
+    bool dollyIn = ( m_mouseWheelUpDollyIn && (m_delta > 0)) ||
+        (!m_mouseWheelUpDollyIn && (m_delta < 0));
+    if (!dollyIn)
+      factor = -factor;
+    m_camera->dolly(std::pow(1.1f, factor));
+    e->accept();
+  } else if (m_state == ROLL) {
+    bool rollLeft = ( m_mouseWheelUpRollLeft && (m_delta > 0)) ||
+        (!m_mouseWheelUpRollLeft && (m_delta < 0));
+    if (rollLeft)
+      m_camera->roll(m_keyPressAngle);
+    else
+      m_camera->roll(-m_keyPressAngle);
+    e->accept();
+  }
+  setState(NONE);
+  m_delta = 0;
+#else
   if (e->delta() == 0)
     return;
   if (m_state == DOLLY) {
@@ -304,6 +335,7 @@ void Z3DTrackballInteractionHandler::wheelEvent(QWheelEvent *e, int, int)
     e->accept();
   }
   setState(NONE);
+#endif
 }
 
 void Z3DTrackballInteractionHandler::shift(glm::ivec2 mouseStart, glm::ivec2 mouseEnd, int w, int h)
