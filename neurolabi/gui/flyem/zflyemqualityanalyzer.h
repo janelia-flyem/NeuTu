@@ -61,13 +61,16 @@ public:
 
   bool touchingSideBoundary(const ZObject3dScan &obj);
 
+  FlyEm::ZHotSpotArray& computeHotSpot(const ZSwcTree *tree, ZObject3dScan *obj, double xRes, double yRes,
+      double zRes, double lengthThre);
+
   FlyEm::ZHotSpotArray& computeHotSpot(const ZFlyEmNeuron &neuron);
   FlyEm::ZHotSpotArray& computeHotSpot(const ZFlyEmNeuron *neuron);
 
   FlyEm::ZHotSpotArray& computeHotSpot(const ZFlyEmNeuron &neuron,
-                                      const ZFlyEmDataBundle &dataBundle);
+                                       std::vector<ZFlyEmNeuron>& neuronArray);
   FlyEm::ZHotSpotArray& computeHotSpot(const ZFlyEmNeuron *neuron,
-                                      const ZFlyEmDataBundle &dataBundle);
+                                       std::vector<ZFlyEmNeuron>& neuronArray);
 
 private:
   FlyEm::ZIntCuboidArray m_substackRegion;

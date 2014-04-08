@@ -3,6 +3,8 @@
 #include <iostream>
 #include <sstream>
 #include "zstring.h"
+#include "zjsonarray.h"
+#include "tz_math.h"
 
 void FlyEm::ZGeometry::print() const
 {
@@ -160,10 +162,41 @@ ZJsonObject FlyEm::ZHotSpot::toJsonObject() const
   ZJsonObject obj;
   obj.setEntry("Confidence", m_confidence);
   obj.setEntry("Type", getTypeString());
-  ZJsonObject geometryObject = m_geometry->toJsonObject();
-  obj.setEntry("Geometry", geometryObject);
-  ZJsonObject structObject = m_structInfo->toJsonObject();
-  obj.setEntry("Structure", structObject);
+  if (m_geometry != NULL) {
+    ZJsonObject geometryObject = m_geometry->toJsonObject();
+    obj.setEntry("Geometry", geometryObject);
+  }
+  if (m_structInfo != NULL) {
+    ZJsonObject structObject = m_structInfo->toJsonObject();
+    obj.setEntry("Structure", structObject);
+  }
+
+  return obj;
+}
+
+ZJsonObject FlyEm::ZHotSpot::toRavelerJsonObject(
+    const double *resolution, const int *imageSize) const
+{
+  ZJsonObject obj;
+  obj.setEntry("text", getTypeString());
+  if (m_structInfo != NULL) {
+    obj.setEntry("body ID", m_structInfo->getSource());
+  }
+  if (m_geometry != NULL) {
+
+
+    ZPointGeometry *geometry = dynamic_cast<ZPointGeometry*>(m_geometry);
+    if (geometry != NULL) {
+      int x = iround(geometry->getCenter().x() / resolution[0]);
+      int y = iround(geometry->getCenter().y() / resolution[1]);
+      y = imageSize[1] - y + 1;
+      int z = iround(geometry->getCenter().z() / resolution[2]);
+
+      ZJsonArray arrayObj;
+      arrayObj <<  x << y << z;
+      obj.setEntry("location", arrayObj);
+    }
+  }
 
   return obj;
 }

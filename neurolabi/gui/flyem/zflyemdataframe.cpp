@@ -2254,6 +2254,17 @@ void ZFlyEmDataFrame::updateQualityControl()
   dump(m_qualityManager->getHotSpot().toString().c_str());
 
 #ifdef _DEBUG_
-  m_qualityManager->getHotSpot().exportJsonFile(GET_DATA_DIR + "/test.json");
+  double resolution[3];
+  int imageSize[3];
+  resolution[0] = m_dataArray[0]->getSwcResolution(NeuTube::X_AXIS);
+  resolution[1] = m_dataArray[0]->getSwcResolution(NeuTube::Y_AXIS);
+  resolution[2] = m_dataArray[0]->getSwcResolution(NeuTube::Z_AXIS);
+
+  imageSize[0] = m_dataArray[0]->getSourceDimension(NeuTube::X_AXIS);
+  imageSize[1] = m_dataArray[0]->getSourceDimension(NeuTube::Y_AXIS);
+  imageSize[2] = m_dataArray[0]->getSourceDimension(NeuTube::Z_AXIS);
+
+  m_qualityManager->getHotSpot().exportRavelerBookmark(
+        GET_DATA_DIR + "/test.json", resolution, imageSize);
 #endif
 }
