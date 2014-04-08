@@ -39,15 +39,15 @@ title: Skeletonization Service
                     "type": "array",
                     "minItems": 0,
                     "items": {
-                      "type": "object"
+                      "type": "object",
                       "properties": {
                         "type": "string",
-                        "confidence" {"type": "number"},
+                        "confidence": {"type": "number"},
                         "geometry": {
                           "type": "object",
                           "properties": {
-                            "type": "string",
-                            "center" {
+                            "type": {"type": "string"},
+                            "center": {
                               "type": "array",
                               "minItems": 3,
                               "maxItems": 3,
@@ -58,7 +58,7 @@ title: Skeletonization Service
                         "structure": {
                           "type": "object",
                           "properties": {
-                            "type": "string"
+                            "type": {"type": "string" },
                             "source": {"type": "integer", "minimum": 1},
                             "target": {
                               "type": "array",
@@ -67,9 +67,9 @@ title: Skeletonization Service
                                 "minimum": 1
                               }
                             }
-                          }
-                        },
-                        "required": ["type"]
+                          },
+                          "required": ["type"]
+                        }
                       }
                     }
                   },
