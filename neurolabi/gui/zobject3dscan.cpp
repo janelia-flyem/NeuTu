@@ -26,6 +26,9 @@
 #include "zeigensolver.h"
 #include "zdoublevector.h"
 #include "zstack.hxx"
+#include "zstring.h"
+#include "zhdf5reader.h"
+#include "zstringarray.h"
 
 using namespace std;
 
@@ -1002,47 +1005,58 @@ void ZObject3dScan::print() const
 
 bool ZObject3dScan::load(const string &filePath)
 {
+  bool succ = false;
   if (ZFileType::fileType(filePath) == ZFileType::DVID_OBJECT_FILE) {
-    return importDvidObject(filePath);
-  }
-
-  FILE *fp = fopen(filePath.c_str(), "rb");
+    succ = importDvidObject(filePath);
+  } else if (ZFileType::fileType(filePath) == ZFileType::OBJECT_SCAN_FILE) {
+    FILE *fp = fopen(filePath.c_str(), "rb");
 #ifdef _DEBUG_
-  std::cout << filePath << std::endl;
+    std::cout << filePath << std::endl;
 #endif
-  if (fp != NULL) {
-    int stripeNumber = 0;
-    fread(&stripeNumber, sizeof(int), 1, fp);
+    if (fp != NULL) {
+      int stripeNumber = 0;
+      fread(&stripeNumber, sizeof(int), 1, fp);
 
-    PROCESS_ERROR(stripeNumber < 0, "Invalid stripe number", return false);
-    /*
+      PROCESS_ERROR(stripeNumber < 0, "Invalid stripe number", return false);
+      /*
     if (stripeNumber < 0) {
       RECORD_ERROR(true, "Invalid stripe number");
       return false;
     }
     */
 
-    m_stripeArray.resize(stripeNumber);
-    for (vector<ZObject3dStripe>::iterator iter = m_stripeArray.begin();
-         iter != m_stripeArray.end(); ++iter) {
-      iter->read(fp);
+      m_stripeArray.resize(stripeNumber);
+      for (vector<ZObject3dStripe>::iterator iter = m_stripeArray.begin();
+           iter != m_stripeArray.end(); ++iter) {
+        iter->read(fp);
+      }
+      fclose(fp);
+
+      if (isCanonizedActually()) {
+        m_isCanonized = true;
+      } else {
+        m_isCanonized = false;
+      }
+
+      deprecate(ALL_COMPONENT);
+
+      succ = true;
     }
-    fclose(fp);
-
-    if (isCanonizedActually()) {
-      m_isCanonized = true;
-    } else {
-      m_isCanonized = false;
-    }
-
-    deprecate(ALL_COMPONENT);
-
-    return true;
   } else {
-    RECORD_WARNING(true, "Cannont open file " + filePath);
+    ZString filePath2(filePath);
+    if (filePath2.contains(":")) {
+      std::vector<std::string> strArray = filePath2.tokenize(':');
+      if (strArray.size() > 2) {
+        if (ZFileType::fileType(strArray[0]) == ZFileType::HDF5_FILE) {
+          succ = importHdf5(strArray[0], strArray[1]);
+        }
+      }
+    }
   }
 
-  return false;
+  RECORD_WARNING(!succ, "Cannont open file " + filePath);
+
+  return succ;
 }
 
 void ZObject3dScan::save(const char *filePath) const
@@ -2283,6 +2297,21 @@ std::vector<int> ZObject3dScan::toIntArray() const
   }
 
   return array;
+}
+
+bool ZObject3dScan::importHdf5(const string &filePath, const string &key)
+{
+  clear();
+
+  ZHdf5Reader reader;
+  if (reader.open(filePath)) {
+    std::vector<int> array = reader.readIntArray(key);
+    if (!array.empty()) {
+      return load(&(array[0]), array.size());
+    }
+  }
+
+  return false;
 }
 
 ZINTERFACE_DEFINE_CLASS_NAME(ZObject3dScan)

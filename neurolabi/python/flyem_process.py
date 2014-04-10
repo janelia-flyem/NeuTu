@@ -140,6 +140,8 @@ if config.has_key('skeletonize'):
 
 scriptList = []
 
+print bodyDirList
+
 for bodyDir in bodyDirList:
     print 'Building body list for ', bodyDir
     distr.setBodyDir(os.path.abspath(os.path.join(bodyDir, 'stacked')))
@@ -177,6 +179,13 @@ for bodyDir in bodyDirList:
         print subscript
         nextDepList.append(os.path.abspath(subscript) + '.done')
 
+    #Generate skeleton
+    commandList = []
+    scriptDir = os.path.dirname(runScript)
+    commandList.append('cd ' + scriptDir)
+    commandList.append('sh ' + runScript)
+    scheduler.submit(commandList, dependency = [os.path.abspath(os.path.join(bodyDir, 'bodysize.txt'))])
+
     #Create data bundle
     commandList = []
     commandList.append('python ' + neutubeDir + \
@@ -187,13 +196,15 @@ for bodyDir in bodyDirList:
         ' --synapse_annotation ' + os.path.abspath(synapseAnnotationFile))
 
     scheduler.submit(commandList, dependency = nextDepList)
-    sys.exit(1)
+    #sys.exit(1)
 
 
-for script in scriptList:
-    commandList = []
-    scriptDir = os.path.dirname(script)
-    commandList.append('cd ' + scriptDir)
-    commandList.append('sh ' + script)
-    scheduler.submit(commandList, dependency = [os.path.abspath(scriptDir + '/../bodysize.txt')])
+
+#scripts for generate skeletons
+#for script in scriptList:
+#    commandList = []
+#    scriptDir = os.path.dirname(script)
+#    commandList.append('cd ' + scriptDir)
+#    commandList.append('sh ' + script)
+#    scheduler.submit(commandList, dependency = [os.path.abspath(scriptDir + '/../bodysize.txt')])
 

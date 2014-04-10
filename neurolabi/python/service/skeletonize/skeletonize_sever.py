@@ -44,7 +44,7 @@ def do_skeletonize():
         print request.json
         jsonObj = request.json
         try:
-            jsonschema.validate(jsonObj, json.loads(getSchema('skeletonize', 'post')))
+            jsonschema.validate(jsonObj, json.loads(ns.getSchema('skeletonize', 'post')))
         except jsonschema.exceptions.ValidationError as inst:
             print 'Invalid json input'
             print inst

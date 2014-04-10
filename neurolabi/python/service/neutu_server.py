@@ -22,7 +22,7 @@ def getDefaultUuid():
     return 'a75'
 
 def getSchema(service, method):
-    ramlPath = os.path.join(os.path.dirname(os.path.abspath(os.path.realpath(__file__))), service, interface.raml)
+    ramlPath = os.path.join(os.path.dirname(os.path.abspath(os.path.realpath(__file__))), service, 'interface.raml')
     with open(ramlPath) as f:
         content = f.readlines()
     f.close()
