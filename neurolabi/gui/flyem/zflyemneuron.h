@@ -228,12 +228,24 @@ public:
     return m_resolution;
   }
 
+  /*!
+   * \brief Import body form an HDF5 file
+   *
+   * \param filePath Path of the HDF5 file
+   * \param key Key of the body
+   * \return true iff the body is loaded successfully
+   */
+  bool importBodyFromHdf5(
+      const std::string &filePath, const std::string &key);
+
   static const int TopMatchCapacity;
 
   //Interfaces for SWIG. Do not use them in native applications
   void releaseBody();
   void releaseModel();
   /**************************SWIG End***************/
+
+
 
 private:
   std::string getAbsolutePath(const ZString &path, const std::string &source);

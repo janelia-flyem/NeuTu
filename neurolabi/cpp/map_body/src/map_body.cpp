@@ -31,6 +31,9 @@
 #include "tz_imatrix.h"
 #include "zobject3dscan.h"
 #include "zgraph.h"
+#include "zhdf5writer.h"
+#include "zfiletype.h"
+#include "misc/miscutility.h"
 
 using namespace std;
 
@@ -177,7 +180,7 @@ static void compare_body(const IMatrix *imat1, const IMatrix *imat2,
 
 int main(int argc, char *argv[])
 {
-  if (Show_Version(argc, argv, "0.4") == 1) {
+  if (Show_Version(argc, argv, "0.5") == 1) {
     return 0;
   }
 
@@ -196,7 +199,7 @@ int main(int argc, char *argv[])
 
   char *dataDir = Get_String_Arg(const_cast<char*>("input"));
 
-  int overwriteLevel = Get_Int_Arg(const_cast<char*>("--overwrite_level"));
+  //int overwriteLevel = Get_Int_Arg(const_cast<char*>("--overwrite_level"));
 
   int zOffset = Get_Int_Arg(const_cast<char*>("--z_offset"));
 
@@ -208,7 +211,7 @@ int main(int argc, char *argv[])
     zEnd = Get_Int_Arg(CC("--range"), 2);
   } else {
     ZFileList fileList;
-    if (Is_Arg_Matched("--body_map")) {
+    if (Is_Arg_Matched(CC("--body_map"))) {
       fileList.load(std::string(dataDir) + "/superpixel_maps", "png",
                     ZFileList::SORT_BY_LAST_NUMBER);
     } else {
@@ -384,9 +387,16 @@ int main(int argc, char *argv[])
       stackedDir = Get_String_Arg(CC("--stacked_dir"));
     }
 
+    bool isHdf = (ZFileType::fileType(stackedDir) == ZFileType::HDF5_FILE);
+    ZHdf5Writer hdfWriter;
+
     ZString fullBodyDir = bodyDir + "/" + stackedDir;
-    if (!dexist(fullBodyDir.c_str())) {
-      mkdir(fullBodyDir.c_str(), 0755);
+    if (!isHdf) {
+      if (!dexist(fullBodyDir.c_str())) {
+        mkdir(fullBodyDir.c_str(), 0755);
+      }
+    } else {
+      hdfWriter.open(fullBodyDir);
     }
 
     vector<std::pair<size_t, int> > objSizeArray;
@@ -443,7 +453,11 @@ int main(int argc, char *argv[])
         stackedObjPath.appendNumber(bodyId);
         stackedObjPath += ".sobj";
         */
-          obj.save(stackedObjPath);
+          if (isHdf) {
+            hdfWriter.writeIntArray(misc::num2str(bodyId), obj.toIntArray());
+          } else {
+            obj.save(stackedObjPath);
+          }
         }
       }
     }

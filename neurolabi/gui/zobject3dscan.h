@@ -211,6 +211,25 @@ public:
   template<class T>
   int scanArray(const T *array, int x, int y, int z, int width);
 
+  /*!
+   * \brief Load from a data array
+   *
+   * The object will be cleared if data is NULL.
+   *
+   * Format:
+   *   data[0]: Number of stripes
+   *   Stripes ...:
+   *      stripe[0]: z
+   *      stripe[1]: y
+   *      stripe[2]: number of segments
+   *
+   * \param data The data array arranged as the writing order
+   * \param length Number of elements in \a data
+   *
+   * \return true if the data is loaded correctly
+   */
+  bool load(const int *data, size_t length);
+
   void drawStack(Stack *stack, int v, const int *offset = NULL) const;
   void drawStack(Stack *stack, uint8_t red, uint8_t green, uint8_t blue,
                  const int *offset = NULL) const;
@@ -382,6 +401,8 @@ public:
   std::vector<double> getPlaneCov() const;
 
   void processEvent(TEvent event);
+
+  std::vector<int> toIntArray() const;
 
 private:
   std::vector<ZObject3dStripe> m_stripeArray;

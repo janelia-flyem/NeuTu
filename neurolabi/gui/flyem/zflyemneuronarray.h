@@ -23,6 +23,7 @@ public:
   void exportIdPosition(const std::string &filePath,
                         const ZFlyEmNeuronFilter &filter);
 
+  void exportBodyToHdf5(const std::string &filePath);
 };
 
 #endif // ZFLYEMNEURONARRAY_H

@@ -2,6 +2,8 @@
 #include "zfilelist.h"
 #include "zstring.h"
 #include "zobject3dscan.h"
+#include "zhdf5writer.h"
+#include "misc/miscutility.h"
 
 ZFlyEmNeuronArray::ZFlyEmNeuronArray()
 {
@@ -30,4 +32,24 @@ void ZFlyEmNeuronArray::setSynapseAnnotation(
   }
 }
 
+void ZFlyEmNeuronArray::exportBodyToHdf5(const std::string &filePath)
+{
+  ZHdf5Writer writer;
+  writer.open(filePath);
+
+  //writer.createGroup("/");
+  writer.createGroup("/bodies");
+
+  for (ZFlyEmNeuronArray::iterator iter = begin(); iter != end(); ++iter) {
+    ZFlyEmNeuron &neuron = *iter;
+    ZObject3dScan *obj = neuron.getBody();
+    if (obj != NULL) {
+      if (!obj->isEmpty()) {
+        writer.writeIntArray("/bodies/" + misc::num2str(neuron.getId()) + ".sobj",
+                             obj->toIntArray());
+      }
+    }
+    neuron.deprecate(ZFlyEmNeuron::BODY);
+  }
+}
 

@@ -42,6 +42,42 @@ void ZHdf5Reader::close()
 #endif
 }
 
+std::vector<int> ZHdf5Reader::readIntArray(const string &dataPath)
+{
+  std::vector<int> array;
+
+#if defined(_ENABLE_HDF5_)
+  hid_t dset = H5Dopen(m_file, dataPath.c_str(), H5P_DEFAULT);
+  hid_t space = H5Dget_space(dset);
+  hid_t datatype = H5Dget_type(dset);
+
+  if (H5Tequal(datatype, H5T_STD_I32BE) || H5Tequal(datatype, H5T_STD_I32LE)) {
+    hid_t nativeType = H5T_NATIVE_INT32;
+
+    int ndim = H5Sget_simple_extent_ndims(space);
+
+    if (ndim > 0) {
+      hsize_t dims[ndim];
+      H5Sget_simple_extent_dims(space, dims, NULL);
+
+      size_t arrayLength = 1;
+      for (int i = 0; i < ndim; ++i) {
+        arrayLength *= dims[i];
+      }
+      array.resize(arrayLength);
+      H5Dread(dset, nativeType, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(array[0]));
+    }
+  }
+
+  H5Tclose(datatype);
+  //H5Tclose(nativeType);
+  H5Dclose(dset);
+  H5Sclose(space);
+#endif
+
+  return array;
+}
+
 mylib::Array* ZHdf5Reader::readArray(const std::string &dataPath)
 {
   mylib::Array *array = NULL;

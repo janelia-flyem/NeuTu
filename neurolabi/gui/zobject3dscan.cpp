@@ -2222,4 +2222,67 @@ void ZObject3dScan::processEvent(TEvent event)
   }
 }
 
+#define VERIFY_DATA(condition) \
+  if (!(condition)) { \
+    clear(); \
+    return false; \
+  }
+
+#define CHECK_DATA_LENGTH(s)  VERIFY_DATA(length >= (size_t) (s))
+
+bool ZObject3dScan::load(const int *data, size_t length)
+{
+  clear();
+
+  if (data != NULL) {
+    m_stripeArray.resize(*(data++));
+    --length;
+    for (std::vector<ZObject3dStripe>::iterator iter = m_stripeArray.begin();
+         iter != m_stripeArray.end(); ++iter) {
+      CHECK_DATA_LENGTH(3)
+
+      ZObject3dStripe &stripe = *iter;
+      stripe.setZ(*(data++));
+      stripe.setY(*(data++));
+      int nseg = *(data++);
+
+      VERIFY_DATA(nseg > 0)
+
+      length -= 3;
+
+      CHECK_DATA_LENGTH(nseg * 2)
+
+      for (int i = 0; i < nseg; ++i) {
+        stripe.addSegment(data[0], data[1], false);
+        data += 2;
+      }
+
+      length -= nseg * 2;
+    }
+  }
+
+  return true;
+}
+
+std::vector<int> ZObject3dScan::toIntArray() const
+{
+  std::vector<int> array;
+  if (!isEmpty()) {
+    array.push_back(getStripeNumber());
+    for (std::vector<ZObject3dStripe>::const_iterator iter = m_stripeArray.begin();
+         iter != m_stripeArray.end(); ++iter) {
+      const ZObject3dStripe &stripe = *iter;
+      array.push_back(stripe.getZ());
+      array.push_back(stripe.getY());
+      array.push_back(stripe.getSegmentNumber());
+      for (int i = 0; i < stripe.getSegmentNumber(); ++i) {
+        array.push_back(stripe.getSegmentStart(i));
+        array.push_back(stripe.getSegmentEnd(i));
+      }
+    }
+  }
+
+  return array;
+}
+
 ZINTERFACE_DEFINE_CLASS_NAME(ZObject3dScan)

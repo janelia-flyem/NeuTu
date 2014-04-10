@@ -10,6 +10,7 @@
 #include "flyem/zsynapseannotationarray.h"
 #include "neutube.h"
 #include "zswctree.h"
+#include "zflyemneuronarray.h"
 
 class ZFlyEmDataBundle
 {
@@ -37,11 +38,11 @@ public:
 
   bool hasNeuronName(const std::string &name) const;
 
-  const std::vector<ZFlyEmNeuron>& getNeuronArray() const {
+  const ZFlyEmNeuronArray& getNeuronArray() const {
     return m_neuronArray;
   }
 
-  std::vector<ZFlyEmNeuron>& getNeuronArray() {
+  ZFlyEmNeuronArray& getNeuronArray() {
     return m_neuronArray;
   }
 
@@ -150,7 +151,7 @@ public:
   inline const ZSwcTree& getBoundBox() const { return m_boundBox; }
 
 private:
-  std::vector<ZFlyEmNeuron> m_neuronArray;
+  ZFlyEmNeuronArray m_neuronArray;
   std::string m_synapseAnnotationFile;
   std::string m_grayScalePath;
   //std::string m_configFile;

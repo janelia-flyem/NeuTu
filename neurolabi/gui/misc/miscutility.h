@@ -26,6 +26,8 @@ int computeRavelerHeight(const FlyEm::ZIntCuboidArray &blockArray, int margin);
 
 bool exportPointList(const std::string &filePath, const ZPointArray &pointArray);
 
+std::string num2str(int n);
+
 }
 
 namespace {

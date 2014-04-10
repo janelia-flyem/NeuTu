@@ -10882,7 +10882,7 @@ void ZTest::test(MainWindow *host)
   std::cout << hotSpotArray.toString() << std::endl;
 #endif
 
-#if 1 //Count orphans and boundary orphans
+#if 0 //Count orphans and boundary orphans
   ZFlyEmNeuronArray neuronArray;
   neuronArray.importBodyDir(
         GET_DATA_DIR + "/flyem/FIB/skeletonization/session31/0_100000/stacked");
@@ -10923,20 +10923,51 @@ void ZTest::test(MainWindow *host)
     if (psdCount > 0) {
       ++totalCount;
       totalPsdCount += psdCount;
-      if (analyzer.isOrphanBody(neuron.getBody())) {
-        if (analyzer.isStitchedOrphanBody(neuron.getBody())) {
+      if (!analyzer.touchingGlobalBoundary(*neuron.getBody())) {
+        if (analyzer.isStitchedOrphanBody(*neuron.getBody())) {
           boundaryOrphanCount++;
           boundaryOrphanPsdCount += psdCount;
         }
         orphanCount++;
-        orphanPsdCount++;
+        orphanPsdCount += psdCount;
       }
       neuron.deprecate(ZFlyEmNeuron::ALL_COMPONENT);
     }
   }
 
-  std::cout << "#Orphans:" << orphanCount << std::endl;
-  std::cout << "#Boundary orphans:" << boundaryOrphanCount << std::endl;
+  std::cout << "#Bodies with PSDs: " << totalCount << "; #PSDs: "
+            << totalPsdCount << std::endl;
+  std::cout << "#Orphans:" << orphanCount << "; #PSDs: "
+            << orphanPsdCount << std::endl;
+  std::cout << "#Boundary orphans:" << boundaryOrphanCount << "; #PSDs: "
+            << boundaryOrphanPsdCount << std::endl;
 
+#endif
+
+#if 0
+  ZObject3dScanArray bodyArray;
+  bodyArray.importDir(
+        GET_DATA_DIR + "/flyem/FIB/skeletonization/session31/0_100000/stacked");
+
+  bodyArray.exportHdf5(GET_DATA_DIR + "/test.hf5");
+
+  ZObject3dScan obj;
+  obj.importHdf5(GET_DATA_DIR + "/test.hf5", "/body/1.sobj");
+
+  obj.save(GET_DATA_DIR + "/test.sobj");
+
+#endif
+
+#if 0
+  ZFlyEmDataBundle dataBundle;
+  dataBundle.loadJsonFile(
+        GET_TEST_DATA_DIR + "/flyem/FIB/data_release/bundle5/data_bundle.json");
+  dataBundle.getNeuronArray().exportBodyToHdf5(GET_DATA_DIR + "/test.hf5");
+#endif
+
+#if 1
+  ZFlyEmNeuron neuron;
+  neuron.importBodyFromHdf5(GET_TEST_DATA_DIR + "/test.hf5", "/bodies/9531.sobj");
+  neuron.getBody()->save(GET_DATA_DIR + "/test.sobj");
 #endif
 }

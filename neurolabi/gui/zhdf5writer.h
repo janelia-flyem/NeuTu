@@ -37,6 +37,10 @@ public:
   void writeArray(const std::string &path, const mylib::Array *array);
   void writeDoubleArray(const std::string &path,
                         const std::vector<std::vector<double> > &feature);
+  void writeIntArray(const std::string &path,
+                     const std::vector<std::vector<int> > &feature);
+  void writeIntArray(const std::string &path,
+                     const std::vector<int> &feature);
 
 private:
   hid_t m_file;

@@ -1115,6 +1115,24 @@ TEST(ZObject3dScan, component)
   ASSERT_EQ(0, (int) vs.count(2));
 }
 
+TEST(ZObject3dScan, load)
+{
+  std::vector<int> array;
+  array.push_back(1);
+  array.push_back(0);
+  array.push_back(0);
+  array.push_back(1);
+  array.push_back(0);
+  array.push_back(1);
+
+  ZObject3dScan obj;
+  ASSERT_TRUE(obj.load(&(array[0]), array.size()));
+  obj.print();
+  ASSERT_EQ(2, (int) obj.getVoxelNumber());
+
+
+}
+
 #endif
 
 #endif // ZOBJECT3DSCANTEST_H

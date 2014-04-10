@@ -322,3 +322,11 @@ bool misc::exportPointList(
 
   return false;
 }
+
+std::string misc::num2str(int n)
+{
+  std::ostringstream stream;
+  stream << n;
+
+  return stream.str();
+}

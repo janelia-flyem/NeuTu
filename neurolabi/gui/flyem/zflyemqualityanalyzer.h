@@ -19,8 +19,10 @@ public:
 
   bool isExitingOrphanBody(const ZObject3dScan &obj);
 
+  //Boundary orphan
   bool isStitchedOrphanBody(const ZObject3dScan &obj);
 
+  //Local orphan
   bool isOrphanBody(const ZObject3dScan &obj);
 
   class SubstackRegionCalbration {
