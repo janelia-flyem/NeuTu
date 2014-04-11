@@ -782,6 +782,10 @@ ZStack* ZStackFile::readStack(ZStack *data)
     }
   }
 
+  if (data == NULL) {
+    failed = true;
+  }
+
   if (failed) {
     cout << "Failed to read stack: " << endl;
     this->print();

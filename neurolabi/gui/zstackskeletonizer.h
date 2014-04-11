@@ -14,7 +14,7 @@ class ZStackSkeletonizer : public ZProgressable
 public:
   ZStackSkeletonizer();
 
-  void init(const ZJsonObject &config);
+  void configure(const ZJsonObject &config);
 
   inline void setLengthThreshold(double threshold) {
     m_lengthThreshold = threshold;
@@ -70,6 +70,12 @@ public:
   }
 
   void print() const;
+
+private:
+  /*!
+   * \a stack will be destroyed after the function call.
+   */
+  ZSwcTree *makeSkeletonWithoutDs(Stack *stack);
 
 private:
   double m_lengthThreshold;

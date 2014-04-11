@@ -9,7 +9,8 @@
     return new ZFlyEmNeuron;
   }
 
-  ZFlyEmNeuron* CreateZFlyEmNeuron(int id, ZSwcTree *model, ZObject3dScan* body) {
+  ZFlyEmNeuron* CreateZFlyEmNeuron(
+    int id, ZSwcTree *model, ZObject3dScan* body) {
     return new ZFlyEmNeuron(id, model, body);
   }
 
