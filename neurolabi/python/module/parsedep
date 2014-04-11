@@ -1,0 +1,14 @@
+#!/bin/bash
+
+depstr=''
+while read line
+do
+  line=`echo $line | grep -E '%include [^"]+\.i'`
+  #echo $line
+  dep=`echo $line | sed -E 's/%include[ ]+([^\.]*\.i)/\1/'`
+  #echo "Parsed: $dep"
+  depstr="${depstr} $dep"
+done < neutube.i
+
+echo $depstr
+ 
