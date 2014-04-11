@@ -10965,9 +10965,36 @@ void ZTest::test(MainWindow *host)
   dataBundle.getNeuronArray().exportBodyToHdf5(GET_DATA_DIR + "/test.hf5");
 #endif
 
-#if 1
+#if 0
   ZFlyEmNeuron neuron;
   neuron.importBodyFromHdf5(GET_TEST_DATA_DIR + "/test.hf5", "/bodies/9531.sobj");
   neuron.getBody()->save(GET_DATA_DIR + "/test.sobj");
+#endif
+
+#if 1
+  ZFlyEmDataBundle dataBundle;
+  dataBundle.loadJsonFile(
+        GET_DATA_DIR +
+        "/flyem/FIB/data_release/bundle5/data_bundle_wo_synapse.json");
+
+  ZFlyEmQualityAnalyzer analyzer;
+
+#if 0
+  const std::vector<ZFlyEmNeuron>& neuronArray = dataBundle.getNeuronArray();
+  for (size_t i = 0; i < neuronArray.size(); ++i) {
+    const ZFlyEmNeuron &neuron = neuronArray[i];
+    FlyEm::ZHotSpotArray &hotSpotArray = analyzer.computeHotSpotForSplit(neuron);
+    if (!hotSpotArray.empty()) {
+      hotSpotArray.print();
+//      neuron.getUnscaledModel()->save(GET_DATA_DIR + "/test.swc");
+//      break;
+    }
+  }
+#endif
+
+  ZFlyEmNeuron *neuron = dataBundle.getNeuron(406309);
+  FlyEm::ZHotSpotArray &hotSpotArray = analyzer.computeHotSpotForSplit(*neuron);
+  hotSpotArray.print();
+  neuron->getUnscaledModel()->save(GET_DATA_DIR + "/test.swc");
 #endif
 }

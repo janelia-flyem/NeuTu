@@ -2495,7 +2495,7 @@ BOOL Write_Swc_Tree_E(const char *file_path, Swc_Tree *tree)
   }
   
 
-  Swc_Tree_Iterator_Start(tree, 2, FALSE);
+  Swc_Tree_Iterator_Start(tree, SWC_TREE_ITERATOR_DEPTH_FIRST, FALSE);
   Swc_Tree_Node *tn = NULL;
 
 
@@ -2968,7 +2968,7 @@ void Swc_Tree_To_Dot_File(Swc_Tree *tree, const char *file_path)
 
 int Swc_Tree_Resort_Id(Swc_Tree *tree)
 {
-  Swc_Tree_Iterator_Start(tree, 2, FALSE);
+  Swc_Tree_Iterator_Start(tree, SWC_TREE_ITERATOR_DEPTH_FIRST, FALSE);
   int id = 1;
   Swc_Tree_Node *tn = NULL;
 

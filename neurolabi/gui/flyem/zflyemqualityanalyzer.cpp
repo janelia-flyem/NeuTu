@@ -379,6 +379,73 @@ ZFlyEmQualityAnalyzer::computeHotSpot(
   return m_hotSpotArray;
 }
 
+FlyEm::ZHotSpotArray& ZFlyEmQualityAnalyzer::computeHotSpotForSplit(
+    const ZFlyEmNeuron &neuron)
+{
+  m_hotSpotArray.clear();
+
+  const static double nearbyThreshold = 10.0;
+  const static double distThreshold = 1000.0;
+  ZSwcTree *tree = neuron.getUnscaledModel();
+  if (tree != NULL) {
+    const std::vector<Swc_Tree_Node*> &nodeArray = tree->getSwcTreeNodeArray();
+
+    //For each node i
+    for (std::vector<Swc_Tree_Node*>::const_iterator sourceIter = nodeArray.begin();
+         sourceIter != nodeArray.end(); ++sourceIter) {
+      const Swc_Tree_Node *sourceNode = *sourceIter;
+      bool isHotNode = false;
+      if (SwcTreeNode::isRegular(sourceNode)) {
+        //For each node j
+        for (std::vector<Swc_Tree_Node*>::const_iterator targetIter = sourceIter + 1;
+             targetIter != nodeArray.end(); ++targetIter) {
+          const Swc_Tree_Node *targetNode = *targetIter;
+          //if node i is close to node j
+          if (SwcTreeNode::isNearby(sourceNode, targetNode, nearbyThreshold)) {
+            //if the geodesic distance is big
+            double gdist = SwcTreeNode::distance(
+                  sourceNode, targetNode, SwcTreeNode::GEODESIC);
+            if (!isinf(gdist) && gdist > distThreshold) {
+              //Add a hot spot
+              int x = iround(SwcTreeNode::x(sourceNode));
+              int y = iround(SwcTreeNode::y(sourceNode));
+              int z = iround(SwcTreeNode::z(sourceNode));
+              isHotNode = true;
+
+#if 0
+              ZObject3dScan *body = neuron.getBody();
+              if (body != NULL) {
+                if (!body->contains(x, y, z)) {
+                  isHotNode = false;
+                }
+              }
+#endif
+
+              if (isHotNode) {
+#ifdef _DEBUG_
+                SwcTreeNode::setType(const_cast<Swc_Tree_Node*>(sourceNode), 5);
+                SwcTreeNode::setType(const_cast<Swc_Tree_Node*>(targetNode), 6);
+#endif
+                FlyEm::ZHotSpot *hotSpot =
+                    FlyEm::ZHotSpotFactory::createPointHotSpot(x, y, z);
+                FlyEm::ZStructureInfo *structInfo = new FlyEm::ZStructureInfo;
+                structInfo->setSource(neuron.getId());
+                structInfo->setType(FlyEm::ZStructureInfo::TYPE_SPLIT);
+                hotSpot->setStructure(structInfo);
+                m_hotSpotArray.append(hotSpot);
+                break;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return m_hotSpotArray;
+}
+
+
 FlyEm::ZHotSpotArray&
 ZFlyEmQualityAnalyzer::computeHotSpot(const ZFlyEmNeuron *neuron)
 {

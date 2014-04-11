@@ -17,7 +17,9 @@ FlyEm::ZHotSpotArray::~ZHotSpotArray()
 
 void FlyEm::ZHotSpotArray::append(ZHotSpot *hotSpot)
 {
-  push_back(hotSpot);
+  if (hotSpot != NULL) {
+    push_back(hotSpot);
+  }
 }
 
 ZTextLineCompositer FlyEm::ZHotSpotArray::toLineCompositer() const
@@ -38,6 +40,11 @@ ZTextLineCompositer FlyEm::ZHotSpotArray::toLineCompositer() const
 std::string FlyEm::ZHotSpotArray::toString() const
 {
   return toLineCompositer().toString(2);
+}
+
+void FlyEm::ZHotSpotArray::print() const
+{
+  std::cout << toString() << std::endl;
 }
 
 void FlyEm::ZHotSpotArray::concat(FlyEm::ZHotSpotArray *spotArray)

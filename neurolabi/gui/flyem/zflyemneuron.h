@@ -29,7 +29,7 @@ public:
   ZFlyEmNeuron(const ZFlyEmNeuron &neuron);
 
   enum EComponent {
-    MODEL, BODY, BUDDY_MODEL, ALL_COMPONENT
+    MODEL, UNSCALED_MODEL, BODY, BUDDY_MODEL, ALL_COMPONENT
   };
 
   bool isDeprecated(EComponent comp) const;
@@ -104,6 +104,7 @@ public:
   }
 
   ZSwcTree *getModel(const std::string &bundleSource = "") const;
+  ZSwcTree *getUnscaledModel(const std::string &bundleSource = "") const;
 
   /*!
    * \brief Get the buddy model from resampling
@@ -270,6 +271,7 @@ private:
   std::vector<double> m_outputWeight;
 
   mutable ZSwcTree *m_model;
+  mutable ZSwcTree *m_unscaledModel;
   mutable ZSwcTree *m_buddyModel;
   mutable ZObject3dScan *m_body;
   mutable std::vector<const ZFlyEmNeuron*> m_matched;

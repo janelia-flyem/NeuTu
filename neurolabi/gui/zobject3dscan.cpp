@@ -125,6 +125,16 @@ void ZObject3dStripe::translate(int dx, int dy, int dz)
   }
 }
 
+void ZObject3dStripe::fillIntArray(int *array) const
+{
+  if (array != NULL) {
+    array[0] = getZ();
+    array[1] = getY();
+    array[2] = getSegmentNumber();
+    memcpy(array + 3, &(m_segmentArray[0]), sizeof(int) * m_segmentArray.size());
+  }
+}
+
 void ZObject3dStripe::addZ(int dz)
 {
   m_z += dz;
@@ -2279,13 +2289,29 @@ bool ZObject3dScan::load(const int *data, size_t length)
 }
 
 std::vector<int> ZObject3dScan::toIntArray() const
-{
+{ 
   std::vector<int> array;
   if (!isEmpty()) {
-    array.push_back(getStripeNumber());
+    //Count total size
+    size_t arraySize = 1;
     for (std::vector<ZObject3dStripe>::const_iterator iter = m_stripeArray.begin();
          iter != m_stripeArray.end(); ++iter) {
       const ZObject3dStripe &stripe = *iter;
+      arraySize += 3 + stripe.getSegmentNumber() * 2;
+    }
+
+    array.resize(arraySize);
+    array[0] = getStripeNumber();
+//    array.push_back(getStripeNumber());
+    size_t index = 1;
+    for (std::vector<ZObject3dStripe>::const_iterator iter = m_stripeArray.begin();
+         iter != m_stripeArray.end(); ++iter) {
+      const ZObject3dStripe &stripe = *iter;
+      size_t stripeSize = 3 + stripe.getSegmentNumber() * 2;
+//      array.resize(array.size() + stripeSize);
+      stripe.fillIntArray(&(array[index]));
+      index += stripeSize;
+      /*
       array.push_back(stripe.getZ());
       array.push_back(stripe.getY());
       array.push_back(stripe.getSegmentNumber());
@@ -2293,6 +2319,7 @@ std::vector<int> ZObject3dScan::toIntArray() const
         array.push_back(stripe.getSegmentStart(i));
         array.push_back(stripe.getSegmentEnd(i));
       }
+      */
     }
   }
 

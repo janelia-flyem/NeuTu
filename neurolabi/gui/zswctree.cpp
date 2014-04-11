@@ -158,6 +158,7 @@ void ZSwcTree::save(const char *filePath)
 #endif
 
   if (!isEmpty()) {
+    resortId();
     Write_Swc_Tree_E(filePath, m_tree);
   } else {
     RECORD_WARNING_UNCOND("Empty tree. No file saved.");

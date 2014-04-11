@@ -105,6 +105,12 @@ public:
    */
   bool contains(int x, int y, int z) const;
 
+  /*!
+   * \brief Fill an integer array with the stripe data
+   * \param array Target array, which must be preallocated with sufficient size.
+   */
+  void fillIntArray(int *array) const;
+
 private:
   std::vector<int> m_segmentArray;
   int m_y;
