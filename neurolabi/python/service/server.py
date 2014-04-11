@@ -9,8 +9,8 @@ import socket
 import os
 
 sys.path.append('..')
-sys.path.append('module')
-sys.path.append('flyem')
+sys.path.append('../module')
+sys.path.append('../flyem')
 
 socket.setdefaulttimeout(1000)
 

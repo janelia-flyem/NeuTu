@@ -3,33 +3,36 @@ CONFIG += console
 CONFIG -= app_bundle
 CONFIG -= qt
 
-CDir = $${PWD}/../../c
-GuiDir = $${PWD}/../../gui
-GenelibDir = $${PWD}/../../lib/genelib/src
+#CDir = $${PWD}/../../c
+#GuiDir = $${PWD}/../../gui
+#GenelibDir = $${PWD}/../../lib/genelib/src
 
-HOME = $$system(echo $HOME)
-INCLUDEPATH += $${CDir} $${CDir}/include $${GuiDir} $${GenelibDir} \
-    /usr/include/libxml2 $${HOME}/local/include
+#HOME = $$system(echo $HOME)
+#INCLUDEPATH += $${CDir} $${CDir}/include $${GuiDir} $${GenelibDir} \
+#    /usr/include/libxml2 $${HOME}/local/include
 
-LIBS += -L/usr/local/lib \
-    -L/usr/lib \
-    -L$${CDir}/lib \
-    -L$${HOME}/local/lib \
-    -lfftw3 \
-    -lfftw3f \
-    -lxml2 \
-    -lpng \
-    -ljansson
+#LIBS += -L/usr/local/lib \
+#    -L/usr/lib \
+#    -L$${CDir}/lib \
+#    -L$${HOME}/local/lib \
+#    -lfftw3 \
+#    -lfftw3f \
+#    -lxml2 \
+#    -lpng \
+#    -ljansson
 
 DEFINES += HAVE_CONFIG_H
 
-CONFIG(debug, debug|release) {
-    DEFINES += _DEBUG_ _ADVANCED_
-    LIBS += -lneurolabi_debug
-} else {
-    LIBS += -lneurolabi
-}
+#CONFIG(debug, debug|release) {
+#    DEFINES += _DEBUG_ _ADVANCED_
+#    LIBS += -lneurolabi_debug
+#} else {
+#    LIBS += -lneurolabi
+#}
 
+NEUROLABI_DIR = $${PWD}/../../
+EXTLIB_DIR = $${NEUROLABI_DIR}/lib
+include (../../gui/extlib.pri)
 include (../../gui/gui_free.pri)
 
 SOURCES += src/map_body.cpp

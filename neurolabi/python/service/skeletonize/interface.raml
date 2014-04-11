@@ -39,10 +39,15 @@ title: Skeletonization Service
                     "type": "array",
                     "minItems": 0,
                     "items": {
-                      "type": "string"
+                      "type": "object",
+                      "properties": {
+                        "id": {"type": "integer", "minimum": 1},
+                        "url": {"type": "string"}
+                      },
+                      "required": ["id", "url"]
                     }
                   },
-                "required" : ["swc-list"]
+                  "required": ["swc-list"]
                 }
               }
 /interface/interface.raml:

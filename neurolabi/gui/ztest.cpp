@@ -10853,7 +10853,7 @@ void ZTest::test(MainWindow *host)
   std::cout << "Distance: " << dist << std::endl;
 #endif
 
-#if 1
+#if 0
   ZSwcDeepAngleMetric metric;
   metric.setLevel(3);
   metric.setMinDist(100.0);
@@ -10880,5 +10880,94 @@ void ZTest::test(MainWindow *host)
   }
 
   std::cout << hotSpotArray.toString() << std::endl;
+#endif
+
+#if 0 //Count orphans and boundary orphans
+  ZFlyEmNeuronArray neuronArray;
+  neuronArray.importBodyDir(
+        GET_DATA_DIR + "/flyem/FIB/skeletonization/session31/0_100000/stacked");
+  std::cout << neuronArray.size() << std::endl;
+
+  FlyEm::ZSynapseAnnotationArray synapseArray;
+  synapseArray.loadJson(
+        dataPath + "/flyem/FIB/skeletonization/session31/annotations-synapse.json");
+
+  std::vector<int> allPsdCount = synapseArray.countPsd();
+
+  FlyEm::ZIntCuboidArray blockArray;
+  blockArray.loadSubstackList(dataPath + "/flyem/FIB/block_13layer.txt");
+  ZFlyEmQualityAnalyzer::SubstackRegionCalbration calbr;
+  calbr.setBounding(true, true, false);
+  calbr.setMargin(10, 10, 0);
+  //blockArray.print();
+  //calbr.calibrate(blockArray);
+
+  ZFlyEmQualityAnalyzer analyzer;
+  analyzer.setSubstackRegion(blockArray, calbr);
+
+  int totalCount = 0;
+  int totalPsdCount = 0;
+  int orphanCount = 0;
+  int boundaryOrphanCount = 0;
+  int orphanPsdCount = 0;
+  int boundaryOrphanPsdCount = 0;
+
+  for (ZFlyEmNeuronArray::const_iterator
+       iter = neuronArray.begin(); iter != neuronArray.end(); ++iter) {
+    const ZFlyEmNeuron &neuron = *iter;
+    int psdCount = 0;
+
+    if ((size_t) neuron.getId() < allPsdCount.size()) {
+      psdCount = allPsdCount[neuron.getId()];
+    }
+    if (psdCount > 0) {
+      ++totalCount;
+      totalPsdCount += psdCount;
+      if (!analyzer.touchingGlobalBoundary(*neuron.getBody())) {
+        if (analyzer.isStitchedOrphanBody(*neuron.getBody())) {
+          boundaryOrphanCount++;
+          boundaryOrphanPsdCount += psdCount;
+        }
+        orphanCount++;
+        orphanPsdCount += psdCount;
+      }
+      neuron.deprecate(ZFlyEmNeuron::ALL_COMPONENT);
+    }
+  }
+
+  std::cout << "#Bodies with PSDs: " << totalCount << "; #PSDs: "
+            << totalPsdCount << std::endl;
+  std::cout << "#Orphans:" << orphanCount << "; #PSDs: "
+            << orphanPsdCount << std::endl;
+  std::cout << "#Boundary orphans:" << boundaryOrphanCount << "; #PSDs: "
+            << boundaryOrphanPsdCount << std::endl;
+
+#endif
+
+#if 0
+  ZObject3dScanArray bodyArray;
+  bodyArray.importDir(
+        GET_DATA_DIR + "/flyem/FIB/skeletonization/session31/0_100000/stacked");
+
+  bodyArray.exportHdf5(GET_DATA_DIR + "/test.hf5");
+
+  ZObject3dScan obj;
+  obj.importHdf5(GET_DATA_DIR + "/test.hf5", "/body/1.sobj");
+
+  obj.save(GET_DATA_DIR + "/test.sobj");
+
+#endif
+
+#if 0
+  ZFlyEmDataBundle dataBundle;
+  dataBundle.loadJsonFile(
+        GET_TEST_DATA_DIR + "/flyem/FIB/data_release/bundle5/data_bundle.json");
+  dataBundle.getNeuronArray().exportBodyToHdf5(GET_DATA_DIR + "/test.hf5");
+#endif
+
+#if 1
+  ZFlyEmNeuron neuron;
+  neuron.importBodyFromHdf5(GET_TEST_DATA_DIR + "/test.hf5", "/bodies/9531.sobj");
+  neuron.getBody()->save(GET_DATA_DIR + "/test.sobj");
 #endif
 }

@@ -22,7 +22,9 @@ class QualityAnalyzer:
     def computeHotSpot(self, bodyId):
         neuron = self._dataBundle.getNeuron(bodyId)
         if neuron:
-           return self._engine.computeHotSpot(neuron.getModel().getCData(), None, 10, 10, 10, 1000).toJsonString()
+            return self._engine.computeHotSpot(neuron.getModel().getCData(), None, 10, 10, 10, 1000).toJsonString()
+        else:
+            raise exception('Cannot retrieve the neuron: ' + str(bodyId))
 
 if __name__ == '__main__':
     qa = QualityAnalyzer()

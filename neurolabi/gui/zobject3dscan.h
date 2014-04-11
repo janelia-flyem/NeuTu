@@ -383,6 +383,43 @@ public:
 
   void processEvent(TEvent event);
 
+
+  /*!
+   * \brief Get the integer array representation of the object
+   *
+   * Format:
+   *   data[0]: Number of stripes
+   *   Stripes ...:
+   *      stripe[0]: z
+   *      stripe[1]: y
+   *      stripe[2]: number of segments
+   */
+  std::vector<int> toIntArray() const;
+
+  /*!
+   * \brief Load from a data array
+   *
+   * The object will be cleared if data is NULL.
+   *
+   * \param data The data array arranged as the writing order
+   * \param length Number of elements in \a data
+   *
+   * \return true if the data is loaded correctly
+   */
+  bool load(const int *data, size_t length);
+
+  /*!
+   * \brief Load object from an HDF5 file.
+   *
+   * The object becomes empty if the import failed.
+   *
+   * \param filePath HDF5 file path
+   * \param key Data path of the object
+   *
+   * \return true iff the object is loaded successfully
+   */
+  bool importHdf5(const std::string &filePath, const std::string &key);
+
 private:
   std::vector<ZObject3dStripe> m_stripeArray;
   /*

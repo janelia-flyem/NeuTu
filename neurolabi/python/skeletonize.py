@@ -67,17 +67,17 @@ def Skeletonize(source, target, config = None):
                                            config['args']['downsampleInterval'][1],
                                            config['args']['downsampleInterval'][2])
             
-        if config['args'].has_key('minimalLength'):
-            skeletonizer.setLengthThreshold(config['args']['minimalLength'])
+    if config['args'].has_key('minimalLength'):
+        skeletonizer.setLengthThreshold(config['args']['minimalLength'])
             
-        if config['args'].has_key('minimalObjectSize'):
-            skeletonizer.setMinObjSize(config['args']['minimalObjectSize'])
+    if config['args'].has_key('minimalObjectSize'):
+        skeletonizer.setMinObjSize(config['args']['minimalObjectSize'])
             
-        if config['args'].has_key('keepingSingleObject'):
-            skeletonizer.setKeepingSingleObject(config['args']['keepingSingleObject'])
+    if config['args'].has_key('keepingSingleObject'):
+        skeletonizer.setKeepingSingleObject(config['args']['keepingSingleObject'])
                 
-        if config['args'].has_key('rebase'):
-            skeletonizer.setRebase(config['args']['rebase'])
+    if config['args'].has_key('rebase'):
+        skeletonizer.setRebase(config['args']['rebase'])
             
     skeletonizer._print()
     

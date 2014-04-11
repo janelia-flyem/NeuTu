@@ -10,6 +10,7 @@
 #include "swctreenode.h"
 #include "c_json.h"
 #include "tz_error.h"
+#include "zhdf5reader.h"
 
 using namespace std;
 
@@ -662,4 +663,25 @@ void ZFlyEmNeuron::releaseBody()
 void ZFlyEmNeuron::releaseModel()
 {
   m_model = NULL;
+}
+
+bool ZFlyEmNeuron::importBodyFromHdf5(
+    const std::string &filePath, const std::string &key)
+{
+  deprecate(BODY);
+  ZHdf5Reader reader;
+  if (reader.open(filePath)) {
+    std::vector<int> array = reader.readIntArray(key);
+    if (!array.empty()) {
+      if (m_body == NULL) {
+        m_body = new ZObject3dScan;
+      }
+
+      return m_body->load(&(array[0]), array.size());
+    }
+
+    return false;
+  }
+
+  return false;
 }

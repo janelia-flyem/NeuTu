@@ -2,6 +2,7 @@
 #define ZHDF5READER_H
 
 #include <string>
+#include <vector>
 
 #include "zhdf5_header.h"
 #include "mylib/array.h"
@@ -31,6 +32,8 @@ public:
   bool open(const std::string &source);
   void close();
   mylib::Array* readArray(const std::string &dataPath);
+
+  std::vector<int> readIntArray(const std::string &dataPath);
 
   static herr_t printObjectInfo(hid_t loc_id, const char *name, void *opdata);
   void printInfo();

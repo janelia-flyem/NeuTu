@@ -62,12 +62,14 @@ void ZHdf5Writer::createGroup(const std::string &group)
 {
 #if defined(_ENABLE_HDF5_)
   if (m_file != NULL_FILE) {
-    herr_t status = H5Gget_objinfo(m_file, group.c_str(), 0, NULL);
-    if (status != 0) {
-      hid_t group_id = H5Gcreate(m_file, group.c_str(), H5P_DEFAULT, H5P_DEFAULT,
-                                 H5P_DEFAULT);
+    //herr_t status = H5Oget_info(m_file, group.c_str(), 0, NULL);
+    //if (status != 0) {
+    hid_t group_id = H5Gcreate(m_file, group.c_str(), H5P_DEFAULT, H5P_DEFAULT,
+                               H5P_DEFAULT);
+    if (group_id >= 0) {
       H5Gclose(group_id);
     }
+    //}
   }
 #else
   UNUSED_PARAMETER(&group);
@@ -163,6 +165,44 @@ void ZHdf5Writer::writeDoubleArray(
     memcpy((double *) array->data + dims[1] * i,
         &(feature[i][0]), dims[1] * sizeof(double));
   }
+
+  writeArray(path, array);
+
+  mylib::Kill_Array(array);
+}
+
+void ZHdf5Writer::writeIntArray(
+    const std::string &path, const std::vector<std::vector<int> > &feature)
+{
+  int ndim = 2;
+  mylib::Dimn_Type dims[2];
+  dims[0] = feature.size();
+  dims[1] = feature[0].size();
+
+  mylib::Array *array = mylib::Make_Array(
+        mylib::PLAIN_KIND, mylib::INT32_TYPE, ndim, dims);
+
+  for (size_t i = 0; i < feature.size(); ++i) {
+    memcpy(((int *) array->data) + dims[1] * i,
+        &(feature[i][0]), dims[1] * sizeof(int));
+  }
+
+  writeArray(path, array);
+
+  mylib::Kill_Array(array);
+}
+
+void ZHdf5Writer::writeIntArray(
+    const std::string &path, const std::vector<int> &feature)
+{
+  int ndim = 1;
+  mylib::Dimn_Type dims[1];
+  dims[0] = feature.size();
+
+  mylib::Array *array = mylib::Make_Array(
+        mylib::PLAIN_KIND, mylib::INT32_TYPE, ndim, dims);
+
+  memcpy(array->data, &(feature[0]), dims[0] * sizeof(int));
 
   writeArray(path, array);
 
