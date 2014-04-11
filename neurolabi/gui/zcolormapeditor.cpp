@@ -506,14 +506,14 @@ void ZColorMapEditor::createWidget()
   m_domainMaxNameLabel->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
   m_domainMinSpinBox = new QDoubleSpinBox(this);
   m_domainMaxSpinBox = new QDoubleSpinBox(this);
-  m_domainMinSpinBox->setValue(m_colorMap->get().getDomainMin());
-  m_domainMaxSpinBox->setValue(m_colorMap->get().getDomainMax());
   m_domainMinSpinBox->setRange(-1e10, 1e10);
   m_domainMinSpinBox->setKeyboardTracking(false);
   m_domainMinSpinBox->setDecimals(4);
   m_domainMaxSpinBox->setRange(-1e10, 1e10);
   m_domainMaxSpinBox->setDecimals(4);
   m_domainMaxSpinBox->setKeyboardTracking(false);
+  m_domainMinSpinBox->setValue(m_colorMap->get().getDomainMin());
+  m_domainMaxSpinBox->setValue(m_colorMap->get().getDomainMax());
   m_fitDomainToDataButton = new QPushButton("Fit to Data", this);
   m_fitDomainToDataButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
   if (m_colorMap->get().hasDataRange())
