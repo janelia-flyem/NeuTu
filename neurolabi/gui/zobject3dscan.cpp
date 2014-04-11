@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <sstream>
 #include <cmath>
+#include <cstring>
 #if _QT_GUI_USED_
 #include <QtGui>
 #endif

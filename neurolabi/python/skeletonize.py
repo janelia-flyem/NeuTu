@@ -69,6 +69,9 @@ def Skeletonize(source, target, config = None):
             
     if config['args'].has_key('minimalLength'):
         skeletonizer.setLengthThreshold(config['args']['minimalLength'])
+
+    if config['args'].has_key('maximalDistance'):
+        skeletonizer.setLengthThreshold(config['args']['maximalDistance'])
             
     if config['args'].has_key('minimalObjectSize'):
         skeletonizer.setMinObjSize(config['args']['minimalObjectSize'])

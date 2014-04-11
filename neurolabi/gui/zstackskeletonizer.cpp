@@ -362,6 +362,11 @@ void ZStackSkeletonizer::init(const ZJsonObject &config)
     setLengthThreshold(ZJsonParser::numberValue(value));
   }
 
+  value = config["maximalDistance"];
+  if (ZJsonParser::isNumber(value)) {
+    setDistanceThreshold(ZJsonParser::numberValue(value));
+  }
+
   value = config["keepingSingleObject"];
   if (ZJsonParser::isBoolean(value)) {
     setKeepingSingleObject(ZJsonParser::booleanValue(value));
