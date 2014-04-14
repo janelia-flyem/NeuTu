@@ -7,6 +7,7 @@ import jsonschema
 import httplib
 import socket
 import os
+import argparse
 
 sys.path.append('..')
 sys.path.append('../..')
@@ -72,10 +73,10 @@ def do_skeletonize():
             bodyLink = '/api/node/' + uuid + '/skeletons/' + str(bodyId) + '.swc'
             print '************', bodyLink
             conn = httplib.HTTPConnection(dvidServer)
-            r1 = conn.request("GET", bodyLink)
+            conn.request("GET", bodyLink)
+            r1 = conn.getresponse()
             swcAvailable = False
-            print r1
-            if not r1 or not r1.status == 200:
+            if not r1.status == 200:
                 try:
                     skl.Skeletonize(bodyId, 'dvid', config)
                     print 'skeletons retrieved.'
@@ -122,8 +123,12 @@ def parseJson():
     data = get_json_post()
     return '<p>' + data['head'] + '</p>'
 
-print 'Starting the server ...'
-run(host=socket.gethostname(), port=8080, debug=True)
+if __name__ == '__main__': 
+    print 'Starting the server ...'
+    parser = argparse.ArgumentParser();
+    parser.add_argument("--port", dest="port", type = int, help="port", default=8080);
+    args = parser.parse_args()
+    run(host=socket.gethostname(), port=args.port, debug=True)
 
 # print getSchema('skeletonize', 'post')
 # try:
