@@ -18,6 +18,7 @@ public:
   void append(FlyEm::ZHotSpot *hotSpot);
   void concat(ZHotSpotArray *spotArray);
   std::string toString() const;
+  void print() const;
   ZTextLineCompositer toLineCompositer() const;
 
   std::string toJsonString() const;

@@ -74,6 +74,8 @@ public:
   FlyEm::ZHotSpotArray& computeHotSpot(const ZFlyEmNeuron *neuron,
                                        std::vector<ZFlyEmNeuron>& neuronArray);
 
+  FlyEm::ZHotSpotArray& computeHotSpotForSplit(const ZFlyEmNeuron &neuron);
+
 private:
   FlyEm::ZIntCuboidArray m_substackRegion;
   FlyEm::ZHotSpotArray m_hotSpotArray;

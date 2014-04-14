@@ -71,6 +71,8 @@ bool ZFlyEmNeuron::isDeprecated(EComponent comp) const
     return (m_body == NULL);
   case BUDDY_MODEL:
     return (m_buddyModel == NULL);
+  case UNSCALED_MODEL:
+    return (m_unscaledModel == NULL);
   default:
     break;
   }
@@ -86,6 +88,10 @@ void ZFlyEmNeuron::deprecate(EComponent comp) const
   case MODEL:
     delete m_model;
     m_model = NULL;
+    break;
+  case UNSCALED_MODEL:
+    delete m_unscaledModel;
+    m_unscaledModel = NULL;
     break;
   case BODY:
     delete m_body;
@@ -137,6 +143,26 @@ ZSwcTree* ZFlyEmNeuron::getResampleBuddyModel() const
   }
 
   return m_buddyModel;
+}
+
+ZSwcTree* ZFlyEmNeuron::getUnscaledModel(const string &bundleSource) const
+{
+  if (isDeprecated(UNSCALED_MODEL)) {
+    if (!m_modelPath.empty()) {
+      m_unscaledModel = new ZSwcTree;
+      ZString path(m_modelPath);
+      if (!path.isAbsolutePath()) {
+        path = path.absolutePath(ZString::dirPath(bundleSource));
+      }
+      m_unscaledModel->load(path.c_str());
+      if (m_unscaledModel->data() == NULL) {
+        delete m_unscaledModel;
+        m_unscaledModel = NULL;
+      }
+    }
+  }
+
+  return m_unscaledModel;
 }
 
 ZSwcTree* ZFlyEmNeuron::getModel(const string &bundleSource) const

@@ -45,8 +45,14 @@ void ZFlyEmNeuronArray::exportBodyToHdf5(const std::string &filePath)
     ZObject3dScan *obj = neuron.getBody();
     if (obj != NULL) {
       if (!obj->isEmpty()) {
+#ifdef _DEBUG_
+        tic();
+#endif
         writer.writeIntArray("/bodies/" + misc::num2str(neuron.getId()) + ".sobj",
                              obj->toIntArray());
+#ifdef _DEBUG_
+        ptoc();
+#endif
       }
     }
     neuron.deprecate(ZFlyEmNeuron::BODY);

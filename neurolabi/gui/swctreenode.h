@@ -469,6 +469,15 @@ inline std::vector<std::string>& clipboard() {
 }
 
 //Relations
+/*!
+ * \brief Test if two node are close to each other
+ *
+ * Two nodes are close to each other if their surface distance is no bigger than
+ * distThre. It return false if either of the nodes is not regular.
+ */
+bool isNearby(const Swc_Tree_Node *tn1, const Swc_Tree_Node *tn2,
+              double distThre);
+
 bool hasOverlap(const Swc_Tree_Node *tn1, const Swc_Tree_Node *tn2);
 
 /*!

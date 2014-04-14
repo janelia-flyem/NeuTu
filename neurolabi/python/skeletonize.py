@@ -22,6 +22,7 @@ def Skeletonize(source, target, config = None):
             elif not config.has_key('uuid'):
                 raise Exception('UUID must be specified for DVID target.')
         
+    if config:
         dvidServer = config['dvid-server']
         uuid = config['uuid']
 
@@ -44,18 +45,30 @@ def Skeletonize(source, target, config = None):
             config['args'] = json.load(configFile)
             configFile.close()
     
+    sparseObj = None
+    stack = None
     if isinstance(source, int):
         sparseObj = LoadDvidObject(source, dvidServer, uuid)
+        if sparseObj.isEmpty():
+            raise Exception('Unable to load the body: ' + str(source))
+
         if config['args'].has_key('fillingHole'):
             if config['args']['fillingHole']:
                 sparseObj.fillHole()
-        stack = sparseObj.toStackObject()
+        #stack = sparseObj.toStackObject()
     elif source.isdigit():
         sparseObj = LoadDvidObject(int(source), dvidServer, uuid)
+        if sparseObj.isEmpty():
+            raise Exception('Unable to load the body: ' + str(source))
         if config['args'].has_key('fillingHole'):
             if config['args']['fillingHole']:
                 sparseObj.fillHole()
-        stack = sparseObj.toStackObject()
+        #stack = sparseObj.toStackObject()
+    elif isinstance(source, str):
+        print source
+        if source.endswith('.sobj'):
+            sparseObj = neutube.CreateObject3dScan()
+            sparseObj.load(source)
     else:
         stack = neutube.ZStack()
         stackFile = neutube.ZStackFile()
@@ -69,6 +82,9 @@ def Skeletonize(source, target, config = None):
             
     if config['args'].has_key('minimalLength'):
         skeletonizer.setLengthThreshold(config['args']['minimalLength'])
+
+    if config['args'].has_key('maximalDistance'):
+        skeletonizer.setDistanceThreshold(config['args']['maximalDistance'])
             
     if config['args'].has_key('minimalObjectSize'):
         skeletonizer.setMinObjSize(config['args']['minimalObjectSize'])
@@ -81,8 +97,11 @@ def Skeletonize(source, target, config = None):
             
     skeletonizer._print()
     
-    tree = skeletonizer.makeSkeleton(stack)
-    
+    tree = None
+    if sparseObj:
+        tree = skeletonizer.makeSkeleton(sparseObj)
+    else:
+        tree = skeletonizer.makeSkeleton(stack)
         
     if target == 'dvid':
         conn = httplib.HTTPConnection(dvidServer)
@@ -96,7 +115,10 @@ def Skeletonize(source, target, config = None):
     else:
         tree.save(target)
     
-    neutube.DeleteStackObject(stack)
+    if stack:
+        neutube.DeleteStackObject(stack)
+    if sparseObj:
+        neutube.DeleteObject3dScan(sparseObj)
     neutube.DeleteSwcTree(tree)
 
 if __name__ == '__main__': 
@@ -111,8 +133,8 @@ if __name__ == '__main__':
     config = { 'args': json.load(configFile) }    
     configFile.close()
         
-    config['dvid-server'] = 'emdata1.int.janelia.org'
-    config['uuid'] = '240a'
+    config['dvid-server'] = 'emdata1.int.janelia.org:7000'
+    config['uuid'] = 'a75'
     Skeletonize(options.input, options.output, config)
     
     print options.input

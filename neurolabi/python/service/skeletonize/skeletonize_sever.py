@@ -61,6 +61,7 @@ def do_skeletonize():
     print config
     
     output["swc-list"] = []
+    output['error'] = []
     for bodyId in bodyArray:
         conn = httplib.HTTPConnection(dvidServer)
         bodyLink = '/api/node/' + uuid + '/skeletons/' + str(bodyId) + '.swc'
@@ -72,10 +73,13 @@ def do_skeletonize():
             try:
                 skl.Skeletonize(bodyId, 'dvid', config)
             except Exception as inst:
-                return '<p>' + str(inst) + '</p>'
-            
-        swc = {"id": bodyId, "url": dvidServer + bodyLink}
-        output["swc-list"].append(swc)
+                print str(inst)
+                output['error'].append(str(inst))
+            else:
+                swc = {"id": bodyId, "url": dvidServer + bodyLink}
+                output["swc-list"].append(swc)
+        else:
+            output['error'].append('The DVID server is down. Please wait.')
     
     return json.dumps(output, sort_keys = False)
 

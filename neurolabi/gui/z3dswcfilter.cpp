@@ -542,9 +542,9 @@ void Z3DSwcFilter::render(Z3DEye eye)
 
   if (m_renderingPrimitive.isSelected("Normal")) {
     m_rendererBase->activateRenderer(m_sphereRendererForCone, m_coneRenderer);
-  } else if (m_renderingPrimitive.isSelected("Cylinder")) {
+  } /*else if (m_renderingPrimitive.isSelected("Cylinder")) {
     m_rendererBase->activateRenderer(m_coneRenderer);
-  }
+  }*/
   else if (m_renderingPrimitive.isSelected("Line"))
     m_rendererBase->activateRenderer(m_lineRenderer);
   else /* (m_renderingPrimitive.get() == "Sphere") */{
@@ -568,8 +568,8 @@ void Z3DSwcFilter::renderPicking(Z3DEye eye)
 
   if (m_renderingPrimitive.isSelected("Normal")) {
     m_rendererBase->activateRenderer(m_coneRenderer, m_sphereRendererForCone);
-  } else if (m_renderingPrimitive.isSelected("Cylinder"))
-    m_rendererBase->activateRenderer(m_coneRenderer);
+  } /*else if (m_renderingPrimitive.isSelected("Cylinder"))
+    m_rendererBase->activateRenderer(m_coneRenderer);*/
   else if (m_renderingPrimitive.isSelected("Line"))
     m_rendererBase->activateRenderer(m_lineRenderer);
   else /* (m_renderingPrimitive.get() == "Sphere") */{
@@ -834,8 +834,8 @@ void Z3DSwcFilter::prepareData()
   int zMin = std::numeric_limits<int>::max();
   int zMax = std::numeric_limits<int>::min();
 
-  bool checkRadius = m_renderingPrimitive.isSelected("Normal") ||
-      m_renderingPrimitive.isSelected("Cylinder");
+  bool checkRadius = m_renderingPrimitive.isSelected("Normal") /*||
+      m_renderingPrimitive.isSelected("Cylinder")*/;
   for (size_t i=0; i<m_decompsedNodePairs.size(); i++) {
     for (size_t j=0; j<m_decompsedNodePairs[i].size(); j++) {
       Swc_Tree_Node *n1 = m_decompsedNodePairs[i][j].first;

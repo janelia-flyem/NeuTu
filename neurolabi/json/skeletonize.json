@@ -3,7 +3,8 @@
   "minimalLength": 40,
   "keepingSingleObject": true,
   "rebase": true,
-  "fillingHole": true
+  "fillingHole": true,
+  "maximalDistance": 100
 }
 
 

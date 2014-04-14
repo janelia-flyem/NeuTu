@@ -172,6 +172,7 @@
 #include "test/zspgrowtest.h"
 #include "test/zflyemneuronmatchtest.h"
 #include "ztextlinecompositer.h"
+#include "zstackskeletonizer.h"
 
 using namespace std;
 
@@ -10965,9 +10966,50 @@ void ZTest::test(MainWindow *host)
   dataBundle.getNeuronArray().exportBodyToHdf5(GET_DATA_DIR + "/test.hf5");
 #endif
 
-#if 1
+#if 0
   ZFlyEmNeuron neuron;
   neuron.importBodyFromHdf5(GET_TEST_DATA_DIR + "/test.hf5", "/bodies/9531.sobj");
   neuron.getBody()->save(GET_DATA_DIR + "/test.sobj");
+#endif
+
+#if 0
+  ZFlyEmDataBundle dataBundle;
+  dataBundle.loadJsonFile(
+        GET_DATA_DIR +
+        "/flyem/FIB/data_release/bundle5/data_bundle_wo_synapse.json");
+
+  ZFlyEmQualityAnalyzer analyzer;
+
+#  if 0
+  const std::vector<ZFlyEmNeuron>& neuronArray = dataBundle.getNeuronArray();
+  for (size_t i = 0; i < neuronArray.size(); ++i) {
+    const ZFlyEmNeuron &neuron = neuronArray[i];
+    FlyEm::ZHotSpotArray &hotSpotArray = analyzer.computeHotSpotForSplit(neuron);
+    if (!hotSpotArray.empty()) {
+      hotSpotArray.print();
+//      neuron.getUnscaledModel()->save(GET_DATA_DIR + "/test.swc");
+//      break;
+    }
+  }
+#  endif
+
+  ZFlyEmNeuron *neuron = dataBundle.getNeuron(406309);
+  FlyEm::ZHotSpotArray &hotSpotArray = analyzer.computeHotSpotForSplit(*neuron);
+  hotSpotArray.print();
+  neuron->getUnscaledModel()->save(GET_DATA_DIR + "/test.swc");
+#endif
+
+#if 1
+  ZStackSkeletonizer skeletonizer;
+
+  ZJsonObject config;
+  config.load(GET_TEST_DATA_DIR + "/../json/skeletonize.json");
+  config.print();
+  skeletonizer.configure(config);
+  ZObject3dScan obj;
+  obj.load(GET_TEST_DATA_DIR + "/flyem/FIB/skeletonization/session31/5000000_/stacked/591796.sobj");
+  skeletonizer.print();
+  ZSwcTree *tree = skeletonizer.makeSkeleton(obj);
+  tree->save(GET_TEST_DATA_DIR + "/test.swc");
 #endif
 }

@@ -1338,6 +1338,18 @@ void SwcTreeNode::adoptChildren(
   }
 }
 
+bool SwcTreeNode::isNearby(
+    const Swc_Tree_Node *tn1, const Swc_Tree_Node *tn2, double distThre)
+{
+  if (!isRegular(tn1) || !isRegular(tn2)) {
+    return false;
+  }
+
+  double dist = distance(tn1, tn2, SwcTreeNode::EUCLIDEAN_SURFACE);
+
+  return (dist <= distThre);
+}
+
 bool SwcTreeNode::hasOverlap(const Swc_Tree_Node *tn1, const Swc_Tree_Node *tn2)
 {
   if (!isRegular(tn1) || !isRegular(tn2)) {

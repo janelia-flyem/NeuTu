@@ -51,19 +51,18 @@ ZSwcTree* ZStackSkeletonizer::makeSkeleton(const ZObject3dScan &obj)
 {
   ZSwcTree *tree = NULL;
   if (!obj.isEmpty()) {
-    ZStack *stack = obj.toStackObject();
-    tree = makeSkeleton(*stack);
+    ZObject3dScan newObj = obj;
+    newObj.downsampleMax(m_downsampleInterval[0],
+                         m_downsampleInterval[1], m_downsampleInterval[2]);
+    ZStack *stack = newObj.toStackObject();
+    tree = makeSkeletonWithoutDs(stack->c_stack());
   }
 
   return tree;
 }
 
-ZSwcTree* ZStackSkeletonizer::makeSkeleton(const Stack *stack)
+ZSwcTree* ZStackSkeletonizer::makeSkeletonWithoutDs(Stack *stackData)
 {
-  startProgress();
-  Stack *stackData = Downsample_Stack_Max(stack, m_downsampleInterval[0],
-      m_downsampleInterval[1], m_downsampleInterval[2], NULL);
-
   if (m_level > 0) {
     Stack_Level_Mask(stackData, m_level);
   }
@@ -103,6 +102,10 @@ ZSwcTree* ZStackSkeletonizer::makeSkeleton(const Stack *stack)
     stackData = out;
   }
   advanceProgress(0.05);
+
+#ifdef _DEBUG_
+    C_Stack::write("/groups/flyem/home/zhaot/Work/neutube/neurolabi/data/test.tif", stackData);
+#endif
 
   cout << "Label objects ...\n" << endl;
   int nobj = Stack_Label_Large_Objects_N(
@@ -334,6 +337,13 @@ ZSwcTree* ZStackSkeletonizer::makeSkeleton(const Stack *stack)
   return wholeTree;
 }
 
+ZSwcTree* ZStackSkeletonizer::makeSkeleton(const Stack *stack)
+{
+  Stack *stackData = Downsample_Stack_Max(stack, m_downsampleInterval[0],
+      m_downsampleInterval[1], m_downsampleInterval[2], NULL);
+  return makeSkeletonWithoutDs(stackData);
+}
+
 void ZStackSkeletonizer::reconnect(ZSwcTree *tree)
 {
   if (tree->regularRootNumber() > 1) {
@@ -347,7 +357,7 @@ void ZStackSkeletonizer::reconnect(ZSwcTree *tree)
   }
 }
 
-void ZStackSkeletonizer::init(const ZJsonObject &config)
+void ZStackSkeletonizer::configure(const ZJsonObject &config)
 {
   ZJsonArray array(const_cast<json_t*>(config["downsampleInterval"]), false);
   std::vector<int> interval = array.toIntegerArray();
@@ -360,6 +370,11 @@ void ZStackSkeletonizer::init(const ZJsonObject &config)
   const json_t *value = config["minimalLength"];
   if (ZJsonParser::isNumber(value)) {
     setLengthThreshold(ZJsonParser::numberValue(value));
+  }
+
+  value = config["maximalDistance"];
+  if (ZJsonParser::isNumber(value)) {
+    setDistanceThreshold(ZJsonParser::numberValue(value));
   }
 
   value = config["keepingSingleObject"];
@@ -376,7 +391,7 @@ void ZStackSkeletonizer::init(const ZJsonObject &config)
 void ZStackSkeletonizer::print() const
 {
   std::cout << "Minimal length: " << m_lengthThreshold << std::endl;
-  std::cout << "Minimal distance: " << m_distanceThreshold << std::endl;
+  std::cout << "Maximal distance: " << m_distanceThreshold << std::endl;
   std::cout << "Rebase: " << m_rebase << std::endl;
   std::cout << "Intepolate: " << m_interpolating << std::endl;
   std::cout << "Remove border: " << m_removingBorder << std::endl;
