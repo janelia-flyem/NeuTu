@@ -29,7 +29,7 @@ def LoadDvidObject(bodyId, dvidServer, uuid):
     
     #neutube.PrintCharArray(dataArray)
     
-    sparseObj = neutube.ZObject3dScan()
+    sparseObj = neutube.CreateObject3dScan()
     sparseObj.importDvidObjectBuffer(dataArray)
     
     return sparseObj

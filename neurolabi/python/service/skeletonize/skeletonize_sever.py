@@ -62,24 +62,34 @@ def do_skeletonize():
     
     output["swc-list"] = []
     output['error'] = []
-    for bodyId in bodyArray:
-        conn = httplib.HTTPConnection(dvidServer)
-        bodyLink = '/api/node/' + uuid + '/skeletons/' + str(bodyId) + '.swc'
-        print '************', bodyLink
-        conn.request("GET", bodyLink)
-
-        r1 = conn.getresponse()
-        if not r1.status == 200:
-            try:
-                skl.Skeletonize(bodyId, 'dvid', config)
-            except Exception as inst:
-                print str(inst)
-                output['error'].append(str(inst))
+    conn = httplib.HTTPConnection(dvidServer)
+    conn.request("GET", '/api/node/' + uuid + '/skeletons/info')
+    r1 = conn.getresponse()
+    if not r1.status == 200:
+        output['error'].append('Cannot connect to the DVID server.')
+    else:
+        for bodyId in bodyArray:
+            bodyLink = '/api/node/' + uuid + '/skeletons/' + str(bodyId) + '.swc'
+            print '************', bodyLink
+            conn = httplib.HTTPConnection(dvidServer)
+            r1 = conn.request("GET", bodyLink)
+            swcAvailable = False
+            print r1
+            if not r1 or not r1.status == 200:
+                try:
+                    skl.Skeletonize(bodyId, 'dvid', config)
+                    print 'skeletons retrieved.'
+                except Exception as inst:
+                    print str(inst)
+                    output['error'].append(str(inst))
+                else:
+                    swcAvailable = True
             else:
+                swcAvailable = True
+
+            if swcAvailable:
                 swc = {"id": bodyId, "url": dvidServer + bodyLink}
                 output["swc-list"].append(swc)
-        else:
-            output['error'].append('The DVID server is down. Please wait.')
     
     return json.dumps(output, sort_keys = False)
 
