@@ -173,6 +173,7 @@
 #include "test/zflyemneuronmatchtest.h"
 #include "ztextlinecompositer.h"
 #include "zstackskeletonizer.h"
+#include "flyem/zflyemcoordinateconverter.h"
 
 using namespace std;
 
@@ -10999,7 +11000,7 @@ void ZTest::test(MainWindow *host)
   neuron->getUnscaledModel()->save(GET_DATA_DIR + "/test.swc");
 #endif
 
-#if 1
+#if 0
   ZStackSkeletonizer skeletonizer;
 
   ZJsonObject config;
@@ -11011,5 +11012,69 @@ void ZTest::test(MainWindow *host)
   skeletonizer.print();
   ZSwcTree *tree = skeletonizer.makeSkeleton(obj);
   tree->save(GET_TEST_DATA_DIR + "/test.swc");
+#endif
+
+#if 0
+  ZFlyEmDataBundle dataBundle;
+  dataBundle.loadJsonFile(
+        GET_DATA_DIR +
+        "/flyem/FIB/skeletonization/session31/500000_/len40/data_bundle.json");
+
+  ZFlyEmQualityAnalyzer analyzer;
+
+#  if 1
+  const std::vector<ZFlyEmNeuron>& neuronArray = dataBundle.getNeuronArray();
+  for (size_t i = 0; i < neuronArray.size(); ++i) {
+    const ZFlyEmNeuron &neuron = neuronArray[i];
+    FlyEm::ZHotSpotArray &hotSpotArray = analyzer.computeHotSpotForSplit(neuron);
+    if (!hotSpotArray.empty()) {
+      hotSpotArray.print();
+//      neuron.getUnscaledModel()->save(GET_DATA_DIR + "/test.swc");
+//      break;
+    }
+  }
+#  else
+  ZFlyEmNeuron *neuron = dataBundle.getNeuron(406309);
+  FlyEm::ZHotSpotArray &hotSpotArray = analyzer.computeHotSpotForSplit(*neuron);
+  hotSpotArray.print();
+  neuron->getUnscaledModel()->save(GET_DATA_DIR + "/test.swc");
+#  endif
+
+#endif
+
+#if 0
+  std::cout << misc::computeConfidence(5000, 1000, 10000) << std::endl;
+#endif
+
+#if 1
+  ZFlyEmCoordinateConverter converter;
+  converter.setStackSize(3150, 2599, 6500);
+  converter.setVoxelResolution(10, 10, 10);
+  converter.setZStart(1490);
+  converter.setMargin(10);
+
+  double x = 6600;
+  double y = 10040;
+  double z = 37600;
+
+  converter.convert(&x, &y, &z, ZFlyEmCoordinateConverter::PHYSICAL_SPACE,
+                    ZFlyEmCoordinateConverter::IMAGE_SPACE);
+  std::cout << x << " " << y << " " << z << std::endl;
+
+  converter.convert(&x, &y, &z, ZFlyEmCoordinateConverter::IMAGE_SPACE,
+                    ZFlyEmCoordinateConverter::ROI_SPACE);
+  std::cout << x << " " << y << " " << z << std::endl;
+
+  converter.convert(&x, &y, &z, ZFlyEmCoordinateConverter::ROI_SPACE,
+                    ZFlyEmCoordinateConverter::PHYSICAL_SPACE);
+  std::cout << x << " " << y << " " << z << std::endl;
+
+  converter.convert(&x, &y, &z, ZFlyEmCoordinateConverter::PHYSICAL_SPACE,
+                    ZFlyEmCoordinateConverter::RAVELER_SPACE);
+  std::cout << x << " " << y << " " << z << std::endl;
+
+  converter.convert(&x, &y, &z, ZFlyEmCoordinateConverter::RAVELER_SPACE,
+                    ZFlyEmCoordinateConverter::ROI_SPACE);
+  std::cout << x << " " << y << " " << z << std::endl;
 #endif
 }

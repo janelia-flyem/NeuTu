@@ -60,7 +60,7 @@ public:
   ~ZHotSpot();
 
   enum EType {
-    TYPE_POINT, TYPE_REGION, TYPE_SURFACE
+    TYPE_POINT, TYPE_REGION, TYPE_SURFACE, TYPE_CURVE
   };
 
   void print() const;

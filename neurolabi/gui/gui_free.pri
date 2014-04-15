@@ -172,7 +172,8 @@ HEADERS +=$${PWD}/zstackprocessor.h \
    $${PWD}/flyem/zhotspotfactory.h \
    $${PWD}/ztextlinecompositer.h \
    $${PWD}/zobject3dscanarray.h \
-   $${PWD}/zstringarray.h
+   $${PWD}/zstringarray.h \
+   $${PWD}/flyem/zflyemcoordinateconverter.h
 
 SOURCES +=$${PWD}/zstackprocessor.cpp \
    $${PWD}/zstack.cxx \
@@ -331,4 +332,5 @@ SOURCES +=$${PWD}/zstackprocessor.cpp \
    $${PWD}/flyem/zhotspotfactory.cpp \
    $${PWD}/ztextlinecompositer.cpp \
    $${PWD}/zobject3dscanarray.cpp \
-   $${PWD}/zstringarray.cpp
+   $${PWD}/zstringarray.cpp \
+   $${PWD}/flyem/zflyemcoordinateconverter.cpp

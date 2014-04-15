@@ -1865,7 +1865,7 @@ void MainWindow::createAutoSaveDir()
 {
   if (NeutubeConfig::getInstance().isAutoSaveEnabled()) {
 #ifdef _DEBUG_
-    std::cout << "Create autsave dir" << std::endl;
+    std::cout << "Create autosave dir" << std::endl;
 #endif
 
     QString autoSaveDir =

@@ -28,6 +28,13 @@ bool exportPointList(const std::string &filePath, const ZPointArray &pointArray)
 
 std::string num2str(int n);
 
+/*!
+ * \brief A function for computing confidence
+ *
+ * \param median The value where confidence = 0.5
+ * \param p95 The value where confidence = 0.95
+ */
+double computeConfidence(double v, double median, double p95);
 }
 
 namespace {

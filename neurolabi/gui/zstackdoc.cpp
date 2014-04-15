@@ -547,6 +547,9 @@ bool ZStackDoc::isUndoClean()
 
 bool ZStackDoc::isSwcSavingRequired()
 {
+  qDebug() << m_swcList.empty();
+  qDebug() << isUndoClean();
+
   return !m_swcList.empty() && isUndoClean();
 }
 

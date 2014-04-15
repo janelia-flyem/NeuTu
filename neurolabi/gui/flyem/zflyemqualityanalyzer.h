@@ -8,6 +8,7 @@
 #include "flyem/zhotspot.h"
 #include "flyem/zhotspotarray.h"
 #include "zprogressable.h"
+#include "flyem/zflyemcoordinateconverter.h"
 
 class ZPointArray;
 class ZFlyEmDataBundle;
@@ -79,7 +80,7 @@ public:
 private:
   FlyEm::ZIntCuboidArray m_substackRegion;
   FlyEm::ZHotSpotArray m_hotSpotArray;
-
+  ZFlyEmCoordinateConverter::ESpace m_targetSpace;
 };
 
 #endif // ZFLYEMQUALITYANALYZER_H

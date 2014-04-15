@@ -10,6 +10,142 @@
 #include "tz_stack_bwmorph.h"
 #include "tz_stack_math.h"
 #include "tz_fimage_lib.h"
+#include "tz_voxel_graphics.h"
+
+ZNeuronTraceSeeder::ZNeuronTraceSeeder()
+{
+
+}
+
+ZNeuronTraceSeeder::~ZNeuronTraceSeeder()
+{
+
+}
+
+void ZNeuronTraceSeeder::sortSeed(
+    Geo3d_Scalar_Field *seedPointArray, Stack *signal, Trace_Workspace *ws)
+{
+  Locseg_Fit_Workspace *fws = (Locseg_Fit_Workspace *) ws->fit_workspace;
+  fws->sws->fs.n = 2;
+  fws->sws->fs.options[0] = STACK_FIT_DOT;
+  fws->sws->fs.options[1] = STACK_FIT_CORRCOEF;
+
+  m_seedArray.resize(seedPointArray->size);
+  m_seedScoreArray.resize(seedPointArray->size);
+
+  Stack *seed_mask = C_Stack::make(GREY, signal->width, signal->height,
+                                   signal->depth);
+  Zero_Stack(seed_mask);
+
+  for (int i = 0; i < seedPointArray->size; i++) {
+    printf("-----------------------------> seed: %d / %d\n", i,
+           seedPointArray->size);
+
+    int index = i;
+    int x = (int) seedPointArray->points[index][0];
+    int y = (int) seedPointArray->points[index][1];
+    int z = (int) seedPointArray->points[index][2];
+
+    double width = seedPointArray->values[index];
+
+    ssize_t seed_offset = C_Stack::offset(x, y, z, signal->width, signal->height,
+                                          signal->depth);
+
+    if (width < 3.0) {
+      width += 0.5;
+    }
+    Set_Neuroseg(&(m_seedArray[i].seg), width, 0.0, NEUROSEG_DEFAULT_H,
+                 0.0, 0.0, 0.0, 0.0, 1.0);
+
+    double cpos[3];
+    cpos[0] = x;
+    cpos[1] = y;
+    cpos[2] = z;
+    //cpos[2] /= z_scale;
+
+    Set_Neuroseg_Position(&(m_seedArray[i]), cpos, NEUROSEG_CENTER);
+
+    if (seed_mask->array[seed_offset] > 0) {
+      printf("labeled\n");
+      m_seedScoreArray[i] = 0.0;
+      continue;
+    }
+
+    //Local_Neuroseg_Optimize(locseg + i, signal, z_scale, 0);
+    double z_scale = 1.0;
+    Local_Neuroseg_Optimize_W(&(m_seedArray[i]), signal, z_scale, 0, fws);
+
+    m_seedScoreArray[i] = fws->sws->fs.scores[1];
+
+    double min_score = ws->min_score;
+
+    if (m_seedScoreArray[i] > min_score) {
+      Local_Neuroseg_Label_G(&(m_seedArray[i]), seed_mask, -1, 2, z_scale);
+    } else {
+      Local_Neuroseg_Label_G(&(m_seedArray[i]), seed_mask, -1, 1, z_scale);
+    }
+  }
+
+  C_Stack::kill(seed_mask);
+}
+
+ZNeuronConstructor::ZNeuronConstructor() : m_connWorkspace(NULL), m_signal(NULL)
+{
+
+}
+
+
+ZSwcTree *ZNeuronConstructor::reconstruct(
+    std::vector<Locseg_Chain*> &chainArray)
+{
+  ZSwcTree *tree = NULL;
+
+  if (!chainArray.empty()) {
+    int chain_number = chainArray.size();
+    /* alloc <chain_array> */
+    Neuron_Component *neuronComponent =
+        Make_Neuron_Component_Array(chain_number);
+
+    for (int i = 0; i < chain_number; i++) {
+      Set_Neuron_Component(neuronComponent + i,
+                           NEUROCOMP_TYPE_LOCSEG_CHAIN,
+                           chainArray[i]);
+    }
+
+    /* reconstruct neuron */
+    /* alloc <ns> */
+    double zscale = 1.0;
+    Neuron_Structure *ns = Locseg_Chain_Comp_Neurostruct(
+          neuronComponent, chain_number, m_signal, zscale, m_connWorkspace);
+
+    Process_Neuron_Structure(ns);
+
+    if (m_connWorkspace->crossover_test == TRUE) {
+      Neuron_Structure_Crossover_Test(ns, zscale);
+    }
+
+    /* alloc <ns2> */
+    Neuron_Structure* ns2=
+        Neuron_Structure_Locseg_Chain_To_Circle_S(ns, 1.0, 1.0);
+
+    Neuron_Structure_To_Tree(ns2);
+
+    tree->setData(Neuron_Structure_To_Swc_Tree_Circle_Z(ns2, 1.0, NULL));
+    tree->resortId();
+
+    /* free <ns2> */
+    Kill_Neuron_Structure(ns2);
+    /* free <ns> */
+    ns->comp = NULL;
+    Kill_Neuron_Structure(ns);
+
+    /* free <chain_array> */
+    Clean_Neuron_Component_Array(neuronComponent, chain_number);
+    free(neuronComponent);
+  }
+
+  return tree;
+}
 
 ZNeuronTracer::ZNeuronTracer() : m_stack(NULL), m_traceWorkspace(NULL),
   m_connWorkspace(NULL), m_swcConnector(NULL),
@@ -239,20 +375,83 @@ Stack* ZNeuronTracer::enhanceLine(const Stack *stack)
   return out;
 }
 
+
+Geo3d_Scalar_Field* ZNeuronTracer::extractSeed(const Stack *mask)
+{
+  Stack *dist = Stack_Bwdist_L_U16(mask, NULL, 0);
+  Stack *seeds = Stack_Local_Max(dist, NULL, STACK_LOCMAX_CENTER);
+  Voxel_List *list = Stack_To_Voxel_List(seeds);
+  Pixel_Array *pa = Voxel_List_Sampling(dist, list);
+
+  C_Stack::kill(dist);
+
+  Voxel_P *voxel_array = Voxel_List_To_Array(list, 1, NULL, NULL);
+  //double *pa_array = (double *) pa->array;
+  uint16 *pa_array = (uint16 *) pa->array;
+
+  printf("%d seeds found.\n", pa->size);
+
+  Geo3d_Scalar_Field *field = Make_Geo3d_Scalar_Field(pa->size);
+  field->size = 0;
+  int i;
+  for (i = 0; i < pa->size; i++) {
+    if (IS_IN_OPEN_RANGE3(voxel_array[i]->x, voxel_array[i]->y,
+                          voxel_array[i]->z, 0, seeds->width - 1,
+                          0, seeds->height - 1, 0, seeds->depth - 1)) {
+      field->points[field->size][0] = voxel_array[i]->x;
+      field->points[field->size][1] = voxel_array[i]->y;
+      field->points[field->size][2] = voxel_array[i]->z;
+      field->values[field->size] = sqrt((double)pa_array[i]);
+      field->size++;
+    }
+  }
+
+  C_Stack::kill(seeds);
+
+  return field;
+}
+
+
+std::vector<Locseg_Chain*> ZNeuronTracer::trace(const Stack *stack,
+    std::vector<Local_Neuroseg> &locsegArray, std::vector<double> &values)
+{
+  int nchain;
+  Locseg_Chain **chain =
+      Trace_Locseg_S(stack, 1.0, &(locsegArray[0]), &(values[0]),
+      locsegArray.size(), m_traceWorkspace, &nchain);
+
+  std::vector<Locseg_Chain*> chainArray(nchain);
+
+  for (int i = 0; i < nchain; ++i) {
+    chainArray[i] = chain[i];
+  }
+
+  free(chain);
+
+  return chainArray;
+}
+
 ZSwcTree* ZNeuronTracer::trace(Stack *stack)
 {
   ZSwcTree *tree = NULL;
 
   //Extract seeds
   //First mask
+  std::cout << "Binarizing ..." << std::endl;
+
   Stack *bw = binarize(stack);
+  C_Stack::translate(bw, GREY, 1);
+
+  std::cout << "Removing noise ..." << std::endl;
   Stack *mask = bwsolid(bw);
   C_Stack::kill(bw);
 
   //Thin line mask
+  std::cout << "Enhancing thin branches ..." << std::endl;
   Stack *line = enhanceLine(stack);
   Stack *mask2 = C_Stack::clone(line);
 
+  std::cout << "Making mask for thin branches ..." << std::endl;
   ZStackBinarizer binarizer;
   binarizer.setMethod(ZStackBinarizer::BM_LOCMAX);
   binarizer.setRetryCount(5);
@@ -264,11 +463,38 @@ ZSwcTree* ZNeuronTracer::trace(Stack *stack)
   }
 
   if (mask2 != NULL) {
+    C_Stack::translate(mask2, GREY, 1);
     Stack_Or(mask, mask2, mask);
     C_Stack::kill(mask2);
   }
 
   //Trace each seed
+  std::cout << "Extracting seed points ..." << std::endl;
+  Geo3d_Scalar_Field *seedPointArray = extractSeed(mask);
+
+  std::cout << "Sorting seeds ..." << std::endl;
+  ZNeuronTraceSeeder seeder;
+  seeder.sortSeed(seedPointArray, stack, m_traceWorkspace);
+
+  Kill_Geo3d_Scalar_Field(seedPointArray);
+
+  std::vector<Local_Neuroseg>& locsegArray = seeder.getSeedArray();
+  std::vector<double>& scoreArray = seeder.getScoreArray();
+
+  std::cout << "Tracing ..." << std::endl;
+  std::vector<Locseg_Chain*> chainArray = trace(stack, locsegArray, scoreArray);
+
+  std::cout << "Reconstructing ..." << std::endl;
+  ZNeuronConstructor constructor;
+  constructor.setWorkspace(m_connWorkspace);
+  constructor.setSignal(stack);
+  tree = constructor.reconstruct(chainArray);
+
+  /*
+
+  */
+
+  //misc::CleanPointerArray(locsegArray);
 
   //Subtract skeleton mask
 
@@ -278,6 +504,8 @@ ZSwcTree* ZNeuronTracer::trace(Stack *stack)
   //Post process
 
   //Create neuron structure
+
+  std::cout << "Done!" << std::endl;
 
   return tree;
 }

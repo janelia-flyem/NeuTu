@@ -330,3 +330,11 @@ std::string misc::num2str(int n)
 
   return stream.str();
 }
+
+double misc::computeConfidence(double v, double median, double p95)
+{
+  double alpha = median;
+  double beta = -(p95 - median) / 2.9444;
+
+  return 1.0 / (1.0 + exp((v - alpha)/beta));
+}

@@ -152,6 +152,8 @@ std::string FlyEm::ZHotSpot::getTypeString() const
     return "region";
   case TYPE_SURFACE:
     return "surface";
+  case TYPE_CURVE:
+    return "curve";
   }
 
   return "";
@@ -160,15 +162,15 @@ std::string FlyEm::ZHotSpot::getTypeString() const
 ZJsonObject FlyEm::ZHotSpot::toJsonObject() const
 {
   ZJsonObject obj;
-  obj.setEntry("Confidence", m_confidence);
-  obj.setEntry("Type", getTypeString());
+  obj.setEntry("confidence", m_confidence);
+  obj.setEntry("type", getTypeString());
   if (m_geometry != NULL) {
     ZJsonObject geometryObject = m_geometry->toJsonObject();
-    obj.setEntry("Geometry", geometryObject);
+    obj.setEntry("geometry", geometryObject);
   }
   if (m_structInfo != NULL) {
     ZJsonObject structObject = m_structInfo->toJsonObject();
-    obj.setEntry("Structure", structObject);
+    obj.setEntry("structure", structObject);
   }
 
   return obj;
