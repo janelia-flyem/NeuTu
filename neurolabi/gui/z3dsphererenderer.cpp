@@ -406,7 +406,7 @@ void Z3DSphereRenderer::renderPicking(Z3DEye eye)
   shader.setUniformValue("lighting_enabled", false);
   shader.setUniformValue("pos_scale", getCoordScales());
 
-  float fovy = m_rendererBase->getCamera().getFieldOfView();
+  float fovy = glm::degrees(m_rendererBase->getCamera().getFieldOfView());
   float adj;
   if (fovy <= 90.f){
     adj = 1.0027+0.000111*fovy+0.000098*fovy*fovy;
