@@ -116,9 +116,12 @@ def Skeletonize(source, target, config = None):
         tree.save(target)
     
     if stack:
+        print 'Deleting stack'
         neutube.DeleteStackObject(stack)
     if sparseObj:
+        print 'Deleting object'
         neutube.DeleteObject3dScan(sparseObj)
+
     neutube.DeleteSwcTree(tree)
 
 if __name__ == '__main__': 
