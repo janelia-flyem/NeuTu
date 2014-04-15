@@ -23,7 +23,7 @@ qualityAnalyzer.loadDataBundle(os.path.join(os.getcwd(), '../../../data/flyem/FI
 
 @get('/home')
 def home():
-    return '<h1>Welcome to the skeletonization service</h1>'
+    return '<h1>Welcome to the hot spot service</h1>'
 
 @get('/hotspot')
 def computing_hotspot():
@@ -47,7 +47,7 @@ def compute_hotspot():
         print request.json
         jsonObj = request.json
         try:
-            jsonschema.validate(jsonObj, json.loads(getSchema('skeletonize', 'post')))
+            jsonschema.validate(jsonObj, json.loads(ns.getSchema('hotspot', 'post')))
         except jsonschema.exceptions.ValidationError as inst:
             print 'Invalid json input'
             print inst
