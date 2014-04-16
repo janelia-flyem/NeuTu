@@ -66,6 +66,16 @@ void ZPointArray::append(double x, double y, double z)
   push_back(ZPoint(x, y, z));
 }
 
+void ZPointArray::append(const ZPoint &pt)
+{
+  push_back(pt);
+}
+
+void ZPointArray::append(const ZPointArray &ptArray)
+{
+  insert(end(), ptArray.begin(), ptArray.end());
+}
+
 std::string ZPointArray::toJsonString() const
 {
   std::string str;

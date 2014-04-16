@@ -113,6 +113,16 @@ public:
    */
   bool hasKey(const char *key) const;
 
+  /*!
+   * \brief Set an entry as an array
+   *
+   * It returns NULL if the key already exists.
+   *
+   * \param key The entry key.
+   * \return The json array added to the object.
+   */
+  json_t *setArrayEntry(const char *key);
+
 private:
   void setEntryWithoutKeyCheck(const char *key, json_t *obj, bool asNew = false);
 

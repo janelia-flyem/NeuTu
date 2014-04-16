@@ -21,6 +21,9 @@ def getDefaultDvidServer():
 def getDefaultUuid():
     return 'a75'
 
+def getSkeletonServer():
+    return 'emrecon100.janelia.priv:8082'
+
 def getSchema(service, method):
     ramlPath = os.path.join(os.path.dirname(os.path.abspath(os.path.realpath(__file__))), service, 'interface.raml')
     with open(ramlPath) as f:

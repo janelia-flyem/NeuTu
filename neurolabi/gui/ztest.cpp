@@ -11014,7 +11014,7 @@ void ZTest::test(MainWindow *host)
   tree->save(GET_TEST_DATA_DIR + "/test.swc");
 #endif
 
-#if 0
+#if 1
   ZFlyEmDataBundle dataBundle;
   dataBundle.loadJsonFile(
         GET_DATA_DIR +
@@ -11022,7 +11022,7 @@ void ZTest::test(MainWindow *host)
 
   ZFlyEmQualityAnalyzer analyzer;
 
-#  if 1
+#  if 0
   const std::vector<ZFlyEmNeuron>& neuronArray = dataBundle.getNeuronArray();
   for (size_t i = 0; i < neuronArray.size(); ++i) {
     const ZFlyEmNeuron &neuron = neuronArray[i];
@@ -11034,11 +11034,23 @@ void ZTest::test(MainWindow *host)
     }
   }
 #  else
-  ZFlyEmNeuron *neuron = dataBundle.getNeuron(406309);
+  ZFlyEmNeuron *neuron = dataBundle.getNeuron(21894);
   FlyEm::ZHotSpotArray &hotSpotArray = analyzer.computeHotSpotForSplit(*neuron);
   hotSpotArray.print();
-  neuron->getUnscaledModel()->save(GET_DATA_DIR + "/test.swc");
+  //neuron->getUnscaledModel()->save(GET_DATA_DIR + "/test.swc");
+
+  std::cout << hotSpotArray.toJsonString() << std::endl;
 #  endif
+
+#endif
+
+#if 0
+  ZFlyEmNeuron neuron;
+  neuron.setId(1);
+  neuron.setModelPath(GET_DATA_DIR + "/test.swc");
+  ZFlyEmQualityAnalyzer analyzer;
+  FlyEm::ZHotSpotArray &hotSpotArray = analyzer.computeHotSpotForSplit(neuron);
+  hotSpotArray.print();
 
 #endif
 
@@ -11046,7 +11058,7 @@ void ZTest::test(MainWindow *host)
   std::cout << misc::computeConfidence(5000, 1000, 10000) << std::endl;
 #endif
 
-#if 1
+#if 0
   ZFlyEmCoordinateConverter converter;
   converter.setStackSize(3150, 2599, 6500);
   converter.setVoxelResolution(10, 10, 10);
@@ -11077,4 +11089,27 @@ void ZTest::test(MainWindow *host)
                     ZFlyEmCoordinateConverter::ROI_SPACE);
   std::cout << x << " " << y << " " << z << std::endl;
 #endif
+
+#if 0
+  FlyEm::ZCurveGeometry geometry;
+  geometry.appendPoint(0, 1, 2);
+  geometry.appendPoint(3, 4, 5);
+  geometry.appendPoint(6, 7, 8);
+  geometry.print();
+
+
+  ZPointArray curve;
+  curve.append(0, 1, 2);
+  curve.append(3, 4, 5);
+  curve.append(6, 7, 8);
+
+  FlyEm::ZHotSpotFactory factory;
+  FlyEm::ZHotSpot *hotSpot = factory.createCurveHotSpot(curve);
+  hotSpot->print();
+
+  delete hotSpot;
+  //ZJsonObject obj = hotSpot->toRavelerJsonObject(resolution, imageSize);
+  //obj.print();
+#endif
+
 }

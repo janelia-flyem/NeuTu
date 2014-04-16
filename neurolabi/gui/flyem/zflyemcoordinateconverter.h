@@ -3,6 +3,8 @@
 
 #include <vector>
 
+class ZPoint;
+
 class ZFlyEmCoordinateConverter
 {
 public:
@@ -20,13 +22,14 @@ public:
   void setZStart(int zStart);
   void setMargin(int margin);
 
-  void convert(double *x, double *y, double *z, ESpace source, ESpace target);
+  void convert(double *x, double *y, double *z, ESpace source, ESpace target) const;
+  void convert(ZPoint *pt, ESpace source, ESpace target) const;
 
 private:
-  void convertFromRavelerSpace(double *x, double *y, double *z, ESpace target);
-  void convertFromImageSpace(double *x, double *y, double *z, ESpace target);
-  void convertFromPhysicalSpace(double *x, double *y, double *z, ESpace target);
-  void convertFromRoiSpace(double *x, double *y, double *z, ESpace target);
+  void convertFromRavelerSpace(double *x, double *y, double *z, ESpace target) const;
+  void convertFromImageSpace(double *x, double *y, double *z, ESpace target) const;
+  void convertFromPhysicalSpace(double *x, double *y, double *z, ESpace target) const;
+  void convertFromRoiSpace(double *x, double *y, double *z, ESpace target) const;
 
 private:
   std::vector<int> m_stackSize;

@@ -5,6 +5,7 @@
 #include "zpoint.h"
 #include "ztextlinecompositer.h"
 #include "zjsonobject.h"
+#include "zpointarray.h"
 
 namespace FlyEm {
 
@@ -14,6 +15,7 @@ public:
   void print() const;
   virtual ZTextLineCompositer toLineCompositer() const = 0;
   virtual ZJsonObject toJsonObject() const = 0;
+  virtual ZPointArray toPointArray() const = 0;
 };
 
 class ZPointGeometry : public ZGeometry {
@@ -23,9 +25,28 @@ public:
   inline const ZPoint& getCenter() const { return m_center; }
   ZTextLineCompositer toLineCompositer() const;
   ZJsonObject toJsonObject() const;
+  ZPointArray toPointArray() const;
 
 private:
   ZPoint m_center;
+};
+
+class ZCurveGeometry : public ZGeometry {
+public:
+  ~ZCurveGeometry() {}
+  ZTextLineCompositer toLineCompositer() const;
+  ZJsonObject toJsonObject() const;
+
+  void appendPoint(double x, double y, double z);
+
+  size_t getAnchorNumber() const;
+  const ZPoint& getAnchor(size_t index) const;
+  void setAnchor(const ZPointArray &curve);
+
+  ZPointArray toPointArray() const;
+
+private:
+  ZPointArray m_curve;
 };
 
 class ZStructureInfo {
@@ -72,6 +93,7 @@ public:
   }
 
   void setGeometry(ZGeometry *geometry);
+  void setGuidence(ZGeometry *geometry);
   void setStructure(ZStructureInfo *structure);
 
   ZTextLineCompositer toLineCompositer() const;
@@ -82,8 +104,13 @@ public:
 
   std::string getTypeString() const;
 
+  inline ZGeometry* getGeometry() const {
+    return m_geometry;
+  }
+
 private:
   ZGeometry *m_geometry;
+  ZGeometry *m_guidence;
   ZStructureInfo *m_structInfo;
   double m_confidence;
   EType m_type;

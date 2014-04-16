@@ -12,6 +12,8 @@ public:
 
 public:
   static ZHotSpot* createPointHotSpot(double x, double y, double z);
+  static ZHotSpot* createCurveHotSpot();
+  static ZHotSpot* createCurveHotSpot(const ZPointArray &pointArray);
 };
 
 }

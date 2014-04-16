@@ -5,13 +5,19 @@
 #include "zstring.h"
 #include "zjsonarray.h"
 #include "tz_math.h"
+#include "flyem/zflyemcoordinateconverter.h"
 
 void FlyEm::ZGeometry::print() const
 {
+  std::cout << toLineCompositer().toString(2) << std::endl;
+  /*
   std::cout << "FlyEm::ZGeometry::print():" << std::endl;
   std::cout << "to do" << std::endl;
+  */
 }
 
+
+/******************ZPointGeometry*******************/
 void FlyEm::ZPointGeometry::setCenter(double x, double y, double z)
 {
   m_center.set(x, y, z);
@@ -36,6 +42,70 @@ ZJsonObject FlyEm::ZPointGeometry::toJsonObject() const
 
   return obj;
 }
+
+ZPointArray FlyEm::ZPointGeometry::toPointArray() const
+{
+  ZPointArray ptArray;
+
+  ptArray.append(getCenter());
+
+  return ptArray;
+}
+//////////////////ZPointGeometry//////////////////////////
+
+/******************ZCurveGeometry*******************/
+void FlyEm::ZCurveGeometry::appendPoint(double x, double y, double z)
+{
+  m_curve.append(x, y, z);
+}
+
+ZTextLineCompositer FlyEm::ZCurveGeometry::toLineCompositer() const
+{
+  ZTextLineCompositer compositer;
+  compositer.appendLine("Curve: ");
+  for (size_t i = 0; i < m_curve.size(); ++i) {
+    const ZPoint &pt = m_curve[i];
+    compositer.appendLine(pt.toString(), 1);
+  }
+
+  return compositer;
+}
+
+ZJsonObject FlyEm::ZCurveGeometry::toJsonObject() const
+{
+  ZJsonObject obj;
+  ZJsonArray ptArray(obj.setArrayEntry("curve"), false);
+  for (size_t i = 0; i < m_curve.size(); ++i) {
+    const ZPoint &pt = m_curve[i];
+    ZJsonArray ptObj;
+    ptObj << pt[0] << pt[1] << pt[2];
+    ptArray.append(ptObj);
+  }
+
+  return obj;
+}
+
+size_t FlyEm::ZCurveGeometry::getAnchorNumber() const
+{
+  return m_curve.size();
+}
+
+const ZPoint& FlyEm::ZCurveGeometry::getAnchor(size_t index) const
+{
+  return m_curve[index];
+}
+
+void FlyEm::ZCurveGeometry::setAnchor(const ZPointArray &curve)
+{
+  m_curve = curve;
+}
+
+ZPointArray FlyEm::ZCurveGeometry::toPointArray() const
+{
+  return m_curve;
+}
+
+//////////////////ZCurveGeometry//////////////////////////
 
 void FlyEm::ZStructureInfo::print() const
 {
@@ -87,13 +157,15 @@ ZJsonObject FlyEm::ZStructureInfo::toJsonObject() const
 }
 
 FlyEm::ZHotSpot::ZHotSpot() :
-  m_geometry(NULL), m_structInfo(NULL), m_confidence(0), m_type(TYPE_POINT)
+  m_geometry(NULL), m_guidence(NULL), m_structInfo(NULL),
+  m_confidence(0), m_type(TYPE_POINT)
 {
 }
 
 FlyEm::ZHotSpot::~ZHotSpot()
 {
   delete m_geometry;
+  delete m_guidence;
   delete m_structInfo;
 }
 
@@ -110,6 +182,13 @@ ZTextLineCompositer FlyEm::ZHotSpot::toLineCompositer() const
     compositer.appendLine(m_geometry->toLineCompositer(), 1);
   } else {
     compositer.appendLine("No geometrical information", 1);
+  }
+
+  if (m_guidence != NULL) {
+    compositer.appendLine("Guidence: ", 1);
+    compositer.appendLine(m_guidence->toLineCompositer(), 2);
+  } else {
+    compositer.appendLine("No guidence", 1);
   }
 
   if (m_structInfo != NULL) {
@@ -132,6 +211,15 @@ void FlyEm::ZHotSpot::setGeometry(FlyEm::ZGeometry *geometry)
   }
 
   m_geometry = geometry;
+}
+
+void FlyEm::ZHotSpot::setGuidence(ZGeometry *geometry)
+{
+  if (m_guidence != NULL) {
+    delete m_guidence;
+  }
+
+  m_guidence = geometry;
 }
 
 void FlyEm::ZHotSpot::setStructure(ZStructureInfo *structure)
@@ -168,6 +256,10 @@ ZJsonObject FlyEm::ZHotSpot::toJsonObject() const
     ZJsonObject geometryObject = m_geometry->toJsonObject();
     obj.setEntry("geometry", geometryObject);
   }
+  if (m_guidence != NULL) {
+    ZJsonObject guidenceObject = m_guidence->toJsonObject();
+    obj.setEntry("guidence", guidenceObject);
+  }
   if (m_structInfo != NULL) {
     ZJsonObject structObject = m_structInfo->toJsonObject();
     obj.setEntry("structure", structObject);
@@ -184,11 +276,36 @@ ZJsonObject FlyEm::ZHotSpot::toRavelerJsonObject(
   if (m_structInfo != NULL) {
     obj.setEntry("body ID", m_structInfo->getSource());
   }
+
   if (m_geometry != NULL) {
+    ZPointArray ptArray;
+    if (m_geometry != NULL) {
+      ptArray = m_geometry->toPointArray();
+    }
 
+    if (m_guidence != NULL) {
+      ptArray.append(m_guidence->toPointArray());
+    }
 
+    ZFlyEmCoordinateConverter converter;
+    converter.setStackSize(imageSize[0], imageSize[1], imageSize[2]);
+    converter.setVoxelResolution(resolution[0], resolution[1], resolution[2]);
+    for (size_t i = 0; i < ptArray.size(); ++i) {
+      ZPoint &pt = ptArray[i];
+      converter.convert(&pt, ZFlyEmCoordinateConverter::PHYSICAL_SPACE,
+                        ZFlyEmCoordinateConverter::RAVELER_SPACE);
+      ZJsonArray arrayObj;
+      arrayObj <<  iround(pt.x()) << iround(pt.y()) << iround(pt.z());
+      obj.setEntry("location", arrayObj);
+    }
+#if 0
     ZPointGeometry *geometry = dynamic_cast<ZPointGeometry*>(m_geometry);
     if (geometry != NULL) {
+      ptArray = geometry->toPointArray();
+    }
+
+    ZCurveGeometry
+
       int x = iround(geometry->getCenter().x() / resolution[0]);
       int y = iround(geometry->getCenter().y() / resolution[1]);
       y = imageSize[1] - y + 1;
@@ -197,7 +314,24 @@ ZJsonObject FlyEm::ZHotSpot::toRavelerJsonObject(
       ZJsonArray arrayObj;
       arrayObj <<  x << y << z;
       obj.setEntry("location", arrayObj);
+    } else {
+      ZCurveGeometry *geometry = dynamic_cast<ZCurveGeometry*>(m_geometry);
+
+      if (geometry != NULL) {
+        ZFlyEmCoordinateConverter converter;
+        converter.setStackSize(imageSize[0], imageSize[1], imageSize[2]);
+        converter.setVoxelResolution(resolution[0], resolution[1], resolution[2]);
+        for (size_t i = 0; i < geometry->getAnchorNumber(); ++i) {
+          ZPoint pt = geometry->getAnchor(i);
+          converter.convert(&pt, ZFlyEmCoordinateConverter::PHYSICAL_SPACE,
+                            ZFlyEmCoordinateConverter::RAVELER_SPACE);
+          ZJsonArray arrayObj;
+          arrayObj <<  iround(pt.x()) << iround(pt.y()) << iround(pt.z());
+          obj.setEntry("location", arrayObj);
+        }
+      }
     }
+#endif
   }
 
   return obj;

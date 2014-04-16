@@ -550,7 +550,7 @@ bool ZStackDoc::isSwcSavingRequired()
   qDebug() << m_swcList.empty();
   qDebug() << isUndoClean();
 
-  return !m_swcList.empty() && isUndoClean();
+  return !m_swcList.empty() && !isUndoClean();
 }
 
 void ZStackDoc::swcTreeTranslateRootTo(double x, double y, double z)

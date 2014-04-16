@@ -17,7 +17,7 @@ using namespace std;
 const int ZFlyEmNeuron::TopMatchCapacity = 10;
 
 #define CONSTRUCTOR_INIT m_sourceId(0), m_id(0), m_synapseScale(10.0), m_model(NULL), \
-  m_buddyModel(NULL), m_body(NULL), m_synapseAnnotation(NULL)
+  m_unscaledModel(NULL), m_buddyModel(NULL), m_body(NULL), m_synapseAnnotation(NULL)
 
 const char *ZFlyEmNeuron::m_idKey = "id";
 const char *ZFlyEmNeuron::m_nameKey = "name";
@@ -38,6 +38,7 @@ ZFlyEmNeuron::ZFlyEmNeuron(int id, ZSwcTree *model, ZObject3dScan *body) :
 {
   m_id = id;
   m_model = model;
+  m_unscaledModel = model->clone();
   m_body = body;
 }
 

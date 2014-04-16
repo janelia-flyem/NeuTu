@@ -1,6 +1,6 @@
 #include "zflyemcoordinateconverter.h"
 #include "zerror.h"
-
+#include "zpoint.h"
 
 ZFlyEmCoordinateConverter::ZFlyEmCoordinateConverter() :
   m_zStart(1490), m_margin(10)
@@ -35,7 +35,7 @@ void ZFlyEmCoordinateConverter::setMargin(int margin)
 }
 
 void ZFlyEmCoordinateConverter::convertFromRavelerSpace(
-    double *x, double *y, double *z, ESpace target)
+    double *x, double *y, double *z, ESpace target) const
 {
   switch(target) {
   case IMAGE_SPACE:
@@ -54,7 +54,7 @@ void ZFlyEmCoordinateConverter::convertFromRavelerSpace(
 }
 
 void ZFlyEmCoordinateConverter::convertFromImageSpace(
-    double *x, double *y, double *z, ESpace target)
+    double *x, double *y, double *z, ESpace target) const
 {
   switch(target) {
   case RAVELER_SPACE:
@@ -78,7 +78,7 @@ void ZFlyEmCoordinateConverter::convertFromImageSpace(
 }
 
 void ZFlyEmCoordinateConverter::convertFromPhysicalSpace(
-    double *x, double *y, double *z, ESpace target)
+    double *x, double *y, double *z, ESpace target) const
 {
   switch(target) {
   case IMAGE_SPACE:
@@ -97,7 +97,7 @@ void ZFlyEmCoordinateConverter::convertFromPhysicalSpace(
 }
 
 void ZFlyEmCoordinateConverter::convertFromRoiSpace(
-    double *x, double *y, double *z, ESpace target)
+    double *x, double *y, double *z, ESpace target) const
 {
   switch(target) {
   case IMAGE_SPACE:
@@ -116,7 +116,7 @@ void ZFlyEmCoordinateConverter::convertFromRoiSpace(
 }
 
 void ZFlyEmCoordinateConverter::convert(
-    double *x, double *y, double *z, ESpace source, ESpace target)
+    double *x, double *y, double *z, ESpace source, ESpace target) const
 {
   switch (source) {
   case RAVELER_SPACE:
@@ -133,5 +133,13 @@ void ZFlyEmCoordinateConverter::convert(
     break;
   default:
     RECORD_WARNING_UNCOND("Unknown space.");
+  }
+}
+
+void ZFlyEmCoordinateConverter::convert(
+    ZPoint *pt, ESpace source, ESpace target) const
+{
+  if (pt != NULL) {
+    convert(pt->xRef(), pt->yRef(), pt->zRef(), source, target);
   }
 }

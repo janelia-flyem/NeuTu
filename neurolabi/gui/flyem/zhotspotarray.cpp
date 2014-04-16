@@ -77,15 +77,19 @@ bool FlyEm::ZHotSpotArray::exportJsonFile(const std::string &filePath)
 std::string FlyEm::ZHotSpotArray::toJsonString() const
 {
   ZJsonObject obj;
-  ZJsonArray arrayObj;
-  for (FlyEm::ZHotSpotArray::const_iterator iter = begin(); iter != end();
-       ++iter) {
-    ZHotSpot *hotSpot = *iter;
-    ZJsonObject spotObj = hotSpot->toJsonObject();
-    arrayObj.append(spotObj);
-  }
+  if (!empty()) {
+    ZJsonArray arrayObj;
+    for (FlyEm::ZHotSpotArray::const_iterator iter = begin(); iter != end();
+         ++iter) {
+      ZHotSpot *hotSpot = *iter;
+      ZJsonObject spotObj = hotSpot->toJsonObject();
+      arrayObj.append(spotObj);
+    }
 
-  obj.setEntry("hot_spot", arrayObj);
+    obj.setEntry("hot_spot", arrayObj);
+  } else {
+    obj.consumeEntry("hot_spot", json_array());
+  }
 
   return obj.dumpString();
 }

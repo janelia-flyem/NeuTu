@@ -21,6 +21,8 @@ public:
    * \brief Append a point
    */
   void append(double x, double y, double z);
+  void append(const ZPoint &pt);
+  void append(const ZPointArray &ptArray);
 
   std::string toJsonString() const;
 };

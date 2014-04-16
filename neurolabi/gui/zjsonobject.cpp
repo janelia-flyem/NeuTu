@@ -282,3 +282,16 @@ bool ZJsonObject::dump(const string &path) const
 {
   return C_Json::dump(m_data, path.c_str());
 }
+
+json_t* ZJsonObject::setArrayEntry(const char *key)
+{
+  json_t* arrayObj = NULL;
+  if (isValidKey(key)) {
+    if (!hasKey(key)) {
+      arrayObj = json_array();
+      setEntryWithoutKeyCheck(key, arrayObj, true);
+    }
+  }
+
+  return arrayObj;
+}

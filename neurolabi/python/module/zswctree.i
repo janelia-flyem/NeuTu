@@ -12,6 +12,12 @@
     return array;
   }
 
+  ZSwcTree* DecodeSwcTree(const std::vector<char> &data) {
+    ZSwcTree *tree = new ZSwcTree;
+    tree->loadFromBuffer(&(data[0]));
+    return tree;
+  }
+
   ZSwcTree* CreateSwcTree() {
     return new ZSwcTree;
   }

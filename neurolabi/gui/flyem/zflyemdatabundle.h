@@ -11,6 +11,7 @@
 #include "neutube.h"
 #include "zswctree.h"
 #include "zflyemneuronarray.h"
+#include "flyem/zflyemcoordinateconverter.h"
 
 class ZFlyEmDataBundle
 {

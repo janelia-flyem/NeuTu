@@ -16,3 +16,24 @@ FlyEm::ZHotSpotFactory::createPointHotSpot(double x, double y, double z)
 
   return hotSpot;
 }
+
+FlyEm::ZHotSpot* FlyEm::ZHotSpotFactory::createCurveHotSpot()
+{
+  FlyEm::ZHotSpot *hotSpot = new FlyEm::ZHotSpot;
+  FlyEm::ZCurveGeometry *geometry = new FlyEm::ZCurveGeometry;
+  hotSpot->setGeometry(geometry);
+  hotSpot->setType(FlyEm::ZHotSpot::TYPE_CURVE);
+
+  return hotSpot;
+}
+
+FlyEm::ZHotSpot*
+FlyEm::ZHotSpotFactory::createCurveHotSpot(const ZPointArray &pointArray)
+{
+  FlyEm::ZHotSpot *hotSpot = createCurveHotSpot();
+  FlyEm::ZCurveGeometry *geometry =
+      dynamic_cast<FlyEm::ZCurveGeometry*>(hotSpot->getGeometry());
+  geometry->setAnchor(pointArray);
+
+  return hotSpot;
+}

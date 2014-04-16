@@ -406,7 +406,7 @@ FlyEm::ZHotSpotArray& ZFlyEmQualityAnalyzer::computeHotSpotForSplit(
             //if the geodesic distance is big
             double gdist = SwcTreeNode::distance(
                   sourceNode, targetNode, SwcTreeNode::GEODESIC);
-            if (!std::isinf(gdist) && gdist > distThreshold) {
+            if (!tz_isinf(gdist) && gdist > distThreshold) {
               //Add a hot spot
               int x = iround(SwcTreeNode::x(sourceNode));
               int y = iround(SwcTreeNode::y(sourceNode));
@@ -436,6 +436,18 @@ FlyEm::ZHotSpotArray& ZFlyEmQualityAnalyzer::computeHotSpotForSplit(
                 hotSpot->setConfidence(
                       misc::computeConfidence(gdist, 1000, 10000));
                 m_hotSpotArray.append(hotSpot);
+
+                ZSwcPath path(const_cast<Swc_Tree_Node*>(sourceNode),
+                              const_cast<Swc_Tree_Node*>(targetNode));
+                FlyEm::ZCurveGeometry *guidence = new FlyEm::ZCurveGeometry();
+                for (ZSwcPath::const_iterator iter = path.begin();
+                     iter != path.end(); ++iter) {
+                  Swc_Tree_Node *tn = *iter;
+                  guidence->appendPoint(SwcTreeNode::x(tn), SwcTreeNode::y(tn),
+                                        SwcTreeNode::z(tn));
+                }
+                hotSpot->setGuidence(guidence);
+
                 break;
               }
             }
