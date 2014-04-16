@@ -126,7 +126,7 @@ def parseJson():
 if __name__ == '__main__': 
     print 'Starting the server ...'
     parser = argparse.ArgumentParser();
-    parser.add_argument("--port", dest="port", type = int, help="port", default=8080);
+    parser.add_argument("--port", dest="port", type = int, help="port", default=8082);
     args = parser.parse_args()
     run(host=socket.gethostname(), port=args.port, debug=True)
 

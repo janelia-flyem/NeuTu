@@ -443,8 +443,9 @@ FlyEm::ZHotSpotArray& ZFlyEmQualityAnalyzer::computeHotSpotForSplit(
                 for (ZSwcPath::const_iterator iter = path.begin();
                      iter != path.end(); ++iter) {
                   Swc_Tree_Node *tn = *iter;
-                  guidence->appendPoint(SwcTreeNode::x(tn), SwcTreeNode::y(tn),
-                                        SwcTreeNode::z(tn));
+                  guidence->appendPoint(iround(SwcTreeNode::x(tn)),
+                                        iround(SwcTreeNode::y(tn)),
+                                        iround(SwcTreeNode::z(tn)));
                 }
                 hotSpot->setGuidence(guidence);
 

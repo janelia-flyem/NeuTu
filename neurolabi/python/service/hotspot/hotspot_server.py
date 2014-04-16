@@ -7,6 +7,7 @@ import jsonschema
 import httplib
 import socket
 import os
+import argparse
 
 sys.path.append('..')
 sys.path.append('../..')
@@ -19,7 +20,7 @@ import quality_analyzer as qa
 import neutu_server as ns
 
 qualityAnalyzer = qa.QualityAnalyzer()
-qualityAnalyzer.loadDataBundle(os.path.join(os.getcwd(), '../../../data/flyem/FIB/data_release/bundle5/data_bundle.json'))
+#qualityAnalyzer.loadDataBundle(os.path.join(os.getcwd(), '../../../data/flyem/FIB/data_release/bundle5/data_bundle.json'))
 
 @get('/home')
 def home():
@@ -66,8 +67,8 @@ def compute_hotspot():
     global qualityAnalyzer
 
     for bodyId in bodyArray:
-        bodyLink = '/api/node/' + uuid + '/skeletons/' + str(bodyId) + '.swc'
-        print '************', bodyLink
+#        bodyLink = '/api/node/' + uuid + '/skeletons/' + str(bodyId) + '.swc'
+#        print '************', bodyLink
         result = None
         try:
             result = qualityAnalyzer.computeHotSpot(bodyId)
@@ -117,7 +118,14 @@ def parseJson():
     data = get_json_post()
     return '<p>' + data['head'] + '</p>'
 
-run(host=socket.gethostname(), port=8081, debug=True)
+if __name__ == '__main__': 
+    print 'Starting the server ...'
+    parser = argparse.ArgumentParser();
+    parser.add_argument("--port", dest="port", type = int, help="port", default=8081);
+    args = parser.parse_args()
+    run(host=socket.gethostname(), port=args.port, debug=True)
+
+#run(host=socket.gethostname(), port=8081, debug=True)
 
 # print getSchema('skeletonize', 'post')
 # try:
