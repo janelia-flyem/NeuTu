@@ -16,10 +16,15 @@ public:
 
 public:
   /*!
-   * \brief Append a voxel to the back
+   * \brief Append a voxel to the end
    * \param voxel The voxel to be added
    */
   void append(const ZVoxel &voxel);
+
+  /*!
+   * \brief Append a voxel to the end
+   */
+  void append(int x, int y, int z, double value);
 
   /*!
    * \brief prepend Add a voxel to the front
@@ -72,6 +77,9 @@ public:
   void sample(const Stack *stack, double (*f)(double));
   Swc_Tree *toSwcTree() const;
   Swc_Tree *toSwcTree(size_t startIndex, size_t endIndex) const;
+
+  void print() const;
+
 };
 
 #endif // ZVOXELARRAY_H

@@ -77,6 +77,7 @@
 #include "zstack.hxx"
 #include "flyem/zsegmentationanalyzer.h"
 #include "flyem/zsegmentationbundle.h"
+#include "flyem/zflyemneuronmatchtaskmanager.h"
 #include "zstackblender.h"
 #include "zgraph.h"
 #include "zarray.h"
@@ -89,6 +90,7 @@
 #include "zpunctum.h"
 #include "zswcsizetrunkanalyzer.h"
 #include "zswcweighttrunkanalyzer.h"
+#include "zstackbinarizer.h"
 #include "zdebug.h"
 #include "tz_color.h"
 #include "zhdf5reader.h"
@@ -103,6 +105,9 @@
 #include "z3dmesh.h"
 #include "zstackdoc.h"
 #include "z3dwindow.h"
+#include "flyem/zhotspot.h"
+#include "flyem/zhotspotarray.h"
+#include "flyem/zhotspotfactory.h"
 #include "z3dswcfilter.h"
 #include "z3dinteractionhandler.h"
 #include "z3dcompositor.h"
@@ -126,9 +131,14 @@
 #include "zswcglobalfeatureanalyzer.h"
 #include "zlogmessagereporter.h"
 #include "zerror.h"
+#include "zmatlabprocess.h"
+#include "flyem/zflyemneuronexporter.h"
+#include "flyem/zflyemneuronarray.h"
 #include "flyem/zflyembodyanalyzer.h"
 #include "swc/zswcresampler.h"
+#include "flyem/zflyemneuronfeatureanalyzer.h"
 #include "swc/zswcnodedistselector.h"
+#include "zmultitaskmanager.h"
 #include "misc/miscutility.h"
 #include "test/zjsontest.h"
 #include "test/zswctreetest.h"
@@ -155,17 +165,27 @@
 #include "test/zflyemneuronfiltertest.h"
 #include "test/zswcmetrictest.h"
 #include "test/zmatrixtest.h"
-
+#include "test/zstacktest.h"
+#include "zswcgenerator.h"
+#include "test/zswcgeneratortest.h"
+#include "test/zflyemneuronimagefactorytest.h"
+#include "test/zspgrowtest.h"
+#include "test/zflyemneuronmatchtest.h"
+#include "ztextlinecompositer.h"
+#include "zstackskeletonizer.h"
+#include "flyem/zflyemcoordinateconverter.h"
+#include "dvid/zdvidreader.h"
+#include "zneurontracer.h"
+#include "zworkspacefactory.h"
 
 using namespace std;
 
 ostream& ZTest::m_failureStream = cerr;
 
-
 ZTest::ZTest()
 {
-
 }
+
 
 bool ZTest::testTreeIterator(ZSwcTree &tree,
                              const ZTestSwcTreeIteratorConfig &config,
@@ -184,6 +204,7 @@ bool ZTest::testTreeIterator(ZSwcTree &tree,
     count = tree.updateIterator(config.option, config.start, *(config.blocker),
                                 TRUE);
   }
+
 
 #ifdef _USE_GTEST_
   EXPECT_EQ(count, truthCount) << "Unmatched node number";
@@ -223,6 +244,7 @@ bool ZTest::testTreeIterator(ZSwcTree &tree,
 
   return true;
 }
+
 
 bool ZTest::testTreeIterator()
 {
@@ -10236,11 +10258,949 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
-#if 1
+#if 0
   ZObject3dScan obj;
   obj.importDvidObject(GET_DATA_DIR + "/1.dvid");
 
   std::cout << obj.getVoxelNumber() << std::endl;
 #endif
 
+#if 0
+  ZObject3dScan obj;
+  obj.addSegment(0, 1, 1, 1);
+  obj.addSegment(1, 1, 0, 2);
+  obj.addSegment(2, 0, 1, 1);
+  obj.addSegment(2, 1, 0, 2);
+  obj.addSegment(2, 2, 1, 1);
+  obj.save(GET_DATA_DIR + "/benchmark/tower3.sobj");
+#endif
+
+#if 0
+  ZObject3dScan obj;
+  obj.addSegment(1, 2, 2, 2);
+  obj.addSegment(2, 2, 1, 3);
+  obj.addSegment(3, 1, 2, 2);
+  obj.addSegment(3, 2, 1, 3);
+  obj.addSegment(3, 3, 2, 2);
+  obj.save(GET_DATA_DIR + "/benchmark/tower5.sobj");
+#endif
+
+#if 0
+  ZObject3dScan obj;
+  obj.addSegment(1, 16, 16, 16);
+  obj.addSegment(2, 16, 5, 32);
+  for (int y = 5; y < 16; ++y) {
+    obj.addSegment(3, y, 16, 16);
+  }
+  obj.addSegment(3, 16, 5, 32);
+  for (int y = 17; y < 33; ++y) {
+    obj.addSegment(3, y, 16, 16);
+  }
+  obj.save(GET_DATA_DIR + "/benchmark/pile.sobj");
+#endif
+
+#if 0
+  ZMatlabProcess matlabProcess;
+  if (matlabProcess.findMatlab()) {
+    matlabProcess.setWorkDir("/tmp/matlab");
+    matlabProcess.setScript("/Users/zhaot/Work/SLAT/matlab/SLAT/run/flyem/tz_run_flyem_clustering_command.m");
+    matlabProcess.run();
+
+    matlabProcess.printOutputSummary();
+  }
+#endif
+
+#if 0
+  ZStackBinarizer binarizer;
+  binarizer.setThreshold(8);
+  binarizer.setMethod(ZStackBinarizer::BM_ONE_SIGMA);
+  binarizer.setRetryCount(3);
+  binarizer.setMinObjectSize(5);
+
+  Stack *stack = C_Stack::readSc(GET_DATA_DIR + "/system/mouse_neuron_single/stack.tif");
+  if (!binarizer.binarize(stack)) {
+    std::cout << "Binarization failed" << std::endl;
+  }
+  C_Stack::write(GET_DATA_DIR + "/test.tif", stack);
+#endif
+
+#if 0
+   Stack *stack = C_Stack::readSc(GET_DATA_DIR + "/system/mouse_neuron_single/stack.tif");
+   std::cout << Stack_Var(stack) << std::endl;
+#endif
+
+#if 0
+  ZString str("data/testffa/test.tif/");
+  std::vector<std::string> parts = str.decomposePath();
+  for (size_t i = 0; i < parts.size(); ++i) {
+    std::cout << parts[i] << " || ";
+  }
+  std::cout << std::endl;
+#endif
+
+#if 0
+  std::cout << ZString::relativePath(GET_DATA_DIR + "/test/test.tif", GET_DATA_DIR + "/benchmark")
+               << std::endl;
+#endif
+
+
+#if 0
+  ZSwcTree tree;
+  tree.load(GET_DATA_DIR + "/test.swc");
+  ZStack stack(GREY, 512, 512, 60, 1);
+  stack.setZero();
+  tree.labelStack(stack.c_stack());
+  stack.save(GET_DATA_DIR + "/test.tif");
+#endif
+
+#if 0
+  Stack *stack =C_Stack::readSc(GET_DATA_DIR + "/benchmark/ball.tif");
+  stack = C_Stack::boundCrop(stack, 0);
+  Stack *out = misc::computeNormal(stack, NeuTube::Z_AXIS);
+  C_Stack::write(GET_DATA_DIR + "/test.tif", out);
+#endif
+
+#if 0
+  ZFlyEmDataBundle bundle;
+  bundle.loadJsonFile(
+        GET_DATA_DIR + "/flyem/TEM/data_release/bundle1/data_bundle.json");
+  ZFlyEmNeuron *neuron = bundle.getNeuron(515936);
+  ZFlyEmNeuronFeatureAnalyzer analyzer;
+  int layer = analyzer.computeMostSpreadedLayer(*neuron);
+  double radius = analyzer.computeSpreadRadius(*neuron, layer);
+  std::cout << "Most spreaded layer: " << layer << std::endl;
+  std::cout << "Radius: " << radius << std::endl;
+#endif
+
+#if 0
+  FlyEm::ZIntCuboidArray blockArray;
+  blockArray.loadSubstackList(dataPath + "/flyem/FIB/block_13layer.txt");
+  Cuboid_I boundBox = blockArray.getBoundBox();
+  std::cout << "Offset: " << boundBox.cb[0] << " " << boundBox.cb[1] << std::endl;
+  blockArray.translate(-boundBox.cb[0], -boundBox.cb[1], -boundBox.cb[2]);
+  blockArray.translate(10, 10, 10);
+
+  blockArray.exportSwc(dataPath + "/flyem/FIB/orphan_body_check_block_13layer.swc");
+
+  FlyEm::ZIntCuboidArray blockArray2;
+  blockArray2.loadSubstackList(dataPath + "/flyem/FIB/block_layer12_13.txt");
+  blockArray2.translate(-boundBox.cb[0], -boundBox.cb[1], -boundBox.cb[2]);
+  blockArray2.translate(10, 10, 10);
+  blockArray2.exportSwc(dataPath + "/flyem/FIB/orphan_body_check_block_layer12_13.swc");
+#endif
+
+#if 0
+  FlyEm::ZIntCuboidArray blockArray;
+  blockArray.loadSubstackList(dataPath + "/flyem/FIB/block_13layer.txt");
+  ZFlyEmQualityAnalyzer::SubstackRegionCalbration calbr;
+  calbr.setBounding(true, true, false);
+  calbr.setMargin(10, 10, 0);
+  blockArray.print();
+  calbr.calibrate(blockArray);
+  //blockArray.print();
+  Cuboid_I boundBox = blockArray.getBoundBox();
+  Print_Cuboid_I(&boundBox);
+
+  blockArray.exportSwc(GET_DATA_DIR + "/test.swc");
+#endif
+
+#if 0
+  FlyEm::ZIntCuboidArray blockArray;
+  blockArray.loadSubstackList(dataPath + "/flyem/FIB/block_13layer.txt");
+  std::cout << misc::computeRavelerHeight(blockArray, 10) << std::endl;
+#endif
+
+#if 0 //Get all bodies within a certain body range
+  ZFlyEmNeuronArray neuronArray;
+  neuronArray.importBodyDir(
+        GET_DATA_DIR + "/flyem/FIB/skeletonization/session26/100k_500k/stacked");
+  std::cout << neuronArray.size() << std::endl;
+
+  FlyEm::ZSynapseAnnotationArray synapseAnnotation;
+  synapseAnnotation.loadJson(
+        GET_DATA_DIR + "/flyem/FIB/skeletonization/session26/annotations-synapse.json");
+  neuronArray.setSynapseAnnotation(&synapseAnnotation);
+
+  ZFlyEmNeuronExporter exporter;
+  exporter.exportIdPosition(neuronArray, GET_DATA_DIR + "/test.json");
+
+  /*
+  for (size_t i = 0; i < neuronArray.size(); ++i) {
+
+  }
+  */
+#endif
+
+#if 0
+  FlyEm::ZSynapseAnnotationArray synapseArray;
+  synapseArray.loadJson(
+        dataPath + "/flyem/FIB/skeletonization/session27/annotations-synapse.json");
+
+  std::vector<int> psdCount = synapseArray.countPsd();
+  std::vector<int> tbarCount = synapseArray.countTBar();
+
+  size_t maxId = std::max(psdCount.size(), tbarCount.size());
+
+  int bodyCount = 0;
+  for (size_t i = 0; i < maxId; ++i) {
+    if (psdCount[i] > 0 || tbarCount[i] > 0) {
+      ++bodyCount;
+    }
+  }
+
+  std::cout << bodyCount << " bodies have synapses" << std::endl;
+#endif
+
+#if 0
+  FlyEm::ZSynapseAnnotationArray synapseArray;
+  synapseArray.loadJson(
+        dataPath + "/flyem/FIB/skeletonization/session27/annotations-synapse.json");
+
+  std::vector<int> psdCount = synapseArray.countPsd();
+  std::vector<int> tbarCount = synapseArray.countTBar();
+
+  std::cout << psdCount.size() << std::endl;
+  std::cout << tbarCount.size() << std::endl;
+#endif
+
+#if 0
+  ZFlyEmNeuronArray neuronArray;
+  neuronArray.importBodyDir(
+        GET_DATA_DIR + "/flyem/FIB/skeletonization/session27/100k_le_2/stacked");
+  std::cout << neuronArray.size() << std::endl;
+
+  FlyEm::ZSynapseAnnotationArray synapseArray;
+  synapseArray.loadJson(
+        dataPath + "/flyem/FIB/skeletonization/session27/annotations-synapse.json");
+
+  std::vector<int> allPsdCount = synapseArray.countPsd();
+  std::vector<int> allTbarCount = synapseArray.countTBar();
+
+  FlyEm::ZIntCuboidArray blockArray;
+  blockArray.loadSubstackList(dataPath + "/flyem/FIB/block_13layer.txt");
+  ZFlyEmQualityAnalyzer::SubstackRegionCalbration calbr;
+  calbr.setBounding(true, true, false);
+  calbr.setMargin(10, 10, 0);
+  //blockArray.print();
+  //calbr.calibrate(blockArray);
+
+  ZFlyEmQualityAnalyzer analyzer;
+  analyzer.setSubstackRegion(blockArray, calbr);
+
+  json_t *rootObj = json_object();
+
+  json_t *neuronArrayObj = json_array();
+  for (ZFlyEmNeuronArray::const_iterator
+       iter = neuronArray.begin(); iter != neuronArray.end(); ++iter) {
+
+    const ZFlyEmNeuron &neuron = *iter;
+    int psdCount = 0;
+    int tbarCount = 0;
+
+    if ((size_t) neuron.getId() < allPsdCount.size()) {
+      psdCount = allPsdCount[neuron.getId()];
+    }
+    if ((size_t) neuron.getId() < allTbarCount.size()) {
+      tbarCount = allTbarCount[neuron.getId()];
+    }
+    if (psdCount > 0 || tbarCount > 0) {
+      std::cout << "Neuron: " << neuron.getId() << ": "
+                << tbarCount << " " << psdCount << std::endl;
+      json_t *neuronObj = json_object();
+      json_object_set_new(neuronObj, "id", json_integer(neuron.getId()));
+      if (analyzer.touchingGlobalBoundary(*neuron.getBody())) {
+        json_object_set_new(neuronObj, "boundary", json_true());
+      } else {
+        json_object_set_new(neuronObj, "boundary", json_false());
+      }
+      json_object_set_new(neuronObj, "tbar",
+                          json_integer(tbarCount));
+
+      json_object_set_new(neuronObj, "psd",
+                          json_integer(psdCount));
+      json_array_append_new(neuronArrayObj, neuronObj);
+    }
+  }
+  json_object_set_new(rootObj, "data", neuronArrayObj);
+
+  json_dump_file(rootObj, (GET_DATA_DIR + "/small_body.json").c_str(),
+                 JSON_INDENT(2));
+
+#endif
+
+#if 0 //Sort large bodies
+  ZFlyEmNeuronArray neuronArray;
+  neuronArray.importBodyDir(
+        GET_DATA_DIR + "/flyem/FIB/skeletonization/session27/100k_5m/stacked");
+  std::cout << neuronArray.size() << std::endl;
+
+  for (ZFlyEmNeuronArray::const_iterator
+       iter = neuronArray.begin(); iter != neuronArray.end(); ++iter) {
+  }
+
+  ZFlyEmNeuronExporter exporter;
+  int ravelerHeight = 2599;
+  exporter.setRavelerHeight(ravelerHeight);
+  exporter.useRavelerCoordinate(true);
+
+  ZFlyEmNeuronBodySizeFilter sizeFilter;
+  sizeFilter.setSizeRange(100000, 1000000);
+  exporter.setNeuronFilter(&sizeFilter);
+  exporter.exportIdPosition(neuronArray, GET_DATA_DIR + "/100k_1m.json");
+
+  sizeFilter.setSizeRange(1000000, 5000000);
+  exporter.exportIdPosition(neuronArray, GET_DATA_DIR + "/1m_5m.json");
+#endif
+
+#if 0
+  ZFlyEmNeuronArray neuronArray;
+  neuronArray.importBodyDir(
+        GET_DATA_DIR + "/flyem/FIB/skeletonization/session27/100k_1m/stacked");
+
+  int ravelerHeight = 2599;
+  json_t *rootObj = json_object();
+  json_t *neuronArrayObj = json_array();
+
+  for (ZFlyEmNeuronArray::iterator iter = neuronArray.begin();
+       iter != neuronArray.end(); ++iter) {
+    ZFlyEmNeuron &neuron = *iter;
+    bool isSelected = true;
+    if (isSelected) {
+      ZObject3dScan *obj = neuron.getBody();
+      if (obj != NULL) {
+        ZVoxel voxel = obj->getMarker();
+
+        json_t *neuronObj = json_object();
+        json_t *idObj = json_integer(neuron.getId());
+        json_object_set_new(neuronObj, "id", idObj);
+
+
+        //voxel.translate(bodyOffset[0], bodyOffset[1], bodyOffset[2]);
+        //std::cout << voxel.x() << " " << voxel.y() << " " << voxel.z() << std::endl;
+        json_t *arrayObj = json_array();
+
+        json_array_append_new(arrayObj, json_integer(voxel.x()));
+
+        int y = voxel.y();
+        y = ravelerHeight - 1 - voxel.y();
+        json_array_append_new(arrayObj, json_integer(y));
+        json_array_append_new(arrayObj, json_integer(voxel.z()));
+
+        json_object_set_new(neuronObj, "position", arrayObj);
+
+        json_array_append_new(neuronArrayObj, neuronObj);
+      }
+      neuron.deprecate(ZFlyEmNeuron::BODY);
+    }
+  }
+
+  json_object_set_new(rootObj, "data", neuronArrayObj);
+  json_dump_file(rootObj, (GET_DATA_DIR + "/100k_1m.json").c_str(), JSON_INDENT(2));
+
+  json_decref(rootObj);
+#endif
+
+#if 0
+  ZFlyEmNeuronArray neuronArray;
+  neuronArray.importBodyDir(
+        GET_DATA_DIR + "/flyem/FIB/skeletonization/session27/1m_5m/stacked");
+
+  int ravelerHeight = 2599;
+  json_t *rootObj = json_object();
+  json_t *neuronArrayObj = json_array();
+
+  for (ZFlyEmNeuronArray::iterator iter = neuronArray.begin();
+       iter != neuronArray.end(); ++iter) {
+    ZFlyEmNeuron &neuron = *iter;
+    bool isSelected = true;
+    if (isSelected) {
+      ZObject3dScan *obj = neuron.getBody();
+      if (obj != NULL) {
+        ZVoxel voxel = obj->getMarker();
+
+        json_t *neuronObj = json_object();
+        json_t *idObj = json_integer(neuron.getId());
+        json_object_set_new(neuronObj, "id", idObj);
+
+
+        //voxel.translate(bodyOffset[0], bodyOffset[1], bodyOffset[2]);
+        //std::cout << voxel.x() << " " << voxel.y() << " " << voxel.z() << std::endl;
+        json_t *arrayObj = json_array();
+
+        json_array_append_new(arrayObj, json_integer(voxel.x()));
+
+        int y = voxel.y();
+        y = ravelerHeight - 1 - voxel.y();
+        json_array_append_new(arrayObj, json_integer(y));
+        json_array_append_new(arrayObj, json_integer(voxel.z()));
+
+        json_object_set_new(neuronObj, "position", arrayObj);
+
+        json_array_append_new(neuronArrayObj, neuronObj);
+      }
+      neuron.deprecate(ZFlyEmNeuron::BODY);
+    }
+  }
+
+  json_object_set_new(rootObj, "data", neuronArrayObj);
+  json_dump_file(rootObj, (GET_DATA_DIR + "/1m_5m.json").c_str(), JSON_INDENT(2));
+
+  json_decref(rootObj);
+#endif
+
+#if 0
+  FlyEm::ZIntCuboidArray blockArray;
+  blockArray.loadSubstackList(dataPath + "/flyem/FIB/block_13layer.txt");
+
+  ZFlyEmQualityAnalyzer::SubstackRegionCalbration calbr;
+  calbr.setBounding(true, true, false);
+  calbr.setMargin(10, 10, 0);
+  blockArray.print();
+  calbr.calibrate(blockArray);
+
+  Print_Cuboid_I(&(blockArray.getBoundBox()));
+
+  blockArray.exportSwc(dataPath + "/flyem/FIB/orphan_body_check_block_13layer.swc");
+#endif
+
+#if 0
+  ZFlyEmNeuronArray neuronArray;
+  neuronArray.importBodyDir(
+        GET_TEST_DATA_DIR +
+        "/flyem/FIB/skeletonization/session28/100k+/stacked");
+
+  FlyEm::ZSynapseAnnotationArray synapseArray;
+  synapseArray.loadJson(
+        GET_TEST_DATA_DIR +
+        "/flyem/FIB/skeletonization/session28/annotations-synapse.json");
+
+  FlyEm::ZIntCuboidArray blockArray;
+  blockArray.loadSubstackList(GET_TEST_DATA_DIR + "/flyem/FIB/block_13layer.txt");
+  ZFlyEmQualityAnalyzer::SubstackRegionCalbration calbr;
+  calbr.setBounding(true, true, false);
+  calbr.setMargin(10, 10, 0);
+  ZFlyEmQualityAnalyzer analyzer;
+  analyzer.setSubstackRegion(blockArray, calbr);
+
+  std::vector<int> allSynapseCount = synapseArray.countSynapse();
+
+  ZFlyEmNeuronArray selectedNeuronArray;
+  for (ZFlyEmNeuronArray::iterator iter = neuronArray.begin();
+       iter != neuronArray.end(); ++iter) {
+    ZFlyEmNeuron &neuron = *iter;
+    if ((size_t) neuron.getId() < allSynapseCount.size()) {
+      if (allSynapseCount[neuron.getId()] > 0) {
+        if (analyzer.touchingSideBoundary(*neuron.getBody())) {
+          selectedNeuronArray.push_back(neuron);
+        }
+        neuron.deprecate(ZFlyEmNeuron::BODY);
+      }
+    }
+  }
+
+  ZFlyEmNeuronExporter exporter;
+  exporter.exportIdVolume(selectedNeuronArray, GET_TEST_DATA_DIR + "/test2.json");
+
+#endif
+
+#if 0
+  ZFlyEmDataBundle dataBundle;
+  dataBundle.loadJsonFile(
+        GET_DATA_DIR + "/flyem/FIB/data_release/test/data_bundle.json");
+
+  std::vector<ZFlyEmNeuron>& neuronArray = dataBundle.getNeuronArray();
+  ZFlyEmQualityAnalyzer analyzer;
+
+  FlyEm::ZIntCuboidArray blockArray;
+  blockArray.loadSubstackList(GET_TEST_DATA_DIR + "/flyem/FIB/block_13layer.txt");
+  ZFlyEmQualityAnalyzer::SubstackRegionCalbration calbr;
+  calbr.setBounding(true, true, false);
+  calbr.setMargin(10, 10, 0);
+  analyzer.setSubstackRegion(blockArray, calbr);
+
+  ZPointArray pointArray = analyzer.computeHotSpot(neuronArray[0]);
+
+  std::cout << "Number of hotspots: " << pointArray.size() << std::endl;
+
+  ZSwcTree *tree = ZSwcGenerator::createSwc(pointArray, 20);
+
+  tree->save(GET_DATA_DIR + "/test.swc");
+
+  delete tree;
+
+  //misc::exportPointList(GET_DATA_DIR + "/test.json", pointArray);
+#endif
+
+#if 0
+  ZPointArray pointArray;
+  pointArray.append(1, 2, 3);
+  pointArray.append(4, 5, 6);
+  pointArray.append(4, 5, 6.5);
+
+  std::cout << pointArray.toJsonString() << std::endl;
+#endif
+
+#if 0
+  ZJsonArray jsonArray;
+  jsonArray << 1 << 2 << 3.5;
+  std::cout << json_dumps(jsonArray.getValue(), JSON_INDENT(2)) << std::endl;
+#endif
+
+#if 0
+  ZSwcPruner pruner;
+  pruner.setMinLength(18.0);
+
+  ZSwcTree tree;
+  tree.load(GET_TEST_DATA_DIR + "/benchmark/swc/fork2.swc");
+  pruner.prune(&tree);
+  tree.save(GET_TEST_DATA_DIR + "/test.swc");
+
+  pruner.setMinLength(100.0);
+  tree.load(GET_TEST_DATA_DIR + "/benchmark/swc/compare/compare1.swc");
+  pruner.prune(&tree);
+  tree.save(GET_TEST_DATA_DIR + "/test.swc");
+
+  pruner.setMinLength(5000.0);
+  tree.load(GET_TEST_DATA_DIR + "/209.swc");
+  pruner.prune(&tree);
+  tree.save(GET_TEST_DATA_DIR + "/test.swc");
+#endif
+
+#if 0
+  ZSquareTaskManager *taskManager = new ZSquareTaskManager;
+  for (int i = 0; i < 100; ++i) {
+    ZSquareTask *task = new ZSquareTask;
+    task->setValue(i + 1);
+    taskManager->addTask(task);
+  }
+
+  tic();
+  taskManager->start();
+  taskManager->waitForDone();
+  ptoc();
+
+  taskManager->deleteLater();
+#endif
+
+#if 0
+  ZFlyEmNeuronMatchTaskManager *taskManager = new ZFlyEmNeuronMatchTaskManager;
+  ZFlyEmDataBundle bundle;
+  bundle.loadJsonFile(
+        GET_TEST_DATA_DIR + "/flyem/TEM/data_release/bundle1/data_bundle.json");
+
+  ZFlyEmNeuron *source = bundle.getNeuron(209);
+  for (std::vector<ZFlyEmNeuron>::iterator iter = bundle.getNeuronArray().begin();
+       iter != bundle.getNeuronArray().end(); ++iter) {
+    ZFlyEmNeuron *neuron = &(*iter);
+    if (neuron != source) {
+      ZFlyEmNeuronMatchTask *task = new ZFlyEmNeuronMatchTask;
+      task->setSource(source);
+      task->setTarget(neuron);
+      taskManager->addTask(task);
+    }
+  }
+
+  taskManager->start();
+  taskManager->waitForDone();
+
+  taskManager->deleteLater();
+#endif
+
+#if 0
+  ZTextLineCompositer compositer;
+  compositer.appendLine("Title");
+  compositer.appendLine("Headline 1", 1);
+  compositer.appendLine("Headline 1.1", 2);
+  compositer.appendLine("Headline 2", 1);
+  compositer.appendLine("Title 2");
+  std::cout << compositer.toString(4) << std::endl;
+
+  ZTextLineCompositer compositer2;
+  compositer2.appendLine("All");
+  compositer2.appendLine(compositer, 1);
+  compositer2.setLevel(1);
+  compositer2.print(2);
+#endif
+
+#if 0
+  FlyEm::ZHotSpot *hotSpot =
+      FlyEm::ZHotSpotFactory::createPointHotSpot(1, 2, 3);
+  hotSpot->print();
+
+  delete hotSpot;
+#endif
+
+#if 0
+  ZSwcDeepAngleMetric metric;
+  metric.setLevel(3);
+  metric.setMinDist(100);
+
+  ZSwcTree tree1;
+  ZSwcTree tree2;
+
+  tree1.load(GET_TEST_DATA_DIR + "/flyem/FIB/data_release/bundle5/swc/538772.swc");
+  tree2.load(GET_TEST_DATA_DIR + "/flyem/FIB/data_release/bundle5/swc/622288.swc");
+
+  //tree1.load(GET_TEST_DATA_DIR + "/benchmark/swc/dist/angle/tree3.swc");
+  //tree2.load(GET_TEST_DATA_DIR + "/benchmark/swc/dist/angle/tree4.swc");
+
+  /*
+  Swc_Tree_Node *root = tree2.queryNode(1);
+  SwcTreeNode::setAsRoot(root);
+  tree2.setDataFromNode(root, ZSwcTree::FREE_WRAPPER);
+  */
+
+  double dist = metric.measureDistance(&tree1, &tree2);
+
+  Print_Swc_Tree_Node(metric.getFirstNode());
+  Print_Swc_Tree_Node(metric.getSecondNode());
+
+  std::cout << "Distance: " << dist << std::endl;
+#endif
+
+#if 0
+  ZSwcDeepAngleMetric metric;
+  metric.setLevel(3);
+  metric.setMinDist(100.0);
+  ZFlyEmDataBundle dataBundle;
+  dataBundle.loadJsonFile(GET_TEST_DATA_DIR + "/flyem/FIB/data_release/bundle5/data_bundle.json");
+  ZFlyEmNeuron *neuron = dataBundle.getNeuron(538772);
+  const std::vector<ZFlyEmNeuron>& neuronArray = dataBundle.getNeuronArray();
+  FlyEm::ZHotSpotArray hotSpotArray;
+  for (size_t i = 0; i < neuronArray.size(); ++i) {
+    const ZFlyEmNeuron &buddyNeuron = neuronArray[i];
+    if (neuron->getId() != buddyNeuron.getId()) {
+      double dist =
+          metric.measureDistance(neuron->getModel(), buddyNeuron.getModel());
+      if (dist < 1.0) {
+        const Swc_Tree_Node *tn = metric.getFirstNode();
+        FlyEm::ZHotSpot *hotSpot = new FlyEm::ZHotSpot;
+        FlyEm::ZPointGeometry *geometry = new FlyEm::ZPointGeometry;
+        geometry->setCenter(
+              SwcTreeNode::x(tn), SwcTreeNode::y(tn), SwcTreeNode::z(tn));
+        hotSpot->setGeometry(geometry);
+        hotSpotArray.append(hotSpot);
+      }
+    }
+  }
+
+  std::cout << hotSpotArray.toString() << std::endl;
+#endif
+
+#if 0 //Count orphans and boundary orphans
+  ZFlyEmNeuronArray neuronArray;
+  neuronArray.importBodyDir(
+        GET_DATA_DIR + "/flyem/FIB/skeletonization/session31/0_100000/stacked");
+  std::cout << neuronArray.size() << std::endl;
+
+  FlyEm::ZSynapseAnnotationArray synapseArray;
+  synapseArray.loadJson(
+        dataPath + "/flyem/FIB/skeletonization/session31/annotations-synapse.json");
+
+  std::vector<int> allPsdCount = synapseArray.countPsd();
+
+  FlyEm::ZIntCuboidArray blockArray;
+  blockArray.loadSubstackList(dataPath + "/flyem/FIB/block_13layer.txt");
+  ZFlyEmQualityAnalyzer::SubstackRegionCalbration calbr;
+  calbr.setBounding(true, true, false);
+  calbr.setMargin(10, 10, 0);
+  //blockArray.print();
+  //calbr.calibrate(blockArray);
+
+  ZFlyEmQualityAnalyzer analyzer;
+  analyzer.setSubstackRegion(blockArray, calbr);
+
+  int totalCount = 0;
+  int totalPsdCount = 0;
+  int orphanCount = 0;
+  int boundaryOrphanCount = 0;
+  int orphanPsdCount = 0;
+  int boundaryOrphanPsdCount = 0;
+
+  for (ZFlyEmNeuronArray::const_iterator
+       iter = neuronArray.begin(); iter != neuronArray.end(); ++iter) {
+    const ZFlyEmNeuron &neuron = *iter;
+    int psdCount = 0;
+
+    if ((size_t) neuron.getId() < allPsdCount.size()) {
+      psdCount = allPsdCount[neuron.getId()];
+    }
+    if (psdCount > 0) {
+      ++totalCount;
+      totalPsdCount += psdCount;
+      if (!analyzer.touchingGlobalBoundary(*neuron.getBody())) {
+        if (analyzer.isStitchedOrphanBody(*neuron.getBody())) {
+          boundaryOrphanCount++;
+          boundaryOrphanPsdCount += psdCount;
+        }
+        orphanCount++;
+        orphanPsdCount += psdCount;
+      }
+      neuron.deprecate(ZFlyEmNeuron::ALL_COMPONENT);
+    }
+  }
+
+  std::cout << "#Bodies with PSDs: " << totalCount << "; #PSDs: "
+            << totalPsdCount << std::endl;
+  std::cout << "#Orphans:" << orphanCount << "; #PSDs: "
+            << orphanPsdCount << std::endl;
+  std::cout << "#Boundary orphans:" << boundaryOrphanCount << "; #PSDs: "
+            << boundaryOrphanPsdCount << std::endl;
+
+#endif
+
+#if 0
+  ZObject3dScanArray bodyArray;
+  bodyArray.importDir(
+        GET_DATA_DIR + "/flyem/FIB/skeletonization/session31/0_100000/stacked");
+
+  bodyArray.exportHdf5(GET_DATA_DIR + "/test.hf5");
+
+  ZObject3dScan obj;
+  obj.importHdf5(GET_DATA_DIR + "/test.hf5", "/body/1.sobj");
+
+  obj.save(GET_DATA_DIR + "/test.sobj");
+
+#endif
+
+#if 0
+  ZFlyEmDataBundle dataBundle;
+  dataBundle.loadJsonFile(
+        GET_TEST_DATA_DIR + "/flyem/FIB/data_release/bundle5/data_bundle.json");
+  dataBundle.getNeuronArray().exportBodyToHdf5(GET_DATA_DIR + "/test.hf5");
+#endif
+
+#if 0
+  ZFlyEmNeuron neuron;
+  neuron.importBodyFromHdf5(GET_TEST_DATA_DIR + "/test.hf5", "/bodies/9531.sobj");
+  neuron.getBody()->save(GET_DATA_DIR + "/test.sobj");
+#endif
+
+#if 0
+  ZFlyEmDataBundle dataBundle;
+  dataBundle.loadJsonFile(
+        GET_DATA_DIR +
+        "/flyem/FIB/data_release/bundle5/data_bundle_wo_synapse.json");
+
+  ZFlyEmQualityAnalyzer analyzer;
+
+#  if 0
+  const std::vector<ZFlyEmNeuron>& neuronArray = dataBundle.getNeuronArray();
+  for (size_t i = 0; i < neuronArray.size(); ++i) {
+    const ZFlyEmNeuron &neuron = neuronArray[i];
+    FlyEm::ZHotSpotArray &hotSpotArray = analyzer.computeHotSpotForSplit(neuron);
+    if (!hotSpotArray.empty()) {
+      hotSpotArray.print();
+//      neuron.getUnscaledModel()->save(GET_DATA_DIR + "/test.swc");
+//      break;
+    }
+  }
+#  endif
+
+  ZFlyEmNeuron *neuron = dataBundle.getNeuron(406309);
+  FlyEm::ZHotSpotArray &hotSpotArray = analyzer.computeHotSpotForSplit(*neuron);
+  hotSpotArray.print();
+  neuron->getUnscaledModel()->save(GET_DATA_DIR + "/test.swc");
+#endif
+
+#if 0
+  ZStackSkeletonizer skeletonizer;
+
+  ZJsonObject config;
+  config.load(GET_TEST_DATA_DIR + "/../json/skeletonize.json");
+  config.print();
+  skeletonizer.configure(config);
+  ZObject3dScan obj;
+  obj.load(GET_TEST_DATA_DIR + "/flyem/FIB/skeletonization/session31/5000000_/stacked/591796.sobj");
+  skeletonizer.print();
+  ZSwcTree *tree = skeletonizer.makeSkeleton(obj);
+  tree->save(GET_TEST_DATA_DIR + "/test.swc");
+#endif
+
+#if 0
+  ZFlyEmDataBundle dataBundle;
+  dataBundle.loadJsonFile(
+        GET_DATA_DIR +
+        "/flyem/FIB/skeletonization/session31/500000_/len40/data_bundle.json");
+
+  ZFlyEmQualityAnalyzer analyzer;
+
+#  if 0
+  const std::vector<ZFlyEmNeuron>& neuronArray = dataBundle.getNeuronArray();
+  for (size_t i = 0; i < neuronArray.size(); ++i) {
+    const ZFlyEmNeuron &neuron = neuronArray[i];
+    FlyEm::ZHotSpotArray &hotSpotArray = analyzer.computeHotSpotForSplit(neuron);
+    if (!hotSpotArray.empty()) {
+      hotSpotArray.print();
+//      neuron.getUnscaledModel()->save(GET_DATA_DIR + "/test.swc");
+//      break;
+    }
+  }
+#  else
+  ZFlyEmNeuron *neuron = dataBundle.getNeuron(21894);
+  FlyEm::ZHotSpotArray &hotSpotArray = analyzer.computeHotSpotForSplit(*neuron);
+  hotSpotArray.print();
+  //neuron->getUnscaledModel()->save(GET_DATA_DIR + "/test.swc");
+
+  std::cout << hotSpotArray.toJsonString() << std::endl;
+#  endif
+
+#endif
+
+#if 0
+  ZFlyEmNeuron neuron;
+  neuron.setId(1);
+  neuron.setModelPath(GET_DATA_DIR + "/test.swc");
+  ZFlyEmQualityAnalyzer analyzer;
+  FlyEm::ZHotSpotArray &hotSpotArray = analyzer.computeHotSpotForSplit(neuron);
+  hotSpotArray.print();
+
+#endif
+
+#if 0
+  std::cout << misc::computeConfidence(5000, 1000, 10000) << std::endl;
+#endif
+
+#if 0
+  ZFlyEmCoordinateConverter converter;
+  converter.setStackSize(3150, 2599, 6500);
+  converter.setVoxelResolution(10, 10, 10);
+  converter.setZStart(1490);
+  converter.setMargin(10);
+
+  double x = 6600;
+  double y = 10040;
+  double z = 37600;
+
+  converter.convert(&x, &y, &z, ZFlyEmCoordinateConverter::PHYSICAL_SPACE,
+                    ZFlyEmCoordinateConverter::IMAGE_SPACE);
+  std::cout << x << " " << y << " " << z << std::endl;
+
+  converter.convert(&x, &y, &z, ZFlyEmCoordinateConverter::IMAGE_SPACE,
+                    ZFlyEmCoordinateConverter::ROI_SPACE);
+  std::cout << x << " " << y << " " << z << std::endl;
+
+  converter.convert(&x, &y, &z, ZFlyEmCoordinateConverter::ROI_SPACE,
+                    ZFlyEmCoordinateConverter::PHYSICAL_SPACE);
+  std::cout << x << " " << y << " " << z << std::endl;
+
+  converter.convert(&x, &y, &z, ZFlyEmCoordinateConverter::PHYSICAL_SPACE,
+                    ZFlyEmCoordinateConverter::RAVELER_SPACE);
+  std::cout << x << " " << y << " " << z << std::endl;
+
+  converter.convert(&x, &y, &z, ZFlyEmCoordinateConverter::RAVELER_SPACE,
+                    ZFlyEmCoordinateConverter::ROI_SPACE);
+  std::cout << x << " " << y << " " << z << std::endl;
+#endif
+
+#if 0
+  FlyEm::ZCurveGeometry geometry;
+  geometry.appendPoint(0, 1, 2);
+  geometry.appendPoint(3, 4, 5);
+  geometry.appendPoint(6, 7, 8);
+  geometry.print();
+
+
+  ZPointArray curve;
+  curve.append(0, 1, 2);
+  curve.append(3, 4, 5);
+  curve.append(6, 7, 8);
+
+  FlyEm::ZHotSpotFactory factory;
+  FlyEm::ZHotSpot *hotSpot = factory.createCurveHotSpot(curve);
+  hotSpot->print();
+
+  delete hotSpot;
+  //ZJsonObject obj = hotSpot->toRavelerJsonObject(resolution, imageSize);
+  //obj.print();
+#endif
+
+#if 0
+  ZDvidReader reader;
+  reader.open("http://emdata1.int.janelia.org:7000", "a75");
+  //ZObject3dScan obj = reader.readBody(117);
+
+  //obj.save(GET_DATA_DIR + "/test.sobj");
+
+  ZSwcTree *tree = reader.readSwc(117);
+  if (tree != NULL) {
+    tree->save(GET_DATA_DIR + "/test.swc");
+  }
+#endif
+
+#if 0
+  ZDvidReader reader;
+  reader.open("http://emdata1.int.janelia.org:7000", "a75");
+  ZStack *stack = reader.readGreyScale(500, 500, 3000, 1024, 1024, 10);
+  if (stack != NULL) {
+    stack->save(GET_DATA_DIR + "/test.tif");
+  } else {
+    std::cout << "Null stack" << std::endl;
+  }
+#endif
+
+#if 0
+  int bodyId = 117;
+  ZDvidReader reader;
+  reader.open("http://emdata1.int.janelia.org:7000", "a75");
+
+  ZSwcTree *tree = reader.readSwc(bodyId);
+
+  ZFlyEmNeuron neuron(bodyId, tree, NULL);
+
+  ZFlyEmQualityAnalyzer analyzer;
+  FlyEm::ZHotSpotArray &hotSpotArray = analyzer.computeHotSpotForSplit(neuron);
+  hotSpotArray.print();
+
+  FlyEm::ZHotSpot *hotSpot = hotSpotArray[0];
+  ZCuboid boundBox = hotSpot->toPointArray().getBoundBox();
+  boundBox.print();
+
+  ZStack *stack = reader.readGrayScale(boundBox.firstCorner().x(),
+                                       boundBox.firstCorner().y(),
+                                       boundBox.firstCorner().z(),
+                                       boundBox.width() + 1,
+                                       boundBox.height() + 1,
+                                       boundBox.depth() + 1);
+  if (stack != NULL) {
+    stack->save(GET_DATA_DIR + "/test.tif");
+  } else {
+    std::cout << "Null stack" << std::endl;
+  }
+
+  tree = ZSwcGenerator::createSwc(hotSpot->toPointArray(), 5.0, true);
+  tree->translate(-boundBox.firstCorner());
+  tree->save(GET_DATA_DIR + "/test.swc");
+
+
+  ZFlyEmCoordinateConverter converter;
+  converter.configure(ZFlyEmDataInfo(FlyEm::DATA_FIB25));
+
+  ZPoint corner = boundBox.firstCorner();
+  converter.convert(&corner, ZFlyEmCoordinateConverter::IMAGE_SPACE,
+                    ZFlyEmCoordinateConverter::RAVELER_SPACE);
+  std::cout << "Position: " << corner.toString() << std::endl;
+
+#endif
+
+#if 1
+  ZStack stack;
+  stack.load(GET_DATA_DIR + "/system/diadem/diadem_e4.tif");
+
+  ZWorkspaceFactory wf;
+  Trace_Workspace *traceWorkspace = wf.createTraceWorkspace(stack.c_stack());
+  Connection_Test_Workspace *connWorkspace = wf.createConnectionTestWorkspace();
+
+  ZNeuronTracer tracer;
+
+  tracer.setTraceWorkspace(traceWorkspace);
+  tracer.setConnWorkspace(connWorkspace);
+
+
+  ZSwcTree *tree = tracer.trace(stack.c_stack());
+
+  tree->save(GET_DATA_DIR + "/test.swc");
+
+  delete tree;
+#endif
 }

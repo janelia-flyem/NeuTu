@@ -18,6 +18,11 @@ void ZVoxelArray::append(const ZVoxel &voxel)
   push_back(voxel);
 }
 
+void ZVoxelArray::append(int x, int y, int z, double value)
+{
+  push_back(ZVoxel(x, y, z, value));
+}
+
 void ZVoxelArray::prepend(const ZVoxel &voxel)
 {
   insert(begin(), voxel);
@@ -209,4 +214,12 @@ double ZVoxelArray::getCurveLength() const
   }
 
   return length;
+}
+
+void ZVoxelArray::print() const
+{
+  std::cout << size() << " voxels" << std::endl;
+  for (size_t i = 0; i < size(); ++i) {
+    (*this)[i].print();
+  }
 }

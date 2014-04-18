@@ -68,11 +68,3 @@ else:exists(../lib/ITK/lib/libITKCommon.a) {
       -litkv3p_netlib
 }
 
-CONFIG(debug, debug|release) {
-    exists(/usr/local/include/opencv/cv.h) {
-        DEFINES += _USE_OPENCV_
-        INCLUDEPATH += /usr/local/include/opencv
-        LIBS += -lopencv_core -lopencv_ml
-    }
-}
-

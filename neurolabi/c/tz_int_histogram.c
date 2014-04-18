@@ -26,6 +26,20 @@ int Int_Histogram_Max(const int *hist)
   return hist[0] + hist[1] - 1;
 }
 
+int Int_Histogram_Sum(const int *hist)
+{
+  int length = hist[0];
+  hist = Int_Histogram_Const_Array(hist);
+
+  int all = 0;
+  int i;
+  for (i = 0; i < length; i++) {
+    all += hist[i];
+  }
+
+  return all;
+}
+
 int Int_Histogram_Quantile(const int *hist, double q)
 {
   int length = hist[0];

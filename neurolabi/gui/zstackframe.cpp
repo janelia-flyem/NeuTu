@@ -19,7 +19,7 @@
 #include "zdoublevector.h"
 #include "zfiletype.h"
 #include <QtGui>
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
+#ifdef _QT5_
 #include <QtWidgets>
 #endif
 #include "zobjsmanagerwidget.h"
@@ -30,6 +30,9 @@
 #include "zobject3dscan.h"
 #include "tz_stack_math.h"
 #include "z3dcompositor.h"
+#include "zstring.h"
+#include "biocytin/zbiocytinfilenameparser.h"
+#include "zpunctumio.h"
 
 using namespace std;
 
@@ -46,6 +49,8 @@ ZStackFrame::ZStackFrame(QWidget *parent, bool preparingModel) :
 
   //m_presenter = new ZStackPresenter(this);
   //m_view = new ZStackView(this);
+  m_presenter = NULL;
+  m_view = NULL;
   if (preparingModel) {
     constructFrame();
   }
@@ -89,6 +94,12 @@ void ZStackFrame::createPresenter()
 void ZStackFrame::createView()
 {
   m_view = new ZStackView(this);
+}
+
+void ZStackFrame::consumeDocument(ZStackDoc *doc)
+{
+  tr1::shared_ptr<ZStackDoc> docPtr(doc);
+  setDocument(docPtr);
 }
 
 void ZStackFrame::setDocument(tr1::shared_ptr<ZStackDoc> doc)
@@ -240,25 +251,27 @@ void ZStackFrame::loadStack(Stack *stack, bool isOwner)
 {
   Q_ASSERT(m_doc != NULL);
   m_doc->loadStack(stack, isOwner);
-  m_presenter->optimizeStackBc();
-  m_view->reset();
+  prepareDisplay();
 }
 
 void ZStackFrame::loadStack(ZStack *stack)
 {
   Q_ASSERT(m_doc != NULL);
   m_doc->loadStack(stack);
+  prepareDisplay();
+}
+
+void ZStackFrame::prepareDisplay()
+{
+  setWindowTitle(document()->stackSourcePath().c_str());
+  m_statusInfo =  QString("%1 loaded").arg(document()->stackSourcePath().c_str());
   m_presenter->optimizeStackBc();
   m_view->reset();
-  setWindowTitle(stack->sourcePath());
 }
 
 void ZStackFrame::setupDisplay()
 {
-  setWindowTitle(document()->stackSourcePath());
-  m_statusInfo =  QString("%1 loaded").arg(document()->stackSourcePath());
-  m_presenter->optimizeStackBc();
-  m_view->reset();
+  prepareDisplay();
 
   qDebug() << "ready(this) emitted";
 
@@ -628,7 +641,8 @@ QString ZStackFrame::briefInfo() const
 QString ZStackFrame::info() const
 {
   if ((document() != NULL) && view() != NULL) {
-    QString info = document()->stack()->sourcePath() +
+    QString info = document()->stack()->sourcePath().c_str();
+    info +=
       QString("\n %1 x %2 => %3 x %4").arg(document()->stack()->width()).
       arg(document()->stack()->height()).
       arg(view()->imageWidget()->screenSize().width()).
@@ -1175,13 +1189,18 @@ Z3DWindow* ZStackFrame::open3DWindow(QWidget *parent, Z3DWindow::EInitMode mode)
   if (Z3DApplication::app()->is3DSupported()) {
     if (m_3dWindow == NULL) {
       m_3dWindow = new Z3DWindow(document(), mode, false, parent);
+      m_3dWindow->setWindowTitle("3D View");
       connect(m_3dWindow, SIGNAL(destroyed()), this, SLOT(detach3DWindow()));
       if (NeutubeConfig::getInstance().getApplication() == "Biocytin") {
         m_3dWindow->getCompositor()->setBackgroundFirstColor(glm::vec3(1, 1, 1));
         m_3dWindow->getCompositor()->setBackgroundSecondColor(glm::vec3(1, 1, 1));
-        if (!NeutubeConfig::getInstance().getZ3DWindowConfig().isBackgroundOn()) {
-          m_3dWindow->getCompositor()->setShowBackground(false);
-        }
+      }
+      if (!NeutubeConfig::getInstance().getZ3DWindowConfig().isBackgroundOn()) {
+        m_3dWindow->getCompositor()->setShowBackground(false);
+      }
+      if (document()->getTag() == NeuTube::Document::FLYEM_BODY) {
+        m_3dWindow->getVolumeRaycasterRenderer()->setCompositeMode(
+              "Direct Volume Rendering");
       }
     }
 
@@ -1344,6 +1363,9 @@ void ZStackFrame::importMask(const QString &filePath)
       ZObject3d *obj = new ZObject3d;
       obj->setColor(QColor(255, 0, 0, 128));
       if (obj->loadStack(stack->c_stack(0))) {
+        obj->translate(iround(document()->getStackOffset().x()),
+                       iround(document()->getStackOffset().y()),
+                       iround(document()->getStackOffset().z()));
         executeAddObjectCommand(obj, NeuTube::Documentable_OBJ3D);
       } else {
         delete obj;
@@ -1377,6 +1399,17 @@ void ZStackFrame::importSobj(const QStringList &fileList)
   loadStack(stack);
 }
 
+void ZStackFrame::importPointList(const QString &filePath)
+{
+  QList<ZPunctum*> puncta = ZPunctumIO::load(filePath);
+  if (!puncta.isEmpty()) {
+    foreach (ZPunctum* punctum, puncta) {
+      document()->addPunctum(punctum);
+    }
+    document()->notifyPunctumModified();
+  }
+}
+
 void ZStackFrame::autoBcAdjust()
 {
   document()->startProgress();
@@ -1398,6 +1431,32 @@ void ZStackFrame::autoBcAdjust()
   }
   document()->endProgress();
   updateView();
+}
+
+void ZStackFrame::loadRoi()
+{
+  if (!document()->stackSourcePath().empty()) {
+    ZString sourcePath = document()->stackSourcePath();
+
+    ZString suffix =
+        ZBiocytinFileNameParser::getSuffix(ZBiocytinFileNameParser::ROI);
+
+    sourcePath = sourcePath.dirPath() + ZString::FileSeparator +
+        ZBiocytinFileNameParser::getCoreName(sourcePath);
+
+    QFileInfo fileInfo((sourcePath + suffix + ".tif").c_str());
+    if (!fileInfo.exists()) {
+      fileInfo.setFile(
+            (sourcePath + static_cast<const ZString&>(suffix).toLower() + ".tif").c_str());
+    } else if (!fileInfo.exists()) {
+      fileInfo.setFile(
+            (sourcePath + static_cast<const ZString&>(suffix).toUpper() + ".tif").c_str());
+    }
+
+    if (fileInfo.exists()) {
+      loadRoi(fileInfo.absoluteFilePath());
+    }
+  }
 }
 
 void ZStackFrame::loadRoi(const QString &filePath)
@@ -1448,10 +1507,18 @@ void ZStackFrame::zoomToSelectedSwcNodes()
     ZCuboid cuboid = SwcTreeNode::boundBox(*document()->selectedSwcTreeNodes());
     int cx, cy, cz;
     ZPoint center = cuboid.center();
+    center -= document()->getStackOffset();
     cx = iround(center.x());
     cy = iround(center.y());
     cz = iround(center.z());
     int radius = iround(std::max(cuboid.width(), cuboid.height()) / 2.0);
     viewRoi(cx, cy, cz, radius);
   }
+}
+
+void ZStackFrame::notifyUser(const QString &message)
+{
+  m_statusInfo = message;
+
+  emit infoChanged();
 }

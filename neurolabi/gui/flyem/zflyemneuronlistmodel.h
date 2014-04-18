@@ -49,12 +49,16 @@ public:
 
   void notifyRowDataChanged(int row);
 
+  void notifyAllDataChanged();
+
   /*!
    * \brief Test if the current index if the key of the neuron.
    *
    * \return true iff \a index is the key.
    */
   static bool isNeuronKey(const QModelIndex &index);
+
+  QString getColumnName(int col) const;
 
 signals:
 

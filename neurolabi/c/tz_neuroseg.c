@@ -1022,19 +1022,20 @@ static void neuroseg_scale_field(coordinate_3d_t pt, double *value,
     pt[0] *= r_scale / norm;
     pt[1] *= r / norm;
 
-    double d = 2.0;
+    //double d = 2.0;
 
     /* length to positive boundary */
-    double enorm = sqrt(pt[0] * pt[0] + pt[1] * pt[1]);
+    double enorm = pt[0] * pt[0] + pt[1] * pt[1];
     if (enorm < 1.0) {
-      alpha /= enorm;
-    } else {
-      if (enorm > d) {
-        alpha *= d / enorm;
-      }
+      alpha /= sqrt(enorm);
+    } else if (enorm > 4.0) {
+      alpha /= sqrt(enorm);
+      alpha = alpha + alpha;
+      //alpha *= 2.0 / enorm;
     }
-    pt[0] *= (1.0 + alpha);
-    pt[1] *= (1.0 + alpha);
+    double alpha2 = 1.0 + alpha;
+    pt[0] *= alpha2;
+    pt[1] *= alpha2;
 #else
     double norm = sqrt(pt[0] * pt[0] + pt[1] * pt[1]);
     double t = 2.0 / 0.6;
@@ -1159,8 +1160,8 @@ Geo3d_Scalar_Field* Neuroseg_Field_S(const Neuroseg *seg,
 		 field->values, &(field->size));
   */
 
-  double z_start = 0.0;
-  double z_step = (seg->h - 1.0) / (nslice - 1);
+  const double z_start = 0.0;
+  const double z_step = (seg->h - 1.0) / (nslice - 1);
   //double z_step = (seg->h - 1.0) / nslice;
   //double z_step = seg->h / nslice;
   
@@ -1198,8 +1199,12 @@ Geo3d_Scalar_Field* Neuroseg_Field_S(const Neuroseg *seg,
     weight = 0.0;
     for (i = 0; i < length; i++) {
       points[i][2] = z;
+      /*
       neuroseg_scale_field(points[i], values + i, r, seg->scale, r_scale,
 			   sqrt_r, sqrt_r_scale);
+                           */
+      neuroseg_scale_field(points[i], values + i, r, seg->scale, r_scale,
+          sqrt_r, sqrt_r_scale);
       weight += fabs(values[i]);
       //weight += values[i] * values[i];
     }
@@ -1220,6 +1225,7 @@ Geo3d_Scalar_Field* Neuroseg_Field_S(const Neuroseg *seg,
     points[i][2] = z_start;
     neuroseg_scale_field(points[i], values + i, r, seg->scale, r_scale,
 			 sqrt_r, sqrt_r_scale);
+
     weight += fabs(values[i]);
     //weight += values[i] * values[i];
   }
@@ -1253,6 +1259,217 @@ Geo3d_Scalar_Field* Neuroseg_Field_S(const Neuroseg *seg,
   return field;
 }
 
+Geo3d_Scalar_Field* Neuroseg_Field_S_Fast(const Neuroseg *seg,
+    Neuroseg_Field_f field_func,
+    Geo3d_Scalar_Field *field)
+{
+  if ((seg->r1 == 0) || (seg->scale == 0)) {
+    return NULL;
+  }
+
+  //int nslice = (int) round(seg->h);
+  //int nslice = NEUROSEG_DEFAULT_H;
+  int nslice = NEUROSEG_DEFAULT_H;
+  /*
+  if (nslice == 0) {
+    nslice = 1;
+  }
+  */
+  if (field == NULL) {
+    field = New_Geo3d_Scalar_Field();
+    //Neuroseg_Field_Point_Number(seg, step);
+    Construct_Geo3d_Scalar_Field(field, NEUROSEG_SLICE_FIELD_LENGTH * nslice);
+				 //Neuroseg_Field_Point_Number(seg, step));
+  }
+
+  /*
+  Neuroseg_Field(seg, step, Coordinate_3d_Double_Array(field->points), 
+		 field->values, &(field->size));
+  */
+
+  const double z_start = 0.0;
+  const double z_step = (seg->h - 1.0) / (nslice - 1);
+  //double z_step = (seg->h - 1.0) / nslice;
+  //double z_step = seg->h / nslice;
+  
+  //double z_end = nslice;
+  int length;
+  coordinate_3d_t *points = field->points;
+  double *values = field->values;
+  double coef = NEUROSEG_COEF(seg) * z_step;
+  double r = seg->r1;
+  double z = z_start;
+
+  Neuroseg_Slice_Field(points, values, &length, field_func);
+  field->size = length;
+
+  int i, j;
+  double weight = 0.0;
+  double r_scale = r * seg->scale;
+  double sqrt_r = sqrt(r);
+  double sqrt_sqrt_scale = sqrt(sqrt(seg->scale));
+  double sqrt_r_scale = sqrt_r * sqrt_sqrt_scale;
+  points = field->points;
+  values = field->values;
+
+  if (coef != 0.0 && nslice > 1) {
+    memcpy(field->values + length, field->values, sizeof(double) * length);
+  }
+
+  for (i = 0; i < length; i++) {
+    points[i][2] = z;
+#ifdef _DEBUG_
+    neuroseg_scale_field(points[i], values + i, r, seg->scale, r_scale,
+			 sqrt_r, sqrt_r_scale);
+#else
+    double *pt = points[i];
+    //double *value = values + i;
+    if (values[i] >= 0.0) {
+      pt[0] *= r_scale;
+      pt[1] *= r;
+      values[i] *= sqrt_r_scale;
+    } else {    
+      /* length in the base receptor */
+      double norm = sqrt(pt[0] * pt[0] + pt[1] * pt[1]);
+      double alpha = norm - 1;
+
+      /* positive boundary */
+      pt[0] *= r_scale / norm;
+      pt[1] *= r / norm;
+      /*
+      double rnorm = r / norm;
+      pt[0] *= rnorm * seg->scale;
+      pt[1] *= rnorm;
+      */
+
+
+      /* length to positive boundary */
+      double enorm = pt[0] * pt[0] + pt[1] * pt[1];
+      if (enorm < 1.0) {
+        alpha /= sqrt(enorm);
+      } else if (enorm > 4.0) {
+        alpha /= sqrt(enorm);
+        alpha = alpha + alpha;
+        //alpha *= 2.0 / sqrt(enorm);
+        //alpha *= 2.0 / enorm;
+      }
+
+      //double alpha2 = 1.0 + alpha;
+      pt[0] *= 1.0 + alpha;
+      pt[1] *= 1.0 + alpha;
+    }
+#endif
+
+    weight += fabs(values[i]);
+    //weight += values[i] * values[i];
+  }
+
+  for (i = 0; i < length; i++) {
+    values[i] /= weight;
+    //values[i] /= sqrt(weight);
+  }
+
+  if (coef == 0.0 && nslice > 1) {
+    memcpy(field->values + length, field->values, sizeof(double) * length);
+  }
+
+  for (j = 1; j < nslice; j++) {
+    z += z_step;
+    if (coef != 0.0) {
+      r += coef;
+      r_scale = r * seg->scale;
+      sqrt_r = sqrt(r);
+      sqrt_r_scale = sqrt_r * sqrt_sqrt_scale;
+    }
+    points += length;
+    values += length;
+    field->size += length;    
+
+    memcpy(points, field->points, sizeof(coordinate_3d_t) * length);
+    for (i = 0; i < length; i++) {
+      points[i][2] = z;
+    }
+    if (j > 1) {
+      memcpy(values, field->values, sizeof(double) * length);
+    }
+    if (coef != 0.0) {
+      weight = 0.0;
+      for (i = 0; i < length; i++) {
+        points[i][2] = z;
+        /*
+           neuroseg_scale_field(points[i], values + i, r, seg->scale, r_scale,
+           sqrt_r, sqrt_r_scale);
+           */
+#ifdef _DEBUG_
+        neuroseg_scale_field(points[i], values + i, r, seg->scale, r_scale,
+            sqrt_r, sqrt_r_scale);
+#else
+        double *pt = points[i];
+        //double *value = values + i;
+        if (values[i] >= 0.0) {
+          pt[0] *= r_scale;
+          pt[1] *= r;
+          values[i] *= sqrt_r_scale;
+        } else {    
+          /* length in the base receptor */
+          double norm = sqrt(pt[0] * pt[0] + pt[1] * pt[1]);
+          double alpha = norm - 1;
+
+          /* positive boundary */
+          double rnorm = r / norm;
+          pt[0] *= rnorm * seg->scale;
+          pt[1] *= rnorm;
+
+
+          /* length to positive boundary */
+          double enorm = pt[0] * pt[0] + pt[1] * pt[1];
+          if (enorm < 1.0) {
+            alpha /= sqrt(enorm);
+          } else if (enorm > 4.0) {
+            alpha *= 2.0 / sqrt(enorm);
+            //alpha *= 2.0 / enorm;
+          }
+
+          //double alpha2 = 1.0 + alpha;
+          pt[0] *= 1.0 + alpha;
+          pt[1] *= 1.0 + alpha;
+        }
+#endif
+        weight += fabs(values[i]);
+        //weight += values[i] * values[i];
+      }
+      for (i = 0; i < length; i++) {
+        //values[i] /= sqrt(weight);
+        values[i] /= weight;
+      }
+    }
+  }
+
+  
+  
+  if (seg->alpha != 0.0) {
+    Rotate_Z(Coordinate_3d_Double_Array(field->points),
+	     Coordinate_3d_Double_Array(field->points),
+	     field->size, seg->alpha, 0);
+  }
+
+  if (seg->curvature >= NEUROSEG_MIN_CURVATURE) {
+    double curvature = seg->curvature;
+    if (curvature > NEUROSEG_MAX_CURVATURE) {
+      curvature = NEUROSEG_MAX_CURVATURE;
+    }
+
+    Geo3d_Point_Array_Bend(field->points, field->size, seg->h / curvature);
+  }
+
+  if ((seg->theta != 0.0) || (seg->psi != 0.0)) {
+    Rotate_XZ(Coordinate_3d_Double_Array(field->points), 
+	      Coordinate_3d_Double_Array(field->points),
+	      field->size, seg->theta, seg->psi, 0);
+  }
+
+  return field;
+}
 
 /*
 Geo3d_Scalar_Field* Neuroseg_Field_S(const Neuroseg *seg, double step,

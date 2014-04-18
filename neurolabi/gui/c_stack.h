@@ -69,16 +69,43 @@ inline void cppDelete(Stack *stack) { delete stack; }
  */
 Stack* clone(const Stack *stack);
 
-//Copy is essentially the same as <clone>. But <clone> is preferred.
 //Stack* copy(const Stack *stack);
 void copyValue(const Stack *src, Stack *dst);
-void copyPlaneValue(Stack *stack, void *array, int slice);
+void copyPlaneValue(Stack *stack, const void *array, int slice);
 ///@}
 
 //Attributes of a stack
+/*!
+ * \brief Width of the stack
+ *
+ * \a stack shouldn't be NULL.
+ */
 inline int width(const Stack *stack) { return stack->width; }
+
+/*!
+ * \brief Height of the stack
+ *
+ * \a stack shouldn't be NULL.
+ */
 inline int height(const Stack *stack) { return stack->height; }
+
+/*!
+ * \brief Depth (number of planes) of the stack
+ *
+ * \a stack shouldn't be NULL.
+ */
 inline int depth(const Stack *stack) { return stack->depth; }
+
+/*!
+ * \brief Pixel data kind of the stack
+ *
+ *  \a stack shouldn't be NULL. The kind can be:
+ *    GREY: unsigned 8-bit
+ *    GREY16: unsigned 16-bit
+ *    COLOR: 24-bit RGB
+ *    FLOAT32: single-precision float
+ *    FLOAT64: double-predision float
+ */
 inline int kind(const Stack *stack) { return stack->kind; }
 
 inline void setWidth(Stack *stack, int width) { stack->width = width; }
@@ -95,14 +122,67 @@ inline size_t area(const Stack *stack) {
 
 size_t voxelNumber(const Stack *stack);
 
+inline size_t allByteNumber(const Stack *stack) {
+  return planeByteNumber(stack) * depth(stack) * kind(stack);
+}
+
 //Voxel access
+/*!
+ * \brief Pointer to the raw data
+ */
 inline uint8_t* array8(const Stack *stack) { return (uint8_t*) stack->array; }
+
+/*!
+ * \brief Voxel value at a certain index
+ *
+ * It returns the value in the first channel for COLOR kind.
+ */
 double value(const Stack *stack, size_t index);
-double value(const Stack *stack, int x, int y, int z, int c);
+
+/*!
+ * \brief Voxel value at a certain position
+ *
+ * \param stack Source stack
+ * \param x X coordinate
+ * \param y Y coordinate
+ * \param z Z coordinate
+ * \param c Color channel
+ */
+double value(const Stack *stack, int x, int y, int z, int c = 0);
+
 void setPixel(Stack *stack, int x, int y, int z, int c, double v);
 void setZero(Stack *stack);
+
+/*!
+ * \brief View a single slice
+ */
 Stack sliceView(const Stack *stack, int slice);
+
+/*!
+ * \brief View one or more slices
+ *
+ * The start plane is set to 0 if \a startPlane is negative and the end plane
+ * is set to the last plane of \a stack if it is out of range.
+ *
+ * \param stack Source stack.
+ * \param startPlane Start plane.
+ * \param endPlane End plane.
+ */
+Stack sliceView(const Stack *stack, int startPlane, int endPlane);
+
 Stack* channelExtraction(const Stack *stack, int channel);
+
+/*!
+ * \brief Set values of a stack by memory copying
+ *
+ * \param stack Target stack.
+ * \param offset Start of the stack buffer for assignment
+ * \param buffer Source buffer
+ * \param length Size of the source buffer
+ *
+ * \return true if the values are set successfully
+ */
+bool setValue(Stack *stack, size_t offset, const void *buffer, size_t length);
 
 //Stack manipulation
 //Crop a stack
@@ -114,11 +194,24 @@ Stack* crop(const Stack *stack, const Cuboid_I &box, Stack *desstack);
 //Crop a stack using its bound box
 Stack* boundCrop(const Stack *stack, int margin = 0);
 
+/*!
+ * \brief Crop a stack using its bound box
+ *
+ * It stores the offset to the original stack in \a offset if \a offset is not
+ * NULL.
+ */
+Stack* boundCrop(const Stack *stack, int margin, int *offset);
+
 Stack* resize(const Stack* stack,int width,int height,int depth);
 Stack* translate(Stack *stack, int kind, int in_place);
 
 
 void print(const Stack *stack);
+
+/*!
+ * \brief Print the voxel values of a stack
+ */
+void printValue(const Stack *stack);
 
 //Stack statistics
 double min(const Stack *stack);
@@ -161,6 +254,10 @@ inline size_t elementNumber(const Mc_Stack *stack) {
       channelNumber(stack);
 }
 
+inline size_t allByteNumber(const Mc_Stack *stack) {
+  return volumeByteNumber(stack);
+}
+
 void setAttribute(Mc_Stack *stack, int kind, int width, int height, int depth,
                   int channel);
 
@@ -170,7 +267,7 @@ void systemKill(Mc_Stack *stack);
 
 void kill(Mc_Stack *stack);
 
-void copyPlaneValue(Mc_Stack *stack, void *array, int channel, int slice);
+void copyPlaneValue(Mc_Stack *stack, const void *array, int channel, int slice);
 void copyChannelValue(Mc_Stack *mc_stack, int chan, const Stack *stack);
 
 bool hasSameValue(Mc_Stack *stack, size_t index1, size_t index2);
@@ -195,6 +292,10 @@ Stack* extractChannel(const Stack *stack, int c);
 
 void setStackValue(Stack *stack, const std::vector<size_t> &indexArray,
                    double value);
+/*!
+ * \brief Set all voxel values of a stack to zero
+ */
+void setZero(Mc_Stack *stack);
 
 std::vector<size_t> getNeighborIndices(
     const Stack *stack, const std::vector<size_t> &indexArray,

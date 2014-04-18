@@ -21,6 +21,7 @@ include(extlib.pri)
 #neurolabi
 CONFIG(debug, debug|release) {
     TARGET = neuTube_d
+    DEFINES += _DEBUG_ _ADVANCED_ PROJECT_PATH=\"\\\"$$PWD\\\"\"
 } else {
     TARGET = neuTube
 }
@@ -47,7 +48,8 @@ include(add_itk.pri)
 QT += opengl xml network
 isEqual(QT_MAJOR_VERSION,5) | greaterThan(QT_MAJOR_VERSION,5) {
 message("Qt 5")
-    QT += concurrent
+    QT += concurrent gui
+    DEFINES += _QT5_
 }
 
 #QT += webkit
@@ -83,8 +85,9 @@ CONFIG(debug, debug|release) {
 
 } # static gtest
 
+LIBS += -lstdc++
 unix:!macx {
-    QMAKE_CXXFLAGS += -D_LINUX_
+    DEFINES += _LINUX_
     LIBS += -lQtGui -lQtCore \
       -lQtOpenGL -lQtNetwork \
       -lQtGui \
@@ -122,16 +125,7 @@ macx {
 }
 
 win32 {
-    INCLUDEPATH += C:/Mingw/include \
-        C:/Mingw/include/libxml2 \
-        C:/Qt/2010.05/mingw/include/libxml2
-
-    LIBS += -LC:/Mingw/lib \
-        -lfftw3 \
-        -lfftw3f \
-        -lxml2 \
-        -lpng \
-        -mwin32 -mthreads -lpcreposix -lpcre -ljansson -lpthread
+    DEFINES += _NEUTUBE_WINDOWS_
 
     RC_FILE = images/app.rc
 }
@@ -143,6 +137,15 @@ include(ext/libqxt.pri)
 include (gui_free.pri)
 include(test/test.pri)
 
+
+CONFIG(debug, debug|release) {
+    exists(../lib/opencv) {
+        system(echo 'opencv found')
+        DEFINES += _USE_OPENCV_
+        INCLUDEPATH += ../lib/opencv/include ../lib/opencv/include/opencv
+        LIBS += -L../lib/opencv/lib -lopencv_core -lopencv_ml
+    }
+}
 
 # Input
 RESOURCES = gui.qrc
@@ -346,8 +349,6 @@ HEADERS += mainwindow.h \
     zflyemqueryview.h \
     flyemgeosearchdialog.h \
     zqslogmessagereporter.h \
-    flyem/zflyemneuronfilter.h \
-    flyem/zflyemneuronfilterfactory.h \
     flyemgeofilterdialog.h \
     zactionactivator.h \
     zswccurvaturefeatureanalyzer.h \
@@ -357,7 +358,33 @@ HEADERS += mainwindow.h \
     zglew.h \
     penwidthdialog.h \
     dvid/zdvidclient.h \
-    dvidobjectdialog.h
+    dvidobjectdialog.h \
+    zpainter.h \
+    resolutiondialog.h \
+    dvid/zdvidbuffer.h \
+    dvid/zdvidrequest.h \
+    zmatlabprocess.h \
+    zneuronseed.h \
+    dvidimagedialog.h \
+    ztiledstackframe.h \
+    ztilemanager.h \
+    ztilemanagerview.h \
+    ztilegraphicsitem.h \
+    ztileinfo.h \
+    tilemanagerdialog.h \
+    flyem/zflyemneuronimagefactory.h \
+    flyem/zflyemneuronfeatureanalyzer.h \
+    flyemneuronthumbnaildialog.h \
+    flyem/zflyemneuronexporter.h \
+    flyem/zswctreebatchmatcher.h \
+    zmultitaskmanager.h \
+    flyem/zflyemneuronmatchtaskmanager.h \
+    flyem/zflyemneuronfiltertaskmanager.h \
+    zinteractionevent.h \
+    flyemhotspotdialog.h \
+    flyem/zflyemqualityanalyzertaskmanager.h \
+    zworkspacefactory.h \
+    dvid/zdvidreader.h
 
 FORMS += settingdialog.ui \
     frameinfodialog.ui \
@@ -397,7 +424,12 @@ FORMS += settingdialog.ui \
     flyemgeosearchdialog.ui \
     flyemgeofilterdialog.ui \
     penwidthdialog.ui \
-    dvidobjectdialog.ui
+    dvidobjectdialog.ui \
+    resolutiondialog.ui \
+    dvidimagedialog.ui \
+    tilemanagerdialog.ui \
+    flyemneuronthumbnaildialog.ui \
+    flyemhotspotdialog.ui
 SOURCES += main.cpp \
     mainwindow.cpp \
     zstackview.cpp \
@@ -571,7 +603,33 @@ SOURCES += main.cpp \
     zstackdocmenufactory.cpp \
     penwidthdialog.cpp \
     dvid/zdvidclient.cpp \
-    dvidobjectdialog.cpp
+    dvidobjectdialog.cpp \
+    zpainter.cpp \
+    resolutiondialog.cpp \
+    dvid/zdvidbuffer.cpp \
+    dvid/zdvidrequest.cpp \
+    zmatlabprocess.cpp \
+    zneuronseed.cpp \
+    dvidimagedialog.cpp \
+    ztiledstackframe.cpp \
+    ztilemanager.cpp \
+    ztilemanagerview.cpp \
+    ztilegraphicsitem.cpp \
+    ztileinfo.cpp \
+    tilemanagerdialog.cpp \
+    flyem/zflyemneuronimagefactory.cpp \
+    flyem/zflyemneuronfeatureanalyzer.cpp \
+    flyemneuronthumbnaildialog.cpp \
+    flyem/zflyemneuronexporter.cpp \
+    flyem/zswctreebatchmatcher.cpp \
+    zmultitaskmanager.cpp \
+    flyem/zflyemneuronmatchtaskmanager.cpp \
+    flyem/zflyemneuronfiltertaskmanager.cpp \
+    zinteractionevent.cpp \
+    flyemhotspotdialog.cpp \
+    flyem/zflyemqualityanalyzertaskmanager.cpp \
+    zworkspacefactory.cpp \
+    dvid/zdvidreader.cpp
 
 OTHER_FILES += \
     extlib.pri

@@ -1,6 +1,7 @@
 #include "zvoxel.h"
 #include <assert.h>
 #include <math.h>
+#include <iostream>
 #include "tz_stack_utils.h"
 #include "tz_stack_lib.h"
 #include "tz_utilities.h"
@@ -111,4 +112,10 @@ void ZVoxel::translate(int dx, int dy, int dz)
   m_x += dx;
   m_y += dy;
   m_z += dz;
+}
+
+void ZVoxel::print() const
+{
+  std::cout << "(" << m_x << ", " << m_y << ", " << m_z << "): " << m_value
+            << std::endl;
 }

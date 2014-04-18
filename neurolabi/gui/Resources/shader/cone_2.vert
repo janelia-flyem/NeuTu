@@ -1,10 +1,18 @@
 // note: this shader requires that base radius is smaller than top radius
 
+#if GLSL_VERSION >= 130
+in vec4 attr_origin;    // base location + base radius
+in vec4 attr_axis;      // axis (= top - base) + top radius
+in float attr_flags;
+in vec4 attr_colors;
+in vec4 attr_colors2;
+#else
 attribute vec4 attr_origin;    // base location + base radius
 attribute vec4 attr_axis;      // axis (= top - base) + top radius
 attribute float attr_flags;
 attribute vec4 attr_colors;
 attribute vec4 attr_colors2;
+#endif
 
 uniform float size_scale = 1.0;
 uniform vec3 pos_scale = vec3(1.0, 1.0, 1.0);
@@ -17,6 +25,21 @@ uniform mat3 normal_matrix;
 uniform vec4 clip_planes[CLIP_PLANE_COUNT];
 #endif
 
+#if GLSL_VERSION >= 130
+out vec3 point;
+out vec3 axis;
+out vec3 base;
+out vec3 top;
+out vec3 U;
+out vec3 V;
+out vec4 combo1;
+#define bradius combo1.x
+#define tradius combo1.y
+#define height combo1.z
+#define inv_sqr_height combo1.w
+out vec4 color1;
+out vec4 color2;
+#else
 varying vec3 point;
 varying vec3 axis;
 varying vec3 base;
@@ -30,6 +53,7 @@ varying vec4 combo1;
 #define inv_sqr_height combo1.w
 varying vec4 color1;
 varying vec4 color2;
+#endif
 
 void main(void)
 {

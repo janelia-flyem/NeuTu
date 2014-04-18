@@ -146,14 +146,36 @@ HEADERS +=$${PWD}/zstackprocessor.h \
    $${PWD}/swc/zswcterminalsurfacemetric.h \
    $${PWD}/zapclustering.h \
    $${PWD}/swc/zswcterminalanglemetric.h \
-   $${PWD}/flyem/zflyemneuronfilter.h \
-   $${PWD}/flyem/zflyemneuronfilterfactory.h \
    $${PWD}/swc/zswcdeepanglemetric.h \
    $${PWD}/zswcsubtreefeatureanalyzer.h \
    $${PWD}/swc/zswcsubtreeanalyzer.h \
    $${PWD}/zswctreenodearray.h \
    $${PWD}/flyem/zflyembodyanalyzer.h \
-   $${PWD}/swc/zswcnodedistselector.h
+   $${PWD}/swc/zswcnodedistselector.h \
+   $${PWD}/zstackbinarizer.h \
+   $${PWD}/zvectorgenerator.h \
+   $${PWD}/zstackfactory.h \
+   $${PWD}/zeigensolver.h \
+   $${PWD}/zmapgenerator.h \
+   $${PWD}/flyem/zflyemneuronfeatureset.h \
+   $${PWD}/flyem/zflyemneuronfilter.h \
+   $${PWD}/flyem/zflyemneuronfilterfactory.h \
+   $${PWD}/flyem/zflyemneuronfeature.h \
+   $${PWD}/flyem/zflyemneuronfeaturefactory.h \
+   $${PWD}/flyem/zflyemneuronarray.h \
+   $${PWD}/swc/zswcpruner.h \
+   $${PWD}/flyem/zflyemneuronlayermatcher.h \
+   $${PWD}/zdynamicprogrammer.h \
+   $${PWD}/flyem/zhotspot.h \
+   $${PWD}/ztextlinearray.h \
+   $${PWD}/flyem/zhotspotarray.h \
+   $${PWD}/flyem/zhotspotfactory.h \
+   $${PWD}/ztextlinecompositer.h \
+   $${PWD}/zobject3dscanarray.h \
+   $${PWD}/zstringarray.h \
+   $${PWD}/flyem/zflyemcoordinateconverter.h \
+   $${PWD}/flyem/zflyem.h \
+   $${PWD}/flyem/zflyemdatainfo.h
 
 SOURCES +=$${PWD}/zstackprocessor.cpp \
    $${PWD}/zstack.cxx \
@@ -286,11 +308,32 @@ SOURCES +=$${PWD}/zstackprocessor.cpp \
    $${PWD}/swc/zswcterminalsurfacemetric.cpp \
    $${PWD}/zapclustering.cpp \
    $${PWD}/swc/zswcterminalanglemetric.cpp \
-   $${PWD}/flyem/zflyemneuronfilter.cpp \
-   $${PWD}/flyem/zflyemneuronfilterfactory.cpp \
    $${PWD}/swc/zswcdeepanglemetric.cpp \
    $${PWD}/zswcsubtreefeatureanalyzer.cpp \
    $${PWD}/swc/zswcsubtreeanalyzer.cpp \
    $${PWD}/zswctreenodearray.cpp \
    $${PWD}/flyem/zflyembodyanalyzer.cpp \
-   $${PWD}/swc/zswcnodedistselector.cpp
+   $${PWD}/swc/zswcnodedistselector.cpp \
+   $${PWD}/zstackbinarizer.cpp \
+   $${PWD}/zvectorgenerator.cpp \
+   $${PWD}/zstackfactory.cpp \
+   $${PWD}/zeigensolver.cpp \
+   $${PWD}/zmapgenerator.cpp \
+   $${PWD}/flyem/zflyemneuronfeatureset.cpp \
+   $${PWD}/flyem/zflyemneuronfilter.cpp \
+   $${PWD}/flyem/zflyemneuronfilterfactory.cpp \
+   $${PWD}/flyem/zflyemneuronfeature.cpp \
+   $${PWD}/flyem/zflyemneuronfeaturefactory.cpp \
+   $${PWD}/flyem/zflyemneuronarray.cpp \
+   $${PWD}/swc/zswcpruner.cpp \
+   $${PWD}/flyem/zflyemneuronlayermatcher.cpp \
+   $${PWD}/zdynamicprogrammer.cpp \
+   $${PWD}/flyem/zhotspot.cpp \
+   $${PWD}/ztextlinearray.cpp \
+   $${PWD}/flyem/zhotspotarray.cpp \
+   $${PWD}/flyem/zhotspotfactory.cpp \
+   $${PWD}/ztextlinecompositer.cpp \
+   $${PWD}/zobject3dscanarray.cpp \
+   $${PWD}/zstringarray.cpp \
+   $${PWD}/flyem/zflyemcoordinateconverter.cpp \
+   $${PWD}/flyem/zflyemdatainfo.cpp

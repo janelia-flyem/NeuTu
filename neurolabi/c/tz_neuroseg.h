@@ -465,6 +465,11 @@ void Neuroseg_Slice_Field_P(coordinate_3d_t *pcoord, double *value,
 Geo3d_Scalar_Field* Neuroseg_Field_S(const Neuroseg *seg,
 				     Neuroseg_Field_f field_func,
 				     Geo3d_Scalar_Field *field);
+/**@brief A faster version of Neuroseg_Field_S
+ */
+Geo3d_Scalar_Field* Neuroseg_Field_S_Fast(const Neuroseg *seg,
+    Neuroseg_Field_f field_func,
+    Geo3d_Scalar_Field *field);
 
 /**@brief Positive intensity field of a neuroseg
  *

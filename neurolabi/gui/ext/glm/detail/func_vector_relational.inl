@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////////
 /// OpenGL Mathematics (glm.g-truc.net)
 ///
-/// Copyright (c) 2005 - 2013 G-Truc Creation (www.g-truc.net)
+/// Copyright (c) 2005 - 2014 G-Truc Creation (www.g-truc.net)
 /// Permission is hereby granted, free of charge, to any person obtaining a copy
 /// of this software and associated documentation files (the "Software"), to deal
 /// in the Software without restriction, including without limitation the rights
@@ -106,8 +106,6 @@ namespace glm
 		vecType<T, P> const & y
 	)
 	{
-		//GLM_STATIC_ASSERT(detail::is_vector<vecType<T, P> >::_YES,
-		//	"Invalid template instantiation of 'equal', GLM vector types required");
 		assert(x.length() == y.length());
 
 		typename vecType<bool, P>::bool_type Result(vecType<bool, P>::_null);
@@ -123,8 +121,6 @@ namespace glm
 		vecType<T, P> const & y
 	)
 	{
-		//GLM_STATIC_ASSERT(detail::is_vector<vecType<T, P> >::_YES,
-		//	"Invalid template instantiation of 'notEqual', GLM vector types required");
 		assert(x.length() == y.length());
 
 		typename vecType<bool, P>::bool_type Result(vecType<bool, P>::_null);
@@ -136,9 +132,6 @@ namespace glm
 	template <precision P, template <typename, precision> class vecType>
 	GLM_FUNC_QUALIFIER bool any(vecType<bool, P> const & v)
 	{
-		//GLM_STATIC_ASSERT(detail::is_vector<vecType<bool, P> >::_YES,
-		//	"Invalid template instantiation of 'any', GLM boolean vector types required");
-
 		bool Result = false;
 		for(int i = 0; i < v.length(); ++i)
 			Result = Result || v[i];
@@ -148,9 +141,6 @@ namespace glm
 	template <precision P, template <typename, precision> class vecType>
 	GLM_FUNC_QUALIFIER bool all(vecType<bool, P> const & v)
 	{
-		//GLM_STATIC_ASSERT(detail::is_vector<vecType<bool, P> >::_YES,
-		//	"Invalid template instantiation of 'all', GLM boolean vector types required");
-
 		bool Result = true;
 		for(int i = 0; i < v.length(); ++i)
 			Result = Result && v[i];
@@ -160,9 +150,6 @@ namespace glm
 	template <precision P, template <typename, precision> class vecType>
 	GLM_FUNC_QUALIFIER vecType<bool, P> not_(vecType<bool, P> const & v)
 	{
-		//GLM_STATIC_ASSERT(detail::is_vector<vecType<bool, P> >::_YES,
-		//	"Invalid template instantiation of 'not_', GLM vector types required");
-
 		typename vecType<bool, P>::bool_type Result(vecType<bool, P>::_null);
 		for(int i = 0; i < v.length(); ++i)
 			Result[i] = !v[i];

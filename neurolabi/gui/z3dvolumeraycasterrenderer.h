@@ -88,6 +88,7 @@ public:
   }
 
   void setCompositeMode(const QString &option);
+  QString getCompositeMode() const;
   void setTextureFilterMode(const QString &option);
 
 signals:
@@ -103,11 +104,8 @@ protected:
   virtual void deinitialize();
   virtual QString generateHeader();
 
-  virtual void renderUsingOpengl();
-  virtual void renderPickingUsingOpengl();
-
-  virtual void renderUsingGLSL(Z3DEye eye);
-  virtual void renderPickingUsingGLSL(Z3DEye);
+  virtual void render(Z3DEye eye);
+  virtual void renderPicking(Z3DEye);
 
   Z3DShaderProgram m_raycasterShader;
   Z3DShaderProgram m_2dImageShader;
@@ -117,8 +115,7 @@ protected:
   ZFloatParameter m_isoValue;  // The used isovalue, when isosurface raycasting is enabled
   ZFloatParameter m_localMIPThreshold;
 
-  ZOptionParameter<QString> m_gradientMode;   // What type of calculation should be used for on-the-fly gradients
-  ZOptionParameter<QString> m_compositingMode;  // What compositing mode should be applied
+  ZOptionParameter<QString> m_compositingMode;
 
   ZBoolParameter m_channel1Visible;
   ZBoolParameter m_channel2Visible;

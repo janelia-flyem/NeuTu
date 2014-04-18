@@ -3,6 +3,7 @@
 
 #include <QTableView>
 
+class ZFlyEmNeuronListModel;
 class QMenu;
 
 class ZFlyEmQueryView : public QTableView
@@ -12,6 +13,8 @@ public:
   explicit ZFlyEmQueryView(QWidget *parent = 0);
 
   inline void setContextMenu(QMenu *menu) { m_contextMenu = menu; }
+
+  ZFlyEmNeuronListModel* getModel() const;
 
 signals:
 

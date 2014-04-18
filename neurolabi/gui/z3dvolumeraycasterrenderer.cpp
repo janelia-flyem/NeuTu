@@ -8,7 +8,6 @@ Z3DVolumeRaycasterRenderer::Z3DVolumeRaycasterRenderer(QObject *parent)
   , m_samplingRate("Sampling Rate", 2.f, 0.01f, 20.f)
   , m_isoValue("ISO Value", 0.5f, 0.0f, 1.0f)
   , m_localMIPThreshold("Local MIP Threshold", 0.8f, 0.01f, 1.f)
-  , m_gradientMode("Gradient Calculation")
   , m_compositingMode("Compositing")
   , m_channel1Visible("Show Channel 1", true)
   , m_channel2Visible("Show Channel 2", true)
@@ -118,6 +117,11 @@ Z3DVolumeRaycasterRenderer::~Z3DVolumeRaycasterRenderer()
 void Z3DVolumeRaycasterRenderer::setCompositeMode(const QString &option)
 {
   m_compositingMode.select(option);
+}
+
+QString Z3DVolumeRaycasterRenderer::getCompositeMode() const
+{
+  return m_compositingMode.get();
 }
 
 void Z3DVolumeRaycasterRenderer::setTextureFilterMode(const QString &option)
@@ -325,16 +329,7 @@ QString Z3DVolumeRaycasterRenderer::generateHeader()
   return headerSource;
 }
 
-void Z3DVolumeRaycasterRenderer::renderUsingOpengl()
-{
-  //renderUsingGLSL();
-}
-
-void Z3DVolumeRaycasterRenderer::renderPickingUsingOpengl()
-{
-}
-
-void Z3DVolumeRaycasterRenderer::renderUsingGLSL(Z3DEye eye)
+void Z3DVolumeRaycasterRenderer::render(Z3DEye eye)
 {
   if (!m_initialized)
     return;
@@ -413,7 +408,7 @@ void Z3DVolumeRaycasterRenderer::renderUsingGLSL(Z3DEye eye)
   CHECK_GL_ERROR;
 }
 
-void Z3DVolumeRaycasterRenderer::renderPickingUsingGLSL(Z3DEye)
+void Z3DVolumeRaycasterRenderer::renderPicking(Z3DEye)
 {
 }
 

@@ -77,5 +77,6 @@
         <file>Resources/config/angle_filter.json</file>
         <file>Resources/config/composite_filter.json</file>
         <file>Resources/config/distance_filter.json</file>
+        <file>images/open_dvid.png</file>
     </qresource>
 </RCC>

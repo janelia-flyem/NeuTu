@@ -12,6 +12,7 @@
 #include "tz_math.h"
 #include "tz_int_histogram.h"
 #include "tz_stack_threshold.h"
+#include "tz_stack_bwmorph.h"
 
 ZStackGraph::ZStackGraph()
 {
@@ -104,18 +105,42 @@ ZGraph* ZStackGraph::buildForegroundGraph(const Stack *stack)
   return graph;
 }
 
+ZGraph* ZStackGraph::buildSurfaceGraph(const Stack *stack)
+{
+  if (stack == NULL) {
+    return NULL;
+  }
+
+  Stack *oldMask = m_workspace.signal_mask;
+
+  m_workspace.signal_mask = Stack_Perimeter(stack, NULL, 26);
+  ZGraph *graph = new ZGraph(Stack_Graph_W(stack, &m_workspace));
+
+  C_Stack::kill(m_workspace.signal_mask);
+  m_workspace.signal_mask = oldMask;
+
+  return graph;
+}
+
+
 std::vector<int> ZStackGraph::computeShortestPath(
-    const Stack *stack, int startIndex, int endIndex, bool fgOnly)
+    const Stack *stack, int startIndex, int endIndex, EVertexOption option)
 {
   updateRange(startIndex, endIndex, C_Stack::width(stack),
               C_Stack::height(stack), C_Stack::depth(stack));
 
   ZGraph *graph = NULL;
 
-  if (fgOnly) {
+  switch (option) {
+  case VO_FOREGROUND:
     graph = buildForegroundGraph(stack);
-  } else {
+    break;
+  case VO_SURFACE:
+    graph = buildSurfaceGraph(stack);
+    break;
+  default:
     graph = buildGraph(stack);
+    break;
   }
 
   int swidth = m_workspace.range[1] - m_workspace.range[0] + 1;
@@ -142,9 +167,11 @@ std::vector<int> ZStackGraph::computeShortestPath(
     }
   }
 
+  /*
   if (m_workspace.signal_mask == NULL) {
     return indexPath;
   }
+  */
 
   std::vector<int> cleanedPath;
   for (size_t i = 0; i < path.size(); ++i) {
@@ -205,9 +232,9 @@ void ZStackGraph::updateRange(int x1, int y1, int z1, int x2, int y2, int z2,
   if (m_workspace.range == NULL) {
     double dist = Geo3d_Dist(x1, y1, z1, x2, y2, z2);
     int margin[3];
-    margin[0] = iround(dist - abs(x2 - x1 + 1));
-    margin[1] = iround(dist - abs(y2 - y1 + 1));
-    margin[2] = iround(dist - abs(z2 - z1 + 1));
+    margin[0] = iround(dist / 2.0 - abs(x2 - x1 + 1));
+    margin[1] = iround(dist / 2.0 - abs(y2 - y1 + 1));
+    margin[2] = iround(dist / 4.0 - abs(z2 - z1 + 1));
     for (int i = 0; i < 3; ++i) {
       if (margin[i] < 0) {
         margin[i] = 0;

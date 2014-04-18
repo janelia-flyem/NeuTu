@@ -4,15 +4,11 @@ import numpy as np;
 
 def CreateDataBundle(config):
 #     dataPath = config["dataPath"]; #'/Users/zhaot/Work/neutube/neurolabi/data';
-    sessionPath = config["sessionPath"]; #dataPath + '/flyem/FIB/skeletonization/session11';
-    if config.has_key("swcDir"):
-        swcPath = config['swcDir']; #sessionPath + '/' + config['swcDir'];
-    else:
-        swcPath = sessionPath + '/swc/adjusted';
+    swcPath = config['swcDir']; #sessionPath + '/' + config['swcDir'];
     
     swcFileList = list();
     if config.has_key("minBodySize") | config.has_key("maxBodySize"):
-        data = np.loadtxt(sessionPath + '/bodies/bodysize.txt', delimiter=',');
+        data = np.loadtxt(config['bundlePath'] + '/bodysize.txt', delimiter=',');
         bodyList = data[:, 0];
         bodySize = data[:, 1];
         lowerThreshold = -1;
@@ -70,19 +66,38 @@ def CreateDataBundle(config):
                     if tokens[3] == "unknown":
                         neuronClass[int(tokens[1])] = tokens[3] + " " + tokens[4];
 
+    neuronName = {};
+    if "bodyAnnotation" in config:
+        bodyAnnotationPath = config["bodyAnnotation"];
+        f = open(bodyAnnotationPath);
+        bodyAnnotation = json.load(f);
+        f.close();
+
+        for body in bodyAnnotation["data"]:
+            if "name" in body:
+                bodyId = body["body ID"];
+                neuronName[bodyId] = body["name"];
+        
     for f in swcFileList:
         if f.endswith('.swc'):
 #             print f;
             bodyId = f.split('.')[0];
             neuron = {"id": int(bodyId), "name": "FIB_" + bodyId, 
                       "model": swcPath + "/" + f};
+                      
             if (config["addingClass"]):
                 neuron["class"] = neuronClass[int(bodyId)];
+                
+            if (config["addingName"]):
+                if int(bodyId) in neuronName:
+                    neuron["name"] = neuronName[int(bodyId)];
+                
             if config.has_key("objDir"):
-                neuron["volume"] = (config["objDir"] + "/" + os.path.basename(f)).replace('.swc', '.obj');
+                neuron["volume"] = (config["objDir"] + "/" + os.path.basename(f)).replace('.swc', '.sobj');
             dataBundle["neuron"].append(neuron);
             
-    otherFields = ["image_resolution", "synapse_scale", "synapse", "source_offset", "source_dimension"];
+    otherFields = ["image_resolution", "synapse_scale", "synapse", "source_offset", 
+                   "source_dimension", "swc_resolution", "image_resolution"];
     for field in otherFields:
         if config.has_key(field):
             dataBundle[field] = config[field];

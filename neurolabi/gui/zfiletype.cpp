@@ -68,7 +68,10 @@ ZFileType::EFileType ZFileType::fileType(const std::string &filePath)
     return JPG_FILE;
   } else if (str.endsWith(".dvid", ZString::CASE_INSENSITIVE)) {
     return DVID_OBJECT_FILE;
+  } else if (str.endsWith(".hf5", ZString::CASE_INSENSITIVE)) {
+    return HDF5_FILE;
   }
+
 
   return UNIDENTIFIED_FILE;
 }
@@ -108,6 +111,8 @@ std::string ZFileType::typeName(EFileType type)
     return "Reveler bookmark";
   case MYERS_NSP_FILE:
     return "Neuron segmentation";
+  case HDF5_FILE:
+    return "HDF5";
   default:
     return "Unknown";
   }

@@ -5,11 +5,16 @@
 #include "zprogressable.h"
 
 class ZSwcTree;
+class ZStack;
+class ZObject3dScan;
+class ZJsonObject;
 
 class ZStackSkeletonizer : public ZProgressable
 {
 public:
   ZStackSkeletonizer();
+
+  void configure(const ZJsonObject &config);
 
   inline void setLengthThreshold(double threshold) {
     m_lengthThreshold = threshold;
@@ -49,12 +54,28 @@ public:
     m_resolution[2] = zRes;
   }
 
+  inline void setDownsampleInterval(int xintv, int yintv, int zintv) {
+    m_downsampleInterval[0] = xintv;
+    m_downsampleInterval[1] = yintv;
+    m_downsampleInterval[2] = zintv;
+  }
+
   ZSwcTree* makeSkeleton(const Stack *stack);
+  ZSwcTree* makeSkeleton(const ZStack &stack);
+  ZSwcTree* makeSkeleton(const ZObject3dScan &obj);
 
   void reconnect(ZSwcTree *tree);
   inline void setConnectingBranch(bool conn) {
     m_connectingBranch = conn;
   }
+
+  void print() const;
+
+private:
+  /*!
+   * \a stack will be destroyed after the function call.
+   */
+  ZSwcTree *makeSkeletonWithoutDs(Stack *stack);
 
 private:
   double m_lengthThreshold;
@@ -67,6 +88,7 @@ private:
   int m_level;
   bool m_connectingBranch;
   double m_resolution[3];
+  int m_downsampleInterval[3];
 };
 
 #endif // ZSTACKSKELETONIZER_H

@@ -1,6 +1,6 @@
+#include "zglew.h"
 #include "z3dgpuinfo.h"
 
-#include "zglew.h"
 #include <QStringList>
 #include <QProcess>
 #include "QsLog.h"

@@ -16,7 +16,7 @@
    </font>
   </property>
   <property name="windowTitle">
-   <string>neuTube 0.84</string>
+   <string>neuTube 0.91</string>
   </property>
   <widget class="QWidget" name="centralwidget"/>
   <widget class="QMenuBar" name="menubar">
@@ -51,7 +51,7 @@
      <addaction name="actionAddNeuron_Network"/>
      <addaction name="actionTracing_result"/>
      <addaction name="actionV3D_Apo"/>
-     <addaction name="actionV3D_Marker"/>
+     <addaction name="actionJSON_Point_List"/>
     </widget>
     <widget class="QMenu" name="menuImport">
      <property name="title">
@@ -59,20 +59,31 @@
      </property>
      <addaction name="actionImage_Sequence"/>
      <addaction name="actionSparse_objects"/>
-     <addaction name="actionDVID_Object"/>
+     <addaction name="actionTiles"/>
     </widget>
     <widget class="QMenu" name="menuExport">
      <property name="title">
       <string>Export</string>
      </property>
      <addaction name="actionMask"/>
+     <addaction name="actionSWC_Rescaling"/>
+    </widget>
+    <widget class="QMenu" name="menuOpen_Recent">
+     <property name="statusTip">
+      <string>Open a recently visited file</string>
+     </property>
+     <property name="title">
+      <string>Open Recent</string>
+     </property>
     </widget>
     <addaction name="actionOpen"/>
+    <addaction name="menuOpen_Recent"/>
     <addaction name="menuLoad_into"/>
     <addaction name="menuTrace_Project"/>
+    <addaction name="menuImport"/>
+    <addaction name="separator"/>
     <addaction name="actionSave_Stack"/>
     <addaction name="actionSave_SWC"/>
-    <addaction name="menuImport"/>
     <addaction name="menuExport"/>
    </widget>
    <widget class="QMenu" name="menuEdit">
@@ -132,6 +143,7 @@
       <addaction name="actionErode"/>
       <addaction name="actionSolidify"/>
       <addaction name="actionDistance_Map"/>
+      <addaction name="actionSurface_detection"/>
       <addaction name="actionShortest_Path_Flow"/>
       <addaction name="actionExpand_Region"/>
       <addaction name="actionMorphological_Thinning"/>
@@ -205,6 +217,8 @@
     <addaction name="menuPuncta"/>
     <addaction name="menuSwc"/>
     <addaction name="menuQuery"/>
+    <addaction name="separator"/>
+    <addaction name="actionTile_Manager_2"/>
    </widget>
    <widget class="QMenu" name="menuOptions">
     <property name="title">
@@ -239,6 +253,9 @@
       <addaction name="actionImportSegmentation"/>
       <addaction name="actionAxon_Export"/>
       <addaction name="actionImportFlyEmDatabase"/>
+      <addaction name="actionDvid_Object"/>
+      <addaction name="actionVolume_field"/>
+      <addaction name="actionThumbnails_2"/>
      </widget>
      <widget class="QMenu" name="menuQuality_Control">
       <property name="title">
@@ -261,6 +278,7 @@
       <addaction name="actionClear_Decoration"/>
       <addaction name="actionExtract_body"/>
       <addaction name="actionLoop_Analysis"/>
+      <addaction name="actionIdentify_Hot_Spot"/>
      </widget>
      <widget class="QMenu" name="menuTEM_Paper">
       <property name="title">
@@ -277,14 +295,33 @@
       <addaction name="actionSynapse"/>
       <addaction name="actionSimilarity_Matrix"/>
       <addaction name="actionDendrogram"/>
+      <addaction name="actionAssign_Clustering"/>
+      <addaction name="actionMorphological_Features"/>
+      <addaction name="actionFeature_Selection"/>
+     </widget>
+     <widget class="QMenu" name="menuDVID">
+      <property name="title">
+       <string>DVID</string>
+      </property>
+      <addaction name="actionGet_Grayscale"/>
+      <addaction name="actionHot_Spot_Demo"/>
+     </widget>
+     <widget class="QMenu" name="menuExport_2">
+      <property name="title">
+       <string>Export</string>
+      </property>
+      <addaction name="actionBundle"/>
+      <addaction name="actionThumbnails"/>
      </widget>
      <addaction name="actionExtract_Neuron"/>
      <addaction name="actionSkeletonization"/>
      <addaction name="menuFlyEmOpen"/>
+     <addaction name="menuExport_2"/>
      <addaction name="menuQuality_Control"/>
      <addaction name="actionFlyEmClone"/>
      <addaction name="menuTEM_Paper"/>
      <addaction name="menuStatistics"/>
+     <addaction name="menuDVID"/>
     </widget>
     <addaction name="menuFLy_EM"/>
    </widget>
@@ -322,8 +359,11 @@
    <property name="text">
     <string>Open</string>
    </property>
+   <property name="toolTip">
+    <string>Open a file</string>
+   </property>
    <property name="statusTip">
-    <string>Open a stack (.tif or .lsm)</string>
+    <string>Open a file (.tif, .lsm or .swc)</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+O</string>
@@ -410,10 +450,10 @@
      <normaloff>:/images/tracetube.png</normaloff>:/images/tracetube.png</iconset>
    </property>
    <property name="text">
-    <string>Trace Tube</string>
+    <string>Trace A Branch</string>
    </property>
    <property name="statusTip">
-    <string>Trace a tube</string>
+    <string>Activiate the function of tracing a branch with mouse click</string>
    </property>
   </action>
   <action name="actionUpdate">
@@ -808,7 +848,7 @@
   </action>
   <action name="actionAxon_Export">
    <property name="text">
-    <string>Axon Export</string>
+    <string>Axon</string>
    </property>
   </action>
   <action name="actionExtract_body">
@@ -999,8 +1039,107 @@
    </property>
   </action>
   <action name="actionDVID_Object">
+   <property name="icon">
+    <iconset resource="gui.qrc">
+     <normaloff>:/images/open_dvid.png</normaloff>:/images/open_dvid.png</iconset>
+   </property>
    <property name="text">
     <string>DVID Object</string>
+   </property>
+  </action>
+  <action name="actionDvid_Object">
+   <property name="icon">
+    <iconset resource="gui.qrc">
+     <normaloff>:/images/open_dvid.png</normaloff>:/images/open_dvid.png</iconset>
+   </property>
+   <property name="text">
+    <string>DVID Object</string>
+   </property>
+  </action>
+  <action name="actionAssign_Clustering">
+   <property name="text">
+    <string>Assign Clustering</string>
+   </property>
+  </action>
+  <action name="actionSWC_Rescaling">
+   <property name="text">
+    <string>Rescaled SWC</string>
+   </property>
+  </action>
+  <action name="actionSurface_detection">
+   <property name="text">
+    <string>Surface Detection</string>
+   </property>
+  </action>
+  <action name="actionMorphological_Features">
+   <property name="text">
+    <string>Morphological Features</string>
+   </property>
+  </action>
+  <action name="actionFeature_Selection">
+   <property name="text">
+    <string>Feature Selection</string>
+   </property>
+   <property name="toolTip">
+    <string>Select morphological features</string>
+   </property>
+   <property name="statusTip">
+    <string>Select a morphological features for disinguishing neuron classes. The features are sorted by discriminant power.</string>
+   </property>
+  </action>
+  <action name="actionGet_Grayscale">
+   <property name="text">
+    <string>Get Grayscale</string>
+   </property>
+  </action>
+  <action name="actionTile_Manager">
+   <property name="text">
+    <string>Tile Manager</string>
+   </property>
+  </action>
+  <action name="actionTile_Manager_2">
+   <property name="text">
+    <string>Tile Manager</string>
+   </property>
+  </action>
+  <action name="actionTiles">
+   <property name="text">
+    <string>Tiles</string>
+   </property>
+  </action>
+  <action name="actionThumbnails">
+   <property name="text">
+    <string>Thumbnails</string>
+   </property>
+  </action>
+  <action name="actionBundle">
+   <property name="text">
+    <string>Bundle</string>
+   </property>
+  </action>
+  <action name="actionVolume_field">
+   <property name="text">
+    <string>Volume Entry</string>
+   </property>
+  </action>
+  <action name="actionThumbnails_2">
+   <property name="text">
+    <string>Thumbnails</string>
+   </property>
+  </action>
+  <action name="actionJSON_Point_List">
+   <property name="text">
+    <string>JSON Point List</string>
+   </property>
+  </action>
+  <action name="actionIdentify_Hot_Spot">
+   <property name="text">
+    <string>Identify Hot Spot</string>
+   </property>
+  </action>
+  <action name="actionHot_Spot_Demo">
+   <property name="text">
+    <string>Hot Spot Demo</string>
    </property>
   </action>
  </widget>

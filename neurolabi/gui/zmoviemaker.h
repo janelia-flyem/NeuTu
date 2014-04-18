@@ -1,6 +1,7 @@
 #ifndef ZMOVIEMAKER_H
 #define ZMOVIEMAKER_H
 
+#include <QColor>
 #include <string>
 #include <vector>
 #ifdef __GLIBCXX__

@@ -41,11 +41,11 @@ public:
 
   void hideBoundBox();
 
+  // get salient 3d position hit by 2d point
   // check success before using the returned value
   // if first hit 3d position is in volume, success will be true,
   // otherwise don't use the returned value
-  glm::vec3 getFirstHit3DPosition(int x, int y, int width, int height,
-                                  bool &success);
+  glm::vec3 get3DPosition(int x, int y, int width, int height, bool &success);
 
   inline int xCutLowerValue() { return m_xCut.lowerValue(); }
   inline int xCutUpperValue() { return m_xCut.upperValue(); }
@@ -88,9 +88,16 @@ protected slots:
   void updateCubeSerieSlices();
 
 private:
+  // check success before using the returned value
+  // if first hit 3d position is in volume, success will be true,
+  // otherwise don't use the returned value
+  glm::vec3 getFirstHit3DPosition(int x, int y, int width, int height, bool &success);
+  // use first channel intensity
+  glm::vec3 getMaxInten3DPositionUnderScreenPoint(int x, int y, int width, int height, bool &success);
   //get 3D position from 2D screen position
   glm::vec3 get3DPosition(glm::ivec2 pos2D, int width, int height, Z3DRenderOutputPort &port);
-  bool posIsInVolume(glm::vec3 pos3D) const;
+  //get 3D position from 2D screen position and depth
+  glm::vec3 get3DPosition(glm::ivec2 pos2D, double depth, int width, int height);
   void clearFRVolumeSlices();
 
   // based on context, prepare minimum necessary data and send to raycasterrenderer

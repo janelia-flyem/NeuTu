@@ -3,6 +3,7 @@
 
 #include <QWidget>
 #include <QProgressBar>
+#include <QImage>
 
 #include "flyem/zflyemneuronlistmodel.h"
 #include "zprogressable.h"
@@ -11,6 +12,10 @@
 class ZFlyEmNeuronPresenter;
 class QStatusBar;
 class QMenu;
+class ZFlyEmDataFrame;
+class ZFlyEmQueryView;
+class ZImageWidget;
+class QGraphicsScene;
 
 namespace Ui {
 class FlyEmDataForm;
@@ -36,6 +41,8 @@ public:
 
   inline void setStatusBar(QStatusBar *bar) { m_statusBar = bar; }
 
+  ZFlyEmDataFrame* getParentFrame() const;
+
   /*!
    * \brief Create all context menus
    */
@@ -45,6 +52,15 @@ public:
    * \brief Create all actions
    */
   void createAction();
+
+  /*!
+   * \brief Update the view of query table
+   */
+  void updateQueryTable();
+
+  void updateSlaveQueryTable();
+
+  void dump(const QString &message);
 
 signals:
   void showSummaryTriggered();
@@ -56,6 +72,7 @@ signals:
   void volumeTriggered(const QString&);
   void saveBundleTriggered(int, const QString&);
   void showNearbyNeuronTriggered(const ZFlyEmNeuron *neuron);
+  void searchNeighborNeuronTriggered(const ZFlyEmNeuron *neuron);
 
 private slots:
   void on_pushButton_clicked();
@@ -78,7 +95,13 @@ private slots:
   void updateInfoWindow(const QModelIndex &index);
   void viewModel(const QModelIndex &index);
   void showSelectedModel();
+  void showSelectedModelWithBoundBox();
   void showNearbyNeuron();
+  void searchNeighborNeuron();
+  void updateSlaveQuery(const QModelIndex &index);
+  void showSecondarySelectedModel();
+  void updateThumbnail(const QModelIndex &index);
+  void updateThumbnailSecondary(const QModelIndex &index);
 
   /*!
    * \brief Change class of selected neurons
@@ -103,16 +126,31 @@ private slots:
   void on_exportPushButton_clicked();
 
 private:
+  ZStackDoc* showViewSelectedModel(ZFlyEmQueryView *view);
+  void updateThumbnail(ZFlyEmNeuron *neuron);
+
+private:
   Ui::FlyEmDataForm *ui;
   ZFlyEmNeuronListModel *m_neuronList;
+  ZFlyEmNeuronListModel *m_secondaryNeuronList;
   QStatusBar *m_statusBar;
 
   QMenu *m_neuronContextMenu;
   QAction *m_showSelectedModelAction;
+  QAction *m_showSelectedModelWithBoundBoxAction;
   QAction *m_changeClassAction;
   QAction *m_neighborSearchAction;
 
+  QMenu *m_secondaryNeuronContextMenu;
+  QAction *m_showSecondarySelectedModelAction;
+
   ZQtBarProgressReporter m_specialProgressReporter;
+
+  /*
+  QImage *m_thumbnailImage;
+  ZImageWidget *m_thumbnailWidget;
+  */
+  QGraphicsScene *m_thumbnailScene;
 };
 
 #endif // FLYEMDATAFORM_H

@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////////
 /// OpenGL Mathematics (glm.g-truc.net)
 ///
-/// Copyright (c) 2005 - 2013 G-Truc Creation (www.g-truc.net)
+/// Copyright (c) 2005 - 2014 G-Truc Creation (www.g-truc.net)
 /// Permission is hereby granted, free of charge, to any person obtaining a copy
 /// of this software and associated documentation files (the "Software"), to deal
 /// in the Software without restriction, including without limitation the rights
@@ -139,46 +139,8 @@ namespace detail
 		this->value[2] = v2;
 	}
 
-#if(GLM_HAS_INITIALIZER_LISTS)
-	template <typename T, precision P>
-	template <typename U>
-	GLM_FUNC_QUALIFIER tmat3x3<T, P>::tmat3x3(std::initializer_list<U> l)
-	{
-		assert(l.size() == this->length() * this->value[0].length());
-
-		typename std::initializer_list<U>::iterator p = l.begin();
-
-		this->value[0] = tvec3<T, P>(*(p + 0), *(p + 1), *(p + 2));
-		this->value[1] = tvec3<T, P>(*(p + 3), *(p + 4), *(p + 5));
-		this->value[2] = tvec3<T, P>(*(p + 6), *(p + 7), *(p + 8));
-	}
-
-	template <typename T, precision P>
-	GLM_FUNC_QUALIFIER tmat3x3<T, P>::tmat3x3(std::initializer_list<tvec3<T, P> > l)
-	{
-		assert(l.size() == this->length());
-
-		this->value[0] = l.begin()[0];
-		this->value[1] = l.begin()[1];
-		this->value[2] = l.begin()[2];
-	}
-#endif//GLM_HAS_INITIALIZER_LISTS
-
 	//////////////////////////////////////
 	// Conversion constructors
-	template <typename T, precision P>
-	template <typename U>
-	GLM_FUNC_QUALIFIER tmat3x3<T, P>::tmat3x3
-	(
-		U const & s
-	)
-	{
-		value_type const Zero(0);
-		this->value[0] = tvec3<T, P>(static_cast<T>(s), Zero, Zero);
-		this->value[1] = tvec3<T, P>(Zero, value_type(s), Zero);
-		this->value[2] = tvec3<T, P>(Zero, Zero, value_type(s));
-	}
-	
 	template <typename T, precision P>
 	template <
 		typename X1, typename Y1, typename Z1,
@@ -406,7 +368,7 @@ namespace detail
 	template <typename U>
 	GLM_FUNC_QUALIFIER tmat3x3<T, P> & tmat3x3<T, P>::operator/= (tmat3x3<U, P> const & m)
 	{
-		return (*this = *this * m._inverse());
+		return (*this = *this * detail::compute_inverse<detail::tmat3x3, T, P>::call(m));
 	}
 
 	template <typename T, precision P>
@@ -444,19 +406,44 @@ namespace detail
 	}
 
 	template <typename T, precision P>
-	GLM_FUNC_QUALIFIER tmat3x3<T, P> tmat3x3<T, P>::_inverse() const
+	struct compute_inverse<detail::tmat3x3, T, P>
 	{
-		T S00 = value[0][0];
-		T S01 = value[0][1];
-		T S02 = value[0][2];
+		static detail::tmat3x3<T, P> call(detail::tmat3x3<T, P> const & m)
+		{
+			T OneOverDeterminant = static_cast<T>(1) / (
+				+ m[0][0] * (m[1][1] * m[2][2] - m[2][1] * m[1][2])
+				- m[1][0] * (m[0][1] * m[2][2] - m[2][1] * m[0][2])
+				+ m[2][0] * (m[0][1] * m[1][2] - m[1][1] * m[0][2]));
 
-		T S10 = value[1][0];
-		T S11 = value[1][1];
-		T S12 = value[1][2];
+			detail::tmat3x3<T, P> Inverse(detail::tmat3x3<T, P>::_null);
+			Inverse[0][0] = + (m[1][1] * m[2][2] - m[2][1] * m[1][2]) * OneOverDeterminant;
+			Inverse[1][0] = - (m[1][0] * m[2][2] - m[2][0] * m[1][2]) * OneOverDeterminant;
+			Inverse[2][0] = + (m[1][0] * m[2][1] - m[2][0] * m[1][1]) * OneOverDeterminant;
+			Inverse[0][1] = - (m[0][1] * m[2][2] - m[2][1] * m[0][2]) * OneOverDeterminant;
+			Inverse[1][1] = + (m[0][0] * m[2][2] - m[2][0] * m[0][2]) * OneOverDeterminant;
+			Inverse[2][1] = - (m[0][0] * m[2][1] - m[2][0] * m[0][1]) * OneOverDeterminant;
+			Inverse[0][2] = + (m[0][1] * m[1][2] - m[1][1] * m[0][2]) * OneOverDeterminant;
+			Inverse[1][2] = - (m[0][0] * m[1][2] - m[1][0] * m[0][2]) * OneOverDeterminant;
+			Inverse[2][2] = + (m[0][0] * m[1][1] - m[1][0] * m[0][1]) * OneOverDeterminant;
 
-		T S20 = value[2][0];
-		T S21 = value[2][1];
-		T S22 = value[2][2];
+			return Inverse;
+		}
+	};
+
+	template <typename T, precision P>
+	GLM_FUNC_QUALIFIER tmat3x3<T, P> compute_inverse_mat3(tmat3x3<T, P> const & m)
+	{
+		T S00 = m[0][0];
+		T S01 = m[0][1];
+		T S02 = m[0][2];
+
+		T S10 = m[1][0];
+		T S11 = m[1][1];
+		T S12 = m[1][2];
+
+		T S20 = m[2][0];
+		T S21 = m[2][1];
+		T S22 = m[2][2];
 /*
 		tmat3x3<T, P> Inverse(
 			+ (S11 * S22 - S21 * S12),
@@ -480,9 +467,10 @@ namespace detail
 			S10 * S02 - S12 * S00,
 			S11 * S00 - S10 * S01);
 
-		T Determinant = S00 * (S11 * S22 - S21 * S12)
-						- S10 * (S01 * S22 - S21 * S02)
-						+ S20 * (S01 * S12 - S11 * S02);
+		T Determinant = 
+			+ S00 * (S11 * S22 - S21 * S12)
+			- S10 * (S01 * S22 - S21 * S02)
+			+ S20 * (S01 * S12 - S11 * S02);
 
 		Inverse /= Determinant;
 		return Inverse;
@@ -628,25 +616,25 @@ namespace detail
 		tmat3x3<T, P> const & m2
 	)
 	{
-		typename tmat3x3<T, P>::value_type const SrcA00 = m1[0][0];
-		typename tmat3x3<T, P>::value_type const SrcA01 = m1[0][1];
-		typename tmat3x3<T, P>::value_type const SrcA02 = m1[0][2];
-		typename tmat3x3<T, P>::value_type const SrcA10 = m1[1][0];
-		typename tmat3x3<T, P>::value_type const SrcA11 = m1[1][1];
-		typename tmat3x3<T, P>::value_type const SrcA12 = m1[1][2];
-		typename tmat3x3<T, P>::value_type const SrcA20 = m1[2][0];
-		typename tmat3x3<T, P>::value_type const SrcA21 = m1[2][1];
-		typename tmat3x3<T, P>::value_type const SrcA22 = m1[2][2];
+		T const SrcA00 = m1[0][0];
+		T const SrcA01 = m1[0][1];
+		T const SrcA02 = m1[0][2];
+		T const SrcA10 = m1[1][0];
+		T const SrcA11 = m1[1][1];
+		T const SrcA12 = m1[1][2];
+		T const SrcA20 = m1[2][0];
+		T const SrcA21 = m1[2][1];
+		T const SrcA22 = m1[2][2];
 
-		typename tmat3x3<T, P>::value_type const SrcB00 = m2[0][0];
-		typename tmat3x3<T, P>::value_type const SrcB01 = m2[0][1];
-		typename tmat3x3<T, P>::value_type const SrcB02 = m2[0][2];
-		typename tmat3x3<T, P>::value_type const SrcB10 = m2[1][0];
-		typename tmat3x3<T, P>::value_type const SrcB11 = m2[1][1];
-		typename tmat3x3<T, P>::value_type const SrcB12 = m2[1][2];
-		typename tmat3x3<T, P>::value_type const SrcB20 = m2[2][0];
-		typename tmat3x3<T, P>::value_type const SrcB21 = m2[2][1];
-		typename tmat3x3<T, P>::value_type const SrcB22 = m2[2][2];
+		T const SrcB00 = m2[0][0];
+		T const SrcB01 = m2[0][1];
+		T const SrcB02 = m2[0][2];
+		T const SrcB10 = m2[1][0];
+		T const SrcB11 = m2[1][1];
+		T const SrcB12 = m2[1][2];
+		T const SrcB20 = m2[2][0];
+		T const SrcB21 = m2[2][1];
+		T const SrcB22 = m2[2][2];
 
 		tmat3x3<T, P> Result(tmat3x3<T, P>::_null);
 		Result[0][0] = SrcA00 * SrcB00 + SrcA10 * SrcB01 + SrcA20 * SrcB02;
@@ -732,7 +720,7 @@ namespace detail
 		typename tmat3x3<T, P>::row_type const & v
 	)
 	{
-		return m._inverse() * v;
+		return detail::compute_inverse<detail::tmat3x3, T, P>::call(m) * v;
 	}
 
 	template <typename T, precision P>
@@ -742,7 +730,7 @@ namespace detail
 		tmat3x3<T, P> const & m
 	)
 	{
-		return v * m._inverse();
+		return v * detail::compute_inverse<detail::tmat3x3, T, P>::call(m);
 	}
 
 	template <typename T, precision P>

@@ -25,6 +25,7 @@ class QMouseEvent;
 class QKeyEvent;
 class QAction;
 class QMenu;
+class ZInteractionEvent;
 
 class ZStackPresenter : public QObject {
   Q_OBJECT
@@ -80,8 +81,6 @@ public:
 */
   void processMouseReleaseEvent(QMouseEvent *event, int sliceIndex);
   void processKeyPressEvent(QKeyEvent *event);
-  bool processKeyPressEventForSwc(QKeyEvent *event);
-  bool processKeyPressEventForStroke(QKeyEvent *event);
   void processMouseMoveEvent(QMouseEvent *event);
   void processMousePressEvent(QMouseEvent *event);
   void processMouseDoubleClickEvent(QMouseEvent *eventint, int sliceIndex);
@@ -128,7 +127,7 @@ public:
 
   void setViewPortCenter(int x, int y, int z);
 
-  const QPoint dataPositionFromMouse(MouseButtonAction mba);
+  const QPointF stackPositionFromMouse(MouseButtonAction mba);
 
   QStringList toStringList() const;
 
@@ -178,7 +177,7 @@ public slots:
   void enterSwcConnectMode();
   void enterSwcExtendMode();
   void exitSwcExtendMode();
-  void enterSwcSmartExtendMode();
+  //void enterSwcSmartExtendMode();
   void enterSwcAddNodeMode(double x, double y);
   void enterSwcSelectMode();
   void enterDrawStrokeMode(double x, double y);
@@ -223,20 +222,28 @@ public slots:
   const Swc_Tree_Node* getSelectedSwcNode() const;
 
 signals:
-  void mousePositionCaptured(int x, int y, int z);
+  void mousePositionCaptured(double x, double y, double z);
 
 private:
   EMouseEventProcessStatus processMouseReleaseForPuncta(
-      QMouseEvent *event, int *positionInStack);
+      QMouseEvent *event, double *positionInStack);
   EMouseEventProcessStatus processMouseReleaseForTube(
-      QMouseEvent *event, int *positionInStack);
+      QMouseEvent *event, double *positionInStack);
   EMouseEventProcessStatus processMouseReleaseForSwc(
-      QMouseEvent *event, int *positionInStack);
+      QMouseEvent *event, double *positionInStack);
   EMouseEventProcessStatus processMouseReleaseForStroke(
-      QMouseEvent *event, int *positionInStack);
+      QMouseEvent *event, double *positionInStack);
+
+  bool processKeyPressEventForSwc(QKeyEvent *event);
+  bool processKeyPressEventForStroke(QKeyEvent *event);
+
   bool isPointInStack(double x, double y);
-  QPoint mapFromWidgetToStack(const QPoint &pos);
-  QPoint mapFromGlobalToStack(const QPoint &pos);
+  QPointF mapFromWidgetToStack(const QPoint &pos);
+  QPointF mapFromGlobalToStack(const QPoint &pos);
+
+  bool estimateActiveStrokeWidth();
+
+  void processEvent(const ZInteractionEvent &event);
 
 private:
   ZStackFrame *m_parent;
@@ -289,7 +296,7 @@ private:
 
   QAction *m_swcConnectToAction;
   QAction *m_swcExtendAction;
-  QAction *m_swcSmartExtendAction;
+  //QAction *m_swcSmartExtendAction;
   QAction *m_swcDeleteAction;
   QAction *m_swcConnectSelectedAction;
   QAction *m_swcSelectConnectionAction;
@@ -322,7 +329,7 @@ private:
   int m_mouseLeftPressPosition[3];
   int m_mouseRightPressPosition[3];
   int m_mouseLeftDoubleClickPosition[3];
-  QPoint m_grabPosition;
+  QPointF m_grabPosition;
 
   ZStroke2d m_stroke;
   bool m_isStrokeOn;

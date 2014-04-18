@@ -10,25 +10,36 @@
 #include "swctreenode.h"
 #include "c_json.h"
 #include "tz_error.h"
+#include "zhdf5reader.h"
 
 using namespace std;
 
 const int ZFlyEmNeuron::TopMatchCapacity = 10;
 
 #define CONSTRUCTOR_INIT m_sourceId(0), m_id(0), m_synapseScale(10.0), m_model(NULL), \
-  m_buddyModel(NULL), m_body(NULL), m_synapseAnnotation(NULL)
+  m_unscaledModel(NULL), m_buddyModel(NULL), m_body(NULL), m_synapseAnnotation(NULL)
 
 const char *ZFlyEmNeuron::m_idKey = "id";
 const char *ZFlyEmNeuron::m_nameKey = "name";
 const char *ZFlyEmNeuron::m_classKey = "class";
 const char *ZFlyEmNeuron::m_modelKey = "model";
 const char *ZFlyEmNeuron::m_volumeKey = "volume";
+const char *ZFlyEmNeuron::m_thumbnailKey = "thumbnail";
 
 ZFlyEmNeuron::ZFlyEmNeuron() : CONSTRUCTOR_INIT
 {
   for (int i = 0; i < 3; ++i) {
     m_resolution[i] = 1.0;
   }
+}
+
+ZFlyEmNeuron::ZFlyEmNeuron(int id, ZSwcTree *model, ZObject3dScan *body) :
+  CONSTRUCTOR_INIT
+{
+  m_id = id;
+  m_model = model;
+  m_unscaledModel = model->clone();
+  m_body = body;
 }
 
 ZFlyEmNeuron::ZFlyEmNeuron(const ZFlyEmNeuron &neuron) : CONSTRUCTOR_INIT
@@ -38,6 +49,10 @@ ZFlyEmNeuron::ZFlyEmNeuron(const ZFlyEmNeuron &neuron) : CONSTRUCTOR_INIT
   m_name = neuron.m_name;
   m_class = neuron.m_class;
   m_modelPath = neuron.m_modelPath;
+  m_volumePath = neuron.m_volumePath;
+  m_thumbnailPath = neuron.m_thumbnailPath;
+  m_synapseScale = neuron.m_synapseScale;
+  m_synapseAnnotation = neuron.m_synapseAnnotation;
   for (int i = 0; i < 3; ++i) {
     m_resolution[i] = neuron.m_resolution[i];
   }
@@ -57,6 +72,8 @@ bool ZFlyEmNeuron::isDeprecated(EComponent comp) const
     return (m_body == NULL);
   case BUDDY_MODEL:
     return (m_buddyModel == NULL);
+  case UNSCALED_MODEL:
+    return (m_unscaledModel == NULL);
   default:
     break;
   }
@@ -64,7 +81,7 @@ bool ZFlyEmNeuron::isDeprecated(EComponent comp) const
   return false;
 }
 
-void ZFlyEmNeuron::deprecate(EComponent comp)
+void ZFlyEmNeuron::deprecate(EComponent comp) const
 {
   deprecateDependent(comp);
 
@@ -72,6 +89,10 @@ void ZFlyEmNeuron::deprecate(EComponent comp)
   case MODEL:
     delete m_model;
     m_model = NULL;
+    break;
+  case UNSCALED_MODEL:
+    delete m_unscaledModel;
+    m_unscaledModel = NULL;
     break;
   case BODY:
     delete m_body;
@@ -91,7 +112,7 @@ void ZFlyEmNeuron::deprecate(EComponent comp)
   }
 }
 
-void ZFlyEmNeuron::deprecateDependent(EComponent comp)
+void ZFlyEmNeuron::deprecateDependent(EComponent comp) const
 {
   switch (comp) {
   case MODEL:
@@ -114,6 +135,35 @@ ZSwcTree* ZFlyEmNeuron::getResampleBuddyModel(double rs) const
   }
 
   return m_buddyModel;
+}
+
+ZSwcTree* ZFlyEmNeuron::getResampleBuddyModel() const
+{
+  if (isDeprecated(BUDDY_MODEL)) {
+    return NULL;
+  }
+
+  return m_buddyModel;
+}
+
+ZSwcTree* ZFlyEmNeuron::getUnscaledModel(const string &bundleSource) const
+{
+  if (isDeprecated(UNSCALED_MODEL)) {
+    if (!m_modelPath.empty()) {
+      m_unscaledModel = new ZSwcTree;
+      ZString path(m_modelPath);
+      if (!path.isAbsolutePath()) {
+        path = path.absolutePath(ZString::dirPath(bundleSource));
+      }
+      m_unscaledModel->load(path.c_str());
+      if (m_unscaledModel->data() == NULL) {
+        delete m_unscaledModel;
+        m_unscaledModel = NULL;
+      }
+    }
+  }
+
+  return m_unscaledModel;
 }
 
 ZSwcTree* ZFlyEmNeuron::getModel(const string &bundleSource) const
@@ -175,18 +225,27 @@ string ZFlyEmNeuron::getAbsolutePath(const ZString &path, const string &source)
 
 void ZFlyEmNeuron::loadJsonObject(ZJsonObject &obj, const string &source)
 {
-  m_id = ZJsonParser::integerValue(obj["id"]);
-  m_name = ZJsonParser::stringValue(obj["name"]);
-  m_class = ZJsonParser::stringValue(obj["class"]);
+  m_id = ZJsonParser::integerValue(obj[m_idKey]);
+  m_name = ZJsonParser::stringValue(obj[m_nameKey]);
+  m_class = ZJsonParser::stringValue(obj[m_classKey]);
 
-  m_modelPath = ZJsonParser::stringValue(obj["model"]);
+  m_modelPath = ZJsonParser::stringValue(obj[m_modelKey]);
   if (!m_modelPath.empty()) {
     m_modelPath = getAbsolutePath(m_modelPath, source);
   }
 
-  m_volumePath = ZJsonParser::stringValue(obj["volume"]);
+  m_volumePath = ZJsonParser::stringValue(obj[m_volumeKey]);
   if (!m_volumePath.empty()) {
     m_volumePath = getAbsolutePath(m_volumePath, source);
+  }
+
+#ifdef _DEBUG_2
+  std::cout << m_volumePath << std::endl;
+#endif
+
+  m_thumbnailPath = ZJsonParser::stringValue(obj[m_thumbnailKey]);
+  if (!m_thumbnailPath.empty()) {
+    m_thumbnailPath = getAbsolutePath(m_thumbnailPath, source);
   }
 
   deprecate(ALL_COMPONENT);
@@ -218,6 +277,40 @@ json_t* ZFlyEmNeuron::makeJsonObject() const
   return obj;
 }
 
+json_t* ZFlyEmNeuron::makeJsonObject(const std::string &bundleDir) const
+{
+  json_t *obj = C_Json::makeObject();
+
+  ZJsonObject objWrapper(obj, false);
+
+  objWrapper.setEntry(m_idKey, m_id);
+  if (!m_name.empty()) {
+    objWrapper.setEntry(m_nameKey, m_name);
+  }
+
+  if (!m_class.empty()) {
+    objWrapper.setEntry(m_classKey, m_class);
+  }
+
+  if (!m_modelPath.empty()) {
+    objWrapper.setEntry(
+          m_modelKey, ZString::relativePath(m_modelPath, bundleDir));
+  }
+
+  if (!m_volumePath.empty()) {
+    objWrapper.setEntry(
+          m_volumeKey, ZString::relativePath(m_volumePath, bundleDir));
+  }
+
+  if (!m_thumbnailPath.empty()) {
+    objWrapper.setEntry(
+          m_thumbnailKey, ZString::relativePath(m_thumbnailPath, bundleDir));
+  }
+
+  return obj;
+}
+
+
 void ZFlyEmNeuron::print() const
 {
   print(cout);
@@ -230,6 +323,8 @@ void ZFlyEmNeuron::print(ostream &stream) const
   stream << "  Name: " << m_name << endl;
   stream << "  Class: " << m_class << endl;
   stream << "  Model: " << m_modelPath << endl;
+  stream << "  Volume: " << m_volumePath << endl;
+  stream << "  Thumbnail: " << m_thumbnailPath << endl;
 }
 
 void ZFlyEmNeuron::setId(const string &str)
@@ -580,4 +675,40 @@ ZFlyEmNeuronRange ZFlyEmNeuron::getRange(double xyRes, double zRes) const
   }
 
   return range;
+}
+
+bool ZFlyEmNeuron::hasClass() const
+{
+  return !getClass().empty();
+}
+
+void ZFlyEmNeuron::releaseBody()
+{
+  m_body = NULL;
+}
+
+void ZFlyEmNeuron::releaseModel()
+{
+  m_model = NULL;
+}
+
+bool ZFlyEmNeuron::importBodyFromHdf5(
+    const std::string &filePath, const std::string &key)
+{
+  deprecate(BODY);
+  ZHdf5Reader reader;
+  if (reader.open(filePath)) {
+    std::vector<int> array = reader.readIntArray(key);
+    if (!array.empty()) {
+      if (m_body == NULL) {
+        m_body = new ZObject3dScan;
+      }
+
+      return m_body->load(&(array[0]), array.size());
+    }
+
+    return false;
+  }
+
+  return false;
 }

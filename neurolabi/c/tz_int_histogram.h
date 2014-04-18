@@ -33,6 +33,7 @@ int Int_Histogram_Length(const int *hist);
 
 int Int_Histogram_Min(const int *hist);
 int Int_Histogram_Max(const int *hist);
+int Int_Histogram_Sum(const int *hist);
 
 int Int_Histogram_Quantile(const int *hist, double q);
 

@@ -25,12 +25,17 @@ public:
    *
    * An object is empty iff no key exists.
    */
-  bool isEmpty();
+  bool isEmpty() const;
 
 public:
   bool load(std::string filePath);
-  std::string toString();
+  std::string summary();
   std::map<std::string, json_t*> toEntryMap(bool recursive = true) const;
+
+  /*!
+   * \brief Dump the object to a string.
+   */
+  std::string dumpString();
 
   /*!
    * \brief Test if a key is valid
@@ -38,10 +43,16 @@ public:
    * \return true iff \a key is valid.
    */
   static bool isValidKey(const char *key);
+
   /*!
    * \brief Set an entry of the object
    */
   void setEntry(const char *key, json_t *obj);
+
+  /*!
+   * \brief Set an entry without increasing the reference count
+   */
+  void consumeEntry(const char *key, json_t *obj);
 
   /*!
    * \brief Set an entry of the object with string value
@@ -84,6 +95,11 @@ public:
   void setEntry(const char *key, double v);
 
   /*!
+   * \brief setEntry Set an entry of the object
+   */
+  void setEntry(const char *key, ZJsonValue &value);
+
+  /*!
    * \brief Save the json object into a file
    *
    * \return true iff write succeeds.
@@ -97,8 +113,18 @@ public:
    */
   bool hasKey(const char *key) const;
 
+  /*!
+   * \brief Set an entry as an array
+   *
+   * It returns NULL if the key already exists.
+   *
+   * \param key The entry key.
+   * \return The json array added to the object.
+   */
+  json_t *setArrayEntry(const char *key);
+
 private:
-  void setEntryWithoutKeyCheck(const char *key, json_t *obj);
+  void setEntryWithoutKeyCheck(const char *key, json_t *obj, bool asNew = false);
 
 private:
   static void appendEntries(const char *key, json_t *obj,

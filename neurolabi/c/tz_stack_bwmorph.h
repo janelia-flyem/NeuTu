@@ -160,7 +160,7 @@ Stack* Stack_Remove_Small_Object(Stack *in, Stack *out,
  * indices. Set it to NULL if you do not need such information. <out> must be
  * FLOAT32 kind.
  */
-Stack* Stack_Bwdist_L(Stack *in, Stack *out, long int *label);
+Stack* Stack_Bwdist_L(const Stack *in, Stack *out, long int *label);
 
 /**@brief economic distance transformation
  *
@@ -180,7 +180,7 @@ Stack* Stack_Bwdist_L(Stack *in, Stack *out, long int *label);
  *
  * Note: The result is the square of distance.
  */
-Stack* Stack_Bwdist_L_U16(Stack *in, Stack *out, int pad);
+Stack* Stack_Bwdist_L_U16(const Stack *in, Stack *out, int pad);
 
 /**@brief Plane-by-plane distance transform
  *
@@ -188,7 +188,7 @@ Stack* Stack_Bwdist_L_U16(Stack *in, Stack *out, int pad);
  * 2D distance transform for each slice of <in> instead of performing the
  * 3D distance transform.
  */
-Stack *Stack_Bwdist_L_U16P(Stack *in, Stack *out, int pad);
+Stack *Stack_Bwdist_L_U16P(const Stack *in, Stack *out, int pad);
 
 /**@}*/
 

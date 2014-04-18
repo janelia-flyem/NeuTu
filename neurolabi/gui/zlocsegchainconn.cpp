@@ -58,7 +58,7 @@ void ZLocsegChainConn::load(const char *filePath)
   UNUSED_PARAMETER(filePath);
 }
 
-void ZLocsegChainConn::display(QPainter &painter, int z, Display_Style option) const
+void ZLocsegChainConn::display(ZPainter &painter, int z, Display_Style option) const
 {
   UNUSED_PARAMETER(option);
 

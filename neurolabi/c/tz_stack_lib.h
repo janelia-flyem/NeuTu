@@ -55,7 +55,7 @@ void Copy_Stack_Array(Stack *dst, const Stack *src);
  * be NULL. The text field was added later to the structure and has caused
  * compatability problems because it does not support NULL text.
  */
-Stack* Copy_Stack_T(Stack *stack);
+Stack* Copy_Stack_T(const Stack *stack);
 
 /**@brief Convert a stack into a binary matrix.
  *
@@ -107,7 +107,7 @@ Stack* Flip_Stack_Y(const Stack *stack, Stack *out);
  *
  * Note: Print_Stack_Value() is obsoleted by Print_Stack().
  */
-void Print_Stack_Value(Stack* stack);
+void Print_Stack_Value(const Stack* stack);
 
 double Stack_Array_Value(const Stack *stack, size_t index);
 
@@ -141,7 +141,7 @@ Stack* Downsample_Stack_Mean_F(Stack *stack,int wintv,int hintv,int dintv,
     Stack *stack2);
 void Downsample_Stack_Max_Size(int width, int height, int depth, 
     int wintv,int hintv,int dintv, int *wd, int *hd, int *dd);
-Stack* Downsample_Stack_Max(Stack* stack,int wintv,int hintv,int dintv,
+Stack* Downsample_Stack_Max(const Stack* stack,int wintv,int hintv,int dintv,
     Stack *out);
 
 Stack* Upsample_Stack(const Stack *stack, int wintv, int hintv, int dintv,

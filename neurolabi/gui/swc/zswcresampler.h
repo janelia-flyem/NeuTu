@@ -25,7 +25,7 @@ public:
    * \param tree
    * \return Number of nodes that are removed
    */
-  void optimalDownsample(ZSwcTree *tree);
+  int optimalDownsample(ZSwcTree *tree);
 
 private:
   /*!

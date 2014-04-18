@@ -7,12 +7,12 @@ Z3DCamera::Z3DCamera()
   , m_upVector(0.f, 1.f, 0.f)
   //, m_projectionType(Orthographic)
   , m_projectionType(Perspective)
-  , m_fieldOfView(45)
+  , m_fieldOfView(glm::radians(45.f))
   , m_aspectRatio(1.f)
   , m_nearDist(.1f)
   , m_farDist(50.f)
   , m_windowAspectRatio(1.f)
-  , m_eyeSeparationAngle(8.f)
+  , m_eyeSeparationAngle(glm::radians(8.f))
 {
   updateCamera();
   updateFrustum();
@@ -26,7 +26,7 @@ Z3DCamera::~Z3DCamera()
 
 void Z3DCamera::setFieldOfView(float fov)
 {
-  m_fieldOfView = glm::clamp(fov, 10.f, 170.f);
+  m_fieldOfView = glm::clamp(fov, glm::radians(10.f), glm::radians(170.f));
   updateFrustum();
   invalidProjectionMatrix();
 }
@@ -52,9 +52,9 @@ void Z3DCamera::setWindowAspectRatio(float war)
   invalidProjectionMatrix();
 }
 
-void Z3DCamera::setEyeSeparationAngle(float degree)
+void Z3DCamera::setEyeSeparationAngle(float angle)
 {
-  m_eyeSeparationAngle = glm::clamp(degree, 1.f, 80.f);
+  m_eyeSeparationAngle = glm::clamp(angle, glm::radians(1.f), glm::radians(80.f));
   updateCamera();
   invalidStereoProjectionMatrix();
   invalidStereoViewMatrix();
@@ -112,7 +112,7 @@ void Z3DCamera::resetCamera(const std::vector<double> &bound, ResetCameraOptions
     // this forms a right triangle with one side being the radius, another being
     // the target distance for the camera, then just find the target dist using
     // a sin.
-    double angle = glm::radians(m_fieldOfView);
+    double angle = m_fieldOfView;
     if (m_aspectRatio < 1.0) {  // use horizontal angle to calculate
       angle = 2.0*std::atan(std::tan(angle*0.5)*m_aspectRatio);
     }
@@ -265,7 +265,7 @@ bool Z3DCamera::operator !=(const Z3DCamera &rhs) const
 
 void Z3DCamera::dolly(float value)
 {
-  if (value <= 0.f || (m_centerDist < .01f && value > 1.f))
+  if (value <= 0.f || (m_centerDist < 1.0f && value > 1.f))
     return;
   glm::vec3 pos = m_center - m_viewVector * (m_centerDist / value);
   float maxV = 1e15;
@@ -396,12 +396,12 @@ void Z3DCamera::updateCamera()
     m_upVector = glm::normalize(m_upVector);
   }
   m_strafeVector = glm::cross(m_viewVector, m_upVector);
-  m_eyeSeparation = 2.f * m_centerDist * std::tan(glm::radians(m_eyeSeparationAngle)/2.f);
+  m_eyeSeparation = 2.f * m_centerDist * std::tan(m_eyeSeparationAngle/2.f);
 }
 
 void Z3DCamera::updateFrustum()
 {
-  float halfheight = std::tan(0.5f * glm::radians(m_fieldOfView)) * m_nearDist;
+  float halfheight = std::tan(0.5f * m_fieldOfView) * m_nearDist;
   m_top = halfheight;
   m_bottom = -halfheight;
   float halfwidth = halfheight * m_aspectRatio * m_windowAspectRatio;

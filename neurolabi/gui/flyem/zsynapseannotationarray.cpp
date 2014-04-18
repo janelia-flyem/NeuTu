@@ -578,6 +578,9 @@ ZSynapseAnnotationArray::toMarkerArray(
       }
       commentStream << synapse->bodyId();
 
+      commentStream << "; Raveler coordinates: (" << synapse->x() << ", "
+                    << synapse->y() << ", " << synapse->z() << ")";
+
       marker.setName(commentStream.str());
 
       marker.setComment(commentStream.str());

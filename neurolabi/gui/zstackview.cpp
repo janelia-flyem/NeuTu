@@ -22,7 +22,7 @@
 #include "neutubeconfig.h"
 
 #include <QtGui>
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
+#ifdef _QT5_
 #include <QtWidgets>
 #endif
 
@@ -702,6 +702,9 @@ void ZStackView::updateImageScreen()
 {
   m_paintBundle.unsetSwcNodeList();
   m_paintBundle.clearAllDrawableLists();
+  if (buddyDocument() != NULL) {
+    m_paintBundle.setStackOffset(buddyDocument()->getStackOffset());
+  }
 
   int slice = m_depthControl->value();
   if (buddyPresenter()->interactiveContext().isProjectView()) {
@@ -807,30 +810,39 @@ bool ZStackView::isDepthChangable()
 
 void ZStackView::mouseRolledInImageWidget(QWheelEvent *event)
 {
-  if (isDepthChangable()) {
-    int numSteps = event->delta();
-    //for strange mighty mouse response in Qt 4.6.2
-    if ((abs(numSteps) > 0) && (abs(numSteps) < 120)) {
-      if (numSteps > 0) {
-        numSteps = 1;
-      } else {
-        numSteps = -1;
-      }
+  int numSteps = event->delta();
+  if ((abs(numSteps) > 0) && (abs(numSteps) < 120)) {
+    if (numSteps > 0) {
+      numSteps = 1;
     } else {
-      numSteps /= 120;
+      numSteps = -1;
     }
-    if (numSteps != 0) {
-      int newPos = m_depthControl->value() + numSteps;
-      if ((newPos >= m_depthControl->minimum()) &&
-          (newPos <= m_depthControl->maximum())) {
-        m_depthControl->setValue(newPos);
+  } else {
+    numSteps /= 120;
+  }
+
+  if (event->modifiers() == Qt::NoModifier) {
+    if (isDepthChangable()) {
+      //for strange mighty mouse response in Qt 4.6.2
+      if (numSteps != 0) {
+        int newPos = m_depthControl->value() + numSteps;
+        if ((newPos >= m_depthControl->minimum()) &&
+            (newPos <= m_depthControl->maximum())) {
+          m_depthControl->setValue(newPos);
+        }
+        QPointF pos = imageWidget()->canvasCoordinate(event->pos());
+        int z = sliceIndex();
+        if (buddyPresenter()->interactiveContext().isProjectView()) {
+          z = -1;
+        }
+        setInfo(buddyDocument()->dataInfo(pos.x(), pos.y(), z));
       }
-      QPoint pos = imageWidget()->canvasCoordinate(event->pos());
-      int z = sliceIndex();
-      if (buddyPresenter()->interactiveContext().isProjectView()) {
-        z = -1;
-      }
-      setInfo(buddyDocument()->dataInfo(pos.x(), pos.y(), z));
+    }
+  } else if (event->modifiers() == Qt::ShiftModifier) {
+    if (numSteps > 0) {
+      m_imageWidget->increaseZoomRatio();
+    } else if (numSteps < 0) {
+      m_imageWidget->decreaseZoomRatio();
     }
   }
 }
@@ -860,7 +872,6 @@ void ZStackView::redraw()
 
 void ZStackView::prepareDocument()
 {
-
 }
 
 QMenu* ZStackView::leftMenu()
@@ -1310,7 +1321,8 @@ void ZStackView::paintObjectBuffer()
       slice = -1;
     }
 
-    QPainter painter(m_objectCanvas);
+    ZPainter painter(m_objectCanvas);
+    painter.setStackOffset(buddyDocument()->getStackOffset());
 
     if (buddyDocument()->hasDrawable()) {
       QList<ZStackDrawable*> *objs = buddyDocument()->drawableList();
@@ -1424,10 +1436,14 @@ void ZStackView::paintActiveDecorationBuffer()
   const QList<ZStackDrawable*>& drawableList =
       buddyPresenter()->getActiveDecorationList();
 
-  foreach (ZStackDrawable *obj, drawableList) {
-    if (obj->getTarget() == ZStackDrawable::OBJECT_CANVAS) {
-      QPainter painter(m_activeDecorationCanvas);
-      obj->display(painter, sliceIndex());
+  if (!drawableList.isEmpty()) {
+    ZPainter painter(m_activeDecorationCanvas);
+    painter.setStackOffset(buddyDocument()->getStackOffset());
+
+    foreach (ZStackDrawable *obj, drawableList) {
+      if (obj->getTarget() == ZStackDrawable::OBJECT_CANVAS) {
+        obj->display(painter, sliceIndex());
+      }
     }
   }
 #endif
@@ -1484,7 +1500,8 @@ ZStack* ZStackView::getStrokeMask(uint8_t maskValue)
       }
 
       foreach (ZStroke2d *obj, buddyDocument()->getStrokeList()) {
-        QPainter painter(m_objectCanvas);
+        ZPainter painter(m_objectCanvas);
+        painter.setStackOffset(buddyDocument()->getStackOffset());
         obj->display(painter, slice, buddyPresenter()->objectStyle());
       }
     }

@@ -12,31 +12,55 @@ ZJsonParser::ZJsonParser()
 
 bool ZJsonParser::isObject(const json_t *value)
 {
+  if (value == NULL) {
+    return false;
+  }
+
   return json_is_object(value);
 }
 
 bool ZJsonParser::isArray(const json_t *value)
 {
+  if (value == NULL) {
+    return false;
+  }
+
   return json_is_array(value);
 }
 
 bool ZJsonParser::isInteger(const json_t *value)
 {
+  if (value == NULL) {
+    return false;
+  }
+
   return json_is_integer(value);
 }
 
 bool ZJsonParser::isReal(const json_t *value)
 {
+  if (value == NULL) {
+    return false;
+  }
+
   return json_is_real(value);
 }
 
 bool ZJsonParser::isNumber(const json_t *value)
 {
+  if (value == NULL) {
+    return false;
+  }
+
   return json_is_number(value);
 }
 
 bool ZJsonParser::isBoolean(const json_t *value)
 {
+  if (value == NULL) {
+    return false;
+  }
+
   return json_is_boolean(value);
 }
 

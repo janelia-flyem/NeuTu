@@ -1,5 +1,10 @@
+#if GLSL_VERSION >= 130
+in vec3 attr_vertex;
+in vec4 attr_color;
+#else
 attribute vec3 attr_vertex;
 attribute vec4 attr_color;
+#endif
 
 uniform mat4 view_matrix;
 uniform mat4 projection_view_matrix;
@@ -9,7 +14,11 @@ uniform vec3 pos_scale = vec3(1.0, 1.0, 1.0);
 uniform vec4 clip_planes[CLIP_PLANE_COUNT];
 #endif
 
+#if GLSL_VERSION >= 130
+out vec4 color;
+#else
 varying vec4 color;
+#endif
 
 void main()
 {

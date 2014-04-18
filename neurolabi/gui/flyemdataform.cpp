@@ -8,6 +8,7 @@
 #include <QStatusBar>
 #include <QMenu>
 #include <QMessageBox>
+#include <QGraphicsPixmapItem>
 
 #include "neutubeconfig.h"
 #include "tz_error.h"
@@ -16,6 +17,9 @@
 #include "ui_flyemdataform.h"
 #include "flyem/zflyemdataframe.h"
 #include "flyem/zflyemstackframe.h"
+#include "zimagewidget.h"
+#include "zfiletype.h"
+#include "zimage.h"
 
 FlyEmDataForm::FlyEmDataForm(QWidget *parent) :
   QWidget(parent),
@@ -23,36 +27,72 @@ FlyEmDataForm::FlyEmDataForm(QWidget *parent) :
   m_statusBar(NULL),
   m_neuronContextMenu(NULL),
   m_showSelectedModelAction(NULL),
+  m_showSelectedModelWithBoundBoxAction(NULL),
   m_changeClassAction(NULL),
-  m_neighborSearchAction(NULL)
+  m_neighborSearchAction(NULL),
+  m_secondaryNeuronContextMenu(NULL),
+  m_showSecondarySelectedModelAction(NULL)
 {
   ui->setupUi(this);
+  ui->slaveQueryView->setParent(ui->InformationTab->widget(1));
+
   ui->progressBar->hide();
   m_neuronList = new ZFlyEmNeuronListModel(this);
   ui->queryView->setModel(m_neuronList);
+  m_secondaryNeuronList = new ZFlyEmNeuronListModel(this);
+  ui->slaveQueryView->setModel(m_secondaryNeuronList);
   ui->queryView->setSelectionMode(QAbstractItemView::ExtendedSelection);
+#ifdef _DEBUG_
   connect(ui->queryView, SIGNAL(doubleClicked(QModelIndex)),
           this, SLOT(assignClass(QModelIndex)));
+#endif
   connect(ui->queryView, SIGNAL(clicked(QModelIndex)),
           this, SLOT(updateStatusBar(QModelIndex)));
   connect(ui->queryView, SIGNAL(clicked(QModelIndex)),
           this, SLOT(updateInfoWindow(QModelIndex)));
+  connect(ui->queryView, SIGNAL(clicked(QModelIndex)),
+          this, SLOT(updateSlaveQuery(QModelIndex)));
+  connect(ui->queryView, SIGNAL(clicked(QModelIndex)),
+          this, SLOT(updateThumbnail(QModelIndex)));
+  connect(ui->slaveQueryView, SIGNAL(clicked(QModelIndex)),
+          this, SLOT(updateThumbnailSecondary(QModelIndex)));
 
   //customize
-  ui->testPushButton->hide();
+  //ui->testPushButton->hide();
   ui->generalPushButton->hide();
 
   createAction();
   createContextMenu();
   ui->queryView->setContextMenu(m_neuronContextMenu);
+  ui->slaveQueryView->setContextMenu(m_secondaryNeuronContextMenu);
 
   m_specialProgressReporter.setProgressBar(ui->progressBar);
   setProgressReporter(&m_specialProgressReporter);
+
+  setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+
+  //m_thumbnailImage = new QImage;
+  //m_thumbnailImage->load(":/images/hideobj.png");
+  m_thumbnailScene = new QGraphicsScene;
+  ui->thumbnailView->setScene(m_thumbnailScene);
+  /*
+  m_thumbnailWidget = new ZImageWidget(ui->thumnailContainer, m_thumbnailImage);
+  m_thumbnailWidget->setProjRegion(
+        QRect(QPoint(0, 0), ui->thumnailContainer->size()));
+        */
+
+  ui->overallLayout->setMargin(10);
+  ui->thumbnailView->resize(256, ui->thumbnailView->height());
+  ui->outputTextEdit->resize(190, ui->outputTextEdit->height());
+  setLayout(ui->overallLayout);
+
 }
 
 FlyEmDataForm::~FlyEmDataForm()
 {
+  //delete m_thumbnailImage;
   delete ui;
+  delete m_thumbnailScene;
 }
 
 QSize FlyEmDataForm::sizeHint() const
@@ -164,6 +204,33 @@ void FlyEmDataForm::updateInfoWindow(const QModelIndex &index)
   }
 }
 
+ZFlyEmDataFrame* FlyEmDataForm::getParentFrame() const
+{
+  return dynamic_cast<ZFlyEmDataFrame*>(this->parentWidget());
+}
+
+void FlyEmDataForm::updateSlaveQuery(const QModelIndex &index)
+{
+  ZFlyEmDataFrame *frame = getParentFrame();
+  if (frame != NULL) {
+    if (m_neuronList->getColumnName(index.column()) == "Class") {
+      const ZFlyEmNeuron *neuron = m_neuronList->getNeuron(index.row());
+      if (neuron->hasClass()) {
+        m_secondaryNeuronList->clear();
+        ZFlyEmDataBundle *bundle = frame->getDataBundle();
+        std::vector<ZFlyEmNeuron> &neuronArray = bundle->getNeuronArray();
+        for (std::vector<ZFlyEmNeuron>::iterator iter = neuronArray.begin();
+             iter != neuronArray.end(); ++iter) {
+          ZFlyEmNeuron &buddyNeuron = *iter;
+          if (buddyNeuron.getClass() == neuron->getClass()) {
+            m_secondaryNeuronList->append(&buddyNeuron);
+          }
+        }
+      }
+    }
+  }
+}
+
 void FlyEmDataForm::assignClass(const QModelIndex &index)
 {
   if (index.row() > m_neuronList->rowCount()) {
@@ -202,7 +269,7 @@ void FlyEmDataForm::viewModel(const QModelIndex &index)
 
   ui->progressBar->setValue(50);
   ui->progressBar->show();
-  QApplication::processEvents();
+  //QApplication::processEvents();
 
   //const ZFlyEmNeuron *neuron = m_neuronList->getNeuron(index);
   QVector<const ZFlyEmNeuron*> neuronArray =
@@ -248,13 +315,13 @@ void FlyEmDataForm::viewModel(const QModelIndex &index)
   ui->progressBar->hide();
 }
 
-void FlyEmDataForm::showSelectedModel()
+ZStackDoc *FlyEmDataForm::showViewSelectedModel(ZFlyEmQueryView *view)
 {
   ui->progressBar->setValue(50);
   ui->progressBar->show();
-  QApplication::processEvents();
+  //QApplication::processEvents();
 
-  QItemSelectionModel *sel = ui->queryView->selectionModel();
+  QItemSelectionModel *sel = view->selectionModel();
 
 #ifdef _DEBUG_2
   appendOutput(QString("%1 rows selected").arg(sel->selectedIndexes().size()).toStdString());
@@ -262,14 +329,40 @@ void FlyEmDataForm::showSelectedModel()
 
   ZStackFrame *frame = new ZStackFrame;
 
-  m_neuronList->retrieveModel(sel->selectedIndexes(), frame->document().get());
+  view->getModel()->retrieveModel(sel->selectedIndexes(), frame->document().get());
   ui->progressBar->setValue(75);
-  QApplication::processEvents();
+  //QApplication::processEvents();
 
   frame->open3DWindow(this->parentWidget());
+  ZStackDoc *hostDoc = frame->document().get();
+
   delete frame;
 
   ui->progressBar->hide();
+
+  return hostDoc;
+}
+
+void FlyEmDataForm::showSelectedModel()
+{
+  showViewSelectedModel(ui->queryView);
+}
+
+void FlyEmDataForm::showSelectedModelWithBoundBox()
+{
+  ZStackDoc *hostDoc = showViewSelectedModel(ui->queryView);
+  ZFlyEmDataFrame *frame = getParentFrame();
+  if (frame != NULL) {
+    ZFlyEmDataBundle *dataBundle = frame->getDataBundle();
+    if (!dataBundle->getBoundBox().isEmpty()) {
+      hostDoc->addSwcTree(dataBundle->getBoundBox().clone());
+    }
+  }
+}
+
+void FlyEmDataForm::showSecondarySelectedModel()
+{
+  showViewSelectedModel(ui->slaveQueryView);
 }
 
 void FlyEmDataForm::on_showModelPushButton_clicked()
@@ -345,8 +438,14 @@ void FlyEmDataForm::createContextMenu()
   if (m_neuronContextMenu == NULL) {
     m_neuronContextMenu = new QMenu(this);
     m_neuronContextMenu->addAction(m_showSelectedModelAction);
+    m_neuronContextMenu->addAction(m_showSelectedModelWithBoundBoxAction);
     m_neuronContextMenu->addAction(m_changeClassAction);
     m_neuronContextMenu->addAction(m_neighborSearchAction);
+  }
+
+  if (m_secondaryNeuronContextMenu == NULL) {
+    m_secondaryNeuronContextMenu = new QMenu(this);
+    m_secondaryNeuronContextMenu->addAction(m_showSecondarySelectedModelAction);
   }
 }
 
@@ -358,6 +457,19 @@ void FlyEmDataForm::createAction()
             this, SLOT(showSelectedModel()));
   }
 
+  if (m_showSelectedModelWithBoundBoxAction == NULL) {
+    m_showSelectedModelWithBoundBoxAction =
+        new QAction("Show Model with Bound Box", this);
+    connect(m_showSelectedModelWithBoundBoxAction, SIGNAL(triggered()),
+            this, SLOT(showSelectedModelWithBoundBox()));
+  }
+
+  if (m_showSecondarySelectedModelAction == NULL) {
+    m_showSecondarySelectedModelAction = new QAction("Show Model", this);
+    connect(m_showSecondarySelectedModelAction, SIGNAL(triggered()),
+            this, SLOT(showSecondarySelectedModel()));
+  }
+
   if (m_changeClassAction == NULL) {
     m_changeClassAction = new QAction("Change Class", this);
     connect(m_changeClassAction, SIGNAL(triggered()),
@@ -367,7 +479,7 @@ void FlyEmDataForm::createAction()
   if (m_neighborSearchAction == NULL) {
     m_neighborSearchAction = new QAction("Search neighbor", this);
     connect(m_neighborSearchAction, SIGNAL(triggered()),
-            this, SLOT(showNearbyNeuron()));
+            this, SLOT(searchNeighborNeuron()));
   }
 }
 
@@ -383,4 +495,78 @@ void FlyEmDataForm::showNearbyNeuron()
       break;
     }
   }
+}
+
+void FlyEmDataForm::searchNeighborNeuron()
+{
+  QItemSelectionModel *sel = ui->queryView->selectionModel();
+
+  QModelIndexList indexList = sel->selectedIndexes();
+
+  foreach (QModelIndex index, indexList) {
+    if (m_neuronList->isNeuronKey(index)) {
+      emit searchNeighborNeuronTriggered(m_neuronList->getNeuron(index));
+      break;
+    }
+  }
+}
+
+void FlyEmDataForm::updateQueryTable()
+{
+  m_neuronList->notifyAllDataChanged();
+}
+
+void FlyEmDataForm::updateSlaveQueryTable()
+{
+  m_secondaryNeuronList->notifyAllDataChanged();
+}
+
+void FlyEmDataForm::updateThumbnail(const QModelIndex &index)
+{
+  ZFlyEmNeuron *neuron = m_neuronList->getNeuron(index);
+  updateThumbnail(neuron);
+}
+
+void FlyEmDataForm::updateThumbnailSecondary(const QModelIndex &index)
+{ 
+  ZFlyEmNeuron *neuron = m_secondaryNeuronList->getNeuron(index);
+  updateThumbnail(neuron);
+}
+
+void FlyEmDataForm::updateThumbnail(ZFlyEmNeuron *neuron)
+{
+  m_thumbnailScene->clear();
+  if (neuron != NULL) {
+    if (!neuron->getThumbnailPath().empty()) {
+      QGraphicsPixmapItem *thumbnailItem = new QGraphicsPixmapItem;
+      QPixmap pixmap;
+      if (!pixmap.load(neuron->getThumbnailPath().c_str())) {
+        if (ZFileType::fileType(neuron->getThumbnailPath()) ==
+            ZFileType::TIFF_FILE) {
+          Stack *stack = C_Stack::readSc(neuron->getThumbnailPath().c_str());
+          if (stack != NULL) {
+            ZImage image(C_Stack::width(stack), C_Stack::height(stack));
+            image.setData(C_Stack::array8(stack));
+#ifdef _DEBUG_2
+            image.save((GET_DATA_DIR + "/test.png").c_str());
+#endif
+            if (!pixmap.convertFromImage(image)) {
+              dump("Failed to load the thumbnail.");
+            }
+            C_Stack::kill(stack);
+          } else {
+            dump("Failed to load the thumbnail.");
+          }
+        }
+      }
+      thumbnailItem->setPixmap(pixmap);
+      m_thumbnailScene->addItem(thumbnailItem);
+    }
+  }
+}
+
+void FlyEmDataForm::dump(const QString &message)
+{
+  appendOutput("<p>" + message + "</p>");
+  //QApplication::processEvents();
 }

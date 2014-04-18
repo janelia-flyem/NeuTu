@@ -3,6 +3,7 @@
 #include "tz_rastergeom.h"
 #include "zimagewidget.h"
 #include <cmath>
+#include "zpainter.h"
 #include "zpaintbundle.h"
 
 ZImageWidget::ZImageWidget(QWidget *parent, QImage *image) : QWidget(parent)
@@ -304,27 +305,26 @@ void ZImageWidget::zoom(int zoomRatio)
 void ZImageWidget::paintEvent(QPaintEvent * /*event*/)
 {
   if (m_image != NULL) {
-    QPainter painter(this);
+    ZPainter painter(this);
     painter.setRenderHint(QPainter::Antialiasing, false);
-
     //zoom(m_zoomRatio);
     setView(m_zoomRatio, m_viewPort.topLeft());
 
     QSize size = projectSize();
-    painter.drawImage(QRectF(0, 0, size.width(), size.height()), *m_image,
+    painter.drawImage(m_projRegion, *m_image,
                       m_viewPort);
 
     for (int i = 0; i < m_mask.size(); ++i) {
       if (m_mask[i] != NULL) {
-        painter.drawImage(QRectF(0, 0, size.width(), size.height()),
+        painter.drawImage(QRect(0, 0, size.width(), size.height()),
                             *(m_mask[i]), m_viewPort);
       }
     }
     painter.end();
-
+#if 1
     if (m_paintBundle) {
       double zoomRatio = size.width() * 1.0 / m_viewPort.width();
-      QPainter painter1(this);
+      ZPainter painter1(this);
 #ifdef _DEBUG_2
       std::cout << x() - parentWidget()->x() << " "
                 << y() - parentWidget()->y()
@@ -338,8 +338,12 @@ void ZImageWidget::paintEvent(QPaintEvent * /*event*/)
       transform.scale(zoomRatio, zoomRatio);
       painter1.setTransform(transform);
 
+      painter1.setStackOffset(m_paintBundle->getStackOffset());
       for (ZPaintBundle::const_iterator it = m_paintBundle->begin();
            it != m_paintBundle->end(); ++it) {
+#ifdef _DEBUG_2
+          std::cout << (*it)->className() << std::endl;
+#endif
         if ((*it)->getTarget() == ZStackDrawable::WIDGET) {
           (*it)->display(painter1, m_paintBundle->sliceIndex(),
                          m_paintBundle->displayStyle());
@@ -363,6 +367,7 @@ void ZImageWidget::paintEvent(QPaintEvent * /*event*/)
       painter.drawRect(ratio * m_viewPort.left(), ratio * m_viewPort.top(),
                        ratio * m_viewPort.width(), ratio * m_viewPort.height());
     }
+#endif
   }
 }
 
@@ -435,16 +440,18 @@ QSize ZImageWidget::canvasSize() const
 }
 
 
-QPoint ZImageWidget::canvasCoordinate(QPoint widgetCoord) const
+QPointF ZImageWidget::canvasCoordinate(QPoint widgetCoord) const
 {
   QSize csize = projectSize();
   //QSize isize = canvasSize();
 
-  QPoint pt;
+  QPointF pt;
 
   if (csize.width() > 0 && csize.height() > 0) {
-    pt.setX(widgetCoord.x() * (m_viewPort.width())/ (csize.width()) + m_viewPort.left());
-    pt.setY(widgetCoord.y() * (m_viewPort.height())/ (csize.height()) + m_viewPort.top());
+    pt.setX(static_cast<double>(widgetCoord.x() * (m_viewPort.width()))/
+            (csize.width()) + m_viewPort.left() - 0.5);
+    pt.setY(static_cast<double>(widgetCoord.y() * (m_viewPort.height()))/
+            (csize.height()) + m_viewPort.top() - 0.5);
   }
   /*
   pt.setX(Raster_Linear_Map(widgetCoord.x(), 0, csize.width(),
@@ -537,4 +544,9 @@ double ZImageWidget::getActualOffsetY() const
   return static_cast<double>(
         m_viewPort.top() * m_projRegion.bottom() -
         m_viewPort.bottom() * m_projRegion.top()) / m_viewPort.height();
+}
+
+void ZImageWidget::updateView()
+{
+  update(QRect(QPoint(0, 0), screenSize()));
 }

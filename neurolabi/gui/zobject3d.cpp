@@ -121,7 +121,7 @@ void ZObject3d::load(const char *filePath)
   UNUSED_PARAMETER(filePath);
 }
 
-void ZObject3d::display(QPainter &painter, int z, Display_Style option) const
+void ZObject3d::display(ZPainter &painter, int z, Display_Style option) const
 {  
   UNUSED_PARAMETER(option);
 #if _QT_GUI_USED_
@@ -301,7 +301,7 @@ void ZObject3d::print()
   }
 }
 
-Stack* ZObject3d::toStack(int *offset)
+Stack* ZObject3d::toStack(int *offset) const
 {
   Object_3d *obj = c_obj();
 
@@ -418,7 +418,7 @@ double ZObject3d::getRadius() const
   return radius;
 }
 
-bool ZObject3d::isEmpty()
+bool ZObject3d::isEmpty() const
 {
   return m_voxelArray.empty();
 }

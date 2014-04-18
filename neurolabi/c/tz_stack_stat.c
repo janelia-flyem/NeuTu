@@ -164,6 +164,42 @@ double Stack_Sum(const Stack *stack)
 }
 #undef STACK_SUM
 
+#define STACK_SQUARE_SUM(stack_array)			\
+  for (i = 0; i < nvoxel; i++) {		\
+    sum += (double) stack_array[i] * stack_array[i];		\
+  }
+
+double Stack_Square_Sum(const Stack *stack)
+{
+  double sum = 0.0;
+  size_t i;
+  size_t nvoxel = Stack_Voxel_Number(stack);
+
+  DEFINE_SCALAR_ARRAY_ALL(array, stack);
+
+  switch (Stack_Kind(stack)) {
+  case GREY:
+    STACK_SQUARE_SUM(array_grey);
+    break;
+  case GREY16:
+    STACK_SQUARE_SUM(array_grey16);
+    break;
+  case FLOAT32:
+    STACK_SQUARE_SUM(array_float32);
+    break;
+  case FLOAT64:
+    STACK_SQUARE_SUM(array_float64);
+    break;
+  default:
+    PRINT_EXCEPTION("Unsupported image kind",
+		    "Make sure the stack kind is one of the following:\n GREY, GREY16, FLOAT32, FLOAT64");
+    break;
+  }
+  
+  return sum;
+}
+#undef STACK_SQUARE_SUM
+
 /*
  * Calculate the mean of the stack.
  */
@@ -171,6 +207,17 @@ double Stack_Mean(const Stack *stack)
 {
   double s = Stack_Sum(stack);
   return s / (double) Stack_Voxel_Number(stack);
+}
+
+double Stack_Var(const Stack *stack)
+{
+  double s = Stack_Mean(stack);
+  double s2 = Stack_Square_Sum(stack);
+  double n = Stack_Voxel_Number(stack);
+
+  double v = s2 / n - s * s;
+
+  return v;
 }
 
 #define STACK_FGAREA(array)			\

@@ -25,7 +25,7 @@ class Z3DSwcFilter : public Z3DGeometryFilter
   Q_OBJECT
 public:
   enum InteractionMode {
-    Select, AddSwcNode, ExtendSwcNode, ConnectSwcNode, SmartExtendSwcNode
+    Select, AddSwcNode, ConnectSwcNode, SmartExtendSwcNode
   };
 
   explicit Z3DSwcFilter();

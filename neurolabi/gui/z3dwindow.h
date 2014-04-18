@@ -16,6 +16,7 @@
 #include "zglmutils.h"
 #include "z3dcameraparameter.h"
 #include "zactionactivator.h"
+#include "z3dvolumeraycasterrenderer.h"
 
 class ZStackDoc;
 class Z3DTrackballInteractionHandler;
@@ -36,7 +37,6 @@ class ZWidgetsGroup;
 class Z3DCanvas;
 class Z3DNetworkEvaluator;
 class Z3DProcessorNetwork;
-class Z3DVolumeRaycasterRenderer;
 class Z3DTriangleList;
 
 class Z3DWindow : public QMainWindow
@@ -140,7 +140,6 @@ public slots:
   void selectedSwcChangedFrom3D(ZSwcTree* p, bool append);
   void selectedSwcTreeNodeChangedFrom3D(Swc_Tree_Node* p, bool append);
   void addNewSwcTreeNode(double x, double y, double z, double r);
-  void extendSwcTreeNode(double x, double y, double z);
   void connectSwcTreeNode(Swc_Tree_Node *tn);
   void deleteSelectedSwcNode();
   void locateSwcNodeIn2DView();
@@ -220,7 +219,7 @@ public slots:
   void updateSettingsDockWidget();
 
   void toogleAddSwcNodeMode(bool checked);
-  void toogleExtendSelectedSwcNodeMode(bool checked);
+  //void toogleExtendSelectedSwcNodeMode(bool checked);
   void toogleSmartExtendSelectedSwcNodeMode(bool checked);
   void changeBackground();
 
@@ -253,7 +252,7 @@ private:
   QAction *m_toogleAddSwcNodeModeAction;
   QAction *m_changeBackgroundAction;
   QAction *m_toogleMoveSelectedObjectsAction;
-  QAction *m_toogleExtendSelectedSwcNodeAction;
+  //QAction *m_toogleExtendSelectedSwcNodeAction;
   QAction *m_toogleSmartExtendSelectedSwcNodeAction;
   QAction *m_locateSwcNodeIn2DAction;
 

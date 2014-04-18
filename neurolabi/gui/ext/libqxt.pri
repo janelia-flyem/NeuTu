@@ -1,6 +1,6 @@
 INCLUDEPATH += $$PWD/libqxt/core $$PWD/libqxt/widgets
 
-DEFINES += BUILD_QXT
+DEFINES += BUILD_QXT BUILD_QXT_OBJECT
 
 HEADERS += \
     $$PWD/libqxt/core/qxtglobal.h \

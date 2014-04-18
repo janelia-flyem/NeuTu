@@ -58,6 +58,7 @@ typedef float              float32;
 typedef double             float64;
 
 typedef char              *string;     //  Used to emphasize '\0' terminated string
+typedef const char        *const_string;
 typedef int                boolean;    //  Used to emphasize == 0 is false, != 0 is on
 typedef int                tristate;   //  Used to emphasize == 0, > 0, < 0 is what matters
 

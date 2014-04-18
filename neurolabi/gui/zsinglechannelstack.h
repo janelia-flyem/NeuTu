@@ -107,6 +107,7 @@ public: /* operations */
 public: /* processing routines */
   bool binarize(int threshold = 0);
   bool bwsolid();
+  bool bwperim();
   bool enhanceLine(double sigmaX, double sigmaY, double sigmaZ);
   bool enhanceLine();
   bool watershed();

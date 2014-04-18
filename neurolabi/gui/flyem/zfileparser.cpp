@@ -70,6 +70,7 @@ bool ZFileParser::writeVaa3dMakerFile(std::string filePath,
   return true;
 }
 
+
 bool ZFileParser::writeVaa3dApoFile(std::string filePath,
                                     vector<ZVaa3dApo> markerArray)
 {

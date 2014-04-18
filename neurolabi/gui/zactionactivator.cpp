@@ -77,10 +77,12 @@ void ZActionActivator::update(const Z3DWindow *window)
 
 void ZActionActivator::registerAction(QAction *action, bool positive)
 {
-  if (positive) {
-    m_postiveActionList.insert(action);
-  } else {
-    m_negativeActionList.insert(action);
+  if (action != NULL) {
+    if (positive) {
+      m_postiveActionList.insert(action);
+    } else {
+      m_negativeActionList.insert(action);
+    }
   }
 }
 
@@ -122,4 +124,24 @@ bool ZSingleSwcNodeActionActivator::isPositive(const ZStackDoc *doc) const
   }
 
   return doc->selectedSwcTreeNodes()->size() == 1;
+}
+
+/////////////////////////////////////////
+ZSwcActionActivator::ZSwcActionActivator()
+{
+
+}
+
+ZSwcActionActivator::~ZSwcActionActivator()
+{
+
+}
+
+bool ZSwcActionActivator::isPositive(const ZStackDoc *doc) const
+{
+  if (doc == NULL) {
+    return false;
+  }
+
+  return doc->hasSwc();
 }

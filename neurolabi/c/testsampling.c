@@ -16,6 +16,7 @@ INIT_EXCEPTION_MAIN(e)
 
 int main(int argc, char *argv[])
 {
+#if 0
   Stack *stack = Make_Stack(GREY, 3, 3, 3);
   int i;
   for (i = 0; i < Stack_Voxel_Number(stack); i++) {
@@ -76,6 +77,23 @@ int main(int argc, char *argv[])
   Kill_Stack(stack);
   Kill_DMatrix(dm);
   Kill_DMatrix(points);
+#endif
+
+#if 1
+  Stack *stack = Make_Stack(GREY, 5, 6, 3);
+  Zero_Stack(stack);
+  int i;
+  for (i = 0; i < Stack_Voxel_Number(stack); i++) {
+    stack->array[i] = i % 7 == 0;
+  }
+  Print_Stack(stack);
+  printf("%d\n", Stack_Point_Hit_Mask(stack, 0, 0, 0));
+  printf("%d\n", Stack_Point_Hit_Mask(stack, 0.8, 0, 0));
+  printf("%d\n", Stack_Point_Hit_Mask(stack, 1, 2.8, 2.7));
+  printf("%d\n", Stack_Point_Hit_Mask(stack, 1, 1.8, 1.7));
+  printf("%d\n", Stack_Point_Hit_Mask(stack, 2.8, 2.7, 1));
+  printf("%d\n", Stack_Point_Hit_Mask(stack, 1.8, 1.7, 1));
+#endif
 
   return 0;
 }

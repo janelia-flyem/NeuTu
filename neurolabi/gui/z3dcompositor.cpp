@@ -21,9 +21,9 @@ Z3DCompositor::Z3DCompositor()
   , m_camera("Camera", Z3DCamera())
   , m_geometriesMultisampleMode("Multisample Anti-Aliasing")
   , m_transparencyMethod("Transparency")
-  , m_inport("Image", false, InvalidMonoViewResult)
-  , m_leftEyeInport("LeftEyeImage", false, InvalidLeftEyeResult)
-  , m_rightEyeInport("RightEyeImage", false, InvalidRightEyeResult)
+  , m_inport("Image", true, InvalidMonoViewResult)
+  , m_leftEyeInport("LeftEyeImage", true, InvalidLeftEyeResult)
+  , m_rightEyeInport("RightEyeImage", true, InvalidRightEyeResult)
   , m_outport("Image", true, InvalidMonoViewResult)
   , m_leftEyeOutport("LeftEyeImage", true, InvalidLeftEyeResult)
   , m_rightEyeOutport("RightEyeImage", true, InvalidRightEyeResult)
@@ -318,6 +318,10 @@ void Z3DCompositor::process(Z3DEye eye)
     }
   } else {      // with volume
     if (normalFilters.empty() && onTopFilters.empty()) {  // directly copy inport image to outport
+      const Z3DTexture *colorTex = NULL;
+      const Z3DTexture *depthTex = NULL;
+      renderImages(currentInport, currentOutport, eye, colorTex, depthTex);
+
       currentOutport.bindTarget();
       currentOutport.clearTarget();
       m_rendererBase->setViewport(currentOutport.getSize());
@@ -328,8 +332,8 @@ void Z3DCompositor::process(Z3DEye eye)
         glEnable(GL_BLEND);
         glBlendFunc(GL_ONE,GL_ONE_MINUS_SRC_ALPHA);
       }
-      m_textureCopyRenderer->setColorTexture(currentInport.getColorTexture());
-      m_textureCopyRenderer->setDepthTexture(currentInport.getDepthTexture());
+      m_textureCopyRenderer->setColorTexture(colorTex);
+      m_textureCopyRenderer->setDepthTexture(depthTex);
       m_rendererBase->activateRenderer(m_textureCopyRenderer);
       m_rendererBase->render(eye);
       if (m_showBackground.get()) {
@@ -352,6 +356,10 @@ void Z3DCompositor::process(Z3DEye eye)
       else
         renderGeometries(onTopFilters, m_tempPort, eye);
 
+      const Z3DTexture *colorTex = NULL;
+      const Z3DTexture *depthTex = NULL;
+      renderImages(currentInport, currentOutport, eye, colorTex, depthTex);
+
       // blend tempPort with volume
       currentOutport.bindTarget();
       currentOutport.clearTarget();
@@ -366,15 +374,15 @@ void Z3DCompositor::process(Z3DEye eye)
       if (onTopFilters.empty()) {
         m_alphaBlendRenderer->setColorTexture1(m_tempPort.getColorTexture());
         m_alphaBlendRenderer->setDepthTexture1(m_tempPort.getDepthTexture());
-        m_alphaBlendRenderer->setColorTexture2(currentInport.getColorTexture());
-        m_alphaBlendRenderer->setDepthTexture2(currentInport.getDepthTexture());
+        m_alphaBlendRenderer->setColorTexture2(colorTex);
+        m_alphaBlendRenderer->setDepthTexture2(depthTex);
         m_rendererBase->activateRenderer(m_alphaBlendRenderer);
         m_rendererBase->render(eye);
       } else {
         m_firstOnTopBlendRenderer->setColorTexture1(m_tempPort.getColorTexture());
         m_firstOnTopBlendRenderer->setDepthTexture1(m_tempPort.getDepthTexture());
-        m_firstOnTopBlendRenderer->setColorTexture2(currentInport.getColorTexture());
-        m_firstOnTopBlendRenderer->setDepthTexture2(currentInport.getDepthTexture());
+        m_firstOnTopBlendRenderer->setColorTexture2(colorTex);
+        m_firstOnTopBlendRenderer->setDepthTexture2(depthTex);
         m_rendererBase->activateRenderer(m_firstOnTopBlendRenderer);
         m_rendererBase->render(eye);
       }
@@ -398,6 +406,10 @@ void Z3DCompositor::process(Z3DEye eye)
       // render normal geometries into tempport
       renderGeometries(normalFilters, m_tempPort, eye);
 
+      const Z3DTexture *colorTex = NULL;
+      const Z3DTexture *depthTex = NULL;
+      renderImages(currentInport, currentOutport, eye, colorTex, depthTex);
+
       // blend inport and tempport into tempport2
       m_tempPort2.bindTarget();
       CHECK_GL_ERROR;
@@ -405,8 +417,8 @@ void Z3DCompositor::process(Z3DEye eye)
       m_rendererBase->setViewport(m_tempPort2.getSize());
       m_alphaBlendRenderer->setColorTexture1(m_tempPort.getColorTexture());
       m_alphaBlendRenderer->setDepthTexture1(m_tempPort.getDepthTexture());
-      m_alphaBlendRenderer->setColorTexture2(currentInport.getColorTexture());
-      m_alphaBlendRenderer->setDepthTexture2(currentInport.getDepthTexture());
+      m_alphaBlendRenderer->setColorTexture2(colorTex);
+      m_alphaBlendRenderer->setDepthTexture2(depthTex);
       m_rendererBase->activateRenderer(m_alphaBlendRenderer);
       m_rendererBase->render(eye);
 
@@ -994,4 +1006,59 @@ bool Z3DCompositor::createWARenderTarget(glm::ivec2 size)
     m_waRT = NULL;
   }
   return comp;
+}
+
+void Z3DCompositor::renderImages(Z3DRenderInputPort &currentInport, Z3DRenderOutputPort &currentOutport,
+                                 Z3DEye eye, const Z3DTexture *&colorTex, const Z3DTexture *&depthTex)
+{
+  size_t numImages = currentInport.getNumOfValidInputs();
+  if (numImages == 0) {
+    assert(false);
+  }
+  if (numImages == 1) {
+    colorTex = currentInport.getColorTexture(0);
+    depthTex = currentInport.getDepthTexture(0);
+  } else {
+    m_tempPort3.resize(currentOutport.getSize());
+    m_tempPort4.resize(currentOutport.getSize());
+
+    // blend inport1 and inport2 into tempport3
+    m_tempPort3.bindTarget();
+    m_tempPort3.clearTarget();
+    CHECK_GL_ERROR;
+
+    m_rendererBase->setViewport(m_tempPort3.getSize());
+    m_alphaBlendRenderer->setColorTexture1(currentInport.getColorTexture(0));
+    m_alphaBlendRenderer->setDepthTexture1(currentInport.getDepthTexture(0));
+    m_alphaBlendRenderer->setColorTexture2(currentInport.getColorTexture(1));
+    m_alphaBlendRenderer->setDepthTexture2(currentInport.getDepthTexture(1));
+    m_rendererBase->activateRenderer(m_alphaBlendRenderer);
+    m_rendererBase->render(eye);
+
+    m_tempPort3.releaseTarget();
+    CHECK_GL_ERROR;
+
+    Z3DRenderOutputPort *resPort = &m_tempPort3;
+    Z3DRenderOutputPort *nextResPort = &m_tempPort4;
+    for (size_t i=2; i<numImages; ++i) {
+      nextResPort->bindTarget();
+      nextResPort->clearTarget();
+      CHECK_GL_ERROR;
+
+      m_alphaBlendRenderer->setColorTexture1(resPort->getColorTexture());
+      m_alphaBlendRenderer->setDepthTexture1(resPort->getDepthTexture());
+      m_alphaBlendRenderer->setColorTexture2(currentInport.getColorTexture(i));
+      m_alphaBlendRenderer->setDepthTexture2(currentInport.getDepthTexture(i));
+      m_rendererBase->activateRenderer(m_alphaBlendRenderer);
+      m_rendererBase->render(eye);
+
+      nextResPort->releaseTarget();
+      CHECK_GL_ERROR;
+
+      std::swap(resPort, nextResPort);
+    }
+
+    colorTex = resPort->getColorTexture();
+    depthTex = resPort->getDepthTexture();
+  }
 }

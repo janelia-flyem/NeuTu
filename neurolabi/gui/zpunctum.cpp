@@ -96,7 +96,7 @@ ZPunctum::~ZPunctum()
 //  }
 //}
 
-void ZPunctum::display(QPainter &painter, int n, ZStackDrawable::Display_Style style) const
+void ZPunctum::display(ZPainter &painter, int n, ZStackDrawable::Display_Style style) const
 {
   if (!isVisible())
     return;

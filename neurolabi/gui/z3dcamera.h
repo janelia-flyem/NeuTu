@@ -52,7 +52,7 @@ public:
   bool isOrthographicProjection() const { return m_projectionType == Orthographic; }
 
   float getFieldOfView() const { return m_fieldOfView; }
-  void setFieldOfView(float fov);  // in degree
+  void setFieldOfView(float fov);
 
   float getAspectRatio() const { return m_aspectRatio; }
   void setAspectRatio(float ar);
@@ -67,7 +67,7 @@ public:
   void setWindowAspectRatio(float war);
 
   float getEyeSeparationAngle() const { return m_eyeSeparationAngle; }
-  void setEyeSeparationAngle(float degree);  // in degree
+  void setEyeSeparationAngle(float angle);
 
   // convinient functions to set many variables at once:
 
@@ -121,13 +121,13 @@ public:
   void dolly(float value);
 
   // Rotate the camera about the view vector.  This will
-  // spin the camera about its axis. angle in degree
+  // spin the camera about its axis.
   void roll(float angle);
 
   // Rotate the camera about the view up vector centered at the focal point.
   // Note that the view up vector is whatever was set via setUpVector, and is
   // not necessarily perpendicular to the direction of projection.  The
-  // result is a horizontal rotation of the camera. angle in degree
+  // result is a horizontal rotation of the camera.
   void azimuth(float angle);
 
   // Description:
@@ -135,7 +135,7 @@ public:
   // position as the center of rotation. Note that the view up vector is
   // whatever was set via setUpVector, and is not necessarily perpendicular
   // to the view vector.  The result is a horizontal rotation
-  // of the scene. angle in degree
+  // of the scene.
   void yaw(float angle);
   inline void pan(float angle) { yaw(angle); }
 
@@ -143,24 +143,21 @@ public:
   // Rotate the camera about the cross product of the view up vector and
   // the view vector (point at left in screen), using the focal point as
   // the center of rotation. The result is a vertical rotation of the scene.
-  // angle in degree
   void elevation(float angle);
 
   // Description:
   // Rotate the focal point about the cross product of the view vector
   // and the view up vector (point right in screen), using the camera's position
   // as the center of rotation.  The result is a vertical rotation of the camera.
-  // angle in degree
   void pitch(float angle);
   inline void tilt(float angle) { pitch(angle); }
 
   // In perspective mode, decrease the view angle by the specified factor.
   // A value greater than 1 is a zoom-in, a value less than 1 is a zoom-out.
-  // angle in degree
   void zoom(float factor);
 
   // rotate around a point
-  // angle in degree, axis and point in worldspace, axis should be normalized
+  // axis and point in worldspace, axis should be normalized
   void rotate(float angle, glm::vec3 axis, glm::vec3 point);
   void rotate(glm::quat quat, glm::vec3 point);
   // rotate around center (focus point)
@@ -212,13 +209,13 @@ private:
   glm::vec3 m_center;
   glm::vec3 m_upVector;  // normalized
   ProjectionType m_projectionType;
-  float m_fieldOfView; // fov in degree
+  float m_fieldOfView;
   float m_aspectRatio;
   float m_nearDist;
   float m_farDist;
   float m_windowAspectRatio;
   float m_eyeSeparation;  // dist from left eye to right eye
-  float m_eyeSeparationAngle;  // angle between two eyes to focus point in degree
+  float m_eyeSeparationAngle;  // angle between two eyes to focus point
 
   // derived camera variables
   glm::vec3 m_viewVector;  // normalized vector from eye to center (center - eye)

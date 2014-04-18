@@ -3,6 +3,8 @@
 #include "swctreenode.h"
 #include "swc/zswcresampler.h"
 #include "flyem/zflyemneuronrangecompare.h"
+#include "zdoublevector.h"
+#include "zpointarray.h"
 
 ZSwcGenerator::ZSwcGenerator()
 {
@@ -165,9 +167,68 @@ ZSwcTree* ZSwcGenerator::createRangeCompareSwc(
   return tree;
 }
 
+ZSwcTree* ZSwcGenerator::createSwcByRegionSampling(
+    const ZVoxelArray &voxelArray, double radiusAdjustment)
+{
+#ifdef _DEBUG_2
+  voxelArray.print();
+#endif
+
+  ZDoubleVector voxelSizeArray(voxelArray.size());
+
+  //Retrieve voxel size
+  for (size_t i = 0; i < voxelSizeArray.size(); ++i) {
+    voxelSizeArray[i] = -voxelArray[i].value();
+  }
+
+  std::vector<int> indexArray;
+  voxelSizeArray.sort(indexArray);
+
+  std::vector<bool> sampled(voxelArray.size(), true);
+
+  for (size_t i = 1; i < voxelArray.size(); ++i) {
+    size_t currentVoxelIndex = indexArray[i];
+    const ZVoxel &currentVoxel = voxelArray[currentVoxelIndex];
+    for (size_t j = 0; j < i; ++j) {
+      size_t prevVoxelIndex = indexArray[j];
+      if (sampled[prevVoxelIndex]) {
+        const ZVoxel &prevVoxel = voxelArray[prevVoxelIndex];
+        double dist = currentVoxel.distanceTo(prevVoxel);
+        if (dist < prevVoxel.value()) {
+          sampled[currentVoxelIndex] = false;
+          break;
+        }
+      }
+    }
+  }
+
+  Swc_Tree_Node *prevTn = NULL;
+
+  for (size_t i = 0; i < voxelArray.size(); ++i) {
+    if (sampled[i]) {
+      Swc_Tree_Node *tn = SwcTreeNode::makePointer();
+      SwcTreeNode::setPos(
+            tn, voxelArray[i].x(), voxelArray[i].y(), voxelArray[i].z());
+      SwcTreeNode::setRadius(
+            tn, voxelArray[i].value() + radiusAdjustment);
+      Swc_Tree_Node_Set_Parent(tn, prevTn);
+      prevTn = tn;
+    }
+  }
+
+  ZSwcTree *tree = new ZSwcTree;
+  tree->setDataFromNodeRoot(prevTn);
+
+  return tree;
+}
+
 ZSwcTree* ZSwcGenerator::createSwc(
     const ZVoxelArray &voxelArray, ZSwcGenerator::EPostProcess option)
 {
+  if (option == REGION_SAMPLING) {
+    return createSwcByRegionSampling(voxelArray);
+  }
+
   size_t startIndex = 0;
   size_t endIndex = voxelArray.size() - 1;
 
@@ -183,9 +244,12 @@ ZSwcTree* ZSwcGenerator::createSwc(
 
   for (size_t i = startIndex + 1; i < endIndex; i++) {
     double dist = voxelArray[i].distanceTo(prevVoxel);
-    bool sampling = false;
-    if (dist > prevVoxel.value()) {
-      sampling = true;
+    bool sampling = true;
+
+    if (option == SPARSE_SAMPLING) {
+      if (dist < prevVoxel.value()) {
+        sampling = false;
+      }
     }
 
     if (sampling) {
@@ -224,4 +288,30 @@ ZSwcTree* ZSwcGenerator::createSwc(
   }
 
   return treeWrapper;
+}
+
+ZSwcTree* ZSwcGenerator::createSwc(
+    const ZPointArray &pointArray, double radius, bool isConnected)
+{
+  ZSwcTree *tree = new ZSwcTree;
+
+  Swc_Tree_Node *root = tree->forceVirtualRoot();
+  Swc_Tree_Node *parent = root;
+
+  for (ZPointArray::const_iterator iter = pointArray.begin();
+       iter != pointArray.end(); ++iter) {
+    const ZPoint &pt = *iter;
+    Swc_Tree_Node *tn = New_Swc_Tree_Node();
+
+    SwcTreeNode::setPos(tn, pt.x(), pt.y(), pt.z());
+    SwcTreeNode::setRadius(tn, radius);
+    SwcTreeNode::setParent(tn, parent);
+    if (isConnected) {
+      parent = tn;
+    }
+  }
+
+  tree->resortId();
+
+  return tree;
 }

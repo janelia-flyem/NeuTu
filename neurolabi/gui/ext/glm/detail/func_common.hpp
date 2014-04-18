@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////////
 /// OpenGL Mathematics (glm.g-truc.net)
 ///
-/// Copyright (c) 2005 - 2013 G-Truc Creation (www.g-truc.net)
+/// Copyright (c) 2005 - 2014 G-Truc Creation (www.g-truc.net)
 /// Permission is hereby granted, free of charge, to any person obtaining a copy
 /// of this software and associated documentation files (the "Software"), to deal
 /// in the Software without restriction, including without limitation the rights
@@ -37,6 +37,8 @@
 #define GLM_FUNC_COMMON_INCLUDED
 
 #include "setup.hpp"
+#include "precision.hpp"
+#include "type_int.hpp"
 #include "_fixes.hpp"
 
 namespace glm
@@ -256,6 +258,18 @@ namespace glm
 	/// glm::dvec3 t = glm::mix(e, f, a); // Types of the third parameter is not required to match with the first and the second.
 	/// glm::vec4 u = glm::mix(g, h, r); // Interpolations can be perform per component with a vector for the last parameter.
 	/// @endcode
+	template <typename T, typename U, precision P, template <typename, precision> class vecType>
+	GLM_FUNC_DECL vecType<T, P> mix(
+		vecType<T, P> const & x,
+		vecType<T, P> const & y,
+		vecType<U, P> const & a);
+
+	template <typename T, typename U, precision P, template <typename, precision> class vecType>
+	GLM_FUNC_DECL vecType<T, P> mix(
+		vecType<T, P> const & x,
+		vecType<T, P> const & y,
+		U const & a);
+
 	template <typename genTypeT, typename genTypeU>
 	GLM_FUNC_DECL genTypeT mix(
 		genTypeT const & x,

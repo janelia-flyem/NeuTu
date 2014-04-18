@@ -24,6 +24,13 @@ class Z3DRenderTarget;
 
 class Z3DRenderInputPort;
 
+#ifndef GL_DEPTH_COMPONENT24
+#define GL_DEPTH_COMPONENT24 0x81A6
+#endif
+#ifndef GL_RGBA16
+#define GL_RGBA16 0x805B
+#endif
+
 class Z3DRenderOutputPort : public Z3DOutputPortBase
 {
   friend class Z3DRenderProcessor;
@@ -117,19 +124,19 @@ public:
   glm::ivec2 getExpectedSize() const { return m_expectedSize; }
 
   // go through all connected output render ports and count how many have valid rendering
-  int getNumOfValidInputs() const;
+  size_t getNumOfValidInputs() const;
 
   // once we have the number of valid inputs, we can use a index as parameter to query data from input
   // idx range from 0 to getNumOfValidInputs() - 1
-  glm::ivec2 getSize(int idx = 0) const;
-  const Z3DTexture* getColorTexture(int idx = 0) const;
-  const Z3DTexture* getDepthTexture(int idx = 0) const;
+  glm::ivec2 getSize(size_t idx = 0) const;
+  const Z3DTexture* getColorTexture(size_t idx = 0) const;
+  const Z3DTexture* getDepthTexture(size_t idx = 0) const;
 
 protected:
   virtual void setProcessor(Z3DProcessor *p);
 
 private:
-  const Z3DRenderTarget* getRenderTarget(int idx) const;
+  const Z3DRenderTarget* getRenderTarget(size_t idx) const;
 
   glm::ivec2 m_expectedSize;
 };

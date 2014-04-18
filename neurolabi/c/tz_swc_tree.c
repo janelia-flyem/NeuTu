@@ -12,7 +12,11 @@
 #define getpid _getpid
 #endif
 #include <utilities.h>
+#ifndef __USE_BSD
+#  define __USE_BSD
+#endif
 #include <string.h>
+#include <ctype.h>
 #include "tz_error.h"
 #include "tz_swc_tree.h"
 #include "tz_swc.h"
@@ -1545,6 +1549,7 @@ void Swc_Tree_Node_Connect(Swc_Tree_Node *tn, Swc_Tree_Node *tn2)
   }
 }
 
+#define SWC_LOCSEG_MINIMAL_HEIGHT 0.001
 Local_Neuroseg* Swc_Tree_Node_To_Locseg(const Swc_Tree_Node *tn,
 					Local_Neuroseg *locseg)
 {
@@ -1573,8 +1578,13 @@ Local_Neuroseg* Swc_Tree_Node_To_Locseg(const Swc_Tree_Node *tn,
   Local_Neuroseg_Change_Top(locseg, top);
   locseg->seg.r1 = Swc_Tree_Node_Const_Data(tn->parent)->d;
   locseg->seg.scale = 1.0;
-  locseg->seg.c = (Swc_Tree_Node_Const_Data(tn)->d - locseg->seg.r1) / 
-    (locseg->seg.h - 1.0);
+  double adjustedHeight = locseg->seg.h - 1.0;
+  if (adjustedHeight < SWC_LOCSEG_MINIMAL_HEIGHT) {
+      locseg->seg.c = 1.0;
+  } else {
+      locseg->seg.c = (Swc_Tree_Node_Const_Data(tn)->d - locseg->seg.r1) /
+              adjustedHeight;
+  }
   locseg->seg.alpha = 0;
   locseg->seg.curvature = 0;
 
@@ -2021,6 +2031,175 @@ Swc_Tree_Node* Swc_Tree_Regular_Root(Swc_Tree *tree)
   return NULL;
 }
 
+static int swc_tree_string_max_id(const char *swc_string)
+{
+  int max_id = -1;
+  int id = 0;
+  int state = 0; //0 ready, 1 ignore
+  size_t index = 0;
+  char c;
+  while ((c = swc_string[index]) != '\0') {
+    switch (state) {
+      case 0:
+        if (isdigit(c)) {
+          id = String_First_Integer(swc_string + index);
+          if (id > max_id) {
+            max_id = id;
+          }
+          state = 1;
+        } else if (c == '#' || c == '-') {
+          state  = 1;
+        }
+        break;
+      case 1:
+        if (c == '\n' || c == '\r') {
+          state = 0;
+        }
+        break;
+      default:
+        break;
+    }
+    ++index;
+  }
+
+  return max_id;
+}
+
+Swc_Tree* Swc_Tree_Parse_String(char *swc_string)
+{
+  if (swc_string == NULL) {
+    return NULL;
+  }
+
+  if (strlen(swc_string) <= 0) {
+    return NULL;
+  }
+
+  int max_id = swc_tree_string_max_id(swc_string);
+#ifdef _DEBUG_
+  printf("%d\n", max_id);
+#endif
+
+  if (max_id < 0) {
+    return NULL;
+  }
+
+  /* alloc <map> */
+  Swc_Tree_Node_Map *map = (Swc_Tree_Node_Map *) 
+    Guarded_Malloc(sizeof(Swc_Tree_Node_Map) * (max_id + 2), 
+		   "Read_Swc_Tree");
+
+  int i;
+  for (i = 1; i <= max_id + 1; i++) {
+    map[i].tree_node = NULL;
+  }
+
+  int n = 0;
+
+#define MAX_SWC_FIELD_NUMBER 100
+
+  double value[MAX_SWC_FIELD_NUMBER];
+  
+  const char *sep = "\n\r";
+  char *line = NULL;
+#if defined(_WIN64) || defined(_WIN32)
+  while ((line = strtok(swc_string, sep)) != NULL) {
+    swc_string = NULL;
+#else
+  while ((line = strsep(&swc_string, sep)) != NULL) {
+#endif
+    strtrim(line);
+    if (strlen(line) > 0) {
+      int field_number;
+      int cpos;
+      int csize = strlen(line);
+      BOOL commentFound = FALSE;
+      BOOL specialCommentFound = FALSE;
+      for (cpos = 0; cpos < csize; cpos++) {
+        if (commentFound) {
+          if (line[cpos] == '@') {
+            specialCommentFound = !specialCommentFound;
+          }
+          if (specialCommentFound == FALSE) {
+            line[cpos] = ' ';
+          }
+        }
+        if (line[cpos] == '#') {
+          commentFound = TRUE;
+        }
+      }
+
+      String_To_Double_Array(line, value, &field_number);
+
+      if (field_number >= 7) {
+        Swc_Node node;
+        Default_Swc_Node(&node);
+        node.id = (int) value[0];
+        node.type = (int) value[1];
+        node.x = value[2];
+        node.y = value[3];
+        node.z = value[4];
+        node.d = value[5];
+        node.parent_id = (int) value[6];
+
+        map[node.id + 1].tree_node = New_Swc_Tree_Node();
+        if (field_number >= 8) {
+          node.label = value[7];
+        }
+        if (field_number >= 9) {
+          map[node.id + 1].tree_node->feature = value[8];
+        }
+        if (field_number >= 10) {
+          map[node.id + 1].tree_node->weight = value[9];
+        }
+
+        map[node.id + 1].tree_node->node = node;
+        n++;
+      }
+    }
+  }
+
+  Swc_Tree *tree = New_Swc_Tree();
+
+  tree->root = New_Swc_Tree_Node();
+  tree->root->node.id = -1;
+  tree->root->node.parent_id = -2;
+
+  map[0].tree_node = tree->root;
+
+  for (i = 1; i <= max_id + 1; i++) {
+    if (map[i].tree_node != NULL) {
+      map[i].tree_node->parent = 
+	map[map[i].tree_node->node.parent_id + 1].tree_node;
+
+      if (map[map[i].tree_node->node.parent_id + 1].tree_node == NULL) {
+        printf("WARNING : Node %d does not exist.\n", 
+            map[i].tree_node->node.parent_id);
+        map[i].tree_node->parent = tree->root;
+        map[i].tree_node->node.parent_id = -1;
+      }
+
+      if (map[map[i].tree_node->node.parent_id + 1].tree_node->first_child 
+	  == NULL) {
+	map[map[i].tree_node->node.parent_id + 1].tree_node->first_child = 
+	  map[i].tree_node;
+      } else {
+	Swc_Tree_Node *sibling = 
+	  map[map[i].tree_node->node.parent_id + 1].tree_node->first_child;
+	while (sibling->next_sibling != NULL) {
+	  sibling = sibling->next_sibling;
+	}
+	sibling->next_sibling = map[i].tree_node;
+      }
+    }
+  }
+
+  /* free <map> */
+  free(map);
+
+  return tree;
+}
+
 Swc_Tree* Read_Swc_Tree(const char *file_path)
 {
   return Read_Swc_Tree_E(file_path);
@@ -2110,6 +2289,31 @@ Swc_Tree* Read_Swc_Tree(const char *file_path)
 #endif
 }
 
+Swc_Tree* Read_Swc_Tree_E(const char *file_path)
+{
+  size_t s = fsize(file_path);
+
+  FILE *fp = fopen(file_path, "rb");
+  char *swcString = (char*) malloc(s+2);
+  size_t actual_read = fread(swcString, 1, s, fp);
+  if (actual_read != s) {
+    TZ_WARN(ERROR_IO_READ);
+    free(swcString);
+    fclose(fp);
+    return NULL;
+  }
+  swcString[s] = '\n';
+  swcString[s + 1] = '\0';
+
+  Swc_Tree *tree = Swc_Tree_Parse_String(swcString);
+
+  free(swcString);
+  fclose(fp);
+
+  return tree;
+}
+
+#if 0
 Swc_Tree* Read_Swc_Tree_E(const char *file_path)
 {
   FILE *fp = fopen(file_path, "r");
@@ -2236,6 +2440,7 @@ Swc_Tree* Read_Swc_Tree_E(const char *file_path)
 
   return tree;
 }
+#endif
 
 BOOL Write_Swc_Tree(const char *file_path, Swc_Tree *tree)
 {
@@ -2290,7 +2495,7 @@ BOOL Write_Swc_Tree_E(const char *file_path, Swc_Tree *tree)
   }
   
 
-  Swc_Tree_Iterator_Start(tree, 2, FALSE);
+  Swc_Tree_Iterator_Start(tree, SWC_TREE_ITERATOR_DEPTH_FIRST, FALSE);
   Swc_Tree_Node *tn = NULL;
 
 
@@ -2761,9 +2966,9 @@ void Swc_Tree_To_Dot_File(Swc_Tree *tree, const char *file_path)
   fclose(fp);
 }
 
-void Swc_Tree_Resort_Id(Swc_Tree *tree)
+int Swc_Tree_Resort_Id(Swc_Tree *tree)
 {
-  Swc_Tree_Iterator_Start(tree, 2, FALSE);
+  Swc_Tree_Iterator_Start(tree, SWC_TREE_ITERATOR_DEPTH_FIRST, FALSE);
   int id = 1;
   Swc_Tree_Node *tn = NULL;
 
@@ -2778,6 +2983,8 @@ void Swc_Tree_Resort_Id(Swc_Tree *tree)
       Swc_Tree_Node_Set_Parent_Id(tn, -1);
     }
   }
+
+  return id - 1;
 }
 
 void Swc_Tree_Node_Pos(const Swc_Tree_Node *tn, double *pos)
@@ -2977,6 +3184,7 @@ void Swc_Tree_Connect_Node(Swc_Tree *tree, Swc_Tree_Node *tn)
 {
   TZ_ASSERT(tree != NULL, "Null pointer.");
   TZ_ASSERT(tn != NULL, "Null pointer.");
+  TZ_ASSERT(Swc_Tree_Node_Is_Regular(tn), "Virtual node not allowed");
 
   double eps = 0.05;
 
@@ -5706,13 +5914,15 @@ void Swc_Tree_Erase_Stack(Swc_Tree *tree, Stack *stack, double scale,
 
 void Swc_Tree_Translate(Swc_Tree *tree, double x, double y, double z)
 {
-  Swc_Tree_Iterator_Start(tree, 1, FALSE);
-  Swc_Tree_Node *tn = tree->root;
-  while ((tn = Swc_Tree_Next(tree)) != NULL) {
-    if (Swc_Tree_Node_Is_Regular(tn)) {
-      Swc_Tree_Node_Data(tn)->x += x;
-      Swc_Tree_Node_Data(tn)->y += y;
-      Swc_Tree_Node_Data(tn)->z += z;
+  if (tree != NULL) {
+    Swc_Tree_Iterator_Start(tree, 1, FALSE);
+    Swc_Tree_Node *tn = tree->root;
+    while ((tn = Swc_Tree_Next(tree)) != NULL) {
+      if (Swc_Tree_Node_Is_Regular(tn)) {
+        Swc_Tree_Node_Data(tn)->x += x;
+        Swc_Tree_Node_Data(tn)->y += y;
+        Swc_Tree_Node_Data(tn)->z += z;
+      }
     }
   }
 }

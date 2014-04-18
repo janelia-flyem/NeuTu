@@ -139,7 +139,7 @@ public:
 
 public:
 
-  virtual void display(QPainter &painter, int z = 0, Display_Style option = NORMAL) const;
+  virtual void display(ZPainter &painter, int z = 0, Display_Style option = NORMAL) const;
 
   /*!
    * \brief save Save swc
@@ -152,11 +152,21 @@ public:
   void save(const std::string &filePath);
   void load(const std::string &filePath);
 
+  /*!
+   * \brief Load swc from buffer
+   *
+   * It does not support extended json style sheet.
+   *
+   * \param buffer It must end with '\0'.
+   */
+  void loadFromBuffer(const char *buffer);
+
   virtual int swcFprint(FILE *fp, int start_id = 0, int parent_id = -1,
                         double z_scale = 1.0);
   virtual void swcExport(const char *filePath);
 
   void print(int iterOption = SWC_TREE_ITERATOR_DEPTH_FIRST) const;
+  std::string toString(int iterOption = SWC_TREE_ITERATOR_DEPTH_FIRST) const;
 
   inline std::string source() const { return m_source; }
 
@@ -174,7 +184,7 @@ public:
 
   enum EComponent {
     DEPTH_FIRST_ARRAY, BREADTH_FIRST_ARRAY, LEAF_ARRAY, TERMINAL_ARRAY,
-    BRANCH_POINT_ARRAY, Z_SORTED_ARRAY, ALL_COMPONENT
+    BRANCH_POINT_ARRAY, Z_SORTED_ARRAY, BOUND_BOX, ALL_COMPONENT
   };
 
   bool isDeprecated(EComponent component) const;
@@ -290,7 +300,7 @@ public:
    *
    * \return The bound box.
    */
-  ZCuboid boundBox() const;
+  const ZCuboid& getBoundBox() const;
 
   static ZSwcTree* createCuboidSwc(const ZCuboid &box);
   ZSwcTree* createBoundBoxSwc(double margin = 0.0);
@@ -365,7 +375,7 @@ public:
 
   ZSwcForest* toSwcTreeArray();
 
-  void resortId();
+  int resortId();
 
   void flipY(double height);
 
@@ -386,6 +396,8 @@ public:
   ZSwcBranch *extractBranch(int setLabel);
   ZSwcBranch *extractLongestBranch();
   ZSwcBranch *extractFurthestBranch();
+
+  ZSwcPath getLongestPath();
 
   std::vector<Swc_Tree_Node*> extractLeaf(Swc_Tree_Node *start);
 
@@ -427,7 +439,7 @@ public:
    */
   void addLabelSubtree(Swc_Tree_Node *tn, int label);
 
-  void labelTrunk(int flag, int setLabel, Swc_Tree_Node *start);
+  //void labelTrunk(int flag, int setLabel, Swc_Tree_Node *start);
   void labelTrunkLevel(ZSwcTrunkAnalyzer *trunkAnalyzer);
 
   int regularDepth();
@@ -440,7 +452,7 @@ public:
 
   std::vector<ZSwcPath> getBranchArray();
 
-  void labelBusyLevel();
+  //void labelBusyLevel();
 
   void setTypeByLabel();
   void moveToSurface(double *x, double *y, double *z);
@@ -449,7 +461,7 @@ public:
   inline void deactivateIterator() { m_iteratorReady = true; }
   inline void activateIterator() { m_iteratorReady = false; }
 
-  void forceVirtualRoot();
+  Swc_Tree_Node* forceVirtualRoot();
 
   void setBranchSizeWeight();
 
@@ -517,6 +529,7 @@ private:
   mutable std::vector<Swc_Tree_Node*> m_terminalArray;
   mutable std::vector<Swc_Tree_Node*> m_branchPointArray;
   mutable std::vector<Swc_Tree_Node*> m_zSortedArray;
+  mutable ZCuboid m_boundBox;
 };
 
 #define REGULAR_SWC_NODE_BEGIN(tn, start) \

@@ -825,7 +825,7 @@ int main(int argc, char *argv[])
   Write_Stack("../data/test2.tif", out);
 #endif
 
-#if 1
+#if 0
   Stack *stack = Make_Stack(GREY, 3, 3, 3);
   Zero_Stack(stack);
   Cuboid_I cuboid;
@@ -833,6 +833,17 @@ int main(int argc, char *argv[])
   Cuboid_I_Label_Stack(&cuboid, 1, stack);
   Print_Stack_Value(stack);
 
+#endif
+
+#if 1
+  Stack *stack = Make_Stack(GREY, 3, 3, 1);
+  Zero_Stack(stack);
+  Set_Stack_Pixel(stack, 1, 1, 0, 0, 1);
+  Print_Stack_Value(stack);
+
+  Stack *out = Downsample_Stack_Max(stack, 2, 2, 2, NULL);
+
+  Print_Stack_Value(out);
 #endif
 
 

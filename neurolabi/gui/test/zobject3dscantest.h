@@ -6,6 +6,8 @@
 #include "neutubeconfig.h"
 #include "zgraph.h"
 #include "tz_iarray.h"
+#include "zdebug.h"
+#include "zdoublevector.h"
 
 #ifdef _USE_GTEST_
 
@@ -57,14 +59,14 @@ TEST(TestObject3dStripe, TestGetProperty) {
   EXPECT_EQ((int) stripe.getSize(), 2);
   EXPECT_EQ(stripe.getY(), 3);
   EXPECT_EQ(stripe.getZ(), 5);
-  EXPECT_EQ(stripe.getVoxelNumber(), 5);
+  EXPECT_EQ((int) stripe.getVoxelNumber(), 5);
 
   createStripe2(&stripe);
   EXPECT_EQ(stripe.getSegmentNumber(), 2);
   EXPECT_EQ((int) stripe.getSize(), 2);
   EXPECT_EQ(stripe.getY(), 3);
   EXPECT_EQ(stripe.getZ(), 5);
-  EXPECT_EQ(stripe.getVoxelNumber(), 7);
+  EXPECT_EQ((int) stripe.getVoxelNumber(), 7);
 
   stripe.canonize();
   EXPECT_EQ(stripe.getMinX(), 0);
@@ -73,7 +75,7 @@ TEST(TestObject3dStripe, TestGetProperty) {
   EXPECT_EQ((int) stripe.getSize(), 1);
   EXPECT_EQ(stripe.getY(), 3);
   EXPECT_EQ(stripe.getZ(), 5);
-  EXPECT_EQ(stripe.getVoxelNumber(), 6);
+  EXPECT_EQ((int) stripe.getVoxelNumber(), 6);
 
   createStripe3(&stripe);
   EXPECT_EQ(stripe.getMinX(), 0);
@@ -82,7 +84,7 @@ TEST(TestObject3dStripe, TestGetProperty) {
   EXPECT_EQ((int) stripe.getSize(), 1);
   EXPECT_EQ(stripe.getY(), 3);
   EXPECT_EQ(stripe.getZ(), 5);
-  EXPECT_EQ(stripe.getVoxelNumber(), 6);
+  EXPECT_EQ((int) stripe.getVoxelNumber(), 6);
 
   createStripe4(&stripe);
   EXPECT_EQ(stripe.getSegmentNumber(), 3);
@@ -97,7 +99,7 @@ TEST(TestObject3dStripe, TestGetProperty) {
   EXPECT_EQ((int) stripe.getSize(), 1);
   EXPECT_EQ(stripe.getY(), 3);
   EXPECT_EQ(stripe.getZ(), 5);
-  EXPECT_EQ(stripe.getVoxelNumber(), 6);
+  EXPECT_EQ((int) stripe.getVoxelNumber(), 6);
 }
 
 TEST(TestObject3dStripe, TestUnify) {
@@ -117,14 +119,14 @@ TEST(TestObject3dStripe, TestUnify) {
   EXPECT_EQ(1, stripe.getSegmentNumber());
   EXPECT_EQ(3, stripe.getMinX());
   EXPECT_EQ(7, stripe.getMaxX());
-  EXPECT_EQ(5, stripe.getVoxelNumber());
+  EXPECT_EQ(5, (int) stripe.getVoxelNumber());
 
   stripe2.setY(4);
   EXPECT_FALSE(stripe.unify(stripe2));
   EXPECT_EQ(1, stripe.getSegmentNumber());
   EXPECT_EQ(3, stripe.getMinX());
   EXPECT_EQ(7, stripe.getMaxX());
-  EXPECT_EQ(5, stripe.getVoxelNumber());
+  EXPECT_EQ(5, (int) stripe.getVoxelNumber());
 
   stripe2.setY(3);
   stripe2.setZ(4);
@@ -132,7 +134,7 @@ TEST(TestObject3dStripe, TestUnify) {
   EXPECT_EQ(1, stripe.getSegmentNumber());
   EXPECT_EQ(3, stripe.getMinX());
   EXPECT_EQ(7, stripe.getMaxX());
-  EXPECT_EQ(5, stripe.getVoxelNumber());
+  EXPECT_EQ(5, (int) stripe.getVoxelNumber());
 
   stripe2.clearSegment();
   stripe2.setY(3);
@@ -142,7 +144,7 @@ TEST(TestObject3dStripe, TestUnify) {
   EXPECT_EQ(1, stripe.getSegmentNumber());
   EXPECT_EQ(1, stripe.getMinX());
   EXPECT_EQ(7, stripe.getMaxX());
-  EXPECT_EQ(7, stripe.getVoxelNumber());
+  EXPECT_EQ(7, (int) stripe.getVoxelNumber());
 
   stripe2.clearSegment();
   stripe2.setY(3);
@@ -152,7 +154,7 @@ TEST(TestObject3dStripe, TestUnify) {
   EXPECT_EQ(2, stripe.getSegmentNumber());
   EXPECT_EQ(1, stripe.getMinX());
   EXPECT_EQ(10, stripe.getMaxX());
-  EXPECT_EQ(9, stripe.getVoxelNumber());
+  EXPECT_EQ(9, (int) stripe.getVoxelNumber());
 }
 
 TEST(TestObject3dStripe, TestIO) {
@@ -269,7 +271,7 @@ TEST(TestObject3dStripe, TestCanonize) {
   stripe.addSegment(19, 15, false);
   EXPECT_TRUE(stripe.isCanonized());
   EXPECT_EQ(2, stripe.getSegmentNumber());
-  EXPECT_EQ(15, stripe.getVoxelNumber());
+  EXPECT_EQ(15, (int) stripe.getVoxelNumber());
 }
 
 static void createObject(ZObject3dScan *obj)
@@ -453,8 +455,9 @@ TEST(TestObject3dScan, TestDownsample) {
   EXPECT_EQ(3, (int) obj.getVoxelNumber());
 
   createObject(&obj);
+  obj.print();
   obj.downsampleMax(1, 1, 1);
-  //obj.print();
+  obj.print();
   EXPECT_EQ(1, (int) obj.getStripeNumber());
   EXPECT_EQ(5, (int) obj.getVoxelNumber());
 }
@@ -466,6 +469,7 @@ TEST(TestObject3dScan, TestObjectSize){
   EXPECT_TRUE(sizeArray.empty());
 
   createObject(&obj);
+  obj.print();
   sizeArray = obj.getConnectedObjectSize();
   EXPECT_EQ(2, (int) sizeArray.size());
   EXPECT_EQ(8, (int) sizeArray[0]);
@@ -972,6 +976,161 @@ TEST(Object3dScanTest, findHole)
   ASSERT_EQ(2, (int) hole.getVoxelNumber());
 
   C_Stack::kill(stack);
+}
+
+TEST(ZObject3dScan, Cov)
+{
+  ZObject3dScan obj;
+  obj.addSegment(0, 0, 1, 1);
+  std::vector<double> cov = obj.getPlaneCov();
+  ASSERT_DOUBLE_EQ(0.0, cov[0]);
+  ASSERT_DOUBLE_EQ(0.0, cov[1]);
+  ASSERT_DOUBLE_EQ(0.0, cov[2]);
+
+  obj.addSegment(0, 0, 1, 2);
+  cov = obj.getPlaneCov();
+  ASSERT_DOUBLE_EQ(0.5, cov[0]);
+  ASSERT_DOUBLE_EQ(0.0, cov[1]);
+  ASSERT_DOUBLE_EQ(0.0, cov[2]);
+
+  obj.addSegment(0, 0, 1, 3);
+  obj.addSegment(0, 1, 1, 3);
+  cov = obj.getPlaneCov();
+  ASSERT_DOUBLE_EQ(0.8, cov[0]);
+  ASSERT_DOUBLE_EQ(0.3, cov[1]);
+  ASSERT_DOUBLE_EQ(0.0, cov[2]);
+
+
+  obj.addSegment(0, 0, 1, 3);
+  obj.addSegment(0, 1, 1, 3);
+  obj.addSegment(0, 2, 3, 6);
+  cov = obj.getPlaneCov();
+  ASSERT_DOUBLE_EQ(2.666666666666667, cov[0]);
+  ASSERT_DOUBLE_EQ(0.76666666666666639, cov[1]);
+  ASSERT_DOUBLE_EQ(1.0, cov[2]);
+
+  obj.clear();
+  obj.addSegment(0, 0, 1, 3);
+  obj.addSegment(1, 1, 1, 3);
+  obj.addSegment(2, 2, 3, 6);
+  cov = obj.getPlaneCov();
+  ASSERT_DOUBLE_EQ(2.666666666666667, cov[0]);
+  ASSERT_DOUBLE_EQ(0.76666666666666639, cov[1]);
+  ASSERT_DOUBLE_EQ(1.0, cov[2]);
+
+  obj.clear();
+  obj.addSegment(0, 0, 1, 5);
+  obj.addSegment(0, 1, 1, 5);
+  obj.addSegment(0, 2, 1, 5);
+  std::cout << obj.getSpread(0) << std::endl;
+  //ZDebugPrintDoubleArray(cov, 0, 2);
+}
+
+TEST(ZObject3dScan, contains)
+{
+  ZObject3dStripe stripe;
+  stripe.setY(0);
+  stripe.setZ(0);
+  stripe.addSegment(0, 1);
+
+  ASSERT_TRUE(stripe.containsX(0));
+  ASSERT_FALSE(stripe.containsX(2));
+
+  stripe.addSegment(3, 4);
+  stripe.addSegment(6, 9);
+  ASSERT_TRUE(stripe.containsX(0));
+  ASSERT_FALSE(stripe.containsX(2));
+  ASSERT_TRUE(stripe.containsX(7));
+  ASSERT_FALSE(stripe.containsX(10));
+
+  ZObject3dScan obj;
+  obj.addSegment(0, 0, 0, 1);
+  ASSERT_TRUE(obj.contains(0, 0, 0));
+  ASSERT_FALSE(obj.contains(2, 0, 0));
+
+  obj.addSegment(0, 0, 3, 4);
+  obj.addSegment(0, 0, 6, 9);
+  ASSERT_TRUE(obj.contains(7, 0, 0));
+  ASSERT_FALSE(obj.contains(10, 0, 0));
+
+  obj.addSegment(0, 1, 0, 1);
+  ASSERT_TRUE(obj.contains(0, 1, 0));
+  ASSERT_FALSE(obj.contains(0, 0, 1));
+
+  obj.addSegment(3, 4, 0, 10);
+  obj.addSegment(6, 8, 1, 10);
+  ASSERT_TRUE(obj.contains(0, 4, 3));
+  ASSERT_FALSE(obj.contains(0, 8, 6));
+
+  obj.clear();
+  obj.load(GET_TEST_DATA_DIR + "/benchmark/tower3.sobj");
+  ASSERT_TRUE(obj.contains(1, 1, 0));
+  ASSERT_FALSE(obj.contains(0, 0, 0));
+  ASSERT_FALSE(obj.contains(0, 0, 2));
+  ASSERT_TRUE(obj.contains(1, 0, 2));
+  ASSERT_TRUE(obj.contains(1, 1, 1));
+  ASSERT_FALSE(obj.contains(2, 0, 1));
+  ASSERT_TRUE(obj.contains(2, 1, 2));
+  ASSERT_TRUE(obj.contains(1, 2, 2));
+  ASSERT_FALSE(obj.contains(2, 2, 2));
+
+//  obj.addSegment(0, 0, 3, 4);
+//  obj.addSegment(0, 0, 6, 9);
+}
+
+TEST(ZObject3dScan, component)
+{
+  ZObject3dScan obj;
+  obj.addSegment(0, 0, 1, 1);
+
+  std::map<int, size_t> &vs = obj.getSlicewiseVoxelNumber();
+  ASSERT_EQ(1, (int) vs[0]);
+  ASSERT_EQ(0, (int) vs.count(2));
+
+  obj.addSegment(0, 0, 1, 2);
+  vs = obj.getSlicewiseVoxelNumber();
+  ASSERT_EQ(2, (int) vs[0]);
+  ASSERT_EQ(0, (int) vs.count(2));
+
+  vs = obj.getSlicewiseVoxelNumber();
+  ASSERT_EQ(2, (int) vs[0]);
+  ASSERT_EQ(0, (int) vs.count(2));
+
+  obj.addSegment(1, 1, 2, 4);
+  vs = obj.getSlicewiseVoxelNumber();
+  ASSERT_EQ(2, (int) vs[0]);
+  ASSERT_EQ(3, (int) vs[1]);
+  ASSERT_EQ(0, (int) vs.count(2));
+
+  obj.addSegment(5, 1, 0, 4);
+  vs = obj.getSlicewiseVoxelNumber();
+  ASSERT_EQ(2, (int) vs[0]);
+  ASSERT_EQ(3, (int) vs[1]);
+  ASSERT_EQ(5, (int) vs[5]);
+  ASSERT_EQ(0, (int) vs.count(2));
+
+  ASSERT_EQ(2, (int) vs[0]);
+  ASSERT_EQ(3, (int) vs[1]);
+  ASSERT_EQ(5, (int) vs[5]);
+  ASSERT_EQ(0, (int) vs.count(2));
+}
+
+TEST(ZObject3dScan, load)
+{
+  std::vector<int> array;
+  array.push_back(1);
+  array.push_back(0);
+  array.push_back(0);
+  array.push_back(1);
+  array.push_back(0);
+  array.push_back(1);
+
+  ZObject3dScan obj;
+  ASSERT_TRUE(obj.load(&(array[0]), array.size()));
+  obj.print();
+  ASSERT_EQ(2, (int) obj.getVoxelNumber());
+
+
 }
 
 #endif

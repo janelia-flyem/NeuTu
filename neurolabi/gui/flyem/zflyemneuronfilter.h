@@ -20,7 +20,7 @@ public:
   std::vector<ZFlyEmNeuron*> filter(
       const std::vector<ZFlyEmNeuron*> input) const;
 
-  virtual bool isPassed(const ZFlyEmNeuron &neuron) const = 0;
+  virtual bool isPassed(const ZFlyEmNeuron &neuron) const;
 
   /*!
    * \brief Configure the filter from a json object.
@@ -142,6 +142,23 @@ public:
 private:
   double m_minDist;
   mutable ZSwcDeepAngleMetric m_metric;
+};
+
+class ZFlyEmNeuronBodySizeFilter : public ZFlyEmNeuronFilter
+{
+public:
+  ZFlyEmNeuronBodySizeFilter();
+
+public:
+  bool isPassed(const ZFlyEmNeuron &neuron) const;
+  bool configure(ZJsonValue &config);
+  void print(int indent = 0) const;
+
+  void setSizeRange(size_t minSize, size_t maxSize);
+
+private:
+  size_t m_minSize;
+  size_t m_maxSize;
 };
 
 #endif // ZFLYEMNEURONFILTER_H

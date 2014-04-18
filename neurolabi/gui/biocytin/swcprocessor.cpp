@@ -52,7 +52,9 @@ void Biocytin::SwcProcessor::breakZJump(ZSwcTree *tree, double minDeltaZ)
     if (!SwcTreeNode::isRoot(tn)) {
       double deltaZ =
           fabs(SwcTreeNode::z(tn) - SwcTreeNode::z(SwcTreeNode::parent(tn)));
-      if (deltaZ > minDeltaZ) {
+      double dxy = SwcTreeNode::distance(
+            tn, SwcTreeNode::parent(tn), SwcTreeNode::PLANE_EUCLIDEAN);
+      if (deltaZ / (dxy + 1.0) > minDeltaZ) {
         SwcTreeNode::setParent(tn, tree->root());
       }
     }

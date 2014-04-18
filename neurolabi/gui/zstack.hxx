@@ -93,9 +93,19 @@ public: /* attributes */
   inline Mc_Stack* data() { return mc_stack(); }
   inline const Mc_Stack* data() const { return mc_stack(); }
 
-  //! Set stack data
+  /*!
+   * \brief Set stack data
+   */
   void setData(Mc_Stack *stack,
                C_Stack::Mc_Stack_Deallocator *delloc = C_Stack::kill);
+
+  /*!
+   * \brief Set data from stack
+   *
+   * \a stack will be destroyed after function call. It does nothing if \a stack
+   * is NULL.
+   */
+  void consumeData(Stack *stack);
 
   //! Get the C-compatible data
   /*!
@@ -107,16 +117,20 @@ public: /* attributes */
   const ZSingleChannelStack* singleChannelStack(int c = 0) const;
 
   //! Width of the stack.
-  inline int width() const { return C_Stack::width(mc_stack()); }
+  inline int width() const {
+    return mc_stack() == NULL ? 0 : C_Stack::width(mc_stack()); }
   //! Height of the stack.
-  inline int height() const { return C_Stack::height(mc_stack()); }
+  inline int height() const {
+    return mc_stack() == NULL ? 0 : C_Stack::height(mc_stack()); }
   //! Number of slices of the stack.
-  inline int depth() const { return C_Stack::depth(mc_stack()); }
+  inline int depth() const {
+    return mc_stack() == NULL ? 0 : C_Stack::depth(mc_stack()); }
   //! Voxel type of the stack.
-  inline int kind() const { return C_Stack::kind(mc_stack()); }
+  inline int kind() const {
+    return mc_stack() == NULL ? 0 : C_Stack::kind(mc_stack()); }
   //! Channel number of the stack.
   inline int channelNumber() const {
-    return C_Stack::channelNumber(m_stack);
+    return mc_stack() == NULL ? 0 : C_Stack::channelNumber(m_stack);
   }
 
   //! Component of the stack
@@ -194,9 +208,24 @@ public: /* attributes */
   inline uint8_t value8(size_t index) const {
     return ((uint8_t*) rawChannelData())[index];
   }
+
   inline uint8_t value8(size_t index, int c) const {
     return ((uint8_t*) rawChannelData(c))[index];
   }
+
+  /*!
+   * \brief Test if a stack is empty
+   *
+   * \return true iff the size is 0.
+   */
+  bool isEmpty() const;
+
+  /*!
+   * \brief Test if a stack is virtual.
+   * \return A stack is virtual iff the stack is not empty and its data array
+   * is null
+   */
+  bool isVirtual() const;
 
   void deprecateDependent(EComponent component);
   void deprecateSingleChannelView(int channel);
@@ -216,23 +245,22 @@ public: /* attributes */
 
   //Source of the stack. Usually it is the file where the image is originally read
   //from.
-  const char* sourcePath() const;
+  std::string sourcePath() const;
   //inline Stack_Document* source() const { return m_source; }
 
   //Preferred z scale is the preferred scale ratio between z-axis and xy-plane
   //for anisotropic operations
   inline double preferredZScale() const { return m_preferredZScale; }
 
-  /* A stack is virtual if its data array is null */
-  bool isVirtual() const;
+
 
   // return voxelnumber or dataByteCount of all channels. Obsolete
-  size_t voxelNumber() const;
-  size_t dataByteCount() const;
+  //size_t voxelNumber() const;
+  //size_t dataByteCount() const;
 
   // return voxelnumber of dataByteCount of 1 channel. Obsolete
-  size_t voxelNumber(int ch) const;
-  size_t dataByteCount(int ch) const;
+  //size_t voxelNumber(int ch) const;
+  //size_t dataByteCount(int ch) const;
 
   //Minimal value of the stack.
   double min();
@@ -254,8 +282,12 @@ public: /* attributes */
   bool equalColor(size_t index, size_t channelOffset,
                   const uint8_t *co, size_t length) const;
 
-
   void setValue(size_t index, int c, double value);
+
+  /*!
+   * \brief Set all voxel values to 0.
+   */
+  void setZero();
 
   //Maximum voxel value along a z-parallel line passing (<x>, <y>).
   int maxIntensityDepth(int x, int y, int c = 0) const;
@@ -279,17 +311,17 @@ public: /* attributes */
 
 public: /* data operation */
   //Clean all associated memory except the source
-  void clean();
-  void cleanChannel(int c = 0);   //remove content of this channel
+  void clear();
+  //void cleanChannel(int c = 0);   //remove content of this channel
   void removeChannel(int c = 0); //remove channel
   //Load stack from Stack, split channel if necessary
   bool load(Stack *stack, bool isOwner = true);
 
   //Load stack from a file
   bool load(const std::string &filepath);
-  bool loadImageSequence(const char *filePath);
+  //bool loadImageSequence(const char *filePath);
 
-  bool importJsonFile(const std::string &filePath);
+  //bool importJsonFile(const std::string &filePath);
 
   //Load stack from several single channel stack, stack can be null
   bool load(const Stack *ch1, const Stack *ch2, const Stack *ch3);
@@ -334,23 +366,24 @@ public: /* operations */
   void copyValue(const void *buffer, size_t length, void *loc);
 
   void setOffset(double dx, double dy, double dz);
-  inline ZPoint getOffset() { return m_offset; }
+  inline const ZPoint& getOffset() const { return m_offset; }
+
+  /*!
+   * \brief Test if a stack has non-zero offset
+   *
+   * \return true iff the offset of any dimension is not zero
+   */
+  bool hasOffset() const;
 
 public: /* processing routines */
   bool binarize(int threshold = 0);
   bool bwsolid();
+  bool bwperim();
   bool enhanceLine();
   void extractChannel(int c);
   Stack* copyChannel(int c);
   bool watershed(int c = 0);
   inline const ZResolution& resolution() const { return m_resolution; }
-
-private:
-  ZStack(const ZStack &src); //uncopyable
-
-  void init();
-  bool canMerge(const Stack *s1, const Stack *s2);
-  void setChannelNumber(int nchannel);
 
 public:
   void initChannelColors();
@@ -363,6 +396,14 @@ public:
   void logLSMInfo();
   void setChannelColor(int ch, double r, double g, double b);
 #endif
+
+private:
+  ZStack(const ZStack &src); //uncopyable
+
+  void init();
+  bool canMerge(const Stack *s1, const Stack *s2);
+  void setChannelNumber(int nchannel);
+
 
 private:
   Mc_Stack *m_stack; //Master data

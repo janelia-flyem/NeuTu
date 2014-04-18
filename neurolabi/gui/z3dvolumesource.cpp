@@ -88,6 +88,12 @@ void Z3DVolumeSource::readVolumes()
   if (nchannel > 0) {
     for (int i=0; i<nchannel; i++) {
       Stack *stack = m_doc->stack()->c_stack(i);
+
+      //Under deveopment
+      ZPoint offset = m_doc->stack()->getOffset();
+      offset.set(offset.x() * m_xScale.get(),
+                 offset.y() * m_yScale.get(),
+                 offset.z() * m_zScale.get());
       if (m_doc->stack()->getVoxelNumber() * nchannel > m_maxVoxelNumber) { //Downsample big stack
         m_isVolumeDownsampled.set(true);
         double scale = std::sqrt((m_maxVoxelNumber*1.0) /
@@ -132,12 +138,12 @@ void Z3DVolumeSource::readVolumes()
           }
         }
 
-        Z3DVolume *vh = new Z3DVolume(stack2,
-                                      glm::vec3(1.f/widthScale, 1.f/heightScale, 1.f/depthScale),
-                                      glm::vec3(m_xScale.get(),
-                                                m_yScale.get(),
-                                                m_zScale.get()),
-                                      glm::vec3(.0));
+        Z3DVolume *vh = new Z3DVolume(
+              stack2, glm::vec3(1.f/widthScale, 1.f/heightScale, 1.f/depthScale),
+              glm::vec3(m_xScale.get(), m_yScale.get(), m_zScale.get()),
+              glm::vec3(offset.x(), offset.y(),
+                        offset.z())
+                                      /*glm::vec3(.0)*/);
 
         m_volumes.push_back(vh);
       } else { //small stack
@@ -187,7 +193,9 @@ void Z3DVolumeSource::readVolumes()
                                       glm::vec3(m_xScale.get(),
                                                 m_yScale.get(),
                                                 m_zScale.get()),
-                                      glm::vec3(.0));
+                                      glm::vec3(offset.x(),
+                                                offset.y(),
+                                                offset.z()));
 
         m_volumes.push_back(vh);
 

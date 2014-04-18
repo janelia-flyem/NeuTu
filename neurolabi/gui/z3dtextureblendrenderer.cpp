@@ -48,15 +48,7 @@ QString Z3DTextureBlendRenderer::generateHeader()
   return headerSource;
 }
 
-void Z3DTextureBlendRenderer::renderUsingOpengl()
-{
-}
-
-void Z3DTextureBlendRenderer::renderPickingUsingOpengl()
-{
-}
-
-void Z3DTextureBlendRenderer::renderUsingGLSL(Z3DEye eye)
+void Z3DTextureBlendRenderer::render(Z3DEye eye)
 {
   if (!m_initialized)
     return;
@@ -78,6 +70,6 @@ void Z3DTextureBlendRenderer::renderUsingGLSL(Z3DEye eye)
   m_blendTextureShader.release();
 }
 
-void Z3DTextureBlendRenderer::renderPickingUsingGLSL(Z3DEye)
+void Z3DTextureBlendRenderer::renderPicking(Z3DEye)
 {
 }

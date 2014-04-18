@@ -1469,7 +1469,7 @@ Stack* Stack_Remove_Small_Object(Stack *in, Stack *out,
 }
 
 #include "private/tz_stack_bwdist.c"
-Stack *Stack_Bwdist_L(Stack *in, Stack *out, long int *label)
+Stack *Stack_Bwdist_L(const Stack *in, Stack *out, long int *label)
 {
   if (out == NULL) {
     out = Make_Stack(FLOAT32, in->width, in->height, in->depth);
@@ -1498,7 +1498,7 @@ Stack *Stack_Bwdist_L(Stack *in, Stack *out, long int *label)
  * distance to the background. The distance is 0 if the voxel itself blongs 
  * to backgrond. The maximum distance is 255 because the limit of bit number.
  */
-Stack *Stack_Bwdist_L_U16(Stack *in, Stack *out, int pad)
+Stack *Stack_Bwdist_L_U16(const Stack *in, Stack *out, int pad)
 {
   ASSERT(in->kind == GREY, "GREY stack only");
 
@@ -1524,7 +1524,7 @@ Stack *Stack_Bwdist_L_U16(Stack *in, Stack *out, int pad)
   return out;
 }
 
-Stack *Stack_Bwdist_L_U16P(Stack *in, Stack *out, int pad)
+Stack *Stack_Bwdist_L_U16P(const Stack *in, Stack *out, int pad)
 {
   ASSERT(in->kind == GREY, "GREY stack only");
 

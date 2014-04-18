@@ -16,7 +16,7 @@ public:
   virtual void save(const char *filePath);
   virtual void load(const char *filePath);
 
-  virtual void display(QPainter &painter, int z = 0, Display_Style option = NORMAL) const;
+  virtual void display(ZPainter &painter, int z = 0, Display_Style option = NORMAL) const;
 
   virtual const std::string& className() const;
 
@@ -42,8 +42,11 @@ public:
   double inline getWidth() { return m_width; }
 
   bool getLastPoint(int *x, int *y) const;
+  bool getLastPoint(double *x, double *y) const;
 
   inline size_t getPointNumber() const { return m_pointArray.size(); }
+
+  void print() const;
 
 private:
   std::vector<QPointF> m_pointArray;

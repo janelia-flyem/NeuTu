@@ -64,7 +64,7 @@ ZStack::ZStack(Mc_Stack *stack, C_Stack::Mc_Stack_Deallocator *dealloc)
 
 ZStack::~ZStack()
 {
-  clean();
+  clear();
 }
 
 size_t ZStack::getByteNumber(EStackUnit unit) const
@@ -103,6 +103,11 @@ void ZStack::setData(Mc_Stack *stack, C_Stack::Mc_Stack_Deallocator *delloc)
   deprecate(MC_STACK);
   m_stack = stack;
   m_delloc = delloc;
+}
+
+void ZStack::consumeData(Stack *stack)
+{
+  load(stack, true);
 }
 
 /*
@@ -395,7 +400,7 @@ bool ZStack::isDeprecated(EComponent component) const
   return false;
 }
 
-void ZStack::clean()
+void ZStack::clear()
 {
   deprecate(ZStack::MC_STACK);
 
@@ -461,22 +466,6 @@ void ZStack::removeChannel(int c)
   }
 }
 
-/*
-void ZStack::cleanChannel(int c)
-{
-  if (m_singleChannelStackVector[c] != NULL) {
-    delete m_singleChannelStackVector[c];
-    m_singleChannelStackVector[c] = NULL;
-  }
-}
-
-void ZStack::removeChannel(int c)
-{
-  cleanChannel(c);
-  m_singleChannelStackVector.erase(m_singleChannelStackVector.begin()+c);
-}
-*/
-
 bool ZStack::load(Stack *stack, bool isOwner)
 {
   deprecate(MC_STACK);
@@ -510,24 +499,8 @@ bool ZStack::load(Stack *stack, bool isOwner)
     }
   }
 
-  /*
-  clean();
-  if (stack->kind == COLOR) {
-    init(3);
-    Stack *stack0 = Stack_Channel_Extraction(stack, 0, NULL);
-    m_singleChannelStackVector[0] = new ZSingleChannelStack(stack0, true);
-    Stack *stack1 = Stack_Channel_Extraction(stack, 1, NULL);
-    m_singleChannelStackVector[1] = new ZSingleChannelStack(stack1, true);
-    Stack *stack2 = Stack_Channel_Extraction(stack, 2, NULL);
-    m_singleChannelStackVector[2] = new ZSingleChannelStack(stack2, true);
-    if (isOwner) {
-      Kill_Stack(stack);
-    }
-  } else {
-    init(1);
-    m_singleChannelStackVector[0] = new ZSingleChannelStack(stack, isOwner);
-  }
-  */
+  initChannelColors();
+
   return true;
 }
 
@@ -543,31 +516,6 @@ bool ZStack::load(const string &filepath)
     res->setSource(filepath);
 
   return res;
-
-  /*
-  if (!filepath.empty()) {
-    clean();
-    int nchannel = getChannelNumber(filepath.c_str());
-    if (nchannel > 0) {
-      init(nchannel);
-      for (int i=0; i<nchannel; i++) {
-        Stack *stack = Read_Sc_Stack(filepath.c_str(), i);
-        m_singleChannelStackVector[i] = new ZSingleChannelStack(stack, true);
-      }
-      setSource(filepath);
-    } else { //try other method
-      Stack *stack = Read_Stack_U(filepath.c_str());
-      if (stack != NULL) {
-        load(stack, true);
-        setSource(filepath);
-      } else {
-        return false;
-      }
-    }
-    getLSMInfo(QString::fromStdString(filepath));
-    return true;
-  }
-*/
 }
 
 bool ZStack::load(const Stack *ch1, const Stack *ch2, const Stack *ch3)
@@ -626,16 +574,6 @@ void ZStack::setSource(Stack_Document *stackDoc)
 
 void ZStack::setResolution(double x, double y, double z, char unit)
 {
-  /*
-  if (m_source == NULL) {
-    m_source = New_Stack_Document();
-  }
-
-  m_source->resolution[0] = x;
-  m_source->resolution[1] = y;
-  m_source->resolution[2] = z;
-  m_source->unit = unit;
-  */
   m_resolution.setVoxelSize(x, y, z);
   m_resolution.setUnit(unit);
   m_preferredZScale = z / (.5 * (x + y));
@@ -1027,6 +965,11 @@ bool ZStack::isSwc()
 
 void ZStack::bcAdjustHint(double *scale, double *offset, int c)
 {
+  //debug
+#ifdef _DEBUG_
+  std::cout << "Bc adjust hint" << std::endl;
+#endif
+
   singleChannelStack(c)->bcAdjustHint(scale, offset);
   /*
   if (isDeprecated(STACK_STAT)) {
@@ -1151,6 +1094,19 @@ bool ZStack::bwsolid()
   return isChanged;
 }
 
+bool ZStack::bwperim()
+{
+  bool isChanged = false;
+  if (isBinary()) {
+    isChanged = singleChannelStack(0)->bwperim();
+    if (isChanged) {
+      deprecateDependent(MC_STACK);
+    }
+  }
+
+  return isChanged;
+}
+
 bool ZStack::enhanceLine()
 {
   bool isChanged = false;
@@ -1182,13 +1138,30 @@ Stack *ZStack::copyChannel(int c)
   return out;
 }
 
-const char* ZStack::sourcePath() const
+std::string ZStack::sourcePath() const
 {
-  return m_source.firstUrl().c_str();
+  return m_source.firstUrl();
+}
+
+bool ZStack::isEmpty() const
+{
+  if (m_stack == NULL) {
+    return true;
+  }
+
+  if ((m_stack->width  == 0) && (m_stack->height == 0) && (m_stack->depth == 0)) {
+    return true;
+  }
+
+  return false;
 }
 
 bool ZStack::isVirtual() const
 {
+  if (isEmpty()) {
+    return false;
+  }
+
   return m_stack->array == NULL;
 }
 
@@ -1246,6 +1219,7 @@ ZStack* ZStack::clone() const
   stack->m_resolution = m_resolution;
   stack->m_preferredZScale = m_preferredZScale;
   stack->m_source = m_source;
+  stack->m_offset = m_offset;
 
   return stack;
 }
@@ -1481,3 +1455,16 @@ void ZStack::logLSMInfo()
   LINFO() << "End LSM Info for" << sourcePath();
 }
 #endif
+
+bool ZStack::hasOffset() const
+{
+  return (m_offset.x() != 0.0) || (m_offset.y() != 0.0) ||
+      (m_offset.z() != 0.0);
+}
+
+void ZStack::setZero()
+{
+  if (!isEmpty() && ! isVirtual()) {
+    C_Stack::setZero(m_stack);
+  }
+}

@@ -60,6 +60,10 @@ public:
   virtual void dragEnterEvent(QDragEnterEvent *event);
   virtual void dropEvent(QDropEvent *event);
 
+#ifdef _QT5_
+  void setCursor(const QCursor &c) { viewport()->setCursor(c); }
+#endif
+
 signals:
   // w and h is physical size not logical size, opengl works in physical pixel
   void canvasSizeChanged(int w, int h);

@@ -44,6 +44,8 @@ public:
    */
   void translate(int dx, int dy, int dz);
 
+  void print() const;
+
 private:
   int m_x;
   int m_y;

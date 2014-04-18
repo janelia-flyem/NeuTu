@@ -49,9 +49,10 @@ Z3DTrackballInteractionHandler::Z3DTrackballInteractionHandler(const QString &na
   , m_mouseWheelUpDollyIn(true)
   , m_mouseWheelUpRollLeft(true)
   , m_mouseMotionFactor(10.f)
-  , m_keyPressAngle(10.f)
+  , m_keyPressAngle(glm::radians(10.f))
   , m_keyPressDistance(10.f)
   , m_moveObjects(false)
+  , m_delta(0)
 {
   m_rotateEvent = new ZEventListenerParameter(name + " Rotate");
   m_rotateEvent->listenTo("rotate", Qt::LeftButton, Qt::NoModifier, QEvent::MouseButtonPress);
@@ -284,6 +285,38 @@ void Z3DTrackballInteractionHandler::wheelEvent(QWheelEvent *e, int, int)
 {
   e->ignore();
 
+#ifdef _QT5_
+  if (m_delta > 0 && e->delta() < 0)
+    m_delta = e->delta();
+  else if (m_delta < 0 && e->delta() > 0)
+    m_delta = e->delta();
+  else
+    m_delta += e->delta();
+  if (m_delta > -120 && m_delta < 120)
+    return;
+  if (m_state == DOLLY) {
+    float factor = m_mouseMotionFactor * 0.2f * m_mouseWheelMotionFactor * std::abs(m_delta / 120);
+    factor = std::min(8.f, factor);
+    bool dollyIn = ( m_mouseWheelUpDollyIn && (m_delta > 0)) ||
+        (!m_mouseWheelUpDollyIn && (m_delta < 0));
+    if (!dollyIn)
+      factor = -factor;
+    m_camera->dolly(std::pow(1.1f, factor));
+    e->accept();
+  } else if (m_state == ROLL) {
+    bool rollLeft = ( m_mouseWheelUpRollLeft && (m_delta > 0)) ||
+        (!m_mouseWheelUpRollLeft && (m_delta < 0));
+    if (rollLeft)
+      m_camera->roll(m_keyPressAngle);
+    else
+      m_camera->roll(-m_keyPressAngle);
+    e->accept();
+  }
+  setState(NONE);
+  m_delta = 0;
+#else
+  if (e->delta() == 0)
+    return;
   if (m_state == DOLLY) {
     float factor = m_mouseMotionFactor * 0.2f * m_mouseWheelMotionFactor;
     bool dollyIn = ( m_mouseWheelUpDollyIn && (e->delta() > 0)) ||
@@ -302,6 +335,7 @@ void Z3DTrackballInteractionHandler::wheelEvent(QWheelEvent *e, int, int)
     e->accept();
   }
   setState(NONE);
+#endif
 }
 
 void Z3DTrackballInteractionHandler::shift(glm::ivec2 mouseStart, glm::ivec2 mouseEnd, int w, int h)
@@ -323,8 +357,8 @@ void Z3DTrackballInteractionHandler::rotate(glm::ivec2 mouseStart, glm::ivec2 mo
 {
   glm::ivec2 dPos = mouseEnd - mouseStart;
 
-  double delta_elevation = -36.0 / h;
-  double delta_azimuth = -36.0 / w;
+  double delta_elevation = -0.2 * M_PI / h;
+  double delta_azimuth = -0.2 * M_PI / w;
 
   double rxf = dPos.x * delta_azimuth * m_mouseMotionFactor;
   double ryf = dPos.y * delta_elevation * m_mouseMotionFactor;
@@ -336,8 +370,8 @@ void Z3DTrackballInteractionHandler::rotate(glm::ivec2 mouseStart, glm::ivec2 mo
 void Z3DTrackballInteractionHandler::roll(glm::ivec2 mouseStart, glm::ivec2 mouseEnd, int w, int h)
 {
   glm::dvec2 center(w/2., h/2.);
-  double newAngle = glm::degrees(std::atan2(mouseEnd.y - center.y, mouseEnd.x - center.x));
-  double oldAngle = glm::degrees(std::atan2(mouseStart.y - center.y, mouseStart.x - center.x));
+  double newAngle = std::atan2(mouseEnd.y - center.y, mouseEnd.x - center.x);
+  double oldAngle = std::atan2(mouseStart.y - center.y, mouseStart.x - center.x);
 
   m_camera->roll(newAngle - oldAngle);
 }

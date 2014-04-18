@@ -2,8 +2,13 @@
 #define MISCUTILITY_H
 
 #include <vector>
+#include <string>
 #include "zhistogram.h"
 #include "zstack.hxx"
+#include "zobject3dscan.h"
+#include "neutube.h"
+#include "flyem/zintcuboidarray.h"
+#include "zpointarray.h"
 
 namespace misc {
 
@@ -12,6 +17,24 @@ void paintRadialHistogram(const ZHistogram hist, double cx, double cy, int z,
 void paintRadialHistogram2D(const std::vector<ZHistogram> hist,
                             double cx, int startZ, Stack *stack);
 
+/*!
+ * \brief Y normal of a binary stack
+ */
+Stack* computeNormal(const Stack *stack, NeuTube::EAxis axis);
+
+int computeRavelerHeight(const FlyEm::ZIntCuboidArray &blockArray, int margin);
+
+bool exportPointList(const std::string &filePath, const ZPointArray &pointArray);
+
+std::string num2str(int n);
+
+/*!
+ * \brief A function for computing confidence
+ *
+ * \param median The value where confidence = 0.5
+ * \param p95 The value where confidence = 0.95
+ */
+double computeConfidence(double v, double median, double p95);
 }
 
 namespace {

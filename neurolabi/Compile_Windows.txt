@@ -1,0 +1,18 @@
+Compile neuTube in Windows using Mingw64
+
+1.  Make sure perl (>5.10) and awk are installed and added to system path. Awk can be downloaded from http://gnuwin32.sourceforge.net/packages/gawk.htm. Perl can be downloaded from http://www.activestate.com/activeperl/downloads.
+
+2.  Download cmake from http://www.cmake.org/cmake/resources/software.html , install, make sure cmake.exe can be found from system path. 
+
+2.  Download Qt and Mingw from "http://sourceforge.net/projects/qtx64/files/qt-x64/5.2.1/mingw-4.8/",  Choose the "-opengl.exe" version which includes both Qt and Mingw64. Install. Assume the install directory is $INS_DIR, add "$INS_DIR/mingw64/bin" and "$INS_DIR/qt-5.2.1-x64-mingw482r2-sjlj-opengl/bin" to system path. 
+
+3.  Download QtCreator from "http://sourceforge.net/projects/qtx64/files/qt-creator-x64/3.0.1/". Install. 
+
+4.  Make sure msys or any sh.exe is not in system path. (If you don't know what it is, ignore this)
+
+4.  Go to neurolabi folder under neuTube src folder, Double click cmake_update_library.bat to compile c library. This should generate libneurolabi.a and libneurolabi_debug.a in /neurolabi/c/lib/ folder.
+
+5.  Open QtCreator, configure Kits with qmake.exe in "$INS_DIR/qt-5.2.1-x64-mingw482r2-sjlj-opengl/bin" (refer to QtCreator document for how). 
+
+6.  Open project /neurolabi/gui/gui.pro in QtCreator, Build. After building, add /neurolabi/lib/Mingw/64/bin to system path so that neuTube.exe can run.
+

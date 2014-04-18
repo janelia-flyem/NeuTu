@@ -23,17 +23,18 @@ class ZFlyEmNeuron
 {
 public:
   ZFlyEmNeuron();
+  ZFlyEmNeuron(int id, ZSwcTree *model, ZObject3dScan *body);
   ~ZFlyEmNeuron();
 
   ZFlyEmNeuron(const ZFlyEmNeuron &neuron);
 
   enum EComponent {
-    MODEL, BODY, BUDDY_MODEL, ALL_COMPONENT
+    MODEL, UNSCALED_MODEL, BODY, BUDDY_MODEL, ALL_COMPONENT
   };
 
   bool isDeprecated(EComponent comp) const;
-  void deprecate(EComponent comp);
-  void deprecateDependent(EComponent comp);
+  void deprecate(EComponent comp) const;
+  void deprecateDependent(EComponent comp) const;
 
   void loadJsonObject(ZJsonObject &obj, const std::string &source);
 
@@ -45,6 +46,13 @@ public:
    * \return A pointer to the json object.
    */
   json_t* makeJsonObject() const;
+
+  /*!
+   * \brief Make a json object from the neuron.
+   *
+   * The file paths associated with the neuron are converted into relative path.
+   */
+  json_t* makeJsonObject(const std::string &bundleDir) const;
 
   inline void setId(int id) {
     m_id = id;
@@ -67,6 +75,12 @@ public:
     return m_class;
   }
 
+  /*!
+   * \brief hasClass
+   * \return true if the neuron has been assigned to a class
+   */
+  bool hasClass() const;
+
   void setId(const std::string &str);
 
   inline int getId() const { return m_id; }
@@ -85,7 +99,12 @@ public:
     return m_volumePath;
   }
 
+  inline const std::string& getThumbnailPath() const {
+    return m_thumbnailPath;
+  }
+
   ZSwcTree *getModel(const std::string &bundleSource = "") const;
+  ZSwcTree *getUnscaledModel(const std::string &bundleSource = "") const;
 
   /*!
    * \brief Get the buddy model from resampling
@@ -96,6 +115,17 @@ public:
    * \return The buddy model.
    */
   ZSwcTree *getResampleBuddyModel(double rs) const;
+
+  /*!
+   * \brief Get the buddy model from resampling
+   *
+   * The function will always return the buffered buddy model no matter where
+   * the model is from and it does not trigger model calculation. It returns
+   * NULL if the model is deprecated;
+   *
+   * \return The buddy model.
+   */
+  ZSwcTree *getResampleBuddyModel() const;
 
   /*!
    * \brief Get medical axis of the model along z.
@@ -132,7 +162,18 @@ public:
     m_synapseAnnotation = annotation;
   }
 
+  /*!
+   * \brief Get the number of TBars on the neuron
+   *
+   * It returns 0 if the synapse annotation is not available
+   */
   int getTBarNumber() const;
+
+  /*!
+   * \brief Get the number of PSDs on the neuron
+   *
+   * It returns 0 if the synapse annotation is not available
+   */
   int getPsdNumber() const;
 
   int getInputNeuronNumber() const;
@@ -177,8 +218,35 @@ public:
     m_volumePath = path;
   }
 
+  /*!
+   * \brief Set thumbnail path
+   */
+  inline void setThumbnailPath(const std::string &path) {
+    m_thumbnailPath = path;
+  }
+
+  inline const double *getSwcResolution() const {
+    return m_resolution;
+  }
+
+  /*!
+   * \brief Import body form an HDF5 file
+   *
+   * \param filePath Path of the HDF5 file
+   * \param key Key of the body
+   * \return true iff the body is loaded successfully
+   */
+  bool importBodyFromHdf5(
+      const std::string &filePath, const std::string &key);
 
   static const int TopMatchCapacity;
+
+  //Interfaces for SWIG. Do not use them in native applications
+  void releaseBody();
+  void releaseModel();
+  /**************************SWIG End***************/
+
+
 
 private:
   std::string getAbsolutePath(const ZString &path, const std::string &source);
@@ -190,6 +258,7 @@ private:
   std::string m_class;
   std::string m_modelPath;
   std::string m_volumePath;
+  std::string m_thumbnailPath;
   double m_resolution[3]; //Resolution of the swc file saved as m_modelPath
                           //The swc file and volume file must have the same
                           //resolution
@@ -202,6 +271,7 @@ private:
   std::vector<double> m_outputWeight;
 
   mutable ZSwcTree *m_model;
+  mutable ZSwcTree *m_unscaledModel;
   mutable ZSwcTree *m_buddyModel;
   mutable ZObject3dScan *m_body;
   mutable std::vector<const ZFlyEmNeuron*> m_matched;
@@ -212,6 +282,7 @@ private:
   static const char *m_classKey;
   static const char *m_modelKey;
   static const char *m_volumeKey;
+  static const char *m_thumbnailKey;
 };
 
 template <typename InputIterator>

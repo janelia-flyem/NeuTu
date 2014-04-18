@@ -2,7 +2,7 @@
 #include "z3dcameraparameter.h"
 #include "zparameter.h"
 #include <QtGui>
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
+#ifdef _QT5_
 #include <QtWidgets>
 #endif
 
@@ -151,7 +151,7 @@ QLayout *ZWidgetsGroup::createLayout(QMainWindow *mainWin, bool createBasic)
     label->setWordWrap(true);
     hbl->addWidget(label);
     QWidget* wg = m_parameter->createWidget();
-    wg->setMinimumWidth(125);
+    wg->setMinimumWidth(175);
     wg->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
     hbl->addWidget(wg);
 

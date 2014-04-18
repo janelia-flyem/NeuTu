@@ -5,7 +5,7 @@
 
 #include <z3dgl.h>
 #include <QtGui>
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
+#ifdef _QT5_
 #include <QtWidgets>
 #endif
 #include <limits>
@@ -63,6 +63,7 @@
 #include "zstackdocmenufactory.h"
 #include "swc/zswcsubtreeanalyzer.h"
 #include "biocytin/zbiocytinfilenameparser.h"
+#include <QApplication>
 
 class Sleeper : public QThread
 {
@@ -98,7 +99,7 @@ Z3DWindow::Z3DWindow(std::tr1::shared_ptr<ZStackDoc> doc, Z3DWindow::EInitMode i
   , m_isStereoView(stereoView)
 {
   if (m_doc->stack() != NULL) {
-    setWindowTitle(m_doc->stack()->sourcePath());
+    setWindowTitle(m_doc->stackSourcePath().c_str());
   }
   setAttribute(Qt::WA_DeleteOnClose);
   setFocusPolicy(Qt::StrongFocus);
@@ -236,8 +237,6 @@ void Z3DWindow::init(EInitMode mode)
           m_doc.get(), SLOT(selectSwcNodeConnection()));
   connect(m_swcFilter, SIGNAL(addNewSwcTreeNode(double, double, double, double)),
           this, SLOT(addNewSwcTreeNode(double, double, double, double)));
-  connect(m_swcFilter, SIGNAL(extendSwcTreeNode(double, double, double)),
-          this, SLOT(extendSwcTreeNode(double, double, double)));
   connect(m_swcFilter, SIGNAL(connectingSwcTreeNode(Swc_Tree_Node*)), this,
           SLOT(connectSwcTreeNode(Swc_Tree_Node*)));
 
@@ -397,13 +396,13 @@ void Z3DWindow::createActions()
   connect(m_toogleMoveSelectedObjectsAction, SIGNAL(toggled(bool)), this,
           SLOT(toogleMoveSelectedObjectsMode(bool)));
 
-  m_toogleExtendSelectedSwcNodeAction = new QAction("Extend selected node", this);
-  m_toogleExtendSelectedSwcNodeAction->setCheckable(true);
-  connect(m_toogleExtendSelectedSwcNodeAction, SIGNAL(toggled(bool)), this,
-          SLOT(toogleExtendSelectedSwcNodeMode(bool)));
-  m_singleSwcNodeActionActivator.registerAction(m_toogleExtendSelectedSwcNodeAction, true);
+  //  m_toogleExtendSelectedSwcNodeAction = new QAction("Extend selected node", this);
+  //  m_toogleExtendSelectedSwcNodeAction->setCheckable(true);
+  //  connect(m_toogleExtendSelectedSwcNodeAction, SIGNAL(toggled(bool)), this,
+  //          SLOT(toogleExtendSelectedSwcNodeMode(bool)));
+  //  m_singleSwcNodeActionActivator.registerAction(m_toogleExtendSelectedSwcNodeAction, true);
 
-  m_toogleSmartExtendSelectedSwcNodeAction = new QAction("Smart extension", this);
+  m_toogleSmartExtendSelectedSwcNodeAction = new QAction("Extend Mode", this);
   m_toogleSmartExtendSelectedSwcNodeAction->setCheckable(true);
   connect(m_toogleSmartExtendSelectedSwcNodeAction, SIGNAL(toggled(bool)), this,
           SLOT(toogleSmartExtendSelectedSwcNodeMode(bool)));
@@ -627,7 +626,7 @@ void Z3DWindow::createContextMenu()
   //contextMenu->addAction(m_changeSwcNodeSizeAction);
   //contextMenu->addAction(m_removeSelectedObjectsAction);
   contextMenu->addAction(m_toogleSmartExtendSelectedSwcNodeAction);
-  contextMenu->addAction(m_toogleExtendSelectedSwcNodeAction);
+  //contextMenu->addAction(m_toogleExtendSelectedSwcNodeAction);
   contextMenu->addAction(m_toogleAddSwcNodeModeAction);
   contextMenu->addAction(m_toogleMoveSelectedObjectsAction);
   //contextMenu->addAction(m_removeSwcTurnAction);
@@ -691,7 +690,7 @@ void Z3DWindow::customizeContextMenu()
   if (GET_APPLICATION_NAME == "Biocytin") {
     m_toogleAddSwcNodeModeAction->setVisible(false);
     m_toogleMoveSelectedObjectsAction->setVisible(false);
-    m_toogleExtendSelectedSwcNodeAction->setVisible(false);
+    //m_toogleExtendSelectedSwcNodeAction->setVisible(false);
     m_toogleSmartExtendSelectedSwcNodeAction->setVisible(false);
     m_translateSwcNodeAction->setVisible(false);
     //m_selectSwcNodeDownstreamAction->setVisible(false);
@@ -706,7 +705,7 @@ void Z3DWindow::customizeContextMenu()
     m_changeSwcAlphaAction->setVisible(false);
     m_refreshTraceMaskAction->setVisible(false);
   } else if (GET_APPLICATION_NAME == "FlyEM") {
-    m_toogleExtendSelectedSwcNodeAction->setVisible(false);
+    //m_toogleExtendSelectedSwcNodeAction->setVisible(false);
     m_toogleAddSwcNodeModeAction->setVisible(false);
     //m_toogleMoveSelectedObjectsAction->setVisible(false);
     m_toogleSmartExtendSelectedSwcNodeAction->setVisible(false);
@@ -1164,16 +1163,6 @@ void Z3DWindow::addNewSwcTreeNode(double x, double y, double z, double r)
       */
 }
 
-void Z3DWindow::extendSwcTreeNode(double x, double y, double z)
-{
-  m_doc->executeSwcNodeExtendCommand(ZPoint(x, y, z));
-  /*
-  QUndoCommand *extendSwcTreeNodeCommand =
-      new ZStackDocExtendSwcNodeCommand(m_doc.get(), node, parentNode);
-  m_doc->undoStack()->push(extendSwcTreeNodeCommand);
-  */
-}
-
 void Z3DWindow::removeSwcTurn()
 {
   m_doc->executeRemoveTurnCommand();
@@ -1236,18 +1225,18 @@ void Z3DWindow::punctaDoubleClicked(ZPunctum *p)
 void Z3DWindow::pointInVolumeLeftClicked(QPoint pt, glm::ivec3 pos)
 {
   glm::vec3 fpos = glm::vec3(pos);
-  fpos /= glm::vec3(m_volumeSource->getXScale(), m_volumeSource->getYScale(), m_volumeSource->getZScale());
   m_lastClickedPosInVolume = glm::ivec3(fpos);
   LDEBUG() << "Point in volume left clicked" << fpos;
   // only do tracing when we are not editing swc nodes or the preconditions for editing swc node are not met
   if (hasVolume() && channelNumber() == 1 && m_toogleSmartExtendSelectedSwcNodeAction->isChecked() &&
       m_doc->selectedSwcTreeNodes()->size() == 1) {
     m_doc->executeSwcNodeSmartExtendCommand(ZPoint(fpos[0], fpos[1], fpos[2]));
+    // todo: check modifier and use normal extend if possible
     return;
   }
-  if (m_toogleExtendSelectedSwcNodeAction->isChecked() && m_doc->selectedSwcTreeNodes()->size() == 1) {
-    return;
-  }
+  //  if (m_toogleExtendSelectedSwcNodeAction->isChecked() && m_doc->selectedSwcTreeNodes()->size() == 1) {
+  //    return;
+  //  }
   if (hasVolume() && channelNumber() == 1 && !m_toogleAddSwcNodeModeAction->isChecked()) {
     m_contextMenuGroup["trace"]->popup(m_canvas->mapToGlobal(pt));
   }
@@ -1258,10 +1247,10 @@ void Z3DWindow::show3DViewContextMenu(QPoint pt)
   if (m_toogleAddSwcNodeModeAction->isChecked()) {
     m_toogleAddSwcNodeModeAction->setChecked(false);
     return;
-  } else if (m_toogleExtendSelectedSwcNodeAction->isChecked()) {
+  } /*else if (m_toogleExtendSelectedSwcNodeAction->isChecked()) {
     m_toogleExtendSelectedSwcNodeAction->setChecked(false);
     return;
-  } else if (m_toogleSmartExtendSelectedSwcNodeAction->isChecked()) {
+  }*/ else if (m_toogleSmartExtendSelectedSwcNodeAction->isChecked()) {
     m_toogleSmartExtendSelectedSwcNodeAction->setChecked(false);
     return;
   } else if (getSwcFilter()->getInteractionMode() == Z3DSwcFilter::ConnectSwcNode) {
@@ -1350,12 +1339,15 @@ void Z3DWindow::show3DViewContextMenu(QPoint pt)
     // first see if pt hit any position in volume
     if (channelNumber() > 0) {
       bool success;
-      glm::vec3 fpos = m_volumeRaycaster->getFirstHit3DPosition(
+#ifdef _QT5_
+      glm::vec3 fpos = m_volumeRaycaster->get3DPosition(
+            pt.x() * qApp->devicePixelRatio(), pt.y() * qApp->devicePixelRatio(),
+            m_canvas->width() * qApp->devicePixelRatio(), m_canvas->height() * qApp->devicePixelRatio(), success);
+#else
+      glm::vec3 fpos = m_volumeRaycaster->get3DPosition(
             pt.x(), pt.y(), m_canvas->width(), m_canvas->height(), success);
+#endif
       if (success) {
-        fpos /= glm::vec3(m_volumeSource->getXScale(),
-                          m_volumeSource->getYScale(),
-                          m_volumeSource->getZScale());
         m_lastClickedPosInVolume = glm::ivec3(fpos);
         updateContextMenu("volume");
         //m_contextMenuGroup["volume"]->popup(m_canvas->mapToGlobal(pt));
@@ -1587,7 +1579,7 @@ void Z3DWindow::takeSeriesScreenShot(const QDir &dir, const QString &namePrefix,
   QProgressDialog progress(title, "Cancel", 0, numFrame, this);
   progress.setWindowModality(Qt::WindowModal);
   progress.show();
-  double rAngle = 360.0 / numFrame;
+  double rAngle = M_PI * 2. / numFrame;
   for (int i=0; i<numFrame; i++) {
     progress.setValue(i);
     if (progress.wasCanceled())
@@ -1617,7 +1609,7 @@ void Z3DWindow::takeSeriesScreenShot(const QDir &dir, const QString &namePrefix,
   QProgressDialog progress(title, "Cancel", 0, numFrame, this);
   progress.setWindowModality(Qt::WindowModal);
   progress.show();
-  double rAngle = 360.0 / numFrame;
+  double rAngle = M_PI * 2. / numFrame;
   for (int i=0; i<numFrame; i++) {
     progress.setValue(i);
     if (progress.wasCanceled())
@@ -1683,11 +1675,11 @@ void Z3DWindow::updateSettingsDockWidget()
 void Z3DWindow::toogleAddSwcNodeMode(bool checked)
 {
   if (checked) {
-    if (m_toogleExtendSelectedSwcNodeAction->isChecked()) {
-      m_toogleExtendSelectedSwcNodeAction->blockSignals(true);
-      m_toogleExtendSelectedSwcNodeAction->setChecked(false);
-      m_toogleExtendSelectedSwcNodeAction->blockSignals(false);
-    }
+    //    if (m_toogleExtendSelectedSwcNodeAction->isChecked()) {
+    //      m_toogleExtendSelectedSwcNodeAction->blockSignals(true);
+    //      m_toogleExtendSelectedSwcNodeAction->setChecked(false);
+    //      m_toogleExtendSelectedSwcNodeAction->blockSignals(false);
+    //    }
     if (m_toogleSmartExtendSelectedSwcNodeAction->isChecked()) {
       m_toogleSmartExtendSelectedSwcNodeAction->blockSignals(true);
       m_toogleSmartExtendSelectedSwcNodeAction->setChecked(false);
@@ -1701,26 +1693,24 @@ void Z3DWindow::toogleAddSwcNodeMode(bool checked)
   }
 }
 
-void Z3DWindow::toogleExtendSelectedSwcNodeMode(bool checked)
-{
-  if (checked) {
-    if (m_toogleAddSwcNodeModeAction->isChecked()) {
-      m_toogleAddSwcNodeModeAction->blockSignals(true);
-      m_toogleAddSwcNodeModeAction->setChecked(false);
-      m_toogleAddSwcNodeModeAction->blockSignals(false);
-    }
-    if (m_toogleSmartExtendSelectedSwcNodeAction->isChecked()) {
-      m_toogleSmartExtendSelectedSwcNodeAction->blockSignals(true);
-      m_toogleSmartExtendSelectedSwcNodeAction->setChecked(false);
-      m_toogleSmartExtendSelectedSwcNodeAction->blockSignals(false);
-    }
-    m_swcFilter->setInteractionMode(Z3DSwcFilter::ExtendSwcNode);
-    m_canvas->setCursor(Qt::PointingHandCursor);
-  } else {
-    m_swcFilter->setInteractionMode(Z3DSwcFilter::Select);
-    m_canvas->setCursor(Qt::ArrowCursor);
-  }
-}
+//void Z3DWindow::toogleExtendSelectedSwcNodeMode(bool checked)
+//{
+//  if (checked) {
+//    if (m_toogleAddSwcNodeModeAction->isChecked()) {
+//      m_toogleAddSwcNodeModeAction->blockSignals(true);
+//      m_toogleAddSwcNodeModeAction->setChecked(false);
+//      m_toogleAddSwcNodeModeAction->blockSignals(false);
+//    }
+//    if (m_toogleSmartExtendSelectedSwcNodeAction->isChecked()) {
+//      m_toogleSmartExtendSelectedSwcNodeAction->blockSignals(true);
+//      m_toogleSmartExtendSelectedSwcNodeAction->setChecked(false);
+//      m_toogleSmartExtendSelectedSwcNodeAction->blockSignals(false);
+//    }
+//    m_canvas->setCursor(Qt::PointingHandCursor);
+//  } else {
+//    m_canvas->setCursor(Qt::ArrowCursor);
+//  }
+//}
 
 void Z3DWindow::toogleSmartExtendSelectedSwcNodeMode(bool checked)
 {
@@ -1730,11 +1720,11 @@ void Z3DWindow::toogleSmartExtendSelectedSwcNodeMode(bool checked)
       m_toogleAddSwcNodeModeAction->setChecked(false);
       m_toogleAddSwcNodeModeAction->blockSignals(false);
     }
-    if (m_toogleExtendSelectedSwcNodeAction->isChecked()) {
-      m_toogleExtendSelectedSwcNodeAction->blockSignals(true);
-      m_toogleExtendSelectedSwcNodeAction->setChecked(false);
-      m_toogleExtendSelectedSwcNodeAction->blockSignals(false);
-    }
+    //    if (m_toogleExtendSelectedSwcNodeAction->isChecked()) {
+    //      m_toogleExtendSelectedSwcNodeAction->blockSignals(true);
+    //      m_toogleExtendSelectedSwcNodeAction->setChecked(false);
+    //      m_toogleExtendSelectedSwcNodeAction->blockSignals(false);
+    //    }
     m_swcFilter->setInteractionMode(Z3DSwcFilter::SmartExtendSwcNode);
     m_canvas->setCursor(Qt::PointingHandCursor);
   } else {
@@ -1869,10 +1859,12 @@ void Z3DWindow::keyPressEvent(QKeyEvent *event)
     }
   }
     break;
-  case Qt::Key_M:  // change swc display mode
+  case Qt::Key_G:  // change swc display mode
   {
     if (event->modifiers() == Qt::ControlModifier) {
-      ZOptionParameter<QString> *sm = dynamic_cast<ZOptionParameter<QString>*>(getSwcFilter()->getParameter("Rendering Primitive"));
+      ZOptionParameter<QString> *sm =
+          dynamic_cast<ZOptionParameter<QString>*>(
+            getSwcFilter()->getParameter("Rendering Primitive"));
       sm->selectNext();
     }
   }
@@ -1941,8 +1933,8 @@ void Z3DWindow::updateContextMenu(const QString &group)
     if (channelNumber() > 0 && m_volumeSource->volumeNeedDownsample() && m_volumeSource->isSubvolume()) {
       m_contextMenuGroup["empty"]->addAction(m_exitVolumeZoomInViewAction);
     }
-    if (!m_doc->swcList()->empty() && m_swcFilter->isNodeRendering())
-      m_contextMenuGroup["empty"]->addAction(m_toogleExtendSelectedSwcNodeAction);
+    //if (!m_doc->swcList()->empty() && m_swcFilter->isNodeRendering())
+      //m_contextMenuGroup["empty"]->addAction(m_toogleExtendSelectedSwcNodeAction);
     if (channelNumber() > 0 && !m_doc->swcList()->empty() && m_swcFilter->isNodeRendering())
       m_contextMenuGroup["empty"]->addAction(m_toogleSmartExtendSelectedSwcNodeAction);
     if (!m_doc->swcList()->empty() && m_swcFilter->isNodeRendering())
@@ -1961,8 +1953,8 @@ void Z3DWindow::updateContextMenu(const QString &group)
       }
     }
     m_contextMenuGroup["volume"]->addAction(m_markPunctumAction);
-    if (!m_doc->swcList()->empty() && m_swcFilter->isNodeRendering())
-      m_contextMenuGroup["volume"]->addAction(m_toogleExtendSelectedSwcNodeAction);
+    //if (!m_doc->swcList()->empty() && m_swcFilter->isNodeRendering())
+      //m_contextMenuGroup["volume"]->addAction(m_toogleExtendSelectedSwcNodeAction);
     if (!m_doc->swcList()->empty() && m_swcFilter->isNodeRendering())
       m_contextMenuGroup["volume"]->addAction(m_toogleSmartExtendSelectedSwcNodeAction);
     if (!m_doc->swcList()->empty() && m_swcFilter->isNodeRendering())
@@ -2469,6 +2461,9 @@ void Z3DWindow::transformSelectedSwc()
 
       ZPoint offset = SwcTreeNode::pos(node + 1) - SwcTreeNode::pos(node);
       dlg.setTranslateValue(offset.x(), offset.y(), offset.z());
+    } else {
+      ZPoint offset = getDocument()->getStackOffset();
+      dlg.setTranslateValue(-offset[0], -offset[1], -offset[2]);
     }
     if (dlg.exec()) {
       for (std::set<ZSwcTree*>::iterator iter = treeSet->begin();
@@ -2730,7 +2725,7 @@ void Z3DWindow::saveSelectedSwc()
   }
 
   if (fileName.isEmpty()) {
-    ZString stackSource = m_doc->stackSourcePath().toStdString();
+    ZString stackSource = m_doc->stackSourcePath();
     if (!stackSource.empty()) {
       fileName = stackSource.changeExt("Edit.swc").c_str();
     }

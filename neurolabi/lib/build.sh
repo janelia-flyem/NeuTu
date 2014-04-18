@@ -12,11 +12,11 @@ then
   echo 'Building libfftw3 ...'
   tar -xvf fftw-3.3.2.tar.gz
   cd fftw-3.3.2
-  ./configure --enable-shared=no --prefix=${libdir}/fftw3 
+  ./configure --enable-shared=no --with-pic --prefix=${libdir}/fftw3 
   make
   make install
 
-  ./configure --enable-shared=no --enable-float --prefix=${libdir}/fftw3 
+  ./configure --enable-shared=no --enable-float --with-pic --prefix=${libdir}/fftw3 
   make
   make install
   cd ..
@@ -31,7 +31,7 @@ then
   fi
   tar -xvf jansson-2.5.tar.gz
   cd jansson-2.5
-  ./configure --enable-shared=no --prefix=${libdir}/jansson
+  ./configure --enable-shared=no --with-pic --prefix=${libdir}/jansson
   make
   make install
   cd ..
@@ -47,7 +47,7 @@ then
   fi
   tar -xvf libxml2-2.9.1.tar.gz
   cd libxml2-2.9.1
-  ./configure --without-iconv --without-zlib --enable-shared=no --prefix=${libdir}/xml
+  ./configure --without-iconv --without-zlib --with-pic --enable-shared=no --prefix=${libdir}/xml
   make
   make install
   cd ..
@@ -62,7 +62,7 @@ then
   fi
   tar -xvf libpng-1.6.7.tar.gz
   cd libpng-1.6.7
-  ./configure --enable-shared=no --prefix=${libdir}/png
+  ./configure --enable-shared=no --with-pic --prefix=${libdir}/png
   make
   make install
   cd ..
@@ -77,7 +77,7 @@ then
   fi
   tar -xvf hdf5-1.8.12.tar.gz
   cd hdf5-1.8.12
-  ./configure --enable-shared=no --prefix=${libdir}/hdf5
+  ./configure --enable-shared=no --with-pic --prefix=${libdir}/hdf5
   make
   make install
   cd ..

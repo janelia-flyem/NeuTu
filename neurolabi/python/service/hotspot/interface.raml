@@ -1,0 +1,85 @@
+#%RAML 0.8
+title: Skeletonization Service
+/hotsopt:
+  post:
+    description: "Call service to calculate the hot spots of a body"
+    body:
+      application/json:
+        schema: |
+          { "$schema": "http://json-schema.org/schema#",
+            "title": "Provide body ids whose hot spots will be calculated",
+            "type": "object",
+            "properties": {
+              "dvid-server": { 
+                "description": "location of DVID server (will try to find on service proxy if not provided)",
+                "type": "string" 
+              },
+              "uuid": { "type": "string" },
+              "bodies": { 
+                "description": "Array of body ids",
+                "type": "array",
+                "minItems": 1,
+                "items": {"type": "integer", "minimum": 1},
+                "uniqueItems": true
+              }
+            },
+            "required" : ["uuid", "bodies"]
+          }
+    responses:
+      200:
+        body:
+          application/json:
+            schema: |
+              { "$schema": "http://json-schema.org/schema#",
+                "title": "Provides the information of the hot spots",
+                "type": "object",
+                "properties": {
+                  "hot_spot": {
+                    "description" : "List of coordinates of the hot spots",
+                    "type": "array",
+                    "minItems": 0,
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "type": "string",
+                        "confidence": {"type": "number"},
+                        "geometry": {
+                          "type": "object",
+                          "properties": {
+                            "type": {"type": "string"},
+                            "center": {
+                              "type": "array",
+                              "minItems": 3,
+                              "maxItems": 3,
+                              "items": {"type": "number"}
+                            }
+                          }
+                        },
+                        "structure": {
+                          "type": "object",
+                          "properties": {
+                            "type": {"type": "string" },
+                            "source": {"type": "integer", "minimum": 1},
+                            "target": {
+                              "type": "array",
+                              "items": {
+                                "type": "integer",
+                                "minimum": 1
+                              }
+                            }
+                          },
+                          "required": ["type"]
+                        }
+                      }
+                    }
+                  },
+                  "required" : ["hot_spot"]
+                }
+              }
+/interface/interface.raml:
+  get:
+    description: "Get the interface for the hotspot service"
+    responses:
+      200:
+        body:
+          application/raml+yaml:

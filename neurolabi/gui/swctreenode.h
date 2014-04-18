@@ -168,7 +168,17 @@ int childNumber(const Swc_Tree_Node *tn);
  */
 int minChildLabel(const Swc_Tree_Node *tn);
 
+/*!
+ * \brief Test if a node is a branch point
+ *
+ * \return It returns true iff \a tn is regular and it has more than two regular
+ *        neighbors
+ */
 bool isBranchPoint(const Swc_Tree_Node *tn);
+
+/*!
+ * \brief Test if a node is a leaf
+ */
 bool isLeaf(const Swc_Tree_Node *tn);
 
 /*!
@@ -233,6 +243,10 @@ Swc_Tree_Node* continuousAncestor(const Swc_Tree_Node *tn, double minDist);
 bool isConnected(const Swc_Tree_Node *tn1, const Swc_Tree_Node *tn2);
 
 //Attribute modifiers
+
+void setNode(Swc_Tree_Node *tn, int id, int type, double x, double y, double z,
+         double radius, int parentId);
+
 void setPos(Swc_Tree_Node *tn, double x, double y, double z);
 inline void setX(Swc_Tree_Node *tn, double x) {
   tn->node.x = x;
@@ -267,15 +281,40 @@ inline void addType(Swc_Tree_Node *tn, int type) { tn->node.type += type; }
 void setLabel(Swc_Tree_Node *tn, int label);
 void addLabel(Swc_Tree_Node *tn, int label);
 void copyProperty(const Swc_Tree_Node *src, Swc_Tree_Node *dst);
-void toVirtual(Swc_Tree_Node *tn);
+//void toVirtual(Swc_Tree_Node *tn);
 void setDownstreamType(Swc_Tree_Node *tn, int type);
 void setUpstreamType(Swc_Tree_Node *tn, int type, Swc_Tree_Node *stop = NULL);
 void translate(Swc_Tree_Node *tn, double dx, double dy, double dz);
 void rotate(Swc_Tree_Node *tn, double theta, double psi, const ZPoint &center);
 void rotate(Swc_Tree_Node *tn, double theta, double psi);
 
+/*!
+ *
+ * \a tn1 * \a lambda + \a tn2 * (1 - \a lambda);
+ */
 void interpolate(Swc_Tree_Node *tn1, Swc_Tree_Node *tn2, double lambda,
                 double *x, double *y, double *z, double *r);
+
+/*!
+ * \brief Length ratio between two path.
+ *
+ * \return L(\a tn1, \a tn) / L(\a tn2, \a tn). It returns 0.5 if: there is no
+ * path from \a tn to \a tn1, and from \a tn to \a tn2; or both paths are 0.
+ * It returns 1.0 if there is no path from \a tn to \a tn1, but the path from
+ * \a tn to \a tn2 exists.
+ */
+double pathLengthRatio(
+    Swc_Tree_Node *tn1, Swc_Tree_Node *tn2, Swc_Tree_Node *tn);
+
+
+/*!
+ * \brief Interpolate a node.
+ *
+ * Set \a tn to the interplation of \a tn1 and \a tn2. The lambda is the
+ * path length ratio from \a tn to \a tn1. Nothing is done if \a tn1, \a tn2
+ * or \a tn is virtual.
+ */
+void interpolate(Swc_Tree_Node *tn1, Swc_Tree_Node *tn2, Swc_Tree_Node *tn);
 
 //Elementary operations (do not validate structures)
 enum EKnowingLink {
@@ -314,6 +353,7 @@ void mergeToParent(Swc_Tree_Node *tn);
 void killSubtree(Swc_Tree_Node *tn);
 
 std::string toString(const Swc_Tree_Node *tn);
+std::string toSwcLine(const Swc_Tree_Node *tn);
 
 //Path routines
 void setPathType(Swc_Tree_Node *tn1, Swc_Tree_Node *tn2, int type);
@@ -326,7 +366,7 @@ double pathLength(const Swc_Tree_Node *tn1, const Swc_Tree_Node *tn2);
 double planePathLength(const Swc_Tree_Node *tn1, const Swc_Tree_Node *tn2);
 
 enum EDistanceType {
-  GEODESIC, EUCLIDEAN, EUCLIDEAN_SURFACE
+  GEODESIC, EUCLIDEAN, PLANE_EUCLIDEAN, EUCLIDEAN_SURFACE
 };
 
 /*!
@@ -390,6 +430,11 @@ Swc_Tree_Node* findClosestNode(const std::set<Swc_Tree_Node*> &nodeSet,
  */
 std::vector<Swc_Tree_Node*> neighborArray(const Swc_Tree_Node *tn);
 
+/*!
+ * \brief Get the number of neighbors
+ */
+int regularNeighborNumber(const Swc_Tree_Node *tn);
+
 ZPoint centroid(const std::set<Swc_Tree_Node*> &nodeSet);
 double maxRadius(const std::set<Swc_Tree_Node*> &nodeSet);
 ZCuboid boundBox(const std::set<Swc_Tree_Node*> &nodeSet);
@@ -424,6 +469,15 @@ inline std::vector<std::string>& clipboard() {
 }
 
 //Relations
+/*!
+ * \brief Test if two node are close to each other
+ *
+ * Two nodes are close to each other if their surface distance is no bigger than
+ * distThre. It return false if either of the nodes is not regular.
+ */
+bool isNearby(const Swc_Tree_Node *tn1, const Swc_Tree_Node *tn2,
+              double distThre);
+
 bool hasOverlap(const Swc_Tree_Node *tn1, const Swc_Tree_Node *tn2);
 
 /*!

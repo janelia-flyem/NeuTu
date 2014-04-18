@@ -182,6 +182,11 @@ Geo3d_Scalar_Field* Geo3d_Scalar_Field_Merge(const Geo3d_Scalar_Field *field1,
 					     const Geo3d_Scalar_Field *field2,
 					     Geo3d_Scalar_Field *field);
 
+/**@brief Test if two fields are exactly the same.
+ */
+BOOL Geo3d_Scalar_Field_Is_Equal(const Geo3d_Scalar_Field *field1,
+    const Geo3d_Scalar_Field *field2);
+
 /*
  * Geo3d_Scalar_Field_Translate() translate <field> with (<x>, <y>, <z>).
  */

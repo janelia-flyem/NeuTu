@@ -711,6 +711,10 @@ Swc_Tree* Read_Swc_Tree_E(const char *file_path);
 BOOL Write_Swc_Tree(const char *file_path, Swc_Tree *tree);
 BOOL Write_Swc_Tree_E(const char *file_path, Swc_Tree *tree);
 
+/**@brief Create swc from memory.
+ */
+Swc_Tree* Swc_Tree_Parse_String(char *swc_string);
+
 void Print_Swc_Tree(Swc_Tree *tree);
 
 /**@brief Copy an SWC tree.
@@ -834,7 +838,7 @@ void Swc_Tree_To_Dot_File(Swc_Tree *tree, const char *file_path);
  * Swc_Tree_Resort_Id() sorts the Ids of all nodes of <tree> so that they 
  * conform to the SWC format.
  */
-void Swc_Tree_Resort_Id(Swc_Tree *tree);
+int Swc_Tree_Resort_Id(Swc_Tree *tree);
 
 /**@brief Remove zigzags in a tree.
  *

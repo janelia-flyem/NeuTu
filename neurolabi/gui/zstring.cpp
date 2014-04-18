@@ -62,6 +62,11 @@ ZString::~ZString()
   }
 }
 
+int ZString::firstInteger(const string &str)
+{
+  return String_First_Integer(str.c_str());
+}
+
 int ZString::firstInteger()
 {
   return String_First_Integer(c_str());
@@ -376,6 +381,39 @@ string ZString::absolutePath(const string &dir, const string &relative)
   return fullPath;
 }
 
+string ZString::relativePath(const string &path, const string &reference)
+{
+  vector<string> pathParts = ZString(path).decomposePath();
+  vector<string> referenceParts = ZString(reference).decomposePath();
+
+  string relative;
+
+  int commonLevel = 0;
+
+  int partLength = (int) std::min(pathParts.size(), referenceParts.size());
+  for (int i = 0; i < partLength; ++i) {
+    if (pathParts[i] == referenceParts[i]) {
+      ++commonLevel;
+    } else {
+      break;
+    }
+  }
+
+  int leftLevel = referenceParts.size() - commonLevel;
+  for (int i = 0; i < leftLevel; ++i) {
+    relative += "../";
+  }
+
+  for (int i = commonLevel; i < (int) pathParts.size(); ++i) {
+    relative += pathParts[i];
+    if (i < (int) pathParts.size() - 1) {
+      relative += "/";
+    }
+  }
+
+  return relative;
+}
+
 string ZString::fullPath(
     const string &dir, const string &fname, const string &ext)
 {
@@ -494,6 +532,31 @@ vector<string> ZString::fileParts() const
         parts.push_back(substr(s2 + 1));
       }
     }
+  }
+
+  return parts;
+}
+
+vector<string> ZString::decomposePath() const
+{
+  vector<string> parts;
+
+  size_type currentPos = 0;
+  size_type pos = 0;
+
+  while ((pos = find_first_of(FileSeparator, currentPos)) != string::npos) {
+    if (pos == 0) {
+      parts.push_back("/");
+    } else {
+      if (pos > currentPos) {
+        parts.push_back(substr(currentPos, pos - currentPos));
+      }
+    }
+    currentPos = pos + 1;
+  }
+
+  if (currentPos < length()) {
+    parts.push_back(substr(currentPos, length() - currentPos));
   }
 
   return parts;

@@ -470,9 +470,15 @@ double <2t>_dot_n(const <1t> *d1, const <1t> *d2, size_t length)
   size_t i;
   double d = 0.0;
   for (i = 0; i < length; i++) {
+    double p = d1[i] * d2[i];
+    if (!isnan(p)) {
+      d += p;
+    }
+    /*
     if (!(isnan(d1[i]) || isnan(d2[i]))) {
       d += d1[i] * d2[i];
     }
+    */
   }
 
   return d;
@@ -1511,7 +1517,7 @@ void <2t>_clean_edge3(<1t>* d1,int width,int height,int depth,int margin)
       }
 }
 
-void <2t>_printf(<1t> *d1, size_t length, const char *format)
+void <2t>_printf(const <1t> *d1, size_t length, const char *format)
 {
   size_t i;
   for (i = 0; i < length; i++) {
@@ -1521,7 +1527,7 @@ void <2t>_printf(<1t> *d1, size_t length, const char *format)
   printf("\n");
 }
 
-void <2t>_print2(<1t>* d1,int width,int height)
+void <2t>_print2(const <1t>* d1,int width,int height)
 {
   if (d1 == NULL) {
     printf("Null array.\n");
@@ -1547,12 +1553,12 @@ void <2t>_print2(<1t>* d1,int width,int height)
   printf("\n");
 }
 
-void <2t>_print(<1t>* d1,size_t length)
+void <2t>_print(const <1t>* d1,size_t length)
 {
   <2t>_print2(d1, length, 1);
 }
 
-void <2t>_fprint2(FILE *fp, <1t>* d1,int width,int height)
+void <2t>_fprint2(FILE *fp, const <1t>* d1,int width,int height)
 {
   int i,j;
   size_t offset = 0;
@@ -1574,7 +1580,7 @@ void <2t>_fprint2(FILE *fp, <1t>* d1,int width,int height)
   fprintf(fp, "\n");
 }
 
-void <2t>_print3(<1t> *d1,int width,int height,int depth)
+void <2t>_print3(const <1t> *d1,int width,int height,int depth)
 {
   int k;
   size_t offset=0;

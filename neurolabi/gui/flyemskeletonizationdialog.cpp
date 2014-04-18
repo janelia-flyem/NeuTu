@@ -10,6 +10,8 @@ FlyEmSkeletonizationDialog::FlyEmSkeletonizationDialog(QWidget *parent) :
           this, SLOT(enableDistanceThreshold()));
   connect(ui->objSizeCheckBox, SIGNAL(stateChanged(int)),
           this, SLOT(enableSizeThreshold()));
+  connect(ui->downsampleCheckBox, SIGNAL(stateChanged(int)),
+          this, SLOT(enableDownsample()));
 }
 
 FlyEmSkeletonizationDialog::~FlyEmSkeletonizationDialog()
@@ -57,6 +59,13 @@ void FlyEmSkeletonizationDialog::enableSizeThreshold()
   ui->objSizeSpinBox->setEnabled(ui->objSizeCheckBox->isChecked());
 }
 
+void FlyEmSkeletonizationDialog::enableDownsample()
+{
+  ui->dsXSpinBox->setEnabled(ui->downsampleCheckBox->isChecked());
+  ui->dsYSpinBox->setEnabled(ui->downsampleCheckBox->isChecked());
+  ui->dsZSpinBox->setEnabled(ui->downsampleCheckBox->isChecked());
+}
+
 bool FlyEmSkeletonizationDialog::isLevelChecked() const
 {
   return ui->greyToBinaryCheckBox->isChecked();
@@ -65,4 +74,36 @@ bool FlyEmSkeletonizationDialog::isLevelChecked() const
 int FlyEmSkeletonizationDialog::level() const
 {
   return ui->levelSpinBox->value();
+}
+
+bool FlyEmSkeletonizationDialog::isDownsampleChecked() const
+{
+  return ui->downsampleCheckBox->isChecked();
+}
+
+int FlyEmSkeletonizationDialog::getXInterval() const
+{
+  if (!isDownsampleChecked()) {
+    return 0;
+  }
+
+  return ui->dsXSpinBox->value();
+}
+
+int FlyEmSkeletonizationDialog::getYInterval() const
+{
+  if (!isDownsampleChecked()) {
+    return 0;
+  }
+
+  return ui->dsYSpinBox->value();
+}
+
+int FlyEmSkeletonizationDialog::getZInterval() const
+{
+  if (!isDownsampleChecked()) {
+    return 0;
+  }
+
+  return ui->dsZSpinBox->value();
 }

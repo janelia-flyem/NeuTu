@@ -51,6 +51,15 @@
 
 #define QXT_DLLEXPORT DO_NOT_USE_THIS_ANYMORE
 
+#if defined(BUILD_QXT_OBJECT)
+#    define QXT_CORE_EXPORT
+#    define QXT_GUI_EXPORT
+#    define QXT_NETWORK_EXPORT
+#    define QXT_SQL_EXPORT
+#    define QXT_WEB_EXPORT
+#    define QXT_BERKELEY_EXPORT
+#    define QXT_ZEROCONF_EXPORT
+#else
 #if !defined(QXT_STATIC) && !defined(QXT_DOXYGEN_RUN)
 #    if defined(BUILD_QXT_CORE)
 #        define QXT_CORE_EXPORT Q_DECL_EXPORT
@@ -120,6 +129,7 @@
 #else
 #    define QXT_ZEROCONF_EXPORT
 #endif // QXT_ZEROCONF_EXPORT
+#endif
 
 #if defined(BUILD_QXT_CORE) || defined(BUILD_QXT_GUI) || defined(BUILD_QXT_SQL) || defined(BUILD_QXT_NETWORK) || defined(BUILD_QXT_WEB) || defined(BUILD_QXT_BERKELEY) || defined(BUILD_QXT_ZEROCONF)
 #   define BUILD_QXT

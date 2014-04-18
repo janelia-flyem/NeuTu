@@ -84,6 +84,16 @@ double SwcTreeNode::z(const Swc_Tree_Node *tn)
   return tn->node.z;
 }
 
+void SwcTreeNode::setNode(Swc_Tree_Node *tn, int id, int type, double x,
+                          double y, double z, double radius, int parentId)
+{
+  setId(tn, id);
+  setType(tn, type);
+  setRadius(tn, radius);
+  setParentId(tn, parentId);
+  setPos(tn, x, y, z);
+}
+
 void SwcTreeNode::setPos(Swc_Tree_Node *tn, double x, double y, double z)
 {
   tn->node.x = x;
@@ -221,6 +231,19 @@ ZPoint SwcTreeNode::pos(const Swc_Tree_Node *tn)
   return ZPoint(tn->node.x, tn->node.y, tn->node.z);
 }
 
+std::string SwcTreeNode::toSwcLine(const Swc_Tree_Node *tn)
+{
+  std::ostringstream stream;
+  if (isRegular(tn)) {
+    stream << SwcTreeNode::id(tn) << ' ' << SwcTreeNode::type(tn) << ' '
+           << SwcTreeNode::x(tn) << ' ' << SwcTreeNode::y(tn) << ' '
+           << SwcTreeNode::z(tn) << ' ' << SwcTreeNode::radius(tn) << ' '
+           << SwcTreeNode::parentId(tn) << std::endl;
+  }
+
+  return stream.str();
+}
+
 std::string SwcTreeNode::toString(const Swc_Tree_Node *tn)
 {
   std::ostringstream stream;
@@ -276,7 +299,15 @@ bool SwcTreeNode::isLeaf(const Swc_Tree_Node *tn)
 
 bool SwcTreeNode::isBranchPoint(const Swc_Tree_Node *tn)
 {
-  return Swc_Tree_Node_Is_Branch_Point(tn);
+  if (isRegularRoot(tn)) {
+    if (childNumber(tn) > 2) {
+      return true;
+    }
+  } else {
+    return Swc_Tree_Node_Is_Branch_Point(tn);
+  }
+
+  return false;
 }
 
 bool SwcTreeNode::isTerminal(const Swc_Tree_Node *tn)
@@ -402,6 +433,10 @@ void SwcTreeNode::rotate(Swc_Tree_Node *tn, double theta, double psi)
 double SwcTreeNode::pathLength(const Swc_Tree_Node *tn1,
                                const Swc_Tree_Node *tn2)
 {
+  if (tn1 == tn2) {
+    return 0.0;
+  }
+
   double dist = Infinity;
 
   const Swc_Tree_Node *ancestor = SwcTreeNode::commonAncestor(tn1, tn2);
@@ -462,6 +497,14 @@ double SwcTreeNode::distance(const Swc_Tree_Node *tn1, const Swc_Tree_Node *tn2,
   switch (distType) {
   case SwcTreeNode::EUCLIDEAN:
     dist = Swc_Tree_Node_Dist(tn1, tn2);
+    break;
+  case SwcTreeNode::PLANE_EUCLIDEAN:
+  {
+    double dx = x(tn1) - x(tn2);
+    double dy = y(tn1) - y(tn2);
+    dist = sqrt(dx * dx + dy * dy);
+    break;
+  }
     break;
   case SwcTreeNode::GEODESIC:
     dist = SwcTreeNode::pathLength(tn1, tn2);
@@ -1232,6 +1275,10 @@ bool SwcTreeNode::fitSignal(Swc_Tree_Node *tn, const Stack *stack,
 
   int cz = iround(z(tn));
 
+  if (cz >= C_Stack::depth(stack)) {
+    return false;
+  }
+
   Stack *slice = Crop_Stack(stack, x1, y1, cz, x2 - x1 + 1, y2 - y1 + 1, 1, NULL);
 
   //RC threshold
@@ -1289,6 +1336,18 @@ void SwcTreeNode::adoptChildren(
       child = SwcTreeNode::nextSibling(child);
     }
   }
+}
+
+bool SwcTreeNode::isNearby(
+    const Swc_Tree_Node *tn1, const Swc_Tree_Node *tn2, double distThre)
+{
+  if (!isRegular(tn1) || !isRegular(tn2)) {
+    return false;
+  }
+
+  double dist = distance(tn1, tn2, SwcTreeNode::EUCLIDEAN_SURFACE);
+
+  return (dist <= distThre);
 }
 
 bool SwcTreeNode::hasOverlap(const Swc_Tree_Node *tn1, const Swc_Tree_Node *tn2)
@@ -1415,6 +1474,41 @@ void SwcTreeNode::interpolate(
   }
 }
 
+double SwcTreeNode::pathLengthRatio(
+    Swc_Tree_Node *tn1, Swc_Tree_Node *tn2, Swc_Tree_Node *tn)
+{
+  double d1 = pathLength(tn1, tn);
+  double d2 = pathLength(tn2, tn);
+
+  if (d1 == 0.0 && d2 == 0.0) {
+    return 0.5;
+  } else if (d1 == 0.0) {
+    return 0.0;
+  }
+
+
+  if (tz_isinf(d1) && tz_isinf(d2)) {
+    return 0.5;
+  } else if (tz_isinf(d1)) {
+    return 1.0;
+  } else if (tz_isinf(d2)) {
+    return 0.0;
+  }
+
+  return d1 / (d1 + d2);
+}
+
+void SwcTreeNode::interpolate(
+    Swc_Tree_Node *tn1, Swc_Tree_Node *tn2, Swc_Tree_Node *tn)
+{
+  if (!isRegular(tn1) || !isRegular(tn2) || !isRegular(tn)) {
+    return;
+  }
+
+  double lambda = pathLengthRatio(tn2, tn1, tn);
+  interpolate(tn1, tn2, lambda, tn);
+}
+
 std::vector<Swc_Tree_Node*> SwcTreeNode::neighborArray(const Swc_Tree_Node *tn)
 {
   std::vector<Swc_Tree_Node*> neighborArray;
@@ -1430,6 +1524,23 @@ std::vector<Swc_Tree_Node*> SwcTreeNode::neighborArray(const Swc_Tree_Node *tn)
   }
 
   return neighborArray;
+}
+
+int SwcTreeNode::regularNeighborNumber(const Swc_Tree_Node *tn)
+{
+  int count = 0;
+  if (isRegular(tn)) {
+    if (isRegular(parent(tn))) {
+      ++count;
+    }
+    Swc_Tree_Node *child = firstChild(tn);
+    while (child != NULL) {
+      ++count;
+      child = nextSibling(child);
+    }
+  }
+
+  return count;
 }
 
 std::map<Swc_Tree_Node*, Swc_Tree_Node*> SwcTreeNode::crossoverMatch(

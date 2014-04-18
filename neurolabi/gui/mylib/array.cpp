@@ -149,9 +149,6 @@ static inline int pthread_is_this(pthread_id id)
 
 extern int Boundary_Case_8qm5;
 
-
-
-
 #define SIZEOF(x) ((int) sizeof(x))
 
 /****************************************************************************************
@@ -404,7 +401,8 @@ static inline int pack_array(mylib::Array *array)
   if (object->nsize > array_nsize(array))
     { int ns = array_nsize(array);
       if (ns != 0)
-        { void *x = mylib::Guarded_Realloc(array->dims,(size_t) ns,"Pack_Array");
+        { void *x = mylib::Guarded_Realloc(array->dims,(size_t) ns,
+                                           NCC("Pack_Array"));
           if (x == NULL) return (1);
           array->dims = static_cast<mylib::Dimn_Type*>(x);
         }
@@ -417,7 +415,8 @@ static inline int pack_array(mylib::Array *array)
   if (object->dsize > array_dsize(array))
     { mylib::int64  ns = array_dsize(array);
       if (ns != 0)
-        { void *x = mylib::Guarded_Realloc(array->data,(size_t) ns,"Pack_Array");
+        { void *x = mylib::Guarded_Realloc(array->data,(size_t) ns,
+                                           NCC("Pack_Array"));
           if (x == NULL) return (1);
           array->data = x;
         }
@@ -430,7 +429,8 @@ static inline int pack_array(mylib::Array *array)
   if (object->tsize > array_tsize(array))
     { int ns = array_tsize(array);
       if (ns != 0)
-        { void *x = mylib::Guarded_Realloc(array->text,(size_t) ns,"Pack_Array");
+        { void *x = mylib::Guarded_Realloc(array->text,(size_t) ns,
+                                           NCC("Pack_Array"));
           if (x == NULL) return (1);
           array->text = (char*) x;
         }
@@ -1397,7 +1397,7 @@ static inline Slicer *new_slicer(int dsize, char *routine)
 }
 
 static inline Slicer *copy_slicer(Slicer *slicer)
-{ Slicer *copy = new_slicer(slicer_dsize(slicer),"Copy_Slice");
+{ Slicer *copy = new_slicer(slicer_dsize(slicer),NCC("Copy_Slice"));
   void *_dnc = copy->dnc;
   *copy = *slicer;
   if (slicer->cnt != NULL)
@@ -1629,7 +1629,7 @@ mylib::Slice *G(mylib::Make_Slice)(mylib::Array *I(target), mylib::Coordinate *S
       ecrd = ADIMN(end);
     }
 
-  slice = new_slicer(ndims*SIZEOF(mylib::Size_Type),"Make_Slice");
+  slice = new_slicer(ndims*SIZEOF(mylib::Size_Type),NCC("Make_Slice"));
 
   slice->kind    = SLICE_KIND;
   slice->trg_ref = mylib::Inc_Array(target);
@@ -2075,7 +2075,7 @@ static inline Framer *new_framer(mylib::int64  osize, char *routine)
 }
 
 static inline Framer *copy_framer(Framer *framer)
-{ Framer *copy = new_framer(framer_osize(framer),"Copy_Frame");
+{ Framer *copy = new_framer(framer_osize(framer),NCC("Copy_Frame"));
   void *_offs = copy->offs;
   *copy = *framer;
   if (framer->trg_ref != NULL)
@@ -8800,7 +8800,7 @@ mylib::Frame *G(mylib::Make_Frame)(mylib::Array *I(target), mylib::Coordinate *S
     }
   vsize += size-2;
 
-  frame = new_framer(size*SIZEOF(Offs_Type)+vsize*SIZEOF(double),"Make_Frame");
+  frame = new_framer(size*SIZEOF(Offs_Type)+vsize*SIZEOF(double),NCC("Make_Frame"));
 
   frame->kind    = FRAME_KIND;
   frame->trg_ref = Inc_Array(target);
@@ -8980,6 +8980,8 @@ static void setup_value_compute(Framer *frame)
                 d[j] = v[o[j]];
               break;
             }
+      default:
+        break;
       }
     }
 
@@ -9382,6 +9384,8 @@ static void setup_value_compute(Framer *frame)
               }
               break;
             }
+      default:
+        break;
       }
 
       if (ndims > 10)
@@ -9500,6 +9504,8 @@ mylib::Array *G(mylib::Make_Array_From_Frame)(Frame *framer)
                   d[j] = v[o[j]];
                 break;
               }
+        default:
+          break;
         }
       }
     else
@@ -9805,8 +9811,9 @@ int mylib::AForm_Refcount(AForm *form)
  *                                                                                      *
  ****************************************************************************************/
 
-static mylib::string type_name[] = { "uint8", "uint16", "uint32", "uint64", "int8", "int16", "int32",
-                              "int64", "float32", "float64" };
+static const mylib::const_string type_name[] = {
+  "uint8", "uint16", "uint32", "uint64", "int8", "int16", "int32",
+  "int64", "float32", "float64" };
 
 static int   Uindent;
 static FILE *Uoutput;
@@ -10031,6 +10038,8 @@ void mylib::Print_Array(AForm *o, FILE *output, int indent, string format)
   switch (kind) {
       case PLAIN_KIND:
         switch (a->type) {
+        case mylib::UNKNOWN_TYPE:
+          break;
             case mylib::UINT8_TYPE:
               { mylib::uint8 *v;
 
@@ -10515,6 +10524,8 @@ void mylib::Print_Array(AForm *o, FILE *output, int indent, string format)
         break;
       case RGB_KIND:
         switch (a->type) {
+        case mylib::UNKNOWN_TYPE:
+          break;
             case mylib::UINT8_TYPE:
               { mylib::uint8 *v;
                 mylib::uint8 *w, *x;
@@ -11109,6 +11120,8 @@ void mylib::Print_Array(AForm *o, FILE *output, int indent, string format)
         break;
       case RGBA_KIND:
         switch (a->type) {
+        case mylib::UNKNOWN_TYPE:
+          break;
             case mylib::UINT8_TYPE:
               { mylib::uint8 *v;
                 mylib::uint8 *w, *x;
@@ -11743,6 +11756,8 @@ void mylib::Print_Array(AForm *o, FILE *output, int indent, string format)
         break;
       case COMPLEX_KIND:
         switch (a->type) {
+        case mylib::UNKNOWN_TYPE:
+          break;
             case mylib::UINT8_TYPE:
               { mylib::uint8 *v;
 
@@ -12315,14 +12330,14 @@ void mylib::Print_Array(AForm *o, FILE *output, int indent, string format)
 
 void mylib::Set_Array_Text(mylib::Array *M(a), string text)
 { int len = (int) strlen(text);
-  allocate_array_text(a,len+1,"Set_Array_Text");
+  allocate_array_text(a,len+1,NCC("Set_Array_Text"));
   a->tlen = len;
   strcpy(a->text,text);
 }
 
 void mylib::Append_To_Array_Text(mylib::Array *M(a), string text)
 { int sen = (int) strlen(a->text);
-  allocate_array_text(a,sen+a->tlen+1,"Append_To_Array_Text");
+  allocate_array_text(a,sen+a->tlen+1,NCC("Append_To_Array_Text"));
   a->tlen += sen;
   strcpy(a->text+sen,text);
 }
@@ -44204,11 +44219,11 @@ static mylib::Array *convert_array(mylib::Array *sarray, mylib::Array_Kind tkind
   tels   = pels * kind_size[tkind];
 
   if (in_place)
-    { estring = "Convert_Array_Inplace";
+    { estring = NCC("Convert_Array_Inplace");
       tarray  = sarray;
     }
   else
-    { estring = "Convert_Array";
+    { estring = NCC("Convert_Array");
       tarray  = new_array(0,0,1,estring);
       tarray->tlen    = 0;
       tarray->text[0] = '\0';
@@ -44538,11 +44553,11 @@ mylib::Array *G(Array_Multiply)(mylib::Array *a, mylib::Array *b)
       }
 
     if (complex)
-      { prod = make_start(COMPLEX_KIND,a->type,andims+bndims-1,"Array_Multiply");
+      { prod = make_start(COMPLEX_KIND,a->type,andims+bndims-1,NCC("Array_Multiply"));
         prod->dims[0] = 2;
       }
     else
-      prod = make_start(PLAIN_KIND,a->type,andims+bndims-2,"Array_Multiply");
+      prod = make_start(PLAIN_KIND,a->type,andims+bndims-2,NCC("Array_Multiply"));
 
     { Dimn_Type *pdims;
       int        i;
@@ -45535,7 +45550,8 @@ mylib::Array *G(Apply_Map)(mylib::Array *image, mylib::Array *map)
 
   { int i, j;
 
-    rez = make_start(PLAIN_KIND,map->type,image->ndims+map->ndims-1,"Apply_Map");
+    rez = make_start(PLAIN_KIND,map->type,image->ndims+map->ndims-1,
+                     NCC("Apply_Map"));
     rez->kind  = map->kind;
     rez->scale = map->scale;
     for (i = 0; i < image->ndims; i++)
@@ -45543,7 +45559,7 @@ mylib::Array *G(Apply_Map)(mylib::Array *image, mylib::Array *map)
     for (j = 1, i = image->ndims; i < rez->ndims; i++, j++)
       rez->dims[i] = map->dims[j];
     rez->size = array_size(rez);
-    allocate_array_data(rez,array_dsize(rez),"Apply_Map");
+    allocate_array_data(rez,array_dsize(rez),NCC("Apply_Map"));
     Set_Array_Text(rez,image->text);
   }
 
@@ -47379,7 +47395,7 @@ mylib::Array *Down_Sample_Inplace(mylib::Array *R(M(source)), mylib::Coordinate 
   point = Copy_Array(ipoint);
   Free_Array(ipoint);
 
-  check_dsample_args(source,point,"Down_Sample_Inplace");
+  check_dsample_args(source,point,NCC("Down_Sample_Inplace"));
 
   basis = AForm_Shape(source);
   dims  = ADIMN(basis);
@@ -47411,7 +47427,7 @@ mylib::Array *G(Down_Sample)(AForm *source, mylib::Coordinate *F(ipoint))
   point = Copy_Array(ipoint);
   Free_Array(ipoint);
  
-  check_dsample_args(source,point,"Down_Sample");
+  check_dsample_args(source,point,NCC("Down_Sample"));
 
   basis = AForm_Shape(source);
   dims  = ADIMN(basis);
@@ -47869,7 +47885,7 @@ mylib::Array *Clip_Array_Inplace(mylib::Array *R(M(source)), mylib::Coordinate *
   mylib::Dimn_Type  *bcrd, *scrd, *dims, s;
   int         i, ndims;
 
-  check_clip_args(source,beg,end,"Clip_Array_Inplace");
+  check_clip_args(source,beg,end,NCC("Clip_Array_Inplace"));
 
   ndims = (int) end->size;
   shape = Copy_Array(end);
@@ -47909,7 +47925,7 @@ mylib::Array *G(Clip_Array)(AForm *source, mylib::Coordinate *F(beg), mylib::Coo
   mylib::boolean     islice;
   mylib::Array      *a = AForm_Array(source);
 
-  check_clip_args(source,beg,end,"Clip_Array");
+  check_clip_args(source,beg,end,NCC("Clip_Array"));
 
   ndims = (int) end->size;
 
@@ -48571,6 +48587,8 @@ void expand_array(mylib::Array *target, AForm *source, mylib::Size_Type size,
                 }
               break;
             }
+      case mylib::UNKNOWN_TYPE:
+        break;
       }
     }
 
@@ -48906,6 +48924,8 @@ void expand_array(mylib::Array *target, AForm *source, mylib::Size_Type size,
               }
               break;
             }
+      case mylib::UNKNOWN_TYPE:
+        break;
       }
 
       if (ndims > 10)
@@ -48956,7 +48976,7 @@ mylib::Array *Pad_Array_Inplace(mylib::Array *R(M(source)), mylib::Coordinate *F
   mylib::Size_Type   size;
   int         i, ndims;
 
-  check_expand_args(source,anchor,shape,"Pad_Array_Inplace");
+  check_expand_args(source,anchor,shape,NCC("Pad_Array_Inplace"));
   ndims = (int) anchor->size;
 
   end  = Copy_Array(shape);
@@ -48980,7 +49000,7 @@ mylib::Array *Pad_Array_Inplace(mylib::Array *R(M(source)), mylib::Coordinate *F
       source->size *= m;
     }
 
-  allocate_array_data(source,array_dsize(source),"Expland_Array_In_Place");
+  allocate_array_data(source,array_dsize(source),NCC("Expland_Array_In_Place"));
 
   expand_array(source,source,size,Copy_Array(anchor),end);
   Free_Array(anchor);
@@ -48996,7 +49016,7 @@ mylib::Array *G(Pad_Array)(AForm *source, mylib::Coordinate *F(anchor), mylib::C
   int         i, ndims;
   mylib::Array      *a = AForm_Array(source);
  
-  check_expand_args(source,anchor,shape,"Pad_Array");
+  check_expand_args(source,anchor,shape,NCC("Pad_Array"));
   ndims = (int) anchor->size;
 
   end  = Copy_Array(shape);
@@ -49338,6 +49358,8 @@ static double inner_product_arrays(AForm *o1, AForm *o2)
               }
               break;
             }
+      case mylib::UNKNOWN_TYPE:
+        break;
        }
     }
 
@@ -49585,6 +49607,8 @@ static double sum_array(AForm *o)
               break;
           }
         }
+  case mylib::UNKNOWN_TYPE:
+    break;
   }
   return (t);
 }
@@ -49661,7 +49685,7 @@ Double_Matrix *G(Correlations)(int n, AForm *a1, ...)
   Double_Matrix *rez;
 
   va_start(ap,a1);
-  rez = correlate(n,a1,&ap,"Correlation");
+  rez = correlate(n,a1,&ap,NCC("Correlation"));
   va_end(ap);
   return (rez);
 }
@@ -49679,7 +49703,7 @@ Double_Matrix *G(Covariances)(int n, AForm *a1, ...)
   Double_Vector *sum;
 
   va_start(ap,a1);
-  rez = correlate(n,a1,&ap,"Covariance");
+  rez = correlate(n,a1,&ap,NCC("Covariance"));
   va_end(ap);
 
   va_start(ap,a1);
@@ -49726,7 +49750,7 @@ Double_Matrix *G(Pearson_Correlations)(int n, AForm *a1, ...)
   Double_Vector *sum;
 
   va_start(ap,a1);
-  rez = correlate(n,a1,&ap,"Pearson_Correlation");
+  rez = correlate(n,a1,&ap,NCC("Pearson_Correlation"));
   va_end(ap);
 
   va_start(ap,a1);

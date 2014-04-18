@@ -233,6 +233,26 @@ TEST(SwcTreeNode, neighbor)
   ASSERT_TRUE(tn == NULL);
 }
 
+TEST(SwcTreeNode, pathLength)
+{
+  Swc_Tree_Node *center = SwcTreeNode::makePointer(0, 0, 0, 1);
+  Swc_Tree_Node *tn1 = SwcTreeNode::makePointer(10, 0, 0, 1);
+  SwcTreeNode::setParent(tn1, center);
+  Swc_Tree_Node *tn2 =SwcTreeNode::makePointer(20, 0, 0, 1);
+  SwcTreeNode::setParent(tn2, center);
+  Swc_Tree_Node *tn3 = SwcTreeNode::makePointer(30, 0, 0, 1);
+  Swc_Tree_Node *tn4 = SwcTreeNode::makePointer(30, 0, 0, 1);
+
+  ASSERT_DOUBLE_EQ(10.0, SwcTreeNode::pathLength(tn1, center));
+  ASSERT_DOUBLE_EQ(30.0, SwcTreeNode::pathLength(tn1, tn2));
+  ASSERT_DOUBLE_EQ(0.0, SwcTreeNode::pathLength(tn1, tn1));
+
+  ASSERT_DOUBLE_EQ(0.5, SwcTreeNode::pathLengthRatio(tn3, tn4, center));
+  ASSERT_DOUBLE_EQ(0.25, SwcTreeNode::pathLengthRatio(center, tn2, tn1));
+  ASSERT_DOUBLE_EQ(1.0, SwcTreeNode::pathLengthRatio(tn3, tn2, tn1));
+  ASSERT_DOUBLE_EQ(0.0, SwcTreeNode::pathLengthRatio(tn2, tn3, tn1));
+}
+
 #endif
 
 

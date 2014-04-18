@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////////
 /// OpenGL Mathematics (glm.g-truc.net)
 ///
-/// Copyright (c) 2005 - 2013 G-Truc Creation (www.g-truc.net)
+/// Copyright (c) 2005 - 2014 G-Truc Creation (www.g-truc.net)
 /// Permission is hereby granted, free of charge, to any person obtaining a copy
 /// of this software and associated documentation files (the "Software"), to deal
 /// in the Software without restriction, including without limitation the rights
@@ -31,7 +31,7 @@
 /// @defgroup gtc_constants GLM_GTC_constants
 /// @ingroup gtc
 /// 
-/// @brief Allow to perform bit operations on integer values
+/// @brief Provide a list of constants and precomputed useful values.
 /// 
 /// <glm/gtc/constants.hpp> need to be included to use these features.
 ///////////////////////////////////////////////////////////////////////////////////

@@ -12,6 +12,21 @@ uniform float material_shininess;
 uniform float alpha;
 uniform mat4 projection_matrix;
 
+#if GLSL_VERSION >= 130
+in vec3 point;
+in vec3 axis;
+in vec3 base;
+in vec3 top;
+in vec3 U;
+in vec3 V;
+in vec4 combo1;
+#define bradius combo1.x
+#define tradius combo1.y
+#define height combo1.z
+#define inv_sqr_height combo1.w
+in vec4 color1;
+in vec4 color2;
+#else
 varying vec3 point;
 varying vec3 axis;
 varying vec3 base;
@@ -25,6 +40,7 @@ varying vec4 combo1;
 #define inv_sqr_height combo1.w
 varying vec4 color1;
 varying vec4 color2;
+#endif
 
 vec4 apply_lighting_and_fog(const in vec4 sceneAmbient,
                             const in float materialShininess, const in vec4 materialAmbient, const in vec4 materialSpecular,

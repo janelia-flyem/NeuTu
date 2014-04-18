@@ -7,6 +7,7 @@
 
 #include <QMainWindow>
 #include <QMap>
+#include <QFileDialog>
 
 #include "tz_image_lib_defs.h"
 #include "frameinfodialog.h"
@@ -15,6 +16,7 @@
 #include "moviedialog.h"
 #include "autosaveswclistdialog.h"
 #include "zactionactivator.h"
+#include "flyemneuronthumbnaildialog.h"
 
 class ZStackFrame;
 class QMdiArea;
@@ -34,6 +36,10 @@ class DiagnosisDialog;
 class PenWidthDialog;
 class ZDvidClient;
 class DvidObjectDialog;
+class ResolutionDialog;
+class DvidImageDialog;
+class TileManagerDialog;
+class ZTiledStackFrame;
 
 namespace Ui {
     class MainWindow;
@@ -49,10 +55,15 @@ public:
 public: /* frame operation */
   ZStackFrame* activeStackFrame();
   ZStackFrame* currentStackFrame();
+  ZFlyEmDataFrame* currentFlyEmDataFrame();
+  ZTiledStackFrame* currentTiledStackFrame();
   int frameNumber();
   inline QUndoGroup* undoGroup() const { return m_undoGroup; }
   void initOpenglContext();
   void config();
+
+signals:
+  void dvidRequestCanceled();
 
 public slots:
   void addStackFrame(ZStackFrame *frame, bool isReady = true);
@@ -62,6 +73,22 @@ public slots:
   void updateAction();
   void updateMenu();
   void updateStatusBar();
+
+  ZStackFrame* createEmptyStackFrame(ZStackFrame *parentFrame = NULL);
+
+  ZStackFrame* createStackFrame(
+      ZStack *stack,NeuTube::Document::ETag tag = NeuTube::Document::NORMAL,
+      ZStackFrame *parentFrame = NULL);
+
+  ZStackFrame* createStackFrame(
+      ZStackDoc *doc,NeuTube::Document::ETag tag = NeuTube::Document::NORMAL,
+      ZStackFrame *parentFrame = NULL);
+
+  void showStackFrame(
+      const QStringList &fileList, bool opening3DWindow = false);
+  void createDvidFrame();
+
+  void cancelDvidRequest();
 
 private:
   Ui::MainWindow *m_ui;
@@ -83,7 +110,10 @@ protected:
   QStringList getOpenFileNames(const QString &caption,
                                const QString &filter = QString());
   QString getSaveFileName(const QString &caption,
-                          const QString &filter = QString());
+                          const QString &filter = QString(),
+                          bool usingOldFileName = true,
+                          QFileDialog::Options options = 0);
+  QString getDirectory(const QString &caption);
   void createActionMap();
 
 private slots:
@@ -158,6 +188,7 @@ private slots:
   void viewObject(QAction *action);
   void showFrameInfo();
   void checkViewAction(QAction *action);
+  void checkTraceAction(QAction *action);
   void takeScreenshot();
 
   // slots for 'Tools' menu
@@ -300,8 +331,50 @@ private slots:
 
   void on_actionDVID_Object_triggered();
 
+  void on_actionDvid_Object_triggered();
+
+  void on_actionAssign_Clustering_triggered();
+
+  void on_actionSWC_Rescaling_triggered();
+
+  void on_actionSurface_detection_triggered();
+
+  void on_actionMorphological_Features_triggered();
+
+  void on_actionFeature_Selection_triggered();
+
+  void on_actionGet_Grayscale_triggered();
+
+  void on_actionTile_Manager_2_triggered();
+
+  void on_actionTiles_triggered();
+
+  void on_actionThumbnails_triggered();
+
+  void on_actionBundle_triggered();
+
+  void on_actionVolume_field_triggered();
+
+  void on_actionThumbnails_2_triggered();
+
+  void on_actionJSON_Point_List_triggered();
+
+  void on_actionIdentify_Hot_Spot_triggered();
+
+  void on_actionHot_Spot_Demo_triggered();
+
 private:
   void createActions();
+  void createFileActions();
+  void createEditActions();
+  void createViewActions();
+  void createToolActions();
+  void createTraceActions();
+
+  void updateActionGroup(QActionGroup *group, QAction *triggeredAction);
+  void updateObjectDisplayStyle(ZStackFrame *frame, QAction *action);
+  void updateTraceMode(ZStackFrame *frame, QAction *action);
+
   void customizeActions();
   void createMenus();
   void createContextMenu();
@@ -337,6 +410,9 @@ private:
   //Error handling
   void report(const std::string &title, const std::string &msg,
               ZMessageReporter::EMessageType msgType);
+
+  ZStackDoc* hotSpotDemo(int bodyId, const QString &dvidAddress,
+                           const QString &dvidUuid);
 
 private:
   QMdiArea *mdiArea;
@@ -440,12 +516,16 @@ private:
   QAction *openTraceAction;
 
   ZStackActionActivator m_stackActionActivator;
+  ZSwcActionActivator m_swcActionActivator;
+  QVector<ZActionActivator*> m_actionActivatorList;
 
   FrameInfoDialog m_frameInfoDlg;
   QProgressDialog *m_progress;
   BcAdjustDialog *m_bcDlg;
   HelpDialog *m_helpDlg;
   DiagnosisDialog *m_DiagnosisDlg;
+  ResolutionDialog *m_resDlg;
+
 
   // undo redo
   QUndoGroup *m_undoGroup;
@@ -466,7 +546,11 @@ private:
   QMap<QString, QAction*> m_actionMap;
 
   ZDvidClient *m_dvidClient;
+  ZStackFrame *m_dvidFrame;
   DvidObjectDialog *m_dvidObjectDlg;
+  DvidImageDialog *m_dvidImageDlg;
+  TileManagerDialog *m_tileDlg;
+  //FlyEmNeuronThumbnailDialog *m_thumbnailDlg;
 };
 
 #endif // MAINWINDOW_H

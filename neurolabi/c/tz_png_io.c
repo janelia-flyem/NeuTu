@@ -1,4 +1,5 @@
 #include "tz_png_io.h"
+#include <string.h>
 #include "tz_error.h"
 
 void Png_Attribute(const char *file_path, int *kind, int *width, int *height)

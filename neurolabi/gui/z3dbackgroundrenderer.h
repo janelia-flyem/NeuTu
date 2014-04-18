@@ -32,8 +32,8 @@ protected:
   virtual void renderUsingOpengl();
   virtual void renderPickingUsingOpengl();
 
-  virtual void renderUsingGLSL(Z3DEye eye);
-  virtual void renderPickingUsingGLSL(Z3DEye);
+  virtual void render(Z3DEye eye);
+  virtual void renderPicking(Z3DEye);
 
   Z3DShaderGroup m_backgroundShaderGrp;
 

@@ -13,8 +13,9 @@
 
 #if defined(_QT_GUI_USED_)
 #include <QColor>
-#include <QPainter>
 #endif
+
+#include "zpainter.h"
 
 // abstract class for those can be drawn in an image
 class ZStackDrawable : public virtual ZInterface {
@@ -56,7 +57,7 @@ public:
 
   // Display an object to widget, xoffset and yoffset is top left corner of widget
   // zoomration is ratio of widget pixel to object pixel
-  virtual void display(QPainter &painter, int z = 0, Display_Style option = NORMAL) const = 0;
+  virtual void display(ZPainter &painter, int z = 0, Display_Style option = NORMAL) const = 0;
 
   inline bool isVisible() const { return m_isVisible; }
   inline void setVisible(bool visible) { m_isVisible = visible; }

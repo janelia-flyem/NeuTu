@@ -96,43 +96,10 @@ double* Transform_3d(double *in, double *out, int n, double *a)
 double* Rotate_XZ(double *in, double *out, int n, double theta, double psi, 
 		  int inverse)
 { 
-  /*
-  if ((theta < 0.0) || (theta >= TZ_2PI)) {
-    theta = theta - floor(theta / TZ_2PI) * 2.0 * TZ_PI;
-  }
-  if ((psi < 0.0) || (psi >= TZ_2PI)) {
-    psi = psi - floor(psi / TZ_2PI) * 2.0 * TZ_PI;
-  }
-
-  Ar[0] = cos(theta);
-  if ((Ar[0] >= 1.0) || (Ar[0] <= -1.0)) {
-    Ar[1] = 1.0;
-  } else {
-    Ar[1] = sqrt(1.0 - Ar[0] * Ar[0]);
-    if (theta > TZ_PI) {
-      Ar[1] = -Ar[1];
-    }
-  }
-  //printf("%g\n", Ar[1] - sin(theta));
-  Ar[2] = cos(psi);
-  if ((Ar[2] >= 1.0) || (Ar[2] <= -1.0)) {
-    Ar[3] = 1.0;
-  } else {
-    Ar[3] = sqrt(1.0 - Ar[2] * Ar[2]);
-    if (psi > TZ_PI) {
-      Ar[3] = -Ar[3];
-    }
-  }
-  //printf("%g\n", Ar[3] - sin(psi));
-  */
-  
-  // use local variable to make this function reentrant
-  double Ar[4];
-
-  Ar[0] = cos(theta);
-  Ar[1] = sin(theta);  
-  Ar[2] = cos(psi);
-  Ar[3] = sin(psi);
+  double Ar0 = cos(theta);
+  double Ar1 = sin(theta);  
+  double Ar2 = cos(psi);
+  double Ar3 = sin(psi);
   
   int i;
   int offset = 0;
@@ -141,19 +108,19 @@ double* Rotate_XZ(double *in, double *out, int n, double theta, double psi,
   double *inz = in + 2;
   if (inverse == 0) {
     for (i = 0; i < n; i++) {
-      result[2] = Ar[1] * iny[offset] + Ar[0] * inz[offset];  
-      result[0] = inz[offset] * Ar[1] - iny[offset] * Ar[0];
-      result[1] = in[offset] * Ar[3] - result[0] * Ar[2];
-      result[0] = in[offset] * Ar[2] + result[0] * Ar[3];
+      result[2] = Ar1 * iny[offset] + Ar0 * inz[offset];  
+      result[0] = inz[offset] * Ar1 - iny[offset] * Ar0;
+      result[1] = in[offset] * Ar3 - result[0] * Ar2;
+      result[0] = in[offset] * Ar2 + result[0] * Ar3;
       memcpy(out + offset, result, 24);
       offset += 3;
     }
   } else {
     for (i = 0; i < n; i++) {
-      result[0] = Ar[2] * in[offset] + Ar[3] * iny[offset];
-      result[1] = iny[offset] * Ar[2] - in[offset] * Ar[3];
-      result[2] = inz[offset] * Ar[0] - result[1] * Ar[1];
-      result[1] = inz[offset] * Ar[1] + result[1] * Ar[0];
+      result[0] = Ar2 * in[offset] + Ar3 * iny[offset];
+      result[1] = iny[offset] * Ar2 - in[offset] * Ar3;
+      result[2] = inz[offset] * Ar0 - result[1] * Ar1;
+      result[1] = inz[offset] * Ar1 + result[1] * Ar0;
       memcpy(out + offset, result, 24);
       offset += 3;
     }

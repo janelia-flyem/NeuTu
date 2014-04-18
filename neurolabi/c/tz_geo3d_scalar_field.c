@@ -974,3 +974,41 @@ void Geo3d_Scalar_Field_Pca(const Geo3d_Scalar_Field *field, double *value,
     vec[6] = 1;
   }
 }
+
+BOOL Geo3d_Scalar_Field_Is_Equal(const Geo3d_Scalar_Field *field1,
+    const Geo3d_Scalar_Field *field2)
+{
+  if (field1 == NULL && field2 == NULL) {
+    return TRUE;
+  }
+
+  if (field1 == NULL) {
+    return FALSE;
+  }
+  if (field2 == NULL) {
+    return FALSE;
+  }
+
+  if (field1->size != field2->size) {
+    printf("different size\n");
+    return FALSE;
+  }
+
+  int i;
+  for (i = 0; i < field1->size; ++i) {
+    if (field1->values[i] != field2->values[i]) {
+      printf("different value\n");
+      return FALSE;
+    }
+    int j = 3;
+    for (j = 0; j < 3; ++j) {
+      if (field1->points[i][j] != field2->points[i][j]) {
+        printf("different points: %d %d %g %g\n", i, j, field1->points[i][j],
+            field2->points[i][j]);
+        return FALSE;
+      }
+    }
+  }
+
+  return TRUE;
+}

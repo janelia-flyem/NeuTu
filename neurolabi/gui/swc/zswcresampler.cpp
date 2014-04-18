@@ -61,13 +61,16 @@ int ZSwcResampler::suboptimalDownsample(ZSwcTree *tree)
   return count;
 }
 
-void ZSwcResampler::optimalDownsample(ZSwcTree *tree)
+int ZSwcResampler::optimalDownsample(ZSwcTree *tree)
 {
   int n = 0;
-  while (suboptimalDownsample(tree) > 0) {
-    std::cout << "iter: " << ++n << std::endl;
+  int subn = 0;
+  while ((subn = suboptimalDownsample(tree)) > 0) {
+    n += subn;
   }
-  optimizeCriticalParent(tree);
+  n += optimizeCriticalParent(tree);
+
+  return n;
 }
 
 int ZSwcResampler::optimizeCriticalParent(ZSwcTree *tree)

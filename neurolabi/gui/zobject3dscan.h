@@ -16,6 +16,7 @@
 
 class ZObject3d;
 class ZGraph;
+class ZStack;
 
 class ZObject3dStripe {
 public:
@@ -27,7 +28,7 @@ public:
   int getMaxX() const;
   inline size_t getSize() const { return m_segmentArray.size() / 2; }
   inline int getSegmentNumber() const { return getSize(); }
-  int getVoxelNumber() const;
+  size_t getVoxelNumber() const;
 
   inline void setY(int y) { m_y = y; }
   inline void setZ(int z) { m_z = z; }
@@ -88,6 +89,28 @@ public:
 
   inline void setCanonized(bool canonized) { m_isCanonized = canonized; }
 
+  void switchYZ();
+
+  /*!
+   * \brief Test if an X is within the range of the segments
+   *
+   * \return true iff \a x is on one of the segments.
+   */
+  bool containsX(int x) const;
+
+  /*!
+   * \brief Test the stripe contains a point
+   *
+   * \return true iff (\a x, \a y, \a z) is on the stripe.
+   */
+  bool contains(int x, int y, int z) const;
+
+  /*!
+   * \brief Fill an integer array with the stripe data
+   * \param array Target array, which must be preallocated with sufficient size.
+   */
+  void fillIntArray(int *array) const;
+
 private:
   std::vector<int> m_segmentArray;
   int m_y;
@@ -104,8 +127,10 @@ public:
 
   enum EComponent {
     STRIPE_INDEX_MAP, INDEX_SEGMENT_MAP, ACCUMULATED_STRIPE_NUMBER,
-    ALL_COMPONENT
+    SLICEWISE_VOXEL_NUMBER, ALL_COMPONENT
   };
+
+  typedef int TEvent;
 
   bool isDeprecated(EComponent comp) const;
   void deprecate(EComponent comp);
@@ -129,9 +154,10 @@ public:
    * \brief Get the voxel number on each slice
    * \return The ith element is the #voxel at slice i.
    */
-  std::vector<size_t> getSlicewiseVoxelNumber() const;
+  const std::map<int, size_t>& getSlicewiseVoxelNumber() const;
+  std::map<int, size_t>& getSlicewiseVoxelNumber();
 
-  ZObject3dStripe getStripe(size_t index) const;
+  const ZObject3dStripe& getStripe(size_t index) const;
 
   /*
   const int* getFirstStripe() const;
@@ -154,6 +180,7 @@ public:
 
   void print() const;
 
+  void save(const char *filePath) const;
   void save(const std::string &filePath) const;
   bool load(const std::string &filePath);
 
@@ -183,7 +210,9 @@ public:
   /*!
    * \brief Import object from a byte array
    */
-  bool importDvidObject(const char *byteArray, size_t byteNumber);
+  bool importDvidObjectBuffer(const char *byteArray, size_t byteNumber);
+
+  bool importDvidObjectBuffer(const std::vector<char> &byteArray);
 
   template<class T>
   int scanArray(const T *array, int x, int y, int z, int width);
@@ -218,6 +247,8 @@ public:
   void downsampleMax(int xintv, int yintv, int zintv);
 
   Stack* toStack(int *offset = NULL) const;
+  ZStack* toStackObject() const;
+
   ZCuboid getBoundBox() const;
   void getBoundBox(Cuboid_I *box) const;
 
@@ -259,7 +290,7 @@ public:
   ZObject3dScan getSlice(int z) const;
   ZObject3dScan getSlice(int minZ, int maxZ) const;
 
-  virtual void display(QPainter &painter, int z = 0, Display_Style option = NORMAL)
+  virtual void display(ZPainter &painter, int z = 0, Display_Style option = NORMAL)
   const;
   virtual const std::string& className() const;
 
@@ -278,6 +309,15 @@ public:
 
   ZObject3dScan makeZProjection() const;
   ZObject3dScan makeZProjection(int minZ, int maxZ);
+
+  ZObject3dScan makeYProjection() const;
+
+  /*!
+   * \brief Test if the object contains a voxel
+   *
+   * \return true iff (\a x, \a y, \a z) is a part of the object.
+   */
+  bool contains(int x, int y, int z);
 
   /*!
    * \brief Get minimal Z
@@ -325,6 +365,67 @@ public:
    */
   void fillHole();
 
+  /*!
+   * \brief Make a stack from a list of objects
+   */
+  template<class InputIterator>
+  static Stack* makeStack(InputIterator startObject, InputIterator endObject,
+                          int offset[3]);
+
+  /*!
+   * \brief Switch the Y and Z axis
+   */
+  void switchYZ();
+
+  /*!
+   * \brief Get the ~95% spread area of the object at a centain slice
+   */
+  double getSpread(int z) const;
+
+  /*!
+   * Compute the plane covariance
+   */
+  std::vector<double> getPlaneCov() const;
+
+  void processEvent(TEvent event);
+
+
+  /*!
+   * \brief Get the integer array representation of the object
+   *
+   * Format:
+   *   data[0]: Number of stripes
+   *   Stripes ...:
+   *      stripe[0]: z
+   *      stripe[1]: y
+   *      stripe[2]: number of segments
+   */
+  std::vector<int> toIntArray() const;
+
+  /*!
+   * \brief Load from a data array
+   *
+   * The object will be cleared if data is NULL.
+   *
+   * \param data The data array arranged as the writing order
+   * \param length Number of elements in \a data
+   *
+   * \return true if the data is loaded correctly
+   */
+  bool load(const int *data, size_t length);
+
+  /*!
+   * \brief Load object from an HDF5 file.
+   *
+   * The object becomes empty if the import failed.
+   *
+   * \param filePath HDF5 file path
+   * \param key Data path of the object
+   *
+   * \return true iff the object is loaded successfully
+   */
+  bool importHdf5(const std::string &filePath, const std::string &key);
+
 private:
   std::vector<ZObject3dStripe> m_stripeArray;
   /*
@@ -333,10 +434,20 @@ private:
   */
 
   mutable std::vector<size_t> m_accNumberArray;
+  mutable std::map<int, size_t> m_slicewiseVoxelNumber;
   mutable std::map<std::pair<int, int>, size_t> m_stripeMap;
   mutable std::map<size_t, std::pair<size_t, size_t> > m_indexSegmentMap;
   bool m_isCanonized;
   //mutable int *m_lastStripe;
+
+  //SWIG has some problem recognizing const static type
+#ifndef SWIG
+  const static TEvent EVENT_OBJECT_MODEL_CHANGED; //Note that change of model implies change of view
+  const static TEvent EVENT_OBJECT_UNCANONIZED;
+  const static TEvent EVENT_OBJECT_CANONIZED;
+  const static TEvent EVENT_OBJECT_VIEW_CHANGED;
+  const static TEvent EVENT_NULL;
+#endif
 };
 
 
@@ -406,6 +517,48 @@ std::map<int, ZObject3dScan*>* ZObject3dScan::extractAllObject(
   }
 
   return bodySet;
+}
+
+template<class InputIterator>
+Stack* ZObject3dScan::makeStack(InputIterator startObject,
+                                InputIterator endObject, int offset[3])
+{
+  if (startObject != endObject) {
+    Cuboid_I boundBox;
+    startObject->getBoundBox(&boundBox);
+
+    InputIterator iter = startObject;
+    ++iter;
+    //Get Bound box
+    for (; iter != endObject; ++iter) {
+      Cuboid_I subBoundBox;
+      iter->getBoundBox(&subBoundBox);
+      Cuboid_I_Union(&boundBox, &subBoundBox, &boundBox);
+    }
+
+    int width, height, depth;
+    Cuboid_I_Size(&boundBox, &width, &height, &depth);
+    //Create stack
+    Stack *stack = C_Stack::make(GREY, width, height, depth);
+    C_Stack::setZero(stack);
+
+    for (int i = 0; i < 3; ++i) {
+      offset[i] = -boundBox.cb[i];
+    }
+
+    int v = 1;
+    for (iter = startObject; iter != endObject; ++iter) {
+      iter->drawStack(stack, v++, offset);
+    }
+
+    for (int i = 0; i < 3; ++i) {
+      offset[i] = boundBox.cb[i];
+    }
+
+    return stack;
+  }
+
+  return NULL;
 }
 
 #endif // ZOBJECT3DSCAN_H

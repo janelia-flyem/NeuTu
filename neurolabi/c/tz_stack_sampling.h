@@ -80,6 +80,8 @@ double* Stack_Points_Sampling_Zm(const Stack *stack, double z_scale,
 				 double *array);
 
 
+BOOL Stack_Point_Hit_Mask(const Stack *stack, double x, double y, double z);
+
 /**@*/
 
 /**@}*/

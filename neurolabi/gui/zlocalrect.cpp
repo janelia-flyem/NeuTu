@@ -37,7 +37,7 @@ Local_Neuroseg* ZLocalRect::toLocalNeuroseg() const
   return locseg;
 }
 
-void ZLocalRect::display(QPainter &painter, int z, Display_Style style) const
+void ZLocalRect::display(ZPainter &painter, int z, Display_Style style) const
 {
   Local_Neuroseg locseg;
   Local_R2_Rect_To_Local_Neuroseg(&(this->m_template), &locseg);

@@ -58,10 +58,10 @@ double ZSwcDeepAngleMetric::computeDeepAngle(
   for (size_t i = 0; i < s1; ++i) {
     for (size_t j = 0; j < s2; ++j) {
       if (SwcTreeNode::distance(
-            nodeArray1[i], nodeArray2[i], SwcTreeNode::EUCLIDEAN_SURFACE) <=
+            nodeArray1[i], nodeArray2[j], SwcTreeNode::EUCLIDEAN_SURFACE) <=
           m_minDist) {
         double dist = computeAngle(nodeArray1[i + 1], nodeArray1[i],
-            nodeArray2[i], nodeArray2[i + 1]);
+            nodeArray2[j], nodeArray2[j + 1]);
         if (dist < minDist) {
           minDist = dist;
         }
@@ -86,6 +86,14 @@ double ZSwcDeepAngleMetric::measureDistance(
   if (tree1 == tree2) {
     return 0.0;
   }
+
+#if 1
+  const ZCuboid &box1 = tree1->getBoundBox();
+  const ZCuboid &box2 = tree2->getBoundBox();
+  if (box1.computeDistance(box2) > m_minDist) {
+    return Infinity;
+  }
+#endif
 
   const std::vector<Swc_Tree_Node*> &leafArray1 =
       tree1->getSwcTreeNodeArray(ZSwcTree::TERMINAL_ITERATOR);

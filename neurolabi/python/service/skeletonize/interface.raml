@@ -1,0 +1,63 @@
+#%RAML 0.8
+title: Skeletonization Service
+/skeletonize:
+  post:
+    description: "Call service to calculate the skeleton of a body"
+    body:
+      application/json:
+        schema: |
+          { "$schema": "http://json-schema.org/schema#",
+            "title": "Provide body ids whose skeletons will be calculated",
+            "type": "object",
+            "properties": {
+              "dvid-server": { 
+                "description": "location of DVID server (will try to find on service proxy if not provided)",
+                "type": "string" 
+              },
+              "uuid": { "type": "string" },
+              "bodies": { 
+                "description": "Array of body ids",
+                "type": "array",
+                "minItems": 1,
+                "items": {"type": "integer", "minimum": 1},
+                "uniqueItems": true
+              }
+            },
+            "required" : ["uuid", "bodies"]
+          }
+    responses:
+      200:
+        body:
+          application/json:
+            schema: |
+              { "$schema": "http://json-schema.org/schema#",
+                "title": "Provides the links to the skeletons",
+                "type": "object",
+                "properties": {
+                  "swc-list": {
+                    "description" : "List of links to the skeletons",
+                    "type": "array",
+                    "minItems": 0,
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "id": {"type": "integer", "minimum": 1},
+                        "url": {"type": "string"}
+                      },
+                      "required": ["id", "url"]
+                    }
+                  },
+                  "error": {
+                    "description": "Error message of the current request",
+                    "type": "string"
+                  },
+                  "required": ["swc-list"]
+                }
+              }
+/interface/interface.raml:
+  get:
+    description: "Get the interface for the skeletonization service"
+    responses:
+      200:
+        body:
+          application/raml+yaml:

@@ -105,44 +105,69 @@ double index_distance(ssize_t index1, ssize_t index2, int width, int area)
   return 0.0;
 }
 
-double ZSpGrowParser::pathLength(ssize_t index)
+double ZSpGrowParser::pathLength(ssize_t index, bool masked)
 {
   double len = 0.0;
-  ssize_t secondIndex;
-  //ZPoint firstPoint;
-  //ZPoint secondPoint;
 
+  if (m_workspace->length != NULL) {
+    ssize_t originalIndex = index;
+    if (masked) {
+      if (m_checkedMask != NULL) {
+        while (index >= 0) {
+          if (m_checkedMask->array[index] == 1) {
+            break;
+          }
 
+          index = m_workspace->path[index];
+        }
+      } else {
+        index = -1;
+      }
+    } else {
+      index = -1;
+    }
 
-  if (index >= 0) {
+    len = m_workspace->length[originalIndex];
+    if (index >= 0) {
+      len -= m_workspace->length[index];
+    } else {
+      len += 1.0;
+    }
+  } else {
+    ssize_t secondIndex;
+
+    //ZPoint firstPoint;
+    //ZPoint secondPoint;
+
+    if (index >= 0) {
       if (m_workspace->mask[index] == SP_GROW_SOURCE) {
-          return 0.0;
+        return 0.0;
       }
 
-    len = 1.0;
-    /*
+      len = 1.0;
+      /*
     int x, y, z;
     Stack_Util_Coord(index, m_workspace->width, m_workspace->height,
                      &x, &y, &z);
     secondPoint.set(x, y, z);
     */
-    secondIndex = index;
-    index = m_workspace->path[index];
-  }
+      secondIndex = index;
+      index = m_workspace->path[index];
+    }
 
-  while (index >= 0) {
+    while (index >= 0) {
       /*
     if (m_workspace->mask[index] == SP_GROW_SOURCE) {
       break;
     }
     */
-    if (m_checkedMask != NULL) {
-      if (m_checkedMask->array[index] == 1) {
-        break;
+      if (m_checkedMask != NULL) {
+        if (m_checkedMask->array[index] == 1) {
+          break;
+        }
       }
-    }
 
-    /*
+      /*
     firstPoint = secondPoint;
     int x, y, z;
     Stack_Util_Coord(index, m_workspace->width, m_workspace->height,
@@ -151,48 +176,65 @@ double ZSpGrowParser::pathLength(ssize_t index)
 
     len += firstPoint.distanceTo(secondPoint);
 */
-    ssize_t firstIndex = secondIndex;
-    secondIndex = index;
-    int area = m_workspace->width * m_workspace->height;
-    len += index_distance(firstIndex, secondIndex, m_workspace->width, area);
+      ssize_t firstIndex = secondIndex;
+      secondIndex = index;
+      int area = m_workspace->width * m_workspace->height;
+      len += index_distance(firstIndex, secondIndex, m_workspace->width, area);
 
-    index = m_workspace->path[index];
+      index = m_workspace->path[index];
+    }
   }
+
+#ifdef _DEBUG_2
+  if (m_workspace->length != NULL) {
+    double cachedLength = m_workspace->length[originalIndex];
+    if (index >= 0) {
+      cachedLength -= m_workspace->length[index];
+    } else {
+      cachedLength += 1.0;
+    }
+    std::cout << "Cached length: " <<  cachedLength << " | ";
+    std::cout << "Computed length: " << len << std::endl;
+    if (fabs(cachedLength - len) > 1.5) {
+      std::cout << "Debug here" << std::endl;
+    }
+  }
+#endif
 
   return len;
 }
 
-ZVoxelArray ZSpGrowParser::extractLongestPath(double *length)
+ZVoxelArray ZSpGrowParser::extractLongestPath(double *length, bool masked)
 {
 
   ssize_t idx = -1;
   double maxLength = 0;
   size_t i;
 
-  if (fgArray.empty()) {
+  if (m_fgArray.empty()) {
     if (m_workspace->mask != NULL) {
       for (i = 0; i < m_workspace->size; i++) {
         if (m_workspace->mask[i] != SP_GROW_BARRIER) {
-          fgArray.push_back(i);
+          m_fgArray.push_back(i);
         }
       }
     }
   }
 
-  if (fgArray.empty()) {
+  if (m_fgArray.empty()) {
     for (i = 0; i < m_workspace->size; i++) {
-      double len = pathLength(i);
+      double len = pathLength(i, masked);
       if (len > maxLength) {
         maxLength = len;
         idx = i;
       }
     }
   } else {
-    for (i = 0; i < fgArray.size(); ++i) {
-      double len = pathLength(fgArray[i]);
+    for (i = 0; i < m_fgArray.size(); ++i) {
+      double len = pathLength(m_fgArray[i], masked);
       if (len > maxLength) {
         maxLength = len;
-        idx = fgArray[i];
+        idx = m_fgArray[i];
       }
     }
   }
@@ -226,7 +268,7 @@ vector<ZVoxelArray> ZSpGrowParser::extractAllPath(double lengthThreshold,
   while (isPathAvailable) {
     //Extract the longest path
     double length = 0.0;
-    ZVoxelArray path = extractLongestPath(&length);
+    ZVoxelArray path = extractLongestPath(&length, true);
 
     cout << "Path length: " << length << endl;
     cout << "Path size: " << path.size() << endl;
@@ -286,6 +328,28 @@ Stack* ZSpGrowParser::createDistanceStack()
         }
       }
       stack = Scale_Double_Stack(m_workspace->dist, m_workspace->width,
+                                 m_workspace->height, m_workspace->depth,
+                                 GREY);
+    }
+  }
+
+  return stack;
+}
+
+Stack* ZSpGrowParser::createEuclideanDistanceStack()
+{
+  Stack *stack = NULL;
+
+  if (m_workspace != NULL) {
+    if (m_workspace->length != NULL) {
+      size_t nvoxel = m_workspace->size;
+
+      for (size_t i = 0; i < nvoxel; i++) {
+        if (tz_isinf(m_workspace->dist[i])) {
+          m_workspace->length[i] = 0.0;
+        }
+      }
+      stack = Scale_Double_Stack(m_workspace->length, m_workspace->width,
                                  m_workspace->height, m_workspace->depth,
                                  GREY);
     }

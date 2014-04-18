@@ -1,6 +1,7 @@
 #ifndef ZFLYEMDATABUNDLE_H
 #define ZFLYEMDATABUNDLE_H
 
+#include <QColor>
 #include <vector>
 #include <string>
 #include <map>
@@ -8,6 +9,9 @@
 #include "zflyemneuron.h"
 #include "flyem/zsynapseannotationarray.h"
 #include "neutube.h"
+#include "zswctree.h"
+#include "zflyemneuronarray.h"
+#include "flyem/zflyemcoordinateconverter.h"
 
 class ZFlyEmDataBundle
 {
@@ -35,11 +39,11 @@ public:
 
   bool hasNeuronName(const std::string &name) const;
 
-  const std::vector<ZFlyEmNeuron>& getNeuronArray() const {
+  const ZFlyEmNeuronArray& getNeuronArray() const {
     return m_neuronArray;
   }
 
-  std::vector<ZFlyEmNeuron>& getNeuronArray() {
+  ZFlyEmNeuronArray& getNeuronArray() {
     return m_neuronArray;
   }
 
@@ -75,9 +79,20 @@ public:
   double getSwcResolution(NeuTube::EAxis axis);
 
   /*!
+   * \brief Get source dimension.
+   */
+  int getSourceDimension(NeuTube::EAxis axis) const;
+
+  /*!
    * \brief Export the bundle into a json file
    */
   void exportJsonFile(const std::string &path) const;
+
+  /*!
+   * \brief Get number of layers
+   * \return
+   */
+  int getLayerNumber() const;
 
   /*!
    * \brief Get the Z coordinate of the start of a layer
@@ -116,8 +131,28 @@ public:
    */
   std::map<std::string, int> getClassIdMap() const;
 
+  /*!
+   * \brief Set volume entries based on a directory
+   *
+   * The volume entry is set even the corresponding body file does not exist.
+   *
+   * \param volumeDir The volume directory path.
+   */
+  void setVolume(const std::string &volumeDir);
+
+  /*!
+   * \brief Set thumbnail entries based on a directory
+   *
+   * The thumbnail entry is set even the corresponding body file does not exist.
+   *
+   * \param thumbnailDir The thumbnail directory path.
+   */
+  void setThumbnail(const std::string &thumbnailDir);
+
+  inline const ZSwcTree& getBoundBox() const { return m_boundBox; }
+
 private:
-  std::vector<ZFlyEmNeuron> m_neuronArray;
+  ZFlyEmNeuronArray m_neuronArray;
   std::string m_synapseAnnotationFile;
   std::string m_grayScalePath;
   //std::string m_configFile;
@@ -127,6 +162,8 @@ private:
   int m_sourceOffset[3];
   int m_sourceDimension[3];
   double m_synapseScale;
+  std::vector<double> m_layerRatio;
+  ZSwcTree m_boundBox;
 
   std::string m_source;
   std::map<std::string, double> m_matchThreshold;
@@ -145,9 +182,11 @@ private:
   static const char *m_neuronKey;
   static const char *m_swcResolutionKey;
   static const char *m_matchThresholdKey;
+  static const char *m_layerKey;
+  static const char *m_boundBoxKey;
 
   const static int m_layerNumber;
-  const static double m_layerRatio[11];
+  //const static double m_layerRatio[11];
 };
 
 #endif // ZFLYEMDATABUNDLE_H

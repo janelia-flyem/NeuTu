@@ -73,8 +73,8 @@ public:
   void setMouseMotionFactor(float f) { m_mouseMotionFactor = f; }
   float getMouseMotionFactor() const { return m_mouseMotionFactor; }
 
-  // angle per key press in degree
-  void setKeyPressAngle(float degree) { m_keyPressAngle = degree; }
+  // angle per key press
+  void setKeyPressAngle(float angle) { m_keyPressAngle = angle; }
   float getkeyPressAngle() const { return m_keyPressAngle; }
 
   // distance per key press in pixels
@@ -132,6 +132,8 @@ protected:
   int m_keyPressDistance;
 
   bool m_moveObjects;
+
+  int m_delta;
 };
 
 #endif // Z3DINTERACTIONHANDLER_H

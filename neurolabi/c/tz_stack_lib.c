@@ -474,19 +474,14 @@ void Copy_Stack_Array(Stack *dst, const Stack *src)
   memcpy(dst->array, src->array, Stack_Array_Bsize(dst));
 }
 
-Stack* Copy_Stack_T(Stack *stack)
+Stack* Copy_Stack_T(const Stack *stack)
 {
-  BOOL null_text = FALSE;
-  if (stack->text == NULL) {
-    stack->text = "\0";
-    null_text = TRUE;
+  Stack tmpStack = *stack;
+  if (tmpStack.text == NULL) {
+    tmpStack.text = "\0";
   }
   
-  Stack *out = Copy_Stack(stack);
-
-  if (null_text == TRUE) {
-    stack->text = NULL;
-  }
+  Stack *out = Copy_Stack(&tmpStack);
 
   return out;
 }
@@ -698,7 +693,7 @@ Stack* Crop_Stack(const Stack* stack,int left,int top,int front,
 }
 
 
-void Print_Stack_Value(Stack* stack) 
+void Print_Stack_Value(const Stack* stack) 
 {
   if (stack == NULL) {
     printf("Null stack.\n");
@@ -1919,12 +1914,37 @@ void Downsample_Stack_Max_Size(int width, int height, int depth,
   *dd = kd + (rd > 0);
 }
 
-Stack* Downsample_Stack_Max(Stack* stack,int wintv,int hintv,int dintv, 
+Stack* Downsample_Stack_Max(const Stack* stack,int wintv,int hintv,int dintv, 
     Stack *out)
 {
+  if (wintv == 0 && hintv == 0 && dintv == 0) {
+    if (out == NULL) {
+      out = Copy_Stack_T(stack);
+    } else {
+      out->width = stack->width;
+      out->height = stack->height;
+      out->depth = stack->depth;
+      out->kind = stack->kind;
+      Copy_Stack_Array(out, stack);
+    }
+
+    return out;
+  }
+
   double s;
   int kw,kh,kd,rw,rh,rd;
   int i,j,k,ri,rj,rk;
+
+
+  if (wintv >= stack->width) {
+    wintv = stack->width - 1;
+  }
+  if (hintv >= stack->height) {
+    hintv = stack->height - 1;
+  }
+  if (dintv >= stack->depth) {
+    dintv = stack->depth - 1;
+  }
 
   kw = stack->width / (wintv+1);
   kh = stack->height / (hintv+1);
@@ -1945,7 +1965,7 @@ Stack* Downsample_Stack_Max(Stack* stack,int wintv,int hintv,int dintv,
 	for(rk=0;rk<=dintv;rk++)
 	  for(rj=0;rj<=hintv;rj++)
 	    for(ri=0;ri<=wintv;ri++)
-	      s = dmax2(s, Get_Stack_Pixel(stack,i*(wintv+1)+ri,j*(hintv+1)+rj,k*(dintv+1)+rk,0));
+	      s = dmax2(s, Get_Stack_Pixel((Stack*) stack,i*(wintv+1)+ri,j*(hintv+1)+rj,k*(dintv+1)+rk,0));
 	Set_Stack_Pixel(out,i,j,k,0,s);
       }
       if(rw>0) {
@@ -1953,7 +1973,7 @@ Stack* Downsample_Stack_Max(Stack* stack,int wintv,int hintv,int dintv,
 	for(rk=0;rk<=dintv;rk++)
 	  for(rj=0;rj<=hintv;rj++)
 	    for(ri=0;ri<rw;ri++)
-	      s = dmax2(s, Get_Stack_Pixel(stack,kw*(wintv+1)+ri,j*(hintv+1)+rj,k*(dintv+1)+rk,0));
+	      s = dmax2(s, Get_Stack_Pixel((Stack*) stack,kw*(wintv+1)+ri,j*(hintv+1)+rj,k*(dintv+1)+rk,0));
 	Set_Stack_Pixel(out,kw,j,k,0,s);
       }
     }
@@ -1963,7 +1983,7 @@ Stack* Downsample_Stack_Max(Stack* stack,int wintv,int hintv,int dintv,
 	for(rk=0;rk<=dintv;rk++)
 	  for(rj=0;rj<rh;rj++)
 	    for(ri=0;ri<=wintv;ri++)
-	      s = dmax2(s, Get_Stack_Pixel(stack,i*(wintv+1)+ri,kh*(hintv+1)+rj,k*(dintv+1)+rk,0));
+	      s = dmax2(s, Get_Stack_Pixel((Stack*) stack,i*(wintv+1)+ri,kh*(hintv+1)+rj,k*(dintv+1)+rk,0));
 	Set_Stack_Pixel(out,i,kh,k,0,s);
       }
       if(rw>0) {
@@ -1971,7 +1991,7 @@ Stack* Downsample_Stack_Max(Stack* stack,int wintv,int hintv,int dintv,
 	for(rk=0;rk<=dintv;rk++)
 	  for(rj=0;rj<rh;rj++)
 	    for(ri=0;ri<rw;ri++)
-	      s = dmax2(s, Get_Stack_Pixel(stack,kw*(wintv+1)+ri,kh*(hintv+1)+rj,k*(dintv+1)+rk,0));
+	      s = dmax2(s, Get_Stack_Pixel((Stack*) stack,kw*(wintv+1)+ri,kh*(hintv+1)+rj,k*(dintv+1)+rk,0));
 	Set_Stack_Pixel(out,kw,kh,k,0,s);
       }
     }
@@ -1982,7 +2002,7 @@ Stack* Downsample_Stack_Max(Stack* stack,int wintv,int hintv,int dintv,
 	  for(rk=0;rk<rd;rk++)
 	    for(rj=0;rj<=hintv;rj++)
 	      for(ri=0;ri<=wintv;ri++)
-		s = dmax2(s, Get_Stack_Pixel(stack,i*(wintv+1)+ri,j*(hintv+1)+rj,kd*(dintv+1)+rk,0));
+		s = dmax2(s, Get_Stack_Pixel((Stack*) stack,i*(wintv+1)+ri,j*(hintv+1)+rj,kd*(dintv+1)+rk,0));
 	  Set_Stack_Pixel(out,i,j,kd,0,s);
 	}
 	if(rw>0) {
@@ -1990,7 +2010,7 @@ Stack* Downsample_Stack_Max(Stack* stack,int wintv,int hintv,int dintv,
 	  for(rk=0;rk<rd;rk++)
 	    for(rj=0;rj<=hintv;rj++)
 	      for(ri=0;ri<rw;ri++)
-		s = dmax2(s, Get_Stack_Pixel(stack,kw*(wintv+1)+ri,j*(hintv+1)+rj,rd*(dintv+1)+rk,0));
+		s = dmax2(s, Get_Stack_Pixel((Stack*) stack,kw*(wintv+1)+ri,j*(hintv+1)+rj,rd*(dintv+1)+rk,0));
 	  Set_Stack_Pixel(out,kw,j,kd,0,s);
 	}
       }
@@ -2000,7 +2020,7 @@ Stack* Downsample_Stack_Max(Stack* stack,int wintv,int hintv,int dintv,
 	  for(rk=0;rk<rd;rk++)
 	    for(rj=0;rj<rh;rj++)
 	      for(ri=0;ri<=wintv;ri++)
-		s = dmax2(s, Get_Stack_Pixel(stack,i*(wintv+1)+ri,kh*(hintv+1)+rj,kd*(dintv+1)+rk,0));
+		s = dmax2(s, Get_Stack_Pixel((Stack*) stack,i*(wintv+1)+ri,kh*(hintv+1)+rj,kd*(dintv+1)+rk,0));
 	  Set_Stack_Pixel(out,i,kh,kd,0,s);
 	}
 	if(rw>0) {
@@ -2008,7 +2028,7 @@ Stack* Downsample_Stack_Max(Stack* stack,int wintv,int hintv,int dintv,
 	  for(rk=0;rk<rd;rk++)
 	    for(rj=0;rj<rh;rj++)
 	      for(ri=0;ri<rw;ri++)
-		s = dmax2(s, Get_Stack_Pixel(stack,kw*(wintv+1)+ri,kh*(hintv+1)+rj,kd*(dintv+1)+rk,0));
+		s = dmax2(s, Get_Stack_Pixel((Stack*) stack,kw*(wintv+1)+ri,kh*(hintv+1)+rj,kd*(dintv+1)+rk,0));
 	  Set_Stack_Pixel(out,kw,kh,kd,0,s);
 	}
       }
@@ -2331,7 +2351,7 @@ void Stack_Binarize(Stack* stack)
 
   DEFINE_SCALAR_ARRAY_ALL(array, stack);
 
-  int voxel_number = Stack_Voxel_Number(stack);
+  size_t voxel_number = Stack_Voxel_Number(stack);
   size_t i;
 
   switch(stack->kind) {
@@ -2367,7 +2387,7 @@ void Stack_Binarize_Level(Stack* stack, double level)
 
   DEFINE_SCALAR_ARRAY_ALL(array, stack);
 
-  int voxel_number = Stack_Voxel_Number(stack);
+  size_t voxel_number = Stack_Voxel_Number(stack);
   size_t i;
 
   switch(stack->kind) {
@@ -3772,6 +3792,7 @@ Stack* Stack_Median_Filter_N(const Stack *stack, int conn, Stack *out)
 void Stack_Bound_Box(const Stack *stack, Cuboid_I *bound_box)
 {
   TZ_ASSERT(bound_box != NULL, "null pointer");
+  TZ_ASSERT(stack->kind == GREY, "Only GREY stack supported.");
 
   int i, j, k;
   size_t offset = 0;

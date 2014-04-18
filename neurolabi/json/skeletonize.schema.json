@@ -1,0 +1,24 @@
+{
+  "title": "Skeletonization Schema",
+  "type": "object",
+  "properties": {
+    "downsampleInterval": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "items": {"type": "integer"},
+    },
+    "minimalLength": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "keepingSingleObject": {
+      "type": "boolean"
+    },
+    "rebase": {
+      "type": "boolean"
+    }
+  }
+}
+
+

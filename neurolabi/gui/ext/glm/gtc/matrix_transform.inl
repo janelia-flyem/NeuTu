@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////////
 /// OpenGL Mathematics (glm.g-truc.net)
 ///
-/// Copyright (c) 2005 - 2013 G-Truc Creation (www.g-truc.net)
+/// Copyright (c) 2005 - 2014 G-Truc Creation (www.g-truc.net)
 /// Permission is hereby granted, free of charge, to any person obtaining a copy
 /// of this software and associated documentation files (the "Software"), to deal
 /// in the Software without restriction, including without limitation the rights
@@ -28,6 +28,7 @@
 
 #include "../geometric.hpp"
 #include "../trigonometric.hpp"
+#include "../matrix.hpp"
 
 namespace glm
 {
@@ -75,14 +76,14 @@ namespace glm
 #ifdef GLM_FORCE_RADIANS
 		T a = angle;
 #else
+#		pragma message("GLM: rotate function taking degrees as a parameter is deprecated. #define GLM_FORCE_RADIANS before including GLM headers to remove this message.")
 		T a = radians(angle);
 #endif
 		T c = cos(a);
 		T s = sin(a);
 
-		detail::tvec3<T, P> axis = normalize(v);
-
-		detail::tvec3<T, P> temp = (T(1) - c) * axis;
+		detail::tvec3<T, P> axis(normalize(v));
+		detail::tvec3<T, P> temp((T(1) - c) * axis);
 
 		detail::tmat4x4<T, P> Rotate(detail::tmat4x4<T, P>::_null);
 		Rotate[0][0] = c + temp[0] * axis[0];
@@ -116,6 +117,7 @@ namespace glm
 #ifdef GLM_FORCE_RADIANS
 		T const a = angle;
 #else
+#		pragma message("GLM: rotate_slow function taking degrees as a parameter is deprecated. #define GLM_FORCE_RADIANS before including GLM headers to remove this message.")
 		T const a = radians(angle);
 #endif
 		T c = cos(a);
@@ -248,6 +250,7 @@ namespace glm
 #ifdef GLM_FORCE_RADIANS
 		valType const rad = fovy;
 #else
+#		pragma message("GLM: perspective function taking degrees as a parameter is deprecated. #define GLM_FORCE_RADIANS before including GLM headers to remove this message.")
 		valType const rad = glm::radians(fovy);
 #endif
 
@@ -279,6 +282,7 @@ namespace glm
 #ifdef GLM_FORCE_RADIANS
 		valType rad = fov;
 #else
+#		pragma message("GLM: perspectiveFov function taking degrees as a parameter is deprecated. #define GLM_FORCE_RADIANS before including GLM headers to remove this message.")
 		valType rad = glm::radians(fov);
 #endif
 		valType h = glm::cos(valType(0.5) * rad) / glm::sin(valType(0.5) * rad);
@@ -304,6 +308,7 @@ namespace glm
 #ifdef GLM_FORCE_RADIANS
 		T const range = tan(fovy / T(2)) * zNear;	
 #else
+#		pragma message("GLM: infinitePerspective function taking degrees as a parameter is deprecated. #define GLM_FORCE_RADIANS before including GLM headers to remove this message.")
 		T const range = tan(radians(fovy / T(2))) * zNear;	
 #endif
 		T left = -range * aspect;
@@ -331,6 +336,7 @@ namespace glm
 #ifdef GLM_FORCE_RADIANS
 		T range = tan(fovy / T(2)) * zNear;	
 #else
+#		pragma message("GLM: tweakedInfinitePerspective function taking degrees as a parameter is deprecated. #define GLM_FORCE_RADIANS before including GLM headers to remove this message.")
 		T range = tan(radians(fovy / T(2))) * zNear;	
 #endif
 		T left = -range * aspect;
@@ -377,14 +383,14 @@ namespace glm
 		detail::tvec4<U, P> const & viewport
 	)
 	{
-		detail::tmat4x4<T, P> inverse = glm::inverse(proj * model);
+		detail::tmat4x4<T, P> Inverse = inverse(proj * model);
 
 		detail::tvec4<T, P> tmp = detail::tvec4<T, P>(win, T(1));
 		tmp.x = (tmp.x - T(viewport[0])) / T(viewport[2]);
 		tmp.y = (tmp.y - T(viewport[1])) / T(viewport[3]);
 		tmp = tmp * T(2) - T(1);
 
-		detail::tvec4<T, P> obj = inverse * tmp;
+		detail::tvec4<T, P> obj = Inverse * tmp;
 		obj /= obj.w;
 
 		return detail::tvec3<T, P>(obj);

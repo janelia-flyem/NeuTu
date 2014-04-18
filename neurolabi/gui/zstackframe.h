@@ -10,6 +10,7 @@
 #include <QString>
 #include <QStringList>
 #include <QUrl>
+#include <QStatusBar>
 #ifdef __GLIBCXX__
 #include <tr1/memory>
 #else
@@ -65,6 +66,7 @@ public:
   bool isReadyToSave() const;
   static inline QString defaultTraceProjectFile() { return "project.xml"; }
 
+  void consumeDocument(ZStackDoc *doc);
   void setDocument(std::tr1::shared_ptr<ZStackDoc> doc);
 
   inline virtual std::string name() { return "base"; }
@@ -90,6 +92,8 @@ public:
   void importSwc(const QString &filePath);
 
   void importSobj(const QStringList &fileList);
+
+  void importPointList(const QString &filePath);
 
   void exportVrml(const QString &filePath);
   void exportTube(const QString &filePath);
@@ -205,6 +209,11 @@ public:
 
   void setSizeHintOption(NeuTube::ESizeHintOption option);
   void loadRoi(const QString &filePath);
+  void loadRoi();
+
+  void prepareDisplay();
+
+  void notifyUser(const QString &message);
 
 public slots:
   void setLocsegChainInfo(ZLocsegChain *chain, QString prefix = "",

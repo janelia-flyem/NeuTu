@@ -1,0 +1,12 @@
+#!/bin/bash
+ 
+make
+
+if [ ! -d build ]
+then
+  mkdir build
+fi
+
+cd build
+cmake ..
+make

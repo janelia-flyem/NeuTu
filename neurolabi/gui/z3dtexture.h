@@ -115,7 +115,7 @@ public:
   void nextAvailableUnit();
   void activateCurrentUnit();
   GLint getCurrentUnitNumber() const { return m_currentUnitNumber; }
-  GLenum getCurrentUnitEnum() const { return GL_TEXTURE0 + m_currentUnitNumber; }
+  GLenum getCurrentUnitEnum() const;
   // clear assigned unit
   void reset() { m_currentUnitNumber = -1; }
 

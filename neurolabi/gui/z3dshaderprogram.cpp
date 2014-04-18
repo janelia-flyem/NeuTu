@@ -7,16 +7,22 @@
 #include "z3dvolume.h"
 
 Z3DShaderProgram::Z3DShaderProgram(QObject * parent)
+#ifdef _QT5_
+  : QOpenGLShaderProgram(parent)
+#else
   : QGLShaderProgram(parent)
+#endif
   , m_logUniformLocationError(false)
 {
 }
 
+#ifndef _QT5_
 Z3DShaderProgram::Z3DShaderProgram(const QGLContext *context, QObject *parent)
   : QGLShaderProgram(context, parent)
   , m_logUniformLocationError(false)
 {
 }
+#endif
 
 Z3DShaderProgram::~Z3DShaderProgram()
 {
@@ -25,7 +31,11 @@ Z3DShaderProgram::~Z3DShaderProgram()
 bool Z3DShaderProgram::bind()
 {
   m_textureUnitManager.reset();
+#ifdef _QT5_
+  return QOpenGLShaderProgram::bind();
+#else
   return QGLShaderProgram::bind();
+#endif
 }
 
 void Z3DShaderProgram::bindFragDataLocation(GLuint colorNumber, const QString &name)
@@ -208,7 +218,11 @@ void Z3DShaderProgram::loadFromSourceCode(const QStringList &vertSrcs, const QSt
   removeAllShaders();
   for (int i=0; i<vertSrcs.size(); ++i) {
     QString vertSrc = header + vertSrcs[i];
+#ifdef _QT5_
+    if (!addShaderFromSourceCode(QOpenGLShader::Vertex, vertSrc)) {
+#else
     if (!addShaderFromSourceCode(QGLShader::Vertex, vertSrc)) {
+#endif
       LDEBUG() << vertSrc;
       throw Exception("Can not compile vertex shader. Error log: " + log().toStdString());
     }
@@ -216,7 +230,11 @@ void Z3DShaderProgram::loadFromSourceCode(const QStringList &vertSrcs, const QSt
 
   for (int i=0; i<geomSrcs.size(); ++i) {
     QString geomSrc = header + geomSrcs[i];
+#ifdef _QT5_
+    if (!addShaderFromSourceCode(QOpenGLShader::Geometry, geomSrc)) {
+#else
     if (!addShaderFromSourceCode(QGLShader::Geometry, geomSrc)) {
+#endif
       LDEBUG() << geomSrc;
       throw Exception("Can not compile geometry shader. Error log: " + log().toStdString());
     }
@@ -224,7 +242,11 @@ void Z3DShaderProgram::loadFromSourceCode(const QStringList &vertSrcs, const QSt
 
   for (int i=0; i<fragSrcs.size(); ++i) {
     QString fragSrc = header + fragSrcs[i];
+#ifdef _QT5_
+    if (!addShaderFromSourceCode(QOpenGLShader::Fragment, fragSrc)) {
+#else
     if (!addShaderFromSourceCode(QGLShader::Fragment, fragSrc)) {
+#endif
       LDEBUG() << fragSrc;
       throw Exception("Can not compile fragment shader. Error log: " + log().toStdString());
     }

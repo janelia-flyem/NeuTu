@@ -1,24 +1,39 @@
 #ifndef Z3DSHADERPROGRAM_H
 #define Z3DSHADERPROGRAM_H
 
+#ifdef _QT5_
+#include <QOpenGLShaderProgram>
+#else
 #include <QGLShaderProgram>
+#endif
 #include "zglmutils.h"
 #include "z3dtexture.h"
 
 class Z3DVolume;
 
+#ifdef _QT5_
+class Z3DShaderProgram : public QOpenGLShaderProgram
+#else
 class Z3DShaderProgram : public QGLShaderProgram
+#endif
 {
 public:
   explicit Z3DShaderProgram(QObject * parent = 0);
+#ifndef _QT5_
   explicit Z3DShaderProgram(const QGLContext *context, QObject *parent = 0);
+#endif
   ~Z3DShaderProgram();
 
   // overriding bind() to reset texture unit manager
   bool bind();
 
+#ifdef _QT5_
+  using QOpenGLShaderProgram::setUniformValue;
+  using QOpenGLShaderProgram::setUniformValueArray;
+#else
   using QGLShaderProgram::setUniformValue;
   using QGLShaderProgram::setUniformValueArray;
+#endif
 
   void bindFragDataLocation(GLuint colorNumber, const QString &name);
 

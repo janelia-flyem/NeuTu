@@ -1,3 +1,4 @@
+#include "zglew.h"
 #include "z3dcanvasrenderer.h"
 
 #include "z3dcanvas.h"

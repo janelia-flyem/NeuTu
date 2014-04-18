@@ -341,6 +341,14 @@ void ZFlyEmNeuronListModel::notifyDataChanged (
   emit dataChanged(topLeft, bottomRight);
 }
 
+void ZFlyEmNeuronListModel::notifyAllDataChanged()
+{
+  QModelIndex topLeft = createIndex(0, 0);
+  QModelIndex bottomRight = createIndex(rowCount() - 1, columnCount() - 1);
+
+  emit dataChanged(topLeft, bottomRight);
+}
+
 void ZFlyEmNeuronListModel::notifyRowDataChanged(int row)
 {
   QModelIndex topLeft = createIndex(row, 0);
@@ -352,4 +360,9 @@ void ZFlyEmNeuronListModel::notifyRowDataChanged(int row)
 bool ZFlyEmNeuronListModel::isNeuronKey(const QModelIndex &index)
 {
   return index.column() == 0;
+}
+
+QString ZFlyEmNeuronListModel::getColumnName(int col) const
+{
+  return m_presenter->getColumnName(col);
 }

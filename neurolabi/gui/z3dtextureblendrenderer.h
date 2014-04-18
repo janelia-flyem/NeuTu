@@ -31,11 +31,8 @@ protected:
   virtual void deinitialize();
   virtual QString generateHeader();
 
-  virtual void renderUsingOpengl();
-  virtual void renderPickingUsingOpengl();
-
-  virtual void renderUsingGLSL(Z3DEye eye);
-  virtual void renderPickingUsingGLSL(Z3DEye);
+  virtual void render(Z3DEye eye);
+  virtual void renderPicking(Z3DEye);
 
   const Z3DTexture *m_colorTexture1;
   const Z3DTexture *m_depthTexture1;

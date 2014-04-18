@@ -35,7 +35,7 @@ public:
 
   virtual void save(const char *filePath);
   virtual void load(const char *filePath);
-  virtual void display(QPainter &painter, int z = 0, Display_Style option = NORMAL)
+  virtual void display(ZPainter &painter, int z = 0, Display_Style option = NORMAL)
   const;
 
 public:
@@ -52,7 +52,7 @@ public:
   inline void setY(int index, int y) { m_voxelArray[index * 3 + 1] = y; }
   inline void setZ(int index, int z) { m_voxelArray[index * 3 + 2] = z; }
 
-  bool isEmpty();
+  bool isEmpty() const;
 
   void append(int x, int y, int z);
 
@@ -99,7 +99,7 @@ public:
 
   ZObject3dArray* growLabel(const ZObject3d &seed, int growLevel = -1);
 
-  Stack* toStack(int *offset = NULL);
+  Stack* toStack(int *offset = NULL) const;
   bool loadStack(const Stack *stack, int threshold = 0);
 
   ZPoint getCenter() const;

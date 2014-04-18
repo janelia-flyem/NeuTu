@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////////
 /// OpenGL Mathematics (glm.g-truc.net)
 ///
-/// Copyright (c) 2005 - 2013 G-Truc Creation (www.g-truc.net)
+/// Copyright (c) 2005 - 2014 G-Truc Creation (www.g-truc.net)
 /// Permission is hereby granted, free of charge, to any person obtaining a copy
 /// of this software and associated documentation files (the "Software"), to deal
 /// in the Software without restriction, including without limitation the rights
@@ -51,8 +51,6 @@ namespace detail
 		GLM_FUNC_DECL GLM_CONSTEXPR length_t length() const;
 
 		template <typename U, precision Q>
-		friend tmat3x3<U, Q> inverse(tmat3x3<U, Q> const & m);
-		template <typename U, precision Q>
 		friend tvec3<U, Q> operator/(tmat3x3<U, Q> const & m, tvec3<U, Q> const & v);
 		template <typename U, precision Q>
 		friend tvec3<U, Q> operator/(tvec3<U, Q> const & v, tmat3x3<U, Q> const & m);
@@ -60,8 +58,6 @@ namespace detail
 	private:
 		/// @cond DETAIL
 		col_type value[3];
-
-		GLM_FUNC_DECL tmat3x3<T, P> _inverse() const;
 		/// @endcond
 		
 	public:
@@ -75,39 +71,28 @@ namespace detail
 			ctor Null);
 		GLM_FUNC_DECL explicit tmat3x3(
 			T const & s);
-		GLM_FUNC_DECL explicit tmat3x3(
+		GLM_FUNC_DECL tmat3x3(
 			T const & x0, T const & y0, T const & z0,
 			T const & x1, T const & y1, T const & z1,
 			T const & x2, T const & y2, T const & z2);
-		GLM_FUNC_DECL explicit tmat3x3(
+		GLM_FUNC_DECL tmat3x3(
 			col_type const & v0,
 			col_type const & v1,
 			col_type const & v2);
 
-#if(GLM_HAS_INITIALIZER_LISTS)
-		template <typename U>
-		GLM_FUNC_DECL tmat3x3(std::initializer_list<U> m);
-
-		GLM_FUNC_DECL tmat3x3(std::initializer_list<tvec3<T, P> > m);
-#endif//GLM_HAS_INITIALIZER_LISTS
-
 		//////////////////////////////////////
 		// Conversions
-		template <typename U>
-		GLM_FUNC_DECL explicit tmat3x3(
-			U const & x);
-			
 		template<
 			typename X1, typename Y1, typename Z1,
 			typename X2, typename Y2, typename Z2,
 			typename X3, typename Y3, typename Z3>
-		GLM_FUNC_DECL explicit tmat3x3(
+		GLM_FUNC_DECL tmat3x3(
 			X1 const & x1, Y1 const & y1, Z1 const & z1,
 			X2 const & x2, Y2 const & y2, Z2 const & z2,
 			X3 const & x3, Y3 const & y3, Z3 const & z3);
 			
 		template <typename V1, typename V2, typename V3>
-		GLM_FUNC_DECL explicit tmat3x3(
+		GLM_FUNC_DECL tmat3x3(
 			tvec3<V1, P> const & v1,
 			tvec3<V2, P> const & v2,
 			tvec3<V3, P> const & v3);
@@ -158,6 +143,9 @@ namespace detail
 		GLM_FUNC_DECL tmat3x3<T, P> operator++(int);
 		GLM_FUNC_DECL tmat3x3<T, P> operator--(int);
 	};
+
+	template <typename T, precision P>
+	GLM_FUNC_DECL tmat3x3<T, P> compute_inverse_mat3(tmat3x3<T, P> const & m);
 
 	// Binary operators
 	template <typename T, precision P>

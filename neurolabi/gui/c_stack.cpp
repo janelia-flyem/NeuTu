@@ -24,7 +24,7 @@
 
 using namespace std;
 
-void C_Stack::copyPlaneValue(Stack *stack, void *array, int slice)
+void C_Stack::copyPlaneValue(Stack *stack, const void *array, int slice)
 {
   PROCESS_ERROR(stack == NULL, "Null stack", return);
   PROCESS_ERROR(slice < 0 || slice >= C_Stack::depth(stack), "Invalid slice",
@@ -37,7 +37,7 @@ void C_Stack::copyPlaneValue(Stack *stack, void *array, int slice)
 }
 
 void C_Stack::copyPlaneValue(
-    Mc_Stack *stack, void *array, int channel, int slice)
+    Mc_Stack *stack, const void *array, int channel, int slice)
 {
   PROCESS_ERROR(stack == NULL, "Null stack", return);
   PROCESS_ERROR(slice < 0 || slice >= C_Stack::depth(stack), "Invalid slice",
@@ -104,6 +104,29 @@ Stack* C_Stack::boundCrop(const Stack *stack, int margin)
   return Stack_Bound_Crop(stack, margin);
 }
 
+Stack* C_Stack::boundCrop(const Stack *stack, int margin, int *offset)
+{
+  Cuboid_I bound_box;
+  Stack_Bound_Box(stack, &bound_box);
+
+  int width = 0;
+  int height = 0;
+  int depth = 0;
+  Cuboid_I_Size(&bound_box, &width, &height, &depth);
+
+  Stack *out =  Crop_Stack(stack, bound_box.cb[0] - margin,
+      bound_box.cb[1] - margin, bound_box.cb[2] - margin,
+      width + margin * 2, height + margin * 2, depth + margin * 2, NULL);
+
+  if (offset != NULL) {
+    for (int i = 0; i < 3; ++i) {
+      offset[i] = bound_box.cb[i] - margin;
+    }
+  }
+
+  return out;
+}
+
 int* C_Stack::hist(const Stack* stack)
 {
   return Stack_Hist(stack);
@@ -112,6 +135,14 @@ int* C_Stack::hist(const Stack* stack)
 void C_Stack::setZero(Stack *stack)
 {
   Zero_Stack(stack);
+}
+
+void C_Stack::setZero(Mc_Stack *stack)
+{
+  if (stack != NULL) {
+    size_t length = allByteNumber(stack);
+    bzero(stack->array, length);
+  }
 }
 
 ssize_t C_Stack::offset(int x, int y, int z, int width, int height, int depth)
@@ -144,9 +175,29 @@ void C_Stack::print(const Stack *stack)
   Print_Stack(stack);
 }
 
+void C_Stack::printValue(const Stack *stack)
+{
+  Print_Stack_Value(stack);
+}
+
 Stack* C_Stack::channelExtraction(const Stack *stack, int channel)
 {
   return Stack_Channel_Extraction(stack, channel, NULL);
+}
+
+bool C_Stack::setValue(
+    Stack *stack, size_t offset, const void *buffer, size_t length)
+{
+  if (stack != NULL) {
+    uint8_t *stackBuffer = array8(stack);
+    if (stackBuffer != NULL && allByteNumber(stack) >= offset + length) {
+      memcpy(stackBuffer + offset, buffer, length);
+
+      return true;
+    }
+  }
+
+  return false;
 }
 
 Stack* C_Stack::resize(const Stack *stack, int width, int height, int depth)
@@ -781,11 +832,33 @@ void C_Stack::drawInteger(Stack *canvas, int n, int dx, int dy, int dz,
 
 Stack C_Stack::sliceView(const Stack *stack, int slice)
 {
+  TZ_ASSERT(slice >= 0 && slice < C_Stack::depth(stack), "Invalide slice");
+  Stack stackSlice = *stack;
+  stackSlice.array = array8(stack) + C_Stack::planeByteNumber(stack) * slice;
+  setDepth(&stackSlice, 1);
+
+  return stackSlice;
+}
+
+Stack C_Stack::sliceView(const Stack *stack, int startPlane, int endPlane)
+{
+  TZ_ASSERT(startPlane <= endPlane, "Invalide slice");
+  TZ_ASSERT(endPlane >= 0, "Invalide slice");
+  TZ_ASSERT(startPlane < C_Stack::depth(stack), "Invalide slice");
+
+  if (startPlane < 0) {
+    startPlane = 0;
+  }
+
+  if (endPlane >= C_Stack::depth(stack)) {
+    endPlane = C_Stack::depth(stack) - 1;
+  }
+
   Stack stackSlice = *stack;
   stackSlice.array = array8(stack) +
-      C_Stack::width(stack) * C_Stack::height(stack) * C_Stack::kind(stack) *
-      slice;
-  setDepth(&stackSlice, 1);
+      C_Stack::planeByteNumber(stack) * startPlane;
+
+  setDepth(&stackSlice, endPlane - startPlane + 1);
 
   return stackSlice;
 }

@@ -42,7 +42,7 @@ void ZStroke2d::append(double x, double y)
   if (m_pointArray.empty()) {
     m_pointArray.push_back(QPointF(x, y));
   } else {
-    if (x != m_pointArray.back().x() && y != m_pointArray.back().y()) {
+    if (x != m_pointArray.back().x() || y != m_pointArray.back().y()) {
       m_pointArray.push_back(QPointF(x, y));
     }
   }
@@ -70,7 +70,7 @@ void ZStroke2d::setEraser(bool isEraser)
   m_color.setAlpha(128);
 }
 
-void ZStroke2d::display(QPainter &painter, int z, Display_Style option) const
+void ZStroke2d::display(ZPainter &painter, int z, Display_Style option) const
 {
   UNUSED_PARAMETER(z);
   UNUSED_PARAMETER(option);
@@ -149,4 +149,23 @@ bool ZStroke2d::getLastPoint(int *x, int *y) const
   *y = iround(m_pointArray.back().y());
 
   return true;
+}
+
+bool ZStroke2d::getLastPoint(double *x, double *y) const
+{
+  if (m_pointArray.empty()) {
+    return false;
+  }
+
+  *x = m_pointArray.back().x();
+  *y = m_pointArray.back().y();
+
+  return true;
+}
+
+void ZStroke2d::print() const
+{
+  foreach (QPointF point, m_pointArray) {
+    std::cout << point.x() << " " << point.y() << std::endl;
+  }
 }

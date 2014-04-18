@@ -17,5 +17,6 @@
 #define TZ_SQRT3 1.73205080757
 
 #define MAX_PATH_LENGTH 500
+#define MAX_INT32 2147483647
 
 #endif

@@ -2113,7 +2113,7 @@ int main(int argc, char* argv[])
       range.size[1], range.size[2]);
 #endif
 
-#if 1
+#if 0
   Local_Neuroseg *locseg = New_Local_Neuroseg();
   locseg->seg.r1 = 2.0;
   Print_Local_Neuroseg(locseg);
@@ -2128,6 +2128,46 @@ int main(int argc, char* argv[])
   Local_Neuroseg *locseg2 = Local_Neuroseg_From_Field(field, NULL);
   Print_Local_Neuroseg(locseg2);
 #endif
+
+#if 0
+  Local_Neuroseg *locseg = New_Local_Neuroseg();
+  locseg->seg.r1 = 2.0;
+  Print_Local_Neuroseg(locseg);
+  double offset[3] = {42, 306, 30};
+  Local_Neuroseg_Translate(locseg, offset);
+  Geo3d_Scalar_Field *field1 = Neuroseg_Field_S_Fast(&(locseg->seg), NULL, NULL);
+  Geo3d_Scalar_Field *field2 = Neuroseg_Field_S(&(locseg->seg), NULL, NULL);
+  
+  BOOL issame = Geo3d_Scalar_Field_Is_Equal(field1, field2);
+
+  if (issame) {
+    printf("Same field.\n");
+  } else {
+    printf("Different field.\n");
+  }
+#endif
+
+#if 1
+  Local_Neuroseg *locseg = New_Local_Neuroseg();
+  locseg->seg.r1 = 2.0;
+  Print_Local_Neuroseg(locseg);
+  double offset[3] = {42, 306, 30};
+  Local_Neuroseg_Translate(locseg, offset);
+
+  Stack *stack = Read_Stack("/Users/zhaot/Work/neutube/neurolabi/data/system/diadem/diadem_e1.tif");
+  Locseg_Score_Workspace *ws = New_Locseg_Score_Workspace();
+  ws->mask = stack;
+
+  tic();
+  int i;
+  for (i = 0; i < 5000; ++i) {
+    Local_Neuroseg_Score_W(locseg, stack, 1.0, ws);
+  }
+    
+  ptoc();
+  printf("Score: %g (Expected: 0.0643115)\n", Local_Neuroseg_Score_W(locseg, stack, 1.0, ws));
+#endif
+
 
   return 0;
 }

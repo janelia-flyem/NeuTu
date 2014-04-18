@@ -14,6 +14,10 @@
 #include "flyemdataprocessdialog.h"
 #include "zprogressable.h"
 #include "zqtbarprogressreporter.h"
+#include "zswctreebatchmatcher.h"
+#include "flyem/zflyemneuronmatchtaskmanager.h"
+#include "flyem/zflyemneuronfiltertaskmanager.h"
+#include "flyem/zflyemqualityanalyzertaskmanager.h"
 
 class ZSwcTrunkAnalyzer;
 class ZSwcFeatureAnalyzer;
@@ -26,6 +30,9 @@ class FlyEmDataForm;
 class QStatusBar;
 class FlyEmGeoSearchDialog;
 class FlyEmGeoFilterDialog;
+class FlyEmNeuronThumbnailDialog;
+class ZFlyEmNeuronImageFactory;
+class FlyEmHotSpotDialog;
 
 class ZFlyEmDataFrame : public QMdiSubWindow, ZProgressable
 {
@@ -67,6 +74,14 @@ public:
   void setStatusBar(QStatusBar *bar);
 
   void predictClass(ZFlyEmNeuron *neuron);
+  void predictClass(const QVector<ZFlyEmNeuron*> &neuronArray);
+
+  /*!
+   * \brief Reassign classes to neurons
+   * \param classFile The list of class names in the same order how the neurons
+   *        are listed in the bundles.
+   */
+  void assignClass(const std::string &classFile);
 
   /*!
    * \brief Export unnormalized similarity matrix
@@ -77,6 +92,54 @@ public:
    * \a return true iff the export succeeds.
    */
   bool exportSimilarityMatrix(const QString &fileName, int bundleIndex = 0);
+
+  inline ZFlyEmDataBundle* getDataBundle(int index = 0) {
+    return (index < m_dataArray.size()) ? m_dataArray[index] : NULL;
+  }
+
+  /*!
+   * \brief Compute and save morphological features of all the neurons
+   *
+   * \param includingLabel Add the class label as the first column
+   * \return true iff the file is saved.
+   */
+  bool saveNeuronFeature(const QString &path, bool includingLabel);
+
+  const std::vector<std::string>& getNeuronFeatureName();
+
+  /*!
+   * \brief Export thumbnails into a directory
+   * \param Target directory
+   */
+  void exportThumbnail(const QString &saveDir, bool thumbnailUpdate,
+                       const ZFlyEmNeuronImageFactory &imageFactory);
+
+  void exportThumbnail();
+
+  void exportBundle(const QString &savePath);
+
+  /*!
+   * \brief Set volume entries based on a directory
+   *
+   * The volume entry is set even the corresponding body file does not exist.
+   * It only applies to the first bundle.
+   *
+   * \param dirName The volume directory path.
+   */
+  void setVolume(const QString &dirName);
+
+  /*!
+   * \brief Set thumbnails based on a directory
+   *
+   * The thumnal entry is set even the corresponding file does not exist.
+   * It only applies to the first bundle.
+   *
+   * \param dirName The thumbnail directory path.
+   */
+  void setThumbnail(const QString &dirName);
+
+  void identifyHotSpot();
+  void identifyHotSpot(int id);
 
 signals:
   void volumeTriggered(const QString &path);
@@ -98,6 +161,11 @@ public slots:
   void saveBundle(int index, const QString &path);
 
   void showNearbyNeuron(const ZFlyEmNeuron *neuron);
+  void searchNeighborNeuron(const ZFlyEmNeuron *neuron);
+
+  void updateClassPrediction();
+  void updateSearchResult();
+  void updateQualityControl();
 
 private:
   FlyEm::ZSynapseAnnotationArray *getSynapseAnnotation();
@@ -106,6 +174,7 @@ private:
   std::string getName(const std::pair<int, int> &bodyId) const;
 
   const ZFlyEmNeuron* getNeuron(int id, int bundleIndex = -1) const;
+  ZFlyEmNeuron* getNeuron(int id, int bundleIndex = -1);
   const ZFlyEmNeuron* getNeuron(const std::pair<int, int> &bodyId) const;
 
   const ZFlyEmNeuron *getNeuronFromIndex(size_t idx, int *bundleIndex) const;
@@ -116,6 +185,9 @@ private:
   const QColor* getColor(const std::pair<int, int> &bodyId) const;
 
   FlyEmDataForm *getMainWidget() const;
+  void prepareClassPrediction(ZFlyEmNeuron *neuron);
+
+  bool initTaskManager(ZMultiTaskManager *taskManager);
 
 private:
   void parseCommand(const std::string &command);
@@ -151,9 +223,20 @@ private:
 
   QProgressBar* getProgressBar();
 
+  /*!
+   * \brief Get the source path of a data bundle
+   *
+   * \return It returns empty string if \a index is out of range.
+   */
+  const QString getDataBundleSource(int index = 0) const;
+
+  bool isDataBundleIndexValid(int index) const;
+
 private:
+  //Main data
   QVector<ZFlyEmDataBundle*> m_dataArray;
   
+  //View
   FlyEmDataForm *m_centralWidget;
 
   //parsing results
@@ -184,6 +267,15 @@ private:
   ZQtBarProgressReporter m_specialProgressReporter;
 
   FlyEmGeoFilterDialog *m_geoSearchDlg;
+  FlyEmNeuronThumbnailDialog *m_thumbnailDlg;
+  FlyEmHotSpotDialog *m_hotSpotDlg;
+
+  ZFlyEmNeuronMatchTaskManager *m_matchManager;
+  ZFlyEmNeuronFilterTaskManager *m_filterManager;
+  ZFlyEmQualityAnalyzerTaskManager *m_qualityManager;
+  //ZSwcTreeBatchMatcher *m_batchMatcher;
+
+  QVector<ZFlyEmNeuron*> m_foregroundNeuronArray;
 };
 
 #endif // ZFLYEMDATAFRAME_H

@@ -16,7 +16,7 @@
 #include "tz_utilities.h"
 #include "neutubeconfig.h"
 
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
+#ifdef _QT5_
 #include <QStack>
 #include <QPointer>
 // thanks to Daniel Price for this workaround
@@ -103,7 +103,7 @@ int main(int argc, char *argv[])
 {
 
 #ifndef _FLYEM_
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
+#ifdef _QT5_
   qInstallMessageHandler(myMessageOutput);
 #else
   qInstallMsgHandler(myMessageOutput);
@@ -113,6 +113,8 @@ int main(int argc, char *argv[])
   bool debugging = false;
   bool unitTest = false;
   bool runCommandLine = false;
+
+  QStringList fileList;
 
 #ifndef QT_NO_DEBUG
   if (argc > 1) {
@@ -125,6 +127,12 @@ int main(int argc, char *argv[])
     }
     if (strcmp(argv[1], "--command") == 0) {
       runCommandLine = true;
+    }
+
+    if (strcmp(argv[1], "--load") == 0) {
+      for (int i = 2; i < argc; ++i) {
+        fileList << argv[i];
+      }
     }
   }
 #endif
@@ -162,7 +170,8 @@ int main(int argc, char *argv[])
     QsLogging::Logger& logger = QsLogging::Logger::instance();
     const QString sLogPath(QDir(app.applicationDirPath()).filePath("neuTube_log.txt"));
     QsLogging::DestinationPtr fileDestination(
-          QsLogging::DestinationFactory::MakeFileDestination(sLogPath, QsLogging::EnableLogRotation, 1e7, 20));
+          QsLogging::DestinationFactory::MakeFileDestination(sLogPath, QsLogging::EnableLogRotation,
+                                                             QsLogging::MaxSizeBytes(1e7), QsLogging::MaxOldLogCount(20)));
     QsLogging::DestinationPtr debugDestination(
           QsLogging::DestinationFactory::MakeDebugOutputDestination());
     logger.addDestination(debugDestination);
@@ -173,11 +182,11 @@ int main(int argc, char *argv[])
     logger.setLoggingLevel(QsLogging::InfoLevel);
 #endif
 
-#if defined __APPLE__ && (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))
+#if (defined __APPLE__) && !(defined _QT5_)
     app.setGraphicsSystem("raster");
 #endif
 
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
+#ifdef _QT5_
     qApp->installEventFilter(new MacEventFilter(qApp));
 #endif
 
@@ -191,6 +200,10 @@ int main(int argc, char *argv[])
     mainWin->config();
     mainWin->show();
     mainWin->initOpenglContext();
+
+    if (!fileList.isEmpty()) {
+      mainWin->showStackFrame(fileList, true);
+    }
 
     int result =  app.exec();
 

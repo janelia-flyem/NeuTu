@@ -1,0 +1,8 @@
+#%RAML 0.8
+---   
+title: skeletonize
+version: v1
+baseUri:
+/{bodyId}:
+  get:
+    qeuryParamters:

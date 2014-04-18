@@ -6,6 +6,7 @@
 #include "swctreenode.h"
 #include "zcircle.h"
 #include "tz_math.h"
+#include "zpoint.h"
 
 #include <boost/iterator/iterator_facade.hpp>
 #include <boost/type_traits/is_convertible.hpp>
@@ -40,7 +41,8 @@ public:
       if (pos == Begin) {
         m_listIdx = 0;
         m_swcNodeIter = m_bundle->m_swcNodes->begin();
-        while (m_listIdx < m_bundle->m_objLists.size() && m_drawableIdx >= m_bundle->m_objLists[m_listIdx]->size()) {
+        while (m_listIdx < m_bundle->m_objLists.size() &&
+               m_drawableIdx >= m_bundle->m_objLists[m_listIdx]->size()) {
           ++m_listIdx;
         }
         if (m_listIdx == m_bundle->m_objLists.size()) {
@@ -157,6 +159,16 @@ public:
   inline void setDisplayStyle(ZStackDrawable::Display_Style style) { m_style = style; }
   inline ZStackDrawable::Display_Style displayStyle() const { return m_style; }
 
+  inline void setStackOffset(double x, double y, double z) {
+    m_stackOffset.set(x, y, z);
+  }
+  inline void setStackOffset(const ZPoint &offset) {
+    m_stackOffset = offset;
+  }
+  inline const ZPoint& getStackOffset() const {
+    return m_stackOffset;
+  }
+
 private:
   template<typename T1, typename T2> friend class impl::drawable_iter;
 
@@ -167,6 +179,8 @@ private:
 
   QList<ZStackDrawable*> m_otherDrawables; // collect single input
   std::set<Swc_Tree_Node*> m_emptyNodeSet; // make sure m_swcNodes always point to something
+
+  ZPoint m_stackOffset;
 };
 
 #endif // ZPAINTBUNDLE_H

@@ -185,16 +185,7 @@ QString Z3DVolumeSliceRenderer::generateHeader()
   return headerSource;
 }
 
-void Z3DVolumeSliceRenderer::renderUsingOpengl()
-{
-  //renderUsingGLSL();
-}
-
-void Z3DVolumeSliceRenderer::renderPickingUsingOpengl()
-{
-}
-
-void Z3DVolumeSliceRenderer::renderUsingGLSL(Z3DEye eye)
+void Z3DVolumeSliceRenderer::render(Z3DEye eye)
 {
   if (!m_initialized)
     return;
@@ -214,7 +205,7 @@ void Z3DVolumeSliceRenderer::renderUsingGLSL(Z3DEye eye)
   m_volumeSliceShader.release();
 }
 
-void Z3DVolumeSliceRenderer::renderPickingUsingGLSL(Z3DEye)
+void Z3DVolumeSliceRenderer::renderPicking(Z3DEye)
 {
 }
 

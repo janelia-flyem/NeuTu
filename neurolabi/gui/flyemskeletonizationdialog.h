@@ -24,9 +24,15 @@ public:
   bool isLevelChecked() const;
   int level() const;
 
+  bool isDownsampleChecked() const;
+  int getXInterval() const;
+  int getYInterval() const;
+  int getZInterval() const;
+
 public slots:
   void enableDistanceThreshold();
   void enableSizeThreshold();
+  void enableDownsample();
 
 private:
   Ui::FlyEmSkeletonizationDialog *ui;

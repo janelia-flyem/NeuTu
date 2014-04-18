@@ -325,7 +325,6 @@ bool ZFlyEmStackFrame::trainBodyConnection()
 
   delete featureMatrix;
 
-
   vector<int> &groundLabel = testSegBundle.getGroundLabel();
 
   if (groundLabel.empty()) {
@@ -546,6 +545,8 @@ bool ZFlyEmStackFrame::evaluateBodyConnectionClassifier(
   }
 
   cout << "done" << endl;
+#else
+  UNUSED_PARAMETER(&threshold);
 #endif
 
   return true;
@@ -562,4 +563,5 @@ void ZFlyEmStackFrame::computeBodyConnFeature()
     FlyEm::ZSegmentationAnalyzer::generateBcf(*bundle, featureSet[i]);
   }
 }
+
 

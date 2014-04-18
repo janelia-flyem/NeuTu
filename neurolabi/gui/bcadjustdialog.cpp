@@ -39,6 +39,8 @@ BcAdjustDialog::BcAdjustDialog(QWidget *parent) :
   m_ui->labelUpperValue_3->setFixedSize(m_ui->labelUpperValue->sizeHint());
   m_ui->labelLowerValue_4->setFixedSize(m_ui->labelLowerValue->sizeHint());
   m_ui->labelUpperValue_4->setFixedSize(m_ui->labelUpperValue->sizeHint());
+
+  setLayout(m_ui->overallLayout);
 }
 
 BcAdjustDialog::~BcAdjustDialog()

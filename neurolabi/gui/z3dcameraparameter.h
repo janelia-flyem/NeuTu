@@ -15,7 +15,7 @@ public:
   inline void setEye(const glm::vec3& pos) { m_value.setEye(pos); updatePara(); }
   inline void setCenter(const glm::vec3& focus) { m_value.setCenter(focus); updatePara(); }
   inline void setUpVector(const glm::vec3& up) { m_value.setUpVector(up); updatePara(); }
-  inline void setEyeSeparationAngle(float degree) { m_value.setEyeSeparationAngle(degree); updatePara(); }
+  inline void setEyeSeparationAngle(float angle) { m_value.setEyeSeparationAngle(angle); updatePara(); }
   inline void setFrustum(float fov, float ratio, float ndist, float fdist)
       { m_value.setFrustum(fov, ratio, ndist, fdist); updatePara(); }
   inline void setNearDist(float nd) { m_value.setNearDist(nd); updatePara(); }

@@ -251,10 +251,9 @@ void ZMatrix::importTextFile(const string &filePath)
   free(value);
 }
 
-int ZMatrix::copyRowValue(
-    int row, int columnStart, int columnEnd, double *data)
+int ZMatrix::copyRowValue(int row, int columnStart, int columnEnd, double *dst)
 {
-  if (data == NULL) {
+  if (dst == NULL) {
     return 0;
   }
 
@@ -271,7 +270,7 @@ int ZMatrix::copyRowValue(
   }
 
   if (columnStart < 0) {
-    data -= columnStart;
+    dst -= columnStart;
     columnStart = 0;
   }
 
@@ -280,7 +279,49 @@ int ZMatrix::copyRowValue(
   }
 
   int length = columnEnd - columnStart + 1;
-  memcpy(data, m_data[row] + columnStart, sizeof(double) * length);
+  memcpy(dst, m_data[row] + columnStart, sizeof(double) * length);
 
   return length;
+}
+
+bool ZMatrix::setRowValue(int row, const std::vector<double> &rowValue)
+{
+  if (row < 0 || row >= getRowNumber()) {
+    return false;
+  }
+
+  if (rowValue.empty() || (int) rowValue.size() != getColumnNumber()) {
+    return false;
+  }
+
+  memcpy(m_data[row], &(rowValue[0]), sizeof(double) * rowValue.size());
+
+  return true;
+}
+
+bool ZMatrix::setRowValue(
+    int row, int columnStart, const std::vector<double> &rowValue)
+{
+  if (row < 0 || row >= getRowNumber()) {
+    return false;
+  }
+
+  if (columnStart < 0) {
+    return false;
+  }
+
+  if (rowValue.empty() ||
+      (int) rowValue.size() != getColumnNumber() - columnStart) {
+    return false;
+  }
+
+  memcpy(m_data[row] + columnStart, &(rowValue[0]),
+      sizeof(double) * rowValue.size());
+
+  return true;
+}
+
+bool ZMatrix::isEmpty() const
+{
+  return (m_data == NULL) || (m_rowNumber == 0) || (m_columnNumber == 0);
 }

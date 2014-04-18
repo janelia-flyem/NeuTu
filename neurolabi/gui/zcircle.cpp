@@ -38,7 +38,7 @@ void ZCircle::set(double x, double y, double z, double r)
 //#endif
 //}
 
-void ZCircle::display(QPainter &painter, int n,
+void ZCircle::display(ZPainter &painter, int n,
                       ZStackDrawable::Display_Style style) const
 {
   UNUSED_PARAMETER(style);
@@ -66,11 +66,13 @@ bool ZCircle::isCuttingPlane(double z, double r, double n)
   return false;
 }
 
-void ZCircle::display(QPainter *painter, int n, Display_Style style) const
+void ZCircle::display(ZPainter *painter, int stackFocus, Display_Style style) const
 {
   UNUSED_PARAMETER(style);
 #if defined(_QT_GUI_USED_)
   double adjustedRadius = m_r + m_defaultPenWidth * 0.5;
+  double dataFocus = stackFocus - painter->getOffset().z();
+
   QRectF rect;
   if (hasVisualEffect(VE_BOUND_BOX)) {
     rect.setLeft(m_center.x() - adjustedRadius);
@@ -81,11 +83,11 @@ void ZCircle::display(QPainter *painter, int n, Display_Style style) const
 
   bool visible = false;
 
-  if (n == -1) {
+  if (stackFocus == -1) {
     visible = true;
   } else {
-    if (isCuttingPlane(m_center.z(), m_r, n)) {
-      double h = fabs(m_center.z() - n);
+    if (isCuttingPlane(m_center.z(), m_r, dataFocus)) {
+      double h = fabs(m_center.z() - dataFocus);
       if (m_r > h) {
         double r = sqrt(m_r * m_r - h * h);
         adjustedRadius = r + m_defaultPenWidth * 0.5;

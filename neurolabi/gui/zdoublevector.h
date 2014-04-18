@@ -8,6 +8,7 @@ class ZDoubleVector : public std::vector<double>
 {
 public:
   ZDoubleVector();
+  ZDoubleVector(size_t n);
   ZDoubleVector(size_t n, double val);
   ZDoubleVector(const double *data, std::size_t start,
                 std::size_t end, std::size_t stride);
@@ -15,9 +16,35 @@ public:
 
 public:
   inline double* dataArray() { return &((*this)[0]); }
-  double sum();
+  inline const double* dataArray() const { return &((*this)[0]); }
+  double sum() const;
   double min(size_t *index = 0);
   double max(size_t *index = 0);
+
+  /*!
+   * \brief Weighted sum of the indices
+   */
+  double indexSum() const;
+
+  /*!
+   * \brief Weighted mean of the indices
+   */
+  double indexMean() const;
+
+  /*!
+   * \brief Weighted sum of the quare of indices
+   */
+  double squaredIndexSum() const;
+
+  /*!
+   * \brief Weighted mean of the quare of indices
+   */
+  double squaredIndexMean() const;
+
+  /*!
+   * \brief Weighted variance of the indices
+   */
+  double indexVar() const;
 
   bool operator== (const ZDoubleVector &vec);
 
@@ -28,6 +55,13 @@ public:
    * the file. All values in the orignal buffer are cleared before the reading.
    */
   void importTextFile(const std::string &filePath);
+
+  /*!
+   * \brief Sort the double array.
+   *
+   * \param indexArray The variable to store the sorted element indices
+   */
+  void sort(std::vector<int> &indexArray);
 
   template <class T>
   static std::vector<std::vector<double> > reshape(std::vector<T> vec,

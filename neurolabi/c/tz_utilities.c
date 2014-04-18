@@ -508,6 +508,11 @@ int tz_isinf(double x)
   return (x == Infinity) || (x == -Infinity);
 }
 
+BOOL Is_Integer_Value(double x)
+{
+  return x == (double) (int) x;
+}
+
 #ifndef HAVE_FGETLN
 char *fgetln(FILE *stream, size_t *len)
 {
@@ -668,7 +673,7 @@ void Fprint_File_Binary(FILE *fp, size_t n, FILE *out)
 
 size_t fsize(const char *filename)
 {
-#ifdef HAVE_SYS_STAT_H
+#ifdef HAVE_SYS_STAT_H_
   struct stat buf;
   stat(filename, &buf);
   return buf.st_size;

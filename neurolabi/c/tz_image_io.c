@@ -9,7 +9,9 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <string.h>
-#define __USE_BSD
+#if !defined(_USE_BSD)
+#  define __USE_BSD
+#endif
 #include <string.h>
 #include <stdint.h>
 #ifdef HAVE_UNISTD_H

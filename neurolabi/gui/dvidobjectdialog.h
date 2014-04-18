@@ -2,6 +2,7 @@
 #define DVIDOBJECTDIALOG_H
 
 #include <QDialog>
+#include <vector>
 
 namespace Ui {
 class DvidObjectDialog;
@@ -17,7 +18,10 @@ public:
 
   void setAddress(const QString &address);
   QString getAddress() const;
-  int getBodyId() const;
+  std::vector<int> getBodyId() const;
+
+  bool retrievingObject() const;
+  bool retrievingSkeleton() const;
 
 private:
   Ui::DvidObjectDialog *ui;

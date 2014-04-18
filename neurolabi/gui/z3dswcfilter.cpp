@@ -47,7 +47,7 @@ Z3DSwcFilter::Z3DSwcFilter()
 
 
   // rendering primitive
-  m_renderingPrimitive.addOptions("Normal", "Line", "Sphere");
+  m_renderingPrimitive.addOptions("Normal", "Sphere", "Line");
   m_renderingPrimitive.select("Sphere");
 
   const NeutubeConfig::Z3DWindowConfig::SwcTabConfig &config =
@@ -542,9 +542,9 @@ void Z3DSwcFilter::render(Z3DEye eye)
 
   if (m_renderingPrimitive.isSelected("Normal")) {
     m_rendererBase->activateRenderer(m_sphereRendererForCone, m_coneRenderer);
-  } else if (m_renderingPrimitive.isSelected("Cylinder")) {
+  } /*else if (m_renderingPrimitive.isSelected("Cylinder")) {
     m_rendererBase->activateRenderer(m_coneRenderer);
-  }
+  }*/
   else if (m_renderingPrimitive.isSelected("Line"))
     m_rendererBase->activateRenderer(m_lineRenderer);
   else /* (m_renderingPrimitive.get() == "Sphere") */{
@@ -568,8 +568,8 @@ void Z3DSwcFilter::renderPicking(Z3DEye eye)
 
   if (m_renderingPrimitive.isSelected("Normal")) {
     m_rendererBase->activateRenderer(m_coneRenderer, m_sphereRendererForCone);
-  } else if (m_renderingPrimitive.isSelected("Cylinder"))
-    m_rendererBase->activateRenderer(m_coneRenderer);
+  } /*else if (m_renderingPrimitive.isSelected("Cylinder"))
+    m_rendererBase->activateRenderer(m_coneRenderer);*/
   else if (m_renderingPrimitive.isSelected("Line"))
     m_rendererBase->activateRenderer(m_lineRenderer);
   else /* (m_renderingPrimitive.get() == "Sphere") */{
@@ -834,8 +834,8 @@ void Z3DSwcFilter::prepareData()
   int zMin = std::numeric_limits<int>::max();
   int zMax = std::numeric_limits<int>::min();
 
-  bool checkRadius = m_renderingPrimitive.isSelected("Normal") ||
-      m_renderingPrimitive.isSelected("Cylinder");
+  bool checkRadius = m_renderingPrimitive.isSelected("Normal") /*||
+      m_renderingPrimitive.isSelected("Cylinder")*/;
   for (size_t i=0; i<m_decompsedNodePairs.size(); i++) {
     for (size_t j=0; j<m_decompsedNodePairs[i].size(); j++) {
       Swc_Tree_Node *n1 = m_decompsedNodePairs[i][j].first;
@@ -1440,7 +1440,7 @@ void Z3DSwcFilter::selectSwc(QMouseEvent *e, int w, int h)
           */
           emit addNewSwcTreeNode(pos.x, pos.y, pos.z, SwcTreeNode::radius(tn));
         }
-      } else if (m_interactionMode == ExtendSwcNode && m_selectedSwcTreeNodes->size() == 1) {  // hit nothing, extend node
+      } /*else if (m_interactionMode == ExtendSwcNode && m_selectedSwcTreeNodes->size() == 1) {  // hit nothing, extend node
         Swc_Tree_Node *tn = *(m_selectedSwcTreeNodes->begin());
         glm::dvec3 v1,v2;
         get3DRayUnderScreenPoint(v1, v2, e->x(), e->y(), w, h);
@@ -1448,15 +1448,8 @@ void Z3DSwcFilter::selectSwc(QMouseEvent *e, int w, int h)
                            tn->node.y * getCoordScales().y,
                            tn->node.z * getCoordScales().z);
         glm::dvec3 pos = projectPointOnRay(nodePos, v1, v2) / glm::dvec3(getCoordScales());
-        /*
-        Swc_Tree_Node* node = Make_Swc_Tree_Node(&(tn->node));
-        node->node.x = pos.x;
-        node->node.y = pos.y;
-        node->node.z = pos.z;
-        emit extendSwcTreeNode(node, tn);
-        */
         emit extendSwcTreeNode(pos.x, pos.y, pos.z);
-      }
+      } */
     }
     m_pressedSwc = NULL;
     m_pressedSwcTreeNode = NULL;

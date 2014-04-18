@@ -62,4 +62,15 @@ public:
   bool isPositive(const ZStackDoc *doc) const;
 };
 
+////////ZSwcActionActivator////////////
+class ZSwcActionActivator : public ZActionActivator
+{
+public:
+  ZSwcActionActivator();
+  ~ZSwcActionActivator();
+
+public:
+  bool isPositive(const ZStackDoc *doc) const;
+};
+
 #endif // ZACTIONACTIVATOR_H

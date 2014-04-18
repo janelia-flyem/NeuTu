@@ -28,7 +28,11 @@ uniform VolumeStruct volume_struct_5;
 uniform TF_SAMPLER_TYPE_5 transfer_function_5;
 #endif
 
+#if GLSL_VERSION >= 130
+in vec2 texCoord0;
+#else
 varying vec2 texCoord0;
+#endif
 
 vec4 applyTF(in sampler1D tex, in vec4 intensity)
 {

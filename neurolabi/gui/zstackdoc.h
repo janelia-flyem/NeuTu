@@ -56,6 +56,12 @@ class ZStroke2d;
 class QWidget;
 class ZSwcNodeObjsModel;
 
+/*!
+ * \brief The class of stack document
+ *
+ * Each document has at most one main stack, which defines some context of other
+ * data (e.g. resolution).
+ */
 class ZStackDoc : public QObject, public ZReportable, public ZProgressable
 {
   Q_OBJECT
@@ -97,7 +103,9 @@ public:
     ACTION_SELECT_SWC_BRANCH, ACTION_SELECT_CONNECTED_SWC_NODE,
     ACTION_SELECT_ALL_SWC_NODE,
     ACTION_CHANGE_SWC_TYPE, ACTION_CHANGE_SWC_SIZE, ACTION_REMOVE_TURN,
-    ACTION_RESOLVE_CROSSOVER, ACTION_SWC_Z_INTERPOLATION
+    ACTION_RESOLVE_CROSSOVER, ACTION_SWC_Z_INTERPOLATION,
+    ACTION_SWC_RADIUS_INTERPOLATION, ACTION_SWC_POSITION_INTERPOLATION,
+    ACTION_SWC_INTERPOLATION
   };
 
 public: //attributes
@@ -114,7 +122,7 @@ public: //attributes
   // hasObject() returns true iff it has an object.
   bool hasObject();
   // hasSwc() returns true iff it has an SWC object.
-  bool hasSwc();
+  bool hasSwc() const;
   // hasDrawable() returns true iff it has a drawable object.
   bool hasDrawable();
 
@@ -129,6 +137,31 @@ public: //attributes
   virtual void deprecateDependent(EComponent component);
   virtual void deprecate(EComponent component);
   virtual bool isDeprecated(EComponent component);
+
+
+  /*!
+   * \brief The offset from stack space to data space
+   */
+  ZPoint getStackOffset() const;
+
+  /*!
+   * \brief Get the data space coordinates of stack coordinates
+   */
+  ZPoint getDataCoord(const ZPoint &pt);
+  ZPoint getDataCoord(double x, double y, double z);
+
+  /*!
+   * \brief Map stack coodinates to data space
+   */
+  void mapToDataCoord(ZPoint *pt);
+  void mapToDataCoord(double *x, double *y, double *z);
+
+  /*!
+   * \brief Data coordinates to stack coordinates
+   */
+  void mapToStackCoord(ZPoint *pt);
+  void mapToStackCoord(double *x, double *y, double *z);
+
 
   // Prefix for tracing project.
   const char *tubePrefix() const;
@@ -152,7 +185,7 @@ public: //attributes
     return &m_selectedSwcTreeNodes;}
   inline ZSwcNetwork* swcNetwork() { return m_swcNetwork; }
   ZResolution stackResolution() const;
-  QString stackSourcePath() const;
+  std::string stackSourcePath() const;
   bool hasChainList();
 
   //void setStackMask(ZStack *stack);
@@ -173,6 +206,7 @@ public: //attributes
   */
 
   bool isUndoClean();
+  bool isSwcSavingRequired();
 
   /*
   void setProgressReporter(ZProgressReporter *reporter);
@@ -195,7 +229,7 @@ public: //swc tree edit
   void deleteSelectedSwcNode();
   void addSizeForSelectedSwcNode(double dr);
 
-  void estimateSwcRadius(ZSwcTree *tree);
+  void estimateSwcRadius(ZSwcTree *tree, int maxIter = 1);
   void estimateSwcRadius();
 
 public: //swc selection
@@ -211,8 +245,9 @@ public:
   virtual void loadStack(Stack *stack, bool isOwner = true);
   virtual void loadStack(ZStack *zstack);
   virtual ZStack*& stackRef();
+  virtual const ZStack *stackRef() const;
 
-  void readStack(const char *filePath);
+  void readStack(const char *filePath, bool newThread = true);
   void readSwc(const char *filePath);
 
   void saveSwc(QWidget *parentWidget);
@@ -261,7 +296,7 @@ public:
 
   QString toString();
   QStringList toStringList() const;
-  virtual QString dataInfo(int x, int y, int z) const;
+  virtual QString dataInfo(double cx, double cy, int z) const;
 
   ZCurve locsegProfileCurve(int option) const;
 
@@ -279,6 +314,7 @@ public:
   bool invert();
   int findLoop(int minLoopSize = 100);
   void bwthin();
+  bool bwperim();
 
   int maxIntesityDepth(int x, int y);
   ZStack* projectBiocytinStack(Biocytin::ZStackProjector &projector);
@@ -465,8 +501,16 @@ public: /* puncta related methods */
 
   std::vector<ZSwcTree*> getSwcArray() const;
   bool getLastStrokePoint(int *x, int *y) const;
+  bool getLastStrokePoint(double *x, double *y) const;
 
   void updateModelData(EDocumentDataType type);
+
+  /*!
+   * \brief Get all swc trees from the document in a single tree
+   *
+   * \return The user is responsible of freeing the returned object.
+   */
+  ZSwcTree *getMergedSwc();
 
 public:
   inline NeuTube::Document::ETag getTag() const { return m_tag; }
@@ -541,12 +585,17 @@ public slots: //undoable commands
   bool executeChangeSelectedSwcNodeSize();
   bool executeConnectSwcNodeCommand(Swc_Tree_Node *tn);
   bool executeConnectSwcNodeCommand(Swc_Tree_Node *tn1, Swc_Tree_Node *tn2);
+  bool executeSmartConnectSwcNodeCommand(Swc_Tree_Node *tn1, Swc_Tree_Node *tn2);
+  bool executeSmartConnectSwcNodeCommand();
   bool executeBreakSwcConnectionCommand();
   bool executeAddSwcNodeCommand(const ZPoint &center, double radius);
   bool executeSwcNodeChangeSizeCommand(double dr);
   bool executeMergeSwcNodeCommand();
   bool executeTraceSwcBranchCommand(double x, double y, double z, int c = 0);
   bool executeInterpolateSwcZCommand();
+  bool executeInterpolateSwcRadiusCommand();
+  bool executeInterpolateSwcPositionCommand();
+  bool executeInterpolateSwcCommand();
   bool executeBreakForestCommand();
   bool executeGroupSwcCommand();
   bool executeSetRootCommand();

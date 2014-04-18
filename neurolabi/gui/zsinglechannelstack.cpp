@@ -411,6 +411,19 @@ bool ZSingleChannelStack::bwsolid()
   return false;
 }
 
+bool ZSingleChannelStack::bwperim()
+{
+  if (isBinary()) {
+    Stack *out = Stack_Perimeter(m_stack, NULL, 26);
+    C_Stack::copyValue(out, m_stack);
+    Kill_Stack(out);
+    deprecateDependent(STACK);
+    return true;
+  }
+
+  return false;
+}
+
 bool ZSingleChannelStack::enhanceLine(
     double sigmaX, double sigmaY, double sigmaZ)
 {
