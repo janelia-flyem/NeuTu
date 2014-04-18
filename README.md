@@ -24,8 +24,8 @@ by specifying the qmake command path and the corresponding spec path.
 
 ### Windows
 
-To be added
+See neurolabi/Compile_Windows.txt for more details.
 
 ## Need help?
 
-Contact tingzhao@gmail.com (Ting Zhao)
+Contact Ting Zhao: zhaot@janelia.hhmi.org or tingzhao@gmail.com (preferred)
