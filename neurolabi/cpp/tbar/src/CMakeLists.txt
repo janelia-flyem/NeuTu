@@ -57,7 +57,7 @@ include_directories(
 add_executable(Tbar_apply_sa Tbar_apply_sa.cpp)
 TARGET_LINK_LIBRARIES(Tbar_apply_sa 
   ${neutubeLib} ${neuLib} ${jsonLib} ${fftw3Lib} ${fftw3fLib} ${xmlLib} 
-  ${pngLib} ${hdfLib} ${hdfLtLib} ${zLib} ${dlLib} 
+  ${pngLib} ${hdfLtLib} ${hdfLib} ${zLib} ${dlLib} 
   )
 
 
