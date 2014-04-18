@@ -13,7 +13,7 @@ Software package for neuron reconstruction and visualization
 
 ### Linux and Mac
 
-1. Make sure you have installed Qt 4.8.1+ (Qt 4.8.5 recommended)
+1. Make sure you have installed Qt 4.8.1+ (Qt 4.8.4 recommended)
 2. Go to the NeuTu directory and run
 
 ####
@@ -24,8 +24,8 @@ by specifying the qmake command path and the corresponding spec path.
 
 ### Windows
 
-To be added
+See neurolabi/Compile_Windows.txt for more details.
 
 ## Need help?
 
-Contact tingzhao@gmail.com (Ting Zhao)
+Contact Ting Zhao: zhaot@janelia.hhmi.org or tingzhao@gmail.com (preferred)
