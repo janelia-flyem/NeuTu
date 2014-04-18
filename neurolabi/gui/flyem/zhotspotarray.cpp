@@ -1,4 +1,5 @@
 #include "zhotspotarray.h"
+#include <algorithm>
 #include "ztextlinearray.h"
 #include "zstring.h"
 #include "zjsonobject.h"
