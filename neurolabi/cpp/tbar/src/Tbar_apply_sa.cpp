@@ -62,7 +62,7 @@ FMatrix* hdf5read_prediction(const char *filePath)
     }
     cout << "type_size: " << type_size << endl;
 
-    dim_type mat_dims[MAX_DIM];
+    dim_type mat_dims[TZ_MATRIX_MAX_DIM];
     ndim_type mat_ndim = ndim;
 
     cout << "Size:";
@@ -429,10 +429,9 @@ int main(int argc, char *argv[])
 
     cout << "Merge centers ..." << endl;
 
-    vector<size_t> indexArray = centerArray.toIndexArray(detected1->dim[0],
-                                                         detected1->dim[1],
-                                                         detected1->dim[2],
-                                                         -1, -1, -1);
+    vector<size_t> indexArray = centerArray.toIndexArray<size_t>(
+        detected1->dim[0], detected1->dim[1], detected1->dim[2],
+        -1, -1, -1);
 
     vector<float> weightArray(indexArray.size());
     for (int i = 0; i < indexArray.size(); i++) {
