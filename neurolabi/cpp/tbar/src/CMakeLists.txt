@@ -1,45 +1,64 @@
 #CMake file for tbar src
 
-message ("exe: " ${BUILDEM_READY})
-if (BUILDEM_READY)
-  message ("Building executable: Tbar_apply_sa")
+SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_DEBUG_")
+SET(NeurolabiDir ${CMAKE_CURRENT_SOURCE_DIR}/../../..)
+SET(GuiDir ${NeurolabiDir}/gui)
+SET(NeurolabiLibDir ${NeurolabiDir}/c/lib)
+SET(NeutubeLibDir ${NeurolabiDir}/cpp/lib/build)
+SET(EXTLIB_DIR ${NeurolabiDir}/lib)
 
-  SET(GuiDir ${BUILDEM_DIR}/include/neurolabi/neulib_cpp)
-  SET(NeurolabiLibDir ${BUILDEM_DIR}/lib)
-  MESSAGE(${GuiDir})
+#SET(jsonLib jansson)
+set(CMAKE_PREFIX_PATH ${EXTLIB_DIR}/jansson)
+find_library(jsonLib LIBRARY NAMES jansson)
 
-  SET(ExternalSource ${GuiDir}/zpoint.cpp ${GuiDir}/zobject3darray.cpp 
-    ${GuiDir}/zobject3d.cpp
-    ${GuiDir}/zstring.cpp ${GuiDir}/zargumentprocessor.cpp
-    ${GuiDir}/zkmeansclustering.cpp ${GuiDir}/zdoublevector.cpp
-    ${GuiDir}/zrandomgenerator.cpp)
+set(CMAKE_PREFIX_PATH ${EXTLIB_DIR}/fftw3)
+find_library(fftw3Lib LIBRARY NAMES fftw3)
+find_library(fftw3fLib LIBRARY NAMES fftw3f)
+set(CMAKE_PREFIX_PATH ${EXTLIB_DIR}/xml)
+find_library(xmlLib LIBRARY NAMES xml2)
+set(CMAKE_PREFIX_PATH ${EXTLIB_DIR}/png)
+find_library(pngLib LIBRARY NAMES png)
+set(CMAKE_PREFIX_PATH ${EXTLIB_DIR}/hdf5)
+find_library(hdfLib LIBRARY NAMES hdf5)
+set(CMAKE_PREFIX_PATH ${EXTLIB_DIR}/hdf5)
+find_library(hdfLtLib LIBRARY NAMES hdf5_hl)
+set(CMAKE_PREFIX_PATH ${NeurolabiLibDir})
+find_library(neuLib LIBRARY NAMES neurolabi)
+set(CMAKE_PREFIX_PATH ${NeutubeLibDir})
+find_library(neutubeLib LIBRARY NAMES neutube)
+find_library(zLib LIBRARY NAMES z)
+find_library(dlLib LIBRARY NAMES dl)
 
-  foreach (file ${ExternalSource})
-    ADD_CUSTOM_COMMAND(OUTPUT ${file} COMMAND touch ${file})
-  endforeach(file)
+message("Json library: ${jsonLib}")
+message("fftw3 library: ${fftw3Lib}")
+message("fftw3f library: ${fftw3fLib}")
+message("xml library: ${xmlLib}")
+message("png library: ${pngLib}")
+message("hdf library: ${hdfLib}")
+message("hdflt library: ${hdfLtLib}")
+message("neurolabi library: ${neuLib}")
+message("neutube library: ${neutubeLib}")
+message("libz library: ${zLib}")
+message("dl library: ${dlLib}")
 
-  LINK_DIRECTORIES (${BUILDEM_DIR}/lib)
-  INCLUDE_DIRECTORIES(${BUILDEM_DIR}/include ${BUILDEM_DIR}/include/neurolabi
-    ${GuiDir})
+include_directories(
+  ${NeurolabiDir}/c 
+  ${NeurolabiDir}/c/include 
+  ${NeurolabiDir}/gui/ext 
+  ${NeurolabiDir}/gui 
+  ${EXTLIB_DIR}/genelib/src
+  ${EXTLIB_DIR}/xml/include/libxml2
+  ${EXTLIB_DIR}/fftw3/include
+  ${EXTLIB_DIR}/png/include
+  ${EXTLIB_DIR}/jansson/include
+  ${EXTLIB_DIR}/hdf5/include
+  )
 
-  ADD_EXECUTABLE (Tbar_apply_sa Tbar_apply_sa.cpp ${ExternalSource})
-
-
-  SET(hdf5Lib hdf5)
-  SET(hdf5LtLib hdf5_hl)
-  SET(neuLib neurolabi_min)
-
-  #FIND_LIBRARY(hdf5Lib NAMES hdf5 PATHS ${BUILDEM_DIR}/lib NO_DEFAULT_PATH)
-  #FIND_LIBRARY(hdf5LtLib NAMES hdf5_hl PATHS ${BUILDEM_DIR}/lib NO_DEFAULT_PATH)
-  #FIND_LIBRARY(neuLib NAMES neurolabi_min PATHS ${BUILDEM_DIR}/lib NO_DEFAULT_PATH)
-
-  TARGET_LINK_LIBRARIES(Tbar_apply_sa ${neuLib} ${hdf5Lib} ${hdf5LtLib})
-
-  MESSAGE(STATUS "Library path " ${CMAKE_LIBRARY_PATH} ${CMAKE_INCLUDE_PATH})
-  MESSAGE(STATUS "hdf5Lib " ${hdf5Lib})
-  MESSAGE(STATUS "hdf5LtLib " ${hdf5LtLib})
-  MESSAGE(STATUS "neuLib " ${neuLib})
-endif(BUILDEM_READY)
+add_executable(Tbar_apply_sa Tbar_apply_sa.cpp)
+TARGET_LINK_LIBRARIES(Tbar_apply_sa 
+  ${neutubeLib} ${neuLib} ${jsonLib} ${fftw3Lib} ${fftw3fLib} ${xmlLib} 
+  ${pngLib} ${hdfLib} ${hdfLtLib} ${zLib} ${dlLib} 
+  )
 
 
 
