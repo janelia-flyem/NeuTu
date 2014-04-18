@@ -291,11 +291,12 @@ ZSwcTree* ZSwcGenerator::createSwc(
 }
 
 ZSwcTree* ZSwcGenerator::createSwc(
-    const ZPointArray &pointArray, double radius)
+    const ZPointArray &pointArray, double radius, bool isConnected)
 {
   ZSwcTree *tree = new ZSwcTree;
 
   Swc_Tree_Node *root = tree->forceVirtualRoot();
+  Swc_Tree_Node *parent = root;
 
   for (ZPointArray::const_iterator iter = pointArray.begin();
        iter != pointArray.end(); ++iter) {
@@ -304,7 +305,10 @@ ZSwcTree* ZSwcGenerator::createSwc(
 
     SwcTreeNode::setPos(tn, pt.x(), pt.y(), pt.z());
     SwcTreeNode::setRadius(tn, radius);
-    SwcTreeNode::setParent(tn, root);
+    SwcTreeNode::setParent(tn, parent);
+    if (isConnected) {
+      parent = tn;
+    }
   }
 
   tree->resortId();

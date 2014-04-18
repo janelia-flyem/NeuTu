@@ -121,6 +121,10 @@
 #include "dvidimagedialog.h"
 #include "tilemanagerdialog.h"
 #include "ztiledstackframe.h"
+#include "dvid/zdvidreader.h"
+#include "flyem/zflyemdatainfo.h"
+#include "flyem/zflyemqualityanalyzer.h"
+#include "zswcgenerator.h"
 
 #include "ztest.h"
 
@@ -192,6 +196,8 @@ MainWindow::MainWindow(QWidget *parent) :
   createAutoSaveDir();
 
   m_progress = new QProgressDialog(this);
+  m_progress->setModal(true);
+  m_progress->setWindowFlags(Qt::Dialog|Qt::WindowStaysOnTopHint);
   m_progress->setCancelButton(0);
 
   m_bcDlg = new BcAdjustDialog(this);
@@ -3010,7 +3016,19 @@ void MainWindow::on_actionPixel_triggered()
 
 void MainWindow::test()
 {
-  ZTest::test(this);
+  QFuture<void> res = QtConcurrent::run(ZTest::test, this);
+
+  m_progress->setRange(0, 2);
+  m_progress->setLabelText(QString("Testing ..."));
+  int currentProgress = 0;
+  m_progress->setValue(++currentProgress);
+  m_progress->show();
+
+  res.waitForFinished();
+  //ZTest::test(this);
+
+  m_progress->reset();
+
   statusBar()->showMessage(tr("Test done."));
 }
 
@@ -4081,6 +4099,14 @@ void MainWindow::on_actionShortcut_triggered()
   }
 }
 
+ZStackFrame* MainWindow::createEmptyStackFrame(ZStackFrame *parentFrame)
+{
+  ZStackFrame *newFrame = new ZStackFrame;
+  newFrame->setParentFrame(parentFrame);
+
+  return newFrame;
+}
+
 ZStackFrame *MainWindow::createStackFrame(
     ZStack *stack, NeuTube::Document::ETag tag, ZStackFrame *parentFrame)
 {
@@ -4100,8 +4126,36 @@ ZStackFrame *MainWindow::createStackFrame(
       newFrame->document()->setStackBackground(
             parentFrame->document()->getStackBackground());
     }
-    addStackFrame(newFrame);
-    presentStackFrame(newFrame);
+    //addStackFrame(newFrame);
+    //presentStackFrame(newFrame);
+
+    return newFrame;
+  }
+
+  return NULL;
+}
+
+ZStackFrame *MainWindow::createStackFrame(
+    ZStackDoc *doc, NeuTube::Document::ETag tag, ZStackFrame *parentFrame)
+{
+  if (doc != NULL) {
+    ZStackFrame *newFrame = new ZStackFrame;
+    newFrame->setParentFrame(parentFrame);
+    //debug
+    //tic();
+
+    newFrame->consumeDocument(doc);
+
+    //debug
+    //std::cout << toc() <<std::endl;
+
+    newFrame->document()->setTag(tag);
+    if (parentFrame != NULL) {
+      newFrame->document()->setStackBackground(
+            parentFrame->document()->getStackBackground());
+    }
+    //addStackFrame(newFrame);
+    //presentStackFrame(newFrame);
 
     return newFrame;
   }
@@ -4133,7 +4187,10 @@ void MainWindow::on_actionMake_Projection_triggered()
 
       ZStack *stack = frame->document()->projectBiocytinStack(projector);
       if (stack != NULL) {
-        createStackFrame(stack, NeuTube::Document::BIOCYTIN_PROJECTION, frame);
+        ZStackFrame *newFrame =
+            createStackFrame(stack, NeuTube::Document::BIOCYTIN_PROJECTION, frame);
+        addStackFrame(newFrame);
+        presentStackFrame(newFrame);
       }
       frame->document()->setProgressReporter(oldReporter);
 
@@ -4592,7 +4649,7 @@ void MainWindow::createDvidFrame()
 
   if (!dvidBuffer->getSwcTreeArray().isEmpty()) {
     if (frame == NULL) {
-      frame = createStackFrame(NULL);
+      frame = createEmptyStackFrame();
     }
 
     foreach (ZSwcTree* tree, dvidBuffer->getSwcTreeArray()) {
@@ -4613,6 +4670,9 @@ void MainWindow::createDvidFrame()
   if (frame == NULL) {
     report("No data retrieved", "No data retrieved from DVID",
            ZMessageReporter::Warning);
+  } else {
+    addStackFrame(frame);
+    presentStackFrame(frame);
   }
 
   dvidBuffer->clear();
@@ -5051,5 +5111,172 @@ void MainWindow::on_actionIdentify_Hot_Spot_triggered()
   ZFlyEmDataFrame *frame = currentFlyEmDataFrame();
   if (frame != NULL) {
     frame->identifyHotSpot();
+  }
+}
+
+ZStackDoc *MainWindow::hotSpotDemo(
+    int bodyId, const QString &dvidAddress, const QString &dvidUuid)
+{
+  ZDvidReader reader;
+  reader.open(dvidAddress, dvidUuid);
+
+  ZSwcTree *tree = reader.readSwc(bodyId);
+  if (tree == NULL) {
+    report("Hot Spot Demo Failed", "No skeleton found.",
+           ZMessageReporter::Warning);
+    return NULL;
+  }
+
+  ZFlyEmNeuron neuron(bodyId, tree, NULL);
+
+  ZFlyEmQualityAnalyzer analyzer;
+  FlyEm::ZHotSpotArray &hotSpotArray = analyzer.computeHotSpotForSplit(neuron);
+  if (hotSpotArray.empty()) {
+    report("Hot Spot Demo Failed", "The neuron seems normal.",
+           ZMessageReporter::Warning);
+    return NULL;
+  }
+
+
+  FlyEm::ZHotSpot *hotSpot = hotSpotArray[0];
+  ZCuboid boundBox = hotSpot->toPointArray().getBoundBox();
+  boundBox.expand(10);
+
+  ZStack *stack = reader.readGrayScale(boundBox.firstCorner().x(),
+                                       boundBox.firstCorner().y(),
+                                       boundBox.firstCorner().z(),
+                                       boundBox.width() + 1,
+                                       boundBox.height() + 1,
+                                       boundBox.depth() + 1);
+
+  if (stack == NULL) {
+    if (hotSpotArray.empty()) {
+      report("Hot Spot Demo Failed", "Cannot retreive grayscale data.",
+             ZMessageReporter::Warning);
+      return NULL;
+    }
+  }
+
+  tree = ZSwcGenerator::createSwc(hotSpot->toPointArray(), 5.0, true);
+
+  ZStackDoc *doc = new ZStackDoc(stack, NULL);
+  doc->addSwcTree(tree, false);
+
+  return doc;
+
+  /*
+  ZStackFrame *frame = createStackFrame(stack);
+  frame->document()->addSwcTree(tree, false);
+
+  return frame;
+  */
+
+  //addStackFrame(frame);
+  //presentStackFrame(frame);
+}
+
+void MainWindow::on_actionHot_Spot_Demo_triggered()
+{
+  ZFlyEmDataInfo dataInfo(FlyEm::DATA_FIB25);
+  m_dvidObjectDlg->setAddress(dataInfo.getDvidAddress());
+  if (m_dvidObjectDlg->exec()) {
+    int bodyId = m_dvidObjectDlg->getBodyId()[0];
+#if 0
+    ZStackFrame *frame =
+        hotSpotDemo(bodyId, m_dvidObjectDlg->getAddress(), dataInfo.getDvidUuid());
+#else
+    QFuture<ZStackDoc*> res = QtConcurrent::run(
+          this, &MainWindow::hotSpotDemo, bodyId,
+          m_dvidObjectDlg->getAddress(), dataInfo.getDvidUuid());
+#endif
+
+    m_progress->setRange(0, 2);
+    m_progress->setLabelText(QString("Testing ..."));
+    int currentProgress = 0;
+    m_progress->setValue(++currentProgress);
+    m_progress->show();
+
+    res.waitForFinished();
+
+    ZStackDoc *doc = res.result();
+    if (doc != NULL) {
+      ZStackFrame *frame = createStackFrame(doc);
+      addStackFrame(frame);
+      presentStackFrame(frame);
+    }
+#if 0
+    ZStackFrame *frame = res.result();
+    if (frame != NULL) {
+      addStackFrame(frame);
+      presentStackFrame(frame);
+    }
+#endif
+
+    m_progress->reset();
+
+#if 0
+
+
+
+    ZDvidReader reader;
+    reader.open(m_dvidObjectDlg->getAddress(), dataInfo.getDvidUuid());
+
+    ZSwcTree *tree = reader.readSwc(bodyId);
+    if (tree == NULL) {
+      report("Hot Spot Demo Failed", "No skeleton found.",
+             ZMessageReporter::Warning);
+      return;
+    }
+
+    ZFlyEmNeuron neuron(bodyId, tree, NULL);
+
+    ZFlyEmQualityAnalyzer analyzer;
+    FlyEm::ZHotSpotArray &hotSpotArray = analyzer.computeHotSpotForSplit(neuron);
+    if (hotSpotArray.empty()) {
+      report("Hot Spot Demo Failed", "The neuron seems normal.",
+             ZMessageReporter::Warning);
+      return;
+    }
+
+
+    FlyEm::ZHotSpot *hotSpot = hotSpotArray[0];
+    ZCuboid boundBox = hotSpot->toPointArray().getBoundBox();
+    boundBox.expand(10);
+
+    ZStack *stack = reader.readGrayScale(boundBox.firstCorner().x(),
+                                         boundBox.firstCorner().y(),
+                                         boundBox.firstCorner().z(),
+                                         boundBox.width() + 1,
+                                         boundBox.height() + 1,
+                                         boundBox.depth() + 1);
+
+    if (stack == NULL) {
+      if (hotSpotArray.empty()) {
+        report("Hot Spot Demo Failed", "Cannot retreive grayscale data.",
+               ZMessageReporter::Warning);
+        return;
+      }
+    }
+
+    tree = ZSwcGenerator::createSwc(hotSpot->toPointArray(), 5.0, true);
+
+    ZStackFrame *frame = createStackFrame(stack);
+    frame->document()->addSwcTree(tree, false);
+    addStackFrame(frame);
+    presentStackFrame(frame);
+
+    //tree->translate(-boundBox.firstCorner());
+
+    /*
+
+    ZFlyEmCoordinateConverter converter;
+    converter.configure(ZFlyEmDataInfo(FlyEm::DATA_FIB25));
+
+    ZPoint corner = boundBox.firstCorner();
+    converter.convert(&corner, ZFlyEmCoordinateConverter::IMAGE_SPACE,
+                      ZFlyEmCoordinateConverter::RAVELER_SPACE);
+    std::cout << "Position: " << corner.toString() << std::endl;
+    */
+#endif
   }
 }

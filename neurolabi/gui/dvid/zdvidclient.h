@@ -27,11 +27,13 @@ class ZDvidClient : public QObject, ZProgressable
   Q_OBJECT
 
 public:
+  ZDvidClient(QObject *parent = NULL);
   ZDvidClient(const QString &server, QObject *parent = NULL);
 
   inline void setServer(const QString &server) {
     m_serverAddress = server;
   }
+
   inline const QString &getServer() {
     return m_serverAddress;
   }
@@ -39,6 +41,8 @@ public:
   inline const QString& getTmpDirectory() {
     return m_tmpDirectory;
   }
+
+  void setUuid(const QString &uuid);
 
   /*!
    * \brief Send a request to DVID
@@ -62,6 +66,7 @@ signals:
   void imageRetrieved();
   void noRequestLeft();
   void requestFailed();
+  void requestCanceled();
 
 public slots:
   void postNextRequest();
@@ -80,6 +85,7 @@ private:
 
 private:
   QString m_serverAddress; //Server address
+  QString m_uuid; //uuid of the dataset
   QString m_dataPath;
   QNetworkAccessManager *m_networkManager;
   QNetworkReply *m_networkReply;

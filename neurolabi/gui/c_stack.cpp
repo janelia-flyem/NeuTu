@@ -24,7 +24,7 @@
 
 using namespace std;
 
-void C_Stack::copyPlaneValue(Stack *stack, void *array, int slice)
+void C_Stack::copyPlaneValue(Stack *stack, const void *array, int slice)
 {
   PROCESS_ERROR(stack == NULL, "Null stack", return);
   PROCESS_ERROR(slice < 0 || slice >= C_Stack::depth(stack), "Invalid slice",
@@ -37,7 +37,7 @@ void C_Stack::copyPlaneValue(Stack *stack, void *array, int slice)
 }
 
 void C_Stack::copyPlaneValue(
-    Mc_Stack *stack, void *array, int channel, int slice)
+    Mc_Stack *stack, const void *array, int channel, int slice)
 {
   PROCESS_ERROR(stack == NULL, "Null stack", return);
   PROCESS_ERROR(slice < 0 || slice >= C_Stack::depth(stack), "Invalid slice",
@@ -832,11 +832,33 @@ void C_Stack::drawInteger(Stack *canvas, int n, int dx, int dy, int dz,
 
 Stack C_Stack::sliceView(const Stack *stack, int slice)
 {
+  TZ_ASSERT(slice >= 0 && slice < C_Stack::depth(stack), "Invalide slice");
+  Stack stackSlice = *stack;
+  stackSlice.array = array8(stack) + C_Stack::planeByteNumber(stack) * slice;
+  setDepth(&stackSlice, 1);
+
+  return stackSlice;
+}
+
+Stack C_Stack::sliceView(const Stack *stack, int startPlane, int endPlane)
+{
+  TZ_ASSERT(startPlane <= endPlane, "Invalide slice");
+  TZ_ASSERT(endPlane >= 0, "Invalide slice");
+  TZ_ASSERT(startPlane < C_Stack::depth(stack), "Invalide slice");
+
+  if (startPlane < 0) {
+    startPlane = 0;
+  }
+
+  if (endPlane >= C_Stack::depth(stack)) {
+    endPlane = C_Stack::depth(stack) - 1;
+  }
+
   Stack stackSlice = *stack;
   stackSlice.array = array8(stack) +
-      C_Stack::width(stack) * C_Stack::height(stack) * C_Stack::kind(stack) *
-      slice;
-  setDepth(&stackSlice, 1);
+      C_Stack::planeByteNumber(stack) * startPlane;
+
+  setDepth(&stackSlice, endPlane - startPlane + 1);
 
   return stackSlice;
 }

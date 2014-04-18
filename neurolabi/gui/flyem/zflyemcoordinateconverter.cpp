@@ -9,6 +9,14 @@ ZFlyEmCoordinateConverter::ZFlyEmCoordinateConverter() :
   m_voxelResolution.resize(3, 1.0);
 }
 
+void ZFlyEmCoordinateConverter::configure(const ZFlyEmDataInfo &dataInfo)
+{
+  m_stackSize = dataInfo.getStackSize();
+  m_voxelResolution = dataInfo.getVoxelResolution();
+  m_margin = dataInfo.getBlockMargin();
+  m_zStart = dataInfo.getStartCoordinates()[2];
+}
+
 void ZFlyEmCoordinateConverter::setStackSize(int xDim, int yDim, int zDim)
 {
   m_stackSize[0] = xDim;

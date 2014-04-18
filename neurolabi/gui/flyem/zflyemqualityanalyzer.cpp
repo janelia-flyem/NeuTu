@@ -439,15 +439,15 @@ FlyEm::ZHotSpotArray& ZFlyEmQualityAnalyzer::computeHotSpotForSplit(
 
                 ZSwcPath path(const_cast<Swc_Tree_Node*>(sourceNode),
                               const_cast<Swc_Tree_Node*>(targetNode));
-                FlyEm::ZCurveGeometry *guidence = new FlyEm::ZCurveGeometry();
+                FlyEm::ZCurveGeometry *guidance = new FlyEm::ZCurveGeometry();
                 for (ZSwcPath::const_iterator iter = path.begin();
                      iter != path.end(); ++iter) {
                   Swc_Tree_Node *tn = *iter;
-                  guidence->appendPoint(iround(SwcTreeNode::x(tn)),
+                  guidance->appendPoint(iround(SwcTreeNode::x(tn)),
                                         iround(SwcTreeNode::y(tn)),
                                         iround(SwcTreeNode::z(tn)));
                 }
-                hotSpot->setGuidence(guidence);
+                hotSpot->setguidance(guidance);
 
                 break;
               }
@@ -457,6 +457,8 @@ FlyEm::ZHotSpotArray& ZFlyEmQualityAnalyzer::computeHotSpotForSplit(
       }
     }
   }
+
+  m_hotSpotArray.sort();
 
   return m_hotSpotArray;
 }

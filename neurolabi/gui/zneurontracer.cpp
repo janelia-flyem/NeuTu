@@ -130,6 +130,7 @@ ZSwcTree *ZNeuronConstructor::reconstruct(
 
     Neuron_Structure_To_Tree(ns2);
 
+    tree = new ZSwcTree;
     tree->setData(Neuron_Structure_To_Swc_Tree_Circle_Z(ns2, 1.0, NULL));
     tree->resortId();
 
@@ -490,18 +491,12 @@ ZSwcTree* ZNeuronTracer::trace(Stack *stack)
   constructor.setSignal(stack);
   tree = constructor.reconstruct(chainArray);
 
-  /*
-
-  */
-
-  //misc::CleanPointerArray(locsegArray);
-
-  //Subtract skeleton mask
-
-  //If there is any skeleton signal left
-    //Trace again without position adjust
-
   //Post process
+  Swc_Tree_Remove_Zigzag(tree->data());
+  Swc_Tree_Tune_Branch(tree->data());
+  Swc_Tree_Remove_Spur(tree->data());
+  Swc_Tree_Merge_Close_Node(tree->data(), 0.01);
+  Swc_Tree_Remove_Overshoot(tree->data());
 
   //Create neuron structure
 

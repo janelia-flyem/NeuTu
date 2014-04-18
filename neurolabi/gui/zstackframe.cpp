@@ -96,6 +96,12 @@ void ZStackFrame::createView()
   m_view = new ZStackView(this);
 }
 
+void ZStackFrame::consumeDocument(ZStackDoc *doc)
+{
+  tr1::shared_ptr<ZStackDoc> docPtr(doc);
+  setDocument(docPtr);
+}
+
 void ZStackFrame::setDocument(tr1::shared_ptr<ZStackDoc> doc)
 {
   m_doc = doc;

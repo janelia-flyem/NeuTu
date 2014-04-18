@@ -304,6 +304,7 @@
        <string>DVID</string>
       </property>
       <addaction name="actionGet_Grayscale"/>
+      <addaction name="actionHot_Spot_Demo"/>
      </widget>
      <widget class="QMenu" name="menuExport_2">
       <property name="title">
@@ -1134,6 +1135,11 @@
   <action name="actionIdentify_Hot_Spot">
    <property name="text">
     <string>Identify Hot Spot</string>
+   </property>
+  </action>
+  <action name="actionHot_Spot_Demo">
+   <property name="text">
+    <string>Hot Spot Demo</string>
    </property>
   </action>
  </widget>

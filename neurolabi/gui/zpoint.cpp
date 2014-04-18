@@ -254,3 +254,7 @@ std::string ZPoint::toJsonString() const
   return stream.str();
 }
 
+ZPoint ZPoint::operator - () const
+{
+  return ZPoint(-x(), -y(), -z());
+}

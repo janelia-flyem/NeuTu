@@ -93,7 +93,7 @@ public:
   }
 
   void setGeometry(ZGeometry *geometry);
-  void setGuidence(ZGeometry *geometry);
+  void setguidance(ZGeometry *geometry);
   void setStructure(ZStructureInfo *structure);
 
   ZTextLineCompositer toLineCompositer() const;
@@ -103,14 +103,21 @@ public:
                                   const int *imageSize) const;
 
   std::string getTypeString() const;
+  ZPointArray toPointArray() const;
 
   inline ZGeometry* getGeometry() const {
     return m_geometry;
   }
 
+  inline double getConfidence() const {
+    return m_confidence;
+  }
+
+  static bool compareConfidence(const ZHotSpot *spot1, const ZHotSpot *spot2);
+
 private:
   ZGeometry *m_geometry;
-  ZGeometry *m_guidence;
+  ZGeometry *m_guidance;
   ZStructureInfo *m_structInfo;
   double m_confidence;
   EType m_type;

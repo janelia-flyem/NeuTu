@@ -321,3 +321,9 @@ double ZCuboid::computeDistance(const ZCuboid &box) const
 
   return sqrt(xDist * xDist + yDist * yDist + zDist * zDist);
 }
+
+void ZCuboid::include(const ZPoint &point) {
+  joinX(point.x());
+  joinY(point.y());
+  joinZ(point.z());
+}

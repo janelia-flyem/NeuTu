@@ -74,9 +74,16 @@ public slots:
   void updateMenu();
   void updateStatusBar();
 
+  ZStackFrame* createEmptyStackFrame(ZStackFrame *parentFrame = NULL);
+
   ZStackFrame* createStackFrame(
       ZStack *stack,NeuTube::Document::ETag tag = NeuTube::Document::NORMAL,
       ZStackFrame *parentFrame = NULL);
+
+  ZStackFrame* createStackFrame(
+      ZStackDoc *doc,NeuTube::Document::ETag tag = NeuTube::Document::NORMAL,
+      ZStackFrame *parentFrame = NULL);
+
   void showStackFrame(
       const QStringList &fileList, bool opening3DWindow = false);
   void createDvidFrame();
@@ -354,6 +361,8 @@ private slots:
 
   void on_actionIdentify_Hot_Spot_triggered();
 
+  void on_actionHot_Spot_Demo_triggered();
+
 private:
   void createActions();
   void createFileActions();
@@ -401,6 +410,9 @@ private:
   //Error handling
   void report(const std::string &title, const std::string &msg,
               ZMessageReporter::EMessageType msgType);
+
+  ZStackDoc* hotSpotDemo(int bodyId, const QString &dvidAddress,
+                           const QString &dvidUuid);
 
 private:
   QMdiArea *mdiArea;

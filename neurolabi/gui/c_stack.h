@@ -71,7 +71,7 @@ Stack* clone(const Stack *stack);
 
 //Stack* copy(const Stack *stack);
 void copyValue(const Stack *src, Stack *dst);
-void copyPlaneValue(Stack *stack, void *array, int slice);
+void copyPlaneValue(Stack *stack, const void *array, int slice);
 ///@}
 
 //Attributes of a stack
@@ -152,7 +152,24 @@ double value(const Stack *stack, int x, int y, int z, int c = 0);
 
 void setPixel(Stack *stack, int x, int y, int z, int c, double v);
 void setZero(Stack *stack);
+
+/*!
+ * \brief View a single slice
+ */
 Stack sliceView(const Stack *stack, int slice);
+
+/*!
+ * \brief View one or more slices
+ *
+ * The start plane is set to 0 if \a startPlane is negative and the end plane
+ * is set to the last plane of \a stack if it is out of range.
+ *
+ * \param stack Source stack.
+ * \param startPlane Start plane.
+ * \param endPlane End plane.
+ */
+Stack sliceView(const Stack *stack, int startPlane, int endPlane);
+
 Stack* channelExtraction(const Stack *stack, int channel);
 
 /*!
@@ -250,7 +267,7 @@ void systemKill(Mc_Stack *stack);
 
 void kill(Mc_Stack *stack);
 
-void copyPlaneValue(Mc_Stack *stack, void *array, int channel, int slice);
+void copyPlaneValue(Mc_Stack *stack, const void *array, int channel, int slice);
 void copyChannelValue(Mc_Stack *mc_stack, int chan, const Stack *stack);
 
 bool hasSameValue(Mc_Stack *stack, size_t index1, size_t index2);

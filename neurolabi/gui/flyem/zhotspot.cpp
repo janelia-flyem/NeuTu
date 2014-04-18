@@ -157,7 +157,7 @@ ZJsonObject FlyEm::ZStructureInfo::toJsonObject() const
 }
 
 FlyEm::ZHotSpot::ZHotSpot() :
-  m_geometry(NULL), m_guidence(NULL), m_structInfo(NULL),
+  m_geometry(NULL), m_guidance(NULL), m_structInfo(NULL),
   m_confidence(0), m_type(TYPE_POINT)
 {
 }
@@ -165,7 +165,7 @@ FlyEm::ZHotSpot::ZHotSpot() :
 FlyEm::ZHotSpot::~ZHotSpot()
 {
   delete m_geometry;
-  delete m_guidence;
+  delete m_guidance;
   delete m_structInfo;
 }
 
@@ -184,11 +184,11 @@ ZTextLineCompositer FlyEm::ZHotSpot::toLineCompositer() const
     compositer.appendLine("No geometrical information", 1);
   }
 
-  if (m_guidence != NULL) {
-    compositer.appendLine("Guidence: ", 1);
-    compositer.appendLine(m_guidence->toLineCompositer(), 2);
+  if (m_guidance != NULL) {
+    compositer.appendLine("guidance: ", 1);
+    compositer.appendLine(m_guidance->toLineCompositer(), 2);
   } else {
-    compositer.appendLine("No guidence", 1);
+    compositer.appendLine("No guidance", 1);
   }
 
   if (m_structInfo != NULL) {
@@ -213,13 +213,13 @@ void FlyEm::ZHotSpot::setGeometry(FlyEm::ZGeometry *geometry)
   m_geometry = geometry;
 }
 
-void FlyEm::ZHotSpot::setGuidence(ZGeometry *geometry)
+void FlyEm::ZHotSpot::setguidance(ZGeometry *geometry)
 {
-  if (m_guidence != NULL) {
-    delete m_guidence;
+  if (m_guidance != NULL) {
+    delete m_guidance;
   }
 
-  m_guidence = geometry;
+  m_guidance = geometry;
 }
 
 void FlyEm::ZHotSpot::setStructure(ZStructureInfo *structure)
@@ -256,9 +256,9 @@ ZJsonObject FlyEm::ZHotSpot::toJsonObject() const
     ZJsonObject geometryObject = m_geometry->toJsonObject();
     obj.setEntry("geometry", geometryObject);
   }
-  if (m_guidence != NULL) {
-    ZJsonObject guidenceObject = m_guidence->toJsonObject();
-    obj.setEntry("guidence", guidenceObject);
+  if (m_guidance != NULL) {
+    ZJsonObject guidanceObject = m_guidance->toJsonObject();
+    obj.setEntry("guidance", guidanceObject);
   }
   if (m_structInfo != NULL) {
     ZJsonObject structObject = m_structInfo->toJsonObject();
@@ -266,6 +266,20 @@ ZJsonObject FlyEm::ZHotSpot::toJsonObject() const
   }
 
   return obj;
+}
+
+ZPointArray FlyEm::ZHotSpot::toPointArray() const
+{
+  ZPointArray ptArray;
+  if (m_geometry != NULL) {
+    ptArray = m_geometry->toPointArray();
+  }
+
+  if (m_guidance != NULL) {
+    ptArray.append(m_guidance->toPointArray());
+  }
+
+  return ptArray;
 }
 
 ZJsonObject FlyEm::ZHotSpot::toRavelerJsonObject(
@@ -278,14 +292,7 @@ ZJsonObject FlyEm::ZHotSpot::toRavelerJsonObject(
   }
 
   if (m_geometry != NULL) {
-    ZPointArray ptArray;
-    if (m_geometry != NULL) {
-      ptArray = m_geometry->toPointArray();
-    }
-
-    if (m_guidence != NULL) {
-      ptArray.append(m_guidence->toPointArray());
-    }
+    ZPointArray ptArray = toPointArray();
 
     ZFlyEmCoordinateConverter converter;
     converter.setStackSize(imageSize[0], imageSize[1], imageSize[2]);
@@ -335,4 +342,10 @@ ZJsonObject FlyEm::ZHotSpot::toRavelerJsonObject(
   }
 
   return obj;
+}
+
+bool FlyEm::ZHotSpot::compareConfidence(
+    const ZHotSpot *spot1, const ZHotSpot *spot2)
+{
+  return spot1->getConfidence() > spot2->getConfidence();
 }

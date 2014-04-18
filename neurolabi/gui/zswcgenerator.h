@@ -18,6 +18,7 @@ public:
     OPTIMAL_SAMPLING, SPARSE_SAMPLING, REGION_SAMPLING, NO_PROCESS
   };
 
+
   static ZSwcTree* createVirtualRootSwc();
   static ZSwcTree* createCircleSwc(double cx, double cy, double cz, double r);
   static ZSwcTree* createBoxSwc(const ZCuboid &box);
@@ -30,7 +31,8 @@ public:
   static ZSwcTree* createSwc(const ZVoxelArray &voxelArray,
                              EPostProcess option = NO_PROCESS);
 
-  static ZSwcTree* createSwc(const ZPointArray &pointArray, double radius);
+  static ZSwcTree* createSwc(const ZPointArray &pointArray, double radius,
+                             bool isConnected = false);
 
 private:
   static ZSwcTree* createSwcByRegionSampling(const ZVoxelArray &voxelArray,

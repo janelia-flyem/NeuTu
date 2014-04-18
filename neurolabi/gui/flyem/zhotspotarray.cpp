@@ -112,3 +112,8 @@ bool FlyEm::ZHotSpotArray::exportRavelerBookmark(
 
   return obj.dump(filePath);
 }
+
+void FlyEm::ZHotSpotArray::sort()
+{
+  std::sort(begin(), end(), ZHotSpot::compareConfidence);
+}

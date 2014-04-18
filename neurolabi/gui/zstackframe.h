@@ -66,6 +66,7 @@ public:
   bool isReadyToSave() const;
   static inline QString defaultTraceProjectFile() { return "project.xml"; }
 
+  void consumeDocument(ZStackDoc *doc);
   void setDocument(std::tr1::shared_ptr<ZStackDoc> doc);
 
   inline virtual std::string name() { return "base"; }

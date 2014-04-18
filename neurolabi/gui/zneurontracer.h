@@ -83,6 +83,9 @@ public:
    */
   ZSwcTree* trace(Stack *stack);
 
+  //Autotrace configuration
+
+
   //Helper functions
   static double findBestTerminalBreak(
       const ZPoint &terminalCenter, double terminalRadius,

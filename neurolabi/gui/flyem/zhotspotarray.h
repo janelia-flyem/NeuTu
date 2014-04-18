@@ -26,6 +26,11 @@ public:
   bool exportRavelerBookmark(const std::string &filePath,
                              const double *resolution,
                              const int *imageSize);
+
+  /*!
+   * \brief Sort the hot spots by in the descending order of confidence.
+   */
+  void sort();
 };
 
 }

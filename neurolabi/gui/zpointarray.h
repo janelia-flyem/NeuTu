@@ -4,6 +4,7 @@
 #include <vector>
 #include <zpoint.h>
 #include <string>
+#include "zcuboid.h"
 
 class ZPointArray : public std::vector<ZPoint>
 {
@@ -25,6 +26,11 @@ public:
   void append(const ZPointArray &ptArray);
 
   std::string toJsonString() const;
+
+  /*!
+   * \brief Bounding box of the point array
+   */
+  ZCuboid getBoundBox() const;
 };
 
 #endif // ZPOINTARRAY_H

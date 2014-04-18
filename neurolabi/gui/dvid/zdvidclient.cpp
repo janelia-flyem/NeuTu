@@ -9,8 +9,8 @@
 #include "zerror.h"
 #include "zdvidbuffer.h"
 
-ZDvidClient::ZDvidClient(const QString &server, QObject *parent) :
-  QObject(parent), m_serverAddress(server), m_dataPath("api/node/240a"),
+ZDvidClient::ZDvidClient(QObject *parent) :
+  QObject(parent), m_dataPath("api/node/a75"),
   m_networkReply(NULL), m_targetDirectory("/tmp"),
   m_tmpDirectory("/tmp"), m_file(NULL),
   m_uploadStream(NULL), m_isCanceling(false)
@@ -18,6 +18,22 @@ ZDvidClient::ZDvidClient(const QString &server, QObject *parent) :
   m_networkManager = new QNetworkAccessManager(this);
   m_dvidBuffer = new ZDvidBuffer(this);
   createConnection();
+}
+
+ZDvidClient::ZDvidClient(const QString &server, QObject *parent) :
+  QObject(parent), m_serverAddress(server), m_dataPath("api/node/a75"),
+  m_networkReply(NULL), m_targetDirectory("/tmp"),
+  m_tmpDirectory("/tmp"), m_file(NULL),
+  m_uploadStream(NULL), m_isCanceling(false)
+{
+  m_networkManager = new QNetworkAccessManager(this);
+  m_dvidBuffer = new ZDvidBuffer(this);
+  createConnection();
+}
+
+void ZDvidClient::setUuid(const QString &uuid)
+{
+  m_dataPath = "api/node/" + uuid;
 }
 
 void ZDvidClient::createConnection()
@@ -52,7 +68,7 @@ bool ZDvidClient::postRequest(
   {
     QList<QVariant> parameterList = parameter.toList();
     requestUrl.setUrl(
-          QString("%1/%2/grayscale8/xy/%3_%4/%5_%6_%7").arg(m_serverAddress).
+          QString("%1/%2/grayscale8/raw/0_1/%3_%4/%5_%6_%7").arg(m_serverAddress).
           arg(m_dataPath).
           arg(parameterList[3].toInt()).arg(parameterList[4].toInt()).
         arg(parameterList[0].toInt()).arg(parameterList[1].toInt()).
@@ -346,4 +362,6 @@ void ZDvidClient::cancelRequest()
     delete m_file;
     m_file = NULL;
   }
+
+  emit requestCanceled();
 }

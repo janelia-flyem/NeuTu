@@ -383,7 +383,8 @@ HEADERS += mainwindow.h \
     zinteractionevent.h \
     flyemhotspotdialog.h \
     flyem/zflyemqualityanalyzertaskmanager.h \
-    zworkspacefactory.h
+    zworkspacefactory.h \
+    dvid/zdvidreader.h
 
 FORMS += settingdialog.ui \
     frameinfodialog.ui \
@@ -627,7 +628,8 @@ SOURCES += main.cpp \
     zinteractionevent.cpp \
     flyemhotspotdialog.cpp \
     flyem/zflyemqualityanalyzertaskmanager.cpp \
-    zworkspacefactory.cpp
+    zworkspacefactory.cpp \
+    dvid/zdvidreader.cpp
 
 OTHER_FILES += \
     extlib.pri

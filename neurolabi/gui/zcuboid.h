@@ -65,6 +65,10 @@ public:
   void joinX(double x);
   void joinY(double y);
   void joinZ(double z);
+  /*!
+   * \brief Expand the box minimally to include a point.
+   */
+  void include(const ZPoint &point);
 
   void print();
 

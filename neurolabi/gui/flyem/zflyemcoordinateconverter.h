@@ -2,6 +2,7 @@
 #define ZFLYEMCOORDINATECONVERTER_H
 
 #include <vector>
+#include "flyem/zflyemdatainfo.h"
 
 class ZPoint;
 
@@ -16,6 +17,8 @@ public:
     PHYSICAL_SPACE, /* resolution scale from image space */
     ROI_SPACE, /* Set the origin as the first corner of the ROI bound box. */
   };
+
+  void configure(const ZFlyEmDataInfo &dataInfo);
 
   void setStackSize(int xDim, int yDim, int zDim);
   void setVoxelResolution(double xRes, double yRes, double zRes);

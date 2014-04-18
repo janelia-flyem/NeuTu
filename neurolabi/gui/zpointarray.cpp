@@ -108,3 +108,18 @@ std::string ZPointArray::toJsonString() const
 
   return str;
 }
+
+ZCuboid ZPointArray::getBoundBox() const
+{
+  ZCuboid boundBox;
+  if (!empty()) {
+    const ZPoint &pt = (*this)[0];
+    boundBox.set(pt.x(), pt.y(), pt.z(), pt.x(), pt.y(), pt.z());
+  }
+
+  for (ZPointArray::const_iterator iter = begin(); iter != end(); ++iter) {
+    boundBox.include(*iter);
+  }
+
+  return boundBox;
+}
