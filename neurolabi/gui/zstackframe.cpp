@@ -54,6 +54,10 @@ ZStackFrame::ZStackFrame(QWidget *parent, bool preparingModel) :
   if (preparingModel) {
     constructFrame();
   }
+#if defined(_QT5_) && defined(Q_OS_WIN)
+  showMaximized();
+  showNormal();
+#endif
 }
 
 ZStackFrame::~ZStackFrame()
