@@ -30,6 +30,7 @@
 #include "zstring.h"
 #include "zhdf5reader.h"
 #include "zstringarray.h"
+#include "zhdf5writer.h"
 
 using namespace std;
 
@@ -1077,17 +1078,29 @@ void ZObject3dScan::save(const char *filePath) const
 
 void ZObject3dScan::save(const string &filePath) const
 {
-  FILE *fp = fopen(filePath.c_str(), "wb");
-  if (fp != NULL) {
-    int stripeNumber = (int) getStripeNumber();
-    fwrite(&stripeNumber, sizeof(int), 1, fp);
-    for (vector<ZObject3dStripe>::const_iterator iter = m_stripeArray.begin();
-         iter != m_stripeArray.end(); ++iter) {
-      iter->write(fp);
+  ZString filePath2(filePath);
+  if (filePath2.contains(":")) {
+    std::vector<std::string> strArray = filePath2.tokenize(':');
+    if (strArray.size() > 2) {
+      if (ZFileType::fileType(strArray[0]) == ZFileType::HDF5_FILE) {
+        exportHdf5(strArray[0], strArray[1]);
+      }
+    } else {
+      RECORD_WARNING(true, "Invalid path: " + filePath);
     }
-    fclose(fp);
   } else {
-    RECORD_WARNING(true, "Cannont open file " + filePath);
+    FILE *fp = fopen(filePath.c_str(), "wb");
+    if (fp != NULL) {
+      int stripeNumber = (int) getStripeNumber();
+      fwrite(&stripeNumber, sizeof(int), 1, fp);
+      for (vector<ZObject3dStripe>::const_iterator iter = m_stripeArray.begin();
+           iter != m_stripeArray.end(); ++iter) {
+        iter->write(fp);
+      }
+      fclose(fp);
+    } else {
+      RECORD_WARNING(true, "Cannont open file " + filePath);
+    }
   }
 }
 
@@ -2341,5 +2354,18 @@ bool ZObject3dScan::importHdf5(const string &filePath, const string &key)
 
   return false;
 }
+
+bool ZObject3dScan::exportHdf5(const string &filePath, const string &key) const
+{
+  ZHdf5Writer writer;
+  if (writer.open(filePath)) {
+    writer.writeIntArray(key, toIntArray());
+    writer.close();
+    return true;
+  }
+
+  return false;
+}
+
 
 ZINTERFACE_DEFINE_CLASS_NAME(ZObject3dScan)

@@ -426,6 +426,19 @@ public:
    */
   bool importHdf5(const std::string &filePath, const std::string &key);
 
+  /*!
+   * \brief Saven object to an HDF5 file.
+   *
+   * If \a filePath exists, the function will try to write the object with the
+   * appending mode; otherwise it will try to create a new HDF5 file.
+   *
+   * \param filePath HDF5 file path
+   * \param key Data path of the object
+   *
+   * \return true iff the object is saved successfully
+   */
+  bool exportHdf5(const std::string &filePath, const std::string &key) const;
+
 private:
   std::vector<ZObject3dStripe> m_stripeArray;
   /*

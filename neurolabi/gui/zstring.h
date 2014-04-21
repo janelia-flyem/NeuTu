@@ -102,6 +102,7 @@ public:
    * {"/", "home", "test", "data", "test.tif"}
    */
   std::vector<std::string> decomposePath() const;
+  static std::vector<std::string> decomposePath(const std::string &str);
 
   ZString toFileExt();
   ZString toFileName();

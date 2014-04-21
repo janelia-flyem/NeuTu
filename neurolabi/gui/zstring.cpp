@@ -539,24 +539,29 @@ vector<string> ZString::fileParts() const
 
 vector<string> ZString::decomposePath() const
 {
+  return decomposePath(*this);
+}
+
+vector<string> ZString::decomposePath(const std::string &str)
+{
   vector<string> parts;
 
   size_type currentPos = 0;
   size_type pos = 0;
 
-  while ((pos = find_first_of(FileSeparator, currentPos)) != string::npos) {
+  while ((pos = str.find_first_of(FileSeparator, currentPos)) != string::npos) {
     if (pos == 0) {
       parts.push_back("/");
     } else {
       if (pos > currentPos) {
-        parts.push_back(substr(currentPos, pos - currentPos));
+        parts.push_back(str.substr(currentPos, pos - currentPos));
       }
     }
     currentPos = pos + 1;
   }
 
-  if (currentPos < length()) {
-    parts.push_back(substr(currentPos, length() - currentPos));
+  if (currentPos < str.length()) {
+    parts.push_back(str.substr(currentPos, str.length() - currentPos));
   }
 
   return parts;

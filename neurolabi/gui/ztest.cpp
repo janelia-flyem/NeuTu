@@ -177,6 +177,7 @@
 #include "dvid/zdvidreader.h"
 #include "zneurontracer.h"
 #include "zworkspacefactory.h"
+#include "zobject3dscanarray.h"
 
 using namespace std;
 
@@ -11197,6 +11198,25 @@ void ZTest::test(MainWindow *host)
   tracer.setConnWorkspace(connWorkspace);
 
 
+  ZSwcTree *tree = tracer.trace(stack.c_stack());
+
+  tree->save(GET_DATA_DIR + "/test.swc");
+
+  delete tree;
+#endif
+
+#if 0
+  ZObject3dScan obj;
+  obj.load(GET_DATA_DIR + "/benchmark/pile.sobj");
+
+  obj.exportHdf5(GET_DATA_DIR + "/test.hf5", "/stacked/pile.sobj");
+#endif
+
+#if 0
+  ZStack stack;
+  stack.load(GET_DATA_DIR + "/system/diadem/diadem_e1.tif");
+
+  ZNeuronTracer tracer;
   ZSwcTree *tree = tracer.trace(stack.c_stack());
 
   tree->save(GET_DATA_DIR + "/test.swc");

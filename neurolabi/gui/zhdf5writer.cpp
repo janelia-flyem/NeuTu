@@ -4,6 +4,7 @@
 
 #include "tz_utilities.h"
 #include "mylib/array.h"
+#include "zstring.h"
 
 ZHdf5Writer::ZHdf5Writer() : m_file(NULL_FILE)
 {
@@ -132,6 +133,22 @@ void ZHdf5Writer::writeArray(const std::string &path, const mylib::Array *array)
     type_id = H5T_STD_I8BE;
     mem_type_id = H5T_NATIVE_INT8;
     break;
+  }
+
+  std::vector<std::string> pathArray = ZString::decomposePath(path);
+  if (pathArray.size() > 1) {
+    size_t startIndex = 0;
+    if (pathArray[0] == "/") {
+      ++startIndex;
+    }
+    if (startIndex < pathArray.size() - 1) {
+      std::string group = pathArray[startIndex];
+      createGroup(group);
+      for (size_t i = startIndex + 1; i < pathArray.size() - 1; ++i) {
+        group = group + "/" + pathArray[i];
+        createGroup(group);
+      }
+    }
   }
 
   hid_t dataSpace = H5Screate_simple(array->ndims, dims, NULL);

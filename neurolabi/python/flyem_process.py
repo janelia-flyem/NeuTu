@@ -3,6 +3,18 @@ import sys
 import json
 import subprocess
 import uuid
+import h5py
+
+def get_body_list(source):
+    bodyFileList = None
+    if os.path.isdir(source):
+        bodyFileList = glob.glob(os.path.join(source, '*.sobj'))
+    else:
+        f = h5py.File(source)
+        bodyFileList = f['/stacked'].keys()
+
+    return bodyFileList
+
 
 configFile = open('config.json')
 if not configFile:
@@ -110,7 +122,6 @@ for bodyRange in bodySizeList:
     outputDir = str(bodyRange[0]) + '_'
     if bodyRange[1] >= bodyRange[0]:
         outputDir += str(bodyRange[1])
-
     
     print outputDir
     bodyDirList.append(outputDir)
@@ -144,10 +155,12 @@ print bodyDirList
 
 for bodyDir in bodyDirList:
     print 'Building body list for ', bodyDir
-    distr.setBodyDir(os.path.abspath(os.path.join(bodyDir, 'stacked')))
+    targetContainer = 'stacked'
+    distr.setBodyDir(os.path.abspath(os.path.join(bodyDir, targetContainer)))
     swcDir = os.path.join(bodyDir, 'len' + str(distr.getMinLength()) + '/swc')
     distr.setSwcDir(os.path.abspath(swcDir))
-    bodyFileList = glob.glob(os.path.join(bodyDir, 'stacked/*.sobj'))
+    #bodyFileList = glob.glob(os.path.join(bodyDir, 'stacked/*.sobj'))
+    bodyFileList = get_body_list(os.path.join(bodyDir, targetContainer))
     bodySizeFile = os.path.abspath(os.path.join(bodyDir, 'bodysize.txt'))
     print ' ', len(bodyFileList), ' bodies found.'
     bodyList = []

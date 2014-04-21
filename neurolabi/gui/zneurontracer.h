@@ -80,6 +80,8 @@ public:
 
   /*!
    * \brief Auto trace
+   *
+   * It will also create workspaces automatically if necessary.
    */
   ZSwcTree* trace(Stack *stack);
 
