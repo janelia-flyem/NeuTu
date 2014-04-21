@@ -125,6 +125,7 @@
 #include "flyem/zflyemdatainfo.h"
 #include "flyem/zflyemqualityanalyzer.h"
 #include "zswcgenerator.h"
+#include <QtConcurrent>
 
 #include "ztest.h"
 
