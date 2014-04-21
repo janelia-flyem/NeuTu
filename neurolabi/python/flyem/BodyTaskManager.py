@@ -18,8 +18,10 @@ class ExtractBodyTaskManager:
         self.minSize = 0;
         self.maxSize = -1;
         self.overwriteLevel = 1
-        self.zOffset = 0
+        #self.zOffset = 0
+        self.zRange = None
         self.bodyMapDir = ''
+        self.targetContainer = 'stacked'
         self.output = ''
         self.bodysizeFile = ''
         self.jobNumber = 5
@@ -35,8 +37,8 @@ class ExtractBodyTaskManager:
     def setOverwriteLevel(self, level):
         self.overwriteLevel = level;
         
-    def setZOffset(self, offset):
-        self.zOffset = offset;
+    #def setZOffset(self, offset):
+    #    self.zOffset = offset;
     
     def setJobNumber(self, n):
         self.jobNumber = n;
@@ -46,6 +48,9 @@ class ExtractBodyTaskManager:
         
     def setBodyMapDir(self, inputBodyMap):
         self.bodyMapDir = inputBodyMap
+
+    def setTargetContainer(self, container):
+        self.targetContainer = container;
         
     def setBodySizeFile(self, filePath):
         self.bodysizeFile = filePath
@@ -55,16 +60,24 @@ class ExtractBodyTaskManager:
 
     def setSkipFileFlag(self, flag):
         self.skipFileFlag = flag
+
+    def setZRange(self, z0, z1):
+        self.zRange = [z0, z1]
         
     def getFullCommand(self):
-        command = self.commandPath + ' ' + self.bodyMapDir + ' -o ' + self.output + \
-            ' --sobj ' + ' --minsize ' + str(self.minSize);
+        command = self.commandPath + ' ' + self.bodyMapDir + \
+                ' -o ' + self.output + \
+                ' --sobj' + ' --minsize ' + str(self.minSize);
         if self.maxSize >= self.minSize:
             command += ' --maxsize ' + str(self.maxSize)
         command += ' --overwrite_level ' + str(self.overwriteLevel);
         if self.bodysizeFile:
             command += ' --bodysize_file ' + self.bodysizeFile
-        command += ' --z_offset ' + str(self.zOffset)
+        #command += ' --z_offset ' + str(self.zOffset)
+        if self.zRange:
+            command += ' --range ' + str(self.zRange[0]) + ' ' + \
+                    str(self.zRange[1])
+        command += ' --stacked_dir ' + self.targetContainer
         
         return command;
         

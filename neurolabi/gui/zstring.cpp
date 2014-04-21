@@ -172,7 +172,7 @@ std::vector<std::string> ZString::tokenize(char c)
       wordArray.push_back(
             substr(tokenPos[i] + 1, tokenPos[i + 1] - tokenPos[i] - 1));
     }
-    wordArray.push_back(substr(tokenPos.back()));
+    wordArray.push_back(substr(tokenPos.back() + 1));
   }
 
   return wordArray;

@@ -175,9 +175,6 @@
 #include "zstackskeletonizer.h"
 #include "flyem/zflyemcoordinateconverter.h"
 #include "dvid/zdvidreader.h"
-#include "zneurontracer.h"
-#include "zworkspacefactory.h"
-#include "zobject3dscanarray.h"
 
 using namespace std;
 
@@ -11118,109 +11115,35 @@ void ZTest::test(MainWindow *host)
 
 #if 0
   ZDvidReader reader;
-  reader.open("http://emdata1.int.janelia.org:7000", "a75");
-  //ZObject3dScan obj = reader.readBody(117);
-
-  //obj.save(GET_DATA_DIR + "/test.sobj");
-
   ZSwcTree *tree = reader.readSwc(117);
-  if (tree != NULL) {
-    tree->save(GET_DATA_DIR + "/test.swc");
-  }
-#endif
 
-#if 0
-  ZDvidReader reader;
-  reader.open("http://emdata1.int.janelia.org:7000", "a75");
-  ZStack *stack = reader.readGreyScale(500, 500, 3000, 1024, 1024, 10);
-  if (stack != NULL) {
-    stack->save(GET_DATA_DIR + "/test.tif");
-  } else {
-    std::cout << "Null stack" << std::endl;
-  }
-#endif
+  ZSwcPruner pruner;
+  pruner.setMinLength(1000.0);
 
-#if 0
-  int bodyId = 117;
-  ZDvidReader reader;
-  reader.open("http://emdata1.int.janelia.org:7000", "a75");
+  pruner.prune(tree);
 
-  ZSwcTree *tree = reader.readSwc(bodyId);
+  ZFlyEmNeuron neuron(117, tree, NULL);
 
-  ZFlyEmNeuron neuron(bodyId, tree, NULL);
+  FlyEm::ZIntCuboidArray blockArray;
+  blockArray.loadSubstackList(dataPath + "/flyem/FIB/block_13layer.txt");
+  ZFlyEmQualityAnalyzer::SubstackRegionCalbration calbr;
+  calbr.setBounding(true, true, false);
+  calbr.setMargin(10, 10, 0);
 
   ZFlyEmQualityAnalyzer analyzer;
-  FlyEm::ZHotSpotArray &hotSpotArray = analyzer.computeHotSpotForSplit(neuron);
-  hotSpotArray.print();
+  analyzer.setSubstackRegion(blockArray, calbr);
 
-  FlyEm::ZHotSpot *hotSpot = hotSpotArray[0];
-  ZCuboid boundBox = hotSpot->toPointArray().getBoundBox();
-  boundBox.print();
+  ZSwcTreeNodeArray nodeArray =
+      tree->getSwcTreeNodeArray(ZSwcTree::TERMINAL_ITERATOR);
 
-  ZStack *stack = reader.readGrayScale(boundBox.firstCorner().x(),
-                                       boundBox.firstCorner().y(),
-                                       boundBox.firstCorner().z(),
-                                       boundBox.width() + 1,
-                                       boundBox.height() + 1,
-                                       boundBox.depth() + 1);
-  if (stack != NULL) {
-    stack->save(GET_DATA_DIR + "/test.tif");
-  } else {
-    std::cout << "Null stack" << std::endl;
+  for (ZSwcTreeNodeArray::const_iterator iter = nodeArray.begin();
+       iter != nodeArray.end(); ++iter) {
+    ZPoint center = SwcTreeNode::pos(*iter);
+    double margin = 100;
+    dvidClient->
   }
 
-  tree = ZSwcGenerator::createSwc(hotSpot->toPointArray(), 5.0, true);
-  tree->translate(-boundBox.firstCorner());
-  tree->save(GET_DATA_DIR + "/test.swc");
-
-
-  ZFlyEmCoordinateConverter converter;
-  converter.configure(ZFlyEmDataInfo(FlyEm::DATA_FIB25));
-
-  ZPoint corner = boundBox.firstCorner();
-  converter.convert(&corner, ZFlyEmCoordinateConverter::IMAGE_SPACE,
-                    ZFlyEmCoordinateConverter::RAVELER_SPACE);
-  std::cout << "Position: " << corner.toString() << std::endl;
-
+  analyzer.computeHotSpotForMerge(neuron, neighborNeuronArray);
 #endif
 
-#if 1
-  ZStack stack;
-  stack.load(GET_DATA_DIR + "/system/diadem/diadem_e4.tif");
-
-  ZWorkspaceFactory wf;
-  Trace_Workspace *traceWorkspace = wf.createTraceWorkspace(stack.c_stack());
-  Connection_Test_Workspace *connWorkspace = wf.createConnectionTestWorkspace();
-
-  ZNeuronTracer tracer;
-
-  tracer.setTraceWorkspace(traceWorkspace);
-  tracer.setConnWorkspace(connWorkspace);
-
-
-  ZSwcTree *tree = tracer.trace(stack.c_stack());
-
-  tree->save(GET_DATA_DIR + "/test.swc");
-
-  delete tree;
-#endif
-
-#if 0
-  ZObject3dScan obj;
-  obj.load(GET_DATA_DIR + "/benchmark/pile.sobj");
-
-  obj.exportHdf5(GET_DATA_DIR + "/test.hf5", "/stacked/pile.sobj");
-#endif
-
-#if 0
-  ZStack stack;
-  stack.load(GET_DATA_DIR + "/system/diadem/diadem_e1.tif");
-
-  ZNeuronTracer tracer;
-  ZSwcTree *tree = tracer.trace(stack.c_stack());
-
-  tree->save(GET_DATA_DIR + "/test.swc");
-
-  delete tree;
-#endif
 }

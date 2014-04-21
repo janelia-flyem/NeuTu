@@ -15,6 +15,7 @@ class SkeletonizeTaskDistributor:
         self.jobNumber = 5;
         self.usingCluster = False;
         self.args = '--sobj --minsize 0'
+        self.targetContainer = 'stacked'
         
     def setCommandPath(self, path):
         self.commandPath = path;
@@ -30,6 +31,9 @@ class SkeletonizeTaskDistributor:
     
     def setJobNumber(self, n):
         self.jobNumber = n;
+
+    def setTargetContainer(self, container):
+        self.targetContainer = container
 
     def setArgs(self, args):
         self.args = args;

@@ -11,7 +11,7 @@ def get_body_list(source):
         bodyFileList = glob.glob(os.path.join(source, '*.sobj'))
     else:
         f = h5py.File(source)
-        bodyFileList = f['/stacked'].keys()
+        bodyFileList = f['/'].keys()
 
     return bodyFileList
 
@@ -109,12 +109,19 @@ sys.path.append(neutubePythonPath)
 sys.path.append(os.path.join(neutubePythonPath, 'flyem'))
 import neututils
 import BodyTaskManager
+    
+targetContainer = 'stacked.hf5'
 taskManager = BodyTaskManager.ExtractBodyTaskManager()
 taskManager.setBodyMapDir(os.path.abspath('body_maps'))
 taskManager.setCommandPath(os.path.join(neutubeDir, 'neurolabi/cpp/map_body-build-desktop-Qt_4_8_2_in_PATH__System__Debug/map_body'))
+taskManager.setTargetContainer(targetContainer)
 
-if config.has_key('z_offset'):
-    taskManager.setZOffset(config['z_offset'])
+if config.has_key('z_range'):
+    zRange = config['z_range']
+    taskManager.setZRange(zRange[0], zRange[1])
+
+#if config.has_key('z_offset'):
+#    taskManager.setZOffset(config['z_offset'])
 
 bodyDirList = []
 for bodyRange in bodySizeList:
@@ -155,7 +162,6 @@ print bodyDirList
 
 for bodyDir in bodyDirList:
     print 'Building body list for ', bodyDir
-    targetContainer = 'stacked'
     distr.setBodyDir(os.path.abspath(os.path.join(bodyDir, targetContainer)))
     swcDir = os.path.join(bodyDir, 'len' + str(distr.getMinLength()) + '/swc')
     distr.setSwcDir(os.path.abspath(swcDir))
@@ -193,11 +199,11 @@ for bodyDir in bodyDirList:
         nextDepList.append(os.path.abspath(subscript) + '.done')
 
     #Generate skeleton
-    commandList = []
-    scriptDir = os.path.dirname(runScript)
-    commandList.append('cd ' + scriptDir)
-    commandList.append('sh ' + runScript)
-    scheduler.submit(commandList, dependency = [os.path.abspath(os.path.join(bodyDir, 'bodysize.txt'))])
+    #commandList = []
+    #scriptDir = os.path.dirname(runScript)
+    #commandList.append('cd ' + scriptDir)
+    #commandList.append('sh ' + runScript)
+    #scheduler.submit(commandList, dependency = [os.path.abspath(os.path.join(bodyDir, 'bodysize.txt'))])
 
     #Create data bundle
     commandList = []
