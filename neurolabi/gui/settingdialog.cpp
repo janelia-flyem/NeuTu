@@ -63,6 +63,8 @@ void SettingDialog::resetWidgetValue()
 
   spComboBox->setCurrentIndex(m_reconstructEffort);
 
+  backgroundComboBox->setCurrentIndex(0);
+
   updateOverview();
 }
 
@@ -211,5 +213,25 @@ void SettingDialog::setUnit(char unit)
     m_unit = 0;
   } else {
     m_unit = 1;
+  }
+}
+
+NeuTube::EImageBackground SettingDialog::getBackground() const
+{
+  if (backgroundComboBox->currentIndex() == 0) {
+    return NeuTube::IMAGE_BACKGROUND_DARK;
+  }
+
+  return NeuTube::IMAGE_BACKGROUND_BRIGHT;
+}
+
+void SettingDialog::setBackground(NeuTube::EImageBackground bg)
+{
+  switch (bg) {
+  case NeuTube::IMAGE_BACKGROUND_DARK:
+    backgroundComboBox->setCurrentIndex(0);
+    break;
+  case NeuTube::IMAGE_BACKGROUND_BRIGHT:
+    backgroundComboBox->setCurrentIndex(1);
   }
 }

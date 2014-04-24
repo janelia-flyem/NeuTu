@@ -418,7 +418,7 @@ public:
 
   void translate(const ZPoint& offset);
   void translate(double x, double y, double z);
-  void scale(double x, double y, double z);
+  void scale(double sx, double sy, double sz);
   //Rotate swc tree around a point
   void rotate(double theta, double psi, const ZPoint& center);
 

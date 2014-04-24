@@ -256,6 +256,7 @@
       <addaction name="actionDvid_Object"/>
       <addaction name="actionVolume_field"/>
       <addaction name="actionThumbnails_2"/>
+      <addaction name="actionHDF5_Body"/>
      </widget>
      <widget class="QMenu" name="menuQuality_Control">
       <property name="title">
@@ -1140,6 +1141,11 @@
   <action name="actionHot_Spot_Demo">
    <property name="text">
     <string>Hot Spot Demo</string>
+   </property>
+  </action>
+  <action name="actionHDF5_Body">
+   <property name="text">
+    <string>HDF5 Body</string>
    </property>
   </action>
  </widget>

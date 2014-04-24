@@ -551,7 +551,7 @@ ZFlyEmQualityAnalyzer::computeHotSpot(const ZFlyEmNeuron &neuron,
 
   ZSwcDeepAngleMetric metric;
   metric.setLevel(3);
-  metric.setMinDist(100.0);
+  metric.setMinDist(30.0);
   /*
   ZFlyEmDataBundle dataBundle;
   dataBundle.loadJsonFile(GET_TEST_DATA_DIR + "/flyem/FIB/data_release/bundle5/data_bundle.json");
@@ -559,9 +559,13 @@ ZFlyEmQualityAnalyzer::computeHotSpot(const ZFlyEmNeuron &neuron,
   */
   for (size_t i = 0; i < neuronArray.size(); ++i) {
     const ZFlyEmNeuron &buddyNeuron = neuronArray[i];
-    if (neuron.getId() != buddyNeuron.getId()) {
+    if (neuron.getId() != buddyNeuron.getId() && buddyNeuron.getId() >= 0) {
       double dist =
-          metric.measureDistance(neuron.getModel(), buddyNeuron.getModel());
+          metric.measureDistance(
+            neuron.getUnscaledModel(), buddyNeuron.getUnscaledModel());
+#ifdef _DEBUG_
+      std::cout << "Distance: " << dist << std::endl;
+#endif
       if (dist < 1.0) {
         const Swc_Tree_Node *tn = metric.getFirstNode();
         FlyEm::ZHotSpot *hotSpot = new FlyEm::ZHotSpot;
@@ -578,6 +582,8 @@ ZFlyEmQualityAnalyzer::computeHotSpot(const ZFlyEmNeuron &neuron,
       }
     }
   }
+
+  m_hotSpotArray.sort();
 
   return m_hotSpotArray;
 }

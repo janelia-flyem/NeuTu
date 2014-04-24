@@ -163,16 +163,18 @@ std::vector<std::string> ZString::tokenize(char c)
       } else {
         wordArray.push_back(substr(0, tokenPos[0]));
       }
-    }
 
-    for (size_t i = 0; i < tokenPos.size() - 1; ++i) {
-#ifdef _DEBUG_2
-      cout << substr(tokenPos[i] + 1, tokenPos[i + 1] - tokenPos[i] - 1) << endl;
-#endif
-      wordArray.push_back(
-            substr(tokenPos[i] + 1, tokenPos[i + 1] - tokenPos[i] - 1));
+      for (size_t i = 0; i < tokenPos.size() - 1; ++i) {
+  #ifdef _DEBUG_2
+        cout << substr(tokenPos[i] + 1, tokenPos[i + 1] - tokenPos[i] - 1) << endl;
+  #endif
+        wordArray.push_back(
+              substr(tokenPos[i] + 1, tokenPos[i + 1] - tokenPos[i] - 1));
+      }
+      wordArray.push_back(substr(tokenPos.back() + 1));
+    } else {
+      wordArray.push_back(*this);
     }
-    wordArray.push_back(substr(tokenPos.back() + 1));
   }
 
   return wordArray;
@@ -627,4 +629,12 @@ string ZString::firstQuotedWord()
   }
 
   return word;
+}
+
+std::string ZString::num2str(int n)
+{
+  std::ostringstream stream;
+  stream << n;
+
+  return stream.str();
 }

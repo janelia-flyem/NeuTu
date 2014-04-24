@@ -7,6 +7,7 @@
 #include "tz_stack_bwmorph.h"
 #include "tz_stack_math.h"
 #include "flyem/zflyemqualityanalyzer.h"
+#include "zfiletype.h"
 
 using namespace std;
 
@@ -323,18 +324,23 @@ bool misc::exportPointList(
   return false;
 }
 
-std::string misc::num2str(int n)
-{
-  std::ostringstream stream;
-  stream << n;
-
-  return stream.str();
-}
-
 double misc::computeConfidence(double v, double median, double p95)
 {
   double alpha = median;
   double beta = -(p95 - median) / 2.9444;
 
   return 1.0 / (1.0 + exp((v - alpha)/beta));
+}
+
+std::vector<std::string> misc::parseHdf5Path(const string &path)
+{
+  std::vector<std::string> tokens = ZString(path).tokenize(':');
+  std::vector<std::string> pathArray;
+  if (tokens.size() > 0) {
+    if (ZFileType::fileType(tokens[0]) == ZFileType::HDF5_FILE) {
+      pathArray = tokens;
+    }
+  }
+
+  return pathArray;
 }

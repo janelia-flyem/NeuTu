@@ -40,6 +40,8 @@ class ResolutionDialog;
 class DvidImageDialog;
 class TileManagerDialog;
 class ZTiledStackFrame;
+class FlyEmBodyIdDialog;
+class FlyEmHotSpotDialog;
 
 namespace Ui {
     class MainWindow;
@@ -64,6 +66,7 @@ public: /* frame operation */
 
 signals:
   void dvidRequestCanceled();
+  void progressDone();
 
 public slots:
   void addStackFrame(ZStackFrame *frame, bool isReady = true);
@@ -363,6 +366,8 @@ private slots:
 
   void on_actionHot_Spot_Demo_triggered();
 
+  void on_actionHDF5_Body_triggered();
+
 private:
   void createActions();
   void createFileActions();
@@ -413,6 +418,16 @@ private:
 
   ZStackDoc* hotSpotDemo(int bodyId, const QString &dvidAddress,
                            const QString &dvidUuid);
+  /*!
+   * \brief Hotspot demo for false split
+   */
+  ZStackDoc* hotSpotDemoFs(int bodyId, const QString &dvidAddress,
+                           const QString &dvidUuid);
+
+  ZStackDoc* importHdf5Body(int bodyId, const QString &hdf5Path);
+  ZStackDoc* importHdf5BodyM(const std::vector<int> &bodyIdArray,
+                             const QString &hdf5Path,
+                             const std::vector<int> &downsampleInterval);
 
 private:
   QMdiArea *mdiArea;
@@ -550,6 +565,9 @@ private:
   DvidObjectDialog *m_dvidObjectDlg;
   DvidImageDialog *m_dvidImageDlg;
   TileManagerDialog *m_tileDlg;
+  FlyEmBodyIdDialog *m_bodyDlg;
+  FlyEmHotSpotDialog *m_hotSpotDlg;
+
   //FlyEmNeuronThumbnailDialog *m_thumbnailDlg;
 };
 

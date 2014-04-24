@@ -2216,7 +2216,7 @@ void ZFlyEmDataFrame::identifyHotSpot()
 {
   if (initTaskManager(m_qualityManager)) {
     if (m_hotSpotDlg->exec()) {
-      int id = m_hotSpotDlg->getId();
+      int id = m_hotSpotDlg->getBodyId();
       identifyHotSpot(id);
     }
   }

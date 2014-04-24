@@ -17,6 +17,7 @@
 #include <memory>
 #endif
 #include <string>
+#include <set>
 #include "zopencv_header.h"
 
 #include "neutube.h"
@@ -175,6 +176,8 @@
 #include "zstackskeletonizer.h"
 #include "flyem/zflyemcoordinateconverter.h"
 #include "dvid/zdvidreader.h"
+#include "dvid/zdvidinfo.h"
+#include "zstringarray.h"
 
 using namespace std;
 
@@ -11115,14 +11118,38 @@ void ZTest::test(MainWindow *host)
 
 #if 0
   ZDvidReader reader;
-  ZSwcTree *tree = reader.readSwc(117);
 
+  ZFlyEmDataInfo eminfo(FlyEm::DATA_FIB25);
+  reader.open(eminfo.getDvidAddress().c_str(), "91a", 9000);
+
+  std::vector<int> bodyId = reader.readBodyId(1000, 1000, 4500, 100, 100, 100);
+
+  for (size_t i = 0; i < bodyId.size(); ++i) {
+    std::cout << bodyId[i] << " ";
+  }
+  std::cout << std::endl;
+#endif
+
+#if 0
+  ZDvidReader reader;
+  ZFlyEmDataInfo eminfo(FlyEm::DATA_FIB25);
+  reader.open(eminfo.getDvidAddress().c_str(), "91a", 9000);
+
+  int sourceBodyId = 265246;
+  ZSwcTree *tree = reader.readSwc(sourceBodyId);
+#endif
+
+#if 1
+  ZDvidReader reader;
+
+  ZFlyEmDataInfo eminfo(FlyEm::DATA_FIB25);
+  reader.open(eminfo.getDvidAddress().c_str(), "91a", 9000);
+
+  /*
   ZSwcPruner pruner;
   pruner.setMinLength(1000.0);
-
   pruner.prune(tree);
-
-  ZFlyEmNeuron neuron(117, tree, NULL);
+  */
 
   FlyEm::ZIntCuboidArray blockArray;
   blockArray.loadSubstackList(dataPath + "/flyem/FIB/block_13layer.txt");
@@ -11133,17 +11160,150 @@ void ZTest::test(MainWindow *host)
   ZFlyEmQualityAnalyzer analyzer;
   analyzer.setSubstackRegion(blockArray, calbr);
 
-  ZSwcTreeNodeArray nodeArray =
-      tree->getSwcTreeNodeArray(ZSwcTree::TERMINAL_ITERATOR);
+  ZDvidInfo dvidInfo;
+  QString info = reader.readInfo("superpixels");
+  dvidInfo.setFromJsonString(info.toStdString());
 
+  int sourceBodyId = 117;
+  ZSwcTree *tree = reader.readSwc(sourceBodyId);
+  ZSwcTree *unscaledTree = tree->clone();
+  tree->scale(dvidInfo.getVoxelResolution()[0],
+      dvidInfo.getVoxelResolution()[1], dvidInfo.getVoxelResolution()[2]);
+  ZFlyEmNeuron neuron(sourceBodyId, tree, NULL);
+  neuron.setUnscaledModel(unscaledTree);
+
+  ZSwcTreeNodeArray nodeArray =
+      unscaledTree->getSwcTreeNodeArray(ZSwcTree::TERMINAL_ITERATOR);
+
+  double margin = 50;
+
+  std::set<int> bodySet;
   for (ZSwcTreeNodeArray::const_iterator iter = nodeArray.begin();
        iter != nodeArray.end(); ++iter) {
     ZPoint center = SwcTreeNode::pos(*iter);
-    double margin = 100;
-    dvidClient->
+    std::vector<int> bodyId = reader.readBodyId(
+          center.x(), center.y(), center.z(),
+          margin, margin, margin);
+    std::cout << bodyId.size() << " neighbor bodies" << std::endl;
+    bodySet.insert(bodyId.begin(), bodyId.end());
   }
 
-  analyzer.computeHotSpotForMerge(neuron, neighborNeuronArray);
+  std::cout << "Retrieving " << bodySet.size() << " neurons ..." << std::endl;
+
+
+  std::vector<ZFlyEmNeuron> neuronArray(bodySet.size());
+  size_t index = 0;
+  int neuronRetrievalCount = 0;
+  for (std::set<int>::const_iterator iter = bodySet.begin();
+       iter != bodySet.end(); ++iter, ++index) {
+    int bodyId = *iter;
+    ZSwcTree *tree = reader.readSwc(bodyId);
+    ZFlyEmNeuron &neuron = neuronArray[index];
+    if (tree != NULL) {
+      neuron.setId(bodyId);
+      neuron.setUnscaledModel(tree);
+      ZSwcTree *tree2 = tree->clone();
+      tree2->scale(dvidInfo.getVoxelResolution()[0],
+          dvidInfo.getVoxelResolution()[1], dvidInfo.getVoxelResolution()[2]);
+      neuron.setModel(tree2);
+      ++neuronRetrievalCount;
+    } else {
+      neuron.setId(-1);
+    }
+  }
+
+  std::cout << neuronRetrievalCount << " neurons retrieved." << std::endl;
+
+  std::cout << "Computing hot spots ..." << std::endl;
+  FlyEm::ZHotSpotArray &hotSpotArray =
+      analyzer.computeHotSpot(neuron, neuronArray);
+  hotSpotArray.print();
 #endif
 
+#if 0
+  ZFlyEmDataInfo eminfo(FlyEm::DATA_FIB25);
+  ZDvidReader reader;
+  reader.open(eminfo.getDvidAddress().c_str(), "91a", 9000);
+  QString info = reader.readInfo("superpixels");
+
+  qDebug() << info;
+
+  ZJsonObject obj;
+  obj.decode(info.toStdString());
+
+  obj.print();
+
+  ZDvidInfo dvidInfo;
+  dvidInfo.setFromJsonString(info.toStdString());
+  dvidInfo.print();
+#endif
+
+#if 0
+  ZFlyEmNeuronArray neuronArray;
+  neuronArray.importBodyDir(
+        GET_TEST_DATA_DIR +
+        "/flyem/FIB/skeletonization/session33/100000_/stacked.hf5");
+  std::cout << neuronArray.size() << " neurons." << std::endl;
+
+  FlyEm::ZSynapseAnnotationArray synapseArray;
+  synapseArray.loadJson(
+        GET_TEST_DATA_DIR +
+        "/flyem/FIB/skeletonization/session33/annotations-synapse.json");
+
+  FlyEm::ZIntCuboidArray blockArray;
+  blockArray.loadSubstackList(GET_DATA_DIR + "/flyem/FIB/block_13layer.txt");
+  ZFlyEmQualityAnalyzer::SubstackRegionCalbration calbr;
+  calbr.setBounding(true, true, false);
+  calbr.setMargin(10, 10, 0);
+  ZFlyEmQualityAnalyzer analyzer;
+  analyzer.setSubstackRegion(blockArray, calbr);
+
+  std::vector<int> allSynapseCount = synapseArray.countSynapse();
+
+  ZFlyEmNeuronArray selectedNeuronArray;
+  for (ZFlyEmNeuronArray::iterator iter = neuronArray.begin();
+       iter != neuronArray.end(); ++iter) {
+    ZFlyEmNeuron &neuron = *iter;
+    if ((size_t) neuron.getId() < allSynapseCount.size()) {
+      if (allSynapseCount[neuron.getId()] > 0) {
+        if (analyzer.touchingSideBoundary(*neuron.getBody())) {
+          selectedNeuronArray.push_back(neuron);
+        }
+        neuron.deprecate(ZFlyEmNeuron::BODY);
+      }
+    }
+  }
+
+  ZFlyEmNeuronExporter exporter;
+  exporter.exportIdVolume(selectedNeuronArray, GET_TEST_DATA_DIR + "/test2.json");
+#endif
+
+#if 0
+  ZHdf5Reader reader;
+  reader.open(GET_DATA_DIR + "/flyem/FIB/skeletonization/session33/100000_/stacked.hf5");
+
+  std::vector<std::string> nameArray = reader.getAllDatasetName("/");
+  std::cout << nameArray.size() << std::endl;
+  for (std::vector<std::string>::const_iterator iter = nameArray.begin();
+       iter != nameArray.end(); ++iter) {
+    std::cout << *iter << std::endl;
+  }
+#endif
+
+#if 0
+  std::vector<std::string> pathArray =
+      misc::parseHdf5Path(GET_DATA_DIR +
+                          "/flyem/FIB/skeletonization/session33/100000_/stacked.hf5");
+  ZStringArray::print(pathArray);
+#endif
+
+#if 0
+  ZFlyEmNeuronArray neuronArray;
+  neuronArray.importBodyDir(
+        GET_TEST_DATA_DIR +
+        "/flyem/FIB/skeletonization/session33/100000_/stacked.hf5");
+  std::cout << neuronArray.size() << " neurons." << std::endl;
+
+
+#endif
 }

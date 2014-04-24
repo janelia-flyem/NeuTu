@@ -44,6 +44,17 @@ public:
   std::vector<int> toIntegerArray() const;
 
   ZJsonArray& operator << (double e);
+
+  /*!
+   * \brief Decode a string.
+   *
+   * The object will be cleared first no matter whether the decoding
+   * succeeds or not.
+   *
+   * \param str Source string.
+   * \return true iff the decoding succeeds.
+   */
+  bool decode(const std::string &str);
 };
 
 #endif // ZJSONARRAY_H

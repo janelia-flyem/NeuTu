@@ -24,3 +24,26 @@ void ZDvidRequest::setGetImageRequest(int x0, int y0, int z0, int width, int hei
   parameter << x0 << y0 << z0 << width << height;
   m_parameter = parameter;
 }
+
+void ZDvidRequest::setGetInfoRequest(const QString &dataType)
+{
+  if (dataType == "superpixels") {
+    m_requestType = ZDvidRequest::DVID_GET_SUPERPIXEL_INFO;
+  } else {
+    m_requestType = ZDvidRequest::DVID_NULL_REQUEST;
+  }
+}
+
+void ZDvidRequest::setGetStringRequest(const QString &dataType)
+{
+  if (dataType == "sp2body") {
+    m_requestType = ZDvidRequest::DVID_GET_SP2BODY_STRING;
+  } else {
+    m_requestType = ZDvidRequest::DVID_NULL_REQUEST;
+  }
+}
+
+void ZDvidRequest::setParameter(const QVariant &parameter)
+{
+  m_parameter = parameter;
+}

@@ -1018,6 +1018,11 @@ bool ZObject3dScan::load(const string &filePath)
 {
   bool succ = false;
   ZString filePath2(filePath);
+
+#ifdef _DEBUG_
+    std::cout << filePath << std::endl;
+#endif
+
   if (filePath2.contains(":")) {
     std::vector<std::string> strArray = filePath2.tokenize(':');
     if (strArray.size() >= 2) {
@@ -1029,9 +1034,6 @@ bool ZObject3dScan::load(const string &filePath)
     succ = importDvidObject(filePath);
   } else if (ZFileType::fileType(filePath) == ZFileType::OBJECT_SCAN_FILE) {
     FILE *fp = fopen(filePath.c_str(), "rb");
-#ifdef _DEBUG_
-    std::cout << filePath << std::endl;
-#endif
     if (fp != NULL) {
       int stripeNumber = 0;
       fread(&stripeNumber, sizeof(int), 1, fp);

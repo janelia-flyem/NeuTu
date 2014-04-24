@@ -1,6 +1,8 @@
 #include "zjsonarray.h"
 #include "c_json.h"
 #include "tz_utilities.h"
+#include "zjsonparser.h"
+#include "zerror.h"
 
 using namespace std;
 
@@ -95,4 +97,27 @@ ZJsonArray& ZJsonArray::operator << (double e)
   }
 
   return *this;
+}
+
+bool ZJsonArray::decode(const string &str)
+{
+  clear();
+
+  ZJsonParser parser;
+  json_t *obj = parser.decode(str);
+
+  if (ZJsonParser::isArray(obj)) {
+    set(obj, true);
+  } else {
+    if (obj == NULL) {
+      parser.printError();
+    } else {
+      json_decref(obj);
+      RECORD_ERROR_UNCOND("Not a json array");
+    }
+
+    return false;
+  }
+
+  return true;
 }

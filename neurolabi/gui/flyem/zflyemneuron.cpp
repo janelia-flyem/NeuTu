@@ -712,3 +712,13 @@ bool ZFlyEmNeuron::importBodyFromHdf5(
 
   return false;
 }
+
+void ZFlyEmNeuron::setModel(ZSwcTree *tree)
+{
+  m_model = tree;
+}
+
+void ZFlyEmNeuron::setUnscaledModel(ZSwcTree *tree)
+{
+  m_unscaledModel = tree;
+}

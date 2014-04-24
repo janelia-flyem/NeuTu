@@ -8,6 +8,7 @@
 #include "zstring.h"
 #include "tz_xml_utils.h"
 #include "tz_error.h"
+#include "zhdf5reader.h"
 
 using namespace std;
 

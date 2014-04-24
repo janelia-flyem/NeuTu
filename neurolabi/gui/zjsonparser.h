@@ -37,6 +37,16 @@ public:
 
   static void print(const char *key, json_t *value, int indent);
 
+  /*!
+   * \brief Decode a json string
+   *
+   * \param str A json string
+   * \return A raw json object. The user is responsible for freeing it.
+   */
+  json_t* decode(const std::string &str);
+
+  void printError() const;
+
 private:
   json_error_t m_error;
 

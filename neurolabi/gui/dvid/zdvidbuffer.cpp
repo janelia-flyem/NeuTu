@@ -42,6 +42,15 @@ void ZDvidBuffer::importImage()
   }
 }
 
+void ZDvidBuffer::importInfo()
+{
+  if (m_dvidClient != NULL) {
+    m_infoArray.append(m_dvidClient->getInfo());
+    qDebug() << "Emitting dataTransered from importInfo()";
+    emit dataTransfered();
+  }
+}
+
 void ZDvidBuffer::clear()
 {
   m_bodyArray.clear();
@@ -54,4 +63,6 @@ void ZDvidBuffer::clear()
     delete stack;
   }
   m_imageArray.clear();
+
+  m_infoArray.clear();
 }

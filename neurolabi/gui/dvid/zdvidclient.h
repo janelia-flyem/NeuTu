@@ -34,6 +34,8 @@ public:
     m_serverAddress = server;
   }
 
+  void setServer(const QString &server, int port);
+
   inline const QString &getServer() {
     return m_serverAddress;
   }
@@ -52,6 +54,7 @@ public:
   inline const ZObject3dScan& getObject() const { return m_obj; }
   inline const ZSwcTree& getSwcTree() const { return m_swcTree; }
   inline const ZStack& getImage() const { return m_image; }
+  inline const QString& getInfo() const { return m_dataInfo; }
 
   inline ZDvidBuffer* getDvidBuffer() const { return m_dvidBuffer; }
 
@@ -64,9 +67,11 @@ signals:
   void objectRetrieved();
   void swcRetrieved();
   void imageRetrieved();
+  void infoRetrieved();
   void noRequestLeft();
   void requestFailed();
   void requestCanceled();
+  void requestFinished();
 
 public slots:
   void postNextRequest();
@@ -77,6 +82,7 @@ private slots:
   void readObject();
   void readSwc();
   void readImage();
+  void readInfo();
   void cancelRequest();
 
 private:
@@ -96,9 +102,11 @@ private:
   ZObject3dScan m_obj;
   ZSwcTree m_swcTree;
   ZStack m_image;
+  QString m_dataInfo;
   QByteArray m_objectBuffer;
   QByteArray m_swcBuffer;
   QByteArray m_imageBuffer;
+  QByteArray m_infoBuffer;
 
   QIODevice *m_uploadStream;
 

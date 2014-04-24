@@ -118,3 +118,14 @@ void FlyEm::ZHotSpotArray::sort()
 {
   std::sort(begin(), end(), ZHotSpot::compareConfidence);
 }
+
+ZPointArray FlyEm::ZHotSpotArray::toPointArray() const
+{
+  ZPointArray ptArray;
+  for (ZHotSpotArray::const_iterator iter = begin(); iter != end(); ++iter) {
+    const ZHotSpot *hotSpot = *iter;
+    ptArray.append(hotSpot->toPointArray());
+  }
+
+  return ptArray;
+}

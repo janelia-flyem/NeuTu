@@ -192,3 +192,13 @@ void ZJsonParser::print(const char *key, json_t *object, int indent)
     break;
   }
 }
+
+json_t* ZJsonParser::decode(const string &str)
+{
+  return json_loads(str.c_str(), 0, &m_error);
+}
+
+void ZJsonParser::printError() const
+{
+  std::cout << m_error.text << std::endl;
+}

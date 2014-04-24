@@ -174,10 +174,15 @@ void ZSwcPruner::removeTerminalBranch(Swc_Tree_Node *tn)
 {
   while (!SwcTreeNode::isBranchPoint(SwcTreeNode::parent(tn))) {
     tn = SwcTreeNode::parent(tn);
+    if (tn == NULL) {
+      break;
+    }
   }
 
-  SwcTreeNode::detachParent(tn);
-  SwcTreeNode::killSubtree(tn);
+  if (tn != NULL) {
+    SwcTreeNode::detachParent(tn);
+    SwcTreeNode::killSubtree(tn);
+  }
 }
 
 void ZSwcPruner::reduceTerminalBranch(Swc_Tree_Node *tn)

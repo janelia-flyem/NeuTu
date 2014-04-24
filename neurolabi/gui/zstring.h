@@ -116,6 +116,8 @@ public:
     return *this;
   }
 
+  static std::string num2str(int n);
+
 private:
   String_Workspace *m_workspace;
 };

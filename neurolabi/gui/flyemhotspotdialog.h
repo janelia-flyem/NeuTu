@@ -2,6 +2,7 @@
 #define FLYEMHOTSPOTDIALOG_H
 
 #include <QDialog>
+#include "flyem/zhotspot.h"
 
 namespace Ui {
 class FlyEmHotSpotDialog;
@@ -15,7 +16,12 @@ public:
   explicit FlyEmHotSpotDialog(QWidget *parent = 0);
   ~FlyEmHotSpotDialog();
 
-  int getId() const;
+  enum EHotSpotType {
+    FALSE_MERGE, FALSE_SPLIT
+  };
+
+  int getBodyId() const;
+  EHotSpotType getType() const;
 
 private:
   Ui::FlyEmHotSpotDialog *ui;

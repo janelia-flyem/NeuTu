@@ -166,9 +166,35 @@ typedef struct _Hdf5PrintOpData {
   hid_t file_id;
 } Hdf5PrintOpData;
 
+herr_t ZHdf5Reader::getDataSetName(hid_t loc_id, const char *name, void *opdata)
+{
+#ifdef _ENABLE_HDF5_
+  H5G_stat_t statbuf;
+
+  H5Gget_objinfo(loc_id, name, 0, &statbuf);
+  std::vector<std::string> *nameArray = NULL;
+  if (opdata != NULL) {
+    nameArray = (std::vector<std::string>*) (opdata);
+  }
+
+  switch (statbuf.type) {
+  case H5G_DATASET:
+       nameArray->push_back(name);
+       break;
+  default:
+       break;
+  }
+#else
+  UNUSED_PARAMETER(loc_id);
+  UNUSED_PARAMETER(opdata);
+  UNUSED_PARAMETER(name);
+#endif
+  return 0;
+}
+
 herr_t ZHdf5Reader::printObjectInfo(hid_t loc_id, const char *name, void *opdata)
 {
-#ifdef _USE_HDF5_
+#ifdef _ENABLE_HDF5_
   H5G_stat_t statbuf;
 
   H5Gget_objinfo(loc_id, name, 0, &statbuf);
@@ -213,9 +239,23 @@ herr_t ZHdf5Reader::printObjectInfo(hid_t loc_id, const char *name, void *opdata
   return 0;
 }
 
+std::vector<std::string> ZHdf5Reader::getAllDatasetName(
+    const std::string &group)
+{
+  std::vector<std::string> nameArray;
+
+#ifdef _ENABLE_HDF5_
+  if (m_file != NULL_FILE) {
+    H5Giterate(m_file, group.c_str(), NULL, getDataSetName, &nameArray);
+  }
+#endif
+
+  return nameArray;
+}
+
 void ZHdf5Reader::printInfo()
 {
-#ifdef _USE_HDF5_
+#ifdef _ENABLE_HDF5_
   if (m_file != NULL_FILE) {
     Hdf5PrintOpData opdata;
     opdata.indent = 0;
@@ -228,3 +268,4 @@ void ZHdf5Reader::printInfo()
   }
 #endif
 }
+

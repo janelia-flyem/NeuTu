@@ -52,7 +52,12 @@ public:
   const char *getString();
 
   void set(json_t *data, bool asNew);
+
+  /*!
+   * \brief Obsolete. Will be removed.
+   */
   void decodeString(const char *str);
+
   void clear();
 
   void print() const;

@@ -74,6 +74,18 @@ public:
     m_resolution[2] = z;
   }
 
+  inline void setStackOffset(double x, double y, double z) {
+    m_stackOffset[0] = x;
+    m_stackOffset[1] = y;
+    m_stackOffset[2] = z;
+  }
+
+  inline void setStackOffset(const ZPoint &pt) {
+    m_stackOffset[0] = pt.x();
+    m_stackOffset[1] = pt.y();
+    m_stackOffset[2] = pt.z();
+  }
+
   inline void setVertexOption(ZStackGraph::EVertexOption vertexOption) {
     m_vertexOption = vertexOption;
   }
@@ -115,6 +127,7 @@ private:
   NeuTube::EImageBackground m_backgroundType;
   ZStackGraph::EVertexOption m_vertexOption;
   double m_resolution[3];
+  double m_stackOffset[3];
 
   //Intermedite buffer
   std::vector<Locseg_Chain*> m_chainArray;

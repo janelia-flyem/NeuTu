@@ -791,6 +791,7 @@ void ZStackFrame::synchronizeSetting()
 {
   m_settingDlg->setResolution(document()->stack()->resolution().voxelSize());
   m_settingDlg->setUnit(document()->stack()->resolution().unit());
+  m_settingDlg->setBackground(document()->getStackBackground());
 }
 
 void ZStackFrame::synchronizeDocument()
@@ -811,6 +812,7 @@ void ZStackFrame::synchronizeDocument()
                                        reconstructDistThre(),
                                        reconstructSpTest(),
                                        crossoverTest());
+  m_doc->setStackBackground(m_settingDlg->getBackground());
 }
 
 void ZStackFrame::setLocsegChainInfo(ZLocsegChain *chain, QString prefix,

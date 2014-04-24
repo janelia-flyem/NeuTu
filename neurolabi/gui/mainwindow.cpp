@@ -126,6 +126,10 @@
 #include "flyem/zflyemqualityanalyzer.h"
 #include "zswcgenerator.h"
 #include <QtConcurrentRun>
+#include "flyembodyiddialog.h"
+#include "flyemhotspotdialog.h"
+#include "dvid/zdvidinfo.h"
+#include "zswctreenodearray.h"
 
 #include "ztest.h"
 
@@ -197,9 +201,12 @@ MainWindow::MainWindow(QWidget *parent) :
   createAutoSaveDir();
 
   m_progress = new QProgressDialog(this);
-  m_progress->setModal(true);
-  m_progress->setWindowFlags(Qt::Dialog|Qt::WindowStaysOnTopHint);
+  m_progress->setWindowModality(Qt::WindowModal);
+  m_progress->setAutoClose(true);
+  //m_progress->setWindowFlags(Qt::Dialog|Qt::WindowStaysOnTopHint);
   m_progress->setCancelButton(0);
+
+  connect(this, SIGNAL(progressDone()), m_progress, SLOT(reset()));
 
   m_bcDlg = new BcAdjustDialog(this);
   connect(m_bcDlg, SIGNAL(valueChanged()), this, SLOT(bcAdjust()));
@@ -254,6 +261,8 @@ MainWindow::MainWindow(QWidget *parent) :
           */
 
   m_tileDlg = new TileManagerDialog(this);
+  m_bodyDlg = new FlyEmBodyIdDialog(this);
+  m_hotSpotDlg = new FlyEmHotSpotDialog(this);
 }
 
 MainWindow::~MainWindow()
@@ -705,6 +714,7 @@ void MainWindow::customizeActions()
   m_ui->menuPuncta->menuAction()->setVisible(false);
   m_ui->menuSwc->menuAction()->setVisible(false);
   m_ui->menuQuery->menuAction()->setVisible(false);
+  m_ui->menuOptions->menuAction()->setVisible(false);
 #endif
 }
 
@@ -1177,7 +1187,7 @@ void MainWindow::presentStackFrame(ZStackFrame *frame)
   frame->show();
   updateMenu();
   //mdiArea->setActiveSubWindow(frame);
-  getProgressDialog()->reset();
+  //getProgressDialog()->reset();
   frame->setViewInfo();
 
   if (NeutubeConfig::getInstance().getApplication() == "Biocytin") {
@@ -1229,6 +1239,8 @@ void MainWindow::openFile(const QString &fileName)
       frame = new ZStackFrame(mdiArea);
       connect(frame, SIGNAL(ready(ZStackFrame*)),
               this, SLOT(presentStackFrame(ZStackFrame*)));
+      connect(frame, SIGNAL(ready(ZStackFrame*)),
+              this, SIGNAL(progressDone()));
       frame->createDocument();
       frame->show();
       frame->setViewInfo("Loading data ...");
@@ -3042,10 +3054,10 @@ void MainWindow::evokeStackFrame(QMdiSubWindow *frame)
 #ifdef __APPLE__
   if (frame != NULL) {
     frame->hide();
-    QApplication::processEvents();
+    //QApplication::processEvents();
     qDebug() << "process 1";
     frame->show();
-    QApplication::processEvents();
+    //QApplication::processEvents();
     qDebug() << "process 2";
     mdiArea->setActiveSubWindow(frame);
   }
@@ -3911,7 +3923,7 @@ void MainWindow::reportFileOpenProblem(const QString &filePath,
 void MainWindow::addFlyEmDataFrame(ZFlyEmDataFrame *frame)
 {
   if (frame  != NULL) {
-    QApplication::processEvents();
+    //QApplication::processEvents();
 
     QMdiSubWindow *subWindow = mdiArea->addSubWindow(frame);
     connect(frame, SIGNAL(volumeTriggered(const QString&)),
@@ -5176,19 +5188,149 @@ ZStackDoc *MainWindow::hotSpotDemo(
   //presentStackFrame(frame);
 }
 
+ZStackDoc *MainWindow::hotSpotDemoFs(
+    int bodyId, const QString &dvidAddress, const QString &dvidUuid)
+{
+  ZDvidReader reader;
+  reader.open(dvidAddress, dvidUuid);
+
+  /*
+  ZSwcPruner pruner;
+  pruner.setMinLength(1000.0);
+  pruner.prune(tree);
+  */
+
+  ZDvidInfo dvidInfo;
+  QString info = reader.readInfo("superpixels");
+  dvidInfo.setFromJsonString(info.toStdString());
+
+  int sourceBodyId = bodyId;
+  ZSwcTree *tree = reader.readSwc(sourceBodyId);
+  ZSwcTree *unscaledTree = tree->clone();
+  tree->scale(dvidInfo.getVoxelResolution()[0],
+      dvidInfo.getVoxelResolution()[1], dvidInfo.getVoxelResolution()[2]);
+  ZFlyEmNeuron neuron(sourceBodyId, tree, NULL);
+  neuron.setUnscaledModel(unscaledTree);
+
+  ZSwcTreeNodeArray nodeArray =
+      unscaledTree->getSwcTreeNodeArray(ZSwcTree::TERMINAL_ITERATOR);
+
+  double margin = 50;
+
+  std::set<int> bodySet;
+  for (ZSwcTreeNodeArray::const_iterator iter = nodeArray.begin();
+       iter != nodeArray.end(); ++iter) {
+    ZPoint center = SwcTreeNode::pos(*iter);
+    std::vector<int> bodyId = reader.readBodyId(
+          center.x(), center.y(), center.z(),
+          margin, margin, margin);
+    std::cout << bodyId.size() << " neighbor bodies" << std::endl;
+    bodySet.insert(bodyId.begin(), bodyId.end());
+  }
+
+  std::cout << "Retrieving " << bodySet.size() << " neurons ..." << std::endl;
+
+
+  std::vector<ZFlyEmNeuron> neuronArray(bodySet.size());
+  size_t index = 0;
+  int neuronRetrievalCount = 0;
+  for (std::set<int>::const_iterator iter = bodySet.begin();
+       iter != bodySet.end(); ++iter, ++index) {
+    int bodyId = *iter;
+    ZSwcTree *tree = reader.readSwc(bodyId);
+    ZFlyEmNeuron &neuron = neuronArray[index];
+    if (tree != NULL) {
+      neuron.setId(bodyId);
+      neuron.setUnscaledModel(tree);
+      ZSwcTree *tree2 = tree->clone();
+      tree2->scale(dvidInfo.getVoxelResolution()[0],
+          dvidInfo.getVoxelResolution()[1], dvidInfo.getVoxelResolution()[2]);
+      neuron.setModel(tree2);
+      ++neuronRetrievalCount;
+    } else {
+      neuron.setId(-1);
+    }
+  }
+
+  std::cout << neuronRetrievalCount << " neurons retrieved." << std::endl;
+
+  std::cout << "Computing hot spots ..." << std::endl;
+  ZFlyEmQualityAnalyzer analyzer;
+  FlyEm::ZHotSpotArray &hotSpotArray =
+      analyzer.computeHotSpot(neuron, neuronArray);
+  if (hotSpotArray.empty()) {
+    report("Hot Spot Demo Failed", "The neuron seems normal.",
+           ZMessageReporter::Warning);
+    return NULL;
+  }
+  //hotSpotArray.print();
+
+  //FlyEm::ZHotSpot *hotSpot = hotSpotArray[0];
+  ZCuboid boundBox = hotSpotArray.toPointArray().getBoundBox();
+  boundBox.expand(10);
+
+  ZStack *stack = reader.readGrayScale(boundBox.firstCorner().x(),
+                                       boundBox.firstCorner().y(),
+                                       boundBox.firstCorner().z(),
+                                       boundBox.width() + 1,
+                                       boundBox.height() + 1,
+                                       boundBox.depth() + 1);
+
+  if (stack == NULL) {
+    if (hotSpotArray.empty()) {
+      report("Hot Spot Demo Failed", "Cannot retreive grayscale data.",
+             ZMessageReporter::Warning);
+      return NULL;
+    }
+  }
+
+  tree = ZSwcGenerator::createSwc(hotSpotArray.toPointArray(), 5.0);
+
+  ZStackDoc *doc = new ZStackDoc(stack, NULL);
+  doc->addSwcTree(tree, false);
+
+  return doc;
+
+  /*
+  ZStackFrame *frame = createStackFrame(stack);
+  frame->document()->addSwcTree(tree, false);
+
+  return frame;
+  */
+
+  //addStackFrame(frame);
+  //presentStackFrame(frame);
+}
+
 void MainWindow::on_actionHot_Spot_Demo_triggered()
 {
   ZFlyEmDataInfo dataInfo(FlyEm::DATA_FIB25);
-  m_dvidObjectDlg->setAddress(dataInfo.getDvidAddress());
-  if (m_dvidObjectDlg->exec()) {
-    int bodyId = m_dvidObjectDlg->getBodyId()[0];
+
+  //m_dvidObjectDlg->setAddress(dataInfo.getDvidAddressWithPort().c_str());
+  if (m_hotSpotDlg->exec()) {
+    int bodyId = m_hotSpotDlg->getBodyId();
 #if 0
     ZStackFrame *frame =
         hotSpotDemo(bodyId, m_dvidObjectDlg->getAddress(), dataInfo.getDvidUuid());
 #else
-    QFuture<ZStackDoc*> res = QtConcurrent::run(
-          this, &MainWindow::hotSpotDemo, bodyId,
-          m_dvidObjectDlg->getAddress(), dataInfo.getDvidUuid());
+    qDebug() << dataInfo.getDvidAddressWithPort().c_str();
+
+    QFuture<ZStackDoc*> res;
+
+    switch (m_hotSpotDlg->getType()) {
+    case FlyEmHotSpotDialog::FALSE_MERGE:
+      res = QtConcurrent::run(
+            this, &MainWindow::hotSpotDemo, bodyId,
+            QString(dataInfo.getDvidAddressWithPort().c_str()),
+            QString(dataInfo.getDvidUuid().c_str()));
+      break;
+    case FlyEmHotSpotDialog::FALSE_SPLIT:
+      res = QtConcurrent::run(
+            this, &MainWindow::hotSpotDemoFs, bodyId,
+            QString(dataInfo.getDvidAddressWithPort().c_str()),
+            QString(dataInfo.getDvidUuid().c_str()));
+      break;
+    }
 #endif
 
     m_progress->setRange(0, 2);
@@ -5279,5 +5421,100 @@ void MainWindow::on_actionHot_Spot_Demo_triggered()
     std::cout << "Position: " << corner.toString() << std::endl;
     */
 #endif
+  }
+}
+
+ZStackDoc* MainWindow::importHdf5Body(int bodyId, const QString &hdf5Path)
+{
+  ZObject3dScan obj;
+  obj.importHdf5(hdf5Path.toStdString(), ZString::num2str(bodyId) + ".sobj");
+  ZStackDoc *doc = NULL;
+  if (!obj.isEmpty()) {
+    ZStack *stack = obj.toStackObject();
+    if (stack != NULL) {
+      doc = new ZStackDoc(stack, NULL);
+    }
+  }
+
+  return doc;
+}
+
+ZStackDoc* MainWindow::importHdf5BodyM(const std::vector<int> &bodyIdArray,
+                                       const QString &hdf5Path,
+                                       const std::vector<int> &downsampleInterval)
+{
+  QVector<ZObject3dScan> objectArray;
+  objectArray.resize(bodyIdArray.size());
+
+  ZStack *stack = NULL;
+  int offset[3] = {0, 0, 0};
+  for (size_t i = 0; i < bodyIdArray.size(); ++i) {
+    int bodyId = bodyIdArray[i];
+    objectArray[i].importHdf5(
+          hdf5Path.toStdString(), ZString::num2str(bodyId) + ".sobj");
+    if (downsampleInterval.size() == 3) {
+      objectArray[i].downsampleMax(downsampleInterval[0],
+          downsampleInterval[1], downsampleInterval[2]);
+    }
+    Stack *stackData = ZObject3dScan::makeStack(
+          objectArray.begin(), objectArray.end(), offset);
+    if (stackData != NULL) {
+      stack = new ZStack;
+      stack->consumeData(stackData);
+      stack->setOffset(offset[0], offset[1], offset[2]);
+    }
+  }
+
+  ZStackDoc *doc = NULL;
+  if (stack != NULL) {
+    doc = new ZStackDoc(stack, NULL);
+  }
+
+  return doc;
+}
+
+void MainWindow::on_actionHDF5_Body_triggered()
+{
+  QString fileName = getOpenFileName("HDF5", "HDF5 file (*.hf5)");
+  if (!fileName.isEmpty()) {
+    if (m_bodyDlg->exec()) {
+      std::vector<int> bodyIdArray = m_bodyDlg->getBodyIdArray();
+      std::vector<int> downsampleInterval = m_bodyDlg->getDownsampleInterval();
+      /*
+      ZObject3dScan obj;
+      obj.importHdf5(fileName.toStdString(), ZString::num2str(bodyId) + ".sobj");
+      ZStackFrame *frame = NULL;
+      if (!obj.isEmpty()) {
+        ZStack *stack = obj.toStackObject();
+        if (stack != NULL) {
+          frame = createStackFrame(stack, NeuTube::Document::FLYEM_BODY);
+        }
+      }
+      */
+
+      QFuture<ZStackDoc*> res = QtConcurrent::run(
+            this, &MainWindow::importHdf5BodyM, bodyIdArray, fileName,
+            downsampleInterval);
+
+      m_progress->setRange(0, 2);
+      m_progress->setLabelText(QString("Testing ..."));
+      int currentProgress = 0;
+      m_progress->setValue(++currentProgress);
+      m_progress->show();
+
+      res.waitForFinished();
+
+      ZStackDoc *doc = res.result();
+      if (doc != NULL) {
+        ZStackFrame *frame =
+            createStackFrame(doc, NeuTube::Document::FLYEM_BODY);
+        addStackFrame(frame);
+        presentStackFrame(frame);
+      } else {
+        report("Loading Failed", "No body found.", ZMessageReporter::Warning);
+      }
+
+      emit progressDone();
+    }
   }
 }

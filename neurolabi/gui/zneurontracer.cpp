@@ -14,7 +14,6 @@
 
 ZNeuronTraceSeeder::ZNeuronTraceSeeder()
 {
-
 }
 
 ZNeuronTraceSeeder::~ZNeuronTraceSeeder()
@@ -156,9 +155,10 @@ ZNeuronTracer::ZNeuronTracer() : m_stack(NULL), m_traceWorkspace(NULL),
   m_vertexOption(ZStackGraph::VO_ALL)
 {
   m_swcConnector = new ZSwcConnector;
-  m_resolution[0] = 1.0;
-  m_resolution[1] = 1.0;
-  m_resolution[2] = 1.0;
+  for (int i = 0; i < 3; ++i) {
+    m_resolution[i] = 1.0;
+    m_stackOffset[i] = 0.0;
+  }
 }
 
 ZNeuronTracer::~ZNeuronTracer()
@@ -181,9 +181,9 @@ ZSwcPath ZNeuronTracer::trace(double x, double y, double z)
   }
 
   double pos[3];
-  pos[0] = x;
-  pos[1] = y;
-  pos[2] = z;
+  pos[0] = x - m_stackOffset[0];
+  pos[1] = y - m_stackOffset[1];
+  pos[2] = z - m_stackOffset[2];
 
   /* alloc <locseg> */
   Local_Neuroseg *locseg = New_Local_Neuroseg();
@@ -226,6 +226,8 @@ ZSwcPath ZNeuronTracer::trace(double x, double y, double z)
     if (!path.empty()) {
       SwcTreeNode::setParent(tn, path.back());
     }
+    SwcTreeNode::translate(tn, m_stackOffset[0], m_stackOffset[1],
+        m_stackOffset[2]);
     path.push_back(tn);
   }
 
@@ -267,6 +269,14 @@ void ZNeuronTracer::setConnWorkspace(Connection_Test_Workspace *workspace)
 Swc_Tree* ZNeuronTracer::trace(double x1, double y1, double z1, double r1,
                                double x2, double y2, double z2, double r2)
 {
+  x1 -= m_stackOffset[0];
+  y1 -= m_stackOffset[1];
+  z1 -= m_stackOffset[2];
+
+  x2 -= m_stackOffset[0];
+  y2 -= m_stackOffset[1];
+  z2 -= m_stackOffset[2];
+
   if (x1 < 0 || y1 < 0 || z1 < 0 || x1 >= C_Stack::width(m_stack) ||
       y1 >= C_Stack::height(m_stack) || z1 >= C_Stack::depth(m_stack)) {
     return NULL;
@@ -333,7 +343,13 @@ Swc_Tree* ZNeuronTracer::trace(double x1, double y1, double z1, double r1,
     }
   }
 
-  return voxelArray.toSwcTree();
+  Swc_Tree *tree = voxelArray.toSwcTree();
+  if (tree != NULL) {
+    Swc_Tree_Translate(tree, m_stackOffset[0], m_stackOffset[1],
+        m_stackOffset[2]);
+  }
+
+  return tree;
 }
 
 Stack *ZNeuronTracer::binarize(const Stack *stack)

@@ -14,7 +14,16 @@ FlyEmHotSpotDialog::~FlyEmHotSpotDialog()
   delete ui;
 }
 
-int FlyEmHotSpotDialog::getId() const
+int FlyEmHotSpotDialog::getBodyId() const
 {
   return ZString::firstInteger(ui->idLineEdit->text().toStdString());
+}
+
+FlyEmHotSpotDialog::EHotSpotType FlyEmHotSpotDialog::getType() const
+{
+  if (ui->typeComboBox->currentIndex() == 0) {
+    return FALSE_MERGE;
+  }
+
+  return FALSE_SPLIT;
 }

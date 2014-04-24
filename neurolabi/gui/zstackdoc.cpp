@@ -5528,6 +5528,8 @@ bool ZStackDoc::executeSwcNodeSmartExtendCommand(
           tracer.setResolution(1, 1, 10);
         }
 
+        tracer.setStackOffset(getStackOffset());
+
         Swc_Tree *branch = tracer.trace(
               SwcTreeNode::x(prevNode), SwcTreeNode::y(prevNode),
               SwcTreeNode::z(prevNode), SwcTreeNode::radius(prevNode),
@@ -6350,6 +6352,14 @@ bool ZStackDoc::executeSmartConnectSwcNodeCommand(
 
   ZPoint offset = getStackOffset();
 
+  tracer.setStackOffset(offset.x(), offset.y(), offset.z());
+  Swc_Tree *branch = tracer.trace(
+        offset.x(), SwcTreeNode::y(tn1),
+        SwcTreeNode::z(tn1), SwcTreeNode::radius(tn1),
+        SwcTreeNode::x(tn2), SwcTreeNode::y(tn2),
+        SwcTreeNode::z(tn2), SwcTreeNode::radius(tn2));
+
+  /*
   Swc_Tree *branch = tracer.trace(
         SwcTreeNode::x(tn1) - offset.x(), SwcTreeNode::y(tn1) - offset.y(),
         SwcTreeNode::z(tn1) - offset.z(), SwcTreeNode::radius(tn1),
@@ -6357,6 +6367,7 @@ bool ZStackDoc::executeSmartConnectSwcNodeCommand(
         SwcTreeNode::z(tn2) - offset.z(), SwcTreeNode::radius(tn2));
 
   Swc_Tree_Translate(branch, offset.x(), offset.y(), offset.z());
+  */
 
   if (branch != NULL) {
     if (Swc_Tree_Has_Branch(branch)) {
@@ -6605,6 +6616,9 @@ bool ZStackDoc::executeTraceSwcBranchCommand(
   ZNeuronTracer tracer;
   tracer.setIntensityField(stack()->c_stack(c));
   tracer.setTraceWorkspace(getTraceWorkspace());
+  tracer.setStackOffset(getStackOffset().x(), getStackOffset().y(),
+                        getStackOffset().z());
+
   refreshTraceMask();
   ZSwcPath branch = tracer.trace(x, y, z);
 

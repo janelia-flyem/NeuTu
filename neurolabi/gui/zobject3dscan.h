@@ -367,10 +367,12 @@ public:
 
   /*!
    * \brief Make a stack from a list of objects
+   *
+   * \a offset is used to store the corner coordinates if it is not NULL.
    */
   template<class InputIterator>
   static Stack* makeStack(InputIterator startObject, InputIterator endObject,
-                          int offset[3]);
+                          int *offset = NULL);
 
   /*!
    * \brief Switch the Y and Z axis
@@ -534,7 +536,7 @@ std::map<int, ZObject3dScan*>* ZObject3dScan::extractAllObject(
 
 template<class InputIterator>
 Stack* ZObject3dScan::makeStack(InputIterator startObject,
-                                InputIterator endObject, int offset[3])
+                                InputIterator endObject, int *offset)
 {
   if (startObject != endObject) {
     Cuboid_I boundBox;
@@ -555,17 +557,20 @@ Stack* ZObject3dScan::makeStack(InputIterator startObject,
     Stack *stack = C_Stack::make(GREY, width, height, depth);
     C_Stack::setZero(stack);
 
+    int stackOffset[3] = {0, 0, 0};
     for (int i = 0; i < 3; ++i) {
-      offset[i] = -boundBox.cb[i];
+      stackOffset[i] = -boundBox.cb[i];
     }
 
     int v = 1;
     for (iter = startObject; iter != endObject; ++iter) {
-      iter->drawStack(stack, v++, offset);
+      iter->drawStack(stack, v++, stackOffset);
     }
 
-    for (int i = 0; i < 3; ++i) {
-      offset[i] = boundBox.cb[i];
+    if (offset != NULL) {
+      for (int i = 0; i < 3; ++i) {
+        offset[i] = boundBox.cb[i];
+      }
     }
 
     return stack;
