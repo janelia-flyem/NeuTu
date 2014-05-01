@@ -10,6 +10,17 @@ import json
 from LoadDvidObject import LoadDvidObject
 import httplib
 
+def SubmitSkeletonizeService(dvidServer, uuid, bodyArray):
+   #curl -X POST -H "Content-Type: application/json" #
+   #-d '{"dvid-server": http://emdata1.int.janelia.org, "uuid": "339c", "bodies":[1, 2, 3]}'
+   # http://emrecon100.janelia.priv:8082/skeletonize
+    conn = httplib.HTTPConnection("emrecon100.janelia.priv:8082")
+    jsonData = {"dvid-server": dvidServer, "uuid": uuid, "bodies": bodyArray};
+    headers = {"Content-type": "application/json"}
+    conn.request("POST", "/skeletonize", json.dumps(jsonData), headers)
+    r = conn.getresponse()
+    r.read()
+    
 def Skeletonize(source, target, config = None):
     dvidServer = None
     uuid = None

@@ -248,6 +248,8 @@ void setNode(Swc_Tree_Node *tn, int id, int type, double x, double y, double z,
          double radius, int parentId);
 
 void setPos(Swc_Tree_Node *tn, double x, double y, double z);
+void setPos(Swc_Tree_Node *tn, const ZPoint &pt);
+
 inline void setX(Swc_Tree_Node *tn, double x) {
   tn->node.x = x;
 }

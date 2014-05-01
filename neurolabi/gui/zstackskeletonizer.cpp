@@ -17,13 +17,15 @@
 #include "zstack.hxx"
 #include "zobject3dscan.h"
 #include "zerror.h"
+#include "tz_math.h"
+#include "swc/zswcresampler.h"
 
 using namespace std;
 
 ZStackSkeletonizer::ZStackSkeletonizer() : m_lengthThreshold(15.0),
   m_distanceThreshold(-1.0), m_rebase(false), m_interpolating(false),
-  m_removingBorder(false), m_minObjSize(0), m_keepingSingleObject(false),
-  m_level(0), m_connectingBranch(true)
+  m_removingBorder(false), m_fillingHole(false), m_minObjSize(0),
+  m_keepingSingleObject(false), m_level(0), m_connectingBranch(true)
 {
   for (int i = 0; i < 3; ++i) {
     m_resolution[i] = 1.0;
@@ -52,10 +54,16 @@ ZSwcTree* ZStackSkeletonizer::makeSkeleton(const ZObject3dScan &obj)
   ZSwcTree *tree = NULL;
   if (!obj.isEmpty()) {
     ZObject3dScan newObj = obj;
+    ZCuboid box = obj.getBoundBox();
     newObj.downsampleMax(m_downsampleInterval[0],
                          m_downsampleInterval[1], m_downsampleInterval[2]);
-    ZStack *stack = newObj.toStackObject();
-    tree = makeSkeletonWithoutDs(stack->c_stack());
+    int offset[3] = {0, 0, 0};
+    Stack *stack = newObj.toStack(offset);
+    tree = makeSkeletonWithoutDs(stack);
+    if (tree != NULL) {
+      const ZPoint pt = box.firstCorner();
+      tree->translate(pt.x(), pt.y(), pt.z());
+    }
   }
 
   return tree;
@@ -103,13 +111,25 @@ ZSwcTree* ZStackSkeletonizer::makeSkeletonWithoutDs(Stack *stackData)
   }
   advanceProgress(0.05);
 
-#ifdef _DEBUG_
+  if (m_fillingHole) {
+    std::cout << "Filling hole ..." << std::endl;
+    Stack *bufferStack = Stack_Fill_Hole_N(stackData, NULL, 1, 26, NULL);
+    C_Stack::kill(stackData);
+    stackData = bufferStack;
+  }
+
+#ifdef _DEBUG_2
     C_Stack::write("/groups/flyem/home/zhaot/Work/neutube/neurolabi/data/test.tif", stackData);
 #endif
 
+  int dsVol = (m_downsampleInterval[0] + 1) * (m_downsampleInterval[1] + 1) *
+      (m_downsampleInterval[2] + 1);
+
   cout << "Label objects ...\n" << endl;
+  int minObjSize = minObjSize;
+  minObjSize /= dsVol;
   int nobj = Stack_Label_Large_Objects_N(
-        stackData, NULL, 1, 2, m_minObjSize, 26);
+        stackData, NULL, 1, 2, minObjSize, 26);
   //int nobj = Stack_Label_Objects_N(stackData, NULL, 1, 2, 26);
   if (nobj == 0) {
     cout << "No object found in the image. No skeleton generated." << endl;
@@ -154,8 +174,18 @@ ZSwcTree* ZStackSkeletonizer::makeSkeletonWithoutDs(Stack *stackData)
       Translate_Stack(croppedObjStack, GREY, 1);
     }
 
+    double linScale = 1.0;
+
+    if (m_downsampleInterval[0] == m_downsampleInterval[1] &&
+        m_downsampleInterval[1] == m_downsampleInterval[2]) {
+      linScale = m_downsampleInterval[0] + 1;
+    } else {
+      linScale = Cube_Root(dsVol);
+    }
+
+    double lengthThreshold = m_lengthThreshold / linScale;
     if (objSize == 1) {
-      if (m_keepingSingleObject || m_lengthThreshold <= 1) {
+      if (m_keepingSingleObject || lengthThreshold <= 1) {
         int x = 0;
         int y = 0;
         int z = 0;
@@ -220,7 +250,7 @@ ZSwcTree* ZStackSkeletonizer::makeSkeletonWithoutDs(Stack *stackData)
         Stack_Sp_Grow(tmpdist, NULL, 0, NULL, 0, sgw);
       }
 
-      double lengthThreshold = m_lengthThreshold;
+      //double lengthThreshold = lengthThreshold;
 
       std::vector<ZVoxelArray> pathArray =
           parser.extractAllPath(lengthThreshold, tmpdist);
@@ -325,10 +355,14 @@ ZSwcTree* ZStackSkeletonizer::makeSkeletonWithoutDs(Stack *stackData)
           m_downsampleInterval[1] + 1, m_downsampleInterval[2] + 1);
     }
 
-    wholeTree->resortId();
     if (m_connectingBranch) {
       reconnect(wholeTree);
     }
+
+    ZSwcResampler resampler;
+    resampler.optimalDownsample(wholeTree);
+
+    wholeTree->resortId();
   }
 
   advanceProgress(0.05);
@@ -355,6 +389,13 @@ void ZStackSkeletonizer::reconnect(ZSwcTree *tree)
                        m_distanceThreshold / m_resolution[0]);
     tree->resortId();
   }
+}
+
+void ZStackSkeletonizer::configure(const string &filePath)
+{
+  ZJsonObject obj;
+  obj.load(filePath);
+  configure(obj);
 }
 
 void ZStackSkeletonizer::configure(const ZJsonObject &config)
@@ -386,6 +427,16 @@ void ZStackSkeletonizer::configure(const ZJsonObject &config)
   if (ZJsonParser::isBoolean(value)) {
     setRebase(ZJsonParser::booleanValue(value));
   }
+
+  value = config["fillingHole"];
+  if (ZJsonParser::isBoolean(value)) {
+    setFillingHole(ZJsonParser::booleanValue(value));
+  }
+
+  value = config["minimalObjectSize"];
+  if (ZJsonParser::isInteger(value)) {
+    setMinObjSize(ZJsonParser::integerValue(value));
+  }
 }
 
 void ZStackSkeletonizer::print() const
@@ -395,6 +446,7 @@ void ZStackSkeletonizer::print() const
   std::cout << "Rebase: " << m_rebase << std::endl;
   std::cout << "Intepolate: " << m_interpolating << std::endl;
   std::cout << "Remove border: " << m_removingBorder << std::endl;
+  std::cout << "Filling hole: " << m_fillingHole << std::endl;
   std::cout << "Minimal object size: " << m_minObjSize << std::endl;
   std::cout << "Keep short object: " << m_keepingSingleObject << std::endl;
   std::cout << "Level: " << m_level << std::endl;

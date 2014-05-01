@@ -142,6 +142,30 @@ ZSwcTree* ZSwcForest::merge()
 
 void ZSwcForest::print()
 {
-    cout << size() << " trees" << endl;
-    Print_Graph(m_graph);
+  cout << size() << " trees" << endl;
+  for (iterator iter  = begin(); iter != end(); ++iter) {
+    ZSwcTree *subtree = *iter;
+    std::cout << "Tree " << std::endl;
+    subtree->print();
+  }
+  //Print_Graph(m_graph);
+}
+
+ZSwcTree* ZSwcForest::toSwcTree()
+{
+  ZSwcTree *result = new ZSwcTree;
+  for (iterator iter  = begin(); iter != end(); ++iter) {
+    ZSwcTree *subtree = *iter;
+    if (subtree != NULL) {
+      result->merge(subtree, true);
+    }
+  }
+
+  clear();
+  if (result->isEmpty()) {
+    delete result;
+    result = NULL;
+  }
+
+  return result;
 }

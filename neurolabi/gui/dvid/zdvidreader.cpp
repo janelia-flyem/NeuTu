@@ -2,6 +2,7 @@
 #include "zdvidbuffer.h"
 #include "zstackfactory.h"
 #include "zdvidinfo.h"
+#include "dvid/zdvidtarget.h"
 
 ZDvidReader::ZDvidReader(QObject *parent) :
   QObject(parent)
@@ -22,12 +23,36 @@ void ZDvidReader::slotTest()
   qDebug() << "ZDvidReader::slotTest";
 }
 
-void ZDvidReader::open(
+bool ZDvidReader::open(
     const QString &serverAddress, const QString &uuid, int port)
 {
   m_dvidClient->reset();
+
+  if (serverAddress.isEmpty()) {
+    return false;
+  }
+
+  if (uuid.isEmpty()) {
+    return false;
+  }
+
   m_dvidClient->setServer(serverAddress, port);
   m_dvidClient->setUuid(uuid);
+
+  return true;
+}
+
+bool ZDvidReader::open(const ZDvidTarget &target)
+{
+  return open(("http://" + target.getAddress()).c_str(),
+              target.getUuid().c_str(), target.getPort());
+}
+
+bool ZDvidReader::open(const QString &sourceString)
+{
+  ZDvidTarget target;
+  target.set(sourceString.toStdString());
+  return open(target);
 }
 
 ZObject3dScan ZDvidReader::readBody(int bodyId)
@@ -112,7 +137,10 @@ QString ZDvidReader::readInfo(const QString &dataType)
 
   const QStringList& infoArray = dvidBuffer->getInfoArray();
 
-  return infoArray.join(" ");
+  QString info = infoArray.join(" ");
+  dvidBuffer->clearInfoArray();
+
+  return info;
 }
 
 std::vector<int> ZDvidReader::readBodyId(
@@ -155,6 +183,36 @@ std::vector<int> ZDvidReader::readBodyId(
       ZJsonArray array;
       qDebug() << infoArray[1];
       array.decode(infoArray[1].toStdString());
+      idArray = array.toIntegerArray();
+    }
+  }
+
+  return idArray;
+}
+
+std::vector<int> ZDvidReader::readBodyId(size_t minSize, size_t maxSize)
+{
+  std::vector<int> idArray;
+
+  if (minSize <= maxSize) {
+    ZDvidRequest request;
+    request.setGetStringRequest("sp2body");
+
+    request.setParameter(QVariant(QString("sizerange/%1/%2").
+                                  arg(minSize).arg(maxSize)));
+    m_dvidClient->appendRequest(request);
+    m_dvidClient->postNextRequest();
+
+    m_eventLoop->exec();
+
+    ZDvidBuffer *dvidBuffer = m_dvidClient->getDvidBuffer();
+
+    const QStringList& infoArray = dvidBuffer->getInfoArray();
+
+    if (infoArray.size() > 0) {
+      ZJsonArray array;
+      qDebug() << infoArray[0];
+      array.decode(infoArray[0].toStdString());
       idArray = array.toIntegerArray();
     }
   }

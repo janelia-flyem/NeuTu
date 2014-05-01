@@ -8,6 +8,7 @@
 
 class ZSwcTree;
 class ZPointArray;
+class ZLineSegmentArray;
 
 class ZSwcGenerator
 {
@@ -33,6 +34,8 @@ public:
 
   static ZSwcTree* createSwc(const ZPointArray &pointArray, double radius,
                              bool isConnected = false);
+
+  static ZSwcTree* createSwc(const ZLineSegmentArray &lineArray, double radius);
 
 private:
   static ZSwcTree* createSwcByRegionSampling(const ZVoxelArray &voxelArray,

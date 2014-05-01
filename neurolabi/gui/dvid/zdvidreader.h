@@ -11,14 +11,18 @@
 #include "zstack.hxx"
 #include "zdvidclient.h"
 
+class ZDvidTarget;
+
 class ZDvidReader : public QObject
 {
   Q_OBJECT
 public:
   explicit ZDvidReader(QObject *parent = 0);
 
-  void open(const QString &serverAddress, const QString &uuid,
+  bool open(const QString &serverAddress, const QString &uuid,
             int port = -1);
+  bool open(const ZDvidTarget &target);
+  bool open(const QString &sourceString);
 
   ZSwcTree *readSwc(int bodyId);
   ZObject3dScan readBody(int bodyId);
@@ -29,6 +33,7 @@ public:
   QString readInfo(const QString &dataType);
   std::vector<int> readBodyId(
       int x0, int y0, int z0, int width, int height, int depth);
+  std::vector<int> readBodyId(size_t minSize, size_t maxSize);
 
 signals:
 

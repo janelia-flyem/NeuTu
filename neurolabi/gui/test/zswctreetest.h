@@ -14,6 +14,7 @@
 #include "zswcglobalfeatureanalyzer.h"
 #include "zdoublevector.h"
 #include "swc/zswcpruner.h"
+#include "zswcforest.h"
 
 #ifdef _USE_GTEST_
 
@@ -398,6 +399,20 @@ TEST(SwcTree, getLongestPath)
 //  path.print();
 }
 
+TEST(SwcTree, forest)
+{
+  ZSwcTree tree;
+  ASSERT_EQ(0x0, tree.toSwcTreeArray());
+
+  tree.load(GET_TEST_DATA_DIR + "/benchmark/swc/long_fork.swc");
+  ZSwcForest *forest = tree.toSwcTreeArray();
+
+  ASSERT_EQ(1, (int) forest->size());
+  ASSERT_EQ(true, tree.isEmpty());
+
+  delete forest;
+}
+
 TEST(SwcTree, Prune)
 {
   ZSwcPruner pruner;
@@ -412,6 +427,18 @@ TEST(SwcTree, Prune)
   tree.load(GET_TEST_DATA_DIR + "/benchmark/swc/compare/compare1.swc");
 
   ASSERT_EQ(4 , pruner.prune(&tree));
+
+  tree.load(GET_TEST_DATA_DIR + "/benchmark/swc/compare/compare1.swc");
+
+  ZSwcTree tree2;
+  tree2.load(GET_TEST_DATA_DIR + "/benchmark/swc/fork2.swc");
+  tree.merge(&tree2, false);
+
+  tree.print();
+
+  ASSERT_EQ(5, pruner.prune(&tree));
+
+  tree.save(GET_TEST_DATA_DIR + "/test.swc");
 }
 
 TEST(SwcTree, boundBox)

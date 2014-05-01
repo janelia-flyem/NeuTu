@@ -385,7 +385,11 @@ HEADERS += mainwindow.h \
     flyem/zflyemqualityanalyzertaskmanager.h \
     zworkspacefactory.h \
     dvid/zdvidreader.h \
-    flyembodyiddialog.h
+    flyembodyiddialog.h \
+    dvid/zdvidfilter.h \
+    zdviddialog.h \
+    flyembodyfilterdialog.h \
+    flyem/zskeletonizeservice.h
 
 FORMS += settingdialog.ui \
     frameinfodialog.ui \
@@ -431,7 +435,9 @@ FORMS += settingdialog.ui \
     tilemanagerdialog.ui \
     flyemneuronthumbnaildialog.ui \
     flyemhotspotdialog.ui \
-    flyembodyiddialog.ui
+    flyembodyiddialog.ui \
+    zdviddialog.ui \
+    flyembodyfilterdialog.ui
 SOURCES += main.cpp \
     mainwindow.cpp \
     zstackview.cpp \
@@ -632,7 +638,11 @@ SOURCES += main.cpp \
     flyem/zflyemqualityanalyzertaskmanager.cpp \
     zworkspacefactory.cpp \
     dvid/zdvidreader.cpp \
-    flyembodyiddialog.cpp
+    flyembodyiddialog.cpp \
+    dvid/zdvidfilter.cpp \
+    zdviddialog.cpp \
+    flyembodyfilterdialog.cpp \
+    flyem/zskeletonizeservice.cpp
 
 OTHER_FILES += \
     extlib.pri

@@ -13,6 +13,8 @@
 #include "zflyemneuronarray.h"
 #include "flyem/zflyemcoordinateconverter.h"
 
+class ZDvidFilter;
+
 class ZFlyEmDataBundle
 {
 public:
@@ -28,6 +30,8 @@ public:
   void deprecateDependent(EComponent comp);
 
   bool loadJsonFile(const std::string &filePath);
+  bool loadDvid(const ZDvidFilter &dvidFilter);
+
   std::string toSummaryString() const;
   std::string toDetailString() const;
   void print() const;
@@ -149,7 +153,12 @@ public:
    */
   void setThumbnail(const std::string &thumbnailDir);
 
+  /*!
+   * \brief Get the boundbox of the databundle.
+   */
   inline const ZSwcTree& getBoundBox() const { return m_boundBox; }
+
+  void submitSkeletonizeService() const;
 
 private:
   ZFlyEmNeuronArray m_neuronArray;

@@ -646,26 +646,50 @@ void ZStackDoc::selectSwcNodeConnection()
 {
   std::set<Swc_Tree_Node*> *nodeSet = selectedSwcTreeNodes();
 
-  Swc_Tree_Node *ancestor = *(nodeSet->begin());
+  std::set<Swc_Tree_Node*> newSelectedSet;
 
-  for (std::set<Swc_Tree_Node*>::iterator iter = nodeSet->begin();
-       iter != nodeSet->end(); ++iter) {
-    ancestor = SwcTreeNode::commonAncestor(ancestor, *iter);
-  }
+  std::vector<bool> labeled(nodeSet->size(), false);
 
-  for (std::set<Swc_Tree_Node*>::iterator iter = nodeSet->begin();
-       iter != nodeSet->end(); ++iter) {
-    Swc_Tree_Node *tn = *iter;
-    while (tn != NULL) {
-      if (SwcTreeNode::isRegular(tn)) {
-        setSwcTreeNodeSelected(tn, true);
+  int sourceIndex = 0;
+  for (std::set<Swc_Tree_Node*>::iterator sourceIter = nodeSet->begin();
+       sourceIter != nodeSet->end(); ++sourceIter, ++sourceIndex) {
+    if (!labeled[sourceIndex]) {
+      //Swc_Tree_Node *ancestor = *sourceIter;
+
+      //Swc_Tree_Node *ancestor = *(nodeSet->begin());
+
+      int index = sourceIndex + 1;
+      std::set<Swc_Tree_Node*>::iterator targetIter = sourceIter;
+      ++targetIter;
+      for (; targetIter != nodeSet->end(); ++targetIter, ++index) {
+        Swc_Tree_Node *ancestor =
+            SwcTreeNode::commonAncestor(*sourceIter, *targetIter);
+        if (SwcTreeNode::isRegular(ancestor)) {
+          labeled[index] = true;
+
+          Swc_Tree_Node *tn = *sourceIter;
+          while (SwcTreeNode::isRegular(tn)) {
+            newSelectedSet.insert(tn);
+            if (tn == ancestor) {
+              break;
+            }
+            tn = SwcTreeNode::parent(tn);
+          }
+
+          tn = *targetIter;
+          while (SwcTreeNode::isRegular(tn)) {
+            newSelectedSet.insert(tn);
+            if (tn == ancestor) {
+              break;
+            }
+            tn = SwcTreeNode::parent(tn);
+          }
+        }
       }
-      if (tn == ancestor) {
-        break;
-      }
-      tn = SwcTreeNode::parent(tn);
     }
   }
+
+  setSwcTreeNodeSelected(newSelectedSet.begin(), newSelectedSet.end(), true);
 }
 
 void ZStackDoc::selectUpstreamNode()

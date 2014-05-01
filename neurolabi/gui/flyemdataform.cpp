@@ -30,6 +30,7 @@ FlyEmDataForm::FlyEmDataForm(QWidget *parent) :
   m_showSelectedModelWithBoundBoxAction(NULL),
   m_changeClassAction(NULL),
   m_neighborSearchAction(NULL),
+  m_showSelectedBodyAction(NULL),
   m_secondaryNeuronContextMenu(NULL),
   m_showSecondarySelectedModelAction(NULL)
 {
@@ -343,10 +344,44 @@ ZStackDoc *FlyEmDataForm::showViewSelectedModel(ZFlyEmQueryView *view)
   return hostDoc;
 }
 
+ZStackDoc *FlyEmDataForm::showViewSelectedBody(ZFlyEmQueryView *view)
+{
+  ui->progressBar->setValue(50);
+  ui->progressBar->show();
+  //QApplication::processEvents();
+
+  QItemSelectionModel *sel = view->selectionModel();
+
+#ifdef _DEBUG_2
+  appendOutput(QString("%1 rows selected").arg(sel->selectedIndexes().size()).toStdString());
+#endif
+
+  ZStackFrame *frame = new ZStackFrame;
+
+  view->getModel()->retrieveBody(sel->selectedIndexes(), frame->document().get());
+  ui->progressBar->setValue(75);
+  //QApplication::processEvents();
+
+  frame->open3DWindow(this->parentWidget());
+  ZStackDoc *hostDoc = frame->document().get();
+
+  delete frame;
+
+  ui->progressBar->hide();
+
+  return hostDoc;
+}
+
 void FlyEmDataForm::showSelectedModel()
 {
   showViewSelectedModel(ui->queryView);
 }
+
+void FlyEmDataForm::showSelectedBody()
+{
+  showViewSelectedBody(ui->queryView);
+}
+
 
 void FlyEmDataForm::showSelectedModelWithBoundBox()
 {
@@ -441,6 +476,7 @@ void FlyEmDataForm::createContextMenu()
     m_neuronContextMenu->addAction(m_showSelectedModelWithBoundBoxAction);
     m_neuronContextMenu->addAction(m_changeClassAction);
     m_neuronContextMenu->addAction(m_neighborSearchAction);
+    m_neuronContextMenu->addAction(m_showSelectedBodyAction);
   }
 
   if (m_secondaryNeuronContextMenu == NULL) {
@@ -455,6 +491,12 @@ void FlyEmDataForm::createAction()
     m_showSelectedModelAction = new QAction("Show Model", this);
     connect(m_showSelectedModelAction, SIGNAL(triggered()),
             this, SLOT(showSelectedModel()));
+  }
+
+  if (m_showSelectedBodyAction == NULL) {
+    m_showSelectedBodyAction = new QAction("Show Body", this);
+    connect(m_showSelectedBodyAction, SIGNAL(triggered()),
+            this, SLOT(showSelectedBody()));
   }
 
   if (m_showSelectedModelWithBoundBoxAction == NULL) {

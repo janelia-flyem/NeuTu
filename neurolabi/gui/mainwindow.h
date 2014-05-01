@@ -42,6 +42,7 @@ class TileManagerDialog;
 class ZTiledStackFrame;
 class FlyEmBodyIdDialog;
 class FlyEmHotSpotDialog;
+class ZDvidDialog;
 
 namespace Ui {
     class MainWindow;
@@ -368,6 +369,10 @@ private slots:
 
   void on_actionHDF5_Body_triggered();
 
+  void on_actionDVID_Bundle_triggered();
+
+  void on_actionSubmit_Skeletonize_triggered();
+
 private:
   void createActions();
   void createFileActions();
@@ -567,6 +572,7 @@ private:
   TileManagerDialog *m_tileDlg;
   FlyEmBodyIdDialog *m_bodyDlg;
   FlyEmHotSpotDialog *m_hotSpotDlg;
+  ZDvidDialog *m_dvidDlg;
 
   //FlyEmNeuronThumbnailDialog *m_thumbnailDlg;
 };

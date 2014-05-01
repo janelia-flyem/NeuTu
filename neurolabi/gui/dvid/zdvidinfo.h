@@ -31,8 +31,16 @@ public:
    */
   std::vector<int> getBlockIndex(double x, double y, double z);
 
-  inline const std::vector<double>& getVoxelResolution() {
+  inline const std::vector<double>& getVoxelResolution() const {
     return m_voxelResolution;
+  }
+
+  inline const std::vector<int>& getStartCoordinates() const {
+    return m_startCoordinates;
+  }
+
+  inline const std::vector<int>& getStackSize() const {
+    return m_stackSize;
   }
 
 private:

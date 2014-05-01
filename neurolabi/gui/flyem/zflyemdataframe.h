@@ -141,6 +141,8 @@ public:
   void identifyHotSpot();
   void identifyHotSpot(int id);
 
+  void submitSkeletonizeService() const;
+
 signals:
   void volumeTriggered(const QString &path);
   

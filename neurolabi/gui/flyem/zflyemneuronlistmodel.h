@@ -34,6 +34,8 @@ public:
   QVector<const ZFlyEmNeuron*> getNeuronArray(const QModelIndex &index) const;
 
   void retrieveModel(const QModelIndexList &indexList, ZStackDoc *doc) const;
+  void retrieveBody(const QModelIndexList &indexList, ZStackDoc *doc) const;
+
   bool insertRows(int row, int count, const QModelIndex &parent = QModelIndex());
   bool insertColumns(int col, int count, const QModelIndex &parent = QModelIndex());
   bool removeRows(int row, int count, const QModelIndex &parent = QModelIndex());

@@ -6,6 +6,7 @@
 #include "flyem/zhotspot.h"
 #include "ztextlinecompositer.h"
 #include "zpointarray.h"
+#include "zlinesegmentarray.h"
 
 namespace FlyEm {
 
@@ -29,6 +30,7 @@ public:
                              const int *imageSize);
 
   ZPointArray toPointArray() const;
+  ZLineSegmentArray toLineSegmentArray() const;
 
   /*!
    * \brief Sort the hot spots by in the descending order of confidence.

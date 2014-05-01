@@ -203,6 +203,9 @@ std::string NeutubeConfig::getPath(Config_Item item) const
       return getApplicatinDir() + ZString::FileSeparator + "autosave";
     }
     return m_autoSaveDir;
+  case SKELETONIZATION_CONFIG:
+    return getApplicatinDir() + ZString::FileSeparator + "json" +
+        ZString::FileSeparator + "skeletonize_fib25_len40.json";
   default:
     break;
   }

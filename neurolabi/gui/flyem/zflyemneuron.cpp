@@ -12,6 +12,11 @@
 #include "tz_error.h"
 #include "zhdf5reader.h"
 
+#if defined(_QT_GUI_USED_)
+#include "dvid/zdvidreader.h"
+#include "flyem/zskeletonizeservice.h"
+#endif
+
 using namespace std;
 
 const int ZFlyEmNeuron::TopMatchCapacity = 10;
@@ -170,15 +175,38 @@ ZSwcTree* ZFlyEmNeuron::getModel(const string &bundleSource) const
 {
   if (isDeprecated(MODEL)) {
     if (!m_modelPath.empty()) {
-      m_model = new ZSwcTree;
+      //m_model = new ZSwcTree;
       ZString path(m_modelPath);
-      if (!path.isAbsolutePath()) {
-        path = path.absolutePath(ZString::dirPath(bundleSource));
+      if (path.startsWith("http:")) {
+#if defined(_QT_GUI_USED_)
+        ZDvidReader reader;
+        if (reader.open(m_modelPath.c_str())) {
+          m_model = reader.readSwc(getId());
+        }
+
+        if (m_model == NULL) {
+          ZSkeletonizeService service;
+          ZDvidTarget dvidTarget;
+          dvidTarget.set(m_modelPath);
+          service.callService(dvidTarget, getId());
+        }
+
+        if (reader.open(m_modelPath.c_str())) {
+          m_model = reader.readSwc(getId());
+        }
+#endif
+      } else {
+        if (!path.isAbsolutePath()) {
+          path = path.absolutePath(ZString::dirPath(bundleSource));
+        }
+        m_model = new ZSwcTree;
+        m_model->load(path.c_str());
       }
-      m_model->load(path.c_str());
-      if (m_model->data() == NULL) {
-        delete m_model;
-        m_model = NULL;
+      if (m_model != NULL) {
+        if (m_model->data() == NULL) {
+          delete m_model;
+          m_model = NULL;
+        }
       }
     }
 
@@ -193,9 +221,20 @@ ZSwcTree* ZFlyEmNeuron::getModel(const string &bundleSource) const
 ZObject3dScan* ZFlyEmNeuron::getBody() const
 {
   if (isDeprecated(BODY)) {
-    if (!m_volumePath.empty()) {
-      m_body = new ZObject3dScan;
-      m_body->load(m_volumePath);
+    ZString path(m_volumePath);
+    if (path.startsWith("http:")) {
+#if defined(_QT_GUI_USED_)
+      ZDvidReader reader;
+      if (reader.open(m_volumePath.c_str())) {
+        m_body = new ZObject3dScan;
+        *m_body = reader.readBody(getId());
+      }
+#endif
+    } else {
+      if (!m_volumePath.empty()) {
+        m_body = new ZObject3dScan;
+        m_body->load(m_volumePath);
+      }
     }
   }
 

@@ -1,5 +1,6 @@
 #include "zflyemdatabundle.h"
 
+#include <QProcess>
 #include <iostream>
 #include <sstream>
 #include <fstream>
@@ -11,6 +12,10 @@
 #include "zswctree.h"
 #include "swctreenode.h"
 #include "zerror.h"
+#include "dvid/zdvidinfo.h"
+#include "dvid/zdvidreader.h"
+#include "dvid/zdvidtarget.h"
+#include "dvid/zdvidfilter.h"
 
 using namespace std;
 
@@ -93,6 +98,55 @@ void ZFlyEmDataBundle::deprecateDependent(EComponent comp)
   default:
     break;
   }
+}
+
+
+bool ZFlyEmDataBundle::loadDvid(const ZDvidFilter &dvidFilter)
+{
+  ZDvidReader reader;
+  reader.open(dvidFilter.getDvidTarget());
+  QString info = reader.readInfo("superpixels");
+
+  qDebug() << info;
+
+  const ZDvidTarget &dvidTarget = dvidFilter.getDvidTarget();
+
+  m_source = dvidTarget.getSourceString();
+
+        //"http:" + dvidFilter.getDvidAddress() + ":" +
+      //ZString::num2str(dvidFilter.getPort()) + ":" + dvidFilter.getUuid();
+
+  ZDvidInfo dvidInfo;
+  dvidInfo.setFromJsonString(info.toStdString());
+  dvidInfo.print();
+
+  const std::vector<double> &voxelResolution = dvidInfo.getVoxelResolution();
+  const std::vector<int> &sourceOffset = dvidInfo.getStartCoordinates();
+  const std::vector<int> &stackSize = dvidInfo.getStackSize();
+
+  for (int i = 0; i < 3; ++i) {
+    m_imageResolution[i] = voxelResolution[i];
+    m_swcResolution[i] = voxelResolution[i];
+    m_sourceOffset[i] = sourceOffset[i];
+    m_sourceDimension[i] = stackSize[i];
+  }
+
+  std::vector<int> bodyIdArray = reader.readBodyId(dvidFilter.getMinBodySize(),
+                                                   dvidFilter.getMaxBodySize());
+
+  m_neuronArray.resize(bodyIdArray.size());
+  size_t realSize = 0;
+  for (size_t i = 0; i < bodyIdArray.size(); ++i) {
+    if (bodyIdArray[i] > 0) {
+      ZFlyEmNeuron &neuron = m_neuronArray[realSize];
+      neuron.setId(bodyIdArray[realSize++]);
+      neuron.setModelPath(m_source);
+      neuron.setVolumePath(m_source);
+    }
+  }
+  m_neuronArray.resize(realSize);
+
+  return true;
 }
 
 bool ZFlyEmDataBundle::loadJsonFile(const std::string &filePath)
@@ -673,5 +727,43 @@ void ZFlyEmDataBundle::setThumbnail(const std::string &thumbnailDir)
     thumbnailPath.appendNumber(neuron.getId());
     thumbnailPath.append(".tif");
     neuron.setThumbnailPath(thumbnailPath);
+  }
+}
+
+void ZFlyEmDataBundle::submitSkeletonizeService() const
+{
+  const QString sklServer = "emrecon100.janelia.priv:9082/skeletonize";
+  const std::vector<ZFlyEmNeuron> &neuronArray = getNeuronArray();
+  QProcess process;
+  for (std::vector<ZFlyEmNeuron>::const_iterator iter = neuronArray.begin();
+       iter != neuronArray.end(); ++iter) {
+    const ZFlyEmNeuron &neuron = *iter;
+    std::string path = neuron.getModelPath();
+    ZDvidTarget target;
+    target.set(path);
+
+    if (target.isValid()) {
+      /*
+      QString command = QString(
+            "curl -X POST -H \"Content-Type: application/json\" -d "
+            "'{\"dvid-server\": \"%1\", \"uuid\": \"%2\", \"bodies\": [%3]}' "
+            "http://%4").arg(target.getAddressWithPort().c_str()).
+          arg(target.getUuid().c_str()).arg(neuron.getId()).arg(sklServer);
+*/
+      QString command = "curl";
+      QString data = QString(
+            "{\"dvid-server\": \"%1\", \"uuid\": \"%2\", \"bodies\": [%3]}").
+          arg(target.getAddressWithPort().c_str()).
+          arg(target.getUuid().c_str()).arg(neuron.getId());
+      QStringList args;
+      args << "-X" << "POST" << "-H" << "Content-Type: application/json"
+           << "-d" << data
+           << QString("http://%4").arg(sklServer);
+
+      qDebug() << command;
+      qDebug() << args;
+      process.start(command, args);
+      process.waitForFinished(300000);
+    }
   }
 }

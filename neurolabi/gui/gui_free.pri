@@ -176,7 +176,10 @@ HEADERS +=$${PWD}/zstackprocessor.h \
    $${PWD}/flyem/zflyemcoordinateconverter.h \
    $${PWD}/flyem/zflyem.h \
    $${PWD}/flyem/zflyemdatainfo.h \
-   $${PWD}/dvid/zdvidinfo.h
+   $${PWD}/dvid/zdvidinfo.h \
+   $${PWD}/zlinesegment.h \
+   $${PWD}/zlinesegmentarray.h \
+   $${PWD}/dvid/zdvidtarget.h
 
 SOURCES +=$${PWD}/zstackprocessor.cpp \
    $${PWD}/zstack.cxx \
@@ -338,4 +341,7 @@ SOURCES +=$${PWD}/zstackprocessor.cpp \
    $${PWD}/zstringarray.cpp \
    $${PWD}/flyem/zflyemcoordinateconverter.cpp \
    $${PWD}/flyem/zflyemdatainfo.cpp \
-   $${PWD}/dvid/zdvidinfo.cpp
+   $${PWD}/dvid/zdvidinfo.cpp \
+   $${PWD}/zlinesegment.cpp \
+   $${PWD}/zlinesegmentarray.cpp \
+   $${PWD}/dvid/zdvidtarget.cpp

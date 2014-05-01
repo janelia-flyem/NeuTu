@@ -11139,7 +11139,7 @@ void ZTest::test(MainWindow *host)
   ZSwcTree *tree = reader.readSwc(sourceBodyId);
 #endif
 
-#if 1
+#if 0
   ZDvidReader reader;
 
   ZFlyEmDataInfo eminfo(FlyEm::DATA_FIB25);
@@ -11305,5 +11305,41 @@ void ZTest::test(MainWindow *host)
   std::cout << neuronArray.size() << " neurons." << std::endl;
 
 
+#endif
+
+#if 0
+  ZDvidReader reader;
+
+  ZFlyEmDataInfo eminfo(FlyEm::DATA_FIB25);
+  reader.open(eminfo.getDvidAddress().c_str(), "339c");
+
+  std::vector<int> bodyId = reader.readBodyId(1000000, 2000000);
+
+  for (size_t i = 0; i < bodyId.size(); ++i) {
+    std::cout << bodyId[i] << " ";
+  }
+  std::cout << std::endl;
+#endif
+
+#if 1
+  ZFlyEmNeuron neuron;
+  neuron.setId(117);
+  neuron.setModelPath("http:emdata1.int.janelia.org:9000:91a");
+  neuron.setVolumePath("http:emdata1.int.janelia.org:9000:91a");
+
+  ZSwcTree *tree2 = neuron.getModel();
+
+  tree2->save(GET_TEST_DATA_DIR + "/test2.swc");
+
+  ZObject3dScan *obj = neuron.getBody();
+  ZStackSkeletonizer skeletonizer;
+
+  skeletonizer.configure(
+        NeutubeConfig::getInstance().getPath(NeutubeConfig::SKELETONIZATION_CONFIG));
+  skeletonizer.print();
+
+  ZSwcTree *tree = skeletonizer.makeSkeleton(*obj);
+
+  tree->save(GET_TEST_DATA_DIR + "/test.swc");
 #endif
 }

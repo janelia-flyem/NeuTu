@@ -66,3 +66,8 @@ void ZDvidBuffer::clear()
 
   m_infoArray.clear();
 }
+
+void ZDvidBuffer::clearInfoArray()
+{
+  m_infoArray.clear();
+}

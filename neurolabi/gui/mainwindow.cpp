@@ -16,6 +16,7 @@
 #else
 #include <memory>
 #endif
+#include <limits>
 
 #include "ui_mainwindow.h"
 
@@ -130,6 +131,9 @@
 #include "flyemhotspotdialog.h"
 #include "dvid/zdvidinfo.h"
 #include "zswctreenodearray.h"
+#include "zdviddialog.h"
+#include "dvid/zdvidtarget.h"
+#include "dvid/zdvidfilter.h"
 
 #include "ztest.h"
 
@@ -263,6 +267,7 @@ MainWindow::MainWindow(QWidget *parent) :
   m_tileDlg = new TileManagerDialog(this);
   m_bodyDlg = new FlyEmBodyIdDialog(this);
   m_hotSpotDlg = new FlyEmHotSpotDialog(this);
+  m_dvidDlg = new ZDvidDialog(this);
 }
 
 MainWindow::~MainWindow()
@@ -5206,6 +5211,9 @@ ZStackDoc *MainWindow::hotSpotDemoFs(
 
   int sourceBodyId = bodyId;
   ZSwcTree *tree = reader.readSwc(sourceBodyId);
+
+  qDebug() << "Model loaded.";
+
   ZSwcTree *unscaledTree = tree->clone();
   tree->scale(dvidInfo.getVoxelResolution()[0],
       dvidInfo.getVoxelResolution()[1], dvidInfo.getVoxelResolution()[2]);
@@ -5259,8 +5267,10 @@ ZStackDoc *MainWindow::hotSpotDemoFs(
   FlyEm::ZHotSpotArray &hotSpotArray =
       analyzer.computeHotSpot(neuron, neuronArray);
   if (hotSpotArray.empty()) {
+    /*
     report("Hot Spot Demo Failed", "The neuron seems normal.",
            ZMessageReporter::Warning);
+           */
     return NULL;
   }
   //hotSpotArray.print();
@@ -5278,13 +5288,16 @@ ZStackDoc *MainWindow::hotSpotDemoFs(
 
   if (stack == NULL) {
     if (hotSpotArray.empty()) {
+      /*
       report("Hot Spot Demo Failed", "Cannot retreive grayscale data.",
              ZMessageReporter::Warning);
+             */
       return NULL;
     }
   }
 
-  tree = ZSwcGenerator::createSwc(hotSpotArray.toPointArray(), 5.0);
+  tree = ZSwcGenerator::createSwc(hotSpotArray.toLineSegmentArray(), 5.0);
+  //tree = ZSwcGenerator::createSwc(hotSpotArray.toPointArray(), 5.0);
 
   ZStackDoc *doc = new ZStackDoc(stack, NULL);
   doc->addSwcTree(tree, false);
@@ -5346,6 +5359,9 @@ void MainWindow::on_actionHot_Spot_Demo_triggered()
       ZStackFrame *frame = createStackFrame(doc);
       addStackFrame(frame);
       presentStackFrame(frame);
+    } else {
+      report("No Hotspot Detected", "No hotspot detected.",
+             ZMessageReporter::Information);
     }
 #if 0
     ZStackFrame *frame = res.result();
@@ -5516,5 +5532,46 @@ void MainWindow::on_actionHDF5_Body_triggered()
 
       emit progressDone();
     }
+  }
+}
+
+void MainWindow::on_actionDVID_Bundle_triggered()
+{
+  if (m_dvidDlg->exec()) {
+    m_progress->setRange(0, 3);
+
+    int currentProgress = 0;
+    m_progress->open();
+    m_progress->setLabelText(QString("Loading ..."));
+
+    m_progress->setValue(++currentProgress);
+
+    ZDvidTarget target;
+    target.set(
+          m_dvidDlg->getAddress().toStdString(),
+          m_dvidDlg->getUuid().toStdString(), m_dvidDlg->getPort());
+    ZDvidFilter dvidFilter;
+    dvidFilter.setDvidTarget(target);
+    dvidFilter.setMinBodySize(1000000);
+    dvidFilter.setMaxBodySize(std::numeric_limits<std::size_t>::max());
+
+    ZFlyEmDataBundle *dataBundle = new ZFlyEmDataBundle;
+    if (dataBundle->loadDvid(dvidFilter)) {
+      ZFlyEmDataFrame *frame = new ZFlyEmDataFrame;
+      frame->addData(dataBundle);
+      addFlyEmDataFrame(frame);
+    } else {
+      delete dataBundle;
+      reportFileOpenProblem(target.getSourceString().c_str());
+    }
+    m_progress->reset();
+  }
+}
+
+void MainWindow::on_actionSubmit_Skeletonize_triggered()
+{
+  ZFlyEmDataFrame *frame = currentFlyEmDataFrame();
+  if (frame != NULL) {
+    frame->submitSkeletonizeService();
   }
 }

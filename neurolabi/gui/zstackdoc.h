@@ -807,7 +807,8 @@ void ZStackDoc::setSwcSelected(InputIterator first, InputIterator last, bool sel
 }
 
 template <class InputIterator>
-void ZStackDoc::setSwcTreeNodeSelected(InputIterator first, InputIterator last, bool select)
+void ZStackDoc::setSwcTreeNodeSelected(
+    InputIterator first, InputIterator last, bool select)
 {
   QList<Swc_Tree_Node*> selected;
   QList<Swc_Tree_Node*> deselected;

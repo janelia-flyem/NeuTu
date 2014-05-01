@@ -5,6 +5,7 @@
 #include "flyem/zflyemneuronrangecompare.h"
 #include "zdoublevector.h"
 #include "zpointarray.h"
+#include "zlinesegmentarray.h"
 
 ZSwcGenerator::ZSwcGenerator()
 {
@@ -309,6 +310,33 @@ ZSwcTree* ZSwcGenerator::createSwc(
     if (isConnected) {
       parent = tn;
     }
+  }
+
+  tree->resortId();
+
+  return tree;
+}
+
+ZSwcTree* ZSwcGenerator::createSwc(
+    const ZLineSegmentArray &lineArray, double radius)
+{
+  ZSwcTree *tree = new ZSwcTree;
+
+  Swc_Tree_Node *root = tree->forceVirtualRoot();
+
+  for (ZLineSegmentArray::const_iterator iter = lineArray.begin();
+       iter != lineArray.end(); ++iter) {
+    const ZLineSegment &seg = *iter;
+    Swc_Tree_Node *tn = New_Swc_Tree_Node();
+
+    SwcTreeNode::setPos(tn, seg.getStartPoint());
+    SwcTreeNode::setRadius(tn, radius);
+    SwcTreeNode::setParent(tn, root);
+
+    Swc_Tree_Node *tn2 = New_Swc_Tree_Node();
+    SwcTreeNode::setPos(tn2, seg.getEndPoint());
+    SwcTreeNode::setRadius(tn2, radius);
+    SwcTreeNode::setParent(tn2, tn);
   }
 
   tree->resortId();

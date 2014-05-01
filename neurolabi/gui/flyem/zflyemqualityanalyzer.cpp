@@ -447,7 +447,7 @@ FlyEm::ZHotSpotArray& ZFlyEmQualityAnalyzer::computeHotSpotForSplit(
                                         iround(SwcTreeNode::y(tn)),
                                         iround(SwcTreeNode::z(tn)));
                 }
-                hotSpot->setguidance(guidance);
+                hotSpot->setGuidance(guidance);
 
                 break;
               }
@@ -551,7 +551,7 @@ ZFlyEmQualityAnalyzer::computeHotSpot(const ZFlyEmNeuron &neuron,
 
   ZSwcDeepAngleMetric metric;
   metric.setLevel(3);
-  metric.setMinDist(30.0);
+  metric.setMinDist(20.0);
   /*
   ZFlyEmDataBundle dataBundle;
   dataBundle.loadJsonFile(GET_TEST_DATA_DIR + "/flyem/FIB/data_release/bundle5/data_bundle.json");
@@ -576,6 +576,12 @@ ZFlyEmQualityAnalyzer::computeHotSpot(const ZFlyEmNeuron &neuron,
         structure->setSource(neuron.getId());
         structure->addTarget(buddyNeuron.getId());
         hotSpot->setGeometry(geometry);
+
+        FlyEm::ZCurveGeometry *guidance = new FlyEm::ZCurveGeometry;
+        guidance->appendPoint(SwcTreeNode::pos(tn));
+        guidance->appendPoint(SwcTreeNode::pos(metric.getSecondNode()));
+        hotSpot->setGuidance(guidance);
+
         hotSpot->setStructure(structure);
         hotSpot->setConfidence(1.0 - dist);
         m_hotSpotArray.append(hotSpot);

@@ -101,6 +101,13 @@ void SwcTreeNode::setPos(Swc_Tree_Node *tn, double x, double y, double z)
   tn->node.z = z;
 }
 
+void SwcTreeNode::setPos(Swc_Tree_Node *tn, const ZPoint &pt)
+{
+  tn->node.x = pt.x();
+  tn->node.y = pt.y();
+  tn->node.z = pt.z();
+}
+
 double SwcTreeNode::radius(const Swc_Tree_Node *tn)
 {
   return tn->node.d;

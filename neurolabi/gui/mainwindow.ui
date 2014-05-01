@@ -16,7 +16,7 @@
    </font>
   </property>
   <property name="windowTitle">
-   <string>neuTube 0.92</string>
+   <string>neuTube 0.92b</string>
   </property>
   <widget class="QWidget" name="centralwidget"/>
   <widget class="QMenuBar" name="menubar">
@@ -257,6 +257,7 @@
       <addaction name="actionVolume_field"/>
       <addaction name="actionThumbnails_2"/>
       <addaction name="actionHDF5_Body"/>
+      <addaction name="actionDVID_Bundle"/>
      </widget>
      <widget class="QMenu" name="menuQuality_Control">
       <property name="title">
@@ -306,6 +307,7 @@
       </property>
       <addaction name="actionGet_Grayscale"/>
       <addaction name="actionHot_Spot_Demo"/>
+      <addaction name="actionSubmit_Skeletonize"/>
      </widget>
      <widget class="QMenu" name="menuExport_2">
       <property name="title">
@@ -1146,6 +1148,16 @@
   <action name="actionHDF5_Body">
    <property name="text">
     <string>HDF5 Body</string>
+   </property>
+  </action>
+  <action name="actionDVID_Bundle">
+   <property name="text">
+    <string>DVID Bundle</string>
+   </property>
+  </action>
+  <action name="actionSubmit_Skeletonize">
+   <property name="text">
+    <string>Submit Skeletonize</string>
    </property>
   </action>
  </widget>

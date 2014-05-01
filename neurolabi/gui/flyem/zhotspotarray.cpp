@@ -129,3 +129,14 @@ ZPointArray FlyEm::ZHotSpotArray::toPointArray() const
 
   return ptArray;
 }
+
+ZLineSegmentArray FlyEm::ZHotSpotArray::toLineSegmentArray() const
+{
+  ZLineSegmentArray lineArray;
+  for (ZHotSpotArray::const_iterator iter = begin(); iter != end(); ++iter) {
+    const ZHotSpot *hotSpot = *iter;
+    lineArray.append(hotSpot->toLineSegmentArray());
+  }
+
+  return lineArray;
+}

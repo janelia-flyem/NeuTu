@@ -1,6 +1,7 @@
 #ifndef ZSTACKSKELETONIZER_H
 #define ZSTACKSKELETONIZER_H
 
+#include <string>
 #include "tz_image_lib_defs.h"
 #include "zprogressable.h"
 
@@ -14,6 +15,16 @@ class ZStackSkeletonizer : public ZProgressable
 public:
   ZStackSkeletonizer();
 
+  /*!
+   * \brief Configure the skeletonizer from a json file.
+   */
+  void configure(const std::string &filePath);
+
+  /*!
+   * \brief Configure the skeletonizer from a json object.
+   *
+   * See "neurolabi/json/skeletonize.schema.json" for the schema.
+   */
   void configure(const ZJsonObject &config);
 
   inline void setLengthThreshold(double threshold) {
@@ -34,6 +45,10 @@ public:
 
   inline void setRemovingBorder(bool r) {
     m_removingBorder = r;
+  }
+
+  inline void setFillingHole(bool f) {
+    m_fillingHole = f;
   }
 
   inline void setMinObjSize(int s) {
@@ -60,6 +75,12 @@ public:
     m_downsampleInterval[2] = zintv;
   }
 
+  inline void getDownsampleInterval(int *xintv, int *yintv, int *zintv) {
+    *xintv = m_downsampleInterval[0];
+    *yintv = m_downsampleInterval[1];
+    *zintv = m_downsampleInterval[2];
+  }
+
   ZSwcTree* makeSkeleton(const Stack *stack);
   ZSwcTree* makeSkeleton(const ZStack &stack);
   ZSwcTree* makeSkeleton(const ZObject3dScan &obj);
@@ -83,6 +104,7 @@ private:
   bool m_rebase;
   bool m_interpolating;
   bool m_removingBorder;
+  bool m_fillingHole;
   int m_minObjSize;
   bool m_keepingSingleObject;
   int m_level;

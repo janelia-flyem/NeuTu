@@ -47,6 +47,8 @@ public slots:
 
   void clear();
 
+  void clearInfoArray();
+
 private:
   QVector<ZObject3dScan> m_bodyArray;
   QVector<ZSwcTree*> m_swcTreeArray;

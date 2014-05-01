@@ -2268,3 +2268,10 @@ void ZFlyEmDataFrame::updateQualityControl()
         GET_DATA_DIR + "/test.json", resolution, imageSize);
 #endif
 }
+
+void ZFlyEmDataFrame::submitSkeletonizeService() const
+{
+  foreach (ZFlyEmDataBundle *dataBundle, m_dataArray) {
+    dataBundle->submitSkeletonizeService();
+  }
+}

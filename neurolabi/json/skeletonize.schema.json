@@ -17,6 +17,17 @@
     },
     "rebase": {
       "type": "boolean"
+    },
+    "fillingHole": {
+      "type": "boolean"
+    },
+    "maximalDistance": {
+      "type": "number",
+      "minimum": 0
+    },
+    "minimalObjectSize": {
+      "type": "integer",
+      "minimum": 0
     }
   }
 }

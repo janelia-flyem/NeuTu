@@ -51,43 +51,49 @@ bool ZDvidClient::postRequest(
     ZDvidRequest::EDvidRequest request, const QVariant &parameter)
 {
   QUrl requestUrl;
+  QString urlString;
 
   switch (request) {
   case ZDvidRequest::DVID_GET_SUPERPIXEL_INFO:
-    requestUrl.setUrl(QString("%1/%2/superpixels/info").
-                      arg(m_serverAddress).arg(m_dataPath));
+    urlString = QString("%1/%2/superpixels/info").
+        arg(m_serverAddress).arg(m_dataPath);
     break;
   case ZDvidRequest::DVID_GET_SP2BODY_STRING:
-    requestUrl.setUrl(QString("%1/%2/sp2body/%3").arg(m_serverAddress).
-                      arg(m_dataPath).arg(parameter.toString()));
+    urlString = QString("%1/%2/sp2body/%3").arg(m_serverAddress).
+        arg(m_dataPath).arg(parameter.toString());
     break;
   case ZDvidRequest::DVID_GET_OBJECT:
   case ZDvidRequest::DVID_SAVE_OBJECT:
-    requestUrl.setUrl(QString("%1/%2/sp2body/sparsevol/%3").
-                      arg(m_serverAddress).arg(m_dataPath).
-                      arg(parameter.toInt()));
+    urlString = QString("%1/%2/sp2body/sparsevol/%3").
+        arg(m_serverAddress).arg(m_dataPath).
+        arg(parameter.toInt());
     break;
   case ZDvidRequest::DVID_GET_SWC:
   case ZDvidRequest::DVID_UPLOAD_SWC:
-    requestUrl.setUrl(QString("%1/%2/skeletons/%3.swc").
-                      arg(m_serverAddress).arg(m_dataPath).
-                      arg(parameter.toInt()));
+    urlString = QString("%1/%2/skeletons/%3.swc").
+        arg(m_serverAddress).arg(m_dataPath).
+        arg(parameter.toInt());
     break;
   case ZDvidRequest::DVID_GET_GRAY_SCALE:
   {
     QList<QVariant> parameterList = parameter.toList();
-    requestUrl.setUrl(
-          QString("%1/%2/grayscale8/raw/0_1/%3_%4/%5_%6_%7").arg(m_serverAddress).
-          arg(m_dataPath).
-          arg(parameterList[3].toInt()).arg(parameterList[4].toInt()).
+    urlString = QString("%1/%2/grayscale8/raw/0_1/%3_%4/%5_%6_%7").arg(m_serverAddress).
+        arg(m_dataPath).
+        arg(parameterList[3].toInt()).arg(parameterList[4].toInt()).
         arg(parameterList[0].toInt()).arg(parameterList[1].toInt()).
-        arg(parameterList[2].toInt()));
+        arg(parameterList[2].toInt());
   }
     break;
   default:
     RECORD_ERROR_UNCOND("Invalid request");
     return false;
   }
+
+  if (!urlString.startsWith("http")) {
+    urlString = "http://" + urlString;
+  }
+
+  requestUrl.setUrl(urlString);
 
   qDebug() << requestUrl.toString();
 

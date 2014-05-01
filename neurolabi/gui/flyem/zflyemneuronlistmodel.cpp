@@ -7,6 +7,7 @@
 #include "zpunctaobjsmodel.h"
 #include "zswccolorscheme.h"
 #include "QsLog.h"
+#include "zobject3dscanarray.h"
 
 ZFlyEmNeuronListModel::ZFlyEmNeuronListModel(QObject *parent) :
   QAbstractTableModel(parent)
@@ -233,6 +234,38 @@ void ZFlyEmNeuronListModel::retrieveModel(
   doc->swcObjsModel()->updateModelData();
   doc->punctaObjsModel()->updateModelData();
 }
+
+void ZFlyEmNeuronListModel::retrieveBody(
+    const QModelIndexList &indexList, ZStackDoc *doc) const
+{
+  QVector<const ZFlyEmNeuron*> neuronArray;
+
+  foreach (QModelIndex index, indexList) {
+    QVector<const ZFlyEmNeuron*> subArray = getNeuronArray(index);
+    foreach (const ZFlyEmNeuron *neuron, subArray) {
+      neuronArray.append(neuron);
+    }
+  }
+
+  foreach (const ZFlyEmNeuron *neuron, neuronArray) {
+    if (neuron != NULL) {
+      //doc->addSwcTree(neuron->getModel()->clone(), true);
+      ZObject3dScan *body = neuron->getBody();
+      ZObject3dScanArray bodyArray;
+
+      if (body != NULL) {
+        bodyArray.push_back(*body);
+      }
+
+      ZStack *stack = bodyArray.toStackObject();
+      if (stack != NULL) {
+        doc->loadStack(stack);
+        doc->setTag(NeuTube::Document::FLYEM_BODY);
+      }
+    }
+  }
+}
+
 
 bool ZFlyEmNeuronListModel::insertRows(
     int row, int count, const QModelIndex &parent)
