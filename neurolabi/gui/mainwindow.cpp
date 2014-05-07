@@ -1240,8 +1240,59 @@ void MainWindow::presentStackFrame(ZStackFrame *frame)
   }
 }
 
+ZStackDoc* MainWindow::openFileFunc(const QString &fileName)
+{
+  ZStackDoc *doc = NULL;
+  ZFileType::EFileType fileType = ZFileType::fileType(fileName.toStdString());
+
+  if (ZFileType::isNeutubeOpenable(fileType)) {
+    doc = new ZStackDoc(NULL, NULL);
+    if (doc->loadFile(fileName) == false) {
+      delete doc;
+      doc = NULL;
+    }
+  }
+
+  return doc;
+}
+
 void MainWindow::openFile(const QString &fileName)
 {
+  QFuture<ZStackDoc*> res;
+
+  res = QtConcurrent::run(this, &MainWindow::openFileFunc, fileName);
+
+  m_progress->setRange(0, 2);
+  m_progress->setLabelText(QString("Loading %1 ...").arg(fileName));
+  int currentProgress = 0;
+  m_progress->setValue(++currentProgress);
+  m_progress->show();
+
+  res.waitForFinished();
+
+  ZStackDoc *doc = res.result();
+  if (doc != NULL) {
+    ZStackFrame *frame = createStackFrame(doc);
+    if (doc->hasStackData()) {
+      if (GET_APPLICATION_NAME == "Biocytin") {
+        doc->setStackBackground(NeuTube::IMAGE_BACKGROUND_BRIGHT);
+        doc->setTag(NeuTube::Document::BIOCYTIN_STACK);
+      }
+      addStackFrame(frame);
+      presentStackFrame(frame);
+      m_progress->reset();
+    } else {
+      m_progress->reset();
+      frame->open3DWindow(this);
+      delete frame;
+    }
+    setCurrentFile(fileName);
+  } else {
+    m_progress->reset();
+    reportFileOpenProblem(fileName);
+  }
+
+#if 0
   ZFileType::EFileType fileType = ZFileType::fileType(fileName.toStdString());
 
   if (ZFileType::isNeutubeOpenable(fileType)) {
@@ -1306,6 +1357,7 @@ void MainWindow::openFile(const QString &fileName)
   } else {
     reportFileOpenProblem(fileName, " unrecognized file name extension");
   }
+#endif
 }
 
 void MainWindow::openTraceProject(QString fileName)
@@ -4036,7 +4088,7 @@ void MainWindow::reportFileOpenProblem(const QString &filePath,
 
   report(std::string("File Open Error"),
          std::string("Cannot open ") + filePath.toStdString() +
-         finalReason.toStdString(), ZMessageReporter::Warning);
+         ": " + finalReason.toStdString(), ZMessageReporter::Warning);
 
 #if 0
   QMessageBox::critical(this, tr("Error"),
@@ -4276,6 +4328,26 @@ ZStackFrame *MainWindow::createStackFrame(
     }
     //addStackFrame(newFrame);
     //presentStackFrame(newFrame);
+
+    return newFrame;
+  }
+
+  return NULL;
+}
+
+ZStackFrame *MainWindow::createStackFrame(
+    ZStackDoc *doc, ZStackFrame *parentFrame)
+{
+  if (doc != NULL) {
+    ZStackFrame *newFrame = new ZStackFrame;
+    newFrame->setParentFrame(parentFrame);
+
+    newFrame->consumeDocument(doc);
+
+    if (parentFrame != NULL) {
+      newFrame->document()->setStackBackground(
+            parentFrame->document()->getStackBackground());
+    }
 
     return newFrame;
   }
@@ -5649,7 +5721,7 @@ void MainWindow::on_actionHDF5_Body_triggered()
             downsampleInterval);
 
       m_progress->setRange(0, 2);
-      m_progress->setLabelText(QString("Testing ..."));
+      m_progress->setLabelText(QString("Loading ..."));
       int currentProgress = 0;
       m_progress->setValue(++currentProgress);
       m_progress->show();

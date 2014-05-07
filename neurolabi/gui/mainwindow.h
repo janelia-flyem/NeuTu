@@ -86,8 +86,11 @@ public slots:
       ZStackFrame *parentFrame = NULL);
 
   ZStackFrame* createStackFrame(
-      ZStackDoc *doc,NeuTube::Document::ETag tag = NeuTube::Document::NORMAL,
+      ZStackDoc *doc,NeuTube::Document::ETag tag,
       ZStackFrame *parentFrame = NULL);
+
+  ZStackFrame* createStackFrame(
+      ZStackDoc *doc, ZStackFrame *parentFrame = NULL);
 
   void showStackFrame(
       const QStringList &fileList, bool opening3DWindow = false);
@@ -121,6 +124,8 @@ protected:
                           const QString &dir);
   QString getDirectory(const QString &caption);
   void createActionMap();
+
+  ZStackDoc* openFileFunc(const QString &filePath);
 
 private slots:
   // slots for 'File' menu

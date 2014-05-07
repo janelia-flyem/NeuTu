@@ -5003,7 +5003,7 @@ void ZStackDoc::loadFileList(const QStringList &fileList)
 #endif
 }
 
-void ZStackDoc::loadFile(const QString &filePath, bool emitMessage)
+bool ZStackDoc::loadFile(const QString &filePath, bool emitMessage)
 {
   switch (ZFileType::fileType(filePath.toStdString())) {
   case ZFileType::SWC_FILE:
@@ -5028,10 +5028,12 @@ void ZStackDoc::loadFile(const QString &filePath, bool emitMessage)
       emit swcNetworkModified();
     }
     break;
+  case ZFileType::OBJECT_SCAN_FILE:
+    setTag(NeuTube::Document::FLYEM_BODY);
   case ZFileType::TIFF_FILE:
   case ZFileType::LSM_FILE:
   case ZFileType::V3D_RAW_FILE:
-    readStack(filePath.toStdString().c_str());
+    readStack(filePath.toStdString().c_str(), false);
     if (emitMessage) {
       stackModified();
     }
@@ -5048,6 +5050,8 @@ void ZStackDoc::loadFile(const QString &filePath, bool emitMessage)
       if (emitMessage) {
         emit swcModified();
       }
+    } else {
+      return false;
     }
     break;
   case ZFileType::V3D_APO_FILE:
@@ -5057,11 +5061,16 @@ void ZStackDoc::loadFile(const QString &filePath, bool emitMessage)
       if (emitMessage) {
         emit punctaModified();
       }
+    } else {
+      return false;
     }
     break;
   default:
+    return false;
     break;
   }
+
+  return true;
 }
 
 void ZStackDoc::deprecateDependent(EComponent component)

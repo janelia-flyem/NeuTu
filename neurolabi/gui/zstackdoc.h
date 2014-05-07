@@ -243,7 +243,7 @@ public: //swc selection
 public:
   void loadFileList(const QList<QUrl> &urlList);
   void loadFileList(const QStringList &filePath);
-  void loadFile(const QString &filePath, bool emitMessage = false);
+  bool loadFile(const QString &filePath, bool emitMessage = false);
   virtual void loadStack(Stack *stack, bool isOwner = true);
   virtual void loadStack(ZStack *zstack);
   virtual ZStack*& stackRef();
