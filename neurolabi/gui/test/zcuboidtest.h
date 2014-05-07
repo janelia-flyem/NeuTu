@@ -11,6 +11,7 @@
 #include <memory>
 #endif
 #include "zcuboid.h"
+#include "zintcuboidface.h"
 
 #ifdef _USE_GTEST_
 
@@ -204,6 +205,127 @@ TEST(ZCuboid, distance) {
 
   box2.set(10, 20, 30, 20, 30, 50);
   ASSERT_DOUBLE_EQ(box1.computeDistance(box2), 0.0);
+}
+
+TEST(ZIntCuboidFace, basic)
+{
+  ZIntCuboidFaceArray faceArray;
+
+  ZIntCuboidFace face;
+  //face.print();
+  ASSERT_EQ(0, face.getLowerBound(0));
+  faceArray.appendValid(face);
+
+  face.set(ZIntCuboidFace::Corner(10, 20), ZIntCuboidFace::Corner(40, 80));
+  ASSERT_EQ(10, face.getLowerBound(0));
+  //face.print();
+  faceArray.appendValid(face);
+  ASSERT_EQ(2, (int) faceArray.size());
+
+  face.set(10, 20, 40, 80);
+  //face.print();
+
+  faceArray.appendValid(face);
+
+  //faceArray.print();
+
+  ASSERT_FALSE(faceArray[0].hasOverlap(faceArray[1]));
+  ASSERT_TRUE(faceArray[1].hasOverlap(faceArray[2]));
+
+  ZIntCuboidFaceArray faceArray2 = faceArray[0].cropBy(faceArray[1]);
+  //faceArray2.print();
+
+  faceArray2 = faceArray[1].cropBy(faceArray[0]);
+  //faceArray2.print();
+
+  faceArray2 = faceArray[1].cropBy(faceArray[2]);
+  //faceArray2.print();
+
+  ASSERT_TRUE(faceArray[1].isWithin(faceArray[2]));
+
+  face.set(20, 30, 100, 90);
+  faceArray.appendValid(face);
+  //faceArray.print();
+
+  faceArray2 = faceArray[2].cropBy(faceArray[3]);
+  //faceArray2.print();
+
+  face.set(20, 30, 30, 60);
+  faceArray.appendValid(face);
+  faceArray2 = faceArray[2].cropBy(faceArray[4]);
+  //faceArray2.print();
+}
+
+TEST(ZIntCuboidFace, dist)
+{
+  ZIntCuboidFace face;
+  face.set(10, 20, 40, 80);
+  //face.print();
+
+  ASSERT_DOUBLE_EQ(0.0, face.computeDistance(10, 20, 0));
+  ASSERT_TRUE(face.contains(10, 20, 0));
+
+  ASSERT_DOUBLE_EQ(10.0, face.computeDistance(10, 20, 10));
+  ASSERT_FALSE(face.contains(10, 20, 10));
+  ASSERT_DOUBLE_EQ(10.0, face.computeDistance(10, 10, 0));
+  ASSERT_DOUBLE_EQ(10.0, face.computeDistance(0, 20, 0));
+  ASSERT_DOUBLE_EQ(sqrt(300.0), face.computeDistance(0, 10, 10));
+  ASSERT_DOUBLE_EQ(sqrt(300.0), face.computeDistance(50, 90, -10));
+
+  face.setNormal(NeuTube::X_AXIS);
+  ASSERT_DOUBLE_EQ(0.0, face.computeDistance(0, 10, 20));
+  ASSERT_DOUBLE_EQ(10.0, face.computeDistance(10, 10, 20));
+  ASSERT_DOUBLE_EQ(10.0, face.computeDistance(0, 10, 10));
+  ASSERT_DOUBLE_EQ(10.0, face.computeDistance(0, 0, 20));
+  ASSERT_DOUBLE_EQ(sqrt(300.0), face.computeDistance(10, 0, 10));
+  ASSERT_DOUBLE_EQ(sqrt(300.0), face.computeDistance(-10, 50, 90));
+
+  ZIntCuboidFaceArray faceArray;
+  Cuboid_I cuboid;
+  Cuboid_I_Set_S(&cuboid, 10, 20, 30, 40, 50, 60);
+  faceArray.append(&cuboid);
+  //faceArray.print();
+  ASSERT_TRUE(faceArray.contains(10, 20, 30));
+  ASSERT_FALSE(faceArray.contains(40, 50, 60));
+  ASSERT_TRUE(faceArray.contains(49, 69, 89));
+  ASSERT_TRUE(faceArray.contains(15, 25, 30));
+  ASSERT_TRUE(faceArray.contains(25, 69, 50));
+  ASSERT_FALSE(faceArray.contains(25, 69, 90));
+  ASSERT_TRUE(faceArray.contains(25, 69, 89));
+  ASSERT_FALSE(faceArray.contains(25, 59, 79));
+}
+
+TEST(ZIntCuboidFaceArray, basic)
+{
+  ZIntCuboidFaceArray faceArray;
+  Cuboid_I cuboid;
+  Cuboid_I_Set_S(&cuboid, 10, 20, 30, 40, 50, 60);
+  faceArray.append(&cuboid);
+  ASSERT_EQ(6, (int) faceArray.size());
+  //faceArray.print();
+
+  ZIntCuboidFaceArray faceArray2;
+  Cuboid_I_Set_S(&cuboid, 50, 30, 40, 40, 50, 60);
+  faceArray2.append(&cuboid);
+  ASSERT_EQ(6, (int) faceArray2.size());
+  //faceArray2.print();
+
+  for (ZIntCuboidFaceArray::iterator iter = faceArray2.begin();
+       iter != faceArray2.end(); ++iter) {
+    ZIntCuboidFace &face = *iter;
+    face.moveBackward(1);
+  }
+
+  ZIntCuboidFaceArray faceArray3;
+  for (ZIntCuboidFaceArray::const_iterator iter = faceArray.begin();
+       iter != faceArray.end(); ++iter) {
+    const ZIntCuboidFace &face = *iter;
+    faceArray3.append(face.cropBy(faceArray2));
+  }
+
+  faceArray3.print();
+
+  ASSERT_EQ(7, (int) faceArray3.size());
 }
 
 #endif

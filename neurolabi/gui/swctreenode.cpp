@@ -556,6 +556,17 @@ double SwcTreeNode::distance(const Swc_Tree_Node *tn, double x, double y,
   return dist;
 }
 
+double SwcTreeNode::scaledDistance(
+    const Swc_Tree_Node *tn1, const Swc_Tree_Node *tn2,
+    double sx, double sy, double sz)
+{
+  double dx = (x(tn1) - x(tn2)) * sx;
+  double dy = (y(tn1) - y(tn2)) * sy;
+  double dz = (z(tn1) - z(tn2)) * sz;
+
+  return sqrt(dx * dx + dy * dy + dz * dz);
+}
+
 Swc_Tree_Node*
 SwcTreeNode::furthestNode(Swc_Tree_Node *tn, EDistanceType distType)
 {
@@ -1155,6 +1166,24 @@ double SwcTreeNode::segmentLength(std::set<Swc_Tree_Node *> &nodeSet)
 
   return length;
 }
+
+double SwcTreeNode::scaledSegmentLength(std::set<Swc_Tree_Node*> &nodeSet,
+                                        double sx, double sy, double sz)
+{
+  double length = 0.0;
+
+  for (std::set<Swc_Tree_Node *>::const_iterator iter = nodeSet.begin();
+       iter != nodeSet.end(); ++iter) {
+    if (isRegular(*iter)) {
+      if (nodeSet.count(parent(*iter)) > 0) {
+        length += Swc_Tree_Node_Scaled_Length(*iter, sx, sy, sz);
+      }
+    }
+  }
+
+  return length;
+}
+
 
 int SwcTreeNode::compareZ(const Swc_Tree_Node *tn1, const Swc_Tree_Node *tn2)
 {

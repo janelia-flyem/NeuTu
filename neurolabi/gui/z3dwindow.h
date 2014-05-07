@@ -154,7 +154,8 @@ public slots:
   void swcDoubleClicked(ZSwcTree* tree);
   void swcNodeDoubleClicked(Swc_Tree_Node* node);
   void punctaDoubleClicked(ZPunctum* p);
-  void pointInVolumeLeftClicked(QPoint pt, glm::ivec3 pos);
+  void pointInVolumeLeftClicked(QPoint pt, glm::ivec3 pos,
+                                Qt::KeyboardModifiers modifiers);
 
   void changeSelectedSwcNodeType();
   void setRootAsSelectedSwcNode();

@@ -62,6 +62,8 @@ QMenu* ZStackDocMenuFactory::makeSwcNodeContextMenu(
   submenu = new QMenu("Information", menu);
   submenu->addAction(doc->getAction(ZStackDoc::ACTION_SWC_SUMMARIZE));
   submenu->addAction(doc->getAction(ZStackDoc::ACTION_MEASURE_SWC_NODE_LENGTH));
+  submenu->addAction(
+        doc->getAction(ZStackDoc::ACTION_MEASURE_SCALED_SWC_NODE_LENGTH));
   menu->addMenu(submenu);
 
   return menu;

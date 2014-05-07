@@ -241,6 +241,8 @@ public:
   }
   bool isAutoSaveEnabled() const { return m_autoSaveEnabled; }
 
+  inline bool usingNativeDialog() const { return m_usingNativeDialog; }
+
 private:
   NeutubeConfig();
   NeutubeConfig(const NeutubeConfig&);
@@ -268,6 +270,7 @@ private:
   std::string m_autoSaveDir;
   int m_autoSaveInterval;
   bool m_autoSaveEnabled;
+  bool m_usingNativeDialog;
 
   ZMessageReporter *m_messageReporter;
 };

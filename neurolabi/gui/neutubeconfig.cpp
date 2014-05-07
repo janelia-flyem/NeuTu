@@ -11,7 +11,7 @@ using namespace std;
 
 NeutubeConfig::NeutubeConfig() : m_segmentationClassifThreshold(0.5),
   m_isSettingOn(true), m_isStereoOn(true), m_autoSaveInterval(600000),
-  m_autoSaveEnabled(true)
+  m_autoSaveEnabled(true), m_usingNativeDialog(true)
 {
   m_messageReporter = new ZLogMessageReporter;
 }
@@ -99,6 +99,13 @@ bool NeutubeConfig::load(const std::string &filePath)
     if (!node.empty()) {
       if (node.getAttribute("status") == "off") {
         m_isStereoOn = false;
+      }
+    }
+
+    node = doc.getRootElement().queryNode("NativeFileDialog");
+    if (!node.empty()) {
+      if (node.getAttribute("status") == "off") {
+        m_usingNativeDialog = false;
       }
     }
 

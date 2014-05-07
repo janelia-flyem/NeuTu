@@ -15,6 +15,12 @@ public:
   explicit FlyEmBodyFilterDialog(QWidget *parent = 0);
   ~FlyEmBodyFilterDialog();
 
+  size_t getMinBodySize() const;
+  size_t getMaxBodySize() const;
+  bool hasUpperBodySize() const;
+
+  std::vector<int> getExcludedBodies() const;
+
 private:
   Ui::FlyEmBodyFilterDialog *ui;
 };

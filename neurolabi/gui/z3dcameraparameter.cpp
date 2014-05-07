@@ -164,6 +164,10 @@ QWidget *Z3DCameraParameter::actualCreateWidget(QWidget *parent)
   QGroupBox *groupBox = new QGroupBox("Camera Parameters", parent);
   groupBox->setLayout(lw);
 
+#ifndef _DEBUG_
+  groupBox->setVisible(false);
+#endif
+
   //widget->setParent(parent);
   delete camera;
   //return widget;

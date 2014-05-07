@@ -179,7 +179,9 @@ HEADERS +=$${PWD}/zstackprocessor.h \
    $${PWD}/dvid/zdvidinfo.h \
    $${PWD}/zlinesegment.h \
    $${PWD}/zlinesegmentarray.h \
-   $${PWD}/dvid/zdvidtarget.h
+   $${PWD}/dvid/zdvidtarget.h \
+   $${PWD}/dvid/zdvidfilter.h \
+   $${PWD}/zintcuboidface.h
 
 SOURCES +=$${PWD}/zstackprocessor.cpp \
    $${PWD}/zstack.cxx \
@@ -344,4 +346,6 @@ SOURCES +=$${PWD}/zstackprocessor.cpp \
    $${PWD}/dvid/zdvidinfo.cpp \
    $${PWD}/zlinesegment.cpp \
    $${PWD}/zlinesegmentarray.cpp \
-   $${PWD}/dvid/zdvidtarget.cpp
+   $${PWD}/dvid/zdvidtarget.cpp \
+   $${PWD}/dvid/zdvidfilter.cpp \
+   $${PWD}/zintcuboidface.cpp

@@ -5,6 +5,8 @@
 #include "neutubeconfig.h"
 #include "flyem/zflyemqualityanalyzer.h"
 #include "flyem/zintcuboidarray.h"
+#include "zswcgenerator.h"
+#include "zswctree.h"
 
 #ifdef _USE_GTEST_
 
@@ -127,6 +129,12 @@ TEST(ZFlyEmQualityAnalyzer, touchingGlobalBoundary) {
   ZFlyEmQualityAnalyzer analyzer;
   analyzer.setSubstackRegion(blockArray);
 
+#if 0
+  ZIntCuboidFaceArray faceArray = blockArray.getBorderFace();
+  ZSwcTree *tree = ZSwcGenerator::createSwc(faceArray, 3.0);
+  tree->save(GET_TEST_DATA_DIR + "/test.swc");
+#endif
+
   ZObject3dScan obj;
   obj.addSegment(0, 0, 0, 0);
   ASSERT_TRUE(analyzer.touchingGlobalBoundary(obj));
@@ -157,6 +165,10 @@ TEST(ZFlyEmQualityAnalyzer, touchingGlobalBoundary) {
 
   obj.clear();
   obj.addSegment(100, 10, 10, 10);
+  ASSERT_FALSE(analyzer.touchingGlobalBoundary(obj));
+
+  obj.clear();
+  obj.addSegment(99, 10, 10, 10);
   ASSERT_TRUE(analyzer.touchingGlobalBoundary(obj));
 
   obj.clear();
@@ -173,6 +185,10 @@ TEST(ZFlyEmQualityAnalyzer, touchingGlobalBoundary) {
 
   obj.clear();
   obj.addSegment(200, 50, 50, 50);
+  ASSERT_FALSE(analyzer.touchingGlobalBoundary(obj));
+
+  obj.clear();
+  obj.addSegment(199, 50, 50, 50);
   ASSERT_TRUE(analyzer.touchingGlobalBoundary(obj));
 }
 

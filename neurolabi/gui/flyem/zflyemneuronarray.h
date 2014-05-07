@@ -5,6 +5,8 @@
 #include <string>
 #include "zflyemneuron.h"
 #include "flyem/zflyemneuronfilter.h"
+#include "dvid/zdvidtarget.h"
+#include "dvid/zdvidfilter.h"
 
 class ZFlyEmNeuronArray : public std::vector<ZFlyEmNeuron>
 {

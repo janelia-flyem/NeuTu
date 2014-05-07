@@ -215,6 +215,23 @@ bool ZFlyEmQualityAnalyzer::touchingGlobalBoundary(const ZObject3dScan &obj)
   obj.getBoundBox(&objBox);
   */
 
+  ZIntCuboidFaceArray faceArray = m_substackRegion.getBorderFace();
+  for (size_t i = 0; i < obj.getStripeNumber(); ++i) {
+    const ZObject3dStripe &stripe = obj.getStripe(i);
+    for (int j = 0; j < stripe.getSegmentNumber(); ++j) {
+      if (faceArray.contains(stripe.getSegmentStart(j), stripe.getY(),
+                             stripe.getZ())) {
+        return true;
+      }
+      if (faceArray.contains(stripe.getSegmentEnd(j), stripe.getY(),
+                             stripe.getZ())) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+#if 0
   Cuboid_I boundBox = m_substackRegion.getBoundBox();
 
   //Test if the body touches the boundary
@@ -245,6 +262,7 @@ bool ZFlyEmQualityAnalyzer::touchingGlobalBoundary(const ZObject3dScan &obj)
   }
 
   return false;
+#endif
 }
 
 bool ZFlyEmQualityAnalyzer::touchingSideBoundary(const ZObject3dScan &obj)

@@ -203,7 +203,9 @@ void ZDvidClient::readObject()
 
 void ZDvidClient::readSwc()
 {
-  m_swcBuffer.append(m_networkReply->readAll());
+  if (m_networkReply != NULL) {
+    m_swcBuffer.append(m_networkReply->readAll());
+  }
 
   //qDebug() << m_swcBuffer;
 }

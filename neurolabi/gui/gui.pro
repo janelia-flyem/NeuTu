@@ -386,7 +386,6 @@ HEADERS += mainwindow.h \
     zworkspacefactory.h \
     dvid/zdvidreader.h \
     flyembodyiddialog.h \
-    dvid/zdvidfilter.h \
     zdviddialog.h \
     flyembodyfilterdialog.h \
     flyem/zskeletonizeservice.h
@@ -639,7 +638,6 @@ SOURCES += main.cpp \
     zworkspacefactory.cpp \
     dvid/zdvidreader.cpp \
     flyembodyiddialog.cpp \
-    dvid/zdvidfilter.cpp \
     zdviddialog.cpp \
     flyembodyfilterdialog.cpp \
     flyem/zskeletonizeservice.cpp

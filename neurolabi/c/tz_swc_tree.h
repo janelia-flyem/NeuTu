@@ -463,6 +463,11 @@ BOOL Swc_Tree_Node_Is_Upstream(Swc_Tree_Node *tn1, Swc_Tree_Node *tn2);
  */
 double Swc_Tree_Node_Length(const Swc_Tree_Node *tn);
 
+/**@brief The scaled distance from a node to its parent.
+ */
+double Swc_Tree_Node_Scaled_Length(const Swc_Tree_Node *tn, 
+    double sx, double sy, double sz);
+
 /**@brief The distance between two nodes.
  *
  * Swc_Tree_Node_Dist() returns the distance between <tn1> and <tn2>.

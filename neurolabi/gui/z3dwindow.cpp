@@ -268,8 +268,9 @@ void Z3DWindow::init(EInitMode mode)
 
   // more processors: init raycaster
   m_volumeRaycaster = new Z3DVolumeRaycaster();
-  connect(m_volumeRaycaster, SIGNAL(pointInVolumeLeftClicked(QPoint, glm::ivec3)),
-          this, SLOT(pointInVolumeLeftClicked(QPoint, glm::ivec3)));
+  connect(m_volumeRaycaster,
+          SIGNAL(pointInVolumeLeftClicked(QPoint, glm::ivec3, Qt::KeyboardModifiers)),
+          this, SLOT(pointInVolumeLeftClicked(QPoint, glm::ivec3, Qt::KeyboardModifiers)));
 
   // register processors to receive QGLWidget event
   m_canvas->addEventListenerToBack(m_swcFilter);
@@ -402,11 +403,12 @@ void Z3DWindow::createActions()
   //          SLOT(toogleExtendSelectedSwcNodeMode(bool)));
   //  m_singleSwcNodeActionActivator.registerAction(m_toogleExtendSelectedSwcNodeAction, true);
 
-  m_toogleSmartExtendSelectedSwcNodeAction = new QAction("Extend Mode", this);
+  m_toogleSmartExtendSelectedSwcNodeAction = new QAction("Extend", this);
   m_toogleSmartExtendSelectedSwcNodeAction->setCheckable(true);
   connect(m_toogleSmartExtendSelectedSwcNodeAction, SIGNAL(toggled(bool)), this,
           SLOT(toogleSmartExtendSelectedSwcNodeMode(bool)));
-  m_singleSwcNodeActionActivator.registerAction(m_toogleSmartExtendSelectedSwcNodeAction, true);
+  m_singleSwcNodeActionActivator.registerAction(
+        m_toogleSmartExtendSelectedSwcNodeAction, true);
 
   m_changeSwcNodeTypeAction = new QAction("Change type", this);
   connect(m_changeSwcNodeTypeAction, SIGNAL(triggered()),
@@ -603,6 +605,10 @@ void Z3DWindow::createContextMenu()
 
   //Swc node
   contextMenu = new QMenu(this);
+
+
+  contextMenu->addAction(m_toogleSmartExtendSelectedSwcNodeAction);
+
   //QMenu *selectMenu = new QMenu("Select", contextMenu);
   //contextMenu->addAction(m_setSwcRootAction);
   //contextMenu->addAction(m_breakSwcConnectionAction);
@@ -625,7 +631,7 @@ void Z3DWindow::createContextMenu()
   //contextMenu->addAction(m_translateSwcNodeAction);
   //contextMenu->addAction(m_changeSwcNodeSizeAction);
   //contextMenu->addAction(m_removeSelectedObjectsAction);
-  contextMenu->addAction(m_toogleSmartExtendSelectedSwcNodeAction);
+
   //contextMenu->addAction(m_toogleExtendSelectedSwcNodeAction);
   contextMenu->addAction(m_toogleAddSwcNodeModeAction);
   contextMenu->addAction(m_toogleMoveSelectedObjectsAction);
@@ -633,6 +639,7 @@ void Z3DWindow::createContextMenu()
   //contextMenu->addAction(m_resolveCrossoverAction);
   //contextMenu->addAction(m_swcNodeLengthAction);
   ZStackDocMenuFactory::makeSwcNodeContextMenu(getDocument(), contextMenu);
+
   m_contextMenuGroup["swcnode"] = contextMenu;
 
   contextMenu = new QMenu(this);
@@ -1222,22 +1229,29 @@ void Z3DWindow::punctaDoubleClicked(ZPunctum *p)
   gotoPosition(boundBox);
 }
 
-void Z3DWindow::pointInVolumeLeftClicked(QPoint pt, glm::ivec3 pos)
+void Z3DWindow::pointInVolumeLeftClicked(
+    QPoint pt, glm::ivec3 pos, Qt::KeyboardModifiers modifiers)
 {
   glm::vec3 fpos = glm::vec3(pos);
   m_lastClickedPosInVolume = glm::ivec3(fpos);
   LDEBUG() << "Point in volume left clicked" << fpos;
   // only do tracing when we are not editing swc nodes or the preconditions for editing swc node are not met
-  if (hasVolume() && channelNumber() == 1 && m_toogleSmartExtendSelectedSwcNodeAction->isChecked() &&
+  if (hasVolume() && channelNumber() == 1 &&
+      m_toogleSmartExtendSelectedSwcNodeAction->isChecked() &&
       m_doc->selectedSwcTreeNodes()->size() == 1) {
-    m_doc->executeSwcNodeSmartExtendCommand(ZPoint(fpos[0], fpos[1], fpos[2]));
+    if (modifiers == Qt::ControlModifier) {
+      m_doc->executeSwcNodeExtendCommand(ZPoint(fpos[0], fpos[1], fpos[2]));
+    } else {
+      m_doc->executeSwcNodeSmartExtendCommand(ZPoint(fpos[0], fpos[1], fpos[2]));
+    }
     // todo: check modifier and use normal extend if possible
     return;
   }
   //  if (m_toogleExtendSelectedSwcNodeAction->isChecked() && m_doc->selectedSwcTreeNodes()->size() == 1) {
   //    return;
   //  }
-  if (hasVolume() && channelNumber() == 1 && !m_toogleAddSwcNodeModeAction->isChecked()) {
+  if (hasVolume() && channelNumber() == 1 &&
+      !m_toogleAddSwcNodeModeAction->isChecked()) {
     m_contextMenuGroup["trace"]->popup(m_canvas->mapToGlobal(pt));
   }
 }
@@ -1935,8 +1949,10 @@ void Z3DWindow::updateContextMenu(const QString &group)
     }
     //if (!m_doc->swcList()->empty() && m_swcFilter->isNodeRendering())
       //m_contextMenuGroup["empty"]->addAction(m_toogleExtendSelectedSwcNodeAction);
+    /*
     if (channelNumber() > 0 && !m_doc->swcList()->empty() && m_swcFilter->isNodeRendering())
       m_contextMenuGroup["empty"]->addAction(m_toogleSmartExtendSelectedSwcNodeAction);
+*/
     if (!m_doc->swcList()->empty() && m_swcFilter->isNodeRendering())
       m_contextMenuGroup["empty"]->addAction(m_toogleAddSwcNodeModeAction);
     if (!m_doc->swcList()->empty() || !m_doc->punctaList()->empty())
@@ -1955,8 +1971,10 @@ void Z3DWindow::updateContextMenu(const QString &group)
     m_contextMenuGroup["volume"]->addAction(m_markPunctumAction);
     //if (!m_doc->swcList()->empty() && m_swcFilter->isNodeRendering())
       //m_contextMenuGroup["volume"]->addAction(m_toogleExtendSelectedSwcNodeAction);
+    /*
     if (!m_doc->swcList()->empty() && m_swcFilter->isNodeRendering())
       m_contextMenuGroup["volume"]->addAction(m_toogleSmartExtendSelectedSwcNodeAction);
+*/
     if (!m_doc->swcList()->empty() && m_swcFilter->isNodeRendering())
       m_contextMenuGroup["volume"]->addAction(m_toogleAddSwcNodeModeAction);
     if (!m_doc->swcList()->empty() || !m_doc->punctaList()->empty())

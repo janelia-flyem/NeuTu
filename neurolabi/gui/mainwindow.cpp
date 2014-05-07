@@ -134,6 +134,7 @@
 #include "zdviddialog.h"
 #include "dvid/zdvidtarget.h"
 #include "dvid/zdvidfilter.h"
+#include "flyembodyfilterdialog.h"
 
 #include "ztest.h"
 
@@ -268,6 +269,13 @@ MainWindow::MainWindow(QWidget *parent) :
   m_bodyDlg = new FlyEmBodyIdDialog(this);
   m_hotSpotDlg = new FlyEmHotSpotDialog(this);
   m_dvidDlg = new ZDvidDialog(this);
+  m_bodyFilterDlg = new FlyEmBodyFilterDialog(this);
+
+  if (NeutubeConfig::getInstance().usingNativeDialog()) {
+    m_fileDialogOption = 0;
+  } else {
+    m_fileDialogOption = QFileDialog::DontUseNativeDialog;
+  }
 }
 
 MainWindow::~MainWindow()
@@ -546,13 +554,13 @@ void MainWindow::createActions()
 
   m_ui->actionMask_SWC->setIcon(QIcon(":/images/masktoswc.png"));
 
-#ifdef _DEBUG_
+//#ifdef _DEBUG_
   testAction = new QAction(tr("&Test"), this);
   testAction->setShortcut(tr("Ctrl+T"));
   testAction->setStatusTip(tr("Test"));
   testAction->setIcon(QIcon(":/images/test.png"));
   connect(testAction, SIGNAL(triggered()), this, SLOT(test()));
-#endif
+//#endif
 
   //customizeActions();
 }
@@ -706,10 +714,10 @@ void MainWindow::customizeActions()
     m_ui->actionJSON_Point_List->setVisible(false);
   }
 
-#ifdef _DEBUG_
+//#ifdef _DEBUG_
   testAction->setVisible(
         NeutubeConfig::getInstance().getApplication() != "Biocytin");
-#endif
+//#endif
 
 #if !defined(_DEBUG_)
   m_ui->menuTube->menuAction()->setVisible(false);
@@ -782,15 +790,17 @@ void MainWindow::createMenus()
 #endif
 
   m_ui->menuOptions->addAction(settingAction);
-#ifdef _DEBUG_
+//#ifdef _DEBUG_
   m_ui->menuHelp->addAction(testAction);
-#endif
+//#endif
 
+/*
 #if defined(_FLYEM_)
   m_ui->menuFLy_EM->setEnabled(true);
 #else
   m_ui->menuFLy_EM->setEnabled(false);
 #endif
+  */
 
   updateMenu();
 
@@ -1107,9 +1117,13 @@ void MainWindow::takeScreenshot()
   ZStackFrame *frame = currentStackFrame();
   if (frame != NULL) {
     QString fileName =
+        getSaveFileName("Save Screenshot", "Tiff stack files (*.tif) ");
+#if 0
+
         QFileDialog::getSaveFileName(this, tr("Save Screenshot"), m_lastOpenedFilePath,
                                      tr("Tiff stack files (*.tif) "), NULL/*,
                                      QFileDialog::DontUseNativeDialog*/);
+#endif
     if (!fileName.isEmpty()) {
       m_lastOpenedFilePath = fileName;
       frame->takeScreenshot(fileName);
@@ -1327,10 +1341,13 @@ void MainWindow::openTraceProject(QString fileName)
 void MainWindow::openTraceProject()
 {
   QString fileName =
+      getOpenFileName(tr("Open Project"), tr("XML files (*.xml)"));
+#if 0
       QFileDialog::getOpenFileName(this, tr("Open Project"),
                                    m_lastOpenedFilePath,
                                    tr("XML files (*.xml)"),
                                    NULL/*, QFileDialog::DontUseNativeDialog*/);
+#endif
   if (!fileName.isEmpty()) {
     m_lastOpenedFilePath = fileName;
     openTraceProject(fileName);
@@ -1439,11 +1456,16 @@ void MainWindow::saveAs()
   ZStackFrame *frame = currentStackFrame();
 
   if (frame != NULL) {
-    QString fileName = QFileDialog::getSaveFileName(
+    QString fileName = getSaveFileName(
+          "Save stack", "Tiff stack files (*.tif) ",
+          frame->document()->stack()->sourcePath().c_str());
+#if 0
+        QFileDialog::getSaveFileName(
           this, tr("Save stack"),
           frame->document()->stack()->sourcePath().c_str(),
           tr("Tiff stack files (*.tif) "), NULL/*,
           QFileDialog::DontUseNativeDialog*/);
+#endif
 
     if (!fileName.isEmpty()) {
       m_lastOpenedFilePath = fileName;
@@ -1454,9 +1476,12 @@ void MainWindow::saveAs()
 
 void MainWindow::exportSwc()
 {
-  QString fileName =
+  QString fileName = getSaveFileName("Save SWC", "SWC files (*.swc) ");
+
+#if 0
     QFileDialog::getSaveFileName(this, tr("Save SWC"), m_lastOpenedFilePath,
          tr("SWC files (*.swc) "));
+#endif
 
   if (!fileName.isEmpty()) {
     m_lastOpenedFilePath = fileName;
@@ -1469,9 +1494,12 @@ void MainWindow::exportSwc()
 
 void MainWindow::exportPuncta()
 {
-  QString fileName =
+  QString fileName = getSaveFileName("Save Puncta", "Puncta files (*.apo) ");
+
+#if 0
     QFileDialog::getSaveFileName(this, tr("Save Puncta"), m_lastOpenedFilePath,
          tr("Puncta files (*.apo) "));
+#endif
 
   if (!fileName.isEmpty()) {
     m_lastOpenedFilePath = fileName;
@@ -1484,10 +1512,14 @@ void MainWindow::exportPuncta()
 
 void MainWindow::exportNeuronStructure()
 {
-  QString fileName =
+  QString fileName = getSaveFileName(
+        "Save neuron structure", "SWC files (*.swc) ", "./untitled.swc");
+
+#if 0
     QFileDialog::getSaveFileName(this, tr("Save neuron structure"),
                                  "./untitled.swc",
                                  tr("SWC files (*.swc) "));
+#endif
   if (!fileName.isEmpty()) {
     ZStackFrame *frame = currentStackFrame();
     if (frame != NULL) {
@@ -1505,9 +1537,13 @@ void MainWindow::exportNeuronStructure()
 
 void MainWindow::exportVrml()
 {
-  QString fileName =
+  QString fileName = getSaveFileName("Export VRML", "Vrml files (*.wrl) ",
+                                     "./untitled.vrml");
+
+#if 0
     QFileDialog::getSaveFileName(this, tr("Export VRML"), "./untitled.vrml",
          tr("Vrml files (*.wrl) "));
+#endif
 
   if (!fileName.isEmpty()) {
     ZStackFrame *frame = activeStackFrame();
@@ -1519,13 +1555,14 @@ void MainWindow::exportVrml()
 
 void MainWindow::exportBinary()
 {
-  QString fileName =
+  QString fileName = getSaveFileName("Save tracing results", "");
+#if 0
     QFileDialog::getSaveFileName(this, tr("Save tracing results"),
                                  m_lastOpenedFilePath,
                                  //tr("Binary files (*.tb)"), 0,
                                  QString(), 0,
                                  QFileDialog::DontConfirmOverwrite);
-
+#endif
   if (!fileName.isEmpty()) {
     m_lastOpenedFilePath = fileName;
     ZStackFrame *frame = activeStackFrame();
@@ -1537,10 +1574,13 @@ void MainWindow::exportBinary()
 
 void MainWindow::exportNeuronStructureAsMultipleSwc()
 {
-  QString fileName =
+  QString fileName = getSaveFileName("Save neuron structure as multiple swcs",
+                                     "SWC files (*.swc) ", "./untitled.swc");
+#if 0
     QFileDialog::getSaveFileName(this, tr("Save neuron structure as multiple swcs"),
                                  "./untitled.swc",
                                  tr("SWC files (*.swc) "));
+#endif
   if (!fileName.isEmpty()) {
     ZStackFrame *frame = currentStackFrame();
     if (frame != NULL) {
@@ -1558,10 +1598,13 @@ void MainWindow::exportNeuronStructureAsMultipleSwc()
 
 void MainWindow::exportChainFileList()
 {
-  QString fileName =
+  QString fileName = getSaveFileName(
+        "Save tracing results", "Binary files (*.tb)");
+#if 0
     QFileDialog::getSaveFileName(this, tr("Save tracing results"), m_lastOpenedFilePath,
          tr("Binary files (*.tb)"), 0,
          QFileDialog::DontConfirmOverwrite);
+#endif
 
   if (!fileName.isEmpty()) {
     m_lastOpenedFilePath = fileName;
@@ -1574,9 +1617,12 @@ void MainWindow::exportChainFileList()
 
 void MainWindow::exportTubeConnection()
 {
-  QString fileName =
+  QString fileName = getSaveFileName("Save connection", "XML files (*.xml) ");
+
+#if 0
       QFileDialog::getSaveFileName(this, tr("Save connection"), m_lastOpenedFilePath,
            tr("XML files (*.xml) "));
+#endif
 
   if (!fileName.isEmpty()) {
     m_lastOpenedFilePath = fileName;
@@ -1589,10 +1635,14 @@ void MainWindow::exportTubeConnection()
 
 void MainWindow::exportTubeConnectionFeat()
 {
-  QString fileName =
+  QString fileName = getSaveFileName("Save connection feature",
+                                     "Feature files (*.txt) ");
+
+#if 0
       QFileDialog::getSaveFileName(this, tr("Save connection feature"),
                                    m_lastOpenedFilePath,
                                    tr("Feature files (*.txt) "));
+#endif
 
   if (!fileName.isEmpty()) {
     m_lastOpenedFilePath = fileName;
@@ -1605,10 +1655,12 @@ void MainWindow::exportTubeConnectionFeat()
 
 void MainWindow::exportSvg()
 {
-  QString fileName =
+  QString fileName = getSaveFileName("Save svg file", "Svg file (*.svg) ",
+                                     "./untitled.svg");
+#if 0
       QFileDialog::getSaveFileName(this, tr("Save svg file"), "./untitled.svg",
            tr("Svg file (*.svg) "));
-
+#endif
   if (!fileName.isEmpty()) {
     activeStackFrame()->document()->exportSvg(
           fileName.toLocal8Bit().constData());
@@ -1617,10 +1669,13 @@ void MainWindow::exportSvg()
 
 void MainWindow::exportTraceProject()
 {
-  QString fileName =
+  QString fileName = getSaveFileName("Save trace project", "XML file (*.xml) ",
+                                     "./untitled.xml");
+#if 0
       QFileDialog::getSaveFileName(this, tr("Save trace project"),
                                    "./untitled.xml",
                                    tr("XML file (*.xml) "));
+#endif
 
   if (!fileName.isEmpty()) {
     TraceOutputDialog dlg;
@@ -1631,11 +1686,14 @@ void MainWindow::exportTraceProject()
 
 void MainWindow::importBinary()
 {
-  QStringList files = QFileDialog::getOpenFileNames(
+  QStringList files = getOpenFileNames(tr("Import tracing results"),
+                                       tr("Binary files (*.tb)"));
+#if 0
+      QFileDialog::getOpenFileNames(
         this, tr("Import tracing results"), m_lastOpenedFilePath,
         tr("Binary files (*.tb)"),
         NULL/*, QFileDialog::DontUseNativeDialog*/);
-
+#endif
   if (!files.isEmpty()) {
     ZStackFrame *frame = currentStackFrame();
     if (frame != NULL) {
@@ -1648,11 +1706,13 @@ void MainWindow::importBinary()
 
 void MainWindow::importSwc()
 {
-  QStringList files =
+  QStringList files = getOpenFileNames("Import SWC files", "SWC files (*.swc)");
+
+#if 0
       QFileDialog::getOpenFileNames(this, tr("Import SWC files"), m_lastOpenedFilePath,
                                     tr("SWC files (*.swc)"),
                                     NULL/*, QFileDialog::DontUseNativeDialog*/);
-
+#endif
   if (!files.isEmpty()) {
     ZStackFrame *frame = currentStackFrame();
     if (frame != NULL) {
@@ -1667,11 +1727,14 @@ void MainWindow::importSwc()
 
 void MainWindow::importPuncta()
 {
-  QStringList files =
+  QStringList files = getOpenFileNames(
+        "Import Puncta files", "Puncta files (*.apo)");
+
+#if 0
       QFileDialog::getOpenFileNames(this, tr("Import Puncta files"), m_lastOpenedFilePath,
                                     tr("Puncta files (*.apo)"),
                                     NULL/*, QFileDialog::DontUseNativeDialog*/);
-
+#endif
   if (!files.isEmpty()) {
     ZStackFrame *frame = currentStackFrame();
     if (frame != NULL) {
@@ -1712,9 +1775,14 @@ void MainWindow::importBadTube()
 
 void MainWindow::importTubeConnection()
 {
-  QString fileName = QFileDialog::getOpenFileName(
+  QString fileName = getOpenFileName(
+        "Import Connection", "XML files (*.xml)");
+
+#if 0
+      QFileDialog::getOpenFileName(
         this, tr("Import Connection"), m_lastOpenedFilePath,
         tr("XML files (*.xml)"), NULL/*, QFileDialog::DontUseNativeDialog*/);
+#endif
 
   if (!fileName.isEmpty()) {
     if (currentStackFrame() != NULL) {
@@ -1747,7 +1815,7 @@ QString MainWindow::getOpenFileName(const QString &caption, const QString &filte
   QString fileName =
       QFileDialog::getOpenFileName(this, caption, m_lastOpenedFilePath,
                                    filter,
-                                   NULL/*, QFileDialog::DontUseNativeDialog*/);
+                                   NULL, m_fileDialogOption);
 
   if (!fileName.isEmpty()) {
     QFileInfo fInfo(fileName);
@@ -1760,10 +1828,17 @@ QString MainWindow::getOpenFileName(const QString &caption, const QString &filte
 QStringList MainWindow::getOpenFileNames(
     const QString &caption, const QString &filter)
 {
+#if defined(_QT_FILE_DIALOG_)
+  QString fileName =
+      QFileDialog::getOpenFileName(this, caption, m_lastOpenedFilePath,
+                                   filter,
+                                   NULL, QFileDialog::DontUseNativeDialog)
+#else
   QStringList fileNameList =
       QFileDialog::getOpenFileNames(this, caption, m_lastOpenedFilePath,
                                    filter,
                                    NULL/*, QFileDialog::DontUseNativeDialog*/);
+#endif
 
   if (!fileNameList.isEmpty()) {
     QFileInfo fInfo(fileNameList[0]);
@@ -1774,21 +1849,13 @@ QStringList MainWindow::getOpenFileNames(
 }
 
 QString MainWindow::getSaveFileName(
-    const QString &caption, const QString &filter, bool usingOldFileName,
-    QFileDialog::Options options)
+    const QString &caption, const QString &filter, const QString &dir)
 {
   QString fileName;
 
-  if (usingOldFileName) {
-    fileName = QFileDialog::getSaveFileName(
-          this, caption, m_lastOpenedFilePath, filter, NULL, options
-          /*QFileDialog::DontUseNativeDialog |*/
-          /*QFileDialog::DontConfirmOverwrite*/);
-  } else {
-    fileName = QFileDialog::getSaveFileName(
-          this, caption, QFileInfo(fileName).absoluteDir().canonicalPath(),
-          filter, NULL, options);
-  }
+  fileName = QFileDialog::getSaveFileName(
+        this, caption, dir, filter, NULL, m_fileDialogOption);
+
   if (!fileName.isEmpty()) {
     QFileInfo fInfo(fileName);
     recordLastOpenPath(fInfo.absoluteDir().absolutePath());
@@ -1797,11 +1864,17 @@ QString MainWindow::getSaveFileName(
   return fileName;
 }
 
+QString MainWindow::getSaveFileName(const QString &caption, const QString &filter)
+{
+  return getSaveFileName(caption, filter, m_lastOpenedFilePath);
+}
+
 QString MainWindow::getDirectory(const QString &caption)
 {
   QString fileName;
   fileName = QFileDialog::getExistingDirectory(
-        this, caption, m_lastOpenedFilePath);
+        this, caption, m_lastOpenedFilePath,
+        m_fileDialogOption | QFileDialog::ShowDirsOnly);
 
   if (!fileName.isEmpty()) {
     QFileInfo fInfo(fileName);
@@ -1814,11 +1887,15 @@ QString MainWindow::getDirectory(const QString &caption)
 
 void MainWindow::importImageSequence()
 {
-  QString fileName =
+  QString fileName = getOpenFileName(
+        "Open Image Sequence", "Image files (*.tif *.png)");
+
+#if 0
       QFileDialog::getOpenFileName(this, tr("Open Image Sequence"),
                                    m_lastOpenedFilePath,
                                    tr("Image files (*.tif *.png)"),
                                    NULL/*, QFileDialog::DontUseNativeDialog*/);
+#endif
 
   if (!fileName.isEmpty()) {
     m_lastOpenedFilePath = fileName;
@@ -2317,11 +2394,17 @@ void MainWindow::updateBcDlg(const ZStackFrame *frame)
 
 void MainWindow::on_actionOpen_triggered()
 {
-  QString fileName = QFileDialog::getOpenFileName(
+  QString fileName = getOpenFileName(
+        "Open stack",
+        "Stack files (*.tif *.lsm *.raw *.png *.swc *.nnt *.apo *.marker *.json)");
+
+#if 0
+      QFileDialog::getOpenFileName(
         this, tr("Open stack"),
         m_lastOpenedFilePath,
         tr("Stack files (*.tif *.lsm *.raw *.png *.swc *.nnt *.apo *.marker *.json)"),
         NULL/*, QFileDialog::DontUseNativeDialog*/);
+#endif
 
   if (!fileName.isEmpty()) {
     m_lastOpenedFilePath = QFileInfo(fileName).absoluteDir().path();
@@ -2505,11 +2588,14 @@ void MainWindow::on_actionSave_triggered()
 
       qDebug() << dataFile;
 
-      QString fileName =
+      QString fileName = getSaveFileName(
+            "Save tracing project", "Tracing project",
+            dataFile + "/untitled.trace");
+#if 0
           QFileDialog::getSaveFileName(this, tr("Save tracing project"),
                                        dataFile + "/untitled.trace",
                                        tr("Tracing project"), 0);
-
+#endif
       qDebug() << fileName;
 
       if (!fileName.isEmpty()) {
@@ -2525,11 +2611,13 @@ void MainWindow::on_actionLoad_triggered()
       QFileDialog::getExistingDirectory(this, tr("Tracing Project"),
                                         ".", QFileDialog::ShowDirsOnly);*/
 #if defined __APPLE__
-      QFileDialog::getOpenFileName(this, tr("Tracing Project"), m_lastOpenedFilePath,
-                                   "Tracing project (*.trace)");
+      getOpenFileName("Tracing Project", "Tracing project (*.trace)");
 #else
+      getOpenFileName("Tracing Project", "Tracing project (*.xml)");
+#if 0
       QFileDialog::getOpenFileName(this, tr("Tracing Project"), m_lastOpenedFilePath,
                                "Tracing project (*.xml)");
+#endif
 #endif
 
   if (!dirpath.isEmpty()) {
@@ -2573,10 +2661,14 @@ void MainWindow::on_actionAdd_Reference_triggered()
 {
   ZStackFrame *frame = currentStackFrame();
   if (frame != NULL) {
-    QStringList pathList =
+    QStringList pathList = getOpenFileNames(
+          "Add SWC Reference", "Swc files (*.swc)");
+
+#if 0
         QFileDialog::getOpenFileNames(this, tr("Add SWC Reference"), m_lastOpenedFilePath,
                                      "Swc files (*.swc)",
                                       NULL/*, QFileDialog::DontUseNativeDialog*/);
+#endif
     if (!pathList.isEmpty()) {
       m_lastOpenedFilePath = pathList[0];
       frame->importSwcAsReference(pathList);
@@ -2606,10 +2698,14 @@ void MainWindow::on_actionSave_As_triggered()
 
     qDebug() << dataFile;
 
-    QString fileName =
+    QString fileName = getSaveFileName(
+          "Save tracing project", "Tracing project",
+          dataFile + "/untitled.trace");
+#if 0
         QFileDialog::getSaveFileName(this, tr("Save tracing project"),
                                      dataFile + "/untitled.trace",
                                      tr("Tracing project"), 0);
+#endif
 
     if (!fileName.isEmpty()) {
       frame->saveProjectAs(fileName);
@@ -2619,9 +2715,12 @@ void MainWindow::on_actionSave_As_triggered()
 
 void MainWindow::on_actionLoad_from_a_file_triggered()
 {
-  QString fileName =
+  QString fileName = getOpenFileName("Open Project", "XML files (*.xml)");
+
+#if 0
       QFileDialog::getOpenFileName(this, tr("Open Project"), m_lastOpenedFilePath,
                                    tr("XML files (*.xml)"));
+#endif
   m_lastOpenedFilePath = fileName;
   openTraceProject(fileName);
 }
@@ -3088,10 +3187,14 @@ void MainWindow::evokeStackFrame(QMdiSubWindow *frame)
 
 void MainWindow::on_actionImport_Network_triggered()
 {
-  QString fileName =
+  QString fileName = getOpenFileName(
+        "Open Network", "FlyEM network files (*.txt)");
+
+#if 0
       QFileDialog::getOpenFileName(this, tr("Open Network"),
                                    m_lastOpenedFilePath,
                                    tr("FlyEM network files (*.txt)"));
+#endif
 
   if (!fileName.isEmpty()) {
     m_lastOpenedFilePath = fileName;
@@ -3118,10 +3221,14 @@ void MainWindow::on_actionAddSWC_triggered()
   ZStackFrame *frame = activeStackFrame();
   if (frame != NULL) {
     QStringList fileList =
+        getOpenFileNames("Load SWC files", "SWC files (*.swc)");
+
+#if 0
         QFileDialog::getOpenFileNames(this, tr("Load SWC files"),
                                       m_lastOpenedFilePath,
                                       tr("SWC files (*.swc)"),
                                       NULL/*, QFileDialog::DontUseNativeDialog*/);
+#endif
     if (!fileList.isEmpty()) {
       frame->load(fileList);
       if (NeutubeConfig::getInstance().getMainWindowConfig().
@@ -3139,11 +3246,14 @@ void MainWindow::on_actionImage_Sequence_triggered()
 
 void MainWindow::on_actionAddFlyEmNeuron_Network_triggered()
 {
-  QString fileName =
+  QString fileName = getOpenFileName(
+        "Open Network", "FlyEM network files (*.fnt)");
+
+#if 0
       QFileDialog::getOpenFileName(this, tr("Open Network"),
                                    m_lastOpenedFilePath,
                                    tr("FlyEM network files (*.fnt)"));
-
+#endif
   if (!fileName.isEmpty()) {
     m_lastOpenedFilePath = fileName;
 
@@ -3170,12 +3280,15 @@ void MainWindow::on_actionAddFlyEmNeuron_Network_triggered()
 
 void MainWindow::on_actionSynapse_Annotation_triggered()
 {
-  QStringList fileList =
+  QStringList fileList = getOpenFileNames(
+        "Load Synapse Annotations", "JSON files (*.json)");
+
+#if 0
       QFileDialog::getOpenFileNames(this, tr("Load Synapse Annotations"),
                                    m_lastOpenedFilePath,
                                    tr("JSON files (*.json)"),
                                     NULL/*, QFileDialog::DontUseNativeDialog*/);
-
+#endif
   if (!fileList.isEmpty()) {
     ZStackFrame *frame = new ZStackFrame;
     frame->load(fileList);
@@ -3209,10 +3322,14 @@ void MainWindow::on_actionPosition_triggered()
 
 void MainWindow::on_actionImportMask_triggered()
 {
-  QString fileName =
+  QString fileName = getOpenFileName(
+        "Import mask", "Image file (*.tif *.xml *.json)");
+
+#if 0
       QFileDialog::getOpenFileName(this, tr("Import mask"),
                                    m_lastOpenedFilePath,
                                    tr("Image file (*.tif *.xml *.json)"));
+#endif
 
   if (!fileName.isEmpty()) {
     ZStackFrame *frame = currentStackFrame();
@@ -3327,10 +3444,13 @@ void MainWindow::on_actionFlyEmSelect_triggered()
 
 void MainWindow::on_actionImportSegmentation_triggered()
 {
-  QString fileName =
+  QString fileName = getOpenFileName(
+        "Import FlyEM segmentation", "Segmentation file (*.json)");
+#if 0
       QFileDialog::getOpenFileName(this, tr("Import FlyEM segmentation"),
                                    m_lastOpenedFilePath,
                                    tr("Segmentation file (*.json)"));
+#endif
 
   if (!fileName.isEmpty()) {
     ZFlyEmStackFrame *frame = new ZFlyEmStackFrame;
@@ -3403,10 +3523,13 @@ void MainWindow::on_actionFlyEmSelect_connection_triggered()
 
 void MainWindow::on_actionAxon_Export_triggered()
 {
-  QString fileName =
+  QString fileName = getOpenFileName("Import axon", "Axon export file (*.txt)");
+
+#if 0
       QFileDialog::getOpenFileName(this, tr("Import axon"),
                                    m_lastOpenedFilePath,
                                    tr("Axon export file (*.txt)"));
+#endif
 
   if (!fileName.isEmpty()) {
     ZFlyEmStackFrame *frame = new ZFlyEmStackFrame;
@@ -4019,10 +4142,12 @@ void MainWindow::on_actionAddMask_triggered()
 {
   ZStackFrame *frame = currentStackFrame();
   if (frame != NULL) {
-    QString fileName = QFileDialog::getOpenFileName(
-          this, tr("Load Mask"), m_lastOpenedFilePath,
-          tr("Image files (*.tif *.png)"),
+    QString fileName =
+        getOpenFileName("Load Mask", "Image files (*.tif *.png)");
+#if 0
+        QFileDialog::,
           NULL/*, QFileDialog::DontUseNativeDialog*/);
+#endif
     if (!fileName.isEmpty()) {
       frame->importMask(fileName);
       m_lastOpenedFilePath = fileName;
@@ -4085,9 +4210,14 @@ void MainWindow::on_actionMask_triggered()
       path = m_lastOpenedFilePath;
     }
 
-    QString fileName = QFileDialog::getSaveFileName(
+    QString fileName = getSaveFileName("Save Mask", "TIF files (*.tif)",
+                                       path.c_str());
+#if 0
+        QFileDialog::getSaveFileName(
           this, tr("Save Mask"), path.c_str(), tr("TIF files (*.tif)"),
           NULL/*, QFileDialog::DontUseNativeDialog*/);
+#endif
+
     if (!fileName.isEmpty()) {
       frame->exportObjectMask(NeuTube::RED, fileName);
       m_lastOpenedFilePath = fileName;
@@ -4440,11 +4570,15 @@ void MainWindow::expandCurrentFrame()
 {
   ZStackFrame *frame = activeStackFrame();
   if (frame != NULL) {
-    QStringList fileList =
+    QStringList fileList = getOpenFileNames(
+          "Load files", "SWC/Image files (*.swc *.png *.tif)");
+
+#if 0
         QFileDialog::getOpenFileNames(this, tr("Load files"),
                                       m_lastOpenedFilePath,
                                       tr("SWC/Image files (*.swc *.png *.tif)"),
                                       NULL/*, QFileDialog::DontUseNativeDialog*/);
+#endif
 
     bool swcLoaded = false;
     if (!fileList.isEmpty()) {
@@ -4499,11 +4633,13 @@ void MainWindow::on_actionSave_SWC_triggered()
         swcSource = "./untitled.swc";
       }
 
-      QString fileName =
+      QString fileName = getSaveFileName(
+            "Save neuron as SWC", tr("SWC file (*.swc) "), swcSource.c_str());
+#if 0
           QFileDialog::getSaveFileName(this, tr("Save neuron as SWC"),
                                        swcSource.c_str(),
                                        tr("SWC file (*.swc) "));
-
+#endif
       if (!fileName.isEmpty()) {
         frame->document()->saveSwc(fileName.toStdString());
       }
@@ -5538,31 +5674,40 @@ void MainWindow::on_actionHDF5_Body_triggered()
 void MainWindow::on_actionDVID_Bundle_triggered()
 {
   if (m_dvidDlg->exec()) {
-    m_progress->setRange(0, 3);
+    if (m_bodyFilterDlg->exec()) {
+      m_progress->setRange(0, 3);
 
-    int currentProgress = 0;
-    m_progress->open();
-    m_progress->setLabelText(QString("Loading ..."));
+      int currentProgress = 0;
+      m_progress->open();
+      m_progress->setLabelText(QString("Loading ..."));
 
-    m_progress->setValue(++currentProgress);
+      m_progress->setValue(++currentProgress);
 
-    ZDvidTarget target;
-    target.set(
-          m_dvidDlg->getAddress().toStdString(),
-          m_dvidDlg->getUuid().toStdString(), m_dvidDlg->getPort());
-    ZDvidFilter dvidFilter;
-    dvidFilter.setDvidTarget(target);
-    dvidFilter.setMinBodySize(1000000);
-    dvidFilter.setMaxBodySize(std::numeric_limits<std::size_t>::max());
+      ZDvidTarget target;
+      target.set(
+            m_dvidDlg->getAddress().toStdString(),
+            m_dvidDlg->getUuid().toStdString(), m_dvidDlg->getPort());
+      ZDvidFilter dvidFilter;
+      dvidFilter.setDvidTarget(target);
+      dvidFilter.setMinBodySize(m_bodyFilterDlg->getMinBodySize());
+      if (m_bodyFilterDlg->hasUpperBodySize()) {
+        dvidFilter.setMaxBodySize(m_bodyFilterDlg->getMaxBodySize());
+      } else {
+        dvidFilter.setMaxBodySize(std::numeric_limits<std::size_t>::max());
+      }
 
-    ZFlyEmDataBundle *dataBundle = new ZFlyEmDataBundle;
-    if (dataBundle->loadDvid(dvidFilter)) {
-      ZFlyEmDataFrame *frame = new ZFlyEmDataFrame;
-      frame->addData(dataBundle);
-      addFlyEmDataFrame(frame);
-    } else {
-      delete dataBundle;
-      reportFileOpenProblem(target.getSourceString().c_str());
+      std::vector<int> excludedBodyArray = m_bodyFilterDlg->getExcludedBodies();
+      dvidFilter.exclude(excludedBodyArray);
+
+      ZFlyEmDataBundle *dataBundle = new ZFlyEmDataBundle;
+      if (dataBundle->loadDvid(dvidFilter)) {
+        ZFlyEmDataFrame *frame = new ZFlyEmDataFrame;
+        frame->addData(dataBundle);
+        addFlyEmDataFrame(frame);
+      } else {
+        delete dataBundle;
+        reportFileOpenProblem(target.getSourceString().c_str());
+      }
     }
     m_progress->reset();
   }

@@ -70,8 +70,10 @@ public:
   inline void setZCutUpper(int v) { m_zCut.setUpperValue(v); }
 
 signals:
-  void pointInVolumeLeftClicked(QPoint pt, glm::ivec3 pos3D);
-  void pointInVolumeRightClicked(QPoint pt, glm::ivec3 pos3D);
+  void pointInVolumeLeftClicked(QPoint pt, glm::ivec3 pos3D,
+                                Qt::KeyboardModifiers modifiers);
+  void pointInVolumeRightClicked(QPoint pt, glm::ivec3 pos3D,
+                                 Qt::KeyboardModifiers modifiers);
 
 protected slots:
   void adjustWidget();

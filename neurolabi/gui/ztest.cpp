@@ -11321,7 +11321,7 @@ void ZTest::test(MainWindow *host)
   std::cout << std::endl;
 #endif
 
-#if 1
+#if 0
   ZFlyEmNeuron neuron;
   neuron.setId(117);
   neuron.setModelPath("http:emdata1.int.janelia.org:9000:91a");
@@ -11341,5 +11341,173 @@ void ZTest::test(MainWindow *host)
   ZSwcTree *tree = skeletonizer.makeSkeleton(*obj);
 
   tree->save(GET_TEST_DATA_DIR + "/test.swc");
+#endif
+
+#if 0
+  ZFlyEmDataBundle dataBundle;
+  ZDvidFilter dvidFilter;
+  dvidFilter.setMinBodySize(1);
+  dvidFilter.setMaxBodySize(100000);
+  dataBundle.loadDvid(dvidFilter);
+#endif
+
+#if 0
+  ZIntCuboidFaceArray faceArray;
+  Cuboid_I cuboid;
+  Cuboid_I_Set_S(&cuboid, 10, 20, 30, 40, 50, 60);
+  faceArray.append(&cuboid);
+  ZSwcTree *tree = ZSwcGenerator::createSwc(faceArray, 5.0);
+  tree->save(GET_DATA_DIR + "/test.swc");
+#endif
+
+#if 0
+  FlyEm::ZIntCuboidArray blockArray;
+  blockArray.loadSubstackList(GET_DATA_DIR + "/flyem/FIB/block_13layer.txt");
+
+  ZIntCuboidFaceArray faceArray = blockArray.getBorderFace();
+  ZSwcTree *tree = ZSwcGenerator::createSwc(faceArray, 5.0);
+  tree->save(GET_DATA_DIR + "/test.swc");
+#endif
+
+#if 0
+  //Provide x,y,z coordinates (and a body id) for all bodies
+  //between 100,000 and 500,0000 in size.
+
+  ZFlyEmNeuronArray neuronArray;
+  neuronArray.importBodyDir(
+        GET_DATA_DIR + "/flyem/FIB/skeletonization/session34/100000_/stacked.hf5");
+
+
+  std::cout << neuronArray.size() << " bodies loaded." << std::endl;
+
+  //QVector<ZObject3dScan> objList(fileList.size());
+  json_t *smallObj = json_object();
+  json_t *smallDataObj = json_array();
+
+  //json_t *bigObj = json_object();
+  //json_t *bigDataObj = json_array();
+
+  for (ZFlyEmNeuronArray::iterator iter = neuronArray.begin();
+       iter != neuronArray.end(); ++iter) {
+    ZFlyEmNeuron &neuron = *iter;
+
+    //std::cout << objFile.absoluteFilePath().toStdString().c_str() << std::endl;
+    ZObject3dScan *obj = neuron.getBody();
+    //obj.load(objFile.absoluteFilePath().toStdString());
+
+    int id = neuron.getId();
+    if (obj->isEmpty()) {
+      std::cout << "Empty object: " << id << std::endl;
+      continue;
+    }
+
+    size_t volume = obj->getVoxelNumber();
+    if (volume >= 100000 && volume <= 5000000) {
+      std::cout << "100k-5M " << id << std::endl;
+      ZVoxel voxel = obj->getMarker();
+      std::cout << voxel.x() << " " << voxel.y() << " " << voxel.z() << std::endl;
+      json_t *arrayObj = json_array();
+
+      TZ_ASSERT(voxel.x() >= 0, "invalid point");
+
+      json_array_append(arrayObj, json_integer(id));
+
+      int vx = voxel.x();
+      int vy = 2598 - voxel.y();
+      int vz = voxel.z();
+
+      std::cout << "(" << vx << ", " << vy << ", " << vz << ")" << std::endl;
+
+      json_array_append(arrayObj, json_integer(vx));
+      json_array_append(arrayObj, json_integer(vy));
+      json_array_append(arrayObj, json_integer(vz));
+      json_array_append(smallDataObj, arrayObj);
+    }
+
+    neuron.deprecate(ZFlyEmNeuron::ALL_COMPONENT);
+  }
+
+  json_object_set(smallObj, "data", smallDataObj);
+  //json_object_set(bigObj, "data", bigDataObj);
+
+  json_t *metaObj = json_object();
+
+  json_object_set(metaObj, "description", json_string("point list"));
+  json_object_set(metaObj, "file version", json_integer(1));
+
+  json_object_set(smallObj, "metadata", metaObj);
+  //json_object_set(bigObj, "metadata", metaObj);
+
+  json_dump_file(smallObj, (dataPath + "/100k_5M.json").c_str(), JSON_INDENT(2));
+  //json_dump_file(bigObj, (dataPath + "/500k_100k.json").c_str(), JSON_INDENT(2));
+
+#endif
+
+#if 1 //Count orphans
+  ZFlyEmNeuronArray neuronArray;
+  neuronArray.importBodyDir(
+        GET_DATA_DIR + "/flyem/FIB/skeletonization/session34/100000_/stacked.hf5");
+  std::cout << neuronArray.size() << std::endl;
+
+  FlyEm::ZSynapseAnnotationArray synapseArray;
+  synapseArray.loadJson(
+        dataPath + "/flyem/FIB/skeletonization/session34/annotations-synapse.json");
+
+  std::vector<int> allPsdCount = synapseArray.countPsd();
+  std::vector<int> allTbarCount = synapseArray.countTBar();
+
+  FlyEm::ZIntCuboidArray blockArray;
+  blockArray.loadSubstackList(dataPath + "/flyem/FIB/block_13layer.txt");
+  ZFlyEmQualityAnalyzer::SubstackRegionCalbration calbr;
+  calbr.setBounding(true, true, false);
+  calbr.setMargin(10, 10, 0);
+  //blockArray.print();
+  //calbr.calibrate(blockArray);
+
+  ZFlyEmQualityAnalyzer analyzer;
+  analyzer.setSubstackRegion(blockArray, calbr);
+
+  int orphanCount = 0;
+  int orphanPsdCount = 0;
+  int orphanTbarCount = 0;
+
+  for (ZFlyEmNeuronArray::const_iterator
+       iter = neuronArray.begin(); iter != neuronArray.end(); ++iter) {
+    const ZFlyEmNeuron &neuron = *iter;
+
+    std::cout << neuron.getId() << std::endl;
+
+    int psdCount = 0;
+    int tbarCount = 0;
+
+    if ((size_t) neuron.getId() < allPsdCount.size()) {
+      psdCount = allPsdCount[neuron.getId()];
+    }
+    if ((size_t) neuron.getId() < allTbarCount.size()) {
+      tbarCount = allTbarCount[neuron.getId()];
+    }
+
+    if (psdCount > 0 || tbarCount > 0) {
+      //++totalCount;
+      //totalPsdCount += psdCount;
+      if (!analyzer.touchingGlobalBoundary(*neuron.getBody())) {
+#if 0
+        if (analyzer.isStitchedOrphanBody(*neuron.getBody())) {
+          boundaryOrphanCount++;
+          boundaryOrphanPsdCount += psdCount;
+        }
+#endif
+        orphanCount++;
+        orphanPsdCount += psdCount;
+        orphanTbarCount += tbarCount;
+      }
+      neuron.deprecate(ZFlyEmNeuron::ALL_COMPONENT);
+    }
+  }
+
+  std::cout << "#Orphans >= 100k: " << orphanCount << std::endl;
+  std::cout << "#PSDs: " << orphanPsdCount << std::endl;
+  std::cout << "#TBars: " << orphanTbarCount << std::endl;
+
 #endif
 }

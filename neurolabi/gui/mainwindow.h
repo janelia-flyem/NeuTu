@@ -43,6 +43,7 @@ class ZTiledStackFrame;
 class FlyEmBodyIdDialog;
 class FlyEmHotSpotDialog;
 class ZDvidDialog;
+class FlyEmBodyFilterDialog;
 
 namespace Ui {
     class MainWindow;
@@ -114,9 +115,10 @@ protected:
   QStringList getOpenFileNames(const QString &caption,
                                const QString &filter = QString());
   QString getSaveFileName(const QString &caption,
-                          const QString &filter = QString(),
-                          bool usingOldFileName = true,
-                          QFileDialog::Options options = 0);
+                          const QString &filter = QString());
+  QString getSaveFileName(const QString &caption,
+                          const QString &filter,
+                          const QString &dir);
   QString getDirectory(const QString &caption);
   void createActionMap();
 
@@ -573,8 +575,10 @@ private:
   FlyEmBodyIdDialog *m_bodyDlg;
   FlyEmHotSpotDialog *m_hotSpotDlg;
   ZDvidDialog *m_dvidDlg;
+  FlyEmBodyFilterDialog *m_bodyFilterDlg;
 
   //FlyEmNeuronThumbnailDialog *m_thumbnailDlg;
+  QFileDialog::Options m_fileDialogOption;
 };
 
 #endif // MAINWINDOW_H

@@ -9,6 +9,8 @@
 class ZSwcTree;
 class ZPointArray;
 class ZLineSegmentArray;
+class ZIntCuboidFace;
+class ZIntCuboidFaceArray;
 
 class ZSwcGenerator
 {
@@ -36,6 +38,9 @@ public:
                              bool isConnected = false);
 
   static ZSwcTree* createSwc(const ZLineSegmentArray &lineArray, double radius);
+
+  static ZSwcTree* createSwc(const ZIntCuboidFace &face, double radius);
+  static ZSwcTree* createSwc(const ZIntCuboidFaceArray &faceArray, double radius);
 
 private:
   static ZSwcTree* createSwcByRegionSampling(const ZVoxelArray &voxelArray,

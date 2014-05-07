@@ -405,6 +405,12 @@ double distance(const Swc_Tree_Node *tn1, const Swc_Tree_Node *tn2,
 double distance(const Swc_Tree_Node *tn, double x, double y, double z,
                 EDistanceType distType = EUCLIDEAN);
 
+/*!
+ * \brief Scaled distance between two nodes.
+ */
+double scaledDistance(const Swc_Tree_Node *tn1, const Swc_Tree_Node *tn2,
+                double sx, double sy, double sz);
+
 Swc_Tree_Node*
 furthestNode(Swc_Tree_Node *tn, EDistanceType distType = EUCLIDEAN);
 
@@ -461,6 +467,16 @@ void kill(Swc_Tree_Node *tn);
  * returns 0 if \a nodeSet is empty or all nodes in the set is isolated.
  */
 double segmentLength(std::set<Swc_Tree_Node*> &nodeSet);
+
+/*!
+ * \brief The overall scaled length of the segments formed by a set of nodes
+ *
+ * \param sx X scale.
+ * \param sy Y scale.
+ * \param sz Z scale.
+ */
+double scaledSegmentLength(std::set<Swc_Tree_Node*> &nodeSet,
+                           double sx, double sy, double sz);
 
 //clipboard
 void clearClipboard();

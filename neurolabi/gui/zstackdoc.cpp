@@ -85,6 +85,7 @@
 #include "swcskeletontransformdialog.h"
 #include "swcsizedialog.h"
 
+
 using namespace std;
 
 ZStackDoc::ZStackDoc(ZStack *stack, QObject *parent) : QObject(parent)
@@ -247,6 +248,11 @@ void ZStackDoc::createActions()
   connect(action, SIGNAL(triggered()), this, SLOT(showSeletedSwcNodeLength()));
   m_actionMap[ACTION_MEASURE_SWC_NODE_LENGTH] = action;
 
+  action = new QAction("Scaled Path length", this);
+  connect(action, SIGNAL(triggered()),
+          this, SLOT(showSeletedSwcNodeScaledLength()));
+  m_actionMap[ACTION_MEASURE_SCALED_SWC_NODE_LENGTH] = action;
+
   action = new QAction("Delete", this);
   connect(action, SIGNAL(triggered()), this, SLOT(executeDeleteSwcNodeCommand()));
   m_actionMap[ACTION_DELETE_SWC_NODE] = action;
@@ -314,6 +320,8 @@ void ZStackDoc::createActions()
 
   m_singleSwcNodeActionActivator.registerAction(
         m_actionMap[ACTION_MEASURE_SWC_NODE_LENGTH], false);
+  m_singleSwcNodeActionActivator.registerAction(
+        m_actionMap[ACTION_MEASURE_SCALED_SWC_NODE_LENGTH], false);
   m_singleSwcNodeActionActivator.registerAction(
         m_actionMap[ACTION_BREAK_SWC_NODE], false);
   m_singleSwcNodeActionActivator.registerAction(
@@ -6998,9 +7006,27 @@ void ZStackDoc::updateModelData(EDocumentDataType type)
   }
 }
 
-void ZStackDoc::showSeletedSwcNodeLength()
+void ZStackDoc::showSeletedSwcNodeScaledLength()
 {
-  double length = SwcTreeNode::segmentLength(*selectedSwcTreeNodes());
+  double resolution[3] = {1, 1, 1};
+  if (m_resDlg.exec()) {
+    resolution[0] = m_resDlg.getXYScale();
+    resolution[1] = m_resDlg.getXYScale();
+    resolution[2] = m_resDlg.getZScale();
+    showSeletedSwcNodeLength(resolution);
+  }
+}
+
+void ZStackDoc::showSeletedSwcNodeLength(double *resolution)
+{
+  double length = 0.0;
+
+  if (resolution == NULL) {
+    length = SwcTreeNode::segmentLength(*selectedSwcTreeNodes());
+  } else {
+    length = SwcTreeNode::scaledSegmentLength(
+          *selectedSwcTreeNodes(), resolution[0], resolution[1], resolution[2]);
+  }
 
   InformationDialog dlg;
 
@@ -7014,8 +7040,18 @@ void ZStackDoc::showSeletedSwcNodeLength()
     Swc_Tree_Node *tn1 = *iter;
     ++iter;
     Swc_Tree_Node *tn2 = *iter;
-    textStream << "<p>Straight line distance between the two selected nodes: "
-               << SwcTreeNode::distance(tn1, tn2) << "</p>";
+
+    if (!SwcTreeNode::isConnected(tn1, tn2)) {
+      double dist = 0.0;
+      if (resolution == NULL) {
+        dist = SwcTreeNode::distance(tn1, tn2);
+      } else {
+        dist = SwcTreeNode::scaledDistance(tn1, tn2, resolution[0],
+            resolution[1], resolution[2]);
+      }
+      textStream << "<p>Straight line distance between the two selected nodes: "
+                 << dist << "</p>";
+    }
   }
 
   dlg.setText(textStream.str());

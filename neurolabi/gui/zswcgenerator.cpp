@@ -6,6 +6,7 @@
 #include "zdoublevector.h"
 #include "zpointarray.h"
 #include "zlinesegmentarray.h"
+#include "zintcuboidface.h"
 
 ZSwcGenerator::ZSwcGenerator()
 {
@@ -340,6 +341,39 @@ ZSwcTree* ZSwcGenerator::createSwc(
   }
 
   tree->resortId();
+
+  return tree;
+}
+
+ZSwcTree* ZSwcGenerator::createSwc(const ZIntCuboidFace &face, double radius)
+{
+  if (!face.isValid()) {
+    return NULL;
+  }
+
+  ZPointArray ptArray;
+  for (int i = 0; i < 4; ++i) {
+    ptArray.append(face.getCornerCoordinates(i));
+  }
+  ptArray.append(ptArray[0]);
+
+  return createSwc(ptArray, radius, true);
+}
+
+ZSwcTree* ZSwcGenerator::createSwc(
+    const ZIntCuboidFaceArray &faceArray, double radius)
+{
+  if (faceArray.empty()) {
+    return NULL;
+  }
+
+  ZSwcTree *tree = new ZSwcTree;
+
+  for (ZIntCuboidFaceArray::const_iterator iter = faceArray.begin();
+       iter != faceArray.end(); ++iter) {
+    ZSwcTree *subtree = createSwc(*iter, radius);
+    tree->merge(subtree, true);
+  }
 
   return tree;
 }

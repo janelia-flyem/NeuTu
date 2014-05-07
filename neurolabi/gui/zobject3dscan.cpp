@@ -1664,9 +1664,11 @@ void ZObject3dScan::dilate()
 ZObject3dScan ZObject3dScan::getSlice(int z) const
 {
   ZObject3dScan slice;
-  for (size_t i = 0; i < getStripeNumber(); ++i) {
-    if (m_stripeArray[i].getZ() == z) {
-      slice.addStripe(m_stripeArray[i], false);
+  size_t stripeNumber = getStripeNumber();
+  for (size_t i = 0; i < stripeNumber; ++i) {
+    const ZObject3dStripe &stripe = m_stripeArray[i];
+    if (stripe.getZ() == z) {
+      slice.addStripe(stripe, false);
     }
   }
 

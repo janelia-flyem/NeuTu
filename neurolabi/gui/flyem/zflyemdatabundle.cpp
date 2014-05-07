@@ -137,11 +137,17 @@ bool ZFlyEmDataBundle::loadDvid(const ZDvidFilter &dvidFilter)
   m_neuronArray.resize(bodyIdArray.size());
   size_t realSize = 0;
   for (size_t i = 0; i < bodyIdArray.size(); ++i) {
-    if (bodyIdArray[i] > 0) {
-      ZFlyEmNeuron &neuron = m_neuronArray[realSize];
-      neuron.setId(bodyIdArray[realSize++]);
+    if (bodyIdArray[i] > 0 && !dvidFilter.isExcluded(bodyIdArray[i])) {
+      ZFlyEmNeuron &neuron = m_neuronArray[realSize++];
+      neuron.setId(bodyIdArray[i]);
       neuron.setModelPath(m_source);
       neuron.setVolumePath(m_source);
+      neuron.setResolution(m_swcResolution);
+#ifdef _DEBUG_
+      if (neuron.getId() == 16493) {
+        std::cout << "Potential bug" << std::endl;
+      }
+#endif
     }
   }
   m_neuronArray.resize(realSize);

@@ -792,6 +792,9 @@ std::vector<double> ZFlyEmDataFrame::getMatchingScore(
       }
 
       if (comparing) {
+#ifdef _DEBUG_
+        std::cout << "Matching " << id << " " << neuronIter->getId() << std::endl;
+#endif
         ZSwcTree *tree2 = neuronIter->getModel();
 
         if (tree2 != NULL) {

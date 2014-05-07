@@ -26,4 +26,5 @@
     <ChainManager status="off"></ChainManager>
   </Z3DWindow>
   <Application>FlyEM</Application>
+  <NativeFileDialog status="on"></NativeFileDialog>
 </neutube>

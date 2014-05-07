@@ -35,6 +35,7 @@
 #include "zstackreadthread.h"
 #include "zstackfile.h"
 #include "zactionactivator.h"
+#include "resolutiondialog.h"
 
 class ZStackFrame;
 class ZInterface;
@@ -91,7 +92,8 @@ public:
   };
 
   enum EActionItem {
-    ACTION_MEASURE_SWC_NODE_LENGTH, ACTION_SWC_SUMMARIZE,
+    ACTION_MEASURE_SWC_NODE_LENGTH, ACTION_MEASURE_SCALED_SWC_NODE_LENGTH,
+    ACTION_SWC_SUMMARIZE,
     ACTION_CHNAGE_SWC_NODE_SIZE, ACTION_TRANSLATE_SWC_NODE,
     ACTION_SET_SWC_ROOT, ACTION_INSERT_SWC_NODE,
     ACTION_RESET_BRANCH_POINT, ACTION_SET_BRANCH_POINT,
@@ -632,7 +634,8 @@ public slots:
    */
   void selectNeighborSwcNode();
 
-  void showSeletedSwcNodeLength();
+  void showSeletedSwcNodeLength(double *resolution = NULL);
+  void showSeletedSwcNodeScaledLength();
 
   void hideSelectedPuncta();
   void showSelectedPuncta();
@@ -749,6 +752,8 @@ private:
 
   NeuTube::Document::ETag m_tag;
   NeuTube::EImageBackground m_stackBackground;
+
+  ResolutionDialog m_resDlg;
 };
 
 //   template  //

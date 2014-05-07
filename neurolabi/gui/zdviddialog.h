@@ -2,6 +2,7 @@
 #define ZDVIDDIALOG_H
 
 #include <QDialog>
+#include <string>
 
 namespace Ui {
 class ZDvidDialog;
@@ -19,8 +20,12 @@ public:
   QString getAddress() const;
   QString getUuid() const;
 
+public slots:
+  void setServer(int index);
+
 private:
   Ui::ZDvidDialog *ui;
+  std::string m_customString;
 };
 
 #endif // ZDVIDDIALOG_H

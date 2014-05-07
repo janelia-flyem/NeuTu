@@ -17,8 +17,6 @@ FlyEm::ZIntCuboidArray::ZIntCuboidArray()
 void FlyEm::ZIntCuboidArray::append(
     int x, int y, int z, int width, int height, int depth)
 {
-
-
   Cuboid_I cuboid;
   Cuboid_I_Set_S(&cuboid, x, y, z, width, height, depth);
   push_back(cuboid);
@@ -26,9 +24,11 @@ void FlyEm::ZIntCuboidArray::append(
   std::cout << depth << std::endl;
   Print_Cuboid_I(&cuboid);
 #endif
+
+  deprecate(ALL_COMPONENT);
 }
 
-int FlyEm::ZIntCuboidArray::hitTest(double x, double y, double z)
+int FlyEm::ZIntCuboidArray::hitTest(double x, double y, double z) const
 {
   int ix = floor(x);
   int iy = floor(y);
@@ -47,7 +47,7 @@ int FlyEm::ZIntCuboidArray::hitTest(double x, double y, double z)
   return -1;
 }
 
-int FlyEm::ZIntCuboidArray::hitInternalTest(double x, double y, double z)
+int FlyEm::ZIntCuboidArray::hitInternalTest(double x, double y, double z) const
 {
   int ix = floor(x);
   int iy = floor(y);
@@ -85,6 +85,8 @@ void FlyEm::ZIntCuboidArray::loadSubstackList(const std::string filePath)
   } else {
     cerr << "Cannot open " << filePath << endl;
   }
+
+  deprecate(ALL_COMPONENT);
 }
 
 void FlyEm::ZIntCuboidArray::translate(int x, int y, int z)
@@ -97,6 +99,8 @@ void FlyEm::ZIntCuboidArray::translate(int x, int y, int z)
     iter->cb[2] += z;
     iter->ce[2] += z;
   }
+
+  deprecate(ALL_COMPONENT);
 }
 
 void FlyEm::ZIntCuboidArray::rescale(double factor)
@@ -109,6 +113,8 @@ void FlyEm::ZIntCuboidArray::rescale(double factor)
     iter->cb[2] *= factor;
     iter->ce[2] *= factor;
   }
+
+  deprecate(ALL_COMPONENT);
 }
 
 void FlyEm::ZIntCuboidArray::exportSwc(const string &filePath) const
@@ -153,6 +159,8 @@ void FlyEm::ZIntCuboidArray::intersect(const Cuboid_I &cuboid)
   }
 
   removeInvalidCuboid();
+
+  deprecate(ALL_COMPONENT);
 }
 
 
@@ -259,4 +267,59 @@ size_t FlyEm::ZIntCuboidArray::getVolume() const
   }
 
   return volume;
+}
+
+ZIntCuboidFaceArray FlyEm::ZIntCuboidArray::getBorderFace() const
+{
+  if (isDeprecated(BORDER_FACE)) {
+    ZIntCuboidFaceArray faceArray;
+    for (ZIntCuboidArray::const_iterator iter = begin(); iter != end();
+         ++iter) {
+      faceArray.append(&(*iter));
+    }
+
+    ZIntCuboidFaceArray cropFaceArray = faceArray;
+    cropFaceArray.moveBackward(1);
+
+    m_borderFace = faceArray.cropBy(cropFaceArray);
+  }
+
+  return m_borderFace;
+}
+
+
+void FlyEm::ZIntCuboidArray::deprecate(EComponent component) const
+{
+  deprecateDependent(component);
+
+  switch (component) {
+  case BORDER_FACE:
+    m_borderFace.clear();
+    break;
+  case ALL_COMPONENT:
+    break;
+  }
+}
+
+void FlyEm::ZIntCuboidArray::deprecateDependent(EComponent component) const
+{
+  switch (component) {
+  case ALL_COMPONENT:
+    deprecate(BORDER_FACE);
+    break;
+  case BORDER_FACE:
+    break;
+  }
+}
+
+bool FlyEm::ZIntCuboidArray::isDeprecated(EComponent component) const
+{
+  switch (component) {
+  case ALL_COMPONENT: //Is any of the component deprecated?
+    return isDeprecated(BORDER_FACE);
+  case BORDER_FACE:
+    return m_borderFace.empty();
+  }
+
+  return false;
 }
