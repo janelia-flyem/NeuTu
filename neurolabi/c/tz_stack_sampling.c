@@ -351,7 +351,7 @@ Pixel_Array* Stack_Index_Sampling(const Stack *stack, const int *indices,
     sum += tmp_sum * wy_low_x_wz_high;					\
   }
 
-#define STACK_POINT_SAMPLING STACK_POINT_SAMPLING4
+#define STACK_POINT_SAMPLING STACK_POINT_SAMPLING0
 
 double Stack_Point_Sampling(const Stack *stack, double x, double y, double z)
 {
@@ -523,7 +523,7 @@ double Stack_Point_Sampling_Grey(const uint8_t *array, int width, int height, in
 
     size_t offset =  area *  z_low + width * y_low + x_low;
     
-    STACK_POINT_SAMPLING(array);
+    STACK_POINT_SAMPLING4(array);
     /* Return the weighted sum */
     return sum;
   }
