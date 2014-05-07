@@ -1260,7 +1260,7 @@ void MainWindow::openFile(const QString &fileName)
 {
   QFuture<ZStackDoc*> res;
 
-  res = QtConcurrent::run(this, &MainWindow::openFileFunc, fileName);
+  //res = QtConcurrent::run(this, &MainWindow::openFileFunc, fileName);
 
   m_progress->setRange(0, 2);
   m_progress->setLabelText(QString("Loading %1 ...").arg(fileName));
@@ -1268,9 +1268,11 @@ void MainWindow::openFile(const QString &fileName)
   m_progress->setValue(++currentProgress);
   m_progress->show();
 
-  res.waitForFinished();
+  //res.waitForFinished();
 
-  ZStackDoc *doc = res.result();
+  //ZStackDoc *doc = res.result();
+
+  ZStackDoc *doc = openFileFunc(fileName);
   if (doc != NULL) {
     ZStackFrame *frame = createStackFrame(doc);
     if (doc->hasStackData()) {

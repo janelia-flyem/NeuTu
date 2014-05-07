@@ -233,8 +233,8 @@ void Z3DWindow::init(EInitMode mode)
   connect(m_swcFilter, SIGNAL(treeNodeSelected(Swc_Tree_Node*,bool)),
           this, SLOT(selectedSwcTreeNodeChangedFrom3D(Swc_Tree_Node*,bool)));
 
-  connect(m_swcFilter, SIGNAL(treeNodeSelectConnection()),
-          m_doc.get(), SLOT(selectSwcNodeConnection()));
+  connect(m_swcFilter, SIGNAL(treeNodeSelectConnection(Swc_Tree_Node*)),
+          m_doc.get(), SLOT(selectSwcNodeConnection(Swc_Tree_Node*)));
   connect(m_swcFilter, SIGNAL(addNewSwcTreeNode(double, double, double, double)),
           this, SLOT(addNewSwcTreeNode(double, double, double, double)));
   connect(m_swcFilter, SIGNAL(connectingSwcTreeNode(Swc_Tree_Node*)), this,

@@ -29,7 +29,7 @@
     <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
    </property>
   </widget>
-  <widget class="QWidget" name="">
+  <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
      <x>30</x>
@@ -120,7 +120,7 @@
       <item>
        <widget class="QLineEdit" name="excludedBodyLineEdit">
         <property name="text">
-         <string>16493</string>
+         <string>16493 662773</string>
         </property>
        </widget>
       </item>

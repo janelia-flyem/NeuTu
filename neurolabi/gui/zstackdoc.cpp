@@ -650,7 +650,7 @@ void ZStackDoc::addSizeForSelectedSwcNode(double dr)
   }
 }
 
-void ZStackDoc::selectSwcNodeConnection()
+void ZStackDoc::selectSwcNodeConnection(Swc_Tree_Node *lastSelectedNode)
 {
   std::set<Swc_Tree_Node*> *nodeSet = selectedSwcTreeNodes();
 

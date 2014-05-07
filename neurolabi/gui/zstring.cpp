@@ -346,6 +346,8 @@ bool ZString::isAbsolutePath(const string &path)
   if (!path.empty()) {
     if (path[0] == FileSeparator) {
       return true;
+    } else if (ZString(path).startsWith("http:")) {
+      return true;
     }
   }
 #endif

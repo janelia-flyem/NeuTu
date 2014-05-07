@@ -791,12 +791,14 @@ ZStackPresenter::processMouseReleaseForSwc(QMouseEvent *event, double *positionI
 
     switch (m_interactiveContext.swcEditMode()) {
     case ZInteractiveContext::SWC_EDIT_SELECT:
-      if (buddyDocument()->selectSwcTreeNode(
+    {
+      Swc_Tree_Node *selected = buddyDocument()->selectSwcTreeNode(
             positionInData.x(), positionInData.y(), positionInData.z(),
             event->modifiers() == Qt::ControlModifier ||
-            event->modifiers() == Qt::ShiftModifier)) {
+            event->modifiers() == Qt::ShiftModifier);
+      if (selected != NULL) {
         if (event->modifiers() == Qt::ShiftModifier) {
-          buddyDocument()->selectSwcNodeConnection();
+          buddyDocument()->selectSwcNodeConnection(selected);
         }
         status = MOUSE_HIT_OBJECT;
         if (event->modifiers() != Qt::ShiftModifier &&
@@ -809,6 +811,7 @@ ZStackPresenter::processMouseReleaseForSwc(QMouseEvent *event, double *positionI
         interactionEvent.setEvent(ZInteractionEvent::EVENT_SWC_NODE_SELECTED);
       }
       buddyDocument()->notifySwcModified();
+    }
       break;
     case ZInteractiveContext::SWC_EDIT_CONNECT:
     {
@@ -835,11 +838,12 @@ ZStackPresenter::processMouseReleaseForSwc(QMouseEvent *event, double *positionI
       bool isExtensionCanceled = false;
       if (event->modifiers() == Qt::ControlModifier ||
           event->modifiers() == Qt::ShiftModifier) {
-        if (buddyDocument()->selectSwcTreeNode(
+        Swc_Tree_Node *selected = buddyDocument()->selectSwcTreeNode(
               positionInData.x(), positionInData.y(), positionInData.z(),
-              true)) {
+              true);
+        if (selected != NULL) {
           if (event->modifiers() == Qt::ShiftModifier) {
-            buddyDocument()->selectSwcNodeConnection();
+            buddyDocument()->selectSwcNodeConnection(selected);
           }
           buddyDocument()->notifySwcModified();
           exitSwcExtendMode();
@@ -2321,9 +2325,9 @@ void ZStackPresenter::selectDownstreamNode()
   buddyDocument()->selectDownstreamNode();
 }
 
-void ZStackPresenter::selectSwcNodeConnection()
+void ZStackPresenter::selectSwcNodeConnection(Swc_Tree_Node *lastSelected)
 {
-  buddyDocument()->selectSwcNodeConnection();
+  buddyDocument()->selectSwcNodeConnection(lastSelected);
 }
 
 void ZStackPresenter::selectUpstreamNode()

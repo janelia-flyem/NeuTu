@@ -197,7 +197,7 @@ public slots:
   void tryDrawStrokeMode(double x, double y, bool isEraser);
 
   void selectDownstreamNode();
-  void selectSwcNodeConnection();
+  void selectSwcNodeConnection(Swc_Tree_Node *lastSelected = NULL);
   void selectUpstreamNode();
   void selectBranchNode();
   void selectTreeNode();

@@ -621,7 +621,7 @@ public slots:
   bool saveSwc(const std::string &filePath);
   void loadReaderResult();
   void selectDownstreamNode();
-  void selectSwcNodeConnection();
+  void selectSwcNodeConnection(Swc_Tree_Node *lastSelectedNode = NULL);
   void selectUpstreamNode();
   void selectBranchNode();
   void selectTreeNode();
@@ -697,6 +697,9 @@ private:
   QList<ZStroke2d*> m_strokeList;
   QList<ZObject3d*> m_obj3dList;
 
+  //Special object
+  ZSwcNetwork *m_swcNetwork;
+
   //Roles
   QList<ZDocumentable*> m_objs;
   QList<ZStackDrawable*> m_drawableList;
@@ -710,9 +713,6 @@ private:
   ZSwcObjsModel *m_swcObjsModel;
   ZSwcNodeObjsModel *m_swcNodeObjsModel;
   ZPunctaObjsModel *m_punctaObjsModel;
-
-  //Special object
-  ZSwcNetwork *m_swcNetwork;
 
   //Parent frame
   ZStackFrame *m_parentFrame;

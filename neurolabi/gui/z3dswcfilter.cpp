@@ -1393,7 +1393,8 @@ void Z3DSwcFilter::selectSwc(QMouseEvent *e, int w, int h)
         } else {
           emit treeNodeSelected(m_pressedSwcTreeNode, appending);
           if (e->modifiers() == Qt::ShiftModifier) {
-            emit treeNodeSelectConnection();
+            qDebug() << "treeNodeSelectConnection emitted";
+            emit treeNodeSelectConnection(m_pressedSwcTreeNode);
           }
         }
         e->accept();

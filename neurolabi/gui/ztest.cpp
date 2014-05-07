@@ -11443,7 +11443,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1 //Count orphans
+#if 0 //Count orphans
   ZFlyEmNeuronArray neuronArray;
   neuronArray.importBodyDir(
         GET_DATA_DIR + "/flyem/FIB/skeletonization/session34/100000_/stacked.hf5");
@@ -11508,6 +11508,37 @@ void ZTest::test(MainWindow *host)
   std::cout << "#Orphans >= 100k: " << orphanCount << std::endl;
   std::cout << "#PSDs: " << orphanPsdCount << std::endl;
   std::cout << "#TBars: " << orphanTbarCount << std::endl;
+
+#endif
+  QDir dir((GET_DATA_DIR + "/flyem/TEM/All_Cells").c_str());
+  QString outputDirPath = (GET_DATA_DIR + "/flyem/TEM/All_Cells_Scaled").c_str();
+  QDir outputDir(outputDirPath);
+
+  QFileInfoList subDirList = dir.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot);
+  QStringList nameFilters;
+  nameFilters << "*.swc";
+  foreach (QFileInfo fileInfo, subDirList) {
+    qDebug() << fileInfo.fileName();
+    QDir subdir(fileInfo.absoluteFilePath());
+    QFileInfoList swcFileInfoList = subdir.entryInfoList(
+          nameFilters, QDir::Files);
+    QString outputSubDir = outputDirPath + "/" + fileInfo.fileName();
+    if (!outputDir.exists(fileInfo.fileName())) {
+      outputDir.mkdir(fileInfo.fileName());
+    }
+    foreach (QFileInfo swcFileInfo, swcFileInfoList) {
+      qDebug() << swcFileInfo.fileName();
+      QString outputFilePath = outputSubDir + "/" + swcFileInfo.fileName();
+      qDebug() << outputFilePath;
+
+      ZSwcTree tree;
+      tree.load(swcFileInfo.absoluteFilePath().toStdString());
+      tree.rescale(0.031, 0.031, 0.043);
+      tree.save(outputFilePath.toStdString());
+    }
+  }
+#if 1
+
 
 #endif
 }
