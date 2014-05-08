@@ -29,7 +29,7 @@
     <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
    </property>
   </widget>
-  <widget class="QWidget" name="">
+  <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
      <x>20</x>
@@ -51,21 +51,21 @@
       <item>
        <widget class="QSpinBox" name="xDsSpinBox">
         <property name="value">
-         <number>5</number>
+         <number>9</number>
         </property>
        </widget>
       </item>
       <item>
        <widget class="QSpinBox" name="yDsSpinBox">
         <property name="value">
-         <number>5</number>
+         <number>9</number>
         </property>
        </widget>
       </item>
       <item>
        <widget class="QSpinBox" name="zDsSpinBox">
         <property name="value">
-         <number>5</number>
+         <number>9</number>
         </property>
        </widget>
       </item>

@@ -61,7 +61,7 @@
              <number>2147483647</number>
             </property>
             <property name="value">
-             <number>100000</number>
+             <number>1000000</number>
             </property>
            </widget>
           </item>
@@ -75,7 +75,7 @@
              <string>Max body size</string>
             </property>
             <property name="checked">
-             <bool>true</bool>
+             <bool>false</bool>
             </property>
            </widget>
           </item>
@@ -85,7 +85,7 @@
              <number>2147483647</number>
             </property>
             <property name="value">
-             <number>1000000</number>
+             <number>5000000</number>
             </property>
            </widget>
           </item>

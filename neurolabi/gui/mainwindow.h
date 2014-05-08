@@ -17,6 +17,7 @@
 #include "autosaveswclistdialog.h"
 #include "zactionactivator.h"
 #include "flyemneuronthumbnaildialog.h"
+#include "zstackdoc.h"
 
 class ZStackFrame;
 class QMdiArea;
@@ -125,7 +126,7 @@ protected:
   QString getDirectory(const QString &caption);
   void createActionMap();
 
-  ZStackDoc* openFileFunc(const QString &filePath);
+  ZStackDoc::Reader* openFileFunc(const QString &filePath);
 
 private slots:
   // slots for 'File' menu

@@ -71,6 +71,48 @@ public:
   ZStackDoc(ZStack *stack, QObject *parent);
   virtual ~ZStackDoc();
 
+  //Designed for multi-thread reading
+  class Reader {
+  public:
+    Reader();
+
+    bool readFile(const QString &filePath);
+    void clear();
+    void loadSwc(const QString &filePath);
+    void loadLocsegChain(const QString &filePath);
+    void loadStack(const QString &filePath);
+    void loadSwcNetwork(const QString &filePath);
+    void loadPuncta(const QString &filePath);
+
+    inline ZStack* getStack() const { return m_stack; }
+    inline const ZStackFile& getStackSource() const { return m_stackSource; }
+    inline const QList<ZSwcTree*>& getSwcList() const { return m_swcList; }
+    inline const QList<ZPunctum*>& getPunctaList() const { return m_punctaList; }
+    inline const QList<ZStroke2d*>& getStrokeList() const { return m_strokeList; }
+    inline const QList<ZObject3d*>& getObjectList() const { return m_obj3dList; }
+    inline const QList<ZLocsegChain*>& getChainList() const { return m_chainList; }
+
+  private:
+    void addSwcTree(ZSwcTree *tree);
+    void addLocsegChain(ZLocsegChain *chain);
+    void addPunctum(ZPunctum *p);
+
+  private:
+    //Main stack
+    ZStack *m_stack;
+    ZStackFile m_stackSource;
+
+    //Concrete objects
+    QList<ZSwcTree*> m_swcList;
+    QList<ZPunctum*> m_punctaList;
+    QList<ZStroke2d*> m_strokeList;
+    QList<ZObject3d*> m_obj3dList;
+    QList<ZLocsegChain*> m_chainList;
+
+    //Special object
+    ZSwcNetwork *m_swcNetwork;
+  };
+
   enum TubeImportOption {
     ALL_TUBE,
     GOOD_TUBE,
@@ -199,6 +241,8 @@ public: //attributes
 
   void updateSwcNodeAction();
 
+  void addData(const Reader &reader);
+
   /*
   void createContextMenu();
 
@@ -261,6 +305,7 @@ public:
   virtual ZStack *stackMask() const;
   inline QList<ZDocumentable*>* objects() { return &m_objs; }
   void setStackSource(const char *filePath);
+  void setStackSource(const ZStackFile &stackFile);
   void loadSwcNetwork(const QString &filePath);
   void loadSwcNetwork(const char *filePath);
   bool importImageSequence(const char *filePath);
@@ -346,9 +391,14 @@ public: /* puncta related methods */
   inline bool hasSelectedPuncta() {return !m_selectedPuncta.empty();}
 
   void addLocsegChain(ZLocsegChain *chain);
+  void addLocsegChain(const QList<ZLocsegChain*> &chainList);
+
   void addSwcTree(ZSwcTree *obj, bool uniqueSource = true);
   void addSwcTree(const QList<ZSwcTree*> &swcList, bool uniqueSource = true);
   void addPunctum(ZPunctum *obj);
+  void addPunctum(const QList<ZPunctum*> &punctaList);
+
+
   void addObj3d(ZObject3d *obj);
   void addStroke(ZStroke2d *obj);
 

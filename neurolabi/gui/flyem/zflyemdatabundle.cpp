@@ -16,6 +16,7 @@
 #include "dvid/zdvidreader.h"
 #include "dvid/zdvidtarget.h"
 #include "dvid/zdvidfilter.h"
+#include "zflyemdvidreader.h"
 
 using namespace std;
 
@@ -32,6 +33,7 @@ const char *ZFlyEmDataBundle::m_swcResolutionKey = "swc_resolution";
 const char *ZFlyEmDataBundle::m_matchThresholdKey = "match_threshold";
 const char *ZFlyEmDataBundle::m_layerKey = "layer";
 const char *ZFlyEmDataBundle::m_boundBoxKey = "bound_box";
+const char *ZFlyEmDataBundle::m_serverKey = "dvid";
 
 const int ZFlyEmDataBundle::m_layerNumber = 10;
 /*
@@ -136,13 +138,26 @@ bool ZFlyEmDataBundle::loadDvid(const ZDvidFilter &dvidFilter)
 
   m_neuronArray.resize(bodyIdArray.size());
   size_t realSize = 0;
+
+  ZFlyEmDvidReader fdReader;
+  fdReader.open(dvidFilter.getDvidTarget());
   for (size_t i = 0; i < bodyIdArray.size(); ++i) {
-    if (bodyIdArray[i] > 0 && !dvidFilter.isExcluded(bodyIdArray[i])) {
+    int bodyId = bodyIdArray[i];
+    if (bodyId > 0 && !dvidFilter.isExcluded(bodyId)) {
       ZFlyEmNeuron &neuron = m_neuronArray[realSize++];
       neuron.setId(bodyIdArray[i]);
       neuron.setModelPath(m_source);
       neuron.setVolumePath(m_source);
       neuron.setResolution(m_swcResolution);
+
+      ZFlyEmBodyAnnotation annotation = fdReader.readAnnotation(bodyId);
+      if (!annotation.getName().empty()) {
+        neuron.setName(annotation.getName());
+      }
+
+      if (!annotation.getClass().empty()) {
+        neuron.setClass(annotation.getClass());
+      }
 #ifdef _DEBUG_
       if (neuron.getId() == 16493) {
         std::cout << "Potential bug" << std::endl;
@@ -260,6 +275,29 @@ bool ZFlyEmDataBundle::loadJsonFile(const std::string &filePath)
       m_boundBox.load(path);
       m_boundBox.rescale(
             m_swcResolution[0], m_swcResolution[1], m_swcResolution[2]);
+    }
+
+    json_t *serverObj = bundleObject[ZFlyEmDataBundle::m_serverKey];
+    if (serverObj != NULL) {
+      ZJsonObject obj(serverObj, false);
+      ZDvidTarget target;
+      target.set(ZJsonParser::stringValue(obj["address"]),
+          ZJsonParser::stringValue(obj["uuid"]),
+          ZJsonParser::integerValue(obj["port"]));
+      ZFlyEmDvidReader reader;
+      if (reader.open(target)) {
+        for (ZFlyEmNeuronArray::iterator iter = m_neuronArray.begin();
+             iter != m_neuronArray.end(); ++iter) {
+          ZFlyEmNeuron &neuron = *iter;
+          ZFlyEmBodyAnnotation annotation = reader.readAnnotation(neuron.getId());
+          if (!annotation.getName().empty()) {
+            neuron.setName(annotation.getName());
+          }
+          if (!annotation.getClass().empty()) {
+            neuron.setClass(annotation.getClass());
+          }
+        }
+      }
     }
 
     updateNeuronConnection();

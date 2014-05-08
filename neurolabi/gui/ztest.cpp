@@ -178,6 +178,7 @@
 #include "dvid/zdvidreader.h"
 #include "dvid/zdvidinfo.h"
 #include "zstringarray.h"
+#include "zflyemdvidreader.h"
 
 using namespace std;
 
@@ -11510,6 +11511,8 @@ void ZTest::test(MainWindow *host)
   std::cout << "#TBars: " << orphanTbarCount << std::endl;
 
 #endif
+
+#if 0 //rescale TEM cells
   QDir dir((GET_DATA_DIR + "/flyem/TEM/All_Cells").c_str());
   QString outputDirPath = (GET_DATA_DIR + "/flyem/TEM/All_Cells_Scaled").c_str();
   QDir outputDir(outputDirPath);
@@ -11537,8 +11540,69 @@ void ZTest::test(MainWindow *host)
       tree.save(outputFilePath.toStdString());
     }
   }
-#if 1
+#endif
 
+#if 0
+  ZFlyEmNeuronArray neuronArray;
+  neuronArray.importBodyDir(
+        GET_TEST_DATA_DIR +
+        "/flyem/FIB/skeletonization/session34/100000_/stacked.hf5");
+  std::cout << neuronArray.size() << " neurons." << std::endl;
+
+  FlyEm::ZSynapseAnnotationArray synapseArray;
+  synapseArray.loadJson(
+        GET_TEST_DATA_DIR +
+        "/flyem/FIB/skeletonization/session34/annotations-synapse.json");
+
+  FlyEm::ZIntCuboidArray blockArray;
+  blockArray.loadSubstackList(GET_DATA_DIR + "/flyem/FIB/block_13layer.txt");
+  ZFlyEmQualityAnalyzer::SubstackRegionCalbration calbr;
+  calbr.setBounding(true, true, false);
+  calbr.setMargin(10, 10, 0);
+  ZFlyEmQualityAnalyzer analyzer;
+  analyzer.setSubstackRegion(blockArray, calbr);
+
+  std::vector<int> allSynapseCount = synapseArray.countSynapse();
+
+  ZFlyEmNeuronArray selectedNeuronArray;
+  for (ZFlyEmNeuronArray::iterator iter = neuronArray.begin();
+       iter != neuronArray.end(); ++iter) {
+    ZFlyEmNeuron &neuron = *iter;
+    std::cout << neuron.getId() << std::endl;
+    if ((size_t) neuron.getId() < allSynapseCount.size()) {
+      if (allSynapseCount[neuron.getId()] > 0) {
+        if (analyzer.touchingSideBoundary(*neuron.getBody())) {
+          selectedNeuronArray.push_back(neuron);
+        }
+        neuron.deprecate(ZFlyEmNeuron::BODY);
+      }
+    }
+  }
+
+  ZFlyEmNeuronExporter exporter;
+  exporter.exportIdVolume(selectedNeuronArray, GET_TEST_DATA_DIR + "/side_bounary.json");
+#endif
+
+#if 0
+  ZDvidReader reader;
+
+  ZFlyEmDataInfo eminfo(FlyEm::DATA_FIB25);
+  reader.open(eminfo.getDvidAddress().c_str(), eminfo.getDvidUuid().c_str(),
+              eminfo.getDvidPort());
+
+  QByteArray keyValue = reader.readKeyValue("skeletons", "1.swc");
+
+  qDebug() << QString(keyValue);
+#endif
+
+#if 1
+  ZFlyEmDataInfo eminfo(FlyEm::DATA_FIB25);
+  ZFlyEmDvidReader reader;
+  reader.open(eminfo.getDvidAddress().c_str(), eminfo.getDvidUuid().c_str(),
+              eminfo.getDvidPort());
+
+  ZFlyEmBodyAnnotation annotation = reader.readAnnotation(117);
+  annotation.print();
 
 #endif
 }

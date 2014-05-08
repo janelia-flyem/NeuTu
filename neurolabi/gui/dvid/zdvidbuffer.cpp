@@ -51,6 +51,15 @@ void ZDvidBuffer::importInfo()
   }
 }
 
+void ZDvidBuffer::importKeyValue()
+{
+  if (m_dvidClient != NULL) {
+    m_keyValueArray.append(m_dvidClient->getKeyValue());
+    qDebug() << "Emitting dataTransered from importKeyValue()";
+    emit dataTransfered();
+  }
+}
+
 void ZDvidBuffer::clear()
 {
   m_bodyArray.clear();
@@ -70,4 +79,30 @@ void ZDvidBuffer::clear()
 void ZDvidBuffer::clearInfoArray()
 {
   m_infoArray.clear();
+}
+
+void ZDvidBuffer::clearKeyValueArray()
+{
+  m_keyValueArray.clear();
+}
+
+void ZDvidBuffer::clearImageArray()
+{
+  foreach (ZStack *stack, m_imageArray) {
+    delete stack;
+  }
+  m_imageArray.clear();
+}
+
+void ZDvidBuffer::clearTreeArray()
+{
+  foreach (ZSwcTree *tree, m_swcTreeArray) {
+    delete tree;
+  }
+  m_swcTreeArray.clear();
+}
+
+void ZDvidBuffer::clearBodyArray()
+{
+  m_bodyArray.clear();
 }

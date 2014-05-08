@@ -43,6 +43,15 @@ void ZDvidRequest::setGetStringRequest(const QString &dataType)
   }
 }
 
+void ZDvidRequest::setGetKeyValueRequest(
+    const QString &dataName, const QString key)
+{
+  m_requestType = ZDvidRequest::DVID_GET_KEYVALUE;
+  QList<QVariant> parameter;
+  parameter << dataName << key;
+  m_parameter = parameter;
+}
+
 void ZDvidRequest::setParameter(const QVariant &parameter)
 {
   m_parameter = parameter;

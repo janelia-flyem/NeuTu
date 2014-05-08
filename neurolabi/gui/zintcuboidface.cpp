@@ -385,7 +385,8 @@ void ZIntCuboidFaceArray::append(const Cuboid_I *cuboid)
       face.set(cuboid->cb[1], cuboid->cb[2], cuboid->ce[1], cuboid->ce[2]);
       append(face);
 
-      face.setNormal(NeuTube::X_AXIS, false);
+      //face.setNormal(NeuTube::X_AXIS, false);
+      face.flip();
       face.setZ(cuboid->ce[0]);
       append(face);
 
@@ -402,7 +403,9 @@ void ZIntCuboidFaceArray::append(const Cuboid_I *cuboid)
       face.setZ(cuboid->cb[2]);
       face.set(cuboid->cb[0], cuboid->cb[1], cuboid->ce[0], cuboid->ce[1]);
       append(face);
-      face.setNormal(NeuTube::Z_AXIS, false);
+
+      face.flip();
+      //face.setNormal(NeuTube::Z_AXIS, false);
       face.setZ(cuboid->ce[2]);
       append(face);
     }

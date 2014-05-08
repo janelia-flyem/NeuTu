@@ -1240,27 +1240,27 @@ void MainWindow::presentStackFrame(ZStackFrame *frame)
   }
 }
 
-ZStackDoc* MainWindow::openFileFunc(const QString &fileName)
+ZStackDoc::Reader* MainWindow::openFileFunc(const QString &fileName)
 {
-  ZStackDoc *doc = NULL;
+  ZStackDoc::Reader *reader = NULL;
   ZFileType::EFileType fileType = ZFileType::fileType(fileName.toStdString());
 
   if (ZFileType::isNeutubeOpenable(fileType)) {
-    doc = new ZStackDoc(NULL, NULL);
-    if (doc->loadFile(fileName) == false) {
-      delete doc;
-      doc = NULL;
+    reader = new ZStackDoc::Reader;
+    if (reader->readFile(fileName) == false) {
+      delete reader;
+      reader = NULL;
     }
   }
 
-  return doc;
+  return reader;
 }
 
 void MainWindow::openFile(const QString &fileName)
 {
-  QFuture<ZStackDoc*> res;
+  QFuture<ZStackDoc::Reader*> res;
 
-  //res = QtConcurrent::run(this, &MainWindow::openFileFunc, fileName);
+  res = QtConcurrent::run(this, &MainWindow::openFileFunc, fileName);
 
   m_progress->setRange(0, 2);
   m_progress->setLabelText(QString("Loading %1 ...").arg(fileName));
@@ -1268,11 +1268,21 @@ void MainWindow::openFile(const QString &fileName)
   m_progress->setValue(++currentProgress);
   m_progress->show();
 
-  //res.waitForFinished();
+  res.waitForFinished();
 
-  //ZStackDoc *doc = res.result();
+  ZStackDoc::Reader *docReader = res.result();
 
-  ZStackDoc *doc = openFileFunc(fileName);
+  //ZStackDoc::Reader *docReader = openFileFunc(fileName);
+
+  ZStackDoc *doc = NULL;
+  if (docReader != NULL) {
+    doc = new ZStackDoc(NULL, NULL);
+    doc->addData(*docReader);
+
+    delete docReader;
+    docReader = NULL;
+  }
+
   if (doc != NULL) {
     ZStackFrame *frame = createStackFrame(doc);
     if (doc->hasStackData()) {

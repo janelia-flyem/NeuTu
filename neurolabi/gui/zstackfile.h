@@ -70,6 +70,8 @@ public:
 
   void appendUrl(const std::string &path);
 
+  void clear();
+
 private:
   EFileType m_type;
   std::vector<std::string> m_urlList;

@@ -62,8 +62,8 @@ public:
   bool containsDigit();
   std::string& replace(const std::string &from, const std::string &to);
   std::string& replace(int from, const std::string &to);
-  bool startsWith(const std::string &str, ECaseSensitivity cs = CASE_SENSITIVE);
-  bool endsWith(const std::string &str, ECaseSensitivity cs = CASE_SENSITIVE);
+  bool startsWith(const std::string &str, ECaseSensitivity cs = CASE_SENSITIVE) const;
+  bool endsWith(const std::string &str, ECaseSensitivity cs = CASE_SENSITIVE) const;
   void trim();
 
   void toLower();
@@ -80,6 +80,8 @@ public:
   static bool isAbsolutePath(const std::string &path);
   static std::string absolutePath(const std::string &dir,
                                   const std::string &relative);
+  bool isRemotePath() const;
+
   /*!
    * \brief Get the relative path
    */

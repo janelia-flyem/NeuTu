@@ -71,6 +71,7 @@ ZObject3dScan ZDvidReader::readBody(int bodyId)
   if (!bodyArray.empty()) {
     return bodyArray[0];
   }
+  dvidBuffer->clearBodyArray();
 
   return ZObject3dScan();
 }
@@ -92,6 +93,7 @@ ZSwcTree* ZDvidReader::readSwc(int bodyId)
   if (!treeArray.empty()) {
     return treeArray[0]->clone();
   }
+  dvidBuffer->clearTreeArray();
 
   return NULL;
 }
@@ -119,6 +121,7 @@ ZStack* ZDvidReader::readGrayScale(
   }
 
   stack->setOffset(x0, y0, z0);
+  dvidBuffer->clearImageArray();
 
   return stack;
 }
@@ -185,6 +188,7 @@ std::vector<int> ZDvidReader::readBodyId(
       array.decode(infoArray[1].toStdString());
       idArray = array.toIntegerArray();
     }
+    dvidBuffer->clearInfoArray();
   }
 
   return idArray;
@@ -215,7 +219,33 @@ std::vector<int> ZDvidReader::readBodyId(size_t minSize, size_t maxSize)
       array.decode(infoArray[0].toStdString());
       idArray = array.toIntegerArray();
     }
+
+    dvidBuffer->clearInfoArray();
   }
 
   return idArray;
+}
+
+QByteArray ZDvidReader::readKeyValue(const QString &dataName, const QString &key)
+{
+  ZDvidBuffer *dvidBuffer = m_dvidClient->getDvidBuffer();
+  dvidBuffer->clear();
+
+  ZDvidRequest request;
+  request.setGetKeyValueRequest(dataName, key);
+  m_dvidClient->appendRequest(request);
+  m_dvidClient->postNextRequest();
+
+  m_eventLoop->exec();
+
+  const QVector<QByteArray> &array = dvidBuffer->getKeyValueArray();
+
+  QByteArray keyValue;
+  if (!array.isEmpty()) {
+    keyValue = array[0];
+  }
+
+  dvidBuffer->clearKeyValueArray();
+
+  return keyValue;
 }

@@ -250,7 +250,7 @@ string& ZString::replace(int from, const string &to)
   return *this;
 }
 
-bool ZString::startsWith(const string &str, ECaseSensitivity cs)
+bool ZString::startsWith(const string &str, ECaseSensitivity cs) const
 {
   string str1(c_str());
   string str2(str.c_str());
@@ -263,7 +263,7 @@ bool ZString::startsWith(const string &str, ECaseSensitivity cs)
   return String_Starts_With(str1.c_str(), str2.c_str());
 }
 
-bool ZString::endsWith(const string &str, ECaseSensitivity cs)
+bool ZString::endsWith(const string &str, ECaseSensitivity cs) const
 {
   string str1(c_str());
   string str2(str.c_str());
@@ -385,8 +385,17 @@ string ZString::absolutePath(const string &dir, const string &relative)
   return fullPath;
 }
 
+bool ZString::isRemotePath() const
+{
+  return startsWith("http:");
+}
+
 string ZString::relativePath(const string &path, const string &reference)
 {
+  if (ZString(path).isRemotePath()) {
+    return path;
+  }
+
   vector<string> pathParts = ZString(path).decomposePath();
   vector<string> referenceParts = ZString(reference).decomposePath();
 

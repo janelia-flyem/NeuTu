@@ -29,7 +29,7 @@ void ZFlyEmDataInfo::configure(FlyEm::EDataSet dataSet)
     m_blockMargin = 10;
     m_dvidAddress = "http://emdata1.int.janelia.org";
     m_dvidPort = 9000;
-    m_dvidUuid = "91a";
+    m_dvidUuid = "b42";
     break;
   default:
     RECORD_ERROR_UNCOND("Unsupported dataset")

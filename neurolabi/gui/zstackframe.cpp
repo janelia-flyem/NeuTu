@@ -125,6 +125,8 @@ void ZStackFrame::setDocument(tr1::shared_ptr<ZStackDoc> doc)
     m_view->reset();
   }
 
+  setWindowTitle(m_doc->stackSourcePath().c_str());
+
   m_progressReporter.setProgressBar(m_view->progressBar());
   m_doc->setProgressReporter(&m_progressReporter);
 }

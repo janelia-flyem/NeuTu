@@ -193,6 +193,7 @@ private:
   static const char *m_matchThresholdKey;
   static const char *m_layerKey;
   static const char *m_boundBoxKey;
+  static const char *m_serverKey;
 
   const static int m_layerNumber;
   //const static double m_layerRatio[11];

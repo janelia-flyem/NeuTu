@@ -2146,6 +2146,8 @@ void ZFlyEmDataFrame::exportThumbnail(
       neuron.setThumbnailPath(outputPath.toStdString());
     }
 
+    neuron.deprecate(ZFlyEmNeuron::BODY);
+
     //Stack *stack = m_dataArray[0]->createThumbnail()
   }
 

@@ -388,7 +388,8 @@ HEADERS += mainwindow.h \
     flyembodyiddialog.h \
     zdviddialog.h \
     flyembodyfilterdialog.h \
-    flyem/zskeletonizeservice.h
+    flyem/zskeletonizeservice.h \
+    zflyemdvidreader.h
 
 FORMS += settingdialog.ui \
     frameinfodialog.ui \
@@ -640,7 +641,8 @@ SOURCES += main.cpp \
     flyembodyiddialog.cpp \
     zdviddialog.cpp \
     flyembodyfilterdialog.cpp \
-    flyem/zskeletonizeservice.cpp
+    flyem/zskeletonizeservice.cpp \
+    zflyemdvidreader.cpp
 
 OTHER_FILES += \
     extlib.pri

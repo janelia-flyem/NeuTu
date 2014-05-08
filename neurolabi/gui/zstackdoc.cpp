@@ -652,6 +652,8 @@ void ZStackDoc::addSizeForSelectedSwcNode(double dr)
 
 void ZStackDoc::selectSwcNodeConnection(Swc_Tree_Node *lastSelectedNode)
 {
+  UNUSED_PARAMETER(lastSelectedNode);
+
   std::set<Swc_Tree_Node*> *nodeSet = selectedSwcTreeNodes();
 
   std::set<Swc_Tree_Node*> newSelectedSet;
@@ -1075,6 +1077,12 @@ void ZStackDoc::importFlyEmNetwork(const char *filePath)
   for (size_t i = 0; i < m_swcNetwork->treeNumber(); i++) {
     addSwcTree(m_swcNetwork->getTree(i));
   }
+}
+
+void ZStackDoc::setStackSource(const ZStackFile &stackFile)
+{
+  m_stackSource = stackFile;
+  setStackSource(m_stackSource.firstUrl().c_str());
 }
 
 void ZStackDoc::setStackSource(const char *filePath)
@@ -1751,6 +1759,17 @@ void ZStackDoc::addSwcTree(const QList<ZSwcTree *> &swcList, bool uniqueSource)
     addSwcTree(*iter, uniqueSource);
   }
   blockSignals(false);
+
+  if (!swcList.isEmpty()) {
+    notifySwcModified();
+  }
+}
+
+void ZStackDoc::addPunctum(const QList<ZPunctum *> &punctaList)
+{
+  foreach (ZPunctum *punctum, punctaList) {
+    addPunctum(punctum);
+  }
 }
 
 void ZStackDoc::addPunctum(ZPunctum *obj)
@@ -1805,6 +1824,13 @@ void ZStackDoc::addLocsegChainConn(ZLocsegChainConn *obj)
   m_objs.append(obj);
   m_connList.append(obj);
   m_drawableList.append(obj);
+}
+
+void ZStackDoc::addLocsegChain(const QList<ZLocsegChain *> &chainList)
+{
+  foreach (ZLocsegChain *chain, chainList) {
+    addLocsegChain(chain);
+  }
 }
 
 void ZStackDoc::addLocsegChain(ZLocsegChain *obj)
@@ -7317,5 +7343,164 @@ void ZStackDoc::mapToStackCoord(double *x, double *y, double *z)
     *x -= getStackOffset().x();
     *y -= getStackOffset().y();
     *z -= getStackOffset().z();
+  }
+}
+
+void ZStackDoc::addData(const Reader &reader)
+{
+  if (!reader.getSwcList().isEmpty()) {
+    addSwcTree(reader.getSwcList());
+    notifySwcModified();
+  }
+
+  if (reader.getStack() != NULL) {
+    loadStack(reader.getStack());
+    setStackSource(reader.getStackSource());
+    initTraceWorkspace();
+    initConnectionTestWorkspace();
+    notifyStackModified();
+  }
+
+  if (!reader.getChainList().isEmpty()) {
+    addLocsegChain(reader.getChainList());
+    notifyChainModified();
+  }
+
+  if (!reader.getPunctaList().isEmpty()) {
+    addPunctum(reader.getPunctaList());
+    notifyPunctumModified();
+  }
+}
+
+///////////Stack Reader///////////
+
+ZStackDoc::Reader::Reader() : m_stack(NULL), m_swcNetwork(NULL)
+{
+
+}
+
+bool ZStackDoc::Reader::readFile(const QString &filePath)
+{
+  switch (ZFileType::fileType(filePath.toStdString())) {
+  case ZFileType::SWC_FILE:
+    loadSwc(filePath);
+    break;
+  case ZFileType::LOCSEG_CHAIN_FILE:
+    loadLocsegChain(filePath);
+    break;
+  case ZFileType::SWC_NETWORK_FILE:
+    loadSwcNetwork(filePath);
+    break;
+  case ZFileType::OBJECT_SCAN_FILE:
+  case ZFileType::TIFF_FILE:
+  case ZFileType::LSM_FILE:
+  case ZFileType::V3D_RAW_FILE:
+    loadStack(filePath);
+    break;
+    /*
+  case ZFileType::FLYEM_NETWORK_FILE:
+    importFlyEmNetwork(filePath.toStdString().c_str());
+    break;
+  case ZFileType::SYNAPSE_ANNOTATON_FILE:
+    importSynapseAnnotation(filePath.toStdString());
+    break;
+    */
+  case ZFileType::V3D_APO_FILE:
+  case ZFileType::V3D_MARKER_FILE:
+  case ZFileType::RAVELER_BOOKMARK:
+    loadPuncta(filePath);
+    break;
+  default:
+    return false;
+    break;
+  }
+
+  return true;
+}
+
+void ZStackDoc::Reader::loadSwc(const QString &filePath)
+{
+  ZSwcTree *tree = new ZSwcTree();
+  tree->load(filePath.toLocal8Bit().constData());
+  if (!tree->isEmpty()) {
+    addSwcTree(tree);
+  } else {
+    delete tree;
+  }
+}
+
+void ZStackDoc::Reader::addSwcTree(ZSwcTree *tree)
+{
+  if (tree != NULL) {
+    m_swcList.append(tree);
+  }
+}
+
+void ZStackDoc::Reader::loadLocsegChain(const QString &filePath)
+{
+  if (!filePath.isEmpty()) {
+    ZLocsegChain *chain = new ZLocsegChain();
+    chain->load(filePath.toLocal8Bit().constData());
+    if (!chain->isEmpty()) {
+      addLocsegChain(chain);
+    } else {
+      delete chain;
+    }
+  }
+}
+
+void ZStackDoc::Reader::addLocsegChain(ZLocsegChain *chain)
+{
+  if (chain != NULL) {
+    m_chainList.append(chain);
+  }
+}
+
+void ZStackDoc::Reader::loadStack(const QString &filePath)
+{
+  m_stackSource.import(filePath.toStdString());
+  m_stack = m_stackSource.readStack();
+}
+
+void ZStackDoc::Reader::clear()
+{
+  m_stack = NULL;
+  m_swcList.clear();
+  m_stackSource.clear();
+  m_swcList.clear();
+  m_punctaList.clear();
+  m_strokeList.clear();
+  m_obj3dList.clear();
+}
+
+void ZStackDoc::Reader::loadSwcNetwork(const QString &filePath)
+{
+  if (!filePath.isEmpty()) {
+    if (m_swcNetwork == NULL) {
+      m_swcNetwork = new ZSwcNetwork;
+    }
+
+    m_swcNetwork->importTxtFile(filePath.toStdString());
+
+    for (size_t i = 0; i < m_swcNetwork->treeNumber(); i++) {
+      addSwcTree(m_swcNetwork->getTree(i));
+    }
+  }
+}
+
+void ZStackDoc::Reader::loadPuncta(const QString &filePath)
+{
+  if (!filePath.isEmpty()) {
+    QList<ZPunctum*> plist = ZPunctumIO::load(filePath);
+    foreach (ZPunctum* punctum, plist) {
+      addPunctum(punctum);
+    }
+  }
+}
+
+void ZStackDoc::Reader::addPunctum(ZPunctum *p)
+{
+  if (p != NULL) {
+    m_punctaList.append(p);
   }
 }

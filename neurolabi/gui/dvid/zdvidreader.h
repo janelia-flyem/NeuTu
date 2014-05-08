@@ -34,6 +34,7 @@ public:
   std::vector<int> readBodyId(
       int x0, int y0, int z0, int width, int height, int depth);
   std::vector<int> readBodyId(size_t minSize, size_t maxSize);
+  QByteArray readKeyValue(const QString &dataName, const QString &key);
 
 signals:
 
