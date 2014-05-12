@@ -14,6 +14,7 @@ NeutubeConfig::NeutubeConfig() : m_segmentationClassifThreshold(0.5),
   m_autoSaveEnabled(true), m_usingNativeDialog(true)
 {
   m_messageReporter = new ZLogMessageReporter;
+  m_softwareName = "NeuTu";
 }
 
 NeutubeConfig::NeutubeConfig(const NeutubeConfig& config) :
@@ -154,6 +155,10 @@ bool NeutubeConfig::load(const std::string &filePath)
             ZString::fullPath(getApplicatinDir(), "neutube_warn", "txt"));
       reporter->setErrorFile(
             ZString::fullPath(getApplicatinDir(), "neutube_error", "txt"));
+    }
+
+    if (GET_APPLICATION_NAME == "General") {
+      m_softwareName = "neuTube";
     }
 
     return true;

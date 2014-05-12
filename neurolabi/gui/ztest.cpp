@@ -4,6 +4,8 @@
 #include <QDir>
 #include <QDomDocument>
 #include <QDomElement>
+#include <QImage>
+#include <QPainter>
 #include <iostream>
 #include <ostream>
 #include <fstream>
@@ -179,6 +181,7 @@
 #include "dvid/zdvidinfo.h"
 #include "zstringarray.h"
 #include "zflyemdvidreader.h"
+#include "zstroke2d.h"
 
 using namespace std;
 
@@ -11595,7 +11598,7 @@ void ZTest::test(MainWindow *host)
   qDebug() << QString(keyValue);
 #endif
 
-#if 1
+#if 0
   ZFlyEmDataInfo eminfo(FlyEm::DATA_FIB25);
   ZFlyEmDvidReader reader;
   reader.open(eminfo.getDvidAddress().c_str(), eminfo.getDvidUuid().c_str(),
@@ -11604,5 +11607,20 @@ void ZTest::test(MainWindow *host)
   ZFlyEmBodyAnnotation annotation = reader.readAnnotation(117);
   annotation.print();
 
+#endif
+
+#if 1
+  //QImage image(1024, 1024, QImage::Format_Mono);
+  //QPainter painter(image);
+  ZStroke2d stroke;
+  stroke.setZ(0);
+  stroke.append(50, 50);
+  stroke.append(70, 80);
+  stroke.setWidth(10);
+  stroke.setLabel(200);
+  Stack *stack = C_Stack::make(GREY, 100, 100, 1);
+  C_Stack::setZero(stack);
+  stroke.labelGrey(stack);
+  C_Stack::write(GET_DATA_DIR + "/test.tif", stack);
 #endif
 }

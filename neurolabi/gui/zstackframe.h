@@ -215,6 +215,8 @@ public:
 
   void notifyUser(const QString &message);
 
+  Stack* runSeededWatershed();
+
 public slots:
   void setLocsegChainInfo(ZLocsegChain *chain, QString prefix = "",
                           QString suffix = "");

@@ -2,9 +2,14 @@
 #define ZSTROKE2D_H
 
 #include <QPointF>
+#include <QVector>
+#include <vector>
+#include <QColor>
+#include <QImage>
+
 #include "zdocumentable.h"
 #include "zstackdrawable.h"
-#include <vector>
+#include "c_stack.h"
 
 class ZStroke2d : public ZDocumentable, public ZStackDrawable {
 public:
@@ -18,12 +23,29 @@ public:
 
   virtual void display(ZPainter &painter, int z = 0, Display_Style option = NORMAL) const;
 
+  void labelBinary(Stack *stack) const;
+
+  /*!
+   * \brief Label a stack with the internal label value.
+   */
+  void labelGrey(Stack *stack) const;
+
+  /*!
+   * \brief Label a stack with a given label value.
+   *
+   * The label is automatically set to 0 if it is negative or 255 if it is
+   * larger than 255. \a stack must have GREY kind; otherwise nothing will be
+   * done.
+   */
+  void labelGrey(Stack *stack, int label) const;
+
   virtual const std::string& className() const;
 
   inline void setWidth(double width) { m_width = width; }
   void append(double x, double y);
   void set(const QPoint &pt);
   void set(double x, double y);
+  void setLabel(int label);
 
   void clear();
 
@@ -33,11 +55,12 @@ public:
 
   void addWidth(double dw);
 
-  void setEraser(bool isEraser);
-  inline bool isEraser() { return m_isEraser; }
+  void setEraser(bool enabled);
+  inline bool isEraser() const { return m_label == 0; }
   inline void setFilled(bool isFilled) {
     m_isFilled = isFilled;
   }
+  inline void setZ(int z) { m_z = z; }
 
   double inline getWidth() { return m_width; }
 
@@ -49,13 +72,25 @@ public:
   void print() const;
 
 private:
+  static QVector<QColor> constructColorTable();
+  const QColor& getLabelColor() const;
+  void labelImage(QImage *image) const;
+
+
+private:
   std::vector<QPointF> m_pointArray;
   double m_width;
-  bool m_isEraser;
+
+  int m_label; //Label = 0 is reserved for eraser
+  int m_z;
+
+  //bool m_isEraser;
   bool m_isFilled;
 
   static const double m_minWidth;
   static const double m_maxWidth;
+
+  const static QVector<QColor> m_colorTable;
 };
 
 #endif // ZSTROKE2D_H

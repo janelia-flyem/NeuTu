@@ -235,6 +235,8 @@ void Z3DWindow::init(EInitMode mode)
 
   connect(m_swcFilter, SIGNAL(treeNodeSelectConnection(Swc_Tree_Node*)),
           m_doc.get(), SLOT(selectSwcNodeConnection(Swc_Tree_Node*)));
+  connect(m_swcFilter, SIGNAL(treeNodeSelectFloodFilling(Swc_Tree_Node*)),
+          m_doc.get(), SLOT(selectSwcNodeFloodFilling(Swc_Tree_Node*)));
   connect(m_swcFilter, SIGNAL(addNewSwcTreeNode(double, double, double, double)),
           this, SLOT(addNewSwcTreeNode(double, double, double, double)));
   connect(m_swcFilter, SIGNAL(connectingSwcTreeNode(Swc_Tree_Node*)), this,
@@ -387,7 +389,7 @@ void Z3DWindow::createActions()
   connect(m_locateSwcNodeIn2DAction, SIGNAL(triggered()), this,
           SLOT(locateSwcNodeIn2DView()));
 
-  m_toogleAddSwcNodeModeAction = new QAction("Add swc node", this);
+  m_toogleAddSwcNodeModeAction = new QAction("Add neuron node", this);
   m_toogleAddSwcNodeModeAction->setCheckable(true);
   connect(m_toogleAddSwcNodeModeAction, SIGNAL(toggled(bool)), this,
           SLOT(toogleAddSwcNodeMode(bool)));
@@ -755,7 +757,7 @@ void Z3DWindow::createDockWindows()
 
 
   if (config.getZ3DWindowConfig().isUtilsOn()) {
-    ZWidgetsGroup *utils = new ZWidgetsGroup("Utils", m_widgetsGroup, 1);
+    ZWidgetsGroup *utils = new ZWidgetsGroup("General", m_widgetsGroup, 1);
     new ZWidgetsGroup(resetCameraButton, utils, 1);
 #ifdef _FLYEM_
     new ZWidgetsGroup(flipViewButton, utils, 1);
@@ -838,21 +840,21 @@ void Z3DWindow::createDockWindows()
 
   QTabWidget *tabs = createBasicSettingTabWidget();
   m_settingsDockWidget->setWidget(tabs);
-
-  addDockWidget(Qt::RightDockWidgetArea, m_settingsDockWidget);
   m_viewMenu->addSeparator();
   m_viewMenu->addAction(m_settingsDockWidget->toggleViewAction());
   connect(m_widgetsGroup, SIGNAL(widgetsGroupChanged()), this, SLOT(updateSettingsDockWidget()));
 
-  m_objectsDockWidget = new QDockWidget(tr("Objects Manager"), this);
+  m_objectsDockWidget = new QDockWidget(tr("Objects"), this);
   m_objectsDockWidget->setAllowedAreas(Qt::RightDockWidgetArea);
   ZObjsManagerWidget* omw = new ZObjsManagerWidget(getDocument(), m_objectsDockWidget);
   connect(omw, SIGNAL(swcDoubleClicked(ZSwcTree*)), this, SLOT(swcDoubleClicked(ZSwcTree*)));
   connect(omw, SIGNAL(swcNodeDoubleClicked(Swc_Tree_Node*)), this, SLOT(swcNodeDoubleClicked(Swc_Tree_Node*)));
   connect(omw, SIGNAL(punctaDoubleClicked(ZPunctum*)), this, SLOT(punctaDoubleClicked(ZPunctum*)));
   m_objectsDockWidget->setWidget(omw);
-  addDockWidget(Qt::RightDockWidgetArea, m_objectsDockWidget);
   m_viewMenu->addAction(m_objectsDockWidget->toggleViewAction());
+
+  addDockWidget(Qt::RightDockWidgetArea, m_objectsDockWidget);
+  addDockWidget(Qt::RightDockWidgetArea, m_settingsDockWidget);
 
   customizeDockWindows(tabs);
 }

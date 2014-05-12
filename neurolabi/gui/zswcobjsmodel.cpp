@@ -72,7 +72,7 @@ void ZSwcObjsModel::updateModelData()
   rootData << "swcs" << "id" << "type" << "radius" << "x" << "y" << "z" <<
               "parent_id" << "label" << "weight" << "feature" << "index" << "source";
               */
-  rootData << "SWC" << "Source";
+  rootData << "Neuron" << "Source";
   m_rootItem = new ZObjsItem(rootData, m_doc->swcList());
   setupModelData(m_rootItem);
   endResetModel();
@@ -89,12 +89,12 @@ void ZSwcObjsModel::setupModelData(ZObjsItem *parent)
     data.clear();
     ZSwcTree *swcTree = m_doc->swcList()->at(i);
 
-    data << QString("swc %1").arg(i+1)
+    data << QString("Neuron %1").arg(i+1)
          << QString::fromStdString(swcTree->source());
 
     ZObjsItem *nodeParent = new ZObjsItem(data, swcTree, parent);
     nodeParent->setCheckState(swcTree->isVisible() ? Qt::Checked : Qt::Unchecked);
-    nodeParent->setToolTip(QString("source: %1").arg(
+    nodeParent->setToolTip(QString("Neuron %1: %2").arg(i + 1).arg(
                              QString::fromStdString(swcTree->source())));
     parent->appendChild(nodeParent);
     m_swcToRow[swcTree] = i;

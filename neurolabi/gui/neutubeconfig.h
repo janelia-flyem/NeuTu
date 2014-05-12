@@ -51,6 +51,10 @@ public:
     return m_application;
   }
 
+  inline const std::string& getSoftwareName() const {
+    return m_softwareName;
+  }
+
   inline bool isStereoEnabled() {
     return m_isStereoOn;
   }
@@ -251,6 +255,7 @@ private:
 
 private:
   std::string m_application;
+  std::string m_softwareName;
   std::string m_applicationDir;
   std::string m_segmentationClassifierPath;
   std::string m_segmentationTrainingTestPath;
@@ -287,5 +292,6 @@ private:
 
 #define GET_MESSAGE_REPORTER (NeutubeConfig::getInstance().getMessageReporter())
 #define GET_APPLICATION_NAME (NeutubeConfig::getInstance().getApplication())
+#define GET_SOFTWARE_NAME (NeutubeConfig::getInstance().getSoftwareName())
 
 #endif // NEUTUBECONFIG_H

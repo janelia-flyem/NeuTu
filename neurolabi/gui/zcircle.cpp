@@ -100,14 +100,14 @@ void ZCircle::display(ZPainter *painter, int stackFocus, Display_Style style) co
   }
 
   if (visible) {
-    if (hasVisualEffect(VE_BOUND_BOX)) {
-      painter->drawRect(rect);
-    }
-
     if (!hasVisualEffect(VE_NO_CIRCLE)) {
       painter->drawEllipse(QPointF(m_center.x(), m_center.y()),
                            adjustedRadius, adjustedRadius);
     }
+  }
+
+  if (hasVisualEffect(VE_BOUND_BOX)) {
+    painter->drawRect(rect);
   }
 #endif
 }

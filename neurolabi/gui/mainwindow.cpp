@@ -276,6 +276,9 @@ MainWindow::MainWindow(QWidget *parent) :
   } else {
     m_fileDialogOption = QFileDialog::DontUseNativeDialog;
   }
+
+  setWindowTitle(QString("%1 %2").arg(GET_SOFTWARE_NAME.c_str()).
+                 arg(windowTitle()));
 }
 
 MainWindow::~MainWindow()
@@ -1068,14 +1071,15 @@ void MainWindow::initOpenglContext()
 
 bool MainWindow::okToContinue()
 {
-  if (isWindowModified()) {
-    int r = QMessageBox::warning(this, tr("Stack"),
-         tr("The stack has been modified.\n"
-            "Do you want to save your changes?"),
-         QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
+  if (currentStackFrame() != NULL) {
+    int r  = QMessageBox::warning(
+          this, "Exit?",
+          QString("Do you want to exit %1? All unsaved changes will be lost.").
+          arg(GET_SOFTWARE_NAME.c_str()),
+          QMessageBox::Yes | QMessageBox::No);
     if (r == QMessageBox::Yes) {
-      save();
-    } else if (r == QMessageBox::Cancel) {
+      //save();
+    } else if (r == QMessageBox::No) {
       return false;
     }
   }
@@ -1258,15 +1262,16 @@ ZStackDoc::Reader* MainWindow::openFileFunc(const QString &fileName)
 
 void MainWindow::openFile(const QString &fileName)
 {
+#ifndef _LINUX_
   QFuture<ZStackDoc::Reader*> res;
-
-  res = QtConcurrent::run(this, &MainWindow::openFileFunc, fileName);
 
   m_progress->setRange(0, 2);
   m_progress->setLabelText(QString("Loading %1 ...").arg(fileName));
   int currentProgress = 0;
   m_progress->setValue(++currentProgress);
   m_progress->show();
+
+  res = QtConcurrent::run(this, &MainWindow::openFileFunc, fileName);
 
   res.waitForFinished();
 
@@ -1303,8 +1308,7 @@ void MainWindow::openFile(const QString &fileName)
     m_progress->reset();
     reportFileOpenProblem(fileName);
   }
-
-#if 0
+#else
   ZFileType::EFileType fileType = ZFileType::fileType(fileName.toStdString());
 
   if (ZFileType::isNeutubeOpenable(fileType)) {
@@ -2108,15 +2112,15 @@ void MainWindow::openRecentFile()
 
 void MainWindow::about()
 {
-  QString title = "<h2>neuTube</h2>";
+  QString title = QString("<h2>%1</h2>").arg(GET_SOFTWARE_NAME.c_str());
   if (!NeutubeConfig::getInstance().getApplication().empty()) {
     title += QString("<p>") +
         NeutubeConfig::getInstance().getApplication().c_str() + " Edition" +
         "</p>";
   }
-  QMessageBox::about(this, tr("About neuTube"),
+  QMessageBox::about(this, QString("About %1").arg(GET_SOFTWARE_NAME.c_str()),
                      title +
-                     "<p>neuTube is software "
+                     "<p>" + GET_SOFTWARE_NAME.c_str() +" is software "
                      "for neuron tracing and visualization. "
                      "It was originally developed by Ting Zhao "
                      "in Myers Lab "
@@ -4295,17 +4299,17 @@ void MainWindow::on_actionShortcut_triggered()
     m_helpDlg->show();
     m_helpDlg->raise();
   } else if (GET_APPLICATION_NAME == "General") {
-    QString title = "<h2>neuTube Help</h2>";
+    QString title = QString("<h2> %1 Help </h2").
+        arg(NeutubeConfig::getInstance().getSoftwareName().c_str());
     if (!NeutubeConfig::getInstance().getApplication().empty()) {
       title += QString("<p>") +
           NeutubeConfig::getInstance().getApplication().c_str() + " Edition" +
           "</p>";
     }
-    QMessageBox::about(this, tr("neuTube"),
+    QMessageBox::about(this, GET_SOFTWARE_NAME.c_str(),
                        title + "<p>Please check</p>"
                        "<p><a href=\"https://sites.google.com/site/neurontracing\">"
-                       "online documentation</a></p>"
-                       );
+                       "online documentation</a></p>");
   } else {
     QMessageBox::information(this, "Sorry", "No help is available for this edition.");
   }
@@ -4317,6 +4321,32 @@ ZStackFrame* MainWindow::createEmptyStackFrame(ZStackFrame *parentFrame)
   newFrame->setParentFrame(parentFrame);
 
   return newFrame;
+}
+
+ZStackFrame *MainWindow::createStackFrame(
+    Stack *stack, NeuTube::Document::ETag tag, ZStackFrame *parentFrame)
+{
+  if (stack != NULL) {
+    ZStackFrame *newFrame = new ZStackFrame;
+    newFrame->setParentFrame(parentFrame);
+
+    ZStack *stackObject = new ZStack;
+    stackObject->consumeData(stack);
+
+    newFrame->loadStack(stackObject);
+
+    newFrame->document()->setTag(tag);
+    if (parentFrame != NULL) {
+      newFrame->document()->setStackBackground(
+            parentFrame->document()->getStackBackground());
+    }
+    //addStackFrame(newFrame);
+    //presentStackFrame(newFrame);
+
+    return newFrame;
+  }
+
+  return NULL;
 }
 
 ZStackFrame *MainWindow::createStackFrame(
@@ -4845,7 +4875,7 @@ void MainWindow::createDvidFrame()
   QProgressDialog *progressDlg = getProgressDialog();
   progressDlg->reset();
   progressDlg->setCancelButton(0);
-  progressDlg->setLabelText("Loading dvid object ...");
+  progressDlg->setLabelText("Creating window ...");
   progressDlg->setRange(0, 100);
   QProgressBar *bar = getProgressBar();
   ZQtBarProgressReporter reporter;
@@ -4914,7 +4944,7 @@ void MainWindow::createDvidFrame()
   }
 
   dvidBuffer->clear();
-
+  progressDlg->reset();
 
 #if 0
   const ZObject3dScan &obj = m_dvidClient->getObject();
@@ -5352,7 +5382,7 @@ void MainWindow::on_actionIdentify_Hot_Spot_triggered()
   }
 }
 
-ZStackDoc *MainWindow::hotSpotDemo(
+ZStackDoc::Reader *MainWindow::hotSpotDemo(
     int bodyId, const QString &dvidAddress, const QString &dvidUuid)
 {
   ZDvidReader reader;
@@ -5397,10 +5427,14 @@ ZStackDoc *MainWindow::hotSpotDemo(
 
   tree = ZSwcGenerator::createSwc(hotSpot->toPointArray(), 5.0, true);
 
-  ZStackDoc *doc = new ZStackDoc(stack, NULL);
-  doc->addSwcTree(tree, false);
+  ZStackDoc::Reader *docReader = new ZStackDoc::Reader();
+  docReader->setStack(stack);
+  docReader->addSwcTree(tree);
 
-  return doc;
+  //ZStackDoc *doc = new ZStackDoc(stack, NULL);
+  //doc->addSwcTree(tree, false);
+
+  return docReader;
 
   /*
   ZStackFrame *frame = createStackFrame(stack);
@@ -5413,7 +5447,22 @@ ZStackDoc *MainWindow::hotSpotDemo(
   //presentStackFrame(frame);
 }
 
-ZStackDoc *MainWindow::hotSpotDemoFs(
+ZStackDoc::Reader* MainWindow::readDvidGrayScale(
+    const QString &dvidAddress, const QString &dvidUuid,
+    int x, int y, int z, int width, int height, int depth)
+{
+  ZDvidReader reader;
+  reader.open(dvidAddress, dvidUuid);
+
+  ZStack *stack = reader.readGrayScale(x, y, z, width, height, depth);
+  ZStackDoc::Reader *docReader = new ZStackDoc::Reader;
+  docReader->setStack(stack);
+  //reader->setStackSource("http:" + dvidAddress + ":" + dvidUuid);
+
+  return docReader;
+}
+
+ZStackDoc::Reader *MainWindow::hotSpotDemoFs(
     int bodyId, const QString &dvidAddress, const QString &dvidUuid)
 {
   ZDvidReader reader;
@@ -5519,10 +5568,13 @@ ZStackDoc *MainWindow::hotSpotDemoFs(
   tree = ZSwcGenerator::createSwc(hotSpotArray.toLineSegmentArray(), 5.0);
   //tree = ZSwcGenerator::createSwc(hotSpotArray.toPointArray(), 5.0);
 
-  ZStackDoc *doc = new ZStackDoc(stack, NULL);
-  doc->addSwcTree(tree, false);
+  ZStackDoc::Reader *docReader = new ZStackDoc::Reader();
+  docReader->setStack(stack);
+  docReader->addSwcTree(tree);
+  //ZStackDoc *doc = new ZStackDoc(stack, NULL);
+  //doc->addSwcTree(tree, false);
 
-  return doc;
+  return docReader;
 
   /*
   ZStackFrame *frame = createStackFrame(stack);
@@ -5548,7 +5600,7 @@ void MainWindow::on_actionHot_Spot_Demo_triggered()
 #else
     qDebug() << dataInfo.getDvidAddressWithPort().c_str();
 
-    QFuture<ZStackDoc*> res;
+    QFuture<ZStackDoc::Reader*> res;
 
     switch (m_hotSpotDlg->getType()) {
     case FlyEmHotSpotDialog::FALSE_MERGE:
@@ -5574,7 +5626,19 @@ void MainWindow::on_actionHot_Spot_Demo_triggered()
 
     res.waitForFinished();
 
-    ZStackDoc *doc = res.result();
+    ZStackDoc::Reader *docReader = res.result();
+
+    ZStackDoc *doc = NULL;
+
+    if (docReader != NULL) {
+      if (docReader->hasData()) {
+        doc = new ZStackDoc(NULL, NULL);
+        doc->addData(*docReader);
+      }
+      delete docReader;
+      docReader = NULL;
+    }
+
     if (doc != NULL) {
       ZStackFrame *frame = createStackFrame(doc);
       addStackFrame(frame);
@@ -5802,5 +5866,23 @@ void MainWindow::on_actionSubmit_Skeletonize_triggered()
   ZFlyEmDataFrame *frame = currentFlyEmDataFrame();
   if (frame != NULL) {
     frame->submitSkeletonizeService();
+  }
+}
+
+void MainWindow::on_actionSplit_Region_triggered()
+{
+  ZStackFrame *frame = currentStackFrame();
+  if (frame != NULL) {
+    m_progress->setRange(0, 0);
+    m_progress->open();
+    Stack *stack = frame->runSeededWatershed();
+
+    if (stack != NULL) {
+      ZStackFrame *frame = createStackFrame(stack);
+      addStackFrame(frame);
+      presentStackFrame(frame);
+    }
+
+    m_progress->reset();
   }
 }

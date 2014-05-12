@@ -87,6 +87,10 @@ public slots:
       ZStackFrame *parentFrame = NULL);
 
   ZStackFrame* createStackFrame(
+      Stack *stack,NeuTube::Document::ETag tag = NeuTube::Document::NORMAL,
+      ZStackFrame *parentFrame = NULL);
+
+  ZStackFrame* createStackFrame(
       ZStackDoc *doc,NeuTube::Document::ETag tag,
       ZStackFrame *parentFrame = NULL);
 
@@ -381,6 +385,8 @@ private slots:
 
   void on_actionSubmit_Skeletonize_triggered();
 
+  void on_actionSplit_Region_triggered();
+
 private:
   void createActions();
   void createFileActions();
@@ -429,12 +435,12 @@ private:
   void report(const std::string &title, const std::string &msg,
               ZMessageReporter::EMessageType msgType);
 
-  ZStackDoc* hotSpotDemo(int bodyId, const QString &dvidAddress,
+  ZStackDoc::Reader* hotSpotDemo(int bodyId, const QString &dvidAddress,
                            const QString &dvidUuid);
   /*!
    * \brief Hotspot demo for false split
    */
-  ZStackDoc* hotSpotDemoFs(int bodyId, const QString &dvidAddress,
+  ZStackDoc::Reader *hotSpotDemoFs(int bodyId, const QString &dvidAddress,
                            const QString &dvidUuid);
 
   ZStackDoc* importHdf5Body(int bodyId, const QString &hdf5Path);
@@ -442,6 +448,10 @@ private:
                              const QString &hdf5Path,
                              const std::vector<int> &downsampleInterval);
 
+  ZStackDoc::Reader* readDvidGrayScale(const QString &dvidAddress,
+                                       const QString &dvidUuid,
+                                       int x, int y, int z,
+                                       int width, int height, int depth);
 private:
   QMdiArea *mdiArea;
 

@@ -92,10 +92,14 @@ public:
     inline const QList<ZObject3d*>& getObjectList() const { return m_obj3dList; }
     inline const QList<ZLocsegChain*>& getChainList() const { return m_chainList; }
 
-  private:
+    bool hasData() const;
+
+  public:
     void addSwcTree(ZSwcTree *tree);
     void addLocsegChain(ZLocsegChain *chain);
     void addPunctum(ZPunctum *p);
+    void setStack(ZStack *stack);
+    void setStackSource(const ZStackFile &stackFile);
 
   private:
     //Main stack
@@ -243,23 +247,10 @@ public: //attributes
 
   void addData(const Reader &reader);
 
-  /*
-  void createContextMenu();
-
-  inline QMenu* getSwcNodeContextMenu() {
-    return m_swcNodeContextMenu;
-  }
-  */
 
   bool isUndoClean();
   bool isSwcSavingRequired();
 
-  /*
-  void setProgressReporter(ZProgressReporter *reporter);
-  inline ZProgressReporter* getProgressReporter() {
-    return m_progressReporter;
-  }
-*/
 public: //swc tree edit
   // move soma (first root) to new location
   void swcTreeTranslateRootTo(double x, double y, double z);
@@ -352,6 +343,12 @@ public:
   void breakLocsegChain(ZLocsegChain *obj, QList<ZLocsegChain*> *pResult = NULL);  //optional output break result
   void breakSelectedLocsegChain();
 
+  int maxIntesityDepth(int x, int y);
+  ZStack* projectBiocytinStack(Biocytin::ZStackProjector &projector);
+
+  void updateStackFromSource();
+
+public: //Image processing
   static int autoThreshold(Stack* stack);
   int autoThreshold();
   bool binarize(int threshold);
@@ -362,11 +359,7 @@ public:
   int findLoop(int minLoopSize = 100);
   void bwthin();
   bool bwperim();
-
-  int maxIntesityDepth(int x, int y);
-  ZStack* projectBiocytinStack(Biocytin::ZStackProjector &projector);
-
-  void updateStackFromSource();
+  Stack* runSeedWatershed();
 
 public: /* tracing routines */
   ZLocsegChain* fitseg(int x, int y, int z, double r = 3.0);
@@ -672,6 +665,7 @@ public slots:
   void loadReaderResult();
   void selectDownstreamNode();
   void selectSwcNodeConnection(Swc_Tree_Node *lastSelectedNode = NULL);
+  void selectSwcNodeFloodFilling(Swc_Tree_Node *lastSelectedNode);
   void selectUpstreamNode();
   void selectBranchNode();
   void selectTreeNode();

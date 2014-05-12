@@ -109,6 +109,11 @@ Z3DSwcFilter::Z3DSwcFilter()
   m_selectSwcEvent->listenTo("select swc connection", Qt::LeftButton,
                              Qt::ShiftModifier, QEvent::MouseButtonRelease);
 
+  m_selectSwcEvent->listenTo("select swc flood filling", Qt::LeftButton,
+                             Qt::AltModifier, QEvent::MouseButtonPress);
+  m_selectSwcEvent->listenTo("select swc flood filling", Qt::LeftButton,
+                             Qt::AltModifier, QEvent::MouseButtonRelease);
+
   m_selectSwcEvent->listenTo("append select swc", Qt::LeftButton,
                              Qt::ControlModifier, QEvent::MouseButtonPress);
   m_selectSwcEvent->listenTo("append select swc", Qt::LeftButton,
@@ -461,7 +466,7 @@ bool compareParameterName(const ZParameter *p1, const ZParameter *p2)
 ZWidgetsGroup *Z3DSwcFilter::getWidgetsGroup()
 {
   if (!m_widgetsGroup) {
-    m_widgetsGroup = new ZWidgetsGroup("Swcs", NULL, 1);
+    m_widgetsGroup = new ZWidgetsGroup("Neurons", NULL, 1);
     new ZWidgetsGroup(&m_showSwcs, m_widgetsGroup, 1);
     new ZWidgetsGroup(&m_stayOnTop, m_widgetsGroup, 1);
     new ZWidgetsGroup(&m_renderingPrimitive, m_widgetsGroup, 1);
@@ -1381,7 +1386,8 @@ void Z3DSwcFilter::selectSwc(QMouseEvent *e, int w, int h)
     if (std::abs(e->x() - m_startCoord.x) < 2 && std::abs(m_startCoord.y - e->y()) < 2) {
       //bool showingContextMenu = (e->button() == Qt::RightButton);
       bool appending = (e->modifiers() == Qt::ControlModifier) ||
-          (e->modifiers() == Qt::ShiftModifier);
+          (e->modifiers() == Qt::ShiftModifier) ||
+          (e->modifiers() == Qt::AltModifier);
 
       if (m_pressedSwc || m_pressedSwcTreeNode) {  // hit something
         // do not select tree when it is node rendering, but allow deselecting swc tree in node rendering mode
@@ -1395,6 +1401,8 @@ void Z3DSwcFilter::selectSwc(QMouseEvent *e, int w, int h)
           if (e->modifiers() == Qt::ShiftModifier) {
             qDebug() << "treeNodeSelectConnection emitted";
             emit treeNodeSelectConnection(m_pressedSwcTreeNode);
+          } else if (e->modifiers() == Qt::AltModifier) {
+            emit treeNodeSelectFloodFilling(m_pressedSwcTreeNode);
           }
         }
         e->accept();

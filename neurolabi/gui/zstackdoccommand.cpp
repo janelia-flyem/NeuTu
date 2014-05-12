@@ -248,10 +248,10 @@ ZStackDocCommand::SwcEdit::AddSwcNode::AddSwcNode(
     ZStackDoc *doc, Swc_Tree_Node *tn, QUndoCommand *parent)
   : QUndoCommand(parent), m_doc(doc), m_node(tn), m_treeInDoc(false)
 {
-  setText(QObject::tr("Add New Swc Node"));
+  setText(QObject::tr("Add Neuron Node"));
   m_tree = new ZSwcTree();
   m_tree->setDataFromNode(m_node);
-  m_tree->setSource(QString("#added by add swc node command %1").arg(m_index++).toStdString());
+  m_tree->setSource(QString("#added by add neuron node command %1").arg(m_index++).toStdString());
 }
 
 ZStackDocCommand::SwcEdit::AddSwcNode::~AddSwcNode()

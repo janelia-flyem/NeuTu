@@ -68,6 +68,7 @@ macx {
 
 unix:!macx {
   LIBS += -lGL -lGLEW -lGLU
+  DEFINES += _LINUX_
 }
 
 } # static glew
@@ -389,7 +390,8 @@ HEADERS += mainwindow.h \
     zdviddialog.h \
     flyembodyfilterdialog.h \
     flyem/zskeletonizeservice.h \
-    zflyemdvidreader.h
+    zflyemdvidreader.h \
+    zstroke2darray.h
 
 FORMS += settingdialog.ui \
     frameinfodialog.ui \
@@ -642,7 +644,8 @@ SOURCES += main.cpp \
     zdviddialog.cpp \
     flyembodyfilterdialog.cpp \
     flyem/zskeletonizeservice.cpp \
-    zflyemdvidreader.cpp
+    zflyemdvidreader.cpp \
+    zstroke2darray.cpp
 
 OTHER_FILES += \
     extlib.pri

@@ -256,7 +256,6 @@ void ZStackPresenter::createStrokeActions()
   connect(m_eraseStrokeAction, SIGNAL(triggered()),
           this, SLOT(tryEraseStrokeMode()));
   m_actionMap[ACTION_ERASE_STROKE] = m_eraseStrokeAction;
-
 }
 
 void ZStackPresenter::createActions()
@@ -795,14 +794,16 @@ ZStackPresenter::processMouseReleaseForSwc(QMouseEvent *event, double *positionI
       Swc_Tree_Node *selected = buddyDocument()->selectSwcTreeNode(
             positionInData.x(), positionInData.y(), positionInData.z(),
             event->modifiers() == Qt::ControlModifier ||
-            event->modifiers() == Qt::ShiftModifier);
+            event->modifiers() == Qt::ShiftModifier ||
+            event->modifiers() == Qt::AltModifier);
       if (selected != NULL) {
         if (event->modifiers() == Qt::ShiftModifier) {
           buddyDocument()->selectSwcNodeConnection(selected);
+        } if (event->modifiers() == Qt::AltModifier) {
+          buddyDocument()->selectSwcNodeFloodFilling(selected);
         }
         status = MOUSE_HIT_OBJECT;
-        if (event->modifiers() != Qt::ShiftModifier &&
-            event->modifiers() != Qt::ControlModifier) {
+        if (event->modifiers() == Qt::NoModifier) {
           if (buddyDocument()->selectedSwcTreeNodes()->size() == 1 &&
               NeutubeConfig::getInstance().getApplication() == "Biocytin") {
             enterSwcExtendMode();
@@ -1011,6 +1012,7 @@ ZStackPresenter::processMouseReleaseForStroke(
       } else {
         newStroke->setColor(QColor(0, 0, 0, 0));
       }
+      newStroke->setZ(buddyView()->sliceIndex());
       buddyDocument()->executeAddStrokeCommand(newStroke);
     }
 
@@ -1411,6 +1413,21 @@ bool ZStackPresenter::processKeyPressEventForStroke(QKeyEvent *event)
       }
     }
     break;
+  case Qt::Key_0:
+  case Qt::Key_1:
+  case Qt::Key_2:
+  case Qt::Key_3:
+  case Qt::Key_4:
+  case Qt::Key_5:
+  case Qt::Key_6:
+    if (event->modifiers() == Qt::ControlModifier) {
+      if (m_interactiveContext.strokeEditMode() ==
+          ZInteractiveContext::STROKE_DRAW) {
+        m_stroke.setLabel(event->key() - Qt::Key_0);
+        buddyView()->paintActiveDecoration();
+      }
+    }
+    break;
 #endif
   default:
     break;
@@ -1496,7 +1513,9 @@ void ZStackPresenter::processKeyPressEvent(QKeyEvent *event)
     //      buddyView()->imageWidget()->setZoomRatio(m_zoomRatio);
     //      buddyView()->updateImageScreen();
     //    }
-    buddyView()->imageWidget()->increaseZoomRatio();
+    if (event->modifiers() == Qt::NoModifier) {
+      buddyView()->imageWidget()->increaseZoomRatio();
+    }
     break;
 
   case Qt::Key_Minus:
@@ -1507,7 +1526,9 @@ void ZStackPresenter::processKeyPressEvent(QKeyEvent *event)
     //      buddyView()->imageWidget()->setZoomRatio(m_zoomRatio);
     //      buddyView()->updateImageScreen();
     //    }
-    buddyView()->imageWidget()->decreaseZoomRatio();
+    if (event->modifiers() == Qt::NoModifier) {
+      buddyView()->imageWidget()->decreaseZoomRatio();
+    }
     break;
 
   case Qt::Key_W:
@@ -2123,7 +2144,8 @@ void ZStackPresenter::tryEraseStrokeMode()
 
 void ZStackPresenter::tryDrawStrokeMode(double x, double y, bool isEraser)
 {
-  if (NeutubeConfig::getInstance().getApplication() == "Biocytin") {
+  if (GET_APPLICATION_NAME == "Biocytin" ||
+      GET_APPLICATION_NAME == "FlyEM") {
     if ((interactiveContext().swcEditMode() == ZInteractiveContext::SWC_EDIT_OFF ||
          interactiveContext().swcEditMode() == ZInteractiveContext::SWC_EDIT_SELECT) &&
         interactiveContext().tubeEditMode() == ZInteractiveContext::TUBE_EDIT_OFF) {

@@ -1530,3 +1530,8 @@ void ZStackFrame::notifyUser(const QString &message)
 
   emit infoChanged();
 }
+
+Stack* ZStackFrame::runSeededWatershed()
+{
+  //document()->runSeededWatershed();
+}
