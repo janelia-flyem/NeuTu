@@ -4634,14 +4634,13 @@ void MainWindow::on_actionMask_SWC_triggered()
 */
         if (stackFrame != NULL) {
           swcFrame->document()->estimateSwcRadius(wholeTree);
-          if (wholeTree->size() > 5) {
-            Biocytin::SwcProcessor::smoothRadius(wholeTree);
-          }
-        }
+
+          Biocytin::SwcProcessor::smoothRadius(wholeTree);
 
 #ifdef _DEBUG_2
-        wholeTree->save(GET_DATA_DIR + "/test2.swc");
+        wholeTree->save(GET_DATA_DIR + "/test.swc");
 #endif
+        }
 
         ZSwcResampler resampler;
         resampler.optimalDownsample(wholeTree);

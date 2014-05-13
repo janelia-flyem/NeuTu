@@ -312,7 +312,7 @@ void ZSwcPath::resetPositionFromStack(const Stack *stack)
 
 }
 
-double ZSwcPath::getLength()
+double ZSwcPath::getLength() const
 {
   double length = 0.0;
   for (size_t i = 1; i < size(); ++i) {
@@ -322,4 +322,19 @@ double ZSwcPath::getLength()
   }
 
   return length;
+}
+
+double ZSwcPath::getAverageRadius() const
+{
+  double radius = 0.0;
+
+  for (ZSwcPath::const_iterator iter = begin(); iter != end(); ++iter) {
+    radius += SwcTreeNode::radius(*iter);
+  }
+
+  if (size() > 0) {
+    radius /= size();
+  }
+
+  return radius;
 }

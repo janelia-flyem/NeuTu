@@ -127,7 +127,7 @@ void ZStroke2d::display(ZPainter &painter, int z, Display_Style option) const
     if (isEraser()) {
       return;
     }
-    color.setAlpha(color.alpha() / 2);
+    color.setAlphaF(color.alphaF() / (1.2 + abs(m_z - z) / 5.0));
   }
   QPen pen(color);
   QBrush brush(color);
@@ -215,7 +215,7 @@ void ZStroke2d::labelGrey(Stack *stack, int label) const
   for (int j = 0; j < image.height(); ++j) {
     for (int i = 0; i < image.width(); ++i) {
       QRgb color = image.pixel(i, j);
-      if (qRed(color) > 0) {
+      if (qRed(color) > 0 || qGreen(color) > 0 || qBlue(color) > 0) {
         array[offset] = label;
       }
       offset++;

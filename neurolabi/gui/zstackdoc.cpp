@@ -84,6 +84,7 @@
 #include "biocytin/zbiocytinfilenameparser.h"
 #include "swcskeletontransformdialog.h"
 #include "swcsizedialog.h"
+#include "tz_stack_watershed.h"
 
 
 using namespace std;
@@ -7603,7 +7604,24 @@ bool ZStackDoc::Reader::hasData() const
   return true;
 }
 
-Stack* ZStackDoc::runSeedWatershed()
+Stack* ZStackDoc::runSeededWatershed()
 {
+  Stack *stack = m_stack->c_stack();
+  Stack_Watershed_Workspace *ws =
+      Make_Stack_Watershed_Workspace(stack);
+  Stack *mask = C_Stack::make(GREY, C_Stack::width(stack),
+                              C_Stack::height(stack), C_Stack::depth(stack));
+  C_Stack::setZero(mask);
+  ws->mask = mask;
+  foreach (ZStroke2d* stroke, m_strokeList) {
+    stroke->labelGrey(mask);
+  }
+  Stack *out= Stack_Watershed(stack, ws);
 
+#ifdef _DEBUG_
+  C_Stack::write(GET_DATA_DIR + "/test.tif", ws->mask);
+#endif
+
+  return out;
 }
+

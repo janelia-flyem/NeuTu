@@ -359,7 +359,7 @@ public: //Image processing
   int findLoop(int minLoopSize = 100);
   void bwthin();
   bool bwperim();
-  Stack* runSeedWatershed();
+  Stack* runSeededWatershed();
 
 public: /* tracing routines */
   ZLocsegChain* fitseg(int x, int y, int z, double r = 3.0);

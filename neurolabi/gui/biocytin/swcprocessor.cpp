@@ -114,7 +114,11 @@ void Biocytin::SwcProcessor::smoothRadius(ZSwcTree *tree)
       endTn = endTn->parent;
     }
     ZSwcPath path(*iter, endTn);
-    path.smoothRadius(true);
+    //ad-hoc condition to avoid smoothing soma or large branches;
+    //needs improvement
+    if (path.size() > 5 && path.getAverageRadius() < 15.0) {
+      path.smoothRadius(true);
+    }
     path.label(1);
   }
 }

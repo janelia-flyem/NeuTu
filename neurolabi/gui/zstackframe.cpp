@@ -1533,5 +1533,5 @@ void ZStackFrame::notifyUser(const QString &message)
 
 Stack* ZStackFrame::runSeededWatershed()
 {
-  //document()->runSeededWatershed();
+  return document()->runSeededWatershed();
 }
