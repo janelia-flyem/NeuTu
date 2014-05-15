@@ -189,11 +189,16 @@ ZSwcTree* ZFlyEmNeuron::getModel(const string &bundleSource) const
           ZDvidTarget dvidTarget;
           dvidTarget.set(m_modelPath);
           service.callService(dvidTarget, getId());
+
+          if (reader.open(m_modelPath.c_str())) {
+            m_model = reader.readSwc(getId());
+          }
         }
 
-        if (reader.open(m_modelPath.c_str())) {
-          m_model = reader.readSwc(getId());
+        if (m_model != NULL) {
+          m_model->setSource(m_modelPath + ":" + ZString::num2str(getId()));
         }
+
 #endif
       } else {
         if (!path.isAbsolutePath()) {

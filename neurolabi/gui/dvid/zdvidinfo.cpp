@@ -17,8 +17,6 @@ ZDvidInfo::ZDvidInfo() : m_dvidPort(7000)
 {
   m_stackSize.resize(3, 0);
   m_voxelResolution.resize(3, 1.0);
-  m_startCoordinates.resize(3, 0);
-  m_startBlockIndex.resize(3, 0);
   m_blockSize.resize(3, m_defaultBlockSize);
 }
 
@@ -28,9 +26,11 @@ void ZDvidInfo::setFromJsonString(const std::string &str)
   if (obj.decode(str)) {
     if (obj.hasKey(m_minPointKey)) {
       ZJsonArray array(obj[m_minPointKey], false);
-      m_startCoordinates = array.toIntegerArray();
-      if (m_startCoordinates.size() != 3) {
-        m_startCoordinates.resize(3, 0);
+      std::vector<int> startCoordinates = array.toIntegerArray();
+      if (startCoordinates.size() == 3) {
+        m_startCoordinates.set(startCoordinates);
+      } else {
+        m_startCoordinates.set(0, 0, 0);
       }
     }
 
@@ -50,9 +50,11 @@ void ZDvidInfo::setFromJsonString(const std::string &str)
 
     if (obj.hasKey(m_blockMinIndexKey)) {
       ZJsonArray array(obj[m_blockMinIndexKey], false);
-      m_startBlockIndex = array.toIntegerArray();
-      if (m_startBlockIndex.size() != 3) {
-        m_startBlockIndex.resize(3, 0);
+      std::vector<int> startBlockIndex = array.toIntegerArray();
+      if (startBlockIndex.size() == 3) {
+        m_startBlockIndex.set(startBlockIndex);
+      } else {
+        m_startBlockIndex.set(0, 0, 0);
       }
     }
 
@@ -91,9 +93,9 @@ void ZDvidInfo::print() const
 }
 
 
-std::vector<int> ZDvidInfo::getBlockIndex(double x, double y, double z)
+ZIntPoint ZDvidInfo::getBlockIndex(double x, double y, double z)
 {
-  std::vector<int> blockIndex;
+  ZIntPoint blockIndex(-1, -1, -1);
 
   if (x < m_startCoordinates[0] ||
       x >= m_startCoordinates[0] + m_stackSize[0]) {
@@ -114,12 +116,44 @@ std::vector<int> ZDvidInfo::getBlockIndex(double x, double y, double z)
   pt[1] = iround(y);
   pt[2] = iround(z);
 
-  blockIndex.resize(3, 0);
-
   for (int i = 0; i < 3; ++i) {
     blockIndex[i] = (pt[i] - m_startCoordinates[i]) /
         m_blockSize[i] + m_startBlockIndex[i];
   }
 
   return blockIndex;
+}
+
+bool ZDvidInfo::isValidBlockIndex(const ZIntPoint &pt)
+{
+  for (int i = 0; i < 3; ++i) {
+    if (pt[i] < m_startBlockIndex[i]) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+ZIntPointArray ZDvidInfo::getBlockIndex(const ZObject3dScan &obj)
+{
+  std::set<ZIntPoint> blockSet;
+  for (size_t i = 0; i < obj.getStripeNumber(); ++i) {
+    const ZObject3dStripe &stripe = obj.getStripe(i);
+    for (int j = 0; j < stripe.getSegmentNumber(); ++j) {
+      ZIntPoint block1 = getBlockIndex(
+            stripe.getSegmentStart(j), stripe.getY(), stripe.getZ());
+      ZIntPoint block2 = getBlockIndex(
+            stripe.getSegmentEnd(j), stripe.getY(), stripe.getZ());
+      for (int y = block1.getY(); y <= block2.getY(); ++y) {
+        ZIntPoint block(block1.getX(), y, block1.getZ());
+        blockSet.insert(block);
+      }
+    }
+  }
+
+  ZIntPointArray blockArray;
+  blockArray.append(blockSet.begin(), blockSet.end());
+
+  return blockArray;
 }

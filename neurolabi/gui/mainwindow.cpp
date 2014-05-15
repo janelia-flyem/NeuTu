@@ -5872,16 +5872,17 @@ void MainWindow::on_actionSplit_Region_triggered()
 {
   ZStackFrame *frame = currentStackFrame();
   if (frame != NULL) {
+    m_progress->setLabelText("Splitting ...");
     m_progress->setRange(0, 0);
     m_progress->open();
-    Stack *stack = frame->runSeededWatershed();
-
+    frame->runSeededWatershed();
+/*
     if (stack != NULL) {
       ZStackFrame *frame = createStackFrame(stack);
       addStackFrame(frame);
       presentStackFrame(frame);
     }
-
+*/
     m_progress->reset();
   }
 }

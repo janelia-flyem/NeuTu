@@ -123,7 +123,7 @@ bool ZFlyEmDataBundle::loadDvid(const ZDvidFilter &dvidFilter)
   dvidInfo.print();
 
   const std::vector<double> &voxelResolution = dvidInfo.getVoxelResolution();
-  const std::vector<int> &sourceOffset = dvidInfo.getStartCoordinates();
+  const ZIntPoint &sourceOffset = dvidInfo.getStartCoordinates();
   const std::vector<int> &stackSize = dvidInfo.getStackSize();
 
   for (int i = 0; i < 3; ++i) {

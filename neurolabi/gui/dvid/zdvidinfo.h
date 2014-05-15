@@ -3,6 +3,9 @@
 
 #include <vector>
 #include <string>
+#include "zintpoint.h"
+#include "zintpointarray.h"
+#include "zobject3dscan.h"
 
 class ZDvidInfo
 {
@@ -29,13 +32,18 @@ public:
    *
    * \return Empty array if the point is out of range.
    */
-  std::vector<int> getBlockIndex(double x, double y, double z);
+  ZIntPoint getBlockIndex(double x, double y, double z);
+
+  /*!
+   * \brief Get the indices of all blocks containing at least one voxl of an object
+   */
+  ZIntPointArray getBlockIndex(const ZObject3dScan &obj);
 
   inline const std::vector<double>& getVoxelResolution() const {
     return m_voxelResolution;
   }
 
-  inline const std::vector<int>& getStartCoordinates() const {
+  inline const ZIntPoint& getStartCoordinates() const {
     return m_startCoordinates;
   }
 
@@ -43,11 +51,13 @@ public:
     return m_stackSize;
   }
 
+  bool isValidBlockIndex(const ZIntPoint &pt);
+
 private:
   std::vector<int> m_stackSize;
   std::vector<double> m_voxelResolution;
-  std::vector<int> m_startCoordinates;
-  std::vector<int> m_startBlockIndex;
+  ZIntPoint m_startCoordinates;
+  ZIntPoint m_startBlockIndex;
   std::vector<int> m_blockSize;
 
   std::string m_dvidAddress;

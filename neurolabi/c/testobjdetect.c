@@ -1006,12 +1006,14 @@ int main()
 #endif
 
 #if 1
-  Stack *stack = Read_Stack("../data/benchmark/binary/2d/disk_n3.tif");
+  //Stack *stack = Read_Stack("../data/benchmark/binary/2d/ring_n10.tif");
+  Stack *stack = Read_Stack("../data/bintest.tif");
   Print_Stack_Info(stack);
-  Object_3d *obj = Stack_Region_Border(stack, 8);
+  Object_3d *obj = Stack_Region_Border(stack, 6);
 
   Zero_Stack(stack);
-  for (size_t i = 0; i < obj->size; ++i) {
+  size_t i;
+  for (i = 0; i < obj->size; ++i) {
     Set_Stack_Pixel(stack, obj->voxels[i][0], obj->voxels[i][1],
         obj->voxels[i][2], 0, 1);
   }
