@@ -50,5 +50,13 @@ bool ZTileInfo::loadJsonObject(const ZJsonObject &obj)
     }
   }
 
+  if (obj.hasKey("image")) {
+      m_imageSourse = ZJsonParser::stringValue(obj["image"]);
+  }
+
+  if (obj.hasKey("swc")) {
+      m_swcSource = ZJsonParser::stringValue(obj["swc"]);
+  }
+
   return true;
 }

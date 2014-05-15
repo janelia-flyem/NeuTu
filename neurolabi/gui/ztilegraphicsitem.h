@@ -5,7 +5,7 @@
 #include "ztileinfo.h"
 #include "zjsonobject.h"
 
-class ZTileGraphicsItem : public QGraphicsRectItem
+class ZTileGraphicsItem : public QGraphicsPixmapItem
 {
 public:
   inline const ZTileInfo& getTileInfo() const {

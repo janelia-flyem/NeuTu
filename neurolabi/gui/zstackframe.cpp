@@ -1500,6 +1500,7 @@ void ZStackFrame::loadRoi(const QString &filePath)
     obj->setColor(16, 16, 16, 64);
 
     obj->setTarget(ZStackDrawable::OBJECT_CANVAS);
+    clearDecoration();
     addDecoration(obj);
     updateView();
 

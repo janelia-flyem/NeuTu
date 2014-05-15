@@ -25,7 +25,7 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>22</height>
+     <height>26</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -59,7 +59,7 @@
      </property>
      <addaction name="actionImage_Sequence"/>
      <addaction name="actionSparse_objects"/>
-     <addaction name="actionTiles"/>
+     <addaction name="actionTiles2"/>
     </widget>
     <widget class="QMenu" name="menuExport">
      <property name="title">
@@ -76,6 +76,7 @@
       <string>Open Recent</string>
      </property>
     </widget>
+    <addaction name="actionTiles"/>
     <addaction name="actionOpen"/>
     <addaction name="menuOpen_Recent"/>
     <addaction name="menuLoad_into"/>
@@ -367,7 +368,7 @@
      <normaloff>:/images/open.png</normaloff>:/images/open.png</iconset>
    </property>
    <property name="text">
-    <string>Open</string>
+    <string>Open Stack</string>
    </property>
    <property name="toolTip">
     <string>Open a file</string>
@@ -1112,7 +1113,7 @@
     <string>Tile Manager</string>
    </property>
   </action>
-  <action name="actionTiles">
+  <action name="actionTiles2">
    <property name="text">
     <string>Tiles</string>
    </property>
@@ -1170,6 +1171,11 @@
   <action name="actionSplit_Region">
    <property name="text">
     <string>Split Region</string>
+   </property>
+  </action>
+  <action name="actionTiles">
+   <property name="text">
+    <string>Open Project</string>
    </property>
   </action>
  </widget>

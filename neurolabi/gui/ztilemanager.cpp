@@ -17,7 +17,7 @@ const QColor ZTileManager::m_selectionColor = QColor(255, 0, 0);
 const QColor ZTileManager::m_preselectionColor = QColor(0, 255, 0);
 
 ZTileManager::ZTileManager(QObject *parent) : QGraphicsScene(parent),
-  m_selectedTileItem(NULL), m_preselected(NULL)/*, m_selectDecoration(NULL)*/
+  m_selectedTileItem(NULL), m_preselected(NULL), m_highlightRec(NULL)/*, m_selectDecoration(NULL)*/
 {
 }
 
@@ -111,7 +111,6 @@ void ZTileManager::mousePressEvent(QGraphicsSceneMouseEvent *event)
 void ZTileManager::clearPreselected()
 {
   if (m_preselected != NULL) {
-    m_preselected->setPen(QPen(QColor(0, 0, 0)));
     m_preselected = NULL;
   }
 }
@@ -134,6 +133,8 @@ void ZTileManager::updateTileStack()
   ZStackFrame *frame = getParentFrame();
   if (frame != NULL && m_selectedTileItem != NULL) {
     std::string source = m_selectedTileItem->getTileInfo().getSource();
+    //plot boundary of the selected tile.
+    plotItemBoundary(m_selectedTileItem,m_selectionColor);
     if (source != std::string(frame->document()->stackSourcePath())) {
       startProgress();
       advanceProgress(0.5);
@@ -149,11 +150,18 @@ void ZTileManager::updateTileStack()
   }
 }
 
+void ZTileManager::plotItemBoundary(ZTileGraphicsItem *item, QColor boundaryColor)
+{
+    ZTileInfo m_tileInfo = item->getTileInfo();
+    m_highlightRec = addRect(m_tileInfo.getOffset().x(), m_tileInfo.getOffset().y(),
+            m_tileInfo.getWidth(), m_tileInfo.getHeight(),QPen(boundaryColor));
+
+}
+
 void ZTileManager::preselectItem(ZTileGraphicsItem *item)
 {
   if (m_preselected != item && m_selectedTileItem != item && item != NULL) {
     m_preselected = item;
-    m_preselected->setPen(QPen(m_preselectionColor));
   }
 }
 
@@ -161,10 +169,10 @@ void ZTileManager::selectItem(ZTileGraphicsItem *item)
 {
   if (m_selectedTileItem != item && item != NULL) {
     if (m_selectedTileItem != NULL) {
-      m_selectedTileItem->setPen(QPen(QColor(0, 0, 0)));
+        //erase previous boundary
+        removeItem(m_highlightRec);
     }
     m_selectedTileItem = item;
-    m_selectedTileItem->setPen(QPen(m_selectionColor));
     if (m_selectedTileItem == m_preselected) {
       m_preselected = NULL;
     }

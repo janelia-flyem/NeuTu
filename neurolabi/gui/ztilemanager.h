@@ -43,10 +43,12 @@ protected:
   void mouseReleaseEvent(QGraphicsSceneMouseEvent * mouseEvent);
   void initDecoration();
   void clearPreselected();
+  void plotItemBoundary(ZTileGraphicsItem *item, QColor boundaryColor);
 
 private:
   ZTileGraphicsItem *m_selectedTileItem;
   ZTileGraphicsItem *m_preselected;
+  QGraphicsRectItem *m_highlightRec;
 
   static const QColor m_preselectionColor;
   static const QColor m_selectionColor;

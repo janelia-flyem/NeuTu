@@ -3,8 +3,8 @@
 bool ZTileGraphicsItem::loadJsonObject(const ZJsonObject &obj)
 {
   if (m_tileInfo.loadJsonObject(obj)) {
-    setRect(m_tileInfo.getOffset().x(), m_tileInfo.getOffset().y(),
-            m_tileInfo.getWidth(), m_tileInfo.getHeight());
+    setOffset(m_tileInfo.getOffset().x(), m_tileInfo.getOffset().y());
+    setPixmap(QPixmap(QString::fromStdString((m_tileInfo.getImageSource()))));
     setToolTip(m_tileInfo.getSource().c_str());
 
     return true;

@@ -852,6 +852,7 @@ void MainWindow::createToolBars()
     m_ui->toolBar->addAction(m_ui->actionOpen_3D_View_Without_Volume);
   }
 
+  m_ui->toolBar->addAction(m_ui->actionTile_Manager_2);
   m_ui->toolBar->addAction(m_ui->actionBrightnessContrast);
 
 #ifdef _ADVANCED_
@@ -5277,6 +5278,10 @@ void MainWindow::on_actionTiles_triggered()
       presentStackFrame(frame);
     }
     progressDlg->reset();
+
+    //bring up the tile manager.
+    on_actionTile_Manager_2_triggered();
+
   }
 }
 

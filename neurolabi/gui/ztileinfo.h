@@ -30,11 +30,20 @@ public:
     return m_dim[2];
   }
 
+  inline const std::string& getImageSource() const {
+      return m_imageSourse;
+  }
+
+  inline const std::string& getSWCSource() const {
+      return m_swcSource;
+  }
+
   bool loadJsonObject(const ZJsonObject &obj);
 
 private:
   std::string m_source;
   std::string m_swcSource;
+  std::string m_imageSourse;
   ZPoint m_offset;
   int m_dim[3];
 };

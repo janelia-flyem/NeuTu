@@ -21,8 +21,7 @@ bool ZTiledStackFrame::importTiles(const QString &path)
     std::string filePath =
         m_tileManager->getFirstTile()->getTileInfo().getSource();
         */
-    m_tileManager->selectItem(m_tileManager->getFirstTile());
-
+   m_tileManager->selectItem(m_tileManager->getFirstTile());
     /*
     m_doc->readStack(filePath.c_str(), false);
     setWindowTitle(filePath.c_str());
