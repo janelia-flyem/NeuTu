@@ -9,6 +9,7 @@
 const double ZStroke2d::m_minWidth = 1.0;
 const double ZStroke2d::m_maxWidth = 100.0;
 const QVector<QColor> ZStroke2d::m_colorTable = ZStroke2d::constructColorTable();
+const QColor ZStroke2d::m_blackColor = Qt::black;
 
 QVector<QColor> ZStroke2d::constructColorTable()
 {
@@ -122,12 +123,14 @@ void ZStroke2d::display(ZPainter &painter, int z, Display_Style option) const
   //UNUSED_PARAMETER(z);
   UNUSED_PARAMETER(option);
 
+  z -= iround(painter.getOffset().z());
+
   QColor color = m_color;
   if (m_z >= 0 && m_z != z) {
     if (isEraser()) {
       return;
     }
-    color.setAlpha(color.alpha() / 2);
+    color.setAlphaF(color.alphaF() / (1.2 + abs(m_z - z) / 5.0));
   }
   QPen pen(color);
   QBrush brush(color);
@@ -215,7 +218,7 @@ void ZStroke2d::labelGrey(Stack *stack, int label) const
   for (int j = 0; j < image.height(); ++j) {
     for (int i = 0; i < image.width(); ++i) {
       QRgb color = image.pixel(i, j);
-      if (qRed(color) > 0) {
+      if (qRed(color) > 0 || qGreen(color) > 0 || qBlue(color) > 0) {
         array[offset] = label;
       }
       offset++;
@@ -342,6 +345,20 @@ void ZStroke2d::print() const
 
 const QColor& ZStroke2d::getLabelColor() const
 {
+  if (m_label == 255) {
+    return m_blackColor;
+  }
+
   int index = m_label % m_colorTable.size();
   return m_colorTable[index];
+}
+
+void ZStroke2d::translate(const ZPoint offset)
+{
+  for (std::vector<QPointF>::iterator iter = m_pointArray.begin();
+       iter != m_pointArray.end(); ++iter) {
+    QPointF &pt = *iter;
+    pt += QPointF(offset.x(), offset.y());
+  }
+  m_z += iround(offset.z());
 }

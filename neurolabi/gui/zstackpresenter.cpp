@@ -1012,7 +1012,8 @@ ZStackPresenter::processMouseReleaseForStroke(
       } else {
         newStroke->setColor(QColor(0, 0, 0, 0));
       }
-      newStroke->setZ(buddyView()->sliceIndex());
+      newStroke->setZ(buddyView()->sliceIndex() +
+                      iround(buddyDocument()->getStackOffset().z()));
       buddyDocument()->executeAddStrokeCommand(newStroke);
     }
 
@@ -1428,6 +1429,15 @@ bool ZStackPresenter::processKeyPressEventForStroke(QKeyEvent *event)
       }
     }
     break;
+  case Qt::Key_B:
+    if (event->modifiers() == Qt::ControlModifier) {
+      if (m_interactiveContext.strokeEditMode() ==
+          ZInteractiveContext::STROKE_DRAW) {
+        m_stroke.setLabel(255);
+        buddyView()->paintActiveDecoration();
+      }
+    }
+    break;
 #endif
   default:
     break;
@@ -1453,6 +1463,9 @@ bool ZStackPresenter::estimateActiveStrokeWidth()
   m_stroke.getLastPoint(&x, &y);
 
   Swc_Tree_Node tn;
+  x -= buddyDocument()->stack()->getOffset().x();
+  y -= buddyDocument()->stack()->getOffset().x();
+
   SwcTreeNode::setNode(
         &tn, 1, 2, x, y, buddyView()->sliceIndex(), width / 2.0, -1);
 

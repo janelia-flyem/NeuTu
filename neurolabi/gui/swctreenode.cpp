@@ -1286,6 +1286,10 @@ double SwcTreeNode::estimateRadius(const Swc_Tree_Node *tn, const Stack *stack,
 bool SwcTreeNode::fitSignal(Swc_Tree_Node *tn, const Stack *stack,
                             NeuTube::EImageBackground bg)
 {
+  if (tn == NULL || stack == NULL) {
+    return false;
+  }
+
   bool succ = false;
 
   double expandScale = 3.0;

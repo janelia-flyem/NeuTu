@@ -182,7 +182,9 @@ HEADERS +=$${PWD}/zstackprocessor.h \
    $${PWD}/dvid/zdvidtarget.h \
    $${PWD}/dvid/zdvidfilter.h \
    $${PWD}/zintcuboidface.h \
-   $${PWD}/zflyembodyannotation.h
+   $${PWD}/zflyembodyannotation.h \
+   $${PWD}/zintpoint.h \
+    zintpointarray.h
 
 SOURCES +=$${PWD}/zstackprocessor.cpp \
    $${PWD}/zstack.cxx \
@@ -350,4 +352,6 @@ SOURCES +=$${PWD}/zstackprocessor.cpp \
    $${PWD}/dvid/zdvidtarget.cpp \
    $${PWD}/dvid/zdvidfilter.cpp \
    $${PWD}/zintcuboidface.cpp \
-   $${PWD}/zflyembodyannotation.cpp
+   $${PWD}/zflyembodyannotation.cpp \
+   $${PWD}/zintpoint.cpp \
+    zintpointarray.cpp

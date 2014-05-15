@@ -84,6 +84,7 @@
 #include "biocytin/zbiocytinfilenameparser.h"
 #include "swcskeletontransformdialog.h"
 #include "swcsizedialog.h"
+#include "tz_stack_watershed.h"
 
 
 using namespace std;
@@ -1853,9 +1854,9 @@ void ZStackDoc::addObj3d(ZObject3d *obj)
   }
 
   obj->setTarget(ZStackDrawable::OBJECT_CANVAS);
-  m_objs.append(obj);
-  m_obj3dList.append(obj);
-  m_drawableList.append(obj);
+  m_objs.prepend(obj);
+  m_obj3dList.prepend(obj);
+  m_drawableList.prepend(obj);
 }
 
 void ZStackDoc::addStroke(ZStroke2d *obj)
@@ -3144,6 +3145,17 @@ void ZStackDoc::removeAllLocsegChain()
   }
 
   notifyChainModified();
+}
+
+void ZStackDoc::removeAllObj3d()
+{
+  QMutableListIterator<ZObject3d*> objIter(m_obj3dList);
+  while (objIter.hasNext()) {
+    ZObject3d *obj = objIter.next();
+    removeObject(obj, true);
+  }
+
+  notifyObj3dModified();
 }
 
 void ZStackDoc::removeObject(ZInterface *obj, bool deleteObject)
@@ -7603,7 +7615,57 @@ bool ZStackDoc::Reader::hasData() const
   return true;
 }
 
-Stack* ZStackDoc::runSeedWatershed()
+void ZStackDoc::runSeededWatershed()
 {
+  Stack *stack = m_stack->c_stack();
+  Stack_Watershed_Workspace *ws =
+      Make_Stack_Watershed_Workspace(stack);
+  ws->conn = 6;
+  Stack *mask = C_Stack::make(GREY, C_Stack::width(stack),
+                              C_Stack::height(stack), C_Stack::depth(stack));
+  C_Stack::setZero(mask);
+  ws->mask = mask;
+  foreach (ZStroke2d* stroke, m_strokeList) {
+    ZPoint stackOffset = getStackOffset();
+    ZStroke2d tmpStroke = *stroke;
+    tmpStroke.translate(-stackOffset);
+    tmpStroke.labelGrey(mask);
+  }
 
+#if 1
+  if (m_stack->isBinary()) {
+    size_t voxelNumber = m_stack->getVoxelNumber();
+    for (size_t i = 0; i < voxelNumber; ++i) {
+      if (stack->array[i] == 0) {
+        mask->array[i] = STACK_WATERSHED_BARRIER;
+      }
+    }
+    stack = Stack_Bwdist_L_U16P(stack, NULL, 0);
+  }
+#endif
+
+  Stack *out= Stack_Watershed(stack, ws);
+
+  if (stack != m_stack->c_stack()) {
+    C_Stack::kill(stack);
+  }
+
+  Object_3d *objData = Stack_Region_Border(out, 6);
+  removeAllObj3d();
+  if (objData != NULL) {
+    ZObject3d *obj = new ZObject3d(objData);
+    obj->translate(iround(getStackOffset().x()),
+                   iround(getStackOffset().y()),
+                   iround(getStackOffset().z()));
+    addObj3d(obj);
+    notifyObj3dModified();
+  }
+
+  C_Stack::kill(out);
+#ifdef _DEBUG_2
+  C_Stack::write(GET_DATA_DIR + "/test.tif", ws->mask);
+#endif
+
+  //return out;
 }
+

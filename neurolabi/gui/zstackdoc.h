@@ -326,6 +326,7 @@ public:
   void removeLocsegChain(ZInterface *obj);
   void removeSmallLocsegChain(double thre);   //remove small locseg chain (geolen < thre)
   void removeAllLocsegChain();
+  void removeAllObj3d();
   std::set<ZSwcTree*> removeEmptySwcTree(bool deleteObject = true);
   void removeAllSwcTree(bool deleteObject = true);
 
@@ -359,7 +360,7 @@ public: //Image processing
   int findLoop(int minLoopSize = 100);
   void bwthin();
   bool bwperim();
-  Stack* runSeedWatershed();
+  void runSeededWatershed();
 
 public: /* tracing routines */
   ZLocsegChain* fitseg(int x, int y, int z, double r = 3.0);

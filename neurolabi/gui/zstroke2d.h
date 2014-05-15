@@ -71,6 +71,11 @@ public:
 
   void print() const;
 
+  /*!
+   * \brief Translate the stroke
+   */
+  void translate(const ZPoint offset);
+
 private:
   static QVector<QColor> constructColorTable();
   const QColor& getLabelColor() const;
@@ -91,6 +96,7 @@ private:
   static const double m_maxWidth;
 
   const static QVector<QColor> m_colorTable;
+  const static QColor m_blackColor;
 };
 
 #endif // ZSTROKE2D_H

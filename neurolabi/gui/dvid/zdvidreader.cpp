@@ -152,10 +152,10 @@ std::vector<int> ZDvidReader::readBodyId(
   ZDvidInfo dvidInfo;
   dvidInfo.setFromJsonString(readInfo("superpixels").toStdString());
 
-  std::vector<int> startIndex = dvidInfo.getBlockIndex(x0, y0, z0);
-  std::vector<int> endIndex = dvidInfo.getBlockIndex(x0 + width - 1,
-                                                     y0 + height - 1,
-                                                     z0 + depth - 1);
+  ZIntPoint startIndex = dvidInfo.getBlockIndex(x0, y0, z0);
+  ZIntPoint endIndex = dvidInfo.getBlockIndex(x0 + width - 1,
+                                              y0 + height - 1,
+                                              z0 + depth - 1);
 
 #ifdef _DEBUG_
   std::cout << "Region: " << x0 << ", " << y0 << ", " << z0 << " -> "
@@ -165,7 +165,8 @@ std::vector<int> ZDvidReader::readBodyId(
 
   std::vector<int> idArray;
 
-  if (!startIndex.empty() && !endIndex.empty()) {
+  if (dvidInfo.isValidBlockIndex(startIndex) &&
+      dvidInfo.isValidBlockIndex(endIndex)) {
     ZDvidRequest request;
     request.setGetStringRequest("sp2body");
 

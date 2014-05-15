@@ -78,7 +78,8 @@ bool ZDvidClient::postRequest(
   case ZDvidRequest::DVID_GET_GRAY_SCALE:
   {
     QList<QVariant> parameterList = parameter.toList();
-    urlString = QString("%1/%2/grayscale8/raw/0_1/%3_%4/%5_%6_%7").arg(m_serverAddress).
+    urlString = QString("%1/%2/grayscale8/raw/0_1/%3_%4/%5_%6_%7").
+        arg(m_serverAddress).
         arg(m_dataPath).
         arg(parameterList[3].toInt()).arg(parameterList[4].toInt()).
         arg(parameterList[0].toInt()).arg(parameterList[1].toInt()).

@@ -141,6 +141,7 @@ void ZTileManager::updateTileStack()
       QApplication::processEvents();
       frame->document()->readStack(source.c_str(), false);
       if (GET_APPLICATION_NAME == "Biocytin") {
+        frame->document()->setStackBackground(NeuTube::IMAGE_BACKGROUND_BRIGHT);
         frame->autoBcAdjust();
         frame->loadRoi();
       }

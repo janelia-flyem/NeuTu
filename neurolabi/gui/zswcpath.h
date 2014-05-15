@@ -9,7 +9,8 @@
 class ZSwcTree;
 
 //A replace for ZSwcBranch
-//The path does not have to be continuous.
+//The path does not have to be continuous. Any object of the class should not
+//contain a virtual node.
 
 class ZSwcPath : public std::vector<Swc_Tree_Node*>
 {
@@ -65,7 +66,14 @@ public:
   /*!
    * \brief Overall length of the path
    */
-  double getLength();
+  double getLength() const;
+
+  /*!
+   * \brief Average radius of the path
+   *
+   * It returns 0.0 for empty path.
+   */
+  double getAverageRadius() const;
 
 private:
   ZSwcTree *m_hostTree;

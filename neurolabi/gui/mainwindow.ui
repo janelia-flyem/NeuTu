@@ -1172,6 +1172,9 @@
    <property name="text">
     <string>Split Region</string>
    </property>
+   <property name="shortcut">
+    <string>Shift+S</string>
+   </property>
   </action>
   <action name="actionTiles">
    <property name="text">
