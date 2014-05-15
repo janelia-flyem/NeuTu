@@ -4308,7 +4308,7 @@ void MainWindow::on_actionShortcut_triggered()
     }
     QMessageBox::about(this, GET_SOFTWARE_NAME.c_str(),
                        title + "<p>Please check</p>"
-                       "<p><a href=\"https://sites.google.com/site/neurontracing\">"
+                       "<p><a href=\"http://neutracing.com\">"
                        "online documentation</a></p>");
   } else {
     QMessageBox::information(this, "Sorry", "No help is available for this edition.");
