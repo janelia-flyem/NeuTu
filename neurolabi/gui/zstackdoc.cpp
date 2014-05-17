@@ -7368,6 +7368,20 @@ ZPoint ZStackDoc::getStackOffset() const
   return ZPoint(0, 0, 0);
 }
 
+void ZStackDoc::setStackOffset(double x, double y, double z)
+{
+  if (stackRef() != NULL) {
+    stackRef()->setOffset(x, y, z);
+  }
+}
+
+void ZStackDoc::setStackOffset(const ZPoint &offset)
+{
+  if (stackRef() != NULL) {
+    stackRef()->setOffset(offset);
+  }
+}
+
 ZPoint ZStackDoc::getDataCoord(const ZPoint &pt)
 {
   return pt + getStackOffset();
@@ -7632,7 +7646,14 @@ void ZStackDoc::runSeededWatershed()
     tmpStroke.labelGrey(mask);
   }
 
-#if 1
+  size_t voxelNumber = m_stack->getVoxelNumber();
+  for (size_t i = 0; i < voxelNumber; ++i) {
+    if (stack->array[i] == 0) {
+      mask->array[i] = STACK_WATERSHED_BARRIER;
+    }
+  }
+
+#if 0
   if (m_stack->isBinary()) {
     size_t voxelNumber = m_stack->getVoxelNumber();
     for (size_t i = 0; i < voxelNumber; ++i) {
@@ -7650,7 +7671,7 @@ void ZStackDoc::runSeededWatershed()
     C_Stack::kill(stack);
   }
 
-  Object_3d *objData = Stack_Region_Border(out, 6);
+  Object_3d *objData = Stack_Region_Border(out, 6, TRUE);
   removeAllObj3d();
   if (objData != NULL) {
     ZObject3d *obj = new ZObject3d(objData);
@@ -7665,7 +7686,6 @@ void ZStackDoc::runSeededWatershed()
 #ifdef _DEBUG_2
   C_Stack::write(GET_DATA_DIR + "/test.tif", ws->mask);
 #endif
-
   //return out;
 }
 

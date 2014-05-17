@@ -11582,8 +11582,8 @@ void ZTest::test(MainWindow *host)
     }
   }
 
-  ZFlyEmNeuronExporter exporter;
-  exporter.exportIdVolume(selectedNeuronArray, GET_TEST_DATA_DIR + "/side_bounary.json");
+  //ZFlyEmNeuronExporter exporter;
+  //exporter.exportIdVolume(selectedNeuronArray, GET_TEST_DATA_DIR + "/side_bounary.json");
 #endif
 
 #if 0
@@ -11609,7 +11609,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   //QImage image(1024, 1024, QImage::Format_Mono);
   //QPainter painter(image);
   ZStroke2d stroke;
@@ -11622,5 +11622,134 @@ void ZTest::test(MainWindow *host)
   C_Stack::setZero(stack);
   stroke.labelGrey(stack);
   C_Stack::write(GET_DATA_DIR + "/test.tif", stack);
+#endif
+
+#if 0
+  ZDvidReader reader;
+
+  ZFlyEmDataInfo eminfo(FlyEm::DATA_FIB25);
+  reader.open(eminfo.getDvidAddress().c_str(), eminfo.getDvidUuid().c_str(),
+              eminfo.getDvidPort());
+
+  FlyEm::ZSynapseAnnotationArray synapseArray;
+  synapseArray.loadJson(
+        GET_TEST_DATA_DIR +
+        "/flyem/FIB/skeletonization/session35/annotations-synapse.json");
+
+  std::vector<int> bodyIdArray = reader.readBodyId(0, 100000);
+
+  std::cout << bodyIdArray.size() << std::endl;
+
+  FlyEm::ZIntCuboidArray blockArray;
+  blockArray.loadSubstackList(GET_DATA_DIR + "/flyem/FIB/block_13layer.txt");
+  ZFlyEmQualityAnalyzer::SubstackRegionCalbration calbr;
+  calbr.setBounding(true, true, false);
+  calbr.setMargin(10, 10, 0);
+  ZFlyEmQualityAnalyzer analyzer;
+  analyzer.setSubstackRegion(blockArray, calbr);
+
+  std::vector<int> allSynapseCount = synapseArray.countSynapse();
+  //std::vector<int> allPsdCount = synapseArray.countPsd();
+  //std::vector<int> allTbarcount = synapseArray.countTBar();
+
+  ofstream stream((GET_DATA_DIR + "/face_orphan.txt").c_str());
+
+  int count = 0;
+  for (std::vector<int>::const_iterator iter = bodyIdArray.begin();
+       iter != bodyIdArray.end(); ++iter) {
+    int bodyId = *iter;
+
+    if ((size_t) bodyId < allSynapseCount.size()) {
+      if (allSynapseCount[bodyId] > 0) {
+        ZObject3dScan obj = reader.readBody(bodyId);
+        //obj.print();
+        if (analyzer.isInternalFaceOrphan(obj)) {
+          std::cout << "Body ID: " << bodyId << std::endl;
+          stream << bodyId << std::endl;
+          ++count;
+        }
+      }
+    }
+  }
+
+  stream.close();
+
+  std::cout << count << " internal face orphans." << std::endl;
+#endif
+
+#if 0
+  ZFlyEmNeuronArray neuronArray;
+  neuronArray.importBodyDir(
+        GET_TEST_DATA_DIR +
+        "/flyem/FIB/skeletonization/session34/100000_/stacked.hf5");
+  std::cout << neuronArray.size() << " neurons." << std::endl;
+
+  FlyEm::ZSynapseAnnotationArray synapseArray;
+  synapseArray.loadJson(
+        GET_TEST_DATA_DIR +
+        "/flyem/FIB/skeletonization/session34/annotations-synapse.json");
+
+  FlyEm::ZIntCuboidArray blockArray;
+  blockArray.loadSubstackList(GET_DATA_DIR + "/flyem/FIB/block_13layer.txt");
+  ZFlyEmQualityAnalyzer::SubstackRegionCalbration calbr;
+  calbr.setBounding(true, true, false);
+  calbr.setMargin(10, 10, 0);
+  ZFlyEmQualityAnalyzer analyzer;
+  analyzer.setSubstackRegion(blockArray, calbr);
+
+  std::vector<int> allSynapseCount = synapseArray.countSynapse();
+
+  ZFlyEmNeuronArray selectedNeuronArray;
+  for (ZFlyEmNeuronArray::iterator iter = neuronArray.begin();
+       iter != neuronArray.end(); ++iter) {
+    ZFlyEmNeuron &neuron = *iter;
+    if (neuron.getId() == 605706) {
+      std::cout << neuron.getId() << std::endl;
+      if ((size_t) neuron.getId() < allSynapseCount.size()) {
+        if (allSynapseCount[neuron.getId()] > 0) {
+          neuron.getBody()->save(GET_DATA_DIR + "/test.sobj");
+          if (analyzer.touchingSideBoundary(*neuron.getBody())) {
+            selectedNeuronArray.push_back(neuron);
+          }
+          neuron.deprecate(ZFlyEmNeuron::BODY);
+        }
+      }
+    }
+  }
+
+  //ZFlyEmNeuronExporter exporter;
+  //exporter.exportIdVolume(selectedNeuronArray, GET_TEST_DATA_DIR + "/side_bounary.json");
+#endif
+
+#if 1
+  FlyEm::ZSynapseAnnotationArray synapseArray;
+  synapseArray.loadJson(
+        GET_TEST_DATA_DIR +
+        "/flyem/FIB/skeletonization/session35/annotations-synapse.json");
+
+  std::vector<int> allPsdCount = synapseArray.countPsd();
+  std::vector<int> allTbarCount = synapseArray.countTBar();
+  int psdCount = 0;
+  int tbarCount = 0;
+
+  ZString line;
+  FILE *fp = fopen((GET_DATA_DIR + "/face_orphan.txt").c_str(), "r");
+  while(line.readLine(fp)) {
+    std::vector<int> bodyIdArray = line.toIntegerArray();
+    if (!bodyIdArray.empty()) {
+      int bodyId = bodyIdArray[0];
+      if ((size_t) bodyId < allPsdCount.size()) {
+        psdCount += allPsdCount[bodyId];
+      }
+      if ((size_t) bodyId < allTbarCount.size()) {
+        tbarCount += allTbarCount[bodyId];
+      }
+    }
+  }
+
+  fclose(fp);
+
+  std::cout << "#PSD: " << psdCount << std::endl;
+  std::cout << "#Tbar: " << tbarCount << std::endl;
 #endif
 }

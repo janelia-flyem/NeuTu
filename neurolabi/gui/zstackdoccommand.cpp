@@ -838,7 +838,12 @@ ZStackDocCommand::SwcEdit::ConnectSwcNode::ConnectSwcNode(
 {
   setText("Connect Swc Nodes");
 
-  ZGraph *graph = ZSwcConnector::buildConnection(*doc->selectedSwcTreeNodes());
+  ZSwcConnector connector;
+  connector.setMinDist(
+        SwcTreeNode::averageRadius(doc->selectedSwcTreeNodes()->begin(),
+                                   doc->selectedSwcTreeNodes()->end()) * 20.0);
+
+  ZGraph *graph = connector.buildConnection(*doc->selectedSwcTreeNodes());
 
   if (graph->size() > 0) {
     std::vector<Swc_Tree_Node*> nodeArray;

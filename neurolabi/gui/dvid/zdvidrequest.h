@@ -18,6 +18,8 @@ public:
   void setGetSwcRequest(int bodyId);
   void setGetObjectRequest(int bodyId);
   void setGetImageRequest(int x0, int y0, int z0, int width, int height);
+  void setGetImageRequest(
+      int x0, int y0, int z0, int width, int height, int depth);
   void setGetInfoRequest(const QString &dataType);
   void setGetStringRequest(const QString &dataType);
   void setGetKeyValueRequest(const QString &dataName, const QString key);

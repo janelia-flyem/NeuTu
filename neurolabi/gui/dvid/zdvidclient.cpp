@@ -78,12 +78,23 @@ bool ZDvidClient::postRequest(
   case ZDvidRequest::DVID_GET_GRAY_SCALE:
   {
     QList<QVariant> parameterList = parameter.toList();
-    urlString = QString("%1/%2/grayscale8/raw/0_1/%3_%4/%5_%6_%7").
-        arg(m_serverAddress).
-        arg(m_dataPath).
-        arg(parameterList[3].toInt()).arg(parameterList[4].toInt()).
-        arg(parameterList[0].toInt()).arg(parameterList[1].toInt()).
-        arg(parameterList[2].toInt());
+    //if (parameterList)
+    if (parameterList.size() == 5) {
+      urlString = QString("%1/%2/grayscale8/raw/0_1/%3_%4/%5_%6_%7").
+          arg(m_serverAddress).
+          arg(m_dataPath).
+          arg(parameterList[3].toInt()).arg(parameterList[4].toInt()).
+          arg(parameterList[0].toInt()).arg(parameterList[1].toInt()).
+          arg(parameterList[2].toInt());
+    } else {
+      urlString = QString("%1/%2/grayscale8/raw/0_1_2/%3_%4_%5/%6_%7_%8").
+          arg(m_serverAddress).
+          arg(m_dataPath).
+          arg(parameterList[3].toInt()).arg(parameterList[4].toInt()).
+          arg(parameterList[5].toInt()).
+          arg(parameterList[0].toInt()).arg(parameterList[1].toInt()).
+          arg(parameterList[2].toInt());
+    }
   }
     break;
   case ZDvidRequest::DVID_GET_KEYVALUE:
@@ -306,28 +317,48 @@ void ZDvidClient::finishRequest(QNetworkReply::NetworkError error)
     }
 
     if (!m_imageBuffer.isEmpty()) {
-      QImage image;
-      QBuffer buffer(&m_imageBuffer);
-      QImageReader imageReader(&buffer);
-      imageReader.setFormat("png");
-      imageReader.read(&image);
+      QList<QVariant> parameterList = m_currentRequestParameter.toList();
+      if (parameterList.size() == 5) {
+        QImage image;
+        QBuffer buffer(&m_imageBuffer);
+        QImageReader imageReader(&buffer);
+        imageReader.setFormat("png");
+        imageReader.read(&image);
 
-      qDebug() << image.width() << " " << image.width() << " " << image.format();
+        qDebug() << image.width() << " " << image.width() << " " << image.format();
 
-      if (m_image.width() != image.width() || m_image.height() != image.height()) {
-        int width = m_currentRequestParameter.toList().at(3).toInt();
-        int height = m_currentRequestParameter.toList().at(4).toInt();
-        m_image.setData(C_Stack::make(GREY, width, height, 1, 1));
+        if (m_image.width() != image.width() ||
+            m_image.height() != image.height()) {
+          int width = parameterList.at(3).toInt();
+          int height = parameterList.at(4).toInt();
+          m_image.setData(C_Stack::make(GREY, width, height, 1, 1));
+        }
+
+        for (int y = 0; y < m_image.height(); ++y) {
+          C_Stack::setValue(m_image.c_stack(), m_image.kind() * y * m_image.width(),
+                            image.scanLine(y), image.width());
+        }
+
+        m_image.setOffset(m_currentRequestParameter.toList().at(0).toInt(),
+                          m_currentRequestParameter.toList().at(1).toInt(),
+                          m_currentRequestParameter.toList().at(2).toInt());
+      } else if (m_currentRequestParameter.toList().size() == 6){
+        int width = parameterList.at(3).toInt();
+        int height = parameterList.at(4).toInt();
+        int depth = parameterList.at(5).toInt();
+        int voxelNumber = width * height * depth;
+        if (voxelNumber == m_imageBuffer.size()) {
+          m_image.setData(C_Stack::make(GREY, width, height, depth, 1));
+          const char *dataArray = m_imageBuffer.constData();
+          m_image.copyValue(dataArray, m_imageBuffer.size());
+          m_image.setOffset(m_currentRequestParameter.toList().at(0).toInt(),
+                            m_currentRequestParameter.toList().at(1).toInt(),
+                            m_currentRequestParameter.toList().at(2).toInt());
+        } else {
+          RECORD_WARNING_UNCOND("Image retrieval failed.");
+          m_image.clear();
+        }
       }
-
-      for (int y = 0; y < m_image.height(); ++y) {
-        C_Stack::setValue(m_image.c_stack(), m_image.kind() * y * m_image.width(),
-                          image.scanLine(y), image.width());
-      }
-
-      m_image.setOffset(m_currentRequestParameter.toList().at(0).toInt(),
-                        m_currentRequestParameter.toList().at(1).toInt(),
-                        m_currentRequestParameter.toList().at(2).toInt());
 
       imageRetrievalDone = true;
     }

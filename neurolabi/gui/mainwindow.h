@@ -387,6 +387,8 @@ private slots:
 
   void on_actionSplit_Region_triggered();
 
+  void on_actionLoad_Body_with_Grayscale_triggered();
+
 private:
   void createActions();
   void createFileActions();

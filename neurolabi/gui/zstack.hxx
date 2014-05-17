@@ -362,10 +362,15 @@ public: /* operations */
 
   double averageIntensity(ZStack *mask);
 
+  /*!
+   * \brief Copy values from a buffer to the stack.
+   */
   void copyValue(const void *buffer, size_t length, int ch = 0);
+
   void copyValue(const void *buffer, size_t length, void *loc);
 
   void setOffset(double dx, double dy, double dz);
+  void setOffset(const ZPoint &pt);
   inline const ZPoint& getOffset() const { return m_offset; }
 
   /*!

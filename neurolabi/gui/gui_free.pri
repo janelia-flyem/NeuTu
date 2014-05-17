@@ -184,7 +184,7 @@ HEADERS +=$${PWD}/zstackprocessor.h \
    $${PWD}/zintcuboidface.h \
    $${PWD}/zflyembodyannotation.h \
    $${PWD}/zintpoint.h \
-    zintpointarray.h
+   $${PWD}/zintpointarray.h
 
 SOURCES +=$${PWD}/zstackprocessor.cpp \
    $${PWD}/zstack.cxx \
@@ -354,4 +354,4 @@ SOURCES +=$${PWD}/zstackprocessor.cpp \
    $${PWD}/zintcuboidface.cpp \
    $${PWD}/zflyembodyannotation.cpp \
    $${PWD}/zintpoint.cpp \
-    zintpointarray.cpp
+   $${PWD}/zintpointarray.cpp

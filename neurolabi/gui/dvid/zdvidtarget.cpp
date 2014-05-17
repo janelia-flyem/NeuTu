@@ -28,7 +28,7 @@ void ZDvidTarget::set(const std::string &sourceString)
   std::vector<std::string> tokens = ZString(sourceString).tokenize(':');
 
   if (tokens.size() < 4 || tokens[0] != "http") {
-    RECORD_WARNING_UNCOND("Invlid source string");
+    RECORD_WARNING_UNCOND("Invalid source string");
   } else {
     int port = -1;
     if (!tokens[2].empty()) {

@@ -2257,7 +2257,7 @@ void ZSwcTree::translate(double x, double y, double z)
 
 void ZSwcTree::translate(const ZPoint &offset)
 {
-  Swc_Tree_Translate(data(), offset.x(), offset.y(), offset.z());
+  translate(offset.x(), offset.y(), offset.z());
 }
 
 void ZSwcTree::scale(double x, double y, double z)

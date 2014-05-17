@@ -56,9 +56,10 @@ ZStack* ZStackFactory::composite(InputIterator begin, InputIterator end)
       if (offset[i][1] != offset[i-1][1]) {
         isPilable = false;
       }
-      if (offset[i][2] <= offset[i-1][1]) {
+      if (offset[i][2] != offset[i-1][2] + C_Stack::depth(stackArray[i-1])) {
         isPilable = false;
       }
+
       if (C_Stack::width(stackArray[i]) != C_Stack::width(stackArray[i-1])) {
         isPilable = false;
       }

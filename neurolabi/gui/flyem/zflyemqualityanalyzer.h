@@ -64,6 +64,14 @@ public:
 
   bool touchingSideBoundary(const ZObject3dScan &obj);
 
+  /*!
+   * \brief Test if a body an interanal-face orphan
+   *
+   * An internal-face orphan is defined as body that is a local orphan not
+   * touching global boundary but touching at least one internal face.
+   */
+  bool isInternalFaceOrphan(const ZObject3dScan &obj);
+
   FlyEm::ZHotSpotArray& computeHotSpot(const ZSwcTree *tree, ZObject3dScan *obj, double xRes, double yRes,
       double zRes, double lengthThre);
 

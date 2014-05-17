@@ -170,9 +170,10 @@ void Stack_Grow_Object_S(Stack *seed, Stack *mask, Objlabel_Workspace *ow);
 /**@brief Extract region borders of a stack
  *
  * A pixel is a region pixel iff it has a neighbor with a different intensity 
- * than itself.
+ * than itself. The background (label = 0) is ignored if ignoring_bg is true.
  */
-Object_3d* Stack_Region_Border(const Stack *stack, int nnbr);
+Object_3d* Stack_Region_Border(const Stack *stack, int nnbr, 
+    BOOL ignoring_bg);
 
 /*
  * Note: Stack_Build_Seed_Graph_G() is preferred than Stack_Build_Seed_Graph().

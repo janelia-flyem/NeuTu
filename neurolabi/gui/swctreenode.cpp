@@ -1321,6 +1321,10 @@ bool SwcTreeNode::fitSignal(Swc_Tree_Node *tn, const Stack *stack,
 
   Stack *slice = Crop_Stack(stack, x1, y1, cz, x2 - x1 + 1, y2 - y1 + 1, 1, NULL);
 
+  if (slice == NULL) {
+    return false;
+  }
+
   //RC threshold
   int thre = Stack_Threshold_RC(slice, 0, 65535);
 

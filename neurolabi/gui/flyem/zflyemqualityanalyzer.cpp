@@ -611,3 +611,34 @@ ZFlyEmQualityAnalyzer::computeHotSpot(const ZFlyEmNeuron &neuron,
 
   return m_hotSpotArray;
 }
+
+bool ZFlyEmQualityAnalyzer::isInternalFaceOrphan(const ZObject3dScan &obj)
+{
+  Cuboid_I objBox;
+  obj.getBoundBox(&objBox);
+
+  bool isLocalOrphan = false;
+
+  int boxIndex = m_substackRegion.hitTest(
+        objBox.cb[0], objBox.cb[1], objBox.cb[2]);
+  if (boxIndex >= 0) {
+    if (boxIndex == m_substackRegion.hitTest(
+          objBox.ce[0], objBox.ce[1], objBox.ce[2])) {
+      isLocalOrphan = true;
+    }
+  }
+
+
+  if (isLocalOrphan) {
+    if (!touchingGlobalBoundary(obj)) {
+      Cuboid_I &block = m_substackRegion[boxIndex];
+      for (int i = 0; i < 3; ++i) {
+        if (objBox.cb[i] == block.cb[i] || objBox.ce[i] == block.ce[i]) {
+          return true;
+        }
+      }
+    }
+  }
+
+  return false;
+}

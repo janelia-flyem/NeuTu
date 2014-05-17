@@ -81,6 +81,11 @@ void ZStack::setOffset(double dx, double dy, double dz)
   m_offset.set(dx, dy, dz);
 }
 
+void ZStack::setOffset(const ZPoint &pt)
+{
+  m_offset = pt;
+}
+
 size_t ZStack::getVoxelNumber(EStackUnit unit) const
 {
   switch (unit) {

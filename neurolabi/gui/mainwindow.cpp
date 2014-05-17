@@ -135,6 +135,8 @@
 #include "dvid/zdvidtarget.h"
 #include "dvid/zdvidfilter.h"
 #include "flyembodyfilterdialog.h"
+#include "tz_stack_math.h"
+#include "tz_stack_relation.h"
 
 #include "ztest.h"
 
@@ -4645,6 +4647,10 @@ void MainWindow::on_actionMask_SWC_triggered()
         ZSwcResampler resampler;
         resampler.optimalDownsample(wholeTree);
 
+        if (stackFrame != NULL) {
+          wholeTree->translate(stackFrame->document()->getStackOffset());
+        }
+
         if (stackFrame != swcFrame) {
           swcFrame->document()->addSwcTree(wholeTree);
         } else {
@@ -5234,6 +5240,14 @@ void MainWindow::on_actionGet_Grayscale_triggered()
     m_dvidClient->reset();
     m_dvidClient->setServer(m_dvidImageDlg->getAddress());
     int depth = m_dvidImageDlg->getDepth();
+    ZDvidRequest request;
+    request.setGetImageRequest(
+          m_dvidImageDlg->getX(), m_dvidImageDlg->getY(),
+          m_dvidImageDlg->getZ(),
+          m_dvidImageDlg->getWidth(), m_dvidImageDlg->getHeight(), depth);
+    m_dvidClient->appendRequest(request);
+
+#if 0
     for (int z = 0; z < depth; ++z) {
       ZDvidRequest request;
       request.setGetImageRequest(
@@ -5242,6 +5256,7 @@ void MainWindow::on_actionGet_Grayscale_triggered()
             m_dvidImageDlg->getWidth(), m_dvidImageDlg->getHeight());
       m_dvidClient->appendRequest(request);
     }
+#endif
 
     m_dvidClient->postNextRequest();
   }
@@ -5883,6 +5898,64 @@ void MainWindow::on_actionSplit_Region_triggered()
       presentStackFrame(frame);
     }
 */
+    m_progress->reset();
+  }
+}
+
+void MainWindow::on_actionLoad_Body_with_Grayscale_triggered()
+{
+  if (m_dvidObjectDlg->exec()) {
+    m_progress->setLabelText("Loading ...");
+    m_progress->setRange(0, 0);
+    m_progress->open();
+
+    ZFlyEmDataInfo dataInfo(FlyEm::DATA_FIB25);
+    ZDvidReader reader;
+    if (reader.open(dataInfo.getDvidAddress().c_str(), dataInfo.getDvidUuid().c_str(),
+                    dataInfo.getDvidPort())) {
+      std::vector<int> bodyIdArray = m_dvidObjectDlg->getBodyId();
+      if (!bodyIdArray.empty()) {
+        int bodyId = bodyIdArray[0];
+        ZObject3dScan body = reader.readBody(bodyId);
+        if (!body.isEmpty()) {
+          ZStack *stack = body.toStackObject();
+          int x = stack->getOffset().x();
+          int y = stack->getOffset().y();
+          int z = stack->getOffset().z();
+          int width = stack->width();
+          int height = stack->height();
+          int depth = stack->depth();
+
+          ZStack *grayStack = reader.readGrayScale(x, y, z, width, height, depth);
+
+          if (grayStack != NULL) {
+            TZ_ASSERT(grayStack->kind() == GREY, "Unsuppored kind.");
+            if (Stack_Same_Size(grayStack->c_stack(), stack->c_stack())) {
+              size_t voxelNumber = stack->getVoxelNumber();
+              uint8_t *maskArray = stack->array8();
+              uint8_t *signalArray = grayStack->array8();
+              for (size_t i = 0; i < voxelNumber; ++i) {
+                if (maskArray[i] > 0) {
+                  if (signalArray[i] < 255) {
+                    maskArray[i] = signalArray[i] + 1;
+                  } else {
+                    maskArray[i] = 255;
+                  }
+                }
+              }
+            }
+            //Stack_Mul(stack->c_stack(), grayStack->c_stack(), stack->c_stack());
+            delete grayStack;
+          }
+
+          ZStackDoc *doc = new ZStackDoc(NULL, NULL);
+          doc->loadStack(stack);
+          ZStackFrame *frame = createStackFrame(doc);
+          addStackFrame(frame);
+          presentStackFrame(frame);
+        }
+      }
+    }
     m_progress->reset();
   }
 }

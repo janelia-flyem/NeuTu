@@ -191,6 +191,8 @@ public: //attributes
    * \brief The offset from stack space to data space
    */
   ZPoint getStackOffset() const;
+  void setStackOffset(double x, double y, double z);
+  void setStackOffset(const ZPoint &offset);
 
   /*!
    * \brief Get the data space coordinates of stack coordinates

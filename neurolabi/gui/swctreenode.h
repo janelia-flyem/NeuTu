@@ -451,6 +451,9 @@ template<class InputIterator>
 ZPoint centroid(InputIterator first, InputIterator last);
 
 template<class InputIterator>
+double averageRadius(InputIterator first, InputIterator last);
+
+template<class InputIterator>
 ZCuboid boundBox(InputIterator first, InputIterator last);
 
 template<class InputIterator>
@@ -606,19 +609,44 @@ ZPoint SwcTreeNode::centroid(InputIterator first, InputIterator last)
   int count = 0;
 
   while (first != last) {
-    pt += pos(*first) * radius(*first);
-    weight += radius(*first);
+    if (isRegular(*first)) {
+      pt += pos(*first) * radius(*first);
+      weight += radius(*first);
+      ++count;
+    }
+
     ++first;
-    ++count;
   }
 
   if (weight > 0.0) {
     pt /= weight;
-  } else {
+  } else if (count > 0){
     pt /= count;
   }
 
   return pt;
+}
+
+template<class InputIterator>
+double SwcTreeNode::averageRadius(InputIterator first, InputIterator last)
+{
+  double mu = 0.0;
+  int count = 0;
+
+  while (first != last) {
+    if (isRegular(*first)) {
+      mu += radius(*first);
+      ++count;
+    }
+
+    ++first;
+  }
+
+  if (count > 0) {
+    mu /= count;
+  }
+
+  return mu;
 }
 
 #endif // SWCTREENODE_H
