@@ -1,13 +1,13 @@
 #ifndef Z3DSHADERPROGRAM_H
 #define Z3DSHADERPROGRAM_H
 
+#include "z3dtexture.h"
 #ifdef _QT5_
 #include <QOpenGLShaderProgram>
 #else
 #include <QGLShaderProgram>
 #endif
 #include "zglmutils.h"
-#include "z3dtexture.h"
 
 class Z3DVolume;
 
