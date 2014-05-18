@@ -447,6 +447,15 @@ ZPoint centroid(const std::set<Swc_Tree_Node*> &nodeSet);
 double maxRadius(const std::set<Swc_Tree_Node*> &nodeSet);
 ZCuboid boundBox(const std::set<Swc_Tree_Node*> &nodeSet);
 
+/*!
+ * \brief Test if all nodes in the set are connected
+ *
+ * Here two nodes are connected if there is a path between them. A virtual node
+ * is also considered by checking the structural links. It returns true if the
+ * set is empty.
+ */
+bool isAllConnected(const std::set<Swc_Tree_Node*> &nodeSet);
+
 template<class InputIterator>
 ZPoint centroid(InputIterator first, InputIterator last);
 
@@ -458,6 +467,15 @@ ZCuboid boundBox(InputIterator first, InputIterator last);
 
 template<class InputIterator>
 void setType(InputIterator first, InputIterator last, int type);
+
+/*!
+ * \brief Iterate through nodes to check if they are all connected.
+ *
+ * Here two nodes are connected if there is a path between them. A virtual node
+ * is also considered by checking the structural links.
+ */
+template<class InputIterator>
+bool isAllConnected(InputIterator first, InputIterator last);
 
 Swc_Tree_Node* merge(const std::set<Swc_Tree_Node*> &nodeSet);
 void kill(std::set<Swc_Tree_Node*> &nodeSet);
@@ -647,6 +665,25 @@ double SwcTreeNode::averageRadius(InputIterator first, InputIterator last)
   }
 
   return mu;
+}
+
+template<class InputIterator>
+bool SwcTreeNode::isAllConnected(InputIterator first, InputIterator last)
+{
+  bool isConnected = true;
+  while (first != last) {
+    InputIterator testNode = first;
+    ++testNode;
+    while (testNode != last) {
+      if (commonAncestor(*first, *testNode) == NULL) {
+        return false;
+      }
+      ++testNode;
+    }
+    ++first;
+  }
+
+  return isConnected;
 }
 
 #endif // SWCTREENODE_H

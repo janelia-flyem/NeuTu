@@ -665,6 +665,10 @@ ZStackDocCommand::SwcEdit::SetParent::SetParent(
   m_oldParent(NULL), m_prevSibling(NULL)
 {
   //TZ_ASSERT(parentNode != NULL, "Null pointer");
+#ifdef _DEBUG_
+  std::cout << m_newParent << " --> " << m_node << std::endl;
+#endif
+
   setText(QObject::tr("Set swc node parent"));
 }
 
@@ -802,10 +806,11 @@ void ZStackDocCommand::SwcEdit::SwcPathLabeTraceMask::redo()
 
 ZStackDocCommand::SwcEdit::SetRoot::SetRoot(
     ZStackDoc *doc, Swc_Tree_Node *tn, QUndoCommand *parent) :
-  CompositeCommand(doc, parent)
+  QUndoCommand(parent), m_doc(doc), m_node(tn)
+  //CompositeCommand(doc, parent)
 {
   setText(QObject::tr("Set root"));
-
+#if 0
   if (tn != NULL) {
     Swc_Tree_Node *buffer1, *buffer2, *buffer3;
     buffer1 = tn;
@@ -830,7 +835,51 @@ ZStackDocCommand::SwcEdit::SetRoot::SetRoot(
     //Swc_Tree_Node_Set_Parent(tn, buffer1);
     new SetParent(doc, tn, buffer1, this);
   }
+#endif
 }
+
+void ZStackDocCommand::SwcEdit::SetRoot::redo()
+{
+  m_originalParentArray.clear();
+  if (m_node != NULL) {
+    Swc_Tree_Node *parent = SwcTreeNode::parent(m_node);
+
+    while (SwcTreeNode::isRegular(parent)) {
+      m_originalParentArray.push_back(parent);
+      parent = SwcTreeNode::parent(parent);
+    }
+    Swc_Tree_Node *virtualRoot = parent;
+
+    SwcTreeNode::setParent(m_node, virtualRoot);
+    Swc_Tree_Node *currentParent = m_node;
+    for (std::vector<Swc_Tree_Node*>::iterator
+         iter = m_originalParentArray.begin();
+         iter != m_originalParentArray.end(); ++iter) {
+      SwcTreeNode::setParent(*iter, currentParent);
+      currentParent = *iter;
+    }
+
+    m_doc->notifySwcModified();
+  }
+}
+
+void ZStackDocCommand::SwcEdit::SetRoot::undo()
+{
+  if (!m_originalParentArray.empty()) {
+    Swc_Tree_Node *virtualRoot = SwcTreeNode::parent(m_node);
+    Swc_Tree_Node *currentParent = virtualRoot;
+    for (std::vector<Swc_Tree_Node*>::reverse_iterator
+         iter = m_originalParentArray.rbegin();
+         iter != m_originalParentArray.rend(); ++iter) {
+      SwcTreeNode::setParent(*iter, currentParent);
+      currentParent = *iter;
+    }
+    SwcTreeNode::setParent(m_node, m_originalParentArray.front());
+
+    m_doc->notifySwcModified();
+  }
+}
+
 
 ZStackDocCommand::SwcEdit::ConnectSwcNode::ConnectSwcNode(
     ZStackDoc *doc, QUndoCommand *parent) :

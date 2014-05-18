@@ -253,6 +253,29 @@ TEST(SwcTreeNode, pathLength)
   ASSERT_DOUBLE_EQ(0.0, SwcTreeNode::pathLengthRatio(tn2, tn3, tn1));
 }
 
+TEST(SwcTreeNode, Connection)
+{
+  std::set<Swc_Tree_Node*> nodeSet;
+  ASSERT_TRUE(SwcTreeNode::isAllConnected(nodeSet));
+
+  Swc_Tree_Node *center = SwcTreeNode::makePointer(0, 0, 0, 1);
+  Swc_Tree_Node *tn1 = SwcTreeNode::makePointer(10, 0, 0, 1);
+
+  nodeSet.insert(center);
+  nodeSet.insert(tn1);
+  ASSERT_FALSE(SwcTreeNode::isAllConnected(nodeSet));
+
+  SwcTreeNode::setParent(tn1, center);
+  ASSERT_TRUE(SwcTreeNode::isAllConnected(nodeSet));
+
+  Swc_Tree_Node *tn2 = SwcTreeNode::makePointer(10, 0, 0, 1);
+  nodeSet.insert(tn2);
+  ASSERT_FALSE(SwcTreeNode::isAllConnected(nodeSet));
+
+  SwcTreeNode::setParent(tn2, tn1);
+  ASSERT_TRUE(SwcTreeNode::isAllConnected(nodeSet));
+}
+
 #endif
 
 

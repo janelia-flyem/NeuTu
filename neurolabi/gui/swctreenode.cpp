@@ -1066,6 +1066,11 @@ ZCuboid SwcTreeNode::boundBox(const std::set<Swc_Tree_Node *> &nodeSet)
   return bound;
 }
 
+bool SwcTreeNode::isAllConnected(const std::set<Swc_Tree_Node *> &nodeSet)
+{
+  return isAllConnected(nodeSet.begin(), nodeSet.end());
+}
+
 Swc_Tree_Node* SwcTreeNode::merge(const set<Swc_Tree_Node*> &nodeSet)
 {
   Swc_Tree_Node *coreNode = NULL;

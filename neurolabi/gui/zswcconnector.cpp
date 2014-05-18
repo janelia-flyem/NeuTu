@@ -102,7 +102,7 @@ ZGraph* ZSwcConnector::buildConnection(
     }
     graph->removeEdge(edgeList);
 
-#ifdef _DEBUG_2
+#ifdef _DEBUG_
   graph->print();
 #endif
 #if 1
@@ -162,7 +162,7 @@ ZGraph* ZSwcConnector::buildConnection(
 #endif
   }
 
-#ifdef _DEBUG_2
+#ifdef _DEBUG_
   graph->print();
 #endif
 

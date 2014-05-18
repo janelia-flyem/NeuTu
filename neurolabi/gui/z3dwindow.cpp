@@ -407,6 +407,7 @@ void Z3DWindow::createActions()
 
   m_toogleSmartExtendSelectedSwcNodeAction = new QAction("Extend", this);
   m_toogleSmartExtendSelectedSwcNodeAction->setCheckable(true);
+  m_toogleSmartExtendSelectedSwcNodeAction->setIcon(QIcon(":/images/extend.png"));
   connect(m_toogleSmartExtendSelectedSwcNodeAction, SIGNAL(toggled(bool)), this,
           SLOT(toogleSmartExtendSelectedSwcNodeMode(bool)));
   m_singleSwcNodeActionActivator.registerAction(
@@ -434,6 +435,7 @@ void Z3DWindow::createActions()
   m_connectToSwcNodeAction = new QAction("Connect to", this);
   connect(m_connectToSwcNodeAction, SIGNAL(triggered()), this,
           SLOT(startConnectingSwcNode()));
+  m_connectToSwcNodeAction->setIcon(QIcon(":/images/connect_to.png"));
   m_singleSwcNodeActionActivator.registerAction(m_connectToSwcNodeAction, true);
 
   m_mergeSwcNodeAction = new QAction("Merge", this);
@@ -444,6 +446,7 @@ void Z3DWindow::createActions()
   m_selectSwcConnectionAction = new QAction("Select Connection", this);
   connect(m_selectSwcConnectionAction, SIGNAL(triggered()), m_doc.get(),
           SLOT(selectSwcNodeConnection()));
+
 /*
   m_selectSwcNodeUpstreamAction = new QAction("Upstream", this);
   connect(m_selectSwcNodeUpstreamAction, SIGNAL(triggered()), m_doc.get(),

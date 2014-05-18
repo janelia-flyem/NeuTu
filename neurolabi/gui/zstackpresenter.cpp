@@ -134,6 +134,7 @@ void ZStackPresenter::createTubeActions()
   connect(m_checkConnAction, SIGNAL(triggered()), this, SLOT(enterCheckConnMode()));
 
   m_connectAction = new QAction(tr("Connect to"), this);
+  m_connectAction->setIcon(QIcon(":/images/connect_to.png"));
   connect(m_connectAction, SIGNAL(triggered()), this, SLOT(enterConnectMode()));
 
   m_extendAction = new QAction(tr("Extend"), this);
@@ -199,11 +200,13 @@ void ZStackPresenter::createSwcActions()
   m_swcConnectToAction = new QAction(tr("Connect to"), this);
   connect(m_swcConnectToAction, SIGNAL(triggered()),
           this, SLOT(enterSwcConnectMode()));
+  m_swcConnectToAction->setIcon(QIcon(":/images/connect_to.png"));
   m_actionMap[ACTION_CONNECT_TO_SWC_NODE] = m_swcConnectToAction;
 
   m_swcExtendAction = new QAction(tr("Extend"), this);
   connect(m_swcExtendAction, SIGNAL(triggered()),
           this, SLOT(enterSwcExtendMode()));
+  m_swcExtendAction->setIcon(QIcon(":/images/extend.png"));
   m_actionMap[ACTION_EXTEND_SWC_NODE] = m_swcExtendAction;
 #if 0
   m_swcSmartExtendAction = new QAction(tr("Smart extension"), this);

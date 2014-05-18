@@ -263,15 +263,19 @@ void ZStackDoc::createActions()
   m_actionMap[ACTION_INSERT_SWC_NODE] = action;
 
   action = new QAction("Break", this);
-  connect(action, SIGNAL(triggered()), this, SLOT(executeBreakSwcConnectionCommand()));
+  connect(action, SIGNAL(triggered()),
+          this, SLOT(executeBreakSwcConnectionCommand()));
+  action->setIcon(QIcon(":/images/cut.png"));
   m_actionMap[ACTION_BREAK_SWC_NODE] = action;
 
   action = new QAction("Connect", this);
+  action->setIcon(QIcon(":/images/connect.png"));
   connect(action, SIGNAL(triggered()), this, SLOT(executeConnectSwcNodeCommand()));
   m_actionMap[ACTION_CONNECT_SWC_NODE] = action;
 
   action = new QAction("Merge", this);
   connect(action, SIGNAL(triggered()), this, SLOT(executeMergeSwcNodeCommand()));
+  action->setIcon(QIcon(":/images/merge.png"));
   m_actionMap[ACTION_MERGE_SWC_NODE] = action;
 
   action = new QAction("Translate", this);
@@ -6167,7 +6171,8 @@ bool ZStackDoc::executeSwcNodeEstimateRadiusCommand()
 
 bool ZStackDoc::executeMergeSwcNodeCommand()
 {
-  if (selectedSwcTreeNodes()->size() > 1) {
+  if (selectedSwcTreeNodes()->size() > 1 &&
+      SwcTreeNode::isAllConnected(*selectedSwcTreeNodes())) {
     QUndoCommand *command = new ZStackDocCommand::SwcEdit::MergeSwcNode(this);
     pushUndoCommand(command);
     deprecateTraceMask();
