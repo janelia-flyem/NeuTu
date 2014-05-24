@@ -97,6 +97,28 @@ bool ZDvidClient::postRequest(
     }
   }
     break;
+  case ZDvidRequest::DVID_GET_BODY_LABEL:
+  {
+    QList<QVariant> parameterList = parameter.toList();
+    //if (parameterList)
+    if (parameterList.size() == 5) {
+      urlString = QString("%1/%2/bodies/raw/0_1/%3_%4/%5_%6_%7").
+          arg(m_serverAddress).
+          arg(m_dataPath).
+          arg(parameterList[3].toInt()).arg(parameterList[4].toInt()).
+          arg(parameterList[0].toInt()).arg(parameterList[1].toInt()).
+          arg(parameterList[2].toInt());
+    } else {
+      urlString = QString("%1/%2/bodies/raw/0_1_2/%3_%4_%5/%6_%7_%8").
+          arg(m_serverAddress).
+          arg(m_dataPath).
+          arg(parameterList[3].toInt()).arg(parameterList[4].toInt()).
+          arg(parameterList[5].toInt()).
+          arg(parameterList[0].toInt()).arg(parameterList[1].toInt()).
+          arg(parameterList[2].toInt());
+    }
+  }
+    break;
   case ZDvidRequest::DVID_GET_KEYVALUE:
   {
     QList<QVariant> parameterList = parameter.toList();
@@ -123,6 +145,7 @@ bool ZDvidClient::postRequest(
   case ZDvidRequest::DVID_SAVE_OBJECT:
   case ZDvidRequest::DVID_GET_SWC:
   case ZDvidRequest::DVID_GET_GRAY_SCALE:
+  case ZDvidRequest::DVID_GET_BODY_LABEL:
   case ZDvidRequest::DVID_GET_SUPERPIXEL_INFO:
   case ZDvidRequest::DVID_GET_SP2BODY_STRING:
   case ZDvidRequest::DVID_GET_KEYVALUE:
@@ -196,6 +219,7 @@ bool ZDvidClient::postRequest(
     connect(m_networkReply, SIGNAL(readyRead()), this, SLOT(readSwc()));
     break;
   case ZDvidRequest::DVID_GET_GRAY_SCALE:
+  case ZDvidRequest::DVID_GET_BODY_LABEL:
     connect(m_networkReply, SIGNAL(finished()), this, SLOT(finishRequest()));
     connect(m_networkReply, SIGNAL(readyRead()), this, SLOT(readImage()));
     break;
@@ -304,6 +328,10 @@ void ZDvidClient::finishRequest(QNetworkReply::NetworkError error)
     emit requestFailed();
   } else {
     if (!m_objectBuffer.isEmpty()) {
+#ifdef _DEBUG_2
+    ptoc();
+#endif
+
       m_obj.importDvidObjectBuffer(
             m_objectBuffer.constData(), m_objectBuffer.size());
       objectRetrievalDone = true;
@@ -350,7 +378,24 @@ void ZDvidClient::finishRequest(QNetworkReply::NetworkError error)
         if (voxelNumber == m_imageBuffer.size()) {
           m_image.setData(C_Stack::make(GREY, width, height, depth, 1));
           const char *dataArray = m_imageBuffer.constData();
-          m_image.copyValue(dataArray, m_imageBuffer.size());
+          m_image.loadValue(dataArray, m_imageBuffer.size());
+          m_image.setOffset(m_currentRequestParameter.toList().at(0).toInt(),
+                            m_currentRequestParameter.toList().at(1).toInt(),
+                            m_currentRequestParameter.toList().at(2).toInt());
+        } else if (m_imageBuffer.size() % voxelNumber == 0) {
+          int channelNumber = m_imageBuffer.size() / voxelNumber;
+          const char *dataArray = m_imageBuffer.constData();
+          if (channelNumber == 8) {
+            m_image.setData(C_Stack::make(FLOAT64, width, height, depth, 1));
+            m_image.loadValue(dataArray, m_imageBuffer.size());
+          } else {
+            m_image.setData(
+                  C_Stack::make(GREY, width, height, depth, channelNumber));
+
+            for (int i = 0; i < channelNumber; ++i) {
+              m_image.loadValue(dataArray + voxelNumber * i, voxelNumber, i);
+            }
+          }
           m_image.setOffset(m_currentRequestParameter.toList().at(0).toInt(),
                             m_currentRequestParameter.toList().at(1).toInt(),
                             m_currentRequestParameter.toList().at(2).toInt());

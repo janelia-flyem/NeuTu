@@ -35,12 +35,12 @@ public:
   virtual ~ZJsonValue();
 
 public:
-  inline json_t *getData() { return m_data; }
-  inline json_t *getValue() { return m_data; }
+  inline json_t *getData() const { return m_data; }
+  inline json_t *getValue() const { return m_data; }
 
-  bool isObject();
-  bool isArray();
-  bool isString();
+  bool isObject() const;
+  bool isArray() const;
+  bool isString() const;
   bool isInteger();
   bool isReal();
   bool isNumber();

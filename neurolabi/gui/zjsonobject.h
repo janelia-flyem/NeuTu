@@ -135,6 +135,8 @@ public:
    */
   json_t *setArrayEntry(const char *key);
 
+  void setValue(const ZJsonValue &value);
+
 private:
   void setEntryWithoutKeyCheck(const char *key, json_t *obj, bool asNew = false);
 

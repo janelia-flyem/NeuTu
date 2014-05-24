@@ -57,7 +57,8 @@ ZStack::ZStack(int kind, int width, int height, int depth,
   setData(stack, delloc);
 }
 
-ZStack::ZStack(Mc_Stack *stack, C_Stack::Mc_Stack_Deallocator *dealloc)
+ZStack::ZStack(Mc_Stack *stack, C_Stack::Mc_Stack_Deallocator *dealloc) :
+  m_stack(NULL), m_delloc(NULL), m_preferredZScale(1.0), m_isLSMFile(false)
 {
   setData(stack, dealloc);
 }
@@ -1246,13 +1247,13 @@ double ZStack::averageIntensity(ZStack *mask)
   return v;
 }
 
-void ZStack::copyValue(const void *buffer, size_t length, int ch)
+void ZStack::loadValue(const void *buffer, size_t length, int ch)
 {
   memcpy(rawChannelData(ch), buffer, length);
   deprecateDependent(MC_STACK);
 }
 
-void ZStack::copyValue(const void *buffer, size_t length, void *loc)
+void ZStack::loadValue(const void *buffer, size_t length, void *loc)
 {
   memcpy(loc, buffer, length);
   deprecateDependent(MC_STACK);
@@ -1472,4 +1473,32 @@ void ZStack::setZero()
   if (!isEmpty() && ! isVirtual()) {
     C_Stack::setZero(m_stack);
   }
+}
+
+void ZStack::printInfo() const
+{
+  std::cout << "Stack: " << std::endl;
+  std::cout << "  Size: (" << width() << " x " << height() << " x " << depth()
+            << ")" <<  std::endl;
+  std::cout << "  Channel number: " << channelNumber() << std::endl;
+  std::cout << "  Voxel type: " << kind() << std::endl;
+  std::cout << "  Offset: " << getOffset().toString() << std::endl;
+
+  if (isEmpty()) {
+    std::cout << "  Empty stack." << std::endl;
+  }
+}
+
+bool ZStack::reshape(int width, int height, int depth)
+{
+  size_t v = (size_t) width * height * depth;
+  if (v == getVoxelNumber()) {
+    m_stack->width = width;
+    m_stack->height = height;
+    m_stack->depth = depth;
+
+    return true;
+  }
+
+  return false;
 }

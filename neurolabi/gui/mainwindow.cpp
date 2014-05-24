@@ -1969,7 +1969,7 @@ void MainWindow::importImageSequence()
 
   if (!fileName.isEmpty()) {
     m_lastOpenedFilePath = fileName;
-    ZStackFrame *frame = new ZStackFrame(mdiArea);
+    ZStackFrame *frame = new ZStackFrame;
 
     //ZStackFrame *frame = new ZStackFrame;
 
@@ -1982,6 +1982,7 @@ void MainWindow::importImageSequence()
     m_progress->setValue(++currentProgress);
 
     qApp->processEvents();
+    //m_progress->repaint();
 
 
     if (frame->importImageSequence(fileName.toStdString().c_str()) == SUCCESS) {
@@ -1994,7 +1995,7 @@ void MainWindow::importImageSequence()
     m_progress->setValue(++currentProgress);
     m_progress->reset();
   }
-  QApplication::processEvents();
+  //QApplication::processEvents();
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
@@ -5419,6 +5420,9 @@ ZStackDoc::Reader *MainWindow::hotSpotDemo(
     return NULL;
   }
 
+#ifdef _DEBUG_2
+  hotSpotArray.exportJsonFile(GET_TEST_DATA_DIR + "/test.json");
+#endif
 
   FlyEm::ZHotSpot *hotSpot = hotSpotArray[0];
   ZCuboid boundBox = hotSpot->toPointArray().getBoundBox();

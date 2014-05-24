@@ -137,6 +137,11 @@ void C_Stack::setZero(Stack *stack)
   Zero_Stack(stack);
 }
 
+void C_Stack::setOne(Stack *stack)
+{
+  One_Stack(stack);
+}
+
 void C_Stack::setZero(Mc_Stack *stack)
 {
   if (stack != NULL) {
@@ -144,6 +149,17 @@ void C_Stack::setZero(Mc_Stack *stack)
     bzero(stack->array, length);
   }
 }
+
+void C_Stack::setOne(Mc_Stack *stack)
+{
+  Stack sstack;
+  for (int i = 0; i < channelNumber(stack); ++i) {
+    view(stack, &sstack, i);
+    One_Stack(&sstack);
+  }
+}
+
+
 
 ssize_t C_Stack::offset(int x, int y, int z, int width, int height, int depth)
 {
@@ -178,6 +194,17 @@ void C_Stack::print(const Stack *stack)
 void C_Stack::printValue(const Stack *stack)
 {
   Print_Stack_Value(stack);
+}
+
+void C_Stack::printValue(const Mc_Stack *stack)
+{
+  int nc = channelNumber(stack);
+  Stack sstack;
+  for (int c = 0; c < nc; ++c) {
+    view(stack, &sstack, c);
+    std::cout << "Channel " << c << ":" << std::endl;
+    printValue(&sstack);
+  }
 }
 
 Stack* C_Stack::channelExtraction(const Stack *stack, int channel)
@@ -256,6 +283,13 @@ void C_Stack::systemKill(Stack *stack)
 {
   if (stack != NULL) {
     free(stack->array);
+    free(stack);
+  }
+}
+
+void C_Stack::freePointer(Mc_Stack *stack)
+{
+  if (stack != NULL) {
     free(stack);
   }
 }
@@ -918,4 +952,161 @@ Mc_Stack *C_Stack::resize(const Mc_Stack *stack, int width, int height, int dept
     C_Stack::kill(stk);
   }
   return res;
+}
+
+#define MC_STACK_SET_ZERO(array) \
+  for (int c = 0; c < nc; ++c) { \
+    size_t offset = s4 * c + s3 * z0 + s2 * y0 + x0;\
+    for (int z = 0; z < sd; ++z) {\
+      for (int y = 0; y < sh; ++y) {\
+        for (int x = 0; x < sw; ++x) {\
+          array[offset] = 0;\
+          offset += p1;\
+        }\
+        offset += p2;\
+      }\
+      offset += p3;\
+    }\
+  }
+
+void C_Stack::setZero(
+    Mc_Stack *stack, int x0, int y0, int z0, int sw, int sh, int sd)
+{
+  if (sw < 0 || sh < 0 || sd < 0) {
+    return;
+  }
+
+  //Readjust the size to avoid out-of-bound operation
+  Cuboid_I stackBox;
+  Cuboid_I_Set_S(&stackBox, 0, 0, 0, width(stack), height(stack), depth(stack));
+
+  Cuboid_I subBox;
+  Cuboid_I_Set_S(&subBox, x0, y0, z0, sw, sh, sd);
+
+  Cuboid_I_Intersect(&stackBox, &subBox, &subBox);
+
+  Image_Array ima;
+  ima.array = stack->array;
+
+  if (Cuboid_I_Is_Valid(&subBox)) {
+    x0 = subBox.cb[0];
+    y0 = subBox.cb[1];
+    z0 = subBox.cb[2];
+    sw = Cuboid_I_Width(&subBox);
+    sh = Cuboid_I_Height(&subBox);
+    sd = Cuboid_I_Depth(&subBox);
+
+    const size_t s2 = width(stack);
+    const size_t s3 = area(stack);
+    const size_t p1 = 1;
+    const size_t p2 = s2 - sw + 1 - p1;
+    const size_t p3 = p2 + s3 - sh * s2 - p2;
+    const size_t s4 = voxelNumber(stack);
+
+    int nc = channelNumber(stack);
+    switch (kind(stack)) {
+    case GREY:
+      MC_STACK_SET_ZERO(ima.array8);
+      break;
+    case GREY16:
+      MC_STACK_SET_ZERO(ima.array16);
+      break;
+    case FLOAT32:
+      MC_STACK_SET_ZERO(ima.array32);
+      break;
+    case FLOAT64:
+      MC_STACK_SET_ZERO(ima.array64);
+      break;
+    default:
+      break;
+    }
+  }
+}
+
+#define STACK_SET_BLOCK_VALUE(dstArray, srcArray) \
+for (int z = 0; z < sd; ++z) {\
+  for (int y = 0; y < sh; ++y) {\
+    for (int x = 0; x < sw; ++x) {\
+      dstArray[offset] = srcArray[offset2];\
+      offset += p1;\
+      offset2 += bp1;\
+    }\
+    offset += p2;\
+    offset2 += bp2;\
+  }\
+  offset += p3;\
+  offset2 += bp3;\
+}
+
+void C_Stack::setBlockValue(
+    Stack *stack, const Stack *block, int x0, int y0, int z0)
+{
+  if (kind(stack) != kind(block) || stack == NULL || block == NULL) {
+    return;
+  }
+
+  if (x0 < 0 || y0 < 0 || z0 < 0) { //negative offset not supported yet
+    return;
+  }
+
+  int sw = width(block);
+  int sh = height(block);
+  int sd = depth(block);
+
+  //Readjust the size to avoid out-of-bound operation
+  Cuboid_I stackBox;
+  Cuboid_I_Set_S(&stackBox, 0, 0, 0, width(stack), height(stack), depth(stack));
+
+  Cuboid_I subBox;
+  Cuboid_I_Set_S(&subBox, x0, y0, z0, sw, sh, sd);
+
+  Cuboid_I_Intersect(&stackBox, &subBox, &subBox);
+
+  Image_Array ima;
+  ima.array = stack->array;
+  Image_Array blockIma;
+  blockIma.array = block->array;
+
+  if (Cuboid_I_Is_Valid(&subBox)) {
+    x0 = subBox.cb[0];
+    y0 = subBox.cb[1];
+    z0 = subBox.cb[2];
+    sw = Cuboid_I_Width(&subBox);
+    sh = Cuboid_I_Height(&subBox);
+    sd = Cuboid_I_Depth(&subBox);
+
+    const size_t s2 = width(stack);
+    const size_t s3 = area(stack);
+    const size_t p1 = 1;
+    const size_t p2 = s2 - sw + 1 - p1;
+    const size_t p3 = p2 + s3 - sh * s2 - p2;
+
+    const size_t bs2 = width(block);
+    const size_t bs3 = area(block);
+    const size_t bp1 = 1;
+    const size_t bp2 = bs2 - sw + 1 - p1;
+    const size_t bp3 = bp2 + bs3 - sh * bs2 - bp2;
+
+
+    size_t offset = s3 * z0 + s2 * y0 + x0;
+    size_t offset2 = 0;
+
+    switch (kind(stack)) {
+    case GREY:
+      STACK_SET_BLOCK_VALUE(ima.array8, blockIma.array8);
+      break;
+    case GREY16:
+      STACK_SET_BLOCK_VALUE(ima.array16, blockIma.array16);
+      break;
+    case FLOAT32:
+      STACK_SET_BLOCK_VALUE(ima.array32, blockIma.array32);
+      break;
+    case FLOAT64:
+      STACK_SET_BLOCK_VALUE(ima.array64, blockIma.array64);
+      break;
+    default:
+      break;
+    }
+
+  }
 }

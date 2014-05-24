@@ -35,6 +35,15 @@ void ZDvidRequest::setGetImageRequest(
   m_parameter = parameter;
 }
 
+void ZDvidRequest::setGetBodyLabelRequest(
+    int x0, int y0, int z0, int width, int height, int depth)
+{
+  m_requestType = ZDvidRequest::DVID_GET_BODY_LABEL;
+  QList<QVariant> parameter;
+  parameter << x0 << y0 << z0 << width << height << depth;
+  m_parameter = parameter;
+}
+
 void ZDvidRequest::setGetInfoRequest(const QString &dataType)
 {
   if (dataType == "superpixels") {

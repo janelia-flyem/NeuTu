@@ -153,6 +153,8 @@ double value(const Stack *stack, int x, int y, int z, int c = 0);
 void setPixel(Stack *stack, int x, int y, int z, int c, double v);
 void setZero(Stack *stack);
 
+void setOne(Stack *stack);
+
 /*!
  * \brief View a single slice
  */
@@ -213,6 +215,8 @@ void print(const Stack *stack);
  */
 void printValue(const Stack *stack);
 
+void printValue(const Mc_Stack *stack);
+
 //Stack statistics
 double min(const Stack *stack);
 double max(const Stack *stack);
@@ -233,6 +237,9 @@ inline int height(const Mc_Stack *stack) { return stack->height; }
 inline int depth(const Mc_Stack *stack) { return stack->depth; }
 inline int kind(const Mc_Stack *stack) { return stack->kind; }
 inline int channelNumber(const Mc_Stack *stack) { return stack->nchannel; }
+inline size_t area(const Mc_Stack *stack) {
+  return (size_t) width(stack) * height(stack);
+}
 
 inline uint8_t* array8(const Mc_Stack *stack) {
   return (uint8_t*) stack->array; }
@@ -264,6 +271,7 @@ void setAttribute(Mc_Stack *stack, int kind, int width, int height, int depth,
 void setChannelNumber(Mc_Stack *stack, int nchannel);
 inline void cppDelete(Mc_Stack *stack) { delete stack; }
 void systemKill(Mc_Stack *stack);
+void freePointer(Mc_Stack *stack);
 
 void kill(Mc_Stack *stack);
 
@@ -293,9 +301,14 @@ Stack* extractChannel(const Stack *stack, int c);
 void setStackValue(Stack *stack, const std::vector<size_t> &indexArray,
                    double value);
 /*!
- * \brief Set all voxel values of a stack to zero
+ * \brief Set all voxel values of a stack to 0
  */
 void setZero(Mc_Stack *stack);
+
+/*!
+ * \brief Set all voxel values of a stack to 1
+ */
+void setOne(Mc_Stack *stack);
 
 std::vector<size_t> getNeighborIndices(
     const Stack *stack, const std::vector<size_t> &indexArray,
@@ -314,6 +327,23 @@ Mc_Stack* read(const std::string &filePath, int channel = -1);
 Stack* readSc(const std::string &filePath);
 
 Mc_Stack* resize(const Mc_Stack *stack, int width, int height, int depth);
+
+//Routines for substack
+/*!
+ * \brief Set a subregion of a stack to 0
+ *
+ * Set the region of (\a x0, \a y0, \a z0) | \a sw x \a sh x \a sd to 0 in
+ * \a stack.
+ */
+void setZero(Mc_Stack *stack, int x0, int y0, int z0, int sw, int sh, int sd);
+
+/*!
+ * \brief Set the value of a block of a stack
+ *
+ * \a stack and \a block must have the same kind. The value of \a block will be
+ * copied to \a stack at the starting position of (\a x0, \a y0, \a z0).
+ */
+void setBlockValue(Stack *stack, const Stack *block, int x0, int y0, int z0);
 
 //Paint routines
 void drawPatch(Stack *canvas, const Stack *patch,

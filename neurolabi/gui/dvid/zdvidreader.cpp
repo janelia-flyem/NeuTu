@@ -57,6 +57,9 @@ bool ZDvidReader::open(const QString &sourceString)
 
 ZObject3dScan ZDvidReader::readBody(int bodyId)
 {
+  ZDvidBuffer *dvidBuffer = m_dvidClient->getDvidBuffer();
+  dvidBuffer->clearBodyArray();
+
   ZDvidRequest request;
   request.setGetObjectRequest(bodyId);
   m_dvidClient->appendRequest(request);
@@ -64,7 +67,7 @@ ZObject3dScan ZDvidReader::readBody(int bodyId)
 
   m_eventLoop->exec();
 
-  ZDvidBuffer *dvidBuffer = m_dvidClient->getDvidBuffer();
+
 
   const QVector<ZObject3dScan>& bodyArray = dvidBuffer->getBodyArray();
 
@@ -73,7 +76,6 @@ ZObject3dScan ZDvidReader::readBody(int bodyId)
   if (!bodyArray.empty()) {
     obj = bodyArray[0];
   }
-  dvidBuffer->clearBodyArray();
 
   return obj;
 }
@@ -81,7 +83,7 @@ ZObject3dScan ZDvidReader::readBody(int bodyId)
 ZSwcTree* ZDvidReader::readSwc(int bodyId)
 {
   ZDvidBuffer *dvidBuffer = m_dvidClient->getDvidBuffer();
-  dvidBuffer->clear();
+  dvidBuffer->clearTreeArray();
 
   ZDvidRequest request;
   request.setGetSwcRequest(bodyId);
@@ -95,7 +97,6 @@ ZSwcTree* ZDvidReader::readSwc(int bodyId)
   if (!treeArray.empty()) {
     return treeArray[0]->clone();
   }
-  dvidBuffer->clearTreeArray();
 
   return NULL;
 }
@@ -103,6 +104,9 @@ ZSwcTree* ZDvidReader::readSwc(int bodyId)
 ZStack* ZDvidReader::readGrayScale(
     int x0, int y0, int z0, int width, int height, int depth)
 {
+  ZDvidBuffer *dvidBuffer = m_dvidClient->getDvidBuffer();
+  dvidBuffer->clearImageArray();
+
   ZDvidRequest request;
   if (depth > 100) {
     request.setGetImageRequest(x0, y0, z0, width, height, depth / 3);
@@ -126,7 +130,7 @@ ZStack* ZDvidReader::readGrayScale(
 
   m_eventLoop->exec();
 
-  ZDvidBuffer *dvidBuffer = m_dvidClient->getDvidBuffer();
+
 
   const QVector<ZStack*>& imageArray = dvidBuffer->getImageArray();
 
@@ -188,10 +192,22 @@ QString ZDvidReader::readInfo(const QString &dataType)
 }
 
 std::vector<int> ZDvidReader::readBodyId(
+    const ZIntPoint &firstCorner, const ZIntPoint &lastCorner)
+{
+  return readBodyId(firstCorner.getX(), firstCorner.getY(), firstCorner.getZ(),
+                    lastCorner.getX() - firstCorner.getX() + 1,
+                    lastCorner.getY() - firstCorner.getY() + 1,
+                    lastCorner.getZ() - firstCorner.getZ() + 1);
+}
+
+std::vector<int> ZDvidReader::readBodyId(
     int x0, int y0, int z0, int width, int height, int depth)
 {
   ZDvidInfo dvidInfo;
   dvidInfo.setFromJsonString(readInfo("superpixels").toStdString());
+
+  ZDvidBuffer *dvidBuffer = m_dvidClient->getDvidBuffer();
+  dvidBuffer->clearInfoArray();
 
   ZIntPoint startIndex = dvidInfo.getBlockIndex(x0, y0, z0);
   ZIntPoint endIndex = dvidInfo.getBlockIndex(x0 + width - 1,
@@ -220,17 +236,16 @@ std::vector<int> ZDvidReader::readBodyId(
 
     m_eventLoop->exec();
 
-    ZDvidBuffer *dvidBuffer = m_dvidClient->getDvidBuffer();
+
 
     const QStringList& infoArray = dvidBuffer->getInfoArray();
 
-    if (infoArray.size() > 1) {
+    if (infoArray.size() > 0) {
       ZJsonArray array;
-      qDebug() << infoArray[1];
-      array.decode(infoArray[1].toStdString());
+      qDebug() << infoArray[0];
+      array.decode(infoArray[0].toStdString());
       idArray = array.toIntegerArray();
     }
-    dvidBuffer->clearInfoArray();
   }
 
   return idArray;
@@ -290,4 +305,53 @@ QByteArray ZDvidReader::readKeyValue(const QString &dataName, const QString &key
   dvidBuffer->clearKeyValueArray();
 
   return keyValue;
+}
+
+ZStack* ZDvidReader::readBodyLabel(
+    int x0, int y0, int z0, int width, int height, int depth)
+{
+  ZDvidBuffer *dvidBuffer = m_dvidClient->getDvidBuffer();
+  dvidBuffer->clearImageArray();
+
+  ZDvidRequest request;
+  size_t voxelNumber = (size_t) width * height * depth;
+  if (voxelNumber > MAX_INT32) {
+    int subdepth = depth / 3;
+    request.setGetBodyLabelRequest(x0, y0, z0, width, height, subdepth);
+    m_dvidClient->appendRequest(request);
+
+    request.setGetBodyLabelRequest(x0, y0, z0 + subdepth,
+                               width, height, subdepth);
+    m_dvidClient->appendRequest(request);
+
+    request.setGetBodyLabelRequest(x0, y0, z0 + subdepth + subdepth,
+                               width, height,
+                               depth - subdepth - subdepth);
+    m_dvidClient->appendRequest(request);
+
+    m_dvidClient->postNextRequest();
+  } else {
+    request.setGetBodyLabelRequest(x0, y0, z0, width, height, depth);
+    m_dvidClient->appendRequest(request);
+    m_dvidClient->postNextRequest();
+  }
+
+  m_eventLoop->exec();
+
+  const QVector<ZStack*>& imageArray = dvidBuffer->getImageArray();
+
+  ZStack *stack = NULL;
+  if (!imageArray.isEmpty()) {
+    //stack = imageArray[0]->clone();
+    if (!imageArray.isEmpty()) {
+      if (imageArray.size() == 1) {
+        stack = imageArray[0]->clone();
+      } else {
+        stack = ZStackFactory::composite(imageArray.begin(), imageArray.end());
+      }
+    }
+  }
+
+
+  return stack;
 }

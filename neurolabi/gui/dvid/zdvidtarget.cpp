@@ -16,7 +16,11 @@ std::string ZDvidTarget::getSourceString() const
 void ZDvidTarget::set(
     const std::string &address, const std::string &uuid, int port)
 {
-  m_address = address;
+  if (ZString(address).startsWith("http://")) {
+    m_address = address.substr(7);
+  } else {
+    m_address = address;
+  }
   m_uuid = uuid;
   m_port = port;
 }
@@ -53,4 +57,9 @@ std::string ZDvidTarget::getAddressWithPort() const
   }
 
   return getAddress() + ":" + ZString::num2str(getPort());
+}
+
+void ZDvidTarget::print() const
+{
+  std::cout << getSourceString() << std::endl;
 }

@@ -353,7 +353,8 @@ ZSwcTree* ZSwcGenerator::createSwc(const ZIntCuboidFace &face, double radius)
 
   ZPointArray ptArray;
   for (int i = 0; i < 4; ++i) {
-    ptArray.append(face.getCornerCoordinates(i));
+    ZIntPoint pt = face.getCornerCoordinates(i);
+    ptArray.append(ZPoint(pt.getX(), pt.getY(), pt.getZ()));
   }
   ptArray.append(ptArray[0]);
 

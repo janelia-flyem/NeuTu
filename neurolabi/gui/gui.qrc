@@ -80,5 +80,6 @@
         <file>images/open_dvid.png</file>
         <file>images/connect_to.png</file>
         <file>images/connect.png</file>
+        <file>images/manage_tile.png</file>
     </qresource>
 </RCC>

@@ -26,22 +26,9 @@ public:
   //Local orphan
   bool isOrphanBody(const ZObject3dScan &obj);
 
-  class SubstackRegionCalbration {
-  public:
-    SubstackRegionCalbration();
-
-    void setMargin(int x, int y, int z);
-    void setBounding(bool x, bool y, bool z);
-    void calibrate(FlyEm::ZIntCuboidArray &roi) const;
-
-  private:
-    int m_margin[3];
-    bool m_bounding[3];
-  };
-
   void setSubstackRegion(const FlyEm::ZIntCuboidArray &roi);
   void setSubstackRegion(const FlyEm::ZIntCuboidArray &roi,
-                         const SubstackRegionCalbration &calbr);
+                         const FlyEm::SubstackRegionCalbration &calbr);
 
   /*!
    * \brief Label SWC node that is out of range.

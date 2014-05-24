@@ -1834,11 +1834,45 @@ ZVoxel ZObject3dScan::getMarker() const
     return ZVoxel(-1, -1, -1);
   }
 
+#if 1
+  int offset[3] = {0, 0, 0};
+  ZVoxel voxel;
+  size_t stripeNumber = getStripeNumber();
+  std::vector<ZObject3dScan> sliceArray(getMaxZ() + 1);
+  for (size_t i = 0; i < stripeNumber; ++i) {
+    const ZObject3dStripe &stripe = getStripe(i);
+    int currentZ = stripe.getZ();
+    sliceArray[currentZ].addStripe(stripe, false);
+  }
+
+  for (size_t i = 0; i < sliceArray.size(); ++i) {
+    ZObject3dScan &slice = sliceArray[i];
+
+    if (!slice.isEmpty()) {
+      int currentZ = slice.getStripe(0).getZ();
+      Stack *stack = slice.toStack(offset);
+      Stack *dist = Stack_Bwdist_L_U16P(stack, NULL, 0);
+      size_t index;
+      double v = sqrt(Stack_Max(dist, &index));
+      if (v > voxel.value()) {
+        int x, y, tmpz;
+        C_Stack::indexToCoord(index, C_Stack::width(stack), C_Stack::height(stack),
+                              &x, &y, &tmpz);
+
+        voxel.set(x + offset[0], y + offset[1], currentZ, v);
+      }
+      Kill_Stack(dist);
+      Kill_Stack(stack);
+      slice.clear();
+    }
+  }
+#else
   int minZ = getMinZ();
   int maxZ = getMaxZ();
   int offset[3];
   ZVoxel voxel;
-  for (int z = minZ; z < maxZ; ++z) {
+  int zStep = 2;
+  for (int z = minZ; z < maxZ; z += zStep) {
     ZObject3dScan slice = getSlice(z);
     if (!slice.isEmpty()) {
       Stack *stack = slice.toStack(offset);
@@ -1856,6 +1890,7 @@ ZVoxel ZObject3dScan::getMarker() const
       Kill_Stack(stack);
     }
   }
+#endif
 
   return voxel;
 }
@@ -1997,6 +2032,11 @@ bool ZObject3dScan::importDvidObject(const std::string &filePath)
 
     tz_uint32 numberOfVoxels = 0;
     n = fread(&numberOfVoxels, 4, 1, fp);
+
+#ifdef _DEBUG_
+    std::cout << "#dvid voxels: " << numberOfVoxels << std::endl;
+#endif
+
     if (n != 1) {
       fclose(fp);
       return false;
@@ -2108,7 +2148,7 @@ bool ZObject3dScan::importDvidObjectBuffer(
       return false;
     }
 
-    addSegment(coord[2], coord[1], coord[0], coord[0] + runLength, false);
+    addSegment(coord[2], coord[1], coord[0], coord[0] + runLength - 1, false);
   }
 
   return true;
@@ -2343,5 +2383,6 @@ bool ZObject3dScan::importHdf5(const string &filePath, const string &key)
 
   return false;
 }
+
 
 ZINTERFACE_DEFINE_CLASS_NAME(ZObject3dScan)

@@ -1883,7 +1883,7 @@ void Z3DWindow::keyPressEvent(QKeyEvent *event)
     if (event->modifiers() == Qt::ControlModifier) {
       ZOptionParameter<QString> *sm =
           dynamic_cast<ZOptionParameter<QString>*>(
-            getSwcFilter()->getParameter("Rendering Primitive"));
+            getSwcFilter()->getParameter("Geometry"));
       sm->selectNext();
     }
   }

@@ -9,6 +9,7 @@
 #include <map>
 
 #include "zprogressreporter.h"
+#include "zuncopyable.h"
 
 //! ZGraph class
 /*!
@@ -21,7 +22,7 @@
  *  UNDIRECTED_WITHOUT_WEIGHT: Undirected without weights
 */
 
-class ZGraph
+class ZGraph : public ZUncopyable
 {
 public:
   enum EGraphType {

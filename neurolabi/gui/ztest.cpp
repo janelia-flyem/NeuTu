@@ -182,6 +182,8 @@
 #include "zstringarray.h"
 #include "zflyemdvidreader.h"
 #include "zstroke2d.h"
+#include "flyem/zflyemservice.h"
+#include "zintset.h"
 
 using namespace std;
 
@@ -11634,7 +11636,7 @@ void ZTest::test(MainWindow *host)
   FlyEm::ZSynapseAnnotationArray synapseArray;
   synapseArray.loadJson(
         GET_TEST_DATA_DIR +
-        "/flyem/FIB/skeletonization/session35/annotations-synapse.json");
+        "/flyem/FIB/skeletonization/session36/annotations-synapse.json");
 
   std::vector<int> bodyIdArray = reader.readBodyId(0, 100000);
 
@@ -11721,7 +11723,7 @@ void ZTest::test(MainWindow *host)
   //exporter.exportIdVolume(selectedNeuronArray, GET_TEST_DATA_DIR + "/side_bounary.json");
 #endif
 
-#if 1
+#if 0
   FlyEm::ZSynapseAnnotationArray synapseArray;
   synapseArray.loadJson(
         GET_TEST_DATA_DIR +
@@ -11751,5 +11753,324 @@ void ZTest::test(MainWindow *host)
 
   std::cout << "#PSD: " << psdCount << std::endl;
   std::cout << "#Tbar: " << tbarCount << std::endl;
+#endif
+
+#if 0
+  std::vector<int> bodyIdArray;
+
+  FlyEm::Service::FaceOrphanOverlap service;
+  service.loadFace(cuboidArray);
+  service.markBody(bodyArray, 1);
+  ZGraph *graph = service.computeOverlap();
+  std::vector<ZObject3dScan> &objArray = service.getTouchRegion();
+
+  for (size_t i = 0; i < bodyIdArray.size(); ++i) {
+    int bodyId = bodyIdArray[i];
+    ZObject3dScan &body = bodyArray[i];
+
+  }
+
+#endif
+
+#if 0
+  ZDvidReader reader;
+
+  ZFlyEmDataInfo eminfo(FlyEm::DATA_FIB25);
+  reader.open(eminfo.getDvidAddress().c_str(), eminfo.getDvidUuid().c_str(),
+              eminfo.getDvidPort());
+
+  ZStack *stack = reader.readBodyLabel(2140, 2089, 1500, 1, 500, 500);
+
+  stack->printInfo();
+
+  std::set<FlyEm::TBodyLabel> bodySet;
+
+  size_t voxelNumber = stack->getVoxelNumber();
+
+  FlyEm::TBodyLabel *labelArray =
+      (FlyEm::TBodyLabel*) (stack->array8());
+  for (size_t i = 0; i < voxelNumber; ++i) {
+    bodySet.insert(labelArray[i]);
+  }
+
+  std::cout << bodySet.size() << std::endl;
+
+  for (std::set<FlyEm::TBodyLabel>::const_iterator iter = bodySet.begin();
+       iter != bodySet.end(); ++iter) {
+    std::cout << *iter << std::endl;
+  }
+
+  return;
+
+  std::vector<int> bodyIdArray =
+      reader.readBodyId(1500, 1500, 2500, 100, 100, 10);
+  for (std::vector<int>::const_iterator iter = bodyIdArray.begin();
+       iter != bodyIdArray.end(); ++iter) {
+    std::cout << *iter << std::endl;
+  }
+
+  Stack *scaled = Scale_Double_Stack(
+        (double*) stack->array8(),
+        stack->width(), stack->height(), stack->depth(), GREY16);
+
+  C_Stack::write(GET_DATA_DIR + "/test.tif", scaled);
+
+
+  stack = reader.readGrayScale(1500, 1500, 2500, 100, 100, 10);
+  stack->save(GET_DATA_DIR + "/test2.tif");
+
+  delete stack;
+#endif
+
+#if 0
+  FlyEm::Service::FaceOrphanOverlap service;
+
+  ZFlyEmDataInfo eminfo(FlyEm::DATA_FIB25);
+  ZDvidTarget dvidTarget;
+  dvidTarget.set(
+        eminfo.getDvidAddress(), eminfo.getDvidUuid(), eminfo.getDvidPort());
+  service.setDvidTarget(dvidTarget);
+
+  FlyEm::ZIntCuboidArray blockArray;
+  blockArray.loadSubstackList(GET_DATA_DIR + "/flyem/FIB/block_13layer.txt");
+  ZFlyEmQualityAnalyzer::SubstackRegionCalbration calbr;
+  calbr.setBounding(true, true, false);
+  calbr.setMargin(10, 10, 0);
+  calbr.calibrate(blockArray);
+
+#if 0
+  blockArray.resize(20);
+  blockArray.exportSwc(GET_DATA_DIR + "/test.swc");
+#endif
+  service.loadFace(blockArray);
+
+#if 1
+  service.markBody();
+
+  std::vector<int> orphanBodyArray;
+  orphanBodyArray.push_back(34677);
+  orphanBodyArray.push_back(236315);
+  orphanBodyArray.push_back(66038);
+  orphanBodyArray.push_back(67948);
+  orphanBodyArray.push_back(625684);
+  service.loadFaceOrphanBody(orphanBodyArray);
+
+  service.computeOverlap();
+
+  const std::vector<ZIntPoint> &marker = service.getMarker();
+  for (std::vector<ZIntPoint>::const_iterator iter = marker.begin();
+       iter != marker.end(); ++iter) {
+    std::cout << iter->getX() << " " << iter->getY() << " " << iter->getZ() << std::endl;
+  }
+#endif
+  service.print();
+#endif
+
+#if 0
+  ZDvidReader reader;
+
+  ZFlyEmDataInfo eminfo(FlyEm::DATA_FIB25);
+  reader.open(eminfo.getDvidAddress().c_str(), eminfo.getDvidUuid().c_str(),
+              eminfo.getDvidPort());
+  tic();
+  ZObject3dScan obj = reader.readBody(19985);
+
+  obj.getBoundBox().print();
+
+  std::cout << obj.getVoxelNumber() << std::endl;
+#endif
+
+#if 0
+  ZDvidReader reader;
+  ZFlyEmDataInfo eminfo(FlyEm::DATA_FIB25);
+  reader.open(eminfo.getDvidAddress().c_str(), eminfo.getDvidUuid().c_str(),
+              eminfo.getDvidPort());
+
+  ZString line;
+  FILE *fp = fopen((GET_DATA_DIR + "/face_orphan.txt").c_str(), "r");
+  while(line.readLine(fp)) {
+    std::vector<int> bodyIdArray = line.toIntegerArray();
+    if (!bodyIdArray.empty()) {
+      int bodyId = bodyIdArray[0];
+      ZObject3dScan obj = reader.readBody(bodyId);
+      if (obj.getBoundBox().lastCorner().z() < 2000) {
+        std::cout << bodyId << ": ";
+        obj.getBoundBox().print();
+      }
+    }
+  }
+
+  fclose(fp);
+#endif
+
+#if 0
+  ZFlyEmDataInfo eminfo(FlyEm::DATA_FIB25);
+  ZDvidTarget dvidTarget;
+  dvidTarget.set(
+        eminfo.getDvidAddress(), eminfo.getDvidUuid(), eminfo.getDvidPort());
+  ZDvidReader reader;
+  reader.open(dvidTarget);
+
+  tic();
+  ZObject3dScan obj = reader.readBody(9);
+  //obj.canonize();
+  obj.getBoundBox().print();
+  obj.getMarker().print();
+  ptoc();
+#endif
+
+#if 0
+  FlyEm::Service::FaceOrphanOverlap service;
+
+  ZFlyEmDataInfo eminfo(FlyEm::DATA_FIB25);
+  ZDvidTarget dvidTarget;
+  dvidTarget.set(
+        eminfo.getDvidAddress(), eminfo.getDvidUuid(), eminfo.getDvidPort());
+  service.setDvidTarget(dvidTarget);
+
+  FlyEm::ZIntCuboidArray blockArray;
+  blockArray.loadSubstackList(GET_DATA_DIR + "/flyem/FIB/block_13layer.txt");
+  ZFlyEmQualityAnalyzer::SubstackRegionCalbration calbr;
+  calbr.setBounding(true, true, false);
+  calbr.setMargin(10, 10, 0);
+  calbr.calibrate(blockArray);
+
+#if 0
+  blockArray.resize(20);
+  blockArray.exportSwc(GET_DATA_DIR + "/test.swc");
+#endif
+  service.loadFace(blockArray);
+  service.markBody();
+  service.loadSynapse(GET_DATA_DIR +
+                      "/flyem/FIB/skeletonization/session36/annotations-synapse.json");
+
+
+  std::vector<int> orphanBodyArray;
+
+#if 1
+  ZString line;
+  FILE *fp = fopen((GET_DATA_DIR + "/face_orphan.txt").c_str(), "r");
+  while(line.readLine(fp)) {
+    std::vector<int> bodyIdArray = line.toIntegerArray();
+    if (!bodyIdArray.empty()) {
+      int bodyId = bodyIdArray[0];
+      orphanBodyArray.push_back(bodyId);
+    }
+  }
+
+  fclose(fp);
+#else
+  orphanBodyArray.push_back(34677);
+  orphanBodyArray.push_back(236315);
+  orphanBodyArray.push_back(66038);
+  orphanBodyArray.push_back(67948);
+  orphanBodyArray.push_back(625684);
+#endif
+  service.loadFaceOrphanBody(orphanBodyArray);
+
+  service.computeOverlap();
+
+  const std::vector<ZIntPoint> &marker = service.getMarker();
+  for (std::vector<ZIntPoint>::const_iterator iter = marker.begin();
+       iter != marker.end(); ++iter) {
+    std::cout << iter->getX() << " " << iter->getY() << " " << iter->getZ() << std::endl;
+  }
+
+  ZFlyEmCoordinateConverter converter;
+  converter.setStackSize(3150, 2599, 6500);
+  converter.setVoxelResolution(10, 10, 10);
+  converter.setZStart(1490);
+  converter.setMargin(10);
+
+  service.setCoordinateConverter(converter);
+
+  service.exportJsonFile(GET_DATA_DIR + "/test.json");
+#endif
+
+#if 0
+  Mc_Stack *stack = C_Stack::make(GREY16, 5, 5, 2, 3);
+  C_Stack::setOne(stack);
+  C_Stack::setZero(stack, 3, 2, 1, 3, 2, 2);
+  C_Stack::printValue(stack);
+#endif
+
+#if 0
+  Stack *stack = C_Stack::make(GREY16, 5, 5, 2);
+  C_Stack::setOne(stack);
+  Stack *block = C_Stack::make(GREY16, 2, 2, 5);
+  C_Stack::setZero(block);
+  C_Stack::setBlockValue(stack, block, 1, 1, 0);
+  C_Stack::printValue(stack);
+#endif
+
+#if 0
+  FlyEm::ZSubstackRoi roi;
+  roi.importJsonFile(GET_DATA_DIR + "/flyem/FIB/roi.json");
+
+  ZIntCuboidFaceArray faceArray = roi.getCuboidArray().getSideBorderFace();
+  faceArray.exportSwc(GET_DATA_DIR + "/test.swc");
+#endif
+
+#if 1
+  FlyEm::ZSubstackRoi roi;
+  roi.importJsonFile(GET_DATA_DIR + "/flyem/FIB/roi.json");
+
+  ZIntCuboidFaceArray faceArray = roi.getCuboidArray().getSideBorderFace();
+
+  ZFlyEmDataInfo eminfo(FlyEm::DATA_FIB25);
+  ZDvidTarget dvidTarget;
+  dvidTarget.set(
+        eminfo.getDvidAddress(), eminfo.getDvidUuid(), eminfo.getDvidPort());
+  ZDvidReader reader;
+  reader.open(dvidTarget);
+
+  ZIntSet bodySet;
+  for (ZIntCuboidFaceArray::const_iterator iter = faceArray.begin();
+       iter != faceArray.end(); ++iter) {
+    const ZIntCuboidFace &face = *iter;
+    std::vector<int> bodyIdArray =
+        reader.readBodyId(face.getCornerCoordinates(0),
+                          face.getCornerCoordinates(3));
+    std::cout << bodyIdArray.size() << " ids." << std::endl;
+    bodySet.insert(bodyIdArray.begin(), bodyIdArray.end());
+  }
+
+  std::cout << bodySet.size() << std::endl;
+
+#if 0
+
+  FlyEm::ZSynapseAnnotationArray synapseArray;
+  synapseArray.loadJson(
+        GET_TEST_DATA_DIR +
+        "/flyem/FIB/skeletonization/session34/annotations-synapse.json");
+
+  FlyEm::ZIntCuboidArray blockArray;
+  blockArray.loadSubstackList(GET_DATA_DIR + "/flyem/FIB/block_13layer.txt");
+  ZFlyEmQualityAnalyzer::SubstackRegionCalbration calbr;
+  calbr.setBounding(true, true, false);
+  calbr.setMargin(10, 10, 0);
+  ZFlyEmQualityAnalyzer analyzer;
+  analyzer.setSubstackRegion(blockArray, calbr);
+
+  std::vector<int> allSynapseCount = synapseArray.countSynapse();
+
+  ZFlyEmNeuronArray selectedNeuronArray;
+  for (ZFlyEmNeuronArray::iterator iter = neuronArray.begin();
+       iter != neuronArray.end(); ++iter) {
+    ZFlyEmNeuron &neuron = *iter;
+    std::cout << neuron.getId() << std::endl;
+    if ((size_t) neuron.getId() < allSynapseCount.size()) {
+      if (allSynapseCount[neuron.getId()] > 0) {
+        if (analyzer.touchingSideBoundary(*neuron.getBody())) {
+          selectedNeuronArray.push_back(neuron);
+        }
+        neuron.deprecate(ZFlyEmNeuron::BODY);
+      }
+    }
+  }
+#endif
+
+  //ZFlyEmNeuronExporter exporter;
+  //exporter.exportIdVolume(selectedNeuronArray, GET_TEST_DATA_DIR + "/side_bounary.json");
 #endif
 }

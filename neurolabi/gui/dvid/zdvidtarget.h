@@ -54,6 +54,8 @@ public:
    */
   bool isValid() const;
 
+  void print() const;
+
 private:
   std::string m_address;
   std::string m_uuid;

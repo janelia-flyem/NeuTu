@@ -391,7 +391,8 @@ HEADERS += mainwindow.h \
     flyembodyfilterdialog.h \
     flyem/zskeletonizeservice.h \
     zflyemdvidreader.h \
-    zstroke2darray.h
+    zstroke2darray.h \
+    flyem/zflyemservice.h
 
 FORMS += settingdialog.ui \
     frameinfodialog.ui \
@@ -645,7 +646,8 @@ SOURCES += main.cpp \
     flyembodyfilterdialog.cpp \
     flyem/zskeletonizeservice.cpp \
     zflyemdvidreader.cpp \
-    zstroke2darray.cpp
+    zstroke2darray.cpp \
+    flyem/zflyemservice.cpp
 
 OTHER_FILES += \
     extlib.pri

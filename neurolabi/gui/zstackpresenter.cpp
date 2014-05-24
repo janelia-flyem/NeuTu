@@ -1639,7 +1639,7 @@ void ZStackPresenter::processKeyPressEvent(QKeyEvent *event)
       if (event->modifiers() == Qt::NoModifier) {
         m_stroke.addWidth(1.0);
         buddyView()->paintActiveDecoration();
-      } else if (event->modifiers() == Qt::ControlModifier) {
+      } else if (event->modifiers() == Qt::ShiftModifier) {
         if (estimateActiveStrokeWidth()) {
           buddyView()->paintActiveDecoration();
         }
