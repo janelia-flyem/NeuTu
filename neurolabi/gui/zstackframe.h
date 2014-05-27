@@ -40,6 +40,7 @@ class ZCurve;
 class QUndoCommand;
 class ZStack;
 class ZStackDoc;
+class ZStackDocReader;
 
 class ZStackFrame : public QMdiSubWindow, public ZReportable
 {
@@ -65,9 +66,7 @@ public:
   inline bool hasProject() const { return (m_traceProject != NULL); }
   bool isReadyToSave() const;
   static inline QString defaultTraceProjectFile() { return "project.xml"; }
-
-  void consumeDocument(ZStackDoc *doc);
-  void setDocument(std::tr1::shared_ptr<ZStackDoc> doc);
+  void addDocData(const ZStackDocReader &reader);
 
   inline virtual std::string name() { return "base"; }
 
@@ -241,6 +240,9 @@ protected:
   void resizeEvent(QResizeEvent *event);
   virtual void dragEnterEvent(QDragEnterEvent *event);
   virtual void dropEvent(QDropEvent *event);
+
+  void consumeDocument(ZStackDoc *doc);
+  void setDocument(std::tr1::shared_ptr<ZStackDoc> doc);
 
 private:
   void setView(ZStackView *view);

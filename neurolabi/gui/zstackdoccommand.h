@@ -545,7 +545,7 @@ private:
   QList<ZLocsegChain*> m_oldChainList;
   QList<ZLocsegChain*> m_newChainList;
 };
-
+#if 0
 class AutoTrace : public QUndoCommand
 {
 public:
@@ -563,7 +563,7 @@ private:
   QList<ZObject3d*> m_obj3dList;
   QList<ZPunctum*> m_punctaList;
 };
-
+#endif
 class AutoTraceAxon : public QUndoCommand
 {
 public:

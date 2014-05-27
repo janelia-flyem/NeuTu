@@ -81,5 +81,8 @@
         <file>images/connect_to.png</file>
         <file>images/connect.png</file>
         <file>images/manage_tile.png</file>
+        <file>images/delete.png</file>
+        <file>images/change_focus.png</file>
+        <file>images/insert.png</file>
     </qresource>
 </RCC>

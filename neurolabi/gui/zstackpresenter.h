@@ -335,6 +335,7 @@ private:
   bool m_isStrokeOn;
 
   ZSingleSwcNodeActionActivator m_singleSwcNodeActionActivator;
+  bool m_skipMouseReleaseEvent;
 
 signals:
   void viewModeChanged();

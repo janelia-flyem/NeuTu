@@ -7,6 +7,7 @@
 #include "neutube.h"
 #include "zstackgraph.h"
 #include "tz_locseg_chain.h"
+#include "zprogressable.h"
 
 class ZStack;
 class ZSwcTree;
@@ -47,7 +48,7 @@ private:
   Stack *m_signal;
 };
 
-class ZNeuronTracer
+class ZNeuronTracer : public ZProgressable
 {
 public:
   ZNeuronTracer();
@@ -105,6 +106,25 @@ public:
       const ZPoint &terminalCenter, double terminalRadius,
       const ZPoint &innerCenter, double innerRadius,
       const Stack *stack);
+
+  inline Trace_Workspace* getTraceWorkspace() const {
+    return m_traceWorkspace;
+  }
+
+  inline Connection_Test_Workspace* getConnectionTestWorkspace() const {
+    return m_connWorkspace;
+  }
+
+  void initTraceWorkspace(ZStack *stack);
+  void initConnectionTestWorkspace();
+
+  void updateTraceWorkspace(int traceEffort, bool traceMasked,
+                            double xRes, double yRes, double zRes);
+  void updateConnectionTestWorkspace(
+      double xRes, double yRes, double zRes,
+      char unit, double distThre, bool spTest, bool crossoverTest);
+
+  void loadTraceMask(bool traceMasked);
 
 private:
   //Helper functions

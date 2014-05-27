@@ -87,7 +87,8 @@ private:
       if (++m_drawableIdx >= m_bundle->m_objLists[m_listIdx]->size()) {
         ++m_listIdx;
         m_drawableIdx = 0;
-        while (m_listIdx < m_bundle->m_objLists.size() && m_drawableIdx >= m_bundle->m_objLists[m_listIdx]->size()) {
+        while (m_listIdx < m_bundle->m_objLists.size() &&
+               m_drawableIdx >= m_bundle->m_objLists[m_listIdx]->size()) {
           ++m_listIdx;
         }
         if (m_listIdx == m_bundle->m_objLists.size()) { // move out of list, return first item of node set
@@ -109,14 +110,17 @@ private:
   void setSwcNodeAdaptor()
   {
     if (m_swcNodeIter != m_bundle->m_swcNodes->end()) { // update ZCircle
-      if ((iround(SwcTreeNode::z(*m_swcNodeIter)) == m_bundle->m_sliceIndex) || (m_bundle->m_sliceIndex == -1)) {
+      if ((iround(SwcTreeNode::z(*m_swcNodeIter)) == m_bundle->m_sliceIndex) ||
+          (m_bundle->m_sliceIndex == -1)) {
         m_nodeAdaptor.setColor(255, 255, 0);
       } else {
         m_nodeAdaptor.setColor(164, 164, 0);
       }
       m_nodeAdaptor.set(SwcTreeNode::x(*m_swcNodeIter), SwcTreeNode::y(*m_swcNodeIter),
                         SwcTreeNode::z(*m_swcNodeIter), SwcTreeNode::radius(*m_swcNodeIter));
-      m_nodeAdaptor.setVisualEffect(ZCircle::VE_BOUND_BOX | ZCircle::VE_DASH_PATTERN);
+      m_nodeAdaptor.setVisualEffect(ZCircle::VE_BOUND_BOX |
+                                    ZCircle::VE_DASH_PATTERN |
+                                    ZCircle::VE_NO_FILL);
     }
   }
 

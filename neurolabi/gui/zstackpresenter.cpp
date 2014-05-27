@@ -26,7 +26,8 @@ ZStackPresenter::ZStackPresenter(ZStackFrame *parent) : QObject(parent),
   m_parent(parent),
   //m_zoomRatio(1),
   m_showObject(true),
-  m_isStrokeOn(false)
+  m_isStrokeOn(false),
+  m_skipMouseReleaseEvent(false)
 {
   initInteractiveContext();
 
@@ -35,7 +36,7 @@ ZStackPresenter::ZStackPresenter(ZStackFrame *parent) : QObject(parent),
   m_greyOffset.resize(1);
   m_greyOffset[0] = 0.0;
 
-  m_objStyle = ZStackDrawable::NORMAL;
+  m_objStyle = ZStackDrawable::BOUNDARY;
   m_threshold = -1;
   m_mouseLeftButtonPressed = false;
   m_mouseRightButtonPressed = false;
@@ -71,7 +72,9 @@ void ZStackPresenter::initInteractiveContext()
 
 void ZStackPresenter::createTraceActions()
 {
-  m_traceAction = new QAction(tr("trace"), this);
+  m_traceAction = new QAction(tr("trace"), this->parent());
+  m_traceAction->setStatusTip("Trace an individual branch");
+  m_traceAction->setToolTip("Trace an individual branch");
   connect(m_traceAction, SIGNAL(triggered()), this, SLOT(traceTube()));
 
   m_fitsegAction = new QAction(tr("fit"), this);
@@ -215,6 +218,7 @@ void ZStackPresenter::createSwcActions()
   m_actionMap[ACTION_SMART_EXTEND_SWC_NODE] = m_swcSmartExtendAction;
 #endif
   m_swcDeleteAction = new  QAction(tr("Delete"), this);
+  m_swcDeleteAction->setIcon(QIcon(":/images/delete.png"));
   connect(m_swcDeleteAction, SIGNAL(triggered()),
           this, SLOT(deleteSwcNode()));
 
@@ -227,6 +231,7 @@ void ZStackPresenter::createSwcActions()
           this, SLOT(breakSelectedSwcNode()));
 
   m_swcLockFocusAction = new QAction(tr("Lock Focus"), this);
+  m_swcLockFocusAction->setIcon(QIcon(":/images/change_focus.png"));
   connect(m_swcLockFocusAction, SIGNAL(triggered()),
           this, SLOT(lockSelectedSwcNodeFocus()));
   m_actionMap[ACTION_LOCK_SWC_NODE_FOCUS] = m_swcLockFocusAction;
@@ -264,6 +269,7 @@ void ZStackPresenter::createStrokeActions()
 void ZStackPresenter::createActions()
 {
   m_deleteSelectedAction = new QAction(tr("Delete Selected Object"), this);
+  m_deleteSelectedAction->setIcon(QIcon(":/images/delete.png"));
   connect(m_deleteSelectedAction, SIGNAL(triggered()), this, SLOT(deleteSelected()));
 
 
@@ -444,8 +450,6 @@ void ZStackPresenter::prepareView()
   createDocDependentActions();
   updateLeftMenu(m_traceAction);
   buddyView()->rightMenu()->clear();
-  //addSwcEditFunctionToRightMenu();
-  //createContextMenu();
 }
 
 void ZStackPresenter::updateLeftMenu(QAction *action, bool clear)
@@ -1032,6 +1036,11 @@ ZStackPresenter::processMouseReleaseForStroke(
 void ZStackPresenter::processMouseReleaseEvent(
     QMouseEvent *event, int sliceIndex)
 {
+  if (!(m_mouseLeftButtonPressed || m_mouseRightButtonPressed)) {
+    //m_skipMouseReleaseEvent = false;
+    return;
+  }
+
   QPointF pos;
 
   if (event->button() == Qt::LeftButton) {
@@ -1664,7 +1673,7 @@ void ZStackPresenter::processMouseDoubleClickEvent(QMouseEvent *event,
   m_mouseLeftReleasePosition[0] = event->x();
   m_mouseLeftReleasePosition[1] = event->y();
   m_mouseLeftReleasePosition[2] = sliceIndex;
-  m_mouseLeftButtonPressed = false;
+  m_mouseLeftButtonPressed = true; //for menu popup
 
   QPointF pos = stackPositionFromMouse(LEFT_RELEASE);
 
@@ -1682,25 +1691,6 @@ void ZStackPresenter::processMouseDoubleClickEvent(QMouseEvent *event,
 
   if (!interactiveContext().isTraceModeOff()) {
     if (interactiveContext().isProjectView()) {
-
-        /*
-      }
-
-      int id = buddyDocument()->pickLocsegChainId(pos.x(), pos.y(), -1);
-
-      if (id >= 0) {
-        int found = buddyDocument()->
-                    selectLocsegChain(id, pos.x(), pos.y(), -1, false);
-        if (found) {
-          buddyView()->setSliceIndex(found - 1);
-          //m_mode = NORMAL_MODE;
-          interactiveContext().setViewMode(ZInteractiveContext::VIEW_NORMAL);
-          emit(viewModeChanged());
-          //updateView();
-        }
-        */
-      //} else {
-
       if (buddyDocument()->hasStackData()) {
         int sliceIndex =
             buddyDocument()->maxIntesityDepth(pos.x(), pos.y());

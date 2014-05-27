@@ -80,3 +80,13 @@ void DiagnosisDialog::scrollToBottom()
   ui->infoTextBrowser->verticalScrollBar()->setValue(
         ui->infoTextBrowser->verticalScrollBar()->maximum());
 }
+
+void DiagnosisDialog::setVideoCardInfo(const QString &str)
+{
+  ui->videoCardInfoTextEdit->setPlainText(str);
+}
+
+void DiagnosisDialog::setVideoCardInfo(const QStringList &info)
+{
+  setVideoCardInfo(info.join("\n"));
+}

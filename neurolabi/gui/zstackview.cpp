@@ -942,8 +942,12 @@ void ZStackView::takeScreenshot(const QString &filename)
 {
   QImageWriter writer(filename);
   writer.setCompression(1);
-  const QRect& viewPort = m_imageWidget->viewPort();
-  if(!writer.write(m_image->copy(viewPort))) {
+
+  QImage image(m_imageWidget->projectSize(), QImage::Format_ARGB32);
+  m_imageWidget->render(&image);
+  //const QRect& viewPort = m_imageWidget->viewPort();
+  //if(!writer.write(m_image->copy(viewPort))) {
+  if(!writer.write(image)) {
     LERROR() << writer.errorString();
   } else {
     LINFO() << "wrote screenshot:" << filename;

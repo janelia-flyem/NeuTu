@@ -70,6 +70,7 @@ public: /* frame operation */
 signals:
   void dvidRequestCanceled();
   void progressDone();
+  void docReaderReady(ZStackDocReader*);
 
 public slots:
   void addStackFrame(ZStackFrame *frame, bool isReady = true);
@@ -89,19 +90,25 @@ public slots:
   ZStackFrame* createStackFrame(
       Stack *stack,NeuTube::Document::ETag tag = NeuTube::Document::NORMAL,
       ZStackFrame *parentFrame = NULL);
-
+  /*
   ZStackFrame* createStackFrame(
       ZStackDoc *doc,NeuTube::Document::ETag tag,
       ZStackFrame *parentFrame = NULL);
 
+
   ZStackFrame* createStackFrame(
       ZStackDoc *doc, ZStackFrame *parentFrame = NULL);
+*/
+  ZStackFrame* createStackFrame(
+      ZStackDocReader *reader, ZStackFrame *parentFrame = NULL);
 
   void showStackFrame(
       const QStringList &fileList, bool opening3DWindow = false);
   void createDvidFrame();
 
   void cancelDvidRequest();
+
+  void createStackFrameFromDocReader(ZStackDocReader *reader);
 
 private:
   Ui::MainWindow *m_ui;
@@ -130,7 +137,7 @@ protected:
   QString getDirectory(const QString &caption);
   void createActionMap();
 
-  ZStackDoc::Reader* openFileFunc(const QString &filePath);
+  ZStackDocReader* openFileFunc(const QString &filePath);
 
 private slots:
   // slots for 'File' menu
@@ -144,7 +151,7 @@ private slots:
   void on_actionAutoMerge_triggered();
   void on_actionLoad_from_a_file_triggered();
   void on_actionSave_As_triggered();
-  void on_actionFrom_SWC_triggered();
+  //void on_actionFrom_SWC_triggered();
   void on_actionAdd_Reference_triggered();
   void on_actionLoad_triggered();
   void on_actionSave_triggered();
@@ -437,12 +444,12 @@ private:
   void report(const std::string &title, const std::string &msg,
               ZMessageReporter::EMessageType msgType);
 
-  ZStackDoc::Reader* hotSpotDemo(int bodyId, const QString &dvidAddress,
+  ZStackDocReader* hotSpotDemo(int bodyId, const QString &dvidAddress,
                            const QString &dvidUuid);
   /*!
    * \brief Hotspot demo for false split
    */
-  ZStackDoc::Reader *hotSpotDemoFs(int bodyId, const QString &dvidAddress,
+  ZStackDocReader *hotSpotDemoFs(int bodyId, const QString &dvidAddress,
                            const QString &dvidUuid);
 
   ZStackDoc* importHdf5Body(int bodyId, const QString &hdf5Path);
@@ -450,10 +457,13 @@ private:
                              const QString &hdf5Path,
                              const std::vector<int> &downsampleInterval);
 
-  ZStackDoc::Reader* readDvidGrayScale(const QString &dvidAddress,
+  ZStackDocReader* readDvidGrayScale(const QString &dvidAddress,
                                        const QString &dvidUuid,
                                        int x, int y, int z,
                                        int width, int height, int depth);
+
+  void autoTrace(ZStackFrame *frame);
+
 private:
   QMdiArea *mdiArea;
 
@@ -597,6 +607,8 @@ private:
 
   //FlyEmNeuronThumbnailDialog *m_thumbnailDlg;
   QFileDialog::Options m_fileDialogOption;
+
+  //ZStackDocReader *m_docReader;
 };
 
 #endif // MAINWINDOW_H

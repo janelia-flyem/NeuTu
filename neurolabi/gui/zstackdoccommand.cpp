@@ -1381,7 +1381,7 @@ void ZStackDocCommand::TubeEdit::Trace::undo()
     m_doc->notifyChainModified();
   }
 }
-
+#if 0
 ZStackDocCommand::TubeEdit::AutoTrace::AutoTrace(ZStackDoc *doc, QUndoCommand *parent)
   : QUndoCommand(parent), m_doc(doc)
 {
@@ -1462,7 +1462,9 @@ void ZStackDocCommand::TubeEdit::AutoTrace::undo()
   m_obj3dList = obj3dList;
   m_punctaList = punctaList;
 }
+#endif
 
+#if 0
 void ZStackDocCommand::TubeEdit::AutoTrace::redo()
 {
   QList<ZLocsegChain*> chainList = m_doc->getChainList();
@@ -1517,7 +1519,7 @@ void ZStackDocCommand::TubeEdit::AutoTrace::redo()
   m_obj3dList = obj3dList;
   m_punctaList = punctaList;
 }
-
+#endif
 ZStackDocCommand::TubeEdit::AutoTraceAxon::AutoTraceAxon(
     ZStackDoc *doc, QUndoCommand *parent)
   :QUndoCommand(parent), m_doc(doc)

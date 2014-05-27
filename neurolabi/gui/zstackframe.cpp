@@ -49,6 +49,7 @@ ZStackFrame::ZStackFrame(QWidget *parent, bool preparingModel) :
 
   //m_presenter = new ZStackPresenter(this);
   //m_view = new ZStackView(this);
+  qDebug() << m_doc.get();
   m_presenter = NULL;
   m_view = NULL;
   if (preparingModel) {
@@ -92,12 +93,39 @@ void ZStackFrame::createDocument()
 
 void ZStackFrame::createPresenter()
 {
-  m_presenter = new ZStackPresenter(this);
+  if (m_presenter == NULL) {
+    m_presenter = new ZStackPresenter(this);
+  }
 }
 
 void ZStackFrame::createView()
 {
-  m_view = new ZStackView(this);
+  if (m_view == NULL) {
+    m_view = new ZStackView(this);
+  }
+}
+
+void ZStackFrame::addDocData(const ZStackDocReader &reader)
+{
+  if (m_doc == NULL) {
+    createDocument();
+  }
+  m_doc->addData(reader);
+
+  m_doc->updateTraceWorkspace(traceEffort(), traceMasked(),
+                              xResolution(), yResolution(), zResolution());
+  m_doc->updateConnectionTestWorkspace(xResolution(), yResolution(),
+                                       zResolution(), unit(),
+                                       reconstructDistThre(),
+                                       reconstructSpTest(),
+                                       crossoverTest());
+
+  if (m_doc->hasStackData()) {
+    m_presenter->optimizeStackBc();
+    m_view->reset();
+  }
+
+  setWindowTitle(m_doc->stackSourcePath().c_str());
 }
 
 void ZStackFrame::consumeDocument(ZStackDoc *doc)
