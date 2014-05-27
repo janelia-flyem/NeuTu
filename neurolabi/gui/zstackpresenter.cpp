@@ -236,6 +236,12 @@ void ZStackPresenter::createSwcActions()
           this, SLOT(lockSelectedSwcNodeFocus()));
   m_actionMap[ACTION_LOCK_SWC_NODE_FOCUS] = m_swcLockFocusAction;
 
+  m_swcChangeFocusAction = new QAction(tr("Move to Current Plane"), this);
+  m_swcChangeFocusAction->setIcon(QIcon(":/images/change_focus.png"));
+  connect(m_swcChangeFocusAction, SIGNAL(triggered()),
+          this, SLOT(changeSelectedSwcNodeFocus()));
+  m_actionMap[ACTION_CHANGE_SWC_NODE_FOCUS] = m_swcChangeFocusAction;
+
   m_swcEstimateRadiusAction = new QAction(tr("Estimate Radius"), this);
   connect(m_swcEstimateRadiusAction, SIGNAL(triggered()),
           this, SLOT(estimateSelectedSwcRadius()));
@@ -428,7 +434,8 @@ void ZStackPresenter::addSwcEditFunctionToRightMenu()
       updateRightMenu(m_swcBreakSelectedAction, false);
     }
     updateRightMenu(m_swcDeleteAction, false);
-    updateRightMenu(m_swcLockFocusAction, false);
+    //updateRightMenu(m_swcLockFocusAction, false);
+    updateRightMenu(m_swcChangeFocusAction, false);
     updateRightMenu(m_swcEstimateRadiusAction, false);
     //updateRightMenu(m_swcSelectAllNodeAction, false);
   } else {
@@ -1382,6 +1389,9 @@ bool ZStackPresenter::processKeyPressEventForSwc(QKeyEvent *event)
   case Qt::Key_I:
     buddyDocument()->executeInsertSwcNode();
     break;
+  case Qt::Key_F:
+    changeSelectedSwcNodeFocus();
+    break;
   default:
     break;
   }
@@ -2210,6 +2220,11 @@ void ZStackPresenter::lockSelectedSwcNodeFocus()
         ZInteractiveContext::SWC_EDIT_LOCK_FOCUS);
   buddyDocument()->executeSwcNodeChangeZCommand(buddyView()->sliceIndex());
   updateCursor();
+}
+
+void ZStackPresenter::changeSelectedSwcNodeFocus()
+{
+  buddyDocument()->executeSwcNodeChangeZCommand(buddyView()->sliceIndex());
 }
 
 void ZStackPresenter::estimateSelectedSwcRadius()

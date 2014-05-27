@@ -1879,23 +1879,28 @@ bool ZStackDocCommand::ObjectEdit::MoveSelected::mergeWith(const QUndoCommand *o
   if (other->id() != id())
     return false;
 
-  const MoveSelected *oth = static_cast<const MoveSelected *>(other);
-  if (m_punctaList != oth->m_punctaList ||
-      m_swcNodeList != oth->m_swcNodeList ||
-      m_swcList != oth->m_swcList ||
-      m_swcScaleX != oth->m_swcScaleX ||
-      m_swcScaleY != oth->m_swcScaleY ||
-      m_swcScaleZ != oth->m_swcScaleZ ||
-      m_punctaScaleX != oth->m_punctaScaleX ||
-      m_punctaScaleY != oth->m_punctaScaleY ||
-      m_punctaScaleZ != oth->m_punctaScaleZ) {
-    return false;
+  const MoveSelected *oth = dynamic_cast<const MoveSelected *>(other);
+  if (oth != NULL) {
+    if (m_punctaList != oth->m_punctaList ||
+        m_swcNodeList != oth->m_swcNodeList ||
+        m_swcList != oth->m_swcList ||
+        m_swcScaleX != oth->m_swcScaleX ||
+        m_swcScaleY != oth->m_swcScaleY ||
+        m_swcScaleZ != oth->m_swcScaleZ ||
+        m_punctaScaleX != oth->m_punctaScaleX ||
+        m_punctaScaleY != oth->m_punctaScaleY ||
+        m_punctaScaleZ != oth->m_punctaScaleZ) {
+      return false;
+    }
+
+    m_x += oth->m_x;
+    m_y += oth->m_y;
+    m_z += oth->m_z;
+
+    return true;
   }
 
-  m_x += oth->m_x;
-  m_y += oth->m_y;
-  m_z += oth->m_z;
-  return true;
+  return false;
 }
 
 void ZStackDocCommand::ObjectEdit::MoveSelected::undo()

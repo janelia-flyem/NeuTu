@@ -50,7 +50,8 @@ public:
   enum EActionItem {
     ACTION_EXTEND_SWC_NODE, ACTION_SMART_EXTEND_SWC_NODE,
     ACTION_CONNECT_TO_SWC_NODE, ACTION_ADD_SWC_NODE,
-    ACTION_LOCK_SWC_NODE_FOCUS, ACTION_ESTIMATE_SWC_NODE_RADIUS,
+    ACTION_LOCK_SWC_NODE_FOCUS, ACTION_CHANGE_SWC_NODE_FOCUS,
+    ACTION_ESTIMATE_SWC_NODE_RADIUS,
     ACTION_PAINT_STROKE, ACTION_ERASE_STROKE
   };
 
@@ -185,6 +186,7 @@ public slots:
   void exitStrokeEdit();
   void deleteSwcNode();
   void lockSelectedSwcNodeFocus();
+  void changeSelectedSwcNodeFocus();
   void processSliceChangeEvent(int z);
   void estimateSelectedSwcRadius();
   void connectSelectedSwcNode();
@@ -301,6 +303,7 @@ private:
   QAction *m_swcConnectSelectedAction;
   QAction *m_swcSelectConnectionAction;
   QAction *m_swcLockFocusAction;
+  QAction *m_swcChangeFocusAction;
   QAction *m_swcEstimateRadiusAction;
   //QAction *m_swcSelectAllNodeAction;
   QAction *m_swcBreakSelectedAction;

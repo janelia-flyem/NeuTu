@@ -133,19 +133,21 @@ bool ZFlyEmDataBundle::loadDvid(const ZDvidFilter &dvidFilter)
     m_sourceDimension[i] = stackSize[i];
   }
 
-  std::vector<int> bodyIdArray = reader.readBodyId(dvidFilter.getMinBodySize(),
-                                                   dvidFilter.getMaxBodySize());
+  std::set<int> bodySet = reader.readBodyId(dvidFilter.getMinBodySize(),
+                                                dvidFilter.getMaxBodySize());
 
-  m_neuronArray.resize(bodyIdArray.size());
+  m_neuronArray.resize(bodySet.size());
   size_t realSize = 0;
 
   ZFlyEmDvidReader fdReader;
   fdReader.open(dvidFilter.getDvidTarget());
-  for (size_t i = 0; i < bodyIdArray.size(); ++i) {
-    int bodyId = bodyIdArray[i];
+  size_t i = 0;
+  for (std::set<int>::const_iterator iter = bodySet.begin();
+       iter != bodySet.end(); ++iter, ++i) {
+    int bodyId = *iter;
     if (bodyId > 0 && !dvidFilter.isExcluded(bodyId)) {
       ZFlyEmNeuron &neuron = m_neuronArray[realSize++];
-      neuron.setId(bodyIdArray[i]);
+      neuron.setId(bodyId);
       neuron.setModelPath(m_source);
       neuron.setVolumePath(m_source);
       neuron.setResolution(m_swcResolution);

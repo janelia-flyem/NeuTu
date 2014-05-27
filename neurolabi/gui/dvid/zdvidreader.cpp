@@ -191,7 +191,7 @@ QString ZDvidReader::readInfo(const QString &dataType)
   return info;
 }
 
-std::vector<int> ZDvidReader::readBodyId(
+std::set<int> ZDvidReader::readBodyId(
     const ZIntPoint &firstCorner, const ZIntPoint &lastCorner)
 {
   return readBodyId(firstCorner.getX(), firstCorner.getY(), firstCorner.getZ(),
@@ -200,9 +200,26 @@ std::vector<int> ZDvidReader::readBodyId(
                     lastCorner.getZ() - firstCorner.getZ() + 1);
 }
 
-std::vector<int> ZDvidReader::readBodyId(
+std::set<int> ZDvidReader::readBodyId(
     int x0, int y0, int z0, int width, int height, int depth)
 {
+  ZStack *stack = readBodyLabel(x0, y0, z0, width, height, depth);
+
+  std::set<int> bodySet;
+
+  size_t voxelNumber = stack->getVoxelNumber();
+
+  FlyEm::TBodyLabel *labelArray =
+      (FlyEm::TBodyLabel*) (stack->array8());
+  for (size_t i = 0; i < voxelNumber; ++i) {
+    bodySet.insert((int) labelArray[i]);
+  }
+
+  delete stack;
+
+  return bodySet;
+
+#if 0
   ZDvidInfo dvidInfo;
   dvidInfo.setFromJsonString(readInfo("superpixels").toStdString());
 
@@ -249,10 +266,13 @@ std::vector<int> ZDvidReader::readBodyId(
   }
 
   return idArray;
+#endif
 }
 
-std::vector<int> ZDvidReader::readBodyId(size_t minSize, size_t maxSize)
+std::set<int> ZDvidReader::readBodyId(size_t minSize, size_t maxSize)
 {
+  std::set<int> bodySet;
+
   std::vector<int> idArray;
 
   if (minSize <= maxSize) {
@@ -272,15 +292,16 @@ std::vector<int> ZDvidReader::readBodyId(size_t minSize, size_t maxSize)
 
     if (infoArray.size() > 0) {
       ZJsonArray array;
-      qDebug() << infoArray[0];
+      //qDebug() << infoArray[0];
       array.decode(infoArray[0].toStdString());
       idArray = array.toIntegerArray();
+      bodySet.insert(idArray.begin(), idArray.end());
     }
 
     dvidBuffer->clearInfoArray();
   }
 
-  return idArray;
+  return bodySet;
 }
 
 QByteArray ZDvidReader::readKeyValue(const QString &dataName, const QString &key)

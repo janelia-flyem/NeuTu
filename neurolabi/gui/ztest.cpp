@@ -11631,6 +11631,19 @@ void ZTest::test(MainWindow *host)
   faceArray.exportSwc(GET_DATA_DIR + "/test.swc");
 #endif
 
+#if 0
+  ZFlyEmNeuron neuron;
+  neuron.setId(117);
+  ZFlyEmDataInfo eminfo(FlyEm::DATA_FIB25);
+  ZDvidTarget dvidTarget;
+  dvidTarget.set(eminfo.getDvidAddress(), eminfo.getDvidUuid(),
+                 eminfo.getDvidPort());
+
+  neuron.setVolumePath(dvidTarget.getBodyPath(117));
+  ZObject3dScan *body = neuron.getBody();
+  std::cout << body->getVoxelNumber() << std::endl;
+#endif
+
 #if 1
   FlyEm::ZSubstackRoi roi;
   roi.importJsonFile(GET_DATA_DIR + "/flyem/FIB/roi.json");
@@ -11644,18 +11657,43 @@ void ZTest::test(MainWindow *host)
   ZDvidReader reader;
   reader.open(dvidTarget);
 
-  ZIntSet bodySet;
+  ZIntSet sideBodySet;
   for (ZIntCuboidFaceArray::const_iterator iter = faceArray.begin();
        iter != faceArray.end(); ++iter) {
     const ZIntCuboidFace &face = *iter;
-    std::vector<int> bodyIdArray =
+    std::set<int> bodySet =
         reader.readBodyId(face.getCornerCoordinates(0),
                           face.getCornerCoordinates(3));
-    std::cout << bodyIdArray.size() << " ids." << std::endl;
-    bodySet.insert(bodyIdArray.begin(), bodyIdArray.end());
+    std::cout << bodySet.size() << " ids." << std::endl;
+    sideBodySet.insert(bodySet.begin(), bodySet.end());
   }
+  std::cout << sideBodySet.size() << std::endl;
 
-  std::cout << bodySet.size() << std::endl;
+  ZIntSet largeBodySet = reader.readBodyId(100000, INT32_MAX);
+  std::cout << largeBodySet.size() << std::endl;
+
+  sideBodySet.intersect(largeBodySet);
+  std::cout << sideBodySet.size() << std::endl;
+
+  FlyEm::ZSynapseAnnotationArray synapseArray;
+  synapseArray.loadJson(
+        GET_TEST_DATA_DIR +
+        "/flyem/FIB/skeletonization/session36/annotations-synapse.json");
+  std::vector<int> allSynapseCount = synapseArray.countSynapse();
+  ZFlyEmNeuronArray selectedNeuronArray;
+  for (ZIntSet::const_iterator iter = sideBodySet.begin();
+       iter != sideBodySet.end(); ++iter) {
+    int bodyId = *iter;
+    std::cout << bodyId << std::endl;
+    if ((size_t) bodyId < allSynapseCount.size()) {
+      if (allSynapseCount[bodyId] > 0) {
+        ZFlyEmNeuron neuron;
+        neuron.setVolumePath(dvidTarget.getBodyPath(bodyId));
+        neuron.setId(bodyId);
+        selectedNeuronArray.push_back(neuron);
+      }
+    }
+  }
 
 #if 0
 
@@ -11690,7 +11728,32 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
-  //ZFlyEmNeuronExporter exporter;
-  //exporter.exportIdVolume(selectedNeuronArray, GET_TEST_DATA_DIR + "/side_bounary.json");
+  ZFlyEmNeuronExporter exporter;
+  exporter.exportIdVolume(selectedNeuronArray,
+                          GET_TEST_DATA_DIR + "/side_bounary.json");
+#endif
+
+#if 0
+  ZIntSet set1;
+  set1.insert(1);
+  set1.insert(2);
+  set1.insert(3);
+
+  /*
+  ZIntSet set2;
+  set2.insert(1);
+  set2.insert(2);
+  set1.intersect(set2);
+  */
+
+  std::vector<int> set2;
+  set2.push_back(1);
+  set2.push_back(2);
+  set2.push_back(2);
+  set2.push_back(4);
+  set2.push_back(5);
+  set1.intersect(set2);
+
+  set1.print();
 #endif
 }

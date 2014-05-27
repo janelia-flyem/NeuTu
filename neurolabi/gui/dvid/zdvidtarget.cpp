@@ -18,6 +18,8 @@ void ZDvidTarget::set(
 {
   if (ZString(address).startsWith("http://")) {
     m_address = address.substr(7);
+  } else if (ZString(address).startsWith("//")) {
+    m_address = address.substr(2);
   } else {
     m_address = address;
   }
@@ -62,4 +64,9 @@ std::string ZDvidTarget::getAddressWithPort() const
 void ZDvidTarget::print() const
 {
   std::cout << getSourceString() << std::endl;
+}
+
+std::string ZDvidTarget::getBodyPath(int bodyId) const
+{
+  return getSourceString() + ":" + ZString::num2str(bodyId);
 }

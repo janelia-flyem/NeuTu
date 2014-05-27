@@ -385,7 +385,7 @@ void Z3DWindow::createActions()
         SLOT(deleteSelectedSwcNode()));
   }
 
-  m_locateSwcNodeIn2DAction = new QAction("Locate node in 2D View", this);
+  m_locateSwcNodeIn2DAction = new QAction("Locate node(s) in 2D", this);
   connect(m_locateSwcNodeIn2DAction, SIGNAL(triggered()), this,
           SLOT(locateSwcNodeIn2DView()));
 
@@ -394,7 +394,8 @@ void Z3DWindow::createActions()
   connect(m_toogleAddSwcNodeModeAction, SIGNAL(toggled(bool)), this,
           SLOT(toogleAddSwcNodeMode(bool)));
 
-  m_toogleMoveSelectedObjectsAction = new QAction("Shift+Mouse to move selected objects", this);
+  m_toogleMoveSelectedObjectsAction =
+      new QAction("Move selected objects (Shift+Mouse)", this);
   m_toogleMoveSelectedObjectsAction->setCheckable(true);
   connect(m_toogleMoveSelectedObjectsAction, SIGNAL(toggled(bool)), this,
           SLOT(toogleMoveSelectedObjectsMode(bool)));

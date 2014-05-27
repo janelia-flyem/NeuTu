@@ -48,6 +48,15 @@ public:
   std::string getSourceString() const;
 
   /*!
+   * \brief getBodyPath
+   *
+   * The functions does not check if a body exists.
+   *
+   * \return The path of a certain body.
+   */
+  std::string getBodyPath(int bodyId) const;
+
+  /*!
    * \brief Test if the target is valid
    *
    * \return true iff the target is valid.

@@ -1173,7 +1173,7 @@
     <string>Split Region</string>
    </property>
    <property name="shortcut">
-    <string>Shift+S</string>
+    <string>Shift+Space</string>
    </property>
   </action>
   <action name="actionLoad_Grayscale">

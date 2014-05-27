@@ -1,7 +1,9 @@
 #ifndef ZINTARRAY_H
 #define ZINTARRAY_H
 
-class ZIntArray
+#include <vector>
+
+class ZIntArray : public std::vector<int>
 {
 public:
   ZIntArray();

@@ -1449,16 +1449,7 @@ void Z3DSwcFilter::selectSwc(QMouseEvent *e, int w, int h)
           */
           emit addNewSwcTreeNode(pos.x, pos.y, pos.z, SwcTreeNode::radius(tn));
         }
-      } /*else if (m_interactionMode == ExtendSwcNode && m_selectedSwcTreeNodes->size() == 1) {  // hit nothing, extend node
-        Swc_Tree_Node *tn = *(m_selectedSwcTreeNodes->begin());
-        glm::dvec3 v1,v2;
-        get3DRayUnderScreenPoint(v1, v2, e->x(), e->y(), w, h);
-        glm::dvec3 nodePos(tn->node.x * getCoordScales().x,
-                           tn->node.y * getCoordScales().y,
-                           tn->node.z * getCoordScales().z);
-        glm::dvec3 pos = projectPointOnRay(nodePos, v1, v2) / glm::dvec3(getCoordScales());
-        emit extendSwcTreeNode(pos.x, pos.y, pos.z);
-      } */
+      }
     }
     m_pressedSwc = NULL;
     m_pressedSwcTreeNode = NULL;

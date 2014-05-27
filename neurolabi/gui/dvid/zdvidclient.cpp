@@ -409,7 +409,7 @@ void ZDvidClient::finishRequest(QNetworkReply::NetworkError error)
     }
 
     if (!m_infoBuffer.isEmpty()) {
-      qDebug() << m_infoBuffer;
+      //qDebug() << m_infoBuffer;
       m_dataInfo = QString(m_infoBuffer);
       infoRetrievalDone = true;
     }

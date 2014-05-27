@@ -32,11 +32,11 @@ public:
   ZStack* readBodyLabel(
       int x0, int y0, int z0, int width, int height, int depth);
   QString readInfo(const QString &dataType);
-  std::vector<int> readBodyId(
+  std::set<int> readBodyId(
       int x0, int y0, int z0, int width, int height, int depth);
-  std::vector<int> readBodyId(const ZIntPoint &firstCorner,
+  std::set<int> readBodyId(const ZIntPoint &firstCorner,
                               const ZIntPoint &lastCorner);
-  std::vector<int> readBodyId(size_t minSize, size_t maxSize);
+  std::set<int> readBodyId(size_t minSize, size_t maxSize);
   QByteArray readKeyValue(const QString &dataName, const QString &key);
 
 signals:

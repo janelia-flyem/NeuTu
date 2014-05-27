@@ -5558,7 +5558,7 @@ ZStackDocReader *MainWindow::hotSpotDemoFs(
   for (ZSwcTreeNodeArray::const_iterator iter = nodeArray.begin();
        iter != nodeArray.end(); ++iter) {
     ZPoint center = SwcTreeNode::pos(*iter);
-    std::vector<int> bodyId = reader.readBodyId(
+    std::set<int> bodyId = reader.readBodyId(
           center.x(), center.y(), center.z(),
           margin, margin, margin);
     std::cout << bodyId.size() << " neighbor bodies" << std::endl;
@@ -5938,20 +5938,22 @@ void MainWindow::on_actionSubmit_Skeletonize_triggered()
 
 void MainWindow::on_actionSplit_Region_triggered()
 {
-  ZStackFrame *frame = currentStackFrame();
-  if (frame != NULL) {
-    m_progress->setLabelText("Splitting ...");
-    m_progress->setRange(0, 0);
-    m_progress->open();
-    frame->runSeededWatershed();
-/*
+  if (GET_APPLICATION_NAME == "FlyEM") {
+    ZStackFrame *frame = currentStackFrame();
+    if (frame != NULL) {
+      m_progress->setLabelText("Splitting ...");
+      m_progress->setRange(0, 0);
+      m_progress->open();
+      frame->runSeededWatershed();
+      /*
     if (stack != NULL) {
       ZStackFrame *frame = createStackFrame(stack);
       addStackFrame(frame);
       presentStackFrame(frame);
     }
 */
-    m_progress->reset();
+      m_progress->reset();
+    }
   }
 }
 
