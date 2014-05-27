@@ -70,12 +70,14 @@ public: /* frame operation */
 signals:
   void dvidRequestCanceled();
   void progressDone();
+  void progressAdvanced();
   void docReaderReady(ZStackDocReader*);
 
 public slots:
   void addStackFrame(ZStackFrame *frame, bool isReady = true);
   void presentStackFrame(ZStackFrame *frame);
   void openFile(const QString &fileName);
+  void advanceProgress();
 
   void updateAction();
   void updateMenu();

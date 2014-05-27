@@ -11669,7 +11669,7 @@ void ZTest::test(MainWindow *host)
   }
   std::cout << sideBodySet.size() << std::endl;
 
-  ZIntSet largeBodySet = reader.readBodyId(100000, INT32_MAX);
+  ZIntSet largeBodySet = reader.readBodyId(100000, MAX_INT32);
   std::cout << largeBodySet.size() << std::endl;
 
   sideBodySet.intersect(largeBodySet);

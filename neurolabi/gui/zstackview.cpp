@@ -111,7 +111,7 @@ ZStackView::ZStackView(ZStackFrame *parent) : QWidget(parent)
   //m_scrollEnabled = false;
   //updateScrollControl();
 
-  m_imageWidget->setFocus();
+  //m_imageWidget->setFocus();
   connectSignalSlot();
 
   setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
