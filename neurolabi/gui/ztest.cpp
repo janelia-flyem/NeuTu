@@ -11623,12 +11623,12 @@ void ZTest::test(MainWindow *host)
   C_Stack::printValue(stack);
 #endif
 
-#if 0
+#if 1
   FlyEm::ZSubstackRoi roi;
   roi.importJsonFile(GET_DATA_DIR + "/flyem/FIB/roi.json");
 
   ZIntCuboidFaceArray faceArray = roi.getCuboidArray().getSideBorderFace();
-  faceArray.exportSwc(GET_DATA_DIR + "/test.swc");
+  faceArray.exportSwc(GET_DATA_DIR + "/flyem/FIB/block_13layer_chop.swc");
 #endif
 
 #if 0
@@ -11644,7 +11644,7 @@ void ZTest::test(MainWindow *host)
   std::cout << body->getVoxelNumber() << std::endl;
 #endif
 
-#if 1
+#if 0
   FlyEm::ZSubstackRoi roi;
   roi.importJsonFile(GET_DATA_DIR + "/flyem/FIB/roi.json");
 
@@ -11669,7 +11669,7 @@ void ZTest::test(MainWindow *host)
   }
   std::cout << sideBodySet.size() << std::endl;
 
-  ZIntSet largeBodySet = reader.readBodyId(100000, INT32_MAX);
+  ZIntSet largeBodySet = reader.readBodyId(100000, MAX_INT32);
   std::cout << largeBodySet.size() << std::endl;
 
   sideBodySet.intersect(largeBodySet);

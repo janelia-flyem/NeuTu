@@ -215,6 +215,7 @@ MainWindow::MainWindow(QWidget *parent) :
   m_progress->setCancelButton(0);
 
   connect(this, SIGNAL(progressDone()), m_progress, SLOT(reset()));
+  connect(this, SIGNAL(progressAdvanced()), this, SLOT(advanceProgress()));
 
   m_bcDlg = new BcAdjustDialog(this);
   connect(m_bcDlg, SIGNAL(valueChanged()), this, SLOT(bcAdjust()));
@@ -1250,6 +1251,11 @@ void MainWindow::presentStackFrame(ZStackFrame *frame)
   }
 }
 
+void MainWindow::advanceProgress()
+{
+  m_progress->setValue(m_progress->value() + 1);
+}
+
 ZStackDocReader* MainWindow::openFileFunc(const QString &fileName)
 {
   ZStackDocReader *reader = NULL;
@@ -1257,12 +1263,12 @@ ZStackDocReader* MainWindow::openFileFunc(const QString &fileName)
 
   if (ZFileType::isNeutubeOpenable(fileType)) {
     reader = new ZStackDocReader;
-    m_progress->setValue(m_progress->value() + 1);
+    emit progressAdvanced();
     if (reader->readFile(fileName) == false) {
       delete reader;
       reader = NULL;
     }
-    m_progress->setValue(m_progress->value() + 1);
+    emit progressAdvanced();
   }
 
   emit docReaderReady(reader);
@@ -6051,9 +6057,8 @@ void MainWindow::createStackFrameFromDocReader(ZStackDocReader *reader)
       }
       addStackFrame(frame);
       presentStackFrame(frame);
-      m_progress->reset();
+      //QApplication::processEvents();
     } else {
-      m_progress->reset();
       frame->open3DWindow(this);
       delete frame;
     }
@@ -6061,9 +6066,8 @@ void MainWindow::createStackFrameFromDocReader(ZStackDocReader *reader)
       setCurrentFile(fileName);
     }
   } else {
-    m_progress->reset();
     reportFileOpenProblem(fileName);
   }
 
-  m_progress->reset();
+  emit progressDone();
 }

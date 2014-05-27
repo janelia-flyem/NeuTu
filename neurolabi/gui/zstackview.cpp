@@ -111,7 +111,8 @@ ZStackView::ZStackView(ZStackFrame *parent) : QWidget(parent)
   //m_scrollEnabled = false;
   //updateScrollControl();
 
-  //m_imageWidget->setFocus(); //Cause problem of creating subwindows
+  //m_imageWidget->setFocus(); //Cause problem in creating subwindows
+
   connectSignalSlot();
 
   setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);

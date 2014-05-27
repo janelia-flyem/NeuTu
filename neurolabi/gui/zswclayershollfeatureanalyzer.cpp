@@ -28,7 +28,8 @@ std::vector<double> ZSwcLayerShollFeatureAnalyzer::computeFeature(
 
   Swc_Tree_Node *iter = tree.begin();
 
-  while (SwcTreeNode::isRoot(iter)) {
+  //while (SwcTreeNode::isRoot(iter)) {
+  while (SwcTreeNode::isVirtual(iter)) {
     iter = tree.next();
   }
 

@@ -93,15 +93,29 @@ if not os.path.exists('body_maps'):
     subprocess.call([os.path.join(neutubeDir, 'neurolabi/shell/flyem_prepare_imat'), 'input', '.'])
     print 'Done.'
 
-if not config.has_key("body_size"):
-    print 'Skip body generation because no body size is specified. Done.'
+if not config.has_key("body_partition"):
+    print 'Skip body generation because no body partition is specified. Done.'
     sys.exit(1)
 
-bodySizeList = config['body_size']
-for bodyRange in bodySizeList:
+bodyPartition = config['body_partition']
+bodySizeList = [None] * len(bodyPartition)
+bodySkeletonizeOn = [True] * len(bodyPartition)
+zRangeList = [None] * len(bodyPartition)
+index = 0
+for body in bodyPartition:
+    bodyRange = body["size"]
     if len(bodyRange) != 2:
         print 'Invalid body size range. Abort.'
         sys.exit(1)
+
+    bodySizeList[index] = bodyRange
+    if body.has_key("skeletonize"):
+        bodySkeletonizeOn[index] = body["skeletonize"]
+
+    if body.has_key("z_range"):
+        zRangeList[index] = body["z_range"]
+
+    index += 1
 
 print 'Extracting bodies ...'
 neutubePythonPath = os.path.join(neutubeDir, 'neurolabi/python')
@@ -116,20 +130,25 @@ taskManager.setBodyMapDir(os.path.abspath('body_maps'))
 taskManager.setCommandPath(os.path.join(neutubeDir, 'neurolabi/cpp/map_body-build-desktop-Qt_4_8_2_in_PATH__System__Debug/map_body'))
 taskManager.setTargetContainer(targetContainer)
 
-if config.has_key('z_range'):
-    zRange = config['z_range']
-    taskManager.setZRange(zRange[0], zRange[1])
 
 #if config.has_key('z_offset'):
 #    taskManager.setZOffset(config['z_offset'])
 
 bodyDirList = []
-for bodyRange in bodySizeList:
+for body in bodyPartition:
+    if body.has_key('z_range'):
+        zRange = body['z_range']
+        taskManager.setZRange(zRange[0], zRange[1])
+    else:
+        taskManager.zRange = None
+
+    bodyRange = body["size"]
     taskManager.setRange(bodyRange)
     outputDir = str(bodyRange[0]) + '_'
     if bodyRange[1] >= bodyRange[0]:
         outputDir += str(bodyRange[1])
     
+    body['output_dir'] = outputDir
     print outputDir
     bodyDirList.append(outputDir)
     bodySizeFile = os.path.abspath(os.path.join(outputDir, 'bodysize.txt'))
@@ -160,62 +179,65 @@ scriptList = []
 
 print bodyDirList
 
-for bodyDir in bodyDirList:
-    print 'Building body list for ', bodyDir
-    distr.setBodyDir(os.path.abspath(os.path.join(bodyDir, targetContainer)))
-    swcDir = os.path.join(bodyDir, 'len' + str(distr.getMinLength()) + '/swc')
-    distr.setSwcDir(os.path.abspath(swcDir))
-    #bodyFileList = glob.glob(os.path.join(bodyDir, 'stacked/*.sobj'))
-    bodyFileList = get_body_list(os.path.join(bodyDir, targetContainer))
-    bodySizeFile = os.path.abspath(os.path.join(bodyDir, 'bodysize.txt'))
-    print ' ', len(bodyFileList), ' bodies found.'
-    bodyList = []
-    print '  extracting body IDs...'
-    for bodyFile in bodyFileList:
-        bodyId = int(os.path.splitext(os.path.basename(bodyFile))[0]);
-        if not bodyId in excludedBodyList:
-            bodyList.append(bodyId);
-
-    distr.setBodyList(bodyList);
-    distr.setCommandPath('/groups/flyem/home/zhaot/Work/neutube_ws/neurolabi/cpp/skeletonize/build/bin/skeletonize');
-
-    scriptDir = os.path.join(swcDir, 'scripts')
-    if not os.path.exists(scriptDir):
-        os.makedirs(scriptDir)
-    distr.generateScript(scriptDir);
-
-    runScript = os.path.join(os.path.abspath(swcDir), 'generate.sh')
-    neututils.create_text_file(runScript, ['sh ' + os.path.join(os.getcwd(), distr.getMasterScript())])
-
-    print runScript, 'created.'
-    scriptList.append(runScript)
-    scheduler.submit('sh ' + runScript, dependency = [bodySizeFile])
-
-    skeletonizeScriptList = distr.getSubscript()
-    nextDepList = []
-    print scriptDir
-    for subscript in skeletonizeScriptList:
-        print subscript
-        nextDepList.append(os.path.abspath(subscript) + '.done')
-
-    #Generate skeleton
-    #commandList = []
-    #scriptDir = os.path.dirname(runScript)
-    #commandList.append('cd ' + scriptDir)
-    #commandList.append('sh ' + runScript)
-    #scheduler.submit(commandList, dependency = [os.path.abspath(os.path.join(bodyDir, 'bodysize.txt'))])
-
-    #Create data bundle
-    commandList = []
-    commandList.append('python ' + neutubeDir + \
-        '/neurolabi/python/app/create_data_bundle.py --config ' + \
-        os.path.join(os.getcwd(), 'config.json') + \
-        ' --session ' + os.getcwd() + ' --swc_dir ' + os.path.abspath(swcDir) + \
-        ' --body_annotation ' + os.path.abspath(bodyAnnotationFile) + \
-        ' --synapse_annotation ' + os.path.abspath(synapseAnnotationFile))
-
-    scheduler.submit(commandList, dependency = nextDepList)
-    #sys.exit(1)
+#skeletonization and bundle creation
+for body in bodyPartition:
+    if body['skeletonize']:
+        bodyDir = body['output_dir']
+        print 'Building body list for ', bodyDir
+        distr.setBodyDir(os.path.abspath(os.path.join(bodyDir, targetContainer)))
+        swcDir = os.path.join(bodyDir, 'len' + str(distr.getMinLength()) + '/swc')
+        distr.setSwcDir(os.path.abspath(swcDir))
+        #bodyFileList = glob.glob(os.path.join(bodyDir, 'stacked/*.sobj'))
+        bodyFileList = get_body_list(os.path.join(bodyDir, targetContainer))
+        bodySizeFile = os.path.abspath(os.path.join(bodyDir, 'bodysize.txt'))
+        print ' ', len(bodyFileList), ' bodies found.'
+        bodyList = []
+        print '  extracting body IDs...'
+        for bodyFile in bodyFileList:
+            bodyId = int(os.path.splitext(os.path.basename(bodyFile))[0]);
+            if not bodyId in excludedBodyList:
+                bodyList.append(bodyId);
+     
+        distr.setBodyList(bodyList);
+        distr.setCommandPath('/groups/flyem/home/zhaot/Work/neutube_ws/neurolabi/cpp/skeletonize/build/bin/skeletonize');
+     
+        scriptDir = os.path.join(swcDir, 'scripts')
+        if not os.path.exists(scriptDir):
+            os.makedirs(scriptDir)
+        distr.generateScript(scriptDir);
+     
+        runScript = os.path.join(os.path.abspath(swcDir), 'generate.sh')
+        neututils.create_text_file(runScript, ['sh ' + os.path.join(os.getcwd(), distr.getMasterScript())])
+     
+        print runScript, 'created.'
+        scriptList.append(runScript)
+        scheduler.submit('sh ' + runScript, dependency = [bodySizeFile])
+     
+        skeletonizeScriptList = distr.getSubscript()
+        nextDepList = []
+        print scriptDir
+        for subscript in skeletonizeScriptList:
+            print subscript
+            nextDepList.append(os.path.abspath(subscript) + '.done')
+     
+        #Generate skeleton
+        #commandList = []
+        #scriptDir = os.path.dirname(runScript)
+        #commandList.append('cd ' + scriptDir)
+        #commandList.append('sh ' + runScript)
+        #scheduler.submit(commandList, dependency = [os.path.abspath(os.path.join(bodyDir, 'bodysize.txt'))])
+     
+        #Create data bundle
+        commandList = []
+        commandList.append('python ' + neutubeDir + \
+            '/neurolabi/python/app/create_data_bundle.py --config ' + \
+            os.path.join(os.getcwd(), 'config.json') + \
+            ' --session ' + os.getcwd() + ' --swc_dir ' + os.path.abspath(swcDir) + \
+            ' --body_annotation ' + os.path.abspath(bodyAnnotationFile) + \
+            ' --synapse_annotation ' + os.path.abspath(synapseAnnotationFile))
+     
+        scheduler.submit(commandList, dependency = nextDepList)
+        #sys.exit(1)
 
 
 
