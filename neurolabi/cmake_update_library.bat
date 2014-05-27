@@ -68,12 +68,12 @@ cd __tmp_cmake_tmp__
 rd /q/s ../c/CMakeCache.txt
 
 cmake ../c -DCMAKE_BUILD_TYPE=Debug -G "MinGW Makefiles"
-make clean
-make
-make clean
+mingw32-make clean
+mingw32-make
+mingw32-make clean
 cmake ../c -DCMAKE_BUILD_TYPE=Release -G "MinGW Makefiles"
-make
-make install
+mingw32-make
+mingw32-make install
 
 cd ..
 rd /q/s __tmp_cmake_tmp__
