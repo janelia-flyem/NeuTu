@@ -313,6 +313,9 @@ public: /* attributes */
    */
   ZStack* clone() const;
 
+  /*!
+   * \brief Source of the stack.
+   */
   ZStackFile* source() { return &m_source; }
 
   void deprecateDependent(EComponent component);
@@ -391,6 +394,26 @@ public: /* operations */
    * \return true iff the offset of any dimension is not zero
    */
   bool hasOffset() const;
+
+  /*!
+   * \brief Paste the values of a stack to another stack
+   *
+   * The stacks are aligned with their offsets while pasting. The values of
+   * \a dst are set to those in the source stack. Any value out of the source
+   * range is untouched. The stacks must have same kind, which should be either
+   * GREY or GREY16. \a valueIgnored is to mask \a dst.
+   *
+   * \return true iff the pasting can be performed.
+   */
+  bool paste(ZStack *dst, int valueIgnored = -1) const;
+
+  /*!
+   * \brief Get the bound box of the stack.
+   *
+   * The result is stored in \a box. Not the box covers the whole stack, not
+   * just the foreground.
+   */
+  void getBoundBox(Cuboid_I *box) const;
 
 public: /* processing routines */
   bool binarize(int threshold = 0);

@@ -1027,7 +1027,9 @@ void C_Stack::setZero(
 for (int z = 0; z < sd; ++z) {\
   for (int y = 0; y < sh; ++y) {\
     for (int x = 0; x < sw; ++x) {\
-      dstArray[offset] = srcArray[offset2];\
+      if ((int) srcArray[offset2] != valueIgnored) {\
+        dstArray[offset] = srcArray[offset2];\
+      }\
       offset += p1;\
       offset2 += bp1;\
     }\
@@ -1039,15 +1041,18 @@ for (int z = 0; z < sd; ++z) {\
 }
 
 void C_Stack::setBlockValue(
-    Stack *stack, const Stack *block, int x0, int y0, int z0)
+    Stack *stack, const Stack *block, int x0, int y0, int z0,
+    int valueIgnored)
 {
   if (kind(stack) != kind(block) || stack == NULL || block == NULL) {
     return;
   }
 
+  /*
   if (x0 < 0 || y0 < 0 || z0 < 0) { //negative offset not supported yet
     return;
   }
+  */
 
   int sw = width(block);
   int sh = height(block);
@@ -1068,9 +1073,9 @@ void C_Stack::setBlockValue(
   blockIma.array = block->array;
 
   if (Cuboid_I_Is_Valid(&subBox)) {
-    x0 = subBox.cb[0];
-    y0 = subBox.cb[1];
-    z0 = subBox.cb[2];
+    int nx0 = subBox.cb[0];
+    int ny0 = subBox.cb[1];
+    int nz0 = subBox.cb[2];
     sw = Cuboid_I_Width(&subBox);
     sh = Cuboid_I_Height(&subBox);
     sd = Cuboid_I_Depth(&subBox);
@@ -1088,8 +1093,8 @@ void C_Stack::setBlockValue(
     const size_t bp3 = bp2 + bs3 - sh * bs2 - bp2;
 
 
-    size_t offset = s3 * z0 + s2 * y0 + x0;
-    size_t offset2 = 0;
+    size_t offset = s3 * nz0 + s2 * ny0 + nx0;
+    size_t offset2 = bs3 * (nz0 - z0) + bs2 * (ny0 - y0) + nx0 - x0;
 
     switch (kind(stack)) {
     case GREY:

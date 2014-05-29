@@ -12,6 +12,7 @@
 #include <QTimer>
 #include <QInputDialog>
 #include <QApplication>
+#include <QtConcurrentRun>
 
 #include "QsLog.h"
 
@@ -84,7 +85,8 @@
 #include "swcskeletontransformdialog.h"
 #include "swcsizedialog.h"
 #include "tz_stack_watershed.h"
-
+#include "zstackwatershed.h"
+#include "zstackarray.h"
 
 using namespace std;
 
@@ -7617,26 +7619,122 @@ bool ZStackDocReader::hasData() const
   }
 
   if (!getSwcList().isEmpty()) {
-    return false;
+    return true;
   }
 
   if (!getPunctaList().isEmpty()) {
-    return false;
+    return true;
   }
 
   if (!getStrokeList().isEmpty()) {
-    return false;
+    return true;
   }
 
   if (!getObjectList().isEmpty()) {
-    return false;
+    return true;
   }
 
   if (!getChainList().isEmpty()) {
-    return false;
+    return true;
   }
 
-  return true;
+  return false;
+}
+
+std::vector<ZStack*> ZStackDoc::createWatershedMask()
+{
+  std::vector<ZStack*> maskArray;
+  foreach (ZStroke2d* stroke, m_strokeList) {
+    if (!stroke->isEmpty()) {
+      maskArray.push_back(stroke->toStack());
+    }
+  }
+
+  return maskArray;
+}
+
+void ZStackDoc::localSeededWatershed()
+{
+  removeAllObj3d();
+
+  if (!m_strokeList.isEmpty()) {
+    ZStackWatershed engine;
+    ZStack *out = engine.run(m_stack, createWatershedMask());
+
+#if 0
+    Stack *stack = m_stack->c_stack();
+    Stack_Watershed_Workspace *ws =
+        Make_Stack_Watershed_Workspace(stack);
+    ws->conn = 6;
+    Stack *mask = C_Stack::make(GREY, C_Stack::width(stack),
+                                C_Stack::height(stack), C_Stack::depth(stack));
+    C_Stack::setZero(mask);
+    ws->mask = mask;
+
+    ZStackArray stackArray = createWatershedMask();
+    Mc_Stack maskView;
+    C_Stack::view(ws->mask, &maskView);
+    ZStack maskWrapper(&maskView, NULL);
+    maskWrapper.setOffset(m_stack->getOffset());
+    stackArray.paste(&maskWrapper, 0);
+
+#ifdef _DEBUG_2
+    C_Stack::write(GET_DATA_DIR + "/test.tif", ws->mask);
+#endif
+
+    size_t voxelNumber = m_stack->getVoxelNumber();
+    for (size_t i = 0; i < voxelNumber; ++i) {
+      if (stack->array[i] == 0) {
+        mask->array[i] = STACK_WATERSHED_BARRIER;
+      }
+    }
+
+    advanceProgress(0.1);
+    QApplication::processEvents();
+
+    Stack *out= Stack_Watershed(stack, ws);
+
+    advanceProgress(0.5);
+    QApplication::processEvents();
+
+    if (stack != m_stack->c_stack()) {
+      C_Stack::kill(stack);
+    }
+#endif
+
+    Object_3d *objData = Stack_Region_Border(out->c_stack(), 6, TRUE);
+
+    if (objData != NULL) {
+      ZObject3d *obj = new ZObject3d(objData);
+      /*
+      obj->translate(iround(getStackOffset().x()),
+                     iround(getStackOffset().y()),
+                     iround(getStackOffset().z()));
+                     */
+
+      obj->translate(iround(out->getOffset().x()),
+                     iround(out->getOffset().y()),
+                     iround(out->getOffset().z()));
+
+      addObj3d(obj);
+      notifyObj3dModified();
+    }
+
+   // C_Stack::kill(out);
+    delete out;
+  }
+}
+
+void ZStackDoc::runLocalSeededWatershed()
+{
+  startProgress();
+  QApplication::processEvents();
+
+  localSeededWatershed();
+
+  //QtConcurrent::run(this, &ZStackDoc::localSeededWatershed); //crashed for unknown reason
+
+  endProgress();
 }
 
 void ZStackDoc::runSeededWatershed()
@@ -7649,6 +7747,16 @@ void ZStackDoc::runSeededWatershed()
                               C_Stack::height(stack), C_Stack::depth(stack));
   C_Stack::setZero(mask);
   ws->mask = mask;
+
+  /*
+  ZStackArray stackArray = createWatershedMask();
+  Mc_Stack maskView;
+  C_Stack::view(ws->mask, &maskView);
+  ZStack maskWrapper(&maskView, NULL);
+  maskWrapper.setOffset(m_stack->getOffset());
+  stackArray.paste(&maskWrapper, 0);
+*/
+
   foreach (ZStroke2d* stroke, m_strokeList) {
     ZPoint stackOffset = getStackOffset();
     ZStroke2d tmpStroke = *stroke;
@@ -7656,13 +7764,14 @@ void ZStackDoc::runSeededWatershed()
     tmpStroke.labelGrey(mask);
   }
 
+  /*
   size_t voxelNumber = m_stack->getVoxelNumber();
   for (size_t i = 0; i < voxelNumber; ++i) {
     if (stack->array[i] == 0) {
       mask->array[i] = STACK_WATERSHED_BARRIER;
     }
   }
-
+  */
 #if 0
   if (m_stack->isBinary()) {
     size_t voxelNumber = m_stack->getVoxelNumber();

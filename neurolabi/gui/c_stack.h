@@ -341,9 +341,13 @@ void setZero(Mc_Stack *stack, int x0, int y0, int z0, int sw, int sh, int sd);
  * \brief Set the value of a block of a stack
  *
  * \a stack and \a block must have the same kind. The value of \a block will be
- * copied to \a stack at the starting position of (\a x0, \a y0, \a z0).
+ * copied to \a stack at the starting position of (\a x0, \a y0, \a z0). Any
+ * value equal to \a valueIgnored in \a block is ignored, i.e. the values of
+ * the corresponding positions in \a stack are untouched.
  */
-void setBlockValue(Stack *stack, const Stack *block, int x0, int y0, int z0);
+//void setBlockValue(Stack *stack, const Stack *block, int x0, int y0, int z0);
+void setBlockValue(Stack *stack, const Stack *block, int x0, int y0, int z0,
+                   int valueIgnored = -1);
 
 //Paint routines
 void drawPatch(Stack *canvas, const Stack *patch,

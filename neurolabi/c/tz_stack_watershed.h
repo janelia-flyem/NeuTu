@@ -66,7 +66,7 @@ enum { STACK_WATERSHED_MAX_SEED = 244, STACK_WATERSHED_BARRIER = 255};
 
 DECLARE_ZOBJECT_INTERFACE(Stack_Watershed_Workspace)
 
-Stack_Watershed_Workspace* Make_Stack_Watershed_Workspace(Stack *stack);
+Stack_Watershed_Workspace* Make_Stack_Watershed_Workspace(const Stack *stack);
 
 void Stack_Watershed_Infer_Parameter(const Stack *stack, 
 				     Stack_Watershed_Workspace *ws);

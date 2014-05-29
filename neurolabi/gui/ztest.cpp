@@ -11617,13 +11617,13 @@ void ZTest::test(MainWindow *host)
 #if 0
   Stack *stack = C_Stack::make(GREY16, 5, 5, 2);
   C_Stack::setOne(stack);
-  Stack *block = C_Stack::make(GREY16, 2, 2, 5);
+  Stack *block = C_Stack::make(GREY16, 20, 3, 5);
   C_Stack::setZero(block);
-  C_Stack::setBlockValue(stack, block, 1, 1, 0);
+  C_Stack::setBlockValue(stack, block, -1, -1, 0);
   C_Stack::printValue(stack);
 #endif
 
-#if 1
+#if 0
   FlyEm::ZSubstackRoi roi;
   roi.importJsonFile(GET_DATA_DIR + "/flyem/FIB/roi.json");
 
@@ -11755,5 +11755,18 @@ void ZTest::test(MainWindow *host)
   set1.intersect(set2);
 
   set1.print();
+#endif
+
+#if 1
+  ZStroke2d stroke;
+  stroke.append(10, 10);
+  //stroke.append(20, 20);
+  //stroke.append(21, 30);
+  //stroke.append(10, 100);
+  stroke.setWidth(20);
+  ZStack *stack = stroke.toStack();
+  stack->printInfo();
+
+  stack->save(GET_DATA_DIR + "/test.tif");
 #endif
 }

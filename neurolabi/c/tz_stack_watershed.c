@@ -745,7 +745,7 @@ void Print_Stack_Watershed_Workspace(Stack_Watershed_Workspace *ws)
   }
 }
 
-Stack_Watershed_Workspace* Make_Stack_Watershed_Workspace(Stack *stack)
+Stack_Watershed_Workspace* Make_Stack_Watershed_Workspace(const Stack *stack)
 {
   Stack_Watershed_Workspace *ws = New_Stack_Watershed_Workspace();
   size_t nvoxel = Stack_Voxel_Number(stack);

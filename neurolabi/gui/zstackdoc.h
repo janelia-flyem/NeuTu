@@ -321,6 +321,10 @@ public: //Image processing
   void bwthin();
   bool bwperim();
   void runSeededWatershed();
+  void runLocalSeededWatershed();
+
+private:
+  void localSeededWatershed();
 
 public: /* tracing routines */
   ZLocsegChain* fitseg(int x, int y, int z, double r = 3.0);
@@ -698,6 +702,7 @@ private:
   Swc_Tree* swcReconstruction(int rootOption, bool singleTree,
                               bool removingOvershoot);
   ZSwcTree* nodeToSwcTree(Swc_Tree_Node* node) const;
+  std::vector<ZStack*> createWatershedMask();
 
 private:
   //Main stack

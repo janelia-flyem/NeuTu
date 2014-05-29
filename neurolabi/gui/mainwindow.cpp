@@ -6,6 +6,7 @@
 #endif
 //#include <QtSvg>
 #include <QDir>
+#include <QtConcurrentRun>
 
 #include <iostream>
 #include <ostream>
@@ -127,7 +128,6 @@
 #include "flyem/zflyemdatainfo.h"
 #include "flyem/zflyemqualityanalyzer.h"
 #include "zswcgenerator.h"
-#include <QtConcurrentRun>
 #include "flyembodyiddialog.h"
 #include "flyemhotspotdialog.h"
 #include "dvid/zdvidinfo.h"
@@ -4938,20 +4938,22 @@ void MainWindow::createDvidFrame()
   reporter.start();
   reporter.advance(0.1);
 
-  ZStackFrame *frame = NULL;
   ZDvidBuffer *dvidBuffer = m_dvidClient->getDvidBuffer();
+
+  ZStackDocReader reader;
 
   ZStack *docStack = NULL;
 
   const QVector<ZStack*>& imageArray = dvidBuffer->getImageArray();
   if (!imageArray.isEmpty()) {
     docStack = ZStackFactory::composite(imageArray.begin(), imageArray.end());
+
+    /*
     if (docStack != NULL) {
       frame = createStackFrame(docStack);
     }
-  }
-
-  if (frame == NULL) {
+    */
+  } else {
     const QVector<ZObject3dScan>& bodyArray = dvidBuffer->getBodyArray();
     int offset[3] = {0, 0, 0};
     Stack *stack = ZObject3dScan::makeStack(bodyArray.begin(), bodyArray.end(),
@@ -4960,41 +4962,40 @@ void MainWindow::createDvidFrame()
       docStack = new ZStack;
       docStack->consumeData(stack);
       docStack->setOffset(offset[0], offset[1], offset[2]);
-      frame = createStackFrame(docStack, NeuTube::Document::FLYEM_BODY);
+      //frame = createStackFrame(docStack, NeuTube::Document::FLYEM_BODY);
     }
   }
 
-  if (frame != NULL) {
-    addStackFrame(frame);
-    presentStackFrame(frame);
+  if (docStack != NULL) {
+    reader.setStack(docStack);
   }
 
   if (!dvidBuffer->getSwcTreeArray().isEmpty()) {
-    if (frame == NULL) {
-      frame = createEmptyStackFrame();
-    }
-
     foreach (ZSwcTree* tree, dvidBuffer->getSwcTreeArray()) {
+      reader.addSwcTree(tree);
 #ifdef _DEBUG_2
       tree->print();
       std::cout << (ZStackDrawable*) tree << std::endl;
 #endif
-      frame->document()->addSwcTree(tree, false);
+      //frame->document()->addSwcTree(tree, false);
     }
     dvidBuffer->getSwcTreeArray().clear(); //Remove the ownership
+  }
+
+  if (reader.hasData()) {
+    ZStackFrame *frame = createEmptyStackFrame();
+    frame->addDocData(reader);
 
     if (!frame->document()->hasStackData()) {
       frame->open3DWindow(this);
       delete frame;
+    } else {
+      addStackFrame(frame);
+      presentStackFrame(frame);
     }
-  }
-
-  if (frame == NULL) {
+  } else {
     report("No data retrieved", "No data retrieved from DVID",
            ZMessageReporter::Warning);
-  } else {
-    addStackFrame(frame);
-    presentStackFrame(frame);
   }
 
   dvidBuffer->clear();

@@ -1460,6 +1460,11 @@ bool ZStackPresenter::processKeyPressEventForStroke(QKeyEvent *event)
       }
     }
     break;
+  case Qt::Key_Space:
+    if (GET_APPLICATION_NAME == "FlyEM") {
+      buddyDocument()->runLocalSeededWatershed();
+    }
+    break;
 #endif
   default:
     break;

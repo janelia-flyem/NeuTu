@@ -21,6 +21,7 @@
 #include "tz_int_histogram.h"
 #include "zjsonparser.h"
 #include "zfiletype.h"
+#include "tz_math.h"
 #ifdef _NEUTUBE_
 #include "QsLog.h"
 #endif
@@ -1501,4 +1502,47 @@ bool ZStack::reshape(int width, int height, int depth)
   }
 
   return false;
+}
+
+bool ZStack::paste(ZStack *dst, int valueIgnored) const
+{
+  if (dst != NULL) {
+    if (kind() != dst->kind()) {
+      return false;
+    }
+
+    if (isVirtual() || dst->isVirtual()) {
+      return false;
+    }
+
+    if (isEmpty() || dst->isEmpty()) {
+      return false;
+    }
+
+    int ch = imin2(dst->channelNumber(), channelNumber());
+    ZPoint offset = getOffset() - dst->getOffset();
+    int x0 = iround(offset.x());
+    int y0 = iround(offset.y());
+    int z0 = iround(offset.z());
+
+    for (int i = 0; i < ch; ++i) {
+      C_Stack::setBlockValue(dst->c_stack(i), c_stack(i), x0, y0, z0,
+                             valueIgnored);
+    }
+
+    return true;
+  }
+
+  return false;
+}
+
+void ZStack::getBoundBox(Cuboid_I *box) const
+{
+  if (box != NULL) {
+    int x0 = iround(getOffset().x());
+    int y0 = iround(getOffset().y());
+    int z0 = iround(getOffset().z());
+
+    Cuboid_I_Set_S(box, x0, y0, z0, width(), height(), depth());
+  }
 }
