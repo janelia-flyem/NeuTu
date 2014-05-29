@@ -1147,9 +1147,10 @@ void ZStackPresenter::processMouseMoveEvent(QMouseEvent *event)
       m_mouseLeftButtonPressed == true && event->modifiers() == Qt::ShiftModifier) {
     QPointF pos = mapFromWidgetToStack(event->pos());
     buddyDocument()->mapToDataCoord(&pos.rx(), &pos.ry(), NULL);
-    buddyDocument()->executeMoveSwcNodeCommand(pos.x() - m_lastMouseDataCoord.x(),
-                                               pos.y() - m_lastMouseDataCoord.y(),
-                                               0);
+    buddyDocument()->executeMoveObjectCommand(pos.x() - m_lastMouseDataCoord.x(),
+                                              pos.y() - m_lastMouseDataCoord.y(),
+                                              0,
+                                              1,1,1,1,1,1);
 
     m_lastMouseDataCoord = pos;
     return;
