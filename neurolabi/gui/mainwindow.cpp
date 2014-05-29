@@ -6060,6 +6060,7 @@ void MainWindow::createStackFrameFromDocReader(ZStackDocReader *reader)
       presentStackFrame(frame);
       //QApplication::processEvents();
     } else {
+      emit progressDone();
       frame->open3DWindow(this);
       delete frame;
     }
