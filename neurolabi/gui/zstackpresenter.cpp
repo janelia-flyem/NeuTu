@@ -217,6 +217,12 @@ void ZStackPresenter::createSwcActions()
           this, SLOT(enterSwcSmartExtendMode()));
   m_actionMap[ACTION_SMART_EXTEND_SWC_NODE] = m_swcSmartExtendAction;
 #endif
+
+  m_swcMoveSelectedAction = new  QAction(tr("Move selected objects (Shift+Mouse)"), this);
+  connect(m_swcMoveSelectedAction, SIGNAL(triggered()),
+          this, SLOT(enterSwcMoveMode()));
+  m_actionMap[ACTION_MOVE_SWC_NODE] = m_swcMoveSelectedAction;
+
   m_swcDeleteAction = new  QAction(tr("Delete"), this);
   m_swcDeleteAction->setIcon(QIcon(":/images/delete.png"));
   connect(m_swcDeleteAction, SIGNAL(triggered()),
@@ -1137,6 +1143,18 @@ void ZStackPresenter::processMouseMoveEvent(QMouseEvent *event)
   else
     m_mouseMovePosition[2] = buddyView()->sliceIndex();
 
+  if (m_interactiveContext.swcEditMode() == ZInteractiveContext::SWC_EDIT_MOVE_NODE &&
+      m_mouseLeftButtonPressed == true && event->modifiers() == Qt::ShiftModifier) {
+    QPointF pos = mapFromWidgetToStack(event->pos());
+    buddyDocument()->mapToDataCoord(&pos.rx(), &pos.ry(), NULL);
+    buddyDocument()->executeMoveSwcNodeCommand(pos.x() - m_lastMouseDataCoord.x(),
+                                               pos.y() - m_lastMouseDataCoord.y(),
+                                               0);
+
+    m_lastMouseDataCoord = pos;
+    return;
+  }
+
   switch (this->interactiveContext().exploreMode()) {
   case ZInteractiveContext::EXPLORE_MOVE_IMAGE:
     {
@@ -1219,6 +1237,12 @@ void ZStackPresenter::processMousePressEvent(QMouseEvent *event)
 
   if (event->button() == Qt::LeftButton) {
     m_mouseLeftButtonPressed = true;
+
+    if (m_interactiveContext.swcEditMode() == ZInteractiveContext::SWC_EDIT_MOVE_NODE &&
+        event->modifiers() == Qt::ShiftModifier) {
+      m_lastMouseDataCoord = mapFromWidgetToStack(event->pos());
+      buddyDocument()->mapToDataCoord(&m_lastMouseDataCoord.rx(), &m_lastMouseDataCoord.ry(), NULL);
+    }
 
     if (m_interactiveContext.strokeEditMode() ==
         ZInteractiveContext::STROKE_DRAW) {
@@ -2119,6 +2143,14 @@ void ZStackPresenter::exitSwcExtendMode()
   }
 }
 
+void ZStackPresenter::enterSwcMoveMode()
+{
+  const Swc_Tree_Node *tn = getSelectedSwcNode();
+  if (tn != NULL) {
+    interactiveContext().setSwcEditMode(ZInteractiveContext::SWC_EDIT_MOVE_NODE);
+    updateCursor();
+  }
+}
 
 void ZStackPresenter::enterSwcAddNodeMode(double x, double y)
 {
@@ -2322,7 +2354,9 @@ void ZStackPresenter::updateCursor()
   if (this->interactiveContext().swcEditMode() ==
       ZInteractiveContext::SWC_EDIT_EXTEND ||
       this->interactiveContext().swcEditMode() ==
-            ZInteractiveContext::SWC_EDIT_SMART_EXTEND) {
+      ZInteractiveContext::SWC_EDIT_SMART_EXTEND ||
+      this->interactiveContext().swcEditMode() ==
+      ZInteractiveContext::SWC_EDIT_MOVE_NODE) {
     buddyView()->setScreenCursor(Qt::PointingHandCursor);
   } else if (this->interactiveContext().swcEditMode() ==
              ZInteractiveContext::SWC_EDIT_LOCK_FOCUS) {

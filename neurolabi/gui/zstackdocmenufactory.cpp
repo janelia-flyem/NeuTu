@@ -81,6 +81,8 @@ QMenu* ZStackDocMenuFactory::makeSwcNodeContextMenu(
   menu->addAction(presenter->getAction(ZStackPresenter::ACTION_CONNECT_TO_SWC_NODE));
   menu->addAction(presenter->getAction(
                     ZStackPresenter::ACTION_CHANGE_SWC_NODE_FOCUS));
+  menu->addAction(presenter->getAction(
+                    ZStackPresenter::ACTION_MOVE_SWC_NODE));
 
   if (GET_APPLICATION_NAME == "Biocytin") {
     menu->addAction(presenter->getAction(

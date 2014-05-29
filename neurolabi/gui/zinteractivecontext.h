@@ -41,7 +41,8 @@ public:
     SWC_EDIT_EXTEND,
     SWC_EDIT_SMART_EXTEND,
     SWC_EDIT_LOCK_FOCUS,
-    SWC_EDIT_ADD_NODE
+    SWC_EDIT_ADD_NODE,
+    SWC_EDIT_MOVE_NODE
   };
 
   enum StrokeEditMode {
