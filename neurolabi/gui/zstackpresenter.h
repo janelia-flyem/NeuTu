@@ -51,6 +51,7 @@ public:
     ACTION_EXTEND_SWC_NODE, ACTION_SMART_EXTEND_SWC_NODE,
     ACTION_CONNECT_TO_SWC_NODE, ACTION_ADD_SWC_NODE,
     ACTION_LOCK_SWC_NODE_FOCUS, ACTION_CHANGE_SWC_NODE_FOCUS,
+    ACTION_MOVE_SWC_NODE,
     ACTION_ESTIMATE_SWC_NODE_RADIUS,
     ACTION_PAINT_STROKE, ACTION_ERASE_STROKE
   };
@@ -179,6 +180,7 @@ public slots:
   void enterSwcExtendMode();
   void exitSwcExtendMode();
   //void enterSwcSmartExtendMode();
+  void enterSwcMoveMode();
   void enterSwcAddNodeMode(double x, double y);
   void enterSwcSelectMode();
   void enterDrawStrokeMode(double x, double y);
@@ -299,6 +301,7 @@ private:
   QAction *m_swcConnectToAction;
   QAction *m_swcExtendAction;
   //QAction *m_swcSmartExtendAction;
+  QAction *m_swcMoveSelectedAction;
   QAction *m_swcDeleteAction;
   QAction *m_swcConnectSelectedAction;
   QAction *m_swcSelectConnectionAction;
@@ -333,6 +336,7 @@ private:
   int m_mouseRightPressPosition[3];
   int m_mouseLeftDoubleClickPosition[3];
   QPointF m_grabPosition;
+  QPointF m_lastMouseDataCoord;
 
   ZStroke2d m_stroke;
   bool m_isStrokeOn;

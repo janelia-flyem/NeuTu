@@ -1267,10 +1267,10 @@ void Z3DWindow::show3DViewContextMenu(QPoint pt)
   if (m_toogleAddSwcNodeModeAction->isChecked()) {
     m_toogleAddSwcNodeModeAction->setChecked(false);
     return;
-  } /*else if (m_toogleExtendSelectedSwcNodeAction->isChecked()) {
-    m_toogleExtendSelectedSwcNodeAction->setChecked(false);
+  } else if (m_toogleMoveSelectedObjectsAction->isChecked()) {
+    m_toogleMoveSelectedObjectsAction->setChecked(false);
     return;
-  }*/ else if (m_toogleSmartExtendSelectedSwcNodeAction->isChecked()) {
+  } else if (m_toogleSmartExtendSelectedSwcNodeAction->isChecked()) {
     m_toogleSmartExtendSelectedSwcNodeAction->setChecked(false);
     return;
   } else if (getSwcFilter()->getInteractionMode() == Z3DSwcFilter::ConnectSwcNode) {
@@ -1764,6 +1764,7 @@ void Z3DWindow::changeBackground()
 void Z3DWindow::toogleMoveSelectedObjectsMode(bool checked)
 {
   getInteractionHandler()->setMoveObjects(checked);
+  m_canvas->setCursor(checked ? Qt::PointingHandCursor : Qt::ArrowCursor);
 }
 
 void Z3DWindow::moveSelectedObjects(double x, double y, double z)
