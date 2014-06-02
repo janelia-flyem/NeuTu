@@ -1418,7 +1418,7 @@ bool ZStackPresenter::processKeyPressEventForSwc(QKeyEvent *event)
     if (event->modifiers() == Qt::NoModifier) {
       if (!buddyDocument()->selectedSwcTreeNodes()->empty()) {
         if (buddyDocument()->selectedSwcTreeNodes()->size() == 1) {
-          enterConnectMode();
+          enterSwcConnectMode();
         } else {
           buddyDocument()->executeConnectSwcNodeCommand();
         }
@@ -2114,6 +2114,7 @@ void ZStackPresenter::enterConnectMode()
   this->interactiveContext().
       setTubeEditMode(ZInteractiveContext::TUBE_EDIT_CONNECT);
   buddyDocument()->updateMasterLocsegChain();
+  updateCursor();
   buddyView()->setScreenCursor(Qt::PointingHandCursor);
 }
 
@@ -2140,6 +2141,7 @@ void ZStackPresenter::enterMouseCapturingMode()
 
 void ZStackPresenter::enterSwcConnectMode()
 {
+  m_parent->notifyUser("Connecting mode is on. Click on the target node to connect.");
   this->interactiveContext().setSwcEditMode(ZInteractiveContext::SWC_EDIT_CONNECT);
   updateCursor();
 }

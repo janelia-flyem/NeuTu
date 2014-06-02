@@ -253,9 +253,9 @@ private:
   QAction *m_markPunctumAction;
   QAction *m_toogleAddSwcNodeModeAction;
   QAction *m_changeBackgroundAction;
-  QAction *m_toogleMoveSelectedObjectsAction;
+  QAction *m_toggleMoveSelectedObjectsAction;
   //QAction *m_toogleExtendSelectedSwcNodeAction;
-  QAction *m_toogleSmartExtendSelectedSwcNodeAction;
+  QAction *m_toggleSmartExtendSelectedSwcNodeAction;
   QAction *m_locateSwcNodeIn2DAction;
 
   QAction *m_undoAction;
