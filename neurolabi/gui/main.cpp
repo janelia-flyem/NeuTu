@@ -147,7 +147,10 @@ int main(int argc, char *argv[])
     std::cout << "Unable to load configuration: "
               << config.getConfigPath() << std::endl;
   }
-  //config.print();
+
+#ifdef _DEBUG_
+  config.print();
+#endif
 
   RECORD_INFORMATION("************* Start ******************");
 

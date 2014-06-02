@@ -398,6 +398,8 @@ private slots:
 
   void on_actionLoad_Body_with_Grayscale_triggered();
 
+  void on_actionFlyEmSettings_triggered();
+
 private:
   void createActions();
   void createFileActions();
@@ -445,6 +447,7 @@ private:
   //Error handling
   void report(const std::string &title, const std::string &msg,
               ZMessageReporter::EMessageType msgType);
+  bool ask(const std::string &title, const std::string &msg);
 
   ZStackDocReader* hotSpotDemo(int bodyId, const QString &dvidAddress,
                            const QString &dvidUuid);
@@ -606,6 +609,7 @@ private:
   FlyEmHotSpotDialog *m_hotSpotDlg;
   ZDvidDialog *m_dvidDlg;
   FlyEmBodyFilterDialog *m_bodyFilterDlg;
+
 
   //FlyEmNeuronThumbnailDialog *m_thumbnailDlg;
   QFileDialog::Options m_fileDialogOption;

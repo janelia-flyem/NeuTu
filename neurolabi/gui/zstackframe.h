@@ -212,8 +212,6 @@ public:
 
   void prepareDisplay();
 
-  void notifyUser(const QString &message);
-
   void runSeededWatershed();
 
 public slots:
@@ -223,6 +221,7 @@ public slots:
   void detach3DWindow();
   void setupDisplay();
   void zoomToSelectedSwcNodes();
+  void notifyUser(const QString &message);
 
 signals:
   void infoChanged();

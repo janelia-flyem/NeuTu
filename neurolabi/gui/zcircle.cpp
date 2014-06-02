@@ -119,9 +119,28 @@ void ZCircle::display(ZPainter *painter, int stackFocus, Display_Style style) co
 
   if (hasVisualEffect(VE_BOUND_BOX)) {
     const QBrush &oldBrush = painter->brush();
+    const QPen &oldPen = painter->pen();
     painter->setBrush(Qt::NoBrush);
+#if 0 //for future versions
+    QPen pen = oldPen;
+    QVector<qreal> pattern;
+    pattern << 1 << 2;
+    pen.setDashPattern(pattern);
+    painter->setPen(pen);
     painter->drawRect(rect);
+
+    pen.setColor(Qt::black);
+    pen.setDashOffset(1.5);
+    painter->setPen(pen);
+#endif
+
+    //QPainter::CompositionMode oldMode = painter->compositionMode();
+    //painter->setCompositionMode(QPainter::RasterOp_SourceXorDestination);
+    painter->drawRect(rect);
+
+    //painter->setCompositionMode(oldMode);
     painter->setBrush(oldBrush);
+    painter->setPen(oldPen);
   }
 #endif
 }

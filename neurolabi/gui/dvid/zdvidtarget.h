@@ -2,6 +2,7 @@
 #define ZDVIDTARGET_H
 
 #include <string>
+#include "zjsonobject.h"
 
 /*!
  * \brief The class of representing the location of a dvid server
@@ -33,8 +34,20 @@ public:
     return m_uuid;
   }
 
+  inline const std::string& getComment() const {
+    return m_comment;
+  }
+
+  inline const std::string& getName() const {
+    return m_name;
+  }
+
   inline int getPort() const {
     return m_port;
+  }
+
+  inline void setName(const std::string &name) {
+    m_name = name;
   }
 
   std::string getUrl() const;
@@ -45,7 +58,7 @@ public:
    *
    * \return "http:address:port:uuid"
    */
-  std::string getSourceString() const;
+  std::string getSourceString(bool withHttpPrefix = true) const;
 
   /*!
    * \brief getBodyPath
@@ -63,12 +76,25 @@ public:
    */
   bool isValid() const;
 
+  /*!
+   * \brief Load json object
+   */
+  void loadJsonObject(const ZJsonObject &obj);
+
   void print() const;
 
 private:
   std::string m_address;
   std::string m_uuid;
   int m_port;
+  std::string m_name;
+  std::string m_comment;
+
+  const static char* m_addressKey;
+  const static char* m_portKey;
+  const static char* m_uuidKey;
+  const static char* m_commentKey;
+  const static char* m_nameKey;
 };
 
 #endif // ZDVIDTARGET_H

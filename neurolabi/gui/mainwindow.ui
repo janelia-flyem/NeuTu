@@ -16,7 +16,7 @@
    </font>
   </property>
   <property name="windowTitle">
-   <string>0.94</string>
+   <string>0.99</string>
   </property>
   <widget class="QWidget" name="centralwidget"/>
   <widget class="QMenuBar" name="menubar">
@@ -323,8 +323,6 @@
       </property>
       <addaction name="actionSplit_Region"/>
      </widget>
-     <addaction name="actionExtract_Neuron"/>
-     <addaction name="actionSkeletonization"/>
      <addaction name="menuFlyEmOpen"/>
      <addaction name="menuExport_2"/>
      <addaction name="menuQuality_Control"/>
@@ -333,6 +331,10 @@
      <addaction name="menuStatistics"/>
      <addaction name="menuDVID"/>
      <addaction name="menuSegmentation_2"/>
+     <addaction name="actionSkeletonization"/>
+     <addaction name="actionExtract_Neuron"/>
+     <addaction name="separator"/>
+     <addaction name="actionFlyEmSettings"/>
     </widget>
     <addaction name="menuFLy_EM"/>
    </widget>
@@ -1184,6 +1186,11 @@
   <action name="actionLoad_Body_with_Grayscale">
    <property name="text">
     <string>Load Body with Grayscale</string>
+   </property>
+  </action>
+  <action name="actionFlyEmSettings">
+   <property name="text">
+    <string>Settings</string>
    </property>
   </action>
  </widget>

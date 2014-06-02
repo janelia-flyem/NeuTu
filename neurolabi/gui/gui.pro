@@ -392,7 +392,8 @@ HEADERS += mainwindow.h \
     flyem/zskeletonizeservice.h \
     zflyemdvidreader.h \
     zstroke2darray.h \
-    flyem/zflyemservice.h
+    flyem/zflyemservice.h \
+    zactionfactory.h
 
 FORMS += settingdialog.ui \
     frameinfodialog.ui \
@@ -647,7 +648,8 @@ SOURCES += main.cpp \
     flyem/zskeletonizeservice.cpp \
     zflyemdvidreader.cpp \
     zstroke2darray.cpp \
-    flyem/zflyemservice.cpp
+    flyem/zflyemservice.cpp \
+    zactionfactory.cpp
 
 OTHER_FILES += \
     extlib.pri

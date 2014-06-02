@@ -189,7 +189,8 @@ HEADERS +=$${PWD}/zstackprocessor.h \
    $${PWD}/zintset.h \
    $${PWD}/flyem/zflyemsubstackroi.h \
    $${PWD}/zstackwatershed.h \
-   $${PWD}/zstackarray.h
+   $${PWD}/zstackarray.h \
+   $${PWD}/flyem/zflyemconfig.h
 
 SOURCES +=$${PWD}/zstackprocessor.cpp \
    $${PWD}/zstack.cxx \
@@ -364,4 +365,5 @@ SOURCES +=$${PWD}/zstackprocessor.cpp \
    $${PWD}/zintset.cpp \
    $${PWD}/flyem/zflyemsubstackroi.cpp \
    $${PWD}/zstackwatershed.cpp \
-   $${PWD}/zstackarray.cpp
+   $${PWD}/zstackarray.cpp \
+   $${PWD}/flyem/zflyemconfig.cpp

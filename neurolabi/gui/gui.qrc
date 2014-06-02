@@ -84,5 +84,7 @@
         <file>images/delete.png</file>
         <file>images/change_focus.png</file>
         <file>images/insert.png</file>
+        <file>images/move.png</file>
+        <file>images/add.png</file>
     </qresource>
 </RCC>

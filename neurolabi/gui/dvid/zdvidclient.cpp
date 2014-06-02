@@ -8,6 +8,7 @@
 
 #include "zerror.h"
 #include "zdvidbuffer.h"
+#include "neutubeconfig.h"
 
 ZDvidClient::ZDvidClient(QObject *parent) :
   QObject(parent), m_dataPath("api/node/b42"),
@@ -542,4 +543,14 @@ void ZDvidClient::cancelRequest()
   }
 
   emit requestCanceled();
+}
+
+void ZDvidClient::setDefaultServer()
+{
+#if defined(_FLYEM_)
+  const ZDvidTarget &dvidTarget =
+      NeutubeConfig::getInstance().getFlyEmConfig().getDvidTarget();
+  setServer(dvidTarget.getAddress().c_str(), dvidTarget.getPort());
+  setUuid(dvidTarget.getUuid().c_str());
+#endif
 }

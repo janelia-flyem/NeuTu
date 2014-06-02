@@ -105,6 +105,9 @@ public:
   void createStrokeContextMenu();
   QMenu* getStrokeContextMenu();
 
+  void createStackContextMenu();
+  QMenu* getStackContextMenu();
+
   void setStackBc(double scale, double offset, int c = 0);
 
   /* optimize stack brightness and contrast */
@@ -125,7 +128,7 @@ public:
 
   void addTubeEditFunctionToRightMenu();
   void addPunctaEditFunctionToRightMenu();
-  void addSwcEditFunctionToRightMenu();
+  //void addSwcEditFunctionToRightMenu();
 
   void setViewPortCenter(int x, int y, int z);
 
@@ -196,6 +199,7 @@ public slots:
   void selectAllSwcTreeNode();
 
   void trySwcAddNodeMode(double x, double y);
+  void trySwcAddNodeMode();
   void tryPaintStrokeMode();
   void tryEraseStrokeMode();
   void tryDrawStrokeMode(double x, double y, bool isEraser);
@@ -302,14 +306,14 @@ private:
   QAction *m_swcExtendAction;
   //QAction *m_swcSmartExtendAction;
   QAction *m_swcMoveSelectedAction;
-  QAction *m_swcDeleteAction;
-  QAction *m_swcConnectSelectedAction;
+  //QAction *m_swcDeleteAction;
+  //QAction *m_swcConnectSelectedAction;
   QAction *m_swcSelectConnectionAction;
   QAction *m_swcLockFocusAction;
   QAction *m_swcChangeFocusAction;
   QAction *m_swcEstimateRadiusAction;
   //QAction *m_swcSelectAllNodeAction;
-  QAction *m_swcBreakSelectedAction;
+  //QAction *m_swcBreakSelectedAction;
 
   QAction *m_selectSwcNodeDownstreamAction;
   QAction *m_selectSwcConnectionAction;
@@ -327,6 +331,7 @@ private:
 
   QMenu *m_swcNodeContextMenu;
   QMenu *m_strokePaintContextMenu;
+  QMenu *m_stackContextMenu;
 
   //recorded information
   int m_mouseMovePosition[3];

@@ -14,9 +14,10 @@ public:
   ~ZStackWatershed();
 
 public:
-  ZStack* run(const Stack *stack, const std::vector<ZStack *> &seedMask);
+  //ZStack* run(const Stack *stack, const std::vector<ZStack *> &seedMask);
   ZStack* run(const ZStack *stack, const std::vector<ZStack *> &seedMask);
   void setRange(int x0, int y0, int z0, int x1, int y1, int z1);
+  void setRange(const Cuboid_I &box);
   inline void setFloodingZero(bool status) {
     m_floodingZero = status;
   }

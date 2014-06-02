@@ -273,6 +273,14 @@ MainWindow::MainWindow(QWidget *parent) :
   m_bodyDlg = new FlyEmBodyIdDialog(this);
   m_hotSpotDlg = new FlyEmHotSpotDialog(this);
   m_dvidDlg = new ZDvidDialog(this);
+  m_dvidDlg->loadConfig(
+          ZString::fullPath(NeutubeConfig::getInstance().getApplicatinDir(),
+                            "json", "", "flyem_config.json"));
+#if defined(_FLYEM_)
+  NeutubeConfig::getInstance().getFlyEmConfig().setDvidTarget(
+        m_dvidDlg->getDvidTarget());
+#endif
+
   m_bodyFilterDlg = new FlyEmBodyFilterDialog(this);
 
   if (NeutubeConfig::getInstance().usingNativeDialog()) {
@@ -1052,6 +1060,12 @@ void MainWindow::report(const std::string &title, const std::string &msg,
                         ZMessageReporter::EMessageType msgType)
 {
   m_reporter->report(title, msg, msgType);
+}
+
+bool MainWindow::ask(const std::string &title, const std::string &msg)
+{
+  return QMessageBox::information(this, title.c_str(),
+        msg.c_str(), QMessageBox::No | QMessageBox::Yes) == QMessageBox::Yes;
 }
 
 void MainWindow::initOpenglContext()
@@ -5288,7 +5302,8 @@ void MainWindow::on_actionGet_Grayscale_triggered()
     connect(progressDlg, SIGNAL(canceled()), this, SLOT(cancelDvidRequest()));
 
     m_dvidClient->reset();
-    m_dvidClient->setServer(m_dvidImageDlg->getAddress());
+    m_dvidClient->setDefaultServer();
+    //m_dvidClient->setServer(m_dvidImageDlg->getAddress());
     int depth = m_dvidImageDlg->getDepth();
     ZDvidRequest request;
     request.setGetImageRequest(
@@ -5895,44 +5910,67 @@ void MainWindow::on_actionHDF5_Body_triggered()
 
 void MainWindow::on_actionDVID_Bundle_triggered()
 {
-  if (m_dvidDlg->exec()) {
-    if (m_bodyFilterDlg->exec()) {
-      m_progress->setRange(0, 3);
-
-      int currentProgress = 0;
-      m_progress->open();
-      m_progress->setLabelText(QString("Loading ..."));
-
-      m_progress->setValue(++currentProgress);
-
-      ZDvidTarget target;
-      target.set(
-            m_dvidDlg->getAddress().toStdString(),
-            m_dvidDlg->getUuid().toStdString(), m_dvidDlg->getPort());
-      ZDvidFilter dvidFilter;
-      dvidFilter.setDvidTarget(target);
-      dvidFilter.setMinBodySize(m_bodyFilterDlg->getMinBodySize());
-      if (m_bodyFilterDlg->hasUpperBodySize()) {
-        dvidFilter.setMaxBodySize(m_bodyFilterDlg->getMaxBodySize());
+#if defined(_FLYEM_)
+  ZDvidTarget target =
+      NeutubeConfig::getInstance().getFlyEmConfig().getDvidTarget();
+  bool continueLoading = false;
+  if (target.isValid()) {
+    if (ask("Load DVID Data",
+            "Load data from " + target.getSourceString() + "?")) {
+      continueLoading = true;
+    }
+  } else {
+    if (m_dvidDlg->exec()) {
+      NeutubeConfig::getInstance().getFlyEmConfig().setDvidTarget(
+            m_dvidDlg->getDvidTarget());
+      target = NeutubeConfig::getInstance().getFlyEmConfig().getDvidTarget();
+      if (!target.isValid()) {
+        report("Invalid DVID", "Invalid DVID server.", ZMessageReporter::Warning);
       } else {
-        dvidFilter.setMaxBodySize(std::numeric_limits<std::size_t>::max());
-      }
-
-      std::vector<int> excludedBodyArray = m_bodyFilterDlg->getExcludedBodies();
-      dvidFilter.exclude(excludedBodyArray);
-
-      ZFlyEmDataBundle *dataBundle = new ZFlyEmDataBundle;
-      if (dataBundle->loadDvid(dvidFilter)) {
-        ZFlyEmDataFrame *frame = new ZFlyEmDataFrame;
-        frame->addData(dataBundle);
-        addFlyEmDataFrame(frame);
-      } else {
-        delete dataBundle;
-        reportFileOpenProblem(target.getSourceString().c_str());
+        continueLoading = true;
       }
     }
-    m_progress->reset();
   }
+
+  if (continueLoading && m_bodyFilterDlg->exec()) {
+    m_progress->setRange(0, 3);
+
+    int currentProgress = 0;
+    m_progress->show();
+    m_progress->setLabelText(QString("Loading ") +
+                             target.getSourceString().c_str() + "...");
+
+    m_progress->setValue(++currentProgress);
+
+    ZDvidTarget target;
+    target.set(
+          m_dvidDlg->getAddress().toStdString(),
+          m_dvidDlg->getUuid().toStdString(), m_dvidDlg->getPort());
+    ZDvidFilter dvidFilter;
+    dvidFilter.setDvidTarget(target);
+    dvidFilter.setMinBodySize(m_bodyFilterDlg->getMinBodySize());
+    if (m_bodyFilterDlg->hasUpperBodySize()) {
+      dvidFilter.setMaxBodySize(m_bodyFilterDlg->getMaxBodySize());
+    } else {
+      dvidFilter.setMaxBodySize(std::numeric_limits<std::size_t>::max());
+    }
+
+    std::vector<int> excludedBodyArray = m_bodyFilterDlg->getExcludedBodies();
+    dvidFilter.exclude(excludedBodyArray);
+
+    ZFlyEmDataBundle *dataBundle = new ZFlyEmDataBundle;
+    if (dataBundle->loadDvid(dvidFilter)) {
+      ZFlyEmDataFrame *frame = new ZFlyEmDataFrame;
+      frame->addData(dataBundle);
+      addFlyEmDataFrame(frame);
+    } else {
+      delete dataBundle;
+      reportFileOpenProblem(target.getSourceString().c_str());
+    }
+  }
+  m_progress->reset();
+  m_progress->hide();
+#endif
 }
 
 void MainWindow::on_actionSubmit_Skeletonize_triggered()
@@ -5966,16 +6004,22 @@ void MainWindow::on_actionSplit_Region_triggered()
 
 void MainWindow::on_actionLoad_Body_with_Grayscale_triggered()
 {
-  if (m_dvidObjectDlg->exec()) {
+#if defined(_FLYEM_)
+  if (m_bodyDlg->exec()) {
     m_progress->setLabelText("Loading ...");
     m_progress->setRange(0, 0);
     m_progress->open();
 
+    /*
     ZFlyEmDataInfo dataInfo(FlyEm::DATA_FIB25);
     ZDvidReader reader;
-    if (reader.open(dataInfo.getDvidAddress().c_str(), dataInfo.getDvidUuid().c_str(),
-                    dataInfo.getDvidPort())) {
-      std::vector<int> bodyIdArray = m_dvidObjectDlg->getBodyId();
+    */
+
+    const ZDvidTarget &target = GET_FLYEM_CONFIG.getDvidTarget();
+
+    ZDvidReader reader;
+    if (reader.open(target)) {
+      std::vector<int> bodyIdArray = m_bodyDlg->getBodyIdArray();
       if (!bodyIdArray.empty()) {
         int bodyId = bodyIdArray[0];
         ZObject3dScan body = reader.readBody(bodyId);
@@ -6010,10 +6054,20 @@ void MainWindow::on_actionLoad_Body_with_Grayscale_triggered()
             delete grayStack;
           }
 
+          ZStack *out = stack;
+          std::vector<int> dsIntv = m_bodyDlg->getDownsampleInterval();
+          if (dsIntv[0] > 0 || dsIntv[1] > 0 || dsIntv[2] > 0) {
+            Stack *outData = C_Stack::downsampleMin(
+                  stack->c_stack(), dsIntv[0], dsIntv[1], dsIntv[2]);
+            out = new ZStack();
+            out->consumeData(outData);
+            delete stack;
+          }
+
           //ZStackDoc *doc = new ZStackDoc(NULL, NULL);
           //doc->loadStack(stack);
           ZStackDocReader docReader;
-          docReader.setStack(stack);
+          docReader.setStack(out);
           ZStackFrame *frame = createStackFrame(&docReader);
           addStackFrame(frame);
           presentStackFrame(frame);
@@ -6022,6 +6076,7 @@ void MainWindow::on_actionLoad_Body_with_Grayscale_triggered()
     }
     m_progress->reset();
   }
+#endif
 }
 
 void MainWindow::createStackFrameFromDocReader(ZStackDocReader *reader)
@@ -6072,4 +6127,17 @@ void MainWindow::createStackFrameFromDocReader(ZStackDocReader *reader)
   }
 
   emit progressDone();
+}
+
+void MainWindow::on_actionFlyEmSettings_triggered()
+{
+#if defined(_FLYEM_)
+  if (m_dvidDlg->exec()) {
+    NeutubeConfig::getInstance().getFlyEmConfig().setDvidTarget(
+          m_dvidDlg->getDvidTarget());
+#ifdef _DEBUG_
+    NeutubeConfig::getInstance().getFlyEmConfig().print();
+#endif
+  }
+#endif
 }

@@ -26,3 +26,24 @@ void ZStackArray::paste(ZStack *stack, int valueIgnored) const
     }
   }
 }
+
+void ZStackArray::getBoundBox(Cuboid_I *box) const
+{
+  if (box != NULL) {
+    if (empty()) {
+      Cuboid_I_Set_S(box, 0, 0, 0, 0, 0, 0);
+    } else {
+
+      const_iterator iter = begin();
+      const ZStack *stack = *iter;
+      stack->getBoundBox(box);
+      ++iter;
+      for (; iter != end(); ++iter) {
+        Cuboid_I singleBox;
+        stack = *iter;
+        stack->getBoundBox(&singleBox);
+        Cuboid_I_Union(box, &singleBox, box);
+      }
+    }
+  }
+}

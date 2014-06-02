@@ -11757,7 +11757,7 @@ void ZTest::test(MainWindow *host)
   set1.print();
 #endif
 
-#if 1
+#if 0
   ZStroke2d stroke;
   stroke.append(10, 10);
   //stroke.append(20, 20);
@@ -11768,5 +11768,17 @@ void ZTest::test(MainWindow *host)
   stack->printInfo();
 
   stack->save(GET_DATA_DIR + "/test.tif");
+#endif
+
+#if 1
+  Stack *stack = C_Stack::make(GREY8, 5, 5, 5);
+  C_Stack::setOne(stack);
+  for (size_t i = 0; i < C_Stack::voxelNumber(stack); ++i) {
+    stack->array[i] = 255-i;
+  }
+  C_Stack::printValue(stack);
+
+  Stack *out = C_Stack::downsampleMin(stack, 1, 1, 1);
+  C_Stack::printValue(out);
 #endif
 }

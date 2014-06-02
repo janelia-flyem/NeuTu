@@ -204,35 +204,46 @@ void ZStackDoc::createActions()
   m_redoAction->setShortcuts(QKeySequence::Redo);
 
   QAction *action = new QAction("Downstream", this);
+  action->setStatusTip("Select downstream nodes");
   connect(action, SIGNAL(triggered()), this, SLOT(selectDownstreamNode()));
   m_actionMap[ACTION_SELECT_DOWNSTREAM] = action;
 
   action = new QAction("Upstream", this);
+  action->setStatusTip("Select upstream nodes");
   connect(action, SIGNAL(triggered()), this, SLOT(selectUpstreamNode()));
   m_actionMap[ACTION_SELECT_UPSTREAM] = action;
 
   action = new QAction("Neighbors", this);
+  action->setStatusTip(
+        "Select neighbors (nodes coonected directly) of the currently selected nodes");
   connect(action, SIGNAL(triggered()), this, SLOT(selectNeighborSwcNode()));
   m_actionMap[ACTION_SELECT_NEIGHBOR_SWC_NODE] = action;
 
   action = new QAction("Host branch", this);
+  action->setStatusTip("Select branches containing the currently selected nodes");
   connect(action, SIGNAL(triggered()), this, SLOT(selectBranchNode()));
   m_actionMap[ACTION_SELECT_SWC_BRANCH] = action;
 
   action = new QAction("All connected nodes", this);
+  action->setStatusTip("Select all nodes connected (directly or indirectly) "
+                       "of the currently selected nodes");
   connect(action, SIGNAL(triggered()), this, SLOT(selectConnectedNode()));
   m_actionMap[ACTION_SELECT_CONNECTED_SWC_NODE] = action;
 
   action = new QAction("All nodes", this);
+  action->setShortcut(QKeySequence::SelectAll);
+  action->setStatusTip("Selet all nodes");
   connect(action, SIGNAL(triggered()), this, SLOT(selectAllSwcTreeNode()));
   m_actionMap[ACTION_SELECT_ALL_SWC_NODE] = action;
 
   action = new QAction("Resolve crossover", this);
+  action->setStatusTip("Create a crossover near the selected node if it is detected");
   connect(action, SIGNAL(triggered()),
           this, SLOT(executeResolveCrossoverCommand()));
   m_actionMap[ACTION_RESOLVE_CROSSOVER] = action;
 
   action = new QAction("Remove turn", this);
+  action->setStatusTip("Remove a nearby sharp turn");
   connect(action, SIGNAL(triggered()),
           this, SLOT(executeRemoveTurnCommand()));
   m_actionMap[ACTION_REMOVE_TURN] = action;
@@ -247,27 +258,36 @@ void ZStackDoc::createActions()
   m_actionMap[ACTION_MEASURE_SCALED_SWC_NODE_LENGTH] = action;
 
   action = new QAction("Delete", this);
+  action->setShortcut(Qt::Key_X);
+  action->setStatusTip("Delete selected nodes");
   action->setIcon(QIcon(":/images/delete.png"));
   connect(action, SIGNAL(triggered()), this, SLOT(executeDeleteSwcNodeCommand()));
   m_actionMap[ACTION_DELETE_SWC_NODE] = action;
 
   action = new QAction("Insert", this);
+  action->setStatusTip("Insert a node between two adjacent nodes");
+  action->setShortcut(Qt::Key_I);
   action->setIcon(QIcon(":/images/insert.png"));
   connect(action, SIGNAL(triggered()), this, SLOT(executeInsertSwcNode()));
   m_actionMap[ACTION_INSERT_SWC_NODE] = action;
 
   action = new QAction("Break", this);
+  action->setStatusTip("Delect connections among the selected nodes");
+  action->setShortcut(Qt::Key_B);
   connect(action, SIGNAL(triggered()),
           this, SLOT(executeBreakSwcConnectionCommand()));
   action->setIcon(QIcon(":/images/cut.png"));
   m_actionMap[ACTION_BREAK_SWC_NODE] = action;
 
   action = new QAction("Connect", this);
+  action->setStatusTip("Connect selected nodes");
+  action->setShortcut(Qt::Key_C);
   action->setIcon(QIcon(":/images/connect.png"));
   connect(action, SIGNAL(triggered()), this, SLOT(executeConnectSwcNodeCommand()));
   m_actionMap[ACTION_CONNECT_SWC_NODE] = action;
 
   action = new QAction("Merge", this);
+  action->setStatusTip("Merge selected nodes, which for a single tree");
   connect(action, SIGNAL(triggered()), this, SLOT(executeMergeSwcNodeCommand()));
   action->setIcon(QIcon(":/images/merge.png"));
   m_actionMap[ACTION_MERGE_SWC_NODE] = action;
@@ -283,18 +303,23 @@ void ZStackDoc::createActions()
   m_actionMap[ACTION_CHANGE_SWC_SIZE] = action;
 
   action = new QAction("Set as root", this);
+  action->setStatusTip("Set the selected node as a root");
   connect(action, SIGNAL(triggered()), this, SLOT(executeSetRootCommand()));
   m_actionMap[ACTION_SET_SWC_ROOT] = action;
 
   action = new QAction("Join isolated branch", this);
+  action->setStatusTip("Connect to the nearest branch that does not have a path to the selected nodes");
   connect(action, SIGNAL(triggered()), this, SLOT(executeSetBranchPoint()));
   m_actionMap[ACTION_SET_BRANCH_POINT] = action;
 
   action = new QAction("Join isolated brach (across trees)", this);
+  action->setStatusTip("Connect to the nearest branch that does not have a path to the selected nodes. "
+                       "The branch can be in another neuron.");
   connect(action, SIGNAL(triggered()), this, SLOT(executeConnectIsolatedSwc()));
   m_actionMap[ACTION_CONNECTED_ISOLATED_SWC] = action;
 
   action = new QAction("Reset branch point", this);
+  action->setStatusTip("Move a neighboring branch point to the selected node");
   connect(action, SIGNAL(triggered()), this, SLOT(executeResetBranchPoint()));
   m_actionMap[ACTION_RESET_BRANCH_POINT] = action;
 
@@ -5323,6 +5348,13 @@ void ZStackDoc::notifySwcModified()
   emit swcModified();
 }
 
+void ZStackDoc::notifyStatusMessageUpdated(const QString &message)
+{
+  if (!message.isEmpty()) {
+    emit statusMessageUpdated(message);
+  }
+}
+
 void ZStackDoc::notifyPunctumModified()
 {
   emit punctaModified();
@@ -5655,6 +5687,9 @@ bool ZStackDoc::executeSwcNodeSmartExtendCommand(const ZPoint &center)
 bool ZStackDoc::executeSwcNodeSmartExtendCommand(
     const ZPoint &center, double radius)
 {
+  bool succ = false;
+  QString message;
+
   QUndoCommand *command = NULL;
   std::set<Swc_Tree_Node*> *nodeSet = selectedSwcTreeNodes();
   if (!nodeSet->empty()) {
@@ -5694,6 +5729,8 @@ bool ZStackDoc::executeSwcNodeSmartExtendCommand(
             }
             ZSwcPath path(begin, leaf);
 
+            message = QString("%1 nodes are added").arg(path.size());
+
             command = new ZStackDocCommand::SwcEdit::CompositeCommand(this);
             new ZStackDocCommand::SwcEdit::AddSwcNode(this, begin, command);
             std::set<Swc_Tree_Node*> nodeSet;
@@ -5716,14 +5753,18 @@ bool ZStackDoc::executeSwcNodeSmartExtendCommand(
   if (command != NULL) {
     pushUndoCommand(command);
     deprecateTraceMask();
-    return true;
+    notifyStatusMessageUpdated(message);
+    succ = true;
   }
 
-  return false;
+  return succ;
 }
 
 bool ZStackDoc::executeInterpolateSwcZCommand()
 {
+  bool succ = false;
+  QString message;
+
   if (!m_selectedSwcTreeNodes.empty()) {
     ZStackDocCommand::SwcEdit::CompositeCommand *allCommand =
         new ZStackDocCommand::SwcEdit::CompositeCommand(this);
@@ -5763,18 +5804,23 @@ bool ZStackDoc::executeInterpolateSwcZCommand()
       allCommand->setText(QObject::tr("Z Interpolation"));
       pushUndoCommand(allCommand);
       deprecateTraceMask();
+      message = QString("The Z coordinates of %1 node(s) are intepolated").
+          arg(allCommand->childCount());
     } else {
       delete allCommand;
     }
 
-    return true;
+    succ = true;
   }
 
-  return false;
+  notifyStatusMessageUpdated(message);
+  return succ;
 }
 
 bool ZStackDoc::executeInterpolateSwcPositionCommand()
 {
+  bool succ = false;
+  QString message;
   if (!m_selectedSwcTreeNodes.empty()) {
     ZStackDocCommand::SwcEdit::CompositeCommand *allCommand =
         new ZStackDocCommand::SwcEdit::CompositeCommand(this);
@@ -5823,18 +5869,24 @@ bool ZStackDoc::executeInterpolateSwcPositionCommand()
       allCommand->setText(QObject::tr("Position Interpolation"));
       pushUndoCommand(allCommand);
       deprecateTraceMask();
+      message = QString("The coordinates of %1 node(s) are intepolated").
+          arg(allCommand->childCount());
     } else {
       delete allCommand;
     }
 
-    return true;
+    succ = true;
   }
 
-  return false;
+  notifyStatusMessageUpdated(message);
+
+  return succ;
 }
 
 bool ZStackDoc::executeInterpolateSwcCommand()
 {
+  bool succ = false;
+  QString message;
   if (!m_selectedSwcTreeNodes.empty()) {
     ZStackDocCommand::SwcEdit::CompositeCommand *allCommand =
         new ZStackDocCommand::SwcEdit::CompositeCommand(this);
@@ -5887,18 +5939,22 @@ bool ZStackDoc::executeInterpolateSwcCommand()
       allCommand->setText(QObject::tr("Interpolation"));
       pushUndoCommand(allCommand);
       deprecateTraceMask();
+      message = QString("%1 node(s) are interpolated").arg(allCommand->childCount());
     } else {
       delete allCommand;
     }
 
-    return true;
+    succ = true;
   }
 
-  return false;
+  notifyStatusMessageUpdated(message);
+  return succ;
 }
 
 bool ZStackDoc::executeInterpolateSwcRadiusCommand()
 {
+  bool succ = false;
+  QString message;
   if (!m_selectedSwcTreeNodes.empty()) {
     ZStackDocCommand::SwcEdit::CompositeCommand *allCommand =
         new ZStackDocCommand::SwcEdit::CompositeCommand(this);
@@ -5938,18 +5994,23 @@ bool ZStackDoc::executeInterpolateSwcRadiusCommand()
       allCommand->setText(QObject::tr("Radius Interpolation"));
       pushUndoCommand(allCommand);
       deprecateTraceMask();
+      message = QString("Radii of %1 node(s) are interpolated.").
+          arg(allCommand->childCount());
     } else {
       delete allCommand;
     }
 
-    return true;
+    succ = true;
   }
 
-  return false;
+  notifyStatusMessageUpdated(message);
+  return succ;
 }
 
 bool ZStackDoc::executeSwcNodeChangeZCommand(double z)
 {
+  bool succ = false;
+  QString message;
   if (!m_selectedSwcTreeNodes.empty()) {
     ZStackDocCommand::SwcEdit::CompositeCommand *allCommand =
         new ZStackDocCommand::SwcEdit::CompositeCommand(this);
@@ -5965,18 +6026,23 @@ bool ZStackDoc::executeSwcNodeChangeZCommand(double z)
       allCommand->setText(QObject::tr("Change Z of Selected Node"));
       pushUndoCommand(allCommand);
       deprecateTraceMask();
+      message = QString("Z of %1 node(s) is set to %2").
+          arg(allCommand->childCount()).arg(z);
     } else {
       delete allCommand;
     }
-
-    return true;
+    succ = true;
   }
 
-  return false;
+  notifyStatusMessageUpdated(message);
+
+  return succ;
 }
 
 bool ZStackDoc::executeMoveSwcNodeCommand(double dx, double dy, double dz)
 {
+  bool succ = false;
+  QString message;
   if (!m_selectedSwcTreeNodes.empty()) {
     ZStackDocCommand::SwcEdit::CompositeCommand *allCommand =
         new ZStackDocCommand::SwcEdit::CompositeCommand(this);
@@ -5994,14 +6060,16 @@ bool ZStackDoc::executeMoveSwcNodeCommand(double dx, double dy, double dz)
       allCommand->setText(QObject::tr("Move Selected Node"));
       pushUndoCommand(allCommand);
       deprecateTraceMask();
+      message = "Nodes moved.";
     } else {
       delete allCommand;
     }
 
-    return true;
+    succ = true;
   }
 
-  return false;
+  notifyStatusMessageUpdated(message);
+  return succ;
 }
 
 bool ZStackDoc::executeTranslateSelectedSwcNode()
@@ -6086,6 +6154,10 @@ bool ZStackDoc::executeChangeSelectedSwcNodeSize()
 
 bool ZStackDoc::executeSwcNodeChangeSizeCommand(double dr)
 {
+  bool succ = false;
+  QString message;
+  int nodeCount = 0;
+
   if (!m_selectedSwcTreeNodes.empty()) {
     ZStackDocCommand::SwcEdit::CompositeCommand *allCommand =
         new ZStackDocCommand::SwcEdit::CompositeCommand(this);
@@ -6096,21 +6168,27 @@ bool ZStackDoc::executeSwcNodeChangeSizeCommand(double dr)
         SwcTreeNode::changeRadius(&newNode, dr, 1.0);
         new ZStackDocCommand::SwcEdit::ChangeSwcNode(
               this, *iter, newNode, allCommand);
+        ++nodeCount;
       }
     }
 
     if (allCommand->childCount() > 0) {
       allCommand->setText(QObject::tr("Node - Change Size"));
+
       pushUndoCommand(allCommand);
       deprecateTraceMask();
+
+      message = QString("Size(s) of %1 node(s) are changed.").arg(nodeCount);
     } else {
       delete allCommand;
     }
 
-    return true;
+    succ = true;
   }
 
-  return false;
+  notifyStatusMessageUpdated(message);
+
+  return succ;
 }
 
 void ZStackDoc::estimateSwcRadius(ZSwcTree *tree, int maxIter)
@@ -6173,35 +6251,84 @@ bool ZStackDoc::executeSwcNodeEstimateRadiusCommand()
   return false;
 }
 
+static bool isMergable(const std::set<Swc_Tree_Node*> &nodeSet)
+{
+  std::set<Swc_Tree_Node*> newSelectedSet;
+
+  QQueue<Swc_Tree_Node*> tnQueue;
+  tnQueue.enqueue(*(nodeSet.begin()));
+
+  while (!tnQueue.isEmpty()) {
+    Swc_Tree_Node *tn = tnQueue.dequeue();
+    std::vector<Swc_Tree_Node*> neighborArray =
+        SwcTreeNode::neighborArray(tn);
+    for (std::vector<Swc_Tree_Node*>::iterator
+         iter = neighborArray.begin(); iter != neighborArray.end();
+         ++iter) {
+      if (nodeSet.count(*iter) > 0 &&
+          newSelectedSet.count(*iter) == 0) {
+        newSelectedSet.insert(*iter);
+        tnQueue.enqueue(*iter);
+      }
+    }
+  }
+
+  return nodeSet.size() == newSelectedSet.size();
+}
+
 bool ZStackDoc::executeMergeSwcNodeCommand()
 {
+  bool succ = false;
+  QString message;
   if (selectedSwcTreeNodes()->size() > 1 &&
-      SwcTreeNode::isAllConnected(*selectedSwcTreeNodes())) {
+      /*SwcTreeNode::isAllConnected(*selectedSwcTreeNodes()) &&*/
+      isMergable(*selectedSwcTreeNodes())) {
+    message = QString("%1 nodes are merged.").arg(selectedSwcTreeNodes()->size());
     QUndoCommand *command = new ZStackDocCommand::SwcEdit::MergeSwcNode(this);
     pushUndoCommand(command);
     deprecateTraceMask();
-
-    return true;
+    succ = true;
+  } else {
+    message = QString("Cannot merge the nodes, "
+                      "which should be directly connected.");
   }
 
-  return false;
+  notifyStatusMessageUpdated(message);
+
+  return succ;
 }
 
 bool ZStackDoc::executeSetRootCommand()
 {
+  bool succ = false;
+
+  QString message;
+
   std::set<Swc_Tree_Node*> *nodeSet = selectedSwcTreeNodes();
   if (nodeSet->size() == 1) {
-    QUndoCommand *command =
-        new ZStackDocCommand::SwcEdit::SetRoot(this, *nodeSet->begin());
-    pushUndoCommand(command);
-    return true;
+    Swc_Tree_Node *tn = *nodeSet->begin();
+    if (!SwcTreeNode::isRoot(tn)) {
+      QUndoCommand *command =
+          new ZStackDocCommand::SwcEdit::SetRoot(this, tn);
+      pushUndoCommand(command);
+      succ = true;
+      message = "A node is set to root.";
+    } else {
+      message = "The selected node is already a root. Nothing is done.";
+    }
   }
 
-  return false;
+  notifyStatusMessageUpdated(message);
+
+  return succ;
 }
 
 bool ZStackDoc::executeRemoveTurnCommand()
 {
+  bool succ = false;
+
+  QString message;
+
   std::set<Swc_Tree_Node*> *nodeSet = selectedSwcTreeNodes();
   if (nodeSet->size() == 1) {
     Swc_Tree_Node *tn = *(nodeSet->begin());
@@ -6210,24 +6337,6 @@ bool ZStackDoc::executeRemoveTurnCommand()
     if (SwcTreeNode::isContinuation(tn)) {
       tn1 = SwcTreeNode::firstChild(tn);
       tn2 = SwcTreeNode::parent(tn);
-      /*
-      if (SwcTreeNode::isTurn(SwcTreeNode::firstChild(tn), tn,
-                              SwcTreeNode::parent(tn))) {
-        ZStackDocCommand::SwcEdit::CompositeCommand *command =
-                new ZStackDocCommand::SwcEdit::CompositeCommand(this);
-
-        new ZStackDocCommand::SwcEdit::SetParent(
-              this, SwcTreeNode::firstChild(tn), SwcTreeNode::parent(tn),
-              command);
-        new ZStackDocCommand::SwcEdit::DeleteSwcNode(
-              this, tn, SwcTreeNode::root(tn), command);
-        pushUndoCommand(command);
-
-        deprecateTraceMask();
-
-        return true;
-      }
-      */
     } else {
       std::vector<Swc_Tree_Node*> neighborArray =
           SwcTreeNode::neighborArray(tn);
@@ -6256,15 +6365,25 @@ bool ZStackDoc::executeRemoveTurnCommand()
             this, tn, x, y, z, r);
       pushUndoCommand(command);
       deprecateTraceMask();
-      return true;
+
+      message = "A turn is detected and removed.";
+
+      succ = true;
+    } else {
+      message = "No turn is detected. Nothing is done.";
     }
   }
 
-  return false;
+  notifyStatusMessageUpdated(message);
+
+  return succ;
 }
 
 bool ZStackDoc::executeResolveCrossoverCommand()
 {
+  bool succ = false;
+  QString message;
+
   std::set<Swc_Tree_Node*> *nodeSet = selectedSwcTreeNodes();
   if (nodeSet->size() == 1) {
     Swc_Tree_Node *center = *(nodeSet->begin());
@@ -6300,11 +6419,17 @@ bool ZStackDoc::executeResolveCrossoverCommand()
       }
       pushUndoCommand(command);
       deprecateTraceMask();
-      return true;
+
+      message = "A crossover is created.";
+      succ = true;
+    } else {
+      message = "No crossover is detected. Nothing is done";
     }
   }
 
-  return false;
+  notifyStatusMessageUpdated(message);
+
+  return succ;
 }
 
 bool ZStackDoc::executeWatershedCommand()
@@ -6358,6 +6483,9 @@ bool ZStackDoc::executeEnhanceLineCommand()
 
 bool ZStackDoc::executeDeleteSwcNodeCommand()
 {
+  bool succ = false;
+  QString message;
+
   if (!m_selectedSwcTreeNodes.empty()) {
     ZStackDocCommand::SwcEdit::CompositeCommand *allCommand =
         new ZStackDocCommand::SwcEdit::CompositeCommand(this);
@@ -6371,6 +6499,7 @@ bool ZStackDoc::executeDeleteSwcNodeCommand()
     new ZStackDocCommand::SwcEdit::RemoveEmptyTree(this, allCommand);
 
     if (allCommand->childCount() > 0) {
+      message = QString("%1 node(s) are deleted").arg(m_selectedSwcTreeNodes.size());
       allCommand->setText(QObject::tr("Delete Selected Node"));
       blockSignals(true);
       pushUndoCommand(allCommand);
@@ -6385,38 +6514,31 @@ bool ZStackDoc::executeDeleteSwcNodeCommand()
       delete allCommand;
     }
 
-    return true;
+    succ = true;
   }
 
-  return false;
+  notifyStatusMessageUpdated(message);
+
+  return succ;
 }
 
 bool ZStackDoc::executeConnectSwcNodeCommand()
 {
+  bool succ = false;
+  QString message;
+
   if (m_selectedSwcTreeNodes.size() > 1) {
     QUndoCommand *command =  new ZStackDocCommand::SwcEdit::ConnectSwcNode(this);
     pushUndoCommand(command);
     deprecateTraceMask();
-  }
-  /*
-  std::set<SwcTreeNode> swcNodeSet;
-  for (std::set<SwcTreeNode*>::const_iterator iter = m_selectedSwcTreeNodes.begin();
-       iter != m_selectedSwcTreeNodes.end(); ++iter) {
-    swcNodeSet.insert(m_selectedSwcTreeNodes.end(), *(*iter));
+
+    message = "Nodes are connected.";
+    succ = true;
   }
 
-  if (SwcTreeNode::connect(m_selectedSwcTreeNodes)) {
-    QUndoCommand *allCommand =
-        new ZStackDocCommand::SwcEdit::CompositeCommand(this);
-    for (set<Swc_Tree_Node*>::iterator iter = m_selectedSwcTreeNodes.begin();
-         iter != m_selectedSwcTreeNodes.end(); ++iter) {
-      if ()
-      new ZStackDocCommand::SwcEdit::SetParent()
-    }
-  }
-  */
+  notifyStatusMessageUpdated(message);
 
-  return false;
+  return succ;
 }
 
 bool ZStackDoc::executeConnectSwcNodeCommand(Swc_Tree_Node *tn)
@@ -6433,11 +6555,13 @@ bool ZStackDoc::executeConnectSwcNodeCommand(Swc_Tree_Node *tn)
 bool ZStackDoc::executeConnectSwcNodeCommand(
     Swc_Tree_Node *tn1, Swc_Tree_Node *tn2)
 {
+  QString message = "The nodes are already connected. Nothing is done";
   if (!SwcTreeNode::isRegular(tn1) || !SwcTreeNode::isRegular(tn2)) {
     return false;
   }
 
   if (SwcTreeNode::isRegular(SwcTreeNode::commonAncestor(tn1, tn2))) {
+    notifyStatusMessageUpdated(message);
     return false;
   }
 
@@ -6451,6 +6575,8 @@ bool ZStackDoc::executeConnectSwcNodeCommand(
   deprecateTraceMask();
 
   notifySwcModified();
+  message = "Two nodes are connected.";
+  notifyStatusMessageUpdated(message);
 
   return true;
 }
@@ -6470,16 +6596,18 @@ bool ZStackDoc::executeSmartConnectSwcNodeCommand()
 bool ZStackDoc::executeSmartConnectSwcNodeCommand(
     Swc_Tree_Node *tn1, Swc_Tree_Node *tn2)
 {
+  bool succ  = false;
+
+  QString message;
+
   if (!SwcTreeNode::isRegular(tn1) || !SwcTreeNode::isRegular(tn2)) {
     return false;
   }
 
   if (SwcTreeNode::isRegular(SwcTreeNode::commonAncestor(tn1, tn2))) {
+    notifyStatusMessageUpdated("Nothing is done because the nodes are already connected.");
     return false;
   }
-
-  QUndoCommand *command =
-      new ZStackDocCommand::SwcEdit::CompositeCommand(this);
 
   //ZNeuronTracer tracer;
   //tracer.setBackgroundType(getStackBackground());
@@ -6523,6 +6651,8 @@ bool ZStackDoc::executeSmartConnectSwcNodeCommand(
         branch = NULL;
       }
 
+      QUndoCommand *command =
+          new ZStackDocCommand::SwcEdit::CompositeCommand(this);
       command = new ZStackDocCommand::SwcEdit::CompositeCommand(this);
       new ZStackDocCommand::SwcEdit::SetRoot(this, tn2, command);
 
@@ -6540,19 +6670,26 @@ bool ZStackDoc::executeSmartConnectSwcNodeCommand(
         new ZStackDocCommand::SwcEdit::SetParent(this, tn2, tn1, command);
       }
       new ZStackDocCommand::SwcEdit::RemoveEmptyTree(this, command);
+
+      pushUndoCommand(command);
+      deprecateTraceMask();
+
+      notifySwcModified();
+      message = "Nodes are connected";
+      succ = true;
     }
   }
 
-  pushUndoCommand(command);
-  deprecateTraceMask();
+  notifyStatusMessageUpdated(message);
 
-  notifySwcModified();
-
-  return true;
+  return succ;
 }
 
 bool ZStackDoc::executeBreakSwcConnectionCommand()
 {
+  bool succ = false;
+
+  QString message;
   if (!m_selectedSwcTreeNodes.empty()) {
     ZStackDocCommand::SwcEdit::CompositeCommand *allCommand =
         new ZStackDocCommand::SwcEdit::CompositeCommand(this);
@@ -6574,14 +6711,17 @@ bool ZStackDoc::executeBreakSwcConnectionCommand()
       blockSignals(false);
       notifySwcModified();
       deprecateTraceMask();
+
+      message = "Connections removed.";
+      succ = true;
     } else {
       delete allCommand;
     }
-
-    return true;
   }
 
-  return false;
+  notifyStatusMessageUpdated(message);
+
+  return succ;
 }
 
 bool ZStackDoc::executeBreakForestCommand()
@@ -6878,10 +7018,13 @@ bool ZStackDoc::executeTraceSwcBranchCommand(
 #endif
     }
 
+    ZSwcPath path(branchRoot, tree->firstLeaf());
+
+
     QUndoCommand *command =
         new ZStackDocCommand::SwcEdit::CompositeCommand(this);
 
-    ZSwcPath path(branchRoot, tree->firstLeaf());
+
 
     new ZStackDocCommand::SwcEdit::AddSwc(this, tree, command);
 
@@ -6895,6 +7038,9 @@ bool ZStackDoc::executeTraceSwcBranchCommand(
 
     pushUndoCommand(command);
 
+    QString statusMessage;
+    statusMessage = QString("%1 nodes added.").arg(path.size());
+    emit statusMessageUpdated(statusMessage);
     //tracer.updateMask(branch);
 
     return true;
@@ -6983,6 +7129,7 @@ void ZStackDoc::saveSwc(QWidget *parentWidget)
       if (tree->hasGoodSourceName()) {
         tree->resortId();
         tree->save(tree->source().c_str());
+        emit statusMessageUpdated(QString(tree->source().c_str()) + " saved.");
       } else {
         ZString stackSource = stackSourcePath();
         QString fileName;
@@ -7001,6 +7148,7 @@ void ZStackDoc::saveSwc(QWidget *parentWidget)
           tree->save(fileName.toStdString().c_str());
           tree->setSource(fileName.toStdString());
           notifySwcModified();
+          emit statusMessageUpdated(QString(tree->source().c_str()) + " saved.");
         }
       }
     }
@@ -7177,6 +7325,10 @@ void ZStackDoc::showSeletedSwcNodeLength(double *resolution)
 
 bool ZStackDoc::executeInsertSwcNode()
 {
+  bool succ = false;
+
+  QString message;
+  int insertionCount = 0;
   if (selectedSwcTreeNodes()->size() >= 2) {
     QUndoCommand *command =
         new ZStackDocCommand::SwcEdit::CompositeCommand(this);
@@ -7188,22 +7340,33 @@ bool ZStackDoc::executeInsertSwcNode()
         SwcTreeNode::interpolate(*iter, parent, 0.5, tn);
         new ZStackDocCommand::SwcEdit::SetParent(this, tn, parent, command);
         new ZStackDocCommand::SwcEdit::SetParent(this, *iter, tn, command);
+        ++insertionCount;
       }
     }
     if (command->childCount() > 0) {
       pushUndoCommand(command);
       deprecateTraceMask();
-      return true;
+      message = QString("%1 nodes inserted.").arg(insertionCount);
+      succ = true;
     } else {
+      message = QString("Cannont insert a node. "
+                        "At least two adjacent nodes should be selected.");
       delete command;
     }
   }
 
-  return false;
+  if (!message.isEmpty()) {
+    emit statusMessageUpdated(message);
+  }
+
+  return succ;
 }
 
 bool ZStackDoc::executeSetBranchPoint()
 {
+  bool succ = false;
+  QString message;
+
   if (selectedSwcTreeNodes()->size() == 1) {
     Swc_Tree_Node *branchPoint = *(selectedSwcTreeNodes()->begin());
     Swc_Tree_Node *hostRoot = SwcTreeNode::regularRoot(branchPoint);
@@ -7249,24 +7412,30 @@ bool ZStackDoc::executeSetBranchPoint()
 
       pushUndoCommand(command);
       deprecateTraceMask();
-      return true;
+
+      message = "A branch point is created.";
+      succ = true;
     }
   }
 
-  return false;
+  if (!message.isEmpty()) {
+    emit statusMessageUpdated(message);
+  }
+
+  return succ;
 }
 
 bool ZStackDoc::executeConnectIsolatedSwc()
 {
+  bool succ = false;
+  QString message;
+
   if (selectedSwcTreeNodes()->size() == 1) {
     Swc_Tree_Node *branchPoint = *(selectedSwcTreeNodes()->begin());
     Swc_Tree_Node *hostRoot = SwcTreeNode::regularRoot(branchPoint);
     Swc_Tree_Node *masterRoot = SwcTreeNode::parent(hostRoot);
 
     if (SwcTreeNode::childNumber(masterRoot) > 1 || swcList()->size() > 1) {
-      QUndoCommand *command =
-          new ZStackDocCommand::SwcEdit::CompositeCommand(this);
-
       ZSwcTree tree;
       tree.setDataFromNode(masterRoot);
 
@@ -7308,21 +7477,27 @@ bool ZStackDoc::executeConnectIsolatedSwc()
       }
 
       if (closestNode != NULL) {
+        QUndoCommand *command =
+            new ZStackDocCommand::SwcEdit::CompositeCommand(this);
         if (!SwcTreeNode::isRoot(closestNode)) {
           new ZStackDocCommand::SwcEdit::SetRoot(this, closestNode, command);
         }
         new ZStackDocCommand::SwcEdit::SetParent(
               this, closestNode, branchPoint, command);
         new ZStackDocCommand::SwcEdit::RemoveEmptyTree(this, command);
-      }
+        pushUndoCommand(command);
+        deprecateTraceMask();
 
-      pushUndoCommand(command);
-      deprecateTraceMask();
-      return true;
+        message = "Two nodes are connected.";
+        succ = true;
+      }
     }
   }
 
-  return false;
+  if (!message.isEmpty()) {
+    emit statusMessageUpdated(message);
+  }
+  return succ;
 }
 
 bool ZStackDoc::executeResetBranchPoint()
@@ -7659,7 +7834,26 @@ void ZStackDoc::localSeededWatershed()
 
   if (!m_strokeList.isEmpty()) {
     ZStackWatershed engine;
-    ZStack *out = engine.run(m_stack, createWatershedMask());
+    ZStackArray seedMask = createWatershedMask();
+
+    advanceProgress(0.1);
+    QApplication::processEvents();
+
+    Cuboid_I box;
+    seedMask.getBoundBox(&box);
+    const int xMargin = 10;
+    const int yMargin = 10;
+    const int zMargin = 20;
+    Cuboid_I_Expand_X(&box, xMargin);
+    Cuboid_I_Expand_Y(&box, yMargin);
+    Cuboid_I_Expand_Z(&box, zMargin);
+
+    engine.setRange(box);
+    ZStack *out = engine.run(m_stack, seedMask);
+
+    advanceProgress(0.1);
+    QApplication::processEvents();
+
 
 #if 0
     Stack *stack = m_stack->c_stack();
@@ -7704,6 +7898,9 @@ void ZStackDoc::localSeededWatershed()
 
     Object_3d *objData = Stack_Region_Border(out->c_stack(), 6, TRUE);
 
+    advanceProgress(0.1);
+    QApplication::processEvents();
+
     if (objData != NULL) {
       ZObject3d *obj = new ZObject3d(objData);
       /*
@@ -7715,12 +7912,39 @@ void ZStackDoc::localSeededWatershed()
       obj->translate(iround(out->getOffset().x()),
                      iround(out->getOffset().y()),
                      iround(out->getOffset().z()));
+      obj->setColor(255, 255, 0, 180);
 
       addObj3d(obj);
       notifyObj3dModified();
     }
 
    // C_Stack::kill(out);
+    delete out;
+  }
+}
+
+void ZStackDoc::seededWatershed()
+{
+  removeAllObj3d();
+
+  if (!m_strokeList.isEmpty()) {
+    ZStackWatershed engine;
+    ZStackArray seedMask = createWatershedMask();
+    ZStack *out = engine.run(m_stack, seedMask);
+
+    Object_3d *objData = Stack_Region_Border(out->c_stack(), 6, TRUE);
+
+    if (objData != NULL) {
+      ZObject3d *obj = new ZObject3d(objData);
+
+      obj->translate(iround(out->getOffset().x()),
+                     iround(out->getOffset().y()),
+                     iround(out->getOffset().z()));
+      obj->setColor(255, 255, 0, 255);
+
+      addObj3d(obj);
+      notifyObj3dModified();
+    }
     delete out;
   }
 }
@@ -7739,6 +7963,9 @@ void ZStackDoc::runLocalSeededWatershed()
 
 void ZStackDoc::runSeededWatershed()
 {
+#if 1
+  seededWatershed();
+#else //old code
   Stack *stack = m_stack->c_stack();
   Stack_Watershed_Workspace *ws =
       Make_Stack_Watershed_Workspace(stack);
@@ -7764,14 +7991,12 @@ void ZStackDoc::runSeededWatershed()
     tmpStroke.labelGrey(mask);
   }
 
-  /*
   size_t voxelNumber = m_stack->getVoxelNumber();
   for (size_t i = 0; i < voxelNumber; ++i) {
     if (stack->array[i] == 0) {
       mask->array[i] = STACK_WATERSHED_BARRIER;
     }
   }
-  */
 #if 0
   if (m_stack->isBinary()) {
     size_t voxelNumber = m_stack->getVoxelNumber();
@@ -7806,5 +8031,8 @@ void ZStackDoc::runSeededWatershed()
   C_Stack::write(GET_DATA_DIR + "/test.tif", ws->mask);
 #endif
   //return out;
+
+#endif
+
 }
 

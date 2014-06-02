@@ -45,6 +45,10 @@ public slots:
   void slotTest();
 
 private:
+  static std::vector<std::pair<int, int> > partitionStack(
+      int x0, int y0, int z0, int width, int height, int depth);
+
+private:
   QEventLoop *m_eventLoop;
   ZDvidClient *m_dvidClient;
   QTimer *m_timer;

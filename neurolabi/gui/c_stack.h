@@ -207,6 +207,17 @@ Stack* boundCrop(const Stack *stack, int margin, int *offset);
 Stack* resize(const Stack* stack,int width,int height,int depth);
 Stack* translate(Stack *stack, int kind, int in_place);
 
+/*!
+ * \brief Downsample a stack
+ *
+ * \param stack source stack
+ * \param xintv X interval
+ * \param yintv Y interval
+ * \param zintv Z interval
+ * \return The result.
+ */
+Stack* downsampleMax(const Stack *stack, int xintv, int yintv, int zintv);
+Stack* downsampleMin(const Stack *stack, int xintv, int yintv, int zintv);
 
 void print(const Stack *stack);
 
@@ -347,7 +358,7 @@ void setZero(Mc_Stack *stack, int x0, int y0, int z0, int sw, int sh, int sd);
  */
 //void setBlockValue(Stack *stack, const Stack *block, int x0, int y0, int z0);
 void setBlockValue(Stack *stack, const Stack *block, int x0, int y0, int z0,
-                   int valueIgnored = -1);
+                   int srcValueIgnored = -1, int dstValueIgnored = -1);
 
 //Paint routines
 void drawPatch(Stack *canvas, const Stack *patch,

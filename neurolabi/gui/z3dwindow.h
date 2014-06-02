@@ -226,6 +226,7 @@ public slots:
 
   void toogleMoveSelectedObjectsMode(bool checked);
   void moveSelectedObjects(double x, double y, double z);
+  void notifyUser(const QString &message);
 
 protected:
   virtual void dragEnterEvent(QDragEnterEvent *event);

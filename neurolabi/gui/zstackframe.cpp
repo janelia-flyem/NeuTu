@@ -209,6 +209,8 @@ void ZStackFrame::connectSignalSlot()
           m_view, SLOT(paintObject()));
   connect(m_view, SIGNAL(currentSliceChanged(int)),
           m_presenter, SLOT(processSliceChangeEvent(int)));
+  connect(m_doc.get(), SIGNAL(statusMessageUpdated(QString)),
+          this, SLOT(notifyUser(QString)));
 }
 
 void ZStackFrame::disconnectAll()
@@ -1555,9 +1557,11 @@ void ZStackFrame::zoomToSelectedSwcNodes()
 
 void ZStackFrame::notifyUser(const QString &message)
 {
-  m_statusInfo = message;
+  if (!message.isEmpty()) {
+    m_statusInfo = message;
 
-  emit infoChanged();
+    emit infoChanged();
+  }
 }
 
 void ZStackFrame::runSeededWatershed()

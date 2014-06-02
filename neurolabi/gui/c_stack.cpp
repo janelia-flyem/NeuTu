@@ -232,6 +232,141 @@ Stack* C_Stack::resize(const Stack *stack, int width, int height, int depth)
   return Resize_Stack(stack, width, height, depth);
 }
 
+#define DOWNSAMPLE_GENERAL(srcArray, dstArray, compare) \
+  for (int z = 0; z < d; ++z) {\
+    for (int y = 0; y < h; ++y) {\
+      for (int x = 0; x < w; ++x) {\
+        if (compare || (xCounter + yCounter + zCounter) == 0) {\
+          *dstArray = *srcArray;\
+        }\
+        ++srcArray;\
+        if (++xCounter > xintv) {\
+          xCounter = 0;\
+          ++dstArray;\
+        }\
+      }\
+      if (xCounter != 0) {\
+        ++dstArray;\
+      }\
+      if (++yCounter > yintv) {\
+        yCounter = 0;\
+      } else {\
+        dstArray -= swidth;\
+      }\
+      xCounter = 0;\
+    }\
+    if (yCounter != 0) {\
+      dstArray += swidth;\
+    }\
+    if (++zCounter > zintv) {\
+      zCounter = 0;\
+    } else {\
+      dstArray -= outArea;\
+    }\
+    xCounter = 0;\
+    yCounter = 0;\
+  }
+
+#define DOWNSAMPLE_MAX(srcArray, dstArray) \
+  DOWNSAMPLE_GENERAL(srcArray, dstArray, (*srcArray > *dstArray))
+
+#define DOWNSAMPLE_MIN(srcArray, dstArray) \
+  DOWNSAMPLE_GENERAL(srcArray, dstArray, (*srcArray < *dstArray))
+
+Stack* C_Stack::downsampleMax(const Stack *stack, int xintv, int yintv, int zintv)
+{
+  if (xintv == 0 && yintv == 0 && zintv == 0) {
+    return clone(stack);
+  }
+
+  int xCounter = 0;
+  int yCounter = 0;
+  int zCounter = 0;
+
+  int w = width(stack);
+  int h = height(stack);
+  int d = depth(stack);
+  int swidth = w / (xintv + 1) + (w % (xintv + 1) > 0);
+  int sheight = h / (yintv + 1) + (h % (yintv + 1) > 0);
+  int sdepth = d / (zintv + 1) + (d % (zintv + 1) > 0);
+
+  Stack *out = make(kind(stack), swidth, sheight, sdepth);
+  //setZero(out);
+
+  size_t outArea = area(out);
+
+  Image_Array srcIma;
+  Image_Array dstIma;
+  srcIma.array = stack->array;
+  dstIma.array = out->array;
+
+  switch (kind(stack)) {
+  case GREY:
+    DOWNSAMPLE_MAX(srcIma.array8, dstIma.array8);
+    break;
+  case GREY16:
+    DOWNSAMPLE_MAX(srcIma.array16, dstIma.array16);
+    break;
+  case GREY32:
+    DOWNSAMPLE_MAX(srcIma.array32, dstIma.array32);
+    break;
+  case GREY64:
+    DOWNSAMPLE_MAX(srcIma.array64, dstIma.array64);
+    break;
+  default:
+    break;
+  }
+
+  return out;
+}
+
+Stack* C_Stack::downsampleMin(const Stack *stack, int xintv, int yintv, int zintv)
+{
+  if (xintv == 0 && yintv == 0 && zintv == 0) {
+    return clone(stack);
+  }
+
+  int xCounter = 0;
+  int yCounter = 0;
+  int zCounter = 0;
+
+  int w = width(stack);
+  int h = height(stack);
+  int d = depth(stack);
+  int swidth = w / (xintv + 1) + (w % (xintv + 1) > 0);
+  int sheight = h / (yintv + 1) + (h % (yintv + 1) > 0);
+  int sdepth = d / (zintv + 1) + (d % (zintv + 1) > 0);
+
+  Stack *out = make(kind(stack), swidth, sheight, sdepth);
+  setZero(out);
+
+  size_t outArea = area(out);
+
+  Image_Array srcIma;
+  Image_Array dstIma;
+  srcIma.array = stack->array;
+  dstIma.array = out->array;
+
+  switch (kind(stack)) {
+  case GREY:
+    DOWNSAMPLE_MIN(srcIma.array8, dstIma.array8);
+    break;
+  case GREY16:
+    DOWNSAMPLE_MIN(srcIma.array16, dstIma.array16);
+    break;
+  case GREY32:
+    DOWNSAMPLE_MIN(srcIma.array32, dstIma.array32);
+    break;
+  case GREY64:
+    DOWNSAMPLE_MIN(srcIma.array64, dstIma.array64);
+    break;
+  default:
+    break;
+  }
+
+  return out;
+}
+
 /*
 Stack* C_Stack::copy(const Stack *stack)
 {
@@ -1027,7 +1162,8 @@ void C_Stack::setZero(
 for (int z = 0; z < sd; ++z) {\
   for (int y = 0; y < sh; ++y) {\
     for (int x = 0; x < sw; ++x) {\
-      if ((int) srcArray[offset2] != valueIgnored) {\
+      if ((int) srcArray[offset2] != srcValueIgnored && \
+          (int) dstArray[offset] != dstValueIgnored) {\
         dstArray[offset] = srcArray[offset2];\
       }\
       offset += p1;\
@@ -1040,9 +1176,8 @@ for (int z = 0; z < sd; ++z) {\
   offset2 += bp3;\
 }
 
-void C_Stack::setBlockValue(
-    Stack *stack, const Stack *block, int x0, int y0, int z0,
-    int valueIgnored)
+void C_Stack::setBlockValue(Stack *stack, const Stack *block, int x0, int y0, int z0,
+    int srcValueIgnored, int dstValueIgnored)
 {
   if (kind(stack) != kind(block) || stack == NULL || block == NULL) {
     return;

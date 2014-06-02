@@ -242,6 +242,9 @@ void Z3DWindow::init(EInitMode mode)
   connect(m_swcFilter, SIGNAL(connectingSwcTreeNode(Swc_Tree_Node*)), this,
           SLOT(connectSwcTreeNode(Swc_Tree_Node*)));
 
+  connect(m_doc.get(), SIGNAL(statusMessageUpdated(QString)),
+          this, SLOT(notifyUser(QString)));
+
   m_swcFilter->setSelectedSwcs(m_doc->selectedSwcs());
   m_swcFilter->setSelectedSwcTreeNodes(m_doc->selectedSwcTreeNodes());
   m_punctaFilter->setSelectedPuncta(m_doc->selectedPuncta());
@@ -395,7 +398,8 @@ void Z3DWindow::createActions()
           SLOT(toogleAddSwcNodeMode(bool)));
 
   m_toogleMoveSelectedObjectsAction =
-      new QAction("Move selected objects (Shift+Mouse)", this);
+      new QAction("Move Selected (Shift+Mouse)", this);
+  m_toogleMoveSelectedObjectsAction->setIcon(QIcon(":/images/move.png"));
   m_toogleMoveSelectedObjectsAction->setCheckable(true);
   connect(m_toogleMoveSelectedObjectsAction, SIGNAL(toggled(bool)), this,
           SLOT(toogleMoveSelectedObjectsMode(bool)));
@@ -408,6 +412,8 @@ void Z3DWindow::createActions()
 
   m_toogleSmartExtendSelectedSwcNodeAction = new QAction("Extend", this);
   m_toogleSmartExtendSelectedSwcNodeAction->setCheckable(true);
+  m_toogleSmartExtendSelectedSwcNodeAction->setStatusTip(
+        "Extend the currently selected node with mouse click.");
   m_toogleSmartExtendSelectedSwcNodeAction->setIcon(QIcon(":/images/extend.png"));
   connect(m_toogleSmartExtendSelectedSwcNodeAction, SIGNAL(toggled(bool)), this,
           SLOT(toogleSmartExtendSelectedSwcNodeMode(bool)));
@@ -434,6 +440,8 @@ void Z3DWindow::createActions()
   m_singleSwcNodeActionActivator.registerAction(m_connectSwcNodeAction, false);
 
   m_connectToSwcNodeAction = new QAction("Connect to", this);
+  m_connectToSwcNodeAction->setStatusTip(
+        "Connect the currently selected node to another");
   connect(m_connectToSwcNodeAction, SIGNAL(triggered()), this,
           SLOT(startConnectingSwcNode()));
   m_connectToSwcNodeAction->setIcon(QIcon(":/images/connect_to.png"));
@@ -631,20 +639,22 @@ void Z3DWindow::createContextMenu()
   //selectMenu->addAction(m_selectAllConnectedSwcNodeAction);
   //selectMenu->addAction(m_selectAllSwcNodeAction);
   //contextMenu->addMenu(selectMenu);
-
-  contextMenu->addAction(m_locateSwcNodeIn2DAction);
-  contextMenu->addAction(m_changeSwcNodeTypeAction);
+  //contextMenu->addAction(m_changeSwcNodeTypeAction);
   //contextMenu->addAction(m_translateSwcNodeAction);
   //contextMenu->addAction(m_changeSwcNodeSizeAction);
   //contextMenu->addAction(m_removeSelectedObjectsAction);
 
   //contextMenu->addAction(m_toogleExtendSelectedSwcNodeAction);
-  contextMenu->addAction(m_toogleAddSwcNodeModeAction);
+
   contextMenu->addAction(m_toogleMoveSelectedObjectsAction);
   //contextMenu->addAction(m_removeSwcTurnAction);
   //contextMenu->addAction(m_resolveCrossoverAction);
   //contextMenu->addAction(m_swcNodeLengthAction);
-  ZStackDocMenuFactory::makeSwcNodeContextMenu(getDocument(), contextMenu);
+  ZStackDocMenuFactory::makeSwcNodeContextMenu(getDocument(), this, contextMenu);
+  contextMenu->addSeparator();
+  contextMenu->addAction(m_locateSwcNodeIn2DAction);
+  contextMenu->addAction(m_changeSwcNodeTypeAction);
+  contextMenu->addAction(m_toogleAddSwcNodeModeAction);
 
   m_contextMenuGroup["swcnode"] = contextMenu;
 
@@ -1764,7 +1774,7 @@ void Z3DWindow::changeBackground()
 void Z3DWindow::toogleMoveSelectedObjectsMode(bool checked)
 {
   getInteractionHandler()->setMoveObjects(checked);
-  m_canvas->setCursor(checked ? Qt::PointingHandCursor : Qt::ArrowCursor);
+  m_canvas->setCursor(checked ? Qt::ClosedHandCursor : Qt::ArrowCursor);
 }
 
 void Z3DWindow::moveSelectedObjects(double x, double y, double z)
@@ -1913,6 +1923,10 @@ void Z3DWindow::keyPressEvent(QKeyEvent *event)
       locateSwcNodeIn2DView();
     }
     break;
+  case Qt::Key_V:
+    if (event->modifiers() == Qt::NoModifier) {
+      m_toogleMoveSelectedObjectsAction->trigger();
+    }
   default:
     break;
   }
@@ -2832,4 +2846,9 @@ bool Z3DWindow::hasSelectedSwcNode() const
 bool Z3DWindow::hasMultipleSelectedSwcNode() const
 {
   return m_doc->hasMultipleSelectedSwcNode();
+}
+
+void Z3DWindow::notifyUser(const QString &message)
+{
+  statusBar()->showMessage(message);
 }

@@ -325,6 +325,7 @@ public: //Image processing
 
 private:
   void localSeededWatershed();
+  void seededWatershed();
 
 public: /* tracing routines */
   ZLocsegChain* fitseg(int x, int y, int z, double r = 3.0);
@@ -567,10 +568,15 @@ public:
   void notifyStackModified();
   void notifyStrokeModified();
   void notifyAllObjectModified();
+  void notifyStatusMessageUpdated(const QString &message);
 
 public:
   inline QAction* getUndoAction() { return m_undoAction; }
   inline QAction* getRedoAction() { return m_redoAction; }
+
+  ZSingleSwcNodeActionActivator* getSingleSwcNodeActionActivator()  {
+    return &m_singleSwcNodeActionActivator;
+  }
 
 public slots: //undoable commands
   bool executeAddObjectCommand(ZDocumentable *obj, NeuTube::EDocumentableType type);
@@ -690,6 +696,7 @@ signals:
   void swcVisibleStateChanged(ZSwcTree* swctree, bool visible);
   void cleanChanged(bool);
   void holdSegChanged();
+  void statusMessageUpdated(QString message);
 
 private:
   void connectSignalSlot();

@@ -1824,7 +1824,7 @@ ZStackDocCommand::ObjectEdit::MoveSelected::MoveSelected(
     m_punctaMoved(false), m_swcScaleX(1.), m_swcScaleY(1.), m_swcScaleZ(1.),
     m_punctaScaleX(1.), m_punctaScaleY(1.), m_punctaScaleZ(1.)
 {
-  setText(QObject::tr("Move Selected Objects"));
+  setText(QObject::tr("Move Selected"));
 }
 
 ZStackDocCommand::ObjectEdit::MoveSelected::~MoveSelected()

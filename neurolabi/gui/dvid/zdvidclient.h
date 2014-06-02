@@ -36,6 +36,8 @@ public:
 
   void setServer(const QString &server, int port);
 
+  void setDefaultServer();
+
   inline const QString &getServer() {
     return m_serverAddress;
   }

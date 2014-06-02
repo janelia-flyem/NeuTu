@@ -108,29 +108,18 @@ ZStack* ZDvidReader::readGrayScale(
   dvidBuffer->clearImageArray();
 
   ZDvidRequest request;
-  if (depth > 100) {
-    request.setGetImageRequest(x0, y0, z0, width, height, depth / 3);
-    m_dvidClient->appendRequest(request);
 
-    request.setGetImageRequest(x0, y0, z0 + depth / 3,
-                               width, height, depth / 3);
-    m_dvidClient->appendRequest(request);
-
-    request.setGetImageRequest(x0, y0, z0 + depth / 3 + depth / 3,
-                               width, height,
-                               depth - depth / 3 - depth / 3);
-    m_dvidClient->appendRequest(request);
-
-    m_dvidClient->postNextRequest();
-  } else {
-    request.setGetImageRequest(x0, y0, z0, width, height, depth);
+  std::vector<std::pair<int, int> > partition =
+      partitionStack(x0, y0, z0, width, height, depth);
+  for (std::vector<std::pair<int, int> >::const_iterator
+       iter = partition.begin(); iter != partition.end(); ++iter) {
+    request.setGetImageRequest(x0, y0, iter->first, width, height, iter->second);
     m_dvidClient->appendRequest(request);
     m_dvidClient->postNextRequest();
   }
 
+
   m_eventLoop->exec();
-
-
 
   const QVector<ZStack*>& imageArray = dvidBuffer->getImageArray();
 
@@ -335,32 +324,41 @@ ZStack* ZDvidReader::readBodyLabel(
   dvidBuffer->clearImageArray();
 
   ZDvidRequest request;
-  size_t voxelNumber = (size_t) width * height * depth;
-  if (voxelNumber > MAX_INT32) {
-    int subdepth = depth / 3;
-    request.setGetBodyLabelRequest(x0, y0, z0, width, height, subdepth);
-    m_dvidClient->appendRequest(request);
-
-    request.setGetBodyLabelRequest(x0, y0, z0 + subdepth,
-                               width, height, subdepth);
-    m_dvidClient->appendRequest(request);
-
-    request.setGetBodyLabelRequest(x0, y0, z0 + subdepth + subdepth,
-                               width, height,
-                               depth - subdepth - subdepth);
-    m_dvidClient->appendRequest(request);
-
-    m_dvidClient->postNextRequest();
-  } else {
-    request.setGetBodyLabelRequest(x0, y0, z0, width, height, depth);
+  std::vector<std::pair<int, int> > partition =
+      partitionStack(x0, y0, z0, width, height, depth);
+  for (std::vector<std::pair<int, int> >::const_iterator
+       iter = partition.begin(); iter != partition.end(); ++iter) {
+    request.setGetBodyLabelRequest(x0, y0, iter->first, width, height, iter->second);
     m_dvidClient->appendRequest(request);
     m_dvidClient->postNextRequest();
   }
+#if 0
+  size_t voxelNumber = (size_t) width * height * depth;
+  size_t dvidSizeLimit = MAX_INT32 / 2;
+  //if (voxelNumber > dvidSizeLimit) {
+    int nseg = voxelNumber / dvidSizeLimit + 1;
+    int z = 0;
+    int subdepth = depth / nseg;
+    while (z < depth) {
+      int leftDepth = depth - z;
+      if (leftDepth < subdepth) {
+        subdepth = leftDepth;
+      }
+      request.setGetBodyLabelRequest(x0, y0, z + z0, width, height, subdepth);
+      m_dvidClient->appendRequest(request);
+      m_dvidClient->postNextRequest();
+      z += subdepth;
+    }
+  /*} else {
+    request.setGetBodyLabelRequest(x0, y0, z0, width, height, depth);
+    m_dvidClient->appendRequest(request);
+    m_dvidClient->postNextRequest();
+  }*/
+#endif
 
   m_eventLoop->exec();
 
   const QVector<ZStack*>& imageArray = dvidBuffer->getImageArray();
-
   ZStack *stack = NULL;
   if (!imageArray.isEmpty()) {
     //stack = imageArray[0]->clone();
@@ -375,4 +373,27 @@ ZStack* ZDvidReader::readBodyLabel(
 
 
   return stack;
+}
+
+std::vector<std::pair<int, int> > ZDvidReader::partitionStack(
+    int x0, int y0, int z0, int width, int height, int depth)
+{
+  UNUSED_PARAMETER(x0);
+  UNUSED_PARAMETER(y0);
+  std::vector<std::pair<int, int> > partition;
+  size_t voxelNumber = (size_t) width * height * depth;
+  size_t dvidSizeLimit = MAX_INT32 / 2;
+  int nseg = voxelNumber / dvidSizeLimit + 1;
+  int z = 0;
+  int subdepth = depth / nseg;
+  while (z < depth) {
+    int leftDepth = depth - z;
+    if (leftDepth < subdepth) {
+      subdepth = leftDepth;
+    }
+    partition.push_back(std::pair<int, int>(z + z0, subdepth));
+    z += subdepth;
+  }
+
+  return partition;
 }
