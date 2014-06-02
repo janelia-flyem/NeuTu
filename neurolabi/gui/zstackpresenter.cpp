@@ -339,9 +339,11 @@ void ZStackPresenter::createActions()
 void ZStackPresenter::createSwcNodeContextMenu()
 {
   if (m_swcNodeContextMenu == NULL) {
-    m_swcNodeContextMenu = ZStackDocMenuFactory::makeSwcNodeContextMenu(
+    ZStackDocMenuFactory menuFactory;
+    menuFactory.setSingleSwcNodeActionActivator(&m_singleSwcNodeActionActivator);
+    m_swcNodeContextMenu = menuFactory.makeSwcNodeContextMenu(
           this, m_parent, NULL);
-    ZStackDocMenuFactory::makeSwcNodeContextMenu(
+    menuFactory.makeSwcNodeContextMenu(
           buddyDocument(), m_parent, m_swcNodeContextMenu);
     m_swcNodeContextMenu->addSeparator();
     m_swcNodeContextMenu->addAction(m_actionMap[ACTION_ADD_SWC_NODE]);
@@ -363,8 +365,9 @@ QMenu* ZStackPresenter::getSwcNodeContextMenu()
 void ZStackPresenter::createStrokeContextMenu()
 {
   if (m_strokePaintContextMenu == NULL) {
+    ZStackDocMenuFactory menuFactory;
     m_strokePaintContextMenu =
-        ZStackDocMenuFactory::makeSrokePaintContextMenu(this, m_parent, NULL);
+        menuFactory.makeSrokePaintContextMenu(this, m_parent, NULL);
   }
 }
 
@@ -380,8 +383,9 @@ QMenu* ZStackPresenter::getStrokeContextMenu()
 void ZStackPresenter::createStackContextMenu()
 {
   if (m_stackContextMenu == NULL) {
+    ZStackDocMenuFactory menuFactory;
     m_stackContextMenu =
-        ZStackDocMenuFactory::makeStackContextMenu(this, m_parent, NULL);
+        menuFactory.makeStackContextMenu(this, m_parent, NULL);
   }
 }
 
@@ -859,11 +863,13 @@ ZStackPresenter::processMouseReleaseForSwc(QMouseEvent *event, double *positionI
             positionInData.x(), positionInData.y(), positionInData.z(),
             event->modifiers() == Qt::ControlModifier ||
             event->modifiers() == Qt::ShiftModifier ||
-            event->modifiers() == Qt::AltModifier);
+            event->modifiers() == Qt::AltModifier ||
+            event->modifiers() == (Qt::AltModifier | Qt::ControlModifier));
       if (selected != NULL) {
         if (event->modifiers() == Qt::ShiftModifier) {
           buddyDocument()->selectSwcNodeConnection(selected);
-        } if (event->modifiers() == Qt::AltModifier) {
+        } if (event->modifiers() == Qt::AltModifier ||
+              event->modifiers() == (Qt::AltModifier | Qt::ControlModifier)) {
           buddyDocument()->selectSwcNodeFloodFilling(selected);
         }
         status = MOUSE_HIT_OBJECT;
@@ -1919,7 +1925,7 @@ void ZStackPresenter::autoTrace()
 void ZStackPresenter::traceTube()
 {
   QPointF dataPos = stackPositionFromMouse(LEFT_RELEASE);
-  buddyView()->setImageWidgetCursor(Qt::WaitCursor);
+  buddyView()->setScreenCursor(Qt::BusyCursor);
   if (buddyDocument()->stack()->channelNumber() == 1) {
 //  if (buddyDocument()->stack()->depth() == 1) {
 //    buddyDocument()->traceRect(dataPos.x(), dataPos.y(),

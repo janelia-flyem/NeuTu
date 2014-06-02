@@ -5,6 +5,7 @@
 
 class ZStackDoc;
 class QWidget;
+class ZActionActivator;
 
 class ZActionFactory
 {
@@ -31,7 +32,9 @@ public:
     ACTION_SWC_INTERPOLATION
   };
 
-  static QAction* makeAction(EActionItem item, const ZStackDoc *doc, QWidget *parent);
+  static QAction* makeAction(
+      EActionItem item, const ZStackDoc *doc, QWidget *parent,
+      ZActionActivator *activator = NULL, bool positive = true);
 };
 
 #endif // ZACTIONFACTORY_H

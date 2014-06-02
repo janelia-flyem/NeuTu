@@ -8,7 +8,8 @@
 #include "zstackpresenter.h"
 #include "zactionfactory.h"
 
-ZStackDocMenuFactory::ZStackDocMenuFactory()
+ZStackDocMenuFactory::ZStackDocMenuFactory() :
+  m_singleSwcNodeActionActivator(NULL)
 {
 }
 
@@ -25,28 +26,32 @@ QMenu* ZStackDocMenuFactory::makeSwcNodeContextMenu(
   //menu->addAction(doc->getAction(ZStackDoc::ACTION_DELETE_SWC_NODE));
   //menu->addAction(doc->getAction(ZStackDoc::ACTION_BREAK_SWC_NODE));
   QAction *action = ZActionFactory::makeAction(
-        ZActionFactory::ACTION_BREAK_SWC_NODE, doc, parentWidget);
+        ZActionFactory::ACTION_BREAK_SWC_NODE, doc, parentWidget,
+        m_singleSwcNodeActionActivator, false);
   menu->addAction(action);
-  doc->getSingleSwcNodeActionActivator()->registerAction(action, false);
+
 
   action = ZActionFactory::makeAction(
-        ZActionFactory::ACTION_CONNECT_SWC_NODE, doc, parentWidget);
+        ZActionFactory::ACTION_CONNECT_SWC_NODE, doc, parentWidget,
+        m_singleSwcNodeActionActivator, false);
   menu->addAction(action);
-  doc->getSingleSwcNodeActionActivator()->registerAction(action, false);
+  //doc->getSingleSwcNodeActionActivator()->registerAction(action, false);
 
   //menu->addAction(doc->getAction(ZStackDoc::ACTION_CONNECT_SWC_NODE));
   action = ZActionFactory::makeAction(
-        ZActionFactory::ACTION_MERGE_SWC_NODE, doc, parentWidget);
+        ZActionFactory::ACTION_MERGE_SWC_NODE, doc, parentWidget,
+        m_singleSwcNodeActionActivator, false);
   menu->addAction(action);
-  doc->getSingleSwcNodeActionActivator()->registerAction(action, false);
+  //doc->getSingleSwcNodeActionActivator()->registerAction(action, false);
 
   //menu->addAction(doc->getAction(ZStackDoc::ACTION_MERGE_SWC_NODE));
 
   //menu->addAction(doc->getAction(ZStackDoc::ACTION_INSERT_SWC_NODE));
   action = ZActionFactory::makeAction(
-        ZActionFactory::ACTION_INSERT_SWC_NODE, doc, parentWidget);
+        ZActionFactory::ACTION_INSERT_SWC_NODE, doc, parentWidget,
+        m_singleSwcNodeActionActivator, false);
   menu->addAction(action);
-  doc->getSingleSwcNodeActionActivator()->registerAction(action, false);
+  //doc->getSingleSwcNodeActionActivator()->registerAction(action, false);
 
   QMenu *submenu = new QMenu("Intepolate", menu);
   //submenu->addAction(doc->getAction(ZStackDoc::ACTION_SWC_INTERPOLATION));
@@ -128,9 +133,10 @@ QMenu* ZStackDocMenuFactory::makeSwcNodeContextMenu(
 
   //submenu->addAction(doc->getAction(ZStackDoc::ACTION_RESET_BRANCH_POINT));
   action = ZActionFactory::makeAction(
-        ZActionFactory::ACTION_RESET_BRANCH_POINT, doc, parentWidget);
+        ZActionFactory::ACTION_RESET_BRANCH_POINT, doc, parentWidget,
+        m_singleSwcNodeActionActivator, true);
   submenu->addAction(action);
-  doc->getSingleSwcNodeActionActivator()->registerAction(action, true);
+  //doc->getSingleSwcNodeActionActivator()->registerAction(action, true);
 
   menu->addMenu(submenu);
 
@@ -148,9 +154,10 @@ QMenu* ZStackDocMenuFactory::makeSwcNodeContextMenu(
 
   //submenu->addAction(doc->getAction(ZStackDoc::ACTION_SET_SWC_ROOT));
   action = ZActionFactory::makeAction(
-        ZActionFactory::ACTION_SET_SWC_ROOT, doc, parentWidget);
+        ZActionFactory::ACTION_SET_SWC_ROOT, doc, parentWidget,
+        m_singleSwcNodeActionActivator, true);
   submenu->addAction(action);
-  doc->getSingleSwcNodeActionActivator()->registerAction(action, true);
+  //doc->getSingleSwcNodeActionActivator()->registerAction(action, true);
 
   menu->addMenu(submenu);
 
@@ -168,15 +175,17 @@ QMenu* ZStackDocMenuFactory::makeSwcNodeContextMenu(
 
   submenu->addAction(doc->getAction(ZStackDoc::ACTION_MEASURE_SWC_NODE_LENGTH));
   action = ZActionFactory::makeAction(
-        ZActionFactory::ACTION_MEASURE_SWC_NODE_LENGTH, doc, parentWidget);
-  doc->getSingleSwcNodeActionActivator()->registerAction(action, true);
+        ZActionFactory::ACTION_MEASURE_SWC_NODE_LENGTH, doc, parentWidget,
+        m_singleSwcNodeActionActivator, true);
+  //doc->getSingleSwcNodeActionActivator()->registerAction(action, true);
   //submenu->addAction(action);
 
   submenu->addAction(
         doc->getAction(ZStackDoc::ACTION_MEASURE_SCALED_SWC_NODE_LENGTH));
   action = ZActionFactory::makeAction(
-        ZActionFactory::ACTION_MEASURE_SCALED_SWC_NODE_LENGTH, doc, parentWidget);
-  doc->getSingleSwcNodeActionActivator()->registerAction(action, true);
+        ZActionFactory::ACTION_MEASURE_SCALED_SWC_NODE_LENGTH, doc, parentWidget,
+        m_singleSwcNodeActionActivator, true);
+  //doc->getSingleSwcNodeActionActivator()->registerAction(action, true);
   //submenu->addAction(action);
 
   menu->addMenu(submenu);

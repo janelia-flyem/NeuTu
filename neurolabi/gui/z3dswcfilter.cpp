@@ -113,6 +113,10 @@ Z3DSwcFilter::Z3DSwcFilter()
                              Qt::AltModifier, QEvent::MouseButtonPress);
   m_selectSwcEvent->listenTo("select swc flood filling", Qt::LeftButton,
                              Qt::AltModifier, QEvent::MouseButtonRelease);
+  m_selectSwcEvent->listenTo("select swc flood filling", Qt::LeftButton,
+                             Qt::AltModifier | Qt::ControlModifier, QEvent::MouseButtonPress);
+  m_selectSwcEvent->listenTo("select swc flood filling", Qt::LeftButton,
+                             Qt::AltModifier | Qt::ControlModifier, QEvent::MouseButtonRelease);
 
   m_selectSwcEvent->listenTo("append select swc", Qt::LeftButton,
                              Qt::ControlModifier, QEvent::MouseButtonPress);
@@ -1387,7 +1391,8 @@ void Z3DSwcFilter::selectSwc(QMouseEvent *e, int w, int h)
       //bool showingContextMenu = (e->button() == Qt::RightButton);
       bool appending = (e->modifiers() == Qt::ControlModifier) ||
           (e->modifiers() == Qt::ShiftModifier) ||
-          (e->modifiers() == Qt::AltModifier);
+          (e->modifiers() == Qt::AltModifier) ||
+          (e->modifiers() == (Qt::AltModifier | Qt::ControlModifier));
 
       if (m_pressedSwc || m_pressedSwcTreeNode) {  // hit something
         // do not select tree when it is node rendering, but allow deselecting swc tree in node rendering mode
@@ -1401,7 +1406,8 @@ void Z3DSwcFilter::selectSwc(QMouseEvent *e, int w, int h)
           if (e->modifiers() == Qt::ShiftModifier) {
             qDebug() << "treeNodeSelectConnection emitted";
             emit treeNodeSelectConnection(m_pressedSwcTreeNode);
-          } else if (e->modifiers() == Qt::AltModifier) {
+          } else if (e->modifiers() == Qt::AltModifier ||
+                     e->modifiers() == (Qt::AltModifier | Qt::ControlModifier)) {
             emit treeNodeSelectFloodFilling(m_pressedSwcTreeNode);
           }
         }

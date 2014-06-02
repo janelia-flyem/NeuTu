@@ -2,13 +2,15 @@
 #include <QWidget>
 #include <QObject>
 #include "zstackdoc.h"
+#include "zactionactivator.h"
 
 ZActionFactory::ZActionFactory()
 {
 }
 
 QAction* ZActionFactory::makeAction(
-    EActionItem item, const ZStackDoc *doc, QWidget *parent)
+    EActionItem item, const ZStackDoc *doc, QWidget *parent,
+    ZActionActivator *activator, bool positive)
 {
   QAction *action = NULL;
   switch (item) {
@@ -152,6 +154,10 @@ QAction* ZActionFactory::makeAction(
     break;
   default:
     break;
+  }
+
+  if (action != NULL && activator != NULL) {
+    activator->registerAction(action, positive);
   }
 
   return action;

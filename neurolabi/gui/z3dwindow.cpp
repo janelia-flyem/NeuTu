@@ -653,7 +653,9 @@ void Z3DWindow::createContextMenu()
   //contextMenu->addAction(m_removeSwcTurnAction);
   //contextMenu->addAction(m_resolveCrossoverAction);
   //contextMenu->addAction(m_swcNodeLengthAction);
-  ZStackDocMenuFactory::makeSwcNodeContextMenu(getDocument(), this, contextMenu);
+  ZStackDocMenuFactory menuFactory;
+  menuFactory.setSingleSwcNodeActionActivator(&m_singleSwcNodeActionActivator);
+  menuFactory.makeSwcNodeContextMenu(getDocument(), this, contextMenu);
   contextMenu->addSeparator();
   contextMenu->addAction(m_locateSwcNodeIn2DAction);
   contextMenu->addAction(m_changeSwcNodeTypeAction);
@@ -1427,9 +1429,12 @@ void Z3DWindow::traceTube()
       m_lastClickedPosInVolume[1],
       m_lastClickedPosInVolume[2]);
       */
+  m_canvas->setCursor(Qt::BusyCursor);
   m_doc->executeTraceSwcBranchCommand(m_lastClickedPosInVolume[0],
       m_lastClickedPosInVolume[1],
       m_lastClickedPosInVolume[2]);
+  getSwcFilter()->setInteractionMode(Z3DSwcFilter::Select);
+  m_canvas->setCursor(Qt::ArrowCursor);
 }
 
 void Z3DWindow::openZoomInView()
@@ -1936,7 +1941,7 @@ void Z3DWindow::keyPressEvent(QKeyEvent *event)
     break;
   case Qt::Key_V:
     if (event->modifiers() == Qt::NoModifier) {
-      toogleMoveSelectedObjectsMode(true);
+      m_toogleMoveSelectedObjectsAction->toggle();
     }
     break;
   case Qt::Key_Space:
