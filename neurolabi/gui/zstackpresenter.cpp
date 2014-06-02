@@ -224,6 +224,7 @@ void ZStackPresenter::createSwcActions()
   m_actionMap[ACTION_CONNECT_TO_SWC_NODE] = m_swcConnectToAction;
 
   m_swcExtendAction = new QAction(tr("Extend"), parent());
+  m_swcExtendAction->setShortcut(Qt::Key_Space);
   m_swcExtendAction->setStatusTip(
         "Extend the currently selected node with mouse click.");
   connect(m_swcExtendAction, SIGNAL(triggered()),
@@ -1409,7 +1410,13 @@ bool ZStackPresenter::processKeyPressEventForSwc(QKeyEvent *event)
     break;
   case Qt::Key_C:
     if (event->modifiers() == Qt::NoModifier) {
-      buddyDocument()->executeConnectSwcNodeCommand();
+      if (!buddyDocument()->selectedSwcTreeNodes()->empty()) {
+        if (buddyDocument()->selectedSwcTreeNodes()->size() == 1) {
+          enterConnectMode();
+        } else {
+          buddyDocument()->executeConnectSwcNodeCommand();
+        }
+      }
     } else if (event->modifiers() == Qt::ShiftModifier) {
       buddyDocument()->executeSmartConnectSwcNodeCommand();
     }
@@ -1511,6 +1518,8 @@ bool ZStackPresenter::processKeyPressEventForStroke(QKeyEvent *event)
   case Qt::Key_Space:
     if (GET_APPLICATION_NAME == "FlyEM") {
       buddyDocument()->runLocalSeededWatershed();
+    } else {
+      enterSwcExtendMode();
     }
     break;
 #endif
@@ -2131,20 +2140,22 @@ void ZStackPresenter::enterSwcConnectMode()
 
 void ZStackPresenter::enterSwcExtendMode()
 {
-  const Swc_Tree_Node *tn = getSelectedSwcNode();
-  if (tn != NULL) {
-    m_parent->notifyUser("Left click to extend. Path calculation is off when 'Cmd/Ctrl' is held."
-                         "Right click to exit extending mode.");
+  if (buddyDocument()->selectedSwcTreeNodes()->size() == 1) {
+    const Swc_Tree_Node *tn = getSelectedSwcNode();
+    if (tn != NULL) {
+      m_parent->notifyUser("Left click to extend. Path calculation is off when 'Cmd/Ctrl' is held."
+                           "Right click to exit extending mode.");
 
-    m_stroke.setFilled(false);
-    QPointF pos = mapFromGlobalToStack(QCursor::pos());
-    m_stroke.set(pos.x(), pos.y());
-    //m_stroke.set(SwcTreeNode::x(tn), SwcTreeNode::y(tn));
-    m_stroke.setWidth(SwcTreeNode::radius(tn) * 2.0);
-    turnOnStroke();
-    m_stroke.setTarget(ZStackDrawable::WIDGET);
-    interactiveContext().setSwcEditMode(ZInteractiveContext::SWC_EDIT_EXTEND);
-    updateCursor();
+      m_stroke.setFilled(false);
+      QPointF pos = mapFromGlobalToStack(QCursor::pos());
+      m_stroke.set(pos.x(), pos.y());
+      //m_stroke.set(SwcTreeNode::x(tn), SwcTreeNode::y(tn));
+      m_stroke.setWidth(SwcTreeNode::radius(tn) * 2.0);
+      turnOnStroke();
+      m_stroke.setTarget(ZStackDrawable::WIDGET);
+      interactiveContext().setSwcEditMode(ZInteractiveContext::SWC_EDIT_EXTEND);
+      updateCursor();
+    }
   }
 }
 #if 0

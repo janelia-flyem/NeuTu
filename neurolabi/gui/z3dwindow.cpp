@@ -399,6 +399,7 @@ void Z3DWindow::createActions()
 
   m_toogleMoveSelectedObjectsAction =
       new QAction("Move Selected (Shift+Mouse)", this);
+  m_toogleMoveSelectedObjectsAction->setShortcut(Qt::Key_V);
   m_toogleMoveSelectedObjectsAction->setIcon(QIcon(":/images/move.png"));
   m_toogleMoveSelectedObjectsAction->setCheckable(true);
   connect(m_toogleMoveSelectedObjectsAction, SIGNAL(toggled(bool)), this,
@@ -412,6 +413,7 @@ void Z3DWindow::createActions()
 
   m_toogleSmartExtendSelectedSwcNodeAction = new QAction("Extend", this);
   m_toogleSmartExtendSelectedSwcNodeAction->setCheckable(true);
+  m_toogleSmartExtendSelectedSwcNodeAction->setShortcut(Qt::Key_Space);
   m_toogleSmartExtendSelectedSwcNodeAction->setStatusTip(
         "Extend the currently selected node with mouse click.");
   m_toogleSmartExtendSelectedSwcNodeAction->setIcon(QIcon(":/images/extend.png"));
@@ -440,6 +442,7 @@ void Z3DWindow::createActions()
   m_singleSwcNodeActionActivator.registerAction(m_connectSwcNodeAction, false);
 
   m_connectToSwcNodeAction = new QAction("Connect to", this);
+  m_connectToSwcNodeAction->setShortcut(Qt::Key_C);
   m_connectToSwcNodeAction->setStatusTip(
         "Connect the currently selected node to another");
   connect(m_connectToSwcNodeAction, SIGNAL(triggered()), this,
@@ -1755,6 +1758,8 @@ void Z3DWindow::toogleSmartExtendSelectedSwcNodeMode(bool checked)
     //      m_toogleExtendSelectedSwcNodeAction->setChecked(false);
     //      m_toogleExtendSelectedSwcNodeAction->blockSignals(false);
     //    }
+    notifyUser("Left click to extend. Path calculation is off when 'Cmd/Ctrl' is held."
+               "Right click to exit extending mode.");
     m_swcFilter->setInteractionMode(Z3DSwcFilter::SmartExtendSwcNode);
     m_canvas->setCursor(Qt::PointingHandCursor);
   } else {
@@ -1844,7 +1849,13 @@ void Z3DWindow::keyPressEvent(QKeyEvent *event)
         SwcTreeNode::addToClipboard(*iter);
       }
     } else if (event->modifiers() == Qt::NoModifier) {
-      m_doc->executeConnectSwcNodeCommand();
+      if (!m_doc->selectedSwcTreeNodes()->empty()) {
+        if (m_doc->selectedSwcTreeNodes()->size() > 1) {
+          m_doc->executeConnectSwcNodeCommand();
+        } else {
+          startConnectingSwcNode();
+        }
+      }
     }
   }
     break;
@@ -1925,8 +1936,14 @@ void Z3DWindow::keyPressEvent(QKeyEvent *event)
     break;
   case Qt::Key_V:
     if (event->modifiers() == Qt::NoModifier) {
-      m_toogleMoveSelectedObjectsAction->trigger();
+      toogleMoveSelectedObjectsMode(true);
     }
+    break;
+  case Qt::Key_Space:
+    if (getDocument()->selectedSwcTreeNodes()->size() == 1) {
+      m_toogleSmartExtendSelectedSwcNodeAction->toggle();
+    }
+    break;
   default:
     break;
   }

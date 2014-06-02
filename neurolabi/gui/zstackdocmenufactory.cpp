@@ -12,7 +12,8 @@ ZStackDocMenuFactory::ZStackDocMenuFactory()
 {
 }
 
-QMenu* ZStackDocMenuFactory::makeSwcNodeContextMenu(ZStackDoc *doc, QWidget *parentWidget, QMenu *menu)
+QMenu* ZStackDocMenuFactory::makeSwcNodeContextMenu(
+    ZStackDoc *doc, QWidget *parentWidget, QMenu *menu)
 {
   if (menu == NULL) {
     menu = new QMenu(NULL);
