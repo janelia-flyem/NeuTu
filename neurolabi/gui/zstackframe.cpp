@@ -1226,7 +1226,13 @@ Z3DWindow* ZStackFrame::open3DWindow(QWidget *parent, Z3DWindow::EInitMode mode)
 {
   if (Z3DApplication::app()->is3DSupported()) {
     if (m_3dWindow == NULL) {
+#ifdef _WIN32
+      m_3dWindow = new Z3DWindow(document(), mode, false, NULL);
+      connect(parent, SIGNAL(destroyed()), m_3dWindow, SLOT(close()));
+      connect(parent, SIGNAL(destroyed(QObject*)), m_3dWindow, SLOT(close()));
+#else
       m_3dWindow = new Z3DWindow(document(), mode, false, parent);
+#endif
       m_3dWindow->setWindowTitle("3D View");
       connect(m_3dWindow, SIGNAL(destroyed()), this, SLOT(detach3DWindow()));
       if (NeutubeConfig::getInstance().getApplication() == "Biocytin") {
