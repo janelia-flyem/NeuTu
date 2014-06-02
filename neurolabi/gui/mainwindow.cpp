@@ -725,11 +725,13 @@ void MainWindow::customizeActions()
     m_ui->actionMake_Projection->setVisible(false);
     m_ui->actionMask_SWC->setVisible(false);
     m_ui->actionTile_Manager_2->setVisible(false);
+    m_ui->actionTiles->setVisible(false);
     //m_ui->menuHelp->menuAction()->setVisible(false);
   }
 
   if (NeutubeConfig::getInstance().getApplication() != "FlyEM") {
     m_ui->actionJSON_Point_List->setVisible(false);
+    m_ui->actionSparse_objects->setVisible(false);
   }
 
 #ifdef _DEBUG_
@@ -737,6 +739,7 @@ void MainWindow::customizeActions()
         NeutubeConfig::getInstance().getApplication() != "Biocytin");
 #else
   testAction->setVisible(false);
+  this->punctaExportAction->setVisible(false);
 #endif
 
 #if !defined(_DEBUG_)
