@@ -732,10 +732,12 @@ void MainWindow::customizeActions()
     m_ui->actionJSON_Point_List->setVisible(false);
   }
 
-//#ifdef _DEBUG_
+#ifdef _DEBUG_
   testAction->setVisible(
         NeutubeConfig::getInstance().getApplication() != "Biocytin");
-//#endif
+#else
+  testAction->setVisible(false);
+#endif
 
 #if !defined(_DEBUG_)
   m_ui->menuTube->menuAction()->setVisible(false);
@@ -2408,8 +2410,8 @@ void MainWindow::updateFrameInfoDlg()
     } else {
       if (frameNumber() == 0) {
         m_frameInfoDlg.setText(tr("Nothing exists. "
-                                  "This dialog is to show you information "
-                                  "about your document."));
+                                  "This dialog is to show information "
+                                  "of the active document."));
       } else {
         m_frameInfoDlg.setText(QString("%1 ghost(s)").arg(frameNumber()));
       }

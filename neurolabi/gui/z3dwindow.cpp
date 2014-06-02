@@ -2043,7 +2043,7 @@ void Z3DWindow::updateContextMenu(const QString &group)
         m_contextMenuGroup["volume"]->addAction(m_openVolumeZoomInViewAction);
       }
     }
-    m_contextMenuGroup["volume"]->addAction(m_markPunctumAction);
+    //m_contextMenuGroup["volume"]->addAction(m_markPunctumAction);
     //if (!m_doc->swcList()->empty() && m_swcFilter->isNodeRendering())
       //m_contextMenuGroup["volume"]->addAction(m_toogleExtendSelectedSwcNodeAction);
     /*
