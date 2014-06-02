@@ -149,7 +149,7 @@ QMenu* ZStackDocMenuFactory::makeSwcNodeContextMenu(ZStackDoc *doc, QWidget *par
   action = ZActionFactory::makeAction(
         ZActionFactory::ACTION_SET_SWC_ROOT, doc, parentWidget);
   submenu->addAction(action);
-  doc->getSingleSwcNodeActionActivator()->registerAction(action, false);
+  doc->getSingleSwcNodeActionActivator()->registerAction(action, true);
 
   menu->addMenu(submenu);
 
