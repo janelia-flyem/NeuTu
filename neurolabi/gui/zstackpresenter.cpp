@@ -222,6 +222,7 @@ void ZStackPresenter::createSwcActions()
   m_actionMap[ACTION_LOCATE_SELECTED_SWC_NODES_IN_3D] = action;
 
   m_swcConnectToAction = new QAction(tr("Connect to"), parent());
+  m_swcConnectToAction->setShortcut(Qt::Key_C);
   m_swcConnectToAction->setStatusTip(
         "Connect the currently selected node to another");
   connect(m_swcConnectToAction, SIGNAL(triggered()),
