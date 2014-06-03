@@ -2164,6 +2164,8 @@ void MainWindow::about()
         NeutubeConfig::getInstance().getApplication().c_str() + " Edition" +
         "</p>";
   }
+  QString thirdPartyLib = QString("<p><a href=\"file://%1/doc/ThirdPartyLibraries.txt\">Third Party Libraries</a></p>")
+      .arg(QApplication::applicationDirPath());
   QMessageBox::about(this, QString("About %1").arg(GET_SOFTWARE_NAME.c_str()),
                      title +
                      "<p>" + GET_SOFTWARE_NAME.c_str() +" is software "
@@ -2187,7 +2189,7 @@ void MainWindow::about()
                      "<a href=mailto:tingzhao@gmail.com>tingzhao@gmail.com</a></p>"
                      "<p>Source code: "
                      "<a href=\"https://github.com/janelia-flyem/NeuTu\">"
-                     "https://github.com/janelia-flyem/NeuTu</a></p>"
+                     "https://github.com/janelia-flyem/NeuTu</a></p>" + thirdPartyLib
                      /*
                      "<p>Reference: <a href=\"http://www.nature.com/nmeth/journal/v9/n1/full/nmeth.1784.html\">"
                      "mGRASP enables mapping mammalian synaptic connectivity with light microscopy</a>, "
