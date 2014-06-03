@@ -2164,7 +2164,7 @@ void MainWindow::about()
         NeutubeConfig::getInstance().getApplication().c_str() + " Edition" +
         "</p>";
   }
-  QString thirdPartyLib = QString("<p><a href=\"file://%1/doc/ThirdPartyLibraries.txt\">Third Party Libraries</a></p>")
+  QString thirdPartyLib = QString("<p><a href=\"file:///%1/doc/ThirdPartyLibraries.txt\">Third Party Libraries</a></p>")
       .arg(QApplication::applicationDirPath());
   QMessageBox::about(this, QString("About %1").arg(GET_SOFTWARE_NAME.c_str()),
                      title +
