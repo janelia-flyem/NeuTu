@@ -33,13 +33,15 @@
 #include "zstring.h"
 #include "biocytin/zbiocytinfilenameparser.h"
 #include "zpunctumio.h"
+#include "ztilegraphicsitem.h"
+#include "ztileinfo.h"
 
 using namespace std;
 
 ZStackFrame::ZStackFrame(QWidget *parent, bool preparingModel) :
   QMdiSubWindow(parent), m_parentFrame(NULL),
   m_traceProject(NULL), m_isClosing(false),
-  m_3dWindow(NULL)
+  m_3dWindow(NULL), m_tile(NULL)
 {
   setAttribute(Qt::WA_DeleteOnClose, true);
   setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
@@ -250,6 +252,10 @@ void ZStackFrame::cleanUp()
   if (m_settingDlg != NULL) {
     delete m_settingDlg;
     m_settingDlg = NULL;
+  }
+  if (m_tile != NULL) {
+      delete m_tile;
+      m_tile = NULL;
   }
 }
 
@@ -1514,8 +1520,28 @@ void ZStackFrame::zoomToSelectedSwcNodes()
 {
   if (!document()->selectedSwcTreeNodes()->empty()) {
     ZCuboid cuboid = SwcTreeNode::boundBox(*document()->selectedSwcTreeNodes());
-    int cx, cy, cz;
     ZPoint center = cuboid.center();
+
+    //check which stack the selected points belong to. If needed, load the corresponding stack.
+    ZTileInfo tile = getTileManager()->getSelectedTileItem()->getTileInfo();
+    QRect bound= QRect(tile.getOffset().x(),tile.getOffset().y(),tile.getWidth(),tile.getHeight());
+    if (!bound.contains(center.x(),center.y())) {
+        QList<QGraphicsItem*> itemList = getTileManager()->items();
+        foreach (QGraphicsItem *item, itemList) {
+          ZTileGraphicsItem *zitem = dynamic_cast<ZTileGraphicsItem*>(item);
+          if (zitem != NULL) {
+              //check whether this item contains the selected points.
+              tile = zitem->getTileInfo();
+              bound = QRect(tile.getOffset().x(),tile.getOffset().y(),tile.getWidth(),tile.getHeight());
+              if (bound.contains(center.x(),center.y())) {
+                  getTileManager()->selectItem(zitem);
+                  break;
+              }
+          }
+        }
+
+    }
+    int cx, cy, cz;
     center -= document()->getStackOffset();
     cx = iround(center.x());
     cy = iround(center.y());

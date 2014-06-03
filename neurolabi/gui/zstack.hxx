@@ -366,6 +366,7 @@ public: /* operations */
   void copyValue(const void *buffer, size_t length, void *loc);
 
   void setOffset(double dx, double dy, double dz);
+  void setOffset(const ZPoint &pt);
   inline const ZPoint& getOffset() const { return m_offset; }
 
   /*!

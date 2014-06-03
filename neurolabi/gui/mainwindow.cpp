@@ -120,7 +120,7 @@
 #include "zswcglobalfeatureanalyzer.h"
 #include "zstackfactory.h"
 #include "dvidimagedialog.h"
-#include "tilemanagerdialog.h"
+#include "tilemanager.h"
 #include "ztiledstackframe.h"
 #include "dvid/zdvidreader.h"
 #include "flyem/zflyemdatainfo.h"
@@ -265,7 +265,7 @@ MainWindow::MainWindow(QWidget *parent) :
           this, SLOT(createDvidFrame()));
           */
 
-  m_tileDlg = new TileManagerDialog(this);
+  m_tileDlg = new TileManager(this);
   m_bodyDlg = new FlyEmBodyIdDialog(this);
   m_hotSpotDlg = new FlyEmHotSpotDialog(this);
   m_dvidDlg = new ZDvidDialog(this);
@@ -552,10 +552,10 @@ void MainWindow::createActions()
   connect(settingAction, SIGNAL(triggered()), this, SLOT(setOption()));
 
   m_ui->actionOpen_3D_View_Without_Volume->setIcon(QIcon(":/images/3dview.png"));
-
   m_ui->actionShortcut->setIcon(QIcon(":/images/help2.png"));
-
   m_ui->actionMask_SWC->setIcon(QIcon(":/images/masktoswc.png"));
+  m_ui->actionTiles->setIcon(QIcon(":/images/open_tile.png"));
+  m_ui->actionTile_Manager_2->setIcon(QIcon(":/images/manage_tile.png"));
 
 //#ifdef _DEBUG_
   testAction = new QAction(tr("&Test"), this);
@@ -618,6 +618,7 @@ void MainWindow::setActionActivity()
 
   m_stackActionActivator.registerAction(m_ui->actionMask_SWC, true);
   m_stackActionActivator.registerAction(m_ui->actionOpen_3D_View_Without_Volume, true);
+  m_stackActionActivator.registerAction(m_ui->actionTile_Manager_2, true);
   m_stackActionActivator.registerAction(m_ui->actionMask, true);
 
   m_stackActionActivator.registerAction(m_ui->actionBinarize, true);
@@ -819,7 +820,8 @@ void MainWindow::createToolBars()
 {
 //  fileToolBar = addToolBar(tr("&File"));
   //fileToolBar->addAction(newAction);
-  m_ui->toolBar->addAction(openAction);
+  m_ui->toolBar->addAction(m_ui->actionTiles);
+  //m_ui->toolBar->addAction(openAction);
 
   if (NeutubeConfig::getInstance().getApplication() == "FlyEM") {
     m_ui->toolBar->addAction(m_ui->actionImportFlyEmDatabase);
@@ -851,8 +853,8 @@ void MainWindow::createToolBars()
   if (NeutubeConfig::getInstance().getApplication() == "Biocytin") {
     m_ui->toolBar->addAction(m_ui->actionOpen_3D_View_Without_Volume);
   }
-
   m_ui->toolBar->addAction(m_ui->actionTile_Manager_2);
+
   m_ui->toolBar->addAction(m_ui->actionBrightnessContrast);
 
 #ifdef _ADVANCED_
@@ -889,8 +891,6 @@ void MainWindow::updateAction()
 {
   ZStackFrame *frame = currentStackFrame();
 
-
-
   m_writeActionGroup->setDisabled(frame == NULL);
   m_viewActionGroup->setDisabled(frame == NULL);
   viewMode->setDisabled(frame == NULL);
@@ -916,6 +916,7 @@ void MainWindow::updateMenu()
   } else {
     ZStackFrame *frame = currentStackFrame();
     if (frame != NULL) {
+      connect(frame->getTileManager(),SIGNAL(loadingTile()),this,SLOT(on_actionTile_Manager_2_triggered()));
       if (frame->presenter() != NULL) { /* not a closing frame */
         m_ui->menuEdit->clear();
         m_ui->menuEdit->addAction(undoAction);
@@ -1034,6 +1035,7 @@ void MainWindow::enableStackActions(bool b)
 
   m_ui->actionMask_SWC->setEnabled(b);
   m_ui->actionOpen_3D_View_Without_Volume->setEnabled(b);
+  m_ui->actionTile_Manager_2->setEnabled(b);
   m_ui->actionMask->setEnabled(b);
 
   m_ui->actionBinarize->setEnabled(b);
@@ -4646,6 +4648,8 @@ void MainWindow::on_actionMask_SWC_triggered()
         ZSwcResampler resampler;
         resampler.optimalDownsample(wholeTree);
 
+        wholeTree->translate(stackFrame->document()->getStackOffset());
+
         if (stackFrame != swcFrame) {
           swcFrame->document()->addSwcTree(wholeTree);
         } else {
@@ -5258,6 +5262,7 @@ void MainWindow::on_actionTile_Manager_2_triggered()
   ZTiledStackFrame *frame = currentTiledStackFrame();
   if (frame != NULL) {
     m_tileDlg->show();
+    m_tileDlg->raise();
     m_tileDlg->setTileManager(frame->getTileManager());
   }
 }
@@ -5278,10 +5283,19 @@ void MainWindow::on_actionTiles_triggered()
     }
     progressDlg->reset();
 
-    //bring up the tile manager.
-    on_actionTile_Manager_2_triggered();
+    //import SWC file
+    frame->swcFilename = fileName.split(".",QString::SkipEmptyParts).at(0);
+    frame->swcFilename.append(".swc");
+    if (QFile::exists(frame->swcFilename)) {
+        frame->load(frame->swcFilename);
+        if (NeutubeConfig::getInstance().getMainWindowConfig().isExpandSwcWith3DWindow()) {
+          frame->open3DWindow(this, Z3DWindow::EXCLUDE_VOLUME);
+        }
+    }
 
+    m_tileDlg->setDocument(frame->document());
   }
+  on_actionTile_Manager_2_triggered();
 }
 
 void MainWindow::showStackFrame(

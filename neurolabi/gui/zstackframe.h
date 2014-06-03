@@ -28,6 +28,7 @@
 #include "neutube.h"
 #include "zreportable.h"
 #include "neutube.h"
+#include "ztilemanager.h"
 
 class ZStackView;
 class ZStackPresenter;
@@ -40,6 +41,7 @@ class ZCurve;
 class QUndoCommand;
 class ZStack;
 class ZStackDoc;
+class ZTileManager;
 
 class ZStackFrame : public QMdiSubWindow, public ZReportable
 {
@@ -105,6 +107,8 @@ public:
   ZStack* getObjectMask();
   ZStack* getObjectMask(NeuTube::EColor color);
   ZStack* getStrokeMask();
+  ZTileManager* getTileManager() {return m_tile;}
+  void setTileManager(ZTileManager *p) {m_tile = p; }
 
   void saveStack(const QString &filePath);
 
@@ -217,6 +221,8 @@ public:
 
   void runSeededWatershed();
 
+  QString swcFilename;
+
 public slots:
   void setLocsegChainInfo(ZLocsegChain *chain, QString prefix = "",
                           QString suffix = "");
@@ -254,6 +260,7 @@ protected:
   ZStackView *m_view;
   ZStackFrame *m_parentFrame;
   QList<ZStackFrame*> m_childFrameList;
+  ZTileManager* m_tile;
 
   ZTraceProject *m_traceProject;
 

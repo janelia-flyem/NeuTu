@@ -1811,6 +1811,19 @@ void ZStackDoc::addSwcTree(ZSwcTree *obj, bool uniqueSource)
   notifySwcModified();
 }
 
+void ZStackDoc::addSwcTree(ZSwcTree *obj, bool uniqueSource, bool translatingWithStack)
+{
+  if (obj == NULL) {
+    return;
+  }
+
+  if (translatingWithStack) {
+      obj->translate(getStackOffset());
+  }
+
+  addSwcTree(obj, uniqueSource);
+}
+
 void ZStackDoc::addSwcTree(const QList<ZSwcTree *> &swcList, bool uniqueSource)
 {
   blockSignals(true);

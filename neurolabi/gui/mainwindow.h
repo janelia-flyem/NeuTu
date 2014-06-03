@@ -39,7 +39,7 @@ class ZDvidClient;
 class DvidObjectDialog;
 class ResolutionDialog;
 class DvidImageDialog;
-class TileManagerDialog;
+class TileManager;
 class ZTiledStackFrame;
 class FlyEmBodyIdDialog;
 class FlyEmHotSpotDialog;
@@ -79,6 +79,8 @@ public slots:
   void updateAction();
   void updateMenu();
   void updateStatusBar();
+
+  void on_actionTile_Manager_2_triggered();
 
   ZStackFrame* createEmptyStackFrame(ZStackFrame *parentFrame = NULL);
 
@@ -361,8 +363,6 @@ private slots:
 
   void on_actionGet_Grayscale_triggered();
 
-  void on_actionTile_Manager_2_triggered();
-
   void on_actionTiles_triggered();
 
   void on_actionThumbnails_triggered();
@@ -452,6 +452,7 @@ private:
                                        const QString &dvidUuid,
                                        int x, int y, int z,
                                        int width, int height, int depth);
+
 private:
   QMdiArea *mdiArea;
 
@@ -587,7 +588,7 @@ private:
   ZStackFrame *m_dvidFrame;
   DvidObjectDialog *m_dvidObjectDlg;
   DvidImageDialog *m_dvidImageDlg;
-  TileManagerDialog *m_tileDlg;
+  TileManager *m_tileDlg;
   FlyEmBodyIdDialog *m_bodyDlg;
   FlyEmHotSpotDialog *m_hotSpotDlg;
   ZDvidDialog *m_dvidDlg;

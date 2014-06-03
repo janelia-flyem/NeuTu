@@ -12,13 +12,16 @@
 #include "zstack.hxx"
 #include "zstackpresenter.h"
 #include "zstackview.h"
+#include "zpoint.h"
 
 const QColor ZTileManager::m_selectionColor = QColor(255, 0, 0);
-const QColor ZTileManager::m_preselectionColor = QColor(0, 255, 0);
+//const QColor ZTileManager::m_preselectionColor = QColor(0, 255, 0);
 
 ZTileManager::ZTileManager(QObject *parent) : QGraphicsScene(parent),
-  m_selectedTileItem(NULL), m_preselected(NULL), m_highlightRec(NULL)/*, m_selectDecoration(NULL)*/
+  m_selectedTileItem(NULL), /*m_preselected(NULL),*/ m_highlightRec(NULL), m_view(NULL)/*, m_selectDecoration(NULL)*/
 {
+    scaleFactor = 0.1;
+    getParentFrame()->setTileManager(this);
 }
 
 ZTileManager::~ZTileManager()
@@ -68,6 +71,7 @@ bool ZTileManager::importJsonFile(const QString &filePath)
             ZTileGraphicsItem *tileItem = new ZTileGraphicsItem;
             if (tileItem->loadJsonObject(tileObj)) {
               //tileItem->setFlag(QGraphicsItem::ItemIsSelectable);
+              tileItem->setScale(scaleFactor);
               addItem(tileItem);
               succ = true;
             } else {
@@ -79,10 +83,12 @@ bool ZTileManager::importJsonFile(const QString &filePath)
     }
   }
 
+  //std::cout << items().size() << " tiles" << std::endl;
+
   if (succ) {
     if (getFirstTile() != NULL) {
       m_selectedTileItem = NULL;
-      m_preselected = NULL;
+      //m_preselected = NULL;
       initDecoration();
     } else {
       succ = false;
@@ -97,27 +103,34 @@ ZStackFrame* ZTileManager::getParentFrame() const
   return dynamic_cast<ZStackFrame*>(parent());
 }
 
-void ZTileManager::mousePressEvent(QGraphicsSceneMouseEvent *event)
+void ZTileManager::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
 {
   ZTileGraphicsItem* hitItem =
       dynamic_cast<ZTileGraphicsItem*>(
         itemAt(event->scenePos().x(), event->scenePos().y(), QTransform()));
 
   if (hitItem != NULL) {
-    preselectItem(hitItem);
+      //clearPreselected();
+      selectItem(hitItem);
+      //preselectItem(hitItem);
   }
 }
 
+/*
 void ZTileManager::clearPreselected()
 {
   if (m_preselected != NULL) {
     m_preselected = NULL;
   }
 }
+*/
+
 
 void ZTileManager::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
-  clearPreselected();
+    if (m_view != NULL) getParentView()->viewport()->update();
+/*
+    clearPreselected();
 
   ZTileGraphicsItem* hitItem =
       dynamic_cast<ZTileGraphicsItem*>(
@@ -126,6 +139,7 @@ void ZTileManager::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
   if (hitItem != NULL) {
     selectItem(hitItem);
   }
+  */
 }
 
 void ZTileManager::updateTileStack()
@@ -140,6 +154,7 @@ void ZTileManager::updateTileStack()
       advanceProgress(0.5);
       QApplication::processEvents();
       frame->document()->readStack(source.c_str(), false);
+      frame->document()->stack()->setOffset(m_selectedTileItem->getTileInfo().getOffset());
       if (GET_APPLICATION_NAME == "Biocytin") {
         frame->document()->setStackBackground(NeuTube::IMAGE_BACKGROUND_BRIGHT);
         frame->autoBcAdjust();
@@ -153,32 +168,35 @@ void ZTileManager::updateTileStack()
 
 void ZTileManager::plotItemBoundary(ZTileGraphicsItem *item, QColor boundaryColor)
 {
-    ZTileInfo m_tileInfo = item->getTileInfo();
-    m_highlightRec = addRect(m_tileInfo.getOffset().x(), m_tileInfo.getOffset().y(),
-            m_tileInfo.getWidth(), m_tileInfo.getHeight(),QPen(boundaryColor));
-
+    if (m_highlightRec != NULL) removeItem(m_highlightRec);
+    m_highlightRec = addRect(item->mapRectToParent(item->boundingRect()),boundaryColor);
 }
 
+/*
 void ZTileManager::preselectItem(ZTileGraphicsItem *item)
 {
   if (m_preselected != item && m_selectedTileItem != item && item != NULL) {
     m_preselected = item;
   }
 }
+*/
 
 void ZTileManager::selectItem(ZTileGraphicsItem *item)
 {
   if (m_selectedTileItem != item && item != NULL) {
-    if (m_selectedTileItem != NULL) {
+    //if (m_selectedTileItem != NULL) {
         //erase previous boundary
-        removeItem(m_highlightRec);
-    }
+    //    removeItem(m_highlightRec);
+    //}
     m_selectedTileItem = item;
+    /*
     if (m_selectedTileItem == m_preselected) {
       m_preselected = NULL;
     }
+    */
     //m_selectDecoration->setRect(m_selectedTileItem->rect());
     //qDebug() << m_selectDecoration->rect();
+    emit(loadingTile());
     updateTileStack();
   }
 }
