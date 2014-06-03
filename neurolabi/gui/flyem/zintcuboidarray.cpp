@@ -7,6 +7,8 @@
 #include "zcuboid.h"
 #include "zswctree.h"
 #include "swctreenode.h"
+#include "zjsonobject.h"
+#include "zjsonparser.h"
 
 using namespace std;
 
@@ -17,8 +19,6 @@ FlyEm::ZIntCuboidArray::ZIntCuboidArray()
 void FlyEm::ZIntCuboidArray::append(
     int x, int y, int z, int width, int height, int depth)
 {
-
-
   Cuboid_I cuboid;
   Cuboid_I_Set_S(&cuboid, x, y, z, width, height, depth);
   push_back(cuboid);
@@ -26,9 +26,16 @@ void FlyEm::ZIntCuboidArray::append(
   std::cout << depth << std::endl;
   Print_Cuboid_I(&cuboid);
 #endif
+
+  deprecate(ALL_COMPONENT);
 }
 
-int FlyEm::ZIntCuboidArray::hitTest(double x, double y, double z)
+int FlyEm::ZIntCuboidArray::hitTest(const ZPoint &pt) const
+{
+  return hitTest(pt.x(), pt.y(), pt.z());
+}
+
+int FlyEm::ZIntCuboidArray::hitTest(double x, double y, double z) const
 {
   int ix = floor(x);
   int iy = floor(y);
@@ -47,7 +54,7 @@ int FlyEm::ZIntCuboidArray::hitTest(double x, double y, double z)
   return -1;
 }
 
-int FlyEm::ZIntCuboidArray::hitInternalTest(double x, double y, double z)
+int FlyEm::ZIntCuboidArray::hitInternalTest(double x, double y, double z) const
 {
   int ix = floor(x);
   int iy = floor(y);
@@ -66,8 +73,11 @@ int FlyEm::ZIntCuboidArray::hitInternalTest(double x, double y, double z)
   return -1;
 }
 
-void FlyEm::ZIntCuboidArray::loadSubstackList(const std::string filePath)
+std::vector<int> FlyEm::ZIntCuboidArray::loadSubstackList(
+    const std::string filePath)
 {
+  std::vector<int> stackIdArray;
+
   clear();
 
   ZString str;
@@ -76,6 +86,9 @@ void FlyEm::ZIntCuboidArray::loadSubstackList(const std::string filePath)
     while (str.readLine(fp)) {
       std::vector<int> valueArray = str.toIntegerArray();
       if (valueArray.size() == 7) {
+        int id = valueArray[0];
+        stackIdArray.push_back(id);
+
         append(valueArray[1], valueArray[3], valueArray[5],
             abs(valueArray[2]) - valueArray[1] + 1,
             abs(valueArray[4]) - valueArray[3] + 1,
@@ -85,6 +98,10 @@ void FlyEm::ZIntCuboidArray::loadSubstackList(const std::string filePath)
   } else {
     cerr << "Cannot open " << filePath << endl;
   }
+
+  deprecate(ALL_COMPONENT);
+
+  return stackIdArray;
 }
 
 void FlyEm::ZIntCuboidArray::translate(int x, int y, int z)
@@ -97,6 +114,8 @@ void FlyEm::ZIntCuboidArray::translate(int x, int y, int z)
     iter->cb[2] += z;
     iter->ce[2] += z;
   }
+
+  deprecate(ALL_COMPONENT);
 }
 
 void FlyEm::ZIntCuboidArray::rescale(double factor)
@@ -109,6 +128,8 @@ void FlyEm::ZIntCuboidArray::rescale(double factor)
     iter->cb[2] *= factor;
     iter->ce[2] *= factor;
   }
+
+  deprecate(ALL_COMPONENT);
 }
 
 void FlyEm::ZIntCuboidArray::exportSwc(const string &filePath) const
@@ -153,6 +174,8 @@ void FlyEm::ZIntCuboidArray::intersect(const Cuboid_I &cuboid)
   }
 
   removeInvalidCuboid();
+
+  deprecate(ALL_COMPONENT);
 }
 
 
@@ -259,4 +282,254 @@ size_t FlyEm::ZIntCuboidArray::getVolume() const
   }
 
   return volume;
+}
+
+ZIntCuboidFaceArray FlyEm::ZIntCuboidArray::getBorderFace() const
+{
+  if (isDeprecated(BORDER_FACE)) {
+    ZIntCuboidFaceArray faceArray;
+    for (ZIntCuboidArray::const_iterator iter = begin(); iter != end();
+         ++iter) {
+      faceArray.append(&(*iter));
+    }
+
+    ZIntCuboidFaceArray cropFaceArray = faceArray;
+    cropFaceArray.moveBackward(1);
+
+    m_borderFace = faceArray.cropBy(cropFaceArray);
+  }
+
+  return m_borderFace;
+}
+
+ZIntCuboidFaceArray FlyEm::ZIntCuboidArray::getSideBorderFace() const
+{
+  ZIntCuboidFaceArray borderFaceArray = getBorderFace();
+
+  ZIntCuboidFaceArray sideBorderFaceArray;
+  for (ZIntCuboidFaceArray::const_iterator iter = borderFaceArray.begin();
+       iter != borderFaceArray.end(); ++iter) {
+    const ZIntCuboidFace &face = *iter;
+    if (face.getAxis() != NeuTube::Z_AXIS) {
+      sideBorderFaceArray.append(face);
+    }
+  }
+
+  return sideBorderFaceArray;
+}
+
+
+void FlyEm::ZIntCuboidArray::deprecate(EComponent component) const
+{
+  deprecateDependent(component);
+
+  switch (component) {
+  case BORDER_FACE:
+    m_borderFace.clear();
+    break;
+  case ALL_COMPONENT:
+    break;
+  }
+}
+
+void FlyEm::ZIntCuboidArray::deprecateDependent(EComponent component) const
+{
+  switch (component) {
+  case ALL_COMPONENT:
+    deprecate(BORDER_FACE);
+    break;
+  case BORDER_FACE:
+    break;
+  }
+}
+
+bool FlyEm::ZIntCuboidArray::isDeprecated(EComponent component) const
+{
+  switch (component) {
+  case ALL_COMPONENT: //Is any of the component deprecated?
+    return isDeprecated(BORDER_FACE);
+  case BORDER_FACE:
+    return m_borderFace.empty();
+  }
+
+  return false;
+}
+
+FlyEm::ZIntCuboidCutter::ZIntCuboidCutter()
+{
+  Cuboid_I_Set_S(&m_cuboid, 0, 0, 0, 0, 0, 0);
+}
+
+bool FlyEm::ZIntCuboidCutter::loadJsonObject(const ZJsonObject &obj)
+{
+  if (obj.hasKey("start") && obj.hasKey("size")) {
+    ZJsonArray start(obj["start"], false);
+    ZJsonArray size(obj["size"], false);
+
+    std::vector<int> startCoord = start.toIntegerArray();
+    std::vector<int> blockSize = size.toIntegerArray();
+
+    if (start.size() == 3 && size.size() == 3) {
+      Cuboid_I_Set_S(&m_cuboid, startCoord[0], startCoord[1], startCoord[2],
+          blockSize[0], blockSize[1], blockSize[2]);
+      return true;
+    }
+  }
+
+  return false;
+}
+
+void FlyEm::ZIntCuboidCutter::cut(Cuboid_I *cuboid)
+{
+  if (cuboid == NULL) {
+    return;
+  }
+
+  if (Cuboid_I_Is_Valid(&m_cuboid)) {
+    Cuboid_I tmpCuboid;
+    tmpCuboid = m_cuboid;
+    for (int i = 0; i < 3; ++i) {
+      tmpCuboid.cb[i] += cuboid->cb[i];
+      tmpCuboid.ce[i] += cuboid->ce[i];
+    }
+    Cuboid_I_Intersect(&tmpCuboid, cuboid, &tmpCuboid);
+    if (Cuboid_I_Is_Valid(&tmpCuboid)) {
+      *cuboid = tmpCuboid;
+    }
+  }
+}
+
+FlyEm::SubstackRegionCalbration::SubstackRegionCalbration()
+{
+  for (int i = 0; i < 3; i++) {
+    m_margin[i] = 0;
+    m_bounding[i] = true;
+  }
+}
+
+void FlyEm::SubstackRegionCalbration::setMargin(
+    int x, int y, int z)
+{
+  m_margin[0] = x;
+  m_margin[1] = y;
+  m_margin[2] = z;
+}
+
+void FlyEm::SubstackRegionCalbration::setBounding(
+    bool x, bool y, bool z)
+{
+  m_bounding[0] = x;
+  m_bounding[1] = y;
+  m_bounding[2] = z;
+}
+
+bool FlyEm::SubstackRegionCalbration::importJsonObject(const ZJsonObject &obj)
+{
+  std::vector<int> margin = ZJsonArray(obj["margin"], false).toIntegerArray();
+  std::vector<bool> bounding = ZJsonArray(obj["bounding"], false).toBoolArray();
+
+  if (margin.size() == 3 && bounding.size() == 3) {
+    for (int i = 0; i < 3; ++i) {
+      m_margin[i] = margin[i];
+      m_bounding[i] = bounding[i];
+    }
+    return true;
+  }
+
+  return false;
+}
+
+void FlyEm::SubstackRegionCalbration::calibrate(
+    FlyEm::ZIntCuboidArray &roi) const
+{
+  Cuboid_I boundBox = roi.getBoundBox();
+
+  int m_offset[3] = {0, 0, 0};
+  for (int i = 0; i < 3; i++) {
+    m_offset[i] = m_margin[i];
+    if (m_bounding[i]) {
+      m_offset[i] -= boundBox.cb[i];
+    }
+  }
+
+  roi.translate(m_offset[0], m_offset[1], m_offset[2]);
+}
+
+void FlyEm::ZSubstackRoi::clear()
+{
+  m_idArray.clear();
+  m_cuboidArray.clear();
+}
+
+const char* FlyEm::ZSubstackRoi::m_blockFileKey = "block_file";
+const char* FlyEm::ZSubstackRoi::m_calbrationKey = "calibration";
+const char* FlyEm::ZSubstackRoi::m_cutterKey = "cutter";
+
+
+void FlyEm::ZSubstackRoi::importJsonFile(const std::string &filePath)
+{
+  clear();
+
+  ZJsonObject obj;
+  obj.load(filePath);
+
+  std::string blockFile = ZJsonParser::stringValue(obj[m_blockFileKey]);
+  if (!blockFile.empty()) {
+    m_idArray = m_cuboidArray.loadSubstackList(blockFile);
+  }
+
+  FlyEm::SubstackRegionCalbration calbr;
+  calbr.importJsonObject(ZJsonObject(obj[m_calbrationKey], false));
+  calbr.calibrate(m_cuboidArray);
+
+  if (obj.hasKey(m_cutterKey)) {
+    ZJsonArray cutterArray(obj[m_cutterKey], false);
+    for (size_t i = 0; i < cutterArray.size(); ++i) {
+      ZJsonObject cutterObj(cutterArray.at(i), false);
+      if (!cutterObj.isEmpty()) {
+        ZIntCuboidCutter cutter;
+        int id = ZJsonParser::integerValue(cutterObj["id"]);
+        cutter.loadJsonObject(cutterObj);
+        cutter.cut(getCuboidFromId(id));
+      }
+    }
+  }
+}
+
+Cuboid_I* FlyEm::ZSubstackRoi::getCuboidFromId(int id)
+{
+  Cuboid_I *cuboid = NULL;
+  for (size_t i = 0; i < m_idArray.size(); ++i) {
+    if (m_idArray[i] == id) {
+      cuboid = &(m_cuboidArray[i]);
+    }
+  }
+
+  return cuboid;
+}
+
+void FlyEm::ZSubstackRoi::exportSwc(const string &filePath)
+{
+  if (!m_cuboidArray.empty()) {
+    ZSwcTree *tree = new ZSwcTree;
+    int index = 0;
+    for (ZIntCuboidArray::const_iterator iter = m_cuboidArray.begin();
+         iter != m_cuboidArray.end(); ++iter, ++index) {
+      ZCuboid cuboid;
+      cuboid.set(iter->cb[0], iter->cb[1], iter->cb[2], iter->ce[0], iter->ce[1],
+          iter->ce[2]);
+      ZSwcTree *subtree = ZSwcTree::createCuboidSwc(cuboid);
+      if (!m_idArray.empty()) {
+        subtree->setType(m_idArray[index]);
+      } else {
+        subtree->setType(index);
+      }
+      tree->merge(subtree, true);
+    }
+
+    tree->resortId();
+    tree->save(filePath);
+
+    delete tree;
+  }
 }

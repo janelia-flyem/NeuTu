@@ -1,6 +1,7 @@
 #include <QtGui>
 
 #include "settingdialog.h"
+#include "neutubeconfig.h"
 
 SettingDialog::SettingDialog(QWidget *parent) : QDialog(parent)
 {
@@ -28,6 +29,12 @@ SettingDialog::SettingDialog(QWidget *parent) : QDialog(parent)
   m_reconstructEffort = 0;
 
   resetWidgetValue();
+
+  if (GET_APPLICATION_NAME != "General") {
+    this->tabWidget->removeTab(1);
+    this->tabWidget->removeTab(1);
+    this->tabWidget->removeTab(1);
+  }
 }
 
 void SettingDialog::resetWidgetValue()
@@ -51,17 +58,19 @@ void SettingDialog::resetWidgetValue()
   overshootCheckBox->setChecked(m_removeOvershoot);
 
   switch (m_rootOption) {
-        case 0:
+  case 0:
     autoRadioButton->setChecked(true);
     break;
-        case 1:
+  case 1:
     selectedRadioButton->setChecked(true);
     break;
-        default:
+  default:
     break;
   }
 
   spComboBox->setCurrentIndex(m_reconstructEffort);
+
+  backgroundComboBox->setCurrentIndex(0);
 
   updateOverview();
 }
@@ -211,5 +220,25 @@ void SettingDialog::setUnit(char unit)
     m_unit = 0;
   } else {
     m_unit = 1;
+  }
+}
+
+NeuTube::EImageBackground SettingDialog::getBackground() const
+{
+  if (backgroundComboBox->currentIndex() == 0) {
+    return NeuTube::IMAGE_BACKGROUND_DARK;
+  }
+
+  return NeuTube::IMAGE_BACKGROUND_BRIGHT;
+}
+
+void SettingDialog::setBackground(NeuTube::EImageBackground bg)
+{
+  switch (bg) {
+  case NeuTube::IMAGE_BACKGROUND_DARK:
+    backgroundComboBox->setCurrentIndex(0);
+    break;
+  case NeuTube::IMAGE_BACKGROUND_BRIGHT:
+    backgroundComboBox->setCurrentIndex(1);
   }
 }

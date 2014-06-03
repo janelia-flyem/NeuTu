@@ -9,6 +9,7 @@
 #include "zflyemneuronaxis.h"
 #include "zflyemneuronrange.h"
 
+
 class ZSwcTree;
 class ZPunctum;
 class ZObject3dScan;
@@ -105,6 +106,9 @@ public:
 
   ZSwcTree *getModel(const std::string &bundleSource = "") const;
   ZSwcTree *getUnscaledModel(const std::string &bundleSource = "") const;
+
+  void setModel(ZSwcTree *tree);
+  void setUnscaledModel(ZSwcTree *tree);
 
   /*!
    * \brief Get the buddy model from resampling

@@ -31,7 +31,8 @@ public:
     return m_layerMargin;
   }
 
-
+  static std::vector<double> computeBranchCount(
+      ZSwcTree *tree, std::vector<double> layerArray);
 
 private:
   double m_layerBaseFactor;

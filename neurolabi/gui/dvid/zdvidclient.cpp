@@ -8,9 +8,10 @@
 
 #include "zerror.h"
 #include "zdvidbuffer.h"
+#include "neutubeconfig.h"
 
 ZDvidClient::ZDvidClient(QObject *parent) :
-  QObject(parent), m_dataPath("api/node/a75"),
+  QObject(parent), m_dataPath("api/node/b42"),
   m_networkReply(NULL), m_targetDirectory("/tmp"),
   m_tmpDirectory("/tmp"), m_file(NULL),
   m_uploadStream(NULL), m_isCanceling(false)
@@ -21,7 +22,7 @@ ZDvidClient::ZDvidClient(QObject *parent) :
 }
 
 ZDvidClient::ZDvidClient(const QString &server, QObject *parent) :
-  QObject(parent), m_serverAddress(server), m_dataPath("api/node/a75"),
+  QObject(parent), m_serverAddress(server), m_dataPath("api/node/b42"),
   m_networkReply(NULL), m_targetDirectory("/tmp"),
   m_tmpDirectory("/tmp"), m_file(NULL),
   m_uploadStream(NULL), m_isCanceling(false)
@@ -44,41 +45,99 @@ void ZDvidClient::createConnection()
   connect(this, SIGNAL(objectRetrieved()), m_dvidBuffer, SLOT(importSparseObject()));
   connect(this, SIGNAL(swcRetrieved()), m_dvidBuffer, SLOT(importSwcTree()));
   connect(this, SIGNAL(imageRetrieved()), m_dvidBuffer, SLOT(importImage()));
+  connect(this, SIGNAL(infoRetrieved()), m_dvidBuffer, SLOT(importInfo()));
+  connect(this, SIGNAL(keyValueRetrieved()), m_dvidBuffer, SLOT(importKeyValue()));
 }
 
 bool ZDvidClient::postRequest(
     ZDvidRequest::EDvidRequest request, const QVariant &parameter)
 {
   QUrl requestUrl;
+  QString urlString;
 
   switch (request) {
+  case ZDvidRequest::DVID_GET_SUPERPIXEL_INFO:
+    urlString = QString("%1/%2/superpixels/info").
+        arg(m_serverAddress).arg(m_dataPath);
+    break;
+  case ZDvidRequest::DVID_GET_SP2BODY_STRING:
+    urlString = QString("%1/%2/sp2body/%3").arg(m_serverAddress).
+        arg(m_dataPath).arg(parameter.toString());
+    break;
   case ZDvidRequest::DVID_GET_OBJECT:
   case ZDvidRequest::DVID_SAVE_OBJECT:
-    requestUrl.setUrl(QString("%1/%2/sp2body/sparsevol/%3").
-                      arg(m_serverAddress).arg(m_dataPath).
-                      arg(parameter.toInt()));
+    urlString = QString("%1/%2/sp2body/sparsevol/%3").
+        arg(m_serverAddress).arg(m_dataPath).
+        arg(parameter.toInt());
     break;
   case ZDvidRequest::DVID_GET_SWC:
   case ZDvidRequest::DVID_UPLOAD_SWC:
-    requestUrl.setUrl(QString("%1/%2/skeletons/%3.swc").
-                      arg(m_serverAddress).arg(m_dataPath).
-                      arg(parameter.toInt()));
+    urlString = QString("%1/%2/skeletons/%3.swc").
+        arg(m_serverAddress).arg(m_dataPath).
+        arg(parameter.toInt());
     break;
   case ZDvidRequest::DVID_GET_GRAY_SCALE:
   {
     QList<QVariant> parameterList = parameter.toList();
-    requestUrl.setUrl(
-          QString("%1/%2/grayscale8/raw/0_1/%3_%4/%5_%6_%7").arg(m_serverAddress).
+    //if (parameterList)
+    if (parameterList.size() == 5) {
+      urlString = QString("%1/%2/grayscale8/raw/0_1/%3_%4/%5_%6_%7").
+          arg(m_serverAddress).
           arg(m_dataPath).
           arg(parameterList[3].toInt()).arg(parameterList[4].toInt()).
-        arg(parameterList[0].toInt()).arg(parameterList[1].toInt()).
-        arg(parameterList[2].toInt()));
+          arg(parameterList[0].toInt()).arg(parameterList[1].toInt()).
+          arg(parameterList[2].toInt());
+    } else {
+      urlString = QString("%1/%2/grayscale8/raw/0_1_2/%3_%4_%5/%6_%7_%8").
+          arg(m_serverAddress).
+          arg(m_dataPath).
+          arg(parameterList[3].toInt()).arg(parameterList[4].toInt()).
+          arg(parameterList[5].toInt()).
+          arg(parameterList[0].toInt()).arg(parameterList[1].toInt()).
+          arg(parameterList[2].toInt());
+    }
+  }
+    break;
+  case ZDvidRequest::DVID_GET_BODY_LABEL:
+  {
+    QList<QVariant> parameterList = parameter.toList();
+    //if (parameterList)
+    if (parameterList.size() == 5) {
+      urlString = QString("%1/%2/bodies/raw/0_1/%3_%4/%5_%6_%7").
+          arg(m_serverAddress).
+          arg(m_dataPath).
+          arg(parameterList[3].toInt()).arg(parameterList[4].toInt()).
+          arg(parameterList[0].toInt()).arg(parameterList[1].toInt()).
+          arg(parameterList[2].toInt());
+    } else {
+      urlString = QString("%1/%2/bodies/raw/0_1_2/%3_%4_%5/%6_%7_%8").
+          arg(m_serverAddress).
+          arg(m_dataPath).
+          arg(parameterList[3].toInt()).arg(parameterList[4].toInt()).
+          arg(parameterList[5].toInt()).
+          arg(parameterList[0].toInt()).arg(parameterList[1].toInt()).
+          arg(parameterList[2].toInt());
+    }
+  }
+    break;
+  case ZDvidRequest::DVID_GET_KEYVALUE:
+  {
+    QList<QVariant> parameterList = parameter.toList();
+    urlString = QString("%1/%2/%3/%4").
+        arg(m_serverAddress).arg(m_dataPath).
+        arg(parameterList[0].toString()).arg(parameterList[1].toString());
   }
     break;
   default:
     RECORD_ERROR_UNCOND("Invalid request");
     return false;
   }
+
+  if (!urlString.startsWith("http")) {
+    urlString = "http://" + urlString;
+  }
+
+  requestUrl.setUrl(urlString);
 
   qDebug() << requestUrl.toString();
 
@@ -87,6 +146,10 @@ bool ZDvidClient::postRequest(
   case ZDvidRequest::DVID_SAVE_OBJECT:
   case ZDvidRequest::DVID_GET_SWC:
   case ZDvidRequest::DVID_GET_GRAY_SCALE:
+  case ZDvidRequest::DVID_GET_BODY_LABEL:
+  case ZDvidRequest::DVID_GET_SUPERPIXEL_INFO:
+  case ZDvidRequest::DVID_GET_SP2BODY_STRING:
+  case ZDvidRequest::DVID_GET_KEYVALUE:
     m_networkReply = m_networkManager->get(QNetworkRequest(requestUrl));
     break;
   case ZDvidRequest::DVID_UPLOAD_SWC:
@@ -157,10 +220,20 @@ bool ZDvidClient::postRequest(
     connect(m_networkReply, SIGNAL(readyRead()), this, SLOT(readSwc()));
     break;
   case ZDvidRequest::DVID_GET_GRAY_SCALE:
+  case ZDvidRequest::DVID_GET_BODY_LABEL:
     connect(m_networkReply, SIGNAL(finished()), this, SLOT(finishRequest()));
     connect(m_networkReply, SIGNAL(readyRead()), this, SLOT(readImage()));
     break;
   case ZDvidRequest::DVID_UPLOAD_SWC:
+    connect(m_networkReply, SIGNAL(finished()), this, SLOT(finishRequest()));
+    break;
+  case ZDvidRequest::DVID_GET_SUPERPIXEL_INFO:
+  case ZDvidRequest::DVID_GET_SP2BODY_STRING:
+    connect(m_networkReply, SIGNAL(readyRead()), this, SLOT(readInfo()));
+    connect(m_networkReply, SIGNAL(finished()), this, SLOT(finishRequest()));
+    break;
+  case ZDvidRequest::DVID_GET_KEYVALUE:
+    connect(m_networkReply, SIGNAL(readyRead()), this, SLOT(readKeyValue()));
     connect(m_networkReply, SIGNAL(finished()), this, SLOT(finishRequest()));
     break;
   default:
@@ -181,19 +254,37 @@ void ZDvidClient::readObject()
 
 void ZDvidClient::readSwc()
 {
-  m_swcBuffer.append(m_networkReply->readAll());
+  if (m_networkReply != NULL) {
+    m_swcBuffer.append(m_networkReply->readAll());
+  }
 
   //qDebug() << m_swcBuffer;
 }
 
 void ZDvidClient::readImage()
 {
-  m_imageBuffer.append(m_networkReply->readAll());
+  if (m_networkReply != NULL) {
+    m_imageBuffer.append(m_networkReply->readAll());
+  }
+}
+
+void ZDvidClient::readInfo()
+{
+  if (m_networkReply != NULL) {
+    m_infoBuffer.append(m_networkReply->readAll());
+  }
+}
+
+void ZDvidClient::readKeyValue()
+{
+  if (m_networkReply != NULL) {
+    m_keyValueBuffer.append(m_networkReply->readAll());
+  }
 }
 
 bool ZDvidClient::writeObject()
 {
-  if (m_file != NULL) {
+  if (m_file != NULL && m_networkReply != NULL) {
     /*
     ZObject3dScan obj;
     QByteArray buffer = m_networkReply->readAll();
@@ -221,19 +312,27 @@ void ZDvidClient::finishRequest(QNetworkReply::NetworkError error)
   bool objectRetrievalDone = false;
   bool swcRetrievalDone = false;
   bool imageRetrievalDone = false;
+  bool infoRetrievalDone = false;
+  bool keyValueRetrievalDone = false;
 
   if (error != QNetworkReply::NoError) {
     if (m_file != NULL) {
       m_file->remove();
     }
-    RECORD_ERROR_UNCOND(std::string("Unable to finish operation: ") +
-                        m_networkReply->errorString().toStdString());
+    if (m_networkReply != NULL) {
+      RECORD_ERROR_UNCOND(std::string("Unable to finish operation: ") +
+                          m_networkReply->errorString().toStdString());
+    }
     m_objectBuffer.clear();
     m_swcBuffer.clear();
     qDebug() << "Request failed";
     emit requestFailed();
   } else {
     if (!m_objectBuffer.isEmpty()) {
+#ifdef _DEBUG_2
+    ptoc();
+#endif
+
       m_obj.importDvidObjectBuffer(
             m_objectBuffer.constData(), m_objectBuffer.size());
       objectRetrievalDone = true;
@@ -247,30 +346,85 @@ void ZDvidClient::finishRequest(QNetworkReply::NetworkError error)
     }
 
     if (!m_imageBuffer.isEmpty()) {
-      QImage image;
-      QBuffer buffer(&m_imageBuffer);
-      QImageReader imageReader(&buffer);
-      imageReader.setFormat("png");
-      imageReader.read(&image);
+      QList<QVariant> parameterList = m_currentRequestParameter.toList();
+      if (parameterList.size() == 5) {
+        QImage image;
+        QBuffer buffer(&m_imageBuffer);
+        QImageReader imageReader(&buffer);
+        imageReader.setFormat("png");
+        imageReader.read(&image);
 
-      qDebug() << image.width() << " " << image.width() << " " << image.format();
+        qDebug() << image.width() << " " << image.width() << " " << image.format();
 
-      if (m_image.width() != image.width() || m_image.height() != image.height()) {
-        int width = m_currentRequestParameter.toList().at(3).toInt();
-        int height = m_currentRequestParameter.toList().at(4).toInt();
-        m_image.setData(C_Stack::make(GREY, width, height, 1, 1));
+        if (m_image.width() != image.width() ||
+            m_image.height() != image.height()) {
+          int width = parameterList.at(3).toInt();
+          int height = parameterList.at(4).toInt();
+          m_image.setData(C_Stack::make(GREY, width, height, 1, 1));
+        }
+
+        for (int y = 0; y < m_image.height(); ++y) {
+          C_Stack::setValue(m_image.c_stack(), m_image.kind() * y * m_image.width(),
+                            image.scanLine(y), image.width());
+        }
+
+        m_image.setOffset(m_currentRequestParameter.toList().at(0).toInt(),
+                          m_currentRequestParameter.toList().at(1).toInt(),
+                          m_currentRequestParameter.toList().at(2).toInt());
+      } else if (m_currentRequestParameter.toList().size() == 6){
+        int width = parameterList.at(3).toInt();
+        int height = parameterList.at(4).toInt();
+        int depth = parameterList.at(5).toInt();
+        int voxelNumber = width * height * depth;
+        if (voxelNumber == m_imageBuffer.size()) {
+          m_image.setData(C_Stack::make(GREY, width, height, depth, 1));
+          const char *dataArray = m_imageBuffer.constData();
+          m_image.loadValue(dataArray, m_imageBuffer.size());
+          m_image.setOffset(m_currentRequestParameter.toList().at(0).toInt(),
+                            m_currentRequestParameter.toList().at(1).toInt(),
+                            m_currentRequestParameter.toList().at(2).toInt());
+        } else if (m_imageBuffer.size() % voxelNumber == 0) {
+          int channelNumber = m_imageBuffer.size() / voxelNumber;
+          const char *dataArray = m_imageBuffer.constData();
+          if (channelNumber == 8) {
+            m_image.setData(C_Stack::make(FLOAT64, width, height, depth, 1));
+            m_image.loadValue(dataArray, m_imageBuffer.size());
+          } else {
+            m_image.setData(
+                  C_Stack::make(GREY, width, height, depth, channelNumber));
+
+            for (int i = 0; i < channelNumber; ++i) {
+              m_image.loadValue(dataArray + voxelNumber * i, voxelNumber, i);
+            }
+          }
+          m_image.setOffset(m_currentRequestParameter.toList().at(0).toInt(),
+                            m_currentRequestParameter.toList().at(1).toInt(),
+                            m_currentRequestParameter.toList().at(2).toInt());
+        } else {
+          RECORD_WARNING_UNCOND("Image retrieval failed.");
+          m_image.clear();
+        }
       }
-
-      for (int y = 0; y < m_image.height(); ++y) {
-        C_Stack::setValue(m_image.c_stack(), m_image.kind() * y * m_image.width(),
-                          image.scanLine(y), image.width());
-      }
-
-      m_image.setOffset(m_currentRequestParameter.toList().at(0).toInt(),
-                        m_currentRequestParameter.toList().at(1).toInt(),
-                        m_currentRequestParameter.toList().at(2).toInt());
 
       imageRetrievalDone = true;
+    }
+
+    if (!m_infoBuffer.isEmpty()) {
+      //qDebug() << m_infoBuffer;
+      m_dataInfo = QString(m_infoBuffer);
+      infoRetrievalDone = true;
+    }
+
+    if (!m_keyValueBuffer.isEmpty()) {
+      m_keyValue = m_keyValueBuffer;
+      //qDebug() << QString(m_keyValue);
+      keyValueRetrievalDone = true;
+    }
+
+    if (!objectRetrievalDone && !swcRetrievalDone && !imageRetrievalDone &&
+        !infoRetrievalDone && !keyValueRetrievalDone) {
+      qDebug() << "Request failed: no data retrieved.";
+      emit requestFailed();
     }
   }
 
@@ -280,8 +434,10 @@ void ZDvidClient::finishRequest(QNetworkReply::NetworkError error)
     m_uploadStream = NULL;
   }
 
-  m_networkReply->deleteLater();
-  m_networkReply = NULL;
+  if (m_networkReply != NULL) {
+    m_networkReply->deleteLater();
+    m_networkReply = NULL;
+  }
 
   if (m_file != NULL) {
     delete m_file;
@@ -291,6 +447,8 @@ void ZDvidClient::finishRequest(QNetworkReply::NetworkError error)
   m_objectBuffer.clear();
   m_swcBuffer.clear();
   m_imageBuffer.clear();
+  m_infoBuffer.clear();
+  m_keyValueBuffer.clear();
 
   if (objectRetrievalDone) {
     emit objectRetrieved();
@@ -302,6 +460,23 @@ void ZDvidClient::finishRequest(QNetworkReply::NetworkError error)
 
   if (imageRetrievalDone) {
     emit imageRetrieved();
+  }
+
+  if (infoRetrievalDone) {
+    emit infoRetrieved();
+  }
+
+  if (keyValueRetrievalDone) {
+    emit keyValueRetrieved();
+  }
+}
+
+void ZDvidClient::setServer(const QString &server, int port)
+{
+  if (port >= 0) {
+    m_serverAddress = QString("%1:%2").arg(server).arg(port);
+  } else {
+    setServer(server);
   }
 }
 
@@ -315,7 +490,9 @@ void ZDvidClient::postNextRequest()
       ZDvidRequest request = m_requestQueue.dequeue();
       m_currentRequestParameter = request.getParameter();
       qDebug() << "Posting next request: " << request.getParameter();
-      postRequest(request.getType(), request.getParameter());
+      if (postRequest(request.getType(), request.getParameter()) == false) {
+        emit requestFailed();
+      }
     }
   }
 }
@@ -351,6 +528,8 @@ void ZDvidClient::cancelRequest()
   m_objectBuffer.clear();
   m_swcBuffer.clear();
   m_imageBuffer.clear();
+  m_infoBuffer.clear();
+  m_keyValueBuffer.clear();
 
   if (m_uploadStream != NULL) {
     m_uploadStream->close();
@@ -364,4 +543,14 @@ void ZDvidClient::cancelRequest()
   }
 
   emit requestCanceled();
+}
+
+void ZDvidClient::setDefaultServer()
+{
+#if defined(_FLYEM_)
+  const ZDvidTarget &dvidTarget =
+      NeutubeConfig::getInstance().getFlyEmConfig().getDvidTarget();
+  setServer(dvidTarget.getAddress().c_str(), dvidTarget.getPort());
+  setUuid(dvidTarget.getUuid().c_str());
+#endif
 }

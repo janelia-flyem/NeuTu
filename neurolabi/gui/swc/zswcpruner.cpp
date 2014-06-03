@@ -3,8 +3,9 @@
 #include "zswctree.h"
 #include "swctreenode.h"
 #include "zswcbranch.h"
+#include "zswcforest.h"
 
-ZSwcPruner::ZSwcPruner() : m_minLength(100.0)
+ZSwcPruner::ZSwcPruner() : m_minLength(100.0), m_removingOrphan(false)
 {
 }
 
@@ -52,6 +53,37 @@ int ZSwcPruner::prune(ZSwcTree *tree) const
     return 0;
   }
 
+  if (tree->isEmpty()) {
+    return 0;
+  }
+
+  if (tree->isForest()) {
+    ZSwcForest * forest = tree->toSwcTreeArray();
+
+#ifdef _DEBUG_
+    forest->print();
+#endif
+
+    int count = 0;
+    if (forest != NULL) {
+      for (ZSwcForest::iterator iter = forest->begin(); iter != forest->end();
+           ++iter) {
+        count += prune(*iter);
+      }
+
+      ZSwcTree *result = forest->toSwcTree();
+      tree->setData(result->data());
+      result->setData(NULL, ZSwcTree::LEAVE_ALONE);
+      delete result;
+    }
+
+    return count;
+  }
+
+#ifdef _DEBUG_
+  tree->print();
+#endif
+
   const std::vector<Swc_Tree_Node*>& branchPointArray =
       tree->getSwcTreeNodeArray(ZSwcTree::BRANCH_POINT_ITERATOR);
   if (branchPointArray.size() == 0) {
@@ -59,6 +91,11 @@ int ZSwcPruner::prune(ZSwcTree *tree) const
   }
 
   SwcTreeNode::setAsRoot(branchPointArray[0]);
+  tree->setDataFromNode(branchPointArray[0], ZSwcTree::LEAVE_ALONE);
+
+#ifdef _DEBUG_
+  tree->print();
+#endif
 
   int maxId = tree->resortId();
 
@@ -174,10 +211,15 @@ void ZSwcPruner::removeTerminalBranch(Swc_Tree_Node *tn)
 {
   while (!SwcTreeNode::isBranchPoint(SwcTreeNode::parent(tn))) {
     tn = SwcTreeNode::parent(tn);
+    if (tn == NULL) {
+      break;
+    }
   }
 
-  SwcTreeNode::detachParent(tn);
-  SwcTreeNode::killSubtree(tn);
+  if (tn != NULL) {
+    SwcTreeNode::detachParent(tn);
+    SwcTreeNode::killSubtree(tn);
+  }
 }
 
 void ZSwcPruner::reduceTerminalBranch(Swc_Tree_Node *tn)

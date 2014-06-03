@@ -182,6 +182,75 @@ bool Z3DGpuInfo::isVAOSupported() const
       isExtensionSupported("GL_APPLE_vertex_array_object");
 }
 
+QStringList Z3DGpuInfo::getGpuInfo() const
+{
+  QStringList info;
+  if (!isSupported()) {
+    info << QString("Current GPU card is not supported. Reason: %1").
+            arg(m_notSupportedReason);
+    info << "3D functions will be disabled.";
+    return info;
+  }
+
+#ifdef __APPLE__
+  QProcess dispInfo;
+  dispInfo.start("system_profiler", QStringList() << "SPDisplaysDataType");
+
+  if (dispInfo.waitForFinished(-1))
+    info << dispInfo.readAllStandardOutput();
+  else
+    info << dispInfo.readAllStandardError();
+#endif
+
+  info << QString("OpenGL Vendor: %1").arg(m_glVendorString);
+  info << QString("OpenGL Renderer: %1").arg(m_glRendererString);
+  info << QString("OpenGL Version: %1").arg(m_glVersionString);
+  info << QString("OpenGL SL Version: %1").arg(m_glslVersionString);
+  //LINFO() << "OpenGL Extensions:" << m_glExtensionsString;
+  info << QString("Max Texture Size:              %1").arg(m_maxTexureSize);
+  info << QString("Max 3D Texture Size:           %1").arg(m_max3DTextureSize);
+  info << QString("Max Color Attachments:         %1").arg(m_maxColorAttachments);
+  info << QString("Max Draw Buffer:               %1").arg(m_maxDrawBuffer);
+  if(isGeometryShaderSupported() && m_maxGeometryOutputVertices > 0) {
+    info << QString("Max GS Output Vertices:        %1").
+            arg(m_maxGeometryOutputVertices);
+  }
+  info << QString("Max VS Texture Image Units:    %1").
+          arg(m_maxVertexTextureImageUnits);
+  if (isGeometryShaderSupported() && m_maxGeometryTextureImageUnits > 0) {
+    info << QString("Max GS Texture Image Units:    %1").arg(m_maxGeometryTextureImageUnits);
+  }
+  info << QString("Max FS Texture Image Units:    %1").arg(m_maxTextureImageUnits);
+  info << QString("VS+GS+FS Texture Image Units:  %1").arg(m_maxCombinedTextureImageUnits);
+  info << QString("Max Texture Coordinates:       %1").arg(m_maxTextureCoords);
+
+  if(getTotalTextureMemory() != -1) {
+    info << QString("Total Graphics Memory Size:    %1 MB").
+            arg(getTotalTextureMemory()/1024);
+  }
+
+  if(getAvailableTextureMemory() != -1) {
+    info << QString("Available Graphics Memory Size: %1 MB").
+            arg(getAvailableTextureMemory()/1024);
+  }
+
+  info << QString("Smooth Point Size Range:       (%1, %2)").
+          arg(m_minSmoothPointSize).arg(m_maxSmoothPointSize);
+  info << QString("Smooth Point Size Granularity: %1").
+          arg(m_smoothPointSizeGranularity);
+  info << QString("Aliased Point Size Range:      (%1, %2)").
+          arg(m_minAliasedPointSize).arg(m_maxAliasedPointSize);
+
+  info << QString("Smooth Line Width Range:       (%1, %2)").
+          arg(m_minSmoothLineWidth).arg(m_maxSmoothLineWidth);
+  info << QString("Smooth Line Width Granularity: %1").
+          arg(m_smoothLineWidthGranularity);
+  info << QString("Aliased Line Width Range:      (%1, %2)").
+          arg(m_minAliasedLineWidth).arg(m_maxAliasedLineWidth);
+
+  return info;
+}
+
 void Z3DGpuInfo::logGpuInfo() const
 {
   if (!isSupported()) {
@@ -204,7 +273,7 @@ void Z3DGpuInfo::logGpuInfo() const
   LINFO() << "OpenGL Renderer:" << m_glRendererString;
   LINFO() << "OpenGL Version:" << m_glVersionString;
   LINFO() << "OpenGL SL Version:" << m_glslVersionString;
-  LINFO() << "OpenGL Extensions:" << m_glExtensionsString;
+  //LINFO() << "OpenGL Extensions:" << m_glExtensionsString;
   LINFO() << "Max Texture Size:              " << m_maxTexureSize;
   LINFO() << "Max 3D Texture Size:           " << m_max3DTextureSize;
   LINFO() << "Max Color Attachments:         " << m_maxColorAttachments;

@@ -3,6 +3,7 @@
 #include "zstring.h"
 #include "zobject3dscan.h"
 #include "zhdf5writer.h"
+#include "zhdf5reader.h"
 #include "misc/miscutility.h"
 
 ZFlyEmNeuronArray::ZFlyEmNeuronArray()
@@ -12,14 +13,38 @@ ZFlyEmNeuronArray::ZFlyEmNeuronArray()
 void ZFlyEmNeuronArray::importBodyDir(const std::string &dirPath)
 {
   clear();
-  ZFileList fileList;
-  fileList.load(dirPath, "sobj");
-  for (int i = 0; i < fileList.size(); ++i) {
-    int bodyId = ZString::lastInteger(fileList.getFilePath(i));
-    ZFlyEmNeuron neuron;
-    neuron.setId(bodyId);
-    neuron.setVolumePath(fileList.getFilePath(i));
-    push_back(neuron);
+
+  std::vector<std::string> pathArray = misc::parseHdf5Path(dirPath);
+  if (!pathArray.empty()) {
+    ZHdf5Reader reader;
+    reader.open(pathArray[0]);
+    if (pathArray.size() == 1) {
+      pathArray.push_back("/");
+    }
+    std::vector<std::string> bodyNameArray =
+        reader.getAllDatasetName(pathArray[1]);
+    for (size_t i = 0; i < bodyNameArray.size(); ++i) {
+      if (ZString(bodyNameArray[i]).endsWith(".sobj")) {
+        int bodyId = ZString::lastInteger(bodyNameArray[i]);
+        ZFlyEmNeuron neuron;
+        neuron.setId(bodyId);
+        if (!ZString(pathArray[1]).endsWith("/")) {
+          pathArray[1] += "/";
+        }
+        neuron.setVolumePath(pathArray[0] + ":" + pathArray[1] + bodyNameArray[i]);
+        push_back(neuron);
+      }
+    }
+  } else {
+    ZFileList fileList;
+    fileList.load(dirPath, "sobj");
+    for (int i = 0; i < fileList.size(); ++i) {
+      int bodyId = ZString::lastInteger(fileList.getFilePath(i));
+      ZFlyEmNeuron neuron;
+      neuron.setId(bodyId);
+      neuron.setVolumePath(fileList.getFilePath(i));
+      push_back(neuron);
+    }
   }
 }
 
@@ -48,7 +73,7 @@ void ZFlyEmNeuronArray::exportBodyToHdf5(const std::string &filePath)
 #ifdef _DEBUG_
         tic();
 #endif
-        writer.writeIntArray("/bodies/" + misc::num2str(neuron.getId()) + ".sobj",
+        writer.writeIntArray("/bodies/" + ZString::num2str(neuron.getId()) + ".sobj",
                              obj->toIntArray());
 #ifdef _DEBUG_
         ptoc();

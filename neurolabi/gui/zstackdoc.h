@@ -35,6 +35,8 @@
 #include "zstackreadthread.h"
 #include "zstackfile.h"
 #include "zactionactivator.h"
+#include "resolutiondialog.h"
+#include "zneurontracer.h"
 
 class ZStackFrame;
 class ZInterface;
@@ -55,6 +57,7 @@ class ZPunctaObjsModel;
 class ZStroke2d;
 class QWidget;
 class ZSwcNodeObjsModel;
+class ZStackDocReader;
 
 /*!
  * \brief The class of stack document
@@ -69,6 +72,8 @@ class ZStackDoc : public QObject, public ZReportable, public ZProgressable
 public:
   ZStackDoc(ZStack *stack, QObject *parent);
   virtual ~ZStackDoc();
+
+  //Designed for multi-thread reading
 
   enum TubeImportOption {
     ALL_TUBE,
@@ -91,7 +96,8 @@ public:
   };
 
   enum EActionItem {
-    ACTION_MEASURE_SWC_NODE_LENGTH, ACTION_SWC_SUMMARIZE,
+    ACTION_MEASURE_SWC_NODE_LENGTH, ACTION_MEASURE_SCALED_SWC_NODE_LENGTH,
+    ACTION_SWC_SUMMARIZE,
     ACTION_CHNAGE_SWC_NODE_SIZE, ACTION_TRANSLATE_SWC_NODE,
     ACTION_SET_SWC_ROOT, ACTION_INSERT_SWC_NODE,
     ACTION_RESET_BRANCH_POINT, ACTION_SET_BRANCH_POINT,
@@ -143,6 +149,8 @@ public: //attributes
    * \brief The offset from stack space to data space
    */
   ZPoint getStackOffset() const;
+  void setStackOffset(double x, double y, double z);
+  void setStackOffset(const ZPoint &offset);
 
   /*!
    * \brief Get the data space coordinates of stack coordinates
@@ -197,23 +205,12 @@ public: //attributes
 
   void updateSwcNodeAction();
 
-  /*
-  void createContextMenu();
+  void addData(const ZStackDocReader &reader);
 
-  inline QMenu* getSwcNodeContextMenu() {
-    return m_swcNodeContextMenu;
-  }
-  */
 
   bool isUndoClean();
   bool isSwcSavingRequired();
 
-  /*
-  void setProgressReporter(ZProgressReporter *reporter);
-  inline ZProgressReporter* getProgressReporter() {
-    return m_progressReporter;
-  }
-*/
 public: //swc tree edit
   // move soma (first root) to new location
   void swcTreeTranslateRootTo(double x, double y, double z);
@@ -241,7 +238,7 @@ public: //swc selection
 public:
   void loadFileList(const QList<QUrl> &urlList);
   void loadFileList(const QStringList &filePath);
-  void loadFile(const QString &filePath, bool emitMessage = false);
+  bool loadFile(const QString &filePath, bool emitMessage = false);
   virtual void loadStack(Stack *stack, bool isOwner = true);
   virtual void loadStack(ZStack *zstack);
   virtual ZStack*& stackRef();
@@ -259,6 +256,7 @@ public:
   virtual ZStack *stackMask() const;
   inline QList<ZDocumentable*>* objects() { return &m_objs; }
   void setStackSource(const char *filePath);
+  void setStackSource(const ZStackFile &stackFile);
   void loadSwcNetwork(const QString &filePath);
   void loadSwcNetwork(const char *filePath);
   bool importImageSequence(const char *filePath);
@@ -288,6 +286,7 @@ public:
   void removeLocsegChain(ZInterface *obj);
   void removeSmallLocsegChain(double thre);   //remove small locseg chain (geolen < thre)
   void removeAllLocsegChain();
+  void removeAllObj3d();
   std::set<ZSwcTree*> removeEmptySwcTree(bool deleteObject = true);
   void removeAllSwcTree(bool deleteObject = true);
 
@@ -305,6 +304,12 @@ public:
   void breakLocsegChain(ZLocsegChain *obj, QList<ZLocsegChain*> *pResult = NULL);  //optional output break result
   void breakSelectedLocsegChain();
 
+  int maxIntesityDepth(int x, int y);
+  ZStack* projectBiocytinStack(Biocytin::ZStackProjector &projector);
+
+  void updateStackFromSource();
+
+public: //Image processing
   static int autoThreshold(Stack* stack);
   int autoThreshold();
   bool binarize(int threshold);
@@ -315,11 +320,12 @@ public:
   int findLoop(int minLoopSize = 100);
   void bwthin();
   bool bwperim();
+  void runSeededWatershed();
+  void runLocalSeededWatershed();
 
-  int maxIntesityDepth(int x, int y);
-  ZStack* projectBiocytinStack(Biocytin::ZStackProjector &projector);
-
-  void updateStackFromSource();
+private:
+  void localSeededWatershed();
+  void seededWatershed();
 
 public: /* tracing routines */
   ZLocsegChain* fitseg(int x, int y, int z, double r = 3.0);
@@ -344,9 +350,14 @@ public: /* puncta related methods */
   inline bool hasSelectedPuncta() {return !m_selectedPuncta.empty();}
 
   void addLocsegChain(ZLocsegChain *chain);
+  void addLocsegChain(const QList<ZLocsegChain*> &chainList);
+
   void addSwcTree(ZSwcTree *obj, bool uniqueSource = true);
   void addSwcTree(const QList<ZSwcTree*> &swcList, bool uniqueSource = true);
   void addPunctum(ZPunctum *obj);
+  void addPunctum(const QList<ZPunctum*> &punctaList);
+
+
   void addObj3d(ZObject3d *obj);
   void addStroke(ZStroke2d *obj);
 
@@ -452,9 +463,9 @@ public: /* puncta related methods */
   void setTubePrefix(const char *filePath);
   void setBadChainScreen(const char *screen);
 
-  void autoTrace();
-  void autoTrace(Stack* stack);
-  void traceFromSwc(QProgressBar *pb = NULL);
+  //void autoTrace();
+  //void autoTrace(Stack* stack);
+  //void traceFromSwc(QProgressBar *pb = NULL);
 
   void test(QProgressBar *pb = NULL);
 
@@ -530,7 +541,13 @@ public:
                                      char unit, double distThre, bool spTest,
                                      bool crossoverTest);
 
-  inline Trace_Workspace* getTraceWorkspace() { return m_traceWorkspace; }
+  inline Trace_Workspace* getTraceWorkspace() const {
+    return m_neuronTracer.getTraceWorkspace();
+  }
+
+  inline Connection_Test_Workspace* getConnectionTestWorkspace() const {
+    return m_neuronTracer.getConnectionTestWorkspace();
+  }
 
   /*
   inline ZSwcTree* previewSwc() { return m_previewSwc; }
@@ -551,10 +568,15 @@ public:
   void notifyStackModified();
   void notifyStrokeModified();
   void notifyAllObjectModified();
+  void notifyStatusMessageUpdated(const QString &message);
 
 public:
   inline QAction* getUndoAction() { return m_undoAction; }
   inline QAction* getRedoAction() { return m_redoAction; }
+
+  ZSingleSwcNodeActionActivator* getSingleSwcNodeActionActivator()  {
+    return &m_singleSwcNodeActionActivator;
+  }
 
 public slots: //undoable commands
   bool executeAddObjectCommand(ZDocumentable *obj, NeuTube::EDocumentableType type);
@@ -619,7 +641,8 @@ public slots:
   bool saveSwc(const std::string &filePath);
   void loadReaderResult();
   void selectDownstreamNode();
-  void selectSwcNodeConnection();
+  void selectSwcNodeConnection(Swc_Tree_Node *lastSelectedNode = NULL);
+  void selectSwcNodeFloodFilling(Swc_Tree_Node *lastSelectedNode);
   void selectUpstreamNode();
   void selectBranchNode();
   void selectTreeNode();
@@ -632,7 +655,8 @@ public slots:
    */
   void selectNeighborSwcNode();
 
-  void showSeletedSwcNodeLength();
+  void showSeletedSwcNodeLength(double *resolution = NULL);
+  void showSeletedSwcNodeScaledLength();
 
   void hideSelectedPuncta();
   void showSelectedPuncta();
@@ -672,17 +696,20 @@ signals:
   void swcVisibleStateChanged(ZSwcTree* swctree, bool visible);
   void cleanChanged(bool);
   void holdSegChanged();
+  void statusMessageUpdated(QString message);
 
 private:
   void connectSignalSlot();
-  void initTraceWorkspace();
-  void initConnectionTestWorkspace();
-  void loadTraceMask(bool traceMasked);
+  void initNeuronTracer();
+  //void initTraceWorkspace();
+  //void initConnectionTestWorkspace();
+  //void loadTraceMask(bool traceMasked);
   int xmlConnNode(QXmlStreamReader *xml, QString *filePath, int *spot);
   int xmlConnMode(QXmlStreamReader *xml);
   Swc_Tree* swcReconstruction(int rootOption, bool singleTree,
                               bool removingOvershoot);
   ZSwcTree* nodeToSwcTree(Swc_Tree_Node* node) const;
+  std::vector<ZStack*> createWatershedMask();
 
 private:
   //Main stack
@@ -693,6 +720,9 @@ private:
   QList<ZPunctum*> m_punctaList;
   QList<ZStroke2d*> m_strokeList;
   QList<ZObject3d*> m_obj3dList;
+
+  //Special object
+  ZSwcNetwork *m_swcNetwork;
 
   //Roles
   QList<ZDocumentable*> m_objs;
@@ -708,16 +738,12 @@ private:
   ZSwcNodeObjsModel *m_swcNodeObjsModel;
   ZPunctaObjsModel *m_punctaObjsModel;
 
-  //Special object
-  ZSwcNetwork *m_swcNetwork;
-
   //Parent frame
   ZStackFrame *m_parentFrame;
 
   /* workspaces */
-  Trace_Workspace *m_traceWorkspace;
   bool m_isTraceMaskObsolete;
-  Connection_Test_Workspace *m_connectionTestWorkspace;
+  ZNeuronTracer m_neuronTracer;
 
   //Meta information
   ZStackFile m_stackSource;
@@ -749,6 +775,8 @@ private:
 
   NeuTube::Document::ETag m_tag;
   NeuTube::EImageBackground m_stackBackground;
+
+  ResolutionDialog m_resDlg;
 };
 
 //   template  //
@@ -807,7 +835,8 @@ void ZStackDoc::setSwcSelected(InputIterator first, InputIterator last, bool sel
 }
 
 template <class InputIterator>
-void ZStackDoc::setSwcTreeNodeSelected(InputIterator first, InputIterator last, bool select)
+void ZStackDoc::setSwcTreeNodeSelected(
+    InputIterator first, InputIterator last, bool select)
 {
   QList<Swc_Tree_Node*> selected;
   QList<Swc_Tree_Node*> deselected;
@@ -831,4 +860,53 @@ void ZStackDoc::setSwcTreeNodeSelected(InputIterator first, InputIterator last, 
   }
 }
 
+class ZStackDocReader {
+public:
+  ZStackDocReader();
+
+  bool readFile(const QString &filePath);
+  void clear();
+  void loadSwc(const QString &filePath);
+  void loadLocsegChain(const QString &filePath);
+  void loadStack(const QString &filePath);
+  void loadSwcNetwork(const QString &filePath);
+  void loadPuncta(const QString &filePath);
+
+  inline ZStack* getStack() const { return m_stack; }
+  inline const ZStackFile& getStackSource() const { return m_stackSource; }
+  inline const QList<ZSwcTree*>& getSwcList() const { return m_swcList; }
+  inline const QList<ZPunctum*>& getPunctaList() const { return m_punctaList; }
+  inline const QList<ZStroke2d*>& getStrokeList() const { return m_strokeList; }
+  inline const QList<ZObject3d*>& getObjectList() const { return m_obj3dList; }
+  inline const QList<ZLocsegChain*>& getChainList() const { return m_chainList; }
+
+  bool hasData() const;
+  inline const QString& getFileName() const {
+    return m_filePath;
+  }
+
+public:
+  void addSwcTree(ZSwcTree *tree);
+  void addLocsegChain(ZLocsegChain *chain);
+  void addPunctum(ZPunctum *p);
+  void setStack(ZStack *stack);
+  void setStackSource(const ZStackFile &stackFile);
+
+private:
+  QString m_filePath;
+
+  //Main stack
+  ZStack *m_stack;
+  ZStackFile m_stackSource;
+
+  //Concrete objects
+  QList<ZSwcTree*> m_swcList;
+  QList<ZPunctum*> m_punctaList;
+  QList<ZStroke2d*> m_strokeList;
+  QList<ZObject3d*> m_obj3dList;
+  QList<ZLocsegChain*> m_chainList;
+
+  //Special object
+  ZSwcNetwork *m_swcNetwork;
+};
 #endif

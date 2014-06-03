@@ -52,10 +52,12 @@ bool ZActionActivator::isPositive(const Z3DWindow *window) const
 void ZActionActivator::update(bool positive)
 {
   foreach (QAction *action, m_postiveActionList) {
+    qDebug() << action->text();
     action->setEnabled(positive);
   }
 
   foreach (QAction *action, m_negativeActionList) {
+    qDebug() << action->text();
     action->setEnabled(!positive);
   }
 }

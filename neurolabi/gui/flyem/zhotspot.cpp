@@ -51,12 +51,22 @@ ZPointArray FlyEm::ZPointGeometry::toPointArray() const
 
   return ptArray;
 }
+
+ZLineSegmentArray FlyEm::ZPointGeometry::toLineSegmentArray() const
+{
+  return ZLineSegmentArray();
+}
 //////////////////ZPointGeometry//////////////////////////
 
 /******************ZCurveGeometry*******************/
 void FlyEm::ZCurveGeometry::appendPoint(double x, double y, double z)
 {
   m_curve.append(x, y, z);
+}
+
+void FlyEm::ZCurveGeometry::appendPoint(const ZPoint &pt)
+{
+  m_curve.append(pt);
 }
 
 ZTextLineCompositer FlyEm::ZCurveGeometry::toLineCompositer() const
@@ -103,6 +113,16 @@ void FlyEm::ZCurveGeometry::setAnchor(const ZPointArray &curve)
 ZPointArray FlyEm::ZCurveGeometry::toPointArray() const
 {
   return m_curve;
+}
+
+ZLineSegmentArray FlyEm::ZCurveGeometry::toLineSegmentArray() const
+{
+  ZLineSegmentArray lineArray;
+  for (size_t i = 1; i < m_curve.size(); ++i) {
+    lineArray.append(m_curve[i - 1], m_curve[i]);
+  }
+
+  return lineArray;
 }
 
 //////////////////ZCurveGeometry//////////////////////////
@@ -213,7 +233,7 @@ void FlyEm::ZHotSpot::setGeometry(FlyEm::ZGeometry *geometry)
   m_geometry = geometry;
 }
 
-void FlyEm::ZHotSpot::setguidance(ZGeometry *geometry)
+void FlyEm::ZHotSpot::setGuidance(ZGeometry *geometry)
 {
   if (m_guidance != NULL) {
     delete m_guidance;
@@ -280,6 +300,20 @@ ZPointArray FlyEm::ZHotSpot::toPointArray() const
   }
 
   return ptArray;
+}
+
+ZLineSegmentArray FlyEm::ZHotSpot::toLineSegmentArray() const
+{
+  ZLineSegmentArray lineArray;
+  if (m_geometry != NULL) {
+    lineArray = m_geometry->toLineSegmentArray();
+  }
+
+  if (m_guidance != NULL) {
+    lineArray.append(m_guidance->toLineSegmentArray());
+  }
+
+  return lineArray;
 }
 
 ZJsonObject FlyEm::ZHotSpot::toRavelerJsonObject(

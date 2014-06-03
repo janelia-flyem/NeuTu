@@ -2,6 +2,7 @@
 #define ZDVIDBUFFER_H
 
 #include <QObject>
+#include <QStringList>
 #include "zobject3dscan.h"
 #include "zswctree.h"
 #include "zstack.hxx"
@@ -22,6 +23,8 @@ public slots:
   void importSwcTree();
   void importSparseObject();
   void importImage();
+  void importInfo();
+  void importKeyValue();
 
   inline const QVector<ZObject3dScan>& getBodyArray() const {
     return m_bodyArray;
@@ -39,12 +42,28 @@ public slots:
     return m_imageArray;
   }
 
+  inline const QStringList& getInfoArray() const {
+    return m_infoArray;
+  }
+
+  inline const QVector<QByteArray>& getKeyValueArray() const {
+    return m_keyValueArray;
+  }
+
   void clear();
+
+  void clearInfoArray();
+  void clearKeyValueArray();
+  void clearBodyArray();
+  void clearImageArray();
+  void clearTreeArray();
 
 private:
   QVector<ZObject3dScan> m_bodyArray;
   QVector<ZSwcTree*> m_swcTreeArray;
   QVector<ZStack*> m_imageArray;
+  QStringList m_infoArray;
+  QVector<QByteArray> m_keyValueArray;
 
   ZDvidClient *m_dvidClient;
 };

@@ -8,6 +8,7 @@
 #include <QDialog>
 
 #include "ui_settingdialog.h"
+#include "neutube.h"
 
 class SettingDialog : public QDialog, public Ui_SettingDialog
 {
@@ -34,6 +35,13 @@ public:
   inline bool singleTree() { return m_singleTree; }
   inline bool removeOvershoot() { return m_removeOvershoot; }
   inline int reconstructEffort() { return m_reconstructEffort; }
+
+  /*!
+   * \brief Get backgound setting.
+   */
+  NeuTube::EImageBackground getBackground() const;
+
+  void setBackground(NeuTube::EImageBackground bg);
 
 public:
   void setResolution(const double *res, int unit = 1);

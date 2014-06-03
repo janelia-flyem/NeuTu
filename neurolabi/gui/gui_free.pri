@@ -175,7 +175,22 @@ HEADERS +=$${PWD}/zstackprocessor.h \
    $${PWD}/zstringarray.h \
    $${PWD}/flyem/zflyemcoordinateconverter.h \
    $${PWD}/flyem/zflyem.h \
-   $${PWD}/flyem/zflyemdatainfo.h
+   $${PWD}/flyem/zflyemdatainfo.h \
+   $${PWD}/dvid/zdvidinfo.h \
+   $${PWD}/zlinesegment.h \
+   $${PWD}/zlinesegmentarray.h \
+   $${PWD}/dvid/zdvidtarget.h \
+   $${PWD}/dvid/zdvidfilter.h \
+   $${PWD}/zintcuboidface.h \
+   $${PWD}/zflyembodyannotation.h \
+   $${PWD}/zintpoint.h \
+   $${PWD}/zintpointarray.h \
+   $${PWD}/zintarray.h \
+   $${PWD}/zintset.h \
+   $${PWD}/flyem/zflyemsubstackroi.h \
+   $${PWD}/zstackwatershed.h \
+   $${PWD}/zstackarray.h \
+   $${PWD}/flyem/zflyemconfig.h
 
 SOURCES +=$${PWD}/zstackprocessor.cpp \
    $${PWD}/zstack.cxx \
@@ -336,4 +351,19 @@ SOURCES +=$${PWD}/zstackprocessor.cpp \
    $${PWD}/zobject3dscanarray.cpp \
    $${PWD}/zstringarray.cpp \
    $${PWD}/flyem/zflyemcoordinateconverter.cpp \
-   $${PWD}/flyem/zflyemdatainfo.cpp
+   $${PWD}/flyem/zflyemdatainfo.cpp \
+   $${PWD}/dvid/zdvidinfo.cpp \
+   $${PWD}/zlinesegment.cpp \
+   $${PWD}/zlinesegmentarray.cpp \
+   $${PWD}/dvid/zdvidtarget.cpp \
+   $${PWD}/dvid/zdvidfilter.cpp \
+   $${PWD}/zintcuboidface.cpp \
+   $${PWD}/zflyembodyannotation.cpp \
+   $${PWD}/zintpoint.cpp \
+   $${PWD}/zintpointarray.cpp \
+   $${PWD}/zintarray.cpp \
+   $${PWD}/zintset.cpp \
+   $${PWD}/flyem/zflyemsubstackroi.cpp \
+   $${PWD}/zstackwatershed.cpp \
+   $${PWD}/zstackarray.cpp \
+   $${PWD}/flyem/zflyemconfig.cpp

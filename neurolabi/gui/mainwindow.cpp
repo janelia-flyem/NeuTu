@@ -6,6 +6,7 @@
 #endif
 //#include <QtSvg>
 #include <QDir>
+#include <QtConcurrentRun>
 
 #include <iostream>
 #include <ostream>
@@ -16,6 +17,7 @@
 #else
 #include <memory>
 #endif
+#include <limits>
 
 #include "ui_mainwindow.h"
 
@@ -90,6 +92,7 @@
 #include "neutubeconfig.h"
 #include "zfilelist.h"
 #include "z3dwindow.h"
+#include "z3dgpuinfo.h"
 #include "z3dvolumesource.h"
 #include "z3dcompositor.h"
 #include "zstackskeletonizer.h"
@@ -125,6 +128,16 @@
 #include "flyem/zflyemdatainfo.h"
 #include "flyem/zflyemqualityanalyzer.h"
 #include "zswcgenerator.h"
+#include "flyembodyiddialog.h"
+#include "flyemhotspotdialog.h"
+#include "dvid/zdvidinfo.h"
+#include "zswctreenodearray.h"
+#include "zdviddialog.h"
+#include "dvid/zdvidtarget.h"
+#include "dvid/zdvidfilter.h"
+#include "flyembodyfilterdialog.h"
+#include "tz_stack_math.h"
+#include "tz_stack_relation.h"
 
 #include "ztest.h"
 
@@ -196,9 +209,13 @@ MainWindow::MainWindow(QWidget *parent) :
   createAutoSaveDir();
 
   m_progress = new QProgressDialog(this);
-  m_progress->setModal(true);
-  m_progress->setWindowFlags(Qt::Dialog|Qt::WindowStaysOnTopHint);
+  m_progress->setWindowModality(Qt::WindowModal);
+  m_progress->setAutoClose(true);
+  //m_progress->setWindowFlags(Qt::Dialog|Qt::WindowStaysOnTopHint);
   m_progress->setCancelButton(0);
+
+  connect(this, SIGNAL(progressDone()), m_progress, SLOT(reset()));
+  connect(this, SIGNAL(progressAdvanced()), this, SLOT(advanceProgress()));
 
   m_bcDlg = new BcAdjustDialog(this);
   connect(m_bcDlg, SIGNAL(valueChanged()), this, SLOT(bcAdjust()));
@@ -253,6 +270,30 @@ MainWindow::MainWindow(QWidget *parent) :
           */
 
   m_tileDlg = new TileManagerDialog(this);
+  m_bodyDlg = new FlyEmBodyIdDialog(this);
+  m_hotSpotDlg = new FlyEmHotSpotDialog(this);
+  m_dvidDlg = new ZDvidDialog(this);
+  m_dvidDlg->loadConfig(
+          ZString::fullPath(NeutubeConfig::getInstance().getApplicatinDir(),
+                            "json", "", "flyem_config.json"));
+#if defined(_FLYEM_)
+  NeutubeConfig::getInstance().getFlyEmConfig().setDvidTarget(
+        m_dvidDlg->getDvidTarget());
+#endif
+
+  m_bodyFilterDlg = new FlyEmBodyFilterDialog(this);
+
+  if (NeutubeConfig::getInstance().usingNativeDialog()) {
+    m_fileDialogOption = 0;
+  } else {
+    m_fileDialogOption = QFileDialog::DontUseNativeDialog;
+  }
+
+  setWindowTitle(QString("%1 %2").arg(GET_SOFTWARE_NAME.c_str()).
+                 arg(windowTitle()));
+
+  connect(this, SIGNAL(docReaderReady(ZStackDocReader*)),
+          this, SLOT(createStackFrameFromDocReader(ZStackDocReader*)));
 }
 
 MainWindow::~MainWindow()
@@ -452,7 +493,7 @@ void MainWindow::createViewActions()
   objectViewSkeletonAction->setCheckable(true);
   objectViewSkeletonAction->setStatusTip(tr("Show objects in the skeleton form"));
 
-  objectViewNormalAction->setChecked(true);
+  objectViewSurfaceAction->setChecked(true);
   connect(objectView, SIGNAL(triggered(QAction*)),
     this, SLOT(viewObject(QAction*)));
 
@@ -462,7 +503,7 @@ void MainWindow::createViewActions()
   connect(infoViewAction, SIGNAL(triggered()), this, SLOT(showFrameInfo()));
 
   screenshotAction = new QAction(tr("&Take Screenshot"), this);
-  screenshotAction->setStatusTip("Take screenshot");
+  screenshotAction->setStatusTip("Take screenshot of the active image window");
   screenshotAction->setIcon(QIcon(":/images/screenshot_toolbar.png"));
   connect(screenshotAction, SIGNAL(triggered()), this, SLOT(takeScreenshot()));
 }
@@ -531,13 +572,13 @@ void MainWindow::createActions()
 
   m_ui->actionMask_SWC->setIcon(QIcon(":/images/masktoswc.png"));
 
-#ifdef _DEBUG_
+//#ifdef _DEBUG_
   testAction = new QAction(tr("&Test"), this);
   testAction->setShortcut(tr("Ctrl+T"));
   testAction->setStatusTip(tr("Test"));
   testAction->setIcon(QIcon(":/images/test.png"));
   connect(testAction, SIGNAL(triggered()), this, SLOT(test()));
-#endif
+//#endif
 
   //customizeActions();
 }
@@ -684,16 +725,21 @@ void MainWindow::customizeActions()
     m_ui->actionMake_Projection->setVisible(false);
     m_ui->actionMask_SWC->setVisible(false);
     m_ui->actionTile_Manager_2->setVisible(false);
+    m_ui->actionTiles->setVisible(false);
     //m_ui->menuHelp->menuAction()->setVisible(false);
   }
 
   if (NeutubeConfig::getInstance().getApplication() != "FlyEM") {
     m_ui->actionJSON_Point_List->setVisible(false);
+    m_ui->actionSparse_objects->setVisible(false);
   }
 
 #ifdef _DEBUG_
   testAction->setVisible(
         NeutubeConfig::getInstance().getApplication() != "Biocytin");
+#else
+  testAction->setVisible(false);
+  this->punctaExportAction->setVisible(false);
 #endif
 
 #if !defined(_DEBUG_)
@@ -704,6 +750,7 @@ void MainWindow::customizeActions()
   m_ui->menuPuncta->menuAction()->setVisible(false);
   m_ui->menuSwc->menuAction()->setVisible(false);
   m_ui->menuQuery->menuAction()->setVisible(false);
+  m_ui->menuOptions->menuAction()->setVisible(false);
 #endif
 }
 
@@ -766,15 +813,17 @@ void MainWindow::createMenus()
 #endif
 
   m_ui->menuOptions->addAction(settingAction);
-#ifdef _DEBUG_
+//#ifdef _DEBUG_
   m_ui->menuHelp->addAction(testAction);
-#endif
+//#endif
 
+/*
 #if defined(_FLYEM_)
   m_ui->menuFLy_EM->setEnabled(true);
 #else
   m_ui->menuFLy_EM->setEnabled(false);
 #endif
+  */
 
   updateMenu();
 
@@ -1018,6 +1067,12 @@ void MainWindow::report(const std::string &title, const std::string &msg,
   m_reporter->report(title, msg, msgType);
 }
 
+bool MainWindow::ask(const std::string &title, const std::string &msg)
+{
+  return QMessageBox::information(this, title.c_str(),
+        msg.c_str(), QMessageBox::No | QMessageBox::Yes) == QMessageBox::Yes;
+}
+
 void MainWindow::initOpenglContext()
 {
   // initGL requires a valid OpenGL context
@@ -1042,14 +1097,15 @@ void MainWindow::initOpenglContext()
 
 bool MainWindow::okToContinue()
 {
-  if (isWindowModified()) {
-    int r = QMessageBox::warning(this, tr("Stack"),
-         tr("The stack has been modified.\n"
-            "Do you want to save your changes?"),
-         QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
+  if (currentStackFrame() != NULL) {
+    int r  = QMessageBox::warning(
+          this, "Exit?",
+          QString("Do you want to exit %1? All unsaved changes will be lost.").
+          arg(GET_SOFTWARE_NAME.c_str()),
+          QMessageBox::Yes | QMessageBox::No);
     if (r == QMessageBox::Yes) {
-      save();
-    } else if (r == QMessageBox::Cancel) {
+      //save();
+    } else if (r == QMessageBox::No) {
       return false;
     }
   }
@@ -1091,9 +1147,13 @@ void MainWindow::takeScreenshot()
   ZStackFrame *frame = currentStackFrame();
   if (frame != NULL) {
     QString fileName =
+        getSaveFileName("Save Screenshot", "Tiff stack files (*.tif) ");
+#if 0
+
         QFileDialog::getSaveFileName(this, tr("Save Screenshot"), m_lastOpenedFilePath,
                                      tr("Tiff stack files (*.tif) "), NULL/*,
                                      QFileDialog::DontUseNativeDialog*/);
+#endif
     if (!fileName.isEmpty()) {
       m_lastOpenedFilePath = fileName;
       frame->takeScreenshot(fileName);
@@ -1176,7 +1236,7 @@ void MainWindow::presentStackFrame(ZStackFrame *frame)
   frame->show();
   updateMenu();
   //mdiArea->setActiveSubWindow(frame);
-  getProgressDialog()->reset();
+  //getProgressDialog()->reset();
   frame->setViewInfo();
 
   if (NeutubeConfig::getInstance().getApplication() == "Biocytin") {
@@ -1210,8 +1270,90 @@ void MainWindow::presentStackFrame(ZStackFrame *frame)
   }
 }
 
+void MainWindow::advanceProgress()
+{
+  m_progress->setValue(m_progress->value() + 1);
+}
+
+ZStackDocReader* MainWindow::openFileFunc(const QString &fileName)
+{
+  ZStackDocReader *reader = NULL;
+  ZFileType::EFileType fileType = ZFileType::fileType(fileName.toStdString());
+
+  if (ZFileType::isNeutubeOpenable(fileType)) {
+    reader = new ZStackDocReader;
+    emit progressAdvanced();
+    if (reader->readFile(fileName) == false) {
+      delete reader;
+      reader = NULL;
+    }
+    emit progressAdvanced();
+  }
+
+  emit docReaderReady(reader);
+
+  return reader;
+}
+
 void MainWindow::openFile(const QString &fileName)
 {
+#if 1
+  /*
+  if (m_docReader != NULL) {
+    RECORD_WARNING_UNCOND("Bad buffer");
+    delete m_docReader;
+    m_docReader = NULL;
+  }
+*/
+  QFuture<ZStackDocReader*> res;
+
+  m_progress->setRange(0, 5);
+  m_progress->setLabelText(QString("Loading %1 ...").arg(fileName));
+  int currentProgress = 0;
+  m_progress->setValue(++currentProgress);
+  m_progress->show();
+
+  res = QtConcurrent::run(this, &MainWindow::openFileFunc, fileName);
+
+  //res.waitForFinished();
+
+  //createStackFrameFromDocReader(res.result());
+  /*
+  ZStackDocReader *docReader = res.result();
+
+  //ZStackDocReader *docReader = openFileFunc(fileName);
+
+  ZStackDoc *doc = NULL;
+  if (docReader != NULL) {
+    doc = new ZStackDoc(NULL, NULL);
+    doc->addData(*docReader);
+
+    delete docReader;
+    docReader = NULL;
+  }
+
+  if (doc != NULL) {
+    ZStackFrame *frame = createStackFrame(doc);
+    if (doc->hasStackData()) {
+      if (GET_APPLICATION_NAME == "Biocytin") {
+        doc->setStackBackground(NeuTube::IMAGE_BACKGROUND_BRIGHT);
+        doc->setTag(NeuTube::Document::BIOCYTIN_STACK);
+      }
+      addStackFrame(frame);
+      presentStackFrame(frame);
+      m_progress->reset();
+    } else {
+      m_progress->reset();
+      frame->open3DWindow(this);
+      delete frame;
+    }
+    setCurrentFile(fileName);
+  } else {
+    m_progress->reset();
+    reportFileOpenProblem(fileName);
+  }
+  */
+#else
   ZFileType::EFileType fileType = ZFileType::fileType(fileName.toStdString());
 
   if (ZFileType::isNeutubeOpenable(fileType)) {
@@ -1228,6 +1370,8 @@ void MainWindow::openFile(const QString &fileName)
       frame = new ZStackFrame(mdiArea);
       connect(frame, SIGNAL(ready(ZStackFrame*)),
               this, SLOT(presentStackFrame(ZStackFrame*)));
+      connect(frame, SIGNAL(ready(ZStackFrame*)),
+              this, SIGNAL(progressDone()));
       frame->createDocument();
       frame->show();
       frame->setViewInfo("Loading data ...");
@@ -1274,6 +1418,7 @@ void MainWindow::openFile(const QString &fileName)
   } else {
     reportFileOpenProblem(fileName, " unrecognized file name extension");
   }
+#endif
 }
 
 void MainWindow::openTraceProject(QString fileName)
@@ -1309,10 +1454,13 @@ void MainWindow::openTraceProject(QString fileName)
 void MainWindow::openTraceProject()
 {
   QString fileName =
+      getOpenFileName(tr("Open Project"), tr("XML files (*.xml)"));
+#if 0
       QFileDialog::getOpenFileName(this, tr("Open Project"),
                                    m_lastOpenedFilePath,
                                    tr("XML files (*.xml)"),
                                    NULL/*, QFileDialog::DontUseNativeDialog*/);
+#endif
   if (!fileName.isEmpty()) {
     m_lastOpenedFilePath = fileName;
     openTraceProject(fileName);
@@ -1421,11 +1569,16 @@ void MainWindow::saveAs()
   ZStackFrame *frame = currentStackFrame();
 
   if (frame != NULL) {
-    QString fileName = QFileDialog::getSaveFileName(
+    QString fileName = getSaveFileName(
+          "Save stack", "Tiff stack files (*.tif) ",
+          frame->document()->stack()->sourcePath().c_str());
+#if 0
+        QFileDialog::getSaveFileName(
           this, tr("Save stack"),
           frame->document()->stack()->sourcePath().c_str(),
           tr("Tiff stack files (*.tif) "), NULL/*,
           QFileDialog::DontUseNativeDialog*/);
+#endif
 
     if (!fileName.isEmpty()) {
       m_lastOpenedFilePath = fileName;
@@ -1436,9 +1589,12 @@ void MainWindow::saveAs()
 
 void MainWindow::exportSwc()
 {
-  QString fileName =
+  QString fileName = getSaveFileName("Save SWC", "SWC files (*.swc) ");
+
+#if 0
     QFileDialog::getSaveFileName(this, tr("Save SWC"), m_lastOpenedFilePath,
          tr("SWC files (*.swc) "));
+#endif
 
   if (!fileName.isEmpty()) {
     m_lastOpenedFilePath = fileName;
@@ -1451,9 +1607,12 @@ void MainWindow::exportSwc()
 
 void MainWindow::exportPuncta()
 {
-  QString fileName =
+  QString fileName = getSaveFileName("Save Puncta", "Puncta files (*.apo) ");
+
+#if 0
     QFileDialog::getSaveFileName(this, tr("Save Puncta"), m_lastOpenedFilePath,
          tr("Puncta files (*.apo) "));
+#endif
 
   if (!fileName.isEmpty()) {
     m_lastOpenedFilePath = fileName;
@@ -1466,10 +1625,14 @@ void MainWindow::exportPuncta()
 
 void MainWindow::exportNeuronStructure()
 {
-  QString fileName =
+  QString fileName = getSaveFileName(
+        "Save neuron structure", "SWC files (*.swc) ", "./untitled.swc");
+
+#if 0
     QFileDialog::getSaveFileName(this, tr("Save neuron structure"),
                                  "./untitled.swc",
                                  tr("SWC files (*.swc) "));
+#endif
   if (!fileName.isEmpty()) {
     ZStackFrame *frame = currentStackFrame();
     if (frame != NULL) {
@@ -1487,9 +1650,13 @@ void MainWindow::exportNeuronStructure()
 
 void MainWindow::exportVrml()
 {
-  QString fileName =
+  QString fileName = getSaveFileName("Export VRML", "Vrml files (*.wrl) ",
+                                     "./untitled.vrml");
+
+#if 0
     QFileDialog::getSaveFileName(this, tr("Export VRML"), "./untitled.vrml",
          tr("Vrml files (*.wrl) "));
+#endif
 
   if (!fileName.isEmpty()) {
     ZStackFrame *frame = activeStackFrame();
@@ -1501,13 +1668,14 @@ void MainWindow::exportVrml()
 
 void MainWindow::exportBinary()
 {
-  QString fileName =
+  QString fileName = getSaveFileName("Save tracing results", "");
+#if 0
     QFileDialog::getSaveFileName(this, tr("Save tracing results"),
                                  m_lastOpenedFilePath,
                                  //tr("Binary files (*.tb)"), 0,
                                  QString(), 0,
                                  QFileDialog::DontConfirmOverwrite);
-
+#endif
   if (!fileName.isEmpty()) {
     m_lastOpenedFilePath = fileName;
     ZStackFrame *frame = activeStackFrame();
@@ -1519,10 +1687,13 @@ void MainWindow::exportBinary()
 
 void MainWindow::exportNeuronStructureAsMultipleSwc()
 {
-  QString fileName =
+  QString fileName = getSaveFileName("Save neuron structure as multiple swcs",
+                                     "SWC files (*.swc) ", "./untitled.swc");
+#if 0
     QFileDialog::getSaveFileName(this, tr("Save neuron structure as multiple swcs"),
                                  "./untitled.swc",
                                  tr("SWC files (*.swc) "));
+#endif
   if (!fileName.isEmpty()) {
     ZStackFrame *frame = currentStackFrame();
     if (frame != NULL) {
@@ -1540,10 +1711,13 @@ void MainWindow::exportNeuronStructureAsMultipleSwc()
 
 void MainWindow::exportChainFileList()
 {
-  QString fileName =
+  QString fileName = getSaveFileName(
+        "Save tracing results", "Binary files (*.tb)");
+#if 0
     QFileDialog::getSaveFileName(this, tr("Save tracing results"), m_lastOpenedFilePath,
          tr("Binary files (*.tb)"), 0,
          QFileDialog::DontConfirmOverwrite);
+#endif
 
   if (!fileName.isEmpty()) {
     m_lastOpenedFilePath = fileName;
@@ -1556,9 +1730,12 @@ void MainWindow::exportChainFileList()
 
 void MainWindow::exportTubeConnection()
 {
-  QString fileName =
+  QString fileName = getSaveFileName("Save connection", "XML files (*.xml) ");
+
+#if 0
       QFileDialog::getSaveFileName(this, tr("Save connection"), m_lastOpenedFilePath,
            tr("XML files (*.xml) "));
+#endif
 
   if (!fileName.isEmpty()) {
     m_lastOpenedFilePath = fileName;
@@ -1571,10 +1748,14 @@ void MainWindow::exportTubeConnection()
 
 void MainWindow::exportTubeConnectionFeat()
 {
-  QString fileName =
+  QString fileName = getSaveFileName("Save connection feature",
+                                     "Feature files (*.txt) ");
+
+#if 0
       QFileDialog::getSaveFileName(this, tr("Save connection feature"),
                                    m_lastOpenedFilePath,
                                    tr("Feature files (*.txt) "));
+#endif
 
   if (!fileName.isEmpty()) {
     m_lastOpenedFilePath = fileName;
@@ -1587,10 +1768,12 @@ void MainWindow::exportTubeConnectionFeat()
 
 void MainWindow::exportSvg()
 {
-  QString fileName =
+  QString fileName = getSaveFileName("Save svg file", "Svg file (*.svg) ",
+                                     "./untitled.svg");
+#if 0
       QFileDialog::getSaveFileName(this, tr("Save svg file"), "./untitled.svg",
            tr("Svg file (*.svg) "));
-
+#endif
   if (!fileName.isEmpty()) {
     activeStackFrame()->document()->exportSvg(
           fileName.toLocal8Bit().constData());
@@ -1599,10 +1782,13 @@ void MainWindow::exportSvg()
 
 void MainWindow::exportTraceProject()
 {
-  QString fileName =
+  QString fileName = getSaveFileName("Save trace project", "XML file (*.xml) ",
+                                     "./untitled.xml");
+#if 0
       QFileDialog::getSaveFileName(this, tr("Save trace project"),
                                    "./untitled.xml",
                                    tr("XML file (*.xml) "));
+#endif
 
   if (!fileName.isEmpty()) {
     TraceOutputDialog dlg;
@@ -1613,11 +1799,14 @@ void MainWindow::exportTraceProject()
 
 void MainWindow::importBinary()
 {
-  QStringList files = QFileDialog::getOpenFileNames(
+  QStringList files = getOpenFileNames(tr("Import tracing results"),
+                                       tr("Binary files (*.tb)"));
+#if 0
+      QFileDialog::getOpenFileNames(
         this, tr("Import tracing results"), m_lastOpenedFilePath,
         tr("Binary files (*.tb)"),
         NULL/*, QFileDialog::DontUseNativeDialog*/);
-
+#endif
   if (!files.isEmpty()) {
     ZStackFrame *frame = currentStackFrame();
     if (frame != NULL) {
@@ -1630,11 +1819,13 @@ void MainWindow::importBinary()
 
 void MainWindow::importSwc()
 {
-  QStringList files =
+  QStringList files = getOpenFileNames("Import SWC files", "SWC files (*.swc)");
+
+#if 0
       QFileDialog::getOpenFileNames(this, tr("Import SWC files"), m_lastOpenedFilePath,
                                     tr("SWC files (*.swc)"),
                                     NULL/*, QFileDialog::DontUseNativeDialog*/);
-
+#endif
   if (!files.isEmpty()) {
     ZStackFrame *frame = currentStackFrame();
     if (frame != NULL) {
@@ -1649,11 +1840,14 @@ void MainWindow::importSwc()
 
 void MainWindow::importPuncta()
 {
-  QStringList files =
+  QStringList files = getOpenFileNames(
+        "Import Puncta files", "Puncta files (*.apo)");
+
+#if 0
       QFileDialog::getOpenFileNames(this, tr("Import Puncta files"), m_lastOpenedFilePath,
                                     tr("Puncta files (*.apo)"),
                                     NULL/*, QFileDialog::DontUseNativeDialog*/);
-
+#endif
   if (!files.isEmpty()) {
     ZStackFrame *frame = currentStackFrame();
     if (frame != NULL) {
@@ -1694,9 +1888,14 @@ void MainWindow::importBadTube()
 
 void MainWindow::importTubeConnection()
 {
-  QString fileName = QFileDialog::getOpenFileName(
+  QString fileName = getOpenFileName(
+        "Import Connection", "XML files (*.xml)");
+
+#if 0
+      QFileDialog::getOpenFileName(
         this, tr("Import Connection"), m_lastOpenedFilePath,
         tr("XML files (*.xml)"), NULL/*, QFileDialog::DontUseNativeDialog*/);
+#endif
 
   if (!fileName.isEmpty()) {
     if (currentStackFrame() != NULL) {
@@ -1729,7 +1928,7 @@ QString MainWindow::getOpenFileName(const QString &caption, const QString &filte
   QString fileName =
       QFileDialog::getOpenFileName(this, caption, m_lastOpenedFilePath,
                                    filter,
-                                   NULL/*, QFileDialog::DontUseNativeDialog*/);
+                                   NULL, m_fileDialogOption);
 
   if (!fileName.isEmpty()) {
     QFileInfo fInfo(fileName);
@@ -1742,10 +1941,17 @@ QString MainWindow::getOpenFileName(const QString &caption, const QString &filte
 QStringList MainWindow::getOpenFileNames(
     const QString &caption, const QString &filter)
 {
+#if defined(_QT_FILE_DIALOG_)
+  QString fileName =
+      QFileDialog::getOpenFileName(this, caption, m_lastOpenedFilePath,
+                                   filter,
+                                   NULL, QFileDialog::DontUseNativeDialog)
+#else
   QStringList fileNameList =
       QFileDialog::getOpenFileNames(this, caption, m_lastOpenedFilePath,
                                    filter,
                                    NULL/*, QFileDialog::DontUseNativeDialog*/);
+#endif
 
   if (!fileNameList.isEmpty()) {
     QFileInfo fInfo(fileNameList[0]);
@@ -1756,21 +1962,13 @@ QStringList MainWindow::getOpenFileNames(
 }
 
 QString MainWindow::getSaveFileName(
-    const QString &caption, const QString &filter, bool usingOldFileName,
-    QFileDialog::Options options)
+    const QString &caption, const QString &filter, const QString &dir)
 {
   QString fileName;
 
-  if (usingOldFileName) {
-    fileName = QFileDialog::getSaveFileName(
-          this, caption, m_lastOpenedFilePath, filter, NULL, options
-          /*QFileDialog::DontUseNativeDialog |*/
-          /*QFileDialog::DontConfirmOverwrite*/);
-  } else {
-    fileName = QFileDialog::getSaveFileName(
-          this, caption, QFileInfo(fileName).absoluteDir().canonicalPath(),
-          filter, NULL, options);
-  }
+  fileName = QFileDialog::getSaveFileName(
+        this, caption, dir, filter, NULL, m_fileDialogOption);
+
   if (!fileName.isEmpty()) {
     QFileInfo fInfo(fileName);
     recordLastOpenPath(fInfo.absoluteDir().absolutePath());
@@ -1779,11 +1977,17 @@ QString MainWindow::getSaveFileName(
   return fileName;
 }
 
+QString MainWindow::getSaveFileName(const QString &caption, const QString &filter)
+{
+  return getSaveFileName(caption, filter, m_lastOpenedFilePath);
+}
+
 QString MainWindow::getDirectory(const QString &caption)
 {
   QString fileName;
   fileName = QFileDialog::getExistingDirectory(
-        this, caption, m_lastOpenedFilePath);
+        this, caption, m_lastOpenedFilePath,
+        m_fileDialogOption | QFileDialog::ShowDirsOnly);
 
   if (!fileName.isEmpty()) {
     QFileInfo fInfo(fileName);
@@ -1796,15 +2000,19 @@ QString MainWindow::getDirectory(const QString &caption)
 
 void MainWindow::importImageSequence()
 {
-  QString fileName =
+  QString fileName = getOpenFileName(
+        "Open Image Sequence", "Image files (*.tif *.png)");
+
+#if 0
       QFileDialog::getOpenFileName(this, tr("Open Image Sequence"),
                                    m_lastOpenedFilePath,
                                    tr("Image files (*.tif *.png)"),
                                    NULL/*, QFileDialog::DontUseNativeDialog*/);
+#endif
 
   if (!fileName.isEmpty()) {
     m_lastOpenedFilePath = fileName;
-    ZStackFrame *frame = new ZStackFrame(mdiArea);
+    ZStackFrame *frame = new ZStackFrame;
 
     //ZStackFrame *frame = new ZStackFrame;
 
@@ -1817,6 +2025,7 @@ void MainWindow::importImageSequence()
     m_progress->setValue(++currentProgress);
 
     qApp->processEvents();
+    //m_progress->repaint();
 
 
     if (frame->importImageSequence(fileName.toStdString().c_str()) == SUCCESS) {
@@ -1829,7 +2038,7 @@ void MainWindow::importImageSequence()
     m_progress->setValue(++currentProgress);
     m_progress->reset();
   }
-  QApplication::processEvents();
+  //QApplication::processEvents();
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
@@ -1949,15 +2158,17 @@ void MainWindow::openRecentFile()
 
 void MainWindow::about()
 {
-  QString title = "<h2>neuTube</h2>";
+  QString title = QString("<h2>%1</h2>").arg(GET_SOFTWARE_NAME.c_str());
   if (!NeutubeConfig::getInstance().getApplication().empty()) {
     title += QString("<p>") +
         NeutubeConfig::getInstance().getApplication().c_str() + " Edition" +
         "</p>";
   }
-  QMessageBox::about(this, tr("About neuTube"),
+  QString thirdPartyLib = QString("<p><a href=\"file:///%1/doc/ThirdPartyLibraries.txt\">Third Party Libraries</a></p>")
+      .arg(QApplication::applicationDirPath());
+  QMessageBox::about(this, QString("About %1").arg(GET_SOFTWARE_NAME.c_str()),
                      title +
-                     "<p>neuTube is software "
+                     "<p>" + GET_SOFTWARE_NAME.c_str() +" is software "
                      "for neuron tracing and visualization. "
                      "It was originally developed by Ting Zhao "
                      "in Myers Lab "
@@ -1978,10 +2189,12 @@ void MainWindow::about()
                      "<a href=mailto:tingzhao@gmail.com>tingzhao@gmail.com</a></p>"
                      "<p>Source code: "
                      "<a href=\"https://github.com/janelia-flyem/NeuTu\">"
-                     "https://github.com/janelia-flyem/NeuTu</a></p>"
+                     "https://github.com/janelia-flyem/NeuTu</a></p>" + thirdPartyLib
+                     /*
                      "<p>Reference: <a href=\"http://www.nature.com/nmeth/journal/v9/n1/full/nmeth.1784.html\">"
                      "mGRASP enables mapping mammalian synaptic connectivity with light microscopy</a>, "
                      "<i>Nature Methods</i> 9 (1), 96-102</p>"
+                                        */
                      );
 }
 
@@ -2202,8 +2415,8 @@ void MainWindow::updateFrameInfoDlg()
     } else {
       if (frameNumber() == 0) {
         m_frameInfoDlg.setText(tr("Nothing exists. "
-                                  "This dialog is to show you information "
-                                  "about your document."));
+                                  "This dialog is to show information "
+                                  "of the active document."));
       } else {
         m_frameInfoDlg.setText(QString("%1 ghost(s)").arg(frameNumber()));
       }
@@ -2299,11 +2512,17 @@ void MainWindow::updateBcDlg(const ZStackFrame *frame)
 
 void MainWindow::on_actionOpen_triggered()
 {
-  QString fileName = QFileDialog::getOpenFileName(
+  QString fileName = getOpenFileName(
+        "Open stack",
+        "Stack files (*.tif *.lsm *.raw *.png *.swc *.nnt *.apo *.marker *.json)");
+
+#if 0
+      QFileDialog::getOpenFileName(
         this, tr("Open stack"),
         m_lastOpenedFilePath,
         tr("Stack files (*.tif *.lsm *.raw *.png *.swc *.nnt *.apo *.marker *.json)"),
         NULL/*, QFileDialog::DontUseNativeDialog*/);
+#endif
 
   if (!fileName.isEmpty()) {
     m_lastOpenedFilePath = QFileInfo(fileName).absoluteDir().path();
@@ -2349,20 +2568,31 @@ void MainWindow::on_actionDisable_triggered()
 
 }
 
+void MainWindow::autoTrace(ZStackFrame *frame)
+{
+  ZQtBarProgressReporter reporter;
+  reporter.setProgressBar(getProgressBar());
+
+  ZProgressReporter *oldReporter =
+      frame->document()->getProgressReporter();
+  frame->document()->setProgressReporter(&reporter);
+
+  frame->executeAutoTraceCommand();
+
+  frame->document()->setProgressReporter(oldReporter);
+
+  emit progressDone();
+}
+
 void MainWindow::on_actionAutomatic_triggered()
 {
   ZStackFrame *frame = currentStackFrame();
   if (frame != NULL) {
-    frame->executeAutoTraceCommand();
-    //currentStackFrame()->view()->progressBar()->setValue(0);
+    m_progress->setRange(0, 100);
+    m_progress->setValue(1);
+    m_progress->show();
 
-    /*
-    ZStackDocAutoTraceCommand *atcommand = new ZStackDocAutoTraceCommand(currentStackFrame()->document().get(),
-                                                                         currentStackFrame()->view()->progressBar());
-*/
-//currentStackFrame()->pushUndoCommand(atcommand);
-    //currentStackFrame()->presenter()->autoTrace();
-    //currentStackFrame()->updateView();
+    QtConcurrent::run(this, &MainWindow::autoTrace, frame);
   }
 }
 
@@ -2487,11 +2717,14 @@ void MainWindow::on_actionSave_triggered()
 
       qDebug() << dataFile;
 
-      QString fileName =
+      QString fileName = getSaveFileName(
+            "Save tracing project", "Tracing project",
+            dataFile + "/untitled.trace");
+#if 0
           QFileDialog::getSaveFileName(this, tr("Save tracing project"),
                                        dataFile + "/untitled.trace",
                                        tr("Tracing project"), 0);
-
+#endif
       qDebug() << fileName;
 
       if (!fileName.isEmpty()) {
@@ -2507,11 +2740,13 @@ void MainWindow::on_actionLoad_triggered()
       QFileDialog::getExistingDirectory(this, tr("Tracing Project"),
                                         ".", QFileDialog::ShowDirsOnly);*/
 #if defined __APPLE__
-      QFileDialog::getOpenFileName(this, tr("Tracing Project"), m_lastOpenedFilePath,
-                                   "Tracing project (*.trace)");
+      getOpenFileName("Tracing Project", "Tracing project (*.trace)");
 #else
+      getOpenFileName("Tracing Project", "Tracing project (*.xml)");
+#if 0
       QFileDialog::getOpenFileName(this, tr("Tracing Project"), m_lastOpenedFilePath,
                                "Tracing project (*.xml)");
+#endif
 #endif
 
   if (!dirpath.isEmpty()) {
@@ -2555,10 +2790,14 @@ void MainWindow::on_actionAdd_Reference_triggered()
 {
   ZStackFrame *frame = currentStackFrame();
   if (frame != NULL) {
-    QStringList pathList =
+    QStringList pathList = getOpenFileNames(
+          "Add SWC Reference", "Swc files (*.swc)");
+
+#if 0
         QFileDialog::getOpenFileNames(this, tr("Add SWC Reference"), m_lastOpenedFilePath,
                                      "Swc files (*.swc)",
                                       NULL/*, QFileDialog::DontUseNativeDialog*/);
+#endif
     if (!pathList.isEmpty()) {
       m_lastOpenedFilePath = pathList[0];
       frame->importSwcAsReference(pathList);
@@ -2566,7 +2805,7 @@ void MainWindow::on_actionAdd_Reference_triggered()
     }
   }
 }
-
+#if 0
 void MainWindow::on_actionFrom_SWC_triggered()
 {
   ZStackFrame *frame = currentStackFrame();
@@ -2575,7 +2814,7 @@ void MainWindow::on_actionFrom_SWC_triggered()
     frame->updateView();
   }
 }
-
+#endif
 void MainWindow::on_actionSave_As_triggered()
 {
   ZStackFrame *frame = currentStackFrame();
@@ -2588,10 +2827,14 @@ void MainWindow::on_actionSave_As_triggered()
 
     qDebug() << dataFile;
 
-    QString fileName =
+    QString fileName = getSaveFileName(
+          "Save tracing project", "Tracing project",
+          dataFile + "/untitled.trace");
+#if 0
         QFileDialog::getSaveFileName(this, tr("Save tracing project"),
                                      dataFile + "/untitled.trace",
                                      tr("Tracing project"), 0);
+#endif
 
     if (!fileName.isEmpty()) {
       frame->saveProjectAs(fileName);
@@ -2601,9 +2844,12 @@ void MainWindow::on_actionSave_As_triggered()
 
 void MainWindow::on_actionLoad_from_a_file_triggered()
 {
-  QString fileName =
+  QString fileName = getOpenFileName("Open Project", "XML files (*.xml)");
+
+#if 0
       QFileDialog::getOpenFileName(this, tr("Open Project"), m_lastOpenedFilePath,
                                    tr("XML files (*.xml)"));
+#endif
   m_lastOpenedFilePath = fileName;
   openTraceProject(fileName);
 }
@@ -3041,10 +3287,10 @@ void MainWindow::evokeStackFrame(QMdiSubWindow *frame)
 #ifdef __APPLE__
   if (frame != NULL) {
     frame->hide();
-    QApplication::processEvents();
+    //QApplication::processEvents();
     qDebug() << "process 1";
     frame->show();
-    QApplication::processEvents();
+    //QApplication::processEvents();
     qDebug() << "process 2";
     mdiArea->setActiveSubWindow(frame);
   }
@@ -3070,10 +3316,14 @@ void MainWindow::evokeStackFrame(QMdiSubWindow *frame)
 
 void MainWindow::on_actionImport_Network_triggered()
 {
-  QString fileName =
+  QString fileName = getOpenFileName(
+        "Open Network", "FlyEM network files (*.txt)");
+
+#if 0
       QFileDialog::getOpenFileName(this, tr("Open Network"),
                                    m_lastOpenedFilePath,
                                    tr("FlyEM network files (*.txt)"));
+#endif
 
   if (!fileName.isEmpty()) {
     m_lastOpenedFilePath = fileName;
@@ -3100,10 +3350,14 @@ void MainWindow::on_actionAddSWC_triggered()
   ZStackFrame *frame = activeStackFrame();
   if (frame != NULL) {
     QStringList fileList =
+        getOpenFileNames("Load SWC files", "SWC files (*.swc)");
+
+#if 0
         QFileDialog::getOpenFileNames(this, tr("Load SWC files"),
                                       m_lastOpenedFilePath,
                                       tr("SWC files (*.swc)"),
                                       NULL/*, QFileDialog::DontUseNativeDialog*/);
+#endif
     if (!fileList.isEmpty()) {
       frame->load(fileList);
       if (NeutubeConfig::getInstance().getMainWindowConfig().
@@ -3121,11 +3375,14 @@ void MainWindow::on_actionImage_Sequence_triggered()
 
 void MainWindow::on_actionAddFlyEmNeuron_Network_triggered()
 {
-  QString fileName =
+  QString fileName = getOpenFileName(
+        "Open Network", "FlyEM network files (*.fnt)");
+
+#if 0
       QFileDialog::getOpenFileName(this, tr("Open Network"),
                                    m_lastOpenedFilePath,
                                    tr("FlyEM network files (*.fnt)"));
-
+#endif
   if (!fileName.isEmpty()) {
     m_lastOpenedFilePath = fileName;
 
@@ -3152,12 +3409,15 @@ void MainWindow::on_actionAddFlyEmNeuron_Network_triggered()
 
 void MainWindow::on_actionSynapse_Annotation_triggered()
 {
-  QStringList fileList =
+  QStringList fileList = getOpenFileNames(
+        "Load Synapse Annotations", "JSON files (*.json)");
+
+#if 0
       QFileDialog::getOpenFileNames(this, tr("Load Synapse Annotations"),
                                    m_lastOpenedFilePath,
                                    tr("JSON files (*.json)"),
                                     NULL/*, QFileDialog::DontUseNativeDialog*/);
-
+#endif
   if (!fileList.isEmpty()) {
     ZStackFrame *frame = new ZStackFrame;
     frame->load(fileList);
@@ -3191,10 +3451,14 @@ void MainWindow::on_actionPosition_triggered()
 
 void MainWindow::on_actionImportMask_triggered()
 {
-  QString fileName =
+  QString fileName = getOpenFileName(
+        "Import mask", "Image file (*.tif *.xml *.json)");
+
+#if 0
       QFileDialog::getOpenFileName(this, tr("Import mask"),
                                    m_lastOpenedFilePath,
                                    tr("Image file (*.tif *.xml *.json)"));
+#endif
 
   if (!fileName.isEmpty()) {
     ZStackFrame *frame = currentStackFrame();
@@ -3309,10 +3573,13 @@ void MainWindow::on_actionFlyEmSelect_triggered()
 
 void MainWindow::on_actionImportSegmentation_triggered()
 {
-  QString fileName =
+  QString fileName = getOpenFileName(
+        "Import FlyEM segmentation", "Segmentation file (*.json)");
+#if 0
       QFileDialog::getOpenFileName(this, tr("Import FlyEM segmentation"),
                                    m_lastOpenedFilePath,
                                    tr("Segmentation file (*.json)"));
+#endif
 
   if (!fileName.isEmpty()) {
     ZFlyEmStackFrame *frame = new ZFlyEmStackFrame;
@@ -3385,10 +3652,13 @@ void MainWindow::on_actionFlyEmSelect_connection_triggered()
 
 void MainWindow::on_actionAxon_Export_triggered()
 {
-  QString fileName =
+  QString fileName = getOpenFileName("Import axon", "Axon export file (*.txt)");
+
+#if 0
       QFileDialog::getOpenFileName(this, tr("Import axon"),
                                    m_lastOpenedFilePath,
                                    tr("Axon export file (*.txt)"));
+#endif
 
   if (!fileName.isEmpty()) {
     ZFlyEmStackFrame *frame = new ZFlyEmStackFrame;
@@ -3895,7 +4165,7 @@ void MainWindow::reportFileOpenProblem(const QString &filePath,
 
   report(std::string("File Open Error"),
          std::string("Cannot open ") + filePath.toStdString() +
-         finalReason.toStdString(), ZMessageReporter::Warning);
+         ": " + finalReason.toStdString(), ZMessageReporter::Warning);
 
 #if 0
   QMessageBox::critical(this, tr("Error"),
@@ -3910,7 +4180,7 @@ void MainWindow::reportFileOpenProblem(const QString &filePath,
 void MainWindow::addFlyEmDataFrame(ZFlyEmDataFrame *frame)
 {
   if (frame  != NULL) {
-    QApplication::processEvents();
+    //QApplication::processEvents();
 
     QMdiSubWindow *subWindow = mdiArea->addSubWindow(frame);
     connect(frame, SIGNAL(volumeTriggered(const QString&)),
@@ -4001,10 +4271,12 @@ void MainWindow::on_actionAddMask_triggered()
 {
   ZStackFrame *frame = currentStackFrame();
   if (frame != NULL) {
-    QString fileName = QFileDialog::getOpenFileName(
-          this, tr("Load Mask"), m_lastOpenedFilePath,
-          tr("Image files (*.tif *.png)"),
+    QString fileName =
+        getOpenFileName("Load Mask", "Image files (*.tif *.png)");
+#if 0
+        QFileDialog::,
           NULL/*, QFileDialog::DontUseNativeDialog*/);
+#endif
     if (!fileName.isEmpty()) {
       frame->importMask(fileName);
       m_lastOpenedFilePath = fileName;
@@ -4067,9 +4339,14 @@ void MainWindow::on_actionMask_triggered()
       path = m_lastOpenedFilePath;
     }
 
-    QString fileName = QFileDialog::getSaveFileName(
+    QString fileName = getSaveFileName("Save Mask", "TIF files (*.tif)",
+                                       path.c_str());
+#if 0
+        QFileDialog::getSaveFileName(
           this, tr("Save Mask"), path.c_str(), tr("TIF files (*.tif)"),
           NULL/*, QFileDialog::DontUseNativeDialog*/);
+#endif
+
     if (!fileName.isEmpty()) {
       frame->exportObjectMask(NeuTube::RED, fileName);
       m_lastOpenedFilePath = fileName;
@@ -4083,17 +4360,17 @@ void MainWindow::on_actionShortcut_triggered()
     m_helpDlg->show();
     m_helpDlg->raise();
   } else if (GET_APPLICATION_NAME == "General") {
-    QString title = "<h2>neuTube Help</h2>";
+    QString title = QString("<h2> %1 Help </h2").
+        arg(NeutubeConfig::getInstance().getSoftwareName().c_str());
     if (!NeutubeConfig::getInstance().getApplication().empty()) {
       title += QString("<p>") +
           NeutubeConfig::getInstance().getApplication().c_str() + " Edition" +
           "</p>";
     }
-    QMessageBox::about(this, tr("neuTube"),
+    QMessageBox::about(this, GET_SOFTWARE_NAME.c_str(),
                        title + "<p>Please check</p>"
-                       "<p><a href=\"https://sites.google.com/site/neurontracing\">"
-                       "online documentation</a></p>"
-                       );
+                       "<p><a href=\"http://neutracing.com\">"
+                       "online documentation</a></p>");
   } else {
     QMessageBox::information(this, "Sorry", "No help is available for this edition.");
   }
@@ -4105,6 +4382,32 @@ ZStackFrame* MainWindow::createEmptyStackFrame(ZStackFrame *parentFrame)
   newFrame->setParentFrame(parentFrame);
 
   return newFrame;
+}
+
+ZStackFrame *MainWindow::createStackFrame(
+    Stack *stack, NeuTube::Document::ETag tag, ZStackFrame *parentFrame)
+{
+  if (stack != NULL) {
+    ZStackFrame *newFrame = new ZStackFrame;
+    newFrame->setParentFrame(parentFrame);
+
+    ZStack *stackObject = new ZStack;
+    stackObject->consumeData(stack);
+
+    newFrame->loadStack(stackObject);
+
+    newFrame->document()->setTag(tag);
+    if (parentFrame != NULL) {
+      newFrame->document()->setStackBackground(
+            parentFrame->document()->getStackBackground());
+    }
+    //addStackFrame(newFrame);
+    //presentStackFrame(newFrame);
+
+    return newFrame;
+  }
+
+  return NULL;
 }
 
 ZStackFrame *MainWindow::createStackFrame(
@@ -4134,7 +4437,49 @@ ZStackFrame *MainWindow::createStackFrame(
 
   return NULL;
 }
+#if 0
+ZStackFrame *MainWindow::createStackFrame(
+    ZStackDoc *doc, ZStackFrame *parentFrame)
+{
+  if (doc != NULL) {
+    ZStackFrame *newFrame = new ZStackFrame;
+    newFrame->setParentFrame(parentFrame);
 
+    newFrame->consumeDocument(doc);
+
+    if (parentFrame != NULL) {
+      newFrame->document()->setStackBackground(
+            parentFrame->document()->getStackBackground());
+    }
+
+    return newFrame;
+  }
+
+  return NULL;
+}
+#endif
+ZStackFrame *MainWindow::createStackFrame(
+    ZStackDocReader *reader, ZStackFrame *parentFrame)
+{
+  if (reader != NULL) {
+    ZStackFrame *newFrame = new ZStackFrame;
+    newFrame->setParentFrame(parentFrame);
+
+    newFrame->addDocData(*reader);
+    //newFrame->consumeDocument(doc);
+
+    if (parentFrame != NULL) {
+      newFrame->document()->setStackBackground(
+            parentFrame->document()->getStackBackground());
+    }
+
+    return newFrame;
+  }
+
+  return NULL;
+}
+
+#if 0
 ZStackFrame *MainWindow::createStackFrame(
     ZStackDoc *doc, NeuTube::Document::ETag tag, ZStackFrame *parentFrame)
 {
@@ -4162,7 +4507,7 @@ ZStackFrame *MainWindow::createStackFrame(
 
   return NULL;
 }
-
+#endif
 void MainWindow::on_actionMake_Projection_triggered()
 {
   ZStackFrame *frame = currentStackFrame();
@@ -4208,18 +4553,6 @@ QProgressDialog* MainWindow::getProgressDialog()
 QProgressBar* MainWindow::getProgressBar()
 {
   return getProgressDialog()->findChild<QProgressBar*>();
-
-  /*
-  const QObjectList &objList = getProgressDialog()->children();
-  foreach (QObject* obj, objList) {
-    QProgressBar *bar = qobject_cast<QProgressBar*>(obj);
-    if (bar != NULL) {
-      return bar;
-    }
-  }
-
-  return NULL;
-  */
 }
 
 static void setSkeletonizer(
@@ -4372,17 +4705,20 @@ void MainWindow::on_actionMask_SWC_triggered()
 */
         if (stackFrame != NULL) {
           swcFrame->document()->estimateSwcRadius(wholeTree);
-          if (wholeTree->size() > 5) {
-            Biocytin::SwcProcessor::smoothRadius(wholeTree);
-          }
-        }
+
+          Biocytin::SwcProcessor::smoothRadius(wholeTree);
 
 #ifdef _DEBUG_2
-        wholeTree->save(GET_DATA_DIR + "/test2.swc");
+        wholeTree->save(GET_DATA_DIR + "/test.swc");
 #endif
+        }
 
         ZSwcResampler resampler;
         resampler.optimalDownsample(wholeTree);
+
+        if (stackFrame != NULL) {
+          wholeTree->translate(stackFrame->document()->getStackOffset());
+        }
 
         if (stackFrame != swcFrame) {
           swcFrame->document()->addSwcTree(wholeTree);
@@ -4422,11 +4758,15 @@ void MainWindow::expandCurrentFrame()
 {
   ZStackFrame *frame = activeStackFrame();
   if (frame != NULL) {
-    QStringList fileList =
+    QStringList fileList = getOpenFileNames(
+          "Load files", "SWC/Image files (*.swc *.png *.tif)");
+
+#if 0
         QFileDialog::getOpenFileNames(this, tr("Load files"),
                                       m_lastOpenedFilePath,
                                       tr("SWC/Image files (*.swc *.png *.tif)"),
                                       NULL/*, QFileDialog::DontUseNativeDialog*/);
+#endif
 
     bool swcLoaded = false;
     if (!fileList.isEmpty()) {
@@ -4467,6 +4807,7 @@ void MainWindow::on_actionAutosaved_Files_triggered()
 void MainWindow::on_actionDiagnosis_triggered()
 {
   m_DiagnosisDlg->show();
+  m_DiagnosisDlg->setVideoCardInfo(Z3DGpuInfoInstance.getGpuInfo());
   m_DiagnosisDlg->scrollToBottom();
   m_DiagnosisDlg->raise();
 }
@@ -4481,11 +4822,13 @@ void MainWindow::on_actionSave_SWC_triggered()
         swcSource = "./untitled.swc";
       }
 
-      QString fileName =
+      QString fileName = getSaveFileName(
+            "Save neuron as SWC", tr("SWC file (*.swc) "), swcSource.c_str());
+#if 0
           QFileDialog::getSaveFileName(this, tr("Save neuron as SWC"),
                                        swcSource.c_str(),
                                        tr("SWC file (*.swc) "));
-
+#endif
       if (!fileName.isEmpty()) {
         frame->document()->saveSwc(fileName.toStdString());
       }
@@ -4607,7 +4950,7 @@ void MainWindow::createDvidFrame()
   QProgressDialog *progressDlg = getProgressDialog();
   progressDlg->reset();
   progressDlg->setCancelButton(0);
-  progressDlg->setLabelText("Loading dvid object ...");
+  progressDlg->setLabelText("Creating window ...");
   progressDlg->setRange(0, 100);
   QProgressBar *bar = getProgressBar();
   ZQtBarProgressReporter reporter;
@@ -4616,20 +4959,22 @@ void MainWindow::createDvidFrame()
   reporter.start();
   reporter.advance(0.1);
 
-  ZStackFrame *frame = NULL;
   ZDvidBuffer *dvidBuffer = m_dvidClient->getDvidBuffer();
+
+  ZStackDocReader reader;
 
   ZStack *docStack = NULL;
 
   const QVector<ZStack*>& imageArray = dvidBuffer->getImageArray();
   if (!imageArray.isEmpty()) {
     docStack = ZStackFactory::composite(imageArray.begin(), imageArray.end());
+
+    /*
     if (docStack != NULL) {
       frame = createStackFrame(docStack);
     }
-  }
-
-  if (frame == NULL) {
+    */
+  } else {
     const QVector<ZObject3dScan>& bodyArray = dvidBuffer->getBodyArray();
     int offset[3] = {0, 0, 0};
     Stack *stack = ZObject3dScan::makeStack(bodyArray.begin(), bodyArray.end(),
@@ -4638,45 +4983,44 @@ void MainWindow::createDvidFrame()
       docStack = new ZStack;
       docStack->consumeData(stack);
       docStack->setOffset(offset[0], offset[1], offset[2]);
-      frame = createStackFrame(docStack, NeuTube::Document::FLYEM_BODY);
+      //frame = createStackFrame(docStack, NeuTube::Document::FLYEM_BODY);
     }
   }
 
-  if (frame != NULL) {
-    addStackFrame(frame);
-    presentStackFrame(frame);
+  if (docStack != NULL) {
+    reader.setStack(docStack);
   }
 
   if (!dvidBuffer->getSwcTreeArray().isEmpty()) {
-    if (frame == NULL) {
-      frame = createEmptyStackFrame();
-    }
-
     foreach (ZSwcTree* tree, dvidBuffer->getSwcTreeArray()) {
+      reader.addSwcTree(tree);
 #ifdef _DEBUG_2
       tree->print();
       std::cout << (ZStackDrawable*) tree << std::endl;
 #endif
-      frame->document()->addSwcTree(tree, false);
+      //frame->document()->addSwcTree(tree, false);
     }
     dvidBuffer->getSwcTreeArray().clear(); //Remove the ownership
+  }
+
+  if (reader.hasData()) {
+    ZStackFrame *frame = createEmptyStackFrame();
+    frame->addDocData(reader);
 
     if (!frame->document()->hasStackData()) {
       frame->open3DWindow(this);
       delete frame;
+    } else {
+      addStackFrame(frame);
+      presentStackFrame(frame);
     }
-  }
-
-  if (frame == NULL) {
+  } else {
     report("No data retrieved", "No data retrieved from DVID",
            ZMessageReporter::Warning);
-  } else {
-    addStackFrame(frame);
-    presentStackFrame(frame);
   }
 
   dvidBuffer->clear();
-
+  progressDlg->reset();
 
 #if 0
   const ZObject3dScan &obj = m_dvidClient->getObject();
@@ -4965,8 +5309,17 @@ void MainWindow::on_actionGet_Grayscale_triggered()
     connect(progressDlg, SIGNAL(canceled()), this, SLOT(cancelDvidRequest()));
 
     m_dvidClient->reset();
-    m_dvidClient->setServer(m_dvidImageDlg->getAddress());
+    m_dvidClient->setDefaultServer();
+    //m_dvidClient->setServer(m_dvidImageDlg->getAddress());
     int depth = m_dvidImageDlg->getDepth();
+    ZDvidRequest request;
+    request.setGetImageRequest(
+          m_dvidImageDlg->getX(), m_dvidImageDlg->getY(),
+          m_dvidImageDlg->getZ(),
+          m_dvidImageDlg->getWidth(), m_dvidImageDlg->getHeight(), depth);
+    m_dvidClient->appendRequest(request);
+
+#if 0
     for (int z = 0; z < depth; ++z) {
       ZDvidRequest request;
       request.setGetImageRequest(
@@ -4975,6 +5328,7 @@ void MainWindow::on_actionGet_Grayscale_triggered()
             m_dvidImageDlg->getWidth(), m_dvidImageDlg->getHeight());
       m_dvidClient->appendRequest(request);
     }
+#endif
 
     m_dvidClient->postNextRequest();
   }
@@ -5114,7 +5468,7 @@ void MainWindow::on_actionIdentify_Hot_Spot_triggered()
   }
 }
 
-ZStackDoc *MainWindow::hotSpotDemo(
+ZStackDocReader *MainWindow::hotSpotDemo(
     int bodyId, const QString &dvidAddress, const QString &dvidUuid)
 {
   ZDvidReader reader;
@@ -5137,6 +5491,9 @@ ZStackDoc *MainWindow::hotSpotDemo(
     return NULL;
   }
 
+#ifdef _DEBUG_2
+  hotSpotArray.exportJsonFile(GET_TEST_DATA_DIR + "/test.json");
+#endif
 
   FlyEm::ZHotSpot *hotSpot = hotSpotArray[0];
   ZCuboid boundBox = hotSpot->toPointArray().getBoundBox();
@@ -5159,10 +5516,154 @@ ZStackDoc *MainWindow::hotSpotDemo(
 
   tree = ZSwcGenerator::createSwc(hotSpot->toPointArray(), 5.0, true);
 
-  ZStackDoc *doc = new ZStackDoc(stack, NULL);
-  doc->addSwcTree(tree, false);
+  ZStackDocReader *docReader = new ZStackDocReader();
+  docReader->setStack(stack);
+  docReader->addSwcTree(tree);
 
-  return doc;
+  //ZStackDoc *doc = new ZStackDoc(stack, NULL);
+  //doc->addSwcTree(tree, false);
+
+  return docReader;
+
+  /*
+  ZStackFrame *frame = createStackFrame(stack);
+  frame->document()->addSwcTree(tree, false);
+
+  return frame;
+  */
+
+  //addStackFrame(frame);
+  //presentStackFrame(frame);
+}
+
+ZStackDocReader* MainWindow::readDvidGrayScale(
+    const QString &dvidAddress, const QString &dvidUuid,
+    int x, int y, int z, int width, int height, int depth)
+{
+  ZDvidReader reader;
+  reader.open(dvidAddress, dvidUuid);
+
+  ZStack *stack = reader.readGrayScale(x, y, z, width, height, depth);
+  ZStackDocReader *docReader = new ZStackDocReader;
+  docReader->setStack(stack);
+  //reader->setStackSource("http:" + dvidAddress + ":" + dvidUuid);
+
+  return docReader;
+}
+
+ZStackDocReader *MainWindow::hotSpotDemoFs(
+    int bodyId, const QString &dvidAddress, const QString &dvidUuid)
+{
+  ZDvidReader reader;
+  reader.open(dvidAddress, dvidUuid);
+
+  /*
+  ZSwcPruner pruner;
+  pruner.setMinLength(1000.0);
+  pruner.prune(tree);
+  */
+
+  ZDvidInfo dvidInfo;
+  QString info = reader.readInfo("superpixels");
+  dvidInfo.setFromJsonString(info.toStdString());
+
+  int sourceBodyId = bodyId;
+  ZSwcTree *tree = reader.readSwc(sourceBodyId);
+
+  qDebug() << "Model loaded.";
+
+  ZSwcTree *unscaledTree = tree->clone();
+  tree->scale(dvidInfo.getVoxelResolution()[0],
+      dvidInfo.getVoxelResolution()[1], dvidInfo.getVoxelResolution()[2]);
+  ZFlyEmNeuron neuron(sourceBodyId, tree, NULL);
+  neuron.setUnscaledModel(unscaledTree);
+
+  ZSwcTreeNodeArray nodeArray =
+      unscaledTree->getSwcTreeNodeArray(ZSwcTree::TERMINAL_ITERATOR);
+
+  double margin = 50;
+
+  std::set<int> bodySet;
+  for (ZSwcTreeNodeArray::const_iterator iter = nodeArray.begin();
+       iter != nodeArray.end(); ++iter) {
+    ZPoint center = SwcTreeNode::pos(*iter);
+    std::set<int> bodyId = reader.readBodyId(
+          center.x(), center.y(), center.z(),
+          margin, margin, margin);
+    std::cout << bodyId.size() << " neighbor bodies" << std::endl;
+    bodySet.insert(bodyId.begin(), bodyId.end());
+  }
+
+  std::cout << "Retrieving " << bodySet.size() << " neurons ..." << std::endl;
+
+
+  std::vector<ZFlyEmNeuron> neuronArray(bodySet.size());
+  size_t index = 0;
+  int neuronRetrievalCount = 0;
+  for (std::set<int>::const_iterator iter = bodySet.begin();
+       iter != bodySet.end(); ++iter, ++index) {
+    int bodyId = *iter;
+    ZSwcTree *tree = reader.readSwc(bodyId);
+    ZFlyEmNeuron &neuron = neuronArray[index];
+    if (tree != NULL) {
+      neuron.setId(bodyId);
+      neuron.setUnscaledModel(tree);
+      ZSwcTree *tree2 = tree->clone();
+      tree2->scale(dvidInfo.getVoxelResolution()[0],
+          dvidInfo.getVoxelResolution()[1], dvidInfo.getVoxelResolution()[2]);
+      neuron.setModel(tree2);
+      ++neuronRetrievalCount;
+    } else {
+      neuron.setId(-1);
+    }
+  }
+
+  std::cout << neuronRetrievalCount << " neurons retrieved." << std::endl;
+
+  std::cout << "Computing hot spots ..." << std::endl;
+  ZFlyEmQualityAnalyzer analyzer;
+  FlyEm::ZHotSpotArray &hotSpotArray =
+      analyzer.computeHotSpot(neuron, neuronArray);
+  if (hotSpotArray.empty()) {
+    /*
+    report("Hot Spot Demo Failed", "The neuron seems normal.",
+           ZMessageReporter::Warning);
+           */
+    return NULL;
+  }
+  //hotSpotArray.print();
+
+  //FlyEm::ZHotSpot *hotSpot = hotSpotArray[0];
+  ZCuboid boundBox = hotSpotArray.toPointArray().getBoundBox();
+  boundBox.expand(10);
+
+  ZStack *stack = reader.readGrayScale(boundBox.firstCorner().x(),
+                                       boundBox.firstCorner().y(),
+                                       boundBox.firstCorner().z(),
+                                       boundBox.width() + 1,
+                                       boundBox.height() + 1,
+                                       boundBox.depth() + 1);
+
+  if (stack == NULL) {
+    if (hotSpotArray.empty()) {
+      /*
+      report("Hot Spot Demo Failed", "Cannot retreive grayscale data.",
+             ZMessageReporter::Warning);
+             */
+      return NULL;
+    }
+  }
+
+  tree = ZSwcGenerator::createSwc(hotSpotArray.toLineSegmentArray(), 5.0);
+  //tree = ZSwcGenerator::createSwc(hotSpotArray.toPointArray(), 5.0);
+
+  ZStackDocReader *docReader = new ZStackDocReader();
+  docReader->setStack(stack);
+  docReader->addSwcTree(tree);
+  //ZStackDoc *doc = new ZStackDoc(stack, NULL);
+  //doc->addSwcTree(tree, false);
+
+  return docReader;
 
   /*
   ZStackFrame *frame = createStackFrame(stack);
@@ -5178,16 +5679,32 @@ ZStackDoc *MainWindow::hotSpotDemo(
 void MainWindow::on_actionHot_Spot_Demo_triggered()
 {
   ZFlyEmDataInfo dataInfo(FlyEm::DATA_FIB25);
-  m_dvidObjectDlg->setAddress(dataInfo.getDvidAddress());
-  if (m_dvidObjectDlg->exec()) {
-    int bodyId = m_dvidObjectDlg->getBodyId()[0];
+
+  //m_dvidObjectDlg->setAddress(dataInfo.getDvidAddressWithPort().c_str());
+  if (m_hotSpotDlg->exec()) {
+    int bodyId = m_hotSpotDlg->getBodyId();
 #if 0
     ZStackFrame *frame =
         hotSpotDemo(bodyId, m_dvidObjectDlg->getAddress(), dataInfo.getDvidUuid());
 #else
-    QFuture<ZStackDoc*> res = QtConcurrent::run(
-          this, &MainWindow::hotSpotDemo, bodyId,
-          m_dvidObjectDlg->getAddress(), dataInfo.getDvidUuid());
+    qDebug() << dataInfo.getDvidAddressWithPort().c_str();
+
+    QFuture<ZStackDocReader*> res;
+
+    switch (m_hotSpotDlg->getType()) {
+    case FlyEmHotSpotDialog::FALSE_MERGE:
+      res = QtConcurrent::run(
+            this, &MainWindow::hotSpotDemo, bodyId,
+            QString(dataInfo.getDvidAddressWithPort().c_str()),
+            QString(dataInfo.getDvidUuid().c_str()));
+      break;
+    case FlyEmHotSpotDialog::FALSE_SPLIT:
+      res = QtConcurrent::run(
+            this, &MainWindow::hotSpotDemoFs, bodyId,
+            QString(dataInfo.getDvidAddressWithPort().c_str()),
+            QString(dataInfo.getDvidUuid().c_str()));
+      break;
+    }
 #endif
 
     m_progress->setRange(0, 2);
@@ -5198,11 +5715,30 @@ void MainWindow::on_actionHot_Spot_Demo_triggered()
 
     res.waitForFinished();
 
-    ZStackDoc *doc = res.result();
-    if (doc != NULL) {
-      ZStackFrame *frame = createStackFrame(doc);
+    ZStackDocReader *docReader = res.result();
+#if 0
+    ZStackDoc *doc = NULL;
+
+    if (docReader != NULL) {
+      if (docReader->hasData()) {
+        doc = new ZStackDoc(NULL, NULL);
+        doc->addData(*docReader);
+      }
+      delete docReader;
+      docReader = NULL;
+    }
+#endif
+    if (docReader != NULL) {
+      ZStackFrame *frame = createStackFrame(docReader);
+
+      delete docReader;
+      docReader = NULL;
+
       addStackFrame(frame);
       presentStackFrame(frame);
+    } else {
+      report("No Hotspot Detected", "No hotspot detected.",
+             ZMessageReporter::Information);
     }
 #if 0
     ZStackFrame *frame = res.result();
@@ -5279,4 +5815,336 @@ void MainWindow::on_actionHot_Spot_Demo_triggered()
     */
 #endif
   }
+}
+
+ZStackDoc* MainWindow::importHdf5Body(int bodyId, const QString &hdf5Path)
+{
+  ZObject3dScan obj;
+  obj.importHdf5(hdf5Path.toStdString(), ZString::num2str(bodyId) + ".sobj");
+  ZStackDoc *doc = NULL;
+  if (!obj.isEmpty()) {
+    ZStack *stack = obj.toStackObject();
+    if (stack != NULL) {
+      doc = new ZStackDoc(stack, NULL);
+    }
+  }
+
+  return doc;
+}
+
+ZStackDoc* MainWindow::importHdf5BodyM(const std::vector<int> &bodyIdArray,
+                                       const QString &hdf5Path,
+                                       const std::vector<int> &downsampleInterval)
+{
+  QVector<ZObject3dScan> objectArray;
+  objectArray.resize(bodyIdArray.size());
+
+  ZStack *stack = NULL;
+  int offset[3] = {0, 0, 0};
+  for (size_t i = 0; i < bodyIdArray.size(); ++i) {
+    int bodyId = bodyIdArray[i];
+    objectArray[i].importHdf5(
+          hdf5Path.toStdString(), ZString::num2str(bodyId) + ".sobj");
+    if (downsampleInterval.size() == 3) {
+      objectArray[i].downsampleMax(downsampleInterval[0],
+          downsampleInterval[1], downsampleInterval[2]);
+    }
+    Stack *stackData = ZObject3dScan::makeStack(
+          objectArray.begin(), objectArray.end(), offset);
+    if (stackData != NULL) {
+      stack = new ZStack;
+      stack->consumeData(stackData);
+      stack->setOffset(offset[0], offset[1], offset[2]);
+    }
+  }
+
+  ZStackDoc *doc = NULL;
+  if (stack != NULL) {
+    doc = new ZStackDoc(stack, NULL);
+  }
+
+  return doc;
+}
+
+
+void MainWindow::on_actionHDF5_Body_triggered()
+{
+#if 0
+  QString fileName = getOpenFileName("HDF5", "HDF5 file (*.hf5)");
+  if (!fileName.isEmpty()) {
+    if (m_bodyDlg->exec()) {
+      std::vector<int> bodyIdArray = m_bodyDlg->getBodyIdArray();
+      std::vector<int> downsampleInterval = m_bodyDlg->getDownsampleInterval();
+      /*
+      ZObject3dScan obj;
+      obj.importHdf5(fileName.toStdString(), ZString::num2str(bodyId) + ".sobj");
+      ZStackFrame *frame = NULL;
+      if (!obj.isEmpty()) {
+        ZStack *stack = obj.toStackObject();
+        if (stack != NULL) {
+          frame = createStackFrame(stack, NeuTube::Document::FLYEM_BODY);
+        }
+      }
+      */
+
+      QFuture<ZStackDoc*> res = QtConcurrent::run(
+            this, &MainWindow::importHdf5BodyM, bodyIdArray, fileName,
+            downsampleInterval);
+
+      m_progress->setRange(0, 2);
+      m_progress->setLabelText(QString("Loading ..."));
+      int currentProgress = 0;
+      m_progress->setValue(++currentProgress);
+      m_progress->show();
+
+      res.waitForFinished();
+
+      ZStackDoc *doc = res.result();
+      if (doc != NULL) {
+        ZStackFrame *frame =
+            createStackFrame(doc, NeuTube::Document::FLYEM_BODY);
+        addStackFrame(frame);
+        presentStackFrame(frame);
+      } else {
+        report("Loading Failed", "No body found.", ZMessageReporter::Warning);
+      }
+
+      emit progressDone();
+    }
+  }
+  #endif
+}
+
+void MainWindow::on_actionDVID_Bundle_triggered()
+{
+#if defined(_FLYEM_)
+  ZDvidTarget target =
+      NeutubeConfig::getInstance().getFlyEmConfig().getDvidTarget();
+  bool continueLoading = false;
+  if (target.isValid()) {
+    if (ask("Load DVID Data",
+            "Load data from " + target.getSourceString() + "?")) {
+      continueLoading = true;
+    }
+  } else {
+    if (m_dvidDlg->exec()) {
+      NeutubeConfig::getInstance().getFlyEmConfig().setDvidTarget(
+            m_dvidDlg->getDvidTarget());
+      target = NeutubeConfig::getInstance().getFlyEmConfig().getDvidTarget();
+      if (!target.isValid()) {
+        report("Invalid DVID", "Invalid DVID server.", ZMessageReporter::Warning);
+      } else {
+        continueLoading = true;
+      }
+    }
+  }
+
+  if (continueLoading && m_bodyFilterDlg->exec()) {
+    m_progress->setRange(0, 3);
+
+    int currentProgress = 0;
+    m_progress->show();
+    m_progress->setLabelText(QString("Loading ") +
+                             target.getSourceString().c_str() + "...");
+
+    m_progress->setValue(++currentProgress);
+
+    ZDvidTarget target;
+    target.set(
+          m_dvidDlg->getAddress().toStdString(),
+          m_dvidDlg->getUuid().toStdString(), m_dvidDlg->getPort());
+    ZDvidFilter dvidFilter;
+    dvidFilter.setDvidTarget(target);
+    dvidFilter.setMinBodySize(m_bodyFilterDlg->getMinBodySize());
+    if (m_bodyFilterDlg->hasUpperBodySize()) {
+      dvidFilter.setMaxBodySize(m_bodyFilterDlg->getMaxBodySize());
+    } else {
+      dvidFilter.setMaxBodySize(std::numeric_limits<std::size_t>::max());
+    }
+
+    std::vector<int> excludedBodyArray = m_bodyFilterDlg->getExcludedBodies();
+    dvidFilter.exclude(excludedBodyArray);
+
+    ZFlyEmDataBundle *dataBundle = new ZFlyEmDataBundle;
+    if (dataBundle->loadDvid(dvidFilter)) {
+      ZFlyEmDataFrame *frame = new ZFlyEmDataFrame;
+      frame->addData(dataBundle);
+      addFlyEmDataFrame(frame);
+    } else {
+      delete dataBundle;
+      reportFileOpenProblem(target.getSourceString().c_str());
+    }
+  }
+  m_progress->reset();
+  m_progress->hide();
+#endif
+}
+
+void MainWindow::on_actionSubmit_Skeletonize_triggered()
+{
+  ZFlyEmDataFrame *frame = currentFlyEmDataFrame();
+  if (frame != NULL) {
+    frame->submitSkeletonizeService();
+  }
+}
+
+void MainWindow::on_actionSplit_Region_triggered()
+{
+  if (GET_APPLICATION_NAME == "FlyEM") {
+    ZStackFrame *frame = currentStackFrame();
+    if (frame != NULL) {
+      m_progress->setLabelText("Splitting ...");
+      m_progress->setRange(0, 0);
+      m_progress->open();
+      frame->runSeededWatershed();
+      /*
+    if (stack != NULL) {
+      ZStackFrame *frame = createStackFrame(stack);
+      addStackFrame(frame);
+      presentStackFrame(frame);
+    }
+*/
+      m_progress->reset();
+    }
+  }
+}
+
+void MainWindow::on_actionLoad_Body_with_Grayscale_triggered()
+{
+#if defined(_FLYEM_)
+  if (m_bodyDlg->exec()) {
+    m_progress->setLabelText("Loading ...");
+    m_progress->setRange(0, 0);
+    m_progress->open();
+
+    /*
+    ZFlyEmDataInfo dataInfo(FlyEm::DATA_FIB25);
+    ZDvidReader reader;
+    */
+
+    const ZDvidTarget &target = GET_FLYEM_CONFIG.getDvidTarget();
+
+    ZDvidReader reader;
+    if (reader.open(target)) {
+      std::vector<int> bodyIdArray = m_bodyDlg->getBodyIdArray();
+      if (!bodyIdArray.empty()) {
+        int bodyId = bodyIdArray[0];
+        ZObject3dScan body = reader.readBody(bodyId);
+        if (!body.isEmpty()) {
+          ZStack *stack = body.toStackObject();
+          int x = stack->getOffset().x();
+          int y = stack->getOffset().y();
+          int z = stack->getOffset().z();
+          int width = stack->width();
+          int height = stack->height();
+          int depth = stack->depth();
+
+          ZStack *grayStack = reader.readGrayScale(x, y, z, width, height, depth);
+
+          if (grayStack != NULL) {
+            TZ_ASSERT(grayStack->kind() == GREY, "Unsuppored kind.");
+            if (Stack_Same_Size(grayStack->c_stack(), stack->c_stack())) {
+              size_t voxelNumber = stack->getVoxelNumber();
+              uint8_t *maskArray = stack->array8();
+              uint8_t *signalArray = grayStack->array8();
+              for (size_t i = 0; i < voxelNumber; ++i) {
+                if (maskArray[i] > 0) {
+                  if (signalArray[i] < 255) {
+                    maskArray[i] = signalArray[i] + 1;
+                  } else {
+                    maskArray[i] = 255;
+                  }
+                }
+              }
+            }
+            //Stack_Mul(stack->c_stack(), grayStack->c_stack(), stack->c_stack());
+            delete grayStack;
+          }
+
+          ZStack *out = stack;
+          std::vector<int> dsIntv = m_bodyDlg->getDownsampleInterval();
+          if (dsIntv[0] > 0 || dsIntv[1] > 0 || dsIntv[2] > 0) {
+            Stack *outData = C_Stack::downsampleMin(
+                  stack->c_stack(), dsIntv[0], dsIntv[1], dsIntv[2]);
+            out = new ZStack();
+            out->consumeData(outData);
+            delete stack;
+          }
+
+          //ZStackDoc *doc = new ZStackDoc(NULL, NULL);
+          //doc->loadStack(stack);
+          ZStackDocReader docReader;
+          docReader.setStack(out);
+          ZStackFrame *frame = createStackFrame(&docReader);
+          addStackFrame(frame);
+          presentStackFrame(frame);
+        }
+      }
+    }
+    m_progress->reset();
+  }
+#endif
+}
+
+void MainWindow::createStackFrameFromDocReader(ZStackDocReader *reader)
+{
+#if 0
+  ZStackDoc *doc = NULL;
+  QString fileName;
+  if (reader != NULL) {
+    doc = new ZStackDoc(NULL, NULL);
+    doc->addData(*reader);
+    fileName = reader->getFileName();
+
+    delete reader;
+    reader = NULL;
+  } else {
+    report("Error Reading", "Something wrong with reading a file",
+           ZMessageReporter::Warning);
+    return;
+  }
+#endif
+
+  QString fileName;
+  if (reader != NULL) {
+    ZStackFrame *frame = createStackFrame(reader);
+    fileName = reader->getFileName();
+
+    delete reader;
+    reader = NULL;
+
+    if (frame->document()->hasStackData()) {
+      if (GET_APPLICATION_NAME == "Biocytin") {
+        frame->document()->setStackBackground(NeuTube::IMAGE_BACKGROUND_BRIGHT);
+        frame->document()->setTag(NeuTube::Document::BIOCYTIN_STACK);
+      }
+      addStackFrame(frame);
+      presentStackFrame(frame);
+      //QApplication::processEvents();
+    } else {
+      emit progressDone();
+      frame->open3DWindow(this);
+      delete frame;
+    }
+    if (!fileName.isEmpty()) {
+      setCurrentFile(fileName);
+    }
+  } else {
+    reportFileOpenProblem(fileName);
+  }
+
+  emit progressDone();
+}
+
+void MainWindow::on_actionFlyEmSettings_triggered()
+{
+#if defined(_FLYEM_)
+  if (m_dvidDlg->exec()) {
+    NeutubeConfig::getInstance().getFlyEmConfig().setDvidTarget(
+          m_dvidDlg->getDvidTarget());
+#ifdef _DEBUG_
+    NeutubeConfig::getInstance().getFlyEmConfig().print();
+#endif
+  }
+#endif
 }

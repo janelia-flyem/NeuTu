@@ -28,13 +28,21 @@ public:
     return m_blockMargin;
   }
 
-  const char* getDvidAddress() const {
-    return m_dvidAddress.c_str();
+  const std::string& getDvidAddress() const {
+    return m_dvidAddress;
   }
 
-  const char* getDvidUuid() const {
-    return m_dvidUuid.c_str();
+  const std::string& getDvidUuid() const {
+    return m_dvidUuid;
   }
+
+  inline int getDvidPort() const {
+    return m_dvidPort;
+  }
+
+  void setDvidPort(int port);
+
+  std::string getDvidAddressWithPort() const;
 
 private:
   FlyEm::EDataSet m_dataSet;
@@ -43,6 +51,7 @@ private:
   std::vector<int> m_startCoordinates;
   int m_blockMargin;
   std::string m_dvidAddress;
+  int m_dvidPort;
   std::string m_dvidUuid;
 };
 

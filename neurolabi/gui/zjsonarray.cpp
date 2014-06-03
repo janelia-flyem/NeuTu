@@ -1,6 +1,8 @@
 #include "zjsonarray.h"
 #include "c_json.h"
 #include "tz_utilities.h"
+#include "zjsonparser.h"
+#include "zerror.h"
 
 using namespace std;
 
@@ -12,6 +14,15 @@ ZJsonArray::ZJsonArray(json_t *data, bool asNew)
 {
   if (json_is_array(data)) {
     set(data, asNew);
+  } else {
+    m_data = NULL;
+  }
+}
+
+ZJsonArray::ZJsonArray(const json_t *data, bool asNew)
+{
+  if (json_is_array(data)) {
+    set(const_cast<json_t*>(data), asNew);
   } else {
     m_data = NULL;
   }
@@ -82,6 +93,21 @@ std::vector<int> ZJsonArray::toIntegerArray() const
   return array;
 }
 
+std::vector<bool> ZJsonArray::toBoolArray() const
+{
+  std::vector<bool> array;
+  if (m_data != NULL) {
+    for (size_t i = 0; i < size(); ++i) {
+      const json_t *value = at(i);
+      if (json_is_boolean(value)) {
+        array.push_back(json_is_true(value));
+      }
+    }
+  }
+
+  return array;
+}
+
 ZJsonArray& ZJsonArray::operator << (double e)
 {
   if (m_data == NULL) {
@@ -95,4 +121,27 @@ ZJsonArray& ZJsonArray::operator << (double e)
   }
 
   return *this;
+}
+
+bool ZJsonArray::decode(const string &str)
+{
+  clear();
+
+  ZJsonParser parser;
+  json_t *obj = parser.decode(str);
+
+  if (ZJsonParser::isArray(obj)) {
+    set(obj, true);
+  } else {
+    if (obj == NULL) {
+      parser.printError();
+    } else {
+      json_decref(obj);
+      RECORD_ERROR_UNCOND("Not a json array");
+    }
+
+    return false;
+  }
+
+  return true;
 }

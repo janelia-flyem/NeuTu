@@ -49,11 +49,16 @@ ZStackFrame::ZStackFrame(QWidget *parent, bool preparingModel) :
 
   //m_presenter = new ZStackPresenter(this);
   //m_view = new ZStackView(this);
+  qDebug() << m_doc.get();
   m_presenter = NULL;
   m_view = NULL;
   if (preparingModel) {
     constructFrame();
   }
+#if defined(_QT5_) && defined(Q_OS_WIN)
+  showMaximized();
+  showNormal();
+#endif
 }
 
 ZStackFrame::~ZStackFrame()
@@ -88,12 +93,39 @@ void ZStackFrame::createDocument()
 
 void ZStackFrame::createPresenter()
 {
-  m_presenter = new ZStackPresenter(this);
+  if (m_presenter == NULL) {
+    m_presenter = new ZStackPresenter(this);
+  }
 }
 
 void ZStackFrame::createView()
 {
-  m_view = new ZStackView(this);
+  if (m_view == NULL) {
+    m_view = new ZStackView(this);
+  }
+}
+
+void ZStackFrame::addDocData(const ZStackDocReader &reader)
+{
+  if (m_doc == NULL) {
+    createDocument();
+  }
+  m_doc->addData(reader);
+
+  m_doc->updateTraceWorkspace(traceEffort(), traceMasked(),
+                              xResolution(), yResolution(), zResolution());
+  m_doc->updateConnectionTestWorkspace(xResolution(), yResolution(),
+                                       zResolution(), unit(),
+                                       reconstructDistThre(),
+                                       reconstructSpTest(),
+                                       crossoverTest());
+
+  if (m_doc->hasStackData()) {
+    m_presenter->optimizeStackBc();
+    m_view->reset();
+  }
+
+  setWindowTitle(m_doc->stackSourcePath().c_str());
 }
 
 void ZStackFrame::consumeDocument(ZStackDoc *doc)
@@ -120,6 +152,8 @@ void ZStackFrame::setDocument(tr1::shared_ptr<ZStackDoc> doc)
     m_presenter->optimizeStackBc();
     m_view->reset();
   }
+
+  setWindowTitle(m_doc->stackSourcePath().c_str());
 
   m_progressReporter.setProgressBar(m_view->progressBar());
   m_doc->setProgressReporter(&m_progressReporter);
@@ -175,6 +209,8 @@ void ZStackFrame::connectSignalSlot()
           m_view, SLOT(paintObject()));
   connect(m_view, SIGNAL(currentSliceChanged(int)),
           m_presenter, SLOT(processSliceChangeEvent(int)));
+  connect(m_doc.get(), SIGNAL(statusMessageUpdated(QString)),
+          this, SLOT(notifyUser(QString)));
 }
 
 void ZStackFrame::disconnectAll()
@@ -787,6 +823,7 @@ void ZStackFrame::synchronizeSetting()
 {
   m_settingDlg->setResolution(document()->stack()->resolution().voxelSize());
   m_settingDlg->setUnit(document()->stack()->resolution().unit());
+  m_settingDlg->setBackground(document()->getStackBackground());
 }
 
 void ZStackFrame::synchronizeDocument()
@@ -807,6 +844,7 @@ void ZStackFrame::synchronizeDocument()
                                        reconstructDistThre(),
                                        reconstructSpTest(),
                                        crossoverTest());
+  m_doc->setStackBackground(m_settingDlg->getBackground());
 }
 
 void ZStackFrame::setLocsegChainInfo(ZLocsegChain *chain, QString prefix,
@@ -1188,7 +1226,13 @@ Z3DWindow* ZStackFrame::open3DWindow(QWidget *parent, Z3DWindow::EInitMode mode)
 {
   if (Z3DApplication::app()->is3DSupported()) {
     if (m_3dWindow == NULL) {
+#ifdef _WIN32
+      m_3dWindow = new Z3DWindow(document(), mode, false, NULL);
+      connect(parent, SIGNAL(destroyed()), m_3dWindow, SLOT(close()));
+      connect(parent, SIGNAL(destroyed(QObject*)), m_3dWindow, SLOT(close()));
+#else
       m_3dWindow = new Z3DWindow(document(), mode, false, parent);
+#endif
       m_3dWindow->setWindowTitle("3D View");
       connect(m_3dWindow, SIGNAL(destroyed()), this, SLOT(detach3DWindow()));
       if (NeutubeConfig::getInstance().getApplication() == "Biocytin") {
@@ -1492,6 +1536,7 @@ void ZStackFrame::loadRoi(const QString &filePath)
     obj->setColor(16, 16, 16, 64);
 
     obj->setTarget(ZStackDrawable::OBJECT_CANVAS);
+    clearDecoration();
     addDecoration(obj);
     updateView();
 
@@ -1518,7 +1563,14 @@ void ZStackFrame::zoomToSelectedSwcNodes()
 
 void ZStackFrame::notifyUser(const QString &message)
 {
-  m_statusInfo = message;
+  if (!message.isEmpty()) {
+    m_statusInfo = message;
 
-  emit infoChanged();
+    emit infoChanged();
+  }
+}
+
+void ZStackFrame::runSeededWatershed()
+{
+  document()->runSeededWatershed();
 }

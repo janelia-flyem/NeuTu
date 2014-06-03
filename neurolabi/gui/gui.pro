@@ -68,6 +68,7 @@ macx {
 
 unix:!macx {
   LIBS += -lGL -lGLEW -lGLU
+  DEFINES += _LINUX_
 }
 
 } # static glew
@@ -384,7 +385,15 @@ HEADERS += mainwindow.h \
     flyemhotspotdialog.h \
     flyem/zflyemqualityanalyzertaskmanager.h \
     zworkspacefactory.h \
-    dvid/zdvidreader.h
+    dvid/zdvidreader.h \
+    flyembodyiddialog.h \
+    zdviddialog.h \
+    flyembodyfilterdialog.h \
+    flyem/zskeletonizeservice.h \
+    zflyemdvidreader.h \
+    zstroke2darray.h \
+    flyem/zflyemservice.h \
+    zactionfactory.h
 
 FORMS += settingdialog.ui \
     frameinfodialog.ui \
@@ -429,7 +438,10 @@ FORMS += settingdialog.ui \
     dvidimagedialog.ui \
     tilemanagerdialog.ui \
     flyemneuronthumbnaildialog.ui \
-    flyemhotspotdialog.ui
+    flyemhotspotdialog.ui \
+    flyembodyiddialog.ui \
+    zdviddialog.ui \
+    flyembodyfilterdialog.ui
 SOURCES += main.cpp \
     mainwindow.cpp \
     zstackview.cpp \
@@ -629,7 +641,15 @@ SOURCES += main.cpp \
     flyemhotspotdialog.cpp \
     flyem/zflyemqualityanalyzertaskmanager.cpp \
     zworkspacefactory.cpp \
-    dvid/zdvidreader.cpp
+    dvid/zdvidreader.cpp \
+    flyembodyiddialog.cpp \
+    zdviddialog.cpp \
+    flyembodyfilterdialog.cpp \
+    flyem/zskeletonizeservice.cpp \
+    zflyemdvidreader.cpp \
+    zstroke2darray.cpp \
+    flyem/zflyemservice.cpp \
+    zactionfactory.cpp
 
 OTHER_FILES += \
     extlib.pri

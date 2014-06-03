@@ -75,7 +75,10 @@ class SkeletonizeTaskDistributor:
         return self.masterScript
 
     def getFullCommand(self, index):
-        bodyFile = self.bodyDir + '/' + str(self.bodyList[index]) + '.sobj';
+        if self.bodyDir.endswith('.hf5'):
+            bodyFile = self.bodyDir + ':/' + str(self.bodyList[index]) + '.sobj';
+        else:
+            bodyFile = self.bodyDir + '/' + str(self.bodyList[index]) + '.sobj';
         swcFile = self.swcDir + '/' + str(self.bodyList[index]) + '.swc';
         command = self.commandPath + ' ' + bodyFile  + ' -o ' + swcFile;
         if self.dsIntv[0] > 0 or self.dsIntv[1] > 0 or self.dsIntv[2] > 0:

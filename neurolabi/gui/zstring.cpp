@@ -163,16 +163,18 @@ std::vector<std::string> ZString::tokenize(char c)
       } else {
         wordArray.push_back(substr(0, tokenPos[0]));
       }
-    }
 
-    for (size_t i = 0; i < tokenPos.size() - 1; ++i) {
-#ifdef _DEBUG_2
-      cout << substr(tokenPos[i] + 1, tokenPos[i + 1] - tokenPos[i] - 1) << endl;
-#endif
-      wordArray.push_back(
-            substr(tokenPos[i] + 1, tokenPos[i + 1] - tokenPos[i] - 1));
+      for (size_t i = 0; i < tokenPos.size() - 1; ++i) {
+  #ifdef _DEBUG_2
+        cout << substr(tokenPos[i] + 1, tokenPos[i + 1] - tokenPos[i] - 1) << endl;
+  #endif
+        wordArray.push_back(
+              substr(tokenPos[i] + 1, tokenPos[i + 1] - tokenPos[i] - 1));
+      }
+      wordArray.push_back(substr(tokenPos.back() + 1));
+    } else {
+      wordArray.push_back(*this);
     }
-    wordArray.push_back(substr(tokenPos.back()));
   }
 
   return wordArray;
@@ -248,7 +250,7 @@ string& ZString::replace(int from, const string &to)
   return *this;
 }
 
-bool ZString::startsWith(const string &str, ECaseSensitivity cs)
+bool ZString::startsWith(const string &str, ECaseSensitivity cs) const
 {
   string str1(c_str());
   string str2(str.c_str());
@@ -261,7 +263,7 @@ bool ZString::startsWith(const string &str, ECaseSensitivity cs)
   return String_Starts_With(str1.c_str(), str2.c_str());
 }
 
-bool ZString::endsWith(const string &str, ECaseSensitivity cs)
+bool ZString::endsWith(const string &str, ECaseSensitivity cs) const
 {
   string str1(c_str());
   string str2(str.c_str());
@@ -344,6 +346,8 @@ bool ZString::isAbsolutePath(const string &path)
   if (!path.empty()) {
     if (path[0] == FileSeparator) {
       return true;
+    } else if (ZString(path).startsWith("http:")) {
+      return true;
     }
   }
 #endif
@@ -381,8 +385,17 @@ string ZString::absolutePath(const string &dir, const string &relative)
   return fullPath;
 }
 
+bool ZString::isRemotePath() const
+{
+  return startsWith("http:");
+}
+
 string ZString::relativePath(const string &path, const string &reference)
 {
+  if (ZString(path).isRemotePath()) {
+    return path;
+  }
+
   vector<string> pathParts = ZString(path).decomposePath();
   vector<string> referenceParts = ZString(reference).decomposePath();
 
@@ -430,6 +443,18 @@ string ZString::fullPath(
   }
 
   return dir + fname + '.' + ext;
+}
+
+string ZString::fullPath(
+    const string &dir, const string &part1, const string &part2, const string &part3)
+{
+  vector<string> parts(4);
+  parts[0] = dir;
+  parts[1] = part1;
+  parts[2] = part2;
+  parts[3] = part3;
+
+  return fullPath(parts);
 }
 
 string ZString::fullPath(const vector<string> &parts)
@@ -539,24 +564,29 @@ vector<string> ZString::fileParts() const
 
 vector<string> ZString::decomposePath() const
 {
+  return decomposePath(*this);
+}
+
+vector<string> ZString::decomposePath(const std::string &str)
+{
   vector<string> parts;
 
   size_type currentPos = 0;
   size_type pos = 0;
 
-  while ((pos = find_first_of(FileSeparator, currentPos)) != string::npos) {
+  while ((pos = str.find_first_of(FileSeparator, currentPos)) != string::npos) {
     if (pos == 0) {
       parts.push_back("/");
     } else {
       if (pos > currentPos) {
-        parts.push_back(substr(currentPos, pos - currentPos));
+        parts.push_back(str.substr(currentPos, pos - currentPos));
       }
     }
     currentPos = pos + 1;
   }
 
-  if (currentPos < length()) {
-    parts.push_back(substr(currentPos, length() - currentPos));
+  if (currentPos < str.length()) {
+    parts.push_back(str.substr(currentPos, str.length() - currentPos));
   }
 
   return parts;
@@ -622,4 +652,12 @@ string ZString::firstQuotedWord()
   }
 
   return word;
+}
+
+std::string ZString::num2str(int n)
+{
+  std::ostringstream stream;
+  stream << n;
+
+  return stream.str();
 }

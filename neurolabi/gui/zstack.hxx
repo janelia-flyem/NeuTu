@@ -65,7 +65,8 @@ public:
    Construct a stack with stack data.
    \param stack Stack data
    \param dealloc The function applied on \a stack while the object is
-                  deconstructed.
+                  deconstructed. \a delloc can be NULL to keep the stack data
+                  in the memory even the object is deconstructed.
    */
   ZStack(Mc_Stack *stack,
          C_Stack::Mc_Stack_Deallocator *dealloc = C_Stack::kill);
@@ -227,12 +228,6 @@ public: /* attributes */
    */
   bool isVirtual() const;
 
-  void deprecateDependent(EComponent component);
-  void deprecateSingleChannelView(int channel);
-  void deprecate(EComponent component);
-  bool isDeprecated(EComponent component) const;
-  bool isSingleChannelViewDeprecated(int channel) const;
-
   //shift one channel
   void shiftLocation(int *offset, int c = 0, int width = -1, int height = -1, int depth = -1);
 
@@ -252,22 +247,21 @@ public: /* attributes */
   //for anisotropic operations
   inline double preferredZScale() const { return m_preferredZScale; }
 
-
-
-  // return voxelnumber or dataByteCount of all channels. Obsolete
-  //size_t voxelNumber() const;
-  //size_t dataByteCount() const;
-
-  // return voxelnumber of dataByteCount of 1 channel. Obsolete
-  //size_t voxelNumber(int ch) const;
-  //size_t dataByteCount(int ch) const;
-
   //Minimal value of the stack.
   double min();
   double min(int c) const;
   //Maximum value of the stack.
   double max();
   double max(int c) const;
+
+  /*!
+   * \brief Reshape the stack.
+   *
+   * If the reshaped the volume is the same as the stack voxel number, the stack
+   * is reshaped to (\a width x \a height x \a depth) and the function retuns
+   * true. Otherwise it returns false and nothing is done.
+   */
+  bool reshape(int width, int height, int depth);
 
   double saturatedIntensity() const;
 
@@ -301,13 +295,34 @@ public: /* attributes */
   //If the source of the stack is an swc
   bool isSwc();
 
-
-
+  /*!
+   * \brief Get raw data point
+   *
+   * \param c Channel.
+   * \param slice Slice index.
+   */
   void *getDataPointer(int c, int slice) const;
 
+  /*!
+   * \brief Print information of the stack
+   */
+  void printInfo() const;
+
+  /*!
+   * \brief Make a clone of the stack
+   */
   ZStack* clone() const;
 
+  /*!
+   * \brief Source of the stack.
+   */
   ZStackFile* source() { return &m_source; }
+
+  void deprecateDependent(EComponent component);
+  void deprecateSingleChannelView(int channel);
+  void deprecate(EComponent component);
+  bool isDeprecated(EComponent component) const;
+  bool isSingleChannelViewDeprecated(int channel) const;
 
 public: /* data operation */
   //Clean all associated memory except the source
@@ -362,10 +377,15 @@ public: /* operations */
 
   double averageIntensity(ZStack *mask);
 
-  void copyValue(const void *buffer, size_t length, int ch = 0);
-  void copyValue(const void *buffer, size_t length, void *loc);
+  /*!
+   * \brief Copy values from a buffer to the stack.
+   */
+  void loadValue(const void *buffer, size_t length, int ch = 0);
+
+  void loadValue(const void *buffer, size_t length, void *loc);
 
   void setOffset(double dx, double dy, double dz);
+  void setOffset(const ZPoint &pt);
   inline const ZPoint& getOffset() const { return m_offset; }
 
   /*!
@@ -374,6 +394,26 @@ public: /* operations */
    * \return true iff the offset of any dimension is not zero
    */
   bool hasOffset() const;
+
+  /*!
+   * \brief Paste the values of a stack to another stack
+   *
+   * The stacks are aligned with their offsets while pasting. The values of
+   * \a dst are set to those in the source stack. Any value out of the source
+   * range is untouched. The stacks must have same kind, which should be either
+   * GREY or GREY16. \a valueIgnored is to mask \a dst.
+   *
+   * \return true iff the pasting can be performed.
+   */
+  bool paste(ZStack *dst, int valueIgnored = -1) const;
+
+  /*!
+   * \brief Get the bound box of the stack.
+   *
+   * The result is stored in \a box. Not the box covers the whole stack, not
+   * just the foreground.
+   */
+  void getBoundBox(Cuboid_I *box) const;
 
 public: /* processing routines */
   bool binarize(int threshold = 0);

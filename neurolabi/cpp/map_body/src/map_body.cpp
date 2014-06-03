@@ -201,7 +201,7 @@ int main(int argc, char *argv[])
 
   //int overwriteLevel = Get_Int_Arg(const_cast<char*>("--overwrite_level"));
 
-  int zOffset = Get_Int_Arg(const_cast<char*>("--z_offset"));
+  //int zOffset = Get_Int_Arg(const_cast<char*>("--z_offset"));
 
   int zStart = 0;
   int zEnd = 0;
@@ -306,7 +306,7 @@ int main(int argc, char *argv[])
         cout << "extracting bodies" << endl;
         tic();
         ZObject3dScan::extractAllObject(mat->array, width, height, depth,
-                                        z + zOffset - zStart, &bodySet);
+                                        z /*+ zOffset - zStart*/, &bodySet);
         Kill_IMatrix(mat);
         ptoc();
 
@@ -454,7 +454,7 @@ int main(int argc, char *argv[])
         stackedObjPath += ".sobj";
         */
           if (isHdf) {
-            hdfWriter.writeIntArray(misc::num2str(bodyId), obj.toIntArray());
+            hdfWriter.writeIntArray(misc::num2str(bodyId) + ".sobj", obj.toIntArray());
           } else {
             obj.save(stackedObjPath);
           }

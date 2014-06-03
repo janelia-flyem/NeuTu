@@ -37,10 +37,11 @@ class ZSwcTrunkAnalyzer;
  *In neuTube, any node with negative ID will be treated as virtual. A virtual
  *node is not considered as a part of the tree model. It is introduced to
  *facilitate hosting multiple trees or handling specific data structure such as
- *binary trees. All normal operations should assume that ONLY the root node can
+ *binary trees. An object containing multiple trees is called a forest. All
+ *normal operations should assume that ONLY the root node can
  *be virtual. The children of a virtual root are called regular roots, because
  *each of them is the root of a real SWC tree.
-*/
+ */
 
 class ZSwcTree :
     public ZDocumentable, public ZStackDrawable, public ZSwcExportable {
@@ -107,13 +108,17 @@ public:
   /*!
    * \brief Set the data from a node.
    *
+   * \a tn becomes the root of the tree. The old data is treated based on
+   * \a option:
+   *    CLEAN_ALL (default): Clean all old data.
+   *    FREE_WRAPPER: Free the old wrapper only.
+   *    LEAVE_ONLY: Don't do anything.
    *
-   *
-   * \param tree
-   * \param option
+   * \a tn will be detached from its old parent after the operation.
    */
-  void setDataFromNode(Swc_Tree_Node *tree, ESetDataOption option = CLEAN_ALL);
-  void setDataFromNodeRoot(Swc_Tree_Node *tree,
+  void setDataFromNode(Swc_Tree_Node *tn, ESetDataOption option = CLEAN_ALL);
+
+  void setDataFromNodeRoot(Swc_Tree_Node *tn,
                            ESetDataOption option = CLEAN_ALL);
   ///@}
 
@@ -129,13 +134,28 @@ public:
 
   /*!
    * \brief Test if a tree is empty.
-   * \return true iff the tree has no regular root.
+   * \return true iff the tree has no regular node.
    */
   bool isEmpty() const;
 
+  /*!
+   * \brief Test if a tree has any regular node.
+   */
   bool hasRegularNode();
 
+  /*!
+   * \brief Test if a tree is valid.
+   *
+   * \return true iff there is no link loop.
+   */
   bool isValid();
+
+  /*!
+   * \brief Test if a tree is a forest.
+   *
+   * \return true iff it has more than one regular roots.
+   */
+  bool isForest() const;
 
 public:
 
@@ -373,6 +393,15 @@ public:
   double distanceTo(
       double x, double y, double z, double zScale, Swc_Tree_Node **node = NULL) const;
 
+  /*!
+   * \brief Convert the tree into an array of trees.
+   *
+   * It will move all regular nodes in the current tree to the returned forest.
+   * After the operation, the current tree becomes empty. It returns NULL if the
+   * current tree is empty.
+   *
+   * \return An array of trees.
+   */
   ZSwcForest* toSwcTreeArray();
 
   int resortId();
@@ -418,7 +447,7 @@ public:
 
   void translate(const ZPoint& offset);
   void translate(double x, double y, double z);
-  void scale(double x, double y, double z);
+  void scale(double sx, double sy, double sz);
   //Rotate swc tree around a point
   void rotate(double theta, double psi, const ZPoint& center);
 

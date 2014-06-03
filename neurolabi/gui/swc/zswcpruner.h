@@ -14,12 +14,33 @@ public:
   /*!
    * \brief Prune an SWC tree.
    *
-   * \return Number of terminal branches that are removed
+   * It removes short branches from a tree.
+   *
+   * \return Number of terminal branches that are removed.
    */
   int prune(ZSwcTree *tree) const;
 
+  /*!
+   * \brief Set the minimal length of preserved branches.
+   *
+   * All branches shorter than than \a length will be removed recursively. The
+   * orphan branches might be treated differently.
+   *
+   * \param length The length threshold.
+   */
   inline void setMinLength(double length) {
     m_minLength = length;
+  }
+
+  /*!
+   * \brief Set the option of removing orphans
+   *
+   * An orphan branch is defined as a tree without branching.
+   *
+   * \param removing Remove the orphans shorter
+   */
+  inline void setRemovingOrphan(bool removing) {
+    m_removingOrphan = removing;
   }
 
 private:
@@ -35,6 +56,7 @@ private:
 
 private:
   double m_minLength;
+  bool m_removingOrphan;
 };
 
 #endif // ZSWCPRUNER_H

@@ -5,6 +5,8 @@
 #include "flyem/zflyemneuronrangecompare.h"
 #include "zdoublevector.h"
 #include "zpointarray.h"
+#include "zlinesegmentarray.h"
+#include "zintcuboidface.h"
 
 ZSwcGenerator::ZSwcGenerator()
 {
@@ -312,6 +314,67 @@ ZSwcTree* ZSwcGenerator::createSwc(
   }
 
   tree->resortId();
+
+  return tree;
+}
+
+ZSwcTree* ZSwcGenerator::createSwc(
+    const ZLineSegmentArray &lineArray, double radius)
+{
+  ZSwcTree *tree = new ZSwcTree;
+
+  Swc_Tree_Node *root = tree->forceVirtualRoot();
+
+  for (ZLineSegmentArray::const_iterator iter = lineArray.begin();
+       iter != lineArray.end(); ++iter) {
+    const ZLineSegment &seg = *iter;
+    Swc_Tree_Node *tn = New_Swc_Tree_Node();
+
+    SwcTreeNode::setPos(tn, seg.getStartPoint());
+    SwcTreeNode::setRadius(tn, radius);
+    SwcTreeNode::setParent(tn, root);
+
+    Swc_Tree_Node *tn2 = New_Swc_Tree_Node();
+    SwcTreeNode::setPos(tn2, seg.getEndPoint());
+    SwcTreeNode::setRadius(tn2, radius);
+    SwcTreeNode::setParent(tn2, tn);
+  }
+
+  tree->resortId();
+
+  return tree;
+}
+
+ZSwcTree* ZSwcGenerator::createSwc(const ZIntCuboidFace &face, double radius)
+{
+  if (!face.isValid()) {
+    return NULL;
+  }
+
+  ZPointArray ptArray;
+  for (int i = 0; i < 4; ++i) {
+    ZIntPoint pt = face.getCornerCoordinates(i);
+    ptArray.append(ZPoint(pt.getX(), pt.getY(), pt.getZ()));
+  }
+  ptArray.append(ptArray[0]);
+
+  return createSwc(ptArray, radius, true);
+}
+
+ZSwcTree* ZSwcGenerator::createSwc(
+    const ZIntCuboidFaceArray &faceArray, double radius)
+{
+  if (faceArray.empty()) {
+    return NULL;
+  }
+
+  ZSwcTree *tree = new ZSwcTree;
+
+  for (ZIntCuboidFaceArray::const_iterator iter = faceArray.begin();
+       iter != faceArray.end(); ++iter) {
+    ZSwcTree *subtree = createSwc(*iter, radius);
+    tree->merge(subtree, true);
+  }
 
   return tree;
 }

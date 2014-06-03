@@ -16,6 +16,8 @@ public:
   ~DiagnosisDialog();
 
   void scrollToBottom();
+  void setVideoCardInfo(const QString &str);
+  void setVideoCardInfo(const QStringList &info);
 
 public slots:
   void scrollToBottom(int index);

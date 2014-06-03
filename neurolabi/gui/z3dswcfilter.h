@@ -87,7 +87,8 @@ signals:
   void treeSelected(ZSwcTree*, bool append);
   void treeNodeSelected(Swc_Tree_Node*, bool append);
   void connectingSwcTreeNode(Swc_Tree_Node*);
-  void treeNodeSelectConnection();
+  void treeNodeSelectConnection(Swc_Tree_Node*);
+  void treeNodeSelectFloodFilling(Swc_Tree_Node*);
   void addNewSwcTreeNode(double x, double y, double z, double r);
   void extendSwcTreeNode(double x, double y, double z);
 

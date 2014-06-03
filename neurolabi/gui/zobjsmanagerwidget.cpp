@@ -233,6 +233,7 @@ void ZObjsManagerWidget::createWidget()
   tabs->setUsesScrollButtons(true);
 
   m_swcObjsTreeView = new QTreeView(this);
+  m_swcObjsTreeView->setTextElideMode(Qt::ElideLeft);
   m_swcObjsTreeView->setExpandsOnDoubleClick(false);
   m_swcObjsTreeView->setModel(m_doc->swcObjsModel());
   m_swcObjsTreeView->setSelectionMode(QAbstractItemView::ExtendedSelection);
@@ -242,7 +243,7 @@ void ZObjsManagerWidget::createWidget()
   connect(m_swcObjsTreeView->selectionModel(),
           SIGNAL(selectionChanged(QItemSelection,QItemSelection)),
           this, SLOT(swcSelectionChangedFromTreeView(QItemSelection,QItemSelection)));
-  tabs->addTab(m_swcObjsTreeView, "Swcs");
+  tabs->addTab(m_swcObjsTreeView, "Neurons");
 
   if (NeutubeConfig::getInstance().getObjManagerConfig().isCategorizedSwcNodeOn()) {
     m_swcNodeObjsTreeView = new QTreeView(this);
@@ -255,7 +256,7 @@ void ZObjsManagerWidget::createWidget()
     connect(m_swcNodeObjsTreeView->selectionModel(),
             SIGNAL(selectionChanged(QItemSelection,QItemSelection)),
             this, SLOT(updateSelectionFromCategorizedSwcNode(QItemSelection,QItemSelection)));
-    tabs->addTab(m_swcNodeObjsTreeView, "SWC Nodes");
+    tabs->addTab(m_swcNodeObjsTreeView, "Neuron Nodes");
   }
 
   if (NeutubeConfig::getInstance().getMainWindowConfig().isMarkPunctaOn()) {

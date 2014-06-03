@@ -28,7 +28,19 @@ public:
   bool isEmpty() const;
 
 public:
-  bool load(std::string filePath);
+  bool load(const std::string &filePath);
+
+  /*!
+   * \brief Decode a string.
+   *
+   * All old entries of the object will be removed no matter whether the decoding
+   * succeeds or not.
+   *
+   * \param str Source string.
+   * \return true iff the decoding succeeds.
+   */
+  bool decode(const std::string &str);
+
   std::string summary();
   std::map<std::string, json_t*> toEntryMap(bool recursive = true) const;
 
@@ -122,6 +134,8 @@ public:
    * \return The json array added to the object.
    */
   json_t *setArrayEntry(const char *key);
+
+  void setValue(const ZJsonValue &value);
 
 private:
   void setEntryWithoutKeyCheck(const char *key, json_t *obj, bool asNew = false);

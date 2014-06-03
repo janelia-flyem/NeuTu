@@ -7,6 +7,7 @@
 #include "tz_error.h"
 #include "zjsonparser.h"
 #include "c_json.h"
+#include "zerror.h"
 
 using namespace std;
 
@@ -68,7 +69,7 @@ const json_t* ZJsonObject::operator[] (const char *key) const
   return NULL;
 }
 
-bool ZJsonObject::load(string filePath)
+bool ZJsonObject::load(const string &filePath)
 {
   if (m_data != NULL) {
     json_decref(m_data);
@@ -84,6 +85,29 @@ bool ZJsonObject::load(string filePath)
 #endif
 
   return false;
+}
+
+bool ZJsonObject::decode(const string &str)
+{
+  clear();
+
+  ZJsonParser parser;
+  json_t *obj = parser.decode(str);
+
+  if (ZJsonParser::isObject(obj)) {
+    set(obj, true);
+  } else {
+    if (obj == NULL) {
+      parser.printError();
+    } else {
+      json_decref(obj);
+      RECORD_ERROR_UNCOND("Not a json object");
+    }
+
+    return false;
+  }
+
+  return true;
 }
 
 string ZJsonObject::dumpString()
@@ -294,4 +318,13 @@ json_t* ZJsonObject::setArrayEntry(const char *key)
   }
 
   return arrayObj;
+}
+
+void ZJsonObject::setValue(const ZJsonValue &value)
+{
+  if (value.isObject()) {
+    set(value.getData(), false);
+  } else {
+    clear();
+  }
 }

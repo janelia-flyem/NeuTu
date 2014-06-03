@@ -450,14 +450,19 @@ void ZSwcTree::display(
 
       switch (style) {
       case BOUNDARY:
-        if (SwcTreeNode::isRoot(tn) || SwcTreeNode::isBranchPoint(tn)) {
+        //if (SwcTreeNode::isRoot(tn) || SwcTreeNode::isBranchPoint(tn)) {
+      {
           ZCircle circle(SwcTreeNode::x(tn), SwcTreeNode::y(tn), SwcTreeNode::z(tn),
                          SwcTreeNode::radius(tn));
           circle.display(&painter, stackFocus, style);
-        }
+      }
+        //}
         break;
       case SOLID:
       {
+        QColor brushColor= pen.color();
+        brushColor.setAlphaF(sqrt(brushColor.alphaF() / 2.0));
+        painter.setBrush(brushColor);
         ZCircle circle(SwcTreeNode::x(tn), SwcTreeNode::y(tn), SwcTreeNode::z(tn),
                        SwcTreeNode::radius(tn));
         circle.display(&painter, stackFocus, style);
@@ -1195,6 +1200,10 @@ ZSwcTree& ZSwcTree::operator=(const ZSwcTree &other)
 
 ZSwcForest* ZSwcTree::toSwcTreeArray()
 {
+  if (isEmpty()) {
+    return NULL;
+  }
+
   ZSwcForest *forest = new ZSwcForest;
 
   if (Swc_Tree_Node_Is_Virtual(m_tree->root)) {
@@ -1207,6 +1216,11 @@ ZSwcForest* ZSwcTree::toSwcTreeArray()
       forest->push_back(tree);
       child = sibling;
     }
+  } else {
+    ZSwcTree *tree = new ZSwcTree;
+    tree->setData(m_tree);
+    m_tree = NULL;
+    forest->push_back(tree);
   }
 
   return forest;
@@ -1971,6 +1985,19 @@ bool ZSwcTree::isValid()
   return true;
 }
 
+bool ZSwcTree::isForest() const
+{
+  Swc_Tree_Node *tn = root();
+
+  if (SwcTreeNode::isVirtual(tn)) {
+    if (SwcTreeNode::childNumber(tn) > 1) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 Swc_Tree_Node* ZSwcTree::removeRandomBranch()
 {
   int n = updateIterator(SWC_TREE_ITERATOR_DEPTH_FIRST, 1);
@@ -2235,7 +2262,7 @@ void ZSwcTree::translate(double x, double y, double z)
 
 void ZSwcTree::translate(const ZPoint &offset)
 {
-  Swc_Tree_Translate(data(), offset.x(), offset.y(), offset.z());
+  translate(offset.x(), offset.y(), offset.z());
 }
 
 void ZSwcTree::scale(double x, double y, double z)

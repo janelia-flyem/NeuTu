@@ -26,7 +26,6 @@ int computeRavelerHeight(const FlyEm::ZIntCuboidArray &blockArray, int margin);
 
 bool exportPointList(const std::string &filePath, const ZPointArray &pointArray);
 
-std::string num2str(int n);
 
 /*!
  * \brief A function for computing confidence
@@ -35,6 +34,15 @@ std::string num2str(int n);
  * \param p95 The value where confidence = 0.95
  */
 double computeConfidence(double v, double median, double p95);
+
+/*!
+ * \brief Parse hdf5 path
+ *
+ * "file.h5f:/group/path"
+ *
+ * \return empty array if the parsing failed
+ */
+std::vector<std::string> parseHdf5Path(const std::string &path);
 }
 
 namespace {

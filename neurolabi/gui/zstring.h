@@ -62,8 +62,8 @@ public:
   bool containsDigit();
   std::string& replace(const std::string &from, const std::string &to);
   std::string& replace(int from, const std::string &to);
-  bool startsWith(const std::string &str, ECaseSensitivity cs = CASE_SENSITIVE);
-  bool endsWith(const std::string &str, ECaseSensitivity cs = CASE_SENSITIVE);
+  bool startsWith(const std::string &str, ECaseSensitivity cs = CASE_SENSITIVE) const;
+  bool endsWith(const std::string &str, ECaseSensitivity cs = CASE_SENSITIVE) const;
   void trim();
 
   void toLower();
@@ -80,6 +80,8 @@ public:
   static bool isAbsolutePath(const std::string &path);
   static std::string absolutePath(const std::string &dir,
                                   const std::string &relative);
+  bool isRemotePath() const;
+
   /*!
    * \brief Get the relative path
    */
@@ -88,6 +90,8 @@ public:
 
   static std::string fullPath(const std::string &dir, const std::string &fname,
                               const std::string &ext);
+  static std::string fullPath(const std::string &dir, const std::string &part1,
+                              const std::string &part2, const std::string &part3);
   static std::string fullPath(const std::vector<std::string> &parts);
   static std::string removeFileExt(const std::string &str);
   static std::string getBaseName(const std::string &str);
@@ -102,6 +106,7 @@ public:
    * {"/", "home", "test", "data", "test.tif"}
    */
   std::vector<std::string> decomposePath() const;
+  static std::vector<std::string> decomposePath(const std::string &str);
 
   ZString toFileExt();
   ZString toFileName();
@@ -114,6 +119,8 @@ public:
   inline const ZString& constRef() const {
     return *this;
   }
+
+  static std::string num2str(int n);
 
 private:
   String_Workspace *m_workspace;

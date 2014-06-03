@@ -792,6 +792,9 @@ std::vector<double> ZFlyEmDataFrame::getMatchingScore(
       }
 
       if (comparing) {
+#ifdef _DEBUG_
+        std::cout << "Matching " << id << " " << neuronIter->getId() << std::endl;
+#endif
         ZSwcTree *tree2 = neuronIter->getModel();
 
         if (tree2 != NULL) {
@@ -2143,6 +2146,8 @@ void ZFlyEmDataFrame::exportThumbnail(
       neuron.setThumbnailPath(outputPath.toStdString());
     }
 
+    neuron.deprecate(ZFlyEmNeuron::BODY);
+
     //Stack *stack = m_dataArray[0]->createThumbnail()
   }
 
@@ -2216,7 +2221,7 @@ void ZFlyEmDataFrame::identifyHotSpot()
 {
   if (initTaskManager(m_qualityManager)) {
     if (m_hotSpotDlg->exec()) {
-      int id = m_hotSpotDlg->getId();
+      int id = m_hotSpotDlg->getBodyId();
       identifyHotSpot(id);
     }
   }
@@ -2267,4 +2272,11 @@ void ZFlyEmDataFrame::updateQualityControl()
   m_qualityManager->getHotSpot().exportRavelerBookmark(
         GET_DATA_DIR + "/test.json", resolution, imageSize);
 #endif
+}
+
+void ZFlyEmDataFrame::submitSkeletonizeService() const
+{
+  foreach (ZFlyEmDataBundle *dataBundle, m_dataArray) {
+    dataBundle->submitSkeletonizeService();
+  }
 }

@@ -63,6 +63,8 @@ def do_skeletonize():
     
     output["swc-list"] = []
     output['error'] = []
+
+    print dvidServer
     conn = httplib.HTTPConnection(dvidServer)
     conn.request("GET", '/api/node/' + uuid + '/skeletons/info')
     r1 = conn.getresponse()

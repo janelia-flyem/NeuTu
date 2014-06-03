@@ -85,10 +85,11 @@ int main(int argc, char *argv[])
                                "[--intv <int> <int> <int>]",
                                "[--minlen <int(15)>] [--maxdist <int(50)>]",
                                "[--minobj <int(0)>]",
-                               "[--keep_short] [--save_offset]",
+                               "[--keep_short]",
                                "[--interpolate] [--rmborder]",
                                "[--rebase]", "[--level <int>]",
                                "[--fill_hole]",
+                               "[--config <string>]",
                                NULL};
 
   if (help(argc, argv, Spec) == 1) {
@@ -99,26 +100,34 @@ int main(int argc, char *argv[])
 
   const char *input = ZArgumentProcessor::getStringArg("input");
 
+
+  ZStackSkeletonizer skeletonizer;
+  if (ZArgumentProcessor::isArgMatched("--config")) {
+    skeletonizer.configure(ZArgumentProcessor::getStringArg("--config"));
+  }
+
   /* Skeletonization */
   cout << "Read stack ...\n" << endl;
 
   Stack *stack = NULL;
-  int offset[3] = { 0, 0, 0 };
+  //int offset[3] = { 0, 0, 0 };
 
   int dsIntv[3] = { 0, 0, 0 };
   if (ZArgumentProcessor::isArgMatched("--intv")) {
     for (int i = 0; i < 3; ++i) {
       dsIntv[i] = ZArgumentProcessor::getIntArg("--intv", i + 1);
     }
+  } else {
+    skeletonizer.getDownsampleInterval(dsIntv, dsIntv + 1, dsIntv + 2);
   }
-
-  bool isDownsample = (dsIntv[0] > 0 || dsIntv[1] > 0 || dsIntv[2] > 0);
-
 
   bool isBinarized = false;
 
+
+  ZObject3dScan obj;
   if (ZFileType::fileType(input) == ZFileType::OBJECT_SCAN_FILE) {
-    ZObject3dScan obj;
+    obj.load(input);
+    /*
     if (obj.load(input)) {
       if (isDownsample) {
         cout << "Downsampling ..." << endl;
@@ -133,9 +142,11 @@ int main(int argc, char *argv[])
         }
       }
     }
+    */
   } else {
     stack = C_Stack::readSc(input);
 
+    /*
     if (isDownsample) {
       cout << "Downsampling ..." << endl;
       Stack *bufferStack = Downsample_Stack_Max(
@@ -144,82 +155,83 @@ int main(int argc, char *argv[])
       C_Stack::kill(stack);
       stack = bufferStack;
     }
+    */
   }
 
-  if (stack == NULL) {
+  if (stack == NULL && obj.isEmpty()) {
     cerr << "Failed to load stack data: " << input << endl;
     cerr << "Abort." << endl;
-  }
-
-  size_t voxelNumber = C_Stack::voxelNumber(stack);
-  while (voxelNumber > MAX_INT32) {
-    std::cout << "Stack too big. Downsampling triggered automatically." << std::endl;
-    std::cout << "Downsampling ..." << std::endl;
-    Stack *bufferStack = Downsample_Stack_Max(
-          stack, 1, 1, 1, NULL);
-    C_Stack::kill(stack);
-    stack = bufferStack;
-
-    for (int i = 0; i < 3; ++i) {
-      dsIntv[i] = dsIntv[i] * 2 + 1;
-    }
-    isDownsample = true;
-
-    voxelNumber = C_Stack::voxelNumber(stack);
-  }
-
-  if (!isBinarized) {
-    cout << "Binarizing ..." << endl;
-    if (ZArgumentProcessor::isArgMatched("--level")) {
-      Stack_Binarize_Level(stack, ZArgumentProcessor::getIntArg("--level"));
-      if (C_Stack::kind(stack) == GREY16) {
-        Translate_Stack(stack, GREY, 1);
-      }
-    } else {
-      Stack_Binarize(stack);
-    }
-  }
-
-  if (Stack_Max(stack, NULL) != 1) {
-    cout << "The stack might contain no object. Abort" << endl;
+    
     return 1;
   }
 
+  if (stack != NULL) {
+    size_t voxelNumber = C_Stack::voxelNumber(stack);
+    voxelNumber /= (dsIntv[0] + 1) * (dsIntv[1] + 1) * (dsIntv[2] + 1);
+    while (voxelNumber > MAX_INT32) {
+      std::cout << "Stack too big. Downsampling triggered automatically." << std::endl;
+
+      for (int i = 0; i < 3; ++i) {
+        dsIntv[i] = dsIntv[i] * 2 + 1;
+      }
+
+      voxelNumber /= (dsIntv[0] + 1) * (dsIntv[1] + 1) * (dsIntv[2] + 1);
+    }
+
+    if (!isBinarized) {
+      cout << "Binarizing ..." << endl;
+      if (ZArgumentProcessor::isArgMatched("--level")) {
+        Stack_Binarize_Level(stack, ZArgumentProcessor::getIntArg("--level"));
+        if (C_Stack::kind(stack) == GREY16) {
+          Translate_Stack(stack, GREY, 1);
+        }
+      } else {
+        Stack_Binarize(stack);
+      }
+    }
+    if (Stack_Max(stack, NULL) != 1) {
+      cout << "The stack might contain no object. Abort" << endl;
+      return 1;
+    }
+  }
+
+  skeletonizer.setDownsampleInterval(dsIntv[0], dsIntv[1], dsIntv[2]);
   if (ZArgumentProcessor::isArgMatched("--rmborder")) {
-    printf("Remove borders ...\n");
-    Stack_Not(stack, stack);
-    Stack* solid = Stack_Majority_Filter(stack, NULL, 8);
-    C_Stack::kill(stack);
-
-    Stack_Not(solid, solid);
-    stack = solid;
+    skeletonizer.setRemovingBorder(true);
   }
-
   if (ZArgumentProcessor::isArgMatched("--interpolate")) {
-    printf("Interpolating ...\n");
-    Stack *bufferStack = Stack_Bwinterp(stack, NULL);
-    C_Stack::kill(stack);
-    stack = bufferStack;
+    skeletonizer.setInterpolating(true);
   }
-
   if (ZArgumentProcessor::isArgMatched("--fill_hole")) {
-    std::cout << "Filling hole ..." << std::endl;
-    Stack *bufferStack = Stack_Fill_Hole_N(stack, NULL, 1, 26, NULL);
-    C_Stack::kill(stack);
-    stack = bufferStack;
+    skeletonizer.setFillingHole(true);
   }
-
-  ZStackSkeletonizer skeletonizer;
   if (ZArgumentProcessor::isArgMatched("--rebase")) {
     skeletonizer.setRebase(true);
-  } else {
-    skeletonizer.setRebase(false);
+  }
+  if (ZArgumentProcessor::isArgMatched("--keep_short")) {
+    skeletonizer.setKeepingSingleObject(true);
   }
 
   int minObjSize = ZArgumentProcessor::getIntArg("--minobj");
   int maxDist = ZArgumentProcessor::getIntArg("--maxdist");
   int minLen = ZArgumentProcessor::getIntArg("--minlen");
 
+  if (ZArgumentProcessor::isArgMatched("--minobj")) {
+    skeletonizer.setMinObjSize(minObjSize);
+  }
+
+
+  if (ZArgumentProcessor::isArgMatched("--maxdist")) {
+    skeletonizer.setDistanceThreshold(maxDist);
+  }
+
+  if (ZArgumentProcessor::isArgMatched("--minlen")) {
+    skeletonizer.setLengthThreshold(minLen);
+  }
+
+  skeletonizer.print();
+
+  /*
   if (isDownsample) {
     int dsVol = (dsIntv[0] + 1) * (dsIntv[1] + 1) * (dsIntv[2] + 1);
     minObjSize /= dsVol;
@@ -233,26 +245,27 @@ int main(int argc, char *argv[])
     maxDist /= linScale;
     minLen /= linScale;
   }
+  */
 
-  skeletonizer.setMinObjSize(minObjSize);
-  skeletonizer.setDistanceThreshold(maxDist);
-  skeletonizer.setLengthThreshold(minLen);
-  if (ZArgumentProcessor::isArgMatched("--keep_short")) {
-    skeletonizer.setKeepingSingleObject(true);
+  ZSwcTree *wholeTree = NULL;
+  
+  if (stack != NULL) {
+    wholeTree = skeletonizer.makeSkeleton(stack);
   } else {
-    skeletonizer.setKeepingSingleObject(false);
+    wholeTree = skeletonizer.makeSkeleton(obj);
   }
 
-  ZSwcTree *wholeTree = skeletonizer.makeSkeleton(stack);
-
   if (wholeTree != NULL) {
+/*
     ZSwcResampler resampler;
     resampler.optimalDownsample(wholeTree);
     if (isDownsample) {
       wholeTree->rescale(dsIntv[0] + 1, dsIntv[1] + 1, dsIntv[2] + 1);
     }
+    */
 
     ZString outputPath = ZArgumentProcessor::getStringArg("-o");
+    /*
     if (ZArgumentProcessor::isArgMatched("--save_offset")) {
       outputPath.replace(".swc", ".offset.txt");
       ofstream stream(outputPath.c_str());
@@ -261,6 +274,7 @@ int main(int argc, char *argv[])
     } else {
       wholeTree->translate(offset[0], offset[1], offset[2]);
     }
+    */
 
     wholeTree->save(outputPath.c_str());
     cout << outputPath << " saved" << endl;

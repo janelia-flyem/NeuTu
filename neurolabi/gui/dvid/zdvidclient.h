@@ -34,6 +34,10 @@ public:
     m_serverAddress = server;
   }
 
+  void setServer(const QString &server, int port);
+
+  void setDefaultServer();
+
   inline const QString &getServer() {
     return m_serverAddress;
   }
@@ -52,6 +56,8 @@ public:
   inline const ZObject3dScan& getObject() const { return m_obj; }
   inline const ZSwcTree& getSwcTree() const { return m_swcTree; }
   inline const ZStack& getImage() const { return m_image; }
+  inline const QString& getInfo() const { return m_dataInfo; }
+  inline const QByteArray& getKeyValue() const { return m_keyValue; }
 
   inline ZDvidBuffer* getDvidBuffer() const { return m_dvidBuffer; }
 
@@ -64,9 +70,12 @@ signals:
   void objectRetrieved();
   void swcRetrieved();
   void imageRetrieved();
+  void infoRetrieved();
+  void keyValueRetrieved();
   void noRequestLeft();
   void requestFailed();
   void requestCanceled();
+  void requestFinished();
 
 public slots:
   void postNextRequest();
@@ -77,6 +86,8 @@ private slots:
   void readObject();
   void readSwc();
   void readImage();
+  void readInfo();
+  void readKeyValue();
   void cancelRequest();
 
 private:
@@ -96,9 +107,14 @@ private:
   ZObject3dScan m_obj;
   ZSwcTree m_swcTree;
   ZStack m_image;
+  QString m_dataInfo;
+  QByteArray m_keyValue;
+
   QByteArray m_objectBuffer;
   QByteArray m_swcBuffer;
   QByteArray m_imageBuffer;
+  QByteArray m_infoBuffer;
+  QByteArray m_keyValueBuffer;
 
   QIODevice *m_uploadStream;
 

@@ -5,6 +5,8 @@
 #include <string>
 #include "flyem/zhotspot.h"
 #include "ztextlinecompositer.h"
+#include "zpointarray.h"
+#include "zlinesegmentarray.h"
 
 namespace FlyEm {
 
@@ -26,6 +28,9 @@ public:
   bool exportRavelerBookmark(const std::string &filePath,
                              const double *resolution,
                              const int *imageSize);
+
+  ZPointArray toPointArray() const;
+  ZLineSegmentArray toLineSegmentArray() const;
 
   /*!
    * \brief Sort the hot spots by in the descending order of confidence.

@@ -1397,6 +1397,34 @@ double Swc_Tree_Node_Length(const Swc_Tree_Node *tn)
   return length;
 }
 
+double Swc_Tree_Node_Scaled_Length(const Swc_Tree_Node *tn,
+    double sx, double sy, double sz)
+{
+  double length = 0.0;
+
+  if (Swc_Tree_Node_Is_Regular(tn) && (Swc_Tree_Node_Is_Root(tn) == FALSE)) {
+    Swc_Tree_Node *parent_tn = tn->parent;
+    while (!Swc_Tree_Node_Is_Regular(parent_tn)) {
+      parent_tn = parent_tn->parent;
+      if (parent_tn == NULL) {
+	break;
+      }
+    }
+    
+    if (parent_tn != NULL) {
+      double dx = (Swc_Tree_Node_Const_Data(tn)->x - 
+	Swc_Tree_Node_Const_Data(parent_tn)->x) * sx;
+      double dy = (Swc_Tree_Node_Const_Data(tn)->y - 
+	Swc_Tree_Node_Const_Data(parent_tn)->y) * sy;
+      double dz = (Swc_Tree_Node_Const_Data(tn)->z - 
+	Swc_Tree_Node_Const_Data(parent_tn)->z) * sz;
+      
+      length = sqrt(dx * dx + dy * dy + dz * dz);
+    }
+  }
+
+  return length;
+}
 double Swc_Tree_Node_Surface_Area(const Swc_Tree_Node *tn)
 {
   double area = 0.0;

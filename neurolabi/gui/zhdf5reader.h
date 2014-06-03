@@ -38,6 +38,14 @@ public:
   static herr_t printObjectInfo(hid_t loc_id, const char *name, void *opdata);
   void printInfo();
 
+  /*!
+   * \brief Get all dataset names in a group
+   */
+  std::vector<std::string> getAllDatasetName(const std::string &group);
+
+private:
+  static herr_t getDataSetName(hid_t loc_id, const char *name, void *opdata);
+
 private:
   std::string m_source;
   hid_t m_file;

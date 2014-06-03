@@ -233,12 +233,17 @@ void Z3DWindow::init(EInitMode mode)
   connect(m_swcFilter, SIGNAL(treeNodeSelected(Swc_Tree_Node*,bool)),
           this, SLOT(selectedSwcTreeNodeChangedFrom3D(Swc_Tree_Node*,bool)));
 
-  connect(m_swcFilter, SIGNAL(treeNodeSelectConnection()),
-          m_doc.get(), SLOT(selectSwcNodeConnection()));
+  connect(m_swcFilter, SIGNAL(treeNodeSelectConnection(Swc_Tree_Node*)),
+          m_doc.get(), SLOT(selectSwcNodeConnection(Swc_Tree_Node*)));
+  connect(m_swcFilter, SIGNAL(treeNodeSelectFloodFilling(Swc_Tree_Node*)),
+          m_doc.get(), SLOT(selectSwcNodeFloodFilling(Swc_Tree_Node*)));
   connect(m_swcFilter, SIGNAL(addNewSwcTreeNode(double, double, double, double)),
           this, SLOT(addNewSwcTreeNode(double, double, double, double)));
   connect(m_swcFilter, SIGNAL(connectingSwcTreeNode(Swc_Tree_Node*)), this,
           SLOT(connectSwcTreeNode(Swc_Tree_Node*)));
+
+  connect(m_doc.get(), SIGNAL(statusMessageUpdated(QString)),
+          this, SLOT(notifyUser(QString)));
 
   m_swcFilter->setSelectedSwcs(m_doc->selectedSwcs());
   m_swcFilter->setSelectedSwcTreeNodes(m_doc->selectedSwcTreeNodes());
@@ -268,8 +273,9 @@ void Z3DWindow::init(EInitMode mode)
 
   // more processors: init raycaster
   m_volumeRaycaster = new Z3DVolumeRaycaster();
-  connect(m_volumeRaycaster, SIGNAL(pointInVolumeLeftClicked(QPoint, glm::ivec3)),
-          this, SLOT(pointInVolumeLeftClicked(QPoint, glm::ivec3)));
+  connect(m_volumeRaycaster,
+          SIGNAL(pointInVolumeLeftClicked(QPoint, glm::ivec3, Qt::KeyboardModifiers)),
+          this, SLOT(pointInVolumeLeftClicked(QPoint, glm::ivec3, Qt::KeyboardModifiers)));
 
   // register processors to receive QGLWidget event
   m_canvas->addEventListenerToBack(m_swcFilter);
@@ -382,18 +388,21 @@ void Z3DWindow::createActions()
         SLOT(deleteSelectedSwcNode()));
   }
 
-  m_locateSwcNodeIn2DAction = new QAction("Locate node in 2D View", this);
+  m_locateSwcNodeIn2DAction = new QAction("Locate node(s) in 2D", this);
   connect(m_locateSwcNodeIn2DAction, SIGNAL(triggered()), this,
           SLOT(locateSwcNodeIn2DView()));
 
-  m_toogleAddSwcNodeModeAction = new QAction("Add swc node", this);
+  m_toogleAddSwcNodeModeAction = new QAction("Add neuron node", this);
   m_toogleAddSwcNodeModeAction->setCheckable(true);
   connect(m_toogleAddSwcNodeModeAction, SIGNAL(toggled(bool)), this,
           SLOT(toogleAddSwcNodeMode(bool)));
 
-  m_toogleMoveSelectedObjectsAction = new QAction("Shift+Mouse to move selected objects", this);
-  m_toogleMoveSelectedObjectsAction->setCheckable(true);
-  connect(m_toogleMoveSelectedObjectsAction, SIGNAL(toggled(bool)), this,
+  m_toggleMoveSelectedObjectsAction =
+      new QAction("Move Selected (Shift+Mouse)", this);
+  m_toggleMoveSelectedObjectsAction->setShortcut(Qt::Key_V);
+  m_toggleMoveSelectedObjectsAction->setIcon(QIcon(":/images/move.png"));
+  m_toggleMoveSelectedObjectsAction->setCheckable(true);
+  connect(m_toggleMoveSelectedObjectsAction, SIGNAL(toggled(bool)), this,
           SLOT(toogleMoveSelectedObjectsMode(bool)));
 
   //  m_toogleExtendSelectedSwcNodeAction = new QAction("Extend selected node", this);
@@ -402,11 +411,16 @@ void Z3DWindow::createActions()
   //          SLOT(toogleExtendSelectedSwcNodeMode(bool)));
   //  m_singleSwcNodeActionActivator.registerAction(m_toogleExtendSelectedSwcNodeAction, true);
 
-  m_toogleSmartExtendSelectedSwcNodeAction = new QAction("Extend Mode", this);
-  m_toogleSmartExtendSelectedSwcNodeAction->setCheckable(true);
-  connect(m_toogleSmartExtendSelectedSwcNodeAction, SIGNAL(toggled(bool)), this,
+  m_toggleSmartExtendSelectedSwcNodeAction = new QAction("Extend", this);
+  m_toggleSmartExtendSelectedSwcNodeAction->setCheckable(true);
+  m_toggleSmartExtendSelectedSwcNodeAction->setShortcut(Qt::Key_Space);
+  m_toggleSmartExtendSelectedSwcNodeAction->setStatusTip(
+        "Extend the currently selected node with mouse click.");
+  m_toggleSmartExtendSelectedSwcNodeAction->setIcon(QIcon(":/images/extend.png"));
+  connect(m_toggleSmartExtendSelectedSwcNodeAction, SIGNAL(toggled(bool)), this,
           SLOT(toogleSmartExtendSelectedSwcNodeMode(bool)));
-  m_singleSwcNodeActionActivator.registerAction(m_toogleSmartExtendSelectedSwcNodeAction, true);
+  m_singleSwcNodeActionActivator.registerAction(
+        m_toggleSmartExtendSelectedSwcNodeAction, true);
 
   m_changeSwcNodeTypeAction = new QAction("Change type", this);
   connect(m_changeSwcNodeTypeAction, SIGNAL(triggered()),
@@ -428,8 +442,12 @@ void Z3DWindow::createActions()
   m_singleSwcNodeActionActivator.registerAction(m_connectSwcNodeAction, false);
 
   m_connectToSwcNodeAction = new QAction("Connect to", this);
+  m_connectToSwcNodeAction->setShortcut(Qt::Key_C);
+  m_connectToSwcNodeAction->setStatusTip(
+        "Connect the currently selected node to another");
   connect(m_connectToSwcNodeAction, SIGNAL(triggered()), this,
           SLOT(startConnectingSwcNode()));
+  m_connectToSwcNodeAction->setIcon(QIcon(":/images/connect_to.png"));
   m_singleSwcNodeActionActivator.registerAction(m_connectToSwcNodeAction, true);
 
   m_mergeSwcNodeAction = new QAction("Merge", this);
@@ -440,6 +458,7 @@ void Z3DWindow::createActions()
   m_selectSwcConnectionAction = new QAction("Select Connection", this);
   connect(m_selectSwcConnectionAction, SIGNAL(triggered()), m_doc.get(),
           SLOT(selectSwcNodeConnection()));
+
 /*
   m_selectSwcNodeUpstreamAction = new QAction("Upstream", this);
   connect(m_selectSwcNodeUpstreamAction, SIGNAL(triggered()), m_doc.get(),
@@ -594,7 +613,7 @@ void Z3DWindow::createContextMenu()
   contextMenu->addAction("Convert to swc",
                          this, SLOT(convertPunctaToSwc()));
   contextMenu->addAction(m_removeSelectedObjectsAction);
-  contextMenu->addAction(m_toogleMoveSelectedObjectsAction);
+  contextMenu->addAction(m_toggleMoveSelectedObjectsAction);
   m_contextMenuGroup["puncta"] = contextMenu;
 
 #ifdef _DEBUG_
@@ -603,6 +622,10 @@ void Z3DWindow::createContextMenu()
 
   //Swc node
   contextMenu = new QMenu(this);
+
+
+  contextMenu->addAction(m_toggleSmartExtendSelectedSwcNodeAction);
+
   //QMenu *selectMenu = new QMenu("Select", contextMenu);
   //contextMenu->addAction(m_setSwcRootAction);
   //contextMenu->addAction(m_breakSwcConnectionAction);
@@ -619,20 +642,25 @@ void Z3DWindow::createContextMenu()
   //selectMenu->addAction(m_selectAllConnectedSwcNodeAction);
   //selectMenu->addAction(m_selectAllSwcNodeAction);
   //contextMenu->addMenu(selectMenu);
-
-  contextMenu->addAction(m_locateSwcNodeIn2DAction);
-  contextMenu->addAction(m_changeSwcNodeTypeAction);
+  //contextMenu->addAction(m_changeSwcNodeTypeAction);
   //contextMenu->addAction(m_translateSwcNodeAction);
   //contextMenu->addAction(m_changeSwcNodeSizeAction);
   //contextMenu->addAction(m_removeSelectedObjectsAction);
-  contextMenu->addAction(m_toogleSmartExtendSelectedSwcNodeAction);
+
   //contextMenu->addAction(m_toogleExtendSelectedSwcNodeAction);
-  contextMenu->addAction(m_toogleAddSwcNodeModeAction);
-  contextMenu->addAction(m_toogleMoveSelectedObjectsAction);
+
+  contextMenu->addAction(m_toggleMoveSelectedObjectsAction);
   //contextMenu->addAction(m_removeSwcTurnAction);
   //contextMenu->addAction(m_resolveCrossoverAction);
   //contextMenu->addAction(m_swcNodeLengthAction);
-  ZStackDocMenuFactory::makeSwcNodeContextMenu(getDocument(), contextMenu);
+  ZStackDocMenuFactory menuFactory;
+  menuFactory.setSingleSwcNodeActionActivator(&m_singleSwcNodeActionActivator);
+  menuFactory.makeSwcNodeContextMenu(getDocument(), this, contextMenu);
+  contextMenu->addSeparator();
+  contextMenu->addAction(m_locateSwcNodeIn2DAction);
+  contextMenu->addAction(m_changeSwcNodeTypeAction);
+  contextMenu->addAction(m_toogleAddSwcNodeModeAction);
+
   m_contextMenuGroup["swcnode"] = contextMenu;
 
   contextMenu = new QMenu(this);
@@ -650,7 +678,7 @@ void Z3DWindow::createContextMenu()
   contextMenu->addAction("Test", this, SLOT(test()));
 #endif
   contextMenu->addAction(m_removeSelectedObjectsAction);
-  contextMenu->addAction(m_toogleMoveSelectedObjectsAction);
+  contextMenu->addAction(m_toggleMoveSelectedObjectsAction);
   m_contextMenuGroup["swc"] = contextMenu;
 
   contextMenu = new QMenu(this);
@@ -689,9 +717,9 @@ void Z3DWindow::customizeContextMenu()
 
   if (GET_APPLICATION_NAME == "Biocytin") {
     m_toogleAddSwcNodeModeAction->setVisible(false);
-    m_toogleMoveSelectedObjectsAction->setVisible(false);
+    m_toggleMoveSelectedObjectsAction->setVisible(false);
     //m_toogleExtendSelectedSwcNodeAction->setVisible(false);
-    m_toogleSmartExtendSelectedSwcNodeAction->setVisible(false);
+    m_toggleSmartExtendSelectedSwcNodeAction->setVisible(false);
     m_translateSwcNodeAction->setVisible(false);
     //m_selectSwcNodeDownstreamAction->setVisible(false);
     //m_changeSwcNodeTypeAction->setVisible(false);
@@ -708,7 +736,7 @@ void Z3DWindow::customizeContextMenu()
     //m_toogleExtendSelectedSwcNodeAction->setVisible(false);
     m_toogleAddSwcNodeModeAction->setVisible(false);
     //m_toogleMoveSelectedObjectsAction->setVisible(false);
-    m_toogleSmartExtendSelectedSwcNodeAction->setVisible(false);
+    m_toggleSmartExtendSelectedSwcNodeAction->setVisible(false);
   }
 }
 
@@ -748,7 +776,7 @@ void Z3DWindow::createDockWindows()
 
 
   if (config.getZ3DWindowConfig().isUtilsOn()) {
-    ZWidgetsGroup *utils = new ZWidgetsGroup("Utils", m_widgetsGroup, 1);
+    ZWidgetsGroup *utils = new ZWidgetsGroup("General", m_widgetsGroup, 1);
     new ZWidgetsGroup(resetCameraButton, utils, 1);
 #ifdef _FLYEM_
     new ZWidgetsGroup(flipViewButton, utils, 1);
@@ -831,21 +859,21 @@ void Z3DWindow::createDockWindows()
 
   QTabWidget *tabs = createBasicSettingTabWidget();
   m_settingsDockWidget->setWidget(tabs);
-
-  addDockWidget(Qt::RightDockWidgetArea, m_settingsDockWidget);
   m_viewMenu->addSeparator();
   m_viewMenu->addAction(m_settingsDockWidget->toggleViewAction());
   connect(m_widgetsGroup, SIGNAL(widgetsGroupChanged()), this, SLOT(updateSettingsDockWidget()));
 
-  m_objectsDockWidget = new QDockWidget(tr("Objects Manager"), this);
+  m_objectsDockWidget = new QDockWidget(tr("Objects"), this);
   m_objectsDockWidget->setAllowedAreas(Qt::RightDockWidgetArea);
   ZObjsManagerWidget* omw = new ZObjsManagerWidget(getDocument(), m_objectsDockWidget);
   connect(omw, SIGNAL(swcDoubleClicked(ZSwcTree*)), this, SLOT(swcDoubleClicked(ZSwcTree*)));
   connect(omw, SIGNAL(swcNodeDoubleClicked(Swc_Tree_Node*)), this, SLOT(swcNodeDoubleClicked(Swc_Tree_Node*)));
   connect(omw, SIGNAL(punctaDoubleClicked(ZPunctum*)), this, SLOT(punctaDoubleClicked(ZPunctum*)));
   m_objectsDockWidget->setWidget(omw);
-  addDockWidget(Qt::RightDockWidgetArea, m_objectsDockWidget);
   m_viewMenu->addAction(m_objectsDockWidget->toggleViewAction());
+
+  addDockWidget(Qt::RightDockWidgetArea, m_objectsDockWidget);
+  addDockWidget(Qt::RightDockWidgetArea, m_settingsDockWidget);
 
   customizeDockWindows(tabs);
 }
@@ -1170,8 +1198,9 @@ void Z3DWindow::removeSwcTurn()
 
 void Z3DWindow::startConnectingSwcNode()
 {
+  notifyUser("Click on the target node to connect.");
   getSwcFilter()->setInteractionMode(Z3DSwcFilter::ConnectSwcNode);
-  m_canvas->setCursor(Qt::PointingHandCursor);
+  m_canvas->setCursor(Qt::SizeBDiagCursor);
 }
 
 void Z3DWindow::connectSwcTreeNode(Swc_Tree_Node *tn)
@@ -1222,36 +1251,46 @@ void Z3DWindow::punctaDoubleClicked(ZPunctum *p)
   gotoPosition(boundBox);
 }
 
-void Z3DWindow::pointInVolumeLeftClicked(QPoint pt, glm::ivec3 pos)
+void Z3DWindow::pointInVolumeLeftClicked(
+    QPoint pt, glm::ivec3 pos, Qt::KeyboardModifiers modifiers)
 {
   glm::vec3 fpos = glm::vec3(pos);
   m_lastClickedPosInVolume = glm::ivec3(fpos);
   LDEBUG() << "Point in volume left clicked" << fpos;
   // only do tracing when we are not editing swc nodes or the preconditions for editing swc node are not met
-  if (hasVolume() && channelNumber() == 1 && m_toogleSmartExtendSelectedSwcNodeAction->isChecked() &&
+  if (hasVolume() && channelNumber() == 1 &&
+      m_toggleSmartExtendSelectedSwcNodeAction->isChecked() &&
       m_doc->selectedSwcTreeNodes()->size() == 1) {
-    m_doc->executeSwcNodeSmartExtendCommand(ZPoint(fpos[0], fpos[1], fpos[2]));
+    if (modifiers == Qt::ControlModifier) {
+      m_doc->executeSwcNodeExtendCommand(ZPoint(fpos[0], fpos[1], fpos[2]));
+    } else {
+      m_doc->executeSwcNodeSmartExtendCommand(ZPoint(fpos[0], fpos[1], fpos[2]));
+    }
     // todo: check modifier and use normal extend if possible
     return;
   }
   //  if (m_toogleExtendSelectedSwcNodeAction->isChecked() && m_doc->selectedSwcTreeNodes()->size() == 1) {
   //    return;
   //  }
-  if (hasVolume() && channelNumber() == 1 && !m_toogleAddSwcNodeModeAction->isChecked()) {
+  if (hasVolume() && channelNumber() == 1 &&
+      !m_toogleAddSwcNodeModeAction->isChecked() &&
+      !m_toggleMoveSelectedObjectsAction->isChecked() &&
+      !m_toggleSmartExtendSelectedSwcNodeAction->isChecked()) {
     m_contextMenuGroup["trace"]->popup(m_canvas->mapToGlobal(pt));
   }
 }
 
 void Z3DWindow::show3DViewContextMenu(QPoint pt)
 {
+  notifyUser(" ");
   if (m_toogleAddSwcNodeModeAction->isChecked()) {
     m_toogleAddSwcNodeModeAction->setChecked(false);
     return;
-  } /*else if (m_toogleExtendSelectedSwcNodeAction->isChecked()) {
-    m_toogleExtendSelectedSwcNodeAction->setChecked(false);
+  } else if (m_toggleMoveSelectedObjectsAction->isChecked()) {
+    m_toggleMoveSelectedObjectsAction->setChecked(false);
     return;
-  }*/ else if (m_toogleSmartExtendSelectedSwcNodeAction->isChecked()) {
-    m_toogleSmartExtendSelectedSwcNodeAction->setChecked(false);
+  } else if (m_toggleSmartExtendSelectedSwcNodeAction->isChecked()) {
+    m_toggleSmartExtendSelectedSwcNodeAction->setChecked(false);
     return;
   } else if (getSwcFilter()->getInteractionMode() == Z3DSwcFilter::ConnectSwcNode) {
     getSwcFilter()->setInteractionMode(Z3DSwcFilter::Select);
@@ -1394,9 +1433,12 @@ void Z3DWindow::traceTube()
       m_lastClickedPosInVolume[1],
       m_lastClickedPosInVolume[2]);
       */
+  m_canvas->setCursor(Qt::BusyCursor);
   m_doc->executeTraceSwcBranchCommand(m_lastClickedPosInVolume[0],
       m_lastClickedPosInVolume[1],
       m_lastClickedPosInVolume[2]);
+  getSwcFilter()->setInteractionMode(Z3DSwcFilter::Select);
+  m_canvas->setCursor(Qt::ArrowCursor);
 }
 
 void Z3DWindow::openZoomInView()
@@ -1680,13 +1722,14 @@ void Z3DWindow::toogleAddSwcNodeMode(bool checked)
     //      m_toogleExtendSelectedSwcNodeAction->setChecked(false);
     //      m_toogleExtendSelectedSwcNodeAction->blockSignals(false);
     //    }
-    if (m_toogleSmartExtendSelectedSwcNodeAction->isChecked()) {
-      m_toogleSmartExtendSelectedSwcNodeAction->blockSignals(true);
-      m_toogleSmartExtendSelectedSwcNodeAction->setChecked(false);
-      m_toogleSmartExtendSelectedSwcNodeAction->blockSignals(false);
+    if (m_toggleSmartExtendSelectedSwcNodeAction->isChecked()) {
+      m_toggleSmartExtendSelectedSwcNodeAction->blockSignals(true);
+      m_toggleSmartExtendSelectedSwcNodeAction->setChecked(false);
+      m_toggleSmartExtendSelectedSwcNodeAction->blockSignals(false);
     }
     m_swcFilter->setInteractionMode(Z3DSwcFilter::AddSwcNode);
     m_canvas->setCursor(Qt::PointingHandCursor);
+    notifyUser("Click to add a node");
   } else {
     m_swcFilter->setInteractionMode(Z3DSwcFilter::Select);
     m_canvas->setCursor(Qt::ArrowCursor);
@@ -1725,6 +1768,8 @@ void Z3DWindow::toogleSmartExtendSelectedSwcNodeMode(bool checked)
     //      m_toogleExtendSelectedSwcNodeAction->setChecked(false);
     //      m_toogleExtendSelectedSwcNodeAction->blockSignals(false);
     //    }
+    notifyUser("Left click to extend. Path calculation is off when 'Cmd/Ctrl' is held."
+               "Right click to exit extending mode.");
     m_swcFilter->setInteractionMode(Z3DSwcFilter::SmartExtendSwcNode);
     m_canvas->setCursor(Qt::PointingHandCursor);
   } else {
@@ -1744,6 +1789,10 @@ void Z3DWindow::changeBackground()
 void Z3DWindow::toogleMoveSelectedObjectsMode(bool checked)
 {
   getInteractionHandler()->setMoveObjects(checked);
+  m_canvas->setCursor(checked ? Qt::ClosedHandCursor : Qt::ArrowCursor);
+  if (checked) {
+    notifyUser("Shift + Mouse to move selected objects");
+  }
 }
 
 void Z3DWindow::moveSelectedObjects(double x, double y, double z)
@@ -1813,7 +1862,19 @@ void Z3DWindow::keyPressEvent(QKeyEvent *event)
         SwcTreeNode::addToClipboard(*iter);
       }
     } else if (event->modifiers() == Qt::NoModifier) {
-      m_doc->executeConnectSwcNodeCommand();
+      if (!m_doc->selectedSwcTreeNodes()->empty()) {
+        if (m_doc->selectedSwcTreeNodes()->size() > 1) {
+          m_doc->executeConnectSwcNodeCommand();
+        } else {
+          if (m_toggleMoveSelectedObjectsAction->isChecked()) {
+            m_toggleMoveSelectedObjectsAction->toggle();
+          }
+          if (m_toggleSmartExtendSelectedSwcNodeAction->isChecked()) {
+            m_toggleSmartExtendSelectedSwcNodeAction->toggle();
+          }
+          startConnectingSwcNode();
+        }
+      }
     }
   }
     break;
@@ -1864,7 +1925,7 @@ void Z3DWindow::keyPressEvent(QKeyEvent *event)
     if (event->modifiers() == Qt::ControlModifier) {
       ZOptionParameter<QString> *sm =
           dynamic_cast<ZOptionParameter<QString>*>(
-            getSwcFilter()->getParameter("Rendering Primitive"));
+            getSwcFilter()->getParameter("Geometry"));
       sm->selectNext();
     }
   }
@@ -1890,6 +1951,34 @@ void Z3DWindow::keyPressEvent(QKeyEvent *event)
   case Qt::Key_Z:
     if (event->modifiers() == Qt::NoModifier) {
       locateSwcNodeIn2DView();
+    }
+    break;
+  case Qt::Key_V:
+    if (event->modifiers() == Qt::NoModifier) {
+      if (!m_toggleMoveSelectedObjectsAction->isChecked()) {
+        if (m_toggleSmartExtendSelectedSwcNodeAction->isChecked()) {
+          m_toggleSmartExtendSelectedSwcNodeAction->toggle();
+        }
+        if (getSwcFilter()->getInteractionMode() == Z3DSwcFilter::ConnectSwcNode) {
+            getSwcFilter()->setInteractionMode(Z3DSwcFilter::Select);
+            m_canvas->setCursor(Qt::ArrowCursor);
+        }
+        m_toggleMoveSelectedObjectsAction->toggle();
+      }
+    }
+    break;
+  case Qt::Key_Space:
+    if (getDocument()->selectedSwcTreeNodes()->size() == 1) {
+      if (!m_toggleSmartExtendSelectedSwcNodeAction->isChecked()) {
+        if (m_toggleMoveSelectedObjectsAction->isChecked()) {
+          m_toggleMoveSelectedObjectsAction->toggle();
+        }
+        if (getSwcFilter()->getInteractionMode() == Z3DSwcFilter::ConnectSwcNode) {
+            getSwcFilter()->setInteractionMode(Z3DSwcFilter::Select);
+            m_canvas->setCursor(Qt::ArrowCursor);
+        }
+        m_toggleSmartExtendSelectedSwcNodeAction->toggle();
+      }
     }
     break;
   default:
@@ -1935,12 +2024,14 @@ void Z3DWindow::updateContextMenu(const QString &group)
     }
     //if (!m_doc->swcList()->empty() && m_swcFilter->isNodeRendering())
       //m_contextMenuGroup["empty"]->addAction(m_toogleExtendSelectedSwcNodeAction);
+    /*
     if (channelNumber() > 0 && !m_doc->swcList()->empty() && m_swcFilter->isNodeRendering())
       m_contextMenuGroup["empty"]->addAction(m_toogleSmartExtendSelectedSwcNodeAction);
+*/
     if (!m_doc->swcList()->empty() && m_swcFilter->isNodeRendering())
       m_contextMenuGroup["empty"]->addAction(m_toogleAddSwcNodeModeAction);
     if (!m_doc->swcList()->empty() || !m_doc->punctaList()->empty())
-      m_contextMenuGroup["empty"]->addAction(m_toogleMoveSelectedObjectsAction);
+      m_contextMenuGroup["empty"]->addAction(m_toggleMoveSelectedObjectsAction);
     m_contextMenuGroup["empty"]->addAction(m_changeBackgroundAction);
   }
   if (group == "volume") {
@@ -1952,15 +2043,17 @@ void Z3DWindow::updateContextMenu(const QString &group)
         m_contextMenuGroup["volume"]->addAction(m_openVolumeZoomInViewAction);
       }
     }
-    m_contextMenuGroup["volume"]->addAction(m_markPunctumAction);
+    //m_contextMenuGroup["volume"]->addAction(m_markPunctumAction);
     //if (!m_doc->swcList()->empty() && m_swcFilter->isNodeRendering())
       //m_contextMenuGroup["volume"]->addAction(m_toogleExtendSelectedSwcNodeAction);
+    /*
     if (!m_doc->swcList()->empty() && m_swcFilter->isNodeRendering())
       m_contextMenuGroup["volume"]->addAction(m_toogleSmartExtendSelectedSwcNodeAction);
+*/
     if (!m_doc->swcList()->empty() && m_swcFilter->isNodeRendering())
       m_contextMenuGroup["volume"]->addAction(m_toogleAddSwcNodeModeAction);
     if (!m_doc->swcList()->empty() || !m_doc->punctaList()->empty())
-      m_contextMenuGroup["volume"]->addAction(m_toogleMoveSelectedObjectsAction);
+      m_contextMenuGroup["volume"]->addAction(m_toggleMoveSelectedObjectsAction);
     m_contextMenuGroup["volume"]->addAction(m_changeBackgroundAction);
     m_contextMenuGroup["volume"]->addAction(m_refreshTraceMaskAction);
   }
@@ -2807,4 +2900,9 @@ bool Z3DWindow::hasSelectedSwcNode() const
 bool Z3DWindow::hasMultipleSelectedSwcNode() const
 {
   return m_doc->hasMultipleSelectedSwcNode();
+}
+
+void Z3DWindow::notifyUser(const QString &message)
+{
+  statusBar()->showMessage(message);
 }

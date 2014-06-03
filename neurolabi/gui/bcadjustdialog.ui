@@ -2,6 +2,9 @@
 <ui version="4.0">
  <class>BcAdjustDialog</class>
  <widget class="QDialog" name="BcAdjustDialog">
+  <property name="windowModality">
+   <enum>Qt::NonModal</enum>
+  </property>
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -13,13 +16,13 @@
   <property name="windowTitle">
    <string>Brightness &amp; Contrast</string>
   </property>
-  <widget class="QWidget" name="">
+  <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
      <x>10</x>
      <y>10</y>
      <width>451</width>
-     <height>404</height>
+     <height>464</height>
     </rect>
    </property>
    <layout class="QVBoxLayout" name="overallLayout">
@@ -134,6 +137,13 @@
      </layout>
     </item>
     <item>
+     <widget class="Line" name="line">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+     </widget>
+    </item>
+    <item>
      <layout class="QHBoxLayout" name="ch2_layout">
       <item>
        <widget class="QLabel" name="ch2_label">
@@ -230,6 +240,13 @@
        </layout>
       </item>
      </layout>
+    </item>
+    <item>
+     <widget class="Line" name="line_2">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+     </widget>
     </item>
     <item>
      <layout class="QHBoxLayout" name="ch3_layout">
@@ -330,6 +347,13 @@
      </layout>
     </item>
     <item>
+     <widget class="Line" name="line_3">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+     </widget>
+    </item>
+    <item>
      <layout class="QHBoxLayout" name="ch4_layout">
       <item>
        <widget class="QLabel" name="ch4_label">
@@ -426,6 +450,13 @@
        </layout>
       </item>
      </layout>
+    </item>
+    <item>
+     <widget class="Line" name="line_4">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+     </widget>
     </item>
     <item>
      <layout class="QHBoxLayout" name="horizontalLayout_17">

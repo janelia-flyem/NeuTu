@@ -835,3 +835,8 @@ void ZStackFile::appendUrl(const string &path)
 {
   m_urlList.push_back(path);
 }
+
+void ZStackFile::clear()
+{
+  m_urlList.clear();
+}

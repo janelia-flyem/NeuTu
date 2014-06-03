@@ -362,8 +362,8 @@ double Stack_Point_Sampling(const Stack *stack, double x, double y, double z)
   */
 
   /* If the point is out of range */
-  if ((x > stack->width - 1) || (x < 0) || (y > stack->height - 1) || (y < 0)
-      || (z > stack->depth - 1) || (z < 0)) {
+  if ((x >= stack->width - 1) || (x <= 0) || (y >= stack->height - 1) || (y <= 0)
+      || (z >= stack->depth - 1) || (z <= 0)) {
     return NaN;
   } else {
     double sum = 0.0;
@@ -501,8 +501,8 @@ BOOL Stack_Point_Hit_Mask(const Stack *stack, double x, double y, double z)
 double Stack_Point_Sampling_Grey(const uint8_t *array, int width, int height, int depth, double x, double y, double z)
 {
   /* If the point is out of range */
-  if ((x > width - 1) || (x < 0) || (y > height - 1) || (y < 0)
-      || (z > depth - 1) || (z < 0)) {
+  if ((x >= width - 1) || (x <= 0) || (y >= height - 1) || (y <= 0)
+      || (z >= depth - 1) || (z <= 0)) {
     return NaN;
   } else {
     double sum = 0.0;
@@ -537,8 +537,8 @@ double Stack_Point_Sampling_A(const Stack *stack, double x, double y, double z,
   }
 
   /* If the point is out of range */
-  if ((x > stack->width - 1) || (x < 0) || (y > stack->height - 1) || (y < 0)
-      || (z > stack->depth - 1) || (z < 0)) {
+  if ((x >= stack->width - 1) || (x <= 0) || (y >= stack->height - 1) || (y <= 0)
+      || (z >= stack->depth - 1) || (z <= 0)) {
     return NaN;
   } else {
     double sum = 0.0;

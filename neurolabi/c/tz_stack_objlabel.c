@@ -1466,3 +1466,79 @@ Graph* Stack_Label_Field_Neighbor_Graph(Stack *stack, int threshold,
 
   return graph;
 }
+
+
+
+Object_3d* Stack_Region_Border(const Stack *stack, int nnbr, BOOL ignoring_bg)
+{
+  int x, y, z;
+  int is_in_bound[26];
+  int width = Stack_Width(stack);
+  int height = Stack_Height(stack);
+  int depth = Stack_Depth(stack);
+  //int cwidth = width - 1;
+  //int cheight = height - 1;
+  //int cdepth = depth - 1;
+
+  /* alloc <mask> */
+  Stack *mask = Make_Stack(GREY, width, height, depth);
+  Zero_Stack(mask);
+
+  int neighbor[26];
+  Stack_Neighbor_Offset(nnbr, width, height, neighbor);
+  size_t index;
+  size_t voxelNumber = Stack_Voxel_Number(stack);
+  size_t count = 0;
+  for (index = 0; index < voxelNumber; ++index) {
+    if (stack->array[index] > 0) {
+      int n_in_bound = Stack_Neighbor_Bound_Test_I(nnbr, width, height, depth,
+          index, is_in_bound);
+      int j;
+      for (j = 0; j < nnbr; ++j) {
+        if (n_in_bound == nnbr || is_in_bound[j]) {
+          size_t neighbor_index = index + neighbor[j];
+          if (ignoring_bg) {
+            if (stack->array[neighbor_index] > stack->array[index]) {
+              mask->array[index] = 1;
+              ++count;
+              break;
+            }
+          } else {
+            if (stack->array[neighbor_index] < stack->array[index]) {
+              mask->array[index] = 1;
+              ++count;
+              break;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  if (count == 0) {
+    /* free <mask> */
+    Kill_Stack(mask);
+    return NULL;
+  }
+
+  /* alloc <obj> */
+  Object_3d *obj = Make_Object_3d(count, 0);
+  index = 0;
+  size_t obj_iter = 0;
+  for (z = 0; z < depth; ++z) {
+    for (y = 0; y < height; ++y) {
+      for (x = 0; x < width; ++x) {
+        if (mask->array[index++] > 0) {
+          Object_3d_Set_Voxel(obj, obj_iter++, x, y, z);
+        }
+      }
+    }
+  }
+
+  /* free <mask> */
+  Kill_Stack(mask);
+
+
+  /* return <obj> */
+  return obj;
+}

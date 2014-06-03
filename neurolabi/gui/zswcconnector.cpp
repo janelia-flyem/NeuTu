@@ -67,16 +67,24 @@ pair<Swc_Tree_Node*, Swc_Tree_Node*> ZSwcConnector::identifyConnection(
 ZGraph* ZSwcConnector::buildConnection(
     const vector<Swc_Tree_Node *> &nodeArray)
 {
+  std::vector<bool> isOrphan(nodeArray.size(), true);
+
   ZGraph *graph = new ZGraph(ZGraph::UNDIRECTED_WITH_WEIGHT);
   for (size_t i = 0; i < nodeArray.size(); ++i) {
     for (size_t j = i + 1; j < nodeArray.size(); ++j) {
-      if (i < j) {
+      if (SwcTreeNode::isRegular(nodeArray[i]) &&
+          SwcTreeNode::isRegular(nodeArray[j])) {
         if (SwcTreeNode::regularRoot(nodeArray[i]) !=
             SwcTreeNode::regularRoot(nodeArray[j])) {
           double w = SwcTreeNode::distance(nodeArray[i], nodeArray[j]);
-          graph->addEdge(i, j, w + 0.1);
+          if (w <= m_minDist) {
+            graph->addEdge(i, j, w + 0.1);
+          }
         } else {
-          graph->addEdge(i, j, 0);
+          if (isOrphan[j]) {
+            graph->addEdge(i, j, 0);
+            isOrphan[j] = false;
+          }
         }
       }
     }
@@ -94,6 +102,10 @@ ZGraph* ZSwcConnector::buildConnection(
     }
     graph->removeEdge(edgeList);
 
+#ifdef _DEBUG_
+  graph->print();
+#endif
+#if 1
     if (graph->size() > 1) {
       //Breadth-first sort of edges
       Graph_Workspace *gw = New_Graph_Workspace();
@@ -120,20 +132,25 @@ ZGraph* ZSwcConnector::buildConnection(
           mask[i] = 0;
         }
 
-        Arrayqueue_Add_Last(&aq, root);
-        mask[root] = 1;
-        int next = root;
-        do {
-          for (i = 1; i <= NUMBER_OF_NEIGHBORS(next, neighbor_list); i++) {
-            int node = NEIGHBOR_OF(next, i, neighbor_list);
-            if (mask[node] == 0) {
-              Arrayqueue_Add_Last(&aq, node);
-              mask[node] = 1;
-              graph->addEdge(next, node);
-            }
+        for (int edgeIndex = 0; edgeIndex < tmpGraph->getEdgeNumber(); ++edgeIndex) {
+          root = tmpGraph->getEdgeBegin(edgeIndex);
+          if (mask[root] == 0) {
+            Arrayqueue_Add_Last(&aq, root);
+            mask[root] = 1;
+            int next = root;
+            do {
+              for (i = 1; i <= NUMBER_OF_NEIGHBORS(next, neighbor_list); i++) {
+                int node = NEIGHBOR_OF(next, i, neighbor_list);
+                if (mask[node] == 0) {
+                  Arrayqueue_Add_Last(&aq, node);
+                  mask[node] = 1;
+                  graph->addEdge(next, node);
+                }
+              }
+              next = aq.array[next];
+            } while (next >= 0);
           }
-          next = aq.array[next];
-        } while (next >= 0);
+        }
 
         /* free <mask> */
         free(mask);
@@ -142,6 +159,7 @@ ZGraph* ZSwcConnector::buildConnection(
       Kill_Graph_Workspace(gw);
       delete tmpGraph;
     }
+#endif
   }
 
 #ifdef _DEBUG_

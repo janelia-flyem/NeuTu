@@ -14,6 +14,25 @@ void ZPainter::drawPoint(const QPointF &pt)
   QPainter::drawPoint(pt + QPointF(m_offset.x(), m_offset.y()));
 }
 
+void ZPainter::drawPoint(const QPoint &pt)
+{
+  QPainter::drawPoint(pt + QPointF(m_offset.x(), m_offset.y()));
+}
+
+void ZPainter::drawPoints(const QPointF *points, int pointCount)
+{
+  for (int i = 0; i < pointCount; ++i) {
+    drawPoint(points[i]);
+  }
+}
+
+void ZPainter::drawPoints(const QPoint *points, int pointCount)
+{
+  for (int i = 0; i < pointCount; ++i) {
+    drawPoint(points[i]);
+  }
+}
+
 void ZPainter::drawLine(int x1, int y1, int x2, int y2)
 {
   drawLine(QPointF(x1, y1), QPointF(x2, y2));

@@ -50,7 +50,9 @@ public:
   enum EActionItem {
     ACTION_EXTEND_SWC_NODE, ACTION_SMART_EXTEND_SWC_NODE,
     ACTION_CONNECT_TO_SWC_NODE, ACTION_ADD_SWC_NODE,
-    ACTION_LOCK_SWC_NODE_FOCUS, ACTION_ESTIMATE_SWC_NODE_RADIUS,
+    ACTION_LOCK_SWC_NODE_FOCUS, ACTION_CHANGE_SWC_NODE_FOCUS,
+    ACTION_MOVE_SWC_NODE,
+    ACTION_ESTIMATE_SWC_NODE_RADIUS,
     ACTION_PAINT_STROKE, ACTION_ERASE_STROKE
   };
 
@@ -103,6 +105,9 @@ public:
   void createStrokeContextMenu();
   QMenu* getStrokeContextMenu();
 
+  void createStackContextMenu();
+  QMenu* getStackContextMenu();
+
   void setStackBc(double scale, double offset, int c = 0);
 
   /* optimize stack brightness and contrast */
@@ -123,7 +128,7 @@ public:
 
   void addTubeEditFunctionToRightMenu();
   void addPunctaEditFunctionToRightMenu();
-  void addSwcEditFunctionToRightMenu();
+  //void addSwcEditFunctionToRightMenu();
 
   void setViewPortCenter(int x, int y, int z);
 
@@ -178,6 +183,7 @@ public slots:
   void enterSwcExtendMode();
   void exitSwcExtendMode();
   //void enterSwcSmartExtendMode();
+  void enterSwcMoveMode();
   void enterSwcAddNodeMode(double x, double y);
   void enterSwcSelectMode();
   void enterDrawStrokeMode(double x, double y);
@@ -185,6 +191,7 @@ public slots:
   void exitStrokeEdit();
   void deleteSwcNode();
   void lockSelectedSwcNodeFocus();
+  void changeSelectedSwcNodeFocus();
   void processSliceChangeEvent(int z);
   void estimateSelectedSwcRadius();
   void connectSelectedSwcNode();
@@ -192,12 +199,13 @@ public slots:
   void selectAllSwcTreeNode();
 
   void trySwcAddNodeMode(double x, double y);
+  void trySwcAddNodeMode();
   void tryPaintStrokeMode();
   void tryEraseStrokeMode();
   void tryDrawStrokeMode(double x, double y, bool isEraser);
 
   void selectDownstreamNode();
-  void selectSwcNodeConnection();
+  void selectSwcNodeConnection(Swc_Tree_Node *lastSelected = NULL);
   void selectUpstreamNode();
   void selectBranchNode();
   void selectTreeNode();
@@ -297,13 +305,15 @@ private:
   QAction *m_swcConnectToAction;
   QAction *m_swcExtendAction;
   //QAction *m_swcSmartExtendAction;
-  QAction *m_swcDeleteAction;
-  QAction *m_swcConnectSelectedAction;
+  QAction *m_swcMoveSelectedAction;
+  //QAction *m_swcDeleteAction;
+  //QAction *m_swcConnectSelectedAction;
   QAction *m_swcSelectConnectionAction;
   QAction *m_swcLockFocusAction;
+  QAction *m_swcChangeFocusAction;
   QAction *m_swcEstimateRadiusAction;
   //QAction *m_swcSelectAllNodeAction;
-  QAction *m_swcBreakSelectedAction;
+  //QAction *m_swcBreakSelectedAction;
 
   QAction *m_selectSwcNodeDownstreamAction;
   QAction *m_selectSwcConnectionAction;
@@ -321,6 +331,7 @@ private:
 
   QMenu *m_swcNodeContextMenu;
   QMenu *m_strokePaintContextMenu;
+  QMenu *m_stackContextMenu;
 
   //recorded information
   int m_mouseMovePosition[3];
@@ -330,11 +341,13 @@ private:
   int m_mouseRightPressPosition[3];
   int m_mouseLeftDoubleClickPosition[3];
   QPointF m_grabPosition;
+  QPointF m_lastMouseDataCoord;
 
   ZStroke2d m_stroke;
   bool m_isStrokeOn;
 
   ZSingleSwcNodeActionActivator m_singleSwcNodeActionActivator;
+  bool m_skipMouseReleaseEvent;
 
 signals:
   void viewModeChanged();

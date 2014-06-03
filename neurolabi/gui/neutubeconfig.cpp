@@ -11,9 +11,10 @@ using namespace std;
 
 NeutubeConfig::NeutubeConfig() : m_segmentationClassifThreshold(0.5),
   m_isSettingOn(true), m_isStereoOn(true), m_autoSaveInterval(600000),
-  m_autoSaveEnabled(true)
+  m_autoSaveEnabled(true), m_usingNativeDialog(true)
 {
   m_messageReporter = new ZLogMessageReporter;
+  m_softwareName = "NeuTu";
 }
 
 NeutubeConfig::NeutubeConfig(const NeutubeConfig& config) :
@@ -102,6 +103,13 @@ bool NeutubeConfig::load(const std::string &filePath)
       }
     }
 
+    node = doc.getRootElement().queryNode("NativeFileDialog");
+    if (!node.empty()) {
+      if (node.getAttribute("status") == "off") {
+        m_usingNativeDialog = false;
+      }
+    }
+
     node = doc.getRootElement().queryNode("MainWindow");
     if (!node.empty()) {
       m_mainWindowConfig.loadXmlNode(&node);
@@ -149,6 +157,10 @@ bool NeutubeConfig::load(const std::string &filePath)
             ZString::fullPath(getApplicatinDir(), "neutube_error", "txt"));
     }
 
+    if (GET_APPLICATION_NAME == "General") {
+      m_softwareName = "neuTube";
+    }
+
     return true;
   }
 
@@ -177,6 +189,10 @@ void NeutubeConfig::print()
   cout << "Autosave dir: " << getPath(AUTO_SAVE) << endl;
   cout << "Autosave interval: " << m_autoSaveInterval << endl;
   cout << endl;
+
+#if defined(_FLYEM_)
+  m_flyemConfig.print();
+#endif
 }
 
 std::string NeutubeConfig::getPath(Config_Item item) const
@@ -203,6 +219,9 @@ std::string NeutubeConfig::getPath(Config_Item item) const
       return getApplicatinDir() + ZString::FileSeparator + "autosave";
     }
     return m_autoSaveDir;
+  case SKELETONIZATION_CONFIG:
+    return getApplicatinDir() + ZString::FileSeparator + "json" +
+        ZString::FileSeparator + "skeletonize_fib25_len40.json";
   default:
     break;
   }

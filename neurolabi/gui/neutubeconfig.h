@@ -5,6 +5,9 @@
 #include <vector>
 
 #include "zmessagereporter.h"
+#if defined(_FLYEM_)
+#include "flyem/zflyemconfig.h"
+#endif
 
 class ZXmlNode;
 
@@ -15,7 +18,7 @@ public:
     DATA, FLYEM_BODY_CONN_CLASSIFIER, FLYEM_BODY_CONN_TRAIN_DATA,
     FLYEM_BODY_CONN_TRAIN_TRUTH, FLYEM_BODY_CONN_EVAL_DATA,
     FLYEM_BODY_CONN_EVAL_TRUTH, SWC_REPOSOTARY, AUTO_SAVE,
-    CONFIGURE_FILE
+    CONFIGURE_FILE, SKELETONIZATION_CONFIG
   };
 
   static NeutubeConfig& getInstance() {
@@ -49,6 +52,10 @@ public:
 
   inline const std::string& getApplication() const {
     return m_application;
+  }
+
+  inline const std::string& getSoftwareName() const {
+    return m_softwareName;
   }
 
   inline bool isStereoEnabled() {
@@ -241,6 +248,13 @@ public:
   }
   bool isAutoSaveEnabled() const { return m_autoSaveEnabled; }
 
+  inline bool usingNativeDialog() const { return m_usingNativeDialog; }
+
+#if defined(_FLYEM_)
+  const ZFlyEmConfig &getFlyEmConfig() const { return m_flyemConfig; }
+  ZFlyEmConfig &getFlyEmConfig() { return m_flyemConfig; }
+#endif
+
 private:
   NeutubeConfig();
   NeutubeConfig(const NeutubeConfig&);
@@ -249,6 +263,7 @@ private:
 
 private:
   std::string m_application;
+  std::string m_softwareName;
   std::string m_applicationDir;
   std::string m_segmentationClassifierPath;
   std::string m_segmentationTrainingTestPath;
@@ -268,21 +283,31 @@ private:
   std::string m_autoSaveDir;
   int m_autoSaveInterval;
   bool m_autoSaveEnabled;
+  bool m_usingNativeDialog;
+
+#if defined(_FLYEM_)
+  ZFlyEmConfig m_flyemConfig;
+#endif
 
   ZMessageReporter *m_messageReporter;
 };
 
 #define GET_DATA_DIR (NeutubeConfig::getInstance().getPath(NeutubeConfig::DATA))
 #if defined(PROJECT_PATH)
-#define GET_TEST_DATA_DIR (std::string(PROJECT_PATH) + "/../data")
+#  define GET_TEST_DATA_DIR (std::string(PROJECT_PATH) + "/../data")
 #endif
 
 #ifndef GET_TEST_DATA_DIR
-#define GET_TEST_DATA_DIR GET_DATA_DIR
+#  define GET_TEST_DATA_DIR GET_DATA_DIR
 #endif
 
 
 #define GET_MESSAGE_REPORTER (NeutubeConfig::getInstance().getMessageReporter())
-#define GET_APPLICATION_NAME (NeutubeConfig::getInstance().getApplication())
+#  define GET_APPLICATION_NAME (NeutubeConfig::getInstance().getApplication())
+#define GET_SOFTWARE_NAME (NeutubeConfig::getInstance().getSoftwareName())
+
+#if defined(_FLYEM_)
+#  define GET_FLYEM_CONFIG (NeutubeConfig::getInstance().getFlyEmConfig())
+#endif
 
 #endif // NEUTUBECONFIG_H

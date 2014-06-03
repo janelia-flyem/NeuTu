@@ -995,5 +995,32 @@ int main()
   Write_Stack("../data/test.tif", stack);
 #endif
 
+#if 0
+  Stack *stack = Make_Stack(GREY, 3, 3, 3);
+  Zero_Stack(stack);
+  stack->array[4] = 1;
+  Object_3d *obj = Stack_Region_Border(stack, 26);
+  printf("Object: %p\n", (void*) obj);
+  Print_Object_3d(obj);
+  
+#endif
+
+#if 1
+  //Stack *stack = Read_Stack("../data/benchmark/binary/2d/ring_n10.tif");
+  Stack *stack = Read_Stack("../data/bintest.tif");
+  Print_Stack_Info(stack);
+  Object_3d *obj = Stack_Region_Border(stack, 6);
+
+  Zero_Stack(stack);
+  size_t i;
+  for (i = 0; i < obj->size; ++i) {
+    Set_Stack_Pixel(stack, obj->voxels[i][0], obj->voxels[i][1],
+        obj->voxels[i][2], 0, 1);
+  }
+
+  Write_Stack("../data/test.tif", stack);
+#endif
+
+
   return 0;
 }

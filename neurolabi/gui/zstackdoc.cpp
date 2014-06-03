@@ -12,6 +12,7 @@
 #include <QTimer>
 #include <QInputDialog>
 #include <QApplication>
+#include <QtConcurrentRun>
 
 #include "QsLog.h"
 
@@ -76,7 +77,6 @@
 #include "tz_stack_bwmorph.h"
 #include "zstackdoccommand.h"
 #include "zstroke2d.h"
-#include "zneurontracer.h"
 #include "zqtmessagereporter.h"
 #include "zswcconnector.h"
 #include "biocytin/biocytin.h"
@@ -84,6 +84,9 @@
 #include "biocytin/zbiocytinfilenameparser.h"
 #include "swcskeletontransformdialog.h"
 #include "swcsizedialog.h"
+#include "tz_stack_watershed.h"
+#include "zstackwatershed.h"
+#include "zstackarray.h"
 
 using namespace std;
 
@@ -91,22 +94,15 @@ ZStackDoc::ZStackDoc(ZStack *stack, QObject *parent) : QObject(parent)
 {
   m_stack = stack;
   m_parentFrame = NULL;
-  //m_parent = parent;
   m_masterChain = NULL;
-  //m_previewSwc = NULL;
-  m_traceWorkspace = NULL;
   m_isTraceMaskObsolete = true;
-  m_connectionTestWorkspace = NULL;
   m_swcNetwork = NULL;
-  initTraceWorkspace();
-  initConnectionTestWorkspace();
+
+  initNeuronTracer();
   m_swcObjsModel = new ZSwcObjsModel(this, this);
   m_swcNodeObjsModel = new ZSwcNodeObjsModel(this, this);
   m_punctaObjsModel = new ZPunctaObjsModel(this, this);
   m_undoStack = new QUndoStack(this);
-  //m_progressReporter = &m_nullProgressReporter;
-
-  //m_swcNodeContextMenu = NULL;
 
   connectSignalSlot();
 
@@ -119,7 +115,6 @@ ZStackDoc::ZStackDoc(ZStack *stack, QObject *parent) : QObject(parent)
   }
 
   createActions();
-  //createContextMenu();
 
   setTag(NeuTube::Document::NORMAL);
   setStackBackground(NeuTube::IMAGE_BACKGROUND_DARK);
@@ -129,6 +124,7 @@ ZStackDoc::~ZStackDoc()
 {
   deprecate(STACK);
 
+  qDebug() << m_objs.size();
   if (m_objs.size() != 0) {
     for (int i = 0; i < m_objs.size(); ++i) {
       delete m_objs.at(i);
@@ -140,32 +136,30 @@ ZStackDoc::~ZStackDoc()
     delete m_swcNetwork;
   }
 
-  if (m_traceWorkspace != NULL) {
-    if (m_traceWorkspace->fit_workspace != NULL) {
-      Locseg_Fit_Workspace *fw =
-          (Locseg_Fit_Workspace*) m_traceWorkspace->fit_workspace;
-      fw->sws->mask = NULL;
-      Kill_Locseg_Fit_Workspace(fw);
-      m_traceWorkspace->fit_workspace = NULL;
-    }
-    Kill_Trace_Workspace(m_traceWorkspace);
-  }
-
-  if (m_connectionTestWorkspace != NULL) {
-    Kill_Connection_Test_Workspace(m_connectionTestWorkspace);
-  }
-
-  /*
-  if (m_previewSwc != NULL) {
-    delete m_previewSwc;
-  }
-  */
-
   delete m_undoStack;
   //delete m_swcNodeContextMenu;
 
   destroyReporter();
-  //delete m_stackMask;
+}
+
+void ZStackDoc::initNeuronTracer()
+{
+  m_neuronTracer.initTraceWorkspace(stack());
+  m_neuronTracer.initConnectionTestWorkspace();
+  if (stack() != NULL) {
+    m_neuronTracer.setIntensityField(stack()->c_stack());
+  }
+  m_neuronTracer.setBackgroundType(getStackBackground());
+  if (getTag() == NeuTube::Document::FLYEM_BODY) {
+    m_neuronTracer.setVertexOption(ZStackGraph::VO_SURFACE);
+  }
+
+  if (GET_APPLICATION_NAME == "Biocytin") {
+    m_neuronTracer.setResolution(1, 1, 10);
+  }
+
+  ZPoint offset = getStackOffset();
+  m_neuronTracer.setStackOffset(offset.x(), offset.y(), offset.z());
 }
 
 void ZStackDoc::setParentFrame(ZStackFrame *parent)
@@ -210,35 +204,46 @@ void ZStackDoc::createActions()
   m_redoAction->setShortcuts(QKeySequence::Redo);
 
   QAction *action = new QAction("Downstream", this);
+  action->setStatusTip("Select downstream nodes");
   connect(action, SIGNAL(triggered()), this, SLOT(selectDownstreamNode()));
   m_actionMap[ACTION_SELECT_DOWNSTREAM] = action;
 
   action = new QAction("Upstream", this);
+  action->setStatusTip("Select upstream nodes");
   connect(action, SIGNAL(triggered()), this, SLOT(selectUpstreamNode()));
   m_actionMap[ACTION_SELECT_UPSTREAM] = action;
 
   action = new QAction("Neighbors", this);
+  action->setStatusTip(
+        "Select neighbors (nodes coonected directly) of the currently selected nodes");
   connect(action, SIGNAL(triggered()), this, SLOT(selectNeighborSwcNode()));
   m_actionMap[ACTION_SELECT_NEIGHBOR_SWC_NODE] = action;
 
   action = new QAction("Host branch", this);
+  action->setStatusTip("Select branches containing the currently selected nodes");
   connect(action, SIGNAL(triggered()), this, SLOT(selectBranchNode()));
   m_actionMap[ACTION_SELECT_SWC_BRANCH] = action;
 
   action = new QAction("All connected nodes", this);
+  action->setStatusTip("Select all nodes connected (directly or indirectly) "
+                       "of the currently selected nodes");
   connect(action, SIGNAL(triggered()), this, SLOT(selectConnectedNode()));
   m_actionMap[ACTION_SELECT_CONNECTED_SWC_NODE] = action;
 
   action = new QAction("All nodes", this);
+  action->setShortcut(QKeySequence::SelectAll);
+  action->setStatusTip("Selet all nodes");
   connect(action, SIGNAL(triggered()), this, SLOT(selectAllSwcTreeNode()));
   m_actionMap[ACTION_SELECT_ALL_SWC_NODE] = action;
 
   action = new QAction("Resolve crossover", this);
+  action->setStatusTip("Create a crossover near the selected node if it is detected");
   connect(action, SIGNAL(triggered()),
           this, SLOT(executeResolveCrossoverCommand()));
   m_actionMap[ACTION_RESOLVE_CROSSOVER] = action;
 
   action = new QAction("Remove turn", this);
+  action->setStatusTip("Remove a nearby sharp turn");
   connect(action, SIGNAL(triggered()),
           this, SLOT(executeRemoveTurnCommand()));
   m_actionMap[ACTION_REMOVE_TURN] = action;
@@ -247,24 +252,44 @@ void ZStackDoc::createActions()
   connect(action, SIGNAL(triggered()), this, SLOT(showSeletedSwcNodeLength()));
   m_actionMap[ACTION_MEASURE_SWC_NODE_LENGTH] = action;
 
+  action = new QAction("Scaled Path length", this);
+  connect(action, SIGNAL(triggered()),
+          this, SLOT(showSeletedSwcNodeScaledLength()));
+  m_actionMap[ACTION_MEASURE_SCALED_SWC_NODE_LENGTH] = action;
+
   action = new QAction("Delete", this);
+  action->setShortcut(Qt::Key_X);
+  action->setStatusTip("Delete selected nodes");
+  action->setIcon(QIcon(":/images/delete.png"));
   connect(action, SIGNAL(triggered()), this, SLOT(executeDeleteSwcNodeCommand()));
   m_actionMap[ACTION_DELETE_SWC_NODE] = action;
 
   action = new QAction("Insert", this);
+  action->setStatusTip("Insert a node between two adjacent nodes");
+  action->setShortcut(Qt::Key_I);
+  action->setIcon(QIcon(":/images/insert.png"));
   connect(action, SIGNAL(triggered()), this, SLOT(executeInsertSwcNode()));
   m_actionMap[ACTION_INSERT_SWC_NODE] = action;
 
   action = new QAction("Break", this);
-  connect(action, SIGNAL(triggered()), this, SLOT(executeBreakSwcConnectionCommand()));
+  action->setStatusTip("Delect connections among the selected nodes");
+  action->setShortcut(Qt::Key_B);
+  connect(action, SIGNAL(triggered()),
+          this, SLOT(executeBreakSwcConnectionCommand()));
+  action->setIcon(QIcon(":/images/cut.png"));
   m_actionMap[ACTION_BREAK_SWC_NODE] = action;
 
   action = new QAction("Connect", this);
+  action->setStatusTip("Connect selected nodes");
+  action->setShortcut(Qt::Key_C);
+  action->setIcon(QIcon(":/images/connect.png"));
   connect(action, SIGNAL(triggered()), this, SLOT(executeConnectSwcNodeCommand()));
   m_actionMap[ACTION_CONNECT_SWC_NODE] = action;
 
   action = new QAction("Merge", this);
+  action->setStatusTip("Merge selected nodes, which for a single tree");
   connect(action, SIGNAL(triggered()), this, SLOT(executeMergeSwcNodeCommand()));
+  action->setIcon(QIcon(":/images/merge.png"));
   m_actionMap[ACTION_MERGE_SWC_NODE] = action;
 
   action = new QAction("Translate", this);
@@ -278,18 +303,23 @@ void ZStackDoc::createActions()
   m_actionMap[ACTION_CHANGE_SWC_SIZE] = action;
 
   action = new QAction("Set as root", this);
+  action->setStatusTip("Set the selected node as a root");
   connect(action, SIGNAL(triggered()), this, SLOT(executeSetRootCommand()));
   m_actionMap[ACTION_SET_SWC_ROOT] = action;
 
   action = new QAction("Join isolated branch", this);
+  action->setStatusTip("Connect to the nearest branch that does not have a path to the selected nodes");
   connect(action, SIGNAL(triggered()), this, SLOT(executeSetBranchPoint()));
   m_actionMap[ACTION_SET_BRANCH_POINT] = action;
 
   action = new QAction("Join isolated brach (across trees)", this);
+  action->setStatusTip("Connect to the nearest branch that does not have a path to the selected nodes. "
+                       "The branch can be in another neuron.");
   connect(action, SIGNAL(triggered()), this, SLOT(executeConnectIsolatedSwc()));
   m_actionMap[ACTION_CONNECTED_ISOLATED_SWC] = action;
 
   action = new QAction("Reset branch point", this);
+  action->setStatusTip("Move a neighboring branch point to the selected node");
   connect(action, SIGNAL(triggered()), this, SLOT(executeResetBranchPoint()));
   m_actionMap[ACTION_RESET_BRANCH_POINT] = action;
 
@@ -314,6 +344,8 @@ void ZStackDoc::createActions()
 
   m_singleSwcNodeActionActivator.registerAction(
         m_actionMap[ACTION_MEASURE_SWC_NODE_LENGTH], false);
+  m_singleSwcNodeActionActivator.registerAction(
+        m_actionMap[ACTION_MEASURE_SCALED_SWC_NODE_LENGTH], false);
   m_singleSwcNodeActionActivator.registerAction(
         m_actionMap[ACTION_BREAK_SWC_NODE], false);
   m_singleSwcNodeActionActivator.registerAction(
@@ -432,6 +464,7 @@ bool ZStackDoc::saveSwc(const string &filePath)
   return false;
 }
 
+#if 0
 void ZStackDoc::initTraceWorkspace()
 {
   if (m_stack == NULL || m_stack->channelNumber() != 1) {
@@ -468,10 +501,14 @@ void ZStackDoc::initConnectionTestWorkspace()
     m_connectionTestWorkspace = New_Connection_Test_Workspace();
   }
 }
+#endif
 
 void ZStackDoc::updateTraceWorkspace(int traceEffort, bool traceMasked,
                                      double xRes, double yRes, double zRes)
 {
+  m_neuronTracer.updateTraceWorkspace(traceEffort, traceMasked,
+                                      xRes, yRes, zRes);
+#if 0
   if (traceEffort > 0) {
     m_traceWorkspace->refit = FALSE;
   } else {
@@ -483,12 +520,16 @@ void ZStackDoc::updateTraceWorkspace(int traceEffort, bool traceMasked,
   m_traceWorkspace->resolution[2] = zRes;
 
   loadTraceMask(traceMasked);
+#endif
 }
 
 void ZStackDoc::updateConnectionTestWorkspace(
     double xRes, double yRes, double zRes,
     char unit, double distThre, bool spTest, bool crossoverTest)
 {
+  m_neuronTracer.updateConnectionTestWorkspace(
+        xRes, yRes, zRes, unit, distThre, spTest, crossoverTest);
+#if 0
   m_connectionTestWorkspace->resolution[0] = xRes;
   m_connectionTestWorkspace->resolution[1] = yRes;
   m_connectionTestWorkspace->resolution[2] = zRes;
@@ -496,6 +537,7 @@ void ZStackDoc::updateConnectionTestWorkspace(
   m_connectionTestWorkspace->dist_thre = distThre;
   m_connectionTestWorkspace->sp_test = spTest;
   m_connectionTestWorkspace->crossover_test = crossoverTest;
+#endif
 }
 
 bool ZStackDoc::isEmpty()
@@ -642,30 +684,115 @@ void ZStackDoc::addSizeForSelectedSwcNode(double dr)
   }
 }
 
-void ZStackDoc::selectSwcNodeConnection()
+void ZStackDoc::selectSwcNodeFloodFilling(Swc_Tree_Node *lastSelectedNode)
 {
   std::set<Swc_Tree_Node*> *nodeSet = selectedSwcTreeNodes();
+  std::set<Swc_Tree_Node*> newSelectedSet;
 
-  Swc_Tree_Node *ancestor = *(nodeSet->begin());
+  QQueue<Swc_Tree_Node*> tnQueue;
+  tnQueue.enqueue(lastSelectedNode);
 
-  for (std::set<Swc_Tree_Node*>::iterator iter = nodeSet->begin();
-       iter != nodeSet->end(); ++iter) {
-    ancestor = SwcTreeNode::commonAncestor(ancestor, *iter);
-  }
-
-  for (std::set<Swc_Tree_Node*>::iterator iter = nodeSet->begin();
-       iter != nodeSet->end(); ++iter) {
-    Swc_Tree_Node *tn = *iter;
-    while (tn != NULL) {
-      if (SwcTreeNode::isRegular(tn)) {
-        setSwcTreeNodeSelected(tn, true);
+  while (!tnQueue.isEmpty()) {
+    Swc_Tree_Node *tn = tnQueue.dequeue();
+    std::vector<Swc_Tree_Node*> neighborArray =
+        SwcTreeNode::neighborArray(tn);
+    for (std::vector<Swc_Tree_Node*>::iterator
+         iter = neighborArray.begin(); iter != neighborArray.end();
+         ++iter) {
+      if (nodeSet->count(*iter) == 0 &&
+          newSelectedSet.count(*iter) == 0) {
+        newSelectedSet.insert(*iter);
+        tnQueue.enqueue(*iter);
       }
-      if (tn == ancestor) {
-        break;
-      }
-      tn = SwcTreeNode::parent(tn);
     }
   }
+
+  setSwcTreeNodeSelected(newSelectedSet.begin(), newSelectedSet.end(), true);
+}
+
+void ZStackDoc::selectSwcNodeConnection(Swc_Tree_Node *lastSelectedNode)
+{
+  std::set<Swc_Tree_Node*> *nodeSet = selectedSwcTreeNodes();
+  std::set<Swc_Tree_Node*> newSelectedSet;
+  std::vector<bool> labeled(nodeSet->size(), false);
+
+  if (lastSelectedNode != NULL) {
+    for (std::set<Swc_Tree_Node*>::iterator targetIter = nodeSet->begin();
+         targetIter != nodeSet->end(); ++targetIter) {
+      Swc_Tree_Node *ancestor = SwcTreeNode::commonAncestor(lastSelectedNode,
+                                                            *targetIter);
+      if (SwcTreeNode::isRegular(ancestor)) {
+        if (lastSelectedNode == ancestor) {
+          std::vector<Swc_Tree_Node*> tnArray;
+          Swc_Tree_Node *tn = *targetIter;
+          while (tn != lastSelectedNode) {
+            tnArray.push_back(tn);
+            tn = SwcTreeNode::parent(tn);
+          }
+          for (std::vector<Swc_Tree_Node*>::reverse_iterator iter = tnArray.rbegin();
+               iter != tnArray.rend(); ++iter) {
+            if (nodeSet->count(*iter) == 0) {
+              newSelectedSet.insert(*iter);
+            } else {
+              break;
+            }
+          }
+        } else {
+          ZSwcPath path(lastSelectedNode, *targetIter);
+          ZSwcPath::iterator iter = path.begin();
+          ++iter;
+          for (; iter != path.end(); ++iter) {
+            if (nodeSet->count(*iter) == 0) {
+              newSelectedSet.insert(*iter);
+            } else {
+              break;
+            }
+          }
+        }
+      }
+    }
+  } else {
+    int sourceIndex = 0;
+    for (std::set<Swc_Tree_Node*>::iterator sourceIter = nodeSet->begin();
+         sourceIter != nodeSet->end(); ++sourceIter, ++sourceIndex) {
+      if (!labeled[sourceIndex]) {
+        //Swc_Tree_Node *ancestor = *sourceIter;
+
+        //Swc_Tree_Node *ancestor = *(nodeSet->begin());
+
+        int index = sourceIndex + 1;
+        std::set<Swc_Tree_Node*>::iterator targetIter = sourceIter;
+        ++targetIter;
+        for (; targetIter != nodeSet->end(); ++targetIter, ++index) {
+          Swc_Tree_Node *ancestor =
+              SwcTreeNode::commonAncestor(*sourceIter, *targetIter);
+          if (SwcTreeNode::isRegular(ancestor)) {
+            labeled[index] = true;
+
+            Swc_Tree_Node *tn = *sourceIter;
+            while (SwcTreeNode::isRegular(tn)) {
+              newSelectedSet.insert(tn);
+              if (tn == ancestor) {
+                break;
+              }
+              tn = SwcTreeNode::parent(tn);
+            }
+
+            tn = *targetIter;
+            while (SwcTreeNode::isRegular(tn)) {
+              newSelectedSet.insert(tn);
+              if (tn == ancestor) {
+                break;
+              }
+              tn = SwcTreeNode::parent(tn);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  setSwcTreeNodeSelected(newSelectedSet.begin(), newSelectedSet.end(), true);
 }
 
 void ZStackDoc::selectUpstreamNode()
@@ -874,8 +1001,7 @@ void ZStackDoc::loadStack(Stack *stack, bool isOwner)
 
   if (mainStack != NULL) {
     mainStack->load(stack, isOwner);
-    initTraceWorkspace();
-    initConnectionTestWorkspace();
+    initNeuronTracer();
     emit stackModified();
   }
 }
@@ -891,8 +1017,7 @@ void ZStackDoc::loadStack(ZStack *zstack)
   if (zstack != mainStack) {
     deprecate(STACK);
     mainStack = zstack;
-    initTraceWorkspace();
-    initConnectionTestWorkspace();
+    initNeuronTracer();
     emit stackModified();
   }
 }
@@ -906,8 +1031,7 @@ void ZStackDoc::loadReaderResult()
 
   if (mainStack != NULL) {
     if (mainStack->data() != NULL) {
-      initTraceWorkspace();
-      initConnectionTestWorkspace();
+      initNeuronTracer();
       setStackSource(m_reader.getStackFile()->firstUrl().c_str());
     }
   }
@@ -974,8 +1098,7 @@ bool ZStackDoc::importImageSequence(const char *filePath)
 
     return false;
   } else {
-    initTraceWorkspace();
-    initConnectionTestWorkspace();
+    initNeuronTracer();
     setStackSource(filePath);
   }
 
@@ -1045,6 +1168,12 @@ void ZStackDoc::importFlyEmNetwork(const char *filePath)
   }
 }
 
+void ZStackDoc::setStackSource(const ZStackFile &stackFile)
+{
+  m_stackSource = stackFile;
+  setStackSource(m_stackSource.firstUrl().c_str());
+}
+
 void ZStackDoc::setStackSource(const char *filePath)
 {
   if (m_stack != NULL) {
@@ -1108,7 +1237,7 @@ ZLocsegChain* ZStackDoc::fitseg(int x, int y, int z, double r)
   ZStack *mainStack = stack();
   if (mainStack != NULL) {
     Locseg_Fit_Workspace *ws =
-        (Locseg_Fit_Workspace*) m_traceWorkspace->fit_workspace;
+        (Locseg_Fit_Workspace*) getTraceWorkspace()->fit_workspace;
 
     if (ws->sws->field_func == Neurofield_Rpi) {
       return fitRpiseg(x, y, z, r);
@@ -1360,6 +1489,7 @@ ZLocsegChain* ZStackDoc::dropseg(int x, int y, int z, double r)
   return NULL;
 }
 
+#if 0
 void ZStackDoc::loadTraceMask(bool traceMasked)
 {
   if (traceMasked) {
@@ -1368,19 +1498,20 @@ void ZStackDoc::loadTraceMask(bool traceMasked)
     Trace_Workspace_Set_Fit_Mask(m_traceWorkspace, NULL);
   }
 }
+#endif
 
 void ZStackDoc::refreshTraceMask()
 {
   if (m_isTraceMaskObsolete) {
-    if (m_traceWorkspace->trace_mask == NULL) {
-      m_traceWorkspace->trace_mask =
+    if (getTraceWorkspace()->trace_mask == NULL) {
+      getTraceWorkspace()->trace_mask =
           C_Stack::make(GREY, stack()->width(), stack()->height(),
                         stack()->depth());
     }
-    Zero_Stack(m_traceWorkspace->trace_mask);
+    Zero_Stack(getTraceWorkspace()->trace_mask);
 
     foreach (ZSwcTree *tree, m_swcList) {
-      tree->labelStack(m_traceWorkspace->trace_mask);
+      tree->labelStack(getTraceWorkspace()->trace_mask);
     }
     m_isTraceMaskObsolete = false;
   }
@@ -1408,7 +1539,7 @@ ZLocsegChain* ZStackDoc::traceTube(int x, int y, int z, double r, int c)
     Set_Neuroseg_Position(locseg, pos, NEUROSEG_CENTER);
 
     Locseg_Fit_Workspace *ws =
-    	(Locseg_Fit_Workspace*) m_traceWorkspace->fit_workspace;
+        (Locseg_Fit_Workspace*) getTraceWorkspace()->fit_workspace;
     Local_Neuroseg_Optimize_W(locseg, mainStack->c_stack(c),
                               mainStack->preferredZScale(), 1, ws);
 
@@ -1419,10 +1550,10 @@ ZLocsegChain* ZStackDoc::traceTube(int x, int y, int z, double r, int c)
     Locseg_Node *p = Make_Locseg_Node(locseg, tr);
     Locseg_Chain *locseg_chain = Make_Locseg_Chain(p);
 
-    Trace_Workspace_Set_Trace_Status(m_traceWorkspace, TRACE_NORMAL,
+    Trace_Workspace_Set_Trace_Status(getTraceWorkspace(), TRACE_NORMAL,
     		TRACE_NORMAL);
     Trace_Locseg(mainStack->c_stack(c), mainStack->preferredZScale(), locseg_chain,
-    		m_traceWorkspace);
+            getTraceWorkspace());
     Locseg_Chain_Remove_Overlap_Ends(locseg_chain);
     Locseg_Chain_Remove_Turn_Ends(locseg_chain, 1.0);
 
@@ -1473,15 +1604,15 @@ ZLocsegChain* ZStackDoc::traceRect(int x, int y, int z, double r, int c)
     ZLocalRect *rect = new ZLocalRect(x, y, z, 0.0, r);
 
     Receptor_Fit_Workspace *rfw =
-        (Receptor_Fit_Workspace*) m_traceWorkspace->fit_workspace;
+        (Receptor_Fit_Workspace*) getTraceWorkspace()->fit_workspace;
     rect->fitStack(mainStack->c_stack(c), rfw);
 
     ZDirectionalTemplateChain chain;
     chain.append(rect);
 
-    Trace_Workspace_Set_Trace_Status(m_traceWorkspace, TRACE_NORMAL,
+    Trace_Workspace_Set_Trace_Status(getTraceWorkspace(), TRACE_NORMAL,
                 TRACE_NORMAL);
-    chain.trace(mainStack, m_traceWorkspace);
+    chain.trace(mainStack, getTraceWorkspace());
 
     ZLocsegChain *obj = chain.toLocsegChain();
     if (!obj->isEmpty()) {
@@ -1719,6 +1850,17 @@ void ZStackDoc::addSwcTree(const QList<ZSwcTree *> &swcList, bool uniqueSource)
     addSwcTree(*iter, uniqueSource);
   }
   blockSignals(false);
+
+  if (!swcList.isEmpty()) {
+    notifySwcModified();
+  }
+}
+
+void ZStackDoc::addPunctum(const QList<ZPunctum *> &punctaList)
+{
+  foreach (ZPunctum *punctum, punctaList) {
+    addPunctum(punctum);
+  }
 }
 
 void ZStackDoc::addPunctum(ZPunctum *obj)
@@ -1743,9 +1885,9 @@ void ZStackDoc::addObj3d(ZObject3d *obj)
   }
 
   obj->setTarget(ZStackDrawable::OBJECT_CANVAS);
-  m_objs.append(obj);
-  m_obj3dList.append(obj);
-  m_drawableList.append(obj);
+  m_objs.prepend(obj);
+  m_obj3dList.prepend(obj);
+  m_drawableList.prepend(obj);
 }
 
 void ZStackDoc::addStroke(ZStroke2d *obj)
@@ -1775,6 +1917,13 @@ void ZStackDoc::addLocsegChainConn(ZLocsegChainConn *obj)
   m_drawableList.append(obj);
 }
 
+void ZStackDoc::addLocsegChain(const QList<ZLocsegChain *> &chainList)
+{
+  foreach (ZLocsegChain *chain, chainList) {
+    addLocsegChain(chain);
+  }
+}
+
 void ZStackDoc::addLocsegChain(ZLocsegChain *obj)
 {
   if (obj == NULL) {
@@ -1784,16 +1933,16 @@ void ZStackDoc::addLocsegChain(ZLocsegChain *obj)
   ZStack *mainStack = stack();
 
   if (mainStack != NULL) {
-    if (m_traceWorkspace->trace_mask == NULL) {
-      m_traceWorkspace->trace_mask =
+    if (getTraceWorkspace()->trace_mask == NULL) {
+      getTraceWorkspace()->trace_mask =
           Make_Stack(GREY16, mainStack->width(), mainStack->height(),
                      mainStack->depth());
-      Zero_Stack(m_traceWorkspace->trace_mask);
+      Zero_Stack(getTraceWorkspace()->trace_mask);
     }
   }
 
-  obj->setId(m_traceWorkspace->chain_id);
-  obj->labelTraceMask(m_traceWorkspace->trace_mask);
+  obj->setId(getTraceWorkspace()->chain_id);
+  obj->labelTraceMask(getTraceWorkspace()->trace_mask);
 
   m_objs.append(obj);
   //m_swcObjects.append(obj);
@@ -1801,7 +1950,7 @@ void ZStackDoc::addLocsegChain(ZLocsegChain *obj)
   m_chainList.append(obj);
   m_drawableList.append(obj);
 
-  m_traceWorkspace->chain_id++;
+  getTraceWorkspace()->chain_id++;
 
   if (obj->isSelected()) {
     setChainSelected(obj, true);
@@ -1811,7 +1960,7 @@ void ZStackDoc::addLocsegChain(ZLocsegChain *obj)
 void ZStackDoc::updateLocsegChain(ZLocsegChain *obj)
 {
   if (obj != NULL) {
-    obj->labelTraceMask(m_traceWorkspace->trace_mask);
+    obj->labelTraceMask(getTraceWorkspace()->trace_mask);
   }
 }
 
@@ -1896,7 +2045,7 @@ Swc_Tree* ZStackDoc::swcReconstruction(int rootOption, bool singleTree,
     }
 
     /* reconstruct neuron */
-    Connection_Test_Workspace *ctw = m_connectionTestWorkspace;
+    Connection_Test_Workspace *ctw = getConnectionTestWorkspace();
 
     double zscale = m_chainList.at(0)->zScale();
 
@@ -1913,7 +2062,7 @@ Swc_Tree* ZStackDoc::swcReconstruction(int rootOption, bool singleTree,
 
     Process_Neuron_Structure(ns);
 
-    if (m_connectionTestWorkspace->crossover_test == TRUE) {
+    if (getConnectionTestWorkspace()->crossover_test == TRUE) {
       Neuron_Structure_Crossover_Test(ns, zscale);
     }
 
@@ -2127,9 +2276,9 @@ void ZStackDoc::exportLocsegChainConnFeat(const char *filePath)
 {
   double feat[9];
   double res[3];
-  res[0] = m_traceWorkspace->resolution[0];// m_parent->xResolution();
-  res[1] = m_traceWorkspace->resolution[1];//m_parent->yResolution();
-  res[2] = m_traceWorkspace->resolution[2];//m_parent->zResolution();
+  res[0] = getTraceWorkspace()->resolution[0];// m_parent->xResolution();
+  res[1] = getTraceWorkspace()->resolution[1];//m_parent->yResolution();
+  res[2] = getTraceWorkspace()->resolution[2];//m_parent->zResolution();
 
   FILE *fp = fopen(filePath, "w");
 
@@ -2345,14 +2494,14 @@ void ZStackDoc::importGoodTube(const char *dirpath, const char *prefix,
 
   QStringList fileList;
 
-  sprintf(file_path, "^%s.*\\.tb", m_traceWorkspace->save_prefix);
+  sprintf(file_path, "^%s.*\\.tb", getTraceWorkspace()->save_prefix);
 
   if (dirpath == NULL) {
-    dirpath = m_traceWorkspace->save_path;
+    dirpath = getTraceWorkspace()->save_path;
   }
 
   if (prefix == NULL) {
-    prefix = m_traceWorkspace->save_prefix;
+    prefix = getTraceWorkspace()->save_prefix;
   }
 
   int n = dir_fnum_s(dirpath, file_path);
@@ -2416,7 +2565,7 @@ void ZStackDoc::importBadTube(const char *dirpath, const char *prefix)
   }
 
   if (prefix == NULL) {
-    prefix = m_traceWorkspace->save_prefix;
+    prefix = getTraceWorkspace()->save_prefix;
   }
 
   QStringList fileList;
@@ -2587,24 +2736,24 @@ void ZStackDoc::buildLocsegChainConn()
     double zscale = m_chainList.at(0)->zScale();
 
     /* alloc <ns> */
-    BOOL old_interpolate = m_connectionTestWorkspace->interpolate;
-    m_connectionTestWorkspace->interpolate = FALSE;
+    BOOL old_interpolate = getConnectionTestWorkspace()->interpolate;
+    getConnectionTestWorkspace()->interpolate = FALSE;
     Neuron_Structure *ns = NULL;
     ZStack *mainStack = stack();
     if (mainStack != NULL) {
       Locseg_Chain_Comp_Neurostruct(
             chain_array, chain_number, mainStack->c_stack(), zscale,
-            m_connectionTestWorkspace);
+            getConnectionTestWorkspace());
     } else {
       Locseg_Chain_Comp_Neurostruct(
             chain_array, chain_number, NULL, zscale,
-            m_connectionTestWorkspace);
+            getConnectionTestWorkspace());
     }
-    m_connectionTestWorkspace->interpolate = old_interpolate;
+    getConnectionTestWorkspace()->interpolate = old_interpolate;
 
     Process_Neuron_Structure(ns);
 
-    if (m_connectionTestWorkspace->crossover_test) {
+    if (getConnectionTestWorkspace()->crossover_test) {
       Neuron_Structure_Crossover_Test(ns, zscale);
     }
 
@@ -2674,22 +2823,22 @@ void ZStackDoc::selectConnectedChain()
 
 int ZStackDoc::pickLocsegChainId(int x, int y, int z) const
 {
-  if (m_traceWorkspace == NULL) {
+  if (getTraceWorkspace() == NULL) {
     return -1;
   }
 
-  if (m_traceWorkspace->trace_mask == NULL) {
+  if (getTraceWorkspace()->trace_mask == NULL) {
     return -1;
   }
 
   int id = -1;
 
-  if (IS_IN_CLOSE_RANGE(x, 0, m_traceWorkspace->trace_mask->width - 1) &&
-      IS_IN_CLOSE_RANGE(y, 0, m_traceWorkspace->trace_mask->height - 1)) {
+  if (IS_IN_CLOSE_RANGE(x, 0, getTraceWorkspace()->trace_mask->width - 1) &&
+      IS_IN_CLOSE_RANGE(y, 0, getTraceWorkspace()->trace_mask->height - 1)) {
     if (z >= 0) {
-      id = ((int) Get_Stack_Pixel(m_traceWorkspace->trace_mask, x, y, z, 0)) - 1;
+      id = ((int) Get_Stack_Pixel(getTraceWorkspace()->trace_mask, x, y, z, 0)) - 1;
     } else {
-      id = ((int) Stack_Hittest_Z(m_traceWorkspace->trace_mask, x, y)) - 1;
+      id = ((int) Stack_Hittest_Z(getTraceWorkspace()->trace_mask, x, y)) - 1;
     }
   }
 
@@ -2982,7 +3131,7 @@ void ZStackDoc::removeLocsegChain(ZInterface *obj)
   for (int i = 0; i < m_chainList.size(); i++) {
     if ((ZInterface*) m_chainList.at(i) == obj) {
       ZLocsegChain *chain = m_chainList.takeAt(i);
-      chain->eraseTraceMask(m_traceWorkspace->trace_mask);
+      chain->eraseTraceMask(getTraceWorkspace()->trace_mask);
       if (m_masterChain == chain) {
         m_masterChain = NULL;
       }
@@ -3027,6 +3176,17 @@ void ZStackDoc::removeAllLocsegChain()
   }
 
   notifyChainModified();
+}
+
+void ZStackDoc::removeAllObj3d()
+{
+  QMutableListIterator<ZObject3d*> objIter(m_obj3dList);
+  while (objIter.hasNext()) {
+    ZObject3d *obj = objIter.next();
+    removeObject(obj, true);
+  }
+
+  notifyObj3dModified();
 }
 
 void ZStackDoc::removeObject(ZInterface *obj, bool deleteObject)
@@ -3103,7 +3263,7 @@ void ZStackDoc::removeSelectedObject(bool deleteObject)
       if (obj == m_masterChain) {
         m_masterChain = NULL;
       }
-      obj->eraseTraceMask(m_traceWorkspace->trace_mask);
+      obj->eraseTraceMask(getTraceWorkspace()->trace_mask);
       connIter.toFront();
       while (connIter.hasNext()) {
         ZLocsegChainConn *conn = connIter.next();
@@ -3175,17 +3335,17 @@ bool ZStackDoc::pushLocsegChain(ZInterface *obj)
 
   if (found) {
     ZLocsegChain *newChain = NULL;
-    if (m_traceWorkspace == NULL) {
+    if (getTraceWorkspace() == NULL) {
       newChain = chain->pushHeldNode(stack()->c_stack());
     } else {
-      chain->eraseTraceMask(m_traceWorkspace->trace_mask);
+      chain->eraseTraceMask(getTraceWorkspace()->trace_mask);
       newChain = chain->pushHeldNode(stack()->c_stack(),
-				    m_traceWorkspace->trace_mask);
+                    getTraceWorkspace()->trace_mask);
     }
     if (newChain != NULL) {
       chain->merge(newChain);
-      if (m_traceWorkspace != NULL) {
-        chain->labelTraceMask(m_traceWorkspace->trace_mask);
+      if (getTraceWorkspace() != NULL) {
+        chain->labelTraceMask(getTraceWorkspace()->trace_mask);
       }
       delete newChain;
     }
@@ -3216,10 +3376,10 @@ bool ZStackDoc::fixLocsegChainTerminal(ZInterface *obj)
   }
 
   if (found) {
-    if (m_traceWorkspace != NULL) {
-      chain->eraseTraceMask(m_traceWorkspace->trace_mask);
-      chain->fixTerminal(stack()->c_stack(), m_traceWorkspace);
-      chain->labelTraceMask(m_traceWorkspace->trace_mask);
+    if (getTraceWorkspace() != NULL) {
+      chain->eraseTraceMask(getTraceWorkspace()->trace_mask);
+      chain->fixTerminal(stack()->c_stack(), getTraceWorkspace());
+      chain->labelTraceMask(getTraceWorkspace()->trace_mask);
     }
 
     updateLocsegChain(chain);
@@ -3533,20 +3693,20 @@ void ZStackDoc::appendSwcNetwork(ZSwcNetwork &network)
 
 void ZStackDoc::setTraceMinScore(double score)
 {
-  m_traceWorkspace->min_score = score;
+  getTraceWorkspace()->min_score = score;
 }
 
 void ZStackDoc::setReceptor(int option, bool cone)
 {
-  ((Locseg_Fit_Workspace*) m_traceWorkspace->fit_workspace)->sws->field_func =
+  ((Locseg_Fit_Workspace*) getTraceWorkspace()->fit_workspace)->sws->field_func =
       Neuroseg_Slice_Field_Func(option);
 
   if (cone == TRUE) {
     Locseg_Fit_Workspace_Enable_Cone(
-        (Locseg_Fit_Workspace*) m_traceWorkspace->fit_workspace);
+        (Locseg_Fit_Workspace*) getTraceWorkspace()->fit_workspace);
   } else {
     Locseg_Fit_Workspace_Disable_Cone(
-        (Locseg_Fit_Workspace*) m_traceWorkspace->fit_workspace);
+        (Locseg_Fit_Workspace*) getTraceWorkspace()->fit_workspace);
   }
 }
 
@@ -3570,7 +3730,7 @@ ZInterface* ZStackDoc::bringChainToFront()
     if (chain->isSelected()) {
       if (i > 0) {
         m_chainList.move(i, 0);
-        chain->labelTraceMask(m_traceWorkspace->trace_mask, -1);
+        chain->labelTraceMask(getTraceWorkspace()->trace_mask, -1);
         int j;
         for (j = 0; j < m_objs.size(); j++) {
           if ((ZInterface*) m_objs.at(j) == (ZInterface*) chain) {
@@ -3619,7 +3779,7 @@ ZInterface* ZStackDoc::sendChainToBack()
       if (i < m_chainList.size() - 1) {
         int j;
         for (j = i + 1; j < m_chainList.size(); j++) {
-          m_chainList.at(j)->labelTraceMask(m_traceWorkspace->trace_mask,
+          m_chainList.at(j)->labelTraceMask(getTraceWorkspace()->trace_mask,
                                             chain->id() + 1);
         }
 
@@ -3704,7 +3864,7 @@ bool ZStackDoc::hookChain(int id, int option)
           default:
             {
               Locseg_Fit_Workspace *ws =
-                  (Locseg_Fit_Workspace*) m_traceWorkspace->fit_workspace;
+                  (Locseg_Fit_Workspace*) getTraceWorkspace()->fit_workspace;
               newchain = m_masterChain->spBridge(chain, stack()->c_stack(), ws);
             }
           }
@@ -3813,9 +3973,9 @@ bool ZStackDoc::chainShortestPath(int id)
           Stack_Graph_Workspace *sgw = New_Stack_Graph_Workspace();
           sgw->conn = 26;
           sgw->wf = Stack_Voxel_Weight_S;
-          sgw->resolution[0] = m_traceWorkspace->resolution[0];// m_parent->xResolution();
-          sgw->resolution[1] = m_traceWorkspace->resolution[1];//m_parent->yResolution();
-          sgw->resolution[2] = m_traceWorkspace->resolution[2];//m_parent->zResolution();
+          sgw->resolution[0] = getTraceWorkspace()->resolution[0];// m_parent->xResolution();
+          sgw->resolution[1] = getTraceWorkspace()->resolution[1];//m_parent->yResolution();
+          sgw->resolution[2] = getTraceWorkspace()->resolution[2];//m_parent->zResolution();
           /*
           double inner = Locseg_Chain_Average_Score(m_masterChain->data(),
                                                     stack()->stack(), 1.0,
@@ -3862,9 +4022,9 @@ void ZStackDoc::chainConnInfo(int id)
         ZLocsegChain *chain = m_chainList.at(i);
         if (chain->id() == id) {
           double res[3];
-          res[0] = m_traceWorkspace->resolution[0];//m_parent->xResolution();
-          res[1] = m_traceWorkspace->resolution[1];//m_parent->yResolution();
-          res[2] = m_traceWorkspace->resolution[2];//m_parent->zResolution();
+          res[0] = getTraceWorkspace()->resolution[0];//m_parent->xResolution();
+          res[1] = getTraceWorkspace()->resolution[1];//m_parent->yResolution();
+          res[2] = getTraceWorkspace()->resolution[2];//m_parent->zResolution();
           int n;
           Locseg_Chain_Conn_Feature(m_masterChain->data(),
                                                     chain->data(),
@@ -3893,7 +4053,7 @@ void ZStackDoc::extendChain(double x, double y, double z)
 
 void ZStackDoc::addLocsegChainConn(ZLocsegChain *hook, ZLocsegChain *loop)
 {
-  Connection_Test_Workspace *ctw = m_connectionTestWorkspace;
+  Connection_Test_Workspace *ctw = getConnectionTestWorkspace();
 
   Neurocomp_Conn nc_conn;
   Locseg_Chain_Connection_Test(hook->data(), loop->data(), NULL,
@@ -3925,7 +4085,7 @@ void ZStackDoc::addLocsegChainConn(ZLocsegChain *hook, ZLocsegChain *loop,
   if ((hookSpot >= 0) && (loopSpot >= 0)) {
     conn = new ZLocsegChainConn(hook, loop, hookSpot, loopSpot, mode);
   } else {
-    Connection_Test_Workspace *ctw = m_connectionTestWorkspace;
+    Connection_Test_Workspace *ctw = getConnectionTestWorkspace();
     int old_value = ctw->hook_spot;
     ctw->hook_spot = hookSpot;
     Neurocomp_Conn nc_conn;
@@ -3951,12 +4111,12 @@ bool ZStackDoc::isMasterChainId(int id)
 
 void ZStackDoc::refineSelectedChainEnd()
 {
-  Trace_Workspace_Set_Fit_Mask(m_traceWorkspace, m_traceWorkspace->trace_mask);
+  Trace_Workspace_Set_Fit_Mask(getTraceWorkspace(), getTraceWorkspace()->trace_mask);
   foreach(ZLocsegChain *chain, m_chainList) {
     if (chain->isSelected()) {
       ZStack *mainStack = stack();
       if (mainStack != NULL) {
-        chain->refineHeldEnd(mainStack->c_stack(), m_traceWorkspace);
+        chain->refineHeldEnd(mainStack->c_stack(), getTraceWorkspace());
         updateLocsegChain(chain);
 
         QMutableListIterator<ZLocsegChainConn*> connIter(m_connList);
@@ -3977,10 +4137,10 @@ void ZStackDoc::refineLocsegChainEnd()
 {
   ZStack *mainStack = stack();
   if (mainStack != NULL) {
-    Trace_Workspace_Set_Fit_Mask(m_traceWorkspace, m_traceWorkspace->trace_mask);
+    Trace_Workspace_Set_Fit_Mask(getTraceWorkspace(), getTraceWorkspace()->trace_mask);
     foreach(ZLocsegChain *chain, m_chainList) {
-      chain->refineEnd(DL_HEAD, mainStack->c_stack(), m_traceWorkspace);
-      chain->refineEnd(DL_TAIL, mainStack->c_stack(), m_traceWorkspace);
+      chain->refineEnd(DL_HEAD, mainStack->c_stack(), getTraceWorkspace());
+      chain->refineEnd(DL_TAIL, mainStack->c_stack(), getTraceWorkspace());
       updateLocsegChain(chain);
 
       QMutableListIterator<ZLocsegChainConn*> connIter(m_connList);
@@ -3999,7 +4159,7 @@ void ZStackDoc::refineLocsegChainEnd()
 void ZStackDoc::mergeAllChain()
 {
   foreach(ZLocsegChain *chain, m_chainList) {
-    chain->eraseTraceMask(m_traceWorkspace->trace_mask);
+    chain->eraseTraceMask(getTraceWorkspace()->trace_mask);
   }
 
   if (m_chainList.size() > 0) {
@@ -4022,7 +4182,7 @@ void ZStackDoc::mergeAllChain()
      }
 
      /* reconstruct neuron */
-     Connection_Test_Workspace ctw = *m_connectionTestWorkspace;
+     Connection_Test_Workspace ctw = *getConnectionTestWorkspace();
      ctw.sp_test = FALSE;
 
      double zscale = m_chainList.at(0)->zScale();
@@ -4040,7 +4200,7 @@ void ZStackDoc::mergeAllChain()
 
      Process_Neuron_Structure(ns);
 
-     if (m_connectionTestWorkspace->crossover_test) {
+     if (getConnectionTestWorkspace()->crossover_test) {
        Neuron_Structure_Crossover_Test(ns, zscale);
      }
 
@@ -4060,7 +4220,7 @@ void ZStackDoc::mergeAllChain()
          setChainSelected(obj, true);
        } else {
          obj->updateBufferChain();
-         obj->labelTraceMask(m_traceWorkspace->trace_mask);
+         obj->labelTraceMask(getTraceWorkspace()->trace_mask);
          //obj->setSelected(false);
          setChainSelected(obj, false);
        }
@@ -4134,12 +4294,12 @@ void ZStackDoc::setWorkdir(const QString &filePath)
 
 void ZStackDoc::setWorkdir(const char *filePath)
 {
-  strcpy(m_traceWorkspace->save_path, filePath);
+  strcpy(getTraceWorkspace()->save_path, filePath);
 }
 
 void ZStackDoc::setTubePrefix(const char *prefix)
 {
-  strcpy(m_traceWorkspace->save_prefix, prefix);
+  strcpy(getTraceWorkspace()->save_prefix, prefix);
 }
 
 void ZStackDoc::setBadChainScreen(const char *screen)
@@ -4150,12 +4310,12 @@ void ZStackDoc::setBadChainScreen(const char *screen)
     m_badChainScreen = screen;
   }
 }
-
+#if 0
 void ZStackDoc::autoTrace()
 {
   ZStack *mainStack = stack();
   if (mainStack != NULL) {
-    QDir workDir(m_traceWorkspace->save_path);
+    QDir workDir(getTraceWorkspace()->save_path);
 
     if (!workDir.exists()) {
       workDir.mkdir(workDir.absolutePath());
@@ -4188,8 +4348,8 @@ void ZStackDoc::autoTrace()
     mask = mask2;
 
     double z_scale = 1.0;
-    if (m_traceWorkspace->resolution[0] != m_traceWorkspace->resolution[2]) {
-      z_scale = m_traceWorkspace->resolution[0] / m_traceWorkspace->resolution[2];
+    if (getTraceWorkspace()->resolution[0] != getTraceWorkspace()->resolution[2]) {
+      z_scale = getTraceWorkspace()->resolution[0] / getTraceWorkspace()->resolution[2];
     }
 
     mask2 = mask;
@@ -4275,7 +4435,7 @@ void ZStackDoc::autoTrace()
     Stack *seed_mask = mask;
     Zero_Stack(seed_mask);
     Locseg_Fit_Workspace *fws =
-        (Locseg_Fit_Workspace*) m_traceWorkspace->fit_workspace;
+        (Locseg_Fit_Workspace*) getTraceWorkspace()->fit_workspace;
     Stack_Fit_Score old_fs = fws->sws->fs;
 
     fws->sws->fs.n = 2;
@@ -4357,19 +4517,19 @@ void ZStackDoc::autoTrace()
     Kill_Stack(seed_mask);
 
     /* make trace mask */
-    if (m_traceWorkspace->trace_mask == NULL) {
-      m_traceWorkspace->trace_mask =
+    if (getTraceWorkspace()->trace_mask == NULL) {
+      getTraceWorkspace()->trace_mask =
           Make_Stack(GREY16, mainStack->width(), mainStack->height(),
                      mainStack->depth());
     }
-    Zero_Stack(m_traceWorkspace->trace_mask);
+    Zero_Stack(getTraceWorkspace()->trace_mask);
 
 
     /* trace all seeds */
     int nchain;
     Locseg_Chain **chain =
         Trace_Locseg_S(mainStack->c_stack(), 1.0, locseg, values, seed_field->size,
-                       m_traceWorkspace, &nchain);
+                       getTraceWorkspace(), &nchain);
 
     m_progressReporter->advance(0.3);
 
@@ -4390,37 +4550,37 @@ void ZStackDoc::autoTrace()
     }
     */
 
-    Stack_Binarize(m_traceWorkspace->trace_mask);
+    Stack_Binarize(getTraceWorkspace()->trace_mask);
 
-    double old_step = m_traceWorkspace->trace_step;
-    BOOL old_refit = m_traceWorkspace->refit;
-    BOOL traceMasked = Trace_Workspace_Is_Masked(m_traceWorkspace);
+    double old_step = getTraceWorkspace()->trace_step;
+    BOOL old_refit = getTraceWorkspace()->refit;
+    BOOL traceMasked = Trace_Workspace_Is_Masked(getTraceWorkspace());
 
-    loadTraceMask(true);
-    m_traceWorkspace->trace_step = 0.1;
-    m_traceWorkspace->refit = FALSE;
+    m_neuronTracer.loadTraceMask(true);
+    getTraceWorkspace()->trace_step = 0.1;
+    getTraceWorkspace()->refit = FALSE;
 
     for (i = 0; i < nchain; i++) {
       if (chain[i] != NULL) {
         /* erase the mask */
         ws->option = 7;
-        Locseg_Chain_Label_W(chain[i], m_traceWorkspace->trace_mask, 1.0,
+        Locseg_Chain_Label_W(chain[i], getTraceWorkspace()->trace_mask, 1.0,
                              0, Locseg_Chain_Length(chain[i]) - 1,
                              ws);
 
-        m_traceWorkspace->trace_status[0] = TRACE_NORMAL;
-        m_traceWorkspace->trace_status[1] = TRACE_NORMAL;
-        Trace_Locseg(stack()->c_stack(), 1.0, chain[i], m_traceWorkspace);
+        getTraceWorkspace()->trace_status[0] = TRACE_NORMAL;
+        getTraceWorkspace()->trace_status[1] = TRACE_NORMAL;
+        Trace_Locseg(stack()->c_stack(), 1.0, chain[i], getTraceWorkspace());
         Locseg_Chain_Down_Sample(chain[i]);
 
         Locseg_Chain_Tune_End(chain[i], stack()->c_stack(), 1.0,
-                              m_traceWorkspace->trace_mask, DL_HEAD);
+                              getTraceWorkspace()->trace_mask, DL_HEAD);
         Locseg_Chain_Tune_End(chain[i], stack()->c_stack(), 1.0,
-                              m_traceWorkspace->trace_mask, DL_TAIL);
+                              getTraceWorkspace()->trace_mask, DL_TAIL);
 
         if (Locseg_Chain_Length(chain[i]) > 0) {
           ws->option = 6;
-          Locseg_Chain_Label_W(chain[i], m_traceWorkspace->trace_mask, 1.0,
+          Locseg_Chain_Label_W(chain[i], getTraceWorkspace()->trace_mask, 1.0,
                                0, Locseg_Chain_Length(chain[i]) - 1, ws);
         }
       }
@@ -4429,12 +4589,12 @@ void ZStackDoc::autoTrace()
     ws->signal = NULL;
     Kill_Locseg_Label_Workspace(ws);
 
-    m_traceWorkspace->trace_step = old_step;
-    m_traceWorkspace->refit = old_refit;
-    loadTraceMask(traceMasked);
+    getTraceWorkspace()->trace_step = old_step;
+    getTraceWorkspace()->refit = old_refit;
+    m_neuronTracer.loadTraceMask(traceMasked);
 
-    Zero_Stack(m_traceWorkspace->trace_mask);
-    m_traceWorkspace->chain_id = 0;
+    Zero_Stack(getTraceWorkspace()->trace_mask);
+    getTraceWorkspace()->chain_id = 0;
 
     /* add chains */
     for (i = 0; i < nchain; i++) {
@@ -4465,12 +4625,13 @@ void ZStackDoc::autoTrace()
     m_progressReporter->end();
   }
 }
+#endif
 
 void ZStackDoc::eraseTraceMask(const ZLocsegChain *chain)
 {
-  chain->eraseTraceMask(m_traceWorkspace->trace_mask);
+  chain->eraseTraceMask(getTraceWorkspace()->trace_mask);
 }
-
+#if 0
 void ZStackDoc::autoTrace(Stack *stack)
 {
   int thre = autoThreshold(stack);
@@ -4487,8 +4648,8 @@ void ZStackDoc::autoTrace(Stack *stack)
   //mask = mask2;
 
   double z_scale = 1.0;
-  if (m_traceWorkspace->resolution[0] != m_traceWorkspace->resolution[2]) {
-    z_scale = m_traceWorkspace->resolution[0] / m_traceWorkspace->resolution[2];
+  if (getTraceWorkspace()->resolution[0] != getTraceWorkspace()->resolution[2]) {
+    z_scale = getTraceWorkspace()->resolution[0] / getTraceWorkspace()->resolution[2];
   }
 
   Stack *mask2 = mask;
@@ -4569,7 +4730,7 @@ void ZStackDoc::autoTrace(Stack *stack)
   Stack *seed_mask = mask;
   Zero_Stack(seed_mask);
   Locseg_Fit_Workspace *fws =
-      (Locseg_Fit_Workspace*) m_traceWorkspace->fit_workspace;
+      (Locseg_Fit_Workspace*) getTraceWorkspace()->fit_workspace;
   Stack_Fit_Score old_fs = fws->sws->fs;
 
   fws->sws->fs.n = 2;
@@ -4646,20 +4807,20 @@ void ZStackDoc::autoTrace(Stack *stack)
   Kill_Stack(seed_mask);
 
   /* make trace mask */
-  if (m_traceWorkspace->trace_mask == NULL) {
-    m_traceWorkspace->trace_mask =
+  if (getTraceWorkspace()->trace_mask == NULL) {
+    getTraceWorkspace()->trace_mask =
       Make_Stack(GREY16, stack->width, stack->height,
      stack->depth);
-    Zero_Stack(m_traceWorkspace->trace_mask);
+    Zero_Stack(getTraceWorkspace()->trace_mask);
   }
 
   /* trace all seeds */
   int nchain;
-  m_traceWorkspace->min_chain_length = 10;
-  m_traceWorkspace->min_score = 0.1;
+  getTraceWorkspace()->min_chain_length = 10;
+  getTraceWorkspace()->min_score = 0.1;
   Locseg_Chain **chain =
     Trace_Locseg_S(stack, 1.0, locseg, values, seed_field->size,
-                   m_traceWorkspace, &nchain);
+                   getTraceWorkspace(), &nchain);
 
   /* tune ends */
   Locseg_Label_Workspace *ws = New_Locseg_Label_Workspace();
@@ -4668,44 +4829,44 @@ void ZStackDoc::autoTrace(Stack *stack)
   ws->sdiff = 0.0;
   ws->option = 6;
 
-  Zero_Stack(m_traceWorkspace->trace_mask);
+  Zero_Stack(getTraceWorkspace()->trace_mask);
   for (i = 0; i < nchain; i++) {
     if(chain[i] != NULL) {
-      Locseg_Chain_Label_W(chain[i], m_traceWorkspace->trace_mask, 1.0,
+      Locseg_Chain_Label_W(chain[i], getTraceWorkspace()->trace_mask, 1.0,
                            0, Locseg_Chain_Length(chain[i]) - 1,
                            ws);
     }
   }
 
-  double old_step = m_traceWorkspace->trace_step;
-  BOOL old_refit = m_traceWorkspace->refit;
-  BOOL traceMasked = Trace_Workspace_Is_Masked(m_traceWorkspace);
+  double old_step = getTraceWorkspace()->trace_step;
+  BOOL old_refit = getTraceWorkspace()->refit;
+  BOOL traceMasked = Trace_Workspace_Is_Masked(getTraceWorkspace());
 
-  loadTraceMask(true);
-  m_traceWorkspace->trace_step = 0.1;
-  m_traceWorkspace->refit = FALSE;
+  m_neuronTracer.loadTraceMask(true);
+  getTraceWorkspace()->trace_step = 0.1;
+  getTraceWorkspace()->refit = FALSE;
 
   for (i = 0; i < nchain; i++) {
     if (chain[i] != NULL) {
       /* erase the mask */
       ws->option = 7;
-      Locseg_Chain_Label_W(chain[i], m_traceWorkspace->trace_mask, 1.0,
+      Locseg_Chain_Label_W(chain[i], getTraceWorkspace()->trace_mask, 1.0,
                            0, Locseg_Chain_Length(chain[i]) - 1,
                            ws);
 
-      m_traceWorkspace->trace_status[0] = TRACE_NORMAL;
-      m_traceWorkspace->trace_status[1] = TRACE_NORMAL;
-      Trace_Locseg(stack, 1.0, chain[i], m_traceWorkspace);
+      getTraceWorkspace()->trace_status[0] = TRACE_NORMAL;
+      getTraceWorkspace()->trace_status[1] = TRACE_NORMAL;
+      Trace_Locseg(stack, 1.0, chain[i], getTraceWorkspace());
       Locseg_Chain_Down_Sample(chain[i]);
 
       Locseg_Chain_Tune_End(chain[i], stack, 1.0,
-                            m_traceWorkspace->trace_mask, DL_HEAD);
+                            getTraceWorkspace()->trace_mask, DL_HEAD);
       Locseg_Chain_Tune_End(chain[i], stack, 1.0,
-                            m_traceWorkspace->trace_mask, DL_TAIL);
+                            getTraceWorkspace()->trace_mask, DL_TAIL);
 
       if (Locseg_Chain_Length(chain[i]) > 0) {
         ws->option = 6;
-        Locseg_Chain_Label_W(chain[i], m_traceWorkspace->trace_mask, 1.0,
+        Locseg_Chain_Label_W(chain[i], getTraceWorkspace()->trace_mask, 1.0,
                              0, Locseg_Chain_Length(chain[i]) - 1, ws);
       }
     }
@@ -4714,12 +4875,12 @@ void ZStackDoc::autoTrace(Stack *stack)
   ws->signal = NULL;
   Kill_Locseg_Label_Workspace(ws);
 
-  m_traceWorkspace->trace_step = old_step;
-  m_traceWorkspace->refit = old_refit;
-  loadTraceMask(traceMasked);
+  getTraceWorkspace()->trace_step = old_step;
+  getTraceWorkspace()->refit = old_refit;
+  m_neuronTracer.loadTraceMask(traceMasked);
 
-  Zero_Stack(m_traceWorkspace->trace_mask);
-  m_traceWorkspace->chain_id = 0;
+  Zero_Stack(getTraceWorkspace()->trace_mask);
+  getTraceWorkspace()->chain_id = 0;
 
   /* add chains */
   for (i = 0; i < nchain; i++) {
@@ -4764,7 +4925,7 @@ void ZStackDoc::traceFromSwc(QProgressBar *pb)
       GUARDED_MALLOC_ARRAY(ball, n, Geo3d_Ball);
       int length = 0;
       Locseg_Fit_Workspace *ws =
-          (Locseg_Fit_Workspace*) m_traceWorkspace->fit_workspace;
+          (Locseg_Fit_Workspace*) getTraceWorkspace()->fit_workspace;
       Swc_Tree_Node *tn = NULL;
       while ((tn = tree->next()) != NULL) {
         if (Swc_Tree_Node_Is_Leaf(tn)) {
@@ -4774,7 +4935,7 @@ void ZStackDoc::traceFromSwc(QProgressBar *pb)
           ball[length].r = Swc_Tree_Node_Data(tn)->d;
           length++;
           if (stack()->isTracable()) {
-            ws = (Locseg_Fit_Workspace*) m_traceWorkspace->fit_workspace;
+            ws = (Locseg_Fit_Workspace*) getTraceWorkspace()->fit_workspace;
           } else {
             ws = NULL;
           }
@@ -4806,6 +4967,7 @@ void ZStackDoc::traceFromSwc(QProgressBar *pb)
     pb->hide();
   }
 }
+#endif
 
 bool ZStackDoc::binarize(int threshold)
 {
@@ -4971,7 +5133,7 @@ void ZStackDoc::loadFileList(const QStringList &fileList)
 #endif
 }
 
-void ZStackDoc::loadFile(const QString &filePath, bool emitMessage)
+bool ZStackDoc::loadFile(const QString &filePath, bool emitMessage)
 {
   switch (ZFileType::fileType(filePath.toStdString())) {
   case ZFileType::SWC_FILE:
@@ -4996,10 +5158,12 @@ void ZStackDoc::loadFile(const QString &filePath, bool emitMessage)
       emit swcNetworkModified();
     }
     break;
+  case ZFileType::OBJECT_SCAN_FILE:
+    setTag(NeuTube::Document::FLYEM_BODY);
   case ZFileType::TIFF_FILE:
   case ZFileType::LSM_FILE:
   case ZFileType::V3D_RAW_FILE:
-    readStack(filePath.toStdString().c_str());
+    readStack(filePath.toStdString().c_str(), false);
     if (emitMessage) {
       stackModified();
     }
@@ -5016,6 +5180,8 @@ void ZStackDoc::loadFile(const QString &filePath, bool emitMessage)
       if (emitMessage) {
         emit swcModified();
       }
+    } else {
+      return false;
     }
     break;
   case ZFileType::V3D_APO_FILE:
@@ -5025,11 +5191,16 @@ void ZStackDoc::loadFile(const QString &filePath, bool emitMessage)
       if (emitMessage) {
         emit punctaModified();
       }
+    } else {
+      return false;
     }
     break;
   default:
+    return false;
     break;
   }
+
+  return true;
 }
 
 void ZStackDoc::deprecateDependent(EComponent component)
@@ -5161,8 +5332,8 @@ void ZStackDoc::test(QProgressBar *pb)
 
 const char* ZStackDoc::tubePrefix() const
 {
-  if (m_traceWorkspace != NULL) {
-    return m_traceWorkspace->save_prefix;
+  if (getTraceWorkspace() != NULL) {
+    return getTraceWorkspace()->save_prefix;
   }
 
   return NULL;
@@ -5175,6 +5346,13 @@ void ZStackDoc::notifySwcModified()
   }
 
   emit swcModified();
+}
+
+void ZStackDoc::notifyStatusMessageUpdated(const QString &message)
+{
+  if (!message.isEmpty()) {
+    emit statusMessageUpdated(message);
+  }
 }
 
 void ZStackDoc::notifyPunctumModified()
@@ -5509,26 +5687,31 @@ bool ZStackDoc::executeSwcNodeSmartExtendCommand(const ZPoint &center)
 bool ZStackDoc::executeSwcNodeSmartExtendCommand(
     const ZPoint &center, double radius)
 {
+  bool succ = false;
+  QString message;
+
   QUndoCommand *command = NULL;
   std::set<Swc_Tree_Node*> *nodeSet = selectedSwcTreeNodes();
   if (!nodeSet->empty()) {
     Swc_Tree_Node *prevNode = *(nodeSet->begin());
     if (prevNode != NULL) {
       if (center[0] >= 0 && center[1] >= 0 && center[2] >= 0) {
-        ZNeuronTracer tracer;
-        tracer.setBackgroundType(getStackBackground());
-        tracer.setIntensityField(stack()->c_stack());
-        tracer.setTraceWorkspace(m_traceWorkspace);
-        if (m_traceWorkspace->trace_mask == NULL) {
-          m_traceWorkspace->trace_mask =
+        //ZNeuronTracer tracer;
+        //tracer.setBackgroundType(getStackBackground());
+        //tracer.setIntensityField(stack()->c_stack());
+        //tracer.setTraceWorkspace(getTraceWorkspace());
+        if (getTraceWorkspace()->trace_mask == NULL) {
+          getTraceWorkspace()->trace_mask =
               C_Stack::make(GREY, stack()->width(), stack()->height(),
                             stack()->depth());
         }
         if (GET_APPLICATION_NAME == "Biocytin") {
-          tracer.setResolution(1, 1, 10);
+          m_neuronTracer.setResolution(1, 1, 10);
         }
 
-        Swc_Tree *branch = tracer.trace(
+        m_neuronTracer.setStackOffset(getStackOffset());
+
+        Swc_Tree *branch = m_neuronTracer.trace(
               SwcTreeNode::x(prevNode), SwcTreeNode::y(prevNode),
               SwcTreeNode::z(prevNode), SwcTreeNode::radius(prevNode),
               center.x(), center.y(), center.z(), radius);
@@ -5545,6 +5728,8 @@ bool ZStackDoc::executeSwcNodeSmartExtendCommand(
               leaf = SwcTreeNode::firstChild(leaf);
             }
             ZSwcPath path(begin, leaf);
+
+            message = QString("%1 nodes are added").arg(path.size());
 
             command = new ZStackDocCommand::SwcEdit::CompositeCommand(this);
             new ZStackDocCommand::SwcEdit::AddSwcNode(this, begin, command);
@@ -5568,14 +5753,18 @@ bool ZStackDoc::executeSwcNodeSmartExtendCommand(
   if (command != NULL) {
     pushUndoCommand(command);
     deprecateTraceMask();
-    return true;
+    notifyStatusMessageUpdated(message);
+    succ = true;
   }
 
-  return false;
+  return succ;
 }
 
 bool ZStackDoc::executeInterpolateSwcZCommand()
 {
+  bool succ = false;
+  QString message;
+
   if (!m_selectedSwcTreeNodes.empty()) {
     ZStackDocCommand::SwcEdit::CompositeCommand *allCommand =
         new ZStackDocCommand::SwcEdit::CompositeCommand(this);
@@ -5615,18 +5804,23 @@ bool ZStackDoc::executeInterpolateSwcZCommand()
       allCommand->setText(QObject::tr("Z Interpolation"));
       pushUndoCommand(allCommand);
       deprecateTraceMask();
+      message = QString("The Z coordinates of %1 node(s) are intepolated").
+          arg(allCommand->childCount());
     } else {
       delete allCommand;
     }
 
-    return true;
+    succ = true;
   }
 
-  return false;
+  notifyStatusMessageUpdated(message);
+  return succ;
 }
 
 bool ZStackDoc::executeInterpolateSwcPositionCommand()
 {
+  bool succ = false;
+  QString message;
   if (!m_selectedSwcTreeNodes.empty()) {
     ZStackDocCommand::SwcEdit::CompositeCommand *allCommand =
         new ZStackDocCommand::SwcEdit::CompositeCommand(this);
@@ -5675,18 +5869,24 @@ bool ZStackDoc::executeInterpolateSwcPositionCommand()
       allCommand->setText(QObject::tr("Position Interpolation"));
       pushUndoCommand(allCommand);
       deprecateTraceMask();
+      message = QString("The coordinates of %1 node(s) are intepolated").
+          arg(allCommand->childCount());
     } else {
       delete allCommand;
     }
 
-    return true;
+    succ = true;
   }
 
-  return false;
+  notifyStatusMessageUpdated(message);
+
+  return succ;
 }
 
 bool ZStackDoc::executeInterpolateSwcCommand()
 {
+  bool succ = false;
+  QString message;
   if (!m_selectedSwcTreeNodes.empty()) {
     ZStackDocCommand::SwcEdit::CompositeCommand *allCommand =
         new ZStackDocCommand::SwcEdit::CompositeCommand(this);
@@ -5739,18 +5939,22 @@ bool ZStackDoc::executeInterpolateSwcCommand()
       allCommand->setText(QObject::tr("Interpolation"));
       pushUndoCommand(allCommand);
       deprecateTraceMask();
+      message = QString("%1 node(s) are interpolated").arg(allCommand->childCount());
     } else {
       delete allCommand;
     }
 
-    return true;
+    succ = true;
   }
 
-  return false;
+  notifyStatusMessageUpdated(message);
+  return succ;
 }
 
 bool ZStackDoc::executeInterpolateSwcRadiusCommand()
 {
+  bool succ = false;
+  QString message;
   if (!m_selectedSwcTreeNodes.empty()) {
     ZStackDocCommand::SwcEdit::CompositeCommand *allCommand =
         new ZStackDocCommand::SwcEdit::CompositeCommand(this);
@@ -5790,18 +5994,23 @@ bool ZStackDoc::executeInterpolateSwcRadiusCommand()
       allCommand->setText(QObject::tr("Radius Interpolation"));
       pushUndoCommand(allCommand);
       deprecateTraceMask();
+      message = QString("Radii of %1 node(s) are interpolated.").
+          arg(allCommand->childCount());
     } else {
       delete allCommand;
     }
 
-    return true;
+    succ = true;
   }
 
-  return false;
+  notifyStatusMessageUpdated(message);
+  return succ;
 }
 
 bool ZStackDoc::executeSwcNodeChangeZCommand(double z)
 {
+  bool succ = false;
+  QString message;
   if (!m_selectedSwcTreeNodes.empty()) {
     ZStackDocCommand::SwcEdit::CompositeCommand *allCommand =
         new ZStackDocCommand::SwcEdit::CompositeCommand(this);
@@ -5814,21 +6023,26 @@ bool ZStackDoc::executeSwcNodeChangeZCommand(double z)
     }
 
     if (allCommand->childCount() > 0) {
-      allCommand->setText(QObject::tr("Change Z of Selected Swc Node"));
+      allCommand->setText(QObject::tr("Change Z of Selected Node"));
       pushUndoCommand(allCommand);
       deprecateTraceMask();
+      message = QString("Z of %1 node(s) is set to %2").
+          arg(allCommand->childCount()).arg(z);
     } else {
       delete allCommand;
     }
-
-    return true;
+    succ = true;
   }
 
-  return false;
+  notifyStatusMessageUpdated(message);
+
+  return succ;
 }
 
 bool ZStackDoc::executeMoveSwcNodeCommand(double dx, double dy, double dz)
 {
+  bool succ = false;
+  QString message;
   if (!m_selectedSwcTreeNodes.empty()) {
     ZStackDocCommand::SwcEdit::CompositeCommand *allCommand =
         new ZStackDocCommand::SwcEdit::CompositeCommand(this);
@@ -5843,17 +6057,19 @@ bool ZStackDoc::executeMoveSwcNodeCommand(double dx, double dy, double dz)
     }
 
     if (allCommand->childCount() > 0) {
-      allCommand->setText(QObject::tr("Move Selected Swc Node"));
+      allCommand->setText(QObject::tr("Move Selected Node"));
       pushUndoCommand(allCommand);
       deprecateTraceMask();
+      message = "Nodes moved.";
     } else {
       delete allCommand;
     }
 
-    return true;
+    succ = true;
   }
 
-  return false;
+  notifyStatusMessageUpdated(message);
+  return succ;
 }
 
 bool ZStackDoc::executeTranslateSelectedSwcNode()
@@ -5938,6 +6154,10 @@ bool ZStackDoc::executeChangeSelectedSwcNodeSize()
 
 bool ZStackDoc::executeSwcNodeChangeSizeCommand(double dr)
 {
+  bool succ = false;
+  QString message;
+  int nodeCount = 0;
+
   if (!m_selectedSwcTreeNodes.empty()) {
     ZStackDocCommand::SwcEdit::CompositeCommand *allCommand =
         new ZStackDocCommand::SwcEdit::CompositeCommand(this);
@@ -5948,21 +6168,27 @@ bool ZStackDoc::executeSwcNodeChangeSizeCommand(double dr)
         SwcTreeNode::changeRadius(&newNode, dr, 1.0);
         new ZStackDocCommand::SwcEdit::ChangeSwcNode(
               this, *iter, newNode, allCommand);
+        ++nodeCount;
       }
     }
 
     if (allCommand->childCount() > 0) {
-      allCommand->setText(QObject::tr("Swc Node - Change Size"));
+      allCommand->setText(QObject::tr("Node - Change Size"));
+
       pushUndoCommand(allCommand);
       deprecateTraceMask();
+
+      message = QString("Size(s) of %1 node(s) are changed.").arg(nodeCount);
     } else {
       delete allCommand;
     }
 
-    return true;
+    succ = true;
   }
 
-  return false;
+  notifyStatusMessageUpdated(message);
+
+  return succ;
 }
 
 void ZStackDoc::estimateSwcRadius(ZSwcTree *tree, int maxIter)
@@ -6010,7 +6236,7 @@ bool ZStackDoc::executeSwcNodeEstimateRadiusCommand()
     }
 
     if (allCommand->childCount() > 0) {
-      allCommand->setText(QObject::tr("Swc Node - Estimate Radius"));
+      allCommand->setText(QObject::tr("Node - Estimate Radius"));
       pushUndoCommand(allCommand);
       deprecateTraceMask();
     } else {
@@ -6025,34 +6251,84 @@ bool ZStackDoc::executeSwcNodeEstimateRadiusCommand()
   return false;
 }
 
+static bool isMergable(const std::set<Swc_Tree_Node*> &nodeSet)
+{
+  std::set<Swc_Tree_Node*> newSelectedSet;
+
+  QQueue<Swc_Tree_Node*> tnQueue;
+  tnQueue.enqueue(*(nodeSet.begin()));
+
+  while (!tnQueue.isEmpty()) {
+    Swc_Tree_Node *tn = tnQueue.dequeue();
+    std::vector<Swc_Tree_Node*> neighborArray =
+        SwcTreeNode::neighborArray(tn);
+    for (std::vector<Swc_Tree_Node*>::iterator
+         iter = neighborArray.begin(); iter != neighborArray.end();
+         ++iter) {
+      if (nodeSet.count(*iter) > 0 &&
+          newSelectedSet.count(*iter) == 0) {
+        newSelectedSet.insert(*iter);
+        tnQueue.enqueue(*iter);
+      }
+    }
+  }
+
+  return nodeSet.size() == newSelectedSet.size();
+}
+
 bool ZStackDoc::executeMergeSwcNodeCommand()
 {
-  if (selectedSwcTreeNodes()->size() > 1) {
+  bool succ = false;
+  QString message;
+  if (selectedSwcTreeNodes()->size() > 1 &&
+      /*SwcTreeNode::isAllConnected(*selectedSwcTreeNodes()) &&*/
+      isMergable(*selectedSwcTreeNodes())) {
+    message = QString("%1 nodes are merged.").arg(selectedSwcTreeNodes()->size());
     QUndoCommand *command = new ZStackDocCommand::SwcEdit::MergeSwcNode(this);
     pushUndoCommand(command);
     deprecateTraceMask();
-
-    return true;
+    succ = true;
+  } else {
+    message = QString("Cannot merge the nodes, "
+                      "which should be directly connected.");
   }
 
-  return false;
+  notifyStatusMessageUpdated(message);
+
+  return succ;
 }
 
 bool ZStackDoc::executeSetRootCommand()
 {
+  bool succ = false;
+
+  QString message;
+
   std::set<Swc_Tree_Node*> *nodeSet = selectedSwcTreeNodes();
   if (nodeSet->size() == 1) {
-    QUndoCommand *command =
-        new ZStackDocCommand::SwcEdit::SetRoot(this, *nodeSet->begin());
-    pushUndoCommand(command);
-    return true;
+    Swc_Tree_Node *tn = *nodeSet->begin();
+    if (!SwcTreeNode::isRoot(tn)) {
+      QUndoCommand *command =
+          new ZStackDocCommand::SwcEdit::SetRoot(this, tn);
+      pushUndoCommand(command);
+      succ = true;
+      message = "A node is set to root.";
+    } else {
+      message = "The selected node is already a root. Nothing is done.";
+    }
   }
 
-  return false;
+  notifyStatusMessageUpdated(message);
+
+  return succ;
 }
 
 bool ZStackDoc::executeRemoveTurnCommand()
 {
+  bool succ = false;
+
+  QString message;
+
   std::set<Swc_Tree_Node*> *nodeSet = selectedSwcTreeNodes();
   if (nodeSet->size() == 1) {
     Swc_Tree_Node *tn = *(nodeSet->begin());
@@ -6061,24 +6337,6 @@ bool ZStackDoc::executeRemoveTurnCommand()
     if (SwcTreeNode::isContinuation(tn)) {
       tn1 = SwcTreeNode::firstChild(tn);
       tn2 = SwcTreeNode::parent(tn);
-      /*
-      if (SwcTreeNode::isTurn(SwcTreeNode::firstChild(tn), tn,
-                              SwcTreeNode::parent(tn))) {
-        ZStackDocCommand::SwcEdit::CompositeCommand *command =
-                new ZStackDocCommand::SwcEdit::CompositeCommand(this);
-
-        new ZStackDocCommand::SwcEdit::SetParent(
-              this, SwcTreeNode::firstChild(tn), SwcTreeNode::parent(tn),
-              command);
-        new ZStackDocCommand::SwcEdit::DeleteSwcNode(
-              this, tn, SwcTreeNode::root(tn), command);
-        pushUndoCommand(command);
-
-        deprecateTraceMask();
-
-        return true;
-      }
-      */
     } else {
       std::vector<Swc_Tree_Node*> neighborArray =
           SwcTreeNode::neighborArray(tn);
@@ -6107,15 +6365,25 @@ bool ZStackDoc::executeRemoveTurnCommand()
             this, tn, x, y, z, r);
       pushUndoCommand(command);
       deprecateTraceMask();
-      return true;
+
+      message = "A turn is detected and removed.";
+
+      succ = true;
+    } else {
+      message = "No turn is detected. Nothing is done.";
     }
   }
 
-  return false;
+  notifyStatusMessageUpdated(message);
+
+  return succ;
 }
 
 bool ZStackDoc::executeResolveCrossoverCommand()
 {
+  bool succ = false;
+  QString message;
+
   std::set<Swc_Tree_Node*> *nodeSet = selectedSwcTreeNodes();
   if (nodeSet->size() == 1) {
     Swc_Tree_Node *center = *(nodeSet->begin());
@@ -6151,11 +6419,17 @@ bool ZStackDoc::executeResolveCrossoverCommand()
       }
       pushUndoCommand(command);
       deprecateTraceMask();
-      return true;
+
+      message = "A crossover is created.";
+      succ = true;
+    } else {
+      message = "No crossover is detected. Nothing is done";
     }
   }
 
-  return false;
+  notifyStatusMessageUpdated(message);
+
+  return succ;
 }
 
 bool ZStackDoc::executeWatershedCommand()
@@ -6209,6 +6483,9 @@ bool ZStackDoc::executeEnhanceLineCommand()
 
 bool ZStackDoc::executeDeleteSwcNodeCommand()
 {
+  bool succ = false;
+  QString message;
+
   if (!m_selectedSwcTreeNodes.empty()) {
     ZStackDocCommand::SwcEdit::CompositeCommand *allCommand =
         new ZStackDocCommand::SwcEdit::CompositeCommand(this);
@@ -6222,7 +6499,8 @@ bool ZStackDoc::executeDeleteSwcNodeCommand()
     new ZStackDocCommand::SwcEdit::RemoveEmptyTree(this, allCommand);
 
     if (allCommand->childCount() > 0) {
-      allCommand->setText(QObject::tr("Delete Selected Swc Node"));
+      message = QString("%1 node(s) are deleted").arg(m_selectedSwcTreeNodes.size());
+      allCommand->setText(QObject::tr("Delete Selected Node"));
       blockSignals(true);
       pushUndoCommand(allCommand);
 #ifdef _DEBUG_2
@@ -6236,38 +6514,31 @@ bool ZStackDoc::executeDeleteSwcNodeCommand()
       delete allCommand;
     }
 
-    return true;
+    succ = true;
   }
 
-  return false;
+  notifyStatusMessageUpdated(message);
+
+  return succ;
 }
 
 bool ZStackDoc::executeConnectSwcNodeCommand()
 {
+  bool succ = false;
+  QString message;
+
   if (m_selectedSwcTreeNodes.size() > 1) {
     QUndoCommand *command =  new ZStackDocCommand::SwcEdit::ConnectSwcNode(this);
     pushUndoCommand(command);
     deprecateTraceMask();
-  }
-  /*
-  std::set<SwcTreeNode> swcNodeSet;
-  for (std::set<SwcTreeNode*>::const_iterator iter = m_selectedSwcTreeNodes.begin();
-       iter != m_selectedSwcTreeNodes.end(); ++iter) {
-    swcNodeSet.insert(m_selectedSwcTreeNodes.end(), *(*iter));
+
+    message = "Nodes are connected.";
+    succ = true;
   }
 
-  if (SwcTreeNode::connect(m_selectedSwcTreeNodes)) {
-    QUndoCommand *allCommand =
-        new ZStackDocCommand::SwcEdit::CompositeCommand(this);
-    for (set<Swc_Tree_Node*>::iterator iter = m_selectedSwcTreeNodes.begin();
-         iter != m_selectedSwcTreeNodes.end(); ++iter) {
-      if ()
-      new ZStackDocCommand::SwcEdit::SetParent()
-    }
-  }
-  */
+  notifyStatusMessageUpdated(message);
 
-  return false;
+  return succ;
 }
 
 bool ZStackDoc::executeConnectSwcNodeCommand(Swc_Tree_Node *tn)
@@ -6284,11 +6555,13 @@ bool ZStackDoc::executeConnectSwcNodeCommand(Swc_Tree_Node *tn)
 bool ZStackDoc::executeConnectSwcNodeCommand(
     Swc_Tree_Node *tn1, Swc_Tree_Node *tn2)
 {
+  QString message = "The nodes are already connected. Nothing is done";
   if (!SwcTreeNode::isRegular(tn1) || !SwcTreeNode::isRegular(tn2)) {
     return false;
   }
 
   if (SwcTreeNode::isRegular(SwcTreeNode::commonAncestor(tn1, tn2))) {
+    notifyStatusMessageUpdated(message);
     return false;
   }
 
@@ -6302,6 +6575,8 @@ bool ZStackDoc::executeConnectSwcNodeCommand(
   deprecateTraceMask();
 
   notifySwcModified();
+  message = "Two nodes are connected.";
+  notifyStatusMessageUpdated(message);
 
   return true;
 }
@@ -6321,35 +6596,36 @@ bool ZStackDoc::executeSmartConnectSwcNodeCommand()
 bool ZStackDoc::executeSmartConnectSwcNodeCommand(
     Swc_Tree_Node *tn1, Swc_Tree_Node *tn2)
 {
+  bool succ  = false;
+
+  QString message;
+
   if (!SwcTreeNode::isRegular(tn1) || !SwcTreeNode::isRegular(tn2)) {
     return false;
   }
 
   if (SwcTreeNode::isRegular(SwcTreeNode::commonAncestor(tn1, tn2))) {
+    notifyStatusMessageUpdated("Nothing is done because the nodes are already connected.");
     return false;
   }
 
-  QUndoCommand *command =
-      new ZStackDocCommand::SwcEdit::CompositeCommand(this);
-
-  ZNeuronTracer tracer;
-  if (getTag() == NeuTube::Document::FLYEM_BODY) {
-    tracer.setVertexOption(ZStackGraph::VO_SURFACE);
-  }
-  tracer.setBackgroundType(getStackBackground());
-  tracer.setIntensityField(stack()->c_stack());
-  tracer.setTraceWorkspace(m_traceWorkspace);
-  if (m_traceWorkspace->trace_mask == NULL) {
-    m_traceWorkspace->trace_mask =
+  //ZNeuronTracer tracer;
+  //tracer.setBackgroundType(getStackBackground());
+  //tracer.setIntensityField(stack()->c_stack());
+  //tracer.setTraceWorkspace(getTraceWorkspace());
+  if (getTraceWorkspace()->trace_mask == NULL) {
+    getTraceWorkspace()->trace_mask =
         C_Stack::make(GREY, stack()->width(), stack()->height(),
                       stack()->depth());
   }
-  if (GET_APPLICATION_NAME == "Biocytin") {
-    tracer.setResolution(1, 1, 10);
-  }
 
-  ZPoint offset = getStackOffset();
+  Swc_Tree *branch = m_neuronTracer.trace(
+        SwcTreeNode::x(tn1), SwcTreeNode::y(tn1),
+        SwcTreeNode::z(tn1), SwcTreeNode::radius(tn1),
+        SwcTreeNode::x(tn2), SwcTreeNode::y(tn2),
+        SwcTreeNode::z(tn2), SwcTreeNode::radius(tn2));
 
+  /*
   Swc_Tree *branch = tracer.trace(
         SwcTreeNode::x(tn1) - offset.x(), SwcTreeNode::y(tn1) - offset.y(),
         SwcTreeNode::z(tn1) - offset.z(), SwcTreeNode::radius(tn1),
@@ -6357,6 +6633,7 @@ bool ZStackDoc::executeSmartConnectSwcNodeCommand(
         SwcTreeNode::z(tn2) - offset.z(), SwcTreeNode::radius(tn2));
 
   Swc_Tree_Translate(branch, offset.x(), offset.y(), offset.z());
+  */
 
   if (branch != NULL) {
     if (Swc_Tree_Has_Branch(branch)) {
@@ -6374,6 +6651,8 @@ bool ZStackDoc::executeSmartConnectSwcNodeCommand(
         branch = NULL;
       }
 
+      QUndoCommand *command =
+          new ZStackDocCommand::SwcEdit::CompositeCommand(this);
       command = new ZStackDocCommand::SwcEdit::CompositeCommand(this);
       new ZStackDocCommand::SwcEdit::SetRoot(this, tn2, command);
 
@@ -6391,19 +6670,26 @@ bool ZStackDoc::executeSmartConnectSwcNodeCommand(
         new ZStackDocCommand::SwcEdit::SetParent(this, tn2, tn1, command);
       }
       new ZStackDocCommand::SwcEdit::RemoveEmptyTree(this, command);
+
+      pushUndoCommand(command);
+      deprecateTraceMask();
+
+      notifySwcModified();
+      message = "Nodes are connected";
+      succ = true;
     }
   }
 
-  pushUndoCommand(command);
-  deprecateTraceMask();
+  notifyStatusMessageUpdated(message);
 
-  notifySwcModified();
-
-  return true;
+  return succ;
 }
 
 bool ZStackDoc::executeBreakSwcConnectionCommand()
 {
+  bool succ = false;
+
+  QString message;
   if (!m_selectedSwcTreeNodes.empty()) {
     ZStackDocCommand::SwcEdit::CompositeCommand *allCommand =
         new ZStackDocCommand::SwcEdit::CompositeCommand(this);
@@ -6425,14 +6711,17 @@ bool ZStackDoc::executeBreakSwcConnectionCommand()
       blockSignals(false);
       notifySwcModified();
       deprecateTraceMask();
+
+      message = "Connections removed.";
+      succ = true;
     } else {
       delete allCommand;
     }
-
-    return true;
   }
 
-  return false;
+  notifyStatusMessageUpdated(message);
+
+  return succ;
 }
 
 bool ZStackDoc::executeBreakForestCommand()
@@ -6602,11 +6891,14 @@ bool ZStackDoc::executeTraceSwcBranchCommand(
   pushUndoCommand(command);
   */
 
-  ZNeuronTracer tracer;
-  tracer.setIntensityField(stack()->c_stack(c));
-  tracer.setTraceWorkspace(getTraceWorkspace());
+  //ZNeuronTracer tracer;
+  m_neuronTracer.setIntensityField(stack()->c_stack(c));
+  //tracer.setTraceWorkspace(getTraceWorkspace());
+  //tracer.setStackOffset(getStackOffset().x(), getStackOffset().y(),
+  //                      getStackOffset().z());
+
   refreshTraceMask();
-  ZSwcPath branch = tracer.trace(x, y, z);
+  ZSwcPath branch = m_neuronTracer.trace(x, y, z);
 
   if (branch.size() > 1) {
     ZSwcConnector swcConnector;
@@ -6726,10 +7018,13 @@ bool ZStackDoc::executeTraceSwcBranchCommand(
 #endif
     }
 
+    ZSwcPath path(branchRoot, tree->firstLeaf());
+
+
     QUndoCommand *command =
         new ZStackDocCommand::SwcEdit::CompositeCommand(this);
 
-    ZSwcPath path(branchRoot, tree->firstLeaf());
+
 
     new ZStackDocCommand::SwcEdit::AddSwc(this, tree, command);
 
@@ -6743,6 +7038,9 @@ bool ZStackDoc::executeTraceSwcBranchCommand(
 
     pushUndoCommand(command);
 
+    QString statusMessage;
+    statusMessage = QString("%1 nodes added.").arg(path.size());
+    emit statusMessageUpdated(statusMessage);
     //tracer.updateMask(branch);
 
     return true;
@@ -6776,18 +7074,29 @@ bool ZStackDoc::executeAutoTraceCommand()
   return false;
 #endif
 
+#if 0
   autoTrace();
   Swc_Tree *rawTree = this->swcReconstruction(0, false, true);
   removeAllLocsegChain();
-  Zero_Stack(m_traceWorkspace->trace_mask);
-  if (rawTree != NULL) {
-    ZSwcTree *tree = new ZSwcTree;
-    tree->setData(rawTree);
+  Zero_Stack(getTraceWorkspace()->trace_mask);
+#endif
+
+  m_neuronTracer.setProgressReporter(getProgressReporter());
+
+  startProgress(0.9);
+  ZSwcTree *tree = m_neuronTracer.trace(stack()->c_stack());
+  endProgress(0.9);
+
+  Zero_Stack(getTraceWorkspace()->trace_mask);
+
+  if (tree != NULL) {
+    //ZSwcTree *tree = new ZSwcTree;
+    //tree->setData(rawTree);
     //QUndoCommand *command = new ZStackDocCommand::SwcEdit::AddSwc(this, tree);
     ZStackDocCommand::SwcEdit::CompositeCommand *command =
         new ZStackDocCommand::SwcEdit::CompositeCommand(this);
     new ZStackDocCommand::SwcEdit::AddSwc(this, tree, command);
-    new ZStackDocCommand::SwcEdit::SwcTreeLabeTraceMask(this, rawTree, command);
+    new ZStackDocCommand::SwcEdit::SwcTreeLabeTraceMask(this, tree->data(), command);
     pushUndoCommand(command);
 
     return true;
@@ -6820,6 +7129,7 @@ void ZStackDoc::saveSwc(QWidget *parentWidget)
       if (tree->hasGoodSourceName()) {
         tree->resortId();
         tree->save(tree->source().c_str());
+        emit statusMessageUpdated(QString(tree->source().c_str()) + " saved.");
       } else {
         ZString stackSource = stackSourcePath();
         QString fileName;
@@ -6838,6 +7148,7 @@ void ZStackDoc::saveSwc(QWidget *parentWidget)
           tree->save(fileName.toStdString().c_str());
           tree->setSource(fileName.toStdString());
           notifySwcModified();
+          emit statusMessageUpdated(QString(tree->source().c_str()) + " saved.");
         }
       }
     }
@@ -6960,9 +7271,27 @@ void ZStackDoc::updateModelData(EDocumentDataType type)
   }
 }
 
-void ZStackDoc::showSeletedSwcNodeLength()
+void ZStackDoc::showSeletedSwcNodeScaledLength()
 {
-  double length = SwcTreeNode::segmentLength(*selectedSwcTreeNodes());
+  double resolution[3] = {1, 1, 1};
+  if (m_resDlg.exec()) {
+    resolution[0] = m_resDlg.getXYScale();
+    resolution[1] = m_resDlg.getXYScale();
+    resolution[2] = m_resDlg.getZScale();
+    showSeletedSwcNodeLength(resolution);
+  }
+}
+
+void ZStackDoc::showSeletedSwcNodeLength(double *resolution)
+{
+  double length = 0.0;
+
+  if (resolution == NULL) {
+    length = SwcTreeNode::segmentLength(*selectedSwcTreeNodes());
+  } else {
+    length = SwcTreeNode::scaledSegmentLength(
+          *selectedSwcTreeNodes(), resolution[0], resolution[1], resolution[2]);
+  }
 
   InformationDialog dlg;
 
@@ -6976,8 +7305,18 @@ void ZStackDoc::showSeletedSwcNodeLength()
     Swc_Tree_Node *tn1 = *iter;
     ++iter;
     Swc_Tree_Node *tn2 = *iter;
-    textStream << "<p>Straight line distance between the two selected nodes: "
-               << SwcTreeNode::distance(tn1, tn2) << "</p>";
+
+    if (!SwcTreeNode::isConnected(tn1, tn2)) {
+      double dist = 0.0;
+      if (resolution == NULL) {
+        dist = SwcTreeNode::distance(tn1, tn2);
+      } else {
+        dist = SwcTreeNode::scaledDistance(tn1, tn2, resolution[0],
+            resolution[1], resolution[2]);
+      }
+      textStream << "<p>Straight line distance between the two selected nodes: "
+                 << dist << "</p>";
+    }
   }
 
   dlg.setText(textStream.str());
@@ -6986,6 +7325,10 @@ void ZStackDoc::showSeletedSwcNodeLength()
 
 bool ZStackDoc::executeInsertSwcNode()
 {
+  bool succ = false;
+
+  QString message;
+  int insertionCount = 0;
   if (selectedSwcTreeNodes()->size() >= 2) {
     QUndoCommand *command =
         new ZStackDocCommand::SwcEdit::CompositeCommand(this);
@@ -6997,22 +7340,33 @@ bool ZStackDoc::executeInsertSwcNode()
         SwcTreeNode::interpolate(*iter, parent, 0.5, tn);
         new ZStackDocCommand::SwcEdit::SetParent(this, tn, parent, command);
         new ZStackDocCommand::SwcEdit::SetParent(this, *iter, tn, command);
+        ++insertionCount;
       }
     }
     if (command->childCount() > 0) {
       pushUndoCommand(command);
       deprecateTraceMask();
-      return true;
+      message = QString("%1 nodes inserted.").arg(insertionCount);
+      succ = true;
     } else {
+      message = QString("Cannont insert a node. "
+                        "At least two adjacent nodes should be selected.");
       delete command;
     }
   }
 
-  return false;
+  if (!message.isEmpty()) {
+    emit statusMessageUpdated(message);
+  }
+
+  return succ;
 }
 
 bool ZStackDoc::executeSetBranchPoint()
 {
+  bool succ = false;
+  QString message;
+
   if (selectedSwcTreeNodes()->size() == 1) {
     Swc_Tree_Node *branchPoint = *(selectedSwcTreeNodes()->begin());
     Swc_Tree_Node *hostRoot = SwcTreeNode::regularRoot(branchPoint);
@@ -7058,24 +7412,30 @@ bool ZStackDoc::executeSetBranchPoint()
 
       pushUndoCommand(command);
       deprecateTraceMask();
-      return true;
+
+      message = "A branch point is created.";
+      succ = true;
     }
   }
 
-  return false;
+  if (!message.isEmpty()) {
+    emit statusMessageUpdated(message);
+  }
+
+  return succ;
 }
 
 bool ZStackDoc::executeConnectIsolatedSwc()
 {
+  bool succ = false;
+  QString message;
+
   if (selectedSwcTreeNodes()->size() == 1) {
     Swc_Tree_Node *branchPoint = *(selectedSwcTreeNodes()->begin());
     Swc_Tree_Node *hostRoot = SwcTreeNode::regularRoot(branchPoint);
     Swc_Tree_Node *masterRoot = SwcTreeNode::parent(hostRoot);
 
     if (SwcTreeNode::childNumber(masterRoot) > 1 || swcList()->size() > 1) {
-      QUndoCommand *command =
-          new ZStackDocCommand::SwcEdit::CompositeCommand(this);
-
       ZSwcTree tree;
       tree.setDataFromNode(masterRoot);
 
@@ -7117,21 +7477,27 @@ bool ZStackDoc::executeConnectIsolatedSwc()
       }
 
       if (closestNode != NULL) {
+        QUndoCommand *command =
+            new ZStackDocCommand::SwcEdit::CompositeCommand(this);
         if (!SwcTreeNode::isRoot(closestNode)) {
           new ZStackDocCommand::SwcEdit::SetRoot(this, closestNode, command);
         }
         new ZStackDocCommand::SwcEdit::SetParent(
               this, closestNode, branchPoint, command);
         new ZStackDocCommand::SwcEdit::RemoveEmptyTree(this, command);
-      }
+        pushUndoCommand(command);
+        deprecateTraceMask();
 
-      pushUndoCommand(command);
-      deprecateTraceMask();
-      return true;
+        message = "Two nodes are connected.";
+        succ = true;
+      }
     }
   }
 
-  return false;
+  if (!message.isEmpty()) {
+    emit statusMessageUpdated(message);
+  }
+  return succ;
 }
 
 bool ZStackDoc::executeResetBranchPoint()
@@ -7188,6 +7554,20 @@ ZPoint ZStackDoc::getStackOffset() const
   return ZPoint(0, 0, 0);
 }
 
+void ZStackDoc::setStackOffset(double x, double y, double z)
+{
+  if (stackRef() != NULL) {
+    stackRef()->setOffset(x, y, z);
+  }
+}
+
+void ZStackDoc::setStackOffset(const ZPoint &offset)
+{
+  if (stackRef() != NULL) {
+    stackRef()->setOffset(offset);
+  }
+}
+
 ZPoint ZStackDoc::getDataCoord(const ZPoint &pt)
 {
   return pt + getStackOffset();
@@ -7236,3 +7616,423 @@ void ZStackDoc::mapToStackCoord(double *x, double *y, double *z)
     *z -= getStackOffset().z();
   }
 }
+
+void ZStackDoc::addData(const ZStackDocReader &reader)
+{
+  if (!reader.getSwcList().isEmpty()) {
+    addSwcTree(reader.getSwcList());
+    notifySwcModified();
+  }
+
+  if (reader.getStack() != NULL) {
+    loadStack(reader.getStack());
+    setStackSource(reader.getStackSource());
+    initNeuronTracer();
+    notifyStackModified();
+  }
+
+  if (!reader.getChainList().isEmpty()) {
+    addLocsegChain(reader.getChainList());
+    notifyChainModified();
+  }
+
+  if (!reader.getPunctaList().isEmpty()) {
+    addPunctum(reader.getPunctaList());
+    notifyPunctumModified();
+  }
+}
+
+///////////Stack Reader///////////
+
+ZStackDocReader::ZStackDocReader() : m_stack(NULL), m_swcNetwork(NULL)
+{
+
+}
+
+bool ZStackDocReader::readFile(const QString &filePath)
+{
+  m_filePath = filePath;
+
+  switch (ZFileType::fileType(filePath.toStdString())) {
+  case ZFileType::SWC_FILE:
+    loadSwc(filePath);
+    break;
+  case ZFileType::LOCSEG_CHAIN_FILE:
+    loadLocsegChain(filePath);
+    break;
+  case ZFileType::SWC_NETWORK_FILE:
+    loadSwcNetwork(filePath);
+    break;
+  case ZFileType::OBJECT_SCAN_FILE:
+  case ZFileType::TIFF_FILE:
+  case ZFileType::LSM_FILE:
+  case ZFileType::V3D_RAW_FILE:
+    loadStack(filePath);
+    break;
+    /*
+  case ZFileType::FLYEM_NETWORK_FILE:
+    importFlyEmNetwork(filePath.toStdString().c_str());
+    break;
+  case ZFileType::SYNAPSE_ANNOTATON_FILE:
+    importSynapseAnnotation(filePath.toStdString());
+    break;
+    */
+  case ZFileType::V3D_APO_FILE:
+  case ZFileType::V3D_MARKER_FILE:
+  case ZFileType::RAVELER_BOOKMARK:
+    loadPuncta(filePath);
+    break;
+  default:
+    return false;
+    break;
+  }
+
+  return true;
+}
+
+void ZStackDocReader::loadSwc(const QString &filePath)
+{
+  ZSwcTree *tree = new ZSwcTree();
+  tree->load(filePath.toLocal8Bit().constData());
+  if (!tree->isEmpty()) {
+    addSwcTree(tree);
+  } else {
+    delete tree;
+  }
+}
+
+void ZStackDocReader::addSwcTree(ZSwcTree *tree)
+{
+  if (tree != NULL) {
+    m_swcList.append(tree);
+  }
+}
+
+void ZStackDocReader::loadLocsegChain(const QString &filePath)
+{
+  if (!filePath.isEmpty()) {
+    ZLocsegChain *chain = new ZLocsegChain();
+    chain->load(filePath.toLocal8Bit().constData());
+    if (!chain->isEmpty()) {
+      addLocsegChain(chain);
+    } else {
+      delete chain;
+    }
+  }
+}
+
+void ZStackDocReader::addLocsegChain(ZLocsegChain *chain)
+{
+  if (chain != NULL) {
+    m_chainList.append(chain);
+  }
+}
+
+void ZStackDocReader::loadStack(const QString &filePath)
+{
+  m_stackSource.import(filePath.toStdString());
+  m_stack = m_stackSource.readStack();
+}
+
+void ZStackDocReader::clear()
+{
+  m_stack = NULL;
+  m_swcList.clear();
+  m_stackSource.clear();
+  m_swcList.clear();
+  m_punctaList.clear();
+  m_strokeList.clear();
+  m_obj3dList.clear();
+}
+
+void ZStackDocReader::loadSwcNetwork(const QString &filePath)
+{
+  if (!filePath.isEmpty()) {
+    if (m_swcNetwork == NULL) {
+      m_swcNetwork = new ZSwcNetwork;
+    }
+
+    m_swcNetwork->importTxtFile(filePath.toStdString());
+
+    for (size_t i = 0; i < m_swcNetwork->treeNumber(); i++) {
+      addSwcTree(m_swcNetwork->getTree(i));
+    }
+  }
+}
+
+void ZStackDocReader::loadPuncta(const QString &filePath)
+{
+  if (!filePath.isEmpty()) {
+    QList<ZPunctum*> plist = ZPunctumIO::load(filePath);
+    foreach (ZPunctum* punctum, plist) {
+      addPunctum(punctum);
+    }
+  }
+}
+
+void ZStackDocReader::addPunctum(ZPunctum *p)
+{
+  if (p != NULL) {
+    m_punctaList.append(p);
+  }
+}
+
+void ZStackDocReader::setStack(ZStack *stack)
+{
+  m_stack = stack;
+}
+
+void ZStackDocReader::setStackSource(const ZStackFile &stackFile)
+{
+  m_stackSource = stackFile;
+}
+
+bool ZStackDocReader::hasData() const
+{
+  if (getStack() != NULL) {
+    return true;
+  }
+
+  if (!getSwcList().isEmpty()) {
+    return true;
+  }
+
+  if (!getPunctaList().isEmpty()) {
+    return true;
+  }
+
+  if (!getStrokeList().isEmpty()) {
+    return true;
+  }
+
+  if (!getObjectList().isEmpty()) {
+    return true;
+  }
+
+  if (!getChainList().isEmpty()) {
+    return true;
+  }
+
+  return false;
+}
+
+std::vector<ZStack*> ZStackDoc::createWatershedMask()
+{
+  std::vector<ZStack*> maskArray;
+  foreach (ZStroke2d* stroke, m_strokeList) {
+    if (!stroke->isEmpty()) {
+      maskArray.push_back(stroke->toStack());
+    }
+  }
+
+  return maskArray;
+}
+
+void ZStackDoc::localSeededWatershed()
+{
+  removeAllObj3d();
+
+  if (!m_strokeList.isEmpty()) {
+    ZStackWatershed engine;
+    ZStackArray seedMask = createWatershedMask();
+
+    advanceProgress(0.1);
+    QApplication::processEvents();
+
+    Cuboid_I box;
+    seedMask.getBoundBox(&box);
+    const int xMargin = 10;
+    const int yMargin = 10;
+    const int zMargin = 20;
+    Cuboid_I_Expand_X(&box, xMargin);
+    Cuboid_I_Expand_Y(&box, yMargin);
+    Cuboid_I_Expand_Z(&box, zMargin);
+
+    engine.setRange(box);
+    ZStack *out = engine.run(m_stack, seedMask);
+
+    advanceProgress(0.1);
+    QApplication::processEvents();
+
+
+#if 0
+    Stack *stack = m_stack->c_stack();
+    Stack_Watershed_Workspace *ws =
+        Make_Stack_Watershed_Workspace(stack);
+    ws->conn = 6;
+    Stack *mask = C_Stack::make(GREY, C_Stack::width(stack),
+                                C_Stack::height(stack), C_Stack::depth(stack));
+    C_Stack::setZero(mask);
+    ws->mask = mask;
+
+    ZStackArray stackArray = createWatershedMask();
+    Mc_Stack maskView;
+    C_Stack::view(ws->mask, &maskView);
+    ZStack maskWrapper(&maskView, NULL);
+    maskWrapper.setOffset(m_stack->getOffset());
+    stackArray.paste(&maskWrapper, 0);
+
+#ifdef _DEBUG_2
+    C_Stack::write(GET_DATA_DIR + "/test.tif", ws->mask);
+#endif
+
+    size_t voxelNumber = m_stack->getVoxelNumber();
+    for (size_t i = 0; i < voxelNumber; ++i) {
+      if (stack->array[i] == 0) {
+        mask->array[i] = STACK_WATERSHED_BARRIER;
+      }
+    }
+
+    advanceProgress(0.1);
+    QApplication::processEvents();
+
+    Stack *out= Stack_Watershed(stack, ws);
+
+    advanceProgress(0.5);
+    QApplication::processEvents();
+
+    if (stack != m_stack->c_stack()) {
+      C_Stack::kill(stack);
+    }
+#endif
+
+    Object_3d *objData = Stack_Region_Border(out->c_stack(), 6, TRUE);
+
+    advanceProgress(0.1);
+    QApplication::processEvents();
+
+    if (objData != NULL) {
+      ZObject3d *obj = new ZObject3d(objData);
+      /*
+      obj->translate(iround(getStackOffset().x()),
+                     iround(getStackOffset().y()),
+                     iround(getStackOffset().z()));
+                     */
+
+      obj->translate(iround(out->getOffset().x()),
+                     iround(out->getOffset().y()),
+                     iround(out->getOffset().z()));
+      obj->setColor(255, 255, 0, 180);
+
+      addObj3d(obj);
+      notifyObj3dModified();
+    }
+
+   // C_Stack::kill(out);
+    delete out;
+  }
+}
+
+void ZStackDoc::seededWatershed()
+{
+  removeAllObj3d();
+
+  if (!m_strokeList.isEmpty()) {
+    ZStackWatershed engine;
+    ZStackArray seedMask = createWatershedMask();
+    ZStack *out = engine.run(m_stack, seedMask);
+
+    Object_3d *objData = Stack_Region_Border(out->c_stack(), 6, TRUE);
+
+    if (objData != NULL) {
+      ZObject3d *obj = new ZObject3d(objData);
+
+      obj->translate(iround(out->getOffset().x()),
+                     iround(out->getOffset().y()),
+                     iround(out->getOffset().z()));
+      obj->setColor(255, 255, 0, 255);
+
+      addObj3d(obj);
+      notifyObj3dModified();
+    }
+    delete out;
+  }
+}
+
+void ZStackDoc::runLocalSeededWatershed()
+{
+  startProgress();
+  QApplication::processEvents();
+
+  localSeededWatershed();
+
+  //QtConcurrent::run(this, &ZStackDoc::localSeededWatershed); //crashed for unknown reason
+
+  endProgress();
+}
+
+void ZStackDoc::runSeededWatershed()
+{
+#if 1
+  seededWatershed();
+#else //old code
+  Stack *stack = m_stack->c_stack();
+  Stack_Watershed_Workspace *ws =
+      Make_Stack_Watershed_Workspace(stack);
+  ws->conn = 6;
+  Stack *mask = C_Stack::make(GREY, C_Stack::width(stack),
+                              C_Stack::height(stack), C_Stack::depth(stack));
+  C_Stack::setZero(mask);
+  ws->mask = mask;
+
+  /*
+  ZStackArray stackArray = createWatershedMask();
+  Mc_Stack maskView;
+  C_Stack::view(ws->mask, &maskView);
+  ZStack maskWrapper(&maskView, NULL);
+  maskWrapper.setOffset(m_stack->getOffset());
+  stackArray.paste(&maskWrapper, 0);
+*/
+
+  foreach (ZStroke2d* stroke, m_strokeList) {
+    ZPoint stackOffset = getStackOffset();
+    ZStroke2d tmpStroke = *stroke;
+    tmpStroke.translate(-stackOffset);
+    tmpStroke.labelGrey(mask);
+  }
+
+  size_t voxelNumber = m_stack->getVoxelNumber();
+  for (size_t i = 0; i < voxelNumber; ++i) {
+    if (stack->array[i] == 0) {
+      mask->array[i] = STACK_WATERSHED_BARRIER;
+    }
+  }
+#if 0
+  if (m_stack->isBinary()) {
+    size_t voxelNumber = m_stack->getVoxelNumber();
+    for (size_t i = 0; i < voxelNumber; ++i) {
+      if (stack->array[i] == 0) {
+        mask->array[i] = STACK_WATERSHED_BARRIER;
+      }
+    }
+    stack = Stack_Bwdist_L_U16P(stack, NULL, 0);
+  }
+#endif
+
+  Stack *out= Stack_Watershed(stack, ws);
+
+  if (stack != m_stack->c_stack()) {
+    C_Stack::kill(stack);
+  }
+
+  Object_3d *objData = Stack_Region_Border(out, 6, TRUE);
+  removeAllObj3d();
+  if (objData != NULL) {
+    ZObject3d *obj = new ZObject3d(objData);
+    obj->translate(iround(getStackOffset().x()),
+                   iround(getStackOffset().y()),
+                   iround(getStackOffset().z()));
+    addObj3d(obj);
+    notifyObj3dModified();
+  }
+
+  C_Stack::kill(out);
+#ifdef _DEBUG_2
+  C_Stack::write(GET_DATA_DIR + "/test.tif", ws->mask);
+#endif
+  //return out;
+
+#endif
+
+}
+

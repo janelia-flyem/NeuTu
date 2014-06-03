@@ -27,6 +27,7 @@ public:
   const static TVisualEffect VE_DASH_PATTERN;
   const static TVisualEffect VE_BOUND_BOX;
   const static TVisualEffect VE_NO_CIRCLE;
+  const static TVisualEffect VE_NO_FILL;
 
 public:
   virtual void display(ZPainter &painter, int z = 0,

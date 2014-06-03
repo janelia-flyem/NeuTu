@@ -49,7 +49,7 @@ unix {
 exists($${EXTLIB_DIR}/hdf5/lib/libhdf5.a) {
     DEFINES += _ENABLE_HDF5_
     INCLUDEPATH += $${EXTLIB_DIR}/hdf5/include
-    LIBS += -L$${EXTLIB_DIR}/hdf5/lib -lhdf5
+    LIBS += -L$${EXTLIB_DIR}/hdf5/lib -lhdf5 -lhdf5_hl
 }
 
 #System libraries

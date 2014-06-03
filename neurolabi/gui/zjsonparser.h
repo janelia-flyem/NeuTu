@@ -28,7 +28,14 @@ public:
 
   static const char* stringValue(const json_t *value);
   static double numberValue(const json_t *value);
+
+  /*!
+   * \brief Integer value of a json value.
+   *
+   * \return 0 if \a value is not in integer type or it is NULL.
+   */
   static int integerValue(const json_t *value);
+
   static bool booleanValue(const json_t *value);
 
   static const char* stringValue(const json_t *value, size_t index);
@@ -36,6 +43,16 @@ public:
   static int integerValue(const json_t *value, size_t index);
 
   static void print(const char *key, json_t *value, int indent);
+
+  /*!
+   * \brief Decode a json string
+   *
+   * \param str A json string
+   * \return A raw json object. The user is responsible for freeing it.
+   */
+  json_t* decode(const std::string &str);
+
+  void printError() const;
 
 private:
   json_error_t m_error;

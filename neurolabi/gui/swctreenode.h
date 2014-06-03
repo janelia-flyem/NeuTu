@@ -248,6 +248,8 @@ void setNode(Swc_Tree_Node *tn, int id, int type, double x, double y, double z,
          double radius, int parentId);
 
 void setPos(Swc_Tree_Node *tn, double x, double y, double z);
+void setPos(Swc_Tree_Node *tn, const ZPoint &pt);
+
 inline void setX(Swc_Tree_Node *tn, double x) {
   tn->node.x = x;
 }
@@ -403,6 +405,12 @@ double distance(const Swc_Tree_Node *tn1, const Swc_Tree_Node *tn2,
 double distance(const Swc_Tree_Node *tn, double x, double y, double z,
                 EDistanceType distType = EUCLIDEAN);
 
+/*!
+ * \brief Scaled distance between two nodes.
+ */
+double scaledDistance(const Swc_Tree_Node *tn1, const Swc_Tree_Node *tn2,
+                double sx, double sy, double sz);
+
 Swc_Tree_Node*
 furthestNode(Swc_Tree_Node *tn, EDistanceType distType = EUCLIDEAN);
 
@@ -439,14 +447,35 @@ ZPoint centroid(const std::set<Swc_Tree_Node*> &nodeSet);
 double maxRadius(const std::set<Swc_Tree_Node*> &nodeSet);
 ZCuboid boundBox(const std::set<Swc_Tree_Node*> &nodeSet);
 
+/*!
+ * \brief Test if all nodes in the set are connected
+ *
+ * Here two nodes are connected if there is a path between them. A virtual node
+ * is also considered by checking the structural links. It returns true if the
+ * set is empty.
+ */
+bool isAllConnected(const std::set<Swc_Tree_Node*> &nodeSet);
+
 template<class InputIterator>
 ZPoint centroid(InputIterator first, InputIterator last);
+
+template<class InputIterator>
+double averageRadius(InputIterator first, InputIterator last);
 
 template<class InputIterator>
 ZCuboid boundBox(InputIterator first, InputIterator last);
 
 template<class InputIterator>
 void setType(InputIterator first, InputIterator last, int type);
+
+/*!
+ * \brief Iterate through nodes to check if they are all connected.
+ *
+ * Here two nodes are connected if there is a path between them. A virtual node
+ * is also considered by checking the structural links.
+ */
+template<class InputIterator>
+bool isAllConnected(InputIterator first, InputIterator last);
 
 Swc_Tree_Node* merge(const std::set<Swc_Tree_Node*> &nodeSet);
 void kill(std::set<Swc_Tree_Node*> &nodeSet);
@@ -459,6 +488,16 @@ void kill(Swc_Tree_Node *tn);
  * returns 0 if \a nodeSet is empty or all nodes in the set is isolated.
  */
 double segmentLength(std::set<Swc_Tree_Node*> &nodeSet);
+
+/*!
+ * \brief The overall scaled length of the segments formed by a set of nodes
+ *
+ * \param sx X scale.
+ * \param sy Y scale.
+ * \param sz Z scale.
+ */
+double scaledSegmentLength(std::set<Swc_Tree_Node*> &nodeSet,
+                           double sx, double sy, double sz);
 
 //clipboard
 void clearClipboard();
@@ -588,19 +627,63 @@ ZPoint SwcTreeNode::centroid(InputIterator first, InputIterator last)
   int count = 0;
 
   while (first != last) {
-    pt += pos(*first) * radius(*first);
-    weight += radius(*first);
+    if (isRegular(*first)) {
+      pt += pos(*first) * radius(*first);
+      weight += radius(*first);
+      ++count;
+    }
+
     ++first;
-    ++count;
   }
 
   if (weight > 0.0) {
     pt /= weight;
-  } else {
+  } else if (count > 0){
     pt /= count;
   }
 
   return pt;
+}
+
+template<class InputIterator>
+double SwcTreeNode::averageRadius(InputIterator first, InputIterator last)
+{
+  double mu = 0.0;
+  int count = 0;
+
+  while (first != last) {
+    if (isRegular(*first)) {
+      mu += radius(*first);
+      ++count;
+    }
+
+    ++first;
+  }
+
+  if (count > 0) {
+    mu /= count;
+  }
+
+  return mu;
+}
+
+template<class InputIterator>
+bool SwcTreeNode::isAllConnected(InputIterator first, InputIterator last)
+{
+  bool isConnected = true;
+  while (first != last) {
+    InputIterator testNode = first;
+    ++testNode;
+    while (testNode != last) {
+      if (commonAncestor(*first, *testNode) == NULL) {
+        return false;
+      }
+      ++testNode;
+    }
+    ++first;
+  }
+
+  return isConnected;
 }
 
 #endif // SWCTREENODE_H

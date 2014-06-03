@@ -9,6 +9,11 @@ ZQtBarProgressReporter::ZQtBarProgressReporter()
   m_progressBar = NULL;
 }
 
+ZQtBarProgressReporter::~ZQtBarProgressReporter()
+{
+
+}
+
 void ZQtBarProgressReporter::open()
 {
   if (m_progressBar != NULL) {

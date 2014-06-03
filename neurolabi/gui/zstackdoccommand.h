@@ -317,10 +317,17 @@ private:
   ZSwcPath m_branch;
 };
 
-class SetRoot : public CompositeCommand
+class SetRoot : public QUndoCommand//: public CompositeCommand
 {
 public:
   SetRoot(ZStackDoc *doc, Swc_Tree_Node *tn, QUndoCommand *parent = NULL);
+  void undo();
+  void redo();
+
+private:
+  ZStackDoc *m_doc;
+  Swc_Tree_Node *m_node;
+  std::vector<Swc_Tree_Node*> m_originalParentArray;
 };
 
 class ConnectSwcNode : public CompositeCommand
@@ -356,12 +363,14 @@ private:
   std::set<ZSwcTree*> m_emptyTreeSet;
 };
 
+//Not operation invariant
 class BreakForest : public CompositeCommand
 {
 public:
   BreakForest(ZStackDoc *doc, QUndoCommand *parent = NULL);
 };
 
+//Not operation invariant
 class GroupSwc : public CompositeCommand
 {
 public:
@@ -536,7 +545,7 @@ private:
   QList<ZLocsegChain*> m_oldChainList;
   QList<ZLocsegChain*> m_newChainList;
 };
-
+#if 0
 class AutoTrace : public QUndoCommand
 {
 public:
@@ -554,7 +563,7 @@ private:
   QList<ZObject3d*> m_obj3dList;
   QList<ZPunctum*> m_punctaList;
 };
-
+#endif
 class AutoTraceAxon : public QUndoCommand
 {
 public:

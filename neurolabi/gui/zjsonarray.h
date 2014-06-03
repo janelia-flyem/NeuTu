@@ -10,6 +10,7 @@ class ZJsonArray : public ZJsonValue, ZUncopyable
 public:
   ZJsonArray();
   ZJsonArray(json_t *data, bool asNew);
+  ZJsonArray(const json_t *data, bool asNew);
   virtual ~ZJsonArray();
 
 public:
@@ -43,7 +44,25 @@ public:
    */
   std::vector<int> toIntegerArray() const;
 
+  /*!
+   * \brief Get a boolean array from the json array.
+   *
+   * Any json array element that is not boolean will be ignored.
+   */
+  std::vector<bool> toBoolArray() const;
+
   ZJsonArray& operator << (double e);
+
+  /*!
+   * \brief Decode a string.
+   *
+   * The object will be cleared first no matter whether the decoding
+   * succeeds or not.
+   *
+   * \param str Source string.
+   * \return true iff the decoding succeeds.
+   */
+  bool decode(const std::string &str);
 };
 
 #endif // ZJSONARRAY_H

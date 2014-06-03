@@ -1,6 +1,8 @@
 #include "zglew.h"
 #include "z3dvolumeraycaster.h"
 
+#include <QApplication>
+#include <QMouseEvent>
 #include "z3dvolumeraycasterrenderer.h"
 #include "z3dvolumeslicerenderer.h"
 #include "z3dtexturecoordinaterenderer.h"
@@ -13,7 +15,7 @@
 #include "QsLog.h"
 #include "zbenchtimer.h"
 #include "z3dutils.h"
-#include <QApplication>
+
 
 const size_t Z3DVolumeRaycaster::m_maxNumOfFullResolutionVolumeSlice = 6;
 
@@ -103,17 +105,30 @@ Z3DVolumeRaycaster::Z3DVolumeRaycaster()
   connect(&m_showZSlice2, SIGNAL(valueChanged()), this, SLOT(adjustWidget()));
   connect(&m_showBoundBox, SIGNAL(valueChanged()), this, SLOT(adjustWidget()));
 
-  connect(&m_xSlicePosition, SIGNAL(valueChanged()), this, SLOT(invalidateFRVolumeXSlice()));
-  connect(&m_ySlicePosition, SIGNAL(valueChanged()), this, SLOT(invalidateFRVolumeYSlice()));
-  connect(&m_zSlicePosition, SIGNAL(valueChanged()), this, SLOT(invalidateFRVolumeZSlice()));
-  connect(&m_xSlice2Position, SIGNAL(valueChanged()), this, SLOT(invalidateFRVolumeXSlice2()));
-  connect(&m_ySlice2Position, SIGNAL(valueChanged()), this, SLOT(invalidateFRVolumeXSlice2()));
-  connect(&m_zSlice2Position, SIGNAL(valueChanged()), this, SLOT(invalidateFRVolumeXSlice2()));
+  connect(&m_xSlicePosition, SIGNAL(valueChanged()),
+          this, SLOT(invalidateFRVolumeXSlice()));
+  connect(&m_ySlicePosition, SIGNAL(valueChanged()),
+          this, SLOT(invalidateFRVolumeYSlice()));
+  connect(&m_zSlicePosition, SIGNAL(valueChanged()),
+          this, SLOT(invalidateFRVolumeZSlice()));
+  connect(&m_xSlice2Position, SIGNAL(valueChanged()),
+          this, SLOT(invalidateFRVolumeXSlice2()));
+  connect(&m_ySlice2Position, SIGNAL(valueChanged()),
+          this, SLOT(invalidateFRVolumeXSlice2()));
+  connect(&m_zSlice2Position, SIGNAL(valueChanged()),
+          this, SLOT(invalidateFRVolumeXSlice2()));
 
   m_leftMouseButtonPressEvent = new ZEventListenerParameter("Left Mouse Button Pressed", true, false, this);
-  m_leftMouseButtonPressEvent->listenTo("trace", Qt::LeftButton, Qt::NoModifier, QEvent::MouseButtonPress);
-  m_leftMouseButtonPressEvent->listenTo("trace", Qt::LeftButton, Qt::NoModifier, QEvent::MouseButtonRelease);
-  connect(m_leftMouseButtonPressEvent, SIGNAL(mouseEventTriggered(QMouseEvent*,int,int)),
+  m_leftMouseButtonPressEvent->listenTo(
+        "trace", Qt::LeftButton, Qt::NoModifier, QEvent::MouseButtonPress);
+  m_leftMouseButtonPressEvent->listenTo(
+        "trace", Qt::LeftButton, Qt::ControlModifier, QEvent::MouseButtonPress);
+  m_leftMouseButtonPressEvent->listenTo(
+        "trace", Qt::LeftButton, Qt::ControlModifier, QEvent::MouseButtonRelease);
+  m_leftMouseButtonPressEvent->listenTo(
+        "trace", Qt::LeftButton, Qt::NoModifier, QEvent::MouseButtonRelease);
+  connect(m_leftMouseButtonPressEvent,
+          SIGNAL(mouseEventTriggered(QMouseEvent*,int,int)),
           this, SLOT(leftMouseButtonPressed(QMouseEvent*,int,int)));
   addEventListener(m_leftMouseButtonPressEvent);
 }
@@ -246,7 +261,7 @@ bool Z3DVolumeRaycaster::isReady(Z3DEye eye) const
 ZWidgetsGroup *Z3DVolumeRaycaster::getWidgetsGroup()
 {
   if (!m_widgetsGroup) {
-    m_widgetsGroup = new ZWidgetsGroup("Volume", NULL, 1);
+    m_widgetsGroup = new ZWidgetsGroup("Image", NULL, 1);
     std::vector<ZParameter*> paras = getParameters();
     new ZWidgetsGroup(&m_xCut, m_widgetsGroup, 12);
     new ZWidgetsGroup(&m_yCut, m_widgetsGroup, 12);
@@ -271,7 +286,7 @@ ZWidgetsGroup *Z3DVolumeRaycaster::getWidgetsGroup()
       else if (para->getName().contains("Transfer Function"))
         new ZWidgetsGroup(para, m_widgetsGroup, 2);
       else if (para->getName() == "Compositing")
-        new ZWidgetsGroup(para, m_widgetsGroup, 9);
+        new ZWidgetsGroup(para, m_widgetsGroup, 2);
       else if (para->getName() == "ISO Value")
         new ZWidgetsGroup(para, m_widgetsGroup, 9);
       else if (para->getName() == "Local MIP Threshold")
@@ -1029,7 +1044,8 @@ void Z3DVolumeRaycaster::leftMouseButtonPressed(QMouseEvent *e, int w, int h)
       glm::vec3 pos3D = get3DPosition(e->x(), e->y(), w, h, success);
 #endif
       if (success) {
-        emit pointInVolumeLeftClicked(e->pos(), glm::ivec3(pos3D));
+        emit pointInVolumeLeftClicked(e->pos(), glm::ivec3(pos3D),
+                                      e->modifiers());
         e->accept();
       }
     }

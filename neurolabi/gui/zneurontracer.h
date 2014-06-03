@@ -7,6 +7,7 @@
 #include "neutube.h"
 #include "zstackgraph.h"
 #include "tz_locseg_chain.h"
+#include "zprogressable.h"
 
 class ZStack;
 class ZSwcTree;
@@ -47,7 +48,7 @@ private:
   Stack *m_signal;
 };
 
-class ZNeuronTracer
+class ZNeuronTracer : public ZProgressable
 {
 public:
   ZNeuronTracer();
@@ -74,12 +75,26 @@ public:
     m_resolution[2] = z;
   }
 
+  inline void setStackOffset(double x, double y, double z) {
+    m_stackOffset[0] = x;
+    m_stackOffset[1] = y;
+    m_stackOffset[2] = z;
+  }
+
+  inline void setStackOffset(const ZPoint &pt) {
+    m_stackOffset[0] = pt.x();
+    m_stackOffset[1] = pt.y();
+    m_stackOffset[2] = pt.z();
+  }
+
   inline void setVertexOption(ZStackGraph::EVertexOption vertexOption) {
     m_vertexOption = vertexOption;
   }
 
   /*!
    * \brief Auto trace
+   *
+   * It will also create workspaces automatically if necessary.
    */
   ZSwcTree* trace(Stack *stack);
 
@@ -91,6 +106,25 @@ public:
       const ZPoint &terminalCenter, double terminalRadius,
       const ZPoint &innerCenter, double innerRadius,
       const Stack *stack);
+
+  inline Trace_Workspace* getTraceWorkspace() const {
+    return m_traceWorkspace;
+  }
+
+  inline Connection_Test_Workspace* getConnectionTestWorkspace() const {
+    return m_connWorkspace;
+  }
+
+  void initTraceWorkspace(ZStack *stack);
+  void initConnectionTestWorkspace();
+
+  void updateTraceWorkspace(int traceEffort, bool traceMasked,
+                            double xRes, double yRes, double zRes);
+  void updateConnectionTestWorkspace(
+      double xRes, double yRes, double zRes,
+      char unit, double distThre, bool spTest, bool crossoverTest);
+
+  void loadTraceMask(bool traceMasked);
 
 private:
   //Helper functions
@@ -113,6 +147,7 @@ private:
   NeuTube::EImageBackground m_backgroundType;
   ZStackGraph::EVertexOption m_vertexOption;
   double m_resolution[3];
+  double m_stackOffset[3];
 
   //Intermedite buffer
   std::vector<Locseg_Chain*> m_chainArray;

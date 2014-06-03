@@ -4,6 +4,8 @@
 #include <QDir>
 #include <QDomDocument>
 #include <QDomElement>
+#include <QImage>
+#include <QPainter>
 #include <iostream>
 #include <ostream>
 #include <fstream>
@@ -17,6 +19,7 @@
 #include <memory>
 #endif
 #include <string>
+#include <set>
 #include "zopencv_header.h"
 
 #include "neutube.h"
@@ -175,8 +178,12 @@
 #include "zstackskeletonizer.h"
 #include "flyem/zflyemcoordinateconverter.h"
 #include "dvid/zdvidreader.h"
-#include "zneurontracer.h"
-#include "zworkspacefactory.h"
+#include "dvid/zdvidinfo.h"
+#include "zstringarray.h"
+#include "zflyemdvidreader.h"
+#include "zstroke2d.h"
+#include "flyem/zflyemservice.h"
+#include "zintset.h"
 
 using namespace std;
 
@@ -187,387 +194,7 @@ ZTest::ZTest()
 }
 
 
-bool ZTest::testTreeIterator(ZSwcTree &tree,
-                             const ZTestSwcTreeIteratorConfig &config,
-                             int *truthArray,
-                             int truthCount, bool testReverse)
-{
-  int count = -1;
 
-  if (config.start == NULL && config.blocker == NULL) {
-    count = tree.updateIterator(config.option, TRUE);
-  } else if (config.blocker == NULL) {
-    count = tree.updateIterator(config.option, config.start, TRUE);
-  } else if (config.start == NULL) {
-    count = tree.updateIterator(config.option, *(config.blocker), TRUE);
-  } else {
-    count = tree.updateIterator(config.option, config.start, *(config.blocker),
-                                TRUE);
-  }
-
-
-#ifdef _USE_GTEST_
-  EXPECT_EQ(count, truthCount) << "Unmatched node number";
-#else
-  if (count != truthCount) {
-    cerr << "Unmatched node number" << endl;
-    return false;
-  }
-#endif
-
-  if (truthArray == NULL) {
-    if (tree.begin() != NULL) {
-      return false;
-    }
-  }
-
-  for (Swc_Tree_Node *tn = tree.begin(); tn != tree.end(); tn = tree.next()) {
-    if (testReverse) {
-#ifdef _USE_GTEST_
-      EXPECT_EQ(SwcTreeNode::id(tn), truthArray[count - 1 - SwcTreeNode::index(tn)])
-          << "Unmatched node number";
-#else
-      if (SwcTreeNode::id(tn) != truthArray[count - 1 - SwcTreeNode::index(tn)]) {
-        cout << "Unmatched id" << endl;
-        tree.print(SWC_TREE_ITERATOR_NO_UPDATE);
-        return false;
-      }
-#endif
-    } else {
-      if (SwcTreeNode::id(tn) != truthArray[SwcTreeNode::index(tn)]) {
-        cout << "Unmatched id" << endl;
-        tree.print(SWC_TREE_ITERATOR_NO_UPDATE);
-        return false;
-      }
-    }
-  }
-
-  return true;
-}
-
-
-bool ZTest::testTreeIterator()
-{
-  ZSwcTree tree;
-  tree.load(GET_TEST_DATA_DIR + "/benchmark/swc/breadth_first.swc");
-
-  ZTestSwcTreeIteratorConfig config;
-
-  {
-    config.option = SWC_TREE_ITERATOR_BREADTH_FIRST;
-    int array[7] = { -1, 1, 2, 3, 4, 5, 6 };
-    TZ_ASSERT(testTreeIterator(tree, config, array,
-                               sizeof(array) / sizeof(array[0])),
-        "tree iteration failed");
-  }
-
-  {
-    config.option = SWC_TREE_ITERATOR_REVERSE;
-    int array[7] = { 6, 5, 4, 3, 2, 1, -1 };
-    TZ_ASSERT(testTreeIterator(tree, config, array,
-                               sizeof(array) / sizeof(array[0])),
-        "tree iteration failed");
-  }
-
-  {
-    config.option = SWC_TREE_ITERATOR_LEAF;
-    int array[3] = { 5, 6, 4 };
-    TZ_ASSERT(testTreeIterator(tree, config, array,
-                               sizeof(array) / sizeof(array[0])),
-        "tree iteration failed");
-  }
-
-  {
-    config.option = SWC_TREE_ITERATOR_REVERSE;
-    int array[3] = { 5, 6, 4 };
-    TZ_ASSERT(testTreeIterator(tree, config, array,
-                               sizeof(array) / sizeof(array[0]), true),
-        "tree iteration failed");
-  }
-
-  //With blockers
-  set<Swc_Tree_Node*> blocker;
-  blocker.insert(tree.data()->root->first_child);
-
-  {
-    config.option = SWC_TREE_ITERATOR_BREADTH_FIRST;
-    config.blocker = &blocker;
-    int array[1] = { -1 };
-    TZ_ASSERT(testTreeIterator(tree, config, array,
-                               sizeof(array) / sizeof(array[0])),
-        "tree iteration failed");
-  }
-
-  {
-    config.option = SWC_TREE_ITERATOR_DEPTH_FIRST;
-    int array[1] = { -1 };
-    TZ_ASSERT(testTreeIterator(tree, config, array,
-                               sizeof(array) / sizeof(array[0])),
-        "tree iteration failed");
-  }
-
-  {
-    config.option = SWC_TREE_ITERATOR_REVERSE;
-    int array[1] = { -1 };
-    TZ_ASSERT(testTreeIterator(tree, config, array,
-                               sizeof(array) / sizeof(array[0])),
-        "tree iteration failed");
-  }
-
-  {
-    config.option = SWC_TREE_ITERATOR_LEAF;
-    TZ_ASSERT(testTreeIterator(tree, config, NULL, 0),
-        "tree iteration failed");
-  }
-
-  blocker.clear();
-  blocker.insert(tree.data()->root->first_child->first_child);
-  {
-    config.option = SWC_TREE_ITERATOR_BREADTH_FIRST;
-    int array[2] = { -1, 1 };
-    TZ_ASSERT(testTreeIterator(tree, config, array,
-                               sizeof(array) / sizeof(array[0])),
-        "tree iteration failed");
-  }
-
-  {
-    config.option = SWC_TREE_ITERATOR_DEPTH_FIRST;
-    int array[2] = { -1, 1 };
-    TZ_ASSERT(testTreeIterator(tree, config, array,
-                               sizeof(array) / sizeof(array[0])),
-        "tree iteration failed");
-  }
-
-  {
-    config.option = SWC_TREE_ITERATOR_REVERSE;
-    int array[2] = { 1, -1 };
-    TZ_ASSERT(testTreeIterator(tree, config, array,
-                               sizeof(array) / sizeof(array[0])),
-        "tree iteration failed");
-  }
-
-  blocker.clear();
-  blocker.insert(tree.data()->root->first_child->first_child->first_child);
-  {
-    config.option = SWC_TREE_ITERATOR_BREADTH_FIRST;
-    int array[4] = { -1, 1, 2, 4 };
-    TZ_ASSERT(testTreeIterator(tree, config, array,
-                               sizeof(array) / sizeof(array[0])),
-        "tree iteration failed");
-  }
-
-  {
-    int array[4] = { -1, 1, 2, 4 };
-    config.option = SWC_TREE_ITERATOR_REVERSE;
-    TZ_ASSERT(testTreeIterator(tree, config, array,
-                               sizeof(array) / sizeof(array[0]), true),
-            "tree iteration failed");
-  }
-
-  {
-    int array[4] = { -1, 1, 2, 4 };
-    config.option = SWC_TREE_ITERATOR_DEPTH_FIRST;
-    TZ_ASSERT(testTreeIterator(tree, config, array,
-                               sizeof(array) / sizeof(array[0])),
-        "tree iteration failed");
-  }
-
-  {
-
-    int array[4] = { -1, 1, 2, 4 };
-    config.option = SWC_TREE_ITERATOR_REVERSE;
-    TZ_ASSERT(testTreeIterator(tree, config, array,
-                               sizeof(array) / sizeof(array[0]), true),
-            "tree iteration failed");
-  }
-
-  blocker.clear();
-  blocker.insert(tree.data()->root->first_child->first_child->first_child->next_sibling);
-  {
-    int array[6] = { -1, 1, 2, 3, 5, 6 };
-    config.option = SWC_TREE_ITERATOR_BREADTH_FIRST;
-    TZ_ASSERT(testTreeIterator(tree, config, array,
-                               sizeof(array) / sizeof(array[0])),
-        "tree iteration failed");
-  }
-
-  {
-    int array[6] = { -1, 1, 2, 3, 5, 6 };
-    config.option = SWC_TREE_ITERATOR_REVERSE;
-    TZ_ASSERT(testTreeIterator(tree, config, array,
-                               sizeof(array) / sizeof(array[0]), true),
-            "tree iteration failed");
-  }
-
-  {
-    int array[6] = { -1, 1, 2, 3, 5, 6 };
-    config.option = SWC_TREE_ITERATOR_DEPTH_FIRST;
-    TZ_ASSERT(testTreeIterator(tree, config, array,
-                               sizeof(array) / sizeof(array[0])),
-        "tree iteration failed");
-  }
-
-  {
-    int array[6] = { -1, 1, 2, 3, 5, 6 };
-    config.option = SWC_TREE_ITERATOR_REVERSE;
-    TZ_ASSERT(testTreeIterator(tree, config, array,
-                               sizeof(array) / sizeof(array[0]), true),
-            "tree iteration failed");
-  }
-
-  {
-    int array[2] = { 5, 6 };
-    config.option = SWC_TREE_ITERATOR_LEAF;
-    TZ_ASSERT(testTreeIterator(tree, config, array,
-                               sizeof(array) / sizeof(array[0])),
-            "tree iteration failed");
-
-    config.option = SWC_TREE_ITERATOR_REVERSE;
-    TZ_ASSERT(testTreeIterator(tree, config, array,
-                               sizeof(array) / sizeof(array[0]), true),
-        "tree iteration failed");
-  }
-
-  blocker.insert(tree.data()->root->first_child->first_child->first_child);
-  {
-    int array[3] = { -1, 1, 2 };
-    config.option = SWC_TREE_ITERATOR_BREADTH_FIRST;
-    TZ_ASSERT(testTreeIterator(tree, config, array,
-                               sizeof(array) / sizeof(array[0])),
-        "tree iteration failed");
-  }
-
-  {
-    int array[3] = { -1, 1, 2 };
-    config.option = SWC_TREE_ITERATOR_REVERSE;
-    TZ_ASSERT(testTreeIterator(tree, config, array,
-                               sizeof(array) / sizeof(array[0]), true),
-            "tree iteration failed");
-  }
-
-  {
-    int array[3] = { -1, 1, 2 };
-    config.option = SWC_TREE_ITERATOR_DEPTH_FIRST;
-    TZ_ASSERT(testTreeIterator(tree, config, array,
-                               sizeof(array) / sizeof(array[0])),
-        "tree iteration failed");
-  }
-
-  {
-    int array[3] = { -1, 1, 2 };
-    config.option = SWC_TREE_ITERATOR_REVERSE;
-    TZ_ASSERT(testTreeIterator(tree, config, array,
-                               sizeof(array) / sizeof(array[0]), true),
-            "tree iteration failed");
-  }
-
-  blocker.clear();
-  blocker.insert(tree.data()->root->first_child->first_child->first_child->first_child);
-  {
-    int array[6] = { -1, 1, 2, 3, 4, 6 };
-    config.option = SWC_TREE_ITERATOR_BREADTH_FIRST;
-    TZ_ASSERT(testTreeIterator(tree, config, array,
-                               sizeof(array) / sizeof(array[0])),
-        "tree iteration failed");
-  }
-
-  {
-    int array[6] = { -1, 1, 2, 3, 6, 4 };
-    config.option = SWC_TREE_ITERATOR_DEPTH_FIRST;
-    TZ_ASSERT(testTreeIterator(tree, config, array,
-                               sizeof(array) / sizeof(array[0])),
-        "tree iteration failed");
-  }
-
-  Swc_Tree_Node *start = tree.data()->root->first_child->first_child;
-  {
-    int array[4] = { 2, 3, 4, 6 };
-    config.start = start;
-    config.option = SWC_TREE_ITERATOR_BREADTH_FIRST;
-    TZ_ASSERT(testTreeIterator(tree, config, array,
-                               sizeof(array) / sizeof(array[0])),
-        "tree iteration failed");
-  }
-
-  {
-    int array[4] = { 2, 3, 6, 4 };
-    config.option = SWC_TREE_ITERATOR_DEPTH_FIRST;
-    TZ_ASSERT(testTreeIterator(tree, config, array,
-                               sizeof(array) / sizeof(array[0])),
-        "tree iteration failed");
-  }
-
-  ////////////
-  config.start = tree.data()->root->first_child->first_child->first_child;
-  {
-    int array[2] = { 3, 6 };
-    config.option = SWC_TREE_ITERATOR_BREADTH_FIRST;
-    TZ_ASSERT(testTreeIterator(tree, config, array,
-                               sizeof(array) / sizeof(array[0])),
-        "tree iteration failed");
-  }
-
-  {
-    int array[2] = { 3, 6 };
-    config.option = SWC_TREE_ITERATOR_DEPTH_FIRST;
-    TZ_ASSERT(testTreeIterator(tree, config, array,
-                               sizeof(array) / sizeof(array[0])),
-        "tree iteration failed");
-  }
-
-
-#if 0
-  tree.print(SWC_TREE_ITERATOR_DEPTH_FIRST);
-  cout << endl;
-
-  tree.print(SWC_TREE_ITERATOR_BREADTH_FIRST);
-  cout << endl;
-
-  tree.deactivateIterator();
-  tree.print(SWC_TREE_ITERATOR_DEPTH_FIRST);
-  cout << endl;
-
-  tree.activateIterator();
-  tree.print(SWC_TREE_ITERATOR_DEPTH_FIRST);
-  cout << endl;
-
-  tree.print(SWC_TREE_ITERATOR_LEAF);
-  cout << endl;
-
-  set<Swc_Tree_Node*> blocker;
-  blocker.insert(tree.data()->root->first_child);
-
-  tree.updateIterator(SWC_TREE_ITERATOR_DEPTH_FIRST, blocker);
-  tree.print(SWC_TREE_ITERATOR_NO_UPDATE);
-  cout << endl;
-
-  tree.updateIterator(SWC_TREE_ITERATOR_BREADTH_FIRST, blocker);
-  tree.print(SWC_TREE_ITERATOR_NO_UPDATE);
-  cout << endl;
-
-  blocker.clear();
-  blocker.insert(tree.data()->root->first_child->first_child->first_child);
-  tree.updateIterator(SWC_TREE_ITERATOR_BREADTH_FIRST, blocker);
-  tree.print(SWC_TREE_ITERATOR_NO_UPDATE);
-  cout << endl;
-
-  blocker.clear();
-  tree.updateIterator(SWC_TREE_ITERATOR_BREADTH_FIRST,
-                      tree.data()->root->first_child->first_child->first_child,
-                      blocker);
-  tree.print(SWC_TREE_ITERATOR_NO_UPDATE);
-  cout << endl;
-
-  blocker.insert(tree.data()->root->first_child->first_child->first_child->first_child);
-  tree.updateIterator(SWC_TREE_ITERATOR_DEPTH_FIRST,
-                      tree.data()->root->first_child->first_child->first_child,
-                      blocker);
-  tree.print(SWC_TREE_ITERATOR_NO_UPDATE);
-  cout << endl;
-#endif
-
-  return true;
-}
 
 #ifdef _JANELIA_WORKSTATION_
 const static string dataPath("/groups/flyem/home/zhaot/Work/neutube_ws/neurolabi/data");
@@ -11117,90 +10744,1041 @@ void ZTest::test(MainWindow *host)
 
 #if 0
   ZDvidReader reader;
-  reader.open("http://emdata1.int.janelia.org:7000", "a75");
-  //ZObject3dScan obj = reader.readBody(117);
 
-  //obj.save(GET_DATA_DIR + "/test.sobj");
+  ZFlyEmDataInfo eminfo(FlyEm::DATA_FIB25);
+  reader.open(eminfo.getDvidAddress().c_str(), "91a", 9000);
 
-  ZSwcTree *tree = reader.readSwc(117);
-  if (tree != NULL) {
-    tree->save(GET_DATA_DIR + "/test.swc");
+  std::vector<int> bodyId = reader.readBodyId(1000, 1000, 4500, 100, 100, 100);
+
+  for (size_t i = 0; i < bodyId.size(); ++i) {
+    std::cout << bodyId[i] << " ";
   }
+  std::cout << std::endl;
 #endif
 
 #if 0
   ZDvidReader reader;
-  reader.open("http://emdata1.int.janelia.org:7000", "a75");
-  ZStack *stack = reader.readGreyScale(500, 500, 3000, 1024, 1024, 10);
-  if (stack != NULL) {
-    stack->save(GET_DATA_DIR + "/test.tif");
-  } else {
-    std::cout << "Null stack" << std::endl;
-  }
+  ZFlyEmDataInfo eminfo(FlyEm::DATA_FIB25);
+  reader.open(eminfo.getDvidAddress().c_str(), "91a", 9000);
+
+  int sourceBodyId = 265246;
+  ZSwcTree *tree = reader.readSwc(sourceBodyId);
 #endif
 
 #if 0
-  int bodyId = 117;
   ZDvidReader reader;
-  reader.open("http://emdata1.int.janelia.org:7000", "a75");
 
-  ZSwcTree *tree = reader.readSwc(bodyId);
+  ZFlyEmDataInfo eminfo(FlyEm::DATA_FIB25);
+  reader.open(eminfo.getDvidAddress().c_str(), "91a", 9000);
 
-  ZFlyEmNeuron neuron(bodyId, tree, NULL);
+  /*
+  ZSwcPruner pruner;
+  pruner.setMinLength(1000.0);
+  pruner.prune(tree);
+  */
+
+  FlyEm::ZIntCuboidArray blockArray;
+  blockArray.loadSubstackList(dataPath + "/flyem/FIB/block_13layer.txt");
+  ZFlyEmQualityAnalyzer::SubstackRegionCalbration calbr;
+  calbr.setBounding(true, true, false);
+  calbr.setMargin(10, 10, 0);
 
   ZFlyEmQualityAnalyzer analyzer;
-  FlyEm::ZHotSpotArray &hotSpotArray = analyzer.computeHotSpotForSplit(neuron);
-  hotSpotArray.print();
+  analyzer.setSubstackRegion(blockArray, calbr);
 
-  FlyEm::ZHotSpot *hotSpot = hotSpotArray[0];
-  ZCuboid boundBox = hotSpot->toPointArray().getBoundBox();
-  boundBox.print();
+  ZDvidInfo dvidInfo;
+  QString info = reader.readInfo("superpixels");
+  dvidInfo.setFromJsonString(info.toStdString());
 
-  ZStack *stack = reader.readGrayScale(boundBox.firstCorner().x(),
-                                       boundBox.firstCorner().y(),
-                                       boundBox.firstCorner().z(),
-                                       boundBox.width() + 1,
-                                       boundBox.height() + 1,
-                                       boundBox.depth() + 1);
-  if (stack != NULL) {
-    stack->save(GET_DATA_DIR + "/test.tif");
-  } else {
-    std::cout << "Null stack" << std::endl;
+  int sourceBodyId = 117;
+  ZSwcTree *tree = reader.readSwc(sourceBodyId);
+  ZSwcTree *unscaledTree = tree->clone();
+  tree->scale(dvidInfo.getVoxelResolution()[0],
+      dvidInfo.getVoxelResolution()[1], dvidInfo.getVoxelResolution()[2]);
+  ZFlyEmNeuron neuron(sourceBodyId, tree, NULL);
+  neuron.setUnscaledModel(unscaledTree);
+
+  ZSwcTreeNodeArray nodeArray =
+      unscaledTree->getSwcTreeNodeArray(ZSwcTree::TERMINAL_ITERATOR);
+
+  double margin = 50;
+
+  std::set<int> bodySet;
+  for (ZSwcTreeNodeArray::const_iterator iter = nodeArray.begin();
+       iter != nodeArray.end(); ++iter) {
+    ZPoint center = SwcTreeNode::pos(*iter);
+    std::vector<int> bodyId = reader.readBodyId(
+          center.x(), center.y(), center.z(),
+          margin, margin, margin);
+    std::cout << bodyId.size() << " neighbor bodies" << std::endl;
+    bodySet.insert(bodyId.begin(), bodyId.end());
   }
 
-  tree = ZSwcGenerator::createSwc(hotSpot->toPointArray(), 5.0, true);
-  tree->translate(-boundBox.firstCorner());
-  tree->save(GET_DATA_DIR + "/test.swc");
+  std::cout << "Retrieving " << bodySet.size() << " neurons ..." << std::endl;
 
+
+  std::vector<ZFlyEmNeuron> neuronArray(bodySet.size());
+  size_t index = 0;
+  int neuronRetrievalCount = 0;
+  for (std::set<int>::const_iterator iter = bodySet.begin();
+       iter != bodySet.end(); ++iter, ++index) {
+    int bodyId = *iter;
+    ZSwcTree *tree = reader.readSwc(bodyId);
+    ZFlyEmNeuron &neuron = neuronArray[index];
+    if (tree != NULL) {
+      neuron.setId(bodyId);
+      neuron.setUnscaledModel(tree);
+      ZSwcTree *tree2 = tree->clone();
+      tree2->scale(dvidInfo.getVoxelResolution()[0],
+          dvidInfo.getVoxelResolution()[1], dvidInfo.getVoxelResolution()[2]);
+      neuron.setModel(tree2);
+      ++neuronRetrievalCount;
+    } else {
+      neuron.setId(-1);
+    }
+  }
+
+  std::cout << neuronRetrievalCount << " neurons retrieved." << std::endl;
+
+  std::cout << "Computing hot spots ..." << std::endl;
+  FlyEm::ZHotSpotArray &hotSpotArray =
+      analyzer.computeHotSpot(neuron, neuronArray);
+  hotSpotArray.print();
+#endif
+
+#if 0
+  ZFlyEmDataInfo eminfo(FlyEm::DATA_FIB25);
+  ZDvidReader reader;
+  reader.open(eminfo.getDvidAddress().c_str(), "91a", 9000);
+  QString info = reader.readInfo("superpixels");
+
+  qDebug() << info;
+
+  ZJsonObject obj;
+  obj.decode(info.toStdString());
+
+  obj.print();
+
+  ZDvidInfo dvidInfo;
+  dvidInfo.setFromJsonString(info.toStdString());
+  dvidInfo.print();
+#endif
+
+#if 0
+  ZFlyEmNeuronArray neuronArray;
+  neuronArray.importBodyDir(
+        GET_TEST_DATA_DIR +
+        "/flyem/FIB/skeletonization/session33/100000_/stacked.hf5");
+  std::cout << neuronArray.size() << " neurons." << std::endl;
+
+  FlyEm::ZSynapseAnnotationArray synapseArray;
+  synapseArray.loadJson(
+        GET_TEST_DATA_DIR +
+        "/flyem/FIB/skeletonization/session33/annotations-synapse.json");
+
+  FlyEm::ZIntCuboidArray blockArray;
+  blockArray.loadSubstackList(GET_DATA_DIR + "/flyem/FIB/block_13layer.txt");
+  ZFlyEmQualityAnalyzer::SubstackRegionCalbration calbr;
+  calbr.setBounding(true, true, false);
+  calbr.setMargin(10, 10, 0);
+  ZFlyEmQualityAnalyzer analyzer;
+  analyzer.setSubstackRegion(blockArray, calbr);
+
+  std::vector<int> allSynapseCount = synapseArray.countSynapse();
+
+  ZFlyEmNeuronArray selectedNeuronArray;
+  for (ZFlyEmNeuronArray::iterator iter = neuronArray.begin();
+       iter != neuronArray.end(); ++iter) {
+    ZFlyEmNeuron &neuron = *iter;
+    if ((size_t) neuron.getId() < allSynapseCount.size()) {
+      if (allSynapseCount[neuron.getId()] > 0) {
+        if (analyzer.touchingSideBoundary(*neuron.getBody())) {
+          selectedNeuronArray.push_back(neuron);
+        }
+        neuron.deprecate(ZFlyEmNeuron::BODY);
+      }
+    }
+  }
+
+  ZFlyEmNeuronExporter exporter;
+  exporter.exportIdVolume(selectedNeuronArray, GET_TEST_DATA_DIR + "/test2.json");
+#endif
+
+#if 0
+  ZHdf5Reader reader;
+  reader.open(GET_DATA_DIR + "/flyem/FIB/skeletonization/session33/100000_/stacked.hf5");
+
+  std::vector<std::string> nameArray = reader.getAllDatasetName("/");
+  std::cout << nameArray.size() << std::endl;
+  for (std::vector<std::string>::const_iterator iter = nameArray.begin();
+       iter != nameArray.end(); ++iter) {
+    std::cout << *iter << std::endl;
+  }
+#endif
+
+#if 0
+  std::vector<std::string> pathArray =
+      misc::parseHdf5Path(GET_DATA_DIR +
+                          "/flyem/FIB/skeletonization/session33/100000_/stacked.hf5");
+  ZStringArray::print(pathArray);
+#endif
+
+#if 0
+  ZFlyEmNeuronArray neuronArray;
+  neuronArray.importBodyDir(
+        GET_TEST_DATA_DIR +
+        "/flyem/FIB/skeletonization/session33/100000_/stacked.hf5");
+  std::cout << neuronArray.size() << " neurons." << std::endl;
+
+
+#endif
+
+#if 0
+  ZDvidReader reader;
+
+  ZFlyEmDataInfo eminfo(FlyEm::DATA_FIB25);
+  reader.open(eminfo.getDvidAddress().c_str(), "339c");
+
+  std::vector<int> bodyId = reader.readBodyId(1000000, 2000000);
+
+  for (size_t i = 0; i < bodyId.size(); ++i) {
+    std::cout << bodyId[i] << " ";
+  }
+  std::cout << std::endl;
+#endif
+
+#if 0
+  ZFlyEmNeuron neuron;
+  neuron.setId(117);
+  neuron.setModelPath("http:emdata1.int.janelia.org:9000:91a");
+  neuron.setVolumePath("http:emdata1.int.janelia.org:9000:91a");
+
+  ZSwcTree *tree2 = neuron.getModel();
+
+  tree2->save(GET_TEST_DATA_DIR + "/test2.swc");
+
+  ZObject3dScan *obj = neuron.getBody();
+  ZStackSkeletonizer skeletonizer;
+
+  skeletonizer.configure(
+        NeutubeConfig::getInstance().getPath(NeutubeConfig::SKELETONIZATION_CONFIG));
+  skeletonizer.print();
+
+  ZSwcTree *tree = skeletonizer.makeSkeleton(*obj);
+
+  tree->save(GET_TEST_DATA_DIR + "/test.swc");
+#endif
+
+#if 0
+  ZFlyEmDataBundle dataBundle;
+  ZDvidFilter dvidFilter;
+  dvidFilter.setMinBodySize(1);
+  dvidFilter.setMaxBodySize(100000);
+  dataBundle.loadDvid(dvidFilter);
+#endif
+
+#if 0
+  ZIntCuboidFaceArray faceArray;
+  Cuboid_I cuboid;
+  Cuboid_I_Set_S(&cuboid, 10, 20, 30, 40, 50, 60);
+  faceArray.append(&cuboid);
+  ZSwcTree *tree = ZSwcGenerator::createSwc(faceArray, 5.0);
+  tree->save(GET_DATA_DIR + "/test.swc");
+#endif
+
+#if 0
+  FlyEm::ZIntCuboidArray blockArray;
+  blockArray.loadSubstackList(GET_DATA_DIR + "/flyem/FIB/block_13layer.txt");
+
+  ZIntCuboidFaceArray faceArray = blockArray.getBorderFace();
+  ZSwcTree *tree = ZSwcGenerator::createSwc(faceArray, 5.0);
+  tree->save(GET_DATA_DIR + "/test.swc");
+#endif
+
+#if 0
+  //Provide x,y,z coordinates (and a body id) for all bodies
+  //between 100,000 and 500,0000 in size.
+
+  ZFlyEmNeuronArray neuronArray;
+  neuronArray.importBodyDir(
+        GET_DATA_DIR + "/flyem/FIB/skeletonization/session34/100000_/stacked.hf5");
+
+
+  std::cout << neuronArray.size() << " bodies loaded." << std::endl;
+
+  //QVector<ZObject3dScan> objList(fileList.size());
+  json_t *smallObj = json_object();
+  json_t *smallDataObj = json_array();
+
+  //json_t *bigObj = json_object();
+  //json_t *bigDataObj = json_array();
+
+  for (ZFlyEmNeuronArray::iterator iter = neuronArray.begin();
+       iter != neuronArray.end(); ++iter) {
+    ZFlyEmNeuron &neuron = *iter;
+
+    //std::cout << objFile.absoluteFilePath().toStdString().c_str() << std::endl;
+    ZObject3dScan *obj = neuron.getBody();
+    //obj.load(objFile.absoluteFilePath().toStdString());
+
+    int id = neuron.getId();
+    if (obj->isEmpty()) {
+      std::cout << "Empty object: " << id << std::endl;
+      continue;
+    }
+
+    size_t volume = obj->getVoxelNumber();
+    if (volume >= 100000 && volume <= 5000000) {
+      std::cout << "100k-5M " << id << std::endl;
+      ZVoxel voxel = obj->getMarker();
+      std::cout << voxel.x() << " " << voxel.y() << " " << voxel.z() << std::endl;
+      json_t *arrayObj = json_array();
+
+      TZ_ASSERT(voxel.x() >= 0, "invalid point");
+
+      json_array_append(arrayObj, json_integer(id));
+
+      int vx = voxel.x();
+      int vy = 2598 - voxel.y();
+      int vz = voxel.z();
+
+      std::cout << "(" << vx << ", " << vy << ", " << vz << ")" << std::endl;
+
+      json_array_append(arrayObj, json_integer(vx));
+      json_array_append(arrayObj, json_integer(vy));
+      json_array_append(arrayObj, json_integer(vz));
+      json_array_append(smallDataObj, arrayObj);
+    }
+
+    neuron.deprecate(ZFlyEmNeuron::ALL_COMPONENT);
+  }
+
+  json_object_set(smallObj, "data", smallDataObj);
+  //json_object_set(bigObj, "data", bigDataObj);
+
+  json_t *metaObj = json_object();
+
+  json_object_set(metaObj, "description", json_string("point list"));
+  json_object_set(metaObj, "file version", json_integer(1));
+
+  json_object_set(smallObj, "metadata", metaObj);
+  //json_object_set(bigObj, "metadata", metaObj);
+
+  json_dump_file(smallObj, (dataPath + "/100k_5M.json").c_str(), JSON_INDENT(2));
+  //json_dump_file(bigObj, (dataPath + "/500k_100k.json").c_str(), JSON_INDENT(2));
+
+#endif
+
+#if 0 //Count orphans
+  ZFlyEmNeuronArray neuronArray;
+  neuronArray.importBodyDir(
+        GET_DATA_DIR + "/flyem/FIB/skeletonization/session34/100000_/stacked.hf5");
+  std::cout << neuronArray.size() << std::endl;
+
+  FlyEm::ZSynapseAnnotationArray synapseArray;
+  synapseArray.loadJson(
+        dataPath + "/flyem/FIB/skeletonization/session34/annotations-synapse.json");
+
+  std::vector<int> allPsdCount = synapseArray.countPsd();
+  std::vector<int> allTbarCount = synapseArray.countTBar();
+
+  FlyEm::ZIntCuboidArray blockArray;
+  blockArray.loadSubstackList(dataPath + "/flyem/FIB/block_13layer.txt");
+  ZFlyEmQualityAnalyzer::SubstackRegionCalbration calbr;
+  calbr.setBounding(true, true, false);
+  calbr.setMargin(10, 10, 0);
+  //blockArray.print();
+  //calbr.calibrate(blockArray);
+
+  ZFlyEmQualityAnalyzer analyzer;
+  analyzer.setSubstackRegion(blockArray, calbr);
+
+  int orphanCount = 0;
+  int orphanPsdCount = 0;
+  int orphanTbarCount = 0;
+
+  for (ZFlyEmNeuronArray::const_iterator
+       iter = neuronArray.begin(); iter != neuronArray.end(); ++iter) {
+    const ZFlyEmNeuron &neuron = *iter;
+
+    std::cout << neuron.getId() << std::endl;
+
+    int psdCount = 0;
+    int tbarCount = 0;
+
+    if ((size_t) neuron.getId() < allPsdCount.size()) {
+      psdCount = allPsdCount[neuron.getId()];
+    }
+    if ((size_t) neuron.getId() < allTbarCount.size()) {
+      tbarCount = allTbarCount[neuron.getId()];
+    }
+
+    if (psdCount > 0 || tbarCount > 0) {
+      //++totalCount;
+      //totalPsdCount += psdCount;
+      if (!analyzer.touchingGlobalBoundary(*neuron.getBody())) {
+#if 0
+        if (analyzer.isStitchedOrphanBody(*neuron.getBody())) {
+          boundaryOrphanCount++;
+          boundaryOrphanPsdCount += psdCount;
+        }
+#endif
+        orphanCount++;
+        orphanPsdCount += psdCount;
+        orphanTbarCount += tbarCount;
+      }
+      neuron.deprecate(ZFlyEmNeuron::ALL_COMPONENT);
+    }
+  }
+
+  std::cout << "#Orphans >= 100k: " << orphanCount << std::endl;
+  std::cout << "#PSDs: " << orphanPsdCount << std::endl;
+  std::cout << "#TBars: " << orphanTbarCount << std::endl;
+
+#endif
+
+#if 0 //rescale TEM cells
+  QDir dir((GET_DATA_DIR + "/flyem/TEM/All_Cells").c_str());
+  QString outputDirPath = (GET_DATA_DIR + "/flyem/TEM/All_Cells_Scaled").c_str();
+  QDir outputDir(outputDirPath);
+
+  QFileInfoList subDirList = dir.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot);
+  QStringList nameFilters;
+  nameFilters << "*.swc";
+  foreach (QFileInfo fileInfo, subDirList) {
+    qDebug() << fileInfo.fileName();
+    QDir subdir(fileInfo.absoluteFilePath());
+    QFileInfoList swcFileInfoList = subdir.entryInfoList(
+          nameFilters, QDir::Files);
+    QString outputSubDir = outputDirPath + "/" + fileInfo.fileName();
+    if (!outputDir.exists(fileInfo.fileName())) {
+      outputDir.mkdir(fileInfo.fileName());
+    }
+    foreach (QFileInfo swcFileInfo, swcFileInfoList) {
+      qDebug() << swcFileInfo.fileName();
+      QString outputFilePath = outputSubDir + "/" + swcFileInfo.fileName();
+      qDebug() << outputFilePath;
+
+      ZSwcTree tree;
+      tree.load(swcFileInfo.absoluteFilePath().toStdString());
+      tree.rescale(0.031, 0.031, 0.043);
+      tree.save(outputFilePath.toStdString());
+    }
+  }
+#endif
+
+#if 0
+  ZFlyEmNeuronArray neuronArray;
+  neuronArray.importBodyDir(
+        GET_TEST_DATA_DIR +
+        "/flyem/FIB/skeletonization/session34/100000_/stacked.hf5");
+  std::cout << neuronArray.size() << " neurons." << std::endl;
+
+  FlyEm::ZSynapseAnnotationArray synapseArray;
+  synapseArray.loadJson(
+        GET_TEST_DATA_DIR +
+        "/flyem/FIB/skeletonization/session34/annotations-synapse.json");
+
+  FlyEm::ZIntCuboidArray blockArray;
+  blockArray.loadSubstackList(GET_DATA_DIR + "/flyem/FIB/block_13layer.txt");
+  ZFlyEmQualityAnalyzer::SubstackRegionCalbration calbr;
+  calbr.setBounding(true, true, false);
+  calbr.setMargin(10, 10, 0);
+  ZFlyEmQualityAnalyzer analyzer;
+  analyzer.setSubstackRegion(blockArray, calbr);
+
+  std::vector<int> allSynapseCount = synapseArray.countSynapse();
+
+  ZFlyEmNeuronArray selectedNeuronArray;
+  for (ZFlyEmNeuronArray::iterator iter = neuronArray.begin();
+       iter != neuronArray.end(); ++iter) {
+    ZFlyEmNeuron &neuron = *iter;
+    std::cout << neuron.getId() << std::endl;
+    if ((size_t) neuron.getId() < allSynapseCount.size()) {
+      if (allSynapseCount[neuron.getId()] > 0) {
+        if (analyzer.touchingSideBoundary(*neuron.getBody())) {
+          selectedNeuronArray.push_back(neuron);
+        }
+        neuron.deprecate(ZFlyEmNeuron::BODY);
+      }
+    }
+  }
+
+  //ZFlyEmNeuronExporter exporter;
+  //exporter.exportIdVolume(selectedNeuronArray, GET_TEST_DATA_DIR + "/side_bounary.json");
+#endif
+
+#if 0
+  ZDvidReader reader;
+
+  ZFlyEmDataInfo eminfo(FlyEm::DATA_FIB25);
+  reader.open(eminfo.getDvidAddress().c_str(), eminfo.getDvidUuid().c_str(),
+              eminfo.getDvidPort());
+
+  QByteArray keyValue = reader.readKeyValue("skeletons", "1.swc");
+
+  qDebug() << QString(keyValue);
+#endif
+
+#if 0
+  ZFlyEmDataInfo eminfo(FlyEm::DATA_FIB25);
+  ZFlyEmDvidReader reader;
+  reader.open(eminfo.getDvidAddress().c_str(), eminfo.getDvidUuid().c_str(),
+              eminfo.getDvidPort());
+
+  ZFlyEmBodyAnnotation annotation = reader.readAnnotation(117);
+  annotation.print();
+
+#endif
+
+#if 0
+  //QImage image(1024, 1024, QImage::Format_Mono);
+  //QPainter painter(image);
+  ZStroke2d stroke;
+  stroke.setZ(0);
+  stroke.append(50, 50);
+  stroke.append(70, 80);
+  stroke.setWidth(10);
+  stroke.setLabel(200);
+  Stack *stack = C_Stack::make(GREY, 100, 100, 1);
+  C_Stack::setZero(stack);
+  stroke.labelGrey(stack);
+  C_Stack::write(GET_DATA_DIR + "/test.tif", stack);
+#endif
+
+#if 0
+  ZDvidReader reader;
+
+  ZFlyEmDataInfo eminfo(FlyEm::DATA_FIB25);
+  reader.open(eminfo.getDvidAddress().c_str(), eminfo.getDvidUuid().c_str(),
+              eminfo.getDvidPort());
+
+  FlyEm::ZSynapseAnnotationArray synapseArray;
+  synapseArray.loadJson(
+        GET_TEST_DATA_DIR +
+        "/flyem/FIB/skeletonization/session36/annotations-synapse.json");
+
+  std::vector<int> bodyIdArray = reader.readBodyId(0, 100000);
+
+  std::cout << bodyIdArray.size() << std::endl;
+
+  FlyEm::ZIntCuboidArray blockArray;
+  blockArray.loadSubstackList(GET_DATA_DIR + "/flyem/FIB/block_13layer.txt");
+  ZFlyEmQualityAnalyzer::SubstackRegionCalbration calbr;
+  calbr.setBounding(true, true, false);
+  calbr.setMargin(10, 10, 0);
+  ZFlyEmQualityAnalyzer analyzer;
+  analyzer.setSubstackRegion(blockArray, calbr);
+
+  std::vector<int> allSynapseCount = synapseArray.countSynapse();
+  //std::vector<int> allPsdCount = synapseArray.countPsd();
+  //std::vector<int> allTbarcount = synapseArray.countTBar();
+
+  ofstream stream((GET_DATA_DIR + "/face_orphan.txt").c_str());
+
+  int count = 0;
+  for (std::vector<int>::const_iterator iter = bodyIdArray.begin();
+       iter != bodyIdArray.end(); ++iter) {
+    int bodyId = *iter;
+
+    if ((size_t) bodyId < allSynapseCount.size()) {
+      if (allSynapseCount[bodyId] > 0) {
+        ZObject3dScan obj = reader.readBody(bodyId);
+        //obj.print();
+        if (analyzer.isInternalFaceOrphan(obj)) {
+          std::cout << "Body ID: " << bodyId << std::endl;
+          stream << bodyId << std::endl;
+          ++count;
+        }
+      }
+    }
+  }
+
+  stream.close();
+
+  std::cout << count << " internal face orphans." << std::endl;
+#endif
+
+#if 0
+  ZFlyEmNeuronArray neuronArray;
+  neuronArray.importBodyDir(
+        GET_TEST_DATA_DIR +
+        "/flyem/FIB/skeletonization/session34/100000_/stacked.hf5");
+  std::cout << neuronArray.size() << " neurons." << std::endl;
+
+  FlyEm::ZSynapseAnnotationArray synapseArray;
+  synapseArray.loadJson(
+        GET_TEST_DATA_DIR +
+        "/flyem/FIB/skeletonization/session34/annotations-synapse.json");
+
+  FlyEm::ZIntCuboidArray blockArray;
+  blockArray.loadSubstackList(GET_DATA_DIR + "/flyem/FIB/block_13layer.txt");
+  ZFlyEmQualityAnalyzer::SubstackRegionCalbration calbr;
+  calbr.setBounding(true, true, false);
+  calbr.setMargin(10, 10, 0);
+  ZFlyEmQualityAnalyzer analyzer;
+  analyzer.setSubstackRegion(blockArray, calbr);
+
+  std::vector<int> allSynapseCount = synapseArray.countSynapse();
+
+  ZFlyEmNeuronArray selectedNeuronArray;
+  for (ZFlyEmNeuronArray::iterator iter = neuronArray.begin();
+       iter != neuronArray.end(); ++iter) {
+    ZFlyEmNeuron &neuron = *iter;
+    if (neuron.getId() == 605706) {
+      std::cout << neuron.getId() << std::endl;
+      if ((size_t) neuron.getId() < allSynapseCount.size()) {
+        if (allSynapseCount[neuron.getId()] > 0) {
+          neuron.getBody()->save(GET_DATA_DIR + "/test.sobj");
+          if (analyzer.touchingSideBoundary(*neuron.getBody())) {
+            selectedNeuronArray.push_back(neuron);
+          }
+          neuron.deprecate(ZFlyEmNeuron::BODY);
+        }
+      }
+    }
+  }
+
+  //ZFlyEmNeuronExporter exporter;
+  //exporter.exportIdVolume(selectedNeuronArray, GET_TEST_DATA_DIR + "/side_bounary.json");
+#endif
+
+#if 0
+  FlyEm::ZSynapseAnnotationArray synapseArray;
+  synapseArray.loadJson(
+        GET_TEST_DATA_DIR +
+        "/flyem/FIB/skeletonization/session35/annotations-synapse.json");
+
+  std::vector<int> allPsdCount = synapseArray.countPsd();
+  std::vector<int> allTbarCount = synapseArray.countTBar();
+  int psdCount = 0;
+  int tbarCount = 0;
+
+  ZString line;
+  FILE *fp = fopen((GET_DATA_DIR + "/face_orphan.txt").c_str(), "r");
+  while(line.readLine(fp)) {
+    std::vector<int> bodyIdArray = line.toIntegerArray();
+    if (!bodyIdArray.empty()) {
+      int bodyId = bodyIdArray[0];
+      if ((size_t) bodyId < allPsdCount.size()) {
+        psdCount += allPsdCount[bodyId];
+      }
+      if ((size_t) bodyId < allTbarCount.size()) {
+        tbarCount += allTbarCount[bodyId];
+      }
+    }
+  }
+
+  fclose(fp);
+
+  std::cout << "#PSD: " << psdCount << std::endl;
+  std::cout << "#Tbar: " << tbarCount << std::endl;
+#endif
+
+#if 0
+  std::vector<int> bodyIdArray;
+
+  FlyEm::Service::FaceOrphanOverlap service;
+  service.loadFace(cuboidArray);
+  service.markBody(bodyArray, 1);
+  ZGraph *graph = service.computeOverlap();
+  std::vector<ZObject3dScan> &objArray = service.getTouchRegion();
+
+  for (size_t i = 0; i < bodyIdArray.size(); ++i) {
+    int bodyId = bodyIdArray[i];
+    ZObject3dScan &body = bodyArray[i];
+
+  }
+
+#endif
+
+#if 0
+  ZDvidReader reader;
+
+  ZFlyEmDataInfo eminfo(FlyEm::DATA_FIB25);
+  reader.open(eminfo.getDvidAddress().c_str(), eminfo.getDvidUuid().c_str(),
+              eminfo.getDvidPort());
+
+  ZStack *stack = reader.readBodyLabel(2140, 2089, 1500, 1, 500, 500);
+
+  stack->printInfo();
+
+  std::set<FlyEm::TBodyLabel> bodySet;
+
+  size_t voxelNumber = stack->getVoxelNumber();
+
+  FlyEm::TBodyLabel *labelArray =
+      (FlyEm::TBodyLabel*) (stack->array8());
+  for (size_t i = 0; i < voxelNumber; ++i) {
+    bodySet.insert(labelArray[i]);
+  }
+
+  std::cout << bodySet.size() << std::endl;
+
+  for (std::set<FlyEm::TBodyLabel>::const_iterator iter = bodySet.begin();
+       iter != bodySet.end(); ++iter) {
+    std::cout << *iter << std::endl;
+  }
+
+  return;
+
+  std::vector<int> bodyIdArray =
+      reader.readBodyId(1500, 1500, 2500, 100, 100, 10);
+  for (std::vector<int>::const_iterator iter = bodyIdArray.begin();
+       iter != bodyIdArray.end(); ++iter) {
+    std::cout << *iter << std::endl;
+  }
+
+  Stack *scaled = Scale_Double_Stack(
+        (double*) stack->array8(),
+        stack->width(), stack->height(), stack->depth(), GREY16);
+
+  C_Stack::write(GET_DATA_DIR + "/test.tif", scaled);
+
+
+  stack = reader.readGrayScale(1500, 1500, 2500, 100, 100, 10);
+  stack->save(GET_DATA_DIR + "/test2.tif");
+
+  delete stack;
+#endif
+
+#if 0
+  FlyEm::Service::FaceOrphanOverlap service;
+
+  ZFlyEmDataInfo eminfo(FlyEm::DATA_FIB25);
+  ZDvidTarget dvidTarget;
+  dvidTarget.set(
+        eminfo.getDvidAddress(), eminfo.getDvidUuid(), eminfo.getDvidPort());
+  service.setDvidTarget(dvidTarget);
+
+  FlyEm::ZIntCuboidArray blockArray;
+  blockArray.loadSubstackList(GET_DATA_DIR + "/flyem/FIB/block_13layer.txt");
+  ZFlyEmQualityAnalyzer::SubstackRegionCalbration calbr;
+  calbr.setBounding(true, true, false);
+  calbr.setMargin(10, 10, 0);
+  calbr.calibrate(blockArray);
+
+#if 0
+  blockArray.resize(20);
+  blockArray.exportSwc(GET_DATA_DIR + "/test.swc");
+#endif
+  service.loadFace(blockArray);
+
+#if 1
+  service.markBody();
+
+  std::vector<int> orphanBodyArray;
+  orphanBodyArray.push_back(34677);
+  orphanBodyArray.push_back(236315);
+  orphanBodyArray.push_back(66038);
+  orphanBodyArray.push_back(67948);
+  orphanBodyArray.push_back(625684);
+  service.loadFaceOrphanBody(orphanBodyArray);
+
+  service.computeOverlap();
+
+  const std::vector<ZIntPoint> &marker = service.getMarker();
+  for (std::vector<ZIntPoint>::const_iterator iter = marker.begin();
+       iter != marker.end(); ++iter) {
+    std::cout << iter->getX() << " " << iter->getY() << " " << iter->getZ() << std::endl;
+  }
+#endif
+  service.print();
+#endif
+
+#if 0
+  ZDvidReader reader;
+
+  ZFlyEmDataInfo eminfo(FlyEm::DATA_FIB25);
+  reader.open(eminfo.getDvidAddress().c_str(), eminfo.getDvidUuid().c_str(),
+              eminfo.getDvidPort());
+  tic();
+  ZObject3dScan obj = reader.readBody(19985);
+
+  obj.getBoundBox().print();
+
+  std::cout << obj.getVoxelNumber() << std::endl;
+#endif
+
+#if 0
+  ZDvidReader reader;
+  ZFlyEmDataInfo eminfo(FlyEm::DATA_FIB25);
+  reader.open(eminfo.getDvidAddress().c_str(), eminfo.getDvidUuid().c_str(),
+              eminfo.getDvidPort());
+
+  ZString line;
+  FILE *fp = fopen((GET_DATA_DIR + "/face_orphan.txt").c_str(), "r");
+  while(line.readLine(fp)) {
+    std::vector<int> bodyIdArray = line.toIntegerArray();
+    if (!bodyIdArray.empty()) {
+      int bodyId = bodyIdArray[0];
+      ZObject3dScan obj = reader.readBody(bodyId);
+      if (obj.getBoundBox().lastCorner().z() < 2000) {
+        std::cout << bodyId << ": ";
+        obj.getBoundBox().print();
+      }
+    }
+  }
+
+  fclose(fp);
+#endif
+
+#if 0
+  ZFlyEmDataInfo eminfo(FlyEm::DATA_FIB25);
+  ZDvidTarget dvidTarget;
+  dvidTarget.set(
+        eminfo.getDvidAddress(), eminfo.getDvidUuid(), eminfo.getDvidPort());
+  ZDvidReader reader;
+  reader.open(dvidTarget);
+
+  tic();
+  ZObject3dScan obj = reader.readBody(9);
+  //obj.canonize();
+  obj.getBoundBox().print();
+  obj.getMarker().print();
+  ptoc();
+#endif
+
+#if 0
+  FlyEm::Service::FaceOrphanOverlap service;
+
+  ZFlyEmDataInfo eminfo(FlyEm::DATA_FIB25);
+  ZDvidTarget dvidTarget;
+  dvidTarget.set(
+        eminfo.getDvidAddress(), eminfo.getDvidUuid(), eminfo.getDvidPort());
+  service.setDvidTarget(dvidTarget);
+
+  FlyEm::ZIntCuboidArray blockArray;
+  blockArray.loadSubstackList(GET_DATA_DIR + "/flyem/FIB/block_13layer.txt");
+  ZFlyEmQualityAnalyzer::SubstackRegionCalbration calbr;
+  calbr.setBounding(true, true, false);
+  calbr.setMargin(10, 10, 0);
+  calbr.calibrate(blockArray);
+
+#if 0
+  blockArray.resize(20);
+  blockArray.exportSwc(GET_DATA_DIR + "/test.swc");
+#endif
+  service.loadFace(blockArray);
+  service.markBody();
+  service.loadSynapse(GET_DATA_DIR +
+                      "/flyem/FIB/skeletonization/session36/annotations-synapse.json");
+
+
+  std::vector<int> orphanBodyArray;
+
+#if 1
+  ZString line;
+  FILE *fp = fopen((GET_DATA_DIR + "/face_orphan.txt").c_str(), "r");
+  while(line.readLine(fp)) {
+    std::vector<int> bodyIdArray = line.toIntegerArray();
+    if (!bodyIdArray.empty()) {
+      int bodyId = bodyIdArray[0];
+      orphanBodyArray.push_back(bodyId);
+    }
+  }
+
+  fclose(fp);
+#else
+  orphanBodyArray.push_back(34677);
+  orphanBodyArray.push_back(236315);
+  orphanBodyArray.push_back(66038);
+  orphanBodyArray.push_back(67948);
+  orphanBodyArray.push_back(625684);
+#endif
+  service.loadFaceOrphanBody(orphanBodyArray);
+
+  service.computeOverlap();
+
+  const std::vector<ZIntPoint> &marker = service.getMarker();
+  for (std::vector<ZIntPoint>::const_iterator iter = marker.begin();
+       iter != marker.end(); ++iter) {
+    std::cout << iter->getX() << " " << iter->getY() << " " << iter->getZ() << std::endl;
+  }
 
   ZFlyEmCoordinateConverter converter;
-  converter.configure(ZFlyEmDataInfo(FlyEm::DATA_FIB25));
+  converter.setStackSize(3150, 2599, 6500);
+  converter.setVoxelResolution(10, 10, 10);
+  converter.setZStart(1490);
+  converter.setMargin(10);
 
-  ZPoint corner = boundBox.firstCorner();
-  converter.convert(&corner, ZFlyEmCoordinateConverter::IMAGE_SPACE,
-                    ZFlyEmCoordinateConverter::RAVELER_SPACE);
-  std::cout << "Position: " << corner.toString() << std::endl;
+  service.setCoordinateConverter(converter);
 
+  service.exportJsonFile(GET_DATA_DIR + "/test.json");
+#endif
+
+#if 0
+  Mc_Stack *stack = C_Stack::make(GREY16, 5, 5, 2, 3);
+  C_Stack::setOne(stack);
+  C_Stack::setZero(stack, 3, 2, 1, 3, 2, 2);
+  C_Stack::printValue(stack);
+#endif
+
+#if 0
+  Stack *stack = C_Stack::make(GREY16, 5, 5, 2);
+  C_Stack::setOne(stack);
+  Stack *block = C_Stack::make(GREY16, 20, 3, 5);
+  C_Stack::setZero(block);
+  C_Stack::setBlockValue(stack, block, -1, -1, 0);
+  C_Stack::printValue(stack);
+#endif
+
+#if 0
+  FlyEm::ZSubstackRoi roi;
+  roi.importJsonFile(GET_DATA_DIR + "/flyem/FIB/roi.json");
+
+  ZIntCuboidFaceArray faceArray = roi.getCuboidArray().getSideBorderFace();
+  faceArray.exportSwc(GET_DATA_DIR + "/flyem/FIB/block_13layer_chop.swc");
+#endif
+
+#if 0
+  ZFlyEmNeuron neuron;
+  neuron.setId(117);
+  ZFlyEmDataInfo eminfo(FlyEm::DATA_FIB25);
+  ZDvidTarget dvidTarget;
+  dvidTarget.set(eminfo.getDvidAddress(), eminfo.getDvidUuid(),
+                 eminfo.getDvidPort());
+
+  neuron.setVolumePath(dvidTarget.getBodyPath(117));
+  ZObject3dScan *body = neuron.getBody();
+  std::cout << body->getVoxelNumber() << std::endl;
+#endif
+
+#if 0
+  FlyEm::ZSubstackRoi roi;
+  roi.importJsonFile(GET_DATA_DIR + "/flyem/FIB/roi.json");
+
+  ZIntCuboidFaceArray faceArray = roi.getCuboidArray().getSideBorderFace();
+
+  ZFlyEmDataInfo eminfo(FlyEm::DATA_FIB25);
+  ZDvidTarget dvidTarget;
+  dvidTarget.set(
+        eminfo.getDvidAddress(), eminfo.getDvidUuid(), eminfo.getDvidPort());
+  ZDvidReader reader;
+  reader.open(dvidTarget);
+
+  ZIntSet sideBodySet;
+  for (ZIntCuboidFaceArray::const_iterator iter = faceArray.begin();
+       iter != faceArray.end(); ++iter) {
+    const ZIntCuboidFace &face = *iter;
+    std::set<int> bodySet =
+        reader.readBodyId(face.getCornerCoordinates(0),
+                          face.getCornerCoordinates(3));
+    std::cout << bodySet.size() << " ids." << std::endl;
+    sideBodySet.insert(bodySet.begin(), bodySet.end());
+  }
+  std::cout << sideBodySet.size() << std::endl;
+
+  ZIntSet largeBodySet = reader.readBodyId(100000, MAX_INT32);
+  std::cout << largeBodySet.size() << std::endl;
+
+  sideBodySet.intersect(largeBodySet);
+  std::cout << sideBodySet.size() << std::endl;
+
+  FlyEm::ZSynapseAnnotationArray synapseArray;
+  synapseArray.loadJson(
+        GET_TEST_DATA_DIR +
+        "/flyem/FIB/skeletonization/session36/annotations-synapse.json");
+  std::vector<int> allSynapseCount = synapseArray.countSynapse();
+  ZFlyEmNeuronArray selectedNeuronArray;
+  for (ZIntSet::const_iterator iter = sideBodySet.begin();
+       iter != sideBodySet.end(); ++iter) {
+    int bodyId = *iter;
+    std::cout << bodyId << std::endl;
+    if ((size_t) bodyId < allSynapseCount.size()) {
+      if (allSynapseCount[bodyId] > 0) {
+        ZFlyEmNeuron neuron;
+        neuron.setVolumePath(dvidTarget.getBodyPath(bodyId));
+        neuron.setId(bodyId);
+        selectedNeuronArray.push_back(neuron);
+      }
+    }
+  }
+
+#if 0
+
+  FlyEm::ZSynapseAnnotationArray synapseArray;
+  synapseArray.loadJson(
+        GET_TEST_DATA_DIR +
+        "/flyem/FIB/skeletonization/session34/annotations-synapse.json");
+
+  FlyEm::ZIntCuboidArray blockArray;
+  blockArray.loadSubstackList(GET_DATA_DIR + "/flyem/FIB/block_13layer.txt");
+  ZFlyEmQualityAnalyzer::SubstackRegionCalbration calbr;
+  calbr.setBounding(true, true, false);
+  calbr.setMargin(10, 10, 0);
+  ZFlyEmQualityAnalyzer analyzer;
+  analyzer.setSubstackRegion(blockArray, calbr);
+
+  std::vector<int> allSynapseCount = synapseArray.countSynapse();
+
+  ZFlyEmNeuronArray selectedNeuronArray;
+  for (ZFlyEmNeuronArray::iterator iter = neuronArray.begin();
+       iter != neuronArray.end(); ++iter) {
+    ZFlyEmNeuron &neuron = *iter;
+    std::cout << neuron.getId() << std::endl;
+    if ((size_t) neuron.getId() < allSynapseCount.size()) {
+      if (allSynapseCount[neuron.getId()] > 0) {
+        if (analyzer.touchingSideBoundary(*neuron.getBody())) {
+          selectedNeuronArray.push_back(neuron);
+        }
+        neuron.deprecate(ZFlyEmNeuron::BODY);
+      }
+    }
+  }
+#endif
+
+  ZFlyEmNeuronExporter exporter;
+  exporter.exportIdVolume(selectedNeuronArray,
+                          GET_TEST_DATA_DIR + "/side_bounary.json");
+#endif
+
+#if 0
+  ZIntSet set1;
+  set1.insert(1);
+  set1.insert(2);
+  set1.insert(3);
+
+  /*
+  ZIntSet set2;
+  set2.insert(1);
+  set2.insert(2);
+  set1.intersect(set2);
+  */
+
+  std::vector<int> set2;
+  set2.push_back(1);
+  set2.push_back(2);
+  set2.push_back(2);
+  set2.push_back(4);
+  set2.push_back(5);
+  set1.intersect(set2);
+
+  set1.print();
+#endif
+
+#if 0
+  ZStroke2d stroke;
+  stroke.append(10, 10);
+  //stroke.append(20, 20);
+  //stroke.append(21, 30);
+  //stroke.append(10, 100);
+  stroke.setWidth(20);
+  ZStack *stack = stroke.toStack();
+  stack->printInfo();
+
+  stack->save(GET_DATA_DIR + "/test.tif");
 #endif
 
 #if 1
-  ZStack stack;
-  stack.load(GET_DATA_DIR + "/system/diadem/diadem_e4.tif");
+  Stack *stack = C_Stack::make(GREY8, 5, 5, 5);
+  C_Stack::setOne(stack);
+  for (size_t i = 0; i < C_Stack::voxelNumber(stack); ++i) {
+    stack->array[i] = 255-i;
+  }
+  C_Stack::printValue(stack);
 
-  ZWorkspaceFactory wf;
-  Trace_Workspace *traceWorkspace = wf.createTraceWorkspace(stack.c_stack());
-  Connection_Test_Workspace *connWorkspace = wf.createConnectionTestWorkspace();
-
-  ZNeuronTracer tracer;
-
-  tracer.setTraceWorkspace(traceWorkspace);
-  tracer.setConnWorkspace(connWorkspace);
-
-
-  ZSwcTree *tree = tracer.trace(stack.c_stack());
-
-  tree->save(GET_DATA_DIR + "/test.swc");
-
-  delete tree;
+  Stack *out = C_Stack::downsampleMin(stack, 1, 1, 1);
+  C_Stack::printValue(out);
 #endif
 }

@@ -84,6 +84,10 @@ BOOL Cuboid_I_Hit(const Cuboid_I *cuboid, int x, int y, int z);
  */
 BOOL Cuboid_I_Hit_Internal(const Cuboid_I *cuboid, int x, int y, int z);
 
+/**@brief Translate a cuboid.
+ */
+void Cuboid_I_Translate(Cuboid_I *cuboid, int dx, int dy, int dz);
+
 
 __END_DECLS
 

@@ -181,7 +181,8 @@ void ZFlyEmQualityAnalyzer::setSubstackRegion(const FlyEm::ZIntCuboidArray &roi)
 }
 
 void ZFlyEmQualityAnalyzer::setSubstackRegion(
-    const FlyEm::ZIntCuboidArray &roi, const SubstackRegionCalbration &calbr)
+    const FlyEm::ZIntCuboidArray &roi,
+    const FlyEm::SubstackRegionCalbration &calbr)
 {
   m_substackRegion = roi;
   calbr.calibrate(m_substackRegion);
@@ -215,6 +216,23 @@ bool ZFlyEmQualityAnalyzer::touchingGlobalBoundary(const ZObject3dScan &obj)
   obj.getBoundBox(&objBox);
   */
 
+  ZIntCuboidFaceArray faceArray = m_substackRegion.getBorderFace();
+  for (size_t i = 0; i < obj.getStripeNumber(); ++i) {
+    const ZObject3dStripe &stripe = obj.getStripe(i);
+    for (int j = 0; j < stripe.getSegmentNumber(); ++j) {
+      if (faceArray.contains(stripe.getSegmentStart(j), stripe.getY(),
+                             stripe.getZ())) {
+        return true;
+      }
+      if (faceArray.contains(stripe.getSegmentEnd(j), stripe.getY(),
+                             stripe.getZ())) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+#if 0
   Cuboid_I boundBox = m_substackRegion.getBoundBox();
 
   //Test if the body touches the boundary
@@ -245,6 +263,7 @@ bool ZFlyEmQualityAnalyzer::touchingGlobalBoundary(const ZObject3dScan &obj)
   }
 
   return false;
+#endif
 }
 
 bool ZFlyEmQualityAnalyzer::touchingSideBoundary(const ZObject3dScan &obj)
@@ -279,46 +298,6 @@ bool ZFlyEmQualityAnalyzer::touchingSideBoundary(const ZObject3dScan &obj)
   }
 
   return false;
-}
-
-ZFlyEmQualityAnalyzer::SubstackRegionCalbration::SubstackRegionCalbration()
-{
-  for (int i = 0; i < 3; i++) {
-    m_margin[i] = 0;
-    m_bounding[i] = true;
-  }
-}
-
-void ZFlyEmQualityAnalyzer::SubstackRegionCalbration::setMargin(
-    int x, int y, int z)
-{
-  m_margin[0] = x;
-  m_margin[1] = y;
-  m_margin[2] = z;
-}
-
-void ZFlyEmQualityAnalyzer::SubstackRegionCalbration::setBounding(
-    bool x, bool y, bool z)
-{
-  m_bounding[0] = x;
-  m_bounding[1] = y;
-  m_bounding[2] = z;
-}
-
-void ZFlyEmQualityAnalyzer::SubstackRegionCalbration::calibrate(
-    FlyEm::ZIntCuboidArray &roi) const
-{
-  Cuboid_I boundBox = roi.getBoundBox();
-
-  int m_offset[3] = {0, 0, 0};
-  for (int i = 0; i < 3; i++) {
-    m_offset[i] = m_margin[i];
-    if (m_bounding[i]) {
-      m_offset[i] -= boundBox.cb[i];
-    }
-  }
-
-  roi.translate(m_offset[0], m_offset[1], m_offset[2]);
 }
 
 FlyEm::ZHotSpotArray&
@@ -447,7 +426,7 @@ FlyEm::ZHotSpotArray& ZFlyEmQualityAnalyzer::computeHotSpotForSplit(
                                         iround(SwcTreeNode::y(tn)),
                                         iround(SwcTreeNode::z(tn)));
                 }
-                hotSpot->setguidance(guidance);
+                hotSpot->setGuidance(guidance);
 
                 break;
               }
@@ -551,7 +530,7 @@ ZFlyEmQualityAnalyzer::computeHotSpot(const ZFlyEmNeuron &neuron,
 
   ZSwcDeepAngleMetric metric;
   metric.setLevel(3);
-  metric.setMinDist(100.0);
+  metric.setMinDist(20.0);
   /*
   ZFlyEmDataBundle dataBundle;
   dataBundle.loadJsonFile(GET_TEST_DATA_DIR + "/flyem/FIB/data_release/bundle5/data_bundle.json");
@@ -559,9 +538,13 @@ ZFlyEmQualityAnalyzer::computeHotSpot(const ZFlyEmNeuron &neuron,
   */
   for (size_t i = 0; i < neuronArray.size(); ++i) {
     const ZFlyEmNeuron &buddyNeuron = neuronArray[i];
-    if (neuron.getId() != buddyNeuron.getId()) {
+    if (neuron.getId() != buddyNeuron.getId() && buddyNeuron.getId() >= 0) {
       double dist =
-          metric.measureDistance(neuron.getModel(), buddyNeuron.getModel());
+          metric.measureDistance(
+            neuron.getUnscaledModel(), buddyNeuron.getUnscaledModel());
+#ifdef _DEBUG_
+      std::cout << "Distance: " << dist << std::endl;
+#endif
       if (dist < 1.0) {
         const Swc_Tree_Node *tn = metric.getFirstNode();
         FlyEm::ZHotSpot *hotSpot = new FlyEm::ZHotSpot;
@@ -572,6 +555,12 @@ ZFlyEmQualityAnalyzer::computeHotSpot(const ZFlyEmNeuron &neuron,
         structure->setSource(neuron.getId());
         structure->addTarget(buddyNeuron.getId());
         hotSpot->setGeometry(geometry);
+
+        FlyEm::ZCurveGeometry *guidance = new FlyEm::ZCurveGeometry;
+        guidance->appendPoint(SwcTreeNode::pos(tn));
+        guidance->appendPoint(SwcTreeNode::pos(metric.getSecondNode()));
+        hotSpot->setGuidance(guidance);
+
         hotSpot->setStructure(structure);
         hotSpot->setConfidence(1.0 - dist);
         m_hotSpotArray.append(hotSpot);
@@ -579,5 +568,38 @@ ZFlyEmQualityAnalyzer::computeHotSpot(const ZFlyEmNeuron &neuron,
     }
   }
 
+  m_hotSpotArray.sort();
+
   return m_hotSpotArray;
+}
+
+bool ZFlyEmQualityAnalyzer::isInternalFaceOrphan(const ZObject3dScan &obj)
+{
+  Cuboid_I objBox;
+  obj.getBoundBox(&objBox);
+
+  bool isLocalOrphan = false;
+
+  int boxIndex = m_substackRegion.hitTest(
+        objBox.cb[0], objBox.cb[1], objBox.cb[2]);
+  if (boxIndex >= 0) {
+    if (boxIndex == m_substackRegion.hitTest(
+          objBox.ce[0], objBox.ce[1], objBox.ce[2])) {
+      isLocalOrphan = true;
+    }
+  }
+
+
+  if (isLocalOrphan) {
+    if (!touchingGlobalBoundary(obj)) {
+      Cuboid_I &block = m_substackRegion[boxIndex];
+      for (int i = 0; i < 3; ++i) {
+        if (objBox.cb[i] == block.cb[i] || objBox.ce[i] == block.ce[i]) {
+          return true;
+        }
+      }
+    }
+  }
+
+  return false;
 }

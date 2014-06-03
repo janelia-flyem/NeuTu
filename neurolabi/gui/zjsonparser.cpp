@@ -95,7 +95,7 @@ void ZJsonParser::decref(json_t *value)
 
 const char* ZJsonParser::stringValue(const json_t *value)
 {
-  if (value == NULL) {
+  if (value == NULL || !json_is_string(value)) {
     return m_emptyString;
   }
 
@@ -109,6 +109,10 @@ double ZJsonParser::numberValue(const json_t *value)
 
 int ZJsonParser::integerValue(const json_t *value)
 {
+  if (value == NULL) {
+    return 0;
+  }
+
   return json_integer_value(value);
 }
 
@@ -191,4 +195,14 @@ void ZJsonParser::print(const char *key, json_t *object, int indent)
     cout << "false" << endl;
     break;
   }
+}
+
+json_t* ZJsonParser::decode(const string &str)
+{
+  return json_loads(str.c_str(), 0, &m_error);
+}
+
+void ZJsonParser::printError() const
+{
+  std::cout << m_error.text << std::endl;
 }

@@ -10,6 +10,7 @@
 #include "tz_cdefs.h"
 #include "tz_imatrix.h"
 #include "tz_image_lib_defs.h"
+#include "tz_object_3d.h"
 
 __BEGIN_DECLS
 
@@ -165,6 +166,14 @@ int Stack_Label_Largest_Object_N(Stack *stack, IMatrix *chord,
 				 int flag, int label, int n_nbr);
 
 void Stack_Grow_Object_S(Stack *seed, Stack *mask, Objlabel_Workspace *ow);
+
+/**@brief Extract region borders of a stack
+ *
+ * A pixel is a region pixel iff it has a neighbor with a different intensity 
+ * than itself. The background (label = 0) is ignored if ignoring_bg is true.
+ */
+Object_3d* Stack_Region_Border(const Stack *stack, int nnbr, 
+    BOOL ignoring_bg);
 
 /*
  * Note: Stack_Build_Seed_Graph_G() is preferred than Stack_Build_Seed_Graph().

@@ -290,6 +290,7 @@ public:
   ZObject3dScan getSlice(int z) const;
   ZObject3dScan getSlice(int minZ, int maxZ) const;
 
+
   virtual void display(ZPainter &painter, int z = 0, Display_Style option = NORMAL)
   const;
   virtual const std::string& className() const;
@@ -367,10 +368,12 @@ public:
 
   /*!
    * \brief Make a stack from a list of objects
+   *
+   * \a offset is used to store the corner coordinates if it is not NULL.
    */
   template<class InputIterator>
   static Stack* makeStack(InputIterator startObject, InputIterator endObject,
-                          int offset[3]);
+                          int *offset = NULL);
 
   /*!
    * \brief Switch the Y and Z axis
@@ -425,6 +428,19 @@ public:
    * \return true iff the object is loaded successfully
    */
   bool importHdf5(const std::string &filePath, const std::string &key);
+
+  /*!
+   * \brief Saven object to an HDF5 file.
+   *
+   * If \a filePath exists, the function will try to write the object with the
+   * appending mode; otherwise it will try to create a new HDF5 file.
+   *
+   * \param filePath HDF5 file path
+   * \param key Data path of the object
+   *
+   * \return true iff the object is saved successfully
+   */
+  bool exportHdf5(const std::string &filePath, const std::string &key) const;
 
 private:
   std::vector<ZObject3dStripe> m_stripeArray;
@@ -521,7 +537,7 @@ std::map<int, ZObject3dScan*>* ZObject3dScan::extractAllObject(
 
 template<class InputIterator>
 Stack* ZObject3dScan::makeStack(InputIterator startObject,
-                                InputIterator endObject, int offset[3])
+                                InputIterator endObject, int *offset)
 {
   if (startObject != endObject) {
     Cuboid_I boundBox;
@@ -542,17 +558,20 @@ Stack* ZObject3dScan::makeStack(InputIterator startObject,
     Stack *stack = C_Stack::make(GREY, width, height, depth);
     C_Stack::setZero(stack);
 
+    int stackOffset[3] = {0, 0, 0};
     for (int i = 0; i < 3; ++i) {
-      offset[i] = -boundBox.cb[i];
+      stackOffset[i] = -boundBox.cb[i];
     }
 
     int v = 1;
     for (iter = startObject; iter != endObject; ++iter) {
-      iter->drawStack(stack, v++, offset);
+      iter->drawStack(stack, v++, stackOffset);
     }
 
-    for (int i = 0; i < 3; ++i) {
-      offset[i] = boundBox.cb[i];
+    if (offset != NULL) {
+      for (int i = 0; i < 3; ++i) {
+        offset[i] = boundBox.cb[i];
+      }
     }
 
     return stack;

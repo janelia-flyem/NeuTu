@@ -14,6 +14,16 @@ public:
   ZSwcForest();
   ~ZSwcForest();
 
+  /*!
+   * \brief Convert the forest into a tree object.
+   *
+   * The forest becomes empty after conversion. It returns NULL if there's no
+   * regular node.
+   *
+   * \return The tree object containing all regular nodes in the tree elements.
+   */
+  ZSwcTree* toSwcTree();
+
 public:
   //Graph* buildConnectionGraph(bool mst = false, double distThre = -1.0);
   //ZSwcTree* merge();

@@ -154,7 +154,8 @@ public slots:
   void swcDoubleClicked(ZSwcTree* tree);
   void swcNodeDoubleClicked(Swc_Tree_Node* node);
   void punctaDoubleClicked(ZPunctum* p);
-  void pointInVolumeLeftClicked(QPoint pt, glm::ivec3 pos);
+  void pointInVolumeLeftClicked(QPoint pt, glm::ivec3 pos,
+                                Qt::KeyboardModifiers modifiers);
 
   void changeSelectedSwcNodeType();
   void setRootAsSelectedSwcNode();
@@ -225,6 +226,7 @@ public slots:
 
   void toogleMoveSelectedObjectsMode(bool checked);
   void moveSelectedObjects(double x, double y, double z);
+  void notifyUser(const QString &message);
 
 protected:
   virtual void dragEnterEvent(QDragEnterEvent *event);
@@ -251,9 +253,9 @@ private:
   QAction *m_markPunctumAction;
   QAction *m_toogleAddSwcNodeModeAction;
   QAction *m_changeBackgroundAction;
-  QAction *m_toogleMoveSelectedObjectsAction;
+  QAction *m_toggleMoveSelectedObjectsAction;
   //QAction *m_toogleExtendSelectedSwcNodeAction;
-  QAction *m_toogleSmartExtendSelectedSwcNodeAction;
+  QAction *m_toggleSmartExtendSelectedSwcNodeAction;
   QAction *m_locateSwcNodeIn2DAction;
 
   QAction *m_undoAction;

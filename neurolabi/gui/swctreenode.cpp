@@ -101,6 +101,13 @@ void SwcTreeNode::setPos(Swc_Tree_Node *tn, double x, double y, double z)
   tn->node.z = z;
 }
 
+void SwcTreeNode::setPos(Swc_Tree_Node *tn, const ZPoint &pt)
+{
+  tn->node.x = pt.x();
+  tn->node.y = pt.y();
+  tn->node.z = pt.z();
+}
+
 double SwcTreeNode::radius(const Swc_Tree_Node *tn)
 {
   return tn->node.d;
@@ -547,6 +554,17 @@ double SwcTreeNode::distance(const Swc_Tree_Node *tn, double x, double y,
   }
 
   return dist;
+}
+
+double SwcTreeNode::scaledDistance(
+    const Swc_Tree_Node *tn1, const Swc_Tree_Node *tn2,
+    double sx, double sy, double sz)
+{
+  double dx = (x(tn1) - x(tn2)) * sx;
+  double dy = (y(tn1) - y(tn2)) * sy;
+  double dz = (z(tn1) - z(tn2)) * sz;
+
+  return sqrt(dx * dx + dy * dy + dz * dz);
 }
 
 Swc_Tree_Node*
@@ -1048,6 +1066,11 @@ ZCuboid SwcTreeNode::boundBox(const std::set<Swc_Tree_Node *> &nodeSet)
   return bound;
 }
 
+bool SwcTreeNode::isAllConnected(const std::set<Swc_Tree_Node *> &nodeSet)
+{
+  return isAllConnected(nodeSet.begin(), nodeSet.end());
+}
+
 Swc_Tree_Node* SwcTreeNode::merge(const set<Swc_Tree_Node*> &nodeSet)
 {
   Swc_Tree_Node *coreNode = NULL;
@@ -1148,6 +1171,24 @@ double SwcTreeNode::segmentLength(std::set<Swc_Tree_Node *> &nodeSet)
 
   return length;
 }
+
+double SwcTreeNode::scaledSegmentLength(std::set<Swc_Tree_Node*> &nodeSet,
+                                        double sx, double sy, double sz)
+{
+  double length = 0.0;
+
+  for (std::set<Swc_Tree_Node *>::const_iterator iter = nodeSet.begin();
+       iter != nodeSet.end(); ++iter) {
+    if (isRegular(*iter)) {
+      if (nodeSet.count(parent(*iter)) > 0) {
+        length += Swc_Tree_Node_Scaled_Length(*iter, sx, sy, sz);
+      }
+    }
+  }
+
+  return length;
+}
+
 
 int SwcTreeNode::compareZ(const Swc_Tree_Node *tn1, const Swc_Tree_Node *tn2)
 {
@@ -1250,6 +1291,10 @@ double SwcTreeNode::estimateRadius(const Swc_Tree_Node *tn, const Stack *stack,
 bool SwcTreeNode::fitSignal(Swc_Tree_Node *tn, const Stack *stack,
                             NeuTube::EImageBackground bg)
 {
+  if (tn == NULL || stack == NULL) {
+    return false;
+  }
+
   bool succ = false;
 
   double expandScale = 3.0;
@@ -1280,6 +1325,10 @@ bool SwcTreeNode::fitSignal(Swc_Tree_Node *tn, const Stack *stack,
   }
 
   Stack *slice = Crop_Stack(stack, x1, y1, cz, x2 - x1 + 1, y2 - y1 + 1, 1, NULL);
+
+  if (slice == NULL) {
+    return false;
+  }
 
   //RC threshold
   int thre = Stack_Threshold_RC(slice, 0, 65535);
