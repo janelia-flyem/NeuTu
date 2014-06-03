@@ -17,11 +17,30 @@ void ZDvidRequest::setGetSwcRequest(int bodyId)
   m_parameter = bodyId;
 }
 
-void ZDvidRequest::setGetImageRequest(int x0, int y0, int z0, int width, int height)
+void ZDvidRequest::setGetImageRequest(
+    int x0, int y0, int z0, int width, int height)
 {
   m_requestType = ZDvidRequest::DVID_GET_GRAY_SCALE;
   QList<QVariant> parameter;
   parameter << x0 << y0 << z0 << width << height;
+  m_parameter = parameter;
+}
+
+void ZDvidRequest::setGetImageRequest(
+    int x0, int y0, int z0, int width, int height, int depth)
+{
+  m_requestType = ZDvidRequest::DVID_GET_GRAY_SCALE;
+  QList<QVariant> parameter;
+  parameter << x0 << y0 << z0 << width << height << depth;
+  m_parameter = parameter;
+}
+
+void ZDvidRequest::setGetBodyLabelRequest(
+    int x0, int y0, int z0, int width, int height, int depth)
+{
+  m_requestType = ZDvidRequest::DVID_GET_BODY_LABEL;
+  QList<QVariant> parameter;
+  parameter << x0 << y0 << z0 << width << height << depth;
   m_parameter = parameter;
 }
 

@@ -445,6 +445,18 @@ string ZString::fullPath(
   return dir + fname + '.' + ext;
 }
 
+string ZString::fullPath(
+    const string &dir, const string &part1, const string &part2, const string &part3)
+{
+  vector<string> parts(4);
+  parts[0] = dir;
+  parts[1] = part1;
+  parts[2] = part2;
+  parts[3] = part3;
+
+  return fullPath(parts);
+}
+
 string ZString::fullPath(const vector<string> &parts)
 {
   string path;

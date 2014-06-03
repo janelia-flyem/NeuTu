@@ -3,6 +3,7 @@
 
 #include <vector>
 #include "zpoint.h"
+#include "zintpoint.h"
 
 /*************
  *
@@ -28,6 +29,8 @@ public:
   ZCuboid(const ZCuboid &cuboid);
 
   void set(double x1, double y1, double z1, double x2, double y2, double z2);
+  void set(const ZPoint &firstCorner, const ZPoint &lastCorner);
+  void set(const ZIntPoint &firstCorner, const ZIntPoint &lastCorner);
   void set(const double *corner);
 
   /*!

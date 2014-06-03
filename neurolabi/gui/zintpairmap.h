@@ -9,6 +9,9 @@ class ZIntPairMap : public std::map<std::pair<int, int>, int>
 public:
   void incPairCount(int x, int y);
 
+  void add(const ZIntPairMap &submap);
+  std::pair<int, int> getPeak() const;
+
   void print() const;
   void printSummary() const;
 };

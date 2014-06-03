@@ -10,6 +10,7 @@ class ZJsonArray : public ZJsonValue, ZUncopyable
 public:
   ZJsonArray();
   ZJsonArray(json_t *data, bool asNew);
+  ZJsonArray(const json_t *data, bool asNew);
   virtual ~ZJsonArray();
 
 public:
@@ -42,6 +43,13 @@ public:
    * Any json array element that is not integer will be ignored.
    */
   std::vector<int> toIntegerArray() const;
+
+  /*!
+   * \brief Get a boolean array from the json array.
+   *
+   * Any json array element that is not boolean will be ignored.
+   */
+  std::vector<bool> toBoolArray() const;
 
   ZJsonArray& operator << (double e);
 

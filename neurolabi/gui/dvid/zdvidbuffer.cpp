@@ -34,11 +34,13 @@ void ZDvidBuffer::importSwcTree()
 void ZDvidBuffer::importImage()
 {
   if (m_dvidClient != NULL) {
-    ZStack *image = m_dvidClient->getImage().clone();
-    m_imageArray.append(image);
+    if (!m_dvidClient->getImage().isEmpty()) {
+      ZStack *image = m_dvidClient->getImage().clone();
+      m_imageArray.append(image);
 
-    qDebug() << "Emitting dataTransfered from importImage()";
-    emit dataTransfered();
+      qDebug() << "Emitting dataTransfered from importImage()";
+      emit dataTransfered();
+    }
   }
 }
 

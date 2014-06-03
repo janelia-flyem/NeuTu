@@ -39,7 +39,7 @@ ZJsonValue::~ZJsonValue()
   }
 }
 
-bool ZJsonValue::isObject()
+bool ZJsonValue::isObject() const
 {
   if (m_data == NULL) {
     return false;
@@ -48,7 +48,7 @@ bool ZJsonValue::isObject()
   return json_is_object(m_data) > 0;
 }
 
-bool ZJsonValue::isArray()
+bool ZJsonValue::isArray() const
 {
   if (m_data == NULL) {
     return false;
@@ -57,7 +57,7 @@ bool ZJsonValue::isArray()
   return json_is_array(m_data) > 0;
 }
 
-bool ZJsonValue::isString()
+bool ZJsonValue::isString() const
 {
   if (m_data == NULL) {
     return false;

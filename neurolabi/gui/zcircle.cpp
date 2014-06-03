@@ -1,5 +1,6 @@
 #if defined(_QT_GUI_USED_)
 #include <QPainter>
+#include <QDebug>
 #endif
 
 #include <math.h>
@@ -11,6 +12,7 @@ const ZCircle::TVisualEffect ZCircle::VE_NONE = 0;
 const ZCircle::TVisualEffect ZCircle::VE_DASH_PATTERN = 1;
 const ZCircle::TVisualEffect ZCircle::VE_BOUND_BOX = 2;
 const ZCircle::TVisualEffect ZCircle::VE_NO_CIRCLE = 4;
+const ZCircle::TVisualEffect ZCircle::VE_NO_FILL = 8;
 
 ZCircle::ZCircle() : m_visualEffect(ZCircle::VE_NONE)
 {
@@ -50,7 +52,15 @@ void ZCircle::display(ZPainter &painter, int n,
 
   painter.setPen(pen);
 
+  //qDebug() << "Internal color: " << m_color;
+  const QBrush &oldBrush = painter.brush();
+  if (hasVisualEffect(VE_NO_FILL)) {
+    painter.setBrush(Qt::NoBrush);
+  }
   display(&painter, n, style);
+  if (hasVisualEffect(VE_NO_FILL)) {
+    painter.setBrush(oldBrush);
+  }
 #endif
 }
 
@@ -101,13 +111,36 @@ void ZCircle::display(ZPainter *painter, int stackFocus, Display_Style style) co
 
   if (visible) {
     if (!hasVisualEffect(VE_NO_CIRCLE)) {
+      //qDebug() << painter->brush().color();
       painter->drawEllipse(QPointF(m_center.x(), m_center.y()),
                            adjustedRadius, adjustedRadius);
     }
   }
 
   if (hasVisualEffect(VE_BOUND_BOX)) {
+    const QBrush &oldBrush = painter->brush();
+    const QPen &oldPen = painter->pen();
+    painter->setBrush(Qt::NoBrush);
+#if 0 //for future versions
+    QPen pen = oldPen;
+    QVector<qreal> pattern;
+    pattern << 1 << 2;
+    pen.setDashPattern(pattern);
+    painter->setPen(pen);
     painter->drawRect(rect);
+
+    pen.setColor(Qt::black);
+    pen.setDashOffset(1.5);
+    painter->setPen(pen);
+#endif
+
+    //QPainter::CompositionMode oldMode = painter->compositionMode();
+    //painter->setCompositionMode(QPainter::RasterOp_SourceXorDestination);
+    painter->drawRect(rect);
+
+    //painter->setCompositionMode(oldMode);
+    painter->setBrush(oldBrush);
+    painter->setPen(oldPen);
   }
 #endif
 }

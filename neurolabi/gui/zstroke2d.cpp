@@ -5,6 +5,8 @@
 #include <QBitmap>
 #include "neutubeconfig.h"
 #include "tz_math.h"
+#include "zintpoint.h"
+#include "zstack.hxx"
 
 const double ZStroke2d::m_minWidth = 1.0;
 const double ZStroke2d::m_maxWidth = 100.0;
@@ -289,7 +291,7 @@ void ZStroke2d::clear()
   m_pointArray.clear();
 }
 
-bool ZStroke2d::isEmpty()
+bool ZStroke2d::isEmpty() const
 {
   return m_pointArray.empty();
 }
@@ -361,4 +363,55 @@ void ZStroke2d::translate(const ZPoint offset)
     pt += QPointF(offset.x(), offset.y());
   }
   m_z += iround(offset.z());
+}
+
+ZStack* ZStroke2d::toStack() const
+{
+  if (isEmpty()) {
+    return NULL;
+
+  }
+  const static int margin = 5;
+
+  //Estimate bound box
+  double x0 = m_pointArray[0].x();
+  double y0 = m_pointArray[0].y();
+  double x1 = x0;
+  double y1 = y0;
+
+  foreach(const QPointF &pt, m_pointArray) {
+    if (x0 > pt.x()) {
+      x0 = pt.x();
+    }
+    if (x1 < pt.x()) {
+      x1 = pt.x();
+    }
+    if (y0 > pt.y()) {
+      y0 = pt.y();
+    }
+    if (y1 < pt.y()) {
+      y1 = pt.y();
+    }
+  }
+
+  Cuboid_I boundBox;
+  int r = iround(m_width / 2);
+  boundBox.cb[0] = iround(x0) - margin - r;
+  boundBox.cb[1] = iround(y0) - margin - r;
+  boundBox.cb[2] = m_z;
+  boundBox.ce[0] = iround(x1) + margin + r;
+  boundBox.ce[1] = iround(y1) + margin + r;
+  boundBox.ce[2] = m_z;
+
+  int width = Cuboid_I_Width(&boundBox);
+  int height = Cuboid_I_Height(&boundBox);
+  int depth = Cuboid_I_Depth(&boundBox);
+
+  ZStack *stack = new ZStack(GREY, width, height, depth, 1);
+  stack->setOffset(boundBox.cb[0], boundBox.cb[1], boundBox.cb[2]);
+  ZStroke2d tmpStroke = *this;
+  tmpStroke.translate(-stack->getOffset());
+  tmpStroke.labelGrey(stack->c_stack());
+
+  return stack;
 }

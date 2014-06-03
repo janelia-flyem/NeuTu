@@ -21,7 +21,7 @@ public:
   int getWidth() const;
   int getHeight() const;
   int getDepth() const;
-  QString getAddress() const;
+  //QString getAddress() const;
   void setAddress(const QString address);
 
 private:

@@ -90,6 +90,8 @@ public:
 
   static std::string fullPath(const std::string &dir, const std::string &fname,
                               const std::string &ext);
+  static std::string fullPath(const std::string &dir, const std::string &part1,
+                              const std::string &part2, const std::string &part3);
   static std::string fullPath(const std::vector<std::string> &parts);
   static std::string removeFileExt(const std::string &str);
   static std::string getBaseName(const std::string &str);

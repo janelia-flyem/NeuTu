@@ -1066,6 +1066,11 @@ ZCuboid SwcTreeNode::boundBox(const std::set<Swc_Tree_Node *> &nodeSet)
   return bound;
 }
 
+bool SwcTreeNode::isAllConnected(const std::set<Swc_Tree_Node *> &nodeSet)
+{
+  return isAllConnected(nodeSet.begin(), nodeSet.end());
+}
+
 Swc_Tree_Node* SwcTreeNode::merge(const set<Swc_Tree_Node*> &nodeSet)
 {
   Swc_Tree_Node *coreNode = NULL;
@@ -1320,6 +1325,10 @@ bool SwcTreeNode::fitSignal(Swc_Tree_Node *tn, const Stack *stack,
   }
 
   Stack *slice = Crop_Stack(stack, x1, y1, cz, x2 - x1 + 1, y2 - y1 + 1, 1, NULL);
+
+  if (slice == NULL) {
+    return false;
+  }
 
   //RC threshold
   int thre = Stack_Threshold_RC(slice, 0, 65535);

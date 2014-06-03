@@ -42,6 +42,7 @@ class QUndoCommand;
 class ZStack;
 class ZStackDoc;
 class ZTileManager;
+class ZStackDocReader;
 
 class ZStackFrame : public QMdiSubWindow, public ZReportable
 {
@@ -67,9 +68,7 @@ public:
   inline bool hasProject() const { return (m_traceProject != NULL); }
   bool isReadyToSave() const;
   static inline QString defaultTraceProjectFile() { return "project.xml"; }
-
-  void consumeDocument(ZStackDoc *doc);
-  void setDocument(std::tr1::shared_ptr<ZStackDoc> doc);
+  void addDocData(const ZStackDocReader &reader);
 
   inline virtual std::string name() { return "base"; }
 
@@ -217,8 +216,6 @@ public:
 
   void prepareDisplay();
 
-  void notifyUser(const QString &message);
-
   void runSeededWatershed();
 
   QString swcFilename;
@@ -230,6 +227,8 @@ public slots:
   void detach3DWindow();
   void setupDisplay();
   void zoomToSelectedSwcNodes();
+  void notifyUser(const QString &message);
+  void locateSwcNodeIn2DView();
 
 signals:
   void infoChanged();
@@ -247,6 +246,9 @@ protected:
   void resizeEvent(QResizeEvent *event);
   virtual void dragEnterEvent(QDragEnterEvent *event);
   virtual void dropEvent(QDropEvent *event);
+
+  void consumeDocument(ZStackDoc *doc);
+  void setDocument(std::tr1::shared_ptr<ZStackDoc> doc);
 
 private:
   void setView(ZStackView *view);

@@ -19,6 +19,15 @@ ZJsonArray::ZJsonArray(json_t *data, bool asNew)
   }
 }
 
+ZJsonArray::ZJsonArray(const json_t *data, bool asNew)
+{
+  if (json_is_array(data)) {
+    set(const_cast<json_t*>(data), asNew);
+  } else {
+    m_data = NULL;
+  }
+}
+
 ZJsonArray::~ZJsonArray()
 {
 
@@ -77,6 +86,21 @@ std::vector<int> ZJsonArray::toIntegerArray() const
       const json_t *value = at(i);
       if (json_is_integer(value)) {
         array.push_back(json_integer_value(value));
+      }
+    }
+  }
+
+  return array;
+}
+
+std::vector<bool> ZJsonArray::toBoolArray() const
+{
+  std::vector<bool> array;
+  if (m_data != NULL) {
+    for (size_t i = 0; i < size(); ++i) {
+      const json_t *value = at(i);
+      if (json_is_boolean(value)) {
+        array.push_back(json_is_true(value));
       }
     }
   }

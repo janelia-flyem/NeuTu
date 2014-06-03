@@ -22,8 +22,10 @@ public:
   inline double getConnDist() const { return m_dist; }
   inline void setConnDist(double dist) { m_dist = dist; }
 
-  static ZGraph* buildConnection(const std::vector<Swc_Tree_Node *> &nodeArray);
-  static ZGraph* buildConnection(const std::set<Swc_Tree_Node *> &nodeSet);
+  inline void setMinDist(double dist) { m_minDist = dist; }
+
+  ZGraph* buildConnection(const std::vector<Swc_Tree_Node *> &nodeArray);
+  ZGraph* buildConnection(const std::set<Swc_Tree_Node *> &nodeSet);
 
 private:
   double m_minDist;

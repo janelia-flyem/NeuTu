@@ -450,14 +450,19 @@ void ZSwcTree::display(
 
       switch (style) {
       case BOUNDARY:
-        if (SwcTreeNode::isRoot(tn) || SwcTreeNode::isBranchPoint(tn)) {
+        //if (SwcTreeNode::isRoot(tn) || SwcTreeNode::isBranchPoint(tn)) {
+      {
           ZCircle circle(SwcTreeNode::x(tn), SwcTreeNode::y(tn), SwcTreeNode::z(tn),
                          SwcTreeNode::radius(tn));
           circle.display(&painter, stackFocus, style);
-        }
+      }
+        //}
         break;
       case SOLID:
       {
+        QColor brushColor= pen.color();
+        brushColor.setAlphaF(sqrt(brushColor.alphaF() / 2.0));
+        painter.setBrush(brushColor);
         ZCircle circle(SwcTreeNode::x(tn), SwcTreeNode::y(tn), SwcTreeNode::z(tn),
                        SwcTreeNode::radius(tn));
         circle.display(&painter, stackFocus, style);
@@ -2257,7 +2262,7 @@ void ZSwcTree::translate(double x, double y, double z)
 
 void ZSwcTree::translate(const ZPoint &offset)
 {
-  Swc_Tree_Translate(data(), offset.x(), offset.y(), offset.z());
+  translate(offset.x(), offset.y(), offset.z());
 }
 
 void ZSwcTree::scale(double x, double y, double z)

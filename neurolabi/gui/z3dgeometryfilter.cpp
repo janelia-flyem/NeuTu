@@ -3,7 +3,7 @@
 Z3DGeometryFilter::Z3DGeometryFilter()
   : Z3DProcessor()
   , m_outPort("GeometryFilter")
-  , m_stayOnTop("Stay On Top", false)
+  , m_stayOnTop("Always in Front", true)
   , m_pickingManager(NULL)
   , m_pickingObjectsRegistered(false)
   , m_needBlending(false)
