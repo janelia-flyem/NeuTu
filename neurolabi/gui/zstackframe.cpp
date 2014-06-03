@@ -1570,6 +1570,18 @@ void ZStackFrame::notifyUser(const QString &message)
   }
 }
 
+void ZStackFrame::locateSwcNodeIn2DView()
+{
+  if (!document()->selectedSwcTreeNodes()->empty()) {
+    if (!m_3dWindow) {
+      open3DWindow(this);
+    }
+    QApplication::processEvents();
+    m_3dWindow->zoomToSelectedSwcNodes();
+    m_3dWindow->raise();
+  }
+}
+
 void ZStackFrame::runSeededWatershed()
 {
   document()->runSeededWatershed();

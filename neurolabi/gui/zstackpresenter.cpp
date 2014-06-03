@@ -215,6 +215,12 @@ void ZStackPresenter::createSwcActions()
   action->setIcon(QIcon(":/images/add.png"));
   m_actionMap[ACTION_ADD_SWC_NODE] = action;
 
+  action = new QAction(tr("Locate node(s) in 3D"), parent());
+  connect(action, SIGNAL(triggered()),
+          m_parent, SLOT(locateSwcNodeIn2DView()));
+  action->setStatusTip("Located selected swc nodes in 3D view.");
+  m_actionMap[ACTION_LOCATE_SELECTED_SWC_NODES_IN_3D] = action;
+
   m_swcConnectToAction = new QAction(tr("Connect to"), parent());
   m_swcConnectToAction->setStatusTip(
         "Connect the currently selected node to another");
@@ -347,6 +353,7 @@ void ZStackPresenter::createSwcNodeContextMenu()
           buddyDocument(), m_parent, m_swcNodeContextMenu);
     m_swcNodeContextMenu->addSeparator();
     m_swcNodeContextMenu->addAction(m_actionMap[ACTION_ADD_SWC_NODE]);
+    m_swcNodeContextMenu->addAction(m_actionMap[ACTION_LOCATE_SELECTED_SWC_NODES_IN_3D]);
   }
 }
 

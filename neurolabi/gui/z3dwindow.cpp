@@ -162,6 +162,21 @@ void Z3DWindow::gotoPosition(std::vector<double> bound, double minRadius,
   setupCamera(bound, Z3DCamera::ResetAll);
 }
 
+void Z3DWindow::zoomToSelectedSwcNodes()
+{
+  if (!getDocument()->selectedSwcTreeNodes()->empty()) {
+    ZCuboid cuboid = SwcTreeNode::boundBox(*getDocument()->selectedSwcTreeNodes());
+    std::vector<double> bound(6);
+    bound[0] = cuboid.firstCorner().x();
+    bound[2] = cuboid.firstCorner().y();
+    bound[4] = cuboid.firstCorner().z();
+    bound[1] = cuboid.lastCorner().x();
+    bound[3] = cuboid.lastCorner().y();
+    bound[5] = cuboid.lastCorner().z();
+    gotoPosition(bound);
+  }
+}
+
 void Z3DWindow::init(EInitMode mode)
 {
   // processors
@@ -2241,6 +2256,7 @@ void Z3DWindow::locateSwcNodeIn2DView()
   if (!m_doc->selectedSwcTreeNodes()->empty()) {
     if (m_doc->getParentFrame() != NULL) {
       m_doc->getParentFrame()->zoomToSelectedSwcNodes();
+      m_doc->getParentFrame()->raise();
       /*
       ZCuboid cuboid = SwcTreeNode::boundBox(*m_doc->selectedSwcTreeNodes());
       int cx, cy, cz;

@@ -54,6 +54,7 @@ public:
   void gotoPosition(double x, double y, double z, double radius = 64);
   void gotoPosition(std::vector<double> bound, double minRadius = 64,
                     double range = 128);
+  void zoomToSelectedSwcNodes();
 
   // useful stuff
   Z3DCameraParameter* getCamera();

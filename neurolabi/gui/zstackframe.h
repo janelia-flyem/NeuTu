@@ -222,6 +222,7 @@ public slots:
   void setupDisplay();
   void zoomToSelectedSwcNodes();
   void notifyUser(const QString &message);
+  void locateSwcNodeIn2DView();
 
 signals:
   void infoChanged();
