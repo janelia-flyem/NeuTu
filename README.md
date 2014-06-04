@@ -28,4 +28,4 @@ See neurolabi/Compile_Windows.txt for more details.
 
 ## Need help?
 
-Contact Ting Zhao: zhaot@janelia.hhmi.org or tingzhao@gmail.com (preferred)
+Contact Ting Zhao: zhaot@janelia.hhmi.org
