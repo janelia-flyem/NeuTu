@@ -103,7 +103,7 @@ void ZMovieMaker::recruitCast()
       ZStack *stack = new ZStack();
       stack->load(iter->second);
 
-      if (academy->stack() != NULL) {
+      if (academy->getStack() != NULL) {
         cout << "Warning: " << "multiple volume detected. Only one allowed."
              << endl;
       } else {

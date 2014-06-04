@@ -1366,7 +1366,7 @@ ZStackDocCommand::TubeEdit::Trace::Trace(
 
 void ZStackDocCommand::TubeEdit::Trace::redo()
 {
-  if (m_doc->stack()->depth() == 1) {
+  if (m_doc->getStack()->depth() == 1) {
     m_chain = m_doc->traceRect(m_x, m_y, m_z, 3.0, m_c);
   } else {
     m_chain = m_doc->traceTube(m_x, m_y, m_z, 3.0, m_c);
@@ -2065,7 +2065,7 @@ void ZStackDocCommand::StackProcess::Binarize::undo()
 void ZStackDocCommand::StackProcess::Binarize::redo()
 {
   //zstack = new ZStack(*(doc->m_stack));
-  zstack = doc->stack()->clone();
+  zstack = doc->getStack()->clone();
   success = doc->binarize(thre);
 }
 
@@ -2097,7 +2097,7 @@ void ZStackDocCommand::StackProcess::BwSolid::undo()
 void ZStackDocCommand::StackProcess::BwSolid::redo()
 {
   //zstack = new ZStack(*(doc->m_stack));
-  zstack = doc->stack()->clone();
+  zstack = doc->getStack()->clone();
   success = doc->bwsolid();
 }
 
@@ -2129,7 +2129,7 @@ void ZStackDocCommand::StackProcess::Watershed::undo()
 void ZStackDocCommand::StackProcess::Watershed::redo()
 {
   //zstack = new ZStack(*(doc->m_stack));
-  zstack = doc->stack()->clone();
+  zstack = doc->getStack()->clone();
   success = doc->watershed();
 }
 
@@ -2161,7 +2161,7 @@ void ZStackDocCommand::StackProcess::EnhanceLine::undo()
 void ZStackDocCommand::StackProcess::EnhanceLine::redo()
 {
   //zstack = new ZStack(*(doc->m_stack));
-  zstack = doc->stack()->clone();
+  zstack = doc->getStack()->clone();
   success = doc->enhanceLine();
 }
 

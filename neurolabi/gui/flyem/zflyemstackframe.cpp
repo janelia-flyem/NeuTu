@@ -107,7 +107,7 @@ ZStack* ZFlyEmStackFrame::spinoffStackSelection(
 
 void ZFlyEmStackFrame::copyDocument(ZStackFrame *frame)
 {
-  document()->loadStack(frame->document()->stack()->clone());
+  document()->loadStack(frame->document()->getStack()->clone());
   /*
   document()->setStackMask(
         frame->document()->stackMask()->clone());

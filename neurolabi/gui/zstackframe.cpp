@@ -436,7 +436,7 @@ int ZStackFrame::loadTraceProject(const char *filePath, QProgressBar *pb)
         if (stack != NULL) {
           char *stackFile = Stack_Document_File_Path(stack_doc);
           loadStack(stack, true);
-          document()->stack()->setSource(stack_doc);
+          document()->getStack()->setSource(stack_doc);
           if (stack_doc->channel == -1) {
             setWindowTitle(stackFile);
           } else {
@@ -583,7 +583,7 @@ void ZStackFrame::saveTraceProject(const QString &filePath,
   stream << "<trace version=\"1.0\">\n";
   stream << "<data>\n";
   stream << "<image type=\"tif\">\n";
-  stream << "<url>" << document()->stack()->source()->firstUrl().c_str()
+  stream << "<url>" << document()->getStack()->source().firstUrl().c_str()
          << "</url>\n";
   stream << "<resolution>" << "<x>" << xResolution() << "</x>"
       << "<y>" << yResolution() << "</y>" << "<z>" << zResolution() << "</z>"
@@ -677,10 +677,10 @@ QString ZStackFrame::briefInfo() const
 QString ZStackFrame::info() const
 {
   if ((document() != NULL) && view() != NULL) {
-    QString info = document()->stack()->sourcePath().c_str();
+    QString info = document()->getStack()->sourcePath().c_str();
     info +=
-      QString("\n %1 x %2 => %3 x %4").arg(document()->stack()->width()).
-      arg(document()->stack()->height()).
+      QString("\n %1 x %2 => %3 x %4").arg(document()->getStack()->width()).
+      arg(document()->getStack()->height()).
       arg(view()->imageWidget()->screenSize().width()).
       arg(view()->imageWidget()->screenSize().height());
     info += QString("\n zoom ratio: %1").arg(presenter()->zoomRatio());
@@ -821,14 +821,14 @@ void ZStackFrame::setBc(double greyScale, double greyOffset, int channel)
 
 void ZStackFrame::synchronizeSetting()
 {
-  m_settingDlg->setResolution(document()->stack()->resolution().voxelSize());
-  m_settingDlg->setUnit(document()->stack()->resolution().unit());
+  m_settingDlg->setResolution(document()->getStack()->resolution().voxelSize());
+  m_settingDlg->setUnit(document()->getStack()->resolution().unit());
   m_settingDlg->setBackground(document()->getStackBackground());
 }
 
 void ZStackFrame::synchronizeDocument()
 {
-  document()->stack()->setResolution(m_settingDlg->xResolution(),
+  document()->getStack()->setResolution(m_settingDlg->xResolution(),
                                      m_settingDlg->yResolution(),
                                      m_settingDlg->zResolution(),
                                      m_settingDlg->unit());
@@ -1098,7 +1098,7 @@ void ZStackFrame::exportSwc(const QString &filePath)
 {
   document()->exportSwc(filePath.toStdString().c_str());
 
-  if (document()->stack()->isSwc()) {
+  if (document()->getStack()->isSwc()) {
     m_doc->undoStack()->setClean();
     setWindowTitle(filePath);
   }
@@ -1177,7 +1177,7 @@ void ZStackFrame::exportObjectMask(
 
 void ZStackFrame::saveStack(const QString &filePath)
 {
-  document()->stack()->save(filePath.toStdString());
+  document()->getStack()->save(filePath.toStdString());
   document()->setStackSource(filePath.toStdString().c_str());
 }
 
@@ -1297,7 +1297,7 @@ void ZStackFrame::setStackMask(ZStack *stack)
 ZStackFrame* ZStackFrame::spinoffStackSelection(const vector<int> &selected)
 {
   if (document()->hasStackData()) {
-    int channelNumber = document()->stack()->channelNumber();
+    int channelNumber = document()->getStack()->channelNumber();
     std::vector<std::vector<double> > selectedColor =
         ZDoubleVector::reshape(selected, channelNumber);
 
@@ -1314,7 +1314,7 @@ ZStackFrame* ZStackFrame::spinoffStackSelection(
 
   if (m_doc->hasStackData()) {
     frame = new ZStackFrame();
-    ZStack *substack = m_doc->stack()->createSubstack(selected);
+    ZStack *substack = m_doc->getStack()->createSubstack(selected);
 
     frame->document()->loadStack(substack);
     frame->view()->reset();
@@ -1457,10 +1457,10 @@ void ZStackFrame::importPointList(const QString &filePath)
 void ZStackFrame::autoBcAdjust()
 {
   document()->startProgress();
-  for (int i = 0; i < document()->stack()->channelNumber(); ++i) {
+  for (int i = 0; i < document()->getStack()->channelNumber(); ++i) {
     document()->advanceProgress(0.1);
     double lower, upper;
-    ZStackStatistics::getGreyMapHint(*document()->stack(), i,
+    ZStackStatistics::getGreyMapHint(*document()->getStack(), i,
                                      &lower, &upper);
     document()->advanceProgress(0.2);
     double scale = 1.0;
@@ -1531,7 +1531,7 @@ void ZStackFrame::loadRoi(const QString &filePath)
 #endif
 
     //obj->print();
-    obj->duplicateAcrossZ(document()->stack()->depth());
+    obj->duplicateAcrossZ(document()->getStack()->depth());
 
     obj->setColor(16, 16, 16, 64);
 

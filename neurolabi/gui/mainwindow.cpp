@@ -138,6 +138,7 @@
 #include "flyembodyfilterdialog.h"
 #include "tz_stack_math.h"
 #include "tz_stack_relation.h"
+#include "zstackdoclabelstackfactory.h"
 
 #include "ztest.h"
 
@@ -1571,7 +1572,7 @@ void MainWindow::saveAs()
   if (frame != NULL) {
     QString fileName = getSaveFileName(
           "Save stack", "Tiff stack files (*.tif) ",
-          frame->document()->stack()->sourcePath().c_str());
+          frame->document()->getStack()->sourcePath().c_str());
 #if 0
         QFileDialog::getSaveFileName(
           this, tr("Save stack"),
@@ -2490,15 +2491,15 @@ void MainWindow::autoBcAdjust()
 void MainWindow::updateBcDlg(const ZStackFrame *frame)
 {
   if (frame != NULL) {
-    ZStack *stack = frame->presenter()->buddyDocument()->stack();
+    ZStack *stack = frame->presenter()->buddyDocument()->getStack();
     if (stack != NULL) {
       int nChannel = stack->channelNumber();
       m_bcDlg->setNumOfChannel(nChannel);
       for (int i=0; i<std::min(nChannel, m_bcDlg->getMaxNumOfChannel()); i++) {
-        m_bcDlg->setRange(frame->document()->stack()->min(i),
-                          frame->document()->stack()->max(i), i);
-        qDebug() << frame->document()->stack()->min(i) <<
-                    ' ' << frame->document()->stack()->max(i) << "\n";
+        m_bcDlg->setRange(frame->document()->getStack()->min(i),
+                          frame->document()->getStack()->max(i), i);
+        qDebug() << frame->document()->getStack()->min(i) <<
+                    ' ' << frame->document()->getStack()->max(i) << "\n";
 
         m_bcDlg->setValue(iround(frame->displayGreyMin(i)),
                           iround(frame->displayGreyMax(i)), i);
@@ -2618,7 +2619,7 @@ void MainWindow::on_actionAutomatic_Axon_triggered()
 void MainWindow::on_actionUpdate_triggered()
 {
   if (currentStackFrame() != NULL) {
-    currentStackFrame()->document()->updateStackFromSource();
+    currentStackFrame()->document()->reloadStack();
     qDebug() << "Updating slider\n";
     currentStackFrame()->view()->updateSlider();
     currentStackFrame()->updateView();
@@ -2867,7 +2868,7 @@ void MainWindow::on_actionExtract_Channel_triggered()
 {
   ZStackFrame *frame = currentStackFrame();
   if (frame != NULL) {
-    ChannelDialog dlg(NULL, frame->document()->stack()->channelNumber());
+    ChannelDialog dlg(NULL, frame->document()->getStack()->channelNumber());
     if (dlg.exec() == QDialog::Accepted) {
       m_progress->setRange(0, 100);
       m_progress->setLabelText(QString("Extracing channel ..."));
@@ -2876,15 +2877,15 @@ void MainWindow::on_actionExtract_Channel_triggered()
       m_progress->setValue(25);
 
       int channel = dlg.channel();
-      Stack *stack = frame->document()->stack()->copyChannel(channel);
+      Stack *stack = frame->document()->getStack()->copyChannel(channel);
       if (stack != NULL) {
         m_progress->setRange(0, 100);
         m_progress->setLabelText(QString("Extracting Channel %1 ...").arg(channel));
         m_progress->show();
         ZStackFrame *nframe = new ZStackFrame;
         nframe->loadStack(stack, true);
-        nframe->document()->stack()->setSource(
-              frame->document()->stack()->sourcePath(), channel);
+        nframe->document()->getStack()->setSource(
+              frame->document()->getStack()->sourcePath(), channel);
         QString src(frame->document()->stackSourcePath().c_str());
         src += QString("_channel_%1").arg(channel+1);
         nframe->setWindowTitle(src);
@@ -2997,8 +2998,8 @@ void MainWindow::on_actionDistance_Map_triggered()
 
     DistanceMapDialog dlg;
     if (dlg.exec() == QDialog::Accepted) {
-      if (currentStackFrame()->document()->stack()->isBinary()) {
-        proc.distanceTransform(currentStackFrame()->document()->stack(),
+      if (currentStackFrame()->document()->getStack()->isBinary()) {
+        proc.distanceTransform(currentStackFrame()->document()->getStack(),
                                dlg.isSquared(), dlg.isSliceWise());
         currentStackFrame()->document()->notifyStackModified();
         currentStackFrame()->updateView();
@@ -3012,8 +3013,8 @@ void MainWindow::on_actionShortest_Path_Flow_triggered()
   if (currentStackFrame() != NULL) {
     ZStackProcessor proc;
 
-    if (currentStackFrame()->document()->stack()->isBinary()) {
-      proc.shortestPathFlow(currentStackFrame()->document()->stack());
+    if (currentStackFrame()->document()->getStack()->isBinary()) {
+      proc.shortestPathFlow(currentStackFrame()->document()->getStack());
       currentStackFrame()->document()->notifyStackModified();
       currentStackFrame()->updateView();
     }
@@ -3027,8 +3028,8 @@ void MainWindow::on_actionExpand_Region_triggered()
 
     RegionExpandDialog dlg;
     if (dlg.exec() == QDialog::Accepted) {
-      if (currentStackFrame()->document()->stack()->isBinary()) {
-        proc.expandRegion(currentStackFrame()->document()->stack(),
+      if (currentStackFrame()->document()->getStack()->isBinary()) {
+        proc.expandRegion(currentStackFrame()->document()->getStack(),
                           dlg.getRadius());
         currentStackFrame()->document()->notifyStackModified();
         currentStackFrame()->updateView();
@@ -3158,7 +3159,7 @@ void MainWindow::on_actionSkeletonization_triggered()
   if (dlg.exec() == QDialog::Accepted) {
     ZStackFrame *frame = currentStackFrame();
     if (frame != NULL) {
-      ZStack *stack = frame->document()->stack();
+      ZStack *stack = frame->document()->getStack();
       //stack->binarize();
 
       Stack *stackData = stack->c_stack();
@@ -3216,7 +3217,7 @@ void MainWindow::on_actionPixel_triggered()
         return;
       }
 
-      ZStack *stack = frame->document()->stack();
+      ZStack *stack = frame->document()->getStack();
 
       int x, y, z;
       bool found = false;
@@ -3743,7 +3744,7 @@ void MainWindow::on_actionMexican_Hat_triggered()
     ZStackProcessor proc;
     MexicanHatDialog dlg;
     if (dlg.exec() == QDialog::Accepted) {
-      proc.mexihatFilter(currentStackFrame()->document()->stack(),
+      proc.mexihatFilter(currentStackFrame()->document()->getStack(),
                      dlg.sigma());
       currentStackFrame()->updateView();
     }
@@ -4392,7 +4393,7 @@ ZStackFrame *MainWindow::createStackFrame(
     newFrame->setParentFrame(parentFrame);
 
     ZStack *stackObject = new ZStack;
-    stackObject->consumeData(stack);
+    stackObject->consume(stack);
 
     newFrame->loadStack(stackObject);
 
@@ -4645,19 +4646,19 @@ void MainWindow::on_actionMask_SWC_triggered()
           ZSwcPositionAdjuster adjuster;
           adjuster.setProgressReporter(&reporter);
           adjuster.setSignal(
-                stackFrame->document()->stack()->c_stack(0),
+                stackFrame->document()->getStack()->c_stack(0),
                 stackFrame->document()->getStackBackground());
 
           adjuster.getProgressReporter()->startSubprogress(0.3);
           adjuster.adjustPosition(*wholeTree);
           adjuster.getProgressReporter()->endSubprogress(0.3);
         } else {
-          if (frame->document()->stack()->channelNumber() == 2) {
+          if (frame->document()->getStack()->channelNumber() == 2) {
             report("Mask Choice",
                    "No stack data found. "
                    "The second channel of the current image is used as a depth mask.",
                    ZMessageReporter::Warning);
-            Stack *depthData = frame->document()->stack()->c_stack(1);
+            Stack *depthData = frame->document()->getStack()->c_stack(1);
             if (depthData != NULL) {
               Biocytin::SwcProcessor::assignZ(wholeTree, *depthData);
             }
@@ -4688,9 +4689,9 @@ void MainWindow::on_actionMask_SWC_triggered()
           std::string source;
 
           if (stackFrame != NULL) {
-            source = stackFrame->document()->stack()->sourcePath();
+            source = stackFrame->document()->getStack()->sourcePath();
           } else {
-            source = frame->document()->stack()->sourcePath();
+            source = frame->document()->getStack()->sourcePath();
           }
 
           wholeTree->setType(ZBiocytinFileNameParser::getTileIndex(source));
@@ -4981,7 +4982,7 @@ void MainWindow::createDvidFrame()
                                             offset);
     if (stack != NULL) {
       docStack = new ZStack;
-      docStack->consumeData(stack);
+      docStack->consume(stack);
       docStack->setOffset(offset[0], offset[1], offset[2]);
       //frame = createStackFrame(docStack, NeuTube::Document::FLYEM_BODY);
     }
@@ -5853,7 +5854,7 @@ ZStackDoc* MainWindow::importHdf5BodyM(const std::vector<int> &bodyIdArray,
           objectArray.begin(), objectArray.end(), offset);
     if (stackData != NULL) {
       stack = new ZStack;
-      stack->consumeData(stackData);
+      stack->consume(stackData);
       stack->setOffset(offset[0], offset[1], offset[2]);
     }
   }
@@ -6067,7 +6068,7 @@ void MainWindow::on_actionLoad_Body_with_Grayscale_triggered()
             Stack *outData = C_Stack::downsampleMin(
                   stack->c_stack(), dsIntv[0], dsIntv[1], dsIntv[2]);
             out = new ZStack();
-            out->consumeData(outData);
+            out->consume(outData);
             delete stack;
           }
 
@@ -6076,6 +6077,7 @@ void MainWindow::on_actionLoad_Body_with_Grayscale_triggered()
           ZStackDocReader docReader;
           docReader.setStack(out);
           ZStackFrame *frame = createStackFrame(&docReader);
+          frame->document()->setTag(NeuTube::Document::FLYEM_BODY);
           addStackFrame(frame);
           presentStackFrame(frame);
         }
@@ -6147,4 +6149,26 @@ void MainWindow::on_actionFlyEmSettings_triggered()
 #endif
   }
 #endif
+}
+
+void MainWindow::on_actionView_Labeled_Regions_triggered()
+{
+  ZStackFrame *frame = currentStackFrame();
+  if (frame != NULL) {
+    ZStackDocReader docReader;
+    ZStackDocLabelStackFactory *factory = new ZStackDocLabelStackFactory;
+    factory->setDocument(frame->document().get());
+    //ZStack *labeled = frame->document()->makeLabelStack();
+    ZStack *labeled = factory->makeStack();
+    if (labeled != NULL) {
+      docReader.setStack(labeled);
+      ZStackFrame *newFrame = createStackFrame(&docReader, frame);
+      newFrame->document()->setTag(NeuTube::Document::FLYEM_BODY);
+      newFrame->document()->setStackFactory(factory);
+      connect(frame->document().get(), SIGNAL(labelFieldModified()),
+              newFrame->document().get(), SLOT(reloadStack()));
+      addStackFrame(newFrame);
+      presentStackFrame(newFrame);
+    }
+  }
 }

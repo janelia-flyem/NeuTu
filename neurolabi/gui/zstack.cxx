@@ -112,9 +112,21 @@ void ZStack::setData(Mc_Stack *stack, C_Stack::Mc_Stack_Deallocator *delloc)
   m_delloc = delloc;
 }
 
-void ZStack::consumeData(Stack *stack)
+void ZStack::consume(Stack *stack)
 {
   load(stack, true);
+}
+
+void ZStack::consume(ZStack *stack)
+{
+  this->setData(stack->m_stack, stack->m_delloc);
+  stack->m_delloc = NULL;
+  setSource(stack->source());
+  m_resolution = stack->resolution();
+  setOffset(stack->getOffset());
+  m_preferredZScale = stack->m_preferredZScale;
+
+  delete stack;
 }
 
 /*

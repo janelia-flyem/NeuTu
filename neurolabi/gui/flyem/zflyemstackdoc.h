@@ -34,7 +34,7 @@ public:
   ZStack* getSegmentation() const;
 
   virtual ZStack *stackMask() const;
-  virtual ZStack *stack() const;
+  virtual ZStack *getStack() const;
   virtual ZStack*& stackRef();
 
   void importSegmentation(const std::string &filePath);

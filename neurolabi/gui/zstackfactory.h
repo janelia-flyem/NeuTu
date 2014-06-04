@@ -14,6 +14,8 @@ class ZStackFactory
 public:
   ZStackFactory();
 
+  virtual ZStack* makeStack(ZStack *stack = NULL) const;
+
 public:
   template<class InputIterator>
   static ZStack* composite(InputIterator begin, InputIterator end);
@@ -94,7 +96,7 @@ ZStack* ZStackFactory::composite(InputIterator begin, InputIterator end)
   FREE_2D_ARRAY(offset, stackNumber);
 
   ZStack *stack = new ZStack;
-  stack->consumeData(merged);
+  stack->consume(merged);
   stack->setOffset(corner[0], corner[1], corner[2]);
 
   return stack;

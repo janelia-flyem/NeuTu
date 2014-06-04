@@ -33,7 +33,7 @@ Z3DVolumeSource::Z3DVolumeSource(ZStackDoc *doc)
   addPort(m_stackOutputPort);
 
   if (m_doc != NULL) {
-    if (m_doc->hasStackData() && m_doc->stack()->channelNumber() > 0) {
+    if (m_doc->hasStackData() && m_doc->getStack()->channelNumber() > 0) {
       readVolumes();
     }
   }
@@ -84,20 +84,20 @@ void Z3DVolumeSource::readVolumes()
   }
 
   clearVolume();
-  int nchannel = m_doc->hasStackData() ? m_doc->stack()->channelNumber() : 0;
+  int nchannel = m_doc->hasStackData() ? m_doc->getStack()->channelNumber() : 0;
   if (nchannel > 0) {
     for (int i=0; i<nchannel; i++) {
-      Stack *stack = m_doc->stack()->c_stack(i);
+      Stack *stack = m_doc->getStack()->c_stack(i);
 
       //Under deveopment
-      ZPoint offset = m_doc->stack()->getOffset();
+      ZPoint offset = m_doc->getStack()->getOffset();
       offset.set(offset.x() * m_xScale.get(),
                  offset.y() * m_yScale.get(),
                  offset.z() * m_zScale.get());
-      if (m_doc->stack()->getVoxelNumber() * nchannel > m_maxVoxelNumber) { //Downsample big stack
+      if (m_doc->getStack()->getVoxelNumber() * nchannel > m_maxVoxelNumber) { //Downsample big stack
         m_isVolumeDownsampled.set(true);
         double scale = std::sqrt((m_maxVoxelNumber*1.0) /
-                                 (m_doc->stack()->getVoxelNumber() * nchannel));
+                                 (m_doc->getStack()->getVoxelNumber() * nchannel));
         int height = (int)(stack->height * scale);
         int width = (int)(stack->width * scale);
         int depth = stack->depth;
@@ -129,7 +129,7 @@ void Z3DVolumeSource::readVolumes()
         Stack *stack2 = Resize_Stack(stack, width, height, depth);
         Translate_Stack(stack2, GREY, 1);
 
-        if (m_doc->stack()->isBinary()) {
+        if (m_doc->getStack()->isBinary()) {
           size_t volume = Stack_Voxel_Number(stack2);
           for (size_t voxelIndex = 0; voxelIndex < volume; ++voxelIndex) {
             if (stack2->array[voxelIndex] == 1) {
@@ -177,8 +177,8 @@ void Z3DVolumeSource::readVolumes()
         else
           stack2 = Copy_Stack(stack);
 
-        if (stack->kind == GREY && m_doc->stack()->isBinary()) {
-          size_t volume = m_doc->stack()->getVoxelNumber();
+        if (stack->kind == GREY && m_doc->getStack()->isBinary()) {
+          size_t volume = m_doc->getStack()->getVoxelNumber();
           for (size_t voxelIndex = 0; voxelIndex < volume; ++voxelIndex) {
             if (stack2->array[voxelIndex] == 1) {
               stack2->array[voxelIndex] = 255;
@@ -202,7 +202,7 @@ void Z3DVolumeSource::readVolumes()
       }
     } //for each cannel
 
-    std::vector<ZVec3Parameter*>& chCols = m_doc->stack()->channelColors();
+    std::vector<ZVec3Parameter*>& chCols = m_doc->getStack()->channelColors();
     for (int i=0; i<nchannel; i++) {
       m_volumes[i]->setVolColor(chCols[i]->get());
     }
@@ -217,13 +217,13 @@ void Z3DVolumeSource::readSubVolumes(int left, int top, int front, int width,
   }
 
   clearZoomInVolume();
-  int nchannel = m_doc->hasStackData() ? m_doc->stack()->channelNumber() : 0;
+  int nchannel = m_doc->hasStackData() ? m_doc->getStack()->channelNumber() : 0;
   if (nchannel > 0) {
     glm::vec3 scaleSpacing = glm::vec3(m_xScale.get(), m_yScale.get(), m_zScale.get());
     glm::vec3 downsampleSpacing = glm::vec3(1.f, 1.f, 1.f);
     glm::vec3 offset = glm::vec3(left, top, front) * scaleSpacing + getVolume(0)->getOffset();
     for (int i=0; i<nchannel; i++) {
-      Stack *stack = m_doc->stack()->c_stack(i);
+      Stack *stack = m_doc->getStack()->c_stack(i);
       Stack *subStack = Crop_Stack(stack, left, top, front, width, height, depth, NULL);
       if (subStack->kind == GREY) {
         Z3DVolume *vh = new Z3DVolume(subStack, downsampleSpacing, scaleSpacing, offset,
@@ -241,7 +241,7 @@ void Z3DVolumeSource::readSubVolumes(int left, int top, int front, int width,
       }
     }
 
-    std::vector<ZVec3Parameter*>& chCols = m_doc->stack()->channelColors();
+    std::vector<ZVec3Parameter*>& chCols = m_doc->getStack()->channelColors();
     for (int i=0; i<nchannel; i++) {
       m_zoomInVolumes[i]->setVolColor(chCols[i]->get());
     }
@@ -259,7 +259,7 @@ void Z3DVolumeSource::sendData()
     m_outputPorts[i]->setData(NULL);
   }
   if (m_volumes.size() > 0) {
-    m_stackOutputPort.setData(m_doc->stack());
+    m_stackOutputPort.setData(m_doc->getStack());
   }
 }
 
@@ -278,7 +278,7 @@ void Z3DVolumeSource::sendZoomInVolumeData()
     m_outputPorts[i]->setData(NULL);
   }
   if (m_volumes.size() > 0) {
-    m_stackOutputPort.setData(m_doc->stack());
+    m_stackOutputPort.setData(m_doc->getStack());
   }
 }
 
@@ -395,13 +395,13 @@ bool Z3DVolumeSource::openZoomInView(const glm::ivec3& volPos)
     m_zoomInViewSize.set(m_zoomInViewSize.get()+1);
   int halfsize = m_zoomInViewSize.get() / 2;
   int left = std::max(volPos[0]-halfsize+1, 0);
-  int right = std::min(volPos[0]+halfsize, m_doc->stack()->width()-1);
+  int right = std::min(volPos[0]+halfsize, m_doc->getStack()->width()-1);
   int width = right - left + 1;
   int up = std::max(volPos[1]-halfsize+1, 0);
-  int down = std::min(volPos[1]+halfsize, m_doc->stack()->height()-1);
+  int down = std::min(volPos[1]+halfsize, m_doc->getStack()->height()-1);
   int height = down - up + 1;
   int front = 0;
-  int depth = m_doc->stack()->depth();
+  int depth = m_doc->getStack()->depth();
   m_zoomInBound.clear();
   m_zoomInBound.push_back(left*m_xScale.get() + offset.x);
   m_zoomInBound.push_back(right*m_xScale.get() + offset.x);
@@ -436,7 +436,7 @@ bool Z3DVolumeSource::volumeNeedDownsample() const
     return false;
   }
 
-  if (m_doc->stack()->getVoxelNumber() * m_doc->stack()->channelNumber() <= m_maxVoxelNumber)
+  if (m_doc->getStack()->getVoxelNumber() * m_doc->getStack()->channelNumber() <= m_maxVoxelNumber)
     return false;
   else
     return true;

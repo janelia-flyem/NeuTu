@@ -106,7 +106,8 @@ public: /* attributes */
    * \a stack will be destroyed after function call. It does nothing if \a stack
    * is NULL.
    */
-  void consumeData(Stack *stack);
+  void consume(Stack *stack);
+  void consume(ZStack *stack);
 
   //! Get the C-compatible data
   /*!
@@ -316,7 +317,7 @@ public: /* attributes */
   /*!
    * \brief Source of the stack.
    */
-  ZStackFile* source() { return &m_source; }
+  const ZStackFile& source() const { return m_source; }
 
   void deprecateDependent(EComponent component);
   void deprecateSingleChannelView(int channel);

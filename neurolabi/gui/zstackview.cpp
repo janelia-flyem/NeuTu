@@ -655,7 +655,7 @@ QImage::Format ZStackView::stackKindToImageFormat(int kind)
 
 ZStack* ZStackView::stackData()
 {
-  return (buddyDocument() != NULL) ? buddyDocument()->stack() : NULL;
+  return (buddyDocument() != NULL) ? buddyDocument()->getStack() : NULL;
 }
 
 int ZStackView::maxSliceIndex()

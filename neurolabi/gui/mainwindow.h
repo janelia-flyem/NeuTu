@@ -400,6 +400,8 @@ private slots:
 
   void on_actionFlyEmSettings_triggered();
 
+  void on_actionView_Labeled_Regions_triggered();
+
 private:
   void createActions();
   void createFileActions();

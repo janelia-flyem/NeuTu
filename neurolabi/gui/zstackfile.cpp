@@ -493,7 +493,7 @@ File_Bundle_S ZStackFile::toFileBundleS() const
   return fs;
 }
 
-ZStack* ZStackFile::readStack(ZStack *data)
+ZStack* ZStackFile::readStack(ZStack *data) const
 {
   bool failed = false;
 
@@ -797,7 +797,7 @@ ZStack* ZStackFile::readStack(ZStack *data)
   return data;
 }
 
-void ZStackFile::print()
+void ZStackFile::print() const
 {
   if (m_urlList.empty()) {
     cout << "No file associated." << endl;

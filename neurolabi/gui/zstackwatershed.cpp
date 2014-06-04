@@ -106,7 +106,7 @@ ZStack *ZStackWatershed::run(
 
       Stack *out = Stack_Watershed(source, ws);
       result = new ZStack;
-      result->consumeData(out);
+      result->consume(out);
       result->setOffset(sourceOffset);
 
       if (source != stack->c_stack()) {

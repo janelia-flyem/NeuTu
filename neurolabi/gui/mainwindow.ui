@@ -322,6 +322,7 @@
        <string>Segmentation</string>
       </property>
       <addaction name="actionSplit_Region"/>
+      <addaction name="actionView_Labeled_Regions"/>
      </widget>
      <addaction name="menuFlyEmOpen"/>
      <addaction name="menuExport_2"/>
@@ -1191,6 +1192,11 @@
   <action name="actionFlyEmSettings">
    <property name="text">
     <string>Settings</string>
+   </property>
+  </action>
+  <action name="actionView_Labeled_Regions">
+   <property name="text">
+    <string>View Labeled Regions</string>
    </property>
   </action>
  </widget>

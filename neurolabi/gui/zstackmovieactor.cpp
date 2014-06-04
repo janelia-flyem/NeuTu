@@ -59,7 +59,7 @@ void ZStackMovieActor::move(double t)
 void ZStackMovieActor::reset()
 {
   if (m_stage != NULL) {
-    if (m_stack != m_stage->getWindow()->getDocument()->stack()) {
+    if (m_stack != m_stage->getWindow()->getDocument()->getStack()) {
       m_stage->getWindow()->getDocument()->loadStack(m_stack);
       QApplication::processEvents();
       //m_stage->setVolumeChanged(true);

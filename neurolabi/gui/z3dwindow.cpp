@@ -98,7 +98,7 @@ Z3DWindow::Z3DWindow(std::tr1::shared_ptr<ZStackDoc> doc, Z3DWindow::EInitMode i
   , m_advancedSettingDockWidget(NULL)
   , m_isStereoView(stereoView)
 {
-  if (m_doc->stack() != NULL) {
+  if (m_doc->getStack() != NULL) {
     setWindowTitle(m_doc->stackSourcePath().c_str());
   }
   setAttribute(Qt::WA_DeleteOnClose);
@@ -908,7 +908,7 @@ int Z3DWindow::channelNumber()
   }
 
   if (m_doc->hasStackData()) {
-    return m_doc->stack()->channelNumber();
+    return m_doc->getStack()->channelNumber();
   } else {
     return 0;
   }
@@ -1996,6 +1996,9 @@ void Z3DWindow::keyPressEvent(QKeyEvent *event)
       }
     }
     break;
+  case Qt::Key_R:
+    m_doc->executeResetBranchPoint();
+    break;
   default:
     break;
   }
@@ -2023,7 +2026,8 @@ QTabWidget *Z3DWindow::createAdvancedSettingTabWidget()
   tabs->setElideMode(Qt::ElideNone);
   const QList<ZWidgetsGroup*>& groups = m_widgetsGroup->getChildGroups();
   for (int i=0; i<groups.size(); i++) {
-    if (groups[i]->isGroup() && groups[i]->getGroupName() != "Capture" && groups[i]->getGroupName() != "Utils") {
+    if (groups[i]->isGroup() && groups[i]->getGroupName() != "Capture" &&
+        groups[i]->getGroupName() != "Utils") {
       tabs->addTab(groups[i]->createWidget(this, false), groups[i]->getGroupName());
     }
   }
@@ -2034,7 +2038,8 @@ void Z3DWindow::updateContextMenu(const QString &group)
 {
   if (group == "empty") {
     m_contextMenuGroup["empty"]->clear();
-    if (channelNumber() > 0 && m_volumeSource->volumeNeedDownsample() && m_volumeSource->isSubvolume()) {
+    if (channelNumber() > 0 && m_volumeSource->volumeNeedDownsample() &&
+        m_volumeSource->isSubvolume()) {
       m_contextMenuGroup["empty"]->addAction(m_exitVolumeZoomInViewAction);
     }
     //if (!m_doc->swcList()->empty() && m_swcFilter->isNodeRendering())

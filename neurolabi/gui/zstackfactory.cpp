@@ -33,3 +33,8 @@ Stack *ZStackFactory::pileMatched(const std::vector<Stack*> stackArray)
 
   return out;
 }
+
+ZStack* ZStackFactory::makeStack(ZStack *stack) const
+{
+  return stack;
+}

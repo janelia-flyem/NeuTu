@@ -658,7 +658,7 @@ ZStackPresenter::processMouseReleaseForPuncta(QMouseEvent *event, double *positi
       if (m_interactiveContext.isNormalView()) {
         if (m_interactiveContext.isContextMenuActivated() &&
             interactiveContext().markPuncta() && buddyDocument()->hasStackData() &&
-            (!buddyDocument()->stack()->isVirtual())) {
+            (!buddyDocument()->getStack()->isVirtual())) {
           buddyView()->popLeftMenu(event->pos());
           status = CONTEXT_MENU_POPPED;
         }
@@ -971,8 +971,8 @@ ZStackPresenter::processMouseReleaseForSwc(QMouseEvent *event, double *positionI
 
 bool ZStackPresenter::isPointInStack(double x, double y)
 {
-  return (x >= 0) && (x < buddyDocument()->stack()->width()) &&
-      (y >= 0) && (y < buddyDocument()->stack()->height());
+  return (x >= 0) && (x < buddyDocument()->getStack()->width()) &&
+      (y >= 0) && (y < buddyDocument()->getStack()->height());
 }
 
 ZStackPresenter::EMouseEventProcessStatus
@@ -1029,14 +1029,14 @@ ZStackPresenter::processMouseReleaseForStroke(
 
             Stack_Graph_Workspace_Set_Range(sgw, x0, x1, y0, y1, z0, z1);
             Stack_Graph_Workspace_Validate_Range(
-                  sgw, buddyDocument()->stack()->width(),
-                  buddyDocument()->stack()->height(),
-                  buddyDocument()->stack()->depth());
+                  sgw, buddyDocument()->getStack()->width(),
+                  buddyDocument()->getStack()->height(),
+                  buddyDocument()->getStack()->depth());
 
             sgw->wf = Stack_Voxel_Weight;
 
             Int_Arraylist *path = Stack_Route(
-                  buddyDocument()->stack()->c_stack(), source, target, sgw);
+                  buddyDocument()->getStack()->c_stack(), source, target, sgw);
 
             newStroke->clear();
 #ifdef _DEBUG_2
@@ -1044,8 +1044,8 @@ ZStackPresenter::processMouseReleaseForStroke(
 #endif
             for (int i = 0; i < path->length; ++i) {
               int x, y, z;
-              C_Stack::indexToCoord(path->array[i], buddyDocument()->stack()->width(),
-                                    buddyDocument()->stack()->height(),
+              C_Stack::indexToCoord(path->array[i], buddyDocument()->getStack()->width(),
+                                    buddyDocument()->getStack()->height(),
                                     &x, &y, &z);
 #ifdef _DEBUG_2
               std::cout << x << " " << y << std::endl;
@@ -1461,6 +1461,9 @@ bool ZStackPresenter::processKeyPressEventForSwc(QKeyEvent *event)
       m_swcMoveSelectedAction->trigger();
     }
     break;
+  case Qt::Key_R:
+    buddyDocument()->executeResetBranchPoint();
+    break;
   default:
     break;
   }
@@ -1561,13 +1564,13 @@ bool ZStackPresenter::estimateActiveStrokeWidth()
   m_stroke.getLastPoint(&x, &y);
 
   Swc_Tree_Node tn;
-  x -= buddyDocument()->stack()->getOffset().x();
-  y -= buddyDocument()->stack()->getOffset().x();
+  x -= buddyDocument()->getStack()->getOffset().x();
+  y -= buddyDocument()->getStack()->getOffset().x();
 
   SwcTreeNode::setNode(
         &tn, 1, 2, x, y, buddyView()->sliceIndex(), width / 2.0, -1);
 
-  if (SwcTreeNode::fitSignal(&tn, buddyDocument()->stack()->c_stack(),
+  if (SwcTreeNode::fitSignal(&tn, buddyDocument()->getStack()->c_stack(),
                              buddyDocument()->getStackBackground())) {
     m_stroke.setWidth(SwcTreeNode::radius(&tn) * 2.0);
 
@@ -1705,7 +1708,7 @@ void ZStackPresenter::processKeyPressEvent(QKeyEvent *event)
   case Qt::Key_M:
     if (m_interactiveContext.isNormalView()) {
       if (interactiveContext().markPuncta() && buddyDocument()->hasStackData() &&
-          (!buddyDocument()->stack()->isVirtual())) {
+          (!buddyDocument()->getStack()->isVirtual())) {
         QPointF dataPos = stackPositionFromMouse(MOVE);
         buddyDocument()->markPunctum(dataPos.x(), dataPos.y(),
                                      buddyView()->sliceIndex());
@@ -1740,9 +1743,6 @@ void ZStackPresenter::processKeyPressEvent(QKeyEvent *event)
         }
       }
     }
-    break;
-  case Qt::Key_R:
-    buddyDocument()->executeResetBranchPoint();
     break;
   default:
     break;
@@ -1895,7 +1895,7 @@ void ZStackPresenter::setStackBc(double scale, double offset, int c)
 void ZStackPresenter::optimizeStackBc()
 {
   if (buddyDocument() != NULL) {
-    ZStack *stack = buddyDocument()->stack();
+    ZStack *stack = buddyDocument()->getStack();
     if (stack != NULL) {
       if (!stack->isVirtual()) {
         double scale, offset;
@@ -1934,7 +1934,7 @@ void ZStackPresenter::traceTube()
 {
   QPointF dataPos = stackPositionFromMouse(LEFT_RELEASE);
   buddyView()->setScreenCursor(Qt::BusyCursor);
-  if (buddyDocument()->stack()->channelNumber() == 1) {
+  if (buddyDocument()->getStack()->channelNumber() == 1) {
 //  if (buddyDocument()->stack()->depth() == 1) {
 //    buddyDocument()->traceRect(dataPos.x(), dataPos.y(),
 //                               m_mouseLeftReleasePosition[2]);
@@ -1951,8 +1951,8 @@ void ZStackPresenter::traceTube()
                                                                    m_mouseLeftReleasePosition[2]);
     buddyDocument()->pushUndoCommand(traceTubeCommand);
 #endif
-  } else if (buddyDocument()->stack()->channelNumber() > 1) {
-    ChannelDialog dlg(NULL, buddyDocument()->stack()->channelNumber());
+  } else if (buddyDocument()->getStack()->channelNumber() > 1) {
+    ChannelDialog dlg(NULL, buddyDocument()->getStack()->channelNumber());
     if (dlg.exec() == QDialog::Accepted) {
       int channel = dlg.channel();
       buddyDocument()->executeTraceTubeCommand(
@@ -1978,7 +1978,7 @@ void ZStackPresenter::fitSegment()
   buddyDocument()->fitseg(dataPos.x(), dataPos.y(),
                           m_mouseLeftReleasePosition[2]);
                           */
-  if (buddyDocument()->stack()->depth() == 1) {
+  if (buddyDocument()->getStack()->depth() == 1) {
     buddyDocument()->fitRect(dataPos.x(), dataPos.y(),
             m_mouseLeftReleasePosition[2]);
   } else {

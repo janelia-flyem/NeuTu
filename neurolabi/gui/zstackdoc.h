@@ -58,6 +58,7 @@ class ZStroke2d;
 class QWidget;
 class ZSwcNodeObjsModel;
 class ZStackDocReader;
+class ZStackFactory;
 
 /*!
  * \brief The class of stack document
@@ -70,7 +71,7 @@ class ZStackDoc : public QObject, public ZReportable, public ZProgressable
   Q_OBJECT
 
 public:
-  ZStackDoc(ZStack *stack, QObject *parent);
+  ZStackDoc(ZStack *getStack, QObject *parent);
   virtual ~ZStackDoc();
 
   //Designed for multi-thread reading
@@ -239,7 +240,7 @@ public:
   void loadFileList(const QList<QUrl> &urlList);
   void loadFileList(const QStringList &filePath);
   bool loadFile(const QString &filePath, bool emitMessage = false);
-  virtual void loadStack(Stack *stack, bool isOwner = true);
+  virtual void loadStack(Stack *getStack, bool isOwner = true);
   virtual void loadStack(ZStack *zstack);
   virtual ZStack*& stackRef();
   virtual const ZStack *stackRef() const;
@@ -252,7 +253,7 @@ public:
   inline ZStackFrame* getParentFrame() { return m_parentFrame; }
   void setParentFrame(ZStackFrame* parent);
 
-  virtual ZStack* stack() const;
+  virtual ZStack* getStack() const;
   virtual ZStack *stackMask() const;
   inline QList<ZDocumentable*>* objects() { return &m_objs; }
   void setStackSource(const char *filePath);
@@ -308,9 +309,10 @@ public:
   ZStack* projectBiocytinStack(Biocytin::ZStackProjector &projector);
 
   void updateStackFromSource();
+  void setStackFactory(ZStackFactory *factory);
 
 public: //Image processing
-  static int autoThreshold(Stack* stack);
+  static int autoThreshold(Stack* getStack);
   int autoThreshold();
   bool binarize(int threshold);
   bool bwsolid();
@@ -578,6 +580,14 @@ public:
     return &m_singleSwcNodeActionActivator;
   }
 
+  inline const ZStack* getLabelField() const {
+    return m_labelField;
+  }
+
+  void setLabelField(ZStack *getStack);
+
+  ZStack* makeLabelStack(ZStack *getStack = NULL) const;
+
 public slots: //undoable commands
   bool executeAddObjectCommand(ZDocumentable *obj, NeuTube::EDocumentableType type);
   bool executeRemoveObjectCommand();
@@ -663,6 +673,8 @@ public slots:
 
   void emptySlot();
 
+  void reloadStack();
+
 /*
 public:
   inline void notifyStackModified() {
@@ -671,9 +683,10 @@ public:
 */
 signals:
   void locsegChainSelected(ZLocsegChain*);
-  void stackDelivered(Stack *stack, bool beOwner);
+  void stackDelivered(Stack *getStack, bool beOwner);
   void frameDelivered(ZStackFrame *frame);
   void stackModified();
+  void labelFieldModified();
   void stackReadDone();
   void stackLoaded();
   void punctaModified();
@@ -696,7 +709,7 @@ signals:
   void swcVisibleStateChanged(ZSwcTree* swctree, bool visible);
   void cleanChanged(bool);
   void holdSegChanged();
-  void statusMessageUpdated(QString message);
+  void statusMessageUpdated(QString message) const;
 
 private:
   void connectSignalSlot();
@@ -740,6 +753,7 @@ private:
 
   //Parent frame
   ZStackFrame *m_parentFrame;
+  ZStack *m_labelField;
 
   /* workspaces */
   bool m_isTraceMaskObsolete;
@@ -777,6 +791,8 @@ private:
   NeuTube::EImageBackground m_stackBackground;
 
   ResolutionDialog m_resDlg;
+
+  ZStackFactory *m_stackFactory;
 };
 
 //   template  //
