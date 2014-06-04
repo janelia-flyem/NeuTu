@@ -527,9 +527,7 @@ public: /* puncta related methods */
 public:
   inline NeuTube::Document::ETag getTag() const { return m_tag; }
   inline void setTag(NeuTube::Document::ETag tag) { m_tag = tag; }
-  inline void setStackBackground(NeuTube::EImageBackground bg) {
-    m_stackBackground = bg;
-  }
+  void setStackBackground(NeuTube::EImageBackground bg);
   inline NeuTube::EImageBackground getStackBackground() const {
     return m_stackBackground;
   }

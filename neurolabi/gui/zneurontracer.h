@@ -65,6 +65,8 @@ public:
   Swc_Tree* trace(double x1, double y1, double z1, double r1,
                  double x2, double y2, double z2, double r2);
 
+  void clear();
+
   inline void setBackgroundType(NeuTube::EImageBackground bg) {
     m_backgroundType = bg;
   }
