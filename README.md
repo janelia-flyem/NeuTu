@@ -26,6 +26,11 @@ by specifying the qmake command path and the corresponding spec path.
 
 See neurolabi/Compile_Windows.txt for more details.
 
+## Configuration
+
+### General version
+Copy neurolabi/gui/config.xml to the folder containing the executable 
+
 ## Need help?
 
 Contact Ting Zhao: zhaot@janelia.hhmi.org
