@@ -107,7 +107,7 @@ ZStack* Biocytin::ZStackProjector::project(
                         stack->channelNumber());
       for (int channel = 0; channel  < stack->channelNumber(); ++channel) {
         Image *projBuffer = Proj_Stack_Zmin(stack->c_stack(channel));
-        proj->copyValue(projBuffer->array,
+        proj->loadValue(projBuffer->array,
                          proj->getByteNumber(ZStack::SINGLE_PLANE), channel);
         Kill_Image(projBuffer);
       }

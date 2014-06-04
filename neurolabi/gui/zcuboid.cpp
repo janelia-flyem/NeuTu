@@ -36,6 +36,18 @@ void ZCuboid::set(double x1, double y1, double z1,
   m_lastCorner.set(x2, y2, z2);
 }
 
+void ZCuboid::set(const ZPoint &firstCorner, const ZPoint &lastCorner)
+{
+  m_firstCorner = firstCorner;
+  m_lastCorner = lastCorner;
+}
+
+void ZCuboid::set(const ZIntPoint &firstCorner, const ZIntPoint &lastCorner)
+{
+  m_firstCorner.set(firstCorner.getX(), firstCorner.getY(), firstCorner.getZ());
+  m_lastCorner.set(lastCorner.getX(), lastCorner.getY(), lastCorner.getZ());
+}
+
 void ZCuboid::set(const double *corner)
 {
   set(corner[0], corner[1], corner[2], corner[3], corner[4], corner[5]);

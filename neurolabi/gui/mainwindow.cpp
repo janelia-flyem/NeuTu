@@ -6,6 +6,7 @@
 #endif
 //#include <QtSvg>
 #include <QDir>
+#include <QtConcurrentRun>
 
 #include <iostream>
 #include <ostream>
@@ -91,6 +92,7 @@
 #include "neutubeconfig.h"
 #include "zfilelist.h"
 #include "z3dwindow.h"
+#include "z3dgpuinfo.h"
 #include "z3dvolumesource.h"
 #include "z3dcompositor.h"
 #include "zstackskeletonizer.h"
@@ -126,7 +128,6 @@
 #include "flyem/zflyemdatainfo.h"
 #include "flyem/zflyemqualityanalyzer.h"
 #include "zswcgenerator.h"
-#include <QtConcurrentRun>
 #include "flyembodyiddialog.h"
 #include "flyemhotspotdialog.h"
 #include "dvid/zdvidinfo.h"
@@ -135,6 +136,8 @@
 #include "dvid/zdvidtarget.h"
 #include "dvid/zdvidfilter.h"
 #include "flyembodyfilterdialog.h"
+#include "tz_stack_math.h"
+#include "tz_stack_relation.h"
 
 #include "ztest.h"
 
@@ -212,6 +215,7 @@ MainWindow::MainWindow(QWidget *parent) :
   m_progress->setCancelButton(0);
 
   connect(this, SIGNAL(progressDone()), m_progress, SLOT(reset()));
+  connect(this, SIGNAL(progressAdvanced()), this, SLOT(advanceProgress()));
 
   m_bcDlg = new BcAdjustDialog(this);
   connect(m_bcDlg, SIGNAL(valueChanged()), this, SLOT(bcAdjust()));
@@ -269,6 +273,14 @@ MainWindow::MainWindow(QWidget *parent) :
   m_bodyDlg = new FlyEmBodyIdDialog(this);
   m_hotSpotDlg = new FlyEmHotSpotDialog(this);
   m_dvidDlg = new ZDvidDialog(this);
+  m_dvidDlg->loadConfig(
+          ZString::fullPath(NeutubeConfig::getInstance().getApplicatinDir(),
+                            "json", "", "flyem_config.json"));
+#if defined(_FLYEM_)
+  NeutubeConfig::getInstance().getFlyEmConfig().setDvidTarget(
+        m_dvidDlg->getDvidTarget());
+#endif
+
   m_bodyFilterDlg = new FlyEmBodyFilterDialog(this);
 
   if (NeutubeConfig::getInstance().usingNativeDialog()) {
@@ -279,6 +291,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
   setWindowTitle(QString("%1 %2").arg(GET_SOFTWARE_NAME.c_str()).
                  arg(windowTitle()));
+
+  connect(this, SIGNAL(docReaderReady(ZStackDocReader*)),
+          this, SLOT(createStackFrameFromDocReader(ZStackDocReader*)));
 }
 
 MainWindow::~MainWindow()
@@ -478,7 +493,7 @@ void MainWindow::createViewActions()
   objectViewSkeletonAction->setCheckable(true);
   objectViewSkeletonAction->setStatusTip(tr("Show objects in the skeleton form"));
 
-  objectViewNormalAction->setChecked(true);
+  objectViewSurfaceAction->setChecked(true);
   connect(objectView, SIGNAL(triggered(QAction*)),
     this, SLOT(viewObject(QAction*)));
 
@@ -488,7 +503,7 @@ void MainWindow::createViewActions()
   connect(infoViewAction, SIGNAL(triggered()), this, SLOT(showFrameInfo()));
 
   screenshotAction = new QAction(tr("&Take Screenshot"), this);
-  screenshotAction->setStatusTip("Take screenshot");
+  screenshotAction->setStatusTip("Take screenshot of the active image window");
   screenshotAction->setIcon(QIcon(":/images/screenshot_toolbar.png"));
   connect(screenshotAction, SIGNAL(triggered()), this, SLOT(takeScreenshot()));
 }
@@ -711,17 +726,22 @@ void MainWindow::customizeActions()
     m_ui->actionMake_Projection->setVisible(false);
     m_ui->actionMask_SWC->setVisible(false);
     m_ui->actionTile_Manager_2->setVisible(false);
+    m_ui->actionTiles->setVisible(false);
     //m_ui->menuHelp->menuAction()->setVisible(false);
   }
 
   if (NeutubeConfig::getInstance().getApplication() != "FlyEM") {
     m_ui->actionJSON_Point_List->setVisible(false);
+    m_ui->actionSparse_objects->setVisible(false);
   }
 
-//#ifdef _DEBUG_
+#ifdef _DEBUG_
   testAction->setVisible(
         NeutubeConfig::getInstance().getApplication() != "Biocytin");
-//#endif
+#else
+  testAction->setVisible(false);
+  this->punctaExportAction->setVisible(false);
+#endif
 
 #if !defined(_DEBUG_)
   m_ui->menuTube->menuAction()->setVisible(false);
@@ -1050,6 +1070,12 @@ void MainWindow::report(const std::string &title, const std::string &msg,
   m_reporter->report(title, msg, msgType);
 }
 
+bool MainWindow::ask(const std::string &title, const std::string &msg)
+{
+  return QMessageBox::information(this, title.c_str(),
+        msg.c_str(), QMessageBox::No | QMessageBox::Yes) == QMessageBox::Yes;
+}
+
 void MainWindow::initOpenglContext()
 {
   // initGL requires a valid OpenGL context
@@ -1247,28 +1273,44 @@ void MainWindow::presentStackFrame(ZStackFrame *frame)
   }
 }
 
-ZStackDoc::Reader* MainWindow::openFileFunc(const QString &fileName)
+void MainWindow::advanceProgress()
 {
-  ZStackDoc::Reader *reader = NULL;
+  m_progress->setValue(m_progress->value() + 1);
+}
+
+ZStackDocReader* MainWindow::openFileFunc(const QString &fileName)
+{
+  ZStackDocReader *reader = NULL;
   ZFileType::EFileType fileType = ZFileType::fileType(fileName.toStdString());
 
   if (ZFileType::isNeutubeOpenable(fileType)) {
-    reader = new ZStackDoc::Reader;
+    reader = new ZStackDocReader;
+    emit progressAdvanced();
     if (reader->readFile(fileName) == false) {
       delete reader;
       reader = NULL;
     }
+    emit progressAdvanced();
   }
+
+  emit docReaderReady(reader);
 
   return reader;
 }
 
 void MainWindow::openFile(const QString &fileName)
 {
-#ifndef _LINUX_
-  QFuture<ZStackDoc::Reader*> res;
+#if 1
+  /*
+  if (m_docReader != NULL) {
+    RECORD_WARNING_UNCOND("Bad buffer");
+    delete m_docReader;
+    m_docReader = NULL;
+  }
+*/
+  QFuture<ZStackDocReader*> res;
 
-  m_progress->setRange(0, 2);
+  m_progress->setRange(0, 5);
   m_progress->setLabelText(QString("Loading %1 ...").arg(fileName));
   int currentProgress = 0;
   m_progress->setValue(++currentProgress);
@@ -1276,11 +1318,13 @@ void MainWindow::openFile(const QString &fileName)
 
   res = QtConcurrent::run(this, &MainWindow::openFileFunc, fileName);
 
-  res.waitForFinished();
+  //res.waitForFinished();
 
-  ZStackDoc::Reader *docReader = res.result();
+  //createStackFrameFromDocReader(res.result());
+  /*
+  ZStackDocReader *docReader = res.result();
 
-  //ZStackDoc::Reader *docReader = openFileFunc(fileName);
+  //ZStackDocReader *docReader = openFileFunc(fileName);
 
   ZStackDoc *doc = NULL;
   if (docReader != NULL) {
@@ -1311,6 +1355,7 @@ void MainWindow::openFile(const QString &fileName)
     m_progress->reset();
     reportFileOpenProblem(fileName);
   }
+  */
 #else
   ZFileType::EFileType fileType = ZFileType::fileType(fileName.toStdString());
 
@@ -1970,7 +2015,7 @@ void MainWindow::importImageSequence()
 
   if (!fileName.isEmpty()) {
     m_lastOpenedFilePath = fileName;
-    ZStackFrame *frame = new ZStackFrame(mdiArea);
+    ZStackFrame *frame = new ZStackFrame;
 
     //ZStackFrame *frame = new ZStackFrame;
 
@@ -1983,6 +2028,7 @@ void MainWindow::importImageSequence()
     m_progress->setValue(++currentProgress);
 
     qApp->processEvents();
+    //m_progress->repaint();
 
 
     if (frame->importImageSequence(fileName.toStdString().c_str()) == SUCCESS) {
@@ -1995,7 +2041,7 @@ void MainWindow::importImageSequence()
     m_progress->setValue(++currentProgress);
     m_progress->reset();
   }
-  QApplication::processEvents();
+  //QApplication::processEvents();
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
@@ -2121,6 +2167,8 @@ void MainWindow::about()
         NeutubeConfig::getInstance().getApplication().c_str() + " Edition" +
         "</p>";
   }
+  QString thirdPartyLib = QString("<p><a href=\"file:///%1/doc/ThirdPartyLibraries.txt\">Third Party Libraries</a></p>")
+      .arg(QApplication::applicationDirPath());
   QMessageBox::about(this, QString("About %1").arg(GET_SOFTWARE_NAME.c_str()),
                      title +
                      "<p>" + GET_SOFTWARE_NAME.c_str() +" is software "
@@ -2144,10 +2192,12 @@ void MainWindow::about()
                      "<a href=mailto:tingzhao@gmail.com>tingzhao@gmail.com</a></p>"
                      "<p>Source code: "
                      "<a href=\"https://github.com/janelia-flyem/NeuTu\">"
-                     "https://github.com/janelia-flyem/NeuTu</a></p>"
+                     "https://github.com/janelia-flyem/NeuTu</a></p>" + thirdPartyLib
+                     /*
                      "<p>Reference: <a href=\"http://www.nature.com/nmeth/journal/v9/n1/full/nmeth.1784.html\">"
                      "mGRASP enables mapping mammalian synaptic connectivity with light microscopy</a>, "
                      "<i>Nature Methods</i> 9 (1), 96-102</p>"
+                                        */
                      );
 }
 
@@ -2368,8 +2418,8 @@ void MainWindow::updateFrameInfoDlg()
     } else {
       if (frameNumber() == 0) {
         m_frameInfoDlg.setText(tr("Nothing exists. "
-                                  "This dialog is to show you information "
-                                  "about your document."));
+                                  "This dialog is to show information "
+                                  "of the active document."));
       } else {
         m_frameInfoDlg.setText(QString("%1 ghost(s)").arg(frameNumber()));
       }
@@ -2521,20 +2571,31 @@ void MainWindow::on_actionDisable_triggered()
 
 }
 
+void MainWindow::autoTrace(ZStackFrame *frame)
+{
+  ZQtBarProgressReporter reporter;
+  reporter.setProgressBar(getProgressBar());
+
+  ZProgressReporter *oldReporter =
+      frame->document()->getProgressReporter();
+  frame->document()->setProgressReporter(&reporter);
+
+  frame->executeAutoTraceCommand();
+
+  frame->document()->setProgressReporter(oldReporter);
+
+  emit progressDone();
+}
+
 void MainWindow::on_actionAutomatic_triggered()
 {
   ZStackFrame *frame = currentStackFrame();
   if (frame != NULL) {
-    frame->executeAutoTraceCommand();
-    //currentStackFrame()->view()->progressBar()->setValue(0);
+    m_progress->setRange(0, 100);
+    m_progress->setValue(1);
+    m_progress->show();
 
-    /*
-    ZStackDocAutoTraceCommand *atcommand = new ZStackDocAutoTraceCommand(currentStackFrame()->document().get(),
-                                                                         currentStackFrame()->view()->progressBar());
-*/
-//currentStackFrame()->pushUndoCommand(atcommand);
-    //currentStackFrame()->presenter()->autoTrace();
-    //currentStackFrame()->updateView();
+    QtConcurrent::run(this, &MainWindow::autoTrace, frame);
   }
 }
 
@@ -2747,7 +2808,7 @@ void MainWindow::on_actionAdd_Reference_triggered()
     }
   }
 }
-
+#if 0
 void MainWindow::on_actionFrom_SWC_triggered()
 {
   ZStackFrame *frame = currentStackFrame();
@@ -2756,7 +2817,7 @@ void MainWindow::on_actionFrom_SWC_triggered()
     frame->updateView();
   }
 }
-
+#endif
 void MainWindow::on_actionSave_As_triggered()
 {
   ZStackFrame *frame = currentStackFrame();
@@ -4379,7 +4440,7 @@ ZStackFrame *MainWindow::createStackFrame(
 
   return NULL;
 }
-
+#if 0
 ZStackFrame *MainWindow::createStackFrame(
     ZStackDoc *doc, ZStackFrame *parentFrame)
 {
@@ -4399,7 +4460,29 @@ ZStackFrame *MainWindow::createStackFrame(
 
   return NULL;
 }
+#endif
+ZStackFrame *MainWindow::createStackFrame(
+    ZStackDocReader *reader, ZStackFrame *parentFrame)
+{
+  if (reader != NULL) {
+    ZStackFrame *newFrame = new ZStackFrame;
+    newFrame->setParentFrame(parentFrame);
 
+    newFrame->addDocData(*reader);
+    //newFrame->consumeDocument(doc);
+
+    if (parentFrame != NULL) {
+      newFrame->document()->setStackBackground(
+            parentFrame->document()->getStackBackground());
+    }
+
+    return newFrame;
+  }
+
+  return NULL;
+}
+
+#if 0
 ZStackFrame *MainWindow::createStackFrame(
     ZStackDoc *doc, NeuTube::Document::ETag tag, ZStackFrame *parentFrame)
 {
@@ -4427,7 +4510,7 @@ ZStackFrame *MainWindow::createStackFrame(
 
   return NULL;
 }
-
+#endif
 void MainWindow::on_actionMake_Projection_triggered()
 {
   ZStackFrame *frame = currentStackFrame();
@@ -4473,18 +4556,6 @@ QProgressDialog* MainWindow::getProgressDialog()
 QProgressBar* MainWindow::getProgressBar()
 {
   return getProgressDialog()->findChild<QProgressBar*>();
-
-  /*
-  const QObjectList &objList = getProgressDialog()->children();
-  foreach (QObject* obj, objList) {
-    QProgressBar *bar = qobject_cast<QProgressBar*>(obj);
-    if (bar != NULL) {
-      return bar;
-    }
-  }
-
-  return NULL;
-  */
 }
 
 static void setSkeletonizer(
@@ -4648,7 +4719,9 @@ void MainWindow::on_actionMask_SWC_triggered()
         ZSwcResampler resampler;
         resampler.optimalDownsample(wholeTree);
 
-        wholeTree->translate(stackFrame->document()->getStackOffset());
+        if (stackFrame != NULL) {
+          wholeTree->translate(stackFrame->document()->getStackOffset());
+        }
 
         if (stackFrame != swcFrame) {
           swcFrame->document()->addSwcTree(wholeTree);
@@ -4737,6 +4810,7 @@ void MainWindow::on_actionAutosaved_Files_triggered()
 void MainWindow::on_actionDiagnosis_triggered()
 {
   m_DiagnosisDlg->show();
+  m_DiagnosisDlg->setVideoCardInfo(Z3DGpuInfoInstance.getGpuInfo());
   m_DiagnosisDlg->scrollToBottom();
   m_DiagnosisDlg->raise();
 }
@@ -4888,20 +4962,22 @@ void MainWindow::createDvidFrame()
   reporter.start();
   reporter.advance(0.1);
 
-  ZStackFrame *frame = NULL;
   ZDvidBuffer *dvidBuffer = m_dvidClient->getDvidBuffer();
+
+  ZStackDocReader reader;
 
   ZStack *docStack = NULL;
 
   const QVector<ZStack*>& imageArray = dvidBuffer->getImageArray();
   if (!imageArray.isEmpty()) {
     docStack = ZStackFactory::composite(imageArray.begin(), imageArray.end());
+
+    /*
     if (docStack != NULL) {
       frame = createStackFrame(docStack);
     }
-  }
-
-  if (frame == NULL) {
+    */
+  } else {
     const QVector<ZObject3dScan>& bodyArray = dvidBuffer->getBodyArray();
     int offset[3] = {0, 0, 0};
     Stack *stack = ZObject3dScan::makeStack(bodyArray.begin(), bodyArray.end(),
@@ -4910,41 +4986,40 @@ void MainWindow::createDvidFrame()
       docStack = new ZStack;
       docStack->consumeData(stack);
       docStack->setOffset(offset[0], offset[1], offset[2]);
-      frame = createStackFrame(docStack, NeuTube::Document::FLYEM_BODY);
+      //frame = createStackFrame(docStack, NeuTube::Document::FLYEM_BODY);
     }
   }
 
-  if (frame != NULL) {
-    addStackFrame(frame);
-    presentStackFrame(frame);
+  if (docStack != NULL) {
+    reader.setStack(docStack);
   }
 
   if (!dvidBuffer->getSwcTreeArray().isEmpty()) {
-    if (frame == NULL) {
-      frame = createEmptyStackFrame();
-    }
-
     foreach (ZSwcTree* tree, dvidBuffer->getSwcTreeArray()) {
+      reader.addSwcTree(tree);
 #ifdef _DEBUG_2
       tree->print();
       std::cout << (ZStackDrawable*) tree << std::endl;
 #endif
-      frame->document()->addSwcTree(tree, false);
+      //frame->document()->addSwcTree(tree, false);
     }
     dvidBuffer->getSwcTreeArray().clear(); //Remove the ownership
+  }
+
+  if (reader.hasData()) {
+    ZStackFrame *frame = createEmptyStackFrame();
+    frame->addDocData(reader);
 
     if (!frame->document()->hasStackData()) {
       frame->open3DWindow(this);
       delete frame;
+    } else {
+      addStackFrame(frame);
+      presentStackFrame(frame);
     }
-  }
-
-  if (frame == NULL) {
+  } else {
     report("No data retrieved", "No data retrieved from DVID",
            ZMessageReporter::Warning);
-  } else {
-    addStackFrame(frame);
-    presentStackFrame(frame);
   }
 
   dvidBuffer->clear();
@@ -5237,8 +5312,17 @@ void MainWindow::on_actionGet_Grayscale_triggered()
     connect(progressDlg, SIGNAL(canceled()), this, SLOT(cancelDvidRequest()));
 
     m_dvidClient->reset();
-    m_dvidClient->setServer(m_dvidImageDlg->getAddress());
+    m_dvidClient->setDefaultServer();
+    //m_dvidClient->setServer(m_dvidImageDlg->getAddress());
     int depth = m_dvidImageDlg->getDepth();
+    ZDvidRequest request;
+    request.setGetImageRequest(
+          m_dvidImageDlg->getX(), m_dvidImageDlg->getY(),
+          m_dvidImageDlg->getZ(),
+          m_dvidImageDlg->getWidth(), m_dvidImageDlg->getHeight(), depth);
+    m_dvidClient->appendRequest(request);
+
+#if 0
     for (int z = 0; z < depth; ++z) {
       ZDvidRequest request;
       request.setGetImageRequest(
@@ -5247,6 +5331,7 @@ void MainWindow::on_actionGet_Grayscale_triggered()
             m_dvidImageDlg->getWidth(), m_dvidImageDlg->getHeight());
       m_dvidClient->appendRequest(request);
     }
+#endif
 
     m_dvidClient->postNextRequest();
   }
@@ -5400,7 +5485,7 @@ void MainWindow::on_actionIdentify_Hot_Spot_triggered()
   }
 }
 
-ZStackDoc::Reader *MainWindow::hotSpotDemo(
+ZStackDocReader *MainWindow::hotSpotDemo(
     int bodyId, const QString &dvidAddress, const QString &dvidUuid)
 {
   ZDvidReader reader;
@@ -5423,6 +5508,9 @@ ZStackDoc::Reader *MainWindow::hotSpotDemo(
     return NULL;
   }
 
+#ifdef _DEBUG_2
+  hotSpotArray.exportJsonFile(GET_TEST_DATA_DIR + "/test.json");
+#endif
 
   FlyEm::ZHotSpot *hotSpot = hotSpotArray[0];
   ZCuboid boundBox = hotSpot->toPointArray().getBoundBox();
@@ -5445,7 +5533,7 @@ ZStackDoc::Reader *MainWindow::hotSpotDemo(
 
   tree = ZSwcGenerator::createSwc(hotSpot->toPointArray(), 5.0, true);
 
-  ZStackDoc::Reader *docReader = new ZStackDoc::Reader();
+  ZStackDocReader *docReader = new ZStackDocReader();
   docReader->setStack(stack);
   docReader->addSwcTree(tree);
 
@@ -5465,7 +5553,7 @@ ZStackDoc::Reader *MainWindow::hotSpotDemo(
   //presentStackFrame(frame);
 }
 
-ZStackDoc::Reader* MainWindow::readDvidGrayScale(
+ZStackDocReader* MainWindow::readDvidGrayScale(
     const QString &dvidAddress, const QString &dvidUuid,
     int x, int y, int z, int width, int height, int depth)
 {
@@ -5473,14 +5561,14 @@ ZStackDoc::Reader* MainWindow::readDvidGrayScale(
   reader.open(dvidAddress, dvidUuid);
 
   ZStack *stack = reader.readGrayScale(x, y, z, width, height, depth);
-  ZStackDoc::Reader *docReader = new ZStackDoc::Reader;
+  ZStackDocReader *docReader = new ZStackDocReader;
   docReader->setStack(stack);
   //reader->setStackSource("http:" + dvidAddress + ":" + dvidUuid);
 
   return docReader;
 }
 
-ZStackDoc::Reader *MainWindow::hotSpotDemoFs(
+ZStackDocReader *MainWindow::hotSpotDemoFs(
     int bodyId, const QString &dvidAddress, const QString &dvidUuid)
 {
   ZDvidReader reader;
@@ -5516,7 +5604,7 @@ ZStackDoc::Reader *MainWindow::hotSpotDemoFs(
   for (ZSwcTreeNodeArray::const_iterator iter = nodeArray.begin();
        iter != nodeArray.end(); ++iter) {
     ZPoint center = SwcTreeNode::pos(*iter);
-    std::vector<int> bodyId = reader.readBodyId(
+    std::set<int> bodyId = reader.readBodyId(
           center.x(), center.y(), center.z(),
           margin, margin, margin);
     std::cout << bodyId.size() << " neighbor bodies" << std::endl;
@@ -5586,7 +5674,7 @@ ZStackDoc::Reader *MainWindow::hotSpotDemoFs(
   tree = ZSwcGenerator::createSwc(hotSpotArray.toLineSegmentArray(), 5.0);
   //tree = ZSwcGenerator::createSwc(hotSpotArray.toPointArray(), 5.0);
 
-  ZStackDoc::Reader *docReader = new ZStackDoc::Reader();
+  ZStackDocReader *docReader = new ZStackDocReader();
   docReader->setStack(stack);
   docReader->addSwcTree(tree);
   //ZStackDoc *doc = new ZStackDoc(stack, NULL);
@@ -5618,7 +5706,7 @@ void MainWindow::on_actionHot_Spot_Demo_triggered()
 #else
     qDebug() << dataInfo.getDvidAddressWithPort().c_str();
 
-    QFuture<ZStackDoc::Reader*> res;
+    QFuture<ZStackDocReader*> res;
 
     switch (m_hotSpotDlg->getType()) {
     case FlyEmHotSpotDialog::FALSE_MERGE:
@@ -5644,8 +5732,8 @@ void MainWindow::on_actionHot_Spot_Demo_triggered()
 
     res.waitForFinished();
 
-    ZStackDoc::Reader *docReader = res.result();
-
+    ZStackDocReader *docReader = res.result();
+#if 0
     ZStackDoc *doc = NULL;
 
     if (docReader != NULL) {
@@ -5656,9 +5744,13 @@ void MainWindow::on_actionHot_Spot_Demo_triggered()
       delete docReader;
       docReader = NULL;
     }
+#endif
+    if (docReader != NULL) {
+      ZStackFrame *frame = createStackFrame(docReader);
 
-    if (doc != NULL) {
-      ZStackFrame *frame = createStackFrame(doc);
+      delete docReader;
+      docReader = NULL;
+
       addStackFrame(frame);
       presentStackFrame(frame);
     } else {
@@ -5791,8 +5883,10 @@ ZStackDoc* MainWindow::importHdf5BodyM(const std::vector<int> &bodyIdArray,
   return doc;
 }
 
+
 void MainWindow::on_actionHDF5_Body_triggered()
 {
+#if 0
   QString fileName = getOpenFileName("HDF5", "HDF5 file (*.hf5)");
   if (!fileName.isEmpty()) {
     if (m_bodyDlg->exec()) {
@@ -5835,48 +5929,72 @@ void MainWindow::on_actionHDF5_Body_triggered()
       emit progressDone();
     }
   }
+  #endif
 }
 
 void MainWindow::on_actionDVID_Bundle_triggered()
 {
-  if (m_dvidDlg->exec()) {
-    if (m_bodyFilterDlg->exec()) {
-      m_progress->setRange(0, 3);
-
-      int currentProgress = 0;
-      m_progress->open();
-      m_progress->setLabelText(QString("Loading ..."));
-
-      m_progress->setValue(++currentProgress);
-
-      ZDvidTarget target;
-      target.set(
-            m_dvidDlg->getAddress().toStdString(),
-            m_dvidDlg->getUuid().toStdString(), m_dvidDlg->getPort());
-      ZDvidFilter dvidFilter;
-      dvidFilter.setDvidTarget(target);
-      dvidFilter.setMinBodySize(m_bodyFilterDlg->getMinBodySize());
-      if (m_bodyFilterDlg->hasUpperBodySize()) {
-        dvidFilter.setMaxBodySize(m_bodyFilterDlg->getMaxBodySize());
+#if defined(_FLYEM_)
+  ZDvidTarget target =
+      NeutubeConfig::getInstance().getFlyEmConfig().getDvidTarget();
+  bool continueLoading = false;
+  if (target.isValid()) {
+    if (ask("Load DVID Data",
+            "Load data from " + target.getSourceString() + "?")) {
+      continueLoading = true;
+    }
+  } else {
+    if (m_dvidDlg->exec()) {
+      NeutubeConfig::getInstance().getFlyEmConfig().setDvidTarget(
+            m_dvidDlg->getDvidTarget());
+      target = NeutubeConfig::getInstance().getFlyEmConfig().getDvidTarget();
+      if (!target.isValid()) {
+        report("Invalid DVID", "Invalid DVID server.", ZMessageReporter::Warning);
       } else {
-        dvidFilter.setMaxBodySize(std::numeric_limits<std::size_t>::max());
-      }
-
-      std::vector<int> excludedBodyArray = m_bodyFilterDlg->getExcludedBodies();
-      dvidFilter.exclude(excludedBodyArray);
-
-      ZFlyEmDataBundle *dataBundle = new ZFlyEmDataBundle;
-      if (dataBundle->loadDvid(dvidFilter)) {
-        ZFlyEmDataFrame *frame = new ZFlyEmDataFrame;
-        frame->addData(dataBundle);
-        addFlyEmDataFrame(frame);
-      } else {
-        delete dataBundle;
-        reportFileOpenProblem(target.getSourceString().c_str());
+        continueLoading = true;
       }
     }
-    m_progress->reset();
   }
+
+  if (continueLoading && m_bodyFilterDlg->exec()) {
+    m_progress->setRange(0, 3);
+
+    int currentProgress = 0;
+    m_progress->show();
+    m_progress->setLabelText(QString("Loading ") +
+                             target.getSourceString().c_str() + "...");
+
+    m_progress->setValue(++currentProgress);
+
+    ZDvidTarget target;
+    target.set(
+          m_dvidDlg->getAddress().toStdString(),
+          m_dvidDlg->getUuid().toStdString(), m_dvidDlg->getPort());
+    ZDvidFilter dvidFilter;
+    dvidFilter.setDvidTarget(target);
+    dvidFilter.setMinBodySize(m_bodyFilterDlg->getMinBodySize());
+    if (m_bodyFilterDlg->hasUpperBodySize()) {
+      dvidFilter.setMaxBodySize(m_bodyFilterDlg->getMaxBodySize());
+    } else {
+      dvidFilter.setMaxBodySize(std::numeric_limits<std::size_t>::max());
+    }
+
+    std::vector<int> excludedBodyArray = m_bodyFilterDlg->getExcludedBodies();
+    dvidFilter.exclude(excludedBodyArray);
+
+    ZFlyEmDataBundle *dataBundle = new ZFlyEmDataBundle;
+    if (dataBundle->loadDvid(dvidFilter)) {
+      ZFlyEmDataFrame *frame = new ZFlyEmDataFrame;
+      frame->addData(dataBundle);
+      addFlyEmDataFrame(frame);
+    } else {
+      delete dataBundle;
+      reportFileOpenProblem(target.getSourceString().c_str());
+    }
+  }
+  m_progress->reset();
+  m_progress->hide();
+#endif
 }
 
 void MainWindow::on_actionSubmit_Skeletonize_triggered()
@@ -5889,19 +6007,161 @@ void MainWindow::on_actionSubmit_Skeletonize_triggered()
 
 void MainWindow::on_actionSplit_Region_triggered()
 {
-  ZStackFrame *frame = currentStackFrame();
-  if (frame != NULL) {
-    m_progress->setLabelText("Splitting ...");
-    m_progress->setRange(0, 0);
-    m_progress->open();
-    frame->runSeededWatershed();
-/*
+  if (GET_APPLICATION_NAME == "FlyEM") {
+    ZStackFrame *frame = currentStackFrame();
+    if (frame != NULL) {
+      m_progress->setLabelText("Splitting ...");
+      m_progress->setRange(0, 0);
+      m_progress->open();
+      frame->runSeededWatershed();
+      /*
     if (stack != NULL) {
       ZStackFrame *frame = createStackFrame(stack);
       addStackFrame(frame);
       presentStackFrame(frame);
     }
 */
+      m_progress->reset();
+    }
+  }
+}
+
+void MainWindow::on_actionLoad_Body_with_Grayscale_triggered()
+{
+#if defined(_FLYEM_)
+  if (m_bodyDlg->exec()) {
+    m_progress->setLabelText("Loading ...");
+    m_progress->setRange(0, 0);
+    m_progress->open();
+
+    /*
+    ZFlyEmDataInfo dataInfo(FlyEm::DATA_FIB25);
+    ZDvidReader reader;
+    */
+
+    const ZDvidTarget &target = GET_FLYEM_CONFIG.getDvidTarget();
+
+    ZDvidReader reader;
+    if (reader.open(target)) {
+      std::vector<int> bodyIdArray = m_bodyDlg->getBodyIdArray();
+      if (!bodyIdArray.empty()) {
+        int bodyId = bodyIdArray[0];
+        ZObject3dScan body = reader.readBody(bodyId);
+        if (!body.isEmpty()) {
+          ZStack *stack = body.toStackObject();
+          int x = stack->getOffset().x();
+          int y = stack->getOffset().y();
+          int z = stack->getOffset().z();
+          int width = stack->width();
+          int height = stack->height();
+          int depth = stack->depth();
+
+          ZStack *grayStack = reader.readGrayScale(x, y, z, width, height, depth);
+
+          if (grayStack != NULL) {
+            TZ_ASSERT(grayStack->kind() == GREY, "Unsuppored kind.");
+            if (Stack_Same_Size(grayStack->c_stack(), stack->c_stack())) {
+              size_t voxelNumber = stack->getVoxelNumber();
+              uint8_t *maskArray = stack->array8();
+              uint8_t *signalArray = grayStack->array8();
+              for (size_t i = 0; i < voxelNumber; ++i) {
+                if (maskArray[i] > 0) {
+                  if (signalArray[i] < 255) {
+                    maskArray[i] = signalArray[i] + 1;
+                  } else {
+                    maskArray[i] = 255;
+                  }
+                }
+              }
+            }
+            //Stack_Mul(stack->c_stack(), grayStack->c_stack(), stack->c_stack());
+            delete grayStack;
+          }
+
+          ZStack *out = stack;
+          std::vector<int> dsIntv = m_bodyDlg->getDownsampleInterval();
+          if (dsIntv[0] > 0 || dsIntv[1] > 0 || dsIntv[2] > 0) {
+            Stack *outData = C_Stack::downsampleMin(
+                  stack->c_stack(), dsIntv[0], dsIntv[1], dsIntv[2]);
+            out = new ZStack();
+            out->consumeData(outData);
+            delete stack;
+          }
+
+          //ZStackDoc *doc = new ZStackDoc(NULL, NULL);
+          //doc->loadStack(stack);
+          ZStackDocReader docReader;
+          docReader.setStack(out);
+          ZStackFrame *frame = createStackFrame(&docReader);
+          addStackFrame(frame);
+          presentStackFrame(frame);
+        }
+      }
+    }
     m_progress->reset();
   }
+#endif
+}
+
+void MainWindow::createStackFrameFromDocReader(ZStackDocReader *reader)
+{
+#if 0
+  ZStackDoc *doc = NULL;
+  QString fileName;
+  if (reader != NULL) {
+    doc = new ZStackDoc(NULL, NULL);
+    doc->addData(*reader);
+    fileName = reader->getFileName();
+
+    delete reader;
+    reader = NULL;
+  } else {
+    report("Error Reading", "Something wrong with reading a file",
+           ZMessageReporter::Warning);
+    return;
+  }
+#endif
+
+  QString fileName;
+  if (reader != NULL) {
+    ZStackFrame *frame = createStackFrame(reader);
+    fileName = reader->getFileName();
+
+    delete reader;
+    reader = NULL;
+
+    if (frame->document()->hasStackData()) {
+      if (GET_APPLICATION_NAME == "Biocytin") {
+        frame->document()->setStackBackground(NeuTube::IMAGE_BACKGROUND_BRIGHT);
+        frame->document()->setTag(NeuTube::Document::BIOCYTIN_STACK);
+      }
+      addStackFrame(frame);
+      presentStackFrame(frame);
+      //QApplication::processEvents();
+    } else {
+      emit progressDone();
+      frame->open3DWindow(this);
+      delete frame;
+    }
+    if (!fileName.isEmpty()) {
+      setCurrentFile(fileName);
+    }
+  } else {
+    reportFileOpenProblem(fileName);
+  }
+
+  emit progressDone();
+}
+
+void MainWindow::on_actionFlyEmSettings_triggered()
+{
+#if defined(_FLYEM_)
+  if (m_dvidDlg->exec()) {
+    NeutubeConfig::getInstance().getFlyEmConfig().setDvidTarget(
+          m_dvidDlg->getDvidTarget());
+#ifdef _DEBUG_
+    NeutubeConfig::getInstance().getFlyEmConfig().print();
+#endif
+  }
+#endif
 }

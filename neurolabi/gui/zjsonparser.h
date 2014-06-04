@@ -28,7 +28,14 @@ public:
 
   static const char* stringValue(const json_t *value);
   static double numberValue(const json_t *value);
+
+  /*!
+   * \brief Integer value of a json value.
+   *
+   * \return 0 if \a value is not in integer type or it is NULL.
+   */
   static int integerValue(const json_t *value);
+
   static bool booleanValue(const json_t *value);
 
   static const char* stringValue(const json_t *value, size_t index);

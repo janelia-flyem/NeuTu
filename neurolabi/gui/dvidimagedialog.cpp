@@ -1,11 +1,16 @@
 #include "dvidimagedialog.h"
 #include "ui_dvidimagedialog.h"
+#include "neutubeconfig.h"
 
 DvidImageDialog::DvidImageDialog(QWidget *parent) :
   QDialog(parent),
   ui(new Ui::DvidImageDialog)
 {
   ui->setupUi(this);
+#if defined(_FLYEM_)
+  setAddress( NeutubeConfig::getInstance().getFlyEmConfig().
+              getDvidTarget().getSourceString(false).c_str());
+#endif
 }
 
 DvidImageDialog::~DvidImageDialog()
@@ -42,14 +47,15 @@ int DvidImageDialog::getDepth() const
 {
   return ui->depthSpinBox->value();
 }
-
+#if 0
 QString DvidImageDialog::getAddress() const
 {
   return ui->addressWidget->text();
 }
-
+#endif
 void DvidImageDialog::setAddress(const QString address)
 {
   ui->addressWidget->setText(address);
 }
+
 

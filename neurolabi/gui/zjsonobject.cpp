@@ -319,3 +319,12 @@ json_t* ZJsonObject::setArrayEntry(const char *key)
 
   return arrayObj;
 }
+
+void ZJsonObject::setValue(const ZJsonValue &value)
+{
+  if (value.isObject()) {
+    set(value.getData(), false);
+  } else {
+    clear();
+  }
+}

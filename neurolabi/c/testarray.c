@@ -632,7 +632,7 @@ int main(int argc, char *argv[])
   printf("%d, %d, %d\n", a[0], a[1], a[2]);
 #endif
   
-#if 0
+#if 1
   struct A {
     int array[3];
   };
@@ -701,7 +701,7 @@ int main(int argc, char *argv[])
   b.width = 1;
 #endif
 
-#if 1
+#if 0
   int array[] = {1, 2, 1, 1, 2, 2, 2, 2, 1, 2, 3, 4, 5};
   size_t length = sizeof(array) / sizeof(int);
   int *out = iarray_medfilter(array, length, 3, NULL);

@@ -11,6 +11,8 @@
 #include "zstackdrawable.h"
 #include "c_stack.h"
 
+class ZStack;
+
 class ZStroke2d : public ZDocumentable, public ZStackDrawable {
 public:
   ZStroke2d();
@@ -49,7 +51,7 @@ public:
 
   void clear();
 
-  bool isEmpty();
+  bool isEmpty() const;
 
   ZStroke2d* clone();
 
@@ -75,6 +77,14 @@ public:
    * \brief Translate the stroke
    */
   void translate(const ZPoint offset);
+
+  /*!
+   * \brief Convert the stroke to a stack.
+   *
+   * Only GREY type is supported. If m_label is bigger than 255, label % 255 is
+   * taken.
+   */
+  ZStack *toStack() const;
 
 private:
   static QVector<QColor> constructColorTable();

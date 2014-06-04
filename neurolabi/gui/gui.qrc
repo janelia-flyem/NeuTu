@@ -79,6 +79,13 @@
         <file>Resources/config/distance_filter.json</file>
         <file>images/open_dvid.png</file>
         <file>images/open_tile.png</file>
+        <file>images/connect_to.png</file>
+        <file>images/connect.png</file>
         <file>images/manage_tile.png</file>
+        <file>images/delete.png</file>
+        <file>images/change_focus.png</file>
+        <file>images/insert.png</file>
+        <file>images/move.png</file>
+        <file>images/add.png</file>
     </qresource>
 </RCC>

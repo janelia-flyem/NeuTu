@@ -54,6 +54,7 @@ public:
   void gotoPosition(double x, double y, double z, double radius = 64);
   void gotoPosition(std::vector<double> bound, double minRadius = 64,
                     double range = 128);
+  void zoomToSelectedSwcNodes();
 
   // useful stuff
   Z3DCameraParameter* getCamera();
@@ -226,6 +227,7 @@ public slots:
 
   void toogleMoveSelectedObjectsMode(bool checked);
   void moveSelectedObjects(double x, double y, double z);
+  void notifyUser(const QString &message);
 
 protected:
   virtual void dragEnterEvent(QDragEnterEvent *event);
@@ -252,9 +254,9 @@ private:
   QAction *m_markPunctumAction;
   QAction *m_toogleAddSwcNodeModeAction;
   QAction *m_changeBackgroundAction;
-  QAction *m_toogleMoveSelectedObjectsAction;
+  QAction *m_toggleMoveSelectedObjectsAction;
   //QAction *m_toogleExtendSelectedSwcNodeAction;
-  QAction *m_toogleSmartExtendSelectedSwcNodeAction;
+  QAction *m_toggleSmartExtendSelectedSwcNodeAction;
   QAction *m_locateSwcNodeIn2DAction;
 
   QAction *m_undoAction;

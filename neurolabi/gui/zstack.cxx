@@ -21,6 +21,7 @@
 #include "tz_int_histogram.h"
 #include "zjsonparser.h"
 #include "zfiletype.h"
+#include "tz_math.h"
 #ifdef _NEUTUBE_
 #include "QsLog.h"
 #endif
@@ -57,7 +58,8 @@ ZStack::ZStack(int kind, int width, int height, int depth,
   setData(stack, delloc);
 }
 
-ZStack::ZStack(Mc_Stack *stack, C_Stack::Mc_Stack_Deallocator *dealloc)
+ZStack::ZStack(Mc_Stack *stack, C_Stack::Mc_Stack_Deallocator *dealloc) :
+  m_stack(NULL), m_delloc(NULL), m_preferredZScale(1.0), m_isLSMFile(false)
 {
   setData(stack, dealloc);
 }
@@ -83,7 +85,7 @@ void ZStack::setOffset(double dx, double dy, double dz)
 
 void ZStack::setOffset(const ZPoint &pt)
 {
-    m_offset = pt;
+  m_offset = pt;
 }
 
 size_t ZStack::getVoxelNumber(EStackUnit unit) const
@@ -1246,13 +1248,13 @@ double ZStack::averageIntensity(ZStack *mask)
   return v;
 }
 
-void ZStack::copyValue(const void *buffer, size_t length, int ch)
+void ZStack::loadValue(const void *buffer, size_t length, int ch)
 {
   memcpy(rawChannelData(ch), buffer, length);
   deprecateDependent(MC_STACK);
 }
 
-void ZStack::copyValue(const void *buffer, size_t length, void *loc)
+void ZStack::loadValue(const void *buffer, size_t length, void *loc)
 {
   memcpy(loc, buffer, length);
   deprecateDependent(MC_STACK);
@@ -1471,5 +1473,76 @@ void ZStack::setZero()
 {
   if (!isEmpty() && ! isVirtual()) {
     C_Stack::setZero(m_stack);
+  }
+}
+
+void ZStack::printInfo() const
+{
+  std::cout << "Stack: " << std::endl;
+  std::cout << "  Size: (" << width() << " x " << height() << " x " << depth()
+            << ")" <<  std::endl;
+  std::cout << "  Channel number: " << channelNumber() << std::endl;
+  std::cout << "  Voxel type: " << kind() << std::endl;
+  std::cout << "  Offset: " << getOffset().toString() << std::endl;
+
+  if (isEmpty()) {
+    std::cout << "  Empty stack." << std::endl;
+  }
+}
+
+bool ZStack::reshape(int width, int height, int depth)
+{
+  size_t v = (size_t) width * height * depth;
+  if (v == getVoxelNumber()) {
+    m_stack->width = width;
+    m_stack->height = height;
+    m_stack->depth = depth;
+
+    return true;
+  }
+
+  return false;
+}
+
+bool ZStack::paste(ZStack *dst, int valueIgnored) const
+{
+  if (dst != NULL) {
+    if (kind() != dst->kind()) {
+      return false;
+    }
+
+    if (isVirtual() || dst->isVirtual()) {
+      return false;
+    }
+
+    if (isEmpty() || dst->isEmpty()) {
+      return false;
+    }
+
+    int ch = imin2(dst->channelNumber(), channelNumber());
+    ZPoint offset = getOffset() - dst->getOffset();
+    int x0 = iround(offset.x());
+    int y0 = iround(offset.y());
+    int z0 = iround(offset.z());
+
+    for (int i = 0; i < ch; ++i) {
+      C_Stack::setBlockValue(dst->c_stack(i), c_stack(i), x0, y0, z0,
+                             valueIgnored);
+    }
+
+    return true;
+  }
+
+  return false;
+}
+
+void ZStack::getBoundBox(Cuboid_I *box) const
+{
+  if (box != NULL) {
+    int x0 = iround(getOffset().x());
+    int y0 = iround(getOffset().y());
+    int z0 = iround(getOffset().z());
+
+    Cuboid_I_Set_S(box, x0, y0, z0, width(), height(), depth());
   }
 }

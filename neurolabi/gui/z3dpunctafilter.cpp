@@ -12,7 +12,7 @@ Z3DPunctaFilter::Z3DPunctaFilter()
   : Z3DGeometryFilter()
   , m_sphereRenderer(NULL)
   , m_boundBoxRenderer(NULL)
-  , m_showPuncta("Show Puncta", true)
+  , m_showPuncta("Visible", true)
   , m_colorMode("Color Mode")
   , m_singleColorForAllPuncta("Puncta Color", glm::vec4(ZRandomInstance.randReal<float>(),
                                                        ZRandomInstance.randReal<float>(),

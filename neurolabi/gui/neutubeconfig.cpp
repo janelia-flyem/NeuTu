@@ -189,6 +189,10 @@ void NeutubeConfig::print()
   cout << "Autosave dir: " << getPath(AUTO_SAVE) << endl;
   cout << "Autosave interval: " << m_autoSaveInterval << endl;
   cout << endl;
+
+#if defined(_FLYEM_)
+  m_flyemConfig.print();
+#endif
 }
 
 std::string NeutubeConfig::getPath(Config_Item item) const

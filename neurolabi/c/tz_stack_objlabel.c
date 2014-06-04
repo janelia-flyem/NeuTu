@@ -1469,7 +1469,7 @@ Graph* Stack_Label_Field_Neighbor_Graph(Stack *stack, int threshold,
 
 
 
-Object_3d* Stack_Region_Border(const Stack *stack, int nnbr)
+Object_3d* Stack_Region_Border(const Stack *stack, int nnbr, BOOL ignoring_bg)
 {
   int x, y, z;
   int is_in_bound[26];
@@ -1490,16 +1490,26 @@ Object_3d* Stack_Region_Border(const Stack *stack, int nnbr)
   size_t voxelNumber = Stack_Voxel_Number(stack);
   size_t count = 0;
   for (index = 0; index < voxelNumber; ++index) {
-    int n_in_bound = Stack_Neighbor_Bound_Test_I(nnbr, width, height, depth,
-        index, is_in_bound);
-    int j;
-    for (j = 0; j < nnbr; ++j) {
-      if (n_in_bound == nnbr || is_in_bound[j]) {
-        size_t neighbor_index = index + neighbor[j];
-        if (stack->array[neighbor_index] != stack->array[index]) {
-          mask->array[index] = 1;
-          ++count;
-          break;
+    if (stack->array[index] > 0) {
+      int n_in_bound = Stack_Neighbor_Bound_Test_I(nnbr, width, height, depth,
+          index, is_in_bound);
+      int j;
+      for (j = 0; j < nnbr; ++j) {
+        if (n_in_bound == nnbr || is_in_bound[j]) {
+          size_t neighbor_index = index + neighbor[j];
+          if (ignoring_bg) {
+            if (stack->array[neighbor_index] > stack->array[index]) {
+              mask->array[index] = 1;
+              ++count;
+              break;
+            }
+          } else {
+            if (stack->array[neighbor_index] < stack->array[index]) {
+              mask->array[index] = 1;
+              ++count;
+              break;
+            }
+          }
         }
       }
     }

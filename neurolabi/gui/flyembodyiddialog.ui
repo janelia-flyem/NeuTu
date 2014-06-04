@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>375</width>
-    <height>171</height>
+    <width>349</width>
+    <height>161</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -20,7 +20,7 @@
    <property name="geometry">
     <rect>
      <x>160</x>
-     <y>130</y>
+     <y>120</y>
      <width>171</width>
      <height>32</height>
     </rect>
@@ -32,98 +32,88 @@
     <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
    </property>
   </widget>
-  <widget class="QWidget" name="layoutWidget">
-   <property name="geometry">
-    <rect>
-     <x>20</x>
-     <y>20</y>
-     <width>341</width>
-     <height>23</height>
-    </rect>
-   </property>
-   <layout class="QHBoxLayout" name="horizontalLayout">
-    <item>
-     <widget class="QLabel" name="label">
-      <property name="text">
-       <string>Body Ids</string>
-      </property>
-     </widget>
-    </item>
-    <item>
-     <widget class="QLineEdit" name="bodyIdLineEdit"/>
-    </item>
-   </layout>
-  </widget>
   <widget class="QWidget" name="">
    <property name="geometry">
     <rect>
      <x>20</x>
-     <y>50</y>
-     <width>315</width>
-     <height>52</height>
+     <y>20</y>
+     <width>317</width>
+     <height>87</height>
     </rect>
    </property>
-   <layout class="QHBoxLayout" name="horizontalLayout_2">
+   <layout class="QVBoxLayout" name="verticalLayout_4">
     <item>
-     <widget class="QLabel" name="label_2">
-      <property name="text">
-       <string>Downsample Interval</string>
-      </property>
-     </widget>
-    </item>
-    <item>
-     <layout class="QVBoxLayout" name="verticalLayout">
+     <layout class="QHBoxLayout" name="horizontalLayout">
       <item>
-       <widget class="QLabel" name="label_3">
+       <widget class="QLabel" name="label">
         <property name="text">
-         <string>X</string>
+         <string>Body Ids</string>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QSpinBox" name="xDsSpinBox"/>
+       <widget class="QLineEdit" name="bodyIdLineEdit"/>
       </item>
      </layout>
     </item>
     <item>
-     <layout class="QVBoxLayout" name="verticalLayout_2">
+     <layout class="QHBoxLayout" name="horizontalLayout_2">
       <item>
-       <widget class="QLabel" name="label_4">
+       <widget class="QLabel" name="label_2">
         <property name="text">
-         <string>Y</string>
+         <string>Downsample Interval</string>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QSpinBox" name="yDsSpinBox"/>
+       <layout class="QVBoxLayout" name="verticalLayout">
+        <item>
+         <widget class="QLabel" name="label_3">
+          <property name="text">
+           <string>X</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QSpinBox" name="xDsSpinBox"/>
+        </item>
+       </layout>
       </item>
-     </layout>
-    </item>
-    <item>
-     <layout class="QVBoxLayout" name="verticalLayout_3">
       <item>
-       <widget class="QLabel" name="label_5">
-        <property name="text">
-         <string>Z</string>
-        </property>
-       </widget>
+       <layout class="QVBoxLayout" name="verticalLayout_2">
+        <item>
+         <widget class="QLabel" name="label_4">
+          <property name="text">
+           <string>Y</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QSpinBox" name="yDsSpinBox"/>
+        </item>
+       </layout>
       </item>
       <item>
-       <widget class="QSpinBox" name="zDsSpinBox"/>
+       <layout class="QVBoxLayout" name="verticalLayout_3">
+        <item>
+         <widget class="QLabel" name="label_5">
+          <property name="text">
+           <string>Z</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QSpinBox" name="zDsSpinBox"/>
+        </item>
+       </layout>
       </item>
      </layout>
     </item>
    </layout>
   </widget>
   <zorder>layoutWidget</zorder>
+  <zorder>layoutWidget</zorder>
   <zorder>buttonBox</zorder>
-  <zorder>label_2</zorder>
-  <zorder>xDsSpinBox</zorder>
-  <zorder>yDsSpinBox</zorder>
-  <zorder>zDsSpinBox</zorder>
-  <zorder>label_3</zorder>
-  <zorder>label_4</zorder>
-  <zorder>label_5</zorder>
  </widget>
  <resources/>
  <connections>

@@ -665,6 +665,10 @@ ZStackDocCommand::SwcEdit::SetParent::SetParent(
   m_oldParent(NULL), m_prevSibling(NULL)
 {
   //TZ_ASSERT(parentNode != NULL, "Null pointer");
+#ifdef _DEBUG_
+  std::cout << m_newParent << " --> " << m_node << std::endl;
+#endif
+
   setText(QObject::tr("Set swc node parent"));
 }
 
@@ -802,10 +806,11 @@ void ZStackDocCommand::SwcEdit::SwcPathLabeTraceMask::redo()
 
 ZStackDocCommand::SwcEdit::SetRoot::SetRoot(
     ZStackDoc *doc, Swc_Tree_Node *tn, QUndoCommand *parent) :
-  CompositeCommand(doc, parent)
+  QUndoCommand(parent), m_doc(doc), m_node(tn)
+  //CompositeCommand(doc, parent)
 {
   setText(QObject::tr("Set root"));
-
+#if 0
   if (tn != NULL) {
     Swc_Tree_Node *buffer1, *buffer2, *buffer3;
     buffer1 = tn;
@@ -830,7 +835,51 @@ ZStackDocCommand::SwcEdit::SetRoot::SetRoot(
     //Swc_Tree_Node_Set_Parent(tn, buffer1);
     new SetParent(doc, tn, buffer1, this);
   }
+#endif
 }
+
+void ZStackDocCommand::SwcEdit::SetRoot::redo()
+{
+  m_originalParentArray.clear();
+  if (m_node != NULL) {
+    Swc_Tree_Node *parent = SwcTreeNode::parent(m_node);
+
+    while (SwcTreeNode::isRegular(parent)) {
+      m_originalParentArray.push_back(parent);
+      parent = SwcTreeNode::parent(parent);
+    }
+    Swc_Tree_Node *virtualRoot = parent;
+
+    SwcTreeNode::setParent(m_node, virtualRoot);
+    Swc_Tree_Node *currentParent = m_node;
+    for (std::vector<Swc_Tree_Node*>::iterator
+         iter = m_originalParentArray.begin();
+         iter != m_originalParentArray.end(); ++iter) {
+      SwcTreeNode::setParent(*iter, currentParent);
+      currentParent = *iter;
+    }
+
+    m_doc->notifySwcModified();
+  }
+}
+
+void ZStackDocCommand::SwcEdit::SetRoot::undo()
+{
+  if (!m_originalParentArray.empty()) {
+    Swc_Tree_Node *virtualRoot = SwcTreeNode::parent(m_node);
+    Swc_Tree_Node *currentParent = virtualRoot;
+    for (std::vector<Swc_Tree_Node*>::reverse_iterator
+         iter = m_originalParentArray.rbegin();
+         iter != m_originalParentArray.rend(); ++iter) {
+      SwcTreeNode::setParent(*iter, currentParent);
+      currentParent = *iter;
+    }
+    SwcTreeNode::setParent(m_node, m_originalParentArray.front());
+
+    m_doc->notifySwcModified();
+  }
+}
+
 
 ZStackDocCommand::SwcEdit::ConnectSwcNode::ConnectSwcNode(
     ZStackDoc *doc, QUndoCommand *parent) :
@@ -838,7 +887,12 @@ ZStackDocCommand::SwcEdit::ConnectSwcNode::ConnectSwcNode(
 {
   setText("Connect Swc Nodes");
 
-  ZGraph *graph = ZSwcConnector::buildConnection(*doc->selectedSwcTreeNodes());
+  ZSwcConnector connector;
+  connector.setMinDist(
+        SwcTreeNode::averageRadius(doc->selectedSwcTreeNodes()->begin(),
+                                   doc->selectedSwcTreeNodes()->end()) * 20.0);
+
+  ZGraph *graph = connector.buildConnection(*doc->selectedSwcTreeNodes());
 
   if (graph->size() > 0) {
     std::vector<Swc_Tree_Node*> nodeArray;
@@ -1327,7 +1381,7 @@ void ZStackDocCommand::TubeEdit::Trace::undo()
     m_doc->notifyChainModified();
   }
 }
-
+#if 0
 ZStackDocCommand::TubeEdit::AutoTrace::AutoTrace(ZStackDoc *doc, QUndoCommand *parent)
   : QUndoCommand(parent), m_doc(doc)
 {
@@ -1408,7 +1462,9 @@ void ZStackDocCommand::TubeEdit::AutoTrace::undo()
   m_obj3dList = obj3dList;
   m_punctaList = punctaList;
 }
+#endif
 
+#if 0
 void ZStackDocCommand::TubeEdit::AutoTrace::redo()
 {
   QList<ZLocsegChain*> chainList = m_doc->getChainList();
@@ -1463,7 +1519,7 @@ void ZStackDocCommand::TubeEdit::AutoTrace::redo()
   m_obj3dList = obj3dList;
   m_punctaList = punctaList;
 }
-
+#endif
 ZStackDocCommand::TubeEdit::AutoTraceAxon::AutoTraceAxon(
     ZStackDoc *doc, QUndoCommand *parent)
   :QUndoCommand(parent), m_doc(doc)
@@ -1768,7 +1824,7 @@ ZStackDocCommand::ObjectEdit::MoveSelected::MoveSelected(
     m_punctaMoved(false), m_swcScaleX(1.), m_swcScaleY(1.), m_swcScaleZ(1.),
     m_punctaScaleX(1.), m_punctaScaleY(1.), m_punctaScaleZ(1.)
 {
-  setText(QObject::tr("Move Selected Objects"));
+  setText(QObject::tr("Move Selected"));
 }
 
 ZStackDocCommand::ObjectEdit::MoveSelected::~MoveSelected()
@@ -1823,23 +1879,28 @@ bool ZStackDocCommand::ObjectEdit::MoveSelected::mergeWith(const QUndoCommand *o
   if (other->id() != id())
     return false;
 
-  const MoveSelected *oth = static_cast<const MoveSelected *>(other);
-  if (m_punctaList != oth->m_punctaList ||
-      m_swcNodeList != oth->m_swcNodeList ||
-      m_swcList != oth->m_swcList ||
-      m_swcScaleX != oth->m_swcScaleX ||
-      m_swcScaleY != oth->m_swcScaleY ||
-      m_swcScaleZ != oth->m_swcScaleZ ||
-      m_punctaScaleX != oth->m_punctaScaleX ||
-      m_punctaScaleY != oth->m_punctaScaleY ||
-      m_punctaScaleZ != oth->m_punctaScaleZ) {
-    return false;
+  const MoveSelected *oth = dynamic_cast<const MoveSelected *>(other);
+  if (oth != NULL) {
+    if (m_punctaList != oth->m_punctaList ||
+        m_swcNodeList != oth->m_swcNodeList ||
+        m_swcList != oth->m_swcList ||
+        m_swcScaleX != oth->m_swcScaleX ||
+        m_swcScaleY != oth->m_swcScaleY ||
+        m_swcScaleZ != oth->m_swcScaleZ ||
+        m_punctaScaleX != oth->m_punctaScaleX ||
+        m_punctaScaleY != oth->m_punctaScaleY ||
+        m_punctaScaleZ != oth->m_punctaScaleZ) {
+      return false;
+    }
+
+    m_x += oth->m_x;
+    m_y += oth->m_y;
+    m_z += oth->m_z;
+
+    return true;
   }
 
-  m_x += oth->m_x;
-  m_y += oth->m_y;
-  m_z += oth->m_z;
-  return true;
+  return false;
 }
 
 void ZStackDocCommand::ObjectEdit::MoveSelected::undo()

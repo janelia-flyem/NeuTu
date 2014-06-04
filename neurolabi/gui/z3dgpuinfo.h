@@ -109,6 +109,7 @@ public:
 
   // log useful gpu info
   void logGpuInfo() const;
+  QStringList getGpuInfo() const;
 
   // check avalibility of some special effect
   bool isWeightedAverageSupported() const;

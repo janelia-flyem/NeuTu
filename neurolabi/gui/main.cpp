@@ -9,9 +9,7 @@
 #include "zerror.h"
 #include "z3dapplication.h"
 
-#if !defined(QT_NO_DEBUG)
 #include "ztest.h"
-#endif
 
 #include "tz_utilities.h"
 #include "neutubeconfig.h"
@@ -116,11 +114,12 @@ int main(int argc, char *argv[])
 
   QStringList fileList;
 
-#ifndef QT_NO_DEBUG
+
   if (argc > 1) {
     if (strcmp(argv[1], "d") == 0) {
       debugging = true;
     }
+#ifndef QT_NO_DEBUG
     if (strcmp(argv[1], "u") == 0 || QString(argv[1]).startsWith("--gtest")) {
       unitTest = true;
       debugging = true;
@@ -134,8 +133,9 @@ int main(int argc, char *argv[])
         fileList << argv[i];
       }
     }
-  }
 #endif
+  }
+
 
   QApplication app(argc, argv);     // call first otherwise it will cause runtime warning: Please instantiate the QApplication object first
 
@@ -147,7 +147,10 @@ int main(int argc, char *argv[])
     std::cout << "Unable to load configuration: "
               << config.getConfigPath() << std::endl;
   }
-  //config.print();
+
+#ifdef _DEBUG_
+  config.print();
+#endif
 
   RECORD_INFORMATION("************* Start ******************");
 
@@ -232,13 +235,15 @@ int main(int argc, char *argv[])
     */
     if (unitTest) {
       ZTest::runUnitTest(argc, argv);
-    } else {
+    }
+#else
+    if (unitTest) {
+      std::cout << "No unit test in the release version." << std::endl;
+    }
+#endif
+    if (!unitTest) {
       ZTest::test(NULL);
     }
-
-#else
-    std::cout << "No debugging in the release version." << std::endl;
-#endif
 
     return 1;
   }

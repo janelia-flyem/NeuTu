@@ -23,8 +23,8 @@ Z3DSwcFilter::Z3DSwcFilter()
   , m_sphereRenderer(NULL)
   , m_sphereRendererForCone(NULL)
   , m_boundBoxRenderer(NULL)
-  , m_showSwcs("Show Swcs", true)
-  , m_renderingPrimitive("Rendering Primitive")
+  , m_showSwcs("Visible", true)
+  , m_renderingPrimitive("Geometry")
   , m_colorMode("Color Mode")
   , m_pressedSwc(NULL)
   , m_selectedSwcs(NULL)
@@ -113,6 +113,10 @@ Z3DSwcFilter::Z3DSwcFilter()
                              Qt::AltModifier, QEvent::MouseButtonPress);
   m_selectSwcEvent->listenTo("select swc flood filling", Qt::LeftButton,
                              Qt::AltModifier, QEvent::MouseButtonRelease);
+  m_selectSwcEvent->listenTo("select swc flood filling", Qt::LeftButton,
+                             Qt::AltModifier | Qt::ControlModifier, QEvent::MouseButtonPress);
+  m_selectSwcEvent->listenTo("select swc flood filling", Qt::LeftButton,
+                             Qt::AltModifier | Qt::ControlModifier, QEvent::MouseButtonRelease);
 
   m_selectSwcEvent->listenTo("append select swc", Qt::LeftButton,
                              Qt::ControlModifier, QEvent::MouseButtonPress);
@@ -1387,7 +1391,8 @@ void Z3DSwcFilter::selectSwc(QMouseEvent *e, int w, int h)
       //bool showingContextMenu = (e->button() == Qt::RightButton);
       bool appending = (e->modifiers() == Qt::ControlModifier) ||
           (e->modifiers() == Qt::ShiftModifier) ||
-          (e->modifiers() == Qt::AltModifier);
+          (e->modifiers() == Qt::AltModifier) ||
+          (e->modifiers() == (Qt::AltModifier | Qt::ControlModifier));
 
       if (m_pressedSwc || m_pressedSwcTreeNode) {  // hit something
         // do not select tree when it is node rendering, but allow deselecting swc tree in node rendering mode
@@ -1401,7 +1406,8 @@ void Z3DSwcFilter::selectSwc(QMouseEvent *e, int w, int h)
           if (e->modifiers() == Qt::ShiftModifier) {
             qDebug() << "treeNodeSelectConnection emitted";
             emit treeNodeSelectConnection(m_pressedSwcTreeNode);
-          } else if (e->modifiers() == Qt::AltModifier) {
+          } else if (e->modifiers() == Qt::AltModifier ||
+                     e->modifiers() == (Qt::AltModifier | Qt::ControlModifier)) {
             emit treeNodeSelectFloodFilling(m_pressedSwcTreeNode);
           }
         }
@@ -1449,16 +1455,7 @@ void Z3DSwcFilter::selectSwc(QMouseEvent *e, int w, int h)
           */
           emit addNewSwcTreeNode(pos.x, pos.y, pos.z, SwcTreeNode::radius(tn));
         }
-      } /*else if (m_interactionMode == ExtendSwcNode && m_selectedSwcTreeNodes->size() == 1) {  // hit nothing, extend node
-        Swc_Tree_Node *tn = *(m_selectedSwcTreeNodes->begin());
-        glm::dvec3 v1,v2;
-        get3DRayUnderScreenPoint(v1, v2, e->x(), e->y(), w, h);
-        glm::dvec3 nodePos(tn->node.x * getCoordScales().x,
-                           tn->node.y * getCoordScales().y,
-                           tn->node.z * getCoordScales().z);
-        glm::dvec3 pos = projectPointOnRay(nodePos, v1, v2) / glm::dvec3(getCoordScales());
-        emit extendSwcTreeNode(pos.x, pos.y, pos.z);
-      } */
+      }
     }
     m_pressedSwc = NULL;
     m_pressedSwcTreeNode = NULL;

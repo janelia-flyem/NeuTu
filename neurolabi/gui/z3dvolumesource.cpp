@@ -451,12 +451,12 @@ ZWidgetsGroup *Z3DVolumeSource::getWidgetsGroup()
 {
   if (!m_widgetsGroup) {
     m_widgetsGroup = new ZWidgetsGroup("Volume Source", NULL, 1);
-    new ZWidgetsGroup(&m_zScale, m_widgetsGroup, 1);
-    new ZWidgetsGroup(&m_xScale, m_widgetsGroup, 1);
-    new ZWidgetsGroup(&m_yScale, m_widgetsGroup, 1);
-    new ZWidgetsGroup(&m_isVolumeDownsampled, m_widgetsGroup, 1);
-    new ZWidgetsGroup(&m_isSubVolume, m_widgetsGroup, 1);
-    new ZWidgetsGroup(&m_zoomInViewSize, m_widgetsGroup, 1);
+    new ZWidgetsGroup(&m_zScale, m_widgetsGroup, 3);
+    new ZWidgetsGroup(&m_xScale, m_widgetsGroup, 3);
+    new ZWidgetsGroup(&m_yScale, m_widgetsGroup, 3);
+    new ZWidgetsGroup(&m_isVolumeDownsampled, m_widgetsGroup, 3);
+    new ZWidgetsGroup(&m_isSubVolume, m_widgetsGroup, 3);
+    new ZWidgetsGroup(&m_zoomInViewSize, m_widgetsGroup, 3);
     m_widgetsGroup->setBasicAdvancedCutoff(4);
   }
   return m_widgetsGroup;

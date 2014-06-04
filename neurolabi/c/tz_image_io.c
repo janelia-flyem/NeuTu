@@ -9,7 +9,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <string.h>
-#if !defined(_USE_BSD)
+#if !defined(__USE_BSD)
 #  define __USE_BSD
 #endif
 #include <string.h>

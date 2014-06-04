@@ -11,6 +11,8 @@
 #include "tz_stack_math.h"
 #include "tz_fimage_lib.h"
 #include "tz_voxel_graphics.h"
+#include "zstack.hxx"
+#include "swc/zswcresampler.h"
 
 ZNeuronTraceSeeder::ZNeuronTraceSeeder()
 {
@@ -18,7 +20,6 @@ ZNeuronTraceSeeder::ZNeuronTraceSeeder()
 
 ZNeuronTraceSeeder::~ZNeuronTraceSeeder()
 {
-
 }
 
 void ZNeuronTraceSeeder::sortSeed(
@@ -163,6 +164,21 @@ ZNeuronTracer::ZNeuronTracer() : m_stack(NULL), m_traceWorkspace(NULL),
 
 ZNeuronTracer::~ZNeuronTracer()
 {
+  if (m_traceWorkspace != NULL) {
+    if (m_traceWorkspace->fit_workspace != NULL) {
+      Locseg_Fit_Workspace *fw =
+          (Locseg_Fit_Workspace*) m_traceWorkspace->fit_workspace;
+      fw->sws->mask = NULL;
+      Kill_Locseg_Fit_Workspace(fw);
+      m_traceWorkspace->fit_workspace = NULL;
+    }
+    Kill_Trace_Workspace(m_traceWorkspace);
+  }
+
+  if (m_connWorkspace != NULL) {
+    Kill_Connection_Test_Workspace(m_connWorkspace);
+  }
+
   delete m_swcConnector;
 }
 
@@ -487,6 +503,9 @@ std::vector<Locseg_Chain*> ZNeuronTracer::trace(const Stack *stack,
 
 ZSwcTree* ZNeuronTracer::trace(Stack *stack)
 {
+  startProgress();
+
+
   ZSwcTree *tree = NULL;
 
   //Extract seeds
@@ -497,10 +516,13 @@ ZSwcTree* ZNeuronTracer::trace(Stack *stack)
   Stack *bw = binarize(stack);
   C_Stack::translate(bw, GREY, 1);
 
+  advanceProgress(0.05);
+
   std::cout << "Removing noise ..." << std::endl;
 
   /* <mask> allocated */
   Stack *mask = bwsolid(bw);
+  advanceProgress(0.05);
 
   /* <bw> freed */
   C_Stack::kill(bw);
@@ -509,6 +531,7 @@ ZSwcTree* ZNeuronTracer::trace(Stack *stack)
   std::cout << "Enhancing thin branches ..." << std::endl;
   /* <line> allocated */
   Stack *line = enhanceLine(stack);
+  advanceProgress(0.05);
 
   /* <mask2> allocated */
   Stack *mask2 = C_Stack::clone(line);
@@ -533,6 +556,7 @@ ZSwcTree* ZNeuronTracer::trace(Stack *stack)
     Stack_Or(mask, mask2, mask);
     C_Stack::kill(mask2);
   }
+  advanceProgress(0.05);
 
   //Trace each seed
   std::cout << "Extracting seed points ..." << std::endl;
@@ -540,12 +564,16 @@ ZSwcTree* ZNeuronTracer::trace(Stack *stack)
   /* <seedPointArray> allocated */
   Geo3d_Scalar_Field *seedPointArray = extractSeed(mask);
 
+  advanceProgress(0.05);
+
   /* <mask2> freed */
   C_Stack::kill(mask);
 
   std::cout << "Sorting seeds ..." << std::endl;
   ZNeuronTraceSeeder seeder;
   seeder.sortSeed(seedPointArray, stack, m_traceWorkspace);
+
+  advanceProgress(0.1);
 
   /* <seedPointArray> freed */
   Kill_Geo3d_Scalar_Field(seedPointArray);
@@ -556,7 +584,9 @@ ZSwcTree* ZNeuronTracer::trace(Stack *stack)
   std::cout << "Tracing ..." << std::endl;
 
   /* <chainArray> allocated */
+
   std::vector<Locseg_Chain*> chainArray = trace(stack, locsegArray, scoreArray);
+  advanceProgress(0.3);
 
   std::cout << "Reconstructing ..." << std::endl;
   ZNeuronConstructor constructor;
@@ -566,6 +596,7 @@ ZSwcTree* ZNeuronTracer::trace(Stack *stack)
   //Create neuron structure
   /* free <chainArray> */
   tree = constructor.reconstruct(chainArray);
+  advanceProgress(0.1);
 
   //Post process
   Swc_Tree_Remove_Zigzag(tree->data());
@@ -574,7 +605,12 @@ ZSwcTree* ZNeuronTracer::trace(Stack *stack)
   Swc_Tree_Merge_Close_Node(tree->data(), 0.01);
   Swc_Tree_Remove_Overshoot(tree->data());
 
+  ZSwcResampler resampler;
+  resampler.optimalDownsample(tree);
+  advanceProgress(0.1);
+
   std::cout << "Done!" << std::endl;
+  endProgress();
 
   return tree;
 }
@@ -610,4 +646,79 @@ double ZNeuronTracer::findBestTerminalBreak(
   }
 
   return lambda;
+}
+
+void ZNeuronTracer::initTraceWorkspace(ZStack *stack)
+{
+  if (stack == NULL || stack->channelNumber() != 1) {
+    m_traceWorkspace =
+        Locseg_Chain_Default_Trace_Workspace(m_traceWorkspace, NULL);
+  } else {
+    m_traceWorkspace =
+        Locseg_Chain_Default_Trace_Workspace(m_traceWorkspace,
+                                             stack->c_stack());
+  }
+  if (m_traceWorkspace->fit_workspace == NULL) {
+    m_traceWorkspace->fit_workspace = New_Locseg_Fit_Workspace();
+  }
+
+  m_traceWorkspace->tune_end = TRUE;
+  m_traceWorkspace->add_hit = TRUE;
+
+
+  if (stack != NULL) {
+    if (stack->depth() == 1) {
+      m_traceWorkspace->min_score = 0.5;
+      Receptor_Fit_Workspace *rfw =
+          (Receptor_Fit_Workspace*) m_traceWorkspace->fit_workspace;
+      Default_R2_Rect_Fit_Workspace(rfw);
+      rfw->sws->fs.n = 2;
+      rfw->sws->fs.options[1] = STACK_FIT_CORRCOEF;
+    }
+  }
+}
+
+void ZNeuronTracer::updateTraceWorkspace(
+    int traceEffort, bool traceMasked, double xRes, double yRes, double zRes)
+{
+  if (traceEffort > 0) {
+    m_traceWorkspace->refit = FALSE;
+  } else {
+    m_traceWorkspace->refit = TRUE;
+  }
+
+  m_traceWorkspace->resolution[0] = xRes;
+  m_traceWorkspace->resolution[1] = yRes;
+  m_traceWorkspace->resolution[2] = zRes;
+
+  loadTraceMask(traceMasked);
+}
+
+void ZNeuronTracer::loadTraceMask(bool traceMasked)
+{
+  if (traceMasked) {
+    Trace_Workspace_Set_Fit_Mask(m_traceWorkspace, m_traceWorkspace->trace_mask);
+  } else {
+    Trace_Workspace_Set_Fit_Mask(m_traceWorkspace, NULL);
+  }
+}
+
+void ZNeuronTracer::initConnectionTestWorkspace()
+{
+  if (m_connWorkspace == NULL) {
+    m_connWorkspace = New_Connection_Test_Workspace();
+  }
+}
+
+void ZNeuronTracer::updateConnectionTestWorkspace(
+    double xRes, double yRes, double zRes,
+    char unit, double distThre, bool spTest, bool crossoverTest)
+{
+  m_connWorkspace->resolution[0] = xRes;
+  m_connWorkspace->resolution[1] = yRes;
+  m_connWorkspace->resolution[2] = zRes;
+  m_connWorkspace->unit = unit;
+  m_connWorkspace->dist_thre = distThre;
+  m_connWorkspace->sp_test = spTest;
+  m_connWorkspace->crossover_test = crossoverTest;
 }

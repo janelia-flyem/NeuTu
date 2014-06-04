@@ -182,6 +182,8 @@
 #include "zstringarray.h"
 #include "zflyemdvidreader.h"
 #include "zstroke2d.h"
+#include "flyem/zflyemservice.h"
+#include "zintset.h"
 
 using namespace std;
 
@@ -192,387 +194,7 @@ ZTest::ZTest()
 }
 
 
-bool ZTest::testTreeIterator(ZSwcTree &tree,
-                             const ZTestSwcTreeIteratorConfig &config,
-                             int *truthArray,
-                             int truthCount, bool testReverse)
-{
-  int count = -1;
 
-  if (config.start == NULL && config.blocker == NULL) {
-    count = tree.updateIterator(config.option, TRUE);
-  } else if (config.blocker == NULL) {
-    count = tree.updateIterator(config.option, config.start, TRUE);
-  } else if (config.start == NULL) {
-    count = tree.updateIterator(config.option, *(config.blocker), TRUE);
-  } else {
-    count = tree.updateIterator(config.option, config.start, *(config.blocker),
-                                TRUE);
-  }
-
-
-#ifdef _USE_GTEST_
-  EXPECT_EQ(count, truthCount) << "Unmatched node number";
-#else
-  if (count != truthCount) {
-    cerr << "Unmatched node number" << endl;
-    return false;
-  }
-#endif
-
-  if (truthArray == NULL) {
-    if (tree.begin() != NULL) {
-      return false;
-    }
-  }
-
-  for (Swc_Tree_Node *tn = tree.begin(); tn != tree.end(); tn = tree.next()) {
-    if (testReverse) {
-#ifdef _USE_GTEST_
-      EXPECT_EQ(SwcTreeNode::id(tn), truthArray[count - 1 - SwcTreeNode::index(tn)])
-          << "Unmatched node number";
-#else
-      if (SwcTreeNode::id(tn) != truthArray[count - 1 - SwcTreeNode::index(tn)]) {
-        cout << "Unmatched id" << endl;
-        tree.print(SWC_TREE_ITERATOR_NO_UPDATE);
-        return false;
-      }
-#endif
-    } else {
-      if (SwcTreeNode::id(tn) != truthArray[SwcTreeNode::index(tn)]) {
-        cout << "Unmatched id" << endl;
-        tree.print(SWC_TREE_ITERATOR_NO_UPDATE);
-        return false;
-      }
-    }
-  }
-
-  return true;
-}
-
-
-bool ZTest::testTreeIterator()
-{
-  ZSwcTree tree;
-  tree.load(GET_TEST_DATA_DIR + "/benchmark/swc/breadth_first.swc");
-
-  ZTestSwcTreeIteratorConfig config;
-
-  {
-    config.option = SWC_TREE_ITERATOR_BREADTH_FIRST;
-    int array[7] = { -1, 1, 2, 3, 4, 5, 6 };
-    TZ_ASSERT(testTreeIterator(tree, config, array,
-                               sizeof(array) / sizeof(array[0])),
-        "tree iteration failed");
-  }
-
-  {
-    config.option = SWC_TREE_ITERATOR_REVERSE;
-    int array[7] = { 6, 5, 4, 3, 2, 1, -1 };
-    TZ_ASSERT(testTreeIterator(tree, config, array,
-                               sizeof(array) / sizeof(array[0])),
-        "tree iteration failed");
-  }
-
-  {
-    config.option = SWC_TREE_ITERATOR_LEAF;
-    int array[3] = { 5, 6, 4 };
-    TZ_ASSERT(testTreeIterator(tree, config, array,
-                               sizeof(array) / sizeof(array[0])),
-        "tree iteration failed");
-  }
-
-  {
-    config.option = SWC_TREE_ITERATOR_REVERSE;
-    int array[3] = { 5, 6, 4 };
-    TZ_ASSERT(testTreeIterator(tree, config, array,
-                               sizeof(array) / sizeof(array[0]), true),
-        "tree iteration failed");
-  }
-
-  //With blockers
-  set<Swc_Tree_Node*> blocker;
-  blocker.insert(tree.data()->root->first_child);
-
-  {
-    config.option = SWC_TREE_ITERATOR_BREADTH_FIRST;
-    config.blocker = &blocker;
-    int array[1] = { -1 };
-    TZ_ASSERT(testTreeIterator(tree, config, array,
-                               sizeof(array) / sizeof(array[0])),
-        "tree iteration failed");
-  }
-
-  {
-    config.option = SWC_TREE_ITERATOR_DEPTH_FIRST;
-    int array[1] = { -1 };
-    TZ_ASSERT(testTreeIterator(tree, config, array,
-                               sizeof(array) / sizeof(array[0])),
-        "tree iteration failed");
-  }
-
-  {
-    config.option = SWC_TREE_ITERATOR_REVERSE;
-    int array[1] = { -1 };
-    TZ_ASSERT(testTreeIterator(tree, config, array,
-                               sizeof(array) / sizeof(array[0])),
-        "tree iteration failed");
-  }
-
-  {
-    config.option = SWC_TREE_ITERATOR_LEAF;
-    TZ_ASSERT(testTreeIterator(tree, config, NULL, 0),
-        "tree iteration failed");
-  }
-
-  blocker.clear();
-  blocker.insert(tree.data()->root->first_child->first_child);
-  {
-    config.option = SWC_TREE_ITERATOR_BREADTH_FIRST;
-    int array[2] = { -1, 1 };
-    TZ_ASSERT(testTreeIterator(tree, config, array,
-                               sizeof(array) / sizeof(array[0])),
-        "tree iteration failed");
-  }
-
-  {
-    config.option = SWC_TREE_ITERATOR_DEPTH_FIRST;
-    int array[2] = { -1, 1 };
-    TZ_ASSERT(testTreeIterator(tree, config, array,
-                               sizeof(array) / sizeof(array[0])),
-        "tree iteration failed");
-  }
-
-  {
-    config.option = SWC_TREE_ITERATOR_REVERSE;
-    int array[2] = { 1, -1 };
-    TZ_ASSERT(testTreeIterator(tree, config, array,
-                               sizeof(array) / sizeof(array[0])),
-        "tree iteration failed");
-  }
-
-  blocker.clear();
-  blocker.insert(tree.data()->root->first_child->first_child->first_child);
-  {
-    config.option = SWC_TREE_ITERATOR_BREADTH_FIRST;
-    int array[4] = { -1, 1, 2, 4 };
-    TZ_ASSERT(testTreeIterator(tree, config, array,
-                               sizeof(array) / sizeof(array[0])),
-        "tree iteration failed");
-  }
-
-  {
-    int array[4] = { -1, 1, 2, 4 };
-    config.option = SWC_TREE_ITERATOR_REVERSE;
-    TZ_ASSERT(testTreeIterator(tree, config, array,
-                               sizeof(array) / sizeof(array[0]), true),
-            "tree iteration failed");
-  }
-
-  {
-    int array[4] = { -1, 1, 2, 4 };
-    config.option = SWC_TREE_ITERATOR_DEPTH_FIRST;
-    TZ_ASSERT(testTreeIterator(tree, config, array,
-                               sizeof(array) / sizeof(array[0])),
-        "tree iteration failed");
-  }
-
-  {
-
-    int array[4] = { -1, 1, 2, 4 };
-    config.option = SWC_TREE_ITERATOR_REVERSE;
-    TZ_ASSERT(testTreeIterator(tree, config, array,
-                               sizeof(array) / sizeof(array[0]), true),
-            "tree iteration failed");
-  }
-
-  blocker.clear();
-  blocker.insert(tree.data()->root->first_child->first_child->first_child->next_sibling);
-  {
-    int array[6] = { -1, 1, 2, 3, 5, 6 };
-    config.option = SWC_TREE_ITERATOR_BREADTH_FIRST;
-    TZ_ASSERT(testTreeIterator(tree, config, array,
-                               sizeof(array) / sizeof(array[0])),
-        "tree iteration failed");
-  }
-
-  {
-    int array[6] = { -1, 1, 2, 3, 5, 6 };
-    config.option = SWC_TREE_ITERATOR_REVERSE;
-    TZ_ASSERT(testTreeIterator(tree, config, array,
-                               sizeof(array) / sizeof(array[0]), true),
-            "tree iteration failed");
-  }
-
-  {
-    int array[6] = { -1, 1, 2, 3, 5, 6 };
-    config.option = SWC_TREE_ITERATOR_DEPTH_FIRST;
-    TZ_ASSERT(testTreeIterator(tree, config, array,
-                               sizeof(array) / sizeof(array[0])),
-        "tree iteration failed");
-  }
-
-  {
-    int array[6] = { -1, 1, 2, 3, 5, 6 };
-    config.option = SWC_TREE_ITERATOR_REVERSE;
-    TZ_ASSERT(testTreeIterator(tree, config, array,
-                               sizeof(array) / sizeof(array[0]), true),
-            "tree iteration failed");
-  }
-
-  {
-    int array[2] = { 5, 6 };
-    config.option = SWC_TREE_ITERATOR_LEAF;
-    TZ_ASSERT(testTreeIterator(tree, config, array,
-                               sizeof(array) / sizeof(array[0])),
-            "tree iteration failed");
-
-    config.option = SWC_TREE_ITERATOR_REVERSE;
-    TZ_ASSERT(testTreeIterator(tree, config, array,
-                               sizeof(array) / sizeof(array[0]), true),
-        "tree iteration failed");
-  }
-
-  blocker.insert(tree.data()->root->first_child->first_child->first_child);
-  {
-    int array[3] = { -1, 1, 2 };
-    config.option = SWC_TREE_ITERATOR_BREADTH_FIRST;
-    TZ_ASSERT(testTreeIterator(tree, config, array,
-                               sizeof(array) / sizeof(array[0])),
-        "tree iteration failed");
-  }
-
-  {
-    int array[3] = { -1, 1, 2 };
-    config.option = SWC_TREE_ITERATOR_REVERSE;
-    TZ_ASSERT(testTreeIterator(tree, config, array,
-                               sizeof(array) / sizeof(array[0]), true),
-            "tree iteration failed");
-  }
-
-  {
-    int array[3] = { -1, 1, 2 };
-    config.option = SWC_TREE_ITERATOR_DEPTH_FIRST;
-    TZ_ASSERT(testTreeIterator(tree, config, array,
-                               sizeof(array) / sizeof(array[0])),
-        "tree iteration failed");
-  }
-
-  {
-    int array[3] = { -1, 1, 2 };
-    config.option = SWC_TREE_ITERATOR_REVERSE;
-    TZ_ASSERT(testTreeIterator(tree, config, array,
-                               sizeof(array) / sizeof(array[0]), true),
-            "tree iteration failed");
-  }
-
-  blocker.clear();
-  blocker.insert(tree.data()->root->first_child->first_child->first_child->first_child);
-  {
-    int array[6] = { -1, 1, 2, 3, 4, 6 };
-    config.option = SWC_TREE_ITERATOR_BREADTH_FIRST;
-    TZ_ASSERT(testTreeIterator(tree, config, array,
-                               sizeof(array) / sizeof(array[0])),
-        "tree iteration failed");
-  }
-
-  {
-    int array[6] = { -1, 1, 2, 3, 6, 4 };
-    config.option = SWC_TREE_ITERATOR_DEPTH_FIRST;
-    TZ_ASSERT(testTreeIterator(tree, config, array,
-                               sizeof(array) / sizeof(array[0])),
-        "tree iteration failed");
-  }
-
-  Swc_Tree_Node *start = tree.data()->root->first_child->first_child;
-  {
-    int array[4] = { 2, 3, 4, 6 };
-    config.start = start;
-    config.option = SWC_TREE_ITERATOR_BREADTH_FIRST;
-    TZ_ASSERT(testTreeIterator(tree, config, array,
-                               sizeof(array) / sizeof(array[0])),
-        "tree iteration failed");
-  }
-
-  {
-    int array[4] = { 2, 3, 6, 4 };
-    config.option = SWC_TREE_ITERATOR_DEPTH_FIRST;
-    TZ_ASSERT(testTreeIterator(tree, config, array,
-                               sizeof(array) / sizeof(array[0])),
-        "tree iteration failed");
-  }
-
-  ////////////
-  config.start = tree.data()->root->first_child->first_child->first_child;
-  {
-    int array[2] = { 3, 6 };
-    config.option = SWC_TREE_ITERATOR_BREADTH_FIRST;
-    TZ_ASSERT(testTreeIterator(tree, config, array,
-                               sizeof(array) / sizeof(array[0])),
-        "tree iteration failed");
-  }
-
-  {
-    int array[2] = { 3, 6 };
-    config.option = SWC_TREE_ITERATOR_DEPTH_FIRST;
-    TZ_ASSERT(testTreeIterator(tree, config, array,
-                               sizeof(array) / sizeof(array[0])),
-        "tree iteration failed");
-  }
-
-
-#if 0
-  tree.print(SWC_TREE_ITERATOR_DEPTH_FIRST);
-  cout << endl;
-
-  tree.print(SWC_TREE_ITERATOR_BREADTH_FIRST);
-  cout << endl;
-
-  tree.deactivateIterator();
-  tree.print(SWC_TREE_ITERATOR_DEPTH_FIRST);
-  cout << endl;
-
-  tree.activateIterator();
-  tree.print(SWC_TREE_ITERATOR_DEPTH_FIRST);
-  cout << endl;
-
-  tree.print(SWC_TREE_ITERATOR_LEAF);
-  cout << endl;
-
-  set<Swc_Tree_Node*> blocker;
-  blocker.insert(tree.data()->root->first_child);
-
-  tree.updateIterator(SWC_TREE_ITERATOR_DEPTH_FIRST, blocker);
-  tree.print(SWC_TREE_ITERATOR_NO_UPDATE);
-  cout << endl;
-
-  tree.updateIterator(SWC_TREE_ITERATOR_BREADTH_FIRST, blocker);
-  tree.print(SWC_TREE_ITERATOR_NO_UPDATE);
-  cout << endl;
-
-  blocker.clear();
-  blocker.insert(tree.data()->root->first_child->first_child->first_child);
-  tree.updateIterator(SWC_TREE_ITERATOR_BREADTH_FIRST, blocker);
-  tree.print(SWC_TREE_ITERATOR_NO_UPDATE);
-  cout << endl;
-
-  blocker.clear();
-  tree.updateIterator(SWC_TREE_ITERATOR_BREADTH_FIRST,
-                      tree.data()->root->first_child->first_child->first_child,
-                      blocker);
-  tree.print(SWC_TREE_ITERATOR_NO_UPDATE);
-  cout << endl;
-
-  blocker.insert(tree.data()->root->first_child->first_child->first_child->first_child);
-  tree.updateIterator(SWC_TREE_ITERATOR_DEPTH_FIRST,
-                      tree.data()->root->first_child->first_child->first_child,
-                      blocker);
-  tree.print(SWC_TREE_ITERATOR_NO_UPDATE);
-  cout << endl;
-#endif
-
-  return true;
-}
 
 #ifdef _JANELIA_WORKSTATION_
 const static string dataPath("/groups/flyem/home/zhaot/Work/neutube_ws/neurolabi/data");
@@ -11582,8 +11204,8 @@ void ZTest::test(MainWindow *host)
     }
   }
 
-  ZFlyEmNeuronExporter exporter;
-  exporter.exportIdVolume(selectedNeuronArray, GET_TEST_DATA_DIR + "/side_bounary.json");
+  //ZFlyEmNeuronExporter exporter;
+  //exporter.exportIdVolume(selectedNeuronArray, GET_TEST_DATA_DIR + "/side_bounary.json");
 #endif
 
 #if 0
@@ -11609,7 +11231,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   //QImage image(1024, 1024, QImage::Format_Mono);
   //QPainter painter(image);
   ZStroke2d stroke;
@@ -11622,5 +11244,541 @@ void ZTest::test(MainWindow *host)
   C_Stack::setZero(stack);
   stroke.labelGrey(stack);
   C_Stack::write(GET_DATA_DIR + "/test.tif", stack);
+#endif
+
+#if 0
+  ZDvidReader reader;
+
+  ZFlyEmDataInfo eminfo(FlyEm::DATA_FIB25);
+  reader.open(eminfo.getDvidAddress().c_str(), eminfo.getDvidUuid().c_str(),
+              eminfo.getDvidPort());
+
+  FlyEm::ZSynapseAnnotationArray synapseArray;
+  synapseArray.loadJson(
+        GET_TEST_DATA_DIR +
+        "/flyem/FIB/skeletonization/session36/annotations-synapse.json");
+
+  std::vector<int> bodyIdArray = reader.readBodyId(0, 100000);
+
+  std::cout << bodyIdArray.size() << std::endl;
+
+  FlyEm::ZIntCuboidArray blockArray;
+  blockArray.loadSubstackList(GET_DATA_DIR + "/flyem/FIB/block_13layer.txt");
+  ZFlyEmQualityAnalyzer::SubstackRegionCalbration calbr;
+  calbr.setBounding(true, true, false);
+  calbr.setMargin(10, 10, 0);
+  ZFlyEmQualityAnalyzer analyzer;
+  analyzer.setSubstackRegion(blockArray, calbr);
+
+  std::vector<int> allSynapseCount = synapseArray.countSynapse();
+  //std::vector<int> allPsdCount = synapseArray.countPsd();
+  //std::vector<int> allTbarcount = synapseArray.countTBar();
+
+  ofstream stream((GET_DATA_DIR + "/face_orphan.txt").c_str());
+
+  int count = 0;
+  for (std::vector<int>::const_iterator iter = bodyIdArray.begin();
+       iter != bodyIdArray.end(); ++iter) {
+    int bodyId = *iter;
+
+    if ((size_t) bodyId < allSynapseCount.size()) {
+      if (allSynapseCount[bodyId] > 0) {
+        ZObject3dScan obj = reader.readBody(bodyId);
+        //obj.print();
+        if (analyzer.isInternalFaceOrphan(obj)) {
+          std::cout << "Body ID: " << bodyId << std::endl;
+          stream << bodyId << std::endl;
+          ++count;
+        }
+      }
+    }
+  }
+
+  stream.close();
+
+  std::cout << count << " internal face orphans." << std::endl;
+#endif
+
+#if 0
+  ZFlyEmNeuronArray neuronArray;
+  neuronArray.importBodyDir(
+        GET_TEST_DATA_DIR +
+        "/flyem/FIB/skeletonization/session34/100000_/stacked.hf5");
+  std::cout << neuronArray.size() << " neurons." << std::endl;
+
+  FlyEm::ZSynapseAnnotationArray synapseArray;
+  synapseArray.loadJson(
+        GET_TEST_DATA_DIR +
+        "/flyem/FIB/skeletonization/session34/annotations-synapse.json");
+
+  FlyEm::ZIntCuboidArray blockArray;
+  blockArray.loadSubstackList(GET_DATA_DIR + "/flyem/FIB/block_13layer.txt");
+  ZFlyEmQualityAnalyzer::SubstackRegionCalbration calbr;
+  calbr.setBounding(true, true, false);
+  calbr.setMargin(10, 10, 0);
+  ZFlyEmQualityAnalyzer analyzer;
+  analyzer.setSubstackRegion(blockArray, calbr);
+
+  std::vector<int> allSynapseCount = synapseArray.countSynapse();
+
+  ZFlyEmNeuronArray selectedNeuronArray;
+  for (ZFlyEmNeuronArray::iterator iter = neuronArray.begin();
+       iter != neuronArray.end(); ++iter) {
+    ZFlyEmNeuron &neuron = *iter;
+    if (neuron.getId() == 605706) {
+      std::cout << neuron.getId() << std::endl;
+      if ((size_t) neuron.getId() < allSynapseCount.size()) {
+        if (allSynapseCount[neuron.getId()] > 0) {
+          neuron.getBody()->save(GET_DATA_DIR + "/test.sobj");
+          if (analyzer.touchingSideBoundary(*neuron.getBody())) {
+            selectedNeuronArray.push_back(neuron);
+          }
+          neuron.deprecate(ZFlyEmNeuron::BODY);
+        }
+      }
+    }
+  }
+
+  //ZFlyEmNeuronExporter exporter;
+  //exporter.exportIdVolume(selectedNeuronArray, GET_TEST_DATA_DIR + "/side_bounary.json");
+#endif
+
+#if 0
+  FlyEm::ZSynapseAnnotationArray synapseArray;
+  synapseArray.loadJson(
+        GET_TEST_DATA_DIR +
+        "/flyem/FIB/skeletonization/session35/annotations-synapse.json");
+
+  std::vector<int> allPsdCount = synapseArray.countPsd();
+  std::vector<int> allTbarCount = synapseArray.countTBar();
+  int psdCount = 0;
+  int tbarCount = 0;
+
+  ZString line;
+  FILE *fp = fopen((GET_DATA_DIR + "/face_orphan.txt").c_str(), "r");
+  while(line.readLine(fp)) {
+    std::vector<int> bodyIdArray = line.toIntegerArray();
+    if (!bodyIdArray.empty()) {
+      int bodyId = bodyIdArray[0];
+      if ((size_t) bodyId < allPsdCount.size()) {
+        psdCount += allPsdCount[bodyId];
+      }
+      if ((size_t) bodyId < allTbarCount.size()) {
+        tbarCount += allTbarCount[bodyId];
+      }
+    }
+  }
+
+  fclose(fp);
+
+  std::cout << "#PSD: " << psdCount << std::endl;
+  std::cout << "#Tbar: " << tbarCount << std::endl;
+#endif
+
+#if 0
+  std::vector<int> bodyIdArray;
+
+  FlyEm::Service::FaceOrphanOverlap service;
+  service.loadFace(cuboidArray);
+  service.markBody(bodyArray, 1);
+  ZGraph *graph = service.computeOverlap();
+  std::vector<ZObject3dScan> &objArray = service.getTouchRegion();
+
+  for (size_t i = 0; i < bodyIdArray.size(); ++i) {
+    int bodyId = bodyIdArray[i];
+    ZObject3dScan &body = bodyArray[i];
+
+  }
+
+#endif
+
+#if 0
+  ZDvidReader reader;
+
+  ZFlyEmDataInfo eminfo(FlyEm::DATA_FIB25);
+  reader.open(eminfo.getDvidAddress().c_str(), eminfo.getDvidUuid().c_str(),
+              eminfo.getDvidPort());
+
+  ZStack *stack = reader.readBodyLabel(2140, 2089, 1500, 1, 500, 500);
+
+  stack->printInfo();
+
+  std::set<FlyEm::TBodyLabel> bodySet;
+
+  size_t voxelNumber = stack->getVoxelNumber();
+
+  FlyEm::TBodyLabel *labelArray =
+      (FlyEm::TBodyLabel*) (stack->array8());
+  for (size_t i = 0; i < voxelNumber; ++i) {
+    bodySet.insert(labelArray[i]);
+  }
+
+  std::cout << bodySet.size() << std::endl;
+
+  for (std::set<FlyEm::TBodyLabel>::const_iterator iter = bodySet.begin();
+       iter != bodySet.end(); ++iter) {
+    std::cout << *iter << std::endl;
+  }
+
+  return;
+
+  std::vector<int> bodyIdArray =
+      reader.readBodyId(1500, 1500, 2500, 100, 100, 10);
+  for (std::vector<int>::const_iterator iter = bodyIdArray.begin();
+       iter != bodyIdArray.end(); ++iter) {
+    std::cout << *iter << std::endl;
+  }
+
+  Stack *scaled = Scale_Double_Stack(
+        (double*) stack->array8(),
+        stack->width(), stack->height(), stack->depth(), GREY16);
+
+  C_Stack::write(GET_DATA_DIR + "/test.tif", scaled);
+
+
+  stack = reader.readGrayScale(1500, 1500, 2500, 100, 100, 10);
+  stack->save(GET_DATA_DIR + "/test2.tif");
+
+  delete stack;
+#endif
+
+#if 0
+  FlyEm::Service::FaceOrphanOverlap service;
+
+  ZFlyEmDataInfo eminfo(FlyEm::DATA_FIB25);
+  ZDvidTarget dvidTarget;
+  dvidTarget.set(
+        eminfo.getDvidAddress(), eminfo.getDvidUuid(), eminfo.getDvidPort());
+  service.setDvidTarget(dvidTarget);
+
+  FlyEm::ZIntCuboidArray blockArray;
+  blockArray.loadSubstackList(GET_DATA_DIR + "/flyem/FIB/block_13layer.txt");
+  ZFlyEmQualityAnalyzer::SubstackRegionCalbration calbr;
+  calbr.setBounding(true, true, false);
+  calbr.setMargin(10, 10, 0);
+  calbr.calibrate(blockArray);
+
+#if 0
+  blockArray.resize(20);
+  blockArray.exportSwc(GET_DATA_DIR + "/test.swc");
+#endif
+  service.loadFace(blockArray);
+
+#if 1
+  service.markBody();
+
+  std::vector<int> orphanBodyArray;
+  orphanBodyArray.push_back(34677);
+  orphanBodyArray.push_back(236315);
+  orphanBodyArray.push_back(66038);
+  orphanBodyArray.push_back(67948);
+  orphanBodyArray.push_back(625684);
+  service.loadFaceOrphanBody(orphanBodyArray);
+
+  service.computeOverlap();
+
+  const std::vector<ZIntPoint> &marker = service.getMarker();
+  for (std::vector<ZIntPoint>::const_iterator iter = marker.begin();
+       iter != marker.end(); ++iter) {
+    std::cout << iter->getX() << " " << iter->getY() << " " << iter->getZ() << std::endl;
+  }
+#endif
+  service.print();
+#endif
+
+#if 0
+  ZDvidReader reader;
+
+  ZFlyEmDataInfo eminfo(FlyEm::DATA_FIB25);
+  reader.open(eminfo.getDvidAddress().c_str(), eminfo.getDvidUuid().c_str(),
+              eminfo.getDvidPort());
+  tic();
+  ZObject3dScan obj = reader.readBody(19985);
+
+  obj.getBoundBox().print();
+
+  std::cout << obj.getVoxelNumber() << std::endl;
+#endif
+
+#if 0
+  ZDvidReader reader;
+  ZFlyEmDataInfo eminfo(FlyEm::DATA_FIB25);
+  reader.open(eminfo.getDvidAddress().c_str(), eminfo.getDvidUuid().c_str(),
+              eminfo.getDvidPort());
+
+  ZString line;
+  FILE *fp = fopen((GET_DATA_DIR + "/face_orphan.txt").c_str(), "r");
+  while(line.readLine(fp)) {
+    std::vector<int> bodyIdArray = line.toIntegerArray();
+    if (!bodyIdArray.empty()) {
+      int bodyId = bodyIdArray[0];
+      ZObject3dScan obj = reader.readBody(bodyId);
+      if (obj.getBoundBox().lastCorner().z() < 2000) {
+        std::cout << bodyId << ": ";
+        obj.getBoundBox().print();
+      }
+    }
+  }
+
+  fclose(fp);
+#endif
+
+#if 0
+  ZFlyEmDataInfo eminfo(FlyEm::DATA_FIB25);
+  ZDvidTarget dvidTarget;
+  dvidTarget.set(
+        eminfo.getDvidAddress(), eminfo.getDvidUuid(), eminfo.getDvidPort());
+  ZDvidReader reader;
+  reader.open(dvidTarget);
+
+  tic();
+  ZObject3dScan obj = reader.readBody(9);
+  //obj.canonize();
+  obj.getBoundBox().print();
+  obj.getMarker().print();
+  ptoc();
+#endif
+
+#if 0
+  FlyEm::Service::FaceOrphanOverlap service;
+
+  ZFlyEmDataInfo eminfo(FlyEm::DATA_FIB25);
+  ZDvidTarget dvidTarget;
+  dvidTarget.set(
+        eminfo.getDvidAddress(), eminfo.getDvidUuid(), eminfo.getDvidPort());
+  service.setDvidTarget(dvidTarget);
+
+  FlyEm::ZIntCuboidArray blockArray;
+  blockArray.loadSubstackList(GET_DATA_DIR + "/flyem/FIB/block_13layer.txt");
+  ZFlyEmQualityAnalyzer::SubstackRegionCalbration calbr;
+  calbr.setBounding(true, true, false);
+  calbr.setMargin(10, 10, 0);
+  calbr.calibrate(blockArray);
+
+#if 0
+  blockArray.resize(20);
+  blockArray.exportSwc(GET_DATA_DIR + "/test.swc");
+#endif
+  service.loadFace(blockArray);
+  service.markBody();
+  service.loadSynapse(GET_DATA_DIR +
+                      "/flyem/FIB/skeletonization/session36/annotations-synapse.json");
+
+
+  std::vector<int> orphanBodyArray;
+
+#if 1
+  ZString line;
+  FILE *fp = fopen((GET_DATA_DIR + "/face_orphan.txt").c_str(), "r");
+  while(line.readLine(fp)) {
+    std::vector<int> bodyIdArray = line.toIntegerArray();
+    if (!bodyIdArray.empty()) {
+      int bodyId = bodyIdArray[0];
+      orphanBodyArray.push_back(bodyId);
+    }
+  }
+
+  fclose(fp);
+#else
+  orphanBodyArray.push_back(34677);
+  orphanBodyArray.push_back(236315);
+  orphanBodyArray.push_back(66038);
+  orphanBodyArray.push_back(67948);
+  orphanBodyArray.push_back(625684);
+#endif
+  service.loadFaceOrphanBody(orphanBodyArray);
+
+  service.computeOverlap();
+
+  const std::vector<ZIntPoint> &marker = service.getMarker();
+  for (std::vector<ZIntPoint>::const_iterator iter = marker.begin();
+       iter != marker.end(); ++iter) {
+    std::cout << iter->getX() << " " << iter->getY() << " " << iter->getZ() << std::endl;
+  }
+
+  ZFlyEmCoordinateConverter converter;
+  converter.setStackSize(3150, 2599, 6500);
+  converter.setVoxelResolution(10, 10, 10);
+  converter.setZStart(1490);
+  converter.setMargin(10);
+
+  service.setCoordinateConverter(converter);
+
+  service.exportJsonFile(GET_DATA_DIR + "/test.json");
+#endif
+
+#if 0
+  Mc_Stack *stack = C_Stack::make(GREY16, 5, 5, 2, 3);
+  C_Stack::setOne(stack);
+  C_Stack::setZero(stack, 3, 2, 1, 3, 2, 2);
+  C_Stack::printValue(stack);
+#endif
+
+#if 0
+  Stack *stack = C_Stack::make(GREY16, 5, 5, 2);
+  C_Stack::setOne(stack);
+  Stack *block = C_Stack::make(GREY16, 20, 3, 5);
+  C_Stack::setZero(block);
+  C_Stack::setBlockValue(stack, block, -1, -1, 0);
+  C_Stack::printValue(stack);
+#endif
+
+#if 0
+  FlyEm::ZSubstackRoi roi;
+  roi.importJsonFile(GET_DATA_DIR + "/flyem/FIB/roi.json");
+
+  ZIntCuboidFaceArray faceArray = roi.getCuboidArray().getSideBorderFace();
+  faceArray.exportSwc(GET_DATA_DIR + "/flyem/FIB/block_13layer_chop.swc");
+#endif
+
+#if 0
+  ZFlyEmNeuron neuron;
+  neuron.setId(117);
+  ZFlyEmDataInfo eminfo(FlyEm::DATA_FIB25);
+  ZDvidTarget dvidTarget;
+  dvidTarget.set(eminfo.getDvidAddress(), eminfo.getDvidUuid(),
+                 eminfo.getDvidPort());
+
+  neuron.setVolumePath(dvidTarget.getBodyPath(117));
+  ZObject3dScan *body = neuron.getBody();
+  std::cout << body->getVoxelNumber() << std::endl;
+#endif
+
+#if 0
+  FlyEm::ZSubstackRoi roi;
+  roi.importJsonFile(GET_DATA_DIR + "/flyem/FIB/roi.json");
+
+  ZIntCuboidFaceArray faceArray = roi.getCuboidArray().getSideBorderFace();
+
+  ZFlyEmDataInfo eminfo(FlyEm::DATA_FIB25);
+  ZDvidTarget dvidTarget;
+  dvidTarget.set(
+        eminfo.getDvidAddress(), eminfo.getDvidUuid(), eminfo.getDvidPort());
+  ZDvidReader reader;
+  reader.open(dvidTarget);
+
+  ZIntSet sideBodySet;
+  for (ZIntCuboidFaceArray::const_iterator iter = faceArray.begin();
+       iter != faceArray.end(); ++iter) {
+    const ZIntCuboidFace &face = *iter;
+    std::set<int> bodySet =
+        reader.readBodyId(face.getCornerCoordinates(0),
+                          face.getCornerCoordinates(3));
+    std::cout << bodySet.size() << " ids." << std::endl;
+    sideBodySet.insert(bodySet.begin(), bodySet.end());
+  }
+  std::cout << sideBodySet.size() << std::endl;
+
+  ZIntSet largeBodySet = reader.readBodyId(100000, MAX_INT32);
+  std::cout << largeBodySet.size() << std::endl;
+
+  sideBodySet.intersect(largeBodySet);
+  std::cout << sideBodySet.size() << std::endl;
+
+  FlyEm::ZSynapseAnnotationArray synapseArray;
+  synapseArray.loadJson(
+        GET_TEST_DATA_DIR +
+        "/flyem/FIB/skeletonization/session36/annotations-synapse.json");
+  std::vector<int> allSynapseCount = synapseArray.countSynapse();
+  ZFlyEmNeuronArray selectedNeuronArray;
+  for (ZIntSet::const_iterator iter = sideBodySet.begin();
+       iter != sideBodySet.end(); ++iter) {
+    int bodyId = *iter;
+    std::cout << bodyId << std::endl;
+    if ((size_t) bodyId < allSynapseCount.size()) {
+      if (allSynapseCount[bodyId] > 0) {
+        ZFlyEmNeuron neuron;
+        neuron.setVolumePath(dvidTarget.getBodyPath(bodyId));
+        neuron.setId(bodyId);
+        selectedNeuronArray.push_back(neuron);
+      }
+    }
+  }
+
+#if 0
+
+  FlyEm::ZSynapseAnnotationArray synapseArray;
+  synapseArray.loadJson(
+        GET_TEST_DATA_DIR +
+        "/flyem/FIB/skeletonization/session34/annotations-synapse.json");
+
+  FlyEm::ZIntCuboidArray blockArray;
+  blockArray.loadSubstackList(GET_DATA_DIR + "/flyem/FIB/block_13layer.txt");
+  ZFlyEmQualityAnalyzer::SubstackRegionCalbration calbr;
+  calbr.setBounding(true, true, false);
+  calbr.setMargin(10, 10, 0);
+  ZFlyEmQualityAnalyzer analyzer;
+  analyzer.setSubstackRegion(blockArray, calbr);
+
+  std::vector<int> allSynapseCount = synapseArray.countSynapse();
+
+  ZFlyEmNeuronArray selectedNeuronArray;
+  for (ZFlyEmNeuronArray::iterator iter = neuronArray.begin();
+       iter != neuronArray.end(); ++iter) {
+    ZFlyEmNeuron &neuron = *iter;
+    std::cout << neuron.getId() << std::endl;
+    if ((size_t) neuron.getId() < allSynapseCount.size()) {
+      if (allSynapseCount[neuron.getId()] > 0) {
+        if (analyzer.touchingSideBoundary(*neuron.getBody())) {
+          selectedNeuronArray.push_back(neuron);
+        }
+        neuron.deprecate(ZFlyEmNeuron::BODY);
+      }
+    }
+  }
+#endif
+
+  ZFlyEmNeuronExporter exporter;
+  exporter.exportIdVolume(selectedNeuronArray,
+                          GET_TEST_DATA_DIR + "/side_bounary.json");
+#endif
+
+#if 0
+  ZIntSet set1;
+  set1.insert(1);
+  set1.insert(2);
+  set1.insert(3);
+
+  /*
+  ZIntSet set2;
+  set2.insert(1);
+  set2.insert(2);
+  set1.intersect(set2);
+  */
+
+  std::vector<int> set2;
+  set2.push_back(1);
+  set2.push_back(2);
+  set2.push_back(2);
+  set2.push_back(4);
+  set2.push_back(5);
+  set1.intersect(set2);
+
+  set1.print();
+#endif
+
+#if 0
+  ZStroke2d stroke;
+  stroke.append(10, 10);
+  //stroke.append(20, 20);
+  //stroke.append(21, 30);
+  //stroke.append(10, 100);
+  stroke.setWidth(20);
+  ZStack *stack = stroke.toStack();
+  stack->printInfo();
+
+  stack->save(GET_DATA_DIR + "/test.tif");
+#endif
+
+#if 1
+  Stack *stack = C_Stack::make(GREY8, 5, 5, 5);
+  C_Stack::setOne(stack);
+  for (size_t i = 0; i < C_Stack::voxelNumber(stack); ++i) {
+    stack->array[i] = 255-i;
+  }
+  C_Stack::printValue(stack);
+
+  Stack *out = C_Stack::downsampleMin(stack, 1, 1, 1);
+  C_Stack::printValue(out);
 #endif
 }

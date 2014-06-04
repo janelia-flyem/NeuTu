@@ -3,7 +3,9 @@
 #include <cmath>
 
 #include "tz_utilities.h"
-
+#include "zintpoint.h"
+#include "zswcgenerator.h"
+#include "zswctree.h"
 
 ZIntCuboidFace::ZIntCuboidFace() : m_z(0), m_normalAxis(NeuTube::Z_AXIS),
   m_isNormalPositive(true)
@@ -228,9 +230,9 @@ ZIntCuboidFaceArray ZIntCuboidFace::cropBy(
   return result;
 }
 
-ZPoint ZIntCuboidFace::getCornerCoordinates(int index) const
+ZIntPoint ZIntCuboidFace::getCornerCoordinates(int index) const
 {
-  ZPoint pt;
+  ZIntPoint pt;
   Corner corner = getCorner(index);
   switch (getAxis()) {
   case NeuTube::X_AXIS:
@@ -371,6 +373,28 @@ void ZIntCuboidFaceArray::print() const
   for (const_iterator iter = begin(); iter != end(); ++iter) {
     const ZIntCuboidFace &face = *iter;
     face.print();
+  }
+}
+
+void ZIntCuboidFaceArray::exportSwc(const std::string &filePath) const
+{
+  if (!empty()) {
+    ZSwcTree *tree = new ZSwcTree;
+    int index = 0;
+    for (const_iterator iter = begin(); iter != end();
+         ++iter, ++index) {
+      const ZIntCuboidFace &face = *iter;
+      ZCuboid cuboid;
+      cuboid.set(face.getCornerCoordinates(0), face.getCornerCoordinates(3));
+      ZSwcTree *subtree = ZSwcTree::createCuboidSwc(cuboid);
+      subtree->setType(index);
+      tree->merge(subtree, true);
+    }
+
+    tree->resortId();
+    tree->save(filePath);
+
+    delete tree;
   }
 }
 

@@ -95,7 +95,7 @@ void ZJsonParser::decref(json_t *value)
 
 const char* ZJsonParser::stringValue(const json_t *value)
 {
-  if (value == NULL) {
+  if (value == NULL || !json_is_string(value)) {
     return m_emptyString;
   }
 
@@ -109,6 +109,10 @@ double ZJsonParser::numberValue(const json_t *value)
 
 int ZJsonParser::integerValue(const json_t *value)
 {
+  if (value == NULL) {
+    return 0;
+  }
+
   return json_integer_value(value);
 }
 

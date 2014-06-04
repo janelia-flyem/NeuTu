@@ -5,8 +5,11 @@
 #include <vector>
 #include "tz_cuboid_i.h"
 #include "zpoint.h"
+#include "zintpoint.h"
 
 class ZIntCuboidFaceArray;
+class ZGraph;
+class ZStack;
 
 class ZIntCuboidFace
 {
@@ -47,7 +50,7 @@ public:
   const Corner& getFirstCorner() const { return m_firstCorner; }
   const Corner& getLastCorner() const { return m_lastCorner; }
 
-  ZPoint getCornerCoordinates(int index) const;
+  ZIntPoint getCornerCoordinates(int index) const;
 
   /*!
    * \brief Get a corner of the face.
@@ -130,6 +133,13 @@ public:
   bool contains(int x, int y, int z) const;
 
   void print() const;
+
+  void exportSwc(const std::string &filePath) const;
+
+public: //Routines developed for checking face orphans
+  ZGraph* getConnection() const;
+  std::vector<ZStack*> toStack(int kind) const;
+
 };
 
 #endif // ZINTCUBOIDFACE_H

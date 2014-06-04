@@ -26,7 +26,8 @@ ZStackPresenter::ZStackPresenter(ZStackFrame *parent) : QObject(parent),
   m_parent(parent),
   //m_zoomRatio(1),
   m_showObject(true),
-  m_isStrokeOn(false)
+  m_isStrokeOn(false),
+  m_skipMouseReleaseEvent(false)
 {
   initInteractiveContext();
 
@@ -35,7 +36,7 @@ ZStackPresenter::ZStackPresenter(ZStackFrame *parent) : QObject(parent),
   m_greyOffset.resize(1);
   m_greyOffset[0] = 0.0;
 
-  m_objStyle = ZStackDrawable::NORMAL;
+  m_objStyle = ZStackDrawable::BOUNDARY;
   m_threshold = -1;
   m_mouseLeftButtonPressed = false;
   m_mouseRightButtonPressed = false;
@@ -55,7 +56,21 @@ ZStackPresenter::ZStackPresenter(ZStackFrame *parent) : QObject(parent),
 
   m_swcNodeContextMenu = NULL;
   m_strokePaintContextMenu = NULL;
+  m_stackContextMenu = NULL;
   createActions();
+}
+
+ZStackPresenter::~ZStackPresenter()
+{
+  foreach(ZStackDrawable *decoration, m_decorationList) {
+    delete decoration;
+  }
+
+  m_decorationList.clear();
+
+  delete m_swcNodeContextMenu;
+  delete m_strokePaintContextMenu;
+  delete m_stackContextMenu;
 }
 
 void ZStackPresenter::initInteractiveContext()
@@ -71,7 +86,9 @@ void ZStackPresenter::initInteractiveContext()
 
 void ZStackPresenter::createTraceActions()
 {
-  m_traceAction = new QAction(tr("trace"), this);
+  m_traceAction = new QAction(tr("trace"), this->parent());
+  m_traceAction->setStatusTip("Trace an individual branch");
+  m_traceAction->setToolTip("Trace an individual branch");
   connect(m_traceAction, SIGNAL(triggered()), this, SLOT(traceTube()));
 
   m_fitsegAction = new QAction(tr("fit"), this);
@@ -134,6 +151,7 @@ void ZStackPresenter::createTubeActions()
   connect(m_checkConnAction, SIGNAL(triggered()), this, SLOT(enterCheckConnMode()));
 
   m_connectAction = new QAction(tr("Connect to"), this);
+  m_connectAction->setIcon(QIcon(":/images/connect_to.png"));
   connect(m_connectAction, SIGNAL(triggered()), this, SLOT(enterConnectMode()));
 
   m_extendAction = new QAction(tr("Extend"), this);
@@ -189,21 +207,36 @@ void ZStackPresenter::createDocDependentActions()
 
 void ZStackPresenter::createSwcActions()
 {
-  /*
-  QAction *action = new QAction(tr("Add swc node"), this);
+  QAction *action = new QAction(tr("Add Neuron Node"), parent());
   connect(action, SIGNAL(triggered()),
-          this, SLOT(trySwcAddNodeMode(double, double)));
+          this, SLOT(trySwcAddNodeMode()));
+  action->setStatusTip("Add an isolated neuron node.");
+  action->setShortcut(Qt::Key_G);
+  action->setIcon(QIcon(":/images/add.png"));
   m_actionMap[ACTION_ADD_SWC_NODE] = action;
-  */
 
-  m_swcConnectToAction = new QAction(tr("Connect to"), this);
+  action = new QAction(tr("Locate node(s) in 3D"), parent());
+  connect(action, SIGNAL(triggered()),
+          m_parent, SLOT(locateSwcNodeIn2DView()));
+  action->setStatusTip("Located selected swc nodes in 3D view.");
+  m_actionMap[ACTION_LOCATE_SELECTED_SWC_NODES_IN_3D] = action;
+
+  m_swcConnectToAction = new QAction(tr("Connect to"), parent());
+  m_swcConnectToAction->setShortcut(Qt::Key_C);
+  m_swcConnectToAction->setStatusTip(
+        "Connect the currently selected node to another");
   connect(m_swcConnectToAction, SIGNAL(triggered()),
           this, SLOT(enterSwcConnectMode()));
+  m_swcConnectToAction->setIcon(QIcon(":/images/connect_to.png"));
   m_actionMap[ACTION_CONNECT_TO_SWC_NODE] = m_swcConnectToAction;
 
-  m_swcExtendAction = new QAction(tr("Extend"), this);
+  m_swcExtendAction = new QAction(tr("Extend"), parent());
+  m_swcExtendAction->setShortcut(Qt::Key_Space);
+  m_swcExtendAction->setStatusTip(
+        "Extend the currently selected node with mouse click.");
   connect(m_swcExtendAction, SIGNAL(triggered()),
           this, SLOT(enterSwcExtendMode()));
+  m_swcExtendAction->setIcon(QIcon(":/images/extend.png"));
   m_actionMap[ACTION_EXTEND_SWC_NODE] = m_swcExtendAction;
 #if 0
   m_swcSmartExtendAction = new QAction(tr("Smart extension"), this);
@@ -211,22 +244,48 @@ void ZStackPresenter::createSwcActions()
           this, SLOT(enterSwcSmartExtendMode()));
   m_actionMap[ACTION_SMART_EXTEND_SWC_NODE] = m_swcSmartExtendAction;
 #endif
-  m_swcDeleteAction = new  QAction(tr("Delete"), this);
+
+  m_swcMoveSelectedAction =
+      new  QAction(tr("Move Selected (Shift+Mouse)"), this->parent());
+  m_swcMoveSelectedAction->setShortcut(Qt::Key_V);
+  m_swcMoveSelectedAction->setStatusTip("Move selected nodes with mouse.");
+  m_swcMoveSelectedAction->setIcon(QIcon(":/images/move.png"));
+  connect(m_swcMoveSelectedAction, SIGNAL(triggered()),
+          this, SLOT(enterSwcMoveMode()));
+  m_actionMap[ACTION_MOVE_SWC_NODE] = m_swcMoveSelectedAction;
+
+#if 0
+  m_swcDeleteAction = new  QAction(tr("Delete"), parent());
+  m_swcDeleteAction->setStatusTip("Delete selected nodes.");
+  m_swcDeleteAction->setShortcut(Qt::Key_X);
+  m_swcDeleteAction->setIcon(QIcon(":/images/delete.png"));
   connect(m_swcDeleteAction, SIGNAL(triggered()),
           this, SLOT(deleteSwcNode()));
 
   m_swcConnectSelectedAction = new QAction(tr("Connect"), this);
+  m_swcConnectSelectedAction->setShortcut(Qt::Key_C);
   connect(m_swcConnectSelectedAction, SIGNAL(triggered()),
           this, SLOT(connectSelectedSwcNode()));
 
   m_swcBreakSelectedAction = new QAction(tr("Break"), this);
+  m_swcBreakSelectedAction->setShortcut(Qt::Key_B);
   connect(m_swcBreakSelectedAction, SIGNAL(triggered()),
           this, SLOT(breakSelectedSwcNode()));
-
+#endif
   m_swcLockFocusAction = new QAction(tr("Lock Focus"), this);
+  m_swcLockFocusAction->setIcon(QIcon(":/images/change_focus.png"));
   connect(m_swcLockFocusAction, SIGNAL(triggered()),
           this, SLOT(lockSelectedSwcNodeFocus()));
   m_actionMap[ACTION_LOCK_SWC_NODE_FOCUS] = m_swcLockFocusAction;
+
+  m_swcChangeFocusAction = new QAction(tr("Move to Current Plane"), parent());
+  m_swcChangeFocusAction->setShortcut(Qt::Key_F);
+  m_swcChangeFocusAction->setStatusTip(
+        "Move the centers of the selected nodes to the current plane.");
+  m_swcChangeFocusAction->setIcon(QIcon(":/images/change_focus.png"));
+  connect(m_swcChangeFocusAction, SIGNAL(triggered()),
+          this, SLOT(changeSelectedSwcNodeFocus()));
+  m_actionMap[ACTION_CHANGE_SWC_NODE_FOCUS] = m_swcChangeFocusAction;
 
   m_swcEstimateRadiusAction = new QAction(tr("Estimate Radius"), this);
   connect(m_swcEstimateRadiusAction, SIGNAL(triggered()),
@@ -261,6 +320,7 @@ void ZStackPresenter::createStrokeActions()
 void ZStackPresenter::createActions()
 {
   m_deleteSelectedAction = new QAction(tr("Delete Selected Object"), this);
+  m_deleteSelectedAction->setIcon(QIcon(":/images/delete.png"));
   connect(m_deleteSelectedAction, SIGNAL(triggered()), this, SLOT(deleteSelected()));
 
 
@@ -286,8 +346,15 @@ void ZStackPresenter::createActions()
 void ZStackPresenter::createSwcNodeContextMenu()
 {
   if (m_swcNodeContextMenu == NULL) {
-    m_swcNodeContextMenu = ZStackDocMenuFactory::makeSwcNodeContextMenu(this);
-    ZStackDocMenuFactory::makeSwcNodeContextMenu(buddyDocument(), m_swcNodeContextMenu);
+    ZStackDocMenuFactory menuFactory;
+    menuFactory.setSingleSwcNodeActionActivator(&m_singleSwcNodeActionActivator);
+    m_swcNodeContextMenu = menuFactory.makeSwcNodeContextMenu(
+          this, m_parent, NULL);
+    menuFactory.makeSwcNodeContextMenu(
+          buddyDocument(), m_parent, m_swcNodeContextMenu);
+    m_swcNodeContextMenu->addSeparator();
+    m_swcNodeContextMenu->addAction(m_actionMap[ACTION_ADD_SWC_NODE]);
+    m_swcNodeContextMenu->addAction(m_actionMap[ACTION_LOCATE_SELECTED_SWC_NODES_IN_3D]);
   }
 }
 
@@ -306,8 +373,9 @@ QMenu* ZStackPresenter::getSwcNodeContextMenu()
 void ZStackPresenter::createStrokeContextMenu()
 {
   if (m_strokePaintContextMenu == NULL) {
+    ZStackDocMenuFactory menuFactory;
     m_strokePaintContextMenu =
-        ZStackDocMenuFactory::makeSrokePaintContextMenu(this);
+        menuFactory.makeSrokePaintContextMenu(this, m_parent, NULL);
   }
 }
 
@@ -320,16 +388,22 @@ QMenu* ZStackPresenter::getStrokeContextMenu()
   return m_strokePaintContextMenu;
 }
 
-ZStackPresenter::~ZStackPresenter()
+void ZStackPresenter::createStackContextMenu()
 {
-  foreach(ZStackDrawable *decoration, m_decorationList) {
-    delete decoration;
+  if (m_stackContextMenu == NULL) {
+    ZStackDocMenuFactory menuFactory;
+    m_stackContextMenu =
+        menuFactory.makeStackContextMenu(this, m_parent, NULL);
+  }
+}
+
+QMenu* ZStackPresenter::getStackContextMenu()
+{
+  if (m_stackContextMenu == NULL) {
+    createStackContextMenu();
   }
 
-  m_decorationList.clear();
-
-  delete m_swcNodeContextMenu;
-  delete m_strokePaintContextMenu;
+  return m_stackContextMenu;
 }
 
 void ZStackPresenter::turnOnStroke()
@@ -406,7 +480,7 @@ void ZStackPresenter::addTubeEditFunctionToRightMenu()
   submenu->addAction(m_backAction);
   updateRightMenu(submenu, false);
 }
-
+#if 0
 void ZStackPresenter::addSwcEditFunctionToRightMenu()
 {
   if (buddyDocument()->hasSelectedSwcNode()) {
@@ -419,7 +493,8 @@ void ZStackPresenter::addSwcEditFunctionToRightMenu()
       updateRightMenu(m_swcBreakSelectedAction, false);
     }
     updateRightMenu(m_swcDeleteAction, false);
-    updateRightMenu(m_swcLockFocusAction, false);
+    //updateRightMenu(m_swcLockFocusAction, false);
+    updateRightMenu(m_swcChangeFocusAction, false);
     updateRightMenu(m_swcEstimateRadiusAction, false);
     //updateRightMenu(m_swcSelectAllNodeAction, false);
   } else {
@@ -435,14 +510,12 @@ void ZStackPresenter::addSwcEditFunctionToRightMenu()
   selectMenu->addAction(m_selectAllSwcNodeAction);
   updateRightMenu(selectMenu, false);
 }
-
+#endif
 void ZStackPresenter::prepareView()
 {
   createDocDependentActions();
   updateLeftMenu(m_traceAction);
   buddyView()->rightMenu()->clear();
-  //addSwcEditFunctionToRightMenu();
-  //createContextMenu();
 }
 
 void ZStackPresenter::updateLeftMenu(QAction *action, bool clear)
@@ -775,6 +848,9 @@ ZStackPresenter::processMouseReleaseForSwc(QMouseEvent *event, double *positionI
         if (buddyDocument()->getTag() == NeuTube::Document::BIOCYTIN_PROJECTION) {
           buddyView()->showContextMenu(getStrokeContextMenu(), event->pos());
           status = CONTEXT_MENU_POPPED;
+        } else {
+          buddyView()->showContextMenu(getStackContextMenu(), event->pos());
+          status = CONTEXT_MENU_POPPED;
         }
       }
     } else {
@@ -795,11 +871,13 @@ ZStackPresenter::processMouseReleaseForSwc(QMouseEvent *event, double *positionI
             positionInData.x(), positionInData.y(), positionInData.z(),
             event->modifiers() == Qt::ControlModifier ||
             event->modifiers() == Qt::ShiftModifier ||
-            event->modifiers() == Qt::AltModifier);
+            event->modifiers() == Qt::AltModifier ||
+            event->modifiers() == (Qt::AltModifier | Qt::ControlModifier));
       if (selected != NULL) {
         if (event->modifiers() == Qt::ShiftModifier) {
           buddyDocument()->selectSwcNodeConnection(selected);
-        } if (event->modifiers() == Qt::AltModifier) {
+        } if (event->modifiers() == Qt::AltModifier ||
+              event->modifiers() == (Qt::AltModifier | Qt::ControlModifier)) {
           buddyDocument()->selectSwcNodeFloodFilling(selected);
         }
         status = MOUSE_HIT_OBJECT;
@@ -836,23 +914,24 @@ ZStackPresenter::processMouseReleaseForSwc(QMouseEvent *event, double *positionI
       break;
     case ZInteractiveContext::SWC_EDIT_EXTEND:
     {
-      bool isExtensionCanceled = false;
-      if (event->modifiers() == Qt::ControlModifier ||
-          event->modifiers() == Qt::ShiftModifier) {
-        Swc_Tree_Node *selected = buddyDocument()->selectSwcTreeNode(
-              positionInData.x(), positionInData.y(), positionInData.z(),
-              true);
+      Swc_Tree_Node *selected = NULL;
+      if (event->modifiers() != Qt::ControlModifier) {
+        selected = buddyDocument()->swcHitTest(
+              positionInData.x(), positionInData.y(), positionInData.z());
         if (selected != NULL) {
           if (event->modifiers() == Qt::ShiftModifier) {
+            buddyDocument()->selectSwcTreeNode(selected, true);
             buddyDocument()->selectSwcNodeConnection(selected);
+            buddyDocument()->notifySwcModified();
+            exitSwcExtendMode();
+          } else {
+            buddyDocument()->selectSwcTreeNode(selected, false);
+            m_stroke.setWidth(SwcTreeNode::radius(selected) * 2.0);
           }
-          buddyDocument()->notifySwcModified();
-          exitSwcExtendMode();
-           isExtensionCanceled = true;
         }
       }
 
-      if (!isExtensionCanceled){
+      if (selected == NULL) {
         if (event->modifiers() == Qt::ControlModifier) {
           if (buddyDocument()->executeSwcNodeExtendCommand(
                 positionInData,
@@ -872,35 +951,6 @@ ZStackPresenter::processMouseReleaseForSwc(QMouseEvent *event, double *positionI
       //m_interactiveContext.setSwcEditMode(ZInteractiveContext::SWC_EDIT_SELECT);
     }
       break;
-#if 0
-    case ZInteractiveContext::SWC_EDIT_SMART_EXTEND:
-    {
-      bool isExtensionCanceled = false;
-      if (event->modifiers() == Qt::ControlModifier ||
-          event->modifiers() == Qt::ShiftModifier) {
-        if (buddyDocument()->selectSwcTreeNode(
-              positionInStack[0], positionInStack[1], positionInStack[2],
-              true)) {
-          if (event->modifiers() == Qt::ShiftModifier) {
-            buddyDocument()->selectSwcNodeConnection();
-          }
-          buddyDocument()->notifySwcModified();
-          exitSwcExtendMode();
-          isExtensionCanceled = true;
-        }
-      }
-
-      if (!isExtensionCanceled) {
-        if (buddyDocument()->executeSwcNodeSmartExtendCommand(
-              ZPoint(positionInStack[0], positionInStack[1], positionInStack[2]),
-              m_stroke.getWidth() / 2.0)) {
-          status = MOUSE_COMMAND_EXECUTED;
-        }
-      }
-      //m_interactiveContext.setSwcEditMode(ZInteractiveContext::SWC_EDIT_SELECT);
-    }
-      break;
-#endif
     case ZInteractiveContext::SWC_EDIT_ADD_NODE:
     {
       //double radius = m_cursorRadius / buddyView()->getZoomRatio();
@@ -1029,6 +1079,11 @@ ZStackPresenter::processMouseReleaseForStroke(
 void ZStackPresenter::processMouseReleaseEvent(
     QMouseEvent *event, int sliceIndex)
 {
+  if (!(m_mouseLeftButtonPressed || m_mouseRightButtonPressed)) {
+    //m_skipMouseReleaseEvent = false;
+    return;
+  }
+
   QPointF pos;
 
   if (event->button() == Qt::LeftButton) {
@@ -1118,6 +1173,19 @@ void ZStackPresenter::processMouseMoveEvent(QMouseEvent *event)
   else
     m_mouseMovePosition[2] = buddyView()->sliceIndex();
 
+  if (m_interactiveContext.swcEditMode() == ZInteractiveContext::SWC_EDIT_MOVE_NODE &&
+      m_mouseLeftButtonPressed == true && event->modifiers() == Qt::ShiftModifier) {
+    QPointF pos = mapFromWidgetToStack(event->pos());
+    buddyDocument()->mapToDataCoord(&pos.rx(), &pos.ry(), NULL);
+    buddyDocument()->executeMoveObjectCommand(pos.x() - m_lastMouseDataCoord.x(),
+                                              pos.y() - m_lastMouseDataCoord.y(),
+                                              0,
+                                              1,1,1,1,1,1);
+
+    m_lastMouseDataCoord = pos;
+    return;
+  }
+
   switch (this->interactiveContext().exploreMode()) {
   case ZInteractiveContext::EXPLORE_MOVE_IMAGE:
     {
@@ -1201,6 +1269,14 @@ void ZStackPresenter::processMousePressEvent(QMouseEvent *event)
   if (event->button() == Qt::LeftButton) {
     m_mouseLeftButtonPressed = true;
 
+    if (m_interactiveContext.swcEditMode() ==
+        ZInteractiveContext::SWC_EDIT_MOVE_NODE &&
+        event->modifiers() == Qt::ShiftModifier) {
+      m_lastMouseDataCoord = mapFromWidgetToStack(event->pos());
+      buddyDocument()->mapToDataCoord(
+            &m_lastMouseDataCoord.rx(), &m_lastMouseDataCoord.ry(), NULL);
+    }
+
     if (m_interactiveContext.strokeEditMode() ==
         ZInteractiveContext::STROKE_DRAW) {
       QPointF pos = mapFromWidgetToStack(event->pos());
@@ -1282,7 +1358,8 @@ bool ZStackPresenter::processKeyPressEventForSwc(QKeyEvent *event)
     }
     break;
   case Qt::Key_G:
-    if (event->modifiers() == Qt::ControlModifier) {
+
+    if (event->modifiers() == Qt::NoModifier) {
       QPointF pos = mapFromGlobalToStack(QCursor::pos());
       trySwcAddNodeMode(pos.x(), pos.y());
       /*
@@ -1347,7 +1424,13 @@ bool ZStackPresenter::processKeyPressEventForSwc(QKeyEvent *event)
     break;
   case Qt::Key_C:
     if (event->modifiers() == Qt::NoModifier) {
-      buddyDocument()->executeConnectSwcNodeCommand();
+      if (!buddyDocument()->selectedSwcTreeNodes()->empty()) {
+        if (buddyDocument()->selectedSwcTreeNodes()->size() == 1) {
+          enterSwcConnectMode();
+        } else {
+          buddyDocument()->executeConnectSwcNodeCommand();
+        }
+      }
     } else if (event->modifiers() == Qt::ShiftModifier) {
       buddyDocument()->executeSmartConnectSwcNodeCommand();
     }
@@ -1369,6 +1452,14 @@ bool ZStackPresenter::processKeyPressEventForSwc(QKeyEvent *event)
     break;
   case Qt::Key_I:
     buddyDocument()->executeInsertSwcNode();
+    break;
+  case Qt::Key_F:
+    changeSelectedSwcNodeFocus();
+    break;
+  case Qt::Key_V:
+    if (event->modifiers() == Qt::NoModifier) {
+      m_swcMoveSelectedAction->trigger();
+    }
     break;
   default:
     break;
@@ -1436,6 +1527,13 @@ bool ZStackPresenter::processKeyPressEventForStroke(QKeyEvent *event)
         m_stroke.setLabel(255);
         buddyView()->paintActiveDecoration();
       }
+    }
+    break;
+  case Qt::Key_Space:
+    if (GET_APPLICATION_NAME == "FlyEM") {
+      buddyDocument()->runLocalSeededWatershed();
+    } else {
+      enterSwcExtendMode();
     }
     break;
 #endif
@@ -1661,7 +1759,7 @@ void ZStackPresenter::processMouseDoubleClickEvent(QMouseEvent *event,
   m_mouseLeftReleasePosition[0] = event->x();
   m_mouseLeftReleasePosition[1] = event->y();
   m_mouseLeftReleasePosition[2] = sliceIndex;
-  m_mouseLeftButtonPressed = false;
+  m_mouseLeftButtonPressed = true; //for menu popup
 
   QPointF pos = stackPositionFromMouse(LEFT_RELEASE);
 
@@ -1679,25 +1777,6 @@ void ZStackPresenter::processMouseDoubleClickEvent(QMouseEvent *event,
 
   if (!interactiveContext().isTraceModeOff()) {
     if (interactiveContext().isProjectView()) {
-
-        /*
-      }
-
-      int id = buddyDocument()->pickLocsegChainId(pos.x(), pos.y(), -1);
-
-      if (id >= 0) {
-        int found = buddyDocument()->
-                    selectLocsegChain(id, pos.x(), pos.y(), -1, false);
-        if (found) {
-          buddyView()->setSliceIndex(found - 1);
-          //m_mode = NORMAL_MODE;
-          interactiveContext().setViewMode(ZInteractiveContext::VIEW_NORMAL);
-          emit(viewModeChanged());
-          //updateView();
-        }
-        */
-      //} else {
-
       if (buddyDocument()->hasStackData()) {
         int sliceIndex =
             buddyDocument()->maxIntesityDepth(pos.x(), pos.y());
@@ -1854,7 +1933,7 @@ void ZStackPresenter::autoTrace()
 void ZStackPresenter::traceTube()
 {
   QPointF dataPos = stackPositionFromMouse(LEFT_RELEASE);
-  buddyView()->setImageWidgetCursor(Qt::WaitCursor);
+  buddyView()->setScreenCursor(Qt::BusyCursor);
   if (buddyDocument()->stack()->channelNumber() == 1) {
 //  if (buddyDocument()->stack()->depth() == 1) {
 //    buddyDocument()->traceRect(dataPos.x(), dataPos.y(),
@@ -2043,6 +2122,7 @@ void ZStackPresenter::enterConnectMode()
   this->interactiveContext().
       setTubeEditMode(ZInteractiveContext::TUBE_EDIT_CONNECT);
   buddyDocument()->updateMasterLocsegChain();
+  updateCursor();
   buddyView()->setScreenCursor(Qt::PointingHandCursor);
 }
 
@@ -2069,23 +2149,29 @@ void ZStackPresenter::enterMouseCapturingMode()
 
 void ZStackPresenter::enterSwcConnectMode()
 {
+  m_parent->notifyUser("Connecting mode is on. Click on the target node to connect.");
   this->interactiveContext().setSwcEditMode(ZInteractiveContext::SWC_EDIT_CONNECT);
   updateCursor();
 }
 
 void ZStackPresenter::enterSwcExtendMode()
 {
-  const Swc_Tree_Node *tn = getSelectedSwcNode();
-  if (tn != NULL) {
-    m_stroke.setFilled(false);
-    QPointF pos = mapFromGlobalToStack(QCursor::pos());
-    m_stroke.set(pos.x(), pos.y());
-    //m_stroke.set(SwcTreeNode::x(tn), SwcTreeNode::y(tn));
-    m_stroke.setWidth(SwcTreeNode::radius(tn) * 2.0);
-    turnOnStroke();
-    m_stroke.setTarget(ZStackDrawable::WIDGET);
-    interactiveContext().setSwcEditMode(ZInteractiveContext::SWC_EDIT_EXTEND);
-    updateCursor();
+  if (buddyDocument()->selectedSwcTreeNodes()->size() == 1) {
+    const Swc_Tree_Node *tn = getSelectedSwcNode();
+    if (tn != NULL) {
+      m_parent->notifyUser("Left click to extend. Path calculation is off when 'Cmd/Ctrl' is held."
+                           "Right click to exit extending mode.");
+
+      m_stroke.setFilled(false);
+      QPointF pos = mapFromGlobalToStack(QCursor::pos());
+      m_stroke.set(pos.x(), pos.y());
+      //m_stroke.set(SwcTreeNode::x(tn), SwcTreeNode::y(tn));
+      m_stroke.setWidth(SwcTreeNode::radius(tn) * 2.0);
+      turnOnStroke();
+      m_stroke.setTarget(ZStackDrawable::WIDGET);
+      interactiveContext().setSwcEditMode(ZInteractiveContext::SWC_EDIT_EXTEND);
+      updateCursor();
+    }
   }
 }
 #if 0
@@ -2113,9 +2199,21 @@ void ZStackPresenter::exitSwcExtendMode()
       interactiveContext().swcEditMode() == ZInteractiveContext::SWC_EDIT_SMART_EXTEND) {
     interactiveContext().setSwcEditMode(ZInteractiveContext::SWC_EDIT_SELECT);
     exitStrokeEdit();
+    m_parent->notifyUser("Exit extending mode");
   }
 }
 
+void ZStackPresenter::enterSwcMoveMode()
+{
+  const Swc_Tree_Node *tn = getSelectedSwcNode();
+  if (tn != NULL) {
+    interactiveContext().setSwcEditMode(
+          ZInteractiveContext::SWC_EDIT_MOVE_NODE);
+    m_parent->notifyUser("Hold the Shift key and then move the mouse with left button pressed "
+                         "to move the selected nodes. Right click to exit moving mode.");
+    updateCursor();
+  }
+}
 
 void ZStackPresenter::enterSwcAddNodeMode(double x, double y)
 {
@@ -2133,6 +2231,12 @@ void ZStackPresenter::enterSwcAddNodeMode(double x, double y)
   turnOnStroke();
   //buddyView()->paintActiveDecoration();
   updateCursor();
+}
+
+void ZStackPresenter::trySwcAddNodeMode()
+{
+  QPointF pos = mapFromGlobalToStack(QCursor::pos());
+  trySwcAddNodeMode(pos.x(), pos.y());
 }
 
 void ZStackPresenter::trySwcAddNodeMode(double x, double y)
@@ -2217,6 +2321,11 @@ void ZStackPresenter::lockSelectedSwcNodeFocus()
         ZInteractiveContext::SWC_EDIT_LOCK_FOCUS);
   buddyDocument()->executeSwcNodeChangeZCommand(buddyView()->sliceIndex());
   updateCursor();
+}
+
+void ZStackPresenter::changeSelectedSwcNodeFocus()
+{
+  buddyDocument()->executeSwcNodeChangeZCommand(buddyView()->sliceIndex());
 }
 
 void ZStackPresenter::estimateSelectedSwcRadius()
@@ -2305,6 +2414,8 @@ void ZStackPresenter::enterSwcSelectMode()
     m_interactiveContext.setExitingEdit(true);
   }
 
+  m_parent->notifyUser("Use mouse to select nodes");
+
   m_interactiveContext.setSwcEditMode(ZInteractiveContext::SWC_EDIT_SELECT);
   updateCursor();
 }
@@ -2314,8 +2425,11 @@ void ZStackPresenter::updateCursor()
   if (this->interactiveContext().swcEditMode() ==
       ZInteractiveContext::SWC_EDIT_EXTEND ||
       this->interactiveContext().swcEditMode() ==
-            ZInteractiveContext::SWC_EDIT_SMART_EXTEND) {
+      ZInteractiveContext::SWC_EDIT_SMART_EXTEND) {
     buddyView()->setScreenCursor(Qt::PointingHandCursor);
+  } else if (this->interactiveContext().swcEditMode() ==
+      ZInteractiveContext::SWC_EDIT_MOVE_NODE) {
+    buddyView()->setScreenCursor(Qt::ClosedHandCursor);
   } else if (this->interactiveContext().swcEditMode() ==
              ZInteractiveContext::SWC_EDIT_LOCK_FOCUS) {
     buddyView()->setScreenCursor(Qt::ClosedHandCursor);

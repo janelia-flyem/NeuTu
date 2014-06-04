@@ -5,6 +5,9 @@
 #include <vector>
 
 #include "zmessagereporter.h"
+#if defined(_FLYEM_)
+#include "flyem/zflyemconfig.h"
+#endif
 
 class ZXmlNode;
 
@@ -247,6 +250,11 @@ public:
 
   inline bool usingNativeDialog() const { return m_usingNativeDialog; }
 
+#if defined(_FLYEM_)
+  const ZFlyEmConfig &getFlyEmConfig() const { return m_flyemConfig; }
+  ZFlyEmConfig &getFlyEmConfig() { return m_flyemConfig; }
+#endif
+
 private:
   NeutubeConfig();
   NeutubeConfig(const NeutubeConfig&);
@@ -277,21 +285,29 @@ private:
   bool m_autoSaveEnabled;
   bool m_usingNativeDialog;
 
+#if defined(_FLYEM_)
+  ZFlyEmConfig m_flyemConfig;
+#endif
+
   ZMessageReporter *m_messageReporter;
 };
 
 #define GET_DATA_DIR (NeutubeConfig::getInstance().getPath(NeutubeConfig::DATA))
 #if defined(PROJECT_PATH)
-#define GET_TEST_DATA_DIR (std::string(PROJECT_PATH) + "/../data")
+#  define GET_TEST_DATA_DIR (std::string(PROJECT_PATH) + "/../data")
 #endif
 
 #ifndef GET_TEST_DATA_DIR
-#define GET_TEST_DATA_DIR GET_DATA_DIR
+#  define GET_TEST_DATA_DIR GET_DATA_DIR
 #endif
 
 
 #define GET_MESSAGE_REPORTER (NeutubeConfig::getInstance().getMessageReporter())
-#define GET_APPLICATION_NAME (NeutubeConfig::getInstance().getApplication())
+#  define GET_APPLICATION_NAME (NeutubeConfig::getInstance().getApplication())
 #define GET_SOFTWARE_NAME (NeutubeConfig::getInstance().getSoftwareName())
+
+#if defined(_FLYEM_)
+#  define GET_FLYEM_CONFIG (NeutubeConfig::getInstance().getFlyEmConfig())
+#endif
 
 #endif // NEUTUBECONFIG_H

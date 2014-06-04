@@ -197,3 +197,13 @@ void Cuboid_I_Expand_Z(Cuboid_I *cuboid, int margin)
   cuboid->cb[2] -= margin;
   cuboid->ce[2] += margin;
 }
+
+void Cuboid_I_Translate(Cuboid_I *cuboid, int dx, int dy, int dz)
+{
+  cuboid->cb[0] += dx;
+  cuboid->ce[0] += dx;
+  cuboid->cb[1] += dy;
+  cuboid->ce[1] += dy;
+  cuboid->cb[2] += dz;
+  cuboid->ce[2] += dz;
+}

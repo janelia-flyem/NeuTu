@@ -2,12 +2,14 @@
 #define ZQTBARPROGRESSREPORTER_H
 
 #include <QProgressBar>
+#include <QObject>
 #include "zprogressreporter.h"
 
 class ZQtBarProgressReporter : public ZProgressReporter
 {
 public:
   ZQtBarProgressReporter();
+  ~ZQtBarProgressReporter();
 
 public:
   inline void setProgressBar(QProgressBar *progressBar) {
