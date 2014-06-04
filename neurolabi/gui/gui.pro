@@ -89,10 +89,7 @@ CONFIG(debug, debug|release) {
 LIBS += -lstdc++
 unix:!macx {
     DEFINES += _LINUX_
-    LIBS += -lQtGui -lQtCore \
-      -lQtOpenGL -lQtNetwork \
-      -lQtGui \
-      -lXt -lSM -lICE \
+    LIBS += -lXt -lSM -lICE \
       -lX11 -lm \
       -lpthread \
       -lGL -lrt -lGLU
