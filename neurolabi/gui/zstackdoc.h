@@ -355,6 +355,7 @@ public: /* puncta related methods */
   void addLocsegChain(const QList<ZLocsegChain*> &chainList);
 
   void addSwcTree(ZSwcTree *obj, bool uniqueSource = true);
+  void addSwcTree(ZSwcTree *obj, bool uniqueSource, bool translatingWithStack);
   void addSwcTree(const QList<ZSwcTree*> &swcList, bool uniqueSource = true);
   void addPunctum(ZPunctum *obj);
   void addPunctum(const QList<ZPunctum*> &punctaList);
@@ -528,9 +529,7 @@ public: /* puncta related methods */
 public:
   inline NeuTube::Document::ETag getTag() const { return m_tag; }
   inline void setTag(NeuTube::Document::ETag tag) { m_tag = tag; }
-  inline void setStackBackground(NeuTube::EImageBackground bg) {
-    m_stackBackground = bg;
-  }
+  void setStackBackground(NeuTube::EImageBackground bg);
   inline NeuTube::EImageBackground getStackBackground() const {
     return m_stackBackground;
   }

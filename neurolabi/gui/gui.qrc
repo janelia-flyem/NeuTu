@@ -78,6 +78,7 @@
         <file>Resources/config/composite_filter.json</file>
         <file>Resources/config/distance_filter.json</file>
         <file>images/open_dvid.png</file>
+        <file>images/open_tile.png</file>
         <file>images/connect_to.png</file>
         <file>images/connect.png</file>
         <file>images/manage_tile.png</file>

@@ -2850,8 +2850,8 @@ void Z3DWindow::saveSelectedSwc()
   }
 
   if (GET_APPLICATION_NAME == "Biocytin") {
-    fileName =
-        ZBiocytinFileNameParser::getSwcEditPath(fileName.toStdString()).c_str();
+      fileName = m_doc->getParentFrame()->swcFilename;
+      //fileName =ZBiocytinFileNameParser::getSwcEditPath(fileName.toStdString()).c_str();
   }
 
   fileName =

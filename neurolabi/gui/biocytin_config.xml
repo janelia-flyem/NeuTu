@@ -13,7 +13,7 @@
   </FlyEmQASegmentationEvaluation>
   <FlyEmQASegmentationClassifier>flyem_segmentation.cvt</FlyEmQASegmentationClassifier>
   <SwcRepository>/Users/zhaot/Work/neutube/neurolabi/data/flyem/skeletonization/session3/len15/adjusted</SwcRepository>
-  <Settings status="off"></Settings>
+  <Settings status="on"></Settings>
   <Stereo status="off"></Stereo>
   <MainWindow>
     <tracing status="off"></tracing>

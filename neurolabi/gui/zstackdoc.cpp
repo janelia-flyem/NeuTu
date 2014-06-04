@@ -182,6 +182,12 @@ ZStack* ZStackDoc::stackMask() const
   return NULL;
 }
 
+void ZStackDoc::setStackBackground(NeuTube::EImageBackground bg)
+{
+    m_stackBackground = bg;
+    m_neuronTracer.setBackgroundType(bg);
+}
+
 void ZStackDoc::emptySlot()
 {
   QMessageBox::information(NULL, "empty slot", "To be implemented");
@@ -1076,8 +1082,9 @@ void ZStackDoc::readStack(const char *filePath, bool newThread)
   } else {
     deprecate(STACK);
 
-    ZStack*& mainStack = stackRef();
-    mainStack = m_stackSource.readStack();
+    //ZStack*& mainStack = stackRef();
+    //mainStack = m_stackSource.readStack();
+    loadStack(m_stackSource.readStack());
 
     emit stackModified();
   }
@@ -1845,6 +1852,19 @@ void ZStackDoc::addSwcTree(ZSwcTree *obj, bool uniqueSource)
   }
 
   notifySwcModified();
+}
+
+void ZStackDoc::addSwcTree(ZSwcTree *obj, bool uniqueSource, bool translatingWithStack)
+{
+  if (obj == NULL) {
+    return;
+  }
+
+  if (translatingWithStack) {
+      obj->translate(getStackOffset());
+  }
+
+  addSwcTree(obj, uniqueSource);
 }
 
 void ZStackDoc::addSwcTree(const QList<ZSwcTree *> &swcList, bool uniqueSource)
@@ -5226,6 +5246,7 @@ void ZStackDoc::deprecate(EComponent component)
   case STACK:
     delete stackRef();
     stackRef() = NULL;
+    m_neuronTracer.clear();
     break;
   default:
     break;

@@ -89,10 +89,7 @@ CONFIG(debug, debug|release) {
 LIBS += -lstdc++
 unix:!macx {
     DEFINES += _LINUX_
-    LIBS += -lQtGui -lQtCore \
-      -lQtOpenGL -lQtNetwork \
-      -lQtGui \
-      -lXt -lSM -lICE \
+    LIBS += -lXt -lSM -lICE \
       -lX11 -lm \
       -lpthread \
       -lGL -lrt -lGLU
@@ -372,7 +369,6 @@ HEADERS += mainwindow.h \
     ztilemanagerview.h \
     ztilegraphicsitem.h \
     ztileinfo.h \
-    tilemanagerdialog.h \
     flyem/zflyemneuronimagefactory.h \
     flyem/zflyemneuronfeatureanalyzer.h \
     flyemneuronthumbnaildialog.h \
@@ -392,6 +388,7 @@ HEADERS += mainwindow.h \
     flyem/zskeletonizeservice.h \
     zflyemdvidreader.h \
     zstroke2darray.h \
+    tilemanager.h \
     flyem/zflyemservice.h \
     zactionfactory.h \
     zstackreadfactory.h \
@@ -438,12 +435,12 @@ FORMS += settingdialog.ui \
     dvidobjectdialog.ui \
     resolutiondialog.ui \
     dvidimagedialog.ui \
-    tilemanagerdialog.ui \
     flyemneuronthumbnaildialog.ui \
     flyemhotspotdialog.ui \
     flyembodyiddialog.ui \
     zdviddialog.ui \
-    flyembodyfilterdialog.ui
+    flyembodyfilterdialog.ui \
+    tilemanager.ui
 SOURCES += main.cpp \
     mainwindow.cpp \
     zstackview.cpp \
@@ -630,7 +627,6 @@ SOURCES += main.cpp \
     ztilemanagerview.cpp \
     ztilegraphicsitem.cpp \
     ztileinfo.cpp \
-    tilemanagerdialog.cpp \
     flyem/zflyemneuronimagefactory.cpp \
     flyem/zflyemneuronfeatureanalyzer.cpp \
     flyemneuronthumbnaildialog.cpp \
@@ -650,6 +646,7 @@ SOURCES += main.cpp \
     flyem/zskeletonizeservice.cpp \
     zflyemdvidreader.cpp \
     zstroke2darray.cpp \
+    tilemanager.cpp \
     flyem/zflyemservice.cpp \
     zactionfactory.cpp \
     zstackreadfactory.cpp \

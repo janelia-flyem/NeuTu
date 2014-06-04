@@ -182,6 +182,31 @@ ZNeuronTracer::~ZNeuronTracer()
   delete m_swcConnector;
 }
 
+void ZNeuronTracer::clear()
+{
+    if (m_traceWorkspace != NULL) {
+      if (m_traceWorkspace->fit_workspace != NULL) {
+        Locseg_Fit_Workspace *fw =
+            (Locseg_Fit_Workspace*) m_traceWorkspace->fit_workspace;
+        fw->sws->mask = NULL;
+        Kill_Locseg_Fit_Workspace(fw);
+        m_traceWorkspace->fit_workspace = NULL;
+      }
+      Kill_Trace_Workspace(m_traceWorkspace);
+      m_traceWorkspace = NULL;
+    }
+
+    if (m_connWorkspace != NULL) {
+      Kill_Connection_Test_Workspace(m_connWorkspace);
+      m_connWorkspace = NULL;
+    }
+
+    delete m_swcConnector;
+    m_swcConnector = NULL;
+    m_chainArray.clear();
+    m_stack = NULL;
+}
+
 void ZNeuronTracer::setIntensityField(Stack *stack)
 {
   m_stack = stack;

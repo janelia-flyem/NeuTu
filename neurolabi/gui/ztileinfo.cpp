@@ -14,10 +14,6 @@ bool ZTileInfo::loadJsonObject(const ZJsonObject &obj)
     m_source = ZJsonParser::stringValue(obj["source"]);
   }
 
-  if (obj.hasKey("swc")) {
-    m_swcSource = ZJsonParser::stringValue(obj["swc"]);
-  }
-
   if (obj.hasKey("offset")) {
     const json_t *value = obj["offset"];
     if (ZJsonParser::isArray(value)) {
@@ -35,6 +31,7 @@ bool ZTileInfo::loadJsonObject(const ZJsonObject &obj)
     return false;
   }
 
+
   if (obj.hasKey("size")) {
     const json_t *value = obj["size"];
     if (ZJsonParser::isArray(value)) {
@@ -48,6 +45,10 @@ bool ZTileInfo::loadJsonObject(const ZJsonObject &obj)
     } else {
       return false;
     }
+  }
+
+  if (obj.hasKey("image")) {
+      m_imageSourse = ZJsonParser::stringValue(obj["image"]);
   }
 
   return true;
