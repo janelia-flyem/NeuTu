@@ -164,22 +164,7 @@ ZNeuronTracer::ZNeuronTracer() : m_stack(NULL), m_traceWorkspace(NULL),
 
 ZNeuronTracer::~ZNeuronTracer()
 {
-  if (m_traceWorkspace != NULL) {
-    if (m_traceWorkspace->fit_workspace != NULL) {
-      Locseg_Fit_Workspace *fw =
-          (Locseg_Fit_Workspace*) m_traceWorkspace->fit_workspace;
-      fw->sws->mask = NULL;
-      Kill_Locseg_Fit_Workspace(fw);
-      m_traceWorkspace->fit_workspace = NULL;
-    }
-    Kill_Trace_Workspace(m_traceWorkspace);
-  }
-
-  if (m_connWorkspace != NULL) {
-    Kill_Connection_Test_Workspace(m_connWorkspace);
-  }
-
-  delete m_swcConnector;
+  clear();
 }
 
 void ZNeuronTracer::clear()

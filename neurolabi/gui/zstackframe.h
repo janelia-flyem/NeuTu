@@ -21,7 +21,6 @@
 #include "plotsettings.h"
 #include "zinteractivecontext.h"
 #include "zstackdrawable.h"
-#include "z3dwindow.h"
 #include "zqtbarprogressreporter.h"
 #include "zrescaleswcdialog.h"
 #include "zdocumentable.h"
@@ -29,6 +28,7 @@
 #include "zreportable.h"
 #include "neutube.h"
 #include "ztilemanager.h"
+#include "z3dwindow.h"
 
 class ZStackView;
 class ZStackPresenter;
@@ -43,6 +43,7 @@ class ZStack;
 class ZStackDoc;
 class ZTileManager;
 class ZStackDocReader;
+class MainWindow;
 
 class ZStackFrame : public QMdiSubWindow, public ZReportable
 {
@@ -129,6 +130,10 @@ public:
 
   Z3DWindow* open3DWindow(QWidget *parent,
                           Z3DWindow::EInitMode mode = Z3DWindow::NORMAL_INIT);
+  /*!
+   * \brief Get the main window ancestor of the frame.
+   */
+  MainWindow* getMainWindow();
 
   void load(const QList<QUrl> &urls);
   void load(const QStringList &fileList);
@@ -241,7 +246,7 @@ protected: // Events
   virtual void keyPressEvent(QKeyEvent *event);
 
 protected:
-  void cleanUp();
+  void clear();
   void closeEvent(QCloseEvent *event);
   void resizeEvent(QResizeEvent *event);
   virtual void dragEnterEvent(QDragEnterEvent *event);

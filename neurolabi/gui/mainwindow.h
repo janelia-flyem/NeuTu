@@ -77,6 +77,7 @@ public slots:
   void addStackFrame(ZStackFrame *frame, bool isReady = true);
   void presentStackFrame(ZStackFrame *frame);
   void openFile(const QString &fileName);
+  void openFile(const QStringList &fileNameList);
   void advanceProgress();
 
   void updateAction();

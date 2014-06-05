@@ -1299,6 +1299,20 @@ ZStackDocReader* MainWindow::openFileFunc(const QString &fileName)
   return reader;
 }
 
+void MainWindow::openFile(const QStringList &fileNameList)
+{
+  foreach (QString fileName, fileNameList) {
+    m_progress->setRange(0, 5);
+    m_progress->setLabelText(QString("Loading %1 ...").arg(fileName));
+    int currentProgress = 0;
+    m_progress->setValue(++currentProgress);
+    m_progress->show();
+    QFuture<ZStackDocReader*> res =
+        QtConcurrent::run(this, &MainWindow::openFileFunc, fileName);
+    res.waitForFinished();
+  }
+}
+
 void MainWindow::openFile(const QString &fileName)
 {
 #if 1
@@ -1309,7 +1323,6 @@ void MainWindow::openFile(const QString &fileName)
     m_docReader = NULL;
   }
 */
-  QFuture<ZStackDocReader*> res;
 
   m_progress->setRange(0, 5);
   m_progress->setLabelText(QString("Loading %1 ...").arg(fileName));
@@ -1317,7 +1330,8 @@ void MainWindow::openFile(const QString &fileName)
   m_progress->setValue(++currentProgress);
   m_progress->show();
 
-  res = QtConcurrent::run(this, &MainWindow::openFileFunc, fileName);
+  //QFuture<ZStackDocReader*> res =
+  QtConcurrent::run(this, &MainWindow::openFileFunc, fileName);
 
   //res.waitForFinished();
 
@@ -2695,8 +2709,17 @@ void MainWindow::dropEvent(QDropEvent *event)
 {
   QList<QUrl> urls = event->mimeData()->urls();
 
-  QString file = urls.first().toLocalFile();
+  QStringList fileList;
+  foreach (QUrl url, urls) {
+    fileList.append(url.path());
+  }
 
+  openFile(fileList);
+  m_lastOpenedFilePath = fileList.back();
+
+  //QString file = urls.first().toLocalFile();
+
+  /*
   if (file.endsWith(".xml") || file.endsWith(".trace")
     || file.endsWith(".trace/")) {
     openTraceProject(file);
@@ -2704,6 +2727,7 @@ void MainWindow::dropEvent(QDropEvent *event)
     m_lastOpenedFilePath = QFileInfo(file).absoluteDir().path();
     openFile(file);
   }
+  */
 }
 
 void MainWindow::on_actionSave_triggered()

@@ -35,13 +35,14 @@
 #include "zpunctumio.h"
 #include "ztilegraphicsitem.h"
 #include "ztileinfo.h"
+#include "mainwindow.h"
 
 using namespace std;
 
 ZStackFrame::ZStackFrame(QWidget *parent, bool preparingModel) :
   QMdiSubWindow(parent), m_parentFrame(NULL),
-  m_traceProject(NULL), m_isClosing(false),
-  m_3dWindow(NULL), m_tile(NULL)
+  m_tile(NULL), m_traceProject(NULL), m_isClosing(false),
+  m_3dWindow(NULL)
 {
   setAttribute(Qt::WA_DeleteOnClose, true);
   setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
@@ -69,7 +70,7 @@ ZStackFrame::~ZStackFrame()
   std::cout << "Frame " << this << " deconstructed" << std::endl;
 #endif
 
-  cleanUp();
+  clear();
 }
 
 void ZStackFrame::constructFrame()
@@ -136,87 +137,65 @@ void ZStackFrame::consumeDocument(ZStackDoc *doc)
   setDocument(docPtr);
 }
 
-void ZStackFrame::setDocument(tr1::shared_ptr<ZStackDoc> doc)
-{
-  m_doc = doc;
-  m_doc->setParentFrame(this);
-  connectSignalSlot();
+#define UPDATE_DOC_SIGNAL_SLOT(connect) \
+  connect(m_doc.get(), SIGNAL(locsegChainSelected(ZLocsegChain*)), \
+      this, SLOT(setLocsegChainInfo(ZLocsegChain*)));\
+  connect(m_doc.get(), SIGNAL(stackLoaded()), this, SIGNAL(stackLoaded()));\
+  connect(m_doc.get(), SIGNAL(stackModified()),\
+          m_view, SLOT(updateChannelControl()));\
+  connect(m_doc.get(), SIGNAL(stackModified()),\
+          m_view, SLOT(updateThresholdSlider()));\
+  connect(m_doc.get(), SIGNAL(stackModified()),\
+          m_view, SLOT(updateSlider()));\
+  connect(m_doc.get(), SIGNAL(stackModified()),\
+          m_presenter, SLOT(updateStackBc()));\
+  connect(m_doc.get(), SIGNAL(stackModified()),\
+          m_view, SLOT(updateView()));\
+\
+  connect(m_doc.get(), SIGNAL(objectModified()), m_view, SLOT(paintObject()));\
+  connect(m_doc.get(), SIGNAL(chainModified()),\
+          m_view, SLOT(paintObject()));\
+  connect(m_doc.get(), SIGNAL(swcModified()),\
+          m_view, SLOT(paintObject()));\
+  connect(m_doc.get(), SIGNAL(punctaModified()),\
+          m_view, SLOT(paintObject()));\
+  connect(m_doc.get(), SIGNAL(obj3dModified()),\
+          m_view, SLOT(paintObject()));\
+  connect(m_doc.get(), SIGNAL(strokeModified()), m_view, SLOT(paintObject()));\
+  connect(m_doc.get(), SIGNAL(cleanChanged(bool)),\
+          this, SLOT(changeWindowTitle(bool)));\
+  connect(m_doc.get(), SIGNAL(holdSegChanged()), m_view, SLOT(paintObject()));\
+  connect(m_doc.get(), SIGNAL(chainSelectionChanged(QList<ZLocsegChain*>,QList<ZLocsegChain*>)),\
+          m_view, SLOT(paintObject()));\
+  connect(m_doc.get(), SIGNAL(swcTreeNodeSelectionChanged(\
+                                QList<Swc_Tree_Node*>,QList<Swc_Tree_Node*>)),\
+          m_view, SLOT(paintObject()));\
+  connect(m_doc.get(), SIGNAL(punctaSelectionChanged(QList<ZPunctum*>,QList<ZPunctum*>)),\
+          m_view, SLOT(paintObject()));\
+  connect(m_doc.get(), SIGNAL(chainVisibleStateChanged(ZLocsegChain*,bool)),\
+          m_view, SLOT(paintObject()));\
+  connect(m_doc.get(), SIGNAL(swcVisibleStateChanged(ZSwcTree*,bool)),\
+          m_view, SLOT(paintObject()));\
+  connect(m_doc.get(), SIGNAL(punctumVisibleStateChanged(ZPunctum*,bool)),\
+          m_view, SLOT(paintObject()));\
+  connect(m_doc.get(), SIGNAL(statusMessageUpdated(QString)),\
+          this, SLOT(notifyUser(QString)));
 
-  m_doc->updateTraceWorkspace(traceEffort(), traceMasked(),
-                              xResolution(), yResolution(), zResolution());
-  m_doc->updateConnectionTestWorkspace(xResolution(), yResolution(),
-                                       zResolution(), unit(),
-                                       reconstructDistThre(),
-                                       reconstructSpTest(),
-                                       crossoverTest());
-
-  if (m_doc->hasStackData()) {
-    m_presenter->optimizeStackBc();
-    m_view->reset();
-  }
-
-  setWindowTitle(m_doc->stackSourcePath().c_str());
-
-  m_progressReporter.setProgressBar(m_view->progressBar());
-  m_doc->setProgressReporter(&m_progressReporter);
-}
+#define UPDATE_SIGNAL_SLOT(connect) \
+  UPDATE_DOC_SIGNAL_SLOT(connect) \
+  connect(this, SIGNAL(stackLoaded()), this, SLOT(setupDisplay()));\
+  connect(m_view, SIGNAL(currentSliceChanged(int)),\
+          m_presenter, SLOT(processSliceChangeEvent(int)));
 
 void ZStackFrame::connectSignalSlot()
 {
-  connect(m_doc.get(), SIGNAL(locsegChainSelected(ZLocsegChain*)),
-      this, SLOT(setLocsegChainInfo(ZLocsegChain*)));
-  connect(m_doc.get(), SIGNAL(stackLoaded()), this, SIGNAL(stackLoaded()));
-  connect(this, SIGNAL(stackLoaded()), this, SLOT(setupDisplay()));
-
-  connect(m_doc.get(), SIGNAL(stackModified()),
-          m_view, SLOT(updateChannelControl()));
-  connect(m_doc.get(), SIGNAL(stackModified()),
-          m_view, SLOT(updateThresholdSlider()));
-  connect(m_doc.get(), SIGNAL(stackModified()),
-          m_view, SLOT(updateSlider()));
-  connect(m_doc.get(), SIGNAL(stackModified()),
-          m_presenter, SLOT(updateStackBc()));
-  connect(m_doc.get(), SIGNAL(stackModified()),
-          m_view, SLOT(updateView()));
-
-  connect(m_doc.get(), SIGNAL(objectModified()), m_view, SLOT(paintObject()));
-  connect(m_doc.get(), SIGNAL(chainModified()),
-          m_view, SLOT(paintObject()));
-  connect(m_doc.get(), SIGNAL(swcModified()),
-          m_view, SLOT(paintObject()));
-  connect(m_doc.get(), SIGNAL(punctaModified()),
-          m_view, SLOT(paintObject()));
-  connect(m_doc.get(), SIGNAL(obj3dModified()),
-          m_view, SLOT(paintObject()));
-  connect(m_doc.get(), SIGNAL(strokeModified()), m_view, SLOT(paintObject()));
-  connect(m_doc.get(), SIGNAL(cleanChanged(bool)),
-          this, SLOT(changeWindowTitle(bool)));
-  connect(m_doc.get(), SIGNAL(holdSegChanged()), m_view, SLOT(paintObject()));
-  connect(m_doc.get(), SIGNAL(chainSelectionChanged(QList<ZLocsegChain*>,QList<ZLocsegChain*>)),
-          m_view, SLOT(paintObject()));
-  /*
-  connect(m_doc.get(), SIGNAL(swcSelectionChanged(QList<ZSwcTree*>,QList<ZSwcTree*>)),
-          m_view, SLOT(paintObject()));
-          */
-  connect(m_doc.get(), SIGNAL(swcTreeNodeSelectionChanged(
-                                QList<Swc_Tree_Node*>,QList<Swc_Tree_Node*>)),
-          m_view, SLOT(paintObject()));
-  connect(m_doc.get(), SIGNAL(punctaSelectionChanged(QList<ZPunctum*>,QList<ZPunctum*>)),
-          m_view, SLOT(paintObject()));
-  connect(m_doc.get(), SIGNAL(chainVisibleStateChanged(ZLocsegChain*,bool)),
-          m_view, SLOT(paintObject()));
-  connect(m_doc.get(), SIGNAL(swcVisibleStateChanged(ZSwcTree*,bool)),
-          m_view, SLOT(paintObject()));
-  connect(m_doc.get(), SIGNAL(punctumVisibleStateChanged(ZPunctum*,bool)),
-          m_view, SLOT(paintObject()));
-  connect(m_view, SIGNAL(currentSliceChanged(int)),
-          m_presenter, SLOT(processSliceChangeEvent(int)));
-  connect(m_doc.get(), SIGNAL(statusMessageUpdated(QString)),
-          this, SLOT(notifyUser(QString)));
+  UPDATE_SIGNAL_SLOT(connect);
 }
 
 void ZStackFrame::disconnectAll()
 {
+  UPDATE_SIGNAL_SLOT(disconnect);
+#if 0
   disconnect(m_doc.get(), SIGNAL(locsegChainSelected(ZLocsegChain*)),
       this, SLOT(setLocsegChainInfo(ZLocsegChain*)));
   disconnect(m_doc.get(), SIGNAL(stackModified()),
@@ -251,6 +230,35 @@ void ZStackFrame::disconnectAll()
              m_view, SLOT(paintObject()));
   disconnect(m_doc.get(), SIGNAL(punctumVisibleStateChanged(ZPunctum*,bool)),
              m_view, SLOT(paintObject()));
+#endif
+}
+
+void ZStackFrame::setDocument(tr1::shared_ptr<ZStackDoc> doc)
+{
+  if (m_doc.get() != doc.get()) {
+    UPDATE_DOC_SIGNAL_SLOT(disconnect);
+    m_doc = doc;
+    m_doc->setParentFrame(this);
+    UPDATE_DOC_SIGNAL_SLOT(connect);
+
+    m_doc->updateTraceWorkspace(traceEffort(), traceMasked(),
+                                xResolution(), yResolution(), zResolution());
+    m_doc->updateConnectionTestWorkspace(xResolution(), yResolution(),
+                                         zResolution(), unit(),
+                                         reconstructDistThre(),
+                                         reconstructSpTest(),
+                                         crossoverTest());
+
+    if (m_doc->hasStackData()) {
+      m_presenter->optimizeStackBc();
+      m_view->reset();
+    }
+
+    setWindowTitle(m_doc->stackSourcePath().c_str());
+
+    m_progressReporter.setProgressBar(m_view->progressBar());
+    m_doc->setProgressReporter(&m_progressReporter);
+  }
 }
 
 void ZStackFrame::takeScreenshot(const QString &filename)
@@ -259,7 +267,7 @@ void ZStackFrame::takeScreenshot(const QString &filename)
     m_view->takeScreenshot(filename);
 }
 
-void ZStackFrame::cleanUp()
+void ZStackFrame::clear()
 {
   disconnectAll();
   detachParentFrame();
@@ -269,6 +277,7 @@ void ZStackFrame::cleanUp()
   document()->setProgressReporter(NULL);
 
   // will be deleted by parent (this), so don't need, otherwise will crash
+  /*
   if (m_view != NULL) {
     delete m_view;
     m_view = NULL;
@@ -283,6 +292,7 @@ void ZStackFrame::cleanUp()
     delete m_settingDlg;
     m_settingDlg = NULL;
   }
+  */
   if (m_tile != NULL) {
       delete m_tile;
       m_tile = NULL;
@@ -625,8 +635,9 @@ void ZStackFrame::closeEvent(QCloseEvent *event)
     qDebug() << "emit closed(this)";
     emit closed(this);
   } else {
-    int ans =  QMessageBox::question(this, tr("Confirm"), tr("There are unsaved changes. Close anyway?"),
-                                      QMessageBox::Cancel | QMessageBox::Ok, QMessageBox::Ok);
+    int ans =  QMessageBox::question(
+          this, tr("Confirm"), tr("There might be unsaved changes. Close anyway?"),
+          QMessageBox::Cancel | QMessageBox::Ok, QMessageBox::Ok);
     if (ans == QMessageBox::Ok) {
       m_isClosing = true;
       event->accept();
@@ -658,10 +669,34 @@ void ZStackFrame::dropEvent(QDropEvent *event)
 {
   QList<QUrl> urls = event->mimeData()->urls();
 
-  load(urls);
+  //Filter out tiff files
+  QList<QUrl> imageUrls;
+  QList<QUrl> nonImageUrls;
 
-  if (NeutubeConfig::getInstance().getApplication() == "Biocytin") {
-    open3DWindow(this->parentWidget(), Z3DWindow::EXCLUDE_VOLUME);
+  foreach (QUrl url, urls) {
+    if (ZFileType::isImageFile(url.path().toStdString())) {
+      imageUrls.append(url);
+    } else {
+      nonImageUrls.append(url);
+    }
+  }
+
+  if (!imageUrls.isEmpty()) {
+    MainWindow *mainWindow = getMainWindow();
+    if (mainWindow != NULL) {
+      QStringList fileList;
+      foreach (QUrl url, imageUrls) {
+        fileList.append(url.path());
+      }
+      mainWindow->openFile(fileList);
+    }
+  }
+
+  if (!nonImageUrls.isEmpty()) {
+    load(nonImageUrls);
+    if (NeutubeConfig::getInstance().getApplication() == "Biocytin") {
+      open3DWindow(this->parentWidget(), Z3DWindow::EXCLUDE_VOLUME);
+    }
   }
 }
 
@@ -1283,6 +1318,22 @@ void ZStackFrame::load(const QStringList &fileList)
 void ZStackFrame::load(const QString &filePath)
 {
   m_doc->loadFile(filePath, true);
+}
+
+MainWindow* ZStackFrame::getMainWindow()
+{
+  MainWindow *mainwin = NULL;
+  QObject *parentObject = parent();
+  if (parentObject != NULL) {
+    parentObject = parentObject->parent();
+    if (parentObject != NULL) {
+      parentObject = parentObject->parent();
+    }
+
+    mainwin = dynamic_cast<MainWindow*>(parentObject);
+  }
+
+  return mainwin;
 }
 
 /*
