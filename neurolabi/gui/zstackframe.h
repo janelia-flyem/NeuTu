@@ -216,14 +216,18 @@ public:
   inline ZStackFrame* getParentFrame() { return m_parentFrame; }
 
   void setSizeHintOption(NeuTube::ESizeHintOption option);
-  void loadRoi(const QString &filePath);
-  void loadRoi();
+  /*!
+   * Remove all existing decorations if isExclusive is true.
+   */
+  void loadRoi(const QString &filePath, bool isExclusive);
+  void loadRoi(bool isExclusive);
 
   void prepareDisplay();
 
   void runSeededWatershed();
 
   QString swcFilename;
+  void makeSWCProjection(ZStackDoc *doc);
 
 public slots:
   void setLocsegChainInfo(ZLocsegChain *chain, QString prefix = "",

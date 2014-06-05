@@ -1249,7 +1249,7 @@ void MainWindow::presentStackFrame(ZStackFrame *frame)
   if (NeutubeConfig::getInstance().getApplication() == "Biocytin") {
     frame->autoBcAdjust();
 
-    frame->loadRoi();
+    frame->loadRoi(false);
 #if 0
     if (!frame->document()->stackSourcePath().isEmpty()) {
       ZString sourcePath = frame->document()->stackSourcePath().toStdString();
@@ -4565,6 +4565,7 @@ void MainWindow::on_actionMake_Projection_triggered()
       if (stack != NULL) {
         ZStackFrame *newFrame =
             createStackFrame(stack, NeuTube::Document::BIOCYTIN_PROJECTION, frame);
+        newFrame->makeSWCProjection(frame->document().get());
         addStackFrame(newFrame);
         presentStackFrame(newFrame);
       }

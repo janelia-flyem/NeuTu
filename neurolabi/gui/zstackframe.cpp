@@ -1536,7 +1536,7 @@ void ZStackFrame::autoBcAdjust()
   updateView();
 }
 
-void ZStackFrame::loadRoi()
+void ZStackFrame::loadRoi(bool isExclusive)
 {
   if (!document()->stackSourcePath().empty()) {
     ZString sourcePath = document()->stackSourcePath();
@@ -1557,12 +1557,12 @@ void ZStackFrame::loadRoi()
     }
 
     if (fileInfo.exists()) {
-      loadRoi(fileInfo.absoluteFilePath());
+      loadRoi(fileInfo.absoluteFilePath(), isExclusive);
     }
   }
 }
 
-void ZStackFrame::loadRoi(const QString &filePath)
+void ZStackFrame::loadRoi(const QString &filePath, bool isExclusive)
 {
   ZStackFile stackFile;
   stackFile.import(filePath.toStdString());
@@ -1595,7 +1595,9 @@ void ZStackFrame::loadRoi(const QString &filePath)
     obj->setColor(16, 16, 16, 64);
 
     obj->setTarget(ZStackDrawable::OBJECT_CANVAS);
-    clearDecoration();
+    if (isExclusive) {
+      clearDecoration();
+    }
     addDecoration(obj);
     updateView();
 
@@ -1664,4 +1666,17 @@ void ZStackFrame::locateSwcNodeIn3DView()
 void ZStackFrame::runSeededWatershed()
 {
   document()->runSeededWatershed();
+}
+void ZStackFrame::makeSWCProjection(ZStackDoc *doc)
+{
+    if (doc == NULL) return;
+    QList<ZSwcTree*> *swclist= doc->swcList();
+    foreach (ZSwcTree* swc, *swclist) {
+        ZSwcTree *swcClone = swc->clone();
+        std::vector<Swc_Tree_Node*> nodes = swcClone->getSwcTreeNodeArray();
+        foreach (Swc_Tree_Node *nd, nodes) {
+            SwcTreeNode::setZ(nd, 0);
+        }
+        this->presenter()->addDecoration(swcClone);
+    }
 }
