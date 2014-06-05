@@ -1,5 +1,13 @@
 #!/bin/bash
 
+uncompress_lib () {
+  if [ ! -f $1.tar ]
+  then
+    gunzip < $1.tar.gz > $1.tar
+  fi
+  tar -xvf $1.tar
+}
+
 libdir=`pwd`
 
 if [ ! -f fftw3/lib/libfftw3.a ]
@@ -10,11 +18,12 @@ then
   fi
 
   echo 'Building libfftw3 ...'
-  if [ ! -f fftw-3.3.2.tar ]
-  then
-    gunzip fftw-3.3.2.tar.gz
-  fi
-  tar -xvf fftw-3.3.2.tar
+  uncompress_lib fftw-3.3.2
+  #if [ ! -f fftw-3.3.2.tar ]
+  #then
+  #  gunzip fftw-3.3.2.tar.gz
+  #fi
+  #tar -xvf fftw-3.3.2.tar
   cd fftw-3.3.2
   ./configure --enable-shared=no --with-pic --prefix=${libdir}/fftw3 
   make
@@ -33,8 +42,9 @@ then
   then
     mkdir jansson
   fi
-  gunzip jansson-2.5.tar.gz
-  tar -xvf jansson-2.5.tar
+  uncompress_lib jansson-2.5
+  #gunzip jansson-2.5.tar.gz
+  #tar -xvf jansson-2.5.tar
   cd jansson-2.5
   ./configure --enable-shared=no --with-pic --prefix=${libdir}/jansson
   make
@@ -50,8 +60,9 @@ then
   then
     mkdir xml
   fi
-  gunzip libxml2-2.9.1.tar.gz
-  tar -xvf libxml2-2.9.1.tar
+  uncompress_lib libxml2-2.9.1
+  #gunzip libxml2-2.9.1.tar.gz
+  #tar -xvf libxml2-2.9.1.tar
   cd libxml2-2.9.1
   ./configure --without-iconv --without-zlib --with-pic --enable-shared=no --prefix=${libdir}/xml
   make
@@ -66,8 +77,9 @@ then
   then
     mkdir png
   fi
-  gunzip libpng-1.6.7.tar.gz
-  tar -xvf libpng-1.6.7.tar
+  uncompress_lib libpng-1.6.7
+  #gunzip libpng-1.6.7.tar.gz
+  #tar -xvf libpng-1.6.7.tar
   cd libpng-1.6.7
   ./configure --enable-shared=no --with-pic --prefix=${libdir}/png
   make
@@ -82,8 +94,9 @@ then
   then
     mkdir hdf5
   fi
-  gunzip hdf5-1.8.12.tar.gz
-  tar -xvf hdf5-1.8.12.tar
+  uncompress_lib hdf5-1.8.12.tar.gz
+  #gunzip hdf5-1.8.12.tar.gz
+  #tar -xvf hdf5-1.8.12.tar
   cd hdf5-1.8.12
   ./configure --enable-shared=no --with-pic --prefix=${libdir}/hdf5
   make

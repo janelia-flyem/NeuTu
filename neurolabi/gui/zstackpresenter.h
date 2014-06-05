@@ -92,7 +92,7 @@ public:
   void createTraceActions();
   void createPunctaActions();
   void createSwcActions();
-  void createTubeActions();
+  //void createTubeActions();
   void createStrokeActions();
   void createDocDependentActions();
 
@@ -127,7 +127,7 @@ public:
   void updateRightMenu(QMenu *submenu, bool clear = true);
   void updateLeftMenu();
 
-  void addTubeEditFunctionToRightMenu();
+  //void addTubeEditFunctionToRightMenu();
   void addPunctaEditFunctionToRightMenu();
   //void addSwcEditFunctionToRightMenu();
 
@@ -236,8 +236,10 @@ signals:
 private:
   EMouseEventProcessStatus processMouseReleaseForPuncta(
       QMouseEvent *event, double *positionInStack);
+  /*
   EMouseEventProcessStatus processMouseReleaseForTube(
       QMouseEvent *event, double *positionInStack);
+      */
   EMouseEventProcessStatus processMouseReleaseForSwc(
       QMouseEvent *event, double *positionInStack);
   EMouseEventProcessStatus processMouseReleaseForStroke(
@@ -279,22 +281,22 @@ private:
   QAction *m_fitsegAction;
   QAction *m_fitEllipseAction;
   QAction *m_dropsegAction;
-  QAction *m_cutAction;
-  QAction *m_breakAction;
-  QAction *m_hookAction;
-  QAction *m_spHookAction;
-  QAction *m_linkAction;
-  QAction *m_mergeAction;
+  //QAction *m_cutAction;
+  //QAction *m_breakAction;
+  //QAction *m_hookAction;
+  //QAction *m_spHookAction;
+  //QAction *m_linkAction;
+  //QAction *m_mergeAction;
   QAction *m_frontAction;
   QAction *m_backAction;
-  QAction *m_refineEndAction;
-  QAction *m_connectAction;
-  QAction *m_extendAction;
-  QAction *m_walkAction;
-  QAction *m_checkConnAction;
-  QAction *m_disconnectAction;
-  QAction *m_neighborAction;
-  QAction *m_selectConnectedTubeAction;
+  //QAction *m_refineEndAction;
+  //QAction *m_connectAction;
+  //QAction *m_extendAction;
+  //QAction *m_walkAction;
+  //QAction *m_checkConnAction;
+  //QAction *m_disconnectAction;
+  //QAction *m_neighborAction;
+  //QAction *m_selectConnectedTubeAction;
   QAction *m_markPunctaAction;
   QAction *m_deleteSelectedAction;
   QAction *m_deleteAllPunctaAction;

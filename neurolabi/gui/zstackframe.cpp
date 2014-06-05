@@ -236,7 +236,9 @@ void ZStackFrame::disconnectAll()
 void ZStackFrame::setDocument(tr1::shared_ptr<ZStackDoc> doc)
 {
   if (m_doc.get() != doc.get()) {
-    UPDATE_DOC_SIGNAL_SLOT(disconnect);
+    if (m_doc != NULL) {
+      UPDATE_DOC_SIGNAL_SLOT(disconnect);
+    }
     m_doc = doc;
     m_doc->setParentFrame(this);
     UPDATE_DOC_SIGNAL_SLOT(connect);
@@ -1647,7 +1649,7 @@ void ZStackFrame::notifyUser(const QString &message)
   }
 }
 
-void ZStackFrame::locateSwcNodeIn2DView()
+void ZStackFrame::locateSwcNodeIn3DView()
 {
   if (!document()->selectedSwcTreeNodes()->empty()) {
     if (!m_3dWindow) {

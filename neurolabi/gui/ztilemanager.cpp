@@ -128,6 +128,7 @@ void ZTileManager::clearPreselected()
 
 void ZTileManager::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
+  UNUSED_PARAMETER(event);
     if (m_view != NULL) getParentView()->viewport()->update();
 /*
     clearPreselected();

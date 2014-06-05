@@ -937,7 +937,10 @@ void MainWindow::updateMenu()
   } else {
     ZStackFrame *frame = currentStackFrame();
     if (frame != NULL) {
-      connect(frame->getTileManager(),SIGNAL(loadingTile()),this,SLOT(on_actionTile_Manager_2_triggered()));
+      if (frame->getTileManager() != NULL) {
+        connect(frame->getTileManager(),SIGNAL(loadingTile()),
+                this,SLOT(on_actionTile_Manager_2_triggered()));
+      }
       if (frame->presenter() != NULL) { /* not a closing frame */
         m_ui->menuEdit->clear();
         m_ui->menuEdit->addAction(undoAction);

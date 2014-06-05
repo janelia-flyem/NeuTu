@@ -119,6 +119,7 @@ void ZStackPresenter::createPunctaActions()
   connect(m_meanshiftAllPunctaAction, SIGNAL(triggered()), this, SLOT(meanshiftAllPuncta()));
 }
 
+#if 0
 void ZStackPresenter::createTubeActions()
 {
   m_hookAction = new QAction(tr("Straight hook"), this);
@@ -174,6 +175,7 @@ void ZStackPresenter::createTubeActions()
   connect(m_refineEndAction, SIGNAL(triggered()),
           this, SLOT(refineChainEnd()));
 }
+#endif
 
 //Doesn't work while connecting doc slots directly for unknown reason
 void ZStackPresenter::createDocDependentActions()
@@ -217,7 +219,7 @@ void ZStackPresenter::createSwcActions()
 
   action = new QAction(tr("Locate node(s) in 3D"), parent());
   connect(action, SIGNAL(triggered()),
-          m_parent, SLOT(locateSwcNodeIn2DView()));
+          m_parent, SLOT(locateSwcNodeIn3DView()));
   action->setStatusTip("Located selected swc nodes in 3D view.");
   m_actionMap[ACTION_LOCATE_SELECTED_SWC_NODES_IN_3D] = action;
 
@@ -339,7 +341,7 @@ void ZStackPresenter::createActions()
   createPunctaActions();
   createSwcActions();
   createTraceActions();
-  createTubeActions();
+  //createTubeActions();
   createStrokeActions();
 }
 
@@ -449,7 +451,7 @@ void ZStackPresenter::addPunctaEditFunctionToRightMenu()
   updateRightMenu(m_deleteSelectedAction, false);
   updateRightMenu(m_deleteAllPunctaAction, false);
 }
-
+#if 0
 void ZStackPresenter::addTubeEditFunctionToRightMenu()
 {
   updateRightMenu(m_cutAction, false);
@@ -480,6 +482,8 @@ void ZStackPresenter::addTubeEditFunctionToRightMenu()
   submenu->addAction(m_backAction);
   updateRightMenu(submenu, false);
 }
+#endif
+
 #if 0
 void ZStackPresenter::addSwcEditFunctionToRightMenu()
 {
@@ -673,6 +677,7 @@ ZStackPresenter::processMouseReleaseForPuncta(QMouseEvent *event, double *positi
   return status;
 }
 
+#if 0
 ZStackPresenter::EMouseEventProcessStatus
 ZStackPresenter::processMouseReleaseForTube(QMouseEvent *event, double *positionInStack)
 {
@@ -815,6 +820,7 @@ ZStackPresenter::processMouseReleaseForTube(QMouseEvent *event, double *position
 
   return status;
 }
+#endif
 
 const Swc_Tree_Node* ZStackPresenter::getSelectedSwcNode() const
 {
@@ -888,8 +894,13 @@ ZStackPresenter::processMouseReleaseForSwc(QMouseEvent *event, double *positionI
           }
         }
         interactionEvent.setEvent(ZInteractionEvent::EVENT_SWC_NODE_SELECTED);
+        buddyDocument()->notifySwcModified();
+      } else {
+        if (buddyDocument()->hasTracable()) {
+          buddyView()->popLeftMenu(event->pos());
+          status = CONTEXT_MENU_POPPED;
+        }
       }
-      buddyDocument()->notifySwcModified();
     }
       break;
     case ZInteractiveContext::SWC_EDIT_CONNECT:
@@ -1014,6 +1025,12 @@ ZStackPresenter::processMouseReleaseForStroke(
             }
 
             Stack_Graph_Workspace *sgw = New_Stack_Graph_Workspace();
+            if (buddyDocument()->getStackBackground() ==
+                NeuTube::IMAGE_BACKGROUND_BRIGHT) {
+              sgw->wf = Stack_Voxel_Weight;
+            } else {
+              sgw->wf = Stack_Voxel_Weight_S;
+            }
             double pointDistance = Geo3d_Dist(start.x(), start.y(), 0,
                 end.x(), end.y(), 0) / 2;
             double cx = (start.x() + end.x()) / 2;
@@ -1033,7 +1050,7 @@ ZStackPresenter::processMouseReleaseForStroke(
                   buddyDocument()->getStack()->height(),
                   buddyDocument()->getStack()->depth());
 
-            sgw->wf = Stack_Voxel_Weight;
+            //sgw->wf = Stack_Voxel_Weight;
 
             Int_Arraylist *path = Stack_Route(
                   buddyDocument()->getStack()->c_stack(), source, target, sgw);
@@ -1137,9 +1154,11 @@ void ZStackPresenter::processMouseReleaseEvent(
       }
 
       // tube chain
+#if 0
       if (status == MOUSE_EVENT_PASSED) {
         status = processMouseReleaseForTube(event, positionInStack);
       }
+#endif
 
       if (status == MOUSE_EVENT_PASSED) {
         status = processMouseReleaseForStroke(event, positionInStack);
@@ -1898,12 +1917,14 @@ void ZStackPresenter::optimizeStackBc()
     ZStack *stack = buddyDocument()->getStack();
     if (stack != NULL) {
       if (!stack->isVirtual()) {
-        double scale, offset;
-        m_greyScale.resize(stack->channelNumber());
-        m_greyOffset.resize(stack->channelNumber());
-        for (int i=0; i<stack->channelNumber(); i++) {
-          stack->bcAdjustHint(&scale, &offset, i);
-          setStackBc(scale, offset, i);
+        if (stack->kind() != GREY) {
+          double scale, offset;
+          m_greyScale.resize(stack->channelNumber());
+          m_greyOffset.resize(stack->channelNumber());
+          for (int i=0; i<stack->channelNumber(); i++) {
+            stack->bcAdjustHint(&scale, &offset, i);
+            setStackBc(scale, offset, i);
+          }
         }
       }
     }
