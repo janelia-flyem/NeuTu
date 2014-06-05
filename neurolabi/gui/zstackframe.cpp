@@ -1612,3 +1612,16 @@ void ZStackFrame::runSeededWatershed()
 {
   document()->runSeededWatershed();
 }
+void ZStackFrame::makeSWCProjection(ZStackDoc *doc)
+{
+    if (doc == NULL) return;
+    QList<ZSwcTree*> *swclist= doc->swcList();
+    foreach (ZSwcTree* swc, *swclist) {
+        ZSwcTree *swcClone = swc->clone();
+        std::vector<Swc_Tree_Node*> nodes = swcClone->getSwcTreeNodeArray();
+        foreach (Swc_Tree_Node *nd, nodes) {
+            SwcTreeNode::setZ(nd, 0);
+        }
+        this->presenter()->addDecoration(swcClone);
+    }
+}
