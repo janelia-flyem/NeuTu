@@ -1245,7 +1245,7 @@ void MainWindow::presentStackFrame(ZStackFrame *frame)
   if (NeutubeConfig::getInstance().getApplication() == "Biocytin") {
     frame->autoBcAdjust();
 
-    frame->loadRoi();
+    frame->loadRoi(false);
 #if 0
     if (!frame->document()->stackSourcePath().isEmpty()) {
       ZString sourcePath = frame->document()->stackSourcePath().toStdString();

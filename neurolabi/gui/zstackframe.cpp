@@ -1483,7 +1483,7 @@ void ZStackFrame::autoBcAdjust()
   updateView();
 }
 
-void ZStackFrame::loadRoi()
+void ZStackFrame::loadRoi(bool isExclusive)
 {
   if (!document()->stackSourcePath().empty()) {
     ZString sourcePath = document()->stackSourcePath();
@@ -1504,12 +1504,12 @@ void ZStackFrame::loadRoi()
     }
 
     if (fileInfo.exists()) {
-      loadRoi(fileInfo.absoluteFilePath());
+      loadRoi(fileInfo.absoluteFilePath(), isExclusive);
     }
   }
 }
 
-void ZStackFrame::loadRoi(const QString &filePath)
+void ZStackFrame::loadRoi(const QString &filePath, bool isExclusive)
 {
   ZStackFile stackFile;
   stackFile.import(filePath.toStdString());
@@ -1542,7 +1542,9 @@ void ZStackFrame::loadRoi(const QString &filePath)
     obj->setColor(16, 16, 16, 64);
 
     obj->setTarget(ZStackDrawable::OBJECT_CANVAS);
-    clearDecoration();
+    if (isExclusive) {
+      clearDecoration();
+    }
     addDecoration(obj);
     updateView();
 

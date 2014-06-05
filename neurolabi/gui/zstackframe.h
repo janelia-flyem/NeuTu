@@ -211,8 +211,11 @@ public:
   inline ZStackFrame* getParentFrame() { return m_parentFrame; }
 
   void setSizeHintOption(NeuTube::ESizeHintOption option);
-  void loadRoi(const QString &filePath);
-  void loadRoi();
+  /*!
+   * Remove all existing decorations if isExclusive is true.
+   */
+  void loadRoi(const QString &filePath, bool isExclusive);
+  void loadRoi(bool isExclusive);
 
   void prepareDisplay();
 
