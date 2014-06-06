@@ -5,8 +5,10 @@
 #include <utility>
 #ifdef __GLIBCXX__
 #include <tr1/memory>
+using namespace std::tr1;
 #else
 #include <memory>
+using namespace std;
 #endif
 
 namespace FlyEm {
@@ -23,14 +25,14 @@ public:
 
   bool hitTest(int x, int y, int z);
 
-  void setComposition(std::tr1::shared_ptr<ZIntCuboidComposition> firstComponent,
-                      std::tr1::shared_ptr<ZIntCuboidComposition> secondComponent,
+  void setComposition(shared_ptr<ZIntCuboidComposition> firstComponent,
+                      shared_ptr<ZIntCuboidComposition> secondComponent,
                       EOperator opr);
   void setSingular(int x, int y, int z, int width, int height, int depth);
 
 private:
-  std::tr1::shared_ptr<ZIntCuboidComposition> m_firstComponent;
-  std::tr1::shared_ptr<ZIntCuboidComposition> m_secondComponent;
+  shared_ptr<ZIntCuboidComposition> m_firstComponent;
+  shared_ptr<ZIntCuboidComposition> m_secondComponent;
   Cuboid_I m_cuboid;
   EOperator m_operator;
 };

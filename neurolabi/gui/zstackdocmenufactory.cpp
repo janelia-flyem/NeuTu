@@ -168,10 +168,10 @@ QMenu* ZStackDocMenuFactory::makeSwcNodeContextMenu(
   menu->addMenu(submenu);
 */
   submenu = new QMenu("Information", menu);
-  submenu->addAction(doc->getAction(ZStackDoc::ACTION_SWC_SUMMARIZE));
+  //submenu->addAction(doc->getAction(ZStackDoc::ACTION_SWC_SUMMARIZE));
   action = ZActionFactory::makeAction(
         ZActionFactory::ACTION_SWC_SUMMARIZE, doc, parentWidget);
-  //submenu->addAction(action);
+  submenu->addAction(action);
 
   submenu->addAction(doc->getAction(ZStackDoc::ACTION_MEASURE_SWC_NODE_LENGTH));
   action = ZActionFactory::makeAction(
@@ -201,12 +201,31 @@ QMenu* ZStackDocMenuFactory::makeSwcNodeContextMenu(
   }
 
   //menu->addAction(presenter->getAction(ZStackPresenter::ACTION_SMART_EXTEND_SWC_NODE));
-  menu->addAction(presenter->getAction(ZStackPresenter::ACTION_EXTEND_SWC_NODE));
-  menu->addAction(presenter->getAction(ZStackPresenter::ACTION_CONNECT_TO_SWC_NODE));
+  //menu->addAction(presenter->getAction(ZStackPresenter::ACTION_EXTEND_SWC_NODE));
+  menu->addAction(ZActionFactory::makeAction(
+                    ZActionFactory::ACTION_EXTEND_SWC_NODE, presenter,
+                    parentWidget, m_singleSwcNodeActionActivator, true));
+
+  //menu->addAction(presenter->getAction(ZStackPresenter::ACTION_CONNECT_TO_SWC_NODE));
+  menu->addAction(ZActionFactory::makeAction(
+                    ZActionFactory::ACTION_CONNECT_TO_SWC_NODE, presenter,
+                    parentWidget, m_singleSwcNodeActionActivator, true));
+
+  /*
   menu->addAction(presenter->getAction(
                     ZStackPresenter::ACTION_CHANGE_SWC_NODE_FOCUS));
+                    */
+  menu->addAction(ZActionFactory::makeAction(
+                    ZActionFactory::ACTION_CHANGE_SWC_NODE_FOCUS, presenter,
+                    parentWidget));
+
+  /*
   menu->addAction(presenter->getAction(
                     ZStackPresenter::ACTION_MOVE_SWC_NODE));
+                    */
+  menu->addAction(ZActionFactory::makeAction(
+                    ZActionFactory::ACTION_MOVE_SWC_NODE, presenter,
+                    parentWidget));
 
   if (GET_APPLICATION_NAME == "Biocytin") {
     menu->addAction(presenter->getAction(

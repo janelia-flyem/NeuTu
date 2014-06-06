@@ -164,6 +164,7 @@ HEADERS +=$${PWD}/zstackprocessor.h \
    $${PWD}/flyem/zflyemneuronfeaturefactory.h \
    $${PWD}/flyem/zflyemneuronarray.h \
    $${PWD}/swc/zswcpruner.h \
+   $${PWD}/zneurontracer.h \
    $${PWD}/flyem/zflyemneuronlayermatcher.h \
    $${PWD}/zdynamicprogrammer.h \
    $${PWD}/flyem/zhotspot.h \
@@ -190,7 +191,9 @@ HEADERS +=$${PWD}/zstackprocessor.h \
    $${PWD}/flyem/zflyemsubstackroi.h \
    $${PWD}/zstackwatershed.h \
    $${PWD}/zstackarray.h \
-   $${PWD}/flyem/zflyemconfig.h
+   $${PWD}/flyem/zflyemconfig.h \
+   $${PWD}/tr1_header.h \
+    zsharedpointer.h
 
 SOURCES +=$${PWD}/zstackprocessor.cpp \
    $${PWD}/zstack.cxx \
@@ -242,6 +245,7 @@ SOURCES +=$${PWD}/zstackprocessor.cpp \
    $${PWD}/zswcsizefeatureanalyzer.cpp \
    $${PWD}/zobject3darray.cpp \
    $${PWD}/zdoublevector.cpp \
+   $${PWD}/zneurontracer.cpp \
    $${PWD}/zkmeansclustering.cpp \
    $${PWD}/zswcshollfeatureanalyzer.cpp \
    $${PWD}/zswcspatialfeatureanalyzer.cpp \

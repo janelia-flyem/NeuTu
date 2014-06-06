@@ -7360,6 +7360,26 @@ void ZStackDoc::showSeletedSwcNodeLength(double *resolution)
   dlg.exec();
 }
 
+void ZStackDoc::showSwcSummary()
+{
+  InformationDialog dlg;
+
+  std::ostringstream textStream;
+  if (swcList()->isEmpty()) {
+    textStream << "<p>No neuron data.</p>";
+  } else {
+    textStream << "<p>Overall length of " << swcList()->size() << " Neuron(s): ";
+    double length = 0.0;
+    foreach (ZSwcTree* tree, *swcList()) {
+      length += tree->length();
+    }
+    textStream << length << "</p>";
+  }
+
+  dlg.setText(textStream.str());
+  dlg.exec();
+}
+
 bool ZStackDoc::executeInsertSwcNode()
 {
   bool succ = false;

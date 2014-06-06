@@ -6,6 +6,7 @@
 class ZStackDoc;
 class QWidget;
 class ZActionActivator;
+class ZStackPresenter;
 
 class ZActionFactory
 {
@@ -29,11 +30,19 @@ public:
     ACTION_CHANGE_SWC_TYPE, ACTION_CHANGE_SWC_SIZE, ACTION_REMOVE_TURN,
     ACTION_RESOLVE_CROSSOVER, ACTION_SWC_Z_INTERPOLATION,
     ACTION_SWC_RADIUS_INTERPOLATION, ACTION_SWC_POSITION_INTERPOLATION,
-    ACTION_SWC_INTERPOLATION
+    ACTION_SWC_INTERPOLATION, ACTION_EXTEND_SWC_NODE,
+    ACTION_CONNECT_TO_SWC_NODE, ACTION_CHANGE_SWC_NODE_FOCUS,
+    ACTION_ESTIMATE_SWC_NODE_RADIUS,
+    ACTION_MOVE_SWC_NODE, ACTION_ADD_SWC_NODE,
+    ACTION_LOCATE_SELECTED_SWC_NODES_IN_3D
   };
 
   static QAction* makeAction(
       EActionItem item, const ZStackDoc *doc, QWidget *parent,
+      ZActionActivator *activator = NULL, bool positive = true);
+
+  static QAction* makeAction(
+      EActionItem item, const ZStackPresenter *presenter, QWidget *parent,
       ZActionActivator *activator = NULL, bool positive = true);
 };
 

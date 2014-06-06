@@ -670,6 +670,7 @@ public slots:
 
   void showSeletedSwcNodeLength(double *resolution = NULL);
   void showSeletedSwcNodeScaledLength();
+  void showSwcSummary();
 
   void hideSelectedPuncta();
   void showSelectedPuncta();

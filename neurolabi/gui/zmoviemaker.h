@@ -4,12 +4,7 @@
 #include <QColor>
 #include <string>
 #include <vector>
-#ifdef __GLIBCXX__
-#include <tr1/memory>
-#else
-#include <memory>
-#endif
-
+#include "zsharedpointer.h"
 #include "zmoviescript.h"
 #include "zmovieactor.h"
 #include "zmoviescene.h"

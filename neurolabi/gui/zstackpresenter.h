@@ -145,6 +145,14 @@ public:
 
   void setZoomRatio(int ratio);
 
+  inline ZStackFrame* getParentFrame() {
+    return m_parent;
+  }
+
+  inline const ZStackFrame* getParentFrame() const {
+    return m_parent;
+  }
+
 public slots:
   void addDecoration(ZStackDrawable *obj, bool tail = true);
   void removeLastDecoration(ZInterface *obj);

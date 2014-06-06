@@ -33,7 +33,7 @@ QMAKE_CXXFLAGS += -isystem ../gui/ext
 CONFIG += rtti exceptions
 
 CONFIG += static_glew
-CONFIG += static_gtest
+#CONFIG += static_gtest
 
 DEFINES += _QT_APPLICATION_ _QT_GUI_USED_ _NEUTUBE_ HAVE_CONFIG_H _ENABLE_DDP_ _ENABLE_WAVG_
 
@@ -75,16 +75,16 @@ unix:!macx {
 
 contains(CONFIG, static_gtest) { # gtest from ext folder
     include($$PWD/ext/gtest.pri)
-} else { # use your own gtest
+} #else { # use your own gtest
+#
+#CONFIG(debug, debug|release) {
+#    exists($${LOCAL_INSTALL_DIR}/lib/libgtest.a) {
+#        DEFINES += _USE_GTEST_
+#        LIBS += -lgtest
+#    }
+#}
 
-CONFIG(debug, debug|release) {
-    exists($${LOCAL_INSTALL_DIR}/lib/libgtest.a) {
-        DEFINES += _USE_GTEST_
-        LIBS += -lgtest
-    }
-}
-
-} # static gtest
+#} # static gtest
 
 LIBS += -lstdc++
 unix:!macx {
@@ -336,7 +336,6 @@ HEADERS += mainwindow.h \
     flyem/zflyemneuronpresenter.h \
     biocytin/zbiocytinfilenameparser.h \
     diagnosisdialog.h \
-    zneurontracer.h \
     zerror.h \
     zhistogram.h \
     flyem/zflyemneuronrange.h \
@@ -463,7 +462,6 @@ SOURCES += main.cpp \
     zeditswcdialog.cpp \
     cannyedgedialog.cpp \
     zdirectionaltemplatechain.cpp \
-    zneurontracer.cpp \
     medianfilterdialog.cpp \
     diffusiondialog.cpp \
     connectedthresholddialog.cpp \

@@ -3,6 +3,8 @@
 #include <QObject>
 #include "zstackdoc.h"
 #include "zactionactivator.h"
+#include "zstackpresenter.h"
+#include "zstackframe.h"
 
 ZActionFactory::ZActionFactory()
 {
@@ -150,7 +152,83 @@ QAction* ZActionFactory::makeAction(
     //m_singleSwcNodeActionActivator.registerAction(action, false);
   case ACTION_SWC_INTERPOLATION:
     action = new QAction("Position and Radius", parent);
-    doc->connect(action, SIGNAL(triggered()), doc, SLOT(executeInterpolateSwcCommand()));
+    doc->connect(action, SIGNAL(triggered()),
+                 doc, SLOT(executeInterpolateSwcCommand()));
+    break;
+  case ACTION_SWC_SUMMARIZE:
+    action = new QAction("Summary", parent);
+    doc->connect(action, SIGNAL(triggered()),
+                 doc, SLOT(showSwcSummary()));
+    break;
+  default:
+    break;
+  }
+
+  if (action != NULL && activator != NULL) {
+    activator->registerAction(action, positive);
+  }
+
+  return action;
+}
+
+QAction* ZActionFactory::makeAction(
+    EActionItem item, const ZStackPresenter *presenter, QWidget *parent,
+    ZActionActivator *activator, bool positive)
+{
+  QAction *action = NULL;
+  switch (item) {
+  case ACTION_ADD_SWC_NODE:
+    action = new QAction("Add Neuron Node", parent);
+    action->setStatusTip("Add an isolated neuron node.");
+    action->setIcon(QIcon(":/images/add.png"));
+    action->setShortcut(Qt::Key_G);
+    presenter->connect(action, SIGNAL(triggered()),
+                       presenter, SLOT(trySwcAddNodeMode()));
+    break;
+  case ACTION_LOCATE_SELECTED_SWC_NODES_IN_3D:
+    action = new QAction("Locate node(s) in 3D", parent);
+    presenter->getParentFrame()->connect(action, SIGNAL(triggered()),
+                       presenter->getParentFrame(), SLOT(locateSwcNodeIn3DView()));
+    action->setStatusTip("Located selected swc nodes in 3D view.");
+    break;
+  case ACTION_CONNECT_TO_SWC_NODE:
+    action = new QAction("Connect to", parent);
+    action->setShortcut(Qt::Key_C);
+    action->setStatusTip(
+          "Connect the currently selected node to another");
+    presenter->connect(action, SIGNAL(triggered()),
+            presenter, SLOT(enterSwcConnectMode()));
+    action->setIcon(QIcon(":/images/connect_to.png"));
+    break;
+  case ACTION_EXTEND_SWC_NODE:
+    action = new QAction("Extend", parent);
+    action->setShortcut(Qt::Key_Space);
+    action->setStatusTip(
+          "Extend the currently selected node with mouse click.");
+    presenter->connect(
+          action, SIGNAL(triggered()), presenter, SLOT(enterSwcExtendMode()));
+    action->setIcon(QIcon(":/images/extend.png"));
+    break;
+  case ACTION_MOVE_SWC_NODE:
+    action = new QAction("Move Selected (Shift+Mouse)", parent);
+    action->setShortcut(Qt::Key_V);
+    action->setStatusTip("Move selected nodes with mouse.");
+    action->setIcon(QIcon(":/images/move.png"));
+    presenter->connect(action, SIGNAL(triggered()), presenter, SLOT(enterSwcMoveMode()));
+    break;
+  case ACTION_CHANGE_SWC_NODE_FOCUS:
+    action = new QAction("Move to Current Plane", parent);
+    action->setShortcut(Qt::Key_F);
+    action->setStatusTip(
+          "Move the centers of the selected nodes to the current plane.");
+    action->setIcon(QIcon(":/images/change_focus.png"));
+    presenter->connect(action, SIGNAL(triggered()),
+                       presenter, SLOT(changeSelectedSwcNodeFocus()));
+    break;
+  case ACTION_ESTIMATE_SWC_NODE_RADIUS:
+    action = new QAction("Estimate Radius", parent);
+    presenter->connect(action, SIGNAL(triggered()),
+                       presenter, SLOT(estimateSelectedSwcRadius()));
     break;
   default:
     break;

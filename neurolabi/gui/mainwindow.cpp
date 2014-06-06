@@ -12,17 +12,11 @@
 #include <ostream>
 #include <fstream>
 #include <sstream>
-#ifdef __GLIBCXX__
-#include <tr1/memory>
-#else
-#include <memory>
-#endif
 #include <limits>
 
 #include "ui_mainwindow.h"
 
 #include "tz_darray.h"
-
 #include "zstackframe.h"
 #include "zstackdoc.h"
 #include "settingdialog.h"
