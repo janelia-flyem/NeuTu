@@ -192,8 +192,7 @@ HEADERS +=$${PWD}/zstackprocessor.h \
    $${PWD}/zstackwatershed.h \
    $${PWD}/zstackarray.h \
    $${PWD}/flyem/zflyemconfig.h \
-   $${PWD}/tr1_header.h \
-    zsharedpointer.h
+   $${PWD}/tr1_header.h
 
 SOURCES +=$${PWD}/zstackprocessor.cpp \
    $${PWD}/zstack.cxx \
