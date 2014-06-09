@@ -3,7 +3,6 @@
 #include "z3dnetworkevaluator.h"
 #include <algorithm>
 #include "z3dcanvaseventlistener.h"
-#include "z3dscene.h"
 #include "QsLog/QsLog.h"
 #ifdef _QT5_
 #include <QWindow>
@@ -15,13 +14,16 @@ Z3DCanvas::Z3DCanvas(const QString &title, int width, int height, const QGLForma
   , m_fullscreen(false)
   , m_glWidget(NULL)
   , m_3dScene(NULL)
+  , m_networkEvaluator(NULL)
+  , m_fakeStereoOnce(false)
 {
   setAlignment(Qt::AlignLeft | Qt::AlignTop);
   resize(width, height);
 
   m_glWidget = new QGLWidget(format, NULL, shareWidget, f);
   m_glWidget->makeCurrent();
-  m_3dScene = new Z3DScene(width, height, m_glWidget->format().stereo(), this);
+  m_isStereoScene = m_glWidget->format().stereo();
+  m_3dScene = new QGraphicsScene(0, 0, width, height, this);
 
   setViewport(m_glWidget);
   setViewportUpdateMode(FullViewportUpdate);
@@ -122,6 +124,21 @@ void Z3DCanvas::dropEvent(QDropEvent *event)
   event->ignore();
 }
 
+void Z3DCanvas::drawBackground(QPainter *painter, const QRectF &)
+{
+  if (!m_networkEvaluator) {
+    return;
+  }
+
+  // QPainter set glclearcolor to white, we set it back
+  glClearColor(0.f, 0.f, 0.f, 0.f);
+
+  m_networkEvaluator->process(m_isStereoScene || m_fakeStereoOnce);
+  m_fakeStereoOnce = false;
+
+  painter->drawRect(QRect(10, 10, 40, 60));
+}
+
 void Z3DCanvas::timerEvent(QTimerEvent* e)
 {
   broadcastEvent(e, width(), height());
@@ -129,14 +146,16 @@ void Z3DCanvas::timerEvent(QTimerEvent* e)
 
 void Z3DCanvas::setNetworkEvaluator(Z3DNetworkEvaluator *n)
 {
-  m_3dScene->setNetworkEvaluator(n);
+  //m_3dScene->setNetworkEvaluator(n);
+  m_networkEvaluator = n;
   if (n)
     n->setOpenGLContext(this);
 }
 
 void Z3DCanvas::setFakeStereoOnce()
 {
-  m_3dScene->setFakeStereoOnce();
+  m_fakeStereoOnce = true;
+  //m_3dScene->setFakeStereoOnce();
 }
 
 void Z3DCanvas::addEventListenerToBack(Z3DCanvasEventListener *e)
