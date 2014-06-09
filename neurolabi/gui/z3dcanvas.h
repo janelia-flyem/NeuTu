@@ -64,6 +64,8 @@ public:
   void setCursor(const QCursor &c) { viewport()->setCursor(c); }
 #endif
 
+  virtual void drawBackground(QPainter *painter, const QRectF &rect);
+
 signals:
   // w and h is physical size not logical size, opengl works in physical pixel
   void canvasSizeChanged(int w, int h);
@@ -74,8 +76,12 @@ protected:
   bool m_fullscreen;
 
   QGLWidget* m_glWidget;
-  Z3DScene* m_3dScene;
+  QGraphicsScene* m_3dScene;
   std::deque<Z3DCanvasEventListener*> m_listeners;
+
+  Z3DNetworkEvaluator* m_networkEvaluator;
+  bool m_isStereoScene;
+  bool m_fakeStereoOnce;
 };
 
 #endif // Z3DCANVAS_H
