@@ -242,6 +242,10 @@ public:
   bool loadFile(const QString &filePath, bool emitMessage = false);
   virtual void loadStack(Stack *getStack, bool isOwner = true);
   virtual void loadStack(ZStack *zstack);
+
+  /*!
+   * \brief The reference of the main stack variable
+   */
   virtual ZStack*& stackRef();
   virtual const ZStack *stackRef() const;
 
