@@ -128,6 +128,8 @@ ZStackDoc::~ZStackDoc()
   deprecate(STACK);
 
   qDebug() << m_objs.size();
+  qDebug() << "ZStackDoc destroyed";
+
   if (m_objs.size() != 0) {
     for (int i = 0; i < m_objs.size(); ++i) {
       delete m_objs.at(i);

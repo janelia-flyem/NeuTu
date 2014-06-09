@@ -91,7 +91,7 @@ void ZStackFrame::detach3DWindow()
 
 void ZStackFrame::createDocument()
 {
-  setDocument(tr1::shared_ptr<ZStackDoc>(new ZStackDoc(NULL, NULL)));
+  setDocument(ZSharedPointer<ZStackDoc>(new ZStackDoc(NULL, NULL)));
 }
 
 void ZStackFrame::createPresenter()
@@ -133,7 +133,7 @@ void ZStackFrame::addDocData(const ZStackDocReader &reader)
 
 void ZStackFrame::consumeDocument(ZStackDoc *doc)
 {
-  tr1::shared_ptr<ZStackDoc> docPtr(doc);
+  ZSharedPointer<ZStackDoc> docPtr(doc);
   setDocument(docPtr);
 }
 
@@ -233,7 +233,7 @@ void ZStackFrame::disconnectAll()
 #endif
 }
 
-void ZStackFrame::setDocument(tr1::shared_ptr<ZStackDoc> doc)
+void ZStackFrame::setDocument(ZSharedPointer<ZStackDoc> doc)
 {
   if (m_doc.get() != doc.get()) {
     if (m_doc != NULL) {
@@ -1614,23 +1614,24 @@ void ZStackFrame::zoomToSelectedSwcNodes()
     ZPoint center = cuboid.center();
 
     //check which stack the selected points belong to. If needed, load the corresponding stack.
-    ZTileInfo tile = getTileManager()->getSelectedTileItem()->getTileInfo();
-    QRect bound= QRect(tile.getOffset().x(),tile.getOffset().y(),tile.getWidth(),tile.getHeight());
-    if (!bound.contains(center.x(),center.y())) {
+    if (getTileManager() != NULL) {
+      ZTileInfo tile = getTileManager()->getSelectedTileItem()->getTileInfo();
+      QRect bound= QRect(tile.getOffset().x(),tile.getOffset().y(),tile.getWidth(),tile.getHeight());
+      if (!bound.contains(center.x(),center.y())) {
         QList<QGraphicsItem*> itemList = getTileManager()->items();
         foreach (QGraphicsItem *item, itemList) {
           ZTileGraphicsItem *zitem = dynamic_cast<ZTileGraphicsItem*>(item);
           if (zitem != NULL) {
-              //check whether this item contains the selected points.
-              tile = zitem->getTileInfo();
-              bound = QRect(tile.getOffset().x(),tile.getOffset().y(),tile.getWidth(),tile.getHeight());
-              if (bound.contains(center.x(),center.y())) {
-                  getTileManager()->selectItem(zitem);
-                  break;
-              }
+            //check whether this item contains the selected points.
+            tile = zitem->getTileInfo();
+            bound = QRect(tile.getOffset().x(),tile.getOffset().y(),tile.getWidth(),tile.getHeight());
+            if (bound.contains(center.x(),center.y())) {
+              getTileManager()->selectItem(zitem);
+              break;
+            }
           }
         }
-
+      }
     }
     int cx, cy, cz;
     center -= document()->getStackOffset();

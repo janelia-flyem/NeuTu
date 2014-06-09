@@ -5,13 +5,9 @@
 #include "neutubeconfig.h"
 #include "flyem/zintcuboidarray.h"
 #include "flyem/zintcuboidcomposition.h"
-#ifdef __GLIBCXX__
-#include <tr1/memory>
-#else
-#include <memory>
-#endif
 #include "zcuboid.h"
 #include "zintcuboidface.h"
+#include "zsharedpointer.h"
 
 #ifdef _USE_GTEST_
 
@@ -166,15 +162,15 @@ TEST(ZIntCuboidComposition, hitTest)
   EXPECT_TRUE(cuboid.hitTest(2, 2, 2));
   EXPECT_FALSE(cuboid.hitTest(3, 3, 3));
 
-  std::tr1::shared_ptr<FlyEm::ZIntCuboidComposition> comp1(
+  ZSharedPointer<FlyEm::ZIntCuboidComposition> comp1(
         new FlyEm::ZIntCuboidComposition);
   comp1->setSingular(0, 0, 0, 3, 3, 3);
 
-  std::tr1::shared_ptr<FlyEm::ZIntCuboidComposition> comp2(
+  ZSharedPointer<FlyEm::ZIntCuboidComposition> comp2(
         new FlyEm::ZIntCuboidComposition);
   comp2->setSingular(0, 0, 0, 3, 3, 3);
 
-  std::tr1::shared_ptr<FlyEm::ZIntCuboidComposition> comp3(
+  ZSharedPointer<FlyEm::ZIntCuboidComposition> comp3(
         new FlyEm::ZIntCuboidComposition);
   comp3->setComposition(comp1, comp2, FlyEm::ZIntCuboidComposition::OR);
   EXPECT_TRUE(comp3->hitTest(0, 0, 0));

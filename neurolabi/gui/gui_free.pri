@@ -192,7 +192,11 @@ HEADERS +=$${PWD}/zstackprocessor.h \
    $${PWD}/zstackwatershed.h \
    $${PWD}/zstackarray.h \
    $${PWD}/flyem/zflyemconfig.h \
-   $${PWD}/tr1_header.h
+   $${PWD}/tr1_header.h \
+   $${PWD}/zsharedpointer.h \
+    geometry/zgeo3dtransform.h \
+    geometry/zgeometry.h \
+    geometry/zgeo3dscalarfield.h
 
 SOURCES +=$${PWD}/zstackprocessor.cpp \
    $${PWD}/zstack.cxx \
@@ -369,4 +373,7 @@ SOURCES +=$${PWD}/zstackprocessor.cpp \
    $${PWD}/flyem/zflyemsubstackroi.cpp \
    $${PWD}/zstackwatershed.cpp \
    $${PWD}/zstackarray.cpp \
-   $${PWD}/flyem/zflyemconfig.cpp
+   $${PWD}/flyem/zflyemconfig.cpp \
+    geometry/zgeo3dtransform.cpp \
+    geometry/zgeometry.cpp \
+    geometry/zgeo3dscalarfield.cpp

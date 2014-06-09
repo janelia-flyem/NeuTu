@@ -14,12 +14,8 @@
 #include <vector>
 #include "tz_image_lib_defs.h"
 #include "neutube.h"
-#ifdef __GLIBCXX__
-#include <tr1/memory>
-#else
-#include <memory>
-#endif
 #include "zpaintbundle.h"
+#include "zsharedpointer.h"
 
 class ZStackPresenter;
 class QSlider;
@@ -51,12 +47,12 @@ public:
 
   QSize sizeHint() const;
   inline ZImageWidget* imageWidget() const { return m_imageWidget; }
-  inline std::tr1::shared_ptr<ZStackDoc> buddyDocument()
+  inline ZSharedPointer<ZStackDoc> buddyDocument()
   { return (m_parent != NULL) ? m_parent->document() :
-                                std::tr1::shared_ptr<ZStackDoc>(); }
-  inline const std::tr1::shared_ptr<ZStackDoc> buddyDocument() const
+                                ZSharedPointer<ZStackDoc>(); }
+  inline const ZSharedPointer<ZStackDoc> buddyDocument() const
   { return (m_parent != NULL) ? m_parent->document() :
-                                std::tr1::shared_ptr<ZStackDoc>(); }
+                                ZSharedPointer<ZStackDoc>(); }
 
   inline ZStackPresenter* buddyPresenter()
   { return (m_parent != NULL) ? m_parent->presenter() : NULL; }

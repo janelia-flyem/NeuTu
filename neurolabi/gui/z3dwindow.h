@@ -5,11 +5,6 @@
 #include <vector>
 #include <set>
 #include <map>
-#ifdef __GLIBCXX__
-#include <tr1/memory>
-#else
-#include <memory>
-#endif
 #include <QDir>
 #include "zparameter.h"
 #include "znumericparameter.h"
@@ -17,6 +12,8 @@
 #include "z3dcameraparameter.h"
 #include "zactionactivator.h"
 #include "z3dvolumeraycasterrenderer.h"
+#include "zsharedpointer.h"
+
 
 class ZStackDoc;
 class Z3DTrackballInteractionHandler;
@@ -47,7 +44,7 @@ public:
     NORMAL_INIT, EXCLUDE_VOLUME
   };
 
-  explicit Z3DWindow(std::tr1::shared_ptr<ZStackDoc> doc, EInitMode initMode,
+  explicit Z3DWindow(ZSharedPointer<ZStackDoc> doc, EInitMode initMode,
                      bool stereoView = false, QWidget *parent = 0);
   virtual ~Z3DWindow();
 
@@ -306,7 +303,7 @@ private:
   ZSingleSwcNodeActionActivator m_singleSwcNodeActionActivator;
 
 
-  std::tr1::shared_ptr<ZStackDoc> m_doc;
+  ZSharedPointer<ZStackDoc> m_doc;
 
   Z3DNetworkEvaluator *m_networkEvaluator;
   Z3DCanvas *m_canvas;

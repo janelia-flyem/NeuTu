@@ -2,7 +2,6 @@
 
 #include <iostream>
 #include <sstream>
-
 #include <z3dgl.h>
 #include <QtGui>
 #ifdef _QT5_
@@ -74,7 +73,7 @@ public:
 };
 
 
-Z3DWindow::Z3DWindow(std::tr1::shared_ptr<ZStackDoc> doc, Z3DWindow::EInitMode initMode,
+Z3DWindow::Z3DWindow(ZSharedPointer<ZStackDoc> doc, Z3DWindow::EInitMode initMode,
                      bool stereoView, QWidget *parent)
   : QMainWindow(parent)
   , m_doc(doc)

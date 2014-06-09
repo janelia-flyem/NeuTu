@@ -73,7 +73,7 @@ public:
   }
 
 private:
-  std::tr1::shared_ptr<ZStackDoc> m_academy;
+  ZSharedPointer<ZStackDoc> m_academy;
   ZMovieStage *m_stage;
   ZMovieSceneClipperState m_clipperState; //To store double values for integer parameters
   std::vector<ZMovieActor*> m_cast;

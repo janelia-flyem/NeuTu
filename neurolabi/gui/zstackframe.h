@@ -29,6 +29,7 @@
 #include "neutube.h"
 #include "ztilemanager.h"
 #include "z3dwindow.h"
+#include "zsharedpointer.h"
 
 class ZStackView;
 class ZStackPresenter;
@@ -56,7 +57,7 @@ public:
 public:
   // A frame has three parts: view, document and presenter
   inline ZStackView* view() const { return m_view; }
-  inline std::tr1::shared_ptr<ZStackDoc> document() const { return m_doc; }
+  inline ZSharedPointer<ZStackDoc> document() const { return m_doc; }
   inline ZStackPresenter *presenter() const { return m_presenter; }
 
   virtual void constructFrame();
@@ -257,7 +258,7 @@ protected:
   virtual void dropEvent(QDropEvent *event);
 
   void consumeDocument(ZStackDoc *doc);
-  void setDocument(std::tr1::shared_ptr<ZStackDoc> doc);
+  void setDocument(ZSharedPointer<ZStackDoc> doc);
 
 private:
   void setView(ZStackView *view);
@@ -266,7 +267,7 @@ protected:
   SettingDialog *m_settingDlg;
   QDialog *m_manageObjsDlg;
 
-  std::tr1::shared_ptr<ZStackDoc> m_doc;
+  ZSharedPointer<ZStackDoc> m_doc;
   ZStackPresenter *m_presenter;
   ZStackView *m_view;
   ZStackFrame *m_parentFrame;

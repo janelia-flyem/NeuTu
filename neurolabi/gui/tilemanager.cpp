@@ -51,7 +51,7 @@ void TileManager::ShowContextMenu(const QPoint &pos)
     myMenu.exec(globalPos);
 }
 
-void TileManager::setDocument(std::tr1::shared_ptr<ZStackDoc> p_doc)
+void TileManager::setDocument(ZSharedPointer<ZStackDoc> p_doc)
 {
     m_doc = p_doc;
     connect(getDocument(),SIGNAL(swcModified()),ui->tileView,SLOT(update()));

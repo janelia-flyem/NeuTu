@@ -4,9 +4,9 @@
 #include <QMainWindow>
 #include <QGraphicsScene>
 #include <QGraphicsPixmapItem>
-#include <tr1/memory>
 #include "zstackdoc.h"
 #include <QKeyEvent>
+#include "zsharedpointer.h"
 
 class ZTileManager;
 class ZQtBarProgressReporter;
@@ -24,7 +24,7 @@ public:
     ~TileManager();
 
     void setTileManager(ZTileManager *manager);
-    void setDocument(std::tr1::shared_ptr<ZStackDoc> p_doc);
+    void setDocument(ZSharedPointer<ZStackDoc> p_doc);
     inline ZStackDoc* getDocument() const { return m_doc.get(); }
     inline float getScaleFactor() {return scaleFactor;}
 
@@ -37,7 +37,7 @@ private slots:
 private:
     Ui::TileManager *ui;
     ZQtBarProgressReporter *m_progressReporter;
-    std::tr1::shared_ptr<ZStackDoc> m_doc;
+    ZSharedPointer<ZStackDoc> m_doc;
     float scaleFactor;
 };
 
