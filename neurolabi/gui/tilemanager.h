@@ -4,7 +4,13 @@
 #include <QMainWindow>
 #include <QGraphicsScene>
 #include <QGraphicsPixmapItem>
+#ifdef __GLIBCXX__
 #include <tr1/memory>
+using namespace std::tr1;
+#else
+#include <memory>
+using namespace std;
+#endif
 #include "zstackdoc.h"
 #include <QKeyEvent>
 
@@ -24,7 +30,7 @@ public:
     ~TileManager();
 
     void setTileManager(ZTileManager *manager);
-    void setDocument(std::tr1::shared_ptr<ZStackDoc> p_doc);
+    void setDocument(shared_ptr<ZStackDoc> p_doc);
     inline ZStackDoc* getDocument() const { return m_doc.get(); }
     inline float getScaleFactor() {return scaleFactor;}
 
@@ -37,7 +43,7 @@ private slots:
 private:
     Ui::TileManager *ui;
     ZQtBarProgressReporter *m_progressReporter;
-    std::tr1::shared_ptr<ZStackDoc> m_doc;
+    shared_ptr<ZStackDoc> m_doc;
     float scaleFactor;
 };
 

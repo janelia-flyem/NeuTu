@@ -74,7 +74,7 @@ public:
 };
 
 
-Z3DWindow::Z3DWindow(std::tr1::shared_ptr<ZStackDoc> doc, Z3DWindow::EInitMode initMode,
+Z3DWindow::Z3DWindow(shared_ptr<ZStackDoc> doc, Z3DWindow::EInitMode initMode,
                      bool stereoView, QWidget *parent)
   : QMainWindow(parent)
   , m_doc(doc)

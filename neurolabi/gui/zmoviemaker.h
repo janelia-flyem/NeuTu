@@ -6,8 +6,10 @@
 #include <vector>
 #ifdef __GLIBCXX__
 #include <tr1/memory>
+using namespace std::tr1;
 #else
 #include <memory>
+using namespace std;
 #endif
 
 #include "zmoviescript.h"
@@ -78,7 +80,7 @@ public:
   }
 
 private:
-  std::tr1::shared_ptr<ZStackDoc> m_academy;
+  shared_ptr<ZStackDoc> m_academy;
   ZMovieStage *m_stage;
   ZMovieSceneClipperState m_clipperState; //To store double values for integer parameters
   std::vector<ZMovieActor*> m_cast;

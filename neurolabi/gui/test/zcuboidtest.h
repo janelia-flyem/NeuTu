@@ -7,8 +7,10 @@
 #include "flyem/zintcuboidcomposition.h"
 #ifdef __GLIBCXX__
 #include <tr1/memory>
+using namespace std::tr1;
 #else
 #include <memory>
+using namespace std;
 #endif
 #include "zcuboid.h"
 #include "zintcuboidface.h"
@@ -166,15 +168,15 @@ TEST(ZIntCuboidComposition, hitTest)
   EXPECT_TRUE(cuboid.hitTest(2, 2, 2));
   EXPECT_FALSE(cuboid.hitTest(3, 3, 3));
 
-  std::tr1::shared_ptr<FlyEm::ZIntCuboidComposition> comp1(
+  shared_ptr<FlyEm::ZIntCuboidComposition> comp1(
         new FlyEm::ZIntCuboidComposition);
   comp1->setSingular(0, 0, 0, 3, 3, 3);
 
-  std::tr1::shared_ptr<FlyEm::ZIntCuboidComposition> comp2(
+  shared_ptr<FlyEm::ZIntCuboidComposition> comp2(
         new FlyEm::ZIntCuboidComposition);
   comp2->setSingular(0, 0, 0, 3, 3, 3);
 
-  std::tr1::shared_ptr<FlyEm::ZIntCuboidComposition> comp3(
+  shared_ptr<FlyEm::ZIntCuboidComposition> comp3(
         new FlyEm::ZIntCuboidComposition);
   comp3->setComposition(comp1, comp2, FlyEm::ZIntCuboidComposition::OR);
   EXPECT_TRUE(comp3->hitTest(0, 0, 0));

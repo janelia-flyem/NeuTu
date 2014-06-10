@@ -90,7 +90,7 @@ void ZStackFrame::detach3DWindow()
 
 void ZStackFrame::createDocument()
 {
-  setDocument(tr1::shared_ptr<ZStackDoc>(new ZStackDoc(NULL, NULL)));
+  setDocument(shared_ptr<ZStackDoc>(new ZStackDoc(NULL, NULL)));
 }
 
 void ZStackFrame::createPresenter()
@@ -132,11 +132,11 @@ void ZStackFrame::addDocData(const ZStackDocReader &reader)
 
 void ZStackFrame::consumeDocument(ZStackDoc *doc)
 {
-  tr1::shared_ptr<ZStackDoc> docPtr(doc);
+  shared_ptr<ZStackDoc> docPtr(doc);
   setDocument(docPtr);
 }
 
-void ZStackFrame::setDocument(tr1::shared_ptr<ZStackDoc> doc)
+void ZStackFrame::setDocument(shared_ptr<ZStackDoc> doc)
 {
   m_doc = doc;
   m_doc->setParentFrame(this);

@@ -111,7 +111,7 @@ macx {
 
     ICON = images/app.icns
     QMAKE_INFO_PLIST = images/Info.plist
-    QMAKE_CXXFLAGS += -m64
+    QMAKE_CXXFLAGS += -m64 -std=c++11 -stdlib=libc++
 
     doc.files = doc
     doc.path = Contents/MacOS
@@ -120,6 +120,10 @@ macx {
     config.files = config.xml
     config.path = Contents/MacOS
     QMAKE_BUNDLE_DATA += config
+
+    QMAKE_MAC_SDK = macosx10.9
+    QMAKE_MACOSX_DEPLOYMENT_TARGET=10.9
+
 }
 
 win32 {
@@ -390,7 +394,8 @@ HEADERS += mainwindow.h \
     zstroke2darray.h \
     tilemanager.h \
     flyem/zflyemservice.h \
-    zactionfactory.h
+    zactionfactory.h \
+    newprojectmainwindow.h
 
 FORMS += settingdialog.ui \
     frameinfodialog.ui \
@@ -438,7 +443,8 @@ FORMS += settingdialog.ui \
     flyembodyiddialog.ui \
     zdviddialog.ui \
     flyembodyfilterdialog.ui \
-    tilemanager.ui
+    tilemanager.ui \
+    newprojectmainwindow.ui
 SOURCES += main.cpp \
     mainwindow.cpp \
     zstackview.cpp \
@@ -646,7 +652,8 @@ SOURCES += main.cpp \
     zstroke2darray.cpp \
     tilemanager.cpp \
     flyem/zflyemservice.cpp \
-    zactionfactory.cpp
+    zactionfactory.cpp \
+    newprojectmainwindow.cpp
 
 OTHER_FILES += \
     extlib.pri

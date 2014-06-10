@@ -7,8 +7,10 @@
 #include <map>
 #ifdef __GLIBCXX__
 #include <tr1/memory>
+using namespace std::tr1;
 #else
 #include <memory>
+using namespace std;
 #endif
 #include <QDir>
 #include "zparameter.h"
@@ -47,7 +49,7 @@ public:
     NORMAL_INIT, EXCLUDE_VOLUME
   };
 
-  explicit Z3DWindow(std::tr1::shared_ptr<ZStackDoc> doc, EInitMode initMode,
+  explicit Z3DWindow(shared_ptr<ZStackDoc> doc, EInitMode initMode,
                      bool stereoView = false, QWidget *parent = 0);
   virtual ~Z3DWindow();
 
@@ -306,7 +308,7 @@ private:
   ZSingleSwcNodeActionActivator m_singleSwcNodeActionActivator;
 
 
-  std::tr1::shared_ptr<ZStackDoc> m_doc;
+  shared_ptr<ZStackDoc> m_doc;
 
   Z3DNetworkEvaluator *m_networkEvaluator;
   Z3DCanvas *m_canvas;

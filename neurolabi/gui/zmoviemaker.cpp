@@ -326,7 +326,7 @@ void ZMovieMaker::act(int timeStep)
 ZStackDoc* ZMovieMaker::getAcademy()
 {
   if (m_academy == NULL) {
-    m_academy = tr1::shared_ptr<ZStackDoc>(new ZStackDoc(NULL, NULL));
+    m_academy = shared_ptr<ZStackDoc>(new ZStackDoc(NULL, NULL));
   }
 
   return m_academy.get();

@@ -10,7 +10,8 @@ then
   fi
 
   echo 'Building libfftw3 ...'
-  tar -xvf fftw-3.3.2.tar.gz
+  gunzip 
+  tar -zxvf fftw-3.3.2.tar.gz
   cd fftw-3.3.2
   ./configure --enable-shared=no --with-pic --prefix=${libdir}/fftw3 
   make
@@ -29,7 +30,7 @@ then
   then
     mkdir jansson
   fi
-  tar -xvf jansson-2.5.tar.gz
+  tar -zxvf jansson-2.5.tar.gz
   cd jansson-2.5
   ./configure --enable-shared=no --with-pic --prefix=${libdir}/jansson
   make
@@ -45,7 +46,7 @@ then
   then
     mkdir xml
   fi
-  tar -xvf libxml2-2.9.1.tar.gz
+  tar -zxvf libxml2-2.9.1.tar.gz
   cd libxml2-2.9.1
   ./configure --without-iconv --without-zlib --with-pic --enable-shared=no --prefix=${libdir}/xml
   make
@@ -60,7 +61,7 @@ then
   then
     mkdir png
   fi
-  tar -xvf libpng-1.6.7.tar.gz
+  tar -zxvf libpng-1.6.7.tar.gz
   cd libpng-1.6.7
   ./configure --enable-shared=no --with-pic --prefix=${libdir}/png
   make
@@ -75,7 +76,7 @@ then
   then
     mkdir hdf5
   fi
-  tar -xvf hdf5-1.8.12.tar.gz
+  tar -zxvf hdf5-1.8.12.tar.gz
   cd hdf5-1.8.12
   ./configure --enable-shared=no --with-pic --prefix=${libdir}/hdf5
   make

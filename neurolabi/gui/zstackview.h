@@ -16,8 +16,10 @@
 #include "neutube.h"
 #ifdef __GLIBCXX__
 #include <tr1/memory>
+using namespace std::tr1;
 #else
 #include <memory>
+using namespace std;
 #endif
 #include "zpaintbundle.h"
 
@@ -51,12 +53,12 @@ public:
 
   QSize sizeHint() const;
   inline ZImageWidget* imageWidget() const { return m_imageWidget; }
-  inline std::tr1::shared_ptr<ZStackDoc> buddyDocument()
+  inline shared_ptr<ZStackDoc> buddyDocument()
   { return (m_parent != NULL) ? m_parent->document() :
-                                std::tr1::shared_ptr<ZStackDoc>(); }
-  inline const std::tr1::shared_ptr<ZStackDoc> buddyDocument() const
+                                shared_ptr<ZStackDoc>(); }
+  inline const shared_ptr<ZStackDoc> buddyDocument() const
   { return (m_parent != NULL) ? m_parent->document() :
-                                std::tr1::shared_ptr<ZStackDoc>(); }
+                                shared_ptr<ZStackDoc>(); }
 
   inline ZStackPresenter* buddyPresenter()
   { return (m_parent != NULL) ? m_parent->presenter() : NULL; }

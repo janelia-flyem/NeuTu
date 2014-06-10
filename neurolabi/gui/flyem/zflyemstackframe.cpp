@@ -35,7 +35,7 @@ ZFlyEmStackFrame::~ZFlyEmStackFrame()
 
 void ZFlyEmStackFrame::createDocument()
 {
-  setDocument(tr1::shared_ptr<ZStackDoc>(new ZFlyEmStackDoc(NULL, NULL)));
+  setDocument(shared_ptr<ZStackDoc>(new ZFlyEmStackDoc(NULL, NULL)));
 }
 
 bool ZFlyEmStackFrame::importSegmentationBundle(const std::string &filePath)

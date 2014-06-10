@@ -13,8 +13,10 @@
 #include <QStatusBar>
 #ifdef __GLIBCXX__
 #include <tr1/memory>
+using namespace std::tr1;
 #else
 #include <memory>
+using namespace std;
 #endif
 
 #include "tz_image_lib_defs.h"
@@ -55,7 +57,7 @@ public:
 public:
   // A frame has three parts: view, document and presenter
   inline ZStackView* view() const { return m_view; }
-  inline std::tr1::shared_ptr<ZStackDoc> document() const { return m_doc; }
+  inline shared_ptr<ZStackDoc> document() const { return m_doc; }
   inline ZStackPresenter *presenter() const { return m_presenter; }
 
   virtual void constructFrame();
@@ -249,7 +251,7 @@ protected:
   virtual void dropEvent(QDropEvent *event);
 
   void consumeDocument(ZStackDoc *doc);
-  void setDocument(std::tr1::shared_ptr<ZStackDoc> doc);
+  void setDocument(shared_ptr<ZStackDoc> doc);
 
 private:
   void setView(ZStackView *view);
@@ -258,7 +260,7 @@ protected:
   SettingDialog *m_settingDlg;
   QDialog *m_manageObjsDlg;
 
-  std::tr1::shared_ptr<ZStackDoc> m_doc;
+  shared_ptr<ZStackDoc> m_doc;
   ZStackPresenter *m_presenter;
   ZStackView *m_view;
   ZStackFrame *m_parentFrame;
