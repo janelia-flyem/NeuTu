@@ -6,8 +6,10 @@
 #include <vector>
 #ifdef __GLIBCXX__
 #include <tr1/memory>
+using namespace std::tr1;
 #else
 #include <memory>
+using namespace std;
 #endif
 
 #include "zmoviescript.h"

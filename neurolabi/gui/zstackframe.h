@@ -13,8 +13,10 @@
 #include <QStatusBar>
 #ifdef __GLIBCXX__
 #include <tr1/memory>
+using namespace std::tr1;
 #else
 #include <memory>
+using namespace std;
 #endif
 
 #include "tz_image_lib_defs.h"
