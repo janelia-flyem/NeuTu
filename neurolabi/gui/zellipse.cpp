@@ -34,9 +34,11 @@ void ZEllipse::save(const char *filePath)
   UNUSED_PARAMETER(filePath);
 }
 
-void ZEllipse::load(const char *filePath)
+bool ZEllipse::load(const char *filePath)
 {
   UNUSED_PARAMETER(filePath);
+
+  return false;
 }
 
 ZINTERFACE_DEFINE_CLASS_NAME(ZEllipse)

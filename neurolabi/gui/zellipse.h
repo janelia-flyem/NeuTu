@@ -25,7 +25,7 @@ public:
   const;
 
   virtual void save(const char *filePath);
-  virtual void load(const char *filePath);
+  virtual bool load(const char *filePath);
 
 private:
   QPointF m_center;

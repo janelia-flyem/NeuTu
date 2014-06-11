@@ -53,9 +53,11 @@ void ZLocsegChainConn::save(const char *filePath)
   UNUSED_PARAMETER(filePath);
 }
 
-void ZLocsegChainConn::load(const char *filePath)
+bool ZLocsegChainConn::load(const char *filePath)
 {
   UNUSED_PARAMETER(filePath);
+
+  return false;
 }
 
 void ZLocsegChainConn::display(ZPainter &painter, int z, Display_Style option) const

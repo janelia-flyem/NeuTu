@@ -4,6 +4,7 @@
 #include "zstackdoc.h"
 #include "tz_stack_attribute.h"
 #include "z3dgpuinfo.h"
+#include "zsparseobject.h"
 
 const size_t Z3DVolumeSource::m_nChannelSupport = 5;
 
@@ -84,7 +85,8 @@ void Z3DVolumeSource::readVolumes()
   }
 
   clearVolume();
-  int nchannel = m_doc->hasStackData() ? m_doc->getStack()->channelNumber() : 0;
+  int nchannel = m_doc->hasStackData() ?
+        m_doc->getStack()->channelNumber() : 0;
   if (nchannel > 0) {
     for (int i=0; i<nchannel; i++) {
       Stack *stack = m_doc->getStack()->c_stack(i);
@@ -207,6 +209,73 @@ void Z3DVolumeSource::readVolumes()
       m_volumes[i]->setVolColor(chCols[i]->get());
     }
   }
+}
+
+void Z3DVolumeSource::readSparseVolume()
+{
+  if (m_doc == NULL) {
+    return;
+  }
+
+  if (!m_doc->hasStack() || m_doc->getSparseObjectList().isEmpty()) {
+    return;
+  }
+
+  clearVolume();
+  //int nchannel = 1;
+
+#if 0
+  if (m_doc->getStack()->getVoxelNumber() > m_maxVoxelNumber) { //Downsample big stack
+    m_isVolumeDownsampled.set(true);
+    double scale = std::sqrt((m_maxVoxelNumber*1.0) /
+                             (m_doc->getStack()->getVoxelNumber() * nchannel));
+  }
+#endif
+
+  int height = m_doc->getStack()->width();
+  int width = m_doc->getStack()->height();
+  int depth = m_doc->getStack()->depth();
+
+  int maxTextureSize = 100;
+  if (depth > 1) {
+    maxTextureSize = Z3DGpuInfoInstance.getMax3DTextureSize();
+  } else {
+    maxTextureSize = Z3DGpuInfoInstance.getMaxTextureSize();
+  }
+
+  int xIntv = 0;
+  int yIntv = 0;
+  int zIntv = 0;
+  if (height > maxTextureSize) {
+    yIntv = height / maxTextureSize;
+  }
+  if (width > maxTextureSize) {
+    xIntv = width / maxTextureSize;
+  }
+  if (depth > maxTextureSize) {
+    zIntv = depth / maxTextureSize;
+  }
+
+  ZSparseObject obj = *(m_doc->getSparseObjectList().front());
+  obj.downsampleMax(xIntv, yIntv, zIntv);
+  int offset[3];
+  obj.toStack(offset, 255);
+
+  ZPoint finalOffset;
+  finalOffset.set(offset[0]* m_xScale.get() * (xIntv + 1),
+      offset[1] * m_yScale.get() * (yIntv + 1),
+      offset[2] * m_zScale.get() * (zIntv + 1));
+
+  Stack *stack2 = obj.toStack(offset, 255);
+
+  Z3DVolume *vh = new Z3DVolume(
+        stack2, glm::vec3(xIntv + 1, yIntv + 1, zIntv + 1),
+        glm::vec3(m_xScale.get(), m_yScale.get(), m_zScale.get()),
+        glm::vec3(finalOffset.x(), finalOffset.y(), finalOffset.z()));
+
+  m_volumes.push_back(vh);
+
+  m_volumes[0]->setVolColor(glm::vec3(1.f,1.f,1.f));
 }
 
 void Z3DVolumeSource::readSubVolumes(int left, int top, int front, int width,

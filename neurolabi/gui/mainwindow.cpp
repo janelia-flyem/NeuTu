@@ -6155,7 +6155,7 @@ void MainWindow::createStackFrameFromDocReader(ZStackDocReader *reader)
     delete reader;
     reader = NULL;
 
-    if (frame->document()->hasStackData()) {
+    if (frame->document()->hasStack()) {
       if (GET_APPLICATION_NAME == "Biocytin") {
         frame->document()->setStackBackground(NeuTube::IMAGE_BACKGROUND_BRIGHT);
         frame->document()->setTag(NeuTube::Document::BIOCYTIN_STACK);
@@ -6207,8 +6207,10 @@ void MainWindow::on_actionView_Labeled_Regions_triggered()
       newFrame->document()->setStackFactory(factory);
       connect(frame->document().get(), SIGNAL(labelFieldModified()),
               newFrame->document().get(), SLOT(reloadStack()));
-      addStackFrame(newFrame);
-      presentStackFrame(newFrame);
+      newFrame->open3DWindow(NULL);
+      delete newFrame;
+      //addStackFrame(newFrame);
+      //presentStackFrame(newFrame);
     }
   }
 }

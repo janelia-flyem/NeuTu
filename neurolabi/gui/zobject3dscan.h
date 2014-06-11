@@ -10,9 +10,11 @@
 #include "c_stack.h"
 #include "zcuboid.h"
 #include "zstackdrawable.h"
+#include "zdocumentable.h"
 #include "tz_cuboid_i.h"
 #include "zhistogram.h"
 #include "zvoxel.h"
+#include "zstackdocument.h"
 
 class ZObject3d;
 class ZGraph;
@@ -119,7 +121,7 @@ private:
 };
 
 //Scan-line representation of a 3D object
-class ZObject3dScan : public ZStackDrawable
+class ZObject3dScan : public ZStackDrawable, public ZDocumentable
 {
 public:
   ZObject3dScan();
@@ -180,8 +182,10 @@ public:
 
   void print() const;
 
+  void save(const char *filePath);
   void save(const char *filePath) const;
   void save(const std::string &filePath) const;
+  bool load(const char *filePath);
   bool load(const std::string &filePath);
 
   /*!
@@ -246,7 +250,7 @@ public:
   void downsample(int xintv, int yintv, int zintv);
   void downsampleMax(int xintv, int yintv, int zintv);
 
-  Stack* toStack(int *offset = NULL) const;
+  Stack* toStack(int *offset = NULL, int v = 1) const;
   ZStack* toStackObject() const;
 
   ZCuboid getBoundBox() const;
@@ -291,8 +295,8 @@ public:
   ZObject3dScan getSlice(int minZ, int maxZ) const;
 
 
-  virtual void display(ZPainter &painter, int z = 0, Display_Style option = NORMAL)
-  const;
+  virtual void display(
+      ZPainter &painter, int z = 0, Display_Style option = NORMAL) const;
   virtual const std::string& className() const;
 
   void dilate();
@@ -440,7 +444,7 @@ public:
    *
    * \return true iff the object is saved successfully
    */
-  bool exportHdf5(const std::string &filePath, const std::string &key) const;
+  //bool exportHdf5(const std::string &filePath, const std::string &key) const;
 
 private:
   std::vector<ZObject3dStripe> m_stripeArray;

@@ -35,6 +35,8 @@ class Z3DCanvas;
 class Z3DNetworkEvaluator;
 class Z3DProcessorNetwork;
 class Z3DTriangleList;
+class QToolBar;
+class ZStroke2d;
 
 class Z3DWindow : public QMainWindow
 {
@@ -80,6 +82,8 @@ public:
    * \brief Get the document associated with the window
    */
   inline ZStackDoc* getDocument() const { return m_doc.get(); }
+
+  void createToolBar();
 
 protected:
 
@@ -226,6 +230,8 @@ public slots:
   void moveSelectedObjects(double x, double y, double z);
   void notifyUser(const QString &message);
 
+  void addStrokeFrom3dPaint(ZStroke2d*stroke);
+
 protected:
   virtual void dragEnterEvent(QDragEnterEvent *event);
   virtual void dropEvent(QDropEvent *event);
@@ -341,6 +347,8 @@ private:
   Z3DCamera m_cameraRecord;
 
   QString m_lastOpenedFilePath;
+
+  QToolBar *m_toolBar;
 };
 
 #endif // Z3DWINDOW_H

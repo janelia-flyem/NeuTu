@@ -161,6 +161,8 @@ void ZStackFrame::consumeDocument(ZStackDoc *doc)
           m_view, SLOT(paintObject()));\
   connect(m_doc.get(), SIGNAL(obj3dModified()),\
           m_view, SLOT(paintObject()));\
+  connect(m_doc.get(), SIGNAL(sparseObjectModified()),\
+          m_view, SLOT(paintObject()));\
   connect(m_doc.get(), SIGNAL(strokeModified()), m_view, SLOT(paintObject()));\
   connect(m_doc.get(), SIGNAL(cleanChanged(bool)),\
           this, SLOT(changeWindowTitle(bool)));\
@@ -1295,6 +1297,7 @@ Z3DWindow* ZStackFrame::open3DWindow(QWidget *parent, Z3DWindow::EInitMode mode)
     m_3dWindow->setGeometry(screenRect.width() / 10, screenRect.height() / 10,
                             screenRect.width() - screenRect.width() / 5,
                             screenRect.height() - screenRect.height() / 5);
+    //m_3dWindow->createToolBar(); //Cause crash for unknown reasons
     m_3dWindow->show();
     m_3dWindow->raise();
 

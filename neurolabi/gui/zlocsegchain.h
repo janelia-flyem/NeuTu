@@ -43,7 +43,7 @@ public:
 
 public: // I/O functions
   virtual void save(const char *filePath);
-  virtual void load(const char *filePath);
+  virtual bool load(const char *filePath);
 
   virtual int swcFprint(FILE *fp, int start_id = 0, int parent_id = -1,
 			double z_scale = 1.0);

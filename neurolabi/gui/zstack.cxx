@@ -782,6 +782,12 @@ void* ZStack::projection(ZSingleChannelStack::Proj_Mode mode, ZSingleChannelStac
 
 double ZStack::value(int x, int y, int z, int c) const
 {
+  /* Need better treatment for compatibility
+  x -= iround(m_offset.x());
+  y -= iround(m_offset.y());
+  z -= iround(m_offset.z());
+  */
+
   if (!(IS_IN_CLOSE_RANGE(x, 0, width() - 1) &&
         IS_IN_CLOSE_RANGE(y, 0, height() - 1) &&
         IS_IN_CLOSE_RANGE(c, 0, channelNumber() - 1))) {
@@ -1557,4 +1563,12 @@ void ZStack::getBoundBox(Cuboid_I *box) const
 
     Cuboid_I_Set_S(box, x0, y0, z0, width(), height(), depth());
   }
+}
+
+bool ZStack::contains(int x, int y, int z) const
+{
+  Cuboid_I box;
+  getBoundBox(&box);
+
+  return Cuboid_I_Hit(&box, x, y, z) > 0;
 }

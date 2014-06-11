@@ -56,8 +56,13 @@ public:
 
 
   // Display an object to widget, xoffset and yoffset is top left corner of widget
-  // zoomration is ratio of widget pixel to object pixel
-  virtual void display(ZPainter &painter, int z = 0, Display_Style option = NORMAL) const = 0;
+  // zoom ratio is ratio of widget pixel to object pixel
+  virtual void display(
+      ZPainter &painter, int z = 0, Display_Style option = NORMAL) const = 0;
+
+  /* For special painting when ZPainter cannot be created */
+  virtual void display(
+      QPainter *painter, int z = 0, Display_Style option = NORMAL) const;
 
   inline bool isVisible() const { return m_isVisible; }
   inline void setVisible(bool visible) { m_isVisible = visible; }

@@ -11770,7 +11770,7 @@ void ZTest::test(MainWindow *host)
   stack->save(GET_DATA_DIR + "/test.tif");
 #endif
 
-#if 1
+#if 0
   Stack *stack = C_Stack::make(GREY8, 5, 5, 5);
   C_Stack::setOne(stack);
   for (size_t i = 0; i < C_Stack::voxelNumber(stack); ++i) {
@@ -11780,5 +11780,16 @@ void ZTest::test(MainWindow *host)
 
   Stack *out = C_Stack::downsampleMin(stack, 1, 1, 1);
   C_Stack::printValue(out);
+#endif
+
+#if 1
+  ZStack stack;
+  for (size_t i = 0; i < 10; ++i) {
+    std::cout << "Loading stack " << i << " ..." << std::endl;
+
+    stack.load(GET_DATA_DIR + "/system/diadem/diadem_e1.tif");
+    Biocytin::ZStackProjector proj;
+    proj.project(&stack);
+  }
 #endif
 }

@@ -12,7 +12,7 @@
 class ZDocumentable : public virtual ZInterface {
 public:
   virtual void save(const char *filePath) = 0;
-  virtual void load(const char *filePath) = 0;
+  virtual bool load(const char *filePath) = 0;
   virtual ~ZDocumentable() {}
 };
 

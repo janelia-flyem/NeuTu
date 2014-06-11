@@ -885,19 +885,19 @@ QMenu* ZStackView::rightMenu()
   return m_imageWidget->rightMenu();
 }
 
-void ZStackView::popLeftMenu(const QPoint &pos)
+bool ZStackView::popLeftMenu(const QPoint &pos)
 {
-  m_imageWidget->popLeftMenu(pos);
+  return m_imageWidget->popLeftMenu(pos);
 }
 
-void ZStackView::popRightMenu(const QPoint &pos)
+bool ZStackView::popRightMenu(const QPoint &pos)
 {
-  m_imageWidget->popRightMenu(pos);
+  return m_imageWidget->popRightMenu(pos);
 }
 
-void ZStackView::showContextMenu(QMenu *menu, const QPoint &pos)
+bool ZStackView::showContextMenu(QMenu *menu, const QPoint &pos)
 {
-  m_imageWidget->showContextMenu(menu, pos);
+  return m_imageWidget->showContextMenu(menu, pos);
 }
 
 QStringList ZStackView::toStringList() const

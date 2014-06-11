@@ -88,6 +88,7 @@
 #include "zstackwatershed.h"
 #include "zstackarray.h"
 #include "zstackfactory.h"
+#include "zsparseobject.h"
 
 using namespace std;
 
@@ -1195,6 +1196,18 @@ void ZStackDoc::setStackSource(const char *filePath)
   }
 }
 
+bool ZStackDoc::hasStack() const
+{
+  if (getStack() != NULL) {
+    if (getStack()->data() != NULL) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+
 bool ZStackDoc::hasStackData() const
 {
   if (getStack() != NULL) {
@@ -1883,6 +1896,14 @@ void ZStackDoc::addSwcTree(const QList<ZSwcTree *> &swcList, bool uniqueSource)
   }
 }
 
+void ZStackDoc::addSparseObject(const QList<ZSparseObject*> &objList)
+{
+  for (QList<ZSparseObject*>::const_iterator iter = objList.begin();
+       iter != objList.end(); ++iter) {
+    addSparseObject(*iter);
+  }
+}
+
 void ZStackDoc::addPunctum(const QList<ZPunctum *> &punctaList)
 {
   foreach (ZPunctum *punctum, punctaList) {
@@ -1914,6 +1935,18 @@ void ZStackDoc::addObj3d(ZObject3d *obj)
   obj->setTarget(ZStackDrawable::OBJECT_CANVAS);
   m_objs.prepend(obj);
   m_obj3dList.prepend(obj);
+  m_drawableList.prepend(obj);
+}
+
+void ZStackDoc::addSparseObject(ZSparseObject *obj)
+{
+  if (obj == NULL) {
+    return;
+  }
+
+  obj->setTarget(ZStackDrawable::OBJECT_CANVAS);
+  m_objs.prepend(obj);
+  m_sparseObjectList.prepend(obj);
   m_drawableList.prepend(obj);
 }
 
@@ -3216,6 +3249,17 @@ void ZStackDoc::removeAllObj3d()
   notifyObj3dModified();
 }
 
+void ZStackDoc::removeAllSparseObject()
+{
+  QMutableListIterator<ZSparseObject*> objIter(m_sparseObjectList);
+  while (objIter.hasNext()) {
+    ZSparseObject *obj = objIter.next();
+    removeObject(obj, true);
+  }
+
+  notifySparseObjectModified();
+}
+
 void ZStackDoc::removeObject(ZInterface *obj, bool deleteObject)
 {
   REMOVE_OBJECT(m_objs, obj);
@@ -3227,6 +3271,7 @@ void ZStackDoc::removeObject(ZInterface *obj, bool deleteObject)
   REMOVE_OBJECT(m_drawableList, obj);
   REMOVE_OBJECT(m_punctaList, obj);
   REMOVE_OBJECT(m_strokeList, obj);
+  REMOVE_OBJECT(m_sparseObjectList, obj);
 
   removeLocsegChain(obj);
 
@@ -3278,6 +3323,7 @@ void ZStackDoc::removeSelectedObject(bool deleteObject)
   //REMOVE_SELECTED_OBJECT(ZVrmlExportable, m_vrmlObjects, vrmlIter);
   REMOVE_SELECTED_OBJECT(ZSwcTree, m_swcList, swcIter);
   REMOVE_SELECTED_OBJECT(ZObject3d, m_obj3dList, obj3dIter);
+  REMOVE_SELECTED_OBJECT(ZSparseObject, m_sparseObjectList, sparseObjIter);
   REMOVE_SELECTED_OBJECT(ZLocsegChainConn, m_connList, connIter);
   REMOVE_SELECTED_OBJECT(ZStackDrawable, m_drawableList, drawableIter);
   REMOVE_SELECTED_OBJECT(ZPunctum, m_punctaList, punctaIter);
@@ -5187,6 +5233,22 @@ bool ZStackDoc::loadFile(const QString &filePath, bool emitMessage)
     break;
   case ZFileType::OBJECT_SCAN_FILE:
     setTag(NeuTube::Document::FLYEM_BODY);
+  {
+    ZSparseObject *sobj = new ZSparseObject;
+    sobj->load(filePath.toStdString().c_str());
+    addSparseObject(sobj);
+    sobj->setColor(255, 0, 0, 255);
+
+    ZCuboid cuboid = sobj->getBoundBox();
+    ZStack *stack = ZStackFactory::makeVirtualStack(
+          cuboid.width(), cuboid.height(), cuboid.depth());
+    stack->setOffset(cuboid.firstCorner());
+    loadStack(stack);
+
+    emit stackModified();
+    emit sparseObjectModified();
+  }
+    break; //experimenting _DEBUG_
   case ZFileType::TIFF_FILE:
   case ZFileType::LSM_FILE:
   case ZFileType::V3D_RAW_FILE:
@@ -5408,6 +5470,12 @@ void ZStackDoc::notifyObj3dModified()
 {
   emit obj3dModified();
 }
+
+void ZStackDoc::notifySparseObjectModified()
+{
+  emit sparseObjectModified();
+}
+
 
 void ZStackDoc::notifyStackModified()
 {
@@ -6828,6 +6896,34 @@ bool ZStackDoc::executeAddStrokeCommand(ZStroke2d *stroke)
   return false;
 }
 
+bool ZStackDoc::executeAddStrokeCommand(const QList<ZStroke2d*> &strokeList)
+{
+  bool succ = false;
+  QString message;
+  if (!strokeList.isEmpty()) {
+    QUndoCommand *allCommand =
+        new ZStackDocCommand::StrokeEdit::CompositeCommand(this);
+
+    foreach (ZStroke2d* stroke, strokeList) {
+      if (stroke != NULL) {
+        new ZStackDocCommand::StrokeEdit::AddStroke(this, stroke, allCommand);
+      }
+    }
+
+    if (allCommand->childCount() > 0) {
+      pushUndoCommand(allCommand);
+      message = QString("%1 stroke(s) added").arg(allCommand->childCount());
+      succ = true;
+    } else {
+      delete allCommand;
+    }
+  }
+
+  emit statusMessageUpdated(message);
+
+  return succ;
+}
+
 void ZStackDoc::addObject(ZDocumentable *obj, NeuTube::EDocumentableType type)
 {
   switch (type) {
@@ -6848,6 +6944,9 @@ void ZStackDoc::addObject(ZDocumentable *obj, NeuTube::EDocumentableType type)
     break;
   case NeuTube::Documentable_STROKE:
     addStroke(dynamic_cast<ZStroke2d*>(obj));
+    break;
+  case NeuTube::Documentable_SPARSE_OBJECT:
+    addSparseObject(dynamic_cast<ZSparseObject*>(obj));
     break;
   }
 }
@@ -7606,7 +7705,7 @@ bool ZStackDoc::executeResetBranchPoint()
 
 ZPoint ZStackDoc::getStackOffset() const
 {
-  if (hasStackData()) {
+  if (hasStack()) {
     return stackRef()->getOffset();
   }
 
@@ -7699,6 +7798,11 @@ void ZStackDoc::addData(const ZStackDocReader &reader)
     addPunctum(reader.getPunctaList());
     notifyPunctumModified();
   }
+
+  if (!reader.getSparseObjectList().isEmpty()) {
+    addSparseObject(reader.getSparseObjectList());
+    notifySparseObjectModified();
+  }
 }
 
 ///////////Stack Reader///////////
@@ -7789,8 +7893,22 @@ void ZStackDocReader::addLocsegChain(ZLocsegChain *chain)
 
 void ZStackDocReader::loadStack(const QString &filePath)
 {
-  m_stackSource.import(filePath.toStdString());
-  m_stack = m_stackSource.readStack();
+  if (ZFileType::fileType(filePath.toStdString()) == ZFileType::OBJECT_SCAN_FILE) {
+    ZSparseObject *sobj = new ZSparseObject;
+    sobj->load(filePath.toStdString().c_str());
+    if (!sobj->isEmpty()) {
+      addSparseObject(sobj);
+      sobj->setColor(255, 0, 0, 255);
+
+      ZCuboid cuboid = sobj->getBoundBox();
+      m_stack = ZStackFactory::makeVirtualStack(
+            cuboid.width(), cuboid.height(), cuboid.depth());
+      m_stack->setOffset(cuboid.firstCorner());
+    }
+  } else {
+    m_stackSource.import(filePath.toStdString());
+    m_stack = m_stackSource.readStack();
+  }
 }
 
 void ZStackDocReader::clear()
@@ -7802,6 +7920,7 @@ void ZStackDocReader::clear()
   m_punctaList.clear();
   m_strokeList.clear();
   m_obj3dList.clear();
+  m_sparseObjectList.clear();
 }
 
 void ZStackDocReader::loadSwcNetwork(const QString &filePath)
@@ -7833,6 +7952,20 @@ void ZStackDocReader::addPunctum(ZPunctum *p)
 {
   if (p != NULL) {
     m_punctaList.append(p);
+  }
+}
+
+void ZStackDocReader::addStroke(ZStroke2d *stroke)
+{
+  if (stroke != NULL) {
+    m_strokeList.append(stroke);
+  }
+}
+
+void ZStackDocReader::addSparseObject(ZSparseObject *obj)
+{
+  if (obj != NULL) {
+    m_sparseObjectList.append(obj);
   }
 }
 
@@ -8105,13 +8238,15 @@ ZStack* ZStackDoc::makeLabelStack(ZStack *stack) const
   TZ_ASSERT(getStack()->kind() == GREY, "Only GREY kind is supported.");
 
   const ZStack* labelField = getLabelField();
+
+  out = new ZStack(
+        getStack()->kind(), getStack()->width(), getStack()->height(),
+        getStack()->depth(), 3);
+  out->setZero();
+  C_Stack::copyChannelValue(out->data(), 0, getStack()->c_stack());
+  C_Stack::copyChannelValue(out->data(), 1, getStack()->c_stack());
+
   if (labelField != NULL) {
-    out = new ZStack(
-          getStack()->kind(), getStack()->width(), getStack()->height(), getStack()->depth(),
-          3);
-    out->setZero();
-    C_Stack::copyChannelValue(out->data(), 0, getStack()->c_stack());
-    C_Stack::copyChannelValue(out->data(), 1, getStack()->c_stack());
     size_t voxelNumber = out->getVoxelNumber();
     /*
     Stack ch1;
@@ -8133,6 +8268,7 @@ ZStack* ZStackDoc::makeLabelStack(ZStack *stack) const
     }
     out->setOffset(getStack()->getOffset());
   } else {
+    C_Stack::copyChannelValue(out->data(), 2, getStack()->c_stack());
     emit statusMessageUpdated("No label field.");
   }
 

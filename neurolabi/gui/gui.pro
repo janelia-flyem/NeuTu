@@ -74,6 +74,7 @@ unix:!macx {
 } # static glew
 
 contains(CONFIG, static_gtest) { # gtest from ext folder
+    DEFINES += _USE_GTEST_
     include($$PWD/ext/gtest.pri)
 } #else { # use your own gtest
 #
@@ -391,7 +392,10 @@ HEADERS += mainwindow.h \
     flyem/zflyemservice.h \
     zactionfactory.h \
     zstackreadfactory.h \
-    zstackdoclabelstackfactory.h
+    zstackdoclabelstackfactory.h \
+    flyem/zinteractionengine.h \
+    zsparseobject.h \
+    zlabelcolortable.h
 
 FORMS += settingdialog.ui \
     frameinfodialog.ui \
@@ -648,7 +652,10 @@ SOURCES += main.cpp \
     flyem/zflyemservice.cpp \
     zactionfactory.cpp \
     zstackreadfactory.cpp \
-    zstackdoclabelstackfactory.cpp
+    zstackdoclabelstackfactory.cpp \
+    flyem/zinteractionengine.cpp \
+    zsparseobject.cpp \
+    zlabelcolortable.cpp
 
 OTHER_FILES += \
     extlib.pri

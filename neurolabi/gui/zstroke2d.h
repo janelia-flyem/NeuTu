@@ -10,6 +10,7 @@
 #include "zdocumentable.h"
 #include "zstackdrawable.h"
 #include "c_stack.h"
+#include "zlabelcolortable.h"
 
 class ZStack;
 
@@ -21,9 +22,10 @@ public:
 
 public:
   virtual void save(const char *filePath);
-  virtual void load(const char *filePath);
+  virtual bool load(const char *filePath);
 
-  virtual void display(ZPainter &painter, int z = 0, Display_Style option = NORMAL) const;
+  void display(ZPainter &painter, int z = 0, Display_Style option = NORMAL) const;
+  void display(QPainter *rawPainter, int z = 0, Display_Style option = NORMAL) const;
 
   void labelBinary(Stack *stack) const;
 
@@ -48,6 +50,7 @@ public:
   void set(const QPoint &pt);
   void set(double x, double y);
   void setLabel(int label);
+  int getLabel() const;
 
   void clear();
 
@@ -68,6 +71,7 @@ public:
 
   bool getLastPoint(int *x, int *y) const;
   bool getLastPoint(double *x, double *y) const;
+  bool getPoint(double *x, double *y, size_t index) const;
 
   inline size_t getPointNumber() const { return m_pointArray.size(); }
 
@@ -105,8 +109,9 @@ private:
   static const double m_minWidth;
   static const double m_maxWidth;
 
-  const static QVector<QColor> m_colorTable;
-  const static QColor m_blackColor;
+  const static ZLabelColorTable m_colorTable;
+  //const static QVector<QColor> m_colorTable;
+  //const static QColor m_blackColor;
 };
 
 #endif // ZSTROKE2D_H

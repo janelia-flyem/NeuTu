@@ -15,6 +15,7 @@ public:
   ZStackFactory();
 
   virtual ZStack* makeStack(ZStack *stack = NULL) const;
+  static ZStack* makeVirtualStack(int width, int height, int depth);
 
 public:
   template<class InputIterator>

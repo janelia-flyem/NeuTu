@@ -59,6 +59,7 @@ class QWidget;
 class ZSwcNodeObjsModel;
 class ZStackDocReader;
 class ZStackFactory;
+class ZSparseObject;
 
 /*!
  * \brief The class of stack document
@@ -121,6 +122,10 @@ public: //attributes
 
   // hasStackData() returns true iff it has stack array data.
   bool hasStackData() const;
+  /*!
+   * \brief Test if there is any stack (including virtual)
+   */
+  bool hasStack() const;
   bool hasStackMask();
 
   // hasTracable() returns true iff it has tracable data.
@@ -292,6 +297,7 @@ public:
   void removeSmallLocsegChain(double thre);   //remove small locseg chain (geolen < thre)
   void removeAllLocsegChain();
   void removeAllObj3d();
+  void removeAllSparseObject();
   std::set<ZSwcTree*> removeEmptySwcTree(bool deleteObject = true);
   void removeAllSwcTree(bool deleteObject = true);
 
@@ -361,12 +367,14 @@ public: /* puncta related methods */
   void addSwcTree(ZSwcTree *obj, bool uniqueSource = true);
   void addSwcTree(ZSwcTree *obj, bool uniqueSource, bool translatingWithStack);
   void addSwcTree(const QList<ZSwcTree*> &swcList, bool uniqueSource = true);
+  void addSparseObject(const QList<ZSparseObject*> &objList);
   void addPunctum(ZPunctum *obj);
   void addPunctum(const QList<ZPunctum*> &punctaList);
 
 
   void addObj3d(ZObject3d *obj);
   void addStroke(ZStroke2d *obj);
+  void addSparseObject(ZSparseObject *obj);
 
   void addObject(ZDocumentable *obj, NeuTube::EDocumentableType type);
 
@@ -501,6 +509,11 @@ public: /* puncta related methods */
   inline const QList<ZStroke2d*>& getStrokeList() const { return m_strokeList; }
   inline QList<ZStroke2d*>& getStrokeList() { return m_strokeList; }
 
+  inline const QList<ZSparseObject*>& getSparseObjectList() const {
+    return m_sparseObjectList; }
+  inline QList<ZSparseObject*>& getSparseObjectList() {
+    return m_sparseObjectList; }
+
   inline const QList<ZLocsegChainConn*>& getConnList() const { return m_connList; }
   inline QList<ZLocsegChainConn*>& getConnList() { return m_connList; }
 
@@ -570,6 +583,7 @@ public:
   void notifyPunctumModified();
   void notifyChainModified();
   void notifyObj3dModified();
+  void notifySparseObjectModified();
   void notifyStackModified();
   void notifyStrokeModified();
   void notifyAllObjectModified();
@@ -647,6 +661,7 @@ public slots: //undoable commands
   bool executeWatershedCommand();
 
   bool executeAddStrokeCommand(ZStroke2d *stroke);
+  bool executeAddStrokeCommand(const QList<ZStroke2d*> &strokeList);
 
 public slots:
   void selectAllSwcTreeNode();
@@ -697,6 +712,7 @@ signals:
   void swcModified();
   void chainModified();
   void obj3dModified();
+  void sparseObjectModified();
   void strokeModified();
   void objectModified();
   void swcNetworkModified();
@@ -737,6 +753,7 @@ private:
   QList<ZPunctum*> m_punctaList;
   QList<ZStroke2d*> m_strokeList;
   QList<ZObject3d*> m_obj3dList;
+  QList<ZSparseObject*> m_sparseObjectList;
 
   //Special object
   ZSwcNetwork *m_swcNetwork;
@@ -899,6 +916,8 @@ public:
   inline const QList<ZStroke2d*>& getStrokeList() const { return m_strokeList; }
   inline const QList<ZObject3d*>& getObjectList() const { return m_obj3dList; }
   inline const QList<ZLocsegChain*>& getChainList() const { return m_chainList; }
+  inline const QList<ZSparseObject*>& getSparseObjectList() const {
+    return m_sparseObjectList; }
 
   bool hasData() const;
   inline const QString& getFileName() const {
@@ -911,6 +930,8 @@ public:
   void addPunctum(ZPunctum *p);
   void setStack(ZStack *stack);
   void setStackSource(const ZStackFile &stackFile);
+  void addStroke(ZStroke2d *stroke);
+  void addSparseObject(ZSparseObject *obj);
 
 private:
   QString m_filePath;
@@ -924,6 +945,7 @@ private:
   QList<ZPunctum*> m_punctaList;
   QList<ZStroke2d*> m_strokeList;
   QList<ZObject3d*> m_obj3dList;
+  QList<ZSparseObject*> m_sparseObjectList;
   QList<ZLocsegChain*> m_chainList;
 
   //Special object

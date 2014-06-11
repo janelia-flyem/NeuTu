@@ -186,7 +186,7 @@ void ZSwcTree::loadFromBuffer(const char *buffer)
   free(newBuffer);
 }
 
-void ZSwcTree::load(const char *filePath)
+bool ZSwcTree::load(const char *filePath)
 {
   if (m_tree != NULL) {
     Kill_Swc_Tree(m_tree);
@@ -194,7 +194,7 @@ void ZSwcTree::load(const char *filePath)
 
   if (!fexist(filePath)) {
     RECORD_WARNING_UNCOND("Swc file does not exist.");
-    return;
+    return false;
   }
 
   m_tree = Read_Swc_Tree_E(filePath);
@@ -295,6 +295,8 @@ void ZSwcTree::load(const char *filePath)
   }
 
   deprecate(ALL_COMPONENT);
+
+  return true;
 }
 
 void ZSwcTree::display(

@@ -2037,6 +2037,35 @@ void ZStackDocCommand::StrokeEdit::RemoveTopStroke::undo()
   }
 }
 
+ZStackDocCommand::StrokeEdit::CompositeCommand::CompositeCommand(
+    ZStackDoc *doc, QUndoCommand *parent) : QUndoCommand(parent), m_doc(doc)
+{
+}
+
+ZStackDocCommand::StrokeEdit::CompositeCommand::~CompositeCommand()
+{
+  qDebug() << "Stroke composite command (" << this->text() << ") destroyed";
+}
+
+void ZStackDocCommand::StrokeEdit::CompositeCommand::redo()
+{
+  m_doc->blockSignals(true);
+  QUndoCommand::redo();
+  m_doc->blockSignals(false);
+  m_doc->notifyStrokeModified();
+}
+
+
+void ZStackDocCommand::StrokeEdit::CompositeCommand::undo()
+{
+  m_doc->blockSignals(true);
+  QUndoCommand::undo();
+  m_doc->blockSignals(false);
+  m_doc->notifyStrokeModified();
+}
+
+/////////////////////////////////////////////////////
+
 ZStackDocCommand::StackProcess::Binarize::Binarize(
     ZStackDoc *doc, int thre, QUndoCommand *parent)
   :QUndoCommand(parent), doc(doc), zstack(NULL), thre(thre), success(false)

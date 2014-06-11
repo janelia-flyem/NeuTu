@@ -34,7 +34,7 @@ public:
                        Display_Style option = NORMAL) const;
 
   virtual void save(const char *filePath);
-  virtual void load(const char *filePath);
+  virtual bool load(const char *filePath);
 
   void display(ZPainter *painter, int n, Display_Style style) const;
 

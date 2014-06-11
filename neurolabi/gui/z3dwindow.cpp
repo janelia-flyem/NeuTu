@@ -8,6 +8,7 @@
 #include <QtWidgets>
 #endif
 #include <limits>
+#include <QToolBar>
 
 #include "zstack.hxx"
 #include "zstackdoc.h"
@@ -96,6 +97,7 @@ Z3DWindow::Z3DWindow(ZSharedPointer<ZStackDoc> doc, Z3DWindow::EInitMode initMod
   , m_objectsDockWidget(NULL)
   , m_advancedSettingDockWidget(NULL)
   , m_isStereoView(stereoView)
+  , m_toolBar(NULL)
 {
   if (m_doc->getStack() != NULL) {
     setWindowTitle(m_doc->stackSourcePath().c_str());
@@ -110,6 +112,8 @@ Z3DWindow::Z3DWindow(ZSharedPointer<ZStackDoc> doc, Z3DWindow::EInitMode initMod
   createDockWindows();
   setAcceptDrops(true);
   m_mergedContextMenu = new QMenu(this);
+
+  //createToolBar();
 }
 
 Z3DWindow::~Z3DWindow()
@@ -120,6 +124,12 @@ Z3DWindow::~Z3DWindow()
 void Z3DWindow::createStatusBar()
 {
   statusBar()->showMessage("3D window ready.");
+}
+
+
+void Z3DWindow::createToolBar()
+{
+  m_toolBar = addToolBar("Interaction");
 }
 
 void Z3DWindow::gotoPosition(double x, double y, double z, double radius)
@@ -335,13 +345,16 @@ void Z3DWindow::init(EInitMode mode)
   resetCamera();
   m_volumeRaycaster->getCamera()->dependsOn(m_compositor->getCamera());
 
+  if (!NeutubeConfig::getInstance().getZ3DWindowConfig().isAxisOn()) {
+    m_axis->setVisible(false);
+  }
+
   connect(getInteractionHandler(), SIGNAL(cameraMoved()), this, SLOT(resetCameraClippingRange()));
   connect(getInteractionHandler(), SIGNAL(objectsMoved(double,double,double)), this,
           SLOT(moveSelectedObjects(double,double,double)));
 
-  if (!NeutubeConfig::getInstance().getZ3DWindowConfig().isAxisOn()) {
-    m_axis->setVisible(false);
-  }
+  connect(m_canvas, SIGNAL(strokePainted(ZStroke2d*)),
+          this, SLOT(addStrokeFrom3dPaint(ZStroke2d*)));
 
   //  // if have image, try black background
   //  if (channelNumber() > 0) {
@@ -1289,7 +1302,8 @@ void Z3DWindow::pointInVolumeLeftClicked(
   if (hasVolume() && channelNumber() == 1 &&
       !m_toogleAddSwcNodeModeAction->isChecked() &&
       !m_toggleMoveSelectedObjectsAction->isChecked() &&
-      !m_toggleSmartExtendSelectedSwcNodeAction->isChecked()) {
+      !m_toggleSmartExtendSelectedSwcNodeAction->isChecked() &&
+      NeutubeConfig::getInstance().getMainWindowConfig().isTracingOn()) {
     m_contextMenuGroup["trace"]->popup(m_canvas->mapToGlobal(pt));
   }
 }
@@ -1992,6 +2006,12 @@ void Z3DWindow::keyPressEvent(QKeyEvent *event)
             m_canvas->setCursor(Qt::ArrowCursor);
         }
         m_toggleSmartExtendSelectedSwcNodeAction->toggle();
+      }
+    } else {
+      if (GET_APPLICATION_NAME == "FlyEM") {
+        if (event->modifiers() == Qt::ShiftModifier) {
+          getDocument()->runSeededWatershed();
+        }
       }
     }
     break;
@@ -2925,4 +2945,39 @@ bool Z3DWindow::hasMultipleSelectedSwcNode() const
 void Z3DWindow::notifyUser(const QString &message)
 {
   statusBar()->showMessage(message);
+}
+
+void Z3DWindow::addStrokeFrom3dPaint(ZStroke2d *stroke)
+{
+  bool success;
+
+
+  QList<ZStroke2d*> strokeList;
+
+  for (size_t i = 0; i < stroke->getPointNumber(); ++i) {
+    double x = 0;
+    double y = 0;
+    stroke->getPoint(&x, &y, i);
+    glm::vec3 fpos = m_volumeRaycaster->get3DPosition(
+          x, y, m_canvas->width(), m_canvas->height(), success);
+    if (success) {
+#ifdef _DEBUG_
+      std::cout << fpos << std::endl;
+#endif
+      ZStroke2d *strokeData = new ZStroke2d;
+      strokeData->setWidth(stroke->getWidth());
+      strokeData->setLabel(stroke->getLabel());
+
+      strokeData->append(fpos[0], fpos[1]);
+      strokeData->setZ(iround(fpos[2]));
+
+      if (!strokeData->isEmpty()) {
+        strokeList.append(strokeData);
+      } else {
+        delete strokeData;
+      }
+    }
+  }
+
+  m_doc->executeAddStrokeCommand(strokeList);
 }

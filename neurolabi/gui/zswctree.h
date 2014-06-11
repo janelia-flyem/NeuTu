@@ -167,7 +167,7 @@ public:
    */
   virtual void save(const char *filePath);
 
-  virtual void load(const char *filePath);
+  virtual bool load(const char *filePath);
 
   void save(const std::string &filePath);
   void load(const std::string &filePath);

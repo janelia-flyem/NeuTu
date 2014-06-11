@@ -41,7 +41,7 @@ public:
   const;
 
   virtual void save(const char *filePath);
-  virtual void load(const char *filePath);
+  virtual bool load(const char *filePath);
 
   bool has(const ZLocsegChain *hook, const ZLocsegChain *loop) const;
   bool isHook(const ZLocsegChain *chain) const;

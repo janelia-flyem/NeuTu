@@ -256,6 +256,13 @@ public: /* attributes */
   double max(int c) const;
 
   /*!
+   * \brief Determine if a point is within a stack
+   *
+   * The input coordinates are supposed to be global.
+   */
+  bool contains(int x, int y, int z) const;
+
+  /*!
    * \brief Reshape the stack.
    *
    * If the reshaped the volume is the same as the stack voxel number, the stack

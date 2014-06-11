@@ -38,3 +38,8 @@ ZStack* ZStackFactory::makeStack(ZStack *stack) const
 {
   return stack;
 }
+
+ZStack* ZStackFactory::makeVirtualStack(int width, int height, int depth)
+{
+  return new ZStack(GREY, width, height, depth, 1, true);
+}

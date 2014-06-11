@@ -611,6 +611,18 @@ private:
   ZStroke2d *m_stroke;
   bool m_isInDoc;
 };
+
+class CompositeCommand : public QUndoCommand
+{
+public:
+  CompositeCommand(ZStackDoc *doc, QUndoCommand *parent = NULL);
+  virtual ~CompositeCommand();
+
+  void redo();
+  void undo();
+protected:
+  ZStackDoc *m_doc;
+};
 }
 
 namespace StackProcess {

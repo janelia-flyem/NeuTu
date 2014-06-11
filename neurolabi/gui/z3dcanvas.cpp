@@ -7,6 +7,8 @@
 #ifdef _QT5_
 #include <QWindow>
 #endif
+#include "zpainter.h"
+#include "zstackdrawable.h"
 
 Z3DCanvas::Z3DCanvas(const QString &title, int width, int height, const QGLFormat &format,
                      QWidget* parent, const QGLWidget *shareWidget, Qt::WindowFlags f)
@@ -37,6 +39,13 @@ Z3DCanvas::Z3DCanvas(const QString &title, int width, int height, const QGLForma
   setFocusPolicy(Qt::StrongFocus);
 
   setStyleSheet("border-style: none;");
+  setMouseTracking(true);
+
+#if defined(_FLYEM_)
+  connect(&m_interaction, SIGNAL(decorationUpdated()), this, SLOT(update()));
+  connect(&m_interaction, SIGNAL(strokePainted(ZStroke2d*)),
+          this, SIGNAL(strokePainted(ZStroke2d*)));
+#endif
 }
 
 Z3DCanvas::~Z3DCanvas() {}
@@ -65,16 +74,34 @@ void Z3DCanvas::leaveEvent(QEvent* e)
 void Z3DCanvas::mousePressEvent(QMouseEvent* e)
 {
   broadcastEvent(e, width(), height());
+
+
+#if defined(_FLYEM_)
+  m_interaction.processMousePressEvent(e);
+#endif
 }
 
 void Z3DCanvas::mouseReleaseEvent (QMouseEvent* e)
 {
   broadcastEvent(e, width(), height());
+#if defined(_FLYEM_)
+  m_interaction.processMouseReleaseEvent(e);
+#endif
 }
 
 void Z3DCanvas::mouseMoveEvent(QMouseEvent*  e)
 {
-  broadcastEvent(e, width(), height());
+#if defined(_FLYEM_)
+  m_interaction.processMouseMoveEvent(e);
+#endif
+
+#if defined(_FLYEM_)
+  if (!m_interaction.lockingMouseMoveEvent()) {
+#else
+  {
+#endif
+    broadcastEvent(e, width(), height());
+  }
 }
 
 void Z3DCanvas::mouseDoubleClickEvent(QMouseEvent* e)
@@ -90,6 +117,10 @@ void Z3DCanvas::wheelEvent(QWheelEvent* e)
 void Z3DCanvas::keyPressEvent(QKeyEvent* event)
 {
   broadcastEvent(event, width(), height());
+
+#if defined(_FLYEM_)
+  m_interaction.processKeyPressEvent(event);
+#endif
 }
 
 void Z3DCanvas::keyReleaseEvent(QKeyEvent* event)
@@ -112,6 +143,12 @@ void Z3DCanvas::paintEvent(QPaintEvent *event)
 {
   getGLFocus();
   QGraphicsView::paintEvent(event);
+
+  /*
+  ZPainter painter(this);
+  painter.setPen(QColor(255, 0, 0));
+  painter.drawRect(QRect(10, 10, 40, 60));
+  */
 }
 
 void Z3DCanvas::dragEnterEvent(QDragEnterEvent *event)
@@ -136,7 +173,18 @@ void Z3DCanvas::drawBackground(QPainter *painter, const QRectF &)
   m_networkEvaluator->process(m_isStereoScene || m_fakeStereoOnce);
   m_fakeStereoOnce = false;
 
-  painter->drawRect(QRect(10, 10, 40, 60));
+
+#if defined(_FLYEM_)
+  QList<ZStackDrawable*> drawableList = m_interaction.getDecorationList();
+
+  foreach (const ZStackDrawable *drawable, drawableList) {
+    drawable->display(painter);
+  }
+#endif
+
+  //ZPainter painter()
+  //painter->drawRect(QRect(10, 10, 40, 60));
+
 }
 
 void Z3DCanvas::timerEvent(QTimerEvent* e)

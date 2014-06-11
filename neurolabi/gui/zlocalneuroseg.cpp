@@ -483,9 +483,11 @@ void ZLocalNeuroseg::save(const char *filePath)
   UNUSED_PARAMETER(filePath);
 }
 
-void ZLocalNeuroseg::load(const char *filePath)
+bool ZLocalNeuroseg::load(const char *filePath)
 {
   UNUSED_PARAMETER(filePath);
+
+  return false;
 }
 
 void ZLocalNeuroseg::updateProfile(const Stack *stack, int option)

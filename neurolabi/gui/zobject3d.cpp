@@ -116,9 +116,11 @@ void ZObject3d::save(const char *filePath)
   UNUSED_PARAMETER(filePath);
 }
 
-void ZObject3d::load(const char *filePath)
+bool ZObject3d::load(const char *filePath)
 {
   UNUSED_PARAMETER(filePath);
+
+  return false;
 }
 
 void ZObject3d::display(ZPainter &painter, int z, Display_Style option) const

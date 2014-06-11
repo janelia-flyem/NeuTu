@@ -148,7 +148,12 @@ public:
   inline iterator begin() { return iterator(this, iterator::Begin); }
   inline iterator end() { return iterator(this, iterator::End); }
 
-  inline void clearAllDrawableLists() { m_objLists.clear(); m_otherDrawables.clear(); m_objLists.push_back(&m_otherDrawables); }
+  inline void clearAllDrawableLists() {
+    m_objLists.clear();
+    m_otherDrawables.clear();
+    m_objLists.push_back(&m_otherDrawables);
+  }
+
   inline void addDrawable(ZStackDrawable* obj) { if (obj) m_otherDrawables.push_back(obj); }
   inline void removeDrawable(ZStackDrawable* obj) { m_otherDrawables.removeAll(obj); }
   inline void addDrawableList(const QList<ZStackDrawable*>* lst) { if (lst) m_objLists.push_back(lst); }

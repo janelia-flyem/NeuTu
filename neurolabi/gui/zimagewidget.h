@@ -62,10 +62,10 @@ public:
 
   void paintEvent(QPaintEvent *event);
 
-  void popLeftMenu(const QPoint &pos);
-  void popRightMenu(const QPoint &pos);
+  bool popLeftMenu(const QPoint &pos);
+  bool popRightMenu(const QPoint &pos);
 
-  void showContextMenu(QMenu *menu, const QPoint &pos);
+  bool showContextMenu(QMenu *menu, const QPoint &pos);
 
   QMenu* leftMenu();
   QMenu* rightMenu();

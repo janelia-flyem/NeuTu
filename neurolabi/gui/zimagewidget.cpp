@@ -473,21 +473,36 @@ QMenu* ZImageWidget::rightMenu()
   return m_rightButtonMenu;
 }
 
-void ZImageWidget::popLeftMenu(const QPoint &pos)
+bool ZImageWidget::popLeftMenu(const QPoint &pos)
 {
-  m_leftButtonMenu->popup(mapToGlobal(pos));
+  if (!m_leftButtonMenu->isEmpty()) {
+    m_leftButtonMenu->popup(mapToGlobal(pos));
+    return true;
+  }
+
+  return false;
 }
 
-void ZImageWidget::popRightMenu(const QPoint &pos)
+bool ZImageWidget::popRightMenu(const QPoint &pos)
 {
-  m_rightButtonMenu->popup(mapToGlobal(pos));
+  if (!m_rightButtonMenu->isEmpty()) {
+    m_rightButtonMenu->popup(mapToGlobal(pos));
+    return true;
+  }
+
+  return false;
 }
 
-void ZImageWidget::showContextMenu(QMenu *menu, const QPoint &pos)
+bool ZImageWidget::showContextMenu(QMenu *menu, const QPoint &pos)
 {
   if (menu != NULL) {
-    menu->popup(mapToGlobal(pos));
+    if (!menu->isEmpty()) {
+      menu->popup(mapToGlobal(pos));
+      return true;
+    }
   }
+
+  return false;
 }
 
 void ZImageWidget::mouseReleaseEvent(QMouseEvent *event)

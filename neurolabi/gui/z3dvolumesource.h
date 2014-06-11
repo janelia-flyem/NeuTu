@@ -62,7 +62,8 @@ protected:
   virtual void deinitialize();
 
   // once processed, should be valid for both stereo view and mono view
-  virtual void setValid(Z3DEye eye) { Z3DProcessor::setValid(eye); m_invalidationState = Valid; }
+  virtual void setValid(Z3DEye eye) {
+    Z3DProcessor::setValid(eye); m_invalidationState = Valid; }
 
 private:
   void clearVolume();
@@ -71,6 +72,7 @@ private:
   void readSubVolumes(int left, int top, int front, int width, int height, int depth);
   void sendData();
   void sendZoomInVolumeData();
+  void readSparseVolume();
 
   std::vector<Z3DVolume*> m_volumes;
   std::vector<Z3DVolume*> m_zoomInVolumes;

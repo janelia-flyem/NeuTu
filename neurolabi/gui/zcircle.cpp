@@ -150,9 +150,11 @@ void ZCircle::save(const char *filePath)
   UNUSED_PARAMETER(filePath);
 }
 
-void ZCircle::load(const char *filePath)
+bool ZCircle::load(const char *filePath)
 {
   UNUSED_PARAMETER(filePath);
+
+  return false;
 }
 
 ZINTERFACE_DEFINE_CLASS_NAME(ZCircle)

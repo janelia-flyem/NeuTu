@@ -32,7 +32,10 @@ public:
 
 public: // I/O functions
   virtual inline void save(const char *filePath) {Q_UNUSED(filePath)}
-  virtual inline void load(const char *filePath) {Q_UNUSED(filePath)}
+  virtual inline bool load(const char *filePath) {
+    Q_UNUSED(filePath);
+    return false;
+  }
 
   static QList<ZPunctum*> deepCopyPunctaList(const QList<ZPunctum*> &src);
 

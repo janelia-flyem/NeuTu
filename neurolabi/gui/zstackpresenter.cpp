@@ -518,7 +518,11 @@ void ZStackPresenter::addSwcEditFunctionToRightMenu()
 void ZStackPresenter::prepareView()
 {
   createDocDependentActions();
-  updateLeftMenu(m_traceAction);
+  if (NeutubeConfig::getInstance().getMainWindowConfig().isTracingOn()) {
+    updateLeftMenu(m_traceAction);
+  } else {
+    updateLeftMenu(NULL);
+  }
   buddyView()->rightMenu()->clear();
 }
 
@@ -527,8 +531,9 @@ void ZStackPresenter::updateLeftMenu(QAction *action, bool clear)
   if (clear == true) {
     buddyView()->leftMenu()->clear();
   }
-
-  buddyView()->leftMenu()->addAction(action);
+  if (action != NULL) {
+    buddyView()->leftMenu()->addAction(action);
+  }
 }
 
 void ZStackPresenter::updateLeftMenu()
@@ -644,9 +649,9 @@ ZStackPresenter::processMouseReleaseForPuncta(QMouseEvent *event, double *positi
         buddyDocument()->hasSelectedPuncta()) {
       buddyView()->rightMenu()->clear();
       addPunctaEditFunctionToRightMenu();
-      buddyView()->popRightMenu(event->pos());
-
-      status = CONTEXT_MENU_POPPED; //menu popup
+      if (buddyView()->popRightMenu(event->pos())) {
+        status = CONTEXT_MENU_POPPED; //menu popup
+      }
     }
     break;
   case Qt::LeftButton:
@@ -661,10 +666,12 @@ ZStackPresenter::processMouseReleaseForPuncta(QMouseEvent *event, double *positi
     } else {
       if (m_interactiveContext.isNormalView()) {
         if (m_interactiveContext.isContextMenuActivated() &&
-            interactiveContext().markPuncta() && buddyDocument()->hasStackData() &&
+            interactiveContext().markPuncta() &&
+            buddyDocument()->hasStackData() &&
             (!buddyDocument()->getStack()->isVirtual())) {
-          buddyView()->popLeftMenu(event->pos());
-          status = CONTEXT_MENU_POPPED;
+          if (buddyView()->popLeftMenu(event->pos())) {
+            status = CONTEXT_MENU_POPPED;
+          }
         }
       }
     }
@@ -897,8 +904,9 @@ ZStackPresenter::processMouseReleaseForSwc(QMouseEvent *event, double *positionI
         buddyDocument()->notifySwcModified();
       } else {
         if (buddyDocument()->hasTracable()) {
-          buddyView()->popLeftMenu(event->pos());
-          status = CONTEXT_MENU_POPPED;
+          if (buddyView()->popLeftMenu(event->pos())) {
+            status = CONTEXT_MENU_POPPED;
+          }
         }
       }
     }

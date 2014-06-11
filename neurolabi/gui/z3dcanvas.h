@@ -5,10 +5,17 @@
 #include <QGraphicsView>
 #include <QGLWidget>
 #include <QInputEvent>
+#include <deque>
+#include <QList>
+
+#ifdef _FLYEM_
+#  include "flyem/zinteractionengine.h"
+#endif
+
 class Z3DScene;
 class Z3DNetworkEvaluator;
 class Z3DCanvasEventListener;
-#include <deque>
+class ZStackDrawable;
 
 class Z3DCanvas : public QGraphicsView
 {
@@ -35,7 +42,9 @@ public:
   // Set the opengl context of this canvas as the current one.
   inline void getGLFocus() { m_glWidget->makeCurrent(); }
   void toggleFullScreen();
-  void forceUpdate() { QPaintEvent *pe = new QPaintEvent(rect()); paintEvent(pe); delete pe; }
+  void forceUpdate() {
+    QPaintEvent *pe = new QPaintEvent(rect()); paintEvent(pe); delete pe;
+  }
   void updateAll() { m_glWidget->update(); }
 
   // for high dpi support like retina
@@ -66,9 +75,13 @@ public:
 
   virtual void drawBackground(QPainter *painter, const QRectF &rect);
 
+  bool processMouseMoveEventForPaint(QMouseEvent *e);
+
 signals:
   // w and h is physical size not logical size, opengl works in physical pixel
   void canvasSizeChanged(int w, int h);
+  void activeDecorationUpdated();
+  void strokePainted(ZStroke2d*);
 
 protected:
   double getDevicePixelRatio();
@@ -82,6 +95,11 @@ protected:
   Z3DNetworkEvaluator* m_networkEvaluator;
   bool m_isStereoScene;
   bool m_fakeStereoOnce;
+
+private:
+#if defined(_FLYEM_)
+  ZInteractionEngine m_interaction;
+#endif
 };
 
 #endif // Z3DCANVAS_H

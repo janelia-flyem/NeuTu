@@ -10,29 +10,9 @@
 
 const double ZStroke2d::m_minWidth = 1.0;
 const double ZStroke2d::m_maxWidth = 100.0;
-const QVector<QColor> ZStroke2d::m_colorTable = ZStroke2d::constructColorTable();
-const QColor ZStroke2d::m_blackColor = Qt::black;
-
-QVector<QColor> ZStroke2d::constructColorTable()
-{
-  QVector<QColor> colorTable(7);
-
-  colorTable[0] = QColor(Qt::white);
-  colorTable[1] = QColor(Qt::red);
-  colorTable[2] = QColor(Qt::green);
-  colorTable[3] = QColor(Qt::blue);
-  colorTable[4] = QColor(Qt::cyan);
-  colorTable[5] = QColor(Qt::magenta);
-  colorTable[6] = QColor(Qt::yellow);
-
-
-  for (QVector<QColor>::iterator iter = colorTable.begin();
-       iter != colorTable.end(); ++iter) {
-    iter->setAlpha(128);
-  }
-
-  return colorTable;
-}
+//const QVector<QColor> ZStroke2d::m_colorTable = ZStroke2d::constructColorTable();
+//const QColor ZStroke2d::m_blackColor = Qt::black;
+const ZLabelColorTable ZStroke2d::m_colorTable;
 
 ZStroke2d::ZStroke2d() : m_width(10.0), m_z(-1), m_isFilled(true)
 {
@@ -62,9 +42,9 @@ void ZStroke2d::save(const char */*filePath*/)
 
 }
 
-void ZStroke2d::load(const char */*filePath*/)
+bool ZStroke2d::load(const char */*filePath*/)
 {
-
+  return false;
 }
 
 void ZStroke2d::append(double x, double y)
@@ -93,6 +73,11 @@ void ZStroke2d::setLabel(int label)
 {
   m_label = label;
   m_color = getLabelColor();
+}
+
+int ZStroke2d::getLabel() const
+{
+  return m_label;
 }
 
 void ZStroke2d::setEraser(bool enabled)
@@ -124,6 +109,10 @@ void ZStroke2d::display(ZPainter &painter, int z, Display_Style option) const
 {
   //UNUSED_PARAMETER(z);
   UNUSED_PARAMETER(option);
+
+  if (!isVisible()) {
+    return;
+  }
 
   z -= iround(painter.getOffset().z());
 
@@ -166,6 +155,61 @@ void ZStroke2d::display(ZPainter &painter, int z, Display_Style option) const
         painter.setBrush(brush);
         painter.drawEllipse(QPointF(m_pointArray.back()), m_width / 2, m_width / 2);
         */
+    }
+  }
+}
+
+void ZStroke2d::display(QPainter *rawPainter, int z, Display_Style option) const
+{
+  //UNUSED_PARAMETER(z);
+  UNUSED_PARAMETER(option);
+
+  if (rawPainter == NULL || !isVisible()) {
+    return;
+  }
+
+#ifdef _DEBUG_2
+  std::cout << "Draw stroke" << std::endl;
+#endif
+
+  QPainter &painter = *rawPainter;
+
+  //z -= iround(painter.getOffset().z());
+
+  QColor color = m_color;
+  if (m_z >= 0 && m_z != z) {
+    if (isEraser()) {
+      return;
+    }
+    color.setAlphaF(color.alphaF() / (1.2 + abs(m_z - z) / 5.0));
+  }
+
+  QPen pen(color);
+  QBrush brush(color);
+
+  if (isEraser()) {
+    painter.setCompositionMode(QPainter::CompositionMode_Source);
+  } else {
+    painter.setCompositionMode(QPainter::CompositionMode_Source);
+  }
+
+  if (!m_pointArray.empty()) {
+    if (m_pointArray.size() == 1) {
+      if (m_isFilled) {
+        painter.setPen(Qt::NoPen);
+        painter.setBrush(brush);
+      } else {
+        painter.setPen(pen);
+        painter.setBrush(Qt::NoBrush);
+      }
+      painter.drawEllipse(QPointF(m_pointArray[0]), m_width / 2, m_width / 2);
+    } else {
+      pen.setCapStyle(Qt::RoundCap);
+      pen.setWidthF(m_width);
+      painter.setPen(pen);
+      painter.setBrush(Qt::NoBrush);
+      painter.setOpacity(1.0);
+      painter.drawPolyline(&(m_pointArray[0]), m_pointArray.size());
     }
   }
 }
@@ -338,6 +382,19 @@ bool ZStroke2d::getLastPoint(double *x, double *y) const
   return true;
 }
 
+bool ZStroke2d::getPoint(double *x, double *y, size_t index) const
+{
+  if (index >= m_pointArray.size()) {
+    return false;
+  }
+
+  *x = m_pointArray[index].x();
+  *y = m_pointArray[index].y();
+
+  return true;
+}
+
+
 void ZStroke2d::print() const
 {
   foreach (QPointF point, m_pointArray) {
@@ -347,12 +404,16 @@ void ZStroke2d::print() const
 
 const QColor& ZStroke2d::getLabelColor() const
 {
+  return m_colorTable.getColor(m_label);
+
+#if 0
   if (m_label == 255) {
     return m_blackColor;
   }
 
   int index = m_label % m_colorTable.size();
   return m_colorTable[index];
+#endif
 }
 
 void ZStroke2d::translate(const ZPoint offset)

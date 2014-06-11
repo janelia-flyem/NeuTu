@@ -79,7 +79,7 @@ public:
   inline ViewMode viewMode() { return m_viewMode; }
   inline ExploreMode exploreMode() { return m_exploreMode; }
   inline MarkPunctaMode editPunctaMode() {return m_markPunctaMode;}
-  inline StrokeEditMode strokeEditMode() { return m_strokeEditMode; }
+  inline StrokeEditMode strokeEditMode() const { return m_strokeEditMode; }
 
   bool isTraceModeOff()  const;
   inline bool isReconPreview() const {

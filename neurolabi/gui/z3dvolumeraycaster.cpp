@@ -776,7 +776,8 @@ glm::vec3 Z3DVolumeRaycaster::getFirstHit3DPosition(int x, int y, int width, int
   return res;
 }
 
-glm::vec3 Z3DVolumeRaycaster::getMaxInten3DPositionUnderScreenPoint(int x, int y, int width, int height, bool &success)
+glm::vec3 Z3DVolumeRaycaster::getMaxInten3DPositionUnderScreenPoint(
+    int x, int y, int width, int height, bool &success)
 {
   glm::vec3 res(-1);
   glm::vec3 des(-1);
@@ -794,12 +795,24 @@ glm::vec3 Z3DVolumeRaycaster::getMaxInten3DPositionUnderScreenPoint(int x, int y
     glm::vec3 fpos3D = get3DPosition(pos2D, width, height, port);
     glm::vec3 pos3D = glm::applyMatrix(m_volumes.getFirstValidData()->getWorldToPhysicalMatrix(), fpos3D);
     res = glm::round(pos3D / m_volumes.getFirstValidData()->getScaleSpacing());
+#ifdef _DEBUG_
+    std::cout << m_volumes.getFirstValidData()->getScaleSpacing() << std::endl;
+    std::cout << pos3D << std::endl;
+    std::cout << res << std::endl;
+#endif
     //LWARN() << pos3D;
+    Cuboid_I box;
+    stack->getBoundBox(&box);
+    if (Cuboid_I_Hit(&box, res.x, res.y, res.z)) {
+      success = true;
+    }
+    /*
     if (res.x >= 0 && res.x < stack->width() &&
         res.y >= 0 && res.y < stack->height() &&
         res.z >= 0 && res.z < stack->depth()) {
       success = true;
     }
+    */
 
     if (success) {
       fpos3D = get3DPosition(pos2D, 1.0, width, height);
@@ -810,11 +823,19 @@ glm::vec3 Z3DVolumeRaycaster::getMaxInten3DPositionUnderScreenPoint(int x, int y
         return res;
       }
     }
+
+#ifdef _DEBUG_
+    std::cout << fpos3D << std::endl;
+    std::cout << pos3D << std::endl;
+    std::cout << res << std::endl;
+#endif
   }
 
   // find maximum intensity voxel start from res along des direction
   if (success) {
-    double maxInten = stack->value(res.x, res.y, res.z);
+    double maxInten = stack->value(res.x - stack->getOffset().x(),
+                                   res.y - stack->getOffset().y(),
+                                   res.z - stack->getOffset().z());
     glm::vec3 p = res;
     glm::vec3 d = des - res;
     float N = std::max(std::max(std::abs(d.x), std::abs(d.y)), std::abs(d.z));
@@ -822,12 +843,21 @@ glm::vec3 Z3DVolumeRaycaster::getMaxInten3DPositionUnderScreenPoint(int x, int y
     while (true) {
       p = p + stepSize;
       glm::vec3 roundP = glm::round(p);
+
+      if (!stack->contains(roundP.x, roundP.y, roundP.z)) {
+        break;
+      }
+
+      /*
       if (roundP.x < 0 || roundP.x >= stack->width() ||
           roundP.y < 0 || roundP.y >= stack->height() ||
           roundP.z < 0 || roundP.z >= stack->depth()) {
         break;
       }
-      double inten = stack->value(roundP.x, roundP.y, roundP.z);
+      */
+      double inten = stack->value(roundP.x - stack->getOffset().x(),
+                                  roundP.y - stack->getOffset().y(),
+                                  roundP.z - stack->getOffset().z());
       if (inten > maxInten) {
         maxInten = inten;
         res = roundP;
@@ -838,7 +868,8 @@ glm::vec3 Z3DVolumeRaycaster::getMaxInten3DPositionUnderScreenPoint(int x, int y
   return res;
 }
 
-glm::vec3 Z3DVolumeRaycaster::get3DPosition(glm::ivec2 pos2D, int width, int height, Z3DRenderOutputPort &port)
+glm::vec3 Z3DVolumeRaycaster::get3DPosition(
+    glm::ivec2 pos2D, int width, int height, Z3DRenderOutputPort &port)
 {
   glm::mat4 projection = m_camera.get().getProjectionMatrix(CenterEye);
   glm::mat4 modelview = m_camera.get().getViewMatrix(CenterEye);
@@ -862,7 +893,8 @@ glm::vec3 Z3DVolumeRaycaster::get3DPosition(glm::ivec2 pos2D, int width, int hei
   return pos;
 }
 
-glm::vec3 Z3DVolumeRaycaster::get3DPosition(glm::ivec2 pos2D, double depth, int width, int height)
+glm::vec3 Z3DVolumeRaycaster::get3DPosition(
+    glm::ivec2 pos2D, double depth, int width, int height)
 {
   glm::mat4 projection = m_camera.get().getProjectionMatrix(CenterEye);
   glm::mat4 modelview = m_camera.get().getViewMatrix(CenterEye);

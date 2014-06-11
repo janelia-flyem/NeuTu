@@ -30,6 +30,7 @@
 #include "zstring.h"
 #include "zhdf5reader.h"
 #include "zstringarray.h"
+#include "tz_math.h"
 
 using namespace std;
 
@@ -1070,6 +1071,16 @@ bool ZObject3dScan::load(const string &filePath)
   return succ;
 }
 
+bool ZObject3dScan::load(const char *filePath)
+{
+  return load(std::string(filePath));
+}
+
+void ZObject3dScan::save(const char *filePath)
+{
+  save(string(filePath));
+}
+
 void ZObject3dScan::save(const char *filePath) const
 {
   save(string(filePath));
@@ -1259,7 +1270,7 @@ void ZObject3dScan::downsampleMax(int xintv, int yintv, int zintv)
   //deprecate(ALL_COMPONENT);
 }
 
-Stack* ZObject3dScan::toStack(int *offset) const
+Stack* ZObject3dScan::toStack(int *offset, int v) const
 {
   if (isEmpty()) {
     return NULL;
@@ -1283,7 +1294,7 @@ Stack* ZObject3dScan::toStack(int *offset) const
   drawingOffet[1] = -boundBox.firstCorner().y();
   drawingOffet[2] = -boundBox.firstCorner().z();
 
-  drawStack(stack, 1, drawingOffet);
+  drawStack(stack, v, drawingOffet);
 
   return stack;
 }
@@ -1614,14 +1625,23 @@ void ZObject3dScan::display(ZPainter &painter, int z, Display_Style style) const
 {
   UNUSED_PARAMETER(style);
 #if _QT_GUI_USED_
-  QPen pen(m_color, .7);
+  bool isProj = (z < 0);
+
+  z -= iround(painter.getOffset().z());
+
+  QPen pen(m_color);
   painter.setPen(pen);
-  for (size_t i = 0; i < getStripeNumber(); ++i) {
-    ZObject3dStripe stripe = getStripe(i);
-    if (stripe.getZ() == z) {
-      for (int j = 0; j < stripe.getSegmentNumber(); ++j) {
-        painter.drawLine(stripe.getSegmentStart(j), stripe.getY(),
-                         stripe.getSegmentEnd(j), stripe.getY());
+
+  size_t stripeNumber = getStripeNumber();
+  for (size_t i = 0; i < stripeNumber; ++i) {
+    const ZObject3dStripe &stripe = getStripe(i);
+    if (stripe.getZ() == z || isProj) {
+      int nseg = stripe.getSegmentNumber();
+      for (int j = 0; j < nseg; ++j) {
+        int x0 = stripe.getSegmentStart(j);
+        int x1 = stripe.getSegmentEnd(j);
+        int y = stripe.getY();
+        painter.drawLine(x0, y, x1, y);
       }
     }
   }

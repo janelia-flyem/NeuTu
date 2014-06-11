@@ -34,7 +34,7 @@ public:
   virtual const std::string& className() const;
 
   virtual void save(const char *filePath);
-  virtual void load(const char *filePath);
+  virtual bool load(const char *filePath);
   virtual void display(ZPainter &painter, int z = 0, Display_Style option = NORMAL)
   const;
 

@@ -218,7 +218,7 @@ void ZLocsegChain::save(const char *filePath)
   m_source = QString(filePath);
 }
 
-void ZLocsegChain::load(const char *filePath)
+bool ZLocsegChain::load(const char *filePath)
 {
   if (m_chain != NULL) {
     Kill_Locseg_Chain(m_chain);
@@ -227,6 +227,8 @@ void ZLocsegChain::load(const char *filePath)
   m_chain = Read_Locseg_Chain(filePath);
   updateBufferChain();
   m_source = QString(filePath);
+
+  return true;
 }
 
 void ZLocsegChain::labelTraceMask(Stack *mask, int overwrite)
