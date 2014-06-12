@@ -38,7 +38,9 @@ void TileManager::setTileManager(ZTileManager *manager)
   manager->setScaleFactor(scaleFactor);
   manager->setParentView(ui->tileView);
   ui->tileView->setScene(manager);
-  ui->tileView->setSceneRect(0,0,ui->tileView->viewport()->frameSize().width(),ui->tileView->viewport()->frameSize().height());
+  //ui->tileView->setSceneRect(0,0,ui->tileView->viewport()->frameSize().width(),ui->tileView->viewport()->frameSize().height());
+  ui->tileView->setSceneRect(0,0,3000,3000);
+  ui->tileView->setAlignment(Qt::AlignLeft | Qt::AlignTop);
 }
 
 void TileManager::ShowContextMenu(const QPoint &pos)
