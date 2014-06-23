@@ -39,6 +39,8 @@ public:
   bool operator < (const ZIntPoint &pt) const;
   bool operator == (const ZIntPoint &pt) const;
 
+  friend ZIntPoint operator + (const ZIntPoint &pt1, const ZIntPoint &pt2);
+
 public:
   int m_x;
   int m_y;

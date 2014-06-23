@@ -64,6 +64,8 @@
 #include "swc/zswcsubtreeanalyzer.h"
 #include "biocytin/zbiocytinfilenameparser.h"
 #include <QApplication>
+#include "zvoxelgraphics.h"
+#include "zstroke2darray.h"
 
 class Sleeper : public QThread
 {
@@ -199,7 +201,7 @@ void Z3DWindow::init(EInitMode mode)
     connect(m_volumeSource, SIGNAL(xScaleChanged()), this, SLOT(volumeScaleChanged()));
     connect(m_volumeSource, SIGNAL(yScaleChanged()), this, SLOT(volumeScaleChanged()));
     connect(m_volumeSource, SIGNAL(zScaleChanged()), this, SLOT(volumeScaleChanged()));
-    connect(getDocument(), SIGNAL(stackModified()), this, SLOT(volumeChanged()));
+    connect(getDocument(), SIGNAL(volumeModified()), this, SLOT(volumeChanged()));
   }
 
   // more processors: init geometry filters
@@ -353,8 +355,13 @@ void Z3DWindow::init(EInitMode mode)
   connect(getInteractionHandler(), SIGNAL(objectsMoved(double,double,double)), this,
           SLOT(moveSelectedObjects(double,double,double)));
 
+  /*
   connect(m_canvas, SIGNAL(strokePainted(ZStroke2d*)),
           this, SLOT(addStrokeFrom3dPaint(ZStroke2d*)));
+          */
+
+  connect(m_canvas, SIGNAL(strokePainted(ZStroke2d*)),
+          this, SLOT(addPolyplaneFrom3dPaint(ZStroke2d*)));
 
   //  // if have image, try black background
   //  if (channelNumber() > 0) {
@@ -919,7 +926,7 @@ int Z3DWindow::channelNumber()
     return 0;
   }
 
-  if (m_doc->hasStackData()) {
+  if (m_doc->hasStack()) {
     return m_doc->getStack()->channelNumber();
   } else {
     return 0;
@@ -2946,7 +2953,7 @@ void Z3DWindow::notifyUser(const QString &message)
 {
   statusBar()->showMessage(message);
 }
-
+#if 0
 void Z3DWindow::addStrokeFrom3dPaint(ZStroke2d *stroke)
 {
   bool success;
@@ -2960,24 +2967,139 @@ void Z3DWindow::addStrokeFrom3dPaint(ZStroke2d *stroke)
     stroke->getPoint(&x, &y, i);
     glm::vec3 fpos = m_volumeRaycaster->get3DPosition(
           x, y, m_canvas->width(), m_canvas->height(), success);
+
+    /*
+    ZLineSegment seg = m_volumeRaycaster->getScreenRay(
+          x, y, m_canvas->width(), m_canvas->height(), success);
+*/
+
     if (success) {
-#ifdef _DEBUG_
+      //ZObject3d *obj = ZVoxelGraphics::createLineObject(seg);
+
+#ifdef _DEBUG_2
       std::cout << fpos << std::endl;
 #endif
-      ZStroke2d *strokeData = new ZStroke2d;
-      strokeData->setWidth(stroke->getWidth());
-      strokeData->setLabel(stroke->getLabel());
+      //for (size_t i = 0; i < obj->size(); ++i) {
+        ZStroke2d *strokeData = new ZStroke2d;
+        strokeData->setWidth(stroke->getWidth());
+        strokeData->setLabel(stroke->getLabel());
 
-      strokeData->append(fpos[0], fpos[1]);
-      strokeData->setZ(iround(fpos[2]));
+        strokeData->append(fpos[0], fpos[1]);
+        strokeData->setZ(iround(fpos[2]));
+        //strokeData->append(obj->x(i), obj->y(i));
+        //strokeData->setZ(obj->z(i));
 
-      if (!strokeData->isEmpty()) {
-        strokeList.append(strokeData);
-      } else {
-        delete strokeData;
-      }
+        if (!strokeData->isEmpty()) {
+          strokeList.append(strokeData);
+        } else {
+          delete strokeData;
+        }
+      //}
+
+      //delete obj;
     }
   }
 
   m_doc->executeAddStrokeCommand(strokeList);
+}
+#endif
+
+void Z3DWindow::addStrokeFrom3dPaint(ZStroke2d *stroke)
+{
+  bool success = false;
+
+  ZObject3d *baseObj = stroke->toObject3d();
+
+  double x = 0.0;
+  double y = 0.0;
+
+  stroke->getPoint(&x, &y, stroke->getPointNumber() / 2);
+  ZLineSegment seg = m_volumeRaycaster->getScreenRay(
+        iround(x), iround(y), m_canvas->width(), m_canvas->height(), success);
+
+  ZObject3d *obj = new ZObject3d;
+  for (size_t i = 0; i < baseObj->size(); ++i) {
+    ZLineSegment seg = m_volumeRaycaster->getScreenRay(
+          baseObj->x(i), baseObj->y(i),
+          m_canvas->width(), m_canvas->height(), success);
+    ZPoint slope = seg.getEndPoint() - seg.getStartPoint();
+    if (success) {
+      ZCuboid box = m_doc->stackRef()->getBoundBox();
+      ZLineSegment stackSeg;
+      if (box.intersectLine(seg.getStartPoint(), slope, &stackSeg)) {
+        ZObject3d *scanLine = ZVoxelGraphics::createLineObject(stackSeg);
+        obj->append(*scanLine);
+#ifdef _DEBUG_2
+        scanLine->print();
+        obj->print();
+        break;
+#endif
+        delete scanLine;
+      }
+    }
+  }
+  obj->setLabel(stroke->getLabel());
+  ZLabelColorTable colorTable;
+  obj->setColor(colorTable.getColor(obj->getLabel()));
+
+  delete baseObj;
+
+  if (!obj->isEmpty()) {
+    m_doc->executeAddObjectCommand(
+          obj, NeuTube::Documentable_OBJ3D, ZDocPlayer::ROLE_SEED);
+  } else {
+    delete obj;
+  }
+}
+
+void Z3DWindow::addPolyplaneFrom3dPaint(ZStroke2d *stroke)
+{
+  bool success = false;
+
+  std::vector<ZIntPoint> polyline1;
+  std::vector<ZIntPoint> polyline2;
+
+  ZCuboid box = m_doc->stackRef()->getBoundBox();
+  for (size_t i = 0; i < stroke->getPointNumber(); ++i) {
+    double x = 0.0;
+    double y = 0.0;
+    stroke->getPoint(&x, &y, i);
+    ZLineSegment seg = m_volumeRaycaster->getScreenRay(
+          iround(x), iround(y), m_canvas->width(), m_canvas->height(), success);
+    if (success) {
+      ZPoint slope = seg.getEndPoint() - seg.getStartPoint();
+      ZLineSegment stackSeg;
+      if (box.intersectLine(seg.getStartPoint(), slope, &stackSeg)) {
+        ZPoint slope2 = stackSeg.getEndPoint() - stackSeg.getStartPoint();
+        if (slope.dot(slope2) < 0.0) {
+          stackSeg.invert();
+        }
+        polyline1.push_back(ZIntPoint(stackSeg.getStartPoint().toIntPoint()));
+        polyline2.push_back(ZIntPoint(stackSeg.getEndPoint().toIntPoint()));
+      }
+    }
+  }
+
+  ZObject3d *obj = ZVoxelGraphics::createPolyPlaneObject(polyline1, polyline2);
+
+  if (obj != NULL) {
+#ifdef _DEBUG_2
+    ZStack *stack = obj->toStackObject();
+    stack->save(GET_TEST_DATA_DIR + "/test.tif");
+    delete stack;
+#endif
+
+    if (!obj->isEmpty()) {
+      obj->setLabel(stroke->getLabel());
+      ZLabelColorTable colorTable;
+      obj->setColor(colorTable.getColor(obj->getLabel()));
+
+      m_doc->executeAddObjectCommand(
+            obj, NeuTube::Documentable_OBJ3D,
+            ZDocPlayer::ROLE_SEED | ZDocPlayer::ROLE_3DPAINT);
+      //m_doc->notifyVolumeModified();
+    } else {
+      delete obj;
+    }
+  }
 }

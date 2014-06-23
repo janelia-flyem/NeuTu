@@ -69,10 +69,14 @@ private:
   void clearVolume();
   void clearZoomInVolume();
   void readVolumes();
+  void readVolumesWithObject();
   void readSubVolumes(int left, int top, int front, int width, int height, int depth);
   void sendData();
   void sendZoomInVolumeData();
   void readSparseVolume();
+  void readSparseVolumeWithObject();
+
+  void loadData();
 
   std::vector<Z3DVolume*> m_volumes;
   std::vector<Z3DVolume*> m_zoomInVolumes;

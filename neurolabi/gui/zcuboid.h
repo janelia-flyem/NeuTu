@@ -4,6 +4,7 @@
 #include <vector>
 #include "zpoint.h"
 #include "zintpoint.h"
+#include "zlinesegment.h"
 
 /*************
  *
@@ -33,6 +34,9 @@ public:
   void set(const ZIntPoint &firstCorner, const ZIntPoint &lastCorner);
   void set(const double *corner);
 
+  void setFirstCorner(const ZPoint &pt);
+  void setSize(double width, double height, double depth);
+
   /*!
    * \brief Test if the bound box is valid
    *
@@ -45,10 +49,10 @@ public:
    */
   void invalidate();
 
-  double width();
-  double height();
-  double depth();
-  double volume();
+  double width() const;
+  double height() const;
+  double depth() const;
+  double volume() const;
   void intersect(const ZCuboid &cuboid);
   void bind(const ZCuboid &cuboid); //union
 
@@ -78,10 +82,24 @@ public:
   ZPoint corner(int index) const;
   ZPoint center() const;
 
-  inline ZPoint firstCorner() const { return m_firstCorner; }
-  inline ZPoint lastCorner() const { return m_lastCorner; }
+  inline const ZPoint& firstCorner() const { return m_firstCorner; }
+  inline const ZPoint& lastCorner() const { return m_lastCorner; }
 
   double computeDistance(const ZCuboid &box) const;
+
+  void translate(const ZPoint &pt);
+
+  /*!
+   * \brief Compute the intersection between a line and a cuboid
+   *
+   * \a slope defines the slope of the line and it does not have to be
+   * normalized. \a p0 is a point on the line. The result is stored in \a seg
+   * if it is not NULL. It returns false if the slope is 0.
+   *
+   * \return true if the line intersects with the cuboid.
+   */
+  bool intersectLine(
+      const ZPoint &p0, const ZPoint &slope, ZLineSegment *seg) const;
 
 private:
   static double computeDistance(double minX1, double maxX1,

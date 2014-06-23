@@ -13,11 +13,11 @@
 #include "tz_math.h"
 #include "c_stack.h"
 #include "zobject3darray.h"
-//#include "zstack.hxx"
+#include "zstack.hxx"
 
 using namespace std;
 
-ZObject3d::ZObject3d(Object_3d *obj) : m_conn(0)
+ZObject3d::ZObject3d(Object_3d *obj) : m_conn(0), m_label(-1)
 {
   if (obj != NULL) {
     m_voxelArray.resize(obj->size * 3);
@@ -82,6 +82,27 @@ void ZObject3d::append(int x, int y, int z)
   m_voxelArray.push_back(z);
 }
 
+void ZObject3d::append(const ZObject3d &obj, size_t srcOffset)
+{
+  m_voxelArray.insert(m_voxelArray.end(),
+                      obj.m_voxelArray.begin() + srcOffset * 3,
+                      obj.m_voxelArray.end());
+}
+
+void ZObject3d::appendBackward(const ZObject3d &obj, size_t srcOffset)
+{
+  size_t voxelNumber = obj.size();
+  if (srcOffset >= voxelNumber) {
+    return;
+  }
+
+  size_t dstOffset = obj.size();
+  m_voxelArray.resize(m_voxelArray.size() + obj.size() - srcOffset * 3);
+  for (size_t i = voxelNumber - srcOffset; i > 0; --i) {
+    set(dstOffset++, obj.x(i - 1), obj.y(i - 1), obj.z(i - 1));
+  }
+}
+
 Object_3d* ZObject3d::c_obj() const
 {
   m_objWrapper.conn = m_conn;
@@ -89,6 +110,17 @@ Object_3d* ZObject3d::c_obj() const
   m_objWrapper.size = size();
 
   return &m_objWrapper;
+}
+
+void ZObject3d::setFromCObj(const Object_3d *obj)
+{
+  m_voxelArray.resize(obj->size * 3);
+  size_t offset = 0;
+  for (size_t i = 0; i < obj->size; ++i) {
+    for (int j = 0; j < 3; ++j) {
+      m_voxelArray[offset++] = obj->voxels[i][j];
+    }
+  }
 }
 
 void ZObject3d::setLine(ZPoint start, ZPoint end)
@@ -157,7 +189,12 @@ void ZObject3d::display(ZPainter &painter, int z, Display_Style option) const
 #endif
 }
 
-void ZObject3d::labelStack(Stack *stack, int label)
+void ZObject3d::labelStack(Stack *stack) const
+{
+  labelStack(stack, m_label);
+}
+
+void ZObject3d::labelStack(Stack *stack, int label) const
 {
   Object_3d *obj = c_obj();
 
@@ -186,7 +223,17 @@ void ZObject3d::labelStack(Stack *stack, int label)
   }
 }
 
-void ZObject3d::labelStack(Stack *stack, int label, int dx, int dy, int dz)
+void ZObject3d::labelStack(ZStack *stack, int label) const
+{
+  labelStack(stack->c_stack(), label, iround(stack->getOffset().x()),
+             iround(stack->getOffset().y()), iround(stack->getOffset().z()));
+}
+void ZObject3d::labelStack(ZStack *stack) const
+{
+  labelStack(stack, m_label);
+}
+
+void ZObject3d::labelStack(Stack *stack, int label, int dx, int dy, int dz) const
 {
   Object_3d *obj = c_obj();
 
@@ -305,6 +352,21 @@ void ZObject3d::print()
   }
 }
 
+ZStack* ZObject3d::toStackObject() const
+{
+  int offset[3];
+  Stack *stack = toStack(offset);
+  ZStack *stackObject = NULL;
+
+  if (stack != NULL) {
+    stackObject = new ZStack;
+    stackObject->consume(stack);
+    stackObject->setOffset(offset[0], offset[1], offset[2]);
+  }
+
+  return stackObject;
+}
+
 Stack* ZObject3d::toStack(int *offset) const
 {
   Object_3d *obj = c_obj();
@@ -332,6 +394,142 @@ Stack* ZObject3d::toStack(int *offset) const
   }
 
   return stack;
+}
+
+void ZObject3d::drawStack(ZStack *stack) const
+{
+  Object_3d *obj = c_obj();
+
+  uint8_t color[3];
+  color[0] = m_color.red();
+  color[1] = m_color.green();
+  color[2] = m_color.blue();
+
+  ZIntPoint origin = stack->getOffset().toIntPoint();
+  int width = stack->width();
+  int height = stack->height();
+  int depth = stack->depth();
+
+  for (int c = 0;  c < 3; ++c) {
+    Stack *cstack = stack->c_stack(c);
+    for (size_t i = 0; i < obj->size; ++i) {
+      int x = obj->voxels[i][0] - origin[0];
+      int y = obj->voxels[i][1] - origin[1];
+      int z = obj->voxels[i][2] - origin[2];
+      ssize_t offset = Stack_Util_Offset(x, y, z, width, height, depth);
+      if (offset >= 0) {
+        cstack->array[offset] = color[c];
+      }
+    }
+  }
+}
+
+void ZObject3d::drawStack(ZStack *stack, int xIntv, int yIntv, int zIntv) const
+{
+  Object_3d *obj = c_obj();
+
+  uint8_t color[3];
+  color[0] = m_color.red();
+  color[1] = m_color.green();
+  color[2] = m_color.blue();
+
+  ZIntPoint origin = stack->getOffset().toIntPoint();
+  int width = stack->width();
+  int height = stack->height();
+  int depth = stack->depth();
+
+  int rx = xIntv + 1;
+  int ry = yIntv + 1;
+  int rz = zIntv + 1;
+
+  for (int c = 0;  c < 3; ++c) {
+    Stack *cstack = stack->c_stack(c);
+    for (size_t i = 0; i < obj->size; ++i) {
+      int x = obj->voxels[i][0] - origin[0];
+      int y = obj->voxels[i][1] - origin[1];
+      int z = obj->voxels[i][2] - origin[2];
+      ssize_t offset = Stack_Util_Offset(
+            x / rx, y / ry, z / rz, width, height, depth);
+      if (offset >= 0) {
+        cstack->array[offset] = color[c];
+      }
+    }
+  }
+}
+
+void ZObject3d::drawStack(const std::vector<Stack*> &stackArray,
+                          const int *offset,
+                          int xIntv, int yIntv, int zIntv) const
+{
+  Object_3d *obj = c_obj();
+
+  uint8_t color[3];
+  color[0] = m_color.red();
+  color[1] = m_color.green();
+  color[2] = m_color.blue();
+
+  ZIntPoint origin(0, 0, 0);
+  if (offset != NULL) {
+    origin.set(offset[0], offset[1], offset[2]);
+  }
+  int width = C_Stack::width(stackArray[0]);
+  int height = C_Stack::height(stackArray[0]);
+  int depth = C_Stack::depth(stackArray[0]);
+
+  int rx = xIntv + 1;
+  int ry = yIntv + 1;
+  int rz = zIntv + 1;
+
+  for (size_t c = 0; c < stackArray.size(); ++c) {
+    Stack *cstack = stackArray[c];
+    for (size_t i = 0; i < obj->size; ++i) {
+      int x = obj->voxels[i][0] / rx - origin[0];
+      int y = obj->voxels[i][1] / ry - origin[1];
+      int z = obj->voxels[i][2] / rz - origin[2];
+      ssize_t offset = Stack_Util_Offset(x, y, z, width, height, depth);
+      if (offset >= 0) {
+        cstack->array[offset] = color[c];
+      }
+    }
+  }
+}
+
+ZStack* ZObject3d::toLabelStack() const
+{
+  Object_3d *obj = c_obj();
+
+  int corners[6];
+  Object_3d_Range(obj, corners);
+
+  int offset[3];
+  memcpy(offset, corners, sizeof(int) * 3);
+
+  int width = corners[3] - corners[0] + 1;
+  int height = corners[4] - corners[1] + 1;
+  int depth = corners[5] - corners[2] + 1;
+
+  Stack *stack = C_Stack::make(GREY, width, height, depth);
+  C_Stack::setZero(stack);
+
+  int label = m_label;
+  CLIP_VALUE(label, 0, 255);
+  for (size_t i = 0; i < obj->size; ++i) {
+    int x = obj->voxels[i][0] - corners[0];
+    int y = obj->voxels[i][1] - corners[1];
+    int z = obj->voxels[i][2] - corners[2];
+
+    stack->array[Stack_Util_Offset(x, y, z, width, height, depth)] = label;
+  }
+
+  ZStack *stackObject = NULL;
+
+  if (stack != NULL) {
+    stackObject = new ZStack;
+    stackObject->consume(stack);
+    stackObject->setOffset(offset[0], offset[1], offset[2]);
+  }
+
+  return stackObject;
 }
 
 ZObject3dArray* ZObject3d::growLabel(const ZObject3d &seed, int growLevel)
@@ -429,6 +627,8 @@ bool ZObject3d::isEmpty() const
 
 bool ZObject3d::loadStack(const Stack *stack, int threshold)
 {
+  clear();
+
   if (stack == NULL) {
     return false;
   }
@@ -436,8 +636,6 @@ bool ZObject3d::loadStack(const Stack *stack, int threshold)
   if (C_Stack::kind(stack) != GREY) {
     return false;
   }
-
-  clear();
 
   int width = C_Stack::width(stack);
   int height = C_Stack::height(stack);
@@ -449,6 +647,44 @@ bool ZObject3d::loadStack(const Stack *stack, int threshold)
       for (int x = 0; x < width; ++x) {
         if (stack->array[offset] > threshold) {
           append(x, y, z);
+        }
+        ++offset;
+      }
+    }
+  }
+
+  if (isEmpty()) {
+    return false;
+  }
+
+  return true;
+}
+
+bool ZObject3d::loadStack(const ZStack *stack, int threshold)
+{
+  clear();
+
+  if (stack == NULL) {
+    return false;
+  }
+
+  if (stack->kind() != GREY) {
+    return false;
+  }
+
+  ZIntPoint origin = stack->getOffset().toIntPoint();
+
+  int width = stack->width();
+  int height = stack->height();
+  int depth = stack->depth();
+
+  size_t offset = 0;
+  const Stack* stackData = stack->c_stack();
+  for (int z = 0; z < depth; ++z) {
+    for (int y = 0; y < height; ++y) {
+      for (int x = 0; x < width; ++x) {
+        if (stackData->array[offset] > threshold) {
+          append(x + origin.getX(), y + origin.getY(), z + origin.getZ());
         }
         ++offset;
       }
@@ -476,6 +712,21 @@ void ZObject3d::duplicateAcrossZ(int depth)
 
   for (size_t i = 2; i < m_voxelArray.size(); i += 3) {
     m_voxelArray[i] = i / originalSize;
+  }
+}
+
+void ZObject3d::reverse()
+{
+  size_t voxelNumber = size();
+  if (voxelNumber >= 2) {
+    size_t halfSize = voxelNumber / 2;
+    int tmp;
+    for (size_t i = 0; i < halfSize; ++i) {
+      for (size_t j = 0; j < 3; ++j) {
+        SWAP2(m_voxelArray[i * 3 + j],
+            m_voxelArray[(voxelNumber - i - 1) * 3 + j], tmp);
+      }
+    }
   }
 }
 

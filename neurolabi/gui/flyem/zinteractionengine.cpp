@@ -2,7 +2,10 @@
 #include <QMouseEvent>
 
 ZInteractionEngine::ZInteractionEngine(QObject *parent) :
-  QObject(parent), m_dataBuffer(NULL)
+  QObject(parent), m_showObject(true), m_objStyle(ZStackDrawable::NORMAL),
+  m_mouseLeftButtonPressed(false), m_mouseRightButtonPressed(false),
+  m_cursorRadius(5), m_isStrokeOn(false),
+  m_dataBuffer(NULL)
 {
   m_stroke.setWidth(10.0);
   m_namedDecorationList.append(&m_stroke);
@@ -47,6 +50,9 @@ void ZInteractionEngine::processMouseReleaseEvent(
   if (event->button() == Qt::LeftButton) {
     commitData();
     m_mouseLeftButtonPressed = false;
+  } else if (event->button() == Qt::RightButton) {
+    exitPaintStroke();
+    m_mouseRightButtonPressed = false;
   }
 }
 
@@ -60,6 +66,7 @@ void ZInteractionEngine::processMousePressEvent(QMouseEvent *event,
 {
   UNUSED_PARAMETER(sliceIndex);
   UNUSED_PARAMETER(event);
+
   m_mouseLeftButtonPressed = true;
 }
 
@@ -75,21 +82,34 @@ void ZInteractionEngine::processKeyPressEvent(QKeyEvent *event)
     exitPaintStroke();
     break;
   case Qt::Key_1:
-    m_stroke.setLabel(1);
-    emit decorationUpdated();
+    if (isStateOn(STATE_DRAW_STROKE)) {
+      m_stroke.setLabel(1);
+      emit decorationUpdated();
+    }
     break;
   case Qt::Key_2:
-    m_stroke.setLabel(2);
-    emit decorationUpdated();
+    if (isStateOn(STATE_DRAW_STROKE)) {
+      m_stroke.setLabel(2);
+      emit decorationUpdated();
+    }
     break;
   case Qt::Key_3:
-    m_stroke.setLabel(3);
-    emit decorationUpdated();
+    if (isStateOn(STATE_DRAW_STROKE)) {
+      m_stroke.setLabel(3);
+      emit decorationUpdated();
+    }
     break;
   case Qt::Key_4:
-    m_stroke.setLabel(4);
-    emit decorationUpdated();
+    if (isStateOn(STATE_DRAW_STROKE)) {
+      m_stroke.setLabel(4);
+      emit decorationUpdated();
+    }
     break;
+  case Qt::Key_E:
+    if (isStateOn(STATE_DRAW_STROKE)) {
+      m_stroke.setLabel(255);
+      emit decorationUpdated();
+    }
   default:
     break;
   }
@@ -129,4 +149,21 @@ void ZInteractionEngine::saveStroke()
     emit strokePainted(stroke);
   }
   //}
+}
+
+bool ZInteractionEngine::isStateOn(EState status) const
+{
+  switch (status) {
+  case STATE_DRAW_LINE:
+    return false;
+  case STATE_DRAW_STROKE:
+    return m_interactiveContext.strokeEditMode() ==
+        ZInteractiveContext::STROKE_DRAW;
+  case STATE_LEFT_BUTTON_PRESSED:
+    return m_mouseLeftButtonPressed;
+  case STATE_RIGHT_BUTTON_PRESSED:
+    return m_mouseRightButtonPressed;
+  }
+
+  return false;
 }

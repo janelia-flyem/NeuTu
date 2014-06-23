@@ -28,4 +28,6 @@ HEADERS +=     test/zswctreetest.h \
     test/zflyemneuronimagefactorytest.h \
     test/zspgrowtest.h \
     test/zflyemneuronmatchtest.h \
-    test/z3dinteracttest.h
+    test/z3dinteracttest.h \
+    test/zvoxelgraphicstest.h \
+    test/zdocplayertest.h

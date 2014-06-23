@@ -16,6 +16,7 @@
 #include "zswcconnector.h"
 #include "zgraph.h"
 #include "zdocumentable.h"
+#include "zdocplayer.h"
 
 using namespace std;
 
@@ -1833,8 +1834,9 @@ ZStackDocCommand::ObjectEdit::MoveSelected::~MoveSelected()
 
 ZStackDocCommand::ObjectEdit::AddObject::AddObject(
     ZStackDoc *doc, ZDocumentable *obj, NeuTube::EDocumentableType type,
-    QUndoCommand *parent)
-  : QUndoCommand(parent), m_doc(doc), m_obj(obj), m_type(type), m_isInDoc(false)
+    ZDocPlayer::TRole role, QUndoCommand *parent)
+  : QUndoCommand(parent), m_doc(doc), m_obj(obj), m_type(type), m_role(role),
+    m_isInDoc(false)
 {
 
 }
@@ -1848,14 +1850,21 @@ ZStackDocCommand::ObjectEdit::AddObject::~AddObject()
 
 void ZStackDocCommand::ObjectEdit::AddObject::redo()
 {
-  m_doc->addObject(m_obj, m_type);
+  m_doc->addObject(m_obj, m_type, m_role);
   m_doc->notifyObjectModified();
+  if ((m_role & ZDocPlayer::ROLE_3DPAINT) > 0) {
+    m_doc->notifyVolumeModified();
+  }
   m_isInDoc = true;
 }
 
 void ZStackDocCommand::ObjectEdit::AddObject::undo()
 {
-  m_doc->removeObject(m_obj, false);
+  ZDocPlayer::TRole role = m_doc->removeObject(m_obj, false);
+  m_doc->notifyObjectModified();
+  if ((role & ZDocPlayer::ROLE_3DPAINT) > 0) {
+    m_doc->notifyVolumeModified();
+  }
   m_isInDoc = false;
 }
 

@@ -11,8 +11,10 @@
 #include "zstackdrawable.h"
 #include "c_stack.h"
 #include "zlabelcolortable.h"
+#include "zcuboid.h"
 
 class ZStack;
+class ZObject3d;
 
 class ZStroke2d : public ZDocumentable, public ZStackDrawable {
 public:
@@ -89,6 +91,12 @@ public:
    * taken.
    */
   ZStack *toStack() const;
+
+  ZCuboid getBoundBox() const;
+
+  ZObject3d* toObject3d() const;
+
+  void labelStack(ZStack *stack) const;
 
 private:
   static QVector<QColor> constructColorTable();

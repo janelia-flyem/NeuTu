@@ -9,6 +9,7 @@
 #define GLM_FORCE_RADIANS
 //#define GLM_MESSAGES
 #define GLM_SWIZZLE
+//#define GLM_FORCE_INLINE
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtc/matrix_transform.hpp>

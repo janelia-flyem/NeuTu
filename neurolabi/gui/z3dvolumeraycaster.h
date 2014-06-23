@@ -9,6 +9,7 @@
 #include "znumericparameter.h"
 #include "z3dvolume.h"
 #include "z3dmesh.h"
+#include "zlinesegment.h"
 
 #include "zwidgetsgroup.h"
 
@@ -69,6 +70,15 @@ public:
   inline void setZCutLower(int v) { m_zCut.setLowerValue(v); }
   inline void setZCutUpper(int v) { m_zCut.setUpperValue(v); }
 
+  /*!
+   * \brief Get the image-space ray of a screen point
+   *
+   * The ray passes the screen point (\a x, \a y) with the direction into the
+   * screen. \a success is set to true iff the ray hits the volume.
+   */
+  ZLineSegment getScreenRay(int x, int y, int width, int height, bool &success);
+
+
 signals:
   void pointInVolumeLeftClicked(QPoint pt, glm::ivec3 pos3D,
                                 Qt::KeyboardModifiers modifiers);
@@ -93,13 +103,16 @@ private:
   // check success before using the returned value
   // if first hit 3d position is in volume, success will be true,
   // otherwise don't use the returned value
-  glm::vec3 getFirstHit3DPosition(int x, int y, int width, int height, bool &success);
+  glm::vec3 getFirstHit3DPosition(
+      int x, int y, int width, int height, bool &success);
   // use first channel intensity
-  glm::vec3 getMaxInten3DPositionUnderScreenPoint(int x, int y, int width, int height, bool &success);
+  glm::vec3 getMaxInten3DPositionUnderScreenPoint(
+      int x, int y, int width, int height, bool &success);
   //get 3D position from 2D screen position
   glm::vec3 get3DPosition(glm::ivec2 pos2D, int width, int height, Z3DRenderOutputPort &port);
   //get 3D position from 2D screen position and depth
   glm::vec3 get3DPosition(glm::ivec2 pos2D, double depth, int width, int height);
+
   void clearFRVolumeSlices();
 
   // based on context, prepare minimum necessary data and send to raycasterrenderer

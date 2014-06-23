@@ -78,3 +78,9 @@ bool ZIntPoint::operator ==(const ZIntPoint &pt) const
 {
   return getX() == pt.getX() && getY() == pt.getY() && getZ() == pt.getZ();
 }
+
+ZIntPoint operator + (const ZIntPoint &pt1, const ZIntPoint &pt2)
+{
+  return ZIntPoint(pt1.getX() + pt2.getX(), pt1.getY() + pt2.getY(),
+                   pt1.getZ() + pt2.getZ());
+}

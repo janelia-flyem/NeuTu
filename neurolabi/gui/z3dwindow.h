@@ -231,6 +231,7 @@ public slots:
   void notifyUser(const QString &message);
 
   void addStrokeFrom3dPaint(ZStroke2d*stroke);
+  void addPolyplaneFrom3dPaint(ZStroke2d*stroke);
 
 protected:
   virtual void dragEnterEvent(QDragEnterEvent *event);

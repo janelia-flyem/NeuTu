@@ -395,7 +395,9 @@ HEADERS += mainwindow.h \
     zstackdoclabelstackfactory.h \
     flyem/zinteractionengine.h \
     zsparseobject.h \
-    zlabelcolortable.h
+    zlabelcolortable.h \
+    zdocplayer.h \
+    zlinesegmentobject.h
 
 FORMS += settingdialog.ui \
     frameinfodialog.ui \
@@ -655,7 +657,9 @@ SOURCES += main.cpp \
     zstackdoclabelstackfactory.cpp \
     flyem/zinteractionengine.cpp \
     zsparseobject.cpp \
-    zlabelcolortable.cpp
+    zlabelcolortable.cpp \
+    zdocplayer.cpp \
+    zlinesegmentobject.cpp
 
 OTHER_FILES += \
     extlib.pri

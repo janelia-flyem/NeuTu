@@ -205,6 +205,7 @@ void ZStackDoc::connectSignalSlot()
           this, SIGNAL(cleanChanged(bool)));
   connect(&m_reader, SIGNAL(finished()), this, SIGNAL(stackReadDone()));
   connect(this, SIGNAL(stackReadDone()), this, SLOT(loadReaderResult()));
+  connect(this, SIGNAL(stackModified()), this, SIGNAL(volumeModified()));
 }
 
 void ZStackDoc::createActions()
@@ -562,6 +563,11 @@ bool ZStackDoc::isEmpty()
 bool ZStackDoc::hasObject()
 {
   return !m_objs.isEmpty();
+}
+
+bool ZStackDoc::hasSparseObject()
+{
+  return !getSparseObjectList().isEmpty();
 }
 
 bool ZStackDoc::hasSwc() const
@@ -1948,6 +1954,7 @@ void ZStackDoc::addSparseObject(ZSparseObject *obj)
   m_objs.prepend(obj);
   m_sparseObjectList.prepend(obj);
   m_drawableList.prepend(obj);
+  m_playerList.append(new ZSparseObjectPlayer(obj, ZDocPlayer::ROLE_SEED));
 }
 
 void ZStackDoc::addStroke(ZStroke2d *obj)
@@ -1960,6 +1967,9 @@ void ZStackDoc::addStroke(ZStroke2d *obj)
   m_objs.prepend(obj);
   m_strokeList.prepend(obj);
   m_drawableList.prepend(obj);
+
+  m_playerList.append(new ZStroke2dPlayer(obj, ZDocPlayer::ROLE_SEED));
+
 #ifdef _DEBUG_2
   std::cout << "New stroke added" << std::endl;
   obj->print();
@@ -3165,6 +3175,8 @@ void ZStackDoc::removeLastObject(bool deleteObject)
       }
     }
 
+    m_playerList.removePlayer(obj);
+
     if (deleteObject == true) {
       delete obj;
     }
@@ -3260,7 +3272,7 @@ void ZStackDoc::removeAllSparseObject()
   notifySparseObjectModified();
 }
 
-void ZStackDoc::removeObject(ZInterface *obj, bool deleteObject)
+ZDocPlayer::TRole ZStackDoc::removeObject(ZInterface *obj, bool deleteObject)
 {
   REMOVE_OBJECT(m_objs, obj);
   //REMOVE_OBJECT(m_swcObjects, obj);
@@ -3275,9 +3287,14 @@ void ZStackDoc::removeObject(ZInterface *obj, bool deleteObject)
 
   removeLocsegChain(obj);
 
+  ZDocPlayer::TRole role =
+      m_playerList.removePlayer(dynamic_cast<ZDocumentable*>(obj));
+
   if (deleteObject == true) {
     delete obj;
   }
+
+  return role;
 }
 
 std::set<ZSwcTree *> ZStackDoc::removeEmptySwcTree(bool deleteObject)
@@ -3360,6 +3377,33 @@ void ZStackDoc::removeSelectedObject(bool deleteObject)
       }
     }
   }
+}
+
+void ZStackDoc::removeObject(ZDocPlayer::TRole role, bool deleteObject)
+{
+  std::set<ZDocumentable*> removeSet;
+  for (ZDocPlayerList::iterator iter = m_playerList.begin();
+       iter != m_playerList.end(); ++iter) {
+    ZDocPlayer *player = *iter;
+    if (player->hasRole(role)) {
+      removeSet.insert(player->getData());
+    }
+  }
+
+  for (std::set<ZDocumentable*>::iterator iter = removeSet.begin();
+       iter != removeSet.end(); ++iter) {
+    removeObject(*iter, deleteObject);
+  }
+
+#if 0
+  QMutableListIterator<ZDocPlayer*> playerIter(m_playerList);
+  while (playerIter.hasNext()) {
+    ZDocPlayer *player = playerIter.next();
+    if (player->hasRole(role)) {
+      removeObject(player->getData(), deleteObject);
+    }
+  }
+#endif
 }
 
 void ZStackDoc::removeSelectedPuncta(bool deleteObject)
@@ -5237,7 +5281,7 @@ bool ZStackDoc::loadFile(const QString &filePath, bool emitMessage)
     ZSparseObject *sobj = new ZSparseObject;
     sobj->load(filePath.toStdString().c_str());
     addSparseObject(sobj);
-    sobj->setColor(255, 0, 0, 255);
+    sobj->setColor(255, 255, 255, 255);
 
     ZCuboid cuboid = sobj->getBoundBox();
     ZStack *stack = ZStackFactory::makeVirtualStack(
@@ -5480,6 +5524,11 @@ void ZStackDoc::notifySparseObjectModified()
 void ZStackDoc::notifyStackModified()
 {
   emit stackModified();
+}
+
+void ZStackDoc::notifyVolumeModified()
+{
+  emit volumeModified();
 }
 
 void ZStackDoc::notifyStrokeModified()
@@ -6924,7 +6973,8 @@ bool ZStackDoc::executeAddStrokeCommand(const QList<ZStroke2d*> &strokeList)
   return succ;
 }
 
-void ZStackDoc::addObject(ZDocumentable *obj, NeuTube::EDocumentableType type)
+void ZStackDoc::addObject(
+    ZDocumentable *obj, NeuTube::EDocumentableType type, ZDocPlayer::TRole role)
 {
   switch (type) {
   case NeuTube::Documentable_SWC:
@@ -6949,6 +6999,15 @@ void ZStackDoc::addObject(ZDocumentable *obj, NeuTube::EDocumentableType type)
     addSparseObject(dynamic_cast<ZSparseObject*>(obj));
     break;
   }
+
+  addPlayer(obj, role);
+}
+
+void ZStackDoc::addPlayer(ZDocumentable *obj, ZDocPlayer::TRole role)
+{
+  if (role != ZDocPlayer::ROLE_NONE) {
+    m_playerList.append(new ZObject3dPlayer(obj, role));
+  }
 }
 
 bool ZStackDoc::hasObjectSelected()
@@ -6958,11 +7017,11 @@ bool ZStackDoc::hasObjectSelected()
 }
 
 bool ZStackDoc::executeAddObjectCommand(
-    ZDocumentable *obj, NeuTube::EDocumentableType type)
+    ZDocumentable *obj, NeuTube::EDocumentableType type, ZDocPlayer::TRole role)
 {
   if (obj != NULL) {
     ZStackDocCommand::ObjectEdit::AddObject *command =
-        new ZStackDocCommand::ObjectEdit::AddObject(this, obj, type);
+        new ZStackDocCommand::ObjectEdit::AddObject(this, obj, type, role);
     pushUndoCommand(command);
 
     return true;
@@ -7898,7 +7957,7 @@ void ZStackDocReader::loadStack(const QString &filePath)
     sobj->load(filePath.toStdString().c_str());
     if (!sobj->isEmpty()) {
       addSparseObject(sobj);
-      sobj->setColor(255, 0, 0, 255);
+      sobj->setColor(128, 0, 0, 255);
 
       ZCuboid cuboid = sobj->getBoundBox();
       m_stack = ZStackFactory::makeVirtualStack(
@@ -8011,9 +8070,21 @@ bool ZStackDocReader::hasData() const
 std::vector<ZStack*> ZStackDoc::createWatershedMask()
 {
   std::vector<ZStack*> maskArray;
+#if 0
   foreach (ZStroke2d* stroke, m_strokeList) {
     if (!stroke->isEmpty()) {
       maskArray.push_back(stroke->toStack());
+    }
+  }
+#endif
+  for (ZDocPlayerList::const_iterator iter = m_playerList.begin();
+       iter != m_playerList.end(); ++iter) {
+    const ZDocPlayer *player = *iter;
+    if (player->hasRole(ZDocPlayer::ROLE_SEED)) {
+      ZStack *stack = player->toStack();
+      if (stack != NULL) {
+        maskArray.push_back(stack);
+      }
     }
   }
 
@@ -8022,7 +8093,7 @@ std::vector<ZStack*> ZStackDoc::createWatershedMask()
 
 void ZStackDoc::localSeededWatershed()
 {
-  removeAllObj3d();
+  removeObject(ZDocPlayer::ROLE_TMP_RESULT, true);
 
   if (!m_strokeList.isEmpty()) {
     ZStackWatershed engine;
@@ -8107,6 +8178,7 @@ void ZStackDoc::localSeededWatershed()
       obj->setColor(255, 255, 0, 180);
 
       addObj3d(obj);
+      addPlayer(obj, ZDocPlayer::ROLE_TMP_RESULT);
       notifyObj3dModified();
     }
 
@@ -8117,11 +8189,12 @@ void ZStackDoc::localSeededWatershed()
 
 void ZStackDoc::seededWatershed()
 {
-  removeAllObj3d();
+  removeObject(ZDocPlayer::ROLE_TMP_RESULT, true);
+  //removeAllObj3d();
+  ZStackWatershed engine;
+  ZStackArray seedMask = createWatershedMask();
 
-  if (!m_strokeList.isEmpty()) {
-    ZStackWatershed engine;
-    ZStackArray seedMask = createWatershedMask();
+  if (!seedMask.empty()) {
     ZStack *out = engine.run(m_stack, seedMask);
 
     Object_3d *objData = Stack_Region_Border(out->c_stack(), 6, TRUE);
@@ -8135,6 +8208,8 @@ void ZStackDoc::seededWatershed()
       obj->setColor(255, 255, 0, 255);
 
       addObj3d(obj);
+      addPlayer(obj, ZDocPlayer::ROLE_TMP_RESULT);
+
       notifyObj3dModified();
     }
     //delete out;
@@ -8245,6 +8320,7 @@ ZStack* ZStackDoc::makeLabelStack(ZStack *stack) const
   out->setZero();
   C_Stack::copyChannelValue(out->data(), 0, getStack()->c_stack());
   C_Stack::copyChannelValue(out->data(), 1, getStack()->c_stack());
+  C_Stack::copyChannelValue(out->data(), 2, getStack()->c_stack());
 
   if (labelField != NULL) {
     size_t voxelNumber = out->getVoxelNumber();
@@ -8257,18 +8333,22 @@ ZStack* ZStackDoc::makeLabelStack(ZStack *stack) const
     const uint8_t *labelArray = labelField->array8();
     uint8_t *ch1Array = out->array8(0);
     uint8_t *ch2Array = out->array8(1);
+    uint8_t *ch3Array = out->array8(2);
 
     for (size_t i = 0; i < voxelNumber; ++i) {
-      if (labelArray[i] != 1) {
+      if (labelArray[i] == 1) {
+        ch2Array[i] = 0;
+        ch3Array[i] = 0;
+      } else if (labelArray[i] == 2) {
         ch1Array[i] = 0;
-      }
-      if (labelArray[i] != 2) {
+        ch3Array[i] = 0;
+      } else if (labelArray[i] == 3) {
+        ch1Array[i] = 0;
         ch2Array[i] = 0;
       }
     }
     out->setOffset(getStack()->getOffset());
   } else {
-    C_Stack::copyChannelValue(out->data(), 2, getStack()->c_stack());
     emit statusMessageUpdated("No label field.");
   }
 
@@ -8295,4 +8375,27 @@ void ZStackDoc::setStackFactory(ZStackFactory *factory)
   delete m_stackFactory;
 
   m_stackFactory = factory;
+}
+
+QList<const ZDocPlayer*> ZStackDoc::getPlayerList(ZDocPlayer::TRole role) const
+{
+
+  return m_playerList.getPlayerList(role);
+  /*
+  QList<const ZDocPlayer*> playerList;
+  for (ZDocPlayerList::const_iterator iter = m_playerList.begin();
+       iter != m_playerList.end(); ++iter) {
+    const ZDocPlayer *player = *iter;
+    if (player->hasRole(role)) {
+      playerList.append(player);
+    }
+  }
+
+  return playerList;
+  */
+}
+
+bool ZStackDoc::hasPlayer(ZDocPlayer::TRole role) const
+{
+  return m_playerList.hasPlayer(role);
 }

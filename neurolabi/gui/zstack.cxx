@@ -58,6 +58,33 @@ ZStack::ZStack(int kind, int width, int height, int depth,
   setData(stack, delloc);
 }
 
+ZStack::ZStack(int kind, const ZCuboid &box, int nchannel, bool isVirtual)
+  : m_preferredZScale(1.0), m_isLSMFile(false)
+{
+  m_buffer[0] = '\0';
+ // m_proj = NULL;
+ // m_stat = NULL;
+  int width = iround(box.width());
+  int height = iround(box.height());
+  int depth = iround(box.depth());
+
+  Mc_Stack *stack = NULL;
+  C_Stack::Mc_Stack_Deallocator *delloc = NULL;
+  if (isVirtual) {
+    stack = new Mc_Stack;
+    stack->array = NULL;
+    C_Stack::setAttribute(stack, kind, width, height, depth, nchannel);
+    delloc = C_Stack::cppDelete;
+  } else {
+    stack = Make_Mc_Stack(kind, width, height, depth, nchannel);
+    delloc = Kill_Mc_Stack;
+  }
+
+  m_delloc = NULL;
+  setData(stack, delloc);
+  setOffset(box.firstCorner());
+}
+
 ZStack::ZStack(Mc_Stack *stack, C_Stack::Mc_Stack_Deallocator *dealloc) :
   m_stack(NULL), m_delloc(NULL), m_preferredZScale(1.0), m_isLSMFile(false)
 {
@@ -787,6 +814,9 @@ double ZStack::value(int x, int y, int z, int c) const
   y -= iround(m_offset.y());
   z -= iround(m_offset.z());
   */
+  if (isVirtual()) {
+    return 0.0;
+  }
 
   if (!(IS_IN_CLOSE_RANGE(x, 0, width() - 1) &&
         IS_IN_CLOSE_RANGE(y, 0, height() - 1) &&
@@ -1563,6 +1593,15 @@ void ZStack::getBoundBox(Cuboid_I *box) const
 
     Cuboid_I_Set_S(box, x0, y0, z0, width(), height(), depth());
   }
+}
+
+ZCuboid ZStack::getBoundBox() const
+{
+  ZCuboid box;
+  box.setFirstCorner(getOffset());
+  box.setSize(width(), height(), depth());
+
+  return box;
 }
 
 bool ZStack::contains(int x, int y, int z) const

@@ -7,6 +7,7 @@
 
 #include <iostream>
 #include <string>
+#include "zintpoint.h"
 
 class ZPoint {
 public:
@@ -74,6 +75,8 @@ public:
     m_y += dy;
     m_z += dz;
   }
+
+  ZIntPoint toIntPoint() const;
 
 public:
   //virtual void display(ZPainter &painter, int n = 0, Display_Style style = NORMAL) const;

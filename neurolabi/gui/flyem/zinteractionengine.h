@@ -31,6 +31,11 @@ public:
     MOUSE_COMMAND_EXECUTED, MOUSE_EVENT_CAPTURED
   };
 
+  enum EState {
+    STATE_DRAW_STROKE, STATE_DRAW_LINE, STATE_LEFT_BUTTON_PRESSED,
+    STATE_RIGHT_BUTTON_PRESSED
+  };
+
   QList<ZStackDrawable*> getDecorationList() const;
   inline ZStackDrawable::Display_Style getObjectStyle() const { return m_objStyle; }
   inline const ZInteractiveContext& getInteractiveContext() const {
@@ -51,6 +56,8 @@ public:
   void processMouseDoubleClickEvent(QMouseEvent *eventint, int sliceIndex = 0);
 
   bool lockingMouseMoveEvent() const;
+
+  bool isStateOn(EState status) const;
 
 signals:
   void decorationUpdated();

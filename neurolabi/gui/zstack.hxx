@@ -21,6 +21,7 @@
 #include "tz_image_io.h"
 #include "zresolution.h"
 #include "zpoint.h"
+#include "zcuboid.h"
 
 
 //! Stack class
@@ -70,6 +71,8 @@ public:
    */
   ZStack(Mc_Stack *stack,
          C_Stack::Mc_Stack_Deallocator *dealloc = C_Stack::kill);
+
+  ZStack(int kind, const ZCuboid &box, int nchannel, bool isVirtual = false);
 
   //! Destructor
   virtual ~ZStack();
@@ -422,6 +425,8 @@ public: /* operations */
    * just the foreground.
    */
   void getBoundBox(Cuboid_I *box) const;
+
+  ZCuboid getBoundBox() const;
 
 public: /* processing routines */
   bool binarize(int threshold = 0);

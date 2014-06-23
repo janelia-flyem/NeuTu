@@ -258,3 +258,8 @@ ZPoint ZPoint::operator - () const
 {
   return ZPoint(-x(), -y(), -z());
 }
+
+ZIntPoint ZPoint::toIntPoint() const
+{
+  return ZIntPoint(iround(x()), iround(y()), iround(z()));
+}

@@ -19,7 +19,7 @@ public:
   /*!
    * \brief Label a stack with the internal label value.
    */
-  //void labelGrey(Stack *stack) const;
+  void labelStack(ZStack *stack) const;
 
   /*!
    * \brief Convert the stroke to a stack.

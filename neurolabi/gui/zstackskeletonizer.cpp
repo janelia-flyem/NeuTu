@@ -126,7 +126,7 @@ ZSwcTree* ZStackSkeletonizer::makeSkeletonWithoutDs(Stack *stackData)
       (m_downsampleInterval[2] + 1);
 
   cout << "Label objects ...\n" << endl;
-  int minObjSize = minObjSize;
+  int minObjSize = m_minObjSize;
   minObjSize /= dsVol;
   int nobj = Stack_Label_Large_Objects_N(
         stackData, NULL, 1, 2, minObjSize, 26);

@@ -6,6 +6,7 @@
 #include "swctreenode.h"
 #include "neutube.h"
 #include "zswcpath.h"
+#include "zdocplayer.h"
 #include <QMap>
 
 class ZSwcTree;
@@ -403,6 +404,23 @@ private:
 }
 
 namespace ObjectEdit {
+class AddObject : public QUndoCommand
+{
+public:
+  AddObject(ZStackDoc *doc, ZDocumentable *obj, NeuTube::EDocumentableType type,
+            ZDocPlayer::TRole role, QUndoCommand *parent = NULL);
+  ~AddObject();
+  void redo();
+  void undo();
+
+private:
+  ZStackDoc *m_doc;
+  ZDocumentable *m_obj;
+  NeuTube::EDocumentableType m_type;
+  ZDocPlayer::TRole m_role;
+  bool m_isInDoc;
+};
+
 class RemoveSelected : public QUndoCommand
 {
 public:
@@ -453,22 +471,6 @@ public:
   virtual bool mergeWith(const QUndoCommand *other);
   void undo();
   void redo();
-};
-
-class AddObject : public QUndoCommand
-{
-public:
-  AddObject(ZStackDoc *doc, ZDocumentable *obj, NeuTube::EDocumentableType type,
-            QUndoCommand *parent = NULL);
-  ~AddObject();
-  void redo();
-  void undo();
-
-private:
-  ZStackDoc *m_doc;
-  ZDocumentable *m_obj;
-  NeuTube::EDocumentableType m_type;
-  bool m_isInDoc;
 };
 }
 

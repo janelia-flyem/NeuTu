@@ -2,6 +2,7 @@
 #include <QPen>
 #include "zpainter.h"
 #include "tz_math.h"
+#include "zstack.hxx"
 
 const ZLabelColorTable ZSparseObject::m_colorTable;
 
@@ -46,4 +47,14 @@ void ZSparseObject::setLabel(int label)
 {
   m_label = label;
   m_color = m_colorTable.getColor(label);
+}
+
+void ZSparseObject::labelStack(ZStack *stack) const
+{
+  int offset[3];
+  offset[0] = iround(stack->getOffset().x());
+  offset[1] = iround(stack->getOffset().y());
+  offset[2] = iround(stack->getOffset().z());
+
+  drawStack(stack->c_stack(), m_label, offset);
 }

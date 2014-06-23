@@ -7,6 +7,7 @@
 #include "tz_math.h"
 #include "zintpoint.h"
 #include "zstack.hxx"
+#include "zobject3d.h"
 
 const double ZStroke2d::m_minWidth = 1.0;
 const double ZStroke2d::m_maxWidth = 100.0;
@@ -426,6 +427,50 @@ void ZStroke2d::translate(const ZPoint offset)
   m_z += iround(offset.z());
 }
 
+ZObject3d* ZStroke2d::toObject3d() const
+{
+  ZObject3d *obj = NULL;
+  ZStack *stack = toStack();
+  if (stack != NULL) {
+    obj = new ZObject3d;
+    obj->loadStack(stack);
+    obj->setLabel(getLabel());
+  }
+
+  return obj;
+}
+
+ZCuboid ZStroke2d::getBoundBox() const
+{
+  ZCuboid box;
+  if (!isEmpty()) {
+    double x0 = m_pointArray[0].x();
+    double y0 = m_pointArray[0].y();
+    double x1 = x0;
+    double y1 = y0;
+
+    double r = m_width / 2 + 1.0;
+
+    foreach(const QPointF &pt, m_pointArray) {
+      if (x0 > pt.x()) {
+        x0 = pt.x();
+      }
+      if (x1 < pt.x()) {
+        x1 = pt.x();
+      }
+      if (y0 > pt.y()) {
+        y0 = pt.y();
+      }
+      if (y1 < pt.y()) {
+        y1 = pt.y();
+      }
+    }
+
+    box.set(x0 - r, x0 - r, m_z, x0 + r, y0 + r, m_z + 1.0);
+  }
+  return box;
+}
+
 ZStack* ZStroke2d::toStack() const
 {
   if (isEmpty()) {
@@ -475,4 +520,13 @@ ZStack* ZStroke2d::toStack() const
   tmpStroke.labelGrey(stack->c_stack());
 
   return stack;
+}
+
+void ZStroke2d::labelStack(ZStack *stack) const
+{
+  if (stack != NULL) {
+    ZStroke2d tmpStroke = *this;
+    tmpStroke.translate(-stack->getOffset());
+    tmpStroke.labelGrey(stack->c_stack());
+  }
 }

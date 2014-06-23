@@ -21,7 +21,6 @@
 #include <string>
 #include <set>
 #include "zopencv_header.h"
-
 #include "neutube.h"
 #include "zstackprocessor.h"
 #include "zfilelist.h"
@@ -184,6 +183,8 @@
 #include "zstroke2d.h"
 #include "flyem/zflyemservice.h"
 #include "zintset.h"
+#include "test/zvoxelgraphicstest.h"
+#include "test/zdocplayertest.h"
 
 using namespace std;
 
@@ -191,9 +192,8 @@ ostream& ZTest::m_failureStream = cerr;
 
 ZTest::ZTest()
 {
+
 }
-
-
 
 
 #ifdef _JANELIA_WORKSTATION_
@@ -11782,7 +11782,7 @@ void ZTest::test(MainWindow *host)
   C_Stack::printValue(out);
 #endif
 
-#if 1
+#if 0
   ZStack stack;
   for (size_t i = 0; i < 10; ++i) {
     std::cout << "Loading stack " << i << " ..." << std::endl;
@@ -11792,4 +11792,10 @@ void ZTest::test(MainWindow *host)
     proj.project(&stack);
   }
 #endif
+
+#if 1
+  glm::mat4 Projection = glm::perspective(3.14f * 45.0f / 180.f, 1.0f, 0.1f, 100.0f);
+  std::cout << Projection << std::endl;
+#endif
+
 }

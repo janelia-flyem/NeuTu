@@ -37,6 +37,7 @@
 #include "zactionactivator.h"
 #include "resolutiondialog.h"
 #include "zneurontracer.h"
+#include "zdocplayer.h"
 
 class ZStackFrame;
 class ZInterface;
@@ -137,6 +138,7 @@ public: //attributes
   bool hasSwc() const;
   // hasDrawable() returns true iff it has a drawable object.
   bool hasDrawable();
+  bool hasSparseObject();
 
   bool hasSelectedSwc() const;
   bool hasSelectedSwcNode() const;
@@ -289,8 +291,11 @@ public:
   //Those functions do not notify object modification
   void removeLastObject(bool deleteObject = false);
   void removeAllObject(bool deleteObject = true);
-  void removeObject(ZInterface *obj, bool deleteObject = false);
+  ZDocPlayer::TRole removeObject(ZInterface *obj, bool deleteObject = false);
   void removeSelectedObject(bool deleteObject = false);
+
+  /* Remove object with specific roles */
+  void removeObject(ZDocPlayer::TRole role, bool deleteObject = false);
 
   void removeSelectedPuncta(bool deleteObject = false);
   void removeLocsegChain(ZInterface *obj);
@@ -376,7 +381,15 @@ public: /* puncta related methods */
   void addStroke(ZStroke2d *obj);
   void addSparseObject(ZSparseObject *obj);
 
-  void addObject(ZDocumentable *obj, NeuTube::EDocumentableType type);
+  void addObject(ZDocumentable *obj, NeuTube::EDocumentableType type,
+                 ZDocPlayer::TRole role = ZDocPlayer::ROLE_NONE);
+
+  /*!
+   * \brief Add a palyer
+   *
+   * Nothing will be done if \a role is ZDocPlayer::ROLE_NONE.
+   */
+  void addPlayer(ZDocumentable *obj, ZDocPlayer::TRole role);
 
   void updateLocsegChain(ZLocsegChain *chain);
   void importLocsegChain(const QStringList &files,
@@ -530,6 +543,15 @@ public: /* puncta related methods */
   QList<ZSwcTree*>::const_iterator getSwcIteratorEnd() const {
     return m_swcList.end(); }
 
+  inline const ZDocPlayerList& getPlayerList() const {
+    return m_playerList;
+  }
+
+  QList<const ZDocPlayer *> getPlayerList(ZDocPlayer::TRole role) const;
+
+  bool hasPlayer(ZDocPlayer::TRole role) const;
+
+
   std::vector<ZSwcTree*> getSwcArray() const;
   bool getLastStrokePoint(int *x, int *y) const;
   bool getLastStrokePoint(double *x, double *y) const;
@@ -585,6 +607,7 @@ public:
   void notifyObj3dModified();
   void notifySparseObjectModified();
   void notifyStackModified();
+  void notifyVolumeModified();
   void notifyStrokeModified();
   void notifyAllObjectModified();
   void notifyStatusMessageUpdated(const QString &message);
@@ -606,7 +629,9 @@ public:
   ZStack* makeLabelStack(ZStack *getStack = NULL) const;
 
 public slots: //undoable commands
-  bool executeAddObjectCommand(ZDocumentable *obj, NeuTube::EDocumentableType type);
+  bool executeAddObjectCommand(
+      ZDocumentable *obj, NeuTube::EDocumentableType type,
+      ZDocPlayer::TRole role = ZDocPlayer::ROLE_NONE);
   bool executeRemoveObjectCommand();
   //bool executeRemoveUnselectedObjectCommand();
   bool executeMoveObjectCommand(
@@ -731,6 +756,11 @@ signals:
   void holdSegChanged();
   void statusMessageUpdated(QString message) const;
 
+  /*!
+   * \brief A signal indicating modification of volume rendering
+   */
+  void volumeModified();
+
 private:
   void connectSignalSlot();
   void initNeuronTracer();
@@ -754,6 +784,8 @@ private:
   QList<ZStroke2d*> m_strokeList;
   QList<ZObject3d*> m_obj3dList;
   QList<ZSparseObject*> m_sparseObjectList;
+
+  ZDocPlayerList m_playerList;
 
   //Special object
   ZSwcNetwork *m_swcNetwork;

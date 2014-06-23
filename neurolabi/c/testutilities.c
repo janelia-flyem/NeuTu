@@ -12,6 +12,7 @@
 #include "tz_file_list.h"
 #include "tz_image_lib_defs.h"
 #include "tz_stack_utils.h"
+#include "tz_rastergeom.h"
 
 /*
 #include "tz_matlabio.h"
@@ -226,15 +227,14 @@ int main(int argc, char *argv[])
   printf("%g\n", Cube_Root(x) * Cube_Root(x) * Cube_Root(x));
 #endif
 
-#if 0
+#if 1
   printf("%d\n", Raster_Line_Map(852, 451, 296));
-  return 1;
 
   int m = 33;
   int n = 10;
   int i;
-  for (i = 0; i < m; i++) {
-    printf("%d ", Raster_Line_Map(m, n, i));
+  for (i = 0; i < n; i++) {
+    printf("%d ", Raster_Line_Map(n, m, i));
   }
   printf("\n");
 #endif

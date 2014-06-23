@@ -47,8 +47,24 @@ public:
   void setEndPoint(double x, double y, double z);
   void setEndPoint(const ZPoint &pt);
 
+  void set(const ZPoint &start, const ZPoint &end);
+
   inline const ZPoint& getStartPoint() const { return m_start; }
   inline const ZPoint& getEndPoint() const { return m_end; }
+
+  /*!
+   * \brief Get the length of the line segment
+   */
+  double getLength() const;
+
+  /*!
+   * \brief Invert the line segment.
+   *
+   * It swaps the start and end points.
+   */
+  void invert();
+
+  void print() const;
 
 private:
   ZPoint m_start;

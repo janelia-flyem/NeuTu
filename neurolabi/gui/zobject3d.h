@@ -52,16 +52,38 @@ public:
   inline void setY(int index, int y) { m_voxelArray[index * 3 + 1] = y; }
   inline void setZ(int index, int z) { m_voxelArray[index * 3 + 2] = z; }
 
+  inline int getLabel() const { return m_label; }
+  inline void setLabel(int label) { m_label = label; }
+
   bool isEmpty() const;
 
   void append(int x, int y, int z);
 
+  /*!
+   * \brief Append an object to the current object.
+   *
+   * \a srcOffset is the voxel index offset of \a obj for the start of appending.
+   */
+  void append(const ZObject3d &obj, size_t srcOffset = 0);
+
+  /*!
+   * \brief Append an object from the backward direction
+   *
+   * \param srcOffset The offset counted from the end. 0 is the last voxel, 1 is
+   *   the last - 1 voxel and so on.
+   */
+  void appendBackward(const ZObject3d &obj, size_t srcOffset = 0);
+
   void setLine(ZPoint start, ZPoint end);
 
   Object_3d* c_obj() const;
+  void setFromCObj(const Object_3d *obj);
 
-  void labelStack(Stack *stack, int label = 1);
-  void labelStack(Stack *stack, int label, int dx, int dy, int dz);
+  void labelStack(Stack *stack) const;
+  void labelStack(Stack *stack, int label = 1) const;
+  void labelStack(Stack *stack, int label, int dx, int dy, int dz) const;
+  void labelStack(ZStack *stack) const;
+  void labelStack(ZStack *stack, int label) const;
 
   //For tbar detection specifically
   ZPoint computeCentroid(FMatrix *matrix);
@@ -91,16 +113,37 @@ public:
 
   void print();
 
-  inline int lastX() { return *(m_voxelArray.end() - 3); }
-  inline int lastY() { return *(m_voxelArray.end() - 2); }
-  inline int lastZ() { return *(m_voxelArray.end() - 1); }
+  inline int lastX() const { return *(m_voxelArray.end() - 3); }
+  inline int lastY() const { return *(m_voxelArray.end() - 2); }
+  inline int lastZ() const { return *(m_voxelArray.end() - 1); }
 
   void getRange(int *corner) const;
 
   ZObject3dArray* growLabel(const ZObject3d &seed, int growLevel = -1);
 
   Stack* toStack(int *offset = NULL) const;
+  ZStack* toStackObject() const;
+  ZStack* toLabelStack() const;
+  void drawStack(ZStack *stack) const;
+
+  /*!
+   * \brief Draw a stack with downsampling ratios
+   */
+  void drawStack(ZStack *stack, int xIntv, int yIntv, int zIntv) const;
+
+  /*!
+   * \brief Draw a stack array
+   *
+   * The first stack will be drawn by the red color, the second by the green
+   * color and the third by the blue color. \a offset is the offset of the
+   * stacks. All the stacks in \a stackArray are supposed to have the same size.
+   * \a offset is the origin of the stacks in the downsampled space.
+   */
+  void drawStack(const std::vector<Stack*> &stackArray, const int *offset,
+                 int xIntv, int yIntv, int zIntv) const;
+
   bool loadStack(const Stack *stack, int threshold = 0);
+  bool loadStack(const ZStack *stack, int threshold = 0);
 
   ZPoint getCenter() const;
   double getRadius() const;
@@ -116,8 +159,16 @@ public:
    */
   void duplicateAcrossZ(int depth);
 
+  /*!
+   * \brief Reverse the object.
+   *
+   * The operation reverse the order of the voxels.
+   */
+  void reverse();
+
 private:
   int m_conn;
+  int m_label;
   std::vector<int> m_voxelArray;
   mutable Object_3d m_objWrapper;
 };
