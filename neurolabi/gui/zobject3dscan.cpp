@@ -1276,23 +1276,23 @@ Stack* ZObject3dScan::toStack(int *offset, int v) const
     return NULL;
   }
 
-  ZCuboid boundBox = getBoundBox();
+  ZIntCuboid boundBox = getBoundBox();
   if (offset != NULL) {
-    offset[0] = boundBox.firstCorner().x();
-    offset[1] = boundBox.firstCorner().y();
-    offset[2] = boundBox.firstCorner().z();
+    offset[0] = boundBox.getFirstCorner().getX();
+    offset[1] = boundBox.getFirstCorner().getY();
+    offset[2] = boundBox.getFirstCorner().getZ();
   }
 
-  Stack *stack = C_Stack::make(GREY, boundBox.width() + 1,
-                               boundBox.height() + 1,
-                               boundBox.depth() + 1);
+  Stack *stack = C_Stack::make(GREY, boundBox.getWidth(),
+                               boundBox.getHeight(),
+                               boundBox.getDepth());
   C_Stack::setZero(stack);
 
 
   int drawingOffet[3];
-  drawingOffet[0] = -boundBox.firstCorner().x();
-  drawingOffet[1] = -boundBox.firstCorner().y();
-  drawingOffet[2] = -boundBox.firstCorner().z();
+  drawingOffet[0] = -boundBox.getFirstCorner().getX();
+  drawingOffet[1] = -boundBox.getFirstCorner().getY();
+  drawingOffet[2] = -boundBox.getFirstCorner().getZ();
 
   drawStack(stack, v, drawingOffet);
 
@@ -1314,9 +1314,20 @@ ZStack* ZObject3dScan::toStackObject() const
   return stackObject;
 }
 
-ZCuboid ZObject3dScan::getBoundBox() const
+ZStack* ZObject3dScan::toVirtualStack() const
 {
-  ZCuboid boundBox;
+  ZIntCuboid box = getBoundBox();
+
+  ZStack *stack = new ZStack(GREY, box.getWidth(), box.getHeight(),
+                             box.getDepth(), 1, true);
+  stack->setOffset(box.getFirstCorner());
+
+  return stack;
+}
+
+ZIntCuboid ZObject3dScan::getBoundBox() const
+{
+  ZIntCuboid boundBox;
 
   bool isFirst = true;
   for (vector<ZObject3dStripe>::const_iterator iter = m_stripeArray.begin();
@@ -1332,6 +1343,12 @@ ZCuboid ZObject3dScan::getBoundBox() const
         boundBox.joinX(iter->getMinX());
         boundBox.joinX(iter->getMaxX());
       }
+#ifdef _DEBUG_2
+      std::cout << iter->getMinX() << " " << iter->getMaxX() << " "
+                << iter->getY() << " " << iter->getZ() << std::endl;
+      std::cout << boundBox.getFirstCorner().toString() << " "
+                << boundBox.getLastCorner().toString() << std::endl;
+#endif
     }
   }
 
@@ -1340,11 +1357,13 @@ ZCuboid ZObject3dScan::getBoundBox() const
 
 void ZObject3dScan::getBoundBox(Cuboid_I *box) const
 {
-  ZCuboid boundBox = getBoundBox();
+  ZIntCuboid boundBox = getBoundBox();
 
-  Cuboid_I_Set_S(box, boundBox.firstCorner().x(), boundBox.firstCorner().y(),
-                 boundBox.firstCorner().z(), boundBox.width() + 1,
-                 boundBox.height() + 1, boundBox.depth() + 1);
+  Cuboid_I_Set_S(box, boundBox.getFirstCorner().getX(),
+                 boundBox.getFirstCorner().getY(),
+                 boundBox.getFirstCorner().getZ(),
+                 boundBox.getWidth(),
+                 boundBox.getHeight(), boundBox.getDepth());
 }
 
 const std::vector<size_t>& ZObject3dScan::getStripeNumberAccumulation() const

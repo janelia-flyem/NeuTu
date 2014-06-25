@@ -82,7 +82,8 @@ public:
   /*!
    * \brief Translate the stroke
    */
-  void translate(const ZPoint offset);
+  void translate(const ZPoint &offset);
+  void translate(const ZIntPoint &offset);
 
   /*!
    * \brief Convert the stroke to a stack.

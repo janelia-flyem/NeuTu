@@ -146,6 +146,14 @@ CONFIG(debug, debug|release) {
     }
 }
 
+exists($$HOME/local/lib/OpenVDB) {
+    system(echo 'openvdb found')
+    DEFINES += _USE_OPENVDB_
+    INCLUDEPATH += $$HOME/local/lib/OpenVDB/include $$HOME/local/lib/tbb/include
+    LIBS += -L$$HOME/local/lib/OpenVDB/lib -L$$HOME/local/lib/tbb/lib \
+        -lopenvdb -ltbb -lHalf
+}
+
 # Input
 RESOURCES = gui.qrc
 HEADERS += mainwindow.h \
@@ -397,7 +405,9 @@ HEADERS += mainwindow.h \
     zsparseobject.h \
     zlabelcolortable.h \
     zdocplayer.h \
-    zlinesegmentobject.h
+    zlinesegmentobject.h \
+    openvdb_header.h \
+    zopenvdbobject.h
 
 FORMS += settingdialog.ui \
     frameinfodialog.ui \
@@ -659,7 +669,8 @@ SOURCES += main.cpp \
     zsparseobject.cpp \
     zlabelcolortable.cpp \
     zdocplayer.cpp \
-    zlinesegmentobject.cpp
+    zlinesegmentobject.cpp \
+    zopenvdbobject.cpp
 
 OTHER_FILES += \
     extlib.pri

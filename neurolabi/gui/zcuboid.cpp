@@ -613,3 +613,12 @@ bool ZCuboid::intersectLine(
 
   return false;
 }
+
+ZIntCuboid ZCuboid::toIntCuboid() const
+{
+  ZIntCuboid cuboid;
+  cuboid.setFirstCorner(m_firstCorner.toIntPoint());
+  cuboid.setLastCorner(m_lastCorner.toIntPoint());
+
+  return cuboid;
+}

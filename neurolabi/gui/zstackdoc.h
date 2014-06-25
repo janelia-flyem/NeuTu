@@ -156,15 +156,16 @@ public: //attributes
   /*!
    * \brief The offset from stack space to data space
    */
-  ZPoint getStackOffset() const;
-  void setStackOffset(double x, double y, double z);
+  ZIntPoint getStackOffset() const;
+  void setStackOffset(int x, int y, int z);
+  void setStackOffset(const ZIntPoint &offset);
   void setStackOffset(const ZPoint &offset);
 
   /*!
    * \brief Get the data space coordinates of stack coordinates
    */
-  ZPoint getDataCoord(const ZPoint &pt);
-  ZPoint getDataCoord(double x, double y, double z);
+  ZIntPoint getDataCoord(const ZIntPoint &pt);
+  ZIntPoint getDataCoord(int x, int y, int z);
 
   /*!
    * \brief Map stack coodinates to data space

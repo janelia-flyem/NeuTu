@@ -58,15 +58,15 @@ ZStack::ZStack(int kind, int width, int height, int depth,
   setData(stack, delloc);
 }
 
-ZStack::ZStack(int kind, const ZCuboid &box, int nchannel, bool isVirtual)
+ZStack::ZStack(int kind, const ZIntCuboid &box, int nchannel, bool isVirtual)
   : m_preferredZScale(1.0), m_isLSMFile(false)
 {
   m_buffer[0] = '\0';
  // m_proj = NULL;
  // m_stat = NULL;
-  int width = iround(box.width());
-  int height = iround(box.height());
-  int depth = iround(box.depth());
+  int width = box.getWidth();
+  int height = box.getHeight();
+  int depth = box.getDepth();
 
   Mc_Stack *stack = NULL;
   C_Stack::Mc_Stack_Deallocator *delloc = NULL;
@@ -82,7 +82,7 @@ ZStack::ZStack(int kind, const ZCuboid &box, int nchannel, bool isVirtual)
 
   m_delloc = NULL;
   setData(stack, delloc);
-  setOffset(box.firstCorner());
+  setOffset(box.getFirstCorner());
 }
 
 ZStack::ZStack(Mc_Stack *stack, C_Stack::Mc_Stack_Deallocator *dealloc) :
@@ -105,12 +105,12 @@ size_t ZStack::getByteNumber(EStackUnit unit) const
   }
 }
 
-void ZStack::setOffset(double dx, double dy, double dz)
+void ZStack::setOffset(int dx, int dy, int dz)
 {
   m_offset.set(dx, dy, dz);
 }
 
-void ZStack::setOffset(const ZPoint &pt)
+void ZStack::setOffset(const ZIntPoint &pt)
 {
   m_offset = pt;
 }
@@ -1513,8 +1513,8 @@ void ZStack::logLSMInfo()
 
 bool ZStack::hasOffset() const
 {
-  return (m_offset.x() != 0.0) || (m_offset.y() != 0.0) ||
-      (m_offset.z() != 0.0);
+  return (m_offset.getX() != 0) || (m_offset.getY() != 0) ||
+      (m_offset.getZ() != 0);
 }
 
 void ZStack::setZero()
@@ -1568,10 +1568,10 @@ bool ZStack::paste(ZStack *dst, int valueIgnored) const
     }
 
     int ch = imin2(dst->channelNumber(), channelNumber());
-    ZPoint offset = getOffset() - dst->getOffset();
-    int x0 = iround(offset.x());
-    int y0 = iround(offset.y());
-    int z0 = iround(offset.z());
+    ZIntPoint offset = getOffset() - dst->getOffset();
+    int x0 = offset.getX();
+    int y0 = offset.getY();
+    int z0 = offset.getZ();
 
     for (int i = 0; i < ch; ++i) {
       C_Stack::setBlockValue(dst->c_stack(i), c_stack(i), x0, y0, z0,
@@ -1587,17 +1587,17 @@ bool ZStack::paste(ZStack *dst, int valueIgnored) const
 void ZStack::getBoundBox(Cuboid_I *box) const
 {
   if (box != NULL) {
-    int x0 = iround(getOffset().x());
-    int y0 = iround(getOffset().y());
-    int z0 = iround(getOffset().z());
+    int x0 = getOffset().getX();
+    int y0 = getOffset().getY();
+    int z0 = getOffset().getZ();
 
     Cuboid_I_Set_S(box, x0, y0, z0, width(), height(), depth());
   }
 }
 
-ZCuboid ZStack::getBoundBox() const
+ZIntCuboid ZStack::getBoundBox() const
 {
-  ZCuboid box;
+  ZIntCuboid box;
   box.setFirstCorner(getOffset());
   box.setSize(width(), height(), depth());
 

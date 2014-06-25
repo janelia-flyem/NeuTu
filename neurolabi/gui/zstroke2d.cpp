@@ -417,7 +417,7 @@ const QColor& ZStroke2d::getLabelColor() const
 #endif
 }
 
-void ZStroke2d::translate(const ZPoint offset)
+void ZStroke2d::translate(const ZPoint &offset)
 {
   for (std::vector<QPointF>::iterator iter = m_pointArray.begin();
        iter != m_pointArray.end(); ++iter) {
@@ -426,6 +426,17 @@ void ZStroke2d::translate(const ZPoint offset)
   }
   m_z += iround(offset.z());
 }
+
+void ZStroke2d::translate(const ZIntPoint &offset)
+{
+  for (std::vector<QPointF>::iterator iter = m_pointArray.begin();
+       iter != m_pointArray.end(); ++iter) {
+    QPointF &pt = *iter;
+    pt += QPointF(offset.getX(), offset.getY());
+  }
+  m_z += iround(offset.getZ());
+}
+
 
 ZObject3d* ZStroke2d::toObject3d() const
 {

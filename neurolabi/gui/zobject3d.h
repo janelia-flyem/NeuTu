@@ -100,6 +100,7 @@ public:
 
   inline void clear() { m_voxelArray.clear(); }
 
+  void translate(const ZIntPoint &pt);
   void translate(int x, int y, int z);
 
   inline std::vector<int> voxelArray() { return m_voxelArray; }

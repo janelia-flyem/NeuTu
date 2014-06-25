@@ -225,8 +225,8 @@ void ZObject3d::labelStack(Stack *stack, int label) const
 
 void ZObject3d::labelStack(ZStack *stack, int label) const
 {
-  labelStack(stack->c_stack(), label, iround(stack->getOffset().x()),
-             iround(stack->getOffset().y()), iround(stack->getOffset().z()));
+  labelStack(stack->c_stack(), label, stack->getOffset().getX(),
+             stack->getOffset().getY(), stack->getOffset().getZ());
 }
 void ZObject3d::labelStack(ZStack *stack) const
 {
@@ -298,6 +298,11 @@ void ZObject3d::translate(int dx, int dy, int dz)
   for (size_t i = 0; i < size(); i++) {
     set(i, x(i) + dx, y(i) + dy, z(i) + dz);
   }
+}
+
+void ZObject3d::translate(const ZIntPoint &pt)
+{
+  translate(pt.getX(), pt.getY(), pt.getZ());
 }
 
 void ZObject3d::exportSwcFile(string filePath)
@@ -405,7 +410,7 @@ void ZObject3d::drawStack(ZStack *stack) const
   color[1] = m_color.green();
   color[2] = m_color.blue();
 
-  ZIntPoint origin = stack->getOffset().toIntPoint();
+  ZIntPoint origin = stack->getOffset();
   int width = stack->width();
   int height = stack->height();
   int depth = stack->depth();
@@ -433,7 +438,7 @@ void ZObject3d::drawStack(ZStack *stack, int xIntv, int yIntv, int zIntv) const
   color[1] = m_color.green();
   color[2] = m_color.blue();
 
-  ZIntPoint origin = stack->getOffset().toIntPoint();
+  ZIntPoint origin = stack->getOffset();
   int width = stack->width();
   int height = stack->height();
   int depth = stack->depth();
@@ -672,7 +677,7 @@ bool ZObject3d::loadStack(const ZStack *stack, int threshold)
     return false;
   }
 
-  ZIntPoint origin = stack->getOffset().toIntPoint();
+  ZIntPoint origin = stack->getOffset();
 
   int width = stack->width();
   int height = stack->height();

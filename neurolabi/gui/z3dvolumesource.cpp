@@ -108,10 +108,9 @@ void Z3DVolumeSource::readVolumes()
       Stack *stack = m_doc->getStack()->c_stack(i);
 
       //Under deveopment
-      ZPoint offset = m_doc->getStack()->getOffset();
-      offset.set(offset.x() * m_xScale.get(),
-                 offset.y() * m_yScale.get(),
-                 offset.z() * m_zScale.get());
+      ZPoint offset(m_doc->getStack()->getOffset().getX() * m_xScale.get(),
+                    m_doc->getStack()->getOffset().getY() * m_yScale.get(),
+                    m_doc->getStack()->getOffset().getZ() * m_zScale.get());
       if (m_doc->getStack()->getVoxelNumber() * nchannel > m_maxVoxelNumber) { //Downsample big stack
         m_isVolumeDownsampled.set(true);
         double scale = std::sqrt((m_maxVoxelNumber*1.0) /
@@ -255,9 +254,9 @@ void Z3DVolumeSource::readVolumesWithObject()
 #endif
 
   int offset[3];
-  offset[0] = iround(m_doc->getStackOffset().x());
-  offset[1] = iround(m_doc->getStackOffset().y());
-  offset[2] = iround(m_doc->getStackOffset().z());
+  offset[0] = m_doc->getStackOffset().getX();
+  offset[1] = m_doc->getStackOffset().getY();
+  offset[2] = m_doc->getStackOffset().getZ();
 
   ZLabelColorTable colorTable;
   std::vector<QColor> colorArray(m_nChannelSupport);
@@ -316,10 +315,10 @@ void Z3DVolumeSource::readVolumesWithObject()
       Stack *stack = stackArray[i];
 
       //Under deveopment
-      ZPoint offset = m_doc->getStack()->getOffset();
-      offset.set(offset.x() * m_xScale.get(),
-                 offset.y() * m_yScale.get(),
-                 offset.z() * m_zScale.get());
+      ZPoint offset = ZPoint(
+            m_doc->getStack()->getOffset().getX() * m_xScale.get(),
+            m_doc->getStack()->getOffset().getY() * m_yScale.get(),
+            m_doc->getStack()->getOffset().getZ() * m_zScale.get());
       if (m_doc->getStack()->getVoxelNumber() * nchannel > m_maxVoxelNumber) { //Downsample big stack
         m_isVolumeDownsampled.set(true);
         double scale = std::sqrt((m_maxVoxelNumber*1.0) /

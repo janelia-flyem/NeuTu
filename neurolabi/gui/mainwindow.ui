@@ -310,6 +310,7 @@
       <addaction name="actionHot_Spot_Demo"/>
       <addaction name="actionSubmit_Skeletonize"/>
       <addaction name="actionLoad_Body_with_Grayscale"/>
+      <addaction name="actionLoad_Large_Body"/>
      </widget>
      <widget class="QMenu" name="menuExport_2">
       <property name="title">
@@ -1203,6 +1204,11 @@
   <action name="actionTiles">
    <property name="text">
     <string>Open Project</string>
+   </property>
+  </action>
+  <action name="actionLoad_Large_Body">
+   <property name="text">
+    <string>Load Large Body</string>
    </property>
   </action>
  </widget>

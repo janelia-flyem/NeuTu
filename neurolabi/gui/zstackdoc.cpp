@@ -166,8 +166,8 @@ void ZStackDoc::initNeuronTracer()
     m_neuronTracer.setResolution(1, 1, 10);
   }
 
-  ZPoint offset = getStackOffset();
-  m_neuronTracer.setStackOffset(offset.x(), offset.y(), offset.z());
+  ZIntPoint offset = getStackOffset();
+  m_neuronTracer.setStackOffset(offset.getX(), offset.getY(), offset.getZ());
 }
 
 void ZStackDoc::setParentFrame(ZStackFrame *parent)
@@ -4395,8 +4395,8 @@ QString ZStackDoc::dataInfo(double cx, double cy, int z) const
 
       if (getStack()->hasOffset()) {
         info += QString("; Data coordinates: (%1, %2, %3)").
-            arg(getStackOffset().x() + x).arg(getStackOffset().y() + y).
-            arg(getStackOffset().z() + z);
+            arg(getStackOffset().getX() + x).arg(getStackOffset().getY() + y).
+            arg(getStackOffset().getZ() + z);
       }
     }
   }
@@ -5283,10 +5283,10 @@ bool ZStackDoc::loadFile(const QString &filePath, bool emitMessage)
     addSparseObject(sobj);
     sobj->setColor(255, 255, 255, 255);
 
-    ZCuboid cuboid = sobj->getBoundBox();
+    ZIntCuboid cuboid = sobj->getBoundBox();
     ZStack *stack = ZStackFactory::makeVirtualStack(
-          cuboid.width(), cuboid.height(), cuboid.depth());
-    stack->setOffset(cuboid.firstCorner());
+          cuboid.getWidth(), cuboid.getHeight(), cuboid.getDepth());
+    stack->setOffset(cuboid.getFirstCorner());
     loadStack(stack);
 
     emit stackModified();
@@ -7762,75 +7762,87 @@ bool ZStackDoc::executeResetBranchPoint()
   return false;
 }
 
-ZPoint ZStackDoc::getStackOffset() const
+ZIntPoint ZStackDoc::getStackOffset() const
 {
   if (hasStack()) {
     return stackRef()->getOffset();
   }
 
-  return ZPoint(0, 0, 0);
+  return ZIntPoint(0, 0, 0);
 }
 
-void ZStackDoc::setStackOffset(double x, double y, double z)
+void ZStackDoc::setStackOffset(int x, int y, int z)
 {
   if (stackRef() != NULL) {
     stackRef()->setOffset(x, y, z);
   }
 }
 
-void ZStackDoc::setStackOffset(const ZPoint &offset)
+void ZStackDoc::setStackOffset(const ZIntPoint &offset)
 {
   if (stackRef() != NULL) {
     stackRef()->setOffset(offset);
   }
 }
 
-ZPoint ZStackDoc::getDataCoord(const ZPoint &pt)
+void ZStackDoc::setStackOffset(const ZPoint &offset)
+{
+  if (stackRef() != NULL) {
+    stackRef()->setOffset(iround(offset.x()),
+                          iround(offset.y()),
+                          iround(offset.z()));
+  }
+}
+
+ZIntPoint ZStackDoc::getDataCoord(const ZIntPoint &pt)
 {
   return pt + getStackOffset();
 }
 
-ZPoint ZStackDoc::getDataCoord(double x, double y, double z)
+ZIntPoint ZStackDoc::getDataCoord(int x, int y, int z)
 {
-  return ZPoint(x + getStackOffset().x(), y + getStackOffset().y(),
-                z + getStackOffset().z());
+  return ZIntPoint(x + getStackOffset().getX(), y + getStackOffset().getY(),
+                z + getStackOffset().getZ());
 }
 
 void ZStackDoc::mapToDataCoord(ZPoint *pt)
 {
   if (pt != NULL) {
-    *pt += getStackOffset();
+    pt->translate(getStackOffset().getX(), getStackOffset().getY(),
+                  getStackOffset().getZ());
   }
 }
 
 void ZStackDoc::mapToDataCoord(double *x, double *y, double *z)
 {
   if (x != NULL) {
-    *x += getStackOffset().x();
+    *x += getStackOffset().getX();
   }
 
   if (y != NULL) {
-    *y += getStackOffset().y();
+    *y += getStackOffset().getY();
   }
 
   if (z != NULL) {
-    *z += getStackOffset().z();
+    *z += getStackOffset().getZ();
   }
 }
 
 void ZStackDoc::mapToStackCoord(ZPoint *pt)
 {
   if (pt != NULL) {
-    *pt -= getStackOffset();
+    //*pt -= getStackOffset();
+    pt->translate(-getStackOffset().getX(), -getStackOffset().getY(),
+                  -getStackOffset().getZ());
   }
 }
 
 void ZStackDoc::mapToStackCoord(double *x, double *y, double *z)
 {
   if (x != NULL && y != NULL && z != NULL) {
-    *x -= getStackOffset().x();
-    *y -= getStackOffset().y();
-    *z -= getStackOffset().z();
+    *x -= getStackOffset().getX();
+    *y -= getStackOffset().getY();
+    *z -= getStackOffset().getZ();
   }
 }
 
@@ -7959,10 +7971,10 @@ void ZStackDocReader::loadStack(const QString &filePath)
       addSparseObject(sobj);
       sobj->setColor(128, 0, 0, 255);
 
-      ZCuboid cuboid = sobj->getBoundBox();
+      ZIntCuboid cuboid = sobj->getBoundBox();
       m_stack = ZStackFactory::makeVirtualStack(
-            cuboid.width(), cuboid.height(), cuboid.depth());
-      m_stack->setOffset(cuboid.firstCorner());
+            cuboid.getWidth(), cuboid.getHeight(), cuboid.getDepth());
+      m_stack->setOffset(cuboid.getFirstCorner());
     }
   } else {
     m_stackSource.import(filePath.toStdString());
@@ -8172,9 +8184,13 @@ void ZStackDoc::localSeededWatershed()
                      iround(getStackOffset().z()));
                      */
 
-      obj->translate(iround(out->getOffset().x()),
-                     iround(out->getOffset().y()),
-                     iround(out->getOffset().z()));
+      obj->translate(out->getOffset());
+
+      /*
+      obj->translate(iround(out->getOffset().getX()),
+                     iround(out->getOffset().getY()),
+                     iround(out->getOffset().getZ()));
+                     */
       obj->setColor(255, 255, 0, 180);
 
       addObj3d(obj);
@@ -8202,9 +8218,12 @@ void ZStackDoc::seededWatershed()
     if (objData != NULL) {
       ZObject3d *obj = new ZObject3d(objData);
 
-      obj->translate(iround(out->getOffset().x()),
-                     iround(out->getOffset().y()),
-                     iround(out->getOffset().z()));
+      obj->translate(out->getOffset());
+      /*
+      obj->translate(iround(out->getOffset().getX()),
+                     iround(out->getOffset().getY()),
+                     iround(out->getOffset().getZ()));
+                     */
       obj->setColor(255, 255, 0, 255);
 
       addObj3d(obj);

@@ -2602,7 +2602,7 @@ void Z3DWindow::transformSelectedSwc()
       ZPoint offset = SwcTreeNode::pos(node + 1) - SwcTreeNode::pos(node);
       dlg.setTranslateValue(offset.x(), offset.y(), offset.z());
     } else {
-      ZPoint offset = getDocument()->getStackOffset();
+      ZIntPoint offset = getDocument()->getStackOffset();
       dlg.setTranslateValue(-offset[0], -offset[1], -offset[2]);
     }
     if (dlg.exec()) {
@@ -3024,9 +3024,13 @@ void Z3DWindow::addStrokeFrom3dPaint(ZStroke2d *stroke)
           m_canvas->width(), m_canvas->height(), success);
     ZPoint slope = seg.getEndPoint() - seg.getStartPoint();
     if (success) {
-      ZCuboid box = m_doc->stackRef()->getBoundBox();
+      ZIntCuboid box = m_doc->stackRef()->getBoundBox();
+      ZCuboid rbox(box.getFirstCorner().getX(), box.getFirstCorner().getY(),
+                   box.getFirstCorner().getZ(),
+                   box.getLastCorner().getX(), box.getLastCorner().getY(),
+                   box.getLastCorner().getZ());
       ZLineSegment stackSeg;
-      if (box.intersectLine(seg.getStartPoint(), slope, &stackSeg)) {
+      if (rbox.intersectLine(seg.getStartPoint(), slope, &stackSeg)) {
         ZObject3d *scanLine = ZVoxelGraphics::createLineObject(stackSeg);
         obj->append(*scanLine);
 #ifdef _DEBUG_2
@@ -3059,7 +3063,11 @@ void Z3DWindow::addPolyplaneFrom3dPaint(ZStroke2d *stroke)
   std::vector<ZIntPoint> polyline1;
   std::vector<ZIntPoint> polyline2;
 
-  ZCuboid box = m_doc->stackRef()->getBoundBox();
+  ZIntCuboid box = m_doc->stackRef()->getBoundBox();
+  ZCuboid rbox(box.getFirstCorner().getX(), box.getFirstCorner().getY(),
+               box.getFirstCorner().getZ(),
+               box.getLastCorner().getX(), box.getLastCorner().getY(),
+               box.getLastCorner().getZ());
   for (size_t i = 0; i < stroke->getPointNumber(); ++i) {
     double x = 0.0;
     double y = 0.0;
@@ -3069,7 +3077,7 @@ void Z3DWindow::addPolyplaneFrom3dPaint(ZStroke2d *stroke)
     if (success) {
       ZPoint slope = seg.getEndPoint() - seg.getStartPoint();
       ZLineSegment stackSeg;
-      if (box.intersectLine(seg.getStartPoint(), slope, &stackSeg)) {
+      if (rbox.intersectLine(seg.getStartPoint(), slope, &stackSeg)) {
         ZPoint slope2 = stackSeg.getEndPoint() - stackSeg.getStartPoint();
         if (slope.dot(slope2) < 0.0) {
           stackSeg.invert();

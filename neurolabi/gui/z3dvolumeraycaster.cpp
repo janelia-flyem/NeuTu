@@ -883,9 +883,9 @@ glm::vec3 Z3DVolumeRaycaster::getMaxInten3DPositionUnderScreenPoint(
 
   // find maximum intensity voxel start from res along des direction
   if (success) {
-    double maxInten = stack->value(res.x - stack->getOffset().x(),
-                                   res.y - stack->getOffset().y(),
-                                   res.z - stack->getOffset().z());
+    double maxInten = stack->value(res.x - stack->getOffset().getX(),
+                                   res.y - stack->getOffset().getY(),
+                                   res.z - stack->getOffset().getZ());
     glm::vec3 p = res;
     glm::vec3 d = des - res;
     float N = std::max(std::max(std::abs(d.x), std::abs(d.y)), std::abs(d.z));
@@ -905,9 +905,9 @@ glm::vec3 Z3DVolumeRaycaster::getMaxInten3DPositionUnderScreenPoint(
         break;
       }
       */
-      double inten = stack->value(roundP.x - stack->getOffset().x(),
-                                  roundP.y - stack->getOffset().y(),
-                                  roundP.z - stack->getOffset().z());
+      double inten = stack->value(roundP.x - stack->getOffset().getX(),
+                                  roundP.y - stack->getOffset().getY(),
+                                  roundP.z - stack->getOffset().getZ());
       if (inten > maxInten) {
         maxInten = inten;
         res = roundP;

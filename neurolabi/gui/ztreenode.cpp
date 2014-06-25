@@ -1,24 +1,21 @@
 #include "ztreenode.h"
 
+#define ZTREE_NODE_INIT(parent, firstChild, nextSibling, weight, label, index) \
+  m_parent(parent), m_firstChild(firstChild), m_nextSibling(nextSibling), \
+  m_weight(weight), m_label(label), m_index(index)
+
 template<typename T>
-ZTreeNode<T>::ZTreeNode() : m_weight(0.0), m_parent(NULL), m_firstChild(NULL),
-  m_nextSibling(NULL)
+ZTreeNode<T>::ZTreeNode() : ZTREE_NODE_INIT(NULL, NULL, NULL, 0.0, 0, 0)
 {
-  m_index = 0;
-  m_label = 0;
-  m_weight = 0;
 }
 
 template<typename T>
-ZTreeNode<T>::ZTreeNode(const T &data) : m_weight(0.0), m_parent(NULL), m_firstChild(NULL),
-  m_nextSibling(NULL)
+ZTreeNode<T>::ZTreeNode(const T &data) : ZTREE_NODE_INIT(NULL, NULL, NULL, 0.0, 0, 0)
 {
-  m_index = 0;
-  m_label = 0;
-  m_weight = 0;
   m_data = data;
 }
 
+/*
 template<typename T>
 ZTreeNode<T>::ZTreeNode(const ZTreeNode<T> &node)
 {
@@ -31,6 +28,7 @@ ZTreeNode<T>::ZTreeNode(const ZTreeNode<T> &node)
   m_label = node.m_label;
   m_data = node.m_data;
 }
+*/
 
 template<typename T>
 ZTreeNode<T>::~ZTreeNode(void)
@@ -96,21 +94,13 @@ ZTreeNode<T>* ZTreeNode<T>::previousSibling() const
 }
 
 template<typename T>
-bool ZTreeNode<T>::isRoot(
-    bool virtualCheck  //Perform virtual check or not
-    ) const
+bool ZTreeNode<T>::isRoot() const
 {
   bool bIsRoot = true;
 
   ZTreeNode<T> *p = parent();
 
   while (p != NULL) {
-    if (virtualCheck) {
-      if (p->isRegular(virtualCheck)) {
-        bIsRoot = false;
-        break;
-      }
-    }
     p = p->parent();
   }
 
@@ -132,15 +122,12 @@ bool ZTreeNode<T>::isLastChild() const
 }
 
 template<typename T>
-bool ZTreeNode<T>::isLeaf(bool virtualCheck) const
+bool ZTreeNode<T>::isLeaf() const
 {
   bool bIsLeaf = false;
-
-  if (!virtualCheck || isRegular()) {
-    if (firstChild() == NULL) {
-      if (isRoot(virtualCheck) == false) {
-        bIsLeaf = true;
-      }
+  if (firstChild() == NULL) {
+    if (isRoot() == false) {
+      bIsLeaf = true;
     }
   }
 
@@ -148,15 +135,13 @@ bool ZTreeNode<T>::isLeaf(bool virtualCheck) const
 }
 
 template<typename T>
-bool ZTreeNode<T>::isBranchPoint(bool virtualCheck) const
+bool ZTreeNode<T>::isBranchPoint() const
 {
   bool bIsBranchPoint = false;
 
-  if (isRegular(virtualCheck)) {
-    if (firstChild() != NULL) {
-      if (firstChild()->nextSibling() != NULL) {
-        bIsBranchPoint = true;
-      }
+  if (firstChild() != NULL) {
+    if (firstChild()->nextSibling() != NULL) {
+      bIsBranchPoint = true;
     }
   }
 
@@ -164,19 +149,18 @@ bool ZTreeNode<T>::isBranchPoint(bool virtualCheck) const
 }
 
 template<typename T>
-bool ZTreeNode<T>::isContinuation(bool virtualCheck) const
+bool ZTreeNode<T>::isContinuation() const
 {
-  return (isRegular(virtualCheck) && !isRoot(virtualCheck) &&
-          !isLeaf(virtualCheck) && !isBranchPoint(virtualCheck));
+  return (!isRoot() && !isLeaf() && !isBranchPoint());
 }
 
 template<typename T>
-bool ZTreeNode<T>::isSpur(bool virtualCheck) const
+bool ZTreeNode<T>::isSpur() const
 {
   bool bIsSpur = false;
 
-  if (isLeaf(virtualCheck)) {
-    bIsSpur = parent()->isBranchPoint(virtualCheck);
+  if (isLeaf()) {
+    bIsSpur = parent()->isBranchPoint();
   }
 
   return bIsSpur;
@@ -195,9 +179,14 @@ bool ZTreeNode<T>::isSibling(const ZTreeNode<T> *node) const
 }
 
 template<typename T>
-ZTreeNode<T>* ZTreeNode<T>::addChild(
-    ZTreeNode<T> *child  //The new child to be added
-    )
+bool ZTreeNode<T>::isOrphan() const
+{
+  return this->parent() == NULL && this->firstChild() == NULL &&
+      this->nextSibling() == NULL;
+}
+
+template<typename T>
+ZTreeNode<T>* ZTreeNode<T>::addChild(ZTreeNode<T> *child)
 {
   ZTreeNode<T> *tmp;
 
@@ -224,9 +213,7 @@ ZTreeNode<T>* ZTreeNode<T>::addChild(const T &data)
 }
 
 template<typename T>
-void ZTreeNode<T>::removeChild(
-    ZTreeNode<T> *child  //The child to be removed
-    )
+void ZTreeNode<T>::removeChild(ZTreeNode<T> *child)
 {
   if (child != NULL) {
     bool succ = false;
@@ -316,7 +303,7 @@ void ZTreeNode<T>::setNextSibling(ZTreeNode<T> *sibling, bool updatingConsistenc
 {
   if (sibling != nextSibling()) {
     if (updatingConsistency) {
-      if (!isRoot(false)) {
+      if (!isRoot()) {
         sibling->detachParent();
         sibling->setParent(parent(), false);
         sibling->setNextSibling(nextSibling(), false);
@@ -465,7 +452,7 @@ void ZTreeNode<T>::becomeRoot(bool virtualCheck)
 }
 
 template <typename T>
-double ZTreeNode<T>::getBacktraceWeight(int n, bool virtualCheck) const
+double ZTreeNode<T>::getBacktraceWeight(int n) const
 {
   double w = weight();
   ZTreeNode<T> *tn = this;
@@ -478,12 +465,12 @@ double ZTreeNode<T>::getBacktraceWeight(int n, bool virtualCheck) const
       break;
     }
 
-    if (tn->isBranchPoint(virtualCheck)) {
+    if (tn->isBranchPoint()) {
       n--;
     }
   }
 
-  if (tn->isBranchPoint(virtualCheck)) {
+  if (tn->isBranchPoint()) {
     /* do not include the weight of the last branch point */
     w -= tn->weight();
   }
@@ -492,14 +479,14 @@ double ZTreeNode<T>::getBacktraceWeight(int n, bool virtualCheck) const
 }
 
 template <typename T>
-void ZTreeNode<T>::labelBranch(int label, bool virtualCheck)
+void ZTreeNode<T>::labelBranch(int label)
 {
   setLabel(label);
 
-  if (!isBranchPoint(virtualCheck)) {
+  if (!isBranchPoint()) {
     ZTreeNode<T> *current = parent();
 
-    while (current->isContinuation(virtualCheck)) {
+    while (current->isContinuation()) {
       current->setLabel(label);
       current = current->parent();
     }

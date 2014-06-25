@@ -21,7 +21,7 @@
 #include "tz_image_io.h"
 #include "zresolution.h"
 #include "zpoint.h"
-#include "zcuboid.h"
+#include "zintcuboid.h"
 
 
 //! Stack class
@@ -72,7 +72,7 @@ public:
   ZStack(Mc_Stack *stack,
          C_Stack::Mc_Stack_Deallocator *dealloc = C_Stack::kill);
 
-  ZStack(int kind, const ZCuboid &box, int nchannel, bool isVirtual = false);
+  ZStack(int kind, const ZIntCuboid &box, int nchannel, bool isVirtual = false);
 
   //! Destructor
   virtual ~ZStack();
@@ -395,9 +395,9 @@ public: /* operations */
 
   void loadValue(const void *buffer, size_t length, void *loc);
 
-  void setOffset(double dx, double dy, double dz);
-  void setOffset(const ZPoint &pt);
-  inline const ZPoint& getOffset() const { return m_offset; }
+  void setOffset(int dx, int dy, int dz);
+  void setOffset(const ZIntPoint &pt);
+  inline const ZIntPoint& getOffset() const { return m_offset; }
 
   /*!
    * \brief Test if a stack has non-zero offset
@@ -426,7 +426,7 @@ public: /* operations */
    */
   void getBoundBox(Cuboid_I *box) const;
 
-  ZCuboid getBoundBox() const;
+  ZIntCuboid getBoundBox() const;
 
 public: /* processing routines */
   bool binarize(int threshold = 0);
@@ -466,7 +466,7 @@ private:
   ZStackFile m_source;
   double m_preferredZScale;
   ZResolution m_resolution;
-  ZPoint m_offset;
+  ZIntPoint m_offset;
   mutable std::vector<Stack> m_stackView;
   mutable std::vector<ZSingleChannelStack*> m_singleChannelStack;
   mutable char m_buffer[1]; //Buffer of text field of temporary stack

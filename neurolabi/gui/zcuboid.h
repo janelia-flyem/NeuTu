@@ -5,6 +5,7 @@
 #include "zpoint.h"
 #include "zintpoint.h"
 #include "zlinesegment.h"
+#include "zintcuboid.h"
 
 /*************
  *
@@ -100,6 +101,8 @@ public:
    */
   bool intersectLine(
       const ZPoint &p0, const ZPoint &slope, ZLineSegment *seg) const;
+
+  ZIntCuboid toIntCuboid() const;
 
 private:
   static double computeDistance(double minX1, double maxX1,

@@ -25,8 +25,8 @@ public:
   void set(const std::vector<int> &pt);
 
   inline void setX(int x) { m_x = x; }
-  inline void setY(int y) { m_x = y; }
-  inline void setZ(int z) { m_x = z; }
+  inline void setY(int y) { m_y = y; }
+  inline void setZ(int z) { m_z = z; }
 
   const int& operator[] (int index) const;
   int& operator[] (int index);
@@ -39,7 +39,12 @@ public:
   bool operator < (const ZIntPoint &pt) const;
   bool operator == (const ZIntPoint &pt) const;
 
+  ZIntPoint operator - () const;
+
   friend ZIntPoint operator + (const ZIntPoint &pt1, const ZIntPoint &pt2);
+  friend ZIntPoint operator - (const ZIntPoint &pt1, const ZIntPoint &pt2);
+
+  std::string toString() const;
 
 public:
   int m_x;

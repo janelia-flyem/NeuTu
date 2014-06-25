@@ -83,10 +83,10 @@ public:
     m_stackOffset[2] = z;
   }
 
-  inline void setStackOffset(const ZPoint &pt) {
-    m_stackOffset[0] = pt.x();
-    m_stackOffset[1] = pt.y();
-    m_stackOffset[2] = pt.z();
+  inline void setStackOffset(const ZIntPoint &pt) {
+    m_stackOffset[0] = pt.getX();
+    m_stackOffset[1] = pt.getY();
+    m_stackOffset[2] = pt.getZ();
   }
 
   inline void setVertexOption(ZStackGraph::EVertexOption vertexOption) {

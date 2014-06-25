@@ -403,6 +403,8 @@ private slots:
 
   void on_actionView_Labeled_Regions_triggered();
 
+  void on_actionLoad_Large_Body_triggered();
+
 private:
   void createActions();
   void createFileActions();

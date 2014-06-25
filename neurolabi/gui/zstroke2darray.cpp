@@ -47,7 +47,7 @@ ZStack* ZStroke2dArray::toStack() const
 
   ZStack *stack = NULL;
   if (box.isValid()) {
-    stack = new ZStack(GREY, box, 1);
+    stack = new ZStack(GREY, box.toIntCuboid(), 1);
     for (const_iterator iter = begin(); iter != end(); ++iter) {
       const ZStroke2d *stroke = *iter;
       stroke->labelStack(stack);

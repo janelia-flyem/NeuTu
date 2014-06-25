@@ -30,4 +30,5 @@ HEADERS +=     test/zswctreetest.h \
     test/zflyemneuronmatchtest.h \
     test/z3dinteracttest.h \
     test/zvoxelgraphicstest.h \
-    test/zdocplayertest.h
+    test/zdocplayertest.h \
+    test/zopenvdbtest.h

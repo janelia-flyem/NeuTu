@@ -185,6 +185,8 @@
 #include "zintset.h"
 #include "test/zvoxelgraphicstest.h"
 #include "test/zdocplayertest.h"
+#include "test/zopenvdbtest.h"
+#include "zsparseobject.h"
 
 using namespace std;
 
@@ -192,15 +194,14 @@ ostream& ZTest::m_failureStream = cerr;
 
 ZTest::ZTest()
 {
-
 }
-
 
 #ifdef _JANELIA_WORKSTATION_
 const static string dataPath("/groups/flyem/home/zhaot/Work/neutube_ws/neurolabi/data");
 #else
 const static string dataPath("/Users/zhaot/Work/neutube/neurolabi/data");
 #endif
+
 
 int ZTest::runUnitTest(int argc, char *argv[])
 {
@@ -212,6 +213,7 @@ int ZTest::runUnitTest(int argc, char *argv[])
   return 0;
 #endif
 }
+
 
 void ZTest::test(MainWindow *host)
 {
@@ -11793,9 +11795,46 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
-#if 1
+#if 0
   glm::mat4 Projection = glm::perspective(3.14f * 45.0f / 180.f, 1.0f, 0.1f, 100.0f);
   std::cout << Projection << std::endl;
+#endif
+
+#if 1
+  ZSparseObject obj;
+  obj.addSegment(0, 0, 0, 0, false);
+  obj.addSegment(0, 1, 0, 1, false);
+  obj.addSegment(0, 2, 0, 1, false);
+  obj.addSegment(0, 3, 3, 4, false);
+  obj.addSegment(0, 0, 1, 1, false);
+
+
+  obj.translate(1, 2, 3);
+  ZStack *stack = new ZStack(GREY, 5, 5, 5, 1);
+  stack->setZero();
+  stack->setValue(0, 0, 0, 0, 1);
+  stack->setValue(0, 1, 0, 0, 2);
+  stack->setValue(0, 2, 0, 0, 3);
+  stack->setValue(1, 0, 0, 0, 4);
+  stack->setValue(3, 3, 0, 0, 5);
+  stack->setValue(4, 3, 0, 0, 6);
+  stack->setOffset(1, 2, 3);
+
+  obj.setVoxelValue(stack);
+
+  std::cout << obj.getVoxelValue(1, 2, 3) << std::endl;
+  std::cout << obj.getVoxelValue(1, 3, 3) << std::endl;
+  std::cout << obj.getVoxelValue(1, 4, 3) << std::endl;
+  std::cout << obj.getVoxelValue(2, 2, 3) << std::endl;
+  std::cout << obj.getVoxelValue(4, 5, 3) << std::endl;
+  std::cout << obj.getVoxelValue(5, 5, 3) << std::endl;
+
+  /*
+  std::cout << obj.getVoxelValue(0, 0, 0) << std::endl;
+  std::cout << obj.getVoxelValue(0, 1, 0) << std::endl;
+  std::cout << obj.getVoxelValue(0, 2, 0) << std::endl;
+  std::cout << obj.getVoxelValue(1, 0, 0) << std::endl;
+  */
 #endif
 
 }

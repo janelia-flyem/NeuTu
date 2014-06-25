@@ -134,6 +134,7 @@
 #include "tz_stack_relation.h"
 #include "zstackdoclabelstackfactory.h"
 #include "zsharedpointer.h"
+#include "zsparseobject.h"
 
 #include "ztest.h"
 
@@ -6071,11 +6072,16 @@ void MainWindow::on_actionLoad_Body_with_Grayscale_triggered()
       if (!bodyIdArray.empty()) {
         int bodyId = bodyIdArray[0];
         ZObject3dScan body = reader.readBody(bodyId);
+
+#ifdef _DEBUG_
+        std::cout << "Body size: " << body.getVoxelNumber() << std::endl;
+#endif
+
         if (!body.isEmpty()) {
           ZStack *stack = body.toStackObject();
-          int x = stack->getOffset().x();
-          int y = stack->getOffset().y();
-          int z = stack->getOffset().z();
+          int x = stack->getOffset().getX();
+          int y = stack->getOffset().getY();
+          int z = stack->getOffset().getZ();
           int width = stack->width();
           int height = stack->height();
           int depth = stack->depth();
@@ -6213,4 +6219,55 @@ void MainWindow::on_actionView_Labeled_Regions_triggered()
       //presentStackFrame(newFrame);
     }
   }
+}
+
+void MainWindow::on_actionLoad_Large_Body_triggered()
+{
+#if defined(_FLYEM_) && defined(_USE_OPENVDB_)
+  if (m_bodyDlg->exec()) {
+    m_progress->setLabelText("Loading ...");
+    m_progress->setRange(0, 0);
+    m_progress->open();
+
+    const ZDvidTarget &target = GET_FLYEM_CONFIG.getDvidTarget();
+
+    ZDvidReader reader;
+    if (reader.open(target)) {
+      std::vector<int> bodyIdArray = m_bodyDlg->getBodyIdArray();
+      if (!bodyIdArray.empty()) {
+        int bodyId = bodyIdArray[0];
+        ZSparseObject *body = new ZSparseObject;
+        body->append(reader.readBody(bodyId));
+        body->canonize();
+
+        if (!body->isEmpty()) {
+          ZIntCuboid cuboid = body->getBoundBox();
+          int x = cuboid.getFirstCorner().getX();
+          int y = cuboid.getFirstCorner().getY();
+          int z = cuboid.getFirstCorner().getZ();
+          int width = cuboid.getWidth();
+          int height = cuboid.getHeight();
+          int depth  = cuboid.getDepth();
+
+          ZStack *grayStack =
+              reader.readGrayScale(x, y, z, width, height, depth);
+
+          body->setVoxelValue(grayStack);
+          delete grayStack;
+
+          ZStack *stack = body->toVirtualStack();
+
+          ZStackDocReader docReader;
+          docReader.setStack(stack);
+          docReader.addSparseObject(body);
+          ZStackFrame *frame = createStackFrame(&docReader);
+          frame->document()->setTag(NeuTube::Document::FLYEM_BODY);
+          addStackFrame(frame);
+          presentStackFrame(frame);
+        }
+      }
+    }
+    m_progress->reset();
+  }
+#endif
 }

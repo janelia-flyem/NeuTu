@@ -168,13 +168,13 @@ public:
   inline void setDisplayStyle(ZStackDrawable::Display_Style style) { m_style = style; }
   inline ZStackDrawable::Display_Style displayStyle() const { return m_style; }
 
-  inline void setStackOffset(double x, double y, double z) {
+  inline void setStackOffset(int x, int y, int z) {
     m_stackOffset.set(x, y, z);
   }
-  inline void setStackOffset(const ZPoint &offset) {
+  inline void setStackOffset(const ZIntPoint &offset) {
     m_stackOffset = offset;
   }
-  inline const ZPoint& getStackOffset() const {
+  inline const ZIntPoint& getStackOffset() const {
     return m_stackOffset;
   }
 
@@ -189,7 +189,7 @@ private:
   QList<ZStackDrawable*> m_otherDrawables; // collect single input
   std::set<Swc_Tree_Node*> m_emptyNodeSet; // make sure m_swcNodes always point to something
 
-  ZPoint m_stackOffset;
+  ZIntPoint m_stackOffset;
 };
 
 #endif // ZPAINTBUNDLE_H

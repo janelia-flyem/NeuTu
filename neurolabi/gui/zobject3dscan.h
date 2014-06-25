@@ -8,7 +8,7 @@
 #include <utility>
 #include "zqtheader.h"
 #include "c_stack.h"
-#include "zcuboid.h"
+#include "zintcuboid.h"
 #include "zstackdrawable.h"
 #include "zdocumentable.h"
 #include "tz_cuboid_i.h"
@@ -252,8 +252,9 @@ public:
 
   Stack* toStack(int *offset = NULL, int v = 1) const;
   ZStack* toStackObject() const;
+  ZStack* toVirtualStack() const;
 
-  ZCuboid getBoundBox() const;
+  ZIntCuboid getBoundBox() const;
   void getBoundBox(Cuboid_I *box) const;
 
   template<class T>
@@ -446,7 +447,7 @@ public:
    */
   //bool exportHdf5(const std::string &filePath, const std::string &key) const;
 
-private:
+protected:
   std::vector<ZObject3dStripe> m_stripeArray;
   /*
   int m_stripeNumber;

@@ -1469,9 +1469,12 @@ void ZStackFrame::importMask(const QString &filePath)
       ZObject3d *obj = new ZObject3d;
       obj->setColor(QColor(255, 0, 0, 128));
       if (obj->loadStack(stack->c_stack(0))) {
-        obj->translate(iround(document()->getStackOffset().x()),
-                       iround(document()->getStackOffset().y()),
-                       iround(document()->getStackOffset().z()));
+        obj->translate(document()->getStackOffset());
+        /*
+        obj->translate(iround(document()->getStackOffset().getX()),
+                       iround(document()->getStackOffset().getY()),
+                       iround(document()->getStackOffset().getZ()));
+                       */
         executeAddObjectCommand(obj, NeuTube::Documentable_OBJ3D);
       } else {
         delete obj;
@@ -1637,7 +1640,10 @@ void ZStackFrame::zoomToSelectedSwcNodes()
       }
     }
     int cx, cy, cz;
-    center -= document()->getStackOffset();
+    center.translate(-document()->getStackOffset().getX(),
+                     -document()->getStackOffset().getY(),
+                     -document()->getStackOffset().getZ());
+    //-= document()->getStackOffset();
     cx = iround(center.x());
     cy = iround(center.y());
     cz = iround(center.z());

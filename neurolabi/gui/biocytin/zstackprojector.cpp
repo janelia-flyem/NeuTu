@@ -269,7 +269,7 @@ ZStack* Biocytin::ZStackProjector::project(
   }
 
   if (proj != NULL) {
-      proj->setOffset(stack->getOffset().x(), stack->getOffset().y(), 0);
+      proj->setOffset(stack->getOffset().getX(), stack->getOffset().getY(), 0);
   }
   endProgress();
 

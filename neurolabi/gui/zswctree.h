@@ -446,6 +446,7 @@ public:
   void setType(int type);
 
   void translate(const ZPoint& offset);
+  void translate(const ZIntPoint &offset);
   void translate(double x, double y, double z);
   void scale(double sx, double sy, double sz);
   //Rotate swc tree around a point

@@ -318,41 +318,42 @@ static void createObject3(ZObject3dScan *obj)
 TEST(TestObject3dScan, TestGetProperty) {
   ZObject3dScan obj;
   createObject(&obj);
+  obj.print();
   ASSERT_EQ((int) obj.getStripeNumber(), 2);
-  ZCuboid box = obj.getBoundBox();
-  ASSERT_EQ(box.firstCorner().x(), 0);
-  ASSERT_EQ(box.firstCorner().y(), 0);
-  ASSERT_EQ(box.firstCorner().z(), 0);
+  ZIntCuboid box = obj.getBoundBox();
+  ASSERT_EQ(box.getFirstCorner().getX(), 0);
+  ASSERT_EQ(box.getFirstCorner().getY(), 0);
+  ASSERT_EQ(box.getFirstCorner().getZ(), 0);
 
-  ASSERT_EQ(box.lastCorner().x(), 8);
-  ASSERT_EQ(box.lastCorner().y(), 1);
-  ASSERT_EQ(box.lastCorner().z(), 0);
+  ASSERT_EQ(box.getLastCorner().getX(), 8);
+  ASSERT_EQ(box.getLastCorner().getY(), 1);
+  ASSERT_EQ(box.getLastCorner().getZ(), 0);
 
   ASSERT_EQ((int) obj.getVoxelNumber(), 12);
 
   obj.canonize();
   ASSERT_EQ((int) obj.getStripeNumber(), 2);
   box = obj.getBoundBox();
-  ASSERT_EQ(box.firstCorner().x(), 0);
-  ASSERT_EQ(box.firstCorner().y(), 0);
-  ASSERT_EQ(box.firstCorner().z(), 0);
+  ASSERT_EQ(box.getFirstCorner().getX(), 0);
+  ASSERT_EQ(box.getFirstCorner().getY(), 0);
+  ASSERT_EQ(box.getFirstCorner().getZ(), 0);
 
-  ASSERT_EQ(box.lastCorner().x(), 8);
-  ASSERT_EQ(box.lastCorner().y(), 1);
-  ASSERT_EQ(box.lastCorner().z(), 0);
+  ASSERT_EQ(box.getLastCorner().getX(), 8);
+  ASSERT_EQ(box.getLastCorner().getY(), 1);
+  ASSERT_EQ(box.getLastCorner().getZ(), 0);
 
   ASSERT_EQ((int) obj.getVoxelNumber(), 12);
 
   createObject2(&obj);
   ASSERT_EQ((int) obj.getStripeNumber(), 2);
   box = obj.getBoundBox();
-  ASSERT_EQ(box.firstCorner().x(), 0);
-  ASSERT_EQ(box.firstCorner().y(), 0);
-  ASSERT_EQ(box.firstCorner().z(), 0);
+  ASSERT_EQ(box.getFirstCorner().getX(), 0);
+  ASSERT_EQ(box.getFirstCorner().getY(), 0);
+  ASSERT_EQ(box.getFirstCorner().getZ(), 0);
 
-  ASSERT_EQ(box.lastCorner().x(), 8);
-  ASSERT_EQ(box.lastCorner().y(), 1);
-  ASSERT_EQ(box.lastCorner().z(), 0);
+  ASSERT_EQ(box.getLastCorner().getX(), 8);
+  ASSERT_EQ(box.getLastCorner().getY(), 1);
+  ASSERT_EQ(box.getLastCorner().getZ(), 0);
 
   ASSERT_EQ((int) obj.getVoxelNumber(), 15);
 
@@ -360,26 +361,26 @@ TEST(TestObject3dScan, TestGetProperty) {
   //obj.print();
   ASSERT_EQ((int) obj.getStripeNumber(), 2);
   box = obj.getBoundBox();
-  ASSERT_EQ(box.firstCorner().x(), 0);
-  ASSERT_EQ(box.firstCorner().y(), 0);
-  ASSERT_EQ(box.firstCorner().z(), 0);
+  ASSERT_EQ(box.getFirstCorner().getX(), 0);
+  ASSERT_EQ(box.getFirstCorner().getY(), 0);
+  ASSERT_EQ(box.getFirstCorner().getZ(), 0);
 
-  ASSERT_EQ(box.lastCorner().x(), 8);
-  ASSERT_EQ(box.lastCorner().y(), 1);
-  ASSERT_EQ(box.lastCorner().z(), 0);
+  ASSERT_EQ(box.getLastCorner().getX(), 8);
+  ASSERT_EQ(box.getLastCorner().getY(), 1);
+  ASSERT_EQ(box.getLastCorner().getZ(), 0);
 
   ASSERT_EQ((int) obj.getVoxelNumber(), 15);
 
   createObject3(&obj);
   ASSERT_EQ((int) obj.getStripeNumber(), 2);
   box = obj.getBoundBox();
-  ASSERT_EQ(box.firstCorner().x(), 0);
-  ASSERT_EQ(box.firstCorner().y(), 0);
-  ASSERT_EQ(box.firstCorner().z(), 0);
+  ASSERT_EQ(box.getFirstCorner().getX(), 0);
+  ASSERT_EQ(box.getFirstCorner().getY(), 0);
+  ASSERT_EQ(box.getFirstCorner().getZ(), 0);
 
-  ASSERT_EQ(box.lastCorner().x(), 8);
-  ASSERT_EQ(box.lastCorner().y(), 1);
-  ASSERT_EQ(box.lastCorner().z(), 0);
+  ASSERT_EQ(box.getLastCorner().getX(), 8);
+  ASSERT_EQ(box.getLastCorner().getY(), 1);
+  ASSERT_EQ(box.getLastCorner().getZ(), 0);
 
   ASSERT_EQ((int) obj.getVoxelNumber(), 15);
 

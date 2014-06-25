@@ -37,8 +37,8 @@ ZSwcTree* ZStackSkeletonizer::makeSkeleton(const ZStack &stack)
 {
   ZSwcTree *tree = makeSkeleton(stack.c_stack());
   if (tree != NULL) {
-    const ZPoint &pt = stack.getOffset();
-    tree->translate(pt.x(), pt.y(), pt.z());
+    const ZIntPoint &pt = stack.getOffset();
+    tree->translate(pt.getX(), pt.getY(), pt.getZ());
   }
 
   return tree;
@@ -54,15 +54,15 @@ ZSwcTree* ZStackSkeletonizer::makeSkeleton(const ZObject3dScan &obj)
   ZSwcTree *tree = NULL;
   if (!obj.isEmpty()) {
     ZObject3dScan newObj = obj;
-    ZCuboid box = obj.getBoundBox();
+    ZIntCuboid box = obj.getBoundBox();
     newObj.downsampleMax(m_downsampleInterval[0],
                          m_downsampleInterval[1], m_downsampleInterval[2]);
     int offset[3] = {0, 0, 0};
     Stack *stack = newObj.toStack(offset);
     tree = makeSkeletonWithoutDs(stack);
     if (tree != NULL) {
-      const ZPoint pt = box.firstCorner();
-      tree->translate(pt.x(), pt.y(), pt.z());
+      const ZIntPoint pt = box.getFirstCorner();
+      tree->translate(pt.getX(), pt.getY(), pt.getZ());
     }
   }
 

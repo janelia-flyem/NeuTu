@@ -1075,8 +1075,8 @@ ZStackPresenter::processMouseReleaseForStroke(
 #ifdef _DEBUG_2
               std::cout << x << " " << y << std::endl;
 #endif
-              newStroke->append(x + buddyDocument()->getStackOffset().x(),
-                                y + buddyDocument()->getStackOffset().y());
+              newStroke->append(x + buddyDocument()->getStackOffset().getX(),
+                                y + buddyDocument()->getStackOffset().getY());
             }
 #ifdef _DEBUG_2
             std::cout << "New stroke created" << std::endl;
@@ -1088,7 +1088,7 @@ ZStackPresenter::processMouseReleaseForStroke(
         newStroke->setColor(QColor(0, 0, 0, 0));
       }
       newStroke->setZ(buddyView()->sliceIndex() +
-                      iround(buddyDocument()->getStackOffset().z()));
+                      buddyDocument()->getStackOffset().getZ());
       buddyDocument()->executeAddStrokeCommand(newStroke);
     }
 
@@ -1591,8 +1591,8 @@ bool ZStackPresenter::estimateActiveStrokeWidth()
   m_stroke.getLastPoint(&x, &y);
 
   Swc_Tree_Node tn;
-  x -= buddyDocument()->getStack()->getOffset().x();
-  y -= buddyDocument()->getStack()->getOffset().x();
+  x -= buddyDocument()->getStack()->getOffset().getX();
+  y -= buddyDocument()->getStack()->getOffset().getY();
 
   SwcTreeNode::setNode(
         &tn, 1, 2, x, y, buddyView()->sliceIndex(), width / 2.0, -1);

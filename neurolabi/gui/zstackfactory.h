@@ -49,9 +49,9 @@ ZStack* ZStackFactory::composite(InputIterator begin, InputIterator end)
   for (InputIterator iter = begin; iter != end; ++iter) {
     ZStack *stack = *iter;
     stackArray[i] = stack->c_stack();
-    offset[i][0] = iround(stack->getOffset().x());
-    offset[i][1] = iround(stack->getOffset().y());
-    offset[i][2] = iround(stack->getOffset().z());
+    offset[i][0] = iround(stack->getOffset().getX());
+    offset[i][1] = iround(stack->getOffset().getY());
+    offset[i][2] = iround(stack->getOffset().getZ());
     if (i > 0) {
       if (offset[i][0] != offset[i-1][0]) {
         isPilable = false;

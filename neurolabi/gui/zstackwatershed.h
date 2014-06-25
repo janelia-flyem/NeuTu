@@ -24,7 +24,7 @@ public:
 
 private:
   Stack_Watershed_Workspace* createWorkspace(const Stack *stack);
-  void addSeed(Stack_Watershed_Workspace *ws, const ZPoint &offset,
+  void addSeed(Stack_Watershed_Workspace *ws, const ZIntPoint &offset,
                const std::vector<ZStack*> &seedMask);
 
 private:

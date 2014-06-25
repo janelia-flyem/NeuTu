@@ -20,11 +20,11 @@ class ZPainter : public QPainter
 public:
   ZPainter();
   ZPainter(QPaintDevice * device);
-  inline void setStackOffset(double x, double y, double z) {
+  inline void setStackOffset(int x, int y, int z) {
     m_offset.set(-x, -y, -z);
   }
-  inline void setStackOffset(const ZPoint &offset) {
-    setStackOffset(offset.x(), offset.y(), offset.z());
+  inline void setStackOffset(const ZIntPoint &offset) {
+    setStackOffset(offset.getX(), offset.getY(), offset.getZ());
   }
 
   inline const ZPoint& getOffset() { return m_offset; }
