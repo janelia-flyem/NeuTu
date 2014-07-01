@@ -5,7 +5,7 @@
 
 namespace FlyEm {
 /*!
- * \brief A class of a 3D grid
+ * \brief A class of a 3D grid (Obsolete)
  *
  * The grid defines a 3D matrix of blocks, each with the size of the grid
  * interval.

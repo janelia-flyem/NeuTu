@@ -28,6 +28,11 @@ public:
     return m_address;
   }
 
+  /*!
+   * \brief Get the address with port
+   *
+   * \return "address[:port]" or empty if the address is empty.
+   */
   std::string getAddressWithPort() const;
 
   inline const std::string& getUuid() const {
@@ -46,6 +51,15 @@ public:
     return m_port;
   }
 
+  /*!
+   * \brief Check if there is a port
+   *
+   * A valid port is any non-negative port number.
+   *
+   * \return true iff the port is available.
+   */
+  bool hasPort() const;
+
   inline void setName(const std::string &name) {
     m_name = name;
   }
@@ -56,7 +70,10 @@ public:
   /*!
    * \brief Get a single string to represent the target
    *
-   * \return "http:address:port:uuid"
+   * \a withHttpPrefix specifies whether the source string contains the "http:"
+   * prefix or not.
+   *
+   * \return "[http:]address:port:uuid". Return empty if the address is empty.
    */
   std::string getSourceString(bool withHttpPrefix = true) const;
 

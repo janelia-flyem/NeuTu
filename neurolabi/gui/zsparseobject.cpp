@@ -62,8 +62,7 @@ void ZSparseObject::labelStack(ZStack *stack) const
 
 void ZSparseObject::display(ZPainter &painter, int z, Display_Style option) const
 {
-#if defined(_USE_OPENVDB_)
-  if (m_voxelValueObject.isEmpty() || z < 0) {
+  if (m_stackGrid.isEmpty() || z < 0) {
     ZObject3dScan::display(painter, z, option);
   } else {
     UNUSED_PARAMETER(option);
@@ -81,7 +80,7 @@ void ZSparseObject::display(ZPainter &painter, int z, Display_Style option) cons
           int x1 = stripe.getSegmentEnd(j);
           int y = stripe.getY();
           for (int x = x0; x <= x1; ++x) {
-            int v = m_voxelValueObject.getValue(x, y, z);
+            int v = getVoxelValue(x, y, z);
             painter.setPen(QColor(v, v, v));
             painter.drawPoint(QPoint(x, y));
           }
@@ -89,9 +88,6 @@ void ZSparseObject::display(ZPainter &painter, int z, Display_Style option) cons
       }
     }
   }
-#else
-  ZObject3dScan::display(painter, z, option);
-#endif
 }
 
 void ZSparseObject::append(const ZObject3dScan &obj)
@@ -103,19 +99,20 @@ void ZSparseObject::append(const ZObject3dScan &obj)
 
 int ZSparseObject::getVoxelValue(int x, int y, int z) const
 {
-#if defined(_USE_OPENVDB_)
+#if defined(_USE_OPENVDB_2)
   if (m_voxelValueObject.isEmpty()) {
     return 0;
   }
   return m_voxelValueObject.getValue(x, y, z);
 #else
-  return 0;
+  return m_stackGrid.getValue(x, y, z);
 #endif
 }
 
+#if 0
 void ZSparseObject::setVoxelValue(ZStack *stack)
 {
-#if defined(_USE_OPENVDB_)
+#if defined(_USE_OPENVDB_2)
 
 #ifdef _DEBUG_2
   stack->save(GET_TEST_DATA_DIR + "/test.tif");
@@ -158,6 +155,8 @@ void ZSparseObject::setVoxelValue(ZStack *stack)
         }
       }
     }
+    m_voxelValueObject.repack();
   }
 #endif
 }
+#endif

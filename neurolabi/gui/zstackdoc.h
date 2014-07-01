@@ -61,6 +61,7 @@ class ZSwcNodeObjsModel;
 class ZStackDocReader;
 class ZStackFactory;
 class ZSparseObject;
+class ZSparseStack;
 
 /*!
  * \brief The class of stack document
@@ -91,7 +92,7 @@ public:
 
   enum EComponent {
     STACK, STACK_MASK, STACK_SEGMENTATION, SEGMENTATION_OBJECT,
-    SEGMENTATION_GRAPH, SEGMENTATION_INDEX_MAP
+    SEGMENTATION_GRAPH, SEGMENTATION_INDEX_MAP, SPARSE_STACK
   };
 
   enum EDocumentDataType {
@@ -139,6 +140,7 @@ public: //attributes
   // hasDrawable() returns true iff it has a drawable object.
   bool hasDrawable();
   bool hasSparseObject();
+  bool hasSparseStack() const;
 
   bool hasSelectedSwc() const;
   bool hasSelectedSwcNode() const;
@@ -548,6 +550,10 @@ public: /* puncta related methods */
     return m_playerList;
   }
 
+  inline const ZSparseStack* getSparseStack() const {
+    return m_sparseStack;
+  }
+
   QList<const ZDocPlayer *> getPlayerList(ZDocPlayer::TRole role) const;
 
   bool hasPlayer(ZDocPlayer::TRole role) const;
@@ -778,6 +784,8 @@ private:
 private:
   //Main stack
   ZStack *m_stack;
+  ZSparseStack *m_sparseStack; //Serve as main data when m_stack is virtual.
+
 
   //Concrete objects
   QList<ZSwcTree*> m_swcList;
@@ -971,6 +979,7 @@ private:
 
   //Main stack
   ZStack *m_stack;
+  ZStack *m_sparseStack;
   ZStackFile m_stackSource;
 
   //Concrete objects

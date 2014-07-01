@@ -43,3 +43,11 @@ ZStack* ZStackFactory::makeVirtualStack(int width, int height, int depth)
 {
   return new ZStack(GREY, width, height, depth, 1, true);
 }
+
+ZStack* ZStackFactory::makeOneStack(int width, int height, int depth)
+{
+  ZStack *stack = new ZStack(GREY, width, height, depth, 1);
+  stack->setOne();
+
+  return stack;
+}

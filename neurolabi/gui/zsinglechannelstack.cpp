@@ -12,6 +12,7 @@
 #include "tz_stack_relation.h"
 #include "tz_stack_attribute.h"
 #include "tz_stack_watershed.h"
+#include "tz_math.h"
 
 ZSingleChannelStack::ZSingleChannelStack()
 {
@@ -262,6 +263,13 @@ void ZSingleChannelStack::setValue(int x, int y, int z, double v)
       *(float32*)(m_stack->array + (size_t)z*stride_z + (size_t)y*stride_y + (size_t)x*stride_x) = v;
     } else if (kind() == FLOAT64) {
       *(float64*)(m_stack->array + (size_t)z*stride_z + (size_t)y*stride_y + (size_t)x*stride_x) = v;
+    } else if (kind() == COLOR) {
+      color_t *array = (color_t*) (m_stack->array + (size_t)z*stride_z +
+                                   (size_t)y*stride_y + (size_t)x*stride_x);
+      int value = iround(v);
+      (*array)[0] = (uint8_t) (value & 0x000000FF);
+      (*array)[1] = (uint8_t) ((value & 0x0000FF00) >> 8);
+      (*array)[2] = (uint8_t) ((value & 0x00FF0000) >> 16);
     }
   }
 }

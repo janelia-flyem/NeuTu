@@ -1,4 +1,7 @@
 #include "zdvidreader.h"
+
+#include <QThread>
+
 #include "zdvidbuffer.h"
 #include "zstackfactory.h"
 #include "zdvidinfo.h"
@@ -10,10 +13,15 @@ ZDvidReader::ZDvidReader(QObject *parent) :
   m_eventLoop = new QEventLoop(this);
   m_dvidClient = new ZDvidClient(this);
   m_timer = new QTimer(this);
+  //m_timer->setInterval(1000);
 
-  connect(m_dvidClient, SIGNAL(noRequestLeft()), m_eventLoop, SLOT(quit()));
+  m_isReadingDone = false;
+
+  //connect(m_dvidClient, SIGNAL(noRequestLeft()), m_eventLoop, SLOT(quit()));
+  connect(m_dvidClient, SIGNAL(noRequestLeft()), this, SLOT(endReading()));
+  connect(this, SIGNAL(readingDone()), m_eventLoop, SLOT(quit()));
   //connect(m_dvidClient, SIGNAL(requestFailed()), m_eventLoop, SLOT(quit()));
-  connect(m_dvidClient, SIGNAL(requestCanceled()), m_eventLoop, SLOT(quit()));
+  connect(m_dvidClient, SIGNAL(requestCanceled()), this, SLOT(endReading()));
 
   connect(m_timer, SIGNAL(timeout()), m_dvidClient, SLOT(cancelRequest()));
 }
@@ -21,6 +29,21 @@ ZDvidReader::ZDvidReader(QObject *parent) :
 void ZDvidReader::slotTest()
 {
   qDebug() << "ZDvidReader::slotTest";
+  qDebug() << QThread::currentThread();
+
+  m_eventLoop->quit();
+}
+
+void ZDvidReader::startReading()
+{
+  m_isReadingDone = false;
+}
+
+void ZDvidReader::endReading()
+{
+  m_isReadingDone = true;
+
+  emit readingDone();
 }
 
 bool ZDvidReader::open(
@@ -55,8 +78,21 @@ bool ZDvidReader::open(const QString &sourceString)
   return open(target);
 }
 
+void ZDvidReader::waitForReading()
+{
+#ifdef _DEBUG_
+  std::cout << "Start waiting ..." << std::endl;
+  qDebug() << QThread::currentThread();
+#endif
+  if (!isReadingDone()) {
+    m_eventLoop->exec();
+  }
+}
+
 ZObject3dScan ZDvidReader::readBody(int bodyId)
 {
+  startReading();
+
   ZDvidBuffer *dvidBuffer = m_dvidClient->getDvidBuffer();
   dvidBuffer->clearBodyArray();
 
@@ -65,9 +101,7 @@ ZObject3dScan ZDvidReader::readBody(int bodyId)
   m_dvidClient->appendRequest(request);
   m_dvidClient->postNextRequest();
 
-  m_eventLoop->exec();
-
-
+  waitForReading();
 
   const QVector<ZObject3dScan>& bodyArray = dvidBuffer->getBodyArray();
 
@@ -82,6 +116,8 @@ ZObject3dScan ZDvidReader::readBody(int bodyId)
 
 ZSwcTree* ZDvidReader::readSwc(int bodyId)
 {
+  startReading();
+
   ZDvidBuffer *dvidBuffer = m_dvidClient->getDvidBuffer();
   dvidBuffer->clearTreeArray();
 
@@ -90,7 +126,7 @@ ZSwcTree* ZDvidReader::readSwc(int bodyId)
   m_dvidClient->appendRequest(request);
   m_dvidClient->postNextRequest();
 
-  m_eventLoop->exec();
+  waitForReading();
 
   const QVector<ZSwcTree*>& treeArray = dvidBuffer->getSwcTreeArray();
 
@@ -101,9 +137,20 @@ ZSwcTree* ZDvidReader::readSwc(int bodyId)
   return NULL;
 }
 
+ZStack* ZDvidReader::readGrayScale(const ZIntCuboid &cuboid)
+{
+  return readGrayScale(cuboid.getFirstCorner().getX(),
+                       cuboid.getFirstCorner().getY(),
+                       cuboid.getFirstCorner().getZ(),
+                       cuboid.getWidth(), cuboid.getHeight(),
+                       cuboid.getDepth());
+}
+
 ZStack* ZDvidReader::readGrayScale(
     int x0, int y0, int z0, int width, int height, int depth)
 {
+  startReading();
+
   ZDvidBuffer *dvidBuffer = m_dvidClient->getDvidBuffer();
   dvidBuffer->clearImageArray();
 
@@ -118,8 +165,7 @@ ZStack* ZDvidReader::readGrayScale(
     m_dvidClient->postNextRequest();
   }
 
-
-  m_eventLoop->exec();
+  waitForReading();
 
   const QVector<ZStack*>& imageArray = dvidBuffer->getImageArray();
 
@@ -160,8 +206,15 @@ ZStack* ZDvidReader::readGrayScale(
 #endif
 }
 
+bool ZDvidReader::isReadingDone()
+{
+  return m_isReadingDone;
+}
+
 QString ZDvidReader::readInfo(const QString &dataType)
 {
+  startReading();
+
   ZDvidBuffer *dvidBuffer = m_dvidClient->getDvidBuffer();
   dvidBuffer->clear();
 
@@ -170,7 +223,7 @@ QString ZDvidReader::readInfo(const QString &dataType)
   m_dvidClient->appendRequest(request);
   m_dvidClient->postNextRequest();
 
-  m_eventLoop->exec();
+  waitForReading();
 
   const QStringList& infoArray = dvidBuffer->getInfoArray();
 
@@ -265,6 +318,8 @@ std::set<int> ZDvidReader::readBodyId(size_t minSize, size_t maxSize)
   std::vector<int> idArray;
 
   if (minSize <= maxSize) {
+    startReading();
+
     ZDvidRequest request;
     request.setGetStringRequest("sp2body");
 
@@ -273,7 +328,7 @@ std::set<int> ZDvidReader::readBodyId(size_t minSize, size_t maxSize)
     m_dvidClient->appendRequest(request);
     m_dvidClient->postNextRequest();
 
-    m_eventLoop->exec();
+    waitForReading();
 
     ZDvidBuffer *dvidBuffer = m_dvidClient->getDvidBuffer();
 
@@ -295,6 +350,8 @@ std::set<int> ZDvidReader::readBodyId(size_t minSize, size_t maxSize)
 
 QByteArray ZDvidReader::readKeyValue(const QString &dataName, const QString &key)
 {
+  startReading();
+
   ZDvidBuffer *dvidBuffer = m_dvidClient->getDvidBuffer();
   dvidBuffer->clear();
 
@@ -303,7 +360,7 @@ QByteArray ZDvidReader::readKeyValue(const QString &dataName, const QString &key
   m_dvidClient->appendRequest(request);
   m_dvidClient->postNextRequest();
 
-  m_eventLoop->exec();
+  waitForReading();
 
   const QVector<QByteArray> &array = dvidBuffer->getKeyValueArray();
 
@@ -320,6 +377,7 @@ QByteArray ZDvidReader::readKeyValue(const QString &dataName, const QString &key
 ZStack* ZDvidReader::readBodyLabel(
     int x0, int y0, int z0, int width, int height, int depth)
 {
+  startReading();
   ZDvidBuffer *dvidBuffer = m_dvidClient->getDvidBuffer();
   dvidBuffer->clearImageArray();
 
@@ -356,7 +414,7 @@ ZStack* ZDvidReader::readBodyLabel(
   }*/
 #endif
 
-  m_eventLoop->exec();
+  waitForReading();
 
   const QVector<ZStack*>& imageArray = dvidBuffer->getImageArray();
   ZStack *stack = NULL;

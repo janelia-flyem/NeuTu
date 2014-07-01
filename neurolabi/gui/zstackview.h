@@ -60,10 +60,19 @@ public:
   inline QProgressBar* progressBar() { return m_progress; }
 
   int maxSliceIndex();
-  int sliceIndex();
+  int sliceIndex() const;
   void setSliceIndex(int slice);
   void stepSlice(int step);
   int threshold();
+
+  /*!
+   * \brief Get the current Z position.
+   *
+   * \return The current Z position, which is defined as the slice index plus
+   * the Z coordinate of the stack offset.
+   */
+  int getCurrentZ() const;
+
   ZStack *stackData();
 
   void connectSignalSlot();

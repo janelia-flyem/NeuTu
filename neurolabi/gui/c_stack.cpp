@@ -273,10 +273,16 @@ Stack* C_Stack::resize(const Stack *stack, int width, int height, int depth)
 #define DOWNSAMPLE_MIN(srcArray, dstArray) \
   DOWNSAMPLE_GENERAL(srcArray, dstArray, (*srcArray < *dstArray))
 
-Stack* C_Stack::downsampleMax(const Stack *stack, int xintv, int yintv, int zintv)
+Stack* C_Stack::downsampleMax(
+    const Stack *stack, int xintv, int yintv, int zintv, Stack *out)
 {
   if (xintv == 0 && yintv == 0 && zintv == 0) {
-    return clone(stack);
+    if (out == NULL) {
+      return clone(stack);
+    } else {
+      C_Stack::copyValue(stack, out);
+      return out;
+    }
   }
 
   int xCounter = 0;
@@ -290,7 +296,14 @@ Stack* C_Stack::downsampleMax(const Stack *stack, int xintv, int yintv, int zint
   int sheight = h / (yintv + 1) + (h % (yintv + 1) > 0);
   int sdepth = d / (zintv + 1) + (d % (zintv + 1) > 0);
 
-  Stack *out = make(kind(stack), swidth, sheight, sdepth);
+  if (out == NULL) {
+    out = make(kind(stack), swidth, sheight, sdepth);
+  } else {
+    out->kind = kind(stack);
+    out->width = swidth;
+    out->height = sheight;
+    out->depth = sdepth;
+  }
   //setZero(out);
 
   size_t outArea = area(out);

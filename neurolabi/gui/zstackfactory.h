@@ -21,6 +21,8 @@ public:
   template<class InputIterator>
   static ZStack* composite(InputIterator begin, InputIterator end);
 
+  static ZStack* makeOneStack(int width, int height, int depth);
+
 private:
   static Stack* pileMatched(const std::vector<Stack*> stackArray);
 };

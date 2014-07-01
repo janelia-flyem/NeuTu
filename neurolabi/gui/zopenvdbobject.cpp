@@ -23,6 +23,13 @@ int ZOpenVdbObject::getValue(int x, int y, int z) const
   return m_grid->getConstAccessor().getValue(coord);
 }
 
+void ZOpenVdbObject::repack()
+{
+  if (!isEmpty()) {
+    m_grid->tree().prune();
+  }
+}
+
 bool ZOpenVdbObject::isEmpty() const
 {
   if (m_grid == NULL) {

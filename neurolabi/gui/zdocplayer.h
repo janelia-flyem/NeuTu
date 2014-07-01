@@ -24,6 +24,7 @@ public:
   const static TRole ROLE_TMP_RESULT; //Temporary result
   const static TRole ROLE_3DPAINT;
   const static TRole ROLE_MANAGED_OBJECT;
+  const static TRole ROLE_3DSWC_DECORATOR;
 
 public:
   ZDocPlayer();

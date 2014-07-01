@@ -7,6 +7,7 @@
 #include "zpointarray.h"
 #include "zlinesegmentarray.h"
 #include "zintcuboidface.h"
+#include "zstroke2d.h"
 
 ZSwcGenerator::ZSwcGenerator()
 {
@@ -374,6 +375,28 @@ ZSwcTree* ZSwcGenerator::createSwc(
        iter != faceArray.end(); ++iter) {
     ZSwcTree *subtree = createSwc(*iter, radius);
     tree->merge(subtree, true);
+  }
+
+  return tree;
+}
+
+ZSwcTree* ZSwcGenerator::createSwc(const ZStroke2d &stroke)
+{
+  if (stroke.isEmpty()) {
+    return NULL;
+  }
+
+  double z = stroke.getZ();
+  double r = stroke.getWidth() / 2.0;
+  ZSwcTree *tree = new ZSwcTree();
+  tree->forceVirtualRoot();
+  Swc_Tree_Node *parent = tree->root();
+  for (size_t i = 0; i < stroke.getPointNumber(); ++i) {
+    double x, y;
+    stroke.getPoint(&x, &y, i);
+    Swc_Tree_Node *tn = SwcTreeNode::makePointer(x, y, z, r);
+    SwcTreeNode::setParent(tn, parent);
+    parent = tn;
   }
 
   return tree;

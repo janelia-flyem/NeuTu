@@ -208,15 +208,20 @@ Stack* resize(const Stack* stack,int width,int height,int depth);
 Stack* translate(Stack *stack, int kind, int in_place);
 
 /*!
- * \brief Downsample a stack
+ * \brief Downsample a stack with maximum assignment.
  *
  * \param stack source stack
  * \param xintv X interval
  * \param yintv Y interval
  * \param zintv Z interval
+ * \param result object to hold the result. It must have have enough
+ *    preallocated memory to hold the results if it is not NULL.
+ *    If it is NULL, a new object is returned.
  * \return The result.
  */
-Stack* downsampleMax(const Stack *stack, int xintv, int yintv, int zintv);
+Stack* downsampleMax(const Stack *stack, int xintv, int yintv, int zintv,
+                     Stack *result = NULL);
+
 Stack* downsampleMin(const Stack *stack, int xintv, int yintv, int zintv);
 
 void print(const Stack *stack);

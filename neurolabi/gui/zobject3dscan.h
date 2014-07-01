@@ -68,6 +68,7 @@ public:
 
   void downsample(int xintv);
   void downsampleMax(int xintv);
+  void upSample(int xIntv);
 
   void clearSegment();
 
@@ -160,6 +161,7 @@ public:
   std::map<int, size_t>& getSlicewiseVoxelNumber();
 
   const ZObject3dStripe& getStripe(size_t index) const;
+  ZObject3dStripe& getStripe(size_t index);
 
   /*
   const int* getFirstStripe() const;
@@ -249,6 +251,8 @@ public:
 
   void downsample(int xintv, int yintv, int zintv);
   void downsampleMax(int xintv, int yintv, int zintv);
+
+  void upSample(int xIntv, int yIntv, int zIntv);
 
   Stack* toStack(int *offset = NULL, int v = 1) const;
   ZStack* toStackObject() const;
@@ -446,6 +450,19 @@ public:
    * \return true iff the object is saved successfully
    */
   //bool exportHdf5(const std::string &filePath, const std::string &key) const;
+
+  /*!
+   * \brief Check if two objects have overlap
+   *
+   * 26-neighborhood.
+   */
+  bool hasOverlap(ZObject3dScan &obj);
+
+
+  /*!
+   * \brief Check if an object is ajacent to another
+   */
+  bool isAdjacentTo(ZObject3dScan &obj);
 
 protected:
   std::vector<ZObject3dStripe> m_stripeArray;

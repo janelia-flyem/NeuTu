@@ -89,12 +89,14 @@
 #include "zstackarray.h"
 #include "zstackfactory.h"
 #include "zsparseobject.h"
+#include "zsparsestack.h"
 
 using namespace std;
 
 ZStackDoc::ZStackDoc(ZStack *stack, QObject *parent) : QObject(parent)
 {
   m_stack = stack;
+  m_sparseStack = NULL;
   m_labelField = NULL;
   m_parentFrame = NULL;
   m_masterChain = NULL;
@@ -127,6 +129,7 @@ ZStackDoc::ZStackDoc(ZStack *stack, QObject *parent) : QObject(parent)
 ZStackDoc::~ZStackDoc()
 {
   deprecate(STACK);
+  deprecate(SPARSE_STACK);
 
   qDebug() << m_objs.size();
   qDebug() << "ZStackDoc destroyed";
@@ -568,6 +571,11 @@ bool ZStackDoc::hasObject()
 bool ZStackDoc::hasSparseObject()
 {
   return !getSparseObjectList().isEmpty();
+}
+
+bool ZStackDoc::hasSparseStack() const
+{
+  return m_sparseStack != NULL;
 }
 
 bool ZStackDoc::hasSwc() const
@@ -5356,6 +5364,10 @@ void ZStackDoc::deprecate(EComponent component)
     stackRef() = NULL;
     m_neuronTracer.clear();
     break;
+  case SPARSE_STACK:
+    delete m_sparseStack;
+    m_sparseStack = NULL;
+    break;
   default:
     break;
   }
@@ -7876,208 +7888,6 @@ void ZStackDoc::addData(const ZStackDocReader &reader)
   }
 }
 
-///////////Stack Reader///////////
-
-ZStackDocReader::ZStackDocReader() : m_stack(NULL), m_swcNetwork(NULL)
-{
-
-}
-
-bool ZStackDocReader::readFile(const QString &filePath)
-{
-  m_filePath = filePath;
-
-  switch (ZFileType::fileType(filePath.toStdString())) {
-  case ZFileType::SWC_FILE:
-    loadSwc(filePath);
-    break;
-  case ZFileType::LOCSEG_CHAIN_FILE:
-    loadLocsegChain(filePath);
-    break;
-  case ZFileType::SWC_NETWORK_FILE:
-    loadSwcNetwork(filePath);
-    break;
-  case ZFileType::OBJECT_SCAN_FILE:
-  case ZFileType::TIFF_FILE:
-  case ZFileType::LSM_FILE:
-  case ZFileType::V3D_RAW_FILE:
-    loadStack(filePath);
-    break;
-    /*
-  case ZFileType::FLYEM_NETWORK_FILE:
-    importFlyEmNetwork(filePath.toStdString().c_str());
-    break;
-  case ZFileType::SYNAPSE_ANNOTATON_FILE:
-    importSynapseAnnotation(filePath.toStdString());
-    break;
-    */
-  case ZFileType::V3D_APO_FILE:
-  case ZFileType::V3D_MARKER_FILE:
-  case ZFileType::RAVELER_BOOKMARK:
-    loadPuncta(filePath);
-    break;
-  default:
-    return false;
-    break;
-  }
-
-  return true;
-}
-
-void ZStackDocReader::loadSwc(const QString &filePath)
-{
-  ZSwcTree *tree = new ZSwcTree();
-  tree->load(filePath.toLocal8Bit().constData());
-  if (!tree->isEmpty()) {
-    addSwcTree(tree);
-  } else {
-    delete tree;
-  }
-}
-
-void ZStackDocReader::addSwcTree(ZSwcTree *tree)
-{
-  if (tree != NULL) {
-    m_swcList.append(tree);
-  }
-}
-
-void ZStackDocReader::loadLocsegChain(const QString &filePath)
-{
-  if (!filePath.isEmpty()) {
-    ZLocsegChain *chain = new ZLocsegChain();
-    chain->load(filePath.toLocal8Bit().constData());
-    if (!chain->isEmpty()) {
-      addLocsegChain(chain);
-    } else {
-      delete chain;
-    }
-  }
-}
-
-void ZStackDocReader::addLocsegChain(ZLocsegChain *chain)
-{
-  if (chain != NULL) {
-    m_chainList.append(chain);
-  }
-}
-
-void ZStackDocReader::loadStack(const QString &filePath)
-{
-  if (ZFileType::fileType(filePath.toStdString()) == ZFileType::OBJECT_SCAN_FILE) {
-    ZSparseObject *sobj = new ZSparseObject;
-    sobj->load(filePath.toStdString().c_str());
-    if (!sobj->isEmpty()) {
-      addSparseObject(sobj);
-      sobj->setColor(128, 0, 0, 255);
-
-      ZIntCuboid cuboid = sobj->getBoundBox();
-      m_stack = ZStackFactory::makeVirtualStack(
-            cuboid.getWidth(), cuboid.getHeight(), cuboid.getDepth());
-      m_stack->setOffset(cuboid.getFirstCorner());
-    }
-  } else {
-    m_stackSource.import(filePath.toStdString());
-    m_stack = m_stackSource.readStack();
-  }
-}
-
-void ZStackDocReader::clear()
-{
-  m_stack = NULL;
-  m_swcList.clear();
-  m_stackSource.clear();
-  m_swcList.clear();
-  m_punctaList.clear();
-  m_strokeList.clear();
-  m_obj3dList.clear();
-  m_sparseObjectList.clear();
-}
-
-void ZStackDocReader::loadSwcNetwork(const QString &filePath)
-{
-  if (!filePath.isEmpty()) {
-    if (m_swcNetwork == NULL) {
-      m_swcNetwork = new ZSwcNetwork;
-    }
-
-    m_swcNetwork->importTxtFile(filePath.toStdString());
-
-    for (size_t i = 0; i < m_swcNetwork->treeNumber(); i++) {
-      addSwcTree(m_swcNetwork->getTree(i));
-    }
-  }
-}
-
-void ZStackDocReader::loadPuncta(const QString &filePath)
-{
-  if (!filePath.isEmpty()) {
-    QList<ZPunctum*> plist = ZPunctumIO::load(filePath);
-    foreach (ZPunctum* punctum, plist) {
-      addPunctum(punctum);
-    }
-  }
-}
-
-void ZStackDocReader::addPunctum(ZPunctum *p)
-{
-  if (p != NULL) {
-    m_punctaList.append(p);
-  }
-}
-
-void ZStackDocReader::addStroke(ZStroke2d *stroke)
-{
-  if (stroke != NULL) {
-    m_strokeList.append(stroke);
-  }
-}
-
-void ZStackDocReader::addSparseObject(ZSparseObject *obj)
-{
-  if (obj != NULL) {
-    m_sparseObjectList.append(obj);
-  }
-}
-
-void ZStackDocReader::setStack(ZStack *stack)
-{
-  m_stack = stack;
-}
-
-void ZStackDocReader::setStackSource(const ZStackFile &stackFile)
-{
-  m_stackSource = stackFile;
-}
-
-bool ZStackDocReader::hasData() const
-{
-  if (getStack() != NULL) {
-    return true;
-  }
-
-  if (!getSwcList().isEmpty()) {
-    return true;
-  }
-
-  if (!getPunctaList().isEmpty()) {
-    return true;
-  }
-
-  if (!getStrokeList().isEmpty()) {
-    return true;
-  }
-
-  if (!getObjectList().isEmpty()) {
-    return true;
-  }
-
-  if (!getChainList().isEmpty()) {
-    return true;
-  }
-
-  return false;
-}
 
 std::vector<ZStack*> ZStackDoc::createWatershedMask()
 {
@@ -8211,29 +8021,38 @@ void ZStackDoc::seededWatershed()
   ZStackArray seedMask = createWatershedMask();
 
   if (!seedMask.empty()) {
-    ZStack *out = engine.run(m_stack, seedMask);
+    ZStack *signalStack = m_stack;
+    if (signalStack->isVirtual()) {
+      if (m_sparseStack != NULL) {
+        signalStack = m_sparseStack->getStack();
+      }
+    }
 
-    Object_3d *objData = Stack_Region_Border(out->c_stack(), 6, TRUE);
+    if (signalStack != NULL) {
+      ZStack *out = engine.run(signalStack, seedMask);
 
-    if (objData != NULL) {
-      ZObject3d *obj = new ZObject3d(objData);
+      Object_3d *objData = Stack_Region_Border(out->c_stack(), 6, TRUE);
 
-      obj->translate(out->getOffset());
-      /*
+      if (objData != NULL) {
+        ZObject3d *obj = new ZObject3d(objData);
+
+        obj->translate(out->getOffset());
+        /*
       obj->translate(iround(out->getOffset().getX()),
                      iround(out->getOffset().getY()),
                      iround(out->getOffset().getZ()));
                      */
-      obj->setColor(255, 255, 0, 255);
+        obj->setColor(255, 255, 0, 255);
 
-      addObj3d(obj);
-      addPlayer(obj, ZDocPlayer::ROLE_TMP_RESULT);
+        addObj3d(obj);
+        addPlayer(obj, ZDocPlayer::ROLE_TMP_RESULT);
 
-      notifyObj3dModified();
+        notifyObj3dModified();
+      }
+      //delete out;
+
+      setLabelField(out);
     }
-    //delete out;
-
-    setLabelField(out);
   }
 }
 
@@ -8340,6 +8159,7 @@ ZStack* ZStackDoc::makeLabelStack(ZStack *stack) const
   C_Stack::copyChannelValue(out->data(), 0, getStack()->c_stack());
   C_Stack::copyChannelValue(out->data(), 1, getStack()->c_stack());
   C_Stack::copyChannelValue(out->data(), 2, getStack()->c_stack());
+  out->setOffset(getStack()->getOffset());
 
   if (labelField != NULL) {
     size_t voxelNumber = out->getVoxelNumber();
@@ -8366,7 +8186,6 @@ ZStack* ZStackDoc::makeLabelStack(ZStack *stack) const
         ch2Array[i] = 0;
       }
     }
-    out->setOffset(getStack()->getOffset());
   } else {
     emit statusMessageUpdated("No label field.");
   }
@@ -8417,4 +8236,213 @@ QList<const ZDocPlayer*> ZStackDoc::getPlayerList(ZDocPlayer::TRole role) const
 bool ZStackDoc::hasPlayer(ZDocPlayer::TRole role) const
 {
   return m_playerList.hasPlayer(role);
+}
+
+///////////Stack Reader///////////
+
+ZStackDocReader::ZStackDocReader() : m_stack(NULL), m_sparseStack(NULL),
+  m_swcNetwork(NULL)
+{
+
+}
+
+bool ZStackDocReader::readFile(const QString &filePath)
+{
+  m_filePath = filePath;
+
+  switch (ZFileType::fileType(filePath.toStdString())) {
+  case ZFileType::SWC_FILE:
+    loadSwc(filePath);
+    break;
+  case ZFileType::LOCSEG_CHAIN_FILE:
+    loadLocsegChain(filePath);
+    break;
+  case ZFileType::SWC_NETWORK_FILE:
+    loadSwcNetwork(filePath);
+    break;
+  case ZFileType::OBJECT_SCAN_FILE:
+  case ZFileType::TIFF_FILE:
+  case ZFileType::LSM_FILE:
+  case ZFileType::V3D_RAW_FILE:
+    loadStack(filePath);
+    break;
+    /*
+  case ZFileType::FLYEM_NETWORK_FILE:
+    importFlyEmNetwork(filePath.toStdString().c_str());
+    break;
+  case ZFileType::SYNAPSE_ANNOTATON_FILE:
+    importSynapseAnnotation(filePath.toStdString());
+    break;
+    */
+  case ZFileType::V3D_APO_FILE:
+  case ZFileType::V3D_MARKER_FILE:
+  case ZFileType::RAVELER_BOOKMARK:
+    loadPuncta(filePath);
+    break;
+  default:
+    return false;
+    break;
+  }
+
+  return true;
+}
+
+void ZStackDocReader::loadSwc(const QString &filePath)
+{
+  ZSwcTree *tree = new ZSwcTree();
+  tree->load(filePath.toLocal8Bit().constData());
+  if (!tree->isEmpty()) {
+    addSwcTree(tree);
+  } else {
+    delete tree;
+  }
+}
+
+void ZStackDocReader::addSwcTree(ZSwcTree *tree)
+{
+  if (tree != NULL) {
+    m_swcList.append(tree);
+  }
+}
+
+void ZStackDocReader::loadLocsegChain(const QString &filePath)
+{
+  if (!filePath.isEmpty()) {
+    ZLocsegChain *chain = new ZLocsegChain();
+    chain->load(filePath.toLocal8Bit().constData());
+    if (!chain->isEmpty()) {
+      addLocsegChain(chain);
+    } else {
+      delete chain;
+    }
+  }
+}
+
+void ZStackDocReader::addLocsegChain(ZLocsegChain *chain)
+{
+  if (chain != NULL) {
+    m_chainList.append(chain);
+  }
+}
+
+void ZStackDocReader::loadStack(const QString &filePath)
+{
+  if (ZFileType::fileType(filePath.toStdString()) == ZFileType::OBJECT_SCAN_FILE) {
+    ZSparseObject *sobj = new ZSparseObject;
+    sobj->load(filePath.toStdString().c_str());
+    if (!sobj->isEmpty()) {
+      addSparseObject(sobj);
+      sobj->setColor(128, 0, 0, 255);
+
+      ZIntCuboid cuboid = sobj->getBoundBox();
+      m_stack = ZStackFactory::makeVirtualStack(
+            cuboid.getWidth(), cuboid.getHeight(), cuboid.getDepth());
+      m_stack->setOffset(cuboid.getFirstCorner());
+    }
+  } else {
+    m_stackSource.import(filePath.toStdString());
+    m_stack = m_stackSource.readStack();
+  }
+}
+
+void ZStackDocReader::clear()
+{
+  m_stack = NULL;
+  m_sparseStack = NULL;
+  m_swcList.clear();
+  m_stackSource.clear();
+  m_swcList.clear();
+  m_punctaList.clear();
+  m_strokeList.clear();
+  m_obj3dList.clear();
+  m_sparseObjectList.clear();
+}
+
+void ZStackDocReader::loadSwcNetwork(const QString &filePath)
+{
+  if (!filePath.isEmpty()) {
+    if (m_swcNetwork == NULL) {
+      m_swcNetwork = new ZSwcNetwork;
+    }
+
+    m_swcNetwork->importTxtFile(filePath.toStdString());
+
+    for (size_t i = 0; i < m_swcNetwork->treeNumber(); i++) {
+      addSwcTree(m_swcNetwork->getTree(i));
+    }
+  }
+}
+
+void ZStackDocReader::loadPuncta(const QString &filePath)
+{
+  if (!filePath.isEmpty()) {
+    QList<ZPunctum*> plist = ZPunctumIO::load(filePath);
+    foreach (ZPunctum* punctum, plist) {
+      addPunctum(punctum);
+    }
+  }
+}
+
+void ZStackDocReader::addPunctum(ZPunctum *p)
+{
+  if (p != NULL) {
+    m_punctaList.append(p);
+  }
+}
+
+void ZStackDocReader::addStroke(ZStroke2d *stroke)
+{
+  if (stroke != NULL) {
+    m_strokeList.append(stroke);
+  }
+}
+
+void ZStackDocReader::addSparseObject(ZSparseObject *obj)
+{
+  if (obj != NULL) {
+    m_sparseObjectList.append(obj);
+  }
+}
+
+void ZStackDocReader::setStack(ZStack *stack)
+{
+  m_stack = stack;
+}
+
+void ZStackDocReader::setStackSource(const ZStackFile &stackFile)
+{
+  m_stackSource = stackFile;
+}
+
+bool ZStackDocReader::hasData() const
+{
+  if (getStack() != NULL) {
+    return true;
+  }
+
+  if (m_sparseStack != NULL) {
+    return true;
+  }
+
+  if (!getSwcList().isEmpty()) {
+    return true;
+  }
+
+  if (!getPunctaList().isEmpty()) {
+    return true;
+  }
+
+  if (!getStrokeList().isEmpty()) {
+    return true;
+  }
+
+  if (!getObjectList().isEmpty()) {
+    return true;
+  }
+
+  if (!getChainList().isEmpty()) {
+    return true;
+  }
+
+  return false;
 }

@@ -45,6 +45,8 @@ class FlyEmBodyIdDialog;
 class FlyEmHotSpotDialog;
 class ZDvidDialog;
 class FlyEmBodyFilterDialog;
+class FlyEmBodySplitProjectDialog;
+class ZFlyEmNewBodySplitProjectDialog;
 
 namespace Ui {
     class MainWindow;
@@ -66,6 +68,8 @@ public: /* frame operation */
   inline QUndoGroup* undoGroup() const { return m_undoGroup; }
   void initOpenglContext();
   void config();
+
+  void initBodySplitProject();
 
 signals:
   void dvidRequestCanceled();
@@ -122,6 +126,8 @@ private:
   QProgressBar* getProgressBar();
 
   void setActionActivity();
+
+  void initDialog();
 
 protected:
   //a virtual function from QWidget. It is called when the window is closed.
@@ -405,6 +411,10 @@ private slots:
 
   void on_actionLoad_Large_Body_triggered();
 
+  void on_actionBody_Split_Project_triggered();
+
+  void on_actionSplit_Body_triggered();
+
 private:
   void createActions();
   void createFileActions();
@@ -579,7 +589,7 @@ private:
   ZSwcActionActivator m_swcActionActivator;
   QVector<ZActionActivator*> m_actionActivatorList;
 
-  FrameInfoDialog m_frameInfoDlg;
+  FrameInfoDialog *m_frameInfoDlg;
   QProgressDialog *m_progress;
   BcAdjustDialog *m_bcDlg;
   HelpDialog *m_helpDlg;
@@ -598,8 +608,8 @@ private:
   int m_frameCount;
 
 
-  MovieDialog m_movieDlg;
-  AutosaveSwcListDialog m_autosaveSwcDialog;
+  MovieDialog *m_movieDlg;
+  AutosaveSwcListDialog *m_autosaveSwcDialog;
 
   PenWidthDialog *m_penWidthDialog;
 
@@ -614,6 +624,8 @@ private:
   FlyEmHotSpotDialog *m_hotSpotDlg;
   ZDvidDialog *m_dvidDlg;
   FlyEmBodyFilterDialog *m_bodyFilterDlg;
+  FlyEmBodySplitProjectDialog *m_bodySplitProjectDialog;
+  ZFlyEmNewBodySplitProjectDialog *m_newBsProjectDialog;
 
 
   //FlyEmNeuronThumbnailDialog *m_thumbnailDlg;

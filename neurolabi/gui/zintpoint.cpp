@@ -85,12 +85,26 @@ ZIntPoint operator + (const ZIntPoint &pt1, const ZIntPoint &pt2)
                    pt1.getZ() + pt2.getZ());
 }
 
+ZIntPoint operator + (const ZIntPoint &pt1, int v)
+{
+  return ZIntPoint(pt1.getX() + v, pt1.getY() + v, pt1.getZ() + v);
+}
+
 ZIntPoint operator - (const ZIntPoint &pt1, const ZIntPoint &pt2)
 {
   return ZIntPoint(pt1.getX() - pt2.getX(), pt1.getY() - pt2.getY(),
                    pt1.getZ() - pt2.getZ());
 }
 
+ZIntPoint operator / (const ZIntPoint &pt1, const ZIntPoint &pt2)
+{
+  if (pt2.getX() == 0 || pt2.getY() == 0 || pt2.getZ() == 0) {
+    return ZIntPoint(0, 0, 0);
+  }
+
+  return ZIntPoint(pt1.getX() / pt2.getX(), pt1.getY() / pt2.getY(),
+                   pt1.getZ() / pt2.getZ());
+}
 
 std::string ZIntPoint::toString() const
 {

@@ -106,6 +106,7 @@
 #include "zmoviemaker.h"
 #include "z3dmesh.h"
 #include "zstackdoc.h"
+#include "bigdata/zstackblockgrid.h"
 #include "z3dwindow.h"
 #include "flyem/zhotspot.h"
 #include "flyem/zhotspotarray.h"
@@ -187,6 +188,10 @@
 #include "test/zdocplayertest.h"
 #include "test/zopenvdbtest.h"
 #include "zsparseobject.h"
+#include "test/zdvidtest.h"
+#include "bigdata/zdvidblockgrid.h"
+#include "test/zblockgridtest.h"
+#include "test/zsparsestacktest.h"
 
 using namespace std;
 
@@ -213,7 +218,6 @@ int ZTest::runUnitTest(int argc, char *argv[])
   return 0;
 #endif
 }
-
 
 void ZTest::test(MainWindow *host)
 {
@@ -336,6 +340,7 @@ void ZTest::test(MainWindow *host)
   dlg.exec();
 #endif
 
+
 #if 0
   ZStackFrame *frame = new ZStackFrame(this);
   const char *filePath = "E:\\data\\diadem\\diadem1\\nc_01.tif";
@@ -451,8 +456,6 @@ void ZTest::test(MainWindow *host)
       break;
     }
   }
-
-
   double offset1[3] = {0.0, 0.0, 0.0};
   double offset2[3] = {0.0, 0.0, 0.0};
   double offset3[3] = {0.0, 0.0, 0.0};
@@ -497,6 +500,7 @@ void ZTest::test(MainWindow *host)
   tree3.save("/Users/zhaot/Work/neutube/neurolabi/data/test3.swc");
   connect_tree.save("/Users/zhaot/Work/neutube/neurolabi/data/test4.swc");
 #endif
+
 
 #if 0
   ZCuboid cuboid1(0, 0, 0, 2, 1, 3);
@@ -11800,7 +11804,7 @@ void ZTest::test(MainWindow *host)
   std::cout << Projection << std::endl;
 #endif
 
-#if 1
+#if 0
   ZSparseObject obj;
   obj.addSegment(0, 0, 0, 0, false);
   obj.addSegment(0, 1, 0, 1, false);
@@ -11837,4 +11841,136 @@ void ZTest::test(MainWindow *host)
   */
 #endif
 
+#if 0
+  ZDvidDialog dlg;
+  dlg.loadConfig(ZString::fullPath(NeutubeConfig::getInstance().getApplicatinDir(),
+                                   "json", "", "flyem_config.json"));
+
+  ZDvidTarget target = dlg.getDvidTarget();
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  qDebug() << reader.readInfo("skeletons");
+  ZObject3dScan obj = reader.readBody(117);
+
+  //tic();
+  //ZStack *stack = obj.toStackObject();
+  //ptoc();
+
+
+  ZDvidBlockGrid grid;
+  grid.setStartIndex(0, 0, 46);
+  grid.setEndIndex(98, 81, 250);
+  grid.setMinPoint(0, 0, 1490);
+  grid.setBlockSize(32, 32, 32);
+
+  tic();
+  for (size_t i = 0; i < obj.getStripeNumber(); ++i) {
+    const ZObject3dStripe &stripe = obj.getStripe(i);
+    int y = stripe.getY();
+    int z = stripe.getZ();
+    for (int j = 0; j < stripe.getSegmentNumber(); ++j) {
+      int x0 = stripe.getSegmentStart(j);
+      int x1 = stripe.getSegmentEnd(j);
+
+      for (int x = x0; x <= x1; ++x) {
+        ZDvidBlockGrid::Location location = grid.getLocation(x, y, z);
+      }
+    }
+  }
+  ptoc();
+
+#if 0
+  int count = 0;
+  int ncount = 0;
+  for (size_t i = 0; i < obj.getStripeNumber(); ++i) {
+    const ZObject3dStripe &stripe = obj.getStripe(i);
+    if (stripe.isCanonized()) {
+      ++count;
+    } else {
+      ++ncount;
+    }
+  }
+
+
+  std::cout << "Canonized: " << count << std::endl;
+  std::cout << "Uncanonized: " << ncount << std::endl;
+#endif
+  tic();
+  ZObject3dScan obj2 = obj;
+  ptoc();
+
+  tic();
+  obj2.downsampleMax(1, 1, 1);
+  ptoc();
+
+  tic();
+  obj2.dilate();
+  ptoc();
+
+
+
+#endif
+
+#if 1
+  ZDvidDialog dlg;
+  dlg.loadConfig(ZString::fullPath(NeutubeConfig::getInstance().getApplicatinDir(),
+                                   "json", "", "flyem_config.json"));
+
+  ZDvidTarget target = dlg.getDvidTarget();
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  ZDvidInfo dvidInfo;
+  dvidInfo.setFromJsonString(reader.readInfo("superpixels").toStdString());
+  dvidInfo.print();
+
+  ZObject3dScan obj = reader.readBody(117);
+
+  ZIntPointArray blockArray = dvidInfo.getBlockIndex(obj);;
+
+  std::cout << blockArray.size() << std::endl;
+
+  ZStackBlockGrid grid;
+  //grid.setStartIndex(0, 0, 46);
+  //grid.setEndIndex(98, 81, 250);
+  grid.setMinPoint(0, 0, 1490);
+  grid.setBlockSize(32, 32, 32);
+  grid.setGridSize(99, 82, 250 - 46 + 1);
+
+  for (ZIntPointArray::const_iterator iter = blockArray.begin();
+       iter != blockArray.end(); ++iter) {
+    const ZIntPoint blockIndex = *iter - ZIntPoint(0, 0, 46);
+    ZIntCuboid box = grid.getBlockBox(blockIndex);
+    ZStack *stack = reader.readGrayScale(box);
+    grid.consumeStack(blockIndex, stack);
+  }
+
+  tic();
+  size_t volume = 0;
+  for (size_t i = 0; i < obj.getStripeNumber(); ++i) {
+    const ZObject3dStripe &stripe = obj.getStripe(i);
+    int y = stripe.getY();
+    int z = stripe.getZ();
+    for (int j = 0; j < stripe.getSegmentNumber(); ++j) {
+      int x0 = stripe.getSegmentStart(j);
+      int x1 = stripe.getSegmentEnd(j);
+
+      for (int x = x0; x <= x1; ++x) {
+        int v = grid.getValue(x, y, z);
+        volume += (v > 0);
+      }
+    }
+  }
+  ptoc();
+
+  ZStack *largeStack = grid.toStack();
+  largeStack->setZero();
+  largeStack->save(GET_DATA_DIR + "/test.tif");
+  delete largeStack;
+
+  std::cout << "Volume: " << volume << std::endl;
+#endif
 }

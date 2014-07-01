@@ -407,7 +407,10 @@ HEADERS += mainwindow.h \
     zdocplayer.h \
     zlinesegmentobject.h \
     openvdb_header.h \
-    zopenvdbobject.h
+    zopenvdbobject.h \
+    flyembodysplitprojectdialog.h \
+    flyem/zflyembodysplitproject.h \
+    zflyemnewbodysplitprojectdialog.h
 
 FORMS += settingdialog.ui \
     frameinfodialog.ui \
@@ -455,7 +458,9 @@ FORMS += settingdialog.ui \
     flyembodyiddialog.ui \
     zdviddialog.ui \
     flyembodyfilterdialog.ui \
-    tilemanager.ui
+    tilemanager.ui \
+    flyembodysplitprojectdialog.ui \
+    zflyemnewbodysplitprojectdialog.ui
 SOURCES += main.cpp \
     mainwindow.cpp \
     zstackview.cpp \
@@ -670,7 +675,10 @@ SOURCES += main.cpp \
     zlabelcolortable.cpp \
     zdocplayer.cpp \
     zlinesegmentobject.cpp \
-    zopenvdbobject.cpp
+    zopenvdbobject.cpp \
+    flyembodysplitprojectdialog.cpp \
+    flyem/zflyembodysplitproject.cpp \
+    zflyemnewbodysplitprojectdialog.cpp
 
 OTHER_FILES += \
     extlib.pri

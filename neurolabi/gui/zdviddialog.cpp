@@ -51,7 +51,8 @@ void ZDvidDialog::loadConfig(const std::string &filePath)
   }
 
   if (m_dvidRepo.size() > 1) {
-    setServer(1);
+    ui->serverComboBox->setCurrentIndex(1);
+    //setServer(1);
   }
 }
 

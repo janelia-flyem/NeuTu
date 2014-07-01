@@ -326,6 +326,13 @@
       <addaction name="actionSplit_Region"/>
       <addaction name="actionView_Labeled_Regions"/>
      </widget>
+     <widget class="QMenu" name="menuNew">
+      <property name="title">
+       <string>New</string>
+      </property>
+      <addaction name="actionBody_Split_Project"/>
+     </widget>
+     <addaction name="menuNew"/>
      <addaction name="menuFlyEmOpen"/>
      <addaction name="menuExport_2"/>
      <addaction name="menuQuality_Control"/>
@@ -336,6 +343,7 @@
      <addaction name="menuSegmentation_2"/>
      <addaction name="actionSkeletonization"/>
      <addaction name="actionExtract_Neuron"/>
+     <addaction name="actionSplit_Body"/>
      <addaction name="separator"/>
      <addaction name="actionFlyEmSettings"/>
     </widget>
@@ -1209,6 +1217,21 @@
   <action name="actionLoad_Large_Body">
    <property name="text">
     <string>Load Large Body</string>
+   </property>
+  </action>
+  <action name="actionBody_Split_Project">
+   <property name="text">
+    <string>Body Split Project</string>
+   </property>
+  </action>
+  <action name="actionSplit_Body">
+   <property name="icon">
+    <iconset>
+     <normalon>:/images/bodysplit.png</normalon>
+    </iconset>
+   </property>
+   <property name="text">
+    <string>Split Body Project</string>
    </property>
   </action>
  </widget>

@@ -6,6 +6,7 @@
 #include "zobject3dscan.h"
 #include "zlabelcolortable.h"
 #include "zopenvdbobject.h"
+#include "bigdata/zstackblockgrid.h"
 
 class ZSparseObject : public ZObject3dScan
 {
@@ -28,9 +29,14 @@ public:
 
   void append(const ZObject3dScan &obj);
 
-  void setVoxelValue(ZStack *stack);
 
+public: //Intensity functions
+  //void setVoxelValue(ZStack *stack);
   int getVoxelValue(int x, int y, int z) const;
+
+  inline ZStackBlockGrid* getStackGrid() {
+    return &m_stackGrid;
+  }
 
   /*
   const ZObject3dScan& getData() const {
@@ -47,8 +53,10 @@ private:
   int m_label; //Label = 0 is reserved for eraser
 
 #if defined(_USE_OPENVDB_)
-  ZOpenVdbObject m_voxelValueObject;
+  //ZOpenVdbObject m_voxelValueObject;
 #endif
+
+  ZStackBlockGrid m_stackGrid; //Intensity values
 
   const static ZLabelColorTable m_colorTable;
 };

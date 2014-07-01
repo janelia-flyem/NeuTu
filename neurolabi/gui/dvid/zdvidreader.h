@@ -11,6 +11,7 @@
 #include "zstack.hxx"
 #include "zdvidclient.h"
 #include "flyem/zflyem.h"
+#include "zintcuboid.h"
 
 class ZDvidTarget;
 
@@ -29,6 +30,8 @@ public:
   ZObject3dScan readBody(int bodyId);
   ZStack* readGrayScale(
       int x0, int y0, int z0, int width, int height, int depth);
+  ZStack* readGrayScale(const ZIntCuboid &cuboid);
+
   ZStack* readBodyLabel(
       int x0, int y0, int z0, int width, int height, int depth);
   QString readInfo(const QString &dataType);
@@ -40,18 +43,24 @@ public:
   QByteArray readKeyValue(const QString &dataName, const QString &key);
 
 signals:
+  void readingDone();
 
 public slots:
   void slotTest();
+  void startReading();
+  void endReading();
 
 private:
   static std::vector<std::pair<int, int> > partitionStack(
       int x0, int y0, int z0, int width, int height, int depth);
+  bool isReadingDone();
+  void waitForReading();
 
 private:
   QEventLoop *m_eventLoop;
   ZDvidClient *m_dvidClient;
   QTimer *m_timer;
+  bool m_isReadingDone;
 };
 
 #endif // ZDVIDREADER_H

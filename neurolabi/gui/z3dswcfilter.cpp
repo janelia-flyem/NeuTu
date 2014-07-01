@@ -177,6 +177,8 @@ Z3DSwcFilter::~Z3DSwcFilter()
   }
 
   delete m_selectSwcEvent;
+
+  clearDecorateSwcList();
 }
 
 void Z3DSwcFilter::process(Z3DEye)
@@ -340,7 +342,7 @@ void Z3DSwcFilter::registerPickingObjects(Z3DPickingManager *pm)
     m_swcPickingColors.clear();
     m_linePickingColors.clear();
     m_pointPickingColors.clear();
-    for (size_t i=0; i<m_decompsedNodePairs.size(); i++) {
+    for (size_t i=0; i < m_swcList.size(); i++) {
       glm::col4 pickingColor = pm->getColorFromObject(m_swcList[i]);
       glm::vec4 fPickingColor(pickingColor[0]/255.f, pickingColor[1]/255.f, pickingColor[2]/255.f, pickingColor[3]/255.f);
       for (size_t j=0; j<m_decompsedNodePairs[i].size(); j++) {
@@ -540,6 +542,16 @@ ZWidgetsGroup *Z3DSwcFilter::getWidgetsGroup()
     m_widgetsGroup->setBasicAdvancedCutoff(5);
   }
   return m_widgetsGroup;
+}
+
+void Z3DSwcFilter::clearDecorateSwcList()
+{
+  for (std::vector<ZSwcTree*>::iterator iter = m_decorateSwcList.begin();
+       iter != m_decorateSwcList.end(); ++iter) {
+    delete *iter;
+  }
+
+  m_decorateSwcList.clear();
 }
 
 void Z3DSwcFilter::render(Z3DEye eye)

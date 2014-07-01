@@ -21,11 +21,15 @@ ZDvidTarget::ZDvidTarget(
 
 std::string ZDvidTarget::getSourceString(bool withHttpPrefix) const
 {
-  std::string source = getAddress() + ":" + ZString::num2str(getPort()) + ":" +
-      getUuid();
-  if (withHttpPrefix) {
-    source = "http:" + source;
+  std::string source;
+
+  if (!getAddress().empty()) {
+    source = getAddress() + ":" + ZString::num2str(getPort()) + ":" + getUuid();
+    if (withHttpPrefix) {
+      source = "http:" + source;
+    }
   }
+
   return source;
 }
 
@@ -63,6 +67,11 @@ void ZDvidTarget::set(const std::string &sourceString)
   }
 }
 
+bool ZDvidTarget::hasPort() const
+{
+  return getPort() >= 0;
+}
+
 bool ZDvidTarget::isValid() const
 {
   return !getAddress().empty() && !getUuid().empty();
@@ -70,11 +79,16 @@ bool ZDvidTarget::isValid() const
 
 std::string ZDvidTarget::getAddressWithPort() const
 {
-  if (getPort() < 0) {
-    return getAddress();
+  std::string address;
+
+  if (!getAddress().empty()) {
+    address = getAddress();
+    if (hasPort()) {
+      address += ":" + ZString::num2str(getPort());
+    }
   }
 
-  return getAddress() + ":" + ZString::num2str(getPort());
+  return address;
 }
 
 void ZDvidTarget::print() const

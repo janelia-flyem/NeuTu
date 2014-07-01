@@ -87,5 +87,6 @@
         <file>images/insert.png</file>
         <file>images/move.png</file>
         <file>images/add.png</file>
+        <file>images/bodysplit.png</file>
     </qresource>
 </RCC>

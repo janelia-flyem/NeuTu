@@ -332,15 +332,21 @@ void Z3DVolumeRaycaster::process(Z3DEye eye)
 
   if (m_volumes.hasChanged()) {
     glm::uvec3 volDim = volume->getOriginalDimensions();
-    m_xCut.setRange(0, volDim.x - 1);
-    m_xCut.setLowerValue(0);
-    m_xCut.setUpperValue(volDim.x - 1);
-    m_yCut.setRange(0, volDim.y - 1);
-    m_yCut.setLowerValue(0);
-    m_yCut.setUpperValue(volDim.y - 1);
-    m_zCut.setRange(0, volDim.z - 1);
-    m_zCut.setLowerValue(0);
-    m_zCut.setUpperValue(volDim.z - 1);
+    if (m_xCut.maximum() != (int) volDim.x - 1) {
+      m_xCut.setRange(0, volDim.x - 1);
+      m_xCut.setLowerValue(0);
+      m_xCut.setUpperValue(volDim.x - 1);
+    }
+    if (m_yCut.maximum() != (int) volDim.y - 1) {
+      m_yCut.setRange(0, volDim.y - 1);
+      m_yCut.setLowerValue(0);
+      m_yCut.setUpperValue(volDim.y - 1);
+    }
+    if (m_zCut.maximum() != (int) volDim.z - 1) {
+      m_zCut.setRange(0, volDim.z - 1);
+      m_zCut.setLowerValue(0);
+      m_zCut.setUpperValue(volDim.z - 1);
+    }
     m_zSlicePosition.setRange(0, volDim.z-1);
     m_ySlicePosition.setRange(0, volDim.y-1);
     m_xSlicePosition.setRange(0, volDim.x-1);

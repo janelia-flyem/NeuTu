@@ -170,6 +170,7 @@ bool NeutubeConfig::load(const std::string &filePath)
 void NeutubeConfig::print()
 {
   cout << m_dataPath << endl;
+#if 0
   cout << "SWC repository: " << m_swcRepository << endl;
   cout << "Body connection classifier: " << m_segmentationClassifierPath << endl;
   cout << "Body connection training: " << endl;
@@ -185,6 +186,7 @@ void NeutubeConfig::print()
     cout << *iter << " ";
   }
   cout << endl;
+#endif
   cout << "Application dir: " << getApplicatinDir() << endl;
   cout << "Autosave dir: " << getPath(AUTO_SAVE) << endl;
   cout << "Autosave interval: " << m_autoSaveInterval << endl;

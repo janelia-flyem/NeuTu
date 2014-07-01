@@ -820,17 +820,146 @@ double ZStack::value(int x, int y, int z, int c) const
 
   if (!(IS_IN_CLOSE_RANGE(x, 0, width() - 1) &&
         IS_IN_CLOSE_RANGE(y, 0, height() - 1) &&
+        (z < depth()) &&
         IS_IN_CLOSE_RANGE(c, 0, channelNumber() - 1))) {
     return 0.0;
   }
 
   if (z < 0) {
     z = maxIntensityDepth(x, y, c);
-  } else if (!(IS_IN_CLOSE_RANGE(z, 0, depth() - 1))) {
-    return 0.0;
   }
 
   return singleChannelStack(c)->value(x, y, z);
+}
+
+void ZStack::setIntValue(int x, int y, int z, int c, int v)
+{
+  if (isVirtual()) {
+    return;
+  }
+
+  x -= getOffset().getX();
+  y -= getOffset().getY();
+  z -= getOffset().getZ();
+
+  if (x < 0 || x >= width() || y < 0 || y >= height() || z < 0 || z >= depth() ||
+      c < 0 || c >= channelNumber()) {
+    return;
+  }
+
+  size_t stride_y = m_stack->width;
+  size_t stride_z = stride_y * m_stack->height;
+  size_t stride_c = stride_z * m_stack->depth;
+
+  Image_Array ima;
+  ima.array = m_stack->array;
+  size_t offset = stride_c * c + stride_z * z + stride_y * y +  x;
+
+  switch(kind()) {
+  case GREY:
+    CLIP_VALUE(v, 0, 255);
+    ima.array[offset] = v;
+    break;
+  case GREY16:
+    CLIP_VALUE(v, 0, 65535);
+    ima.array16[offset] = v;
+    break;
+  case FLOAT32:
+    ima.array32[offset] = v;
+    break;
+  case FLOAT64:
+    ima.array64[offset] = v;
+    break;
+  case COLOR:
+    ima.arrayc[offset][0] = (uint8_t) (v & 0x000000FF);
+    ima.arrayc[offset][1] = (uint8_t) ((v & 0x0000FF00) >> 8);
+    ima.arrayc[offset][2] = (uint8_t) ((v & 0x00FF0000) >> 16);
+    break;
+  }
+}
+
+int ZStack::getIntValue(int x, int y, int z, int c) const
+{
+  if (isVirtual()) {
+    return 0;
+  }
+
+  x -= getOffset().getX();
+  y -= getOffset().getY();
+  z -= getOffset().getZ();
+
+  if (x < 0 || x >= width() || y < 0 || y >= height() || z < 0 || z >= depth() ||
+      c < 0 || c >= channelNumber()) {
+    return 0;
+  }
+
+  size_t stride_y = m_stack->width;
+  size_t stride_z = stride_y * m_stack->height;
+  size_t stride_c = stride_z * m_stack->depth;
+
+  Image_Array ima;
+  ima.array = m_stack->array;
+  size_t offset = stride_c * c + stride_z * z + stride_y * y +  x;
+
+  switch (kind()) {
+  case GREY:
+    return ima.array8[offset];
+  case COLOR:
+  {
+    int v = ima.arrayc[offset][2];
+    v = (v << 8) + ima.arrayc[offset][1];
+    v = (v << 8) + ima.arrayc[offset][0];
+    return v;
+  }
+  case GREY16:
+    return ima.array16[offset];
+  case FLOAT32:
+    return ima.array32[offset];
+  case FLOAT64:
+    return ima.array64[offset];
+  }
+
+  return 0;
+}
+
+int ZStack::getIntValueLocal(int x, int y, int z, int c) const
+{
+  if (isVirtual()) {
+    return 0;
+  }
+
+  if (x < 0 || x >= width() || y < 0 || y >= height() || z < 0 || z >= depth() ||
+      c < 0 || c >= channelNumber()) {
+    return 0;
+  }
+
+  size_t stride_y = m_stack->width;
+  size_t stride_z = stride_y * m_stack->height;
+  size_t stride_c = stride_z * m_stack->depth;
+
+  Image_Array ima;
+  ima.array = m_stack->array;
+  size_t offset = stride_c * c + stride_z * z + stride_y * y +  x;
+
+  switch (kind()) {
+  case GREY:
+    return ima.array8[offset];
+  case COLOR:
+  {
+    int v = ima.arrayc[offset][2];
+    v = (v << 8) + ima.arrayc[offset][1];
+    v = (v << 8) + ima.arrayc[offset][0];
+    return v;
+  }
+  case GREY16:
+    return ima.array16[offset];
+  case FLOAT32:
+    return ima.array32[offset];
+  case FLOAT64:
+    return ima.array64[offset];
+  }
+
+  return 0;
 }
 
 double ZStack::saturatedIntensity() const
@@ -1228,6 +1357,24 @@ void *ZStack::getDataPointer(int c, int slice) const
   return (void*) array;
 }
 
+const uint8_t* ZStack::getDataPointer(int x, int y, int z) const
+{
+  if (isVirtual()) {
+    return NULL;
+  }
+
+  if (getBoundBox().contains(x, y, z)) {
+    x -= getOffset().getX();
+    y -= getOffset().getY();
+    z -= getOffset().getZ();
+
+    size_t area = width() * height();
+    return array8() + area * z + y * width() + x;
+  }
+
+  return NULL;
+}
+
 bool ZStack::watershed(int c)
 {
   if (!isVirtual() && c < channelNumber()) {
@@ -1524,6 +1671,13 @@ void ZStack::setZero()
   }
 }
 
+void ZStack::setOne()
+{
+  if (!isEmpty() && ! isVirtual()) {
+    C_Stack::setOne(m_stack);
+  }
+}
+
 void ZStack::printInfo() const
 {
   std::cout << "Stack: " << std::endl;
@@ -1610,4 +1764,54 @@ bool ZStack::contains(int x, int y, int z) const
   getBoundBox(&box);
 
   return Cuboid_I_Hit(&box, x, y, z) > 0;
+}
+
+void ZStack::setBlockValue(int x0, int y0, int z0, const ZStack *stack)
+{
+  x0 -= m_offset.getX();
+  y0 -= m_offset.getY();
+  z0 -= m_offset.getZ();
+
+  for (int c = 0; c < channelNumber(); ++c) {
+    const Stack *src = stack->c_stack(c);
+    Stack *dst = c_stack(c);
+    C_Stack::setBlockValue(dst, src, x0, y0, z0);
+  }
+}
+
+void ZStack::downsampleMax(int xintv, int yintv, int zintv)
+{
+  if (xintv == 0 && yintv == 0 && zintv == 0) {
+    return;
+  }
+
+  int w = width();
+  int h = height();
+  int d = depth();
+  int swidth = w / (xintv + 1) + (w % (xintv + 1) > 0);
+  int sheight = h / (yintv + 1) + (h % (yintv + 1) > 0);
+  int sdepth = d / (zintv + 1) + (d % (zintv + 1) > 0);
+
+  m_offset.setX(m_offset.getX() / (xintv + 1));
+  m_offset.setY(m_offset.getY() / (yintv + 1));
+  m_offset.setZ(m_offset.getZ() / (zintv + 1));
+
+  if (isVirtual()) {
+    m_stack->width = swidth;
+    m_stack->height = sheight;
+    m_stack->depth = sdepth;
+  } else {
+    Stack dst;
+    Stack src;
+    Mc_Stack *result = C_Stack::make(GREY, swidth, sheight, sdepth, 1);
+    Mc_Stack *original = m_stack;
+
+    for (int c = 0; c < channelNumber(); ++c) {
+      C_Stack::view(result, &dst, c);
+      C_Stack::view(original, &src, c);
+      C_Stack::downsampleMax(&src, xintv, yintv, zintv, &dst);
+    }
+
+    setData(result);
+  }
 }

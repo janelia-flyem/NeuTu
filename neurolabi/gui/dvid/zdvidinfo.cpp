@@ -12,6 +12,7 @@ const char* ZDvidInfo::m_maxPointKey = "MaxPoint";
 const char* ZDvidInfo::m_blockSizeKey = "BlockSize";
 const char* ZDvidInfo::m_voxelSizeKey = "VoxelSize";
 const char* ZDvidInfo::m_blockMinIndexKey = "MinIndex";
+const char* ZDvidInfo::m_blockMaxIndexKey = "MaxIndex";
 
 ZDvidInfo::ZDvidInfo() : m_dvidPort(7000)
 {
@@ -58,6 +59,16 @@ void ZDvidInfo::setFromJsonString(const std::string &str)
       }
     }
 
+    if (obj.hasKey(m_blockMaxIndexKey)) {
+      ZJsonArray array(obj[m_blockMaxIndexKey], false);
+      std::vector<int> blockIndex = array.toIntegerArray();
+      if (blockIndex.size() == 3) {
+        m_endBlockIndex.set(blockIndex);
+      } else {
+        m_endBlockIndex.set(0, 0, 0);
+      }
+    }
+
     if (obj.hasKey(m_blockSizeKey)) {
       ZJsonArray array(obj[m_blockSizeKey], false);
       m_blockSize = array.toIntegerArray();
@@ -78,18 +89,34 @@ void ZDvidInfo::setFromJsonString(const std::string &str)
 
 void ZDvidInfo::print() const
 {
-  std::cout << "Dvid server: " << m_dvidAddress << " " << m_dvidPort << " "
-            << m_dvidUuid << std::endl;
+  std::cout << "Dvid server: ";
+  if (m_dvidAddress.empty()) {
+    std::cout << "N/A" << std::endl;
+  } else {
+    std::cout << m_dvidAddress << std::endl;
+  }
+
+  std::cout << "Port: " << m_dvidPort << std::endl;
+  if (!m_dvidUuid.empty()) {
+    std::cout << "UUID: " << m_dvidUuid << std::endl;
+  }
   std::cout << "Stack size: " << m_stackSize[0] << " " << m_stackSize[1] << " "
             << m_stackSize[2] << std::endl;
   std::cout << "Voxel resolution: " << m_voxelResolution[0] << " x "
             << m_voxelResolution[1] << " x " << m_voxelResolution[2] << std::endl;
-  std::cout << "Start coordinates: " << m_startCoordinates[0] << " "
-            << m_startCoordinates[1] << " " << m_startCoordinates[2] << std::endl;
-  std::cout << "Start block: " << m_startBlockIndex[0] << " "
-            << m_startBlockIndex[1] << " " << m_startBlockIndex[2] << std::endl;
+  std::cout << "Start coordinates: " << "(" << m_startCoordinates[0] << ", "
+            << m_startCoordinates[1] << ", " << m_startCoordinates[2]
+            << ")" << std::endl;
+  std::cout << "Start block: (" << m_startBlockIndex[0] << ", "
+            << m_startBlockIndex[1] << ", " << m_startBlockIndex[2]
+            << ")" << std::endl;
   std::cout << "Block size: " << m_blockSize[0] << " x "
             << m_blockSize[1] << " x " << m_blockSize[2] << std::endl;
+}
+
+ZIntPoint ZDvidInfo::getBlockSize() const
+{
+  return ZIntPoint(m_blockSize[0], m_blockSize[1], m_blockSize[2]);
 }
 
 
@@ -156,4 +183,11 @@ ZIntPointArray ZDvidInfo::getBlockIndex(const ZObject3dScan &obj)
   blockArray.append(blockSet.begin(), blockSet.end());
 
   return blockArray;
+}
+
+ZIntPoint ZDvidInfo::getGridSize() const
+{
+  return ZIntPoint(m_endBlockIndex.getX() - m_startBlockIndex.getX() + 1,
+                   m_endBlockIndex.getY() - m_startBlockIndex.getY() + 1,
+                   m_endBlockIndex.getZ() - m_startBlockIndex.getZ() + 1);
 }

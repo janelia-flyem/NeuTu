@@ -51,6 +51,17 @@ public:
     return m_stackSize;
   }
 
+  inline const ZIntPoint& getStartBlockIndex() const {
+    return m_startBlockIndex;
+  }
+
+  inline const ZIntPoint& getEndBlockIndex() const {
+    return m_endBlockIndex;
+  }
+
+  ZIntPoint getBlockSize() const;
+  ZIntPoint getGridSize() const;
+
   bool isValidBlockIndex(const ZIntPoint &pt);
 
 private:
@@ -58,6 +69,7 @@ private:
   std::vector<double> m_voxelResolution;
   ZIntPoint m_startCoordinates;
   ZIntPoint m_startBlockIndex;
+  ZIntPoint m_endBlockIndex;
   std::vector<int> m_blockSize;
 
   std::string m_dvidAddress;
@@ -72,6 +84,7 @@ private:
   const static char* m_blockSizeKey;
   const static char* m_voxelSizeKey;
   const static char* m_blockMinIndexKey;
+  const static char* m_blockMaxIndexKey;
 };
 
 #endif // ZDVIDINFO_H

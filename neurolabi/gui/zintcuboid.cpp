@@ -1,4 +1,5 @@
 #include "zintcuboid.h"
+#include "tz_utilities.h"
 
 ZIntCuboid::ZIntCuboid()
 {
@@ -32,6 +33,14 @@ void ZIntCuboid::set(int x1, int y1, int z1, int x2, int y2, int z2)
   setLastCorner(x2, y2, z2);
 }
 
+void ZIntCuboid::join(const ZIntCuboid &cuboid)
+{
+  for (int i = 0; i < 3; i++) {
+    m_firstCorner[i] = imin2(m_firstCorner[i], cuboid.m_firstCorner[i]);
+    m_lastCorner[i] = imax2(m_lastCorner[i], cuboid.m_lastCorner[i]);
+  }
+}
+
 void ZIntCuboid::joinX(int x)
 {
   if (x < m_firstCorner.getX()) {
@@ -57,4 +66,22 @@ void ZIntCuboid::joinZ(int z)
   } else if (z > m_lastCorner.getZ()) {
     m_lastCorner.setZ(z);
   }
+}
+
+size_t ZIntCuboid::getVolume() const
+{
+  if (getWidth() <= 0 || getHeight() <= 0 || getDepth() <= 0) {
+    return 0;
+  }
+
+  size_t area = getWidth() * getHeight();
+
+  return area * getDepth();
+}
+
+bool ZIntCuboid::contains(int x, int y, int z) const
+{
+  return IS_IN_CLOSE_RANGE(x, m_firstCorner.getX(), m_lastCorner.getX()) &&
+      IS_IN_CLOSE_RANGE(y, m_firstCorner.getY(), m_lastCorner.getY()) &&
+      IS_IN_CLOSE_RANGE(z, m_firstCorner.getZ(), m_lastCorner.getZ());
 }

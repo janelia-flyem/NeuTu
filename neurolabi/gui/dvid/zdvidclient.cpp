@@ -491,6 +491,7 @@ void ZDvidClient::postNextRequest()
       m_currentRequestParameter = request.getParameter();
       qDebug() << "Posting next request: " << request.getParameter();
       if (postRequest(request.getType(), request.getParameter()) == false) {
+        qDebug() << "Emitting requestFailed()";
         emit requestFailed();
       }
     }

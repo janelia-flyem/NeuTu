@@ -42,7 +42,14 @@ public:
   ZIntPoint operator - () const;
 
   friend ZIntPoint operator + (const ZIntPoint &pt1, const ZIntPoint &pt2);
+  friend ZIntPoint operator + (const ZIntPoint &pt1, int v);
   friend ZIntPoint operator - (const ZIntPoint &pt1, const ZIntPoint &pt2);
+  /*!
+   * \brief Coordinate-wise ivision
+   *
+   * It returns (0, 0, 0) if \a pt2 has a 0 coordinate value.
+   */
+  friend ZIntPoint operator / (const ZIntPoint &pt1, const ZIntPoint &pt2);
 
   std::string toString() const;
 

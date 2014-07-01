@@ -135,6 +135,8 @@
 #include "zstackdoclabelstackfactory.h"
 #include "zsharedpointer.h"
 #include "zsparseobject.h"
+#include "zflyemnewbodysplitprojectdialog.h"
+#include "flyembodysplitprojectdialog.h"
 
 #include "ztest.h"
 
@@ -143,9 +145,7 @@
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
-    m_ui(new Ui::MainWindow),
-    m_frameInfoDlg(this),
-    m_autosaveSwcDialog(this)
+    m_ui(new Ui::MainWindow)
 {
   //std::cout << "Creating mainwindow ..." << std::endl;
   RECORD_INFORMATION("Creating mainwindow ...");
@@ -174,8 +174,6 @@ MainWindow::MainWindow(QWidget *parent) :
   connect(mdiArea, SIGNAL(subWindowActivated(QMdiSubWindow*)),
           this, SLOT(updateActiveUndoStack()));
 
-  connect(&m_frameInfoDlg, SIGNAL(newCurveSelected(int)),
-          this, SLOT(updateFrameInfoDlg()));
   connect(mdiArea, SIGNAL(subWindowActivated(QMdiSubWindow*)),
           this, SLOT(updateBcDlg()));
 
@@ -205,28 +203,9 @@ MainWindow::MainWindow(QWidget *parent) :
   setCurrentFile("");
   createAutoSaveDir();
 
-  m_progress = new QProgressDialog(this);
-  m_progress->setWindowModality(Qt::WindowModal);
-  m_progress->setAutoClose(true);
-  //m_progress->setWindowFlags(Qt::Dialog|Qt::WindowStaysOnTopHint);
-  m_progress->setCancelButton(0);
-
-  connect(this, SIGNAL(progressDone()), m_progress, SLOT(reset()));
-  connect(this, SIGNAL(progressAdvanced()), this, SLOT(advanceProgress()));
-
-  m_bcDlg = new BcAdjustDialog(this);
-  connect(m_bcDlg, SIGNAL(valueChanged()), this, SLOT(bcAdjust()));
-  connect(m_bcDlg, SIGNAL(autoAdjustTriggered()), this, SLOT(autoBcAdjust()));
-
-  m_helpDlg = new HelpDialog(this);
-  m_DiagnosisDlg = new DiagnosisDialog(this);
-  m_penWidthDialog = new PenWidthDialog(this);
-  m_resDlg = new ResolutionDialog(this);
-
   if (GET_APPLICATION_NAME == "Biocytin") {
     ZStackDrawable::setDefaultPenWidth(1.0);
   }
-  m_penWidthDialog->setPenWidth(ZStackDrawable::getDefaultPenWidth());
 
   setAcceptDrops(true);
 
@@ -251,12 +230,6 @@ MainWindow::MainWindow(QWidget *parent) :
   updateAction();
 
   m_dvidClient = new ZDvidClient("http://emdata1.int.janelia.org", this);
-  m_dvidObjectDlg = new DvidObjectDialog(this);
-  m_dvidObjectDlg->setAddress(m_dvidClient->getServer());
-
-  m_dvidImageDlg = new DvidImageDialog(this);
-  m_dvidImageDlg->setAddress(m_dvidClient->getServer());
-
   m_dvidFrame = NULL;
   connect(m_dvidClient, SIGNAL(noRequestLeft()), this, SLOT(createDvidFrame()));
   connect(this, SIGNAL(dvidRequestCanceled()), m_dvidClient, SLOT(cancelRequest()));
@@ -265,6 +238,62 @@ MainWindow::MainWindow(QWidget *parent) :
   connect(m_dvidClient, SIGNAL(objectRetrieved()),
           this, SLOT(createDvidFrame()));
           */
+
+  setWindowTitle(QString("%1 %2").arg(GET_SOFTWARE_NAME.c_str()).
+                 arg(windowTitle()));
+
+  connect(this, SIGNAL(docReaderReady(ZStackDocReader*)),
+          this, SLOT(createStackFrameFromDocReader(ZStackDocReader*)));
+
+  initDialog();
+}
+
+MainWindow::~MainWindow()
+{
+  m_bodySplitProjectDialog->clear();
+
+  delete m_ui;
+  delete m_reporter;
+}
+
+void MainWindow::createActionMap()
+{
+}
+
+void MainWindow::initDialog()
+{
+  m_frameInfoDlg = new FrameInfoDialog(this);
+  connect(m_frameInfoDlg, SIGNAL(newCurveSelected(int)),
+          this, SLOT(updateFrameInfoDlg()));
+
+  m_autosaveSwcDialog = new AutosaveSwcListDialog(this);
+  m_movieDlg = new MovieDialog(this);
+
+  m_progress = new QProgressDialog(this);
+  m_progress->setWindowModality(Qt::WindowModal);
+  m_progress->setAutoClose(true);
+  //m_progress->setWindowFlags(Qt::Dialog|Qt::WindowStaysOnTopHint);
+  m_progress->setCancelButton(0);
+
+  connect(this, SIGNAL(progressDone()), m_progress, SLOT(reset()));
+  connect(this, SIGNAL(progressAdvanced()), this, SLOT(advanceProgress()));
+
+  m_bcDlg = new BcAdjustDialog(this);
+  connect(m_bcDlg, SIGNAL(valueChanged()), this, SLOT(bcAdjust()));
+  connect(m_bcDlg, SIGNAL(autoAdjustTriggered()), this, SLOT(autoBcAdjust()));
+
+  m_helpDlg = new HelpDialog(this);
+  m_DiagnosisDlg = new DiagnosisDialog(this);
+  m_penWidthDialog = new PenWidthDialog(this);
+  m_resDlg = new ResolutionDialog(this);
+
+  m_penWidthDialog->setPenWidth(ZStackDrawable::getDefaultPenWidth());
+
+  m_dvidObjectDlg = new DvidObjectDialog(this);
+  m_dvidObjectDlg->setAddress(m_dvidClient->getServer());
+
+  m_dvidImageDlg = new DvidImageDialog(this);
+  m_dvidImageDlg->setAddress(m_dvidClient->getServer());
 
   m_tileDlg = new TileManager(this);
   m_bodyDlg = new FlyEmBodyIdDialog(this);
@@ -286,21 +315,16 @@ MainWindow::MainWindow(QWidget *parent) :
     m_fileDialogOption = QFileDialog::DontUseNativeDialog;
   }
 
-  setWindowTitle(QString("%1 %2").arg(GET_SOFTWARE_NAME.c_str()).
-                 arg(windowTitle()));
+  m_newBsProjectDialog = new ZFlyEmNewBodySplitProjectDialog(this);
+  m_newBsProjectDialog->setDvidDialog(m_dvidDlg);
 
-  connect(this, SIGNAL(docReaderReady(ZStackDocReader*)),
-          this, SLOT(createStackFrameFromDocReader(ZStackDocReader*)));
-}
-
-MainWindow::~MainWindow()
-{
-  delete m_ui;
-  delete m_reporter;
-}
-
-void MainWindow::createActionMap()
-{
+  m_bodySplitProjectDialog = new FlyEmBodySplitProjectDialog(this);
+  m_bodySplitProjectDialog->setLoadBodyDialog(m_newBsProjectDialog);
+#if defined(_FLYEM_)
+  QSettings settings("Janelia Farm", "neuTube");
+  m_bodySplitProjectDialog->restoreGeometry(
+          settings.value("BodySplitProjectGeometry").toByteArray());
+#endif
 }
 
 void MainWindow::config()
@@ -841,8 +865,9 @@ void MainWindow::createToolBars()
   //m_ui->toolBar->addAction(openAction);
 
   if (NeutubeConfig::getInstance().getApplication() == "FlyEM") {
-    m_ui->toolBar->addAction(m_ui->actionImportFlyEmDatabase);
-    m_ui->toolBar->addAction(m_ui->actionDvid_Object);
+    //m_ui->toolBar->addAction(m_ui->actionImportFlyEmDatabase);
+    //m_ui->toolBar->addAction(m_ui->actionDvid_Object);
+    m_ui->toolBar->addAction(m_ui->actionSplit_Body);
   }
 
   m_ui->toolBar->addAction(expandAction);
@@ -2221,6 +2246,10 @@ void MainWindow::writeSettings()
 
   settings.setValue("lastPath", m_lastOpenedFilePath);
   settings.setValue("geometry", saveGeometry());
+#if defined(_FLYEM_)
+  settings.setValue(
+        "BodySplitProjectGeometry", m_bodySplitProjectDialog->saveGeometry());
+#endif
   settings.setValue("recentFiles", recentFiles);
   settings.setValue("autoSaveDir", QString(NeutubeConfig::getInstance().
                     getPath(NeutubeConfig::AUTO_SAVE).c_str()));
@@ -2231,6 +2260,7 @@ void MainWindow::readSettings()
   std::cout << "Read settings ..." << std::endl;
   QSettings settings("Janelia Farm", "neuTube");
   restoreGeometry(settings.value("geometry").toByteArray());
+
   recentFiles = settings.value("recentFiles").toStringList();
   m_lastOpenedFilePath = settings.value("lastPath").toString();
   updateRecentFileActions();
@@ -2404,17 +2434,17 @@ int MainWindow::frameNumber()
 
 void MainWindow::showFrameInfo()
 {
-  if (m_frameInfoDlg.isVisible() == true) {
-    m_frameInfoDlg.raise();
+  if (m_frameInfoDlg->isVisible() == true) {
+    m_frameInfoDlg->raise();
   } else {
-    m_frameInfoDlg.show();
+    m_frameInfoDlg->show();
     updateFrameInfoDlg();
   }
 }
 
 void MainWindow::updateFrameInfoDlg()
 {
-  if (m_frameInfoDlg.isVisible() == true) {
+  if (m_frameInfoDlg->isVisible() == true) {
     if (currentStackFrame() != NULL) {
       if (!currentStackFrame()->isClosing()) {
         QStringList infoList = currentStackFrame()->toStringList();
@@ -2423,19 +2453,19 @@ void MainWindow::updateFrameInfoDlg()
         line < infoList.end(); ++line) {
           frameInfo += "<p>" + *line + "</p>";
         }
-        m_frameInfoDlg.setText(frameInfo);
-        m_frameInfoDlg.setCurve(
-            currentStackFrame()->curveToPlot(m_frameInfoDlg.plotSettings(),
-                m_frameInfoDlg.curveOption()));
-        m_frameInfoDlg.updatePlotSettings();
+        m_frameInfoDlg->setText(frameInfo);
+        m_frameInfoDlg->setCurve(
+            currentStackFrame()->curveToPlot(m_frameInfoDlg->plotSettings(),
+                m_frameInfoDlg->curveOption()));
+        m_frameInfoDlg->updatePlotSettings();
       }
     } else {
       if (frameNumber() == 0) {
-        m_frameInfoDlg.setText(tr("Nothing exists. "
+        m_frameInfoDlg->setText(tr("Nothing exists. "
                                   "This dialog is to show information "
                                   "of the active document."));
       } else {
-        m_frameInfoDlg.setText(QString("%1 ghost(s)").arg(frameNumber()));
+        m_frameInfoDlg->setText(QString("%1 ghost(s)").arg(frameNumber()));
       }
     }
   }
@@ -4222,13 +4252,13 @@ void MainWindow::on_actionMake_Movie_triggered()
 {
   const NeutubeConfig &config = NeutubeConfig::getInstance();
 
-  m_movieDlg.setScriptPath((config.getPath(NeutubeConfig::DATA) +
+  m_movieDlg->setScriptPath((config.getPath(NeutubeConfig::DATA) +
                            "/flyem/FIB/movie/reconstruct.json").c_str());
-  m_movieDlg.setOutputPath((config.getPath(NeutubeConfig::DATA) +
+  m_movieDlg->setOutputPath((config.getPath(NeutubeConfig::DATA) +
                             "/flyem/FIB/movie/frame").c_str());
 
-  if (m_movieDlg.exec()) {
-    QString fileName = m_movieDlg.getScriptPath();
+  if (m_movieDlg->exec()) {
+    QString fileName = m_movieDlg->getScriptPath();
     /*
         QFileDialog::getOpenFileName(this, tr("Load Movie Script"),
                                      (config.getPath(NeutubeConfig::DATA) +
@@ -4239,7 +4269,7 @@ void MainWindow::on_actionMake_Movie_triggered()
       ZMovieScript script;
 
       if (script.loadScript(fileName.toStdString())) {
-        QString saveFileDir = m_movieDlg.getOutputPath();
+        QString saveFileDir = m_movieDlg->getOutputPath();
         /*
             QFileDialog::getExistingDirectory(this, tr("Movie Output"),
                                               (config.getPath(NeutubeConfig::DATA) +
@@ -4255,9 +4285,9 @@ void MainWindow::on_actionMake_Movie_triggered()
 
           ZMovieMaker director;
           director.setFrameSize(
-                m_movieDlg.getFrameWidth(), m_movieDlg.getFrameHeight());
+                m_movieDlg->getFrameWidth(), m_movieDlg->getFrameHeight());
           director.setScript(script);
-          director.setFrameInterval(1000 / m_movieDlg.getFrameRate());
+          director.setFrameInterval(1000 / m_movieDlg->getFrameRate());
 
           m_progress->setValue(1);
 
@@ -4827,9 +4857,9 @@ void MainWindow::expandCurrentFrame()
 
 void MainWindow::on_actionAutosaved_Files_triggered()
 {
-  m_autosaveSwcDialog.updateFile();
+  m_autosaveSwcDialog->updateFile();
 
-  m_autosaveSwcDialog.show();
+  m_autosaveSwcDialog->show();
 }
 
 void MainWindow::on_actionDiagnosis_triggered()
@@ -6241,6 +6271,25 @@ void MainWindow::on_actionLoad_Large_Body_triggered()
         body->canonize();
 
         if (!body->isEmpty()) {
+          ZDvidInfo dvidInfo;
+          dvidInfo.setFromJsonString(reader.readInfo("superpixels").toStdString());
+          ZIntPointArray blockArray = dvidInfo.getBlockIndex(*body);;
+          ZStackBlockGrid *grid = body->getStackGrid();
+          //grid.setStartIndex(0, 0, 46);
+          //grid.setEndIndex(98, 81, 250);
+          grid->setMinPoint(dvidInfo.getStartCoordinates());
+          grid->setBlockSize(dvidInfo.getBlockSize());
+          grid->setGridSize(dvidInfo.getGridSize());
+
+          for (ZIntPointArray::const_iterator iter = blockArray.begin();
+               iter != blockArray.end(); ++iter) {
+            const ZIntPoint blockIndex = *iter - dvidInfo.getStartBlockIndex();
+            ZIntCuboid box = grid->getBlockBox(blockIndex);
+            ZStack *stack = reader.readGrayScale(box);
+            grid->consumeStack(blockIndex, stack);
+          }
+
+#if 0
           ZIntCuboid cuboid = body->getBoundBox();
           int x = cuboid.getFirstCorner().getX();
           int y = cuboid.getFirstCorner().getY();
@@ -6254,6 +6303,7 @@ void MainWindow::on_actionLoad_Large_Body_triggered()
 
           body->setVoxelValue(grayStack);
           delete grayStack;
+#endif
 
           ZStack *stack = body->toVirtualStack();
 
@@ -6270,4 +6320,98 @@ void MainWindow::on_actionLoad_Large_Body_triggered()
     m_progress->reset();
   }
 #endif
+}
+
+void MainWindow::on_actionBody_Split_Project_triggered()
+{
+  if (m_newBsProjectDialog->exec()) {
+    m_bodySplitProjectDialog->setDvidTarget(
+          m_newBsProjectDialog->getDvidTarget());
+    m_bodySplitProjectDialog->setBodyId(m_newBsProjectDialog->getBodyId());
+    m_bodySplitProjectDialog->show();
+  }
+}
+
+void MainWindow::initBodySplitProject()
+{
+#if defined(_FLYEM_)
+  m_progress->setLabelText("Loading ...");
+  m_progress->setRange(0, 0);
+  m_progress->open();
+
+  const ZDvidTarget &target = m_bodySplitProjectDialog->getDvidTarget();
+
+  ZDvidReader reader;
+  if (reader.open(target)) {
+    int bodyId = m_bodySplitProjectDialog->getBodyId();
+    std::vector<int> bodyIdArray;
+    if (bodyId > 0) {
+      bodyIdArray.push_back(bodyId);
+    }
+    if (!bodyIdArray.empty()) {
+      int bodyId = bodyIdArray[0];
+      ZObject3dScan body = reader.readBody(bodyId);
+
+      if (!body.isEmpty()) {
+        ZStack *stack = body.toStackObject();
+        int x = stack->getOffset().getX();
+        int y = stack->getOffset().getY();
+        int z = stack->getOffset().getZ();
+        int width = stack->width();
+        int height = stack->height();
+        int depth = stack->depth();
+
+        ZStack *grayStack = reader.readGrayScale(x, y, z, width, height, depth);
+
+        if (grayStack != NULL) {
+          TZ_ASSERT(grayStack->kind() == GREY, "Unsuppored kind.");
+          if (Stack_Same_Size(grayStack->c_stack(), stack->c_stack())) {
+            size_t voxelNumber = stack->getVoxelNumber();
+            uint8_t *maskArray = stack->array8();
+            uint8_t *signalArray = grayStack->array8();
+            for (size_t i = 0; i < voxelNumber; ++i) {
+              if (maskArray[i] > 0) {
+                if (signalArray[i] < 255) {
+                  maskArray[i] = signalArray[i] + 1;
+                } else {
+                  maskArray[i] = 255;
+                }
+              }
+            }
+          }
+          //Stack_Mul(stack->c_stack(), grayStack->c_stack(), stack->c_stack());
+          delete grayStack;
+        }
+
+        ZStack *out = stack;
+#if 0
+        std::vector<int> dsIntv = m_bodyDlg->getDownsampleInterval();
+        if (dsIntv[0] > 0 || dsIntv[1] > 0 || dsIntv[2] > 0) {
+          Stack *outData = C_Stack::downsampleMin(
+                stack->c_stack(), dsIntv[0], dsIntv[1], dsIntv[2]);
+          out = new ZStack();
+          out->consume(outData);
+          delete stack;
+        }
+#endif
+        //ZStackDoc *doc = new ZStackDoc(NULL, NULL);
+        //doc->loadStack(stack);
+        ZStackDocReader docReader;
+        docReader.setStack(out);
+        ZStackFrame *frame = createStackFrame(&docReader);
+        frame->document()->setTag(NeuTube::Document::FLYEM_BODY);
+        addStackFrame(frame);
+        presentStackFrame(frame);
+
+        m_bodySplitProjectDialog->setDataFrame(frame);
+      }
+    }
+  }
+  m_progress->reset();
+#endif
+}
+
+void MainWindow::on_actionSplit_Body_triggered()
+{
+  m_bodySplitProjectDialog->show();
 }

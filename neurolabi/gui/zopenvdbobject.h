@@ -18,6 +18,11 @@ public:
   void setValue(int x, int y, int z, int value);
   int getValue(int x, int y, int z) const;
 
+  /*!
+   * \brief Improve sparse representation
+   */
+  void repack();
+
   void print() const;
 
   bool isEmpty() const;

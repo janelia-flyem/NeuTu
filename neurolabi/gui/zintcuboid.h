@@ -42,9 +42,23 @@ public:
   int getHeight() const;
   int getDepth() const;
 
+  //union
+  void join(const ZIntCuboid &cuboid);
   void joinX(int x);
   void joinY(int y);
   void joinZ(int z);
+
+  /*!
+   * \brief Get the volume of the cuboid.
+   *
+   * It returns 0 if the cuboid is invalid.
+   */
+  size_t getVolume() const;
+
+  /*!
+   * \brief Check if a point is in the cuboid.
+   */
+  bool contains(int x, int y, int z) const;
 
 private:
   ZIntPoint m_firstCorner;

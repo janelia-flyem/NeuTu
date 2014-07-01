@@ -68,8 +68,9 @@ public:
     m_isFilled = isFilled;
   }
   inline void setZ(int z) { m_z = z; }
+  inline int getZ() const { return m_z; }
 
-  double inline getWidth() { return m_width; }
+  double inline getWidth() const { return m_width; }
 
   bool getLastPoint(int *x, int *y) const;
   bool getLastPoint(double *x, double *y) const;

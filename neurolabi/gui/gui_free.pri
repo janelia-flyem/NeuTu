@@ -198,7 +198,12 @@ HEADERS +=$${PWD}/zstackprocessor.h \
    $${PWD}/geometry/zgeometry.h \
    $${PWD}/geometry/zgeo3dscalarfield.h \
    $${PWD}/zvoxelgraphics.h \
-   $${PWD}/zintcuboid.h
+   $${PWD}/zintcuboid.h \
+   $${PWD}/bigdata/zdvidblockgrid.h \
+   $${PWD}/bigdata/zstackblockgrid.h \
+   $${PWD}/bigdata/zblockgrid.h \
+   $${PWD}/bigdata/zblockgridfactory.h \
+   $${PWD}/zsparsestack.h
 
 SOURCES +=$${PWD}/zstackprocessor.cpp \
    $${PWD}/zstack.cxx \
@@ -380,4 +385,9 @@ SOURCES +=$${PWD}/zstackprocessor.cpp \
    $${PWD}/geometry/zgeometry.cpp \
    $${PWD}/geometry/zgeo3dscalarfield.cpp \
    $${PWD}/zvoxelgraphics.cpp \
-   $${PWD}/zintcuboid.cpp
+   $${PWD}/zintcuboid.cpp \
+   $${PWD}/bigdata/zdvidblockgrid.cpp \
+   $${PWD}/bigdata/zstackblockgrid.cpp \
+   $${PWD}/bigdata/zblockgrid.cpp \
+   $${PWD}/bigdata/zblockgridfactory.cpp \
+   $${PWD}/zsparsestack.cpp

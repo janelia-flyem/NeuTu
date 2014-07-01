@@ -158,6 +158,26 @@ public: /* attributes */
   //! Set voxel value at a given position and channel.
   void setValue(int x, int y, int z, int c, double v);
 
+  /*!
+   * \brief Get the intensity value as an integer
+   *
+   * A float value will be rounded to return. It returns 0 if the coordinates
+   * are out of range. The position is adjusted by the stack offset.
+   */
+  int getIntValue(int x, int y, int z, int c = 0) const;
+
+  int getIntValueLocal(int x, int y, int z, int c = 0) const;
+
+  /*!
+   * \brief Set the intensity value of a voxel.
+   *
+   * It does nothing if the coordinates are out of range.
+   * The position is adjusted by the stack offset. for any value bigger than
+   * the voxel maximum / minimum, it is set to maximum / minimum.
+   */
+  void setIntValue(int x, int y, int z, int c, int v);
+
+
   /** @name raw data access
    *  array8(), array16(), array32(), array64() or arrayc() can be used to otain
    *  the raw data array of the stack. The choice of the function depends on the
@@ -294,6 +314,11 @@ public: /* attributes */
    */
   void setZero();
 
+  /*!
+   * \brief Set all voxel values to 1.
+   */
+  void setOne();
+
   //Maximum voxel value along a z-parallel line passing (<x>, <y>).
   int maxIntensityDepth(int x, int y, int c = 0) const;
 
@@ -313,6 +338,8 @@ public: /* attributes */
    * \param slice Slice index.
    */
   void *getDataPointer(int c, int slice) const;
+
+  const uint8_t *getDataPointer(int x, int y, int z) const;
 
   /*!
    * \brief Print information of the stack
@@ -428,6 +455,8 @@ public: /* operations */
 
   ZIntCuboid getBoundBox() const;
 
+  void setBlockValue(int x0, int y0, int z0, const ZStack *stack);
+
 public: /* processing routines */
   bool binarize(int threshold = 0);
   bool bwsolid();
@@ -437,6 +466,13 @@ public: /* processing routines */
   Stack* copyChannel(int c);
   bool watershed(int c = 0);
   inline const ZResolution& resolution() const { return m_resolution; }
+
+  /*!
+   * \brief Downsample the stack with maximum assignment.
+   *
+   * The offset postion is adjusted accordingly.
+   */
+  void downsampleMax(int xintv, int yintv, int zintv);
 
 public:
   void initChannelColors();

@@ -20,6 +20,7 @@
 #include "zstroke2d.h"
 #include "tz_rastergeom.h"
 #include "neutubeconfig.h"
+#include "zsparsestack.h"
 
 #include <QtGui>
 #ifdef _QT5_
@@ -663,9 +664,14 @@ int ZStackView::maxSliceIndex()
   return m_depthControl->maximum();
 }
 
-int ZStackView::sliceIndex()
+int ZStackView::sliceIndex() const
 {
   return m_depthControl->value();
+}
+
+int ZStackView::getCurrentZ() const
+{
+  return sliceIndex() + buddyDocument()->getStackOffset().getZ();
 }
 
 void ZStackView::setSliceIndex(int slice)
@@ -1250,6 +1256,12 @@ void ZStackView::paintStackBuffer()
       }
     } else {
       m_image->setBackground();
+      if (buddyDocument()->hasSparseStack()) {
+        ZStack *slice =
+            buddyDocument()->getSparseStack()->getSlice(getCurrentZ());
+        paintSingleChannelStackSlice(slice, 0);
+        delete slice;
+      }
     }
      //m_scrollEnabled = true;
   } else if (buddyPresenter()->interactiveContext().isProjectView()) {
