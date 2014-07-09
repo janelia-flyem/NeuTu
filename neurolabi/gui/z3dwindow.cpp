@@ -1327,9 +1327,12 @@ void Z3DWindow::show3DViewContextMenu(QPoint pt)
   } else if (m_toggleSmartExtendSelectedSwcNodeAction->isChecked()) {
     m_toggleSmartExtendSelectedSwcNodeAction->setChecked(false);
     return;
-  } else if (getSwcFilter()->getInteractionMode() == Z3DSwcFilter::ConnectSwcNode) {
+  } else if (getSwcFilter()->getInteractionMode() ==
+             Z3DSwcFilter::ConnectSwcNode) {
     getSwcFilter()->setInteractionMode(Z3DSwcFilter::Select);
     m_canvas->setCursor(Qt::ArrowCursor);
+    return;
+  } else if (m_canvas->suppressingContextMenu()) {
     return;
   }
 

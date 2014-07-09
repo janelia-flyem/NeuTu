@@ -24,6 +24,11 @@
 class ZStack;
 class ZObject3dArray;
 
+/*!
+ * \brief The class of a 3D object
+ *
+ * A 3D object is defined as a set of 3D voxels.
+ */
 class ZObject3d : public ZDocumentable, public ZStackDrawable {
 public:
   ZObject3d(Object_3d *obj = NULL);
@@ -39,11 +44,22 @@ public:
   const;
 
 public:
+  /*!
+   * \brief Number of voxels of the object
+   */
   inline size_t size() const { return m_voxelArray.size() / 3; }
+
+  /*!
+   * \brief Set the size of the object
+   *
+   * \a s Number of voxels.
+   */
   inline void setSize(size_t s) { m_voxelArray.resize(s * 3); }
+
   inline int x(size_t index) const { return m_voxelArray[index * 3]; }
   inline int y(size_t index) const { return m_voxelArray[index * 3 + 1]; }
   inline int z(size_t index) const { return m_voxelArray[index * 3 + 2]; }
+
   void set(int index, int x, int y, int z);
   void set(int index, Voxel_t voxel);
   void set(int index, size_t voxelIndex, int width, int height,
@@ -82,6 +98,16 @@ public:
   void labelStack(Stack *stack) const;
   void labelStack(Stack *stack, int label = 1) const;
   void labelStack(Stack *stack, int label, int dx, int dy, int dz) const;
+
+  /*!
+   * \brief Label a stack
+   *
+   * \a offset is the offset of the object while labeling in the original
+   * space.
+   */
+  void labelStack(Stack *stack, int label, int dx, int dy, int dz,
+                  int xIntv, int yIntv, int zIntv) const;
+
   void labelStack(ZStack *stack) const;
   void labelStack(ZStack *stack, int label) const;
 
@@ -166,6 +192,11 @@ public:
    * The operation reverse the order of the voxels.
    */
   void reverse();
+
+  /*!
+   * \brief Upsample an object
+   */
+  void upSample(int xIntv, int yIntv, int zIntv);
 
 private:
   int m_conn;

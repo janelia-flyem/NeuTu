@@ -81,11 +81,21 @@ void Z3DCanvas::mousePressEvent(QMouseEvent* e)
 #endif
 }
 
+bool Z3DCanvas::suppressingContextMenu() const
+{
+  if (m_interaction.isStateOn(ZInteractionEngine::STATE_DRAW_STROKE)) {
+    return true;
+  }
+
+  return false;
+}
+
 void Z3DCanvas::mouseReleaseEvent (QMouseEvent* e)
 {
   broadcastEvent(e, width(), height());
 #if defined(_FLYEM_)
   m_interaction.processMouseReleaseEvent(e);
+  setCursor(m_interaction.getCursorShape());
 #endif
 }
 
@@ -120,6 +130,7 @@ void Z3DCanvas::keyPressEvent(QKeyEvent* event)
 
 #if defined(_FLYEM_)
   m_interaction.processKeyPressEvent(event);
+  setCursor(m_interaction.getCursorShape());
 #endif
 }
 
@@ -237,8 +248,9 @@ void Z3DCanvas::broadcastEvent(QEvent *e, int w, int h)
   getGLFocus();
   for (size_t i = 0 ; i < m_listeners.size() ; ++i) {
     m_listeners[i]->onEvent(e, w, h);
-    if (e->isAccepted())
+    if (e->isAccepted()) {
       break;
+    }
   }
 }
 

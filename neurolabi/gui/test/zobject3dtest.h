@@ -57,6 +57,34 @@ TEST(ZObject3d, Operation)
   ASSERT_EQ(12, obj.z(0));
 }
 
+TEST(ZObject3d, upsample)
+{
+  ZObject3d obj;
+  obj.append(1, 2, 3);
+  obj.upSample(1, 1, 1);
+
+  ASSERT_EQ(8, (int) obj.size());
+  ASSERT_EQ(2, obj.x(0));
+  ASSERT_EQ(4, obj.y(0));
+  ASSERT_EQ(6, obj.z(0));
+
+  obj.clear();
+  obj.append(1, 2, 3);
+  obj.upSample(1, 2, 3);
+  ASSERT_EQ(24, (int) obj.size());
+  ASSERT_EQ(2, obj.x(0));
+  ASSERT_EQ(6, obj.y(0));
+  ASSERT_EQ(12, obj.z(0));
+
+  obj.clear();
+  obj.append(1, 2, 3);
+  obj.append(2, 2, 3);
+  obj.append(2, 3, 1);
+  obj.upSample(1, 1, 1);
+
+  //obj.print();
+}
+
 #endif
 
 

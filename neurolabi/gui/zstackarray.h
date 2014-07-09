@@ -25,6 +25,8 @@ public:
    * The result is stored in \a box.
    */
   void getBoundBox(Cuboid_I *box) const;
+
+  void downsampleMax(int xIntv, int yIntv, int zIntv);
 };
 
 #endif // ZSTACKARRAY_H

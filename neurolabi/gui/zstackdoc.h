@@ -329,6 +329,8 @@ public:
   void updateStackFromSource();
   void setStackFactory(ZStackFactory *factory);
 
+  void setSparseStack(ZSparseStack *spStack);
+
 public: //Image processing
   static int autoThreshold(Stack* getStack);
   int autoThreshold();
@@ -614,6 +616,7 @@ public:
   void notifyObj3dModified();
   void notifySparseObjectModified();
   void notifyStackModified();
+  void notifySparseStackModified();
   void notifyVolumeModified();
   void notifyStrokeModified();
   void notifyAllObjectModified();
@@ -737,6 +740,7 @@ signals:
   void stackDelivered(Stack *getStack, bool beOwner);
   void frameDelivered(ZStackFrame *frame);
   void stackModified();
+  void sparseStackModified();
   void labelFieldModified();
   void stackReadDone();
   void stackLoaded();
@@ -951,6 +955,7 @@ public:
   void loadPuncta(const QString &filePath);
 
   inline ZStack* getStack() const { return m_stack; }
+  inline ZSparseStack* getSparseStack() const { return m_sparseStack; }
   inline const ZStackFile& getStackSource() const { return m_stackSource; }
   inline const QList<ZSwcTree*>& getSwcList() const { return m_swcList; }
   inline const QList<ZPunctum*>& getPunctaList() const { return m_punctaList; }
@@ -973,13 +978,14 @@ public:
   void setStackSource(const ZStackFile &stackFile);
   void addStroke(ZStroke2d *stroke);
   void addSparseObject(ZSparseObject *obj);
+  void setSparseStack(ZSparseStack *spStack);
 
 private:
   QString m_filePath;
 
   //Main stack
   ZStack *m_stack;
-  ZStack *m_sparseStack;
+  ZSparseStack *m_sparseStack;
   ZStackFile m_stackSource;
 
   //Concrete objects

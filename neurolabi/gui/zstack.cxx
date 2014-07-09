@@ -115,6 +115,16 @@ void ZStack::setOffset(const ZIntPoint &pt)
   m_offset = pt;
 }
 
+void ZStack::translate(int dx, int dy, int dz)
+{
+  m_offset += ZIntPoint(dx, dy, dz);
+}
+
+void ZStack::translate(const ZIntPoint &pt)
+{
+  m_offset += pt;
+}
+
 size_t ZStack::getVoxelNumber(EStackUnit unit) const
 {
   switch (unit) {
@@ -1211,12 +1221,15 @@ bool ZStack::hasSameValue(size_t index1, size_t index2)
 
 double ZStack::min()
 {
-  double minValue = min(0);
+  double minValue = 0.0;
 
-  for (int c = 1; c < channelNumber(); ++c) {
-    double value = min(c);
-    if (minValue > value) {
-      minValue = value;
+  if (!isVirtual()) {
+    minValue = min(0);
+    for (int c = 1; c < channelNumber(); ++c) {
+      double value = min(c);
+      if (minValue > value) {
+        minValue = value;
+      }
     }
   }
 
@@ -1230,12 +1243,16 @@ double ZStack::min(int c) const
 
 double ZStack::max()
 {
-  double maxValue = max(0);
+  double maxValue = 255;
 
-  for (int c = 1; c < channelNumber(); ++c) {
-    double value = max(c);
-    if (maxValue < value) {
-      maxValue = value;
+  if (!isVirtual()) {
+    maxValue = max(0);
+
+    for (int c = 1; c < channelNumber(); ++c) {
+      double value = max(c);
+      if (maxValue < value) {
+        maxValue = value;
+      }
     }
   }
 
@@ -1668,6 +1685,7 @@ void ZStack::setZero()
 {
   if (!isEmpty() && ! isVirtual()) {
     C_Stack::setZero(m_stack);
+    deprecate(SINGLE_CHANNEL_VIEW);
   }
 }
 
@@ -1675,6 +1693,7 @@ void ZStack::setOne()
 {
   if (!isEmpty() && ! isVirtual()) {
     C_Stack::setOne(m_stack);
+    deprecate(SINGLE_CHANNEL_VIEW);
   }
 }
 

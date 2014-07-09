@@ -166,6 +166,11 @@ public: /* attributes */
    */
   int getIntValue(int x, int y, int z, int c = 0) const;
 
+  /*!
+   * \brief Get the intensity value as an integer
+   *
+   * (\a x, \a y, \a z) are coordinates relative to the stack origin.
+   */
   int getIntValueLocal(int x, int y, int z, int c = 0) const;
 
   /*!
@@ -177,11 +182,10 @@ public: /* attributes */
    */
   void setIntValue(int x, int y, int z, int c, int v);
 
-
   /** @name raw data access
    *  array8(), array16(), array32(), array64() or arrayc() can be used to otain
    *  the raw data array of the stack. The choice of the function depends on the
-   *  voxel type.
+   *  voxel type. Those functions do not perform kind check.
    */
   ///@{
   /** Array for 8-bit unsigned integer. */
@@ -252,20 +256,20 @@ public: /* attributes */
    */
   bool isVirtual() const;
 
-  //shift one channel
-  void shiftLocation(int *offset, int c = 0, int width = -1, int height = -1, int depth = -1);
-
   // make mc_stack
-  static Mc_Stack* makeMcStack(const Stack *stack1, const Stack *stack2, const Stack *stack3);
-  // subtract most common value of the histogram from this stack, use Stack_Sub_Common
-  void subMostCommonValue(int c);
-  // get average of all channels
-  Stack* averageOfAllChannels();
+  static Mc_Stack* makeMcStack(
+      const Stack *stack1, const Stack *stack2, const Stack *stack3);
 
-  //Source of the stack. Usually it is the file where the image is originally read
+  //Source of the stack. Usually it is the file where the image is originally
+  //read
   //from.
+  /*!
+   * \brief Get the source path of the stack.
+   *
+   * The source path of the stack is defined as the path from which the stack is
+   * loaded.
+   */
   std::string sourcePath() const;
-  //inline Stack_Document* source() const { return m_source; }
 
   //Preferred z scale is the preferred scale ratio between z-axis and xy-plane
   //for anisotropic operations
@@ -293,8 +297,6 @@ public: /* attributes */
    * true. Otherwise it returns false and nothing is done.
    */
   bool reshape(int width, int height, int depth);
-
-  double saturatedIntensity() const;
 
   int autoThreshold(int ch = 0) const;
 
@@ -425,6 +427,16 @@ public: /* operations */
   void setOffset(int dx, int dy, int dz);
   void setOffset(const ZIntPoint &pt);
   inline const ZIntPoint& getOffset() const { return m_offset; }
+  inline ZIntPoint& getOffset() { return m_offset; }
+
+  /*!
+   * \brief Translate the stack.
+   *
+   * Add (\a dx, \a dy, \a dz) to the stack offset.
+   */
+  void translate(int dx, int dy, int dz);
+
+  void translate(const ZIntPoint &pt);
 
   /*!
    * \brief Test if a stack has non-zero offset
@@ -492,6 +504,15 @@ private:
   void init();
   bool canMerge(const Stack *s1, const Stack *s2);
   void setChannelNumber(int nchannel);
+  //shift one channel
+  void shiftLocation(
+      int *offset, int c = 0, int width = -1, int height = -1, int depth = -1);
+
+  // subtract most common value of the histogram from this stack, use Stack_Sub_Common
+  void subMostCommonValue(int c);
+  // get average of all channels
+  Stack* averageOfAllChannels();
+  double saturatedIntensity() const;
 
 
 private:

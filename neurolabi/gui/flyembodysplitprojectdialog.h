@@ -37,6 +37,11 @@ public:
 
   bool isBodyLoaded() const;
 
+  /*!
+   * \brief Dump information
+   */
+  void dump(const QString &info);
+
 public slots:
   void clear();
   void shallowClear();

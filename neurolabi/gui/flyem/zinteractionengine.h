@@ -59,6 +59,8 @@ public:
 
   bool isStateOn(EState status) const;
 
+  Qt::CursorShape getCursorShape() const;
+
 signals:
   void decorationUpdated();
   void strokePainted(ZStroke2d*);
@@ -94,6 +96,8 @@ private:
   bool m_isStrokeOn;
 
   ZStackDocReader *m_dataBuffer;
+
+  Qt::CursorShape m_cursorShape;
 
   //ZSingleSwcNodeActionActivator m_singleSwcNodeActionActivator;
   //bool m_skipMouseReleaseEvent;

@@ -192,6 +192,7 @@
 #include "bigdata/zdvidblockgrid.h"
 #include "test/zblockgridtest.h"
 #include "test/zsparsestacktest.h"
+#include "test/zimagetest.h"
 
 using namespace std;
 
@@ -11744,7 +11745,6 @@ void ZTest::test(MainWindow *host)
   set1.insert(1);
   set1.insert(2);
   set1.insert(3);
-
   /*
   ZIntSet set2;
   set2.insert(1);

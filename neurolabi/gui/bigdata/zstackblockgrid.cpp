@@ -119,6 +119,31 @@ void ZStackBlockGrid::downsampleBlock(int xintv, int yintv, int zintv)
   }
 }
 
+ZStackBlockGrid* ZStackBlockGrid::makeDownsample(int xintv, int yintv, int zintv)
+{
+  ZStackBlockGrid *grid = new ZStackBlockGrid;
+  grid->setBlockSize(
+        getBlockSize() / ZIntPoint(xintv + 1, yintv + 1, zintv + 1));
+  grid->setGridSize(getGridSize());
+  grid->setMinPoint(getMinPoint() / ZIntPoint(xintv + 1, yintv + 1, zintv + 1));
+
+  if (isEmpty()) {
+    clearStack();
+  } else {
+    grid->m_stackArray.resize(m_stackArray.size(), NULL);
+    for (size_t i = 0; i < m_stackArray.size(); ++i) {
+      ZStack *stack = m_stackArray[i];
+      if (stack != NULL) {
+        ZStack *dsStack = stack->clone();
+        dsStack->downsampleMax(xintv, yintv, zintv);
+        grid->m_stackArray[i] = dsStack;
+      }
+    }
+  }
+
+  return grid;
+}
+
 ZIntCuboid ZStackBlockGrid::getStackBoundBox() const
 {
   ZIntCuboid cuboid;

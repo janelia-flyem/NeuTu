@@ -263,3 +263,12 @@ ZIntPoint ZPoint::toIntPoint() const
 {
   return ZIntPoint(iround(x()), iround(y()), iround(z()));
 }
+
+ZIntPoint& ZIntPoint::operator +=(const ZIntPoint &pt)
+{
+  m_x += pt.getX();
+  m_y += pt.getY();
+  m_z += pt.getZ();
+
+  return *this;
+}

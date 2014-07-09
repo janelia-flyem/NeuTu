@@ -89,8 +89,39 @@ void ZDvidReader::waitForReading()
   }
 }
 
+ZObject3dScan *ZDvidReader::readBody(int bodyId, ZObject3dScan *result)
+{
+  if (result == NULL) {
+    result = new ZObject3dScan;
+  }
+
+  startReading();
+
+  ZDvidBuffer *dvidBuffer = m_dvidClient->getDvidBuffer();
+  dvidBuffer->clearBodyArray();
+
+  ZDvidRequest request;
+  request.setGetObjectRequest(bodyId);
+  m_dvidClient->appendRequest(request);
+  m_dvidClient->postNextRequest();
+
+  waitForReading();
+
+  const QVector<ZObject3dScan>& bodyArray = dvidBuffer->getBodyArray();
+
+  if (!bodyArray.empty()) {
+    *result = bodyArray[0];
+  }
+
+  return result;
+}
+
 ZObject3dScan ZDvidReader::readBody(int bodyId)
 {
+  ZObject3dScan obj;
+  readBody(bodyId, &obj);
+  return obj;
+#if 0
   startReading();
 
   ZDvidBuffer *dvidBuffer = m_dvidClient->getDvidBuffer();
@@ -112,6 +143,7 @@ ZObject3dScan ZDvidReader::readBody(int bodyId)
   }
 
   return obj;
+#endif
 }
 
 ZSwcTree* ZDvidReader::readSwc(int bodyId)
@@ -144,6 +176,43 @@ ZStack* ZDvidReader::readGrayScale(const ZIntCuboid &cuboid)
                        cuboid.getFirstCorner().getZ(),
                        cuboid.getWidth(), cuboid.getHeight(),
                        cuboid.getDepth());
+}
+
+ZSparseStack* ZDvidReader::readSparseStack(int bodyId)
+{
+  ZSparseStack *spStack = NULL;
+
+  ZObject3dScan *body = readBody(bodyId, NULL);
+
+  //ZSparseObject *body = new ZSparseObject;
+  //body->append(reader.readBody(bodyId));
+  //body->canonize();
+
+  if (!body->isEmpty()) {
+    spStack = new ZSparseStack;
+    spStack->setObjectMask(body);
+
+    ZDvidInfo dvidInfo;
+    dvidInfo.setFromJsonString(readInfo("superpixels").toStdString());
+    ZIntPointArray blockArray = dvidInfo.getBlockIndex(*body);;
+    ZStackBlockGrid *grid = new ZStackBlockGrid;
+    spStack->setGreyScale(grid);
+    grid->setMinPoint(dvidInfo.getStartCoordinates());
+    grid->setBlockSize(dvidInfo.getBlockSize());
+    grid->setGridSize(dvidInfo.getGridSize());
+
+    for (ZIntPointArray::const_iterator iter = blockArray.begin();
+         iter != blockArray.end(); ++iter) {
+      const ZIntPoint blockIndex = *iter - dvidInfo.getStartBlockIndex();
+      ZIntCuboid box = grid->getBlockBox(blockIndex);
+      ZStack *stack = readGrayScale(box);
+      grid->consumeStack(blockIndex, stack);
+    }
+  } else {
+    delete body;
+  }
+
+  return spStack;
 }
 
 ZStack* ZDvidReader::readGrayScale(

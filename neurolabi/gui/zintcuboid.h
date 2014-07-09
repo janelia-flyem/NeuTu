@@ -60,6 +60,13 @@ public:
    */
   bool contains(int x, int y, int z) const;
 
+  /*!
+   * \brief Check if a cuboid is empty.
+   *
+   * A cuboid is empty if any of its dimension <= 0.
+   */
+  bool isEmpty() const;
+
 private:
   ZIntPoint m_firstCorner;
   ZIntPoint m_lastCorner;

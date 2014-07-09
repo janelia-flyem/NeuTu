@@ -76,6 +76,7 @@ public:
   virtual void drawBackground(QPainter *painter, const QRectF &rect);
 
   bool processMouseMoveEventForPaint(QMouseEvent *e);
+  bool suppressingContextMenu() const;
 
 signals:
   // w and h is physical size not logical size, opengl works in physical pixel

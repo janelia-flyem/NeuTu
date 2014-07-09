@@ -51,6 +51,7 @@ public:
   virtual void labelStack(ZStack*) const {}
   virtual void labelStack(ZStack *, int) const {}
   virtual void labelStack(Stack*, int*, int) const {}
+  virtual void labelStack(Stack*, int*, int, int, int, int) const {}
   virtual void paintStack(ZStack*) const {}
   virtual void paintStack(
       const std::vector<Stack*> &stackArray,
@@ -143,6 +144,8 @@ public:
   void labelStack(ZStack *stack) const;
   void labelStack(ZStack *stack, int value) const;
   void labelStack(Stack *stack, int *offset, int value) const;
+  void labelStack(Stack *stack, int *offset, int value,
+                  int xIntv, int yIntv, int zIntv) const;
   ZStack* toStack() const;
   void paintStack(ZStack *stack) const;
   void paintStack(

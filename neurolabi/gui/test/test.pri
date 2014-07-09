@@ -34,4 +34,5 @@ HEADERS +=     test/zswctreetest.h \
     test/zopenvdbtest.h \
     test/zdvidtest.h \
     test/zblockgridtest.h \
-    test/zsparsestacktest.h
+    test/zsparsestacktest.h \
+    test/zimagetest.h

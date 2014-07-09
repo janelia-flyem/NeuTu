@@ -12,6 +12,7 @@
 #include "zdvidclient.h"
 #include "flyem/zflyem.h"
 #include "zintcuboid.h"
+#include "zsparsestack.h"
 
 class ZDvidTarget;
 
@@ -28,6 +29,8 @@ public:
 
   ZSwcTree *readSwc(int bodyId);
   ZObject3dScan readBody(int bodyId);
+  ZObject3dScan* readBody(int bodyId, ZObject3dScan *result);
+  ZSparseStack* readSparseStack(int bodyId);
   ZStack* readGrayScale(
       int x0, int y0, int z0, int width, int height, int depth);
   ZStack* readGrayScale(const ZIntCuboid &cuboid);

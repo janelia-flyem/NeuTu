@@ -270,6 +270,52 @@ void ZObject3d::labelStack(Stack *stack, int label, int dx, int dy, int dz) cons
   }
 }
 
+void ZObject3d::labelStack(Stack *stack, int label, int dx, int dy, int dz,
+                           int xIntv, int yIntv, int zIntv) const
+{
+  Object_3d *obj = c_obj();
+
+  Image_Array ima;
+  ima.array = stack->array;
+
+  int rx = xIntv + 1;
+  int ry = yIntv + 1;
+  int rz = zIntv + 1;
+
+  ZIntPoint offset(dx, dy, dz);
+
+  switch (Stack_Kind(stack)) {
+  case GREY:
+    label = (label - 1) % 255 + 1;
+    for (size_t i = 0; i < obj->size; i++) {
+      int x = (obj->voxels[i][0] + offset[0]) / rx;
+      int y = (obj->voxels[i][1] + offset[1]) / ry;
+      int z = (obj->voxels[i][2] + offset[2]) / rz;
+      ssize_t index = Stack_Util_Offset(x, y, z, stack->width,
+          stack->height, stack->depth);
+      if (index >= 0) {
+        ima.array8[index] = label;
+      }
+    }
+    break;
+  case GREY16:
+    label = (label - 1) % 65535 + 1;
+    for (size_t i = 0; i < obj->size; i++) {
+      int x = (obj->voxels[i][0] + offset[0]) / rx;
+      int y = (obj->voxels[i][1] + offset[1]) / ry;
+      int z = (obj->voxels[i][2] + offset[2]) / rz;
+      ssize_t index = Stack_Util_Offset(x, y, z, stack->width,
+          stack->height, stack->depth);
+      if (index >= 0) {
+        ima.array16[index] = label;
+      }
+    }
+    break;
+  default:
+    TZ_ERROR(ERROR_DATA_TYPE);
+  }
+}
+
 ZPoint ZObject3d::computeCentroid(FMatrix *matrix)
 {
   ZPoint center(0.0, 0.0, 0.0);
@@ -730,6 +776,30 @@ void ZObject3d::reverse()
       for (size_t j = 0; j < 3; ++j) {
         SWAP2(m_voxelArray[i * 3 + j],
             m_voxelArray[(voxelNumber - i - 1) * 3 + j], tmp);
+      }
+    }
+  }
+}
+
+void ZObject3d::upSample(int xIntv, int yIntv, int zIntv)
+{
+  int rx = xIntv + 1;
+  int ry = yIntv + 1;
+  int rz = zIntv + 1;
+  size_t originalSize = m_voxelArray.size();
+  std::vector<int> voxelArray = m_voxelArray;
+  m_voxelArray.resize(originalSize * rx * ry * rz);
+
+  size_t offset = 0;
+  for (int dz = 0; dz <= zIntv; ++dz) {
+    for (int dy = 0; dy <= yIntv; ++dy) {
+      for (int dx = 0; dx <= xIntv; ++dx) {
+        for (size_t i = 0; i < voxelArray.size(); i += 3) {
+          m_voxelArray[offset] = voxelArray[i] * rx + dx;
+          m_voxelArray[offset + 1] = voxelArray[i + 1] * ry + dy;
+          m_voxelArray[offset + 2] = voxelArray[i + 2] * rz + dz;
+          offset += 3;
+        }
       }
     }
   }

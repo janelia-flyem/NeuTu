@@ -76,6 +76,8 @@ private:
   void readSparseVolume();
   void readSparseVolumeWithObject();
 
+  void readSparseStack();
+
   void loadData();
 
   std::vector<Z3DVolume*> m_volumes;

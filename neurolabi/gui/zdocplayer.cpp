@@ -231,6 +231,22 @@ void ZObject3dPlayer::labelStack(Stack *stack, int *offset, int value) const
   }
 }
 
+void ZObject3dPlayer::labelStack(Stack *stack, int *offset, int value,
+                                 int xIntv, int yIntv, int zIntv) const
+{
+  const ZObject3d *obj = getCompleteData();
+
+  if (obj != NULL) {
+    if (offset == NULL) {
+      obj->labelStack(stack, value, 0, 0, 0, xIntv, yIntv, zIntv);
+    } else {
+      obj->labelStack(stack, value, offset[0], offset[1], offset[2],
+          xIntv, yIntv, zIntv);
+    }
+  }
+}
+
+
 void ZObject3dPlayer::labelStack(ZStack* stack) const
 {
   const ZObject3d *obj = getCompleteData();

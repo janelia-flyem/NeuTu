@@ -1259,7 +1259,11 @@ void ZStackView::paintStackBuffer()
       if (buddyDocument()->hasSparseStack()) {
         ZStack *slice =
             buddyDocument()->getSparseStack()->getSlice(getCurrentZ());
-        paintSingleChannelStackSlice(slice, 0);
+        //paintSingleChannelStackSlice(slice, 0);
+        slice->translate(-buddyDocument()->getStackOffset());
+        slice->getOffset().setZ(0);
+
+        m_image->setData(slice, 0);
         delete slice;
       }
     }

@@ -137,7 +137,7 @@
 #include "zsparseobject.h"
 #include "zflyemnewbodysplitprojectdialog.h"
 #include "flyembodysplitprojectdialog.h"
-
+#include "zsparsestack.h"
 #include "ztest.h"
 
 #include "z3dcanvas.h"
@@ -6266,15 +6266,21 @@ void MainWindow::on_actionLoad_Large_Body_triggered()
       std::vector<int> bodyIdArray = m_bodyDlg->getBodyIdArray();
       if (!bodyIdArray.empty()) {
         int bodyId = bodyIdArray[0];
-        ZSparseObject *body = new ZSparseObject;
-        body->append(reader.readBody(bodyId));
-        body->canonize();
+        ZSparseStack *spStack = new ZSparseStack;
+
+        ZObject3dScan *body = reader.readBody(bodyId, NULL);
+        spStack->setObjectMask(body);
+
+        //ZSparseObject *body = new ZSparseObject;
+        //body->append(reader.readBody(bodyId));
+        //body->canonize();
 
         if (!body->isEmpty()) {
           ZDvidInfo dvidInfo;
           dvidInfo.setFromJsonString(reader.readInfo("superpixels").toStdString());
           ZIntPointArray blockArray = dvidInfo.getBlockIndex(*body);;
-          ZStackBlockGrid *grid = body->getStackGrid();
+          ZStackBlockGrid *grid = new ZStackBlockGrid;
+          spStack->setGreyScale(grid);
           //grid.setStartIndex(0, 0, 46);
           //grid.setEndIndex(98, 81, 250);
           grid->setMinPoint(dvidInfo.getStartCoordinates());
@@ -6305,11 +6311,12 @@ void MainWindow::on_actionLoad_Large_Body_triggered()
           delete grayStack;
 #endif
 
-          ZStack *stack = body->toVirtualStack();
+          //ZStack *stack = body->toVirtualStack();
 
           ZStackDocReader docReader;
-          docReader.setStack(stack);
-          docReader.addSparseObject(body);
+          docReader.setSparseStack(spStack);
+          //docReader.setStack(stack);
+          //docReader.addSparseObject(body);
           ZStackFrame *frame = createStackFrame(&docReader);
           frame->document()->setTag(NeuTube::Document::FLYEM_BODY);
           addStackFrame(frame);
@@ -6350,6 +6357,8 @@ void MainWindow::initBodySplitProject()
     }
     if (!bodyIdArray.empty()) {
       int bodyId = bodyIdArray[0];
+      ZSparseStack *spStack = reader.readSparseStack(bodyId);
+#if 0
       ZObject3dScan body = reader.readBody(bodyId);
 
       if (!body.isEmpty()) {
@@ -6384,6 +6393,8 @@ void MainWindow::initBodySplitProject()
         }
 
         ZStack *out = stack;
+#endif
+
 #if 0
         std::vector<int> dsIntv = m_bodyDlg->getDownsampleInterval();
         if (dsIntv[0] > 0 || dsIntv[1] > 0 || dsIntv[2] > 0) {
@@ -6394,19 +6405,26 @@ void MainWindow::initBodySplitProject()
           delete stack;
         }
 #endif
-        //ZStackDoc *doc = new ZStackDoc(NULL, NULL);
-        //doc->loadStack(stack);
-        ZStackDocReader docReader;
-        docReader.setStack(out);
-        ZStackFrame *frame = createStackFrame(&docReader);
-        frame->document()->setTag(NeuTube::Document::FLYEM_BODY);
-        addStackFrame(frame);
-        presentStackFrame(frame);
+        if (spStack != NULL) {
+          //ZStackDoc *doc = new ZStackDoc(NULL, NULL);
+          //doc->loadStack(stack);
+          ZStackDocReader docReader;
+          //docReader.setStack(out);
+          docReader.setSparseStack(spStack);
+          ZStackFrame *frame = createStackFrame(&docReader);
+          frame->document()->setTag(NeuTube::Document::FLYEM_BODY);
+          addStackFrame(frame);
+          presentStackFrame(frame);
 
-        m_bodySplitProjectDialog->setDataFrame(frame);
+          m_bodySplitProjectDialog->setDataFrame(frame);
+        }
+      } else {
+        m_bodySplitProjectDialog->dump(
+              QString("Cannot load body %1").arg(bodyId));
       }
     }
-  }
+  //}
+
   m_progress->reset();
 #endif
 }

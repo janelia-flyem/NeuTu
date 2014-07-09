@@ -42,6 +42,12 @@ public:
    */
   void downsampleBlock(int xintv, int yintv, int zintv);
 
+  ZStackBlockGrid* makeDownsample(int xintv, int yintv, int zintv);
+
+  inline std::vector<ZStack*>& getStackArray() {
+    return m_stackArray;
+  }
+
 private:
   std::vector<ZStack*> m_stackArray;
 };

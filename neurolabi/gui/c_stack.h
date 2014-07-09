@@ -365,6 +365,13 @@ void setZero(Mc_Stack *stack, int x0, int y0, int z0, int sw, int sh, int sd);
 void setBlockValue(Stack *stack, const Stack *block, int x0, int y0, int z0,
                    int srcValueIgnored = -1, int dstValueIgnored = -1);
 
+/*!
+ * \brief Check if a stack is binary
+ *
+ * A stack is binary if it has GREY kind and the maximum voxel value is 1.
+ */
+bool isBinary(const Stack *stack);
+
 //Paint routines
 void drawPatch(Stack *canvas, const Stack *patch,
                int dx, int dy, int dz, int transparentValue);

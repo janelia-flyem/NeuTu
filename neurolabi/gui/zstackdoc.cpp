@@ -3759,7 +3759,8 @@ ZCurve ZStackDoc::locsegProfileCurve(int option) const
 
   ZStack *mainStack = getStack();
   if (mainStack != NULL) {
-    if (Stack_Channel_Number(mainStack->c_stack()) == 1) {
+    if (!mainStack->isVirtual() &&
+        Stack_Channel_Number(mainStack->c_stack()) == 1) {
       for (int i = 0; i < m_chainList.size(); i++) {
         ZLocsegChain *chain = m_chainList.at(i);
         if (chain->isSelected()) {
@@ -5536,6 +5537,11 @@ void ZStackDoc::notifySparseObjectModified()
 void ZStackDoc::notifyStackModified()
 {
   emit stackModified();
+}
+
+void ZStackDoc::notifySparseStackModified()
+{
+  emit sparseStackModified();
 }
 
 void ZStackDoc::notifyVolumeModified()
@@ -7858,6 +7864,25 @@ void ZStackDoc::mapToStackCoord(double *x, double *y, double *z)
   }
 }
 
+void ZStackDoc::setSparseStack(ZSparseStack *spStack)
+{
+  if (m_sparseStack != NULL) {
+    delete m_sparseStack;
+  }
+  m_sparseStack = spStack;
+
+  if (spStack != NULL) {
+    if (m_stack != NULL) {
+      deprecate(STACK);
+    }
+
+    m_stack = ZStackFactory::makeVirtualStack(spStack->getBoundBox());
+    notifyStackModified();
+  }
+
+  notifySparseStackModified();
+}
+
 void ZStackDoc::addData(const ZStackDocReader &reader)
 {
   if (!reader.getSwcList().isEmpty()) {
@@ -7870,6 +7895,10 @@ void ZStackDoc::addData(const ZStackDocReader &reader)
     setStackSource(reader.getStackSource());
     initNeuronTracer();
     notifyStackModified();
+  }
+
+  if (reader.getSparseStack() != NULL) {
+    setSparseStack(reader.getSparseStack());
   }
 
   if (!reader.getChainList().isEmpty()) {
@@ -8029,7 +8058,13 @@ void ZStackDoc::seededWatershed()
     }
 
     if (signalStack != NULL) {
+      ZIntPoint dsIntv = m_sparseStack->getDownsampleInterval();
+      seedMask.downsampleMax(dsIntv.getX(), dsIntv.getY(), dsIntv.getZ());
       ZStack *out = engine.run(signalStack, seedMask);
+
+#ifdef _DEBUG_
+      out->save(GET_TEST_DATA_DIR + "/test.tif");
+#endif
 
       Object_3d *objData = Stack_Region_Border(out->c_stack(), 6, TRUE);
 
@@ -8037,6 +8072,12 @@ void ZStackDoc::seededWatershed()
         ZObject3d *obj = new ZObject3d(objData);
 
         obj->translate(out->getOffset());
+
+
+        if (dsIntv.getX() > 0 || dsIntv.getY() > 0 || dsIntv.getZ() > 0) {
+          obj->upSample(dsIntv.getX(), dsIntv.getY(), dsIntv.getZ());
+        }
+
         /*
       obj->translate(iround(out->getOffset().getX()),
                      iround(out->getOffset().getY()),
@@ -8148,18 +8189,25 @@ ZStack* ZStackDoc::makeLabelStack(ZStack *stack) const
 {
   ZStack *out = NULL;
 
-  TZ_ASSERT(getStack()->kind() == GREY, "Only GREY kind is supported.");
+  const ZStack *signalStack = getStack();
+  if (signalStack->isVirtual()) {
+    if (hasSparseStack()) {
+      signalStack = getSparseStack()->getStack();
+    }
+  }
+
+  TZ_ASSERT(signalStack->kind() == GREY, "Only GREY kind is supported.");
 
   const ZStack* labelField = getLabelField();
 
-  out = new ZStack(
-        getStack()->kind(), getStack()->width(), getStack()->height(),
-        getStack()->depth(), 3);
+  out = new ZStack(signalStack->kind(), signalStack->getBoundBox(), 3);
   out->setZero();
-  C_Stack::copyChannelValue(out->data(), 0, getStack()->c_stack());
-  C_Stack::copyChannelValue(out->data(), 1, getStack()->c_stack());
-  C_Stack::copyChannelValue(out->data(), 2, getStack()->c_stack());
-  out->setOffset(getStack()->getOffset());
+
+  if (!signalStack->isVirtual()) {
+    C_Stack::copyChannelValue(out->data(), 0, signalStack->c_stack());
+    C_Stack::copyChannelValue(out->data(), 1, signalStack->c_stack());
+    C_Stack::copyChannelValue(out->data(), 2, signalStack->c_stack());
+  }
 
   if (labelField != NULL) {
     size_t voxelNumber = out->getVoxelNumber();
@@ -8402,6 +8450,11 @@ void ZStackDocReader::addSparseObject(ZSparseObject *obj)
   if (obj != NULL) {
     m_sparseObjectList.append(obj);
   }
+}
+
+void ZStackDocReader::setSparseStack(ZSparseStack *spStack)
+{
+  m_sparseStack = spStack;
 }
 
 void ZStackDocReader::setStack(ZStack *stack)

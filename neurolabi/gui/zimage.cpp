@@ -29,29 +29,33 @@ void ZImage::setData(const ZStack *stack, int z)
 {
   if (stack != NULL) {
     if (stack->kind() == GREY) {
-      int targetWidth = width();
-      int targetHeight = height();
-      int sourceWidth = stack->width();
-      int sourceHeight = stack->height();
+      if (z >= stack->getOffset().getZ() &&
+          z < stack->getOffset().getZ() + stack->depth()) {
+        int targetWidth = width();
+        int targetHeight = height();
+        int sourceWidth = stack->width();
+        int sourceHeight = stack->height();
 
-      int sx = imin2(stack->getOffset().getX(), 0);
-      int sy = imin2(stack->getOffset().getY(), 0);
-      int tx0 = imax2(stack->getOffset().getX(), 0);
-      int ty0 = imax2(stack->getOffset().getY(), 0);
-      int tx1 = imin2(tx0 + sourceWidth, targetWidth);
-      int ty1 = imin2(ty0 + sourceHeight, targetHeight);
 
-      for (int y = ty0; y <= ty1; ++y) {
-        uchar *line = scanLine(y) + tx0 * 4;
-        const uint8_t *data = stack->getDataPointer(sx, sy, z);
-        for (int x = tx0; x <= tx1; ++x) {
-          *line++ = *data;
-          *line++ = *data;
-          *line++ = *data;
-          *line++ = 255;
-          ++data;
+        int tx0 = imax2(stack->getOffset().getX(), 0);
+        int ty0 = imax2(stack->getOffset().getY(), 0);
+        int tx1 = imin2(tx0 + sourceWidth, targetWidth);
+        int ty1 = imin2(ty0 + sourceHeight, targetHeight);
+        int sx = tx0;
+        int sy = ty0;
+
+        for (int y = ty0; y < ty1; ++y) {
+          uchar *line = scanLine(y) + tx0 * 4;
+          const uint8_t *data = stack->getDataPointer(sx, sy, z);
+          for (int x = tx0; x < tx1; ++x) {
+            *line++ = *data;
+            *line++ = *data;
+            *line++ = *data;
+            *line++ = 255;
+            ++data;
+          }
+          ++sy;
         }
-        ++sy;
       }
     }
   }

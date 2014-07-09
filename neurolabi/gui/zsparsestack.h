@@ -15,7 +15,7 @@ public:
   ~ZSparseStack();
 
   enum EComponent {
-    STACK, ALL_COMPONET
+    STACK, GREY_SCALE, OBJECT_MASK, ALL_COMPONET
   };
 
   void deprecateDependent(EComponent component);
@@ -23,6 +23,11 @@ public:
   bool isDeprecated(EComponent component) const;
 
   ZStack* getStack();
+  const ZStack* getStack() const;
+
+  inline const ZIntPoint& getDownsampleInterval() const {
+    return m_dsIntv;
+  }
 
   /*!
    * \brief Get a slice of the sparse stack
@@ -31,15 +36,31 @@ public:
    */
   ZStack* getSlice(int z) const;
 
-  inline void setObjectMask(ZObject3dScan *obj) {
-    m_objectMask = obj;
+  void setObjectMask(ZObject3dScan *obj);
+  void setGreyScale(ZStackBlockGrid *stackGrid);
+
+  inline const ZObject3dScan* getObjectMask() const {
+    return m_objectMask;
   }
 
-  inline void setGreyScale(ZStackBlockGrid *stackGrid) {
-    m_stackGrid = stackGrid;
+  inline ZObject3dScan* getObjectMask() {
+    return m_objectMask;
+  }
+
+  inline const ZStackBlockGrid* getStackGrid() const {
+    return m_stackGrid;
+  }
+
+  inline ZStackBlockGrid* getStackGrid() {
+    return m_stackGrid;
   }
 
   size_t getObjectVolume() const;
+
+  /*!
+   * \brief Get the bound bound of the sparse stack.
+   */
+  ZIntCuboid getBoundBox() const;
 
 private:
   static void assignStackValue(ZStack *stack, const ZObject3dScan &obj,

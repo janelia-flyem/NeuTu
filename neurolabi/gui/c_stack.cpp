@@ -1263,3 +1263,22 @@ void C_Stack::setBlockValue(Stack *stack, const Stack *block, int x0, int y0, in
 
   }
 }
+
+bool C_Stack::isBinary(const Stack *stack)
+{
+  if (kind(stack) != GREY) {
+    return false;
+  }
+
+  bool state = false;
+  size_t v = voxelNumber(stack);
+  for (size_t i = 0; i < v; ++i) {
+    if (stack->array[v] == 1) {
+      state = true;
+    } else if (stack->array[v] > 1) {
+      return false;
+    }
+  }
+
+  return state;
+}

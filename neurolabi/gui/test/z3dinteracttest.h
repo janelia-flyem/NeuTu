@@ -3,6 +3,8 @@
 
 #include "ztestheader.h"
 #include "neutubeconfig.h"
+#include "geometry/zgeo3dtransform.h"
+#include "zstack.hxx"
 
 #ifdef _USE_GTEST_
 
@@ -14,7 +16,6 @@ TEST(3DPaint, Basic)
 
   ZGeo3dTransform transform;
   transform.setRotationMatrix();
-
 }
 
 #endif

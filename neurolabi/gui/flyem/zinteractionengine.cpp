@@ -22,8 +22,7 @@ ZInteractionEngine::~ZInteractionEngine()
 
 bool ZInteractionEngine::lockingMouseMoveEvent() const
 {
-  return m_interactiveContext.strokeEditMode() ==
-      ZInteractiveContext::STROKE_DRAW;
+  return isStateOn(STATE_DRAW_STROKE);
 }
 
 void ZInteractionEngine::processMouseMoveEvent(QMouseEvent *event)
@@ -48,10 +47,15 @@ void ZInteractionEngine::processMouseReleaseEvent(
 {
   UNUSED_PARAMETER(sliceIndex);
   if (event->button() == Qt::LeftButton) {
-    commitData();
+    if (isStateOn(STATE_DRAW_STROKE)) {
+      commitData();
+    }
     m_mouseLeftButtonPressed = false;
   } else if (event->button() == Qt::RightButton) {
-    exitPaintStroke();
+    if (isStateOn(STATE_DRAW_STROKE)) {
+      exitPaintStroke();
+      event->accept();
+    }
     m_mouseRightButtonPressed = false;
   }
 }
@@ -67,7 +71,11 @@ void ZInteractionEngine::processMousePressEvent(QMouseEvent *event,
   UNUSED_PARAMETER(sliceIndex);
   UNUSED_PARAMETER(event);
 
-  m_mouseLeftButtonPressed = true;
+  if (event->button() == Qt::LeftButton) {
+    m_mouseLeftButtonPressed = true;
+  } else if (event->button() == Qt::RightButton) {
+    m_mouseRightButtonPressed = true;
+  }
 }
 
 void ZInteractionEngine::processKeyPressEvent(QKeyEvent *event)
@@ -166,4 +174,13 @@ bool ZInteractionEngine::isStateOn(EState status) const
   }
 
   return false;
+}
+
+Qt::CursorShape ZInteractionEngine::getCursorShape() const
+{
+  if (isStateOn(STATE_DRAW_STROKE)) {
+    return Qt::PointingHandCursor;
+  }
+
+  return Qt::ArrowCursor;
 }

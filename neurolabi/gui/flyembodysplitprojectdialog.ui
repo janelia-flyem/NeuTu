@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>301</width>
-    <height>248</height>
+    <width>320</width>
+    <height>338</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -32,8 +32,8 @@
   <widget class="QPushButton" name="donePushButton">
    <property name="geometry">
     <rect>
-     <x>180</x>
-     <y>210</y>
+     <x>190</x>
+     <y>290</y>
      <width>91</width>
      <height>32</height>
     </rect>
@@ -47,64 +47,75 @@
     <rect>
      <x>10</x>
      <y>10</y>
-     <width>271</width>
-     <height>194</height>
+     <width>281</width>
+     <height>261</height>
     </rect>
    </property>
-   <layout class="QHBoxLayout" name="horizontalLayout">
+   <layout class="QVBoxLayout" name="verticalLayout_2">
     <item>
-     <layout class="QVBoxLayout" name="verticalLayout">
+     <layout class="QHBoxLayout" name="horizontalLayout">
       <item>
-       <widget class="QPushButton" name="loadBodyPushButton">
-        <property name="text">
-         <string>Load Body</string>
-        </property>
-       </widget>
+       <layout class="QVBoxLayout" name="verticalLayout">
+        <item>
+         <widget class="QPushButton" name="loadBodyPushButton">
+          <property name="text">
+           <string>Load Body</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="view2dBodyPushButton">
+          <property name="text">
+           <string>View 2D Body</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="view3dBodyPushButton">
+          <property name="text">
+           <string>View 3D Body</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="viewSplitPushButton">
+          <property name="text">
+           <string>View Split</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="commitPushButton">
+          <property name="text">
+           <string>Commit</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </item>
       <item>
-       <widget class="QPushButton" name="view2dBodyPushButton">
-        <property name="text">
-         <string>View 2D Body</string>
+       <widget class="QTextEdit" name="infoWidget">
+        <property name="frameShape">
+         <enum>QFrame::NoFrame</enum>
         </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="view3dBodyPushButton">
-        <property name="text">
-         <string>View 3D Body</string>
+        <property name="frameShadow">
+         <enum>QFrame::Plain</enum>
         </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="viewSplitPushButton">
-        <property name="text">
-         <string>View Split</string>
+        <property name="lineWidth">
+         <number>1</number>
         </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="commitPushButton">
-        <property name="text">
-         <string>Commit</string>
+        <property name="lineWrapMode">
+         <enum>QTextEdit::WidgetWidth</enum>
+        </property>
+        <property name="readOnly">
+         <bool>true</bool>
         </property>
        </widget>
       </item>
      </layout>
     </item>
     <item>
-     <widget class="QTextEdit" name="infoWidget">
-      <property name="frameShape">
-       <enum>QFrame::NoFrame</enum>
-      </property>
-      <property name="frameShadow">
-       <enum>QFrame::Plain</enum>
-      </property>
-      <property name="lineWidth">
-       <number>1</number>
-      </property>
-      <property name="lineWrapMode">
-       <enum>QTextEdit::WidgetWidth</enum>
-      </property>
+     <widget class="QTextEdit" name="outputWidget">
       <property name="readOnly">
        <bool>true</bool>
       </property>

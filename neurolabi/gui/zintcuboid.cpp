@@ -1,8 +1,14 @@
 #include "zintcuboid.h"
 #include "tz_utilities.h"
 
-ZIntCuboid::ZIntCuboid()
+ZIntCuboid::ZIntCuboid() : m_lastCorner(-1, -1, -1)
 {
+}
+
+ZIntCuboid::ZIntCuboid(int x1, int y1, int z1, int x2, int y2, int z2)
+{
+  m_firstCorner.set(x1, y1, z1);
+  m_lastCorner.set(x2, y2, z2);
 }
 
 int ZIntCuboid::getWidth() const
@@ -84,4 +90,9 @@ bool ZIntCuboid::contains(int x, int y, int z) const
   return IS_IN_CLOSE_RANGE(x, m_firstCorner.getX(), m_lastCorner.getX()) &&
       IS_IN_CLOSE_RANGE(y, m_firstCorner.getY(), m_lastCorner.getY()) &&
       IS_IN_CLOSE_RANGE(z, m_firstCorner.getZ(), m_lastCorner.getZ());
+}
+
+bool ZIntCuboid::isEmpty() const
+{
+  return getWidth() <= 0 || getHeight() <= 0 || getDepth() <= 0;
 }

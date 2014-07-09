@@ -5,6 +5,7 @@
 #include "zstack.hxx"
 #include "tz_math.h"
 #include "tz_stack_lib.h"
+#include "zintcuboid.h"
 
 /*!
  * \brief The class of creating a stack
@@ -15,13 +16,24 @@ public:
   ZStackFactory();
 
   virtual ZStack* makeStack(ZStack *stack = NULL) const;
+
+  /*!
+   * \brief Make a virtual stack
+   *
+   * \return It returns NULL if any dimension is not positive.
+   */
   static ZStack* makeVirtualStack(int width, int height, int depth);
+
+
+  static ZStack* makeVirtualStack(const ZIntCuboid &box);
 
 public:
   template<class InputIterator>
   static ZStack* composite(InputIterator begin, InputIterator end);
 
   static ZStack* makeOneStack(int width, int height, int depth);
+  static ZStack* makeIndexStack(int width, int height, int depth);
+  static ZStack* makeUniformStack(int width, int height, int depth, int v);
 
 private:
   static Stack* pileMatched(const std::vector<Stack*> stackArray);

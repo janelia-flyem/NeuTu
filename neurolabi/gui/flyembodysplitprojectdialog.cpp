@@ -152,3 +152,8 @@ void FlyEmBodySplitProjectDialog::updateWidget()
           arg(m_project.getBodyId()));
   }
 }
+
+void FlyEmBodySplitProjectDialog::dump(const QString &info)
+{
+  ui->outputWidget->setText(info);
+}
