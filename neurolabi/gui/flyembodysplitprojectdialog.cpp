@@ -1,4 +1,6 @@
 #include "flyembodysplitprojectdialog.h"
+#include <QFileDialog>
+
 #include "ui_flyembodysplitprojectdialog.h"
 #include "mainwindow.h"
 #include "zstackframe.h"
@@ -21,8 +23,15 @@ FlyEmBodySplitProjectDialog::FlyEmBodySplitProjectDialog(QWidget *parent) :
           SIGNAL(clicked()), this, SLOT(showResult3d()));
   connect(ui->donePushButton, SIGNAL(clicked()), this, SLOT(clear()));
   connect(ui->loadBodyPushButton, SIGNAL(clicked()), this, SLOT(loadBody()));
+  connect(ui->loadBookmarkButton, SIGNAL(clicked()),
+          this, SLOT(loadBookmark()));
+
+  ui->bookmarkView->setModel(&m_bookmarkList);
 
   updateWidget();
+
+  connect(ui->bookmarkView, SIGNAL(doubleClicked(QModelIndex)),
+          this, SLOT(locateBookmark(QModelIndex)));
 }
 
 FlyEmBodySplitProjectDialog::~FlyEmBodySplitProjectDialog()
@@ -133,7 +142,7 @@ bool FlyEmBodySplitProjectDialog::isBodyLoaded() const
   return m_project.getBodyId() > 0;
 }
 
-void FlyEmBodySplitProjectDialog::updateWidget()
+void FlyEmBodySplitProjectDialog::updateButton()
 {
   ui->loadBodyPushButton->setEnabled(!isBodyLoaded());
   ui->view2dBodyPushButton->setEnabled(isBodyLoaded());
@@ -141,19 +150,57 @@ void FlyEmBodySplitProjectDialog::updateWidget()
   ui->viewSplitPushButton->setEnabled(m_project.hasDataFrame());
   ui->commitPushButton->setEnabled(m_project.hasDataFrame());
   ui->donePushButton->setEnabled(isBodyLoaded());
+}
+
+void FlyEmBodySplitProjectDialog::updateWidget()
+{
+  updateButton();
+  QString text;
+  if (!m_project.getBookmarkArray().isEmpty()) {
+    text += QString("<p>%1 bookmarks</p>").arg(m_project.getBookmarkArray().size());
+  }
 
   if (!isBodyLoaded()) {
-    ui->infoWidget->setText("No body loaded.");
+    text += "<p>No body loaded.</p>";
   } else {
-    ui->infoWidget->setText(
-          QString("<p>DVID Server: %1</p>"
-                  "<p>Body ID: %2</p>").
+    text += QString("<p>DVID Server: %1</p><p>Body ID: %2</p>").
           arg(m_project.getDvidTarget().getSourceString().c_str()).
-          arg(m_project.getBodyId()));
+          arg(m_project.getBodyId());
   }
+  ui->infoWidget->setText(text);
+
+  updateBookmarkTable();
 }
 
 void FlyEmBodySplitProjectDialog::dump(const QString &info)
 {
   ui->outputWidget->setText(info);
+}
+
+void FlyEmBodySplitProjectDialog::loadBookmark()
+{
+  QString fileName = getMainWindow()->getOpenFileName("Load Bookmarks", "*.json");
+  if (!fileName.isEmpty()) {
+    m_project.loadBookmark(fileName);
+    updateWidget();
+  }
+}
+
+void FlyEmBodySplitProjectDialog::updateBookmarkTable()
+{
+  const ZFlyEmBookmarkArray &bookmarkArray = m_project.getBookmarkArray();
+  m_bookmarkList.clear();
+  if (isBodyLoaded()) {
+    foreach (ZFlyEmBookmark bookmark, bookmarkArray) {
+      if (bookmark.getBodyId() == m_project.getBodyId()) {
+        m_bookmarkList.append(bookmark);
+      }
+    }
+  }
+}
+
+void FlyEmBodySplitProjectDialog::locateBookmark(const QModelIndex &index)
+{
+  const ZFlyEmBookmark &bookmark = m_bookmarkList.getBookmark(index.row());
+  m_project.locateBookmark(bookmark);
 }

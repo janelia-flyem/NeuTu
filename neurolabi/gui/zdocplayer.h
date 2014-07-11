@@ -2,17 +2,20 @@
 #define ZDOCPLAYER_H
 
 #include <QList>
+#include <QString>
 #include <vector>
 #include "tz_utilities.h"
 #include "tz_cdefs.h"
 #include "zdocumentable.h"
 #include "c_stack.h"
 #include "zuncopyable.h"
+#include "z3dgraph.h"
 
 class ZStack;
 class ZStroke2d;
 class ZSparseObject;
 class ZObject3d;
+class ZSwcTree;
 
 class ZDocPlayer
 {
@@ -25,6 +28,8 @@ public:
   const static TRole ROLE_3DPAINT;
   const static TRole ROLE_MANAGED_OBJECT;
   const static TRole ROLE_3DSWC_DECORATOR;
+  const static TRole ROLE_3DGRAPH_DECORATOR;
+  const static TRole ROLE_TMP_BOOKMARK;
 
 public:
   ZDocPlayer();
@@ -65,6 +70,9 @@ public:
 
   virtual ZStack* toStack() const { return NULL; }
   virtual int getLabel() const { return 0; }
+  virtual QString getTypeName() const { return "Unknown"; }
+  virtual ZSwcTree* getSwcDecoration() const { return NULL; }
+  virtual Z3DGraph get3DGraph() const { return Z3DGraph(); }
 
   inline ZDocumentable* getData() const {
     return m_data;
@@ -129,6 +137,8 @@ public:
 public:
   void labelStack(ZStack*stack) const;
   ZStack* toStack() const;
+  int getLabel() const;
+  QString getTypeName() const;
 
   ZStroke2d* getCompleteData() const;
 };
@@ -153,8 +163,11 @@ public:
         const int *offset, int xIntv, int yIntv, int zIntv) const;
 
   int getLabel() const;
+  ZSwcTree* getSwcDecoration() const;
+  Z3DGraph get3DGraph() const;
 
   const ZObject3d *getCompleteData() const;
+
 };
 
 /***************************************************/

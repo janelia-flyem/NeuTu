@@ -25,6 +25,8 @@ public:
   inline size_t pointNumber() const { return m_pointArray.size(); }
   inline size_t edgeNumber() const { return m_graph->nedge; }
 
+  void clear();
+
 private:
   ZWeightedPointArray m_pointArray;
   Graph *m_graph;

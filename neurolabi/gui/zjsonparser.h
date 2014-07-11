@@ -1,6 +1,7 @@
 #ifndef ZJSONPARSER_H
 #define ZJSONPARSER_H
 
+#include <vector>
 #include "neurolabi_config.h"
 #include "tz_json.h"
 #include "zjsonobject.h"
@@ -41,6 +42,8 @@ public:
   static const char* stringValue(const json_t *value, size_t index);
   static double numberValue(const json_t *value, size_t index);
   static int integerValue(const json_t *value, size_t index);
+
+  static std::vector<int> integerArray(const json_t *value);
 
   static void print(const char *key, json_t *value, int indent);
 

@@ -3,6 +3,8 @@
 #include "zstroke2d.h"
 #include "zsparseobject.h"
 #include "zobject3d.h"
+#include "zswcgenerator.h"
+#include "zswctree.h"
 
 const ZDocPlayer::TRole ZDocPlayer::ROLE_NONE = 0;
 const ZDocPlayer::TRole ZDocPlayer::ROLE_DISPLAY = 1;
@@ -10,6 +12,8 @@ const ZDocPlayer::TRole ZDocPlayer::ROLE_SEED = 2;
 const ZDocPlayer::TRole ZDocPlayer::ROLE_TMP_RESULT = 4;
 const ZDocPlayer::TRole ZDocPlayer::ROLE_3DPAINT = 8;
 const ZDocPlayer::TRole ZDocPlayer::ROLE_MANAGED_OBJECT = 16;
+const ZDocPlayer::TRole ZDocPlayer::ROLE_3DGRAPH_DECORATOR = 32;
+const ZDocPlayer::TRole ZDocPlayer::ROLE_TMP_BOOKMARK = 64;
 
 ZDocPlayer::ZDocPlayer() : m_data(NULL), m_role(ZDocPlayer::ROLE_NONE)
 {
@@ -181,6 +185,18 @@ void ZStroke2dPlayer::labelStack(ZStack* stack) const
   }
 }
 
+int ZStroke2dPlayer::getLabel() const
+{
+  ZStroke2d *stroke = getCompleteData();
+
+  return stroke->getLabel();
+}
+
+QString ZStroke2dPlayer::getTypeName() const
+{
+  return "Plane Stroke";
+}
+
 ZStack* ZStroke2dPlayer::toStack() const
 {
   ZStroke2d *stroke = getCompleteData();
@@ -296,6 +312,33 @@ int ZObject3dPlayer::getLabel() const
   }
 
   return 0;
+}
+
+ZSwcTree* ZObject3dPlayer::getSwcDecoration() const
+{
+  const ZObject3d *obj = getCompleteData();
+
+  ZSwcTree *tree = NULL;
+  if (obj != NULL) {
+    if (!obj->isEmpty()) {
+      tree = ZSwcGenerator::createSwc(*obj, 1.0, 3);
+      tree->setColor(obj->getColor());
+    }
+  }
+
+  return tree;
+}
+
+Z3DGraph ZObject3dPlayer::get3DGraph() const
+{
+  Z3DGraph graph;
+
+  const ZObject3d *obj = getCompleteData();
+  if (obj != NULL) {
+    graph.importObject3d(*obj, 1.0, 3);
+  }
+
+  return graph;
 }
 
 /*************************************/

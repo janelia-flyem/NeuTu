@@ -646,9 +646,9 @@ void MainWindow::setActionActivity()
 
   //objectViewHideAction->setEnabled(b);
   m_stackActionActivator.registerAction(objectViewNormalAction, true);
-  m_stackActionActivator.registerAction(objectViewSolidAction, true);
-  m_stackActionActivator.registerAction(objectViewSurfaceAction, true);
-  m_stackActionActivator.registerAction(objectViewSkeletonAction, true);
+  //m_stackActionActivator.registerAction(objectViewSolidAction, true);
+  //m_stackActionActivator.registerAction(objectViewSurfaceAction, true);
+  //m_stackActionActivator.registerAction(objectViewSkeletonAction, true);
 
   m_stackActionActivator.registerAction(settingAction, true);
 
@@ -933,6 +933,11 @@ void MainWindow::updateAction()
 {
   ZStackFrame *frame = currentStackFrame();
 
+  objectViewNormalAction->setEnabled(frame != NULL);
+  objectViewSolidAction->setEnabled(frame != NULL);
+  objectViewSurfaceAction->setEnabled(frame != NULL);
+  objectViewSkeletonAction->setEnabled(frame != NULL);
+
   m_writeActionGroup->setDisabled(frame == NULL);
   m_viewActionGroup->setDisabled(frame == NULL);
   viewMode->setDisabled(frame == NULL);
@@ -1071,10 +1076,10 @@ void MainWindow::enableStackActions(bool b)
   punctaExportAction->setEnabled(b);
 
   //objectViewHideAction->setEnabled(b);
-  objectViewNormalAction->setEnabled(b);
-  objectViewSolidAction->setEnabled(b);
-  objectViewSurfaceAction->setEnabled(b);
-  objectViewSkeletonAction->setEnabled(b);
+  //objectViewNormalAction->setEnabled(b);
+  //objectViewSolidAction->setEnabled(b);
+  //objectViewSurfaceAction->setEnabled(b);
+  //objectViewSkeletonAction->setEnabled(b);
 
   settingAction->setEnabled(b);
 
@@ -3319,7 +3324,7 @@ void MainWindow::on_actionPixel_triggered()
 
 void MainWindow::test()
 {
-  QFuture<void> res = QtConcurrent::run(ZTest::test, this);
+  //QFuture<void> res = QtConcurrent::run(ZTest::test, this);
 
   m_progress->setRange(0, 2);
   m_progress->setLabelText(QString("Testing ..."));
@@ -3327,8 +3332,8 @@ void MainWindow::test()
   m_progress->setValue(++currentProgress);
   m_progress->show();
 
-  res.waitForFinished();
-  //ZTest::test(this);
+  //res.waitForFinished();
+  ZTest::test(this);
 
   m_progress->reset();
 

@@ -67,6 +67,7 @@
 #include "zstackfile.h"
 #include "zstackprocessor.h"
 #include "zswcobjsmodel.h"
+#include "zdocplayerobjsmodel.h"
 #include "zswcnodeobjsmodel.h"
 #include "zpunctaobjsmodel.h"
 #include "swctreenode.h"
@@ -108,6 +109,7 @@ ZStackDoc::ZStackDoc(ZStack *stack, QObject *parent) : QObject(parent)
   m_swcObjsModel = new ZSwcObjsModel(this, this);
   m_swcNodeObjsModel = new ZSwcNodeObjsModel(this, this);
   m_punctaObjsModel = new ZPunctaObjsModel(this, this);
+  m_seedObjsModel = new ZDocPlayerObjsModel(this, ZDocPlayer::ROLE_SEED, this);
   m_undoStack = new QUndoStack(this);
 
   connectSignalSlot();
@@ -204,6 +206,8 @@ void ZStackDoc::connectSignalSlot()
   connect(this, SIGNAL(swcModified()), m_swcObjsModel, SLOT(updateModelData()));
   connect(this, SIGNAL(swcModified()), m_swcNodeObjsModel, SLOT(updateModelData()));
   connect(this, SIGNAL(punctaModified()), m_punctaObjsModel, SLOT(updateModelData()));
+  connect(this, SIGNAL(seedModified()), m_seedObjsModel, SLOT(updateModelData()));
+
   connect(m_undoStack, SIGNAL(cleanChanged(bool)),
           this, SIGNAL(cleanChanged(bool)));
   connect(&m_reader, SIGNAL(finished()), this, SIGNAL(stackReadDone()));
@@ -1963,6 +1967,7 @@ void ZStackDoc::addSparseObject(ZSparseObject *obj)
   m_sparseObjectList.prepend(obj);
   m_drawableList.prepend(obj);
   m_playerList.append(new ZSparseObjectPlayer(obj, ZDocPlayer::ROLE_SEED));
+  emit seedModified();
 }
 
 void ZStackDoc::addStroke(ZStroke2d *obj)
@@ -1977,6 +1982,7 @@ void ZStackDoc::addStroke(ZStroke2d *obj)
   m_drawableList.prepend(obj);
 
   m_playerList.append(new ZStroke2dPlayer(obj, ZDocPlayer::ROLE_SEED));
+  emit seedModified();
 
 #ifdef _DEBUG_2
   std::cout << "New stroke added" << std::endl;
@@ -5554,6 +5560,11 @@ void ZStackDoc::notifyStrokeModified()
   emit strokeModified();
 }
 
+void ZStackDoc::notify3DGraphModified()
+{
+  emit graph3dModified();
+}
+
 void ZStackDoc::notifyObjectModified()
 {
   emit objectModified();
@@ -7016,15 +7027,37 @@ void ZStackDoc::addObject(
   case NeuTube::Documentable_SPARSE_OBJECT:
     addSparseObject(dynamic_cast<ZSparseObject*>(obj));
     break;
+  default:
+  {
+    m_objs.prepend(obj);
+    ZStackDrawable *drawable = dynamic_cast<ZStackDrawable*>(obj);
+    if (drawable != NULL) {
+      m_drawableList.prepend(drawable);
+    }
+  }
+    break;
   }
 
-  addPlayer(obj, role);
+  addPlayer(obj, type, role);
 }
 
-void ZStackDoc::addPlayer(ZDocumentable *obj, ZDocPlayer::TRole role)
+void ZStackDoc::addPlayer(
+    ZDocumentable *obj, NeuTube::EDocumentableType type, ZDocPlayer::TRole role)
 {
   if (role != ZDocPlayer::ROLE_NONE) {
-    m_playerList.append(new ZObject3dPlayer(obj, role));
+    ZDocPlayer *player = NULL;
+    switch (type) {
+    case NeuTube::Documentable_OBJ3D:
+      player = new ZObject3dPlayer(obj, role);
+      break;
+    default:
+      player = new ZDocPlayer(obj, role);
+      break;
+    }
+
+    if (player->hasRole(ZDocPlayer::ROLE_SEED)) {
+      emit seedModified();
+    }
   }
 }
 
@@ -8033,7 +8066,7 @@ void ZStackDoc::localSeededWatershed()
       obj->setColor(255, 255, 0, 180);
 
       addObj3d(obj);
-      addPlayer(obj, ZDocPlayer::ROLE_TMP_RESULT);
+      addPlayer(obj, NeuTube::Documentable_OBJ3D, ZDocPlayer::ROLE_TMP_RESULT);
       notifyObj3dModified();
     }
 
@@ -8086,7 +8119,7 @@ void ZStackDoc::seededWatershed()
         obj->setColor(255, 255, 0, 255);
 
         addObj3d(obj);
-        addPlayer(obj, ZDocPlayer::ROLE_TMP_RESULT);
+        addPlayer(obj, NeuTube::Documentable_OBJ3D, ZDocPlayer::ROLE_TMP_RESULT);
 
         notifyObj3dModified();
       }
@@ -8284,6 +8317,18 @@ QList<const ZDocPlayer*> ZStackDoc::getPlayerList(ZDocPlayer::TRole role) const
 bool ZStackDoc::hasPlayer(ZDocPlayer::TRole role) const
 {
   return m_playerList.hasPlayer(role);
+}
+
+Z3DGraph ZStackDoc::get3DGraphDecoration() const
+{
+  Z3DGraph graph;
+  QList<const ZDocPlayer *> playerList =
+      getPlayerList(ZDocPlayer::ROLE_3DGRAPH_DECORATOR);
+  foreach(const ZDocPlayer *player, playerList) {
+    graph.append(player->get3DGraph());
+  }
+
+  return graph;
 }
 
 ///////////Stack Reader///////////

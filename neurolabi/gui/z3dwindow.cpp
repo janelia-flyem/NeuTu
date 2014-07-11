@@ -66,6 +66,7 @@
 #include <QApplication>
 #include "zvoxelgraphics.h"
 #include "zstroke2darray.h"
+#include "zswcgenerator.h"
 
 class Sleeper : public QThread
 {
@@ -225,10 +226,16 @@ void Z3DWindow::init(EInitMode mode)
     m_graphFilter->setData(graph);
   }
 
+  m_decorationFilter = new Z3DGraphFilter();
+  m_decorationFilter->setStayOnTop(false);
+  m_decorationFilter->setData(m_doc->get3DGraphDecoration());
+
   connect(getDocument(), SIGNAL(punctaModified()), this, SLOT(punctaChanged()));
   connect(getDocument(), SIGNAL(swcModified()), this, SLOT(swcChanged()));
   connect(getDocument(), SIGNAL(swcNetworkModified()),
           this, SLOT(updateNetworkDisplay()));
+  connect(getDocument(), SIGNAL(graph3dModified()),
+          this, SLOT(updateDecorationDisplay()));
   connect(getDocument(),
           SIGNAL(punctaSelectionChanged(QList<ZPunctum*>,QList<ZPunctum*>)),
           this, SLOT(punctaSelectionChanged()));
@@ -309,6 +316,7 @@ void Z3DWindow::init(EInitMode mode)
   m_canvas->addEventListenerToBack(m_volumeRaycaster);      // for trace
   m_canvas->addEventListenerToBack(m_compositor);  // for interaction
   m_canvas->addEventListenerToBack(m_graphFilter);
+  m_canvas->addEventListenerToBack(m_decorationFilter);
 
   // build network
   for (int i=0; i<5; i++) {  // max supported channel is 5
@@ -321,6 +329,8 @@ void Z3DWindow::init(EInitMode mode)
   m_punctaFilter->getOutputPort("GeometryFilter")->connect(m_compositor->getInputPort("GeometryFilters"));
   m_swcFilter->getOutputPort("GeometryFilter")->connect(m_compositor->getInputPort("GeometryFilters"));
   m_graphFilter->getOutputPort("GeometryFilter")->connect(m_compositor->getInputPort("GeometryFilters"));
+  m_decorationFilter->getOutputPort("GeometryFilter")->connect(m_compositor->getInputPort("GeometryFilters"));
+
   m_axis->getOutputPort("GeometryFilter")->connect(m_compositor->getInputPort("GeometryFilters"));
   m_compositor->getOutputPort("Image")->connect(m_canvasRenderer->getInputPort("Image"));
   m_compositor->getOutputPort("LeftEyeImage")->connect(m_canvasRenderer->getInputPort("LeftEyeImage"));
@@ -341,6 +351,7 @@ void Z3DWindow::init(EInitMode mode)
   updateSwcBoundBox();
   updatePunctaBoundBox();
   updateGraphBoundBox();
+  updateDecorationBoundBox();
   updateOverallBoundBox();
 
   // adjust camera
@@ -1010,6 +1021,11 @@ void Z3DWindow::updateGraphBoundBox()
   m_graphBoundBox = m_graphFilter->boundBox();
 }
 
+void Z3DWindow::updateDecorationBoundBox()
+{
+  m_decorationBoundBox = m_decorationFilter->boundBox();
+}
+
 void Z3DWindow::updatePunctaBoundBox()
 {
   m_punctaBoundBox[0] = m_punctaBoundBox[2] = m_punctaBoundBox[4] = std::numeric_limits<double>::max();
@@ -1055,6 +1071,8 @@ void Z3DWindow::cleanup()
     m_swcFilter = NULL;
     delete m_graphFilter;
     m_graphFilter = NULL;
+    delete m_decorationFilter;
+    m_decorationFilter = NULL;
     delete m_compositor;
     m_compositor = NULL;
     delete m_axis;
@@ -1097,12 +1115,22 @@ void Z3DWindow::updateNetworkDisplay()
   }
 }
 
+void Z3DWindow::updateDecorationDisplay()
+{
+  m_decorationFilter->setData(m_doc->get3DGraphDecoration());
+  updateDecorationBoundBox();
+  updateOverallBoundBox();
+  resetCameraClippingRange();
+}
+
+
 void Z3DWindow::updateDisplay()
 {
   volumeChanged();
   swcChanged();
   punctaChanged();
   updateNetworkDisplay();
+  updateDecorationDisplay();
 }
 
 void Z3DWindow::punctaChanged()
@@ -2137,6 +2165,7 @@ void Z3DWindow::updateOverallBoundBox()
   updateOverallBoundBox(m_swcBoundBox);
   updateOverallBoundBox(m_punctaBoundBox);
   updateOverallBoundBox(m_graphBoundBox);
+  updateOverallBoundBox(m_decorationBoundBox);
   if (m_boundBox[0] > m_boundBox[1] || m_boundBox[2] > m_boundBox[3] || m_boundBox[4] > m_boundBox[5]) {
     // nothing visible
     m_boundBox[0] = m_boundBox [2] = m_boundBox[4] = 0.0f;
@@ -3009,7 +3038,7 @@ void Z3DWindow::addStrokeFrom3dPaint(ZStroke2d *stroke)
 
 void Z3DWindow::addStrokeFrom3dPaint(ZStroke2d *stroke)
 {
-  bool success = false;
+  //bool success = false;
 
   ZObject3d *baseObj = stroke->toObject3d();
 
@@ -3017,16 +3046,17 @@ void Z3DWindow::addStrokeFrom3dPaint(ZStroke2d *stroke)
   double y = 0.0;
 
   stroke->getPoint(&x, &y, stroke->getPointNumber() / 2);
+  /*
   ZLineSegment seg = m_volumeRaycaster->getScreenRay(
-        iround(x), iround(y), m_canvas->width(), m_canvas->height(), success);
-
+        iround(x), iround(y), m_canvas->width(), m_canvas->height());
+*/
   ZObject3d *obj = new ZObject3d;
   for (size_t i = 0; i < baseObj->size(); ++i) {
     ZLineSegment seg = m_volumeRaycaster->getScreenRay(
           baseObj->x(i), baseObj->y(i),
-          m_canvas->width(), m_canvas->height(), success);
+          m_canvas->width(), m_canvas->height());
     ZPoint slope = seg.getEndPoint() - seg.getStartPoint();
-    if (success) {
+    //if (success) {
       ZIntCuboid box = m_doc->stackRef()->getBoundBox();
       ZCuboid rbox(box.getFirstCorner().getX(), box.getFirstCorner().getY(),
                    box.getFirstCorner().getZ(),
@@ -3043,7 +3073,7 @@ void Z3DWindow::addStrokeFrom3dPaint(ZStroke2d *stroke)
 #endif
         delete scanLine;
       }
-    }
+    //}
   }
   obj->setLabel(stroke->getLabel());
   ZLabelColorTable colorTable;
@@ -3061,7 +3091,7 @@ void Z3DWindow::addStrokeFrom3dPaint(ZStroke2d *stroke)
 
 void Z3DWindow::addPolyplaneFrom3dPaint(ZStroke2d *stroke)
 {
-  bool success = false;
+  //bool success = false;
 
   std::vector<ZIntPoint> polyline1;
   std::vector<ZIntPoint> polyline2;
@@ -3076,8 +3106,8 @@ void Z3DWindow::addPolyplaneFrom3dPaint(ZStroke2d *stroke)
     double y = 0.0;
     stroke->getPoint(&x, &y, i);
     ZLineSegment seg = m_volumeRaycaster->getScreenRay(
-          iround(x), iround(y), m_canvas->width(), m_canvas->height(), success);
-    if (success) {
+          iround(x), iround(y), m_canvas->width(), m_canvas->height());
+    //if (success) {
       ZPoint slope = seg.getEndPoint() - seg.getStartPoint();
       ZLineSegment stackSeg;
       if (rbox.intersectLine(seg.getStartPoint(), slope, &stackSeg)) {
@@ -3088,7 +3118,7 @@ void Z3DWindow::addPolyplaneFrom3dPaint(ZStroke2d *stroke)
         polyline1.push_back(ZIntPoint(stackSeg.getStartPoint().toIntPoint()));
         polyline2.push_back(ZIntPoint(stackSeg.getEndPoint().toIntPoint()));
       }
-    }
+    //}
   }
 
   ZObject3d *obj = ZVoxelGraphics::createPolyPlaneObject(polyline1, polyline2);
@@ -3101,13 +3131,18 @@ void Z3DWindow::addPolyplaneFrom3dPaint(ZStroke2d *stroke)
 #endif
 
     if (!obj->isEmpty()) {
+#ifdef _DEBUG_2
+  ZSwcTree *tree = ZSwcGenerator::createSwc(*obj, 1.0, 3);
+  tree->save(GET_TEST_DATA_DIR + "/test.swc");
+#endif
+
       obj->setLabel(stroke->getLabel());
       ZLabelColorTable colorTable;
       obj->setColor(colorTable.getColor(obj->getLabel()));
 
       m_doc->executeAddObjectCommand(
             obj, NeuTube::Documentable_OBJ3D,
-            ZDocPlayer::ROLE_SEED | ZDocPlayer::ROLE_3DPAINT);
+            ZDocPlayer::ROLE_SEED | ZDocPlayer::ROLE_3DGRAPH_DECORATOR);
       //m_doc->notifyVolumeModified();
     } else {
       delete obj;

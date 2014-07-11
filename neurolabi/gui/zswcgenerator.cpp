@@ -8,6 +8,7 @@
 #include "zlinesegmentarray.h"
 #include "zintcuboidface.h"
 #include "zstroke2d.h"
+#include "zobject3d.h"
 
 ZSwcGenerator::ZSwcGenerator()
 {
@@ -398,6 +399,29 @@ ZSwcTree* ZSwcGenerator::createSwc(const ZStroke2d &stroke)
     SwcTreeNode::setParent(tn, parent);
     parent = tn;
   }
+
+  tree->resortId();
+
+  return tree;
+}
+
+ZSwcTree* ZSwcGenerator::createSwc(
+    const ZObject3d &obj, double radius, int sampleStep)
+{
+  if (obj.isEmpty()) {
+    return NULL;
+  }
+
+  ZSwcTree *tree = new ZSwcTree();
+  tree->forceVirtualRoot();
+  Swc_Tree_Node *parent = tree->root();
+  for (size_t i = 0; i < obj.size(); i += sampleStep) {
+    Swc_Tree_Node *tn =
+        SwcTreeNode::makePointer(obj.x(i), obj.y(i), obj.z(i), radius);
+    SwcTreeNode::setParent(tn, parent);
+  }
+
+  tree->resortId();
 
   return tree;
 }

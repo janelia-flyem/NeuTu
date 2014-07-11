@@ -11,7 +11,7 @@ namespace NeuTube {
 enum EDocumentableType {
   Documentable_SWC, Documentable_PUNCTUM, Documentable_OBJ3D,
   Documentable_STROKE, Documentable_LOCSEG_CHAIN, Documentable_CONN,
-  Documentable_SPARSE_OBJECT
+  Documentable_SPARSE_OBJECT, Documentable_Circle
 };
 
 namespace Document {

@@ -7,6 +7,7 @@
 #include <QInputEvent>
 #include <deque>
 #include <QList>
+#include "zstroke2d.h"
 
 #ifdef _FLYEM_
 #  include "flyem/zinteractionengine.h"

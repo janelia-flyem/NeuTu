@@ -2,6 +2,7 @@
 
 #include "z3dgraph.h"
 #include "znormcolormap.h"
+#include "zobject3d.h"
 
 using namespace std;
 
@@ -171,6 +172,24 @@ Z3DGraph::Z3DGraph()
 {
 }
 
+bool Z3DGraph::isEmpty() const
+{
+  return getNodeNumber() == 0;
+}
+
+void Z3DGraph::append(const Z3DGraph &graph)
+{
+  size_t newStartIndex = m_nodeArray.size();
+  m_nodeArray.insert(m_nodeArray.end(), graph.m_nodeArray.begin(),
+                     graph.m_nodeArray.end());
+
+  for (size_t i = 0; i < graph.m_edgeArray.size(); i++) {
+    Z3DGraphEdge edge = graph.m_edgeArray[i];
+    edge.set(edge.vs() + newStartIndex, edge.vt() + newStartIndex);
+    m_edgeArray.push_back(edge);
+  }
+}
+
 void Z3DGraph::importPointNetwork(const ZPointNetwork &pointNetwork,
                                   ZNormColorMap *colorMap)
 {
@@ -257,4 +276,22 @@ void Z3DGraph::print()
   for (size_t i = 0; i < m_edgeArray.size(); ++i) {
     m_edgeArray[i].print();
   }
+}
+
+void Z3DGraph::importObject3d(
+    const ZObject3d &obj, double radius, int sampleStep)
+{
+  m_nodeArray.clear();
+  m_edgeArray.clear();
+
+  for (size_t i = 0; i < obj.size(); i += sampleStep) {
+    m_nodeArray.push_back(Z3DGraphNode(obj.x(i), obj.y(i), obj.z(i), radius));
+    m_nodeArray.back().setColor(obj.getColor());
+  }
+}
+
+void Z3DGraph::clear()
+{
+  m_nodeArray.clear();
+  m_edgeArray.clear();
 }

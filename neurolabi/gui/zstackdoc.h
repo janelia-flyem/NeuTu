@@ -38,6 +38,7 @@
 #include "resolutiondialog.h"
 #include "zneurontracer.h"
 #include "zdocplayer.h"
+#include "z3dgraph.h"
 
 class ZStackFrame;
 class ZInterface;
@@ -58,10 +59,12 @@ class ZPunctaObjsModel;
 class ZStroke2d;
 class QWidget;
 class ZSwcNodeObjsModel;
+class ZDocPlayerObjsModel;
 class ZStackDocReader;
 class ZStackFactory;
 class ZSparseObject;
 class ZSparseStack;
+class ZCircle;
 
 /*!
  * \brief The class of stack document
@@ -193,6 +196,7 @@ public: //attributes
   inline QList<ZLocsegChainConn*>* connList() {return &m_connList;}
   inline QList<ZPunctum*>* punctaList() {return &m_punctaList;}
   inline ZSwcObjsModel* swcObjsModel() {return m_swcObjsModel;}
+  inline ZDocPlayerObjsModel* seedObjsModel() { return m_seedObjsModel; }
   inline ZSwcNodeObjsModel* swcNodeObjsModel() {return m_swcNodeObjsModel;}
   inline ZPunctaObjsModel* punctaObjsModel() {return m_punctaObjsModel;}
   inline std::set<ZPunctum*>* selectedPuncta() {return &m_selectedPuncta;}
@@ -394,7 +398,8 @@ public: /* puncta related methods */
    *
    * Nothing will be done if \a role is ZDocPlayer::ROLE_NONE.
    */
-  void addPlayer(ZDocumentable *obj, ZDocPlayer::TRole role);
+  void addPlayer(ZDocumentable *obj, NeuTube::EDocumentableType type,
+                 ZDocPlayer::TRole role);
 
   void updateLocsegChain(ZLocsegChain *chain);
   void importLocsegChain(const QStringList &files,
@@ -560,6 +565,7 @@ public: /* puncta related methods */
 
   bool hasPlayer(ZDocPlayer::TRole role) const;
 
+  Z3DGraph get3DGraphDecoration() const;
 
   std::vector<ZSwcTree*> getSwcArray() const;
   bool getLastStrokePoint(int *x, int *y) const;
@@ -620,6 +626,7 @@ public:
   void notifyVolumeModified();
   void notifyStrokeModified();
   void notifyAllObjectModified();
+  void notify3DGraphModified();
   void notifyStatusMessageUpdated(const QString &message);
 
 public:
@@ -746,10 +753,12 @@ signals:
   void stackLoaded();
   void punctaModified();
   void swcModified();
+  void seedModified();
   void chainModified();
   void obj3dModified();
   void sparseObjectModified();
   void strokeModified();
+  void graph3dModified();
   void objectModified();
   void swcNetworkModified();
   void punctaSelectionChanged(QList<ZPunctum*> selected,
@@ -798,6 +807,7 @@ private:
   QList<ZObject3d*> m_obj3dList;
   QList<ZSparseObject*> m_sparseObjectList;
 
+
   ZDocPlayerList m_playerList;
 
   //Special object
@@ -816,6 +826,7 @@ private:
   ZSwcObjsModel *m_swcObjsModel;
   ZSwcNodeObjsModel *m_swcNodeObjsModel;
   ZPunctaObjsModel *m_punctaObjsModel;
+  ZDocPlayerObjsModel *m_seedObjsModel;
 
   //Parent frame
   ZStackFrame *m_parentFrame;

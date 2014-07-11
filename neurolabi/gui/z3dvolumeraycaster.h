@@ -74,9 +74,9 @@ public:
    * \brief Get the image-space ray of a screen point
    *
    * The ray passes the screen point (\a x, \a y) with the direction into the
-   * screen. \a success is set to true iff the ray hits the volume.
+   * screen.
    */
-  ZLineSegment getScreenRay(int x, int y, int width, int height, bool &success);
+  ZLineSegment getScreenRay(int x, int y, int width, int height);
 
 
 signals:

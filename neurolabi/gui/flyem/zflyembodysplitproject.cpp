@@ -113,3 +113,17 @@ void ZFlyEmBodySplitProject::setDataFrame(ZStackFrame *frame)
 
   m_dataFrame = frame;
 }
+
+void ZFlyEmBodySplitProject::loadBookmark(const QString &filePath)
+{
+  m_bookmarkArray.importJsonFile(filePath.toStdString());
+}
+
+void ZFlyEmBodySplitProject::locateBookmark(const ZFlyEmBookmark &bookmark)
+{
+  if (m_dataFrame != NULL) {
+    m_dataFrame->viewRoi(bookmark.getLocation().getX(),
+                         bookmark.getLocation().getY(),
+                         bookmark.getLocation().getZ(), 5);
+  }
+}

@@ -281,9 +281,26 @@ void Z3DGraphFilter::setData(const ZPointNetwork &pointNetwork,
   invalidateResult();
 }
 
+void Z3DGraphFilter::addData(const Z3DGraph &graph)
+{
+  m_graph.append(graph);
+  m_dataIsInvalid = true;
+  invalidateResult();
+}
+
 void Z3DGraphFilter::setData(const Z3DGraph &graph)
 {
   m_graph = graph;
+  m_dataIsInvalid = true;
+  invalidateResult();
+}
+
+void Z3DGraphFilter::setData(const ZObject3d &obj)
+{
+  //m_graph.importPointNetwork();
+  m_graph.importObject3d(obj, 1.0, 3);
+  m_dataIsInvalid = true;
+  invalidateResult();
 }
 
 ZWidgetsGroup *Z3DGraphFilter::getWidgetsGroup()
@@ -311,4 +328,9 @@ ZWidgetsGroup *Z3DGraphFilter::getWidgetsGroup()
     m_widgetsGroup->setBasicAdvancedCutoff(5);
   }
   return m_widgetsGroup;
+}
+
+bool Z3DGraphFilter::isReady(Z3DEye eye) const
+{
+  return Z3DGeometryFilter::isReady(eye) && !m_graph.isEmpty();
 }

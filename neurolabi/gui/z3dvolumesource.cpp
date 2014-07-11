@@ -304,7 +304,6 @@ void Z3DVolumeSource::readSparseStack()
     }
     if (depth > maxTextureSize) {
       double alpha = (double) maxTextureSize / depth;
-      depthScale *= (double)maxTextureSize / depth;
       depthScale *= alpha;
       depth = (int) (depth * alpha);
     }

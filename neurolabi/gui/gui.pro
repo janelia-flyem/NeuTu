@@ -146,13 +146,13 @@ CONFIG(debug, debug|release) {
     }
 }
 
-exists($$HOME/local/lib/OpenVDB) {
-    system(echo 'openvdb found')
-    DEFINES += _USE_OPENVDB_
-    INCLUDEPATH += $$HOME/local/lib/OpenVDB/include $$HOME/local/lib/tbb/include
-    LIBS += -L$$HOME/local/lib/OpenVDB/lib -L$$HOME/local/lib/tbb/lib \
-        -lopenvdb -ltbb -lHalf
-}
+#exists($$HOME/local/lib/OpenVDB) {
+#    system(echo 'openvdb found')
+#    DEFINES += _USE_OPENVDB_
+#    INCLUDEPATH += $$HOME/local/lib/OpenVDB/include $$HOME/local/lib/tbb/include
+#    LIBS += -L$$HOME/local/lib/OpenVDB/lib -L$$HOME/local/lib/tbb/lib \
+#        -lopenvdb -ltbb -lHalf
+#}
 
 # Input
 RESOURCES = gui.qrc
@@ -410,7 +410,14 @@ HEADERS += mainwindow.h \
     zopenvdbobject.h \
     flyembodysplitprojectdialog.h \
     flyem/zflyembodysplitproject.h \
-    zflyemnewbodysplitprojectdialog.h
+    zflyemnewbodysplitprojectdialog.h \
+    zstroke2dobjsmodel.h \
+    zdocplayerobjsmodel.h \
+    flyem/zflyembookmarklistmodel.h \
+    flyem/zflyembookmark.h \
+    zabstractmodelpresenter.h \
+    flyem/zflyembookmarkpresenter.h \
+    flyem/zflyembookmarkarray.h
 
 FORMS += settingdialog.ui \
     frameinfodialog.ui \
@@ -678,7 +685,14 @@ SOURCES += main.cpp \
     zopenvdbobject.cpp \
     flyembodysplitprojectdialog.cpp \
     flyem/zflyembodysplitproject.cpp \
-    zflyemnewbodysplitprojectdialog.cpp
+    zflyemnewbodysplitprojectdialog.cpp \
+    zstroke2dobjsmodel.cpp \
+    zdocplayerobjsmodel.cpp \
+    flyem/zflyembookmarklistmodel.cpp \
+    flyem/zflyembookmark.cpp \
+    zabstractmodelpresenter.cpp \
+    flyem/zflyembookmarkpresenter.cpp \
+    flyem/zflyembookmarkarray.cpp
 
 OTHER_FILES += \
     extlib.pri

@@ -1855,6 +1855,9 @@ void ZStackDocCommand::ObjectEdit::AddObject::redo()
   if ((m_role & ZDocPlayer::ROLE_3DPAINT) > 0) {
     m_doc->notifyVolumeModified();
   }
+  if ((m_role & ZDocPlayer::ROLE_3DGRAPH_DECORATOR) > 0) {
+    m_doc->notify3DGraphModified();
+  }
   m_isInDoc = true;
 }
 
@@ -1864,6 +1867,9 @@ void ZStackDocCommand::ObjectEdit::AddObject::undo()
   m_doc->notifyObjectModified();
   if ((role & ZDocPlayer::ROLE_3DPAINT) > 0) {
     m_doc->notifyVolumeModified();
+  }
+  if ((m_role & ZDocPlayer::ROLE_3DGRAPH_DECORATOR)) {
+    m_doc->notify3DGraphModified();
   }
   m_isInDoc = false;
 }

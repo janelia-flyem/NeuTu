@@ -11,6 +11,7 @@
 class Z3DLineRenderer;
 class Z3DConeRenderer;
 class Z3DSphereRenderer;
+class ZObject3d;
 
 class Z3DGraphFilter : public Z3DGeometryFilter
 {
@@ -26,6 +27,9 @@ public:
   void prepareData();
   void setData(const ZPointNetwork &pointCloud, ZNormColorMap *colorMap = NULL);
   void setData(const Z3DGraph &graph);
+  void addData(const Z3DGraph &graph);
+
+  void setData(const ZObject3d &obj);
 
   virtual void process(Z3DEye);
 
@@ -36,6 +40,8 @@ public:
   ZWidgetsGroup *getWidgetsGroup();
 
   inline bool showingArrow() { return m_showingArrow; }
+
+  bool isReady(Z3DEye eye) const;
 
 public slots:
   void prepareColor();

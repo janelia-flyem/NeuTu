@@ -100,7 +100,29 @@ TEST(ZStackDoc, Player)
   ASSERT_FALSE(doc.hasPlayer(ZDocPlayer::ROLE_3DPAINT));
   ASSERT_EQ(2, doc.getPlayerList(ZDocPlayer::ROLE_SEED).size());
 
-  std::cout << "ZStackDocTest: v4" << std::endl;
+  std::cout << "ZStackDocTest: v5" << std::endl;
+
+  ZObject3d *obj2 = new ZObject3d;
+  obj2->append(1, 2, 3);
+  obj2->append(4, 5, 6);
+  doc.addObject(obj2, NeuTube::Documentable_OBJ3D,
+                ZDocPlayer::ROLE_3DGRAPH_DECORATOR);
+
+  Z3DGraph graph = doc.get3DGraphDecoration();
+  ASSERT_EQ(1, (int) graph.getNodeNumber());
+  ASSERT_EQ(0, (int) graph.getEdgeNumber());
+
+  ZObject3d *obj3 = new ZObject3d;
+  obj3->append(7, 8, 9);
+  for (int i = 0; i < 10; ++i) {
+    obj3->append(i, 10, 10);
+  }
+  doc.addObject(obj3, NeuTube::Documentable_OBJ3D,
+                ZDocPlayer::ROLE_3DGRAPH_DECORATOR);
+
+  graph = doc.get3DGraphDecoration();
+  ASSERT_EQ(5, (int) graph.getNodeNumber());
+  ASSERT_EQ(0, (int) graph.getEdgeNumber());
 }
 
 #endif

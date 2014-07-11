@@ -1248,6 +1248,10 @@ void ZStackFrame::setViewPortCenter(int x, int y, int z)
 
 void ZStackFrame::viewRoi(int x, int y, int z, int radius)
 {
+  x -= document()->getStackOffset().getX();
+  y -= document()->getStackOffset().getY();
+  z -= document()->getStackOffset().getZ();
+
   ZStackViewLocator locator;
   locator.setCanvasSize(view()->imageWidget()->canvasSize().width(),
                         view()->imageWidget()->canvasSize().height());
@@ -1640,9 +1644,11 @@ void ZStackFrame::zoomToSelectedSwcNodes()
       }
     }
     int cx, cy, cz;
+#if 0
     center.translate(-document()->getStackOffset().getX(),
                      -document()->getStackOffset().getY(),
                      -document()->getStackOffset().getZ());
+#endif
     //-= document()->getStackOffset();
     cx = iround(center.x());
     cy = iround(center.y());

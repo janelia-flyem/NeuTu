@@ -71,6 +71,17 @@ public: /* frame operation */
 
   void initBodySplitProject();
 
+  QString getOpenFileName(const QString &caption,
+                          const QString &filter = QString());
+  QStringList getOpenFileNames(const QString &caption,
+                               const QString &filter = QString());
+  QString getSaveFileName(const QString &caption,
+                          const QString &filter = QString());
+  QString getSaveFileName(const QString &caption,
+                          const QString &filter,
+                          const QString &dir);
+  QString getDirectory(const QString &caption);
+
 signals:
   void dvidRequestCanceled();
   void progressDone();
@@ -136,16 +147,6 @@ protected:
   virtual void dragEnterEvent(QDragEnterEvent *event);
   virtual void dropEvent(QDropEvent *event);
 
-  QString getOpenFileName(const QString &caption,
-                          const QString &filter = QString());
-  QStringList getOpenFileNames(const QString &caption,
-                               const QString &filter = QString());
-  QString getSaveFileName(const QString &caption,
-                          const QString &filter = QString());
-  QString getSaveFileName(const QString &caption,
-                          const QString &filter,
-                          const QString &dir);
-  QString getDirectory(const QString &caption);
   void createActionMap();
 
   ZStackDocReader* openFileFunc(const QString &filePath);

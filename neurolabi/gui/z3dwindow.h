@@ -74,6 +74,7 @@ public:
   void updateVolumeBoundBox();
   void updateSwcBoundBox();
   void updateGraphBoundBox();
+  void updateDecorationBoundBox();
   void updatePunctaBoundBox();
   void updateOverallBoundBox(std::vector<double> bound);
   void updateOverallBoundBox();       //get bounding box of all objects in world coordinate :[xmin xmax ymin ymax zmin zmax]
@@ -130,6 +131,7 @@ public slots:
   void swcChanged();
   void punctaChanged();
   void updateNetworkDisplay();
+  void updateDecorationDisplay();
   void updateDisplay();
 
   void volumeScaleChanged();
@@ -324,11 +326,13 @@ private:
   Z3DSwcFilter *m_swcFilter;
   Z3DVolumeSource *m_volumeSource;
   Z3DGraphFilter *m_graphFilter;
+  Z3DGraphFilter *m_decorationFilter;
 
   std::vector<double> m_volumeBoundBox;
   std::vector<double> m_swcBoundBox;
   std::vector<double> m_punctaBoundBox;
   std::vector<double> m_graphBoundBox;
+  std::vector<double> m_decorationBoundBox;
   std::vector<double> m_boundBox;    //overall bound box
 
   bool m_isClean;   //already cleanup?

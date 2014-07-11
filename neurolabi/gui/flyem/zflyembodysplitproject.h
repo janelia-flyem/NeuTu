@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include "dvid/zdvidtarget.h"
+#include "flyem/zflyembookmarklistmodel.h"
 
 class ZStackFrame;
 class Z3DWindow;
@@ -28,6 +29,14 @@ public:
   bool hasDataFrame() const;
   void setDataFrame(ZStackFrame *frame);
 
+  void loadBookmark(const QString &filePath);
+
+  const ZFlyEmBookmarkArray& getBookmarkArray() const {
+    return m_bookmarkArray;
+  }
+
+  void locateBookmark(const ZFlyEmBookmark &bookmark);
+
 public slots:
   void showDataFrame() const;
   void showDataFrame3d();
@@ -42,12 +51,12 @@ public slots:
   void shallowClearDataFrame();
   void shallowClearResultWindow();
 
-
 private:
   ZDvidTarget m_dvidTarget;
   int m_bodyId;
   ZStackFrame *m_dataFrame;
   Z3DWindow *m_resultWindow;
+  ZFlyEmBookmarkArray m_bookmarkArray;
 };
 
 #endif // ZFLYEMBODYSPLITPROJECT_H

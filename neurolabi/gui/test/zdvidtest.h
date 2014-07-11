@@ -30,6 +30,7 @@ TEST(ZDvidInfo, basic)
 
 TEST(ZDvidTarget, basic)
 {
+#ifdef _FLYEM_
   ZDvidTarget target = GET_FLYEM_CONFIG.getDvidTarget();
   target.print();
 
@@ -43,6 +44,7 @@ TEST(ZDvidTarget, basic)
 
   target = dlg.getDvidTarget();
   target.print();
+#endif
 }
 
 TEST(ZDvidReader, basic)

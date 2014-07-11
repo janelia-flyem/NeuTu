@@ -33,7 +33,9 @@ public:
   void closeEvent(QCloseEvent *event);
   void setLoadBodyDialog(ZFlyEmNewBodySplitProjectDialog *dlg);
 
+  void updateButton();
   void updateWidget();
+  void updateBookmarkTable();
 
   bool isBodyLoaded() const;
 
@@ -52,11 +54,15 @@ public slots:
   void showData3d();
   void showResult3d();
   void loadBody();
+  void loadBookmark();
+
+  void locateBookmark(const QModelIndex &index);
 
 private:
   Ui::FlyEmBodySplitProjectDialog *ui;
   ZFlyEmNewBodySplitProjectDialog *m_loadBodyDlg;
   ZFlyEmBodySplitProject m_project;
+  ZFlyEmBookmarkListModel m_bookmarkList;
 };
 
 #endif // FLYEMBODYSPLITPROJECTDIALOG_H

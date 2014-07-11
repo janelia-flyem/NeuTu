@@ -783,14 +783,14 @@ glm::vec3 Z3DVolumeRaycaster::getFirstHit3DPosition(int x, int y, int width, int
 }
 
 ZLineSegment Z3DVolumeRaycaster::getScreenRay(
-    int x, int y, int width, int height, bool &success)
+    int x, int y, int width, int height)
 {
   ZLineSegment seg;
 
   glm::vec3 res(-1);
   glm::vec3 des(-1);
-  success = false;
-  ZStack *stack = m_stackInputPort.getFirstValidData();
+  //success = true;
+  //ZStack *stack = m_stackInputPort.getFirstValidData();
   if ((m_outport.hasValidData() || m_rightEyeOutport.hasValidData())) {
     glm::ivec2 pos2D = glm::ivec2(x, height - y);
     Z3DRenderOutputPort &port =
@@ -800,7 +800,7 @@ ZLineSegment Z3DVolumeRaycaster::getScreenRay(
       width /= m_interactionDownsample.get();
       height /= m_interactionDownsample.get();
     }
-    glm::vec3 fpos3D = get3DPosition(pos2D, width, height, port);
+    glm::vec3 fpos3D = get3DPosition(pos2D, 0.5, width, height);
     glm::vec3 pos3D = glm::applyMatrix(
           m_volumes.getFirstValidData()->getWorldToPhysicalMatrix(), fpos3D);
     res = glm::round(pos3D / m_volumes.getFirstValidData()->getScaleSpacing());
@@ -810,21 +810,23 @@ ZLineSegment Z3DVolumeRaycaster::getScreenRay(
     std::cout << res << std::endl;
 #endif
     //LWARN() << pos3D;
+    /*
     Cuboid_I box;
     stack->getBoundBox(&box);
     if (Cuboid_I_Hit(&box, res.x, res.y, res.z)) {
       success = true;
     }
+    */
 
     seg.setStartPoint(res[0], res[1], res[2]);
 
-    if (success) {
+    //if (success) {
       fpos3D = get3DPosition(pos2D, 1.0, width, height);
       pos3D = glm::applyMatrix(
             m_volumes.getFirstValidData()->getWorldToPhysicalMatrix(), fpos3D);
       des = glm::round(pos3D / m_volumes.getFirstValidData()->getScaleSpacing());
       seg.setEndPoint(des[0], des[1], des[2]);
-    }
+    //}
   }
 
   return seg;

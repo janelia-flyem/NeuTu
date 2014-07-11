@@ -193,6 +193,9 @@
 #include "test/zblockgridtest.h"
 #include "test/zsparsestacktest.h"
 #include "test/zimagetest.h"
+#include "test/z3dgraphtest.h"
+#include "flyem/zflyembookmark.h"
+#include "flyem/zflyembookmarkarray.h"
 
 using namespace std;
 
@@ -11913,7 +11916,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   ZDvidDialog dlg;
   dlg.loadConfig(ZString::fullPath(NeutubeConfig::getInstance().getApplicatinDir(),
                                    "json", "", "flyem_config.json"));
@@ -11972,5 +11975,31 @@ void ZTest::test(MainWindow *host)
   delete largeStack;
 
   std::cout << "Volume: " << volume << std::endl;
+#endif
+
+#if 0
+  ZStackFrame *frame = new ZStackFrame;
+  ZObject3d *obj2 = new ZObject3d;
+  obj2->append(1, 2, 3);
+  obj2->append(4, 5, 6);
+  obj2->append(7, 5, 6);
+  obj2->append(4, 9, 6);
+  obj2->append(4, 5, 16);
+  obj2->append(4, 15, 6);
+
+  obj2->setColor(255, 255, 0, 255);
+  frame->document()->addObject(obj2, NeuTube::Documentable_OBJ3D,
+                               ZDocPlayer::ROLE_3DGRAPH_DECORATOR);
+  frame->document()->loadSwc(
+        (GET_TEST_DATA_DIR + "/benchmark/swc/fork.swc").c_str());
+  frame->open3DWindow(NULL);
+  delete frame;
+#endif
+
+#if 1
+  ZFlyEmBookmarkArray bookmarkArray;
+  bookmarkArray.importJsonFile(
+        GET_TEST_DATA_DIR + "/flyem/FIB/annotations-bookmarks.json");
+  bookmarkArray.print();
 #endif
 }
