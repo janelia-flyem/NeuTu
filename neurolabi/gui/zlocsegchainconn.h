@@ -8,8 +8,7 @@
 #define ZLOCSEGCHAINCONN_H_
 
 #include <QXmlStreamWriter>
-#include "zdocumentable.h"
-#include "zstackdrawable.h"
+#include "zstackobject.h"
 #include "tz_neurocomp_conn.h"
 
 class QImage;
@@ -26,7 +25,7 @@ ZlocsegChainConn defines the class of locseg chain connections.
     ...
 */
 
-class ZLocsegChainConn : public ZDocumentable, public ZStackDrawable {
+class ZLocsegChainConn : public ZStackObject {
 public:
   ZLocsegChainConn();
   ZLocsegChainConn(int hook, int link, int hookSpot, int linkSpot,

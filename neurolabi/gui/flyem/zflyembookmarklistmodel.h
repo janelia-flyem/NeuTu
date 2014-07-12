@@ -28,6 +28,7 @@ public:
   void append(const ZFlyEmBookmark &bookmark);
 
   const ZFlyEmBookmark& getBookmark(int row) const;
+  const ZFlyEmBookmarkArray& getBookmarkArray() const;
 
   void load(const QString &filePath);
 

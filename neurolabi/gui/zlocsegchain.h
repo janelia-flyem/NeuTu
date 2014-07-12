@@ -10,10 +10,7 @@
 #include <QList>
 #include <QColor>
 
-#include "zstackdrawable.h"
-#include "zdocumentable.h"
-#include "zswcexportable.h"
-#include "zvrmlexportable.h"
+#include "zstackobject.h"
 #include "tz_locseg_chain.h"
 #include "zlocalneuroseg.h"
 
@@ -27,8 +24,7 @@ ZlocsegChain defines the class of locseg chains.
     ...
 */
 
-class ZLocsegChain : public ZDocumentable, public ZStackDrawable,
-		     public ZSwcExportable, public ZVrmlExportable {
+class ZLocsegChain : public ZStackObject {
 public:
   ZLocsegChain(Locseg_Chain *chain = NULL);
   ZLocsegChain(Local_Neuroseg *locseg);

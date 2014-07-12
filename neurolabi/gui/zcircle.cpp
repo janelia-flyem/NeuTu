@@ -31,6 +31,16 @@ void ZCircle::set(double x, double y, double z, double r)
   m_r = r;
 }
 
+void ZCircle::set(const ZIntPoint &center, double r)
+{
+  set(center.getX(), center.getY(), center.getZ(), r);
+}
+
+void ZCircle::set(const ZPoint &center, double r)
+{
+  set(center.x(), center.y(), center.z(), r);
+}
+
 //void ZCircle::display(QImage *image, int n, Display_Style style) const
 //{
 //#if defined(_QT_GUI_USED_)
@@ -41,8 +51,12 @@ void ZCircle::set(double x, double y, double z, double r)
 //}
 
 void ZCircle::display(ZPainter &painter, int n,
-                      ZStackDrawable::Display_Style style) const
+                      ZStackObject::Display_Style style) const
 {
+  if (!isVisible()) {
+    return;
+  }
+
   UNUSED_PARAMETER(style);
 #if _QT_GUI_USED_
   QPen pen(m_color, m_defaultPenWidth);
@@ -157,4 +171,4 @@ bool ZCircle::load(const char *filePath)
   return false;
 }
 
-ZINTERFACE_DEFINE_CLASS_NAME(ZCircle)
+ZSTACKOBJECT_DEFINE_CLASS_NAME(ZCircle)

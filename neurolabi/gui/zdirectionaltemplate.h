@@ -6,14 +6,14 @@
 #ifndef ZDIRECTIONALTEMPLATE_H
 #define ZDIRECTIONALTEMPLATE_H
 
-#include "zstackdrawable.h"
+#include "zstackobject.h"
 #include "tz_workspace.h"
 #include "tz_trace_defs.h"
 #include "tz_local_neuroseg.h"
 
 class ZPoint;
 
-class ZDirectionalTemplate : public ZStackDrawable
+class ZDirectionalTemplate : public ZStackObject
 {
 public:
     ZDirectionalTemplate();
@@ -45,6 +45,9 @@ public:
     virtual ZPoint bottom() = 0;
     virtual ZPoint center() = 0;
     virtual ZPoint top() = 0;
+
+    virtual void save(const char *) {}
+    virtual bool load(const char *) { return false; }
 
     Trace_Record record() const { return m_tr; }
     Trace_Record* recordRef() { return &m_tr; }

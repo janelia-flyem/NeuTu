@@ -6,7 +6,7 @@
 #include <vector>
 #include "tz_utilities.h"
 #include "tz_cdefs.h"
-#include "zdocumentable.h"
+#include "zstackobject.h"
 #include "c_stack.h"
 #include "zuncopyable.h"
 #include "z3dgraph.h"
@@ -33,14 +33,14 @@ public:
 
 public:
   ZDocPlayer();
-  ZDocPlayer(ZDocumentable* data, TRole role);
+  ZDocPlayer(ZStackObject* data, TRole role);
   virtual ~ZDocPlayer();
 
   /*!
    * \return true iff the player contains \a data. It always returns false if
    *         \a data is NULL.
    */
-  bool hasData(ZDocumentable *data) const;
+  bool hasData(ZStackObject *data) const;
 
   /*!
    * \brief Check if a player has specific roles.
@@ -74,7 +74,7 @@ public:
   virtual ZSwcTree* getSwcDecoration() const { return NULL; }
   virtual Z3DGraph get3DGraph() const { return Z3DGraph(); }
 
-  inline ZDocumentable* getData() const {
+  inline ZStackObject* getData() const {
     return m_data;
   }
   inline TRole getRole() const {
@@ -82,7 +82,7 @@ public:
   }
 
 protected:
-  ZDocumentable *m_data; //not owned by the player
+  ZStackObject *m_data; //not owned by the player
   TRole m_role;
 };
 
@@ -100,7 +100,7 @@ public:
    *
    * \return The roles of \a data.
    */
-  ZDocPlayer::TRole removePlayer(ZDocumentable *data);
+  ZDocPlayer::TRole removePlayer(ZStackObject *data);
 
   /*!
    * \brief Remove players with certain roles.
@@ -132,7 +132,7 @@ class ZStroke2dPlayer : public ZDocPlayer
 {
 public:
   ZStroke2dPlayer();
-  ZStroke2dPlayer(ZDocumentable* data, TRole role);
+  ZStroke2dPlayer(ZStackObject* data, TRole role);
 
 public:
   void labelStack(ZStack*stack) const;
@@ -148,7 +148,7 @@ class ZObject3dPlayer : public ZDocPlayer
 {
 public:
   ZObject3dPlayer();
-  ZObject3dPlayer(ZDocumentable* data, TRole role);
+  ZObject3dPlayer(ZStackObject* data, TRole role);
 
 public:
   void labelStack(ZStack *stack) const;
@@ -175,7 +175,7 @@ class ZSparseObjectPlayer : public ZDocPlayer
 {
 public:
   ZSparseObjectPlayer();
-  ZSparseObjectPlayer(ZDocumentable* data, TRole role);
+  ZSparseObjectPlayer(ZStackObject* data, TRole role);
 
 public:
   void labelStack(ZStack*stack) const;

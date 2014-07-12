@@ -2,6 +2,7 @@
 #define ZFLYEMNEWBODYSPLITPROJECTDIALOG_H
 
 #include <QDialog>
+#include <set>
 #include "dvid/zdvidtarget.h"
 
 class ZDvidDialog;
@@ -26,8 +27,11 @@ public:
   void setDvidTarget(const ZDvidTarget &target);
   int getBodyId() const;
 
+  void setBodyIdComboBox(const std::set<int> &idArray);
+
 private slots:
   void showDvidDialog();
+  void setBodyIdFromComboBox(int index);
 
 private:
   Ui::ZFlyEmNewBodySplitProjectDialog *ui;

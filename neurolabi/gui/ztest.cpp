@@ -196,6 +196,7 @@
 #include "test/z3dgraphtest.h"
 #include "flyem/zflyembookmark.h"
 #include "flyem/zflyembookmarkarray.h"
+#include "zcircle.h"
 
 using namespace std;
 
@@ -11996,10 +11997,22 @@ void ZTest::test(MainWindow *host)
   delete frame;
 #endif
 
-#if 1
+#if 0
   ZFlyEmBookmarkArray bookmarkArray;
   bookmarkArray.importJsonFile(
         GET_TEST_DATA_DIR + "/flyem/FIB/annotations-bookmarks.json");
   bookmarkArray.print();
+#endif
+
+#if 1
+  ZStackFrame *frame = new ZStackFrame;
+  frame->load(GET_TEST_DATA_DIR + "/benchmark/em_stack.tif");
+  host->addStackFrame(frame);
+  host->presentStackFrame(frame);
+
+  ZCircle *circle = new ZCircle(100, 100, 0, 10);
+  circle->setColor(255, 0, 0, 255);
+  frame->document()->addObject(circle, NeuTube::Documentable_Circle,
+                               ZDocPlayer::ROLE_TMP_BOOKMARK);
 #endif
 }

@@ -8,16 +8,13 @@
 #include <vector>
 #include <string>
 
-#include "zstackdrawable.h"
-#include "zdocumentable.h"
-#include "zswcexportable.h"
-#include "zvrmlexportable.h"
+#include "zstackobject.h"
 #include "tz_swc_cell.h"
 #include "tz_math.h"
 #include "zpoint.h"
 #include "zvaa3dmarker.h"
 
-class ZPunctum : public ZStackDrawable, public ZDocumentable
+class ZPunctum : public ZStackObject
 {
 public:
   ZPunctum();

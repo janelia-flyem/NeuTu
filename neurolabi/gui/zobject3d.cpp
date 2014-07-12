@@ -160,7 +160,6 @@ void ZObject3d::display(ZPainter &painter, int z, Display_Style option) const
   UNUSED_PARAMETER(option);
 #if _QT_GUI_USED_
   z -= iround(painter.getOffset().z());
-
   QPen pen(m_color);
   painter.setPen(pen);
   Object_3d *obj= c_obj();
@@ -805,4 +804,4 @@ void ZObject3d::upSample(int xIntv, int yIntv, int zIntv)
   }
 }
 
-ZINTERFACE_DEFINE_CLASS_NAME(ZObject3d)
+ZSTACKOBJECT_DEFINE_CLASS_NAME(ZObject3d)

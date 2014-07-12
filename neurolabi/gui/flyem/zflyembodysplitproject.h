@@ -2,11 +2,13 @@
 #define ZFLYEMBODYSPLITPROJECT_H
 
 #include <QObject>
+#include <set>
 #include "dvid/zdvidtarget.h"
 #include "flyem/zflyembookmarklistmodel.h"
 
 class ZStackFrame;
 class Z3DWindow;
+class ZStackObject;
 
 class ZFlyEmBodySplitProject : public QObject
 {
@@ -30,6 +32,7 @@ public:
   void setDataFrame(ZStackFrame *frame);
 
   void loadBookmark(const QString &filePath);
+  std::set<int> getBookmarkBodySet() const;
 
   const ZFlyEmBookmarkArray& getBookmarkArray() const {
     return m_bookmarkArray;
@@ -37,10 +40,15 @@ public:
 
   void locateBookmark(const ZFlyEmBookmark &bookmark);
 
+  void clearBookmarkDecoration();
+  void addBookmarkDecoration(const ZFlyEmBookmarkArray &bookmarkArray);
+  void updateBookDecoration();
+
 public slots:
   void showDataFrame() const;
   void showDataFrame3d();
   void showResult3d();
+  void showBookmark(bool visible);
 
   /*!
    * \brief Clear the project without deleting the associated widgets
@@ -57,6 +65,8 @@ private:
   ZStackFrame *m_dataFrame;
   Z3DWindow *m_resultWindow;
   ZFlyEmBookmarkArray m_bookmarkArray;
+  std::vector<ZStackObject*> m_bookmarkDecoration;
+  bool m_isBookmarkVisible;
 };
 
 #endif // ZFLYEMBODYSPLITPROJECT_H

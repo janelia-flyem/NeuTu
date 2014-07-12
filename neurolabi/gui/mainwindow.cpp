@@ -204,7 +204,7 @@ MainWindow::MainWindow(QWidget *parent) :
   createAutoSaveDir();
 
   if (GET_APPLICATION_NAME == "Biocytin") {
-    ZStackDrawable::setDefaultPenWidth(1.0);
+    ZStackObject::setDefaultPenWidth(1.0);
   }
 
   setAcceptDrops(true);
@@ -287,7 +287,7 @@ void MainWindow::initDialog()
   m_penWidthDialog = new PenWidthDialog(this);
   m_resDlg = new ResolutionDialog(this);
 
-  m_penWidthDialog->setPenWidth(ZStackDrawable::getDefaultPenWidth());
+  m_penWidthDialog->setPenWidth(ZStackObject::getDefaultPenWidth());
 
   m_dvidObjectDlg = new DvidObjectDialog(this);
   m_dvidObjectDlg->setAddress(m_dvidClient->getServer());
@@ -421,7 +421,7 @@ void MainWindow::createFileActions()
 
   vrmlExportAction = new QAction(tr("&VRML file"), m_writeActionGroup);
   vrmlExportAction->setStatusTip(tr("Export tracing results as a VRML file"));
-  connect(vrmlExportAction, SIGNAL(triggered()), this, SLOT(exportVrml()));
+  //connect(vrmlExportAction, SIGNAL(triggered()), this, SLOT(exportVrml()));
 
   bnExportAction = new QAction(tr("&Tracing result"), m_writeActionGroup);
   bnExportAction->setStatusTip(tr("Export tracing that can be loaded later"));
@@ -429,18 +429,12 @@ void MainWindow::createFileActions()
 
   nsExportAction = new QAction(tr("&Neuron structure"), m_writeActionGroup);
   nsExportAction->setStatusTip(tr("Export neuron structure as a SWC file"));
-  connect(nsExportAction, SIGNAL(triggered()),
-    this, SLOT(exportNeuronStructure()));
 
   nsMultipleSwcExportAction =
       new QAction(tr("&Neuron structure as multiple SWC"), m_writeActionGroup);
   nsMultipleSwcExportAction->setStatusTip(tr("Export neuron structure as multiple SWC files"));
-  connect(nsMultipleSwcExportAction, SIGNAL(triggered()),
-    this, SLOT(exportNeuronStructureAsMultipleSwc()));
 
   connExportAction = new QAction(tr("&Tube connection"), m_writeActionGroup);
-  connect(connExportAction, SIGNAL(triggered()),
-    this, SLOT(exportTubeConnection()));
 
   connFeatExportAction = new QAction(tr("&Connection feature"),
                                      m_writeActionGroup);
@@ -1012,16 +1006,16 @@ void MainWindow::updateMenu()
           checkViewAction(NULL);
         } else {
           switch (frame->presenter()->objectStyle()) {
-          case ZStackDrawable::NORMAL:
+          case ZStackObject::NORMAL:
             checkViewAction(objectViewSolidAction);
             break;
-          case ZStackDrawable::SOLID:
+          case ZStackObject::SOLID:
             checkViewAction(objectViewSolidAction);
             break;
-          case ZStackDrawable::BOUNDARY:
+          case ZStackObject::BOUNDARY:
             checkViewAction(objectViewSurfaceAction);
             break;
-          case ZStackDrawable::SKELETON:
+          case ZStackObject::SKELETON:
             checkViewAction(objectViewSkeletonAction);
             break;
           }
@@ -1229,13 +1223,13 @@ void MainWindow::updateObjectDisplayStyle(ZStackFrame *frame, QAction *action)
 {
   if (frame != NULL) {
     if (action == objectViewNormalAction) {
-      frame->setObjectDisplayStyle(ZStackDrawable::NORMAL);
+      frame->setObjectDisplayStyle(ZStackObject::NORMAL);
     } else if (action == objectViewSolidAction) {
-      frame->setObjectDisplayStyle(ZStackDrawable::SOLID);
+      frame->setObjectDisplayStyle(ZStackObject::SOLID);
     } else if (action == objectViewSurfaceAction) {
-      frame->setObjectDisplayStyle(ZStackDrawable::BOUNDARY);
+      frame->setObjectDisplayStyle(ZStackObject::BOUNDARY);
     } else if (action == objectViewSkeletonAction) {
-      frame->setObjectDisplayStyle(ZStackDrawable::SKELETON);
+      frame->setObjectDisplayStyle(ZStackObject::SKELETON);
     }
   }
 }
@@ -1634,6 +1628,7 @@ void MainWindow::saveAs()
   }
 }
 
+#if 0
 void MainWindow::exportSwc()
 {
   QString fileName = getSaveFileName("Save SWC", "SWC files (*.swc) ");
@@ -1651,6 +1646,7 @@ void MainWindow::exportSwc()
     }
   }
 }
+#endif
 
 void MainWindow::exportPuncta()
 {
@@ -1666,49 +1662,6 @@ void MainWindow::exportPuncta()
     ZStackFrame *frame = currentStackFrame();
     if (frame != NULL) {
       frame->exportPuncta(fileName);
-    }
-  }
-}
-
-void MainWindow::exportNeuronStructure()
-{
-  QString fileName = getSaveFileName(
-        "Save neuron structure", "SWC files (*.swc) ", "./untitled.swc");
-
-#if 0
-    QFileDialog::getSaveFileName(this, tr("Save neuron structure"),
-                                 "./untitled.swc",
-                                 tr("SWC files (*.swc) "));
-#endif
-  if (!fileName.isEmpty()) {
-    ZStackFrame *frame = currentStackFrame();
-    if (frame != NULL) {
-      frame->exportSwcReconstruct(fileName);
-    } else {
-      report("Export Failed", "The frame is empty.", ZMessageReporter::Warning);
-      /*
-      QMessageBox::warning(this, tr("Export Failed"),
-                           tr("Empty frame."), QMessageBox::Ok);
-                           */
-
-    }
-  }
-}
-
-void MainWindow::exportVrml()
-{
-  QString fileName = getSaveFileName("Export VRML", "Vrml files (*.wrl) ",
-                                     "./untitled.vrml");
-
-#if 0
-    QFileDialog::getSaveFileName(this, tr("Export VRML"), "./untitled.vrml",
-         tr("Vrml files (*.wrl) "));
-#endif
-
-  if (!fileName.isEmpty()) {
-    ZStackFrame *frame = activeStackFrame();
-    if (frame != NULL) {
-      frame->exportVrml(fileName);
     }
   }
 }
@@ -1732,30 +1685,6 @@ void MainWindow::exportBinary()
   }
 }
 
-void MainWindow::exportNeuronStructureAsMultipleSwc()
-{
-  QString fileName = getSaveFileName("Save neuron structure as multiple swcs",
-                                     "SWC files (*.swc) ", "./untitled.swc");
-#if 0
-    QFileDialog::getSaveFileName(this, tr("Save neuron structure as multiple swcs"),
-                                 "./untitled.swc",
-                                 tr("SWC files (*.swc) "));
-#endif
-  if (!fileName.isEmpty()) {
-    ZStackFrame *frame = currentStackFrame();
-    if (frame != NULL) {
-      int total = frame->exportSwcReconstruct(fileName, true);
-      //int total = frame->document()->exportMultipleSwcTree(fileName);
-      QMessageBox::information(this, tr("result"),
-                               QString("%1 trees saved").arg(total));
-    } else {
-      QMessageBox::warning(this, tr("Export Failed"),
-                           tr("Empty frame."), QMessageBox::Ok);
-
-    }
-  }
-}
-
 void MainWindow::exportChainFileList()
 {
   QString fileName = getSaveFileName(
@@ -1774,45 +1703,6 @@ void MainWindow::exportChainFileList()
     }
   }
 }
-
-void MainWindow::exportTubeConnection()
-{
-  QString fileName = getSaveFileName("Save connection", "XML files (*.xml) ");
-
-#if 0
-      QFileDialog::getSaveFileName(this, tr("Save connection"), m_lastOpenedFilePath,
-           tr("XML files (*.xml) "));
-#endif
-
-  if (!fileName.isEmpty()) {
-    m_lastOpenedFilePath = fileName;
-    ZStackFrame *frame = activeStackFrame();
-    if (frame != NULL) {
-      frame->exportChainConnection(fileName);
-    }
-  }
-}
-
-void MainWindow::exportTubeConnectionFeat()
-{
-  QString fileName = getSaveFileName("Save connection feature",
-                                     "Feature files (*.txt) ");
-
-#if 0
-      QFileDialog::getSaveFileName(this, tr("Save connection feature"),
-                                   m_lastOpenedFilePath,
-                                   tr("Feature files (*.txt) "));
-#endif
-
-  if (!fileName.isEmpty()) {
-    m_lastOpenedFilePath = fileName;
-    ZStackFrame *frame = activeStackFrame();
-    if (frame != NULL) {
-      frame->exportChainConnectionFeat(fileName);
-    }
-  }
-}
-
 void MainWindow::exportSvg()
 {
   QString fileName = getSaveFileName("Save svg file", "Svg file (*.svg) ",
@@ -1932,43 +1822,6 @@ void MainWindow::importBadTube()
     }
   }
 }
-
-void MainWindow::importTubeConnection()
-{
-  QString fileName = getOpenFileName(
-        "Import Connection", "XML files (*.xml)");
-
-#if 0
-      QFileDialog::getOpenFileName(
-        this, tr("Import Connection"), m_lastOpenedFilePath,
-        tr("XML files (*.xml)"), NULL/*, QFileDialog::DontUseNativeDialog*/);
-#endif
-
-  if (!fileName.isEmpty()) {
-    if (currentStackFrame() != NULL) {
-      m_lastOpenedFilePath = fileName;
-      currentStackFrame()->document()->
-          importLocsegChainConn(fileName.toLocal8Bit().constData());
-      currentStackFrame()->updateView();
-    }
-  }
-}
-
-//void MainWindow::undo()
-//{
-//  ZStackFrame *frame = activeStackFrame();
-//  if (activeStackFrame() != NULL) {
-//    frame->undo();
-//  }
-//}
-
-//void MainWindow::redo()
-//{
-//  ZStackFrame *frame = activeStackFrame();
-//  if (activeStackFrame() != NULL) {
-//    frame->redo();
-//  }
-//}
 
 QString MainWindow::getOpenFileName(const QString &caption, const QString &filter)
 {
@@ -2360,14 +2213,6 @@ void MainWindow::activateInteractiveMarkPuncta(QAction *action)
   }
 }
 
-void MainWindow::buildConn()
-{
-  if (currentStackFrame() != NULL) {
-    currentStackFrame()->document()->buildLocsegChainConn();
-    currentStackFrame()->updateView();
-  }
-}
-
 void MainWindow::manageObjs()
 {
   ZStackFrame *frame = activeStackFrame();
@@ -2673,14 +2518,6 @@ void MainWindow::on_actionUpdate_triggered()
     currentStackFrame()->document()->reloadStack();
     qDebug() << "Updating slider\n";
     currentStackFrame()->view()->updateSlider();
-    currentStackFrame()->updateView();
-  }
-}
-
-void MainWindow::on_actionRefine_Ends_triggered()
-{
-  if (currentStackFrame() != NULL) {
-    currentStackFrame()->document()->refineLocsegChainEnd();
     currentStackFrame()->updateView();
   }
 }
@@ -4998,7 +4835,7 @@ void MainWindow::on_actionDendrogram_triggered()
 void MainWindow::on_actionPen_Width_for_SWC_Display_triggered()
 {
   if (m_penWidthDialog->exec()) {
-    ZStackDrawable::setDefaultPenWidth(m_penWidthDialog->getPenWidth());
+    ZStackObject::setDefaultPenWidth(m_penWidthDialog->getPenWidth());
     foreach (QMdiSubWindow *subwindow, mdiArea->subWindowList()) {
       ZStackFrame *frame = dynamic_cast<ZStackFrame*>(subwindow);
       if (frame != NULL) {
@@ -5059,7 +4896,7 @@ void MainWindow::createDvidFrame()
       reader.addSwcTree(tree);
 #ifdef _DEBUG_2
       tree->print();
-      std::cout << (ZStackDrawable*) tree << std::endl;
+      std::cout << (ZStackObject*) tree << std::endl;
 #endif
       //frame->document()->addSwcTree(tree, false);
     }
@@ -6244,7 +6081,7 @@ void MainWindow::on_actionView_Labeled_Regions_triggered()
     if (labeled != NULL) {
       docReader.setStack(labeled);
       ZStackFrame *newFrame = createStackFrame(&docReader, frame);
-      newFrame->document()->setTag(NeuTube::Document::FLYEM_BODY);
+      newFrame->document()->setTag(NeuTube::Document::FLYEM_SPLIT);
       newFrame->document()->setStackFactory(factory);
       connect(frame->document().get(), SIGNAL(labelFieldModified()),
               newFrame->document().get(), SLOT(reloadStack()));
@@ -6437,4 +6274,5 @@ void MainWindow::initBodySplitProject()
 void MainWindow::on_actionSplit_Body_triggered()
 {
   m_bodySplitProjectDialog->show();
+  m_bodySplitProjectDialog->raise();
 }

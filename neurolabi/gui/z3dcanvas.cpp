@@ -188,9 +188,9 @@ void Z3DCanvas::drawBackground(QPainter *painter, const QRectF &)
 
 
 #if defined(_FLYEM_)
-  QList<ZStackDrawable*> drawableList = m_interaction.getDecorationList();
+  QList<ZStackObject*> drawableList = m_interaction.getDecorationList();
 
-  foreach (const ZStackDrawable *drawable, drawableList) {
+  foreach (const ZStackObject *drawable, drawableList) {
     drawable->display(painter);
   }
 #endif
@@ -264,4 +264,9 @@ double Z3DCanvas::getDevicePixelRatio()
 #else
   return 1.0;
 #endif
+}
+
+void Z3DCanvas::disableKeyEvent()
+{
+  m_interaction.setKeyEventEnabled(false);
 }

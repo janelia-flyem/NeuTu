@@ -18,8 +18,7 @@ ZLocalRect::ZLocalRect(double x, double y, double z, double theta, double r)
   m_template.base.z = z;
 }
 
-ZLocalRect::ZLocalRect(const ZLocalRect &rect) :
-    ZInterface(rect.isSelected()), ZDirectionalTemplate(rect)
+ZLocalRect::ZLocalRect(const ZLocalRect &rect) : ZDirectionalTemplate(rect)
 {
   m_template = rect.m_template;
 }
@@ -200,4 +199,4 @@ ZPoint ZLocalRect::top()
   return pt;
 }
 
-ZINTERFACE_DEFINE_CLASS_NAME(ZLocalRect)
+ZSTACKOBJECT_DEFINE_CLASS_NAME(ZLocalRect)

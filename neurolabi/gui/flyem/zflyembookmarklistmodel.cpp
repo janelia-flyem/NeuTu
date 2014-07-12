@@ -28,6 +28,11 @@ const ZFlyEmBookmark& ZFlyEmBookmarkListModel::getBookmark(int row) const
   return m_bookmarkArray[row];
 }
 
+const ZFlyEmBookmarkArray& ZFlyEmBookmarkListModel::getBookmarkArray() const
+{
+  return m_bookmarkArray;
+}
+
 QVariant ZFlyEmBookmarkListModel::data(const QModelIndex &index, int role) const
 {
   if (!index.isValid()) {

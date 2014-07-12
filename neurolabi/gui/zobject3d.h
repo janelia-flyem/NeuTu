@@ -11,8 +11,7 @@
 #include <string>
 
 #include "tz_object_3d.h"
-#include "zdocumentable.h"
-#include "zstackdrawable.h"
+#include "zstackobject.h"
 #include "tz_fmatrix.h"
 #include "zpoint.h"
 #include "tz_stack_utils.h"
@@ -29,7 +28,7 @@ class ZObject3dArray;
  *
  * A 3D object is defined as a set of 3D voxels.
  */
-class ZObject3d : public ZDocumentable, public ZStackDrawable {
+class ZObject3d : public ZStackObject {
 public:
   ZObject3d(Object_3d *obj = NULL);
   ZObject3d(const std::vector<size_t> &indexArray, int width, int height,

@@ -16,7 +16,7 @@
 class Z3DScene;
 class Z3DNetworkEvaluator;
 class Z3DCanvasEventListener;
-class ZStackDrawable;
+class ZStackObject;
 
 class Z3DCanvas : public QGraphicsView
 {
@@ -78,6 +78,7 @@ public:
 
   bool processMouseMoveEventForPaint(QMouseEvent *e);
   bool suppressingContextMenu() const;
+  void disableKeyEvent();
 
 signals:
   // w and h is physical size not logical size, opengl works in physical pixel

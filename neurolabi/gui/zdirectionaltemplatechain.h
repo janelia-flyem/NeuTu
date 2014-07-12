@@ -7,14 +7,14 @@
 #define ZDIRECTIONALTEMPLATECHAIN_H
 
 #include <QList>
-#include "zstackdrawable.h"
+#include "zstackobject.h"
 #include "tz_trace_defs.h"
 
 class ZDirectionalTemplate;
 class ZStack;
 class ZLocsegChain;
 
-class ZDirectionalTemplateChain : public ZStackDrawable
+class ZDirectionalTemplateChain : public ZStackObject
 {
 public:
     ZDirectionalTemplateChain();

@@ -63,6 +63,7 @@ public:
   inline Z3DPunctaFilter* getPunctaFilter() { return m_punctaFilter; }
   inline Z3DSwcFilter* getSwcFilter() { return m_swcFilter; }
   inline Z3DVolumeRaycaster* getVolumeRaycaster() { return m_volumeRaycaster; }
+  inline Z3DCanvas* getCanvas() { return m_canvas; }
 
   Z3DVolumeRaycasterRenderer* getVolumeRaycasterRenderer();
   inline Z3DGraphFilter* getGraphFilter() { return m_graphFilter; }

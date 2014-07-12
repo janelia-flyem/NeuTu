@@ -2,10 +2,10 @@
 #include <QMouseEvent>
 
 ZInteractionEngine::ZInteractionEngine(QObject *parent) :
-  QObject(parent), m_showObject(true), m_objStyle(ZStackDrawable::NORMAL),
+  QObject(parent), m_showObject(true), m_objStyle(ZStackObject::NORMAL),
   m_mouseLeftButtonPressed(false), m_mouseRightButtonPressed(false),
-  m_cursorRadius(5), m_isStrokeOn(false),
-  m_dataBuffer(NULL)
+  m_cursorRadius(5), m_isStrokeOn(false), m_dataBuffer(NULL),
+  m_isKeyEventEnabled(true)
 {
   m_stroke.setWidth(10.0);
   m_namedDecorationList.append(&m_stroke);
@@ -15,7 +15,7 @@ ZInteractionEngine::ZInteractionEngine(QObject *parent) :
 
 ZInteractionEngine::~ZInteractionEngine()
 {
-  foreach (ZStackDrawable *drawable, m_unnamedDecorationList) {
+  foreach (ZStackObject *drawable, m_unnamedDecorationList) {
     delete drawable;
   }
 }
@@ -80,6 +80,10 @@ void ZInteractionEngine::processMousePressEvent(QMouseEvent *event,
 
 void ZInteractionEngine::processKeyPressEvent(QKeyEvent *event)
 {
+  if (!m_isKeyEventEnabled) {
+    return;
+  }
+
   switch (event->key()) {
   case Qt::Key_R:
     if (event->modifiers() == Qt::ControlModifier) {
@@ -138,9 +142,9 @@ void ZInteractionEngine::exitPaintStroke()
   emit decorationUpdated();
 }
 
-QList<ZStackDrawable*> ZInteractionEngine::getDecorationList() const
+QList<ZStackObject*> ZInteractionEngine::getDecorationList() const
 {
-  QList<ZStackDrawable*> decorationList;
+  QList<ZStackObject*> decorationList;
   decorationList.append(m_namedDecorationList);
   decorationList.append(m_unnamedDecorationList);
 

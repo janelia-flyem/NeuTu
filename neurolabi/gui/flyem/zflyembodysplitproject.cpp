@@ -2,10 +2,12 @@
 #include "zstackframe.h"
 #include "z3dwindow.h"
 #include "zstackdoclabelstackfactory.h"
+#include "zstackobject.h"
+#include "zcircle.h"
 
 ZFlyEmBodySplitProject::ZFlyEmBodySplitProject(QObject *parent) :
-  QObject(parent),
-  m_bodyId(-1), m_dataFrame(NULL), m_resultWindow(NULL)
+  QObject(parent), m_bodyId(-1), m_dataFrame(NULL), m_resultWindow(NULL),
+  m_isBookmarkVisible(true)
 {
 }
 
@@ -25,6 +27,8 @@ void ZFlyEmBodySplitProject::clear()
     m_dataFrame->hide();
     delete m_dataFrame;
   }
+
+  m_bookmarkDecoration.clear();
 
   shallowClear();
 }
@@ -84,7 +88,7 @@ void ZFlyEmBodySplitProject::showResult3d()
 
         ZStackFrame *newFrame = new ZStackFrame;
         newFrame->addDocData(docReader);
-        newFrame->document()->setTag(NeuTube::Document::FLYEM_BODY);
+        newFrame->document()->setTag(NeuTube::Document::FLYEM_SPLIT);
         newFrame->document()->setStackFactory(factory);
         m_dataFrame->connect(
               m_dataFrame->document().get(), SIGNAL(labelFieldModified()),
@@ -112,6 +116,7 @@ void ZFlyEmBodySplitProject::setDataFrame(ZStackFrame *frame)
   }
 
   m_dataFrame = frame;
+  updateBookDecoration();
 }
 
 void ZFlyEmBodySplitProject::loadBookmark(const QString &filePath)
@@ -126,4 +131,77 @@ void ZFlyEmBodySplitProject::locateBookmark(const ZFlyEmBookmark &bookmark)
                          bookmark.getLocation().getY(),
                          bookmark.getLocation().getZ(), 5);
   }
+}
+
+void ZFlyEmBodySplitProject::clearBookmarkDecoration()
+{
+  if (m_dataFrame != NULL) {
+    for (std::vector<ZStackObject*>::iterator iter = m_bookmarkDecoration.begin();
+         iter != m_bookmarkDecoration.end(); ++iter) {
+      ZStackObject *obj = *iter;
+      m_dataFrame->document()->removeObject(obj, false);
+      delete obj;
+    }
+  } else {
+    for (std::vector<ZStackObject*>::iterator iter = m_bookmarkDecoration.begin();
+         iter != m_bookmarkDecoration.end(); ++iter) {
+      delete *iter;
+    }
+  }
+  m_bookmarkDecoration.clear();
+}
+
+void ZFlyEmBodySplitProject::addBookmarkDecoration(
+    const ZFlyEmBookmarkArray &bookmarkArray)
+{
+  if (m_dataFrame != NULL) {
+    for (ZFlyEmBookmarkArray::const_iterator iter = bookmarkArray.begin();
+         iter != bookmarkArray.end(); ++iter) {
+      const ZFlyEmBookmark &bookmark = *iter;
+      ZCircle *circle = new ZCircle;
+      circle->set(bookmark.getLocation(), 5);
+      circle->setColor(255, 0, 0);
+      circle->setVisible(m_isBookmarkVisible);
+      m_dataFrame->document()->addObject(circle);
+      m_bookmarkDecoration.push_back(circle);
+    }
+  }
+}
+
+void ZFlyEmBodySplitProject::updateBookDecoration()
+{
+  clearBookmarkDecoration();
+
+  if (m_dataFrame != NULL) {
+    ZFlyEmBookmarkArray bookmarkArray;
+    foreach (ZFlyEmBookmark bookmark, m_bookmarkArray) {
+      if (bookmark.getBodyId() == getBodyId()) {
+        bookmarkArray.append(bookmark);
+      }
+    }
+    addBookmarkDecoration(bookmarkArray);
+  }
+}
+
+void ZFlyEmBodySplitProject::showBookmark(bool visible)
+{
+  m_isBookmarkVisible = visible;
+  for (std::vector<ZStackObject*>::iterator iter = m_bookmarkDecoration.begin();
+       iter != m_bookmarkDecoration.end(); ++iter) {
+    ZStackObject *obj = *iter;
+    obj->setVisible(visible);
+  }
+  if (m_dataFrame != NULL && !m_bookmarkDecoration.empty()) {
+    m_dataFrame->updateView();
+  }
+}
+
+std::set<int> ZFlyEmBodySplitProject::getBookmarkBodySet() const
+{
+  std::set<int> bodySet;
+  foreach (ZFlyEmBookmark bookmark, m_bookmarkArray) {
+    bodySet.insert(bookmark.getBodyId());
+  }
+
+  return bodySet;
 }

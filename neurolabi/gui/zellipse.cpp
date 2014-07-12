@@ -41,4 +41,4 @@ bool ZEllipse::load(const char *filePath)
   return false;
 }
 
-ZINTERFACE_DEFINE_CLASS_NAME(ZEllipse)
+ZSTACKOBJECT_DEFINE_CLASS_NAME(ZEllipse)

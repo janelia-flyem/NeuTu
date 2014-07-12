@@ -9,11 +9,10 @@
 #include <QFuture>
 #endif
 
-#include "zdocumentable.h"
-#include "zstackdrawable.h"
+#include "zstackobject.h"
 #include "tz_local_neuroseg.h"
 
-class ZLocalNeuroseg : public ZDocumentable, public ZStackDrawable
+class ZLocalNeuroseg : public ZStackObject
 {
 public:
   ZLocalNeuroseg(Local_Neuroseg *locseg, bool isOwner = true);

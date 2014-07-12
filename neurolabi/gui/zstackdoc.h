@@ -41,12 +41,8 @@
 #include "z3dgraph.h"
 
 class ZStackFrame;
-class ZInterface;
-class ZDocumentable;
-class ZSwcExportable;
-class ZVrmlExportable;
 class ZLocalNeuroseg;
-class ZStackDrawable;
+class ZStackObject;
 class ZLocsegChain;
 class ZLocsegChainConn;
 class QXmlStreamReader;
@@ -188,12 +184,11 @@ public: //attributes
   // Prefix for tracing project.
   const char *tubePrefix() const;
 
-  inline QList<ZStackDrawable*>* drawableList() { return &m_drawableList; }
+  inline QList<ZStackObject*>* drawableList() { return &m_objectList; }
 
   inline QList<ZSwcTree*>* swcList() {return &m_swcList;}
   bool hasSwcList();       //to test swctree
   inline QList<ZLocsegChain*>* chainList() {return &m_chainList;}
-  inline QList<ZLocsegChainConn*>* connList() {return &m_connList;}
   inline QList<ZPunctum*>* punctaList() {return &m_punctaList;}
   inline ZSwcObjsModel* swcObjsModel() {return m_swcObjsModel;}
   inline ZDocPlayerObjsModel* seedObjsModel() { return m_seedObjsModel; }
@@ -273,7 +268,6 @@ public:
 
   virtual ZStack* getStack() const;
   virtual ZStack *stackMask() const;
-  inline QList<ZDocumentable*>* objects() { return &m_objs; }
   void setStackSource(const char *filePath);
   void setStackSource(const ZStackFile &stackFile);
   void loadSwcNetwork(const QString &filePath);
@@ -285,12 +279,10 @@ public:
 
   void importFlyEmNetwork(const char *filePath);
 
-  void exportSwc(const char *filePath);
-  void exportVrml(const char *filePath);
+  //void exportVrml(const char *filePath);
   void exportSvg(const char *filePath);
   void exportBinary(const char *prefix);
   void exportSwcTree(const char *filePath);
-  int exportMultipleSwcTree(const QString &filepath);   //if we want each tree seperated
   void exportChainFileList(const char *filepath);
   void exportPuncta(const char *filePath);
   void exportObjectMask(const std::string &filePath);
@@ -298,14 +290,13 @@ public:
   //Those functions do not notify object modification
   void removeLastObject(bool deleteObject = false);
   void removeAllObject(bool deleteObject = true);
-  ZDocPlayer::TRole removeObject(ZInterface *obj, bool deleteObject = false);
+  ZDocPlayer::TRole removeObject(ZStackObject *obj, bool deleteObject = false);
   void removeSelectedObject(bool deleteObject = false);
 
   /* Remove object with specific roles */
   void removeObject(ZDocPlayer::TRole role, bool deleteObject = false);
 
   void removeSelectedPuncta(bool deleteObject = false);
-  void removeLocsegChain(ZInterface *obj);
   void removeSmallLocsegChain(double thre);   //remove small locseg chain (geolen < thre)
   void removeAllLocsegChain();
   void removeAllObj3d();
@@ -313,7 +304,7 @@ public:
   std::set<ZSwcTree*> removeEmptySwcTree(bool deleteObject = true);
   void removeAllSwcTree(bool deleteObject = true);
 
-  void addDocumentable(ZDocumentable *obj);
+  void addObject(ZStackObject *obj);
   void appendSwcNetwork(ZSwcNetwork &network);
 
   QString toString();
@@ -390,7 +381,7 @@ public: /* puncta related methods */
   void addStroke(ZStroke2d *obj);
   void addSparseObject(ZSparseObject *obj);
 
-  void addObject(ZDocumentable *obj, NeuTube::EDocumentableType type,
+  void addObject(ZStackObject *obj, NeuTube::EDocumentableType type,
                  ZDocPlayer::TRole role = ZDocPlayer::ROLE_NONE);
 
   /*!
@@ -398,7 +389,7 @@ public: /* puncta related methods */
    *
    * Nothing will be done if \a role is ZDocPlayer::ROLE_NONE.
    */
-  void addPlayer(ZDocumentable *obj, NeuTube::EDocumentableType type,
+  void addPlayer(ZStackObject *obj, NeuTube::EDocumentableType type,
                  ZDocPlayer::TRole role);
 
   void updateLocsegChain(ZLocsegChain *chain);
@@ -419,9 +410,8 @@ public: /* puncta related methods */
   int selectLocsegChain(int id, int x = -1, int y = -1, int z = -1,
   		bool showProfile = false);
   bool selectSwcTreeBranch(int x, int y, int z);
-  bool pushLocsegChain(ZInterface *obj);
+  bool pushLocsegChain(ZStackObject *obj);
   void pushSelectedLocsegChain();
-  bool fixLocsegChainTerminal(ZInterface *obj);
 
   bool importSynapseAnnotation(const std::string &filePath);
 
@@ -455,46 +445,42 @@ public: /* puncta related methods */
   void setTraceMinScore(double score);
   void setReceptor(int option, bool cone = false);
 
-  void updateMasterLocsegChain();
-  bool linkChain(int id);
-  bool hookChain(int id, int option = 0);
+  //void updateMasterLocsegChain();
+  //bool linkChain(int id);
+  //bool hookChain(int id, int option = 0);
   bool mergeChain(int id);
   bool connectChain(int id);
   bool disconnectChain(int id);
-  bool isMasterChainId(int id);
+  //bool isMasterChainId(int id);
+  /*
   inline bool isMasterChain(const ZLocsegChain *chain) const {
     return m_masterChain == chain;
   }
   inline void setMasterChain(ZLocsegChain *chain) {
     m_masterChain = chain;
   }
-
+*/
   void eraseTraceMask(const ZLocsegChain *chain);
 
-  bool chainShortestPath(int id);
-  void chainConnInfo(int id);
+  //bool chainShortestPath(int id);
+  //void chainConnInfo(int id);
 
-  void extendChain(double x, double y, double z);
+  //void extendChain(double x, double y, double z);
 
-  void addLocsegChainConn(ZLocsegChain *hook, ZLocsegChain *loop);
-  void addLocsegChainConn(ZLocsegChain *hook, ZLocsegChain *loop, int hookSpot,
-                          int loopSpot, int mode = NEUROCOMP_CONN_HL);
-  void addLocsegChainConn(ZLocsegChainConn *obj);
-
-  ZInterface* bringChainToFront();
-  ZInterface* sendChainToBack();
-  void refineSelectedChainEnd();
-  void refineLocsegChainEnd();
+  ZStackObject *bringChainToFront();
+  ZStackObject* sendChainToBack();
+  //void refineSelectedChainEnd();
+  //void refineLocsegChainEnd();
   void mergeAllChain();
 
-  void importLocsegChainConn(const char *filePath);
-  void exportLocsegChainConn(const char *filePath);
-  void exportLocsegChainConnFeat(const char *filePath);
+  //void importLocsegChainConn(const char *filePath);
+  //void exportLocsegChainConn(const char *filePath);
+  //void exportLocsegChainConnFeat(const char *filePath);
 
-  void buildLocsegChainConn();
-  void clearLocsegChainConn();
-  void selectNeighbor();
-  void selectConnectedChain();
+  //void buildLocsegChainConn();
+  //void clearLocsegChainConn();
+  //void selectNeighbor();
+  //void selectConnectedChain();
 
   void setWorkdir(const QString &filePath);
   void setWorkdir(const char *filePath);
@@ -517,8 +503,8 @@ public: /* puncta related methods */
 
   bool hasObjectSelected();
 
-  inline const QList<ZDocumentable*>& getObjectList() const { return m_objs; }
-  inline QList<ZDocumentable*>& getObjectList() { return m_objs; }
+  inline const QList<ZStackObject*>& getObjectList() const { return m_objectList; }
+  inline QList<ZStackObject*>& getObjectList() { return m_objectList; }
 
   inline const QList<ZObject3d*>& getObj3dList() const { return m_obj3dList; }
   inline QList<ZObject3d*>& getObj3dList() { return m_obj3dList; }
@@ -536,12 +522,6 @@ public: /* puncta related methods */
     return m_sparseObjectList; }
   inline QList<ZSparseObject*>& getSparseObjectList() {
     return m_sparseObjectList; }
-
-  inline const QList<ZLocsegChainConn*>& getConnList() const { return m_connList; }
-  inline QList<ZLocsegChainConn*>& getConnList() { return m_connList; }
-
-  inline const QList<ZStackDrawable*>& getDrawableList() const { return m_drawableList; }
-  inline QList<ZStackDrawable*>& getDrawableList() { return m_drawableList; }
 
   inline const QList<ZSwcTree*>& getSwcList() const { return m_swcList; }
   inline QList<ZSwcTree*>& getSwcList() { return m_swcList; }
@@ -645,9 +625,10 @@ public:
 
   ZStack* makeLabelStack(ZStack *getStack = NULL) const;
 
+  void notifyPlayerChanged(ZDocPlayer::TRole role);
+
 public slots: //undoable commands
-  bool executeAddObjectCommand(
-      ZDocumentable *obj, NeuTube::EDocumentableType type,
+  bool executeAddObjectCommand(ZStackObject *obj, NeuTube::EDocumentableType type,
       ZDocPlayer::TRole role = ZDocPlayer::ROLE_NONE);
   bool executeRemoveObjectCommand();
   //bool executeRemoveUnselectedObjectCommand();
@@ -789,8 +770,6 @@ private:
   //void loadTraceMask(bool traceMasked);
   int xmlConnNode(QXmlStreamReader *xml, QString *filePath, int *spot);
   int xmlConnMode(QXmlStreamReader *xml);
-  Swc_Tree* swcReconstruction(int rootOption, bool singleTree,
-                              bool removingOvershoot);
   ZSwcTree* nodeToSwcTree(Swc_Tree_Node* node) const;
   std::vector<ZStack*> createWatershedMask();
 
@@ -814,8 +793,7 @@ private:
   ZSwcNetwork *m_swcNetwork;
 
   //Roles
-  QList<ZDocumentable*> m_objs;
-  QList<ZStackDrawable*> m_drawableList;
+  QList<ZStackObject*> m_objectList;
 
   //Subset of selected objects
   std::set<ZPunctum*> m_selectedPuncta;
@@ -859,9 +837,8 @@ private:
 
   //obsolete fields
   QList<ZLocsegChain*> m_chainList;
-  QList<ZLocsegChainConn*> m_connList;
   std::set<ZLocsegChain*> m_selectedChains;
-  ZLocsegChain *m_masterChain;
+  //ZLocsegChain *m_masterChain;
   QString m_badChainScreen;
 
   NeuTube::Document::ETag m_tag;

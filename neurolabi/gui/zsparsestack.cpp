@@ -95,7 +95,12 @@ ZStack* ZSparseStack::getStack()
       size_t volume = cuboid.getVolume();
       if (volume > MAX_STACK_VOLUME) {
         ZObject3dScan obj = *m_objectMask;
-        m_dsIntv.set(1, 1, 1);
+
+        if (volume / 8 > MAX_STACK_VOLUME) {
+          m_dsIntv.set(2, 2, 2);
+        } else {
+          m_dsIntv.set(1, 1, 1);
+        }
         obj.downsampleMax(m_dsIntv.getX(), m_dsIntv.getY(), m_dsIntv.getZ());
 
         ZStackBlockGrid *dsGrid = m_stackGrid->makeDownsample(

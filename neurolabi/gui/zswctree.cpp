@@ -34,13 +34,14 @@
 
 using namespace std;
 
-ZSwcTree::ZSwcTree(const ZSwcTree &src)
-  : ZInterface(), ZDocumentable(), ZStackDrawable(), ZSwcExportable()
+/*
+ZSwcTree::ZSwcTree(const ZSwcTree &src) : ZStackObject()
 {
   m_tree = src.cloneData();
   //m_source = "new tree";
   m_iteratorReady = false;
 }
+*/
 
 ZSwcTree::ZSwcTree()
 {
@@ -300,7 +301,7 @@ bool ZSwcTree::load(const char *filePath)
 }
 
 void ZSwcTree::display(
-    ZPainter &painter, int stackFocus, ZStackDrawable::Display_Style style) const
+    ZPainter &painter, int stackFocus, ZStackObject::Display_Style style) const
 {
   if (!isVisible()) {
     return;

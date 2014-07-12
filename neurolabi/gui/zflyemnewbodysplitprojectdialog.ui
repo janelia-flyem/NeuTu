@@ -16,8 +16,8 @@
   <widget class="QDialogButtonBox" name="buttonBox">
    <property name="geometry">
     <rect>
-     <x>130</x>
-     <y>140</y>
+     <x>150</x>
+     <y>170</y>
      <width>181</width>
      <height>32</height>
     </rect>
@@ -29,13 +29,13 @@
     <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
    </property>
   </widget>
-  <widget class="QWidget" name="layoutWidget">
+  <widget class="QWidget" name="">
    <property name="geometry">
     <rect>
-     <x>40</x>
-     <y>40</y>
+     <x>41</x>
+     <y>41</y>
      <width>293</width>
-     <height>75</height>
+     <height>111</height>
     </rect>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout">
@@ -93,6 +93,33 @@
       </item>
       <item>
        <spacer name="horizontalSpacer">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayout_5">
+      <item>
+       <widget class="QLabel" name="bodyTextLabel">
+        <property name="text">
+         <string>Bookmarked bodies</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QComboBox" name="bodyIdComboBox"/>
+      </item>
+      <item>
+       <spacer name="horizontalSpacer_2">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
         </property>

@@ -96,7 +96,7 @@ ZPunctum::~ZPunctum()
 //  }
 //}
 
-void ZPunctum::display(ZPainter &painter, int n, ZStackDrawable::Display_Style style) const
+void ZPunctum::display(ZPainter &painter, int n, ZStackObject::Display_Style style) const
 {
   if (!isVisible())
     return;
@@ -161,7 +161,7 @@ QList<ZPunctum *> ZPunctum::deepCopyPunctaList(const QList<ZPunctum *> &src)
 
 void ZPunctum::setSelected(bool selected)
 {
-  ZStackDrawable::setSelected(selected);
+  ZStackObject::setSelected(selected);
 }
 
 QColor ZPunctum::highlightingColor(const QColor &color) const
@@ -219,4 +219,4 @@ void ZPunctum::setFromMarker(const ZVaa3dMarker &marker)
   setSource(QString("%1").arg(marker.type()));
 }
 
-ZINTERFACE_DEFINE_CLASS_NAME(ZPunctum)
+ZSTACKOBJECT_DEFINE_CLASS_NAME(ZPunctum)

@@ -55,7 +55,6 @@ public slots:
   void showResult3d();
   void loadBody();
   void loadBookmark();
-
   void locateBookmark(const QModelIndex &index);
 
 private:

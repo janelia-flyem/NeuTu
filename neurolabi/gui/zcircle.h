@@ -9,15 +9,18 @@
 
 #include "include/tz_stdint.h"
 #include "zpoint.h"
-#include "zdocumentable.h"
-#include "zstackdrawable.h"
+#include "zstackobject.h"
+#include "zintpoint.h"
 
-class ZCircle : public ZDocumentable, public ZStackDrawable {
+class ZCircle : public ZStackObject {
 public:
   ZCircle();
   ZCircle(double x, double y, double z, double r);
   virtual ~ZCircle() {}
+
   void set(double x, double y, double z, double r);
+  void set(const ZPoint &center, double r);
+  void set(const ZIntPoint &center, double r);
 
   virtual const std::string& className() const;
 

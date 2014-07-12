@@ -344,7 +344,7 @@ void ZImageWidget::paintEvent(QPaintEvent * /*event*/)
 #ifdef _DEBUG_
           std::cout << (*it)->className() << std::endl;
 #endif
-        if ((*it)->getTarget() == ZStackDrawable::WIDGET) {
+        if ((*it)->getTarget() == ZStackObject::WIDGET) {
           (*it)->display(painter1, m_paintBundle->sliceIndex(),
                          m_paintBundle->displayStyle());
         }

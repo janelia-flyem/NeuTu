@@ -9,8 +9,7 @@
 #include "zqtheader.h"
 #include "c_stack.h"
 #include "zintcuboid.h"
-#include "zstackdrawable.h"
-#include "zdocumentable.h"
+#include "zstackobject.h"
 #include "tz_cuboid_i.h"
 #include "zhistogram.h"
 #include "zvoxel.h"
@@ -122,7 +121,7 @@ private:
 };
 
 //Scan-line representation of a 3D object
-class ZObject3dScan : public ZStackDrawable, public ZDocumentable
+class ZObject3dScan : public ZStackObject
 {
 public:
   ZObject3dScan();

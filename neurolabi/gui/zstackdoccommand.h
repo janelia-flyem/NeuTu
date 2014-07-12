@@ -407,7 +407,7 @@ namespace ObjectEdit {
 class AddObject : public QUndoCommand
 {
 public:
-  AddObject(ZStackDoc *doc, ZDocumentable *obj, NeuTube::EDocumentableType type,
+  AddObject(ZStackDoc *doc, ZStackObject *obj, NeuTube::EDocumentableType type,
             ZDocPlayer::TRole role, QUndoCommand *parent = NULL);
   ~AddObject();
   void redo();
@@ -415,7 +415,7 @@ public:
 
 private:
   ZStackDoc *m_doc;
-  ZDocumentable *m_obj;
+  ZStackObject *m_obj;
   NeuTube::EDocumentableType m_type;
   ZDocPlayer::TRole m_role;
   bool m_isInDoc;

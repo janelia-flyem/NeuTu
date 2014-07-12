@@ -2561,4 +2561,4 @@ bool ZObject3dScan::importHdf5(const string &filePath, const string &key)
 }
 
 
-ZINTERFACE_DEFINE_CLASS_NAME(ZObject3dScan)
+ZSTACKOBJECT_DEFINE_CLASS_NAME(ZObject3dScan)

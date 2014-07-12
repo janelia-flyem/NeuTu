@@ -18,8 +18,7 @@ ZLocsegChain::ZLocsegChain(Local_Neuroseg *locseg)
   init(chain);
 }
 
-ZLocsegChain::ZLocsegChain(const ZLocsegChain &zlocseg)
-  : ZInterface(), ZDocumentable(), ZStackDrawable(), ZSwcExportable(), ZVrmlExportable()
+ZLocsegChain::ZLocsegChain(const ZLocsegChain &zlocseg) : ZStackObject(zlocseg)
 {
   m_chain = NULL;
   copyData(zlocseg.m_chain);
@@ -52,7 +51,7 @@ void ZLocsegChain::init(Locseg_Chain *chain)
   m_endColor.setRgb(0, 0, 255, 255);
 
   m_source = "traced";
-  setTarget(ZStackDrawable::OBJECT_CANVAS);
+  setTarget(ZStackObject::OBJECT_CANVAS);
 }
 
 ZLocsegChain::~ZLocsegChain()
@@ -284,7 +283,7 @@ double ZLocsegChain::holdClosestSeg(double x, double y, double z)
 
 void ZLocsegChain::setSelected(bool selected)
 {
-  ZStackDrawable::setSelected(selected);
+  ZStackObject::setSelected(selected);
 }
 
 Local_Neuroseg* ZLocsegChain::heldNeuroseg()
@@ -781,4 +780,4 @@ void ZLocsegChain::tailPosition(double pos[]) const
     m_bufferChain[m_bufferChain.size()-1].bottomPosition(pos);
 }
 
-ZINTERFACE_DEFINE_CLASS_NAME(ZLocsegChain)
+ZSTACKOBJECT_DEFINE_CLASS_NAME(ZLocsegChain)

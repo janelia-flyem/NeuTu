@@ -36,7 +36,7 @@ ZStackPresenter::ZStackPresenter(ZStackFrame *parent) : QObject(parent),
   m_greyOffset.resize(1);
   m_greyOffset[0] = 0.0;
 
-  m_objStyle = ZStackDrawable::BOUNDARY;
+  m_objStyle = ZStackObject::BOUNDARY;
   m_threshold = -1;
   m_mouseLeftButtonPressed = false;
   m_mouseRightButtonPressed = false;
@@ -62,7 +62,7 @@ ZStackPresenter::ZStackPresenter(ZStackFrame *parent) : QObject(parent),
 
 ZStackPresenter::~ZStackPresenter()
 {
-  foreach(ZStackDrawable *decoration, m_decorationList) {
+  foreach(ZStackObject *decoration, m_decorationList) {
     delete decoration;
   }
 
@@ -1637,15 +1637,6 @@ void ZStackPresenter::processKeyPressEvent(QKeyEvent *event)
     }
     break;
 
-  case Qt::Key_T:
-    for (int i = 0; i < m_decorationList.size(); i++) {
-      if (m_decorationList.at(i)->isSelected()) {
-        buddyDocument()->
-            fixLocsegChainTerminal((ZInterface*) (m_decorationList.at(i)));
-      }
-    }
-    break;
-
   case Qt::Key_Equal:
   case Qt::Key_Up:
   case Qt::Key_2:
@@ -1850,7 +1841,7 @@ void ZStackPresenter::setObjectVisible(bool v)
   }
 }
 
-void ZStackPresenter::setObjectStyle(ZStackDrawable::Display_Style style)
+void ZStackPresenter::setObjectStyle(ZStackObject::Display_Style style)
 {
   if (m_objStyle != style) {
     m_objStyle = style;
@@ -1863,17 +1854,17 @@ bool ZStackPresenter::isObjectVisible()
   return m_showObject;
 }
 
-void ZStackPresenter::removeLastDecoration(ZInterface *obj)
+void ZStackPresenter::removeLastDecoration(ZStackObject *obj)
 {
   if (!m_decorationList.isEmpty()) {
     if (obj == NULL) {
       delete m_decorationList.takeLast();
       updateView();
     } else {
-      if (obj == (ZInterface *) m_decorationList.last()) {
+      if (obj == m_decorationList.last()) {
         m_decorationList.removeLast();
         updateView();
-      } else if (obj == (ZInterface *) m_decorationList.first()) {
+      } else if (obj == m_decorationList.first()) {
         m_decorationList.removeFirst();
         updateView();
       }
@@ -1881,7 +1872,7 @@ void ZStackPresenter::removeLastDecoration(ZInterface *obj)
   }
 }
 
-void ZStackPresenter::removeDecoration(ZStackDrawable *obj, bool redraw)
+void ZStackPresenter::removeDecoration(ZStackObject *obj, bool redraw)
 {
   for (int i = 0; i < m_decorationList.size(); i++) {
     if (m_decorationList.at(i) == obj) {
@@ -1900,7 +1891,7 @@ void ZStackPresenter::removeAllDecoration()
   m_decorationList.clear();
 }
 
-void ZStackPresenter::addDecoration(ZStackDrawable *obj, bool tail)
+void ZStackPresenter::addDecoration(ZStackObject *obj, bool tail)
 {
   if (tail == true) {
     m_decorationList.append(obj);
@@ -2095,6 +2086,7 @@ void ZStackPresenter::updateStackBc()
   optimizeStackBc();
 }
 
+#if 0
 void ZStackPresenter::enterHookMode()
 {
   //m_intMode[1] = INT_HOOK_TUBE;
@@ -2170,6 +2162,7 @@ void ZStackPresenter::enterDisconnectMode()
   buddyDocument()->updateMasterLocsegChain();
   buddyView()->setScreenCursor(Qt::PointingHandCursor);
 }
+#endif
 
 void ZStackPresenter::enterMouseCapturingMode()
 {
@@ -2197,7 +2190,7 @@ void ZStackPresenter::enterSwcExtendMode()
       //m_stroke.set(SwcTreeNode::x(tn), SwcTreeNode::y(tn));
       m_stroke.setWidth(SwcTreeNode::radius(tn) * 2.0);
       turnOnStroke();
-      m_stroke.setTarget(ZStackDrawable::WIDGET);
+      m_stroke.setTarget(ZStackObject::WIDGET);
       interactiveContext().setSwcEditMode(ZInteractiveContext::SWC_EDIT_EXTEND);
       updateCursor();
     }
@@ -2215,7 +2208,7 @@ void ZStackPresenter::enterSwcSmartExtendMode()
 
     m_stroke.setWidth(SwcTreeNode::radius(tn) * 2.0);
     turnOnStroke();
-    m_stroke.setTarget(ZStackDrawable::WIDGET);
+    m_stroke.setTarget(ZStackObject::WIDGET);
     interactiveContext().setSwcEditMode(ZInteractiveContext::SWC_EDIT_SMART_EXTEND);
     updateCursor();
   }
@@ -2256,7 +2249,7 @@ void ZStackPresenter::enterSwcAddNodeMode(double x, double y)
   m_stroke.set(x, y);
   m_stroke.setEraser(false);
   m_stroke.setFilled(false);
-  m_stroke.setTarget(ZStackDrawable::WIDGET);
+  m_stroke.setTarget(ZStackObject::WIDGET);
   turnOnStroke();
   //buddyView()->paintActiveDecoration();
   updateCursor();
@@ -2310,7 +2303,7 @@ void ZStackPresenter::enterDrawStrokeMode(double x, double y)
   m_stroke.set(x, y);
   m_stroke.setEraser(false);
   m_stroke.setFilled(true);
-  m_stroke.setTarget(ZStackDrawable::OBJECT_CANVAS);
+  m_stroke.setTarget(ZStackObject::OBJECT_CANVAS);
   turnOnStroke();
   //buddyView()->paintActiveDecoration();
   interactiveContext().setStrokeEditMode(ZInteractiveContext::STROKE_DRAW);
@@ -2323,7 +2316,7 @@ void ZStackPresenter::enterEraseStrokeMode(double x, double y)
   m_stroke.set(x, y);
   m_stroke.setFilled(true);
   m_stroke.setEraser(true);
-  m_stroke.setTarget(ZStackDrawable::OBJECT_CANVAS);
+  m_stroke.setTarget(ZStackObject::OBJECT_CANVAS);
   turnOnStroke();
   //buddyView()->paintActiveDecoration();
   interactiveContext().setStrokeEditMode(ZInteractiveContext::STROKE_DRAW);
@@ -2404,14 +2397,6 @@ void ZStackPresenter::breakTube()
   //m_parent->undoStack()->push(breakSelectedTubeCommand);
 }
 
-void ZStackPresenter::refineChainEnd()
-{
-  buddyView()->setImageWidgetCursor(Qt::WaitCursor);
-  buddyDocument()->refineSelectedChainEnd();
-  buddyView()->resetScreenCursor();
-  updateView();
-}
-
 void ZStackPresenter::bringSelectedToFront()
 {
   buddyDocument()->bringChainToFront();
@@ -2421,18 +2406,6 @@ void ZStackPresenter::bringSelectedToFront()
 void ZStackPresenter::sendSelectedToBack()
 {
   buddyDocument()->sendChainToBack();
-  updateView();
-}
-
-void ZStackPresenter::selectNeighbor()
-{
-  buddyDocument()->selectNeighbor();
-  updateView();
-}
-
-void ZStackPresenter::selectConnectedTube()
-{
-  buddyDocument()->selectConnectedChain();
   updateView();
 }
 

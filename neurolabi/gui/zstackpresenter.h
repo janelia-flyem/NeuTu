@@ -12,7 +12,6 @@
 #include <vector>
 #include <QMap>
 
-#include "zstackdrawable.h"
 #include "zinteractivecontext.h"
 #include "zstroke2d.h"
 #include "swctreenode.h"
@@ -61,11 +60,11 @@ public:
   inline double greyOffset(int c = 0) const {return m_greyOffset[c];}
   //inline int zoomRatio() const { return m_zoomRatio; }
   int zoomRatio() const;
-  inline QList<ZStackDrawable*>* decorations() { return &m_decorationList; }
-  inline const QList<ZStackDrawable*>& getActiveDecorationList() const {
+  inline QList<ZStackObject*>* decorations() { return &m_decorationList; }
+  inline const QList<ZStackObject*>& getActiveDecorationList() const {
     return m_activeDecorationList;
   }
-  inline ZStackDrawable::Display_Style objectStyle() { return m_objStyle; }
+  inline ZStackObject::Display_Style objectStyle() { return m_objStyle; }
   inline ZInteractiveContext& interactiveContext() {
     return m_interactiveContext;
   }
@@ -73,7 +72,7 @@ public:
   bool hasObjectToShow() const;
   void setObjectVisible(bool v);
   bool isObjectVisible();
-  void setObjectStyle(ZStackDrawable::Display_Style style);
+  void setObjectStyle(ZStackObject::Display_Style style);
 
   void initInteractiveContext();
 
@@ -154,31 +153,31 @@ public:
   }
 
 public slots:
-  void addDecoration(ZStackDrawable *obj, bool tail = true);
-  void removeLastDecoration(ZInterface *obj);
-  void removeDecoration(ZStackDrawable *obj, bool redraw = true);
+  void addDecoration(ZStackObject *obj, bool tail = true);
+  void removeLastDecoration(ZStackObject *obj);
+  void removeDecoration(ZStackObject *obj, bool redraw = true);
   void removeAllDecoration();
   void traceTube();
   void fitSegment();
   void fitEllipse();
   void dropSegment();
-  void enterHookMode();
-  void enterSpHookMode();
-  void enterLinkMode();
-  void enterMergeMode();
-  void enterWalkMode();
-  void enterCheckConnMode();
-  void enterExtendMode();
-  void enterConnectMode();
-  void enterDisconnectMode();
+  //void enterHookMode();
+  //void enterSpHookMode();
+  //void enterLinkMode();
+  //void enterMergeMode();
+  //void enterWalkMode();
+  //void enterCheckConnMode();
+  //void enterExtendMode();
+  //void enterConnectMode();
+  //void enterDisconnectMode();
   void enterMouseCapturingMode();
   void cutTube();
   void breakTube();
-  void refineChainEnd();
+  //void refineChainEnd();
   void bringSelectedToFront();
   void sendSelectedToBack();
-  void selectNeighbor();
-  void selectConnectedTube();
+  //void selectNeighbor();
+  //void selectConnectedTube();
   void markPuncta();
   void deleteSelected();
   void deleteAllPuncta();
@@ -266,8 +265,8 @@ private:
 
 private:
   ZStackFrame *m_parent;
-  QList<ZStackDrawable*> m_decorationList;
-  QList<ZStackDrawable*> m_activeDecorationList;
+  QList<ZStackObject*> m_decorationList;
+  QList<ZStackObject*> m_activeDecorationList;
 
   //Mode m_mode;
   //InteractiveMode m_intMode[2];
@@ -277,7 +276,7 @@ private:
   std::vector<double> m_greyScale;
   std::vector<double> m_greyOffset;
   int m_threshold;
-  ZStackDrawable::Display_Style m_objStyle;
+  ZStackObject::Display_Style m_objStyle;
   //MouseState m_mouseState;
   bool m_mouseLeftButtonPressed;
   bool m_mouseRightButtonPressed;

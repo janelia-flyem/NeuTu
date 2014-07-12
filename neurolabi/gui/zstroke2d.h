@@ -7,8 +7,7 @@
 #include <QColor>
 #include <QImage>
 
-#include "zdocumentable.h"
-#include "zstackdrawable.h"
+#include "zstackobject.h"
 #include "c_stack.h"
 #include "zlabelcolortable.h"
 #include "zcuboid.h"
@@ -16,7 +15,7 @@
 class ZStack;
 class ZObject3d;
 
-class ZStroke2d : public ZDocumentable, public ZStackDrawable {
+class ZStroke2d : public ZStackObject {
 public:
   ZStroke2d();
   ZStroke2d(const ZStroke2d &stroke);

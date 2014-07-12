@@ -14,7 +14,7 @@
 
 namespace impl {
 
-// note: dereference of this iterator return a pointer to [const] ZStackDrawable, not reference to pointer,
+// note: dereference of this iterator return a pointer to [const] ZStackObject, not reference to pointer,
 // so you can not use it to change pointer itself
 template<class TPaintBundle, class TStackDrawablePtr>
 class drawable_iter
@@ -104,7 +104,7 @@ private:
   TStackDrawablePtr dereference() const
   {
     return m_listIdx < m_bundle->m_objLists.size() ? m_bundle->m_objLists[m_listIdx]->at(m_drawableIdx) :
-                                                     (ZStackDrawable*)(&m_nodeAdaptor);
+                                                     (ZStackObject*)(&m_nodeAdaptor);
   }
 
   void setSwcNodeAdaptor()
@@ -137,8 +137,8 @@ private:
 class ZPaintBundle
 {
 public:
-  typedef impl::drawable_iter<ZPaintBundle, ZStackDrawable*> iterator;
-  typedef impl::drawable_iter<ZPaintBundle const, const ZStackDrawable*> const_iterator;
+  typedef impl::drawable_iter<ZPaintBundle, ZStackObject*> iterator;
+  typedef impl::drawable_iter<ZPaintBundle const, const ZStackObject*> const_iterator;
 
   ZPaintBundle();
 
@@ -154,10 +154,10 @@ public:
     m_objLists.push_back(&m_otherDrawables);
   }
 
-  inline void addDrawable(ZStackDrawable* obj) { if (obj) m_otherDrawables.push_back(obj); }
-  inline void removeDrawable(ZStackDrawable* obj) { m_otherDrawables.removeAll(obj); }
-  inline void addDrawableList(const QList<ZStackDrawable*>* lst) { if (lst) m_objLists.push_back(lst); }
-  inline void removeDrawableList(const QList<ZStackDrawable*>* lst) { m_objLists.removeAll(lst); }
+  inline void addDrawable(ZStackObject* obj) { if (obj) m_otherDrawables.push_back(obj); }
+  inline void removeDrawable(ZStackObject* obj) { m_otherDrawables.removeAll(obj); }
+  inline void addDrawableList(const QList<ZStackObject*>* lst) { if (lst) m_objLists.push_back(lst); }
+  inline void removeDrawableList(const QList<ZStackObject*>* lst) { m_objLists.removeAll(lst); }
 
   inline void setSwcNodeList(const std::set<Swc_Tree_Node*>* lst) { if (lst) m_swcNodes = lst; }
   inline void unsetSwcNodeList() { m_swcNodes = &m_emptyNodeSet; }
@@ -165,8 +165,8 @@ public:
   inline void setSliceIndex(int idx) { m_sliceIndex = idx; }
   inline int sliceIndex() const { return m_sliceIndex; }
 
-  inline void setDisplayStyle(ZStackDrawable::Display_Style style) { m_style = style; }
-  inline ZStackDrawable::Display_Style displayStyle() const { return m_style; }
+  inline void setDisplayStyle(ZStackObject::Display_Style style) { m_style = style; }
+  inline ZStackObject::Display_Style displayStyle() const { return m_style; }
 
   inline void setStackOffset(int x, int y, int z) {
     m_stackOffset.set(x, y, z);
@@ -181,12 +181,12 @@ public:
 private:
   template<typename T1, typename T2> friend class impl::drawable_iter;
 
-  QList<const QList<ZStackDrawable*>*> m_objLists;
+  QList<const QList<ZStackObject*>*> m_objLists;
   const std::set<Swc_Tree_Node*>* m_swcNodes;
   int m_sliceIndex;
-  ZStackDrawable::Display_Style m_style;
+  ZStackObject::Display_Style m_style;
 
-  QList<ZStackDrawable*> m_otherDrawables; // collect single input
+  QList<ZStackObject*> m_otherDrawables; // collect single input
   std::set<Swc_Tree_Node*> m_emptyNodeSet; // make sure m_swcNodes always point to something
 
   ZIntPoint m_stackOffset;

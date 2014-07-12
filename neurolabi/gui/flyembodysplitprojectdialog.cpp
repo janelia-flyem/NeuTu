@@ -25,6 +25,8 @@ FlyEmBodySplitProjectDialog::FlyEmBodySplitProjectDialog(QWidget *parent) :
   connect(ui->loadBodyPushButton, SIGNAL(clicked()), this, SLOT(loadBody()));
   connect(ui->loadBookmarkButton, SIGNAL(clicked()),
           this, SLOT(loadBookmark()));
+  connect(ui->bookmarkVisibleCheckBox, SIGNAL(toggled(bool)),
+          &m_project, SLOT(showBookmark(bool)));
 
   ui->bookmarkView->setModel(&m_bookmarkList);
 
@@ -32,6 +34,8 @@ FlyEmBodySplitProjectDialog::FlyEmBodySplitProjectDialog(QWidget *parent) :
 
   connect(ui->bookmarkView, SIGNAL(doubleClicked(QModelIndex)),
           this, SLOT(locateBookmark(QModelIndex)));
+
+  m_project.showBookmark(ui->bookmarkVisibleCheckBox->isChecked());
 }
 
 FlyEmBodySplitProjectDialog::~FlyEmBodySplitProjectDialog()
@@ -183,6 +187,8 @@ void FlyEmBodySplitProjectDialog::loadBookmark()
   if (!fileName.isEmpty()) {
     m_project.loadBookmark(fileName);
     updateWidget();
+
+    m_loadBodyDlg->setBodyIdComboBox(m_project.getBookmarkBodySet());
   }
 }
 
@@ -191,11 +197,15 @@ void FlyEmBodySplitProjectDialog::updateBookmarkTable()
   const ZFlyEmBookmarkArray &bookmarkArray = m_project.getBookmarkArray();
   m_bookmarkList.clear();
   if (isBodyLoaded()) {
+    m_project.clearBookmarkDecoration();
+
     foreach (ZFlyEmBookmark bookmark, bookmarkArray) {
       if (bookmark.getBodyId() == m_project.getBodyId()) {
         m_bookmarkList.append(bookmark);
       }
     }
+
+    m_project.addBookmarkDecoration(m_bookmarkList.getBookmarkArray());
   }
 }
 

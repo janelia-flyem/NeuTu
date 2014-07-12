@@ -100,7 +100,7 @@ ZStackDoc::ZStackDoc(ZStack *stack, QObject *parent) : QObject(parent)
   m_sparseStack = NULL;
   m_labelField = NULL;
   m_parentFrame = NULL;
-  m_masterChain = NULL;
+  //m_masterChain = NULL;
   m_isTraceMaskObsolete = true;
   m_swcNetwork = NULL;
   m_stackFactory = NULL;
@@ -133,15 +133,12 @@ ZStackDoc::~ZStackDoc()
   deprecate(STACK);
   deprecate(SPARSE_STACK);
 
-  qDebug() << m_objs.size();
   qDebug() << "ZStackDoc destroyed";
 
-  if (m_objs.size() != 0) {
-    for (int i = 0; i < m_objs.size(); ++i) {
-      delete m_objs.at(i);
-    }
-    m_objs.clear();
+  foreach (ZStackObject *obj, m_objectList) {
+    delete obj;
   }
+  m_objectList.clear();
 
   if (m_swcNetwork != NULL) {
     delete m_swcNetwork;
@@ -207,6 +204,13 @@ void ZStackDoc::connectSignalSlot()
   connect(this, SIGNAL(swcModified()), m_swcNodeObjsModel, SLOT(updateModelData()));
   connect(this, SIGNAL(punctaModified()), m_punctaObjsModel, SLOT(updateModelData()));
   connect(this, SIGNAL(seedModified()), m_seedObjsModel, SLOT(updateModelData()));
+
+  connect(this, SIGNAL(chainModified()), this, SIGNAL(objectModified()));
+  connect(this, SIGNAL(punctaModified()), this, SIGNAL(objectModified()));
+  connect(this, SIGNAL(obj3dModified()), this, SIGNAL(objectModified()));
+  connect(this, SIGNAL(sparseObjectModified()), this, SIGNAL(objectModified()));
+  connect(this, SIGNAL(strokeModified()), this, SIGNAL(objectModified()));
+  connect(this, SIGNAL(swcModified()), this, SIGNAL(objectModified()));
 
   connect(m_undoStack, SIGNAL(cleanChanged(bool)),
           this, SIGNAL(cleanChanged(bool)));
@@ -486,63 +490,11 @@ bool ZStackDoc::saveSwc(const string &filePath)
   return false;
 }
 
-#if 0
-void ZStackDoc::initTraceWorkspace()
-{
-  if (m_stack == NULL || m_stack->channelNumber() != 1) {
-    m_traceWorkspace =
-        Locseg_Chain_Default_Trace_Workspace(m_traceWorkspace, NULL);
-  } else {
-    m_traceWorkspace =
-        Locseg_Chain_Default_Trace_Workspace(m_traceWorkspace,
-                                             m_stack->c_stack());
-  }
-  if (m_traceWorkspace->fit_workspace == NULL) {
-    m_traceWorkspace->fit_workspace = New_Locseg_Fit_Workspace();
-  }
-
-  m_traceWorkspace->tune_end = TRUE;
-  m_traceWorkspace->add_hit = TRUE;
-
-
-  if (m_stack != NULL) {
-    if (m_stack->depth() == 1) {
-      m_traceWorkspace->min_score = 0.5;
-      Receptor_Fit_Workspace *rfw =
-          (Receptor_Fit_Workspace*) m_traceWorkspace->fit_workspace;
-      Default_R2_Rect_Fit_Workspace(rfw);
-      rfw->sws->fs.n = 2;
-      rfw->sws->fs.options[1] = STACK_FIT_CORRCOEF;
-    }
-  }
-}
-
-void ZStackDoc::initConnectionTestWorkspace()
-{
-  if (m_connectionTestWorkspace == NULL) {
-    m_connectionTestWorkspace = New_Connection_Test_Workspace();
-  }
-}
-#endif
-
 void ZStackDoc::updateTraceWorkspace(int traceEffort, bool traceMasked,
                                      double xRes, double yRes, double zRes)
 {
   m_neuronTracer.updateTraceWorkspace(traceEffort, traceMasked,
                                       xRes, yRes, zRes);
-#if 0
-  if (traceEffort > 0) {
-    m_traceWorkspace->refit = FALSE;
-  } else {
-    m_traceWorkspace->refit = TRUE;
-  }
-
-  m_traceWorkspace->resolution[0] = xRes;
-  m_traceWorkspace->resolution[1] = yRes;
-  m_traceWorkspace->resolution[2] = zRes;
-
-  loadTraceMask(traceMasked);
-#endif
 }
 
 void ZStackDoc::updateConnectionTestWorkspace(
@@ -551,15 +503,6 @@ void ZStackDoc::updateConnectionTestWorkspace(
 {
   m_neuronTracer.updateConnectionTestWorkspace(
         xRes, yRes, zRes, unit, distThre, spTest, crossoverTest);
-#if 0
-  m_connectionTestWorkspace->resolution[0] = xRes;
-  m_connectionTestWorkspace->resolution[1] = yRes;
-  m_connectionTestWorkspace->resolution[2] = zRes;
-  m_connectionTestWorkspace->unit = unit;
-  m_connectionTestWorkspace->dist_thre = distThre;
-  m_connectionTestWorkspace->sp_test = spTest;
-  m_connectionTestWorkspace->crossover_test = crossoverTest;
-#endif
 }
 
 bool ZStackDoc::isEmpty()
@@ -569,7 +512,7 @@ bool ZStackDoc::isEmpty()
 
 bool ZStackDoc::hasObject()
 {
-  return !m_objs.isEmpty();
+  return !m_objectList.isEmpty();
 }
 
 bool ZStackDoc::hasSparseObject()
@@ -585,7 +528,6 @@ bool ZStackDoc::hasSparseStack() const
 bool ZStackDoc::hasSwc() const
 {
   return !m_swcList.isEmpty();
-  //return !m_swcObjects.isEmpty();
 }
 
 bool ZStackDoc::hasSwcList()
@@ -603,10 +545,11 @@ ZResolution ZStackDoc::stackResolution() const
 
 std::string ZStackDoc::stackSourcePath() const
 {
-  if (hasStackData())
+  if (hasStackData()) {
     return m_stack->sourcePath();
-  else
-    return "";
+  }
+
+  return "";
 }
 
 bool ZStackDoc::hasChainList()
@@ -983,7 +926,7 @@ void ZStackDoc::updateVirtualStackSize()
 
 bool ZStackDoc::hasDrawable()
 {
-  return !m_drawableList.isEmpty();
+  return !m_objectList.isEmpty();
 }
 
 int ZStackDoc::stackWidth() const
@@ -1690,7 +1633,7 @@ void ZStackDoc::cutLocsegChain(ZLocsegChain *obj, QList<ZLocsegChain *> *pResult
   }
 
   if (obj->heldNode() >= 0) {
-    removeObject((ZInterface*) obj, false);
+    removeObject(obj, false);
     ZLocsegChain *chain = new ZLocsegChain(*obj);
     ZLocsegChain *new_chain = chain->cutHeldNode();
     if (new_chain != NULL) {
@@ -1719,7 +1662,7 @@ void ZStackDoc::breakLocsegChain(ZLocsegChain *obj, QList<ZLocsegChain *> *pResu
     pResult->clear();
   }
 
-  removeObject((ZInterface*) obj, false);
+  removeObject(obj, false);
 
   ZLocsegChain *chain = new ZLocsegChain(*obj);
   ZLocsegChain *newChain = chain->breakBetween(0, chain->length() - 1);
@@ -1876,9 +1819,8 @@ void ZStackDoc::addSwcTree(ZSwcTree *obj, bool uniqueSource)
   }
 
   obj->forceVirtualRoot();
-  m_objs.append(obj);
   m_swcList.append(obj);
-  m_drawableList.append(obj);
+  m_objectList.append(obj);
 
   if (obj->isSelected()) {
     setSwcSelected(obj, true);
@@ -1924,9 +1866,13 @@ void ZStackDoc::addSparseObject(const QList<ZSparseObject*> &objList)
 
 void ZStackDoc::addPunctum(const QList<ZPunctum *> &punctaList)
 {
+  blockSignals(true);
   foreach (ZPunctum *punctum, punctaList) {
     addPunctum(punctum);
   }
+  blockSignals(false);
+
+  notifyPunctumModified();
 }
 
 void ZStackDoc::addPunctum(ZPunctum *obj)
@@ -1935,13 +1881,13 @@ void ZStackDoc::addPunctum(ZPunctum *obj)
     return;
   }
 
-  m_objs.append(obj);
   m_punctaList.append(obj);
-  m_drawableList.append(obj);
+  m_objectList.append(obj);
 
   if (obj->isSelected()) {
     setPunctumSelected(obj, true);
   }
+  notifyPunctumModified();
 }
 
 void ZStackDoc::addObj3d(ZObject3d *obj)
@@ -1950,10 +1896,11 @@ void ZStackDoc::addObj3d(ZObject3d *obj)
     return;
   }
 
-  obj->setTarget(ZStackDrawable::OBJECT_CANVAS);
-  m_objs.prepend(obj);
+  obj->setTarget(ZStackObject::OBJECT_CANVAS);
   m_obj3dList.prepend(obj);
-  m_drawableList.prepend(obj);
+  m_objectList.prepend(obj);
+
+  notifyObj3dModified();
 }
 
 void ZStackDoc::addSparseObject(ZSparseObject *obj)
@@ -1962,10 +1909,9 @@ void ZStackDoc::addSparseObject(ZSparseObject *obj)
     return;
   }
 
-  obj->setTarget(ZStackDrawable::OBJECT_CANVAS);
-  m_objs.prepend(obj);
+  obj->setTarget(ZStackObject::OBJECT_CANVAS);
   m_sparseObjectList.prepend(obj);
-  m_drawableList.prepend(obj);
+  m_objectList.prepend(obj);
   m_playerList.append(new ZSparseObjectPlayer(obj, ZDocPlayer::ROLE_SEED));
   emit seedModified();
 }
@@ -1976,10 +1922,9 @@ void ZStackDoc::addStroke(ZStroke2d *obj)
     return;
   }
 
-  obj->setTarget(ZStackDrawable::OBJECT_CANVAS);
-  m_objs.prepend(obj);
+  obj->setTarget(ZStackObject::OBJECT_CANVAS);
   m_strokeList.prepend(obj);
-  m_drawableList.prepend(obj);
+  m_objectList.prepend(obj);
 
   m_playerList.append(new ZStroke2dPlayer(obj, ZDocPlayer::ROLE_SEED));
   emit seedModified();
@@ -1988,17 +1933,6 @@ void ZStackDoc::addStroke(ZStroke2d *obj)
   std::cout << "New stroke added" << std::endl;
   obj->print();
 #endif
-}
-
-void ZStackDoc::addLocsegChainConn(ZLocsegChainConn *obj)
-{
-  if (obj == NULL) {
-    return;
-  }
-
-  m_objs.append(obj);
-  m_connList.append(obj);
-  m_drawableList.append(obj);
 }
 
 void ZStackDoc::addLocsegChain(const QList<ZLocsegChain *> &chainList)
@@ -2028,11 +1962,10 @@ void ZStackDoc::addLocsegChain(ZLocsegChain *obj)
   obj->setId(getTraceWorkspace()->chain_id);
   obj->labelTraceMask(getTraceWorkspace()->trace_mask);
 
-  m_objs.append(obj);
   //m_swcObjects.append(obj);
   //m_vrmlObjects.append(obj);
   m_chainList.append(obj);
-  m_drawableList.append(obj);
+  m_objectList.append(obj);
 
   getTraceWorkspace()->chain_id++;
 
@@ -2048,192 +1981,9 @@ void ZStackDoc::updateLocsegChain(ZLocsegChain *obj)
   }
 }
 
-void ZStackDoc::exportSwc(const char *filePath)
-{
-  UNUSED_PARAMETER(filePath);
-  TZ_ERROR(ERROR_OBSOLETE_FUNC);
-#if 0
-  double z_scale = m_parent->xResolution() / m_parent->zResolution();
-  if ((z_scale > 0.99) && (z_scale < 1.01)) {
-    z_scale = 1.0;
-  }
-
-  int start_id = 0;
-  if (m_swcObjects.size() > 0) {
-    FILE *fp = fopen(filePath, "w");
-    if (fp != NULL) {
-      for (int i = 0; i < m_swcObjects.size(); i++) {
-        start_id = m_swcObjects.at(i)->swcFprint(fp, start_id + 1, -1,
-                                                 z_scale);
-      }
-      fclose(fp);
-    }
-  }
-#endif
-}
-
 void ZStackDoc::exportPuncta(const char *filePath)
 {
   ZPunctumIO::save(filePath, m_punctaList);
-}
-
-Swc_Tree* ZStackDoc::swcReconstruction(int rootOption, bool singleTree,
-                                       bool removingOvershoot)
-{
-  Swc_Tree *tree = NULL;
-
- if (m_chainList.size() > 0) {
-    int chain_number = m_chainList.size();
-
-//    LINFO() << "";
-//    for (int i=0; i<chain_number;++i) {
-//      double minDist = 1e10;
-//      int minDistTreeIdx = -1;
-//      double headPos[3];
-//      double tailPos[3];
-//      m_chainList[i]->headPosition(headPos);
-//      m_chainList[i]->tailPosition(tailPos);
-//      for (int j=0; j<m_swcList.size(); ++j) {
-//        double dist = m_swcList[j]->distanceTo(headPos[0], headPos[1], headPos[2], 5);
-//        if (dist < minDist) {
-//          minDist = dist;
-//          minDistTreeIdx = j;
-//        }
-//        dist = m_swcList[j]->distanceTo(tailPos[0], tailPos[1], tailPos[2], 5);
-//        if (dist < minDist) {
-//          minDist = dist;
-//          minDistTreeIdx = j;
-//        }
-//      }
-//      if (minDist <= 30) {
-//        LINFO() << i << minDistTreeIdx << minDist;
-//      }
-//    }
-//    LINFO() << "";
-//    return NULL;
-
-    /* alloc <chain_array> */
-    Neuron_Component *chain_array =
-      Make_Neuron_Component_Array(chain_number);
-
-    int chain_number2 = 0;
-
-    for (int i = 0; i < chain_number; i++) {
-      if ((m_chainList.at(i)->length() > 0) &&
-          !(m_chainList.at(i)->isIgnorable())) {
-        Set_Neuron_Component(chain_array + chain_number2,
-                             NEUROCOMP_TYPE_LOCSEG_CHAIN,
-                             Copy_Locseg_Chain(m_chainList.at(i)->data()));
-        chain_number2++;
-      }
-    }
-
-    /* reconstruct neuron */
-    Connection_Test_Workspace *ctw = getConnectionTestWorkspace();
-
-    double zscale = m_chainList.at(0)->zScale();
-
-    /* alloc <ns> */
-    ZStack *mainStack = getStack();
-    Neuron_Structure *ns = NULL;
-    if (mainStack != NULL) {
-      ns = Locseg_Chain_Comp_Neurostruct(chain_array, chain_number2,
-                                         mainStack->c_stack(), zscale, ctw);
-    } else {
-      ns = Locseg_Chain_Comp_Neurostruct(chain_array, chain_number2,
-                                         NULL, zscale, ctw);
-    }
-
-    Process_Neuron_Structure(ns);
-
-    if (getConnectionTestWorkspace()->crossover_test == TRUE) {
-      Neuron_Structure_Crossover_Test(ns, zscale);
-    }
-
-#ifdef _DEBUG_2
-    Neuron_Structure_To_Tree(ns);
-    Neuron_Structure_Remove_Conn(ns, 1, 3);
-    Neuron_Structure_Remove_Conn(ns, 3, 1);
-#endif
-
-    /* alloc <ns2> */
-    Neuron_Structure* ns2=
-      Neuron_Structure_Locseg_Chain_To_Circle_S(ns, 1.0, 1.0);
-    /*
-                                                m_parent->xReconstructScale(),
-                                                m_parent->zReconstructScale());
-                                                */
-
-    Neuron_Structure_To_Tree(ns2);
-
-    /*
-    Neuron_Structure_To_Swc_File_Circle_Z(ns2, filePath, m_stack->zscale(),
-                                          NULL);
-     */
-
-    tree = Neuron_Structure_To_Swc_Tree_Circle_Z(ns2, 1.0, NULL);
-    Swc_Tree_Merge_Close_Node(tree, 0.01 * ctw->resolution[0]);
-
-    Swc_Tree_Node *tn = NULL;
-    Swc_Tree_Node *tmp_tn = NULL;
-
-    switch (rootOption) {
-    case 0:
-      Swc_Tree_Iterator_Start(tree, 2, FALSE);
-      tn = Swc_Tree_Next(tree);
-      while ((tmp_tn = Swc_Tree_Next(tree)) != NULL) {
-        if (Swc_Tree_Node_Data(tmp_tn)->d > Swc_Tree_Node_Data(tn)->d) {
-          tn = tmp_tn;
-        }
-      }
-      break;
-    case 1:
-      updateMasterLocsegChain();
-      if (m_masterChain != NULL) {
-        Local_Neuroseg *locseg = m_masterChain->heldNeuroseg();
-        double pos[3];
-        Local_Neuroseg_Center(locseg, pos);
-        tn = Swc_Tree_Closest_Node(tree, pos);
-      }
-      break;
-    default:
-      break;
-    }
-
-    if (tn != NULL) {
-      Swc_Tree_Node_Set_Root(tn);
-      if (singleTree) {
-        if (tn != tree->root) {
-          Swc_Tree_Node_Detach_Parent(tn);
-          Kill_Swc_Tree(tree);
-          tree = New_Swc_Tree();
-          tree->root = tn;
-        }
-      }
-    }
-
-    Swc_Tree_Remove_Zigzag(tree);
-    Swc_Tree_Tune_Branch(tree);
-    Swc_Tree_Remove_Spur(tree);
-    Swc_Tree_Merge_Close_Node(tree, 0.01);
-    if (removingOvershoot) {
-      Swc_Tree_Remove_Overshoot(tree);
-    }
-
-    Swc_Tree_Resort_Id(tree);
-
-    /* free <ns2> */
-    Kill_Neuron_Structure(ns2);
-    /* free <ns> */
-    ns->comp = NULL;
-    Kill_Neuron_Structure(ns);
-
-    /* free <chain_array> */
-    Clean_Neuron_Component_Array(chain_array, chain_number);
-    free(chain_array);
-  }
-
- return tree;
 }
 
 ZSwcTree *ZStackDoc::nodeToSwcTree(Swc_Tree_Node *node) const
@@ -2246,80 +1996,6 @@ ZSwcTree *ZStackDoc::nodeToSwcTree(Swc_Tree_Node *node) const
   return NULL;
 }
 
-void ZStackDoc::exportSwcTree(const char *filePath)
-{
-  //Need modification
-  Swc_Tree *tree = swcReconstruction(0, false, true);
-  if (tree != NULL) {
-    Write_Swc_Tree(filePath, tree);
-    Kill_Swc_Tree(tree);
-  }
-}
-
-int ZStackDoc::exportMultipleSwcTree(const QString &filepath)
-{
-  int total = 0;
-  //Need modification
-  Swc_Tree *tree = swcReconstruction(0, false, true);
-  if (tree != NULL) {
-    Swc_Tree_Node *tn = tree->root;
-    if (Swc_Tree_Node_Is_Virtual(tn)) {
-      Swc_Tree_Node *child = tn->first_child;
-      tn = child;
-      while (tn != NULL) {
-        total++;
-        QString filename = QString("%1_%2.swc").arg(filepath).arg(total, 4, 10, QChar('0'));
-        Swc_Tree tmp_tree;
-        tmp_tree.root = tn;
-        Write_Swc_Tree(filename.toLocal8Bit().constData(), &tmp_tree);
-        child = tn->next_sibling;
-        tn = child;
-      }
-    }
-    Kill_Swc_Tree(tree);
-  }
-  return total;
-}
-
-void ZStackDoc::exportVrml(const char *filePath)
-{
-  UNUSED_PARAMETER(filePath);
-  TZ_ERROR(ERROR_OBSOLETE_FUNC);
-  /*
-  if (m_vrmlObjects.size() > 0) {
-    FILE *fp = fopen(filePath, "w");
-    if (fp != NULL) {
-      Vrml_Head_Fprint(fp, "V2.0", "utf8");
-
-      Vrml_Material *material = New_Vrml_Material();
-      Vrml_SFVec3f_Set(material->diffuse_color, 0.0, 0.8, 0.0);
-
-      Rgb_Color color;
-
-      double hue = 0.0;
-      Bitmask_Set_Bit(DIFFUSE_COLOR, FALSE, &(material->default_mask));
-
-      double step = 1.0 / m_vrmlObjects.size();
-
-      for (int i = 0; i < m_vrmlObjects.size(); i++) {
-        hue = i % 6;
-        hue += step * i;
-        while (hue > 6.0) {
-          hue -= 6.0;
-        }
-        Set_Color_Hsv(&color, hue, 1.0, 1.0);
-        Vrml_SFVec3f_Set(material->diffuse_color, (double)color.r / 255.0,
-                         (double)color.g / 255.0, (double)color.b / 255.0);
-        m_vrmlObjects.at(i)->vrmlFprint(fp, material);
-      }
-
-      Delete_Vrml_Material(material);
-      fclose(fp);
-    }
-  }
-  */
-}
-
 void ZStackDoc::exportSvg(const char *filePath)
 {
   if (!m_swcList.isEmpty()) {
@@ -2329,7 +2005,7 @@ void ZStackDoc::exportSvg(const char *filePath)
 
 void ZStackDoc::exportBinary(const char *prefix)
 {
-  if (m_objs.size() > 0) {
+  if (m_objectList.size() > 0) {
     char *filePath = new char[strlen(prefix) + 10];
     for (int i = 0; i < m_chainList.size(); i++) {
       sprintf(filePath, "%s%d.tb", prefix, i);
@@ -2354,50 +2030,6 @@ void ZStackDoc::exportChainFileList(const char *filepath)
     stream << m_chainList.at(i)->source() << '\n';
   }
   file.close();
-}
-
-void ZStackDoc::exportLocsegChainConnFeat(const char *filePath)
-{
-  double feat[9];
-  double res[3];
-  res[0] = getTraceWorkspace()->resolution[0];// m_parent->xResolution();
-  res[1] = getTraceWorkspace()->resolution[1];//m_parent->yResolution();
-  res[2] = getTraceWorkspace()->resolution[2];//m_parent->zResolution();
-
-  FILE *fp = fopen(filePath, "w");
-
-  for (int i = 0; i < m_chainList.size(); i++) {
-    for (int j = 0; j < m_chainList.size(); j++) {
-      if (i != j) {
-        ZLocsegChain *hook = m_chainList.at(i);
-        ZLocsegChain *loop = m_chainList.at(j);
-        bool found = false;
-        for (int k = 0; k < m_connList.size(); k++) {
-          if (m_connList.at(k)->has(hook, loop)) {
-            found = true;
-            break;
-          }
-        }
-
-        int label;
-        if (found) {
-          label = 1;
-        } else {
-          label = 0;
-        }
-
-        int n;
-        Locseg_Chain_Conn_Feature(hook->data(), loop->data(), NULL, res, feat, &n);
-        fprintf(fp, "%d ", label);
-        for (int u = 0; u < n; u++) {
-          fprintf(fp, "%g ", feat[u]);
-        }
-        fprintf(fp, "\n");
-      }
-    }
-  }
-
-  fclose(fp);
 }
 
 int ZStackDoc::xmlConnNode(QXmlStreamReader *xml,
@@ -2447,70 +2079,6 @@ int ZStackDoc::xmlConnMode(QXmlStreamReader *xml)
   }
 
   return mode;
-}
-
-void ZStackDoc::importLocsegChainConn(const char *filePath)
-{
-  QFile file(filePath);
-  file.open(QIODevice::ReadOnly);
-  QXmlStreamReader xml(&file);
-
-  while (!xml.atEnd()) {
-    QXmlStreamReader::TokenType token = xml.readNext();
-    if (token == QXmlStreamReader::StartElement) {
-      if (xml.name() == "connection") {
-        QString hookFile, loopFile;
-        int hook_spot, loop_spot;
-        xmlConnNode(&xml, &hookFile, &hook_spot);
-        xmlConnNode(&xml, &loopFile, &loop_spot);
-        int mode = xmlConnMode(&xml);
-
-        int loopIndex, hookIndex;
-
-        loopIndex = -1;
-        hookIndex = -1;
-
-        for (int i = 0; i < m_chainList.size(); i++) {
-          if (hookIndex < 0) {
-            if (m_chainList.at(i)->source() == hookFile) {
-              hookIndex = i;
-            }
-          }
-          if (loopIndex < 0) {
-            if (m_chainList.at(i)->source() == loopFile) {
-              loopIndex = i;
-            }
-          }
-        }
-
-        if ((hookIndex >= 0) && (loopIndex >= 0)) {
-          addLocsegChainConn(m_chainList.at(hookIndex),
-                             m_chainList.at(loopIndex),
-                             hook_spot, loop_spot, mode);
-        }
-      }
-    }
-  }
-  file.close();
-}
-
-void ZStackDoc::exportLocsegChainConn(const char *filePath)
-{
-  QFile file(filePath);
-  file.open(QIODevice::WriteOnly);
-  QXmlStreamWriter xml(&file);
-  xml.setAutoFormatting(true);
-  xml.setAutoFormattingIndent(2);
-
-  xml.writeStartDocument("1.0");
-  xml.writeStartElement("tubeConn");
-  for (int i = 0; i < m_connList.size(); i++) {
-    m_connList.at(i)->translateMode();
-    m_connList.at(i)->writeXml(xml);
-  }
-  xml.writeEndElement();
-  xml.writeEndDocument();
-  file.close();
 }
 
 void ZStackDoc::importLocsegChain(const QStringList &fileList,
@@ -2792,119 +2360,6 @@ void ZStackDoc::importPuncta(const QStringList &fileList, LoadObjectOption objop
   emit punctaModified();
 }
 
-void ZStackDoc::clearLocsegChainConn()
-{
-  while (!m_connList.isEmpty()) {
-    ZLocsegChainConn *obj = m_connList.takeLast();
-    removeObject(obj, true);
-  }
-}
-
-void ZStackDoc::buildLocsegChainConn()
-{
-  clearLocsegChainConn();
-
-  if (m_chainList.size() > 0) {
-    int chain_number = m_chainList.size();
-
-    /* alloc <chain_array> */
-    Neuron_Component *chain_array =
-        Make_Neuron_Component_Array(chain_number);
-
-    for (int i = 0; i < chain_number; i++) {
-      Set_Neuron_Component(chain_array + i,
-                           NEUROCOMP_TYPE_LOCSEG_CHAIN,
-                           m_chainList.at(i)->data());
-    }
-
-    double zscale = m_chainList.at(0)->zScale();
-
-    /* alloc <ns> */
-    BOOL old_interpolate = getConnectionTestWorkspace()->interpolate;
-    getConnectionTestWorkspace()->interpolate = FALSE;
-    Neuron_Structure *ns = NULL;
-    ZStack *mainStack = getStack();
-    if (mainStack != NULL) {
-      Locseg_Chain_Comp_Neurostruct(
-            chain_array, chain_number, mainStack->c_stack(), zscale,
-            getConnectionTestWorkspace());
-    } else {
-      Locseg_Chain_Comp_Neurostruct(
-            chain_array, chain_number, NULL, zscale,
-            getConnectionTestWorkspace());
-    }
-    getConnectionTestWorkspace()->interpolate = old_interpolate;
-
-    Process_Neuron_Structure(ns);
-
-    if (getConnectionTestWorkspace()->crossover_test) {
-      Neuron_Structure_Crossover_Test(ns, zscale);
-    }
-
-    Neuron_Structure_To_Tree(ns);
-
-    for (int i = 0; i < NEURON_STRUCTURE_LINK_NUMBER(ns); i++) {
-      ZLocsegChain *hook = m_chainList.at(ns->graph->edges[i][0]);
-      ZLocsegChain *loop = m_chainList.at(ns->graph->edges[i][1]);
-      int hook_spot = ns->conn[i].info[0];
-      int loop_spot = ns->conn[i].info[1];
-
-
-      ZLocsegChainConn *conn =
-          new ZLocsegChainConn(hook, loop,
-                               hook_spot, loop_spot, ns->conn[i].mode);
-
-      addLocsegChainConn(conn);
-    }
-
-    /* free <ns>, including <chain_array> */
-    free(chain_array);
-    ns->comp = NULL;
-    Kill_Neuron_Structure(ns);
-  }
-}
-
-void ZStackDoc::selectNeighbor()
-{
-  if (m_masterChain != NULL) {
-    for (int i = 0; i < m_connList.size(); i++) {
-      if (m_connList.at(i)->isHook(m_masterChain)) {
-        //m_connList.at(i)->loopChain()->setSelected(true);
-        setChainSelected(m_connList.at(i)->loopChain(), true);
-      } else if (m_connList.at(i)->isLoop(m_masterChain)) {
-        //m_connList.at(i)->hookChain()->setSelected(true);
-        setChainSelected(m_connList.at(i)->hookChain(), true);
-      }
-    }
-  }
-}
-
-void ZStackDoc::selectConnectedChain()
-{
-  if (m_masterChain != NULL) {
-    QQueue<ZLocsegChain*> queue;
-    queue.enqueue(m_masterChain);
-    while (!queue.isEmpty()) {
-      ZLocsegChain *cur = queue.dequeue();
-      for (int i = 0; i < m_connList.size(); i++) {
-        if (m_connList.at(i)->isHook(cur)) {
-          if (!m_connList.at(i)->loopChain()->isSelected()) {
-            //m_connList.at(i)->loopChain()->setSelected(true);
-            setChainSelected(m_connList.at(i)->loopChain(), true);
-            queue.enqueue(m_connList.at(i)->loopChain());
-          }
-        } else if (m_connList.at(i)->isLoop(cur)) {
-          if (!m_connList.at(i)->hookChain()->isSelected()) {
-            //m_connList.at(i)->hookChain()->setSelected(true);
-            setChainSelected(m_connList.at(i)->hookChain(), true);
-            queue.enqueue(m_connList.at(i)->hookChain());
-          }
-        }
-      }
-    }
-  }
-}
-
 int ZStackDoc::pickLocsegChainId(int x, int y, int z) const
 {
   if (getTraceWorkspace() == NULL) {
@@ -2970,35 +2425,21 @@ bool ZStackDoc::selectPuncta(int index)
 
 bool ZStackDoc::deleteAllPuncta()
 {
-  int objstartpos = m_objs.size()-1;
+  int objStartPos = m_objectList.size()-1;
   bool result = true;
-  int drawablestartpos = m_drawableList.size()-1;
   while (!m_punctaList.isEmpty()) {
     bool match = false;
-    ZDocumentable *obj = m_punctaList.takeLast();
-    for (int i=objstartpos; i>=0; i--) {
-      if ((ZInterface*) m_objs.at(i) == (ZInterface*) obj) {
-        m_objs.removeAt(i);
+    ZPunctum *obj = m_punctaList.takeLast();
+    for (int i=objStartPos; i>=0; i--) {
+      if (m_objectList.at(i) == dynamic_cast<ZStackObject*>(obj)) {
+        m_objectList.removeAt(i);
         match = true;
-        objstartpos = i-1;
+        objStartPos = i-1;
         break;
       }
     }
     if (!match) {
       std::cout << "error remove puncta objs!" << std::endl;
-      result = false;
-    }
-    match = false;
-    for (int i=drawablestartpos; i>=0; i--) {
-      if ((ZInterface*) m_drawableList.at(i) == (ZInterface*) obj) {
-        m_drawableList.removeAt(i);
-        match = true;
-        drawablestartpos = i-1;
-        break;
-      }
-    }
-    if (!match) {
-      std::cout << "error remove puncta drawable!" << std::endl;
       result = false;
     }
   }
@@ -3092,7 +2533,7 @@ int ZStackDoc::selectLocsegChain(int id, int x, int y, int z, bool showProfile)
     if (chain->id() == id) {
       //chain->setSelected(true);
 
-      m_masterChain = chain;
+      //m_masterChain = chain;
       found = -1;
 
       if (x > 0) {
@@ -3144,48 +2585,42 @@ bool ZStackDoc::selectSwcTreeBranch(int x, int y, int z)
 
 void ZStackDoc::removeLastObject(bool deleteObject)
 {
-  if (!m_objs.isEmpty()) {
-    ZDocumentable *obj = m_objs.takeLast();
+  if (!m_objectList.isEmpty()) {
+    ZStackObject *obj = m_objectList.takeLast();
 
     if (!m_chainList.isEmpty()) {
-      if ((ZInterface*) m_chainList.last() == (ZInterface*) obj) {
-        removeLocsegChain((ZInterface*) obj);
+      if (static_cast<ZStackObject*>(m_chainList.last()) == obj) {
+        m_chainList.removeLast();
       }
     }
 
     if (!m_swcList.isEmpty()) {
-      if ((ZInterface*) m_swcList.last() == (ZInterface*) obj) {
+      if (static_cast<ZStackObject*>(m_swcList.last()) == obj) {
         m_swcList.removeLast();
       }
     }
 
     if (!m_punctaList.isEmpty()) {
-      if ((ZInterface*) m_punctaList.last() == (ZInterface*) obj) {
+      if (static_cast<ZStackObject*>(m_punctaList.last()) == obj) {
         m_punctaList.removeLast();
       }
     }
 
     if (!m_obj3dList.isEmpty()) {
-      if ((ZInterface*) m_obj3dList.last() == (ZInterface*) obj) {
+      if (static_cast<ZStackObject*>(m_obj3dList.last()) == obj) {
         m_obj3dList.removeLast();
       }
     }
 
-    if (!m_connList.isEmpty()) {
-      if ((ZInterface*) m_connList.last() == (ZInterface*) obj) {
-        m_connList.removeLast();
-      }
-    }
-
     if (!m_strokeList.isEmpty()) {
-      if ((ZInterface*) m_strokeList.last() == (ZInterface*) obj) {
+      if (static_cast<ZStackObject*>(m_strokeList.last()) == obj) {
         m_strokeList.removeLast();
       }
     }
 
-    if (!m_drawableList.isEmpty()) {
-      if ((ZInterface*) m_drawableList.last() == (ZInterface*) obj) {
-        m_drawableList.removeLast();
+    if (!m_objectList.isEmpty()) {
+      if (static_cast<ZStackObject*>(m_objectList.last()) == obj) {
+        m_objectList.removeLast();
       }
     }
 
@@ -3199,46 +2634,11 @@ void ZStackDoc::removeLastObject(bool deleteObject)
 
 void ZStackDoc::removeAllObject(bool deleteObject)
 {
-  while (!m_objs.isEmpty()) {
+  while (!m_objectList.isEmpty()) {
     removeLastObject(deleteObject);
   }
 }
 
-#define REMOVE_OBJECT(list, obj)				\
-  for (int i = 0; i < list.size(); i++) {			\
-    if ((ZInterface*) list.at(i) == obj) {		\
-      list.removeAt(i);					\
-      break;					\
-    }						\
-  }
-
-void ZStackDoc::removeLocsegChain(ZInterface *obj)
-{
-  for (int i = 0; i < m_chainList.size(); i++) {
-    if ((ZInterface*) m_chainList.at(i) == obj) {
-      ZLocsegChain *chain = m_chainList.takeAt(i);
-      chain->eraseTraceMask(getTraceWorkspace()->trace_mask);
-      if (m_masterChain == chain) {
-        m_masterChain = NULL;
-      }
-
-      QMutableListIterator<ZLocsegChainConn*> connIter(m_connList);
-      connIter.toFront();
-      while (connIter.hasNext()) {
-        ZLocsegChainConn *conn = connIter.next();
-        if (conn->isLoop(chain) || conn->isHook(chain)) {
-          //REMOVE_OBJECT(m_drawableList, ((ZInterface*) conn))
-          connIter.remove();
-          removeObject(conn, true);
-          //delete conn;
-        }
-      }
-
-      notifyChainModified();
-      break;
-    }
-  }
-}
 
 void ZStackDoc::removeSmallLocsegChain(double thre)
 {
@@ -3286,35 +2686,66 @@ void ZStackDoc::removeAllSparseObject()
   notifySparseObjectModified();
 }
 
-ZDocPlayer::TRole ZStackDoc::removeObject(ZInterface *obj, bool deleteObject)
+#define REMOVE_OBJECT(list, obj)				\
+  for (int i = 0; i < list.size(); i++) {			\
+    if (static_cast<ZStackObject*>(list.at(i)) == obj) {		\
+      list.removeAt(i);					\
+      break;					\
+    }						\
+  }
+
+ZDocPlayer::TRole ZStackDoc::removeObject(ZStackObject *obj, bool deleteObject)
 {
-  REMOVE_OBJECT(m_objs, obj);
-  //REMOVE_OBJECT(m_swcObjects, obj);
-  //REMOVE_OBJECT(m_vrmlObjects, obj);
   REMOVE_OBJECT(m_swcList, obj);
-  REMOVE_OBJECT(m_connList, obj);
   REMOVE_OBJECT(m_obj3dList, obj);
-  REMOVE_OBJECT(m_drawableList, obj);
   REMOVE_OBJECT(m_punctaList, obj);
   REMOVE_OBJECT(m_strokeList, obj);
   REMOVE_OBJECT(m_sparseObjectList, obj);
+  REMOVE_OBJECT(m_chainList, obj);
+  REMOVE_OBJECT(m_objectList, obj);
 
-  removeLocsegChain(obj);
-
-  ZDocPlayer::TRole role =
-      m_playerList.removePlayer(dynamic_cast<ZDocumentable*>(obj));
+  ZDocPlayer::TRole role = m_playerList.removePlayer(obj);
 
   if (deleteObject == true) {
     delete obj;
   }
 
+  notifyObjectModified();
+  notifyPlayerChanged(role);
+
   return role;
+}
+
+void ZStackDoc::removeObject(ZDocPlayer::TRole role, bool deleteObject)
+{
+  std::set<ZStackObject*> removeSet;
+  for (ZDocPlayerList::iterator iter = m_playerList.begin();
+       iter != m_playerList.end(); ++iter) {
+    ZDocPlayer *player = *iter;
+    if (player->hasRole(role)) {
+      removeSet.insert(player->getData());
+    }
+  }
+
+  blockSignals(true);
+  for (std::set<ZStackObject*>::iterator iter = removeSet.begin();
+       iter != removeSet.end(); ++iter) {
+    removeObject(*iter, deleteObject);
+  }
+  blockSignals(false);
+
+  if (!removeSet.empty()) {
+    notifyObjectModified();
+    notifyPlayerChanged(role);
+  }
 }
 
 std::set<ZSwcTree *> ZStackDoc::removeEmptySwcTree(bool deleteObject)
 {
   std::set<ZSwcTree *> emptyTreeSet;
   QMutableListIterator<ZSwcTree*> swcIter(m_swcList);
+
+  blockSignals(true);
   while (swcIter.hasNext()) {
     ZSwcTree *tree = swcIter.next();
     if (!tree->hasRegularNode()) {
@@ -3325,6 +2756,8 @@ std::set<ZSwcTree *> ZStackDoc::removeEmptySwcTree(bool deleteObject)
       }
     }
   }
+  blockSignals(false);
+
   notifySwcModified();
 
   return emptyTreeSet;
@@ -3332,11 +2765,13 @@ std::set<ZSwcTree *> ZStackDoc::removeEmptySwcTree(bool deleteObject)
 
 void ZStackDoc::removeAllSwcTree(bool deleteObject)
 {
+  blockSignals(true);
   QMutableListIterator<ZSwcTree*> swcIter(m_swcList);
   while (swcIter.hasNext()) {
     ZSwcTree *tree = swcIter.next();
     removeObject(tree, deleteObject);
   }
+  blockSignals(false);
   notifySwcModified();
 }
 
@@ -3350,13 +2785,10 @@ void ZStackDoc::removeAllSwcTree(bool deleteObject)
 
 void ZStackDoc::removeSelectedObject(bool deleteObject)
 {
-  //REMOVE_SELECTED_OBJECT(ZSwcExportable, m_swcObjects, swceIter);
-  //REMOVE_SELECTED_OBJECT(ZVrmlExportable, m_vrmlObjects, vrmlIter);
   REMOVE_SELECTED_OBJECT(ZSwcTree, m_swcList, swcIter);
   REMOVE_SELECTED_OBJECT(ZObject3d, m_obj3dList, obj3dIter);
   REMOVE_SELECTED_OBJECT(ZSparseObject, m_sparseObjectList, sparseObjIter);
-  REMOVE_SELECTED_OBJECT(ZLocsegChainConn, m_connList, connIter);
-  REMOVE_SELECTED_OBJECT(ZStackDrawable, m_drawableList, drawableIter);
+  REMOVE_SELECTED_OBJECT(ZStackObject, m_objectList, drawableIter);
   REMOVE_SELECTED_OBJECT(ZPunctum, m_punctaList, punctaIter);
   REMOVE_SELECTED_OBJECT(ZStroke2d, m_strokeList, strokeIter);
 
@@ -3364,26 +2796,20 @@ void ZStackDoc::removeSelectedObject(bool deleteObject)
   while (chainIter.hasNext()) {
     ZLocsegChain *obj = chainIter.next();
     if (obj->isSelected()) {
+      /*
       if (obj == m_masterChain) {
         m_masterChain = NULL;
       }
+      */
       obj->eraseTraceMask(getTraceWorkspace()->trace_mask);
-      connIter.toFront();
-      while (connIter.hasNext()) {
-        ZLocsegChainConn *conn = connIter.next();
-        if (conn->isLoop(obj) || conn->isHook(obj)) {
-          REMOVE_OBJECT(m_drawableList, ((ZInterface*) conn))
-          connIter.remove();
-        }
-      }
       chainIter.remove();
     }
   }
 
 
-  QMutableListIterator<ZDocumentable*> docIter(m_objs);
+  QMutableListIterator<ZStackObject*> docIter(m_objectList);
   while (docIter.hasNext()) {
-    ZDocumentable *obj = docIter.next();
+    ZStackObject *obj = docIter.next();
     if (obj->isSelected()) {
       docIter.remove();
       if (deleteObject == true) {
@@ -3393,72 +2819,34 @@ void ZStackDoc::removeSelectedObject(bool deleteObject)
   }
 }
 
-void ZStackDoc::removeObject(ZDocPlayer::TRole role, bool deleteObject)
-{
-  std::set<ZDocumentable*> removeSet;
-  for (ZDocPlayerList::iterator iter = m_playerList.begin();
-       iter != m_playerList.end(); ++iter) {
-    ZDocPlayer *player = *iter;
-    if (player->hasRole(role)) {
-      removeSet.insert(player->getData());
-    }
-  }
-
-  for (std::set<ZDocumentable*>::iterator iter = removeSet.begin();
-       iter != removeSet.end(); ++iter) {
-    removeObject(*iter, deleteObject);
-  }
-
-#if 0
-  QMutableListIterator<ZDocPlayer*> playerIter(m_playerList);
-  while (playerIter.hasNext()) {
-    ZDocPlayer *player = playerIter.next();
-    if (player->hasRole(role)) {
-      removeObject(player->getData(), deleteObject);
-    }
-  }
-#endif
-}
-
 void ZStackDoc::removeSelectedPuncta(bool deleteObject)
 {
   REMOVE_SELECTED_OBJECT(ZPunctum, m_punctaList, punctaIter);
 
-  QMutableListIterator<ZStackDrawable*> drawableIter(m_drawableList);
-  while (drawableIter.hasNext()) {
-    ZStackDrawable *obj = drawableIter.next();
+  QMutableListIterator<ZStackObject*> objIter(m_objectList);
+  while (objIter.hasNext()) {
+    ZStackObject *obj = objIter.next();
 
     if (obj->isSelected()) {
       if (obj->className() == "ZPunctum") {
-        drawableIter.remove();
+        objIter.remove();
       }
     }
-  }
-
-  QMutableListIterator<ZDocumentable*> docIter(m_objs);
-  while (docIter.hasNext()) {
-    ZDocumentable *obj = docIter.next();
-
-    if (obj->isSelected()) {
-      if (obj->className() == "ZPunctum") {
-        docIter.remove();
-        if (deleteObject == true) {
-          delete obj;
-        }
-      }
+    if (deleteObject) {
+      delete obj;
     }
   }
 
   notifyPunctumModified();
 }
 
-bool ZStackDoc::pushLocsegChain(ZInterface *obj)
+bool ZStackDoc::pushLocsegChain(ZStackObject *obj)
 {
   bool found =false;
 
   ZLocsegChain *chain = NULL;
   foreach (chain, m_chainList) {
-    if ((ZInterface*) chain == obj) {
+    if ((ZStackObject*) chain == obj) {
       found = true;
       break;
     }
@@ -3489,34 +2877,9 @@ void ZStackDoc::pushSelectedLocsegChain()
 {
   for (int i = 0; i < m_chainList.size(); i++) {
     if (m_chainList.at(i)->isSelected()) {
-      pushLocsegChain((ZInterface*) (m_chainList.at(i)));
+      pushLocsegChain(m_chainList.at(i));
     }
   }
-}
-
-bool ZStackDoc::fixLocsegChainTerminal(ZInterface *obj)
-{
-  bool found =false;
-
-  ZLocsegChain *chain = NULL;
-  foreach (chain, m_chainList) {
-    if ((ZInterface*) chain == obj) {
-      found = true;
-      break;
-    }
-  }
-
-  if (found) {
-    if (getTraceWorkspace() != NULL) {
-      chain->eraseTraceMask(getTraceWorkspace()->trace_mask);
-      chain->fixTerminal(getStack()->c_stack(), getTraceWorkspace());
-      chain->labelTraceMask(getTraceWorkspace()->trace_mask);
-    }
-
-    updateLocsegChain(chain);
-  }
-
-  return found;
 }
 
 void ZStackDoc::setPunctumSelected(ZPunctum *punctum, bool select)
@@ -3691,9 +3054,9 @@ void ZStackDoc::deselectAllObject()
   deselectAllChains();
   deselectAllSwcs();
   deselectAllSwcTreeNodes();
-  QMutableListIterator<ZDocumentable*> iter0(m_objs);
+  QMutableListIterator<ZStackObject*> iter0(m_objectList);
   while (iter0.hasNext()) {
-    ZDocumentable *obj = iter0.next();
+    ZStackObject *obj = iter0.next();
     if (obj->isSelected()) {
       obj->setSelected(false);
     }
@@ -3734,26 +3097,12 @@ QStringList ZStackDoc::toStringList() const
   ZStack *mainStack = getStack();
 
   QStringList list;
-  list.append(QString("Number of objects: %1").arg(m_objs.size()));
-  list.append(QString("Number of chains: %1").arg(m_chainList.size()));
+  list.append(QString("Number of objects: %1").arg(m_objectList.size()));
   if (mainStack != NULL) {
     list.append(QString("Stack size: %1 x %2 x %3").arg(mainStack->width())
                 .arg(mainStack->height()).arg(mainStack->depth()));
     list.append(QString("Stack offset: ") +
                 mainStack->getOffset().toString().c_str());
-  }
-
-  if (m_chainList.size() > 0) {
-    for (int i = 0; i < m_chainList.size(); i++) {
-      ZLocsegChain *chain = m_chainList.at(i);
-      if (chain->isSelected()) {
-        ZStack *mainStack = getStack();
-        if (mainStack != NULL) {
-          list += chain->toStringList(mainStack->c_stack());
-        }
-        break;
-      }
-    }
   }
 
   return list;
@@ -3787,9 +3136,10 @@ ZCurve ZStackDoc::locsegProfileCurve(int option) const
   return curve;
 }
 
-void ZStackDoc::addDocumentable(ZDocumentable *obj)
+void ZStackDoc::addObject(ZStackObject *obj)
 {
-  m_objs.append(obj);
+  m_objectList.append(obj);
+  notifyObjectModified();
 }
 
 void ZStackDoc::appendSwcNetwork(ZSwcNetwork &network)
@@ -3842,6 +3192,7 @@ void ZStackDoc::setReceptor(int option, bool cone)
   }
 }
 
+/*
 void ZStackDoc::updateMasterLocsegChain()
 {
   for (int i = 0; i < m_chainList.size(); i++) {
@@ -3852,8 +3203,9 @@ void ZStackDoc::updateMasterLocsegChain()
     }
   }
 }
+*/
 
-ZInterface* ZStackDoc::bringChainToFront()
+ZStackObject* ZStackDoc::bringChainToFront()
 {
   ZLocsegChain *chain = NULL;
 
@@ -3864,32 +3216,16 @@ ZInterface* ZStackDoc::bringChainToFront()
         m_chainList.move(i, 0);
         chain->labelTraceMask(getTraceWorkspace()->trace_mask, -1);
         int j;
-        for (j = 0; j < m_objs.size(); j++) {
-          if ((ZInterface*) m_objs.at(j) == (ZInterface*) chain) {
-            m_objs.move(j, 0);
+        for (j = 0; j < m_objectList.size(); j++) {
+          if (m_objectList.at(j) == (ZStackObject*) chain) {
+            m_objectList.move(j, 0);
             break;
           }
         }
 
-        /*
-        for (j = 0; j < m_swcObjects.size(); j++) {
-          if ((ZInterface*) m_swcObjects.at(j) == (ZInterface*) chain) {
-            m_swcObjects.move(j, 0);
-            break;
-          }
-        }
-
-        for (j = 0; j < m_vrmlObjects.size(); j++) {
-          if ((ZInterface*) m_vrmlObjects.at(j) == (ZInterface*) chain) {
-            m_vrmlObjects.move(j, 0);
-            break;
-          }
-        }
-*/
-
-        for (j = 0; j < m_drawableList.size(); j++) {
-          if ((ZInterface*) m_drawableList.at(j) == (ZInterface*) chain) {
-            m_drawableList.move(j, 0);
+        for (j = 0; j < m_objectList.size(); j++) {
+          if (m_objectList.at(j) == (ZStackObject*) chain) {
+            m_objectList.move(j, 0);
             break;
           }
         }
@@ -3898,10 +3234,10 @@ ZInterface* ZStackDoc::bringChainToFront()
     }
   }
 
-  return (ZInterface*) chain;
+  return chain;
 }
 
-ZInterface* ZStackDoc::sendChainToBack()
+ZStackObject *ZStackDoc::sendChainToBack()
 {
   ZLocsegChain *chain = NULL;
 
@@ -3917,9 +3253,9 @@ ZInterface* ZStackDoc::sendChainToBack()
 
         m_chainList.move(i, m_chainList.size() - 1);
 
-        for (j = 0; j < m_objs.size(); j++) {
-          if ((ZInterface*) m_objs.at(j) == (ZInterface*) chain) {
-            m_objs.move(j, m_objs.size() - 1);
+        for (j = 0; j < m_objectList.size(); j++) {
+          if (m_objectList.at(j) == (ZStackObject*) chain) {
+            m_objectList.move(j, m_objectList.size() - 1);
             break;
           }
         }
@@ -3940,9 +3276,9 @@ ZInterface* ZStackDoc::sendChainToBack()
         }
 */
 
-        for (j = 0; j < m_drawableList.size(); j++) {
-          if ((ZInterface*) m_drawableList.at(j) == (ZInterface*) chain) {
-            m_drawableList.move(j, m_drawableList.size() - 1);
+        for (j = 0; j < m_objectList.size(); j++) {
+          if ((ZInterface*) m_objectList.at(j) == (ZInterface*) chain) {
+            m_objectList.move(j, m_objectList.size() - 1);
             break;
           }
         }
@@ -3954,6 +3290,7 @@ ZInterface* ZStackDoc::sendChainToBack()
   return chain;
 }
 
+/*
 bool ZStackDoc::linkChain(int id)
 {
   if (m_masterChain != NULL) {
@@ -3979,7 +3316,9 @@ bool ZStackDoc::linkChain(int id)
 
   return false;
 }
+*/
 
+/*
 bool ZStackDoc::hookChain(int id, int option)
 {
   if (m_masterChain != NULL) {
@@ -4022,7 +3361,9 @@ bool ZStackDoc::hookChain(int id, int option)
 
   return false;
 }
+*/
 
+/*
 bool ZStackDoc::mergeChain(int id)
 {
   if (m_masterChain != NULL) {
@@ -4031,7 +3372,7 @@ bool ZStackDoc::mergeChain(int id)
         ZLocsegChain *chain = m_chainList.at(i);
 
         if (chain->id() == id) {
-          removeObject((ZInterface*) chain, false);
+          removeObject(chain, false);
           m_masterChain->merge(chain);
           chain->detachData();
           delete chain;
@@ -4046,52 +3387,9 @@ bool ZStackDoc::mergeChain(int id)
 
   return false;
 }
+*/
 
-bool ZStackDoc::connectChain(int id)
-{
-  if (m_masterChain != NULL) {
-    if (m_masterChain->id() != id) {
-      for (int i = 0; i < m_chainList.size(); i++) {
-        ZLocsegChain *chain = m_chainList.at(i);
-        if (chain->id() == id) {
-          addLocsegChainConn(m_masterChain, chain);
-          return true;
-        }
-      }
-    }
-  }
-
-  return false;
-}
-
-bool ZStackDoc::disconnectChain(int id)
-{
-  if (m_masterChain != NULL) {
-    ZLocsegChain *slaveChain = NULL;
-
-    if (m_masterChain->id() != id) {
-      for (int i = 0; i < m_chainList.size(); i++) {
-        ZLocsegChain *chain = m_chainList.at(i);
-        if (chain->id() == id) {
-          slaveChain = chain;
-          break;
-        }
-      }
-      if (slaveChain != NULL) {
-        for (int i = 0; i < m_connList.size(); i++) {
-          ZLocsegChainConn *conn = m_connList.at(i);
-          if (conn->has(m_masterChain, slaveChain)) {
-            removeObject(conn, true);
-            return true;
-          }
-        }
-      }
-    }
-  }
-
-  return false;
-}
-
+#if 0
 bool ZStackDoc::chainShortestPath(int id)
 {
   bool succ = false;
@@ -4174,7 +3472,9 @@ void ZStackDoc::chainConnInfo(int id)
     }
   }
 }
+#endif
 
+/*
 void ZStackDoc::extendChain(double x, double y, double z)
 {
   if (m_masterChain != NULL) {
@@ -4182,56 +3482,8 @@ void ZStackDoc::extendChain(double x, double y, double z)
     updateLocsegChain(m_masterChain);
   }
 }
-
-void ZStackDoc::addLocsegChainConn(ZLocsegChain *hook, ZLocsegChain *loop)
-{
-  Connection_Test_Workspace *ctw = getConnectionTestWorkspace();
-
-  Neurocomp_Conn nc_conn;
-  Locseg_Chain_Connection_Test(hook->data(), loop->data(), NULL,
-  		1.0, &nc_conn, ctw);
-  Neurocomp_Conn_Translate_Mode(loop->length(), &nc_conn);
-
-  ZLocsegChainConn *conn = new ZLocsegChainConn(hook, loop,
-                                                nc_conn.info[0],
-                                                nc_conn.info[1], nc_conn.mode);
-
-  addLocsegChainConn(conn);
-
-  if (nc_conn.mode == NEUROCOMP_CONN_LINK) {
-    int hook_spot, loop_spot;
-    hook_spot = nc_conn.info[1];
-    loop_spot = nc_conn.info[0];
-    conn = new ZLocsegChainConn(loop, hook, hook_spot, loop_spot,
-                                nc_conn.mode);
-
-    addLocsegChainConn(conn);
-  }
-}
-
-void ZStackDoc::addLocsegChainConn(ZLocsegChain *hook, ZLocsegChain *loop,
-                                   int hookSpot, int loopSpot, int mode)
-{
-  ZLocsegChainConn *conn = NULL;
-
-  if ((hookSpot >= 0) && (loopSpot >= 0)) {
-    conn = new ZLocsegChainConn(hook, loop, hookSpot, loopSpot, mode);
-  } else {
-    Connection_Test_Workspace *ctw = getConnectionTestWorkspace();
-    int old_value = ctw->hook_spot;
-    ctw->hook_spot = hookSpot;
-    Neurocomp_Conn nc_conn;
-    Locseg_Chain_Connection_Test(hook->data(), loop->data(), NULL,
-                                 1.0, &nc_conn, ctw);
-
-    conn = new ZLocsegChainConn(hook, loop, nc_conn.info[0], nc_conn.info[1],
-                                nc_conn.mode);
-    ctw->hook_spot = old_value;
-  }
-
-  addLocsegChainConn(conn);
-}
-
+*/
+/*
 bool ZStackDoc::isMasterChainId(int id)
 {
   if (m_masterChain->id() == id) {
@@ -4240,53 +3492,7 @@ bool ZStackDoc::isMasterChainId(int id)
     return false;
   }
 }
-
-void ZStackDoc::refineSelectedChainEnd()
-{
-  Trace_Workspace_Set_Fit_Mask(getTraceWorkspace(), getTraceWorkspace()->trace_mask);
-  foreach(ZLocsegChain *chain, m_chainList) {
-    if (chain->isSelected()) {
-      ZStack *mainStack = getStack();
-      if (mainStack != NULL) {
-        chain->refineHeldEnd(mainStack->c_stack(), getTraceWorkspace());
-        updateLocsegChain(chain);
-
-        QMutableListIterator<ZLocsegChainConn*> connIter(m_connList);
-        connIter.toFront();
-        while (connIter.hasNext()) {
-          ZLocsegChainConn *conn = connIter.next();
-          if (conn->isLoop(chain) || conn->isHook(chain)) {
-            connIter.remove();
-            removeObject(conn, true);
-          }
-        }
-      }
-    }
-  }
-}
-
-void ZStackDoc::refineLocsegChainEnd()
-{
-  ZStack *mainStack = getStack();
-  if (mainStack != NULL) {
-    Trace_Workspace_Set_Fit_Mask(getTraceWorkspace(), getTraceWorkspace()->trace_mask);
-    foreach(ZLocsegChain *chain, m_chainList) {
-      chain->refineEnd(DL_HEAD, mainStack->c_stack(), getTraceWorkspace());
-      chain->refineEnd(DL_TAIL, mainStack->c_stack(), getTraceWorkspace());
-      updateLocsegChain(chain);
-
-      QMutableListIterator<ZLocsegChainConn*> connIter(m_connList);
-      connIter.toFront();
-      while (connIter.hasNext()) {
-        ZLocsegChainConn *conn = connIter.next();
-        if (conn->isLoop(chain) || conn->isHook(chain)) {
-          connIter.remove();
-          removeObject(conn, true);
-        }
-      }
-    }
-  }
-}
+*/
 
 void ZStackDoc::mergeAllChain()
 {
@@ -4442,664 +3648,11 @@ void ZStackDoc::setBadChainScreen(const char *screen)
     m_badChainScreen = screen;
   }
 }
-#if 0
-void ZStackDoc::autoTrace()
-{
-  ZStack *mainStack = stack();
-  if (mainStack != NULL) {
-    QDir workDir(getTraceWorkspace()->save_path);
-
-    if (!workDir.exists()) {
-      workDir.mkdir(workDir.absolutePath());
-    }
-
-    m_progressReporter->start();
-
-    m_progressReporter->advance(0.05);
-
-    //removeAllObject(true);
-
-    m_progressReporter->startSubprogress(0.1);
-    int thre = autoThreshold();
-    m_progressReporter->endSubprogress(0.1);
-
-    /* alloc <mask> */
-    Stack *mask = Copy_Stack(mainStack->c_stack());
-    Stack_Threshold_Binarize(mask, thre);
-    m_progressReporter->advance(0.05);
-
-    Translate_Stack(mask, GREY, 1);
-    m_progressReporter->advance(0.05);
-
-    /* alloc <mask2> */
-    Stack *mask2 = Stack_Majority_Filter_R(mask, NULL, 26, 4);
-    m_progressReporter->advance(0.05);
-
-    /* free <mask>, <mask2> => <mask> */
-    Kill_Stack(mask);
-    mask = mask2;
-
-    double z_scale = 1.0;
-    if (getTraceWorkspace()->resolution[0] != getTraceWorkspace()->resolution[2]) {
-      z_scale = getTraceWorkspace()->resolution[0] / getTraceWorkspace()->resolution[2];
-    }
-
-    mask2 = mask;
-    /* resample the stack for dist calc if z is different */
-    if (z_scale != 1.0) {
-      mask2 = Resample_Stack_Depth(mask, NULL, z_scale);
-      Stack_Binarize(mask2);
-    }
-
-    /* alloc <dist> */
-    Stack *dist = Stack_Bwdist_L_U16(mask2, NULL, 0);
-    m_progressReporter->advance(0.05);
-
-    if (mask != mask2) {
-      Kill_Stack(mask2);
-    }
-
-
-    /* alloc <seeds> */
-    Stack *seeds = Stack_Locmax_Region(dist, 26);
-    m_progressReporter->advance(0.05);
-
-    /* alloc <objs> */
-    Object_3d_List *objs = Stack_Find_Object_N(seeds, NULL, 1, 0, 26);
-    m_progressReporter->advance(0.05);
-
-    Zero_Stack(seeds);
-
-    int objnum = 0;
-    while (objs != NULL) {
-      Object_3d *obj = objs->data;
-      Voxel_t center;
-      Object_3d_Central_Voxel(obj, center);
-      Set_Stack_Pixel(seeds, center[0], center[1], center[2], 0, 1);
-      objs = objs->next;
-      objnum++;
-    }
-    m_progressReporter->advance(0.05);
-
-    /* free <objs> */
-    Kill_Object_3d_List(objs);
-
-    /* alloc <list> */
-    Voxel_List *list = Stack_To_Voxel_List(seeds);
-
-    /* free <seeds> */
-    Kill_Stack(seeds);
-
-    /* alloc <pa> */
-    Pixel_Array *pa = Voxel_List_Sampling(dist, list);
-
-    /* free <dist> */
-    Kill_Stack(dist);
-
-    /* alloc <voxel_array> */
-    Voxel_P *voxel_array = Voxel_List_To_Array(list, 1, NULL, NULL);
-
-    uint16 *pa_array = (uint16 *) pa->array;
-
-    /* alloc <seed_field> */
-    Geo3d_Scalar_Field *seed_field = Make_Geo3d_Scalar_Field(pa->size);
-    seed_field->size = 0;
-    int i;
-    for (i = 0; i < pa->size; i++) {
-      seed_field->points[seed_field->size][0] = voxel_array[i]->x;
-      seed_field->points[seed_field->size][1] = voxel_array[i]->y;
-      seed_field->points[seed_field->size][2] = z_scale * voxel_array[i]->z;
-      seed_field->values[seed_field->size] = sqrt((double)pa_array[i]);
-      seed_field->size++;
-    }
-
-    /* free <list> */
-    Kill_Voxel_List(list);
-
-    /* free <voxel_array> */
-    free(voxel_array);
-
-    /* free <pa> */
-    Kill_Pixel_Array(pa);
-
-    /* now the seeds are in <field> */
-    /* <mask> => <seed_mask> */
-    Stack *seed_mask = mask;
-    Zero_Stack(seed_mask);
-    Locseg_Fit_Workspace *fws =
-        (Locseg_Fit_Workspace*) getTraceWorkspace()->fit_workspace;
-    Stack_Fit_Score old_fs = fws->sws->fs;
-
-    fws->sws->fs.n = 2;
-    fws->sws->fs.options[0] = STACK_FIT_DOT;
-    fws->sws->fs.options[1] = STACK_FIT_CORRCOEF;
-
-    /* alloc <locseg> */
-    Local_Neuroseg *locseg = (Local_Neuroseg *)
-        malloc(seed_field->size * sizeof(Local_Neuroseg));
-
-    /* alloc <values> */
-    double *values = darray_malloc(seed_field->size);
-
-    m_progressReporter->advance(0.05);
-
-    m_progressReporter->startSubprogress(0.3);
-    /* fit segment on each seed */
-    for (i = 0; i < seed_field->size; i++) {
-      qDebug("-----------------------------> seed: %d / %d\n",
-             i, seed_field->size);
-      m_progressReporter->advance(1.0 / seed_field->size);
-
-      int index = i;
-      int x = iround(seed_field->points[index][0]);
-      int y = iround(seed_field->points[index][1]);
-      int z = iround(seed_field->points[index][2]);
-
-      double width = seed_field->values[index];
-
-      ssize_t seed_offset =
-          Stack_Util_Offset(x, y, z, stack()->width(), stack()->height(),
-                            stack()->depth());
-
-      if (seed_offset < 0) {
-        continue;
-      }
-
-      if (width < 3.0) {
-        width += 0.5;
-      }
-
-      Set_Neuroseg(&(locseg[i].seg), width * z_scale, 0.0, NEUROSEG_DEFAULT_H,
-                   TZ_PI_2, 0.0, 0.0, 0.0, 1.0 / z_scale);
-      /*
-    Set_Neuroseg(&(locseg[i].seg), width * z_scale, 0.0, NEUROSEG_HEIGHT,
-                 0.0, 0.0, 0.0, 0.0, 1.0 / z_scale);
-*/
-      double cpos[3];
-      cpos[0] = x;
-      cpos[1] = y;
-      cpos[2] = z;
-
-      Set_Neuroseg_Position(&(locseg[i]), cpos, NEUROSEG_CENTER);
-
-      if (seed_mask->array[seed_offset] > 0) {
-        qDebug("labeled\n");
-        values[i] = 0.0;
-        continue;
-      }
-
-      Local_Neuroseg_Optimize_W(locseg + i, stack()->c_stack(), 1.0, 0, fws);
-
-      values[i] = fws->sws->fs.scores[1];
-
-      qDebug("%g\n", values[i]);
-
-      /* label seed_mask */
-      if (values[i] > LOCAL_NEUROSEG_MIN_CORRCOEF) {
-        Local_Neuroseg_Label_G(locseg + i, seed_mask, -1, 2, 1.0);
-      } else {
-        Local_Neuroseg_Label_G(locseg + i, seed_mask, -1, 1, 1.0);
-      }
-
-      //addLocsegChain(new ZLocsegChain(Copy_Local_Neuroseg(locseg + i)));
-    }
-    m_progressReporter->endSubprogress(0.3);
-
-    fws->sws->fs = old_fs;
-    Kill_Stack(seed_mask);
-
-    /* make trace mask */
-    if (getTraceWorkspace()->trace_mask == NULL) {
-      getTraceWorkspace()->trace_mask =
-          Make_Stack(GREY16, mainStack->width(), mainStack->height(),
-                     mainStack->depth());
-    }
-    Zero_Stack(getTraceWorkspace()->trace_mask);
-
-
-    /* trace all seeds */
-    int nchain;
-    Locseg_Chain **chain =
-        Trace_Locseg_S(mainStack->c_stack(), 1.0, locseg, values, seed_field->size,
-                       getTraceWorkspace(), &nchain);
-
-    m_progressReporter->advance(0.3);
-
-    /* tune ends */
-    Locseg_Label_Workspace *ws = New_Locseg_Label_Workspace();
-    ws->signal = stack()->c_stack();
-    ws->sratio = 1.0;
-    ws->sdiff = 0.0;
-    ws->option = 6;
-
-    /*
-    for (i = 0; i < nchain; i++) {
-      if(chain[i] != NULL) {
-        Locseg_Chain_Label_W(chain[i], m_traceWorkspace->trace_mask, 1.0,
-                             0, Locseg_Chain_Length(chain[i]) - 1,
-                             ws);
-      }
-    }
-    */
-
-    Stack_Binarize(getTraceWorkspace()->trace_mask);
-
-    double old_step = getTraceWorkspace()->trace_step;
-    BOOL old_refit = getTraceWorkspace()->refit;
-    BOOL traceMasked = Trace_Workspace_Is_Masked(getTraceWorkspace());
-
-    m_neuronTracer.loadTraceMask(true);
-    getTraceWorkspace()->trace_step = 0.1;
-    getTraceWorkspace()->refit = FALSE;
-
-    for (i = 0; i < nchain; i++) {
-      if (chain[i] != NULL) {
-        /* erase the mask */
-        ws->option = 7;
-        Locseg_Chain_Label_W(chain[i], getTraceWorkspace()->trace_mask, 1.0,
-                             0, Locseg_Chain_Length(chain[i]) - 1,
-                             ws);
-
-        getTraceWorkspace()->trace_status[0] = TRACE_NORMAL;
-        getTraceWorkspace()->trace_status[1] = TRACE_NORMAL;
-        Trace_Locseg(stack()->c_stack(), 1.0, chain[i], getTraceWorkspace());
-        Locseg_Chain_Down_Sample(chain[i]);
-
-        Locseg_Chain_Tune_End(chain[i], stack()->c_stack(), 1.0,
-                              getTraceWorkspace()->trace_mask, DL_HEAD);
-        Locseg_Chain_Tune_End(chain[i], stack()->c_stack(), 1.0,
-                              getTraceWorkspace()->trace_mask, DL_TAIL);
-
-        if (Locseg_Chain_Length(chain[i]) > 0) {
-          ws->option = 6;
-          Locseg_Chain_Label_W(chain[i], getTraceWorkspace()->trace_mask, 1.0,
-                               0, Locseg_Chain_Length(chain[i]) - 1, ws);
-        }
-      }
-    }
-
-    ws->signal = NULL;
-    Kill_Locseg_Label_Workspace(ws);
-
-    getTraceWorkspace()->trace_step = old_step;
-    getTraceWorkspace()->refit = old_refit;
-    m_neuronTracer.loadTraceMask(traceMasked);
-
-    Zero_Stack(getTraceWorkspace()->trace_mask);
-    getTraceWorkspace()->chain_id = 0;
-
-    /* add chains */
-    for (i = 0; i < nchain; i++) {
-      if (chain[i] != NULL) {
-        if (Locseg_Chain_Length(chain[i]) > 0) {
-          ZLocsegChain *zchain = new ZLocsegChain(chain[i]);
-          if (zchain->confidence(stack()->c_stack()) > 0.5) {
-            addLocsegChain(zchain);
-          } else {
-            delete zchain;
-          }
-        }
-      }
-    }
-    m_progressReporter->advance(0.05);
-
-    free(chain);
-
-    /* free <seed_field> */
-    Kill_Geo3d_Scalar_Field(seed_field);
-
-    /* free <values> */
-    free(values);
-
-    /* free <locseg> */
-    free(locseg);
-
-    m_progressReporter->end();
-  }
-}
-#endif
 
 void ZStackDoc::eraseTraceMask(const ZLocsegChain *chain)
 {
   chain->eraseTraceMask(getTraceWorkspace()->trace_mask);
 }
-#if 0
-void ZStackDoc::autoTrace(Stack *stack)
-{
-  int thre = autoThreshold(stack);
-  /* alloc <mask> */
-  Stack *mask = Copy_Stack(stack);
-  Stack_Threshold_Binarize(mask, thre);
-  Translate_Stack(mask, GREY, 1);
-
-  /* alloc <mask2> */
-  //Stack *mask2 = Stack_Majority_Filter_R(mask, NULL, 26, 4);
-
-  /* free <mask>, <mask2> => <mask> */
-  //Kill_Stack(mask);
-  //mask = mask2;
-
-  double z_scale = 1.0;
-  if (getTraceWorkspace()->resolution[0] != getTraceWorkspace()->resolution[2]) {
-    z_scale = getTraceWorkspace()->resolution[0] / getTraceWorkspace()->resolution[2];
-  }
-
-  Stack *mask2 = mask;
-  /* resample the stack for dist calc if z is different */
-  if (z_scale != 1.0) {
-    mask2 = Resample_Stack_Depth(mask, NULL, z_scale);
-    Stack_Binarize(mask2);
-  }
-
-  /* alloc <dist> */
-  Stack *dist = Stack_Bwdist_L_U16(mask2, NULL, 0);
-
-  if (mask != mask2) {
-    Kill_Stack(mask2);
-  }
-
-  /* alloc <seeds> */
-  Stack *seeds = Stack_Locmax_Region(dist, 26);
-
-  /* alloc <objs> */
-  Object_3d_List *objs = Stack_Find_Object_N(seeds, NULL, 1, 0, 26);
-
-  Zero_Stack(seeds);
-
-  int objnum = 0;
-  while (objs != NULL) {
-    Object_3d *obj = objs->data;
-    Voxel_t center;
-    Object_3d_Central_Voxel(obj, center);
-    Set_Stack_Pixel(seeds, center[0], center[1], center[2], 0, 1);
-    objs = objs->next;
-    objnum++;
-  }
-
-  /* free <objs> */
-  Kill_Object_3d_List(objs);
-
-  /* alloc <list> */
-  Voxel_List *list = Stack_To_Voxel_List(seeds);
-
-  /* free <seeds> */
-  Kill_Stack(seeds);
-
-  /* alloc <pa> */
-  Pixel_Array *pa = Voxel_List_Sampling(dist, list);
-
-  /* free <dist> */
-  Kill_Stack(dist);
-
-  /* alloc <voxel_array> */
-  Voxel_P *voxel_array = Voxel_List_To_Array(list, 1, NULL, NULL);
-
-  uint16 *pa_array = (uint16 *) pa->array;
-
-  /* alloc <seed_field> */
-  Geo3d_Scalar_Field *seed_field = Make_Geo3d_Scalar_Field(pa->size);
-  seed_field->size = 0;
-  int i;
-  for (i = 0; i < pa->size; i++) {
-    seed_field->points[seed_field->size][0] = voxel_array[i]->x;
-    seed_field->points[seed_field->size][1] = voxel_array[i]->y;
-    seed_field->points[seed_field->size][2] = z_scale * voxel_array[i]->z;
-    seed_field->values[seed_field->size] = sqrt((double)pa_array[i]);
-    seed_field->size++;
-  }
-
-  /* free <list> */
-  Kill_Voxel_List(list);
-
-  /* free <voxel_array> */
-  free(voxel_array);
-
-  /* free <pa> */
-  Kill_Pixel_Array(pa);
-
-  /* now the seeds are in <field> */
-  /* <mask> => <seed_mask> */
-  Stack *seed_mask = mask;
-  Zero_Stack(seed_mask);
-  Locseg_Fit_Workspace *fws =
-      (Locseg_Fit_Workspace*) getTraceWorkspace()->fit_workspace;
-  Stack_Fit_Score old_fs = fws->sws->fs;
-
-  fws->sws->fs.n = 2;
-  fws->sws->fs.options[0] = STACK_FIT_DOT;
-  fws->sws->fs.options[1] = STACK_FIT_CORRCOEF;
-
-  /* alloc <locseg> */
-  Local_Neuroseg *locseg = (Local_Neuroseg *)
-                           malloc(seed_field->size * sizeof(Local_Neuroseg));
-
-  /* alloc <values> */
-  double *values = darray_malloc(seed_field->size);
-
-  /* fit segment on each seed */
-  for (i = 0; i < seed_field->size; i++) {
-    qDebug("-----------------------------> seed: %d / %d\n",
-           i, seed_field->size);
-
-    int index = i;
-    int x = iround(seed_field->points[index][0]);
-    int y = iround(seed_field->points[index][1]);
-    int z = iround(seed_field->points[index][2]);
-
-    double width = seed_field->values[index];
-
-    ssize_t seed_offset =
-        Stack_Util_Offset(x, y, z, stack->width, stack->height,
-             stack->depth);
-
-    if (seed_offset < 0) {
-      continue;
-    }
-
-    if (width < 3.0) {
-      width += 0.5;
-    }
-
-    Set_Neuroseg(&(locseg[i].seg), width * z_scale, 0.0, NEUROSEG_DEFAULT_H,
-                 TZ_PI_2, 0.0, 0.0, 0.0, 1.0 / z_scale);
-/*
-    Set_Neuroseg(&(locseg[i].seg), width * z_scale, 0.0, NEUROSEG_HEIGHT,
-                 0.0, 0.0, 0.0, 0.0, 1.0 / z_scale);
-*/
-    double cpos[3];
-    cpos[0] = x;
-    cpos[1] = y;
-    cpos[2] = z;
-
-    Set_Neuroseg_Position(&(locseg[i]), cpos, NEUROSEG_CENTER);
-
-    if (seed_mask->array[seed_offset] > 0) {
-      qDebug("labeled\n");
-      values[i] = 0.0;
-      continue;
-    }
-
-    Local_Neuroseg_Optimize_W(locseg + i, stack, 1.0, 0, fws);
-
-    values[i] = fws->sws->fs.scores[1];
-
-    qDebug("%g\n", values[i]);
-
-    /* label seed_mask */
-    if (values[i] > LOCAL_NEUROSEG_MIN_CORRCOEF) {
-      Local_Neuroseg_Label_G(locseg + i, seed_mask, -1, 2, 1.0);
-    } else {
-      Local_Neuroseg_Label_G(locseg + i, seed_mask, -1, 1, 1.0);
-    }
-
-    //addLocsegChain(new ZLocsegChain(Copy_Local_Neuroseg(locseg + i)));
-  }
-
-  fws->sws->fs = old_fs;
-  Kill_Stack(seed_mask);
-
-  /* make trace mask */
-  if (getTraceWorkspace()->trace_mask == NULL) {
-    getTraceWorkspace()->trace_mask =
-      Make_Stack(GREY16, stack->width, stack->height,
-     stack->depth);
-    Zero_Stack(getTraceWorkspace()->trace_mask);
-  }
-
-  /* trace all seeds */
-  int nchain;
-  getTraceWorkspace()->min_chain_length = 10;
-  getTraceWorkspace()->min_score = 0.1;
-  Locseg_Chain **chain =
-    Trace_Locseg_S(stack, 1.0, locseg, values, seed_field->size,
-                   getTraceWorkspace(), &nchain);
-
-  /* tune ends */
-  Locseg_Label_Workspace *ws = New_Locseg_Label_Workspace();
-  ws->signal = stack;
-  ws->sratio = 1.0;
-  ws->sdiff = 0.0;
-  ws->option = 6;
-
-  Zero_Stack(getTraceWorkspace()->trace_mask);
-  for (i = 0; i < nchain; i++) {
-    if(chain[i] != NULL) {
-      Locseg_Chain_Label_W(chain[i], getTraceWorkspace()->trace_mask, 1.0,
-                           0, Locseg_Chain_Length(chain[i]) - 1,
-                           ws);
-    }
-  }
-
-  double old_step = getTraceWorkspace()->trace_step;
-  BOOL old_refit = getTraceWorkspace()->refit;
-  BOOL traceMasked = Trace_Workspace_Is_Masked(getTraceWorkspace());
-
-  m_neuronTracer.loadTraceMask(true);
-  getTraceWorkspace()->trace_step = 0.1;
-  getTraceWorkspace()->refit = FALSE;
-
-  for (i = 0; i < nchain; i++) {
-    if (chain[i] != NULL) {
-      /* erase the mask */
-      ws->option = 7;
-      Locseg_Chain_Label_W(chain[i], getTraceWorkspace()->trace_mask, 1.0,
-                           0, Locseg_Chain_Length(chain[i]) - 1,
-                           ws);
-
-      getTraceWorkspace()->trace_status[0] = TRACE_NORMAL;
-      getTraceWorkspace()->trace_status[1] = TRACE_NORMAL;
-      Trace_Locseg(stack, 1.0, chain[i], getTraceWorkspace());
-      Locseg_Chain_Down_Sample(chain[i]);
-
-      Locseg_Chain_Tune_End(chain[i], stack, 1.0,
-                            getTraceWorkspace()->trace_mask, DL_HEAD);
-      Locseg_Chain_Tune_End(chain[i], stack, 1.0,
-                            getTraceWorkspace()->trace_mask, DL_TAIL);
-
-      if (Locseg_Chain_Length(chain[i]) > 0) {
-        ws->option = 6;
-        Locseg_Chain_Label_W(chain[i], getTraceWorkspace()->trace_mask, 1.0,
-                             0, Locseg_Chain_Length(chain[i]) - 1, ws);
-      }
-    }
-  }
-
-  ws->signal = NULL;
-  Kill_Locseg_Label_Workspace(ws);
-
-  getTraceWorkspace()->trace_step = old_step;
-  getTraceWorkspace()->refit = old_refit;
-  m_neuronTracer.loadTraceMask(traceMasked);
-
-  Zero_Stack(getTraceWorkspace()->trace_mask);
-  getTraceWorkspace()->chain_id = 0;
-
-  /* add chains */
-  for (i = 0; i < nchain; i++) {
-    if (chain[i] != NULL) {
-      if (Locseg_Chain_Length(chain[i]) > 0) {
-        ZLocsegChain *zchain = new ZLocsegChain(chain[i]);
-        if (zchain->confidence(stack) > 0.03) {
-          addLocsegChain(zchain);
-        } else {
-          delete zchain;
-        }
-      }
-    }
-  }
-
-  free(chain);
-
-  /* free <seed_field> */
-  Kill_Geo3d_Scalar_Field(seed_field);
-
-  /* free <values> */
-  free(values);
-
-  /* free <locseg> */
-  free(locseg);
-}
-
-void ZStackDoc::traceFromSwc(QProgressBar *pb)
-{
-  if (pb != NULL) {
-    pb->setRange(0, m_swcList.length());
-  }
-
-  if (!m_swcList.isEmpty()) {
-    foreach (ZSwcTree *tree, m_swcList) {
-      int n = tree->updateIterator(SWC_TREE_ITERATOR_DEPTH_FIRST, TRUE);
-      Geo3d_Ball *ball = NULL;
-      if (Swc_Tree_Node_Is_Virtual(tree->begin())) {
-        n--;
-        tree->next();
-      }
-      GUARDED_MALLOC_ARRAY(ball, n, Geo3d_Ball);
-      int length = 0;
-      Locseg_Fit_Workspace *ws =
-          (Locseg_Fit_Workspace*) getTraceWorkspace()->fit_workspace;
-      Swc_Tree_Node *tn = NULL;
-      while ((tn = tree->next()) != NULL) {
-        if (Swc_Tree_Node_Is_Leaf(tn)) {
-          ball[length].center[0] = Swc_Tree_Node_Data(tn)->x;
-          ball[length].center[1] = Swc_Tree_Node_Data(tn)->y;
-          ball[length].center[2] = Swc_Tree_Node_Data(tn)->z;
-          ball[length].r = Swc_Tree_Node_Data(tn)->d;
-          length++;
-          if (stack()->isTracable()) {
-            ws = (Locseg_Fit_Workspace*) getTraceWorkspace()->fit_workspace;
-          } else {
-            ws = NULL;
-          }
-          Locseg_Chain *chain =
-              Locseg_Chain_From_Ball_Array(ball, length, stack()->c_stack(),
-                                           stack()->preferredZScale(), ws);
-
-          if (chain != NULL) {
-            addLocsegChain(new ZLocsegChain(chain));
-          }
-          length = 0;
-        } else {
-          ball[length].center[0] = Swc_Tree_Node_Data(tn)->x;
-          ball[length].center[1] = Swc_Tree_Node_Data(tn)->y;
-          ball[length].center[2] = Swc_Tree_Node_Data(tn)->z;
-          ball[length].r = Swc_Tree_Node_Data(tn)->d;
-          length++;
-        }
-      }
-      free(ball);
-      if (pb != NULL) {
-        pb->setValue(pb->value() + 1);
-      }
-    }
-    emit chainModified();
-  }
-
-  if (pb != NULL) {
-    pb->hide();
-  }
-}
-#endif
 
 bool ZStackDoc::binarize(int threshold)
 {
@@ -7003,7 +5556,7 @@ bool ZStackDoc::executeAddStrokeCommand(const QList<ZStroke2d*> &strokeList)
 }
 
 void ZStackDoc::addObject(
-    ZDocumentable *obj, NeuTube::EDocumentableType type, ZDocPlayer::TRole role)
+    ZStackObject *obj, NeuTube::EDocumentableType type, ZDocPlayer::TRole role)
 {
   switch (type) {
   case NeuTube::Documentable_SWC:
@@ -7018,9 +5571,6 @@ void ZStackDoc::addObject(
   case NeuTube::Documentable_LOCSEG_CHAIN:
     addLocsegChain(dynamic_cast<ZLocsegChain*>(obj));
     break;
-  case NeuTube::Documentable_CONN:
-    addLocsegChainConn(dynamic_cast<ZLocsegChainConn*>(obj));
-    break;
   case NeuTube::Documentable_STROKE:
     addStroke(dynamic_cast<ZStroke2d*>(obj));
     break;
@@ -7028,21 +5578,30 @@ void ZStackDoc::addObject(
     addSparseObject(dynamic_cast<ZSparseObject*>(obj));
     break;
   default:
-  {
-    m_objs.prepend(obj);
-    ZStackDrawable *drawable = dynamic_cast<ZStackDrawable*>(obj);
-    if (drawable != NULL) {
-      m_drawableList.prepend(drawable);
-    }
-  }
+    addObject(obj);
     break;
   }
 
   addPlayer(obj, type, role);
 }
 
+void ZStackDoc::notifyPlayerChanged(ZDocPlayer::TRole role)
+{
+  if (role & ZDocPlayer::ROLE_SEED) {
+    emit seedModified();
+  }
+
+  if (role & ZDocPlayer::ROLE_3DPAINT) {
+    notifyVolumeModified();
+  }
+
+  if (role & ZDocPlayer::ROLE_3DGRAPH_DECORATOR) {
+    notify3DGraphModified();
+  }
+}
+
 void ZStackDoc::addPlayer(
-    ZDocumentable *obj, NeuTube::EDocumentableType type, ZDocPlayer::TRole role)
+    ZStackObject *obj, NeuTube::EDocumentableType type, ZDocPlayer::TRole role)
 {
   if (role != ZDocPlayer::ROLE_NONE) {
     ZDocPlayer *player = NULL;
@@ -7055,9 +5614,8 @@ void ZStackDoc::addPlayer(
       break;
     }
 
-    if (player->hasRole(ZDocPlayer::ROLE_SEED)) {
-      emit seedModified();
-    }
+    m_playerList.append(player);
+    notifyPlayerChanged(player->getRole());
   }
 }
 
@@ -7068,7 +5626,7 @@ bool ZStackDoc::hasObjectSelected()
 }
 
 bool ZStackDoc::executeAddObjectCommand(
-    ZDocumentable *obj, NeuTube::EDocumentableType type, ZDocPlayer::TRole role)
+    ZStackObject *obj, NeuTube::EDocumentableType type, ZDocPlayer::TRole role)
 {
   if (obj != NULL) {
     ZStackDocCommand::ObjectEdit::AddObject *command =
@@ -7983,95 +6541,69 @@ void ZStackDoc::localSeededWatershed()
     ZStackWatershed engine;
     ZStackArray seedMask = createWatershedMask();
 
-    advanceProgress(0.1);
-    QApplication::processEvents();
-
-    Cuboid_I box;
-    seedMask.getBoundBox(&box);
-    const int xMargin = 10;
-    const int yMargin = 10;
-    const int zMargin = 20;
-    Cuboid_I_Expand_X(&box, xMargin);
-    Cuboid_I_Expand_Y(&box, yMargin);
-    Cuboid_I_Expand_Z(&box, zMargin);
-
-    engine.setRange(box);
-    ZStack *out = engine.run(m_stack, seedMask);
-
-    advanceProgress(0.1);
-    QApplication::processEvents();
-
-
-#if 0
-    Stack *stack = m_stack->c_stack();
-    Stack_Watershed_Workspace *ws =
-        Make_Stack_Watershed_Workspace(stack);
-    ws->conn = 6;
-    Stack *mask = C_Stack::make(GREY, C_Stack::width(stack),
-                                C_Stack::height(stack), C_Stack::depth(stack));
-    C_Stack::setZero(mask);
-    ws->mask = mask;
-
-    ZStackArray stackArray = createWatershedMask();
-    Mc_Stack maskView;
-    C_Stack::view(ws->mask, &maskView);
-    ZStack maskWrapper(&maskView, NULL);
-    maskWrapper.setOffset(m_stack->getOffset());
-    stackArray.paste(&maskWrapper, 0);
-
-#ifdef _DEBUG_2
-    C_Stack::write(GET_DATA_DIR + "/test.tif", ws->mask);
-#endif
-
-    size_t voxelNumber = m_stack->getVoxelNumber();
-    for (size_t i = 0; i < voxelNumber; ++i) {
-      if (stack->array[i] == 0) {
-        mask->array[i] = STACK_WATERSHED_BARRIER;
+    ZStack *signalStack = m_stack;
+    ZIntPoint dsIntv(0, 0, 0);
+    if (signalStack->isVirtual()) {
+      if (m_sparseStack != NULL) {
+        signalStack = m_sparseStack->getStack();
+        dsIntv = m_sparseStack->getDownsampleInterval();
       }
     }
 
-    advanceProgress(0.1);
-    QApplication::processEvents();
+    if (signalStack != NULL) {
+      seedMask.downsampleMax(dsIntv.getX(), dsIntv.getY(), dsIntv.getZ());
 
-    Stack *out= Stack_Watershed(stack, ws);
+      advanceProgress(0.1);
+      QApplication::processEvents();
 
-    advanceProgress(0.5);
-    QApplication::processEvents();
+      Cuboid_I box;
+      seedMask.getBoundBox(&box);
+      const int xMargin = 10;
+      const int yMargin = 10;
+      const int zMargin = 20;
+      Cuboid_I_Expand_X(&box, xMargin);
+      Cuboid_I_Expand_Y(&box, yMargin);
+      Cuboid_I_Expand_Z(&box, zMargin);
 
-    if (stack != m_stack->c_stack()) {
-      C_Stack::kill(stack);
-    }
-#endif
+      engine.setRange(box);
+      ZStack *out = engine.run(signalStack, seedMask);
 
-    Object_3d *objData = Stack_Region_Border(out->c_stack(), 6, TRUE);
+      advanceProgress(0.1);
+      QApplication::processEvents();
 
-    advanceProgress(0.1);
-    QApplication::processEvents();
+      Object_3d *objData = Stack_Region_Border(out->c_stack(), 6, TRUE);
 
-    if (objData != NULL) {
-      ZObject3d *obj = new ZObject3d(objData);
-      /*
+      advanceProgress(0.1);
+      QApplication::processEvents();
+
+      if (objData != NULL) {
+        ZObject3d *obj = new ZObject3d(objData);
+        /*
       obj->translate(iround(getStackOffset().x()),
                      iround(getStackOffset().y()),
                      iround(getStackOffset().z()));
                      */
 
-      obj->translate(out->getOffset());
+        obj->translate(out->getOffset());
+        if (dsIntv.getX() > 0 || dsIntv.getY() > 0 || dsIntv.getZ() > 0) {
+          obj->upSample(dsIntv.getX(), dsIntv.getY(), dsIntv.getZ());
+        }
 
-      /*
+        /*
       obj->translate(iround(out->getOffset().getX()),
                      iround(out->getOffset().getY()),
                      iround(out->getOffset().getZ()));
                      */
-      obj->setColor(255, 255, 0, 180);
+        obj->setColor(255, 255, 0, 180);
 
-      addObj3d(obj);
-      addPlayer(obj, NeuTube::Documentable_OBJ3D, ZDocPlayer::ROLE_TMP_RESULT);
-      notifyObj3dModified();
+        addObj3d(obj);
+        addPlayer(obj, NeuTube::Documentable_OBJ3D, ZDocPlayer::ROLE_TMP_RESULT);
+        notifyObj3dModified();
+      }
+
+      // C_Stack::kill(out);
+      delete out;
     }
-
-   // C_Stack::kill(out);
-    delete out;
   }
 }
 
@@ -8084,18 +6616,19 @@ void ZStackDoc::seededWatershed()
 
   if (!seedMask.empty()) {
     ZStack *signalStack = m_stack;
+    ZIntPoint dsIntv(0, 0, 0);
     if (signalStack->isVirtual()) {
       if (m_sparseStack != NULL) {
         signalStack = m_sparseStack->getStack();
+        dsIntv = m_sparseStack->getDownsampleInterval();
       }
     }
 
     if (signalStack != NULL) {
-      ZIntPoint dsIntv = m_sparseStack->getDownsampleInterval();
       seedMask.downsampleMax(dsIntv.getX(), dsIntv.getY(), dsIntv.getZ());
       ZStack *out = engine.run(signalStack, seedMask);
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
       out->save(GET_TEST_DATA_DIR + "/test.tif");
 #endif
 

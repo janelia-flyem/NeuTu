@@ -13,12 +13,11 @@
 #include <set>
 
 #include "tz_swc_tree.h"
-#include "zdocumentable.h"
-#include "zstackdrawable.h"
-#include "zswcexportable.h"
+#include "zstackobject.h"
 #include "zpoint.h"
 #include "zswcpath.h"
 #include "zcuboid.h"
+#include "zuncopyable.h"
 
 class ZSwcForest;
 class ZSwcBranch;
@@ -43,8 +42,7 @@ class ZSwcTrunkAnalyzer;
  *each of them is the root of a real SWC tree.
  */
 
-class ZSwcTree :
-    public ZDocumentable, public ZStackDrawable, public ZSwcExportable {
+class ZSwcTree : public ZStackObject, ZUncopyable {
 public:
   //! Action of cleaning the existing data
   enum ESetDataOption {
@@ -72,7 +70,7 @@ public:
    *
    * \param src Original object.
    */
-  ZSwcTree(const ZSwcTree &src);
+  //ZSwcTree(const ZSwcTree &src);
 
   /*!
    * \brief Default constructor.
@@ -165,10 +163,8 @@ public:
    * \brief save Save swc
    * \param filePath
    */
-  virtual void save(const char *filePath);
-
-  virtual bool load(const char *filePath);
-
+  void save(const char *filePath);
+  bool load(const char *filePath);
   void save(const std::string &filePath);
   void load(const std::string &filePath);
 

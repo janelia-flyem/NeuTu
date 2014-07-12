@@ -25,13 +25,13 @@ ZDocPlayer::~ZDocPlayer()
   m_role = ZDocPlayer::ROLE_NONE;
 }
 
-ZDocPlayer::ZDocPlayer(ZDocumentable* data, TRole role)
+ZDocPlayer::ZDocPlayer(ZStackObject *data, TRole role)
 {
   m_data = data;
   m_role = role;
 }
 
-bool ZDocPlayer::hasData(ZDocumentable *data) const
+bool ZDocPlayer::hasData(ZStackObject *data) const
 {
   if (data == NULL) {
     return false;
@@ -70,7 +70,7 @@ ZDocPlayerList::~ZDocPlayerList()
   clear();
 }
 
-ZDocPlayer::TRole ZDocPlayerList::removePlayer(ZDocumentable *data)
+ZDocPlayer::TRole ZDocPlayerList::removePlayer(ZStackObject *data)
 {
   ZDocPlayer::TRole role = ZDocPlayer::ROLE_NONE;
 
@@ -165,7 +165,7 @@ ZStroke2dPlayer::ZStroke2dPlayer() : ZDocPlayer()
 {
 }
 
-ZStroke2dPlayer::ZStroke2dPlayer(ZDocumentable *data, TRole role) :
+ZStroke2dPlayer::ZStroke2dPlayer(ZStackObject *data, TRole role) :
   ZDocPlayer(data, role)
 {
 }
@@ -214,7 +214,7 @@ ZObject3dPlayer::ZObject3dPlayer() : ZDocPlayer()
 {
 }
 
-ZObject3dPlayer::ZObject3dPlayer(ZDocumentable *data, TRole role) :
+ZObject3dPlayer::ZObject3dPlayer(ZStackObject *data, TRole role) :
   ZDocPlayer(data, role)
 {
 }
@@ -347,7 +347,7 @@ ZSparseObjectPlayer::ZSparseObjectPlayer() : ZDocPlayer()
 {
 }
 
-ZSparseObjectPlayer::ZSparseObjectPlayer(ZDocumentable *data, TRole role) :
+ZSparseObjectPlayer::ZSparseObjectPlayer(ZStackObject *data, TRole role) :
   ZDocPlayer(data, role)
 {
 }

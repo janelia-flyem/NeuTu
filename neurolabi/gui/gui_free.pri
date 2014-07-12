@@ -4,9 +4,6 @@ include($${PWD}/mylib/mylib.pri)
 HEADERS +=$${PWD}/zstackprocessor.h \
    $${PWD}/zstack.hxx \
    $${PWD}/zlocalneuroseg.h \
-   $${PWD}/zswcexportable.h \
-   $${PWD}/zdocumentable.h \
-   $${PWD}/zinterface.h \
    $${PWD}/zellipse.h \
    $${PWD}/zswctree.h \
    $${PWD}/zobject3d.h \
@@ -203,7 +200,8 @@ HEADERS +=$${PWD}/zstackprocessor.h \
    $${PWD}/bigdata/zstackblockgrid.h \
    $${PWD}/bigdata/zblockgrid.h \
    $${PWD}/bigdata/zblockgridfactory.h \
-   $${PWD}/zsparsestack.h
+   $${PWD}/zsparsestack.h \
+    zstackobject.h
 
 SOURCES +=$${PWD}/zstackprocessor.cpp \
    $${PWD}/zstack.cxx \
@@ -329,7 +327,6 @@ SOURCES +=$${PWD}/zstackprocessor.cpp \
    $${PWD}/flyem/zflyemneuronrange.cpp \
    $${PWD}/flyem/zflyemneuronaxis.cpp \
    $${PWD}/zswcgenerator.cpp \
-   $${PWD}/zstackdrawable.cpp \
    $${PWD}/zswcnodebufferfeatureanalyzer.cpp \
    $${PWD}/flyem/zflyemneuronrangecompare.cpp \
    $${PWD}/swc/zswcresampler.cpp \
@@ -390,4 +387,5 @@ SOURCES +=$${PWD}/zstackprocessor.cpp \
    $${PWD}/bigdata/zstackblockgrid.cpp \
    $${PWD}/bigdata/zblockgrid.cpp \
    $${PWD}/bigdata/zblockgridfactory.cpp \
-   $${PWD}/zsparsestack.cpp
+   $${PWD}/zsparsestack.cpp \
+    zstackobject.cpp

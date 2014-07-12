@@ -1155,15 +1155,6 @@ void ZStackDocCommand::ObjectEdit::RemoveSelected::undo()
     m_chainList.clear();
     doc->notifyChainModified();
   }
-  if (!m_connList.empty()) {
-    QMutableListIterator<ZLocsegChainConn*> iter(m_connList);
-    while (iter.hasNext()) {
-      ZLocsegChainConn *obj = iter.next();
-      doc->addLocsegChainConn(obj);
-    }
-    m_connList.clear();
-    doc->notifyChainModified();
-  }
 
   if (!m_strokeList.empty()) {
     QMutableListIterator<ZStroke2d*> iter(m_strokeList);
@@ -1248,7 +1239,6 @@ void ZStackDocCommand::ObjectEdit::RemoveSelected::redo()
 {
   COPY_SELECTED_OBJECT(ZSwcTree, doc->getSwcList(), swcIterc, m_swcList);
   COPY_SELECTED_OBJECT(ZObject3d, doc->getObj3dList(), obj3dIterc, m_obj3dList);
-  COPY_SELECTED_OBJECT(ZLocsegChainConn, doc->getConnList(), connIterc, m_connList);
   COPY_SELECTED_OBJECT(ZLocsegChain, doc->getChainList(), chainIterc, m_chainList);
   COPY_SELECTED_OBJECT(ZPunctum, doc->getPunctaList(), punctaIterc, m_punctaList);
   COPY_SELECTED_OBJECT(ZStroke2d, doc->getStrokeList(), strokeIterc, m_strokeList);
@@ -1261,8 +1251,7 @@ void ZStackDocCommand::ObjectEdit::RemoveSelected::redo()
   //REMOVE_SELECTED_OBJECT(ZVrmlExportable, doc->m_vrmlObjects, vrmlIter);
   REMOVE_SELECTED_OBJECT(ZSwcTree, doc->getSwcList(), swcIter);
   REMOVE_SELECTED_OBJECT(ZObject3d, doc->getObj3dList(), obj3dIter);
-  REMOVE_SELECTED_OBJECT(ZLocsegChainConn, doc->getConnList(), connIter);
-  REMOVE_SELECTED_OBJECT(ZStackDrawable, doc->getDrawableList(), drawableIter);
+  REMOVE_SELECTED_OBJECT(ZStackObject, doc->getObjectList(), drawableIter);
   REMOVE_SELECTED_OBJECT(ZPunctum, doc->getPunctaList(), punctaIter);
   REMOVE_SELECTED_OBJECT(ZStroke2d, doc->getStrokeList(), strokeIter);
 
@@ -1271,28 +1260,22 @@ void ZStackDocCommand::ObjectEdit::RemoveSelected::redo()
     ZLocsegChain *obj = chainIter.next();
     if (obj->isSelected()) {
       //if (obj == doc->m_masterChain) {
+#if 0
       if (doc->isMasterChain(obj)) {
         doc->setMasterChain(NULL);
         //doc->m_masterChain = NULL;
       }
+#endif
       doc->eraseTraceMask(obj);
       //obj->eraseTraceMask(doc->m_traceWorkspace->trace_mask);
-      connIter.toFront();
-      while (connIter.hasNext()) {
-        ZLocsegChainConn *conn = connIter.next();
-        if (conn->isLoop(obj) || conn->isHook(obj)) {
-          REMOVE_OBJECT(doc->getDrawableList(), ((ZInterface*) conn));
-          connIter.remove();
-        }
-      }
       chainIter.remove();
     }
   }
 
 
-  QMutableListIterator<ZDocumentable*> docIter(doc->getObjectList());
+  QMutableListIterator<ZStackObject*> docIter(doc->getObjectList());
   while (docIter.hasNext()) {
-    ZDocumentable *obj = docIter.next();
+    ZStackObject *obj = docIter.next();
     if (obj->isSelected()) {
       docIter.remove();
     }
@@ -1833,7 +1816,7 @@ ZStackDocCommand::ObjectEdit::MoveSelected::~MoveSelected()
 }
 
 ZStackDocCommand::ObjectEdit::AddObject::AddObject(
-    ZStackDoc *doc, ZDocumentable *obj, NeuTube::EDocumentableType type,
+    ZStackDoc *doc, ZStackObject *obj, NeuTube::EDocumentableType type,
     ZDocPlayer::TRole role, QUndoCommand *parent)
   : QUndoCommand(parent), m_doc(doc), m_obj(obj), m_type(type), m_role(role),
     m_isInDoc(false)
@@ -1851,26 +1834,29 @@ ZStackDocCommand::ObjectEdit::AddObject::~AddObject()
 void ZStackDocCommand::ObjectEdit::AddObject::redo()
 {
   m_doc->addObject(m_obj, m_type, m_role);
-  m_doc->notifyObjectModified();
+  //m_doc->notifyObjectModified();
+  /*
   if ((m_role & ZDocPlayer::ROLE_3DPAINT) > 0) {
     m_doc->notifyVolumeModified();
   }
   if ((m_role & ZDocPlayer::ROLE_3DGRAPH_DECORATOR) > 0) {
     m_doc->notify3DGraphModified();
   }
+  */
   m_isInDoc = true;
 }
 
 void ZStackDocCommand::ObjectEdit::AddObject::undo()
 {
-  ZDocPlayer::TRole role = m_doc->removeObject(m_obj, false);
+  m_doc->removeObject(m_obj, false);
+  /*
   m_doc->notifyObjectModified();
   if ((role & ZDocPlayer::ROLE_3DPAINT) > 0) {
     m_doc->notifyVolumeModified();
   }
   if ((m_role & ZDocPlayer::ROLE_3DGRAPH_DECORATOR)) {
     m_doc->notify3DGraphModified();
-  }
+  }*/
   m_isInDoc = false;
 }
 

@@ -2,10 +2,9 @@
 #define ZLINESEGMENTOBJECT_H
 
 #include "zlinesegment.h"
-#include "zdocumentable.h"
-#include "zstackdrawable.h"
+#include "zstackobject.h"
 
-class ZLineSegmentObject : public ZLineSegment, ZDocumentable, ZStackDrawable
+class ZLineSegmentObject : public ZLineSegment, ZStackObject
 {
 public:
   ZLineSegmentObject();

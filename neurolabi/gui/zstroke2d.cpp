@@ -21,8 +21,7 @@ ZStroke2d::ZStroke2d() : m_width(10.0), m_z(-1), m_isFilled(true)
   //setEraser(m_isEraser);
 }
 
-ZStroke2d::ZStroke2d(const ZStroke2d &stroke) :
-  ZInterface(stroke), ZDocumentable(stroke), ZStackDrawable(stroke)
+ZStroke2d::ZStroke2d(const ZStroke2d &stroke) : ZStackObject(stroke)
 {
   m_pointArray = stroke.m_pointArray;
   m_width = stroke.m_width;
@@ -36,7 +35,7 @@ ZStroke2d::~ZStroke2d()
 {
 }
 
-ZINTERFACE_DEFINE_CLASS_NAME(ZStroke2d)
+ZSTACKOBJECT_DEFINE_CLASS_NAME(ZStroke2d)
 
 void ZStroke2d::save(const char */*filePath*/)
 {

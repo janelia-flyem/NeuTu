@@ -171,7 +171,7 @@ private slots:
   void on_actionAbout_iTube_triggered();
   void on_actionBrightnessContrast_triggered();
   void on_actionProject_triggered();
-  void on_actionRefine_Ends_triggered();
+  //void on_actionRefine_Ends_triggered();
   void on_actionRemove_Small_triggered();
   void on_actionUpdate_triggered();
   void on_actionAutomatic_triggered();
@@ -192,14 +192,11 @@ private slots:
   void expandCurrentFrame();
 
   // for 'File->Export'
-  void exportSwc();
-  void exportVrml();
+  //void exportSwc();
   void exportBinary();
-  void exportNeuronStructureAsMultipleSwc();
-  void exportNeuronStructure();
   void exportChainFileList();
-  void exportTubeConnection();
-  void exportTubeConnectionFeat();
+  //void exportTubeConnection();
+  //void exportTubeConnectionFeat();
   void exportSvg();
   void exportTraceProject();
   void exportPuncta();
@@ -210,7 +207,7 @@ private slots:
   void importSwc();
   void importGoodTube();
   void importBadTube();
-  void importTubeConnection();
+  //void importTubeConnection();
   void importPuncta();
   void importImageSequence();
 
@@ -229,7 +226,7 @@ private slots:
   // slots for 'Tools' menu
   void activateInteractiveTrace(QAction *action);
   void activateInteractiveMarkPuncta(QAction *action);
-  void buildConn();
+  //void buildConn();
   void manageObjs();
   void binarize();
   void bwsolid();

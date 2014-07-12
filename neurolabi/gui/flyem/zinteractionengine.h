@@ -36,8 +36,8 @@ public:
     STATE_RIGHT_BUTTON_PRESSED
   };
 
-  QList<ZStackDrawable*> getDecorationList() const;
-  inline ZStackDrawable::Display_Style getObjectStyle() const { return m_objStyle; }
+  QList<ZStackObject*> getDecorationList() const;
+  inline ZStackObject::Display_Style getObjectStyle() const { return m_objStyle; }
   inline const ZInteractiveContext& getInteractiveContext() const {
     return m_interactiveContext;
   }
@@ -45,7 +45,7 @@ public:
   bool hasObjectToShow() const;
   void setObjectVisible(bool v);
   bool isObjectVisible();
-  void setObjectStyle(ZStackDrawable::Display_Style style);
+  void setObjectStyle(ZStackObject::Display_Style style);
 
   void initInteractiveContext();
 
@@ -61,6 +61,10 @@ public:
 
   Qt::CursorShape getCursorShape() const;
 
+  inline void setKeyEventEnabled(bool enabled) {
+    m_isKeyEventEnabled = enabled;
+  }
+
 signals:
   void decorationUpdated();
   void strokePainted(ZStroke2d*);
@@ -72,11 +76,11 @@ private:
   void commitData();
 
 private:
-  QList<ZStackDrawable*> m_unnamedDecorationList; //need to free up
-  QList<ZStackDrawable*> m_namedDecorationList; //no need to free up
+  QList<ZStackObject*> m_unnamedDecorationList; //need to free up
+  QList<ZStackObject*> m_namedDecorationList; //no need to free up
 
   bool m_showObject;
-  ZStackDrawable::Display_Style m_objStyle;
+  ZStackObject::Display_Style m_objStyle;
 
   bool m_mouseLeftButtonPressed;
   bool m_mouseRightButtonPressed;
@@ -98,6 +102,8 @@ private:
   ZStackDocReader *m_dataBuffer;
 
   Qt::CursorShape m_cursorShape;
+
+  bool m_isKeyEventEnabled;
 
   //ZSingleSwcNodeActionActivator m_singleSwcNodeActionActivator;
   //bool m_skipMouseReleaseEvent;

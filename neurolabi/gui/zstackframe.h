@@ -87,9 +87,8 @@ public:
   void saveProject();
   void saveProjectAs(const QString &path);
   void importSwcAsReference(const QStringList &pathList);
-  void exportSwc(const QString &filePath);
+  //void exportSwc(const QString &filePath);
   void exportPuncta(const QString &filePath);
-  int exportSwcReconstruct(const QString &filePath, bool multiple = false);
 
   void importMask(const QString &filePath);
   void importSwc(const QString &filePath);
@@ -98,11 +97,11 @@ public:
 
   void importPointList(const QString &filePath);
 
-  void exportVrml(const QString &filePath);
+  //void exportVrml(const QString &filePath);
   void exportTube(const QString &filePath);
   void exportChainFileList(const QString &filePath);
-  void exportChainConnection(const QString &filePath);
-  void exportChainConnectionFeat(const QString &filePath);
+  //void exportChainConnection(const QString &filePath);
+  //void exportChainConnectionFeat(const QString &filePath);
   void exportObjectMask(const QString &filePath);
   void exportObjectMask(NeuTube::EColor color, const QString &filePath);
   ZStack* getObjectMask();
@@ -122,7 +121,7 @@ public:
   void displayActiveDecoration(bool enabled = true);
 
   void setViewMode(ZInteractiveContext::ViewMode mode);
-  void setObjectDisplayStyle(ZStackDrawable::Display_Style style);
+  void setObjectDisplayStyle(ZStackObject::Display_Style style);
   void setViewPortCenter(int x, int y, int z);
   void viewRoi(int x, int y, int z, int radius);
 
@@ -139,6 +138,7 @@ public:
   void load(const QList<QUrl> &urls);
   void load(const QStringList &fileList);
   void load(const QString &filePath);
+  void load(const std::string &filePath);
 
   void disconnectAll();
 
@@ -184,7 +184,7 @@ public: //set frame parameters
   void autoBcAdjust();
 
 public:
-  void addDecoration(ZStackDrawable *obj);
+  void addDecoration(ZStackObject *obj);
   void clearDecoration();
   void updateView();
   void undo();
@@ -199,7 +199,8 @@ public:
   void executeAutoTraceAxonCommand();
   void executeWatershedCommand();
 
-  void executeAddObjectCommand(ZDocumentable *obj, NeuTube::EDocumentableType type);
+  void executeAddObjectCommand(
+      ZStackObject *obj, NeuTube::EDocumentableType type);
 
   //void importStackMask(const std::string &filePath);
   //void setStackMask(ZStack *stack);

@@ -36,6 +36,7 @@
 #include "ztilegraphicsitem.h"
 #include "ztileinfo.h"
 #include "mainwindow.h"
+#include "z3dcanvas.h"
 
 using namespace std;
 
@@ -137,6 +138,21 @@ void ZStackFrame::consumeDocument(ZStackDoc *doc)
   setDocument(docPtr);
 }
 
+#if 0
+  connect(m_doc.get(), SIGNAL(objectModified()), m_view, SLOT(paintObject()));\
+  connect(m_doc.get(), SIGNAL(chainModified()),\
+          m_view, SLOT(paintObject()));\
+  connect(m_doc.get(), SIGNAL(swcModified()),\
+          m_view, SLOT(paintObject()));\
+  connect(m_doc.get(), SIGNAL(punctaModified()),\
+          m_view, SLOT(paintObject()));\
+  connect(m_doc.get(), SIGNAL(obj3dModified()),\
+          m_view, SLOT(paintObject()));\
+  connect(m_doc.get(), SIGNAL(sparseObjectModified()),\
+          m_view, SLOT(paintObject()));\
+  connect(m_doc.get(), SIGNAL(strokeModified()), m_view, SLOT(paintObject()));
+#endif
+
 #define UPDATE_DOC_SIGNAL_SLOT(connect) \
   connect(m_doc.get(), SIGNAL(locsegChainSelected(ZLocsegChain*)), \
       this, SLOT(setLocsegChainInfo(ZLocsegChain*)));\
@@ -151,19 +167,7 @@ void ZStackFrame::consumeDocument(ZStackDoc *doc)
           m_presenter, SLOT(updateStackBc()));\
   connect(m_doc.get(), SIGNAL(stackModified()),\
           m_view, SLOT(updateView()));\
-\
   connect(m_doc.get(), SIGNAL(objectModified()), m_view, SLOT(paintObject()));\
-  connect(m_doc.get(), SIGNAL(chainModified()),\
-          m_view, SLOT(paintObject()));\
-  connect(m_doc.get(), SIGNAL(swcModified()),\
-          m_view, SLOT(paintObject()));\
-  connect(m_doc.get(), SIGNAL(punctaModified()),\
-          m_view, SLOT(paintObject()));\
-  connect(m_doc.get(), SIGNAL(obj3dModified()),\
-          m_view, SLOT(paintObject()));\
-  connect(m_doc.get(), SIGNAL(sparseObjectModified()),\
-          m_view, SLOT(paintObject()));\
-  connect(m_doc.get(), SIGNAL(strokeModified()), m_view, SLOT(paintObject()));\
   connect(m_doc.get(), SIGNAL(cleanChanged(bool)),\
           this, SLOT(changeWindowTitle(bool)));\
   connect(m_doc.get(), SIGNAL(holdSegChanged()), m_view, SLOT(paintObject()));\
@@ -847,7 +851,7 @@ void ZStackFrame::setResolution(const double *res)
   m_settingDlg->setResolution(res);
 }
 
-void ZStackFrame::addDecoration(ZStackDrawable *obj)
+void ZStackFrame::addDecoration(ZStackObject *obj)
 {
   presenter()->addDecoration(obj, true);
 }
@@ -1062,7 +1066,7 @@ void ZStackFrame::executeWatershedCommand()
   document()->executeWatershedCommand();
 }
 
-void ZStackFrame::executeAddObjectCommand(ZDocumentable *obj,
+void ZStackFrame::executeAddObjectCommand(ZStackObject *obj,
                                           NeuTube::EDocumentableType type)
 {
   document()->executeAddObjectCommand(obj, type);
@@ -1139,6 +1143,7 @@ bool ZStackFrame::isReadyToSave() const
   return true;
 }
 
+/*
 void ZStackFrame::exportSwc(const QString &filePath)
 {
   document()->exportSwc(filePath.toStdString().c_str());
@@ -1148,29 +1153,11 @@ void ZStackFrame::exportSwc(const QString &filePath)
     setWindowTitle(filePath);
   }
 }
+*/
 
 void ZStackFrame::exportPuncta(const QString &filePath)
 {
   document()->exportPuncta(filePath.toStdString().c_str());
-}
-
-int ZStackFrame::exportSwcReconstruct(const QString &filePath, bool multiple)
-{
-  int swcNumber = 0;
-
-  if (!multiple) {
-    document()->exportSwcTree(filePath.toStdString().c_str());
-    swcNumber = 1;
-  } else {
-    swcNumber = document()->exportMultipleSwcTree(filePath);
-  }
-
-  return swcNumber;
-}
-
-void ZStackFrame::exportVrml(const QString &filePath)
-{
-  document()->exportVrml(filePath.toStdString().c_str());
 }
 
 void ZStackFrame::exportTube(const QString &filePath)
@@ -1181,16 +1168,6 @@ void ZStackFrame::exportTube(const QString &filePath)
 void ZStackFrame::exportChainFileList(const QString &filePath)
 {
   document()->exportChainFileList(filePath.toStdString().c_str());
-}
-
-void ZStackFrame::exportChainConnection(const QString &filePath)
-{
-  document()->exportLocsegChainConn(filePath.toStdString().c_str());
-}
-
-void ZStackFrame::exportChainConnectionFeat(const QString &filePath)
-{
-  document()->exportLocsegChainConnFeat(filePath.toStdString().c_str());
 }
 
 ZStack* ZStackFrame::getObjectMask()
@@ -1236,7 +1213,7 @@ void ZStackFrame::setViewMode(ZInteractiveContext::ViewMode mode)
   presenter()->interactiveContext().setViewMode(mode);
 }
 
-void ZStackFrame::setObjectDisplayStyle(ZStackDrawable::Display_Style style)
+void ZStackFrame::setObjectDisplayStyle(ZStackObject::Display_Style style)
 {
   presenter()->setObjectStyle(style);
 }
@@ -1291,9 +1268,13 @@ Z3DWindow* ZStackFrame::open3DWindow(QWidget *parent, Z3DWindow::EInitMode mode)
       if (!NeutubeConfig::getInstance().getZ3DWindowConfig().isBackgroundOn()) {
         m_3dWindow->getCompositor()->setShowBackground(false);
       }
-      if (document()->getTag() == NeuTube::Document::FLYEM_BODY) {
+      if (document()->getTag() == NeuTube::Document::FLYEM_BODY ||
+          document()->getTag() == NeuTube::Document::FLYEM_SPLIT) {
         m_3dWindow->getVolumeRaycasterRenderer()->setCompositeMode(
               "Direct Volume Rendering");
+      }
+      if (document()->getTag() == NeuTube::Document::FLYEM_SPLIT) {
+        m_3dWindow->getCanvas()->disableKeyEvent();
       }
     }
 
@@ -1327,6 +1308,11 @@ void ZStackFrame::load(const QStringList &fileList)
 void ZStackFrame::load(const QString &filePath)
 {
   m_doc->loadFile(filePath, true);
+}
+
+void ZStackFrame::load(const std::string &filePath)
+{
+  m_doc->loadFile(filePath.c_str(), true);
 }
 
 MainWindow* ZStackFrame::getMainWindow()
@@ -1604,7 +1590,7 @@ void ZStackFrame::loadRoi(const QString &filePath, bool isExclusive)
 
     obj->setColor(16, 16, 16, 64);
 
-    obj->setTarget(ZStackDrawable::OBJECT_CANVAS);
+    obj->setTarget(ZStackObject::OBJECT_CANVAS);
     if (isExclusive) {
       clearDecoration();
     }

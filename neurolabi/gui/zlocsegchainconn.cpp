@@ -217,4 +217,4 @@ void ZLocsegChainConn::translateMode()
   }
 }
 
-ZINTERFACE_DEFINE_CLASS_NAME(ZLocsegChainConn)
+ZSTACKOBJECT_DEFINE_CLASS_NAME(ZLocsegChainConn)

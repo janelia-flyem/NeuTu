@@ -11,10 +11,9 @@
 #include <QPointF>
 #endif
 
-#include "zdocumentable.h"
-#include "zstackdrawable.h"
+#include "zstackobject.h"
 
-class ZEllipse : public ZDocumentable, public ZStackDrawable {
+class ZEllipse : public ZStackObject {
 public:
   ZEllipse(const QPointF &center, double rx, double ry);
 

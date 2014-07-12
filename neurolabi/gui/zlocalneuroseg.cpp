@@ -45,11 +45,11 @@ void ZLocalNeuroseg::display(ZPainter &painter, int z, Display_Style option,
                              const QColor &color) const
 { //todo
 #if defined(_QT_GUI_USED_)
-  if (option == ZStackDrawable::NORMAL) {
-    option = ZStackDrawable::SOLID;
+  if (option == ZStackObject::NORMAL) {
+    option = ZStackObject::SOLID;
   }
 
-  if ((option == ZStackDrawable::SOLID) || (option == ZStackDrawable::BOUNDARY)) {
+  if ((option == ZStackObject::SOLID) || (option == ZStackObject::BOUNDARY)) {
     if (m_locseg->seg.r1 * m_locseg->seg.scale <= 0.0) {
       return;
     }
@@ -72,8 +72,8 @@ void ZLocalNeuroseg::display(ZPainter &painter, int z, Display_Style option,
   Local_Neuroseg_Bottom(m_locseg, bottom_position);
 
   switch(option) {
-  case ZStackDrawable::SOLID:
-  case ZStackDrawable::BOUNDARY:
+  case ZStackObject::SOLID:
+  case ZStackObject::BOUNDARY:
     {
       double offpos[3];
       int c[3];          /* position of the original point in filter range */
@@ -119,7 +119,7 @@ void ZLocalNeuroseg::display(ZPainter &painter, int z, Display_Style option,
                 (m_filterStack->array[offset] > 0)) {
                 */
             if (m_filterStack->array[offset] > 0) {
-              if (option == ZStackDrawable::BOUNDARY) {
+              if (option == ZStackObject::BOUNDARY) {
                 int k = z - region_corner[2];
                 if (IS_IN_OPEN_RANGE3(i, j, k, 0, m_filterStack->width-1,
                                       0, m_filterStack->height - 1,
@@ -173,7 +173,7 @@ void ZLocalNeuroseg::display(ZPainter &painter, int z, Display_Style option,
                 }
                 new_offset += area;
               }
-              if (option == ZStackDrawable::BOUNDARY) {
+              if (option == ZStackObject::BOUNDARY) {
                 int v2;
                 int neighbor[4];
                 Stack_Neighbor_Offset(4, Stack_Width(m_filterStack),
@@ -227,7 +227,7 @@ void ZLocalNeuroseg::display(ZPainter &painter, int z, Display_Style option,
     }
     break;
         
-  case ZStackDrawable::SKELETON:
+  case ZStackObject::SKELETON:
     {
       double top_position[3];
       Local_Neuroseg_Top(m_locseg, top_position);
@@ -259,7 +259,7 @@ void ZLocalNeuroseg::display(ZPainter &painter, int z, Display_Style option,
     break;
 
   default:
-    //display(locseg, z_scale, image, n, color, ZStackDrawable::NORMAL);
+    //display(locseg, z_scale, image, n, color, ZStackObject::NORMAL);
     break;
   }
 #else
@@ -285,8 +285,8 @@ void ZLocalNeuroseg::display(QImage *image, int n, Palette_Color color,
     }
   }
 
-  if (style == ZStackDrawable::NORMAL) {
-    style = ZStackDrawable::SOLID;
+  if (style == ZStackObject::NORMAL) {
+    style = ZStackObject::SOLID;
   }
 
   int channel[3];
@@ -318,8 +318,8 @@ void ZLocalNeuroseg::display(QImage *image, int n, Palette_Color color,
   Local_Neuroseg_Bottom(m_locseg, bottom_position);
 
   switch(style) {
-  case ZStackDrawable::SOLID:
-  case ZStackDrawable::BOUNDARY:
+  case ZStackObject::SOLID:
+  case ZStackObject::BOUNDARY:
     {
       double offpos[3];
       int c[3];          /* position of the original point in filter range */
@@ -378,7 +378,7 @@ void ZLocalNeuroseg::display(QImage *image, int n, Palette_Color color,
               if ((point[0] >= 0) && (point[0] < image->width()) &&
                   (point[1] >= 0) && (point[1] < image->height()) &&
                   (/*filter[offset] > 0*/ m_filterStack->array[offset] > 0)) {
-                if (style == ZStackDrawable::BOUNDARY) {
+                if (style == ZStackObject::BOUNDARY) {
                   if (Stack_Neighbor_Min(m_filterStack,
                                          6, point[0], point[1], point[2])
                     > 0.0) {
@@ -423,7 +423,7 @@ void ZLocalNeuroseg::display(QImage *image, int n, Palette_Color color,
 
     }
     break;
-  case ZStackDrawable::SKELETON:
+  case ZStackObject::SKELETON:
     {
       double top_position[3];
       Local_Neuroseg_Top(m_locseg, top_position);
@@ -464,7 +464,7 @@ void ZLocalNeuroseg::display(QImage *image, int n, Palette_Color color,
     break;
 
   default:
-    //display(locseg, z_scale, image, n, color, ZStackDrawable::NORMAL);
+    //display(locseg, z_scale, image, n, color, ZStackObject::NORMAL);
     break;
   }
 #endif
@@ -552,4 +552,4 @@ void ZLocalNeuroseg::generateFilterStack()
   free(filter);
 }
 
-ZINTERFACE_DEFINE_CLASS_NAME(ZLocalNeuroseg)
+ZSTACKOBJECT_DEFINE_CLASS_NAME(ZLocalNeuroseg)
