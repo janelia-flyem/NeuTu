@@ -64,6 +64,7 @@
 #include "swc/zswcsubtreeanalyzer.h"
 #include "biocytin/zbiocytinfilenameparser.h"
 #include <QApplication>
+#include "zstroke2d.h"
 
 class Sleeper : public QThread
 {
