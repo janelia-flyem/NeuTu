@@ -97,7 +97,7 @@ ZStack* ZSparseStack::getStack()
         ZObject3dScan obj = *m_objectMask;
 
         if (volume / 8 > MAX_STACK_VOLUME) {
-          m_dsIntv.set(2, 2, 2);
+          m_dsIntv.set(3, 3, 1);
         } else {
           m_dsIntv.set(1, 1, 1);
         }
