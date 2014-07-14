@@ -6551,7 +6551,7 @@ void ZStackDoc::localSeededWatershed()
       }
     }
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
     signalStack->save(GET_TEST_DATA_DIR + "/test.tif");
 #endif
 

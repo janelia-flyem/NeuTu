@@ -3,6 +3,7 @@
 
 #include "z3dgl.h"
 #include <QGraphicsView>
+#include <QWidget>
 #include <QGLWidget>
 #include <QInputEvent>
 #include <deque>

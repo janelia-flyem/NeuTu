@@ -383,9 +383,10 @@ void MainWindow::createFileActions()
   connect(btImportAction, SIGNAL(triggered()), this, SLOT(importBadTube()));
 
   connImportAction = new QAction(tr("&Tube connection"), m_readActionGroup);
+  /*
   connect(connImportAction, SIGNAL(triggered()),
     this, SLOT(importTubeConnection()));
-
+*/
 
   punctaImportAction = new QAction(tr("&puncta file"), m_readActionGroup);
   punctaImportAction->setStatusTip(tr("Import puncta file"));
@@ -413,7 +414,7 @@ void MainWindow::createFileActions()
 
   swcExportAction = new QAction(tr("&SWC file"), m_writeActionGroup);
   swcExportAction->setStatusTip(tr("Export tracing results as a SWC file"));
-  connect(swcExportAction, SIGNAL(triggered()), this, SLOT(exportSwc()));
+  //connect(swcExportAction, SIGNAL(triggered()), this, SLOT(exportSwc()));
 
   svgExportAction = new QAction(tr("&SVG file"), m_writeActionGroup);
   svgExportAction->setStatusTip(tr("Export a SWC file to a SVG file"));
@@ -438,9 +439,10 @@ void MainWindow::createFileActions()
 
   connFeatExportAction = new QAction(tr("&Connection feature"),
                                      m_writeActionGroup);
+  /*
   connect(connFeatExportAction, SIGNAL(triggered()),
           this, SLOT(exportTubeConnectionFeat()));
-
+*/
   chainSourceExportAction = new QAction(tr("Chain file list"),
                                         m_writeActionGroup);
   connect(chainSourceExportAction, SIGNAL(triggered()),
@@ -570,7 +572,7 @@ void MainWindow::createActions()
           SLOT(activateInteractiveMarkPuncta(QAction*)));
 
   buildConnAction = new QAction(tr("Build Connection"), this);
-  connect(buildConnAction, SIGNAL(triggered()), this, SLOT(buildConn()));
+  //connect(buildConnAction, SIGNAL(triggered()), this, SLOT(buildConn()));
 
   manageObjsAction = new QAction(tr("&Manage Objects..."), this);
   manageObjsAction->setStatusTip(tr("Manage objects (swcs, puncta) of current frame"));
