@@ -7,6 +7,8 @@
 #include "bigdata/zblockgrid.h"
 #include "zstack.hxx"
 
+#ifdef _USE_GTEST_
+
 TEST(ZBlockGrid, basic)
 {
   ZBlockGrid grid;
@@ -103,5 +105,6 @@ TEST(ZStackBlockGrid, basic)
   }
   ptoc();
 }
+#endif
 
 #endif // ZBLOCKGRIDTEST_H

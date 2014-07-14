@@ -2,6 +2,7 @@
 #define ZINTPOINT_H
 
 #include <vector>
+#include <string>
 
 /*!
  * \brief The class of 3D points with integer coordinates

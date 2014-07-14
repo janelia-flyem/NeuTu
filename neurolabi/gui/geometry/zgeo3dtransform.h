@@ -15,7 +15,7 @@ public:
    * \param ptArray (x, y, z, ...)
    * \param n Number of points
    */
-  void transform(double *ptArray, size_t n) const;
+  void transform(double *ptArray, std::size_t n) const;
 
 private:
   std::vector<double> m_matrix;
