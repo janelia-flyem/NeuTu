@@ -1,0 +1,18 @@
+{
+  "dvid repo": [
+    {
+      "address": "emdata1.int.janelia.org",
+      "port": 9000,
+      "uuid": "b42",
+      "name": "FIB25-0502",
+      "comment": "FIB-25 export 2014-05-02"
+    },
+    {
+      "address": "emdata2.int.janelia.org",
+      "port": 9000,
+      "uuid": "fa9",
+      "name": "FIB25-0516",
+      "comment": "FIB-25 export 2014-05-16"
+    }
+  ]
+}
