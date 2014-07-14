@@ -6542,6 +6542,7 @@ void ZStackDoc::localSeededWatershed()
     ZStackArray seedMask = createWatershedMask();
 
     ZStack *signalStack = m_stack;
+
     ZIntPoint dsIntv(0, 0, 0);
     if (signalStack->isVirtual()) {
       if (m_sparseStack != NULL) {
@@ -6549,6 +6550,10 @@ void ZStackDoc::localSeededWatershed()
         dsIntv = m_sparseStack->getDownsampleInterval();
       }
     }
+
+#ifdef _DEBUG_
+    signalStack->save(GET_TEST_DATA_DIR + "/test.tif");
+#endif
 
     if (signalStack != NULL) {
       seedMask.downsampleMax(dsIntv.getX(), dsIntv.getY(), dsIntv.getZ());
