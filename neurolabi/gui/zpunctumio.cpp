@@ -107,9 +107,11 @@ void ZPunctumIO::readV3DApoFile(const QString &file, QList<ZPunctum *> &punctaLi
         delete punctum;
         continue;
       }
-      punctum->setProperty1(fieldList[12]);
-      punctum->setProperty2(fieldList[13]);
-      punctum->setProperty3(fieldList[14]);
+      if (fieldList.size() > 14) {
+        punctum->setProperty1(fieldList[12]);
+        punctum->setProperty2(fieldList[13]);
+        punctum->setProperty3(fieldList[14]);
+      }
       if (fieldList.size() >= 18) {
         bool ok1, ok2;
 

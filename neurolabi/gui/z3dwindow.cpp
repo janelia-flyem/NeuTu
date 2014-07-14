@@ -67,6 +67,7 @@
 #include "zvoxelgraphics.h"
 #include "zstroke2darray.h"
 #include "zswcgenerator.h"
+#include "zstroke2d.h"
 
 class Sleeper : public QThread
 {

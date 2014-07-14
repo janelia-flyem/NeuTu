@@ -17,6 +17,7 @@ class Z3DScene;
 class Z3DNetworkEvaluator;
 class Z3DCanvasEventListener;
 class ZStackObject;
+class ZStroke2d;
 
 class Z3DCanvas : public QGraphicsView
 {
