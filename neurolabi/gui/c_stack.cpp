@@ -1273,10 +1273,11 @@ bool C_Stack::isBinary(const Stack *stack)
   bool state = false;
   size_t v = voxelNumber(stack);
   for (size_t i = 0; i < v; ++i) {
-    if (stack->array[v] == 1) {
+    if (stack->array[i] == 1) {
       state = true;
-    } else if (stack->array[v] > 1) {
-      return false;
+    } else if (stack->array[i] > 1) {
+      state = false;
+      break;
     }
   }
 

@@ -4,6 +4,8 @@
 #include "zstackdoclabelstackfactory.h"
 #include "zstackobject.h"
 #include "zcircle.h"
+#include "zsparsestack.h"
+#include "z3dvolumesource.h"
 
 ZFlyEmBodySplitProject::ZFlyEmBodySplitProject(QObject *parent) :
   QObject(parent), m_bodyId(-1), m_dataFrame(NULL), m_resultWindow(NULL),
@@ -94,6 +96,15 @@ void ZFlyEmBodySplitProject::showResult3d()
               m_dataFrame->document().get(), SIGNAL(labelFieldModified()),
               newFrame->document().get(), SLOT(reloadStack()));
         m_resultWindow = newFrame->open3DWindow(NULL);
+        if (m_dataFrame->document()->hasSparseStack()) {
+          ZIntPoint dsIntv =
+              m_dataFrame->document()->getSparseStack()->getDownsampleInterval();
+          if (dsIntv.getX() != dsIntv.getZ()) {
+            m_resultWindow->getVolumeSource()->setZScale(
+                  ((float) (dsIntv.getZ() + 1)) / (dsIntv.getX() + 1));
+            m_resultWindow->resetCamera();
+          }
+        }
         connect(m_resultWindow, SIGNAL(destroyed()),
                 this, SLOT(shallowClearResultWindow()));
         delete newFrame;

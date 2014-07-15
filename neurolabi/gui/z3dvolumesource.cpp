@@ -273,18 +273,6 @@ void Z3DVolumeSource::readSparseStack()
   std::vector<Stack*> stackArray;
 
   if (nchannel > 0) {
-    if (stackData->getVoxelNumber() * nchannel > m_maxVoxelNumber) { //Downsample big stack
-      m_isVolumeDownsampled.set(true);
-      double scale = std::sqrt((m_maxVoxelNumber*1.0) /
-                               (m_doc->getStack()->getVoxelNumber() * nchannel));
-      height = (int)(stackData->height() * scale);
-      width = (int)(stackData->width() * scale);
-      depth = stackData->depth();
-
-      widthScale *= scale;
-      heightScale *= scale;
-    }
-
     int maxTextureSize = 100;
     if (stackData->depth() > 1) {
       maxTextureSize = Z3DGpuInfoInstance.getMax3DTextureSize();
@@ -306,6 +294,18 @@ void Z3DVolumeSource::readSparseStack()
       double alpha = (double) maxTextureSize / depth;
       depthScale *= alpha;
       depth = (int) (depth * alpha);
+    }
+
+    size_t volume = (size_t) width * height *depth * nchannel;
+    if (volume > m_maxVoxelNumber) {
+      //Downsample big stack
+      //m_isVolumeDownsampled.set(true);
+      double scale = std::sqrt((double) (m_maxVoxelNumber) / volume);
+      height = (int)(height * scale);
+      width = (int)(width * scale);
+
+      widthScale *= scale;
+      heightScale *= scale;
     }
 
     for (int i=0; i<nchannel; i++) {

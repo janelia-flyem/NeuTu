@@ -36,6 +36,7 @@ FlyEmBodySplitProjectDialog::FlyEmBodySplitProjectDialog(QWidget *parent) :
           this, SLOT(locateBookmark(QModelIndex)));
 
   m_project.showBookmark(ui->bookmarkVisibleCheckBox->isChecked());
+  //ui->outputWidget->setText("Load a body to start.");
 }
 
 FlyEmBodySplitProjectDialog::~FlyEmBodySplitProjectDialog()
@@ -67,6 +68,8 @@ void FlyEmBodySplitProjectDialog::clear()
 {
   m_project.clear();
   updateWidget();
+
+  //dump("Load a body to start.");
 }
 
 void FlyEmBodySplitProjectDialog::shallowClear()
@@ -88,24 +91,32 @@ void FlyEmBodySplitProjectDialog::shallowClearDataFrame()
 
 void FlyEmBodySplitProjectDialog::showData2d()
 {
+  dump("Showing body in 2D ...");
+
   if (m_project.hasDataFrame()) {
     m_project.showDataFrame();
+    getMainWindow()->raise();
   } else {
     getMainWindow()->initBodySplitProject();
   }
   updateWidget();
+  dump("Done.", true);
 }
 
 void FlyEmBodySplitProjectDialog::showData3d()
 {
   if (m_project.hasDataFrame()) {
+    dump("Showing body in 3D ...");
     m_project.showDataFrame3d();
+    dump("done", true);
   }
 }
 
 void FlyEmBodySplitProjectDialog::showResult3d()
 {
+  dump("Showing splitting result ...");
   m_project.showResult3d();
+  dump("Done.");
 }
 
 MainWindow* FlyEmBodySplitProjectDialog::getMainWindow()
@@ -138,6 +149,8 @@ void FlyEmBodySplitProjectDialog::loadBody()
     setBodyId(m_loadBodyDlg->getBodyId());
 
     updateWidget();
+
+    dump("Body loaded.");
   }
 }
 
@@ -166,6 +179,7 @@ void FlyEmBodySplitProjectDialog::updateWidget()
 
   if (!isBodyLoaded()) {
     text += "<p>No body loaded.</p>";
+    dump("Load a body to start.");
   } else {
     text += QString("<p>DVID Server: %1</p><p>Body ID: %2</p>").
           arg(m_project.getDvidTarget().getSourceString().c_str()).
@@ -176,19 +190,27 @@ void FlyEmBodySplitProjectDialog::updateWidget()
   updateBookmarkTable();
 }
 
-void FlyEmBodySplitProjectDialog::dump(const QString &info)
+void FlyEmBodySplitProjectDialog::dump(const QString &info, bool appending)
 {
-  ui->outputWidget->setText(info);
+  if (appending) {
+    ui->outputWidget->append(info);
+  } else {
+    ui->outputWidget->setText(info);
+  }
 }
 
 void FlyEmBodySplitProjectDialog::loadBookmark()
 {
   QString fileName = getMainWindow()->getOpenFileName("Load Bookmarks", "*.json");
   if (!fileName.isEmpty()) {
+    dump("Loading bookmarks ...");
+
     m_project.loadBookmark(fileName);
     updateWidget();
 
     m_loadBodyDlg->setBodyIdComboBox(m_project.getBookmarkBodySet());
+
+    dump("Done.");
   }
 }
 

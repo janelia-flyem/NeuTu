@@ -1276,12 +1276,13 @@ Z3DWindow* ZStackFrame::open3DWindow(QWidget *parent, Z3DWindow::EInitMode mode)
       if (document()->getTag() == NeuTube::Document::FLYEM_SPLIT) {
         m_3dWindow->getCanvas()->disableKeyEvent();
       }
+
+      QRect screenRect = QApplication::desktop()->screenGeometry();
+      m_3dWindow->setGeometry(screenRect.width() / 10, screenRect.height() / 10,
+                              screenRect.width() - screenRect.width() / 5,
+                              screenRect.height() - screenRect.height() / 5);
     }
 
-    QRect screenRect = QApplication::desktop()->screenGeometry();
-    m_3dWindow->setGeometry(screenRect.width() / 10, screenRect.height() / 10,
-                            screenRect.width() - screenRect.width() / 5,
-                            screenRect.height() - screenRect.height() / 5);
     //m_3dWindow->createToolBar(); //Cause crash for unknown reasons
     m_3dWindow->show();
     m_3dWindow->raise();

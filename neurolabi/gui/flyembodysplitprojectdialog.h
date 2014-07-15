@@ -42,7 +42,7 @@ public:
   /*!
    * \brief Dump information
    */
-  void dump(const QString &info);
+  void dump(const QString &info, bool appending = false);
 
 public slots:
   void clear();
