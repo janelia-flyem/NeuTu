@@ -203,6 +203,11 @@ void ZStroke2d::display(QPainter *rawPainter, int z, Display_Style option) const
         painter.setBrush(Qt::NoBrush);
       }
       painter.drawEllipse(QPointF(m_pointArray[0]), m_width / 2, m_width / 2);
+
+#ifdef _DEBUG_
+      std::cout << "Paint stroke: " << m_width << std::endl;
+      qDebug() << brush;
+#endif
     } else {
       pen.setCapStyle(Qt::RoundCap);
       pen.setWidthF(m_width);
