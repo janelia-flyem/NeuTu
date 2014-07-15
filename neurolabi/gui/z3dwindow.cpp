@@ -2049,7 +2049,11 @@ void Z3DWindow::keyPressEvent(QKeyEvent *event)
     } else {
       if (GET_APPLICATION_NAME == "FlyEM") {
         if (event->modifiers() == Qt::ShiftModifier) {
+          QCursor oldCursor = m_canvas->cursor();
+          m_canvas->setCursor(Qt::BusyCursor);
           getDocument()->runSeededWatershed();
+          notifyUser("Body splitted");
+          m_canvas->setCursor(oldCursor);
         }
       }
     }

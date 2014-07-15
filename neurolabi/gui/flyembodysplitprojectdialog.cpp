@@ -116,7 +116,7 @@ void FlyEmBodySplitProjectDialog::showResult3d()
 {
   dump("Showing splitting result ...");
   m_project.showResult3d();
-  dump("Done.");
+  dump("Done.", true);
 }
 
 MainWindow* FlyEmBodySplitProjectDialog::getMainWindow()
@@ -203,14 +203,12 @@ void FlyEmBodySplitProjectDialog::loadBookmark()
 {
   QString fileName = getMainWindow()->getOpenFileName("Load Bookmarks", "*.json");
   if (!fileName.isEmpty()) {
-    dump("Loading bookmarks ...");
-
     m_project.loadBookmark(fileName);
     updateWidget();
 
     m_loadBodyDlg->setBodyIdComboBox(m_project.getBookmarkBodySet());
 
-    dump("Done.");
+    dump("Bookmarks loaded.");
   }
 }
 
