@@ -157,8 +157,8 @@ void Z3DCanvas::paintEvent(QPaintEvent *event)
   getGLFocus();
   QGraphicsView::paintEvent(event);
 
-  /*
-  ZPainter painter(this);
+/*
+  ZPainter painter(this->viewport());
   painter.setPen(QColor(255, 0, 0));
   painter.drawRect(QRect(10, 10, 40, 60));
   */
