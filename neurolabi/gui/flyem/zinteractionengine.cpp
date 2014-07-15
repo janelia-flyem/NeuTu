@@ -38,6 +38,10 @@ void ZInteractionEngine::processMouseMoveEvent(QMouseEvent *event)
     } else {
       m_stroke.set(event->x(), event->y());
     }
+#ifdef _DEBUG_2
+    std::cout << "decorationUpdated emitted" << std::endl;
+#endif
+
     emit decorationUpdated();
   }
 }

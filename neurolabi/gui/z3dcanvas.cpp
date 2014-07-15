@@ -42,7 +42,8 @@ Z3DCanvas::Z3DCanvas(const QString &title, int width, int height, const QGLForma
   setMouseTracking(true);
 
 #if defined(_FLYEM_)
-  connect(&m_interaction, SIGNAL(decorationUpdated()), this, SLOT(update()));
+  connect(&m_interaction, SIGNAL(decorationUpdated()),
+          this->viewport(), SLOT(update()));
   connect(&m_interaction, SIGNAL(strokePainted(ZStroke2d*)),
           this, SIGNAL(strokePainted(ZStroke2d*)));
 #endif
@@ -157,11 +158,11 @@ void Z3DCanvas::paintEvent(QPaintEvent *event)
   getGLFocus();
   QGraphicsView::paintEvent(event);
 
-  /*
-  ZPainter painter(this);
+#ifdef _DEBUG_2
+  ZPainter painter(this->viewport());
   painter.setPen(QColor(255, 0, 0));
   painter.drawRect(QRect(10, 10, 40, 60));
-  */
+#endif
 }
 
 void Z3DCanvas::dragEnterEvent(QDragEnterEvent *event)
@@ -190,9 +191,15 @@ void Z3DCanvas::drawBackground(QPainter *painter, const QRectF &)
 #if defined(_FLYEM_)
   QList<ZStackObject*> drawableList = m_interaction.getDecorationList();
 
-  foreach (const ZStackObject *drawable, drawableList) {
+  foreach (ZStackObject *drawable, drawableList) {
+    //drawable->setVisible(true);
     drawable->display(painter);
   }
+#endif
+
+#ifdef _DEBUG_2
+  painter->setPen(QColor(255, 0, 0));
+  painter->drawRect(QRect(10, 10, 40, 60));
 #endif
 
   //ZPainter painter()
