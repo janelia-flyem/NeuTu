@@ -57,7 +57,7 @@ bool ZTileManager::importJsonFile(const QString &filePath)
   clear();
 
   bool succ = false;
-  if (!filePath.isEmpty()) {
+  if (!filePath.isEmpty()) { 
     ZJsonObject obj;
     obj.load(filePath.toStdString());
 

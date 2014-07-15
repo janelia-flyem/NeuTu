@@ -4,6 +4,7 @@
 #include <string>
 #include "zpoint.h"
 #include "zjsonobject.h"
+#include <QString>
 
 class ZTileInfo
 {

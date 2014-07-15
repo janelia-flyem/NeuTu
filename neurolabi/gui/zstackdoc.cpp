@@ -6248,8 +6248,13 @@ bool ZStackDoc::executeSwcNodeEstimateRadiusCommand()
     for (set<Swc_Tree_Node*>::iterator iter = m_selectedSwcTreeNodes.begin();
          iter != m_selectedSwcTreeNodes.end(); ++iter) {
       Swc_Tree_Node newNode = *(*iter);
+      ZPoint offset = getStackOffset();
+      SwcTreeNode::translate(&newNode, -offset.x(), -offset.y(),
+                             -offset.z());
       if (SwcTreeNode::fitSignal(&newNode,  stack()->c_stack(),
                                  getStackBackground())) {
+        SwcTreeNode::translate(&newNode, offset.x(), offset.y(),
+                               offset.z());
         new ZStackDocCommand::SwcEdit::ChangeSwcNode(
               this, *iter, newNode, allCommand);
         advanceProgress(step);
