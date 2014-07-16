@@ -56,6 +56,7 @@ public slots:
   void loadBody();
   void loadBookmark();
   void locateBookmark(const QModelIndex &index);
+  void quickView();
 
 private:
   Ui::FlyEmBodySplitProjectDialog *ui;

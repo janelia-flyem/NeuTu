@@ -6,6 +6,7 @@
 #include "zcircle.h"
 #include "zsparsestack.h"
 #include "z3dvolumesource.h"
+#include "zswctree.h"
 
 ZFlyEmBodySplitProject::ZFlyEmBodySplitProject(QObject *parent) :
   QObject(parent), m_bodyId(-1), m_dataFrame(NULL), m_resultWindow(NULL),
@@ -30,8 +31,6 @@ void ZFlyEmBodySplitProject::clear()
     delete m_dataFrame;
   }
 
-  m_bookmarkDecoration.clear();
-
   shallowClear();
 }
 
@@ -51,6 +50,8 @@ void ZFlyEmBodySplitProject::shallowClear()
   m_dataFrame = NULL;
 
   m_bodyId = -1;
+
+  m_bookmarkDecoration.clear();
 }
 
 void ZFlyEmBodySplitProject::shallowClearResultWindow()
@@ -74,6 +75,18 @@ void ZFlyEmBodySplitProject::showDataFrame3d()
 {
   if (m_dataFrame != NULL) {
     m_dataFrame->open3DWindow(m_dataFrame);
+  }
+}
+
+void ZFlyEmBodySplitProject::showSkeleton(ZSwcTree *tree) const
+{
+  if (tree != NULL) {
+    ZStackFrame *newFrame = new ZStackFrame;
+    newFrame->document()->addSwcTree(tree);
+    Z3DWindow *window = newFrame->open3DWindow(NULL);
+    delete newFrame;
+    window->show();
+    window->raise();
   }
 }
 

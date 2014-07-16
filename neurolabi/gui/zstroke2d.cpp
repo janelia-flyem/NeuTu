@@ -121,7 +121,8 @@ void ZStroke2d::display(ZPainter &painter, int z, Display_Style option) const
     if (isEraser()) {
       return;
     }
-    color.setAlphaF(color.alphaF() / (1.2 + abs(m_z - z) / 5.0));
+    //color.setAlphaF(color.alphaF() / (1.2 + abs(m_z - z) / 5.0));
+    return;
   }
   QPen pen(color);
   QBrush brush(color);

@@ -9,6 +9,7 @@
 class ZStackFrame;
 class Z3DWindow;
 class ZStackObject;
+class ZSwcTree;
 
 class ZFlyEmBodySplitProject : public QObject
 {
@@ -43,6 +44,8 @@ public:
   void clearBookmarkDecoration();
   void addBookmarkDecoration(const ZFlyEmBookmarkArray &bookmarkArray);
   void updateBookDecoration();
+
+  void showSkeleton(ZSwcTree *tree) const;
 
 public slots:
   void showDataFrame() const;

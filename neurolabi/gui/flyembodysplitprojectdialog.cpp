@@ -5,6 +5,9 @@
 #include "mainwindow.h"
 #include "zstackframe.h"
 #include "zflyemnewbodysplitprojectdialog.h"
+#include "dvid/zdvidreader.h"
+#include "zstackskeletonizer.h"
+#include "neutubeconfig.h"
 
 FlyEmBodySplitProjectDialog::FlyEmBodySplitProjectDialog(QWidget *parent) :
   QDialog(parent),
@@ -27,6 +30,7 @@ FlyEmBodySplitProjectDialog::FlyEmBodySplitProjectDialog(QWidget *parent) :
           this, SLOT(loadBookmark()));
   connect(ui->bookmarkVisibleCheckBox, SIGNAL(toggled(bool)),
           &m_project, SLOT(showBookmark(bool)));
+  connect(ui->quickViewPushButton, SIGNAL(clicked()), this, SLOT(quickView()));
 
   ui->bookmarkView->setModel(&m_bookmarkList);
 
@@ -151,6 +155,39 @@ void FlyEmBodySplitProjectDialog::loadBody()
     updateWidget();
 
     dump("Body loaded.");
+  }
+}
+
+void FlyEmBodySplitProjectDialog::quickView()
+{
+  const ZDvidTarget &target = getDvidTarget();
+
+  ZDvidReader reader;
+  if (reader.open(target)) {
+    int bodyId = getBodyId();
+    ZObject3dScan obj = reader.readBody(bodyId);
+
+    if (obj.isEmpty()) {
+      dump("Unable to load the body from DVID.");
+    } else {
+      ZIntCuboid box = obj.getBoundBox();
+      dump(QString("Size: %1; Bounding box: %2 x %3 x %4").
+           arg(obj.getVoxelNumber()).arg(box.getWidth()).arg(box.getHeight()).
+           arg(box.getDepth()));
+
+      ZSwcTree *tree = reader.readSwc(bodyId);
+      if (tree == NULL) {
+        ZStackSkeletonizer skeletonizer;
+        ZJsonObject config;
+        config.load(NeutubeConfig::getInstance().getApplicatinDir() +
+                    "/json/skeletonize.json");
+        skeletonizer.configure(config);
+        tree = skeletonizer.makeSkeleton(obj);
+      }
+      m_project.showSkeleton(tree);
+    }
+  } else {
+    dump("Invalid dvid target");
   }
 }
 

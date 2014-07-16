@@ -67,17 +67,33 @@ bool ZSparseStack::isDeprecated(EComponent component) const
 void ZSparseStack::assignStackValue(
     ZStack *stack, const ZObject3dScan &obj, const ZStackBlockGrid &stackGrid)
 {
-  for (size_t i = 0; i < obj.getStripeNumber(); ++i) {
-    const ZObject3dStripe &stripe = obj.getStripe(i);
-    int y = stripe.getY();
-    int z = stripe.getZ();
-    for (int j = 0; j < stripe.getSegmentNumber(); ++j) {
-      int x0 = stripe.getSegmentStart(j);
-      int x1 = stripe.getSegmentEnd(j);
+  if (stackGrid.isEmpty()) {
+    for (size_t i = 0; i < obj.getStripeNumber(); ++i) {
+      const ZObject3dStripe &stripe = obj.getStripe(i);
+      int y = stripe.getY();
+      int z = stripe.getZ();
+      for (int j = 0; j < stripe.getSegmentNumber(); ++j) {
+        int x0 = stripe.getSegmentStart(j);
+        int x1 = stripe.getSegmentEnd(j);
 
-      for (int x = x0; x <= x1; ++x) {
-        int v = stackGrid.getValue(x, y, z);
-        stack->setIntValue(x, y, z, 0, v);
+        for (int x = x0; x <= x1; ++x) {
+          stack->setIntValue(x, y, z, 0, 255);
+        }
+      }
+    }
+  } else {
+    for (size_t i = 0; i < obj.getStripeNumber(); ++i) {
+      const ZObject3dStripe &stripe = obj.getStripe(i);
+      int y = stripe.getY();
+      int z = stripe.getZ();
+      for (int j = 0; j < stripe.getSegmentNumber(); ++j) {
+        int x0 = stripe.getSegmentStart(j);
+        int x1 = stripe.getSegmentEnd(j);
+
+        for (int x = x0; x <= x1; ++x) {
+          int v = stackGrid.getValue(x, y, z);
+          stack->setIntValue(x, y, z, 0, v);
+        }
       }
     }
   }
@@ -117,10 +133,12 @@ ZStack* ZSparseStack::getStack()
         dsGrid.setMinPoint(m_stackGrid->getMinPoint() / (m_dsIntv + 1));
         */
         m_stack =  new ZStack(GREY, obj.getBoundBox(), 1);
+        m_stack->setZero();
         assignStackValue(m_stack, obj, *dsGrid);
         delete dsGrid;
       } else {
         m_stack = new ZStack(GREY, cuboid, 1);
+        m_stack->setZero();
         assignStackValue(m_stack, *m_objectMask, *m_stackGrid);
       }
     }

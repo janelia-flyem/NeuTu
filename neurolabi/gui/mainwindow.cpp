@@ -6202,71 +6202,25 @@ void MainWindow::initBodySplitProject()
     if (!bodyIdArray.empty()) {
       int bodyId = bodyIdArray[0];
       ZSparseStack *spStack = reader.readSparseStack(bodyId);
-#if 0
-      ZObject3dScan body = reader.readBody(bodyId);
 
-      if (!body.isEmpty()) {
-        ZStack *stack = body.toStackObject();
-        int x = stack->getOffset().getX();
-        int y = stack->getOffset().getY();
-        int z = stack->getOffset().getZ();
-        int width = stack->width();
-        int height = stack->height();
-        int depth = stack->depth();
+      if (spStack != NULL) {
+        //ZStackDoc *doc = new ZStackDoc(NULL, NULL);
+        //doc->loadStack(stack);
+        ZStackDocReader docReader;
+        //docReader.setStack(out);
+        docReader.setSparseStack(spStack);
+        ZStackFrame *frame = createStackFrame(&docReader);
+        frame->document()->setTag(NeuTube::Document::FLYEM_BODY);
+        addStackFrame(frame);
+        presentStackFrame(frame);
 
-        ZStack *grayStack = reader.readGrayScale(x, y, z, width, height, depth);
-
-        if (grayStack != NULL) {
-          TZ_ASSERT(grayStack->kind() == GREY, "Unsuppored kind.");
-          if (Stack_Same_Size(grayStack->c_stack(), stack->c_stack())) {
-            size_t voxelNumber = stack->getVoxelNumber();
-            uint8_t *maskArray = stack->array8();
-            uint8_t *signalArray = grayStack->array8();
-            for (size_t i = 0; i < voxelNumber; ++i) {
-              if (maskArray[i] > 0) {
-                if (signalArray[i] < 255) {
-                  maskArray[i] = signalArray[i] + 1;
-                } else {
-                  maskArray[i] = 255;
-                }
-              }
-            }
-          }
-          //Stack_Mul(stack->c_stack(), grayStack->c_stack(), stack->c_stack());
-          delete grayStack;
-        }
-
-        ZStack *out = stack;
-#endif
-
-#if 0
-        std::vector<int> dsIntv = m_bodyDlg->getDownsampleInterval();
-        if (dsIntv[0] > 0 || dsIntv[1] > 0 || dsIntv[2] > 0) {
-          Stack *outData = C_Stack::downsampleMin(
-                stack->c_stack(), dsIntv[0], dsIntv[1], dsIntv[2]);
-          out = new ZStack();
-          out->consume(outData);
-          delete stack;
-        }
-#endif
-        if (spStack != NULL) {
-          //ZStackDoc *doc = new ZStackDoc(NULL, NULL);
-          //doc->loadStack(stack);
-          ZStackDocReader docReader;
-          //docReader.setStack(out);
-          docReader.setSparseStack(spStack);
-          ZStackFrame *frame = createStackFrame(&docReader);
-          frame->document()->setTag(NeuTube::Document::FLYEM_BODY);
-          addStackFrame(frame);
-          presentStackFrame(frame);
-
-          m_bodySplitProjectDialog->setDataFrame(frame);
-        }
-      } else {
-        m_bodySplitProjectDialog->dump(
-              QString("Cannot load body %1").arg(bodyId));
+        m_bodySplitProjectDialog->setDataFrame(frame);
       }
+    } else {
+      m_bodySplitProjectDialog->dump(
+            QString("Cannot load body %1").arg(bodyId));
     }
+  }
   //}
 
   m_progress->reset();
