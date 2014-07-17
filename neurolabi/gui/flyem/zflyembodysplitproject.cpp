@@ -13,6 +13,7 @@
 #include "zstackskeletonizer.h"
 #include "neutubeconfig.h"
 #include "zswcgenerator.h"
+#include "z3dswcfilter.h"
 
 ZFlyEmBodySplitProject::ZFlyEmBodySplitProject(QObject *parent) :
   QObject(parent), m_bodyId(-1), m_dataFrame(NULL), m_resultWindow(NULL),
@@ -115,6 +116,7 @@ void ZFlyEmBodySplitProject::quickView()
       int bodyId = getBodyId();
       ZObject3dScan obj = reader.readBody(bodyId);
       if (!obj.isEmpty()) {
+        obj.canonize();
         size_t voxelNumber =obj.getVoxelNumber();
         int intv = iround(Cube_Root((double) voxelNumber / 1000000));
         obj.downsampleMax(intv, intv, intv);
@@ -138,6 +140,7 @@ void ZFlyEmBodySplitProject::quickView()
         factory.setWindowTitle("Quick View");
 
         m_quickViewWindow = factory.make3DWindow(doc);
+        m_quickViewWindow->getSwcFilter()->setRenderingPrimitive("Sphere");
         connect(m_quickViewWindow, SIGNAL(destroyed()),
                 this, SLOT(shallowClearQuickViewWindow()));
 
