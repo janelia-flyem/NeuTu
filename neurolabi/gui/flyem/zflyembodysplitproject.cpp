@@ -7,10 +7,16 @@
 #include "zsparsestack.h"
 #include "z3dvolumesource.h"
 #include "zswctree.h"
+#include "zwindowfactory.h"
+#include "dvid/zdvidreader.h"
+#include "zwindowfactory.h"
+#include "zstackskeletonizer.h"
+#include "neutubeconfig.h"
+#include "zswcgenerator.h"
 
 ZFlyEmBodySplitProject::ZFlyEmBodySplitProject(QObject *parent) :
   QObject(parent), m_bodyId(-1), m_dataFrame(NULL), m_resultWindow(NULL),
-  m_isBookmarkVisible(true)
+  m_quickViewWindow(NULL), m_isBookmarkVisible(true)
 {
 }
 
@@ -24,11 +30,19 @@ void ZFlyEmBodySplitProject::clear()
   if (m_resultWindow != NULL) {
     m_resultWindow->hide();
     delete m_resultWindow;
+    m_resultWindow = NULL;
   }
 
   if (m_dataFrame != NULL) {
     m_dataFrame->hide();
     delete m_dataFrame;
+    m_dataFrame = NULL;
+  }
+
+  if (m_quickViewWindow != NULL) {
+    m_quickViewWindow->hide();
+    delete m_quickViewWindow;
+    m_quickViewWindow = NULL;
   }
 
   shallowClear();
@@ -39,6 +53,13 @@ void ZFlyEmBodySplitProject::shallowClearDataFrame()
   if (m_resultWindow != NULL) {
     m_resultWindow->hide();
     delete m_resultWindow;
+    m_resultWindow = NULL;
+  }
+
+  if (m_quickViewWindow != NULL) {
+    m_quickViewWindow->hide();
+    delete m_quickViewWindow;
+    m_quickViewWindow = NULL;
   }
 
   shallowClear();
@@ -47,6 +68,7 @@ void ZFlyEmBodySplitProject::shallowClearDataFrame()
 void ZFlyEmBodySplitProject::shallowClear()
 {
   m_resultWindow = NULL;
+  m_quickViewWindow = NULL;
   m_dataFrame = NULL;
 
   m_bodyId = -1;
@@ -57,6 +79,11 @@ void ZFlyEmBodySplitProject::shallowClear()
 void ZFlyEmBodySplitProject::shallowClearResultWindow()
 {
   m_resultWindow = NULL;
+}
+
+void ZFlyEmBodySplitProject::shallowClearQuickViewWindow()
+{
+  m_quickViewWindow = NULL;
 }
 
 void ZFlyEmBodySplitProject::setDvidTarget(const ZDvidTarget &target)
@@ -78,15 +105,75 @@ void ZFlyEmBodySplitProject::showDataFrame3d()
   }
 }
 
-void ZFlyEmBodySplitProject::showSkeleton(ZSwcTree *tree) const
+void ZFlyEmBodySplitProject::quickView()
+{
+  if (m_quickViewWindow == NULL) {
+    const ZDvidTarget &target = getDvidTarget();
+
+    ZDvidReader reader;
+    if (reader.open(target)) {
+      int bodyId = getBodyId();
+      ZObject3dScan obj = reader.readBody(bodyId);
+      if (!obj.isEmpty()) {
+        size_t voxelNumber =obj.getVoxelNumber();
+        int intv = iround(Cube_Root((double) voxelNumber / 1000000));
+        obj.downsampleMax(intv, intv, intv);
+
+        ZSwcTree *tree = ZSwcGenerator::createSwc(obj);
+        /*
+        if (tree == NULL) {
+          ZStackSkeletonizer skeletonizer;
+          ZJsonObject config;
+          config.load(NeutubeConfig::getInstance().getApplicatinDir() +
+                      "/json/skeletonize.json");
+          skeletonizer.configure(config);
+          tree = skeletonizer.makeSkeleton(obj);
+        }
+        */
+
+        ZStackDoc *doc = new ZStackDoc(NULL, NULL);
+        doc->addSwcTree(tree);
+
+        ZWindowFactory factory;
+        factory.setWindowTitle("Quick View");
+
+        m_quickViewWindow = factory.make3DWindow(doc);
+        connect(m_quickViewWindow, SIGNAL(destroyed()),
+                this, SLOT(shallowClearQuickViewWindow()));
+
+        ZIntCuboid box = obj.getBoundBox();
+        m_quickViewWindow->notifyUser(
+              QString("Size: %1; Bounding box: %2 x %3 x %4").
+              arg(obj.getVoxelNumber()).arg(box.getWidth()).arg(box.getHeight()).
+              arg(box.getDepth()));
+      }
+    }
+  }
+
+  if (m_quickViewWindow != NULL) {
+    m_quickViewWindow->show();
+    m_quickViewWindow->raise();
+  }
+}
+
+void ZFlyEmBodySplitProject::showSkeleton(ZSwcTree *tree)
 {
   if (tree != NULL) {
-    ZStackFrame *newFrame = new ZStackFrame;
-    newFrame->document()->addSwcTree(tree);
-    Z3DWindow *window = newFrame->open3DWindow(NULL);
-    delete newFrame;
-    window->show();
-    window->raise();
+    if (m_quickViewWindow == NULL) {
+      ZWindowFactory factory;
+      factory.setWindowTitle("Quick View");
+      ZStackDoc *doc = new ZStackDoc(NULL, NULL);
+      doc->addSwcTree(tree);
+      m_quickViewWindow = factory.make3DWindow(doc);
+      connect(m_quickViewWindow, SIGNAL(destroyed()),
+              this, SLOT(shallowClearQuickViewWindow()));
+    } else {
+      m_quickViewWindow->getDocument()->removeAllSwcTree();
+      m_quickViewWindow->getDocument()->addSwcTree(tree);
+    }
+
+    m_quickViewWindow->show();
+    m_quickViewWindow->raise();
   }
 }
 
@@ -94,21 +181,27 @@ void ZFlyEmBodySplitProject::showResult3d()
 {
   if (m_dataFrame != NULL) {
     if (m_resultWindow == NULL) {
-      ZStackDocReader docReader;
+      //ZStackDocReader docReader;
       ZStackDocLabelStackFactory *factory = new ZStackDocLabelStackFactory;
       factory->setDocument(m_dataFrame->document().get());
       ZStack *labeled = factory->makeStack();
       if (labeled != NULL) {
-        docReader.setStack(labeled);
+        //docReader.setStack(labeled);
+        ZStackDoc *doc = new ZStackDoc(labeled, NULL);
+        doc->setTag(NeuTube::Document::FLYEM_SPLIT);
+        doc->setStackFactory(factory);
+        ZWindowFactory windowFactory;
+        windowFactory.setWindowTitle("Splitting Result");
+        m_resultWindow = windowFactory.make3DWindow(doc);
 
-        ZStackFrame *newFrame = new ZStackFrame;
-        newFrame->addDocData(docReader);
-        newFrame->document()->setTag(NeuTube::Document::FLYEM_SPLIT);
-        newFrame->document()->setStackFactory(factory);
+        //ZStackFrame *newFrame = new ZStackFrame;
+        //newFrame->addDocData(docReader);
+        //newFrame->document()->setTag(NeuTube::Document::FLYEM_SPLIT);
+        //newFrame->document()->setStackFactory(factory);
         m_dataFrame->connect(
               m_dataFrame->document().get(), SIGNAL(labelFieldModified()),
-              newFrame->document().get(), SLOT(reloadStack()));
-        m_resultWindow = newFrame->open3DWindow(NULL);
+              doc, SLOT(reloadStack()));
+        //m_resultWindow = newFrame->open3DWindow(NULL);
         if (m_dataFrame->document()->hasSparseStack()) {
           ZIntPoint dsIntv =
               m_dataFrame->document()->getSparseStack()->getDownsampleInterval();
@@ -120,7 +213,7 @@ void ZFlyEmBodySplitProject::showResult3d()
         }
         connect(m_resultWindow, SIGNAL(destroyed()),
                 this, SLOT(shallowClearResultWindow()));
-        delete newFrame;
+        //delete newFrame;
       }
     }
     m_resultWindow->show();

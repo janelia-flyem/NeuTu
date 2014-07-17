@@ -173,8 +173,9 @@ int main(int argc, char *argv[])
     QsLogging::Logger& logger = QsLogging::Logger::instance();
     const QString sLogPath(QDir(app.applicationDirPath()).filePath("neuTube_log.txt"));
     QsLogging::DestinationPtr fileDestination(
-          QsLogging::DestinationFactory::MakeFileDestination(sLogPath, QsLogging::EnableLogRotation,
-                                                             QsLogging::MaxSizeBytes(1e7), QsLogging::MaxOldLogCount(20)));
+          QsLogging::DestinationFactory::MakeFileDestination(
+            sLogPath, QsLogging::EnableLogRotation,
+            QsLogging::MaxSizeBytes(1e7), QsLogging::MaxOldLogCount(20)));
     QsLogging::DestinationPtr debugDestination(
           QsLogging::DestinationFactory::MakeDebugOutputDestination());
     logger.addDestination(debugDestination);

@@ -45,7 +45,8 @@ public:
   void addBookmarkDecoration(const ZFlyEmBookmarkArray &bookmarkArray);
   void updateBookDecoration();
 
-  void showSkeleton(ZSwcTree *tree) const;
+  void showSkeleton(ZSwcTree *tree);
+  void quickView();
 
 public slots:
   void showDataFrame() const;
@@ -61,12 +62,14 @@ public slots:
   void shallowClear();
   void shallowClearDataFrame();
   void shallowClearResultWindow();
+  void shallowClearQuickViewWindow();
 
 private:
   ZDvidTarget m_dvidTarget;
   int m_bodyId;
   ZStackFrame *m_dataFrame;
   Z3DWindow *m_resultWindow;
+  Z3DWindow *m_quickViewWindow;
   ZFlyEmBookmarkArray m_bookmarkArray;
   std::vector<ZStackObject*> m_bookmarkDecoration;
   bool m_isBookmarkVisible;

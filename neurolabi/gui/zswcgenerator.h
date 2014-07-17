@@ -13,6 +13,7 @@ class ZIntCuboidFace;
 class ZIntCuboidFaceArray;
 class ZStroke2d;
 class ZObject3d;
+class ZObject3dScan;
 
 class ZSwcGenerator
 {
@@ -47,6 +48,8 @@ public:
   static ZSwcTree* createSwc(const ZStroke2d &stroke);
   static ZSwcTree* createSwc(
       const ZObject3d &obj, double radius, int sampleStep);
+
+  static ZSwcTree* createSwc(const ZObject3dScan &obj);
 
 
 private:

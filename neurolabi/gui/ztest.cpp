@@ -77,6 +77,7 @@
 #include "zstackfile.h"
 #include "c_stack.h"
 #include "zstack.hxx"
+#include "zwindowfactory.h"
 #include "flyem/zsegmentationanalyzer.h"
 #include "flyem/zsegmentationbundle.h"
 #include "flyem/zflyemneuronmatchtaskmanager.h"
@@ -12004,7 +12005,7 @@ void ZTest::test(MainWindow *host)
   bookmarkArray.print();
 #endif
 
-#if 1
+#if 0
   ZStackFrame *frame = new ZStackFrame;
   frame->load(GET_TEST_DATA_DIR + "/benchmark/em_stack.tif");
   host->addStackFrame(frame);
@@ -12014,5 +12015,51 @@ void ZTest::test(MainWindow *host)
   circle->setColor(255, 0, 0, 255);
   frame->document()->addObject(circle, NeuTube::Documentable_Circle,
                                ZDocPlayer::ROLE_TMP_BOOKMARK);
+#endif
+
+#if 0
+  ZWindowFactory factory;
+  factory.setWindowTitle("Test");
+
+  ZStackDoc *doc = new ZStackDoc(NULL, NULL);
+  doc->loadFile((GET_TEST_DATA_DIR + "/benchmark/em_stack.tif").c_str());
+  Z3DWindow *window = factory.make3DWindow(doc);
+  window->show();
+  window->raise();
+#endif
+
+#if 1
+  /*
+  ZDvidDialog dlg;
+  dlg.loadConfig(ZString::fullPath(NeutubeConfig::getInstance().getApplicatinDir(),
+                                   "json", "", "flyem_config.json"));
+
+  ZDvidTarget target = dlg.getDvidTarget();
+
+  ZDvidReader reader;
+  reader.open(target);
+  ZObject3dScan obj = reader.readBody(15730);
+  */
+
+  ZObject3dScan obj;
+  obj.load(GET_TEST_DATA_DIR + "/benchmark/50.sobj");
+
+  size_t voxelNumber =obj.getVoxelNumber();
+  int intv = iround(Cube_Root((double) voxelNumber / 1000000));
+  obj.downsampleMax(intv, intv, intv);
+
+  std::cout << obj.getVoxelNumber() << std::endl;
+
+  ZSwcTree *tree = ZSwcGenerator::createSwc(obj);
+  ZWindowFactory factory;
+  factory.setWindowTitle("Test");
+
+  ZStackDoc *doc = new ZStackDoc(NULL, NULL);
+  doc->addSwcTree(tree);
+  Z3DWindow *window = factory.make3DWindow(doc);
+  window->getSwcFilter()->setRenderingPrimitive("Sphere");
+  window->show();
+  window->raise();
+
 #endif
 }

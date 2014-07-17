@@ -9,6 +9,7 @@
 #include "zintcuboidface.h"
 #include "zstroke2d.h"
 #include "zobject3d.h"
+#include "zobject3dscan.h"
 
 ZSwcGenerator::ZSwcGenerator()
 {
@@ -419,6 +420,37 @@ ZSwcTree* ZSwcGenerator::createSwc(
     Swc_Tree_Node *tn =
         SwcTreeNode::makePointer(obj.x(i), obj.y(i), obj.z(i), radius);
     SwcTreeNode::setParent(tn, parent);
+  }
+
+  tree->resortId();
+
+  return tree;
+}
+
+ZSwcTree* ZSwcGenerator::createSwc(const ZObject3dScan &obj)
+{
+  if (obj.isEmpty()) {
+    return NULL;
+  }
+
+  ZSwcTree *tree = new ZSwcTree();
+  tree->forceVirtualRoot();
+  Swc_Tree_Node *root = tree->root();
+
+  size_t stripeNumber = obj.getStripeNumber();
+  for (size_t i = 0; i < stripeNumber; ++i) {
+    const ZObject3dStripe &stripe = obj.getStripe(i);
+    int segNumber = stripe.getSegmentNumber();
+    int y = stripe.getY();
+    int z = stripe.getZ();
+    for (int j = 0; j < segNumber; ++j) {
+      Swc_Tree_Node *tn =
+          SwcTreeNode::makePointer(stripe.getSegmentStart(j), y, z, 2.0);
+      SwcTreeNode::setFirstChild(root, tn);
+      Swc_Tree_Node *tn2 =
+          SwcTreeNode::makePointer(stripe.getSegmentEnd(j), y, z, 2.0);
+      SwcTreeNode::setFirstChild(tn, tn2);
+    }
   }
 
   tree->resortId();

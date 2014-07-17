@@ -160,35 +160,7 @@ void FlyEmBodySplitProjectDialog::loadBody()
 
 void FlyEmBodySplitProjectDialog::quickView()
 {
-  const ZDvidTarget &target = getDvidTarget();
-
-  ZDvidReader reader;
-  if (reader.open(target)) {
-    int bodyId = getBodyId();
-    ZObject3dScan obj = reader.readBody(bodyId);
-
-    if (obj.isEmpty()) {
-      dump("Unable to load the body from DVID.");
-    } else {
-      ZIntCuboid box = obj.getBoundBox();
-      dump(QString("Size: %1; Bounding box: %2 x %3 x %4").
-           arg(obj.getVoxelNumber()).arg(box.getWidth()).arg(box.getHeight()).
-           arg(box.getDepth()));
-
-      ZSwcTree *tree = reader.readSwc(bodyId);
-      if (tree == NULL) {
-        ZStackSkeletonizer skeletonizer;
-        ZJsonObject config;
-        config.load(NeutubeConfig::getInstance().getApplicatinDir() +
-                    "/json/skeletonize.json");
-        skeletonizer.configure(config);
-        tree = skeletonizer.makeSkeleton(obj);
-      }
-      m_project.showSkeleton(tree);
-    }
-  } else {
-    dump("Invalid dvid target");
-  }
+  m_project.quickView();
 }
 
 bool FlyEmBodySplitProjectDialog::isBodyLoaded() const
@@ -200,6 +172,7 @@ void FlyEmBodySplitProjectDialog::updateButton()
 {
   ui->loadBodyPushButton->setEnabled(!isBodyLoaded());
   ui->view2dBodyPushButton->setEnabled(isBodyLoaded());
+  ui->quickViewPushButton->setEnabled(isBodyLoaded());
   ui->view3dBodyPushButton->setEnabled(m_project.hasDataFrame());
   ui->viewSplitPushButton->setEnabled(m_project.hasDataFrame());
   ui->commitPushButton->setEnabled(m_project.hasDataFrame());

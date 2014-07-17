@@ -418,7 +418,8 @@ HEADERS += mainwindow.h \
     zabstractmodelpresenter.h \
     flyem/zflyembookmarkpresenter.h \
     flyem/zflyembookmarkarray.h \
-    zstackobjectarray.h
+    zstackobjectarray.h \
+    zwindowfactory.h
 
 FORMS += settingdialog.ui \
     frameinfodialog.ui \
@@ -694,7 +695,8 @@ SOURCES += main.cpp \
     zabstractmodelpresenter.cpp \
     flyem/zflyembookmarkpresenter.cpp \
     flyem/zflyembookmarkarray.cpp \
-    zstackobjectarray.cpp
+    zstackobjectarray.cpp \
+    zwindowfactory.cpp
 
 OTHER_FILES += \
     extlib.pri

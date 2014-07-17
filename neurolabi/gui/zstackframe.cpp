@@ -37,6 +37,7 @@
 #include "ztileinfo.h"
 #include "mainwindow.h"
 #include "z3dcanvas.h"
+#include "zwindowfactory.h"
 
 using namespace std;
 
@@ -1250,50 +1251,22 @@ void ZStackFrame::showObject()
 
 Z3DWindow* ZStackFrame::open3DWindow(QWidget *parent, Z3DWindow::EInitMode mode)
 {
-  if (Z3DApplication::app()->is3DSupported()) {
-    if (m_3dWindow == NULL) {
-#ifdef _WIN32
-      m_3dWindow = new Z3DWindow(document(), mode, false, NULL);
-      connect(parent, SIGNAL(destroyed()), m_3dWindow, SLOT(close()));
-      connect(parent, SIGNAL(destroyed(QObject*)), m_3dWindow, SLOT(close()));
-#else
-      m_3dWindow = new Z3DWindow(document(), mode, false, parent);
-#endif
-      m_3dWindow->setWindowTitle("3D View");
-      connect(m_3dWindow, SIGNAL(destroyed()), this, SLOT(detach3DWindow()));
-      if (NeutubeConfig::getInstance().getApplication() == "Biocytin") {
-        m_3dWindow->getCompositor()->setBackgroundFirstColor(glm::vec3(1, 1, 1));
-        m_3dWindow->getCompositor()->setBackgroundSecondColor(glm::vec3(1, 1, 1));
-      }
-      if (!NeutubeConfig::getInstance().getZ3DWindowConfig().isBackgroundOn()) {
-        m_3dWindow->getCompositor()->setShowBackground(false);
-      }
-      if (document()->getTag() == NeuTube::Document::FLYEM_BODY ||
-          document()->getTag() == NeuTube::Document::FLYEM_SPLIT) {
-        m_3dWindow->getVolumeRaycasterRenderer()->setCompositeMode(
-              "Direct Volume Rendering");
-      }
-      if (document()->getTag() == NeuTube::Document::FLYEM_SPLIT) {
-        m_3dWindow->getCanvas()->disableKeyEvent();
-      }
+  if (m_3dWindow == NULL) {
+    ZWindowFactory factory;
+    factory.setParentWidget(parent);
+    m_3dWindow = factory.make3DWindow(document(), mode);
+    connect(m_3dWindow, SIGNAL(destroyed()), this, SLOT(detach3DWindow()));
+  }
 
-      QRect screenRect = QApplication::desktop()->screenGeometry();
-      m_3dWindow->setGeometry(screenRect.width() / 10, screenRect.height() / 10,
-                              screenRect.width() - screenRect.width() / 5,
-                              screenRect.height() - screenRect.height() / 5);
-    }
-
-    //m_3dWindow->createToolBar(); //Cause crash for unknown reasons
+  if (m_3dWindow != NULL) {
     m_3dWindow->show();
     m_3dWindow->raise();
-
-    return m_3dWindow;
   } else {
     QMessageBox::critical(this, tr("3D functions are disabled"),
                           Z3DApplication::app()->getErrorMessage());
   }
 
-  return NULL;
+  return m_3dWindow;
 }
 
 void ZStackFrame::load(const QList<QUrl> &urls)

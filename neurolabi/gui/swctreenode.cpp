@@ -49,9 +49,15 @@ Swc_Tree_Node* SwcTreeNode::makePointer(int id, int type, double x, double y,
 }
 
 Swc_Tree_Node* SwcTreeNode::makePointer(
-    double x, double y, double z, double radius)
+    double x, double y, double z, double radius, Swc_Tree_Node *parent)
 {
-  return SwcTreeNode::makePointer(1, 0, x, y, z, radius, -1);
+  Swc_Tree_Node *tn = SwcTreeNode::makePointer(1, 0, x, y, z, radius, -1);
+
+  if (parent != NULL) {
+    setParent(tn, parent);
+  }
+
+  return tn;
 }
 
 Swc_Tree_Node* SwcTreeNode::makePointer(const ZPoint &pos, double radius)
@@ -669,6 +675,25 @@ int SwcTreeNode::labelDifference(Swc_Tree_Node *lhs, Swc_Tree_Node *rhs)
 void SwcTreeNode::setParent(Swc_Tree_Node *tn, Swc_Tree_Node *parent)
 {
   Swc_Tree_Node_Set_Parent(tn, parent);
+}
+
+void SwcTreeNode::setFirstChild(Swc_Tree_Node *tn, Swc_Tree_Node *child)
+{
+  if (child == NULL) {
+    return;
+  }
+
+  Swc_Tree_Node *oldFirstChild = firstChild(tn);
+  if (oldFirstChild == child) {
+    return;
+  }
+
+  detachParent(child);
+  if (tn != NULL) {
+    SwcTreeNode::setLink(child, tn, SwcTreeNode::PARENT);
+    SwcTreeNode::setLink(tn, child, SwcTreeNode::FIRST_CHILD);
+    SwcTreeNode::setLink(child, oldFirstChild, SwcTreeNode::NEXT_SIBLING);
+  }
 }
 
 bool SwcTreeNode::isRegularRoot(const Swc_Tree_Node *tn)

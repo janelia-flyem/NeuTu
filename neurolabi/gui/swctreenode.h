@@ -60,9 +60,12 @@ Swc_Tree_Node* makePointer(int id, int type, double x, double y, double z,
  * \param y Y coordinate of the node cebter
  * \param z Z coordinate of the node center
  * \param radius Radius of the node
+ * \param parent Parent of the node
+ *
  * \return A pointer of Swc_Tree_Node, which must be freed by kill()
  */
-Swc_Tree_Node* makePointer(double x, double y, double z, double radius);
+Swc_Tree_Node* makePointer(double x, double y, double z, double radius,
+                           Swc_Tree_Node *parent = NULL);
 
 /*!
  * \brief Create a pointer of Swc_Tree_Node with default id and type
@@ -346,6 +349,7 @@ void setLink(Swc_Tree_Node *tn, Swc_Tree_Node *target, EKnowingLink link);
  */
 void setAsRoot(Swc_Tree_Node *tn);
 void setParent(Swc_Tree_Node *tn, Swc_Tree_Node *parent);
+void setFirstChild(Swc_Tree_Node *tn, Swc_Tree_Node *child);
 void detachParent(Swc_Tree_Node *tn);
 void adoptChildren(Swc_Tree_Node *newParent, Swc_Tree_Node *oldParent);
 void mergeToParent(Swc_Tree_Node *tn);
