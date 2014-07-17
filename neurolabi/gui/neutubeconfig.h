@@ -18,7 +18,7 @@ public:
     DATA, FLYEM_BODY_CONN_CLASSIFIER, FLYEM_BODY_CONN_TRAIN_DATA,
     FLYEM_BODY_CONN_TRAIN_TRUTH, FLYEM_BODY_CONN_EVAL_DATA,
     FLYEM_BODY_CONN_EVAL_TRUTH, SWC_REPOSOTARY, AUTO_SAVE,
-    CONFIGURE_FILE, SKELETONIZATION_CONFIG
+    CONFIGURE_FILE, SKELETONIZATION_CONFIG, DOCUMENT
   };
 
   static NeutubeConfig& getInstance() {
@@ -265,6 +265,7 @@ private:
   std::string m_application;
   std::string m_softwareName;
   std::string m_applicationDir;
+  std::string m_docUrl;
   std::string m_segmentationClassifierPath;
   std::string m_segmentationTrainingTestPath;
   std::string m_segmentationTrainingTruthPath;
@@ -303,7 +304,8 @@ private:
 
 
 #define GET_MESSAGE_REPORTER (NeutubeConfig::getInstance().getMessageReporter())
-#  define GET_APPLICATION_NAME (NeutubeConfig::getInstance().getApplication())
+#define GET_APPLICATION_NAME (NeutubeConfig::getInstance().getApplication())
+#define GET_APPLICATION_DIR (NeutubeConfig::getInstance().getApplicatinDir())
 #define GET_SOFTWARE_NAME (NeutubeConfig::getInstance().getSoftwareName())
 
 #if defined(_FLYEM_)

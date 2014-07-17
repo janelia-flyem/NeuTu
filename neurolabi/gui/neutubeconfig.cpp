@@ -56,6 +56,9 @@ bool NeutubeConfig::load(const std::string &filePath)
     node = doc.getRootElement().queryNode("dataPath");
     m_dataPath = node.stringValue();
 
+    node = doc.getRootElement().queryNode("docUrl");
+    m_docUrl = node.stringValue();
+
     node = doc.getRootElement().queryNode("developPath");
     m_developPath = node.stringValue();
 
@@ -224,6 +227,8 @@ std::string NeutubeConfig::getPath(Config_Item item) const
   case SKELETONIZATION_CONFIG:
     return getApplicatinDir() + ZString::FileSeparator + "json" +
         ZString::FileSeparator + "skeletonize_fib25_len40.json";
+  case DOCUMENT:
+    return m_docUrl;
   default:
     break;
   }

@@ -145,7 +145,8 @@
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
-    m_ui(new Ui::MainWindow)
+    m_ui(new Ui::MainWindow),
+    m_settings((GET_APPLICATION_DIR + "/settings.qt").c_str(), QSettings::NativeFormat)
 {
   //std::cout << "Creating mainwindow ..." << std::endl;
   RECORD_INFORMATION("Creating mainwindow ...");
@@ -239,8 +240,19 @@ MainWindow::MainWindow(QWidget *parent) :
           this, SLOT(createDvidFrame()));
           */
 
+  if (!m_settings.isWritable()) {
+    report("Configuration Problem",
+           "It seems the software folder is not writable to you. "
+           "The software will not remember your settings. "
+           "We suggest each user get an indvidual copy of the software.",
+           ZMessageReporter::Warning);
+  }
+
+  m_version = windowTitle();
   setWindowTitle(QString("%1 %2").arg(GET_SOFTWARE_NAME.c_str()).
                  arg(windowTitle()));
+
+  checkVersion();
 
   connect(this, SIGNAL(docReaderReady(ZStackDocReader*)),
           this, SLOT(createStackFrameFromDocReader(ZStackDocReader*)));
@@ -861,7 +873,7 @@ void MainWindow::createToolBars()
   //m_ui->toolBar->addAction(openAction);
 
   if (NeutubeConfig::getInstance().getApplication() == "FlyEM") {
-    //m_ui->toolBar->addAction(m_ui->actionImportFlyEmDatabase);
+    m_ui->toolBar->addAction(m_ui->actionImportFlyEmDatabase);
     //m_ui->toolBar->addAction(m_ui->actionDvid_Object);
     m_ui->toolBar->addAction(m_ui->actionSplit_Body);
   }
@@ -2102,32 +2114,52 @@ void MainWindow::about()
 
 void MainWindow::writeSettings()
 {
-  QSettings settings("Janelia Farm", "neuTube");
-
-  settings.setValue("lastPath", m_lastOpenedFilePath);
-  settings.setValue("geometry", saveGeometry());
+  m_settings.setValue("lastPath", m_lastOpenedFilePath);
+  m_settings.setValue("geometry", saveGeometry());
 #if defined(_FLYEM_)
-  settings.setValue(
+  m_settings.setValue(
         "BodySplitProjectGeometry", m_bodySplitProjectDialog->saveGeometry());
 #endif
-  settings.setValue("recentFiles", recentFiles);
-  settings.setValue("autoSaveDir", QString(NeutubeConfig::getInstance().
+  m_settings.setValue("recentFiles", recentFiles);
+  m_settings.setValue("autoSaveDir", QString(NeutubeConfig::getInstance().
                     getPath(NeutubeConfig::AUTO_SAVE).c_str()));
+}
+
+void MainWindow::checkVersion()
+{
+  QString version = m_settings.value("version").toString();
+  if (version.isEmpty()) {
+    m_settings.setValue("version", m_version);
+  } else if (version != m_version) {
+    QString message = QString("%1 on your computer appears to be updated "
+                              "(%2 --> %3).<br>").
+        arg(GET_SOFTWARE_NAME.c_str()).arg(version).arg(m_version);
+    std::string docPath =
+        NeutubeConfig::getInstance().getPath(NeutubeConfig::DOCUMENT);
+    if (!docPath.empty()) {
+      message += QString(" Please go to <a href=\"%1\">%1</a> to check what's changed.").
+          arg(docPath.c_str());
+    }
+
+    report("Software Updated", message.toStdString(),
+           ZMessageReporter::Information);
+    m_settings.setValue("version", m_version);
+  }
 }
 
 void MainWindow::readSettings()
 {
   std::cout << "Read settings ..." << std::endl;
-  QSettings settings("Janelia Farm", "neuTube");
-  restoreGeometry(settings.value("geometry").toByteArray());
+  //QSettings settings("Janelia Farm", "neuTube");
+  restoreGeometry(m_settings.value("geometry").toByteArray());
 
-  recentFiles = settings.value("recentFiles").toStringList();
-  m_lastOpenedFilePath = settings.value("lastPath").toString();
+  recentFiles = m_settings.value("recentFiles").toStringList();
+  m_lastOpenedFilePath = m_settings.value("lastPath").toString();
   updateRecentFileActions();
 
-  if (settings.contains("autoSaveDir")) {
+  if (m_settings.contains("autoSaveDir")) {
     NeutubeConfig::getInstance().setAutoSaveDir(
-          settings.value("autoSaveDir").toString().toStdString());
+          m_settings.value("autoSaveDir").toString().toStdString());
   }
 }
 
@@ -4435,7 +4467,7 @@ void MainWindow::on_actionMake_Projection_triggered()
       if (stack != NULL) {
         ZStackFrame *newFrame =
             createStackFrame(stack, NeuTube::Document::BIOCYTIN_PROJECTION, frame);
-        newFrame->makeSWCProjection(frame->document().get());
+        newFrame->makeSwcProjection(frame->document().get());
         addStackFrame(newFrame);
         presentStackFrame(newFrame);
       }

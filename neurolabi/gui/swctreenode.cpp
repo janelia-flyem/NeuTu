@@ -674,7 +674,8 @@ int SwcTreeNode::labelDifference(Swc_Tree_Node *lhs, Swc_Tree_Node *rhs)
 
 void SwcTreeNode::setParent(Swc_Tree_Node *tn, Swc_Tree_Node *parent)
 {
-  Swc_Tree_Node_Set_Parent(tn, parent);
+  //Swc_Tree_Node_Set_Parent(tn, parent);
+  setFirstChild(parent, tn);
 }
 
 void SwcTreeNode::setFirstChild(Swc_Tree_Node *tn, Swc_Tree_Node *child)

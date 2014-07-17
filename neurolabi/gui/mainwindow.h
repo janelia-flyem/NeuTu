@@ -8,6 +8,7 @@
 #include <QMainWindow>
 #include <QMap>
 #include <QFileDialog>
+#include <QSettings>
 
 #include "tz_image_lib_defs.h"
 #include "frameinfodialog.h"
@@ -139,6 +140,7 @@ private:
   void setActionActivity();
 
   void initDialog();
+  void checkVersion();
 
 protected:
   //a virtual function from QWidget. It is called when the window is closed.
@@ -628,6 +630,9 @@ private:
 
   //FlyEmNeuronThumbnailDialog *m_thumbnailDlg;
   QFileDialog::Options m_fileDialogOption;
+
+  QSettings m_settings;
+  QString m_version;
 
   //ZStackDocReader *m_docReader;
 };

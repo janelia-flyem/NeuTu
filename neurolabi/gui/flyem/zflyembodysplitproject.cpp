@@ -117,11 +117,15 @@ void ZFlyEmBodySplitProject::quickView()
       ZObject3dScan obj = reader.readBody(bodyId);
       if (!obj.isEmpty()) {
         obj.canonize();
+
+#if 0
         size_t voxelNumber =obj.getVoxelNumber();
         int intv = iround(Cube_Root((double) voxelNumber / 1000000));
         obj.downsampleMax(intv, intv, intv);
 
         ZSwcTree *tree = ZSwcGenerator::createSwc(obj);
+#endif
+        ZSwcTree *tree = ZSwcGenerator::createSurfaceSwc(obj);
         /*
         if (tree == NULL) {
           ZStackSkeletonizer skeletonizer;

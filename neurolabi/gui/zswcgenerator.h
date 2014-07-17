@@ -14,6 +14,7 @@ class ZIntCuboidFaceArray;
 class ZStroke2d;
 class ZObject3d;
 class ZObject3dScan;
+class ZStack;
 
 class ZSwcGenerator
 {
@@ -51,6 +52,9 @@ public:
 
   static ZSwcTree* createSwc(const ZObject3dScan &obj);
 
+  static ZSwcTree* createSurfaceSwc(const ZStack &stack, int sparseLevel = 1);
+  static ZSwcTree* createSurfaceSwc(const ZObject3dScan &obj,
+                                    int sparseLevel = 1);
 
 private:
   static ZSwcTree* createSwcByRegionSampling(const ZVoxelArray &voxelArray,

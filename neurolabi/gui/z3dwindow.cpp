@@ -103,9 +103,6 @@ Z3DWindow::Z3DWindow(ZSharedPointer<ZStackDoc> doc, Z3DWindow::EInitMode initMod
   , m_isStereoView(stereoView)
   , m_toolBar(NULL)
 {
-  if (m_doc->getStack() != NULL) {
-    setWindowTitle(m_doc->stackSourcePath().c_str());
-  }
   setAttribute(Qt::WA_DeleteOnClose);
   setFocusPolicy(Qt::StrongFocus);
   createActions();
@@ -117,6 +114,9 @@ Z3DWindow::Z3DWindow(ZSharedPointer<ZStackDoc> doc, Z3DWindow::EInitMode initMod
   setAcceptDrops(true);
   m_mergedContextMenu = new QMenu(this);
 
+  if (m_doc->getStack() != NULL) {
+    setWindowTitle(m_doc->stackSourcePath().c_str());
+  }
   //createToolBar();
 }
 
@@ -3097,22 +3097,22 @@ void Z3DWindow::addStrokeFrom3dPaint(ZStroke2d *stroke)
 void Z3DWindow::addPolyplaneFrom3dPaint(ZStroke2d *stroke)
 {
   //bool success = false;
+  if (m_doc->hasStack()) {
+    std::vector<ZIntPoint> polyline1;
+    std::vector<ZIntPoint> polyline2;
 
-  std::vector<ZIntPoint> polyline1;
-  std::vector<ZIntPoint> polyline2;
-
-  ZIntCuboid box = m_doc->stackRef()->getBoundBox();
-  ZCuboid rbox(box.getFirstCorner().getX(), box.getFirstCorner().getY(),
-               box.getFirstCorner().getZ(),
-               box.getLastCorner().getX(), box.getLastCorner().getY(),
-               box.getLastCorner().getZ());
-  for (size_t i = 0; i < stroke->getPointNumber(); ++i) {
-    double x = 0.0;
-    double y = 0.0;
-    stroke->getPoint(&x, &y, i);
-    ZLineSegment seg = m_volumeRaycaster->getScreenRay(
-          iround(x), iround(y), m_canvas->width(), m_canvas->height());
-    //if (success) {
+    ZIntCuboid box = m_doc->stackRef()->getBoundBox();
+    ZCuboid rbox(box.getFirstCorner().getX(), box.getFirstCorner().getY(),
+                 box.getFirstCorner().getZ(),
+                 box.getLastCorner().getX(), box.getLastCorner().getY(),
+                 box.getLastCorner().getZ());
+    for (size_t i = 0; i < stroke->getPointNumber(); ++i) {
+      double x = 0.0;
+      double y = 0.0;
+      stroke->getPoint(&x, &y, i);
+      ZLineSegment seg = m_volumeRaycaster->getScreenRay(
+            iround(x), iround(y), m_canvas->width(), m_canvas->height());
+      //if (success) {
       ZPoint slope = seg.getEndPoint() - seg.getStartPoint();
       ZLineSegment stackSeg;
       if (rbox.intersectLine(seg.getStartPoint(), slope, &stackSeg)) {
@@ -3123,34 +3123,37 @@ void Z3DWindow::addPolyplaneFrom3dPaint(ZStroke2d *stroke)
         polyline1.push_back(ZIntPoint(stackSeg.getStartPoint().toIntPoint()));
         polyline2.push_back(ZIntPoint(stackSeg.getEndPoint().toIntPoint()));
       }
-    //}
-  }
+      //}
+    }
 
-  ZObject3d *obj = ZVoxelGraphics::createPolyPlaneObject(polyline1, polyline2);
+    ZObject3d *obj = ZVoxelGraphics::createPolyPlaneObject(polyline1, polyline2);
 
-  if (obj != NULL) {
+    if (obj != NULL) {
 #ifdef _DEBUG_2
-    ZStack *stack = obj->toStackObject();
-    stack->save(GET_TEST_DATA_DIR + "/test.tif");
-    delete stack;
+      ZStack *stack = obj->toStackObject();
+      stack->save(GET_TEST_DATA_DIR + "/test.tif");
+      delete stack;
 #endif
 
-    if (!obj->isEmpty()) {
+      if (!obj->isEmpty()) {
 #ifdef _DEBUG_2
-  ZSwcTree *tree = ZSwcGenerator::createSwc(*obj, 1.0, 3);
-  tree->save(GET_TEST_DATA_DIR + "/test.swc");
+        ZSwcTree *tree = ZSwcGenerator::createSwc(*obj, 1.0, 3);
+        tree->save(GET_TEST_DATA_DIR + "/test.swc");
 #endif
 
-      obj->setLabel(stroke->getLabel());
-      ZLabelColorTable colorTable;
-      obj->setColor(colorTable.getColor(obj->getLabel()));
+        obj->setLabel(stroke->getLabel());
+        ZLabelColorTable colorTable;
+        obj->setColor(colorTable.getColor(obj->getLabel()));
 
-      m_doc->executeAddObjectCommand(
-            obj, NeuTube::Documentable_OBJ3D,
-            ZDocPlayer::ROLE_SEED | ZDocPlayer::ROLE_3DGRAPH_DECORATOR);
-      //m_doc->notifyVolumeModified();
-    } else {
-      delete obj;
+        m_doc->executeAddObjectCommand(
+              obj, NeuTube::Documentable_OBJ3D,
+              ZDocPlayer::ROLE_SEED | ZDocPlayer::ROLE_3DGRAPH_DECORATOR);
+        //m_doc->notifyVolumeModified();
+      } else {
+        delete obj;
+      }
     }
   }
+
+  delete stroke;
 }

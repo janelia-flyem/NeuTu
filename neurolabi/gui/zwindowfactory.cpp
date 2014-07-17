@@ -5,8 +5,10 @@
 #include "neutubeconfig.h"
 #include "z3dcompositor.h"
 #include "z3dcanvas.h"
+#include "z3dvolumeraycaster.h"
 
-ZWindowFactory::ZWindowFactory() : m_parentWidget(NULL)
+ZWindowFactory::ZWindowFactory() : m_parentWidget(NULL),
+  m_showVolumeBoundBox(false)
 {
 }
 
@@ -52,6 +54,9 @@ Z3DWindow* ZWindowFactory::make3DWindow(ZSharedPointer<ZStackDoc> doc,
     }
     if (doc->getTag() == NeuTube::Document::FLYEM_SPLIT) {
       window->getCanvas()->disableKeyEvent();
+    }
+    if (!m_showVolumeBoundBox) {
+      window->getVolumeRaycaster()->hideBoundBox();
     }
 
     if (m_windowGeometry.isEmpty()) {

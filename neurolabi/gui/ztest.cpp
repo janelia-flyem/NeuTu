@@ -12017,7 +12017,7 @@ void ZTest::test(MainWindow *host)
                                ZDocPlayer::ROLE_TMP_BOOKMARK);
 #endif
 
-#if 0
+#if 1
   ZWindowFactory factory;
   factory.setWindowTitle("Test");
 
@@ -12028,7 +12028,7 @@ void ZTest::test(MainWindow *host)
   window->raise();
 #endif
 
-#if 1
+#if 0
   /*
   ZDvidDialog dlg;
   dlg.loadConfig(ZString::fullPath(NeutubeConfig::getInstance().getApplicatinDir(),
@@ -12061,5 +12061,27 @@ void ZTest::test(MainWindow *host)
   window->show();
   window->raise();
 
+#endif
+
+#if 0
+  ZObject3dScan obj;
+  obj.load(GET_TEST_DATA_DIR + "/benchmark/50.sobj");
+
+  //size_t voxelNumber =obj.getVoxelNumber();
+  //int intv = iround(Cube_Root((double) voxelNumber / 1000000));
+ //obj.downsampleMax(intv, intv, intv);
+
+  //std::cout << obj.getVoxelNumber() << std::endl;
+
+  ZSwcTree *tree = ZSwcGenerator::createSurfaceSwc(obj, 2);
+  ZWindowFactory factory;
+  factory.setWindowTitle("Test");
+
+  ZStackDoc *doc = new ZStackDoc(NULL, NULL);
+  doc->addSwcTree(tree);
+  Z3DWindow *window = factory.make3DWindow(doc);
+  window->getSwcFilter()->setRenderingPrimitive("Sphere");
+  window->show();
+  window->raise();
 #endif
 }

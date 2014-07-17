@@ -256,6 +256,7 @@ public:
   Stack* toStack(int *offset = NULL, int v = 1) const;
   ZStack* toStackObject() const;
   ZStack* toVirtualStack() const;
+  ZStack* toDownsampledStack(int xIntv, int yIntv, int zIntv);
 
   ZIntCuboid getBoundBox() const;
   void getBoundBox(Cuboid_I *box) const;

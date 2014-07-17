@@ -1542,21 +1542,17 @@ bool ZStackPresenter::processKeyPressEventForStroke(QKeyEvent *event)
   case Qt::Key_4:
   case Qt::Key_5:
   case Qt::Key_6:
-    if (event->modifiers() == Qt::ControlModifier) {
-      if (m_interactiveContext.strokeEditMode() ==
-          ZInteractiveContext::STROKE_DRAW) {
-        m_stroke.setLabel(event->key() - Qt::Key_0);
-        buddyView()->paintActiveDecoration();
-      }
+    if (m_interactiveContext.strokeEditMode() ==
+        ZInteractiveContext::STROKE_DRAW) {
+      m_stroke.setLabel(event->key() - Qt::Key_0);
+      buddyView()->paintActiveDecoration();
     }
     break;
-  case Qt::Key_B:
-    if (event->modifiers() == Qt::ControlModifier) {
-      if (m_interactiveContext.strokeEditMode() ==
-          ZInteractiveContext::STROKE_DRAW) {
-        m_stroke.setLabel(255);
-        buddyView()->paintActiveDecoration();
-      }
+  case Qt::Key_QuoteLeft:
+    if (m_interactiveContext.strokeEditMode() ==
+        ZInteractiveContext::STROKE_DRAW) {
+      m_stroke.setLabel(255);
+      buddyView()->paintActiveDecoration();
     }
     break;
   case Qt::Key_Space:
@@ -1639,30 +1635,28 @@ void ZStackPresenter::processKeyPressEvent(QKeyEvent *event)
 
   case Qt::Key_Equal:
   case Qt::Key_Up:
-  case Qt::Key_2:
-    //    if (m_zoomRatio < 16) {
-    //      m_zoomRatio += 1;
-    //      buddyView()->imageWidget()->setZoomRatio(m_zoomRatio);
-    //      buddyView()->updateImageScreen();
-    //    }
     if (event->modifiers() == Qt::NoModifier) {
       buddyView()->imageWidget()->increaseZoomRatio();
     }
     break;
-
+  case Qt::Key_2:
+    if (m_interactiveContext.strokeEditMode() !=
+        ZInteractiveContext::STROKE_DRAW) {
+      buddyView()->imageWidget()->increaseZoomRatio();
+    }
+    break;
   case Qt::Key_Minus:
   case Qt::Key_Down:
-  case Qt::Key_1:
-    //    if (m_zoomRatio > 1) {
-    //      m_zoomRatio -= 1;
-    //      buddyView()->imageWidget()->setZoomRatio(m_zoomRatio);
-    //      buddyView()->updateImageScreen();
-    //    }
     if (event->modifiers() == Qt::NoModifier) {
       buddyView()->imageWidget()->decreaseZoomRatio();
     }
     break;
-
+  case Qt::Key_1:
+    if (m_interactiveContext.strokeEditMode() !=
+        ZInteractiveContext::STROKE_DRAW) {
+      buddyView()->imageWidget()->decreaseZoomRatio();
+    }
+    break;
   case Qt::Key_W:
     if (event->modifiers() == Qt::ShiftModifier) {
       //setZoomOffset(m_zoomOffset.x(), m_zoomOffset.y() + 10);

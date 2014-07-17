@@ -2,7 +2,7 @@
 
 const QVector<QColor> ZLabelColorTable::m_colorTable =
     ZLabelColorTable::constructColorTable();
-const QColor ZLabelColorTable::m_blackColor = Qt::black;
+const QColor ZLabelColorTable::m_blackColor = QColor(0, 0, 0, 255);
 const QColor ZLabelColorTable::m_transparentColor = QColor(0, 0, 0, 0);
 
 QVector<QColor> ZLabelColorTable::constructColorTable()

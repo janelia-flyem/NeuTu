@@ -10,6 +10,10 @@
 #include "zstroke2d.h"
 #include "zobject3d.h"
 #include "zobject3dscan.h"
+#include "zstack.hxx"
+#include "tz_stack_bwmorph.h"
+#include "neutubeconfig.h"
+#include "tz_math.h"
 
 ZSwcGenerator::ZSwcGenerator()
 {
@@ -454,6 +458,79 @@ ZSwcTree* ZSwcGenerator::createSwc(const ZObject3dScan &obj)
   }
 
   tree->resortId();
+
+  return tree;
+}
+
+ZSwcTree* ZSwcGenerator::createSurfaceSwc(
+    const ZObject3dScan &obj, int sparseLevel)
+{
+  size_t volume = obj.getBoundBox().getVolume();
+
+  int intv = 0;
+  if (volume > MAX_INT32) {
+    intv = iround(Cube_Root((double) volume / MAX_INT32));
+  }
+
+  ZStack *stack = NULL;
+  if (intv > 0) {
+    ZObject3dScan obj2 = obj;
+    obj2.downsampleMax(intv, intv, intv);
+    stack = obj2.toStackObject();
+  } else {
+    stack = obj.toStackObject();
+  }
+
+  ZSwcTree *tree = NULL;
+  if (stack != NULL) {
+    tree = createSurfaceSwc(*stack, sparseLevel);
+  }
+  tree->rescale(intv + 1, intv + 1, intv + 1);
+
+  return tree;
+}
+
+ZSwcTree* ZSwcGenerator::createSurfaceSwc(const ZStack &stack, int sparseLevel)
+{
+  if (stack.kind() != GREY) {
+    return NULL;
+  }
+
+  Stack *surface = Stack_Perimeter(stack.c_stack(), NULL, 6);
+
+#ifdef _DEBUG_2
+  C_Stack::write(GET_DATA_DIR + "/test.tif", surface);
+#endif
+
+  ZSwcTree *tree = NULL;
+  if (surface != NULL) {
+    tree = new ZSwcTree();
+    tree->forceVirtualRoot();
+    Swc_Tree_Node *root = tree->root();
+
+    int width = C_Stack::width(surface);
+    int height = C_Stack::height(surface);
+    int depth = C_Stack::depth(surface);
+
+    size_t offset = 0;
+    int count = 0;
+    for (int z = 0; z < depth; ++z) {
+      for (int y = 0; y < height; ++y) {
+        for (int x = 0; x < width; ++x) {
+          if ((surface->array[offset++]) > 0) {
+            if (count++ % sparseLevel == 0) {
+              SwcTreeNode::makePointer(x + stack.getOffset().getX(),
+                                       y + stack.getOffset().getY(),
+                                       z + stack.getOffset().getY(),
+                                       1.5 * sparseLevel, root);
+            }
+          }
+        }
+      }
+    }
+
+    C_Stack::kill(surface);
+  }
 
   return tree;
 }

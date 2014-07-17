@@ -16,7 +16,7 @@
    </font>
   </property>
   <property name="windowTitle">
-   <string>1.0c</string>
+   <string>1.0f</string>
   </property>
   <widget class="QWidget" name="centralwidget"/>
   <widget class="QMenuBar" name="menubar">

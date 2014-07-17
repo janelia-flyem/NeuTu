@@ -1643,7 +1643,7 @@ void ZStackFrame::runSeededWatershed()
 {
   document()->runSeededWatershed();
 }
-void ZStackFrame::makeSWCProjection(ZStackDoc *doc)
+void ZStackFrame::makeSwcProjection(ZStackDoc *doc)
 {
     if (doc == NULL) return;
     QList<ZSwcTree*> *swclist= doc->swcList();

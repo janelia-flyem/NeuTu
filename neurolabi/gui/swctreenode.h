@@ -348,7 +348,15 @@ void setLink(Swc_Tree_Node *tn, Swc_Tree_Node *target, EKnowingLink link);
  * \param Input node
  */
 void setAsRoot(Swc_Tree_Node *tn);
+
+/*!
+ * \brief Set the parent of a node
+ *
+ * \a parent becomes the parent of \a tn. The postion \a tn in the children of
+ * \a parent is undefined.
+ */
 void setParent(Swc_Tree_Node *tn, Swc_Tree_Node *parent);
+
 void setFirstChild(Swc_Tree_Node *tn, Swc_Tree_Node *child);
 void detachParent(Swc_Tree_Node *tn);
 void adoptChildren(Swc_Tree_Node *newParent, Swc_Tree_Node *oldParent);

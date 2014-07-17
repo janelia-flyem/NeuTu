@@ -203,6 +203,7 @@ int main(int argc, char *argv[])
     MainWindow *mainWin = new MainWindow();
     mainWin->config();
     mainWin->show();
+    mainWin->raise();
     mainWin->initOpenglContext();
 
     if (!fileList.isEmpty()) {

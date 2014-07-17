@@ -121,7 +121,7 @@ void ZInteractionEngine::processKeyPressEvent(QKeyEvent *event)
       emit decorationUpdated();
     }
     break;
-  case Qt::Key_E:
+  case Qt::Key_QuoteLeft:
     if (isStateOn(STATE_DRAW_STROKE)) {
       m_stroke.setLabel(255);
       emit decorationUpdated();

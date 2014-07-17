@@ -30,6 +30,8 @@ private:
   QWidget *m_parentWidget;
   QString m_windowTitle;
   QRect m_windowGeometry;
+
+  bool m_showVolumeBoundBox;
 };
 
 #endif // ZWINDOWFACTORY_H

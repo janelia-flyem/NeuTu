@@ -229,7 +229,7 @@ public:
   void runSeededWatershed();
 
   QString swcFilename;
-  void makeSWCProjection(ZStackDoc *doc);
+  void makeSwcProjection(ZStackDoc *doc);
 
 public slots:
   void setLocsegChainInfo(ZLocsegChain *chain, QString prefix = "",
