@@ -67,6 +67,14 @@ ZStack* ZStackFactory::makeOneStack(int width, int height, int depth)
   return stack;
 }
 
+ZStack* ZStackFactory::makeZeroStack(int width, int height, int depth)
+{
+  ZStack *stack = new ZStack(GREY, width, height, depth, 1);
+  stack->setZero();
+
+  return stack;
+}
+
 ZStack* ZStackFactory::makeIndexStack(int width, int height, int depth)
 {
   ZStack *stack = new ZStack(GREY, width, height, depth, 1);

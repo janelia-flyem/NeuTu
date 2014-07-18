@@ -201,7 +201,8 @@ HEADERS +=$${PWD}/zstackprocessor.h \
    $${PWD}/bigdata/zblockgrid.h \
    $${PWD}/bigdata/zblockgridfactory.h \
    $${PWD}/zsparsestack.h \
-    zstackobject.h
+   $${PWD}/zstackobject.h \
+   $${PWD}/zobject3dfactory.h
 
 SOURCES +=$${PWD}/zstackprocessor.cpp \
    $${PWD}/zstack.cxx \
@@ -388,4 +389,5 @@ SOURCES +=$${PWD}/zstackprocessor.cpp \
    $${PWD}/bigdata/zblockgrid.cpp \
    $${PWD}/bigdata/zblockgridfactory.cpp \
    $${PWD}/zsparsestack.cpp \
-    zstackobject.cpp
+   $${PWD}/zstackobject.cpp \
+   $${PWD}/zobject3dfactory.cpp

@@ -169,6 +169,7 @@
 #include "test/zflyemneuronfiltertest.h"
 #include "test/zswcmetrictest.h"
 #include "test/zmatrixtest.h"
+#include "test/zobject3dfactorytest.h"
 #include "test/zstacktest.h"
 #include "zswcgenerator.h"
 #include "test/zswcgeneratortest.h"

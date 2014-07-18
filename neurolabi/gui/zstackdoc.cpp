@@ -6682,78 +6682,8 @@ void ZStackDoc::runLocalSeededWatershed()
 
 void ZStackDoc::runSeededWatershed()
 {
-#if 1
   seededWatershed();
   emit labelFieldModified();
-#else //old code
-  Stack *stack = m_stack->c_stack();
-  Stack_Watershed_Workspace *ws =
-      Make_Stack_Watershed_Workspace(stack);
-  ws->conn = 6;
-  Stack *mask = C_Stack::make(GREY, C_Stack::width(stack),
-                              C_Stack::height(stack), C_Stack::depth(stack));
-  C_Stack::setZero(mask);
-  ws->mask = mask;
-
-  /*
-  ZStackArray stackArray = createWatershedMask();
-  Mc_Stack maskView;
-  C_Stack::view(ws->mask, &maskView);
-  ZStack maskWrapper(&maskView, NULL);
-  maskWrapper.setOffset(m_stack->getOffset());
-  stackArray.paste(&maskWrapper, 0);
-*/
-
-  foreach (ZStroke2d* stroke, m_strokeList) {
-    ZPoint stackOffset = getStackOffset();
-    ZStroke2d tmpStroke = *stroke;
-    tmpStroke.translate(-stackOffset);
-    tmpStroke.labelGrey(mask);
-  }
-
-  size_t voxelNumber = m_stack->getVoxelNumber();
-  for (size_t i = 0; i < voxelNumber; ++i) {
-    if (stack->array[i] == 0) {
-      mask->array[i] = STACK_WATERSHED_BARRIER;
-    }
-  }
-#if 0
-  if (m_stack->isBinary()) {
-    size_t voxelNumber = m_stack->getVoxelNumber();
-    for (size_t i = 0; i < voxelNumber; ++i) {
-      if (stack->array[i] == 0) {
-        mask->array[i] = STACK_WATERSHED_BARRIER;
-      }
-    }
-    stack = Stack_Bwdist_L_U16P(stack, NULL, 0);
-  }
-#endif
-
-  Stack *out= Stack_Watershed(stack, ws);
-
-  if (stack != m_stack->c_stack()) {
-    C_Stack::kill(stack);
-  }
-
-  Object_3d *objData = Stack_Region_Border(out, 6, TRUE);
-  removeAllObj3d();
-  if (objData != NULL) {
-    ZObject3d *obj = new ZObject3d(objData);
-    obj->translate(iround(getStackOffset().x()),
-                   iround(getStackOffset().y()),
-                   iround(getStackOffset().z()));
-    addObj3d(obj);
-    notifyObj3dModified();
-  }
-
-  C_Stack::kill(out);
-#ifdef _DEBUG_2
-  C_Stack::write(GET_DATA_DIR + "/test.tif", ws->mask);
-#endif
-  //return out;
-
-#endif
-
 }
 
 ZStack* ZStackDoc::makeLabelStack(ZStack *stack) const

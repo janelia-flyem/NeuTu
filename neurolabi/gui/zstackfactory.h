@@ -32,6 +32,7 @@ public:
   static ZStack* composite(InputIterator begin, InputIterator end);
 
   static ZStack* makeOneStack(int width, int height, int depth);
+  static ZStack* makeZeroStack(int width, int height, int depth);
   static ZStack* makeIndexStack(int width, int height, int depth);
   static ZStack* makeUniformStack(int width, int height, int depth, int v);
 

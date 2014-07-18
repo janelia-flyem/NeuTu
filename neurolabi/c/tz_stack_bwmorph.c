@@ -2085,7 +2085,7 @@ Stack* Stack_Bwinterp(const Stack *stack, Stack *out)
   Stack_Not(perim, perim);
   Stack *dist = Stack_Bwdist_L_U16P(perim, NULL, 0);
 
-  Free_Stack(perim);
+  Kill_Stack(perim);
 
   if (out == NULL) {
     out = Copy_Stack((Stack*) stack);
@@ -2128,6 +2128,8 @@ Stack* Stack_Bwinterp(const Stack *stack, Stack *out)
       }
     }
   }
+
+  Kill_Stack(dist);
 
   return out;
 }

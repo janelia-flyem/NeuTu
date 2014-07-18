@@ -10,6 +10,7 @@ class ZObject3dArray : public std::vector<ZObject3d*>
 {
 public:
   ZObject3dArray();
+  ZObject3dArray(size_t s);
   ~ZObject3dArray();
 
 public:
@@ -41,6 +42,13 @@ public:
   double radiusVariance();
   double angleShift();
   ZPoint averageDirection();
+
+  /*!
+   * \brief Take an object.
+   *
+   * The array no longer owns the taken object after the function call.
+   */
+  ZObject3d* take(size_t index);
 
 private:
   int m_width;

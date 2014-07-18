@@ -16,6 +16,12 @@ ZObject3dArray::ZObject3dArray() : m_width(1), m_height(1), m_depth(1)
 {
 }
 
+ZObject3dArray::ZObject3dArray(size_t s) : std::vector<ZObject3d*>(s, NULL),
+  m_width(1), m_height(1), m_depth(1)
+
+{
+}
+
 ZObject3dArray::~ZObject3dArray()
 {
   clearAll();
@@ -266,4 +272,16 @@ ZPoint ZObject3dArray::averageDirection()
   }
 
   return vec;
+}
+
+ZObject3d* ZObject3dArray::take(size_t index)
+{
+  if (index >= size()) {
+    return NULL;
+  }
+
+  ZObject3d *obj = (*this)[index];
+  (*this)[index] = NULL;
+
+  return obj;
 }
