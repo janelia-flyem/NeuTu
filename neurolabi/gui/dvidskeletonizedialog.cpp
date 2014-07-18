@@ -42,6 +42,11 @@ int DvidSkeletonizeDialog::getMinBodySize() const
   return m_bodyDlg->getMinBodySize();
 }
 
+bool DvidSkeletonizeDialog::hasUpperBodySize() const
+{
+  return m_bodyDlg->hasUpperBodySize();
+}
+
 int DvidSkeletonizeDialog::getMaxBodySize() const
 {
   return m_bodyDlg->getMaxBodySize();
@@ -54,9 +59,13 @@ std::set<int> DvidSkeletonizeDialog::getExcludedBodySet() const
 
 void DvidSkeletonizeDialog::updateBodySelection()
 {
+  QString maxBodySize;
+  if (hasUpperBodySize()) {
+    maxBodySize = QString("%1").arg(getMaxBodySize());
+  }
+
   QString text = QString("Body size range: [%1, %2]; Excluded bodies: ").
-      arg(getMinBodySize()).
-      arg(getMaxBodySize());
+      arg(getMinBodySize()).arg(maxBodySize);
   std::set<int> bodySet = m_bodyDlg->getExcludedBodySet();
   for (std::set<int>::const_iterator iter = bodySet.begin();
        iter != bodySet.end(); ++iter) {

@@ -357,7 +357,7 @@ std::set<int> ZDvidReader::readBodyId(
 
     request.setParameter(
           QVariant(QString("intersect/%1_%2_%3/%4_%5_%6").
-          arg(startIndex[0]).arg(startIndex[1]).arg(startIndex[2]).
+                   arg(startIndex[0]).arg(startIndex[1]).arg(startIndex[2]).
         arg(endIndex[0]).arg(endIndex[1]).arg(endIndex[2])));
     m_dvidClient->appendRequest(request);
     m_dvidClient->postNextRequest();
@@ -380,8 +380,57 @@ std::set<int> ZDvidReader::readBodyId(
 #endif
 }
 
+std::set<int> ZDvidReader::readBodyId(const QString sizeRange)
+{
+  std::set<int> bodySet;
+
+  if (!sizeRange.isEmpty()) {
+    std::vector<int> idArray;
+    startReading();
+
+    ZDvidRequest request;
+    request.setGetStringRequest("sp2body");
+
+    request.setParameter(QVariant("sizerange/" + sizeRange));
+    m_dvidClient->appendRequest(request);
+    m_dvidClient->postNextRequest();
+
+    waitForReading();
+
+    ZDvidBuffer *dvidBuffer = m_dvidClient->getDvidBuffer();
+
+    const QStringList& infoArray = dvidBuffer->getInfoArray();
+
+    if (infoArray.size() > 0) {
+      ZJsonArray array;
+      //qDebug() << infoArray[0];
+      array.decode(infoArray[0].toStdString());
+      idArray = array.toIntegerArray();
+      bodySet.insert(idArray.begin(), idArray.end());
+    }
+
+    dvidBuffer->clearInfoArray();
+  }
+
+  return bodySet;
+}
+
+std::set<int> ZDvidReader::readBodyId(size_t minSize)
+{
+  return readBodyId(QString("%1").arg(minSize));
+}
+
 std::set<int> ZDvidReader::readBodyId(size_t minSize, size_t maxSize)
 {
+  QString sizeRange;
+
+  if (minSize <= maxSize) {
+    sizeRange = QString("%1/%2").arg(minSize).arg(maxSize);
+  }
+
+  return readBodyId(sizeRange);
+
+#if 0
   std::set<int> bodySet;
 
   std::vector<int> idArray;
@@ -415,6 +464,7 @@ std::set<int> ZDvidReader::readBodyId(size_t minSize, size_t maxSize)
   }
 
   return bodySet;
+#endif
 }
 
 QByteArray ZDvidReader::readKeyValue(const QString &dataName, const QString &key)

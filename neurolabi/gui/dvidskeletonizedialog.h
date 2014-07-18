@@ -24,6 +24,7 @@ public:
 
   int getMaxBodySize() const;
   int getMinBodySize() const;
+  bool hasUpperBodySize() const;
   std::set<int> getExcludedBodySet() const;
 
   bool noOverwriting() const;

@@ -20,7 +20,8 @@ FlyEmBodyFilterDialog::~FlyEmBodyFilterDialog()
 
 size_t FlyEmBodyFilterDialog::getMinBodySize() const
 {
-  if (ui->minSizeSpinBox->value() < 0) {
+  if (ui->minSizeSpinBox->value() < 0 ||
+      !ui->minBodySizeCheckBox->isChecked()) {
     return 0;
   }
 

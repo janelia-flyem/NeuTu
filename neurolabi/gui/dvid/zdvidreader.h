@@ -42,6 +42,7 @@ public:
       int x0, int y0, int z0, int width, int height, int depth);
   std::set<int> readBodyId(const ZIntPoint &firstCorner,
                               const ZIntPoint &lastCorner);
+  std::set<int> readBodyId(size_t minSize);
   std::set<int> readBodyId(size_t minSize, size_t maxSize);
   QByteArray readKeyValue(const QString &dataName, const QString &key);
 
@@ -52,6 +53,8 @@ public slots:
   void slotTest();
   void startReading();
   void endReading();
+
+  std::set<int> readBodyId(const QString sizeRange);
 
 private:
   static std::vector<std::pair<int, int> > partitionStack(
