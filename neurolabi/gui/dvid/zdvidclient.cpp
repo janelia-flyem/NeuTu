@@ -34,6 +34,7 @@ ZDvidClient::ZDvidClient(const QString &server, QObject *parent) :
 
 void ZDvidClient::setUuid(const QString &uuid)
 {
+  m_uuid = uuid;
   m_dataPath = "api/node/" + uuid;
 }
 
@@ -156,8 +157,8 @@ bool ZDvidClient::postRequest(
   {
 #if 1
     QString command = QString(
-          "curl -X POST http://emdata1.int.janelia.org/%1/skeletons/"
-          "%2.swc --data-binary @%3/%4.swc").arg(m_dataPath).
+          "curl -X POST http://%1/api/node/%2/skeletons/%3.swc"
+          " --data-binary @%4/%5.swc").arg(m_serverAddress).arg(m_dataPath).
         arg(parameter.toInt()).
         arg(m_tmpDirectory).arg(parameter.toInt());
     QProcess::execute(command);

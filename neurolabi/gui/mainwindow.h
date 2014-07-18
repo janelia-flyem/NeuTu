@@ -48,6 +48,7 @@ class ZDvidDialog;
 class FlyEmBodyFilterDialog;
 class FlyEmBodySplitProjectDialog;
 class ZFlyEmNewBodySplitProjectDialog;
+class DvidSkeletonizeDialog;
 
 namespace Ui {
     class MainWindow;
@@ -415,6 +416,8 @@ private slots:
 
   void on_actionSplit_Body_triggered();
 
+  void on_actionUpdate_Skeletons_triggered();
+
 private:
   void createActions();
   void createFileActions();
@@ -626,6 +629,7 @@ private:
   FlyEmBodyFilterDialog *m_bodyFilterDlg;
   FlyEmBodySplitProjectDialog *m_bodySplitProjectDialog;
   ZFlyEmNewBodySplitProjectDialog *m_newBsProjectDialog;
+  DvidSkeletonizeDialog *m_dvidSkeletonizeDialog;
 
 
   //FlyEmNeuronThumbnailDialog *m_thumbnailDlg;

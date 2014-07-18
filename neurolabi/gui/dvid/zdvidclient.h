@@ -42,6 +42,10 @@ public:
     return m_serverAddress;
   }
 
+  inline const QString& getUuid() {
+    return m_uuid;
+  }
+
   inline const QString& getTmpDirectory() {
     return m_tmpDirectory;
   }

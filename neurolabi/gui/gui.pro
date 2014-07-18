@@ -419,7 +419,10 @@ HEADERS += mainwindow.h \
     flyem/zflyembookmarkpresenter.h \
     flyem/zflyembookmarkarray.h \
     zstackobjectarray.h \
-    zwindowfactory.h
+    zwindowfactory.h \
+    dvid/zdvidwriter.h \
+    dvidskeletonizedialog.h \
+    zdialogfactory.h
 
 FORMS += settingdialog.ui \
     frameinfodialog.ui \
@@ -469,7 +472,8 @@ FORMS += settingdialog.ui \
     flyembodyfilterdialog.ui \
     tilemanager.ui \
     flyembodysplitprojectdialog.ui \
-    zflyemnewbodysplitprojectdialog.ui
+    zflyemnewbodysplitprojectdialog.ui \
+    dvidskeletonizedialog.ui
 SOURCES += main.cpp \
     mainwindow.cpp \
     zstackview.cpp \
@@ -696,7 +700,10 @@ SOURCES += main.cpp \
     flyem/zflyembookmarkpresenter.cpp \
     flyem/zflyembookmarkarray.cpp \
     zstackobjectarray.cpp \
-    zwindowfactory.cpp
+    zwindowfactory.cpp \
+    dvid/zdvidwriter.cpp \
+    dvidskeletonizedialog.cpp \
+    zdialogfactory.cpp
 
 OTHER_FILES += \
     extlib.pri

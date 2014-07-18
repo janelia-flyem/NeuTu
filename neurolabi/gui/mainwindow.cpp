@@ -98,6 +98,7 @@
 #include "zstackdoccommand.h"
 #include "zqtmessagereporter.h"
 #include "helpdialog.h"
+#include "zdialogfactory.h"
 #include "zstackstatistics.h"
 #include "zqtbarprogressreporter.h"
 #include "projectiondialog.h"
@@ -119,6 +120,7 @@
 #include "tilemanager.h"
 #include "ztiledstackframe.h"
 #include "dvid/zdvidreader.h"
+#include "dvid/zdvidwriter.h"
 #include "flyem/zflyemdatainfo.h"
 #include "flyem/zflyemqualityanalyzer.h"
 #include "zswcgenerator.h"
@@ -139,6 +141,7 @@
 #include "flyembodysplitprojectdialog.h"
 #include "zsparsestack.h"
 #include "ztest.h"
+#include "dvidskeletonizedialog.h"
 
 #include "z3dcanvas.h"
 #include "z3dapplication.h"
@@ -310,10 +313,7 @@ void MainWindow::initDialog()
   m_tileDlg = new TileManager(this);
   m_bodyDlg = new FlyEmBodyIdDialog(this);
   m_hotSpotDlg = new FlyEmHotSpotDialog(this);
-  m_dvidDlg = new ZDvidDialog(this);
-  m_dvidDlg->loadConfig(
-          ZString::fullPath(NeutubeConfig::getInstance().getApplicatinDir(),
-                            "json", "", "flyem_config.json"));
+  m_dvidDlg = ZDialogFactory::makeDvidDialog(this);
 #if defined(_FLYEM_)
   NeutubeConfig::getInstance().getFlyEmConfig().setDvidTarget(
         m_dvidDlg->getDvidTarget());
@@ -333,10 +333,11 @@ void MainWindow::initDialog()
   m_bodySplitProjectDialog = new FlyEmBodySplitProjectDialog(this);
   m_bodySplitProjectDialog->setLoadBodyDialog(m_newBsProjectDialog);
 #if defined(_FLYEM_)
-  QSettings settings("Janelia Farm", "neuTube");
   m_bodySplitProjectDialog->restoreGeometry(
-          settings.value("BodySplitProjectGeometry").toByteArray());
+          m_settings.value("BodySplitProjectGeometry").toByteArray());
 #endif
+
+  m_dvidSkeletonizeDialog = new DvidSkeletonizeDialog(this);
 }
 
 void MainWindow::config()
@@ -6233,7 +6234,16 @@ void MainWindow::initBodySplitProject()
     }
     if (!bodyIdArray.empty()) {
       int bodyId = bodyIdArray[0];
+#ifdef _DEBUG_
+      tic();
+#endif
       ZSparseStack *spStack = reader.readSparseStack(bodyId);
+#ifdef _DEBUG_
+      ptoc();
+      std::cout << "Voxel number: " << spStack->getObjectMask()->getVoxelNumber()
+                << std::endl;
+#endif
+
 
       if (spStack != NULL) {
         //ZStackDoc *doc = new ZStackDoc(NULL, NULL);
@@ -6263,4 +6273,50 @@ void MainWindow::on_actionSplit_Body_triggered()
 {
   m_bodySplitProjectDialog->show();
   m_bodySplitProjectDialog->raise();
+}
+
+void MainWindow::on_actionUpdate_Skeletons_triggered()
+{
+  if (m_dvidSkeletonizeDialog->exec()) {
+    ZDvidReader reader;
+
+    m_progress->setLabelText("Skeletonizing ...");
+    m_progress->setRange(0, 0);
+    m_progress->open();
+
+    if (reader.open(m_dvidSkeletonizeDialog->getDvidTarget())) {
+      ZDvidWriter writer;
+      writer.open(m_dvidSkeletonizeDialog->getDvidTarget());
+      std::set<int> bodyIdArray =
+          reader.readBodyId(m_dvidSkeletonizeDialog->getMinBodySize(),
+                            m_dvidSkeletonizeDialog->getMaxBodySize());
+      std::set<int> excluded = m_dvidSkeletonizeDialog->getExcludedBodySet();
+
+      ZStackSkeletonizer skeletonizer;
+      ZJsonObject config;
+      config.load(NeutubeConfig::getInstance().getApplicatinDir() +
+                  "/json/skeletonize.json");
+      skeletonizer.configure(config);
+
+      for (std::set<int>::const_iterator iter = bodyIdArray.begin();
+           iter != bodyIdArray.end(); ++iter) {
+        int bodyId = *iter;
+        if (excluded.count(bodyId) == 0) {
+          ZSwcTree *tree = NULL;
+          if (m_dvidSkeletonizeDialog->noOverwriting()) {
+            tree = reader.readSwc(bodyId);
+          }
+          if (tree == NULL) {
+            ZObject3dScan obj = reader.readBody(bodyId);
+            tree = skeletonizer.makeSkeleton(obj);
+            writer.writeSwc(bodyId, tree);
+          }
+          delete tree;
+        }
+      }
+    }
+
+    m_progress->reset();
+    m_progress->hide();
+  }
 }

@@ -229,6 +229,8 @@ std::string NeutubeConfig::getPath(Config_Item item) const
         ZString::FileSeparator + "skeletonize_fib25_len40.json";
   case DOCUMENT:
     return m_docUrl;
+  case TMP_DATA:
+    return "/tmp";
   default:
     break;
   }

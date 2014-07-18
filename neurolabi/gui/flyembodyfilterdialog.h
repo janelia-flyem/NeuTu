@@ -2,6 +2,8 @@
 #define FLYEMBODYFILTERDIALOG_H
 
 #include <QDialog>
+#include <vector>
+#include <set>
 
 namespace Ui {
 class FlyEmBodyFilterDialog;
@@ -20,6 +22,7 @@ public:
   bool hasUpperBodySize() const;
 
   std::vector<int> getExcludedBodies() const;
+  std::set<int> getExcludedBodySet() const;
 
 private:
   Ui::FlyEmBodyFilterDialog *ui;

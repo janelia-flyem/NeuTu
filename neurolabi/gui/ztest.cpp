@@ -179,6 +179,7 @@
 #include "zstackskeletonizer.h"
 #include "flyem/zflyemcoordinateconverter.h"
 #include "dvid/zdvidreader.h"
+#include "dvid/zdvidwriter.h"
 #include "dvid/zdvidinfo.h"
 #include "zstringarray.h"
 #include "zflyemdvidreader.h"
@@ -12017,7 +12018,7 @@ void ZTest::test(MainWindow *host)
                                ZDocPlayer::ROLE_TMP_BOOKMARK);
 #endif
 
-#if 1
+#if 0
   ZWindowFactory factory;
   factory.setWindowTitle("Test");
 
@@ -12083,5 +12084,28 @@ void ZTest::test(MainWindow *host)
   window->getSwcFilter()->setRenderingPrimitive("Sphere");
   window->show();
   window->raise();
+#endif
+
+#if 1
+  ZDvidDialog dlg;
+  dlg.loadConfig(ZString::fullPath(NeutubeConfig::getInstance().getApplicatinDir(),
+                                   "json", "", "flyem_config.json"));
+
+  ZDvidTarget target = dlg.getDvidTarget();
+
+  ZDvidReader reader;
+  reader.open(target);
+  ZObject3dScan obj = reader.readBody(15730);
+
+  ZStackSkeletonizer skeletonizer;
+  ZJsonObject config;
+  config.load(NeutubeConfig::getInstance().getApplicatinDir() +
+              "/json/skeletonize.json");
+  skeletonizer.configure(config);
+  ZSwcTree *tree = skeletonizer.makeSkeleton(obj);
+
+  ZDvidWriter writer;
+  writer.open(target);
+  writer.writeSwc(15730, tree);
 #endif
 }

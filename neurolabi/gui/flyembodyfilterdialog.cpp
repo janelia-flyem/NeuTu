@@ -50,3 +50,12 @@ std::vector<int> FlyEmBodyFilterDialog::getExcludedBodies() const
   ZString str =  ui->excludedBodyLineEdit->text().toStdString();
   return str.toIntegerArray();
 }
+
+std::set<int> FlyEmBodyFilterDialog::getExcludedBodySet() const
+{
+  std::vector<int> bodyArray = getExcludedBodies();
+  std::set<int> bodySet;
+  bodySet.insert(bodyArray.begin(), bodyArray.end());
+
+  return bodySet;
+}

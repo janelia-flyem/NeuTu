@@ -311,6 +311,7 @@
       <addaction name="actionSubmit_Skeletonize"/>
       <addaction name="actionLoad_Body_with_Grayscale"/>
       <addaction name="actionLoad_Large_Body"/>
+      <addaction name="actionUpdate_Skeletons"/>
      </widget>
      <widget class="QMenu" name="menuExport_2">
       <property name="title">
@@ -1232,6 +1233,11 @@
    </property>
    <property name="text">
     <string>Split Body Project</string>
+   </property>
+  </action>
+  <action name="actionUpdate_Skeletons">
+   <property name="text">
+    <string>Update Skeletons</string>
    </property>
   </action>
  </widget>
