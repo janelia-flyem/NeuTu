@@ -6287,9 +6287,16 @@ void MainWindow::on_actionUpdate_Skeletons_triggered()
     if (reader.open(m_dvidSkeletonizeDialog->getDvidTarget())) {
       ZDvidWriter writer;
       writer.open(m_dvidSkeletonizeDialog->getDvidTarget());
-      std::set<int> bodyIdArray =
-          reader.readBodyId(m_dvidSkeletonizeDialog->getMinBodySize(),
-                            m_dvidSkeletonizeDialog->getMaxBodySize());
+      std::set<int> bodyIdArray;
+
+      if (m_dvidSkeletonizeDialog->hasUpperBodySize()) {
+        bodyIdArray =
+            reader.readBodyId(m_dvidSkeletonizeDialog->getMinBodySize(),
+                              m_dvidSkeletonizeDialog->getMaxBodySize());
+      } else {
+        bodyIdArray =
+            reader.readBodyId(m_dvidSkeletonizeDialog->getMinBodySize());
+      }
       std::set<int> excluded = m_dvidSkeletonizeDialog->getExcludedBodySet();
 
       ZStackSkeletonizer skeletonizer;

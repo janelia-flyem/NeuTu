@@ -80,6 +80,7 @@ ZSwcTree* ZStackSkeletonizer::makeSkeletonWithoutDs(Stack *stackData)
   if (maxMaskIntensity > 1.0) {
     Stack_Binarize(stackData);
   } else if (maxMaskIntensity == 0.0) {
+    C_Stack::kill(stackData);
     cout << "Not a binary image. No skeleton generated." << endl;
     return NULL;
   }
@@ -313,6 +314,7 @@ ZSwcTree* ZStackSkeletonizer::makeSkeletonWithoutDs(Stack *stackData)
 
         branch->root = NULL;
         Kill_Swc_Tree(branch);
+        branch = NULL;
 
 #ifdef _DEBUG_
         Swc_Tree_Iterator_Start(subtree, SWC_TREE_ITERATOR_DEPTH_FIRST, false);
@@ -331,7 +333,9 @@ ZSwcTree* ZStackSkeletonizer::makeSkeletonWithoutDs(Stack *stackData)
     }
 
     C_Stack::kill(croppedObjStack);
+    croppedObjStack = NULL;
     C_Stack::kill(objstack);
+    objstack = NULL;
 
     if (Swc_Tree_Regular_Root(subtree) != NULL) {
       cout << Swc_Tree_Node_Fsize(subtree->root) - 1<< " nodes added" << endl;
@@ -342,6 +346,9 @@ ZSwcTree* ZStackSkeletonizer::makeSkeletonWithoutDs(Stack *stackData)
 
     advanceProgress(step);
   }
+
+  C_Stack::kill(stackData);
+  stackData = NULL;
 
   ZSwcTree *wholeTree = NULL;
 
