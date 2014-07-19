@@ -12110,7 +12110,7 @@ void ZTest::test(MainWindow *host)
   writer.writeSwc(15730, tree);
 #endif
 
-#if 1
+#if 0
   ZObject3dScan obj;
   obj.load(GET_TEST_DATA_DIR + "/benchmark/29.sobj");
 
@@ -12129,4 +12129,49 @@ void ZTest::test(MainWindow *host)
 
   }
 #endif
+
+#if 1
+  ZDvidDialog dlg;
+  dlg.loadConfig(ZString::fullPath(NeutubeConfig::getInstance().getApplicatinDir(),
+                                   "json", "", "flyem_config.json"));
+
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "43f", 9000);
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  ZDvidWriter writer;
+  writer.open(target);
+
+  std::set<int> bodyIdSet = reader.readBodyId(1000000);
+  std::vector<int> bodyIdArray;
+  bodyIdArray.insert(bodyIdArray.begin(), bodyIdSet.begin(), bodyIdSet.end());
+
+  ZRandomGenerator rnd;
+  std::vector<int> rank = rnd.randperm(bodyIdArray.size());
+  std::set<int> excluded;
+
+  ZStackSkeletonizer skeletonizer;
+  ZJsonObject config;
+  config.load(NeutubeConfig::getInstance().getApplicatinDir() +
+              "/json/skeletonize.json");
+  skeletonizer.configure(config);
+
+  for (size_t i = 0; i < bodyIdArray.size(); ++i) {
+    int bodyId = bodyIdArray[rank[i] - 1];
+    if (excluded.count(bodyId) == 0) {
+      ZSwcTree *tree = reader.readSwc(bodyId);
+      if (tree == NULL) {
+        ZObject3dScan obj = reader.readBody(bodyId);
+        tree = skeletonizer.makeSkeleton(obj);
+        writer.writeSwc(bodyId, tree);
+      }
+      delete tree;
+      std::cout << ">>>>>>>>>>>>>>>>>>" << i + 1 << " / "
+                << bodyIdArray.size() << std::endl;
+    }
+  }
+#endif
+
 }

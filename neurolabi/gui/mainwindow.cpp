@@ -6305,8 +6305,9 @@ void MainWindow::on_actionUpdate_Skeletons_triggered()
                   "/json/skeletonize.json");
       skeletonizer.configure(config);
 
+      int count = 1;
       for (std::set<int>::const_iterator iter = bodyIdArray.begin();
-           iter != bodyIdArray.end(); ++iter) {
+           iter != bodyIdArray.end(); ++iter, ++count) {
         int bodyId = *iter;
         if (excluded.count(bodyId) == 0) {
           ZSwcTree *tree = NULL;
@@ -6317,6 +6318,8 @@ void MainWindow::on_actionUpdate_Skeletons_triggered()
             ZObject3dScan obj = reader.readBody(bodyId);
             tree = skeletonizer.makeSkeleton(obj);
             writer.writeSwc(bodyId, tree);
+
+            std::cout << count << " / " << bodyIdArray.size() << std::endl;
           }
           delete tree;
         }

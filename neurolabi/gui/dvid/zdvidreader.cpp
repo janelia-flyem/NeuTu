@@ -329,55 +329,6 @@ std::set<int> ZDvidReader::readBodyId(
   delete stack;
 
   return bodySet;
-
-#if 0
-  ZDvidInfo dvidInfo;
-  dvidInfo.setFromJsonString(readInfo("superpixels").toStdString());
-
-  ZDvidBuffer *dvidBuffer = m_dvidClient->getDvidBuffer();
-  dvidBuffer->clearInfoArray();
-
-  ZIntPoint startIndex = dvidInfo.getBlockIndex(x0, y0, z0);
-  ZIntPoint endIndex = dvidInfo.getBlockIndex(x0 + width - 1,
-                                              y0 + height - 1,
-                                              z0 + depth - 1);
-
-#ifdef _DEBUG_
-  std::cout << "Region: " << x0 << ", " << y0 << ", " << z0 << " -> "
-            << x0 + width - 1 << ", " << y0 + height - 1 << ", "
-            << z0 + depth - 1 << std::endl;
-#endif
-
-  std::vector<int> idArray;
-
-  if (dvidInfo.isValidBlockIndex(startIndex) &&
-      dvidInfo.isValidBlockIndex(endIndex)) {
-    ZDvidRequest request;
-    request.setGetStringRequest("sp2body");
-
-    request.setParameter(
-          QVariant(QString("intersect/%1_%2_%3/%4_%5_%6").
-                   arg(startIndex[0]).arg(startIndex[1]).arg(startIndex[2]).
-        arg(endIndex[0]).arg(endIndex[1]).arg(endIndex[2])));
-    m_dvidClient->appendRequest(request);
-    m_dvidClient->postNextRequest();
-
-    m_eventLoop->exec();
-
-
-
-    const QStringList& infoArray = dvidBuffer->getInfoArray();
-
-    if (infoArray.size() > 0) {
-      ZJsonArray array;
-      qDebug() << infoArray[0];
-      array.decode(infoArray[0].toStdString());
-      idArray = array.toIntegerArray();
-    }
-  }
-
-  return idArray;
-#endif
 }
 
 std::set<int> ZDvidReader::readBodyId(const QString sizeRange)
