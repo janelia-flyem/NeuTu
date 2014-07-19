@@ -98,6 +98,9 @@ private:
    */
   ZSwcTree *makeSkeletonWithoutDs(Stack *stack);
 
+  ZSwcTree *makeSkeletonWithoutDsTest(Stack *stack);
+
+
 private:
   double m_lengthThreshold;
   double m_distanceThreshold;

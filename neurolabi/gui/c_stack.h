@@ -58,6 +58,8 @@ void systemKill(Stack *stack);
 //Delete the stack by 'delete' in C++
 inline void cppDelete(Stack *stack) { delete stack; }
 
+int stackUsage();
+
 /** @name Make copies
  */
 ///@{

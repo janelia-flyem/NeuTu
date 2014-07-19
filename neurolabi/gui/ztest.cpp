@@ -12087,7 +12087,7 @@ void ZTest::test(MainWindow *host)
   window->raise();
 #endif
 
-#if 1
+#if 0
   ZDvidDialog dlg;
   dlg.loadConfig(ZString::fullPath(NeutubeConfig::getInstance().getApplicatinDir(),
                                    "json", "", "flyem_config.json"));
@@ -12108,5 +12108,25 @@ void ZTest::test(MainWindow *host)
   ZDvidWriter writer;
   writer.open(target);
   writer.writeSwc(15730, tree);
+#endif
+
+#if 1
+  ZObject3dScan obj;
+  obj.load(GET_TEST_DATA_DIR + "/benchmark/29.sobj");
+
+  ZStackSkeletonizer skeletonizer;
+  ZJsonObject config;
+  config.load(NeutubeConfig::getInstance().getApplicatinDir() +
+              "/json/skeletonize.json");
+
+  for (int i = 0; i < 1000000000; ++i) {
+    skeletonizer.configure(config);
+    ZSwcTree *tree = skeletonizer.makeSkeleton(obj);
+
+    delete tree;
+
+    std::cout << i << ": " << C_Stack::stackUsage() << std::endl;
+
+  }
 #endif
 }

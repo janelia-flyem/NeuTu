@@ -181,8 +181,10 @@ Int_Arraylist* Stack_Sp_Grow(const Stack *stack, const size_t *seeds,
     }
 
     if (sgw->lengthBufferEnabled) {
-      sgw->length = (double*) Guarded_Malloc(
-          sizeof(double) * nvoxel, "Stack_Sp_Grow");
+      if (sgw->length == NULL) {
+        sgw->length = (double*) Guarded_Malloc(
+            sizeof(double) * nvoxel, "Stack_Sp_Grow");
+      }
     }
   }
 
