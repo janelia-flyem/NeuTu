@@ -17,6 +17,12 @@ void ZDvidRequest::setGetSwcRequest(int bodyId)
   m_parameter = bodyId;
 }
 
+void ZDvidRequest::setGetThumbnailRequest(int bodyId)
+{
+  m_requestType = ZDvidRequest::DVID_GET_THUMBNAIL;
+  m_parameter = bodyId;
+}
+
 void ZDvidRequest::setGetImageRequest(
     int x0, int y0, int z0, int width, int height)
 {

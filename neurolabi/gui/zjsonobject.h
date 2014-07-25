@@ -13,6 +13,7 @@ class ZJsonObject : public ZJsonValue
 {
 public:
   explicit ZJsonObject(json_t *json, bool asNew);
+  explicit ZJsonObject(json_t *data, ESetDataOption option);
   ZJsonObject();
   ZJsonObject(const ZJsonObject &obj);
   virtual ~ZJsonObject();
@@ -47,7 +48,7 @@ public:
   /*!
    * \brief Dump the object to a string.
    */
-  std::string dumpString();
+  std::string dumpString(int indent = 2) const;
 
   /*!
    * \brief Test if a key is valid

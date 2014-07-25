@@ -20,6 +20,7 @@
 #include "zimagewidget.h"
 #include "zfiletype.h"
 #include "zimage.h"
+#include "dvid/zdvidreader.h"
 
 FlyEmDataForm::FlyEmDataForm(QWidget *parent) :
   QWidget(parent),
@@ -583,22 +584,38 @@ void FlyEmDataForm::updateThumbnail(ZFlyEmNeuron *neuron)
       QGraphicsPixmapItem *thumbnailItem = new QGraphicsPixmapItem;
       QPixmap pixmap;
       if (!pixmap.load(neuron->getThumbnailPath().c_str())) {
+        Stack *stack = NULL;
         if (ZFileType::fileType(neuron->getThumbnailPath()) ==
             ZFileType::TIFF_FILE) {
-          Stack *stack = C_Stack::readSc(neuron->getThumbnailPath().c_str());
-          if (stack != NULL) {
-            ZImage image(C_Stack::width(stack), C_Stack::height(stack));
-            image.setData(C_Stack::array8(stack));
-#ifdef _DEBUG_2
-            image.save((GET_DATA_DIR + "/test.png").c_str());
-#endif
-            if (!pixmap.convertFromImage(image)) {
-              dump("Failed to load the thumbnail.");
+          stack = C_Stack::readSc(neuron->getThumbnailPath().c_str());
+        } else {
+          ZString str(neuron->getThumbnailPath());
+          if (str.startsWith("http")) {
+            ZDvidTarget target;
+            target.set(str);
+            ZDvidReader reader;
+            if (reader.open(target)) {
+              ZStack *stackObj = reader.readThumbnail(neuron->getId());
+              if (stackObj != NULL) {
+                stack = C_Stack::clone(stackObj->c_stack());
+              }
+              delete stackObj;
             }
-            C_Stack::kill(stack);
-          } else {
+          }
+        }
+
+        if (stack != NULL) {
+          ZImage image(C_Stack::width(stack), C_Stack::height(stack));
+          image.setData(C_Stack::array8(stack));
+#ifdef _DEBUG_2
+          image.save((GET_DATA_DIR + "/test.png").c_str());
+#endif
+          if (!pixmap.convertFromImage(image)) {
             dump("Failed to load the thumbnail.");
           }
+          C_Stack::kill(stack);
+        } else {
+          //dump("Failed to load the thumbnail.");
         }
       }
       thumbnailItem->setPixmap(pixmap);

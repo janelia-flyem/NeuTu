@@ -375,6 +375,7 @@ void Z3DWindow::init(EInitMode mode)
   connect(m_canvas, SIGNAL(strokePainted(ZStroke2d*)),
           this, SLOT(addPolyplaneFrom3dPaint(ZStroke2d*)));
 
+  m_canvas->set3DInteractionHandler(m_compositor->getInteractionHandler());
   //  // if have image, try black background
   //  if (channelNumber() > 0) {
   //    m_background->setFirstColor(glm::vec3(0.f));
@@ -1856,7 +1857,7 @@ void Z3DWindow::changeBackground()
 void Z3DWindow::toogleMoveSelectedObjectsMode(bool checked)
 {
   getInteractionHandler()->setMoveObjects(checked);
-  m_canvas->setCursor(checked ? Qt::ClosedHandCursor : Qt::ArrowCursor);
+  m_canvas->updateCursor();
   if (checked) {
     notifyUser("Shift + Mouse to move selected objects");
   }

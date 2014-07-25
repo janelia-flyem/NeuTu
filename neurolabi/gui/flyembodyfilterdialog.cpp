@@ -60,3 +60,14 @@ std::set<int> FlyEmBodyFilterDialog::getExcludedBodySet() const
 
   return bodySet;
 }
+
+ZDvidFilter FlyEmBodyFilterDialog::getDvidFilter() const
+{
+  ZDvidFilter filter;
+  filter.setMinBodySize(getMinBodySize());
+  filter.setMaxBodySize(getMaxBodySize());
+  filter.setUpperBodySizeEnabled(hasUpperBodySize());
+  filter.exclude(getExcludedBodies());
+
+  return filter;
+}

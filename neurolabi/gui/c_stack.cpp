@@ -227,6 +227,21 @@ bool C_Stack::setValue(
   return false;
 }
 
+bool C_Stack::setValue(
+    Mc_Stack *stack, size_t offset, const void *buffer, size_t length)
+{
+  if (stack != NULL) {
+    uint8_t *stackBuffer = array8(stack);
+    if (stackBuffer != NULL && allByteNumber(stack) >= offset + length) {
+      memcpy(stackBuffer + offset, buffer, length);
+
+      return true;
+    }
+  }
+
+  return false;
+}
+
 Stack* C_Stack::resize(const Stack *stack, int width, int height, int depth)
 {
   return Resize_Stack(stack, width, height, depth);
@@ -578,9 +593,41 @@ int C_Stack::neighborTest(int conn, int width, int height, int depth,
   return nnbr;
 }
 
+
+#define MRAW_MAGIC_NUMBER 1836212599
+
 void C_Stack::write(const std::string &filePath, const Mc_Stack *stack)
 {
-  Write_Mc_Stack(filePath.c_str(), stack, NULL);
+  if (stack == NULL) {
+    return;
+  }
+
+  ZFileType::EFileType fileType = ZFileType::fileType(filePath) ;
+
+  switch (fileType) {
+  case ZFileType::MC_STACK_RAW_FILE:
+  {
+    FILE *fp = fopen(filePath.c_str(), "w");
+    if (fp != NULL) {
+      int magicNumber = MRAW_MAGIC_NUMBER;
+      int reserved = 0;
+      fwrite(&magicNumber, 4, 1, fp);
+      fwrite(&(stack->kind), 4, 1, fp);
+      fwrite(&(stack->width), 4, 1, fp);
+      fwrite(&(stack->height), 4, 1, fp);
+      fwrite(&(stack->depth), 4, 1, fp);
+      fwrite(&(stack->nchannel), 4, 1, fp);
+      fwrite(&reserved, 4, 1, fp);
+      size_t byteNumber = C_Stack::volumeByteNumber(stack);
+      fwrite(stack->array, 1, byteNumber, fp);
+      fclose(fp);
+    }
+  }
+    break;
+  default:
+    Write_Mc_Stack(filePath.c_str(), stack, NULL);
+    break;
+  }
 }
 
 void C_Stack::write(const std::string &filePath, const Stack *stack)
@@ -588,11 +635,89 @@ void C_Stack::write(const std::string &filePath, const Stack *stack)
   Write_Stack_U(filePath.c_str(), stack, NULL);
 }
 
-Mc_Stack* C_Stack::read(const std::string &filePath, int channel)
+Mc_Stack* C_Stack::readMrawFromBuffer(const char *buffer, int channel)
 {
   Mc_Stack *stack = NULL;
+  if (buffer != NULL) {
+    int magicNumber;
+    int kind;
+    int width;
+    int height;
+    int depth;
+    int nchannel;
 
-  if (ZFileType::fileType(filePath) == ZFileType::OBJECT_SCAN_FILE) {
+    int *intBuffer = (int*) buffer;
+
+    magicNumber = *(intBuffer++);
+    if (magicNumber != MRAW_MAGIC_NUMBER) {
+      return NULL;
+    }
+
+    kind = *(intBuffer++);
+    if (kind <= 0 || kind > 8) {
+      return NULL;
+    }
+
+    width = *(intBuffer++);
+    if (width <= 0) {
+      return NULL;
+    }
+
+    height = *(intBuffer++);
+    if (height <= 0) {
+      return NULL;
+    }
+
+    depth = *(intBuffer++);
+    if (depth <= 0) {
+      return NULL;
+    }
+
+    nchannel = *(intBuffer++);
+    if (nchannel <= 0) {
+      return NULL;
+    }
+
+    intBuffer++; //reserved field
+
+
+    if (channel >= 0) {
+      if (channel >= nchannel) {
+        return NULL;
+      } else {
+        nchannel = 1;
+      }
+    }
+
+    stack = make(kind, width, height, depth, nchannel);
+    size_t byteNumber = C_Stack::volumeByteNumber(stack);
+
+    uint8_t *currentBuffer = (uint8_t*) intBuffer;
+    if (channel >= 0) {
+      currentBuffer += byteNumber * channel;
+    }
+
+    if (setValue(stack, 0, currentBuffer, byteNumber) == false) {
+      kill(stack);
+      stack = NULL;
+    }
+  }
+
+  return stack;
+}
+
+Mc_Stack* C_Stack::read(const std::string &filePath, int channel)
+{
+  if (!fexist(filePath.c_str())) {
+    return NULL;
+  }
+
+  Mc_Stack *stack = NULL;
+  ZFileType::EFileType fileType = ZFileType::fileType(filePath) ;
+
+  switch (fileType) {
+  case ZFileType::OBJECT_SCAN_FILE:
+  {
     ZObject3dScan obj;
     if (obj.load(filePath)) {
       ZObject3d *obj3d = obj.toObject3d();
@@ -603,7 +728,78 @@ Mc_Stack* C_Stack::read(const std::string &filePath, int channel)
       C_Stack::kill(tmpstack);
       delete obj3d;
     }
-  } else {
+  }
+    break;
+  case ZFileType::MC_STACK_RAW_FILE:
+  {
+    FILE *fp = fopen(filePath.c_str(), "r");
+    if (fp != NULL) {
+      int magicNumber = 0;
+      int kind = 0;
+      int width = 0;
+      int height = 0;
+      int depth = 0;
+      int nchannel = 0;
+      int reserved = 0;
+      size_t byteNumber = 0;
+
+      if (fread(&magicNumber, 4, 1, fp) != 1) {
+        goto _read_failed;
+      }
+
+      if (magicNumber != MRAW_MAGIC_NUMBER) {
+        goto _read_failed;
+      }
+
+      if (fread(&kind, 4, 1, fp) != 1) {
+        goto _read_failed;
+      }
+      if (fread(&width, 4, 1, fp) != 1) {
+        goto _read_failed;
+      }
+
+      if (fread(&height, 4, 1, fp) != 1) {
+        goto _read_failed;
+      }
+      if (fread(&depth, 4, 1, fp) != 1) {
+        goto _read_failed;
+      }
+      if (fread(&nchannel, 4, 1, fp) != 1) {
+        goto _read_failed;
+      }
+      if (fread(&reserved, 4, 1, fp) != 1) {
+        goto _read_failed;
+      }
+      if (kind <= 0 || kind > 8 || width <= 0 || height <= 0 || depth <= 0) {
+        goto _read_failed;
+      }
+
+      if (channel >= 0) {
+        if (channel >= nchannel) {
+          goto _read_failed;
+        } else {
+          nchannel = 1;
+        }
+      }
+
+      stack = make(kind, width, height, depth, nchannel);
+      byteNumber = C_Stack::volumeByteNumber(stack);
+
+      if (channel >= 0) {
+        fseek(fp, byteNumber * channel, SEEK_CUR);
+      }
+
+      if (fread(stack->array, 1, byteNumber, fp) != byteNumber) {
+        kill(stack);
+        stack = NULL;
+      }
+
+_read_failed:
+      fclose(fp);
+    }
+  }
+    break;
+  default:
     stack = Read_Mc_Stack(filePath.c_str(), channel);
     if ((size_t)stack->width * stack->height * 4 >= (size_t)1024*1024*1024*2) {
       double scale =  (1024.0*1024*1024*2) / ((double)stack->width * stack->height * 4);

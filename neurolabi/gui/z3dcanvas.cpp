@@ -271,3 +271,13 @@ void Z3DCanvas::disableKeyEvent()
 {
   m_interaction.setKeyEventEnabled(false);
 }
+
+void Z3DCanvas::set3DInteractionHandler(Z3DTrackballInteractionHandler *handler)
+{
+  m_interaction.set3DInteractionHandler(handler);
+}
+
+void Z3DCanvas::updateCursor()
+{
+  setCursor(m_interaction.getCursorShape());
+}

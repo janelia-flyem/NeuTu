@@ -200,6 +200,7 @@
 #include "flyem/zflyembookmark.h"
 #include "flyem/zflyembookmarkarray.h"
 #include "zcircle.h"
+#include "test/zdvidiotest.h"
 
 using namespace std;
 
@@ -12130,7 +12131,8 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
-#if 1
+
+#if 0
   ZDvidTarget target;
   target.set("emdata2.int.janelia.org", "43f", 9000);
 
@@ -12172,4 +12174,96 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
+#if 0
+  ZStack stack;
+  stack.load(GET_TEST_DATA_DIR + "/flyem/FIB/data_release/bundle7/thumbnails/117.tif");
+  stack.printInfo();
+
+  stack.save(GET_TEST_DATA_DIR + "/test.mraw");
+
+  ZStack stack2;
+  stack2.load(GET_TEST_DATA_DIR + "/test.mraw");
+  stack2.printInfo();
+
+  stack2.save(GET_TEST_DATA_DIR + "/test.tif");
+#endif
+
+#if 0
+  ZDvidDialog dlg;
+  dlg.loadConfig(ZString::fullPath(NeutubeConfig::getInstance().getApplicatinDir(),
+                                   "json", "", "flyem_config.json"));
+
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "b42", 9000);
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  ZStack *stack = reader.readThumbnail(117);
+  stack->save(GET_TEST_DATA_DIR + "/test.tif");
+#endif
+
+#if 0
+  ZJsonObject obj;
+  obj.setEntry("first", 1);
+  obj.setEntry("second", 2);
+  obj.setEntry("third", 3);
+
+  std::string str = obj.dumpString(0);
+  std::cout << str << std::endl;
+  std::string str2 = ZString(str).replace("\n", " ");
+  std::cout << str2 << std::endl;
+#endif
+
+#if 0 //update annotation
+  std::string annotationFile = GET_DATA_DIR +
+      "/flyem/FIB/skeletonization/session40/annotations-body.json";
+  std::string bundleFile = GET_DATA_DIR +
+      "/flyem/FIB/skeletonization/session40/bundle.json";
+
+
+  ZFlyEmNeuronArray neuronArray;
+  neuronArray.importNamedBody(annotationFile);
+  neuronArray.assignClass(bundleFile);
+
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "43f", 9000);
+
+  ZDvidWriter writer;
+  if (writer.open(target)) {
+    //for each neuron, update annotation
+    for (ZFlyEmNeuronArray::const_iterator iter = neuronArray.begin();
+         iter != neuronArray.end(); ++iter) {
+      const ZFlyEmNeuron &neuron = *iter;
+      writer.writeAnnotation(neuron);
+    }
+  }
+
+#endif
+
+#if 1 //update annotation
+  std::string annotationFile = GET_DATA_DIR +
+      "/flyem/FIB/skeletonization/session40/annotations-body.json";
+  std::string bundleFile = GET_DATA_DIR +
+      "/flyem/FIB/skeletonization/session40/bundle.json";
+
+
+  ZFlyEmNeuronArray neuronArray;
+  neuronArray.importFromDataBundle(bundleFile);
+  neuronArray.assignName(annotationFile);
+
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "43f", 9000);
+
+  ZDvidWriter writer;
+  if (writer.open(target)) {
+    //for each neuron, update annotation
+    for (ZFlyEmNeuronArray::const_iterator iter = neuronArray.begin();
+         iter != neuronArray.end(); ++iter) {
+      const ZFlyEmNeuron &neuron = *iter;
+      writer.writeAnnotation(neuron);
+    }
+  }
+
+#endif
 }

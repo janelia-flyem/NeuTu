@@ -576,9 +576,9 @@ void FlyEm::Service::FaceOrphanOverlap::exportJsonFile(
     m_coordConverter.convert(&x, &y, &z, ZFlyEmCoordinateConverter::IMAGE_SPACE,
                              ZFlyEmCoordinateConverter::RAVELER_SPACE);
 
-    pt.append(json_integer(iround(x)));
-    pt.append(json_integer(iround(y)));
-    pt.append(json_integer(iround(z)));
+    pt.append(iround(x));
+    pt.append(iround(y));
+    pt.append(iround(z));
     obj.setEntry("marker", pt);
 
     ZIntCuboid box = body.getBoundBox();
@@ -615,9 +615,9 @@ void FlyEm::Service::FaceOrphanOverlap::exportJsonFile(
     double z = m_marker[i].getZ();
     m_coordConverter.convert(&x, &y, &z, ZFlyEmCoordinateConverter::IMAGE_SPACE,
                              ZFlyEmCoordinateConverter::RAVELER_SPACE);
-    pt.append(json_integer(iround(x)));
-    pt.append(json_integer(iround(y)));
-    pt.append(json_integer(iround(z)));
+    pt.append(iround(x));
+    pt.append(iround(y));
+    pt.append(iround(z));
     obj.setEntry("marker", pt);
     edgeArray.append(obj);
   }

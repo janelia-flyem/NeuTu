@@ -226,8 +226,7 @@ bool ZSwcTree::load(const char *filePath)
       if (fexist(styleFilePath.c_str())) {
         ZJsonObject jsonObj;
         jsonObj.load(styleFilePath.c_str());
-        json_t *value;
-        value = jsonObj["color"];
+        json_t *value = jsonObj["color"];
         if (value != NULL) {
           int alpha = 255;
           if (ZJsonParser::arraySize(value) == 4) {
@@ -259,7 +258,7 @@ bool ZSwcTree::load(const char *filePath)
           double offset[3] = {1, 1, 1};
 
           ZJsonObject transformObj(value, false);
-          json_t *transformField = transformObj["scale"];
+          const json_t *transformField = transformObj["scale"];
           if (transformField != NULL) {
             if (ZJsonParser::arraySize(transformField) == 3) {
               for (int i = 0; i < 3; ++i) {

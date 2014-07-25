@@ -4,6 +4,7 @@
 #include <QDialog>
 #include <vector>
 #include <set>
+#include "dvid/zdvidfilter.h"
 
 namespace Ui {
 class FlyEmBodyFilterDialog;
@@ -23,6 +24,10 @@ public:
 
   std::vector<int> getExcludedBodies() const;
   std::set<int> getExcludedBodySet() const;
+
+  std::vector<int> getBodyIdArray() const;
+
+  ZDvidFilter getDvidFilter() const;
 
 private:
   Ui::FlyEmBodyFilterDialog *ui;

@@ -19,6 +19,7 @@ class Z3DNetworkEvaluator;
 class Z3DCanvasEventListener;
 class ZStackObject;
 class ZStroke2d;
+class Z3DTrackballInteractionHandler;
 
 class Z3DCanvas : public QGraphicsView
 {
@@ -81,6 +82,10 @@ public:
   bool processMouseMoveEventForPaint(QMouseEvent *e);
   bool suppressingContextMenu() const;
   void disableKeyEvent();
+
+  void set3DInteractionHandler(Z3DTrackballInteractionHandler *handler);
+
+  void updateCursor();
 
 signals:
   // w and h is physical size not logical size, opengl works in physical pixel

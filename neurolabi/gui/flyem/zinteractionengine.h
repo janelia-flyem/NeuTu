@@ -9,6 +9,7 @@
 #include "zstroke2d.h"
 #include "zuncopyable.h"
 #include "zstackdoc.h"
+#include "z3dinteractionhandler.h"
 
 /*!
  * \brief An experimental class of handling GUI interaction
@@ -23,7 +24,8 @@ public:
 
 public:
   enum MouseButtonAction {
-    LEFT_RELEASE, RIGHT_RELEASE, LEFT_PRESS, RIGHT_PRESS, LEFT_DOUBLE_CLICK, MOVE
+    MOUSE_LEFT_RELEASE, MOUSE_RIGHT_RELEASE, MOUSE_LEFT_PRESS,
+    MOUSE_RIGHT_PRESS, MOUSE_LEFT_DOUBLE_CLICK, MOUSE_MOVE
   };
 
   enum EMouseEventProcessStatus {
@@ -33,13 +35,20 @@ public:
 
   enum EState {
     STATE_DRAW_STROKE, STATE_DRAW_LINE, STATE_LEFT_BUTTON_PRESSED,
-    STATE_RIGHT_BUTTON_PRESSED
+    STATE_RIGHT_BUTTON_PRESSED, STATE_MOVE_OBJECT
   };
 
   QList<ZStackObject*> getDecorationList() const;
   inline ZStackObject::Display_Style getObjectStyle() const { return m_objStyle; }
   inline const ZInteractiveContext& getInteractiveContext() const {
     return m_interactiveContext;
+  }
+  inline ZInteractiveContext& getInteractiveContext() {
+    return m_interactiveContext;
+  }
+
+  inline void set3DInteractionHandler(Z3DTrackballInteractionHandler *handler) {
+    m_interactionHandler = handler;
   }
 
   bool hasObjectToShow() const;
@@ -60,6 +69,7 @@ public:
   bool isStateOn(EState status) const;
 
   Qt::CursorShape getCursorShape() const;
+  //void setCursor(const QCursor &c);
 
   inline void setKeyEventEnabled(bool enabled) {
     m_isKeyEventEnabled = enabled;
@@ -105,6 +115,7 @@ private:
 
   bool m_isKeyEventEnabled;
 
+  Z3DTrackballInteractionHandler* m_interactionHandler;
   //ZSingleSwcNodeActionActivator m_singleSwcNodeActionActivator;
   //bool m_skipMouseReleaseEvent;
 };

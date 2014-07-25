@@ -18,6 +18,13 @@ ZJsonObject::ZJsonObject(json_t *json, bool asNew) : ZJsonValue()
   }
 }
 
+ZJsonObject::ZJsonObject(json_t *data, ESetDataOption option) : ZJsonValue()
+{
+  if (ZJsonParser::isObject(data)) {
+    set(data, option);
+  }
+}
+
 ZJsonObject::ZJsonObject()
 {
 }
@@ -110,11 +117,11 @@ bool ZJsonObject::decode(const string &str)
   return true;
 }
 
-string ZJsonObject::dumpString()
+string ZJsonObject::dumpString(int indent) const
 {
   string str;
   if (!isEmpty()) {
-    char *cstr = json_dumps(getValue(), JSON_INDENT(2));
+    char *cstr = json_dumps(getValue(), JSON_INDENT(indent));
     str = cstr;
     free(cstr);
   }

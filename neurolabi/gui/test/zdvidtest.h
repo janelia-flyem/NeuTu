@@ -28,44 +28,6 @@ TEST(ZDvidInfo, basic)
   info.print();
 }
 
-TEST(ZDvidTarget, basic)
-{
-#ifdef _FLYEM_
-  ZDvidTarget target = GET_FLYEM_CONFIG.getDvidTarget();
-  target.print();
-
-  target.set("http:emdata1.int.janelia.org:-1:b42");
-  target.print();
-
-  ZDvidDialog dlg;
-  dlg.loadConfig(ZString::fullPath(NeutubeConfig::getInstance().getApplicatinDir(),
-                                   "json", "", "flyem_config.json"));
-  //if (dlg.exec()) {}
-
-  target = dlg.getDvidTarget();
-  target.print();
-#endif
-}
-
-TEST(ZDvidReader, basic)
-{
-  ZDvidDialog dlg;
-  dlg.loadConfig(ZString::fullPath(NeutubeConfig::getInstance().getApplicatinDir(),
-                                   "json", "", "flyem_config.json"));
-
-  ZDvidTarget target = dlg.getDvidTarget();
-  target.print();
-
-  ZDvidReader reader;
-  ASSERT_FALSE(reader.open(""));
-
-  ASSERT_TRUE(reader.open(target));
-  qDebug() << reader.readInfo("skeletons");
-
-  QString info = reader.readInfo("superpixels");
-  qDebug() << info;
-}
-
 #endif
 
 #endif // ZDVIDTEST_H

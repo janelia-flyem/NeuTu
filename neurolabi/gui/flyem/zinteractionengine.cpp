@@ -5,7 +5,7 @@ ZInteractionEngine::ZInteractionEngine(QObject *parent) :
   QObject(parent), m_showObject(true), m_objStyle(ZStackObject::NORMAL),
   m_mouseLeftButtonPressed(false), m_mouseRightButtonPressed(false),
   m_cursorRadius(5), m_isStrokeOn(false), m_dataBuffer(NULL),
-  m_isKeyEventEnabled(true)
+  m_isKeyEventEnabled(true), m_interactionHandler(NULL)
 {
   m_stroke.setWidth(10.0);
   m_namedDecorationList.append(&m_stroke);
@@ -179,6 +179,10 @@ bool ZInteractionEngine::isStateOn(EState status) const
     return m_mouseLeftButtonPressed;
   case STATE_RIGHT_BUTTON_PRESSED:
     return m_mouseRightButtonPressed;
+  case STATE_MOVE_OBJECT:
+    if (m_interactionHandler != NULL) {
+      return m_interactionHandler->isMovingObjects();
+    }
   }
 
   return false;
@@ -188,7 +192,10 @@ Qt::CursorShape ZInteractionEngine::getCursorShape() const
 {
   if (isStateOn(STATE_DRAW_STROKE)) {
     return Qt::PointingHandCursor;
+  } else if (isStateOn(STATE_MOVE_OBJECT)) {
+    return Qt::ClosedHandCursor;
   }
 
   return Qt::ArrowCursor;
 }
+

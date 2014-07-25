@@ -25,7 +25,7 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>22</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -312,6 +312,7 @@
       <addaction name="actionLoad_Body_with_Grayscale"/>
       <addaction name="actionLoad_Large_Body"/>
       <addaction name="actionUpdate_Skeletons"/>
+      <addaction name="actionCreate_Databundle"/>
      </widget>
      <widget class="QMenu" name="menuExport_2">
       <property name="title">
@@ -1064,19 +1065,11 @@
    </property>
   </action>
   <action name="actionDVID_Object">
-   <property name="icon">
-    <iconset resource="gui.qrc">
-     <normaloff>:/images/open_dvid.png</normaloff>:/images/open_dvid.png</iconset>
-   </property>
    <property name="text">
     <string>DVID Object</string>
    </property>
   </action>
   <action name="actionDvid_Object">
-   <property name="icon">
-    <iconset resource="gui.qrc">
-     <normaloff>:/images/open_dvid.png</normaloff>:/images/open_dvid.png</iconset>
-   </property>
    <property name="text">
     <string>DVID Object</string>
    </property>
@@ -1173,6 +1166,10 @@
    </property>
   </action>
   <action name="actionDVID_Bundle">
+   <property name="icon">
+    <iconset resource="gui.qrc">
+     <normaloff>:/images/open_dvid.png</normaloff>:/images/open_dvid.png</iconset>
+   </property>
    <property name="text">
     <string>DVID Bundle</string>
    </property>
@@ -1238,6 +1235,11 @@
   <action name="actionUpdate_Skeletons">
    <property name="text">
     <string>Update Skeletons</string>
+   </property>
+  </action>
+  <action name="actionCreate_Databundle">
+   <property name="text">
+    <string>Create Data Bundle</string>
    </property>
   </action>
  </widget>

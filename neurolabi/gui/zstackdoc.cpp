@@ -6825,6 +6825,7 @@ bool ZStackDocReader::readFile(const QString &filePath)
   case ZFileType::TIFF_FILE:
   case ZFileType::LSM_FILE:
   case ZFileType::V3D_RAW_FILE:
+  case ZFileType::MC_STACK_RAW_FILE:
     loadStack(filePath);
     break;
     /*

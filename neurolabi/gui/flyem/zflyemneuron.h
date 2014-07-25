@@ -38,6 +38,7 @@ public:
   void deprecateDependent(EComponent comp) const;
 
   void loadJsonObject(ZJsonObject &obj, const std::string &source);
+  ZJsonObject getAnnotationJson() const;
 
   /*!
    * \brief Make a json object from the neuron.
@@ -46,14 +47,14 @@ public:
    *
    * \return A pointer to the json object.
    */
-  json_t* makeJsonObject() const;
+ ZJsonObject makeJsonObject() const;
 
   /*!
    * \brief Make a json object from the neuron.
    *
    * The file paths associated with the neuron are converted into relative path.
    */
-  json_t* makeJsonObject(const std::string &bundleDir) const;
+  ZJsonObject makeJsonObject(const std::string &bundleDir) const;
 
   inline void setId(int id) {
     m_id = id;
