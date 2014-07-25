@@ -12131,10 +12131,6 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 1
-  ZDvidDialog dlg;
-  dlg.loadConfig(ZString::fullPath(NeutubeConfig::getInstance().getApplicatinDir(),
-                                   "json", "", "flyem_config.json"));
-
   ZDvidTarget target;
   target.set("emdata2.int.janelia.org", "43f", 9000);
 
@@ -12151,6 +12147,8 @@ void ZTest::test(MainWindow *host)
   ZRandomGenerator rnd;
   std::vector<int> rank = rnd.randperm(bodyIdArray.size());
   std::set<int> excluded;
+  excluded.insert(16493);
+  excluded.insert(8772496);
 
   ZStackSkeletonizer skeletonizer;
   ZJsonObject config;
