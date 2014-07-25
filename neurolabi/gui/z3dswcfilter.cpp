@@ -931,13 +931,15 @@ void Z3DSwcFilter::prepareData()
     m_sourceColorMapper.insert(std::pair<std::string, size_t>(m_origSwcList[i]->source(), 0));
     */
 
+  /*
+  //Causing lag
   m_xCut.setRange(xMin, xMax);
   m_xCut.set(glm::ivec2(xMin, xMax));
   m_yCut.setRange(yMin, yMax);
   m_yCut.set(glm::ivec2(yMin, yMax));
   m_zCut.setRange(zMin, zMax);
   m_zCut.set(glm::ivec2(zMin, zMax));
-
+*/
   //std::map<std::string,size_t>::iterator it;
 
   std::set<ZSwcTree*> allSources;

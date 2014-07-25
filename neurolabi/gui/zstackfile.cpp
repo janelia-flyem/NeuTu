@@ -167,6 +167,7 @@ void ZStackFile::import(const string &filePath)
   case ZFileType::OBJECT_SCAN_FILE:
   case ZFileType::DVID_OBJECT_FILE:
   case ZFileType::JPG_FILE:
+  case ZFileType::MC_STACK_RAW_FILE:
 #ifdef _DEBUG_2
     cout << filePath << endl;
     cout << filePath.find("*") << endl;

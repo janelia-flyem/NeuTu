@@ -3,6 +3,7 @@
 if [ $# -lt 1 ]
 then
   echo 'Usage: ./update <source>'
+  exit
 fi
 
 source_dir=$1

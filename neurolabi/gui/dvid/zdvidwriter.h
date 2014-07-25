@@ -14,6 +14,9 @@
 #include "zintcuboid.h"
 #include "zsparsestack.h"
 #include "dvid/zdvidtarget.h"
+#include "dvid/zdvidwriter.h"
+
+class ZFlyEmNeuron;
 
 class ZDvidWriter : public QObject
 {
@@ -27,6 +30,10 @@ public:
   bool open(const QString &sourceString);
 
   void writeSwc(int bodyId, ZSwcTree *tree);
+  void writeThumbnail(int bodyId, ZStack *stack);
+  void writeThumbnail(int bodyId, Stack *stack);
+  void writeAnnotation(int bodyId, const ZJsonObject &obj);
+  void writeAnnotation(const ZFlyEmNeuron &neuron);
 
 private:
   QEventLoop *m_eventLoop;

@@ -733,83 +733,27 @@ int ZStack::getChannelNumber(const string &filepath)
   return nchannel;
 }
 
-/*
-Stack* ZStack::channelData(int c)
-{
-  if (c < 0 || c >= channel()) {
-    return NULL;
-  }
-
-  return m_singleChannelStackVector[c]->data();
-}
-*/
-
 string ZStack::save(const string &filepath) const
 {
-  if (channelNumber() == 0)
-    return string();
-  if (channelNumber() == 1) {  //should be fine
-    Write_Stack_U(filepath.c_str(), c_stack(), NULL);
-    return filepath;
-  } else if (kind() == GREY || kind() == GREY16) {
-    /*
-    Mc_Stack *stack = makeMcStack(c_stack(0), c_stack(1),
-                                  c_stack(2));
-                                  */
-    /*
-    m_singleChannelStackVector[0]->data(),
-                                  m_singleChannelStackVector[1]->data(),
-                                  m_singleChannelStackVector[2]->data());
-                                  */
-    Write_Mc_Stack(filepath.c_str(), m_stack, NULL);
-    return filepath;
-  } else {  //save as raw
-    string str = filepath;
-    if (ZFileType::fileType(filepath) != ZFileType::V3D_RAW_FILE) {
-      std::cout << "Unsupported data format for " << str << endl;
-      str += ".raw";
-      std::cout << str << " saved instead." << endl;
+  string resultFilePath;
+
+  if (!isVirtual()) {
+    resultFilePath = filepath;
+    if (channelNumber() > 1 && kind() != GREY && kind() != GREY16) { //save as raw
+      if (ZFileType::fileType(filepath) != ZFileType::V3D_RAW_FILE ||
+          ZFileType::fileType(filepath) != ZFileType::MC_STACK_RAW_FILE) {
+        std::cout << "Unsupported data format for " << resultFilePath << endl;
+        resultFilePath += ".raw";
+        std::cout << resultFilePath << " saved instead." << endl;
+      }
     }
-
-    Write_Mc_Stack(str.c_str(), m_stack, NULL);
-
-    //    FILE *fp = Guarded_Fopen(str.c_str(), "wb", "Write_Raw_Stack");
-
-    //    char formatkey[] = "raw_image_stack_by_hpeng";
-    //    int lenkey = strlen(formatkey);
-    //    fwrite(formatkey, 1, lenkey, fp);
-
-    //    char endian = 'L';
-    //    fwrite(&endian, 1, 1, fp);
-
-    //    uint16_t dataType = kind();
-    //    uint32_t sz[4];
-    //    sz[0] = width();
-    //    sz[1] = height();
-    //    sz[2] = depth();
-    //    sz[3] = channelNumber();
-
-    //    fwrite(&dataType, 2, 1, fp);
-    //    fwrite(sz, 4, 4, fp);
-
-    //    size_t nvoxel = ((size_t) width()) * ((size_t) height()) *
-    //        ((size_t) depth());
-    //    fclose(fp);
-    //    for (int i = 0; i < channelNumber(); ++i) {
-    //      fp = Guarded_Fopen(str.c_str(), "ab", "Write_Raw_Stack");
-    //      //printf("%zd, %ld\n", nvoxel, ftell(fp));
-    //#ifdef _QT_GUI_USED_
-    //      qDebug() << nvoxel << ", " << ftell(fp);
-    //#endif
-    //      size_t num = fwrite(rawChannelData(i), dataType, nvoxel, fp);
-    //      //printf("%zd, %ld\n", num, ftell(fp));
-    // #ifdef _QT_GUI_USED_
-    //      qDebug() << num << ", " << ftell(fp);
-    //#endif
-    //      fclose(fp);
-    //    }
-    return str;
   }
+
+  if (!resultFilePath.empty()) {
+    C_Stack::write(resultFilePath.c_str(), m_stack);
+  }
+
+  return resultFilePath;
 }
 
 void* ZStack::projection(ZSingleChannelStack::Proj_Mode mode, ZSingleChannelStack::Stack_Axis axis, int c)
@@ -1010,8 +954,8 @@ int ZStack::autoThreshold(int ch) const
 
   int thre = 0;
   if (stack->array != NULL) {
-    double scale = 1.0*stack->width * stack->height * stack->depth * stack->kind /
-        (2.0*1024*1024*1024);
+    double scale = 0.5*stack->width * stack->height * stack->depth * stack->kind /
+        (1024*1024*1024);
     if (scale >= 1.0) {
       scale = std::ceil(std::sqrt(scale + 0.1));
       stack = C_Stack::resize(stack, stack->width/scale, stack->height/scale, stack->depth);

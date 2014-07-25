@@ -10,21 +10,24 @@ ZJsonArray::ZJsonArray() : ZJsonValue()
 {
 }
 
-ZJsonArray::ZJsonArray(json_t *data, bool asNew)
+ZJsonArray::ZJsonArray(json_t *data, bool asNew) : ZJsonValue()
 {
   if (json_is_array(data)) {
     set(data, asNew);
-  } else {
-    m_data = NULL;
   }
 }
 
-ZJsonArray::ZJsonArray(const json_t *data, bool asNew)
+ZJsonArray::ZJsonArray(const json_t *data, bool asNew) : ZJsonValue()
 {
   if (json_is_array(data)) {
     set(const_cast<json_t*>(data), asNew);
-  } else {
-    m_data = NULL;
+  }
+}
+
+ZJsonArray::ZJsonArray(json_t *data, ESetDataOption option) : ZJsonValue()
+{
+  if (json_is_array(data)) {
+    set(data, option);
   }
 }
 
@@ -48,6 +51,26 @@ const json_t* ZJsonArray::at(size_t index) const
   return json_array_get(m_data, index);
 }
 
+void ZJsonArray::append(int v)
+{
+  append(json_integer(v));
+}
+
+void ZJsonArray::append(double v)
+{
+  append(json_real(v));
+}
+
+void ZJsonArray::append(const char *str)
+{
+  append(json_string(str));
+}
+
+void ZJsonArray::append(const string &str)
+{
+  append(json_string(str.c_str()));
+}
+
 void ZJsonArray::append(json_t *obj)
 {
   if (obj != NULL) {
@@ -58,7 +81,7 @@ void ZJsonArray::append(json_t *obj)
   }
 }
 
-void ZJsonArray::append(ZJsonValue &obj)
+void ZJsonArray::append(const ZJsonValue &obj)
 {
   append(obj.getValue());
 }

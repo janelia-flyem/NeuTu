@@ -124,7 +124,8 @@ private:
 
   ZDvidBuffer *m_dvidBuffer;
   QQueue<ZDvidRequest> m_requestQueue;
-  QVariant m_currentRequestParameter;
+  ZDvidRequest m_currentRequest;
+
 
   bool m_isCanceling;
   //int m_requestIndex;

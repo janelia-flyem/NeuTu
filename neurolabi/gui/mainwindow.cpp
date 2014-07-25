@@ -5867,6 +5867,7 @@ void MainWindow::on_actionHDF5_Body_triggered()
 void MainWindow::on_actionDVID_Bundle_triggered()
 {
 #if defined(_FLYEM_)
+  /*
   ZDvidTarget target =
       NeutubeConfig::getInstance().getFlyEmConfig().getDvidTarget();
   bool continueLoading = false;
@@ -5876,17 +5877,20 @@ void MainWindow::on_actionDVID_Bundle_triggered()
       continueLoading = true;
     }
   } else {
-    if (m_dvidDlg->exec()) {
-      NeutubeConfig::getInstance().getFlyEmConfig().setDvidTarget(
-            m_dvidDlg->getDvidTarget());
-      target = NeutubeConfig::getInstance().getFlyEmConfig().getDvidTarget();
-      if (!target.isValid()) {
-        report("Invalid DVID", "Invalid DVID server.", ZMessageReporter::Warning);
-      } else {
-        continueLoading = true;
-      }
+  */
+  bool continueLoading = false;
+  ZDvidTarget target;
+  if (m_dvidDlg->exec()) {
+    NeutubeConfig::getInstance().getFlyEmConfig().setDvidTarget(
+          m_dvidDlg->getDvidTarget());
+    target = NeutubeConfig::getInstance().getFlyEmConfig().getDvidTarget();
+    if (!target.isValid()) {
+      report("Invalid DVID", "Invalid DVID server.", ZMessageReporter::Warning);
+    } else {
+      continueLoading = true;
     }
   }
+  //}
 
   if (continueLoading && m_bodyFilterDlg->exec()) {
     m_progress->setRange(0, 3);
@@ -5923,9 +5927,9 @@ void MainWindow::on_actionDVID_Bundle_triggered()
       delete dataBundle;
       reportFileOpenProblem(target.getSourceString().c_str());
     }
+    m_progress->reset();
+    m_progress->hide();
   }
-  m_progress->reset();
-  m_progress->hide();
 #endif
 }
 
@@ -6329,4 +6333,47 @@ void MainWindow::on_actionUpdate_Skeletons_triggered()
     m_progress->reset();
     m_progress->hide();
   }
+}
+
+void MainWindow::on_actionCreate_Databundle_triggered()
+{
+
+}
+
+void MainWindow::on_actionCreate_Thumbnails_triggered()
+{
+#if 0
+  bool continueLoading = false;
+  ZDvidTarget target;
+  if (m_dvidDlg->exec()) {
+    NeutubeConfig::getInstance().getFlyEmConfig().setDvidTarget(
+          m_dvidDlg->getDvidTarget());
+    target = NeutubeConfig::getInstance().getFlyEmConfig().getDvidTarget();
+    if (!target.isValid()) {
+      report("Invalid DVID", "Invalid DVID server.", ZMessageReporter::Warning);
+    } else {
+      continueLoading = true;
+    }
+  }
+  //}
+
+  if (continueLoading && m_bodyFilterDlg->exec()) {
+    ZDvidFilter filter = m_bodyFilterDlg->getDvidFilter();
+    ZDvidReader reader;
+    ZDvidWriter writer;
+    if (reader.open(target) && writer.open(target)) {
+      std::set<int> bodyIdSet = reader.readBodyId(filter);
+      for (std::set<int>::const_iterator iter = bodyIdSet.begin();
+           iter != bodyIdSet.end(); ++iter) {
+        int bodyId = *iter;
+        ZStack *stack = reader.readThumbnail(bodyId);
+        if (stack == NULL) {
+          stack = ZStackFactory::
+          writer.writeThumbnail(bodyId, stack);
+        }
+        delete stack;
+      }
+    }
+  }
+#endif
 }

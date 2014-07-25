@@ -6,6 +6,7 @@
 #include "zstackfactory.h"
 #include "zdvidinfo.h"
 #include "dvid/zdvidtarget.h"
+#include "dvid/zdvidfilter.h"
 
 ZDvidReader::ZDvidReader(QObject *parent) :
   QObject(parent)
@@ -167,6 +168,31 @@ ZSwcTree* ZDvidReader::readSwc(int bodyId)
   }
 
   return NULL;
+}
+
+ZStack* ZDvidReader::readThumbnail(int bodyId)
+{
+  startReading();
+
+  ZDvidBuffer *dvidBuffer = m_dvidClient->getDvidBuffer();
+  dvidBuffer->clearImageArray();
+
+  ZDvidRequest request;
+  request.setGetThumbnailRequest(bodyId);
+  m_dvidClient->appendRequest(request);
+  m_dvidClient->postNextRequest();
+
+
+  waitForReading();
+
+  const QVector<ZStack*>& imageArray = dvidBuffer->getImageArray();
+
+  ZStack *stack = NULL;
+  if (!imageArray.isEmpty()) {
+    stack = imageArray[0]->clone();
+  }
+
+  return stack;
 }
 
 ZStack* ZDvidReader::readGrayScale(const ZIntCuboid &cuboid)
@@ -364,6 +390,31 @@ std::set<int> ZDvidReader::readBodyId(const QString sizeRange)
   }
 
   return bodySet;
+}
+
+std::set<int> ZDvidReader::readBodyId(const ZDvidFilter &filter)
+{
+  std::set<int> bodyIdSet;
+
+  if (filter.hasUpperBodySize()) {
+    bodyIdSet = readBodyId(filter.getMinBodySize(), filter.getMaxBodySize());
+  } else {
+    bodyIdSet = readBodyId(filter.getMinBodySize());
+  }
+
+  if (filter.hasExclusion()) {
+    std::set<int> newBodySet;
+    for (std::set<int>::const_iterator iter = bodyIdSet.begin();
+         iter != bodyIdSet.end(); ++iter) {
+      int bodyId = *iter;
+      if (!filter.isExcluded(bodyId)) {
+        newBodySet.insert(bodyId);
+      }
+    }
+    return newBodySet;
+  }
+
+  return bodyIdSet;
 }
 
 std::set<int> ZDvidReader::readBodyId(size_t minSize)

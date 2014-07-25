@@ -418,6 +418,10 @@ private slots:
 
   void on_actionUpdate_Skeletons_triggered();
 
+  void on_actionCreate_Databundle_triggered();
+
+  void on_actionCreate_Thumbnails_triggered();
+  
 private:
   void createActions();
   void createFileActions();

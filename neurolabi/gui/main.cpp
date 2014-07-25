@@ -114,7 +114,6 @@ int main(int argc, char *argv[])
 
   QStringList fileList;
 
-
   if (argc > 1) {
     if (strcmp(argv[1], "d") == 0) {
       debugging = true;

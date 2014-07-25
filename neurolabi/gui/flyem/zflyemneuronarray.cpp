@@ -84,3 +84,115 @@ void ZFlyEmNeuronArray::exportBodyToHdf5(const std::string &filePath)
   }
 }
 
+
+void ZFlyEmNeuronArray::importNamedBody(const std::string &filePath)
+{
+  clear();
+
+  ZJsonObject obj;
+  obj.load(filePath);
+  if (!obj.isEmpty()) {
+    ZJsonArray array(obj["data"], ZJsonValue::SET_INCREASE_REF_COUNT);
+    for (size_t i = 0; i < array.size(); ++i) {
+      ZJsonObject bodyObj(array.at(i), false);
+      if (bodyObj.hasKey("body ID")) {
+        int bodyId = ZJsonParser::integerValue(bodyObj["body ID"]);
+        if (bodyId > 0) {
+          ZFlyEmNeuron neuron;
+          neuron.setId(bodyId);
+          if (bodyObj.hasKey("name")) {
+            neuron.setName(ZJsonParser::stringValue(bodyObj["name"]));
+            push_back(neuron);
+          }
+        }
+      }
+    }
+  }
+}
+
+void ZFlyEmNeuronArray::importFromDataBundle(const std::string &filePath)
+{
+  clear();
+
+  ZJsonObject obj;
+  obj.load(filePath);
+  if (!obj.isEmpty()) {
+    ZJsonArray array(obj["neuron"], ZJsonValue::SET_INCREASE_REF_COUNT);
+    for (size_t i = 0; i < array.size(); ++i) {
+      ZJsonObject bodyObj(array.at(i), false);
+      if (bodyObj.hasKey("id")) {
+        int bodyId = ZJsonParser::integerValue(bodyObj["id"]);
+        if (bodyId > 0) {
+          ZFlyEmNeuron neuron;
+          neuron.setId(bodyId);
+          if (bodyObj.hasKey("class")) {
+            neuron.setClass(ZJsonParser::stringValue(bodyObj["class"]));
+          }
+          push_back(neuron);
+        }
+      }
+    }
+  }
+}
+
+void ZFlyEmNeuronArray::assignClass(const std::string &filePath)
+{
+  ZJsonObject obj;
+  obj.load(filePath);
+
+  if (!obj.isEmpty()) {
+    ZJsonArray array(obj["neuron"], ZJsonValue::SET_INCREASE_REF_COUNT);
+    if (!array.isEmpty()) {
+      std::map<int, std::string> idClassMap;
+      for (size_t i = 0; i < array.size(); ++i) {
+        ZJsonObject neuronObj(
+              array.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
+        if (neuronObj.hasKey("id") && neuronObj.hasKey("class")) {
+          int bodyId = ZJsonParser::integerValue(neuronObj["id"]);
+          std::string type = ZJsonParser::stringValue(neuronObj["class"]);
+          idClassMap[bodyId] = type;
+        }
+      }
+
+      if (!idClassMap.empty()) {
+        for (ZFlyEmNeuronArray::iterator iter = begin(); iter != end(); ++iter) {
+          ZFlyEmNeuron &neuron = *iter;
+          if (idClassMap.count(neuron.getId()) > 0) {
+            neuron.setClass(idClassMap[neuron.getId()]);
+          }
+        }
+      }
+    }
+  }
+}
+
+void ZFlyEmNeuronArray::assignName(const std::string &filePath)
+{
+  ZJsonObject obj;
+  obj.load(filePath);
+
+  if (!obj.isEmpty()) {
+    ZJsonArray array(obj["data"], ZJsonValue::SET_INCREASE_REF_COUNT);
+    if (!array.isEmpty()) {
+      std::map<int, std::string> idNameMap;
+      for (size_t i = 0; i < array.size(); ++i) {
+        ZJsonObject neuronObj(
+              array.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
+        if (neuronObj.hasKey("body ID") && neuronObj.hasKey("name")) {
+          int bodyId = ZJsonParser::integerValue(neuronObj["body ID"]);
+          std::string name = ZJsonParser::stringValue(neuronObj["name"]);
+          idNameMap[bodyId] = name;
+        }
+      }
+
+      if (!idNameMap.empty()) {
+        for (ZFlyEmNeuronArray::iterator iter = begin(); iter != end(); ++iter) {
+          ZFlyEmNeuron &neuron = *iter;
+          if (idNameMap.count(neuron.getId()) > 0) {
+            neuron.setName(idNameMap[neuron.getId()]);
+          }
+        }
+      }
+    }
+  }
+}

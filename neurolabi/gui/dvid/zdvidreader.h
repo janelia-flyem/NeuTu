@@ -15,6 +15,7 @@
 #include "zsparsestack.h"
 
 class ZDvidTarget;
+class ZDvidFilter;
 
 class ZDvidReader : public QObject
 {
@@ -30,6 +31,9 @@ public:
   ZSwcTree *readSwc(int bodyId);
   ZObject3dScan readBody(int bodyId);
   ZObject3dScan* readBody(int bodyId, ZObject3dScan *result);
+
+  ZStack* readThumbnail(int bodyId);
+
   ZSparseStack* readSparseStack(int bodyId);
   ZStack* readGrayScale(
       int x0, int y0, int z0, int width, int height, int depth);
@@ -45,6 +49,9 @@ public:
   std::set<int> readBodyId(size_t minSize);
   std::set<int> readBodyId(size_t minSize, size_t maxSize);
   QByteArray readKeyValue(const QString &dataName, const QString &key);
+
+  std::set<int> readBodyId(const ZDvidFilter &filter);
+
 
 signals:
   void readingDone();

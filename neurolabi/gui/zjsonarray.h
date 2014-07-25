@@ -9,8 +9,9 @@ class ZJsonArray : public ZJsonValue, ZUncopyable
 {
 public:
   ZJsonArray();
-  ZJsonArray(json_t *data, bool asNew);
-  ZJsonArray(const json_t *data, bool asNew);
+  explicit ZJsonArray(json_t *data, bool asNew);
+  explicit ZJsonArray(const json_t *data, bool asNew);
+  explicit ZJsonArray(json_t *data, ESetDataOption option);
   virtual ~ZJsonArray();
 
 public:
@@ -19,15 +20,14 @@ public:
   const json_t* at(::size_t index) const;
 
   /*!
-   * \brief Append an element.
-   * \param obj The element to be appended. Nothing is done if it is NULL.
-   */
-  void append(json_t *obj);
-
-  /*!
    * \brief Append an element
    */
-  void append(ZJsonValue &obj);
+  void append(const ZJsonValue &obj);
+
+  void append(int v);
+  void append(double v);
+  void append(const char *str);
+  void append(const std::string &str);
 
   /*!
    * \brief Get a number array from the json array.
@@ -63,6 +63,13 @@ public:
    * \return true iff the decoding succeeds.
    */
   bool decode(const std::string &str);
+
+private:
+  /*!
+   * \brief Append an element.
+   * \param obj The element to be appended. Nothing is done if it is NULL.
+   */
+  void append(json_t *obj);
 };
 
 #endif // ZJSONARRAY_H

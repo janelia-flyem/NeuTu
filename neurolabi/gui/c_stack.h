@@ -188,6 +188,8 @@ Stack* channelExtraction(const Stack *stack, int channel);
  */
 bool setValue(Stack *stack, size_t offset, const void *buffer, size_t length);
 
+bool setValue(Mc_Stack *stack, size_t offset, const void *buffer, size_t length);
+
 //Stack manipulation
 //Crop a stack
 Stack* crop(const Stack *stack,int left,int top,int front,
@@ -343,6 +345,9 @@ void write(const std::string &filePath, const Stack *stack);
 void write(const std::string &filePath, const Mc_Stack *stack);
 Mc_Stack* read(const std::string &filePath, int channel = -1);
 Stack* readSc(const std::string &filePath);
+Mc_Stack* readMrawFromBuffer(const char *buffer, int channel = -1);
+
+
 
 Mc_Stack* resize(const Mc_Stack *stack, int width, int height, int depth);
 

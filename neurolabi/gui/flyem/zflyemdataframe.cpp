@@ -44,6 +44,8 @@
 #include "flyem/zflyemneuronfeatureanalyzer.h"
 #include "flyem/zflyemqualityanalyzer.h"
 #include "flyemhotspotdialog.h"
+#include "dvid/zdvidwriter.h"
+#include "dvid/zdvidreader.h"
 
 using namespace std;
 
@@ -2114,32 +2116,50 @@ void ZFlyEmDataFrame::exportThumbnail(
     const QString &saveDir, bool thumbnailUpdate,
     const ZFlyEmNeuronImageFactory &imageFactory)
 {
-  QDir dir(saveDir);
-  if (!dir.exists()) {
-    int ret = QMessageBox::warning(this, "Create directory?",
-                                   saveDir + " does not exist. "
-                                      "Do you want to create it?",
-                                   QMessageBox::Yes | QMessageBox::No);
+  QString outputPath;
 
-    if (ret == QMessageBox::Yes) {
-      dir.mkpath(saveDir);
-    } else {
-      QMessageBox::information(this, "Abort Export", "No thumbnail is generated");
-      return;
+  bool savingToDvid = false;
+  ZDvidWriter writer;
+  if (writer.open(saveDir)) {
+    outputPath = saveDir;
+    savingToDvid = true;
+  } else {
+    QDir dir(saveDir);
+    if (!dir.exists()) {
+      int ret = QMessageBox::warning(this, "Create directory?",
+                                     saveDir + " does not exist. "
+                                        "Do you want to create it?",
+                                     QMessageBox::Yes | QMessageBox::No);
+
+      if (ret == QMessageBox::Yes) {
+        dir.mkpath(saveDir);
+      } else {
+        QMessageBox::information(this, "Abort Export", "No thumbnail is generated");
+        return;
+      }
     }
   }
 
   std::vector<ZFlyEmNeuron>& neuronArray = m_dataArray[0]->getNeuronArray();
 
   startProgress();
+
+  //ZDvidReader reader;
+  //reader.open(saveDir.toStdString());
+
   for (std::vector<ZFlyEmNeuron>::iterator iter = neuronArray.begin();
        iter != neuronArray.end(); ++iter) {
     advanceProgress(1.0 / neuronArray.size());
     ZFlyEmNeuron &neuron = *iter;
-    QString outputPath = QString("%1/%2.tif").arg(saveDir).arg(neuron.getId()).
-        toStdString().c_str();
     Stack *stack = imageFactory.createImage(neuron);
-    C_Stack::write(outputPath.toStdString(), stack);
+
+    if (savingToDvid) {
+      writer.writeThumbnail(neuron.getId(), stack);
+    } else {
+      outputPath = QString("%1/%2.tif").arg(saveDir).arg(neuron.getId()).
+        toStdString().c_str();
+      C_Stack::write(outputPath.toStdString(), stack);
+    }
     C_Stack::kill(stack);
 
     if (thumbnailUpdate) {
@@ -2147,8 +2167,6 @@ void ZFlyEmDataFrame::exportThumbnail(
     }
 
     neuron.deprecate(ZFlyEmNeuron::BODY);
-
-    //Stack *stack = m_dataArray[0]->createThumbnail()
   }
 
   endProgress();

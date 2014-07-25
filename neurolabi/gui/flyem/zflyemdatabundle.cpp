@@ -150,6 +150,7 @@ bool ZFlyEmDataBundle::loadDvid(const ZDvidFilter &dvidFilter)
       neuron.setId(bodyId);
       neuron.setModelPath(m_source);
       neuron.setVolumePath(m_source);
+      neuron.setThumbnailPath(m_source);
       neuron.setResolution(m_swcResolution);
 
       ZFlyEmBodyAnnotation annotation = fdReader.readAnnotation(bodyId);
@@ -632,7 +633,8 @@ void ZFlyEmDataBundle::exportJsonFile(const string &path) const
   for (std::vector<ZFlyEmNeuron>::const_iterator iter = m_neuronArray.begin();
        iter != m_neuronArray.end(); ++iter) {
     const ZFlyEmNeuron &neuron = *iter;
-    neuronArrayWrapper.append(neuron.makeJsonObject(exportDir));
+    ZJsonObject obj = neuron.makeJsonObject(exportDir);
+    neuronArrayWrapper.append(obj);
   }
 
 #ifdef _DEBUG_2

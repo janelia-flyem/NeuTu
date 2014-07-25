@@ -30,7 +30,16 @@ public:
   }
 
   inline void setMaxBodySize(size_t s) {
+    m_hasUpperBodySize = true;
     m_maxBodySize = s;
+  }
+
+  inline void setUpperBodySizeEnabled(bool enabled) {
+    m_hasUpperBodySize = enabled;
+  }
+
+  inline bool hasUpperBodySize() const {
+    return m_hasUpperBodySize;
   }
 
   void setDvidTarget(const ZDvidTarget &target) {
@@ -40,11 +49,13 @@ public:
   void exclude(int bodyId);
   void exclude(const std::vector<int> &bodyArray);
   bool isExcluded(int bodyId) const;
+  bool hasExclusion() const;
 
 private:
   ZDvidTarget m_dvidTarget;
   size_t m_minBodySize;
   size_t m_maxBodySize;
+  bool m_hasUpperBodySize;
 
   std::set<int> m_excludedBodySet;
 };
