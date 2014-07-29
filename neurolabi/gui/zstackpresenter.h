@@ -16,6 +16,7 @@
 #include "zstroke2d.h"
 #include "swctreenode.h"
 #include "zactionactivator.h"
+#include "zkeyeventswcmapper.h"
 
 class ZStackView;
 class ZStackDoc;
@@ -358,6 +359,8 @@ private:
 
   ZSingleSwcNodeActionActivator m_singleSwcNodeActionActivator;
   bool m_skipMouseReleaseEvent;
+
+  ZKeyEventSwcMapper m_swcKeyMapper;
 
 signals:
   void viewModeChanged();

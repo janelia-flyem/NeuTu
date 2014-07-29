@@ -327,6 +327,7 @@
       </property>
       <addaction name="actionSplit_Region"/>
       <addaction name="actionView_Labeled_Regions"/>
+      <addaction name="actionCreate_ROI"/>
      </widget>
      <widget class="QMenu" name="menuNew">
       <property name="title">
@@ -379,7 +380,7 @@
   </widget>
   <action name="actionOpen">
    <property name="icon">
-    <iconset>
+    <iconset resource="gui.qrc">
      <normaloff>:/images/open.png</normaloff>:/images/open.png</iconset>
    </property>
    <property name="text">
@@ -424,7 +425,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset>
+    <iconset resource="gui.qrc">
      <normaloff>:/images/notrace.png</normaloff>:/images/notrace.png</iconset>
    </property>
    <property name="text">
@@ -439,7 +440,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset>
+    <iconset resource="gui.qrc">
      <normaloff>:/images/fitseg.png</normaloff>:/images/fitseg.png</iconset>
    </property>
    <property name="text">
@@ -451,7 +452,7 @@
   </action>
   <action name="actionAutomatic">
    <property name="icon">
-    <iconset>
+    <iconset resource="gui.qrc">
      <normaloff>:/images/autotrace.png</normaloff>:/images/autotrace.png</iconset>
    </property>
    <property name="text">
@@ -472,7 +473,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset>
+    <iconset resource="gui.qrc">
      <normaloff>:/images/tracetube.png</normaloff>:/images/tracetube.png</iconset>
    </property>
    <property name="text">
@@ -530,7 +531,7 @@
   </action>
   <action name="actionBrightnessContrast">
    <property name="icon">
-    <iconset>
+    <iconset resource="gui.qrc">
      <normaloff>:/images/bc.png</normaloff>:/images/bc.png</iconset>
    </property>
    <property name="text">
@@ -599,7 +600,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset>
+    <iconset resource="gui.qrc">
      <normaloff>:/images/swcpreview.png</normaloff>:/images/swcpreview.png</iconset>
    </property>
    <property name="text">
@@ -944,7 +945,7 @@
   </action>
   <action name="actionImportFlyEmDatabase">
    <property name="icon">
-    <iconset>
+    <iconset resource="gui.qrc">
      <normaloff>:/images/open_database.png</normaloff>:/images/open_database.png</iconset>
    </property>
    <property name="text">
@@ -990,7 +991,7 @@
   </action>
   <action name="actionMask">
    <property name="icon">
-    <iconset>
+    <iconset resource="gui.qrc">
      <normaloff>:/images/save_mask.png</normaloff>:/images/save_mask.png</iconset>
    </property>
    <property name="text">
@@ -1066,7 +1067,7 @@
   </action>
   <action name="actionDVID_Object">
    <property name="icon">
-    <iconset>
+    <iconset resource="gui.qrc">
      <normaloff>:/images/open_dvid.png</normaloff>:/images/open_dvid.png</iconset>
    </property>
    <property name="text">
@@ -1075,7 +1076,7 @@
   </action>
   <action name="actionDvid_Object">
    <property name="icon">
-    <iconset>
+    <iconset resource="gui.qrc">
      <normaloff>:/images/open_dvid.png</normaloff>:/images/open_dvid.png</iconset>
    </property>
    <property name="text">
@@ -1246,7 +1247,14 @@
     <string>Create Data Bundle</string>
    </property>
   </action>
+  <action name="actionCreate_ROI">
+   <property name="text">
+    <string>Create ROI</string>
+   </property>
+  </action>
  </widget>
- <resources/>
+ <resources>
+  <include location="gui.qrc"/>
+ </resources>
  <connections/>
 </ui>

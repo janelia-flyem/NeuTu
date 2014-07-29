@@ -61,6 +61,7 @@ void Default_Swc_Tree_Node(Swc_Tree_Node *node)
     node->feature = 0.0;
     node->index = -1;
     node->flag = 0;
+    node->tree_state = 0;
   }
 }
 

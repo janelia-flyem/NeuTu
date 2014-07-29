@@ -2,7 +2,7 @@
 #include "tz_cdefs.h"
 
 ZStackObject::ZStackObject() : m_selected(false), m_isVisible(true),
-  m_style(SOLID), m_target(WIDGET)
+  m_style(SOLID), m_target(WIDGET), m_usingCosmeticPen(false)
 {
 }
 
@@ -102,4 +102,15 @@ bool ZStackObject::isOpaque() {
 const QColor& ZStackObject::getColor() const
 {
   return m_color;
+}
+
+double ZStackObject::getPenWidth() const
+{
+  double width = getDefaultPenWidth();
+
+  if (m_usingCosmeticPen) {
+    width += 2.0;
+  }
+
+  return width;
 }

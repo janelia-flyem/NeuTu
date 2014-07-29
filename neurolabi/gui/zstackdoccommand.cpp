@@ -17,6 +17,7 @@
 #include "zgraph.h"
 #include "zdocumentable.h"
 #include "zdocplayer.h"
+#include "neutubeconfig.h"
 
 using namespace std;
 
@@ -251,8 +252,13 @@ ZStackDocCommand::SwcEdit::AddSwcNode::AddSwcNode(
 {
   setText(QObject::tr("Add Neuron Node"));
   m_tree = new ZSwcTree();
+  if (GET_APPLICATION_NAME == "FlyEM") {
+    m_tree->useCosmeticPen(true);
+  }
+
   m_tree->setDataFromNode(m_node);
-  m_tree->setSource(QString("#added by add neuron node command %1").arg(m_index++).toStdString());
+  m_tree->setSource(QString("#added by add neuron node command %1").
+                    arg(m_index++).toStdString());
 }
 
 ZStackDocCommand::SwcEdit::AddSwcNode::~AddSwcNode()

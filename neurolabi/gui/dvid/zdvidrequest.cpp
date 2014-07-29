@@ -54,6 +54,8 @@ void ZDvidRequest::setGetInfoRequest(const QString &dataType)
 {
   if (dataType == "superpixels") {
     m_requestType = ZDvidRequest::DVID_GET_SUPERPIXEL_INFO;
+  } else if (dataType == "grayscale") {
+    m_requestType = ZDvidRequest::DVID_GET_GRAYSCALE_INFO;
   } else {
     m_requestType = ZDvidRequest::DVID_NULL_REQUEST;
   }

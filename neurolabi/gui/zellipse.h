@@ -20,16 +20,21 @@ public:
   virtual const std::string& className() const;
 
 public:
-  virtual void display(QPainter &painter, int z = 0, Display_Style option = NORMAL)
+  void display(ZPainter &painter, int z = 0, Display_Style option = NORMAL)
   const;
 
   virtual void save(const char *filePath);
   virtual bool load(const char *filePath);
 
+  inline void setAngle(double angle) {
+    m_angle = angle;
+  }
+
 private:
   QPointF m_center;
   double m_rx;
   double m_ry;
+  double m_angle; //angle of m_rx to the X axis
 };
 
 #endif /* _ZELLIPSE_H_ */

@@ -55,6 +55,9 @@ public:
   }
 
 private:
+  double getAdjustedRadius(double r) const;
+
+private:
   ZPoint m_center;
   double m_r;
   TVisualEffect m_visualEffect;

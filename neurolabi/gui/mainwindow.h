@@ -422,6 +422,8 @@ private slots:
 
   void on_actionCreate_Thumbnails_triggered();
   
+  void on_actionCreate_ROI_triggered();
+
 private:
   void createActions();
   void createFileActions();

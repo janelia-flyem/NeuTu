@@ -43,6 +43,8 @@ ZSwcTree::ZSwcTree(const ZSwcTree &src) : ZStackObject()
 }
 */
 
+const int ZSwcTree::m_nodeStateCosmetic = 1;
+
 ZSwcTree::ZSwcTree()
 {
   m_tree = NULL;
@@ -90,6 +92,11 @@ void ZSwcTree::setData(Swc_Tree *tree, ESetDataOption option)
   }
 
   m_tree = tree;
+
+  if (m_tree != NULL) {
+    setHostState(m_tree->root);
+  }
+
   deprecate(ALL_COMPONENT);
 }
 
@@ -141,6 +148,10 @@ void ZSwcTree::setDataFromNode(Swc_Tree_Node *node, ESetDataOption option)
 
   m_tree->root = node;
   deprecate(ALL_COMPONENT);
+
+  if (m_tree != NULL) {
+    setHostState(m_tree->root);
+  }
 }
 
 void ZSwcTree::setDataFromNodeRoot(Swc_Tree_Node *node, ESetDataOption option)
@@ -309,7 +320,7 @@ void ZSwcTree::display(
 #if defined(_QT_GUI_USED_)
   double dataFocus = stackFocus - painter.getOffset().z();
 
-  const double strokeWidth = m_defaultPenWidth;
+  const double strokeWidth = getPenWidth();
 
   updateIterator(SWC_TREE_ITERATOR_DEPTH_FIRST);
 
@@ -329,9 +340,10 @@ void ZSwcTree::display(
   QPen pen;
   pen.setColor(nodeFocusColor);
   pen.setWidth(strokeWidth);
-  //pen.setCosmetic(true);
+  pen.setCosmetic(m_usingCosmeticPen);
   painter.setPen(pen);
   painter.setBrush(Qt::NoBrush);
+
 
   //Draw skeletons
   for (const Swc_Tree_Node *tn = begin(); tn != end(); tn = next()) {
@@ -456,6 +468,7 @@ void ZSwcTree::display(
       {
           ZCircle circle(SwcTreeNode::x(tn), SwcTreeNode::y(tn), SwcTreeNode::z(tn),
                          SwcTreeNode::radius(tn));
+          circle.useCosmeticPen(m_usingCosmeticPen);
           circle.display(&painter, stackFocus, style);
       }
         //}
@@ -467,6 +480,7 @@ void ZSwcTree::display(
         painter.setBrush(brushColor);
         ZCircle circle(SwcTreeNode::x(tn), SwcTreeNode::y(tn), SwcTreeNode::z(tn),
                        SwcTreeNode::radius(tn));
+        circle.useCosmeticPen(m_usingCosmeticPen);
         circle.display(&painter, stackFocus, style);
         }
         break;
@@ -2528,6 +2542,7 @@ void ZSwcTree::addRegularRoot(Swc_Tree_Node *tn)
       m_tree = New_Swc_Tree();
     }
 
+    /*
     if (m_tree->root == NULL) {
       m_tree->root = SwcTreeNode::makeVirtualNode();
     } else if (SwcTreeNode::isRegular(m_tree->root)) {
@@ -2535,6 +2550,8 @@ void ZSwcTree::addRegularRoot(Swc_Tree_Node *tn)
       SwcTreeNode::setParent(m_tree->root, root);
       m_tree->root = root;
     }
+    */
+    forceVirtualRoot();
 
     SwcTreeNode::setParent(tn, m_tree->root);
 
@@ -2554,11 +2571,14 @@ Swc_Tree_Node *ZSwcTree::forceVirtualRoot()
 
   if (SwcTreeNode::isRegular(m_tree->root)) {
     Swc_Tree_Node *tn = SwcTreeNode::makeVirtualNode();
+    setHostState(tn);
     SwcTreeNode::setParent(m_tree->root, tn);
     m_tree->root = tn;
   }
 
   deprecate(ALL_COMPONENT);
+
+  setHostState(m_tree->root);
 
   return m_tree->root;
 }
@@ -2899,4 +2919,38 @@ double ZSwcTree::getMaxSegmentLenth()
   }
 
   return maxLength;
+}
+
+bool ZSwcTree::getHostState(const Swc_Tree_Node *tn, ENodeState state)
+{
+  bool on = false;
+  if (tn != NULL) {
+    switch (state) {
+    case NODE_STATE_COSMETIC:
+      on = ((tn->tree_state & m_nodeStateCosmetic) > 0);
+      break;
+    }
+  }
+
+  return on;
+}
+
+void ZSwcTree::setHostState(Swc_Tree_Node *tn, ENodeState state) const
+{
+  if (tn != NULL) {
+    switch (state) {
+    case NODE_STATE_COSMETIC:
+      if (m_usingCosmeticPen) {
+        tn->tree_state |= m_nodeStateCosmetic;
+      } else {
+        tn->tree_state &= ~m_nodeStateCosmetic;
+      }
+      break;
+    }
+  }
+}
+
+void ZSwcTree::setHostState(Swc_Tree_Node *tn) const
+{
+  setHostState(tn, NODE_STATE_COSMETIC);
 }

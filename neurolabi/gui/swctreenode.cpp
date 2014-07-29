@@ -695,6 +695,8 @@ void SwcTreeNode::setFirstChild(Swc_Tree_Node *tn, Swc_Tree_Node *child)
     SwcTreeNode::setLink(tn, child, SwcTreeNode::FIRST_CHILD);
     SwcTreeNode::setLink(child, oldFirstChild, SwcTreeNode::NEXT_SIBLING);
   }
+
+  child->tree_state = tn->tree_state;
 }
 
 bool SwcTreeNode::isRegularRoot(const Swc_Tree_Node *tn)

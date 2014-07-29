@@ -21,6 +21,7 @@
 #include "tz_geo3d_utils.h"
 #include "zstackdocmenufactory.h"
 #include "zinteractionevent.h"
+#include "zellipse.h"
 
 ZStackPresenter::ZStackPresenter(ZStackFrame *parent) : QObject(parent),
   m_parent(parent),
@@ -58,6 +59,13 @@ ZStackPresenter::ZStackPresenter(ZStackFrame *parent) : QObject(parent),
   m_strokePaintContextMenu = NULL;
   m_stackContextMenu = NULL;
   createActions();
+
+#ifdef _DEBUG_2
+  ZEllipse *ellipse = new ZEllipse(QPointF(50, 50), 10, 5);
+  ellipse->setColor(255, 0, 0);
+  ellipse->setAngle(45);
+  addDecoration(ellipse);
+#endif
 }
 
 ZStackPresenter::~ZStackPresenter()
@@ -1330,6 +1338,9 @@ QMutableListIterator<objtype*> iter(list);	\
 bool ZStackPresenter::processKeyPressEventForSwc(QKeyEvent *event)
 {
   bool taken = false;
+
+  //switch (m_swcKeyMapper.getOperation(event)) {
+  //case ZSwcTree::OPERATION_DELETE_NODE:
   switch (event->key()) {
   case Qt::Key_Backspace:
   case Qt::Key_Delete:
@@ -2235,7 +2246,7 @@ void ZStackPresenter::enterSwcAddNodeMode(double x, double y)
 {
   interactiveContext().setSwcEditMode(ZInteractiveContext::SWC_EDIT_ADD_NODE);
   if (GET_APPLICATION_NAME == "FlyEM") {
-    m_stroke.setWidth(1.0);
+    m_stroke.setWidth(5.0);
   } else {
     m_stroke.setWidth(6.0);
   }

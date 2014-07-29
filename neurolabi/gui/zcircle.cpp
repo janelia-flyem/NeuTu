@@ -59,7 +59,9 @@ void ZCircle::display(ZPainter &painter, int n,
 
   UNUSED_PARAMETER(style);
 #if _QT_GUI_USED_
-  QPen pen(m_color, m_defaultPenWidth);
+  QPen pen(m_color, getPenWidth());
+  pen.setCosmetic(m_usingCosmeticPen);
+
   if (hasVisualEffect(VE_DASH_PATTERN)) {
     pen.setStyle(Qt::DotLine);
   }
@@ -90,11 +92,22 @@ bool ZCircle::isCuttingPlane(double z, double r, double n)
   return false;
 }
 
+double ZCircle::getAdjustedRadius(double r) const
+{
+  double adjustedRadius = r;
+  if (!m_usingCosmeticPen) {
+    adjustedRadius += getPenWidth() * 0.5;
+  }
+
+  return adjustedRadius;
+}
+
 void ZCircle::display(ZPainter *painter, int stackFocus, Display_Style style) const
 {
   UNUSED_PARAMETER(style);
 #if defined(_QT_GUI_USED_)
-  double adjustedRadius = m_r + m_defaultPenWidth * 0.5;
+  double adjustedRadius = getAdjustedRadius(m_r);
+
   double dataFocus = stackFocus - painter->getOffset().z();
 
   QRectF rect;
@@ -114,10 +127,12 @@ void ZCircle::display(ZPainter *painter, int stackFocus, Display_Style style) co
       double h = fabs(m_center.z() - dataFocus);
       if (m_r > h) {
         double r = sqrt(m_r * m_r - h * h);
-        adjustedRadius = r + m_defaultPenWidth * 0.5;
+        adjustedRadius = getAdjustedRadius(r);
+        //adjustedRadius = r + getPenWidth() * 0.5;
         visible = true;
       } else { //too small, show at least one plane
-        adjustedRadius = m_defaultPenWidth * 0.5;
+        //adjustedRadius = getPenWidth() * 0.5;
+        adjustedRadius = getAdjustedRadius(0.1);
         visible = true;
       }
     }
@@ -135,6 +150,12 @@ void ZCircle::display(ZPainter *painter, int stackFocus, Display_Style style) co
     const QBrush &oldBrush = painter->brush();
     const QPen &oldPen = painter->pen();
     painter->setBrush(Qt::NoBrush);
+
+    QPen pen = oldPen;
+    pen.setStyle(Qt::SolidLine);
+    pen.setCosmetic(m_usingCosmeticPen);
+    painter->setPen(pen);
+
 #if 0 //for future versions
     QPen pen = oldPen;
     QVector<qreal> pattern;

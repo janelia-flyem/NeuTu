@@ -49,6 +49,7 @@
 #include "zswctreematcher.h"
 #include "parameterdialog.h"
 #include "zstring.h"
+#include "zdialogfactory.h"
 #include "zrandomgenerator.h"
 #include "zjsonobject.h"
 #include "zpoint.h"
@@ -12245,7 +12246,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1 //update annotation
+#if 0//update annotation
   std::string annotationFile = GET_DATA_DIR +
       "/flyem/FIB/skeletonization/session40/annotations-body.json";
   std::string bundleFile = GET_DATA_DIR +
@@ -12270,4 +12271,24 @@ void ZTest::test(MainWindow *host)
   }
 
 #endif
+
+#if 0
+  QDialog *dlg = ZDialogFactory::makeTestDialog();
+
+  dlg->exec();
+#endif
+
+#if 1
+  ZObject3dScan obj;
+  obj.load(GET_TEST_DATA_DIR + "/benchmark/50.sobj");
+
+  ZFlyEmNeuronImageFactory factory;
+  factory.setDownsampleInterval(9, 9, 9);
+  tic();
+  Stack *stack = factory.createSurfaceImage(obj);
+  ptoc();
+
+  C_Stack::write(GET_TEST_DATA_DIR + "/test.tif", stack);
+#endif
+
 }

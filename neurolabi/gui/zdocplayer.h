@@ -30,6 +30,7 @@ public:
   const static TRole ROLE_3DSWC_DECORATOR;
   const static TRole ROLE_3DGRAPH_DECORATOR;
   const static TRole ROLE_TMP_BOOKMARK;
+  const static TRole ROLE_ROI;
 
 public:
   ZDocPlayer();

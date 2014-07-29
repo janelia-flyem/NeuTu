@@ -422,7 +422,14 @@ HEADERS += mainwindow.h \
     zwindowfactory.h \
     dvid/zdvidwriter.h \
     dvidskeletonizedialog.h \
-    zdialogfactory.h
+    zdialogfactory.h \
+    zdvidserverwidget.h \
+    zwidgetfactory.h \
+    zlabelededitwidget.h \
+    zlabeledcombowidget.h \
+    zspinboxdialog.h \
+    zbuttonbox.h \
+    zkeyeventswcmapper.h
 
 FORMS += settingdialog.ui \
     frameinfodialog.ui \
@@ -703,7 +710,14 @@ SOURCES += main.cpp \
     zwindowfactory.cpp \
     dvid/zdvidwriter.cpp \
     dvidskeletonizedialog.cpp \
-    zdialogfactory.cpp
+    zdialogfactory.cpp \
+    zdvidserverwidget.cpp \
+    zwidgetfactory.cpp \
+    zlabelededitwidget.cpp \
+    zlabeledcombowidget.cpp \
+    zspinboxdialog.cpp \
+    zbuttonbox.cpp \
+    zkeyeventswcmapper.cpp
 
 OTHER_FILES += \
     extlib.pri

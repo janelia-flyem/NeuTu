@@ -58,6 +58,26 @@ public:
     SWC_BRANCH /*!< Single branch */
   };
 
+  //! Host state of a node
+  enum ENodeState {
+    NODE_STATE_COSMETIC
+  };
+
+  enum EOperation {
+    OPERATION_NULL,
+    OPERATION_DELETE_NODE,
+    OPERATION_MOVE_NODE_LEFT, OPERATION_MOVE_NODE_LEFT_FAST,
+    OPERATION_MOVE_NODE_RIGHT, OPERATION_MOVE_NODE_RIGHT_FAST,
+    OPERATION_MOVE_NODE_UP, OPERATION_MOVE_NODE_UP_FAST,
+    OPERATION_MOVE_NODE_DOWN, OPERATION_MOVE_NODE_DOWN_FAST,
+    OPERATION_ADD_NODE,
+    OPERATION_INCREASE_NODE_SIZE, OPERATION_DEDREASE_NODE_SIZE,
+    OPERATION_CONNECT_NODE, OPERATION_CONNECT_NODE_SMART,
+    OPERATION_BREAK_NODE, OPERATION_CONNECT_ISOLATE,
+    OPERATION_ZOOM_TO_SELECTED_NODE, OPERATION_INSERT_NODE, OPERATION_MOVE_NODE,
+    OPERATION_RESET_BRANCH_POINT, OPERATION_CHANGE_NODE_FACUS
+  };
+
   /** @name Constructors
    */
   ///@{
@@ -522,6 +542,15 @@ public:
 
   void labelStack(Stack *stack);
 
+  /*!
+   * \brief Get the length of the longest segment
+   * \return
+   */
+  double getMaxSegmentLenth();
+
+  void setHostState(Swc_Tree_Node *tn, ENodeState state) const;
+  void setHostState(Swc_Tree_Node *tn) const;
+
 public: //static functions
   static std::vector<ZSwcTree*> loadTreeArray(std::string dirPath);
   static Swc_Tree_Node* makeArrow(const ZPoint &startPos, double startSize,
@@ -535,11 +564,8 @@ public: //static functions
                                          double branchAngleMu,
                                          double branchAngleSigma);
 
-  /*!
-   * \brief Get the length of the longest segment
-   * \return
-   */
-  double getMaxSegmentLenth();
+  static bool getHostState(const Swc_Tree_Node *tn, ENodeState state);
+
 
 private:
   Swc_Tree *m_tree;
@@ -556,6 +582,9 @@ private:
   mutable std::vector<Swc_Tree_Node*> m_branchPointArray;
   mutable std::vector<Swc_Tree_Node*> m_zSortedArray;
   mutable ZCuboid m_boundBox;
+
+  static const int m_nodeStateCosmetic;
+
 };
 
 #define REGULAR_SWC_NODE_BEGIN(tn, start) \

@@ -20,6 +20,13 @@
       "uuid": "43f",
       "name": "FIB25-0715",
       "comment": "FIB-25 export 2014-07-15"
+    },
+    {
+      "address": "emdata2.int.janelia.org",
+      "port": 9000,
+      "uuid": "3426",
+      "name": "MB-4",
+      "comment": "Mushroom body MB-4"
     }
   ]
 }

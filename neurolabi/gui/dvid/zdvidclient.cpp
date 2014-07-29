@@ -61,6 +61,10 @@ bool ZDvidClient::postRequest(
     urlString = QString("%1/%2/superpixels/info").
         arg(m_serverAddress).arg(m_dataPath);
     break;
+  case ZDvidRequest::DVID_GET_GRAYSCALE_INFO:
+    urlString = QString("%1/%2/grayscale/info").
+        arg(m_serverAddress).arg(m_dataPath);
+    break;
   case ZDvidRequest::DVID_GET_SP2BODY_STRING:
     urlString = QString("%1/%2/sp2body/%3").arg(m_serverAddress).
         arg(m_dataPath).arg(parameter.toString());
@@ -153,6 +157,7 @@ bool ZDvidClient::postRequest(
   case ZDvidRequest::DVID_GET_GRAY_SCALE:
   case ZDvidRequest::DVID_GET_BODY_LABEL:
   case ZDvidRequest::DVID_GET_SUPERPIXEL_INFO:
+  case ZDvidRequest::DVID_GET_GRAYSCALE_INFO:
   case ZDvidRequest::DVID_GET_SP2BODY_STRING:
   case ZDvidRequest::DVID_GET_KEYVALUE:
   case ZDvidRequest::DVID_GET_THUMBNAIL:
@@ -235,6 +240,7 @@ bool ZDvidClient::postRequest(
     connect(m_networkReply, SIGNAL(finished()), this, SLOT(finishRequest()));
     break;
   case ZDvidRequest::DVID_GET_SUPERPIXEL_INFO:
+  case ZDvidRequest::DVID_GET_GRAYSCALE_INFO:
   case ZDvidRequest::DVID_GET_SP2BODY_STRING:
     connect(m_networkReply, SIGNAL(readyRead()), this, SLOT(readInfo()));
     connect(m_networkReply, SIGNAL(finished()), this, SLOT(finishRequest()));

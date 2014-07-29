@@ -68,7 +68,13 @@ public:
   }
 
   inline static double getDefaultPenWidth() {
-      return m_defaultPenWidth;
+    return m_defaultPenWidth;
+  }
+
+  double getPenWidth() const;
+
+  inline void useCosmeticPen(bool state) {
+    m_usingCosmeticPen = state;
   }
 
 protected:
@@ -78,6 +84,7 @@ protected:
   QColor m_color;
   ETarget m_target;
   static double m_defaultPenWidth;
+  bool m_usingCosmeticPen;
 };
 
 #define ZSTACKOBJECT_DEFINE_CLASS_NAME(c) \

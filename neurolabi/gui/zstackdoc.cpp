@@ -5561,6 +5561,10 @@ void ZStackDoc::addObject(
   switch (type) {
   case NeuTube::Documentable_SWC:
     addSwcTree(dynamic_cast<ZSwcTree*>(obj), false);
+
+    if (role & ZDocPlayer::ROLE_ROI) {
+      obj->useCosmeticPen(true);
+    }
     break;
   case NeuTube::Documentable_PUNCTUM:
     addPunctum(dynamic_cast<ZPunctum*>(obj));

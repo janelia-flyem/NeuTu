@@ -7,6 +7,7 @@
 #include "zcircle.h"
 #include "tz_math.h"
 #include "zpoint.h"
+#include "zswctree.h"
 
 #include <boost/iterator/iterator_facade.hpp>
 #include <boost/type_traits/is_convertible.hpp>
@@ -121,6 +122,8 @@ private:
       m_nodeAdaptor.setVisualEffect(ZCircle::VE_BOUND_BOX |
                                     ZCircle::VE_DASH_PATTERN |
                                     ZCircle::VE_NO_FILL);
+      m_nodeAdaptor.useCosmeticPen(
+            ZSwcTree::getHostState(*m_swcNodeIter, ZSwcTree::NODE_STATE_COSMETIC));
     }
   }
 

@@ -14,6 +14,7 @@ const ZDocPlayer::TRole ZDocPlayer::ROLE_3DPAINT = 8;
 const ZDocPlayer::TRole ZDocPlayer::ROLE_MANAGED_OBJECT = 16;
 const ZDocPlayer::TRole ZDocPlayer::ROLE_3DGRAPH_DECORATOR = 32;
 const ZDocPlayer::TRole ZDocPlayer::ROLE_TMP_BOOKMARK = 64;
+const ZDocPlayer::TRole ZDocPlayer::ROLE_ROI = 128;
 
 ZDocPlayer::ZDocPlayer() : m_data(NULL), m_role(ZDocPlayer::ROLE_NONE)
 {

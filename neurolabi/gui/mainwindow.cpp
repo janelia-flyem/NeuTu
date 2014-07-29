@@ -307,9 +307,6 @@ void MainWindow::initDialog()
   m_dvidObjectDlg = new DvidObjectDialog(this);
   m_dvidObjectDlg->setAddress(m_dvidClient->getServer());
 
-  m_dvidImageDlg = new DvidImageDialog(this);
-  m_dvidImageDlg->setAddress(m_dvidClient->getServer());
-
   m_tileDlg = new TileManager(this);
   m_bodyDlg = new FlyEmBodyIdDialog(this);
   m_hotSpotDlg = new FlyEmHotSpotDialog(this);
@@ -326,6 +323,10 @@ void MainWindow::initDialog()
   } else {
     m_fileDialogOption = QFileDialog::DontUseNativeDialog;
   }
+
+  //m_dvidImageDlg = new DvidImageDialog(this);
+  //m_dvidImageDlg->setAddress(m_dvidClient->getServer());
+  m_dvidImageDlg = ZDialogFactory::makeDvidImageDialog(m_dvidDlg, this);
 
   m_newBsProjectDialog = new ZFlyEmNewBodySplitProjectDialog(this);
   m_newBsProjectDialog->setDvidDialog(m_dvidDlg);
@@ -5240,9 +5241,24 @@ void MainWindow::on_actionGet_Grayscale_triggered()
     progressDlg->setLabelText("Downloading gray scale images ...");
     progressDlg->setRange(0, 0);
     progressDlg->open();
-    progressDlg->setCancelButtonText("Cancel");
-    connect(progressDlg, SIGNAL(canceled()), this, SLOT(cancelDvidRequest()));
+    //progressDlg->setCancelButtonText("Cancel");
+    //connect(progressDlg, SIGNAL(canceled()), this, SLOT(cancelDvidRequest()));
 
+    ZDvidReader reader;
+    if (reader.open(m_dvidImageDlg->getDvidTarget())) {
+      ZStack *stack = reader.readGrayScale(m_dvidImageDlg->getX(),
+                                           m_dvidImageDlg->getY(),
+                                           m_dvidImageDlg->getZ(),
+                                           m_dvidImageDlg->getWidth(),
+                                           m_dvidImageDlg->getHeight(),
+                                           m_dvidImageDlg->getDepth());
+      ZStackFrame *frame = createStackFrame(stack);
+      addStackFrame(frame);
+      presentStackFrame(frame);
+    }
+
+    progressDlg->reset();
+#if 0
     m_dvidClient->reset();
     m_dvidClient->setDefaultServer();
     //m_dvidClient->setServer(m_dvidImageDlg->getAddress());
@@ -5266,6 +5282,7 @@ void MainWindow::on_actionGet_Grayscale_triggered()
 #endif
 
     m_dvidClient->postNextRequest();
+#endif
   }
 }
 
@@ -6376,4 +6393,9 @@ void MainWindow::on_actionCreate_Thumbnails_triggered()
     }
   }
 #endif
+}
+
+void MainWindow::on_actionCreate_ROI_triggered()
+{
+
 }
