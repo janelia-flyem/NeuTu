@@ -36,7 +36,7 @@ public:
       return m_imageSourse;
   }
 
-  bool loadJsonObject(const ZJsonObject &obj);
+  bool loadJsonObject(const ZJsonObject &obj,QString tileFilePath);
 
 private:
   std::string m_source;

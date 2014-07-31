@@ -12,7 +12,7 @@ public:
     return m_tileInfo;
   }
 
-  bool loadJsonObject(const ZJsonObject &obj);
+  bool loadJsonObject(const ZJsonObject &obj, QString tileFilePath);
 
 private:
   ZTileInfo m_tileInfo;

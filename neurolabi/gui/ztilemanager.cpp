@@ -14,6 +14,8 @@
 #include "zstackview.h"
 #include "zpoint.h"
 
+#include <QFileInfo>
+
 const QColor ZTileManager::m_selectionColor = QColor(255, 0, 0);
 //const QColor ZTileManager::m_preselectionColor = QColor(0, 255, 0);
 
@@ -61,6 +63,10 @@ bool ZTileManager::importJsonFile(const QString &filePath)
     ZJsonObject obj;
     obj.load(filePath.toStdString());
 
+    //get the json file path
+    QFileInfo fInfo(filePath);
+    QString tileFilePath = fInfo.absolutePath();
+
     if (obj.hasKey("Tiles")) {
       json_t *value = obj["Tiles"];
       if (ZJsonParser::isArray(value)) {
@@ -69,7 +75,7 @@ bool ZTileManager::importJsonFile(const QString &filePath)
           ZJsonObject tileObj(array.at(i), false);
           if (!tileObj.isEmpty()) {
             ZTileGraphicsItem *tileItem = new ZTileGraphicsItem;
-            if (tileItem->loadJsonObject(tileObj)) {
+            if (tileItem->loadJsonObject(tileObj,tileFilePath)) {
               //tileItem->setFlag(QGraphicsItem::ItemIsSelectable);
               tileItem->setScale(scaleFactor);
               addItem(tileItem);

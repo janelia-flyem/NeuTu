@@ -1,20 +1,13 @@
 #include "ztilegraphicsitem.h"
 #include "c_stack.h"
 #include "zimage.h"
-#include <QFileInfo>
 
-bool ZTileGraphicsItem::loadJsonObject(const ZJsonObject &obj)
+bool ZTileGraphicsItem::loadJsonObject(const ZJsonObject &obj, QString tileFilePath)
 {
-  if (m_tileInfo.loadJsonObject(obj)) {
+  if (m_tileInfo.loadJsonObject(obj,tileFilePath)) {
     setOffset(m_tileInfo.getOffset().x(), m_tileInfo.getOffset().y());
     Stack *stack;
-    QFileInfo fileImage = QFileInfo(m_tileInfo.getImageSource().c_str());
-    if (fileImage.exists()) {
-        stack = C_Stack::readSc(m_tileInfo.getImageSource());
-    } else {
-        std::cout<<"In ZTileGraphicsItem::loadJasonObject, file does not exits: "<<m_tileInfo.getImageSource();
-        return false;
-    }
+    stack = C_Stack::readSc(m_tileInfo.getImageSource().c_str());
 
     ZImage image(C_Stack::width(stack), C_Stack::height(stack));
     Image_Array ima;
