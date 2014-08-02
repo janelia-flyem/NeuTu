@@ -4,11 +4,12 @@
 #include <QKeyEvent>
 #include <QMap>
 #include "zswctree.h"
+#include "neutube.h"
 
 class ZKeyEventSwcMapper
 {
 public:
-  ZKeyEventSwcMapper();
+  ZKeyEventSwcMapper(NeuTube::Document::ETag tag = NeuTube::Document::NORMAL);
 
   ZSwcTree::EOperation getOperation(QKeyEvent *event);
 
@@ -20,6 +21,8 @@ private:
   QMap<int, ZSwcTree::EOperation> m_controlKeyMap;
   QMap<int, ZSwcTree::EOperation> m_altKeyMap;
   QMap<int, ZSwcTree::EOperation> m_shiftKeyMap;
+
+  NeuTube::Document::ETag m_docTag;
 };
 
 #endif // ZKEYEVENTSWCMAPPER_H

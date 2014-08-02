@@ -16,7 +16,7 @@
    </font>
   </property>
   <property name="windowTitle">
-   <string>1.0g</string>
+   <string>1.0h</string>
   </property>
   <widget class="QWidget" name="centralwidget"/>
   <widget class="QMenuBar" name="menubar">
@@ -335,6 +335,12 @@
       </property>
       <addaction name="actionBody_Split_Project"/>
      </widget>
+     <widget class="QMenu" name="menuProject">
+      <property name="title">
+       <string>Project</string>
+      </property>
+      <addaction name="actionFlyEmROI"/>
+     </widget>
      <addaction name="menuNew"/>
      <addaction name="menuFlyEmOpen"/>
      <addaction name="menuExport_2"/>
@@ -347,6 +353,7 @@
      <addaction name="actionSkeletonization"/>
      <addaction name="actionExtract_Neuron"/>
      <addaction name="actionSplit_Body"/>
+     <addaction name="menuProject"/>
      <addaction name="separator"/>
      <addaction name="actionFlyEmSettings"/>
     </widget>
@@ -1250,6 +1257,16 @@
   <action name="actionCreate_ROI">
    <property name="text">
     <string>Create ROI</string>
+   </property>
+  </action>
+  <action name="actionCreate_ROI_Project">
+   <property name="text">
+    <string>Create ROI Project</string>
+   </property>
+  </action>
+  <action name="actionFlyEmROI">
+   <property name="text">
+    <string>ROI</string>
    </property>
   </action>
  </widget>

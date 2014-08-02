@@ -15,6 +15,7 @@ class ZStroke2d;
 class ZObject3d;
 class ZObject3dScan;
 class ZStack;
+class ZClosedCurve;
 
 class ZSwcGenerator
 {
@@ -55,6 +56,8 @@ public:
   static ZSwcTree* createSurfaceSwc(const ZStack &stack, int sparseLevel = 1);
   static ZSwcTree* createSurfaceSwc(const ZObject3dScan &obj,
                                     int sparseLevel = 1);
+
+  static ZSwcTree* createSwc(const ZClosedCurve &curve, double radius);
 
 private:
   static ZSwcTree* createSwcByRegionSampling(const ZVoxelArray &voxelArray,

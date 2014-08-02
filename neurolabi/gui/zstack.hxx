@@ -486,6 +486,8 @@ public: /* processing routines */
    */
   void downsampleMax(int xintv, int yintv, int zintv);
 
+  void crop(const ZIntCuboid &cuboid);
+
 public:
   void initChannelColors();
 

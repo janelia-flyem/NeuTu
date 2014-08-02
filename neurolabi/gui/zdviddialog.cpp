@@ -73,8 +73,14 @@ QString ZDvidDialog::getUuid() const
 
 ZDvidTarget ZDvidDialog::getDvidTarget() const
 {
-  return
-      ZDvidTarget(getAddress().toStdString(), getUuid().toStdString(), getPort());
+  ZDvidTarget target(
+        getAddress().toStdString(), getUuid().toStdString(), getPort());
+  target.setName(
+        ui->serverComboBox->itemText(ui->serverComboBox->currentIndex()).
+        toStdString());
+  target.setComment(ui->infoLabel->text().toStdString());
+
+  return target;
 }
 
 void ZDvidDialog::setServer(int index)

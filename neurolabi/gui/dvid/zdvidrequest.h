@@ -14,7 +14,7 @@ public:
     DVID_GET_OBJECT, DVID_SAVE_OBJECT, DVID_UPLOAD_SWC, DVID_GET_SWC,
     DVID_GET_GRAY_SCALE, DVID_GET_SUPERPIXEL_INFO, DVID_GET_GRAYSCALE_INFO,
     DVID_GET_SP2BODY_STRING, DVID_GET_KEYVALUE, DVID_GET_BODY_LABEL,
-    DVID_GET_THUMBNAIL
+    DVID_GET_THUMBNAIL, DVID_GET_KEYS
   };
 
   void setGetSwcRequest(int bodyId);
@@ -27,7 +27,9 @@ public:
       int x0, int y0, int z0, int width, int height, int depth);
   void setGetInfoRequest(const QString &dataType);
   void setGetStringRequest(const QString &dataType);
-  void setGetKeyValueRequest(const QString &dataName, const QString key);
+  void setGetKeyValueRequest(const QString &dataName, const QString &key);
+  void setGetKeysRequest(const QString &dataName, const QString &minKey,
+                         const QString &maxKey);
 
   void setParameter(const QVariant &parameter);
 

@@ -53,6 +53,13 @@ public:
   inline const ZPoint& getEndPoint() const { return m_end; }
 
   /*!
+   * \brief Get the interpolation point of a segment.
+   *
+   * \param ds The distance to the start point.
+   */
+  ZPoint getInterpolation(double ds) const;
+
+  /*!
    * \brief Get the length of the line segment
    */
   double getLength() const;
@@ -63,6 +70,9 @@ public:
    * It swaps the start and end points.
    */
   void invert();
+
+  ZPoint getVector() const;
+  ZPoint getDirection() const;
 
   void print() const;
 

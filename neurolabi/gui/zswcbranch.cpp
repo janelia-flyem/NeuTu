@@ -300,7 +300,47 @@ vector<ZPoint> ZSwcBranch::sample(double step)
 
   return sampleArray;
 }
+#if 0
+vector<ZPoint> ZSwcBranch::sampleFix(int n)
+{
+  vector<ZPoint> sampleArray;
 
+  if (n > 1) {
+    updateIterator();
+
+    double step = computeLength() / (n - 1);
+    double targetLength = step;
+    double prevLength = 0.0;
+    double curLength = 0.0;
+
+    sampleArray.push_back(
+          ZPoint(m_begin->node.x, m_begin->node.y, m_begin->node.z));
+
+    Swc_Tree_Node *tn = m_begin->next;
+    while (tn != NULL) {
+      double dist = Swc_Tree_Node_Dist(tn, tn->parent);
+      curLength += dist;
+      while (targetLength <= curLength) {
+        double start[3];
+        double end[3];
+        double inter[3];
+
+        Swc_Tree_Node_Pos(tn->parent, start);
+        Swc_Tree_Node_Pos(tn, end);
+        double lambda = (targetLength - prevLength) / dist;
+        Geo3d_Lineseg_Break(start, end, lambda, inter);
+        sampleArray.push_back(ZPoint(inter));
+        targetLength += step;
+      }
+
+      prevLength = curLength;
+      tn = tn->next;
+    }
+  }
+
+  return sampleArray;
+}
+#endif
 void ZSwcBranch::label(int v)
 {
   updateIterator();
@@ -375,6 +415,47 @@ void ZSwcBranch::resample(double step)
     }
   }
 }
+
+#if 0
+void ZSwcBranch::upsample(double step, int maxNewNodeNumber)
+{
+  if (maxNewNodeNumber <= 0) {
+    return;
+  }
+
+  double len = computeLength();
+
+  if (len > 0) {
+    int nseg = iround(len / step);
+    if (nseg > 1) {
+      double realStep = len / nseg;
+
+      vector<ZPoint> pointArray = sample(realStep);
+
+      if (nseg + 1 > nodeNumber()) {
+        int n = nseg + 1 - nodeNumber();
+        for (int i = 0; i < n; i++) {
+          Swc_Tree_Node_Add_Break(m_end, 0.5);
+          --maxNewNodeNumber;
+        }
+      }
+
+      Swc_Tree_Node *tn = m_end;
+
+      TZ_ASSERT(pointArray.size() > 1, "Invalide point number");
+
+      size_t startIndex = nseg - 1;
+
+      for (size_t i = startIndex; i > 0; i--) {
+        tn = tn->parent;
+        double pos[3];
+        pointArray[i].toArray(pos);
+        Swc_Tree_Node_Set_Pos(tn, pos);
+      }
+    }
+  }
+}
+#endif
 
 void ZSwcBranch::removeSmallEnds(double ratio)
 {

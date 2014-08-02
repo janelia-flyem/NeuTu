@@ -49,6 +49,7 @@ class FlyEmBodyFilterDialog;
 class FlyEmBodySplitProjectDialog;
 class ZFlyEmNewBodySplitProjectDialog;
 class DvidSkeletonizeDialog;
+class ZFlyEmRoiDialog;
 
 namespace Ui {
     class MainWindow;
@@ -83,6 +84,14 @@ public: /* frame operation */
                           const QString &filter,
                           const QString &dir);
   QString getDirectory(const QString &caption);
+
+  //Error handling
+  void report(const std::string &title, const std::string &msg,
+              ZMessageReporter::EMessageType msgType);
+  bool ask(const std::string &title, const std::string &msg);
+
+  QProgressDialog* getProgressDialog();
+  QProgressBar* getProgressBar();
 
 signals:
   void dvidRequestCanceled();
@@ -123,6 +132,9 @@ public slots:
 */
   ZStackFrame* createStackFrame(
       ZStackDocReader *reader, ZStackFrame *parentFrame = NULL);
+  ZStackFrame* createStackFrame(
+      const ZStackDocReader &reader,
+      NeuTube::Document::ETag tag = NeuTube::Document::NORMAL);
 
   void showStackFrame(
       const QStringList &fileList, bool opening3DWindow = false);
@@ -134,9 +146,6 @@ public slots:
 
 private:
   Ui::MainWindow *m_ui;
-
-  QProgressDialog* getProgressDialog();
-  QProgressBar* getProgressBar();
 
   void setActionActivity();
 
@@ -424,6 +433,8 @@ private slots:
   
   void on_actionCreate_ROI_triggered();
 
+  void on_actionFlyEmROI_triggered();
+
 private:
   void createActions();
   void createFileActions();
@@ -467,11 +478,6 @@ private:
 
   //Add a flyem data frame. Nothing happens if <frame> is NULL.
   void addFlyEmDataFrame(ZFlyEmDataFrame *frame);
-
-  //Error handling
-  void report(const std::string &title, const std::string &msg,
-              ZMessageReporter::EMessageType msgType);
-  bool ask(const std::string &title, const std::string &msg);
 
   ZStackDocReader* hotSpotDemo(int bodyId, const QString &dvidAddress,
                            const QString &dvidUuid);
@@ -636,6 +642,7 @@ private:
   FlyEmBodySplitProjectDialog *m_bodySplitProjectDialog;
   ZFlyEmNewBodySplitProjectDialog *m_newBsProjectDialog;
   DvidSkeletonizeDialog *m_dvidSkeletonizeDialog;
+  ZFlyEmRoiDialog *m_roiDlg;
 
 
   //FlyEmNeuronThumbnailDialog *m_thumbnailDlg;

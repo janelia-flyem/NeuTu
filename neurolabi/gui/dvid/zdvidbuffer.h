@@ -25,6 +25,7 @@ public slots:
   void importImage();
   void importInfo();
   void importKeyValue();
+  void importKeys();
 
   inline const QVector<ZObject3dScan>& getBodyArray() const {
     return m_bodyArray;
@@ -50,10 +51,15 @@ public slots:
     return m_keyValueArray;
   }
 
+  inline const QVector<QByteArray>& getKeysArray() const {
+    return m_keysArray;
+  }
+
   void clear();
 
   void clearInfoArray();
   void clearKeyValueArray();
+  void clearKeysArray();
   void clearBodyArray();
   void clearImageArray();
   void clearTreeArray();
@@ -64,6 +70,7 @@ private:
   QVector<ZStack*> m_imageArray;
   QStringList m_infoArray;
   QVector<QByteArray> m_keyValueArray;
+  QVector<QByteArray> m_keysArray;
 
   ZDvidClient *m_dvidClient;
 };

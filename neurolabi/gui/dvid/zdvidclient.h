@@ -62,6 +62,7 @@ public:
   inline const ZStack& getImage() const { return m_image; }
   inline const QString& getInfo() const { return m_dataInfo; }
   inline const QByteArray& getKeyValue() const { return m_keyValue; }
+  inline const QByteArray& getKeys() const { return m_keys; }
 
   inline ZDvidBuffer* getDvidBuffer() const { return m_dvidBuffer; }
 
@@ -76,6 +77,7 @@ signals:
   void imageRetrieved();
   void infoRetrieved();
   void keyValueRetrieved();
+  void keysRetrieved();
   void noRequestLeft();
   void requestFailed();
   void requestCanceled();
@@ -92,6 +94,7 @@ private slots:
   void readImage();
   void readInfo();
   void readKeyValue();
+  void readKeys();
   void cancelRequest();
 
 private:
@@ -113,12 +116,13 @@ private:
   ZStack m_image;
   QString m_dataInfo;
   QByteArray m_keyValue;
-
+  QByteArray m_keys;
   QByteArray m_objectBuffer;
   QByteArray m_swcBuffer;
   QByteArray m_imageBuffer;
   QByteArray m_infoBuffer;
   QByteArray m_keyValueBuffer;
+  QByteArray m_keysBuffer;
 
   QIODevice *m_uploadStream;
 

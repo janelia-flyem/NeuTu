@@ -252,8 +252,9 @@ ZStackDocCommand::SwcEdit::AddSwcNode::AddSwcNode(
 {
   setText(QObject::tr("Add Neuron Node"));
   m_tree = new ZSwcTree();
-  if (GET_APPLICATION_NAME == "FlyEM") {
+  if (doc->getTag() == NeuTube::Document::FLYEM_ROI) {
     m_tree->useCosmeticPen(true);
+    m_tree->setStructrualMode(ZSwcTree::STRUCT_CLOSED_CURVE);
   }
 
   m_tree->setDataFromNode(m_node);

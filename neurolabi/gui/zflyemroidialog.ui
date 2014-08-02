@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>ZFlyEmRoiDialog</class>
+ <widget class="QDialog" name="ZFlyEmRoiDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>406</width>
+    <height>375</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>ROI Project</string>
+  </property>
+  <widget class="QWidget" name="layoutWidget">
+   <property name="geometry">
+    <rect>
+     <x>11</x>
+     <y>12</y>
+     <width>383</width>
+     <height>301</height>
+    </rect>
+   </property>
+   <layout class="QVBoxLayout" name="verticalLayout_3">
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayout">
+      <item>
+       <layout class="QVBoxLayout" name="verticalLayout">
+        <item>
+         <widget class="QPushButton" name="dvidServerPushButton">
+          <property name="text">
+           <string>Dvid Server</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="estimateRoiPushButton">
+          <property name="text">
+           <string>Estimate ROI</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="saveResultPushButton">
+          <property name="text">
+           <string>Save Result</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="uploadResultPushButton">
+          <property name="text">
+           <string>Upload Result</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="fullRoiPreviewPushButton">
+          <property name="text">
+           <string>Full ROI Preview</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QTextEdit" name="outputWidget">
+          <property name="frameShape">
+           <enum>QFrame::NoFrame</enum>
+          </property>
+          <property name="frameShadow">
+           <enum>QFrame::Plain</enum>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="verticalSpacer">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>40</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QVBoxLayout" name="verticalLayout_2">
+        <item>
+         <layout class="QVBoxLayout" name="verticalLayout_4">
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_2">
+            <item>
+             <widget class="QLabel" name="label">
+              <property name="text">
+               <string>z</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QSpinBox" name="zSpinBox">
+              <property name="maximum">
+               <number>99999</number>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="loadGrayScalePushButton">
+              <property name="text">
+               <string>Load Slice</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="horizontalSpacer">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <widget class="QPushButton" name="searchPushButton">
+          <property name="text">
+           <string>I'm Feeling Lucky</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QTextEdit" name="infoWidget">
+          <property name="autoFillBackground">
+           <bool>false</bool>
+          </property>
+          <property name="frameShape">
+           <enum>QFrame::NoFrame</enum>
+          </property>
+          <property name="frameShadow">
+           <enum>QFrame::Plain</enum>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <widget class="QProgressBar" name="progressBar">
+      <property name="value">
+       <number>24</number>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

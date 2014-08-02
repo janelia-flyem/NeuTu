@@ -33,6 +33,11 @@ public:
   void set(const ZIntPoint &firstCorner, const ZIntPoint &lastCorner);
   void set(const int *corner);
 
+  void setFirstX(int x);
+  void setLastX(int x);
+  void setFirstY(int y);
+  void setLastY(int y);
+
   /*!
    * \brief Change the size of the cuboid by fixing the first corner
    */

@@ -111,7 +111,8 @@ private:
   void setSwcNodeAdaptor()
   {
     if (m_swcNodeIter != m_bundle->m_swcNodes->end()) { // update ZCircle
-      if ((iround(SwcTreeNode::z(*m_swcNodeIter)) == m_bundle->m_sliceIndex) ||
+      if ((iround(SwcTreeNode::z(*m_swcNodeIter)) ==
+           m_bundle->m_sliceIndex + m_bundle->getStackOffset().getZ()) ||
           (m_bundle->m_sliceIndex == -1)) {
         m_nodeAdaptor.setColor(255, 255, 0);
       } else {

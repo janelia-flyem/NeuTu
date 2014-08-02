@@ -48,6 +48,7 @@ void ZDvidClient::createConnection()
   connect(this, SIGNAL(imageRetrieved()), m_dvidBuffer, SLOT(importImage()));
   connect(this, SIGNAL(infoRetrieved()), m_dvidBuffer, SLOT(importInfo()));
   connect(this, SIGNAL(keyValueRetrieved()), m_dvidBuffer, SLOT(importKeyValue()));
+  connect(this, SIGNAL(keysRetrieved()), m_dvidBuffer, SLOT(importKeys()));
 }
 
 bool ZDvidClient::postRequest(
@@ -137,6 +138,15 @@ bool ZDvidClient::postRequest(
         arg(parameterList[0].toString()).arg(parameterList[1].toString());
   }
     break;
+  case ZDvidRequest::DVID_GET_KEYS:
+  {
+    QList<QVariant> parameterList = parameter.toList();
+    urlString = QString("%1/%2/%3/%4/%5").
+        arg(m_serverAddress).arg(m_dataPath).
+        arg(parameterList[0].toString()).arg(parameterList[1].toString()).
+        arg(parameterList[2].toString());
+  }
+    break;
   default:
     RECORD_ERROR_UNCOND("Invalid request");
     return false;
@@ -160,6 +170,7 @@ bool ZDvidClient::postRequest(
   case ZDvidRequest::DVID_GET_GRAYSCALE_INFO:
   case ZDvidRequest::DVID_GET_SP2BODY_STRING:
   case ZDvidRequest::DVID_GET_KEYVALUE:
+  case ZDvidRequest::DVID_GET_KEYS:
   case ZDvidRequest::DVID_GET_THUMBNAIL:
     m_networkReply = m_networkManager->get(QNetworkRequest(requestUrl));
     break;
@@ -249,6 +260,10 @@ bool ZDvidClient::postRequest(
     connect(m_networkReply, SIGNAL(readyRead()), this, SLOT(readKeyValue()));
     connect(m_networkReply, SIGNAL(finished()), this, SLOT(finishRequest()));
     break;
+  case ZDvidRequest::DVID_GET_KEYS:
+    connect(m_networkReply, SIGNAL(readyRead()), this, SLOT(readKeys()));
+    connect(m_networkReply, SIGNAL(finished()), this, SLOT(finishRequest()));
+    break;
   default:
     RECORD_ERROR_UNCOND("Invalid request");
     return false;
@@ -285,6 +300,13 @@ void ZDvidClient::readInfo()
 {
   if (m_networkReply != NULL) {
     m_infoBuffer.append(m_networkReply->readAll());
+  }
+}
+
+void ZDvidClient::readKeys()
+{
+  if (m_networkReply != NULL) {
+    m_keysBuffer.append(m_networkReply->readAll());
   }
 }
 
@@ -327,6 +349,7 @@ void ZDvidClient::finishRequest(QNetworkReply::NetworkError error)
   bool imageRetrievalDone = false;
   bool infoRetrievalDone = false;
   bool keyValueRetrievalDone = false;
+  bool keysRetrievalDone = false;
 
   if (error != QNetworkReply::NoError) {
     if (m_file != NULL) {
@@ -338,6 +361,11 @@ void ZDvidClient::finishRequest(QNetworkReply::NetworkError error)
     }
     m_objectBuffer.clear();
     m_swcBuffer.clear();
+    m_imageBuffer.clear();
+    m_infoBuffer.clear();
+    m_keyValueBuffer.clear();
+    m_keysBuffer.clear();
+
     qDebug() << "Request failed";
     emit requestFailed();
   } else {
@@ -438,8 +466,13 @@ void ZDvidClient::finishRequest(QNetworkReply::NetworkError error)
       keyValueRetrievalDone = true;
     }
 
+    if (!m_keysBuffer.isEmpty()) {
+      m_keys = m_keysBuffer;
+      keysRetrievalDone = true;
+    }
+
     if (!objectRetrievalDone && !swcRetrievalDone && !imageRetrievalDone &&
-        !infoRetrievalDone && !keyValueRetrievalDone) {
+        !infoRetrievalDone && !keyValueRetrievalDone && !keysRetrievalDone) {
       qDebug() << "Request failed: no data retrieved.";
       emit requestFailed();
     }
@@ -466,6 +499,7 @@ void ZDvidClient::finishRequest(QNetworkReply::NetworkError error)
   m_imageBuffer.clear();
   m_infoBuffer.clear();
   m_keyValueBuffer.clear();
+  m_keysBuffer.clear();
 
   if (objectRetrievalDone) {
     emit objectRetrieved();
@@ -485,6 +519,10 @@ void ZDvidClient::finishRequest(QNetworkReply::NetworkError error)
 
   if (keyValueRetrievalDone) {
     emit keyValueRetrieved();
+  }
+
+  if (keysRetrievalDone) {
+    emit keysRetrieved();
   }
 }
 
@@ -548,6 +586,7 @@ void ZDvidClient::cancelRequest()
   m_imageBuffer.clear();
   m_infoBuffer.clear();
   m_keyValueBuffer.clear();
+  m_keysBuffer.clear();
 
   if (m_uploadStream != NULL) {
     m_uploadStream->close();

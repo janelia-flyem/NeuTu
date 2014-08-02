@@ -291,6 +291,7 @@ void ZNeuronTracer::setConnWorkspace(Connection_Test_Workspace *workspace)
 }
 
 #define MAX_P2P_TRACE_DISTANCE 100
+#define MAX_P2P_TRACE_VOLUME 1000000
 
 Swc_Tree* ZNeuronTracer::trace(double x1, double y1, double z1, double r1,
                                double x2, double y2, double z2, double r2)
@@ -308,9 +309,20 @@ Swc_Tree* ZNeuronTracer::trace(double x1, double y1, double z1, double r1,
     return NULL;
   }
 
+  ZStackGraph stackGraph;
+  stackGraph.updateRange(x1, y1, z1, x2, y2, z2,
+                         C_Stack::width(m_stack),
+                         C_Stack::height(m_stack),
+                         C_Stack::depth(m_stack));
+  if (stackGraph.getRoiVolume() > MAX_P2P_TRACE_VOLUME) {
+    return NULL;
+  }
+
+  /*
   if (ZPoint(x1, y1, z1).distanceTo(x2, y2, z2) > MAX_P2P_TRACE_DISTANCE) {
     return NULL;
   }
+  */
 
   /*
   int start[3];
@@ -324,7 +336,7 @@ Swc_Tree* ZNeuronTracer::trace(double x1, double y1, double z1, double r1,
   end[2] = iround(z2);
   */
 
-  ZStackGraph stackGraph;
+
   stackGraph.setResolution(m_resolution);
 
   if (m_vertexOption == ZStackGraph::VO_SURFACE) {

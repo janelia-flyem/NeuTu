@@ -9,6 +9,7 @@
 #include <iostream>
 #include <cmath>
 #include "tz_utilities.h"
+#include "neutubeconfig.h"
 #include "tz_stack_lib.h"
 #include "zstack.hxx"
 #include "tz_fimage_lib.h"
@@ -1739,6 +1740,48 @@ void ZStack::setBlockValue(int x0, int y0, int z0, const ZStack *stack)
     const Stack *src = stack->c_stack(c);
     Stack *dst = c_stack(c);
     C_Stack::setBlockValue(dst, src, x0, y0, z0);
+  }
+}
+
+void ZStack::crop(const ZIntCuboid &cuboid)
+{
+  if (isEmpty()) {
+    return;
+  }
+
+  if (isVirtual()) {
+    m_stack->width = cuboid.getWidth();
+    m_stack->height = cuboid.getHeight();
+    m_stack->depth = cuboid.getDepth();
+    m_offset = cuboid.getFirstCorner();
+  } else {
+    if (!cuboid.isEmpty()) {
+      int nchannel = channelNumber();
+      Mc_Stack *newStack = C_Stack::make(kind(), cuboid.getWidth(),
+                                         cuboid.getHeight(), cuboid.getDepth(),
+                                         nchannel);
+
+      for (int channel = 0; channel < nchannel; ++channel) {
+        Stack stackView;
+        Stack newStackView;
+        C_Stack::view(m_stack, &stackView, channel);
+        C_Stack::view(newStack, &newStackView, channel);
+
+        ZIntPoint startPoint = cuboid.getFirstCorner() - m_offset;
+        C_Stack::crop(&stackView, startPoint.getX(), startPoint.getY(),
+                      startPoint.getZ(),
+                      cuboid.getWidth(), cuboid.getHeight(),
+                      cuboid.getDepth(), &newStackView);
+#ifdef _DEBUG_2
+        newStackView.text = NULL;
+        C_Stack::write(GET_DATA_DIR + "/test.tif", &newStackView);
+#endif
+      }
+      m_offset = cuboid.getFirstCorner();
+      setData(newStack);
+    } else {
+      deprecate(MC_STACK);
+    }
   }
 }
 

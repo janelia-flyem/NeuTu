@@ -201,7 +201,9 @@
 #include "flyem/zflyembookmark.h"
 #include "flyem/zflyembookmarkarray.h"
 #include "zcircle.h"
+#include "test/zlinesegmenttest.h"
 #include "test/zdvidiotest.h"
+#include "test/zclosedcurvetest.h"
 
 using namespace std;
 
@@ -12278,7 +12280,7 @@ void ZTest::test(MainWindow *host)
   dlg->exec();
 #endif
 
-#if 1
+#if 0
   ZObject3dScan obj;
   obj.load(GET_TEST_DATA_DIR + "/benchmark/50.sobj");
 
@@ -12291,4 +12293,155 @@ void ZTest::test(MainWindow *host)
   C_Stack::write(GET_TEST_DATA_DIR + "/test.tif", stack);
 #endif
 
+#if 0
+  ZSwcTree tree;
+  tree.load(GET_TEST_DATA_DIR + "/flyem/test/roi.swc");
+
+  //resample
+  tree.resample(1.0);
+
+  tree.save(GET_TEST_DATA_DIR + "/test.swc");
+
+  ZSwcResampler sampler;
+  sampler.optimalDownsample(&tree);
+  sampler.optimalDownsample(&tree);
+  tree.save(GET_TEST_DATA_DIR + "/test2.swc");
+#endif
+
+#if 0
+  std::string curvePath1 = GET_TEST_DATA_DIR + "/flyem/test/roi1.swc";
+  std::string curvePath2 = GET_TEST_DATA_DIR + "/flyem/test/roi2.swc";
+
+
+  ZSwcTree tree1;
+  tree1.load(curvePath1);
+  ZSwcTree tree2;
+  tree2.load(curvePath2);
+
+  ZClosedCurve curve1 = tree1.toClosedCurve();
+  ZClosedCurve curve2 = tree2.toClosedCurve();
+
+  curve1 = curve1.resampleF(500);
+  curve2 = curve2.resampleF(500);
+
+  int shift = curve1.findMatchShift(curve2);
+
+  double lambda = 0.5;
+
+  ZClosedCurve curve3 = curve1.interpolate(curve2, lambda, shift);
+
+  ZSwcTree *result = ZSwcGenerator::createSwc(curve3, 5.0);
+
+
+  result->save(GET_TEST_DATA_DIR + "/test.swc");
+#endif
+
+#if 0
+  ZClosedCurve curve;
+  curve.append(0, 0, 0);
+  curve.append(1, 2, 3);
+  ZJsonObject obj = curve.toJsonObject();
+  std::cout << obj.dumpString() << std::endl;
+#endif
+
+#if 0
+//http://emdata1.int.janelia.org:9000/api/node/ba959/roi_curve/0/5000
+
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "ba959", 9000);
+  ZDvidReader reader;
+  if (reader.open(target)) {
+    QStringList keys = reader.readKeys("roi_curve", "0", "5000");
+    qDebug() << keys;
+  }
+#endif
+
+#if 0
+
+  ZClosedCurve curve1;
+  curve1.append(1, 1, 1);
+  curve1.append(2, 2, 2);
+  ZClosedCurve curve2;
+  curve2.append(0, 0, 0);
+  curve2.append(2, 2, 2);
+
+  curve1.interpolate(curve2, 2.0, 0).print();
+#endif
+
+#if 0
+  ZSwcTree tree;
+  tree.load(GET_TEST_DATA_DIR + "/curve_test.swc");
+
+  ZClosedCurve curve1;
+  ZClosedCurve curve2;
+
+  ZSwcTree::RegularRootIterator treeIterator(&tree);
+  for (Swc_Tree_Node *tn = treeIterator.begin(); tn != NULL;
+       tn = treeIterator.next()) {
+    curve1.append(SwcTreeNode::pos(tn));
+    curve2.append(SwcTreeNode::pos(SwcTreeNode::firstChild(tn)));
+  }
+
+  curve1.print();
+  curve2.print();
+
+  ZSwcTree *tree1 = ZSwcGenerator::createSwc(curve1, 5.0);
+  ZSwcTree *tree2 = ZSwcGenerator::createSwc(curve2, 5.0);
+
+  ZClosedCurve curve3 = curve1.interpolate(curve2, 2.0, 5);
+  ZSwcTree *tree3 = ZSwcGenerator::createSwc(curve3, 5.0);
+
+
+  tree.merge(tree1);
+  tree.merge(tree2);
+  tree.merge(tree3);
+
+  tree.save(GET_TEST_DATA_DIR + "/test2.swc");
+#endif
+
+#if 1
+  ZSwcTree tree1;
+  ZSwcTree tree2;
+  tree1.load(GET_TEST_DATA_DIR + "/curve1.swc");
+  tree2.load(GET_TEST_DATA_DIR + "/curve2.swc");
+
+  ZClosedCurve lowerCurve;
+  ZClosedCurve upperCurve;
+
+  Swc_Tree_Node *tn = tree1.firstRegularRoot();
+  while (tn != NULL) {
+    upperCurve.append(SwcTreeNode::pos(tn));
+    tn = SwcTreeNode::firstChild(tn);
+  }
+
+  tn = tree2.firstRegularRoot();
+  while (tn != NULL) {
+    lowerCurve.append(SwcTreeNode::pos(tn));
+    tn = SwcTreeNode::firstChild(tn);
+  }
+
+
+  int sampleNumber = imax3(100, lowerCurve.getLandmarkNumber(),
+                           upperCurve.getLandmarkNumber());
+  ZClosedCurve curve1 = lowerCurve.resampleF(sampleNumber);
+  ZClosedCurve curve2 = upperCurve.resampleF(sampleNumber);
+
+  if (curve1.computeDirection().dot(curve2.computeDirection()) < 0) {
+    curve2.reverse();
+  }
+  int shift = curve1.findMatchShift(curve2);
+  ZClosedCurve curve3 = curve1.interpolate(
+        curve2, 2.0, shift).resampleF(50);
+
+
+  ZSwcTree *tree3 = ZSwcGenerator::createSwc(curve3, 5.0);
+
+  ZSwcTree tree;
+  tree.merge(&tree1, false);
+  tree.merge(&tree2, false);
+  tree.merge(tree3);
+
+  tree.save(GET_TEST_DATA_DIR + "/test2.swc");
+
+#endif
 }

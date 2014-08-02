@@ -429,7 +429,9 @@ HEADERS += mainwindow.h \
     zlabeledcombowidget.h \
     zspinboxdialog.h \
     zbuttonbox.h \
-    zkeyeventswcmapper.h
+    zkeyeventswcmapper.h \
+    zflyemroidialog.h \
+    flyem/zflyemroiproject.h
 
 FORMS += settingdialog.ui \
     frameinfodialog.ui \
@@ -480,7 +482,8 @@ FORMS += settingdialog.ui \
     tilemanager.ui \
     flyembodysplitprojectdialog.ui \
     zflyemnewbodysplitprojectdialog.ui \
-    dvidskeletonizedialog.ui
+    dvidskeletonizedialog.ui \
+    zflyemroidialog.ui
 SOURCES += main.cpp \
     mainwindow.cpp \
     zstackview.cpp \
@@ -717,7 +720,9 @@ SOURCES += main.cpp \
     zlabeledcombowidget.cpp \
     zspinboxdialog.cpp \
     zbuttonbox.cpp \
-    zkeyeventswcmapper.cpp
+    zkeyeventswcmapper.cpp \
+    zflyemroidialog.cpp \
+    flyem/zflyemroiproject.cpp
 
 OTHER_FILES += \
     extlib.pri

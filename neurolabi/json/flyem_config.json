@@ -27,6 +27,13 @@
       "uuid": "3426",
       "name": "MB-4",
       "comment": "Mushroom body MB-4"
+    },
+    {
+      "address": "emdata1.int.janelia.org",
+      "port": 9000,
+      "uuid": "ba959",
+      "name": "MB-6",
+      "comment": "Mushroom body MB-6 (7567 x 11140 x 14625)"
     }
   ]
 }

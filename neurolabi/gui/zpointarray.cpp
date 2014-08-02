@@ -123,3 +123,17 @@ ZCuboid ZPointArray::getBoundBox() const
 
   return boundBox;
 }
+
+ZPoint ZPointArray::computeCenter() const
+{
+  ZPoint center(0.0, 0.0, 0.0);
+  if (!empty()) {
+    for (const_iterator iter = begin(); iter != end(); ++iter) {
+      center += *iter;
+    }
+
+    center /= size();
+  }
+
+  return center;
+}

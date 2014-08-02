@@ -326,6 +326,10 @@ enum EKnowingLink {
   FIRST_CHILD, PARENT, NEXT_SIBLING
 };
 
+enum EChildPosition {
+  CHILD_POS_FIRST, CHILD_POS_LAST
+};
+
 /*!
  * \brief Set the link between two nodes
  *
@@ -353,9 +357,10 @@ void setAsRoot(Swc_Tree_Node *tn);
  * \brief Set the parent of a node
  *
  * \a parent becomes the parent of \a tn. The postion \a tn in the children of
- * \a parent is undefined.
+ * \a parent is defined by \a childPos.
  */
-void setParent(Swc_Tree_Node *tn, Swc_Tree_Node *parent);
+void setParent(Swc_Tree_Node *tn, Swc_Tree_Node *parent,
+               EChildPosition childPos = CHILD_POS_LAST);
 
 void setFirstChild(Swc_Tree_Node *tn, Swc_Tree_Node *child);
 void detachParent(Swc_Tree_Node *tn);

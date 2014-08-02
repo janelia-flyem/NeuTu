@@ -27,6 +27,8 @@ public:
 
   std::string toJsonString() const;
 
+  ZPoint computeCenter() const;
+
   /*!
    * \brief Bounding box of the point array
    */

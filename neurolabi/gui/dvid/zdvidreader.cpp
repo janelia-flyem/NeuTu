@@ -495,6 +495,42 @@ QByteArray ZDvidReader::readKeyValue(const QString &dataName, const QString &key
   return keyValue;
 }
 
+QStringList ZDvidReader::readKeys(
+    const QString &dataName, const QString &minKey, const QString &maxKey)
+{
+  startReading();
+
+  ZDvidBuffer *dvidBuffer = m_dvidClient->getDvidBuffer();
+  dvidBuffer->clear();
+
+  ZDvidRequest request;
+  request.setGetKeysRequest(dataName, minKey, maxKey);
+  m_dvidClient->appendRequest(request);
+  m_dvidClient->postNextRequest();
+
+  waitForReading();
+
+  const QVector<QByteArray> &array = dvidBuffer->getKeysArray();
+
+  QStringList keys;
+  QByteArray keyBuffer;
+  if (!array.isEmpty()) {
+    keyBuffer = array[0];
+  }
+
+  dvidBuffer->clearKeysArray();
+
+  if (!keyBuffer.isEmpty()) {
+    ZJsonArray obj;
+    obj.decode(keyBuffer.data());
+    for (size_t i = 0; i < obj.size(); ++i) {
+      keys << ZJsonParser::stringValue(obj.at(i));
+    }
+  }
+
+  return keys;
+}
+
 ZStack* ZDvidReader::readBodyLabel(
     int x0, int y0, int z0, int width, int height, int depth)
 {
@@ -575,4 +611,54 @@ std::vector<std::pair<int, int> > ZDvidReader::partitionStack(
   }
 
   return partition;
+}
+
+ZClosedCurve* ZDvidReader::readRoiCurve(int z, ZClosedCurve *result)
+{
+  QByteArray byteArray = readKeyValue("roi_curve", QString("%1").arg(z));
+  if (!byteArray.isEmpty()) {
+    if (result == NULL) {
+      result = new ZClosedCurve;
+    } else {
+      result->clear();
+    }
+
+    ZJsonObject obj;
+    obj.decode(byteArray.constData());
+    result->loadJsonObject(obj);
+  }
+
+  return result;
+}
+
+ZIntCuboid ZDvidReader::readBoundBox(int z)
+{
+  QByteArray byteArray = readKeyValue("bound_box", QString("%1").arg(z));
+  ZIntCuboid cuboid;
+
+  if (!byteArray.isEmpty()) {
+    ZJsonArray obj;
+    obj.decode(byteArray.constData());
+    if (obj.size() == 6) {
+      cuboid.set(ZJsonParser::integerValue(obj.at(0)),
+                 ZJsonParser::integerValue(obj.at(1)),
+                 ZJsonParser::integerValue(obj.at(2)),
+                 ZJsonParser::integerValue(obj.at(3)),
+                 ZJsonParser::integerValue(obj.at(4)),
+                 ZJsonParser::integerValue(obj.at(5)));
+    }
+  }
+
+  return cuboid;
+}
+
+ZDvidInfo ZDvidReader::readGrayScaleInfo()
+{
+  QString infoString = readInfo("grayscale");
+  ZDvidInfo dvidInfo;
+  if (!infoString.isEmpty()) {
+    dvidInfo.setFromJsonString(infoString.toStdString());
+  }
+
+  return dvidInfo;
 }

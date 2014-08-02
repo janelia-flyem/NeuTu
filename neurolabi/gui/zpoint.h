@@ -63,6 +63,7 @@ public:
   void normalize();
   double dot(const ZPoint &pt) const;
   double cosAngle(const ZPoint &pt) const;
+  ZPoint cross(const ZPoint &pt) const;
 
   bool isApproxOrigin() const;
   bool approxEquals(const ZPoint &pt) const;

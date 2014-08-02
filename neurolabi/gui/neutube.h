@@ -17,7 +17,7 @@ enum EDocumentableType {
 namespace Document {
 enum ETag {
   NORMAL, BIOCYTIN_PROJECTION, BIOCYTIN_STACK, FLYEM_BODY, FLYEM_STACK,
-  FLYEM_SPLIT
+  FLYEM_SPLIT, FLYEM_ROI
 };
 }
 

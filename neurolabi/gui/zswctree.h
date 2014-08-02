@@ -18,10 +18,12 @@
 #include "zswcpath.h"
 #include "zcuboid.h"
 #include "zuncopyable.h"
+#include "zclosedcurve.h"
 
 class ZSwcForest;
 class ZSwcBranch;
 class ZSwcTrunkAnalyzer;
+class QPointF;
 
 //! SWC tree class
 /*!
@@ -63,19 +65,25 @@ public:
     NODE_STATE_COSMETIC
   };
 
+  //Structral mode
+  enum EStructrualMode {
+    STRUCT_CLOSED_CURVE, STRUCT_NORMAL
+  };
+
   enum EOperation {
     OPERATION_NULL,
-    OPERATION_DELETE_NODE,
+    OPERATION_DELETE_NODE, OPERATION_SELECT_ALL_NODE,
     OPERATION_MOVE_NODE_LEFT, OPERATION_MOVE_NODE_LEFT_FAST,
     OPERATION_MOVE_NODE_RIGHT, OPERATION_MOVE_NODE_RIGHT_FAST,
     OPERATION_MOVE_NODE_UP, OPERATION_MOVE_NODE_UP_FAST,
     OPERATION_MOVE_NODE_DOWN, OPERATION_MOVE_NODE_DOWN_FAST,
     OPERATION_ADD_NODE,
-    OPERATION_INCREASE_NODE_SIZE, OPERATION_DEDREASE_NODE_SIZE,
+    OPERATION_INCREASE_NODE_SIZE, OPERATION_DECREASE_NODE_SIZE,
     OPERATION_CONNECT_NODE, OPERATION_CONNECT_NODE_SMART,
     OPERATION_BREAK_NODE, OPERATION_CONNECT_ISOLATE,
     OPERATION_ZOOM_TO_SELECTED_NODE, OPERATION_INSERT_NODE, OPERATION_MOVE_NODE,
-    OPERATION_RESET_BRANCH_POINT, OPERATION_CHANGE_NODE_FACUS
+    OPERATION_RESET_BRANCH_POINT, OPERATION_CHANGE_NODE_FACUS,
+    OPERATION_EXTEND_NODE
   };
 
   /** @name Constructors
@@ -211,7 +219,7 @@ public:
 
   bool contains(Swc_Tree_Node *tn) const;
 
-  int regularRootNumber();
+  int regularRootNumber() const;
   void addRegularRoot(Swc_Tree_Node *tn);
 
   Swc_Tree_Node *maxLabelNode();
@@ -434,7 +442,7 @@ public:
   Swc_Tree_Node *firstRegularRoot() const;
   Swc_Tree_Node *firstLeaf();
 
-  std::vector<Swc_Tree_Node*> terminalArray();
+  std::vector<Swc_Tree_Node*> getTerminalArray();
 
   ZSwcBranch *extractBranch(int beginId, int endId);
   ZSwcBranch *extractBranch(Swc_Tree_Node *tn1, Swc_Tree_Node *tn2);
@@ -548,8 +556,51 @@ public:
    */
   double getMaxSegmentLenth();
 
+  /*!
+   * \brief Check if a tree is linear
+   *
+   * A linear tree is a non-empty tree that has no branch point and no break
+   * point.
+   */
+  bool isLinear() const;
+
   void setHostState(Swc_Tree_Node *tn, ENodeState state) const;
   void setHostState(Swc_Tree_Node *tn) const;
+
+  inline EStructrualMode getStructrualMode() const {
+    return m_smode;
+  }
+  void setStructrualMode(EStructrualMode mode) {
+    m_smode = mode;
+  }
+
+  ZClosedCurve toClosedCurve() const;
+
+  void updateHostState(ENodeState state);
+
+  //Iterator classes
+  class ExtIterator {
+  public:
+    ExtIterator(ZSwcTree *tree);
+    virtual ~ExtIterator();
+
+    virtual Swc_Tree_Node *begin() = 0;
+    virtual bool hasNext() const = 0;
+    virtual Swc_Tree_Node *next() = 0;
+
+  protected:
+    ZSwcTree *m_tree;
+    Swc_Tree_Node *m_currentNode;
+  };
+
+
+  class RegularRootIterator : public ExtIterator {
+  public:
+    RegularRootIterator(ZSwcTree *tree);
+    Swc_Tree_Node *begin();
+    bool hasNext() const;
+    Swc_Tree_Node *next();
+  };
 
 public: //static functions
   static std::vector<ZSwcTree*> loadTreeArray(std::string dirPath);
@@ -568,8 +619,18 @@ public: //static functions
 
 
 private:
+  static void computeLineSegment(const Swc_Tree_Node *lowerTn,
+                                 const Swc_Tree_Node *upperTn,
+                                 QPointF &lineStart, QPointF &lineEnd,
+                                 bool &visible, int dataFocus);
+  std::pair<const Swc_Tree_Node *, const Swc_Tree_Node *>
+  extractCurveTerminal() const;
+
+private:
   Swc_Tree *m_tree;
   std::string m_source;
+  EStructrualMode m_smode;
+
   mutable bool m_iteratorReady; /* When this option is on, any iterator option changing
                            internal linked list
                            is turned off and SWC_TREE_ITERATOR_NO_UPDATE is

@@ -786,7 +786,6 @@ private:
   QList<ZObject3d*> m_obj3dList;
   QList<ZSparseObject*> m_sparseObjectList;
 
-
   ZDocPlayerList m_playerList;
 
   //Special object
@@ -933,6 +932,7 @@ void ZStackDoc::setSwcTreeNodeSelected(
 class ZStackDocReader {
 public:
   ZStackDocReader();
+  ~ZStackDocReader();
 
   bool readFile(const QString &filePath);
   void clear();
@@ -952,11 +952,19 @@ public:
   inline const QList<ZLocsegChain*>& getChainList() const { return m_chainList; }
   inline const QList<ZSparseObject*>& getSparseObjectList() const {
     return m_sparseObjectList; }
+  inline const ZDocPlayerList& getPlayerList() const {
+    return m_playerList;
+  }
 
   bool hasData() const;
   inline const QString& getFileName() const {
     return m_filePath;
   }
+
+  void addPlayer(ZStackObject *obj, NeuTube::EDocumentableType type,
+                 ZDocPlayer::TRole role);
+  void addObject(ZStackObject *obj, NeuTube::EDocumentableType type,
+                 ZDocPlayer::TRole role = ZDocPlayer::ROLE_NONE);
 
 public:
   void addSwcTree(ZSwcTree *tree);
@@ -967,6 +975,7 @@ public:
   void addStroke(ZStroke2d *stroke);
   void addSparseObject(ZSparseObject *obj);
   void setSparseStack(ZSparseStack *spStack);
+  void addObj3d(ZObject3d *obj);
 
 private:
   QString m_filePath;
@@ -983,6 +992,8 @@ private:
   QList<ZObject3d*> m_obj3dList;
   QList<ZSparseObject*> m_sparseObjectList;
   QList<ZLocsegChain*> m_chainList;
+
+  ZDocPlayerList m_playerList;
 
   //Special object
   ZSwcNetwork *m_swcNetwork;

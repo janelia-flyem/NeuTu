@@ -189,6 +189,8 @@ void Z3DCanvas::drawBackground(QPainter *painter, const QRectF &)
     //drawable->setVisible(true);
     drawable->display(painter);
   }
+#else
+  UNUSED_PARAMETER(painter);
 #endif
 
 #ifdef _DEBUG_2
@@ -269,15 +271,23 @@ double Z3DCanvas::getDevicePixelRatio()
 
 void Z3DCanvas::disableKeyEvent()
 {
+#if defined(_FLYEM_)
   m_interaction.setKeyEventEnabled(false);
+#endif
 }
 
 void Z3DCanvas::set3DInteractionHandler(Z3DTrackballInteractionHandler *handler)
 {
+#if defined(_FLYEM_)
   m_interaction.set3DInteractionHandler(handler);
+#else
+  UNUSED_PARAMETER(handler);
+#endif
 }
 
 void Z3DCanvas::updateCursor()
 {
+#if defined(_FLYEM_)
   setCursor(m_interaction.getCursorShape());
+#endif
 }

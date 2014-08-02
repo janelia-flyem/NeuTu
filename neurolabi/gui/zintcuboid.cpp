@@ -96,3 +96,23 @@ bool ZIntCuboid::isEmpty() const
 {
   return getWidth() <= 0 || getHeight() <= 0 || getDepth() <= 0;
 }
+
+void ZIntCuboid::setFirstX(int x)
+{
+  m_firstCorner.setX(x);
+}
+
+void ZIntCuboid::setLastX(int x)
+{
+  m_lastCorner.setX(x);
+}
+
+void ZIntCuboid::setFirstY(int y)
+{
+  m_firstCorner.setY(y);
+}
+
+void ZIntCuboid::setLastY(int y)
+{
+  m_lastCorner.setY(y);
+}

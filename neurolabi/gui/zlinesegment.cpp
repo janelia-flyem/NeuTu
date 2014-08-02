@@ -60,3 +60,25 @@ void ZLineSegment::invert()
   ZPoint tmp;
   SWAP2(m_start, m_end, tmp);
 }
+
+ZPoint ZLineSegment::getDirection() const
+{
+  ZPoint direction = m_end - m_start;
+  direction.normalize();
+  return direction;
+}
+
+ZPoint ZLineSegment::getVector() const
+{
+  return m_end - m_start;
+}
+
+ZPoint ZLineSegment::getInterpolation(double ds) const
+{
+  double length = getLength();
+  if (length == 0.0) {
+    return m_start;
+  }
+
+  return m_start + getDirection() * ds;
+}

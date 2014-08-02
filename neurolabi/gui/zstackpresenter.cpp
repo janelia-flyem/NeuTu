@@ -1339,12 +1339,8 @@ bool ZStackPresenter::processKeyPressEventForSwc(QKeyEvent *event)
 {
   bool taken = false;
 
-  //switch (m_swcKeyMapper.getOperation(event)) {
-  //case ZSwcTree::OPERATION_DELETE_NODE:
-  switch (event->key()) {
-  case Qt::Key_Backspace:
-  case Qt::Key_Delete:
-  case Qt::Key_X:
+  switch (m_swcKeyMapper.getOperation(event)) {
+  case ZSwcTree::OPERATION_DELETE_NODE:
     taken = buddyDocument()->executeDeleteSwcNodeCommand();
     if (taken) {
       if (m_interactiveContext.swcEditMode() ==
@@ -1353,154 +1349,89 @@ bool ZStackPresenter::processKeyPressEventForSwc(QKeyEvent *event)
       }
     }
     break;
-  case Qt::Key_W:
-    if (event->modifiers() == Qt::NoModifier ||
-        event->modifiers() == Qt::ShiftModifier) {
-      double dy = -1;
-      if (event->modifiers() == Qt::ShiftModifier) {
-        dy *= 10;
-      }
-      taken = buddyDocument()->executeMoveSwcNodeCommand(0, dy, 0);
-    }
+  case ZSwcTree::OPERATION_MOVE_NODE_UP:
+    taken = buddyDocument()->executeMoveSwcNodeCommand(0, -1.0, 0);
     break;
-  case Qt::Key_A:
-    if (event->modifiers() == Qt::NoModifier ||
-        event->modifiers() == Qt::ShiftModifier) {
-      double dx = -1;
-      if (event->modifiers() == Qt::ShiftModifier) {
-        dx *= 10;
-      }
-      taken = buddyDocument()->executeMoveSwcNodeCommand(dx, 0, 0);
-    } else if (event->modifiers() == Qt::ControlModifier) {
-      buddyDocument()->selectAllSwcTreeNode();
-    }
+  case ZSwcTree::OPERATION_MOVE_NODE_UP_FAST:
+    taken = buddyDocument()->executeMoveSwcNodeCommand(0, -10.0, 0);
     break;
-  case Qt::Key_S:
-    if (event->modifiers() == Qt::NoModifier ||
-        event->modifiers() == Qt::ShiftModifier) {
-      double dy = 1;
-      if (event->modifiers() == Qt::ShiftModifier) {
-        dy *= 10;
-      }
-      taken = buddyDocument()->executeMoveSwcNodeCommand(0, dy, 0);
-    }
+  case ZSwcTree::OPERATION_MOVE_NODE_LEFT:
+    taken = buddyDocument()->executeMoveSwcNodeCommand(-1.0, 0, 0);
     break;
-  case Qt::Key_D:
-    if (event->modifiers() == Qt::NoModifier ||
-        event->modifiers() == Qt::ShiftModifier){
-      double dx = 1;
-      if (event->modifiers() == Qt::ShiftModifier) {
-        dx *= 10;
-      }
-      taken = buddyDocument()->executeMoveSwcNodeCommand(dx, 0, 0);
-    }
+  case ZSwcTree::OPERATION_MOVE_NODE_LEFT_FAST:
+    taken = buddyDocument()->executeMoveSwcNodeCommand(-10.0, 0, 0);
     break;
-  case Qt::Key_G:
-
-    if (event->modifiers() == Qt::NoModifier) {
-      QPointF pos = mapFromGlobalToStack(QCursor::pos());
-      trySwcAddNodeMode(pos.x(), pos.y());
-      /*
-      if (interactiveContext().swcEditMode() == ZInteractiveContext::SWC_EDIT_OFF ||
-          interactiveContext().swcEditMode() == ZInteractiveContext::SWC_EDIT_SELECT) {
-        QPoint pos = mapFromGlobalToStack(QCursor::pos());
-        enterSwcAddNodeMode(pos.x(), pos.y());
-      }
-      */
-    }
+  case ZSwcTree::OPERATION_SELECT_ALL_NODE:
+    buddyDocument()->selectAllSwcTreeNode();
+    taken = true;
     break;
-  case Qt::Key_Comma:
-  case Qt::Key_Q:
-#if 0
-    /*
-    if (interactiveContext().swcEditMode() ==
-        ZInteractiveContext::SWC_EDIT_ADD_NODE) {
-        */
-    if (isStrokeOn()) {
-      /*
-        m_cursorRadius = ZCursorStore::prevCircleRadius(m_cursorRadius);
-        updateCursor();
-        taken = true;
-        */
-      m_stroke.addWidth(-1.0);
-      buddyView()->paintActiveDecoration();
-      taken = true;
-    } else {
-      //buddyDocument()->addSizeForSelectedSwcNode(-0.5);
+  case ZSwcTree::OPERATION_MOVE_NODE_DOWN:
+    taken = buddyDocument()->executeMoveSwcNodeCommand(0, 1.0, 0);
+    break;
+  case ZSwcTree::OPERATION_MOVE_NODE_DOWN_FAST:
+    taken = buddyDocument()->executeMoveSwcNodeCommand(0, 10.0, 0);
+    break;
+  case ZSwcTree::OPERATION_MOVE_NODE_RIGHT:
+    taken = buddyDocument()->executeMoveSwcNodeCommand(1.0, 0, 0);
+    break;
+  case ZSwcTree::OPERATION_MOVE_NODE_RIGHT_FAST:
+    taken = buddyDocument()->executeMoveSwcNodeCommand(10.0, 0, 0);
+    break;
+  case ZSwcTree::OPERATION_ADD_NODE:
+  {
+    QPointF pos = mapFromGlobalToStack(QCursor::pos());
+    trySwcAddNodeMode(pos.x(), pos.y());
+    taken = true;
+  }
+    break;
+  case ZSwcTree::OPERATION_DECREASE_NODE_SIZE:
+    if (isStrokeOff()) {
       taken = buddyDocument()->executeSwcNodeChangeSizeCommand(-0.5);
     }
-#endif
-
-    if (isStrokeOff()) {
-      if (event->modifiers() != Qt::ControlModifier) {
-        taken = buddyDocument()->executeSwcNodeChangeSizeCommand(-0.5);
-      }
-    }
-
     break;
-  case Qt::Key_Period:
-  case Qt::Key_E:
-#if 0
-    /*
-    if (interactiveContext().swcEditMode() ==
-        ZInteractiveContext::SWC_EDIT_ADD_NODE) {
-        */
-    if (isStrokeOn()) {
-      m_stroke.addWidth(1.0);
-      buddyView()->paintActiveDecoration();
-      taken = true;
-    } else {
-      //buddyDocument()->addSizeForSelectedSwcNode(0.5);
+  case ZSwcTree::OPERATION_INCREASE_NODE_SIZE:
+    if (isStrokeOff()) {
       taken = buddyDocument()->executeSwcNodeChangeSizeCommand(0.5);
     }
-#endif
-    if (isStrokeOff()) {
-      if (event->modifiers() != Qt::ControlModifier) {
-        taken = buddyDocument()->executeSwcNodeChangeSizeCommand(0.5);
+    break;
+  case ZSwcTree::OPERATION_CONNECT_NODE:
+    if (!buddyDocument()->selectedSwcTreeNodes()->empty()) {
+      if (buddyDocument()->selectedSwcTreeNodes()->size() == 1) {
+        enterSwcConnectMode();
+        taken = true;
+      } else {
+        taken = buddyDocument()->executeConnectSwcNodeCommand();
       }
     }
     break;
-  case Qt::Key_C:
-    if (event->modifiers() == Qt::NoModifier) {
-      if (!buddyDocument()->selectedSwcTreeNodes()->empty()) {
-        if (buddyDocument()->selectedSwcTreeNodes()->size() == 1) {
-          enterSwcConnectMode();
-        } else {
-          buddyDocument()->executeConnectSwcNodeCommand();
-        }
-      }
-    } else if (event->modifiers() == Qt::ShiftModifier) {
-      buddyDocument()->executeSmartConnectSwcNodeCommand();
-    }
+  case ZSwcTree::OPERATION_CONNECT_NODE_SMART:
+    taken = buddyDocument()->executeSmartConnectSwcNodeCommand();
     break;
-  case Qt::Key_B:
-    if (event->modifiers() == Qt::NoModifier) {
-      buddyDocument()->executeBreakSwcConnectionCommand();
-    }
+  case ZSwcTree::OPERATION_BREAK_NODE:
+    taken = buddyDocument()->executeBreakSwcConnectionCommand();
     break;
-  case Qt::Key_N:
-    if (event->modifiers() == Qt::NoModifier) {
-      buddyDocument()->executeConnectIsolatedSwc();
-    }
+  case ZSwcTree::OPERATION_CONNECT_ISOLATE:
+    taken = buddyDocument()->executeConnectIsolatedSwc();
     break;
-  case Qt::Key_Z:
-    if (event->modifiers() == Qt::NoModifier) {
-      m_parent->zoomToSelectedSwcNodes();
-    }
+  case ZSwcTree::OPERATION_ZOOM_TO_SELECTED_NODE:
+    m_parent->zoomToSelectedSwcNodes();
+    taken = true;
     break;
-  case Qt::Key_I:
+  case ZSwcTree::OPERATION_INSERT_NODE:
     buddyDocument()->executeInsertSwcNode();
     break;
-  case Qt::Key_F:
+  case ZSwcTree::OPERATION_CHANGE_NODE_FACUS:
     changeSelectedSwcNodeFocus();
     break;
-  case Qt::Key_V:
-    if (event->modifiers() == Qt::NoModifier) {
-      m_swcMoveSelectedAction->trigger();
-    }
+  case ZSwcTree::OPERATION_MOVE_NODE:
+    m_swcMoveSelectedAction->trigger();
+    taken = true;
     break;
-  case Qt::Key_R:
-    buddyDocument()->executeResetBranchPoint();
+  case ZSwcTree::OPERATION_RESET_BRANCH_POINT:
+    taken = buddyDocument()->executeResetBranchPoint();
+    break;
+  case ZSwcTree::OPERATION_EXTEND_NODE:
+    taken = enterSwcExtendMode();;
     break;
   default:
     break;
@@ -1564,13 +1495,6 @@ bool ZStackPresenter::processKeyPressEventForStroke(QKeyEvent *event)
         ZInteractiveContext::STROKE_DRAW) {
       m_stroke.setLabel(255);
       buddyView()->paintActiveDecoration();
-    }
-    break;
-  case Qt::Key_Space:
-    if (GET_APPLICATION_NAME == "FlyEM") {
-      buddyDocument()->runLocalSeededWatershed();
-    } else {
-      enterSwcExtendMode();
     }
     break;
 #endif
@@ -1765,6 +1689,11 @@ void ZStackPresenter::processKeyPressEvent(QKeyEvent *event)
           buddyView()->paintActiveDecoration();
         }
       }
+    }
+    break;
+  case Qt::Key_Space:
+    if (GET_APPLICATION_NAME == "FlyEM") {
+      buddyDocument()->runLocalSeededWatershed();
     }
     break;
   default:
@@ -2181,8 +2110,9 @@ void ZStackPresenter::enterSwcConnectMode()
   updateCursor();
 }
 
-void ZStackPresenter::enterSwcExtendMode()
+bool ZStackPresenter::enterSwcExtendMode()
 {
+  bool succ = false;
   if (buddyDocument()->selectedSwcTreeNodes()->size() == 1) {
     const Swc_Tree_Node *tn = getSelectedSwcNode();
     if (tn != NULL) {
@@ -2198,8 +2128,11 @@ void ZStackPresenter::enterSwcExtendMode()
       m_stroke.setTarget(ZStackObject::WIDGET);
       interactiveContext().setSwcEditMode(ZInteractiveContext::SWC_EDIT_EXTEND);
       updateCursor();
+      succ = true;
     }
   }
+
+  return succ;
 }
 #if 0
 void ZStackPresenter::enterSwcSmartExtendMode()
@@ -2245,8 +2178,10 @@ void ZStackPresenter::enterSwcMoveMode()
 void ZStackPresenter::enterSwcAddNodeMode(double x, double y)
 {
   interactiveContext().setSwcEditMode(ZInteractiveContext::SWC_EDIT_ADD_NODE);
-  if (GET_APPLICATION_NAME == "FlyEM") {
-    m_stroke.setWidth(5.0);
+  if (buddyDocument()->getTag() == NeuTube::Document::FLYEM_ROI) {
+    m_stroke.setWidth(
+          20.0 + imax2(buddyDocument()->getStack()->width(),
+                       buddyDocument()->getStack()->height()) / 200);
   } else {
     m_stroke.setWidth(6.0);
   }
@@ -2442,7 +2377,11 @@ void ZStackPresenter::updateCursor()
     buddyView()->setScreenCursor(Qt::ClosedHandCursor);
   } else if (interactiveContext().swcEditMode() ==
              ZInteractiveContext::SWC_EDIT_ADD_NODE){
-    buddyView()->setScreenCursor(Qt::CrossCursor);
+    if (buddyDocument()->getTag() == NeuTube::Document::FLYEM_ROI) {
+      buddyView()->setScreenCursor(Qt::PointingHandCursor);
+    } else {
+      buddyView()->setScreenCursor(Qt::CrossCursor);
+    }
     /*
     buddyView()->setScreenCursor(
           ZCursorStore::getInstance().getSmallCrossCursor());

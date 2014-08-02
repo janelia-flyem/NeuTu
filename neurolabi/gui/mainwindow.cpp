@@ -142,6 +142,7 @@
 #include "zsparsestack.h"
 #include "ztest.h"
 #include "dvidskeletonizedialog.h"
+#include "zflyemroidialog.h"
 
 #include "z3dcanvas.h"
 #include "z3dapplication.h"
@@ -266,6 +267,7 @@ MainWindow::MainWindow(QWidget *parent) :
 MainWindow::~MainWindow()
 {
   m_bodySplitProjectDialog->clear();
+  m_roiDlg->clear();
 
   delete m_ui;
   delete m_reporter;
@@ -333,12 +335,16 @@ void MainWindow::initDialog()
 
   m_bodySplitProjectDialog = new FlyEmBodySplitProjectDialog(this);
   m_bodySplitProjectDialog->setLoadBodyDialog(m_newBsProjectDialog);
+
+  m_dvidSkeletonizeDialog = new DvidSkeletonizeDialog(this);
+  m_roiDlg = new ZFlyEmRoiDialog(this);
+
 #if defined(_FLYEM_)
   m_bodySplitProjectDialog->restoreGeometry(
           m_settings.value("BodySplitProjectGeometry").toByteArray());
+  m_roiDlg->restoreGeometry(
+        m_settings.value("RoiProjectGeometry").toByteArray());
 #endif
-
-  m_dvidSkeletonizeDialog = new DvidSkeletonizeDialog(this);
 }
 
 void MainWindow::config()
@@ -2121,6 +2127,8 @@ void MainWindow::writeSettings()
 #if defined(_FLYEM_)
   m_settings.setValue(
         "BodySplitProjectGeometry", m_bodySplitProjectDialog->saveGeometry());
+  m_settings.setValue(
+        "RoiProjectGeometry", m_roiDlg->saveGeometry());
 #endif
   m_settings.setValue("recentFiles", recentFiles);
   m_settings.setValue("autoSaveDir", QString(NeutubeConfig::getInstance().
@@ -4393,6 +4401,16 @@ ZStackFrame *MainWindow::createStackFrame(
   return NULL;
 }
 #endif
+
+ZStackFrame* MainWindow::createStackFrame(
+    const ZStackDocReader &reader, NeuTube::Document::ETag tag)
+{
+  ZStackFrame *newFrame = new ZStackFrame;
+  newFrame->addDocData(reader);
+  newFrame->document()->setTag(tag);
+  return newFrame;
+}
+
 ZStackFrame *MainWindow::createStackFrame(
     ZStackDocReader *reader, ZStackFrame *parentFrame)
 {
@@ -6398,4 +6416,10 @@ void MainWindow::on_actionCreate_Thumbnails_triggered()
 void MainWindow::on_actionCreate_ROI_triggered()
 {
 
+}
+
+void MainWindow::on_actionFlyEmROI_triggered()
+{
+  m_roiDlg->show();
+  m_roiDlg->raise();
 }

@@ -3,6 +3,7 @@
 #include <QDebug>
 #include "neutubeconfig.h"
 #include "flyem/zflyemneuron.h"
+#include "zclosedcurve.h"
 
 ZDvidWriter::ZDvidWriter(QObject *parent) :
   QObject(parent)
@@ -119,4 +120,22 @@ void ZDvidWriter::writeAnnotation(int bodyId, const ZJsonObject &obj)
 void ZDvidWriter::writeAnnotation(const ZFlyEmNeuron &neuron)
 {
   writeAnnotation(neuron.getId(), neuron.getAnnotationJson());
+}
+
+void ZDvidWriter::writeRoiCurve(const ZClosedCurve &curve, int z)
+{
+  ZJsonObject obj = curve.toJsonObject();
+  ZString annotationString = obj.dumpString(0);
+  annotationString.replace(" ", "");
+  annotationString.replace("\"", "\"\"\"");
+
+  QString command = QString(
+        "curl -g -X POST -H \"Content-Type: application/json\" "
+        "-d \"%1\" %2/api/node/%3/roi_curve/%4").arg(annotationString.c_str()).
+      arg(m_dvidClient->getServer()).arg(m_dvidClient->getUuid()).
+      arg(z);
+
+  qDebug() << command;
+
+  QProcess::execute(command);
 }

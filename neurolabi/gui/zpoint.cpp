@@ -211,6 +211,13 @@ double ZPoint::dot(const ZPoint &pt) const
   return m_x * pt.x() + m_y * pt.y() + m_z * pt.z();
 }
 
+ZPoint ZPoint::cross(const ZPoint &pt) const
+{
+  return ZPoint(y() * pt.z() - pt.y() * z(),
+                pt.x() * z() - x() * pt.z(),
+                x() * pt.y() - pt.x() * y());
+}
+
 double ZPoint::cosAngle(const ZPoint &pt) const
 {
   if (this->isApproxOrigin() || pt.isApproxOrigin()) {

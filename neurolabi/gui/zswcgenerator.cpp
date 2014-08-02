@@ -303,6 +303,7 @@ ZSwcTree* ZSwcGenerator::createSwc(
     const ZPointArray &pointArray, double radius, bool isConnected)
 {
   ZSwcTree *tree = new ZSwcTree;
+  tree->useCosmeticPen(true);
 
   Swc_Tree_Node *root = tree->forceVirtualRoot();
   Swc_Tree_Node *parent = root;
@@ -530,6 +531,26 @@ ZSwcTree* ZSwcGenerator::createSurfaceSwc(const ZStack &stack, int sparseLevel)
     }
 
     C_Stack::kill(surface);
+  }
+
+  return tree;
+}
+
+ZSwcTree* ZSwcGenerator::createSwc(const ZClosedCurve &curve, double radius)
+{
+  ZSwcTree *tree = NULL;
+  if (!curve.isEmpty()) {
+    tree = new ZSwcTree();
+    tree->setStructrualMode(ZSwcTree::STRUCT_CLOSED_CURVE);
+    Swc_Tree_Node *parent =
+        SwcTreeNode::makePointer(curve.getLandmark(0), radius);
+    tree->addRegularRoot(parent);
+    for (size_t i = 1; i < curve.getLandmarkNumber(); ++i) {
+      Swc_Tree_Node *tn =
+          SwcTreeNode::makePointer(curve.getLandmark(i), radius);
+      SwcTreeNode::setParent(tn, parent);
+      parent = tn;
+    }
   }
 
   return tree;

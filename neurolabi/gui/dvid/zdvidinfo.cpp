@@ -191,3 +191,13 @@ ZIntPoint ZDvidInfo::getGridSize() const
                    m_endBlockIndex.getY() - m_startBlockIndex.getY() + 1,
                    m_endBlockIndex.getZ() - m_startBlockIndex.getZ() + 1);
 }
+
+int ZDvidInfo::getMinZ() const
+{
+  return m_startCoordinates.getZ();
+}
+
+int ZDvidInfo::getMaxZ() const
+{
+  return getMinZ() + m_stackSize[2] - 1;
+}

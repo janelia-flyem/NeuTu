@@ -64,6 +64,9 @@ public:
 
   bool isValidBlockIndex(const ZIntPoint &pt);
 
+  int getMinZ() const;
+  int getMaxZ() const;
+
 private:
   std::vector<int> m_stackSize;
   std::vector<double> m_voxelResolution;

@@ -45,7 +45,7 @@ ZSwcTree::ZSwcTree(const ZSwcTree &src) : ZStackObject()
 
 const int ZSwcTree::m_nodeStateCosmetic = 1;
 
-ZSwcTree::ZSwcTree()
+ZSwcTree::ZSwcTree() : m_smode(STRUCT_NORMAL)
 {
   m_tree = NULL;
   //m_source = "new tree";
@@ -310,6 +310,91 @@ bool ZSwcTree::load(const char *filePath)
   return true;
 }
 
+bool ZSwcTree::isLinear() const
+{
+  if (regularRootNumber() != 1) {
+    return false;
+  }
+
+  updateIterator(SWC_TREE_ITERATOR_DEPTH_FIRST);
+  for (const Swc_Tree_Node *tn = begin(); tn != end(); tn = next()) {
+    if (SwcTreeNode::isBranchPoint(tn)) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+std::pair<const Swc_Tree_Node*, const Swc_Tree_Node*>
+ZSwcTree::extractCurveTerminal() const
+{
+  std::pair<const Swc_Tree_Node*, const Swc_Tree_Node*> nodePair(NULL, NULL);
+  const std::vector<Swc_Tree_Node *> nodeArray =
+      getSwcTreeNodeArray(TERMINAL_ITERATOR);
+  if (nodeArray.size() == 2) {
+    nodePair.first = nodeArray[0];
+    nodePair.second = nodeArray[1];
+  }
+
+  return nodePair;
+}
+
+void ZSwcTree::computeLineSegment(const Swc_Tree_Node *lowerTn,
+                                  const Swc_Tree_Node *upperTn,
+                                  QPointF &lineStart, QPointF &lineEnd,
+                                  bool &visible, int dataFocus)
+{
+#if defined(_QT_GUI_USED_)
+  double upperZ = dataFocus + 0.5;
+  double lowerZ = dataFocus - 0.5;
+
+  if ((dataFocus == -1) ||
+      (IS_IN_OPEN_RANGE(SwcTreeNode::z(lowerTn), lowerZ, upperZ) &&
+       IS_IN_OPEN_RANGE(SwcTreeNode::z(upperTn), lowerZ, upperZ))) {
+    visible = true;
+    lineStart.setX(SwcTreeNode::x(lowerTn));
+    lineStart.setY(SwcTreeNode::y(lowerTn));
+    lineEnd.setX(SwcTreeNode::x(upperTn));
+    lineEnd.setY(SwcTreeNode::y(upperTn));
+  } else {
+    if (SwcTreeNode::z(lowerTn) >= SwcTreeNode::z(upperTn)) {
+      const Swc_Tree_Node *tmpTn = NULL;
+      SWAP2(lowerTn, upperTn, tmpTn);
+    }
+
+    if (SwcTreeNode::z(lowerTn) < upperZ && SwcTreeNode::z(upperTn) > lowerZ) {
+      visible = true;
+      double dz = SwcTreeNode::z(upperTn) - SwcTreeNode::z(lowerTn);
+      double lambda1 = (SwcTreeNode::z(upperTn) - dataFocus - 0.5) / dz;
+      double lambda2 = lambda1 + 1.0 / dz;
+      if (lambda1 < 0.0) {
+        lambda1 = 0.0;
+      }
+      if (lambda2 > 1.0) {
+        lambda2 = 1.0;
+      }
+
+      lineStart.setX(SwcTreeNode::x(lowerTn) * lambda1 +
+                     SwcTreeNode::x(upperTn) * (1.0 - lambda1));
+      lineStart.setY(SwcTreeNode::y(lowerTn) * lambda1 +
+                     SwcTreeNode::y(upperTn) * (1.0 - lambda1));
+
+      lineEnd.setX(SwcTreeNode::x(lowerTn) * lambda2 +
+                     SwcTreeNode::x(upperTn) * (1.0 - lambda2));
+      lineEnd.setY(SwcTreeNode::y(lowerTn) * lambda2 +
+                     SwcTreeNode::y(upperTn) * (1.0 - lambda2));
+    }
+  }
+#else
+  UNUSED_PARAMETER(lowerTn);
+  UNUSED_PARAMETER(upperTn);
+  UNUSED_PARAMETER(lineStart);
+  UNUSED_PARAMETER(lineEnd);
+  UNUSED_PARAMETER(stackFocus);
+#endif
+}
+
 void ZSwcTree::display(
     ZPainter &painter, int stackFocus, ZStackObject::Display_Style style) const
 {
@@ -361,51 +446,12 @@ void ZSwcTree::display(
 
       QPointF lineStart, lineEnd;
 
-      double upperZ = dataFocus + 0.5;
-      double lowerZ = dataFocus - 0.5;
-
-      if ((stackFocus == -1) ||
-          (IS_IN_OPEN_RANGE(SwcTreeNode::z(lowerTn), lowerZ, upperZ) &&
-           IS_IN_OPEN_RANGE(SwcTreeNode::z(upperTn), lowerZ, upperZ))) {
-        visible = true;
-        lineStart.setX(SwcTreeNode::x(lowerTn));
-        lineStart.setY(SwcTreeNode::y(lowerTn));
-        lineEnd.setX(SwcTreeNode::x(upperTn));
-        lineEnd.setY(SwcTreeNode::y(upperTn));
-      } else {
-        if (SwcTreeNode::z(lowerTn) >= SwcTreeNode::z(upperTn)) {
-          const Swc_Tree_Node *tmpTn = NULL;
-          SWAP2(lowerTn, upperTn, tmpTn);
-        }
-
-        if (SwcTreeNode::z(lowerTn) < upperZ && SwcTreeNode::z(upperTn) > lowerZ) {
-          visible = true;
-          double dz = SwcTreeNode::z(upperTn) - SwcTreeNode::z(lowerTn);
-          double lambda1 = (SwcTreeNode::z(upperTn) - dataFocus - 0.5) / dz;
-          double lambda2 = lambda1 + 1.0 / dz;
-          if (lambda1 < 0.0) {
-            lambda1 = 0.0;
-          }
-          if (lambda2 > 1.0) {
-            lambda2 = 1.0;
-          }
-
-          lineStart.setX(SwcTreeNode::x(lowerTn) * lambda1 +
-                         SwcTreeNode::x(upperTn) * (1.0 - lambda1));
-          lineStart.setY(SwcTreeNode::y(lowerTn) * lambda1 +
-                         SwcTreeNode::y(upperTn) * (1.0 - lambda1));
-
-          lineEnd.setX(SwcTreeNode::x(lowerTn) * lambda2 +
-                         SwcTreeNode::x(upperTn) * (1.0 - lambda2));
-          lineEnd.setY(SwcTreeNode::y(lowerTn) * lambda2 +
-                         SwcTreeNode::y(upperTn) * (1.0 - lambda2));
-        }
-      }
+      computeLineSegment(
+            lowerTn, upperTn, lineStart, lineEnd, visible, dataFocus);
 
       if (visible) {
         const QColor lineTerminalColor(255, 255, 0, 164);
         const QColor lineColor(255, 0, 0, 164);
-        pen.setWidthF(strokeWidth);
         if (SwcTreeNode::isLeaf(tn) || SwcTreeNode::isRegularRoot(tn->parent)) {
           pen.setColor(lineTerminalColor);
         } else {
@@ -413,6 +459,23 @@ void ZSwcTree::display(
         }
         painter.setPen(pen);
 
+        painter.drawLine(lineStart, lineEnd);
+      }
+    }
+  }
+
+  if (getStructrualMode() == ZSwcTree::STRUCT_CLOSED_CURVE) {
+    std::pair<const Swc_Tree_Node*, const Swc_Tree_Node*> nodePair =
+        extractCurveTerminal();
+    if (nodePair.first != NULL && nodePair.second != NULL) {
+      QPointF lineStart, lineEnd;
+      bool visible;
+      computeLineSegment(
+            nodePair.first, nodePair.second, lineStart, lineEnd, visible,
+            dataFocus);
+      if (visible) {
+        pen.setColor(QColor(0, 255, 0));
+        painter.setPen(pen);
         painter.drawLine(lineStart, lineEnd);
       }
     }
@@ -1638,7 +1701,7 @@ ZSwcBranch* ZSwcTree::extractBranch(int label)
   return (new ZSwcBranch(upperEnd, lowerEnd));
 }
 
-vector<Swc_Tree_Node*> ZSwcTree::terminalArray()
+vector<Swc_Tree_Node*> ZSwcTree::getTerminalArray()
 {
   updateIterator(SWC_TREE_ITERATOR_LEAF, FALSE);
 
@@ -2198,6 +2261,7 @@ ZSwcTree* ZSwcTree::clone() const
   tree->m_iteratorReady = m_iteratorReady;
   tree->m_source = m_source;
   tree->setColor(getColor());
+  tree->m_smode = m_smode;
 
   return tree;
 }
@@ -2391,7 +2455,7 @@ bool ZSwcTree::contains(Swc_Tree_Node *tn) const
   return (data()->root == SwcTreeNode::root(tn));
 }
 
-int ZSwcTree::regularRootNumber()
+int ZSwcTree::regularRootNumber() const
 {
   int n = 0;
 
@@ -2921,6 +2985,14 @@ double ZSwcTree::getMaxSegmentLenth()
   return maxLength;
 }
 
+void ZSwcTree::updateHostState(ENodeState state)
+{
+  updateIterator();
+  for (Swc_Tree_Node *tn = begin(); tn != NULL; tn = next()) {
+    setHostState(tn, state);
+  }
+}
+
 bool ZSwcTree::getHostState(const Swc_Tree_Node *tn, ENodeState state)
 {
   bool on = false;
@@ -2953,4 +3025,61 @@ void ZSwcTree::setHostState(Swc_Tree_Node *tn, ENodeState state) const
 void ZSwcTree::setHostState(Swc_Tree_Node *tn) const
 {
   setHostState(tn, NODE_STATE_COSMETIC);
+}
+
+ZClosedCurve ZSwcTree::toClosedCurve() const
+{
+  ZClosedCurve curve;
+  std::pair<const Swc_Tree_Node *, const Swc_Tree_Node *> nodePair =
+      extractCurveTerminal();
+  if (nodePair.first != NULL && nodePair.second != NULL) {
+    ZSwcPath path(const_cast<Swc_Tree_Node*>(nodePair.first),
+                  const_cast<Swc_Tree_Node*>(nodePair.second));
+    for (ZSwcPath::const_iterator iter = path.begin(); iter != path.end();
+         ++iter) {
+      Swc_Tree_Node *tn = *iter;
+      curve.append(SwcTreeNode::pos(tn));
+    }
+  }
+
+  return curve;
+}
+
+ZSwcTree::ExtIterator::ExtIterator(ZSwcTree *tree) :
+  m_tree(tree), m_currentNode(NULL)
+{
+}
+
+ZSwcTree::ExtIterator::~ExtIterator()
+{
+  m_tree = NULL;
+  m_currentNode = NULL;
+}
+
+ZSwcTree::RegularRootIterator::RegularRootIterator(ZSwcTree *tree) :
+  ZSwcTree::ExtIterator(tree)
+{
+
+}
+
+Swc_Tree_Node* ZSwcTree::RegularRootIterator::begin()
+{
+  m_currentNode = NULL;
+  if (m_tree != NULL) {
+    m_currentNode = m_tree->firstRegularRoot();
+  }
+
+  return m_currentNode;
+}
+
+bool ZSwcTree::RegularRootIterator::hasNext() const
+{
+  return SwcTreeNode::nextSibling(m_currentNode) != NULL;
+}
+
+Swc_Tree_Node* ZSwcTree::RegularRootIterator::next()
+{
+  m_currentNode = SwcTreeNode::nextSibling(m_currentNode);
+
+  return m_currentNode;
 }

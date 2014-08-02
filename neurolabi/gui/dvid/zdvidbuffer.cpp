@@ -62,6 +62,15 @@ void ZDvidBuffer::importKeyValue()
   }
 }
 
+void ZDvidBuffer::importKeys()
+{
+  if (m_dvidClient != NULL) {
+    m_keysArray.append(m_dvidClient->getKeys());
+    qDebug() << "Emitting dataTransered from importKeys()";
+    emit dataTransfered();
+  }
+}
+
 void ZDvidBuffer::clear()
 {
   m_bodyArray.clear();
@@ -76,6 +85,8 @@ void ZDvidBuffer::clear()
   m_imageArray.clear();
 
   m_infoArray.clear();
+  m_keysArray.clear();
+  m_keyValueArray.clear();
 }
 
 void ZDvidBuffer::clearInfoArray()
@@ -86,6 +97,11 @@ void ZDvidBuffer::clearInfoArray()
 void ZDvidBuffer::clearKeyValueArray()
 {
   m_keyValueArray.clear();
+}
+
+void ZDvidBuffer::clearKeysArray()
+{
+  m_keysArray.clear();
 }
 
 void ZDvidBuffer::clearImageArray()

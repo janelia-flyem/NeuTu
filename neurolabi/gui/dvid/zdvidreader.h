@@ -13,6 +13,9 @@
 #include "flyem/zflyem.h"
 #include "zintcuboid.h"
 #include "zsparsestack.h"
+#include "zclosedcurve.h"
+#include "dvid/zdvidinfo.h"
+#include "zintcuboid.h"
 
 class ZDvidTarget;
 class ZDvidFilter;
@@ -49,9 +52,15 @@ public:
   std::set<int> readBodyId(size_t minSize);
   std::set<int> readBodyId(size_t minSize, size_t maxSize);
   QByteArray readKeyValue(const QString &dataName, const QString &key);
+  QStringList readKeys(const QString &dataName,
+                       const QString &minKey, const QString &maxKey);
 
   std::set<int> readBodyId(const ZDvidFilter &filter);
 
+  ZClosedCurve* readRoiCurve(int z, ZClosedCurve *result);
+  ZIntCuboid readBoundBox(int z);
+
+  ZDvidInfo readGrayScaleInfo();
 
 signals:
   void readingDone();

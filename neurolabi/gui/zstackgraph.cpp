@@ -248,6 +248,15 @@ void ZStackGraph::updateRange(int x1, int y1, int z1, int x2, int y2, int z2,
   }
 }
 
+size_t ZStackGraph::getRoiVolume() const
+{
+  int width = m_workspace.range[1] - m_workspace.range[0] + 1;
+  int height = m_workspace.range[3] - m_workspace.range[2] + 1;
+  int depth = m_workspace.range[5] - m_workspace.range[4] + 1;
+
+  return ((size_t) width) * height * depth;
+}
+
 #if 0
 void ZStackGraph::initRange(const Stack *stack, int *stack_range)
 {

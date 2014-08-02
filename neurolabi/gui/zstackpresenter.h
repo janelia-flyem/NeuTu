@@ -189,7 +189,7 @@ public slots:
   void updateStackBc();
 
   void enterSwcConnectMode();
-  void enterSwcExtendMode();
+  bool enterSwcExtendMode();
   void exitSwcExtendMode();
   //void enterSwcSmartExtendMode();
   void enterSwcMoveMode();

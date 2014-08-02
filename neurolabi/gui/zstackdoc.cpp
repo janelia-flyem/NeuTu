@@ -57,6 +57,7 @@
 #include "zstack.hxx"
 #include "tz_stack_stat.h"
 #include "mainwindow.h"
+#include "zerror.h"
 #include "tz_error.h"
 #include "zswcnetwork.h"
 #include "zstring.h"
@@ -4466,6 +4467,11 @@ bool ZStackDoc::executeSwcNodeSmartExtendCommand(
               leaf = SwcTreeNode::firstChild(leaf);
             }
             ZSwcPath path(begin, leaf);
+            for (ZSwcPath::iterator iter = path.begin(); iter != path.end();
+                 ++iter) {
+              Swc_Tree_Node *tn = *iter;
+              tn->tree_state = prevNode->tree_state;
+            }
 
             message = QString("%1 nodes are added").arg(path.size());
 
@@ -5560,11 +5566,16 @@ void ZStackDoc::addObject(
 {
   switch (type) {
   case NeuTube::Documentable_SWC:
-    addSwcTree(dynamic_cast<ZSwcTree*>(obj), false);
-
-    if (role & ZDocPlayer::ROLE_ROI) {
-      obj->useCosmeticPen(true);
+  {
+    ZSwcTree *tree = dynamic_cast<ZSwcTree*>(obj);
+    if (tree != NULL) {
+      addSwcTree(tree, false);
+      if (role & ZDocPlayer::ROLE_ROI) {
+        tree->useCosmeticPen(true);
+        tree->updateHostState(ZSwcTree::NODE_STATE_COSMETIC);
+      }
     }
+  }
     break;
   case NeuTube::Documentable_PUNCTUM:
     addPunctum(dynamic_cast<ZPunctum*>(obj));
@@ -6018,10 +6029,12 @@ void ZStackDoc::selectAllSwcTreeNode()
   foreach (ZSwcTree *tree, m_swcList) {
     tree->updateIterator(SWC_TREE_ITERATOR_DEPTH_FIRST);
     for (Swc_Tree_Node *tn = tree->begin(); tn != NULL; tn = tree->next()) {
-      if ((m_selectedSwcTreeNodes.insert(tn)).second) {
-        selected.push_back(tn);
-        // deselect its tree
-        setSwcSelected(nodeToSwcTree(tn), false);
+      if (SwcTreeNode::isRegular(tn)) {
+        if ((m_selectedSwcTreeNodes.insert(tn)).second) {
+          selected.push_back(tn);
+          // deselect its tree
+          setSwcSelected(nodeToSwcTree(tn), false);
+        }
       }
     }
   }
@@ -6510,6 +6523,8 @@ void ZStackDoc::addData(const ZStackDocReader &reader)
     addSparseObject(reader.getSparseObjectList());
     notifySparseObjectModified();
   }
+
+  m_playerList.append(reader.getPlayerList());
 }
 
 
@@ -6811,6 +6826,11 @@ ZStackDocReader::ZStackDocReader() : m_stack(NULL), m_sparseStack(NULL),
 
 }
 
+ZStackDocReader::~ZStackDocReader()
+{
+  clear();
+}
+
 bool ZStackDocReader::readFile(const QString &filePath)
 {
   m_filePath = filePath;
@@ -6922,6 +6942,7 @@ void ZStackDocReader::clear()
   m_strokeList.clear();
   m_obj3dList.clear();
   m_sparseObjectList.clear();
+  m_playerList.clear();
 }
 
 void ZStackDocReader::loadSwcNetwork(const QString &filePath)
@@ -7016,4 +7037,69 @@ bool ZStackDocReader::hasData() const
   }
 
   return false;
+}
+
+void ZStackDocReader::addPlayer(
+    ZStackObject *obj, NeuTube::EDocumentableType type, ZDocPlayer::TRole role)
+{
+  if (role != ZDocPlayer::ROLE_NONE) {
+    ZDocPlayer *player = NULL;
+    switch (type) {
+    case NeuTube::Documentable_OBJ3D:
+      player = new ZObject3dPlayer(obj, role);
+      break;
+    default:
+      player = new ZDocPlayer(obj, role);
+      break;
+    }
+    m_playerList.append(player);
+  }
+}
+
+void ZStackDocReader::addObj3d(ZObject3d *obj)
+{
+  m_obj3dList.append(obj);
+}
+
+void ZStackDocReader::addObject(
+    ZStackObject *obj, NeuTube::EDocumentableType type, ZDocPlayer::TRole role)
+{
+  bool isTypeSupported = true;
+
+  switch (type) {
+  case NeuTube::Documentable_SWC:
+  {
+    ZSwcTree *tree = dynamic_cast<ZSwcTree*>(obj);
+    addSwcTree(tree);
+    if (role & ZDocPlayer::ROLE_ROI) {
+      tree->useCosmeticPen(true);
+      tree->updateHostState(ZSwcTree::NODE_STATE_COSMETIC);
+    }
+  }
+    break;
+  case NeuTube::Documentable_PUNCTUM:
+    addPunctum(dynamic_cast<ZPunctum*>(obj));
+    break;
+  case NeuTube::Documentable_OBJ3D:
+    addObj3d(dynamic_cast<ZObject3d*>(obj));
+    break;
+  case NeuTube::Documentable_LOCSEG_CHAIN:
+    addLocsegChain(dynamic_cast<ZLocsegChain*>(obj));
+    break;
+  case NeuTube::Documentable_STROKE:
+    addStroke(dynamic_cast<ZStroke2d*>(obj));
+    break;
+  case NeuTube::Documentable_SPARSE_OBJECT:
+    addSparseObject(dynamic_cast<ZSparseObject*>(obj));
+    break;
+  default:
+    isTypeSupported = false;
+    break;
+  }
+
+  if (isTypeSupported) {
+    addPlayer(obj, type, role);
+  } else {
+    RECORD_WARNING_UNCOND("Failed to add an unknown object");
+  }
 }

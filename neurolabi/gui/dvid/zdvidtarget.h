@@ -63,6 +63,9 @@ public:
   inline void setName(const std::string &name) {
     m_name = name;
   }
+  inline void setComment(const std::string &comment) {
+    m_comment = comment;
+  }
 
   std::string getUrl() const;
   std::string getUrl(const std::string &dataName) const;

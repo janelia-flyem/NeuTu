@@ -672,10 +672,17 @@ int SwcTreeNode::labelDifference(Swc_Tree_Node *lhs, Swc_Tree_Node *rhs)
   return SwcTreeNode::label(lhs) - SwcTreeNode::label(rhs);
 }
 
-void SwcTreeNode::setParent(Swc_Tree_Node *tn, Swc_Tree_Node *parent)
+void SwcTreeNode::setParent(Swc_Tree_Node *tn, Swc_Tree_Node *parent,
+                            EChildPosition childPos)
 {
-  //Swc_Tree_Node_Set_Parent(tn, parent);
-  setFirstChild(parent, tn);
+  switch (childPos) {
+  case CHILD_POS_FIRST:
+    setFirstChild(parent, tn);
+    break;
+  case CHILD_POS_LAST:
+    Swc_Tree_Node_Set_Parent(tn, parent);
+    break;
+  }
 }
 
 void SwcTreeNode::setFirstChild(Swc_Tree_Node *tn, Swc_Tree_Node *child)

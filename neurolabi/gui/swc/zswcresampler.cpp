@@ -70,6 +70,7 @@ int ZSwcResampler::optimalDownsample(ZSwcTree *tree)
   }
   n += optimizeCriticalParent(tree);
 
+  tree->deprecate(ZSwcTree::ALL_COMPONENT);
   return n;
 }
 
@@ -156,3 +157,30 @@ bool ZSwcResampler::isInterRedundant(
 
   return redundant;
 }
+#if 0
+void ZSwcResampler::upsampleAsFixedNodeNumber(ZSwcTree *tree, int n)
+{
+  int nodeNumberAdded = n - tree->size();
+  if (nodeNumberAdded <= 0) {
+    return;
+  }
+
+  double length = tree->length();
+  double resampleStep = length / (nodeNumberAdded + 1);
+
+  tree->updateIterator();
+  Swc_Tree_Node *tn = tree->begin();
+
+  int count = 0;
+  while (tn != NULL) {
+    Swc_Tree_Node *next = tn->next;
+  }
+
+  int n = Swc_Tree_Label_Branch_All(data());
+
+  for (int i = 1; i <= n; i++) {
+    ZSwcBranch *branch = extractBranch(i);
+    branch->resample(step);
+  }
+}
+#endif

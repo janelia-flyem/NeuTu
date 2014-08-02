@@ -111,6 +111,8 @@ public:
   void updateRange(int x1, int y1, int z1, int x2, int y2, int z2,
                    int width, int height, int depth);
 
+  size_t getRoiVolume() const;
+
   //untested
   void inferWeightParameter(const Stack *stack);
 
