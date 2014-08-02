@@ -111,7 +111,11 @@ macx {
 
     ICON = images/app.icns
     QMAKE_INFO_PLIST = images/Info.plist
-    QMAKE_CXXFLAGS += -m64 -std=c++11 -stdlib=libc++
+    QMAKE_CXXFLAGS += -m64
+
+    exists($${NEUROLABI_DIR}/macosx10.9) {
+        QMAKE_CXXFLAGS += -std=c++11 -stdlib=libc++
+    }
 
     doc.files = doc
     doc.path = Contents/MacOS
@@ -121,9 +125,10 @@ macx {
     config.path = Contents/MacOS
     QMAKE_BUNDLE_DATA += config
 
-    QMAKE_MAC_SDK = macosx10.9
-    QMAKE_MACOSX_DEPLOYMENT_TARGET=10.9
-
+    exists($${NEUROLABI_DIR}/macosx10.9) {
+        QMAKE_MAC_SDK = macosx10.9
+        QMAKE_MACOSX_DEPLOYMENT_TARGET=10.9
+    }
 }
 
 win32 {
