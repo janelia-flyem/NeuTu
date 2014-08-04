@@ -2,11 +2,13 @@
 #include "c_stack.h"
 #include "zimage.h"
 
-bool ZTileGraphicsItem::loadJsonObject(const ZJsonObject &obj)
+bool ZTileGraphicsItem::loadJsonObject(const ZJsonObject &obj, QString tileFilePath)
 {
-  if (m_tileInfo.loadJsonObject(obj)) {
+  if (m_tileInfo.loadJsonObject(obj,tileFilePath)) {
     setOffset(m_tileInfo.getOffset().x(), m_tileInfo.getOffset().y());
-    Stack *stack = C_Stack::readSc(m_tileInfo.getImageSource());
+    Stack *stack;
+    stack = C_Stack::readSc(m_tileInfo.getImageSource().c_str());
+
     ZImage image(C_Stack::width(stack), C_Stack::height(stack));
     Image_Array ima;
     ima.array = stack->array;
@@ -33,12 +35,8 @@ bool ZTileGraphicsItem::loadJsonObject(const ZJsonObject &obj)
     std::cout << image.width() << " " <<  image.height() << std::endl;
     std::cout << pmap.size().width() << " " <<  pixmap().size().height() << std::endl;
 
-
-
     setToolTip(m_tileInfo.getSource().c_str());
-
     return true;
   }
-
   return false;
 }

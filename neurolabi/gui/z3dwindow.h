@@ -314,7 +314,6 @@ private:
 
 
   ZSharedPointer<ZStackDoc> m_doc;
-
   Z3DNetworkEvaluator *m_networkEvaluator;
   Z3DCanvas *m_canvas;
 

@@ -150,7 +150,8 @@
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     m_ui(new Ui::MainWindow),
-    m_settings((GET_APPLICATION_DIR + "/settings.qt").c_str(), QSettings::NativeFormat)
+    m_settings((GET_APPLICATION_DIR + "/settings.qt").c_str(), QSettings::NativeFormat),
+    m_newProject(NULL)
 {
   //std::cout << "Creating mainwindow ..." << std::endl;
   RECORD_INFORMATION("Creating mainwindow ...");
@@ -877,6 +878,7 @@ void MainWindow::createToolBars()
 {
 //  fileToolBar = addToolBar(tr("&File"));
   //fileToolBar->addAction(newAction);
+  m_ui->toolBar->addAction(m_ui->actionNewProject);
   m_ui->toolBar->addAction(m_ui->actionTiles);
   //m_ui->toolBar->addAction(openAction);
 
@@ -886,8 +888,7 @@ void MainWindow::createToolBars()
     m_ui->toolBar->addAction(m_ui->actionSplit_Body);
   }
 
-  m_ui->toolBar->addAction(expandAction);
-  m_ui->toolBar->addAction(m_ui->actionMask);
+  //m_ui->toolBar->addAction(expandAction);
   //fileToolBar->addAction(saveAction);
 
   m_ui->toolBar->addSeparator();
@@ -898,6 +899,7 @@ void MainWindow::createToolBars()
   //m_ui->toolBar->addAction(m_ui->actionAutomatic);
 
   m_ui->toolBar->addAction(m_ui->actionMake_Projection);
+  m_ui->toolBar->addAction(m_ui->actionMask);
   m_ui->toolBar->addAction(m_ui->actionMask_SWC);
 
   m_ui->toolBar->addSeparator();
@@ -912,15 +914,13 @@ void MainWindow::createToolBars()
     m_ui->toolBar->addAction(m_ui->actionOpen_3D_View_Without_Volume);
   }
   m_ui->toolBar->addAction(m_ui->actionTile_Manager_2);
+  m_ui->toolBar->addSeparator();
 
   m_ui->toolBar->addAction(m_ui->actionBrightnessContrast);
-
 #ifdef _ADVANCED_
   //m_ui->toolBar->addAction(infoViewAction);
 #endif
-
   m_ui->toolBar->addAction(settingAction);
-  m_ui->toolBar->addSeparator();
   m_ui->toolBar->addAction(screenshotAction);
 #ifdef _DEBUG_
   m_ui->toolBar->addAction(testAction);
@@ -1059,14 +1059,10 @@ void MainWindow::enableStackActions(bool b)
   expandAction->setEnabled(b);
 
   m_ui->actionMake_Projection->setEnabled(b);
-
   m_ui->actionAddSWC->setEnabled(b);
-
   m_ui->actionTree_Preview->setEnabled(b);
-
   m_ui->actionAutomatic->setEnabled(b);
   m_ui->actionAutomatic_Axon->setEnabled(b);
-
   m_ui->menuLoad_into->setEnabled(b);
 
   noMarkPunctaAction->setEnabled(b);
@@ -1290,7 +1286,6 @@ void MainWindow::presentStackFrame(ZStackFrame *frame)
 
   if (NeutubeConfig::getInstance().getApplication() == "Biocytin") {
     frame->autoBcAdjust();
-
     frame->loadRoi(false);
 #if 0
     if (!frame->document()->stackSourcePath().isEmpty()) {
@@ -5161,8 +5156,10 @@ void MainWindow::on_actionSWC_Rescaling_triggered()
           if (!m_lastOpenedFilePath.endsWith(".swc")) {
             m_lastOpenedFilePath += ".swc";
           }
+          //QString fileName = getSaveFileName(tr("Export neuron as SWC"),
+          //                                   tr("SWC file (*.swc) "), false);
           QString fileName = getSaveFileName(tr("Export neuron as SWC"),
-                                             tr("SWC file (*.swc) "), false);
+                                             tr("SWC file (*.swc) "));
           if (!fileName.isEmpty()) {
             ZSwcTree *tree = frame->document()->getMergedSwc();
             if (tree != NULL) {
@@ -5201,7 +5198,8 @@ void MainWindow::on_actionMorphological_Features_triggered()
 {
   ZFlyEmDataFrame *frame = currentFlyEmDataFrame();
   if (frame != NULL) {
-    QString featureFile = getSaveFileName("Save Features", "*.csv", false);
+    //QString featureFile = getSaveFileName("Save Features", "*.csv", false);
+    QString featureFile = getSaveFileName("Save Features", "*.csv");
     if (!featureFile.isEmpty()) {
       if (!frame->saveNeuronFeature(featureFile, true)) {
         report("Save Failed", "Unable to save the features.",
@@ -5348,6 +5346,17 @@ void MainWindow::on_actionTiles_triggered()
     m_tileDlg->setDocument(frame->document());
   }
   on_actionTile_Manager_2_triggered();
+}
+
+void MainWindow::on_actionNewProject_triggered()
+{
+    if (m_newProject == NULL) {
+        m_newProject = new NewProjectMainWindow;
+        m_newProject->show();
+    } else {
+        m_newProject->show();
+        m_newProject->raise();
+    }
 }
 
 void MainWindow::showStackFrame(

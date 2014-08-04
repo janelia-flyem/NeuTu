@@ -11,12 +11,6 @@
 #include <QStringList>
 #include <QUrl>
 #include <QStatusBar>
-#ifdef __GLIBCXX__
-#include <tr1/memory>
-#else
-#include <memory>
-#endif
-
 #include "tz_image_lib_defs.h"
 #include "plotsettings.h"
 #include "zinteractivecontext.h"

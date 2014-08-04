@@ -76,7 +76,9 @@
       <string>Open Recent</string>
      </property>
     </widget>
+    <addaction name="actionNewProject"/>
     <addaction name="actionTiles"/>
+    <addaction name="separator"/>
     <addaction name="actionOpen"/>
     <addaction name="menuOpen_Recent"/>
     <addaction name="menuLoad_into"/>
@@ -1267,6 +1269,11 @@
   <action name="actionFlyEmROI">
    <property name="text">
     <string>ROI</string>
+   </property>
+  </action>
+  <action name="actionNewProject">
+   <property name="text">
+    <string>New Project</string>
    </property>
   </action>
  </widget>

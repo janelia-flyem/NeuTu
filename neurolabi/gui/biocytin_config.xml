@@ -16,7 +16,7 @@
   <Settings status="on"></Settings>
   <Stereo status="off"></Stereo>
   <MainWindow>
-    <tracing status="off"></tracing>
+    <tracing status="on"></tracing>
     <markPuncta status="off"></markPuncta>
     <swcEdit status="off"></swcEdit>
     <mergeImage status="off"></mergeImage>

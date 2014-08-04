@@ -19,6 +19,7 @@
 #include "zactionactivator.h"
 #include "flyemneuronthumbnaildialog.h"
 #include "zstackdoc.h"
+#include "newprojectmainwindow.h"
 
 class ZStackFrame;
 class QMdiArea;
@@ -50,6 +51,7 @@ class FlyEmBodySplitProjectDialog;
 class ZFlyEmNewBodySplitProjectDialog;
 class DvidSkeletonizeDialog;
 class ZFlyEmRoiDialog;
+class NewProjectMainWindow;
 
 namespace Ui {
     class MainWindow;
@@ -267,154 +269,82 @@ private slots:
   void on_actionMedian_Filter_triggered();
 
   void on_actionDistance_Map_triggered();
-
   void on_actionShortest_Path_Flow_triggered();
-
   void on_actionExpand_Region_triggered();
-
   void on_actionDilate_triggered();
-
   void on_actionExtract_Neuron_triggered();
-
   void on_actionSkeletonization_triggered();
-
   void on_actionPixel_triggered();
 
   //Addictional actions of an frame when it's activated
   void evokeStackFrame(QMdiSubWindow *frame);
-
   void on_actionImport_Network_triggered();
-
   void on_actionAddSWC_triggered();
-
   void on_actionImage_Sequence_triggered();
-
   void on_actionAddFlyEmNeuron_Network_triggered();
-
   void on_actionSynapse_Annotation_triggered();
-
   void on_actionPosition_triggered();
-
   void on_actionImportMask_triggered();
-
   void on_actionFlyEmSelect_triggered();
-
   void on_actionImportSegmentation_triggered();
-
   void on_actionFlyEmClone_triggered();
-
   void on_actionClear_Decoration_triggered();
-
   void on_actionFlyEmGrow_triggered();
-
   void on_actionFlyEmSelect_connection_triggered();
-
   void on_actionAxon_Export_triggered();
-
   void on_actionExtract_body_triggered();
-
   void on_actionPredict_errors_triggered();
-
   void on_actionCompute_Features_triggered();
-
   void on_actionMexican_Hat_triggered();
-
   void on_actionInvert_triggered();
-
   void on_actionFlyEmQATrain_triggered();
-
   void on_actionUpdate_Configuration_triggered();
-
   void on_actionErrorClassifcationTrain_triggered();
-
   void on_actionErrorClassifcationPredict_triggered();
-
   void on_actionErrorClassifcationEvaluate_triggered();
-
   void on_actionErrorClassifcationComputeFeatures_triggered();
-
   void on_actionTem_Paper_Volume_Rendering_triggered();
-
   void on_actionTem_Paper_Neuron_Type_Figure_triggered();
-
   void on_actionBinary_SWC_triggered();
-
   void on_actionImportFlyEmDatabase_triggered();
-
   void on_actionMake_Movie_triggered();
-
   void on_actionOpen_3D_View_Without_Volume_triggered();
-
   void on_actionLoop_Analysis_triggered();
-
   void on_actionMorphological_Thinning_triggered();
-
   void on_actionAddMask_triggered();
-
   void on_actionMask_triggered();
-
   void on_actionShortcut_triggered();
-
   void on_actionMake_Projection_triggered();
-
   void on_actionMask_SWC_triggered();
-
   void on_actionAutosaved_Files_triggered();
-
   void on_actionDiagnosis_triggered();
-
   void on_actionSave_SWC_triggered();
-
   void on_actionSimilarity_Matrix_triggered();
-
   void on_actionSparse_objects_triggered();
-
   void on_actionDendrogram_triggered();
-
   void on_actionPen_Width_for_SWC_Display_triggered();
-
   void on_actionDVID_Object_triggered();
-
   void on_actionDvid_Object_triggered();
-
   void on_actionAssign_Clustering_triggered();
-
   void on_actionSWC_Rescaling_triggered();
-
   void on_actionSurface_detection_triggered();
-
   void on_actionMorphological_Features_triggered();
-
   void on_actionFeature_Selection_triggered();
-
   void on_actionGet_Grayscale_triggered();
-
   void on_actionTiles_triggered();
-
+  void on_actionNewProject_triggered();
   void on_actionThumbnails_triggered();
-
   void on_actionBundle_triggered();
-
   void on_actionVolume_field_triggered();
-
   void on_actionThumbnails_2_triggered();
-
   void on_actionJSON_Point_List_triggered();
-
   void on_actionIdentify_Hot_Spot_triggered();
-
   void on_actionHot_Spot_Demo_triggered();
-
   void on_actionHDF5_Body_triggered();
-
   void on_actionDVID_Bundle_triggered();
-
   void on_actionSubmit_Skeletonize_triggered();
-
   void on_actionSplit_Region_triggered();
-
   void on_actionLoad_Body_with_Grayscale_triggered();
-
   void on_actionFlyEmSettings_triggered();
 
   void on_actionView_Labeled_Regions_triggered();
@@ -644,6 +574,8 @@ private:
   DvidSkeletonizeDialog *m_dvidSkeletonizeDialog;
   ZFlyEmRoiDialog *m_roiDlg;
 
+  //new project main window
+  NewProjectMainWindow *m_newProject;
 
   //FlyEmNeuronThumbnailDialog *m_thumbnailDlg;
   QFileDialog::Options m_fileDialogOption;

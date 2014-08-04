@@ -19,11 +19,6 @@ then
 
   echo 'Building libfftw3 ...'
   uncompress_lib fftw-3.3.2
-  #if [ ! -f fftw-3.3.2.tar ]
-  #then
-  #  gunzip fftw-3.3.2.tar.gz
-  #fi
-  #tar -xvf fftw-3.3.2.tar
   cd fftw-3.3.2
   ./configure --enable-shared=no --with-pic --prefix=${libdir}/fftw3 
   make
@@ -43,8 +38,6 @@ then
     mkdir jansson
   fi
   uncompress_lib jansson-2.5
-  #gunzip jansson-2.5.tar.gz
-  #tar -xvf jansson-2.5.tar
   cd jansson-2.5
   ./configure --enable-shared=no --with-pic --prefix=${libdir}/jansson
   make
@@ -61,8 +54,6 @@ then
     mkdir xml
   fi
   uncompress_lib libxml2-2.9.1
-  #gunzip libxml2-2.9.1.tar.gz
-  #tar -xvf libxml2-2.9.1.tar
   cd libxml2-2.9.1
   ./configure --without-iconv --without-zlib --with-pic --enable-shared=no --prefix=${libdir}/xml
   make
@@ -78,8 +69,6 @@ then
     mkdir png
   fi
   uncompress_lib libpng-1.6.7
-  #gunzip libpng-1.6.7.tar.gz
-  #tar -xvf libpng-1.6.7.tar
   cd libpng-1.6.7
   ./configure --enable-shared=no --with-pic --prefix=${libdir}/png
   make
@@ -95,8 +84,6 @@ then
     mkdir hdf5
   fi
   uncompress_lib hdf5-1.8.12.tar.gz
-  #gunzip hdf5-1.8.12.tar.gz
-  #tar -xvf hdf5-1.8.12.tar
   cd hdf5-1.8.12
   ./configure --enable-shared=no --with-pic --prefix=${libdir}/hdf5
   make

@@ -1395,7 +1395,7 @@ bool SwcTreeNode::fitSignal(Swc_Tree_Node *tn, const Stack *stack,
   double r2 = C_Stack::value(dist, index);
 
   if (r2 > 0) {
-    if (Geo3d_Dist_Sqr(nx, ny, 0, x(tn) - x1, y(tn) - y1, 0) < r2) {
+    if (Geo3d_Dist_Sqr(nx, ny, 0, x(tn) - x1, y(tn) - y1, 0) <= r2 * 2) {
       SwcTreeNode::setRadius(tn, sqrt(r2));
       SwcTreeNode::setX(tn, nx + x1);
       SwcTreeNode::setY(tn, ny + y1);

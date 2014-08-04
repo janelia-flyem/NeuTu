@@ -744,6 +744,7 @@ QString ZStackFrame::info() const
 
 void ZStackFrame::showSetting()
 {
+  synchronizeSetting();
   if (m_settingDlg->exec() == QDialog::Accepted) {
     synchronizeDocument();
   }

@@ -33,7 +33,7 @@ QMAKE_CXXFLAGS += -isystem ../gui/ext
 CONFIG += rtti exceptions
 
 CONFIG += static_glew
-#CONFIG += static_gtest
+CONFIG += static_gtest
 
 DEFINES += _QT_APPLICATION_ _QT_GUI_USED_ _NEUTUBE_ HAVE_CONFIG_H _ENABLE_DDP_ _ENABLE_WAVG_
 
@@ -114,6 +114,10 @@ macx {
     QMAKE_INFO_PLIST = images/Info.plist
     QMAKE_CXXFLAGS += -m64
 
+    exists($${NEUROLABI_DIR}/macosx10.9) {
+        QMAKE_CXXFLAGS += -std=c++11 -stdlib=libc++
+    }
+
     doc.files = doc
     doc.path = Contents/MacOS
     QMAKE_BUNDLE_DATA += doc
@@ -121,6 +125,11 @@ macx {
     config.files = config.xml
     config.path = Contents/MacOS
     QMAKE_BUNDLE_DATA += config
+
+    exists($${NEUROLABI_DIR}/macosx10.9) {
+        QMAKE_MAC_SDK = macosx10.9
+        QMAKE_MACOSX_DEPLOYMENT_TARGET=10.9
+    }
 }
 
 win32 {
@@ -431,7 +440,8 @@ HEADERS += mainwindow.h \
     zbuttonbox.h \
     zkeyeventswcmapper.h \
     zflyemroidialog.h \
-    flyem/zflyemroiproject.h
+    flyem/zflyemroiproject.h \
+    newprojectmainwindow.h
 
 FORMS += settingdialog.ui \
     frameinfodialog.ui \
@@ -483,7 +493,8 @@ FORMS += settingdialog.ui \
     flyembodysplitprojectdialog.ui \
     zflyemnewbodysplitprojectdialog.ui \
     dvidskeletonizedialog.ui \
-    zflyemroidialog.ui
+    zflyemroidialog.ui \
+    newprojectmainwindow.ui
 SOURCES += main.cpp \
     mainwindow.cpp \
     zstackview.cpp \
@@ -722,7 +733,8 @@ SOURCES += main.cpp \
     zbuttonbox.cpp \
     zkeyeventswcmapper.cpp \
     zflyemroidialog.cpp \
-    flyem/zflyemroiproject.cpp
+    flyem/zflyemroiproject.cpp \
+    newprojectmainwindow.cpp
 
 OTHER_FILES += \
     extlib.pri
