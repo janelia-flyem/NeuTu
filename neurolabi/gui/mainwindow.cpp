@@ -2175,7 +2175,7 @@ void MainWindow::readSettings()
 void MainWindow::updateTraceMode(ZStackFrame *frame, QAction *action)
 {
   if (frame != NULL) {
-    ZInteractiveContext::TraceMode traceMode;
+    ZInteractiveContext::TraceMode traceMode = ZInteractiveContext::TRACE_OFF;
     if (action->isChecked()) {
       if (action == noTraceAction) {
         traceMode = ZInteractiveContext::TRACE_OFF;

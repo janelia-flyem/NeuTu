@@ -917,8 +917,8 @@ void ZEditSwcDialog::runOperations()
     return;
   }
 
-  double search_pos[3];
-  double mindist;
+  double search_pos[3] = {0, 0, 0};
+  double mindist = 0.0;
   int minindex = -1;
   if (m_searchCheckBox->isChecked()) {
     search_pos[0] = m_searchPosXSpinBox->value();
