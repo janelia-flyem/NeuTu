@@ -25,7 +25,7 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>22</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -256,7 +256,6 @@
       <addaction name="actionImportSegmentation"/>
       <addaction name="actionAxon_Export"/>
       <addaction name="actionImportFlyEmDatabase"/>
-      <addaction name="actionDvid_Object"/>
       <addaction name="actionVolume_field"/>
       <addaction name="actionThumbnails_2"/>
       <addaction name="actionHDF5_Body"/>
@@ -1074,24 +1073,6 @@
     <string>Pen Width for SWC Display</string>
    </property>
   </action>
-  <action name="actionDVID_Object">
-   <property name="icon">
-    <iconset resource="gui.qrc">
-     <normaloff>:/images/open_dvid.png</normaloff>:/images/open_dvid.png</iconset>
-   </property>
-   <property name="text">
-    <string>DVID Object</string>
-   </property>
-  </action>
-  <action name="actionDvid_Object">
-   <property name="icon">
-    <iconset resource="gui.qrc">
-     <normaloff>:/images/open_dvid.png</normaloff>:/images/open_dvid.png</iconset>
-   </property>
-   <property name="text">
-    <string>DVID Object</string>
-   </property>
-  </action>
   <action name="actionAssign_Clustering">
    <property name="text">
     <string>Assign Clustering</string>
@@ -1184,6 +1165,10 @@
    </property>
   </action>
   <action name="actionDVID_Bundle">
+   <property name="icon">
+    <iconset resource="gui.qrc">
+     <normaloff>:/images/open_dvid.png</normaloff>:/images/open_dvid.png</iconset>
+   </property>
    <property name="text">
     <string>DVID Bundle</string>
    </property>

@@ -114,6 +114,8 @@ int main(int argc, char *argv[])
 
   QStringList fileList;
 
+  bool guiEnabled = true;
+
   if (argc > 1) {
     if (strcmp(argv[1], "d") == 0) {
       debugging = true;
@@ -134,9 +136,12 @@ int main(int argc, char *argv[])
     }
 #endif
   }
+  if (debugging || runCommandLine) {
+    guiEnabled = false;
+  }
 
 
-  QApplication app(argc, argv);     // call first otherwise it will cause runtime warning: Please instantiate the QApplication object first
+  QApplication app(argc, argv, guiEnabled);     // call first otherwise it will cause runtime warning: Please instantiate the QApplication object first
 
   //load config
   NeutubeConfig &config = NeutubeConfig::getInstance();
@@ -243,6 +248,7 @@ int main(int argc, char *argv[])
     }
 #endif
     if (!unitTest) {
+      std::cout << "Running test function" << std::endl;
       ZTest::test(NULL);
     }
 
