@@ -62,6 +62,8 @@ public:
   void append(double x, double y, double z);
 
   ZClosedCurve interpolate(const ZClosedCurve &curve, double lambda, int shift);
+  ZClosedCurve* interpolate(
+      const ZClosedCurve &curve, double lambda, int shift, ZClosedCurve *result);
 
   void reverse();
 

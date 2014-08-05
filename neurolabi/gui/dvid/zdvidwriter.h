@@ -18,6 +18,7 @@
 
 class ZFlyEmNeuron;
 class ZClosedCurve;
+class ZIntCuboid;
 
 class ZDvidWriter : public QObject
 {
@@ -36,6 +37,7 @@ public:
   void writeAnnotation(int bodyId, const ZJsonObject &obj);
   void writeAnnotation(const ZFlyEmNeuron &neuron);
   void writeRoiCurve(const ZClosedCurve &curve, int z);
+  void writeBoundBox(const ZIntCuboid &cuboid, int z);
 
 private:
   QEventLoop *m_eventLoop;

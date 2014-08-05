@@ -984,6 +984,11 @@ ZStackPresenter::processMouseReleaseForSwc(QMouseEvent *event, double *positionI
       double radius = m_stroke.getWidth() / 2.0;
       if (buddyDocument()->executeAddSwcNodeCommand(positionInData, radius)) {
         status = MOUSE_COMMAND_EXECUTED;
+        if (buddyDocument()->getTag() == NeuTube::Document::FLYEM_ROI) {
+          buddyDocument()->selectSwcTreeNode(
+                positionInData[0], positionInData[1], positionInData[2], false);
+          enterSwcExtendMode();
+        }
       }
     }
     default:
@@ -2448,4 +2453,10 @@ void ZStackPresenter::selectConnectedNode()
 void ZStackPresenter::processEvent(const ZInteractionEvent &event)
 {
   m_parent->notifyUser(event.getMessage());
+}
+
+void ZStackPresenter::setViewMode(ZInteractiveContext::ViewMode mode)
+{
+  m_interactiveContext.setViewMode(mode);
+  emit viewModeChanged();
 }

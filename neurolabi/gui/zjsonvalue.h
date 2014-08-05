@@ -88,6 +88,11 @@ public:
    */
   std::string getErrorString() const;
 
+  /*!
+   * \brief Dump the object to a string.
+   */
+  std::string dumpString(int indent = 2) const;
+
 protected:
   json_error_t m_error;
   json_t *m_data;

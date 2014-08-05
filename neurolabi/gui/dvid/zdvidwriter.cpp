@@ -139,3 +139,28 @@ void ZDvidWriter::writeRoiCurve(const ZClosedCurve &curve, int z)
 
   QProcess::execute(command);
 }
+
+void ZDvidWriter::writeBoundBox(const ZIntCuboid &cuboid, int z)
+{
+  ZJsonArray obj;
+  obj.append(cuboid.getFirstCorner().getX());
+  obj.append(cuboid.getFirstCorner().getY());
+  obj.append(cuboid.getFirstCorner().getZ());
+  obj.append(cuboid.getLastCorner().getX());
+  obj.append(cuboid.getLastCorner().getY());
+  obj.append(cuboid.getLastCorner().getZ());
+
+  ZString annotationString = obj.dumpString(0);
+  annotationString.replace(" ", "");
+  annotationString.replace("\"", "\"\"\"");
+
+  QString command = QString(
+        "curl -g -X POST -H \"Content-Type: application/json\" "
+        "-d \"%1\" %2/api/node/%3/bound_box/%4").arg(annotationString.c_str()).
+      arg(m_dvidClient->getServer()).arg(m_dvidClient->getUuid()).
+      arg(z);
+
+  qDebug() << command;
+
+  QProcess::execute(command);
+}

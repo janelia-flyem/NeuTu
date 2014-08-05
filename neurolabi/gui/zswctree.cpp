@@ -31,6 +31,7 @@
 #include "zjsonobject.h"
 #include "zjsonparser.h"
 #include "zerror.h"
+#include "zclosedcurve.h"
 
 using namespace std;
 
@@ -50,6 +51,7 @@ ZSwcTree::ZSwcTree() : m_smode(STRUCT_NORMAL)
   m_tree = NULL;
   //m_source = "new tree";
   m_iteratorReady = false;
+  setColorScheme(COLOR_NORMAL);
 }
 
 ZSwcTree::~ZSwcTree()
@@ -67,6 +69,16 @@ ZSwcTree::~ZSwcTree()
     Kill_Swc_Tree(m_tree);
   }
   m_tree = NULL;
+}
+
+void ZSwcTree::setStructrualMode(EStructrualMode mode)
+{
+  m_smode = mode;
+  if (m_smode == STRUCT_CLOSED_CURVE) {
+    setColorScheme(COLOR_ROI_CURVE);
+  } else {
+    setColorScheme(COLOR_NORMAL);
+  }
 }
 
 void swap(ZSwcTree &first, ZSwcTree &second)
@@ -402,6 +414,17 @@ void ZSwcTree::display(
     return;
   }
 
+  /*
+  const QColor rootColor(164, 164, 255, 164);
+  const QColor branchPointColor(164, 255, 164, 164);
+  const QColor nodeColor(255, 164, 164, 164);
+  const QColor planeSkeletonColor(255, 128, 128, 128);
+
+  const QColor rootFocusColor(0, 0, 255);
+  const QColor branchPointFocusColor(0, 255, 0);
+  const QColor nodeFocusColor(255, 0, 0);
+  */
+
 #if defined(_QT_GUI_USED_)
   double dataFocus = stackFocus - painter.getOffset().z();
 
@@ -413,17 +436,8 @@ void ZSwcTree::display(
     style = SOLID;
   }
 
-  const QColor rootColor(164, 164, 255, 164);
-  const QColor branchPointColor(164, 255, 164, 164);
-  const QColor nodeColor(255, 164, 164, 164);
-  const QColor planeSkeletonColor(255, 128, 128, 128);
-
-  const QColor rootFocusColor(0, 0, 255);
-  const QColor branchPointFocusColor(0, 255, 0);
-  const QColor nodeFocusColor(255, 0, 0);
-
   QPen pen;
-  pen.setColor(nodeFocusColor);
+  pen.setColor(m_nodeFocusColor);
   pen.setWidth(strokeWidth);
   pen.setCosmetic(m_usingCosmeticPen);
   painter.setPen(pen);
@@ -433,7 +447,7 @@ void ZSwcTree::display(
   //Draw skeletons
   for (const Swc_Tree_Node *tn = begin(); tn != end(); tn = next()) {
     if (!SwcTreeNode::isRoot(tn)) {
-      pen.setColor(planeSkeletonColor);
+      pen.setColor(m_planeSkeletonColor);
       pen.setWidthF(strokeWidth / 2.0);
       painter.setPen(pen);
       painter.drawLine(QPointF(SwcTreeNode::x(tn), SwcTreeNode::y(tn)),
@@ -506,21 +520,21 @@ void ZSwcTree::display(
     if (visible) {
       if (SwcTreeNode::isRoot(tn)) {
         if (focused) {
-          pen.setColor(rootFocusColor);
+          pen.setColor(m_rootFocusColor);
         } else {
-          pen.setColor(rootColor);
+          pen.setColor(m_rootColor);
         }
       } else if (SwcTreeNode::isBranchPoint(tn)) {
         if (focused) {
-          pen.setColor(branchPointFocusColor);
+          pen.setColor(m_branchPointFocusColor);
         } else {
-          pen.setColor(branchPointColor);
+          pen.setColor(m_branchPointColor);
         }
       } else {
         if (focused) {
-          pen.setColor(nodeFocusColor);
+          pen.setColor(m_nodeFocusColor);
         } else {
-          pen.setColor(nodeColor);
+          pen.setColor(m_nodeColor);
         }
       }
       painter.setPen(pen);
@@ -1867,6 +1881,29 @@ Swc_Tree_Node* ZSwcTree::queryNode(const ZPoint &pt)
   return Swc_Tree_Closest_Node(data(), pos);
 }
 
+ZPoint ZSwcTree::computeCentroid() const
+{
+  ZPoint center;
+  int count = 0;
+  double weight = 0.0;
+  updateIterator();
+  for (Swc_Tree_Node *tn = begin(); tn != NULL; tn = next()) {
+    if (SwcTreeNode::isRegular(tn)) {
+      center += SwcTreeNode::pos(tn) * SwcTreeNode::radius(tn);
+      weight += SwcTreeNode::radius(tn);
+      ++count;
+    }
+  }
+
+  if (weight > 0.0) {
+    center /= weight;
+  } else if (count > 0) {
+    center /= count;
+  }
+
+  return center;
+}
+
 ZPoint ZSwcTree::somaCenter()
 {
   updateIterator(SWC_TREE_ITERATOR_DEPTH_FIRST, false);
@@ -3005,6 +3042,32 @@ bool ZSwcTree::getHostState(const Swc_Tree_Node *tn, ENodeState state)
   }
 
   return on;
+}
+
+void ZSwcTree::setColorScheme(EColorScheme scheme)
+{
+  switch (scheme) {
+  case COLOR_NORMAL:
+    m_rootColor = QColor(164, 164, 255, 164);
+    m_branchPointColor = QColor(164, 255, 164, 164);
+    m_nodeColor = QColor(255, 164, 164, 164);
+    m_planeSkeletonColor = QColor(255, 128, 128, 128);
+
+    m_rootFocusColor = QColor(0, 0, 255);
+    m_branchPointFocusColor= QColor(0, 255, 0);
+    m_nodeFocusColor = QColor(255, 0, 0);
+    break;
+  case COLOR_ROI_CURVE:
+    m_rootColor = QColor(164, 164, 255, 164);
+    m_branchPointColor = QColor(164, 255, 164, 164);
+    m_nodeColor = QColor(255, 164, 164, 164);
+    m_planeSkeletonColor = QColor(255, 128, 128, 128);
+
+    m_rootFocusColor = QColor(0, 0, 255, 32);
+    m_branchPointFocusColor= QColor(0, 255, 0, 32);
+    m_nodeFocusColor = QColor(255, 0, 0, 32);
+    break;
+  }
 }
 
 void ZSwcTree::setHostState(Swc_Tree_Node *tn, ENodeState state) const

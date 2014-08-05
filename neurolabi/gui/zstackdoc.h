@@ -525,7 +525,9 @@ public: /* puncta related methods */
 
   inline const QList<ZSwcTree*>& getSwcList() const { return m_swcList; }
   inline QList<ZSwcTree*>& getSwcList() { return m_swcList; }
-  inline ZSwcTree* getSwcTree(size_t index) { return m_swcList[index]; }
+  inline ZSwcTree* getSwcTree(size_t index) {
+    if ((int) index >= m_swcList.size()) return NULL;
+    return m_swcList[index]; }
   QList<ZSwcTree*>::iterator getSwcIteratorBegin() { return m_swcList.begin(); }
   QList<ZSwcTree*>::iterator getSwcIteratorEnd() { return m_swcList.end(); }
   QList<ZSwcTree*>::const_iterator getSwcIteratorBegin() const {

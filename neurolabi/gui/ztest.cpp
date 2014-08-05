@@ -74,6 +74,7 @@ using namespace std;
 #include "zdoublevector.h"
 #include "zswcdisttrunkanalyzer.h"
 #include "zswcbranchingtrunkanalyzer.h"
+#include "flyem/zflyemroiproject.h"
 #include "tz_error.h"
 #include "flyem/zsynapselocationmatcher.h"
 #include "flyem/zsynapselocationmetric.h"
@@ -12401,7 +12402,7 @@ void ZTest::test(MainWindow *host)
   tree.save(GET_TEST_DATA_DIR + "/test2.swc");
 #endif
 
-#if 1
+#if 0
   ZSwcTree tree1;
   ZSwcTree tree2;
   tree1.load(GET_TEST_DATA_DIR + "/curve1.swc");
@@ -12445,5 +12446,145 @@ void ZTest::test(MainWindow *host)
 
   tree.save(GET_TEST_DATA_DIR + "/test2.swc");
 
+#endif
+
+#if 0
+  QPixmap *pix = new QPixmap(500,500);
+  QPainter *paint = new QPainter(pix);
+  paint->setPen(*(new QColor(255,34,255,255)));
+  paint->drawRect(15,15,100,100);
+
+  pix->save((GET_TEST_DATA_DIR + "/test.tif").c_str());
+#endif
+
+#if 0
+  ZStroke2d stroke;
+  stroke.append(0, 0);
+  stroke.append(100, 100);
+  stroke.append(-100, 100);
+  stroke.append(100, 20);
+  stroke.setZ(10);
+
+  ZStack *stack = ZStackFactory::makePolygonPicture(stroke);
+  stack->save(GET_TEST_DATA_DIR + "/test.tif");
+#endif
+
+#if 0
+  ZSwcTree tree;
+  tree.load(GET_TEST_DATA_DIR + "/curve_test.swc");
+
+  ZClosedCurve curve1;
+  ZClosedCurve curve2;
+
+  ZSwcTree::RegularRootIterator treeIterator(&tree);
+  for (Swc_Tree_Node *tn = treeIterator.begin(); tn != NULL;
+       tn = treeIterator.next()) {
+    curve1.append(SwcTreeNode::pos(tn));
+    curve2.append(SwcTreeNode::pos(SwcTreeNode::firstChild(tn)));
+  }
+
+  curve1.print();
+  curve2.print();
+
+  ZSwcTree *tree1 = ZSwcGenerator::createSwc(curve1, 5.0);
+  ZSwcTree *tree2 = ZSwcGenerator::createSwc(curve2, 5.0);
+
+  ZClosedCurve curve3 = curve1.interpolate(curve2, 2.0, 5);
+  ZSwcTree *tree3 = ZSwcGenerator::createSwc(curve3, 5.0);
+
+
+  tree.merge(tree1);
+  tree.merge(tree2);
+  tree.merge(tree3);
+
+  tree.save(GET_TEST_DATA_DIR + "/test2.swc");
+#endif
+
+#if 0
+  ZSwcTree tree1;
+  tree1.load(GET_TEST_DATA_DIR + "/curve1.swc");
+
+  ZStroke2d curve;
+
+  Swc_Tree_Node *tn = tree1.firstRegularRoot();
+  while (tn != NULL) {
+    curve.append(SwcTreeNode::x(tn), SwcTreeNode::y(tn));
+    tn = SwcTreeNode::firstChild(tn);
+  }
+
+  ZStack *stack = ZStackFactory::makePolygonPicture(curve);
+  stack->save(GET_TEST_DATA_DIR + "/test.tif");
+#endif
+
+#if 0
+  ZObject3dScan obj;
+  obj.load(GET_TEST_DATA_DIR + "/test.sobj");
+
+  ZDvidInfo dvidInfo;
+  ZDvidReader reader;
+
+  ZDvidTarget target("emdata1.int.janelia.org", "ba959", 9000);
+  if (reader.open(target)) {
+    dvidInfo = reader.readGrayScaleInfo();
+  }
+
+  std::cout << obj.getVoxelNumber() << std::endl;
+
+
+  ZObject3dScan blockObj = dvidInfo.getBlockIndex(obj);
+  std::cout << blockObj.getVoxelNumber() << std::endl;
+
+  blockObj.save(GET_TEST_DATA_DIR + "/test2.sobj");
+#endif
+
+#if 1
+  ZDvidInfo dvidInfo;
+  ZDvidReader reader;
+
+  ZDvidTarget target("emdata1.int.janelia.org", "ba959", 9000);
+
+  if (reader.open(target)) {
+    dvidInfo = reader.readGrayScaleInfo();
+  }
+
+  ZObject3dScan blockObj;
+  blockObj.load(GET_TEST_DATA_DIR + "/block.sobj");
+
+  int z = 100;
+  ZSwcTree *tree = ZSwcGenerator::createSwc(blockObj, z, dvidInfo);
+
+  ZStackDocReader docReader;
+  docReader.addSwcTree(tree);
+  ZStackFrame *frame = host->createStackFrame(docReader);
+  frame->open3DWindow(host);
+  delete frame;
+#endif
+
+#if 0
+  ZDvidInfo dvidInfo;
+  ZDvidReader reader;
+
+  ZDvidTarget target("emdata1.int.janelia.org", "ba959", 9000);
+  if (reader.open(target)) {
+    dvidInfo = reader.readGrayScaleInfo();
+  }
+
+  for (int z = dvidInfo.getMinZ(); z <= dvidInfo.getMaxZ(); ++z) {
+    std::cout << "PLane: " << z << std::endl;
+    ZStack *stack = reader.readGrayScale(
+          dvidInfo.getStartCoordinates().getX(),
+          dvidInfo.getStartCoordinates().getY(),
+          z, dvidInfo.getStackSize()[0],
+        dvidInfo.getStackSize()[1], 1);
+
+    if (stack != NULL) {
+      ZIntCuboid boundBox = ZFlyEmRoiProject::estimateBoundBox(*stack);
+      delete stack;
+      ZDvidWriter writer;
+      if (writer.open(target)) {
+        writer.writeBoundBox(boundBox, z);
+      }
+    }
+  }
 #endif
 }

@@ -153,6 +153,8 @@ public:
     return m_parent;
   }
 
+  void setViewMode(ZInteractiveContext::ViewMode mode);
+
 public slots:
   void addDecoration(ZStackObject *obj, bool tail = true);
   void removeLastDecoration(ZStackObject *obj);

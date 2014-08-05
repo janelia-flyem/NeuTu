@@ -7,6 +7,10 @@
 #include "tz_stack_lib.h"
 #include "zintcuboid.h"
 
+class ZClosedCurve;
+class ZStroke2d;
+
+
 /*!
  * \brief The class of creating a stack
  */
@@ -35,6 +39,8 @@ public:
   static ZStack* makeZeroStack(int width, int height, int depth);
   static ZStack* makeIndexStack(int width, int height, int depth);
   static ZStack* makeUniformStack(int width, int height, int depth, int v);
+
+  static ZStack* makePolygonPicture(const ZStroke2d &stroke);
 
 private:
   static Stack* pileMatched(const std::vector<Stack*> stackArray);

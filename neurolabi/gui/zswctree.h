@@ -18,12 +18,12 @@
 #include "zswcpath.h"
 #include "zcuboid.h"
 #include "zuncopyable.h"
-#include "zclosedcurve.h"
 
 class ZSwcForest;
 class ZSwcBranch;
 class ZSwcTrunkAnalyzer;
 class QPointF;
+class ZClosedCurve;
 
 //! SWC tree class
 /*!
@@ -476,6 +476,8 @@ public:
   //Rotate swc tree around a point
   void rotate(double theta, double psi, const ZPoint& center);
 
+  ZPoint computeCentroid() const;
+
   void resample(double step);
 
   Swc_Tree_Node* removeRandomBranch();
@@ -564,15 +566,19 @@ public:
    */
   bool isLinear() const;
 
+  enum EColorScheme {
+    COLOR_NORMAL, COLOR_ROI_CURVE
+  };
+
+  void setColorScheme(EColorScheme scheme);
+
   void setHostState(Swc_Tree_Node *tn, ENodeState state) const;
   void setHostState(Swc_Tree_Node *tn) const;
 
   inline EStructrualMode getStructrualMode() const {
     return m_smode;
   }
-  void setStructrualMode(EStructrualMode mode) {
-    m_smode = mode;
-  }
+  void setStructrualMode(EStructrualMode mode);
 
   ZClosedCurve toClosedCurve() const;
 
@@ -592,7 +598,6 @@ public:
     ZSwcTree *m_tree;
     Swc_Tree_Node *m_currentNode;
   };
-
 
   class RegularRootIterator : public ExtIterator {
   public:
@@ -646,6 +651,16 @@ private:
 
   static const int m_nodeStateCosmetic;
 
+#ifdef _QT_GUI_USED_
+  QColor m_rootColor;
+  QColor m_branchPointColor;
+  QColor m_nodeColor;
+  QColor m_planeSkeletonColor;
+
+  QColor m_rootFocusColor;
+  QColor m_branchPointFocusColor;
+  QColor m_nodeFocusColor;
+#endif
 };
 
 #define REGULAR_SWC_NODE_BEGIN(tn, start) \

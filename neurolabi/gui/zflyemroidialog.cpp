@@ -1,8 +1,10 @@
 #include "zflyemroidialog.h"
 #include <QtConcurrentRun>
+#include "neutubeconfig.h"
 #include "ui_zflyemroidialog.h"
 #include "dvid/zdvidreader.h"
 #include "dvid/zdvidinfo.h"
+#include "dvid/zdvidwriter.h"
 #include "mainwindow.h"
 #include "zstackframe.h"
 
@@ -37,6 +39,10 @@ ZFlyEmRoiDialog::ZFlyEmRoiDialog(QWidget *parent) :
   updateWidget();
   setProgressBar(ui->progressBar);
   ui->progressBar->hide();
+
+#ifndef _DEBUG_
+  ui->testPushButton->hide();
+#endif
 }
 
 ZFlyEmRoiDialog::~ZFlyEmRoiDialog()
@@ -60,6 +66,8 @@ void ZFlyEmRoiDialog::updateWidget()
       arg(m_project.getDvidInfo().getMaxZ()).
       arg(m_project.getDataZ()).arg(m_project.hasOpenedRoi());
   ui->infoWidget->setText(text);
+
+  ui->loadGrayScalePushButton->setEnabled(m_project.getDvidTarget().isValid());
 }
 
 void ZFlyEmRoiDialog::setDvidTarget()
@@ -89,20 +97,34 @@ void ZFlyEmRoiDialog::loadGrayscaleFunc(int z)
     //int z = m_zDlg->getValue();
     //m_project.setZ(z);
 
-    ZStack *stack = reader.readGrayScale(
-          dvidInfo.getStartCoordinates().getX(),
-          dvidInfo.getStartCoordinates().getY(),
-          z, dvidInfo.getStackSize()[0],
+    ZIntCuboid boundBox = reader.readBoundBox(z);
+
+    ZStack *stack = NULL;
+    if (!boundBox.isEmpty()) {
+      stack = reader.readGrayScale(boundBox.getFirstCorner().getX(),
+                                   boundBox.getFirstCorner().getY(),
+                                   z, boundBox.getWidth(),
+                                   boundBox.getHeight(), 1);
+    } else {
+      stack = reader.readGrayScale(
+            dvidInfo.getStartCoordinates().getX(),
+            dvidInfo.getStartCoordinates().getY(),
+            z, dvidInfo.getStackSize()[0],
           dvidInfo.getStackSize()[1], 1);
+      if (stack != NULL) {
+        boundBox = ZFlyEmRoiProject::estimateBoundBox(*stack);
+        if (!boundBox.isEmpty()) {
+          stack->crop(boundBox);
+        }
+        ZDvidWriter writer;
+        if (writer.open(m_project.getDvidTarget())) {
+          writer.writeBoundBox(boundBox, z);
+        }
+      }
+    }
 
     if (stack != NULL) {
-      ZIntCuboid cuboid = estimateBoundBox(*stack);
-      if (!cuboid.isEmpty()) {
-        stack->crop(cuboid);
-      }
-
       advance(0.5);
-
       m_docReader.clear();
       m_docReader.setStack(stack);
 
@@ -216,68 +238,87 @@ void ZFlyEmRoiDialog::on_searchPushButton_clicked()
   }
 }
 
-ZIntCuboid ZFlyEmRoiDialog::estimateBoundBox(const ZStack &stack)
+
+void ZFlyEmRoiDialog::on_testPushButton_clicked()
 {
-  const static uint8_t fgValue = 255;
-  int width = stack.width();
-  int height = stack.height();
-  const uint8_t *array = stack.array8();
+  ZObject3dScan obj = m_project.getRoiObject();
 
-  ZIntCuboid cuboid = stack.getBoundBox();
-  //Left bound
-  for (int y = 0; y < height; y += 100) {
-    size_t offset = width * y;
-    for (int x = 0; x < width; ++x) {
-      if (array[offset++] != fgValue) {
-        if (x > cuboid.getFirstCorner().getX()) {
-          cuboid.setFirstX(x);
-        }
-        break;
-      }
-    }
-  }
+  obj.save(GET_DATA_DIR + "/test.sobj");
 
-  //Right bound
-  for (int y = 0; y < height; y += 100) {
-    size_t offset = width * y + width - 1;
-    for (int x = width - 1; x >= 0; --x) {
-      if (array[offset--] != fgValue) {
-        if (x < cuboid.getLastCorner().getX()) {
-          cuboid.setLastX(x);
-        }
-        break;
-      }
-    }
-  }
+  dump(QString("%1 saved.").arg((GET_DATA_DIR + "/test.sobj").c_str()));
+}
 
-  //Up bound
-  for (int x = 0; x < width; x += 100) {
-    size_t offset =x;
-    for (int y = 0; y < height; ++y) {
-      if (array[offset] != fgValue) {
-        if (y > cuboid.getFirstCorner().getY()) {
-          cuboid.setFirstY(y);
-        }
-        break;
-      }
-      offset += width;
-    }
-  }
+#define ROI_SCALE 1.01
 
-  //Down bound
-  size_t area = width * height;
-  for (int x = 0; x < width; x += 100) {
-    size_t offset = area - 1 - x;
-    for (int y = height - 1; y >= 0; --y) {
-      if (array[offset] != fgValue) {
-        if (y < cuboid.getLastCorner().getY()) {
-          cuboid.setLastY(y);
-        }
-        break;
-      }
-      offset -= width;
-    }
-  }
+void ZFlyEmRoiDialog::on_xIncPushButton_clicked()
+{
+  m_project.scaleRoiSwc(ROI_SCALE, 1.0);
+}
 
-  return cuboid;
+void ZFlyEmRoiDialog::on_xDecPushButton_clicked()
+{
+  m_project.scaleRoiSwc(1. / ROI_SCALE, 1.0);
+}
+
+
+void ZFlyEmRoiDialog::on_yDecPushButton_clicked()
+{
+  m_project.scaleRoiSwc(1.0, 1. / ROI_SCALE);
+}
+
+void ZFlyEmRoiDialog::on_yIncPushButton_clicked()
+{
+  m_project.scaleRoiSwc(1.0, ROI_SCALE);
+}
+
+void ZFlyEmRoiDialog::on_rotateLeftPushButton_clicked()
+{
+  m_project.rotateRoiSwc(-0.1);
+}
+
+void ZFlyEmRoiDialog::on_rotateRightPushButton_clicked()
+{
+  m_project.rotateRoiSwc(0.1);
+}
+
+void ZFlyEmRoiDialog::on_xyDecPushButton_clicked()
+{
+  m_project.scaleRoiSwc(1. / ROI_SCALE, 1. / ROI_SCALE);
+}
+
+void ZFlyEmRoiDialog::on_xyIncPushButton_clicked()
+{
+  m_project.scaleRoiSwc(ROI_SCALE, ROI_SCALE);
+}
+
+#define MOVE_STEP 5.0
+
+void ZFlyEmRoiDialog::on_movexyDecPushButton_clicked()
+{
+  m_project.translateRoiSwc(-MOVE_STEP, -MOVE_STEP);
+}
+
+void ZFlyEmRoiDialog::on_movexyIncPushButton_clicked()
+{
+  m_project.translateRoiSwc(MOVE_STEP, MOVE_STEP);
+}
+
+void ZFlyEmRoiDialog::on_movexDecPushButton_clicked()
+{
+  m_project.translateRoiSwc(-MOVE_STEP, 0.0);
+}
+
+void ZFlyEmRoiDialog::on_movexIncPushButton_clicked()
+{
+  m_project.translateRoiSwc(MOVE_STEP, 0.0);
+}
+
+void ZFlyEmRoiDialog::on_moveyDecPushButton_clicked()
+{
+  m_project.translateRoiSwc(0.0, -MOVE_STEP);
+}
+
+void ZFlyEmRoiDialog::on_moveyIncPushButton_clicked()
+{
+  m_project.translateRoiSwc(0.0, MOVE_STEP);
 }

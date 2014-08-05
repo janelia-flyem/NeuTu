@@ -54,7 +54,8 @@ Swc_Tree_Node* SwcTreeNode::makePointer(
   Swc_Tree_Node *tn = SwcTreeNode::makePointer(1, 0, x, y, z, radius, -1);
 
   if (parent != NULL) {
-    setParent(tn, parent);
+    setFirstChild(parent, tn);
+    //setParent(tn, parent);
   }
 
   return tn;

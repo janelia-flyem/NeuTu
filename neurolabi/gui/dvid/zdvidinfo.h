@@ -34,10 +34,12 @@ public:
    */
   ZIntPoint getBlockIndex(double x, double y, double z);
 
+  ZIntPoint getBlockIndex(int x, int y, int z);
+
   /*!
    * \brief Get the indices of all blocks containing at least one voxl of an object
    */
-  ZIntPointArray getBlockIndex(const ZObject3dScan &obj);
+  ZObject3dScan getBlockIndex(const ZObject3dScan &obj);
 
   inline const std::vector<double>& getVoxelResolution() const {
     return m_voxelResolution;
@@ -58,6 +60,13 @@ public:
   inline const ZIntPoint& getEndBlockIndex() const {
     return m_endBlockIndex;
   }
+
+  /*!
+   * \brief Get the bound box of a block
+   *
+   * (\a x, \a y, \a z) is the block index.
+   */
+  ZIntCuboid getBlockBox(int x, int y, int z) const;
 
   ZIntPoint getBlockSize() const;
   ZIntPoint getGridSize() const;

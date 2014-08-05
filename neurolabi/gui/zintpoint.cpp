@@ -118,3 +118,8 @@ ZIntPoint ZIntPoint::operator - () const
 {
   return ZIntPoint(-getX(), -getY(), -getZ());
 }
+
+ZPoint ZIntPoint::toPoint() const
+{
+  return ZPoint(getX(), getY(), getZ());
+}

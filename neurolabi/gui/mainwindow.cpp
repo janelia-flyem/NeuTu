@@ -150,8 +150,8 @@
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     m_ui(new Ui::MainWindow),
-    m_settings((GET_APPLICATION_DIR + "/settings.qt").c_str(), QSettings::NativeFormat),
-    m_newProject(NULL)
+    m_newProject(NULL),
+    m_settings((GET_APPLICATION_DIR + "/settings.qt").c_str(), QSettings::NativeFormat)
 {
   //std::cout << "Creating mainwindow ..." << std::endl;
   RECORD_INFORMATION("Creating mainwindow ...");
@@ -878,8 +878,10 @@ void MainWindow::createToolBars()
 {
 //  fileToolBar = addToolBar(tr("&File"));
   //fileToolBar->addAction(newAction);
-  m_ui->toolBar->addAction(m_ui->actionNewProject);
-  m_ui->toolBar->addAction(m_ui->actionTiles);
+  if (GET_APPLICATION_NAME == "Biocytin") {
+    m_ui->toolBar->addAction(m_ui->actionNewProject);
+    m_ui->toolBar->addAction(m_ui->actionTiles);
+  }
   //m_ui->toolBar->addAction(openAction);
 
   if (NeutubeConfig::getInstance().getApplication() == "FlyEM") {

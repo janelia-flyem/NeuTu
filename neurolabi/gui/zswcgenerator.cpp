@@ -14,6 +14,7 @@
 #include "tz_stack_bwmorph.h"
 #include "neutubeconfig.h"
 #include "tz_math.h"
+#include "zclosedcurve.h"
 
 ZSwcGenerator::ZSwcGenerator()
 {
@@ -63,6 +64,15 @@ ZSwcTree* ZSwcGenerator::createCircleSwc(double cx, double cy, double cz, double
 ZSwcTree* ZSwcGenerator::createBoxSwc(const ZCuboid &box)
 {
   return ZSwcTree::createCuboidSwc(box);
+}
+
+ZSwcTree* ZSwcGenerator::createBoxSwc(const ZIntCuboid &box)
+{
+  ZCuboid cuboid;
+  cuboid.setFirstCorner(ZPoint(box.getFirstCorner().toPoint()));
+  cuboid.setSize(box.getWidth(), box.getHeight(), box.getDepth());
+
+  return createBoxSwc(cuboid);
 }
 
 ZSwcTree* ZSwcGenerator::createSwc(const ZFlyEmNeuronRange &range)
@@ -550,6 +560,31 @@ ZSwcTree* ZSwcGenerator::createSwc(const ZClosedCurve &curve, double radius)
           SwcTreeNode::makePointer(curve.getLandmark(i), radius);
       SwcTreeNode::setParent(tn, parent);
       parent = tn;
+    }
+  }
+
+  return tree;
+}
+
+ZSwcTree* ZSwcGenerator::createSwc(
+    const ZObject3dScan &blockObj, int z, const ZDvidInfo &dvidInfo)
+{
+  ZObject3dScan slice = blockObj.getSlice(z);
+  size_t stripeNumber = slice.getStripeNumber();
+
+  ZSwcTree *tree = new ZSwcTree;
+  for (size_t s = 0; s < stripeNumber; ++s) {
+    const ZObject3dStripe &stripe = slice.getStripe(s);
+    int nseg = stripe.getSegmentNumber();
+    int y = stripe.getY();
+    int z = stripe.getZ();
+    for (int i = 0; i < nseg; ++i) {
+      int x0 = stripe.getSegmentStart(i);
+      int x1 = stripe.getSegmentEnd(i);
+      for (int x = x0; x <= x1; ++x) {
+        ZIntCuboid cuboid = dvidInfo.getBlockBox(x, y, z);
+        tree->merge(createBoxSwc(cuboid));
+      }
     }
   }
 

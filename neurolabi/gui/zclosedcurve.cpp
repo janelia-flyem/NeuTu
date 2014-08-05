@@ -205,6 +205,29 @@ void ZClosedCurve::append(double x, double y, double z)
   append(ZPoint(x, y, z));
 }
 
+ZClosedCurve* ZClosedCurve::interpolate(
+    const ZClosedCurve &curve, double lambda, int shift, ZClosedCurve *result)
+{
+  if (result != NULL) {
+    result->clear();
+  }
+
+  if (!isEmpty() && !curve.isEmpty()) {
+    if (result == NULL) {
+      result = new ZClosedCurve;
+    }
+    for (size_t i = 0; i < m_landmarkArray.size(); ++i) {
+      ZPoint pt1 = getLandmark(i + shift);
+      ZPoint pt2 = curve.getLandmark(i);
+      ZPoint pt = pt1 * lambda + pt2 * (1 - lambda);
+
+      result->append(pt);
+    }
+  }
+
+  return result;
+}
+
 ZClosedCurve ZClosedCurve::interpolate(
     const ZClosedCurve &curve, double lambda, int shift)
 {
@@ -223,13 +246,7 @@ ZClosedCurve ZClosedCurve::interpolate(
 #endif
 
   ZClosedCurve result;
-  for (size_t i = 0; i < m_landmarkArray.size(); ++i) {
-    ZPoint pt1 = getLandmark(i + shift);
-    ZPoint pt2 = curve.getLandmark(i);
-    ZPoint pt = pt1 * lambda + pt2 * (1 - lambda);
-
-    result.append(pt);
-  }
+  interpolate(curve, lambda, shift, &result);
 
   return result;
 }

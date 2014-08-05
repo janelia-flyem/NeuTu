@@ -482,7 +482,7 @@ ZCuboid ZStroke2d::getBoundBox() const
       }
     }
 
-    box.set(x0 - r, x0 - r, m_z, x0 + r, y0 + r, m_z + 1.0);
+    box.set(x0 - r, y0 - r, m_z, x1 + r, y1 + r, m_z + 1.0);
   }
   return box;
 }

@@ -180,6 +180,7 @@ public:
 
   //Turn a binary stack into scanlines
   void loadStack(const Stack *stack);
+  void loadStack(const ZStack &stack);
 
   void print() const;
 

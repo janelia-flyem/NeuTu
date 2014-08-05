@@ -8,6 +8,7 @@
 
 class ZStackFrame;
 class ZSwcTree;
+class ZObject3dScan;
 
 class ZFlyEmRoiProject : public QObject
 {
@@ -50,6 +51,8 @@ public:
   void downloadRoi();
   void downloadRoi(int z);
   void downloadAllRoi();
+  ZClosedCurve estimateRoi(int z);
+  ZClosedCurve* estimateRoi(int z, ZClosedCurve *result) const;
   void estimateRoi();
   inline const ZDvidInfo& getDvidInfo() const {
     return m_dvidInfo;
@@ -59,6 +62,24 @@ public:
 
   void setRoiUploaded(int z, bool uploaded);
   bool isRoiCurveUploaded(int z) const;
+
+  ZObject3dScan getFilledRoi(int z) const;
+  ZObject3dScan* getFilledRoi(int z, ZObject3dScan *result) const;
+
+  ZObject3dScan getRoiObject() const;
+
+  int getFirstRoiZ() const;
+  int getLastRoiZ() const;
+
+  void scaleRoiSwc(double sx, double sy);
+  void rotateRoiSwc(double theta);
+  void translateRoiSwc(double dx, double dy);
+
+  static ZIntCuboid estimateBoundBox(const ZStack &stack);
+
+private:
+  ZObject3dScan* getFilledRoi(
+      const ZClosedCurve *curve, int z, ZObject3dScan *result) const;
 
 signals:
 

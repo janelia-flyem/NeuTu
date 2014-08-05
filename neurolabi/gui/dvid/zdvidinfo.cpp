@@ -119,6 +119,36 @@ ZIntPoint ZDvidInfo::getBlockSize() const
   return ZIntPoint(m_blockSize[0], m_blockSize[1], m_blockSize[2]);
 }
 
+ZIntPoint ZDvidInfo::getBlockIndex(int x, int y, int z)
+{
+  ZIntPoint blockIndex(-1, -1, -1);
+
+  if (x < m_startCoordinates[0] ||
+      x >= m_startCoordinates[0] + m_stackSize[0]) {
+    return blockIndex;
+  }
+  if (y < m_startCoordinates[1] ||
+      y >= m_startCoordinates[1] + m_stackSize[1]) {
+    return blockIndex;
+  }
+  if (z < m_startCoordinates[2] ||
+      z >= m_startCoordinates[2] + m_stackSize[2]) {
+    return blockIndex;
+  }
+
+  blockIndex.set(
+        (x - m_startCoordinates[0]) / m_blockSize[0] + m_startBlockIndex[0],
+      (y - m_startCoordinates[1]) / m_blockSize[1] + m_startBlockIndex[1],
+      (z - m_startCoordinates[2]) / m_blockSize[2] + m_startBlockIndex[2]);
+
+#if 0
+  for (int i = 0; i < 3; ++i) {
+    blockIndex[i] = (pt[i] - m_startCoordinates[i]) /
+        m_blockSize[i] + m_startBlockIndex[i];
+  }
+#endif
+  return blockIndex;
+}
 
 ZIntPoint ZDvidInfo::getBlockIndex(double x, double y, double z)
 {
@@ -137,7 +167,7 @@ ZIntPoint ZDvidInfo::getBlockIndex(double x, double y, double z)
     return blockIndex;
   }
 
-  std::vector<int> pt(3);
+  int pt[3];
 
   pt[0] = iround(x);
   pt[1] = iround(y);
@@ -162,27 +192,63 @@ bool ZDvidInfo::isValidBlockIndex(const ZIntPoint &pt)
   return true;
 }
 
-ZIntPointArray ZDvidInfo::getBlockIndex(const ZObject3dScan &obj)
+ZObject3dScan ZDvidInfo::getBlockIndex(const ZObject3dScan &obj)
 {
-  std::set<ZIntPoint> blockSet;
+  ZIntPoint gridSize = m_endBlockIndex - m_startBlockIndex + 1;
+  size_t area = ((size_t) gridSize.getX()) * gridSize.getY();
+  size_t blockNumber = area * gridSize.getZ();
+  std::vector<bool> isAdded(blockNumber, false);
+
+  //std::set<ZIntPoint> blockSet;
+  //ZIntPointArray blockArray;
+  ZObject3dScan blockObj;
+
   for (size_t i = 0; i < obj.getStripeNumber(); ++i) {
+#ifdef _DEBUG_
+    if (i % 10000 == 0) {
+      std::cout << i << "/" << obj.getStripeNumber() << std::endl;
+    }
+#endif
     const ZObject3dStripe &stripe = obj.getStripe(i);
+    int y = stripe.getY();
+    int z = stripe.getZ();
     for (int j = 0; j < stripe.getSegmentNumber(); ++j) {
-      ZIntPoint block1 = getBlockIndex(
-            stripe.getSegmentStart(j), stripe.getY(), stripe.getZ());
-      ZIntPoint block2 = getBlockIndex(
-            stripe.getSegmentEnd(j), stripe.getY(), stripe.getZ());
-      for (int y = block1.getY(); y <= block2.getY(); ++y) {
-        ZIntPoint block(block1.getX(), y, block1.getZ());
-        blockSet.insert(block);
+      ZIntPoint block1 = getBlockIndex(stripe.getSegmentStart(j), y, z);
+      size_t blockIndex1 = area * block1.getZ() +
+          gridSize.getY() * block1.getY() + block1.getX();
+      ZIntPoint block2 = getBlockIndex(stripe.getSegmentEnd(j), y, z);
+      size_t blockIndex2 = area * block2.getZ() +
+          gridSize.getY() * block2.getY() + block2.getX();
+
+      if (!isAdded[blockIndex1] || !isAdded[blockIndex2]) {
+        blockObj.addSegment(
+              block1.getZ(), block1.getY(), block1.getX(), block2.getX(), false);
+        isAdded[blockIndex1] = true;
+        isAdded[blockIndex2] = true;
       }
+      //ZDVIDINFO_ADD_BLOCK(block1);
+      //ZDVIDINFO_ADD_BLOCK(block2);
+
+#if 0
+      for (int x = block1.getX(); x <= block2.getX(); ++x) {
+        ZIntPoint block(x, block1.getY(), block1.getZ());
+        size_t blockIndex =
+            area * block.getZ() + gridSize.getY() * block.getY() +
+            block.getX();
+        if (!isAdded[blockIndex]) {
+          blockArray.append(block);
+          isAdded[blockIndex] = true;
+        }
+          //blockSet.insert(block);
+      }
+#endif
     }
   }
 
-  ZIntPointArray blockArray;
-  blockArray.append(blockSet.begin(), blockSet.end());
+  //blockArray.append(blockSet.begin(), blockSet.end());
+  blockObj.canonize();
 
-  return blockArray;
+  return blockObj;
 }
 
 ZIntPoint ZDvidInfo::getGridSize() const
@@ -200,4 +266,20 @@ int ZDvidInfo::getMinZ() const
 int ZDvidInfo::getMaxZ() const
 {
   return getMinZ() + m_stackSize[2] - 1;
+}
+
+ZIntCuboid ZDvidInfo::getBlockBox(int x, int y, int z) const
+{
+  x -= m_startBlockIndex.getX();
+  y -= m_startBlockIndex.getY();
+  z -= m_startBlockIndex.getZ();
+
+  ZIntCuboid cuboid;
+
+  cuboid.setFirstCorner(x * m_blockSize[0] + m_startCoordinates.getX(),
+      y * m_blockSize[1] + m_startCoordinates.getY(),
+      z * m_blockSize[2] + m_startCoordinates.getZ());
+  cuboid.setSize(m_blockSize[0], m_blockSize[1], m_blockSize[2]);
+
+  return cuboid;
 }

@@ -220,20 +220,37 @@ ZSparseStack* ZDvidReader::readSparseStack(int bodyId)
 
     ZDvidInfo dvidInfo;
     dvidInfo.setFromJsonString(readInfo("superpixels").toStdString());
-    ZIntPointArray blockArray = dvidInfo.getBlockIndex(*body);;
+    ZObject3dScan blockObj = dvidInfo.getBlockIndex(*body);;
     ZStackBlockGrid *grid = new ZStackBlockGrid;
     spStack->setGreyScale(grid);
     grid->setMinPoint(dvidInfo.getStartCoordinates());
     grid->setBlockSize(dvidInfo.getBlockSize());
     grid->setGridSize(dvidInfo.getGridSize());
 
+    /*
     for (ZIntPointArray::const_iterator iter = blockArray.begin();
          iter != blockArray.end(); ++iter) {
-      const ZIntPoint blockIndex = *iter - dvidInfo.getStartBlockIndex();
-      ZIntCuboid box = grid->getBlockBox(blockIndex);
-      ZStack *stack = readGrayScale(box);
-      grid->consumeStack(blockIndex, stack);
+         */
+    size_t stripeNumber = blockObj.getStripeNumber();
+    for (size_t s = 0; s < stripeNumber; ++s) {
+      const ZObject3dStripe &stripe = blockObj.getStripe(s);
+      int segmentNumber = stripe.getSegmentNumber();
+      int y = stripe.getY();
+      int z = stripe.getZ();
+      for (int i = 0; i < segmentNumber; ++i) {
+        int x0 = stripe.getSegmentStart(i);
+        int x1 = stripe.getSegmentEnd(i);
+        for (int x = x0; x <= x1; ++x) {
+          const ZIntPoint blockIndex =
+              ZIntPoint(x, y, z) - dvidInfo.getStartBlockIndex();
+          //const ZIntPoint blockIndex = *iter - dvidInfo.getStartBlockIndex();
+          ZIntCuboid box = grid->getBlockBox(blockIndex);
+          ZStack *stack = readGrayScale(box);
+          grid->consumeStack(blockIndex, stack);
+        }
+      }
     }
+    //}
   } else {
     delete body;
   }

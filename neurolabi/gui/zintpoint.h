@@ -4,6 +4,8 @@
 #include <vector>
 #include <string>
 
+class ZPoint;
+
 /*!
  * \brief The class of 3D points with integer coordinates
  */
@@ -55,6 +57,8 @@ public:
   friend ZIntPoint operator / (const ZIntPoint &pt1, const ZIntPoint &pt2);
 
   std::string toString() const;
+
+  ZPoint toPoint() const;
 
 public:
   int m_x;

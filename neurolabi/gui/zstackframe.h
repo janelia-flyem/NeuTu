@@ -114,10 +114,14 @@ public:
 
   void displayActiveDecoration(bool enabled = true);
 
+  ZInteractiveContext::ViewMode getViewMode() const;
   void setViewMode(ZInteractiveContext::ViewMode mode);
   void setObjectDisplayStyle(ZStackObject::Display_Style style);
   void setViewPortCenter(int x, int y, int z);
   void viewRoi(int x, int y, int z, int radius);
+
+  ZStackObject::Display_Style getObjectStyle() const;
+  void setObjectStyle(ZStackObject::Display_Style style);
 
   void hideObject();
   void showObject();

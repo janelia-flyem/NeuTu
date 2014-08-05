@@ -117,18 +117,6 @@ bool ZJsonObject::decode(const string &str)
   return true;
 }
 
-string ZJsonObject::dumpString(int indent) const
-{
-  string str;
-  if (!isEmpty()) {
-    char *cstr = json_dumps(getValue(), JSON_INDENT(indent));
-    str = cstr;
-    free(cstr);
-  }
-
-  return str;
-}
-
 string ZJsonObject::summary()
 {
   ostringstream stream;

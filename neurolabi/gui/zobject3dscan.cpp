@@ -1028,17 +1028,25 @@ void ZObject3dScan::loadStack(const Stack *stack)
           }
         }
         if (x1 >= 0 && x2 >= 0) {
-          addSegment(x1, x2);
+          addSegment(x1, x2, false);
           x1 = -1;
           x2 = -1;
         }
         ++array;
       }
       if (x1 >= 0) {
-        addSegment(x1, width - 1);
+        addSegment(x1, width - 1, false);
       }
     }
   }
+  setCanonized(true);
+}
+
+void ZObject3dScan::loadStack(const ZStack &stack)
+{
+  loadStack(stack.c_stack());
+  translate(stack.getOffset().getX(), stack.getOffset().getY(),
+            stack.getOffset().getZ());
 }
 
 void ZObject3dScan::print() const

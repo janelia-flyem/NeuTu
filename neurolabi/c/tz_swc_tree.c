@@ -833,6 +833,7 @@ void Swc_Tree_Node_Set_Parent(Swc_Tree_Node *tn, Swc_Tree_Node *parent)
       Swc_Tree_Node_Data(tn)->parent_id = Swc_Tree_Node_Id(parent);
       Swc_Tree_Node_Add_Child(parent, tn);
     }
+    tn->tree_state = parent->tree_state;
   } 
 }
 

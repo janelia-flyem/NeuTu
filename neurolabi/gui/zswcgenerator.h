@@ -16,6 +16,7 @@ class ZObject3d;
 class ZObject3dScan;
 class ZStack;
 class ZClosedCurve;
+class ZDvidInfo;
 
 class ZSwcGenerator
 {
@@ -30,6 +31,7 @@ public:
   static ZSwcTree* createVirtualRootSwc();
   static ZSwcTree* createCircleSwc(double cx, double cy, double cz, double r);
   static ZSwcTree* createBoxSwc(const ZCuboid &box);
+  static ZSwcTree* createBoxSwc(const ZIntCuboid &box);
   static ZSwcTree* createSwc(const ZFlyEmNeuronRange &range);
   static ZSwcTree* createSwc(const ZFlyEmNeuronRange &range,
                              const ZFlyEmNeuronAxis &axis);
@@ -58,6 +60,9 @@ public:
                                     int sparseLevel = 1);
 
   static ZSwcTree* createSwc(const ZClosedCurve &curve, double radius);
+
+  static ZSwcTree* createSwc(const ZObject3dScan &blockObj, int z,
+                             const ZDvidInfo &dvidInfo);
 
 private:
   static ZSwcTree* createSwcByRegionSampling(const ZVoxelArray &voxelArray,

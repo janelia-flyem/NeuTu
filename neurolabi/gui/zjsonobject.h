@@ -46,11 +46,6 @@ public:
   std::map<std::string, json_t*> toEntryMap(bool recursive = true) const;
 
   /*!
-   * \brief Dump the object to a string.
-   */
-  std::string dumpString(int indent = 2) const;
-
-  /*!
    * \brief Test if a key is valid
    *
    * \return true iff \a key is valid.

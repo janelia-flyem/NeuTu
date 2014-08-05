@@ -1210,9 +1210,14 @@ void ZStackFrame::displayActiveDecoration(bool enabled)
   m_view->displayActiveDecoration(enabled);
 }
 
+ZInteractiveContext::ViewMode ZStackFrame::getViewMode() const
+{
+  return presenter()->interactiveContext().viewMode();
+}
+
 void ZStackFrame::setViewMode(ZInteractiveContext::ViewMode mode)
 {
-  presenter()->interactiveContext().setViewMode(mode);
+  presenter()->setViewMode(mode);
 }
 
 void ZStackFrame::setObjectDisplayStyle(ZStackObject::Display_Style style)
@@ -1656,4 +1661,14 @@ void ZStackFrame::makeSwcProjection(ZStackDoc *doc)
         }
         this->presenter()->addDecoration(swcClone);
     }
+}
+
+ZStackObject::Display_Style ZStackFrame::getObjectStyle() const
+{
+  return m_presenter->objectStyle();
+}
+
+void ZStackFrame::setObjectStyle(ZStackObject::Display_Style style)
+{
+  m_presenter->setObjectStyle(style);
 }
