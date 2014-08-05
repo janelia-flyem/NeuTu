@@ -39,6 +39,12 @@ void ZIntCuboid::set(int x1, int y1, int z1, int x2, int y2, int z2)
   setLastCorner(x2, y2, z2);
 }
 
+void ZIntCuboid::set(const ZIntPoint &firstCorner, const ZIntPoint &lastCorner)
+{
+  setFirstCorner(firstCorner);
+  setLastCorner(lastCorner);
+}
+
 void ZIntCuboid::join(const ZIntCuboid &cuboid)
 {
   for (int i = 0; i < 3; i++) {

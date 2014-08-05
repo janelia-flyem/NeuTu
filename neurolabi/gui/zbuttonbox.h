@@ -4,6 +4,7 @@
 #include <QWidget>
 #include <QHBoxLayout>
 #include <QPushButton>
+#include "tz_stdint.h"
 
 class ZButtonBox : public QWidget
 {

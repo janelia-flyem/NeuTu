@@ -32,6 +32,8 @@ ZFlyEmRoiDialog::ZFlyEmRoiDialog(QWidget *parent) :
 
   connect(this, SIGNAL(newDocReady()), this, SLOT(newDataFrame()));
   connect(this, SIGNAL(progressFailed()), ui->progressBar, SLOT(reset()));
+  connect(this, SIGNAL(progressAdvanced(double)),
+          this, SLOT(advanceProgressSlot(double)));
 
   m_project.setZ(ui->zSpinBox->value());
   //m_project.setDvidTarget(m_dvidDlg->getDvidTarget());
@@ -80,7 +82,8 @@ void ZFlyEmRoiDialog::setDvidTarget()
 
 void ZFlyEmRoiDialog::loadGrayscaleFunc(int z)
 {
-  advance(0.1);
+  //advance(0.1);
+  emit progressAdvanced(0.1);
   ZDvidReader reader;
   if (z >= 0 && reader.open(m_project.getDvidTarget())) {
     if (m_project.getRoi(z) == NULL) {
@@ -124,7 +127,8 @@ void ZFlyEmRoiDialog::loadGrayscaleFunc(int z)
     }
 
     if (stack != NULL) {
-      advance(0.5);
+      //advance(0.5);
+      emit progressAdvanced(0.5);
       m_docReader.clear();
       m_docReader.setStack(stack);
 
@@ -228,7 +232,7 @@ void ZFlyEmRoiDialog::estimateRoi()
 
 void ZFlyEmRoiDialog::on_searchPushButton_clicked()
 {
-  int z = m_project.findSliceToCreateRoi();
+  int z = m_project.findSliceToCreateRoi(ui->zSpinBox->value());
   if (z >= 0) {
     start();
     m_project.setZ(z);
@@ -321,4 +325,9 @@ void ZFlyEmRoiDialog::on_moveyDecPushButton_clicked()
 void ZFlyEmRoiDialog::on_moveyIncPushButton_clicked()
 {
   m_project.translateRoiSwc(0.0, MOVE_STEP);
+}
+
+void ZFlyEmRoiDialog::advanceProgressSlot(double p)
+{
+  advance(p);
 }

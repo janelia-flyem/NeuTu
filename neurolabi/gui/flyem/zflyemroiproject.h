@@ -58,6 +58,7 @@ public:
     return m_dvidInfo;
   }
 
+  int findSliceToCreateRoi(int z0) const;
   int findSliceToCreateRoi() const;
 
   void setRoiUploaded(int z, bool uploaded);

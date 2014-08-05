@@ -45,6 +45,7 @@ public slots:
 signals:
   void newDocReady();
   void progressFailed();
+  void progressAdvanced(double);
 
 private slots:
   void on_searchPushButton_clicked();
@@ -78,6 +79,8 @@ private slots:
   void on_moveyDecPushButton_clicked();
 
   void on_moveyIncPushButton_clicked();
+
+  void advanceProgressSlot(double p);
 
 private:
   void loadGrayscaleFunc(int z);

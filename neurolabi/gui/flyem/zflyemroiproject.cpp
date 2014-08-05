@@ -380,10 +380,10 @@ bool ZFlyEmRoiProject::isRoiCurveUploaded(int z) const
   return m_isRoiCurveUploaded[z];
 }
 
-int ZFlyEmRoiProject::findSliceToCreateRoi() const
+int ZFlyEmRoiProject::findSliceToCreateRoi(int z0) const
 {
-  int minZ = (getDvidInfo().getMinZ() + getDataZ()) / 2;
-  int maxZ = (getDvidInfo().getMaxZ() + getDataZ()) / 2;
+  int minZ = (getDvidInfo().getMinZ() + z0) / 2;
+  int maxZ = (getDvidInfo().getMaxZ() + z0) / 2;
   std::pair<int, int> bestSeg(0, 1);
 
   int length = 0;
@@ -397,10 +397,10 @@ int ZFlyEmRoiProject::findSliceToCreateRoi() const
     } else {
       int maxLength = bestSeg.second - bestSeg.first - 1;
       if (length > maxLength) {
-        length = 0;
         bestSeg.first = startZ;
         bestSeg.second = z;
       }
+      length = 0;
       startZ = z;
     }
   }
@@ -420,6 +420,11 @@ int ZFlyEmRoiProject::findSliceToCreateRoi() const
   }
 
   return targetZ;
+}
+
+int ZFlyEmRoiProject::findSliceToCreateRoi() const
+{
+  return findSliceToCreateRoi(getDataZ());
 }
 
 ZObject3dScan* ZFlyEmRoiProject::getFilledRoi(
@@ -559,16 +564,17 @@ ZIntCuboid ZFlyEmRoiProject::estimateBoundBox(const ZStack &stack)
   int height = stack.height();
   const uint8_t *array = stack.array8();
 
-  ZIntCuboid cuboid = stack.getBoundBox();
+  ZIntCuboid cuboid0 = stack.getBoundBox();
+  ZIntCuboid cuboid;
+  cuboid.set(cuboid0.getLastCorner(), cuboid0.getFirstCorner());
   //Left bound
   for (int y = 0; y < height; y += 100) {
     size_t offset = width * y;
     for (int x = 0; x < width; ++x) {
       if (array[offset++] != fgValue) {
-        if (x > cuboid.getFirstCorner().getX()) {
+        if (x < cuboid.getFirstCorner().getX()) {
           cuboid.setFirstX(x);
         }
-        break;
       }
     }
   }
@@ -578,10 +584,9 @@ ZIntCuboid ZFlyEmRoiProject::estimateBoundBox(const ZStack &stack)
     size_t offset = width * y + width - 1;
     for (int x = width - 1; x >= 0; --x) {
       if (array[offset--] != fgValue) {
-        if (x < cuboid.getLastCorner().getX()) {
+        if (x > cuboid.getLastCorner().getX()) {
           cuboid.setLastX(x);
         }
-        break;
       }
     }
   }
@@ -591,10 +596,9 @@ ZIntCuboid ZFlyEmRoiProject::estimateBoundBox(const ZStack &stack)
     size_t offset =x;
     for (int y = 0; y < height; ++y) {
       if (array[offset] != fgValue) {
-        if (y > cuboid.getFirstCorner().getY()) {
+        if (y < cuboid.getFirstCorner().getY()) {
           cuboid.setFirstY(y);
         }
-        break;
       }
       offset += width;
     }
@@ -606,10 +610,9 @@ ZIntCuboid ZFlyEmRoiProject::estimateBoundBox(const ZStack &stack)
     size_t offset = area - 1 - x;
     for (int y = height - 1; y >= 0; --y) {
       if (array[offset] != fgValue) {
-        if (y < cuboid.getLastCorner().getY()) {
+        if (y > cuboid.getLastCorner().getY()) {
           cuboid.setLastY(y);
         }
-        break;
       }
       offset -= width;
     }
