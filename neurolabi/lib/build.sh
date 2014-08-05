@@ -9,6 +9,7 @@ uncompress_lib () {
 }
 
 libdir=`pwd`
+export CFLAGS="-fPIC"
 
 if [ ! -f fftw3/lib/libfftw3.a ]
 then
@@ -55,7 +56,7 @@ then
   fi
   uncompress_lib libxml2-2.9.1
   cd libxml2-2.9.1
-  ./configure --without-iconv --without-zlib --with-pic --enable-shared=no --prefix=${libdir}/xml
+  ./configure --without-iconv --without-zlib --with-pic --enable-shared=no --prefix=${libdir}/xml --without-python
   make
   make install
   cd ..

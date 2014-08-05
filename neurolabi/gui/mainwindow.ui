@@ -354,8 +354,8 @@
      <addaction name="menuSegmentation_2"/>
      <addaction name="actionSkeletonization"/>
      <addaction name="actionExtract_Neuron"/>
-     <addaction name="actionSplit_Body"/>
      <addaction name="menuProject"/>
+     <addaction name="actionSplit_Body"/>
      <addaction name="separator"/>
      <addaction name="actionFlyEmSettings"/>
     </widget>
@@ -1267,6 +1267,10 @@
    </property>
   </action>
   <action name="actionFlyEmROI">
+   <property name="icon">
+    <iconset resource="gui.qrc">
+     <normaloff>:/images/roi.png</normaloff>:/images/roi.png</iconset>
+   </property>
    <property name="text">
     <string>ROI</string>
    </property>

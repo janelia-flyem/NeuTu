@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>419</width>
+    <width>588</width>
     <height>551</height>
    </rect>
   </property>
@@ -182,7 +182,7 @@
     <rect>
      <x>10</x>
      <y>340</y>
-     <width>401</width>
+     <width>381</width>
      <height>201</height>
     </rect>
    </property>
@@ -194,7 +194,7 @@
      <rect>
       <x>0</x>
       <y>160</y>
-      <width>163</width>
+      <width>184</width>
       <height>34</height>
      </rect>
     </property>
@@ -208,17 +208,34 @@
      </item>
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout_8">
+       <property name="spacing">
+        <number>0</number>
+       </property>
+       <property name="leftMargin">
+        <number>10</number>
+       </property>
+       <property name="rightMargin">
+        <number>10</number>
+       </property>
        <item>
         <widget class="QPushButton" name="rotateLeftPushButton">
          <property name="text">
-          <string>&lt;</string>
+          <string/>
+         </property>
+         <property name="icon">
+          <iconset resource="gui.qrc">
+           <normaloff>:/images/rotate_left.png</normaloff>:/images/rotate_left.png</iconset>
          </property>
         </widget>
        </item>
        <item>
         <widget class="QPushButton" name="rotateRightPushButton">
          <property name="text">
-          <string>&gt;</string>
+          <string/>
+         </property>
+         <property name="icon">
+          <iconset resource="gui.qrc">
+           <normaloff>:/images/rotate_right.png</normaloff>:/images/rotate_right.png</iconset>
          </property>
         </widget>
        </item>
@@ -226,90 +243,70 @@
      </item>
     </layout>
    </widget>
-   <widget class="QWidget" name="">
+   <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
       <x>0</x>
       <y>32</y>
-      <width>398</width>
+      <width>381</width>
       <height>121</height>
      </rect>
     </property>
     <layout class="QVBoxLayout" name="verticalLayout_5">
      <item>
       <layout class="QGridLayout" name="gridLayout">
-       <item row="0" column="0">
-        <spacer name="horizontalSpacer_2">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
+       <property name="horizontalSpacing">
+        <number>0</number>
+       </property>
+       <item row="2" column="1">
+        <layout class="QHBoxLayout" name="horizontalLayout_11">
+         <property name="spacing">
+          <number>0</number>
          </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>40</width>
-           <height>20</height>
-          </size>
+         <property name="leftMargin">
+          <number>10</number>
          </property>
-        </spacer>
-       </item>
-       <item row="0" column="1">
-        <widget class="QLabel" name="label_6">
-         <property name="text">
-          <string>X-Y</string>
+         <property name="rightMargin">
+          <number>10</number>
          </property>
-        </widget>
-       </item>
-       <item row="0" column="2">
-        <widget class="QLabel" name="label_5">
-         <property name="text">
-          <string>X</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="3">
-        <widget class="QLabel" name="label_3">
-         <property name="text">
-          <string>Y</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="0">
-        <widget class="QLabel" name="label_2">
-         <property name="text">
-          <string>Scale</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="1">
-        <layout class="QHBoxLayout" name="horizontalLayout_9">
          <item>
-          <widget class="QPushButton" name="xyDecPushButton">
+          <widget class="QPushButton" name="movexyDecPushButton">
            <property name="text">
-            <string>&lt;</string>
+            <string>&lt;+</string>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="xyIncPushButton">
+          <widget class="QPushButton" name="movexyIncPushButton">
            <property name="text">
-            <string>&gt;</string>
+            <string>+&gt;</string>
            </property>
           </widget>
          </item>
         </layout>
        </item>
-       <item row="1" column="2">
-        <layout class="QHBoxLayout" name="horizontalLayout_3">
+       <item row="2" column="2">
+        <layout class="QHBoxLayout" name="horizontalLayout_12">
+         <property name="spacing">
+          <number>0</number>
+         </property>
+         <property name="leftMargin">
+          <number>10</number>
+         </property>
+         <property name="rightMargin">
+          <number>10</number>
+         </property>
          <item>
-          <widget class="QPushButton" name="xDecPushButton">
+          <widget class="QPushButton" name="movexDecPushButton">
            <property name="text">
-            <string>&lt;</string>
+            <string>&lt;+</string>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="xIncPushButton">
+          <widget class="QPushButton" name="movexIncPushButton">
            <property name="text">
-            <string>&gt;</string>
+            <string>+&gt;</string>
            </property>
           </widget>
          </item>
@@ -317,6 +314,15 @@
        </item>
        <item row="1" column="3">
         <layout class="QHBoxLayout" name="horizontalLayout_6">
+         <property name="spacing">
+          <number>0</number>
+         </property>
+         <property name="leftMargin">
+          <number>10</number>
+         </property>
+         <property name="rightMargin">
+          <number>10</number>
+         </property>
          <item>
           <widget class="QPushButton" name="yDecPushButton">
            <property name="text">
@@ -333,24 +339,26 @@
          </item>
         </layout>
        </item>
-       <item row="2" column="0">
-        <widget class="QLabel" name="label_7">
-         <property name="text">
-          <string>Move</string>
+       <item row="1" column="2">
+        <layout class="QHBoxLayout" name="horizontalLayout_3">
+         <property name="spacing">
+          <number>0</number>
          </property>
-        </widget>
-       </item>
-       <item row="2" column="1">
-        <layout class="QHBoxLayout" name="horizontalLayout_11">
+         <property name="leftMargin">
+          <number>10</number>
+         </property>
+         <property name="rightMargin">
+          <number>10</number>
+         </property>
          <item>
-          <widget class="QPushButton" name="movexyDecPushButton">
+          <widget class="QPushButton" name="xDecPushButton">
            <property name="text">
             <string>&lt;</string>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="movexyIncPushButton">
+          <widget class="QPushButton" name="xIncPushButton">
            <property name="text">
             <string>&gt;</string>
            </property>
@@ -358,17 +366,53 @@
          </item>
         </layout>
        </item>
-       <item row="2" column="2">
-        <layout class="QHBoxLayout" name="horizontalLayout_12">
+       <item row="1" column="0">
+        <widget class="QLabel" name="label_2">
+         <property name="text">
+          <string>Scale</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="0">
+        <spacer name="horizontalSpacer_2">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="label_7">
+         <property name="text">
+          <string>Move</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <layout class="QHBoxLayout" name="horizontalLayout_9">
+         <property name="spacing">
+          <number>0</number>
+         </property>
+         <property name="leftMargin">
+          <number>10</number>
+         </property>
+         <property name="rightMargin">
+          <number>10</number>
+         </property>
          <item>
-          <widget class="QPushButton" name="movexDecPushButton">
+          <widget class="QPushButton" name="xyDecPushButton">
            <property name="text">
             <string>&lt;</string>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="movexIncPushButton">
+          <widget class="QPushButton" name="xyIncPushButton">
            <property name="text">
             <string>&gt;</string>
            </property>
@@ -378,19 +422,139 @@
        </item>
        <item row="2" column="3">
         <layout class="QHBoxLayout" name="horizontalLayout_13">
+         <property name="spacing">
+          <number>0</number>
+         </property>
+         <property name="leftMargin">
+          <number>10</number>
+         </property>
+         <property name="rightMargin">
+          <number>10</number>
+         </property>
          <item>
           <widget class="QPushButton" name="moveyDecPushButton">
            <property name="text">
-            <string>&lt;</string>
+            <string>&lt;+</string>
            </property>
           </widget>
          </item>
          <item>
           <widget class="QPushButton" name="moveyIncPushButton">
            <property name="text">
-            <string>&gt;</string>
+            <string>+&gt;</string>
            </property>
           </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="0" column="1">
+        <layout class="QHBoxLayout" name="horizontalLayout_4">
+         <item>
+          <spacer name="horizontalSpacer_3">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QLabel" name="label_8">
+           <property name="text">
+            <string>X-Y</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="horizontalSpacer_4">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+        </layout>
+       </item>
+       <item row="0" column="2">
+        <layout class="QHBoxLayout" name="horizontalLayout_5">
+         <item>
+          <spacer name="horizontalSpacer_5">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QLabel" name="label_5">
+           <property name="text">
+            <string>X</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="horizontalSpacer_6">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+        </layout>
+       </item>
+       <item row="0" column="3">
+        <layout class="QHBoxLayout" name="horizontalLayout_10">
+         <item>
+          <spacer name="horizontalSpacer_7">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QLabel" name="label_3">
+           <property name="text">
+            <string>Y</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="horizontalSpacer_8">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
          </item>
         </layout>
        </item>
@@ -406,10 +570,9 @@
     </layout>
    </widget>
   </widget>
-  <zorder>layoutWidget</zorder>
-  <zorder>groupBox</zorder>
-  <zorder>infoWidget</zorder>
  </widget>
- <resources/>
+ <resources>
+  <include location="gui.qrc"/>
+ </resources>
  <connections/>
 </ui>

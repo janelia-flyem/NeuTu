@@ -888,6 +888,7 @@ void MainWindow::createToolBars()
     m_ui->toolBar->addAction(m_ui->actionImportFlyEmDatabase);
     //m_ui->toolBar->addAction(m_ui->actionDvid_Object);
     m_ui->toolBar->addAction(m_ui->actionSplit_Body);
+    m_ui->toolBar->addAction(m_ui->actionFlyEmROI);
   }
 
   //m_ui->toolBar->addAction(expandAction);
