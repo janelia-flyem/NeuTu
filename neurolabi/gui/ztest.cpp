@@ -12533,7 +12533,7 @@ void ZTest::test(MainWindow *host)
   blockObj.save(GET_TEST_DATA_DIR + "/test2.sobj");
 #endif
 
-#if 1
+#if 0
   ZDvidInfo dvidInfo;
   ZDvidReader reader;
 
@@ -12556,7 +12556,7 @@ void ZTest::test(MainWindow *host)
   delete frame;
 #endif
 
-#if 0
+#if 1
   ZDvidInfo dvidInfo;
   ZDvidReader reader;
 
