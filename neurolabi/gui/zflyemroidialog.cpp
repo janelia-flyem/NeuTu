@@ -70,6 +70,8 @@ void ZFlyEmRoiDialog::updateWidget()
   ui->infoWidget->setText(text);
 
   ui->loadGrayScalePushButton->setEnabled(m_project.getDvidTarget().isValid());
+  ui->searchPushButton->setEnabled(m_project.getDvidTarget().isValid());
+  ui->estimateRoiPushButton->setEnabled(m_project.hasDataFrame());
 }
 
 void ZFlyEmRoiDialog::setDvidTarget()

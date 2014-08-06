@@ -91,5 +91,17 @@
         <file>images/roi.png</file>
         <file>images/rotate_left.png</file>
         <file>images/rotate_right.png</file>
+        <file>images/move_left.png</file>
+        <file>images/move_right.png</file>
+        <file>images/move_down.png</file>
+        <file>images/move_up.png</file>
+        <file>images/move_downright.png</file>
+        <file>images/move_upleft.png</file>
+        <file>images/hsqueeze.png</file>
+        <file>images/hstretch.png</file>
+        <file>images/vsqueeze.png</file>
+        <file>images/vstretch.png</file>
+        <file>images/squeeze.png</file>
+        <file>images/stretch.png</file>
     </qresource>
 </RCC>
