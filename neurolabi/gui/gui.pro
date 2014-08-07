@@ -74,7 +74,7 @@ unix:!macx {
 } # static glew
 
 contains(CONFIG, static_gtest) { # gtest from ext folder
-    DEFINES += _USE_GTEST_
+    #DEFINES += _USE_GTEST_
     include($$PWD/ext/gtest.pri)
 } #else { # use your own gtest
 #
