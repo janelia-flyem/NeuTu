@@ -2,6 +2,7 @@
 #include <iostream>
 #include "tz_error.h"
 #include "zerror.h"
+#include "zpoint.h"
 
 ZIntPoint::ZIntPoint() : m_x(0), m_y(0), m_z(0)
 {

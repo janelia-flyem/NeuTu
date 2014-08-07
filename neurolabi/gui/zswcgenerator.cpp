@@ -569,6 +569,7 @@ ZSwcTree* ZSwcGenerator::createSwc(const ZClosedCurve &curve, double radius)
 ZSwcTree* ZSwcGenerator::createSwc(
     const ZObject3dScan &blockObj, int z, const ZDvidInfo &dvidInfo)
 {
+#ifdef _FLYEM_
   ZObject3dScan slice = blockObj.getSlice(z);
   size_t stripeNumber = slice.getStripeNumber();
 
@@ -589,4 +590,10 @@ ZSwcTree* ZSwcGenerator::createSwc(
   }
 
   return tree;
+#else
+  UNUSED_PARAMETER(&blockObj);
+  UNUSED_PARAMETER(z);
+  UNUSED_PARAMETER(&dvidInfo);
+  return NULL;
+#endif
 }

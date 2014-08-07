@@ -46,6 +46,7 @@ typedef struct _Swc_Tree {
   Swc_Tree_Node *root;         /**< root of the tree */
   Swc_Tree_Node *iterator;     /**< iterator */
   Swc_Tree_Node *begin;        /**< begin of the iterator */
+  int tree_state;
 } Swc_Tree;
 
 typedef struct _Swc_Tree_Branch {

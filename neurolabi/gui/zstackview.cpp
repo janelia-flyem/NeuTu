@@ -295,6 +295,8 @@ void ZStackView::autoThreshold()
 #endif
 }
 
+#define MULTI_THREAD_VIEW_SIZE_THRESHOLD 65536
+
 #if 0
 void ZStackView::updateData(int nslice, int threshold)
 {
@@ -1008,6 +1010,12 @@ void ZStackView::paintSingleChannelStackSlice(ZStack *stack, int slice)
 
 void ZStackView::paintMultipleChannelStackSlice(ZStack *stack, int slice)
 {
+  bool usingMt = false;
+
+  if (stack->width() * stack->height() > MULTI_THREAD_VIEW_SIZE_THRESHOLD) {
+    usingMt = true;
+  }
+
   switch (stack->kind()) {
   case GREY: {
     std::vector<ZImage::DataSource<uint8_t> > stackData8;
@@ -1019,9 +1027,12 @@ void ZStackView::paintMultipleChannelStackSlice(ZStack *stack, int slice)
                 buddyPresenter()->greyScale(i),
                 buddyPresenter()->greyOffset(i),
                 stack->getChannelColor(i)));
+#ifdef _DEBUG_
+        std::cout <<  stack->getChannelColor(i) << std::endl;
+#endif
       }
     }
-    m_image->setData(stackData8);
+    m_image->setData(stackData8, 255, usingMt);
   }
     break;
   case GREY16: {
@@ -1036,7 +1047,7 @@ void ZStackView::paintMultipleChannelStackSlice(ZStack *stack, int slice)
                 stack->getChannelColor(i)));
       }
     }
-    m_image->setData(stackData16);
+    m_image->setData(stackData16, 255, usingMt);
   }
     break;
   default:
@@ -1080,6 +1091,11 @@ void ZStackView::paintSingleChannelStackMip(ZStack *stack)
 
 void ZStackView::paintMultipleChannelStackMip(ZStack *stack)
 {
+  bool usingMt = false;
+
+  if (stack->width() * stack->height() > MULTI_THREAD_VIEW_SIZE_THRESHOLD) {
+    usingMt = true;
+  }
   switch (stack->kind()) {
   case GREY: {
     std::vector<ZImage::DataSource<uint8_t> > stackData8;
@@ -1094,7 +1110,7 @@ void ZStackView::paintMultipleChannelStackMip(ZStack *stack)
                                                          stack->getChannelColor(i)));
       }
     }
-    m_image->setData(stackData8);
+    m_image->setData(stackData8, 255, usingMt);
   }
     break;
   case GREY16: {
@@ -1110,7 +1126,7 @@ void ZStackView::paintMultipleChannelStackMip(ZStack *stack)
                                                            stack->getChannelColor(i)));
       }
     }
-    m_image->setData(stackData16);
+    m_image->setData(stackData16, 255, usingMt);
   }
     break;
   }

@@ -1827,6 +1827,11 @@ void ZStackDoc::addSwcTree(ZSwcTree *obj, bool uniqueSource)
     setSwcSelected(obj, true);
   }
 
+#ifdef _DEBUG_2
+  obj->useCosmeticPen(true);
+  obj->updateHostState(ZSwcTree::NODE_STATE_COSMETIC);
+#endif
+
   notifySwcModified();
 }
 
@@ -5577,7 +5582,7 @@ void ZStackDoc::addObject(
       addSwcTree(tree, false);
       if (role & ZDocPlayer::ROLE_ROI) {
         tree->useCosmeticPen(true);
-        tree->updateHostState(ZSwcTree::NODE_STATE_COSMETIC);
+        tree->updateHostState();
       }
     }
   }
@@ -6284,14 +6289,19 @@ bool ZStackDoc::executeConnectIsolatedSwc()
     Swc_Tree_Node *masterRoot = SwcTreeNode::parent(hostRoot);
 
     if (SwcTreeNode::childNumber(masterRoot) > 1 || swcList()->size() > 1) {
-      ZSwcTree tree;
-      tree.setDataFromNode(masterRoot);
+      //ZSwcTree tree;
+      //tree.setDataFromNode(masterRoot);
+      Swc_Tree tmpTree;
+      tmpTree.root = masterRoot;
+      Swc_Tree_Iterator_Start(&tmpTree, SWC_TREE_ITERATOR_DEPTH_FIRST, FALSE);
 
-      tree.updateIterator(SWC_TREE_ITERATOR_DEPTH_FIRST);
+      //tree.updateIterator(SWC_TREE_ITERATOR_DEPTH_FIRST);
       bool isConnected = false;
       double minDist = Infinity;
       Swc_Tree_Node *closestNode = NULL;
-      for (Swc_Tree_Node *tn = tree.begin(); tn != NULL; tn = tree.next()) {
+      //for (Swc_Tree_Node *tn = tree.begin(); tn != NULL; tn = tree.next()) {
+      Swc_Tree_Node *tn = NULL;
+      while ((tn = Swc_Tree_Next(&tmpTree)) != NULL) {
         if (SwcTreeNode::isRegular(tn)) {
           if (SwcTreeNode::isRoot(tn)) {
             if (tn == hostRoot) {
@@ -6311,7 +6321,7 @@ bool ZStackDoc::executeConnectIsolatedSwc()
           }
         }
       }
-      tree.setDataFromNode(NULL, ZSwcTree::LEAVE_ALONE);
+      //tree.setDataFromNode(NULL, ZSwcTree::LEAVE_ALONE);
 
       foreach (ZSwcTree *buddyTree, *swcList()) {
         if (buddyTree->root() != masterRoot) {
@@ -7078,7 +7088,7 @@ void ZStackDocReader::addObject(
     addSwcTree(tree);
     if (role & ZDocPlayer::ROLE_ROI) {
       tree->useCosmeticPen(true);
-      tree->updateHostState(ZSwcTree::NODE_STATE_COSMETIC);
+      tree->updateHostState();
     }
   }
     break;

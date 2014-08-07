@@ -2027,6 +2027,7 @@ void Default_Swc_Tree(Swc_Tree *tree)
     tree->root = NULL;
     tree->iterator = NULL;
     tree->begin = NULL;
+    tree->tree_state = 0;
   }
 }
 
@@ -2921,6 +2922,7 @@ Swc_Tree_Node* Swc_Tree_Next(Swc_Tree *tree)
 
   if (tn != NULL) {
     //tree->iterator = Swc_Tree_Node_Next(tn);
+    tn->tree_state = tree->tree_state;
     tree->iterator = tn->next;
   }
 

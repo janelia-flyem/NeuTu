@@ -249,6 +249,8 @@ Stack* Read_Sc_Stack(const char *filepath, int channel);
 File_Bundle_S *Parse_Stack_Name_S(char *file_name);
 Stack *Read_Stack_Planes_S(File_Bundle_S *bundle);
 
+Mc_Stack *Read_Stack_Planes_M(File_Bundle_S *bundle);
+
 Stack *Read_Stack_Planes_Sc(File_Bundle_S *bundle, int channel);
 
 void Clean_File_Bundle_S(File_Bundle_S *bundle);

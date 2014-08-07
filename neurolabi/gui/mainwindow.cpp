@@ -781,8 +781,9 @@ void MainWindow::customizeActions()
   this->punctaExportAction->setVisible(false);
 #endif
 
-#if !defined(_DEBUG_)
+
   m_ui->menuTube->menuAction()->setVisible(false);
+#if !defined(_DEBUG_)
   m_ui->menuTrace_Project->menuAction()->setVisible(false);
   m_ui->actionAutomatic_Axon->setVisible(false);
   m_ui->actionDisable->setVisible(false);
@@ -897,7 +898,9 @@ void MainWindow::createToolBars()
 
   m_ui->toolBar->addSeparator();
 
-  m_ui->toolBar->addActions(interactiveTrace->actions());
+  if (GET_APPLICATION_NAME == "General") {
+    m_ui->toolBar->addActions(interactiveTrace->actions());
+  }
 
   //m_ui->toolBar->addSeparator();
   //m_ui->toolBar->addAction(m_ui->actionAutomatic);

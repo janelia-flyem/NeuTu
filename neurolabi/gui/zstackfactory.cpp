@@ -67,17 +67,19 @@ ZStack* ZStackFactory::makeVirtualStack(const ZIntCuboid &box)
   return stack;
 }
 
-ZStack* ZStackFactory::makeOneStack(int width, int height, int depth)
+ZStack* ZStackFactory::makeOneStack(
+    int width, int height, int depth, int nchannel)
 {
-  ZStack *stack = new ZStack(GREY, width, height, depth, 1);
+  ZStack *stack = new ZStack(GREY, width, height, depth, nchannel);
   stack->setOne();
 
   return stack;
 }
 
-ZStack* ZStackFactory::makeZeroStack(int width, int height, int depth)
+ZStack* ZStackFactory::makeZeroStack(
+    int width, int height, int depth, int nchannel)
 {
-  ZStack *stack = new ZStack(GREY, width, height, depth, 1);
+  ZStack *stack = new ZStack(GREY, width, height, depth, nchannel);
   stack->setZero();
 
   return stack;

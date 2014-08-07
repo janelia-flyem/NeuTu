@@ -35,8 +35,10 @@ public:
   template<class InputIterator>
   static ZStack* composite(InputIterator begin, InputIterator end);
 
-  static ZStack* makeOneStack(int width, int height, int depth);
-  static ZStack* makeZeroStack(int width, int height, int depth);
+  static ZStack* makeOneStack(int width, int height, int depth,
+                              int nchannel = 1);
+  static ZStack* makeZeroStack(int width, int height, int depth,
+                               int nchannel = 1);
   static ZStack* makeIndexStack(int width, int height, int depth);
   static ZStack* makeUniformStack(int width, int height, int depth, int v);
 

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>409</width>
-    <height>614</height>
+    <width>412</width>
+    <height>594</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -194,8 +194,8 @@
      <rect>
       <x>0</x>
       <y>170</y>
-      <width>184</width>
-      <height>38</height>
+      <width>187</width>
+      <height>42</height>
      </rect>
     </property>
     <layout class="QHBoxLayout" name="horizontalLayout_7">
@@ -226,6 +226,12 @@
           <iconset resource="gui.qrc">
            <normaloff>:/images/rotate_left.png</normaloff>:/images/rotate_left.png</iconset>
          </property>
+         <property name="iconSize">
+          <size>
+           <width>24</width>
+           <height>24</height>
+          </size>
+         </property>
         </widget>
        </item>
        <item>
@@ -236,6 +242,12 @@
          <property name="icon">
           <iconset resource="gui.qrc">
            <normaloff>:/images/rotate_right.png</normaloff>:/images/rotate_right.png</iconset>
+         </property>
+         <property name="iconSize">
+          <size>
+           <width>24</width>
+           <height>24</height>
+          </size>
          </property>
         </widget>
        </item>
@@ -348,6 +360,12 @@
             <iconset resource="gui.qrc">
              <normaloff>:/images/vsqueeze.png</normaloff>:/images/vsqueeze.png</iconset>
            </property>
+           <property name="iconSize">
+            <size>
+             <width>24</width>
+             <height>24</height>
+            </size>
+           </property>
           </widget>
          </item>
          <item>
@@ -358,6 +376,12 @@
            <property name="icon">
             <iconset resource="gui.qrc">
              <normaloff>:/images/vstretch.png</normaloff>:/images/vstretch.png</iconset>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>24</width>
+             <height>24</height>
+            </size>
            </property>
           </widget>
          </item>
@@ -382,6 +406,12 @@
            <property name="icon">
             <iconset resource="gui.qrc">
              <normaloff>:/images/hsqueeze.png</normaloff>:/images/hsqueeze.png</iconset>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>24</width>
+             <height>24</height>
+            </size>
            </property>
           </widget>
          </item>
@@ -451,6 +481,12 @@
             <iconset resource="gui.qrc">
              <normaloff>:/images/squeeze.png</normaloff>:/images/squeeze.png</iconset>
            </property>
+           <property name="iconSize">
+            <size>
+             <width>24</width>
+             <height>24</height>
+            </size>
+           </property>
           </widget>
          </item>
          <item>
@@ -461,6 +497,12 @@
            <property name="icon">
             <iconset resource="gui.qrc">
              <normaloff>:/images/stretch.png</normaloff>:/images/stretch.png</iconset>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>24</width>
+             <height>24</height>
+            </size>
            </property>
           </widget>
          </item>

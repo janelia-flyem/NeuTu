@@ -32,10 +32,13 @@ ZStackPresenter::ZStackPresenter(ZStackFrame *parent) : QObject(parent),
 {
   initInteractiveContext();
 
-  m_greyScale.resize(1);
-  m_greyScale[0] = 1.0;
-  m_greyOffset.resize(1);
-  m_greyOffset[0] = 0.0;
+  m_greyScale.resize(5);
+  m_greyOffset.resize(5);
+
+  for (size_t i = 0; i < 5; ++i) {
+    m_greyScale[i] = 1.0;
+    m_greyOffset[i] = 0.0;
+  }
 
   m_objStyle = ZStackObject::BOUNDARY;
   m_threshold = -1;

@@ -3307,6 +3307,49 @@ Stack *Read_Stack_Planes_S(File_Bundle_S *bundle)
   return (stack);
 }
 
+Mc_Stack *Read_Stack_Planes_M(File_Bundle_S *bundle)
+{ 
+  char  sname[1000];
+  int   depth = 0;
+
+  while (1) { 
+    Sprint_File_Bundle_S(bundle,depth,sname);
+   
+    if (!fexist(sname)) {
+      break;
+    }
+   
+    depth += 1;
+    
+    if (bundle->first_num + depth - 1 == bundle->last_num) {
+      break;
+    }
+  }
+
+  Sprint_File_Bundle_S(bundle,0,sname);
+
+  Mc_Stack *image = Read_Mc_Stack(sname, -1);
+  size_t area = image->width * image->height;
+  size_t plane_byte_number = area * image->kind * image->nchannel;
+
+  Mc_Stack *stack = Make_Mc_Stack(image->kind, image->width, image->height, 
+      depth, image->nchannel);
+
+  memcpy(stack->array, image->array, plane_byte_number);
+
+  int d;
+
+  for (d = 1; d < depth; d++) {      
+    Sprint_File_Bundle_S(bundle, d, sname);
+    image = Read_Mc_Stack(sname, -1);
+    memcpy(stack->array + plane_byte_number * d, 
+	   image->array, plane_byte_number);
+    Kill_Mc_Stack(image);
+  }
+
+  return (stack);
+}
+
 void Clean_File_Bundle_S(File_Bundle_S *bundle)
 {
   if (bundle->prefix != NULL) {

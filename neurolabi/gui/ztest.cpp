@@ -12556,7 +12556,7 @@ void ZTest::test(MainWindow *host)
   delete frame;
 #endif
 
-#if 1
+#if 0
   ZDvidInfo dvidInfo;
   ZDvidReader reader;
 
@@ -12582,5 +12582,23 @@ void ZTest::test(MainWindow *host)
       }
     }
   }
+#endif
+
+#if 1
+  ZStack *stack = ZStackFactory::makeZeroStack(3, 3, 1, 3);
+  for (int c = 0; c < 3; ++c) {
+    for (int y = 0; y < 3; ++y) {
+      for (int x = 0; x < 3; ++x) {
+        stack->setIntValue(x, y, 0, c, c * 100);
+      }
+    }
+  }
+
+  stack->setIntValue(1, 1, 0, 0, 255);
+  stack->setIntValue(1, 1, 0, 1, 255);
+  stack->setIntValue(1, 1, 0, 2, 255);
+
+  stack->save(GET_DATA_DIR + "/color_test.tif");
+
 #endif
 }

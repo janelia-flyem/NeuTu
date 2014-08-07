@@ -2153,12 +2153,14 @@ void Z3DWindow::updateContextMenu(const QString &group)
 
 void Z3DWindow::updateOverallBoundBox(std::vector<double> bound)
 {
-  m_boundBox[0] = std::min(bound[0], m_boundBox[0]);
-  m_boundBox[1] = std::max(bound[1], m_boundBox[1]);
-  m_boundBox[2] = std::min(bound[2], m_boundBox[2]);
-  m_boundBox[3] = std::max(bound[3], m_boundBox[3]);
-  m_boundBox[4] = std::min(bound[4], m_boundBox[4]);
-  m_boundBox[5] = std::max(bound[5], m_boundBox[5]);
+  if (bound.size() == 6) {
+    m_boundBox[0] = std::min(bound[0], m_boundBox[0]);
+    m_boundBox[1] = std::max(bound[1], m_boundBox[1]);
+    m_boundBox[2] = std::min(bound[2], m_boundBox[2]);
+    m_boundBox[3] = std::max(bound[3], m_boundBox[3]);
+    m_boundBox[4] = std::min(bound[4], m_boundBox[4]);
+    m_boundBox[5] = std::max(bound[5], m_boundBox[5]);
+  }
 }
 
 void Z3DWindow::updateOverallBoundBox()

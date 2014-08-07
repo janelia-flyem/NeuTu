@@ -675,6 +675,11 @@ void ZImage::setData(const std::vector<ZImage::DataSource<uint8_t> > &sources,
   }
 
   std::vector<ZImage::DataSource<uint8_t> > allSources = sources;
+#ifdef _DEBUG_2
+    std::cout << "Color: " << " " << sources[0].color << std::endl;
+    std::cout << "Color: " << " " << sources[1].color << std::endl;
+    std::cout << "Color: " << " " << sources[2].color << std::endl;
+#endif
   bool needScaleAndClamp = false;
   for (size_t i=0; i<allSources.size(); ++i) {
     std::swap(allSources[i].color.r, allSources[i].color.b);
@@ -689,15 +694,24 @@ void ZImage::setData(const std::vector<ZImage::DataSource<uint8_t> > &sources,
     colorMap[i].resize(256);
   }
 
+#ifdef _DEBUG_2
+        std::cout << "Data value" << (int) allSources[2].data[0] << std::endl;
+#endif
 
   if (!needScaleAndClamp) {
     for (int i = 0; i < 256; ++i) {
       colorMap[0][i] = glm::col3(allSources[0].color *
           (float) i);
       for (size_t ch=1; ch<allSources.size(); ++ch) {
-        colorMap[1][i] = glm::col3(allSources[ch].color * (float) i);
+        colorMap[ch][i] = glm::col3(allSources[ch].color * (float) i);
       }
     }
+
+#ifdef _DEBUG_2
+    std::cout << "Color: " << " " << allSources[0].color << std::endl;
+    std::cout << "Color: " << " " << allSources[1].color << std::endl;
+    std::cout << "Color: " << " " << allSources[2].color << std::endl;
+#endif
 
     for (int j = 0; j < height(); j++) {
       uchar *line = scanLine(j);
@@ -707,6 +721,11 @@ void ZImage::setData(const std::vector<ZImage::DataSource<uint8_t> > &sources,
           col3 = glm::max(col3, colorMap[ch][*(allSources[ch].data)++]);
         }
 
+#ifdef _DEBUG_2
+        std::cout << "Color map: " << " " << colorMap[0][1] << std::endl;
+        std::cout << "Color map: " << " " << colorMap[1][1] << std::endl;
+        std::cout << "Color map: " << " " << colorMap[2][1] << std::endl;
+#endif
         *line++ = col3[0];
         *line++ = col3[1];
         *line++ = col3[2];
@@ -733,6 +752,9 @@ void ZImage::setData(const std::vector<ZImage::DataSource<uint8_t> > &sources,
         for (size_t ch=1; ch<allSources.size(); ++ch) {
           col3 = glm::max(col3, colorMap[ch][*(allSources[ch].data)++]);
         }
+#ifdef _DEBUG_2
+        std::cout << "Color: " << " " << colorMap[2][10] << std::endl;
+#endif
 
         *line++ = col3[0];
         *line++ = col3[1];

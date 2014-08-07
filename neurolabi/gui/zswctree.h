@@ -314,6 +314,7 @@ public:
 
     if (m_tree->begin != NULL) {
       m_tree->iterator = m_tree->begin->next;
+      m_tree->begin->tree_state = m_tree->tree_state;
     }
 
     return m_tree->begin;
@@ -572,7 +573,10 @@ public:
 
   void setColorScheme(EColorScheme scheme);
 
-  void setHostState(Swc_Tree_Node *tn, ENodeState state) const;
+  void initHostState(int state);
+  void initHostState();
+
+  //void setHostState(Swc_Tree_Node *tn, ENodeState state) const;
   void setHostState(Swc_Tree_Node *tn) const;
 
   inline EStructrualMode getStructrualMode() const {
@@ -582,7 +586,7 @@ public:
 
   ZClosedCurve toClosedCurve() const;
 
-  void updateHostState(ENodeState state);
+  void updateHostState();
 
   //Iterator classes
   class ExtIterator {
@@ -630,6 +634,7 @@ private:
                                  bool &visible, int dataFocus);
   std::pair<const Swc_Tree_Node *, const Swc_Tree_Node *>
   extractCurveTerminal() const;
+  int getTreeState() const;
 
 private:
   Swc_Tree *m_tree;

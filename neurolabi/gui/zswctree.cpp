@@ -104,10 +104,7 @@ void ZSwcTree::setData(Swc_Tree *tree, ESetDataOption option)
   }
 
   m_tree = tree;
-
-  if (m_tree != NULL) {
-    setHostState(m_tree->root);
-  }
+  initHostState();
 
   deprecate(ALL_COMPONENT);
 }
@@ -156,14 +153,17 @@ void ZSwcTree::setDataFromNode(Swc_Tree_Node *node, ESetDataOption option)
 
   if (m_tree == NULL) {
     m_tree = New_Swc_Tree();
+    initHostState();
   }
 
   m_tree->root = node;
   deprecate(ALL_COMPONENT);
 
+  /*
   if (m_tree != NULL) {
     setHostState(m_tree->root);
   }
+  */
 }
 
 void ZSwcTree::setDataFromNodeRoot(Swc_Tree_Node *node, ESetDataOption option)
@@ -2664,6 +2664,7 @@ Swc_Tree_Node *ZSwcTree::forceVirtualRoot()
 {
   if (m_tree == NULL) {
     m_tree = New_Swc_Tree();
+    initHostState();
   }
 
   if (m_tree->root == NULL) {
@@ -2672,14 +2673,12 @@ Swc_Tree_Node *ZSwcTree::forceVirtualRoot()
 
   if (SwcTreeNode::isRegular(m_tree->root)) {
     Swc_Tree_Node *tn = SwcTreeNode::makeVirtualNode();
-    setHostState(tn);
+    //setHostState(tn);
     SwcTreeNode::setParent(m_tree->root, tn);
     m_tree->root = tn;
   }
 
   deprecate(ALL_COMPONENT);
-
-  setHostState(m_tree->root);
 
   return m_tree->root;
 }
@@ -3022,11 +3021,12 @@ double ZSwcTree::getMaxSegmentLenth()
   return maxLength;
 }
 
-void ZSwcTree::updateHostState(ENodeState state)
+void ZSwcTree::updateHostState()
 {
+  initHostState();
   updateIterator();
   for (Swc_Tree_Node *tn = begin(); tn != NULL; tn = next()) {
-    setHostState(tn, state);
+    setHostState(tn);
   }
 }
 
@@ -3063,31 +3063,49 @@ void ZSwcTree::setColorScheme(EColorScheme scheme)
     m_nodeColor = QColor(255, 164, 164, 164);
     m_planeSkeletonColor = QColor(255, 128, 128, 128);
 
-    m_rootFocusColor = QColor(0, 0, 255, 32);
-    m_branchPointFocusColor= QColor(0, 255, 0, 32);
+    m_rootFocusColor = QColor(255, 0, 100, 64);
+    m_branchPointFocusColor= QColor(0, 255, 0, 255);
     m_nodeFocusColor = QColor(255, 0, 0, 32);
     break;
   }
 }
 
-void ZSwcTree::setHostState(Swc_Tree_Node *tn, ENodeState state) const
+void ZSwcTree::initHostState()
 {
-  if (tn != NULL) {
-    switch (state) {
-    case NODE_STATE_COSMETIC:
-      if (m_usingCosmeticPen) {
-        tn->tree_state |= m_nodeStateCosmetic;
-      } else {
-        tn->tree_state &= ~m_nodeStateCosmetic;
-      }
-      break;
-    }
+  if (m_tree != NULL) {
+    m_tree->tree_state = getTreeState();
   }
+}
+
+void ZSwcTree::initHostState(int state)
+{
+  if (state & m_nodeStateCosmetic) {
+    m_usingCosmeticPen = true;
+  }
+  if (m_tree != NULL) {
+    m_tree->tree_state = state;
+  }
+}
+
+int ZSwcTree::getTreeState() const
+{
+  int state = 0;
+  switch (state) {
+  case NODE_STATE_COSMETIC:
+    if (m_usingCosmeticPen) {
+      state |= m_nodeStateCosmetic;
+    } else {
+      state &= ~m_nodeStateCosmetic;
+    }
+    break;
+  }
+
+  return state;
 }
 
 void ZSwcTree::setHostState(Swc_Tree_Node *tn) const
 {
-  setHostState(tn, NODE_STATE_COSMETIC);
+  tn->tree_state = getTreeState();
 }
 
 ZClosedCurve ZSwcTree::toClosedCurve() const

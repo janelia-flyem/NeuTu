@@ -73,7 +73,7 @@ public:
 
   double getPenWidth() const;
 
-  inline void useCosmeticPen(bool state) {
+  void useCosmeticPen(bool state) {
     m_usingCosmeticPen = state;
   }
 
