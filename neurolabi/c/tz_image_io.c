@@ -3330,20 +3330,27 @@ Mc_Stack *Read_Stack_Planes_M(File_Bundle_S *bundle)
 
   Mc_Stack *image = Read_Mc_Stack(sname, -1);
   size_t area = image->width * image->height;
-  size_t plane_byte_number = area * image->kind * image->nchannel;
+  size_t plane_byte_number = area * image->kind;
+  size_t channel_byte_number = plane_byte_number * image->depth;
 
   Mc_Stack *stack = Make_Mc_Stack(image->kind, image->width, image->height, 
       depth, image->nchannel);
 
-  memcpy(stack->array, image->array, plane_byte_number);
+  int c = 0;
+  for (c = 0; c < 3; ++c) {
+    memcpy(stack->array + channel_byte_number * c, 
+        image->array + plane_byte_number * c, plane_byte_number);
+  }
 
   int d;
 
   for (d = 1; d < depth; d++) {      
     Sprint_File_Bundle_S(bundle, d, sname);
     image = Read_Mc_Stack(sname, -1);
-    memcpy(stack->array + plane_byte_number * d, 
-	   image->array, plane_byte_number);
+    for (c = 0; c < 3; ++c) {
+      memcpy(stack->array + channel_byte_number * c + plane_byte_number * d, 
+          image->array + plane_byte_number * c, plane_byte_number);
+    }
     Kill_Mc_Stack(image);
   }
 
