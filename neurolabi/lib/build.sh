@@ -84,7 +84,7 @@ then
   then
     mkdir hdf5
   fi
-  uncompress_lib hdf5-1.8.12.tar.gz
+  uncompress_lib hdf5-1.8.12
   cd hdf5-1.8.12
   ./configure --enable-shared=no --with-pic --prefix=${libdir}/hdf5
   make
