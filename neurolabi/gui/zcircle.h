@@ -10,7 +10,8 @@
 #include "include/tz_stdint.h"
 #include "zpoint.h"
 #include "zstackobject.h"
-#include "zintpoint.h"
+
+class ZIntPoint;
 
 class ZCircle : public ZStackObject {
 public:

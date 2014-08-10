@@ -172,10 +172,13 @@ int main(int argc, char *argv[])
 #endif
 #endif
 
+    MainWindow::createWorkDir();
+
 
     // init the logging mechanism
     QsLogging::Logger& logger = QsLogging::Logger::instance();
-    const QString sLogPath(QDir(app.applicationDirPath()).filePath("neuTube_log.txt"));
+    const QString sLogPath(
+          NeutubeConfig::getInstance().getPath(NeutubeConfig::LOG_FILE).c_str());
     QsLogging::DestinationPtr fileDestination(
           QsLogging::DestinationFactory::MakeFileDestination(
             sLogPath, QsLogging::EnableLogRotation,

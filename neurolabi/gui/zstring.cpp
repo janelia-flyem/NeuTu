@@ -438,11 +438,19 @@ string ZString::fullPath(
     }
   }
 
+  string path = dir;
+
   if (addingSeparator) {
-    return dir + FileSeparator + fname + '.' + ext;
+    path += FileSeparator;
   }
 
-  return dir + fname + '.' + ext;
+  path += fname;
+
+  if (!ext.empty()) {
+    path = path + "." + ext;
+  }
+
+  return path;
 }
 
 string ZString::fullPath(

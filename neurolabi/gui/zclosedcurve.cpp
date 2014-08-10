@@ -8,6 +8,7 @@
 #include "zjsonparser.h"
 #include "zswctree.h"
 #include "swctreenode.h"
+#include "zlinesegment.h"
 
 const ZPoint ZClosedCurve::m_emptyPlaceHolder;
 

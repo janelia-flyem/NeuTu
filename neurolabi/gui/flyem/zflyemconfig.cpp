@@ -1,4 +1,5 @@
 #include "zflyemconfig.h"
+#include <iostream>
 #include "zjsonobject.h"
 #include "zjsonarray.h"
 

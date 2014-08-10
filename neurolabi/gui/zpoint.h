@@ -7,7 +7,8 @@
 
 #include <iostream>
 #include <string>
-#include "zintpoint.h"
+
+class ZIntPoint;
 
 class ZPoint {
 public:
@@ -47,6 +48,7 @@ public:
 
   ZPoint& operator += (const ZPoint &pt);
   ZPoint& operator -= (const ZPoint &pt);
+  ZPoint& operator *= (const ZPoint &pt);
   ZPoint& operator /= (const ZPoint &pt);
   ZPoint& operator += (double offset);
   ZPoint& operator -= (double offset);
@@ -76,6 +78,10 @@ public:
     m_y += dy;
     m_z += dz;
   }
+  void translate(const ZPoint &dp);
+
+  void rotate(double theta, double psi);
+  void rotate(double theta, double psi, const ZPoint &center);
 
   ZIntPoint toIntPoint() const;
 

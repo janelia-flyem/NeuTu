@@ -1,4 +1,5 @@
 #include "zpainter.h"
+#include "zintpoint.h"
 
 ZPainter::ZPainter()
 {
@@ -7,6 +8,21 @@ ZPainter::ZPainter()
 
 ZPainter::ZPainter(QPaintDevice *device) : QPainter(device)
 {
+}
+
+void ZPainter::setStackOffset(int x, int y, int z)
+{
+  m_offset.set(-x, -y, -z);
+}
+
+void ZPainter::setStackOffset(const ZIntPoint &offset)
+{
+  setStackOffset(offset.getX(), offset.getY(), offset.getZ());
+}
+
+void ZPainter::setStackOffset(const ZPoint &offset)
+{
+  m_offset.set(offset.x(), offset.y(), offset.z());
 }
 
 void ZPainter::drawPoint(const QPointF &pt)

@@ -17,6 +17,7 @@
 #include "tz_stack.h"
 #include "neutubeconfig.h"
 #include "zerror.h"
+#include "zweightedpointarray.h"
 
 using namespace std;
 

@@ -25,6 +25,11 @@ void ZProgressReporter::end()
   }
 }
 
+void ZProgressReporter::setTitle(const std::string &/*title*/)
+{
+
+}
+
 void ZProgressReporter::open()
 {
 

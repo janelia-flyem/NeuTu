@@ -9,6 +9,12 @@
 #include "flyem/zflyemconfig.h"
 #endif
 
+#include "zqtheader.h"
+#if _QT_GUI_USED_
+#include <QDir>
+#include <QSettings>
+#endif
+
 class ZXmlNode;
 
 class NeutubeConfig
@@ -18,7 +24,8 @@ public:
     DATA, FLYEM_BODY_CONN_CLASSIFIER, FLYEM_BODY_CONN_TRAIN_DATA,
     FLYEM_BODY_CONN_TRAIN_TRUTH, FLYEM_BODY_CONN_EVAL_DATA,
     FLYEM_BODY_CONN_EVAL_TRUTH, SWC_REPOSOTARY, AUTO_SAVE,
-    CONFIGURE_FILE, SKELETONIZATION_CONFIG, DOCUMENT, TMP_DATA
+    CONFIGURE_FILE, SKELETONIZATION_CONFIG, DOCUMENT, TMP_DATA,
+    WORKING_DIR, LOG_FILE, LOG_APPOUT, LOG_WARN, LOG_ERROR
   };
 
   static NeutubeConfig& getInstance() {
@@ -61,6 +68,12 @@ public:
   inline bool isStereoEnabled() {
     return m_isStereoOn;
   }
+
+#ifdef _QT_GUI_USED_
+  inline QSettings& getSettings() {
+    return m_settings;
+  }
+#endif
 
   class MainWindowConfig {
   public:
@@ -243,9 +256,7 @@ public:
   inline bool isSettingOn() const { return m_isSettingOn; }
 
   inline int getAutoSaveInterval() const { return m_autoSaveInterval; }
-  inline void setAutoSaveDir(const std::string str) {
-    m_autoSaveDir = str;
-  }
+  void setWorkDir(const std::string str);
   bool isAutoSaveEnabled() const { return m_autoSaveEnabled; }
 
   inline bool usingNativeDialog() const { return m_usingNativeDialog; }
@@ -281,7 +292,8 @@ private:
   ObjManagerConfig m_objManagerConfig;
   bool m_isSettingOn;
   bool m_isStereoOn;
-  std::string m_autoSaveDir;
+  //std::string m_autoSaveDir;
+  std::string m_workDir;
   int m_autoSaveInterval;
   bool m_autoSaveEnabled;
   bool m_usingNativeDialog;
@@ -291,6 +303,10 @@ private:
 #endif
 
   ZMessageReporter *m_messageReporter;
+
+#ifdef _QT_GUI_USED_
+  QSettings m_settings;
+#endif
 };
 
 #define GET_DATA_DIR (NeutubeConfig::getInstance().getPath(NeutubeConfig::DATA))

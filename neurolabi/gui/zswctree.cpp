@@ -32,6 +32,7 @@
 #include "zjsonparser.h"
 #include "zerror.h"
 #include "zclosedcurve.h"
+#include "zintpoint.h"
 
 using namespace std;
 
@@ -426,6 +427,8 @@ void ZSwcTree::display(
   */
 
 #if defined(_QT_GUI_USED_)
+  painter.save();
+
   double dataFocus = stackFocus - painter.getOffset().z();
 
   const double strokeWidth = getPenWidth();
@@ -571,6 +574,8 @@ void ZSwcTree::display(
       }
     }
   }
+
+  painter.restore();
 #endif
 }
 

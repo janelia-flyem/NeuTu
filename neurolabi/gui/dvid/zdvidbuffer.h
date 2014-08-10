@@ -4,9 +4,9 @@
 #include <QObject>
 #include <QStringList>
 #include "zobject3dscan.h"
-#include "zswctree.h"
 #include "zstack.hxx"
 
+class ZSwcTree;
 class ZDvidClient;
 
 class ZDvidBuffer : public QObject

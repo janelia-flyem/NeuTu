@@ -593,6 +593,15 @@ int Hist_Dpthre2(int *hist,int low,int high)
   return thre;
 }
 
+int Stack_Find_Threshold_RC(Stack *stack, int low, int high)
+{
+  int *hist = Stack_Hist(stack);
+  int thre = Hist_Rcthre(hist,low,high);
+  free(hist);
+
+  return thre;
+}
+
 int Stack_Threshold_RC(Stack* stack,int low,int high)
 {
   int *hist = Stack_Hist(stack);

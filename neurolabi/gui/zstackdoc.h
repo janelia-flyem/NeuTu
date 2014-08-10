@@ -19,6 +19,7 @@
 #include <QMap>
 #include <string>
 #include <QMenu>
+#include <QPair>
 
 #include "neutube.h"
 #include "zcurve.h"
@@ -61,6 +62,7 @@ class ZStackFactory;
 class ZSparseObject;
 class ZSparseStack;
 class ZCircle;
+class ZUndoCommand;
 
 /*!
  * \brief The class of stack document
@@ -218,8 +220,12 @@ public: //attributes
   void addData(const ZStackDocReader &reader);
 
 
-  bool isUndoClean();
-  bool isSwcSavingRequired();
+  bool isUndoClean() const;
+  bool isSwcSavingRequired() const;
+  void setSaved(NeuTube::EDocumentableType type, bool state);
+
+  const ZUndoCommand* getLastUndoCommand() const;
+  //const ZUndoCommand* getLastCommand() const;
 
 public: //swc tree edit
   // move soma (first root) to new location
@@ -653,6 +659,9 @@ public slots: //undoable commands
   bool executeSwcNodeChangeZCommand(double z);
   bool executeSwcNodeEstimateRadiusCommand();
   bool executeMoveSwcNodeCommand(double dx, double dy, double dz);
+  bool executeScaleSwcNodeCommand(
+      double sx, double sy, double sz, const ZPoint &center);
+  bool executeRotateSwcNodeCommand(double theta, double psi, bool aroundCenter);
   bool executeTranslateSelectedSwcNode();
   bool executeDeleteSwcNodeCommand();
   bool executeConnectSwcNodeCommand();
@@ -679,6 +688,12 @@ public slots: //undoable commands
   bool executeSetBranchPoint();
   bool executeConnectIsolatedSwc();
   bool executeResetBranchPoint();
+
+  bool executeMoveAllSwcCommand(double dx, double dy, double dz);
+  bool executeScaleAllSwcCommand(double sx, double sy, double sz,
+                                 bool aroundCenter = false);
+  bool executeRotateAllSwcCommand(
+      double theta, double psi, bool aroundCenter = false);
 
   bool executeBinarizeCommand(int thre);
   bool executeBwsolidCommand();
@@ -979,6 +994,13 @@ public:
   void setSparseStack(ZSparseStack *spStack);
   void addObj3d(ZObject3d *obj);
 
+  /*
+  class ZStackObjectWithRole {
+  public:
+    ZStackObjectWithRole(ZStackObject *obj, NeuTube::EDocumentableType type,
+                         ZDocPlayer::TRole role);
+  };
+*/
 private:
   QString m_filePath;
 
@@ -988,6 +1010,8 @@ private:
   ZStackFile m_stackSource;
 
   //Concrete objects
+  //QList<QPair<ZStackObject*,
+
   QList<ZSwcTree*> m_swcList;
   QList<ZPunctum*> m_punctaList;
   QList<ZStroke2d*> m_strokeList;
@@ -996,6 +1020,7 @@ private:
   QList<ZLocsegChain*> m_chainList;
 
   ZDocPlayerList m_playerList;
+
 
   //Special object
   ZSwcNetwork *m_swcNetwork;

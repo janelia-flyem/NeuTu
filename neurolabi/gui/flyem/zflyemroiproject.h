@@ -22,6 +22,7 @@ public:
   void shallowClear();
   void setDvidTarget(const ZDvidTarget &target);
   void showDataFrame() const;
+  void closeDataFrame();
   bool hasDataFrame() const;
   void setDataFrame(ZStackFrame *frame);
   void shallowClearDataFrame();
@@ -63,6 +64,7 @@ public:
 
   void setRoiUploaded(int z, bool uploaded);
   bool isRoiCurveUploaded(int z) const;
+  bool isAllRoiCurveUploaded() const;
 
   ZObject3dScan getFilledRoi(int z) const;
   ZObject3dScan* getFilledRoi(int z, ZObject3dScan *result) const;
@@ -77,6 +79,9 @@ public:
   void translateRoiSwc(double dx, double dy);
 
   static ZIntCuboid estimateBoundBox(const ZStack &stack);
+
+  bool isRoiSaved() const;
+  void setRoiSaved(bool state);
 
 private:
   ZObject3dScan* getFilledRoi(

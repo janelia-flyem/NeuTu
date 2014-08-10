@@ -1,6 +1,8 @@
 #ifndef ZPROGRESSREPORTER_H
 #define ZPROGRESSREPORTER_H
 
+#include <string>
+
 /* Interface for reporting progress
 
 Usage:
@@ -35,6 +37,7 @@ public:
   inline double getProgress() { return m_progress; }
   //void advanceTo(double progress); //progress from 0 to 1
 
+  virtual void setTitle(const std::string &title);
   virtual void open();
   virtual void close();
   virtual void push();

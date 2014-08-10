@@ -19,13 +19,15 @@
 #include "zerror.h"
 #include "tz_math.h"
 #include "swc/zswcresampler.h"
+#include "tz_stack_threshold.h"
 
 using namespace std;
 
 ZStackSkeletonizer::ZStackSkeletonizer() : m_lengthThreshold(15.0),
   m_distanceThreshold(-1.0), m_rebase(false), m_interpolating(false),
   m_removingBorder(false), m_fillingHole(false), m_minObjSize(0),
-  m_keepingSingleObject(false), m_level(0), m_connectingBranch(true)
+  m_keepingSingleObject(false), m_level(0), m_connectingBranch(true),
+  m_usingOriginalSignal(false)
 {
   for (int i = 0; i < 3; ++i) {
     m_resolution[i] = 1.0;
@@ -72,6 +74,12 @@ ZSwcTree* ZStackSkeletonizer::makeSkeleton(const ZObject3dScan &obj)
 
 ZSwcTree* ZStackSkeletonizer::makeSkeletonWithoutDsTest(Stack *stackData)
 {
+  Stack *signal = NULL;
+
+  if (m_usingOriginalSignal) {
+    signal = C_Stack::clone(stackData);
+  }
+
   if (m_level > 0) {
     Stack_Level_Mask(stackData, m_level);
   }
@@ -167,6 +175,14 @@ ZSwcTree* ZStackSkeletonizer::makeSkeletonWithoutDsTest(Stack *stackData)
     int objectOffset[3];
     Stack *croppedObjStack = C_Stack::boundCrop(objstack, 0, objectOffset);
 
+    if (signal != NULL) {
+      Cuboid_I bound_box;
+      Stack_Bound_Box(objstack, &bound_box);
+      Stack *tmpStack = C_Stack::crop(signal, bound_box, NULL);
+      C_Stack::kill(signal);
+      signal = tmpStack;
+    }
+
     /*
     if (C_Stack::kind(objstack) == GREY16) {
       Translate_Stack(objstack, GREY, 1);
@@ -250,7 +266,11 @@ ZSwcTree* ZStackSkeletonizer::makeSkeletonWithoutDsTest(Stack *stackData)
               C_Stack::width(mask), C_Stack::height(mask),
               C_Stack::depth(mask));
         mask->array[seedIndex] = SP_GROW_SOURCE;
-        Stack_Sp_Grow(tmpdist, NULL, 0, NULL, 0, sgw);
+        if (signal != NULL) {
+          Stack_Sp_Grow(signal, NULL, 0, NULL, 0, sgw);
+        } else {
+          Stack_Sp_Grow(tmpdist, NULL, 0, NULL, 0, sgw);
+        }
       }
       //double lengthThreshold = lengthThreshold;
 
@@ -337,6 +357,8 @@ ZSwcTree* ZStackSkeletonizer::makeSkeletonWithoutDsTest(Stack *stackData)
     croppedObjStack = NULL;
     C_Stack::kill(objstack);
     objstack = NULL;
+    C_Stack::kill(signal);
+    signal = NULL;
 
     if (Swc_Tree_Regular_Root(subtree) != NULL) {
       cout << Swc_Tree_Node_Fsize(subtree->root) - 1<< " nodes added" << endl;
@@ -381,13 +403,28 @@ ZSwcTree* ZStackSkeletonizer::makeSkeletonWithoutDsTest(Stack *stackData)
 
 ZSwcTree* ZStackSkeletonizer::makeSkeletonWithoutDs(Stack *stackData)
 {
+  Stack *stackSignal = NULL;
+
   if (m_level > 0) {
     Stack_Level_Mask(stackData, m_level);
   }
+
   advanceProgress(0.05);
 
   double maxMaskIntensity = Stack_Max(stackData, NULL);
   if (maxMaskIntensity > 1.0) {
+    if (m_level == 0) {
+      if (m_usingOriginalSignal) {
+        stackSignal = C_Stack::clone(stackData);
+      }
+      int thre1 =
+          Stack_Find_Threshold_RC(stackData, 0, iround(maxMaskIntensity));
+      int thre2 = Stack_Find_Threshold_Locmax(
+            stackData, 0, iround(maxMaskIntensity));
+
+      int thre = imax2(thre1, thre2);
+      Stack_Threshold(stackData, thre);
+    }
     Stack_Binarize(stackData);
   } else if (maxMaskIntensity == 0.0) {
     C_Stack::kill(stackData);
@@ -475,6 +512,14 @@ ZSwcTree* ZStackSkeletonizer::makeSkeletonWithoutDs(Stack *stackData)
     int objectOffset[3];
     Stack *croppedObjStack = C_Stack::boundCrop(objstack, 0, objectOffset);
 
+    Stack *croppedSignal = NULL;
+    if (signal != NULL) {
+      Cuboid_I bound_box;
+      Stack_Bound_Box(objstack, &bound_box);
+      croppedSignal = C_Stack::crop(stackSignal, bound_box, NULL);;
+    }
+
+
     /*
     if (C_Stack::kind(objstack) == GREY16) {
       Translate_Stack(objstack, GREY, 1);
@@ -523,6 +568,7 @@ ZSwcTree* ZStackSkeletonizer::makeSkeletonWithoutDs(Stack *stackData)
       sgw->resolution[1] = m_resolution[1];
       sgw->resolution[2] = m_resolution[2];
       sgw->wf = Stack_Voxel_Weight_I;
+
       size_t max_index;
       Stack_Max(tmpdist, &max_index);
 
@@ -541,7 +587,13 @@ ZSwcTree* ZStackSkeletonizer::makeSkeletonWithoutDs(Stack *stackData)
 
       mask->array[max_index] = SP_GROW_SOURCE;
       Sp_Grow_Workspace_Set_Mask(sgw, mask->array);
-      Stack_Sp_Grow(tmpdist, NULL, 0, NULL, 0, sgw);
+
+      if (croppedSignal != NULL) {
+        //Stack_Add(croppedSignal, tmpdist, croppedSignal);
+        Stack_Sp_Grow(croppedSignal, NULL, 0, NULL, 0, sgw);
+      } else {
+        Stack_Sp_Grow(tmpdist, NULL, 0, NULL, 0, sgw);
+      }
 
       ZSpGrowParser parser(sgw);
 
@@ -558,7 +610,14 @@ ZSwcTree* ZStackSkeletonizer::makeSkeletonWithoutDs(Stack *stackData)
               C_Stack::width(mask), C_Stack::height(mask),
               C_Stack::depth(mask));
         mask->array[seedIndex] = SP_GROW_SOURCE;
-        Stack_Sp_Grow(tmpdist, NULL, 0, NULL, 0, sgw);
+
+        if (croppedSignal != NULL) {
+          Stack_Sp_Grow(croppedSignal, NULL, 0, NULL, 0, sgw);
+        } else {
+          Stack_Sp_Grow(tmpdist, NULL, 0, NULL, 0, sgw);
+        }
+
+        //Stack_Sp_Grow(tmpdist, NULL, 0, NULL, 0, sgw);
       }
 
       //double lengthThreshold = lengthThreshold;
@@ -646,6 +705,8 @@ ZSwcTree* ZStackSkeletonizer::makeSkeletonWithoutDs(Stack *stackData)
     croppedObjStack = NULL;
     C_Stack::kill(objstack);
     objstack = NULL;
+    C_Stack::kill(croppedSignal);
+    croppedSignal = NULL;
 
     if (Swc_Tree_Regular_Root(subtree) != NULL) {
       cout << Swc_Tree_Node_Fsize(subtree->root) - 1<< " nodes added" << endl;
@@ -659,6 +720,8 @@ ZSwcTree* ZStackSkeletonizer::makeSkeletonWithoutDs(Stack *stackData)
 
   C_Stack::kill(stackData);
   stackData = NULL;
+  C_Stack::kill(stackSignal);
+  stackSignal = NULL;
 
   ZSwcTree *wholeTree = NULL;
 

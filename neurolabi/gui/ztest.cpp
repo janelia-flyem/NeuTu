@@ -4,6 +4,8 @@
 #include <QDir>
 #include <QDomDocument>
 #include <QDomElement>
+#include <QUndoCommand>
+#include <QUndoStack>
 #include <QImage>
 #include <QPainter>
 #include <iostream>
@@ -45,7 +47,7 @@ using namespace std;
 #include "tz_workspace.h"
 #include "tz_graph.h"
 #include "flyemskeletonizationdialog.h"
-#include "zstackaccessor.h"
+//#include "zstackaccessor.h"
 #include "zmatrix.h"
 #include "zswcbranch.h"
 #include "zswctreematcher.h"
@@ -230,6 +232,8 @@ int ZTest::runUnitTest(int argc, char *argv[])
 
   return RUN_ALL_TESTS();
 #else
+  UNUSED_PARAMETER(argc);
+  UNUSED_PARAMETER(argv);
   return 0;
 #endif
 }
@@ -12585,12 +12589,14 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 1
-  ZStack *stack = ZStackFactory::makeZeroStack(3, 3, 1, 3);
+  ZStack *stack = ZStackFactory::makeZeroStack(3, 3, 3, 3);
   for (int c = 0; c < 3; ++c) {
+    for (int z = 0; z < 3; ++z) {
     for (int y = 0; y < 3; ++y) {
       for (int x = 0; x < 3; ++x) {
-        stack->setIntValue(x, y, 0, c, c * 100);
+        stack->setIntValue(x, y, z, c, c * 100);
       }
+    }
     }
   }
 
@@ -12598,7 +12604,25 @@ void ZTest::test(MainWindow *host)
   stack->setIntValue(1, 1, 0, 1, 255);
   stack->setIntValue(1, 1, 0, 2, 255);
 
-  stack->save(GET_DATA_DIR + "/color_test.tif");
+  stack->save(GET_DATA_DIR + "/color_test2.tif");
+
+#endif
+
+#if 0
+  QUndoStack *stack = new QUndoStack(host);
+  stack->push(new QUndoCommand("1"));
+  stack->push(new QUndoCommand("2"));
+
+  qDebug() << stack->count();
+  qDebug() << stack->index();
+
+  stack->undo();;
+  qDebug() << stack->count();
+  qDebug() << stack->index();
+
+
+  const QUndoCommand *command = stack->command(stack->index() - 1);
+  qDebug() << command->text();
 
 #endif
 }

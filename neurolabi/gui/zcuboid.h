@@ -3,9 +3,10 @@
 
 #include <vector>
 #include "zpoint.h"
-#include "zintpoint.h"
-#include "zlinesegment.h"
-#include "zintcuboid.h"
+
+class ZIntPoint;
+class ZIntCuboid;
+class ZLineSegment;
 
 /*************
  *

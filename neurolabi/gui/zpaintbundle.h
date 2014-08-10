@@ -8,6 +8,7 @@
 #include "tz_math.h"
 #include "zpoint.h"
 #include "zswctree.h"
+#include "zintpoint.h"
 
 #include <boost/iterator/iterator_facade.hpp>
 #include <boost/type_traits/is_convertible.hpp>
