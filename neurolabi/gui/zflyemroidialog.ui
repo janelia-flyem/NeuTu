@@ -109,7 +109,14 @@
            </widget>
           </item>
           <item>
-           <widget class="QComboBox" name="projectComboBox"/>
+           <widget class="QComboBox" name="projectComboBox">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+           </widget>
           </item>
           <item>
            <widget class="QPushButton" name="pushButton">
@@ -250,7 +257,7 @@
           <string/>
          </property>
          <property name="icon">
-          <iconset>
+          <iconset resource="gui.qrc">
            <normaloff>:/images/rotate_left.png</normaloff>:/images/rotate_left.png</iconset>
          </property>
          <property name="iconSize">
@@ -267,7 +274,7 @@
           <string/>
          </property>
          <property name="icon">
-          <iconset>
+          <iconset resource="gui.qrc">
            <normaloff>:/images/rotate_right.png</normaloff>:/images/rotate_right.png</iconset>
          </property>
          <property name="iconSize">
@@ -314,7 +321,7 @@
             <string/>
            </property>
            <property name="icon">
-            <iconset>
+            <iconset resource="gui.qrc">
              <normaloff>:/images/move_upleft.png</normaloff>:/images/move_upleft.png</iconset>
            </property>
           </widget>
@@ -325,7 +332,7 @@
             <string/>
            </property>
            <property name="icon">
-            <iconset>
+            <iconset resource="gui.qrc">
              <normaloff>:/images/move_downright.png</normaloff>:/images/move_downright.png</iconset>
            </property>
           </widget>
@@ -349,7 +356,7 @@
             <string/>
            </property>
            <property name="icon">
-            <iconset>
+            <iconset resource="gui.qrc">
              <normaloff>:/images/go-previous.png</normaloff>:/images/go-previous.png</iconset>
            </property>
           </widget>
@@ -360,7 +367,7 @@
             <string/>
            </property>
            <property name="icon">
-            <iconset>
+            <iconset resource="gui.qrc">
              <normaloff>:/images/go-next.png</normaloff>:/images/go-next.png</iconset>
            </property>
           </widget>
@@ -384,7 +391,7 @@
             <string/>
            </property>
            <property name="icon">
-            <iconset>
+            <iconset resource="gui.qrc">
              <normaloff>:/images/vsqueeze.png</normaloff>:/images/vsqueeze.png</iconset>
            </property>
            <property name="iconSize">
@@ -401,7 +408,7 @@
             <string/>
            </property>
            <property name="icon">
-            <iconset>
+            <iconset resource="gui.qrc">
              <normaloff>:/images/vstretch.png</normaloff>:/images/vstretch.png</iconset>
            </property>
            <property name="iconSize">
@@ -431,7 +438,7 @@
             <string/>
            </property>
            <property name="icon">
-            <iconset>
+            <iconset resource="gui.qrc">
              <normaloff>:/images/hsqueeze.png</normaloff>:/images/hsqueeze.png</iconset>
            </property>
            <property name="iconSize">
@@ -448,7 +455,7 @@
             <string/>
            </property>
            <property name="icon">
-            <iconset>
+            <iconset resource="gui.qrc">
              <normaloff>:/images/hstretch.png</normaloff>:/images/hstretch.png</iconset>
            </property>
            <property name="iconSize">
@@ -520,7 +527,7 @@
             <string/>
            </property>
            <property name="icon">
-            <iconset>
+            <iconset resource="gui.qrc">
              <normaloff>:/images/squeeze.png</normaloff>:/images/squeeze.png</iconset>
            </property>
            <property name="iconSize">
@@ -537,7 +544,7 @@
             <string/>
            </property>
            <property name="icon">
-            <iconset>
+            <iconset resource="gui.qrc">
              <normaloff>:/images/stretch.png</normaloff>:/images/stretch.png</iconset>
            </property>
            <property name="iconSize">
@@ -567,7 +574,7 @@
             <string/>
            </property>
            <property name="icon">
-            <iconset>
+            <iconset resource="gui.qrc">
              <normaloff>:/images/move_up.png</normaloff>:/images/move_up.png</iconset>
            </property>
           </widget>
@@ -578,7 +585,7 @@
             <string/>
            </property>
            <property name="icon">
-            <iconset>
+            <iconset resource="gui.qrc">
              <normaloff>:/images/move_down.png</normaloff>:/images/move_down.png</iconset>
            </property>
           </widget>
@@ -709,6 +716,8 @@
    </widget>
   </widget>
  </widget>
- <resources/>
+ <resources>
+  <include location="gui.qrc"/>
+ </resources>
  <connections/>
 </ui>
