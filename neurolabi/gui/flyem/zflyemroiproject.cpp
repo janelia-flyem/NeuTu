@@ -11,9 +11,10 @@
 #include "zobject3dscan.h"
 #include "zstroke2d.h"
 #include "zstackfactory.h"
+#include "zstring.h"
 
-ZFlyEmRoiProject::ZFlyEmRoiProject(QObject *parent) :
-  QObject(parent), m_z(-1), m_dataFrame(NULL)
+ZFlyEmRoiProject::ZFlyEmRoiProject(const std::string &name, QObject *parent) :
+  QObject(parent), m_name(name), m_z(-1), m_dataFrame(NULL)
 {
 }
 
@@ -62,8 +63,8 @@ void ZFlyEmRoiProject::downloadAllRoi()
   ZDvidReader reader;
   if (reader.open(getDvidTarget())) {
     QStringList roiIdArray = reader.readKeys(
-          "roi_curve", QString("%1").arg(m_dvidInfo.getMinZ()),
-          QString("%1").arg(99999));
+          "roi_curve", QString("%1").arg(getRoiKey(m_dvidInfo.getMinZ()).c_str()),
+          QString("%1").arg(getRoiKey(m_dvidInfo.getMaxZ()).c_str()));
     foreach (const QString &roiId, roiIdArray) {
       downloadRoi(roiId.toInt());
     }
@@ -179,6 +180,21 @@ bool ZFlyEmRoiProject::addRoi()
   return false;
 }
 
+bool ZFlyEmRoiProject::hasRoi(int z) const
+{
+  const ZClosedCurve *curve = getRoi(z);
+  if (curve == NULL) {
+    return false;
+  }
+
+  return !curve->isEmpty();
+}
+
+bool ZFlyEmRoiProject::hasRoi() const
+{
+  return hasRoi(getDataZ());
+}
+
 const ZClosedCurve* ZFlyEmRoiProject::getRoi(int z) const
 {
   const ZClosedCurve *curve = NULL;
@@ -258,7 +274,7 @@ int ZFlyEmRoiProject::uploadRoi(int z)
     const ZClosedCurve *curve = m_curveArray[z];
     if (curve != NULL) {
       if (!isRoiCurveUploaded(z)) {
-        writer.writeRoiCurve(*curve, z);
+        writer.writeRoiCurve(*curve, getRoiKey(z));
         setRoiUploaded(z, true);
         ++count;
       }
@@ -287,7 +303,7 @@ void ZFlyEmRoiProject::downloadRoi(int z)
 {
   ZDvidReader reader;
   if (reader.open(getDvidTarget())) {
-    ZClosedCurve *curve = reader.readRoiCurve(z, NULL);
+    ZClosedCurve *curve = reader.readRoiCurve(getRoiKey(z), NULL);
     if (curve != NULL) {
       setRoi(curve, z);
       setRoiUploaded(z, true);
@@ -679,4 +695,15 @@ ZIntCuboid ZFlyEmRoiProject::estimateBoundBox(const ZStack &stack)
   }
 
   return cuboid;
+}
+
+std::string ZFlyEmRoiProject::getRoiKey(int z) const
+{
+  ZString key = getName();
+  if (!key.empty()) {
+    key += "_";
+    key.appendNumber(z, 7);
+  }
+
+  return key;
 }

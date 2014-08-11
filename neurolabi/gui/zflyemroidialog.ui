@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>407</width>
+    <width>444</width>
     <height>594</height>
    </rect>
   </property>
@@ -18,8 +18,8 @@
     <rect>
      <x>11</x>
      <y>12</y>
-     <width>383</width>
-     <height>351</height>
+     <width>425</width>
+     <height>361</height>
     </rect>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -99,6 +99,33 @@
       </item>
       <item>
        <layout class="QVBoxLayout" name="verticalLayout_2">
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_14">
+          <item>
+           <widget class="QLabel" name="label_6">
+            <property name="text">
+             <string>Project</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QComboBox" name="projectComboBox"/>
+          </item>
+          <item>
+           <widget class="QPushButton" name="pushButton">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>New</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
         <item>
          <layout class="QVBoxLayout" name="verticalLayout_4">
           <item>
@@ -182,7 +209,7 @@
     <rect>
      <x>10</x>
      <y>380</y>
-     <width>391</width>
+     <width>421</width>
      <height>211</height>
     </rect>
    </property>
@@ -223,7 +250,7 @@
           <string/>
          </property>
          <property name="icon">
-          <iconset resource="gui.qrc">
+          <iconset>
            <normaloff>:/images/rotate_left.png</normaloff>:/images/rotate_left.png</iconset>
          </property>
          <property name="iconSize">
@@ -240,7 +267,7 @@
           <string/>
          </property>
          <property name="icon">
-          <iconset resource="gui.qrc">
+          <iconset>
            <normaloff>:/images/rotate_right.png</normaloff>:/images/rotate_right.png</iconset>
          </property>
          <property name="iconSize">
@@ -287,7 +314,7 @@
             <string/>
            </property>
            <property name="icon">
-            <iconset resource="gui.qrc">
+            <iconset>
              <normaloff>:/images/move_upleft.png</normaloff>:/images/move_upleft.png</iconset>
            </property>
           </widget>
@@ -298,7 +325,7 @@
             <string/>
            </property>
            <property name="icon">
-            <iconset resource="gui.qrc">
+            <iconset>
              <normaloff>:/images/move_downright.png</normaloff>:/images/move_downright.png</iconset>
            </property>
           </widget>
@@ -322,7 +349,7 @@
             <string/>
            </property>
            <property name="icon">
-            <iconset resource="gui.qrc">
+            <iconset>
              <normaloff>:/images/go-previous.png</normaloff>:/images/go-previous.png</iconset>
            </property>
           </widget>
@@ -333,7 +360,7 @@
             <string/>
            </property>
            <property name="icon">
-            <iconset resource="gui.qrc">
+            <iconset>
              <normaloff>:/images/go-next.png</normaloff>:/images/go-next.png</iconset>
            </property>
           </widget>
@@ -357,7 +384,7 @@
             <string/>
            </property>
            <property name="icon">
-            <iconset resource="gui.qrc">
+            <iconset>
              <normaloff>:/images/vsqueeze.png</normaloff>:/images/vsqueeze.png</iconset>
            </property>
            <property name="iconSize">
@@ -374,7 +401,7 @@
             <string/>
            </property>
            <property name="icon">
-            <iconset resource="gui.qrc">
+            <iconset>
              <normaloff>:/images/vstretch.png</normaloff>:/images/vstretch.png</iconset>
            </property>
            <property name="iconSize">
@@ -404,7 +431,7 @@
             <string/>
            </property>
            <property name="icon">
-            <iconset resource="gui.qrc">
+            <iconset>
              <normaloff>:/images/hsqueeze.png</normaloff>:/images/hsqueeze.png</iconset>
            </property>
            <property name="iconSize">
@@ -421,7 +448,7 @@
             <string/>
            </property>
            <property name="icon">
-            <iconset resource="gui.qrc">
+            <iconset>
              <normaloff>:/images/hstretch.png</normaloff>:/images/hstretch.png</iconset>
            </property>
            <property name="iconSize">
@@ -493,7 +520,7 @@
             <string/>
            </property>
            <property name="icon">
-            <iconset resource="gui.qrc">
+            <iconset>
              <normaloff>:/images/squeeze.png</normaloff>:/images/squeeze.png</iconset>
            </property>
            <property name="iconSize">
@@ -510,7 +537,7 @@
             <string/>
            </property>
            <property name="icon">
-            <iconset resource="gui.qrc">
+            <iconset>
              <normaloff>:/images/stretch.png</normaloff>:/images/stretch.png</iconset>
            </property>
            <property name="iconSize">
@@ -540,7 +567,7 @@
             <string/>
            </property>
            <property name="icon">
-            <iconset resource="gui.qrc">
+            <iconset>
              <normaloff>:/images/move_up.png</normaloff>:/images/move_up.png</iconset>
            </property>
           </widget>
@@ -551,7 +578,7 @@
             <string/>
            </property>
            <property name="icon">
-            <iconset resource="gui.qrc">
+            <iconset>
              <normaloff>:/images/move_down.png</normaloff>:/images/move_down.png</iconset>
            </property>
           </widget>
@@ -682,8 +709,6 @@
    </widget>
   </widget>
  </widget>
- <resources>
-  <include location="gui.qrc"/>
- </resources>
+ <resources/>
  <connections/>
 </ui>

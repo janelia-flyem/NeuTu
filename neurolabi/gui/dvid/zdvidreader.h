@@ -57,7 +57,7 @@ public:
 
   std::set<int> readBodyId(const ZDvidFilter &filter);
 
-  ZClosedCurve* readRoiCurve(int z, ZClosedCurve *result);
+  ZClosedCurve* readRoiCurve(const std::string &key, ZClosedCurve *result);
   ZIntCuboid readBoundBox(int z);
 
   ZDvidInfo readGrayScaleInfo();

@@ -630,9 +630,10 @@ std::vector<std::pair<int, int> > ZDvidReader::partitionStack(
   return partition;
 }
 
-ZClosedCurve* ZDvidReader::readRoiCurve(int z, ZClosedCurve *result)
+ZClosedCurve* ZDvidReader::readRoiCurve(
+    const std::string &key, ZClosedCurve *result)
 {
-  QByteArray byteArray = readKeyValue("roi_curve", QString("%1").arg(z));
+  QByteArray byteArray = readKeyValue("roi_curve", key.c_str());
   if (!byteArray.isEmpty()) {
     if (result == NULL) {
       result = new ZClosedCurve;

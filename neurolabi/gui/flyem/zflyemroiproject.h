@@ -14,7 +14,7 @@ class ZFlyEmRoiProject : public QObject
 {
   Q_OBJECT
 public:
-  explicit ZFlyEmRoiProject(QObject *parent = 0);
+  explicit ZFlyEmRoiProject(const std::string &name, QObject *parent = 0);
   ~ZFlyEmRoiProject();
 
   void initRoi();
@@ -39,6 +39,9 @@ public:
 
   const ZClosedCurve* getRoi() const;
   ZSwcTree* getRoiSwc() const;
+
+  bool hasRoi(int z) const;
+  bool hasRoi() const;
 
   const ZClosedCurve* getRoi(int z) const;
   ZSwcTree* getRoiSwc(int z) const;
@@ -83,6 +86,14 @@ public:
   bool isRoiSaved() const;
   void setRoiSaved(bool state);
 
+  inline void setName(const std::string &name) {
+    m_name = name;
+  }
+
+  inline std::string getName() const { return m_name; }
+
+  std::string getRoiKey(int z) const;
+
 private:
   ZObject3dScan* getFilledRoi(
       const ZClosedCurve *curve, int z, ZObject3dScan *result) const;
@@ -92,6 +103,7 @@ signals:
 public slots:
 
 private:
+  std::string m_name;
   ZDvidTarget m_dvidTarget;
   ZDvidInfo m_dvidInfo;
   int m_z;

@@ -122,18 +122,40 @@ void ZDvidWriter::writeAnnotation(const ZFlyEmNeuron &neuron)
   writeAnnotation(neuron.getId(), neuron.getAnnotationJson());
 }
 
-void ZDvidWriter::writeRoiCurve(const ZClosedCurve &curve, int z)
+void ZDvidWriter::writeRoiCurve(
+    const ZClosedCurve &curve, const std::string &key)
 {
-  ZJsonObject obj = curve.toJsonObject();
-  ZString annotationString = obj.dumpString(0);
+  if (!key.empty()) {
+    ZJsonObject obj = curve.toJsonObject();
+    ZString annotationString = obj.dumpString(0);
+    annotationString.replace(" ", "");
+    annotationString.replace("\"", "\"\"\"");
+
+    QString command = QString(
+          "curl -g -X POST -H \"Content-Type: application/json\" "
+          "-d \"%1\" %2/api/node/%3/roi_curve/%4").arg(annotationString.c_str()).
+        arg(m_dvidClient->getServer()).arg(m_dvidClient->getUuid()).
+        arg(key.c_str());
+
+    qDebug() << command;
+
+    QProcess::execute(command);
+  }
+}
+
+void ZDvidWriter::writeJsonString(
+    const std::string &dataName, const std::string &key,
+    const std::string jsonString)
+{
+  ZString annotationString = jsonString;
   annotationString.replace(" ", "");
   annotationString.replace("\"", "\"\"\"");
 
   QString command = QString(
         "curl -g -X POST -H \"Content-Type: application/json\" "
-        "-d \"%1\" %2/api/node/%3/roi_curve/%4").arg(annotationString.c_str()).
+        "-d \"%1\" %2/api/node/%3/%4/%5").arg(annotationString.c_str()).
       arg(m_dvidClient->getServer()).arg(m_dvidClient->getUuid()).
-      arg(z);
+      arg(dataName.c_str()).arg(key.c_str());
 
   qDebug() << command;
 

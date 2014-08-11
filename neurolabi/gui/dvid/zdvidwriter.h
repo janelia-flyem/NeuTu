@@ -36,7 +36,9 @@ public:
   void writeThumbnail(int bodyId, Stack *stack);
   void writeAnnotation(int bodyId, const ZJsonObject &obj);
   void writeAnnotation(const ZFlyEmNeuron &neuron);
-  void writeRoiCurve(const ZClosedCurve &curve, int z);
+  void writeRoiCurve(const ZClosedCurve &curve, const std::string &key);
+  void writeJsonString(const std::string &dataName, const std::string &key,
+                       const std::string jsonString);
   void writeBoundBox(const ZIntCuboid &cuboid, int z);
 
 private:

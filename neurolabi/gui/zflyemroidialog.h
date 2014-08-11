@@ -2,6 +2,7 @@
 #define ZFLYEMROIDIALOG_H
 
 #include <QDialog>
+#include <QVector>
 #include "zdialogfactory.h"
 #include "flyem/zflyemroiproject.h"
 #include "zqtbarprogressreporter.h"
@@ -9,6 +10,7 @@
 #include "zintcuboid.h"
 
 class MainWindow;
+class ZDvidTarget;
 
 namespace Ui {
 class ZFlyEmRoiDialog;
@@ -26,6 +28,17 @@ public:
   void dump(const QString &str);
   void loadGrayscale(int z);
 
+  inline const ZDvidTarget& getDvidTarget() const {
+    return m_dvidTarget;
+  }
+
+  bool appendProject(ZFlyEmRoiProject *project);
+  ZFlyEmRoiProject* getProject(size_t index);
+
+  ZFlyEmRoiProject* newProject(const std::string &name);
+
+  bool isValidName(const std::string &name) const;
+
 public slots:
   void loadGrayscale();
   void setDvidTarget();
@@ -42,6 +55,7 @@ public slots:
   void previewFullRoi();
   void uploadRoi();
   void estimateRoi();
+  void loadProject(int index);
 
 signals:
   void newDocReady();
@@ -86,14 +100,20 @@ private slots:
 
   void advanceProgressSlot(double p);
 
+  void on_pushButton_clicked();
+
 private:
   void loadGrayscaleFunc(int z);
+  void downloadAllProject();
+  void uploadProjectList();
 
 private:
   Ui::ZFlyEmRoiDialog *ui;
   ZDvidDialog *m_dvidDlg;
   ZSpinBoxDialog *m_zDlg;
-  ZFlyEmRoiProject m_project;
+  QVector<ZFlyEmRoiProject*> m_projectList;
+  ZFlyEmRoiProject *m_project;
+  ZDvidTarget m_dvidTarget;
   ZStackDocReader m_docReader;
 };
 
