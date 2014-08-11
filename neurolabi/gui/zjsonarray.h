@@ -5,7 +5,7 @@
 #include "zjsonvalue.h"
 #include "zuncopyable.h"
 
-class ZJsonArray : public ZJsonValue, ZUncopyable
+class ZJsonArray : public ZJsonValue
 {
 public:
   ZJsonArray();
