@@ -513,7 +513,7 @@ ZSwcTree* ZStackSkeletonizer::makeSkeletonWithoutDs(Stack *stackData)
     Stack *croppedObjStack = C_Stack::boundCrop(objstack, 0, objectOffset);
 
     Stack *croppedSignal = NULL;
-    if (signal != NULL) {
+    if (stackSignal != NULL) {
       Cuboid_I bound_box;
       Stack_Bound_Box(objstack, &bound_box);
       croppedSignal = C_Stack::crop(stackSignal, bound_box, NULL);;
