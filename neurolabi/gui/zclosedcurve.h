@@ -2,9 +2,9 @@
 #define ZCLOSEDCURVE_H
 
 #include "zpointarray.h"
-#include "zlinesegment.h"
 
 class ZJsonObject;
+class ZLineSegment;
 
 class ZClosedCurve
 {

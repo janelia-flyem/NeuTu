@@ -46,7 +46,7 @@ public:
 
 private:
   void binarizeByLocmax(Stack *stack);
-  int *computLocmaxHist(const Stack *stack);
+  int *computeLocmaxHist(const Stack *stack);
   int refineLocmaxThreshold(const Stack *stack, int threshold, int *hist,
                                int upperBound);
   void postProcess(Stack *stack);

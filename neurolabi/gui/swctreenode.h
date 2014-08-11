@@ -7,10 +7,11 @@
 #include <map>
 
 #include "tz_swc_tree.h"
-#include "zpoint.h"
-#include "zweightedpointarray.h"
 #include "neutube.h"
 #include "zcuboid.h"
+#include "zpoint.h"
+
+class ZWeightedPointArray;
 
 typedef int (*Swc_Tree_Node_Compare) (Swc_Tree_Node* lhs, Swc_Tree_Node *rhs);
 typedef bool (*Swc_Tree_Node_Compare_B) (Swc_Tree_Node* lhs, Swc_Tree_Node *rhs);

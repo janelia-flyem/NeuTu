@@ -77,6 +77,15 @@ void ZFlyEmRoiProject::showDataFrame() const
   }
 }
 
+void ZFlyEmRoiProject::closeDataFrame()
+{
+  if (m_dataFrame != NULL) {
+    m_dataFrame->hide();
+    delete m_dataFrame;
+    m_dataFrame = NULL;
+  }
+}
+
 bool ZFlyEmRoiProject::hasDataFrame() const
 {
   return m_dataFrame != NULL;
@@ -86,10 +95,7 @@ void ZFlyEmRoiProject::setDataFrame(ZStackFrame *frame)
 {
   if (m_dataFrame != NULL) {
     frame->setObjectStyle(m_dataFrame->getObjectStyle());
-
-    m_dataFrame->hide();
-    delete m_dataFrame;
-    m_dataFrame = NULL;
+    closeDataFrame();
   }
 
   m_dataFrame = frame;
@@ -132,6 +138,22 @@ void ZFlyEmRoiProject::setZ(int z)
   m_z = z;
 }
 
+bool ZFlyEmRoiProject::isRoiSaved() const
+{
+  if (m_dataFrame != NULL) {
+    return !m_dataFrame->document()->isSwcSavingRequired();
+  }
+
+  return true;
+}
+
+void ZFlyEmRoiProject::setRoiSaved(bool state)
+{
+  if (m_dataFrame != NULL) {
+    m_dataFrame->document()->setSaved(NeuTube::Documentable_SWC, state);
+  }
+}
+
 bool ZFlyEmRoiProject::addRoi()
 {
   if (m_dataFrame != NULL) {
@@ -141,6 +163,7 @@ bool ZFlyEmRoiProject::addRoi()
       if(!curve.isEmpty()) {
         ZClosedCurve *roi = new ZClosedCurve(curve);
         setRoi(roi, getDataZ());
+        setRoiSaved(true);
 
 #ifdef _DEBUG_2
       ZObject3dScan *obj = getFilledRoi(getDataZ(), NULL);
@@ -356,8 +379,8 @@ void ZFlyEmRoiProject::estimateRoi()
     if (!roiCurve.isEmpty()) {
       m_dataFrame->document()->removeObject(ZDocPlayer::ROLE_ROI, true);
       ZSwcTree *tree = ZSwcGenerator::createSwc(roiCurve, getMarkerRadius());
-      m_dataFrame->document()->addObject(tree, NeuTube::Documentable_SWC,
-                                         ZDocPlayer::ROLE_ROI);
+      m_dataFrame->document()->executeAddObjectCommand(
+            tree, NeuTube::Documentable_SWC, ZDocPlayer::ROLE_ROI);
     }
   }
 }
@@ -378,6 +401,19 @@ bool ZFlyEmRoiProject::isRoiCurveUploaded(int z) const
   }
 
   return m_isRoiCurveUploaded[z];
+}
+
+bool ZFlyEmRoiProject::isAllRoiCurveUploaded() const
+{
+  for (size_t z = 0; z < m_curveArray.size(); ++z) {
+    if (getRoi(z) != NULL) {
+      if (!isRoiCurveUploaded(z)) {
+        return false;
+      }
+    }
+  }
+
+  return true;
 }
 
 int ZFlyEmRoiProject::findSliceToCreateRoi(int z0) const
@@ -523,17 +559,33 @@ ZObject3dScan ZFlyEmRoiProject::getRoiObject() const
 void ZFlyEmRoiProject::translateRoiSwc(double dx, double dy)
 {
   if (m_dataFrame != NULL) {
+    if (m_dataFrame->document()->hasSelectedSwcNode()) {
+      m_dataFrame->document()->executeMoveSwcNodeCommand(dx, dy, 0);
+    } else {
+      m_dataFrame->document()->executeMoveAllSwcCommand(dx, dy, 0);
+    }
+    /*
     ZSwcTree *tree = m_dataFrame->document()->getSwcTree(0);
     if (tree != NULL) {
       tree->translate(dx, dy, 0.0);
       m_dataFrame->document()->notifySwcModified();
     }
+    */
   }
 }
 
 void ZFlyEmRoiProject::scaleRoiSwc(double sx, double sy)
 {
   if (m_dataFrame != NULL) {
+    if (m_dataFrame->document()->hasSelectedSwcNode()) {
+      ZSwcTree *allTree = m_dataFrame->document()->getMergedSwc();
+      m_dataFrame->document()->executeScaleSwcNodeCommand(
+            sx, sy, 0, allTree->computeCentroid());
+      delete allTree;
+    } else {
+      m_dataFrame->document()->executeScaleAllSwcCommand(sx, sy, 1.0, true);
+    }
+    /*
     ZSwcTree *tree = m_dataFrame->document()->getSwcTree(0);
     if (tree != NULL) {
       ZPoint center = tree->computeCentroid();
@@ -542,18 +594,26 @@ void ZFlyEmRoiProject::scaleRoiSwc(double sx, double sy)
       tree->translate(center);
       m_dataFrame->document()->notifySwcModified();
     }
+    */
   }
 }
 
 void ZFlyEmRoiProject::rotateRoiSwc(double theta)
 {
   if (m_dataFrame != NULL) {
+    if (m_dataFrame->document()->hasSelectedSwcNode()) {
+      m_dataFrame->document()->executeRotateSwcNodeCommand(0.0, theta, true);
+    } else {
+      m_dataFrame->document()->executeRotateAllSwcCommand(0.0, theta, true);
+    }
+    /*
     ZSwcTree *tree = m_dataFrame->document()->getSwcTree(0);
     if (tree != NULL) {
       ZPoint center = tree->computeCentroid();
       tree->rotate(0.0, theta, center);
       m_dataFrame->document()->notifySwcModified();
     }
+    */
   }
 }
 

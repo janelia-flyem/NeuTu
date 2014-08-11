@@ -21,9 +21,46 @@
 
 using namespace std;
 
+#define INIT_ZUNDOCOMMAND m_isSwcSaved(false)
+
+ZUndoCommand::ZUndoCommand(QUndoCommand *parent) : QUndoCommand(parent),
+  INIT_ZUNDOCOMMAND
+{
+
+}
+
+ZUndoCommand::ZUndoCommand(const QString &text, QUndoCommand *parent) :
+  QUndoCommand(text, parent), INIT_ZUNDOCOMMAND
+{
+
+}
+
+void ZUndoCommand::setSaved(NeuTube::EDocumentableType type, bool state)
+{
+  switch (type) {
+  case NeuTube::Documentable_SWC:
+    m_isSwcSaved = state;
+    break;
+  default:
+    break;
+  }
+}
+
+bool ZUndoCommand::isSaved(NeuTube::EDocumentableType type) const
+{
+  switch (type) {
+  case NeuTube::Documentable_SWC:
+    return m_isSwcSaved;
+  default:
+    return false;
+  }
+
+  return false;
+}
+
 ZStackDocCommand::SwcEdit::TranslateRoot::TranslateRoot(
     ZStackDoc *doc, double x, double y, double z, QUndoCommand *parent)
-  :QUndoCommand(parent), m_doc(doc), m_x(x), m_y(y), m_z(z)
+  :ZUndoCommand(parent), m_doc(doc), m_x(x), m_y(y), m_z(z)
 {
   setText(QObject::tr("translate swc tree root to (%1,%2,%3)").
           arg(m_x).arg(m_y).arg(m_z));
@@ -67,7 +104,7 @@ void ZStackDocCommand::SwcEdit::TranslateRoot::redo()
 
 ZStackDocCommand::SwcEdit::Rescale::Rescale(
     ZStackDoc *doc, double scaleX, double scaleY, double scaleZ, QUndoCommand *parent)
-  :QUndoCommand(parent), m_doc(doc), m_scaleX(scaleX), m_scaleY(scaleY), m_scaleZ(scaleZ)
+  :ZUndoCommand(parent), m_doc(doc), m_scaleX(scaleX), m_scaleY(scaleY), m_scaleZ(scaleZ)
 {
   setText(QObject::tr("rescale swc tree (%1,%2,%3)").arg(scaleX).arg(scaleY).arg(scaleZ));
 }
@@ -75,7 +112,7 @@ ZStackDocCommand::SwcEdit::Rescale::Rescale(
 ZStackDocCommand::SwcEdit::Rescale::Rescale(
     ZStackDoc *doc, double srcPixelPerUmXY, double srcPixelPerUmZ,
     double dstPixelPerUmXY, double dstPixelPerUmZ, QUndoCommand *parent)
-  :QUndoCommand(parent), m_doc(doc)
+  :ZUndoCommand(parent), m_doc(doc)
 {
   m_scaleX = dstPixelPerUmXY/srcPixelPerUmXY;
   m_scaleY = m_scaleX;
@@ -126,7 +163,7 @@ void ZStackDocCommand::SwcEdit::Rescale::redo()
 
 ZStackDocCommand::SwcEdit::RescaleRadius::RescaleRadius(
     ZStackDoc *doc, double scale, int startdepth, int enddepth, QUndoCommand *parent)
-  :QUndoCommand(parent), m_doc(doc), m_scale(scale), m_startdepth(startdepth),
+  :ZUndoCommand(parent), m_doc(doc), m_scale(scale), m_startdepth(startdepth),
     m_enddepth(enddepth)
 {
   if (enddepth < 0) {
@@ -175,7 +212,7 @@ void ZStackDocCommand::SwcEdit::RescaleRadius::redo()
 
 ZStackDocCommand::SwcEdit::ReduceNodeNumber::ReduceNodeNumber(
     ZStackDoc *doc, double lengthThre, QUndoCommand *parent)
-  :QUndoCommand(parent), m_doc(doc), m_lengthThre(lengthThre)
+  :ZUndoCommand(parent), m_doc(doc), m_lengthThre(lengthThre)
 {
   setText(QObject::tr("reduce number of swc node use length thre %1").arg(lengthThre));
 }
@@ -215,7 +252,7 @@ void ZStackDocCommand::SwcEdit::ReduceNodeNumber::redo()
 
 ZStackDocCommand::SwcEdit::AddSwc::AddSwc(
     ZStackDoc *doc, ZSwcTree *tree, QUndoCommand *parent) :
-  QUndoCommand(parent), m_doc(doc), m_tree(tree), m_isInDoc(false)
+  ZUndoCommand(parent), m_doc(doc), m_tree(tree), m_isInDoc(false)
 {
   setText(QObject::tr("Add swc"));
 }
@@ -248,7 +285,7 @@ int ZStackDocCommand::SwcEdit::AddSwcNode::m_index = 1;
 
 ZStackDocCommand::SwcEdit::AddSwcNode::AddSwcNode(
     ZStackDoc *doc, Swc_Tree_Node *tn, QUndoCommand *parent)
-  : QUndoCommand(parent), m_doc(doc), m_node(tn), m_treeInDoc(false)
+  : ZUndoCommand(parent), m_doc(doc), m_node(tn), m_treeInDoc(false)
 {
   setText(QObject::tr("Add Neuron Node"));
   m_tree = new ZSwcTree();
@@ -381,6 +418,9 @@ ZStackDocCommand::SwcEdit::MergeSwcNode::MergeSwcNode(
     }
 
     m_doc->selectedSwcTreeNodes()->clear();
+    if (coreNode != NULL) {
+      m_doc->setSwcTreeNodeSelected(coreNode, true);
+    }
   }
 }
 
@@ -436,7 +476,7 @@ void ZStackDocCommand::SwcEdit::ExtendSwcNode::redo()
 ZStackDocCommand::SwcEdit::ChangeSwcNodeGeometry::ChangeSwcNodeGeometry(
     ZStackDoc *doc, Swc_Tree_Node *node, double x, double y, double z, double r,
     QUndoCommand *parent) :
-  QUndoCommand(parent), m_doc(doc), m_node(node), m_x(x), m_y(y), m_z(z), m_r(r),
+  ZUndoCommand(parent), m_doc(doc), m_node(node), m_x(x), m_y(y), m_z(z), m_r(r),
   m_backupX(0.0), m_backupY(0.0), m_backupZ(0.0), m_backupR(0.0)
 {
   setText(QObject::tr("Change geometry of Selected Swc Node"));
@@ -471,7 +511,7 @@ void ZStackDocCommand::SwcEdit::ChangeSwcNodeGeometry::undo()
 
 ZStackDocCommand::SwcEdit::ChangeSwcNodeZ::ChangeSwcNodeZ(
     ZStackDoc *doc, Swc_Tree_Node *node, double z, QUndoCommand *parent) :
-  QUndoCommand(parent), m_doc(doc), m_node(node), m_z(z), m_backup(0.0)
+  ZUndoCommand(parent), m_doc(doc), m_node(node), m_z(z), m_backup(0.0)
 {
   setText(QObject::tr("Change Z of Selected Swc Node"));
 }
@@ -501,7 +541,7 @@ void ZStackDocCommand::SwcEdit::ChangeSwcNodeZ::undo()
 //////////////////
 ZStackDocCommand::SwcEdit::ChangeSwcNodeRadius::ChangeSwcNodeRadius(
     ZStackDoc *doc, Swc_Tree_Node *node, double radius, QUndoCommand *parent) :
-  QUndoCommand(parent), m_doc(doc), m_node(node), m_radius(radius), m_backup(0.0)
+  ZUndoCommand(parent), m_doc(doc), m_node(node), m_radius(radius), m_backup(0.0)
 {
   setText(QObject::tr("Change Radius of Selected Swc Node"));
 }
@@ -533,7 +573,7 @@ void ZStackDocCommand::SwcEdit::ChangeSwcNodeRadius::undo()
 
 ZStackDocCommand::SwcEdit::ChangeSwcNode::ChangeSwcNode(
     ZStackDoc *doc, Swc_Tree_Node *node, const Swc_Tree_Node &newNode,
-    QUndoCommand *parent) : QUndoCommand(parent), m_doc(doc), m_node(node)
+    QUndoCommand *parent) : ZUndoCommand(parent), m_doc(doc), m_node(node)
 {
   m_newNode = newNode;
 }
@@ -561,7 +601,7 @@ void ZStackDocCommand::SwcEdit::ChangeSwcNode::undo()
 ZStackDocCommand::SwcEdit::DeleteSwcNode::DeleteSwcNode(
     ZStackDoc *doc, Swc_Tree_Node *node, Swc_Tree_Node *root,
     QUndoCommand *parent) :
-  QUndoCommand(parent), m_doc(doc), m_node(node), m_root(root),
+  ZUndoCommand(parent), m_doc(doc), m_node(node), m_root(root),
   m_prevSibling(NULL), m_lastChild(NULL), m_nodeInDoc(true)
 {
   TZ_ASSERT(m_root != NULL, "Null root");
@@ -640,7 +680,7 @@ void ZStackDocCommand::SwcEdit::DeleteSwcNode::undo()
 }
 
 ZStackDocCommand::SwcEdit::CompositeCommand::CompositeCommand(
-    ZStackDoc *doc, QUndoCommand *parent) : QUndoCommand(parent), m_doc(doc)
+    ZStackDoc *doc, QUndoCommand *parent) : ZUndoCommand(parent), m_doc(doc)
 {
 }
 
@@ -669,7 +709,7 @@ void ZStackDocCommand::SwcEdit::CompositeCommand::undo()
 ZStackDocCommand::SwcEdit::SetParent::SetParent(
     ZStackDoc *doc, Swc_Tree_Node *node, Swc_Tree_Node *parentNode,
     QUndoCommand *parent) :
-  QUndoCommand(parent), m_doc(doc), m_node(node), m_newParent(parentNode),
+  ZUndoCommand(parent), m_doc(doc), m_node(node), m_newParent(parentNode),
   m_oldParent(NULL), m_prevSibling(NULL)
 {
   //TZ_ASSERT(parentNode != NULL, "Null pointer");
@@ -737,7 +777,7 @@ void ZStackDocCommand::SwcEdit::SetParent::undo()
 ////////////////////////////////
 ZStackDocCommand::SwcEdit::SetSwcNodeSeletion::SetSwcNodeSeletion(
     ZStackDoc *doc, const std::set<Swc_Tree_Node *> nodeSet,
-    QUndoCommand *parent) : QUndoCommand(parent), m_doc(doc), m_nodeSet(nodeSet)
+    QUndoCommand *parent) : ZUndoCommand(parent), m_doc(doc), m_nodeSet(nodeSet)
 {
 }
 
@@ -761,7 +801,7 @@ void ZStackDocCommand::SwcEdit::SetSwcNodeSeletion::undo()
 //////////////
 ZStackDocCommand::SwcEdit::SwcTreeLabeTraceMask::SwcTreeLabeTraceMask(
     ZStackDoc *doc, Swc_Tree *tree, QUndoCommand *parent) :
-  QUndoCommand(parent), m_doc(doc), m_tree(tree)
+  ZUndoCommand(parent), m_doc(doc), m_tree(tree)
 {
 }
 
@@ -793,7 +833,7 @@ void ZStackDocCommand::SwcEdit::SwcTreeLabeTraceMask::redo()
 
 ZStackDocCommand::SwcEdit::SwcPathLabeTraceMask::SwcPathLabeTraceMask(
     ZStackDoc *doc, const ZSwcPath &branch, QUndoCommand *parent) :
-  QUndoCommand(parent), m_doc(doc)
+  ZUndoCommand(parent), m_doc(doc)
 {
   m_branch = branch;
 }
@@ -814,7 +854,7 @@ void ZStackDocCommand::SwcEdit::SwcPathLabeTraceMask::redo()
 
 ZStackDocCommand::SwcEdit::SetRoot::SetRoot(
     ZStackDoc *doc, Swc_Tree_Node *tn, QUndoCommand *parent) :
-  QUndoCommand(parent), m_doc(doc), m_node(tn)
+  ZUndoCommand(parent), m_doc(doc), m_node(tn)
   //CompositeCommand(doc, parent)
 {
   setText(QObject::tr("Set root"));
@@ -925,7 +965,7 @@ ZStackDocCommand::SwcEdit::ConnectSwcNode::ConnectSwcNode(
 }
 
 ZStackDocCommand::SwcEdit::RemoveSwc::RemoveSwc(ZStackDoc *doc, ZSwcTree *tree, QUndoCommand *parent) :
-  QUndoCommand(parent), m_doc(doc), m_tree(tree), m_isInDoc(true)
+  ZUndoCommand(parent), m_doc(doc), m_tree(tree), m_isInDoc(true)
 {
 }
 
@@ -957,7 +997,7 @@ void ZStackDocCommand::SwcEdit::RemoveSwc::undo()
 }
 
 ZStackDocCommand::SwcEdit::RemoveEmptyTree::RemoveEmptyTree(
-    ZStackDoc *doc, QUndoCommand *parent) : QUndoCommand(parent), m_doc(doc)
+    ZStackDoc *doc, QUndoCommand *parent) : ZUndoCommand(parent), m_doc(doc)
 {
 
 }
@@ -1825,10 +1865,10 @@ ZStackDocCommand::ObjectEdit::MoveSelected::~MoveSelected()
 ZStackDocCommand::ObjectEdit::AddObject::AddObject(
     ZStackDoc *doc, ZStackObject *obj, NeuTube::EDocumentableType type,
     ZDocPlayer::TRole role, QUndoCommand *parent)
-  : QUndoCommand(parent), m_doc(doc), m_obj(obj), m_type(type), m_role(role),
+  : ZUndoCommand(parent), m_doc(doc), m_obj(obj), m_type(type), m_role(role),
     m_isInDoc(false)
 {
-
+  setText(QObject::tr("Add Object"));
 }
 
 ZStackDocCommand::ObjectEdit::AddObject::~AddObject()

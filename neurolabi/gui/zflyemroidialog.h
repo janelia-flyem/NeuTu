@@ -14,7 +14,7 @@ namespace Ui {
 class ZFlyEmRoiDialog;
 }
 
-class ZFlyEmRoiDialog : public QDialog, ZQtBarProgressReporter
+class ZFlyEmRoiDialog : public QDialog, ZProgressable
 {
   Q_OBJECT
 
@@ -24,6 +24,7 @@ public:
 
 public:
   void dump(const QString &str);
+  void loadGrayscale(int z);
 
 public slots:
   void loadGrayscale();
@@ -46,6 +47,9 @@ signals:
   void newDocReady();
   void progressFailed();
   void progressAdvanced(double);
+
+protected:
+    void closeEvent(QCloseEvent*event);
 
 private slots:
   void on_searchPushButton_clicked();

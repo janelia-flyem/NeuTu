@@ -558,17 +558,52 @@ bool ZStackDoc::hasChainList()
   return !m_chainList.isEmpty();
 }
 
-bool ZStackDoc::isUndoClean()
+bool ZStackDoc::isUndoClean() const
 {
   return m_undoStack->isClean();
 }
 
-bool ZStackDoc::isSwcSavingRequired()
+const ZUndoCommand* ZStackDoc::getLastUndoCommand() const
+{
+  if (m_undoStack->isClean()) {
+    return NULL;
+  }
+
+  const QUndoCommand *command = m_undoStack->command(m_undoStack->index() - 1);
+
+  qDebug() << command->text();
+
+  return dynamic_cast<const ZUndoCommand*>(command);
+}
+
+void ZStackDoc::setSaved(NeuTube::EDocumentableType type, bool state)
+{
+  ZUndoCommand* command = const_cast<ZUndoCommand*>(getLastUndoCommand());
+  if (command != NULL) {
+    switch (type) {
+    case NeuTube::Documentable_SWC:
+      command->setSaved(type, state);
+      break;
+    default:
+      break;
+    }
+  }
+}
+
+bool ZStackDoc::isSwcSavingRequired() const
 {
   qDebug() << m_swcList.empty();
   qDebug() << isUndoClean();
 
-  return !m_swcList.empty() && !isUndoClean();
+  bool isSaved = true;
+  if (m_undoStack->canUndo()) {
+    const ZUndoCommand* command = getLastUndoCommand();
+    if (command != NULL) {
+      isSaved = command->isSaved(NeuTube::Documentable_SWC);
+    }
+  }
+
+  return hasSwc() && !isSaved;
 }
 
 void ZStackDoc::swcTreeTranslateRootTo(double x, double y, double z)
@@ -1998,7 +2033,7 @@ ZSwcTree *ZStackDoc::nodeToSwcTree(Swc_Tree_Node *node) const
     if (m_swcList[i]->contains(node))
       return m_swcList[i];
   }
-  assert(false);
+  //assert(false);
   return NULL;
 }
 
@@ -2980,26 +3015,28 @@ void ZStackDoc::deselectAllChains()
 
 void ZStackDoc::setSwcSelected(ZSwcTree *tree, bool select)
 {
-  if (tree->isSelected() != select) {
-    tree->setSelected(select);
-    QList<ZSwcTree*> selected;
-    QList<ZSwcTree*> deselected;
-    if (select) {
-      m_selectedSwcs.insert(tree);
-      selected.push_back(tree);
-      // deselect its nodes
-      std::vector<Swc_Tree_Node *> tns;
-      for (std::set<Swc_Tree_Node*>::iterator it = m_selectedSwcTreeNodes.begin();
-           it != m_selectedSwcTreeNodes.end(); ++it) {
-        if (tree == nodeToSwcTree(*it))
-          tns.push_back(*it);
+  if (tree != NULL) {
+    if (tree->isSelected() != select) {
+      tree->setSelected(select);
+      QList<ZSwcTree*> selected;
+      QList<ZSwcTree*> deselected;
+      if (select) {
+        m_selectedSwcs.insert(tree);
+        selected.push_back(tree);
+        // deselect its nodes
+        std::vector<Swc_Tree_Node *> tns;
+        for (std::set<Swc_Tree_Node*>::iterator it = m_selectedSwcTreeNodes.begin();
+             it != m_selectedSwcTreeNodes.end(); ++it) {
+          if (tree == nodeToSwcTree(*it))
+            tns.push_back(*it);
+        }
+        setSwcTreeNodeSelected(tns.begin(), tns.end(), false);
+      } else {
+        m_selectedSwcs.erase(tree);
+        deselected.push_back(tree);
       }
-      setSwcTreeNodeSelected(tns.begin(), tns.end(), false);
-    } else {
-      m_selectedSwcs.erase(tree);
-      deselected.push_back(tree);
+      emit swcSelectionChanged(selected, deselected);
     }
-    emit swcSelectionChanged(selected, deselected);
   }
 }
 
@@ -4795,6 +4832,7 @@ bool ZStackDoc::executeMoveSwcNodeCommand(double dx, double dy, double dz)
   if (!m_selectedSwcTreeNodes.empty()) {
     ZStackDocCommand::SwcEdit::CompositeCommand *allCommand =
         new ZStackDocCommand::SwcEdit::CompositeCommand(this);
+
     for (set<Swc_Tree_Node*>::iterator iter = m_selectedSwcTreeNodes.begin();
          iter != m_selectedSwcTreeNodes.end(); ++iter) {
       if (*iter != NULL && (dx != 0 || dy != 0 || dz != 0)) {
@@ -5978,6 +6016,7 @@ void ZStackDoc::saveSwc(QWidget *parentWidget)
           tree->resortId();
           tree->save(fileName.toStdString().c_str());
           tree->setSource(fileName.toStdString());
+          setSaved(NeuTube::Documentable_SWC, true);
           notifySwcModified();
           emit statusMessageUpdated(QString(tree->source().c_str()) + " saved.");
         }
@@ -6398,6 +6437,152 @@ bool ZStackDoc::executeResetBranchPoint()
         break;
       }
     }
+  }
+
+  return false;
+}
+
+bool ZStackDoc::executeMoveAllSwcCommand(double dx, double dy, double dz)
+{
+  if (hasSwc()) {
+    QUndoCommand *command =
+        new ZStackDocCommand::SwcEdit::CompositeCommand(this);
+    foreach (ZSwcTree *tree, getSwcList()) {
+      tree->updateIterator();
+      for (Swc_Tree_Node *tn = tree->begin(); tn != NULL; tn = tree->next()) {
+        new ZStackDocCommand::SwcEdit::ChangeSwcNodeGeometry(
+              this, tn, SwcTreeNode::x(tn) + dx, SwcTreeNode::y(tn) + dy,
+              SwcTreeNode::z(tn) + dz, SwcTreeNode::radius(tn), command);
+      }
+    }
+    pushUndoCommand(command);
+
+    return true;
+  }
+
+  return false;
+}
+
+bool ZStackDoc::executeScaleAllSwcCommand(
+    double sx, double sy, double sz, bool aroundCenter)
+{
+  if (hasSwc()) {
+    QUndoCommand *command =
+        new ZStackDocCommand::SwcEdit::CompositeCommand(this);
+    foreach (ZSwcTree *tree, getSwcList()) {
+      tree->updateIterator();
+      ZPoint center;
+      if (aroundCenter) {
+        center = tree->computeCentroid();
+      }
+      for (Swc_Tree_Node *tn = tree->begin(); tn != NULL; tn = tree->next()) {
+        ZPoint position = SwcTreeNode::pos(tn);
+        if (aroundCenter) {
+          position -= center;
+        }
+        position *= ZPoint(sx, sy, sz);
+        if (aroundCenter) {
+          position += center;
+        }
+        new ZStackDocCommand::SwcEdit::ChangeSwcNodeGeometry(
+              this, tn, position.x(), position.y(), position.z(),
+              SwcTreeNode::radius(tn), command);
+      }
+    }
+    pushUndoCommand(command);
+
+    return true;
+  }
+
+  return false;
+}
+
+bool ZStackDoc::executeScaleSwcNodeCommand(
+    double sx, double sy, double sz, const ZPoint &center)
+{
+  if (!m_selectedSwcTreeNodes.empty()) {
+    QUndoCommand *command =
+        new ZStackDocCommand::SwcEdit::CompositeCommand(this);
+    for (std::set<Swc_Tree_Node*>::iterator iter =
+         m_selectedSwcTreeNodes.begin(); iter != m_selectedSwcTreeNodes.end();
+         ++iter) {
+      Swc_Tree_Node *tn = *iter;
+      ZPoint position = SwcTreeNode::pos(tn);
+      position -= center;
+      position *= ZPoint(sx, sy, sz);
+      position += center;
+      new ZStackDocCommand::SwcEdit::ChangeSwcNodeGeometry(
+            this, tn, position.x(), position.y(), position.z(),
+            SwcTreeNode::radius(tn), command);
+    }
+    pushUndoCommand(command);
+
+    return true;
+  }
+
+  return false;
+}
+
+bool ZStackDoc::executeRotateSwcNodeCommand(
+    double theta, double psi, bool aroundCenter)
+{
+  if ((!m_selectedSwcTreeNodes.empty() && !aroundCenter) ||
+      (m_selectedSwcTreeNodes.size() > 1)) {
+    QUndoCommand *command =
+        new ZStackDocCommand::SwcEdit::CompositeCommand(this);
+    ZPoint center;
+    if (aroundCenter) {
+      center = SwcTreeNode::centroid(m_selectedSwcTreeNodes);
+    }
+    for (std::set<Swc_Tree_Node*>::iterator iter =
+         m_selectedSwcTreeNodes.begin(); iter != m_selectedSwcTreeNodes.end();
+         ++iter) {
+      Swc_Tree_Node *tn = *iter;
+      ZPoint position = SwcTreeNode::pos(tn);
+      if (aroundCenter) {
+        position.rotate(theta, psi, center);
+      } else {
+        position.rotate(theta, psi);
+      }
+      new ZStackDocCommand::SwcEdit::ChangeSwcNodeGeometry(
+            this, tn, position.x(), position.y(), position.z(),
+            SwcTreeNode::radius(tn), command);
+    }
+    pushUndoCommand(command);
+
+    return true;
+  }
+
+  return false;
+}
+
+bool ZStackDoc::executeRotateAllSwcCommand(
+    double theta, double psi, bool aroundCenter)
+{
+  if (hasSwc()) {
+    QUndoCommand *command =
+        new ZStackDocCommand::SwcEdit::CompositeCommand(this);
+    foreach (ZSwcTree *tree, getSwcList()) {
+      tree->updateIterator();
+      ZPoint center;
+      if (aroundCenter) {
+        center = tree->computeCentroid();
+      }
+      for (Swc_Tree_Node *tn = tree->begin(); tn != NULL; tn = tree->next()) {
+        ZPoint position = SwcTreeNode::pos(tn);
+        if (aroundCenter) {
+          position.rotate(theta, psi, center);
+        } else {
+          position.rotate(theta, psi);
+        }
+        new ZStackDocCommand::SwcEdit::ChangeSwcNodeGeometry(
+              this, tn, position.x(), position.y(), position.z(),
+              SwcTreeNode::radius(tn), command);
+      }
+    }
+    pushUndoCommand(command);
+
+    return true;
   }
 
   return false;

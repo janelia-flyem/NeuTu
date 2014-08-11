@@ -14,6 +14,8 @@
 #include "tz_coordinate_3d.h"
 #include "tz_error.h"
 #include <cstdio>
+#include "tz_geo3d_utils.h"
+#include "zintpoint.h"
 
 const double ZPoint::m_minimalDistance = 1e-5;
 
@@ -93,6 +95,15 @@ ZPoint& ZPoint::operator -=(const ZPoint &pt)
   m_x -= pt.m_x;
   m_y -= pt.m_y;
   m_z -= pt.m_z;
+
+  return *this;
+}
+
+ZPoint& ZPoint::operator *=(const ZPoint &pt)
+{
+  m_x *= pt.m_x;
+  m_y *= pt.m_y;
+  m_z *= pt.m_z;
 
   return *this;
 }
@@ -278,4 +289,22 @@ ZIntPoint& ZIntPoint::operator +=(const ZIntPoint &pt)
   m_z += pt.getZ();
 
   return *this;
+}
+
+void ZPoint::rotate(double theta, double psi)
+{
+  Geo3d_Rotate_Coordinate(&(m_x), &(m_y), &(m_z),
+                          theta, psi, FALSE);
+}
+
+void ZPoint::translate(const ZPoint &dp)
+{
+  translate(dp.x(), dp.y(), dp.z());
+}
+
+void ZPoint::rotate(double theta, double psi, const ZPoint &center)
+{
+  translate(-center);
+  rotate(theta, psi);
+  translate(center);
 }

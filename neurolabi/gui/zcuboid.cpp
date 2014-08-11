@@ -4,9 +4,11 @@
 #include <cstddef>
 #include <iostream>
 
-#include "zpoint.h"
 #include "tz_error.h"
 #include "tz_utilities.h"
+#include "zintpoint.h"
+#include "zintcuboid.h"
+#include "zlinesegment.h"
 
 #ifndef NULL
 #  define NULL 0x0

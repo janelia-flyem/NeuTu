@@ -12,6 +12,7 @@
 class ZStack;
 class ZSwcTree;
 class ZSwcConnector;
+class ZIntPoint;
 
 class ZNeuronTraceSeeder {
 public:
@@ -83,11 +84,7 @@ public:
     m_stackOffset[2] = z;
   }
 
-  inline void setStackOffset(const ZIntPoint &pt) {
-    m_stackOffset[0] = pt.getX();
-    m_stackOffset[1] = pt.getY();
-    m_stackOffset[2] = pt.getZ();
-  }
+  void setStackOffset(const ZIntPoint &pt);
 
   inline void setVertexOption(ZStackGraph::EVertexOption vertexOption) {
     m_vertexOption = vertexOption;
@@ -128,6 +125,11 @@ public:
 
   void loadTraceMask(bool traceMasked);
 
+  enum ETracingMode {
+    TRACING_AUTO, TRACING_INTERACTIVE, TRACING_SEED
+  };
+  void setTraceScoreThreshold(ETracingMode mode);
+
 private:
   //Helper functions
   Stack* binarize(const Stack *stack);
@@ -151,9 +153,13 @@ private:
   double m_resolution[3];
   double m_stackOffset[3];
 
+  double m_seedMinScore;
+  double m_autoTraceMinScore;
+  double m_traceMinScore;
+  double m_2dTraceMinScore;
+
   //Intermedite buffer
   std::vector<Locseg_Chain*> m_chainArray;
-
 };
 
 #endif // ZNEURONTRACER_H

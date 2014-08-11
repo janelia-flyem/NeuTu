@@ -89,7 +89,7 @@ public:
       const std::string &path, const std::string &reference);
 
   static std::string fullPath(const std::string &dir, const std::string &fname,
-                              const std::string &ext);
+                              const std::string &ext = "");
   static std::string fullPath(const std::string &dir, const std::string &part1,
                               const std::string &part2, const std::string &part3);
   static std::string fullPath(const std::vector<std::string> &parts);

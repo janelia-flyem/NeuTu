@@ -95,6 +95,8 @@ public: /* frame operation */
   QProgressDialog* getProgressDialog();
   QProgressBar* getProgressBar();
 
+  static void createWorkDir();
+
 signals:
   void dvidRequestCanceled();
   void progressDone();
@@ -388,9 +390,10 @@ private:
   void saveFile(const QString &fileName);
   void openTraceProject(QString fileName);
   void setCurrentFile(const QString &fileName);
-  void createAutoSaveDir();
   void updateRecentFileActions();
   QString strippedName(const QString &fullFileName);
+
+  static QSettings& getSettings();
 
   void enableStackActions(bool b);
   void createUndoView();
@@ -580,7 +583,7 @@ private:
   //FlyEmNeuronThumbnailDialog *m_thumbnailDlg;
   QFileDialog::Options m_fileDialogOption;
 
-  QSettings m_settings;
+  //QSettings m_settings;
   QString m_version;
 
   //ZStackDocReader *m_docReader;

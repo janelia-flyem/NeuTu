@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>412</width>
+    <width>410</width>
     <height>594</height>
    </rect>
   </property>
@@ -187,7 +187,7 @@
     </rect>
    </property>
    <property name="title">
-    <string>ROI Editing (No Undo)</string>
+    <string>ROI Editing</string>
    </property>
    <widget class="QWidget" name="layoutWidget_3">
     <property name="geometry">
@@ -260,7 +260,7 @@
      <rect>
       <x>0</x>
       <y>32</y>
-      <width>381</width>
+      <width>449</width>
       <height>131</height>
      </rect>
     </property>
@@ -273,7 +273,7 @@
        <item row="2" column="1">
         <layout class="QHBoxLayout" name="horizontalLayout_11">
          <property name="spacing">
-          <number>0</number>
+          <number>1</number>
          </property>
          <property name="leftMargin">
           <number>10</number>
@@ -308,7 +308,7 @@
        <item row="2" column="2">
         <layout class="QHBoxLayout" name="horizontalLayout_12">
          <property name="spacing">
-          <number>0</number>
+          <number>1</number>
          </property>
          <property name="leftMargin">
           <number>10</number>
@@ -343,7 +343,7 @@
        <item row="1" column="3">
         <layout class="QHBoxLayout" name="horizontalLayout_6">
          <property name="spacing">
-          <number>0</number>
+          <number>1</number>
          </property>
          <property name="leftMargin">
           <number>10</number>
@@ -390,7 +390,7 @@
        <item row="1" column="2">
         <layout class="QHBoxLayout" name="horizontalLayout_3">
          <property name="spacing">
-          <number>0</number>
+          <number>1</number>
          </property>
          <property name="leftMargin">
           <number>10</number>
@@ -436,6 +436,12 @@
        </item>
        <item row="1" column="0">
         <widget class="QLabel" name="label_2">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
          <property name="text">
           <string>Scale</string>
          </property>
@@ -445,6 +451,9 @@
         <spacer name="horizontalSpacer_2">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::Maximum</enum>
          </property>
          <property name="sizeHint" stdset="0">
           <size>
@@ -456,6 +465,12 @@
        </item>
        <item row="2" column="0">
         <widget class="QLabel" name="label_7">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
          <property name="text">
           <string>Move</string>
          </property>
@@ -464,7 +479,7 @@
        <item row="1" column="1">
         <layout class="QHBoxLayout" name="horizontalLayout_9">
          <property name="spacing">
-          <number>0</number>
+          <number>1</number>
          </property>
          <property name="leftMargin">
           <number>10</number>
@@ -511,7 +526,7 @@
        <item row="2" column="3">
         <layout class="QHBoxLayout" name="horizontalLayout_13">
          <property name="spacing">
-          <number>0</number>
+          <number>1</number>
          </property>
          <property name="leftMargin">
           <number>10</number>

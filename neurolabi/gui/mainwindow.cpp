@@ -62,7 +62,7 @@
 #include "tz_workspace.h"
 #include "tz_graph.h"
 #include "flyemskeletonizationdialog.h"
-#include "zstackaccessor.h"
+//#include "zstackaccessor.h"
 #include "zmatrix.h"
 #include "zswcbranch.h"
 #include "zswctreematcher.h"
@@ -150,14 +150,14 @@
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     m_ui(new Ui::MainWindow),
-    m_newProject(NULL),
-    m_settings((GET_APPLICATION_DIR + "/settings.qt").c_str(), QSettings::NativeFormat)
+    m_newProject(NULL)
 {
   //std::cout << "Creating mainwindow ..." << std::endl;
   RECORD_INFORMATION("Creating mainwindow ...");
 
+  //createWorkDir();
 #ifdef _DEBUG_2
-  std::cout << NeutubeConfig::getInstance().getPath(NeutubeConfig::AUTO_SAVE)
+  std::cout << NeutubeConfig::getInstance().getPath(NeutubeConfig::SETTINGS)
                << std::endl;
 #endif
 
@@ -207,7 +207,6 @@ MainWindow::MainWindow(QWidget *parent) :
 
   readSettings();
   setCurrentFile("");
-  createAutoSaveDir();
 
   if (GET_APPLICATION_NAME == "Biocytin") {
     ZStackObject::setDefaultPenWidth(1.0);
@@ -245,7 +244,7 @@ MainWindow::MainWindow(QWidget *parent) :
           this, SLOT(createDvidFrame()));
           */
 
-  if (!m_settings.isWritable()) {
+  if (!getSettings().isWritable()) {
     report("Configuration Problem",
            "It seems the software folder is not writable to you. "
            "The software will not remember your settings. "
@@ -276,6 +275,11 @@ MainWindow::~MainWindow()
 
 void MainWindow::createActionMap()
 {
+}
+
+QSettings& MainWindow::getSettings()
+{
+  return NeutubeConfig::getInstance().getSettings();
 }
 
 void MainWindow::initDialog()
@@ -342,9 +346,9 @@ void MainWindow::initDialog()
 
 #if defined(_FLYEM_)
   m_bodySplitProjectDialog->restoreGeometry(
-          m_settings.value("BodySplitProjectGeometry").toByteArray());
+          getSettings().value("BodySplitProjectGeometry").toByteArray());
   m_roiDlg->restoreGeometry(
-        m_settings.value("RoiProjectGeometry").toByteArray());
+        getSettings().value("RoiProjectGeometry").toByteArray());
 #endif
 }
 
@@ -1158,6 +1162,12 @@ bool MainWindow::okToContinue()
     if (r == QMessageBox::Yes) {
       //save();
     } else if (r == QMessageBox::No) {
+      return false;
+    }
+  }
+
+  if (m_roiDlg->isVisible()) {
+    if (!m_roiDlg->close()) {
       return false;
     }
   }
@@ -2000,38 +2010,37 @@ void MainWindow::setCurrentFile(const QString &fileName)
   //setWindowTitle(tr("%1[*] - %2").arg(shownName).arg(tr("Tiff")));
 }
 
-void MainWindow::createAutoSaveDir()
+void MainWindow::createWorkDir()
 {
-  if (NeutubeConfig::getInstance().isAutoSaveEnabled()) {
 #ifdef _DEBUG_
-    std::cout << "Create autosave dir" << std::endl;
+  std::cout << "Create working directory" << std::endl;
 #endif
 
-    QString autoSaveDir =
-        NeutubeConfig::getInstance().getPath(NeutubeConfig::AUTO_SAVE).c_str();
-#ifdef _DEBUG_
-    std::cout << autoSaveDir.toStdString() << std::endl;
-#endif
-
-    QDir dir(autoSaveDir);
-    if (!dir.exists()) {
-      StartSettingDialog dlg;
-      dlg.setAutoSaveDir(autoSaveDir);
-      if (dlg.exec()) {
-        QDir dir(dlg.getAutosaveDir());
-        NeutubeConfig::getInstance().setAutoSaveDir(
-              dir.absolutePath().toStdString());
-        if (!dir.exists()) {
-          if (!dir.mkpath(dir.absolutePath())) {
-            report("Faile to Create Autosave Directory",
-                   "Cannot create " + dlg.getAutosaveDir().toStdString() +
-                   "Autosave will be disabled.",
-                   ZMessageReporter::Information);
-            RECORD_WARNING_UNCOND("Faile to Create Autosave Directory");
+  QString workDirPath =
+      NeutubeConfig::getInstance().getPath(NeutubeConfig::WORKING_DIR).c_str();
+  QDir workDir(workDirPath);
+  if (!workDir.exists()) {
+    StartSettingDialog dlg;
+    dlg.setWorkDir(workDirPath);
+    if (dlg.exec()) {
+      QDir dir(dlg.getWorkDir());
+      NeutubeConfig::getInstance().setWorkDir(dir.absolutePath().toStdString());
+      if (!dir.exists()) {
+        if (!dir.mkpath(dir.absolutePath())) {
+          QMessageBox::warning(
+                NULL, "Faile to Create the working directory",
+                 "Cannot create " + dlg.getWorkDir() +
+                 "Autosave will be disabled.",
+                 QMessageBox::Ok);
+          RECORD_WARNING_UNCOND("Failed to the working directory.");
+        } else {
+          if (NeutubeConfig::getInstance().isAutoSaveEnabled()) {
+            dir.mkpath(NeutubeConfig::getInstance().getPath(
+                         NeutubeConfig::AUTO_SAVE).c_str());
           }
         }
-
       }
+
     }
   }
 }
@@ -2124,24 +2133,28 @@ void MainWindow::about()
 
 void MainWindow::writeSettings()
 {
-  m_settings.setValue("lastPath", m_lastOpenedFilePath);
-  m_settings.setValue("geometry", saveGeometry());
+  getSettings().setValue("lastPath", m_lastOpenedFilePath);
+  getSettings().setValue("geometry", saveGeometry());
 #if defined(_FLYEM_)
-  m_settings.setValue(
+  getSettings().setValue(
         "BodySplitProjectGeometry", m_bodySplitProjectDialog->saveGeometry());
-  m_settings.setValue(
+  getSettings().setValue(
         "RoiProjectGeometry", m_roiDlg->saveGeometry());
 #endif
-  m_settings.setValue("recentFiles", recentFiles);
+  getSettings().setValue("recentFiles", recentFiles);
+  /*
   m_settings.setValue("autoSaveDir", QString(NeutubeConfig::getInstance().
                     getPath(NeutubeConfig::AUTO_SAVE).c_str()));
+                    */
+  getSettings().setValue("workDir", QString(NeutubeConfig::getInstance().
+                    getPath(NeutubeConfig::WORKING_DIR).c_str()));
 }
 
 void MainWindow::checkVersion()
 {
-  QString version = m_settings.value("version").toString();
+  QString version = getSettings().value("version").toString();
   if (version.isEmpty()) {
-    m_settings.setValue("version", m_version);
+    getSettings().setValue("version", m_version);
   } else if (version != m_version) {
     QString message = QString("%1 on your computer appears to be updated "
                               "(%2 --> %3).<br>").
@@ -2155,7 +2168,7 @@ void MainWindow::checkVersion()
 
     report("Software Updated", message.toStdString(),
            ZMessageReporter::Information);
-    m_settings.setValue("version", m_version);
+    getSettings().setValue("version", m_version);
   }
 }
 
@@ -2163,16 +2176,18 @@ void MainWindow::readSettings()
 {
   std::cout << "Read settings ..." << std::endl;
   //QSettings settings("Janelia Farm", "neuTube");
-  restoreGeometry(m_settings.value("geometry").toByteArray());
+  restoreGeometry(getSettings().value("geometry").toByteArray());
 
-  recentFiles = m_settings.value("recentFiles").toStringList();
-  m_lastOpenedFilePath = m_settings.value("lastPath").toString();
+  recentFiles = getSettings().value("recentFiles").toStringList();
+  m_lastOpenedFilePath = getSettings().value("lastPath").toString();
   updateRecentFileActions();
 
+  /*
   if (m_settings.contains("autoSaveDir")) {
     NeutubeConfig::getInstance().setAutoSaveDir(
           m_settings.value("autoSaveDir").toString().toStdString());
   }
+  */
 }
 
 void MainWindow::updateTraceMode(ZStackFrame *frame, QAction *action)
@@ -2533,8 +2548,8 @@ void MainWindow::on_actionAutomatic_triggered()
   if (frame != NULL) {
     m_progress->setRange(0, 100);
     m_progress->setValue(1);
+    m_progress->setLabelText("Tracing");
     m_progress->show();
-
     QtConcurrent::run(this, &MainWindow::autoTrace, frame);
   }
 }
@@ -3125,12 +3140,15 @@ void MainWindow::on_actionSkeletonization_triggered()
       }
       skeletonizer.setDistanceThreshold(distThre);
 
+      //skeletonizer.setResolution(1, 3);
+
       skeletonizer.setLengthThreshold(dlg.lengthThreshold());
       skeletonizer.setKeepingSingleObject(dlg.isKeepingShortObject());
 
 
       if (dlg.isLevelChecked()) {
         skeletonizer.setLevel(dlg.level());
+        //skeletonizer.useOriginalSignal(true);
       }
 
       ZSwcTree *wholeTree = skeletonizer.makeSkeleton(stackData);

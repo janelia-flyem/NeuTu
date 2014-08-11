@@ -92,6 +92,10 @@ public:
 
   void print() const;
 
+  inline void useOriginalSignal(bool state) {
+    m_usingOriginalSignal = state;
+  }
+
 private:
   /*!
    * \a stack will be destroyed after the function call.
@@ -114,6 +118,7 @@ private:
   bool m_connectingBranch;
   double m_resolution[3];
   int m_downsampleInterval[3];
+  bool m_usingOriginalSignal;
 };
 
 #endif // ZSTACKSKELETONIZER_H

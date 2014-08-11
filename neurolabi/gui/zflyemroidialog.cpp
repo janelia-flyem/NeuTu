@@ -1,5 +1,7 @@
 #include "zflyemroidialog.h"
 #include <QtConcurrentRun>
+#include <QMessageBox>
+#include <QCloseEvent>
 #include "neutubeconfig.h"
 #include "ui_zflyemroidialog.h"
 #include "dvid/zdvidreader.h"
@@ -9,7 +11,7 @@
 #include "zstackframe.h"
 
 ZFlyEmRoiDialog::ZFlyEmRoiDialog(QWidget *parent) :
-  QDialog(parent), ZQtBarProgressReporter(),
+  QDialog(parent), ZProgressable(),
   ui(new Ui::ZFlyEmRoiDialog)
 {
   ui->setupUi(this);
@@ -30,6 +32,38 @@ ZFlyEmRoiDialog::ZFlyEmRoiDialog(QWidget *parent) :
   connect(ui->uploadResultPushButton, SIGNAL(clicked()),
           this, SLOT(uploadRoi()));
 
+
+  QSize iconSize(24, 24);
+  ui->movexDecPushButton->setIconSize(iconSize);
+  ui->movexIncPushButton->setIconSize(iconSize);
+  ui->movexyDecPushButton->setIconSize(iconSize);
+  ui->movexyIncPushButton->setIconSize(iconSize);
+  ui->moveyDecPushButton->setIconSize(iconSize);
+  ui->moveyIncPushButton->setIconSize(iconSize);
+
+  ui->xDecPushButton->setIconSize(iconSize);
+  ui->yDecPushButton->setIconSize(iconSize);
+  ui->xyDecPushButton->setIconSize(iconSize);
+  ui->xyIncPushButton->setIconSize(iconSize);
+  ui->xIncPushButton->setIconSize(iconSize);
+  ui->yIncPushButton->setIconSize(iconSize);
+
+  QSize buttonSize(40, 24);
+  ui->movexDecPushButton->setMaximumSize(buttonSize);
+  ui->movexIncPushButton->setMaximumSize(buttonSize);
+  ui->movexyDecPushButton->setMaximumSize(buttonSize);
+  ui->movexyIncPushButton->setMaximumSize(buttonSize);
+  ui->moveyDecPushButton->setMaximumSize(buttonSize);
+  ui->moveyIncPushButton->setMaximumSize(buttonSize);
+
+  ui->xDecPushButton->setMaximumSize(buttonSize);
+  ui->yDecPushButton->setMaximumSize(buttonSize);
+  ui->xyDecPushButton->setMaximumSize(buttonSize);
+  ui->xyIncPushButton->setMaximumSize(buttonSize);
+  ui->xIncPushButton->setMaximumSize(buttonSize);
+  ui->yIncPushButton->setMaximumSize(buttonSize);
+
+
   connect(this, SIGNAL(newDocReady()), this, SLOT(newDataFrame()));
   connect(this, SIGNAL(progressFailed()), ui->progressBar, SLOT(reset()));
   connect(this, SIGNAL(progressAdvanced(double)),
@@ -39,7 +73,11 @@ ZFlyEmRoiDialog::ZFlyEmRoiDialog(QWidget *parent) :
   //m_project.setDvidTarget(m_dvidDlg->getDvidTarget());
 
   updateWidget();
-  setProgressBar(ui->progressBar);
+
+  ZQtBarProgressReporter *reporter = new ZQtBarProgressReporter;
+  reporter->setProgressBar(ui->progressBar);
+  setProgressReporter(reporter);
+  //setProgressBar(ui->progressBar);
   ui->progressBar->hide();
 
 #ifndef _DEBUG_
@@ -158,15 +196,30 @@ void ZFlyEmRoiDialog::newDataFrame()
   getMainWindow()->addStackFrame(frame);
   getMainWindow()->presentStackFrame(frame);
   updateWidget();
-  end();
+  endProgress();
+}
+
+void ZFlyEmRoiDialog::loadGrayscale(int z)
+{
+  bool loading = true;
+  if (m_project.isRoiSaved() == false) {
+    int ret = QMessageBox::warning(
+          this, "Unsaved Result",
+          "The current ROI is not saved. Do you want to continue?",
+          QMessageBox::Yes | QMessageBox::No);
+    loading = (ret == QMessageBox::Yes);
+  }
+
+  if (loading) {
+    startProgress();
+    QtConcurrent::run(
+          this, &ZFlyEmRoiDialog::loadGrayscaleFunc, z);
+  }
 }
 
 void ZFlyEmRoiDialog::loadGrayscale()
 {
-  start();
-  int z = m_project.getCurrentZ();
-  QtConcurrent::run(
-        this, &ZFlyEmRoiDialog::loadGrayscaleFunc, z);
+  loadGrayscale(m_project.getCurrentZ());
 }
 
 void ZFlyEmRoiDialog::setDataFrame(ZStackFrame *frame)
@@ -192,6 +245,7 @@ void ZFlyEmRoiDialog::addRoi()
     dump("The result cannot be saved because the ROI is invalid.");
   } else {
     dump("ROI saved successfully.");
+    updateWidget();
   }
 }
 
@@ -236,11 +290,8 @@ void ZFlyEmRoiDialog::on_searchPushButton_clicked()
 {
   int z = m_project.findSliceToCreateRoi(ui->zSpinBox->value());
   if (z >= 0) {
-    start();
-    m_project.setZ(z);
     ui->zSpinBox->setValue(z);
-    QtConcurrent::run(
-          this, &ZFlyEmRoiDialog::loadGrayscaleFunc, z);
+    loadGrayscale(z);
   }
 }
 
@@ -331,5 +382,34 @@ void ZFlyEmRoiDialog::on_moveyIncPushButton_clicked()
 
 void ZFlyEmRoiDialog::advanceProgressSlot(double p)
 {
-  advance(p);
+  advanceProgress(p);
+}
+
+void ZFlyEmRoiDialog::closeEvent(QCloseEvent *event)
+{
+  if (!m_project.isRoiSaved()) {
+    int answer = QMessageBox::warning(
+          this, "Unsaved Results",
+          "The current ROI has not been saved. "
+          "Do you want to close the project now?",
+          QMessageBox::Yes | QMessageBox::No);
+    if (answer == QMessageBox::No) {
+      event->ignore();
+    }
+  }
+  if (event->isAccepted()) {
+    if (!m_project.isAllRoiCurveUploaded()) {
+      int answer = QMessageBox::warning(
+            this, "Unsaved Results",
+            "Some ROIs seem not been uploaded into DVID. "
+            "Do you want to close the project now?",
+            QMessageBox::Yes | QMessageBox::No);
+      if (answer == QMessageBox::No) {
+        event->ignore();
+      }
+    }
+  }
+  if (event->isAccepted()) {
+    m_project.closeDataFrame();
+  }
 }

@@ -11,8 +11,9 @@ public:
   ZWeightedPointArray();
 
 public:
-  Geo3d_Scalar_Field *toScalarField();
-  ZPoint principalDirection();
+  Geo3d_Scalar_Field *toScalarField() const;
+  ZPoint principalDirection() const;
+  ZPoint computeCentroid() const;
 };
 
 #endif // ZWEIGHTEDPOINTARRAY_H
