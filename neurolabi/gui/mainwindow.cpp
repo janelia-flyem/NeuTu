@@ -5591,8 +5591,9 @@ ZStackDocReader *MainWindow::hotSpotDemoFs(
   qDebug() << "Model loaded.";
 
   ZSwcTree *unscaledTree = tree->clone();
-  tree->scale(dvidInfo.getVoxelResolution()[0],
-      dvidInfo.getVoxelResolution()[1], dvidInfo.getVoxelResolution()[2]);
+  tree->scale(dvidInfo.getVoxelResolution().voxelSizeX(),
+      dvidInfo.getVoxelResolution().voxelSizeY(),
+      dvidInfo.getVoxelResolution().voxelSizeZ());
   ZFlyEmNeuron neuron(sourceBodyId, tree, NULL);
   neuron.setUnscaledModel(unscaledTree);
 
@@ -5627,8 +5628,9 @@ ZStackDocReader *MainWindow::hotSpotDemoFs(
       neuron.setId(bodyId);
       neuron.setUnscaledModel(tree);
       ZSwcTree *tree2 = tree->clone();
-      tree2->scale(dvidInfo.getVoxelResolution()[0],
-          dvidInfo.getVoxelResolution()[1], dvidInfo.getVoxelResolution()[2]);
+      tree2->scale(dvidInfo.getVoxelResolution().voxelSizeX(),
+                   dvidInfo.getVoxelResolution().voxelSizeY(),
+                   dvidInfo.getVoxelResolution().voxelSizeZ());
       neuron.setModel(tree2);
       ++neuronRetrievalCount;
     } else {

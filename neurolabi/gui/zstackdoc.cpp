@@ -5551,6 +5551,36 @@ bool ZStackDoc::executeAddSwcCommand(ZSwcTree *tree)
   return false;
 }
 
+bool ZStackDoc::executeReplaceSwcCommand(ZSwcTree *tree, ZDocPlayer::TRole role)
+{
+  QUndoCommand *command = new ZStackDocCommand::SwcEdit::CompositeCommand(this);
+
+  const ZDocPlayerList& playerList = getPlayerList();
+  for (ZDocPlayerList::const_iterator iter = playerList.begin();
+       iter != playerList.end(); ++iter) {
+    ZDocPlayer *player = *iter;
+    if (player->hasRole(role)) {
+      ZSwcTree *roleTree = dynamic_cast<ZSwcTree*>(player->getData());
+      if (roleTree != NULL) {
+        new ZStackDocCommand::SwcEdit::RemoveSwc(this, roleTree, command);
+      }
+    }
+  }
+  if (tree != NULL) {
+    new ZStackDocCommand::ObjectEdit::AddObject(
+          this, tree, NeuTube::Documentable_SWC, role, command);
+  }
+
+  if (command->childCount() > 0) {
+    pushUndoCommand(command);
+    return true;
+  } else {
+    delete command;
+  }
+
+  return false;
+}
+
 bool ZStackDoc::executeAddSwcNodeCommand(const ZPoint &center, double radius)
 {
   if (radius > 0) {

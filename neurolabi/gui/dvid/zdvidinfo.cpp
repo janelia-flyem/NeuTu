@@ -11,13 +11,14 @@ const char* ZDvidInfo::m_minPointKey = "MinPoint";
 const char* ZDvidInfo::m_maxPointKey = "MaxPoint";
 const char* ZDvidInfo::m_blockSizeKey = "BlockSize";
 const char* ZDvidInfo::m_voxelSizeKey = "VoxelSize";
+const char* ZDvidInfo::m_voxelUnitKey = "VoxelUnits";
 const char* ZDvidInfo::m_blockMinIndexKey = "MinIndex";
 const char* ZDvidInfo::m_blockMaxIndexKey = "MaxIndex";
 
 ZDvidInfo::ZDvidInfo() : m_dvidPort(7000)
 {
   m_stackSize.resize(3, 0);
-  m_voxelResolution.resize(3, 1.0);
+  //m_voxelResolution.resize(3, 1.0);
   m_blockSize.resize(3, m_defaultBlockSize);
 }
 
@@ -79,9 +80,21 @@ void ZDvidInfo::setFromJsonString(const std::string &str)
 
     if (obj.hasKey(m_voxelSizeKey)) {
       ZJsonArray array(obj[m_voxelSizeKey], false);
-      m_voxelResolution = array.toNumberArray();
-      if (m_voxelResolution.size() != 3) {
-        m_voxelResolution.resize(3, 1);
+      std::vector<double> resolution = array.toNumberArray();
+      if (resolution.size() != 3) {
+        m_voxelResolution.setVoxelSize(1, 1, 1);
+        m_voxelResolution.setUnit('p');
+      } else {
+        m_voxelResolution.setVoxelSize(
+              resolution[0], resolution[1], resolution[2]);
+      }
+    }
+
+    if (obj.hasKey(m_voxelUnitKey)) {
+      ZJsonArray array(obj[m_voxelUnitKey], false);
+      std::string unit = ZJsonParser::stringValue(array.at(0));
+      if (!unit.empty()) {
+        m_voxelResolution.setUnit(unit);
       }
     }
   }
@@ -102,8 +115,9 @@ void ZDvidInfo::print() const
   }
   std::cout << "Stack size: " << m_stackSize[0] << " " << m_stackSize[1] << " "
             << m_stackSize[2] << std::endl;
-  std::cout << "Voxel resolution: " << m_voxelResolution[0] << " x "
-            << m_voxelResolution[1] << " x " << m_voxelResolution[2] << std::endl;
+  std::cout << "Voxel resolution: " << m_voxelResolution.voxelSizeX() << " x "
+            << m_voxelResolution.voxelSizeY() << " x "
+            << m_voxelResolution.voxelSizeZ() << std::endl;
   std::cout << "Start coordinates: " << "(" << m_startCoordinates[0] << ", "
             << m_startCoordinates[1] << ", " << m_startCoordinates[2]
             << ")" << std::endl;

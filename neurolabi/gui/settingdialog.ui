@@ -159,6 +159,11 @@
               <string>um</string>
              </property>
             </item>
+            <item>
+             <property name="text">
+              <string>nm</string>
+             </property>
+            </item>
            </widget>
           </item>
          </layout>

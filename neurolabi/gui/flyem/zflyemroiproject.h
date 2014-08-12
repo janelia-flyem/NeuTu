@@ -96,6 +96,8 @@ public:
 
   std::string getRoiKey(int z) const;
 
+  double estimateRoiVolume(char unit = 'p') const;
+
 private:
   ZObject3dScan* getFilledRoi(
       const ZClosedCurve *curve, int z, ZObject3dScan *result) const;

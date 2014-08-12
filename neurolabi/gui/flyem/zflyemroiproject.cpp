@@ -410,10 +410,14 @@ void ZFlyEmRoiProject::estimateRoi()
   if (m_dataFrame != NULL) {
     ZClosedCurve roiCurve = estimateRoi(getDataZ());
     if (!roiCurve.isEmpty()) {
-      m_dataFrame->document()->removeObject(ZDocPlayer::ROLE_ROI, true);
+      //m_dataFrame->document()->removeObject(ZDocPlayer::ROLE_ROI, true);
       ZSwcTree *tree = ZSwcGenerator::createSwc(roiCurve, getMarkerRadius());
+      /*
       m_dataFrame->document()->executeAddObjectCommand(
             tree, NeuTube::Documentable_SWC, ZDocPlayer::ROLE_ROI);
+            */
+      m_dataFrame->document()->executeReplaceSwcCommand(
+            tree, ZDocPlayer::ROLE_ROI);
     }
   }
 }
@@ -723,4 +727,41 @@ std::string ZFlyEmRoiProject::getRoiKey(int z) const
   }
 
   return key;
+}
+
+double ZFlyEmRoiProject::estimateRoiVolume(char unit) const
+{
+  double totalVolume = 0;
+  size_t z1 = 0;
+  size_t z2 = 0;
+  size_t v1 = 0;
+  size_t v2 = 0;
+  for (size_t z = 0; z < m_curveArray.size(); ++z) {
+    const ZClosedCurve *curve = m_curveArray[z];
+    if (curve != NULL) {
+      if (!curve->isEmpty()) {
+        size_t v = getFilledRoi(z).getVoxelNumber();
+        totalVolume += v;
+        if (v1 == 0) {
+          v1 = v;
+          z1 = z;
+        } else {
+          v2 = v;
+          z2 = z;
+        }
+        if (v1 > 0 && v2 > 0) {
+          totalVolume += 0.5 * (v1 + v2) * (z2 - z1 - 1);
+          v1 = v2;
+          z1 = z2;
+          v2 = 0;
+          z2 = 0;
+        }
+      }
+    }
+  }
+
+  ZResolution res = m_dvidInfo.getVoxelResolution();
+  res.convertUnit(unit);
+
+  return totalVolume * res.voxelSize();
 }

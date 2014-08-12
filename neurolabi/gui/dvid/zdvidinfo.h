@@ -6,6 +6,7 @@
 #include "zintpoint.h"
 #include "zintpointarray.h"
 #include "zobject3dscan.h"
+#include "zresolution.h"
 
 class ZDvidInfo
 {
@@ -41,7 +42,7 @@ public:
    */
   ZObject3dScan getBlockIndex(const ZObject3dScan &obj);
 
-  inline const std::vector<double>& getVoxelResolution() const {
+  inline const ZResolution& getVoxelResolution() const {
     return m_voxelResolution;
   }
 
@@ -78,7 +79,8 @@ public:
 
 private:
   std::vector<int> m_stackSize;
-  std::vector<double> m_voxelResolution;
+  //std::vector<double> m_voxelResolution;
+  ZResolution m_voxelResolution;
   ZIntPoint m_startCoordinates;
   ZIntPoint m_startBlockIndex;
   ZIntPoint m_endBlockIndex;
@@ -95,6 +97,7 @@ private:
   const static char* m_maxPointKey;
   const static char* m_blockSizeKey;
   const static char* m_voxelSizeKey;
+  const static char* m_voxelUnitKey;
   const static char* m_blockMinIndexKey;
   const static char* m_blockMaxIndexKey;
 };

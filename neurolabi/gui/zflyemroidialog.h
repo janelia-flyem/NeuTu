@@ -102,6 +102,8 @@ private slots:
 
   void on_pushButton_clicked();
 
+  void on_estimateVolumePushButton_clicked();
+
 private:
   void loadGrayscaleFunc(int z);
   void downloadAllProject();

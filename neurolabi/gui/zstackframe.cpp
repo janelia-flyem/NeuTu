@@ -850,7 +850,7 @@ bool ZStackFrame::removeOvershoot()
 
 void ZStackFrame::setResolution(const double *res)
 {
-  m_settingDlg->setResolution(res);
+  m_settingDlg->setResolution(res[0], res[1], res[2]);
 }
 
 void ZStackFrame::addDecoration(ZStackObject *obj)
@@ -872,7 +872,7 @@ void ZStackFrame::setBc(double greyScale, double greyOffset, int channel)
 
 void ZStackFrame::synchronizeSetting()
 {
-  m_settingDlg->setResolution(document()->getStack()->resolution().voxelSize());
+  m_settingDlg->setResolution(document()->getStack()->resolution());
   m_settingDlg->setUnit(document()->getStack()->resolution().unit());
   m_settingDlg->setBackground(document()->getStackBackground());
 }

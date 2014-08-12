@@ -665,3 +665,11 @@ void ZFlyEmRoiDialog::uploadProjectList()
     writer.writeJsonString("roi_curve", "projects", array.dumpString(0));
   }
 }
+
+void ZFlyEmRoiDialog::on_estimateVolumePushButton_clicked()
+{
+  if (m_project != NULL) {
+    double volume = m_project->estimateRoiVolume('u');
+    dump(QString("ROI Volume: ~%1 um^3").arg(volume));
+  }
+}
