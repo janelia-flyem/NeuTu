@@ -322,7 +322,11 @@ void ZStackDocCommand::SwcEdit::AddSwcNode::undo()
 
 void ZStackDocCommand::SwcEdit::AddSwcNode::redo()
 {
-  m_doc->addSwcTree(m_tree);
+  if (m_doc->getTag() == NeuTube::Document::FLYEM_ROI) {
+    m_doc->addObject(m_tree, NeuTube::Documentable_SWC, ZDocPlayer::ROLE_ROI);
+  } else {
+    m_doc->addSwcTree(m_tree);
+  }
   m_treeInDoc = true;
 }
 
@@ -434,7 +438,8 @@ ZStackDocCommand::SwcEdit::MergeSwcNode::~MergeSwcNode()
 ZStackDocCommand::SwcEdit::ExtendSwcNode::ExtendSwcNode(
     ZStackDoc *doc, Swc_Tree_Node *node, Swc_Tree_Node *pnode,
     QUndoCommand *parent)
-  : QUndoCommand(parent), m_doc(doc), m_node(node), m_parentNode(pnode), m_nodeInDoc(false)
+  : ZUndoCommand(parent), m_doc(doc), m_node(node), m_parentNode(pnode),
+    m_nodeInDoc(false)
 {
   setText(QObject::tr("Extend Selected Swc Node"));
 }
@@ -964,8 +969,10 @@ ZStackDocCommand::SwcEdit::ConnectSwcNode::ConnectSwcNode(
   delete graph;
 }
 
-ZStackDocCommand::SwcEdit::RemoveSwc::RemoveSwc(ZStackDoc *doc, ZSwcTree *tree, QUndoCommand *parent) :
-  ZUndoCommand(parent), m_doc(doc), m_tree(tree), m_isInDoc(true)
+ZStackDocCommand::SwcEdit::RemoveSwc::RemoveSwc(
+    ZStackDoc *doc, ZSwcTree *tree, QUndoCommand *parent) :
+  ZUndoCommand(parent), m_doc(doc), m_tree(tree), m_role(ZDocPlayer::ROLE_NONE),
+  m_isInDoc(true)
 {
 }
 
@@ -982,7 +989,7 @@ ZStackDocCommand::SwcEdit::RemoveSwc::~RemoveSwc()
 void ZStackDocCommand::SwcEdit::RemoveSwc::redo()
 {
   if (m_tree != NULL) {
-    m_doc->removeObject(m_tree, false);
+    m_role = m_doc->removeObject(m_tree, false);
     m_isInDoc = false;
     m_doc->notifySwcModified();
   }
@@ -991,7 +998,8 @@ void ZStackDocCommand::SwcEdit::RemoveSwc::redo()
 void ZStackDocCommand::SwcEdit::RemoveSwc::undo()
 {
   if (m_tree != NULL) {
-    m_doc->addSwcTree(m_tree);
+    //m_doc->addSwcTree(m_tree);
+    m_doc->addObject(m_tree, NeuTube::Documentable_SWC, m_role);
     m_isInDoc = true;
   }
 }

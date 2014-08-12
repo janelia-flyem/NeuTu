@@ -651,6 +651,8 @@ public slots: //undoable commands
   bool executeAutoTraceAxonCommand();
 
   bool executeAddSwcCommand(ZSwcTree *tree);
+  bool executeReplaceSwcCommand(
+      ZSwcTree *tree, ZDocPlayer::TRole role = ZDocPlayer::ROLE_NONE);
   void executeSwcRescaleCommand(const ZRescaleSwcSetting &setting);
   bool executeSwcNodeExtendCommand(const ZPoint &center);
   bool executeSwcNodeExtendCommand(const ZPoint &center, double radius);

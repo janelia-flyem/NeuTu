@@ -145,7 +145,7 @@ private:
   static int m_index;  // used to generate unique source for each new swc tree
 };
 
-class ExtendSwcNode : public QUndoCommand
+class ExtendSwcNode : public ZUndoCommand
 {
 public:
   ExtendSwcNode(ZStackDoc *doc, Swc_Tree_Node* node, Swc_Tree_Node* pnode,
@@ -361,6 +361,7 @@ public:
 private:
   ZStackDoc *m_doc;
   ZSwcTree *m_tree;
+  ZDocPlayer::TRole m_role;
   bool m_isInDoc;
 };
 
