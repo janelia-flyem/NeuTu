@@ -33,7 +33,7 @@ ZFlyEmRoiDialog::ZFlyEmRoiDialog(QWidget *parent) :
   connect(ui->uploadResultPushButton, SIGNAL(clicked()),
           this, SLOT(uploadRoi()));
 
-
+#if 0
   QSize iconSize(24, 24);
   ui->movexDecPushButton->setIconSize(iconSize);
   ui->movexIncPushButton->setIconSize(iconSize);
@@ -63,7 +63,7 @@ ZFlyEmRoiDialog::ZFlyEmRoiDialog(QWidget *parent) :
   ui->xyIncPushButton->setMaximumSize(buttonSize);
   ui->xIncPushButton->setMaximumSize(buttonSize);
   ui->yIncPushButton->setMaximumSize(buttonSize);
-
+#endif
 
   connect(this, SIGNAL(newDocReady()), this, SLOT(newDataFrame()));
   connect(this, SIGNAL(progressFailed()), ui->progressBar, SLOT(reset()));
@@ -108,6 +108,7 @@ void ZFlyEmRoiDialog::clear()
 
 void ZFlyEmRoiDialog::updateWidget()
 {
+  ui->pushButton->setEnabled(m_dvidTarget.isValid());
   if (m_project != NULL) {
     QString text = QString("<p>DVID: %1</p>"
                            "<p>Z Range: [%2, %3]"
@@ -123,6 +124,7 @@ void ZFlyEmRoiDialog::updateWidget()
     ui->searchPushButton->setEnabled(m_project->getDvidTarget().isValid());
     ui->estimateRoiPushButton->setEnabled(m_project->hasDataFrame());
   } else {
+    ui->infoWidget->setText("");
     ui->loadGrayScalePushButton->setEnabled(false);
     ui->searchPushButton->setEnabled(false);
     ui->estimateRoiPushButton->setEnabled(false);
@@ -184,9 +186,19 @@ void ZFlyEmRoiDialog::setDvidTarget()
 {
   if (m_dvidDlg->exec()) {
     m_dvidTarget = m_dvidDlg->getDvidTarget();
+    dump(QString("Dvid server set to %1").
+         arg(m_dvidTarget.getSourceString().c_str()));
 
     //load all projects
     downloadAllProject();
+    if (!m_projectList.isEmpty()) {
+      dump(QString("%1 projects found. The current project is set to \"%2\"").
+           arg(m_projectList.size()).arg(m_project->getName().c_str()), true);
+    } else {
+      dump("No project exists. You need to new a project to proceed.", true);
+    }
+
+    updateWidget();
 
     /*
     if (m_project != NULL) {
@@ -350,9 +362,13 @@ void ZFlyEmRoiDialog::addRoi()
   }
 }
 
-void ZFlyEmRoiDialog::dump(const QString &str)
+void ZFlyEmRoiDialog::dump(const QString &str, bool appending)
 {
-  ui->outputWidget->setText(str);
+  if (appending) {
+    ui->outputWidget->append(str);
+  } else {
+    ui->outputWidget->setText(str);
+  }
 }
 
 void ZFlyEmRoiDialog::setZ(int z)
@@ -618,7 +634,7 @@ ZFlyEmRoiProject* ZFlyEmRoiDialog::newProject(const std::string &name)
 void ZFlyEmRoiDialog::on_pushButton_clicked() //new project
 {
   bool ok;
-  QString text = QInputDialog::getText(this, tr("QInputDialog::getText()"),
+  QString text = QInputDialog::getText(this, tr("New ROI Project"),
                                        tr("Project name:"), QLineEdit::Normal,
                                        "", &ok);
   if (ok && !text.isEmpty()) {
@@ -629,6 +645,8 @@ void ZFlyEmRoiDialog::on_pushButton_clicked() //new project
           loadProject(0);
         }
         uploadProjectList();
+        dump(QString("Project \"%1\" is created.").
+             arg(project->getName().c_str()));
       }
     }
     updateWidget();

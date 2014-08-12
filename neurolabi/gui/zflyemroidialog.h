@@ -25,7 +25,7 @@ public:
   ~ZFlyEmRoiDialog();
 
 public:
-  void dump(const QString &str);
+  void dump(const QString &str, bool appending = false);
   void loadGrayscale(int z);
 
   inline const ZDvidTarget& getDvidTarget() const {

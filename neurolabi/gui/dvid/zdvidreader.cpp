@@ -633,17 +633,21 @@ std::vector<std::pair<int, int> > ZDvidReader::partitionStack(
 ZClosedCurve* ZDvidReader::readRoiCurve(
     const std::string &key, ZClosedCurve *result)
 {
+  if (result != NULL) {
+    result->clear();
+  }
+
   QByteArray byteArray = readKeyValue("roi_curve", key.c_str());
   if (!byteArray.isEmpty()) {
-    if (result == NULL) {
-      result = new ZClosedCurve;
-    } else {
-      result->clear();
-    }
-
     ZJsonObject obj;
     obj.decode(byteArray.constData());
-    result->loadJsonObject(obj);
+
+    if (!obj.isEmpty()) {
+      if (result == NULL) {
+        result = new ZClosedCurve;
+      }
+      result->loadJsonObject(obj);
+    }
   }
 
   return result;
