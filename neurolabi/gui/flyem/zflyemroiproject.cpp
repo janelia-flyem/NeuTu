@@ -318,8 +318,12 @@ void ZFlyEmRoiProject::downloadRoi(int z)
   if (reader.open(getDvidTarget())) {
     ZClosedCurve *curve = reader.readRoiCurve(getRoiKey(z), NULL);
     if (curve != NULL) {
-      setRoi(curve, z);
-      setRoiUploaded(z, true);
+      if (curve->isEmpty()) {
+        delete curve;
+      } else {
+        setRoi(curve, z);
+        setRoiUploaded(z, true);
+      }
     }
   }
 }
