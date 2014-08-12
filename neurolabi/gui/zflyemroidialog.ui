@@ -6,19 +6,19 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>402</width>
+    <width>422</width>
     <height>703</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>ROI Project</string>
   </property>
-  <widget class="QWidget" name="">
+  <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
      <x>10</x>
      <y>13</y>
-     <width>381</width>
+     <width>399</width>
      <height>679</height>
     </rect>
    </property>
