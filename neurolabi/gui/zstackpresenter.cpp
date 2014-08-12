@@ -63,6 +63,8 @@ ZStackPresenter::ZStackPresenter(ZStackFrame *parent) : QObject(parent),
   m_stackContextMenu = NULL;
   createActions();
 
+  m_leftButtonReleaseMapper.setContext(&m_interactiveContext);
+  m_moveMapper.setContext(&m_interactiveContext);
 #ifdef _DEBUG_2
   ZEllipse *ellipse = new ZEllipse(QPointF(50, 50), 10, 5);
   ellipse->setColor(255, 0, 0);
@@ -970,11 +972,13 @@ ZStackPresenter::processMouseReleaseForSwc(QMouseEvent *event, double *positionI
             interactionEvent.setEvent(ZInteractionEvent::EVENT_SWC_NODE_EXTENDED);
           }
         } else {
-          if (buddyDocument()->executeSwcNodeSmartExtendCommand(
-                positionInData,
-                m_stroke.getWidth() / 2.0)) {
-            status = MOUSE_COMMAND_EXECUTED;
-            interactionEvent.setEvent(ZInteractionEvent::EVENT_SWC_NODE_EXTENDED);
+          if (event->modifiers() == Qt::NoModifier) {
+            if (buddyDocument()->executeSwcNodeSmartExtendCommand(
+                  positionInData,
+                  m_stroke.getWidth() / 2.0)) {
+              status = MOUSE_COMMAND_EXECUTED;
+              interactionEvent.setEvent(ZInteractionEvent::EVENT_SWC_NODE_EXTENDED);
+            }
           }
         }
       }
@@ -1146,8 +1150,13 @@ void ZStackPresenter::processMouseReleaseEvent(
   positionInStack[1] = pos.y();
   positionInStack[2] = sliceIndex;
 
-  switch (this->interactiveContext().exploreMode()) {
-  case ZInteractiveContext::EXPLORE_CAPTURE_MOUSE: //It triggers a processing step
+  ZMouseEventMapper::EOperation op =
+      m_leftButtonReleaseMapper.getOperation(event);
+
+  //switch (this->interactiveContext().exploreMode()) {
+  switch (op) {
+  //case ZInteractiveContext::EXPLORE_CAPTURE_MOUSE: //It triggers a processing step
+  case ZMouseEventMapper::OP_CAPTURE_MOUSE_POSITION:
     if (isPointInStack(positionInStack[0], positionInStack[1])) {
       if (interactiveContext().isProjectView()) {
         positionInStack[2] = buddyDocument()->maxIntesityDepth(pos.x(), pos.y());
@@ -1158,7 +1167,8 @@ void ZStackPresenter::processMouseReleaseEvent(
             positionInStack[0], positionInStack[1], positionInStack[2]);
     }
     break;
-  case ZInteractiveContext::EXPLORE_OFF:
+  //case ZInteractiveContext::EXPLORE_OFF:
+  case ZMouseEventMapper::OP_PROCESS_OBJECT:
   {
     if (interactiveContext().isProjectView()) {
       positionInStack[2] = -1;
@@ -1190,7 +1200,8 @@ void ZStackPresenter::processMouseReleaseEvent(
     }
   }
     break;
-  case ZInteractiveContext::EXPLORE_MOVE_IMAGE:
+  //case ZInteractiveContext::EXPLORE_MOVE_IMAGE:
+  case ZMouseEventMapper::OP_RESOTRE_EXPLORE_MODE:
     this->interactiveContext().restoreExploreMode();
     break;
   default:
@@ -1216,8 +1227,12 @@ void ZStackPresenter::processMouseMoveEvent(QMouseEvent *event)
   else
     m_mouseMovePosition[2] = buddyView()->sliceIndex();
 
+  switch (m_moveMapper.getOperation(event)) {
+  case ZMouseEventMapper::OP_MOVE_OBJECT:
+    /*
   if (m_interactiveContext.swcEditMode() == ZInteractiveContext::SWC_EDIT_MOVE_NODE &&
-      m_mouseLeftButtonPressed == true && event->modifiers() == Qt::ShiftModifier) {
+      m_mouseLeftButtonPressed == true && event->modifiers() == Qt::ShiftModifier) */
+  {
     QPointF pos = mapFromWidgetToStack(event->pos());
     buddyDocument()->mapToDataCoord(&pos.rx(), &pos.ry(), NULL);
     buddyDocument()->executeMoveObjectCommand(pos.x() - m_lastMouseDataCoord.x(),
@@ -1226,11 +1241,13 @@ void ZStackPresenter::processMouseMoveEvent(QMouseEvent *event)
                                               1,1,1,1,1,1);
 
     m_lastMouseDataCoord = pos;
-    return;
+    //return;
   }
+    break;
 
-  switch (this->interactiveContext().exploreMode()) {
-  case ZInteractiveContext::EXPLORE_MOVE_IMAGE:
+  //switch (this->interactiveContext().exploreMode()) {
+  //case ZInteractiveContext::EXPLORE_MOVE_IMAGE:
+  case ZMouseEventMapper::OP_MOVE_IMAGE:
     {
       int x, y;
       x = m_grabPosition.x()
@@ -1245,51 +1262,57 @@ void ZStackPresenter::processMouseMoveEvent(QMouseEvent *event)
     }
 
     break;
-  default:
-    if (m_mouseLeftButtonPressed == true){
-      if (m_interactiveContext.strokeEditMode() ==
-          ZInteractiveContext::STROKE_DRAW) {
-        QPointF pos = buddyView()->imageWidget()->
-                     canvasCoordinate(QPoint(event->x(), event->y()));
-        double dataX = pos.x();
-        double dataY = pos.y();
-        buddyDocument()->mapToDataCoord(&dataX, &dataY, NULL);
-        m_stroke.append(dataX, dataY);
-        buddyView()->paintActiveDecoration();
-      } else {
-        //if (m_zoomRatio > 1) {
-        if (buddyView()->imageWidget()->zoomRatio() > 1) {
-          this->interactiveContext().backupExploreMode();
-          this->interactiveContext().
-              setExploreMode(ZInteractiveContext::EXPLORE_MOVE_IMAGE);
-          m_grabPosition = buddyView()->screen()->canvasCoordinate(event->pos());
-        }
-      }
-    } else {
-      QPointF pos = buddyView()->imageWidget()->
-                   canvasCoordinate(QPoint(event->x(), event->y()));
-      int z = buddyView()->sliceIndex();
-      if (interactiveContext().isProjectView()) {
-        z = -1;
-      }
-      buddyView()->setInfo(buddyDocument()->dataInfo(pos.x(), pos.y(), z));
-
-      if (isStrokeOn()) {
-        double dataX = pos.x();
-        double dataY = pos.y();
-        buddyDocument()->mapToDataCoord(&dataX, &dataY, NULL);
-        m_stroke.set(dataX, dataY);
-        if (m_interactiveContext.strokeEditMode() !=
-            ZInteractiveContext::STROKE_DRAW) {
-          m_stroke.setFilled(false);
-        }
-        turnOnStroke();
-#ifdef _DEBUG_2
-        qDebug() << "Stroke on";
-#endif
-        //buddyView()->paintActiveDecoration();
-      }
+  //default:
+    //if (m_mouseLeftButtonPressed == true){
+      //if (m_interactiveContext.strokeEditMode() ==
+          //ZInteractiveContext::STROKE_DRAW)
+  case ZMouseEventMapper::OP_PAINT_STROKE:
+  {
+    QPointF pos = buddyView()->imageWidget()->
+        canvasCoordinate(QPoint(event->x(), event->y()));
+    double dataX = pos.x();
+    double dataY = pos.y();
+    buddyDocument()->mapToDataCoord(&dataX, &dataY, NULL);
+    m_stroke.append(dataX, dataY);
+    buddyView()->paintActiveDecoration();
+  }
+    break;
+  case ZMouseEventMapper::OP_START_MOVE_IMAGE:
+    if (buddyView()->imageWidget()->zoomRatio() > 1) {
+      this->interactiveContext().backupExploreMode();
+      this->interactiveContext().
+          setExploreMode(ZInteractiveContext::EXPLORE_MOVE_IMAGE);
+      m_grabPosition = buddyView()->screen()->canvasCoordinate(event->pos());
     }
+    break;
+  case ZMouseEventMapper::OP_CAPTURE_IMAGE_INFO:
+  {
+    QPointF pos = buddyView()->imageWidget()->
+        canvasCoordinate(QPoint(event->x(), event->y()));
+    int z = buddyView()->sliceIndex();
+    if (interactiveContext().isProjectView()) {
+      z = -1;
+    }
+    buddyView()->setInfo(buddyDocument()->dataInfo(pos.x(), pos.y(), z));
+
+    if (isStrokeOn()) {
+      double dataX = pos.x();
+      double dataY = pos.y();
+      buddyDocument()->mapToDataCoord(&dataX, &dataY, NULL);
+      m_stroke.set(dataX, dataY);
+      if (m_interactiveContext.strokeEditMode() !=
+          ZInteractiveContext::STROKE_DRAW) {
+        m_stroke.setFilled(false);
+      }
+      turnOnStroke();
+#ifdef _DEBUG_2
+      qDebug() << "Stroke on";
+#endif
+      //buddyView()->paintActiveDecoration();
+    }
+  }
+    break;
+  default:
     break;
   }
 }
@@ -1311,6 +1334,13 @@ void ZStackPresenter::processMousePressEvent(QMouseEvent *event)
 
   if (event->button() == Qt::LeftButton) {
     m_mouseLeftButtonPressed = true;
+
+    m_mouseLeftPressPosition[0] = event->x();
+    m_mouseLeftPressPosition[1] = event->y();
+    m_mouseLeftPressPosition[2] = buddyView()->sliceIndex();
+    m_moveMapper.setPosition(event->x(), event->y(), buddyView()->sliceIndex(),
+                             ZMouseEventMapper::LEFT_BUTTON,
+                             ZMouseEventMapper::BUTTON_PRESS);
 
     if (m_interactiveContext.swcEditMode() ==
         ZInteractiveContext::SWC_EDIT_MOVE_NODE &&

@@ -98,6 +98,7 @@ ZFlyEmRoiDialog::~ZFlyEmRoiDialog()
 
 void ZFlyEmRoiDialog::clear()
 {
+  ui->projectComboBox->clear();
   foreach (ZFlyEmRoiProject *proj, m_projectList) {
     delete proj;
   }
@@ -148,6 +149,7 @@ bool ZFlyEmRoiDialog::appendProject(ZFlyEmRoiProject *project)
         }
       }
       if (isValidProject) {
+        project->downloadAllRoi();
         m_projectList.append(project);
         ui->projectComboBox->addItem(project->getName().c_str());
         return true;
@@ -162,7 +164,7 @@ void ZFlyEmRoiDialog::downloadAllProject()
 {
   ZDvidReader reader;
   if (reader.open(getDvidTarget())) {
-    ui->projectComboBox->clear();
+    clear();
     QByteArray value = reader.readKeyValue("roi_curve", "projects");
     ZJsonArray array;
     array.decode(value.constData());

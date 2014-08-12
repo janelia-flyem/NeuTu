@@ -465,6 +465,42 @@ public:
    */
   bool isAdjacentTo(ZObject3dScan &obj);
 
+  class Segment {
+  public:
+    Segment(int z = 0, int y = 0, int x0 = 0, int x1 = 0) :
+      m_x0(x0), m_x1(x1), m_y(y), m_z(z) {}
+    inline int getZ() const { return m_z; }
+    inline int getY() const { return m_y; }
+    inline int getStart() const { return m_x0; }
+    inline int getEnd() const { return m_x1; }
+    inline void set(int z = 0, int y = 0, int x0 = 0, int x1 = 0) {
+      m_x0 = x0;
+      m_x1 = x1;
+      m_y = y;
+      m_z = z;
+    }
+
+  private:
+    int m_x0;
+    int m_x1;
+    int m_y;
+    int m_z;
+  };
+
+  class ConstSegmentIterator {
+  public:
+    ConstSegmentIterator(const ZObject3dScan *obj = NULL);
+    const Segment& next();
+    bool hasNext() const;
+    void advance();
+
+  private:
+    const ZObject3dScan *m_obj;
+    size_t m_stripeIndex;
+    int m_segmentIndex;
+    Segment m_seg;
+  };
+
 protected:
   std::vector<ZObject3dStripe> m_stripeArray;
   /*

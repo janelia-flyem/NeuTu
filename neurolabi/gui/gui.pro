@@ -441,7 +441,8 @@ HEADERS += mainwindow.h \
     zkeyeventswcmapper.h \
     zflyemroidialog.h \
     flyem/zflyemroiproject.h \
-    newprojectmainwindow.h
+    newprojectmainwindow.h \
+    zmouseeventmapper.h
 
 FORMS += settingdialog.ui \
     frameinfodialog.ui \
@@ -734,7 +735,8 @@ SOURCES += main.cpp \
     zkeyeventswcmapper.cpp \
     zflyemroidialog.cpp \
     flyem/zflyemroiproject.cpp \
-    newprojectmainwindow.cpp
+    newprojectmainwindow.cpp \
+    zmouseeventmapper.cpp
 
 OTHER_FILES += \
     extlib.pri

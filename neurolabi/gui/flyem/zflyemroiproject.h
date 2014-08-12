@@ -4,6 +4,7 @@
 #include <QObject>
 #include "dvid/zdvidtarget.h"
 #include "zclosedcurve.h"
+#include <QString>
 #include "dvid/zdvidinfo.h"
 
 class ZStackFrame;
@@ -54,6 +55,7 @@ public:
   int uploadRoi(int z);
   void downloadRoi();
   void downloadRoi(int z);
+  void downloadRoi(const std::string &key);
   void downloadAllRoi();
   ZClosedCurve estimateRoi(int z);
   ZClosedCurve* estimateRoi(int z, ZClosedCurve *result) const;

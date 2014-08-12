@@ -65,8 +65,9 @@ void ZFlyEmRoiProject::downloadAllRoi()
     QStringList roiIdArray = reader.readKeys(
           "roi_curve", QString("%1").arg(getRoiKey(m_dvidInfo.getMinZ()).c_str()),
           QString("%1").arg(getRoiKey(m_dvidInfo.getMaxZ()).c_str()));
-    foreach (const QString &roiId, roiIdArray) {
-      downloadRoi(roiId.toInt());
+    foreach (const QString &roiKey, roiIdArray) {
+      int roiId = ZString(roiKey.toStdString()).lastInteger();
+      downloadRoi(roiId);
     }
   }
 }
@@ -298,7 +299,19 @@ void ZFlyEmRoiProject::downloadRoi()
 {
   downloadRoi(getDataZ());
 }
-
+/*
+void ZFlyEmRoiProject::downloadRoi(const std::string &key)
+{
+  ZDvidReader reader;
+  if (reader.open(getDvidTarget())) {
+    ZClosedCurve *curve = reader.readRoiCurve(key, NULL);
+    if (curve != NULL) {
+      setRoi(curve, getDataZ());
+      setRoiUploaded(z, true);
+    }
+  }
+}
+*/
 void ZFlyEmRoiProject::downloadRoi(int z)
 {
   ZDvidReader reader;

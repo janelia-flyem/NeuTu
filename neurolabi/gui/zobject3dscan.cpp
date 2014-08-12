@@ -2568,5 +2568,52 @@ bool ZObject3dScan::importHdf5(const string &filePath, const string &key)
   return false;
 }
 
+/////////////////////////Iterators/////////////////////////
+ZObject3dScan::ConstSegmentIterator::ConstSegmentIterator(
+    const ZObject3dScan *obj) : m_obj(obj), m_stripeIndex(0), m_segmentIndex(0)
+{
+}
+
+const ZObject3dScan::Segment& ZObject3dScan::ConstSegmentIterator::next()
+{
+  if (hasNext()) {
+    const ZObject3dStripe &stripe = m_obj->getStripe(m_stripeIndex);
+    m_seg.set(stripe.getZ(), stripe.getY(),
+              stripe.getSegmentStart(m_segmentIndex),
+              stripe.getSegmentEnd(m_segmentIndex));
+    advance();
+  }
+  return m_seg;
+}
+
+bool ZObject3dScan::ConstSegmentIterator::hasNext() const
+{
+  if (m_obj == NULL) {
+    return false;
+  }
+  if (m_stripeIndex >= m_obj->getStripeNumber()) {
+    return false;
+  }
+
+  const ZObject3dStripe &stripe = m_obj->getStripe(m_stripeIndex);
+  if (m_segmentIndex >= stripe.getSegmentNumber()) {
+    return false;
+  }
+
+  return true;
+}
+
+void ZObject3dScan::ConstSegmentIterator::advance()
+{
+  if (m_stripeIndex < m_obj->getStripeNumber()) {
+    const ZObject3dStripe &stripe = m_obj->getStripe(m_stripeIndex);
+    if (m_segmentIndex < stripe.getSegmentNumber() - 1) {
+      ++m_segmentIndex;
+    } else {
+      m_segmentIndex = 0;
+      ++m_stripeIndex;
+    }
+  }
+}
 
 ZSTACKOBJECT_DEFINE_CLASS_NAME(ZObject3dScan)

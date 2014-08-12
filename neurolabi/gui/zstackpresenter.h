@@ -17,6 +17,7 @@
 #include "swctreenode.h"
 #include "zactionactivator.h"
 #include "zkeyeventswcmapper.h"
+#include "zmouseeventmapper.h"
 
 class ZStackView;
 class ZStackDoc;
@@ -363,6 +364,8 @@ private:
   bool m_skipMouseReleaseEvent;
 
   ZKeyEventSwcMapper m_swcKeyMapper;
+  ZMouseEventLeftButtonReleaseMapper m_leftButtonReleaseMapper;
+  ZMouseEventMoveMapper m_moveMapper;
 
 signals:
   void viewModeChanged();

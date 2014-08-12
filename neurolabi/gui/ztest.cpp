@@ -122,6 +122,7 @@ using namespace std;
 #include "z3dinteractionhandler.h"
 #include "z3dcompositor.h"
 #include "z3dvolumeraycaster.h"
+#include "zjsonfactory.h"
 #include "z3dvolumeraycasterrenderer.h"
 #include "z3dvolumesource.h"
 #include "z3dpunctafilter.h"
@@ -12588,7 +12589,7 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
-#if 1
+#if 0
   ZStack *stack = ZStackFactory::makeZeroStack(3, 3, 3, 3);
   for (int c = 0; c < 3; ++c) {
     for (int z = 0; z < 3; ++z) {
@@ -12624,5 +12625,16 @@ void ZTest::test(MainWindow *host)
   const QUndoCommand *command = stack->command(stack->index() - 1);
   qDebug() << command->text();
 
+#endif
+
+#if 1
+  ZObject3dScan obj;
+  obj.addSegment(0, 0, 0, 1);
+  obj.addSegment(0, 2, 3, 5);
+  obj.addSegment(0, 2, 8, 9);
+  obj.addSegment(1, 2, 3, 4);
+
+  ZJsonArray array = ZJsonFactory::makeJsonArray(obj);
+  std::cout << array.dumpString(0) << std::endl;
 #endif
 }
