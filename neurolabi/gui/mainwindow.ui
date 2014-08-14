@@ -292,6 +292,8 @@
       <addaction name="actionTem_Paper_Neuron_Type_Figure"/>
       <addaction name="actionMake_Movie"/>
       <addaction name="actionLoad_Data_Bundle"/>
+      <addaction name="separator"/>
+      <addaction name="actionShape_Matching"/>
      </widget>
      <widget class="QMenu" name="menuStatistics">
       <property name="title">
@@ -1269,6 +1271,11 @@
   <action name="actionLoad_Data_Bundle">
    <property name="text">
     <string>Load Data Bundle</string>
+   </property>
+  </action>
+  <action name="actionShape_Matching">
+   <property name="text">
+    <string>Shape Matching</string>
    </property>
   </action>
  </widget>

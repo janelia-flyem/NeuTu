@@ -1,6 +1,9 @@
 #include "zobject3dfactory.h"
 #include "zstack.hxx"
 #include "zstackfactory.h"
+#include "zobject3d.h"
+#include "zobject3darray.h"
+#include "zobject3dscan.h"
 
 ZObject3dFactory::ZObject3dFactory()
 {
@@ -112,4 +115,26 @@ ZObject3dArray* ZObject3dFactory::makeRegionBoundary(const ZStack &stack)
   delete mask;
 
   return out;
+}
+
+ZObject3dScan* ZObject3dFactory::makeObject3dScan(
+    const ZStack &stack, ZObject3dScan *out)
+{
+  if (out == NULL) {
+    out = new ZObject3dScan;
+  }
+
+  out->clear();
+
+  out->loadStack(stack);
+
+  return out;
+}
+
+ZObject3dScan ZObject3dFactory::makeObject3dScan(const ZStack &stack)
+{
+  ZObject3dScan obj;
+  makeObject3dScan(stack, &obj);
+
+  return obj;
 }

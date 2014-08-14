@@ -1311,6 +1311,11 @@ bool ZStack::isVirtual() const
   return m_stack->array == NULL;
 }
 
+bool ZStack::hasData() const
+{
+  return !isEmpty() && !isVirtual();
+}
+
 void *ZStack::getDataPointer(int c, int slice) const
 {
   const uint8_t *array = array8(c);

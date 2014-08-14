@@ -256,6 +256,14 @@ public: /* attributes */
    */
   bool isVirtual() const;
 
+  /*!
+   * \brief Test if a stack has data.
+   *
+   * \return A stack has data if it is not empty and virtual.
+   */
+  bool hasData() const;
+
+
   // make mc_stack
   static Mc_Stack* makeMcStack(
       const Stack *stack1, const Stack *stack2, const Stack *stack3);
