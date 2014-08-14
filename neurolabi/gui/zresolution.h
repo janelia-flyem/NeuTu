@@ -7,7 +7,7 @@ class ZResolution {
 public:
   ZResolution();
 
-  inline const double voxelSize() const {
+  inline double voxelSize() const {
     return m_voxelSize[0] * m_voxelSize[1] * m_voxelSize[2]; }
   inline double voxelSizeX() const { return m_voxelSize[0]; }
   inline double voxelSizeY() const { return m_voxelSize[1]; }

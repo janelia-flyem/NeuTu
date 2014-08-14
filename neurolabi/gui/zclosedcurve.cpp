@@ -1,5 +1,7 @@
 #include "zclosedcurve.h"
 #include <iostream>
+#include <algorithm>
+
 #include "tz_cdefs.h"
 #include "tz_utilities.h"
 #include "zjsonobject.h"
