@@ -402,9 +402,9 @@ void ZSwcTree::computeLineSegment(const Swc_Tree_Node *lowerTn,
 #else
   UNUSED_PARAMETER(lowerTn);
   UNUSED_PARAMETER(upperTn);
-  UNUSED_PARAMETER(lineStart);
-  UNUSED_PARAMETER(lineEnd);
-  UNUSED_PARAMETER(stackFocus);
+  UNUSED_PARAMETER(&lineStart);
+  UNUSED_PARAMETER(&lineEnd);
+  UNUSED_PARAMETER(dataFocus);
 #endif
 }
 
@@ -3051,6 +3051,7 @@ bool ZSwcTree::getHostState(const Swc_Tree_Node *tn, ENodeState state)
 
 void ZSwcTree::setColorScheme(EColorScheme scheme)
 {
+#ifdef _QT_GUI_USED_
   switch (scheme) {
   case COLOR_NORMAL:
     m_rootColor = QColor(164, 164, 255, 164);
@@ -3073,6 +3074,7 @@ void ZSwcTree::setColorScheme(EColorScheme scheme)
     m_nodeFocusColor = QColor(255, 0, 0, 32);
     break;
   }
+#endif
 }
 
 void ZSwcTree::initHostState()

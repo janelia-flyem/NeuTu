@@ -40,7 +40,9 @@ NeutubeConfig::~NeutubeConfig()
 void NeutubeConfig::setWorkDir(const string str)
 {
   m_workDir = str;
+#ifdef _QT_GUI_USED_
   getSettings().setValue("workDir", m_workDir.c_str());
+#endif
 }
 
 void NeutubeConfig::operator=(const NeutubeConfig& config)

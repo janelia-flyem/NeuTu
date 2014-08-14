@@ -450,10 +450,12 @@ void ZObject3d::drawStack(ZStack *stack) const
 {
   Object_3d *obj = c_obj();
 
-  uint8_t color[3];
+  uint8_t color[3] = {255, 255, 255};
+#if _QT_GUI_USED_
   color[0] = m_color.red();
   color[1] = m_color.green();
   color[2] = m_color.blue();
+#endif
 
   ZIntPoint origin = stack->getOffset();
   int width = stack->width();
@@ -478,11 +480,12 @@ void ZObject3d::drawStack(ZStack *stack, int xIntv, int yIntv, int zIntv) const
 {
   Object_3d *obj = c_obj();
 
-  uint8_t color[3];
+  uint8_t color[3] = {255, 255, 255};
+#ifdef _QT_GUI_USED_
   color[0] = m_color.red();
   color[1] = m_color.green();
   color[2] = m_color.blue();
-
+#endif
   ZIntPoint origin = stack->getOffset();
   int width = stack->width();
   int height = stack->height();
@@ -513,10 +516,12 @@ void ZObject3d::drawStack(const std::vector<Stack*> &stackArray,
 {
   Object_3d *obj = c_obj();
 
-  uint8_t color[3];
+  uint8_t color[3] = {255, 255, 255};
+#ifdef _QT_GUI_USED_
   color[0] = m_color.red();
   color[1] = m_color.green();
   color[2] = m_color.blue();
+#endif
 
   ZIntPoint origin(0, 0, 0);
   if (offset != NULL) {

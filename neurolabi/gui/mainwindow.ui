@@ -291,6 +291,7 @@
       <addaction name="actionTem_Paper_Volume_Rendering"/>
       <addaction name="actionTem_Paper_Neuron_Type_Figure"/>
       <addaction name="actionMake_Movie"/>
+      <addaction name="actionLoad_Data_Bundle"/>
      </widget>
      <widget class="QMenu" name="menuStatistics">
       <property name="title">
@@ -1263,6 +1264,11 @@
   <action name="actionNewProject">
    <property name="text">
     <string>New Project</string>
+   </property>
+  </action>
+  <action name="actionLoad_Data_Bundle">
+   <property name="text">
+    <string>Load Data Bundle</string>
    </property>
   </action>
  </widget>

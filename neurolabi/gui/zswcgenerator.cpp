@@ -7,7 +7,9 @@
 #include "zpointarray.h"
 #include "zlinesegmentarray.h"
 #include "zintcuboidface.h"
+#if _QT_GUI_USED_
 #include "zstroke2d.h"
+#endif
 #include "zobject3d.h"
 #include "zobject3dscan.h"
 #include "zstack.hxx"
@@ -399,6 +401,7 @@ ZSwcTree* ZSwcGenerator::createSwc(
 
 ZSwcTree* ZSwcGenerator::createSwc(const ZStroke2d &stroke)
 {
+#if _QT_GUI_USED_
   if (stroke.isEmpty()) {
     return NULL;
   }
@@ -417,8 +420,10 @@ ZSwcTree* ZSwcGenerator::createSwc(const ZStroke2d &stroke)
   }
 
   tree->resortId();
-
   return tree;
+#else
+  return NULL;
+#endif
 }
 
 ZSwcTree* ZSwcGenerator::createSwc(

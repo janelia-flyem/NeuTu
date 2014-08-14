@@ -10,6 +10,7 @@
 #include "dvid/zdvidwriter.h"
 #include "mainwindow.h"
 #include "zstackframe.h"
+#include "zswcgenerator.h"
 
 ZFlyEmRoiDialog::ZFlyEmRoiDialog(QWidget *parent) :
   QDialog(parent), ZProgressable(),
@@ -428,10 +429,21 @@ void ZFlyEmRoiDialog::on_searchPushButton_clicked()
 void ZFlyEmRoiDialog::on_testPushButton_clicked()
 {
   ZObject3dScan obj = m_project->getRoiObject();
+  obj.downsampleMax(2, 2, 2);
 
-  obj.save(GET_DATA_DIR + "/test.sobj");
+  ZSwcTree *tree = ZSwcGenerator::createSurfaceSwc(obj);
+  if (tree != NULL) {
+    ZStackFrame *frame = new ZStackFrame();
+    frame->document()->addSwcTree(tree);
 
-  dump(QString("%1 saved.").arg((GET_DATA_DIR + "/test.sobj").c_str()));
+    frame->open3DWindow(this);
+    delete frame;
+  }
+
+
+  //obj.save(GET_DATA_DIR + "/test.sobj");
+
+  //dump(QString("%1 saved.").arg((GET_DATA_DIR + "/test.sobj").c_str()));
 }
 
 #define ROI_SCALE 1.01
