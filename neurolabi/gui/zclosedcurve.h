@@ -5,6 +5,7 @@
 
 class ZJsonObject;
 class ZLineSegment;
+class ZCuboid;
 
 class ZClosedCurve
 {
@@ -79,6 +80,8 @@ public:
 
   ZPoint computeCenter() const;
   ZPoint computeDirection() const;
+
+  ZCuboid getBoundBox() const;
 
 private:
   ZPointArray m_landmarkArray;

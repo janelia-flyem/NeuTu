@@ -3,11 +3,15 @@
 
 #include <QObject>
 #include <QDialog>
+#include <QVector>
+#include <QPointer>
 #include <zdviddialog.h>
 #include <dvidimagedialog.h>
 #include <zspinboxdialog.h>
+#include "zparameter.h"
 
 class QSpacerItem;
+class ZParameterArray;
 
 class ZDialogFactory
 {
@@ -20,6 +24,9 @@ public:
   static DvidImageDialog *makeDvidImageDialog(
       ZDvidDialog *dvidDlg, QWidget *parent = 0);
   static ZSpinBoxDialog *makeSpinBoxDialog(QWidget *parent = 0);
+  static QDialog* makeParameterDialog(
+      const ZParameterArray &parameterArray,
+      QWidget *parent);
 
 private:
   QWidget *m_parentWidget;

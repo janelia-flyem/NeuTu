@@ -928,6 +928,21 @@ const ZFlyEmNeuron* ZFlyEmDataFrame::getNeuronFromIndex(
   return neuron;
 }
 
+void ZFlyEmDataFrame::predictClass()
+{
+  if (initTaskManager(m_matchManager)) {
+    foreach (ZFlyEmDataBundle *dataBundle, m_dataArray) {
+      ZFlyEmNeuronArray &neuronArray = dataBundle->getNeuronArray();
+      for (ZFlyEmNeuronArray::iterator iter = neuronArray.begin();
+           iter != neuronArray.end(); ++iter) {
+        ZFlyEmNeuron *neuron = &(*iter);
+        prepareClassPrediction(neuron);
+      }
+    }
+    m_matchManager->start();
+  }
+}
+
 void ZFlyEmDataFrame::predictClass(const QVector<ZFlyEmNeuron *> &neuronArray)
 {
   if (initTaskManager(m_matchManager)) {

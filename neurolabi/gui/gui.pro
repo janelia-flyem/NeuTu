@@ -442,7 +442,11 @@ HEADERS += mainwindow.h \
     zflyemroidialog.h \
     flyem/zflyemroiproject.h \
     newprojectmainwindow.h \
-    zmouseeventmapper.h
+    zmouseeventmapper.h \
+    shapepaperdialog.h \
+    zparameterarray.h \
+    zframefactory.h \
+    zactionbutton.h
 
 FORMS += settingdialog.ui \
     frameinfodialog.ui \
@@ -495,7 +499,8 @@ FORMS += settingdialog.ui \
     zflyemnewbodysplitprojectdialog.ui \
     dvidskeletonizedialog.ui \
     zflyemroidialog.ui \
-    newprojectmainwindow.ui
+    newprojectmainwindow.ui \
+    shapepaperdialog.ui
 SOURCES += main.cpp \
     mainwindow.cpp \
     zstackview.cpp \
@@ -736,7 +741,11 @@ SOURCES += main.cpp \
     zflyemroidialog.cpp \
     flyem/zflyemroiproject.cpp \
     newprojectmainwindow.cpp \
-    zmouseeventmapper.cpp
+    zmouseeventmapper.cpp \
+    shapepaperdialog.cpp \
+    zparameterarray.cpp \
+    zframefactory.cpp \
+    zactionbutton.cpp
 
 OTHER_FILES += \
     extlib.pri

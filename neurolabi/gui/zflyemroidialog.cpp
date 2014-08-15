@@ -3,6 +3,8 @@
 #include <QMessageBox>
 #include <QCloseEvent>
 #include <QInputDialog>
+#include <QMenu>
+
 #include "neutubeconfig.h"
 #include "ui_zflyemroidialog.h"
 #include "dvid/zdvidreader.h"
@@ -11,6 +13,9 @@
 #include "mainwindow.h"
 #include "zstackframe.h"
 #include "zswcgenerator.h"
+#include "zjsonfactory.h"
+#include "zcuboid.h"
+#include "zintcuboid.h"
 
 ZFlyEmRoiDialog::ZFlyEmRoiDialog(QWidget *parent) :
   QDialog(parent), ZProgressable(),
@@ -89,12 +94,23 @@ ZFlyEmRoiDialog::ZFlyEmRoiDialog(QWidget *parent) :
 #ifndef _DEBUG_
   ui->testPushButton->hide();
 #endif
+
+  createMenu();
 }
 
 ZFlyEmRoiDialog::~ZFlyEmRoiDialog()
 {
   m_projectList.clear();
   delete ui;
+}
+
+void ZFlyEmRoiDialog::createMenu()
+{
+  m_nextMenu = new QMenu(this);
+
+  QAction *actionNext1 = new QAction("1", this);
+  m_nextMenu->addAction(actionNext1);
+  //ui->nextPushButton->setMenu(m_nextMenu);
 }
 
 void ZFlyEmRoiDialog::clear()
@@ -179,6 +195,9 @@ void ZFlyEmRoiDialog::downloadAllProject()
       }
     }
     m_project = getProject(0);
+    if (m_project != NULL) {
+      setZ(ui->zSpinBox->value());
+    }
   }
 }
 
@@ -207,6 +226,53 @@ void ZFlyEmRoiDialog::setDvidTarget()
       updateWidget();
     }
     */
+  }
+}
+
+void ZFlyEmRoiDialog::loadPartialGrayscaleFunc(
+    int x0, int x1, int y0, int y1, int z)
+{
+  if (m_project == NULL) {
+    return;
+  }
+
+  //advance(0.1);
+  emit progressAdvanced(0.1);
+  ZDvidReader reader;
+  if (z >= 0 && reader.open(m_project->getDvidTarget())) {
+    if (m_project->getRoi(z) == NULL) {
+      m_project->downloadRoi(z);
+    }
+
+    QString infoString = reader.readInfo("grayscale");
+
+    qDebug() << infoString;
+
+    ZDvidInfo dvidInfo;
+    dvidInfo.setFromJsonString(infoString.toStdString());
+
+    ZStack *stack = NULL;
+    stack = reader.readGrayScale(x0, y0, z,
+                                 x1 - x0 + 1,
+                                 y1 - y0 + 1, 1);
+
+    if (stack != NULL) {
+      //advance(0.5);
+      emit progressAdvanced(0.5);
+      m_docReader.clear();
+      m_docReader.setStack(stack);
+
+      ZSwcTree *tree = m_project->getRoiSwc(z);
+      if (tree != NULL) {
+        m_docReader.addObject(
+              tree, NeuTube::Documentable_SWC, ZDocPlayer::ROLE_ROI);
+      }
+      emit newDocReady();
+    } else {
+      emit progressFailed();
+    }
+  } else {
+    emit progressFailed();
   }
 }
 
@@ -295,7 +361,7 @@ void ZFlyEmRoiDialog::newDataFrame()
 
 void ZFlyEmRoiDialog::loadGrayscale(int z)
 {
-  if (m_project == NULL) {
+  if (m_project == NULL || z < 0) {
     return;
   }
 
@@ -312,6 +378,32 @@ void ZFlyEmRoiDialog::loadGrayscale(int z)
     startProgress();
     QtConcurrent::run(
           this, &ZFlyEmRoiDialog::loadGrayscaleFunc, z);
+  }
+}
+
+void ZFlyEmRoiDialog::loadGrayscale(const ZIntCuboid &box)
+{
+  int z = box.getFirstCorner().getZ();
+  if (m_project == NULL || z < 0) {
+    return;
+  }
+
+  bool loading = true;
+  if (m_project->isRoiSaved() == false) {
+    int ret = QMessageBox::warning(
+          this, "Unsaved Result",
+          "The current ROI is not saved. Do you want to continue?",
+          QMessageBox::Yes | QMessageBox::No);
+    loading = (ret == QMessageBox::Yes);
+  }
+
+  if (loading) {
+    startProgress();
+    QtConcurrent::run(
+          this, &ZFlyEmRoiDialog::loadPartialGrayscaleFunc,
+          box.getFirstCorner().getX(), box.getLastCorner().getX(),
+          box.getFirstCorner().getY(), box.getLastCorner().getY(),
+          box.getFirstCorner().getZ());
   }
 }
 
@@ -379,6 +471,9 @@ void ZFlyEmRoiDialog::setZ(int z)
   }
 
   m_project->setZ(z);
+
+  ui->nextSlicePushButton->setEnabled(getNextZ() >= 0);
+  ui->prevSlicePushButton->setEnabled(getPrevZ() >= 0);
   //updateWidget();
 }
 
@@ -684,4 +779,86 @@ void ZFlyEmRoiDialog::on_estimateVolumePushButton_clicked()
     double volume = m_project->estimateRoiVolume('u');
     dump(QString("ROI Volume: ~%1 um^3").arg(volume));
   }
+}
+
+void ZFlyEmRoiDialog::on_exportPushButton_clicked()
+{
+  if (m_project != NULL) {
+    ZObject3dScan obj = m_project->getRoiObject();
+
+    ZObject3dScan blockObj = m_project->getDvidInfo().getBlockIndex(obj);
+
+    blockObj.save(GET_DATA_DIR + "/test.sobj");
+
+    ZJsonArray array = ZJsonFactory::makeJsonArray(
+          blockObj, ZJsonFactory::OBJECT_DENSE);
+    ZJsonObject jsonObj;
+    jsonObj.setEntry("data", array);
+    jsonObj.dump(GET_DATA_DIR + "/test.json");
+  }
+}
+
+int ZFlyEmRoiDialog::getNextZ() const
+{
+  int z = -1;
+  if (m_project != NULL) {
+    z = m_project->getDataZ() + ui->stepSpinBox->value();
+    if (z >= m_project->getDvidInfo().getMaxZ()) {
+      z = -1;
+    }
+  }
+
+  return z;
+}
+
+int ZFlyEmRoiDialog::getPrevZ() const
+{
+  int z = -1;
+  if (m_project != NULL) {
+    z = m_project->getDataZ() - ui->stepSpinBox->value();
+  }
+
+  return z;
+}
+
+void ZFlyEmRoiDialog::on_nextSlicePushButton_clicked()
+{
+  loadGrayscale(getNextZ());
+}
+
+void ZFlyEmRoiDialog::on_prevSlicePushButton_clicked()
+{
+  loadGrayscale(getPrevZ());
+}
+
+void ZFlyEmRoiDialog::quickLoad(int z)
+{
+  if (z >= 0  && m_project != NULL) {
+    const ZClosedCurve *curve0 = m_project->getRoi(z);
+    ZClosedCurve curve;
+    if (curve0 == NULL) {
+      curve = m_project->estimateRoi(z);
+    } else {
+      curve = *curve0;
+    }
+
+    int margin = 100;
+    ZCuboid cuboid = curve.getBoundBox();
+    ZIntCuboid boundBox = cuboid.toIntCuboid();
+    boundBox.setFirstZ(z);
+    boundBox.expandX(margin);
+    boundBox.expandY(margin);
+    loadGrayscale(boundBox);
+  }
+}
+void ZFlyEmRoiDialog::on_quickPrevPushButton_clicked()
+{
+  int z = getPrevZ();
+  quickLoad(z);
+}
+
+void ZFlyEmRoiDialog::on_quickNextPushButton_3_clicked()
+{
+  int z = getNextZ();
+  quickLoad(z);
 }

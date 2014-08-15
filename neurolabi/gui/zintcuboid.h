@@ -37,6 +37,8 @@ public:
   void setLastX(int x);
   void setFirstY(int y);
   void setLastY(int y);
+  void setFirstZ(int z);
+  void setLastZ(int z);
 
   /*!
    * \brief Change the size of the cuboid by fixing the first corner
@@ -52,6 +54,9 @@ public:
   void joinX(int x);
   void joinY(int y);
   void joinZ(int z);
+
+  void expandX(int dx);
+  void expandY(int dy);
 
   /*!
    * \brief Get the volume of the cuboid.

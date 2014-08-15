@@ -52,6 +52,7 @@ class ZFlyEmNewBodySplitProjectDialog;
 class DvidSkeletonizeDialog;
 class ZFlyEmRoiDialog;
 class NewProjectMainWindow;
+class ShapePaperDialog;
 
 namespace Ui {
     class MainWindow;
@@ -96,6 +97,9 @@ public: /* frame operation */
   QProgressBar* getProgressBar();
 
   static void createWorkDir();
+
+  //Add a flyem data frame. Nothing happens if <frame> is NULL.
+  void addFlyEmDataFrame(ZFlyEmDataFrame *frame);
 
 signals:
   void dvidRequestCanceled();
@@ -367,6 +371,8 @@ private slots:
 
   void on_actionFlyEmROI_triggered();
 
+  void on_actionShape_Matching_triggered();
+
 private:
   void createActions();
   void createFileActions();
@@ -408,9 +414,6 @@ private:
   //Report the problem when a file cannot be opened correctly.
   void reportFileOpenProblem(const QString &filePath,
                              const QString &reason = "");
-
-  //Add a flyem data frame. Nothing happens if <frame> is NULL.
-  void addFlyEmDataFrame(ZFlyEmDataFrame *frame);
 
   ZStackDocReader* hotSpotDemo(int bodyId, const QString &dvidAddress,
                            const QString &dvidUuid);
@@ -576,6 +579,8 @@ private:
   ZFlyEmNewBodySplitProjectDialog *m_newBsProjectDialog;
   DvidSkeletonizeDialog *m_dvidSkeletonizeDialog;
   ZFlyEmRoiDialog *m_roiDlg;
+  ShapePaperDialog *m_shapePaperDlg;
+
 
   //new project main window
   NewProjectMainWindow *m_newProject;

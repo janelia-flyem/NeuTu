@@ -67,11 +67,13 @@ using namespace std;
 #include "zsvggenerator.h"
 #include "zdendrogram.h"
 #include "zcuboid.h"
+#include "zstringparameter.h"
 #include "zswcsizefeatureanalyzer.h"
 #include "zobject3darray.h"
 #include "zswcshollfeatureanalyzer.h"
 #include "zswcspatialfeatureanalyzer.h"
 #include "swctreenode.h"
+#include "zparameterarray.h"
 #include "zswcnetwork.h"
 #include "zdoublevector.h"
 #include "zswcdisttrunkanalyzer.h"
@@ -100,6 +102,7 @@ using namespace std;
 #include "zswcsizetrunkanalyzer.h"
 #include "zswcweighttrunkanalyzer.h"
 #include "zstackbinarizer.h"
+#include "zoptionparameter.h"
 #include "zdebug.h"
 #include "tz_color.h"
 #include "zhdf5reader.h"
@@ -12627,7 +12630,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   ZObject3dScan obj;
   obj.addSegment(0, 0, 0, 1);
   obj.addSegment(0, 2, 3, 5);
@@ -12637,4 +12640,35 @@ void ZTest::test(MainWindow *host)
   ZJsonArray array = ZJsonFactory::makeJsonArray(obj);
   std::cout << array.dumpString(0) << std::endl;
 #endif
+
+#if 1
+  ZParameterArray paramArray;
+
+  ZParameter *param = new ZIntParameter("value1", 1, 0, 255);
+  paramArray.append(param);
+
+  param = new ZStringParameter("value2", "first string");
+  paramArray.append(param);
+
+  ZOptionParameter<QString> *optParam = new ZOptionParameter<QString>("value3");
+  optParam->addOption("first option");
+  optParam->addOption("second option");
+  paramArray.append(optParam);
+
+
+  QDialog *dlg = ZDialogFactory::makeParameterDialog(paramArray, host);
+
+  dlg->exec();
+#endif
+
+#if 0
+  QObject *parent = new QObject();
+  QPointer<QObject> child(new QObject(parent));
+  delete parent;
+
+  if (child) {
+    std::cout << "object alive" << std::endl;
+  }
+#endif
+
 }

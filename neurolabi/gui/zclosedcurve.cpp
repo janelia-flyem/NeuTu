@@ -330,3 +330,8 @@ ZPoint ZClosedCurve::computeDirection() const
 
   return d;
 }
+
+ZCuboid ZClosedCurve::getBoundBox() const
+{
+  return m_landmarkArray.getBoundBox();
+}

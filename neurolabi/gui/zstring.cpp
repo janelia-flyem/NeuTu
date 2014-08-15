@@ -8,6 +8,7 @@
 
 #include "tz_error.h"
 #include "tz_utilities.h"
+#include "zstring.h"
 
 using namespace std;
 

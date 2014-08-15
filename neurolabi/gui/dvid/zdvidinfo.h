@@ -33,14 +33,14 @@ public:
    *
    * \return Empty array if the point is out of range.
    */
-  ZIntPoint getBlockIndex(double x, double y, double z);
+  ZIntPoint getBlockIndex(double x, double y, double z) const;
 
-  ZIntPoint getBlockIndex(int x, int y, int z);
+  ZIntPoint getBlockIndex(int x, int y, int z) const;
 
   /*!
    * \brief Get the indices of all blocks containing at least one voxl of an object
    */
-  ZObject3dScan getBlockIndex(const ZObject3dScan &obj);
+  ZObject3dScan getBlockIndex(const ZObject3dScan &obj) const;
 
   inline const ZResolution& getVoxelResolution() const {
     return m_voxelResolution;

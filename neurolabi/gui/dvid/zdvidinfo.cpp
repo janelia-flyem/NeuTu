@@ -133,7 +133,7 @@ ZIntPoint ZDvidInfo::getBlockSize() const
   return ZIntPoint(m_blockSize[0], m_blockSize[1], m_blockSize[2]);
 }
 
-ZIntPoint ZDvidInfo::getBlockIndex(int x, int y, int z)
+ZIntPoint ZDvidInfo::getBlockIndex(int x, int y, int z) const
 {
   ZIntPoint blockIndex(-1, -1, -1);
 
@@ -164,7 +164,7 @@ ZIntPoint ZDvidInfo::getBlockIndex(int x, int y, int z)
   return blockIndex;
 }
 
-ZIntPoint ZDvidInfo::getBlockIndex(double x, double y, double z)
+ZIntPoint ZDvidInfo::getBlockIndex(double x, double y, double z) const
 {
   ZIntPoint blockIndex(-1, -1, -1);
 
@@ -206,7 +206,7 @@ bool ZDvidInfo::isValidBlockIndex(const ZIntPoint &pt)
   return true;
 }
 
-ZObject3dScan ZDvidInfo::getBlockIndex(const ZObject3dScan &obj)
+ZObject3dScan ZDvidInfo::getBlockIndex(const ZObject3dScan &obj) const
 {
   ZIntPoint gridSize = m_endBlockIndex - m_startBlockIndex + 1;
   size_t area = ((size_t) gridSize.getX()) * gridSize.getY();

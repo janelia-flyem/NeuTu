@@ -75,6 +75,7 @@ public:
 
   void predictClass(ZFlyEmNeuron *neuron);
   void predictClass(const QVector<ZFlyEmNeuron*> &neuronArray);
+  void predictClass();
 
   /*!
    * \brief Reassign classes to neurons

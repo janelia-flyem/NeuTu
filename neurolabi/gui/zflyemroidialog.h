@@ -11,6 +11,7 @@
 
 class MainWindow;
 class ZDvidTarget;
+class QMenu;
 
 namespace Ui {
 class ZFlyEmRoiDialog;
@@ -27,6 +28,7 @@ public:
 public:
   void dump(const QString &str, bool appending = false);
   void loadGrayscale(int z);
+  void loadGrayscale(const ZIntCuboid &box);
 
   inline const ZDvidTarget& getDvidTarget() const {
     return m_dvidTarget;
@@ -104,10 +106,26 @@ private slots:
 
   void on_estimateVolumePushButton_clicked();
 
+  void on_exportPushButton_clicked();
+
+  void on_nextSlicePushButton_clicked();
+
+  void on_prevSlicePushButton_clicked();
+
+  void on_quickPrevPushButton_clicked();
+
+  void on_quickNextPushButton_3_clicked();
+
 private:
   void loadGrayscaleFunc(int z);
+  void loadPartialGrayscaleFunc(int x0, int x1, int y0, int y1, int z);
   void downloadAllProject();
   void uploadProjectList();
+  void createMenu();
+
+  int getNextZ() const;
+  int getPrevZ() const;
+  void quickLoad(int z);
 
 private:
   Ui::ZFlyEmRoiDialog *ui;
@@ -117,6 +135,8 @@ private:
   ZFlyEmRoiProject *m_project;
   ZDvidTarget m_dvidTarget;
   ZStackDocReader m_docReader;
+
+  QMenu *m_nextMenu;
 };
 
 #endif // ZFLYEMROIDIALOG_H

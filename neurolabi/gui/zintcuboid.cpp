@@ -62,6 +62,18 @@ void ZIntCuboid::joinX(int x)
   }
 }
 
+void ZIntCuboid::expandX(int dx)
+{
+  m_firstCorner.setX(m_firstCorner.getX() - dx);
+  m_lastCorner.setX(m_lastCorner.getX() + dx);
+}
+
+void ZIntCuboid::expandY(int dy)
+{
+  m_firstCorner.setY(m_firstCorner.getY() - dy);
+  m_lastCorner.setY(m_lastCorner.getY() + dy);
+}
+
 void ZIntCuboid::joinY(int y)
 {
   if (y < m_firstCorner.getY()) {
@@ -121,4 +133,14 @@ void ZIntCuboid::setFirstY(int y)
 void ZIntCuboid::setLastY(int y)
 {
   m_lastCorner.setY(y);
+}
+
+void ZIntCuboid::setFirstZ(int z)
+{
+  m_firstCorner.setZ(z);
+}
+
+void ZIntCuboid::setLastZ(int z)
+{
+  m_lastCorner.setZ(z);
 }

@@ -143,6 +143,7 @@
 #include "ztest.h"
 #include "dvidskeletonizedialog.h"
 #include "zflyemroidialog.h"
+#include "shapepaperdialog.h"
 
 #include "z3dcanvas.h"
 #include "z3dapplication.h"
@@ -343,12 +344,15 @@ void MainWindow::initDialog()
 
   m_dvidSkeletonizeDialog = new DvidSkeletonizeDialog(this);
   m_roiDlg = new ZFlyEmRoiDialog(this);
+  m_shapePaperDlg = new ShapePaperDialog(this);
 
 #if defined(_FLYEM_)
   m_bodySplitProjectDialog->restoreGeometry(
           getSettings().value("BodySplitProjectGeometry").toByteArray());
   m_roiDlg->restoreGeometry(
         getSettings().value("RoiProjectGeometry").toByteArray());
+  m_shapePaperDlg->restoreGeometry(
+        getSettings().value("ShapePaperDialogGeometry").toByteArray());
 #endif
 }
 
@@ -2140,6 +2144,8 @@ void MainWindow::writeSettings()
         "BodySplitProjectGeometry", m_bodySplitProjectDialog->saveGeometry());
   getSettings().setValue(
         "RoiProjectGeometry", m_roiDlg->saveGeometry());
+  getSettings().setValue("ShapePaperDialogGeometry",
+                         m_shapePaperDlg->saveGeometry());
 #endif
   getSettings().setValue("recentFiles", recentFiles);
   /*
@@ -6458,4 +6464,10 @@ void MainWindow::on_actionFlyEmROI_triggered()
 {
   m_roiDlg->show();
   m_roiDlg->raise();
+}
+
+void MainWindow::on_actionShape_Matching_triggered()
+{
+  m_shapePaperDlg->show();
+  m_shapePaperDlg->raise();
 }

@@ -5,6 +5,7 @@
 #include "zdviddialog.h"
 #include "neutubeconfig.h"
 #include "zstring.h"
+#include "zparameterarray.h"
 
 
 ZDialogFactory::ZDialogFactory(QWidget *parentWidget)
@@ -62,6 +63,23 @@ QDialog* ZDialogFactory::makeTestDialog(QWidget *parent)
   layout->addLayout(buttonLayout);
 
   dlg->connect(okButton, SIGNAL(clicked()), dlg, SLOT(accept()));
+
+  return dlg;
+}
+
+QDialog* ZDialogFactory::makeParameterDialog(
+    const ZParameterArray &parameterArray, QWidget *parent)
+{
+  QDialog *dlg = new QDialog(parent);
+  QVBoxLayout *layout = new QVBoxLayout(dlg);
+  foreach (QPointer<ZParameter> parameter, parameterArray.getData()) {
+    if(parameter) {
+      QHBoxLayout *wlayout = new QHBoxLayout(dlg);
+      wlayout->addWidget(parameter->createNameLabel(dlg));
+      wlayout->addWidget(parameter->createWidget(dlg));
+      layout->addLayout(wlayout);
+    }
+  }
 
   return dlg;
 }

@@ -1275,7 +1275,7 @@
   </action>
   <action name="actionShape_Matching">
    <property name="text">
-    <string>Shape Matching</string>
+    <string>Shape Analysis</string>
    </property>
   </action>
  </widget>
