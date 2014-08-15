@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>407</width>
+    <width>410</width>
     <height>760</height>
    </rect>
   </property>
@@ -18,7 +18,7 @@
     <rect>
      <x>10</x>
      <y>13</y>
-     <width>478</width>
+     <width>391</width>
      <height>741</height>
     </rect>
    </property>
@@ -449,7 +449,7 @@
            <number>1</number>
           </property>
           <property name="rightMargin">
-           <number>10</number>
+           <number>1</number>
           </property>
           <item>
            <widget class="QPushButton" name="xDecPushButton">
