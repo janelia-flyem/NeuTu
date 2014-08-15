@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>410</width>
+    <width>407</width>
     <height>760</height>
    </rect>
   </property>
@@ -377,6 +377,9 @@
      <layout class="QVBoxLayout" name="verticalLayout_3">
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout_4">
+        <property name="spacing">
+         <number>0</number>
+        </property>
         <item>
          <widget class="QLabel" name="label_2">
           <property name="sizePolicy">
@@ -396,10 +399,10 @@
            <number>1</number>
           </property>
           <property name="leftMargin">
-           <number>10</number>
+           <number>1</number>
           </property>
           <property name="rightMargin">
-           <number>10</number>
+           <number>1</number>
           </property>
           <item>
            <widget class="QPushButton" name="xyDecPushButton">
@@ -443,7 +446,7 @@
            <number>1</number>
           </property>
           <property name="leftMargin">
-           <number>10</number>
+           <number>1</number>
           </property>
           <property name="rightMargin">
            <number>10</number>
@@ -490,10 +493,10 @@
            <number>1</number>
           </property>
           <property name="leftMargin">
-           <number>10</number>
+           <number>1</number>
           </property>
           <property name="rightMargin">
-           <number>10</number>
+           <number>1</number>
           </property>
           <item>
            <widget class="QPushButton" name="yDecPushButton">
@@ -535,6 +538,9 @@
       </item>
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout_5">
+        <property name="spacing">
+         <number>0</number>
+        </property>
         <item>
          <widget class="QLabel" name="label_7">
           <property name="sizePolicy">
@@ -554,10 +560,10 @@
            <number>1</number>
           </property>
           <property name="leftMargin">
-           <number>10</number>
+           <number>1</number>
           </property>
           <property name="rightMargin">
-           <number>10</number>
+           <number>1</number>
           </property>
           <item>
            <widget class="QPushButton" name="movexyDecPushButton">
@@ -589,10 +595,10 @@
            <number>1</number>
           </property>
           <property name="leftMargin">
-           <number>10</number>
+           <number>1</number>
           </property>
           <property name="rightMargin">
-           <number>10</number>
+           <number>1</number>
           </property>
           <item>
            <widget class="QPushButton" name="movexDecPushButton">
@@ -624,10 +630,10 @@
            <number>1</number>
           </property>
           <property name="leftMargin">
-           <number>10</number>
+           <number>1</number>
           </property>
           <property name="rightMargin">
-           <number>10</number>
+           <number>1</number>
           </property>
           <item>
            <widget class="QPushButton" name="moveyDecPushButton">
