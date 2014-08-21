@@ -3133,9 +3133,9 @@ ZClosedCurve ZSwcTree::toClosedCurve() const
   return curve;
 }
 
-ZSwcTree::ExtIterator::ExtIterator(ZSwcTree *tree) :
-  m_tree(tree), m_currentNode(NULL)
+ZSwcTree::ExtIterator::ExtIterator(const ZSwcTree *tree)
 {
+  init(tree);
 }
 
 ZSwcTree::ExtIterator::~ExtIterator()
@@ -3144,11 +3144,20 @@ ZSwcTree::ExtIterator::~ExtIterator()
   m_currentNode = NULL;
 }
 
-ZSwcTree::RegularRootIterator::RegularRootIterator(ZSwcTree *tree) :
+void ZSwcTree::ExtIterator::init(const ZSwcTree *tree)
+{
+  m_tree = const_cast<ZSwcTree*>(tree);
+  m_currentNode = NULL;
+}
+
+
+
+ZSwcTree::RegularRootIterator::RegularRootIterator(const ZSwcTree *tree) :
   ZSwcTree::ExtIterator(tree)
 {
 
 }
+
 
 Swc_Tree_Node* ZSwcTree::RegularRootIterator::begin()
 {
@@ -3168,6 +3177,38 @@ bool ZSwcTree::RegularRootIterator::hasNext() const
 Swc_Tree_Node* ZSwcTree::RegularRootIterator::next()
 {
   m_currentNode = SwcTreeNode::nextSibling(m_currentNode);
+
+  return m_currentNode;
+}
+
+////////////////////////////////////////
+
+ZSwcTree::DepthFirstIterator::DepthFirstIterator(const ZSwcTree *tree) :
+  ExtIterator(tree)
+{
+  if (m_tree != NULL) {
+    m_tree->updateIterator(SWC_TREE_ITERATOR_DEPTH_FIRST);
+  }
+}
+
+Swc_Tree_Node* ZSwcTree::DepthFirstIterator::begin()
+{
+  m_currentNode = NULL;
+  if (m_tree != NULL) {
+    m_currentNode = m_tree->begin();
+  }
+
+  return m_currentNode;
+}
+
+bool ZSwcTree::DepthFirstIterator::hasNext() const
+{
+  return m_currentNode->next != NULL;
+}
+
+Swc_Tree_Node* ZSwcTree::DepthFirstIterator::next()
+{
+  m_currentNode = m_tree->next();
 
   return m_currentNode;
 }

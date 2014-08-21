@@ -137,3 +137,53 @@ ZPoint ZPointArray::computeCenter() const
 
   return center;
 }
+
+bool ZPointArray::isEmpty() const
+{
+  return empty();
+}
+
+std::vector<double> ZPointArray::computePlaneCov() const
+{
+  std::vector<double> cov(3, 0.0);
+
+  if (!isEmpty()) {
+    double xMean = 0.0;
+    double yMean = 0.0;
+    double xSquareMean = 0.0;
+    double ySquareMean = 0.0;
+    double xyCorr = 0.0;
+
+    size_t count = 0;
+    for (ZPointArray::const_iterator iter = begin(); iter != end(); ++iter) {
+      const ZPoint &pt = *iter;
+      xMean += pt.x();
+      xSquareMean += pt.x() * pt.x();
+      yMean += pt.y();
+      ySquareMean += pt.y() * pt.y();
+      xyCorr += pt.x() * pt.y();
+      ++count;
+    }
+
+    xMean /= count;
+    yMean /= count;
+    xSquareMean /= count;
+    ySquareMean /= count;
+    xyCorr /= count;
+
+#ifdef _DEBUG_2
+    std::cout << count << std::endl;
+#endif
+
+    double factor = 1.0;
+    if (count > 1) {
+      factor = static_cast<double>(count) / (count - 1);
+    }
+
+    cov[0] = (xSquareMean - xMean * xMean) * factor;
+    cov[1] = (ySquareMean - yMean * yMean) * factor;
+    cov[2] = (xyCorr - xMean * yMean) * factor;
+  }
+
+  return cov;
+}

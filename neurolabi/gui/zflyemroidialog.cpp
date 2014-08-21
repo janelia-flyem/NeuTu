@@ -111,6 +111,12 @@ void ZFlyEmRoiDialog::createMenu()
   QAction *actionNext1 = new QAction("1", this);
   m_nextMenu->addAction(actionNext1);
   //ui->nextPushButton->setMenu(m_nextMenu);
+
+  m_mainMenu = new QMenu(this);
+  ui->menuPushButton->setMenu(m_mainMenu);
+  QAction *exportAction = new QAction("Export", this);
+  m_mainMenu->addAction(exportAction);
+  connect(exportAction, SIGNAL(triggered()), this, SLOT(exportResult()));
 }
 
 void ZFlyEmRoiDialog::clear()
@@ -781,7 +787,7 @@ void ZFlyEmRoiDialog::on_estimateVolumePushButton_clicked()
   }
 }
 
-void ZFlyEmRoiDialog::on_exportPushButton_clicked()
+void ZFlyEmRoiDialog::exportResult()
 {
   if (m_project != NULL) {
     ZObject3dScan obj = m_project->getRoiObject();
@@ -796,6 +802,11 @@ void ZFlyEmRoiDialog::on_exportPushButton_clicked()
     jsonObj.setEntry("data", array);
     jsonObj.dump(GET_DATA_DIR + "/test.json");
   }
+}
+
+void ZFlyEmRoiDialog::on_exportPushButton_clicked()
+{
+  exportResult();
 }
 
 int ZFlyEmRoiDialog::getNextZ() const

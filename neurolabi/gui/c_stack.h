@@ -308,6 +308,7 @@ bool hasValue(Mc_Stack *stack, size_t index,
 
 void view(const Stack *src, Mc_Stack *dst);
 void view(const Mc_Stack *src, Stack *dst, int channel);
+void view(const Stack *src, Image_Array *dst);
 
 Mc_Stack* translate(const Mc_Stack *stack, int targetKind);
 

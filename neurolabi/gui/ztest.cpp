@@ -12641,7 +12641,17 @@ void ZTest::test(MainWindow *host)
   std::cout << array.dumpString(0) << std::endl;
 #endif
 
-#if 1
+#if 0
+  ZObject3dScan obj;
+  obj.load(GET_DATA_DIR + "/test.sobj");
+  ZJsonArray array = ZJsonFactory::makeJsonArray(obj);
+  ZJsonObject headObj;
+  headObj.setEntry("data", array);
+  headObj.dump(GET_DATA_DIR + "/test.json");
+
+#endif
+
+#if 0
   ZParameterArray paramArray;
 
   ZParameter *param = new ZIntParameter("value1", 1, 0, 255);
@@ -12671,4 +12681,12 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
+#if 1
+  ZSwcTree tree;
+  tree.load(GET_DATA_DIR + "/benchmark/swc/mouse_single_org.swc");
+  double sxy = ZSwcGlobalFeatureAnalyzer::computeLateralSpan(tree);
+  double sz = ZSwcGlobalFeatureAnalyzer::computeVerticalSpan(tree);
+
+  std::cout << sxy << " " << sz << std::endl;
+#endif
 }

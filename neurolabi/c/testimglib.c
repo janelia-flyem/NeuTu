@@ -3117,7 +3117,7 @@ int main(int argc, char* argv[])
 
 #endif
 
-#if 1
+#if 0
   File_Bundle_S fb;
   fb.prefix = "../data/benchmark/series2/image";
   fb.suffix = NULL;
@@ -3128,6 +3128,13 @@ int main(int argc, char* argv[])
   Mc_Stack *stack = Read_Stack_Planes_M(&fb);
   Write_Mc_Stack("../data/test.tif", stack, NULL);
 #endif
+
+#if 1
+  Mc_Stack *stack = Read_Mc_Stack("../data/biocytin/JL_07_19_14_2_100x_z004m01_imagej.tif", -1);
+  Print_Mc_Stack_Info(stack);
+  Write_Mc_Stack("../data/test.tif", stack, NULL);
+#endif
+
 
   return 0;  
 }

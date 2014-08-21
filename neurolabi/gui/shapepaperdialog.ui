@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>234</width>
-    <height>380</height>
+    <height>409</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -19,7 +19,7 @@
      <x>10</x>
      <y>10</y>
      <width>212</width>
-     <height>355</height>
+     <height>389</height>
     </rect>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout">
@@ -52,7 +52,14 @@
      </widget>
     </item>
     <item>
-     <widget class="QPushButton" name="pushButton_5">
+     <widget class="QPushButton" name="featurePushButton">
+      <property name="text">
+       <string>Compute Features</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QPushButton" name="predictPushButton">
       <property name="text">
        <string>Class Prediction</string>
       </property>

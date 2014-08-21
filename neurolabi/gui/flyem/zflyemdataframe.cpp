@@ -46,6 +46,7 @@
 #include "flyemhotspotdialog.h"
 #include "dvid/zdvidwriter.h"
 #include "dvid/zdvidreader.h"
+#include "zdoublevector.h"
 
 using namespace std;
 
@@ -123,7 +124,8 @@ ZFlyEmDataFrame::ZFlyEmDataFrame(QWidget *parent) :
   //m_resampleStep = 400.0;
   m_resampleStep = 200.0;
   m_matchingLevel = 2;
-  m_checkOrientation = true;
+  //m_checkOrientation = true;
+  m_scoreOption = SCORE_MATCH;
 
   m_infoPresenter = new ZFlyEmNeuronInfoPresenter(this);
   m_featurePresenter = new ZFlyEmNeuronFeaturePresenter(this);
@@ -690,15 +692,17 @@ std::vector<double> ZFlyEmDataFrame::getMatchingScore(
               ZSwcGlobalFeatureAnalyzer::computeLateralVerticalRatio(*tree1);
           double ratio2 =
               ZSwcGlobalFeatureAnalyzer::computeLateralVerticalRatio(*tree2);
+
+          double ratioDiff = max(ratio1, ratio2) / min(ratio1, ratio2);
           bool needFurtherMatch = true;
-          if (m_checkOrientation) {
+          if (m_scoreOption == SCORE_ORTDIV) {
             if (min(ratio1, ratio2) < 1.0) {
               if (max(ratio1, ratio2) > 3.0) {
                 score[index] = 0;
                 needFurtherMatch = false;
               }
             } else {
-              if (max(ratio1, ratio2) / min(ratio1, ratio2) > 3.0) {
+              if (ratioDiff > 3.0) {
                 score[index] = 0;
                 needFurtherMatch = false;
               }
@@ -714,6 +718,10 @@ std::vector<double> ZFlyEmDataFrame::getMatchingScore(
             QApplication::processEvents();
 
             score[index] = m_matcher.matchingScore();
+
+            if (m_scoreOption == SCORE_ORTREG) {
+              score[index] /= (1.0 + log(ratioDiff));
+            }
 
             //delete tree2ForMatch;
           }
@@ -807,7 +815,8 @@ std::vector<double> ZFlyEmDataFrame::getMatchingScore(
           double ratio2 =
               ZSwcGlobalFeatureAnalyzer::computeLateralVerticalRatio(*tree2);
           bool needFurtherMatch = true;
-          if (m_checkOrientation) {
+          double ratioDiff = max(ratio1, ratio2) / min(ratio1, ratio2);
+          if (m_scoreOption == SCORE_ORTDIV) {
             if (min(ratio1, ratio2) < 1.0) {
               if (max(ratio1, ratio2) > 3.0) {
                 score[index] = 0;
@@ -841,6 +850,9 @@ std::vector<double> ZFlyEmDataFrame::getMatchingScore(
             //QApplication::processEvents();
 
             score[index] = m_matcher.matchingScore();
+            if (m_scoreOption == SCORE_ORTREG) {
+              score[index] /= ratioDiff;
+            }
 
             //delete tree2ForMatch;
           }
@@ -866,6 +878,9 @@ QVector<const ZFlyEmNeuron*> ZFlyEmDataFrame::getTopMatch(
   QVector<const ZFlyEmNeuron*> topMatch;
 
   vector<double> score = getMatchingScore(neuron, pool);
+#ifdef _DEBUG_
+  ZDoubleVector(score).print();
+#endif
 
   if (!score.empty()) {
     vector<int> indexArray(score.size());
@@ -1095,6 +1110,7 @@ void ZFlyEmDataFrame::process()
     case PREDICT_CLASS:
     {
       clearQueryOutput();
+#if 0
       m_foregroundNeuronArray.clear();
       for (size_t i = 0; i < m_sourceIdArray.size(); ++i) {
         ZFlyEmNeuron *neuron =
@@ -1104,7 +1120,7 @@ void ZFlyEmDataFrame::process()
       }
 
       predictClass(m_foregroundNeuronArray);
-#if 0
+#else
       int correctCount = 0;
       int count = 0;
 

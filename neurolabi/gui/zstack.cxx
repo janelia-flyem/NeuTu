@@ -802,9 +802,9 @@ void ZStack::setIntValue(int x, int y, int z, int c, int v)
     return;
   }
 
-  size_t stride_y = m_stack->width;
-  size_t stride_z = stride_y * m_stack->height;
-  size_t stride_c = stride_z * m_stack->depth;
+  size_t stride_y = C_Stack::width(m_stack);
+  size_t stride_z = stride_y * C_Stack::height(m_stack);
+  size_t stride_c = stride_z * C_Stack::depth(m_stack);
 
   Image_Array ima;
   ima.array = m_stack->array;

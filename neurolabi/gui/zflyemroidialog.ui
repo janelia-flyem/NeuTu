@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>410</width>
+    <width>445</width>
     <height>760</height>
    </rect>
   </property>
@@ -18,7 +18,7 @@
     <rect>
      <x>10</x>
      <y>13</y>
-     <width>391</width>
+     <width>425</width>
      <height>741</height>
     </rect>
    </property>
@@ -32,6 +32,13 @@
        <widget class="QPushButton" name="dvidServerPushButton">
         <property name="text">
          <string>Connect to Dvid Server</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="menuPushButton">
+        <property name="text">
+         <string>Menu</string>
         </property>
        </widget>
       </item>

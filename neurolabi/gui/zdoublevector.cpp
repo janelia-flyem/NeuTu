@@ -42,6 +42,11 @@ double ZDoubleVector::sum() const
   return darray_sum(dataArray(), size());
 }
 
+double ZDoubleVector::var() const
+{
+  return darray_var(dataArray(), size());
+}
+
 double ZDoubleVector::max(size_t *index)
 {
   return darray_max(dataArray(), size(), index);

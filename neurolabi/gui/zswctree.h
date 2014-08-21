@@ -591,12 +591,15 @@ public:
   //Iterator classes
   class ExtIterator {
   public:
-    ExtIterator(ZSwcTree *tree);
+    ExtIterator(const ZSwcTree *tree);
     virtual ~ExtIterator();
 
     virtual Swc_Tree_Node *begin() = 0;
     virtual bool hasNext() const = 0;
     virtual Swc_Tree_Node *next() = 0;
+
+  protected:
+     void init(const ZSwcTree *tree);
 
   protected:
     ZSwcTree *m_tree;
@@ -605,7 +608,15 @@ public:
 
   class RegularRootIterator : public ExtIterator {
   public:
-    RegularRootIterator(ZSwcTree *tree);
+    RegularRootIterator(const ZSwcTree *tree);
+    Swc_Tree_Node *begin();
+    bool hasNext() const;
+    Swc_Tree_Node *next();
+  };
+
+  class DepthFirstIterator : public ExtIterator {
+  public:
+    DepthFirstIterator(const ZSwcTree *tree);
     Swc_Tree_Node *begin();
     bool hasNext() const;
     Swc_Tree_Node *next();

@@ -20,6 +20,7 @@ public:
   double sum() const;
   double min(size_t *index = 0);
   double max(size_t *index = 0);
+  double var() const;
 
   /*!
    * \brief Weighted sum of the indices

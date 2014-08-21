@@ -15,6 +15,8 @@
 #include "mainwindow.h"
 #include "zsvggenerator.h"
 #include "zdendrogram.h"
+#include "zswcglobalfeatureanalyzer.h"
+#include "zmatrix.h"
 
 ShapePaperDialog::ShapePaperDialog(QWidget *parent) :
   QDialog(parent),
@@ -133,6 +135,11 @@ QString ShapePaperDialog::getSimmatPath() const
   return m_resultDir->get() + "/simmat.txt";
 }
 
+QString ShapePaperDialog::getFeaturePath() const
+{
+  return m_resultDir->get() + "/feature.csv";
+}
+
 QString ShapePaperDialog::getDendrogramPath() const
 {
   return m_resultDir->get() + "/dendrogram.svg";
@@ -204,9 +211,219 @@ void ShapePaperDialog::on_dendrogramPushButton_clicked()
   }
 }
 
-void ShapePaperDialog::on_pushButton_5_clicked()
+void ShapePaperDialog::on_predictPushButton_clicked()
 {
-  if (m_frame != NULL) {
-    m_frame->predictClass();
+  ZMatrix simmat;
+  simmat.importTextFile(getSimmatPath().toStdString());
+  int nrows = simmat.getRowNumber();
+  int ncols = simmat.getColumnNumber();
+
+  //Normalize
+  /*
+  for (int i = 1; i < nrows; ++i) {
+    int neuronIndex = i - 1;
+    for (int j = 0; j < ncols; ++j) {
+      if (neuronIndex != j) {
+        simmat.set(neuronIndex, j, simmat.at(neuronIndex, j) /
+                   std::max(simmat.at(neuronIndex, neuronIndex), simmat.at(j, j)));
+      }
+    }
   }
+  */
+
+  //Find maximum score
+  int correctNumber = 0;
+  for (int i = 1; i < nrows; ++i) {
+    int neuronIndex = i - 1;
+    double maxScore = 0.0;
+    int matchedIndex = neuronIndex;
+    for (int j = 0; j < ncols; ++j) {
+      if (neuronIndex != j) {
+        if (maxScore < simmat.at(i, j)) {
+          maxScore = simmat.at(i, j);
+          matchedIndex = j;
+        }
+      }
+    }
+
+    const ZFlyEmNeuron *neuron1 = m_frame->getNeuronFromIndex(neuronIndex);
+    const ZFlyEmNeuron *neuron2 = m_frame->getNeuronFromIndex(matchedIndex);
+    if (neuron1->getClass() == neuron2->getClass()) {
+      ++correctNumber;
+    } else {
+      /*
+      dump(QString("Wrong predction: %1 -> %2; (s = %3)").
+           arg(neuron1->getName().c_str()).
+           arg(neuron2->getClass().c_str()).arg(maxScore), true);
+           */
+    }
+  }
+
+  dump(QString("Accurate count: %1").arg(correctNumber), true);
+
+  predictFromOrtAdjustment();
+}
+
+void ShapePaperDialog::predictFromOrtAdjustment()
+{
+  ZMatrix featmat;
+  featmat.importTextFile(getFeaturePath().toStdString() + ".txt");
+
+  ZDoubleVector ratioArray(featmat.getRowNumber());
+  for (size_t i = 0; i < ratioArray.size(); ++i) {
+    ratioArray[i] = log(featmat.at(i, 9) / featmat.at(i, 10));
+//    ratioArray[i] = log(featmat.at(i, 7));
+  }
+
+//  const double mu1 = -1.3302;
+//  const double mu2 = 0.3322;
+//  const double var1 = 0.2944;
+//  const double var2 = 1.0380;
+
+//  const double mu1 = -1.4074;
+//  const double mu2 = 0.11518;
+//  const double var1 = 0.11213;
+//  const double var2 = 1.0489;
+
+//  const double mu1 = -1.4144;
+//  const double mu2 = 0.13755;
+//  const double var1 = 0.11133;
+//  const double var2 = 1.0146;
+
+//  const double mu1 = -1.4083;
+//  const double mu2 = 0.11153;
+//  const double var1 = 0.11168;
+//  const double var2 = 1.0514;
+
+//  const double mu1 = -1.4009;
+//  const double mu2 = 0.14225;
+//  const double var1 = 0.11591;
+//  const double var2 = 1.031;
+
+  const double mu1 = -1.3287;
+  const double mu2 = 0.23399;
+  const double var1 = 0.2902;
+  const double var2 = 1.1109;
+
+//    const double mu1 = -1.4041;
+//    const double mu2 = 0.1346;
+//    const double var1 = 0.1140;
+//    const double var2 = 1.0343;
+//    const double mu1 = -1.111;
+//    const double mu2 = 0.077144;
+//    const double var1 = 0.057516;
+//    const double var2 = 0.55438;
+
+//  const double mu1 = -1.4061;
+//  const double mu2 = 0.0867;
+//  const double var1 = 0.1135;
+//  const double var2 = 1.0798;
+
+
+//  const double mu1 = -1.3813;
+//  const double mu2 = 0.2738;
+//  const double var1 = 0.1277;
+//  const double var2 = 0.9292;
+
+//  const double mu1 = -0.9830;
+//  const double mu2 = 0.2135;
+//  const double var2 = 1.0312;
+//  const double var1 = 0.2932;
+
+//  const double mu1 = -1.1103;
+//  const double mu2 = 0.2637;
+//  const double var1 = 0.1003;
+//  const double var2 = 0.7663;
+
+
+  ZMatrix simmat;
+  simmat.importTextFile(getSimmatPath().toStdString());
+  int nrows = simmat.getRowNumber();
+  int ncols = simmat.getColumnNumber();
+
+  //Find maximum score
+  int correctNumber = 0;
+  for (int i = 1; i < nrows; ++i) {
+    int neuronIndex = i - 1;
+    double maxScore = 0.0;
+    int matchedIndex = neuronIndex;
+    for (int j = 0; j < ncols; ++j) {
+      if (neuronIndex != j) {
+        double k = computeRatioDiff(ratioArray[neuronIndex],
+                                            ratioArray[j], mu1, var1,
+                                            mu2, var2);
+        double score = simmat.at(i, j) * sqrt(k); /// (1 + exp((0.5 - k) * 5));
+        if (maxScore < score) {
+          maxScore = score;
+          matchedIndex = j;
+        }
+      }
+    }
+
+    const ZFlyEmNeuron *neuron1 = m_frame->getNeuronFromIndex(neuronIndex);
+    const ZFlyEmNeuron *neuron2 = m_frame->getNeuronFromIndex(matchedIndex);
+    if (neuron1->getClass() == neuron2->getClass()) {
+      ++correctNumber;
+    } else {
+      /*
+      dump(QString("Wrong predction: %1 -> %2; (s = %3)").
+           arg(neuron1->getName().c_str()).
+           arg(neuron2->getClass().c_str()).arg(maxScore), true);
+           */
+    }
+  }
+
+  dump(QString("Accurate count (ratio adjusted): %1").arg(correctNumber), true);
+}
+
+void ShapePaperDialog::on_featurePushButton_clicked()
+{
+  //Compute features
+  if (m_frame != NULL) {
+    ZSwcGlobalFeatureAnalyzer::EFeatureSet setName =
+        ZSwcGlobalFeatureAnalyzer::NGF3;
+    ZFlyEmDataBundle *bundle = m_frame->getDataBundle();
+    ZFlyEmNeuronArray &neuronArray = bundle->getNeuronArray();
+    ZMatrix featmat(neuronArray.size(),
+                    ZSwcGlobalFeatureAnalyzer::getFeatureNumber(setName));
+    int row = 0;
+    std::vector<std::string> neuronName;
+    for (ZFlyEmNeuronArray::iterator iter = neuronArray.begin();
+         iter != neuronArray.end(); ++iter, ++row) {
+      ZFlyEmNeuron &neuron = *iter;
+      std::vector<double> featureSet =
+          ZSwcGlobalFeatureAnalyzer::computeFeatureSet(
+            *(neuron.getModel()), setName);
+      neuronName.push_back(neuron.getName());
+      featmat.setRowValue(row, featureSet);
+    }
+
+    featmat.exportCsv(getFeaturePath().toStdString() + ".txt");
+    featmat.exportCsv(getFeaturePath().toStdString(), neuronName,
+                      ZSwcGlobalFeatureAnalyzer::getFeatureNameArray(setName));
+  }
+}
+
+double ShapePaperDialog::computeRatioDiff(
+    double x, double y, double mu1, double var1, double mu2, double var2)
+{
+  double zx1 = (x - mu1) * (x - mu1) / var1 / 2.0;
+  double zx2 = (x - mu2) * (x - mu2) / var2 / 2.0;
+  double zy1 = (y - mu1) * (y - mu1) / var1 / 2.0;
+  double zy2 = (y - mu2) * (y - mu2) / var2 / 2.0;
+  double rx = exp(zx2 - zx1) * sqrt(var2 / var1);
+  double ry = exp(zy2 - zy1) * sqrt(var2 / var1);
+
+  double k = 1.0;
+  if (rx > 0.0 || ry > 0.0) {
+    double t = (rx * ry + 1) / (rx + ry);
+    k = t / (1 + t);
+  }
+
+  return k;
+
+      /*
+  return std::fabs((x - y) * ((x + y - mu1 - mu1) /var1 -
+                   (x + y - mu2 - mu2)/var2));
+                       */
 }

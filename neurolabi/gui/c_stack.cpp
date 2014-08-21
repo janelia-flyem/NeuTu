@@ -496,6 +496,12 @@ void C_Stack::view(const Mc_Stack *src, Stack *dst, int channel)
                C_Stack::height(src), C_Stack::depth(src));
 }
 
+void C_Stack::view(const Stack *src, Image_Array *dst)
+{
+  TZ_ASSERT(src != NULL && dst != NULL, "Null pointer");
+  dst->array = src->array;
+}
+
 bool C_Stack::hasSameValue(Mc_Stack *stack, size_t index1, size_t index2,
                            size_t channelOffset)
 { 

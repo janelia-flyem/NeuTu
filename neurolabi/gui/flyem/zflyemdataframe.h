@@ -50,6 +50,12 @@ public:
     MATCH, SORT_SHAPE, PREDICT_CLASS, PREDICT_ERROR, UNKNOWN_ACTION
   };
 
+  enum EScoreOption {
+    SCORE_MATCH, //matching score only
+    SCORE_ORTREG, //regularized by orientation
+    SCORE_ORTDIV  //separated by orientation
+  };
+
   //Load a data bundle file. It returns false if the file cannot be loaded
   //correctly.
   bool load(const std::string &filePath, bool appending = false);
@@ -144,6 +150,9 @@ public:
 
   void submitSkeletonizeService() const;
 
+  const ZFlyEmNeuron *getNeuronFromIndex(
+      size_t idx, int *bundleIndex = NULL) const;
+
 signals:
   void volumeTriggered(const QString &path);
   
@@ -180,7 +189,6 @@ private:
   ZFlyEmNeuron* getNeuron(int id, int bundleIndex = -1);
   const ZFlyEmNeuron* getNeuron(const std::pair<int, int> &bodyId) const;
 
-  const ZFlyEmNeuron *getNeuronFromIndex(size_t idx, int *bundleIndex) const;
   size_t getNeuronNumber() const;
 
   ZSwcTree* getModel(int id, int bundleIndex = -1);
@@ -259,7 +267,8 @@ private:
   FlyEmDataFrameOptionDialog m_optionDialog;
   FlyEmDataQueryDialog m_queryDialog;
   FlyEmDataProcessDialog m_processDialog;
-  bool m_checkOrientation;
+  //bool m_checkOrientation;
+  EScoreOption m_scoreOption;
 
   ZFlyEmNeuronInfoPresenter *m_infoPresenter;
   ZFlyEmNeuronFeaturePresenter *m_featurePresenter;

@@ -28,6 +28,7 @@ public:
   QString getDataBundlePath() const;
   QString getSimmatPath() const;
   QString getDendrogramPath() const;
+  QString getFeaturePath() const;
 
   MainWindow* getMainWindow();
 
@@ -46,7 +47,13 @@ private slots:
 
   void on_dendrogramPushButton_clicked();
 
-  void on_pushButton_5_clicked();
+  void on_predictPushButton_clicked();
+
+  void on_featurePushButton_clicked();
+
+  double computeRatioDiff(double x, double y, double mu1, double var1,
+                          double mu2, double var2);
+  void predictFromOrtAdjustment();
 
 private:
   Ui::ShapePaperDialog *ui;

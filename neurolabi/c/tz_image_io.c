@@ -3137,6 +3137,8 @@ void Write_Mc_Stack(const char *filepath, const Mc_Stack *stack,
 	} else {
 	  ifd = Make_IFD_For_Image(image, 0);
 	}
+        //int tagValue = 1;
+        //Set_Tiff_Tag(ifd,TIFF_NEW_SUB_FILE_TYPE,TIFF_LONG,1,&(tagValue));
 	//Tiff_IFD *ifd = Make_IFD_For_Image_I(image, 0, NULL);
 	//Print_Tiff_IFD(ifd, stdout);
 	Write_Tiff_IFD(tif, ifd);

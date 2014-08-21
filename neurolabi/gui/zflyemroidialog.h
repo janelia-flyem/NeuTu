@@ -116,6 +116,8 @@ private slots:
 
   void on_quickNextPushButton_3_clicked();
 
+  void exportResult();
+
 private:
   void loadGrayscaleFunc(int z);
   void loadPartialGrayscaleFunc(int x0, int x1, int y0, int y1, int z);
@@ -137,6 +139,7 @@ private:
   ZStackDocReader m_docReader;
 
   QMenu *m_nextMenu;
+  QMenu *m_mainMenu;
 };
 
 #endif // ZFLYEMROIDIALOG_H

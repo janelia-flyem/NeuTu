@@ -899,6 +899,9 @@ void MainWindow::createToolBars()
     //m_ui->toolBar->addAction(m_ui->actionDvid_Object);
     m_ui->toolBar->addAction(m_ui->actionSplit_Body);
     m_ui->toolBar->addAction(m_ui->actionFlyEmROI);
+#ifdef _DEBUG_
+    m_ui->toolBar->addAction(m_ui->actionShape_Matching);
+#endif
   }
 
   //m_ui->toolBar->addAction(expandAction);

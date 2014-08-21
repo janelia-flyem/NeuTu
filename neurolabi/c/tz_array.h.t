@@ -169,11 +169,11 @@ void <2t>cpy3(<1t>* d1,<1t>* d2,int width1,int height1,int depth1,int width2,
 <1t>* <2t>_blockmean(<1t> *d1,int width,int height,int bwidth,int bheight,int itype);
 <1t>* <2t>_shiftdim2(<1t>* d1,int width,int height);
 double <2t>_sum_d(const <1t> *d1,size_t length);
-<1t> <2t>_mean(<1t>* d1,size_t length);
+<1t> <2t>_mean(const <1t>* d1,size_t length);
 double <2t>_mean_d(const <1t> *d1,size_t length);
 double <2t>_mean_d_m(const <1t> *d1,size_t length, const int *mask);
-double <2t>_var(<1t> *d1, size_t length);
-double <2t>_cov(<1t> *d1, <1t> *d2, size_t length);
+double <2t>_var(const <1t> *d1, size_t length);
+double <2t>_cov(const <1t> *d1, <1t> *d2, size_t length);
 <1t>* <2t>_malloc(size_t length);
 <1t>* <2t>_calloc(size_t length);
 <1t>* <2t>_malloc2(int width,int height);

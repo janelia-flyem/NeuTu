@@ -33,6 +33,10 @@ public:
    * \brief Bounding box of the point array
    */
   ZCuboid getBoundBox() const;
+
+  std::vector<double> computePlaneCov() const;
+
+  bool isEmpty() const;
 };
 
 #endif // ZPOINTARRAY_H
