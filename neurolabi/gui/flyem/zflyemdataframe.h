@@ -104,6 +104,10 @@ public:
     return (index < m_dataArray.size()) ? m_dataArray[index] : NULL;
   }
 
+  inline const ZFlyEmDataBundle* getDataBundle(int index = 0) const {
+    return (index < m_dataArray.size()) ? m_dataArray[index] : NULL;
+  }
+
   /*!
    * \brief Compute and save morphological features of all the neurons
    *
@@ -122,6 +126,11 @@ public:
                        const ZFlyEmNeuronImageFactory &imageFactory);
 
   void exportThumbnail();
+
+  /*!
+   * \brief Export layer features
+   */
+  void exportLayerFeature(const QString &savePath) const;
 
   void exportBundle(const QString &savePath);
 
@@ -199,6 +208,9 @@ private:
   void prepareClassPrediction(ZFlyEmNeuron *neuron);
 
   bool initTaskManager(ZMultiTaskManager *taskManager);
+
+  std::vector<std::vector<double> > computeLayerFeature(
+      const ZFlyEmNeuron &neuron) const;
 
 private:
   void parseCommand(const std::string &command);

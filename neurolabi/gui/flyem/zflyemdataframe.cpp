@@ -1,14 +1,17 @@
 #include "zflyemdataframe.h"
 
+#include <iostream>
+#include <sstream>
+#include <map>
+
 #include <QMessageBox>
 #include <QApplication>
 #include <QMap>
 #include <QMainWindow>
 #include <QStatusBar>
 #include <QDir>
-#include <iostream>
-#include <sstream>
-#include <map>
+#include <QTextStream>
+
 #include "flyemdataform.h"
 #include "informationdialog.h"
 #include "parameterdialog.h"
@@ -103,7 +106,8 @@ ZFlyEmDataFrame::ZFlyEmDataFrame(QWidget *parent) :
   ZSwcLayerTrunkAnalyzer *trunkAnalyzer = new ZSwcLayerTrunkAnalyzer;
   trunkAnalyzer->setStep(200.0);
   m_trunkAnalyzer = dynamic_cast<ZSwcTrunkAnalyzer*>(trunkAnalyzer);
-  ZSwcLayerShollFeatureAnalyzer *helperAnalyzer = new ZSwcLayerShollFeatureAnalyzer;
+  ZSwcLayerShollFeatureAnalyzer *helperAnalyzer =
+      new ZSwcLayerShollFeatureAnalyzer;
   helperAnalyzer->setLayerScale(4000.0);
   helperAnalyzer->setLayerMargin(100.0);
   m_helperFeatureAnalyzer = helperAnalyzer;
@@ -2328,4 +2332,42 @@ void ZFlyEmDataFrame::submitSkeletonizeService() const
   foreach (ZFlyEmDataBundle *dataBundle, m_dataArray) {
     dataBundle->submitSkeletonizeService();
   }
+}
+
+void ZFlyEmDataFrame::exportLayerFeature(const QString &savePath) const
+{
+  QFile file(savePath);
+  file.open(QIODevice::WriteOnly);
+  QTextStream stream(&file);
+  const ZFlyEmNeuronArray& neuronArray = getDataBundle()->getNeuronArray();
+  for (ZFlyEmNeuronArray::const_iterator iter = neuronArray.begin();
+       iter != neuronArray.end(); ++iter) {
+    const ZFlyEmNeuron &neuron = *iter;
+    std::vector<std::vector<double> > feat = computeLayerFeature(neuron);
+    stream << neuron.getId() << " -1\n";
+    for (size_t i = 0; i < feat.size(); ++i) {
+      for (size_t j = 0; j < 2; ++j) {
+        stream << feat[i][j] << " ";
+      }
+      stream << "\n";
+    }
+  }
+}
+
+std::vector<std::vector<double> > ZFlyEmDataFrame::computeLayerFeature(
+    const ZFlyEmNeuron &neuron) const
+{
+  ZSwcTree *ressampledTree  = neuron.getResampleBuddyModel(m_resampleStep);
+
+  std::vector<std::vector<double> > result;
+
+  m_trunkAnalyzer->clearBlocker();
+
+  ZSwcPath branch = ressampledTree->mainTrunk(m_trunkAnalyzer);
+  for (ZSwcPath::iterator iter = branch.begin(); iter != branch.end(); ++iter) {
+    Swc_Tree_Node *tn = *iter;
+    result.push_back(m_featureAnalyzer->computeFeature(tn));
+  }
+
+  return result;
 }

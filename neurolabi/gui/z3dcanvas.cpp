@@ -38,7 +38,9 @@ Z3DCanvas::Z3DCanvas(const QString &title, int width, int height, const QGLForma
   setAcceptDrops(true);
   setFocusPolicy(Qt::StrongFocus);
 
+#ifndef __APPLE__
   setStyleSheet("border-style: none;");
+#endif
   setMouseTracking(true);
 
 #if defined(_FLYEM_)

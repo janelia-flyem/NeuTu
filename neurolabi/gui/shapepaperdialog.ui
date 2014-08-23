@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>234</width>
-    <height>409</height>
+    <height>444</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -19,7 +19,7 @@
      <x>10</x>
      <y>10</y>
      <width>212</width>
-     <height>389</height>
+     <height>423</height>
     </rect>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout">
@@ -41,6 +41,13 @@
      <widget class="QPushButton" name="dataBundlePushButton">
       <property name="text">
        <string>Load Data Bundle</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QPushButton" name="allResultPushButton">
+      <property name="text">
+       <string>Generate All Result Files</string>
       </property>
      </widget>
     </item>

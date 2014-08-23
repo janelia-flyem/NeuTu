@@ -1,5 +1,8 @@
 #include "shapepaperdialog.h"
 #include <QProcess>
+#include <QFile>
+#include <QFileInfo>
+#include <QMessageBox>
 #include <fstream>
 #include "ui_shapepaperdialog.h"
 #include "zdialogfactory.h"
@@ -17,6 +20,7 @@
 #include "zdendrogram.h"
 #include "zswcglobalfeatureanalyzer.h"
 #include "zmatrix.h"
+#include "zobject3dscan.h"
 
 ShapePaperDialog::ShapePaperDialog(QWidget *parent) :
   QDialog(parent),
@@ -37,6 +41,7 @@ ShapePaperDialog::ShapePaperDialog(QWidget *parent) :
         (GET_DATA_DIR + "/flyem/shape_paper").c_str(), this);
 
   ui->sparseObjectPushButton->hide();
+  updateButtonState();
 }
 
 ShapePaperDialog::~ShapePaperDialog()
@@ -127,7 +132,13 @@ void ShapePaperDialog::on_dataBundlePushButton_clicked()
 
   if (m_frame != NULL) {
     m_frame->show();
+    updateButtonState();
   }
+}
+
+QString ShapePaperDialog::getConfmatPath() const
+{
+  return m_resultDir->get() + "/confmat.txt";
 }
 
 QString ShapePaperDialog::getSimmatPath() const
@@ -140,15 +151,64 @@ QString ShapePaperDialog::getFeaturePath() const
   return m_resultDir->get() + "/feature.csv";
 }
 
+QString ShapePaperDialog::getTrueClassLabelPath() const
+{
+  return m_resultDir->get() + "/true_class.txt";
+}
+
+QString ShapePaperDialog::getPredicatedClassLabelPath() const
+{
+  return m_resultDir->get() + "/predicated_class.txt";
+}
+
+QString ShapePaperDialog::getModelSourcePath() const
+{
+  return "/Users/zhaot/Work/SLAT/matlab/SLAT/run/shape_paper/tz_run_paper10_model_source.m";
+}
+
 QString ShapePaperDialog::getDendrogramPath() const
 {
   return m_resultDir->get() + "/dendrogram.svg";
 }
 
+void ShapePaperDialog::exportModelSource()
+{
+  ZFlyEmNeuronArray *neuronArray = getNeuronArray();
+
+  if (neuronArray != NULL) {
+    QFile file(getModelSourcePath());
+    file.open(QIODevice::WriteOnly);
+    QTextStream stream(&file);
+
+    stream << QString("modelSourceArray = cell(%1, 1);\n").
+              arg(neuronArray->size());
+    //stream << QString("for k = 1:%1\n").arg(neuronArray->size());
+    for (size_t i = 0; i < neuronArray->size(); ++i) {
+      const ZFlyEmNeuron neuron = (*neuronArray)[i];
+      stream << QString("modelSourceArray{%1} = '%2';\n").arg(i + 1).
+                arg(neuron.getModelPath().c_str());
+    }
+    //stream << "end\n";
+  }
+}
+
 void ShapePaperDialog::on_simmatPushButton_clicked()
 {
   if (m_frame != NULL) {
-    m_frame->exportSimilarityMatrix(getSimmatPath());
+    QFile file(getSimmatPath());
+    bool calc = true;
+    if (file.exists()) {
+      int ret = QMessageBox::warning(
+            this, "Similarity matrix exists.",
+            "The similarity matrix has already been calculated. "
+            "Do you want to recalculate and overwrite it?",
+            QMessageBox::Yes | QMessageBox::No);
+      calc = (ret == QMessageBox::Yes);
+    }
+
+    if (calc) {
+      m_frame->exportSimilarityMatrix(getSimmatPath());
+    }
   }
 }
 
@@ -264,6 +324,33 @@ void ShapePaperDialog::on_predictPushButton_clicked()
   predictFromOrtAdjustment();
 }
 
+ZFlyEmDataBundle* ShapePaperDialog::getDataBundle()
+{
+  if (m_frame != NULL) {
+    return m_frame->getDataBundle();
+  }
+
+  return NULL;
+}
+
+ZFlyEmNeuronArray* ShapePaperDialog::getNeuronArray()
+{
+  if (getDataBundle() != NULL) {
+    return &(getDataBundle()->getNeuronArray());
+  }
+
+  return NULL;
+}
+
+std::map<std::string, int> ShapePaperDialog::getClassIdMap()
+{
+  if (getDataBundle() != NULL) {
+    return getDataBundle()->getClassIdMap();
+  }
+
+  return std::map<std::string, int>();
+}
+
 void ShapePaperDialog::predictFromOrtAdjustment()
 {
   ZMatrix featmat;
@@ -376,7 +463,7 @@ void ShapePaperDialog::predictFromOrtAdjustment()
   dump(QString("Accurate count (ratio adjusted): %1").arg(correctNumber), true);
 }
 
-void ShapePaperDialog::on_featurePushButton_clicked()
+void ShapePaperDialog::computeFeatureMatrix()
 {
   //Compute features
   if (m_frame != NULL) {
@@ -401,7 +488,13 @@ void ShapePaperDialog::on_featurePushButton_clicked()
     featmat.exportCsv(getFeaturePath().toStdString() + ".txt");
     featmat.exportCsv(getFeaturePath().toStdString(), neuronName,
                       ZSwcGlobalFeatureAnalyzer::getFeatureNameArray(setName));
+    dump(getFeaturePath() + " saved.", true);
   }
+}
+
+void ShapePaperDialog::on_featurePushButton_clicked()
+{
+  computeFeatureMatrix();
 }
 
 double ShapePaperDialog::computeRatioDiff(
@@ -426,4 +519,134 @@ double ShapePaperDialog::computeRatioDiff(
   return std::fabs((x - y) * ((x + y - mu1 - mu1) /var1 -
                    (x + y - mu2 - mu2)/var2));
                        */
+}
+
+void ShapePaperDialog::updateButtonState()
+{
+  ui->simmatPushButton->setEnabled(m_frame != NULL);
+}
+
+void ShapePaperDialog::computeConfusionMatrix()
+{
+
+}
+
+QString ShapePaperDialog::getPath(EResult result) const
+{
+  switch (result) {
+  case RESULT_SIMMAT:
+    return getSimmatPath();
+  case RESULT_FEATMAT:
+    return getFeaturePath();
+  case RESULT_DENDROGRAM:
+    return getDendrogramPath();
+  case RESULT_TRUE_CLASS_LABEL:
+    return getTrueClassLabelPath();
+  case RESULT_PRED_CLASS_LABEL:
+    return getPredicatedClassLabelPath();
+  case RESULT_CONFMAT:
+    return getConfmatPath();
+  case RESULT_LAYER_FEATMAT:
+    return m_resultDir->get() + "/layer_feat.txt";
+  case RESULT_MODEL_SOURCE:
+    return getModelSourcePath();
+  }
+
+  return QString();
+}
+
+bool ShapePaperDialog::exists(EResult result) const
+{
+  QString path = getPath(result);
+
+  return QFile(path).exists();
+}
+
+void ShapePaperDialog::exportClassLabel()
+{
+
+  ZFlyEmNeuronArray *neuronArray = getNeuronArray();
+  if (neuronArray != NULL) {
+    std::vector<int> idArray;
+    std::map<std::string, int> classIdMap = getClassIdMap();
+    //foreach neuron
+    for (ZFlyEmNeuronArray::const_iterator iter = neuronArray->begin();
+         iter != neuronArray->end(); ++iter) {
+      //get class label
+      const ZFlyEmNeuron neuron = *iter;
+      int id = classIdMap[neuron.getClass()];
+      idArray.push_back(id);
+    }
+
+    //Save labels to a text file
+    QString filePath = getTrueClassLabelPath();
+    std::ofstream stream;
+    stream.open(filePath.toStdString().c_str());
+    for (size_t i = 0; i < idArray.size(); ++i) {
+      stream << idArray[i] << std::endl;
+    }
+    stream.close();
+    dump(filePath + " saved.", true);
+  }
+
+}
+
+void ShapePaperDialog::tryOutput(EResult result)
+{
+  if (!exists(result) && (m_frame != NULL)) {
+    switch(result) {
+    case RESULT_SIMMAT:
+      m_frame->exportSimilarityMatrix(getSimmatPath());
+      break;
+    case RESULT_FEATMAT:
+      computeFeatureMatrix();
+      break;
+    case RESULT_TRUE_CLASS_LABEL:
+      exportClassLabel();
+      break;
+    case RESULT_CONFMAT:
+      computeConfusionMatrix();
+      break;
+    case RESULT_LAYER_FEATMAT:
+      computeLayerFeature();
+      break;
+    case RESULT_MODEL_SOURCE:
+      exportModelSource();
+      break;
+    default:
+      break;
+    }
+  }
+}
+
+void ShapePaperDialog::computeLayerFeature()
+{
+  if (m_frame != NULL) {
+    m_frame->exportLayerFeature(getPath(RESULT_LAYER_FEATMAT));
+  }
+}
+
+void ShapePaperDialog::on_allResultPushButton_clicked()
+{
+  //Generate similarity matrix
+  tryOutput(RESULT_SIMMAT);
+
+  //Generate neuron class labels
+  tryOutput(RESULT_TRUE_CLASS_LABEL);
+
+  tryOutput(RESULT_CONFMAT);
+
+  //Generate neuron IDs
+
+  //Generate neuron Names
+
+  //Generate feature matrix
+  tryOutput(RESULT_PRED_CLASS_LABEL);
+
+  //Generate confusion matrix
+
+  //Generate layer features
+  tryOutput(RESULT_LAYER_FEATMAT);
+
+  tryOutput(RESULT_MODEL_SOURCE);
 }
