@@ -2,6 +2,7 @@
 
 #include "settingdialog.h"
 #include "neutubeconfig.h"
+#include "zresolution.h"
 
 SettingDialog::SettingDialog(QWidget *parent) : QDialog(parent)
 {

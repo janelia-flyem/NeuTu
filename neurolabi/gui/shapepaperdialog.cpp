@@ -15,6 +15,7 @@
 #include "mainwindow.h"
 #include "zsvggenerator.h"
 #include "zdendrogram.h"
+#include "zobject3dscan.h"
 
 ShapePaperDialog::ShapePaperDialog(QWidget *parent) :
   QDialog(parent),
