@@ -223,7 +223,7 @@ MainWindow::MainWindow(QWidget *parent) :
   format.setDoubleBuffer(true);
   format.setRgba(true);
   format.setSampleBuffers(true);
-  format.setStereo(true);
+  //format.setStereo(true);
   m_sharedContext = new Z3DCanvas("Init Canvas", 32, 32, format, this);
 
   m_frameCount = 0;
