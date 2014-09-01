@@ -1064,8 +1064,7 @@ bool ZObject3dScan::load(const string &filePath)
 {
   bool succ = false;
   ZString filePath2(filePath);
-
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
     std::cout << filePath << std::endl;
 #endif
 

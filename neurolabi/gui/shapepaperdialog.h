@@ -29,7 +29,8 @@ public:
   enum EResult {
     RESULT_SIMMAT, RESULT_FEATMAT, RESULT_TRUE_CLASS_LABEL,
     RESULT_PRED_CLASS_LABEL, RESULT_DENDROGRAM,
-    RESULT_CONFMAT, RESULT_LAYER_FEATMAT, RESULT_MODEL_SOURCE
+    RESULT_CONFMAT, RESULT_LAYER_FEATMAT, RESULT_MODEL_SOURCE,
+    RESULT_CLUSTERING, RESULT_NEURON_INFO
   };
 
   QString getSparseObjectDir() const;
@@ -65,6 +66,7 @@ private:
   ZFlyEmDataBundle* getDataBundle();
   std::map<std::string, int> getClassIdMap();
   void exportModelSource();
+  void exportNeuronInfo();
 
 private slots:
   void on_configPushButton_clicked();
@@ -84,6 +86,8 @@ private slots:
   void on_featurePushButton_clicked();
 
   void on_allResultPushButton_clicked();
+
+  void on_clusteringPushButton_clicked();
 
 private:
   Ui::ShapePaperDialog *ui;

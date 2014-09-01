@@ -887,6 +887,9 @@ void MainWindow::createToolBars()
 {
 //  fileToolBar = addToolBar(tr("&File"));
   //fileToolBar->addAction(newAction);
+  //m_ui->toolBar->setStyleSheet("border: none");
+  //m_ui->toolBar->setIconSize(QSize(32, 32));
+
   if (GET_APPLICATION_NAME == "Biocytin") {
     m_ui->toolBar->addAction(m_ui->actionNewProject);
     m_ui->toolBar->addAction(m_ui->actionTiles);

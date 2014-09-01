@@ -5,11 +5,11 @@
 #include <QGraphicsScene>
 #include <QGraphicsPixmapItem>
 #include "zstackdoc.h"
-#include <QKeyEvent>
 #include "zsharedpointer.h"
 
 class ZTileManager;
 class ZQtBarProgressReporter;
+class QKeyEvent;
 
 namespace Ui {
 class TileManager;

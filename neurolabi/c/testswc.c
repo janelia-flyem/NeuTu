@@ -1573,7 +1573,7 @@ int main(int argc, char *argv[])
   darray_print2(feature, feature_number, fileList->file_number);
 #endif
 
-#if 0
+#if 1
   Swc_Tree *tree = Read_Swc_Tree("../data/benchmark/swc/multi_tree2.swc");
   /*
   Swc_Tree subtree;
@@ -1582,7 +1582,7 @@ int main(int argc, char *argv[])
   Print_Swc_Tree(&subtree);
   */
 
-  Swc_Tree_Reconnect(tree, 1.6);
+  Swc_Tree_Reconnect(tree, 1.0, 1.6);
 
   Print_Swc_Tree(tree);
 
@@ -1668,7 +1668,7 @@ int main(int argc, char *argv[])
   Print_Swc_Tree(tree);
 #endif
 
-#if 1
+#if 0
   Swc_Tree *tree = Read_Swc_Tree_E("../data/benchmark/209.swc");
   Swc_Tree_Iterator_Start(tree, SWC_TREE_ITERATOR_DEPTH_FIRST, FALSE);
   Swc_Tree_Node *tn = NULL;

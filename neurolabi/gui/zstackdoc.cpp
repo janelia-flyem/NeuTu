@@ -95,7 +95,8 @@
 
 using namespace std;
 
-ZStackDoc::ZStackDoc(ZStack *stack, QObject *parent) : QObject(parent)
+ZStackDoc::ZStackDoc(ZStack *stack, QObject *parent) : QObject(parent),
+  m_resDlg(NULL)
 {
   m_stack = stack;
   m_sparseStack = NULL;
@@ -115,7 +116,7 @@ ZStackDoc::ZStackDoc(ZStack *stack, QObject *parent) : QObject(parent)
 
   connectSignalSlot();
 
-  setReporter(new ZQtMessageReporter());
+  //setReporter(new ZQtMessageReporter());
 
   if (NeutubeConfig::getInstance().isAutoSaveEnabled()) {
     QTimer *timer = new QTimer(this);
@@ -149,6 +150,10 @@ ZStackDoc::~ZStackDoc()
   delete m_labelField;
   delete m_stackFactory;
   //delete m_swcNodeContextMenu;
+
+  if (m_resDlg != NULL) {
+    delete m_resDlg;
+  }
 
   destroyReporter();
 }
@@ -912,6 +917,15 @@ void ZStackDoc::hideSelectedPuncta()
        it != selectedPuncta()->end(); ++it) {
     setPunctumVisible(*it, false);
   }
+}
+
+ResolutionDialog* ZStackDoc::getResolutionDialog()
+{
+  if (m_resDlg == NULL) {
+    m_resDlg = new ResolutionDialog(NULL);
+  }
+
+  return m_resDlg;
 }
 
 void ZStackDoc::showSelectedPuncta()
@@ -3919,6 +3933,7 @@ bool ZStackDoc::loadFile(const QString &filePath, bool emitMessage)
       emit swcNetworkModified();
     }
     break;
+  case ZFileType::JSON_FILE:
   case ZFileType::SYNAPSE_ANNOTATON_FILE:
     if (importSynapseAnnotation(filePath.toStdString())) {
       if (emitMessage) {
@@ -6021,8 +6036,11 @@ void ZStackDoc::saveSwc(QWidget *parentWidget)
   //Assume there is no empty tree
   if (!m_swcList.empty()) {
     if (m_swcList.size() > 1) {
+      /*
       report("Save failed", "More than one SWC tree exist.",
              ZMessageReporter::Error);
+             */
+      emit statusMessageUpdated("Save failed. More than one SWC tree exist.");
     } else {
       ZSwcTree *tree = m_swcList[0];
       if (tree->hasGoodSourceName()) {
@@ -6176,10 +6194,10 @@ void ZStackDoc::updateModelData(EDocumentDataType type)
 void ZStackDoc::showSeletedSwcNodeScaledLength()
 {
   double resolution[3] = {1, 1, 1};
-  if (m_resDlg.exec()) {
-    resolution[0] = m_resDlg.getXYScale();
-    resolution[1] = m_resDlg.getXYScale();
-    resolution[2] = m_resDlg.getZScale();
+  if (getResolutionDialog()->exec()) {
+    resolution[0] = getResolutionDialog()->getXYScale();
+    resolution[1] = getResolutionDialog()->getXYScale();
+    resolution[2] = getResolutionDialog()->getZScale();
     showSeletedSwcNodeLength(resolution);
   }
 }

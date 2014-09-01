@@ -23,6 +23,7 @@ TEST(ZDvidTarget, basic)
   target.set("http:emdata1.int.janelia.org:-1:b42");
   target.print();
 
+#if 0
   ZDvidDialog dlg;
   dlg.loadConfig(ZString::fullPath(NeutubeConfig::getInstance().getApplicatinDir(),
                                    "json", "", "flyem_config.json"));
@@ -31,11 +32,13 @@ TEST(ZDvidTarget, basic)
   target = dlg.getDvidTarget();
   target.print();
 #endif
+
+#endif
 }
 
 TEST(ZDvidReader, basic)
 {
-#ifdef _FLYEM_
+#ifdef _FLYEM_2
   ZDvidDialog dlg;
   dlg.loadConfig(ZString::fullPath(NeutubeConfig::getInstance().getApplicatinDir(),
                                    "json", "", "flyem_config.json"));

@@ -797,10 +797,10 @@ void ZFlyEmRoiDialog::exportResult()
     blockObj.save(GET_DATA_DIR + "/test.sobj");
 
     ZJsonArray array = ZJsonFactory::makeJsonArray(
-          blockObj, ZJsonFactory::OBJECT_DENSE);
-    ZJsonObject jsonObj;
-    jsonObj.setEntry("data", array);
-    jsonObj.dump(GET_DATA_DIR + "/test.json");
+          blockObj, ZJsonFactory::OBJECT_SPARSE);
+    //ZJsonObject jsonObj;
+    //jsonObj.setEntry("data", array);
+    array.dump(GET_DATA_DIR + "/test.json");
   }
 }
 

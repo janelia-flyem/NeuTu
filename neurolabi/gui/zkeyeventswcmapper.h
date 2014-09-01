@@ -1,10 +1,11 @@
 #ifndef ZKEYEVENTSWCMAPPER_H
 #define ZKEYEVENTSWCMAPPER_H
 
-#include <QKeyEvent>
 #include <QMap>
 #include "zswctree.h"
 #include "neutube.h"
+
+class QKeyEvent;
 
 class ZKeyEventSwcMapper
 {

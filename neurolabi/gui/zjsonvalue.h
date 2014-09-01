@@ -93,6 +93,13 @@ public:
    */
   std::string dumpString(int indent = 2) const;
 
+  /*!
+   * \brief Save the json value into a file
+   *
+   * \return true iff write succeeds.
+   */
+  bool dump(const std::string &path) const;
+
 protected:
   json_error_t m_error;
   json_t *m_data;

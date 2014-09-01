@@ -507,7 +507,7 @@ ZSwcTree* ZStackSkeletonizer::makeSkeletonWithoutDs(Stack *stackData)
     Stack *objstack = Copy_Stack(stackData);
     size_t objSize = Stack_Level_Mask(objstack, 3 + objIndex);
 
-    Translate_Stack(objstack, GREY, 1);
+    //Translate_Stack(objstack, GREY, 1);
 
     int objectOffset[3];
     Stack *croppedObjStack = C_Stack::boundCrop(objstack, 0, objectOffset);
@@ -519,6 +519,8 @@ ZSwcTree* ZStackSkeletonizer::makeSkeletonWithoutDs(Stack *stackData)
       croppedSignal = C_Stack::crop(stackSignal, bound_box, NULL);;
     }
 
+    C_Stack::kill(objstack);
+    objstack = NULL;
 
     /*
     if (C_Stack::kind(objstack) == GREY16) {
@@ -703,8 +705,6 @@ ZSwcTree* ZStackSkeletonizer::makeSkeletonWithoutDs(Stack *stackData)
 
     C_Stack::kill(croppedObjStack);
     croppedObjStack = NULL;
-    C_Stack::kill(objstack);
-    objstack = NULL;
     C_Stack::kill(croppedSignal);
     croppedSignal = NULL;
 

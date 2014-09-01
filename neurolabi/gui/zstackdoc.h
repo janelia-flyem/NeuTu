@@ -792,6 +792,8 @@ private:
   ZSwcTree* nodeToSwcTree(Swc_Tree_Node* node) const;
   std::vector<ZStack*> createWatershedMask();
 
+  ResolutionDialog* getResolutionDialog();
+
 private:
   //Main stack
   ZStack *m_stack;
@@ -862,8 +864,7 @@ private:
   NeuTube::Document::ETag m_tag;
   NeuTube::EImageBackground m_stackBackground;
 
-  ResolutionDialog m_resDlg;
-
+  ResolutionDialog *m_resDlg;
   ZStackFactory *m_stackFactory;
 };
 

@@ -33,10 +33,12 @@ ZSlider::ZSlider(bool useArrow, QWidget *parent) : QWidget(parent)
     m_goLeftButton = new QToolButton;
     m_goLeftButton->setIcon(QIcon(":/images/go-previous.png"));
     m_goLeftButton->setStyleSheet("border: none");
+
     //m_goLeftButton->setEnabled(false); //This messes subwindow stacks for unknown reason
     m_goRightButton = new QToolButton;
     m_goRightButton->setIcon(QIcon(":/images/go-next.png"));
     m_goRightButton->setStyleSheet("border: none");
+
     //m_goRightButton->setEnabled(false);
     connect(m_slider, SIGNAL(valueChanged(int)), this, SLOT(updateArrowState(int)));
     connect(m_goLeftButton, SIGNAL(clicked()), this, SLOT(goLeftButtonClicked()));

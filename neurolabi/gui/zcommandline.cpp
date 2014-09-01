@@ -18,6 +18,11 @@
 #include "flyem/zflyemdatabundle.h"
 #include "flyem/zflyemneuronfeatureanalyzer.h"
 #include "flyem/zflyemneuronfeatureset.h"
+#include "zstackskeletonizer.h"
+#include "dvid/zdvidreader.h"
+#include "dvid/zdvidwriter.h"
+#include "neutubeconfig.h"
+#include "zrandomgenerator.h"
 
 using namespace std;
 
@@ -400,6 +405,56 @@ int ZCommandLine::runComputeFlyEmNeuronFeature()
   return 0;
 }
 
+int ZCommandLine::runSkeletonize()
+{
+  if (m_input.empty()) {
+    return 0;
+  }
+
+  ZDvidTarget target;
+  target.set(m_input[0]);
+  //target.set("emdata2.int.janelia.org", "43f", 9000);
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  ZDvidWriter writer;
+  writer.open(target);
+
+  std::set<int> bodyIdSet = reader.readBodyId(100000);
+  std::vector<int> bodyIdArray;
+  bodyIdArray.insert(bodyIdArray.begin(), bodyIdSet.begin(), bodyIdSet.end());
+
+  ZRandomGenerator rnd;
+  std::vector<int> rank = rnd.randperm(bodyIdArray.size());
+  std::set<int> excluded;
+  //excluded.insert(16493);
+  //excluded.insert(8772496);
+
+  ZStackSkeletonizer skeletonizer;
+  ZJsonObject config;
+  config.load(NeutubeConfig::getInstance().getApplicatinDir() +
+              "/json/skeletonize.json");
+  skeletonizer.configure(config);
+
+  for (size_t i = 0; i < bodyIdArray.size(); ++i) {
+    int bodyId = bodyIdArray[rank[i] - 1];
+    if (excluded.count(bodyId) == 0) {
+      ZSwcTree *tree = reader.readSwc(bodyId);
+      if (tree == NULL) {
+        ZObject3dScan obj = reader.readBody(bodyId);
+        tree = skeletonizer.makeSkeleton(obj);
+        writer.writeSwc(bodyId, tree);
+      }
+      delete tree;
+      std::cout << ">>>>>>>>>>>>>>>>>>" << i + 1 << " / "
+                << bodyIdArray.size() << std::endl;
+    }
+  }
+
+  return 0;
+}
+
 int ZCommandLine::run(int argc, char *argv[])
 {
   static const char *Spec[] = {
@@ -407,7 +462,8 @@ int ZCommandLine::run(int argc, char *argv[])
     "[--sobj_marker]", "[--boundary_orphan <string>]", "[--config <string>]",
     "[--no_block_adjust]",
     "[--sobj_overlap]", "[--intv <int> <int> <int>]", "[--fulloverlap_screen]",
-    "[--synapse_object]", "[--flyem_neuron_feature]", "[--classlist]", 0
+    "[--synapse_object]", "[--flyem_neuron_feature]", "[--classlist]",
+    "[--skeletonize]", 0
   };
 
   ZArgumentProcessor::processArguments(
@@ -490,6 +546,9 @@ int ZCommandLine::run(int argc, char *argv[])
     command = FLYEM_NEURON_FEATURE;
     m_input.push_back(ZArgumentProcessor::getStringArg("input", 0));
     m_output = ZArgumentProcessor::getStringArg("-o");
+  } else if (ZArgumentProcessor::isArgMatched("--skeletonize")) {
+    command = SKELETONIZE;
+    m_input.push_back(ZArgumentProcessor::getStringArg("input", 0));
   }
 
   switch (command) {
@@ -505,6 +564,8 @@ int ZCommandLine::run(int argc, char *argv[])
     return runOutputClassList();
   case FLYEM_NEURON_FEATURE:
     return runComputeFlyEmNeuronFeature();
+  case SKELETONIZE:
+    return runSkeletonize();
   default:
     std::cout << "Unknown command" << std::endl;
     return 1;

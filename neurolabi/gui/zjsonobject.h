@@ -107,12 +107,6 @@ public:
    */
   void setEntry(const char *key, ZJsonValue &value);
 
-  /*!
-   * \brief Save the json object into a file
-   *
-   * \return true iff write succeeds.
-   */
-  bool dump(const std::string &path) const;
 
   /*!
    * \brief Test if a key exists

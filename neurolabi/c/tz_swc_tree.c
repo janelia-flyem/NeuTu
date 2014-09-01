@@ -6625,16 +6625,18 @@ void Swc_Tree_Reconnect(Swc_Tree *tree, double z_scale, double distThre)
           Swc_Tree_Node *ctn;
           double dist = Swc_Tree_Point_Dist_N_Z(
               &subtree, pos[0], pos[1], pos[2], z_scale, &ctn);
-          if (dist < 0.0) {
-            dist = 0.0;
-          }
+          if(dist <= distThre || distThre < 0.0) {
+            if (dist < 0.0) {
+              dist = 0.0;
+            }
 #ifdef _DEBUG_2
-          if (tn->index == ctn->index) {
-            printf("Debug here\n");
-          }
+            if (tn->index == ctn->index) {
+              printf("Debug here\n");
+            }
 #endif
 
-          Graph_Add_Weighted_Edge(graph, tn->index, ctn->index, dist);
+            Graph_Add_Weighted_Edge(graph, tn->index, ctn->index, dist);
+          }
         }
         root = root->next_sibling;
       }

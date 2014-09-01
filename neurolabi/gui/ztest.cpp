@@ -9071,7 +9071,7 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
-#if 0 //Laplacian map
+#if 1 //Laplacian map
   ZFlyEmDataBundle bundle;
   bundle.loadJsonFile(
         dataPath + "/flyem/TEM/data_release/bundle1/data_bundle.json");
@@ -12681,12 +12681,31 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
-#if 1
+#if 0
   ZSwcTree tree;
   tree.load(GET_DATA_DIR + "/benchmark/swc/mouse_single_org.swc");
   double sxy = ZSwcGlobalFeatureAnalyzer::computeLateralSpan(tree);
   double sz = ZSwcGlobalFeatureAnalyzer::computeVerticalSpan(tree);
 
   std::cout << sxy << " " << sz << std::endl;
+#endif
+
+#if 0
+  FlyEm::ZSynapseAnnotationArray synapseArray;
+  //synapseArray.loadJson(GET_DATA_DIR + "/flyem/MB/synapses0725.json");
+  synapseArray.loadJson(GET_DATA_DIR + "/flyem/FIB/FIB25/annotations-synapse.json");
+  FlyEm::SynapseAnnotationConfig annotationConfig;
+  annotationConfig.swcDownsample1 = 0;
+  annotationConfig.swcDownsample2 = 0;
+  annotationConfig.sizeScale = 10.0;
+
+  FlyEm::SynapseDisplayConfig displayConfig;
+  displayConfig.mode = FlyEm::SynapseDisplayConfig::TBAR_ONLY;
+
+  synapseArray.exportMarkerFile(GET_DATA_DIR + "/flyem/FIB/FIB25/tbar.marker",
+                                annotationConfig,
+                                FlyEm::SynapseLocation::CURRENT_SPACE,
+                                displayConfig);
+
 #endif
 }

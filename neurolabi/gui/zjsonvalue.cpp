@@ -4,6 +4,7 @@
 #include <iostream>
 
 #include "zjsonparser.h"
+#include "c_json.h"
 
 using namespace std;
 
@@ -227,4 +228,9 @@ std::string ZJsonValue::dumpString(int indent) const
   }
 
   return str;
+}
+
+bool ZJsonValue::dump(const string &path) const
+{
+  return C_Json::dump(m_data, path.c_str());
 }

@@ -1,8 +1,11 @@
 #include "tilemanager.h"
+
+#include <QKeyEvent>
+#include <QDebug>
+
 #include "ui_tilemanager.h"
 #include "ztilemanager.h"
 #include "zqtbarprogressreporter.h"
-#include <QDebug>
 
 TileManager::TileManager(QWidget *parent) :
     QMainWindow(parent),

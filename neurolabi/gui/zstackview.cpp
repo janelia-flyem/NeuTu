@@ -56,11 +56,11 @@ ZStackView::ZStackView(ZStackFrame *parent) : QWidget(parent)
   m_progress->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
   m_progress->setFocusPolicy(Qt::NoFocus);
 
-
   m_topLayout = new QHBoxLayout;
   m_topLayout->addWidget(m_infoLabel);
   m_topLayout->addWidget(m_activeLabel);
   //m_topLayout->addWidget(m_progress);
+
 
   m_secondTopLayout = new QHBoxLayout;
 

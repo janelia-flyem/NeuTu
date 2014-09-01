@@ -80,7 +80,7 @@
      </widget>
     </item>
     <item>
-     <widget class="QPushButton" name="pushButton_7">
+     <widget class="QPushButton" name="clusteringPushButton">
       <property name="text">
        <string>Clustering</string>
       </property>

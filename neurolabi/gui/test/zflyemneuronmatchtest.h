@@ -20,19 +20,19 @@ TEST(ZFlyEmNeuronMatch, Layer) {
   tic();
   matcher.match(neuron1, neuron2);
   ptoc();
-  matcher.print();
+  //matcher.print();
 
   neuron2 = dataBundle.getNeuron(285743);
   tic();
   matcher.match(neuron1, neuron2);
   ptoc();
-  matcher.print();
+  //matcher.print();
 
   neuron2 = dataBundle.getNeuron(205);
   tic();
   matcher.match(neuron1, neuron2);
   ptoc();
-  matcher.print();
+  //matcher.print();
 
   for (size_t i = 0; i < dataBundle.getNeuronArray().size(); ++i) {
     neuron2 = &(dataBundle.getNeuronArray()[i]);
@@ -42,9 +42,9 @@ TEST(ZFlyEmNeuronMatch, Layer) {
   tic();
   for (size_t i = 0; i < dataBundle.getNeuronArray().size(); ++i) {
     neuron2 = &(dataBundle.getNeuronArray()[i]);
-    neuron2->print();
+    //neuron2->print();
     matcher.match(neuron1, neuron2);
-    matcher.print();
+    //matcher.print();
   }
   ptoc();
 }

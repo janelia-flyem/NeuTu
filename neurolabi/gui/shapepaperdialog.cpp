@@ -3,6 +3,7 @@
 #include <QFile>
 #include <QFileInfo>
 #include <QMessageBox>
+#include <QDir>
 #include <fstream>
 #include "ui_shapepaperdialog.h"
 #include "zdialogfactory.h"
@@ -21,6 +22,7 @@
 #include "zswcglobalfeatureanalyzer.h"
 #include "zmatrix.h"
 #include "zobject3dscan.h"
+#include "zmatlabprocess.h"
 
 ShapePaperDialog::ShapePaperDialog(QWidget *parent) :
   QDialog(parent),
@@ -550,6 +552,10 @@ QString ShapePaperDialog::getPath(EResult result) const
     return m_resultDir->get() + "/layer_feat.txt";
   case RESULT_MODEL_SOURCE:
     return getModelSourcePath();
+  case RESULT_CLUSTERING:
+    return m_resultDir->get() + "/clustering.txt";
+  case RESULT_NEURON_INFO:
+    return m_resultDir->get() + "/neuron_info.json";
   }
 
   return QString();
@@ -591,6 +597,46 @@ void ShapePaperDialog::exportClassLabel()
 
 }
 
+void ShapePaperDialog::exportNeuronInfo()
+{
+  ZFlyEmNeuronArray *neuronArray = getNeuronArray();
+  if (neuronArray != NULL) {
+    std::map<std::string, int> classIdMap = getClassIdMap();
+    //foreach neuron
+    int index = 1;
+    ZJsonArray neuronArrayObj;
+
+    for (ZFlyEmNeuronArray::const_iterator iter = neuronArray->begin();
+         iter != neuronArray->end(); ++iter, ++index) {
+      const ZFlyEmNeuron neuron = *iter;
+
+      ZJsonObject neuronObj;
+      neuronObj.setEntry("index", index);
+      neuronObj.setEntry("class", classIdMap[neuron.getClass()]);
+      neuronObj.setEntry("id", neuron.getId());
+      neuronObj.setEntry("name", neuron.getName());
+      neuronObj.setEntry("path", neuron.getModelPath());
+
+      neuronArrayObj.append(neuronObj);
+    }
+
+    ZJsonArray classArrayObj;
+    for (std::map<std::string, int>::const_iterator iter = classIdMap.begin();
+         iter != classIdMap.end(); ++iter) {
+      ZJsonObject classMapObj;
+      classMapObj.setEntry("label", iter->second);
+      classMapObj.setEntry("name", iter->first);
+      classArrayObj.append(classMapObj);
+    }
+
+    ZJsonObject headObj;
+    headObj.setEntry("neuron", neuronArrayObj);
+    headObj.setEntry("class", classArrayObj);
+
+    headObj.dump(getPath(RESULT_NEURON_INFO).toStdString());
+  }
+}
+
 void ShapePaperDialog::tryOutput(EResult result)
 {
   if (!exists(result) && (m_frame != NULL)) {
@@ -613,6 +659,9 @@ void ShapePaperDialog::tryOutput(EResult result)
     case RESULT_MODEL_SOURCE:
       exportModelSource();
       break;
+    case RESULT_NEURON_INFO:
+      exportNeuronInfo();
+      break;
     default:
       break;
     }
@@ -628,6 +677,11 @@ void ShapePaperDialog::computeLayerFeature()
 
 void ShapePaperDialog::on_allResultPushButton_clicked()
 {
+  if (m_frame == NULL) {
+    dump("No data available.");
+    return;
+  }
+
   //Generate similarity matrix
   tryOutput(RESULT_SIMMAT);
 
@@ -649,4 +703,84 @@ void ShapePaperDialog::on_allResultPushButton_clicked()
   tryOutput(RESULT_LAYER_FEATMAT);
 
   tryOutput(RESULT_MODEL_SOURCE);
+
+  tryOutput(RESULT_NEURON_INFO);
+}
+
+void ShapePaperDialog::on_clusteringPushButton_clicked()
+{
+  if (m_frame != NULL) {
+    QString simmatFile = getSimmatPath();
+    if (!simmatFile.isEmpty()) {
+      QString targetFilePath((GET_DATA_DIR + "/tmp/simmat.txt").c_str());
+      QFile targetFile(targetFilePath);
+      if (targetFile.exists()) {
+        targetFile.remove();
+      }
+
+      if (QFile::copy(simmatFile, targetFilePath)) {
+        ZMatlabProcess process;
+        if (process.findMatlab()) {
+          process.setScript("/Users/zhaot/Work/SLAT/matlab/SLAT/run/"
+                            "shape_paper/tz_run_paper10_clustering_command.m");
+          if (process.run()) {
+            const ZJsonObject &output = process.getOutput();
+            if (output.hasKey("cluster_file")) {
+              const char *outputFile =
+                  ZJsonParser::stringValue(output["cluster_file"]);
+              if (outputFile != NULL) {
+                QFile file(getPath(RESULT_CLUSTERING));
+                if (file.exists()) {
+                  file.remove();
+                }
+
+                QFile::copy(outputFile, getPath(RESULT_CLUSTERING));
+                dump(QString(outputFile) + " saved.");
+
+                ZMatrix mat;
+                mat.importTextFile(getPath(RESULT_CLUSTERING).toStdString());
+
+                QString examplarDirPath = m_resultDir->get() + "/examplars";
+                QStringList nameFilter("*.swc");
+                QDir examplarDir(examplarDirPath);
+                QStringList oldSwcFileList = examplarDir.entryList(nameFilter);
+                foreach (QString swcFile, oldSwcFileList) {
+                  QFile(examplarDir.absoluteFilePath(swcFile)).remove();
+                }
+
+                ZFlyEmNeuronArray *neuronArray = getNeuronArray();
+                for (int i = 0; i < mat.getRowNumber(); ++i) {
+                  int isExamplar = iround(mat.at(i, 1));
+                  if (isExamplar == 1) {
+                    ZFlyEmNeuron &neuron = (*neuronArray)[i];
+                    neuron.getModel()->save(examplarDirPath.toStdString() +
+                          "/" + ZString::getBaseName(neuron.getModelPath()));
+                  }
+                }
+                dump(examplarDirPath + " updated.", true);
+              } else {
+                dump("Cannot finish the task for unknown reasons.");
+              }
+            } else {
+              dump("No output key found.");
+            }
+          } else {
+            dump("Cannot finish the task for unknown reasons.");
+          }
+        } else {
+          dump("No Matlab found. This function requires Matlab.");
+        }
+        /*
+        QProcess::execute(
+              "/Applications/MATLAB.app/bin/matlab < "
+              "/Users/zhaot/Work/SLAT/matlab/SLAT/run/flyem/tz_run_flyem_clustering_command.m "
+              "-nodesktop -nosplash");
+
+        frame->assignClass(GET_DATA_DIR + "/tmp/labels.txt");
+        */
+      } else {
+        dump("Unable to generate similarity matrix");
+      }
+    }
+  }
 }

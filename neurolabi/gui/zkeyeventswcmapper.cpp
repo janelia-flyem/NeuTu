@@ -1,4 +1,5 @@
 #include "zkeyeventswcmapper.h"
+#include <QKeyEvent>
 
 ZKeyEventSwcMapper::ZKeyEventSwcMapper(NeuTube::Document::ETag tag) :
   m_docTag(tag)

@@ -45,17 +45,18 @@ public:
   ZStack* readBodyLabel(
       int x0, int y0, int z0, int width, int height, int depth);
   QString readInfo(const QString &dataType);
+
   std::set<int> readBodyId(
       int x0, int y0, int z0, int width, int height, int depth);
   std::set<int> readBodyId(const ZIntPoint &firstCorner,
                               const ZIntPoint &lastCorner);
   std::set<int> readBodyId(size_t minSize);
   std::set<int> readBodyId(size_t minSize, size_t maxSize);
+  std::set<int> readBodyId(const ZDvidFilter &filter);
+
   QByteArray readKeyValue(const QString &dataName, const QString &key);
   QStringList readKeys(const QString &dataName,
                        const QString &minKey, const QString &maxKey);
-
-  std::set<int> readBodyId(const ZDvidFilter &filter);
 
   ZClosedCurve* readRoiCurve(const std::string &key, ZClosedCurve *result);
   ZIntCuboid readBoundBox(int z);
