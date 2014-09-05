@@ -40,4 +40,4 @@ The binary version for dark field neuron reconstruction can be downloaded from
 
     http://www.neutracing.com
 
-Contact Ting Zhao: zhaot@janelia.hhmi.org
+Contact Ting Zhao: zhaot@janelia.hhmi.org for any questions or comments.
