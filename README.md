@@ -28,9 +28,16 @@ See neurolabi/Compile_Windows.txt for more details.
 
 ## Configuration
 
-### General version
+### The edition for dark field neuron reconstruction
 Copy neurolabi/gui/config.xml to the folder containing the executable 
 
-## Need help?
+### The edition for FLyEM
+Copy config_flyem.xml and neurolabi/json to the folder containing the executable
+
+## Other information
+ 
+The binary version for dark field neuron reconstruction can be downloaded from 
+
+    http://www.neutracing.com
 
 Contact Ting Zhao: zhaot@janelia.hhmi.org
