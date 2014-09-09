@@ -935,7 +935,7 @@ int Z3DWindow::channelNumber()
     return 0;
   }
 
-  if (m_doc == NULL) {
+  if (!m_doc) {
     return 0;
   }
 

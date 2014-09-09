@@ -325,7 +325,7 @@ void ZMovieMaker::act(int timeStep)
 
 ZStackDoc* ZMovieMaker::getAcademy()
 {
-  if (m_academy == NULL) {
+  if (!m_academy) {
     m_academy = ZSharedPointer<ZStackDoc>(new ZStackDoc(NULL, NULL));
   }
 

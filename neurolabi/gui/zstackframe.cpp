@@ -112,7 +112,7 @@ void ZStackFrame::createView()
 
 void ZStackFrame::addDocData(const ZStackDocReader &reader)
 {
-  if (m_doc == NULL) {
+  if (!m_doc) {
     createDocument();
   }
   m_doc->addData(reader);
@@ -243,7 +243,7 @@ void ZStackFrame::disconnectAll()
 void ZStackFrame::setDocument(ZSharedPointer<ZStackDoc> doc)
 {
   if (m_doc.get() != doc.get()) {
-    if (m_doc != NULL) {
+    if (m_doc) {
       UPDATE_DOC_SIGNAL_SLOT(disconnect);
     }
     m_doc = doc;
@@ -726,7 +726,7 @@ QString ZStackFrame::briefInfo() const
 
 QString ZStackFrame::info() const
 {
-  if ((document() != NULL) && view() != NULL) {
+  if ((document()) && view() != NULL) {
     QString info = document()->getStack()->sourcePath().c_str();
     info +=
       QString("\n %1 x %2 => %3 x %4").arg(document()->getStack()->width()).
