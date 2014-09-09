@@ -658,7 +658,7 @@ QImage::Format ZStackView::stackKindToImageFormat(int kind)
 
 ZStack* ZStackView::stackData()
 {
-  return (buddyDocument() != NULL) ? buddyDocument()->getStack() : NULL;
+  return (buddyDocument()) ? buddyDocument()->getStack() : NULL;
 }
 
 int ZStackView::maxSliceIndex()
@@ -711,7 +711,7 @@ void ZStackView::updateImageScreen()
 {
   m_paintBundle.unsetSwcNodeList();
   m_paintBundle.clearAllDrawableLists();
-  if (buddyDocument() != NULL) {
+  if (buddyDocument()) {
     m_paintBundle.setStackOffset(buddyDocument()->getStackOffset());
   }
 
