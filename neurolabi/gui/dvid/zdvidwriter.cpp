@@ -186,3 +186,15 @@ void ZDvidWriter::writeBoundBox(const ZIntCuboid &cuboid, int z)
 
   QProcess::execute(command);
 }
+
+void ZDvidWriter::createKey(const std::string &key)
+{
+  QString command = QString(
+        "curl -X POST -H \"Content-Type: application/json\" -d '{}' "
+        "%1/api/dataset/%2/new/keyvalue/%3").arg(m_dvidClient->getServer()).
+      arg(m_dvidClient->getUuid()).arg(key.c_str());
+
+  qDebug() << command;
+
+  QProcess::execute(command);
+}

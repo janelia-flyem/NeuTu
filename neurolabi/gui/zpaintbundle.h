@@ -16,8 +16,9 @@
 
 namespace impl {
 
-// note: dereference of this iterator return a pointer to [const] ZStackObject, not reference to pointer,
-// so you can not use it to change pointer itself
+// note: dereference of this iterator return a pointer to [const] ZStackObject
+//       instead of a reference to the pointer, so you can not use it to change
+//       the pointer itself.
 template<class TPaintBundle, class TStackDrawablePtr>
 class drawable_iter
     : public boost::iterator_facade<

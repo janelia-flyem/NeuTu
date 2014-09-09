@@ -386,25 +386,25 @@ void Z3DPunctaFilter::prepareData()
   bool needUpdateWidget = false;
   QList<QString> allSources;
   for (size_t i=0; i<m_origPunctaList.size(); ++i) {
-    int idx = allSources.indexOf(m_origPunctaList[i]->source());
+    int idx = allSources.indexOf(m_origPunctaList[i]->getSource().c_str());
     if (idx == -1) {
-      allSources.push_back(m_origPunctaList[i]->source());
+      allSources.push_back(m_origPunctaList[i]->getSource().c_str());
       idx = allSources.size() - 1;
     }
     QString guiname = QString("Source %1 Color").arg(idx + 1);
-    if (m_sourceColorMapper.find(m_origPunctaList[i]->source()) == m_sourceColorMapper.end()) {
-      m_sourceColorMapper[m_origPunctaList[i]->source()] =
+    if (m_sourceColorMapper.find(m_origPunctaList[i]->getSource().c_str()) == m_sourceColorMapper.end()) {
+      m_sourceColorMapper[m_origPunctaList[i]->getSource().c_str()] =
           new ZVec4Parameter(guiname, glm::vec4(ZRandomInstance.randReal<float>(),
                                                 ZRandomInstance.randReal<float>(),
                                                 ZRandomInstance.randReal<float>(),
                                                 1.f));
-      m_sourceColorMapper[m_origPunctaList[i]->source()]->setStyle("COLOR");
-      connect(m_sourceColorMapper[m_origPunctaList[i]->source()], SIGNAL(valueChanged()),
+      m_sourceColorMapper[m_origPunctaList[i]->getSource().c_str()]->setStyle("COLOR");
+      connect(m_sourceColorMapper[m_origPunctaList[i]->getSource().c_str()], SIGNAL(valueChanged()),
           this, SLOT(prepareColor()));
-      addParameter(m_sourceColorMapper[m_origPunctaList[i]->source()]);
+      addParameter(m_sourceColorMapper[m_origPunctaList[i]->getSource().c_str()]);
       needUpdateWidget = true;
     } else {
-      m_sourceColorMapper[m_origPunctaList[i]->source()]->setName(guiname);
+      m_sourceColorMapper[m_origPunctaList[i]->getSource().c_str()]->setName(guiname);
     }
   }
   // remove colors for not exist puncta source
@@ -445,7 +445,7 @@ void Z3DPunctaFilter::prepareColor()
 #ifdef _DEBUG_
       //std::cout << m_punctaList[i]->source().toStdString() << std::endl;
 #endif
-      glm::vec4 color = m_sourceColorMapper[m_punctaList[i]->source()]->get();
+      glm::vec4 color = m_sourceColorMapper[m_punctaList[i]->getSource().c_str()]->get();
       m_pointColors.push_back(color);
     }
   } else if (m_colorMode.isSelected("Random Color")) {

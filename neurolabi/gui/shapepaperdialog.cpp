@@ -389,10 +389,15 @@ void ShapePaperDialog::predictFromOrtAdjustment()
 //  const double var1 = 0.11591;
 //  const double var2 = 1.031;
 
-  const double mu1 = -1.3287;
-  const double mu2 = 0.23399;
-  const double var1 = 0.2902;
-  const double var2 = 1.1109;
+//  const double mu1 = -1.3287;
+//  const double mu2 = 0.23399;
+//  const double var1 = 0.2902;
+//  const double var2 = 1.1109;
+
+  const double mu1 = -1.3304;
+  const double mu2 = 0.23895;
+  const double var1 = 0.28891;
+  const double var2 = 1.1047;
 
 //    const double mu1 = -1.4041;
 //    const double mu2 = 0.1346;
@@ -705,6 +710,8 @@ void ShapePaperDialog::on_allResultPushButton_clicked()
   tryOutput(RESULT_MODEL_SOURCE);
 
   tryOutput(RESULT_NEURON_INFO);
+
+  dump("Done");
 }
 
 void ShapePaperDialog::on_clusteringPushButton_clicked()
@@ -735,7 +742,7 @@ void ShapePaperDialog::on_clusteringPushButton_clicked()
                 }
 
                 QFile::copy(outputFile, getPath(RESULT_CLUSTERING));
-                dump(QString(outputFile) + " saved.");
+                dump(getPath(RESULT_CLUSTERING) + " saved.");
 
                 ZMatrix mat;
                 mat.importTextFile(getPath(RESULT_CLUSTERING).toStdString());

@@ -214,7 +214,7 @@ void ZLocsegChain::vrmlFprint(FILE *fp, const Vrml_Material *material,
 void ZLocsegChain::save(const char *filePath)
 {
   Write_Locseg_Chain(filePath, m_chain);
-  m_source = QString(filePath);
+  m_source = filePath;
 }
 
 bool ZLocsegChain::load(const char *filePath)
@@ -225,7 +225,7 @@ bool ZLocsegChain::load(const char *filePath)
 
   m_chain = Read_Locseg_Chain(filePath);
   updateBufferChain();
-  m_source = QString(filePath);
+  m_source = filePath;
 
   return true;
 }
@@ -385,8 +385,8 @@ QStringList ZLocsegChain::toStringList(const Stack *stack)
 {
   QStringList list;
   list.append(QString("Chain %1: %2 segments").arg(m_id).arg(length()));
-  if (m_source.isEmpty() == false) {
-    list.append(m_source);
+  if (m_source.empty() == false) {
+    list.append(m_source.c_str());
   }
 
   if (stack != NULL) {

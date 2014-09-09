@@ -153,6 +153,7 @@ using namespace std;
 #include "flyem/zflyemneuronfeatureanalyzer.h"
 #include "swc/zswcnodedistselector.h"
 #include "zmultitaskmanager.h"
+#include "dvid/zdvidbufferreader.h"
 #include "misc/miscutility.h"
 #include "test/zjsontest.h"
 #include "test/zswctreetest.h"
@@ -12706,6 +12707,116 @@ void ZTest::test(MainWindow *host)
                                 annotationConfig,
                                 FlyEm::SynapseLocation::CURRENT_SPACE,
                                 displayConfig);
+
+#endif
+
+#if 1
+  FlyEm::ZSynapseAnnotationArray synapseArray;
+  synapseArray.loadJson(GET_DATA_DIR + "/flyem/MB/MB6_TbarPredict_Global_fixed_y.json");
+
+  int count = 0;
+  std::string filePath = GET_DATA_DIR + "/flyem/MB/MB6_TbarPredict_Global_fixed_y.marker";
+  ofstream stream(filePath.c_str());
+  if (!stream.is_open()) {
+    cout << "Failed to open " << filePath << endl;
+  } else {
+    FlyEm::SynapseDisplayConfig displayConfig;
+    displayConfig.tBarColor.red = 255;
+    displayConfig.tBarColor.green = 0;
+    displayConfig.tBarColor.blue = 0;
+
+    for (FlyEm::SynapseLocation *synapse = synapseArray.beginSynapseLocation();
+         synapse != NULL; synapse = synapseArray.nextSynapseLocation()) {
+      if (synapse->isTBar()) {
+        stream << synapse->x() << ',' << synapse->y() << ',' << synapse->z()
+               << ',' << "3,1,,,"
+               << static_cast<int>(displayConfig.tBarColor.red) << ","
+               << static_cast<int>(displayConfig.tBarColor.green) << ","
+               << static_cast<int>(displayConfig.tBarColor.blue) << "," << endl;
+        ++count;
+      }
+    }
+
+    stream.close();
+  }
+
+  std::cout << count << " tbars found." << std::endl;
+#endif
+
+#if 0
+  FlyEm::ZSynapseAnnotationArray synapseArray;
+  synapseArray.loadJson(GET_DATA_DIR + "/flyem/MB/mb06-tbar-predict-dvid_0.78.json");
+
+  std::string roiObjPath = GET_DATA_DIR + "/flyem/MB/mb_roi.sobj";
+  //Get ROI
+  ZObject3dScan obj;
+  obj.load(roiObjPath);
+
+  //Get ROI stack
+  ZStack *stack = obj.toStackObject();
+
+  std::string filePath = GET_DATA_DIR + "/flyem/MB/mb06-tbar-predict-dvid_0.78.roi.marker";
+  ofstream stream(filePath.c_str());
+  if (!stream.is_open()) {
+    cout << "Failed to open " << filePath << endl;
+  } else {
+    FlyEm::SynapseDisplayConfig displayConfig;
+
+    for (FlyEm::SynapseLocation *synapse = synapseArray.beginSynapseLocation();
+         synapse != NULL; synapse = synapseArray.nextSynapseLocation()) {
+      if (synapse->isTBar()) {
+        int x = synapse->x() / 32;
+        int y = synapse->y() / 32;
+        int z = synapse->z() / 32;
+        if (stack->getIntValue(x, y, z) > 0) {
+          stream << synapse->x() << ',' << synapse->y() << ',' << synapse->z()
+                 << ',' << "3,1,,,"
+                 << static_cast<int>(displayConfig.tBarColor.red) << ","
+                 << static_cast<int>(displayConfig.tBarColor.green) << ","
+                 << static_cast<int>(displayConfig.tBarColor.blue) << "," << endl;
+        }
+      }
+    }
+
+    stream.close();
+  }
+  delete stack;
+//  FlyEm::SynapseAnnotationConfig annotationConfig;
+//  annotationConfig.swcDownsample1 = 0;
+//  annotationConfig.swcDownsample2 = 0;
+//  annotationConfig.sizeScale = 10.0;
+
+//  FlyEm::SynapseDisplayConfig displayConfig;
+//  displayConfig.mode = FlyEm::SynapseDisplayConfig::TBAR_ONLY;
+
+
+
+
+/*
+  synapseArray.exportMarkerFile(GET_DATA_DIR + "/flyem/MB/mb06-tbar-predict-dvid_0.78.block.marker",
+                                annotationConfig,
+                                FlyEm::SynapseLocation::CURRENT_SPACE,
+                                displayConfig);
+                                */
+
+#endif
+
+#if 0
+  ZDvidBufferReader reader;
+
+  qDebug() << reader.isReadable("http://emdata2.int.janelia.org:9000/api/node/43f/annotations/117");
+
+  tic();
+  reader.read("http://emdata2.int.janelia.org:9000/api/node/43f/annotations/117");
+  ptoc();
+
+  if (reader.getStatus() == ZDvidBufferReader::READ_OK) {
+    std::cout << "Reading succeeded" << std::endl;
+    std::cout << reader.getBuffer().size() << " bytes read in." << std::endl;
+    qDebug() << reader.getBuffer();
+  } else {
+    std::cout << "Reading failed" << std::endl;
+  }
 
 #endif
 }

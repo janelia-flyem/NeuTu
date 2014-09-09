@@ -373,6 +373,8 @@ private slots:
 
   void on_actionShape_Matching_triggered();
 
+  void on_actionOne_Column_triggered();
+
 private:
   void createActions();
   void createFileActions();

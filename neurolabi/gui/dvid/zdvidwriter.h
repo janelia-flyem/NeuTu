@@ -41,6 +41,13 @@ public:
                        const std::string jsonString);
   void writeBoundBox(const ZIntCuboid &cuboid, int z);
 
+  /*!
+   * \brief Create a new key in DVID.
+   *
+   * It does nothing if the key has already existed.
+   */
+  void createKey(const std::string &key);
+
 private:
   QEventLoop *m_eventLoop;
   ZDvidClient *m_dvidClient;

@@ -53,7 +53,7 @@ public:
   inline Locseg_Chain *data() { return m_chain; }
   void setId(int id) { m_id = id; }
   inline int id() const { return m_id; }
-  inline const QString source() const { return m_source; }
+  //inline const QString source() const { return m_source; }
   inline int heldNode() const { return m_heldNode; }
   inline double zScale() const { return m_zscale; }
   inline void setZScale(double zScale) { m_zscale = zScale; }
@@ -116,7 +116,7 @@ private:
   double m_zscale;
   int m_id;
   int m_heldNode;
-  QString m_source;
+  //QString m_source;
   bool m_ignorable;
 
   QColor m_oddColor;

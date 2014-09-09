@@ -444,7 +444,7 @@ string ZStackDoc::getSwcSource() const
 {
   string swcSource;
   if (m_swcList.size() == 1) {
-    swcSource = m_swcList.first()->source();
+    swcSource = m_swcList.first()->getSource();
   }
 
   return swcSource;
@@ -1855,10 +1855,10 @@ void ZStackDoc::addSwcTree(ZSwcTree *obj, bool uniqueSource)
   }
 
   if (uniqueSource) {
-    if (!obj->source().empty()) {
+    if (!obj->getSource().empty()) {
       QList<ZSwcTree*> treesToRemove;
       for (int i=0; i<m_swcList.size(); i++) {
-        if (m_swcList.at(i)->source() == obj->source()) {
+        if (m_swcList.at(i)->getSource() == obj->getSource()) {
           treesToRemove.push_back(m_swcList.at(i));
         }
       }
@@ -2082,7 +2082,7 @@ void ZStackDoc::exportChainFileList(const char *filepath)
   file.open(QIODevice::WriteOnly);
   QTextStream stream(&file);
   for (int i = 0; i < m_chainList.size(); i++) {
-    stream << m_chainList.at(i)->source() << '\n';
+    stream << m_chainList.at(i)->getSource().c_str() << '\n';
   }
   file.close();
 }
@@ -2151,7 +2151,7 @@ void ZStackDoc::importLocsegChain(const QStringList &fileList,
     if (objopt == APPEND_OBJECT) {   // if this file is already loaded, replace it
       QList<ZLocsegChain*> chainsToRemove;
       for (int i=0; i<m_chainList.size(); i++) {
-        if (m_chainList.at(i)->source() == file) {
+        if (m_chainList.at(i)->getSource().c_str() == file) {
           chainsToRemove.push_back(m_chainList.at(i));
         }
       }
@@ -2326,7 +2326,7 @@ void ZStackDoc::loadLocsegChain(const QString &filePath)
   if (!filePath.isEmpty()) {
     QList<ZLocsegChain*> chainsToRemove;
     for (int i=0; i<m_chainList.size(); i++) {
-      if (m_chainList.at(i)->source() == filePath) {
+      if (m_chainList.at(i)->getSource().c_str() == filePath) {
         chainsToRemove.push_back(m_chainList.at(i));
       }
     }
@@ -2356,7 +2356,7 @@ void ZStackDoc::importSwc(QStringList fileList, LoadObjectOption objopt)
     if (objopt == APPEND_OBJECT) {   // if this file is already loaded, replace it
       QList<ZSwcTree*> treesToRemove;
       for (int i=0; i<m_swcList.size(); i++) {
-        if (m_swcList.at(i)->source() == file.toStdString()) {
+        if (m_swcList.at(i)->getSource() == file.toStdString()) {
           treesToRemove.push_back(m_swcList.at(i));
         }
       }
@@ -2399,7 +2399,7 @@ void ZStackDoc::importPuncta(const QStringList &fileList, LoadObjectOption objop
     if (objopt == APPEND_OBJECT) {   // if this file is already loaded, replace it
       QList<ZPunctum*> punctaToRemove;
       for (int i=0; i<m_punctaList.size(); i++) {
-        if (m_punctaList.at(i)->source() == file) {
+        if (m_punctaList.at(i)->getSource().c_str() == file) {
           punctaToRemove.push_back(m_punctaList.at(i));
         }
       }
@@ -5654,42 +5654,71 @@ bool ZStackDoc::executeAddStrokeCommand(const QList<ZStroke2d*> &strokeList)
   return succ;
 }
 
-void ZStackDoc::addObject(
-    ZStackObject *obj, NeuTube::EDocumentableType type, ZDocPlayer::TRole role)
+void ZStackDoc::addObject(ZStackObject *obj, NeuTube::EDocumentableType type,
+                          ZDocPlayer::TRole role, bool uniqueSource)
 {
-  switch (type) {
-  case NeuTube::Documentable_SWC:
-  {
-    ZSwcTree *tree = dynamic_cast<ZSwcTree*>(obj);
-    if (tree != NULL) {
-      addSwcTree(tree, false);
-      if (role & ZDocPlayer::ROLE_ROI) {
-        tree->useCosmeticPen(true);
-        tree->updateHostState();
+  if (obj == NULL) {
+    return;
+  }
+
+  ZStackObject *oldObject = NULL;
+  if (uniqueSource && !obj->getSource().empty()) {
+    for (QList<ZStackObject*>::iterator iter = m_objectList.begin();
+         iter != m_objectList.end(); ++iter) {
+      ZStackObject *docObj = *iter;
+      if (docObj->getSource() == obj->getSource()) {
+        oldObject = docObj;
+        *iter = obj;
+        break;
       }
     }
   }
-    break;
-  case NeuTube::Documentable_PUNCTUM:
-    addPunctum(dynamic_cast<ZPunctum*>(obj));
-    break;
-  case NeuTube::Documentable_OBJ3D:
-    addObj3d(dynamic_cast<ZObject3d*>(obj));
-    break;
-  case NeuTube::Documentable_LOCSEG_CHAIN:
-    addLocsegChain(dynamic_cast<ZLocsegChain*>(obj));
-    break;
-  case NeuTube::Documentable_STROKE:
-    addStroke(dynamic_cast<ZStroke2d*>(obj));
-    break;
-  case NeuTube::Documentable_SPARSE_OBJECT:
-    addSparseObject(dynamic_cast<ZSparseObject*>(obj));
-    break;
-  default:
-    addObject(obj);
-    break;
-  }
 
+  if (oldObject == NULL) {
+    switch (type) {
+    case NeuTube::Documentable_SWC:
+    {
+      ZSwcTree *tree = dynamic_cast<ZSwcTree*>(obj);
+      if (tree != NULL) {
+        addSwcTree(tree, false);
+        if (role & ZDocPlayer::ROLE_ROI) {
+          tree->useCosmeticPen(true);
+          tree->updateHostState();
+        }
+      }
+    }
+      break;
+    case NeuTube::Documentable_PUNCTUM:
+      addPunctum(dynamic_cast<ZPunctum*>(obj));
+      break;
+    case NeuTube::Documentable_OBJ3D:
+      addObj3d(dynamic_cast<ZObject3d*>(obj));
+      break;
+    case NeuTube::Documentable_LOCSEG_CHAIN:
+      addLocsegChain(dynamic_cast<ZLocsegChain*>(obj));
+      break;
+    case NeuTube::Documentable_STROKE:
+      addStroke(dynamic_cast<ZStroke2d*>(obj));
+      break;
+    case NeuTube::Documentable_SPARSE_OBJECT:
+      addSparseObject(dynamic_cast<ZSparseObject*>(obj));
+      break;
+    default:
+      addObject(obj);
+      break;
+    }
+  } else {
+    switch (type) {
+    case NeuTube::Documentable_OBJ3D:
+    case NeuTube::Documentable_STROKE:
+    case NeuTube::Documentable_SPARSE_OBJECT:
+      obj->setTarget(ZStackObject::OBJECT_CANVAS);
+      break;
+    default:
+      break;
+    }
+    removeObject(oldObject, true);
+  }
   addPlayer(obj, type, role);
 }
 
@@ -6045,8 +6074,8 @@ void ZStackDoc::saveSwc(QWidget *parentWidget)
       ZSwcTree *tree = m_swcList[0];
       if (tree->hasGoodSourceName()) {
         tree->resortId();
-        tree->save(tree->source().c_str());
-        emit statusMessageUpdated(QString(tree->source().c_str()) + " saved.");
+        tree->save(tree->getSource().c_str());
+        emit statusMessageUpdated(QString(tree->getSource().c_str()) + " saved.");
       } else {
         ZString stackSource = stackSourcePath();
         QString fileName;
@@ -6066,7 +6095,7 @@ void ZStackDoc::saveSwc(QWidget *parentWidget)
           tree->setSource(fileName.toStdString());
           setSaved(NeuTube::Documentable_SWC, true);
           notifySwcModified();
-          emit statusMessageUpdated(QString(tree->source().c_str()) + " saved.");
+          emit statusMessageUpdated(QString(tree->getSource().c_str()) + " saved.");
         }
       }
     }
@@ -6802,7 +6831,7 @@ std::vector<ZStack*> ZStackDoc::createWatershedMask()
 
 void ZStackDoc::localSeededWatershed()
 {
-  removeObject(ZDocPlayer::ROLE_TMP_RESULT, true);
+  //removeObject(ZDocPlayer::ROLE_TMP_RESULT, true);
 
   if (!m_strokeList.isEmpty()) {
     ZStackWatershed engine;
@@ -6868,8 +6897,13 @@ void ZStackDoc::localSeededWatershed()
                      */
         obj->setColor(255, 255, 0, 180);
 
-        addObj3d(obj);
-        addPlayer(obj, NeuTube::Documentable_OBJ3D, ZDocPlayer::ROLE_TMP_RESULT);
+        std::string objectSource = "localSeededWatershed:Temporary_Border";
+        obj->setSource(objectSource);
+
+        addObject(obj, NeuTube::Documentable_OBJ3D, ZDocPlayer::ROLE_TMP_RESULT,
+                  true);
+        //addObj3d(obj);
+        //addPlayer(obj, NeuTube::Documentable_OBJ3D, ZDocPlayer::ROLE_TMP_RESULT);
         notifyObj3dModified();
       }
 
@@ -6922,7 +6956,6 @@ void ZStackDoc::seededWatershed()
                      iround(out->getOffset().getZ()));
                      */
         obj->setColor(255, 255, 0, 255);
-
         addObj3d(obj);
         addPlayer(obj, NeuTube::Documentable_OBJ3D, ZDocPlayer::ROLE_TMP_RESULT);
 

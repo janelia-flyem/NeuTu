@@ -446,7 +446,8 @@ HEADERS += mainwindow.h \
     shapepaperdialog.h \
     zparameterarray.h \
     zframefactory.h \
-    zactionbutton.h
+    zactionbutton.h \
+    dvid/zdvidbufferreader.h
 
 FORMS += settingdialog.ui \
     frameinfodialog.ui \
@@ -745,7 +746,8 @@ SOURCES += main.cpp \
     shapepaperdialog.cpp \
     zparameterarray.cpp \
     zframefactory.cpp \
-    zactionbutton.cpp
+    zactionbutton.cpp \
+    dvid/zdvidbufferreader.cpp
 
 OTHER_FILES += \
     extlib.pri

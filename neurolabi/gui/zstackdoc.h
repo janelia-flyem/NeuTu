@@ -387,8 +387,18 @@ public: /* puncta related methods */
   void addStroke(ZStroke2d *obj);
   void addSparseObject(ZSparseObject *obj);
 
+  /*!
+   * \brief Add an object
+   * \param obj
+   * \param type
+   * \param role
+   * \param uniqueSource Replace the object with the same nonempty source if it
+   *        is true. Note that if there are multiple objects with the same source
+   *        existing in the doc, only the first one is replaced.
+   */
   void addObject(ZStackObject *obj, NeuTube::EDocumentableType type,
-                 ZDocPlayer::TRole role = ZDocPlayer::ROLE_NONE);
+                 ZDocPlayer::TRole role = ZDocPlayer::ROLE_NONE,
+                 bool uniqueSource = false);
 
   /*!
    * \brief Add a palyer

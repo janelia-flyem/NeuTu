@@ -1,6 +1,7 @@
 #include "zflyemcoordinateconverter.h"
 #include "zerror.h"
 #include "zpoint.h"
+#include "dvid/zdvidinfo.h"
 
 ZFlyEmCoordinateConverter::ZFlyEmCoordinateConverter() :
   m_zStart(1490), m_margin(10)
@@ -15,6 +16,15 @@ void ZFlyEmCoordinateConverter::configure(const ZFlyEmDataInfo &dataInfo)
   m_voxelResolution = dataInfo.getVoxelResolution();
   m_margin = dataInfo.getBlockMargin();
   m_zStart = dataInfo.getStartCoordinates()[2];
+}
+
+void ZFlyEmCoordinateConverter::configure(const ZDvidInfo &dvidInfo)
+{
+  m_stackSize = dvidInfo.getStackSize();
+  m_voxelResolution[0] = dvidInfo.getVoxelResolution().voxelSizeX();
+  m_voxelResolution[1] = dvidInfo.getVoxelResolution().voxelSizeY();
+  m_voxelResolution[2] = dvidInfo.getVoxelResolution().voxelSizeZ();
+  m_zStart = dvidInfo.getStartCoordinates().getZ();
 }
 
 void ZFlyEmCoordinateConverter::setStackSize(int xDim, int yDim, int zDim)

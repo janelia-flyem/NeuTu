@@ -212,8 +212,6 @@ public:
   void print(int iterOption = SWC_TREE_ITERATOR_DEPTH_FIRST) const;
   std::string toString(int iterOption = SWC_TREE_ITERATOR_DEPTH_FIRST) const;
 
-  inline std::string source() const { return m_source; }
-
   // convert swc to locsegchains..., return next .tb file idx
   int saveAsLocsegChains(const char *prefix, int startNum);
 
@@ -223,8 +221,6 @@ public:
   void addRegularRoot(Swc_Tree_Node *tn);
 
   Swc_Tree_Node *maxLabelNode();
-
-  inline void setSource(std::string source) { m_source = source; }
 
   enum EComponent {
     DEPTH_FIRST_ARRAY, BREADTH_FIRST_ARRAY, LEAF_ARRAY, TERMINAL_ARRAY,
@@ -403,7 +399,7 @@ public:
    * \param source Source node closest to \a tree
    * \param A node in \a tree closest to the tree
    */
-  double distanceTo(ZSwcTree *tree, Swc_Tree_Node **source = NULL,
+  double distanceTo(ZSwcTree *tree, Swc_Tree_Node **getSource = NULL,
                     Swc_Tree_Node **target = NULL);
 
   /*!
@@ -413,7 +409,7 @@ public:
    *
    * \return The surface distance. It returns 0 if \a is not regular.
    */
-  double distanceTo(Swc_Tree_Node *source, Swc_Tree_Node **target = NULL) const;
+  double distanceTo(Swc_Tree_Node *getSource, Swc_Tree_Node **target = NULL) const;
 
   double distanceTo(
       double x, double y, double z, double zScale, Swc_Tree_Node **node = NULL) const;
@@ -649,7 +645,6 @@ private:
 
 private:
   Swc_Tree *m_tree;
-  std::string m_source;
   EStructrualMode m_smode;
 
   mutable bool m_iteratorReady; /* When this option is on, any iterator option changing

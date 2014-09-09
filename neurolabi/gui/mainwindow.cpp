@@ -6477,3 +6477,192 @@ void MainWindow::on_actionShape_Matching_triggered()
   m_shapePaperDlg->show();
   m_shapePaperDlg->raise();
 }
+
+void MainWindow::on_actionOne_Column_triggered()
+{
+  //Get dvid info
+  ZDvidTarget target;
+  target.set("http:emdata2.int.janelia.org:9000:43f");
+
+  ZDvidInfo dvidInfo;
+  ZDvidReader reader;
+  if (reader.open(target)) {
+    dvidInfo = reader.readGrayScaleInfo();
+  }
+
+  ZFlyEmCoordinateConverter converter;
+  converter.configure(dvidInfo);
+
+  std::string dataPath = GET_DATA_DIR + "/flyem/FIB/data_release/onecolumn";
+  std::string roiObjPath = dataPath + "/roi.sobj";
+
+  //Get ROI
+  ZObject3dScan obj;
+  obj.load(roiObjPath);
+
+  //Get ROI stack
+  ZStack *stack = obj.toStackObject();
+
+  std::string syanpseAnnotationPath = dataPath + "/annotations-synapse.json";
+
+  ZJsonObject synapseAnnotationJson;
+  synapseAnnotationJson.load(syanpseAnnotationPath);
+
+
+  ZJsonArray newSynapseArrayJson;
+
+  ZJsonArray synapseArrayJson(
+        synapseAnnotationJson["data"], ZJsonValue::SET_INCREASE_REF_COUNT);
+
+  std::set<int> bodyIdSet;
+
+  //Screen synapses
+  for (size_t i = 0; i < synapseArrayJson.size(); ++i) {
+    json_t *value = synapseArrayJson.at(i);
+    FlyEm::ZSynapseAnnotation synapse;
+    synapse.loadJsonObject(value);
+
+    ZJsonObject synapseJson(value, ZJsonValue::SET_INCREASE_REF_COUNT);
+
+    double x = synapse.getTBarRef()->x();
+    double y = synapse.getTBarRef()->y();
+    double z = synapse.getTBarRef()->z();
+    converter.convert(&x, &y, &z, ZFlyEmCoordinateConverter::RAVELER_SPACE,
+                      ZFlyEmCoordinateConverter::IMAGE_SPACE);
+
+    //If the syanse is in the ROI
+    ZIntPoint blockIndex = dvidInfo.getBlockIndex(x, y, z);
+    if (stack->getIntValue(
+          blockIndex.getX(), blockIndex.getY(), blockIndex.getZ()) > 0) {
+      ZJsonObject newSynapseJson;
+      newSynapseJson.setEntry("T-bar", synapseJson["T-bar"]);
+
+      //add the synapse
+      newSynapseArrayJson.append(newSynapseJson);
+
+      ZJsonArray newPartnerArrayJson;
+
+      //add the related body ID to the set
+      bodyIdSet.insert(synapse.getTBarRef()->getBodyId());
+      std::vector<FlyEm::SynapseLocation> *partnerArray = synapse.getPartnerArrayRef();
+      for (std::vector<FlyEm::SynapseLocation>::const_iterator iter = partnerArray->begin();
+           iter != partnerArray->end(); ++iter) {
+        const FlyEm::SynapseLocation &partner = *iter;
+        x = partner.x();
+        y = partner.y();
+        z = partner.z();
+        converter.convert(&x, &y, &z, ZFlyEmCoordinateConverter::RAVELER_SPACE,
+                          ZFlyEmCoordinateConverter::IMAGE_SPACE);
+
+        blockIndex = dvidInfo.getBlockIndex(x, y, z);
+        if (stack->getIntValue(
+              blockIndex.getX(), blockIndex.getY(), blockIndex.getZ()) > 0) {
+          bodyIdSet.insert(partner.getBodyId());
+          newPartnerArrayJson.append(partner.toJsonObject());
+        }
+      }
+      newSynapseJson.setEntry("partners", newPartnerArrayJson);
+    }
+  }
+
+  ZJsonObject newSynapseAnnotationJson;
+  newSynapseAnnotationJson.setEntry("data", newSynapseArrayJson);
+
+  //newSynapseAnnotationJson.print();
+
+  newSynapseAnnotationJson.dump(dataPath + "/annotations-synapse-cropped.json");
+
+  //Make body ID object
+  ZJsonObject bodyAnnotationJson;
+  bodyAnnotationJson.load(dataPath + "/annotations-body.json");
+
+  ZJsonArray bodyAnnotatonArrayJson(bodyAnnotationJson["data"],
+      ZJsonValue::SET_INCREASE_REF_COUNT);
+
+
+  ZJsonObject newBodyAnnotationJson;
+  ZJsonArray newBodyAnnotatonArrayJson;
+  for (size_t i = 0; i < bodyAnnotatonArrayJson.size(); ++i) {
+    ZJsonObject bodyJson = ZJsonObject(bodyAnnotatonArrayJson.at(i),
+                                       ZJsonValue::SET_INCREASE_REF_COUNT);
+    int bodyId = ZJsonParser::integerValue(bodyJson["body ID"]);
+    if (bodyIdSet.count(bodyId) > 0) {
+      newBodyAnnotatonArrayJson.append(bodyJson);
+    }
+  }
+  newBodyAnnotationJson.setEntry("data", newBodyAnnotatonArrayJson);
+  newBodyAnnotationJson.dump(dataPath + "/annotations-body-cropped.json");
+
+  //Crop skeletons and save them
+  ZStackSkeletonizer skeletonizer;
+  ZJsonObject config;
+  config.load(NeutubeConfig::getInstance().getApplicatinDir() +
+              "/json/skeletonize.json");
+  skeletonizer.configure(config);
+
+  ZDvidWriter writer;
+  writer.open(target);
+
+  for (std::set<int>::const_iterator iter = bodyIdSet.begin();
+       iter != bodyIdSet.end(); ++iter) {
+    int bodyId = *iter;
+    QString swcPath = QString("%1/swc/%2.swc").arg(dataPath.c_str()).arg(bodyId);
+    if (QFile(swcPath).exists()) {
+      continue;
+    }
+
+    ZSwcTree *tree = reader.readSwc(bodyId);
+
+    if (tree == NULL) {
+      ZObject3dScan obj = reader.readBody(bodyId);
+      tree = skeletonizer.makeSkeleton(obj);
+      writer.writeSwc(bodyId, tree);
+    }
+
+    if (tree != NULL) {
+      tree->forceVirtualRoot();
+      std::vector<Swc_Tree_Node*> nodeToDelete;
+      //build delete list
+      ZSwcTree::DepthFirstIterator treeIter(tree);
+      for (Swc_Tree_Node *tn = treeIter.begin(); tn != NULL;
+           tn = treeIter.next()) {
+        if (SwcTreeNode::isRegular(tn)) {
+          double x = SwcTreeNode::x(tn);
+          double y = SwcTreeNode::y(tn);
+          double z = SwcTreeNode::z(tn);
+          ZIntPoint blockIndex = dvidInfo.getBlockIndex(x, y, z);
+          if (stack->getIntValue(
+                blockIndex.getX(), blockIndex.getY(), blockIndex.getZ()) == 0) {
+            nodeToDelete.push_back(tn);
+          }
+        }
+      }
+
+      for (std::vector<Swc_Tree_Node*>::iterator iter = nodeToDelete.begin();
+           iter != nodeToDelete.end(); ++iter) {
+        Swc_Tree_Node *tn = *iter;
+        Swc_Tree_Node *parent = SwcTreeNode::parent(tn);
+        if (parent != NULL) {
+          SwcTreeNode::detachParent(tn);
+        }
+
+        Swc_Tree_Node *child = SwcTreeNode::firstChild(tn);
+        while (child != NULL) {
+          Swc_Tree_Node *nextSibling = SwcTreeNode::nextSibling(child);
+          SwcTreeNode::setParent(child, tree->root());
+          child = nextSibling;
+        }
+      }
+
+
+      if (tree->hasRegularNode()) {
+        tree->save(swcPath.toStdString());
+      }
+
+      delete tree;
+
+    } else {
+      std::cout << "The neuron " << bodyId <<  " has no skeleton" << std::endl;
+    }
+  }
+}

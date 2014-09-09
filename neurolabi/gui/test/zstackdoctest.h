@@ -24,7 +24,7 @@ TEST(ZStackDoc, Swc)
   doc.readSwc((GET_TEST_DATA_DIR + "/benchmark/bundle1/swc/1.swc").c_str());
   doc.saveSwc(GET_TEST_DATA_DIR + "/test1.swc");
   ASSERT_EQ(1, doc.getSwcList().size());
-  ASSERT_EQ(GET_TEST_DATA_DIR + "/test1.swc", doc.getSwcList().front()->source());
+  ASSERT_EQ(GET_TEST_DATA_DIR + "/test1.swc", doc.getSwcList().front()->getSource());
 
   ZSwcTree *tree = new ZSwcTree;
   tree->load(GET_TEST_DATA_DIR + "/benchmark/bundle1/swc/2.swc");
@@ -33,7 +33,7 @@ TEST(ZStackDoc, Swc)
 
   doc.saveSwc(GET_TEST_DATA_DIR + "/test2.swc");
   ASSERT_EQ(1, doc.getSwcList().size());
-  ASSERT_EQ(GET_TEST_DATA_DIR + "/test2.swc", doc.getSwcList().front()->source());
+  ASSERT_EQ(GET_TEST_DATA_DIR + "/test2.swc", doc.getSwcList().front()->getSource());
 }
 
 TEST(ZStackDoc, Player)

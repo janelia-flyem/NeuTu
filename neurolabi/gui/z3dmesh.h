@@ -135,7 +135,7 @@ private:
   std::vector<glm::vec3> m_normals;
   std::vector<glm::vec4> m_colors;
   std::vector<GLuint> m_indices;
-  QString m_source;
+  //QString m_source;
 };
 
 #endif // ZMESH_H

@@ -5,6 +5,7 @@
 #include "flyem/zflyemdatainfo.h"
 
 class ZPoint;
+class ZDvidInfo;
 
 class ZFlyEmCoordinateConverter
 {
@@ -19,6 +20,7 @@ public:
   };
 
   void configure(const ZFlyEmDataInfo &dataInfo);
+  void configure(const ZDvidInfo &dvidInfo);
 
   void setStackSize(int xDim, int yDim, int zDim);
   void setVoxelResolution(double xRes, double yRes, double zRes);

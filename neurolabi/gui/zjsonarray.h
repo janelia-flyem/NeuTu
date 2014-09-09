@@ -30,6 +30,12 @@ public:
   void append(const std::string &str);
 
   /*!
+   * \brief Append an element.
+   * \param obj The element to be appended. Nothing is done if it is NULL.
+   */
+  void append(json_t *obj);
+
+  /*!
    * \brief Get a number array from the json array.
    *
    * \return Returns an empty array if the object can not be converted into a
@@ -64,12 +70,6 @@ public:
    */
   bool decode(const std::string &str);
 
-private:
-  /*!
-   * \brief Append an element.
-   * \param obj The element to be appended. Nothing is done if it is NULL.
-   */
-  void append(json_t *obj);
 };
 
 #endif // ZJSONARRAY_H

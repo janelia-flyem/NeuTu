@@ -4,6 +4,9 @@
 #include "zqtheader.h"
 #include "zpainter.h"
 
+/*!
+ * \brief The abstract class of representing an 3D object
+ */
 class ZStackObject
 {
 public:
@@ -12,7 +15,16 @@ public:
 
   virtual const std::string& className() const = 0;
 
+  /*!
+   * \brief Set the selection state
+   */
   void setSelected(bool selected) { m_selected = selected; }
+
+  /*!
+   * \brief Get the selection state
+   *
+   * \return true iff the object is selected.
+   */
   bool isSelected() const { return m_selected; }
 
   enum Palette_Color {
@@ -50,15 +62,11 @@ public:
   void setColor(const QColor &n);
 
   void setAlpha(int alpha);
-
   int getAlpha();
 
   double getAlphaF();
-
   double getRedF();
-
   double getGreenF();
-
   double getBlueF();
 
   bool isOpaque();
@@ -77,6 +85,9 @@ public:
     m_usingCosmeticPen = state;
   }
 
+  inline std::string getSource() const { return m_source; }
+  inline void setSource(const std::string &source) { m_source = source; }
+
 protected:
   bool m_selected;
   bool m_isVisible;
@@ -85,6 +96,7 @@ protected:
   ETarget m_target;
   static double m_defaultPenWidth;
   bool m_usingCosmeticPen;
+  std::string m_source;
 };
 
 #define ZSTACKOBJECT_DEFINE_CLASS_NAME(c) \

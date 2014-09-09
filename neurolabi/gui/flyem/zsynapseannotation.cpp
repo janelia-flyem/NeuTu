@@ -29,6 +29,13 @@ SynapseLocation::SynapseLocation(EType type, int x, int y, int z, int bodyId,
   set(type, x, y, z, bodyId, confidence, status, multi);
 }
 
+void SynapseLocation::setLocation(int x, int y, int z)
+{
+  m_x = x;
+  m_y = y;
+  m_z = z;
+}
+
 void SynapseLocation::set(EType type, int x, int y, int z, int bodyId,
                           double confidence, const std::string &status,
                           bool multi)
@@ -171,6 +178,21 @@ void SynapseLocation::convertRavelerToImageSpace(int startZ, int height)
 {
   m_z -= startZ;
   m_y = height - 1 - m_y;
+}
+
+ZJsonObject SynapseLocation::toJsonObject() const
+{
+  ZJsonObject json;
+  json.setEntry("confidence", m_confidence);
+  json.setEntry("body ID", m_bodyId);
+
+  ZJsonArray locationJson;
+  locationJson.append(m_x);
+  locationJson.append(m_y);
+  locationJson.append(m_z);
+  json.setEntry("location", locationJson);
+
+  return json;
 }
 
 ZSynapseAnnotation::ZSynapseAnnotation() : m_tBar(SynapseLocation::TBAR)

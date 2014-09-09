@@ -2939,7 +2939,7 @@ const std::vector<Swc_Tree_Node *> &ZSwcTree::getSwcTreeNodeArray(
 
 bool ZSwcTree::hasGoodSourceName()
 {
-  if (ZFileType::fileType(source()) == ZFileType::SWC_FILE) {
+  if (ZFileType::fileType(getSource()) == ZFileType::SWC_FILE) {
     return true;
   }
 

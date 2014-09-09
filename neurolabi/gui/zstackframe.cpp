@@ -906,11 +906,11 @@ void ZStackFrame::setLocsegChainInfo(ZLocsegChain *chain, QString prefix,
     if (chain->heldNode() < 0) {
       m_statusInfo = QString("Chain %1 %2; %3 segments;")
                      .arg(chain->id())
-                     .arg(chain->source())
+                     .arg(chain->getSource().c_str())
                      .arg(chain->length());
     } else {
       m_statusInfo =  QString("Chain %1 [%2] %3").arg(chain->id()).
-                      arg(chain->heldNode()).arg(chain->source());
+                      arg(chain->heldNode()).arg(chain->getSource().c_str());
     }
   }
   m_statusInfo += suffix;

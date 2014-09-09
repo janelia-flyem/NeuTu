@@ -336,6 +336,8 @@
       </property>
       <addaction name="actionBundle"/>
       <addaction name="actionThumbnails"/>
+      <addaction name="separator"/>
+      <addaction name="actionOne_Column"/>
      </widget>
      <widget class="QMenu" name="menuSegmentation_2">
       <property name="title">
@@ -1288,6 +1290,11 @@
   <action name="actionShape_Matching">
    <property name="text">
     <string>Shape Analysis</string>
+   </property>
+  </action>
+  <action name="actionOne_Column">
+   <property name="text">
+    <string>One Column</string>
    </property>
   </action>
  </widget>

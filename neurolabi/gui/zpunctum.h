@@ -50,7 +50,7 @@ public:
   inline double radius() const { return m_radius; }
   inline const QString& name() const {return m_name;}
   inline const QString& comment() const {return m_comment;}
-  inline const QString& source() const {return m_source;}
+  //inline const QString& source() const {return m_source;}
   inline const QString& property1() const {return m_property1;}
   inline const QString& property2() const {return m_property2;}
   inline const QString& property3() const {return m_property3;}
@@ -71,7 +71,7 @@ public:
   inline void setProperty2(const QString &n) { m_property2 = n;}
   inline void setProperty3(const QString &n) { m_property3 = n;}
   //inline void setColor(const QColor &n) { m_color = n;}
-  inline void setSource(const QString &n) {m_source = n;}
+  //inline void setSource(const QString &n) {m_source = n;}
   inline void setScore(double s) { m_score = s; }
 
   void setFromMarker(const ZVaa3dMarker &marker);
@@ -108,7 +108,7 @@ private:
   QString m_property2;
   QString m_property3;
   //QColor m_color;
-  QString m_source;
+  //QString m_source;
   double m_score;  // detection score [-1.0 1.0]
 };
 

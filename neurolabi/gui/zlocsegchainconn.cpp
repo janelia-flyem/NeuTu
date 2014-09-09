@@ -177,12 +177,12 @@ void ZLocsegChainConn::writeXml(QXmlStreamWriter &xml)
   xml.writeStartElement("connection");
 
   xml.writeStartElement("hook");
-  xml.writeTextElement("filePath", m_hookChain->source());
+  xml.writeTextElement("filePath", m_hookChain->getSource().c_str());
   xml.writeTextElement("spot", QString("%1").arg(m_hookSpot));
   xml.writeEndElement();
 
   xml.writeStartElement("loop");
-  xml.writeTextElement("filePath", m_loopChain->source());
+  xml.writeTextElement("filePath", m_loopChain->getSource().c_str());
   xml.writeTextElement("spot", QString("%1").arg(m_loopSpot));
   xml.writeEndElement();
 
@@ -197,9 +197,9 @@ void ZLocsegChainConn::print()
 {
   std::cout << "conn" << std::endl;
   std::cout << m_mode << std::endl;
-  std::cout << m_hookChain->source().toLocal8Bit().constData() << std::endl;
+  std::cout << m_hookChain->getSource() << std::endl;
   std::cout << m_hookSpot << std::endl;
-  std::cout << m_loopChain->source().toLocal8Bit().constData() << std::endl;
+  std::cout << m_loopChain->getSource() << std::endl;
   std::cout << m_loopSpot << std::endl;
 }
 

@@ -204,7 +204,8 @@ HEADERS +=$${PWD}/zstackprocessor.h \
    $${PWD}/zstackobject.h \
    $${PWD}/zobject3dfactory.h \
    $${PWD}/zclosedcurve.h \
-   $${PWD}/zflyemutilities.h
+   $${PWD}/zflyemutilities.h \
+    dvid/zdvidurl.h
 
 SOURCES +=$${PWD}/zstackprocessor.cpp \
    $${PWD}/zstack.cxx \
@@ -394,4 +395,5 @@ SOURCES +=$${PWD}/zstackprocessor.cpp \
    $${PWD}/zstackobject.cpp \
    $${PWD}/zobject3dfactory.cpp \
    $${PWD}/zclosedcurve.cpp \
-   $${PWD}/zflyemutilities.cpp
+   $${PWD}/zflyemutilities.cpp \
+    dvid/zdvidurl.cpp

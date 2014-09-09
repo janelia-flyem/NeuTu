@@ -1220,7 +1220,7 @@ void Z3DWindow::selectedSwcChangedFrom3D(ZSwcTree *p, bool append)
     m_doc->setSwcSelected(p, true);
   }
 
-  statusBar()->showMessage(p->source().c_str());
+  statusBar()->showMessage(p->getSource().c_str());
 }
 
 void Z3DWindow::selectedSwcTreeNodeChangedFrom3D(Swc_Tree_Node *p, bool append)
@@ -2724,7 +2724,7 @@ void Z3DWindow::showSelectedSwcInfo()
   if (!treeSet->empty()) {
     for (std::set<ZSwcTree*>::iterator iter = treeSet->begin();
          iter != treeSet->end(); ++iter) {
-      textStream << "<p><font color=\"blue\">" + (*iter)->source() + "</font></p>";
+      textStream << "<p><font color=\"blue\">" + (*iter)->getSource() + "</font></p>";
       textStream << "<p>Overall length: " << (*iter)->length() << "</p>";
       std::set<int> typeList = (*iter)->typeSet();
       if (typeList.size() > 1) {
@@ -2897,9 +2897,9 @@ void Z3DWindow::saveSelectedSwc()
   QString fileName = "";
 
   if (!treeSet->empty()) {
-    if (!(*treeSet->begin())->source().empty()) {
-      if ((*treeSet->begin())->source()[0] != '#') {
-        fileName = QString((*treeSet->begin())->source().c_str());
+    if (!(*treeSet->begin())->getSource().empty()) {
+      if ((*treeSet->begin())->getSource()[0] != '#') {
+        fileName = QString((*treeSet->begin())->getSource().c_str());
       }
     }
   }
