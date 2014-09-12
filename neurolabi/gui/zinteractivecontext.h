@@ -5,6 +5,11 @@
 #ifndef ZINTERACTIVECONTEXT_H
 #define ZINTERACTIVECONTEXT_H
 
+#include <QRect>
+
+class ZPoint;
+class ZImageWidget;
+
 class ZInteractiveContext
 {
 public:
@@ -102,6 +107,7 @@ public:
   inline void setExitingEdit(bool s) { m_exitingEdit = s; }
   inline bool isExitingEdit() const { return m_exitingEdit; }
 
+  //void setView(const QRect &projRegion, const QRect &viewPort);
 
 private:
   MarkPunctaMode m_markPunctaMode;
@@ -113,6 +119,9 @@ private:
   SwcEditMode m_swcEditMode;
   StrokeEditMode m_strokeEditMode;
   bool m_exitingEdit;
+  //ZImageWidget *m_imageWidget;
+  //QRect m_projRegion;
+  //QRect m_viewPort;
 };
 
 #endif // ZINTERACTIVECONTEXT_H

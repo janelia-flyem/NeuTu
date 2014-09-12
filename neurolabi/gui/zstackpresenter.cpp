@@ -63,8 +63,9 @@ ZStackPresenter::ZStackPresenter(ZStackFrame *parent) : QObject(parent),
   m_stackContextMenu = NULL;
   createActions();
 
-  m_leftButtonReleaseMapper.setContext(&m_interactiveContext);
-  m_moveMapper.setContext(&m_interactiveContext);
+  //m_leftButtonReleaseMapper.setContext(&m_interactiveContext);
+  //m_moveMapper.setContext(&m_interactiveContext);
+  m_mouseEventProcessor.setInteractiveContext(&m_interactiveContext);
 #ifdef _DEBUG_2
   ZEllipse *ellipse = new ZEllipse(QPointF(50, 50), 10, 5);
   ellipse->setColor(255, 0, 0);
@@ -253,12 +254,6 @@ void ZStackPresenter::createSwcActions()
           this, SLOT(enterSwcExtendMode()));
   m_swcExtendAction->setIcon(QIcon(":/images/extend.png"));
   m_actionMap[ACTION_EXTEND_SWC_NODE] = m_swcExtendAction;
-#if 0
-  m_swcSmartExtendAction = new QAction(tr("Smart extension"), this);
-  connect(m_swcSmartExtendAction, SIGNAL(triggered()),
-          this, SLOT(enterSwcSmartExtendMode()));
-  m_actionMap[ACTION_SMART_EXTEND_SWC_NODE] = m_swcSmartExtendAction;
-#endif
 
   m_swcMoveSelectedAction =
       new  QAction(tr("Move Selected (Shift+Mouse)"), this->parent());
@@ -269,24 +264,6 @@ void ZStackPresenter::createSwcActions()
           this, SLOT(enterSwcMoveMode()));
   m_actionMap[ACTION_MOVE_SWC_NODE] = m_swcMoveSelectedAction;
 
-#if 0
-  m_swcDeleteAction = new  QAction(tr("Delete"), parent());
-  m_swcDeleteAction->setStatusTip("Delete selected nodes.");
-  m_swcDeleteAction->setShortcut(Qt::Key_X);
-  m_swcDeleteAction->setIcon(QIcon(":/images/delete.png"));
-  connect(m_swcDeleteAction, SIGNAL(triggered()),
-          this, SLOT(deleteSwcNode()));
-
-  m_swcConnectSelectedAction = new QAction(tr("Connect"), this);
-  m_swcConnectSelectedAction->setShortcut(Qt::Key_C);
-  connect(m_swcConnectSelectedAction, SIGNAL(triggered()),
-          this, SLOT(connectSelectedSwcNode()));
-
-  m_swcBreakSelectedAction = new QAction(tr("Break"), this);
-  m_swcBreakSelectedAction->setShortcut(Qt::Key_B);
-  connect(m_swcBreakSelectedAction, SIGNAL(triggered()),
-          this, SLOT(breakSelectedSwcNode()));
-#endif
   m_swcLockFocusAction = new QAction(tr("Lock Focus"), this);
   m_swcLockFocusAction->setIcon(QIcon(":/images/change_focus.png"));
   connect(m_swcLockFocusAction, SIGNAL(triggered()),
@@ -464,70 +441,7 @@ void ZStackPresenter::addPunctaEditFunctionToRightMenu()
   updateRightMenu(m_deleteSelectedAction, false);
   updateRightMenu(m_deleteAllPunctaAction, false);
 }
-#if 0
-void ZStackPresenter::addTubeEditFunctionToRightMenu()
-{
-  updateRightMenu(m_cutAction, false);
-#ifdef _ADVANCED_
-  updateRightMenu(m_breakAction, false);
-#endif
-  updateRightMenu(m_hookAction, false);
-  updateRightMenu(m_spHookAction, false);
-  updateRightMenu(m_linkAction, false);
-  updateRightMenu(m_mergeAction, false);
-  updateRightMenu(m_extendAction, false);
-#ifdef _ADVANCED_
-  updateRightMenu(m_walkAction, false);
-  updateRightMenu(m_checkConnAction, false);
-  updateRightMenu(m_connectAction, false);
-  updateRightMenu(m_disconnectAction, false);
-#endif
 
-  updateRightMenu(m_refineEndAction, false);
-
-  QMenu *selectmenu = new QMenu("Select");
-  selectmenu->addAction(m_neighborAction);
-  selectmenu->addAction(m_selectConnectedTubeAction);
-  updateRightMenu(selectmenu, false);
-
-  QMenu *submenu = new QMenu("Arrange");
-  submenu->addAction(m_frontAction);
-  submenu->addAction(m_backAction);
-  updateRightMenu(submenu, false);
-}
-#endif
-
-#if 0
-void ZStackPresenter::addSwcEditFunctionToRightMenu()
-{
-  if (buddyDocument()->hasSelectedSwcNode()) {
-    if (!buddyDocument()->hasMultipleSelectedSwcNode()) {
-      updateRightMenu(m_swcConnectToAction, false);
-      updateRightMenu(m_swcExtendAction, false);
-      //updateRightMenu(m_swcSmartExtendAction, false);
-    } else {
-      updateRightMenu(m_swcConnectSelectedAction, false);
-      updateRightMenu(m_swcBreakSelectedAction, false);
-    }
-    updateRightMenu(m_swcDeleteAction, false);
-    //updateRightMenu(m_swcLockFocusAction, false);
-    updateRightMenu(m_swcChangeFocusAction, false);
-    updateRightMenu(m_swcEstimateRadiusAction, false);
-    //updateRightMenu(m_swcSelectAllNodeAction, false);
-  } else {
-    //updateRightMenu(m_swcSelectAllNodeAction, false);
-  }
-  QMenu *selectMenu = new QMenu("Select");
-  selectMenu->addAction(m_selectSwcNodeDownstreamAction);
-  selectMenu->addAction(m_selectSwcConnectionAction);
-  selectMenu->addAction(m_selectSwcNodeUpstreamAction);
-  selectMenu->addAction(m_selectSwcNodeBranchAction);
-  //selectMenu->addAction(m_selectSwcNodeTreeAction);
-  selectMenu->addAction(m_selectAllConnectedSwcNodeAction);
-  selectMenu->addAction(m_selectAllSwcNodeAction);
-  updateRightMenu(selectMenu, false);
-}
-#endif
 void ZStackPresenter::prepareView()
 {
   createDocDependentActions();
@@ -537,6 +451,9 @@ void ZStackPresenter::prepareView()
     updateLeftMenu(NULL);
   }
   buddyView()->rightMenu()->clear();
+  //m_interactiveContext.setView(buddyView()->imageWidget()->projectRegion(),
+  //                             buddyView()->imageWidget()->viewPort());
+  m_mouseEventProcessor.setImageWidget(buddyView()->imageWidget());
 }
 
 void ZStackPresenter::updateLeftMenu(QAction *action, bool clear)
@@ -648,7 +565,8 @@ const QPointF ZStackPresenter::stackPositionFromMouse(MouseButtonAction mba)
 
 //Status: 0 no response; 1: right menu popup; 2: left menu popup; 3: select
 ZStackPresenter::EMouseEventProcessStatus
-ZStackPresenter::processMouseReleaseForPuncta(QMouseEvent *event, double *positionInStack)
+ZStackPresenter::processMouseReleaseForPuncta(
+    QMouseEvent *event, const ZPoint &positionInStack)
 {
   if (!isPointInStack(positionInStack[0], positionInStack[1])) {
     return MOUSE_EVENT_PASSED;
@@ -853,7 +771,8 @@ const Swc_Tree_Node* ZStackPresenter::getSelectedSwcNode() const
 }
 
 ZStackPresenter::EMouseEventProcessStatus
-ZStackPresenter::processMouseReleaseForSwc(QMouseEvent *event, double *positionInStack)
+ZStackPresenter::processMouseReleaseForSwc(
+    QMouseEvent *event, const ZPoint &positionInStack)
 {
   ZInteractionEvent interactionEvent;
 
@@ -1016,7 +935,7 @@ bool ZStackPresenter::isPointInStack(double x, double y)
 
 ZStackPresenter::EMouseEventProcessStatus
 ZStackPresenter::processMouseReleaseForStroke(
-    QMouseEvent *event, double */*positionInStack*/)
+    QMouseEvent *event, const ZPoint &/*positionInStack*/)
 {
   EMouseEventProcessStatus status = MOUSE_EVENT_PASSED;
 
@@ -1124,12 +1043,31 @@ ZStackPresenter::processMouseReleaseForStroke(
 void ZStackPresenter::processMouseReleaseEvent(
     QMouseEvent *event, int sliceIndex)
 {
+  if (m_mouseEventProcessor.getLatestMouseEvent().getAction() ==
+      ZMouseEvent::ACTION_DOUBLE_CLICK) {
+    return;
+  }
+
+#if 0
+  ZMouseEvent mouseEvent;
+  mouseEvent.set(event, ZMouseEvent::ACTION_RELEASE, sliceIndex);
+
+  //distinguish from double click
   if (!(m_mouseLeftButtonPressed || m_mouseRightButtonPressed)) {
     //m_skipMouseReleaseEvent = false;
     return;
   }
+#endif
 
+  const ZMouseEvent& mouseEvent =
+      m_mouseEventProcessor.process(
+        event, ZMouseEvent::ACTION_RELEASE, sliceIndex);
+
+  ZPoint positionInStack = mouseEvent.getRawStackPosition();
+
+#if 0
   QPointF pos;
+
 
   if (event->button() == Qt::LeftButton) {
     m_mouseLeftReleasePosition[0] = event->x();
@@ -1144,14 +1082,16 @@ void ZStackPresenter::processMouseReleaseEvent(
     m_mouseRightButtonPressed = false;
     pos = stackPositionFromMouse(RIGHT_RELEASE);
   }
-
+#endif
+  /*
   double positionInStack[3];
   positionInStack[0] = pos.x();
   positionInStack[1] = pos.y();
   positionInStack[2] = sliceIndex;
+*/
+  ZMouseEventMapper::EOperation op = m_mouseEventProcessor.getOperation();
 
-  ZMouseEventMapper::EOperation op =
-      m_leftButtonReleaseMapper.getOperation(event);
+  //    m_leftButtonReleaseMapper.getOperation(mouseEvent);
 
   //switch (this->interactiveContext().exploreMode()) {
   switch (op) {
@@ -1159,7 +1099,8 @@ void ZStackPresenter::processMouseReleaseEvent(
   case ZMouseEventMapper::OP_CAPTURE_MOUSE_POSITION:
     if (isPointInStack(positionInStack[0], positionInStack[1])) {
       if (interactiveContext().isProjectView()) {
-        positionInStack[2] = buddyDocument()->maxIntesityDepth(pos.x(), pos.y());
+        positionInStack[2] = buddyDocument()->maxIntesityDepth(
+              positionInStack.x(), positionInStack.y());
       }
       this->interactiveContext().restoreExploreMode();
 
@@ -1218,6 +1159,47 @@ void ZStackPresenter::setViewPortCenter(int x, int y, int z)
   buddyView()->updateImageScreen();
 }
 
+void ZStackPresenter::moveImage(int mouseX, int mouseY)
+{
+  int x, y;
+  x = m_grabPosition.x()
+      - mouseX * buddyView()->imageWidget()->viewPort().width()
+      / buddyView()->imageWidget()->projectSize().width();
+  y = m_grabPosition.y()
+      - mouseY * buddyView()->imageWidget()->viewPort().height()
+      / buddyView()->imageWidget()->projectSize().height();
+
+  buddyView()->imageWidget()->setViewPortOffset(x, y);
+  buddyView()->updateImageScreen();
+}
+
+void ZStackPresenter::moveViewPort(int dx, int dy)
+{
+  buddyView()->imageWidget()->moveViewPort(dx, dy);
+  buddyView()->updateImageScreen();
+}
+
+void ZStackPresenter::moveViewPortTo(int x, int y)
+{
+  buddyView()->imageWidget()->setViewPortOffset(x, y);
+  buddyView()->updateImageScreen();
+}
+
+void ZStackPresenter::increaseZoomRatio()
+{
+  buddyView()->imageWidget()->increaseZoomRatio();
+}
+
+void ZStackPresenter::decreaseZoomRatio()
+{
+  buddyView()->imageWidget()->decreaseZoomRatio();
+  //buddyView()->updateImageScreen();
+  /*
+  m_interactiveContext.setView(buddyView()->imageWidget()->projectRegion(),
+                               buddyView()->imageWidget()->viewPort());
+                               */
+}
+
 void ZStackPresenter::processMouseMoveEvent(QMouseEvent *event)
 {
   m_mouseMovePosition[0] = event->x();
@@ -1227,7 +1209,9 @@ void ZStackPresenter::processMouseMoveEvent(QMouseEvent *event)
   else
     m_mouseMovePosition[2] = buddyView()->sliceIndex();
 
-  switch (m_moveMapper.getOperation(event)) {
+  ZMouseEvent mouseEvent;
+  mouseEvent.set(event, ZMouseEvent::ACTION_MOVE, m_mouseMovePosition[2]);
+  switch (m_moveMapper.getOperation(mouseEvent)) {
   case ZMouseEventMapper::OP_MOVE_OBJECT:
     /*
   if (m_interactiveContext.swcEditMode() == ZInteractiveContext::SWC_EDIT_MOVE_NODE &&
@@ -1248,19 +1232,7 @@ void ZStackPresenter::processMouseMoveEvent(QMouseEvent *event)
   //switch (this->interactiveContext().exploreMode()) {
   //case ZInteractiveContext::EXPLORE_MOVE_IMAGE:
   case ZMouseEventMapper::OP_MOVE_IMAGE:
-    {
-      int x, y;
-      x = m_grabPosition.x()
-          - event->x() * buddyView()->imageWidget()->viewPort().width()
-          / buddyView()->imageWidget()->projectSize().width();
-      y = m_grabPosition.y()
-          - event->y() * buddyView()->imageWidget()->viewPort().height()
-          / buddyView()->imageWidget()->projectSize().height();
-
-      buddyView()->imageWidget()->setViewPortOffset(x, y);
-      buddyView()->updateImageScreen();
-    }
-
+    moveImage(event->x(), event->y());
     break;
   //default:
     //if (m_mouseLeftButtonPressed == true){
@@ -1268,10 +1240,15 @@ void ZStackPresenter::processMouseMoveEvent(QMouseEvent *event)
           //ZInteractiveContext::STROKE_DRAW)
   case ZMouseEventMapper::OP_PAINT_STROKE:
   {
+    double dataX = event->x();
+    double dataY = event->y();
+    m_mouseEventProcessor.mapPositionFromWidgetToRawStack(&dataX, &dataY);
+    /*
     QPointF pos = buddyView()->imageWidget()->
         canvasCoordinate(QPoint(event->x(), event->y()));
     double dataX = pos.x();
     double dataY = pos.y();
+    */
     buddyDocument()->mapToDataCoord(&dataX, &dataY, NULL);
     m_stroke.append(dataX, dataY);
     buddyView()->paintActiveDecoration();
@@ -1339,8 +1316,7 @@ void ZStackPresenter::processMousePressEvent(QMouseEvent *event)
     m_mouseLeftPressPosition[1] = event->y();
     m_mouseLeftPressPosition[2] = buddyView()->sliceIndex();
     m_moveMapper.setPosition(event->x(), event->y(), buddyView()->sliceIndex(),
-                             ZMouseEventMapper::LEFT_BUTTON,
-                             ZMouseEventMapper::BUTTON_PRESS);
+                             Qt::LeftButton, ZMouseEvent::ACTION_PRESS);
 
     if (m_interactiveContext.swcEditMode() ==
         ZInteractiveContext::SWC_EDIT_MOVE_NODE &&
@@ -1609,62 +1585,56 @@ void ZStackPresenter::processKeyPressEvent(QKeyEvent *event)
   case Qt::Key_Equal:
   case Qt::Key_Up:
     if (event->modifiers() == Qt::NoModifier) {
-      buddyView()->imageWidget()->increaseZoomRatio();
+      increaseZoomRatio();
     }
     break;
   case Qt::Key_2:
     if (m_interactiveContext.strokeEditMode() !=
         ZInteractiveContext::STROKE_DRAW) {
-      buddyView()->imageWidget()->increaseZoomRatio();
+      increaseZoomRatio();
     }
     break;
   case Qt::Key_Minus:
   case Qt::Key_Down:
     if (event->modifiers() == Qt::NoModifier) {
-      buddyView()->imageWidget()->decreaseZoomRatio();
+      decreaseZoomRatio();
     }
     break;
   case Qt::Key_1:
     if (m_interactiveContext.strokeEditMode() !=
         ZInteractiveContext::STROKE_DRAW) {
-      buddyView()->imageWidget()->decreaseZoomRatio();
+      decreaseZoomRatio();
     }
     break;
   case Qt::Key_W:
     if (event->modifiers() == Qt::ShiftModifier) {
-      //setZoomOffset(m_zoomOffset.x(), m_zoomOffset.y() + 10);
-      buddyView()->imageWidget()->moveViewPort(0, 10);
+      moveViewPort(0, 10);
     } else {
-      //setZoomOffset(m_zoomOffset.x(), m_zoomOffset.y() + 1);
-      buddyView()->imageWidget()->moveViewPort(0, 1);
+      moveViewPort(0, 1);
     }
-    buddyView()->updateImageScreen();
     break;
   case Qt::Key_A:
     if (event->modifiers() == Qt::ShiftModifier) {
-      buddyView()->imageWidget()->moveViewPort(10, 0);
+      moveViewPort(10, 0);
     } else {
-      buddyView()->imageWidget()->moveViewPort(1, 0);
+      moveViewPort(1, 0);
     }
-    buddyView()->updateImageScreen();
     break;
 
   case Qt::Key_S:
     if (event->modifiers() == Qt::ShiftModifier) {
-      buddyView()->imageWidget()->moveViewPort(0, -10);
+      moveViewPort(0, -10);
     } else {
-      buddyView()->imageWidget()->moveViewPort(0, -1);
+      moveViewPort(0, -1);
     }
-    buddyView()->updateImageScreen();
     break;
 
   case Qt::Key_D:
     if (event->modifiers() == Qt::ShiftModifier) {
-      buddyView()->imageWidget()->moveViewPort(-10, 0);
+      moveViewPort(-10, 0);
     } else {
-      buddyView()->imageWidget()->moveViewPort(-1, 0);
+      moveViewPort(-1, 0);
     }
-    buddyView()->updateImageScreen();
     break;
 
   case Qt::Key_Left:
@@ -1927,16 +1897,18 @@ void ZStackPresenter::traceTube()
   QPointF dataPos = stackPositionFromMouse(LEFT_RELEASE);
   buddyView()->setScreenCursor(Qt::BusyCursor);
   if (buddyDocument()->getStack()->channelNumber() == 1) {
-//  if (buddyDocument()->stack()->depth() == 1) {
-//    buddyDocument()->traceRect(dataPos.x(), dataPos.y(),
-//                               m_mouseLeftReleasePosition[2]);
-//  } else {
+    const ZMouseEvent& event =
+        m_mouseEventProcessor.getMouseEvent(
+          Qt::LeftButton, ZMouseEvent::ACTION_RELEASE);
+
+    ZPoint pt = event.getRawStackPosition();
+    pt += buddyDocument()->getStackOffset();
+    buddyDocument()->executeTraceSwcBranchCommand(pt.x(), pt.y(), pt.z());
+
     /*
-    buddyDocument()->executeTraceTubeCommand(dataPos.x(), dataPos.y(),
-                                             m_mouseLeftReleasePosition[2]);
-                                             */
     buddyDocument()->executeTraceSwcBranchCommand(
           dataPos.x(), dataPos.y(), m_mouseLeftReleasePosition[2]);
+          */
 #if 0
     QUndoCommand *traceTubeCommand = new ZStackDocTraceTubeCommand(buddyDocument(),
                                                                    dataPos.x(), dataPos.y(),

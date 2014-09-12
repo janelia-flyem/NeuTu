@@ -12,9 +12,9 @@ public:
   ZObject3dFactory();
 
 public:
-  static ZObject3dArray* makeRegionBoundary(const ZStack &stack);
-  static ZObject3dScan makeObject3dScan(const ZStack &stack);
-  static ZObject3dScan* makeObject3dScan(
+  static ZObject3dArray* MakeRegionBoundary(const ZStack &stack);
+  static ZObject3dScan MakeObject3dScan(const ZStack &stack);
+  static ZObject3dScan* MakeObject3dScan(
       const ZStack &stack, ZObject3dScan *out);
 };
 

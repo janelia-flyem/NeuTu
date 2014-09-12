@@ -860,6 +860,7 @@ void ZStackView::resizeEvent(QResizeEvent *event)
 {
   setInfo();
   event->accept();
+  //buddyPresenter()->updateInteractiveContext();
 }
 
 

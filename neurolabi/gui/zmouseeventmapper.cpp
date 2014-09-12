@@ -2,27 +2,35 @@
 #include <QMouseEvent>
 #include "zinteractivecontext.h"
 #include "zintpoint.h"
+#include "zmouseevent.h"
 
 ZMouseEventMapper::ZMouseEventMapper(ZInteractiveContext *context) :
   m_context(context)
 {
 }
 
+#if 0
 ZMouseEventMapper::EOperation ZMouseEventMapper::getOperation(
     QMouseEvent */*event*/)
 {
   return OP_NULL;
 }
+#endif
 
+ZMouseEventMapper::EOperation ZMouseEventMapper::getOperation(
+    const ZMouseEvent &/*event*/) const
+{
+  return OP_NULL;
+}
 ////////////////////////////////////
 ZMouseEventMapper::EOperation ZMouseEventLeftButtonReleaseMapper::getOperation(
-    QMouseEvent *event)
+    const ZMouseEvent &event) const
 {
   EOperation op = OP_NULL;
   if (m_context != NULL) {
     switch (m_context->exploreMode()) {
     case ZInteractiveContext::EXPLORE_CAPTURE_MOUSE: //It triggers a processing step
-      if (event->modifiers() == Qt::ShiftModifier) {
+      if (event.getModifiers() == Qt::ShiftModifier) {
         op = OP_CAPTURE_MOUSE_POSITION;
       }
       break;
@@ -41,35 +49,37 @@ ZMouseEventMapper::EOperation ZMouseEventLeftButtonReleaseMapper::getOperation(
 }
 
 void ZMouseEventMapper::setPosition(
-    int x, int y, int z, EButton button, EAction action)
+    int x, int y, int z, Qt::MouseButton button, ZMouseEvent::EAction action)
 {
   m_position[button][action] = ZIntPoint(x, y, z);
 }
 
 ZIntPoint
-ZMouseEventMapper::getPosition(EButton button, EAction action) const
+ZMouseEventMapper::getPosition(Qt::MouseButton button,
+                               ZMouseEvent::EAction action) const
 {
+  ZIntPoint pt;
+
   if (m_position.count(button) > 0) {
     if (m_position.at(button).count(action) > 0) {
-      return m_position.at(button).at(action);
+      pt = m_position.at(button).at(action);
     }
   }
 
-  return ZIntPoint();
+  return pt;
 }
 
 /////////////////////////////////
 #define MOUSE_MOVE_IMAGE_THRESHOLD 25
 ZMouseEventMapper::EOperation ZMouseEventMoveMapper::getOperation(
-    QMouseEvent *event)
+    const ZMouseEvent &event) const
 {
   EOperation op = OP_NULL;
   if (m_context != NULL) {
     bool canMoveImage = false;
 
-    if (event->buttons() == Qt::LeftButton) {
-
-      if (event->modifiers() == Qt::ShiftModifier) {
+    if (event.getButtons() == Qt::LeftButton) {
+      if (event.getModifiers() == Qt::ShiftModifier) {
         if (m_context->swcEditMode() == ZInteractiveContext::SWC_EDIT_MOVE_NODE) {
           op = OP_MOVE_OBJECT;
         }
@@ -77,9 +87,10 @@ ZMouseEventMapper::EOperation ZMouseEventMoveMapper::getOperation(
       } else {
         if (m_context->swcEditMode() == ZInteractiveContext::SWC_EDIT_EXTEND ||
             m_context->swcEditMode() == ZInteractiveContext::SWC_EDIT_SMART_EXTEND) {
-          ZIntPoint pressPos = getPosition(LEFT_BUTTON, BUTTON_PRESS);
-          int dx = pressPos.getX() - event->x();
-          int dy = pressPos.getY() - event->y();
+          ZIntPoint pressPos =
+              getPosition(Qt::LeftButton, ZMouseEvent::ACTION_PRESS);
+          int dx = pressPos.getX() - event.getX();
+          int dy = pressPos.getY() - event.getY();
           if (dx * dx + dy * dy > MOUSE_MOVE_IMAGE_THRESHOLD) {
             canMoveImage = true;
           }

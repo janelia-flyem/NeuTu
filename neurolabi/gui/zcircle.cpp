@@ -74,7 +74,7 @@ void ZCircle::display(ZPainter &painter, int n,
   if (hasVisualEffect(VE_NO_FILL)) {
     painter.setBrush(Qt::NoBrush);
   }
-  display(&painter, n, style);
+  displayHelper(&painter, n, style);
   if (hasVisualEffect(VE_NO_FILL)) {
     painter.setBrush(oldBrush);
   }
@@ -103,7 +103,7 @@ double ZCircle::getAdjustedRadius(double r) const
   return adjustedRadius;
 }
 
-void ZCircle::display(ZPainter *painter, int stackFocus, Display_Style style) const
+void ZCircle::displayHelper(ZPainter *painter, int stackFocus, Display_Style style) const
 {
   UNUSED_PARAMETER(style);
 #if defined(_QT_GUI_USED_)

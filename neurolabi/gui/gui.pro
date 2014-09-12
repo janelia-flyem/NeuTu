@@ -447,7 +447,10 @@ HEADERS += mainwindow.h \
     zparameterarray.h \
     zframefactory.h \
     zactionbutton.h \
-    dvid/zdvidbufferreader.h
+    dvid/zdvidbufferreader.h \
+    zmouseevent.h \
+    zmouseeventrecorder.h \
+    zmouseeventprocessor.h
 
 FORMS += settingdialog.ui \
     frameinfodialog.ui \
@@ -747,7 +750,10 @@ SOURCES += main.cpp \
     zparameterarray.cpp \
     zframefactory.cpp \
     zactionbutton.cpp \
-    dvid/zdvidbufferreader.cpp
+    dvid/zdvidbufferreader.cpp \
+    zmouseevent.cpp \
+    zmouseeventrecorder.cpp \
+    zmouseeventprocessor.cpp
 
 OTHER_FILES += \
     extlib.pri

@@ -12710,7 +12710,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   FlyEm::ZSynapseAnnotationArray synapseArray;
   synapseArray.loadJson(GET_DATA_DIR + "/flyem/MB/MB6_TbarPredict_Global_fixed_y.json");
 
@@ -12818,5 +12818,12 @@ void ZTest::test(MainWindow *host)
     std::cout << "Reading failed" << std::endl;
   }
 
+#endif
+
+#if 1
+  ZDvidClient dvidClient;
+  dvidClient.setServer("emdata2.int.janelia.org", 9000);
+  dvidClient.setUuid("fa9");
+  dvidClient.postRequest(ZDvidRequest::DVID_UPLOAD_SWC, 0);
 #endif
 }

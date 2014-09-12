@@ -26,12 +26,6 @@ public:
   void readHead(const QString &url);
   bool isReadable(const QString &url);
 
-  void startReading();
-  void endReading(EStatus status);
-  void waitForReading();
-
-  bool isReadingDone() const;
-
   EStatus getStatus() const;
 
   inline const QByteArray& getBuffer() const {
@@ -50,6 +44,13 @@ private slots:
   void handleTimeout();
   void cancelReading();
   void readBuffer();
+
+private:
+  void startReading();
+  void endReading(EStatus status);
+  void waitForReading();
+
+  bool isReadingDone() const;
 
 private:
   QByteArray m_buffer;

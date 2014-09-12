@@ -18,6 +18,7 @@ class ZStackFactory
 {
 public:
   ZStackFactory();
+  virtual ~ZStackFactory();
 
   virtual ZStack* makeStack(ZStack *stack = NULL) const;
 

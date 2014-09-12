@@ -4,13 +4,18 @@
 #include "zobject3d.h"
 #include "zobject3darray.h"
 #include "zobject3dscan.h"
+#include "neutubeconfig.h"
 
 ZObject3dFactory::ZObject3dFactory()
 {
 }
 
-ZObject3dArray* ZObject3dFactory::makeRegionBoundary(const ZStack &stack)
+ZObject3dArray* ZObject3dFactory::MakeRegionBoundary(const ZStack &stack)
 {
+#ifdef _DEBUG_2
+  stack.save(GET_DATA_DIR + "/test.tif");
+#endif
+
   if (stack.kind() != GREY) {
     return NULL;
   }
@@ -44,8 +49,8 @@ ZObject3dArray* ZObject3dFactory::makeRegionBoundary(const ZStack &stack)
         if (originalStack->array[offset] != originalStack->array[offset - 1] ||
             originalStack->array[offset] != originalStack->array[offset + 1]) {
           maskStack->array[offset] = 1;
-          offset++;
         }
+        offset++;
       }
       offset++;
     }
@@ -59,8 +64,8 @@ ZObject3dArray* ZObject3dFactory::makeRegionBoundary(const ZStack &stack)
         if (originalStack->array[offset] != originalStack->array[offset - width] ||
             originalStack->array[offset] != originalStack->array[offset + width]) {
           maskStack->array[offset] = 1;
-          offset += width;
         }
+        offset += width;
       }
     }
   }
@@ -73,8 +78,8 @@ ZObject3dArray* ZObject3dFactory::makeRegionBoundary(const ZStack &stack)
         if (originalStack->array[offset] != originalStack->array[offset - area] ||
             originalStack->array[offset] != originalStack->array[offset + area]) {
           maskStack->array[offset] = 1;
-          offset += area;
         }
+        offset += area;
       }
     }
   }
@@ -88,7 +93,9 @@ ZObject3dArray* ZObject3dFactory::makeRegionBoundary(const ZStack &stack)
           int v = originalStack->array[offset];
           if (v > 0) {
             ZObject3d *obj = tmpArray[v];
-            obj->append(x, y, z);
+            obj->append(x + stack.getOffset().getX(),
+                        y + stack.getOffset().getY(),
+                        z + stack.getOffset().getZ());
           }
         }
         ++offset;
@@ -97,8 +104,20 @@ ZObject3dArray* ZObject3dFactory::makeRegionBoundary(const ZStack &stack)
   }
 
   //Create output array
-  ZObject3dArray *out = new ZObject3dArray;
+  ZObject3dArray *out = new ZObject3dArray(tmpArray.size());
   out->setSourceSize(width, height, depth);
+  int label = 0;
+  for (ZObject3dArray::iterator iter = tmpArray.begin();
+       iter != tmpArray.end(); ++iter, ++label) {
+    ZObject3d *obj = *iter;
+    if (obj != NULL) {
+      obj->setLabel(label);
+      (*out)[label] = obj;
+    }
+    *iter = NULL;
+  }
+
+  #if 0
   int label = 0;
   for (ZObject3dArray::iterator iter = tmpArray.begin();
        iter != tmpArray.end(); ++iter, ++label) {
@@ -111,13 +130,13 @@ ZObject3dArray* ZObject3dFactory::makeRegionBoundary(const ZStack &stack)
     }
     *iter = NULL;
   }
-
+#endif
   delete mask;
 
   return out;
 }
 
-ZObject3dScan* ZObject3dFactory::makeObject3dScan(
+ZObject3dScan* ZObject3dFactory::MakeObject3dScan(
     const ZStack &stack, ZObject3dScan *out)
 {
   if (out == NULL) {
@@ -131,10 +150,10 @@ ZObject3dScan* ZObject3dFactory::makeObject3dScan(
   return out;
 }
 
-ZObject3dScan ZObject3dFactory::makeObject3dScan(const ZStack &stack)
+ZObject3dScan ZObject3dFactory::MakeObject3dScan(const ZStack &stack)
 {
   ZObject3dScan obj;
-  makeObject3dScan(stack, &obj);
+  MakeObject3dScan(stack, &obj);
 
   return obj;
 }

@@ -40,7 +40,7 @@ public:
   virtual void save(const char *filePath);
   virtual bool load(const char *filePath);
 
-  void display(ZPainter *painter, int n, Display_Style style) const;
+  void displayHelper(ZPainter *painter, int n, Display_Style style) const;
 
   /*!
    * \brief Test if a circle is cut by a plane.

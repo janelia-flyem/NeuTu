@@ -90,6 +90,15 @@ ZPoint& ZPoint::operator +=(const ZPoint &pt)
   return *this;
 }
 
+ZPoint& ZPoint::operator +=(const ZIntPoint &pt)
+{
+  m_x += pt.getX();
+  m_y += pt.getY();
+  m_z += pt.getZ();
+
+  return *this;
+}
+
 ZPoint& ZPoint::operator -=(const ZPoint &pt)
 {
   m_x -= pt.m_x;

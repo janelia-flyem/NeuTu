@@ -56,6 +56,7 @@ public:
   QSize canvasSize() const;
   QSize screenSize() const;
   inline QSize projectSize() const { return m_projRegion.size(); }
+  inline const QRect& projectRegion() const { return m_projRegion; }
   inline const QRect& viewPort() const { return m_viewPort; }
 
   QPointF canvasCoordinate(QPoint widgetCoord) const;

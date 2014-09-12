@@ -47,6 +47,7 @@ public:
   double length() const;
 
   ZPoint& operator += (const ZPoint &pt);
+  ZPoint& operator += (const ZIntPoint &pt);
   ZPoint& operator -= (const ZPoint &pt);
   ZPoint& operator *= (const ZPoint &pt);
   ZPoint& operator /= (const ZPoint &pt);

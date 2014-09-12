@@ -6,6 +6,13 @@
 
 /*!
  * \brief The abstract class of representing an 3D object
+ *
+ * Each object has a source string, which helps identifying its identity. The
+ * source can be the file path where the object is loaded, it can also be a
+ * string serving as an ID. If the source is empty, it means the object does
+ * not have any source identification. How to use the source is up to the user,
+ * but it is recommended to use ZStackObjectSourceFactory to generate source
+ * for special purposes.
  */
 class ZStackObject
 {

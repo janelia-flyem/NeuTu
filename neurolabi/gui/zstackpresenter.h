@@ -18,6 +18,7 @@
 #include "zactionactivator.h"
 #include "zkeyeventswcmapper.h"
 #include "zmouseeventmapper.h"
+#include "zmouseeventprocessor.h"
 
 class ZStackView;
 class ZStackDoc;
@@ -156,6 +157,15 @@ public:
 
   void setViewMode(ZInteractiveContext::ViewMode mode);
 
+  //void updateInteractiveContext();
+
+  void moveImage(int mouseX, int mouseY);
+  void moveViewPort(int dx, int dy);
+  void moveViewPortTo(int x, int y);
+
+  void increaseZoomRatio();
+  void decreaseZoomRatio();
+
 public slots:
   void addDecoration(ZStackObject *obj, bool tail = true);
   void removeLastDecoration(ZStackObject *obj);
@@ -246,15 +256,15 @@ signals:
 
 private:
   EMouseEventProcessStatus processMouseReleaseForPuncta(
-      QMouseEvent *event, double *positionInStack);
+      QMouseEvent *event, const ZPoint &positionInStack);
   /*
   EMouseEventProcessStatus processMouseReleaseForTube(
       QMouseEvent *event, double *positionInStack);
       */
   EMouseEventProcessStatus processMouseReleaseForSwc(
-      QMouseEvent *event, double *positionInStack);
+      QMouseEvent *event, const ZPoint &positionInStack);
   EMouseEventProcessStatus processMouseReleaseForStroke(
-      QMouseEvent *event, double *positionInStack);
+      QMouseEvent *event, const ZPoint &positionInStack);
 
   bool processKeyPressEventForSwc(QKeyEvent *event);
   bool processKeyPressEventForStroke(QKeyEvent *event);
@@ -366,6 +376,8 @@ private:
   ZKeyEventSwcMapper m_swcKeyMapper;
   ZMouseEventLeftButtonReleaseMapper m_leftButtonReleaseMapper;
   ZMouseEventMoveMapper m_moveMapper;
+
+  ZMouseEventProcessor m_mouseEventProcessor;
 
 signals:
   void viewModeChanged();

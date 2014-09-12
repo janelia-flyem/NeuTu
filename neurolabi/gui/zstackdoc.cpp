@@ -92,6 +92,9 @@
 #include "zstackfactory.h"
 #include "zsparseobject.h"
 #include "zsparsestack.h"
+#include "zobject3dfactory.h"
+#include "zobject3darray.h"
+#include "zstackobjectsourcefactory.h"
 
 using namespace std;
 
@@ -6829,87 +6832,143 @@ std::vector<ZStack*> ZStackDoc::createWatershedMask()
   return maskArray;
 }
 
+void ZStackDoc::updateWatershedBoundaryObject(ZStack *out, ZIntPoint dsIntv)
+{
+  if (out != NULL) {
+    ZObject3dArray *objArray = ZObject3dFactory::MakeRegionBoundary(*out);
+    if (objArray != NULL) {
+      if (dsIntv.getX() > 0 || dsIntv.getY() > 0 || dsIntv.getZ() > 0) {
+        for (ZObject3dArray::iterator iter = objArray->begin();
+             iter != objArray->end(); ++iter) {
+          ZObject3d *obj = *iter;
+          if (obj != NULL) {
+            obj->upSample(dsIntv.getX(), dsIntv.getY(), dsIntv.getZ());
+          }
+        }
+      }
+
+      foreach (ZStroke2d *stroke, m_strokeList) {
+        ZObject3d *obj = objArray->take(stroke->getLabel());
+        if (obj != NULL) {
+          obj->setColor(stroke->getColor());
+          //ZString objectSource = "localSeededWatershed:Temporary_Border:";
+         // objectSource.appendNumber(stroke->getLabel());
+          obj->setSource(
+                ZStackObjectSourceFactory::MakeWatershedBoundarySource(
+                  stroke->getLabel()));
+          addObject(obj, NeuTube::Documentable_OBJ3D,
+                    ZDocPlayer::ROLE_TMP_RESULT, true);
+        }
+      }
+
+      delete objArray;
+    }
+  }
+}
+
 void ZStackDoc::localSeededWatershed()
 {
-  //removeObject(ZDocPlayer::ROLE_TMP_RESULT, true);
-
-  if (!m_strokeList.isEmpty()) {
-    ZStackWatershed engine;
-    ZStackArray seedMask = createWatershedMask();
-
-    ZStack *signalStack = m_stack;
-
-    ZIntPoint dsIntv(0, 0, 0);
-    if (signalStack->isVirtual()) {
-      if (m_sparseStack != NULL) {
-        signalStack = m_sparseStack->getStack();
-        dsIntv = m_sparseStack->getDownsampleInterval();
+  removeObject(ZDocPlayer::ROLE_TMP_RESULT, true);
+  if (hasStackData()) {
+    if (!m_strokeList.isEmpty()) {
+      ZStackWatershed engine;
+      ZStackArray seedMask = createWatershedMask();
+      ZStack *signalStack = m_stack;
+      ZIntPoint dsIntv(0, 0, 0);
+      if (signalStack->isVirtual()) {
+        if (m_sparseStack != NULL) {
+          signalStack = m_sparseStack->getStack();
+          dsIntv = m_sparseStack->getDownsampleInterval();
+        }
       }
-    }
 
 #ifdef _DEBUG_2
-    signalStack->save(GET_TEST_DATA_DIR + "/test.tif");
+      signalStack->save(GET_TEST_DATA_DIR + "/test.tif");
 #endif
+      if (signalStack != NULL) {
 
-    if (signalStack != NULL) {
-      seedMask.downsampleMax(dsIntv.getX(), dsIntv.getY(), dsIntv.getZ());
+        seedMask.downsampleMax(dsIntv.getX(), dsIntv.getY(), dsIntv.getZ());
 
-      advanceProgress(0.1);
-      QApplication::processEvents();
+        advanceProgress(0.1);
+        QApplication::processEvents();
 
-      Cuboid_I box;
-      seedMask.getBoundBox(&box);
-      const int xMargin = 10;
-      const int yMargin = 10;
-      const int zMargin = 20;
-      Cuboid_I_Expand_X(&box, xMargin);
-      Cuboid_I_Expand_Y(&box, yMargin);
-      Cuboid_I_Expand_Z(&box, zMargin);
+        Cuboid_I box;
+        seedMask.getBoundBox(&box);
+        const int xMargin = 10;
+        const int yMargin = 10;
+        const int zMargin = 20;
+        Cuboid_I_Expand_X(&box, xMargin);
+        Cuboid_I_Expand_Y(&box, yMargin);
+        Cuboid_I_Expand_Z(&box, zMargin);
 
-      engine.setRange(box);
-      ZStack *out = engine.run(signalStack, seedMask);
+        engine.setRange(box);
+        ZStack *out = engine.run(signalStack, seedMask);
 
-      advanceProgress(0.1);
-      QApplication::processEvents();
+        advanceProgress(0.1);
+        QApplication::processEvents();
 
-      Object_3d *objData = Stack_Region_Border(out->c_stack(), 6, TRUE);
+        //objArray = ZObject3dFactory::MakeRegionBoundary(*out);
+        //objData = Stack_Region_Border(out->c_stack(), 6, TRUE);
 
-      advanceProgress(0.1);
-      QApplication::processEvents();
+        updateWatershedBoundaryObject(out, dsIntv);
 
-      if (objData != NULL) {
-        ZObject3d *obj = new ZObject3d(objData);
-        /*
-      obj->translate(iround(getStackOffset().x()),
-                     iround(getStackOffset().y()),
-                     iround(getStackOffset().z()));
-                     */
+        advanceProgress(0.1);
+        QApplication::processEvents();
 
-        obj->translate(out->getOffset());
-        if (dsIntv.getX() > 0 || dsIntv.getY() > 0 || dsIntv.getZ() > 0) {
-          obj->upSample(dsIntv.getX(), dsIntv.getY(), dsIntv.getZ());
+        // C_Stack::kill(out);
+        //delete out;
+      }
+    }
+#if 0
+    if (objArray != NULL) {
+      if (dsIntv.getX() > 0 || dsIntv.getY() > 0 || dsIntv.getZ() > 0) {
+        for (ZObject3dArray::iterator iter = objArray->begin();
+             iter != objArray->end(); ++iter) {
+          ZObject3d *obj = *iter;
+          if (obj != NULL) {
+            obj->upSample(dsIntv.getX(), dsIntv.getY(), dsIntv.getZ());
+          }
+        }
+      }
+      foreach (ZStroke2d *stroke, m_strokeList) {
+        ZObject3d *obj = objArray->take(stroke->getLabel());
+        if (obj == NULL) {
+          obj = new ZObject3d;
         }
 
-        /*
-      obj->translate(iround(out->getOffset().getX()),
-                     iround(out->getOffset().getY()),
-                     iround(out->getOffset().getZ()));
-                     */
-        obj->setColor(255, 255, 0, 180);
-
-        std::string objectSource = "localSeededWatershed:Temporary_Border";
+        obj->setColor(stroke->getColor());
+        ZString objectSource = "localSeededWatershed:Temporary_Border:";
+        objectSource.appendNumber(stroke->getLabel());
         obj->setSource(objectSource);
-
         addObject(obj, NeuTube::Documentable_OBJ3D, ZDocPlayer::ROLE_TMP_RESULT,
                   true);
-        //addObj3d(obj);
-        //addPlayer(obj, NeuTube::Documentable_OBJ3D, ZDocPlayer::ROLE_TMP_RESULT);
-        notifyObj3dModified();
       }
 
-      // C_Stack::kill(out);
-      delete out;
+      delete objArray;
     }
+#endif
+    notifyObj3dModified();
+
+    /*
+    ZObject3d *obj = new ZObject3d(objData);
+    if (objData != NULL) {
+      obj->translate(out->getOffset());
+      if (dsIntv.getX() > 0 || dsIntv.getY() > 0 || dsIntv.getZ() > 0) {
+        obj->upSample(dsIntv.getX(), dsIntv.getY(), dsIntv.getZ());
+      }
+    }
+    */
+
+    //obj->setColor(255, 255, 0, 180);
+
+    //std::string objectSource = "localSeededWatershed:Temporary_Border";
+    //obj->setSource(objectSource);
+
+    //addObject(obj, NeuTube::Documentable_OBJ3D, ZDocPlayer::ROLE_TMP_RESULT,
+    //          true);
+    //addObj3d(obj);
+    //addPlayer(obj, NeuTube::Documentable_OBJ3D, ZDocPlayer::ROLE_TMP_RESULT);
+    //notifyObj3dModified();
   }
 }
 
@@ -6934,10 +6993,14 @@ void ZStackDoc::seededWatershed()
       seedMask.downsampleMax(dsIntv.getX(), dsIntv.getY(), dsIntv.getZ());
       ZStack *out = engine.run(signalStack, seedMask);
 
+      updateWatershedBoundaryObject(out, dsIntv);
+
+      notifyObj3dModified();
+
 #ifdef _DEBUG_2
       out->save(GET_TEST_DATA_DIR + "/test.tif");
 #endif
-
+#if 0
       Object_3d *objData = Stack_Region_Border(out->c_stack(), 6, TRUE);
 
       if (objData != NULL) {
@@ -6961,6 +7024,7 @@ void ZStackDoc::seededWatershed()
 
         notifyObj3dModified();
       }
+#endif
       //delete out;
 
       setLabelField(out);

@@ -173,10 +173,20 @@ bool ZDvidClient::postRequest(
   case ZDvidRequest::DVID_GET_KEYS:
   case ZDvidRequest::DVID_GET_THUMBNAIL:
     m_networkReply = m_networkManager->get(QNetworkRequest(requestUrl));
+#ifdef _DEBUG_2
+  {
+    QVariant statusCode =
+        m_networkReply->attribute( QNetworkRequest::HttpStatusCodeAttribute);
+
+    qDebug() << statusCode.toInt();
+    qDebug() << m_networkReply->errorString();
+    qDebug() << m_networkReply->request().url();
+  }
+#endif
     break;
   case ZDvidRequest::DVID_UPLOAD_SWC:
   {
-#if 1
+#if 0
     QString command = QString(
           "curl -X POST http://%1/api/node/%2/skeletons/%3.swc"
           " --data-binary @%4/%5.swc").arg(m_serverAddress).arg(m_dataPath).
@@ -191,19 +201,21 @@ bool ZDvidClient::postRequest(
       delete m_uploadStream;
       m_uploadStream = NULL;
       return false;
-    }
-    QByteArray data;
-    QNetworkRequest request(requestUrl);
-    QString crlf;
-    crlf = 0x0d;
-    crlf.append(0x0a);
-    data.append(crlf + "Content-Type: application/octet-stream" + crlf + crlf);
-    data.append(m_uploadStream->readAll());
+    } else {
+      QByteArray data;
+      QNetworkRequest request(requestUrl);
+      //QString crlf;
+      //crlf = 0x0d;
+      //crlf.append(0x0a);
+      //data.append(crlf + "Content-Type: application/octet-stream" + crlf + crlf);
+      data.append(m_uploadStream->readAll());
 
-    request.setHeader(QNetworkRequest::ContentTypeHeader,
-                      QVariant("application/octet-stream"));
-    m_networkReply = m_networkManager->post(request, data);
-    qDebug() << m_networkReply->errorString();
+      request.setHeader(QNetworkRequest::ContentTypeHeader,
+                        QVariant("application/octet-stream"));
+
+      //m_networkReply = m_networkManager->get(request);
+      m_networkReply = m_networkManager->post(request, data);
+    }
 #endif
   }
     break;
@@ -350,6 +362,15 @@ void ZDvidClient::finishRequest(QNetworkReply::NetworkError error)
   bool infoRetrievalDone = false;
   bool keyValueRetrievalDone = false;
   bool keysRetrievalDone = false;
+
+#ifdef _DEBUG_
+  QVariant statusCode =
+      m_networkReply->attribute( QNetworkRequest::HttpStatusCodeAttribute);
+
+  qDebug() << statusCode.toInt();
+  qDebug() << m_networkReply->errorString();
+  qDebug() << m_networkReply->request().url();
+#endif
 
   if (error != QNetworkReply::NoError) {
     if (m_file != NULL) {

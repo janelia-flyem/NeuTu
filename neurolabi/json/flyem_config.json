@@ -1,6 +1,11 @@
 {
   "dvid repo": [
     {
+      "address": "emdata.janelia.org",
+      "uuid": "bf1",
+      "name": "FIB-external"
+    },
+    {
       "address": "emdata1.int.janelia.org",
       "port": 9000,
       "uuid": "b42",

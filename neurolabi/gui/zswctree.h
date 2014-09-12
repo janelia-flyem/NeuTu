@@ -50,7 +50,7 @@ public:
   enum ESetDataOption {
     CLEAN_ALL, /*!< Clean all associated memory */
     FREE_WRAPPER, /*!< Free the wrapper pointer only */
-    LEAVE_ALONE /*!< Don nothing */
+    LEAVE_ALONE /*!< Do nothing */
   };
 
   //! Selection mode
@@ -83,7 +83,8 @@ public:
     OPERATION_BREAK_NODE, OPERATION_CONNECT_ISOLATE,
     OPERATION_ZOOM_TO_SELECTED_NODE, OPERATION_INSERT_NODE, OPERATION_MOVE_NODE,
     OPERATION_RESET_BRANCH_POINT, OPERATION_CHANGE_NODE_FACUS,
-    OPERATION_EXTEND_NODE
+    OPERATION_EXTEND_NODE, OPERATION_SELECT, OPERATION_SELECT_CONNECTION,
+    OPERATION_SELECT_FLOOD
   };
 
   /** @name Constructors

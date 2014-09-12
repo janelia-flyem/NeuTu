@@ -801,8 +801,9 @@ private:
   int xmlConnMode(QXmlStreamReader *xml);
   ZSwcTree* nodeToSwcTree(Swc_Tree_Node* node) const;
   std::vector<ZStack*> createWatershedMask();
-
   ResolutionDialog* getResolutionDialog();
+  void updateWatershedBoundaryObject(ZStack *out, ZIntPoint dsIntv);
+
 
 private:
   //Main stack

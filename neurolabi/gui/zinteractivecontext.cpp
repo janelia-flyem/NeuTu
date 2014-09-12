@@ -1,4 +1,6 @@
 #include "zinteractivecontext.h"
+#include "zpoint.h"
+#include "zimagewidget.h"
 
 ZInteractiveContext::ZInteractiveContext()
 {
@@ -30,3 +32,4 @@ bool ZInteractiveContext::isContextMenuActivated() const
           m_tubeEditMode == TUBE_EDIT_OFF &&
           m_strokeEditMode == STROKE_EDIT_OFF && !m_exitingEdit);
 }
+

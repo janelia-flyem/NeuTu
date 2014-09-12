@@ -14,6 +14,11 @@ ZStackFactory::ZStackFactory()
 {
 }
 
+ZStackFactory::~ZStackFactory()
+{
+
+}
+
 Stack *ZStackFactory::pileMatched(const std::vector<Stack*> stackArray)
 {
   if (stackArray.empty()) {

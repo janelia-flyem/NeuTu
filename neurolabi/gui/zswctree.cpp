@@ -1,5 +1,5 @@
 #if defined(_QT_GUI_USED_)
-#include <QtGui>
+//#include <QtGui>
 #include <QPointF>
 #endif
 
@@ -549,7 +549,7 @@ void ZSwcTree::display(
           ZCircle circle(SwcTreeNode::x(tn), SwcTreeNode::y(tn), SwcTreeNode::z(tn),
                          SwcTreeNode::radius(tn));
           circle.useCosmeticPen(m_usingCosmeticPen);
-          circle.display(&painter, stackFocus, style);
+          circle.displayHelper(&painter, stackFocus, style);
       }
         //}
         break;
@@ -561,7 +561,7 @@ void ZSwcTree::display(
         ZCircle circle(SwcTreeNode::x(tn), SwcTreeNode::y(tn), SwcTreeNode::z(tn),
                        SwcTreeNode::radius(tn));
         circle.useCosmeticPen(m_usingCosmeticPen);
-        circle.display(&painter, stackFocus, style);
+        circle.displayHelper(&painter, stackFocus, style);
         }
         break;
       case SKELETON:

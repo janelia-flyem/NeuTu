@@ -77,9 +77,9 @@ ZStackFrame::~ZStackFrame()
 
 void ZStackFrame::constructFrame()
 {
-  createPresenter();
   createView();
   createDocument();
+  createPresenter();
 
   setView(m_view);
   m_view->prepareDocument();
