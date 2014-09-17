@@ -36,7 +36,7 @@ public:
    */
   ZClosedCurve resampleF(int n) const;
 
-  ZClosedCurve resample(double step) const;
+  //ZClosedCurve resample(double step) const;
 
   /*!
    * \brief Index shift to match a given curve

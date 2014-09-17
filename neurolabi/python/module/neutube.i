@@ -3,14 +3,16 @@
 #include "tz_stack_lib.h"
 #include "tz_image_io.h"
 #include "zstack.hxx"
-#include "zstackdrawable.h"
 #include "zstackskeletonizer.h"
+#include "zclosedcurve.h"
 #include "zswctree.h"
 #include "swctreenode.h"
 #include "zobject3dscan.h"
 #include "zstackfile.h"
 #include "tz_darray.h"
 #include "zpoint.h"
+#include "zintpoint.h"
+#include "zintcuboid.h"
 %}
 
 %include "std_vector.i"
@@ -68,9 +70,10 @@ namespace std {
 %include stack_io.i
 %include stack_attribute.i
 %include zstack.hxx
-%include zstackdrawable.h
+%include zstackobject.h
 %include zswctree.i
 %include zstackskeletonizer.h
+%include zclosedcurve.h
 %include zobject3dscan.i
 %include darray.i
 %include zstackfile.h
@@ -78,3 +81,4 @@ namespace std {
 %include zflyemneuron.i
 %include zflyemqualityanalyzer.i
 %include zflyemhotspot.i
+%include zintcuboid.h

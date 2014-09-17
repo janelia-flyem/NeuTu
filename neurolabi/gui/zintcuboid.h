@@ -8,7 +8,7 @@ class ZIntCuboid
 public:
   ZIntCuboid();
   ZIntCuboid(int x1, int y1, int z1, int x2, int y2, int z2);
-  ZIntCuboid(const ZIntCuboid &cuboid);
+  //ZIntCuboid(const ZIntCuboid &cuboid);
 
   inline const ZIntPoint& getFirstCorner() const { return m_firstCorner; }
   inline const ZIntPoint& getLastCorner() const { return m_lastCorner; }
@@ -31,7 +31,7 @@ public:
 
   void set(int x1, int y1, int z1, int x2, int y2, int z2);
   void set(const ZIntPoint &firstCorner, const ZIntPoint &lastCorner);
-  void set(const int *corner);
+  //void set(const int *corner);
 
   void setFirstX(int x);
   void setLastX(int x);

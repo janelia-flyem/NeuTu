@@ -398,6 +398,6 @@ SOURCES +=$${PWD}/zstackprocessor.cpp \
    $${PWD}/zobject3dfactory.cpp \
    $${PWD}/zclosedcurve.cpp \
    $${PWD}/zflyemutilities.cpp \
-    dvid/zdvidurl.cpp \
-    zstackobjectsourcefactory.cpp \
-    dvid/zdviddata.cpp
+   $${PWD}/dvid/zdvidurl.cpp \
+   $${PWD}/zstackobjectsourcefactory.cpp \
+   $${PWD}/dvid/zdviddata.cpp
