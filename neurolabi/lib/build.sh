@@ -21,11 +21,11 @@ then
   echo 'Building libfftw3 ...'
   uncompress_lib fftw-3.3.2
   cd fftw-3.3.2
-  ./configure --enable-shared=no --with-pic --prefix=${libdir}/fftw3 
+  ./configure --enable-shared=no --with-pic --prefix=${libdir}/fftw3
   make
   make install
 
-  ./configure --enable-shared=no --enable-float --with-pic --prefix=${libdir}/fftw3 
+  ./configure --enable-shared=no --enable-float --with-pic --prefix=${libdir}/fftw3
   make
   make install
   cd ..
@@ -33,7 +33,7 @@ fi
 
 if [ ! -f jansson/lib/libjansson.a ]
 then
-  echo 'Building libjansson ...' 
+  echo 'Building libjansson ...'
   if [ ! -d jansson ]
   then
     mkdir jansson
@@ -56,7 +56,7 @@ then
   fi
   uncompress_lib libxml2-2.9.1
   cd libxml2-2.9.1
-  ./configure --without-iconv --without-zlib --with-pic --enable-shared=no --prefix=${libdir}/xml --without-python
+  ./configure --without-iconv --without-zlib --without-lzma --with-pic --enable-shared=no --prefix=${libdir}/xml --without-python
   make
   make install
   cd ..

@@ -17,19 +17,10 @@ CONFIG(debug, debug|release) {
 }
 
 unix {
-    INCLUDEPATH += \
+    INCLUDEPATH += $${EXTLIB_DIR}/xml/include/libxml2 \
         $${EXTLIB_DIR}/fftw3/include \
         $${EXTLIB_DIR}/png/include \
         $${EXTLIB_DIR}/jansson/include
-}
-
-unix:!macx {
-    INCLUDEPATH += $${EXTLIB_DIR}/xml/include/libxml2
-}
-
-#System libraries
-macx {
-    INCLUDEPATH += /usr/include/libxml2
 }
 
 win32 {
@@ -46,21 +37,13 @@ win32 {
 
 #Self-contained libraries
 unix {
-    LIBS += -L$${EXTLIB_DIR}/fftw3/lib \
+    LIBS += -L$${EXTLIB_DIR}/xml/lib -L$${EXTLIB_DIR}/fftw3/lib \
         -L$${EXTLIB_DIR}/png/lib -L$${EXTLIB_DIR}/jansson/lib \
         -lfftw3 \
         -lfftw3f \
+        -lxml2 \
         -lpng \
         -ljansson
-}
-
-unix:!macx {
-    LIBS += -L$${EXTLIB_DIR}/xml/lib -lxml2
-}
-
-#System libraries
-macx {
-    LIBS += -lxml2
 }
 
 exists($${EXTLIB_DIR}/hdf5/lib/libhdf5.a) {
