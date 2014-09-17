@@ -9,10 +9,11 @@
 #include "zdviddialog.h"
 #include "zstring.h"
 #include "dvid/zdvidreader.h"
+#include "dvid/zdvidurl.h"
 
 #ifdef _USE_GTEST_
 
-TEST(ZDvidInfo, basic)
+TEST(ZDvidTest, ZDvidInfo)
 {
   ZDvidInfo info;
   info.print();
@@ -26,6 +27,24 @@ TEST(ZDvidInfo, basic)
 */
   info.setFromJsonString("{ \"MinPoint\": [1, 2, 3]}");
   info.print();
+
+  ASSERT_EQ(1, info.getStartCoordinates().getX());
+  ASSERT_EQ(2, info.getStartCoordinates().getY());
+  ASSERT_EQ(3, info.getStartCoordinates().getZ());
+}
+
+TEST(ZDvidTest, ZDvidUrl)
+{
+  ZDvidTarget target("emdata.janelia.org", "bf1");
+  //const std::vector<ZDvidTarget> &dvidRepo =
+  //    NeutubeConfig::getInstance().getFlyEmConfig().getDvidRepo();
+  ZDvidUrl dvidUrl(target);
+  std::cout << dvidUrl.getHelpUrl() << std::endl;
+  ASSERT_EQ("http://emdata.janelia.org/api/help", dvidUrl.getHelpUrl());
+
+  std::cout << dvidUrl.getSkeletonUrl() << std::endl;
+  ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/skeletons",
+            dvidUrl.getSkeletonUrl());
 }
 
 #endif

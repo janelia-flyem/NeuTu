@@ -9,9 +9,11 @@
 #include "zerror.h"
 #include "zdvidbuffer.h"
 #include "neutubeconfig.h"
+#include "dvid/zdvidurl.h"
+#include "dvid/zdviddata.h"
 
 ZDvidClient::ZDvidClient(QObject *parent) :
-  QObject(parent), m_dataPath("api/node/b42"),
+  QObject(parent),
   m_networkReply(NULL), m_targetDirectory("/tmp"),
   m_tmpDirectory("/tmp"), m_file(NULL),
   m_uploadStream(NULL), m_isCanceling(false)
@@ -21,21 +23,19 @@ ZDvidClient::ZDvidClient(QObject *parent) :
   createConnection();
 }
 
-ZDvidClient::ZDvidClient(const QString &server, QObject *parent) :
-  QObject(parent), m_serverAddress(server), m_dataPath("api/node/b42"),
-  m_networkReply(NULL), m_targetDirectory("/tmp"),
-  m_tmpDirectory("/tmp"), m_file(NULL),
-  m_uploadStream(NULL), m_isCanceling(false)
+void ZDvidClient::setServer(const QString &server)
 {
-  m_networkManager = new QNetworkAccessManager(this);
-  m_dvidBuffer = new ZDvidBuffer(this);
-  createConnection();
+  m_dvidTarget.setServer(server.toStdString());
 }
 
 void ZDvidClient::setUuid(const QString &uuid)
 {
-  m_uuid = uuid;
-  m_dataPath = "api/node/" + uuid;
+  m_dvidTarget.setUuid(uuid.toStdString());
+}
+
+void ZDvidClient::setPort(int port)
+{
+  m_dvidTarget.setPort(port);
 }
 
 void ZDvidClient::createConnection()
@@ -56,48 +56,79 @@ bool ZDvidClient::postRequest(
 {
   QUrl requestUrl;
   QString urlString;
+  ZDvidUrl dvidUrl(getDvidTarget());
 
   switch (request) {
   case ZDvidRequest::DVID_GET_SUPERPIXEL_INFO:
+    urlString = dvidUrl.getInfoUrl(
+          ZDvidData::getName(ZDvidData::ROLE_SUPERPIXEL)).c_str();
+    /*
     urlString = QString("%1/%2/superpixels/info").
         arg(m_serverAddress).arg(m_dataPath);
+        */
     break;
   case ZDvidRequest::DVID_GET_GRAYSCALE_INFO:
+    urlString = dvidUrl.getInfoUrl(
+          ZDvidData::getName(ZDvidData::ROLE_GRAY_SCALE)).c_str();
+    /*
     urlString = QString("%1/%2/grayscale/info").
         arg(m_serverAddress).arg(m_dataPath);
+        */
     break;
   case ZDvidRequest::DVID_GET_SP2BODY_STRING:
+    urlString = dvidUrl.getSp2bodyUrl(parameter.toString().toStdString()).c_str();
+    /*
     urlString = QString("%1/%2/sp2body/%3").arg(m_serverAddress).
         arg(m_dataPath).arg(parameter.toString());
+        */
     break;
   case ZDvidRequest::DVID_GET_OBJECT:
   case ZDvidRequest::DVID_SAVE_OBJECT:
-    urlString = QString("%1/%2/sp2body/sparsevol/%3").
+    urlString = dvidUrl.getSparsevolUrl(parameter.toInt()).c_str();
+    /*
+    QString("%1/%2/sp2body/sparsevol/%3").
         arg(m_serverAddress).arg(m_dataPath).
         arg(parameter.toInt());
+        */
     break;
   case ZDvidRequest::DVID_GET_SWC:
   case ZDvidRequest::DVID_UPLOAD_SWC:
+    urlString = dvidUrl.getSkeletonUrl(parameter.toInt()).c_str();
+    /*
     urlString = QString("%1/%2/skeletons/%3.swc").
         arg(m_serverAddress).arg(m_dataPath).
         arg(parameter.toInt());
+        */
     break;
   case ZDvidRequest::DVID_GET_THUMBNAIL:
+    urlString = dvidUrl.getThumbnailUrl(parameter.toInt()).c_str();
+    /*
     urlString = QString("%1/%2/thumbnails/%3.mraw").arg(m_serverAddress).
         arg(m_dataPath).arg(parameter.toInt());
+        */
     break;
   case ZDvidRequest::DVID_GET_GRAY_SCALE:
   {
     QList<QVariant> parameterList = parameter.toList();
     //if (parameterList)
     if (parameterList.size() == 5) {
+      urlString = dvidUrl.getGrayscaleUrl(parameterList[3].toInt(),
+          parameterList[4].toInt(), parameterList[0].toInt(),
+          parameterList[1].toInt(), parameterList[2].toInt()).c_str();
+      /*
       urlString = QString("%1/%2/grayscale8/raw/0_1/%3_%4/%5_%6_%7").
           arg(m_serverAddress).
           arg(m_dataPath).
           arg(parameterList[3].toInt()).arg(parameterList[4].toInt()).
           arg(parameterList[0].toInt()).arg(parameterList[1].toInt()).
           arg(parameterList[2].toInt());
+          */
     } else {
+      urlString = dvidUrl.getGrayscaleUrl(parameterList[3].toInt(),
+          parameterList[4].toInt(), parameterList[5].toInt(),
+          parameterList[0].toInt(),
+          parameterList[1].toInt(), parameterList[2].toInt()).c_str();
+      /*
       urlString = QString("%1/%2/grayscale8/raw/0_1_2/%3_%4_%5/%6_%7_%8").
           arg(m_serverAddress).
           arg(m_dataPath).
@@ -105,11 +136,13 @@ bool ZDvidClient::postRequest(
           arg(parameterList[5].toInt()).
           arg(parameterList[0].toInt()).arg(parameterList[1].toInt()).
           arg(parameterList[2].toInt());
+          */
     }
   }
     break;
   case ZDvidRequest::DVID_GET_BODY_LABEL:
   {
+#if 0
     QList<QVariant> parameterList = parameter.toList();
     //if (parameterList)
     if (parameterList.size() == 5) {
@@ -128,23 +161,28 @@ bool ZDvidClient::postRequest(
           arg(parameterList[0].toInt()).arg(parameterList[1].toInt()).
           arg(parameterList[2].toInt());
     }
+#endif
   }
     break;
   case ZDvidRequest::DVID_GET_KEYVALUE:
   {
     QList<QVariant> parameterList = parameter.toList();
+    urlString = dvidUrl.getKeyUrl(parameterList[0].toString().toStdString(),
+        parameterList[1].toString().toStdString()).c_str();
+    /*
     urlString = QString("%1/%2/%3/%4").
         arg(m_serverAddress).arg(m_dataPath).
         arg(parameterList[0].toString()).arg(parameterList[1].toString());
+        */
   }
     break;
   case ZDvidRequest::DVID_GET_KEYS:
   {
     QList<QVariant> parameterList = parameter.toList();
-    urlString = QString("%1/%2/%3/%4/%5").
-        arg(m_serverAddress).arg(m_dataPath).
-        arg(parameterList[0].toString()).arg(parameterList[1].toString()).
-        arg(parameterList[2].toString());
+    urlString = dvidUrl.getKeyRangeUrl(
+          parameterList[0].toString().toStdString(),
+        parameterList[1].toString().toStdString(),
+        parameterList[2].toString().toStdString()).c_str();
   }
     break;
   default:
@@ -364,12 +402,14 @@ void ZDvidClient::finishRequest(QNetworkReply::NetworkError error)
   bool keysRetrievalDone = false;
 
 #ifdef _DEBUG_
-  QVariant statusCode =
-      m_networkReply->attribute( QNetworkRequest::HttpStatusCodeAttribute);
+  if (m_networkReply != NULL) {
+    QVariant statusCode =
+        m_networkReply->attribute( QNetworkRequest::HttpStatusCodeAttribute);
 
-  qDebug() << statusCode.toInt();
-  qDebug() << m_networkReply->errorString();
-  qDebug() << m_networkReply->request().url();
+    qDebug() << statusCode.toInt();
+    qDebug() << m_networkReply->errorString();
+    qDebug() << m_networkReply->request().url();
+  }
 #endif
 
   if (error != QNetworkReply::NoError) {
@@ -549,11 +589,8 @@ void ZDvidClient::finishRequest(QNetworkReply::NetworkError error)
 
 void ZDvidClient::setServer(const QString &server, int port)
 {
-  if (port >= 0) {
-    m_serverAddress = QString("%1:%2").arg(server).arg(port);
-  } else {
-    setServer(server);
-  }
+  setServer(server);
+  setPort(port);
 }
 
 void ZDvidClient::postNextRequest()

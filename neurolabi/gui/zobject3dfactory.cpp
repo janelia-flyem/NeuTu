@@ -10,7 +10,8 @@ ZObject3dFactory::ZObject3dFactory()
 {
 }
 
-ZObject3dArray* ZObject3dFactory::MakeRegionBoundary(const ZStack &stack)
+ZObject3dArray* ZObject3dFactory::MakeRegionBoundary(
+    const ZStack &stack, EOutputForm option)
 {
 #ifdef _DEBUG_2
   stack.save(GET_DATA_DIR + "/test.tif");
@@ -117,20 +118,27 @@ ZObject3dArray* ZObject3dFactory::MakeRegionBoundary(const ZStack &stack)
     *iter = NULL;
   }
 
-  #if 0
-  int label = 0;
-  for (ZObject3dArray::iterator iter = tmpArray.begin();
-       iter != tmpArray.end(); ++iter, ++label) {
-    ZObject3d *obj = *iter;
-    if (!obj->isEmpty()) {
-      obj->setLabel(label);
-      out->push_back(obj);
-    } else {
-      delete obj;
+  ZObject3dArray *out2 = NULL;
+
+  if (option == OUTPUT_COMPACT) {
+    out2 = new ZObject3dArray;
+    for (ZObject3dArray::iterator iter = out->begin(); iter != out->end();
+         ++iter) {
+      ZObject3d *obj = *iter;
+      if (!obj->isEmpty()) {
+        out2->push_back(obj);
+      } else {
+        delete obj;
+      }
+      *iter = NULL;
     }
-    *iter = NULL;
   }
-#endif
+
+  if (out2 != NULL) {
+    delete out;
+    out = out2;
+  }
+
   delete mask;
 
   return out;

@@ -788,7 +788,7 @@ void ZFlyEmDataBundle::submitSkeletonizeService() const
     const ZFlyEmNeuron &neuron = *iter;
     std::string path = neuron.getModelPath();
     ZDvidTarget target;
-    target.set(path);
+    target.setFromSourceString(path);
 
     if (target.isValid()) {
       /*

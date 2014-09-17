@@ -17,7 +17,7 @@ public:
   explicit ZDvidDialog(QWidget *parent = 0);
   ~ZDvidDialog();
 
-  void loadConfig(const std::string &filePath);
+ //void loadConfig(const std::string &filePath);
 
   int getPort() const;
   QString getAddress() const;

@@ -187,7 +187,7 @@ ZSwcTree* ZFlyEmNeuron::getModel(const string &bundleSource) const
         if (m_model == NULL) {
           ZSkeletonizeService service;
           ZDvidTarget dvidTarget;
-          dvidTarget.set(m_modelPath);
+          dvidTarget.setFromSourceString(m_modelPath);
           service.callService(dvidTarget, getId());
 
           if (reader.open(m_modelPath.c_str())) {

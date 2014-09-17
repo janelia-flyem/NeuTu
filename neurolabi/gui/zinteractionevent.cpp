@@ -41,6 +41,12 @@ QString ZInteractionEvent::getMessage() const
     message = "Node extended. You can click to extend more. "
         "Tip: Ctrl/Cmd+Click for extending with a single node";
     break;
+  case EVENT_VIEW_PROJECTION:
+    message = "Switch to projection view.";
+    break;
+  case EVENT_VIEW_SLICE:
+    message = "Switch to slice view.";
+    break;
   default:
     break;
   }

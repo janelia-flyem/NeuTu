@@ -12,6 +12,7 @@
 #include "zstroke2d.h"
 #include "zstackfactory.h"
 #include "zstring.h"
+#include "dvid/zdviddata.h"
 
 ZFlyEmRoiProject::ZFlyEmRoiProject(const std::string &name, QObject *parent) :
   QObject(parent), m_name(name), m_z(-1), m_dataFrame(NULL)
@@ -45,16 +46,24 @@ void ZFlyEmRoiProject::shallowClear()
   m_dataFrame = NULL;
 }
 
-void ZFlyEmRoiProject::setDvidTarget(const ZDvidTarget &target)
+bool ZFlyEmRoiProject::setDvidTarget(const ZDvidTarget &target)
 {
+  bool succ = false;
+
   clear();
 
   m_dvidTarget = target;
   ZDvidReader reader;
   if (reader.open(target)) {
-    m_dvidInfo = reader.readGrayScaleInfo();
-    downloadAllRoi();
+    ZDvidWriter writer;
+    if (writer.open(target)) {
+      writer.createKeyvalue(ZDvidData::getName(ZDvidData::ROLE_ROI_CURVE));
+      m_dvidInfo = reader.readGrayScaleInfo();
+      downloadAllRoi();
+    }
   }
+
+  return succ;
 }
 
 void ZFlyEmRoiProject::downloadAllRoi()
@@ -63,7 +72,8 @@ void ZFlyEmRoiProject::downloadAllRoi()
   ZDvidReader reader;
   if (reader.open(getDvidTarget())) {
     QStringList roiIdArray = reader.readKeys(
-          "roi_curve", QString("%1").arg(getRoiKey(m_dvidInfo.getMinZ()).c_str()),
+          ZDvidData::getName(ZDvidData::ROLE_ROI_CURVE),
+          QString("%1").arg(getRoiKey(m_dvidInfo.getMinZ()).c_str()),
           QString("%1").arg(getRoiKey(m_dvidInfo.getMaxZ()).c_str()));
     foreach (const QString &roiKey, roiIdArray) {
       int roiId = ZString(roiKey.toStdString()).lastInteger();

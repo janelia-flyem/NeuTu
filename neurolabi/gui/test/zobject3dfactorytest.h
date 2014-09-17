@@ -10,13 +10,15 @@
 TEST(ZObject3dFactory, makeObject)
 {
   ZStack *stack = ZStackFactory::makeZeroStack(3, 3, 3);
-  ZObject3dArray *out = ZObject3dFactory::MakeRegionBoundary(*stack);
+  ZObject3dArray *out = ZObject3dFactory::MakeRegionBoundary(
+        *stack, ZObject3dFactory::OUTPUT_COMPACT);
 
   ASSERT_TRUE(out->empty());
   delete out;
 
   stack->setIntValue(1, 1, 1, 0, 1);
-  out = ZObject3dFactory::MakeRegionBoundary(*stack);
+  out = ZObject3dFactory::MakeRegionBoundary(
+        *stack, ZObject3dFactory::OUTPUT_COMPACT);
   ASSERT_EQ(1, (int) out->size());
 
   ZObject3d *obj = out->at(0);
@@ -25,7 +27,8 @@ TEST(ZObject3dFactory, makeObject)
   delete out;
 
   stack->setIntValue(0, 1, 1, 0, 2);
-  out = ZObject3dFactory::MakeRegionBoundary(*stack);
+  out = ZObject3dFactory::MakeRegionBoundary(
+        *stack, ZObject3dFactory::OUTPUT_COMPACT);
   ASSERT_EQ(2, (int) out->size());
 
   delete stack;

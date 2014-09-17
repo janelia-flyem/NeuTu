@@ -450,7 +450,9 @@ HEADERS += mainwindow.h \
     dvid/zdvidbufferreader.h \
     zmouseevent.h \
     zmouseeventrecorder.h \
-    zmouseeventprocessor.h
+    zmouseeventprocessor.h \
+    zstackoperator.h \
+    zsleeper.h
 
 FORMS += settingdialog.ui \
     frameinfodialog.ui \
@@ -753,7 +755,9 @@ SOURCES += main.cpp \
     dvid/zdvidbufferreader.cpp \
     zmouseevent.cpp \
     zmouseeventrecorder.cpp \
-    zmouseeventprocessor.cpp
+    zmouseeventprocessor.cpp \
+    zstackoperator.cpp \
+    zsleeper.cpp
 
 OTHER_FILES += \
     extlib.pri

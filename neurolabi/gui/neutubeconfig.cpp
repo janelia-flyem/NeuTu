@@ -177,6 +177,12 @@ bool NeutubeConfig::load(const std::string &filePath)
       m_softwareName = "neuTube";
     }
 
+#ifdef _FLYEM_
+    getFlyEmConfig().loadConfig(
+          ZString::fullPath(
+            GET_APPLICATION_DIR, "json", "", "flyem_config.json"));
+#endif
+
     return true;
   }
 

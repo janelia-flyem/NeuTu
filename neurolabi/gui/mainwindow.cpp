@@ -144,6 +144,7 @@
 #include "dvidskeletonizedialog.h"
 #include "zflyemroidialog.h"
 #include "shapepaperdialog.h"
+#include "zsleeper.h"
 
 #include "z3dcanvas.h"
 #include "z3dapplication.h"
@@ -235,7 +236,8 @@ MainWindow::MainWindow(QWidget *parent) :
   //m_actionActivatorList.append(&m_swcActionActivator); //Need to monitor swc modification signal
   updateAction();
 
-  m_dvidClient = new ZDvidClient("http://emdata1.int.janelia.org", this);
+  m_dvidClient = new ZDvidClient(this);
+  //m_dvidClient->setServer("http://emdata1.int.janelia.org");
   m_dvidFrame = NULL;
   connect(m_dvidClient, SIGNAL(noRequestLeft()), this, SLOT(createDvidFrame()));
   connect(this, SIGNAL(dvidRequestCanceled()), m_dvidClient, SLOT(cancelRequest()));
@@ -312,8 +314,8 @@ void MainWindow::initDialog()
 
   m_penWidthDialog->setPenWidth(ZStackObject::getDefaultPenWidth());
 
-  m_dvidObjectDlg = new DvidObjectDialog(this);
-  m_dvidObjectDlg->setAddress(m_dvidClient->getServer());
+  //m_dvidObjectDlg = new DvidObjectDialog(this);
+  //m_dvidObjectDlg->setAddress(m_dvidClient->getDvidTarget().getDvid);
 
   m_tileDlg = new TileManager(this);
   m_bodyDlg = new FlyEmBodyIdDialog(this);
@@ -902,7 +904,7 @@ void MainWindow::createToolBars()
     //m_ui->toolBar->addAction(m_ui->actionDvid_Object);
     m_ui->toolBar->addAction(m_ui->actionSplit_Body);
     m_ui->toolBar->addAction(m_ui->actionFlyEmROI);
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
     m_ui->toolBar->addAction(m_ui->actionShape_Matching);
 #endif
   }
@@ -3235,10 +3237,25 @@ void MainWindow::on_actionPixel_triggered()
   }
 }
 
+void MainWindow::testProgressBarFunc()
+{
+  for (int i = 0; i < 100; ++i) {
+    advanceProgress();
+    ZSleeper::msleep(100);
+  }
+  emit progressDone();
+}
+
 void MainWindow::test()
 {
   //QFuture<void> res = QtConcurrent::run(ZTest::test, this);
 
+  m_progress->setRange(0, 100);
+  m_progress->setLabelText("Progressing");
+  m_progress->show();
+  QFuture<void> res = QtConcurrent::run(this, &MainWindow::testProgressBarFunc);
+
+#if 0
   m_progress->setRange(0, 2);
   m_progress->setLabelText(QString("Testing ..."));
   int currentProgress = 0;
@@ -3251,6 +3268,7 @@ void MainWindow::test()
   m_progress->reset();
 
   statusBar()->showMessage(tr("Test done."));
+#endif
 }
 
 void MainWindow::evokeStackFrame(QMdiSubWindow *frame)
@@ -5081,47 +5099,7 @@ void MainWindow::cancelDvidRequest()
 
 void MainWindow::on_actionDvid_Object_triggered()
 {
-  if (m_dvidObjectDlg->exec()) {
-    QProgressDialog *progressDlg = getProgressDialog();
-    progressDlg->setLabelText("Downloading dvid object ...");
-    progressDlg->setRange(0, 0);
-    progressDlg->open();
-    progressDlg->setCancelButtonText("Cancel");
-    connect(progressDlg, SIGNAL(canceled()), this, SLOT(cancelDvidRequest()));
 
-#if 0
-    if (m_dvidFrame != NULL) {
-      delete m_dvidFrame;
-      m_dvidFrame = NULL;
-    }
-
-    m_dvidFrame =  new ZStackFrame;
-    m_dvidFrame->document()->setTag(NeuTube::Document::FLYEM_BODY);
-#endif
-    m_dvidClient->reset();
-    m_dvidClient->setServer(m_dvidObjectDlg->getAddress());
-    std::vector<int> bodyArray = m_dvidObjectDlg->getBodyId();
-    for (size_t i = 0; i < bodyArray.size(); ++i) {
-      ZDvidRequest request;
-      request.setGetObjectRequest(bodyArray[i]);
-      m_dvidClient->appendRequest(request);
-      if (m_dvidObjectDlg->retrievingSkeleton()) {
-        request.setGetSwcRequest(bodyArray[i]);
-        m_dvidClient->appendRequest(request);
-      }
-    }
-#ifdef _DEBUG_2
-    request.setGetObjectRequest(2);
-    m_dvidClient->appendRequest(request);
-    request.setGetObjectRequest(3);
-    m_dvidClient->appendRequest(request);
-#endif
-    m_dvidClient->postNextRequest();
-    /*
-    m_dvidClient->postRequest(ZDvidRequest::DVID_GET_OBJECT,
-                              QVariant(m_dvidObjectDlg->getBodyId()));
-                              */
-  }
 }
 
 void MainWindow::on_actionAssign_Clustering_triggered()
@@ -6303,8 +6281,10 @@ void MainWindow::on_actionBody_Split_Project_triggered()
   }
 }
 
-void MainWindow::initBodySplitProject()
+bool MainWindow::initBodySplitProject()
 {
+  bool succ = false;
+
 #if defined(_FLYEM_)
   m_progress->setLabelText("Loading ...");
   m_progress->setRange(0, 0);
@@ -6325,14 +6305,14 @@ void MainWindow::initBodySplitProject()
       tic();
 #endif
       ZSparseStack *spStack = reader.readSparseStack(bodyId);
-#ifdef _DEBUG_
-      ptoc();
-      std::cout << "Voxel number: " << spStack->getObjectMask()->getVoxelNumber()
-                << std::endl;
-#endif
-
 
       if (spStack != NULL) {
+#ifdef _DEBUG_
+        ptoc();
+        std::cout << "Voxel number: " << spStack->getObjectMask()->getVoxelNumber()
+                  << std::endl;
+#endif
+
         //ZStackDoc *doc = new ZStackDoc(NULL, NULL);
         //doc->loadStack(stack);
         ZStackDocReader docReader;
@@ -6344,16 +6324,19 @@ void MainWindow::initBodySplitProject()
         presentStackFrame(frame);
 
         m_bodySplitProjectDialog->setDataFrame(frame);
+        succ = true;
+      } else {
+        m_bodySplitProjectDialog->dump(
+              QString("Cannot load body %1").arg(bodyId));
       }
-    } else {
-      m_bodySplitProjectDialog->dump(
-            QString("Cannot load body %1").arg(bodyId));
     }
   }
   //}
 
   m_progress->reset();
 #endif
+
+  return succ;
 }
 
 void MainWindow::on_actionSplit_Body_triggered()
@@ -6482,7 +6465,7 @@ void MainWindow::on_actionOne_Column_triggered()
 {
   //Get dvid info
   ZDvidTarget target;
-  target.set("http:emdata2.int.janelia.org:9000:43f");
+  target.setFromSourceString("http:emdata2.int.janelia.org:9000:43f");
 
   ZDvidInfo dvidInfo;
   ZDvidReader reader;

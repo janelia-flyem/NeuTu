@@ -9,14 +9,14 @@ const char* ZDvidTarget::m_uuidKey = "uuid";
 const char* ZDvidTarget::m_commentKey = "comment";
 const char* ZDvidTarget::m_nameKey = "name";
 
-ZDvidTarget::ZDvidTarget()
+ZDvidTarget::ZDvidTarget() : m_port(-1)
 {
 }
 
 ZDvidTarget::ZDvidTarget(
-    const std::string &address, const std::string &uuid, int port) :
-  m_address(address), m_uuid(uuid), m_port(port)
+    const std::string &address, const std::string &uuid, int port)
 {
+  set(address, uuid, port);
 }
 
 std::string ZDvidTarget::getSourceString(bool withHttpPrefix) const
@@ -36,6 +36,13 @@ std::string ZDvidTarget::getSourceString(bool withHttpPrefix) const
 void ZDvidTarget::set(
     const std::string &address, const std::string &uuid, int port)
 {
+  setServer(address);
+  setUuid(uuid);
+  setPort(port);
+}
+
+void ZDvidTarget::setServer(const std::string &address)
+{
   if (ZString(address).startsWith("http://")) {
     m_address = address.substr(7);
   } else if (ZString(address).startsWith("//")) {
@@ -43,11 +50,20 @@ void ZDvidTarget::set(
   } else {
     m_address = address;
   }
+}
+
+void ZDvidTarget::setUuid(const std::string &uuid)
+{
   m_uuid = uuid;
+}
+
+void ZDvidTarget::setPort(int port)
+{
   m_port = port;
 }
 
-void ZDvidTarget::set(const std::string &sourceString)
+
+void ZDvidTarget::setFromSourceString(const std::string &sourceString)
 {
   set("", "", -1);
 
@@ -103,9 +119,25 @@ std::string ZDvidTarget::getBodyPath(int bodyId) const
 
 void ZDvidTarget::loadJsonObject(const ZJsonObject &obj)
 {
-  m_address = ZJsonParser::stringValue(obj[m_addressKey]);
-  m_port = ZJsonParser::integerValue(obj[m_portKey]);
-  m_uuid = ZJsonParser::stringValue(obj[m_uuidKey]);
+  setServer(ZJsonParser::stringValue(obj[m_addressKey]));
+  if (obj.hasKey(m_portKey)) {
+    setPort(ZJsonParser::integerValue(obj[m_portKey]));
+  } else {
+    setPort(-1);
+  }
+  setUuid(ZJsonParser::stringValue(obj[m_uuidKey]));
   m_comment = ZJsonParser::stringValue(obj[m_commentKey]);
   m_name = ZJsonParser::stringValue(obj[m_nameKey]);
+}
+
+std::string ZDvidTarget::getUrl() const
+{
+  ZString url = "http://" + m_address;
+  if (m_port >= 0) {
+    url += ":";
+    url.appendNumber(m_port);
+  }
+  url += "/api/node/" + m_uuid;
+
+  return url;
 }

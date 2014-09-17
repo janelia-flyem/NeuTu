@@ -794,7 +794,7 @@ QSize ZStackView::sizeHint() const
 
 void ZStackView::mouseReleasedInImageWidget(QMouseEvent *event)
 {
-  buddyPresenter()->processMouseReleaseEvent(event, sliceIndex());
+  buddyPresenter()->processMouseReleaseEvent(event);
 }
 
 void ZStackView::mousePressedInImageWidget(QMouseEvent *event)
@@ -809,7 +809,7 @@ void ZStackView::mouseMovedInImageWidget(QMouseEvent *event)
 
 void ZStackView::mouseDoubleClickedInImageWidget(QMouseEvent *event)
 {
-  buddyPresenter()->processMouseDoubleClickEvent(event, sliceIndex());
+  buddyPresenter()->processMouseDoubleClickEvent(event);
 }
 
 bool ZStackView::isDepthChangable()

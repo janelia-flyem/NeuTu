@@ -4007,19 +4007,14 @@ bool ZStackDoc::isDeprecated(EComponent component)
   return false;
 }
 
-Swc_Tree_Node* ZStackDoc::swcHitTest(int x, int y, int z)
+Swc_Tree_Node* ZStackDoc::swcHitTest(double x, double y)
 {
   Swc_Tree_Node *selected = NULL;
-  const double Margin = 0.5;
 
   for (QList<ZSwcTree*>::iterator iter = m_swcList.begin();
        iter != m_swcList.end(); ++iter) {
     ZSwcTree *tree = *iter;
-    if (z < 0) {
-      selected = tree->hitTest(x, y);
-    } else {
-      selected = tree->hitTest(x, y, z, Margin);
-    }
+    selected = tree->hitTest(x, y);
 
     if (selected != NULL) {
       break;
@@ -4027,6 +4022,33 @@ Swc_Tree_Node* ZStackDoc::swcHitTest(int x, int y, int z)
   }
 
   return selected;
+}
+
+Swc_Tree_Node* ZStackDoc::swcHitTest(double x, double y, double z)
+{
+  Swc_Tree_Node *selected = NULL;
+  const double Margin = 0.5;
+
+  for (QList<ZSwcTree*>::iterator iter = m_swcList.begin();
+       iter != m_swcList.end(); ++iter) {
+    ZSwcTree *tree = *iter;
+    //if (z < 0) {
+      //selected = tree->hitTest(x, y);
+    //} else {
+      selected = tree->hitTest(x, y, z, Margin);
+    //}
+
+    if (selected != NULL) {
+      break;
+    }
+  }
+
+  return selected;
+}
+
+Swc_Tree_Node* ZStackDoc::swcHitTest(const ZPoint &pt)
+{
+  return swcHitTest(pt.x(), pt.y(), pt.z());
 }
 
 void ZStackDoc::selectSwcTreeNode(Swc_Tree_Node *selected, bool append)
@@ -4054,6 +4076,11 @@ Swc_Tree_Node *ZStackDoc::selectSwcTreeNode(int x, int y, int z, bool append)
   selectSwcTreeNode(selected, append);
 
   return selected;
+}
+
+Swc_Tree_Node *ZStackDoc::selectSwcTreeNode(const ZPoint &pt, bool append)
+{
+  return selectSwcTreeNode(pt.x(), pt.y(), pt.z(), append);
 }
 
 void ZStackDoc::reloadStack()
@@ -5828,6 +5855,15 @@ bool ZStackDoc::executeTraceTubeCommand(double x, double y, double z, int c)
   return true;
 }
 
+bool ZStackDoc::executeTraceSwcBranchCommand(double x, double y)
+{
+  x -= getStackOffset().getX();
+  y -= getStackOffset().getY();
+  double z = maxIntesityDepth(x, y) + getStackOffset().getZ();
+
+  return executeTraceSwcBranchCommand(x, y, z, 0);
+}
+
 bool ZStackDoc::executeTraceSwcBranchCommand(
     double x, double y, double z, int c)
 {
@@ -6677,6 +6713,16 @@ ZIntPoint ZStackDoc::getStackOffset() const
   return ZIntPoint(0, 0, 0);
 }
 
+ZIntPoint ZStackDoc::getStackSize() const
+{
+  ZIntPoint size(0, 0, 0);
+  if (hasStack()) {
+    size = ZIntPoint(
+          getStack()->width(), getStack()->height(), getStack()->depth());
+  }
+  return size;
+}
+
 void ZStackDoc::setStackOffset(int x, int y, int z)
 {
   if (stackRef() != NULL) {
@@ -6835,7 +6881,8 @@ std::vector<ZStack*> ZStackDoc::createWatershedMask()
 void ZStackDoc::updateWatershedBoundaryObject(ZStack *out, ZIntPoint dsIntv)
 {
   if (out != NULL) {
-    ZObject3dArray *objArray = ZObject3dFactory::MakeRegionBoundary(*out);
+    ZObject3dArray *objArray = ZObject3dFactory::MakeRegionBoundary(
+          *out, ZObject3dFactory::OUTPUT_SPARSE);
     if (objArray != NULL) {
       if (dsIntv.getX() > 0 || dsIntv.getY() > 0 || dsIntv.getZ() > 0) {
         for (ZObject3dArray::iterator iter = objArray->begin();

@@ -3,9 +3,14 @@
 #include "zinteractivecontext.h"
 #include "zintpoint.h"
 #include "zmouseevent.h"
+#include "zstackdoc.h"
+#include "neutube.h"
+#include "zstackoperator.h"
+#include "zstack.hxx"
 
-ZMouseEventMapper::ZMouseEventMapper(ZInteractiveContext *context) :
-  m_context(context)
+ZMouseEventMapper::ZMouseEventMapper(
+    ZInteractiveContext *context, ZStackDoc *doc) :
+  m_context(context), m_doc(doc), m_eventRecorder(NULL)
 {
 }
 
@@ -17,33 +22,16 @@ ZMouseEventMapper::EOperation ZMouseEventMapper::getOperation(
 }
 #endif
 
-ZMouseEventMapper::EOperation ZMouseEventMapper::getOperation(
+ZStackOperator ZMouseEventMapper::getOperation(
     const ZMouseEvent &/*event*/) const
 {
-  return OP_NULL;
+  return ZStackOperator();
 }
-////////////////////////////////////
-ZMouseEventMapper::EOperation ZMouseEventLeftButtonReleaseMapper::getOperation(
-    const ZMouseEvent &event) const
+
+ZStackOperator ZMouseEventMapper::initOperation() const
 {
-  EOperation op = OP_NULL;
-  if (m_context != NULL) {
-    switch (m_context->exploreMode()) {
-    case ZInteractiveContext::EXPLORE_CAPTURE_MOUSE: //It triggers a processing step
-      if (event.getModifiers() == Qt::ShiftModifier) {
-        op = OP_CAPTURE_MOUSE_POSITION;
-      }
-      break;
-    case ZInteractiveContext::EXPLORE_OFF:
-      op = OP_PROCESS_OBJECT;
-      break;
-    case ZInteractiveContext::EXPLORE_MOVE_IMAGE:
-      op = OP_RESOTRE_EXPLORE_MODE;
-      break;
-    default:
-      break;
-    }
-  }
+  ZStackOperator op;
+  op.setMouseEventRecorder(m_eventRecorder);
 
   return op;
 }
@@ -68,20 +56,209 @@ ZMouseEventMapper::getPosition(Qt::MouseButton button,
 
   return pt;
 }
-
-/////////////////////////////////
-#define MOUSE_MOVE_IMAGE_THRESHOLD 25
-ZMouseEventMapper::EOperation ZMouseEventMoveMapper::getOperation(
+///////////////ZMouseEventLeftButtonReleaseMapper/////////////////////
+////////             UO             ////////////////////////////
+ZStackOperator ZMouseEventLeftButtonReleaseMapper::getOperation(
     const ZMouseEvent &event) const
 {
-  EOperation op = OP_NULL;
+  ZStackOperator op = initOperation();
+  if (m_context != NULL) {
+    switch (m_context->exploreMode()) {
+    case ZInteractiveContext::EXPLORE_CAPTURE_MOUSE: //It triggers a processing step
+      if (event.getModifiers() == Qt::ShiftModifier) {
+        op.setOperation(ZStackOperator::OP_CAPTURE_MOUSE_POSITION);
+      }
+      break;
+    case ZInteractiveContext::EXPLORE_MOVE_IMAGE:
+      op.setOperation(ZStackOperator::OP_RESOTRE_EXPLORE_MODE);
+      break;
+    default:
+      break;
+    }
+
+    if (op.isNull()) {
+      if (m_context->strokeEditMode() == ZInteractiveContext::STROKE_DRAW) {
+        op.setOperation(ZStackOperator::OP_STROKE_ADD_NEW);
+      }
+    }
+
+    if (op.isNull()) {
+      ZPoint rawStackPosition = event.getRawStackPosition();
+      ZPoint stackPosition = rawStackPosition + getDocument()->getStackOffset();
+      if (m_doc->getStack()->containsRaw(rawStackPosition)) {
+        if (rawStackPosition.z() < 0) {
+          op.setHitSwcNode(
+                m_doc->swcHitTest(stackPosition.x(), stackPosition.y()));
+        } else {
+          op.setHitSwcNode(m_doc->swcHitTest(stackPosition));
+        }
+        switch (m_context->swcEditMode()) {
+        case ZInteractiveContext::SWC_EDIT_SELECT:
+          if (event.getModifiers() == Qt::NoModifier) {
+            if (op.getHitSwcNode() != NULL) {
+              op.setOperation(ZStackOperator::OP_SWC_SELECT_SINGLE_NODE);
+            } else {
+              if (getDocument()->selectedSwcTreeNodes()->empty()) {
+                op.setOperation(ZStackOperator::OP_SHOW_TRACE_CONTEXT_MENU);
+              } else {
+                op.setOperation(ZStackOperator::OP_SWC_DESELECT_ALL_NODE);
+              }
+            }
+          } else {
+            if (op.getHitSwcNode() != NULL) {
+              if (event.getModifiers() == Qt::ShiftModifier) {
+                op.setOperation(ZStackOperator::OP_SWC_SELECT_CONNECTION);
+              } else if (event.getModifiers() == Qt::ControlModifier) {
+                if (getDocument()->selectedSwcTreeNodes()->count(
+                      op.getHitSwcNode()) > 0) {
+                  op.setOperation(ZStackOperator::OP_SWC_DESELECT_SINGLE_NODE);
+                } else {
+                  op.setOperation(ZStackOperator::OP_SWC_SELECT_MULTIPLE_NODE);
+                }
+              } else if (event.getModifiers() & Qt::AltModifier) {
+                op.setOperation(ZStackOperator::OP_SWC_SELECT_FLOOD);
+              }
+            }
+          }
+          break;
+        case ZInteractiveContext::SWC_EDIT_CONNECT:
+          op.setOperation(ZStackOperator::OP_SWC_CONNECT_TO);
+          break;
+        case ZInteractiveContext::SWC_EDIT_EXTEND:
+          if (event.getModifiers() == Qt::ControlModifier) {
+            op.setOperation(ZStackOperator::OP_SWC_EXTEND);
+          } else {
+            op.setOperation(ZStackOperator::OP_SWC_SMART_EXTEND);
+          }
+          break;
+        case ZInteractiveContext::SWC_EDIT_ADD_NODE:
+          op.setOperation(ZStackOperator::OP_SWC_ADD_NODE);
+          break;
+        default:
+          break;
+        }
+      }
+    }
+
+    if (op.isNull()) {
+      int index = getDocument()->pickPunctaIndex(event.getStackPosition().x(),
+                                                 event.getStackPosition().y(),
+                                                 event.getStackPosition().z());
+      if (index >= 0) {
+        op.setHitPuncta(index);
+        if (event.getModifiers() != Qt::ControlModifier) {
+          op.setOperation(ZStackOperator::OP_PUNCTA_SELECT_SINGLE);
+        } else {
+          op.setOperation(ZStackOperator::OP_PUNCTA_SELECT_MULTIPLE);
+        }
+      } else {
+        if (m_context->isNormalView()) {
+          if (m_context->isContextMenuActivated() &&
+              m_context->markPuncta() &&
+              getDocument()->hasStackData()) {
+            op.setOperation(ZStackOperator::OP_SHOW_PUNCTA_MENU);
+          }
+        }
+      }
+    }
+  }
+
+  return op;
+}
+
+///////////////ZMouseEventLeftButtonDoubleClickMapper/////////////////
+////////             :O             ////////////////////////////
+ZStackOperator ZMouseEventLeftButtonDoubleClickMapper::getOperation(
+    const ZMouseEvent &event) const
+{
+  ZStackOperator op = initOperation();
+
+  ZPoint stackPosition = event.getStackPosition();
+
+  if (event.getRawStackPosition().z() >= 0) {
+    op.setHitSwcNode(m_doc->swcHitTest(stackPosition));
+  } else {
+    op.setHitSwcNode(m_doc->swcHitTest(stackPosition.x(), stackPosition.y()));
+  }
+
+  if (op.getHitSwcNode() != NULL) {
+    op.setOperation(ZStackOperator::OP_SWC_LOCATE_FOCUS);
+  } else {
+    if (event.isInStack()) {
+      if (m_context->isProjectView()) {
+        if (m_doc->hasStackData()) {
+          op.setOperation(ZStackOperator::OP_STACK_LOCATE_SLICE);
+        } else {
+          op.setOperation(ZStackOperator::OP_STACK_VIEW_SLICE);
+        }
+      } else {
+        op.setOperation(ZStackOperator::OP_STACK_VIEW_PROJECTION);
+      }
+    }
+  }
+
+  return op;
+}
+
+///////////////ZMouseEventLeftButtonPressMapper/////////////////
+////////             -O             ////////////////////////////
+ZStackOperator ZMouseEventLeftButtonPressMapper::getOperation(
+    const ZMouseEvent &event) const
+{
+  ZStackOperator op = initOperation();
+
+  if (event.isInStack()) {
+    if (m_context->strokeEditMode() ==
+        ZInteractiveContext::STROKE_DRAW) {
+      op.setOperation(ZStackOperator::OP_STROKE_START_PAINT);
+    }
+  }
+
+  return op;
+}
+
+///////////////ZMouseEventRightButtonReleaseMapper/////////////////////
+////////             OU             ////////////////////////////
+ZStackOperator
+ZMouseEventRightButtonReleaseMapper::getOperation(const ZMouseEvent &event) const
+{
+  ZStackOperator op = initOperation();
+  if (m_context != NULL && m_doc != NULL) {
+    if (event.getButtons() == Qt::RightButton) {
+      if (m_context->isContextMenuActivated()) {
+        if (m_doc->hasSelectedSwcNode()) {
+          op.setOperation(ZStackOperator::OP_SHOW_SWC_CONTEXT_MENU);
+        } else {
+          if (m_doc->getTag() == NeuTube::Document::BIOCYTIN_PROJECTION) {
+            op.setOperation(ZStackOperator::OP_SHOW_STROKE_CONTEXT_MENU);
+          } else {
+            op.setOperation(ZStackOperator::OP_SHOW_STACK_CONTEXT_MENU);
+          }
+        }
+      } else {
+        op.setOperation(ZStackOperator::OP_EXIT_EDIT_MODE);
+      }
+    }
+  }
+
+  return op;
+}
+
+
+//////////////ZMouseEventMapper///////////////////
+////////             =OO             ////////////
+#define MOUSE_MOVE_IMAGE_THRESHOLD 25
+ZStackOperator ZMouseEventMoveMapper::getOperation(
+    const ZMouseEvent &event) const
+{
+  ZStackOperator op = initOperation();
   if (m_context != NULL) {
     bool canMoveImage = false;
 
     if (event.getButtons() == Qt::LeftButton) {
       if (event.getModifiers() == Qt::ShiftModifier) {
         if (m_context->swcEditMode() == ZInteractiveContext::SWC_EDIT_MOVE_NODE) {
-          op = OP_MOVE_OBJECT;
+          op.setOperation(ZStackOperator::OP_MOVE_OBJECT);
         }
         canMoveImage = true;
       } else {
@@ -99,25 +276,25 @@ ZMouseEventMapper::EOperation ZMouseEventMoveMapper::getOperation(
         }
       }
 
-      if (op == OP_NULL) {
+      if (op.isNull()) {
         if (m_context->strokeEditMode() == ZInteractiveContext::STROKE_DRAW) {
-          op = OP_PAINT_STROKE;
+          op.setOperation(ZStackOperator::OP_PAINT_STROKE);
         }
       }
 
-      if (op == OP_NULL) {
+      if (op.isNull()) {
         if (canMoveImage) {
           if (m_context->exploreMode() == ZInteractiveContext::EXPLORE_MOVE_IMAGE) {
-            op = OP_MOVE_IMAGE;
+            op.setOperation(ZStackOperator::OP_MOVE_IMAGE);
           } else {
-            op = OP_START_MOVE_IMAGE;
+            op.setOperation(ZStackOperator::OP_START_MOVE_IMAGE);
           }
         }
       }
     }
 
-    if (op == OP_NULL) {
-      op = OP_CAPTURE_IMAGE_INFO;
+    if (op.isNull()) {
+      op.setOperation(ZStackOperator::OP_TRACK_MOUSE_MOVE);
     }
   }
 

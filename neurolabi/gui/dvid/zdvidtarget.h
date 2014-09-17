@@ -14,15 +14,20 @@ public:
   ZDvidTarget(const std::string &address, const std::string &uuid, int port = -1);
 
   void set(const std::string &address, const std::string &uuid, int port = -1);
+  void setServer(const std::string &address);
+  void setUuid(const std::string &uuid);
+  void setPort(int port);
+
 
   /*!
    * \brief Set dvid target from source string
    *
-   * The old settings will be cleared no matter what.
+   * The old settings will be cleared no matter what. The source string is
+   * http:address:port:uuid.
    *
    * \param sourceString Must start with "http:".
    */
-  void set(const std::string &sourceString);
+  void setFromSourceString(const std::string &sourceString);
 
   inline const std::string& getAddress() const {
     return m_address;

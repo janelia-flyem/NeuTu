@@ -1,18 +1,57 @@
 #include "zmouseeventprocessor.h"
 #include "zimagewidget.h"
+#include "zstackdoc.h"
+#include "zinteractivecontext.h"
+#include "zstackoperator.h"
+#include "zstack.hxx"
 
 ZMouseEventProcessor::ZMouseEventProcessor() :
-  m_context(NULL), m_imageWidget(NULL)
+  m_context(NULL), m_imageWidget(NULL), m_doc(NULL)
 {
+  registerMapper();
+}
+
+void ZMouseEventProcessor::registerMapper()
+{
+  m_mapperList.append(&m_leftButtonReleaseMapper);
+  m_mapperList.append(&m_moveMapper);
+  m_mapperList.append(&m_rightButtonReleaseMapper);
+  m_mapperList.append(&m_leftButtonDoubleClickMapper);
+  foreach (ZMouseEventMapper *mapper, m_mapperList) {
+    mapper->setRecorder(&m_recorder);
+  }
 }
 
 const ZMouseEvent& ZMouseEventProcessor::process(
     QMouseEvent *event, ZMouseEvent::EAction action, int z)
 {
+  switch (action) {
+  case ZMouseEvent::ACTION_PRESS:
+    m_context->blockContextMenu(false);
+    break;
+  case ZMouseEvent::ACTION_RELEASE:
+    if (getLatestMouseEvent().getAction() == ZMouseEvent::ACTION_DOUBLE_CLICK) {
+      return m_emptyEvent;
+    }
+    break;
+  default:
+    break;
+  }
+
   ZMouseEvent zevent;
   zevent.set(event, action, z);
   const ZIntPoint &pt = zevent.getPosition();
   zevent.setRawStackPosition(mapPositionFromWidgetToRawStack(pt));
+
+  if (m_doc->getStack()->containsRaw(zevent.getRawStackPosition())) {
+    zevent.setInStack(true);
+  }
+
+  ZPoint stackPosition = zevent.getRawStackPosition();
+  if (m_doc != NULL) {
+    stackPosition += m_doc->getStackOffset();
+  }
+  zevent.setStackPosition(stackPosition);
 
   return m_recorder.record(zevent);;
 }
@@ -20,13 +59,28 @@ const ZMouseEvent& ZMouseEventProcessor::process(
 void ZMouseEventProcessor::setInteractiveContext(ZInteractiveContext *context)
 {
   m_context = context;
-  m_leftButtonReleaseMapper.setContext(context);
-  m_moveMapper.setContext(context);
+  foreach (ZMouseEventMapper *mapper, m_mapperList) {
+    mapper->setContext(context);
+  }
 }
 
 void ZMouseEventProcessor::setImageWidget(ZImageWidget *widget)
 {
   m_imageWidget = widget;
+}
+
+void ZMouseEventProcessor::setDocument(ZStackDoc *doc)
+{
+  m_doc = doc;
+  m_leftButtonReleaseMapper.setDocument(doc);
+  foreach (ZMouseEventMapper *mapper, m_mapperList) {
+    mapper->setDocument(doc);
+  }
+}
+
+const ZStackDoc* ZMouseEventProcessor::getDocument() const
+{
+  return m_doc;
 }
 
 const ZMouseEventMapper& ZMouseEventProcessor::getMouseEventMapper(
@@ -38,8 +92,14 @@ const ZMouseEventMapper& ZMouseEventProcessor::getMouseEventMapper(
   case ZMouseEvent::ACTION_RELEASE:
     if (event.getButtons() == Qt::LeftButton) {
       return m_leftButtonReleaseMapper;
+    } else if (event.getButtons() == Qt::RightButton) {
+      return m_rightButtonReleaseMapper;
     }
     break;
+  case ZMouseEvent::ACTION_DOUBLE_CLICK:
+    if (event.getButtons() == Qt::LeftButton) {
+      return m_leftButtonDoubleClickMapper;
+    }
   default:
     break;
   }
@@ -47,11 +107,11 @@ const ZMouseEventMapper& ZMouseEventProcessor::getMouseEventMapper(
   return m_emptyMapper;
 }
 
-ZMouseEventMapper::EOperation ZMouseEventProcessor::getOperation() const
+ZStackOperator ZMouseEventProcessor::getOperator() const
 {
   const ZMouseEvent &event = m_recorder.getLatestMouseEvent();
   if (event.isNull()) {
-    return ZMouseEventMapper::OP_NULL;
+    return ZStackOperator();
   }
 
   return getMouseEventMapper(event).getOperation(event);
@@ -94,4 +154,32 @@ const ZMouseEvent& ZMouseEventProcessor::getMouseEvent(
     Qt::MouseButtons buttons, ZMouseEvent::EAction action) const
 {
   return m_recorder.getMouseEvent(buttons, action);
+}
+
+ZPoint ZMouseEventProcessor::getLatestStackPosition() const
+{
+  ZPoint pt = getLatestMouseEvent().getRawStackPosition();
+
+  if (m_doc != NULL) {
+    pt += m_doc->getStackOffset();
+  }
+
+  return pt;
+}
+
+ZPoint ZMouseEventProcessor::getStackPosition(
+    Qt::MouseButtons buttons, ZMouseEvent::EAction action) const
+{
+  return getMouseEvent(buttons, action).getStackPosition();
+}
+
+ZPoint ZMouseEventProcessor::getRawStackPosition(
+    Qt::MouseButtons buttons, ZMouseEvent::EAction action) const
+{
+  return getMouseEvent(buttons, action).getRawStackPosition();
+}
+
+bool ZMouseEventProcessor::isPositionInStack(const ZMouseEvent &event) const
+{
+  return getDocument()->getStack()->containsRaw(event.getRawStackPosition());
 }

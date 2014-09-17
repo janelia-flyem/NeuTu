@@ -6,21 +6,20 @@
 #include "dvid/zdvidreader.h"
 #include "dvid/zdvidwriter.h"
 
-#ifdef _USE_GTEST_
+#if defined(_USE_GTEST_) && defined(_FLYEM_)
 
 TEST(ZDvidTarget, basic)
 {
-#ifdef _FLYEM_
   ZDvidTarget target;
   ASSERT_FALSE(target.isValid());
 
-  target.set("http:emdata1.int.janelia.org:9000:b42");
+  target.setFromSourceString("http:emdata1.int.janelia.org:9000:b42");
   ASSERT_TRUE(target.isValid());
 
   target = GET_FLYEM_CONFIG.getDvidTarget();
   target.print();
 
-  target.set("http:emdata1.int.janelia.org:-1:b42");
+  target.setFromSourceString("http:emdata1.int.janelia.org:-1:b42");
   target.print();
 
 #if 0
@@ -32,23 +31,22 @@ TEST(ZDvidTarget, basic)
   target = dlg.getDvidTarget();
   target.print();
 #endif
-
-#endif
 }
 
 TEST(ZDvidReader, basic)
 {
-#ifdef _FLYEM_2
-  ZDvidDialog dlg;
-  dlg.loadConfig(ZString::fullPath(NeutubeConfig::getInstance().getApplicatinDir(),
-                                   "json", "", "flyem_config.json"));
+  ZFlyEmConfig config;
+
+  config.loadConfig(ZString::fullPath(GET_APPLICATION_DIR,
+                                      "json", "", "flyem_config.json"));
+
 
   ZDvidReader reader;
 
   ZDvidTarget target;
   ASSERT_FALSE(reader.open(target));
 
-  target = dlg.getDvidTarget();
+  target = config.getDvidRepo().front();
   target.print();
 
   ASSERT_FALSE(reader.open(""));
@@ -58,9 +56,16 @@ TEST(ZDvidReader, basic)
 
   QString info = reader.readInfo("superpixels");
   qDebug() << info;
-#endif
 }
 
+TEST(ZDvidWriter, basic)
+{
+  ZDvidTarget dvidTarget("emdata2.int.janelia.org", "628");
+  ZDvidWriter writer;
+  ASSERT_TRUE(writer.open(dvidTarget));
+
+  writer.createData("keyvalue", "skeletons");
+}
 
 #endif
 

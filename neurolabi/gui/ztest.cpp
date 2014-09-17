@@ -12820,10 +12820,46 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   ZDvidClient dvidClient;
   dvidClient.setServer("emdata2.int.janelia.org", 9000);
   dvidClient.setUuid("fa9");
   dvidClient.postRequest(ZDvidRequest::DVID_UPLOAD_SWC, 0);
+#endif
+
+#if 0
+  ZMatrix mat;
+  mat.importTextFile(GET_DATA_DIR + "/flyem/AL/AL_Tbars_xyz.txt");
+
+  int count = 0;
+  std::string filePath = GET_DATA_DIR + "/flyem/AL/AL_Tbars.marker";
+  ofstream stream(filePath.c_str());
+  if (!stream.is_open()) {
+    cout << "Failed to open " << filePath << endl;
+  } else {
+    FlyEm::SynapseDisplayConfig displayConfig;
+    displayConfig.tBarColor.red = 255;
+    displayConfig.tBarColor.green = 0;
+    displayConfig.tBarColor.blue = 0;
+
+    for (int i = 0; i < mat.getRowNumber(); ++i) {
+      stream << mat.at(i, 0) << ',' << mat.at(i, 1) << ',' << mat.at(i, 2)
+             << ',' << "3,1,,,"
+             << static_cast<int>(displayConfig.tBarColor.red) << ","
+             << static_cast<int>(displayConfig.tBarColor.green) << ","
+             << static_cast<int>(displayConfig.tBarColor.blue) << "," << endl;
+      ++count;
+    }
+
+    stream.close();
+  }
+
+  std::cout << count << " tbars found." << std::endl;
+#endif
+
+#if 1
+  ZDvidReader reader;
+  ZDvidTarget target("emdata.janelia.org", "bf1");
+  std::cout << reader.open(target) << std::endl;
 #endif
 }

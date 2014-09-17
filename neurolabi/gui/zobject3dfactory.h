@@ -12,7 +12,12 @@ public:
   ZObject3dFactory();
 
 public:
-  static ZObject3dArray* MakeRegionBoundary(const ZStack &stack);
+  enum EOutputForm {
+    OUTPUT_COMPACT, OUTPUT_SPARSE
+  };
+
+  static ZObject3dArray* MakeRegionBoundary(
+      const ZStack &stack, EOutputForm option);
   static ZObject3dScan MakeObject3dScan(const ZStack &stack);
   static ZObject3dScan* MakeObject3dScan(
       const ZStack &stack, ZObject3dScan *out);

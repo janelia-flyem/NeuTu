@@ -43,14 +43,14 @@ bool ZDvidBufferReader::isReadable(const QString &url)
 
   m_networkReply = m_networkManager->get(QNetworkRequest(url));
 
-  return m_networkReply->error() == QNetworkReply::NoError;
-//  connect(m_networkReply, SIGNAL(readyRead()), this, SLOT(finishReading()));
-//  connect(m_networkReply, SIGNAL(error(QNetworkReply::NetworkError)),
-//          this, SLOT(handleError(QNetworkReply::NetworkError)));
+  //return m_networkReply->error() == QNetworkReply::NoError;
+  connect(m_networkReply, SIGNAL(readyRead()), this, SLOT(finishReading()));
+  connect(m_networkReply, SIGNAL(error(QNetworkReply::NetworkError)),
+          this, SLOT(handleError(QNetworkReply::NetworkError)));
 
-//  waitForReading();
+  waitForReading();
 
-//  return m_status == READ_OK;
+  return m_status == READ_OK;
 }
 
 void ZDvidBufferReader::readHead(const QString &url)

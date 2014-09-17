@@ -592,7 +592,7 @@ void FlyEmDataForm::updateThumbnail(ZFlyEmNeuron *neuron)
           ZString str(neuron->getThumbnailPath());
           if (str.startsWith("http")) {
             ZDvidTarget target;
-            target.set(str);
+            target.setFromSourceString(str);
             ZDvidReader reader;
             if (reader.open(target)) {
               ZStack *stackObj = reader.readThumbnail(neuron->getId());

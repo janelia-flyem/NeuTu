@@ -3,40 +3,18 @@
     {
       "address": "emdata.janelia.org",
       "uuid": "bf1",
-      "name": "FIB-external"
-    },
-    {
-      "address": "emdata1.int.janelia.org",
-      "port": 9000,
-      "uuid": "b42",
-      "name": "FIB25-0502",
-      "comment": "FIB-25 export 2014-05-02"
+      "name": "FIB-external",
+      "comment": "External server"
     },
     {
       "address": "emdata2.int.janelia.org",
-      "port": 9000,
-      "uuid": "fa9",
-      "name": "FIB25-0516",
-      "comment": "FIB-25 export 2014-05-16"
-    },
-    {
-      "address": "emdata2.int.janelia.org",
-      "port": 9000,
-      "uuid": "43f",
+      "uuid": "faa",
       "name": "FIB25-0715",
       "comment": "FIB-25 export 2014-07-15"
     },
     {
       "address": "emdata2.int.janelia.org",
-      "port": 9000,
-      "uuid": "3426",
-      "name": "MB-4",
-      "comment": "Mushroom body MB-4"
-    },
-    {
-      "address": "emdata1.int.janelia.org",
-      "port": 9000,
-      "uuid": "ba959",
+      "uuid": "628",
       "name": "MB-6",
       "comment": "Mushroom body MB-6 (7567 x 11140 x 14625)"
     }

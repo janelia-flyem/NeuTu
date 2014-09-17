@@ -75,7 +75,7 @@ public: /* frame operation */
   void initOpenglContext();
   void config();
 
-  void initBodySplitProject();
+  bool initBodySplitProject();
 
   QString getOpenFileName(const QString &caption,
                           const QString &filter = QString());
@@ -159,6 +159,8 @@ private:
 
   void initDialog();
   void checkVersion();
+
+  void testProgressBarFunc();
 
 protected:
   //a virtual function from QWidget. It is called when the window is closed.
@@ -570,7 +572,7 @@ private:
 
   ZDvidClient *m_dvidClient;
   ZStackFrame *m_dvidFrame;
-  DvidObjectDialog *m_dvidObjectDlg;
+  //DvidObjectDialog *m_dvidObjectDlg;
   DvidImageDialog *m_dvidImageDlg;
   TileManager *m_tileDlg;
   FlyEmBodyIdDialog *m_bodyDlg;

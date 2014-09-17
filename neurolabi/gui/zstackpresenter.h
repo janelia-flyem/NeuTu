@@ -28,6 +28,7 @@ class QKeyEvent;
 class QAction;
 class QMenu;
 class ZInteractionEvent;
+class ZStackOperator;
 
 class ZStackPresenter : public QObject {
   Q_OBJECT
@@ -84,11 +85,11 @@ public:
   void updateZoomOffset(int cx, int cy, int wx, int wy);
   void setZoomOffset(int x, int y);
 */
-  void processMouseReleaseEvent(QMouseEvent *event, int sliceIndex);
+  void processMouseReleaseEvent(QMouseEvent *event);
   void processKeyPressEvent(QKeyEvent *event);
   void processMouseMoveEvent(QMouseEvent *event);
   void processMousePressEvent(QMouseEvent *event);
-  void processMouseDoubleClickEvent(QMouseEvent *eventint, int sliceIndex);
+  void processMouseDoubleClickEvent(QMouseEvent *eventint);
 
   void createActions();
   void createTraceActions();
@@ -110,6 +111,8 @@ public:
 
   void createStackContextMenu();
   QMenu* getStackContextMenu();
+
+  bool isContextMenuOn();
 
   void setStackBc(double scale, double offset, int c = 0);
 
@@ -162,9 +165,22 @@ public:
   void moveImage(int mouseX, int mouseY);
   void moveViewPort(int dx, int dy);
   void moveViewPortTo(int x, int y);
+  /*!
+   * \brief Move a data point to the specified mouse position.
+   * (\a srcX, \a srcY) are the raw stack coordinates.
+   */
+  void moveImageToMouse(double srcX, double srcY, int mouseX, int mouseY);
 
   void increaseZoomRatio();
   void decreaseZoomRatio();
+
+  /*!
+   * \brief Get the current slice index.
+   *
+   * It returns the index of the current active slice. When no slice is active,
+   * such as in the senario of the projection mode, the index is set to -1.
+   */
+  int getSliceIndex() const;
 
 public slots:
   void addDecoration(ZStackObject *obj, bool tail = true);
@@ -175,18 +191,7 @@ public slots:
   void fitSegment();
   void fitEllipse();
   void dropSegment();
-  //void enterHookMode();
-  //void enterSpHookMode();
-  //void enterLinkMode();
-  //void enterMergeMode();
-  //void enterWalkMode();
-  //void enterCheckConnMode();
-  //void enterExtendMode();
-  //void enterConnectMode();
-  //void enterDisconnectMode();
   void enterMouseCapturingMode();
-  void cutTube();
-  void breakTube();
   //void refineChainEnd();
   void bringSelectedToFront();
   void sendSelectedToBack();
@@ -276,6 +281,9 @@ private:
   bool estimateActiveStrokeWidth();
 
   void processEvent(const ZInteractionEvent &event);
+  void process(const ZStackOperator &op);
+
+  void acceptActiveStroke();
 
 private:
   ZStackFrame *m_parent;
@@ -365,7 +373,7 @@ private:
   int m_mouseRightPressPosition[3];
   int m_mouseLeftDoubleClickPosition[3];
   QPointF m_grabPosition;
-  QPointF m_lastMouseDataCoord;
+  ZPoint m_lastMouseDataCoord;
 
   ZStroke2d m_stroke;
   bool m_isStrokeOn;
@@ -374,8 +382,8 @@ private:
   bool m_skipMouseReleaseEvent;
 
   ZKeyEventSwcMapper m_swcKeyMapper;
-  ZMouseEventLeftButtonReleaseMapper m_leftButtonReleaseMapper;
-  ZMouseEventMoveMapper m_moveMapper;
+  //ZMouseEventLeftButtonReleaseMapper m_leftButtonReleaseMapper;
+  //ZMouseEventMoveMapper m_moveMapper;
 
   ZMouseEventProcessor m_mouseEventProcessor;
 

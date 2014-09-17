@@ -16,6 +16,10 @@ public:
     ACTION_NONE, ACTION_PRESS, ACTION_RELEASE, ACTION_MOVE, ACTION_DOUBLE_CLICK
   };
 
+  enum ECoordinateSystem {
+    COORD_WIDGET, COORD_GLOBAL, COORD_RAW_STACK, COORD_STACK
+  };
+
   bool isNull() const;
 
   void set(QMouseEvent *event, int z);
@@ -26,6 +30,8 @@ public:
 
   void setRawStackPosition(const ZPoint &pt);
   void setRawStackPosition(double x, double y, double z);
+
+  void setStackPosition(const ZPoint &pt);
 
   void setPressEvent(QMouseEvent *event, int z);
   void setReleaseEvent(QMouseEvent *event, int z);
@@ -56,6 +62,8 @@ public:
     return m_position;
   }
 
+  ZPoint getPosition(ECoordinateSystem cs) const;
+
   inline int getX() const {
     return getPosition().getX();
   }
@@ -72,14 +80,30 @@ public:
     return m_rawStackPosition;
   }
 
+  inline const ZPoint& getStackPosition() const {
+    return m_stackPosition;
+  }
+
+  inline bool isInStack() const {
+    return m_isInStack;
+  }
+
+  void setInStack(bool isInStack) {
+    m_isInStack = isInStack;
+  }
+
+  void print() const;
+
 private:
   //Qt::MouseButton m_button;
   Qt::MouseButtons m_buttons;
   EAction m_action;
   Qt::KeyboardModifiers m_modifiers;
   ZIntPoint m_position;
-  ZPoint m_rawStackPosition;
-  //ZPoint m_stackPosition;
+  ZIntPoint m_globalPosition;
+  ZPoint m_rawStackPosition; //If z is negative, it means a projection
+  ZPoint m_stackPosition;
+  bool m_isInStack;
 };
 
 #endif // ZMOUSEEVENT_H

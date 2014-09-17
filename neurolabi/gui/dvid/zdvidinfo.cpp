@@ -24,8 +24,15 @@ ZDvidInfo::ZDvidInfo() : m_dvidPort(7000)
 
 void ZDvidInfo::setFromJsonString(const std::string &str)
 {
-  ZJsonObject obj;
-  if (obj.decode(str)) {
+  ZJsonObject rootObj;
+  if (rootObj.decode(str)) {
+    ZJsonObject obj;
+    if (rootObj.hasKey("Extended")) {
+      obj.set(rootObj["Extended"], ZJsonValue::SET_INCREASE_REF_COUNT);
+    } else {
+      obj = rootObj;
+    }
+
     if (obj.hasKey(m_minPointKey)) {
       ZJsonArray array(obj[m_minPointKey], false);
       std::vector<int> startCoordinates = array.toIntegerArray();

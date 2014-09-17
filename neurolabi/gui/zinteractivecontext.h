@@ -103,6 +103,7 @@ public:
   inline bool isStrokeEditModeOff() const { return m_strokeEditMode == STROKE_EDIT_OFF; }
 
   bool isContextMenuActivated() const;
+  void blockContextMenu(bool blocking = true);
 
   inline void setExitingEdit(bool s) { m_exitingEdit = s; }
   inline bool isExitingEdit() const { return m_exitingEdit; }
@@ -119,6 +120,7 @@ private:
   SwcEditMode m_swcEditMode;
   StrokeEditMode m_strokeEditMode;
   bool m_exitingEdit;
+  bool m_blockingContextMenu;
   //ZImageWidget *m_imageWidget;
   //QRect m_projRegion;
   //QRect m_viewPort;

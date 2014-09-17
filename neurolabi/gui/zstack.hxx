@@ -296,6 +296,20 @@ public: /* attributes */
    * The input coordinates are supposed to be global.
    */
   bool contains(int x, int y, int z) const;
+  bool contains(const ZPoint &pt) const;
+  bool contains(const ZIntPoint &pt) const;
+  bool contains(double x, double y) const;
+
+  /*!
+   * \brief containsRaw
+   *
+   * It return true if (\a x, \a y, \a z) is in the raw stack box, which is
+   * defined as (0, width - 1) x (0, height - 1) x (0, depth - 1), with \a z
+   * treated a little specially. If \a z is negative, only \a x and \a y are
+   * tested, as if testing (\a x, \a y, 0).
+   */
+  bool containsRaw(double x, double y, double z) const;
+  bool containsRaw(const ZPoint &pt) const;
 
   /*!
    * \brief Reshape the stack.

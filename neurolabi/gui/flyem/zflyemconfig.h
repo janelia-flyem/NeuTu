@@ -19,8 +19,16 @@ public:
     return m_dvidTarget;
   }
 
+  void loadConfig(const std::string &filePath);
+
+  inline const std::vector<ZDvidTarget> &getDvidRepo() const {
+    return m_dvidRepo;
+  }
+
 private:
   ZDvidTarget m_dvidTarget;
+  std::vector<ZDvidTarget> m_dvidRepo;
+  const static char *m_dvidRepoKey;
 };
 
 #endif // ZFLYEMCONFIG_H

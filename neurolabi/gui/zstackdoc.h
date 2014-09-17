@@ -164,6 +164,8 @@ public: //attributes
   void setStackOffset(const ZIntPoint &offset);
   void setStackOffset(const ZPoint &offset);
 
+  ZIntPoint getStackSize() const;
+
   /*!
    * \brief Get the data space coordinates of stack coordinates
    */
@@ -431,8 +433,11 @@ public: /* puncta related methods */
 
   bool importSynapseAnnotation(const std::string &filePath);
 
-  Swc_Tree_Node *swcHitTest(int x, int y, int z);
+  Swc_Tree_Node *swcHitTest(double x, double y);
+  Swc_Tree_Node *swcHitTest(double x, double y, double z);
+  Swc_Tree_Node *swcHitTest(const ZPoint &pt);
   Swc_Tree_Node *selectSwcTreeNode(int x, int y, int z, bool append = false);
+  Swc_Tree_Node *selectSwcTreeNode(const ZPoint &pt, bool append = false);
   void selectSwcTreeNode(Swc_Tree_Node *tn, bool append = false);
 
   // (de)select objects and emit signals for 3D view and 2D view to sync
@@ -687,6 +692,7 @@ public slots: //undoable commands
   bool executeSwcNodeChangeSizeCommand(double dr);
   bool executeMergeSwcNodeCommand();
   bool executeTraceSwcBranchCommand(double x, double y, double z, int c = 0);
+  bool executeTraceSwcBranchCommand(double x, double y);
   bool executeInterpolateSwcZCommand();
   bool executeInterpolateSwcRadiusCommand();
   bool executeInterpolateSwcPositionCommand();

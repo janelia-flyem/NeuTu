@@ -17,6 +17,9 @@ namespace Ui {
 class ZFlyEmRoiDialog;
 }
 
+/*!
+ * \brief The class of ROI control panel
+ */
 class ZFlyEmRoiDialog : public QDialog, ZProgressable
 {
   Q_OBJECT

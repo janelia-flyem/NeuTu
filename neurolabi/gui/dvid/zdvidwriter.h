@@ -39,19 +39,27 @@ public:
   void writeRoiCurve(const ZClosedCurve &curve, const std::string &key);
   void writeJsonString(const std::string &dataName, const std::string &key,
                        const std::string jsonString);
+  void writeJson(const std::string &dataName, const std::string &key,
+                 const ZJsonValue &obj);
   void writeBoundBox(const ZIntCuboid &cuboid, int z);
 
+  void createData(const std::string &type, const std::string &name);
+
   /*!
-   * \brief Create a new key in DVID.
+   * \brief Create a new keyvalue data in DVID.
    *
-   * It does nothing if the key has already existed.
+   * It does nothing if the data has already existed.
    */
-  void createKey(const std::string &key);
+  void createKeyvalue(const std::string &name);
+
+private:
+  std::string getJsonStringForCurl(const ZJsonValue &obj) const;
 
 private:
   QEventLoop *m_eventLoop;
   ZDvidClient *m_dvidClient;
   QTimer *m_timer;
+  ZDvidTarget m_dvidTarget;
 };
 
 #endif // ZDVIDWRITER_H

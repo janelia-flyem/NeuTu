@@ -1735,6 +1735,42 @@ bool ZStack::contains(int x, int y, int z) const
   return Cuboid_I_Hit(&box, x, y, z) > 0;
 }
 
+bool ZStack::contains(const ZIntPoint &pt) const
+{
+  return contains(pt.getX(), pt.getY(), pt.getZ());
+}
+
+bool ZStack::contains(double x, double y) const
+{
+  return IS_IN_CLOSE_RANGE(x, m_offset.getX(), m_offset.getX() + width() - 1) &&
+      IS_IN_CLOSE_RANGE(y, m_offset.getY(), m_offset.getY() + height() - 1);
+}
+
+bool ZStack::contains(const ZPoint &pt) const
+{
+  return IS_IN_CLOSE_RANGE3(
+        pt.x(), pt.y(), pt.z(),
+        m_offset.getX(), m_offset.getX() + width() - 1,
+        m_offset.getY(), m_offset.getY() + height() - 1,
+        m_offset.getZ(), m_offset.getZ() + depth() - 1);
+}
+
+bool ZStack::containsRaw(double x, double y, double z) const
+{
+  if (z >= 0) {
+    return IS_IN_CLOSE_RANGE3(x, y, z, 0, width() - 1, 0, height() - 1,
+                              0, depth() - 1);
+  } else {
+    return IS_IN_CLOSE_RANGE(x, 0, width() - 1) &&
+        IS_IN_CLOSE_RANGE(y, 0, height() - 1);
+  }
+}
+
+bool ZStack::containsRaw(const ZPoint &pt) const
+{
+  return containsRaw(pt.x(), pt.y(), pt.z());
+}
+
 void ZStack::setBlockValue(int x0, int y0, int z0, const ZStack *stack)
 {
   x0 -= m_offset.getX();

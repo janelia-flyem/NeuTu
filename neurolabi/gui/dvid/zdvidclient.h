@@ -16,6 +16,7 @@
 #include "zprogressable.h"
 #include "zdvidrequest.h"
 #include "zstack.hxx"
+#include "dvid/zdvidtarget.h"
 
 class ZDvidBuffer;
 
@@ -28,16 +29,19 @@ class ZDvidClient : public QObject, ZProgressable
 
 public:
   ZDvidClient(QObject *parent = NULL);
-  ZDvidClient(const QString &server, QObject *parent = NULL);
 
-  inline void setServer(const QString &server) {
-    m_serverAddress = server;
-  }
-
+  void setServer(const QString &server);
+  void setUuid(const QString &uuid);
+  void setPort(int port);
   void setServer(const QString &server, int port);
 
   void setDefaultServer();
 
+  inline const ZDvidTarget& getDvidTarget() const {
+    return m_dvidTarget;
+  }
+
+  /*
   inline const QString &getServer() {
     return m_serverAddress;
   }
@@ -45,12 +49,13 @@ public:
   inline const QString& getUuid() {
     return m_uuid;
   }
+  */
 
   inline const QString& getTmpDirectory() {
     return m_tmpDirectory;
   }
 
-  void setUuid(const QString &uuid);
+
 
   /*!
    * \brief Send a request to DVID
@@ -102,9 +107,10 @@ private:
   inline bool isCanceling() { return m_isCanceling; }
 
 private:
-  QString m_serverAddress; //Server address
-  QString m_uuid; //uuid of the dataset
-  QString m_dataPath;
+  //QString m_serverAddress; //Server address
+  //QString m_uuid; //uuid of the dataset
+  //QString m_dataPath;
+  ZDvidTarget m_dvidTarget;
   QNetworkAccessManager *m_networkManager;
   QNetworkReply *m_networkReply;
   QString m_targetDirectory;

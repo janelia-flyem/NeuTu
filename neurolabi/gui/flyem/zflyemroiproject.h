@@ -11,6 +11,10 @@ class ZStackFrame;
 class ZSwcTree;
 class ZObject3dScan;
 
+
+/*!
+ * \brief The class of managing a FlyEM ROI project
+ */
 class ZFlyEmRoiProject : public QObject
 {
   Q_OBJECT
@@ -18,10 +22,26 @@ public:
   explicit ZFlyEmRoiProject(const std::string &name, QObject *parent = 0);
   ~ZFlyEmRoiProject();
 
-  void initRoi();
+  //void initRoi();
+  /*!
+   * \brief Remove all associated memory
+   */
   void clear();
+
+  /*!
+   * \brief Set all member pointers to NULL
+   */
   void shallowClear();
-  void setDvidTarget(const ZDvidTarget &target);
+
+  /*!
+   * \brief Set the dvid target
+   *
+   * It will create the project in the DVID key if necessary.
+   *
+   * \return true iff the DVID target is writable
+   */
+  bool setDvidTarget(const ZDvidTarget &target);
+
   void showDataFrame() const;
   void closeDataFrame();
   bool hasDataFrame() const;

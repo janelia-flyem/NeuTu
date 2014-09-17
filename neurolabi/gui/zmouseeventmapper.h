@@ -10,18 +10,15 @@
 class ZInteractiveContext;
 class QMouseEvent;
 class ZMouseEvent;
+class ZStackDoc;
+class ZStackOperator;
+class ZMouseEventRecorder;
 
 class ZMouseEventMapper
 {
 public:
-  ZMouseEventMapper(ZInteractiveContext *context = NULL);
-
-  enum EOperation {
-    OP_NULL, OP_MOVE_IMAGE, OP_MOVE_OBJECT, OP_CAPTURE_MOUSE_POSITION,
-    OP_PROCESS_OBJECT, OP_RESOTRE_EXPLORE_MODE, OP_CAPTURE_IMAGE_INFO,
-    OP_PAINT_STROKE, OP_START_MOVE_IMAGE,
-    OP_SWC_SELECT, OP_SWC_EXTEND
-  };
+  ZMouseEventMapper(ZInteractiveContext *context = NULL,
+                    ZStackDoc *doc = NULL);
 
   /*
   enum EButton {
@@ -33,11 +30,29 @@ public:
   };
 */
   //virtual EOperation getOperation(QMouseEvent *event);
-  virtual EOperation getOperation(const ZMouseEvent &event) const;
+  virtual ZStackOperator getOperation(const ZMouseEvent &event) const;
+
+  ZStackOperator initOperation() const;
   //virtual EOperation getOperation()
 
   inline void setContext(ZInteractiveContext *context) {
     m_context = context;
+  }
+
+  inline void setDocument(ZStackDoc *doc) {
+    m_doc = doc;
+  }
+
+  inline void setRecorder(ZMouseEventRecorder *recorder) {
+    m_eventRecorder = recorder;
+  }
+
+  inline void set(ZInteractiveContext *context, ZStackDoc *doc,
+                  ZMouseEventRecorder *recorder)
+  {
+    setContext(context);
+    setDocument(doc);
+    setRecorder(recorder);
   }
 
   void setPosition(int x, int y, int z, Qt::MouseButton button,
@@ -50,22 +65,50 @@ public:
 
   void process(QMouseEvent *event, int z);
 
+  inline const ZStackDoc* getDocument() const {
+    return m_doc;
+  }
+
 protected:
   ZInteractiveContext *m_context;
+  ZStackDoc *m_doc;
+  ZMouseEventRecorder *m_eventRecorder;
   TMousePosition m_position;
 };
 
+////////////////////////////////////
+class ZMouseEventRightButtonReleaseMapper : public ZMouseEventMapper
+{
+public:
+  ZStackOperator getOperation(const ZMouseEvent &event) const;
+};
 
+////////////////////////////////////
 class ZMouseEventLeftButtonReleaseMapper : public ZMouseEventMapper
 {
 public:
-  EOperation getOperation(const ZMouseEvent &event) const;
+  ZStackOperator getOperation(const ZMouseEvent &event) const;
 };
 
+////////////////////////////////////
+class ZMouseEventLeftButtonPressMapper : public ZMouseEventMapper
+{
+public:
+  ZStackOperator getOperation(const ZMouseEvent &event) const;
+};
+
+////////////////////////////////////
+class ZMouseEventLeftButtonDoubleClickMapper : public ZMouseEventMapper
+{
+public:
+  ZStackOperator getOperation(const ZMouseEvent &event) const;
+};
+
+////////////////////////////////////
 class ZMouseEventMoveMapper : public ZMouseEventMapper
 {
 public:
-  EOperation getOperation(const ZMouseEvent &event) const;
+  ZStackOperator getOperation(const ZMouseEvent &event) const;
 };
 
 #endif // ZMOUSEEVENTMAPPER_H

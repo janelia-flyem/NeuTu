@@ -100,11 +100,13 @@ void FlyEmBodySplitProjectDialog::showData2d()
   if (m_project.hasDataFrame()) {
     m_project.showDataFrame();
     getMainWindow()->raise();
+    dump("Done.", true);
   } else {
-    getMainWindow()->initBodySplitProject();
+    if (getMainWindow()->initBodySplitProject()) {
+      updateWidget();
+      dump("Done.", true);
+    }
   }
-  updateWidget();
-  dump("Done.", true);
 }
 
 void FlyEmBodySplitProjectDialog::showData3d()

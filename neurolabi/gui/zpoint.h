@@ -58,6 +58,7 @@ public:
   ZPoint operator - () const;
 
   friend ZPoint operator + (const ZPoint &pt1, const ZPoint &pt2);
+  friend ZPoint operator + (const ZPoint &pt1, const ZIntPoint &pt2);
   friend ZPoint operator - (const ZPoint &pt1, const ZPoint &pt2);
   friend ZPoint operator * (const ZPoint &pt1, double scale);
 

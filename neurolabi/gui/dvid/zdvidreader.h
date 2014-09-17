@@ -16,8 +16,8 @@
 #include "zclosedcurve.h"
 #include "dvid/zdvidinfo.h"
 #include "zintcuboid.h"
+#include "dvid/zdvidtarget.h"
 
-class ZDvidTarget;
 class ZDvidFilter;
 
 class ZDvidReader : public QObject
@@ -63,6 +63,8 @@ public:
 
   ZDvidInfo readGrayScaleInfo();
 
+  bool hasDataKey(const std::string &key) const;
+
 signals:
   void readingDone();
 
@@ -84,6 +86,7 @@ private:
   ZDvidClient *m_dvidClient;
   QTimer *m_timer;
   bool m_isReadingDone;
+  ZDvidTarget m_dvidTarget;
 };
 
 #endif // ZDVIDREADER_H

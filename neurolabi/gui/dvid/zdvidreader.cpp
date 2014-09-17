@@ -7,6 +7,8 @@
 #include "zdvidinfo.h"
 #include "dvid/zdvidtarget.h"
 #include "dvid/zdvidfilter.h"
+#include "dvid/zdvidbufferreader.h"
+#include "dvid/zdvidurl.h"
 
 ZDvidReader::ZDvidReader(QObject *parent) :
   QObject(parent)
@@ -63,6 +65,14 @@ bool ZDvidReader::open(
   m_dvidClient->setServer(serverAddress, port);
   m_dvidClient->setUuid(uuid);
 
+  ZDvidBufferReader bufferReader;
+  ZDvidUrl dvidUrl(serverAddress.toStdString(), uuid.toStdString(), port);
+  if (!bufferReader.isReadable(dvidUrl.getHelpUrl().c_str())) {
+    return false;
+  }
+
+  m_dvidTarget.set(serverAddress.toStdString(), uuid.toStdString(), port);
+
   return true;
 }
 
@@ -75,7 +85,7 @@ bool ZDvidReader::open(const ZDvidTarget &target)
 bool ZDvidReader::open(const QString &sourceString)
 {
   ZDvidTarget target;
-  target.set(sourceString.toStdString());
+  target.setFromSourceString(sourceString.toStdString());
   return open(target);
 }
 
@@ -683,4 +693,11 @@ ZDvidInfo ZDvidReader::readGrayScaleInfo()
   }
 
   return dvidInfo;
+}
+
+bool ZDvidReader::hasDataKey(const std::string &key) const
+{
+  ZDvidUrl dvidUrl(m_dvidTarget);
+  ZDvidBufferReader bufferReader;
+  return bufferReader.isReadable(dvidUrl.getInfoUrl(key).c_str());
 }

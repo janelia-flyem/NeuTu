@@ -412,7 +412,7 @@ int ZCommandLine::runSkeletonize()
   }
 
   ZDvidTarget target;
-  target.set(m_input[0]);
+  target.setFromSourceString(m_input[0]);
   //target.set("emdata2.int.janelia.org", "43f", 9000);
 
   ZDvidReader reader;
