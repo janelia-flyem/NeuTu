@@ -7,6 +7,10 @@
 #include "dvid/zdvidurl.h"
 #include "dvid/zdviddata.h"
 
+#if _ENABLE_LIBDVID_
+#include "DVIDNode.h"
+#endif
+
 ZDvidWriter::ZDvidWriter(QObject *parent) :
   QObject(parent)
 {
