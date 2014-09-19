@@ -214,6 +214,7 @@ using namespace std;
 #include "test/zlinesegmenttest.h"
 #include "test/zdvidiotest.h"
 #include "test/zclosedcurvetest.h"
+#include "dvid/libdvidheader.h"
 
 using namespace std;
 
@@ -12857,9 +12858,21 @@ void ZTest::test(MainWindow *host)
   std::cout << count << " tbars found." << std::endl;
 #endif
 
-#if 1
+#if 0
   ZDvidReader reader;
   ZDvidTarget target("emdata.janelia.org", "bf1");
   std::cout << reader.open(target) << std::endl;
+#endif
+
+#if 1
+#ifdef _ENABLE_LIBDVID_
+  ZDvidTarget target =
+      NeutubeConfig::getInstance().getFlyEmConfig().getDvidRepo().at(0);
+  libdvid::DVIDServer server(target.getAddressWithPort());
+  libdvid::DVIDNode dvidNode(server, target.getUuid());
+
+  libdvid::BinaryDataPtr value;
+  dvidNode.get("skeletons", "1.swc", value);
+#endif
 #endif
 }

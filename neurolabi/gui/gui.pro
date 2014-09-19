@@ -452,7 +452,8 @@ HEADERS += mainwindow.h \
     zmouseeventrecorder.h \
     zmouseeventprocessor.h \
     zstackoperator.h \
-    zsleeper.h
+    zsleeper.h \
+    dvid/libdvidheader.h
 
 FORMS += settingdialog.ui \
     frameinfodialog.ui \

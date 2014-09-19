@@ -56,3 +56,14 @@ exists($${EXTLIB_DIR}/hdf5/lib/libhdf5.a) {
 unix {
     LIBS += -ldl -lz
 }
+
+
+BUILDEM_DIR = /opt/Downloads/buildem
+exists($${BUILDEM_DIR}/lib/libdvidcpp.a) {
+    DEFINES += _ENABLE_LIBDVID_
+    INCLUDEPATH +=  $${BUILDEM_DIR}/include $${BUILDEM_DIR}/include/libdvid
+    LIBS += -L$${BUILDEM_DIR}/lib -L$${BUILDEM_DIR}/lib64 -ldvidcpp \
+        -ljsoncpp -lcppnetlib-uri \
+        -lcppnetlib-client-connections -lcppnetlib-server-parsers  \
+        -lboost_system -lboost_thread -lssl -lcrypto
+}
