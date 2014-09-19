@@ -14,6 +14,7 @@ public:
   enum EOperation {
     OP_NULL, OP_MOVE_IMAGE, OP_MOVE_OBJECT, OP_CAPTURE_MOUSE_POSITION,
     OP_PROCESS_OBJECT, OP_RESOTRE_EXPLORE_MODE, OP_TRACK_MOUSE_MOVE,
+    OP_TRACK_MOUSE_MOVE_WITH_STROKE_TOGGLE,
     OP_PAINT_STROKE, OP_START_MOVE_IMAGE, OP_SHOW_STACK_CONTEXT_MENU,
     OP_SHOW_SWC_CONTEXT_MENU, OP_SHOW_STROKE_CONTEXT_MENU,
     OP_SHOW_PUNCTA_CONTEXT_MENU,  OP_SHOW_TRACE_CONTEXT_MENU,
@@ -76,10 +77,19 @@ public:
     return m_mouseEventRecorder;
   }
 
+  inline void setTogglingStrokeLabel(bool toggling) {
+    m_togglingStrokeLabel = toggling;
+  }
+
+  inline bool togglingStrokeLabel() const {
+    return m_togglingStrokeLabel;
+  }
+
 private:
   EOperation m_op;
   Swc_Tree_Node *m_hitNode;
   int m_punctaIndex;
+  bool m_togglingStrokeLabel;
   const ZMouseEventRecorder *m_mouseEventRecorder;
 };
 

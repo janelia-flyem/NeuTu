@@ -2,7 +2,7 @@
 #include "zmouseeventrecorder.h"
 
 ZStackOperator::ZStackOperator() : m_op(OP_NULL), m_hitNode(NULL),
-  m_punctaIndex(-1), m_mouseEventRecorder(NULL)
+  m_punctaIndex(-1), m_togglingStrokeLabel(false), m_mouseEventRecorder(NULL)
 {
 }
 

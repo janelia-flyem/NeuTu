@@ -280,7 +280,7 @@ private:
 
   bool estimateActiveStrokeWidth();
 
-  void processEvent(const ZInteractionEvent &event);
+  void processEvent(ZInteractionEvent &event);
   void process(const ZStackOperator &op);
 
   void acceptActiveStroke();
@@ -376,6 +376,7 @@ private:
   ZPoint m_lastMouseDataCoord;
 
   ZStroke2d m_stroke;
+  ZStroke2d m_swcStroke;
   bool m_isStrokeOn;
 
   ZSingleSwcNodeActionActivator m_singleSwcNodeActionActivator;

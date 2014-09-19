@@ -25,7 +25,8 @@ ZStroke2d::ZStroke2d(const ZStroke2d &stroke) : ZStackObject(stroke)
 {
   m_pointArray = stroke.m_pointArray;
   m_width = stroke.m_width;
-  m_label = stroke.m_label;
+  setLabel(stroke.m_label);
+  //m_label = stroke.m_label;
   m_z = stroke.m_z;
   //m_isEraser = stroke.m_isEraser;
   m_isFilled = stroke.m_isFilled;
@@ -72,6 +73,20 @@ void ZStroke2d::set(double x, double y)
 void ZStroke2d::setLabel(int label)
 {
   m_label = label;
+  m_originalLabel = label;
+  m_color = getLabelColor();
+}
+
+void ZStroke2d::toggleLabel(bool toggling)
+{
+  if (toggling) {
+    if (m_label == m_originalLabel) {
+      m_label++;
+    }
+  } else {
+    m_label = m_originalLabel;
+  }
+
   m_color = getLabelColor();
 }
 

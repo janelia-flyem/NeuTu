@@ -72,7 +72,7 @@ ZObject3dArray* ZObject3dFactory::MakeRegionBoundary(
   }
 
   //z scan
-  for (int y = 0; y < depth; ++y) {
+  for (int y = 0; y < height; ++y) {
     for (int x = 0; x < width; ++x) {
       offset = width * y + x + area;
       for (int z = 1; z < depth - 1; ++z) {

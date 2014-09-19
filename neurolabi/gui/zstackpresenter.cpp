@@ -57,7 +57,8 @@ ZStackPresenter::ZStackPresenter(ZStackFrame *parent) : QObject(parent),
 
   m_cursorRadius = 10;
 
-  m_activeDecorationList.push_back(&m_stroke);
+  m_activeDecorationList.append(&m_stroke);
+  m_activeDecorationList.append(&m_swcStroke);
 
   m_swcNodeContextMenu = NULL;
   m_strokePaintContextMenu = NULL;
@@ -355,6 +356,7 @@ void ZStackPresenter::turnOnStroke()
 
 void ZStackPresenter::turnOffStroke()
 {
+  m_stroke.toggleLabel(false);
   m_stroke.clear();
   if (isStrokeOn()) {
     buddyView()->paintActiveDecoration();
@@ -1675,7 +1677,7 @@ void ZStackPresenter::selectConnectedNode()
   buddyDocument()->selectConnectedNode();
 }
 
-void ZStackPresenter::processEvent(const ZInteractionEvent &event)
+void ZStackPresenter::processEvent(ZInteractionEvent &event)
 {
   switch (event.getEvent()) {
   case ZInteractionEvent::EVENT_SWC_NODE_SELECTED:
@@ -1688,10 +1690,14 @@ void ZStackPresenter::processEvent(const ZInteractionEvent &event)
     updateView();
     emit(viewModeChanged());
     break;
+  case ZInteractionEvent::EVENT_ACTIVE_DECORATION_UPDATED:
+    buddyView()->paintActiveDecoration();
+    break;
   default:
     break;
   }
   m_parent->notifyUser(event.getMessage());
+  event.setEvent(ZInteractionEvent::EVENT_NULL);
 }
 
 void ZStackPresenter::setViewMode(ZInteractiveContext::ViewMode mode)
@@ -1882,7 +1888,6 @@ void ZStackPresenter::process(const ZStackOperator &op)
     }
     break;
   case ZStackOperator::OP_TRACK_MOUSE_MOVE:
-  {
     buddyView()->setInfo(
           buddyDocument()->dataInfo(
             currentRawStackPos.x(), currentRawStackPos.y(),
@@ -1893,11 +1898,33 @@ void ZStackPresenter::process(const ZStackOperator &op)
       if (m_interactiveContext.strokeEditMode() !=
           ZInteractiveContext::STROKE_DRAW) {
         m_stroke.setFilled(false);
+      } else {
+        m_stroke.toggleLabel(op.togglingStrokeLabel());
       }
-      turnOnStroke();
+      interactionEvent.setEvent(
+            ZInteractionEvent::EVENT_ACTIVE_DECORATION_UPDATED);
+      //turnOnStroke();
     }
-  }
     break;
+#if 0
+  case ZStackOperator::OP_TRACK_MOUSE_MOVE_WITH_STROKE_TOGGLE:
+    buddyView()->setInfo(
+          buddyDocument()->dataInfo(
+            currentRawStackPos.x(), currentRawStackPos.y(),
+            currentRawStackPos.z()));
+    if (isStrokeOn()) {
+      m_stroke.set(currentStackPos.x(), currentStackPos.y());
+      if (m_interactiveContext.strokeEditMode() !=
+          ZInteractiveContext::STROKE_DRAW) {
+        m_stroke.setFilled(false);
+      } else {
+        m_stroke.toggleLabel(/*toggling=*/true);
+      }
+      interactionEvent.setEvent(
+            ZInteractionEvent::EVENT_ACTIVE_DECORATION_UPDATED);
+    }
+    break;
+#endif
   default:
     break;
   }

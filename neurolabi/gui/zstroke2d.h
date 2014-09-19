@@ -53,6 +53,11 @@ public:
   void setLabel(int label);
   int getLabel() const;
 
+  /*!
+   * \brief Toggle the label.
+   */
+  void toggleLabel(bool toggling);
+
   void clear();
 
   bool isEmpty() const;
@@ -110,6 +115,7 @@ private:
   double m_width;
 
   int m_label; //Label = 0 is reserved for eraser
+  int m_originalLabel; //for label toggling
   int m_z;
 
   //bool m_isEraser;

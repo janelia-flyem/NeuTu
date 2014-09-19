@@ -72,7 +72,8 @@ std::string ZDvidUrl::getSkeletonUrl(int bodyId) const
 
 std::string ZDvidUrl::getSparsevolUrl() const
 {
-  return getDataUrl(ZDvidData::getName(ZDvidData::ROLE_SPARSEVOL));
+  return getDataUrl(ZDvidData::ROLE_SP2BODY) + "/" +
+      ZDvidData::getName(ZDvidData::ROLE_SPARSEVOL);
 }
 
 std::string ZDvidUrl::getSparsevolUrl(int bodyId) const

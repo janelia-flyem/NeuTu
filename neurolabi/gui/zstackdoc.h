@@ -564,7 +564,7 @@ public: /* puncta related methods */
     return m_sparseStack;
   }
 
-  QList<const ZDocPlayer *> getPlayerList(ZDocPlayer::TRole role) const;
+  QList<const ZDocPlayer*> getPlayerList(ZDocPlayer::TRole role) const;
 
   bool hasPlayer(ZDocPlayer::TRole role) const;
 

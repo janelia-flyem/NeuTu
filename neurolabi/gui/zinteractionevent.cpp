@@ -1,6 +1,6 @@
 #include "zinteractionevent.h"
 
-ZInteractionEvent::ZInteractionEvent()
+ZInteractionEvent::ZInteractionEvent() : m_event(ZInteractionEvent::EVENT_NULL)
 {
 }
 

@@ -6894,15 +6894,17 @@ void ZStackDoc::updateWatershedBoundaryObject(ZStack *out, ZIntPoint dsIntv)
         }
       }
 
-      foreach (ZStroke2d *stroke, m_strokeList) {
-        ZObject3d *obj = objArray->take(stroke->getLabel());
+      QList<const ZDocPlayer*> playerList = getPlayerList(ZDocPlayer::ROLE_SEED);
+      //foreach (ZStroke2d *stroke, m_strokeList) {
+      foreach (const ZDocPlayer *player, playerList) {
+        ZObject3d *obj = objArray->take(player->getLabel());
         if (obj != NULL) {
-          obj->setColor(stroke->getColor());
+          obj->setColor(player->getData()->getColor());
           //ZString objectSource = "localSeededWatershed:Temporary_Border:";
          // objectSource.appendNumber(stroke->getLabel());
           obj->setSource(
                 ZStackObjectSourceFactory::MakeWatershedBoundarySource(
-                  stroke->getLabel()));
+                  player->getLabel()));
           addObject(obj, NeuTube::Documentable_OBJ3D,
                     ZDocPlayer::ROLE_TMP_RESULT, true);
         }
@@ -6917,9 +6919,10 @@ void ZStackDoc::localSeededWatershed()
 {
   removeObject(ZDocPlayer::ROLE_TMP_RESULT, true);
   if (hasStackData()) {
-    if (!m_strokeList.isEmpty()) {
+    ZStackArray seedMask = createWatershedMask();
+    if (!seedMask.empty()) {
       ZStackWatershed engine;
-      ZStackArray seedMask = createWatershedMask();
+
       ZStack *signalStack = m_stack;
       ZIntPoint dsIntv(0, 0, 0);
       if (signalStack->isVirtual()) {

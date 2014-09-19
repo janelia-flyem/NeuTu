@@ -37,6 +37,7 @@ void ZInteractionEngine::processMouseMoveEvent(QMouseEvent *event)
       event->accept();
     } else {
       m_stroke.set(event->x(), event->y());
+      m_stroke.toggleLabel(event->modifiers() == Qt::ShiftModifier);
     }
 #ifdef _DEBUG_2
     std::cout << "decorationUpdated emitted" << std::endl;
