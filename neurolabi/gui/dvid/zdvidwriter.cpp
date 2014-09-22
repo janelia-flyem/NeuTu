@@ -223,6 +223,11 @@ void ZDvidWriter::writeBoundBox(const ZIntCuboid &cuboid, int z)
   QProcess::execute(command);
 }
 
+void ZDvidWriter::writeSplitLabel(const ZObject3dScan &obj, int label)
+{
+
+}
+
 void ZDvidWriter::createKeyvalue(const std::string &name)
 {
   createData("keyvalue", name);

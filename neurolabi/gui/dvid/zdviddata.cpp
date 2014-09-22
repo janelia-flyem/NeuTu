@@ -10,6 +10,7 @@ const char* ZDvidData::m_thumbnailName = "thumbnails";
 const char* ZDvidData::m_superpixelName = "superpixels";
 const char* ZDvidData::m_sp2bodyName = "sp2body";
 const char* ZDvidData::m_sparsevolName = "sparsevol";
+const char* ZDvidData::m_splitLabelName = "split";
 
 const char* ZDvidData::m_keyValueTypeName = "keyvalue";
 
@@ -42,6 +43,8 @@ const char* ZDvidData::getName(ERole role)
     return m_sp2bodyName;
   case ROLE_SPARSEVOL:
     return m_sparsevolName;
+  case ROLE_SPLIT_LABEL:
+    return m_splitLabelName;
   }
 
   return m_emptyName;

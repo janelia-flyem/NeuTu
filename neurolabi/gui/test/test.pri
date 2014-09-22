@@ -40,4 +40,5 @@ HEADERS +=     test/zswctreetest.h \
     test/zobject3dfactorytest.h \
     test/zdvidiotest.h \
     test/zlinesegmenttest.h \
-    test/zclosedcurvetest.h
+    test/zclosedcurvetest.h \
+    test/zarraytest.h

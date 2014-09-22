@@ -1,5 +1,7 @@
 #include "flyembodysplitprojectdialog.h"
 #include <QFileDialog>
+#include <QProgressDialog>
+#include <QtConcurrentRun>
 
 #include "ui_flyembodysplitprojectdialog.h"
 #include "mainwindow.h"
@@ -8,6 +10,8 @@
 #include "dvid/zdvidreader.h"
 #include "zstackskeletonizer.h"
 #include "neutubeconfig.h"
+#include "zimage.h"
+#include "flyem/zflyemneuronimagefactory.h"
 
 FlyEmBodySplitProjectDialog::FlyEmBodySplitProjectDialog(QWidget *parent) :
   QDialog(parent),
@@ -40,12 +44,25 @@ FlyEmBodySplitProjectDialog::FlyEmBodySplitProjectDialog(QWidget *parent) :
           this, SLOT(locateBookmark(QModelIndex)));
 
   m_project.showBookmark(ui->bookmarkVisibleCheckBox->isChecked());
+
+
+  m_sideViewScene = new QGraphicsScene(this);
+  //m_sideViewScene->setSceneRect(0, 0, ui->sideView->width(), ui->sideView->height());
+  ui->sideView->setScene(m_sideViewScene);
   //ui->outputWidget->setText("Load a body to start.");
+
+  //Progress signal-slot
+  connect(this, SIGNAL(progressDone()),
+          getMainWindow(), SIGNAL(progressDone()));
+
+  connect(this, SIGNAL(messageDumped(QString,bool)),
+          this, SLOT(dump(QString,bool)));
 }
 
 FlyEmBodySplitProjectDialog::~FlyEmBodySplitProjectDialog()
 {
   delete ui;
+  //delete m_sideViewScene;
 }
 
 void FlyEmBodySplitProjectDialog::closeEvent(QCloseEvent */*event*/)
@@ -130,6 +147,11 @@ MainWindow* FlyEmBodySplitProjectDialog::getMainWindow()
   return dynamic_cast<MainWindow*>(this->parentWidget());
 }
 
+QProgressDialog* FlyEmBodySplitProjectDialog::getProgressDialog()
+{
+  return getMainWindow()->getProgressDialog();
+}
+
 const ZDvidTarget& FlyEmBodySplitProjectDialog::getDvidTarget() const
 {
   return m_project.getDvidTarget();
@@ -154,7 +176,9 @@ void FlyEmBodySplitProjectDialog::loadBody()
     setDvidTarget(m_loadBodyDlg->getDvidTarget());
     setBodyId(m_loadBodyDlg->getBodyId());
 
+    //updateSideView();;
     updateWidget();
+    updateSideView();
 
     dump("Body loaded.");
   }
@@ -245,4 +269,90 @@ void FlyEmBodySplitProjectDialog::locateBookmark(const QModelIndex &index)
 {
   const ZFlyEmBookmark &bookmark = m_bookmarkList.getBookmark(index.row());
   m_project.locateBookmark(bookmark);
+}
+
+void FlyEmBodySplitProjectDialog::updateSideView()
+{
+  startProgress("Generating side view ...");
+  getProgressDialog()->setRange(0, 100);
+
+  /*QFuture<void> res = */QtConcurrent::run(
+        this, &FlyEmBodySplitProjectDialog::updateSideViewFunc);
+}
+
+void FlyEmBodySplitProjectDialog::updateSideViewFunc()
+{
+  m_sideViewScene->clear();
+  QGraphicsPixmapItem *thumbnailItem = new QGraphicsPixmapItem;
+  QPixmap pixmap;
+  //Stack *stack = C_Stack::readSc(GET_TEST_DATA_DIR + "/benchmark/bfork_2d.tif");
+
+  ZFlyEmNeuronImageFactory factory;
+  factory.setDownsampleInterval(7, 7, 7);
+
+  getProgressDialog()->setValue(10);
+
+  ZObject3dScan obj;
+  ZDvidReader reader;
+  if (reader.open(getDvidTarget())) {
+    reader.readBody(getBodyId(), &obj);
+  }
+
+  getProgressDialog()->setValue(30);
+
+  //obj.load(GET_DATA_DIR + "/benchmark/432.sobj");
+  tic();
+  Stack *stack = factory.createSurfaceImage(obj);
+  ptoc();
+
+  getProgressDialog()->setValue(80);
+
+  int targetWidth = ui->sideView->width() - 10;
+  double ratio = double(targetWidth) / C_Stack::width(stack);
+
+  Stack *stack2 = C_Stack::resize(stack, iround(C_Stack::width(stack) * ratio),
+                  iround(C_Stack::height(stack) * ratio), 1);
+  C_Stack::kill(stack);
+  stack = stack2;
+
+  getProgressDialog()->setValue(90);
+
+  ZImage image(C_Stack::width(stack), C_Stack::height(stack));
+  image.setData(C_Stack::array8(stack));
+  if (!pixmap.convertFromImage(image)) {
+    dump("Failed to load the thumbnail.");
+  }
+  C_Stack::kill(stack);
+  thumbnailItem->setPixmap(pixmap);
+  //thumbnailItem->setOffset(0, 0);
+  m_sideViewScene->addItem(thumbnailItem);
+
+  emit messageDumped("Side view ready.", true);
+
+  emit progressDone();
+}
+
+void FlyEmBodySplitProjectDialog::startProgress(const QString &label)
+{
+  getMainWindow()->getProgressDialog()->setRange(0, 100);
+  getMainWindow()->getProgressDialog()->setLabelText(label);
+  getMainWindow()->getProgressDialog()->show();
+}
+
+void FlyEmBodySplitProjectDialog::on_pushButton_clicked()
+{
+#ifdef _DEBUG_
+  //updateSideView();
+  startProgress("Test ...");
+  ZObject3dScan obj;
+  obj.load(GET_DATA_DIR + "/benchmark/432.sobj");
+
+  ZFlyEmNeuronImageFactory factory;
+  factory.setDownsampleInterval(7, 7, 7);
+  tic();
+  Stack *stack = factory.createSurfaceImage(obj);
+  ptoc();
+  C_Stack::kill(stack);
+  emit progressDone();
+#endif
 }

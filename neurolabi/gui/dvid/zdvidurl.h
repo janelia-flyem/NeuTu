@@ -40,6 +40,10 @@ public:
   std::string getGrayscaleUrl(int sx, int sy, int sz, int x0, int y0, int z0)
    const;
 
+  std::string getLabels64Url(
+      const std::string &name,
+      int sx, int sy, int sz, int x0, int y0, int z0) const;
+
   std::string getKeyUrl(const std::string &name, const std::string &key) const;
   std::string getKeyRangeUrl(
       const std::string &name,

@@ -43,6 +43,8 @@ public:
                  const ZJsonValue &obj);
   void writeBoundBox(const ZIntCuboid &cuboid, int z);
 
+  void writeSplitLabel(const ZObject3dScan &obj, int label);
+
   void createData(const std::string &type, const std::string &name);
 
   /*!

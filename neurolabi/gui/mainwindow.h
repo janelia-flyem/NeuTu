@@ -76,6 +76,7 @@ public: /* frame operation */
   void config();
 
   bool initBodySplitProject();
+  //void initBodySplitProjectFunc();
 
   QString getOpenFileName(const QString &caption,
                           const QString &filter = QString());

@@ -215,6 +215,8 @@ using namespace std;
 #include "test/zdvidiotest.h"
 #include "test/zclosedcurvetest.h"
 #include "dvid/libdvidheader.h"
+#include "test/zarraytest.h"
+
 
 using namespace std;
 
@@ -12864,7 +12866,7 @@ void ZTest::test(MainWindow *host)
   std::cout << reader.open(target) << std::endl;
 #endif
 
-#if 1
+#if 0
 #ifdef _ENABLE_LIBDVID_
   ZDvidTarget target =
       NeutubeConfig::getInstance().getFlyEmConfig().getDvidRepo().at(0);
@@ -12874,5 +12876,27 @@ void ZTest::test(MainWindow *host)
   libdvid::BinaryDataPtr value;
   dvidNode.get("skeletons", "1.swc", value);
 #endif
+#endif
+
+#if 0
+  ZDvidTarget target("emdata2.int.janelia.org", "faa");
+  ZDvidWriter writer;
+  if (writer.open(target)) {
+    writer.createData("labels64", "split");
+  }
+
+#endif
+
+#if 1
+  ZFlyEmNeuronImageFactory factory;
+  factory.setDownsampleInterval(2, 2, 2);
+
+  ZObject3dScan obj;
+  obj.load(GET_DATA_DIR + "/benchmark/29.sobj");
+  tic();
+  Stack *stack = factory.createSurfaceImage(obj);
+  ptoc();
+
+  C_Stack::write(GET_DATA_DIR + "/test.tif", stack);
 #endif
 }

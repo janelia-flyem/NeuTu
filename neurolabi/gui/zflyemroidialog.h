@@ -66,6 +66,7 @@ signals:
   void newDocReady();
   void progressFailed();
   void progressAdvanced(double);
+  void progressDone();
 
 protected:
     void closeEvent(QCloseEvent*event);

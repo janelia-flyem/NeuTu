@@ -10,6 +10,7 @@ class ZStackFrame;
 class Z3DWindow;
 class ZStackObject;
 class ZSwcTree;
+class ZObject3dScan;
 
 class ZFlyEmBodySplitProject : public QObject
 {
@@ -47,6 +48,8 @@ public:
 
   void showSkeleton(ZSwcTree *tree);
   void quickView();
+
+  ZObject3dScan* readBody(ZObject3dScan *out) const;
 
 public slots:
   void showDataFrame() const;

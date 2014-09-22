@@ -9,6 +9,7 @@
 #include "dvid/zdvidfilter.h"
 #include "dvid/zdvidbufferreader.h"
 #include "dvid/zdvidurl.h"
+#include "zarray.h"
 
 ZDvidReader::ZDvidReader(QObject *parent) :
   QObject(parent)
@@ -700,4 +701,24 @@ bool ZDvidReader::hasDataKey(const std::string &key) const
   ZDvidUrl dvidUrl(m_dvidTarget);
   ZDvidBufferReader bufferReader;
   return bufferReader.isReadable(dvidUrl.getInfoUrl(key).c_str());
+}
+
+ZArray* ZDvidReader::readLabels64(
+    const std::string &dataName, int x0, int y0, int z0,
+    int width, int height, int depth) const
+{
+  ZDvidUrl dvidUrl(m_dvidTarget);
+  ZDvidBufferReader bufferReader;
+  bufferReader.read(dvidUrl.getLabels64Url(
+                      dataName, width, height, depth, x0, y0, z0).c_str());
+  bufferReader.getBuffer();
+  int dims[3];
+  dims[0] = width;
+  dims[1] = height;
+  dims[2] = depth;
+  ZArray *array = new ZArray(mylib::UINT64_TYPE, 3, dims);
+
+  array->copyDataFrom(bufferReader.getBuffer().constData());
+
+  return array;
 }

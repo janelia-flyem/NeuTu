@@ -148,6 +148,16 @@ std::string ZDvidUrl::getGrayscaleUrl(int sx, int sy, int sz,
   return getGrayscaleUrl() + stream.str();
 }
 
+std::string ZDvidUrl::getLabels64Url(
+    const std::string &name, int sx, int sy, int sz,
+    int x0, int y0, int z0) const
+{
+  std::ostringstream stream;
+  stream << "/raw/0_1_2/" << sx << "_" << sy << "_" << sz << "/"
+         << x0 << "_" << y0 << "_" << z0;
+  return getDataUrl(name) + stream.str();
+}
+
 std::string ZDvidUrl::getKeyUrl(const std::string &name, const std::string &key) const
 {
   return getDataUrl(name) + "/" + key;

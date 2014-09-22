@@ -1,6 +1,8 @@
 #include "zarray.h"
 
 #include <iostream>
+#include <string>
+#include <cstdlib>
 
 ZArray::ZArray() : m_data(NULL)
 {
@@ -9,6 +11,8 @@ ZArray::ZArray() : m_data(NULL)
 ZArray::ZArray(ZArray::Value_Type type, int ndims, mylib::Dimn_Type *dims)
 {
   m_data = Make_Array(mylib::PLAIN_KIND, type, ndims, dims);
+  setZero();
+  m_startCoordinates.resize(ndims, 0);
 }
 
 ZArray::ZArray(const ZArray &array)
@@ -18,6 +22,7 @@ ZArray::ZArray(const ZArray &array)
   } else {
     m_data = mylib::Copy_Array(array.m_data);
   }
+  m_startCoordinates = array.m_startCoordinates;
 }
 
 ZArray::~ZArray()
@@ -27,13 +32,13 @@ ZArray::~ZArray()
   }
 }
 
-void ZArray::printInfo()
+void ZArray::printInfo() const
 {
   if (m_data == NULL) {
     std::cout << "Empty array: null data" << std::endl;
   } else {
-    if (ndims() == 0) {
-      std::cout << "Empty array: 0-dimentional" << std::endl;
+    if (isEmpty()) {
+      std::cout << "Empty array" << std::endl;
     } else {
       std::cout << "Array(#): " << mylib::Array_Refcount(m_data) << std::endl;
       std::cout << "  size: " << dim(0);
@@ -74,6 +79,110 @@ void ZArray::printInfo()
       default:
           std::cout << "  unknown type" << std::endl;
       }
+    }
+  }
+}
+
+size_t ZArray::getElementNumber() const
+{
+  if (m_data == NULL) {
+    return 0;
+  }
+
+  size_t s = 0;
+  if (ndims() > 0) {
+    s = 1;
+    for (int i = 0; i < ndims(); ++i) {
+      s *= dim(i);
+    }
+  }
+
+  return s;
+}
+
+bool ZArray::isEmpty() const
+{
+  return getElementNumber() == 0;
+}
+
+void ZArray::setZero()
+{
+  if (!isEmpty()) {
+    bzero(m_data->data, getByteNumber());
+  }
+}
+
+size_t ZArray::getByteNumber() const
+{
+  return getElementNumber() * getValueTypeSize(valueType());
+}
+
+void ZArray::copyDataFrom(const void *data)
+{
+  if (data != NULL) {
+    memcpy(m_data->data, data, getByteNumber());
+  }
+}
+
+size_t ZArray::getValueTypeSize(ZArray::Value_Type valueType)
+{
+  switch (valueType) {
+  case mylib::UINT8_TYPE:
+  case mylib::INT8_TYPE:
+    return 1;
+  case mylib::UINT16_TYPE:
+  case mylib::INT16_TYPE:
+    return 2;
+  case mylib::UINT32_TYPE:
+  case mylib::INT32_TYPE:
+    return 4;
+  case mylib::UINT64_TYPE:
+  case mylib::INT64_TYPE:
+    return 8;
+  case mylib::FLOAT32_TYPE:
+    return 4;
+  case mylib::FLOAT64_TYPE:
+    return 8;
+  default:
+    break;
+  }
+
+  return 0;
+}
+
+void ZArray::print() const
+{
+  printInfo();
+
+  if (!isEmpty()) {
+    const char *format = NULL;
+    switch (valueType()) {
+    case mylib::UINT8_TYPE:
+    case mylib::UINT16_TYPE:
+    case mylib::UINT32_TYPE:
+      format = "%u";
+      break;
+    case mylib::UINT64_TYPE:
+      format = "%llu";
+      break;
+    case mylib::INT8_TYPE:
+    case mylib::INT16_TYPE:
+    case mylib::INT32_TYPE:
+      format = "%d";
+      break;
+    case mylib::INT64_TYPE:
+      format = "%lld";
+      break;
+    case mylib::FLOAT32_TYPE:
+    case mylib::FLOAT64_TYPE:
+      format = "%g";
+      break;
+    default:
+      break;
+    }
+
+    if (!isEmpty() && format != NULL) {
+      mylib::Print_Array(m_data, stdout, 0, const_cast<char*>(format));
     }
   }
 }

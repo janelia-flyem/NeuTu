@@ -75,6 +75,7 @@ ZFlyEmRoiDialog::ZFlyEmRoiDialog(QWidget *parent) :
   connect(this, SIGNAL(progressFailed()), ui->progressBar, SLOT(reset()));
   connect(this, SIGNAL(progressAdvanced(double)),
           this, SLOT(advanceProgressSlot(double)));
+  connect(this, SIGNAL(progressDone()), ui->progressBar, SLOT(reset()));
   connect(ui->projectComboBox, SIGNAL(currentIndexChanged(int)),
           this, SLOT(loadProject(int)));
 

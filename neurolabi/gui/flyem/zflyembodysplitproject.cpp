@@ -14,6 +14,7 @@
 #include "neutubeconfig.h"
 #include "zswcgenerator.h"
 #include "z3dswcfilter.h"
+#include "zobject3dscan.h"
 
 ZFlyEmBodySplitProject::ZFlyEmBodySplitProject(QObject *parent) :
   QObject(parent), m_bodyId(-1), m_dataFrame(NULL), m_resultWindow(NULL),
@@ -104,6 +105,23 @@ void ZFlyEmBodySplitProject::showDataFrame3d()
   if (m_dataFrame != NULL) {
     m_dataFrame->open3DWindow(m_dataFrame);
   }
+}
+
+ZObject3dScan* ZFlyEmBodySplitProject::readBody(ZObject3dScan *out) const
+{
+  if (out != NULL) {
+    out->clear();
+  }
+  ZDvidReader reader;
+  if (reader.open(getDvidTarget())) {
+    if (out == NULL) {
+      out = new ZObject3dScan;
+    }
+
+    reader.readBody(getBodyId(), out);
+  }
+
+  return out;
 }
 
 void ZFlyEmBodySplitProject::quickView()
