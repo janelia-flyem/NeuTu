@@ -50,6 +50,7 @@
 #include "dvid/zdvidwriter.h"
 #include "dvid/zdvidreader.h"
 #include "zdoublevector.h"
+#include "dvid/zdviddata.h"
 
 using namespace std;
 
@@ -187,6 +188,18 @@ void ZFlyEmDataFrame::addData(ZFlyEmDataBundle *data)
     }
 
     m_dataArray.append(data);
+
+    if (m_dataArray.size() == 1) {
+      m_imageFactory.setSizePolicy(ZFlyEmNeuronImageFactory::SIZE_BOUND_BOX,
+                                   ZFlyEmNeuronImageFactory::SIZE_BOUND_BOX,
+                                   ZFlyEmNeuronImageFactory::SIZE_BOUND_BOX);
+      m_imageFactory.setDownsampleInterval(7, 7, 7);
+      m_imageFactory.setSourceDimension(
+            m_dataArray[0]->getSourceDimension(NeuTube::X_AXIS),
+          m_dataArray[0]->getSourceDimension(NeuTube::Y_AXIS),
+          m_dataArray[0]->getSourceDimension(NeuTube::Z_AXIS)
+          );
+    }
   }
 }
 
@@ -923,6 +936,16 @@ ZSwcTree* ZFlyEmDataFrame::getModel(int id, int bundleIndex)
   }
 
   return model;
+}
+
+void ZFlyEmDataFrame::setDvidTarget(const ZDvidTarget &target)
+{
+  m_dvidTarget = target;
+}
+
+const ZDvidTarget& ZFlyEmDataFrame::getDvidTarget() const
+{
+  return m_dvidTarget;
 }
 
 const ZFlyEmNeuron* ZFlyEmDataFrame::getNeuronFromIndex(
@@ -2127,22 +2150,8 @@ void ZFlyEmDataFrame::exportThumbnail()
   if (m_thumbnailDlg->exec()) {
     QString fileName = m_thumbnailDlg->getOutputDirectory();
     if (!fileName.isEmpty()) {
-      ZFlyEmNeuronImageFactory imageFactory;
-      imageFactory.setSizePolicy(ZFlyEmNeuronImageFactory::SIZE_BOUND_BOX,
-                                 ZFlyEmNeuronImageFactory::SIZE_BOUND_BOX,
-                                 ZFlyEmNeuronImageFactory::SIZE_SOURCE);
-      imageFactory.setDownsampleInterval(
-            m_thumbnailDlg->getXIntv(), m_thumbnailDlg->getYIntv(),
-            m_thumbnailDlg->getZIntv());
-
-      imageFactory.setSourceDimension(
-            m_dataArray[0]->getSourceDimension(NeuTube::X_AXIS),
-          m_dataArray[0]->getSourceDimension(NeuTube::Y_AXIS),
-          m_dataArray[0]->getSourceDimension(NeuTube::Z_AXIS)
-          );
-
       exportThumbnail(fileName, m_thumbnailDlg->updatingDataBundle(),
-                      imageFactory);
+                      m_imageFactory);
     }
   }
 }
@@ -2181,6 +2190,14 @@ void ZFlyEmDataFrame::exportThumbnail(
 
   //ZDvidReader reader;
   //reader.open(saveDir.toStdString());
+
+  if (savingToDvid) {
+    ZDvidReader reader;
+    reader.open(saveDir);
+    if (reader.hasData(ZDvidData::getName(ZDvidData::ROLE_THUMBNAIL))) {
+      writer.createKeyvalue(ZDvidData::getName(ZDvidData::ROLE_THUMBNAIL));
+    }
+  }
 
   for (std::vector<ZFlyEmNeuron>::iterator iter = neuronArray.begin();
        iter != neuronArray.end(); ++iter) {

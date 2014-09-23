@@ -21,6 +21,7 @@
 #include "zfiletype.h"
 #include "zimage.h"
 #include "dvid/zdvidreader.h"
+#include "dvid/zdvidwriter.h"
 
 FlyEmDataForm::FlyEmDataForm(QWidget *parent) :
   QWidget(parent),
@@ -87,7 +88,6 @@ FlyEmDataForm::FlyEmDataForm(QWidget *parent) :
   ui->thumbnailView->resize(256, ui->thumbnailView->height());
   ui->outputTextEdit->resize(190, ui->outputTextEdit->height());
   setLayout(ui->overallLayout);
-
 }
 
 FlyEmDataForm::~FlyEmDataForm()
@@ -578,7 +578,8 @@ void FlyEmDataForm::updateThumbnailSecondary(const QModelIndex &index)
 
 void FlyEmDataForm::updateThumbnail(ZFlyEmNeuron *neuron)
 {
-  m_thumbnailScene->clear();
+  initThumbnailScene();
+
   if (neuron != NULL) {
     if (!neuron->getThumbnailPath().empty()) {
       QGraphicsPixmapItem *thumbnailItem = new QGraphicsPixmapItem;
@@ -598,6 +599,13 @@ void FlyEmDataForm::updateThumbnail(ZFlyEmNeuron *neuron)
               ZStack *stackObj = reader.readThumbnail(neuron->getId());
               if (stackObj != NULL) {
                 stack = C_Stack::clone(stackObj->c_stack());
+              } else {
+                stack = getParentFrame()->getImageFactory()->createSurfaceImage(
+                      *neuron->getBody());
+                ZDvidWriter writer;
+                if (writer.open(target)) {
+                  writer.writeThumbnail(neuron->getId(), stack);
+                }
               }
               delete stackObj;
             }
@@ -628,4 +636,38 @@ void FlyEmDataForm::dump(const QString &message)
 {
   appendOutput("<p>" + message + "</p>");
   //QApplication::processEvents();
+}
+
+void FlyEmDataForm::initThumbnailScene()
+{
+  m_thumbnailScene->clear();
+
+  /*
+
+  double x0 = 0;
+  double y0 = 0;
+  double w = ui->thumbnailView->size().width() - 10;
+  double h = ui->thumbnailView->size().height() - 10;
+
+  m_thumbnailScene->setSceneRect(x0, y0, w, h);
+  m_thumbnailScene->addRect(
+        m_thumbnailScene->sceneRect(), QPen(QColor(255, 0, 0)));
+
+  QGraphicsRectItem *item = new QGraphicsRectItem;
+  int sourceWidth = 400;
+  int sourceHeight = 8000;
+
+  item->setRect(QRect(100, 1000, sourceWidth, sourceHeight));
+  double ratio = std::min(double(sourceWidth) / w, double(sourceHeight) / h);
+  */
+}
+
+void FlyEmDataForm::resizeEvent(QResizeEvent *)
+{
+  initThumbnailScene();
+}
+
+void FlyEmDataForm::showEvent(QShowEvent *)
+{
+  //initThumbnailScene();
 }

@@ -51,6 +51,9 @@ public:
 
   ZObject3dScan* readBody(ZObject3dScan *out) const;
 
+  void saveSeed();
+  void downloadSeed();
+
 public slots:
   void showDataFrame() const;
   void showDataFrame3d();

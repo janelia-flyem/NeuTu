@@ -1889,7 +1889,7 @@ ZStackDocCommand::ObjectEdit::AddObject::~AddObject()
 void ZStackDocCommand::ObjectEdit::AddObject::redo()
 {
   m_doc->addObject(m_obj, m_type, m_role);
-  //m_doc->notifyObjectModified();
+  m_doc->notifyObjectModified();
   /*
   if ((m_role & ZDocPlayer::ROLE_3DPAINT) > 0) {
     m_doc->notifyVolumeModified();

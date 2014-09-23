@@ -120,13 +120,15 @@ int main(int argc, char *argv[])
     if (strcmp(argv[1], "d") == 0) {
       debugging = true;
     }
+
+    if (strcmp(argv[1], "--command") == 0) {
+      runCommandLine = true;
+    }
+
 #ifndef QT_NO_DEBUG
     if (strcmp(argv[1], "u") == 0 || QString(argv[1]).startsWith("--gtest")) {
       unitTest = true;
       debugging = true;
-    }
-    if (strcmp(argv[1], "--command") == 0) {
-      runCommandLine = true;
     }
 
     if (strcmp(argv[1], "--load") == 0) {

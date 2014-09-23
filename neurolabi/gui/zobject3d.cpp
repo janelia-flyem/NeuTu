@@ -809,4 +809,32 @@ void ZObject3d::upSample(int xIntv, int yIntv, int zIntv)
   }
 }
 
+ZJsonObject ZObject3d::toJsonObject() const
+{
+  ZJsonObject jsonObj;
+  jsonObj.setEntry("label", m_label);
+  ZJsonArray jsonArray;
+  for (size_t i = 0; i < m_voxelArray.size(); ++i) {
+    jsonArray.append(m_voxelArray[i]);
+  }
+  jsonObj.setEntry("obj3d", jsonArray);
+
+  return jsonObj;
+}
+
+void ZObject3d::loadJsonObject(const ZJsonObject &jsonObj)
+{
+  clear();
+  if (jsonObj.hasKey("label")) {
+    setLabel(ZJsonParser::integerValue(jsonObj["label"]));
+  }
+
+  if (jsonObj.hasKey("obj3d")) {
+    ZJsonArray voxelArray(jsonObj["obj3d"], ZJsonValue::SET_INCREASE_REF_COUNT);
+    for (size_t i = 0; i < voxelArray.size(); ++i) {
+      m_voxelArray.push_back(ZJsonParser::integerValue(voxelArray.at(i)));
+    }
+  }
+}
+
 ZSTACKOBJECT_DEFINE_CLASS_NAME(ZObject3d)

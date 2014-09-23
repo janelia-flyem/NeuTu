@@ -453,7 +453,8 @@ HEADERS += mainwindow.h \
     zmouseeventprocessor.h \
     zstackoperator.h \
     zsleeper.h \
-    dvid/libdvidheader.h
+    dvid/libdvidheader.h \
+    dvidoperatedialog.h
 
 FORMS += settingdialog.ui \
     frameinfodialog.ui \
@@ -507,7 +508,8 @@ FORMS += settingdialog.ui \
     dvidskeletonizedialog.ui \
     zflyemroidialog.ui \
     newprojectmainwindow.ui \
-    shapepaperdialog.ui
+    shapepaperdialog.ui \
+    dvidoperatedialog.ui
 SOURCES += main.cpp \
     mainwindow.cpp \
     zstackview.cpp \
@@ -758,7 +760,8 @@ SOURCES += main.cpp \
     zmouseeventrecorder.cpp \
     zmouseeventprocessor.cpp \
     zstackoperator.cpp \
-    zsleeper.cpp
+    zsleeper.cpp \
+    dvidoperatedialog.cpp
 
 OTHER_FILES += \
     extlib.pri

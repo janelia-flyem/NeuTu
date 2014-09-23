@@ -15,6 +15,10 @@
 #include "zswcgenerator.h"
 #include "z3dswcfilter.h"
 #include "zobject3dscan.h"
+#include "zstroke2d.h"
+#include "dvid/zdvidwriter.h"
+#include "dvid/zdviddata.h"
+#include "zstring.h"
 
 ZFlyEmBodySplitProject::ZFlyEmBodySplitProject(QObject *parent) :
   QObject(parent), m_bodyId(-1), m_dataFrame(NULL), m_resultWindow(NULL),
@@ -346,4 +350,85 @@ std::set<int> ZFlyEmBodySplitProject::getBookmarkBodySet() const
   }
 
   return bodySet;
+}
+
+void ZFlyEmBodySplitProject::saveSeed()
+{
+  QList<const ZDocPlayer*> playerList =
+      m_dataFrame->document()->getPlayerList(ZDocPlayer::ROLE_SEED);
+  ZJsonArray jsonArray;
+  foreach (const ZDocPlayer *player, playerList) {
+    ZJsonObject jsonObj = player->toJsonObject();
+    if (!jsonObj.isEmpty()) {
+      jsonArray.append(jsonObj);
+    }
+    /*
+    ZStroke2d *stroke = dynamic_cast<ZStroke2d*>(player->getData());
+    if (stroke != NULL) {
+      ZJsonObject jsonObj = stroke->toJsonObject();
+      jsonArray.append(jsonObj);
+    }
+    */
+  }
+
+  ZJsonObject rootObj;
+  rootObj.setEntry("seeds", jsonArray);
+  ZDvidWriter writer;
+  if (writer.open(getDvidTarget())) {
+    writer.writeJson(ZDvidData::getName(ZDvidData::ROLE_SPLIT_LABEL),
+                     ZString::num2str(getBodyId()), rootObj);
+  }
+}
+
+void ZFlyEmBodySplitProject::downloadSeed()
+{
+  ZDvidReader reader;
+  if (reader.open(getDvidTarget())) {
+    QByteArray seedData = reader.readKeyValue(
+          ZDvidData::getName(ZDvidData::ROLE_SPLIT_LABEL),
+          ZString::num2str(getBodyId()).c_str());
+    if (!seedData.isEmpty()) {
+      ZJsonObject obj;
+      obj.decode(seedData.constData());
+
+      if (obj.hasKey("seeds")) {
+        ZLabelColorTable colorTable;
+#ifdef _DEBUG_
+        std::cout << m_dataFrame->document()->getPlayerList(
+                       ZDocPlayer::ROLE_SEED).size() << " seeds" <<  std::endl;
+#endif
+        ZJsonArray jsonArray(obj["seeds"], ZJsonValue::SET_INCREASE_REF_COUNT);
+        for (size_t i = 0; i < jsonArray.size(); ++i) {
+          ZJsonObject seedJson(
+                jsonArray.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
+          if (seedJson.hasKey("stroke")) {
+            ZStroke2d *stroke = new ZStroke2d;
+            stroke->loadJsonObject(seedJson);
+            if (!stroke->isEmpty()) {
+              m_dataFrame->document()->addObject(
+                    stroke, NeuTube::Documentable_STROKE, ZDocPlayer::ROLE_SEED);
+            } else {
+              delete stroke;
+            }
+          } else if (seedJson.hasKey("obj3d")) {
+            ZObject3d *obj3d = new ZObject3d;
+            obj3d->loadJsonObject(seedJson);
+            obj3d->setColor(colorTable.getColor(obj3d->getLabel()));
+
+            if (!obj3d->isEmpty()) {
+              m_dataFrame->document()->addObject(
+                    obj3d, NeuTube::Documentable_OBJ3D,
+                    ZDocPlayer::ROLE_SEED | ZDocPlayer::ROLE_3DGRAPH_DECORATOR);
+            } else {
+              delete obj3d;
+            }
+          }
+        }
+#ifdef _DEBUG_
+        std::cout << m_dataFrame->document()->getPlayerList(
+                       ZDocPlayer::ROLE_SEED).size() << " seeds" <<  std::endl;
+#endif
+      }
+    }
+  }
 }

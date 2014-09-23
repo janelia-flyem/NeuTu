@@ -8,6 +8,7 @@
 #include "flyem/zflyemneuronlistmodel.h"
 #include "zprogressable.h"
 #include "zqtbarprogressreporter.h"
+#include "flyem/zflyemneuronimagefactory.h"
 
 class ZFlyEmNeuronPresenter;
 class QStatusBar;
@@ -61,6 +62,12 @@ public:
   void updateSlaveQueryTable();
 
   void dump(const QString &message);
+
+protected:
+  void resizeEvent(QResizeEvent *);
+  void showEvent(QShowEvent *);
+
+  void initThumbnailScene();
 
 signals:
   void showSummaryTriggered();
@@ -154,6 +161,7 @@ private:
   ZImageWidget *m_thumbnailWidget;
   */
   QGraphicsScene *m_thumbnailScene;
+  //ZFlyEmNeuronImageFactory m_imageFactory;
 };
 
 #endif // FLYEMDATAFORM_H

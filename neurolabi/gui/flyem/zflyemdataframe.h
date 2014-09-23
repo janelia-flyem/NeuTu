@@ -18,6 +18,8 @@
 #include "flyem/zflyemneuronmatchtaskmanager.h"
 #include "flyem/zflyemneuronfiltertaskmanager.h"
 #include "flyem/zflyemqualityanalyzertaskmanager.h"
+#include "dvid/zdvidtarget.h"
+#include "flyem/zflyemneuronimagefactory.h"
 
 class ZSwcTrunkAnalyzer;
 class ZSwcFeatureAnalyzer;
@@ -124,7 +126,6 @@ public:
    */
   void exportThumbnail(const QString &saveDir, bool thumbnailUpdate,
                        const ZFlyEmNeuronImageFactory &imageFactory);
-
   void exportThumbnail();
 
   /*!
@@ -161,6 +162,13 @@ public:
 
   const ZFlyEmNeuron *getNeuronFromIndex(
       size_t idx, int *bundleIndex = NULL) const;
+
+  void setDvidTarget(const ZDvidTarget &target);
+  const ZDvidTarget& getDvidTarget() const;
+
+  inline ZFlyEmNeuronImageFactory* getImageFactory() {
+    return &m_imageFactory;
+  }
 
 signals:
   void volumeTriggered(const QString &path);
@@ -255,6 +263,8 @@ private:
 
   bool isDataBundleIndexValid(int index) const;
 
+
+
 private:
   //Main data
   QVector<ZFlyEmDataBundle*> m_dataArray;
@@ -300,6 +310,9 @@ private:
   //ZSwcTreeBatchMatcher *m_batchMatcher;
 
   QVector<ZFlyEmNeuron*> m_foregroundNeuronArray;
+
+  ZDvidTarget m_dvidTarget;
+  ZFlyEmNeuronImageFactory m_imageFactory;
 };
 
 #endif // ZFLYEMDATAFRAME_H

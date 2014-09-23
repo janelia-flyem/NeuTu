@@ -64,10 +64,12 @@ public:
 
   ZDvidInfo readGrayScaleInfo();
 
-  bool hasDataKey(const std::string &key) const;
+  bool hasData(const std::string &key) const;
 
   ZArray* readLabels64(const std::string &dataName, int x0, int y0, int z0,
                        int width, int height, int depth) const;
+
+  bool hasSparseVolume() const;
 
 signals:
   void readingDone();

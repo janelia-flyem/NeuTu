@@ -718,8 +718,8 @@ public slots: //undoable commands
   bool executeEnhanceLineCommand();
   bool executeWatershedCommand();
 
-  bool executeAddStrokeCommand(ZStroke2d *stroke);
-  bool executeAddStrokeCommand(const QList<ZStroke2d*> &strokeList);
+  //bool executeAddStrokeCommand(ZStroke2d *stroke);
+  //bool executeAddStrokeCommand(const QList<ZStroke2d*> &strokeList);
 
 public slots:
   void selectAllSwcTreeNode();

@@ -1,6 +1,8 @@
 #include "zdvidwriter.h"
 #include <QProcess>
 #include <QDebug>
+#include <QFile>
+
 #include "neutubeconfig.h"
 #include "flyem/zflyemneuron.h"
 #include "zclosedcurve.h"
@@ -179,14 +181,32 @@ void ZDvidWriter::writeJsonString(
     const std::string &dataName, const std::string &key,
     const std::string jsonString)
 {
-  ZString annotationString = jsonString;
-  annotationString.replace(" ", "");
-  annotationString.replace("\"", "\"\"\"");
+  QString annotationString = jsonString.c_str();
 
-  QString command = QString(
-        "curl -g -X POST -H \"Content-Type: application/json\" "
-        "-d \"%1\" %2").arg(annotationString.c_str()).
-      arg(ZDvidUrl(m_dvidTarget).getKeyUrl(dataName, key).c_str());
+  QString command;
+  if (annotationString.size() < 1000) {
+    annotationString.replace(" ", "");
+    annotationString.replace("\"", "\"\"\"");
+
+    command = QString(
+          "curl -g -X POST -H \"Content-Type: application/json\" "
+          "-d \"%1\" %2").arg(annotationString).
+        arg(ZDvidUrl(m_dvidTarget).getKeyUrl(dataName, key).c_str());
+  } else {
+    QString tmpPath = QString("%1/%2.json").
+        arg(NeutubeConfig::getInstance().getPath(NeutubeConfig::TMP_DATA).c_str()).
+        arg(key.c_str());
+    QFile file(tmpPath);
+    file.open(QIODevice::WriteOnly | QIODevice::Text);
+    QTextStream out(&file);
+    out << annotationString;
+    file.close();
+
+    command = QString(
+          "curl -g -X POST -H \"Content-Type: application/json\" "
+          "-d \"@%1\" %2").arg(tmpPath).
+        arg(ZDvidUrl(m_dvidTarget).getKeyUrl(dataName, key).c_str());
+  }
 
   qDebug() << command;
 

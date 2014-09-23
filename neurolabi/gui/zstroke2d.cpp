@@ -8,6 +8,7 @@
 #include "zintpoint.h"
 #include "zstack.hxx"
 #include "zobject3d.h"
+#include "zjsonobject.h"
 
 const double ZStroke2d::m_minWidth = 1.0;
 const double ZStroke2d::m_maxWidth = 100.0;
@@ -559,5 +560,53 @@ void ZStroke2d::labelStack(ZStack *stack) const
     ZStroke2d tmpStroke = *this;
     tmpStroke.translate(-stack->getOffset());
     tmpStroke.labelGrey(stack->c_stack());
+  }
+}
+
+ZJsonObject ZStroke2d::toJsonObject() const
+{
+  ZJsonObject obj;
+
+  obj.setEntry("label", m_label);
+  obj.setEntry("width", m_width);
+  obj.setEntry("z", m_z);
+
+  ZJsonArray arrayJson;
+  for (std::vector<QPointF>::const_iterator iter = m_pointArray.begin();
+       iter != m_pointArray.end(); ++iter) {
+    const QPointF &pt = *iter;
+    ZJsonArray ptJson;
+    ptJson.append(pt.x());
+    ptJson.append(pt.y());
+
+    arrayJson.append(ptJson);
+  }
+
+  obj.setEntry("stroke", arrayJson);
+
+  return obj;
+}
+
+void ZStroke2d::loadJsonObject(const ZJsonObject &obj)
+{
+  clear();
+  if (obj.hasKey("label")) {
+    setLabel(ZJsonParser::integerValue(obj["label"]));
+  }
+  if (obj.hasKey("width")) {
+    setWidth(ZJsonParser::numberValue(obj["width"]));
+  }
+  if (obj.hasKey("z")) {
+    setZ(ZJsonParser::integerValue(obj["z"]));
+  }
+
+  if (obj.hasKey("stroke")) {
+    ZJsonArray ptArray(obj["stroke"], ZJsonValue::SET_INCREASE_REF_COUNT);
+    for (size_t i = 0; i < ptArray.size(); ++i) {
+      ZJsonArray ptJson(ptArray.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
+      double x = ZJsonParser::numberValue(ptJson.at(0));
+      double y = ZJsonParser::numberValue(ptJson.at(1));
+      append(x, y);
+    }
   }
 }

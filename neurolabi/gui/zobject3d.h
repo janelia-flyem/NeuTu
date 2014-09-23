@@ -22,6 +22,7 @@
 
 class ZStack;
 class ZObject3dArray;
+class ZJsonObject;
 
 /*!
  * \brief The class of a 3D object
@@ -196,6 +197,9 @@ public:
    * \brief Upsample an object
    */
   void upSample(int xIntv, int yIntv, int zIntv);
+
+  ZJsonObject toJsonObject() const;
+  void loadJsonObject(const ZJsonObject &jsonObj);
 
 private:
   int m_conn;

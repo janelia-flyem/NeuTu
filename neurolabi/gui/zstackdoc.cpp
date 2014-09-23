@@ -1984,8 +1984,7 @@ void ZStackDoc::addStroke(ZStroke2d *obj)
   m_strokeList.prepend(obj);
   m_objectList.prepend(obj);
 
-  m_playerList.append(new ZStroke2dPlayer(obj, ZDocPlayer::ROLE_SEED));
-  emit seedModified();
+  //m_playerList.append(new ZStroke2dPlayer(obj, ZDocPlayer::ROLE_SEED));
 
 #ifdef _DEBUG_2
   std::cout << "New stroke added" << std::endl;
@@ -5640,6 +5639,7 @@ bool ZStackDoc::executeAddSwcNodeCommand(const ZPoint &center, double radius)
   return false;
 }
 
+/*
 bool ZStackDoc::executeAddStrokeCommand(ZStroke2d *stroke)
 {
   if (stroke != NULL) {
@@ -5683,6 +5683,7 @@ bool ZStackDoc::executeAddStrokeCommand(const QList<ZStroke2d*> &strokeList)
 
   return succ;
 }
+*/
 
 void ZStackDoc::addObject(ZStackObject *obj, NeuTube::EDocumentableType type,
                           ZDocPlayer::TRole role, bool uniqueSource)
@@ -5775,6 +5776,12 @@ void ZStackDoc::addPlayer(
     switch (type) {
     case NeuTube::Documentable_OBJ3D:
       player = new ZObject3dPlayer(obj, role);
+      break;
+    case NeuTube::Documentable_STROKE:
+      player = new ZStroke2dPlayer(obj, role);
+      break;
+    case NeuTube::Documentable_SPARSE_OBJECT:
+      player = new ZSparseObjectPlayer(obj, role);
       break;
     default:
       player = new ZDocPlayer(obj, role);

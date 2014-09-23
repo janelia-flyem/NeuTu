@@ -329,6 +329,7 @@
       <addaction name="actionLoad_Large_Body"/>
       <addaction name="actionUpdate_Skeletons"/>
       <addaction name="actionCreate_Databundle"/>
+      <addaction name="actionOperateDvid"/>
      </widget>
      <widget class="QMenu" name="menuExport_2">
       <property name="title">
@@ -1295,6 +1296,11 @@
   <action name="actionOne_Column">
    <property name="text">
     <string>One Column</string>
+   </property>
+  </action>
+  <action name="actionOperateDvid">
+   <property name="text">
+    <string>Operate</string>
    </property>
   </action>
  </widget>

@@ -12,6 +12,8 @@
 #include "neutubeconfig.h"
 #include "zimage.h"
 #include "flyem/zflyemneuronimagefactory.h"
+#include "zdviddialog.h"
+#include "zdialogfactory.h"
 
 FlyEmBodySplitProjectDialog::FlyEmBodySplitProjectDialog(QWidget *parent) :
   QDialog(parent),
@@ -40,16 +42,28 @@ FlyEmBodySplitProjectDialog::FlyEmBodySplitProjectDialog(QWidget *parent) :
 
   updateWidget();
 
-  connect(ui->bookmarkView, SIGNAL(doubleClicked(QModelIndex)),
-          this, SLOT(locateBookmark(QModelIndex)));
-
   m_project.showBookmark(ui->bookmarkVisibleCheckBox->isChecked());
-
 
   m_sideViewScene = new QGraphicsScene(this);
   //m_sideViewScene->setSceneRect(0, 0, ui->sideView->width(), ui->sideView->height());
   ui->sideView->setScene(m_sideViewScene);
   //ui->outputWidget->setText("Load a body to start.");
+
+  m_dvidDlg = ZDialogFactory::makeDvidDialog(this);
+
+  connectSignalSlot();
+}
+
+FlyEmBodySplitProjectDialog::~FlyEmBodySplitProjectDialog()
+{
+  delete ui;
+  //delete m_sideViewScene;
+}
+
+void FlyEmBodySplitProjectDialog::connectSignalSlot()
+{
+  connect(ui->bookmarkView, SIGNAL(doubleClicked(QModelIndex)),
+          this, SLOT(locateBookmark(QModelIndex)));
 
   //Progress signal-slot
   connect(this, SIGNAL(progressDone()),
@@ -57,12 +71,7 @@ FlyEmBodySplitProjectDialog::FlyEmBodySplitProjectDialog(QWidget *parent) :
 
   connect(this, SIGNAL(messageDumped(QString,bool)),
           this, SLOT(dump(QString,bool)));
-}
-
-FlyEmBodySplitProjectDialog::~FlyEmBodySplitProjectDialog()
-{
-  delete ui;
-  //delete m_sideViewScene;
+  connect(this, SIGNAL(sideViewCanceled()), this, SLOT(resetSideView()));
 }
 
 void FlyEmBodySplitProjectDialog::closeEvent(QCloseEvent */*event*/)
@@ -89,6 +98,7 @@ void FlyEmBodySplitProjectDialog::clear()
 {
   m_project.clear();
   updateWidget();
+  resetSideView();
 
   //dump("Load a body to start.");
 }
@@ -172,16 +182,16 @@ void FlyEmBodySplitProjectDialog::setLoadBodyDialog(
 
 void FlyEmBodySplitProjectDialog::loadBody()
 {
-  if (m_loadBodyDlg->exec()) {
-    setDvidTarget(m_loadBodyDlg->getDvidTarget());
-    setBodyId(m_loadBodyDlg->getBodyId());
+ // if (m_loadBodyDlg->exec()) {
+    //setDvidTarget(m_loadBodyDlg->getDvidTarget());
+    setBodyId(ui->bodyIdSpinBox->value());
 
     //updateSideView();;
     updateWidget();
     updateSideView();
 
     dump("Body loaded.");
-  }
+  //}
 }
 
 void FlyEmBodySplitProjectDialog::quickView()
@@ -196,7 +206,11 @@ bool FlyEmBodySplitProjectDialog::isBodyLoaded() const
 
 void FlyEmBodySplitProjectDialog::updateButton()
 {
-  ui->loadBodyPushButton->setEnabled(!isBodyLoaded());
+  ui->loadBodyPushButton->setEnabled(
+        !isBodyLoaded() && m_project.getDvidTarget().isValid());
+  ui->bodyIdSpinBox->setEnabled(
+        !isBodyLoaded()  && m_project.getDvidTarget().isValid());
+
   ui->view2dBodyPushButton->setEnabled(isBodyLoaded());
   ui->quickViewPushButton->setEnabled(isBodyLoaded());
   ui->view3dBodyPushButton->setEnabled(m_project.hasDataFrame());
@@ -210,15 +224,24 @@ void FlyEmBodySplitProjectDialog::updateWidget()
   updateButton();
   QString text;
   if (!m_project.getBookmarkArray().isEmpty()) {
-    text += QString("<p>%1 bookmarks</p>").arg(m_project.getBookmarkArray().size());
+    text += QString("<p>%1 bookmarks</p>").
+        arg(m_project.getBookmarkArray().size());
+  }
+
+  if (m_project.getDvidTarget().isValid()) {
+    ui->dvidInfoLabel->setText(
+          QString("Database: %1 (%2)").
+          arg(m_project.getDvidTarget().getName().c_str()).
+          arg(m_project.getDvidTarget().getSourceString().c_str()));
+  } else {
+    ui->dvidInfoLabel->setText("No database selected.");
   }
 
   if (!isBodyLoaded()) {
     text += "<p>No body loaded.</p>";
     dump("Load a body to start.");
   } else {
-    text += QString("<p>DVID Server: %1</p><p>Body ID: %2</p>").
-          arg(m_project.getDvidTarget().getSourceString().c_str()).
+    text += QString("<p>Body ID: %2</p>").
           arg(m_project.getBodyId());
   }
   ui->infoWidget->setText(text);
@@ -273,49 +296,61 @@ void FlyEmBodySplitProjectDialog::locateBookmark(const QModelIndex &index)
 
 void FlyEmBodySplitProjectDialog::updateSideView()
 {
-  startProgress("Generating side view ...");
-  getProgressDialog()->setRange(0, 100);
+  //startProgress("Generating side view ...");
+  //getProgressDialog()->setRange(0, 100);
 
   /*QFuture<void> res = */QtConcurrent::run(
         this, &FlyEmBodySplitProjectDialog::updateSideViewFunc);
 }
 
-void FlyEmBodySplitProjectDialog::updateSideViewFunc()
+void FlyEmBodySplitProjectDialog::resetSideView()
 {
   m_sideViewScene->clear();
-  QGraphicsPixmapItem *thumbnailItem = new QGraphicsPixmapItem;
+  ui->sideViewLabel->setText("Side view");
+}
+
+void FlyEmBodySplitProjectDialog::updateSideViewFunc()
+{
+  int bodyId = getBodyId();
+
+  ui->sideViewLabel->setText("Side view: generating ...");
+  m_sideViewScene->clear();
+
   QPixmap pixmap;
   //Stack *stack = C_Stack::readSc(GET_TEST_DATA_DIR + "/benchmark/bfork_2d.tif");
 
   ZFlyEmNeuronImageFactory factory;
-  factory.setDownsampleInterval(7, 7, 7);
+  factory.setDownsampleInterval(9, 9, 9);
 
-  getProgressDialog()->setValue(10);
+  //getProgressDialog()->setValue(10);
 
   ZObject3dScan obj;
   ZDvidReader reader;
   if (reader.open(getDvidTarget())) {
-    reader.readBody(getBodyId(), &obj);
+    reader.readBody(bodyId, &obj);
   }
 
-  getProgressDialog()->setValue(30);
+  //getProgressDialog()->setValue(30);
 
   //obj.load(GET_DATA_DIR + "/benchmark/432.sobj");
+  QGraphicsPixmapItem *thumbnailItem = new QGraphicsPixmapItem;
   tic();
   Stack *stack = factory.createSurfaceImage(obj);
   ptoc();
 
-  getProgressDialog()->setValue(80);
+  //getProgressDialog()->setValue(80);
 
   int targetWidth = ui->sideView->width() - 10;
-  double ratio = double(targetWidth) / C_Stack::width(stack);
+  int targetHeight = ui->sideView->height() - 10;
+  double ratio = std::min(double(targetWidth) / C_Stack::width(stack),
+                          double(targetHeight) / C_Stack::height(stack));
 
   Stack *stack2 = C_Stack::resize(stack, iround(C_Stack::width(stack) * ratio),
-                  iround(C_Stack::height(stack) * ratio), 1);
+                                  iround(C_Stack::height(stack) * ratio), 1);
   C_Stack::kill(stack);
   stack = stack2;
 
-  getProgressDialog()->setValue(90);
+  //getProgressDialog()->setValue(90);
 
   ZImage image(C_Stack::width(stack), C_Stack::height(stack));
   image.setData(C_Stack::array8(stack));
@@ -323,13 +358,22 @@ void FlyEmBodySplitProjectDialog::updateSideViewFunc()
     dump("Failed to load the thumbnail.");
   }
   C_Stack::kill(stack);
+
   thumbnailItem->setPixmap(pixmap);
+
   //thumbnailItem->setOffset(0, 0);
-  m_sideViewScene->addItem(thumbnailItem);
 
-  emit messageDumped("Side view ready.", true);
+  if (bodyId == getBodyId()) {
+    m_sideViewScene->addItem(thumbnailItem);
+    ui->sideViewLabel->setText(QString("Side view: %1").arg(bodyId));
+    emit sideViewReady();
+  }
 
-  emit progressDone();
+  //emit messageDumped("Side view ready.", true);
+
+  //emit progressDone();
+
+
 }
 
 void FlyEmBodySplitProjectDialog::startProgress(const QString &label)
@@ -355,4 +399,36 @@ void FlyEmBodySplitProjectDialog::on_pushButton_clicked()
   C_Stack::kill(stack);
   emit progressDone();
 #endif
+}
+
+void FlyEmBodySplitProjectDialog::on_dvidPushButton_clicked()
+{
+
+  if (m_dvidDlg->exec()) {
+    const ZDvidTarget &target = m_dvidDlg->getDvidTarget();
+    ZDvidReader reader;
+    if (reader.open(target)) {
+      if (reader.hasSparseVolume()) {
+        m_project.setDvidTarget(m_dvidDlg->getDvidTarget());
+        dump(QString("Database: %1 (%2)").
+             arg(m_project.getDvidTarget().getName().c_str()).
+             arg(m_project.getDvidTarget().getSourceString().c_str()));
+        updateWidget();
+      } else {
+        dump("Cannot load the database because no body is available.");
+      }
+    } else {
+      dump("Cannot connect to the database.");
+    }
+  }
+}
+
+void FlyEmBodySplitProjectDialog::on_commitPushButton_clicked()
+{
+  m_project.saveSeed();
+}
+
+void FlyEmBodySplitProjectDialog::downloadSeed()
+{
+  m_project.downloadSeed();
 }

@@ -696,7 +696,7 @@ ZDvidInfo ZDvidReader::readGrayScaleInfo()
   return dvidInfo;
 }
 
-bool ZDvidReader::hasDataKey(const std::string &key) const
+bool ZDvidReader::hasData(const std::string &key) const
 {
   ZDvidUrl dvidUrl(m_dvidTarget);
   ZDvidBufferReader bufferReader;
@@ -721,4 +721,9 @@ ZArray* ZDvidReader::readLabels64(
   array->copyDataFrom(bufferReader.getBuffer().constData());
 
   return array;
+}
+
+bool ZDvidReader::hasSparseVolume() const
+{
+  return hasData(ZDvidData::getName(ZDvidData::ROLE_SP2BODY));
 }

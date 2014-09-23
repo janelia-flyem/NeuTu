@@ -53,6 +53,7 @@ class DvidSkeletonizeDialog;
 class ZFlyEmRoiDialog;
 class NewProjectMainWindow;
 class ShapePaperDialog;
+class DvidOperateDialog;
 
 namespace Ui {
     class MainWindow;
@@ -378,6 +379,8 @@ private slots:
 
   void on_actionOne_Column_triggered();
 
+  void on_actionOperateDvid_triggered();
+
 private:
   void createActions();
   void createFileActions();
@@ -585,6 +588,7 @@ private:
   DvidSkeletonizeDialog *m_dvidSkeletonizeDialog;
   ZFlyEmRoiDialog *m_roiDlg;
   ShapePaperDialog *m_shapePaperDlg;
+  DvidOperateDialog *m_dvidOpDlg;
 
 
   //new project main window

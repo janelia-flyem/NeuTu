@@ -10,7 +10,7 @@ const char* ZDvidData::m_thumbnailName = "thumbnails";
 const char* ZDvidData::m_superpixelName = "superpixels";
 const char* ZDvidData::m_sp2bodyName = "sp2body";
 const char* ZDvidData::m_sparsevolName = "sparsevol";
-const char* ZDvidData::m_splitLabelName = "split";
+const char* ZDvidData::m_splitLabelName = "splits";
 
 const char* ZDvidData::m_keyValueTypeName = "keyvalue";
 

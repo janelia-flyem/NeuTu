@@ -2016,7 +2016,15 @@ void ZStackPresenter::acceptActiveStroke()
   }
   newStroke->setZ(buddyView()->sliceIndex() +
                   buddyDocument()->getStackOffset().getZ());
-  buddyDocument()->executeAddStrokeCommand(newStroke);
+
+  ZDocPlayer::TRole role = ZDocPlayer::ROLE_NONE;
+  if (GET_APPLICATION_NAME == "FlyEM") {
+    role = ZDocPlayer::ROLE_SEED;
+  }
+
+  buddyDocument()->executeAddObjectCommand(
+        newStroke, NeuTube::Documentable_STROKE, role);
+  //buddyDocument()->executeAddStrokeCommand(newStroke);
 
   m_stroke.clear();
   buddyView()->paintActiveDecoration();

@@ -16,6 +16,7 @@ class ZStroke2d;
 class ZSparseObject;
 class ZObject3d;
 class ZSwcTree;
+class ZJsonObject;
 
 class ZDocPlayer
 {
@@ -74,6 +75,8 @@ public:
   virtual QString getTypeName() const { return "Unknown"; }
   virtual ZSwcTree* getSwcDecoration() const { return NULL; }
   virtual Z3DGraph get3DGraph() const { return Z3DGraph(); }
+
+  virtual ZJsonObject toJsonObject() const;
 
   inline ZStackObject* getData() const {
     return m_data;
@@ -140,6 +143,7 @@ public:
   ZStack* toStack() const;
   int getLabel() const;
   QString getTypeName() const;
+  ZJsonObject toJsonObject() const;
 
   ZStroke2d* getCompleteData() const;
 };
@@ -166,6 +170,8 @@ public:
   int getLabel() const;
   ZSwcTree* getSwcDecoration() const;
   Z3DGraph get3DGraph() const;
+  ZJsonObject toJsonObject() const;
+  QString getTypeName() const { return "Object3d"; }
 
   const ZObject3d *getCompleteData() const;
 
@@ -182,6 +188,8 @@ public:
   void labelStack(ZStack*stack) const;
   ZStack* toStack() const;
 
+  QString getTypeName() const { return "SparseObject"; }
+
   ZSparseObject *getCompleteData() const;
 };
 
@@ -189,7 +197,7 @@ public:
 class ZPlanePlayer : public ZDocPlayer
 {
 public:
-
+  QString getTypeName() const { return "Plane"; }
 };
 
 #endif // ZDOCPLAYER_H

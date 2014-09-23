@@ -14,6 +14,7 @@
 
 class ZStack;
 class ZObject3d;
+class ZJsonObject;
 
 class ZStroke2d : public ZStackObject {
 public:
@@ -103,6 +104,9 @@ public:
   ZObject3d* toObject3d() const;
 
   void labelStack(ZStack *stack) const;
+
+  ZJsonObject toJsonObject() const;
+  void loadJsonObject(const ZJsonObject &obj);
 
 private:
   static QVector<QColor> constructColorTable();

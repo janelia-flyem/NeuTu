@@ -145,6 +145,7 @@
 #include "zflyemroidialog.h"
 #include "shapepaperdialog.h"
 #include "zsleeper.h"
+#include "dvidoperatedialog.h"
 
 #include "z3dcanvas.h"
 #include "z3dapplication.h"
@@ -355,6 +356,8 @@ void MainWindow::initDialog()
         getSettings().value("RoiProjectGeometry").toByteArray());
   m_shapePaperDlg->restoreGeometry(
         getSettings().value("ShapePaperDialogGeometry").toByteArray());
+
+  m_dvidOpDlg = new DvidOperateDialog;
 #endif
 }
 
@@ -5982,6 +5985,7 @@ void MainWindow::on_actionDVID_Bundle_triggered()
     ZFlyEmDataBundle *dataBundle = new ZFlyEmDataBundle;
     if (dataBundle->loadDvid(dvidFilter)) {
       ZFlyEmDataFrame *frame = new ZFlyEmDataFrame;
+      frame->setDvidTarget(target);
       frame->addData(dataBundle);
       addFlyEmDataFrame(frame);
     } else {
@@ -6313,6 +6317,7 @@ bool MainWindow::initBodySplitProject()
                   << std::endl;
 #endif
 
+
         //ZStackDoc *doc = new ZStackDoc(NULL, NULL);
         //doc->loadStack(stack);
         ZStackDocReader docReader;
@@ -6320,10 +6325,13 @@ bool MainWindow::initBodySplitProject()
         docReader.setSparseStack(spStack);
         ZStackFrame *frame = createStackFrame(&docReader);
         frame->document()->setTag(NeuTube::Document::FLYEM_BODY);
+
+        m_bodySplitProjectDialog->setDataFrame(frame);
+        m_bodySplitProjectDialog->downloadSeed();
+
         addStackFrame(frame);
         presentStackFrame(frame);
 
-        m_bodySplitProjectDialog->setDataFrame(frame);
         succ = true;
       } else {
         m_bodySplitProjectDialog->dump(
@@ -6648,4 +6656,10 @@ void MainWindow::on_actionOne_Column_triggered()
       std::cout << "The neuron " << bodyId <<  " has no skeleton" << std::endl;
     }
   }
+}
+
+void MainWindow::on_actionOperateDvid_triggered()
+{
+  m_dvidOpDlg->show();
+  m_dvidOpDlg->raise();
 }

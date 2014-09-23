@@ -5,6 +5,7 @@
 #include "zobject3d.h"
 #include "zswcgenerator.h"
 #include "zswctree.h"
+#include "zjsonobject.h"
 
 const ZDocPlayer::TRole ZDocPlayer::ROLE_NONE = 0;
 const ZDocPlayer::TRole ZDocPlayer::ROLE_DISPLAY = 1;
@@ -54,6 +55,11 @@ bool ZDocPlayer::hasRole(TRole role) const
 bool ZDocPlayer::isEmpty() const
 {
   return m_data == NULL;
+}
+
+ZJsonObject ZDocPlayer::toJsonObject() const
+{
+  return ZJsonObject();
 }
 
 /*************************************/
@@ -198,6 +204,11 @@ QString ZStroke2dPlayer::getTypeName() const
   return "Plane Stroke";
 }
 
+ZJsonObject ZStroke2dPlayer::toJsonObject() const
+{
+  return getCompleteData()->toJsonObject();
+}
+
 ZStack* ZStroke2dPlayer::toStack() const
 {
   ZStroke2d *stroke = getCompleteData();
@@ -340,6 +351,11 @@ Z3DGraph ZObject3dPlayer::get3DGraph() const
   }
 
   return graph;
+}
+
+ZJsonObject ZObject3dPlayer::toJsonObject() const
+{
+  return getCompleteData()->toJsonObject();
 }
 
 /*************************************/
