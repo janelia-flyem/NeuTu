@@ -13,6 +13,8 @@ public:
   ZDvidTarget();
   ZDvidTarget(const std::string &address, const std::string &uuid, int port = -1);
 
+  void clear();
+
   void set(const std::string &address, const std::string &uuid, int port = -1);
   void setServer(const std::string &address);
   void setUuid(const std::string &uuid);
@@ -136,6 +138,7 @@ private:
   const static char* m_commentKey;
   const static char* m_nameKey;
   const static char* m_localKey;
+  const static char* m_debugKey;
 };
 
 #endif // ZDVIDTARGET_H

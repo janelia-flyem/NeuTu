@@ -21,9 +21,17 @@
     {
       "address": "emdata2.int.janelia.org",
       "uuid": "134",
+      "name": "AL-7-DEBUG",
+      "comment": "AL-Z1213-07",
+      "local": "/Users/zhaot/Work/neutube/neurolabi/data/flyem/AL",
+      "debug": true
+    },
+    {
+      "address": "emdata2.int.janelia.org",
+      "uuid": "134",
       "name": "AL-7",
       "comment": "AL-Z1213-07",
-      "local": "/Users/zhaot/Work/neutube/neurolabi/data/flyem/AL"
+      "local": "/groups/flyem/data/zhaot/local/AL"
     }
   ]
 }

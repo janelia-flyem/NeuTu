@@ -145,9 +145,10 @@ void ZFlyEmRoiDialog::updateWidget()
 
   if (m_project != NULL) {
     QString text = QString("<p>DVID: %1</p>"
-                           "<p>Z Range: [%2, %3]"
-                           "<p>Opened Slice: Z = %4; ROI: %5</p>").
+                           "<p>Local: %2</p>"
+                           "<p>Z Range: [%3, %4]; Opened Slice: Z = %5; ROI: %6</p>").
         arg(m_project->getDvidTarget().getName().c_str()).
+        arg(m_project->getDvidTarget().getLocalFolder().c_str()).
         arg(m_project->getDvidInfo().getMinZ()).
         arg(m_project->getDvidInfo().getMaxZ()).
         arg(m_project->getDataZ()).arg(m_project->hasOpenedRoi());

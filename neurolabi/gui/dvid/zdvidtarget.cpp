@@ -9,6 +9,7 @@ const char* ZDvidTarget::m_uuidKey = "uuid";
 const char* ZDvidTarget::m_commentKey = "comment";
 const char* ZDvidTarget::m_nameKey = "name";
 const char* ZDvidTarget::m_localKey = "local";
+const char* ZDvidTarget::m_debugKey = "debug";
 
 ZDvidTarget::ZDvidTarget() : m_port(-1)
 {
@@ -40,6 +41,14 @@ void ZDvidTarget::set(
   setServer(address);
   setUuid(uuid);
   setPort(port);
+}
+
+void ZDvidTarget::clear()
+{
+  set("", "", -1);
+  m_name = "";
+  m_comment = "";
+  m_localFolder = "";
 }
 
 void ZDvidTarget::setServer(const std::string &address)
@@ -120,16 +129,28 @@ std::string ZDvidTarget::getBodyPath(int bodyId) const
 
 void ZDvidTarget::loadJsonObject(const ZJsonObject &obj)
 {
-  setServer(ZJsonParser::stringValue(obj[m_addressKey]));
-  if (obj.hasKey(m_portKey)) {
-    setPort(ZJsonParser::integerValue(obj[m_portKey]));
-  } else {
-    setPort(-1);
+  clear();
+
+  bool isValidJson = true;
+
+  if (obj.hasKey(m_debugKey)) {
+#ifndef _DEBUG_
+    isValidJson = !ZJsonParser::booleanValue(obj[m_debugKey]);
+#endif
   }
-  setUuid(ZJsonParser::stringValue(obj[m_uuidKey]));
-  m_comment = ZJsonParser::stringValue(obj[m_commentKey]);
-  m_name = ZJsonParser::stringValue(obj[m_nameKey]);
-  m_localFolder = ZJsonParser::stringValue(obj[m_localKey]);
+
+  if (isValidJson) {
+    setServer(ZJsonParser::stringValue(obj[m_addressKey]));
+    if (obj.hasKey(m_portKey)) {
+      setPort(ZJsonParser::integerValue(obj[m_portKey]));
+    } else {
+      setPort(-1);
+    }
+    setUuid(ZJsonParser::stringValue(obj[m_uuidKey]));
+    m_comment = ZJsonParser::stringValue(obj[m_commentKey]);
+    m_name = ZJsonParser::stringValue(obj[m_nameKey]);
+    m_localFolder = ZJsonParser::stringValue(obj[m_localKey]);
+  }
 }
 
 std::string ZDvidTarget::getUrl() const
