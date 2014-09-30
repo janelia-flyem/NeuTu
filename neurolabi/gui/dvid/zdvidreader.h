@@ -20,6 +20,8 @@
 
 class ZDvidFilter;
 class ZArray;
+class ZJsonObject;
+class ZFlyEmNeuronBodyInfo;
 
 class ZDvidReader : public QObject
 {
@@ -70,6 +72,9 @@ public:
                        int width, int height, int depth) const;
 
   bool hasSparseVolume() const;
+  bool hasBodyInfo(int bodyId) const;
+
+  ZFlyEmNeuronBodyInfo readBodyInfo(int bodyId);
 
 signals:
   void readingDone();

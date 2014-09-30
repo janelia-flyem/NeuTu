@@ -1466,6 +1466,47 @@ Stack* Read_Raw_Stack_Slice(const char *filepath, int slice)
   return stack;
 }
 
+typedef struct
+  { Tiff_Reader *reader;
+    Tiff_Writer *writer;
+    int          eof;
+    Tiff_IFD    *ifd;
+    Tiff_Image  *image;
+  } Tio;
+
+void Read_Stack_Offset(const char *filepath, int *x, int *y, int *z)
+{
+  *x = 0;
+  *y = 0;
+  *z = 0;
+
+  Tio   *tif;
+  Tiff_Type type;
+  int    count;
+
+  tif = (Tio *) Open_Tiff((char*)(filepath),"r");
+  int *tx = NULL;
+  int *ty = NULL;
+  int *tz = NULL;
+
+  if ((tx = (int *) Get_Tiff_Tag(tif->ifd,TIFF_X_POSITION_C,&type,&count)) 
+      != NULL) {
+    *x = *tx;
+  }
+
+  if ((ty = (int *) Get_Tiff_Tag(tif->ifd,TIFF_Y_POSITION_C,&type,&count)) 
+      != NULL) {
+    *y = *ty;
+  }
+
+  if ((tz = (int *) Get_Tiff_Tag(tif->ifd,TIFF_Z_POSITION_C,&type,&count)) 
+      != NULL) {
+    *z = *tz;
+  }
+
+  Close_Tiff((Tiff *) tif);
+}
+
 Stack* Read_Stack_U(const char *filepath)
 {
   if (!fexist(filepath)) {
@@ -1524,6 +1565,95 @@ Stack* Read_Xml_Stack(const char *filePath)
 #endif
 }
 
+void Write_Tiff_With_Offset(Tiff *etif, Image *a_image, 
+    int x, int y, int z)
+{ Tio        *tif = (Tio *) etif;
+  Tiff_IFD   *ifd;
+  Tiff_Image *img;
+  int         area;
+
+  area = a_image->width * a_image->height;
+
+  img = Create_Tiff_Image(a_image->width,a_image->height);
+  switch (a_image->kind)
+  { case COLOR:
+      Add_Tiff_Image_Channel(img,CHAN_RED,8,CHAN_UNSIGNED);
+      Add_Tiff_Image_Channel(img,CHAN_GREEN,8,CHAN_UNSIGNED);
+      Add_Tiff_Image_Channel(img,CHAN_BLUE,8,CHAN_UNSIGNED);
+
+      { uint8 *red, *green, *blue;
+        uint8 *out;
+        int    i;
+
+        out   = a_image->array;
+        red   = (uint8*)img->channels[0]->plane;
+        green = (uint8*)img->channels[1]->plane;
+        blue  = (uint8*)img->channels[2]->plane;
+        for (i = 0; i < area; i++)
+          { *red++ = *out++;
+            *green++ = *out++;
+            *blue++ = *out++;
+          }
+      }
+
+      break;
+    case GREY:
+      Add_Tiff_Image_Channel(img,CHAN_BLACK,8,CHAN_UNSIGNED);
+      memcpy(img->channels[0]->plane,a_image->array,area);
+      break;
+    case GREY16:
+      Add_Tiff_Image_Channel(img,CHAN_BLACK,16,CHAN_UNSIGNED);
+      memcpy(img->channels[0]->plane,a_image->array,2*area);
+      break;
+    case FLOAT32:
+      Add_Tiff_Image_Channel(img,CHAN_BLACK,32,CHAN_FLOAT);
+      memcpy(img->channels[0]->plane,a_image->array,4*area);
+      break;
+  }
+
+  ifd = Make_IFD_For_Image(img,0);
+  
+  Set_Tiff_Tag(ifd,TIFF_X_POSITION_C,TIFF_LONG,
+      sizeof(int), &x);
+  Set_Tiff_Tag(ifd,TIFF_Y_POSITION_C,TIFF_LONG,
+      sizeof(int), &y);
+  Set_Tiff_Tag(ifd,TIFF_Z_POSITION_C,TIFF_LONG,
+      sizeof(int), &z);
+
+  if (a_image->text[0] != '\0')
+    Set_Tiff_Tag(ifd,TIFF_JF_TAGGER,TIFF_BYTE,strlen(a_image->text),a_image->text);
+
+  Write_Tiff_IFD(tif->writer,ifd);
+
+  Free_Tiff_IFD(ifd);
+  Free_Tiff_Image(img);
+}
+
+void Write_Stack_With_Offset(
+    const char *file_name, const Stack *a_stack, int x, int y, int z)
+{ 
+  if (a_stack == NULL) {
+    return;
+  }
+
+  if (a_stack->depth == 0) {
+    return;
+  }
+
+  Tiff *tif;
+  int   i;
+
+  tif = Open_Tiff((char*) file_name,"w");
+
+  if (tif != NULL) {
+    Write_Tiff_With_Offset(tif, Select_Plane((Stack*) a_stack, 0), x, y, z);
+
+    for (i = 1; i < a_stack->depth; i++)
+      Write_Tiff(tif,Select_Plane((Stack*)a_stack,i));
+    Close_Tiff(tif);
+  }
+}
+
 void Write_Stack_U(const char *filepath, const Stack *stack, 
 		   const char *metafile)
 {
@@ -1532,19 +1662,23 @@ void Write_Stack_U(const char *filepath, const Stack *stack,
   } else if (Is_Lsm(filepath)) {
     Tiff_IFD *ifd = NULL;
     if (metafile != NULL) {
-      Tiff_Reader *reader;
-    
-      reader = Open_Tiff_Reader((char*) metafile,NULL,1);
-      
-      while (lsm_thumbnail_flag(ifd = Read_Tiff_IFD(reader)) != 0) {
-	Kill_Tiff_IFD(ifd);
-	if (End_Of_Tiff(reader)) {
-	  ifd = NULL;
-	  TZ_ERROR(ERROR_IO_READ);
-	  break;
-	}
+      if (metafile[0] != '@') {
+        Tiff_Reader *reader;
+
+        reader = Open_Tiff_Reader((char*) metafile,NULL,1);
+
+        if (reader != NULL) {
+          while (lsm_thumbnail_flag(ifd = Read_Tiff_IFD(reader)) != 0) {
+            Kill_Tiff_IFD(ifd);
+            if (End_Of_Tiff(reader)) {
+              ifd = NULL;
+              TZ_ERROR(ERROR_IO_READ);
+              break;
+            }
+          }
+          Kill_Tiff_Reader(reader);
+        }
       }
-      Kill_Tiff_Reader(reader);
     }
     Write_Lsm_Stack((char*) filepath, stack, ifd);
     Kill_Tiff_IFD(ifd);
@@ -1553,7 +1687,25 @@ void Write_Stack_U(const char *filepath, const Stack *stack,
     if (stack->text == NULL) {
       tmp_stack.text = (char*) "";
     }
-    Write_Stack((char*) filepath, &tmp_stack);
+
+    BOOL is_written = FALSE;
+    if (metafile != NULL) {
+      if (String_Starts_With(metafile, "@offset")) {
+        if (metafile[0] == '@') {
+          int n = 0;
+          int *offset = String_To_Integer_Array(metafile, NULL, &n);
+          if (n >= 3) {
+            Write_Stack_With_Offset(filepath, &tmp_stack, 
+                offset[0], offset[1], offset[2]);
+            is_written = TRUE;
+          }
+        }
+      }
+    }
+
+    if (is_written == FALSE) {
+      Write_Stack((char*) filepath, &tmp_stack);
+    }
   }  
 }
 
@@ -3141,6 +3293,27 @@ void Write_Mc_Stack(const char *filepath, const Mc_Stack *stack,
         //Set_Tiff_Tag(ifd,TIFF_NEW_SUB_FILE_TYPE,TIFF_LONG,1,&(tagValue));
 	//Tiff_IFD *ifd = Make_IFD_For_Image_I(image, 0, NULL);
 	//Print_Tiff_IFD(ifd, stdout);
+
+        if (i == 0) {
+          if (metafile != NULL) {
+            if (String_Starts_With(metafile, "@offset")) {
+              if (metafile[0] == '@') {
+                int n = 0;
+                int *offset = String_To_Integer_Array(metafile, NULL, &n);
+                if (n >= 3) {
+                  Set_Tiff_Tag(ifd,TIFF_X_POSITION_C,TIFF_RATIONAL,
+                      sizeof(int), offset);
+                  Set_Tiff_Tag(ifd,TIFF_Y_POSITION_C,TIFF_RATIONAL,
+                      sizeof(int), offset + 1);
+                  Set_Tiff_Tag(ifd,TIFF_Z_POSITION_C,TIFF_RATIONAL,
+                      sizeof(int), offset + 2);
+                }
+              }
+            }
+          }
+        }
+
+
 	Write_Tiff_IFD(tif, ifd);
 	Free_Tiff_IFD(ifd);
 	Free_Tiff_Image(image);

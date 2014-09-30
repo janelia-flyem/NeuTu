@@ -14,6 +14,7 @@ const ZCircle::TVisualEffect ZCircle::VE_DASH_PATTERN = 1;
 const ZCircle::TVisualEffect ZCircle::VE_BOUND_BOX = 2;
 const ZCircle::TVisualEffect ZCircle::VE_NO_CIRCLE = 4;
 const ZCircle::TVisualEffect ZCircle::VE_NO_FILL = 8;
+const ZCircle::TVisualEffect ZCircle::VE_GRADIENT_FILL = 16;
 
 ZCircle::ZCircle() : m_visualEffect(ZCircle::VE_NONE)
 {
@@ -71,13 +72,26 @@ void ZCircle::display(ZPainter &painter, int n,
 
   //qDebug() << "Internal color: " << m_color;
   const QBrush &oldBrush = painter.brush();
-  if (hasVisualEffect(VE_NO_FILL)) {
-    painter.setBrush(Qt::NoBrush);
+  if (hasVisualEffect(VE_GRADIENT_FILL)) {
+    QRadialGradient gradient(50, 50, 50, 50, 50);
+    gradient.setColorAt(0, QColor::fromRgbF(0, 1, 0, 1));
+    gradient.setColorAt(1, QColor::fromRgbF(0, 0, 0, 0));
+
+    /*
+    QBrush brush(gradient);
+    brush.setColor(m_color);
+    brush.setStyle(Qt::RadialGradientPattern);
+    painter.setBrush(brush);
+    */
+    //painter.setBrush(m_color);
+    //painter.setBrush(QBrush(m_color, Qt::RadialGradientPattern));
+  } else {
+    if (hasVisualEffect(VE_NO_FILL)) {
+      painter.setBrush(Qt::NoBrush);
+    }
   }
   displayHelper(&painter, n, style);
-  if (hasVisualEffect(VE_NO_FILL)) {
-    painter.setBrush(oldBrush);
-  }
+  painter.setBrush(oldBrush);
 #endif
 }
 
@@ -91,6 +105,11 @@ bool ZCircle::isCuttingPlane(double z, double r, double n)
   }
 
   return false;
+}
+
+bool ZCircle::isCuttingPlane(double n)
+{
+  return isCuttingPlane(m_center.z(), m_r, n);
 }
 
 double ZCircle::getAdjustedRadius(double r) const
@@ -110,15 +129,6 @@ void ZCircle::displayHelper(ZPainter *painter, int stackFocus, Display_Style sty
   double adjustedRadius = getAdjustedRadius(m_r);
 
   double dataFocus = stackFocus - painter->getOffset().z();
-
-  QRectF rect;
-  if (hasVisualEffect(VE_BOUND_BOX)) {
-    rect.setLeft(m_center.x() - adjustedRadius);
-    rect.setTop(m_center.y() - adjustedRadius);
-    rect.setWidth(adjustedRadius + adjustedRadius);
-    rect.setHeight(adjustedRadius + adjustedRadius);
-  }
-
   bool visible = false;
 
   if (stackFocus == -1) {
@@ -148,6 +158,12 @@ void ZCircle::displayHelper(ZPainter *painter, int stackFocus, Display_Style sty
   }
 
   if (hasVisualEffect(VE_BOUND_BOX)) {
+    QRectF rect;
+    rect.setLeft(m_center.x() - adjustedRadius);
+    rect.setTop(m_center.y() - adjustedRadius);
+    rect.setWidth(adjustedRadius + adjustedRadius);
+    rect.setHeight(adjustedRadius + adjustedRadius);
+
     const QBrush &oldBrush = painter->brush();
     const QPen &oldPen = painter->pen();
     painter->setBrush(Qt::NoBrush);

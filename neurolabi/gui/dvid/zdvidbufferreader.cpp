@@ -121,6 +121,14 @@ void ZDvidBufferReader::endReading(EStatus status)
   m_isReadingDone = true;
 
   if (m_networkReply != NULL) {
+    QVariant statusCode = m_networkReply->attribute(
+          QNetworkRequest::HttpStatusCodeAttribute);
+#ifdef _DEBUG_
+    qDebug() << "Status code: " << statusCode;
+#endif
+    if (statusCode.toInt() != 200) {
+      m_status = READ_BAD_RESPONSE;
+    }
     m_networkReply->deleteLater();
     m_networkReply = NULL;
   }

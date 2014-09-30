@@ -8,6 +8,7 @@ const char* ZDvidTarget::m_portKey = "port";
 const char* ZDvidTarget::m_uuidKey = "uuid";
 const char* ZDvidTarget::m_commentKey = "comment";
 const char* ZDvidTarget::m_nameKey = "name";
+const char* ZDvidTarget::m_localKey = "local";
 
 ZDvidTarget::ZDvidTarget() : m_port(-1)
 {
@@ -128,6 +129,7 @@ void ZDvidTarget::loadJsonObject(const ZJsonObject &obj)
   setUuid(ZJsonParser::stringValue(obj[m_uuidKey]));
   m_comment = ZJsonParser::stringValue(obj[m_commentKey]);
   m_name = ZJsonParser::stringValue(obj[m_nameKey]);
+  m_localFolder = ZJsonParser::stringValue(obj[m_localKey]);
 }
 
 std::string ZDvidTarget::getUrl() const
@@ -140,4 +142,39 @@ std::string ZDvidTarget::getUrl() const
   url += "/api/node/" + m_uuid;
 
   return url;
+}
+
+std::string ZDvidTarget::getLocalLowResGrayScalePath(
+    int xintv, int yintv, int zintv) const
+{
+  if (getLocalFolder().empty()) {
+    return "";
+  }
+
+  ZString path = getLocalFolder() + "/grayscale/";
+  path.appendNumber(xintv);
+  path += "_";
+  path.appendNumber(yintv);
+  path += "_";
+  path.appendNumber(zintv);
+
+  return path;
+}
+
+
+std::string ZDvidTarget::getLocalLowResGrayScalePath(
+    int xintv, int yintv, int zintv, int z) const
+{
+  if (getLocalFolder().empty()) {
+    return "";
+  }
+
+  const int padding = 6;
+
+  ZString path = getLocalLowResGrayScalePath(xintv, yintv, zintv);
+  path += "/";
+  path.appendNumber(z, padding);
+  path += ".tif";
+
+  return path;
 }

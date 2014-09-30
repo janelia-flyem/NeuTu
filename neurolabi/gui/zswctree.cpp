@@ -448,10 +448,11 @@ void ZSwcTree::display(
 
 
   //Draw skeletons
+  pen.setCosmetic(true);
+  pen.setWidthF(strokeWidth * 2.0);
   for (const Swc_Tree_Node *tn = begin(); tn != end(); tn = next()) {
     if (!SwcTreeNode::isRoot(tn)) {
       pen.setColor(m_planeSkeletonColor);
-      pen.setWidthF(strokeWidth / 2.0);
       painter.setPen(pen);
       painter.drawLine(QPointF(SwcTreeNode::x(tn), SwcTreeNode::y(tn)),
                        QPointF(SwcTreeNode::x(SwcTreeNode::parent(tn)),
@@ -474,6 +475,7 @@ void ZSwcTree::display(
         } else {
           pen.setColor(lineColor);
         }
+
         painter.setPen(pen);
 
         painter.drawLine(lineStart, lineEnd);
@@ -497,6 +499,9 @@ void ZSwcTree::display(
       }
     }
   }
+  pen.setCosmetic(false);
+
+  pen.setWidthF(strokeWidth);
 
   for (const Swc_Tree_Node *tn = begin(); tn != end(); tn = next()) {
     if (SwcTreeNode::isVirtual(tn)) { //Skip virtual node
@@ -518,7 +523,7 @@ void ZSwcTree::display(
       visible = true;
     }
 
-    pen.setWidthF(strokeWidth);
+
 
     if (visible) {
       if (SwcTreeNode::isRoot(tn)) {
@@ -562,7 +567,7 @@ void ZSwcTree::display(
                        SwcTreeNode::radius(tn));
         circle.useCosmeticPen(m_usingCosmeticPen);
         circle.displayHelper(&painter, stackFocus, style);
-        }
+      }
         break;
       case SKELETON:
         if (SwcTreeNode::isBranchPoint(tn)) {
@@ -1192,8 +1197,13 @@ void ZSwcTree::translateRootTo(double x, double y, double z)
   }
 }
 
-void ZSwcTree::rescale(double scaleX, double scaleY, double scaleZ)
+void ZSwcTree::rescale(
+    double scaleX, double scaleY, double scaleZ, bool changingRadius)
 {
+  if (m_tree != NULL) {
+    Swc_Tree_Resize(m_tree, scaleX, scaleY, scaleZ, changingRadius);
+  }
+#if 0
   if (scaleX != 1.0 || scaleY != 1.0 || scaleZ != 1.0) {
     updateIterator(1, FALSE);
     for (Swc_Tree_Node *tn = begin(); tn != end(); tn = next()) {
@@ -1211,6 +1221,7 @@ void ZSwcTree::rescale(double scaleX, double scaleY, double scaleZ)
       }
     }
   }
+#endif
 }
 
 void ZSwcTree::rescale(double srcPixelPerUmXY, double srcPixelPerUmZ,

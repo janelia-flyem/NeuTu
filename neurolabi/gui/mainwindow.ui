@@ -16,7 +16,7 @@
    </font>
   </property>
   <property name="windowTitle">
-   <string>1.0n</string>
+   <string>1.0p</string>
   </property>
   <property name="iconSize">
    <size>
@@ -330,6 +330,7 @@
       <addaction name="actionUpdate_Skeletons"/>
       <addaction name="actionCreate_Databundle"/>
       <addaction name="actionOperateDvid"/>
+      <addaction name="actionGenerate_Local_Grayscale"/>
      </widget>
      <widget class="QMenu" name="menuExport_2">
       <property name="title">
@@ -1301,6 +1302,11 @@
   <action name="actionOperateDvid">
    <property name="text">
     <string>Operate</string>
+   </property>
+  </action>
+  <action name="actionGenerate_Local_Grayscale">
+   <property name="text">
+    <string>Generate Local Grayscale</string>
    </property>
   </action>
  </widget>

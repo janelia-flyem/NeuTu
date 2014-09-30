@@ -9,6 +9,8 @@
 #if _QT_GUI_USED_
 #include "zstroke2d.h"
 #endif
+#include "zpointarray.h"
+#include "tz_stack.h"
 
 ZStackFactory::ZStackFactory()
 {
@@ -88,6 +90,34 @@ ZStack* ZStackFactory::makeZeroStack(
 {
   ZStack *stack = new ZStack(GREY, width, height, depth, nchannel);
   stack->setZero();
+
+  return stack;
+}
+
+ZStack* ZStackFactory::makeZeroStack(
+    int kind, int width, int height, int depth, int nchannel)
+{
+  ZStack *stack = new ZStack(kind, width, height, depth, nchannel);
+  stack->setZero();
+
+  return stack;
+}
+
+ZStack* ZStackFactory::makeZeroStack(const ZIntCuboid box, int nchannel)
+{
+  ZStack *stack = makeZeroStack(
+        box.getWidth(), box.getHeight(), box.getDepth(), nchannel);
+  stack->setOffset(box.getFirstCorner());
+
+  return stack;
+}
+
+ZStack* ZStackFactory::makeZeroStack(
+    int kind, const ZIntCuboid box, int nchannel)
+{
+  ZStack *stack = makeZeroStack(
+        kind, box.getWidth(), box.getHeight(), box.getDepth(), nchannel);
+  stack->setOffset(box.getFirstCorner());
 
   return stack;
 }
@@ -188,3 +218,108 @@ ZStack* ZStackFactory::makePolygonPicture(const ZStroke2d &curve)
 #endif
 }
 
+ZStack* ZStackFactory::makeDensityMap(const ZPointArray &ptArray, double sigma)
+{
+  ZCuboid boundBox = ptArray.getBoundBox();
+  double radius = sigma * 2;
+  ZPoint pt1 = boundBox.firstCorner();
+  pt1 -= radius;
+
+  ZPoint pt2 = boundBox.lastCorner();
+  pt2 += radius;
+
+
+  ZIntCuboid stackBox(pt1.toIntPoint(), pt2.toIntPoint());
+  ZStack *stack = NULL;
+
+  if (ptArray.size() < 1000) {
+    stack = makeZeroStack(FLOAT64, stackBox);
+    ZPointArray tmpPtArray = ptArray;
+    std::sort(tmpPtArray.begin(), tmpPtArray.end(), ZPoint::ZCompare());
+
+    size_t offset = 0;
+    double inv = 0.5 / sigma / sigma;
+
+    double *array = stack->array64();
+
+    int x0 = stackBox.getFirstCorner().getX();
+    int y0 = stackBox.getFirstCorner().getY();
+    int z0 = stackBox.getFirstCorner().getZ();
+
+    int x1 = stackBox.getLastCorner().getX();
+    int y1 = stackBox.getLastCorner().getY();
+    int z1 = stackBox.getLastCorner().getZ();
+
+
+    for (int z = z0; z <= z1; ++z) {
+      ZPointArray::const_iterator beginIter =
+          std::lower_bound(tmpPtArray.begin(), tmpPtArray.end(),
+                           ZPoint(0, 0, z - radius), ZPoint::ZCompare());
+      ZPointArray::const_iterator endIter =
+          std::upper_bound(tmpPtArray.begin(), tmpPtArray.end(),
+                           ZPoint(0, 0, z + radius), ZPoint::ZCompare());
+#ifdef _DEBUG_
+      std::cout << z << "/" << z1 << std::endl;
+#endif
+
+      ZPointArray subArray;
+      for (ZPointArray::const_iterator iter = beginIter;
+           iter != endIter; ++iter) {
+        subArray.append(*iter);
+      }
+      sort(subArray.begin(), subArray.end(), ZPoint::YCompare());
+
+      for (int y = y0; y <= y1; ++y) {
+        beginIter =
+            std::lower_bound(subArray.begin(), subArray.end(),
+                             ZPoint(0, y - radius, 0), ZPoint::YCompare());
+        endIter =
+            std::upper_bound(subArray.begin(), subArray.end(),
+                             ZPoint(0, y + radius, 0), ZPoint::YCompare());
+
+        for (int x = x0; x <= x1; ++x) {
+          for (ZPointArray::const_iterator iter = beginIter;
+               iter != endIter; ++iter) {
+            const ZPoint &pt = *iter;
+            double dx = x - pt.x();
+            if (fabs(dx) < radius) {
+              double dy = y - pt.y();
+              double dz = z - pt.z();
+              double v = exp(-(dx * dx  + dy * dy  + dz * dz) * inv);
+              array[offset] += v;
+            }
+          }
+          ++offset;
+        }
+      }
+    }
+  } else {
+    stack = makeZeroStack(GREY, stackBox);
+    Filter_3d *filter = Gaussian_Filter_3d(sigma, sigma, sigma);
+
+    for (ZPointArray::const_iterator iter = ptArray.begin();
+         iter != ptArray.end(); ++iter) {
+      const ZPoint &pt = *iter;
+      stack->setIntValue(iround(pt.x()), iround(pt.y()), iround(pt.z()), 0, 1);
+    }
+
+    Stack *stack2 = Filter_Stack(stack->c_stack(), filter);
+
+    Kill_FMatrix(filter);
+
+    ZStack *out = new ZStack;
+    out->consume(stack2);
+    out->setOffset(stack->getOffset());
+
+    delete stack;
+    stack = out;
+  }
+
+  return stack;
+}
+
+ZStack* ZStackFactory::makeAlphaBlend(const ZStack &/*stack1*/, const ZStack &/*stack2*/,
+                              double /*alpha*/)
+{
+  return NULL;
+}

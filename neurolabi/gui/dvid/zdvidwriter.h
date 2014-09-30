@@ -43,9 +43,12 @@ public:
                  const ZJsonValue &obj);
   void writeBoundBox(const ZIntCuboid &cuboid, int z);
 
-  void writeSplitLabel(const ZObject3dScan &obj, int label);
+  //void writeSplitLabel(const ZObject3dScan &obj, int label);
 
   void createData(const std::string &type, const std::string &name);
+
+  void writeBodyInfo(int bodyId, const ZJsonObject &obj);
+  void writeBodyInfo(int bodyId);
 
   /*!
    * \brief Create a new keyvalue data in DVID.
@@ -56,6 +59,8 @@ public:
 
 private:
   std::string getJsonStringForCurl(const ZJsonValue &obj) const;
+  void writeJson(const std::string url, const ZJsonValue &value);
+  void writeJsonString(const std::string url, const std::string jsonString);
 
 private:
   QEventLoop *m_eventLoop;

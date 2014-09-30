@@ -85,8 +85,10 @@ QString ZDvidDialog::getUuid() const
   return ui->uuidLineEdit->text();
 }
 
-ZDvidTarget ZDvidDialog::getDvidTarget() const
+const ZDvidTarget &ZDvidDialog::getDvidTarget() const
 {
+  return m_dvidRepo[ui->serverComboBox->currentIndex()];
+  /*
   ZDvidTarget target(
         getAddress().toStdString(), getUuid().toStdString(), getPort());
   target.setName(
@@ -95,6 +97,7 @@ ZDvidTarget ZDvidDialog::getDvidTarget() const
   target.setComment(ui->infoLabel->text().toStdString());
 
   return target;
+  */
 }
 
 void ZDvidDialog::setServer(int index)

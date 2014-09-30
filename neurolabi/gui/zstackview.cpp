@@ -126,6 +126,9 @@ ZStackView::~ZStackView()
     delete m_image;
   }
 
+  delete m_objectCanvas;
+  delete m_activeDecorationCanvas;
+
   if (m_ctrlLayout != NULL) {
     if (m_ctrlLayout->parent() == NULL) {
       delete m_ctrlLayout;

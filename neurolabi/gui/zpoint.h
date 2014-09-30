@@ -38,6 +38,8 @@ public:
   double& operator[] (int index);
   ZPoint& operator= (const ZPoint &pt);
 
+  bool operator < (const ZPoint &pt) const;
+
   inline void setX(double x) { m_x = x; }
   inline void setY(double y) { m_y = y; }
   inline void setZ(double z) { m_z = z; }
@@ -94,6 +96,24 @@ public:
   virtual void load(const char *filePath);
 
   static inline double minimalDistance() { return m_minimalDistance; }
+
+  struct ZCompare {
+    bool operator() (const ZPoint &pt1, const ZPoint &pt2) {
+      return (pt1.z() < pt2.z());
+    }
+  };
+
+  struct YCompare {
+    bool operator() (const ZPoint &pt1, const ZPoint &pt2) {
+      return (pt1.y() < pt2.y());
+    }
+  };
+
+  struct XCompare {
+    bool operator() (const ZPoint &pt1, const ZPoint &pt2) {
+      return (pt1.x() < pt2.x());
+    }
+  };
 
 private:
   double m_x;

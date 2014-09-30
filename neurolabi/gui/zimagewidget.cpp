@@ -341,7 +341,7 @@ void ZImageWidget::paintEvent(QPaintEvent * /*event*/)
       painter1.setStackOffset(m_paintBundle->getStackOffset());
       for (ZPaintBundle::const_iterator it = m_paintBundle->begin();
            it != m_paintBundle->end(); ++it) {
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
           std::cout << (*it)->className() << std::endl;
 #endif
         if ((*it)->getTarget() == ZStackObject::WIDGET) {

@@ -5,6 +5,7 @@ namespace FlyEm
 {
 
 double GetFlyEmRoiMarkerRadius(double s);
+double GetFlyEmRoiMarkerRadius(double width, double height);
 
 }
 

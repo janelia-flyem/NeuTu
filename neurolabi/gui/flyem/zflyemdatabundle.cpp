@@ -620,6 +620,20 @@ int ZFlyEmDataBundle::getSourceDimension(NeuTube::EAxis axis) const
   return 0;
 }
 
+int ZFlyEmDataBundle::getSourceOffset(NeuTube::EAxis axis) const
+{
+  switch (axis) {
+  case NeuTube::X_AXIS:
+    return m_sourceOffset[0];
+  case NeuTube::Y_AXIS:
+    return m_sourceOffset[1];
+  case NeuTube::Z_AXIS:
+    return m_sourceOffset[2];
+  }
+
+  return 0;
+}
+
 void ZFlyEmDataBundle::exportJsonFile(const string &path) const
 {
   ZJsonObject jsonObj(C_Json::makeObject(), true);

@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>469</width>
+    <width>489</width>
     <height>760</height>
    </rect>
   </property>
@@ -18,7 +18,7 @@
     <rect>
      <x>10</x>
      <y>13</y>
-     <width>451</width>
+     <width>470</width>
      <height>741</height>
     </rect>
    </property>
@@ -175,6 +175,16 @@
            <widget class="QPushButton" name="searchPushButton">
             <property name="text">
              <string>I'm Feeling Lucky</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="quickModeCheckBox">
+            <property name="toolTip">
+             <string>Load a low-resolution slice</string>
+            </property>
+            <property name="text">
+             <string>Quick Mode</string>
             </property>
            </widget>
           </item>

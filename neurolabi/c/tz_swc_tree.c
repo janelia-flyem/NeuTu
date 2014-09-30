@@ -5976,13 +5976,14 @@ void Swc_Tree_Resize(Swc_Tree *tree, double x_scale, double y_scale,
 {
   Swc_Tree_Iterator_Start(tree, 1, FALSE);
   Swc_Tree_Node *tn = tree->root;
+  double d_scale = sqrt(x_scale * y_scale);
   while ((tn = Swc_Tree_Next(tree)) != NULL) {
     if (Swc_Tree_Node_Is_Regular(tn)) {
       Swc_Tree_Node_Data(tn)->x *= x_scale;
       Swc_Tree_Node_Data(tn)->y *= y_scale;
       Swc_Tree_Node_Data(tn)->z *= z_scale;
       if (change_node_size == TRUE) {
-        Swc_Tree_Node_Data(tn)->d *= sqrt(x_scale * y_scale);
+        Swc_Tree_Node_Data(tn)->d *= d_scale;
       }
     }
   }

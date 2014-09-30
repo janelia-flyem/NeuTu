@@ -124,3 +124,8 @@ ZPoint ZIntPoint::toPoint() const
 {
   return ZPoint(getX(), getY(), getZ());
 }
+
+bool ZIntPoint::isZero() const
+{
+  return (getX() == 0) && (getY() == 0) && (getZ() == 0);
+}

@@ -60,6 +60,11 @@ public:
 
   ZPoint toPoint() const;
 
+  /*!
+   * \brief Test if the coordinates are (0, 0, 0)
+   */
+  bool isZero() const;
+
 public:
   int m_x;
   int m_y;

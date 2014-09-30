@@ -9,7 +9,7 @@
 
 class ZClosedCurve;
 class ZStroke2d;
-
+class ZPointArray;
 
 /*!
  * \brief The class of creating a stack
@@ -40,10 +40,26 @@ public:
                               int nchannel = 1);
   static ZStack* makeZeroStack(int width, int height, int depth,
                                int nchannel = 1);
+
+  static ZStack* makeZeroStack(int kind, int width, int height, int depth,
+                               int nchannel);
+
+
+  static ZStack* makeZeroStack(const ZIntCuboid box, int nchannel = 1);
+  static ZStack* makeZeroStack(int kind, const ZIntCuboid box, int nchannel = 1);
+
   static ZStack* makeIndexStack(int width, int height, int depth);
   static ZStack* makeUniformStack(int width, int height, int depth, int v);
 
   static ZStack* makePolygonPicture(const ZStroke2d &stroke);
+
+  static ZStack* makeDensityMap(const ZPointArray &ptArray, double sigma);
+
+  /*!
+   * \brief Only support GREY data
+   */
+  static ZStack* makeAlphaBlend(const ZStack &stack1, const ZStack &stack2,
+                                double alpha);
 
 private:
   static Stack* pileMatched(const std::vector<Stack*> stackArray);

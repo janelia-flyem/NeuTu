@@ -376,7 +376,8 @@ public:
   // move soma (first root) to new location
   void translateRootTo(double x, double y, double z);
   // rescale location and radius
-  void rescale(double scaleX, double scaleY, double scaleZ);
+  void rescale(double scaleX, double scaleY, double scaleZ,
+               bool changingRadius = true);
   void rescale(double srcPixelPerUmXY, double srcPixelPerUmZ,
                double dstPixelPerUmXY, double dstPixelPerUmZ);
   // rescale radius of nodes in certain depth range, startdepth <= depth of node < enddepth

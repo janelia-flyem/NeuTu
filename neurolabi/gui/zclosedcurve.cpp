@@ -335,3 +335,12 @@ ZCuboid ZClosedCurve::getBoundBox() const
 {
   return m_landmarkArray.getBoundBox();
 }
+
+void ZClosedCurve::scale(double sx, double sy, double sz)
+{
+  for (ZPointArray::iterator iter = m_landmarkArray.begin();
+       iter != m_landmarkArray.end(); ++iter) {
+    ZPoint &pt = *iter;
+    pt *= ZPoint(sx, sy, sz);
+  }
+}

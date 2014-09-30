@@ -19,7 +19,8 @@ public:
   explicit ZDvidBufferReader(QObject *parent = 0);
 
   enum EStatus {
-    READ_NULL, READ_OK, READ_FAILED, READ_TIMEOUT, READ_CANCELED
+    READ_NULL, READ_OK, READ_FAILED, READ_TIMEOUT, READ_CANCELED,
+    READ_BAD_RESPONSE
   };
 
   void read(const QString &url);

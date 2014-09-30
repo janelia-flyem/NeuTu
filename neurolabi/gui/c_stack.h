@@ -225,8 +225,8 @@ Stack* translate(Stack *stack, int kind, int in_place);
  */
 Stack* downsampleMax(const Stack *stack, int xintv, int yintv, int zintv,
                      Stack *result = NULL);
-
-Stack* downsampleMin(const Stack *stack, int xintv, int yintv, int zintv);
+Stack* downsampleMin(const Stack *stack, int xintv, int yintv, int zintv,
+                     Stack *result = NULL);
 
 void print(const Stack *stack);
 
@@ -308,6 +308,7 @@ bool hasValue(Mc_Stack *stack, size_t index,
 
 void view(const Stack *src, Mc_Stack *dst);
 void view(const Mc_Stack *src, Stack *dst, int channel);
+void view(const Mc_Stack *src, Mc_Stack *dst, int channel);
 void view(const Stack *src, Image_Array *dst);
 
 Mc_Stack* translate(const Mc_Stack *stack, int targetKind);
@@ -343,11 +344,12 @@ ssize_t indexFromCoord(int x, int y, int z, int width, int height, int depth);
 void indexToCoord(size_t index, int width, int height, int *x, int *y, int *z);
 
 void write(const std::string &filePath, const Stack *stack);
-void write(const std::string &filePath, const Mc_Stack *stack);
+void write(const std::string &filePath, const Mc_Stack *stack,
+           const char *meta = NULL);
 Mc_Stack* read(const std::string &filePath, int channel = -1);
 Stack* readSc(const std::string &filePath);
 Mc_Stack* readMrawFromBuffer(const char *buffer, int channel = -1);
-
+void readStackOffset(const std::string &filePath, int *x, int *y, int *z);
 
 
 Mc_Stack* resize(const Mc_Stack *stack, int width, int height, int depth);
@@ -371,7 +373,8 @@ void setZero(Mc_Stack *stack, int x0, int y0, int z0, int sw, int sh, int sd);
  */
 //void setBlockValue(Stack *stack, const Stack *block, int x0, int y0, int z0);
 void setBlockValue(Stack *stack, const Stack *block, int x0, int y0, int z0,
-                   int srcValueIgnored = -1, int dstValueIgnored = -1);
+                   int srcValueIgnored = -1, int dstValueIgnored = -1,
+                   double alpha = 1.0);
 
 /*!
  * \brief Check if a stack is binary

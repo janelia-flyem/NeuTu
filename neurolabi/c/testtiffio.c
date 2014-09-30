@@ -601,7 +601,7 @@ int main(int argc, char* argv[])
   Print_Mc_Stack_Info(stack);
 #endif
 
-#if 1
+#if 0
   IMatrix *mat = IMatrix_Read("../data/test/session2/body_map/body_map00161.imat");
 
   printf("%d: %d x %d x %d\n", (int) mat->ndim, mat->dim[0], mat->dim[1],
@@ -613,6 +613,34 @@ int main(int argc, char* argv[])
     stack->array[i] = (mat->array[i]) >> 24;
   }
   Write_Stack("../data/test.tif", stack);
+#endif
+
+#if 0
+  Stack *stack = Make_Stack(GREY, 1, 1, 1);
+  //stack->text = "test";
+  //Write_Stack_U("../data/test.tif", stack, NULL);
+
+  Write_Stack_With_Offset("../data/test.tif", stack, 1, 2, 334.43);
+
+  double x = 0;
+  double y = 0;
+  double z = 0;
+  Read_Stack_Offset("../data/test.tif", &x, &y, &z);
+  printf("%g %g %g\n", x, y, z);
+#endif
+
+#if 1
+  Mc_Stack *stack = Make_Mc_Stack(GREY, 1, 1, 1, 1);
+  //stack->text = "test";
+  //Write_Stack_U("../data/test.tif", stack, NULL);
+
+  Write_Mc_Stack("../data/test.tif", stack, "@offset -1, 2, -3");
+
+  int x = 0;
+  int y = 0;
+  int z = 0;
+  Read_Stack_Offset("../data/test.tif", &x, &y, &z);
+  printf("%d %d %d\n", x, y, z);
 #endif
 
   return 0;

@@ -2011,6 +2011,40 @@ int ZObject3dScan::getMaxZ() const
   return maxZ;
 }
 
+int ZObject3dScan::getMinY() const
+{
+  int minY = 0;
+  for (size_t i = 0; i < getStripeNumber(); ++i) {
+    int y = m_stripeArray[i].getY();
+    if (i == 0) {
+      minY = y;
+    } else {
+      if (y < minY) {
+        minY = y;
+      }
+    }
+  }
+
+  return minY;
+}
+
+int ZObject3dScan::getMaxY() const
+{
+  int maxY = 0;
+  for (size_t i = 0; i < getStripeNumber(); ++i) {
+    int y = m_stripeArray[i].getY();
+    if (i == 0) {
+      maxY = y;
+    } else {
+      if (y > maxY) {
+        maxY = y;
+      }
+    }
+  }
+
+  return maxY;
+}
+
 ZVoxel ZObject3dScan::getMarker() const
 {
   if (isEmpty()) {

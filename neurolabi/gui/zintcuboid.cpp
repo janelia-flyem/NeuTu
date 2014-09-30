@@ -1,14 +1,28 @@
 #include "zintcuboid.h"
 #include "tz_utilities.h"
 
-ZIntCuboid::ZIntCuboid() : m_lastCorner(-1, -1, -1)
+ZIntCuboid::ZIntCuboid()
 {
+  reset();
 }
 
 ZIntCuboid::ZIntCuboid(int x1, int y1, int z1, int x2, int y2, int z2)
 {
   m_firstCorner.set(x1, y1, z1);
   m_lastCorner.set(x2, y2, z2);
+}
+
+ZIntCuboid::ZIntCuboid(
+    const ZIntPoint &firstCorner, const ZIntPoint &lastCorner)
+{
+  m_firstCorner = firstCorner;
+  m_lastCorner = lastCorner;
+}
+
+void ZIntCuboid::reset()
+{
+  m_firstCorner.set(0, 0, 0);
+  m_lastCorner.set(-1, -1, -1);
 }
 
 int ZIntCuboid::getWidth() const

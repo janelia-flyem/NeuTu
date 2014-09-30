@@ -170,6 +170,10 @@ public:
     return &m_imageFactory;
   }
 
+
+  ZFlyEmDataBundle* getMasterData();
+  const ZFlyEmDataBundle* getMasterData() const;
+
 signals:
   void volumeTriggered(const QString &path);
   
@@ -263,11 +267,9 @@ private:
 
   bool isDataBundleIndexValid(int index) const;
 
-
-
 private:
   //Main data
-  QVector<ZFlyEmDataBundle*> m_dataArray;
+  QVector<ZFlyEmDataBundle*> m_dataArray; //The first bundle is treated as the master
   
   //View
   FlyEmDataForm *m_centralWidget;

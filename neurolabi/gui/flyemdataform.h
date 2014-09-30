@@ -4,6 +4,8 @@
 #include <QWidget>
 #include <QProgressBar>
 #include <QImage>
+#include <QMap>
+#include <QFuture>
 
 #include "flyem/zflyemneuronlistmodel.h"
 #include "zprogressable.h"
@@ -137,6 +139,7 @@ private:
   ZStackDoc* showViewSelectedModel(ZFlyEmQueryView *view);
   ZStackDoc* showViewSelectedBody(ZFlyEmQueryView *view);
   void updateThumbnail(ZFlyEmNeuron *neuron);
+  void computeThumbnailFunc(ZFlyEmNeuron *neuron);
 
 private:
   Ui::FlyEmDataForm *ui;
@@ -162,6 +165,8 @@ private:
   */
   QGraphicsScene *m_thumbnailScene;
   //ZFlyEmNeuronImageFactory m_imageFactory;
+
+  QMap<QString, QFuture<void> > m_threadFutureMap;
 };
 
 #endif // FLYEMDATAFORM_H

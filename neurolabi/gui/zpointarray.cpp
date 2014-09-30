@@ -3,6 +3,7 @@
 #include <iostream>
 #include "zjsonobject.h"
 #include "zjsonparser.h"
+#include "zstring.h"
 
 ZPointArray::ZPointArray()
 {
@@ -186,4 +187,20 @@ std::vector<double> ZPointArray::computePlaneCov() const
   }
 
   return cov;
+}
+
+void ZPointArray::importTxtFile(const std::string &filePath)
+{
+  clear();
+  ZString str;
+  FILE *fp = fopen(filePath.c_str(), "r");
+  if (fp != NULL) {
+    while (str.readLine(fp)) {
+      std::vector<int> coord = str.toIntegerArray();
+      if (coord.size() == 3) {
+        append(coord[0], coord[1], coord[2]);
+      }
+    }
+  }
+  fclose(fp);
 }

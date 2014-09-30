@@ -6,6 +6,7 @@
 
 #include "zpunctum.h"
 #include "zrandom.h"
+#include "zcircle.h"
 
 ZPunctum::ZPunctum()
   : m_score(1.0)
@@ -101,53 +102,81 @@ void ZPunctum::display(ZPainter &painter, int n, ZStackObject::Display_Style sty
   if (!isVisible())
     return;
 
-  if (style == NORMAL) {
-    style = SOLID;
+  bool isVisible = true;
+
+  double dataFocus = n - painter.getOffset().z();
+
+  if (!ZCircle::isCuttingPlane(m_z, m_radius, dataFocus)) {
+    isVisible = false;
   }
 
-  if (m_selected == true) {
-    painter.setPen(QPen(selectingColor(m_color), 1.5));
-  } else {
-    painter.setPen(QPen(m_color, .7));
-  }
+  if (isVisible) {
+    ZCircle circle(m_x, m_y, m_z, m_radius);
+    circle.setColor(m_color);
 
-  switch (style) {
-  case SOLID: {
-    if ((iround(m_z) == n) || (n == -1)) {
-      int half_size = iround(m_radius - 0.5);
-      int cx = iround(m_x);
-      int cy = iround(m_y);
-      painter.drawRect(cx - half_size, cy - half_size,
-                       half_size * 2 + 1, half_size * 2 + 1);
+    if (style == SOLID) {
+      circle.setVisualEffect(ZCircle::VE_GRADIENT_FILL);
     }
-    break;
+    circle.display(painter, n, style);
   }
-  case SKELETON:
-    break;
-  case BOUNDARY: {
-    double r = m_radius;
-    bool visible = false;
 
-    if ((iround(m_z) == n) || (n == -1)) {
-      visible = true;
-    } else if (fabs(m_z - n) < r) {
-      r = sqrt(r * r - (m_z - n) * (m_z - n));
-      visible = true;
+#if 0
+  if (n >= 0) {
+    if (fabs(dataFocus - m_z) > m_radius) {
+      isVisible = false;
+    }
+  }
+
+  if (isVisible) {
+    if (style == NORMAL) {
+      style = SOLID;
     }
 
-    if (visible) {
-      if (m_selected == true) {
-        painter.setPen(QPen(selectingColor(m_color), 1.5));
-      } else {
-        painter.setPen(QPen(m_color, .7));
+    if (m_selected == true) {
+      painter.setPen(QPen(selectingColor(m_color), 1.5));
+    } else {
+      painter.setPen(QPen(m_color, .7));
+    }
+
+    switch (style) {
+    case SOLID: {
+      if ((iround(m_z) == dataFocus) || (n == -1)) {
+        int half_size = iround(m_radius - 0.5);
+        int cx = iround(m_x);
+        int cy = iround(m_y);
+        painter.drawRect(cx - half_size, cy - half_size,
+                         half_size * 2 + 1, half_size * 2 + 1);
       }
-      painter.drawEllipse(QPointF(m_x, m_y), r, r);
+      break;
     }
-    break;
+    case SKELETON:
+      break;
+    case BOUNDARY: {
+      double r = m_radius;
+      bool visible = false;
+
+      if ((iround(m_z) == iround(dataFocus)) || (n == -1)) {
+        visible = true;
+      } else if (fabs(m_z - dataFocus) < r) {
+        r = sqrt(r * r - (m_z - dataFocus) * (m_z - dataFocus));
+        visible = true;
+      }
+
+      if (visible) {
+        if (m_selected == true) {
+          painter.setPen(QPen(selectingColor(m_color), 1.5));
+        } else {
+          painter.setPen(QPen(m_color, .7));
+        }
+        painter.drawEllipse(QPointF(m_x, m_y), r, r);
+      }
+      break;
+    }
+    default:
+      break;
+    }
   }
-  default:
-    break;
-  }
+#endif
 }
 
 QList<ZPunctum *> ZPunctum::deepCopyPunctaList(const QList<ZPunctum *> &src)

@@ -86,6 +86,7 @@ public:
    * \brief Get source dimension.
    */
   int getSourceDimension(NeuTube::EAxis axis) const;
+  int getSourceOffset(NeuTube::EAxis axis) const;
 
   /*!
    * \brief Export the bundle into a json file

@@ -32,6 +32,7 @@ public:
   const static TVisualEffect VE_BOUND_BOX;
   const static TVisualEffect VE_NO_CIRCLE;
   const static TVisualEffect VE_NO_FILL;
+  const static TVisualEffect VE_GRADIENT_FILL;
 
 public:
   virtual void display(ZPainter &painter, int z = 0,
@@ -46,6 +47,7 @@ public:
    * \brief Test if a circle is cut by a plane.
    */
   static bool isCuttingPlane(double z, double r, double n);
+  bool isCuttingPlane(double n);
 
   inline void setVisualEffect(TVisualEffect effect) {
     m_visualEffect = effect;

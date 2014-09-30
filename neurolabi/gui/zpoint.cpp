@@ -322,3 +322,18 @@ void ZPoint::rotate(double theta, double psi, const ZPoint &center)
   rotate(theta, psi);
   translate(center);
 }
+
+bool ZPoint::operator <(const ZPoint &pt) const
+{
+  if (z() < pt.z()) {
+    return true;
+  } else if (z() > pt.z()) {
+    return false;
+  } else if (y() < pt.y()) {
+    return true;
+  } else if (y() > pt.y()) {
+    return false;
+  }
+
+  return x() < pt.x();
+}

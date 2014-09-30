@@ -108,18 +108,34 @@ public:
 
   void print() const;
 
+  //Special functions
+  inline const std::string& getLocalFolder() const {
+    return m_localFolder;
+  }
+
+  inline void setLocalFolder(const std::string &folder) {
+    m_localFolder = folder;
+  }
+
+  std::string getLocalLowResGrayScalePath(
+      int xintv, int yintv, int zintv) const;
+  std::string getLocalLowResGrayScalePath(
+      int xintv, int yintv, int zintv, int z) const;
+
 private:
   std::string m_address;
   std::string m_uuid;
   int m_port;
   std::string m_name;
   std::string m_comment;
+  std::string m_localFolder;
 
   const static char* m_addressKey;
   const static char* m_portKey;
   const static char* m_uuidKey;
   const static char* m_commentKey;
   const static char* m_nameKey;
+  const static char* m_localKey;
 };
 
 #endif // ZDVIDTARGET_H

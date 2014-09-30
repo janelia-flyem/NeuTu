@@ -3253,12 +3253,15 @@ void MainWindow::test()
 {
   //QFuture<void> res = QtConcurrent::run(ZTest::test, this);
 
+#if 0
   m_progress->setRange(0, 100);
   m_progress->setLabelText("Progressing");
   m_progress->show();
   QFuture<void> res = QtConcurrent::run(this, &MainWindow::testProgressBarFunc);
+#endif
 
-#if 0
+
+#if 1
   m_progress->setRange(0, 2);
   m_progress->setLabelText(QString("Testing ..."));
   int currentProgress = 0;
@@ -3284,10 +3287,10 @@ void MainWindow::evokeStackFrame(QMdiSubWindow *frame)
   if (frame != NULL) {
     frame->hide();
     //QApplication::processEvents();
-    qDebug() << "process 1";
+    //qDebug() << "process 1";
     frame->show();
     //QApplication::processEvents();
-    qDebug() << "process 2";
+    //qDebug() << "process 2";
     mdiArea->setActiveSubWindow(frame);
   }
 #endif
@@ -6662,4 +6665,18 @@ void MainWindow::on_actionOperateDvid_triggered()
 {
   m_dvidOpDlg->show();
   m_dvidOpDlg->raise();
+}
+
+void MainWindow::on_actionGenerate_Local_Grayscale_triggered()
+{
+  ZDvidTarget dvidTarget("emdata2.int.janelia.org", "134", -1);
+  dvidTarget.setLocalFolder(GET_TEST_DATA_DIR +
+                         "/Users/zhaot/Work/neutube/neurolabi/data/flyem/AL");
+
+  ZDvidReader reader;
+  if (reader.open(dvidTarget)) {
+    for (size_t i = 0; i < 10000; ++i) {
+      delete reader.readGrayScale(0, 0, 300, 5136, 4120, 1);
+    }
+  }
 }

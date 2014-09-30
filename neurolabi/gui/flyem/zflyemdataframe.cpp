@@ -2388,3 +2388,18 @@ std::vector<std::vector<double> > ZFlyEmDataFrame::computeLayerFeature(
 
   return result;
 }
+
+ZFlyEmDataBundle* ZFlyEmDataFrame::getMasterData()
+{
+  if (m_dataArray.isEmpty()) {
+    return NULL;
+  }
+
+  return m_dataArray[0];
+}
+
+const ZFlyEmDataBundle* ZFlyEmDataFrame::getMasterData() const
+{
+  return dynamic_cast<const ZFlyEmDataBundle*>(
+        (const_cast<ZFlyEmDataFrame*>(this))->getMasterData());
+}

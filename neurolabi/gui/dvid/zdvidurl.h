@@ -52,6 +52,9 @@ public:
   std::string getAnnotationUrl() const;
   std::string getAnnotationUrl(int bodyId) const;
 
+  std::string getBodyInfoUrl() const;
+  std::string getBodyInfoUrl(int bodyId) const;
+
   std::string getBoundBoxUrl() const;
   std::string getBoundBoxUrl(int z) const;
 

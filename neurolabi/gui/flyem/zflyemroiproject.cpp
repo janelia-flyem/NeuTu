@@ -174,6 +174,10 @@ bool ZFlyEmRoiProject::addRoi()
       ZClosedCurve curve = swcList.front()->toClosedCurve();
       if(!curve.isEmpty()) {
         ZClosedCurve *roi = new ZClosedCurve(curve);
+        if (!m_currentDsIntv.isZero()) {
+          roi->scale(m_currentDsIntv.getX() + 1, m_currentDsIntv.getY() + 1,
+                     m_currentDsIntv.getZ() + 1);
+        }
         setRoi(roi, getDataZ());
         setRoiSaved(true);
 
@@ -238,13 +242,22 @@ ZSwcTree* ZFlyEmRoiProject::getRoiSwc() const
   return getRoiSwc(getDataZ());
 }
 
-ZSwcTree* ZFlyEmRoiProject::getRoiSwc(int z) const
+ZSwcTree* ZFlyEmRoiProject::getRoiSwc(int z, double radius) const
 {
   ZSwcTree *tree = NULL;
 
   const ZClosedCurve *curve = getRoi(z);
   if (curve != NULL) {
-    tree = ZSwcGenerator::createSwc(*curve, getMarkerRadius());
+    if (radius > 0.0) {
+      tree = ZSwcGenerator::createSwc(*curve, radius);
+    } else {
+      tree = ZSwcGenerator::createSwc(*curve, getMarkerRadius());
+    }
+    if (!m_currentDsIntv.isZero()) {
+      tree->rescale(1.0 / (m_currentDsIntv.getX() + 1),
+                    1.0 / (m_currentDsIntv.getY() + 1),
+                    1.0 / (m_currentDsIntv.getZ() + 1), false);
+    }
   }
 
   return tree;
@@ -774,4 +787,9 @@ double ZFlyEmRoiProject::estimateRoiVolume(char unit) const
   res.convertUnit(unit);
 
   return totalVolume * res.voxelSize();
+}
+
+void ZFlyEmRoiProject::setDsIntv(int xintv, int yintv, int zintv)
+{
+  m_currentDsIntv.set(xintv, yintv, zintv);
 }

@@ -65,7 +65,7 @@ public:
   bool hasRoi() const;
 
   const ZClosedCurve* getRoi(int z) const;
-  ZSwcTree* getRoiSwc(int z) const;
+  ZSwcTree* getRoiSwc(int z, double radius = -1.0) const;
   ZSwcTree* getAllRoiSwc() const;
 
   double getMarkerRadius() const;
@@ -118,6 +118,8 @@ public:
 
   double estimateRoiVolume(char unit = 'p') const;
 
+  void setDsIntv(int xintv, int yintv, int zintv);
+
 private:
   ZObject3dScan* getFilledRoi(
       const ZClosedCurve *curve, int z, ZObject3dScan *result) const;
@@ -131,6 +133,7 @@ private:
   ZDvidTarget m_dvidTarget;
   ZDvidInfo m_dvidInfo;
   int m_z;
+  ZIntPoint m_currentDsIntv;
   ZStackFrame *m_dataFrame;
   std::vector<bool> m_isRoiCurveUploaded;
   std::vector<ZClosedCurve*> m_curveArray; //curve array sorted by z position

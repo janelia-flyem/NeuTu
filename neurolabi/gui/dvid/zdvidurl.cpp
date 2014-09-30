@@ -180,6 +180,16 @@ std::string ZDvidUrl::getAnnotationUrl(int bodyId) const
   return getAnnotationUrl() + "/" + ZString::num2str(bodyId);
 }
 
+std::string ZDvidUrl::getBodyInfoUrl() const
+{
+  return getDataUrl(ZDvidData::getName(ZDvidData::ROLE_BODY_INFO));
+}
+
+std::string ZDvidUrl::getBodyInfoUrl(int bodyId) const
+{
+  return getBodyInfoUrl() + "/" + ZString::num2str(bodyId);
+}
+
 std::string ZDvidUrl::getBoundBoxUrl() const
 {
   return getDataUrl(ZDvidData::ROLE_BOUND_BOX);

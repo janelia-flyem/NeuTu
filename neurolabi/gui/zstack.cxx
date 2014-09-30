@@ -26,6 +26,7 @@
 #ifdef _NEUTUBE_
 #include "QsLog.h"
 #endif
+#include "zstring.h"
 
 using namespace std;
 
@@ -167,19 +168,16 @@ void ZStack::consume(ZStack *stack)
   delete stack;
 }
 
-/*
 ZStack::ZStack(const ZStack &src)
-  : m_isLSMFile(false)
 {
-  init(src.channel());
-  m_source = Copy_Stack_Document(src.source());
+  m_stack = src.m_stack;
+  m_delloc = NULL;
   m_preferredZScale = src.m_preferredZScale;
-  for (int i=0; i<src.channel(); i++) {
-    m_singleChannelStackVector[i] =
-        new ZSingleChannelStack(*(src.m_singleChannelStackVector[i]));
-  }
+  m_resolution = src.m_resolution;
+  m_offset = src.m_offset;
+  m_buffer[0] = '\0';
+  m_isLSMFile = src.m_isLSMFile;
 }
-*/
 
 const Stack* ZStack::c_stack(int c) const
 {
@@ -232,6 +230,16 @@ void ZStack::deprecateSingleChannelView(int c)
     delete m_singleChannelStack[c];
     m_singleChannelStack[c] = NULL;
   }
+}
+
+ZStack* ZStack::getSingleChannel(int c) const
+{
+  Mc_Stack *data = new Mc_Stack;
+  C_Stack::view(m_stack, data, c);
+  ZStack *stack = new ZStack(data, C_Stack::cppDelete);
+  stack->setOffset(getOffset());
+
+  return stack;
 }
 
 bool ZStack::isSingleChannelViewDeprecated(int channel) const
@@ -751,7 +759,12 @@ string ZStack::save(const string &filepath) const
   }
 
   if (!resultFilePath.empty()) {
-    C_Stack::write(resultFilePath.c_str(), m_stack);
+    ZString meta;
+    if (m_offset.getX() > 0 || m_offset.getY() > 0 || m_offset.getZ() > 0) {
+      meta = "@offset ";
+      meta += m_offset.toString();
+    }
+    C_Stack::write(resultFilePath.c_str(), m_stack, meta.c_str());
   }
 
   return resultFilePath;
@@ -1675,7 +1688,7 @@ bool ZStack::reshape(int width, int height, int depth)
   return false;
 }
 
-bool ZStack::paste(ZStack *dst, int valueIgnored) const
+bool ZStack::paste(ZStack *dst, int valueIgnored, double alpha) const
 {
   if (dst != NULL) {
     if (kind() != dst->kind()) {
@@ -1698,7 +1711,7 @@ bool ZStack::paste(ZStack *dst, int valueIgnored) const
 
     for (int i = 0; i < ch; ++i) {
       C_Stack::setBlockValue(dst->c_stack(i), c_stack(i), x0, y0, z0,
-                             valueIgnored);
+                             valueIgnored, -1, alpha);
     }
 
     return true;
@@ -1857,6 +1870,43 @@ void ZStack::downsampleMax(int xintv, int yintv, int zintv)
       C_Stack::view(result, &dst, c);
       C_Stack::view(original, &src, c);
       C_Stack::downsampleMax(&src, xintv, yintv, zintv, &dst);
+    }
+
+    setData(result);
+  }
+}
+
+void ZStack::downsampleMin(int xintv, int yintv, int zintv)
+{
+  if (xintv == 0 && yintv == 0 && zintv == 0) {
+    return;
+  }
+
+  int w = width();
+  int h = height();
+  int d = depth();
+  int swidth = w / (xintv + 1) + (w % (xintv + 1) > 0);
+  int sheight = h / (yintv + 1) + (h % (yintv + 1) > 0);
+  int sdepth = d / (zintv + 1) + (d % (zintv + 1) > 0);
+
+  m_offset.setX(m_offset.getX() / (xintv + 1));
+  m_offset.setY(m_offset.getY() / (yintv + 1));
+  m_offset.setZ(m_offset.getZ() / (zintv + 1));
+
+  if (isVirtual()) {
+    m_stack->width = swidth;
+    m_stack->height = sheight;
+    m_stack->depth = sdepth;
+  } else {
+    Stack dst;
+    Stack src;
+    Mc_Stack *result = C_Stack::make(GREY, swidth, sheight, sdepth, 1);
+    Mc_Stack *original = m_stack;
+
+    for (int c = 0; c < channelNumber(); ++c) {
+      C_Stack::view(result, &dst, c);
+      C_Stack::view(original, &src, c);
+      C_Stack::downsampleMin(&src, xintv, yintv, zintv, &dst);
     }
 
     setData(result);

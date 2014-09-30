@@ -74,6 +74,8 @@ public:
 
   ZStack(int kind, const ZIntCuboid &box, int nchannel, bool isVirtual = false);
 
+  ZStack(const ZStack &src);
+
   //! Destructor
   virtual ~ZStack();
 
@@ -120,6 +122,14 @@ public: /* attributes */
   Stack* c_stack(int c = 0);
   ZSingleChannelStack* singleChannelStack(int c = 0);
   const ZSingleChannelStack* singleChannelStack(int c = 0) const;
+
+  /*!
+   * \brief Get a single channel
+   *
+   * The data pointer is shared but the user is responsible for deleting the
+   * returned pointer.
+   */
+  ZStack* getSingleChannel(int c) const;
 
   //! Width of the stack.
   inline int width() const {
@@ -477,7 +487,7 @@ public: /* operations */
    *
    * \return true iff the pasting can be performed.
    */
-  bool paste(ZStack *dst, int valueIgnored = -1) const;
+  bool paste(ZStack *dst, int valueIgnored = -1, double alpha = 1.0) const;
 
   /*!
    * \brief Get the bound box of the stack.
@@ -508,6 +518,13 @@ public: /* processing routines */
    */
   void downsampleMax(int xintv, int yintv, int zintv);
 
+  /*!
+   * \brief Downsample the stack with mininum assignment.
+   *
+   * The offset postion is adjusted accordingly.
+   */
+  void downsampleMin(int xintv, int yintv, int zintv);
+
   void crop(const ZIntCuboid &cuboid);
 
 public:
@@ -523,7 +540,7 @@ public:
 #endif
 
 private:
-  ZStack(const ZStack &src); //uncopyable
+  //ZStack(const ZStack &src); //uncopyable
 
   void init();
   bool canMerge(const Stack *s1, const Stack *s2);

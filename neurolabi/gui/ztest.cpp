@@ -12847,7 +12847,7 @@ void ZTest::test(MainWindow *host)
 
     for (int i = 0; i < mat.getRowNumber(); ++i) {
       stream << mat.at(i, 0) << ',' << mat.at(i, 1) << ',' << mat.at(i, 2)
-             << ',' << "3,1,,,"
+             << ',' << "10,1,,,"
              << static_cast<int>(displayConfig.tBarColor.red) << ","
              << static_cast<int>(displayConfig.tBarColor.green) << ","
              << static_cast<int>(displayConfig.tBarColor.blue) << "," << endl;
@@ -12887,7 +12887,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   ZFlyEmNeuronImageFactory factory;
   factory.setDownsampleInterval(2, 2, 2);
 
@@ -12898,5 +12898,96 @@ void ZTest::test(MainWindow *host)
   ptoc();
 
   C_Stack::write(GET_DATA_DIR + "/test.tif", stack);
+#endif
+
+#if 0
+  ZStackFactory factory;
+  ZPointArray ptArray;
+  ptArray.importTxtFile(GET_DATA_DIR + "/flyem/AL/AL_Tbars_xyz.txt");
+  int dsScale = 5;
+  for (ZPointArray::iterator iter = ptArray.begin(); iter != ptArray.end();
+       ++iter) {
+    *iter *= 1.0 / dsScale;
+  }
+//  ptArray.append(5, 5, 5);
+//  ptArray.append(300, 30, 30);
+  ZStack *stack = factory.makeDensityMap(ptArray, 15.0);
+  /*
+  Stack *stack2 = Scale_Double_Stack(
+        stack->array64(), stack->width(), stack->height(), stack->depth(), GREY);
+        */
+  //C_Stack::write(GET_DATA_DIR + "/test.tif", stack2);
+
+  stack->save(GET_DATA_DIR + "/test.tif");
+#if 0
+  //Get grayscale
+  ZStack *grayScale = factory.makeZeroStack(stack->getBoundBox());
+
+  ZDvidTarget target("emdata2.int.janelia.org", "134", -1);
+  ZDvidReader reader;
+  int width = grayScale->width() * dsScale;
+  int height = grayScale->height() * dsScale;
+  int x0 = grayScale->getOffset().getX() * dsScale;
+  int y0 = grayScale->getOffset().getY() * dsScale;
+
+  if (reader.open(target)) {
+    for (int z = 0; z < grayScale->depth(); ++z) {
+      int z0 = (z + grayScale->getOffset().getZ()) * dsScale;
+      ZStack *stack = reader.readGrayScale(x0, y0, z0, width, height, 1);
+      stack->downsampleMin(dsScale - 1, dsScale - 1, dsScale - 1);
+      stack->paste(grayScale);
+    }
+  }
+
+  grayScale->save(GET_DATA_DIR + "/test2.tif");
+
+  delete stack;
+  delete grayScale;
+#endif
+#endif
+
+#if 0
+  ZStack stack;
+  stack.load(GET_DATA_DIR + "/flyem/AL/test/densitymap.tif");
+  stack.printInfo();
+
+  ZStack grayStack;
+  grayStack.load(GET_DATA_DIR + "/flyem/AL/test/grayscale.tif");
+
+  for (int c = 0; c < stack.channelNumber(); ++c) {
+    ZStack *channelStack = stack.getSingleChannel(c);
+    grayStack.paste(channelStack, -1, 0.8);
+    delete channelStack;
+  }
+  stack.save(GET_DATA_DIR + "/test.tif");
+#endif
+
+#if 0
+  ZStack *stack = ZStackFactory::makeZeroStack(ZIntCuboid(1, 2, 3, 4, 5, 6));
+  stack->save(GET_DATA_DIR + "/test.tif");
+
+  ZStack stack2;
+  stack2.load(GET_DATA_DIR + "/test.tif");
+  stack2.printInfo();
+#endif
+
+#if 1
+  ZDvidTarget dvidTarget("emdata2.int.janelia.org", "134", -1);
+  dvidTarget.setLocalFolder(GET_TEST_DATA_DIR +
+                         "/Users/zhaot/Work/neutube/neurolabi/data/flyem/AL");
+
+  ZDvidReader reader;
+  if (reader.open(dvidTarget)) {
+    for (size_t i = 0; i < 10000; ++i) {
+      std::cout << "Iter: " << i << std::endl;
+      ZStack *stack = reader.readGrayScale(0, 0, 3000, 10240, 10240, 1);
+      stack->printInfo();
+      ZStackDocReader docReader;
+      docReader.setStack(stack);
+      ZStackFrame *frame = host->createStackFrame(
+            docReader, NeuTube::Document::FLYEM_ROI);
+      delete frame;
+    }
+  }
 #endif
 }

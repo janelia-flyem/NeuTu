@@ -1300,9 +1300,20 @@ void ZStackPresenter::fitEllipse()
 
 void ZStackPresenter::markPuncta()
 {
+  const ZMouseEvent& event = m_mouseEventProcessor.getMouseEvent(
+        Qt::LeftButton, ZMouseEvent::ACTION_RELEASE);
+  ZPoint currentStackPos = event.getPosition(ZMouseEvent::COORD_STACK);
+  buddyDocument()->markPunctum(currentStackPos.x(), currentStackPos.y(),
+                               currentStackPos.z());
+
+  /*
+   *   QPoint pos(event.getPosition().getX(),
+             event.getPosition().getY());
+
   QPointF dataPos = stackPositionFromMouse(LEFT_RELEASE);
   buddyDocument()->markPunctum(dataPos.x(), dataPos.y(),
                           m_mouseLeftReleasePosition[2]);
+                          */
 }
 
 void ZStackPresenter::dropSegment()
@@ -1736,7 +1747,7 @@ void ZStackPresenter::process(const ZStackOperator &op)
     interactionEvent.setEvent(ZInteractionEvent::EVENT_SWC_NODE_SELECTED);
     break;
   case ZStackOperator::OP_SWC_SELECT_CONNECTION:
-    buddyDocument()->selectSwcTreeNode(op.getHitSwcNode(), true);
+    buddyDocument()->setSwcTreeNodeSelected(op.getHitSwcNode(), true);
     buddyDocument()->selectSwcNodeConnection(op.getHitSwcNode());
     interactionEvent.setEvent(ZInteractionEvent::EVENT_SWC_NODE_SELECTED);
     break;

@@ -347,6 +347,22 @@ public:
   int getMaxZ() const;
 
   /*!
+   * \brief Get minimal Y
+   *
+   * \return The minimal Y value of the object. If the object is empty,
+   *         it returns 0.
+   */
+  int getMinY() const;
+
+  /*!
+   * \brief Get maximal Y
+   *
+   * \return The maximal Y value of the object. If the object is empty,
+   *         it returns 0.
+   */
+  int getMaxY() const;
+
+  /*!
    * \brief Test if two objects are the same with respect to internal representation
    */
   bool equalsLiterally(const ZObject3dScan &obj) const;

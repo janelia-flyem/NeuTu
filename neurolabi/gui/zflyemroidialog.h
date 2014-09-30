@@ -3,6 +3,9 @@
 
 #include <QDialog>
 #include <QVector>
+#include <QMap>
+#include <QFuture>
+
 #include "zdialogfactory.h"
 #include "flyem/zflyemroiproject.h"
 #include "zqtbarprogressreporter.h"
@@ -29,7 +32,6 @@ public:
   ~ZFlyEmRoiDialog();
 
 public:
-  void dump(const QString &str, bool appending = false);
   void loadGrayscale(int z);
   void loadGrayscale(const ZIntCuboid &box);
 
@@ -61,12 +63,14 @@ public slots:
   void uploadRoi();
   void estimateRoi();
   void loadProject(int index);
+  void dump(const QString &str, bool appending = false);
 
 signals:
   void newDocReady();
   void progressFailed();
   void progressAdvanced(double);
   void progressDone();
+  void messageDumped(QString str, bool appending);
 
 protected:
     void closeEvent(QCloseEvent*event);
@@ -123,15 +127,23 @@ private slots:
   void exportResult();
 
 private:
-  void loadGrayscaleFunc(int z);
+  void loadGrayscaleFunc(int z, bool lowres);
   void loadPartialGrayscaleFunc(int x0, int x1, int y0, int y1, int z);
   void downloadAllProject();
   void uploadProjectList();
   void createMenu();
 
+  void prepareQuickLoadFunc(int z);
+  void prepareQuickLoad(int z, bool waitForDone = false);
+  QString getQuickLoadThreadId(int z) const;
+  bool isPreparingQuickLoad(int z) const;
+
+
   int getNextZ() const;
   int getPrevZ() const;
   void quickLoad(int z);
+
+  void startBackgroundJob();
 
 private:
   Ui::ZFlyEmRoiDialog *ui;
@@ -144,6 +156,11 @@ private:
 
   QMenu *m_nextMenu;
   QMenu *m_mainMenu;
+
+  int m_xintv;
+  int m_yintv;
+
+  QMap<QString, QFuture<void> > m_threadFutureMap;
 };
 
 #endif // ZFLYEMROIDIALOG_H

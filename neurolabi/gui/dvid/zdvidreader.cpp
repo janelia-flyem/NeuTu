@@ -10,6 +10,8 @@
 #include "dvid/zdvidbufferreader.h"
 #include "dvid/zdvidurl.h"
 #include "zarray.h"
+#include "zstring.h"
+#include "flyem/zflyemneuronbodyinfo.h"
 
 ZDvidReader::ZDvidReader(QObject *parent) :
   QObject(parent)
@@ -299,6 +301,8 @@ ZStack* ZDvidReader::readGrayScale(
       stack = ZStackFactory::composite(imageArray.begin(), imageArray.end());
     }
   }
+
+  dvidBuffer->clearImageArray();
 
   return stack;
 
@@ -726,4 +730,30 @@ ZArray* ZDvidReader::readLabels64(
 bool ZDvidReader::hasSparseVolume() const
 {
   return hasData(ZDvidData::getName(ZDvidData::ROLE_SP2BODY));
+}
+
+bool ZDvidReader::hasBodyInfo(int bodyId) const
+{
+  ZDvidUrl dvidUrl(m_dvidTarget);
+
+  ZDvidBufferReader bufferReader;
+
+  return  bufferReader.isReadable(dvidUrl.getBodyInfoUrl(bodyId).c_str());
+}
+
+ZFlyEmNeuronBodyInfo ZDvidReader::readBodyInfo(int bodyId)
+{
+  ZJsonObject obj;
+
+  QByteArray byteArray = readKeyValue(
+        ZDvidData::getName(ZDvidData::ROLE_BODY_INFO),
+        ZString::num2str(bodyId).c_str());
+  if (!byteArray.isEmpty()) {
+    obj.decode(byteArray.constData());
+  }
+
+  ZFlyEmNeuronBodyInfo bodyInfo;
+  bodyInfo.loadJsonObject(obj);
+
+  return bodyInfo;
 }

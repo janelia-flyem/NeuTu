@@ -529,7 +529,11 @@ ZStack* ZStackFile::readStack(ZStack *data) const
           */
         }
       } else {
+        C_Stack::readStackOffset(m_urlList[0].c_str(), offset, offset + 1,
+            offset + 2);
+
         stack = C_Stack::read(m_urlList[0].c_str(), m_channel);
+
 
         if (stack == NULL) {
           failed = true;

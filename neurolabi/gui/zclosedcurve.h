@@ -83,6 +83,8 @@ public:
 
   ZCuboid getBoundBox() const;
 
+  void scale(double sx, double sy, double sz);
+
 private:
   ZPointArray m_landmarkArray;
   static const ZPoint m_emptyPlaceHolder;

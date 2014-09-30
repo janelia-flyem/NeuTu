@@ -4,6 +4,7 @@
 #include <QCloseEvent>
 #include <QInputDialog>
 #include <QMenu>
+#include <QDir>
 
 #include "neutubeconfig.h"
 #include "ui_zflyemroidialog.h"
@@ -16,10 +17,11 @@
 #include "zjsonfactory.h"
 #include "zcuboid.h"
 #include "zintcuboid.h"
+#include "zflyemutilities.h"
 
 ZFlyEmRoiDialog::ZFlyEmRoiDialog(QWidget *parent) :
   QDialog(parent), ZProgressable(),
-  ui(new Ui::ZFlyEmRoiDialog), m_project(NULL)
+  ui(new Ui::ZFlyEmRoiDialog), m_project(NULL), m_xintv(4), m_yintv(4)
 {
   ui->setupUi(this);
 
@@ -78,6 +80,11 @@ ZFlyEmRoiDialog::ZFlyEmRoiDialog(QWidget *parent) :
   connect(this, SIGNAL(progressDone()), ui->progressBar, SLOT(reset()));
   connect(ui->projectComboBox, SIGNAL(currentIndexChanged(int)),
           this, SLOT(loadProject(int)));
+  connect(this, SIGNAL(messageDumped(QString, bool)),
+          this, SLOT(dump(QString, bool)));
+
+  connect(ui->quickModeCheckBox, SIGNAL(toggled(bool)),
+          this, SLOT(updateWidget()));
 
   if (m_project != NULL) {
     m_project->setZ(ui->zSpinBox->value());
@@ -133,6 +140,9 @@ void ZFlyEmRoiDialog::clear()
 void ZFlyEmRoiDialog::updateWidget()
 {
   ui->pushButton->setEnabled(m_dvidTarget.isValid());
+  ui->quickPrevPushButton->setEnabled(!ui->quickModeCheckBox->isChecked());
+  ui->quickNextPushButton_3->setEnabled(!ui->quickModeCheckBox->isChecked());
+
   if (m_project != NULL) {
     QString text = QString("<p>DVID: %1</p>"
                            "<p>Z Range: [%2, %3]"
@@ -283,7 +293,106 @@ void ZFlyEmRoiDialog::loadPartialGrayscaleFunc(
   }
 }
 
-void ZFlyEmRoiDialog::loadGrayscaleFunc(int z)
+void ZFlyEmRoiDialog::prepareQuickLoadFunc(int z)
+{
+  const ZDvidTarget &target = m_project->getDvidTarget();
+  ZDvidReader reader;
+  if (z >= 0 && reader.open(target)) {
+    QString infoString = reader.readInfo("grayscale");
+    ZDvidInfo dvidInfo;
+    dvidInfo.setFromJsonString(infoString.toStdString());
+
+    std::string lowresPath =
+        target.getLocalLowResGrayScalePath(m_xintv, m_xintv, 0, z);
+    if (!lowresPath.empty()) {
+      if (!QFileInfo(lowresPath.c_str()).exists()) {
+        ZIntCuboid boundBox = reader.readBoundBox(z);
+        ZStack *stack = NULL;
+        if (!boundBox.isEmpty()) {
+          stack = reader.readGrayScale(boundBox.getFirstCorner().getX(),
+                                       boundBox.getFirstCorner().getY(),
+                                       z, boundBox.getWidth(),
+                                       boundBox.getHeight(), 1);
+        } else {
+          stack = reader.readGrayScale(
+                dvidInfo.getStartCoordinates().getX(),
+                dvidInfo.getStartCoordinates().getY(),
+                z, dvidInfo.getStackSize()[0],
+              dvidInfo.getStackSize()[1], 1);
+          if (stack != NULL) {
+            boundBox = ZFlyEmRoiProject::estimateBoundBox(*stack);
+            if (!boundBox.isEmpty()) {
+              stack->crop(boundBox);
+            }
+            ZDvidWriter writer;
+            if (writer.open(m_project->getDvidTarget())) {
+              writer.writeBoundBox(boundBox, z);
+            }
+          }
+        }
+
+        if (stack != NULL) {
+          stack->downsampleMin(m_xintv, m_xintv, 0);
+          stack->save(lowresPath);
+          delete stack;
+        }
+      }
+    }
+  }
+}
+
+QString ZFlyEmRoiDialog::getQuickLoadThreadId(int z) const
+{
+  const ZDvidTarget &target = m_project->getDvidTarget();
+  std::string lowresPath =
+      target.getLocalLowResGrayScalePath(m_xintv, m_xintv, 0, z);
+  QString threadId =
+      QString("prepareQuickLoad:%1:%2").arg(lowresPath.c_str()).arg(z);
+
+  return threadId;
+}
+
+bool ZFlyEmRoiDialog::isPreparingQuickLoad(int z) const
+{
+  bool isWaiting = false;
+  QString threadId = getQuickLoadThreadId(z);
+  if (m_threadFutureMap.contains(threadId)) {
+    if (m_threadFutureMap[threadId].isRunning()) {
+      isWaiting = true;
+    }
+  }
+
+  return isWaiting;
+}
+
+void ZFlyEmRoiDialog::prepareQuickLoad(int z, bool waitForDone)
+{
+  if (z >= 0) {
+    const ZDvidTarget &target = m_project->getDvidTarget();
+    std::string lowresPath =
+        target.getLocalLowResGrayScalePath(m_xintv, m_xintv, 0, z);
+
+    if (!QFileInfo(lowresPath.c_str()).exists()) {
+      QString threadId = getQuickLoadThreadId(z);
+      if (!isPreparingQuickLoad(z)) { //Create new thread
+          QFuture<void> future =QtConcurrent::run(
+              this, &ZFlyEmRoiDialog::prepareQuickLoadFunc, z);
+          m_threadFutureMap[threadId] = future;
+#ifdef _DEBUG_
+          emit messageDumped(threadId, true);
+#endif
+      }
+
+      if (waitForDone) {
+        if (m_threadFutureMap.contains(threadId)) {
+          m_threadFutureMap[threadId].waitForFinished();
+        }
+      }
+    }
+  }
+}
+
+void ZFlyEmRoiDialog::loadGrayscaleFunc(int z, bool lowres)
 {
   if (m_project == NULL) {
     return;
@@ -292,7 +401,8 @@ void ZFlyEmRoiDialog::loadGrayscaleFunc(int z)
   //advance(0.1);
   emit progressAdvanced(0.1);
   ZDvidReader reader;
-  if (z >= 0 && reader.open(m_project->getDvidTarget())) {
+  const ZDvidTarget &target = m_project->getDvidTarget();
+  if (z >= 0 && reader.open(target)) {
     if (m_project->getRoi(z) == NULL) {
       m_project->downloadRoi(z);
     }
@@ -307,28 +417,59 @@ void ZFlyEmRoiDialog::loadGrayscaleFunc(int z)
     //int z = m_zDlg->getValue();
     //m_project->setZ(z);
 
-    ZIntCuboid boundBox = reader.readBoundBox(z);
-
     ZStack *stack = NULL;
-    if (!boundBox.isEmpty()) {
-      stack = reader.readGrayScale(boundBox.getFirstCorner().getX(),
-                                   boundBox.getFirstCorner().getY(),
-                                   z, boundBox.getWidth(),
-                                   boundBox.getHeight(), 1);
-    } else {
-      stack = reader.readGrayScale(
-            dvidInfo.getStartCoordinates().getX(),
-            dvidInfo.getStartCoordinates().getY(),
-            z, dvidInfo.getStackSize()[0],
-          dvidInfo.getStackSize()[1], 1);
-      if (stack != NULL) {
-        boundBox = ZFlyEmRoiProject::estimateBoundBox(*stack);
-        if (!boundBox.isEmpty()) {
-          stack->crop(boundBox);
+
+    bool creatingLowres = false;
+    std::string lowresPath =
+        target.getLocalLowResGrayScalePath(m_xintv, m_xintv, 0, z);
+    if (lowres) {
+      m_project->setDsIntv(m_xintv, m_yintv, 0);
+      prepareQuickLoad(z, true);
+      if (QFileInfo(lowresPath.c_str()).exists()) {
+        stack = new ZStack;
+        stack->load(lowresPath);
+      } else if (QDir(target.getLocalFolder().c_str()).exists()) {
+        creatingLowres = true;
+      }
+    }
+
+    if (!lowres || creatingLowres){
+      if (!lowres) {
+        m_project->setDsIntv(0, 0, 0);
+      }
+
+      ZIntCuboid boundBox = reader.readBoundBox(z);
+
+      if (!boundBox.isEmpty()) {
+        stack = reader.readGrayScale(boundBox.getFirstCorner().getX(),
+                                     boundBox.getFirstCorner().getY(),
+                                     z, boundBox.getWidth(),
+                                     boundBox.getHeight(), 1);
+      } else {
+        stack = reader.readGrayScale(
+              dvidInfo.getStartCoordinates().getX(),
+              dvidInfo.getStartCoordinates().getY(),
+              z, dvidInfo.getStackSize()[0],
+            dvidInfo.getStackSize()[1], 1);
+        if (stack != NULL) {
+          boundBox = ZFlyEmRoiProject::estimateBoundBox(*stack);
+          if (!boundBox.isEmpty()) {
+            stack->crop(boundBox);
+          }
+          ZDvidWriter writer;
+          if (writer.open(m_project->getDvidTarget())) {
+            writer.writeBoundBox(boundBox, z);
+          }
         }
-        ZDvidWriter writer;
-        if (writer.open(m_project->getDvidTarget())) {
-          writer.writeBoundBox(boundBox, z);
+      }
+
+      if (stack != NULL) {
+        if (creatingLowres) {
+          emit messageDumped("Creating low res data ...", true);
+          stack->downsampleMin(m_xintv, m_xintv, 0);
+          stack->save(lowresPath);
+          emit messageDumped(
+                QString("Data saved into %1").arg(lowresPath.c_str()), true);
         }
       }
     }
@@ -339,7 +480,8 @@ void ZFlyEmRoiDialog::loadGrayscaleFunc(int z)
       m_docReader.clear();
       m_docReader.setStack(stack);
 
-      ZSwcTree *tree = m_project->getRoiSwc(z);
+      ZSwcTree *tree = m_project->getRoiSwc(
+            z, FlyEm::GetFlyEmRoiMarkerRadius(stack->width(), stack->height()));
       if (tree != NULL) {
         m_docReader.addObject(
               tree, NeuTube::Documentable_SWC, ZDocPlayer::ROLE_ROI);
@@ -364,6 +506,18 @@ void ZFlyEmRoiDialog::newDataFrame()
   getMainWindow()->presentStackFrame(frame);
   updateWidget();
   endProgress();
+
+  startBackgroundJob();
+}
+
+void ZFlyEmRoiDialog::startBackgroundJob()
+{
+  int z = m_project->getCurrentZ();
+  if (z >= 0) {
+    prepareQuickLoad(z);
+    prepareQuickLoad(getNextZ());
+    prepareQuickLoad(getPrevZ());
+  }
 }
 
 void ZFlyEmRoiDialog::loadGrayscale(int z)
@@ -371,6 +525,8 @@ void ZFlyEmRoiDialog::loadGrayscale(int z)
   if (m_project == NULL || z < 0) {
     return;
   }
+
+  bool lowres = ui->quickModeCheckBox->isChecked();
 
   bool loading = true;
   if (m_project->isRoiSaved() == false) {
@@ -382,9 +538,23 @@ void ZFlyEmRoiDialog::loadGrayscale(int z)
   }
 
   if (loading) {
+    if (lowres) {
+      const ZDvidTarget &target = m_project->getDvidTarget();
+      const std::string &path = target.getLocalLowResGrayScalePath(9, 9, 0);
+      if (path.empty() || !QDir(path.c_str()).exists()) {
+        QMessageBox::warning(
+                  this, "No Quick Mode",
+                  "The quick mode is not available for this data.",
+                  QMessageBox::Ok);
+        loading = false;
+      }
+    }
+  }
+
+  if (loading) {
     startProgress();
     QtConcurrent::run(
-          this, &ZFlyEmRoiDialog::loadGrayscaleFunc, z);
+          this, &ZFlyEmRoiDialog::loadGrayscaleFunc, z, lowres);
   }
 }
 
@@ -722,7 +892,7 @@ void ZFlyEmRoiDialog::loadProject(int index)
 bool ZFlyEmRoiDialog::isValidName(const std::string &name) const
 {
   bool isValid = false;
-  if (!name.empty()) {
+  if (!name.empty() && !QString(name.c_str()).contains(' ')) {
     isValid = true;
     foreach (ZFlyEmRoiProject *proj, m_projectList) {
       if (proj->getName() == name) {
@@ -740,6 +910,12 @@ ZFlyEmRoiProject* ZFlyEmRoiDialog::newProject(const std::string &name)
   if (isValidName(name)) {
     project = new ZFlyEmRoiProject(name, this);
     project->setDvidTarget(getDvidTarget());
+  } else {
+    QMessageBox::warning(
+              this, "Failed to Create A Project",
+              "Invalid project name: no space is allowed; "
+              "no duplicated name is allowed.",
+              QMessageBox::Ok);
   }
 
   return project;

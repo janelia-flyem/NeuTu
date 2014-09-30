@@ -18,6 +18,8 @@ public:
   void exportTxtFile(const std::string &filePath) const;
   void print() const;
 
+  void importTxtFile(const std::string &filePath);
+
   /*!
    * \brief Append a point
    */

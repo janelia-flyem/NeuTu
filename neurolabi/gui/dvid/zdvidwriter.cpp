@@ -8,6 +8,8 @@
 #include "zclosedcurve.h"
 #include "dvid/zdvidurl.h"
 #include "dvid/zdviddata.h"
+#include "dvid/zdvidreader.h"
+#include "flyem/zflyemneuronbodyinfo.h"
 
 #if _ENABLE_LIBDVID_
 #include "DVIDNode.h"
@@ -144,6 +146,15 @@ void ZDvidWriter::writeAnnotation(const ZFlyEmNeuron &neuron)
   writeAnnotation(neuron.getId(), neuron.getAnnotationJson());
 }
 
+void ZDvidWriter::writeBodyInfo(int bodyId, const ZJsonObject &obj)
+{
+  if (bodyId > 0 && !obj.isEmpty()) {
+    writeJsonString(ZDvidData::getName(ZDvidData::ROLE_BODY_INFO),
+                    ZString::num2str(bodyId).c_str(),
+                    obj.dumpString(0).c_str());
+  }
+}
+
 void ZDvidWriter::writeRoiCurve(
     const ZClosedCurve &curve, const std::string &key)
 {
@@ -181,31 +192,43 @@ void ZDvidWriter::writeJsonString(
     const std::string &dataName, const std::string &key,
     const std::string jsonString)
 {
+  writeJsonString(ZDvidUrl(m_dvidTarget).getKeyUrl(dataName, key), jsonString);
+}
+
+void ZDvidWriter::writeJson(
+    const std::string &dataName, const std::string &key, const ZJsonValue &obj)
+{
+  writeJsonString(dataName, key, obj.dumpString(0));
+}
+
+void ZDvidWriter::writeJsonString(
+    const std::string url, const std::string jsonString)
+{
   QString annotationString = jsonString.c_str();
 
   QString command;
-  if (annotationString.size() < 1000) {
+  if (annotationString.size() < 5000) {
     annotationString.replace(" ", "");
     annotationString.replace("\"", "\"\"\"");
 
     command = QString(
           "curl -g -X POST -H \"Content-Type: application/json\" "
           "-d \"%1\" %2").arg(annotationString).
-        arg(ZDvidUrl(m_dvidTarget).getKeyUrl(dataName, key).c_str());
+        arg(url.c_str());
   } else {
+    QString urlStr(url.c_str());
+    urlStr.replace("/", "_");
     QString tmpPath = QString("%1/%2.json").
         arg(NeutubeConfig::getInstance().getPath(NeutubeConfig::TMP_DATA).c_str()).
-        arg(key.c_str());
+        arg(urlStr);
     QFile file(tmpPath);
     file.open(QIODevice::WriteOnly | QIODevice::Text);
     QTextStream out(&file);
     out << annotationString;
     file.close();
 
-    command = QString(
-          "curl -g -X POST -H \"Content-Type: application/json\" "
-          "-d \"@%1\" %2").arg(tmpPath).
-        arg(ZDvidUrl(m_dvidTarget).getKeyUrl(dataName, key).c_str());
+    command = QString("curl -g -X POST -H \"Content-Type: application/json\" "
+                      "-d \"@%1\" %2").arg(tmpPath).arg(url.c_str());
   }
 
   qDebug() << command;
@@ -213,10 +236,9 @@ void ZDvidWriter::writeJsonString(
   QProcess::execute(command);
 }
 
-void ZDvidWriter::writeJson(
-    const std::string &dataName, const std::string &key, const ZJsonValue &obj)
+void ZDvidWriter::writeJson(const std::string url, const ZJsonValue &value)
 {
-  writeJsonString(dataName, key, obj.dumpString(0));
+  writeJsonString(url, value.dumpString(0));
 }
 
 void ZDvidWriter::writeBoundBox(const ZIntCuboid &cuboid, int z)
@@ -242,12 +264,12 @@ void ZDvidWriter::writeBoundBox(const ZIntCuboid &cuboid, int z)
 
   QProcess::execute(command);
 }
-
+/*
 void ZDvidWriter::writeSplitLabel(const ZObject3dScan &obj, int label)
 {
 
 }
-
+*/
 void ZDvidWriter::createKeyvalue(const std::string &name)
 {
   createData("keyvalue", name);
@@ -277,4 +299,21 @@ void ZDvidWriter::createData(const std::string &type, const std::string &name)
   qDebug() << command;
 
   QProcess::execute(command);
+}
+
+void ZDvidWriter::writeBodyInfo(int bodyId)
+{
+  ZDvidReader reader;
+  if (reader.open(m_dvidTarget)) {
+    ZObject3dScan obj;
+    reader.readBody(bodyId, &obj);
+    if (!obj.isEmpty()) {
+      ZFlyEmNeuronBodyInfo bodyInfo;
+      bodyInfo.setBodySize(obj.getVoxelNumber());
+      bodyInfo.setBoundBox(obj.getBoundBox());
+      ZJsonObject obj = bodyInfo.toJsonObject();
+      ZDvidUrl dvidUrl(m_dvidTarget);
+      writeJson(dvidUrl.getBodyInfoUrl(bodyId), obj);
+    }
+  }
 }

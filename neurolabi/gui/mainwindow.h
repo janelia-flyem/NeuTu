@@ -381,6 +381,8 @@ private slots:
 
   void on_actionOperateDvid_triggered();
 
+  void on_actionGenerate_Local_Grayscale_triggered();
+
 private:
   void createActions();
   void createFileActions();

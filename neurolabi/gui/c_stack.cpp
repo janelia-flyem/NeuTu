@@ -20,7 +20,7 @@
 #include "zobject3d.h"
 #include "neutubeconfig.h"
 #include "zerror.h"
-
+#include "tz_math.h"
 
 using namespace std;
 
@@ -348,7 +348,8 @@ Stack* C_Stack::downsampleMax(
   return out;
 }
 
-Stack* C_Stack::downsampleMin(const Stack *stack, int xintv, int yintv, int zintv)
+Stack* C_Stack::downsampleMin(
+    const Stack *stack, int xintv, int yintv, int zintv, Stack *out)
 {
   if (xintv == 0 && yintv == 0 && zintv == 0) {
     return clone(stack);
@@ -365,7 +366,14 @@ Stack* C_Stack::downsampleMin(const Stack *stack, int xintv, int yintv, int zint
   int sheight = h / (yintv + 1) + (h % (yintv + 1) > 0);
   int sdepth = d / (zintv + 1) + (d % (zintv + 1) > 0);
 
-  Stack *out = make(kind(stack), swidth, sheight, sdepth);
+  if (out == NULL) {
+    out = make(kind(stack), swidth, sheight, sdepth);
+  } else {
+    out->kind = kind(stack);
+    out->width = swidth;
+    out->height = sheight;
+    out->depth = sdepth;
+  }
   setZero(out);
 
   size_t outArea = area(out);
@@ -496,6 +504,17 @@ void C_Stack::view(const Mc_Stack *src, Stack *dst, int channel)
                C_Stack::height(src), C_Stack::depth(src));
 }
 
+void C_Stack::view(const Mc_Stack *src, Mc_Stack *dst, int channel)
+{
+  TZ_ASSERT(src != NULL && dst != NULL, "Null pointer");
+  TZ_ASSERT(channel >= 0 && channel < C_Stack::channelNumber(src),
+            "Invalide channel");
+
+  dst->array = src->array + volumeByteNumber(src) * channel;
+  setAttribute(dst, C_Stack::kind(src), C_Stack::width(src),
+               C_Stack::height(src), C_Stack::depth(src), 1);
+}
+
 void C_Stack::view(const Stack *src, Image_Array *dst)
 {
   TZ_ASSERT(src != NULL && dst != NULL, "Null pointer");
@@ -602,7 +621,8 @@ int C_Stack::neighborTest(int conn, int width, int height, int depth,
 
 #define MRAW_MAGIC_NUMBER 1836212599
 
-void C_Stack::write(const std::string &filePath, const Mc_Stack *stack)
+void C_Stack::write(
+    const std::string &filePath, const Mc_Stack *stack, const char *meta)
 {
   if (stack == NULL) {
     return;
@@ -631,7 +651,7 @@ void C_Stack::write(const std::string &filePath, const Mc_Stack *stack)
   }
     break;
   default:
-    Write_Mc_Stack(filePath.c_str(), stack, NULL);
+    Write_Mc_Stack(filePath.c_str(), stack, meta);
     break;
   }
 }
@@ -639,6 +659,15 @@ void C_Stack::write(const std::string &filePath, const Mc_Stack *stack)
 void C_Stack::write(const std::string &filePath, const Stack *stack)
 {
   Write_Stack_U(filePath.c_str(), stack, NULL);
+}
+
+void C_Stack::readStackOffset(const string &filePath, int *x, int *y, int *z)
+{
+  *x = 0;
+  *y = 0;
+  *z = 0;
+
+  Read_Stack_Offset(filePath.c_str(), x, y, z);
 }
 
 Mc_Stack* C_Stack::readMrawFromBuffer(const char *buffer, int channel)
@@ -710,6 +739,11 @@ Mc_Stack* C_Stack::readMrawFromBuffer(const char *buffer, int channel)
   }
 
   return stack;
+}
+
+void readStackOffset(const std::string &filePath, int *x, int *y, int *z)
+{
+  C_Stack::readStackOffset(filePath, x, y, z);
 }
 
 Mc_Stack* C_Stack::read(const std::string &filePath, int channel)
@@ -1379,25 +1413,45 @@ void C_Stack::setZero(
 }
 
 #define STACK_SET_BLOCK_VALUE(dstArray, srcArray) \
-for (int z = 0; z < sd; ++z) {\
-  for (int y = 0; y < sh; ++y) {\
-    for (int x = 0; x < sw; ++x) {\
-      if ((int) srcArray[offset2] != srcValueIgnored && \
-          (int) dstArray[offset] != dstValueIgnored) {\
-        dstArray[offset] = srcArray[offset2];\
+  if (alpha == 1.0) {\
+    for (int z = 0; z < sd; ++z) {\
+      for (int y = 0; y < sh; ++y) {\
+        for (int x = 0; x < sw; ++x) {\
+          if ((int) srcArray[offset2] != srcValueIgnored && \
+              (int) dstArray[offset] != dstValueIgnored) {\
+            dstArray[offset] = srcArray[offset2];\
+          }\
+          offset += p1;\
+          offset2 += bp1;\
+        }\
+        offset += p2;\
+        offset2 += bp2;\
       }\
-      offset += p1;\
-      offset2 += bp1;\
+      offset += p3;\
+      offset2 += bp3;\
     }\
-    offset += p2;\
-    offset2 += bp2;\
-  }\
-  offset += p3;\
-  offset2 += bp3;\
-}
+  } else {\
+    for (int z = 0; z < sd; ++z) {\
+      for (int y = 0; y < sh; ++y) {\
+        for (int x = 0; x < sw; ++x) {\
+          if ((int) srcArray[offset2] != srcValueIgnored && \
+              (int) dstArray[offset] != dstValueIgnored) {\
+            double v = alpha * srcArray[offset2] + (1 - alpha) * dstArray[offset];\
+            dstArray[offset] = iround(v);\
+          }\
+          offset += p1;\
+          offset2 += bp1;\
+        }\
+        offset += p2;\
+        offset2 += bp2;\
+      }\
+      offset += p3;\
+      offset2 += bp3;\
+    }\
+  }
 
 void C_Stack::setBlockValue(Stack *stack, const Stack *block, int x0, int y0, int z0,
-    int srcValueIgnored, int dstValueIgnored)
+    int srcValueIgnored, int dstValueIgnored, double alpha)
 {
   if (kind(stack) != kind(block) || stack == NULL || block == NULL) {
     return;
