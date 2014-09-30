@@ -54,12 +54,14 @@ exists($${EXTLIB_DIR}/hdf5/lib/libhdf5.a) {
 
 #System libraries
 unix {
+#tmp fix
+    LIBS += -L/usr/lib64/ssl
     LIBS += -ldl -lz
 }
 
 
 BUILDEM_DIR = /opt/Downloads/buildem
-exists($${BUILDEM_DIR}/lib/libdvidcpp.a) {
+exists($${BUILDEM_DIR}/lib/libdvidcpp2.a) {
     DEFINES += _ENABLE_LIBDVID_
     INCLUDEPATH +=  $${BUILDEM_DIR}/include $${BUILDEM_DIR}/include/libdvid
     LIBS += -L$${BUILDEM_DIR}/lib -L$${BUILDEM_DIR}/lib64 -ldvidcpp \

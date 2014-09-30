@@ -3,6 +3,7 @@
 #include <iostream>
 #include <string>
 #include <cstdlib>
+#include <cstring>
 
 ZArray::ZArray() : m_data(NULL)
 {

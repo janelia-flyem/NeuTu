@@ -541,7 +541,8 @@ void ZFlyEmRoiDialog::loadGrayscale(int z)
   if (loading) {
     if (lowres) {
       const ZDvidTarget &target = m_project->getDvidTarget();
-      const std::string &path = target.getLocalLowResGrayScalePath(9, 9, 0);
+      const std::string &path =
+          target.getLocalLowResGrayScalePath(m_xintv, m_yintv, 0);
       if (path.empty() || !QDir(path.c_str()).exists()) {
         QMessageBox::warning(
                   this, "No Quick Mode",
