@@ -281,9 +281,12 @@
          </widget>
         </item>
         <item>
-         <widget class="QCheckBox" name="checkBox">
+         <widget class="QCheckBox" name="synapseVisibleCheckBox">
           <property name="text">
            <string>Synapse Visible</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
           </property>
          </widget>
         </item>

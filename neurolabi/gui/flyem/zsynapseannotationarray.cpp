@@ -1307,7 +1307,7 @@ FlyEm::ZSynapseAnnotationArray::toTBarPuncta(double radius) const
        synapse != NULL; synapse = nextSynapseLocation()) {
     if (synapse->isTBar()) {
       ZPunctum *punctum = new ZPunctum;
-      punctum->setColor(255, 0, 0);
+      punctum->setColor(0, 0, 255);
       punctum->setCenter(synapse->pos());
       punctum->setRadius(radius);
       puncta.push_back(punctum);

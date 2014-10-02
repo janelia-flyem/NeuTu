@@ -15,6 +15,7 @@ const ZCircle::TVisualEffect ZCircle::VE_BOUND_BOX = 2;
 const ZCircle::TVisualEffect ZCircle::VE_NO_CIRCLE = 4;
 const ZCircle::TVisualEffect ZCircle::VE_NO_FILL = 8;
 const ZCircle::TVisualEffect ZCircle::VE_GRADIENT_FILL = 16;
+const ZCircle::TVisualEffect ZCircle::VE_OUT_FOCUS_DIM = 32;
 
 ZCircle::ZCircle() : m_visualEffect(ZCircle::VE_NONE)
 {
@@ -131,20 +132,27 @@ void ZCircle::displayHelper(ZPainter *painter, int stackFocus, Display_Style sty
   double dataFocus = stackFocus - painter->getOffset().z();
   bool visible = false;
 
+  double alpha = 1.0;
   if (stackFocus == -1) {
     visible = true;
   } else {
     if (isCuttingPlane(m_center.z(), m_r, dataFocus)) {
       double h = fabs(m_center.z() - dataFocus);
+      double r = 0.0;
       if (m_r > h) {
-        double r = sqrt(m_r * m_r - h * h);
+        r = sqrt(m_r * m_r - h * h);
         adjustedRadius = getAdjustedRadius(r);
         //adjustedRadius = r + getPenWidth() * 0.5;
         visible = true;
       } else { //too small, show at least one plane
         //adjustedRadius = getPenWidth() * 0.5;
-        adjustedRadius = getAdjustedRadius(0.1);
+        r = 0.1;
+        adjustedRadius = getAdjustedRadius(r);
         visible = true;
+      }
+      if (hasVisualEffect(VE_OUT_FOCUS_DIM)) {
+        alpha = r / m_r;
+        alpha *= alpha;
       }
     }
   }
@@ -152,6 +160,9 @@ void ZCircle::displayHelper(ZPainter *painter, int stackFocus, Display_Style sty
   if (visible) {
     if (!hasVisualEffect(VE_NO_CIRCLE)) {
       //qDebug() << painter->brush().color();
+      QColor color = painter->pen().color();
+      color.setAlphaF(alpha);
+      painter->setPen(color);
       painter->drawEllipse(QPointF(m_center.x(), m_center.y()),
                            adjustedRadius, adjustedRadius);
     }

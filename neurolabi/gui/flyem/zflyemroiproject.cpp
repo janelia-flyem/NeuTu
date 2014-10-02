@@ -149,7 +149,9 @@ void ZFlyEmRoiProject::updateSynapse()
     punctumList.append(docPunctum);
   }
 
-  m_dataFrame->document()->addPunctum(punctumList);
+  if (m_dataFrame != NULL) {
+    m_dataFrame->document()->addPunctum(punctumList);
+  }
 }
 
 void ZFlyEmRoiProject::shallowClearDataFrame()

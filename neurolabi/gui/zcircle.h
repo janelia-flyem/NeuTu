@@ -33,6 +33,7 @@ public:
   const static TVisualEffect VE_NO_CIRCLE;
   const static TVisualEffect VE_NO_FILL;
   const static TVisualEffect VE_GRADIENT_FILL;
+  const static TVisualEffect VE_OUT_FOCUS_DIM;
 
 public:
   virtual void display(ZPainter &painter, int z = 0,
