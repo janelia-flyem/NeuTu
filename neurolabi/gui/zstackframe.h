@@ -229,6 +229,8 @@ public:
   QString swcFilename;
   void makeSwcProjection(ZStackDoc *doc);
 
+  void clearData();
+
 public slots:
   void setLocsegChainInfo(ZLocsegChain *chain, QString prefix = "",
                           QString suffix = "");

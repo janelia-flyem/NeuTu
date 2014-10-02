@@ -59,6 +59,7 @@ using namespace std;
 #include "zpoint.h"
 #include "flyem/zfileparser.h"
 #include "zswcgenerator.h"
+#include "zpunctumio.h"
 #include "flyem/zsynapseannotationarray.h"
 #include "flyem/zfileparser.h"
 #include "flyem/zsynapseannotationanalyzer.h"
@@ -9075,7 +9076,7 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
-#if 1 //Laplacian map
+#if 0 //Laplacian map
   ZFlyEmDataBundle bundle;
   bundle.loadJsonFile(
         dataPath + "/flyem/TEM/data_release/bundle1/data_bundle.json");
@@ -12919,7 +12920,7 @@ void ZTest::test(MainWindow *host)
   //C_Stack::write(GET_DATA_DIR + "/test.tif", stack2);
 
   stack->save(GET_DATA_DIR + "/test.tif");
-#if 0
+#  if 0
   //Get grayscale
   ZStack *grayScale = factory.makeZeroStack(stack->getBoundBox());
 
@@ -12943,7 +12944,61 @@ void ZTest::test(MainWindow *host)
 
   delete stack;
   delete grayScale;
+#  endif
 #endif
+
+#if 0
+  ZStack stack;
+  stack.load(GET_DATA_DIR + "/flyem/AL/seg_ds9.tif");
+  double sigma = 5.0;
+  Filter_3d *filter = Gaussian_Filter_3d(sigma, sigma, sigma);
+  Stack *stack2Data = Filter_Stack(stack.c_stack(), filter);
+
+  ZStack stack2;
+  stack2.consume(stack2Data);
+
+  Kill_FMatrix(filter);
+
+  stack2.save(GET_DATA_DIR + "/flyem/AL/seg_ds9_smoothed.tif");
+#endif
+
+#if 1
+  //Assign color
+  ZStack stack;
+  stack.load(GET_DATA_DIR + "/flyem/AL/test/seg_ds9_smoothed_color.tif");
+  //stack.setOffset(400, 1350, 450);
+  stack.setOffset(357, 1233, 397);
+  stack.printInfo();
+
+  ZPointArray ptArray;
+  ptArray.importTxtFile(GET_DATA_DIR + "/flyem/AL/AL_Tbars_xyz.txt");
+  double dsScale = 5;
+  std::vector<ZVaa3dMarker> markerArray;
+
+  for (ZPointArray::iterator iter = ptArray.begin(); iter != ptArray.end();
+       ++iter) {
+    ZPoint pt = *iter;
+    pt *= 1.0 / dsScale;
+    ZIntPoint pos = pt.toIntPoint();
+    int red = stack.getIntValue(pos.getX(), pos.getY(), pos.getZ(), 0);
+    int green = stack.getIntValue(pos.getX(), pos.getY(), pos.getZ(), 1);
+    int blue = stack.getIntValue(pos.getX(), pos.getY(), pos.getZ(), 2);
+
+    ZVaa3dMarker marker;
+    marker.setCenter(pt.x(), pt.y(), pt.z());
+    marker.setColor(red, green, blue);
+    marker.setRadius(5);
+    markerArray.push_back(marker);
+  }
+
+  FlyEm::ZFileParser::writeVaa3dMakerFile(
+        GET_DATA_DIR + "/test.marker", markerArray);
+
+
+//    *iter *= 1.0 / dsScale;
+//    stack
+//  }
+
 #endif
 
 #if 0
@@ -12971,7 +13026,7 @@ void ZTest::test(MainWindow *host)
   stack2.printInfo();
 #endif
 
-#if 1
+#if 0
   ZDvidTarget dvidTarget("emdata2.int.janelia.org", "134", -1);
   dvidTarget.setLocalFolder(GET_TEST_DATA_DIR +
                          "/Users/zhaot/Work/neutube/neurolabi/data/flyem/AL");
@@ -12989,5 +13044,18 @@ void ZTest::test(MainWindow *host)
       delete frame;
     }
   }
+#endif
+
+#if 0
+  ZPointArray ptArray;
+  ptArray.importTxtFile(GET_DATA_DIR + "/flyem/AL/AL_Tbars_xyz.txt");
+
+  ZGraph *graph = ptArray.computeDistanceGraph(200);
+
+  graph->printInfo();
+
+  graph->exportTxtFile(GET_DATA_DIR + "/flyem/AL/graph.txt");
+
+  delete graph;
 #endif
 }

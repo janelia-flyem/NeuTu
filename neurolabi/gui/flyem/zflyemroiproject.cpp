@@ -38,6 +38,12 @@ void ZFlyEmRoiProject::clear()
   }
   m_curveArray.clear();
 
+  for (std::vector<ZPunctum*>::iterator iter = m_puncta.begin();
+       iter != m_puncta.end(); ++iter) {
+    delete *iter;
+  }
+  m_puncta.clear();
+
   shallowClear();
 }
 
@@ -111,6 +117,39 @@ void ZFlyEmRoiProject::setDataFrame(ZStackFrame *frame)
   }
 
   m_dataFrame = frame;
+  updateSynapse();
+}
+
+void ZFlyEmRoiProject::updateSynapse()
+{
+  int z = getDataZ();
+  int range = 10;
+
+  ZPunctum markPunctum;
+  markPunctum.setZ(z - range);
+  //Find the puncta range
+  std::vector<ZPunctum*>::const_iterator beginIter =
+      std::lower_bound(m_puncta.begin(), m_puncta.end(),
+                       &markPunctum, ZPunctum::ZCompare());
+  markPunctum.setZ(z + range);
+  std::vector<ZPunctum*>::const_iterator endIter =
+      std::upper_bound(m_puncta.begin(), m_puncta.end(),
+                       &markPunctum, ZPunctum::ZCompare());
+
+  //Add to document
+  QList<ZPunctum*> punctumList;
+  for (std::vector<ZPunctum*>::const_iterator iter = beginIter;
+       iter != endIter; ++iter) {
+    const ZPunctum* punctum = *iter;
+    ZPunctum *docPunctum = new ZPunctum(*punctum);
+    docPunctum->scale(1.0 / (m_currentDsIntv.getX() + 1),
+                      1.0 / (m_currentDsIntv.getY() + 1),
+                      1.0 / (m_currentDsIntv.getZ() + 1));
+    docPunctum->useCosmeticPen(true);
+    punctumList.append(docPunctum);
+  }
+
+  m_dataFrame->document()->addPunctum(punctumList);
 }
 
 void ZFlyEmRoiProject::shallowClearDataFrame()
@@ -792,4 +831,21 @@ double ZFlyEmRoiProject::estimateRoiVolume(char unit) const
 void ZFlyEmRoiProject::setDsIntv(int xintv, int yintv, int zintv)
 {
   m_currentDsIntv.set(xintv, yintv, zintv);
+}
+
+void ZFlyEmRoiProject::setDocData(const ZStackDocReader &docReader)
+{
+  if (m_dataFrame != NULL) {
+    m_dataFrame->clearData();
+    m_dataFrame->addDocData(docReader);
+  }
+}
+
+void ZFlyEmRoiProject::loadSynapse(const std::string &filePath)
+{
+  m_synapseArray.clear();
+  m_synapseArray.loadJson(filePath);
+  m_puncta = m_synapseArray.toTBarPuncta(20.0);
+  std::sort(m_puncta.begin(), m_puncta.end(), ZPunctum::ZCompare());
+  updateSynapse();
 }

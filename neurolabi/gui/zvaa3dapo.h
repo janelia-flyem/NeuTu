@@ -10,11 +10,11 @@ public:
   ZVaa3dApo();
 
 public:
-  virtual std::string toString();
+  virtual std::string toString() const;
 
   inline void setId(int id) { m_id = id; }
 
-  inline double volSize() { return TZ_PI * 1.333333333 * m_r * m_r * m_r; }
+  inline double volSize() const { return TZ_PI * 1.333333333 * m_r * m_r * m_r; }
 
 private:
   int m_id;

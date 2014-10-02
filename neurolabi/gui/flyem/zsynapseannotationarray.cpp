@@ -1298,6 +1298,25 @@ vector<ZPunctum*> FlyEm::ZSynapseAnnotationArray::toPuncta(
 
   return puncta;
 }
+
+std::vector<ZPunctum*>
+FlyEm::ZSynapseAnnotationArray::toTBarPuncta(double radius) const
+{
+  std::vector<ZPunctum*> puncta;
+  for (const SynapseLocation *synapse = beginSynapseLocation();
+       synapse != NULL; synapse = nextSynapseLocation()) {
+    if (synapse->isTBar()) {
+      ZPunctum *punctum = new ZPunctum;
+      punctum->setColor(255, 0, 0);
+      punctum->setCenter(synapse->pos());
+      punctum->setRadius(radius);
+      puncta.push_back(punctum);
+    }
+  }
+
+  return puncta;
+}
+
 #endif
 
 int FlyEm::ZSynapseAnnotationArray::getStrongestInput(int bodyId) const

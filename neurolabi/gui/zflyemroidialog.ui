@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>489</width>
-    <height>760</height>
+    <width>492</width>
+    <height>772</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -19,7 +19,7 @@
      <x>10</x>
      <y>13</y>
      <width>470</width>
-     <height>741</height>
+     <height>752</height>
     </rect>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout_5">
@@ -268,6 +268,24 @@
            </size>
           </property>
          </spacer>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_23">
+        <item>
+         <widget class="QPushButton" name="loadSynapsePushButton">
+          <property name="text">
+           <string>Load Synapse</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="checkBox">
+          <property name="text">
+           <string>Synapse Visible</string>
+          </property>
+         </widget>
         </item>
        </layout>
       </item>

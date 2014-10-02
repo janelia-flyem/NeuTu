@@ -348,6 +348,7 @@
       <addaction name="actionSplit_Region"/>
       <addaction name="actionView_Labeled_Regions"/>
       <addaction name="actionCreate_ROI"/>
+      <addaction name="actionExport_Segmentation_Result"/>
      </widget>
      <widget class="QMenu" name="menuNew">
       <property name="title">
@@ -1307,6 +1308,11 @@
   <action name="actionGenerate_Local_Grayscale">
    <property name="text">
     <string>Generate Local Grayscale</string>
+   </property>
+  </action>
+  <action name="actionExport_Segmentation_Result">
+   <property name="text">
+    <string>Export Result</string>
    </property>
   </action>
  </widget>

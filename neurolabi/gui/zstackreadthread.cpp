@@ -10,6 +10,12 @@ ZStackReadThread::ZStackReadThread(QObject *parent) :
 {
 }
 
+void ZStackReadThread::clear()
+{
+  m_stackFile = NULL;
+  m_stack = NULL;
+}
+
 void ZStackReadThread::run()
 {
   if (m_stackFile != NULL) {

@@ -52,7 +52,7 @@ map<int, string> ZFileParser::loadBodyList(string filePath, string workDir)
 }
 
 bool ZFileParser::writeVaa3dMakerFile(std::string filePath,
-                                      vector<ZVaa3dMarker> markerArray)
+                                      const std::vector<ZVaa3dMarker> &markerArray)
 {
   ofstream stream(filePath.c_str());
   if (!stream.is_open()) {
@@ -60,7 +60,7 @@ bool ZFileParser::writeVaa3dMakerFile(std::string filePath,
     return false;
   }
 
-  for (vector<ZVaa3dMarker>::iterator iter = markerArray.begin();
+  for (vector<ZVaa3dMarker>::const_iterator iter = markerArray.begin();
        iter != markerArray.end(); ++iter) {
     stream << iter->toString() << endl;
   }
@@ -72,7 +72,7 @@ bool ZFileParser::writeVaa3dMakerFile(std::string filePath,
 
 
 bool ZFileParser::writeVaa3dApoFile(std::string filePath,
-                                    vector<ZVaa3dApo> markerArray)
+                                    const std::vector<ZVaa3dApo> &markerArray)
 {
   ofstream stream(filePath.c_str());
   if (!stream.is_open()) {
@@ -80,7 +80,7 @@ bool ZFileParser::writeVaa3dApoFile(std::string filePath,
     return false;
   }
 
-  for (vector<ZVaa3dApo>::iterator iter = markerArray.begin();
+  for (vector<ZVaa3dApo>::const_iterator iter = markerArray.begin();
        iter != markerArray.end(); ++iter) {
     stream << iter->toString() << endl;
   }

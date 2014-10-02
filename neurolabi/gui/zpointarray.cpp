@@ -4,6 +4,7 @@
 #include "zjsonobject.h"
 #include "zjsonparser.h"
 #include "zstring.h"
+#include "zgraph.h"
 
 ZPointArray::ZPointArray()
 {
@@ -203,4 +204,20 @@ void ZPointArray::importTxtFile(const std::string &filePath)
     }
   }
   fclose(fp);
+}
+
+ZGraph* ZPointArray::computeDistanceGraph(double maxDist) const
+{
+  ZGraph *graph = new ZGraph(ZGraph::UNDIRECTED_WITH_WEIGHT);
+  for (size_t i = 0; i < size(); ++i) {
+    const ZPoint &pt1 = (*this)[i];
+    for (size_t j = i + 1; j < size(); ++j) {
+      const ZPoint &pt2 = (*this)[j];
+      double d = pt1.distanceTo(pt2);
+      if (d <= maxDist) {
+        graph->addEdgeFast(i, j, d);
+      }
+    }
+  }
+  return graph;
 }

@@ -23,6 +23,8 @@ public:
     m_stackFile = stackFile;
   }
 
+  void clear();
+
 signals:
 
 public slots:

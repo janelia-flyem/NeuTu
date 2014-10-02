@@ -18,9 +18,9 @@ public:
   static std::map<int, std::string> loadBodyList(std::string filePath,
                                                  std::string workDir = "");
   static bool writeVaa3dMakerFile(std::string filePath,
-                                  std::vector<ZVaa3dMarker> markerArray);
+                                  const std::vector<ZVaa3dMarker> &markerArray);
   static bool writeVaa3dApoFile(std::string filePath,
-                                std::vector<ZVaa3dApo> markerArray);
+                                const std::vector<ZVaa3dApo> &markerArray);
 
   static std::vector<ZVaa3dMarker> readVaa3dMarkerFile(
       const std::string &filePath);

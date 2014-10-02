@@ -6,11 +6,12 @@
 #include "zclosedcurve.h"
 #include <QString>
 #include "dvid/zdvidinfo.h"
+#include "flyem/zsynapseannotationarray.h"
 
 class ZStackFrame;
 class ZSwcTree;
 class ZObject3dScan;
-
+class ZStackDocReader;
 
 /*!
  * \brief The class of managing a FlyEM ROI project
@@ -46,11 +47,14 @@ public:
   void closeDataFrame();
   bool hasDataFrame() const;
   void setDataFrame(ZStackFrame *frame);
+  void setDocData(const ZStackDocReader &docReader);
+  void loadSynapse(const std::string &filePath);
   void shallowClearDataFrame();
   bool addRoi();
   void setRoi(ZClosedCurve *roi, int z);
   int getCurrentZ() const;
   int getDataZ() const;
+  void updateSynapse();
 
   void setZ(int z);
 
@@ -137,6 +141,8 @@ private:
   ZStackFrame *m_dataFrame;
   std::vector<bool> m_isRoiCurveUploaded;
   std::vector<ZClosedCurve*> m_curveArray; //curve array sorted by z position
+  FlyEm::ZSynapseAnnotationArray m_synapseArray;
+  std::vector<ZPunctum*> m_puncta;
 };
 
 #endif // ZFLYEMROIPROJECT_H

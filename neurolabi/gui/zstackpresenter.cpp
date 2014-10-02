@@ -84,15 +84,20 @@ ZStackPresenter::ZStackPresenter(ZStackFrame *parent) : QObject(parent),
 
 ZStackPresenter::~ZStackPresenter()
 {
+  clearData();
+
+  delete m_swcNodeContextMenu;
+  delete m_strokePaintContextMenu;
+  delete m_stackContextMenu;
+}
+
+void ZStackPresenter::clearData()
+{
   foreach(ZStackObject *decoration, m_decorationList) {
     delete decoration;
   }
 
   m_decorationList.clear();
-
-  delete m_swcNodeContextMenu;
-  delete m_strokePaintContextMenu;
-  delete m_stackContextMenu;
 }
 
 void ZStackPresenter::initInteractiveContext()

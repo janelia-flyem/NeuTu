@@ -339,7 +339,7 @@ set<int> ZGraph::getNeighborSet(const vector<int> &vertexArray) const
   return neighborSet;
 }
 
-void ZGraph::print() const
+void ZGraph::printInfo() const
 {
   if (isDirected()) {
     cout << "Directed graph:";
@@ -349,6 +349,11 @@ void ZGraph::print() const
 
   cout << order() << " vertices; ";
   cout << size() << " edges" << endl;
+}
+
+void ZGraph::print() const
+{
+  printInfo();
 
   for (size_t i = 0; i < size(); i++) {
     cout << edgeStart(i) << " -- ";

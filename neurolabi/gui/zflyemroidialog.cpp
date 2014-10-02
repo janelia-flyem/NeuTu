@@ -5,6 +5,7 @@
 #include <QInputDialog>
 #include <QMenu>
 #include <QDir>
+#include <QScrollBar>
 
 #include "neutubeconfig.h"
 #include "ui_zflyemroidialog.h"
@@ -18,10 +19,12 @@
 #include "zcuboid.h"
 #include "zintcuboid.h"
 #include "zflyemutilities.h"
+#include "zstring.h"
 
 ZFlyEmRoiDialog::ZFlyEmRoiDialog(QWidget *parent) :
   QDialog(parent), ZProgressable(),
-  ui(new Ui::ZFlyEmRoiDialog), m_project(NULL), m_xintv(4), m_yintv(4)
+  ui(new Ui::ZFlyEmRoiDialog), m_project(NULL),
+  m_isLoadingGrayScale(false), m_xintv(4), m_yintv(4)
 {
   ui->setupUi(this);
 
@@ -40,6 +43,8 @@ ZFlyEmRoiDialog::ZFlyEmRoiDialog(QWidget *parent) :
           this, SLOT(previewFullRoi()));
   connect(ui->uploadResultPushButton, SIGNAL(clicked()),
           this, SLOT(uploadRoi()));
+  connect(ui->loadSynapsePushButton, SIGNAL(clicked()),
+          this, SLOT(loadSynapse()));
 
 #if 0
   QSize iconSize(24, 24);
@@ -73,7 +78,7 @@ ZFlyEmRoiDialog::ZFlyEmRoiDialog(QWidget *parent) :
   ui->yIncPushButton->setMaximumSize(buttonSize);
 #endif
 
-  connect(this, SIGNAL(newDocReady()), this, SLOT(newDataFrame()));
+  connect(this, SIGNAL(newDocReady()), this, SLOT(updateDataFrame()));
   connect(this, SIGNAL(progressFailed()), ui->progressBar, SLOT(reset()));
   connect(this, SIGNAL(progressAdvanced(double)),
           this, SLOT(advanceProgressSlot(double)));
@@ -158,11 +163,13 @@ void ZFlyEmRoiDialog::updateWidget()
     ui->loadGrayScalePushButton->setEnabled(m_project->getDvidTarget().isValid());
     ui->searchPushButton->setEnabled(m_project->getDvidTarget().isValid());
     ui->estimateRoiPushButton->setEnabled(m_project->hasDataFrame());
+    ui->loadSynapsePushButton->setEnabled(true);
   } else {
     ui->infoWidget->setText("");
     ui->loadGrayScalePushButton->setEnabled(false);
     ui->searchPushButton->setEnabled(false);
     ui->estimateRoiPushButton->setEnabled(false);
+    ui->loadSynapsePushButton->setEnabled(false);
   }
 }
 
@@ -294,17 +301,20 @@ void ZFlyEmRoiDialog::loadPartialGrayscaleFunc(
   }
 }
 
-void ZFlyEmRoiDialog::prepareQuickLoadFunc(int z)
+void ZFlyEmRoiDialog::prepareQuickLoadFunc(
+    const ZDvidTarget &target, const std::string &lowresPath, int z)
 {
-  const ZDvidTarget &target = m_project->getDvidTarget();
+  //const ZDvidTarget &target = m_project->getDvidTarget();
   ZDvidReader reader;
   if (z >= 0 && reader.open(target)) {
     QString infoString = reader.readInfo("grayscale");
     ZDvidInfo dvidInfo;
     dvidInfo.setFromJsonString(infoString.toStdString());
 
+    /*
     std::string lowresPath =
         target.getLocalLowResGrayScalePath(m_xintv, m_xintv, 0, z);
+        */
     if (!lowresPath.empty()) {
       if (!QFileInfo(lowresPath.c_str()).exists()) {
         ZIntCuboid boundBox = reader.readBoundBox(z);
@@ -326,15 +336,23 @@ void ZFlyEmRoiDialog::prepareQuickLoadFunc(int z)
               stack->crop(boundBox);
             }
             ZDvidWriter writer;
-            if (writer.open(m_project->getDvidTarget())) {
+            if (writer.open(target)) {
               writer.writeBoundBox(boundBox, z);
             }
           }
         }
 
         if (stack != NULL) {
-          stack->downsampleMin(m_xintv, m_xintv, 0);
-          stack->save(lowresPath);
+          std::string lowresDir = ZString(lowresPath).dirPath(lowresPath);
+          /*
+          std::string lowresDir =
+              target.getLocalLowResGrayScalePath(m_xintv, m_xintv, 0);
+              */
+          if (QDir(lowresDir.c_str()).exists()) {
+            stack->downsampleMin(m_xintv, m_xintv, 0);
+            stack->save(lowresPath);
+            emit messageDumped("Quick load ready.", true);
+          }
           delete stack;
         }
       }
@@ -377,7 +395,8 @@ void ZFlyEmRoiDialog::prepareQuickLoad(int z, bool waitForDone)
       QString threadId = getQuickLoadThreadId(z);
       if (!isPreparingQuickLoad(z)) { //Create new thread
           QFuture<void> future =QtConcurrent::run(
-              this, &ZFlyEmRoiDialog::prepareQuickLoadFunc, z);
+                this, &ZFlyEmRoiDialog::prepareQuickLoadFunc,
+                target, lowresPath, z);
           m_threadFutureMap[threadId] = future;
 #ifdef _DEBUG_
           emit messageDumped(threadId, true);
@@ -426,7 +445,7 @@ void ZFlyEmRoiDialog::loadGrayscaleFunc(int z, bool lowres)
     if (lowres) {
       m_project->setDsIntv(m_xintv, m_yintv, 0);
       prepareQuickLoad(z, true);
-      if (QFileInfo(lowresPath.c_str()).exists()) {
+      if (QFileInfo(lowresPath.c_str()).exists() && !isPreparingQuickLoad(z)) {
         stack = new ZStack;
         stack->load(lowresPath);
       } else if (QDir(target.getLocalFolder().c_str()).exists()) {
@@ -505,10 +524,28 @@ void ZFlyEmRoiDialog::newDataFrame()
 
   getMainWindow()->addStackFrame(frame);
   getMainWindow()->presentStackFrame(frame);
+}
+
+void ZFlyEmRoiDialog::updateDataFrame()
+{
+  if (m_project->hasDataFrame()) {
+     m_project->setDocData(m_docReader);
+  } else {
+    newDataFrame();
+  }
+  m_project->updateSynapse();
   updateWidget();
   endProgress();
-
   startBackgroundJob();
+  m_isLoadingGrayScale = false;
+}
+
+void ZFlyEmRoiDialog::loadSynapse()
+{
+  QString fileName = getMainWindow()->getOpenFileName("Load Synapses", "*.json");
+  if (!fileName.isEmpty()) {
+    m_project->loadSynapse(fileName.toStdString());
+  }
 }
 
 void ZFlyEmRoiDialog::startBackgroundJob()
@@ -523,7 +560,7 @@ void ZFlyEmRoiDialog::startBackgroundJob()
 
 void ZFlyEmRoiDialog::loadGrayscale(int z)
 {
-  if (m_project == NULL || z < 0) {
+  if (m_project == NULL || z < 0 || m_isLoadingGrayScale) {
     return;
   }
 
@@ -554,6 +591,7 @@ void ZFlyEmRoiDialog::loadGrayscale(int z)
   }
 
   if (loading) {
+    m_isLoadingGrayScale = true;
     startProgress();
     QtConcurrent::run(
           this, &ZFlyEmRoiDialog::loadGrayscaleFunc, z, lowres);
@@ -563,7 +601,7 @@ void ZFlyEmRoiDialog::loadGrayscale(int z)
 void ZFlyEmRoiDialog::loadGrayscale(const ZIntCuboid &box)
 {
   int z = box.getFirstCorner().getZ();
-  if (m_project == NULL || z < 0) {
+  if (m_project == NULL || z < 0 || m_isLoadingGrayScale) {
     return;
   }
 
@@ -577,6 +615,7 @@ void ZFlyEmRoiDialog::loadGrayscale(const ZIntCuboid &box)
   }
 
   if (loading) {
+    m_isLoadingGrayScale = true;
     startProgress();
     QtConcurrent::run(
           this, &ZFlyEmRoiDialog::loadPartialGrayscaleFunc,
@@ -638,6 +677,8 @@ void ZFlyEmRoiDialog::dump(const QString &str, bool appending)
 {
   if (appending) {
     ui->outputWidget->append(str);
+    ui->outputWidget->verticalScrollBar()->setValue(
+          ui->outputWidget->verticalScrollBar()->maximum());
   } else {
     ui->outputWidget->setText(str);
   }
@@ -1001,6 +1042,24 @@ int ZFlyEmRoiDialog::getNextZ() const
   return z;
 }
 
+int ZFlyEmRoiDialog::setPrevZ()
+{
+  int z = getPrevZ();
+  ui->zSpinBox->setValue(z);
+  m_project->setZ(z);
+
+  return z;
+}
+
+int ZFlyEmRoiDialog::setNextZ()
+{
+  int z = getNextZ();
+  ui->zSpinBox->setValue(z);
+  m_project->setZ(z);
+
+  return z;
+}
+
 int ZFlyEmRoiDialog::getPrevZ() const
 {
   int z = -1;
@@ -1013,12 +1072,12 @@ int ZFlyEmRoiDialog::getPrevZ() const
 
 void ZFlyEmRoiDialog::on_nextSlicePushButton_clicked()
 {
-  loadGrayscale(getNextZ());
+  loadGrayscale(setNextZ());
 }
 
 void ZFlyEmRoiDialog::on_prevSlicePushButton_clicked()
 {
-  loadGrayscale(getPrevZ());
+  loadGrayscale(setPrevZ());
 }
 
 void ZFlyEmRoiDialog::quickLoad(int z)
@@ -1043,12 +1102,12 @@ void ZFlyEmRoiDialog::quickLoad(int z)
 }
 void ZFlyEmRoiDialog::on_quickPrevPushButton_clicked()
 {
-  int z = getPrevZ();
+  int z = setPrevZ();
   quickLoad(z);
 }
 
 void ZFlyEmRoiDialog::on_quickNextPushButton_3_clicked()
 {
-  int z = getNextZ();
+  int z = setNextZ();
   quickLoad(z);
 }

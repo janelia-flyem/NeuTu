@@ -58,12 +58,14 @@ public slots:
   void clear();
 
   void newDataFrame();
+  void updateDataFrame();
   void setZ(int z);
   void previewFullRoi();
   void uploadRoi();
   void estimateRoi();
   void loadProject(int index);
   void dump(const QString &str, bool appending = false);
+  void loadSynapse();
 
 signals:
   void newDocReady();
@@ -133,7 +135,8 @@ private:
   void uploadProjectList();
   void createMenu();
 
-  void prepareQuickLoadFunc(int z);
+  void prepareQuickLoadFunc(
+      const ZDvidTarget &target,const std::string &lowresPath, int z);
   void prepareQuickLoad(int z, bool waitForDone = false);
   QString getQuickLoadThreadId(int z) const;
   bool isPreparingQuickLoad(int z) const;
@@ -141,6 +144,10 @@ private:
 
   int getNextZ() const;
   int getPrevZ() const;
+
+  int setNextZ();
+  int setPrevZ();
+
   void quickLoad(int z);
 
   void startBackgroundJob();
@@ -153,6 +160,7 @@ private:
   ZFlyEmRoiProject *m_project;
   ZDvidTarget m_dvidTarget;
   ZStackDocReader m_docReader;
+  bool m_isLoadingGrayScale;
 
   QMenu *m_nextMenu;
   QMenu *m_mainMenu;

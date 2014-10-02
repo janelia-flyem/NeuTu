@@ -113,10 +113,13 @@ void ZPunctum::display(ZPainter &painter, int n, ZStackObject::Display_Style sty
   if (isVisible) {
     ZCircle circle(m_x, m_y, m_z, m_radius);
     circle.setColor(m_color);
+    circle.useCosmeticPen(m_usingCosmeticPen);
 
+    /*
     if (style == SOLID) {
       circle.setVisualEffect(ZCircle::VE_GRADIENT_FILL);
     }
+    */
     circle.display(painter, n, style);
   }
 
@@ -234,6 +237,14 @@ void ZPunctum::translate(double dx, double dy, double dz)
 void ZPunctum::translate(const ZPoint &offset)
 {
   translate(offset.x(), offset.y(), offset.z());
+}
+
+void ZPunctum::scale(double sx, double sy, double sz)
+{
+  m_x *= sx;
+  m_y *= sy;
+  m_z *= sz;
+  m_radius *= sqrt(sx * sy);
 }
 
 void ZPunctum::setFromMarker(const ZVaa3dMarker &marker)

@@ -5,6 +5,9 @@
 #include <zpoint.h>
 #include <string>
 #include "zcuboid.h"
+#include "tz_utilities.h"
+
+class ZGraph;
 
 class ZPointArray : public std::vector<ZPoint>
 {
@@ -39,6 +42,8 @@ public:
   std::vector<double> computePlaneCov() const;
 
   bool isEmpty() const;
+
+  ZGraph *computeDistanceGraph(double maxDist = Infinity) const;
 };
 
 #endif // ZPOINTARRAY_H

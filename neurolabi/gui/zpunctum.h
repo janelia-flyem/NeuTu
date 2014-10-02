@@ -59,6 +59,11 @@ public:
   inline void setX(double n) {  m_x = n; }
   inline void setY(double n) {  m_y = n; }
   inline void setZ(double n) {  m_z = n; }
+  inline void setCenter(const ZPoint &pt) {
+    m_x = pt.x();
+    m_y = pt.y();
+    m_z = pt.z();
+  }
   inline void setSDevOfIntensity(double n) {  m_sDevOfIntensity = n; }
   inline void setMaxIntensity(double n) {  m_maxIntensity = n; }
   inline void setMeanIntensity(double n) {  m_meanIntensity = n;}
@@ -78,6 +83,7 @@ public:
 
   void translate(double dx, double dy, double dz);
   void translate(const ZPoint &offset);
+  void scale(double sx, double sy, double sz);
 
   // update radius from volSize
   inline void updateRadius() { m_radius = Cube_Root(0.75 / M_PI * m_volSize); }
@@ -87,6 +93,12 @@ public:
   inline void updateMass() { m_mass = m_volSize * m_meanIntensity; }
 
   std::string toString();
+
+  struct ZCompare {
+    bool operator() (const ZPunctum *p1, const ZPunctum *p2) {
+      return (p1->z() < p2->z());
+    }
+  };
 
 private:
   QColor highlightingColor(const QColor &color) const;

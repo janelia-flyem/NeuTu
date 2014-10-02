@@ -161,6 +161,54 @@ ZStackDoc::~ZStackDoc()
   destroyReporter();
 }
 
+void ZStackDoc::clearData()
+{
+  deprecate(STACK);
+  deprecate(SPARSE_STACK);
+
+  foreach (ZStackObject *obj, m_objectList) {
+    delete obj;
+  }
+  m_objectList.clear();
+
+  m_swcList.clear();
+  m_punctaList.clear();
+  m_strokeList.clear();
+  m_obj3dList.clear();
+  m_sparseObjectList.clear();
+  m_playerList.clear();
+
+  m_selectedChains.clear();
+  m_selectedPuncta.clear();
+  m_selectedSwcs.clear();
+  m_selectedSwcTreeNodes.clear();
+
+  delete m_swcNetwork;
+  m_swcNetwork = NULL;
+  delete m_labelField;
+  m_labelField = NULL;
+  delete m_stackFactory;
+  m_stackFactory = NULL;
+
+
+  /* workspaces */
+  m_isTraceMaskObsolete = true;
+  m_neuronTracer.clear();
+
+  //Meta information
+  m_stackSource.clear();
+  m_additionalSource.clear();
+
+  //Thread
+  m_reader.clear();
+
+  //Actions
+  //  Undo/Redo
+  if (m_undoStack != NULL) {
+    m_undoStack->clear();
+  }
+}
+
 void ZStackDoc::initNeuronTracer()
 {
   m_neuronTracer.initTraceWorkspace(getStack());

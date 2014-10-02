@@ -276,6 +276,12 @@ void ZStackFrame::takeScreenshot(const QString &filename)
     m_view->takeScreenshot(filename);
 }
 
+void ZStackFrame::clearData()
+{
+  document()->clearData();
+  presenter()->clearData();
+}
+
 void ZStackFrame::clear()
 {
   disconnectAll();

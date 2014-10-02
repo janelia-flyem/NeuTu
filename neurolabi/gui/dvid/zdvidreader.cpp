@@ -281,13 +281,19 @@ ZStack* ZDvidReader::readGrayScale(
 
   ZDvidRequest request;
 
-  std::vector<std::pair<int, int> > partition =
-      partitionStack(x0, y0, z0, width, height, depth);
-  for (std::vector<std::pair<int, int> >::const_iterator
-       iter = partition.begin(); iter != partition.end(); ++iter) {
-    request.setGetImageRequest(x0, y0, iter->first, width, height, iter->second);
+  if (depth == 1) {
+    request.setGetImageRequest(x0, y0, z0, width, height);
     m_dvidClient->appendRequest(request);
     m_dvidClient->postNextRequest();
+  } else {
+    std::vector<std::pair<int, int> > partition =
+        partitionStack(x0, y0, z0, width, height, depth);
+    for (std::vector<std::pair<int, int> >::const_iterator
+         iter = partition.begin(); iter != partition.end(); ++iter) {
+      request.setGetImageRequest(x0, y0, iter->first, width, height, iter->second);
+      m_dvidClient->appendRequest(request);
+      m_dvidClient->postNextRequest();
+    }
   }
 
   waitForReading();

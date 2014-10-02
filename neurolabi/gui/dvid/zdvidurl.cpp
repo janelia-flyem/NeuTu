@@ -135,7 +135,7 @@ std::string ZDvidUrl::getGrayscaleUrl(int sx, int sy, int x0, int y0, int z0)
 const
 {
   std::ostringstream stream;
-  stream << "/raw/0_1" << sx << "_" << sy << "/" << x0 << "_" << y0 << "_" << z0;
+  stream << "/raw/0_1/" << sx << "_" << sy << "/" << x0 << "_" << y0 << "_" << z0;
   return getGrayscaleUrl() + stream.str();
 }
 

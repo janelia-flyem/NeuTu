@@ -73,6 +73,8 @@ public:
     return m_interactiveContext;
   }
 
+  void clearData();
+
   bool hasObjectToShow() const;
   void setObjectVisible(bool v);
   bool isObjectVisible();

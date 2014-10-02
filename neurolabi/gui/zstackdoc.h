@@ -156,6 +156,8 @@ public: //attributes
   virtual bool isDeprecated(EComponent component);
 
 
+  void clearData();
+
   /*!
    * \brief The offset from stack space to data space
    */
@@ -646,7 +648,7 @@ public:
 
   void setLabelField(ZStack *getStack);
 
-  ZStack* makeLabelStack(ZStack *getStack = NULL) const;
+  ZStack* makeLabelStack(ZStack *stack = NULL) const;
 
   void notifyPlayerChanged(ZDocPlayer::TRole role);
 

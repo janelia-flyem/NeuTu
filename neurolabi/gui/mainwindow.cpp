@@ -6680,3 +6680,17 @@ void MainWindow::on_actionGenerate_Local_Grayscale_triggered()
     }
   }
 }
+
+void MainWindow::on_actionExport_Segmentation_Result_triggered()
+{
+  ZStackFrame *stackFrame = currentStackFrame();
+  if (stackFrame != NULL) {
+    QString filePath = getSaveFileName("Save Segmentation", "*.tif");
+    if (!filePath.isEmpty()) {
+      const ZStack *stack = stackFrame->document()->getLabelField();
+      if (stack != NULL) {
+        stack->save(filePath.toStdString());
+      }
+    }
+  }
+}
