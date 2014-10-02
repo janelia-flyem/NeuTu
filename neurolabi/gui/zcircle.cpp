@@ -132,7 +132,10 @@ void ZCircle::displayHelper(ZPainter *painter, int stackFocus, Display_Style sty
   double dataFocus = stackFocus - painter->getOffset().z();
   bool visible = false;
 
-  double alpha = 1.0;
+  const QBrush &oldBrush = painter->brush();
+  const QPen &oldPen = painter->pen();
+  double alpha = oldPen.color().alphaF();
+
   if (stackFocus == -1) {
     visible = true;
   } else {
@@ -151,8 +154,8 @@ void ZCircle::displayHelper(ZPainter *painter, int stackFocus, Display_Style sty
         visible = true;
       }
       if (hasVisualEffect(VE_OUT_FOCUS_DIM)) {
-        alpha = r / m_r;
-        alpha *= alpha;
+        alpha *= r * r / m_r / m_r;
+        //alpha *= alpha;
       }
     }
   }
@@ -175,8 +178,6 @@ void ZCircle::displayHelper(ZPainter *painter, int stackFocus, Display_Style sty
     rect.setWidth(adjustedRadius + adjustedRadius);
     rect.setHeight(adjustedRadius + adjustedRadius);
 
-    const QBrush &oldBrush = painter->brush();
-    const QPen &oldPen = painter->pen();
     painter->setBrush(Qt::NoBrush);
 
     QPen pen = oldPen;
@@ -202,9 +203,10 @@ void ZCircle::displayHelper(ZPainter *painter, int stackFocus, Display_Style sty
     painter->drawRect(rect);
 
     //painter->setCompositionMode(oldMode);
-    painter->setBrush(oldBrush);
-    painter->setPen(oldPen);
   }
+
+  painter->setBrush(oldBrush);
+  painter->setPen(oldPen);
 #endif
 }
 
