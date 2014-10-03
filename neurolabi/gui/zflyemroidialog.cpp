@@ -102,7 +102,7 @@ ZFlyEmRoiDialog::ZFlyEmRoiDialog(QWidget *parent) :
           this, SLOT(dump(QString, bool)));
 
   connect(ui->quickModeCheckBox, SIGNAL(toggled(bool)),
-          this, SLOT(updateWidget()));
+          this, SLOT(setQuickMode(bool)));
 
   if (m_project != NULL) {
     m_project->setZ(ui->zSpinBox->value());
@@ -1220,4 +1220,15 @@ void ZFlyEmRoiDialog::runAutoStep(bool ok)
     emit messageDumped("Canceling ...", true);
     m_isAutoStepping = false;
   }
+}
+
+void ZFlyEmRoiDialog::setQuickMode(bool quickMode)
+{
+  if (quickMode) {
+    m_project->setDsIntv(m_xintv, m_yintv, 0);
+  } else {
+    m_project->setDsIntv(0, 0, 0);
+  }
+
+  updateWidget();
 }

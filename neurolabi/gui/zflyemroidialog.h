@@ -72,6 +72,7 @@ public slots:
   void viewAllSynapseIn3D();
 
   void runAutoStep(bool ok);
+  void setQuickMode(bool quickMode);
 
 signals:
   void newDocReady();

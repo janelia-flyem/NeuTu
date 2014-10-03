@@ -13059,12 +13059,12 @@ void ZTest::test(MainWindow *host)
   delete graph;
 #endif
 
-#if 1
+#if 0
   FlyEm::ZSynapseAnnotationArray synapseArray;
   synapseArray.loadJson(
-        GET_DATA_DIR + "/flyem/AL/AL7_tbars_annotated_20141002T152653.json");
+        GET_DATA_DIR + "/flyem/AL/AL7_tbars_annotated_20141002T170940.json");
   ofstream stream(
-        (GET_DATA_DIR + "/flyem/AL/AL7_tbars_annotated_20141002T152653.txt").c_str());
+        (GET_DATA_DIR + "/flyem/AL/AL7_tbars_annotated_20141002T170940.txt").c_str());
 
   std::vector<ZPunctum*> puncta = synapseArray.toTBarPuncta(10.0);
   for (std::vector<ZPunctum*>::const_iterator iter = puncta.begin();
@@ -13108,5 +13108,95 @@ void ZTest::test(MainWindow *host)
 //  graph->exportTxtFile(GET_DATA_DIR + "/flyem/AL/graph.txt");
 
 //  delete graph;
+#endif
+
+#if 0
+  ZStackFactory factory;
+
+  std::string synapseFile = GET_DATA_DIR + "/flyem/AL/synpase_labeled4.txt";
+
+  FILE *fp = fopen(synapseFile.c_str(), "r");
+
+  ZWeightedPointArray ptArray;
+
+  double dsScale = 5.0;
+
+  ZString line;
+  while (line.readLine(fp)) {
+    std::vector<int> pt = line.toIntegerArray();
+    if (pt.size() == 4) {
+      double weight = 1.0;
+      if (pt[3] > 0) {
+        weight = 3.0;
+      }
+      ptArray.append(pt[0] / dsScale, pt[1] / dsScale, pt[2] / dsScale, weight);
+    }
+  }
+
+  ZStack *stack = factory.makeDensityMap(ptArray, 15.0);
+
+  stack->save(GET_DATA_DIR + "/test.tif");
+#endif
+
+#if 0
+  std::string synapseFile = GET_DATA_DIR + "/flyem/AL/synpase_labeled4.txt";
+
+  FILE *fp = fopen(synapseFile.c_str(), "r");
+
+  ZWeightedPointArray ptArray;
+
+  double dsScale = 5.0;
+
+  ZString line;
+  while (line.readLine(fp)) {
+    std::vector<int> pt = line.toIntegerArray();
+    if (pt.size() == 4) {
+      double weight = 1.0;
+      if (pt[3] > 0) {
+        weight = 3.0;
+      }
+      ptArray.append(pt[0], pt[1], pt[2], weight);
+    }
+  }
+
+  fclose(fp);
+
+  ZStack stack;
+  stack.load(GET_DATA_DIR + "/flyem/AL/seg_ds5_v3.tif");
+
+  ofstream stream(
+        (GET_DATA_DIR + "/flyem/AL/synpase_labeled4_processed.txt").c_str());
+  for (ZWeightedPointArray::const_iterator iter = ptArray.begin();
+       iter != ptArray.end(); ++iter) {
+    const ZPoint &pt = *iter;
+    ZIntPoint dsPt = (pt * (1.0 / dsScale)).toIntPoint();
+    int v = stack.getIntValue(dsPt.getX(), dsPt.getY(), dsPt.getZ());
+    stream << pt.x() << " " << pt.y() << " " << pt.z() << " " << v << std::endl;
+  }
+  stream.close();
+#endif
+
+#if 1
+  std::string annotationFile = GET_DATA_DIR +
+      "/flyem/FIB/skeletonization/session41/annotations-body.json";
+  std::string bundleFile = GET_DATA_DIR +
+      "/flyem/FIB/skeletonization/session41/bundle.json";
+
+  ZFlyEmNeuronArray neuronArray;
+  neuronArray.importNamedBody(annotationFile);
+//  neuronArray.assignClass(bundleFile);
+
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "2b6c", -1);
+
+  ZDvidWriter writer;
+  if (writer.open(target)) {
+    //for each neuron, update annotation
+    for (ZFlyEmNeuronArray::const_iterator iter = neuronArray.begin();
+         iter != neuronArray.end(); ++iter) {
+      const ZFlyEmNeuron &neuron = *iter;
+      writer.writeAnnotation(neuron);
+    }
+  }
 #endif
 }

@@ -611,6 +611,10 @@ void FlyEmDataForm::computeThumbnailFunc(ZFlyEmNeuron *neuron)
 
 void FlyEmDataForm::updateThumbnail(ZFlyEmNeuron *neuron)
 {
+  if (neuron == NULL) {
+    return;
+  }
+
   initThumbnailScene();
 
   bool isWaiting = false;
@@ -823,5 +827,5 @@ void FlyEmDataForm::resizeEvent(QResizeEvent *)
 
 void FlyEmDataForm::showEvent(QShowEvent *)
 {
-  //initThumbnailScene();
+  initThumbnailScene();
 }

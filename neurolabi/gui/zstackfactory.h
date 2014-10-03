@@ -10,6 +10,7 @@
 class ZClosedCurve;
 class ZStroke2d;
 class ZPointArray;
+class ZWeightedPointArray;
 
 /*!
  * \brief The class of creating a stack
@@ -54,6 +55,8 @@ public:
   static ZStack* makePolygonPicture(const ZStroke2d &stroke);
 
   static ZStack* makeDensityMap(const ZPointArray &ptArray, double sigma);
+  static ZStack* makeDensityMap(
+      const ZWeightedPointArray &ptArray, double sigma);
 
   /*!
    * \brief Only support GREY data
