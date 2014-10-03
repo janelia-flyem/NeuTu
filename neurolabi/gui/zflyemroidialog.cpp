@@ -20,11 +20,18 @@
 #include "zintcuboid.h"
 #include "zflyemutilities.h"
 #include "zstring.h"
+#include "zfiletype.h"
+#include "z3dvolumesource.h"
+#include "zwindowfactory.h"
+#include "z3dpunctafilter.h"
+#include "z3dvolumeraycaster.h"
+#include "z3dvolumeraycasterrenderer.h"
 
 ZFlyEmRoiDialog::ZFlyEmRoiDialog(QWidget *parent) :
   QDialog(parent), ZProgressable(),
   ui(new Ui::ZFlyEmRoiDialog), m_project(NULL),
-  m_isLoadingGrayScale(false), m_xintv(4), m_yintv(4)
+  m_isLoadingGrayScale(false), m_isAutoStepping(false),
+  m_xintv(4), m_yintv(4)
 {
   ui->setupUi(this);
 
@@ -45,6 +52,12 @@ ZFlyEmRoiDialog::ZFlyEmRoiDialog(QWidget *parent) :
           this, SLOT(uploadRoi()));
   connect(ui->loadSynapsePushButton, SIGNAL(clicked()),
           this, SLOT(loadSynapse()));
+  connect(ui->synapseVisibleCheckBox, SIGNAL(toggled(bool)),
+          this, SLOT(toggleSynapseView(bool)));
+  connect(ui->viewAllSynapsePushButton, SIGNAL(clicked()),
+          this, SLOT(viewAllSynapseIn3D()));
+  connect(this, SIGNAL(currentSliceLoaded(int)),
+          this, SLOT(loadNextSlice(int)));
 
 #if 0
   QSize iconSize(24, 24);
@@ -130,6 +143,12 @@ void ZFlyEmRoiDialog::createMenu()
   QAction *exportAction = new QAction("Export", this);
   m_mainMenu->addAction(exportAction);
   connect(exportAction, SIGNAL(triggered()), this, SLOT(exportResult()));
+
+  m_autoStepAction = new QAction("Auto Step", this);
+  m_mainMenu->addAction(m_autoStepAction);
+  m_autoStepAction->setCheckable(true);
+  connect(m_autoStepAction, SIGNAL(toggled(bool)),
+          this, SLOT(runAutoStep(bool)));
 }
 
 void ZFlyEmRoiDialog::clear()
@@ -538,14 +557,25 @@ void ZFlyEmRoiDialog::updateDataFrame()
   endProgress();
   startBackgroundJob();
   m_isLoadingGrayScale = false;
+
+  if (m_isAutoStepping) {
+    emit currentSliceLoaded(m_project->getDataZ());
+  }
 }
 
 void ZFlyEmRoiDialog::loadSynapse()
 {
-  QString fileName = getMainWindow()->getOpenFileName("Load Synapses", "*.json");
+  QString fileName = getMainWindow()->getOpenFileName(
+        "Load Synapses", "Point Cloud (*.json *.txt)");
   if (!fileName.isEmpty()) {
-    m_project->loadSynapse(fileName.toStdString());
+    m_project->loadSynapse(
+          fileName.toStdString(), ui->synapseVisibleCheckBox->isChecked());
   }
+}
+
+void ZFlyEmRoiDialog::toggleSynapseView(bool isOn)
+{
+  m_project->setSynapseVisible(isOn);
 }
 
 void ZFlyEmRoiDialog::startBackgroundJob()
@@ -740,9 +770,50 @@ void ZFlyEmRoiDialog::on_searchPushButton_clicked()
   }
 }
 
+void ZFlyEmRoiDialog::loadNextSlice(int currentZ)
+{
+  if (m_isAutoStepping) {
+    int z = currentZ + ui->stepSpinBox->value();
+    if (z > m_project->getDvidInfo().getMaxZ()) {
+      m_isAutoStepping = false;
+    } else {
+      emit messageDumped(QString("Loading next slice: %1").arg(z), true);
+      ui->zSpinBox->setValue(z);
+      loadGrayscale(z);
+    }
+  }
+}
 
 void ZFlyEmRoiDialog::on_testPushButton_clicked()
 {
+  m_isAutoStepping = true;
+  loadGrayscale(ui->zSpinBox->value());
+
+#if 0
+  if (m_project == NULL) {
+    return;
+  }
+
+  int z = m_project->getCurrentZ();
+
+  ZStack *stack = NULL;
+  std::string lowresPath =
+      m_project->getDvidTarget().getLocalLowResGrayScalePath(m_xintv, m_xintv, 0, z);
+  m_project->setDsIntv(m_xintv, m_yintv, 0);
+  if (QFileInfo(lowresPath.c_str()).exists() && !isPreparingQuickLoad(z)) {
+    stack = new ZStack;
+    stack->load(lowresPath);
+  }
+
+
+  if (stack != NULL) {
+    m_docReader.clear();
+    m_docReader.setStack(stack);
+    emit newDocReady();
+  }
+#endif
+
+#if 0
   ZObject3dScan obj = m_project->getRoiObject();
   obj.downsampleMax(2, 2, 2);
 
@@ -754,6 +825,7 @@ void ZFlyEmRoiDialog::on_testPushButton_clicked()
     frame->open3DWindow(this);
     delete frame;
   }
+#endif
 
 
   //obj.save(GET_DATA_DIR + "/test.sobj");
@@ -1110,4 +1182,42 @@ void ZFlyEmRoiDialog::on_quickNextPushButton_3_clicked()
 {
   int z = setNextZ();
   quickLoad(z);
+}
+
+void ZFlyEmRoiDialog::viewAllSynapseIn3D()
+{
+  if (m_project != NULL) {
+    ZStackDoc *doc = m_project->makeAllSynapseDoc();
+    if (doc != NULL) {
+      ZWindowFactory factory;
+      factory.setParentWidget(this);
+      factory.setWindowTitle("Syanpse View");
+      Z3DWindow *window = factory.make3DWindow(doc);
+      window->getVolumeSource()->setXScale(
+            m_project->getCurrentDsIntv().getX() + 1);
+      window->getVolumeSource()->setYScale(
+            m_project->getCurrentDsIntv().getY() + 1);
+      window->getPunctaFilter()->setColorMode("Original Point Color");
+      window->getPunctaFilter()->setSizeScale(0.5);
+      window->getPunctaFilter()->setStayOnTop(false);
+      window->getVolumeRaycasterRenderer()->setCompositeMode(
+            "Direct Volume Rendering");
+      window->setBackgroundColor(glm::vec3(0.0f), glm::vec3(0.0f));
+      window->resetCamera();
+
+      window->show();
+      window->raise();
+    }
+  }
+}
+
+void ZFlyEmRoiDialog::runAutoStep(bool ok)
+{
+  if (ok) {
+    m_isAutoStepping = true;
+    loadGrayscale(ui->zSpinBox->value());
+  } else{
+    emit messageDumped("Canceling ...", true);
+    m_isAutoStepping = false;
+  }
 }

@@ -75,7 +75,7 @@ class ZStackDoc : public QObject, public ZReportable, public ZProgressable
   Q_OBJECT
 
 public:
-  ZStackDoc(ZStack *getStack, QObject *parent);
+  ZStackDoc(ZStack *stack, QObject *parent);
   virtual ~ZStackDoc();
 
   //Designed for multi-thread reading

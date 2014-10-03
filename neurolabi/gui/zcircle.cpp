@@ -96,9 +96,9 @@ void ZCircle::display(ZPainter &painter, int n,
 #endif
 }
 
-bool ZCircle::isCuttingPlane(double z, double r, double n)
+bool ZCircle::isCuttingPlane(double z, double r, double n, double zScale)
 {
-  double h = fabs(z - n);
+  double h = fabs(z - n) / zScale;
   if (r > h) {
     return true;
   } else if (iround(z) == iround(n)) {
@@ -108,9 +108,9 @@ bool ZCircle::isCuttingPlane(double z, double r, double n)
   return false;
 }
 
-bool ZCircle::isCuttingPlane(double n)
+bool ZCircle::isCuttingPlane(double n, double zScale)
 {
-  return isCuttingPlane(m_center.z(), m_r, n);
+  return isCuttingPlane(m_center.z(), m_r, n, zScale);
 }
 
 double ZCircle::getAdjustedRadius(double r) const
@@ -139,8 +139,8 @@ void ZCircle::displayHelper(ZPainter *painter, int stackFocus, Display_Style sty
   if (stackFocus == -1) {
     visible = true;
   } else {
-    if (isCuttingPlane(m_center.z(), m_r, dataFocus)) {
-      double h = fabs(m_center.z() - dataFocus);
+    if (isCuttingPlane(m_center.z(), m_r, dataFocus, m_zScale)) {
+      double h = fabs(m_center.z() - dataFocus) / m_zScale;
       double r = 0.0;
       if (m_r > h) {
         r = sqrt(m_r * m_r - h * h);

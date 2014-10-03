@@ -47,8 +47,8 @@ public:
   /*!
    * \brief Test if a circle is cut by a plane.
    */
-  static bool isCuttingPlane(double z, double r, double n);
-  bool isCuttingPlane(double n);
+  static bool isCuttingPlane(double z, double r, double n, double zScale = 1.0);
+  bool isCuttingPlane(double n, double zScale = 1.0);
 
   inline void setVisualEffect(TVisualEffect effect) {
     m_visualEffect = effect;

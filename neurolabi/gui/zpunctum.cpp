@@ -106,12 +106,13 @@ void ZPunctum::display(ZPainter &painter, int n, ZStackObject::Display_Style sty
 
   double dataFocus = n - painter.getOffset().z();
 
-  if (!ZCircle::isCuttingPlane(m_z, m_radius, dataFocus)) {
+  if (!ZCircle::isCuttingPlane(m_z, m_radius, dataFocus, m_zScale)) {
     isVisible = false;
   }
 
   if (isVisible) {
     ZCircle circle(m_x, m_y, m_z, m_radius);
+    circle.setZScale(m_zScale);
     circle.setColor(m_color);
     circle.useCosmeticPen(m_usingCosmeticPen);
     circle.setVisualEffect(ZCircle::VE_OUT_FOCUS_DIM);

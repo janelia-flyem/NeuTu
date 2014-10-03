@@ -12962,7 +12962,7 @@ void ZTest::test(MainWindow *host)
   stack2.save(GET_DATA_DIR + "/flyem/AL/seg_ds9_smoothed.tif");
 #endif
 
-#if 1
+#if 0
   //Assign color
   ZStack stack;
   stack.load(GET_DATA_DIR + "/flyem/AL/test/seg_ds9_smoothed_color.tif");
@@ -13057,5 +13057,56 @@ void ZTest::test(MainWindow *host)
   graph->exportTxtFile(GET_DATA_DIR + "/flyem/AL/graph.txt");
 
   delete graph;
+#endif
+
+#if 1
+  FlyEm::ZSynapseAnnotationArray synapseArray;
+  synapseArray.loadJson(
+        GET_DATA_DIR + "/flyem/AL/AL7_tbars_annotated_20141002T152653.json");
+  ofstream stream(
+        (GET_DATA_DIR + "/flyem/AL/AL7_tbars_annotated_20141002T152653.txt").c_str());
+
+  std::vector<ZPunctum*> puncta = synapseArray.toTBarPuncta(10.0);
+  for (std::vector<ZPunctum*>::const_iterator iter = puncta.begin();
+       iter != puncta.end(); ++iter) {
+    const ZPunctum *punctum = *iter;
+    stream << punctum->x() << " " << punctum->y() << " " << punctum->z()
+           << std::endl;
+  }
+  stream.close();
+#endif
+
+#if 0
+  ZPointArray ptArray;
+  ptArray.importTxtFile(GET_DATA_DIR + "/flyem/AL/synapse_cleaned.txt");
+
+  ZGraph *graph = ptArray.computeDistanceGraph(30);
+
+  std::set<int> removeSet;
+  for (int edgeIndex = 0; edgeIndex < graph->getEdgeNumber(); ++edgeIndex) {
+    if (graph->getEdgeWeight(edgeIndex) < 10) {
+      removeSet.insert(graph->getEdgeEnd(edgeIndex));
+    }
+  }
+
+  ZPointArray newPtArray;
+
+  ofstream stream(
+        (GET_DATA_DIR + "/flyem/AL/synapse_cleaned.txt").c_str());
+
+  for (size_t i = 0; i < ptArray.size(); ++i) {
+    if (removeSet.count((int) i) == 0) {
+      newPtArray.push_back(ptArray[i]);
+      stream << ptArray[i].x() << " " << ptArray[i].y() << " "
+             << ptArray[i].z() << std::endl;
+    }
+  }
+  stream.close();
+
+//  graph->printInfo();
+
+//  graph->exportTxtFile(GET_DATA_DIR + "/flyem/AL/graph.txt");
+
+//  delete graph;
 #endif
 }

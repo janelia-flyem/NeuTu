@@ -3160,3 +3160,10 @@ void Z3DWindow::addPolyplaneFrom3dPaint(ZStroke2d *stroke)
 
   delete stroke;
 }
+
+void Z3DWindow::setBackgroundColor(
+    const glm::vec3 &color1, const glm::vec3 &color2)
+{
+  getCompositor()->setBackgroundFirstColor(color1);
+  getCompositor()->setBackgroundSecondColor(color2);
+}

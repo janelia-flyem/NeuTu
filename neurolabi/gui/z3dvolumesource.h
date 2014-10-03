@@ -32,6 +32,8 @@ public:
   inline float getXScale() {return m_xScale.get();}
   inline float getYScale() {return m_yScale.get();}
   inline float getZScale() {return m_zScale.get();}
+  inline void setXScale(float s) { m_xScale.set(s); }
+  inline void setYScale(float s) { m_yScale.set(s); }
   inline void setZScale(float s) { m_zScale.set(s); }
 
   bool volumeNeedDownsample() const;

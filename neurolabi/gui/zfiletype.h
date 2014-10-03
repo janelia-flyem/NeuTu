@@ -15,7 +15,7 @@ public:
     V3D_APO_FILE, V3D_MARKER_FILE,
     RAVELER_BOOKMARK, V3D_PBD_FILE, MYERS_NSP_FILE, OBJECT_SCAN_FILE,
     JPG_FILE, DVID_OBJECT_FILE, HDF5_FILE,
-    MC_STACK_RAW_FILE
+    MC_STACK_RAW_FILE, TXT_FILE
   };
 
   static EFileType fileType(const std::string &filePath);

@@ -87,6 +87,8 @@ public:
 
   void createToolBar();
 
+  void setBackgroundColor(const glm::vec3 &color1, const glm::vec3 &color2);
+
 protected:
 
 private:

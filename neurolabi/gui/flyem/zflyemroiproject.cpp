@@ -13,10 +13,19 @@
 #include "zstackfactory.h"
 #include "zstring.h"
 #include "dvid/zdviddata.h"
+#include "zfiletype.h"
 
 ZFlyEmRoiProject::ZFlyEmRoiProject(const std::string &name, QObject *parent) :
   QObject(parent), m_name(name), m_z(-1), m_dataFrame(NULL)
 {
+  m_punctaColorMap.push_back(QColor(255, 255, 255, 255));
+  m_punctaColorMap.push_back(QColor(0, 255, 255, 255));
+  m_punctaColorMap.push_back(QColor(255, 128, 0, 255));
+  m_punctaColorMap.push_back(QColor(0, 0, 255, 255));
+  m_punctaColorMap.push_back(QColor(255, 0, 255, 255));
+  m_punctaColorMap.push_back(QColor(127, 0, 255, 255));
+  m_punctaColorMap.push_back(QColor(0, 255, 0, 0));
+  m_punctaColorMap.push_back(QColor(255, 255, 0, 0));
 }
 
 ZFlyEmRoiProject::~ZFlyEmRoiProject()
@@ -120,6 +129,25 @@ void ZFlyEmRoiProject::setDataFrame(ZStackFrame *frame)
   updateSynapse();
 }
 
+QList<ZPunctum*> ZFlyEmRoiProject::makePunctumList(bool dsScaled) const
+{
+  QList<ZPunctum*> punctumList;
+  for (std::vector<ZPunctum*>::const_iterator iter = m_puncta.begin();
+       iter != m_puncta.end(); ++iter) {
+    const ZPunctum* punctum = *iter;
+    ZPunctum *docPunctum = new ZPunctum(*punctum);
+    if (dsScaled) {
+      docPunctum->scale(1.0 / (m_currentDsIntv.getX() + 1),
+                        1.0 / (m_currentDsIntv.getY() + 1),
+                        1.0 / (m_currentDsIntv.getZ() + 1));
+    }
+    docPunctum->useCosmeticPen(true);
+    punctumList.append(docPunctum);
+  }
+
+  return punctumList;
+}
+
 void ZFlyEmRoiProject::updateSynapse()
 {
   int z = getDataZ();
@@ -145,6 +173,7 @@ void ZFlyEmRoiProject::updateSynapse()
     docPunctum->scale(1.0 / (m_currentDsIntv.getX() + 1),
                       1.0 / (m_currentDsIntv.getY() + 1),
                       1.0 / (m_currentDsIntv.getZ() + 1));
+    docPunctum->setZScale(m_currentDsIntv.getX() + 1);
     docPunctum->useCosmeticPen(true);
     punctumList.append(docPunctum);
   }
@@ -476,6 +505,13 @@ void ZFlyEmRoiProject::estimateRoi()
     if (!roiCurve.isEmpty()) {
       //m_dataFrame->document()->removeObject(ZDocPlayer::ROLE_ROI, true);
       ZSwcTree *tree = ZSwcGenerator::createSwc(roiCurve, getMarkerRadius());
+
+      if (!m_currentDsIntv.isZero()) {
+        tree->rescale(1.0 / (m_currentDsIntv.getX() + 1),
+                      1.0 / (m_currentDsIntv.getY() + 1),
+                      1.0 / (m_currentDsIntv.getZ() + 1), false);
+      }
+
       /*
       m_dataFrame->document()->executeAddObjectCommand(
             tree, NeuTube::Documentable_SWC, ZDocPlayer::ROLE_ROI);
@@ -843,11 +879,93 @@ void ZFlyEmRoiProject::setDocData(const ZStackDocReader &docReader)
   }
 }
 
-void ZFlyEmRoiProject::loadSynapse(const std::string &filePath)
+void ZFlyEmRoiProject::loadSynapse(const std::string &filePath, bool isVisible)
 {
   m_synapseArray.clear();
-  m_synapseArray.loadJson(filePath);
-  m_puncta = m_synapseArray.toTBarPuncta(20.0);
+  m_puncta.clear();
+  const double radius = 20.0;
+  switch (ZFileType::fileType(filePath)) {
+  case ZFileType::JSON_FILE:
+  {
+    m_synapseArray.loadJson(filePath);
+    m_puncta = m_synapseArray.toTBarPuncta(radius);
+  }
+    break;
+  case ZFileType::TXT_FILE:
+  {
+    FILE *fp = fopen(filePath.c_str(), "r");
+    ZString line;
+    while (line.readLine(fp)) {
+      std::vector<int> pt = line.toIntegerArray();
+      if (pt.size() >= 3) {
+        ZPunctum *punctum = new ZPunctum;
+        punctum->setCenter(pt[0], pt[1], pt[2]);
+        punctum->setRadius(radius);
+        punctum->setColor(255, 255, 255, 255);
+        punctum->setVisible(isVisible);
+        if (pt.size() >= 4) {
+          if (pt[3] < (int) m_punctaColorMap.size()) {
+            punctum->setColor(m_punctaColorMap[pt[3]]);
+          }
+        }
+        m_puncta.push_back(punctum);
+      }
+    }
+    fclose(fp);
+  }
+    break;
+  default:
+    break;
+  }
+
   std::sort(m_puncta.begin(), m_puncta.end(), ZPunctum::ZCompare());
   updateSynapse();
+}
+
+void ZFlyEmRoiProject::setSynapseVisible(bool isVisible)
+{
+  if (m_dataFrame != NULL) {
+    QList<ZPunctum*>& puncta = m_dataFrame->document()->getPunctaList();
+    for (QList<ZPunctum*>::iterator iter = puncta.begin();
+         iter != puncta.end(); ++iter) {
+      ZPunctum *punctum = *iter;
+      punctum->setVisible(isVisible);
+    }
+    m_dataFrame->document()->notifyPunctumModified();
+  }
+}
+
+ZStackFrame *ZFlyEmRoiProject::makeAllSynapseFrame() const
+{
+  ZStackFrame *frame = NULL;
+  if (!m_puncta.empty()) {
+    frame = new ZStackFrame();
+    frame->document()->addPunctum(makePunctumList(false));
+
+    if (hasDataFrame()) {
+      if (m_dataFrame->document()->hasStackData()) {
+        frame->document()->loadStack(
+              m_dataFrame->document()->getStack()->clone());
+      }
+    }
+  }
+
+  return frame;
+}
+
+ZStackDoc* ZFlyEmRoiProject::makeAllSynapseDoc() const
+{
+  ZStackDoc *doc = NULL;
+  if (!m_puncta.empty()) {
+    doc = new ZStackDoc(NULL, NULL);
+    doc->addPunctum(makePunctumList(false));
+
+    if (hasDataFrame()) {
+      if (m_dataFrame->document()->hasStackData()) {
+        doc->loadStack(m_dataFrame->document()->getStack()->clone());
+      }
+    }
+  }
+
+  return doc;
 }

@@ -95,6 +95,8 @@ public:
   inline std::string getSource() const { return m_source; }
   inline void setSource(const std::string &source) { m_source = source; }
 
+  inline void setZScale(double scale) { m_zScale = scale; }
+
 protected:
   bool m_selected;
   bool m_isVisible;
@@ -103,6 +105,7 @@ protected:
   ETarget m_target;
   static double m_defaultPenWidth;
   bool m_usingCosmeticPen;
+  double m_zScale;
   std::string m_source;
 };
 

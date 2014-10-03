@@ -60,6 +60,7 @@ ZFileType::EFileType ZFileType::fileType(const std::string &filePath)
         return RAVELER_BOOKMARK;
       }
     }
+    return TXT_FILE;
   } else if (str.endsWith(".nsp", ZString::CASE_INSENSITIVE)) {
     return MYERS_NSP_FILE;
   } else if (str.endsWith(".sobj", ZString::CASE_INSENSITIVE)) {

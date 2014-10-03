@@ -454,7 +454,8 @@ HEADERS += mainwindow.h \
     zstackoperator.h \
     zsleeper.h \
     dvid/libdvidheader.h \
-    dvidoperatedialog.h
+    dvidoperatedialog.h \
+    z3dwindowfactory.h
 
 FORMS += settingdialog.ui \
     frameinfodialog.ui \
@@ -761,7 +762,8 @@ SOURCES += main.cpp \
     zmouseeventprocessor.cpp \
     zstackoperator.cpp \
     zsleeper.cpp \
-    dvidoperatedialog.cpp
+    dvidoperatedialog.cpp \
+    z3dwindowfactory.cpp
 
 OTHER_FILES += \
     extlib.pri

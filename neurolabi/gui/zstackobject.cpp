@@ -2,7 +2,7 @@
 #include "tz_cdefs.h"
 
 ZStackObject::ZStackObject() : m_selected(false), m_isVisible(true),
-  m_style(SOLID), m_target(WIDGET), m_usingCosmeticPen(false)
+  m_style(SOLID), m_target(WIDGET), m_usingCosmeticPen(false), m_zScale(1.0)
 {
 }
 

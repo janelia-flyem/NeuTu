@@ -59,6 +59,11 @@ public:
   inline void setX(double n) {  m_x = n; }
   inline void setY(double n) {  m_y = n; }
   inline void setZ(double n) {  m_z = n; }
+  inline void setCenter(double x, double y, double z) {
+    m_x = x;
+    m_y = y;
+    m_z = z;
+  }
   inline void setCenter(const ZPoint &pt) {
     m_x = pt.x();
     m_y = pt.y();

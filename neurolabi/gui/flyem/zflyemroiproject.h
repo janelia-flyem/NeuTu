@@ -12,6 +12,7 @@ class ZStackFrame;
 class ZSwcTree;
 class ZObject3dScan;
 class ZStackDocReader;
+class ZStackDoc;
 
 /*!
  * \brief The class of managing a FlyEM ROI project
@@ -48,13 +49,14 @@ public:
   bool hasDataFrame() const;
   void setDataFrame(ZStackFrame *frame);
   void setDocData(const ZStackDocReader &docReader);
-  void loadSynapse(const std::string &filePath);
+  void loadSynapse(const std::string &filePath, bool isVisible);
   void shallowClearDataFrame();
   bool addRoi();
   void setRoi(ZClosedCurve *roi, int z);
   int getCurrentZ() const;
   int getDataZ() const;
   void updateSynapse();
+  QList<ZPunctum*> makePunctumList(bool dsScaled) const;
 
   void setZ(int z);
 
@@ -124,6 +126,15 @@ public:
 
   void setDsIntv(int xintv, int yintv, int zintv);
 
+  void setSynapseVisible(bool isVisible);
+
+  ZStackFrame* makeAllSynapseFrame() const;
+  ZStackDoc* makeAllSynapseDoc() const;
+
+  const ZIntPoint& getCurrentDsIntv() const {
+    return m_currentDsIntv;
+  }
+
 private:
   ZObject3dScan* getFilledRoi(
       const ZClosedCurve *curve, int z, ZObject3dScan *result) const;
@@ -143,6 +154,7 @@ private:
   std::vector<ZClosedCurve*> m_curveArray; //curve array sorted by z position
   FlyEm::ZSynapseAnnotationArray m_synapseArray;
   std::vector<ZPunctum*> m_puncta;
+  std::vector<QColor> m_punctaColorMap;
 };
 
 #endif // ZFLYEMROIPROJECT_H

@@ -55,6 +55,8 @@ public slots:
   void shallowClearDataFrame();
   void addRoi();
 
+  void loadNextSlice(int currentZ);
+
   void clear();
 
   void newDataFrame();
@@ -66,6 +68,10 @@ public slots:
   void loadProject(int index);
   void dump(const QString &str, bool appending = false);
   void loadSynapse();
+  void toggleSynapseView(bool isOn);
+  void viewAllSynapseIn3D();
+
+  void runAutoStep(bool ok);
 
 signals:
   void newDocReady();
@@ -73,6 +79,7 @@ signals:
   void progressAdvanced(double);
   void progressDone();
   void messageDumped(QString str, bool appending);
+  void currentSliceLoaded(int z);
 
 protected:
     void closeEvent(QCloseEvent*event);
@@ -161,9 +168,12 @@ private:
   ZDvidTarget m_dvidTarget;
   ZStackDocReader m_docReader;
   bool m_isLoadingGrayScale;
+  bool m_isAutoStepping;
 
   QMenu *m_nextMenu;
   QMenu *m_mainMenu;
+
+  QAction *m_autoStepAction;
 
   int m_xintv;
   int m_yintv;
