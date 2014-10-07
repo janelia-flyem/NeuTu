@@ -108,6 +108,15 @@ public:
   ZJsonObject toJsonObject() const;
   void loadJsonObject(const ZJsonObject &obj);
 
+  bool isSliceVisible(int z) const;
+
+  inline void setPenetrating(bool p) {
+    m_isPenetrating = p;
+  }
+
+  bool hitTest(double x, double y) const;
+  bool hitTest(double x, double y, double z) const;
+
 private:
   static QVector<QColor> constructColorTable();
   const QColor& getLabelColor() const;
@@ -124,6 +133,7 @@ private:
 
   //bool m_isEraser;
   bool m_isFilled;
+  bool m_isPenetrating; //Visible on any slice
 
   static const double m_minWidth;
   static const double m_maxWidth;

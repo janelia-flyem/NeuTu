@@ -4,7 +4,7 @@
 #include <QList>
 #include "zstackdrawable.h"
 #include "swctreenode.h"
-#include "zcircle.h"
+#include "zstackball.h"
 #include "tz_math.h"
 #include "zpoint.h"
 #include "zswctree.h"
@@ -106,8 +106,9 @@ private:
 
   TStackDrawablePtr dereference() const
   {
-    return m_listIdx < m_bundle->m_objLists.size() ? m_bundle->m_objLists[m_listIdx]->at(m_drawableIdx) :
-                                                     (ZStackObject*)(&m_nodeAdaptor);
+    return m_listIdx < m_bundle->m_objLists.size() ?
+          m_bundle->m_objLists[m_listIdx]->at(m_drawableIdx) :
+          dynamic_cast<TStackDrawablePtr>(&m_nodeAdaptor);
   }
 
   void setSwcNodeAdaptor()
@@ -122,9 +123,9 @@ private:
       }
       m_nodeAdaptor.set(SwcTreeNode::x(*m_swcNodeIter), SwcTreeNode::y(*m_swcNodeIter),
                         SwcTreeNode::z(*m_swcNodeIter), SwcTreeNode::radius(*m_swcNodeIter));
-      m_nodeAdaptor.setVisualEffect(ZCircle::VE_BOUND_BOX |
-                                    ZCircle::VE_DASH_PATTERN |
-                                    ZCircle::VE_NO_FILL);
+      m_nodeAdaptor.setVisualEffect(ZStackBall::VE_BOUND_BOX |
+                                    ZStackBall::VE_DASH_PATTERN |
+                                    ZStackBall::VE_NO_FILL);
       m_nodeAdaptor.useCosmeticPen(
             ZSwcTree::getHostState(*m_swcNodeIter, ZSwcTree::NODE_STATE_COSMETIC));
     }
@@ -135,7 +136,7 @@ private:
   int m_drawableIdx;
   std::set<Swc_Tree_Node*>::const_iterator m_swcNodeIter;
 
-  ZCircle m_nodeAdaptor;
+  ZStackBall m_nodeAdaptor;
 };
 
 } // namespace impl

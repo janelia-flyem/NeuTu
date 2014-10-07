@@ -14,6 +14,8 @@
 #include "zstring.h"
 #include "dvid/zdviddata.h"
 #include "zfiletype.h"
+#include "zswcforest.h"
+#include "zswctree.h"
 
 ZFlyEmRoiProject::ZFlyEmRoiProject(const std::string &name, QObject *parent) :
   QObject(parent), m_name(name), m_z(-1), m_dataFrame(NULL)
@@ -968,4 +970,32 @@ ZStackDoc* ZFlyEmRoiProject::makeAllSynapseDoc() const
   }
 
   return doc;
+}
+
+void ZFlyEmRoiProject::clearRoi()
+{
+  m_curveArray.clear();
+}
+
+void ZFlyEmRoiProject::importRoiFromSwc(ZSwcTree *tree)
+{
+  clearRoi();
+  if (tree != NULL) {
+    ZSwcForest *forest = tree->toSwcTreeArray();
+    for (ZSwcForest::iterator iter = forest->begin();
+         iter != forest->end(); ++iter) {
+      ZSwcTree *roiSwc = *iter;
+      ZSwcTree::DepthFirstIterator iter(roiSwc);
+      ZClosedCurve *roiCurve = new ZClosedCurve;
+      double z = 0.0;
+      for (Swc_Tree_Node *tn = iter.begin(); tn != NULL; tn = iter.next()) {
+        if (SwcTreeNode::isRegular(tn)) {
+          z = SwcTreeNode::z(tn);
+          roiCurve->append(SwcTreeNode::pos(tn));
+        }
+      }
+      setRoi(roiCurve, iround(z));
+    }
+    delete forest;
+  }
 }

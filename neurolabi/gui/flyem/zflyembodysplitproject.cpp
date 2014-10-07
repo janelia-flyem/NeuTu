@@ -3,7 +3,7 @@
 #include "z3dwindow.h"
 #include "zstackdoclabelstackfactory.h"
 #include "zstackobject.h"
-#include "zcircle.h"
+#include "zstackball.h"
 #include "zsparsestack.h"
 #include "z3dvolumesource.h"
 #include "zswctree.h"
@@ -304,7 +304,7 @@ void ZFlyEmBodySplitProject::addBookmarkDecoration(
     for (ZFlyEmBookmarkArray::const_iterator iter = bookmarkArray.begin();
          iter != bookmarkArray.end(); ++iter) {
       const ZFlyEmBookmark &bookmark = *iter;
-      ZCircle *circle = new ZCircle;
+      ZStackBall *circle = new ZStackBall;
       circle->set(bookmark.getLocation(), 5);
       circle->setColor(255, 0, 0);
       circle->setVisible(m_isBookmarkVisible);

@@ -9,6 +9,7 @@
 #include "zstack.hxx"
 #include "zobject3d.h"
 #include "zjsonobject.h"
+#include "tz_geometry.h"
 
 const double ZStroke2d::m_minWidth = 1.0;
 const double ZStroke2d::m_maxWidth = 100.0;
@@ -16,7 +17,8 @@ const double ZStroke2d::m_maxWidth = 100.0;
 //const QColor ZStroke2d::m_blackColor = Qt::black;
 const ZLabelColorTable ZStroke2d::m_colorTable;
 
-ZStroke2d::ZStroke2d() : m_width(10.0), m_z(-1), m_isFilled(true)
+ZStroke2d::ZStroke2d() :
+  m_width(10.0), m_z(-1), m_isFilled(true), m_isPenetrating(true)
 {
   setLabel(1);
   //setEraser(m_isEraser);
@@ -31,6 +33,7 @@ ZStroke2d::ZStroke2d(const ZStroke2d &stroke) : ZStackObject(stroke)
   m_z = stroke.m_z;
   //m_isEraser = stroke.m_isEraser;
   m_isFilled = stroke.m_isFilled;
+  m_isPenetrating = m_isPenetrating;
 }
 
 ZStroke2d::~ZStroke2d()
@@ -126,20 +129,20 @@ void ZStroke2d::display(ZPainter &painter, int z, Display_Style option) const
   //UNUSED_PARAMETER(z);
   UNUSED_PARAMETER(option);
 
-  if (!isVisible()) {
-    return;
-  }
-
   z -= iround(painter.getOffset().z());
 
-  QColor color = m_color;
-  if (m_z >= 0 && m_z != z) {
-    if (isEraser()) {
-      return;
-    }
-    //color.setAlphaF(color.alphaF() / (1.2 + abs(m_z - z) / 5.0));
+  if (!isSliceVisible(z)) {
     return;
   }
+
+  QColor color = m_color;
+//  if (m_z >= 0 && m_z != z) {
+//    if (isEraser()) {
+//      return;
+//    }
+//    //color.setAlphaF(color.alphaF() / (1.2 + abs(m_z - z) / 5.0));
+//    return;
+//  }
   QPen pen(color);
   QBrush brush(color);
 
@@ -172,6 +175,16 @@ void ZStroke2d::display(ZPainter &painter, int z, Display_Style option) const
         painter.setBrush(brush);
         painter.drawEllipse(QPointF(m_pointArray.back()), m_width / 2, m_width / 2);
         */
+    }
+
+    if (isSelected()) {
+      painter.setPen(QColor(255, 255, 0));
+      double radius = m_width / 3.0;
+      painter.drawEllipse(m_pointArray.front(), radius, radius);
+      if (m_pointArray.size() > 1) {
+        painter.drawEllipse(m_pointArray.back(), radius, radius);
+        painter.drawPolyline(&(m_pointArray[0]), m_pointArray.size());
+      }
     }
   }
 }
@@ -570,6 +583,7 @@ ZJsonObject ZStroke2d::toJsonObject() const
   obj.setEntry("label", m_label);
   obj.setEntry("width", m_width);
   obj.setEntry("z", m_z);
+  obj.setEntry("z_order", m_zOrder);
 
   ZJsonArray arrayJson;
   for (std::vector<QPointF>::const_iterator iter = m_pointArray.begin();
@@ -600,6 +614,10 @@ void ZStroke2d::loadJsonObject(const ZJsonObject &obj)
     setZ(ZJsonParser::integerValue(obj["z"]));
   }
 
+  if (obj.hasKey("z_order")) {
+    setZOrder(ZJsonParser::integerValue(obj["z_order"]));
+  }
+
   if (obj.hasKey("stroke")) {
     ZJsonArray ptArray(obj["stroke"], ZJsonValue::SET_INCREASE_REF_COUNT);
     for (size_t i = 0; i < ptArray.size(); ++i) {
@@ -609,4 +627,86 @@ void ZStroke2d::loadJsonObject(const ZJsonObject &obj)
       append(x, y);
     }
   }
+}
+
+bool ZStroke2d::isSliceVisible(int z) const
+{
+  if (isVisible()) {
+    if (z == -1 || m_isPenetrating || m_z == z) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+bool ZStroke2d::hitTest(double x, double y) const
+{
+  bool hit = false;
+
+  for (std::vector<QPointF>::const_iterator iter = m_pointArray.begin();
+       iter != m_pointArray.end(); ++iter) {
+    const QPointF &pt = *iter;
+    double dx = pt.x() - x;
+    double dy = pt.y() - y;
+    double dist = sqrt(dx * dx + dy * dy);
+    if (dist * 2 < m_width) {
+      hit = true;
+      break;
+    }
+  }
+
+  if (!hit) {
+    for (size_t i = 1; i < m_pointArray.size(); ++i) {
+      const QPointF &pt1 = m_pointArray[i - 1];
+      const QPointF &pt2 = m_pointArray[i];
+
+      double dx = pt2.x() - pt1.x();
+      double dy = pt2.y() - pt1.y();
+
+      double length = sqrt(dx * dx + dy * dy);
+
+      if (length > 1.0) {
+        double tx = x;
+        double ty = y;
+        tx -= pt1.x();
+        ty -= pt1.y();
+        double angle = -Vector_Angle(dx, dy);
+        double cosAngle = cos(angle);
+        double sinAngle = sin(angle);
+
+        double tmpX = tx;
+        tx = cosAngle * tx - sinAngle * ty;
+        ty = sinAngle * tmpX + cosAngle * ty;
+
+        /*
+        QTransform transform;
+        transform.translate(-pt1.x(), -pt1.y());
+        transform.rotateRadians(-Vector_Angle(dx, dy));
+
+        qreal tx = 0;
+        qreal ty = 0;
+        transform.map(x, y, &tx, &ty);
+        */
+
+        if (tx >= 0 && tx <= length && fabs(ty) <= m_width * 0.5) {
+          hit = true;
+          break;
+        }
+      }
+    }
+  }
+
+  return hit;
+}
+
+bool ZStroke2d::hitTest(double x, double y, double z) const
+{
+  bool hit = false;
+
+  if (iround(z) == m_z) {
+    hit = hitTest(x, y);
+  }
+
+  return hit;
 }

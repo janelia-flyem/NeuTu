@@ -135,6 +135,7 @@ private slots:
   void on_quickNextPushButton_3_clicked();
 
   void exportResult();
+  void importRoi();
 
 private:
   void loadGrayscaleFunc(int z, bool lowres);
@@ -175,6 +176,7 @@ private:
   QMenu *m_mainMenu;
 
   QAction *m_autoStepAction;
+  QAction *m_importRoiAction;
 
   int m_xintv;
   int m_yintv;

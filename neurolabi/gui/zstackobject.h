@@ -63,6 +63,8 @@ public:
   inline ETarget getTarget() const { return m_target; }
   inline void setTarget(ETarget target) { m_target = target; }
 
+  virtual bool isSliceVisible(int z) const;
+
   const QColor& getColor() const;
   void setColor(int red, int green, int blue);
   void setColor(int red, int green, int blue, int alpha);
@@ -97,6 +99,20 @@ public:
 
   inline void setZScale(double scale) { m_zScale = scale; }
 
+  inline int getZOrder() const { return m_zOrder; }
+  void setZOrder(int order) { m_zOrder = order; }
+
+  struct ZOrderCompare {
+    bool operator() (const ZStackObject &obj1, const ZStackObject &obj2) {
+      return (obj1.getZOrder() < obj2.getZOrder());
+    }
+
+    bool operator() (const ZStackObject *obj1, const ZStackObject *obj2) {
+      return (obj1->getZOrder() < obj2->getZOrder());
+    }
+  };
+
+
 protected:
   bool m_selected;
   bool m_isVisible;
@@ -107,6 +123,7 @@ protected:
   bool m_usingCosmeticPen;
   double m_zScale;
   std::string m_source;
+  int m_zOrder;
 };
 
 #define ZSTACKOBJECT_DEFINE_CLASS_NAME(c) \

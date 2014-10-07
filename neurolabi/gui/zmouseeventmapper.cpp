@@ -7,6 +7,7 @@
 #include "neutube.h"
 #include "zstackoperator.h"
 #include "zstack.hxx"
+#include "zstackdochittest.h"
 
 ZMouseEventMapper::ZMouseEventMapper(
     ZInteractiveContext *context, ZStackDoc *doc) :
@@ -77,6 +78,7 @@ ZStackOperator ZMouseEventLeftButtonReleaseMapper::getOperation(
     }
 
     if (op.isNull()) {
+      //Add new stroke
       if (m_context->strokeEditMode() == ZInteractiveContext::STROKE_DRAW) {
         op.setOperation(ZStackOperator::OP_STROKE_ADD_NEW);
       }
@@ -86,57 +88,82 @@ ZStackOperator ZMouseEventLeftButtonReleaseMapper::getOperation(
       ZPoint rawStackPosition = event.getRawStackPosition();
       ZPoint stackPosition = rawStackPosition + getDocument()->getStackOffset();
       if (m_doc->getStack()->containsRaw(rawStackPosition)) {
+        if (m_context->swcEditMode() == ZInteractiveContext::SWC_EDIT_SELECT &&
+            m_context->strokeEditMode() == ZInteractiveContext::STROKE_EDIT_OFF) {
+          ZStackDocHitTest hitManager;
+          if (rawStackPosition.z() < 0) {
+            hitManager.hitTest(
+                  getDocument(), stackPosition.x(), stackPosition.y());
+          } else {
+            hitManager.hitTest(getDocument(), stackPosition);
+          }
+          op.setHitSwcNode(hitManager.getHitSwcNode());
+          op.setHitStroke2d(hitManager.getHitStroke2d());
+        }
+
+        if (op.getHitSwcNode() != NULL) { //SWC select operation
+          if (event.getModifiers() == Qt::NoModifier) {
+            op.setOperation(ZStackOperator::OP_SWC_SELECT_SINGLE_NODE);
+          } else if (event.getModifiers() == Qt::ShiftModifier) {
+            op.setOperation(ZStackOperator::OP_SWC_SELECT_CONNECTION);
+          } else if (event.getModifiers() == Qt::ControlModifier) {
+            if (getDocument()->selectedSwcTreeNodes()->count(
+                  op.getHitSwcNode()) > 0) {
+              op.setOperation(ZStackOperator::OP_SWC_DESELECT_SINGLE_NODE);
+            } else {
+              op.setOperation(ZStackOperator::OP_SWC_SELECT_MULTIPLE_NODE);
+            }
+          } else if (event.getModifiers() & Qt::AltModifier) {
+            op.setOperation(ZStackOperator::OP_SWC_SELECT_FLOOD);
+          }
+        } else if (op.getHitStroke2d() != NULL) {
+          if (event.getModifiers() == Qt::NoModifier) {
+            op.setOperation(ZStackOperator::OP_STROKE_SELECT_SINGLE);
+          } else if (event.getModifiers() == Qt::ShiftModifier ||
+                     event.getModifiers() == Qt::ControlModifier) {
+            op.setOperation(ZStackOperator::OP_STROKE_SELECT_MULTIPLE);
+          }
+        } else {
+          op.setOperation(ZStackOperator::OP_DESELECT_ALL);
+        }
+      }
+    }
+
+        /*
         if (rawStackPosition.z() < 0) {
           op.setHitSwcNode(
                 m_doc->swcHitTest(stackPosition.x(), stackPosition.y()));
         } else {
           op.setHitSwcNode(m_doc->swcHitTest(stackPosition));
         }
-        switch (m_context->swcEditMode()) {
-        case ZInteractiveContext::SWC_EDIT_SELECT:
-          if (event.getModifiers() == Qt::NoModifier) {
-            if (op.getHitSwcNode() != NULL) {
-              op.setOperation(ZStackOperator::OP_SWC_SELECT_SINGLE_NODE);
-            } else {
-              if (getDocument()->selectedSwcTreeNodes()->empty()) {
-                op.setOperation(ZStackOperator::OP_SHOW_TRACE_CONTEXT_MENU);
-              } else {
-                op.setOperation(ZStackOperator::OP_SWC_DESELECT_ALL_NODE);
-              }
-            }
+        */
+
+    if (op.isNull()) {
+      switch (m_context->swcEditMode()) {
+      case ZInteractiveContext::SWC_EDIT_SELECT:
+        if (event.getModifiers() == Qt::NoModifier) {
+          if (getDocument()->selectedSwcTreeNodes()->empty()) {
+            op.setOperation(ZStackOperator::OP_SHOW_TRACE_CONTEXT_MENU);
           } else {
-            if (op.getHitSwcNode() != NULL) {
-              if (event.getModifiers() == Qt::ShiftModifier) {
-                op.setOperation(ZStackOperator::OP_SWC_SELECT_CONNECTION);
-              } else if (event.getModifiers() == Qt::ControlModifier) {
-                if (getDocument()->selectedSwcTreeNodes()->count(
-                      op.getHitSwcNode()) > 0) {
-                  op.setOperation(ZStackOperator::OP_SWC_DESELECT_SINGLE_NODE);
-                } else {
-                  op.setOperation(ZStackOperator::OP_SWC_SELECT_MULTIPLE_NODE);
-                }
-              } else if (event.getModifiers() & Qt::AltModifier) {
-                op.setOperation(ZStackOperator::OP_SWC_SELECT_FLOOD);
-              }
-            }
+            op.setOperation(ZStackOperator::OP_SWC_DESELECT_ALL_NODE);
           }
-          break;
-        case ZInteractiveContext::SWC_EDIT_CONNECT:
-          op.setOperation(ZStackOperator::OP_SWC_CONNECT_TO);
-          break;
-        case ZInteractiveContext::SWC_EDIT_EXTEND:
-          if (event.getModifiers() == Qt::ControlModifier) {
-            op.setOperation(ZStackOperator::OP_SWC_EXTEND);
-          } else {
-            op.setOperation(ZStackOperator::OP_SWC_SMART_EXTEND);
-          }
-          break;
-        case ZInteractiveContext::SWC_EDIT_ADD_NODE:
-          op.setOperation(ZStackOperator::OP_SWC_ADD_NODE);
-          break;
-        default:
-          break;
         }
+        break;
+      case ZInteractiveContext::SWC_EDIT_CONNECT:
+        op.setOperation(ZStackOperator::OP_SWC_CONNECT_TO);
+        break;
+      case ZInteractiveContext::SWC_EDIT_EXTEND:
+        if (event.getModifiers() == Qt::ControlModifier) {
+          op.setOperation(ZStackOperator::OP_SWC_EXTEND);
+        } else {
+          op.setOperation(ZStackOperator::OP_SWC_SMART_EXTEND);
+        }
+        break;
+      case ZInteractiveContext::SWC_EDIT_ADD_NODE:
+        op.setOperation(ZStackOperator::OP_SWC_ADD_NODE);
+        break;
+      default:
+        break;
       }
     }
 

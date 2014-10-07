@@ -1527,7 +1527,7 @@ void Z3DWindow::exitZoomInView()
 
 void Z3DWindow::removeSelectedObject()
 {
-  m_doc->executeRemoveObjectCommand();
+  m_doc->executeRemoveSelectedObjectCommand();
 #if 0
   if (!m_doc->selectedSwcTreeNodes()->empty()) {
     m_doc->executeDeleteSwcNodeCommand();
@@ -2541,25 +2541,24 @@ void Z3DWindow::transformSelectedPuncta()
       if (dlg.isTranslateFirst()) {
         for (std::set<ZPunctum*>::iterator iter = punctaSet->begin();
              iter != punctaSet->end(); ++iter) {
-          (*iter)->setX((*iter)->x() + dx);
-          (*iter)->setY((*iter)->y() + dy);
-          (*iter)->setZ((*iter)->z() + dz);
+          (*iter)->setCenter(
+                (*iter)->x() + dx, (*iter)->y() + dy, (*iter)->z() + dz);
         }
       }
 
       for (std::set<ZPunctum*>::iterator iter = punctaSet->begin();
            iter != punctaSet->end(); ++iter) {
-        (*iter)->setX((*iter)->x() * dlg.getScaleValue(SwcSkeletonTransformDialog::X));
-        (*iter)->setY((*iter)->y() * dlg.getScaleValue(SwcSkeletonTransformDialog::Y));
-        (*iter)->setZ((*iter)->z() * dlg.getScaleValue(SwcSkeletonTransformDialog::Z));
+        (*iter)->setCenter(
+              (*iter)->x() * dlg.getScaleValue(SwcSkeletonTransformDialog::X),
+              (*iter)->y() * dlg.getScaleValue(SwcSkeletonTransformDialog::Y),
+              (*iter)->z() * dlg.getScaleValue(SwcSkeletonTransformDialog::Z));
       }
 
       if (!dlg.isTranslateFirst()) {
         for (std::set<ZPunctum*>::iterator iter = punctaSet->begin();
              iter != punctaSet->end(); ++iter) {
-          (*iter)->setX((*iter)->x() + dx);
-          (*iter)->setY((*iter)->y() + dy);
-          (*iter)->setZ((*iter)->z() + dz);
+          (*iter)->setCenter(
+                (*iter)->x() + dx, (*iter)->y() + dy, (*iter)->z() + dz);
         }
       }
     }
@@ -2581,25 +2580,24 @@ void Z3DWindow::transformAllPuncta()
       if (dlg.isTranslateFirst()) {
         for (QList<ZPunctum*>::iterator iter = punctaSet->begin();
              iter != punctaSet->end(); ++iter) {
-          (*iter)->setX((*iter)->x() + dx);
-          (*iter)->setY((*iter)->y() + dy);
-          (*iter)->setZ((*iter)->z() + dz);
+          ZPunctum *punctum = *iter;
+          punctum->translate(dx, dy, dz);
         }
       }
 
       for (QList<ZPunctum*>::iterator iter = punctaSet->begin();
            iter != punctaSet->end(); ++iter) {
-        (*iter)->setX((*iter)->x() * dlg.getScaleValue(SwcSkeletonTransformDialog::X));
-        (*iter)->setY((*iter)->y() * dlg.getScaleValue(SwcSkeletonTransformDialog::Y));
-        (*iter)->setZ((*iter)->z() * dlg.getScaleValue(SwcSkeletonTransformDialog::Z));
+        (*iter)->setCenter(
+              (*iter)->x() * dlg.getScaleValue(SwcSkeletonTransformDialog::X),
+              (*iter)->y() * dlg.getScaleValue(SwcSkeletonTransformDialog::Y),
+              (*iter)->z() * dlg.getScaleValue(SwcSkeletonTransformDialog::Z));
       }
 
       if (!dlg.isTranslateFirst()) {
         for (QList<ZPunctum*>::iterator iter = punctaSet->begin();
              iter != punctaSet->end(); ++iter) {
-          (*iter)->setX((*iter)->x() + dx);
-          (*iter)->setY((*iter)->y() + dy);
-          (*iter)->setZ((*iter)->z() + dz);
+          ZPunctum *punctum = *iter;
+          punctum->translate(dx, dy, dz);
         }
       }
       m_doc->notifyPunctumModified();

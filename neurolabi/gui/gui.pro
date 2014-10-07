@@ -455,7 +455,12 @@ HEADERS += mainwindow.h \
     zsleeper.h \
     dvid/libdvidheader.h \
     dvidoperatedialog.h \
-    z3dwindowfactory.h
+    z3dwindowfactory.h \
+    qthreadfuturemap.h \
+    zstackball.h \
+    zstackdochittest.h \
+    zkeyeventmapper.h \
+    zuserinputevent.h
 
 FORMS += settingdialog.ui \
     frameinfodialog.ui \
@@ -763,7 +768,12 @@ SOURCES += main.cpp \
     zstackoperator.cpp \
     zsleeper.cpp \
     dvidoperatedialog.cpp \
-    z3dwindowfactory.cpp
+    z3dwindowfactory.cpp \
+    qthreadfuturemap.cpp \
+    zstackball.cpp \
+    zstackdochittest.cpp \
+    zkeyeventmapper.cpp \
+    zuserinputevent.cpp
 
 OTHER_FILES += \
     extlib.pri

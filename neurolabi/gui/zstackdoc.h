@@ -61,7 +61,7 @@ class ZStackDocReader;
 class ZStackFactory;
 class ZSparseObject;
 class ZSparseStack;
-class ZCircle;
+class ZStackBall;
 class ZUndoCommand;
 
 /*!
@@ -203,10 +203,18 @@ public: //attributes
   inline std::set<ZPunctum*>* selectedPuncta() {return &m_selectedPuncta;}
   inline std::set<ZLocsegChain*>* selectedChains() {return &m_selectedChains;}
   inline std::set<ZSwcTree*>* selectedSwcs() {return &m_selectedSwcs;}
-  inline const std::set<ZSwcTree*>* selectedSwcs() const {return &m_selectedSwcs;}
-  inline std::set<Swc_Tree_Node*>* selectedSwcTreeNodes() {return &m_selectedSwcTreeNodes;}
+  inline const std::set<ZSwcTree*>* selectedSwcs() const {
+    return &m_selectedSwcs;}
+  inline std::set<Swc_Tree_Node*>* selectedSwcTreeNodes() {
+    return &m_selectedSwcTreeNodes;}
   inline const std::set<Swc_Tree_Node*>* selectedSwcTreeNodes() const {
     return &m_selectedSwcTreeNodes;}
+
+  inline std::set<ZStroke2d*>* selectedStrokeList() {
+    return &m_selectedStroke;}
+  inline const std::set<ZStroke2d*>* selectedStrokeList() const {
+    return &m_selectedStroke;}
+
   inline ZSwcNetwork* swcNetwork() { return m_swcNetwork; }
   ZResolution stackResolution() const;
   std::string stackSourcePath() const;
@@ -450,6 +458,7 @@ public: /* puncta related methods */
   void setChainSelected(ZLocsegChain* chain, bool select);
   void setChainSelected(const std::vector<ZLocsegChain*> &chains, bool select);
   void deselectAllChains();
+  void deselectAllStroke();
   void setSwcSelected(ZSwcTree* tree, bool select);
   template <class InputIterator>
   void setSwcSelected(InputIterator first, InputIterator last, bool select);
@@ -585,6 +594,9 @@ public: /* puncta related methods */
    */
   ZSwcTree *getMergedSwc();
 
+  void setSelected(ZStackObject *obj, NeuTube::EDocumentableType type,
+                   bool selecting = true);
+
 public:
   inline NeuTube::Document::ETag getTag() const { return m_tag; }
   inline void setTag(NeuTube::Document::ETag tag) { m_tag = tag; }
@@ -655,7 +667,7 @@ public:
 public slots: //undoable commands
   bool executeAddObjectCommand(ZStackObject *obj, NeuTube::EDocumentableType type,
       ZDocPlayer::TRole role = ZDocPlayer::ROLE_NONE);
-  bool executeRemoveObjectCommand();
+  bool executeRemoveSelectedObjectCommand();
   //bool executeRemoveUnselectedObjectCommand();
   bool executeMoveObjectCommand(
       double x, double y, double z,
@@ -838,6 +850,7 @@ private:
   std::set<ZPunctum*> m_selectedPuncta;
   std::set<ZSwcTree*> m_selectedSwcs;
   std::set<Swc_Tree_Node*> m_selectedSwcTreeNodes;
+  std::set<ZStroke2d*> m_selectedStroke;
 
   //model-view structure for obj list and edit
   ZSwcObjsModel *m_swcObjsModel;

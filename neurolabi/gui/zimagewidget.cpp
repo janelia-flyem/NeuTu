@@ -339,19 +339,33 @@ void ZImageWidget::paintEvent(QPaintEvent * /*event*/)
       painter1.setTransform(transform);
 
       painter1.setStackOffset(m_paintBundle->getStackOffset());
-      for (ZPaintBundle::const_iterator it = m_paintBundle->begin();
-           it != m_paintBundle->end(); ++it) {
+      std::vector<const ZStackObject*> visibleObject;
+      ZPaintBundle::const_iterator iter = m_paintBundle->begin();
+      for (;iter != m_paintBundle->end(); ++iter) {
+        const ZStackObject *obj = *iter;
+        if (obj->getTarget() == ZStackObject::WIDGET &&
+            obj->isSliceVisible(m_paintBundle->sliceIndex())) {
+//          obj->display(painter1, m_paintBundle->sliceIndex(),
+//                       m_paintBundle->displayStyle());
 #ifdef _DEBUG_2
-          std::cout << (*it)->className() << std::endl;
+          std::cout << obj << obj->className() << std::endl;
 #endif
-        if ((*it)->getTarget() == ZStackObject::WIDGET) {
-          (*it)->display(painter1, m_paintBundle->sliceIndex(),
-                         m_paintBundle->displayStyle());
+          visibleObject.push_back(obj);
         }
-#ifdef _DEBUG_2
-        std::cout << "object painted" << std::endl;
-#endif
       }
+
+      std::sort(visibleObject.begin(), visibleObject.end(),
+                ZStackObject::ZOrderCompare());
+      for (std::vector<const ZStackObject*>::const_iterator
+           iter = visibleObject.begin(); iter != visibleObject.end(); ++iter) {
+        const ZStackObject *obj = *iter;
+#ifdef _DEBUG_2
+          std::cout << obj << std::endl;
+#endif
+        obj->display(painter1, m_paintBundle->sliceIndex(),
+                     m_paintBundle->displayStyle());
+      }
+
       painter1.end();
     }
 

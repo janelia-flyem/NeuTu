@@ -420,8 +420,8 @@ public:
    * \brief Convert the tree into an array of trees.
    *
    * It will move all regular nodes in the current tree to the returned forest.
-   * After the operation, the current tree becomes empty. It returns NULL if the
-   * current tree is empty.
+   * After the operation, the current tree becomes empty. The user is responsible
+   * to free the returned object. It returns NULL if the current tree is empty.
    *
    * \return An array of trees.
    */

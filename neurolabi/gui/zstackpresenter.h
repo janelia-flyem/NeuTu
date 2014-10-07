@@ -390,6 +390,8 @@ private:
 
   ZMouseEventProcessor m_mouseEventProcessor;
 
+  int m_zOrder;
+
 signals:
   void viewModeChanged();
 };

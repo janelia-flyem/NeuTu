@@ -6,36 +6,34 @@
 
 #include "zpunctum.h"
 #include "zrandom.h"
-#include "zcircle.h"
+#include "zstackball.h"
 
 ZPunctum::ZPunctum()
   : m_score(1.0)
 {
   setColor(255, 255, 0, 255);
-  setX(-1);
-  setY(-1);
-  setZ(-1);
+  setCenter(-1, -1, -1);
   setRadius(2.0);
   setMaxIntensity(255);
   setMeanIntensity(255);
   setSDevOfIntensity(0);
   updateVolSize();
   updateMass();
+  setVisualEffect(ZStackBall::VE_OUT_FOCUS_DIM);
 }
 
 ZPunctum::ZPunctum(double x, double y, double z, double r)
   : m_score(1.0)
 {
   setColor(255, 255, 0, 255);
-  setX(x);
-  setY(y);
-  setZ(z);
+  setCenter(x, y, z);
   setRadius(r);
   setMaxIntensity(255);
   setMeanIntensity(255);
   setSDevOfIntensity(0);
   updateVolSize();
   updateMass();
+  setVisualEffect(ZStackBall::VE_OUT_FOCUS_DIM);
 }
 
 ZPunctum::~ZPunctum()
@@ -97,6 +95,7 @@ ZPunctum::~ZPunctum()
 //  }
 //}
 
+#if 0
 void ZPunctum::display(ZPainter &painter, int n, ZStackObject::Display_Style style) const
 {
   if (!isVisible())
@@ -106,16 +105,16 @@ void ZPunctum::display(ZPainter &painter, int n, ZStackObject::Display_Style sty
 
   double dataFocus = n - painter.getOffset().z();
 
-  if (!ZCircle::isCuttingPlane(m_z, m_radius, dataFocus, m_zScale)) {
+  if (!ZStackBall::isCuttingPlane(m_z, getRadius(), dataFocus, m_zScale)) {
     isVisible = false;
   }
 
   if (isVisible) {
-    ZCircle circle(m_x, m_y, m_z, m_radius);
+    ZStackBall circle(m_x, m_y, m_z, m_radius);
     circle.setZScale(m_zScale);
     circle.setColor(m_color);
     circle.useCosmeticPen(m_usingCosmeticPen);
-    circle.setVisualEffect(ZCircle::VE_OUT_FOCUS_DIM);
+    circle.setVisualEffect(ZStackBall::VE_OUT_FOCUS_DIM);
 
     /*
     if (style == SOLID) {
@@ -183,6 +182,8 @@ void ZPunctum::display(ZPainter &painter, int n, ZStackObject::Display_Style sty
   }
 #endif
 }
+#endif
+
 
 QList<ZPunctum *> ZPunctum::deepCopyPunctaList(const QList<ZPunctum *> &src)
 {
@@ -224,37 +225,14 @@ std::string ZPunctum::toString()
   std::ostringstream stream;
 
   stream << "Puncta(" << m_name.toStdString() << "): "
-         << "(" << m_x << ", " << m_y << ", " << m_z << ")";
+         << "(" << getX() << ", " << getY() << ", " << getZ() << ")";
 
   return stream.str();
 }
 
-void ZPunctum::translate(double dx, double dy, double dz)
-{
-  m_x += dx;
-  m_y += dy;
-  m_z += dz;
-}
-
-void ZPunctum::translate(const ZPoint &offset)
-{
-  translate(offset.x(), offset.y(), offset.z());
-}
-
-void ZPunctum::scale(double sx, double sy, double sz)
-{
-  m_x *= sx;
-  m_y *= sy;
-  m_z *= sz;
-  m_radius *= sqrt(sx * sy);
-}
-
 void ZPunctum::setFromMarker(const ZVaa3dMarker &marker)
 {
-  setX(marker.x());
-  setY(marker.y());
-  setZ(marker.z());
-  setRadius(marker.radius());
+  set(marker.x(), marker.y(), marker.z(), marker.radius());
   setColor(marker.colorR(), marker.colorG(), marker.colorB());
   setComment(marker.comment().c_str());
   setName(marker.name().c_str());

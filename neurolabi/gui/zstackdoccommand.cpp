@@ -1169,7 +1169,7 @@ ZStackDocCommand::ObjectEdit::RemoveSelected::~RemoveSelected()
 void ZStackDocCommand::ObjectEdit::RemoveSelected::undo()
 {
   // restore previous selection state
-  doc->deselectAllObject();
+//  doc->deselectAllObject();
   //bool redrawSwc = false;
 
   // copy stuff back
@@ -1301,6 +1301,7 @@ void ZStackDocCommand::ObjectEdit::RemoveSelected::redo()
   doc->selectedPuncta()->clear();
   doc->selectedSwcs()->clear();
   doc->selectedSwcTreeNodes()->clear();
+  doc->selectedStrokeList()->clear();
 
   //REMOVE_SELECTED_OBJECT(ZSwcExportable, doc->m_swcObjects, swceIter);
   //REMOVE_SELECTED_OBJECT(ZVrmlExportable, doc->m_vrmlObjects, vrmlIter);
@@ -1385,6 +1386,10 @@ void ZStackDocCommand::ObjectEdit::RemoveSelected::redo()
   }
   if (!m_chainList.empty() || !m_connList.empty()) {
     doc->notifyChainModified();
+  }
+
+  if (!m_strokeList.empty()) {
+    doc->notifyStrokeModified();
   }
 }
 

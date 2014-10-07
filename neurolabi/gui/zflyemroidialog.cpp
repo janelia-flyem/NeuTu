@@ -144,6 +144,11 @@ void ZFlyEmRoiDialog::createMenu()
   m_mainMenu->addAction(exportAction);
   connect(exportAction, SIGNAL(triggered()), this, SLOT(exportResult()));
 
+  m_importRoiAction = new QAction("Import ROI", this);
+  m_mainMenu->addAction(m_importRoiAction);
+  m_importRoiAction->setCheckable(true);
+  connect(m_importRoiAction, SIGNAL(triggered()), this, SLOT(importRoi()));
+
   m_autoStepAction = new QAction("Auto Step", this);
   m_mainMenu->addAction(m_autoStepAction);
   m_autoStepAction->setCheckable(true);
@@ -565,11 +570,28 @@ void ZFlyEmRoiDialog::updateDataFrame()
 
 void ZFlyEmRoiDialog::loadSynapse()
 {
-  QString fileName = getMainWindow()->getOpenFileName(
-        "Load Synapses", "Point Cloud (*.json *.txt)");
-  if (!fileName.isEmpty()) {
-    m_project->loadSynapse(
-          fileName.toStdString(), ui->synapseVisibleCheckBox->isChecked());
+  if (m_project != NULL) {
+    QString fileName = getMainWindow()->getOpenFileName(
+          "Load Synapses", "Point Cloud (*.json *.txt)");
+    if (!fileName.isEmpty()) {
+      m_project->loadSynapse(
+            fileName.toStdString(), ui->synapseVisibleCheckBox->isChecked());
+    }
+  } else {
+    dump("Loading synapses not allowed: No project available.");
+  }
+}
+
+void ZFlyEmRoiDialog::importRoi()
+{
+  if (m_project != NULL) {
+    QString fileName = getMainWindow()->getOpenFileName(
+          "Import ROI", "SWC File (*.swc)");
+    if (!fileName.isEmpty()) {
+      ZSwcTree tree;
+      tree.load(fileName.toStdString());
+      m_project->importRoiFromSwc(&tree);
+    }
   }
 }
 

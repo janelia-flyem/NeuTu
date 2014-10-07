@@ -14,7 +14,7 @@
 #include "zstackdoc.h"
 #include "zclickablelabel.h"
 #include "tz_error.h"
-#include "zcircle.h"
+#include "zstackball.h"
 #include "swctreenode.h"
 #include "QsLog.h"
 #include "zstroke2d.h"
@@ -1367,12 +1367,23 @@ void ZStackView::paintObjectBuffer()
 
     if (buddyDocument()->hasDrawable()) {
       QList<ZStackObject*> *objs = buddyDocument()->drawableList();
-      for (QList<ZStackObject*>::const_iterator obj = objs->end() - 1;
-           obj != objs->begin() - 1; --obj) {
-        //(*obj)->display(m_objectCanvas, slice, buddyPresenter()->objectStyle());
-        if ((*obj)->getTarget() == ZStackObject::OBJECT_CANVAS) {
-          (*obj)->display(painter, slice, buddyPresenter()->objectStyle());
+      QList<const ZStackObject*> visibleObject;
+      QList<ZStackObject*>::const_iterator iter = objs->end() - 1;
+      for (;iter != objs->begin() - 1; --iter) {
+        const ZStackObject *obj = *iter;
+        if (obj->isSliceVisible(slice) &&
+            obj->getTarget() == ZStackObject::OBJECT_CANVAS) {
+          visibleObject.append(obj);
         }
+      }
+      std::sort(visibleObject.begin(), visibleObject.end(),
+                ZStackObject::ZOrderCompare());
+
+      for (QList<const ZStackObject*>::const_iterator
+           iter = visibleObject.begin(); iter != visibleObject.end(); ++iter) {
+        //(*obj)->display(m_objectCanvas, slice, buddyPresenter()->objectStyle());
+        const ZStackObject *obj = *iter;
+        obj->display(painter, slice, buddyPresenter()->objectStyle());
       }
     }
 

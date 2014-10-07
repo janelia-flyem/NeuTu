@@ -2032,6 +2032,10 @@ void ZStackDoc::addStroke(ZStroke2d *obj)
   m_strokeList.prepend(obj);
   m_objectList.prepend(obj);
 
+  if (obj->isSelected()) {
+    m_selectedStroke.insert(obj);
+  }
+
   //m_playerList.append(new ZStroke2dPlayer(obj, ZDocPlayer::ROLE_SEED));
 
 #ifdef _DEBUG_2
@@ -2589,9 +2593,7 @@ bool ZStackDoc::meanshiftSelectedPuncta()
       gb->center[2] = iter.value()->z();
       gb->r = iter.value()->radius();
       Geo3d_Ball_Mean_Shift(gb, getStack()->c_stack(), 1, 0.5);
-      iter.value()->setX(gb->center[0]);
-      iter.value()->setY(gb->center[1]);
-      iter.value()->setZ(gb->center[2]);
+      iter.value()->setCenter(gb->center[0], gb->center[1], gb->center[2]);
       Delete_Geo3d_Ball(gb);
     }
   }
@@ -2610,9 +2612,7 @@ bool ZStackDoc::meanshiftAllPuncta()
     gb->center[2] = m_punctaList[i]->z();
     gb->r = m_punctaList[i]->radius();
     Geo3d_Ball_Mean_Shift(gb, getStack()->c_stack(), 1, 0.5);
-    m_punctaList[i]->setX(gb->center[0]);
-    m_punctaList[i]->setY(gb->center[1]);
-    m_punctaList[i]->setZ(gb->center[2]);
+    m_punctaList[i]->setCenter(gb->center[0], gb->center[1], gb->center[2]);
     Delete_Geo3d_Ball(gb);
   }
   return true;
@@ -3077,6 +3077,16 @@ void ZStackDoc::deselectAllChains()
   }
 }
 
+void ZStackDoc::deselectAllStroke()
+{
+  for (std::set<ZStroke2d*>::iterator iter = m_selectedStroke.begin();
+       iter != m_selectedStroke.end(); ++iter) {
+    ZStroke2d *stroke = *iter;
+    stroke->setSelected(false);
+  }
+  m_selectedStroke.clear();
+}
+
 void ZStackDoc::setSwcSelected(ZSwcTree *tree, bool select)
 {
   if (tree != NULL) {
@@ -3161,6 +3171,13 @@ void ZStackDoc::deselectAllObject()
   deselectAllChains();
   deselectAllSwcs();
   deselectAllSwcTreeNodes();
+  deselectAllStroke();
+
+  foreach (ZStackObject *obj, m_objectList) {
+    obj->setSelected(false);
+  }
+
+  /*
   QMutableListIterator<ZStackObject*> iter0(m_objectList);
   while (iter0.hasNext()) {
     ZStackObject *obj = iter0.next();
@@ -3168,6 +3185,7 @@ void ZStackDoc::deselectAllObject()
       obj->setSelected(false);
     }
   }
+  */
 }
 
 void ZStackDoc::setPunctumVisible(ZPunctum *punctum, bool visible)
@@ -3759,6 +3777,31 @@ void ZStackDoc::setBadChainScreen(const char *screen)
 void ZStackDoc::eraseTraceMask(const ZLocsegChain *chain)
 {
   chain->eraseTraceMask(getTraceWorkspace()->trace_mask);
+}
+
+void ZStackDoc::setSelected(
+    ZStackObject *obj, NeuTube::EDocumentableType type, bool selecting)
+{
+  if (obj != NULL) {
+    switch (type) {
+    case NeuTube::Documentable_STROKE:
+    {
+      ZStroke2d *stroke = dynamic_cast<ZStroke2d*>(obj);
+      if (stroke != NULL) {
+        if (selecting) {
+          stroke->setSelected(true);
+          m_selectedStroke.insert(stroke);
+        } else {
+          stroke->setSelected(false);
+          m_selectedStroke.erase(stroke);
+        }
+      }
+    }
+      break;
+    default:
+      break;
+    }
+  }
 }
 
 bool ZStackDoc::binarize(int threshold)
@@ -5844,7 +5887,7 @@ void ZStackDoc::addPlayer(
 bool ZStackDoc::hasObjectSelected()
 {
   return !(m_selectedPuncta.empty() && m_selectedChains.empty() &&
-           m_selectedSwcs.empty());
+           m_selectedSwcs.empty() && m_selectedStroke.empty());
 }
 
 bool ZStackDoc::executeAddObjectCommand(
@@ -5861,7 +5904,7 @@ bool ZStackDoc::executeAddObjectCommand(
   return false;
 }
 
-bool ZStackDoc::executeRemoveObjectCommand()
+bool ZStackDoc::executeRemoveSelectedObjectCommand()
 {
   if (hasObjectSelected()) {
     ZStackDocCommand::ObjectEdit::RemoveSelected *command = new

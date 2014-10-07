@@ -332,7 +332,7 @@ void ZObjsManagerWidget::keyPressEvent(QKeyEvent *event)
   case Qt::Key_Backspace:
   case Qt::Key_Delete:
   {
-    m_doc->executeRemoveObjectCommand();
+    m_doc->executeRemoveSelectedObjectCommand();
 #if 0
     if (m_doc->selectedChains()->empty() && m_doc->selectedPuncta()->empty() && m_doc->selectedSwcs()->empty())
       return;

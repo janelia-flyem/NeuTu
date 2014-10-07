@@ -29,7 +29,8 @@ ZStackPresenter::ZStackPresenter(ZStackFrame *parent) : QObject(parent),
   //m_zoomRatio(1),
   m_showObject(true),
   m_isStrokeOn(false),
-  m_skipMouseReleaseEvent(false)
+  m_skipMouseReleaseEvent(false),
+  m_zOrder(0)
 {
   initInteractiveContext();
 
@@ -864,6 +865,10 @@ bool ZStackPresenter::processKeyPressEventForStroke(QKeyEvent *event)
       buddyView()->paintActiveDecoration();
     }
     break;
+//  case Qt::Key_Delete:
+//  case Qt::Key_Backspace:
+//    buddyDocument()->executeRemoveSelectedObjectCommand();
+//    break;
 #endif
   default:
     break;
@@ -918,7 +923,7 @@ void ZStackPresenter::processKeyPressEvent(QKeyEvent *event)
   switch (event->key()) {
   case Qt::Key_Backspace:
   case Qt::Key_Delete:
-    buddyDocument()->executeRemoveObjectCommand();
+    buddyDocument()->executeRemoveSelectedObjectCommand();
     break;
   case Qt::Key_P:
     if (event->modifiers() == Qt::ControlModifier) {
@@ -1340,7 +1345,7 @@ QStringList ZStackPresenter::toStringList() const
 
 void ZStackPresenter::deleteSelected()
 {
-  buddyDocument()->executeRemoveObjectCommand();
+  buddyDocument()->executeRemoveSelectedObjectCommand();
 #if 0
   QUndoCommand *removeselectedcommand =
       new ZStackDocRemoveSelectedObjectCommand(buddyDocument());
@@ -1709,6 +1714,10 @@ void ZStackPresenter::processEvent(ZInteractionEvent &event)
   case ZInteractionEvent::EVENT_ACTIVE_DECORATION_UPDATED:
     buddyView()->paintActiveDecoration();
     break;
+  case ZInteractionEvent::EVENT_STROKE_SELECTED:
+  case ZInteractionEvent::EVENT_ALL_OBJECT_DESELCTED:
+    updateView();
+    break;
   default:
     break;
   }
@@ -1861,6 +1870,27 @@ void ZStackPresenter::process(const ZStackOperator &op)
       }
     } else {
       m_interactiveContext.blockContextMenu(false);
+    }
+    break;
+  case ZStackOperator::OP_DESELECT_ALL:
+    buddyDocument()->deselectAllObject();
+    interactionEvent.setEvent(ZInteractionEvent::EVENT_ALL_OBJECT_DESELCTED);
+    break;
+  case ZStackOperator::OP_STROKE_SELECT_SINGLE:
+    buddyDocument()->deselectAllObject();
+    if (op.getHitStroke2d() != NULL) {
+      buddyDocument()->setSelected(
+            op.getHitStroke2d(), NeuTube::Documentable_STROKE);
+//      op.getHitStroke2d()->setSelected(true);
+      interactionEvent.setEvent(
+            ZInteractionEvent::EVENT_STROKE_SELECTED);
+    }
+    break;
+  case ZStackOperator::OP_STROKE_SELECT_MULTIPLE:
+    if (op.getHitStroke2d() != NULL) {
+      op.getHitStroke2d()->setSelected(true);
+      interactionEvent.setEvent(
+            ZInteractionEvent::EVENT_STROKE_SELECTED);
     }
     break;
   case ZStackOperator::OP_STROKE_ADD_NEW:
@@ -2032,12 +2062,14 @@ void ZStackPresenter::acceptActiveStroke()
   }
   newStroke->setZ(buddyView()->sliceIndex() +
                   buddyDocument()->getStackOffset().getZ());
+  newStroke->setPenetrating(false);
 
   ZDocPlayer::TRole role = ZDocPlayer::ROLE_NONE;
   if (GET_APPLICATION_NAME == "FlyEM") {
     role = ZDocPlayer::ROLE_SEED;
   }
 
+  newStroke->setZOrder(m_zOrder++);
   buddyDocument()->executeAddObjectCommand(
         newStroke, NeuTube::Documentable_STROKE, role);
   //buddyDocument()->executeAddStrokeCommand(newStroke);

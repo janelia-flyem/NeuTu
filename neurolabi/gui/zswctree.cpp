@@ -16,7 +16,7 @@
 #include "tz_geo3d_utils.h"
 #include "tz_locseg_chain_com.h"
 #include "tz_trace_utils.h"
-#include "zcircle.h"
+#include "zstackball.h"
 #include "zswcforest.h"
 #include "zswcbranch.h"
 #include "zfilelist.h"
@@ -551,7 +551,7 @@ void ZSwcTree::display(
       case BOUNDARY:
         //if (SwcTreeNode::isRoot(tn) || SwcTreeNode::isBranchPoint(tn)) {
       {
-          ZCircle circle(SwcTreeNode::x(tn), SwcTreeNode::y(tn), SwcTreeNode::z(tn),
+          ZStackBall circle(SwcTreeNode::x(tn), SwcTreeNode::y(tn), SwcTreeNode::z(tn),
                          SwcTreeNode::radius(tn));
           circle.useCosmeticPen(m_usingCosmeticPen);
           circle.displayHelper(&painter, stackFocus, style);
@@ -563,7 +563,7 @@ void ZSwcTree::display(
         QColor brushColor= pen.color();
         brushColor.setAlphaF(sqrt(brushColor.alphaF() / 2.0));
         painter.setBrush(brushColor);
-        ZCircle circle(SwcTreeNode::x(tn), SwcTreeNode::y(tn), SwcTreeNode::z(tn),
+        ZStackBall circle(SwcTreeNode::x(tn), SwcTreeNode::y(tn), SwcTreeNode::z(tn),
                        SwcTreeNode::radius(tn));
         circle.useCosmeticPen(m_usingCosmeticPen);
         circle.displayHelper(&painter, stackFocus, style);
@@ -1144,7 +1144,7 @@ Swc_Tree_Node* ZSwcTree::hitTest(double x, double y, double z, double margin)
        iter != nodeArray.end(); ++iter) {
     const Swc_Tree_Node *tn = *iter;
     TZ_ASSERT(SwcTreeNode::isRegular(tn), "Unexpected virtual node.");
-    if (ZCircle::isCuttingPlane(SwcTreeNode::z(tn), SwcTreeNode::radius(tn), z)) {
+    if (ZStackBall::isCuttingPlane(SwcTreeNode::z(tn), SwcTreeNode::radius(tn), z)) {
       double dist = SwcTreeNode::distance(tn, x, y, z);
       if (dist < SwcTreeNode::radius(tn) + margin) {
         dist /= SwcTreeNode::radius(tn) + Regularize_Number;

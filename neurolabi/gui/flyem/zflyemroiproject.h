@@ -76,6 +76,8 @@ public:
 
   double getMarkerRadius() const;
 
+  void clearRoi();
+
   bool hasOpenedRoi() const;
   int uploadRoi();
   int uploadRoi(int z);
@@ -134,6 +136,8 @@ public:
   const ZIntPoint& getCurrentDsIntv() const {
     return m_currentDsIntv;
   }
+
+  void importRoiFromSwc(ZSwcTree *tree);
 
 private:
   ZObject3dScan* getFilledRoi(

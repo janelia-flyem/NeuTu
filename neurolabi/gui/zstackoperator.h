@@ -5,6 +5,7 @@
 #include "zmouseevent.h"
 
 class ZMouseEventRecorder;
+class ZStroke2d;
 
 class ZStackOperator
 {
@@ -13,6 +14,7 @@ public:
 
   enum EOperation {
     OP_NULL, OP_MOVE_IMAGE, OP_MOVE_OBJECT, OP_CAPTURE_MOUSE_POSITION,
+    OP_DESELECT_ALL,
     OP_PROCESS_OBJECT, OP_RESOTRE_EXPLORE_MODE, OP_TRACK_MOUSE_MOVE,
     OP_TRACK_MOUSE_MOVE_WITH_STROKE_TOGGLE,
     OP_PAINT_STROKE, OP_START_MOVE_IMAGE, OP_SHOW_STACK_CONTEXT_MENU,
@@ -23,7 +25,7 @@ public:
     OP_SWC_SELECT, OP_SWC_SELECT_SINGLE_NODE, OP_SWC_SELECT_MULTIPLE_NODE,
     OP_SWC_DESELECT_SINGLE_NODE, OP_SWC_DESELECT_ALL_NODE,
     OP_SWC_EXTEND, OP_SWC_SMART_EXTEND, OP_SWC_CONNECT, OP_SWC_ADD_NODE,
-    OP_SWC_DELETE_NODE, OP_SWC_ELECT_ALL_NODE,
+    OP_SWC_DELETE_NODE, OP_SWC_SELECT_ALL_NODE,
     OP_SWC_MOVE_NODE_LEFT, OP_SWC_MOVE_NODE_LEFT_FAST,
     OP_SWC_MOVE_NODE_RIGHT, OP_SWC_MOVE_NODE_RIGHT_FAST,
     OP_SWC_MOVE_NODE_UP, OP_SWC_MOVE_NODE_UP_FAST,
@@ -38,6 +40,7 @@ public:
     OP_SWC_LOCATE_FOCUS,
     OP_PUNCTA_SELECT_SINGLE, OP_PUNCTA_SELECT_MULTIPLE,
     OP_STROKE_ADD_NEW, OP_STROKE_START_PAINT,
+    OP_STROKE_SELECT_SINGLE, OP_STROKE_SELECT_MULTIPLE,
     OP_STACK_LOCATE_SLICE, OP_STACK_VIEW_PROJECTION,
     OP_STACK_VIEW_SLICE
   };
@@ -58,9 +61,18 @@ public:
     return m_hitNode;
   }
 
+  inline ZStroke2d* getHitStroke2d() const {
+    return m_hitStroke;
+  }
+
   inline void setHitSwcNode(Swc_Tree_Node *tn) {
     m_hitNode = tn;
   }
+
+  inline void setHitStroke2d(ZStroke2d *stroke) {
+    m_hitStroke = stroke;
+  }
+
 
   inline void setHitPuncta(int index) {
     m_punctaIndex = index;
@@ -88,6 +100,7 @@ public:
 private:
   EOperation m_op;
   Swc_Tree_Node *m_hitNode;
+  ZStroke2d *m_hitStroke;
   int m_punctaIndex;
   bool m_togglingStrokeLabel;
   const ZMouseEventRecorder *m_mouseEventRecorder;
