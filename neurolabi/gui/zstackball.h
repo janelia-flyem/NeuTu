@@ -11,8 +11,6 @@ class ZIntPoint;
 
 /*!
  * \brief The class of a ball (x, y, z, r)
- *
- * The class name ZStackBall is a misnomer. Use ZStackBall instead.
  */
 class ZStackBall : public ZStackObject {
 public:
@@ -87,6 +85,7 @@ public:
 
 private:
   double getAdjustedRadius(double r) const;
+  void _init(double x, double y, double z, double r);
 
 private:
   ZPoint m_center;

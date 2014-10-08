@@ -15,14 +15,21 @@ const ZStackBall::TVisualEffect ZStackBall::VE_OUT_FOCUS_DIM = 32;
 
 ZStackBall::ZStackBall() : m_visualEffect(ZStackBall::VE_NONE)
 {
-  set(0, 0, 0, 1);
+  _init(0, 0, 0, 1);
 }
 
 ZStackBall::ZStackBall(double x, double y, double z, double r) :
   m_visualEffect(ZStackBall::VE_NONE)
 {
-  set(x, y, z, r);
+  _init(x, y, z, r);
 }
+
+void ZStackBall::_init(double x, double y, double z, double r)
+{
+  set(x, y, z, r);
+  m_type = ZStackObject::TYPE_STACK_BALL;
+}
+
 
 void ZStackBall::set(double x, double y, double z, double r)
 {

@@ -8,8 +8,10 @@
 #include "zrandom.h"
 #include "zstackball.h"
 
+#define INIT_PUNCTUM m_score(1.0)
+
 ZPunctum::ZPunctum()
-  : m_score(1.0)
+  : INIT_PUNCTUM
 {
   setColor(255, 255, 0, 255);
   setCenter(-1, -1, -1);
@@ -20,10 +22,11 @@ ZPunctum::ZPunctum()
   updateVolSize();
   updateMass();
   setVisualEffect(ZStackBall::VE_OUT_FOCUS_DIM);
+  m_type = ZStackObject::TYPE_PUNCTUM;
 }
 
 ZPunctum::ZPunctum(double x, double y, double z, double r)
-  : m_score(1.0)
+  : INIT_PUNCTUM
 {
   setColor(255, 255, 0, 255);
   setCenter(x, y, z);
@@ -34,6 +37,7 @@ ZPunctum::ZPunctum(double x, double y, double z, double r)
   updateVolSize();
   updateMass();
   setVisualEffect(ZStackBall::VE_OUT_FOCUS_DIM);
+  m_type = ZStackObject::TYPE_PUNCTUM;
 }
 
 ZPunctum::~ZPunctum()

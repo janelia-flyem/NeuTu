@@ -1371,7 +1371,7 @@ void ZStackView::paintObjectBuffer()
       QList<ZStackObject*>::const_iterator iter = objs->end() - 1;
       for (;iter != objs->begin() - 1; --iter) {
         const ZStackObject *obj = *iter;
-        if (obj->isSliceVisible(slice) &&
+        if (obj->isSliceVisible(slice + buddyDocument()->getStackOffset().getZ()) &&
             obj->getTarget() == ZStackObject::OBJECT_CANVAS) {
           visibleObject.append(obj);
         }

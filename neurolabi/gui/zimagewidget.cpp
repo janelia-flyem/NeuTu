@@ -344,7 +344,7 @@ void ZImageWidget::paintEvent(QPaintEvent * /*event*/)
       for (;iter != m_paintBundle->end(); ++iter) {
         const ZStackObject *obj = *iter;
         if (obj->getTarget() == ZStackObject::WIDGET &&
-            obj->isSliceVisible(m_paintBundle->sliceIndex())) {
+            obj->isSliceVisible(m_paintBundle->getZ())) {
 //          obj->display(painter1, m_paintBundle->sliceIndex(),
 //                       m_paintBundle->displayStyle());
 #ifdef _DEBUG_2

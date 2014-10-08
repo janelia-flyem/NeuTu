@@ -21,6 +21,7 @@ ZStroke2d::ZStroke2d() :
   m_width(10.0), m_z(-1), m_isFilled(true), m_isPenetrating(true)
 {
   setLabel(1);
+  m_type = ZStackObject::TYPE_STROKE;
   //setEraser(m_isEraser);
 }
 
@@ -34,6 +35,7 @@ ZStroke2d::ZStroke2d(const ZStroke2d &stroke) : ZStackObject(stroke)
   //m_isEraser = stroke.m_isEraser;
   m_isFilled = stroke.m_isFilled;
   m_isPenetrating = m_isPenetrating;
+  m_type = stroke.m_type;
 }
 
 ZStroke2d::~ZStroke2d()

@@ -22,6 +22,12 @@ public:
 
   virtual const std::string& className() const = 0;
 
+  enum EType {
+    TYPE_SWC, TYPE_PUNCTUM, TYPE_OBJ3D,
+    TYPE_STROKE, TYPE_LOCSEG_CHAIN, TYPE_CONN,
+    TYPE_SPARSE_OBJECT, TYPE_CIRCLE, TYPE_STACK_BALL, TYPE_UNIDENTIFIED
+  };
+
   /*!
    * \brief Set the selection state
    */
@@ -112,6 +118,9 @@ public:
     }
   };
 
+  inline ZStackObject::EType getType() const {
+    return m_type;
+  }
 
 protected:
   bool m_selected;
@@ -124,6 +133,7 @@ protected:
   double m_zScale;
   std::string m_source;
   int m_zOrder;
+  EType m_type;
 };
 
 #define ZSTACKOBJECT_DEFINE_CLASS_NAME(c) \

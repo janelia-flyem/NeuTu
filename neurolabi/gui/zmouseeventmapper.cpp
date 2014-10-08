@@ -129,15 +129,6 @@ ZStackOperator ZMouseEventLeftButtonReleaseMapper::getOperation(
       }
     }
 
-        /*
-        if (rawStackPosition.z() < 0) {
-          op.setHitSwcNode(
-                m_doc->swcHitTest(stackPosition.x(), stackPosition.y()));
-        } else {
-          op.setHitSwcNode(m_doc->swcHitTest(stackPosition));
-        }
-        */
-
     if (op.isNull()) {
       switch (m_context->swcEditMode()) {
       case ZInteractiveContext::SWC_EDIT_SELECT:
@@ -202,15 +193,31 @@ ZStackOperator ZMouseEventLeftButtonDoubleClickMapper::getOperation(
 
   ZPoint stackPosition = event.getStackPosition();
 
-  if (event.getRawStackPosition().z() >= 0) {
-    op.setHitSwcNode(m_doc->swcHitTest(stackPosition));
+//  if (event.getRawStackPosition().z() >= 0) {
+//    op.setHitSwcNode(m_doc->swcHitTest(stackPosition));
+//  } else {
+//    op.setHitSwcNode(m_doc->swcHitTest(stackPosition.x(), stackPosition.y()));
+//  }
+  ZStackDocHitTest hitManager;
+  if (event.getRawStackPosition().z() < 0) {
+    hitManager.hitTest(
+          getDocument(), stackPosition.x(), stackPosition.y());
   } else {
-    op.setHitSwcNode(m_doc->swcHitTest(stackPosition.x(), stackPosition.y()));
+    hitManager.hitTest(getDocument(), stackPosition);
   }
+  op.setHitSwcNode(hitManager.getHitSwcNode());
+  op.setHitStroke2d(hitManager.getHitStroke2d());
+
 
   if (op.getHitSwcNode() != NULL) {
     op.setOperation(ZStackOperator::OP_SWC_LOCATE_FOCUS);
-  } else {
+  } else if (op.getHitStroke2d() != NULL) {
+    if (m_context->isProjectView()) {
+      op.setOperation(ZStackOperator::OP_STROKE_LOCATE_FOCUS);
+    }
+  }
+
+  if (op.isNull()) {
     if (event.isInStack()) {
       if (m_context->isProjectView()) {
         if (m_doc->hasStackData()) {

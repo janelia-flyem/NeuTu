@@ -65,6 +65,7 @@ public:
 
 private:
   double getAdjustedRadius(double r) const;
+  void _init(double x, double y, double z, double r);
 
 private:
   ZPoint m_center;

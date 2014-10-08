@@ -19,13 +19,19 @@ const ZCircle::TVisualEffect ZCircle::VE_OUT_FOCUS_DIM = 32;
 
 ZCircle::ZCircle() : m_visualEffect(ZCircle::VE_NONE)
 {
-  set(0, 0, 0, 1);
+  _init(0, 0, 0, 1);
 }
 
 ZCircle::ZCircle(double x, double y, double z, double r) :
   m_visualEffect(ZCircle::VE_NONE)
 {
+  _init(x, y, z, r);
+}
+
+void ZCircle::_init(double x, double y, double z, double r)
+{
   set(x, y, z, r);
+  m_type = ZStackObject::TYPE_CIRCLE;
 }
 
 void ZCircle::set(double x, double y, double z, double r)

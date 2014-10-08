@@ -172,6 +172,8 @@ public:
   inline void setSliceIndex(int idx) { m_sliceIndex = idx; }
   inline int sliceIndex() const { return m_sliceIndex; }
 
+  inline int getZ() const { return m_sliceIndex + m_stackOffset.getZ(); }
+
   inline void setDisplayStyle(ZStackObject::Display_Style style) { m_style = style; }
   inline ZStackObject::Display_Style displayStyle() const { return m_style; }
 

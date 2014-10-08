@@ -59,6 +59,11 @@ public:
   void writeXml(QXmlStreamWriter &xml);
 
   void print();
+
+private:
+  void _init(int hook, int loop, int hookSpot, int loopSpot, int mode,
+             ZLocsegChain *hookChain = NULL, ZLocsegChain *loopChain = NULL);
+
 private:
   int m_hook;
   int m_loop;

@@ -53,6 +53,7 @@ ZSwcTree::ZSwcTree() : m_smode(STRUCT_NORMAL)
   //m_source = "new tree";
   m_iteratorReady = false;
   setColorScheme(COLOR_NORMAL);
+  m_type = ZStackObject::TYPE_SWC;
 }
 
 ZSwcTree::~ZSwcTree()

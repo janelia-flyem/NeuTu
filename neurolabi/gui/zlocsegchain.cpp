@@ -52,6 +52,7 @@ void ZLocsegChain::init(Locseg_Chain *chain)
 
   m_source = "traced";
   setTarget(ZStackObject::OBJECT_CANVAS);
+  m_type = ZStackObject::TYPE_LOCSEG_CHAIN;
 }
 
 ZLocsegChain::~ZLocsegChain()

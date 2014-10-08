@@ -1117,6 +1117,18 @@ void ZStackPresenter::processMouseDoubleClickEvent(QMouseEvent *event)
       }
     }
     break;
+  case ZStackOperator::OP_STROKE_LOCATE_FOCUS:
+    if (op.getHitStroke2d() != NULL) {
+      int sliceIndex = op.getHitStroke2d()->getZ();
+      sliceIndex -= buddyDocument()->getStackOffset().getZ();
+      if (sliceIndex >= 0 &&
+          sliceIndex < buddyDocument()->getStackSize().getZ()) {
+        buddyView()->setSliceIndex(sliceIndex);
+        interactiveContext().setViewMode(ZInteractiveContext::VIEW_NORMAL);
+        interactionEvent.setEvent(ZInteractionEvent::EVENT_VIEW_SLICE);
+      }
+    }
+    break;
   default:
     break;
   }
