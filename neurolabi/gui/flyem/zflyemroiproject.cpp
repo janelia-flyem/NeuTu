@@ -992,10 +992,10 @@ void ZFlyEmRoiProject::importRoiFromSwc(ZSwcTree *tree)
     for (ZSwcForest::iterator iter = forest->begin();
          iter != forest->end(); ++iter) {
       ZSwcTree *roiSwc = *iter;
-      ZSwcTree::DepthFirstIterator iter(roiSwc);
+      ZSwcTree::DepthFirstIterator swcIter(roiSwc);
       ZClosedCurve *roiCurve = new ZClosedCurve;
       double z = 0.0;
-      for (Swc_Tree_Node *tn = iter.begin(); tn != NULL; tn = iter.next()) {
+      for (Swc_Tree_Node *tn = swcIter.begin(); tn != NULL; tn = swcIter.next()) {
         if (SwcTreeNode::isRegular(tn)) {
           z = SwcTreeNode::z(tn);
           roiCurve->append(SwcTreeNode::pos(tn));
