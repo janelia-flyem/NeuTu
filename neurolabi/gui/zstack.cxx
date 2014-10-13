@@ -569,16 +569,17 @@ bool ZStack::load(Stack *stack, bool isOwner)
   return true;
 }
 
-bool ZStack::load(const string &filepath)
+bool ZStack::load(const string &filepath, bool initColor)
 {
   deprecate(MC_STACK);
 
   ZStackFile stackFile;
   stackFile.import(filepath);
 
-  ZStack *res = stackFile.readStack(this);
-  if (res)
+  ZStack *res = stackFile.readStack(this, initColor);
+  if (res) {
     res->setSource(filepath);
+  }
 
   return res;
 }

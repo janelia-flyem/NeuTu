@@ -35,8 +35,10 @@ void DvidOperateDialog::on_creatDataPushButton_clicked()
                                        "", &ok);
   if (ok && !text.isEmpty()) {
     ZDvidWriter writer;
+    std::string dataType = ui->typeComboBox->currentText().toStdString();
     if (writer.open(m_dvidDlg->getDvidTarget())) {
-      writer.createKeyvalue(text.toStdString());
+//      writer.createKeyvalue(text.toStdString());
+      writer.createData(dataType, text.toStdString());
     }
   }
 }

@@ -12,7 +12,10 @@
  * string serving as an ID. If the source is empty, it means the object does
  * not have any source identification. How to use the source is up to the user,
  * but it is recommended to use ZStackObjectSourceFactory to generate source
- * for special purposes.
+ * for special purposes. There are some special characters put in the front
+ * to specify the role of source IDs:
+ *   '#': unique ID
+ *   '!': reserved ID
  */
 class ZStackObject
 {
@@ -122,6 +125,10 @@ public:
     return m_type;
   }
 
+  static inline const char* getNodeAdapterId() {
+    return m_nodeAdapterId;
+  }
+
 protected:
   bool m_selected;
   bool m_isVisible;
@@ -134,6 +141,8 @@ protected:
   std::string m_source;
   int m_zOrder;
   EType m_type;
+
+  static const char *m_nodeAdapterId;
 };
 
 #define ZSTACKOBJECT_DEFINE_CLASS_NAME(c) \

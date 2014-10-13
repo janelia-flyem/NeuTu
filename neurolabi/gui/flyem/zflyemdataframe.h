@@ -135,6 +135,12 @@ public:
 
   void exportBundle(const QString &savePath);
 
+  void exportSideBoundaryAnalysis(
+      const QString &savePath, const QString &substackPath,
+      const QString &synapsePath);
+
+  void importBoundBox(const QString &substackPath);
+
   /*!
    * \brief Set volume entries based on a directory
    *

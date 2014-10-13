@@ -212,6 +212,7 @@ public slots:
   void saveAllPunctaAs();
   void markPunctum();
   void locatePunctumIn2DView();
+  void changeSelectedPunctaName();
 
   void takeScreenShot(QString filename, int width, int height, Z3DScreenShotType sst);
   void takeScreenShot(QString filename, Z3DScreenShotType sst);
@@ -302,6 +303,7 @@ private:
   QAction *m_resolveCrossoverAction;
 
   QAction *m_saveSelectedPunctaAsAction;
+  QAction *m_changePunctaNameAction;
   QAction *m_saveAllPunctaAsAction;
   QAction *m_locatePunctumIn2DAction;
 

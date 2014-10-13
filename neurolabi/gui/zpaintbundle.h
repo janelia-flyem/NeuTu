@@ -128,6 +128,7 @@ private:
                                     ZStackBall::VE_NO_FILL);
       m_nodeAdaptor.useCosmeticPen(
             ZSwcTree::getHostState(*m_swcNodeIter, ZSwcTree::NODE_STATE_COSMETIC));
+      m_nodeAdaptor.setSource(ZStackObject::getNodeAdapterId());
     }
   }
 

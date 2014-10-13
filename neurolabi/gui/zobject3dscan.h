@@ -367,6 +367,8 @@ public:
    */
   bool equalsLiterally(const ZObject3dScan &obj) const;
 
+  size_t getSurfaceArea() const;
+
   /*!
    * \brief Get the complement of the object
    *

@@ -4205,7 +4205,7 @@ void ZTest::test(MainWindow *host)
 #endif
 
   //Rotate to the other side
-#if 1
+#  if 1
   writer.writeSceneStart(stream, 2);
   writer.writeDuration(stream, 2000, 3);
   stream << "," << endl;
@@ -4282,7 +4282,7 @@ void ZTest::test(MainWindow *host)
   connectedTm3Neurons.push_back("Tm3-h7-A");
   connectedTm3Neurons.push_back("Tm3-f-P");
 
-#if 0
+#  if 0
   for (size_t i = 0; i < connectedTm3Neurons.size(); ++i) {
     if (i != 0) {
       stream << "," << endl;
@@ -11498,7 +11498,7 @@ void ZTest::test(MainWindow *host)
 #endif
   service.loadFace(blockArray);
 
-#if 1
+#  if 1
   service.markBody();
 
   std::vector<int> orphanBodyArray;
@@ -11516,7 +11516,7 @@ void ZTest::test(MainWindow *host)
        iter != marker.end(); ++iter) {
     std::cout << iter->getX() << " " << iter->getY() << " " << iter->getZ() << std::endl;
   }
-#endif
+#  endif
   service.print();
 #endif
 
@@ -11601,7 +11601,7 @@ void ZTest::test(MainWindow *host)
 
   std::vector<int> orphanBodyArray;
 
-#if 1
+#  if 1
   ZString line;
   FILE *fp = fopen((GET_DATA_DIR + "/face_orphan.txt").c_str(), "r");
   while(line.readLine(fp)) {
@@ -11613,13 +11613,13 @@ void ZTest::test(MainWindow *host)
   }
 
   fclose(fp);
-#else
+#  else
   orphanBodyArray.push_back(34677);
   orphanBodyArray.push_back(236315);
   orphanBodyArray.push_back(66038);
   orphanBodyArray.push_back(67948);
   orphanBodyArray.push_back(625684);
-#endif
+#  endif
   service.loadFaceOrphanBody(orphanBodyArray);
 
   service.computeOverlap();
@@ -12904,7 +12904,7 @@ void ZTest::test(MainWindow *host)
 #if 0
   ZStackFactory factory;
   ZPointArray ptArray;
-  ptArray.importTxtFile(GET_DATA_DIR + "/flyem/AL/AL_Tbars_xyz.txt");
+  ptArray.importTxtFile(GET_DATA_DIR + "/flyem/AL/al7-origroi-tbar-predict_0.86.txt");
   int dsScale = 5;
   for (ZPointArray::iterator iter = ptArray.begin(); iter != ptArray.end();
        ++iter) {
@@ -13062,15 +13062,30 @@ void ZTest::test(MainWindow *host)
 #if 0
   FlyEm::ZSynapseAnnotationArray synapseArray;
   synapseArray.loadJson(
-        GET_DATA_DIR + "/flyem/AL/AL7_tbars_annotated_20141002T170940.json");
+        GET_DATA_DIR + "/flyem/AL/al7-origroi-tbar-predict_0.86.json");
   ofstream stream(
-        (GET_DATA_DIR + "/flyem/AL/AL7_tbars_annotated_20141002T170940.txt").c_str());
-
+        (GET_DATA_DIR + "/flyem/AL/al7-origroi-tbar-predict_0.86.txt").c_str());
   std::vector<ZPunctum*> puncta = synapseArray.toTBarPuncta(10.0);
   for (std::vector<ZPunctum*>::const_iterator iter = puncta.begin();
        iter != puncta.end(); ++iter) {
     const ZPunctum *punctum = *iter;
     stream << punctum->x() << " " << punctum->y() << " " << punctum->z()
+           << std::endl;
+  }
+  stream.close();
+#endif
+
+#if 0
+  FlyEm::ZSynapseAnnotationArray synapseArray;
+  synapseArray.loadJson(
+        GET_DATA_DIR + "/flyem/FIB/FIB25/annotations-synapse.json");
+  ofstream stream(
+        (GET_DATA_DIR + "/flyem/FIB/FIB25/annotations-synapse.csv").c_str());
+  std::vector<ZPunctum*> puncta = synapseArray.toTBarPuncta(10.0);
+  for (std::vector<ZPunctum*>::const_iterator iter = puncta.begin();
+       iter != puncta.end(); ++iter) {
+    const ZPunctum *punctum = *iter;
+    stream << punctum->x() << "," << punctum->y() << "," << punctum->z()
            << std::endl;
   }
   stream.close();
@@ -13176,7 +13191,7 @@ void ZTest::test(MainWindow *host)
   stream.close();
 #endif
 
-#if 1
+#if 0
   std::string annotationFile = GET_DATA_DIR +
       "/flyem/FIB/skeletonization/session41/annotations-body.json";
   std::string bundleFile = GET_DATA_DIR +
@@ -13198,5 +13213,107 @@ void ZTest::test(MainWindow *host)
       writer.writeAnnotation(neuron);
     }
   }
+#endif
+
+#if 0
+  ZFlyEmNeuronArray neuronArray;
+  neuronArray.importBodyDir(
+        GET_TEST_DATA_DIR +
+        "/flyem/FIB/skeletonization/session28/100k+/stacked");
+
+  FlyEm::ZSynapseAnnotationArray synapseArray;
+  synapseArray.loadJson(
+        GET_TEST_DATA_DIR +
+        "/flyem/FIB/skeletonization/session28/annotations-synapse.json");
+
+  FlyEm::ZIntCuboidArray blockArray;
+  blockArray.loadSubstackList(GET_TEST_DATA_DIR + "/flyem/FIB/block_13layer.txt");
+  FlyEm::SubstackRegionCalbration calbr;
+  calbr.setBounding(true, true, false);
+  calbr.setMargin(10, 10, 0);
+  ZFlyEmQualityAnalyzer analyzer;
+  analyzer.setSubstackRegion(blockArray, calbr);
+
+  std::vector<int> allSynapseCount = synapseArray.countSynapse();
+
+  ZFlyEmNeuronArray selectedNeuronArray;
+  for (ZFlyEmNeuronArray::iterator iter = neuronArray.begin();
+       iter != neuronArray.end(); ++iter) {
+    ZFlyEmNeuron &neuron = *iter;
+    if ((size_t) neuron.getId() < allSynapseCount.size()) {
+      if (allSynapseCount[neuron.getId()] > 0) {
+        if (analyzer.touchingSideBoundary(*neuron.getBody())) {
+          selectedNeuronArray.push_back(neuron);
+        }
+        neuron.deprecate(ZFlyEmNeuron::BODY);
+      }
+    }
+  }
+
+  ZFlyEmNeuronExporter exporter;
+  exporter.exportIdVolume(selectedNeuronArray, GET_TEST_DATA_DIR + "/test2.json");
+
+#endif
+
+#if 0
+  FlyEm::ZSubstackRoi roi;
+  roi.importJsonFile(
+        GET_DATA_DIR + "/flyem/FIB/FIB25/extended_roi_substack.json");
+
+  ZIntCuboidFaceArray faceArray = roi.getCuboidArray().getSideBorderFace();
+  ZSwcTree *tree = ZSwcGenerator::createSwc(faceArray, 5.0);
+
+  tree->save(GET_DATA_DIR + "/test.swc");
+#endif
+
+#if 1
+  ZStackFactory factory;
+
+  std::string synapseFile =
+      GET_DATA_DIR + "/flyem/AL/synpase_labeled4_processed.txt";
+
+  FILE *fp = fopen(synapseFile.c_str(), "r");
+
+  ZWeightedPointArray ptArray;
+
+  double dsScale = 5.0;
+
+  ZString line;
+  while (line.readLine(fp)) {
+    std::vector<int> pt = line.toIntegerArray();
+    if (pt.size() == 4) {
+      double weight = pt[3];
+      ptArray.append(pt[0] / dsScale, pt[1] / dsScale, pt[2] / dsScale, weight);
+    }
+  }
+
+  ZStack *stack = factory.makeSeedStack(ptArray);
+
+  stack->save(GET_DATA_DIR + "/test.tif");
+#endif
+
+#if 0
+  ZStackFactory factory;
+
+  std::string synapseFile =
+      GET_DATA_DIR + "/flyem/AL/al7-origroi-tbar-predict_0.81.txt";
+
+  FILE *fp = fopen(synapseFile.c_str(), "r");
+
+  ZWeightedPointArray ptArray;
+
+  double dsScale = 5.0;
+
+  ZString line;
+  while (line.readLine(fp)) {
+    std::vector<int> pt = line.toIntegerArray();
+    if (pt.size() == 3) {
+      double weight = 1.0;
+      ptArray.append(pt[0] / dsScale, pt[1] / dsScale, pt[2] / dsScale, weight);
+    }
+  }
+
+  ZStack *stack = factory.makeDensityMap(ptArray, 15.0);
+  stack->save(GET_DATA_DIR + "/test2.tif");
 #endif
 }

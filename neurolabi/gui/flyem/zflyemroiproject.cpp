@@ -17,6 +17,8 @@
 #include "zswcforest.h"
 #include "zswctree.h"
 
+const double ZFlyEmRoiProject::m_defaultSynpaseRadius = 20.0;
+
 ZFlyEmRoiProject::ZFlyEmRoiProject(const std::string &name, QObject *parent) :
   QObject(parent), m_name(name), m_z(-1), m_dataFrame(NULL)
 {
@@ -153,7 +155,7 @@ QList<ZPunctum*> ZFlyEmRoiProject::makePunctumList(bool dsScaled) const
 void ZFlyEmRoiProject::updateSynapse()
 {
   int z = getDataZ();
-  int range = 10;
+  int range = m_defaultSynpaseRadius;
 
   ZPunctum markPunctum;
   markPunctum.setZ(z - range);
@@ -885,7 +887,7 @@ void ZFlyEmRoiProject::loadSynapse(const std::string &filePath, bool isVisible)
 {
   m_synapseArray.clear();
   m_puncta.clear();
-  const double radius = 20.0;
+  const double radius = m_defaultSynpaseRadius;
   switch (ZFileType::fileType(filePath)) {
   case ZFileType::JSON_FILE:
   {
@@ -906,9 +908,14 @@ void ZFlyEmRoiProject::loadSynapse(const std::string &filePath, bool isVisible)
         punctum->setColor(255, 255, 255, 255);
         punctum->setVisible(isVisible);
         if (pt.size() >= 4) {
-          if (pt[3] < (int) m_punctaColorMap.size()) {
-            punctum->setColor(m_punctaColorMap[pt[3]]);
+          int label = pt[3];
+          punctum->setName(QString("%1").arg(label));
+          int colorLabel = label;
+          if (colorLabel >= (int) m_punctaColorMap.size()) {
+            colorLabel %= (m_punctaColorMap.size() - 1);
+            colorLabel += 1;
           }
+          punctum->setColor(m_punctaColorMap[colorLabel]);
         }
         m_puncta.push_back(punctum);
       }

@@ -2,7 +2,9 @@
 #include "zmouseeventrecorder.h"
 #include "zstroke2d.h"
 
-ZStackOperator::ZStackOperator() : m_op(OP_NULL), m_hitNode(NULL),
+ZStackOperator::ZStackOperator() :
+  m_op(OP_NULL), m_hitNode(NULL),
+  m_hitStroke(NULL),
   m_punctaIndex(-1), m_togglingStrokeLabel(false), m_mouseEventRecorder(NULL)
 {
 }

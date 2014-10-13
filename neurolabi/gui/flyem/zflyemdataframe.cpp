@@ -51,6 +51,10 @@
 #include "dvid/zdvidreader.h"
 #include "zdoublevector.h"
 #include "dvid/zdviddata.h"
+#include "zjsonobject.h"
+#include "zjsonarray.h"
+#include "zjsonparser.h"
+#include "zintset.h"
 
 using namespace std;
 
@@ -2402,4 +2406,94 @@ const ZFlyEmDataBundle* ZFlyEmDataFrame::getMasterData() const
 {
   return dynamic_cast<const ZFlyEmDataBundle*>(
         (const_cast<ZFlyEmDataFrame*>(this))->getMasterData());
+}
+
+void ZFlyEmDataFrame::exportSideBoundaryAnalysis(
+    const QString &savePath, const QString &substackPath,
+    const QString &synapsePath)
+{
+  ZDvidReader reader;
+  if (!reader.open(m_dvidTarget)) {
+    dump("Failed to open DVID server.");
+    return;
+  }
+
+  ZFlyEmDataBundle *dataBundle = getMasterData();
+  ZFlyEmNeuronArray &neuronArray = dataBundle->getNeuronArray();
+
+  FlyEm::ZSynapseAnnotationArray synapseArray;
+  synapseArray.loadJson(synapsePath.toStdString());
+
+  FlyEm::ZSubstackRoi roi;
+  roi.importJsonFile(substackPath.toStdString());
+
+  ZIntCuboidFaceArray faceArray = roi.getCuboidArray().getSideBorderFace();
+
+  ZIntSet sideBodySet;
+  for (ZIntCuboidFaceArray::const_iterator iter = faceArray.begin();
+       iter != faceArray.end(); ++iter) {
+    const ZIntCuboidFace &face = *iter;
+    std::set<int> bodySet =
+        reader.readBodyId(face.getCornerCoordinates(0),
+                          face.getCornerCoordinates(3));
+#ifdef _DEBUG_
+    if (bodySet.count(791843) > 0) {
+      std::cout << "debug here" << std::endl;
+    }
+    std::cout << bodySet.size() << " ids." << std::endl;
+#endif
+    sideBodySet.insert(bodySet.begin(), bodySet.end());
+  }
+  std::cout << sideBodySet.size() << std::endl;
+
+  ZIntSet currentBodySet;
+  for (ZFlyEmNeuronArray::iterator iter = neuronArray.begin();
+       iter != neuronArray.end(); ++iter) {
+    ZFlyEmNeuron &neuron = *iter;
+    currentBodySet.insert(neuron.getId());
+  }
+
+  sideBodySet.intersect(currentBodySet);
+  std::cout << sideBodySet.size() << std::endl;
+
+  std::vector<int> allSynapseCount = synapseArray.countSynapse();
+
+  ZJsonObject rootObj;
+  ZJsonArray neuronArrayJson;
+
+//  ZFlyEmNeuronArray selectedNeuronArray;
+  for (ZFlyEmNeuronArray::iterator iter = neuronArray.begin();
+       iter != neuronArray.end(); ++iter) {
+    ZFlyEmNeuron &neuron = *iter;
+    if ((size_t) neuron.getId() < allSynapseCount.size()) {
+      if (allSynapseCount[neuron.getId()] > 0) {
+        ZJsonObject neuronJson;
+        neuronJson.setEntry("id", neuron.getId());
+        ZObject3dScan *body = neuron.getBody();
+        neuronJson.setEntry("volume", (int) body->getVoxelNumber());
+        neuronJson.setEntry("area", (int) body->getSurfaceArea());
+        neuronJson.setEntry("side", sideBodySet.count(neuron.getId()) > 0);
+//        if (analyzer.touchingSideBoundary(*body)) {
+//          selectedNeuronArray.push_back(neuron);
+//        }
+        neuron.deprecate(ZFlyEmNeuron::BODY);
+
+        neuronArrayJson.append(neuronJson);
+      }
+    }
+  }
+
+  rootObj.setEntry("neurons", neuronArrayJson);
+  rootObj.dump(savePath.toStdString());
+
+//  ZFlyEmNeuronExporter exporter;
+//  exporter.exportIdVolume(selectedNeuronArray, savePath.toStdString());
+}
+
+void ZFlyEmDataFrame::importBoundBox(const QString &substackPath)
+{
+  ZFlyEmDataBundle *dataBundle = getMasterData();
+  if (dataBundle != NULL) {
+    getMasterData()->importBoundBox(substackPath.toStdString());
+  }
 }

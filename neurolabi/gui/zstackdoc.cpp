@@ -786,12 +786,12 @@ void ZStackDoc::selectSwcNodeConnection(Swc_Tree_Node *lastSelectedNode)
   if (lastSelectedNode != NULL) {
     for (std::set<Swc_Tree_Node*>::iterator targetIter = nodeSet->begin();
          targetIter != nodeSet->end(); ++targetIter) {
+      Swc_Tree_Node *tn = *targetIter;
       Swc_Tree_Node *ancestor = SwcTreeNode::commonAncestor(lastSelectedNode,
-                                                            *targetIter);
+                                                            tn);
       if (SwcTreeNode::isRegular(ancestor)) {
         if (lastSelectedNode == ancestor) {
           std::vector<Swc_Tree_Node*> tnArray;
-          Swc_Tree_Node *tn = *targetIter;
           while (tn != lastSelectedNode) {
             tnArray.push_back(tn);
             tn = SwcTreeNode::parent(tn);
@@ -805,7 +805,7 @@ void ZStackDoc::selectSwcNodeConnection(Swc_Tree_Node *lastSelectedNode)
             }
           }
         } else {
-          ZSwcPath path(lastSelectedNode, *targetIter);
+          ZSwcPath path(lastSelectedNode, tn);
           ZSwcPath::iterator iter = path.begin();
           ++iter;
           for (; iter != path.end(); ++iter) {
@@ -4097,13 +4097,13 @@ bool ZStackDoc::isDeprecated(EComponent component)
   return false;
 }
 
-Swc_Tree_Node* ZStackDoc::swcHitTest(double x, double y)
+Swc_Tree_Node* ZStackDoc::swcHitTest(double x, double y) const
 {
   Swc_Tree_Node *selected = NULL;
 
-  for (QList<ZSwcTree*>::iterator iter = m_swcList.begin();
+  for (QList<ZSwcTree*>::const_iterator iter = m_swcList.begin();
        iter != m_swcList.end(); ++iter) {
-    ZSwcTree *tree = *iter;
+    ZSwcTree *tree = const_cast<ZSwcTree*>(*iter);
     selected = tree->hitTest(x, y);
 
     if (selected != NULL) {
@@ -4114,14 +4114,14 @@ Swc_Tree_Node* ZStackDoc::swcHitTest(double x, double y)
   return selected;
 }
 
-Swc_Tree_Node* ZStackDoc::swcHitTest(double x, double y, double z)
+Swc_Tree_Node* ZStackDoc::swcHitTest(double x, double y, double z) const
 {
   Swc_Tree_Node *selected = NULL;
   const double Margin = 0.5;
 
-  for (QList<ZSwcTree*>::iterator iter = m_swcList.begin();
+  for (QList<ZSwcTree*>::const_iterator iter = m_swcList.begin();
        iter != m_swcList.end(); ++iter) {
-    ZSwcTree *tree = *iter;
+    ZSwcTree *tree = const_cast<ZSwcTree*>(*iter);
     //if (z < 0) {
       //selected = tree->hitTest(x, y);
     //} else {
@@ -4136,7 +4136,7 @@ Swc_Tree_Node* ZStackDoc::swcHitTest(double x, double y, double z)
   return selected;
 }
 
-Swc_Tree_Node* ZStackDoc::swcHitTest(const ZPoint &pt)
+Swc_Tree_Node* ZStackDoc::swcHitTest(const ZPoint &pt) const
 {
   return swcHitTest(pt.x(), pt.y(), pt.z());
 }
@@ -7592,5 +7592,55 @@ void ZStackDocReader::addObject(
     addPlayer(obj, type, role);
   } else {
     RECORD_WARNING_UNCOND("Failed to add an unknown object");
+  }
+}
+
+void ZStackDoc::importSeedMask(const QString &filePath)
+{
+  ZStack stack;
+  stack.load(filePath.toStdString(), false);
+
+  if (stack.kind() == GREY) {
+    ZLabelColorTable colorTable;
+    std::vector<ZObject3d*> objArray;
+    for (int z = 0; z < stack.depth(); ++z) {
+      for (int y = 0; y < stack.height(); ++y) {
+        for (int x = 0; x < stack.width(); ++x) {
+          int x2 = x + stack.getOffset().getX();
+          int y2 = y + stack.getOffset().getY();
+          int z2 = z + stack.getOffset().getZ();
+
+          int v = stack.getIntValue(x2, y2, z2);
+          if (v > 0) {
+            if (v >= (int) objArray.size()) {
+              objArray.resize(v + 1, NULL);
+            }
+
+            if (objArray[v] == NULL) {
+              objArray[v] = new ZObject3d;
+              objArray[v]->setLabel(v);
+              objArray[v]->setColor(colorTable.getColor(v));
+            }
+
+            objArray[v]->append(x2, y2, z2);
+          }
+        }
+      }
+    }
+    if (objArray.size() > 1) {
+      QUndoCommand *command = new QUndoCommand;
+      for (std::vector<ZObject3d*>::iterator iter = objArray.begin();
+           iter != objArray.end(); ++iter) {
+        ZObject3d *obj = *iter;
+        if (obj != NULL) {
+          new ZStackDocCommand::ObjectEdit::AddObject(
+                this, obj, NeuTube::Documentable_OBJ3D,
+                ZDocPlayer::ROLE_SEED, command);
+        }
+      }
+      pushUndoCommand(command);
+
+      notifyObj3dModified();
+    }
   }
 }

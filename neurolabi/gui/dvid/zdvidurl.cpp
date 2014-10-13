@@ -199,3 +199,17 @@ std::string ZDvidUrl::getBoundBoxUrl(int z) const
 {
   return getBoundBoxUrl() + "/" + ZString::num2str(z);
 }
+
+std::string ZDvidUrl::getBodyLabelUrl() const
+{
+  return getDataUrl(ZDvidData::ROLE_BODY_LABEL);
+}
+
+std::string ZDvidUrl::getBodyLabelUrl(
+    int x0, int y0, int z0, int width, int height, int depth) const
+{
+  std::ostringstream stream;
+  stream << "/raw/0_1_2/" << width << "_" << height << "_" << depth << "/"
+         << x0 << "_" << y0 << "_" << z0;
+  return getBodyLabelUrl() + stream.str();
+}

@@ -58,6 +58,10 @@ public:
   std::string getBoundBoxUrl() const;
   std::string getBoundBoxUrl(int z) const;
 
+  std::string getBodyLabelUrl() const;
+  std::string getBodyLabelUrl(
+      int x0, int y0, int z0, int width, int height, int depth) const;
+
 private:
   ZDvidTarget m_dvidTarget;
 };

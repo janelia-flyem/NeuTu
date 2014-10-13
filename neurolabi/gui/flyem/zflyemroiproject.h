@@ -159,6 +159,8 @@ private:
   FlyEm::ZSynapseAnnotationArray m_synapseArray;
   std::vector<ZPunctum*> m_puncta;
   std::vector<QColor> m_punctaColorMap;
+
+  static const double m_defaultSynpaseRadius;
 };
 
 #endif // ZFLYEMROIPROJECT_H

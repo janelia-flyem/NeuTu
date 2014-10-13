@@ -6700,3 +6700,47 @@ void MainWindow::on_actionExport_Segmentation_Result_triggered()
     }
   }
 }
+
+void MainWindow::on_actionBody_Touching_Analysis_triggered()
+{
+  ZFlyEmDataFrame *frame = currentFlyEmDataFrame();
+  if (frame != NULL) {
+    QString filePath = getSaveFileName("Save Result", "Json File (*.json)");
+    if (!filePath.isEmpty()) {
+      QString substackFile = getOpenFileName(
+            "Open Substack ROI", "ROI File (*.json)");
+      if (!substackFile.isEmpty()) {
+        QString synapseAnnotationFile = getOpenFileName(
+              "Open Synapse Annotation", "Synapse File (*.json)");
+        if (!synapseAnnotationFile.isEmpty()) {
+          frame->exportSideBoundaryAnalysis(
+                filePath, substackFile, synapseAnnotationFile);
+        }
+      }
+    }
+  }
+}
+
+
+void MainWindow::on_actionImportBoundBox_triggered()
+{
+  ZFlyEmDataFrame *frame = currentFlyEmDataFrame();
+  if (frame != NULL) {
+    QString substackFile = getOpenFileName(
+          "Open Substack ROI", "ROI File (*.txt)");
+    if (!substackFile.isEmpty()) {
+      frame->importBoundBox(substackFile);
+    }
+  }
+}
+
+void MainWindow::on_actionImportSeeds_triggered()
+{
+  ZStackFrame *frame = currentStackFrame();
+  if (frame != NULL) {
+    QString fileName = getOpenFileName("Load Seeds", "Image File (*.tif)");
+    if (!fileName.isEmpty()) {
+      frame->importSeedMask(fileName);
+    }
+  }
+}

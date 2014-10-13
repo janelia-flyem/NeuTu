@@ -6,7 +6,8 @@
 #include "zpainter.h"
 #include "zpaintbundle.h"
 
-ZImageWidget::ZImageWidget(QWidget *parent, QImage *image) : QWidget(parent)
+ZImageWidget::ZImageWidget(QWidget *parent, QImage *image) : QWidget(parent),
+  m_isViewHintVisible(true)
 {
   if (image != NULL) {
     m_viewPort.setRect(0, 0, image->width(), image->height());
@@ -341,6 +342,10 @@ void ZImageWidget::paintEvent(QPaintEvent * /*event*/)
       painter1.setStackOffset(m_paintBundle->getStackOffset());
       std::vector<const ZStackObject*> visibleObject;
       ZPaintBundle::const_iterator iter = m_paintBundle->begin();
+#ifdef _DEBUG_2
+      std::cout << "visible: " << std::endl;
+#endif
+
       for (;iter != m_paintBundle->end(); ++iter) {
         const ZStackObject *obj = *iter;
         if (obj->getTarget() == ZStackObject::WIDGET &&
@@ -350,10 +355,15 @@ void ZImageWidget::paintEvent(QPaintEvent * /*event*/)
 #ifdef _DEBUG_2
           std::cout << obj << obj->className() << std::endl;
 #endif
-          visibleObject.push_back(obj);
+          if (obj->getSource() != ZStackObject::getNodeAdapterId()) {
+            visibleObject.push_back(obj);
+          }
         }
       }
 
+#ifdef _DEBUG_2
+      std::cout << "---" << std::endl;
+#endif
       std::sort(visibleObject.begin(), visibleObject.end(),
                 ZStackObject::ZOrderCompare());
       for (std::vector<const ZStackObject*>::const_iterator
@@ -366,12 +376,23 @@ void ZImageWidget::paintEvent(QPaintEvent * /*event*/)
                      m_paintBundle->displayStyle());
       }
 
+      for (iter = m_paintBundle->begin();iter != m_paintBundle->end(); ++iter) {
+        const ZStackObject *obj = *iter;
+        if (obj->getTarget() == ZStackObject::WIDGET &&
+            obj->isSliceVisible(m_paintBundle->getZ())) {
+          if (obj->getSource() == ZStackObject::getNodeAdapterId()) {
+            obj->display(painter1, m_paintBundle->sliceIndex(),
+                         m_paintBundle->displayStyle());
+          }
+        }
+      }
+
       painter1.end();
     }
 
     painter.begin(this);
     painter.setRenderHint(QPainter::Antialiasing, false);
-    if (m_zoomRatio > 1) {
+    if (m_zoomRatio > 1 && m_isViewHintVisible) {
       painter.setPen(QPen(QColor(0, 0, 255, 128)));
       double ratio = (double) projectSize().width() /
                      canvasSize().width() / 5.0;

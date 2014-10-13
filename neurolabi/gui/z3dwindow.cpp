@@ -644,6 +644,11 @@ void Z3DWindow::createContextMenu()
   m_saveSelectedPunctaAsAction = new QAction("save selected puncta as ...", this);
   connect(m_saveSelectedPunctaAsAction, SIGNAL(triggered()), this,
           SLOT(saveSelectedPunctaAs()));
+
+  m_changePunctaNameAction = new QAction("Change name", this);
+  connect(m_changePunctaNameAction, SIGNAL(triggered()), this,
+          SLOT(changeSelectedPunctaName()));
+
   m_saveAllPunctaAsAction = new QAction("save all puncta as ...", this);
   connect(m_saveAllPunctaAsAction, SIGNAL(triggered()), this,
           SLOT(saveAllPunctaAs()));
@@ -652,6 +657,7 @@ void Z3DWindow::createContextMenu()
            SLOT(locatePunctumIn2DView()));
   contextMenu->addAction(m_saveSelectedPunctaAsAction);
   contextMenu->addAction(m_saveAllPunctaAsAction);
+  contextMenu->addAction(m_changePunctaNameAction);
   contextMenu->addAction(m_locatePunctumIn2DAction);
   contextMenu->addAction("Transform selected puncta",
                          this, SLOT(transformSelectedPuncta()));
@@ -1599,6 +1605,23 @@ void Z3DWindow::saveSelectedPunctaAs()
   if (!filename.isEmpty()) {
     m_lastOpenedFilePath = filename;
     ZPunctumIO::save(filename, m_doc->selectedPuncta()->begin(), m_doc->selectedPuncta()->end());
+  }
+}
+
+void Z3DWindow::changeSelectedPunctaName()
+{
+  bool ok;
+  QString text = QInputDialog::getText(this, tr("New Name"),
+                                       tr("Punctum name:"), QLineEdit::Normal,
+                                       "", &ok);
+  if (ok) {
+    std::set<ZPunctum*> *punctumSet = m_doc->selectedPuncta();
+    for (std::set<ZPunctum*>::iterator iter = punctumSet->begin();
+         iter != punctumSet->end(); ++iter) {
+      ZPunctum *punctum = *iter;
+      punctum->setName(text);
+    }
+    m_doc->notifyPunctumModified();
   }
 }
 

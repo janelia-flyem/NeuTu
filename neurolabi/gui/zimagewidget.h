@@ -94,6 +94,10 @@ public:
   double getActualOffsetY() const;
   ///}
 
+  inline void setViewHintVisible(bool visible) {
+    m_isViewHintVisible = visible;
+  }
+
 public:
   virtual void mouseReleaseEvent(QMouseEvent *event);
   virtual void mouseMoveEvent(QMouseEvent *event);
@@ -124,6 +128,7 @@ private:
   QMenu *m_leftButtonMenu;
   QMenu *m_rightButtonMenu;
   ZPaintBundle *m_paintBundle;
+  bool m_isViewHintVisible;
 };
 
 #endif

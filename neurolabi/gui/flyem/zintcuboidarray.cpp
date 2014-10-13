@@ -132,6 +132,28 @@ void FlyEm::ZIntCuboidArray::rescale(double factor)
   deprecate(ALL_COMPONENT);
 }
 
+ZSwcTree* FlyEm::ZIntCuboidArray::toSwc() const
+{
+  ZSwcTree *tree = NULL;
+  if (!empty()) {
+    tree = new ZSwcTree;
+    int index = 0;
+    for (ZIntCuboidArray::const_iterator iter = begin(); iter != end();
+         ++iter, ++index) {
+      ZCuboid cuboid;
+      cuboid.set(iter->cb[0], iter->cb[1], iter->cb[2], iter->ce[0], iter->ce[1],
+          iter->ce[2]);
+      ZSwcTree *subtree = ZSwcTree::createCuboidSwc(cuboid);
+      subtree->setType(index);
+      tree->merge(subtree, true);
+    }
+
+    tree->resortId();
+  }
+
+  return tree;
+}
+
 void FlyEm::ZIntCuboidArray::exportSwc(const string &filePath) const
 {
   if (!empty()) {

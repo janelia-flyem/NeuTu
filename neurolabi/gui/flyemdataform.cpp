@@ -391,8 +391,8 @@ void FlyEmDataForm::showSelectedModelWithBoundBox()
   ZFlyEmDataFrame *frame = getParentFrame();
   if (frame != NULL) {
     ZFlyEmDataBundle *dataBundle = frame->getDataBundle();
-    if (!dataBundle->getBoundBox().isEmpty()) {
-      hostDoc->addSwcTree(dataBundle->getBoundBox().clone());
+    if (dataBundle->hasBoundBox()) {
+      hostDoc->addSwcTree(dataBundle->getBoundBox()->clone());
     }
   }
 }

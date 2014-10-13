@@ -1220,19 +1220,23 @@ vector<int> FlyEm::ZSynapseAnnotationArray::countSynapse()
   for (size_t i = 0; i < size(); i++) {
     for (size_t j = 0; j < (*this)[i].getPartnerArrayRef()->size(); ++j) {
       int psdBodyId = (*this)[i].getPartnerRef(j)->bodyId();
-      if (psdBodyId >= (int) count.size()) {
-        count.resize(psdBodyId + 1, 0);
+      if (psdBodyId >= 0) {
+        if (psdBodyId >= (int) count.size()) {
+          count.resize(psdBodyId + 1, 0);
+        }
+        count[psdBodyId]++;
       }
-      count[psdBodyId]++;
     }
   }
 
   for (size_t i = 0; i < size(); i++) {
     int tbarBodyId = getTBarRef(i)->bodyId();
-    if (tbarBodyId >= (int) count.size()) {
-      count.resize(tbarBodyId + 1, 0);
+    if (tbarBodyId >= 0) {
+      if (tbarBodyId >= (int) count.size()) {
+        count.resize(tbarBodyId + 1, 0);
+      }
+      count[tbarBodyId]++;
     }
-    count[tbarBodyId]++;
   }
 
 
@@ -1300,12 +1304,13 @@ vector<ZPunctum*> FlyEm::ZSynapseAnnotationArray::toPuncta(
 }
 
 std::vector<ZPunctum*>
-FlyEm::ZSynapseAnnotationArray::toTBarPuncta(double radius) const
+FlyEm::ZSynapseAnnotationArray::toTBarPuncta(
+    double radius, double minConfidence) const
 {
   std::vector<ZPunctum*> puncta;
   for (const SynapseLocation *synapse = beginSynapseLocation();
        synapse != NULL; synapse = nextSynapseLocation()) {
-    if (synapse->isTBar()) {
+    if (synapse->isTBar() && synapse->confidence() >= minConfidence) {
       ZPunctum *punctum = new ZPunctum;
       punctum->setColor(0, 0, 255);
       punctum->setCenter(synapse->pos());

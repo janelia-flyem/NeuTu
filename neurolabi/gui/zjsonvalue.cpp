@@ -232,5 +232,8 @@ std::string ZJsonValue::dumpString(int indent) const
 
 bool ZJsonValue::dump(const string &path) const
 {
+#ifdef _DEBUG_
+  std::cout << "Saving json file: " << path << " ..." << std::endl;
+#endif
   return C_Json::dump(m_data, path.c_str());
 }

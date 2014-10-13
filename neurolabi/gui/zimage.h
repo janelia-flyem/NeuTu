@@ -98,6 +98,8 @@ public:
   void enhanceEdge();
   //void drawObject(Object_3d *obj, int z);
 
+  static bool writeImage(const QImage &image, const QString &filePath);
+
 private:
   static bool hasSameColor(uchar *pt1, uchar *pt2);
 };

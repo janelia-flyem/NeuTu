@@ -633,7 +633,7 @@ void ZStroke2d::loadJsonObject(const ZJsonObject &obj)
 
 bool ZStroke2d::isSliceVisible(int z) const
 {
-  if (isVisible()) {
+  if (isVisible() && !isEmpty()) {
     if (z == -1 || m_isPenetrating || m_z == z) {
       return true;
     }

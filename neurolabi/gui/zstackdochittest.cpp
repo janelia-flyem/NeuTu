@@ -20,6 +20,10 @@ bool ZStackDocHitTest::hitTest(const ZStackDoc *doc, double x, double y)
     }
   }
 
+  if (m_hitStroke == NULL) {
+    m_hitSwcNode = doc->swcHitTest(x, y);
+  }
+
   return m_hitStroke != NULL;
 }
 
@@ -40,6 +44,10 @@ bool ZStackDocHitTest::hitTest(
       m_hitStroke = const_cast<ZStroke2d*>(stroke);
       break;
     }
+  }
+
+  if (m_hitStroke == NULL) {
+    m_hitSwcNode = doc->swcHitTest(x, y, z);
   }
 
   return m_hitStroke != NULL;

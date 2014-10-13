@@ -142,24 +142,28 @@ bool ZDvidClient::postRequest(
     break;
   case ZDvidRequest::DVID_GET_BODY_LABEL:
   {
-#if 0
+#if 1
     QList<QVariant> parameterList = parameter.toList();
     //if (parameterList)
     if (parameterList.size() == 5) {
-      urlString = QString("%1/%2/bodies/raw/0_1/%3_%4/%5_%6_%7").
-          arg(m_serverAddress).
-          arg(m_dataPath).
-          arg(parameterList[3].toInt()).arg(parameterList[4].toInt()).
-          arg(parameterList[0].toInt()).arg(parameterList[1].toInt()).
-          arg(parameterList[2].toInt());
+//      urlString = QString("%1/%2/bodies/raw/0_1/%3_%4/%5_%6_%7").
+//          arg(m_serverAddress).
+//          arg(m_dataPath).
+//          arg(parameterList[3].toInt()).arg(parameterList[4].toInt()).
+//          arg(parameterList[0].toInt()).arg(parameterList[1].toInt()).
+//          arg(parameterList[2].toInt());
     } else {
-      urlString = QString("%1/%2/bodies/raw/0_1_2/%3_%4_%5/%6_%7_%8").
-          arg(m_serverAddress).
-          arg(m_dataPath).
-          arg(parameterList[3].toInt()).arg(parameterList[4].toInt()).
-          arg(parameterList[5].toInt()).
-          arg(parameterList[0].toInt()).arg(parameterList[1].toInt()).
-          arg(parameterList[2].toInt());
+      urlString = dvidUrl.getBodyLabelUrl(
+            parameterList[0].toInt(), parameterList[1].toInt(),
+          parameterList[2].toInt(), parameterList[3].toInt(),
+          parameterList[4].toInt(), parameterList[5].toInt()).c_str();
+//      urlString = QString("%1/%2/bodies/raw/0_1_2/%3_%4_%5/%6_%7_%8").
+//          arg(m_serverAddress).
+//          arg(m_dataPath).
+//          arg(parameterList[3].toInt()).arg(parameterList[4].toInt()).
+//          arg(parameterList[5].toInt()).
+//          arg(parameterList[0].toInt()).arg(parameterList[1].toInt()).
+//          arg(parameterList[2].toInt());
     }
 #endif
   }

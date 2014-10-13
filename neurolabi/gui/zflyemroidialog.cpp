@@ -1246,11 +1246,13 @@ void ZFlyEmRoiDialog::runAutoStep(bool ok)
 
 void ZFlyEmRoiDialog::setQuickMode(bool quickMode)
 {
-  if (quickMode) {
-    m_project->setDsIntv(m_xintv, m_yintv, 0);
-  } else {
-    m_project->setDsIntv(0, 0, 0);
-  }
+  if (m_project != NULL) {
+    if (quickMode) {
+      m_project->setDsIntv(m_xintv, m_yintv, 0);
+    } else {
+      m_project->setDsIntv(0, 0, 0);
+    }
 
-  updateWidget();
+    updateWidget();
+  }
 }

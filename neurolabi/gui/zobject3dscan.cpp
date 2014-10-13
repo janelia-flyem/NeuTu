@@ -31,6 +31,7 @@
 #include "zhdf5reader.h"
 #include "zstringarray.h"
 #include "tz_math.h"
+#include "tz_stack_bwmorph.h"
 
 using namespace std;
 
@@ -2599,6 +2600,35 @@ bool ZObject3dScan::importHdf5(const string &filePath, const string &key)
   }
 
   return false;
+}
+
+
+size_t ZObject3dScan::getSurfaceArea() const
+{
+  size_t area = 0;
+
+  int minZ = getMinZ();
+  int maxZ = getMaxZ();
+
+  area += getSlice(minZ).getVoxelNumber();
+  if (maxZ > minZ) {
+    area += getSlice(maxZ).getVoxelNumber();
+  }
+
+  for (int z = minZ + 1; z < maxZ - 1; ++z) {
+    ZObject3dScan subobj = getSlice(z - 1, z + 1);
+
+    Stack *stack = subobj.toStack();
+    Stack *edge = Stack_Perimeter(stack, NULL, 26);
+    C_Stack::kill(stack);
+
+    Stack slice = C_Stack::sliceView(edge, 1);
+    area += Stack_Sum(&slice);
+
+    C_Stack::kill(edge);
+  }
+
+  return area;
 }
 
 /////////////////////////Iterators/////////////////////////

@@ -262,16 +262,19 @@
       <property name="title">
        <string>Import</string>
       </property>
+      <addaction name="actionImportFlyEmDatabase"/>
+      <addaction name="actionDVID_Bundle"/>
+      <addaction name="separator"/>
       <addaction name="actionAddFlyEmNeuron_Network"/>
       <addaction name="actionSynapse_Annotation"/>
       <addaction name="actionImportMask"/>
       <addaction name="actionImportSegmentation"/>
       <addaction name="actionAxon_Export"/>
-      <addaction name="actionImportFlyEmDatabase"/>
       <addaction name="actionVolume_field"/>
       <addaction name="actionThumbnails_2"/>
       <addaction name="actionHDF5_Body"/>
-      <addaction name="actionDVID_Bundle"/>
+      <addaction name="actionImportBoundBox"/>
+      <addaction name="actionImportSeeds"/>
      </widget>
      <widget class="QMenu" name="menuQuality_Control">
       <property name="title">
@@ -295,6 +298,7 @@
       <addaction name="actionExtract_body"/>
       <addaction name="actionLoop_Analysis"/>
       <addaction name="actionIdentify_Hot_Spot"/>
+      <addaction name="actionBody_Touching_Analysis"/>
      </widget>
      <widget class="QMenu" name="menuTEM_Paper">
       <property name="title">
@@ -1313,6 +1317,21 @@
   <action name="actionExport_Segmentation_Result">
    <property name="text">
     <string>Export Result</string>
+   </property>
+  </action>
+  <action name="actionBody_Touching_Analysis">
+   <property name="text">
+    <string>Side Boundary Analysis</string>
+   </property>
+  </action>
+  <action name="actionImportBoundBox">
+   <property name="text">
+    <string>Bound Box</string>
+   </property>
+  </action>
+  <action name="actionImportSeeds">
+   <property name="text">
+    <string>Seeds</string>
    </property>
   </action>
  </widget>

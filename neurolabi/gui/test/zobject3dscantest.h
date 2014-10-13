@@ -385,6 +385,11 @@ TEST(ZObject3dScan, TestGetProperty) {
 
   ASSERT_EQ((int) obj.getVoxelNumber(), 15);
 
+//  obj.load(GET_TEST_DATA_DIR + "/benchmark/29.sobj");
+//  size_t area = obj.getSurfaceArea();
+//  std::cout << area << std::endl;
+//  std::cout << obj.getVoxelNumber() << std::endl;
+
 }
 
 TEST(ZObject3dScan, TestAddSegment) {

@@ -385,6 +385,12 @@ private slots:
 
   void on_actionExport_Segmentation_Result_triggered();
 
+  void on_actionBody_Touching_Analysis_triggered();
+
+  void on_actionImportBoundBox_triggered();
+
+  void on_actionImportSeeds_triggered();
+
 private:
   void createActions();
   void createFileActions();

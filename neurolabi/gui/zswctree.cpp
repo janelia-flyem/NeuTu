@@ -416,17 +416,6 @@ void ZSwcTree::display(
     return;
   }
 
-  /*
-  const QColor rootColor(164, 164, 255, 164);
-  const QColor branchPointColor(164, 255, 164, 164);
-  const QColor nodeColor(255, 164, 164, 164);
-  const QColor planeSkeletonColor(255, 128, 128, 128);
-
-  const QColor rootFocusColor(0, 0, 255);
-  const QColor branchPointFocusColor(0, 255, 0);
-  const QColor nodeFocusColor(255, 0, 0);
-  */
-
 #if defined(_QT_GUI_USED_)
   painter.save();
 
@@ -524,29 +513,28 @@ void ZSwcTree::display(
       visible = true;
     }
 
-
+    QColor nodeColor;
 
     if (visible) {
       if (SwcTreeNode::isRoot(tn)) {
         if (focused) {
-          pen.setColor(m_rootFocusColor);
+          nodeColor = m_rootFocusColor;
         } else {
-          pen.setColor(m_rootColor);
+          nodeColor = m_rootColor;
         }
       } else if (SwcTreeNode::isBranchPoint(tn)) {
         if (focused) {
-          pen.setColor(m_branchPointFocusColor);
+          nodeColor = m_branchPointFocusColor;
         } else {
-          pen.setColor(m_branchPointColor);
+          nodeColor = m_branchPointColor;
         }
       } else {
         if (focused) {
-          pen.setColor(m_nodeFocusColor);
+          nodeColor = m_nodeFocusColor;
         } else {
-          pen.setColor(m_nodeColor);
+          nodeColor = m_nodeColor;
         }
       }
-      painter.setPen(pen);
 
       switch (style) {
       case BOUNDARY:
@@ -554,8 +542,10 @@ void ZSwcTree::display(
       {
           ZStackBall circle(SwcTreeNode::x(tn), SwcTreeNode::y(tn), SwcTreeNode::z(tn),
                          SwcTreeNode::radius(tn));
+          circle.setColor(nodeColor);
           circle.useCosmeticPen(m_usingCosmeticPen);
-          circle.displayHelper(&painter, stackFocus, style);
+          circle.display(painter, stackFocus, style);
+//          circle.displayHelper(&painter, stackFocus, style);
       }
         //}
         break;
@@ -566,12 +556,15 @@ void ZSwcTree::display(
         painter.setBrush(brushColor);
         ZStackBall circle(SwcTreeNode::x(tn), SwcTreeNode::y(tn), SwcTreeNode::z(tn),
                        SwcTreeNode::radius(tn));
+        circle.setColor(nodeColor);
         circle.useCosmeticPen(m_usingCosmeticPen);
-        circle.displayHelper(&painter, stackFocus, style);
+        circle.display(painter, stackFocus, style);
+//        circle.displayHelper(&painter, stackFocus, style);
       }
         break;
       case SKELETON:
         if (SwcTreeNode::isBranchPoint(tn)) {
+          painter.setPen(nodeColor);
           painter.drawPoint(QPointF(SwcTreeNode::x(tn), SwcTreeNode::y(tn)));
         }
         break;

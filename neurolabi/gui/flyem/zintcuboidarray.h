@@ -8,6 +8,7 @@
 #include "zintcuboidface.h"
 
 class ZJsonObject;
+class ZSwcTree;
 
 namespace FlyEm {
 /*!
@@ -57,6 +58,7 @@ public:
   void rescale(double factor);
 
   void exportSwc(const std::string &filePath) const;
+  ZSwcTree* toSwc() const;
 
   void removeInvalidCuboid();
 

@@ -405,7 +405,7 @@ public: /* data operation */
   bool load(Stack *stack, bool isOwner = true);
 
   //Load stack from a file
-  bool load(const std::string &filepath);
+  bool load(const std::string &filepath, bool initColor = true);
   //bool loadImageSequence(const char *filePath);
 
   //bool importJsonFile(const std::string &filePath);

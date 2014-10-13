@@ -426,3 +426,32 @@ ZStack* ZStackFactory::makeAlphaBlend(const ZStack &/*stack1*/, const ZStack &/*
 {
   return NULL;
 }
+
+ZStack* ZStackFactory::makeSeedStack(const ZWeightedPointArray &ptArray)
+{
+  ZCuboid boundBox = ptArray.getBoundBox();
+  ZPoint pt1 = boundBox.firstCorner();
+  ZPoint pt2 = boundBox.lastCorner();
+
+  ZIntCuboid stackBox(pt1.toIntPoint(), pt2.toIntPoint());
+  ZStack *stack = makeZeroStack(GREY, stackBox);
+
+  for (ZWeightedPointArray::const_iterator iter = ptArray.begin();
+       iter != ptArray.end(); ++iter) {
+    const ZWeightedPoint &pt = *iter;
+    int x = iround(pt.x());
+    int y = iround(pt.y());
+    int z = iround(pt.z());
+    int v = iround(pt.weight());
+
+    stack->setIntValue(x, y, z, 0, v);
+    stack->setIntValue(x - 1, y, z, 0, v);
+    stack->setIntValue(x + 1, y, z, 0, v);
+    stack->setIntValue(x, y - 1, z, 0, v);
+    stack->setIntValue(x, y + 1, z, 0, v);
+    stack->setIntValue(x, y, z - 1, 0, v);
+    stack->setIntValue(x, y, z + 1, 0, v);
+  }
+
+  return stack;
+}

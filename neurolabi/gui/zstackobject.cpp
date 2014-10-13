@@ -1,6 +1,8 @@
 #include "zstackobject.h"
 #include "tz_cdefs.h"
 
+const char* ZStackObject::m_nodeAdapterId = "!NodeAdapter";
+
 ZStackObject::ZStackObject() : m_selected(false), m_isVisible(true),
   m_style(SOLID), m_target(WIDGET), m_usingCosmeticPen(false), m_zScale(1.0),
   m_zOrder(0), m_type(TYPE_UNIDENTIFIED)

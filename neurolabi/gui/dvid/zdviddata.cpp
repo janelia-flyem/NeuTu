@@ -1,7 +1,7 @@
 #include "zdviddata.h"
 
 const char* ZDvidData::m_grayScaleName = "grayscale";
-const char* ZDvidData::m_bodyLabelName = "bodylabel";
+const char* ZDvidData::m_bodyLabelName = "bodies";
 const char* ZDvidData::m_roiCurveName = "roi_curve";
 const char* ZDvidData::m_bodyAnnotationName = "annotations";
 const char* ZDvidData::m_boundBoxName = "bound_box";

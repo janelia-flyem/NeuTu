@@ -1,5 +1,6 @@
 #include "zstackball.h"
 
+#include <QDebug>
 #include <math.h>
 #include "tz_math.h"
 #include "zintpoint.h"
@@ -80,6 +81,11 @@ void ZStackBall::display(ZPainter &painter, int n,
 
   UNUSED_PARAMETER(style);
 #if _QT_GUI_USED_
+  painter.save();
+
+//  const QPen &oldPen = painter.pen();
+//  const QBrush &oldBrush = painter.brush();
+
   QPen pen(m_color, getPenWidth());
   pen.setCosmetic(m_usingCosmeticPen);
 
@@ -89,8 +95,12 @@ void ZStackBall::display(ZPainter &painter, int n,
 
   painter.setPen(pen);
 
-  //qDebug() << "Internal color: " << m_color;
-  const QBrush &oldBrush = painter.brush();
+#ifdef _DEBUG_
+  if (m_color.red() < 64 && m_color.green() <64 && m_color.blue() < 64) {
+    qDebug() << "Internal color: " << m_color;
+  }
+#endif
+
   if (hasVisualEffect(VE_GRADIENT_FILL)) {
     QRadialGradient gradient(50, 50, 50, 50, 50);
     gradient.setColorAt(0, QColor::fromRgbF(0, 1, 0, 1));
@@ -110,7 +120,11 @@ void ZStackBall::display(ZPainter &painter, int n,
     }
   }
   displayHelper(&painter, n, style);
-  painter.setBrush(oldBrush);
+
+//  painter.setPen(oldPen);
+//  painter.setBrush(oldBrush);
+
+  painter.restore();
 #endif
 }
 
@@ -161,7 +175,7 @@ void ZStackBall::displayHelper(ZPainter *painter, int stackFocus, Display_Style 
   double dataFocus = stackFocus - painter->getOffset().z();
   bool visible = false;
 
-  const QBrush &oldBrush = painter->brush();
+//  const QBrush &oldBrush = painter->brush();
   const QPen &oldPen = painter->pen();
   double alpha = oldPen.color().alphaF();
 
@@ -233,9 +247,6 @@ void ZStackBall::displayHelper(ZPainter *painter, int stackFocus, Display_Style 
 
     //painter->setCompositionMode(oldMode);
   }
-
-  painter->setBrush(oldBrush);
-  painter->setPen(oldPen);
 #endif
 }
 

@@ -494,7 +494,7 @@ File_Bundle_S ZStackFile::toFileBundleS() const
   return fs;
 }
 
-ZStack* ZStackFile::readStack(ZStack *data) const
+ZStack* ZStackFile::readStack(ZStack *data, bool initColor) const
 {
   bool failed = false;
 
@@ -511,22 +511,6 @@ ZStack* ZStackFile::readStack(ZStack *data) const
         ZObject3dScan obj;
         if (obj.load(m_urlList[0])) {
           data = obj.toStackObject();
-          /*
-          ZObject3d *obj3d = obj.toObject3d();
-
-          Stack *tmpstack = NULL;
-          if (obj3d != NULL) {
-            tmpstack = obj3d->toStack(offset);
-            delete obj3d;
-          }
-          if (tmpstack != NULL) {
-            stack = C_Stack::make(
-                  GREY, C_Stack::width(tmpstack), C_Stack::height(tmpstack),
-                  C_Stack::depth(tmpstack), 1);
-            C_Stack::copyChannelValue(stack, 0, tmpstack);
-            C_Stack::kill(tmpstack);
-          }
-          */
         }
       } else {
         C_Stack::readStackOffset(m_urlList[0].c_str(), offset, offset + 1,
@@ -543,8 +527,10 @@ ZStack* ZStackFile::readStack(ZStack *data) const
           }
           data->setData(stack);
           data->setOffset(offset[0], offset[1], offset[2]);
-          data->initChannelColors();
 #ifdef _NEUTUBE_
+          if (initColor) {
+            data->initChannelColors();
+          }
           data->getLSMInfo(m_urlList[0].c_str());
 #endif
         }

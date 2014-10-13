@@ -344,6 +344,8 @@ public:
 
   void setSparseStack(ZSparseStack *spStack);
 
+  void importSeedMask(const QString &filePath);
+
 public: //Image processing
   static int autoThreshold(Stack* getStack);
   int autoThreshold();
@@ -443,9 +445,9 @@ public: /* puncta related methods */
 
   bool importSynapseAnnotation(const std::string &filePath);
 
-  Swc_Tree_Node *swcHitTest(double x, double y);
-  Swc_Tree_Node *swcHitTest(double x, double y, double z);
-  Swc_Tree_Node *swcHitTest(const ZPoint &pt);
+  Swc_Tree_Node *swcHitTest(double x, double y) const;
+  Swc_Tree_Node *swcHitTest(double x, double y, double z) const;
+  Swc_Tree_Node *swcHitTest(const ZPoint &pt) const;
   Swc_Tree_Node *selectSwcTreeNode(int x, int y, int z, bool append = false);
   Swc_Tree_Node *selectSwcTreeNode(const ZPoint &pt, bool append = false);
   void selectSwcTreeNode(Swc_Tree_Node *tn, bool append = false);

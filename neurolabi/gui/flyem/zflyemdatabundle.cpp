@@ -17,6 +17,8 @@
 #include "dvid/zdvidtarget.h"
 #include "dvid/zdvidfilter.h"
 #include "zflyemdvidreader.h"
+#include "flyem/zintcuboidarray.h"
+#include "zfiletype.h"
 
 using namespace std;
 
@@ -41,7 +43,7 @@ const double ZFlyEmDataBundle::m_layerRatio[11] = {
   0.0, 0.1, 0.2, 0.3, 0.35, 0.43, 0.54, 0.66, 0.73, 0.91, 1.0};
 */
 ZFlyEmDataBundle::ZFlyEmDataBundle() : m_synapseScale(10.0),
-  m_synaseAnnotation(NULL), m_colorMap(NULL)
+  m_boundBox(NULL), m_synaseAnnotation(NULL), m_colorMap(NULL)
 {
   for (int k = 0; k < 3; ++k) {
     m_swcResolution[k] = 1.0;
@@ -54,6 +56,7 @@ ZFlyEmDataBundle::ZFlyEmDataBundle() : m_synapseScale(10.0),
 ZFlyEmDataBundle::~ZFlyEmDataBundle()
 {
   deprecate(ALL_COMPONENT);
+  delete m_boundBox;
 }
 
 bool ZFlyEmDataBundle::isDeprecated(EComponent comp) const
@@ -275,9 +278,7 @@ bool ZFlyEmDataBundle::loadJsonFile(const std::string &filePath)
       if (!path.isAbsolutePath()) {
         path = ZString::absolutePath(ZString(m_source).dirPath(), path);
       }
-      m_boundBox.load(path);
-      m_boundBox.rescale(
-            m_swcResolution[0], m_swcResolution[1], m_swcResolution[2]);
+      importBoundBox(path);
     }
 
     json_t *serverObj = bundleObject[ZFlyEmDataBundle::m_serverKey];
@@ -828,4 +829,33 @@ void ZFlyEmDataBundle::submitSkeletonizeService() const
       process.waitForFinished(300000);
     }
   }
+}
+
+bool ZFlyEmDataBundle::hasBoundBox() const
+{
+  if (m_boundBox != NULL) {
+    return !m_boundBox->isEmpty();
+  }
+
+  return false;
+}
+
+void ZFlyEmDataBundle::importBoundBox(const string &filePath)
+{
+  if (m_boundBox != NULL) {
+    delete m_boundBox;
+    m_boundBox = NULL;
+  }
+
+  if (ZFileType::fileType(filePath) == ZFileType::SWC_FILE) {
+    m_boundBox = new ZSwcTree;
+    m_boundBox->load(filePath);
+  } else {
+    FlyEm::ZIntCuboidArray blockArray;
+    blockArray.loadSubstackList(filePath);
+    m_boundBox = blockArray.toSwc();
+  }
+
+  m_boundBox->rescale(
+        m_swcResolution[0], m_swcResolution[1], m_swcResolution[2]);
 }

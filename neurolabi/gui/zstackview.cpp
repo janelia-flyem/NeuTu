@@ -957,14 +957,19 @@ void ZStackView::takeScreenshot(const QString &filename)
   writer.setCompression(1);
 
   QImage image(m_imageWidget->projectSize(), QImage::Format_ARGB32);
+
+  m_imageWidget->setViewHintVisible(false);
   m_imageWidget->render(&image);
-  //const QRect& viewPort = m_imageWidget->viewPort();
-  //if(!writer.write(m_image->copy(viewPort))) {
-  if(!writer.write(image)) {
-    LERROR() << writer.errorString();
-  } else {
-    LINFO() << "wrote screenshot:" << filename;
-  }
+  m_imageWidget->setViewHintVisible(true);
+  ZImage::writeImage(image, filename);
+
+//  const QRect& viewPort = m_imageWidget->viewPort();
+//  if(!writer.write(m_image->copy(viewPort))) {
+//  if(!writer.write(image)) {
+//    LERROR() << writer.errorString();
+//  } else {
+//    LINFO() << "wrote screenshot:" << filename;
+//  }
 }
 
 void ZStackView::updateView()

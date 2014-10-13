@@ -58,6 +58,8 @@ public:
   static ZStack* makeDensityMap(
       const ZWeightedPointArray &ptArray, double sigma);
 
+  static ZStack* makeSeedStack(const ZWeightedPointArray &ptArray);
+
   /*!
    * \brief Only support GREY data
    */

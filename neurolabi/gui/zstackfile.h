@@ -23,7 +23,7 @@ public:
   };
 
 public:
-  ZStack *readStack(ZStack *data = NULL) const;
+  ZStack *readStack(ZStack *data = NULL, bool initColor = true) const;
   File_Bundle_S toFileBundleS() const;
   ZFileList *toFileList() const;
   void import(const std::string &filePath);

@@ -157,7 +157,11 @@ public:
   /*!
    * \brief Get the boundbox of the databundle.
    */
-  inline const ZSwcTree& getBoundBox() const { return m_boundBox; }
+  inline const ZSwcTree* getBoundBox() const { return m_boundBox; }
+
+  bool hasBoundBox() const;
+
+  void importBoundBox(const std::string &filePath);
 
   void submitSkeletonizeService() const;
 
@@ -173,7 +177,7 @@ private:
   int m_sourceDimension[3];
   double m_synapseScale;
   std::vector<double> m_layerRatio;
-  ZSwcTree m_boundBox;
+  ZSwcTree *m_boundBox;
 
   std::string m_source;
   std::map<std::string, double> m_matchThreshold;

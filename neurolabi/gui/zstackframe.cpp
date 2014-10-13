@@ -1410,6 +1410,11 @@ void ZStackFrame::bwthin()
   document()->bwthin();
 }
 
+void ZStackFrame::importSeedMask(const QString &filePath)
+{
+  document()->importSeedMask(filePath);
+}
+
 void ZStackFrame::importMask(const QString &filePath)
 {
   ZStack *stack = NULL;
