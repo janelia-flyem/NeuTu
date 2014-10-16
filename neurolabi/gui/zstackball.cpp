@@ -72,8 +72,8 @@ void ZStackBall::setCenter(const ZIntPoint &center)
 //#endif
 //}
 
-void ZStackBall::display(ZPainter &painter, int n,
-                      ZStackObject::Display_Style style) const
+void ZStackBall::display(ZPainter &painter, int slice,
+                         ZStackObject::Display_Style style) const
 {
   if (!isVisible()) {
     return;
@@ -119,7 +119,7 @@ void ZStackBall::display(ZPainter &painter, int n,
       painter.setBrush(Qt::NoBrush);
     }
   }
-  displayHelper(&painter, n, style);
+  displayHelper(&painter, slice, style);
 
 //  painter.setPen(oldPen);
 //  painter.setBrush(oldBrush);
@@ -148,7 +148,7 @@ bool ZStackBall::isCuttingPlane(double n, double zScale) const
 bool ZStackBall::isSliceVisible(int z) const
 {
   if (isVisible()) {
-    if (z == -1 || isCuttingPlane(z, m_zScale)) {
+    if (isCuttingPlane(z, m_zScale) || isSelected()) {
       return true;
     }
   }
@@ -166,20 +166,21 @@ double ZStackBall::getAdjustedRadius(double r) const
   return adjustedRadius;
 }
 
-void ZStackBall::displayHelper(ZPainter *painter, int stackFocus, Display_Style style) const
+void ZStackBall::displayHelper(
+    ZPainter *painter, int slice, Display_Style style) const
 {
   UNUSED_PARAMETER(style);
 #if defined(_QT_GUI_USED_)
   double adjustedRadius = getAdjustedRadius(m_r);
 
-  double dataFocus = stackFocus - painter->getOffset().z();
+  double dataFocus = slice + painter->getOffset().z();
   bool visible = false;
 
 //  const QBrush &oldBrush = painter->brush();
   const QPen &oldPen = painter->pen();
   double alpha = oldPen.color().alphaF();
 
-  if (stackFocus == -1) {
+  if (slice == -1) {
     visible = true;
   } else {
     if (isCuttingPlane(m_center.z(), m_r, dataFocus, m_zScale)) {
@@ -214,6 +215,26 @@ void ZStackBall::displayHelper(ZPainter *painter, int stackFocus, Display_Style 
     }
   }
 
+  if (isSelected()) {
+    QRectF rect;
+    rect.setLeft(m_center.x() - m_r);
+    rect.setTop(m_center.y() - m_r);
+    rect.setWidth(m_r + m_r);
+    rect.setHeight(m_r + m_r);
+
+    painter->setBrush(Qt::NoBrush);
+
+    QColor color(255, 255, 0);
+    color.setAlphaF(alpha);
+
+    QPen pen(color);
+    pen.setStyle(Qt::SolidLine);
+    pen.setCosmetic(m_usingCosmeticPen);
+    painter->setPen(pen);
+
+    painter->drawRect(rect);
+  }
+
   if (hasVisualEffect(VE_BOUND_BOX)) {
     QRectF rect;
     rect.setLeft(m_center.x() - adjustedRadius);
@@ -244,8 +265,6 @@ void ZStackBall::displayHelper(ZPainter *painter, int stackFocus, Display_Style 
     //QPainter::CompositionMode oldMode = painter->compositionMode();
     //painter->setCompositionMode(QPainter::RasterOp_SourceXorDestination);
     painter->drawRect(rect);
-
-    //painter->setCompositionMode(oldMode);
   }
 #endif
 }

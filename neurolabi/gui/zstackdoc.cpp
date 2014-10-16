@@ -2006,6 +2006,10 @@ void ZStackDoc::addObj3d(ZObject3d *obj)
   m_obj3dList.prepend(obj);
   m_objectList.prepend(obj);
 
+  if (obj->isSelected()) {
+    setSelected(obj, true);
+  }
+
   notifyObj3dModified();
 }
 
@@ -2033,7 +2037,9 @@ void ZStackDoc::addStroke(ZStroke2d *obj)
   m_objectList.prepend(obj);
 
   if (obj->isSelected()) {
-    m_selectedStroke.insert(obj);
+    setSelected(obj, true);
+    //m_selectedObjectMap[obj->getType()].insert(obj);
+    //m_selectedStroke.insert(obj);
   }
 
   //m_playerList.append(new ZStroke2dPlayer(obj, ZDocPlayer::ROLE_SEED));
@@ -3077,6 +3083,7 @@ void ZStackDoc::deselectAllChains()
   }
 }
 
+/*
 void ZStackDoc::deselectAllStroke()
 {
   for (std::set<ZStroke2d*>::iterator iter = m_selectedStroke.begin();
@@ -3086,6 +3093,7 @@ void ZStackDoc::deselectAllStroke()
   }
   m_selectedStroke.clear();
 }
+*/
 
 void ZStackDoc::setSwcSelected(ZSwcTree *tree, bool select)
 {
@@ -3171,10 +3179,22 @@ void ZStackDoc::deselectAllObject()
   deselectAllChains();
   deselectAllSwcs();
   deselectAllSwcTreeNodes();
-  deselectAllStroke();
+  //deselectAllStroke();
 
   foreach (ZStackObject *obj, m_objectList) {
     obj->setSelected(false);
+  }
+
+  for (QMap<ZStackObject::EType, std::set<ZStackObject*> >::iterator
+       iter = m_selectedObjectMap.begin(); iter != m_selectedObjectMap.end();
+       ++iter) {
+    std::set<ZStackObject*> &objSet = iter.value();
+//    for (std::set<ZStackObject*>::iterator iter = objSet.begin();
+//         iter != objSet.end(); ++iter) {
+//      ZStackObject *obj = *iter;
+//      obj->setSelected(false);
+//    }
+    objSet.clear();
   }
 
   /*
@@ -3779,6 +3799,38 @@ void ZStackDoc::eraseTraceMask(const ZLocsegChain *chain)
   chain->eraseTraceMask(getTraceWorkspace()->trace_mask);
 }
 
+void ZStackDoc::setSelected(ZStackObject *obj,  bool selecting)
+{
+  if (obj != NULL) {
+    ZStackObject::EType type = obj->getType();
+    std::set<ZStackObject*> &selectedSet = getSelected(type);
+
+    obj->setSelected(selecting);
+
+    if (selecting) {
+      selectedSet.insert(obj);
+    } else {
+      selectedSet.erase(obj);
+    }
+  }
+}
+
+std::set<ZStackObject *> &ZStackDoc::getSelected(ZStackObject::EType type)
+{
+  if (!m_selectedObjectMap.contains(type)) {
+    m_selectedObjectMap[type] = std::set<ZStackObject*>();
+  }
+
+  return m_selectedObjectMap[type];
+}
+
+const std::set<ZStackObject *> &ZStackDoc::getSelected(
+    ZStackObject::EType type) const
+{
+  return const_cast<ZStackDoc&>(*this).getSelected(type);
+}
+
+#if 0
 void ZStackDoc::setSelected(
     ZStackObject *obj, NeuTube::EDocumentableType type, bool selecting)
 {
@@ -3803,6 +3855,8 @@ void ZStackDoc::setSelected(
     }
   }
 }
+#endif
+
 
 bool ZStackDoc::binarize(int threshold)
 {
@@ -4095,6 +4149,40 @@ bool ZStackDoc::isDeprecated(EComponent component)
   }
 
   return false;
+}
+
+ZStackObject* ZStackDoc::hitTest(double x, double y, double z)
+{
+  QList<ZStackObject*> sortedObjList = m_objectList;
+  sort(sortedObjList.begin(), sortedObjList.end(),
+       ZStackObject::ZOrderCompare());
+
+  for (QList<ZStackObject*>::iterator iter = sortedObjList.begin();
+       iter != sortedObjList.end(); ++iter) {
+    ZStackObject *obj = *iter;
+    if (obj->hit(x, y, z)) {
+      return obj;
+    }
+  }
+
+  return NULL;
+}
+
+ZStackObject* ZStackDoc::hitTest(double x, double y)
+{
+  QList<ZStackObject*> sortedObjList = m_objectList;
+  sort(sortedObjList.begin(), sortedObjList.end(),
+       ZStackObject::ZOrderCompare());
+
+  for (QList<ZStackObject*>::iterator iter = sortedObjList.begin();
+       iter != sortedObjList.end(); ++iter) {
+    ZStackObject *obj = *iter;
+    if (obj->hit(x, y)) {
+      return obj;
+    }
+  }
+
+  return NULL;
 }
 
 Swc_Tree_Node* ZStackDoc::swcHitTest(double x, double y) const
@@ -5886,8 +5974,20 @@ void ZStackDoc::addPlayer(
 
 bool ZStackDoc::hasObjectSelected()
 {
-  return !(m_selectedPuncta.empty() && m_selectedChains.empty() &&
-           m_selectedSwcs.empty() && m_selectedStroke.empty());
+  bool hasSelected = !(m_selectedPuncta.empty() && m_selectedChains.empty() &&
+                       m_selectedSwcs.empty());
+  if (!hasSelected) {
+    for (QMap<ZStackObject::EType, std::set<ZStackObject*> >::const_iterator
+         iter = m_selectedObjectMap.begin(); iter != m_selectedObjectMap.end();
+         ++iter) {
+      const std::set<ZStackObject*> &objSet = iter.value();
+      if (!objSet.empty()) {
+        hasSelected = true;
+      }
+    }
+  }
+
+  return hasSelected;
 }
 
 bool ZStackDoc::executeAddObjectCommand(
@@ -6955,23 +7055,29 @@ void ZStackDoc::addData(const ZStackDocReader &reader)
 std::vector<ZStack*> ZStackDoc::createWatershedMask()
 {
   std::vector<ZStack*> maskArray;
-#if 0
-  foreach (ZStroke2d* stroke, m_strokeList) {
-    if (!stroke->isEmpty()) {
-      maskArray.push_back(stroke->toStack());
-    }
-  }
-#endif
+
+  bool hasSelected = false;
   for (ZDocPlayerList::const_iterator iter = m_playerList.begin();
        iter != m_playerList.end(); ++iter) {
     const ZDocPlayer *player = *iter;
-    if (player->hasRole(ZDocPlayer::ROLE_SEED)) {
+    if (player->getData()->isSelected()) {
+      hasSelected = true;
+    }
+  }
+
+  for (ZDocPlayerList::const_iterator iter = m_playerList.begin();
+       iter != m_playerList.end(); ++iter) {
+    const ZDocPlayer *player = *iter;
+
+    if (player->hasRole(ZDocPlayer::ROLE_SEED) &&
+        (!hasSelected || player->getData()->isSelected())) {
       ZStack *stack = player->toStack();
       if (stack != NULL) {
         maskArray.push_back(stack);
       }
     }
   }
+
 
   return maskArray;
 }
@@ -7003,6 +7109,7 @@ void ZStackDoc::updateWatershedBoundaryObject(ZStack *out, ZIntPoint dsIntv)
           obj->setSource(
                 ZStackObjectSourceFactory::MakeWatershedBoundarySource(
                   player->getLabel()));
+          obj->setHittable(false);
           addObject(obj, NeuTube::Documentable_OBJ3D,
                     ZDocPlayer::ROLE_TMP_RESULT, true);
         }
@@ -7642,5 +7749,20 @@ void ZStackDoc::importSeedMask(const QString &filePath)
 
       notifyObj3dModified();
     }
+  }
+}
+
+void ZStackDoc::clearSelectedSet()
+{
+  selectedChains()->clear();
+  selectedPuncta()->clear();
+  selectedSwcs()->clear();
+  selectedSwcTreeNodes()->clear();
+
+  for (QMap<ZStackObject::EType, std::set<ZStackObject*> >::iterator
+       iter = m_selectedObjectMap.begin(); iter != m_selectedObjectMap.end();
+       ++iter) {
+    std::set<ZStackObject*> &objSet = iter.value();
+    objSet.clear();
   }
 }

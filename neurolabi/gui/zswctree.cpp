@@ -47,7 +47,7 @@ ZSwcTree::ZSwcTree(const ZSwcTree &src) : ZStackObject()
 
 const int ZSwcTree::m_nodeStateCosmetic = 1;
 
-ZSwcTree::ZSwcTree() : m_smode(STRUCT_NORMAL)
+ZSwcTree::ZSwcTree() : m_smode(STRUCT_NORMAL), m_hitSwcNode(NULL)
 {
   m_tree = NULL;
   //m_source = "new tree";
@@ -409,8 +409,8 @@ void ZSwcTree::computeLineSegment(const Swc_Tree_Node *lowerTn,
 #endif
 }
 
-void ZSwcTree::display(
-    ZPainter &painter, int stackFocus, ZStackObject::Display_Style style) const
+void ZSwcTree::display(ZPainter &painter, int slice,
+                       ZStackObject::Display_Style style) const
 {
   if (!isVisible()) {
     return;
@@ -419,7 +419,7 @@ void ZSwcTree::display(
 #if defined(_QT_GUI_USED_)
   painter.save();
 
-  double dataFocus = stackFocus - painter.getOffset().z();
+  double dataFocus = slice + painter.getOffset().z();
 
   const double strokeWidth = getPenWidth();
 
@@ -504,7 +504,7 @@ void ZSwcTree::display(
     if (fabs(SwcTreeNode::z(tn) - dataFocus) <= 0.5) {
       focused = true;
     }
-    if (focused || (stackFocus == -1)) {
+    if (focused || (slice == -1)) {
       visible = true;
       focused = true;
     } else if (fabs(SwcTreeNode::z(tn) - dataFocus) < r) {
@@ -544,7 +544,7 @@ void ZSwcTree::display(
                          SwcTreeNode::radius(tn));
           circle.setColor(nodeColor);
           circle.useCosmeticPen(m_usingCosmeticPen);
-          circle.display(painter, stackFocus, style);
+          circle.display(painter, slice, style);
 //          circle.displayHelper(&painter, stackFocus, style);
       }
         //}
@@ -558,7 +558,7 @@ void ZSwcTree::display(
                        SwcTreeNode::radius(tn));
         circle.setColor(nodeColor);
         circle.useCosmeticPen(m_usingCosmeticPen);
-        circle.display(painter, stackFocus, style);
+        circle.display(painter, slice, style);
 //        circle.displayHelper(&painter, stackFocus, style);
       }
         break;
@@ -1124,6 +1124,13 @@ Swc_Tree_Node* ZSwcTree::hitTest(double x, double y, double z)
   return NULL;
 }
 
+bool ZSwcTree::hit(double x, double y, double z)
+{
+  m_hitSwcNode = hitTest(x, y, z);
+
+  return m_hitSwcNode != NULL;
+}
+
 Swc_Tree_Node* ZSwcTree::hitTest(double x, double y, double z, double margin)
 {
   const std::vector<Swc_Tree_Node *> &nodeArray = getSwcTreeNodeArray();
@@ -1160,6 +1167,13 @@ Swc_Tree_Node* ZSwcTree::hitTest(double x, double y)
   }
 
   return NULL;
+}
+
+bool ZSwcTree::hit(double x, double y)
+{
+  m_hitSwcNode = hitTest(x, y);
+
+  return m_hitSwcNode;
 }
 
 void ZSwcTree::toSvgFile(const char *filePath)
@@ -2497,7 +2511,7 @@ void ZSwcTree::labelTrunkLevel(ZSwcTrunkAnalyzer *trunkAnalyzer)
   }
 }
 
-bool ZSwcTree::contains(Swc_Tree_Node *tn) const
+bool ZSwcTree::contains(const Swc_Tree_Node *tn) const
 {
   return (data()->root == SwcTreeNode::root(tn));
 }
@@ -3216,4 +3230,20 @@ Swc_Tree_Node* ZSwcTree::DepthFirstIterator::next()
   m_currentNode = m_tree->next();
 
   return m_currentNode;
+}
+
+void ZSwcTree::setNodeSelected(Swc_Tree_Node *tn, bool appending)
+{
+  if (!appending) {
+    m_selectedNode.clear();
+  }
+
+  if (tn != NULL) {
+    m_selectedNode.insert(tn);
+  }
+}
+
+const std::set<Swc_Tree_Node*>& ZSwcTree::getSelectedNode() const
+{
+  return m_selectedNode;
 }

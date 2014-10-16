@@ -13266,7 +13266,7 @@ void ZTest::test(MainWindow *host)
   tree->save(GET_DATA_DIR + "/test.swc");
 #endif
 
-#if 1
+#if 0
   ZStackFactory factory;
 
   std::string synapseFile =
@@ -13315,5 +13315,84 @@ void ZTest::test(MainWindow *host)
 
   ZStack *stack = factory.makeDensityMap(ptArray, 15.0);
   stack->save(GET_DATA_DIR + "/test2.tif");
+#endif
+
+#if 0
+  ZDvidTarget dvidTarget;
+  dvidTarget.set("emdata2.int.janelia.org", "2b6c");
+
+  ZDvidReader reader;
+  reader.open(dvidTarget);
+
+  std::string substackPath =
+      GET_DATA_DIR + "/flyem/FIB/FIB25/extended_roi_substack.json";
+
+  FlyEm::ZSubstackRoi roi;
+  roi.importJsonFile(substackPath);
+
+  ZIntCuboidFaceArray faceArray = roi.getCuboidArray().getSideBorderFace();
+
+//  ZSwcTree *tree = ZSwcGenerator::createSwc(faceArray, 20.0);
+//  tree->save(GET_DATA_DIR + "/test.swc");
+
+//  ZIntSet sideBodySet;
+//  for (ZIntCuboidFaceArray::const_iterator iter = faceArray.begin();
+//       iter != faceArray.end(); ++iter) {
+//    const ZIntCuboidFace &face = *iter;
+//    std::set<int> bodySet =
+//        reader.readBodyId(face.getCornerCoordinates(0),
+//                          face.getCornerCoordinates(3));
+//    sideBodySet.insert(bodySet.begin(), bodySet.end());
+//  }
+
+  ZIntSet sideBodySet = reader.readBodyId(ZIntPoint(5507, 2259, 1000),
+                                          ZIntPoint(5507, 2758, 1499));
+
+  std::cout << sideBodySet.size() << " bodies" << std::endl;
+  for (ZIntSet::const_iterator iter = sideBodySet.begin();
+       iter != sideBodySet.end(); ++iter) {
+    std::cout << *iter << std::endl;
+  }
+
+  std::cout << "Hit: " << sideBodySet.count(30155) << std::endl;
+#endif
+
+#if 1
+  std::string synapseFile =
+      GET_DATA_DIR + "/flyem/AL/al7-origroi-tbar-predict_0.86.txt";
+
+  FILE *fp = fopen(synapseFile.c_str(), "r");
+
+  ZWeightedPointArray ptArray;
+
+  double dsScale = 5.0;
+
+  ZString line;
+  while (line.readLine(fp)) {
+    std::vector<int> pt = line.toIntegerArray();
+    if (pt.size() == 3) {
+      double weight = 1.0;
+      if (pt[3] > 0) {
+        weight = 3.0;
+      }
+      ptArray.append(pt[0], pt[1], pt[2], weight);
+    }
+  }
+
+  fclose(fp);
+
+  ZStack stack;
+  stack.load(GET_DATA_DIR + "/flyem/AL/al7-origroi-tbar-predict_0.86.tif");
+
+  ofstream stream(
+        (GET_DATA_DIR + "/flyem/AL/cluster_predict_0.86.txt").c_str());
+  for (ZWeightedPointArray::const_iterator iter = ptArray.begin();
+       iter != ptArray.end(); ++iter) {
+    const ZPoint &pt = *iter;
+    ZIntPoint dsPt = (pt * (1.0 / dsScale)).toIntPoint();
+    int v = stack.getIntValue(dsPt.getX(), dsPt.getY(), dsPt.getZ());
+    stream << pt.x() << " " << pt.y() << " " << pt.z() << " " << v << std::endl;
+  }
+  stream.close();
 #endif
 }

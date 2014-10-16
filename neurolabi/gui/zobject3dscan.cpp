@@ -1784,13 +1784,14 @@ void ZObject3dScan::duplicateAcrossZ(int depth)
   processEvent(EVENT_OBJECT_MODEL_CHANGED);
 }
 
-void ZObject3dScan::display(ZPainter &painter, int z, Display_Style style) const
+void ZObject3dScan::display(
+    ZPainter &painter, int slice, Display_Style style) const
 {
   UNUSED_PARAMETER(style);
 #if _QT_GUI_USED_
-  bool isProj = (z < 0);
+  bool isProj = (slice == -1);
 
-  z -= iround(painter.getOffset().z());
+  int z = slice - iround(painter.getOffset().z());
 
   QPen pen(m_color);
   painter.setPen(pen);

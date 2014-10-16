@@ -99,7 +99,7 @@ void ZObject3d::appendBackward(const ZObject3d &obj, size_t srcOffset)
   size_t dstOffset = obj.size();
   m_voxelArray.resize(m_voxelArray.size() + obj.size() - srcOffset * 3);
   for (size_t i = voxelNumber - srcOffset; i > 0; --i) {
-    set(dstOffset++, obj.x(i - 1), obj.y(i - 1), obj.z(i - 1));
+    set(dstOffset++, obj.getX(i - 1), obj.getY(i - 1), obj.getZ(i - 1));
   }
 }
 
@@ -155,32 +155,43 @@ bool ZObject3d::load(const char *filePath)
   return false;
 }
 
-void ZObject3d::display(ZPainter &painter, int z, Display_Style option) const
+void ZObject3d::display(ZPainter &painter, int slice, Display_Style option) const
 {  
   UNUSED_PARAMETER(option);
 #if _QT_GUI_USED_
-  z -= iround(painter.getOffset().z());
+  painter.save();
+//  z -= iround(painter.getOffset().z());
+  int z = slice + iround(painter.getOffset().z());
+
   QPen pen(m_color);
   painter.setPen(pen);
   Object_3d *obj= c_obj();
   std::vector<QPoint> pointArray;
   for (size_t i = 0; i < obj->size; i++) {
-    if (((obj->voxels[i][2] == z) || (z < 0))) {
+    if ((obj->voxels[i][2] == z) || (slice == -1)) {
       pointArray.push_back(QPoint(obj->voxels[i][0], obj->voxels[i][1]));
-      //pointArray[i].setX(obj->voxels[i][0]);
-      //pointArray[i].setY(obj->voxels[i][1]);
-      /*
-      uchar *pixel = image->scanLine(obj->voxels[i][1])
-                     + 4 * obj->voxels[i][0];
-
-      pixel[RED] = m_color.red();
-      pixel[GREEN] = m_color.green();
-      pixel[BLUE] = m_color.blue();
-      pixel[ALPHA] = m_color.alpha();
-      */
     }
   }
   painter.drawPoints(&(pointArray[0]), pointArray.size());
+
+  if (isSelected()) {
+    QPen pen(QColor(255, 255, 0));
+    painter.setPen(pen);
+    for (std::vector<QPoint>::iterator iter = pointArray.begin();
+         iter != pointArray.end(); ++iter) {
+      QPoint &pt = *iter;
+      pt += QPoint(1, 0);
+    }
+    painter.drawPoints(&(pointArray[0]), pointArray.size());
+
+    for (std::vector<QPoint>::iterator iter = pointArray.begin();
+         iter != pointArray.end(); ++iter) {
+      QPoint &pt = *iter;
+      pt -= QPoint(1, 0);
+    }
+    painter.drawPoints(&(pointArray[0]), pointArray.size());
+  }
+  painter.restore();
 #else
   UNUSED_PARAMETER(&painter);
   UNUSED_PARAMETER(z);
@@ -329,7 +340,7 @@ ZPoint ZObject3d::computeCentroid(FMatrix *matrix)
                           )];
                           */
     double weight = matrix->array[indexArray[i]];
-    center += ZPoint(x(i) * weight, y(i) * weight, z(i) * weight);
+    center += ZPoint(getX(i) * weight, getY(i) * weight, getZ(i) * weight);
     totalWeight += weight;
   }
 
@@ -341,7 +352,7 @@ ZPoint ZObject3d::computeCentroid(FMatrix *matrix)
 void ZObject3d::translate(int dx, int dy, int dz)
 {
   for (size_t i = 0; i < size(); i++) {
-    set(i, x(i) + dx, y(i) + dy, z(i) + dz);
+    set(i, getX(i) + dx, getY(i) + dy, getZ(i) + dz);
   }
 }
 
@@ -355,7 +366,7 @@ void ZObject3d::exportSwcFile(string filePath)
   ofstream stream(filePath.c_str());
 
   for (size_t i = 0; i < size(); i++) {
-    stream << i + 1 << " " << 2 << " " << x(i) << " " << y(i) << " " << z(i)
+    stream << i + 1 << " " << 2 << " " << getX(i) << " " << getY(i) << " " << getZ(i)
            << " " << 3.0 << " " << -1 << endl;
   }
 
@@ -385,7 +396,7 @@ double ZObject3d::averageIntensity(const Stack *stack) const
   double mu = 0.0;
 
   for (size_t i = 0; i < size(); ++i) {
-    mu += Get_Stack_Pixel(const_cast<Stack*>(stack), x(i), y(i), z(i), 0);
+    mu += Get_Stack_Pixel(const_cast<Stack*>(stack), getX(i), getY(i), getZ(i), 0);
     //mu += stack->value(x(i), y(i), z(i));
   }
 
@@ -398,7 +409,7 @@ void ZObject3d::print()
 {
   cout << "3d object (" << size() << " voxels):" << endl;
   for (size_t i = 0; i < size(); ++i) {
-    cout << "  " << x(i) << " " << y(i) << " " << z(i) << endl;
+    cout << "  " << getX(i) << " " << getY(i) << " " << getZ(i) << endl;
   }
 }
 
@@ -599,9 +610,9 @@ ZObject3dArray* ZObject3d::growLabel(const ZObject3d &seed, int growLevel)
   vector<size_t> currentSeed;
 
   for (size_t i = 0; i < seed.size(); ++i) {
-    int x = seed.x(i) - offset[0];
-    int y = seed.y(i) - offset[1];
-    int z = seed.z(i) - offset[2];
+    int x = seed.getX(i) - offset[0];
+    int y = seed.getY(i) - offset[1];
+    int z = seed.getZ(i) - offset[2];
 
     ssize_t index = Stack_Util_Offset(x, y, z, width, height, depth);
 
@@ -835,6 +846,43 @@ void ZObject3d::loadJsonObject(const ZJsonObject &jsonObj)
       m_voxelArray.push_back(ZJsonParser::integerValue(voxelArray.at(i)));
     }
   }
+}
+
+bool ZObject3d::hit(double x, double y)
+{
+  if (!isHittable()) {
+    return false;
+  }
+
+  int ix = iround(x);
+  int iy = iround(y);
+
+  for (size_t i = 0; i < m_voxelArray.size(); ++i) {
+    if (ix == getX(i) && iy == getY(i)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+bool ZObject3d::hit(double x, double y, double z)
+{
+  if (!isHittable()) {
+    return false;
+  }
+
+  int ix = iround(x);
+  int iy = iround(y);
+  int iz = iround(z);
+
+  for (size_t i = 0; i < size(); ++i) {
+    if (ix == getX(i) && iy == getY(i) && iz == getZ(i)) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 ZSTACKOBJECT_DEFINE_CLASS_NAME(ZObject3d)

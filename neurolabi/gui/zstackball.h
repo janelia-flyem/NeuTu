@@ -54,13 +54,14 @@ public:
   const static TVisualEffect VE_OUT_FOCUS_DIM;
 
 public:
-  virtual void display(ZPainter &painter, int z = 0,
-                       Display_Style option = NORMAL) const;
+  virtual void display(ZPainter &painter, int slice,
+                       Display_Style option) const;
 
   virtual void save(const char *filePath);
   virtual bool load(const char *filePath);
 
-  void displayHelper(ZPainter *painter, int n, Display_Style style) const;
+  void displayHelper(
+      ZPainter *painter, int slice, Display_Style style) const;
 
   bool isSliceVisible(int z) const;
 

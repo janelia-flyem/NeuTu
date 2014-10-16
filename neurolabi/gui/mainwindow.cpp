@@ -6744,3 +6744,11 @@ void MainWindow::on_actionImportSeeds_triggered()
     }
   }
 }
+
+void MainWindow::on_actionUpload_Annotations_triggered()
+{
+  ZFlyEmDataFrame *frame = currentFlyEmDataFrame();
+  if (frame != NULL) {
+    frame->uploadAnnotation();
+  }
+}

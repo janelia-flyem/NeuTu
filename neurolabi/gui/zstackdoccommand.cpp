@@ -1168,10 +1168,6 @@ ZStackDocCommand::ObjectEdit::RemoveSelected::~RemoveSelected()
 
 void ZStackDocCommand::ObjectEdit::RemoveSelected::undo()
 {
-  // restore previous selection state
-//  doc->deselectAllObject();
-  //bool redrawSwc = false;
-
   // copy stuff back
   if (!m_punctaList.empty()) {
     QMutableListIterator<ZPunctum*> iter1(m_punctaList);
@@ -1220,49 +1216,6 @@ void ZStackDocCommand::ObjectEdit::RemoveSelected::undo()
     m_strokeList.clear();
     doc->notifyStrokeModified();
   }
-#if 0
-  // restore swc nodes
-  std::vector<Swc_Tree_Node *> tns;
-  if (!m_deletedNodes.empty()) {
-    // first we delete all new added swc tree wrapper, keep the nodes
-    for (int i=0; i<m_newTreesAfterDeleteNodes.size(); ++i) {
-      m_newTreesAfterDeleteNodes[i]->setData(NULL, ZSwcTree::FREE_WRAPPER);
-    }
-    doc->removeEmptySwcTree();
-    m_newTreesAfterDeleteNodes.clear();
-
-    // then we put deleted empty trees back
-    QMutableListIterator<ZSwcTree*> iter2(m_emptyTreeAfterDeleteNodes);
-    while (iter2.hasNext()) {
-      ZSwcTree *obj = iter2.next();
-      doc->addSwcTree(obj);
-    }
-    m_emptyTreeAfterDeleteNodes.clear();
-
-    // next we restore the parent of all deleted nodes and their children
-    for (QMap<Swc_Tree_Node*, Swc_Tree_Node*>::iterator it = m_deletedNodes.begin();
-         it != m_deletedNodes.end(); ++it) {
-      Swc_Tree_Node_Add_Child(it.value(), it.key());
-      tns.push_back(it.key());
-    }
-    for (QMap<Swc_Tree_Node*, Swc_Tree_Node*>::iterator it = m_childrenOfDeletedNodes.begin();
-         it != m_childrenOfDeletedNodes.end(); ++it) {
-      Swc_Tree_Node_Add_Child(it.value(), it.key());
-    }
-    m_deletedNodes.clear();
-    m_childrenOfDeletedNodes.clear();
-
-    redrawSwc = true;
-  }
-#endif
-  /*
-  if (redrawSwc)
-    doc->notifySwcModified();
-    */
-#if 0
-  // restore swc nodes selection state
-  doc->setSwcTreeNodeSelected(tns.begin(), tns.end(), true);
-#endif
 }
 
 #define COPY_SELECTED_OBJECT(objtype, list, iter, outlist)	\
@@ -1297,11 +1250,8 @@ void ZStackDocCommand::ObjectEdit::RemoveSelected::redo()
   COPY_SELECTED_OBJECT(ZLocsegChain, doc->getChainList(), chainIterc, m_chainList);
   COPY_SELECTED_OBJECT(ZPunctum, doc->getPunctaList(), punctaIterc, m_punctaList);
   COPY_SELECTED_OBJECT(ZStroke2d, doc->getStrokeList(), strokeIterc, m_strokeList);
-  doc->selectedChains()->clear();
-  doc->selectedPuncta()->clear();
-  doc->selectedSwcs()->clear();
-  doc->selectedSwcTreeNodes()->clear();
-  doc->selectedStrokeList()->clear();
+  doc->clearSelectedSet();
+  //doc->selectedStrokeList()->clear();
 
   //REMOVE_SELECTED_OBJECT(ZSwcExportable, doc->m_swcObjects, swceIter);
   //REMOVE_SELECTED_OBJECT(ZVrmlExportable, doc->m_vrmlObjects, vrmlIter);
@@ -1336,44 +1286,6 @@ void ZStackDocCommand::ObjectEdit::RemoveSelected::redo()
       docIter.remove();
     }
   }
-#if 0
-  // delete selected swc nodes
-  if (!doc->selectedSwcTreeNodes()->empty()) {
-    std::set<Swc_Tree_Node*> *nodeSet = doc->selectedSwcTreeNodes();
-    for (std::set<Swc_Tree_Node*>::iterator iter = nodeSet->begin();
-         iter != nodeSet->end(); ++iter) {
-      m_deletedNodes[*iter] = (*iter)->parent;
-    }
-    QSet<ZSwcTree*> swcListOld = doc->m_swcList.toSet();
-
-    for (std::set<Swc_Tree_Node*>::iterator iter = nodeSet->begin();
-         iter != nodeSet->end(); ++iter) {
-      Swc_Tree_Node_Detach_Parent(*iter);
-      Swc_Tree_Node *child = (*iter)->first_child;
-      while (child != NULL) {
-        if (!m_deletedNodes.contains(child))
-          m_childrenOfDeletedNodes[child] = *iter;
-        Swc_Tree_Node *nextChild = child->next_sibling;
-        Swc_Tree_Node_Detach_Parent(child);
-        ZSwcTree *tree = new ZSwcTree();
-        tree->setDataFromNode(child);
-        doc->addSwcTree(tree, false);
-        child = nextChild;
-      }
-#ifdef _DEBUG_
-      LINFO() << "Node deleted:" << QString::fromStdString(SwcTreeNode::toString(*iter));
-#endif
-    }
-
-    nodeSet->clear();
-    doc->removeEmptySwcTree(false);
-    QSet<ZSwcTree*> swcListNew = doc->m_swcList.toSet();
-    QSet<ZSwcTree*> emptyTrees = swcListOld - swcListNew;
-    m_emptyTreeAfterDeleteNodes = emptyTrees.toList();
-    swcListNew.subtract(swcListOld);
-    m_newTreesAfterDeleteNodes = swcListNew.toList();
-  }
-#endif
 
   if (!m_punctaList.empty()) {
     doc->notifyPunctumModified();

@@ -16,6 +16,7 @@
 #include "dvid/zdvidreader.h"
 #include "dvid/zdvidtarget.h"
 #include "dvid/zdvidfilter.h"
+#include "dvid/zdvidwriter.h"
 #include "zflyemdvidreader.h"
 #include "flyem/zintcuboidarray.h"
 #include "zfiletype.h"
@@ -858,4 +859,19 @@ void ZFlyEmDataBundle::importBoundBox(const string &filePath)
 
   m_boundBox->rescale(
         m_swcResolution[0], m_swcResolution[1], m_swcResolution[2]);
+}
+
+void ZFlyEmDataBundle::uploadAnnotation(const ZDvidTarget &dvidTarget) const
+{
+  ZDvidWriter writer;
+  if (writer.open(dvidTarget)) {
+    //for each neuron, update annotation
+    for (ZFlyEmNeuronArray::const_iterator iter = m_neuronArray.begin();
+         iter != m_neuronArray.end(); ++iter) {
+      const ZFlyEmNeuron &neuron = *iter;
+      if (!neuron.getName().empty() || !neuron.getClass().empty()) {
+        writer.writeAnnotation(neuron);
+      }
+    }
+  }
 }

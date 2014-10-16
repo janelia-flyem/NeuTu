@@ -36,6 +36,8 @@ public:
    */
   ZStack* getSlice(int z) const;
 
+  ZStack* getMip() const;
+
   void setObjectMask(ZObject3dScan *obj);
   void setGreyScale(ZStackBlockGrid *stackGrid);
 

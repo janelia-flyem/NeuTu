@@ -55,14 +55,19 @@ public:
     STACK, OBJECT_CANVAS, WIDGET
   };
 
+  enum EDisplaySliceMode {
+    DISPLAY_SLICE_PROJECTION, DISPLAY_SLICE_SINGLE
+  };
+
   // Display an object to widget, xoffset and yoffset is top left corner of widget
   // zoom ratio is ratio of widget pixel to object pixel
   virtual void display(
-      ZPainter &painter, int z = 0, Display_Style option = NORMAL) const = 0;
+      ZPainter &painter, int slice, Display_Style option) const = 0;
 
   /* For special painting when ZPainter cannot be created */
   virtual void display(
-      QPainter *painter, int z = 0, Display_Style option = NORMAL) const;
+      QPainter *painter, int z, Display_Style option,
+      EDisplaySliceMode sliceMode) const;
 
   inline bool isVisible() const { return m_isVisible; }
   inline void setVisible(bool visible) { m_isVisible = visible; }
@@ -73,6 +78,9 @@ public:
   inline void setTarget(ETarget target) { m_target = target; }
 
   virtual bool isSliceVisible(int z) const;
+
+  virtual bool hit(double x, double y, double z);
+  virtual bool hit(double x, double y);
 
   const QColor& getColor() const;
   void setColor(int red, int green, int blue);
@@ -108,6 +116,14 @@ public:
 
   inline void setZScale(double scale) { m_zScale = scale; }
 
+  /*!
+   * \brief Z Order of the object
+   *
+   * The following values are prevserved for special purpose:
+   *   0 - Main image
+   *   > 0 Foreground objects (default value 1)
+   *   < 0 - Background objects (default value -1)
+   */
   inline int getZOrder() const { return m_zOrder; }
   void setZOrder(int order) { m_zOrder = order; }
 
@@ -129,9 +145,18 @@ public:
     return m_nodeAdapterId;
   }
 
+  inline bool isHittable() const {
+    return m_isHittable;
+  }
+
+  inline void setHittable(bool state) {
+    m_isHittable = state;
+  }
+
 protected:
   bool m_selected;
   bool m_isVisible;
+  bool m_isHittable;
   Display_Style m_style;
   QColor m_color;
   ETarget m_target;

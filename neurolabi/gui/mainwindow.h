@@ -391,6 +391,8 @@ private slots:
 
   void on_actionImportSeeds_triggered();
 
+  void on_actionUpload_Annotations_triggered();
+
 private:
   void createActions();
   void createFileActions();

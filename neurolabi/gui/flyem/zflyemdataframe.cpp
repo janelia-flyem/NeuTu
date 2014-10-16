@@ -2497,3 +2497,11 @@ void ZFlyEmDataFrame::importBoundBox(const QString &substackPath)
     getMasterData()->importBoundBox(substackPath.toStdString());
   }
 }
+
+void ZFlyEmDataFrame::uploadAnnotation() const
+{
+  const ZFlyEmDataBundle *dataBundle = getMasterData();
+  if (dataBundle != NULL) {
+    dataBundle->uploadAnnotation(m_dvidTarget);
+  }
+}

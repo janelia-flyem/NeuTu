@@ -189,7 +189,8 @@ void Z3DCanvas::drawBackground(QPainter *painter, const QRectF &)
 
   foreach (ZStackObject *drawable, drawableList) {
     //drawable->setVisible(true);
-    drawable->display(painter);
+    drawable->display(painter, 0, ZStackObject::NORMAL,
+                      ZStackObject::DISPLAY_SLICE_SINGLE);
   }
 #else
   UNUSED_PARAMETER(painter);

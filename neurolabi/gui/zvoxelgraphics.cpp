@@ -25,15 +25,15 @@ static ZObject3d* createScanObject(const ZObject3d *baseLine1,
     for (size_t i = 0; i < lineNumber1; ++i) {
       int j = Raster_Line_Map(lineNumber1, lineNumber2, i);
       addLineObject(obj,
-                 ZIntPoint(baseLine1->x(i), baseLine1->y(i), baseLine1->z(i)),
-                 ZIntPoint(baseLine2->x(j), baseLine2->y(j), baseLine2->z(j)));
+                 ZIntPoint(baseLine1->getX(i), baseLine1->getY(i), baseLine1->getZ(i)),
+                 ZIntPoint(baseLine2->getX(j), baseLine2->getY(j), baseLine2->getZ(j)));
     }
   } else {
     for (size_t i = 0; i < lineNumber2; ++i) {
       int j = Raster_Line_Map(lineNumber2, lineNumber1, i);
       addLineObject(obj,
-                 ZIntPoint(baseLine1->x(j), baseLine1->y(j), baseLine1->z(j)),
-                 ZIntPoint(baseLine2->x(i), baseLine2->y(i), baseLine2->z(i)));
+                 ZIntPoint(baseLine1->getX(j), baseLine1->getY(j), baseLine1->getZ(j)),
+                 ZIntPoint(baseLine2->getX(i), baseLine2->getY(i), baseLine2->getZ(i)));
     }
   }
 
@@ -80,8 +80,8 @@ ZObject3d* ZVoxelGraphics::createLineObject(
   ZObject3d *obj = new ZObject3d;
   obj->setFromCObj(cobj);
 
-  if (v1.getX() != obj->x(0) || v1.getY() != obj->y(0) ||
-      v1.getZ() != obj->z(0)) {
+  if (v1.getX() != obj->getX(0) || v1.getY() != obj->getY(0) ||
+      v1.getZ() != obj->getZ(0)) {
     obj->reverse();
   }
 
@@ -105,9 +105,9 @@ ZObject3d* ZVoxelGraphics::createPlaneObject(
 
   size_t lineNumber = baseLine->size();
   for (size_t i = 1; i < lineNumber; ++i) {
-    int dx = baseLine->x(i) - baseLine->x(i - 1);
-    int dy = baseLine->y(i) - baseLine->y(i - 1);
-    int dz = baseLine->z(i) - baseLine->z(i - 1);
+    int dx = baseLine->getX(i) - baseLine->getX(i - 1);
+    int dy = baseLine->getY(i) - baseLine->getY(i - 1);
+    int dz = baseLine->getZ(i) - baseLine->getZ(i - 1);
 
     scanLine->translate(dx, dy, dz);
     obj->append(*scanLine);
@@ -131,12 +131,12 @@ ZObject3d* ZVoxelGraphics::createLineObject6c(
   size_t VoxelNumber = baseLine->size();
 
   ZObject3d *obj = new ZObject3d;
-  obj->append(baseLine->x(0), baseLine->y(0), baseLine->z(0));
+  obj->append(baseLine->getX(0), baseLine->getY(0), baseLine->getZ(0));
 
   for (size_t i = 1; i < VoxelNumber; ++i) {
-    int x1 = baseLine->x(i);
-    int y1 = baseLine->y(i);
-    int z1 = baseLine->z(i);
+    int x1 = baseLine->getX(i);
+    int y1 = baseLine->getY(i);
+    int z1 = baseLine->getZ(i);
     int x0 = obj->lastX();
     int y0 = obj->lastY();
     int z0 = obj->lastZ();
@@ -221,9 +221,9 @@ ZObject3d* ZVoxelGraphics::createPolyPlaneObject(
 
   size_t lineNumber = baseLine->size();
   for (size_t i = 1; i < lineNumber; ++i) {
-    int dx = baseLine->x(i) - baseLine->x(i - 1);
-    int dy = baseLine->y(i) - baseLine->y(i - 1);
-    int dz = baseLine->z(i) - baseLine->z(i - 1);
+    int dx = baseLine->getX(i) - baseLine->getX(i - 1);
+    int dy = baseLine->getY(i) - baseLine->getY(i - 1);
+    int dz = baseLine->getZ(i) - baseLine->getZ(i - 1);
 
     scanLine->translate(dx, dy, dz);
     obj->append(*scanLine);
@@ -261,7 +261,7 @@ ZObject3d* ZVoxelGraphics::createTriangleObject(
   size_t lineNumber = baseLine->size();
   for (size_t i = 0; i < lineNumber; ++i) {
     ZObject3d *scanLine = createLineObject(
-          pt1, ZIntPoint(baseLine->x(i), baseLine->y(i), baseLine->z(i)));
+          pt1, ZIntPoint(baseLine->getX(i), baseLine->getY(i), baseLine->getZ(i)));
     obj->append(*scanLine);
     delete scanLine;
   }

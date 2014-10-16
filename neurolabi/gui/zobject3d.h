@@ -40,7 +40,8 @@ public:
 
   virtual void save(const char *filePath);
   virtual bool load(const char *filePath);
-  virtual void display(ZPainter &painter, int z = 0, Display_Style option = NORMAL)
+  virtual void display(
+      ZPainter &painter, int slice, Display_Style option)
   const;
 
 public:
@@ -56,11 +57,11 @@ public:
    */
   inline void setSize(size_t s) { m_voxelArray.resize(s * 3); }
 
-  inline int x(size_t index) const { return m_voxelArray[index * 3]; }
-  inline int y(size_t index) const { return m_voxelArray[index * 3 + 1]; }
-  inline int z(size_t index) const { return m_voxelArray[index * 3 + 2]; }
+  inline int getX(size_t index) const { return m_voxelArray[index * 3]; }
+  inline int getY(size_t index) const { return m_voxelArray[index * 3 + 1]; }
+  inline int getZ(size_t index) const { return m_voxelArray[index * 3 + 2]; }
 
-  void set(int index, int x, int y, int z);
+  void set(int index, int getX, int getY, int getZ);
   void set(int index, Voxel_t voxel);
   void set(int index, size_t voxelIndex, int width, int height,
            int dx, int dy, int dz);
@@ -73,7 +74,7 @@ public:
 
   bool isEmpty() const;
 
-  void append(int x, int y, int z);
+  void append(int getX, int getY, int getZ);
 
   /*!
    * \brief Append an object to the current object.
@@ -127,7 +128,7 @@ public:
   inline void clear() { m_voxelArray.clear(); }
 
   void translate(const ZIntPoint &pt);
-  void translate(int x, int y, int z);
+  void translate(int getX, int getY, int getZ);
 
   inline std::vector<int> voxelArray() { return m_voxelArray; }
 
@@ -201,6 +202,9 @@ public:
   ZJsonObject toJsonObject() const;
   void loadJsonObject(const ZJsonObject &jsonObj);
 
+  bool hit(double x, double y);
+  bool hit(double x, double y, double z);
+
 private:
   int m_conn;
   int m_label;
@@ -213,7 +217,7 @@ std::vector<T> ZObject3d::toIndexArray(int width, int height, int depth)
 {
   std::vector<T> indexArray(size(), -1);
   for (size_t i = 0; i < size(); i++) {
-    indexArray[i] = Stack_Util_Offset(x(i), y(i), z(i), width, height, depth);
+    indexArray[i] = Stack_Util_Offset(getX(i), getY(i), getZ(i), width, height, depth);
   }
 
   return indexArray;
@@ -225,8 +229,8 @@ std::vector<T> ZObject3d::toIndexArray(int width, int height, int depth,
 {
   std::vector<T> indexArray(size(), -1);
   for (size_t i = 0; i < size(); i++) {
-    indexArray[i] = Stack_Util_Offset(x(i) + offsetX, y(i) + offsetY,
-                                      z(i) + offsetZ, width, height, depth);
+    indexArray[i] = Stack_Util_Offset(getX(i) + offsetX, getY(i) + offsetY,
+                                      getZ(i) + offsetZ, width, height, depth);
   }
 
   return indexArray;

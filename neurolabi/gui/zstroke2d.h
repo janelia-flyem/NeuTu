@@ -26,8 +26,9 @@ public:
   virtual void save(const char *filePath);
   virtual bool load(const char *filePath);
 
-  void display(ZPainter &painter, int z = 0, Display_Style option = NORMAL) const;
-  void display(QPainter *rawPainter, int z = 0, Display_Style option = NORMAL) const;
+  void display(ZPainter &painter, int slice, Display_Style option) const;
+  void display(QPainter *rawPainter, int z, Display_Style option,
+               EDisplaySliceMode sliceMode) const;
 
   void labelBinary(Stack *stack) const;
 
@@ -116,6 +117,9 @@ public:
 
   bool hitTest(double x, double y) const;
   bool hitTest(double x, double y, double z) const;
+
+  bool hit(double x, double y);
+  bool hit(double x, double y, double z);
 
 private:
   static QVector<QColor> constructColorTable();

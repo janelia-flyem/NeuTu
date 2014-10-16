@@ -461,7 +461,8 @@ HEADERS += mainwindow.h \
     zstackdochittest.h \
     zkeyeventmapper.h \
     zuserinputevent.h \
-    zstackobjectmanager.h
+    zstackobjectmanager.h \
+    zstackobjectgroup.h
 
 FORMS += settingdialog.ui \
     frameinfodialog.ui \
@@ -775,7 +776,8 @@ SOURCES += main.cpp \
     zstackdochittest.cpp \
     zkeyeventmapper.cpp \
     zuserinputevent.cpp \
-    zstackobjectmanager.cpp
+    zstackobjectmanager.cpp \
+    zstackobjectgroup.cpp
 
 OTHER_FILES += \
     extlib.pri

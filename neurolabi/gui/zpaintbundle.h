@@ -114,6 +114,7 @@ private:
   void setSwcNodeAdaptor()
   {
     if (m_swcNodeIter != m_bundle->m_swcNodes->end()) { // update ZCircle
+      /*
       if ((iround(SwcTreeNode::z(*m_swcNodeIter)) ==
            m_bundle->m_sliceIndex + m_bundle->getStackOffset().getZ()) ||
           (m_bundle->m_sliceIndex == -1)) {
@@ -121,11 +122,17 @@ private:
       } else {
         m_nodeAdaptor.setColor(164, 164, 0);
       }
+      */
       m_nodeAdaptor.set(SwcTreeNode::x(*m_swcNodeIter), SwcTreeNode::y(*m_swcNodeIter),
                         SwcTreeNode::z(*m_swcNodeIter), SwcTreeNode::radius(*m_swcNodeIter));
+
+      m_nodeAdaptor.setColor(255, 255, 0);
+      m_nodeAdaptor.setSelected(true);
+      /*
       m_nodeAdaptor.setVisualEffect(ZStackBall::VE_BOUND_BOX |
                                     ZStackBall::VE_DASH_PATTERN |
                                     ZStackBall::VE_NO_FILL);
+                                    */
       m_nodeAdaptor.useCosmeticPen(
             ZSwcTree::getHostState(*m_swcNodeIter, ZSwcTree::NODE_STATE_COSMETIC));
       m_nodeAdaptor.setSource(ZStackObject::getNodeAdapterId());

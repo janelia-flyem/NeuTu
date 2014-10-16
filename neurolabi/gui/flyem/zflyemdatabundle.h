@@ -159,11 +159,24 @@ public:
    */
   inline const ZSwcTree* getBoundBox() const { return m_boundBox; }
 
+  /*!
+   * \brief Test if a bundle has a bound box
+   */
   bool hasBoundBox() const;
 
+  /*!
+   * \brief Import bound box from a file.
+   */
   void importBoundBox(const std::string &filePath);
 
   void submitSkeletonizeService() const;
+
+  /*!
+   * \brief Upload annotations to DVID server
+   *
+   * Empty annotations will be ignored.
+   */
+  void uploadAnnotation(const ZDvidTarget &dvidTarget) const;
 
 private:
   ZFlyEmNeuronArray m_neuronArray;

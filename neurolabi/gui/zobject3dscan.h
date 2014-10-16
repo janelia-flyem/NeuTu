@@ -302,7 +302,7 @@ public:
 
 
   virtual void display(
-      ZPainter &painter, int z = 0, Display_Style option = NORMAL) const;
+      ZPainter &painter, int slice, Display_Style option) const;
   virtual const std::string& className() const;
 
   void dilate();
