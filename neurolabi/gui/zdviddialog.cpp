@@ -16,9 +16,11 @@ ZDvidDialog::ZDvidDialog(QWidget *parent) :
   target.setName("Custom");
   m_dvidRepo.push_back(target);
 
+#if defined(_FLYEM_)
   const std::vector<ZDvidTarget> dvidRepo =
       NeutubeConfig::getInstance().getFlyEmConfig().getDvidRepo();
   m_dvidRepo.insert(m_dvidRepo.end(), dvidRepo.begin(), dvidRepo.end());
+#endif
   for (std::vector<ZDvidTarget>::const_iterator iter = m_dvidRepo.begin();
        iter != m_dvidRepo.end(); ++iter) {
     const ZDvidTarget &target = *iter;
