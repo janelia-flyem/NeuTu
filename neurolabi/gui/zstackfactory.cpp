@@ -12,6 +12,7 @@
 #include "zpointarray.h"
 #include "tz_stack.h"
 #include "zweightedpointarray.h"
+#include "math.h"
 
 ZStackFactory::ZStackFactory()
 {

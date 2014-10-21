@@ -205,10 +205,10 @@ HEADERS +=$${PWD}/zstackprocessor.h \
    $${PWD}/zobject3dfactory.h \
    $${PWD}/zclosedcurve.h \
    $${PWD}/zflyemutilities.h \
-    dvid/zdvidurl.h \
-    zstackobjectsourcefactory.h \
-    dvid/zdviddata.h \
-    flyem/zflyemneuronbodyinfo.h
+   $${PWD}/dvid/zdvidurl.h \
+   $${PWD}/zstackobjectsourcefactory.h \
+   $${PWD}/dvid/zdviddata.h \
+   $${PWD}/flyem/zflyemneuronbodyinfo.h
 
 SOURCES +=$${PWD}/zstackprocessor.cpp \
    $${PWD}/zstack.cxx \
@@ -402,4 +402,4 @@ SOURCES +=$${PWD}/zstackprocessor.cpp \
    $${PWD}/dvid/zdvidurl.cpp \
    $${PWD}/zstackobjectsourcefactory.cpp \
    $${PWD}/dvid/zdviddata.cpp \
-    flyem/zflyemneuronbodyinfo.cpp
+   $${PWD}/flyem/zflyemneuronbodyinfo.cpp
