@@ -14,21 +14,21 @@ TEST(ZVoxelGraphics, paint)
   ZIntPoint v2(0, 0, 0);
   ZObject3d *line = ZVoxelGraphics::createLineObject(v1, v2);
   ASSERT_EQ(1, (int) line->size());
-  ASSERT_EQ(0, line->x(0));
-  ASSERT_EQ(0, line->y(0));
-  ASSERT_EQ(0, line->z(0));
+  ASSERT_EQ(0, line->getX(0));
+  ASSERT_EQ(0, line->getY(0));
+  ASSERT_EQ(0, line->getZ(0));
   delete line;
 
   v2.set(1, 0, 0);
   line = ZVoxelGraphics::createLineObject(v1, v2);
   ASSERT_EQ(2, (int) line->size());
-  ASSERT_EQ(0, line->x(0));
-  ASSERT_EQ(0, line->y(0));
-  ASSERT_EQ(0, line->z(0));
+  ASSERT_EQ(0, line->getX(0));
+  ASSERT_EQ(0, line->getY(0));
+  ASSERT_EQ(0, line->getZ(0));
 
-  ASSERT_EQ(1, line->x(1));
-  ASSERT_EQ(0, line->y(1));
-  ASSERT_EQ(0, line->z(1));
+  ASSERT_EQ(1, line->getX(1));
+  ASSERT_EQ(0, line->getY(1));
+  ASSERT_EQ(0, line->getZ(1));
   delete line;
 
   v1.set(1, 1, 1);
@@ -38,13 +38,13 @@ TEST(ZVoxelGraphics, paint)
   //line->print();
 
   ASSERT_EQ(5, (int) line->size());
-  ASSERT_EQ(1, line->x(0));
-  ASSERT_EQ(1, line->y(0));
-  ASSERT_EQ(1, line->z(0));
+  ASSERT_EQ(1, line->getX(0));
+  ASSERT_EQ(1, line->getY(0));
+  ASSERT_EQ(1, line->getZ(0));
 
-  ASSERT_EQ(5, line->x(4));
-  ASSERT_EQ(5, line->y(4));
-  ASSERT_EQ(5, line->z(4));
+  ASSERT_EQ(5, line->getX(4));
+  ASSERT_EQ(5, line->getY(4));
+  ASSERT_EQ(5, line->getZ(4));
   delete line;
 
   v1.set(5, 5, 5);
@@ -54,13 +54,13 @@ TEST(ZVoxelGraphics, paint)
   //line->print();
 
   ASSERT_EQ(5, (int) line->size());
-  ASSERT_EQ(5, line->x(0));
-  ASSERT_EQ(5, line->y(0));
-  ASSERT_EQ(5, line->z(0));
+  ASSERT_EQ(5, line->getX(0));
+  ASSERT_EQ(5, line->getY(0));
+  ASSERT_EQ(5, line->getZ(0));
 
-  ASSERT_EQ(1, line->x(4));
-  ASSERT_EQ(1, line->y(4));
-  ASSERT_EQ(1, line->z(4));
+  ASSERT_EQ(1, line->getX(4));
+  ASSERT_EQ(1, line->getY(4));
+  ASSERT_EQ(1, line->getZ(4));
   delete line;
 
   v1.set(0, 0, 0);
@@ -72,13 +72,13 @@ TEST(ZVoxelGraphics, paint)
         v1, vec1, len1, vec2, len2);
   //plane->print();
   ASSERT_EQ(9, (int) plane->size());
-  ASSERT_EQ(0, plane->x(0));
-  ASSERT_EQ(0, plane->y(0));
-  ASSERT_EQ(0, plane->z(0));
+  ASSERT_EQ(0, plane->getX(0));
+  ASSERT_EQ(0, plane->getY(0));
+  ASSERT_EQ(0, plane->getZ(0));
 
-  ASSERT_EQ(2, plane->x(8));
-  ASSERT_EQ(2, plane->y(8));
-  ASSERT_EQ(0, plane->z(8));
+  ASSERT_EQ(2, plane->getX(8));
+  ASSERT_EQ(2, plane->getY(8));
+  ASSERT_EQ(0, plane->getZ(8));
   delete plane;
 
   std::vector<ZIntPoint> polyline;
@@ -88,13 +88,13 @@ TEST(ZVoxelGraphics, paint)
   line->print();
 
   ASSERT_EQ(2, (int) line->size());
-  ASSERT_EQ(0, line->x(0));
-  ASSERT_EQ(0, line->y(0));
-  ASSERT_EQ(0, line->z(0));
+  ASSERT_EQ(0, line->getX(0));
+  ASSERT_EQ(0, line->getY(0));
+  ASSERT_EQ(0, line->getZ(0));
 
-  ASSERT_EQ(1, line->x(1));
-  ASSERT_EQ(1, line->y(1));
-  ASSERT_EQ(1, line->z(1));
+  ASSERT_EQ(1, line->getX(1));
+  ASSERT_EQ(1, line->getY(1));
+  ASSERT_EQ(1, line->getZ(1));
 
   delete line;
 
@@ -102,13 +102,13 @@ TEST(ZVoxelGraphics, paint)
   line = ZVoxelGraphics::createPolylineObject(polyline);
   line->print();
   ASSERT_EQ(6, (int) line->size());
-  ASSERT_EQ(0, line->x(0));
-  ASSERT_EQ(0, line->y(0));
-  ASSERT_EQ(0, line->z(0));
+  ASSERT_EQ(0, line->getX(0));
+  ASSERT_EQ(0, line->getY(0));
+  ASSERT_EQ(0, line->getZ(0));
 
-  ASSERT_EQ(1, line->x(1));
-  ASSERT_EQ(1, line->y(1));
-  ASSERT_EQ(1, line->z(1));
+  ASSERT_EQ(1, line->getX(1));
+  ASSERT_EQ(1, line->getY(1));
+  ASSERT_EQ(1, line->getZ(1));
 
   delete line;
 
@@ -123,9 +123,9 @@ TEST(ZVoxelGraphics, paint)
         ZIntPoint(0, 0, 0), ZIntPoint(0, 0, 0), ZIntPoint(0, 0, 0));
   triangle->print();
   ASSERT_EQ(1, (int) triangle->size());
-  ASSERT_EQ(0, triangle->x(0));
-  ASSERT_EQ(0, triangle->y(0));
-  ASSERT_EQ(0, triangle->z(0));
+  ASSERT_EQ(0, triangle->getX(0));
+  ASSERT_EQ(0, triangle->getY(0));
+  ASSERT_EQ(0, triangle->getZ(0));
 
   delete triangle;
 

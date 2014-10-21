@@ -62,6 +62,9 @@ public:
   std::string getBodyLabelUrl(
       int x0, int y0, int z0, int width, int height, int depth) const;
 
+  std::string getSynapseListUrl() const;
+  std::string getSynapseAnnotationUrl(const std::string &name) const;
+
 private:
   ZDvidTarget m_dvidTarget;
 };

@@ -93,12 +93,14 @@ ZStackOperator ZMouseEventLeftButtonReleaseMapper::getOperation(
           ZStackDocHitTest hitManager;
           if (rawStackPosition.z() < 0) {
             hitManager.hitTest(
-                  getDocument(), stackPosition.x(), stackPosition.y());
+                  const_cast<ZStackDoc*>(getDocument()), stackPosition.x(), stackPosition.y());
           } else {
-            hitManager.hitTest(getDocument(), stackPosition);
+            hitManager.hitTest(const_cast<ZStackDoc*>(getDocument()), stackPosition);
           }
           op.setHitSwcNode(hitManager.getHitSwcNode());
           op.setHitStroke2d(hitManager.getHitStroke2d());
+          op.setHitObj3d(hitManager.getObj3d());
+
 
           if (op.getHitSwcNode() != NULL) { //SWC select operation
             if (event.getModifiers() == Qt::NoModifier) {
@@ -121,6 +123,13 @@ ZStackOperator ZMouseEventLeftButtonReleaseMapper::getOperation(
             } else if (event.getModifiers() == Qt::ShiftModifier ||
                        event.getModifiers() == Qt::ControlModifier) {
               op.setOperation(ZStackOperator::OP_STROKE_SELECT_MULTIPLE);
+            }
+          } else if (op.getHitObj3d() != NULL) {
+            if (event.getModifiers() == Qt::NoModifier) {
+              op.setOperation(ZStackOperator::OP_OBJECT3D_SELECT_SINGLE);
+            } else if (event.getModifiers() == Qt::ShiftModifier ||
+                       event.getModifiers() == Qt::ControlModifier) {
+              op.setOperation(ZStackOperator::OP_OBJECT3D_SELECT_MULTIPLE);
             }
           } else {
             op.setOperation(ZStackOperator::OP_DESELECT_ALL);
@@ -200,10 +209,10 @@ ZStackOperator ZMouseEventLeftButtonDoubleClickMapper::getOperation(
 //  }
   ZStackDocHitTest hitManager;
   if (event.getRawStackPosition().z() < 0) {
-    hitManager.hitTest(
-          getDocument(), stackPosition.x(), stackPosition.y());
+    hitManager.hitTest(const_cast<ZStackDoc*>(
+                         getDocument()), stackPosition.x(), stackPosition.y());
   } else {
-    hitManager.hitTest(getDocument(), stackPosition);
+    hitManager.hitTest(const_cast<ZStackDoc*>(getDocument()), stackPosition);
   }
   op.setHitSwcNode(hitManager.getHitSwcNode());
   op.setHitStroke2d(hitManager.getHitStroke2d());

@@ -64,10 +64,10 @@ void ZObject3dArray::append(const ZObject3d &obj,
 
     for (size_t i = 0; i < labelArray.size(); i++) {
       if (objMap.count(labelArray[i]) > 0) {
-        objMap[labelArray[i]]->append(obj.x(i), obj.y(i), obj.z(i));
+        objMap[labelArray[i]]->append(obj.getX(i), obj.getY(i), obj.getZ(i));
       } else { //new object
         ZObject3d *newobj = new ZObject3d;
-        newobj->append(obj.x(i), obj.y(i), obj.z(i));
+        newobj->append(obj.getX(i), obj.getY(i), obj.getZ(i));
         objMap[labelArray[i]] = newobj;
       }
     }

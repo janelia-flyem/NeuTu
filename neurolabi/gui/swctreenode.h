@@ -210,7 +210,7 @@ bool isRegularRoot(const Swc_Tree_Node *tn);
 bool isRoot(const Swc_Tree_Node *tn);
 
 Swc_Tree_Node* regularRoot(Swc_Tree_Node *tn);
-Swc_Tree_Node* root(Swc_Tree_Node *tn);
+Swc_Tree_Node* root(const Swc_Tree_Node *tn);
 Swc_Tree_Node* commonAncestor(Swc_Tree_Node *tn1, Swc_Tree_Node *tn2);
 const Swc_Tree_Node* commonAncestor(const Swc_Tree_Node *tn1,
                                     const Swc_Tree_Node *tn2);

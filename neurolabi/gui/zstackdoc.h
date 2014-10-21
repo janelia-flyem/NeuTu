@@ -20,6 +20,7 @@
 #include <string>
 #include <QMenu>
 #include <QPair>
+#include <QMap>
 
 #include "neutube.h"
 #include "zcurve.h"
@@ -210,10 +211,12 @@ public: //attributes
   inline const std::set<Swc_Tree_Node*>* selectedSwcTreeNodes() const {
     return &m_selectedSwcTreeNodes;}
 
+  /*
   inline std::set<ZStroke2d*>* selectedStrokeList() {
     return &m_selectedStroke;}
   inline const std::set<ZStroke2d*>* selectedStrokeList() const {
     return &m_selectedStroke;}
+    */
 
   inline ZSwcNetwork* swcNetwork() { return m_swcNetwork; }
   ZResolution stackResolution() const;
@@ -445,6 +448,9 @@ public: /* puncta related methods */
 
   bool importSynapseAnnotation(const std::string &filePath);
 
+  ZStackObject *hitTest(double x, double y, double z);
+  ZStackObject *hitTest(double x, double y);
+
   Swc_Tree_Node *swcHitTest(double x, double y) const;
   Swc_Tree_Node *swcHitTest(double x, double y, double z) const;
   Swc_Tree_Node *swcHitTest(const ZPoint &pt) const;
@@ -460,7 +466,7 @@ public: /* puncta related methods */
   void setChainSelected(ZLocsegChain* chain, bool select);
   void setChainSelected(const std::vector<ZLocsegChain*> &chains, bool select);
   void deselectAllChains();
-  void deselectAllStroke();
+  //void deselectAllStroke();
   void setSwcSelected(ZSwcTree* tree, bool select);
   template <class InputIterator>
   void setSwcSelected(InputIterator first, InputIterator last, bool select);
@@ -596,8 +602,16 @@ public: /* puncta related methods */
    */
   ZSwcTree *getMergedSwc();
 
+  void setSelected(ZStackObject *obj,  bool selecting = true);
+  const std::set<ZStackObject*>& getSelected(ZStackObject::EType type) const;
+  std::set<ZStackObject*>& getSelected(ZStackObject::EType type);
+
+  void clearSelectedSet();
+
+  /*
   void setSelected(ZStackObject *obj, NeuTube::EDocumentableType type,
                    bool selecting = true);
+                   */
 
 public:
   inline NeuTube::Document::ETag getTag() const { return m_tag; }
@@ -852,7 +866,9 @@ private:
   std::set<ZPunctum*> m_selectedPuncta;
   std::set<ZSwcTree*> m_selectedSwcs;
   std::set<Swc_Tree_Node*> m_selectedSwcTreeNodes;
-  std::set<ZStroke2d*> m_selectedStroke;
+  //std::set<ZStroke2d*> m_selectedStroke;
+
+  QMap<ZStackObject::EType, std::set<ZStackObject*> > m_selectedObjectMap;
 
   //model-view structure for obj list and edit
   ZSwcObjsModel *m_swcObjsModel;

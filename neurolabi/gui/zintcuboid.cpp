@@ -158,3 +158,8 @@ void ZIntCuboid::setLastZ(int z)
 {
   m_lastCorner.setZ(z);
 }
+
+void ZIntCuboid::setDepth(int depth)
+{
+  m_lastCorner.setZ(m_firstCorner.getZ() + depth - 1);
+}

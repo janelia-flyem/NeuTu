@@ -438,7 +438,7 @@ ZSwcTree* ZSwcGenerator::createSwc(
   Swc_Tree_Node *parent = tree->root();
   for (size_t i = 0; i < obj.size(); i += sampleStep) {
     Swc_Tree_Node *tn =
-        SwcTreeNode::makePointer(obj.x(i), obj.y(i), obj.z(i), radius);
+        SwcTreeNode::makePointer(obj.getX(i), obj.getY(i), obj.getZ(i), radius);
     SwcTreeNode::setParent(tn, parent);
   }
 

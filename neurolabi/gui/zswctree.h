@@ -35,13 +35,16 @@ class ZClosedCurve;
  *Briefly, the basic element of an SWC tree is a node with the following
  *properties: ID, type, x, y, z, radius, parent ID. ZSwcTree provides interfaces
  *for iterating through the nodes with several modes.
- *In neuTube, any node with negative ID will be treated as virtual. A virtual
- *node is not considered as a part of the tree model. It is introduced to
+ *Here any node with negative ID will be treated as virtual. A virtual
+ *node, which is NOT considered as a part of the tree model, is introduced to
  *facilitate hosting multiple trees or handling specific data structure such as
  *binary trees. An object containing multiple trees is called a forest. All
  *normal operations should assume that ONLY the root node can
  *be virtual. The children of a virtual root are called regular roots, because
  *each of them is the root of a real SWC tree.
+ *
+ *To be compatible with some legacy code, the class is also a wrapper of the
+ *C structure Swc_Tree, which is called a raw SWC tree here.
  */
 
 class ZSwcTree : public ZStackObject, ZUncopyable {
@@ -149,7 +152,14 @@ public:
                            ESetDataOption option = CLEAN_ALL);
   ///@}
 
+  /*!
+   * \brief Clone an SWC tree
+   */
   ZSwcTree *clone() const;
+
+  /*!
+   * \brief Clone a raw SWC tree
+   */
   Swc_Tree *cloneData() const;
   //Swc_Tree* copyData() const;  //copy from m_tree
 
@@ -186,7 +196,7 @@ public:
 
 public:
 
-  virtual void display(ZPainter &painter, int z = 0, Display_Style option = NORMAL) const;
+  virtual void display(ZPainter &painter, int slice, Display_Style option) const;
 
   /*!
    * \brief save Save swc
@@ -216,7 +226,10 @@ public:
   // convert swc to locsegchains..., return next .tb file idx
   int saveAsLocsegChains(const char *prefix, int startNum);
 
-  bool contains(Swc_Tree_Node *tn) const;
+  /*!
+   * \brief Test if a node is a part of the tree
+   */
+  bool contains(const Swc_Tree_Node *tn) const;
 
   int regularRootNumber() const;
   void addRegularRoot(Swc_Tree_Node *tn);
@@ -347,17 +360,10 @@ public:
   static ZSwcTree* createCuboidSwc(const ZCuboid &box);
   ZSwcTree* createBoundBoxSwc(double margin = 0.0);
 
-  Swc_Tree_Node* hitTest(double x, double y, double z);
-
   /*!
-   * \brief Hit a node within an expanded region
-   *
-   * It is similart to hitTest except that the hitting is positive when the
-   * point within a node with size expanded by margin (radius + \a margin).
-   *
-   * \return The closest node. Returns NULL if no node is hit.
+   * \brief Hit test.
    */
-  Swc_Tree_Node* hitTest(double x, double y, double z, double margin);
+  Swc_Tree_Node* hitTest(double x, double y, double z);
 
   /*!
    * \brief Plane hit test
@@ -370,6 +376,35 @@ public:
    *          If there is no hit, it returns NULL.
    */
   Swc_Tree_Node* hitTest(double x, double y);
+
+  /*!
+   * \brief Hit a node within an expanded region
+   *
+   * It is similart to hitTest except that the hitting is positive when the
+   * point within a node with size expanded by margin (radius + \a margin).
+   *
+   * \return The closest node. Returns NULL if no node is hit.
+   */
+  Swc_Tree_Node* hitTest(double x, double y, double z, double margin);
+
+  /*!
+   * \brief ZStackObject hit function implementation
+   */
+  bool hit(double x, double y);
+  bool hit(double x, double y, double z);
+
+  /*!
+   * \brief Selecte a node
+   * \param tn It is supposed to be a part of the tree. The function does not
+   *      check the membership for effieciecy purpose.
+   * \param appending Add the node to the selection set with in appending way
+   *      or not.
+   */
+  void setNodeSelected(Swc_Tree_Node *tn, bool appending);
+
+  const std::set<Swc_Tree_Node*>& getSelectedNode() const;
+
+  Swc_Tree_Node* getHitNode() const { return m_hitSwcNode; }
 
   void toSvgFile(const char *filePath);
 
@@ -660,9 +695,13 @@ private:
   mutable std::vector<Swc_Tree_Node*> m_terminalArray;
   mutable std::vector<Swc_Tree_Node*> m_branchPointArray;
   mutable std::vector<Swc_Tree_Node*> m_zSortedArray;
+  mutable std::set<Swc_Tree_Node*> m_selectedNode;
+
   mutable ZCuboid m_boundBox;
 
   static const int m_nodeStateCosmetic;
+
+  Swc_Tree_Node *m_hitSwcNode;
 
 #ifdef _QT_GUI_USED_
   QColor m_rootColor;

@@ -16,6 +16,7 @@
 #include "dvid/zdvidreader.h"
 #include "dvid/zdvidtarget.h"
 #include "dvid/zdvidfilter.h"
+#include "dvid/zdvidwriter.h"
 #include "zflyemdvidreader.h"
 #include "flyem/zintcuboidarray.h"
 #include "zfiletype.h"
@@ -144,6 +145,9 @@ bool ZFlyEmDataBundle::loadDvid(const ZDvidFilter &dvidFilter)
 
   ZFlyEmDvidReader fdReader;
   fdReader.open(dvidFilter.getDvidTarget());
+
+   m_synapseAnnotationFile = dvidTarget.getSourceString();
+
   size_t i = 0;
   for (std::set<int>::const_iterator iter = bodySet.begin();
        iter != bodySet.end(); ++iter, ++i) {
@@ -155,6 +159,8 @@ bool ZFlyEmDataBundle::loadDvid(const ZDvidFilter &dvidFilter)
       neuron.setVolumePath(m_source);
       neuron.setThumbnailPath(m_source);
       neuron.setResolution(m_swcResolution);
+      neuron.setSynapseAnnotation(getSynapseAnnotation());
+      neuron.setSynapseScale(90);
 
       ZFlyEmBodyAnnotation annotation = fdReader.readAnnotation(bodyId);
       if (!annotation.getName().empty()) {
@@ -172,6 +178,16 @@ bool ZFlyEmDataBundle::loadDvid(const ZDvidFilter &dvidFilter)
     }
   }
   m_neuronArray.resize(realSize);
+
+  //Load synapses
+//  if (fdReader.open(dvidTarget)) {
+//    QStringList synapseList = fdReader.readSynapseList();
+//    //qDebug() << synapseList;
+
+//    ZJsonObject obj = fdReader.readSynapseAnnotation(synapseList[0]);
+
+//    //obj.print();
+//  }
 
   return true;
 }
@@ -514,7 +530,7 @@ FlyEm::ZSynapseAnnotationArray* ZFlyEmDataBundle::getSynapseAnnotation() const
         path = ZString::absolutePath(ZString(m_source).dirPath(), path);
       }
 
-      if (fexist(path.c_str())) {
+      if (fexist(path.c_str()) || ZString(path).startsWith("http:")) {
         m_synaseAnnotation = new FlyEm::ZSynapseAnnotationArray;
         m_synaseAnnotation->loadJson(path);
         m_synaseAnnotation->setResolution(m_imageResolution);
@@ -858,4 +874,19 @@ void ZFlyEmDataBundle::importBoundBox(const string &filePath)
 
   m_boundBox->rescale(
         m_swcResolution[0], m_swcResolution[1], m_swcResolution[2]);
+}
+
+void ZFlyEmDataBundle::uploadAnnotation(const ZDvidTarget &dvidTarget) const
+{
+  ZDvidWriter writer;
+  if (writer.open(dvidTarget)) {
+    //for each neuron, update annotation
+    for (ZFlyEmNeuronArray::const_iterator iter = m_neuronArray.begin();
+         iter != m_neuronArray.end(); ++iter) {
+      const ZFlyEmNeuron &neuron = *iter;
+      if (!neuron.getName().empty() || !neuron.getClass().empty()) {
+        writer.writeAnnotation(neuron);
+      }
+    }
+  }
 }

@@ -173,6 +173,29 @@ ZStack* ZSparseStack::getSlice(int z) const
   return stack;
 }
 
+ZStack* ZSparseStack::getMip() const
+{
+  ZStack *stack = NULL;
+  if (m_objectMask != NULL) {
+    ZIntCuboid box = m_objectMask->getBoundBox();
+    box.setFirstZ(0);
+    box.setLastZ(0);
+    stack = new ZStack(GREY, box, 1);
+    ZObject3dScan::ConstSegmentIterator iterator(m_objectMask);
+    while (iterator.hasNext()) {
+      const ZObject3dScan::Segment &seg = iterator.next();
+      int y = seg.getY();
+//      int z = seg.getZ();
+      for (int x = seg.getStart(); x <= seg.getEnd(); ++x) {
+        stack->setIntValue(x, y, 0, 0, 164);
+      }
+    }
+
+  }
+
+  return stack;
+}
+
 void ZSparseStack::setGreyScale(ZStackBlockGrid *stackGrid)
 {
   if (m_stackGrid != stackGrid) {

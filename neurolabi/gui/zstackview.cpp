@@ -1303,6 +1303,17 @@ void ZStackView::paintStackBuffer()
       }
     } else {
       m_image->setBackground();
+      if (buddyDocument()->hasSparseStack()) {
+        ZStack *slice =
+            buddyDocument()->getSparseStack()->getMip();
+        if (slice != NULL) {
+          slice->translate(-buddyDocument()->getStackOffset());
+          slice->getOffset().setZ(0);
+
+          m_image->setData(slice, 0);
+          delete slice;
+        }
+      }
     }
   }
 }
@@ -1363,6 +1374,7 @@ void ZStackView::paintObjectBuffer()
 
   if (buddyPresenter()->isObjectVisible()) {
     int slice = m_depthControl->value();
+    int z = slice + buddyDocument()->getStackOffset().getZ();
     if (buddyPresenter()->interactiveContext().isProjectView()) {
       slice = -1;
     }
@@ -1376,7 +1388,7 @@ void ZStackView::paintObjectBuffer()
       QList<ZStackObject*>::const_iterator iter = objs->end() - 1;
       for (;iter != objs->begin() - 1; --iter) {
         const ZStackObject *obj = *iter;
-        if (obj->isSliceVisible(slice + buddyDocument()->getStackOffset().getZ()) &&
+        if ((obj->isSliceVisible(z) || slice == -1) &&
             obj->getTarget() == ZStackObject::OBJECT_CANVAS) {
           visibleObject.append(obj);
         }
@@ -1499,7 +1511,7 @@ void ZStackView::paintActiveDecorationBuffer()
 
     foreach (ZStackObject *obj, drawableList) {
       if (obj->getTarget() == ZStackObject::OBJECT_CANVAS) {
-        obj->display(painter, sliceIndex());
+        obj->display(painter, sliceIndex(), ZStackObject::NORMAL);
       }
     }
   }

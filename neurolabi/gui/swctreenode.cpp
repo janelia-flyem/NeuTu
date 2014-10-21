@@ -228,18 +228,17 @@ Swc_Tree_Node* SwcTreeNode::regularRoot(Swc_Tree_Node *tn)
   return root;
 }
 
-Swc_Tree_Node* SwcTreeNode::root(Swc_Tree_Node *tn)
+Swc_Tree_Node* SwcTreeNode::root(const Swc_Tree_Node *tn)
 {
-  Swc_Tree_Node *root = tn;
+  const Swc_Tree_Node *root = tn;
 
   while (tn != NULL) {
     root = tn;
     tn = tn->parent;
   }
 
-  return root;
+  return const_cast<Swc_Tree_Node*>(root);
 }
-
 
 ZPoint SwcTreeNode::pos(const Swc_Tree_Node *tn)
 {

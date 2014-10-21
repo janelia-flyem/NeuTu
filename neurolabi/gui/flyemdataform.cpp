@@ -23,6 +23,7 @@
 #include "dvid/zdvidreader.h"
 #include "dvid/zdvidwriter.h"
 #include "flyem/zflyemneuronbodyinfo.h"
+#include "z3dpunctafilter.h"
 
 FlyEmDataForm::FlyEmDataForm(QWidget *parent) :
   QWidget(parent),
@@ -332,11 +333,13 @@ ZStackDoc *FlyEmDataForm::showViewSelectedModel(ZFlyEmQueryView *view)
 
   ZStackFrame *frame = new ZStackFrame;
 
-  view->getModel()->retrieveModel(sel->selectedIndexes(), frame->document().get());
+  view->getModel()->retrieveModel(
+        sel->selectedIndexes(), frame->document().get());
   ui->progressBar->setValue(75);
   //QApplication::processEvents();
 
-  frame->open3DWindow(this->parentWidget());
+  Z3DWindow *window = frame->open3DWindow(this->parentWidget());
+  window->getPunctaFilter()->setColorMode("Original Point Color");
   ZStackDoc *hostDoc = frame->document().get();
 
   delete frame;

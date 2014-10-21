@@ -6,6 +6,7 @@
 
 class ZMouseEventRecorder;
 class ZStroke2d;
+class ZObject3d;
 
 class ZStackOperator
 {
@@ -42,6 +43,7 @@ public:
     OP_STROKE_ADD_NEW, OP_STROKE_START_PAINT,
     OP_STROKE_SELECT_SINGLE, OP_STROKE_SELECT_MULTIPLE,
     OP_STROKE_LOCATE_FOCUS,
+    OP_OBJECT3D_SELECT_SINGLE, OP_OBJECT3D_SELECT_MULTIPLE,
     OP_STACK_LOCATE_SLICE, OP_STACK_VIEW_PROJECTION,
     OP_STACK_VIEW_SLICE
   };
@@ -66,12 +68,20 @@ public:
     return m_hitStroke;
   }
 
+  inline ZObject3d* getHitObj3d() const {
+    return m_hitObj3d;
+  }
+
   inline void setHitSwcNode(Swc_Tree_Node *tn) {
     m_hitNode = tn;
   }
 
   inline void setHitStroke2d(ZStroke2d *stroke) {
     m_hitStroke = stroke;
+  }
+
+  inline void setHitObj3d(ZObject3d *obj) {
+    m_hitObj3d = obj;
   }
 
 
@@ -102,6 +112,7 @@ private:
   EOperation m_op;
   Swc_Tree_Node *m_hitNode;
   ZStroke2d *m_hitStroke;
+  ZObject3d *m_hitObj3d;
   int m_punctaIndex;
   bool m_togglingStrokeLabel;
   const ZMouseEventRecorder *m_mouseEventRecorder;

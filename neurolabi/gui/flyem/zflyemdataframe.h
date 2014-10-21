@@ -142,6 +142,13 @@ public:
   void importBoundBox(const QString &substackPath);
 
   /*!
+   * \brief Upload annotations to DVID server.
+   *
+   * Empty annotations will be ignored.
+   */
+  void uploadAnnotation() const;
+
+  /*!
    * \brief Set volume entries based on a directory
    *
    * The volume entry is set even the corresponding body file does not exist.
@@ -175,7 +182,6 @@ public:
   inline ZFlyEmNeuronImageFactory* getImageFactory() {
     return &m_imageFactory;
   }
-
 
   ZFlyEmDataBundle* getMasterData();
   const ZFlyEmDataBundle* getMasterData() const;

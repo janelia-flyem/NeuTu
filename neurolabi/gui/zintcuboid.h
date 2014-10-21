@@ -55,6 +55,15 @@ public:
   int getHeight() const;
   int getDepth() const;
 
+  /*!
+   * \brief Set the depth
+   *
+   * It change the depth of the cuboid with the first corner fixed.
+   *
+   * \param depth New depth of the cuboid.
+   */
+  void setDepth(int depth);
+
   //union
   void join(const ZIntCuboid &cuboid);
   void joinX(int x);

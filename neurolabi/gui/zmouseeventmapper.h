@@ -71,7 +71,7 @@ public:
 
 protected:
   ZInteractiveContext *m_context;
-  ZStackDoc *m_doc;
+  mutable ZStackDoc *m_doc;
   ZMouseEventRecorder *m_eventRecorder;
   TMousePosition m_position;
 };

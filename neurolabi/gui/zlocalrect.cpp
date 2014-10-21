@@ -36,13 +36,13 @@ Local_Neuroseg* ZLocalRect::toLocalNeuroseg() const
   return locseg;
 }
 
-void ZLocalRect::display(ZPainter &painter, int z, Display_Style style) const
+void ZLocalRect::display(ZPainter &painter, int slice, Display_Style style) const
 {
   Local_Neuroseg locseg;
   Local_R2_Rect_To_Local_Neuroseg(&(this->m_template), &locseg);
 
   ZLocalNeuroseg tmpseg(&locseg);
-  tmpseg.display(painter, z, style);
+  tmpseg.display(painter, slice, style);
 }
 
 void ZLocalRect::fitStack(const Stack *stack, Receptor_Fit_Workspace *ws)

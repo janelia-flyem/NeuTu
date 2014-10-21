@@ -4,15 +4,16 @@
 const char* ZStackObject::m_nodeAdapterId = "!NodeAdapter";
 
 ZStackObject::ZStackObject() : m_selected(false), m_isVisible(true),
+  m_isHittable(true),
   m_style(SOLID), m_target(WIDGET), m_usingCosmeticPen(false), m_zScale(1.0),
-  m_zOrder(0), m_type(TYPE_UNIDENTIFIED)
+  m_zOrder(1), m_type(TYPE_UNIDENTIFIED)
 {
 }
 
 double ZStackObject::m_defaultPenWidth = 0.5;
 
 void ZStackObject::display(QPainter */*painter*/, int /*z*/,
-                           Display_Style /*option*/) const
+                           Display_Style /*option*/, EDisplaySliceMode /*sliceMode*/) const
 {
 }
 
@@ -121,4 +122,14 @@ double ZStackObject::getPenWidth() const
 bool ZStackObject::isSliceVisible(int /*z*/) const
 {
   return isVisible();
+}
+
+bool ZStackObject::hit(double /*x*/, double /*y*/)
+{
+  return false;
+}
+
+bool ZStackObject::hit(double /*x*/, double /*y*/, double /*z*/)
+{
+  return false;
 }

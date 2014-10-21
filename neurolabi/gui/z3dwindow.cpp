@@ -68,6 +68,7 @@
 #include "zstroke2darray.h"
 #include "zswcgenerator.h"
 #include "zstroke2d.h"
+#include "zsparsestack.h"
 
 class Sleeper : public QThread
 {
@@ -3082,7 +3083,7 @@ void Z3DWindow::addStrokeFrom3dPaint(ZStroke2d *stroke)
   ZObject3d *obj = new ZObject3d;
   for (size_t i = 0; i < baseObj->size(); ++i) {
     ZLineSegment seg = m_volumeRaycaster->getScreenRay(
-          baseObj->x(i), baseObj->y(i),
+          baseObj->getX(i), baseObj->getY(i),
           m_canvas->width(), m_canvas->height());
     ZPoint slope = seg.getEndPoint() - seg.getStartPoint();
     //if (success) {
@@ -3151,6 +3152,35 @@ void Z3DWindow::addPolyplaneFrom3dPaint(ZStroke2d *stroke)
     }
 
     ZObject3d *obj = ZVoxelGraphics::createPolyPlaneObject(polyline1, polyline2);
+
+    ZObject3d *processedObj = NULL;
+
+    if (getDocument()->hasSparseStack()) {
+      const ZStack *stack = getDocument()->getSparseStack()->getStack();
+      ZIntPoint dsIntv = getDocument()->getSparseStack()->getDownsampleInterval();
+
+      processedObj = new ZObject3d;
+      for (size_t i = 0; i < obj->size(); ++i) {
+        int x = obj->getX(i) / (dsIntv.getX() + 1);
+        int y = obj->getY(i) / (dsIntv.getY() + 1);
+        int z = obj->getZ(i) / (dsIntv.getZ() + 1);
+        int v = 0;
+        for (int dz = -1; dz <= 1; ++dz) {
+          for (int dy = -1; dy <= 1; ++dy) {
+            for (int dx = -1; dx <= 1; ++dx) {
+              v += stack->getIntValue(x + dx, y + dy, z + dz);
+            }
+          }
+        }
+        if (v > 0) {
+          processedObj->append(x, y, z);
+        }
+      }
+    }
+
+    delete obj;
+    obj = processedObj;
+
 
     if (obj != NULL) {
 #ifdef _DEBUG_2

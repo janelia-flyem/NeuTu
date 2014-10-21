@@ -15,7 +15,10 @@
 #include "zgraph.h"
 #ifdef _QT_GUI_USED_
 #include "zpunctum.h"
+#include "zflyemdvidreader.h"
 #endif
+#include "zstring.h"
+
 using namespace FlyEm;
 using namespace std;
 
@@ -31,12 +34,9 @@ ZSynapseAnnotationArray::~ZSynapseAnnotationArray()
   deprecate(ALL_COMPONENT);
 }
 
-bool ZSynapseAnnotationArray::loadJson(const std::string &filePath,
+bool ZSynapseAnnotationArray::loadJson(const ZJsonObject &jsonObject,
                                        ELoadDataMode mode)
 {
-  ZJsonObject jsonObject;
-  jsonObject.load(filePath);
-
   //Two keys at the first level: "data" and "metadata"
   const char *key;
   json_t *value;
@@ -81,10 +81,31 @@ bool ZSynapseAnnotationArray::loadJson(const std::string &filePath,
                                m_metadata.getSourceYDim());
   }
   */
+  return (tbarNumber > 0);
+}
+
+bool ZSynapseAnnotationArray::loadJson(const std::string &filePath,
+                                       ELoadDataMode mode)
+{
+  ZJsonObject jsonObject;
+  if (ZString(filePath).startsWith("http:")) {
+#ifdef _QT_GUI_USED_
+    ZFlyEmDvidReader reader;
+    if (reader.open(filePath.c_str())) {
+      QStringList synapseList = reader.readSynapseList();
+      //qDebug() << synapseList;
+
+      jsonObject = reader.readSynapseAnnotation(synapseList[0]);
+    }
+#endif
+  } else {
+    jsonObject.load(filePath);
+  }
+  bool hasTBar = loadJson(jsonObject, mode);
 
   m_source = filePath;
 
-  return (tbarNumber > 0);
+  return hasTBar;
 }
 
 string ZSynapseAnnotationArray::metadataString()

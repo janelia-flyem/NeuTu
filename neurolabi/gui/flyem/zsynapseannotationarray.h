@@ -88,6 +88,7 @@ public:
 
 public:
   bool loadJson(const std::string &filePath, ELoadDataMode mode = OVERWRITE);
+  bool loadJson(const ZJsonObject &jsonObject, ELoadDataMode mode = OVERWRITE);
 
   std::string metadataString();
   std::string toString(int indent = 0,

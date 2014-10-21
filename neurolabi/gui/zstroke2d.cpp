@@ -126,14 +126,14 @@ void ZStroke2d::setEraser(bool enabled)
   */
 }
 
-void ZStroke2d::display(ZPainter &painter, int z, Display_Style option) const
+void ZStroke2d::display(ZPainter &painter, int slice, Display_Style option) const
 {
   //UNUSED_PARAMETER(z);
   UNUSED_PARAMETER(option);
 
-  z -= iround(painter.getOffset().z());
+  int z = slice + iround(painter.getOffset().z());
 
-  if (!isSliceVisible(z)) {
+  if (!(isSliceVisible(z) || (slice == -1))) {
     return;
   }
 
@@ -171,12 +171,6 @@ void ZStroke2d::display(ZPainter &painter, int z, Display_Style option) const
       painter.setBrush(Qt::NoBrush);
       painter.setOpacity(1.0);
       painter.drawPolyline(&(m_pointArray[0]), m_pointArray.size());
-
-      /*
-        painter.setPen(Qt::NoPen);
-        painter.setBrush(brush);
-        painter.drawEllipse(QPointF(m_pointArray.back()), m_width / 2, m_width / 2);
-        */
     }
 
     if (isSelected()) {
@@ -191,7 +185,8 @@ void ZStroke2d::display(ZPainter &painter, int z, Display_Style option) const
   }
 }
 
-void ZStroke2d::display(QPainter *rawPainter, int z, Display_Style option) const
+void ZStroke2d::display(QPainter *rawPainter, int z, Display_Style option,
+                        EDisplaySliceMode sliceMode) const
 {
   //UNUSED_PARAMETER(z);
   UNUSED_PARAMETER(option);
@@ -209,7 +204,7 @@ void ZStroke2d::display(QPainter *rawPainter, int z, Display_Style option) const
   //z -= iround(painter.getOffset().z());
 
   QColor color = m_color;
-  if (m_z >= 0 && m_z != z) {
+  if (sliceMode == DISPLAY_SLICE_SINGLE && m_z != z) {
     if (isEraser()) {
       return;
     }
@@ -634,7 +629,7 @@ void ZStroke2d::loadJsonObject(const ZJsonObject &obj)
 bool ZStroke2d::isSliceVisible(int z) const
 {
   if (isVisible() && !isEmpty()) {
-    if (z == -1 || m_isPenetrating || m_z == z) {
+    if (m_isPenetrating || m_z == z) {
       return true;
     }
   }
@@ -711,4 +706,14 @@ bool ZStroke2d::hitTest(double x, double y, double z) const
   }
 
   return hit;
+}
+
+bool ZStroke2d::hit(double x, double y)
+{
+  return hitTest(x, y);
+}
+
+bool ZStroke2d::hit(double x, double y, double z)
+{
+  return hitTest(x, y, z);
 }

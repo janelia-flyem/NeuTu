@@ -335,6 +335,7 @@
       <addaction name="actionCreate_Databundle"/>
       <addaction name="actionOperateDvid"/>
       <addaction name="actionGenerate_Local_Grayscale"/>
+      <addaction name="actionUpload_Annotations"/>
      </widget>
      <widget class="QMenu" name="menuExport_2">
       <property name="title">
@@ -1332,6 +1333,11 @@
   <action name="actionImportSeeds">
    <property name="text">
     <string>Seeds</string>
+   </property>
+  </action>
+  <action name="actionUpload_Annotations">
+   <property name="text">
+    <string>Upload Annotations</string>
    </property>
   </action>
  </widget>

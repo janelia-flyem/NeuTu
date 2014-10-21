@@ -30,7 +30,7 @@ ZStackPresenter::ZStackPresenter(ZStackFrame *parent) : QObject(parent),
   m_showObject(true),
   m_isStrokeOn(false),
   m_skipMouseReleaseEvent(false),
-  m_zOrder(0)
+  m_zOrder(2)
 {
   initInteractiveContext();
 
@@ -58,6 +58,8 @@ ZStackPresenter::ZStackPresenter(ZStackFrame *parent) : QObject(parent),
 
   m_cursorRadius = 10;
 
+  m_stroke.setPenetrating(true);
+  m_swcStroke.setPenetrating(true);
   m_activeDecorationList.append(&m_stroke);
   m_activeDecorationList.append(&m_swcStroke);
 
@@ -1728,6 +1730,7 @@ void ZStackPresenter::processEvent(ZInteractionEvent &event)
     break;
   case ZInteractionEvent::EVENT_STROKE_SELECTED:
   case ZInteractionEvent::EVENT_ALL_OBJECT_DESELCTED:
+  case ZInteractionEvent::EVENT_OBJ3D_SELECTED:
     updateView();
     break;
   default:
@@ -1897,6 +1900,11 @@ void ZStackPresenter::process(const ZStackOperator &op)
       interactionEvent.setEvent(
             ZInteractionEvent::EVENT_STROKE_SELECTED);
     }
+    break;
+  case ZStackOperator::OP_OBJECT3D_SELECT_SINGLE:
+    buddyDocument()->deselectAllObject();
+    buddyDocument()->setSelected(op.getHitObj3d());
+    interactionEvent.setEvent(ZInteractionEvent::EVENT_OBJ3D_SELECTED);
     break;
   case ZStackOperator::OP_STROKE_SELECT_MULTIPLE:
     if (op.getHitStroke2d() != NULL) {
