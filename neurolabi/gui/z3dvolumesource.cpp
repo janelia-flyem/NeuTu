@@ -779,7 +779,7 @@ void Z3DVolumeSource::readSparseVolumeWithObject()
   originalOffset[1] = offset[1] * (yIntv + 1);
   originalOffset[2] = offset[2] * (zIntv + 1);
 
-  QList<ZObject3d*> &objList = m_doc->getObj3dList();
+  QList<ZObject3d*>objList = m_doc->getObj3dList();
   foreach(ZObject3d *obj, objList) {
     obj->drawStack(stackArray, originalOffset, xIntv, yIntv, zIntv);
   }

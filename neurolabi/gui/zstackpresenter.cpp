@@ -133,8 +133,8 @@ void ZStackPresenter::createPunctaActions()
   m_markPunctaAction = new QAction(tr("mark Puncta"), this);
   connect(m_markPunctaAction, SIGNAL(triggered()), this, SLOT(markPuncta()));
 
-  m_deleteAllPunctaAction = new QAction(tr("Delete All Puncta"), this);
-  connect(m_deleteAllPunctaAction, SIGNAL(triggered()), this, SLOT(deleteAllPuncta()));
+  //m_deleteAllPunctaAction = new QAction(tr("Delete All Puncta"), this);
+  //connect(m_deleteAllPunctaAction, SIGNAL(triggered()), this, SLOT(deleteAllPuncta()));
 
   m_enlargePunctaAction = new QAction(tr("Enlarge Puncta"), this);
   connect(m_enlargePunctaAction, SIGNAL(triggered()), this, SLOT(enlargePuncta()));
@@ -277,7 +277,7 @@ void ZStackPresenter::createActions()
   m_fitEllipseAction = new QAction(tr("fit ellipse"), this);
   connect(m_fitEllipseAction, SIGNAL(triggered()), this, SLOT(fitEllipse()));
 
-
+/*
   m_frontAction = new QAction(tr("Bring to front"), this);
   connect(m_frontAction, SIGNAL(triggered()),
           this, SLOT(bringSelectedToFront()));
@@ -285,7 +285,7 @@ void ZStackPresenter::createActions()
   m_backAction = new QAction(tr("Send to back"), this);
   connect(m_backAction, SIGNAL(triggered()),
           this, SLOT(sendSelectedToBack()));
-
+*/
   createPunctaActions();
   createSwcActions();
   createTraceActions();
@@ -398,7 +398,7 @@ void ZStackPresenter::addPunctaEditFunctionToRightMenu()
   updateRightMenu(m_meanshiftPunctaAction, false);
   updateRightMenu(m_meanshiftAllPunctaAction, false);
   updateRightMenu(m_deleteSelectedAction, false);
-  updateRightMenu(m_deleteAllPunctaAction, false);
+  //updateRightMenu(m_deleteAllPunctaAction, false);
 }
 
 void ZStackPresenter::prepareView()
@@ -525,9 +525,10 @@ const QPointF ZStackPresenter::stackPositionFromMouse(MouseButtonAction mba)
 
 const Swc_Tree_Node* ZStackPresenter::getSelectedSwcNode() const
 {
-  std::set<Swc_Tree_Node*> *nodeSet = buddyDocument()->selectedSwcTreeNodes();
-  if (!nodeSet->empty()) {
-    return *(nodeSet->begin());
+  std::set<Swc_Tree_Node*> nodeSet =
+      buddyDocument()->getSelectedSwcTreeSet();
+  if (!nodeSet.empty()) {
+    return *(nodeSet.begin());
   }
 
   return NULL;
@@ -765,8 +766,8 @@ bool ZStackPresenter::processKeyPressEventForSwc(QKeyEvent *event)
     }
     break;
   case ZSwcTree::OPERATION_CONNECT_NODE:
-    if (!buddyDocument()->selectedSwcTreeNodes()->empty()) {
-      if (buddyDocument()->selectedSwcTreeNodes()->size() == 1) {
+    if (!buddyDocument()->hasSelectedSwcNode()) {
+      if (buddyDocument()->getSelectedSwcNodeNumber() == 1) {
         enterSwcConnectMode();
         taken = true;
       } else {
@@ -1079,6 +1080,9 @@ void ZStackPresenter::processMouseDoubleClickEvent(QMouseEvent *event)
   }
 
   ZStackOperator op = m_mouseEventProcessor.getOperator();
+  if (op.getMouseEventRecorder() == NULL) {
+    return;
+  }
 
   ZPoint currentStackPos = op.getMouseEventRecorder()->getLatestMouseEvent().
       getPosition(ZMouseEvent::COORD_STACK);
@@ -1108,8 +1112,8 @@ void ZStackPresenter::processMouseDoubleClickEvent(QMouseEvent *event)
     interactionEvent.setEvent(ZInteractionEvent::EVENT_VIEW_PROJECTION);
     break;
   case ZStackOperator::OP_SWC_LOCATE_FOCUS:
-    if (op.getHitSwcNode() != NULL) {
-      int sliceIndex = iround(SwcTreeNode::z(op.getHitSwcNode()));
+    if (op.getHitObject<Swc_Tree_Node>() != NULL) {
+      int sliceIndex = iround(SwcTreeNode::z(op.getHitObject<Swc_Tree_Node>()));
       sliceIndex -= buddyDocument()->getStackOffset().getZ();
       if (sliceIndex >= 0 &&
           sliceIndex < buddyDocument()->getStackSize().getZ()) {
@@ -1120,8 +1124,8 @@ void ZStackPresenter::processMouseDoubleClickEvent(QMouseEvent *event)
     }
     break;
   case ZStackOperator::OP_STROKE_LOCATE_FOCUS:
-    if (op.getHitStroke2d() != NULL) {
-      int sliceIndex = op.getHitStroke2d()->getZ();
+    if (op.getHitObject<ZStroke2d>() != NULL) {
+      int sliceIndex = op.getHitObject<ZStroke2d>()->getZ();
       sliceIndex -= buddyDocument()->getStackOffset().getZ();
       if (sliceIndex >= 0 &&
           sliceIndex < buddyDocument()->getStackSize().getZ()) {
@@ -1370,11 +1374,13 @@ void ZStackPresenter::deleteSelected()
 #endif
 }
 
+/*
 void ZStackPresenter::deleteAllPuncta()
 {
-  buddyDocument()->deleteAllPuncta();
+  buddyDocument()->deleteObject(ZStackObject::TYPE_PUNCTUM);
   updateView();
 }
+*/
 
 void ZStackPresenter::enlargePuncta()
 {
@@ -1422,7 +1428,7 @@ void ZStackPresenter::enterSwcConnectMode()
 bool ZStackPresenter::enterSwcExtendMode()
 {
   bool succ = false;
-  if (buddyDocument()->selectedSwcTreeNodes()->size() == 1) {
+  if (buddyDocument()->getSelectedSwcNodeNumber() == 1) {
     const Swc_Tree_Node *tn = getSelectedSwcNode();
     if (tn != NULL) {
       m_parent->notifyUser("Left click to extend. Path calculation is off when 'Cmd/Ctrl' is held."
@@ -1604,6 +1610,7 @@ void ZStackPresenter::processSliceChangeEvent(int z)
   }
 }
 
+/*
 void ZStackPresenter::bringSelectedToFront()
 {
   buddyDocument()->bringChainToFront();
@@ -1615,7 +1622,7 @@ void ZStackPresenter::sendSelectedToBack()
   buddyDocument()->sendChainToBack();
   updateView();
 }
-
+*/
 void ZStackPresenter::enterSwcSelectMode()
 {
   if (m_interactiveContext.swcEditMode() != ZInteractiveContext::SWC_EDIT_OFF ||
@@ -1716,9 +1723,10 @@ void ZStackPresenter::processEvent(ZInteractionEvent &event)
 {
   switch (event.getEvent()) {
   case ZInteractionEvent::EVENT_SWC_NODE_SELECTED:
-    if (buddyDocument()->selectedSwcTreeNodes()->size() > 1) {
+    if (buddyDocument()->getSelectedSwcNodeNumber() != 1) {
       exitSwcExtendMode();
     }
+    updateView();
     break;
   case ZInteractionEvent::EVENT_VIEW_PROJECTION:
   case ZInteractionEvent::EVENT_VIEW_SLICE:
@@ -1758,8 +1766,9 @@ void ZStackPresenter::process(const ZStackOperator &op)
   switch (op.getOperation()) {
   case ZStackOperator::OP_SWC_SELECT_SINGLE_NODE:
     buddyDocument()->deselectAllSwcTreeNodes();
-    buddyDocument()->setSwcTreeNodeSelected(op.getHitSwcNode(), true);
-    if (buddyDocument()->selectedSwcTreeNodes()->size() == 1 &&
+    buddyDocument()->selectHitSwcTreeNode(op.getHitObject<ZSwcTree>());
+    //buddyDocument()->setSwcTreeNodeSelected(op.getHitSwcNode(), true);
+    if (buddyDocument()->getSelectedSwcNodeNumber() == 1 &&
         NeutubeConfig::getInstance().getApplication() == "Biocytin") {
       enterSwcExtendMode();
     }
@@ -1769,29 +1778,38 @@ void ZStackPresenter::process(const ZStackOperator &op)
     buddyDocument()->deselectAllSwcTreeNodes();
     break;
   case ZStackOperator::OP_SWC_DESELECT_SINGLE_NODE:
-    buddyDocument()->setSwcTreeNodeSelected(op.getHitSwcNode(), false);
+    buddyDocument()->deselectHitSwcTreeNode(op.getHitObject<ZSwcTree>());
+    //buddyDocument()->setSwcTreeNodeSelected(op.getHitSwcNode(), false);
     break;
   case ZStackOperator::OP_SWC_SELECT_MULTIPLE_NODE:
-    buddyDocument()->setSwcTreeNodeSelected(op.getHitSwcNode(), true);
+    buddyDocument()->selectHitSwcTreeNode(op.getHitObject<ZSwcTree>(), true);
+    //buddyDocument()->setSwcTreeNodeSelected(op.getHitSwcNode(), true);
     interactionEvent.setEvent(ZInteractionEvent::EVENT_SWC_NODE_SELECTED);
     break;
   case ZStackOperator::OP_SWC_SELECT_CONNECTION:
-    buddyDocument()->setSwcTreeNodeSelected(op.getHitSwcNode(), true);
-    buddyDocument()->selectSwcNodeConnection(op.getHitSwcNode());
+    buddyDocument()->selectHitSwcTreeNodeConnection(
+          op.getHitObject<ZSwcTree>());
+    //buddyDocument()->setSwcTreeNodeSelected(op.getHitSwcNode(), true);
+    //buddyDocument()->selectSwcNodeConnection(op.getHitSwcNode());
     interactionEvent.setEvent(ZInteractionEvent::EVENT_SWC_NODE_SELECTED);
     break;
   case ZStackOperator::OP_SWC_SELECT_FLOOD:
+    buddyDocument()->selectHitSwcTreeNodeFloodFilling(
+          op.getHitObject<ZSwcTree>());
+    /*
     buddyDocument()->selectSwcTreeNode(op.getHitSwcNode(), true);
     buddyDocument()->selectSwcNodeFloodFilling(op.getHitSwcNode());
+    */
     interactionEvent.setEvent(ZInteractionEvent::EVENT_SWC_NODE_SELECTED);
     break;
   case ZStackOperator::OP_SWC_CONNECT_TO:
   {
-    std::set<Swc_Tree_Node*> *nodeSet = buddyDocument()->selectedSwcTreeNodes();
-    if (!nodeSet->empty()) {
-      Swc_Tree_Node *prevNode = *(nodeSet->begin());
+    if (buddyDocument()->hasSelectedSwcNode()) {
+      std::set<Swc_Tree_Node*> nodeSet =
+          buddyDocument()->getSelectedSwcTreeSet();
+      Swc_Tree_Node *prevNode = *(nodeSet.begin());
       if (prevNode != NULL) {
-        Swc_Tree_Node *tn = op.getHitSwcNode();
+        Swc_Tree_Node *tn = op.getHitObject<Swc_Tree_Node>();
         if (tn != NULL) {
           if (buddyDocument()->executeConnectSwcNodeCommand(prevNode, tn)) {
             enterSwcSelectMode();
@@ -1873,10 +1891,12 @@ void ZStackPresenter::process(const ZStackOperator &op)
     break;
   case ZStackOperator::OP_PUNCTA_SELECT_SINGLE:
     buddyDocument()->deselectAllPuncta();
-    buddyDocument()->selectPuncta(op.getPunctaIndex());
+    buddyDocument()->setSelected(op.getHitObject<ZPunctum>(), true);
+    //buddyDocument()->selectPuncta(op.getPunctaIndex());
     break;
   case ZStackOperator::OP_PUNCTA_SELECT_MULTIPLE:
-    buddyDocument()->selectPuncta(op.getPunctaIndex());
+    buddyDocument()->setSelected(op.getHitObject<ZPunctum>(), true);
+    //buddyDocument()->selectPuncta(op.getPunctaIndex());
     break;
   case ZStackOperator::OP_SHOW_PUNCTA_MENU:
     if (m_interactiveContext.isContextMenuActivated()) {
@@ -1893,9 +1913,9 @@ void ZStackPresenter::process(const ZStackOperator &op)
     break;
   case ZStackOperator::OP_STROKE_SELECT_SINGLE:
     buddyDocument()->deselectAllObject();
-    if (op.getHitStroke2d() != NULL) {
+    if (op.getHitObject<ZStroke2d>() != NULL) {
       buddyDocument()->setSelected(
-            op.getHitStroke2d(), NeuTube::Documentable_STROKE);
+            op.getHitObject<ZStroke2d>(), NeuTube::Documentable_STROKE);
 //      op.getHitStroke2d()->setSelected(true);
       interactionEvent.setEvent(
             ZInteractionEvent::EVENT_STROKE_SELECTED);
@@ -1903,12 +1923,12 @@ void ZStackPresenter::process(const ZStackOperator &op)
     break;
   case ZStackOperator::OP_OBJECT3D_SELECT_SINGLE:
     buddyDocument()->deselectAllObject();
-    buddyDocument()->setSelected(op.getHitObj3d());
+    buddyDocument()->setSelected(op.getHitObject<ZObject3d>());
     interactionEvent.setEvent(ZInteractionEvent::EVENT_OBJ3D_SELECTED);
     break;
   case ZStackOperator::OP_STROKE_SELECT_MULTIPLE:
-    if (op.getHitStroke2d() != NULL) {
-      op.getHitStroke2d()->setSelected(true);
+    if (op.getHitObject<ZStroke2d>() != NULL) {
+      buddyDocument()->setSelected(op.getHitObject<ZStroke2d>(), true);
       interactionEvent.setEvent(
             ZInteractionEvent::EVENT_STROKE_SELECTED);
     }
@@ -2090,8 +2110,7 @@ void ZStackPresenter::acceptActiveStroke()
   }
 
   newStroke->setZOrder(m_zOrder++);
-  buddyDocument()->executeAddObjectCommand(
-        newStroke, NeuTube::Documentable_STROKE, role);
+  buddyDocument()->executeAddObjectCommand(newStroke, role);
   //buddyDocument()->executeAddStrokeCommand(newStroke);
 
   m_stroke.clear();

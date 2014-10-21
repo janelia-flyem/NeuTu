@@ -43,31 +43,31 @@ TEST(ZStackDoc, Player)
   obj->append(0, 0, 0);
   doc.addObject(obj, NeuTube::Documentable_OBJ3D, ZDocPlayer::ROLE_SEED);
   ASSERT_EQ(1, doc.getPlayerList().size());
-  ASSERT_EQ(1, doc.getObjectList().size());
+  ASSERT_EQ(1, doc.getObjectGroup().size());
 
   doc.addObject(obj, NeuTube::Documentable_OBJ3D, ZDocPlayer::ROLE_NONE);
   ASSERT_EQ(1, doc.getPlayerList().size());
-  ASSERT_EQ(2, doc.getObjectList().size());
+  ASSERT_EQ(2, doc.getObjectGroup().size());
 
   doc.removeObject(ZDocPlayer::ROLE_SEED, false);
   ASSERT_EQ(0, doc.getPlayerList().size());
-  ASSERT_EQ(1, doc.getObjectList().size());
+  ASSERT_EQ(1, doc.getObjectGroup().size());
 
   doc.addObject(obj, NeuTube::Documentable_OBJ3D, ZDocPlayer::ROLE_SEED);
   doc.addObject(obj, NeuTube::Documentable_OBJ3D, ZDocPlayer::ROLE_SEED);
   ASSERT_EQ(2, doc.getPlayerList().size());
-  ASSERT_EQ(3, doc.getObjectList().size());
+  ASSERT_EQ(3, doc.getObjectGroup().size());
 
   doc.removeObject(ZDocPlayer::ROLE_SEED, false);
   ASSERT_EQ(0, doc.getPlayerList().size());
-  ASSERT_EQ(2, doc.getObjectList().size());
+  ASSERT_EQ(2, doc.getObjectGroup().size());
 
   doc.removeAllObject(false);
-  ASSERT_EQ(0, doc.getObjectList().size());
+  ASSERT_EQ(0, doc.getObjectGroup().size());
 
   doc.addObject(obj, NeuTube::Documentable_OBJ3D, ZDocPlayer::ROLE_SEED);
   doc.removeObject(ZDocPlayer::ROLE_SEED, true);
-  ASSERT_EQ(0, doc.getObjectList().size());
+  ASSERT_EQ(0, doc.getObjectGroup().size());
 
   doc.addObject(new ZObject3d, NeuTube::Documentable_OBJ3D,
                 ZDocPlayer::ROLE_DISPLAY);
@@ -78,11 +78,11 @@ TEST(ZStackDoc, Player)
   doc.addObject(new ZObject3d, NeuTube::Documentable_OBJ3D,
                 ZDocPlayer::ROLE_NONE);
   ASSERT_EQ(3, doc.getPlayerList().size());
-  ASSERT_EQ(4, doc.getObjectList().size());
+  ASSERT_EQ(4, doc.getObjectGroup().size());
 
   doc.removeAllObject(true);
   ASSERT_EQ(0, doc.getPlayerList().size());
-  ASSERT_EQ(0, doc.getObjectList().size());
+  ASSERT_EQ(0, doc.getObjectGroup().size());
 
 
   doc.addObject(new ZObject3d, NeuTube::Documentable_OBJ3D,

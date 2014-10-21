@@ -1,6 +1,7 @@
 #include "z3dswcfilter.h"
 
 #include <iostream>
+#include <QSet>
 
 #include "zrandom.h"
 #include "tz_3dgeom.h"
@@ -27,9 +28,9 @@ Z3DSwcFilter::Z3DSwcFilter()
   , m_renderingPrimitive("Geometry")
   , m_colorMode("Color Mode")
   , m_pressedSwc(NULL)
-  , m_selectedSwcs(NULL)
+  //, m_selectedSwcs(NULL)
   , m_pressedSwcTreeNode(NULL)
-  , m_selectedSwcTreeNodes(NULL)
+  //, m_selectedSwcTreeNodes(NULL)
   , m_colorMap("Color Map")
   , m_xCut("X Cut", glm::ivec2(0,0), 0, 0)
   , m_yCut("Y Cut", glm::ivec2(0,0), 0, 0)
@@ -384,26 +385,33 @@ void Z3DSwcFilter::deregisterPickingObjects(Z3DPickingManager *pm)
   m_pickingObjectsRegistered = false;
 }
 
-void Z3DSwcFilter::setData(std::vector<ZSwcTree *> *swcList)
+void Z3DSwcFilter::setData(const std::vector<ZSwcTree *> &swcList)
 {
+  m_origSwcList = swcList;
+#if 0
   m_origSwcList.clear();
   if (swcList) {
     m_origSwcList = *swcList;
     LINFO() << getClassName() << "Read" << m_origSwcList.size() << "swcs.";
   }
+#endif
   getVisibleData();
   m_dataIsInvalid = true;
   invalidateResult();
 }
 
-void Z3DSwcFilter::setData(QList<ZSwcTree *> *swcList)
+void Z3DSwcFilter::setData(const QList<ZSwcTree *> &swcList)
 {
+  m_origSwcList.clear();
+  m_origSwcList.insert(m_origSwcList.begin(), swcList.begin(), swcList.end());
+#if 0
   m_origSwcList.clear();
   if (swcList) {
     for (int i=0; i<swcList->size(); i++)
       m_origSwcList.push_back(swcList->at(i));
     LINFO() << getClassName() << "Read" << m_origSwcList.size() << "swcs.";
   }
+#endif
   getVisibleData();
   m_dataIsInvalid = true;
   invalidateResult();
@@ -690,10 +698,10 @@ void Z3DSwcFilter::addSelectionBox(
 
 void Z3DSwcFilter::renderSelectionBox(Z3DEye eye)
 {
-  if (m_selectedSwcs && m_selectedSwcs->size() > 0) {
+  if (m_selectedSwcs.size() > 0) {
     std::vector<glm::vec3> lines;
-    for (std::set<ZSwcTree*>::iterator it=m_selectedSwcs->begin();
-         it != m_selectedSwcs->end(); it++) {
+    for (std::set<ZSwcTree*>::iterator it=m_selectedSwcs.begin();
+         it != m_selectedSwcs.end(); it++) {
       ZSwcTree *selectedSwc = *it;
       int index = -1;
       for (size_t i = 0; i<m_swcList.size(); i++) {
@@ -767,58 +775,20 @@ void Z3DSwcFilter::renderSelectionBox(Z3DEye eye)
     m_boundBoxRenderer->setData(NULL); // lines will go out of scope
   }
 
-  if (m_selectedSwcTreeNodes && m_selectedSwcTreeNodes->size() > 0) {
-    std::vector<glm::vec3> lines;
-    for (std::set<Swc_Tree_Node*>::iterator it=m_selectedSwcTreeNodes->begin();
-         it != m_selectedSwcTreeNodes->end(); it++) {
+  //QList<Swc_Tree_Node*> nodeList;
+  std::vector<glm::vec3> lines;
+  foreach (ZSwcTree *tree, m_swcList) {
+    const std::set<Swc_Tree_Node*> nodeSet = tree->getSelectedNode();
+    for (std::set<Swc_Tree_Node*>::const_iterator it=nodeSet.begin();
+         it != nodeSet.end(); it++) {
       addSelectionBox(*it, lines);
-#if 0
-      Swc_Tree_Node *selectedSwcTreeNode = *it;
-
-      float radius = selectedSwcTreeNode->node.d * m_rendererBase->getSizeScale();
-      float xmin = selectedSwcTreeNode->node.x * getCoordScales().x - radius;
-      float xmax = selectedSwcTreeNode->node.x * getCoordScales().x + radius;
-      float ymin = selectedSwcTreeNode->node.y * getCoordScales().y - radius;
-      float ymax = selectedSwcTreeNode->node.y * getCoordScales().y + radius;
-      float zmin = selectedSwcTreeNode->node.z * getCoordScales().z - radius;
-      float zmax = selectedSwcTreeNode->node.z * getCoordScales().z + radius;
-      lines.push_back(glm::vec3(xmin, ymin, zmin));
-      lines.push_back(glm::vec3(xmin, ymin, zmax));
-      lines.push_back(glm::vec3(xmin, ymax, zmin));
-      lines.push_back(glm::vec3(xmin, ymax, zmax));
-
-      lines.push_back(glm::vec3(xmax, ymin, zmin));
-      lines.push_back(glm::vec3(xmax, ymin, zmax));
-      lines.push_back(glm::vec3(xmax, ymax, zmin));
-      lines.push_back(glm::vec3(xmax, ymax, zmax));
-
-      lines.push_back(glm::vec3(xmin, ymin, zmin));
-      lines.push_back(glm::vec3(xmax, ymin, zmin));
-      lines.push_back(glm::vec3(xmin, ymax, zmin));
-      lines.push_back(glm::vec3(xmax, ymax, zmin));
-
-      lines.push_back(glm::vec3(xmin, ymin, zmax));
-      lines.push_back(glm::vec3(xmax, ymin, zmax));
-      lines.push_back(glm::vec3(xmin, ymax, zmax));
-      lines.push_back(glm::vec3(xmax, ymax, zmax));
-
-      lines.push_back(glm::vec3(xmin, ymin, zmin));
-      lines.push_back(glm::vec3(xmin, ymax, zmin));
-      lines.push_back(glm::vec3(xmax, ymin, zmin));
-      lines.push_back(glm::vec3(xmax, ymax, zmin));
-
-      lines.push_back(glm::vec3(xmin, ymin, zmax));
-      lines.push_back(glm::vec3(xmin, ymax, zmax));
-      lines.push_back(glm::vec3(xmax, ymin, zmax));
-      lines.push_back(glm::vec3(xmax, ymax, zmax));
-#endif
     }
-
-    m_rendererBase->activateRenderer(m_boundBoxRenderer);
-    m_boundBoxRenderer->setData(&lines);
-    m_rendererBase->render(eye);
-    m_boundBoxRenderer->setData(NULL); // lines will go out of scope
   }
+
+  m_rendererBase->activateRenderer(m_boundBoxRenderer);
+  m_boundBoxRenderer->setData(&lines);
+  m_rendererBase->render(eye);
+  m_boundBoxRenderer->setData(NULL); // lines will go out of scope
 }
 
 void Z3DSwcFilter::prepareData()
@@ -1667,4 +1637,12 @@ void Z3DSwcFilter::deinitialize()
 void Z3DSwcFilter::setColorMode(const std::string &mode)
 {
   m_colorMode.select(mode.c_str());
+}
+
+void Z3DSwcFilter::setSelectedSwcs(const QSet<ZStackObject *> &selectedSwc)
+{
+  for (QSet<ZStackObject *>::const_iterator iter = selectedSwc.begin();
+       iter != selectedSwc.end(); ++iter) {
+    m_selectedSwcs.insert(dynamic_cast<ZSwcTree*>(*iter));
+  }
 }

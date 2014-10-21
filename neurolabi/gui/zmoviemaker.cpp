@@ -334,7 +334,7 @@ ZStackDoc* ZMovieMaker::getAcademy()
 
 void ZMovieMaker::printSummary()
 {
-  cout << "Academy: " << getAcademy()->toString().toStdString();
+  //cout << "Academy: " << getAcademy()->toString().toStdString();
   cout << "Stage: " << m_stage << endl;
 
   cout << m_cast.size() << " actors";

@@ -744,7 +744,7 @@ void ZStackView::updateImageScreen()
       }
 
       //For special handling
-      m_paintBundle.setSwcNodeList(buddyDocument()->selectedSwcTreeNodes());
+      //m_paintBundle.setSwcNodeList(buddyDocument()->selectedSwcTreeNodes());
     }
   }
   // active deco

@@ -7,6 +7,7 @@
 class ZMouseEventRecorder;
 class ZStroke2d;
 class ZObject3d;
+class ZStackObject;
 
 class ZStackOperator
 {
@@ -60,10 +61,23 @@ public:
     m_mouseEventRecorder = recorder;
   }
 
+  /*
   inline Swc_Tree_Node* getHitSwcNode() const {
     return m_hitNode;
   }
+*/
+  inline ZStackObject *getHitObject() const
+  {
+    return m_hitObject;
+  }
 
+  template <typename T>
+  T* getHitObject() const;
+
+//  ZStackObject* getHitObject() const {
+//    return m_hitObject;
+//  }
+/*
   inline ZStroke2d* getHitStroke2d() const {
     return m_hitStroke;
   }
@@ -71,11 +85,17 @@ public:
   inline ZObject3d* getHitObj3d() const {
     return m_hitObj3d;
   }
-
+*/
+  /*
   inline void setHitSwcNode(Swc_Tree_Node *tn) {
     m_hitNode = tn;
   }
+*/
+  inline void setHitObject(ZStackObject *obj) {
+    m_hitObject = obj;
+  }
 
+  /*
   inline void setHitStroke2d(ZStroke2d *stroke) {
     m_hitStroke = stroke;
   }
@@ -88,7 +108,7 @@ public:
   inline void setHitPuncta(int index) {
     m_punctaIndex = index;
   }
-
+*/
   inline int getPunctaIndex() const {
     return m_punctaIndex;
   }
@@ -110,12 +130,23 @@ public:
 
 private:
   EOperation m_op;
-  Swc_Tree_Node *m_hitNode;
-  ZStroke2d *m_hitStroke;
-  ZObject3d *m_hitObj3d;
+  //Swc_Tree_Node *m_hitNode;
+  ZStackObject *m_hitObject;
+//  ZStroke2d *m_hitStroke;
+//  ZObject3d *m_hitObj3d;
   int m_punctaIndex;
   bool m_togglingStrokeLabel;
   const ZMouseEventRecorder *m_mouseEventRecorder;
 };
+
+template<>
+Swc_Tree_Node* ZStackOperator::getHitObject<Swc_Tree_Node>() const;
+
+template <typename T>
+T* ZStackOperator::getHitObject() const
+{
+  return dynamic_cast<T*>(m_hitObject);
+}
+
 
 #endif // ZSTACKOPERATOR_H

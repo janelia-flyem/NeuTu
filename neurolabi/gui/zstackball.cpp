@@ -302,4 +302,20 @@ void ZStackBall::scale(double sx, double sy, double sz)
   m_r *= sqrt(sx * sy);
 }
 
+bool ZStackBall::hit(double x, double y, double z)
+{
+  return m_center.distanceTo(x, y, z) <= m_r;
+}
+
+bool ZStackBall::hit(double x, double y)
+{
+  double dx = x - m_center.x();
+  double dy = y = m_center.y();
+
+  double d2 = dx * dx * dy * dy;
+
+  return d2 <= m_r * m_r;
+}
+
+
 ZSTACKOBJECT_DEFINE_CLASS_NAME(ZStackBall)

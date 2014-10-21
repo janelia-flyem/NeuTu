@@ -41,6 +41,8 @@
 #include "zneurontracer.h"
 #include "zdocplayer.h"
 #include "z3dgraph.h"
+#include "zstackobjectgroup.h"
+#include "tz_error.h"
 
 class ZStackFrame;
 class ZLocalNeuroseg;
@@ -139,6 +141,7 @@ public: //attributes
   bool hasObject();
   // hasSwc() returns true iff it has an SWC object.
   bool hasSwc() const;
+  bool hasPuncta() const;
   // hasDrawable() returns true iff it has a drawable object.
   bool hasDrawable();
   bool hasSparseObject();
@@ -146,6 +149,7 @@ public: //attributes
 
   bool hasSelectedSwc() const;
   bool hasSelectedSwcNode() const;
+  int getSelectedSwcNodeNumber() const;
   bool hasMultipleSelectedSwcNode() const;
 
   int stackWidth() const;
@@ -191,25 +195,44 @@ public: //attributes
   // Prefix for tracing project.
   const char *tubePrefix() const;
 
-  inline QList<ZStackObject*>* drawableList() { return &m_objectList; }
+  inline QList<ZStackObject*>* drawableList() {
+    return &m_objectGroup;
+  }
 
-  inline QList<ZSwcTree*>* swcList() {return &m_swcList;}
+//  inline QList<ZSwcTree*>* swcList();
+
+  QList<ZSwcTree*> getSwcList() const;
+  QList<ZObject3d*> getObj3dList() const;
+  QList<ZStroke2d*> getStrokeList() const;
+  QList<ZLocsegChain*> getLocsegChainList() const;
+  QList<ZPunctum*> getPunctumList() const;
+  QList<ZSparseObject*> getSparseObjectList() const;
+
   bool hasSwcList();       //to test swctree
-  inline QList<ZLocsegChain*>* chainList() {return &m_chainList;}
-  inline QList<ZPunctum*>* punctaList() {return &m_punctaList;}
+  //inline QList<ZLocsegChain*>* chainList() {return &m_chainList;}
+  //inline QList<ZPunctum*>* punctaList() {return &m_punctaList;}
   inline ZSwcObjsModel* swcObjsModel() {return m_swcObjsModel;}
   inline ZDocPlayerObjsModel* seedObjsModel() { return m_seedObjsModel; }
   inline ZSwcNodeObjsModel* swcNodeObjsModel() {return m_swcNodeObjsModel;}
   inline ZPunctaObjsModel* punctaObjsModel() {return m_punctaObjsModel;}
-  inline std::set<ZPunctum*>* selectedPuncta() {return &m_selectedPuncta;}
-  inline std::set<ZLocsegChain*>* selectedChains() {return &m_selectedChains;}
-  inline std::set<ZSwcTree*>* selectedSwcs() {return &m_selectedSwcs;}
-  inline const std::set<ZSwcTree*>* selectedSwcs() const {
-    return &m_selectedSwcs;}
+//  inline std::set<ZPunctum*>* selectedPuncta() {return &m_selectedPuncta;}
+//  inline std::set<ZLocsegChain*>* selectedChains() {return &m_selectedChains;}
+//  inline std::set<ZSwcTree*>* selectedSwcs() {return &m_selectedSwcs;}
+//  inline const std::set<ZSwcTree*>* selectedSwcs() const {
+//    return &m_selectedSwcs;}
+
+  std::set<Swc_Tree_Node*> getSelectedSwcTreeSet() const;
+  static QList<Swc_Tree_Node*> getSelectedSwcNodeList(
+      const ZSwcTree *tree);
+  QList<Swc_Tree_Node*> getSelectedSwcNodeList() const;
+  std::set<Swc_Tree_Node*> getSelectedSwcNodeSet() const;
+
+#if 0
   inline std::set<Swc_Tree_Node*>* selectedSwcTreeNodes() {
     return &m_selectedSwcTreeNodes;}
   inline const std::set<Swc_Tree_Node*>* selectedSwcTreeNodes() const {
     return &m_selectedSwcTreeNodes;}
+#endif
 
   /*
   inline std::set<ZStroke2d*>* selectedStrokeList() {
@@ -309,7 +332,7 @@ public:
   void exportObjectMask(const std::string &filePath);
 
   //Those functions do not notify object modification
-  void removeLastObject(bool deleteObject = false);
+  //void removeLastObject(bool deleteObject = false);
   void removeAllObject(bool deleteObject = true);
   ZDocPlayer::TRole removeObject(ZStackObject *obj, bool deleteObject = false);
   void removeSelectedObject(bool deleteObject = false);
@@ -319,16 +342,16 @@ public:
 
   void removeSelectedPuncta(bool deleteObject = false);
   void removeSmallLocsegChain(double thre);   //remove small locseg chain (geolen < thre)
-  void removeAllLocsegChain();
-  void removeAllObj3d();
-  void removeAllSparseObject();
+  //void removeAllLocsegChain();
+  //void removeAllObj3d();
+  //void removeAllSparseObject();
   std::set<ZSwcTree*> removeEmptySwcTree(bool deleteObject = true);
   void removeAllSwcTree(bool deleteObject = true);
 
-  void addObject(ZStackObject *obj);
+  //void addObject(ZStackObject *obj);
   void appendSwcNetwork(ZSwcNetwork &network);
 
-  QString toString();
+  //QString toString();
   QStringList toStringList() const;
   virtual QString dataInfo(double cx, double cy, int z) const;
 
@@ -387,7 +410,9 @@ public: /* puncta related methods */
   bool shrinkSelectedPuncta();
   bool meanshiftSelectedPuncta();
   bool meanshiftAllPuncta();
-  inline bool hasSelectedPuncta() {return !m_selectedPuncta.empty();}
+  inline bool hasSelectedPuncta() {
+    return m_objectGroup.hasSelected(ZStackObject::TYPE_PUNCTUM);
+  }
 
   void addLocsegChain(ZLocsegChain *chain);
   void addLocsegChain(const QList<ZLocsegChain*> &chainList);
@@ -407,23 +432,23 @@ public: /* puncta related methods */
   /*!
    * \brief Add an object
    * \param obj
-   * \param type
    * \param role
    * \param uniqueSource Replace the object with the same nonempty source if it
    *        is true. Note that if there are multiple objects with the same source
    *        existing in the doc, only the first one is replaced.
    */
-  void addObject(ZStackObject *obj, NeuTube::EDocumentableType type,
-                 ZDocPlayer::TRole role = ZDocPlayer::ROLE_NONE,
-                 bool uniqueSource = false);
+  void addObject(
+      ZStackObject *obj, ZDocPlayer::TRole role = ZDocPlayer::ROLE_NONE,
+      bool uniqueSource = true);
 
   /*!
    * \brief Add a palyer
    *
    * Nothing will be done if \a role is ZDocPlayer::ROLE_NONE.
    */
-  void addPlayer(ZStackObject *obj, NeuTube::EDocumentableType type,
-                 ZDocPlayer::TRole role);
+//  void addPlayer(ZStackObject *obj, NeuTube::EDocumentableType type,
+//                 ZDocPlayer::TRole role);
+  void addPlayer(ZStackObject *obj, ZDocPlayer::TRole role);
 
   void updateLocsegChain(ZLocsegChain *chain);
   void importLocsegChain(const QStringList &files,
@@ -456,7 +481,25 @@ public: /* puncta related methods */
   Swc_Tree_Node *swcHitTest(const ZPoint &pt) const;
   Swc_Tree_Node *selectSwcTreeNode(int x, int y, int z, bool append = false);
   Swc_Tree_Node *selectSwcTreeNode(const ZPoint &pt, bool append = false);
+
+  /*!
+   * \brief Selecte swc tree node
+   *
+   * \a tn must be a part of \a tree if is not NULL. The function does not check
+   * the validity.
+   */
+  void selectSwcTreeNode(ZSwcTree *tree, Swc_Tree_Node *tn, bool append = false);
+  void deselectSwcTreeNode(ZSwcTree *tree, Swc_Tree_Node *tn);
+
   void selectSwcTreeNode(Swc_Tree_Node *tn, bool append = false);
+  void deselectSwcTreeNode(Swc_Tree_Node *tn);
+
+
+  void selectHitSwcTreeNode(ZSwcTree *tree, bool append = false);
+  void deselectHitSwcTreeNode(ZSwcTree *tree);
+
+  void selectHitSwcTreeNodeConnection(ZSwcTree *tree);
+  void selectHitSwcTreeNodeFloodFilling(ZSwcTree *tree);
 
   // (de)select objects and emit signals for 3D view and 2D view to sync
   void setPunctumSelected(ZPunctum* punctum, bool select);
@@ -476,6 +519,8 @@ public: /* puncta related methods */
   void setSwcTreeNodeSelected(InputIterator first, InputIterator last, bool select);
   void deselectAllSwcTreeNodes();
   void deselectAllObject();
+
+  bool isSwcNodeSelected(const Swc_Tree_Node *tn) const;
 
   // show/hide objects and emit signals for 3D view and 2D view to sync
   void setPunctumVisible(ZPunctum* punctum, bool visible);
@@ -507,8 +552,8 @@ public: /* puncta related methods */
 
   //void extendChain(double x, double y, double z);
 
-  ZStackObject *bringChainToFront();
-  ZStackObject* sendChainToBack();
+  //ZStackObject *bringChainToFront();
+  //ZStackObject* sendChainToBack();
   //void refineSelectedChainEnd();
   //void refineLocsegChainEnd();
   void mergeAllChain();
@@ -543,39 +588,60 @@ public: /* puncta related methods */
 
   bool hasObjectSelected();
 
-  inline const QList<ZStackObject*>& getObjectList() const { return m_objectList; }
-  inline QList<ZStackObject*>& getObjectList() { return m_objectList; }
+  inline const ZStackObjectGroup& getObjectGroup() const {
+    return m_objectGroup; }
+  inline ZStackObjectGroup& getObjectGroup() {
+    return m_objectGroup; }
 
-  inline const QList<ZObject3d*>& getObj3dList() const { return m_obj3dList; }
-  inline QList<ZObject3d*>& getObj3dList() { return m_obj3dList; }
+  inline const TStackObjectList& getObjectList(ZStackObject::EType type)
+  const
+  {
+    return m_objectGroup.getObjectList(type);
+  }
 
-  inline const QList<ZLocsegChain*>& getChainList() const { return m_chainList; }
-  inline QList<ZLocsegChain*>& getChainList() { return m_chainList; }
+  inline TStackObjectList& getObjectList(ZStackObject::EType type) {
+    return m_objectGroup.getObjectList(type);
+  }
 
-  inline const QList<ZPunctum*>& getPunctaList() const { return m_punctaList; }
-  inline QList<ZPunctum*>& getPunctaList() { return m_punctaList; }
+  //inline QList<ZStackObject*>& getObjectList() { return m_objectList; }
 
-  inline const QList<ZStroke2d*>& getStrokeList() const { return m_strokeList; }
-  inline QList<ZStroke2d*>& getStrokeList() { return m_strokeList; }
+  //inline const QList<ZObject3d*>& getObj3dList();
+  //inline QList<ZObject3d*>& getObj3dList() { return m_obj3dList; }
 
-  inline const QList<ZSparseObject*>& getSparseObjectList() const {
-    return m_sparseObjectList; }
+  //inline const QList<ZLocsegChain*>& getChainList() const;
+  //inline QList<ZLocsegChain*>& getChainList() { return m_chainList; }
+
+  //inline const QList<ZPunctum*>& getPunctaList() const;
+  //inline QList<ZPunctum*>& getPunctaList() { return m_punctaList; }
+
+   //const QList<ZStroke2d*>& getStrokeList() const;
+  //inline QList<ZStroke2d*>& getStrokeList() { return m_strokeList; }
+
+  /*
   inline QList<ZSparseObject*>& getSparseObjectList() {
     return m_sparseObjectList; }
-
-  inline const QList<ZSwcTree*>& getSwcList() const { return m_swcList; }
-  inline QList<ZSwcTree*>& getSwcList() { return m_swcList; }
-  inline ZSwcTree* getSwcTree(size_t index) {
+*/
+  //inline const QList<ZSwcTree*>& getSwcList() const { return m_swcList; }
+  //inline QList<ZSwcTree*>& getSwcList() { return m_swcList; }
+  ZSwcTree* getSwcTree(size_t index);
+/*{
     if ((int) index >= m_swcList.size()) return NULL;
     return m_swcList[index]; }
+*/
+
+  /*
   QList<ZSwcTree*>::iterator getSwcIteratorBegin() { return m_swcList.begin(); }
   QList<ZSwcTree*>::iterator getSwcIteratorEnd() { return m_swcList.end(); }
   QList<ZSwcTree*>::const_iterator getSwcIteratorBegin() const {
     return m_swcList.begin(); }
   QList<ZSwcTree*>::const_iterator getSwcIteratorEnd() const {
     return m_swcList.end(); }
-
+*/
   inline const ZDocPlayerList& getPlayerList() const {
+    return m_playerList;
+  }
+
+  inline ZDocPlayerList& getPlayerList() {
     return m_playerList;
   }
 
@@ -603,8 +669,18 @@ public: /* puncta related methods */
   ZSwcTree *getMergedSwc();
 
   void setSelected(ZStackObject *obj,  bool selecting = true);
-  const std::set<ZStackObject*>& getSelected(ZStackObject::EType type) const;
-  std::set<ZStackObject*>& getSelected(ZStackObject::EType type);
+  const TStackObjectSet& getSelected(ZStackObject::EType type) const;
+  TStackObjectSet &getSelected(ZStackObject::EType type);
+
+  template <typename T>
+  QList<T*> getSelectedObjectList(ZStackObject::EType type) const;
+
+  /*
+  template <typename T, template <typename> class Cont>
+  Cont<T*> getSelectedObjectSet(ZStackObject::EType type) const;
+*/
+  template <typename T>
+  std::set<T*> getSelectedObjectSet(ZStackObject::EType type) const;
 
   void clearSelectedSet();
 
@@ -642,6 +718,7 @@ public:
   void updatePreviewSwc();
   */
   void notifyObjectModified();
+  void notifyObjectModified(ZStackObject::EType type);
 
   /*!
    * \brief Notify any connect slots about the modification of SWC objects
@@ -662,6 +739,9 @@ public:
   void notify3DGraphModified();
   void notifyStatusMessageUpdated(const QString &message);
 
+  void notifySelectionAdded(const std::set<Swc_Tree_Node*> &oldSelected,
+                            const std::set<Swc_Tree_Node*> &newSelected);
+
 public:
   inline QAction* getUndoAction() { return m_undoAction; }
   inline QAction* getRedoAction() { return m_redoAction; }
@@ -680,8 +760,16 @@ public:
 
   void notifyPlayerChanged(ZDocPlayer::TRole role);
 
+  inline void setLastAddedSwcNode(Swc_Tree_Node *tn) {
+    m_lastAddedSwcNode = tn;
+  }
+
+  inline Swc_Tree_Node* getLastAddedSwcNode() const {
+    return m_lastAddedSwcNode;
+  }
+
 public slots: //undoable commands
-  bool executeAddObjectCommand(ZStackObject *obj, NeuTube::EDocumentableType type,
+  bool executeAddObjectCommand(ZStackObject *obj,
       ZDocPlayer::TRole role = ZDocPlayer::ROLE_NONE);
   bool executeRemoveSelectedObjectCommand();
   //bool executeRemoveUnselectedObjectCommand();
@@ -775,6 +863,7 @@ public slots:
   void showSeletedSwcNodeScaledLength();
   void showSwcSummary();
 
+  void setPunctaVisible(bool visible);
   void hideSelectedPuncta();
   void showSelectedPuncta();
 
@@ -815,7 +904,7 @@ signals:
                            QList<ZSwcTree*> deselected);
   void swcTreeNodeSelectionChanged(QList<Swc_Tree_Node*> selected,
                                    QList<Swc_Tree_Node*> deselected);
-  void punctumVisibleStateChanged(ZPunctum* punctum, bool visible);
+  void punctumVisibleStateChanged();
   void chainVisibleStateChanged(ZLocsegChain* chain, bool visible);
   void swcVisibleStateChanged(ZSwcTree* swctree, bool visible);
   void cleanChanged(bool);
@@ -840,19 +929,22 @@ private:
   ResolutionDialog* getResolutionDialog();
   void updateWatershedBoundaryObject(ZStack *out, ZIntPoint dsIntv);
 
+  static void expandSwcNodeList(QList<Swc_Tree_Node*> *swcList,
+                                const std::set<Swc_Tree_Node*> &swcSet);
+  static void expandSwcNodeList(QList<Swc_Tree_Node*> *swcList,
+                                const std::set<Swc_Tree_Node*> &swcSet,
+                                const Swc_Tree_Node *excluded);
 
 private:
   //Main stack
   ZStack *m_stack;
   ZSparseStack *m_sparseStack; //Serve as main data when m_stack is virtual.
-
-
   //Concrete objects
-  QList<ZSwcTree*> m_swcList;
-  QList<ZPunctum*> m_punctaList;
-  QList<ZStroke2d*> m_strokeList;
-  QList<ZObject3d*> m_obj3dList;
-  QList<ZSparseObject*> m_sparseObjectList;
+//  QList<ZSwcTree*> m_swcList;
+//  QList<ZPunctum*> m_punctaList;
+//  QList<ZStroke2d*> m_strokeList;
+//  QList<ZObject3d*> m_obj3dList;
+//  QList<ZSparseObject*> m_sparseObjectList;
 
   ZDocPlayerList m_playerList;
 
@@ -860,15 +952,18 @@ private:
   ZSwcNetwork *m_swcNetwork;
 
   //Roles
-  QList<ZStackObject*> m_objectList;
+  //QList<ZStackObject*> m_objectList;
+
+  ZStackObjectGroup m_objectGroup;
 
   //Subset of selected objects
-  std::set<ZPunctum*> m_selectedPuncta;
-  std::set<ZSwcTree*> m_selectedSwcs;
-  std::set<Swc_Tree_Node*> m_selectedSwcTreeNodes;
+  //std::set<ZPunctum*> m_selectedPuncta;
+  //std::set<ZSwcTree*> m_selectedSwcs;
+  //std::set<Swc_Tree_Node*> m_selectedSwcTreeNodes;
+  Swc_Tree_Node *m_lastAddedSwcNode;
   //std::set<ZStroke2d*> m_selectedStroke;
 
-  QMap<ZStackObject::EType, std::set<ZStackObject*> > m_selectedObjectMap;
+  //QMap<ZStackObject::EType, std::set<ZStackObject*> > m_selectedObjectMap;
 
   //model-view structure for obj list and edit
   ZSwcObjsModel *m_swcObjsModel;
@@ -906,8 +1001,8 @@ private:
   ZSingleSwcNodeActionActivator m_singleSwcNodeActionActivator;
 
   //obsolete fields
-  QList<ZLocsegChain*> m_chainList;
-  std::set<ZLocsegChain*> m_selectedChains;
+  //QList<ZLocsegChain*> m_chainList;
+  //std::set<ZLocsegChain*> m_selectedChains;
   //ZLocsegChain *m_masterChain;
   QString m_badChainScreen;
 
@@ -928,11 +1023,12 @@ void ZStackDoc::setPunctumSelected(InputIterator first, InputIterator last, bool
     ZPunctum *punctum = *it;
     if (punctum->isSelected() != select) {
       punctum->setSelected(select);
+      m_objectGroup.setSelected(punctum, select);
       if (select) {
-        m_selectedPuncta.insert(punctum);
+        //m_selectedPuncta.insert(punctum);
         selected.push_back(punctum);
       } else {
-        m_selectedPuncta.erase(punctum);
+        //m_selectedPuncta.erase(punctum);
         deselected.push_back(punctum);
       }
     }
@@ -947,27 +1043,41 @@ void ZStackDoc::setSwcSelected(InputIterator first, InputIterator last, bool sel
 {
   QList<ZSwcTree*> selected;
   QList<ZSwcTree*> deselected;
-  std::vector<Swc_Tree_Node *> tns;
+
+  QList<Swc_Tree_Node *> tns;
   for (InputIterator it = first; it != last; ++it) {
     ZSwcTree *tree = *it;
     if (tree->isSelected() != select) {
-      tree->setSelected(select);
+      m_objectGroup.setSelected(tree, select);
       if (select) {
-        m_selectedSwcs.insert(tree);
-        selected.push_back(tree);
+        selected.append(tree);
+
         // deselect its nodes
+        if (tree->hasSelectedNode()) {
+          for (std::set<Swc_Tree_Node*>::const_iterator
+               iter = tree->getSelectedNode().begin();
+               iter != tree->getSelectedNode().end(); ++iter) {
+            Swc_Tree_Node* tn = const_cast<Swc_Tree_Node*>(*iter);
+            tns.append(tn);
+          }
+          tree->deselectAllNode();
+        }
+        /*
         for (std::set<Swc_Tree_Node*>::iterator it = m_selectedSwcTreeNodes.begin();
              it != m_selectedSwcTreeNodes.end(); ++it) {
           if (tree == nodeToSwcTree(*it))
             tns.push_back(*it);
         }
+        */
       } else {
-        m_selectedSwcs.erase(tree);
         deselected.push_back(tree);
       }
     }
   }
-  setSwcTreeNodeSelected(tns.begin(), tns.end(), false);
+  //setSwcTreeNodeSelected(tns.begin(), tns.end(), false);
+  if (!tns.empty()) {
+    emit swcTreeNodeSelectionChanged(QList<Swc_Tree_Node*>(), tns);
+  }
   if (!selected.empty() || !deselected.empty()) {
     emit swcSelectionChanged(selected, deselected);
   }
@@ -975,8 +1085,9 @@ void ZStackDoc::setSwcSelected(InputIterator first, InputIterator last, bool sel
 
 template <class InputIterator>
 void ZStackDoc::setSwcTreeNodeSelected(
-    InputIterator first, InputIterator last, bool select)
+    InputIterator /*first*/, InputIterator /*last*/, bool /*select*/)
 {
+#if 0
   QList<Swc_Tree_Node*> selected;
   QList<Swc_Tree_Node*> deselected;
 
@@ -997,8 +1108,48 @@ void ZStackDoc::setSwcTreeNodeSelected(
   if (!selected.empty() || !deselected.empty()) {
     emit swcTreeNodeSelectionChanged(selected, deselected);
   }
+#endif
 }
 
+template <typename T>
+QList<T*> ZStackDoc::getSelectedObjectList(ZStackObject::EType type) const
+{
+  QList<T*> objList;
+  TStackObjectSet& objSet = const_cast<TStackObjectSet&>(getSelected(type));
+
+  for (TStackObjectSet::const_iterator iter = objSet.begin();
+       iter != objSet.end(); ++iter) {
+    T *obj = dynamic_cast<T*>(*iter);
+    TZ_ASSERT(obj != NULL, "Unmatched type");
+    if (obj != NULL) {
+      objList.append(obj);
+    }
+  }
+
+  return objList;
+}
+
+template <typename T>
+std::set<T*> ZStackDoc::getSelectedObjectSet(ZStackObject::EType type) const
+{
+  std::set<T*> objList;
+  TStackObjectSet& objSet = const_cast<TStackObjectSet&>(getSelected(type));
+
+  for (TStackObjectSet::const_iterator iter = objSet.begin();
+       iter != objSet.end(); ++iter) {
+    T *obj = dynamic_cast<T*>(*iter);
+    TZ_ASSERT(obj != NULL, "Unmatched type");
+    if (obj != NULL) {
+      objList.insert(obj);
+    }
+  }
+
+  return objList;
+}
+
+////////////////////////////////////////////////////
+/// \brief The ZStackDocReader class
+///
 class ZStackDocReader {
 public:
   ZStackDocReader();
@@ -1015,6 +1166,11 @@ public:
   inline ZStack* getStack() const { return m_stack; }
   inline ZSparseStack* getSparseStack() const { return m_sparseStack; }
   inline const ZStackFile& getStackSource() const { return m_stackSource; }
+
+  inline const ZStackObjectGroup& getObjectGroup() const {
+    return m_objectGroup;
+  }
+  /*
   inline const QList<ZSwcTree*>& getSwcList() const { return m_swcList; }
   inline const QList<ZPunctum*>& getPunctaList() const { return m_punctaList; }
   inline const QList<ZStroke2d*>& getStrokeList() const { return m_strokeList; }
@@ -1022,6 +1178,9 @@ public:
   inline const QList<ZLocsegChain*>& getChainList() const { return m_chainList; }
   inline const QList<ZSparseObject*>& getSparseObjectList() const {
     return m_sparseObjectList; }
+
+      */
+
   inline const ZDocPlayerList& getPlayerList() const {
     return m_playerList;
   }
@@ -1031,21 +1190,32 @@ public:
     return m_filePath;
   }
 
-  void addPlayer(ZStackObject *obj, NeuTube::EDocumentableType type,
-                 ZDocPlayer::TRole role);
+  //void addPlayer(ZStackObject *obj, NeuTube::EDocumentableType type,
+  //               ZDocPlayer::TRole role);
+  void addPlayer(ZStackObject *obj, ZDocPlayer::TRole role);
+#if 0
   void addObject(ZStackObject *obj, NeuTube::EDocumentableType type,
                  ZDocPlayer::TRole role = ZDocPlayer::ROLE_NONE);
+#endif
+  void addObject(
+      ZStackObject *obj, ZDocPlayer::TRole role = ZDocPlayer::ROLE_NONE,
+      bool uniqueSource = true);
 
 public:
+  /*
   void addSwcTree(ZSwcTree *tree);
   void addLocsegChain(ZLocsegChain *chain);
   void addPunctum(ZPunctum *p);
-  void setStack(ZStack *stack);
-  void setStackSource(const ZStackFile &stackFile);
   void addStroke(ZStroke2d *stroke);
   void addSparseObject(ZSparseObject *obj);
-  void setSparseStack(ZSparseStack *spStack);
   void addObj3d(ZObject3d *obj);
+*/
+  void setStack(ZStack *stack);
+  void setStackSource(const ZStackFile &stackFile);
+
+
+  void setSparseStack(ZSparseStack *spStack);
+
 
   /*
   class ZStackObjectWithRole {
@@ -1072,8 +1242,9 @@ private:
   QList<ZSparseObject*> m_sparseObjectList;
   QList<ZLocsegChain*> m_chainList;
 
-  ZDocPlayerList m_playerList;
+  ZStackObjectGroup m_objectGroup;
 
+  ZDocPlayerList m_playerList;
 
   //Special object
   ZSwcNetwork *m_swcNetwork;

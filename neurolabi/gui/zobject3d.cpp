@@ -26,12 +26,7 @@ ZObject3d::ZObject3d(Object_3d *obj) : m_conn(0), m_label(-1)
     }
   }
 
-#if _QT_GUI_USED_
-  m_color.setRed(100);
-  m_color.setGreen(200);
-  m_color.setBlue(0);
-  m_color.setAlpha(100);
-#endif
+  setTarget(OBJECT_CANVAS);
 }
 
 ZObject3d::ZObject3d(const vector<size_t> &indexArray, int width, int height,
@@ -44,6 +39,8 @@ ZObject3d::ZObject3d(const vector<size_t> &indexArray, int width, int height,
        iter != indexArray.end(); ++iter, ++i) {
     set(i, *iter, width, height, dx, dy, dz);
   }
+
+  setTarget(OBJECT_CANVAS);
 }
 
 ZObject3d::~ZObject3d()

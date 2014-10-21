@@ -19,9 +19,25 @@
 
 #include "zswctree.h"
 
+ZEditSwcDialog::ZEditSwcDialog(QWidget *parent) : QDialog(parent)
+{
+  _init();
+}
 
-ZEditSwcDialog::ZEditSwcDialog(QWidget *parent, QList<ZSwcTree*> *swcTreeList) :
+
+ZEditSwcDialog::ZEditSwcDialog(
+    QWidget *parent, const QList<ZSwcTree *> &swcTreeList) :
     QDialog(parent), m_swcTreeList(swcTreeList)
+{
+  _init();
+}
+
+ZEditSwcDialog::~ZEditSwcDialog()
+{
+
+}
+
+void ZEditSwcDialog::_init()
 {
   m_inputFileEdit = new QLineEdit;
   m_inputFileEdit->setReadOnly(true);
@@ -81,17 +97,12 @@ ZEditSwcDialog::ZEditSwcDialog(QWidget *parent, QList<ZSwcTree*> *swcTreeList) :
   setWindowTitle(tr("Edit Swc"));
 }
 
-ZEditSwcDialog::~ZEditSwcDialog()
-{
-
-}
-
 void ZEditSwcDialog::createInputGroupBox()
 {
   m_inputGroupBox = new QGroupBox(tr("Input"), this);
   QVBoxLayout *layout = new QVBoxLayout;
   QHBoxLayout *hlayout = new QHBoxLayout;
-  if (m_swcTreeList == NULL) {
+  if (m_swcTreeList.empty()) {
     hlayout->addWidget(new QLabel(tr("Input File:"), this));
     hlayout->addWidget(m_inputFileEdit);
     hlayout->addWidget(m_selectInputFileButton);
@@ -858,7 +869,7 @@ void ZEditSwcDialog::runOperations()
 {
   QString inputFileName = m_inputFileEdit->text();
   QString outputFileName = m_outputFileEdit->text();
-  if (m_swcTreeList != NULL) {
+  if (m_swcTreeList.isEmpty()) {
     if (m_useOtherFileButton->isChecked() && inputFileName.isEmpty()) {
       return;
     }
@@ -893,8 +904,8 @@ void ZEditSwcDialog::runOperations()
   }
 
   Swc_Tree *tree;
-  if (m_swcTreeList != NULL && m_useCurrentSwcButton->isChecked()) {
-    tree = m_swcTreeList->value(m_swcTreeList->size()-1)->cloneData();   //take last one as input
+  if (!m_swcTreeList.isEmpty() && m_useCurrentSwcButton->isChecked()) {
+    tree = m_swcTreeList.value(m_swcTreeList.size()-1)->cloneData();   //take last one as input
   } else {
     tree = Read_Swc_Tree(filepath);
   }

@@ -31,14 +31,12 @@ public:
   explicit Z3DSwcFilter();
   virtual ~Z3DSwcFilter();
 
-  void setData(std::vector<ZSwcTree*> *swcList);
-  void setData(QList<ZSwcTree*> *swcList);
-  inline void setSelectedSwcs(std::set<ZSwcTree*> *list) {
-    m_selectedSwcs = list;
-  }
-  inline void setSelectedSwcTreeNodes(std::set<Swc_Tree_Node*> *list) {
-    m_selectedSwcTreeNodes = list;
-  }
+  void setData(const std::vector<ZSwcTree*> &swcList);
+  void setData(const QList<ZSwcTree*> &swcList);
+  void setSelectedSwcs(const QSet<ZStackObject*> &selectedSwc);
+  //inline void setSelectedSwcTreeNodes(const std::set<Swc_Tree_Node*> &list) {
+  //  m_selectedSwcTreeNodes = list;
+  //}
 
   //get bounding box of swc tree in world coordinate :[xmin xmax ymin ymax zmin zmax]
   std::vector<double> getTreeBound(ZSwcTree *tree) const;
@@ -175,9 +173,9 @@ private:
   ZEventListenerParameter* m_selectSwcEvent;
   glm::ivec2 m_startCoord;
   ZSwcTree *m_pressedSwc;
-  std::set<ZSwcTree*> *m_selectedSwcs;   //point to all selected swcs, managed by other class
+  std::set<ZSwcTree*> m_selectedSwcs;   //point to all selected swcs, managed by other class
   Swc_Tree_Node *m_pressedSwcTreeNode;
-  std::set<Swc_Tree_Node*> *m_selectedSwcTreeNodes;   //point to all selected swcs, managed by other class
+  //std::set<Swc_Tree_Node*> m_selectedSwcTreeNodes;   //point to all selected swcs, managed by other class
 
   std::vector<glm::vec4> m_baseAndBaseRadius;
   std::vector<glm::vec4> m_axisAndTopRadius;

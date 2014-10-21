@@ -243,7 +243,7 @@ void ZFlyEmRoiProject::setRoiSaved(bool state)
 bool ZFlyEmRoiProject::addRoi()
 {
   if (m_dataFrame != NULL) {
-    QList<ZSwcTree*>& swcList = m_dataFrame->document()->getSwcList();
+    QList<ZSwcTree*> swcList = m_dataFrame->document()->getSwcList();
     if (swcList.size() == 1) {
       ZClosedCurve curve = swcList.front()->toClosedCurve();
       if(!curve.isEmpty()) {
@@ -934,7 +934,7 @@ void ZFlyEmRoiProject::loadSynapse(const std::string &filePath, bool isVisible)
 void ZFlyEmRoiProject::setSynapseVisible(bool isVisible)
 {
   if (m_dataFrame != NULL) {
-    QList<ZPunctum*>& puncta = m_dataFrame->document()->getPunctaList();
+    QList<ZPunctum*> puncta = m_dataFrame->document()->getPunctumList();
     for (QList<ZPunctum*>::iterator iter = puncta.begin();
          iter != puncta.end(); ++iter) {
       ZPunctum *punctum = *iter;

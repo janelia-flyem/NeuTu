@@ -125,7 +125,7 @@ bool ZSingleSwcNodeActionActivator::isPositive(const ZStackDoc *doc) const
     return false;
   }
 
-  return doc->selectedSwcTreeNodes()->size() == 1;
+  return doc->getSelectedSwcNodeNumber() == 1;
 }
 
 /////////////////////////////////////////

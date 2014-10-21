@@ -183,7 +183,7 @@ void ZStackFrame::consumeDocument(ZStackDoc *doc)
           m_view, SLOT(paintObject()));\
   connect(m_doc.get(), SIGNAL(swcVisibleStateChanged(ZSwcTree*,bool)),\
           m_view, SLOT(paintObject()));\
-  connect(m_doc.get(), SIGNAL(punctumVisibleStateChanged(ZPunctum*,bool)),\
+  connect(m_doc.get(), SIGNAL(punctumVisibleStateChanged()),\
           m_view, SLOT(paintObject()));\
   connect(m_doc.get(), SIGNAL(statusMessageUpdated(QString)),\
           this, SLOT(notifyUser(QString)));
@@ -235,7 +235,7 @@ void ZStackFrame::disconnectAll()
              m_view, SLOT(paintObject()));
   disconnect(m_doc.get(), SIGNAL(swcVisibleStateChanged(ZSwcTree*,bool)),
              m_view, SLOT(paintObject()));
-  disconnect(m_doc.get(), SIGNAL(punctumVisibleStateChanged(ZPunctum*,bool)),
+  disconnect(m_doc.get(), SIGNAL(punctumVisibleStateChanged()),
              m_view, SLOT(paintObject()));
 #endif
 }
@@ -740,7 +740,7 @@ QString ZStackFrame::info() const
       arg(view()->imageWidget()->screenSize().width()).
       arg(view()->imageWidget()->screenSize().height());
     info += QString("\n zoom ratio: %1").arg(presenter()->zoomRatio());
-    info += QString("\n") + document()->toString();
+    //info += QString("\n") + document()->toString();
     info += QString("\n") + m_statusInfo;
     return info;
   } else {
@@ -1596,8 +1596,9 @@ void ZStackFrame::loadRoi(const QString &filePath, bool isExclusive)
 
 void ZStackFrame::zoomToSelectedSwcNodes()
 {
-  if (!document()->selectedSwcTreeNodes()->empty()) {
-    ZCuboid cuboid = SwcTreeNode::boundBox(*document()->selectedSwcTreeNodes());
+  if (document()->hasSelectedSwcNode()) {
+    std::set<Swc_Tree_Node*> nodeSet = document()->getSelectedSwcTreeSet();
+    ZCuboid cuboid = SwcTreeNode::boundBox(nodeSet);
     ZPoint center = cuboid.center();
 
     //check which stack the selected points belong to. If needed, load the corresponding stack.
@@ -1646,7 +1647,7 @@ void ZStackFrame::notifyUser(const QString &message)
 
 void ZStackFrame::locateSwcNodeIn3DView()
 {
-  if (!document()->selectedSwcTreeNodes()->empty()) {
+  if (document()->hasSelectedSwcNode()) {
     if (!m_3dWindow) {
       open3DWindow(this);
     }
@@ -1663,8 +1664,8 @@ void ZStackFrame::runSeededWatershed()
 void ZStackFrame::makeSwcProjection(ZStackDoc *doc)
 {
     if (doc == NULL) return;
-    QList<ZSwcTree*> *swclist= doc->swcList();
-    foreach (ZSwcTree* swc, *swclist) {
+    QList<ZSwcTree*> swclist= doc->getSwcList();
+    foreach (ZSwcTree* swc, swclist) {
         ZSwcTree *swcClone = swc->clone();
         std::vector<Swc_Tree_Node*> nodes = swcClone->getSwcTreeNodeArray();
         foreach (Swc_Tree_Node *nd, nodes) {

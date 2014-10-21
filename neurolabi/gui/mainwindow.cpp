@@ -2507,8 +2507,8 @@ void MainWindow::on_actionOpen_triggered()
 
 void MainWindow::on_actionEdit_Swc_triggered()
 {
-  if (currentStackFrame() != NULL && currentStackFrame()->document()->hasSwcList()) {
-    ZEditSwcDialog editswcDialog(this, currentStackFrame()->document()->swcList());
+  if (currentStackFrame() != NULL && currentStackFrame()->document()->hasSwc()) {
+    ZEditSwcDialog editswcDialog(this, currentStackFrame()->document()->getSwcList());
     editswcDialog.exec();
   } else {
     ZEditSwcDialog editswcDialog(this);
@@ -5009,7 +5009,8 @@ void MainWindow::createDvidFrame()
 
   if (!dvidBuffer->getSwcTreeArray().isEmpty()) {
     foreach (ZSwcTree* tree, dvidBuffer->getSwcTreeArray()) {
-      reader.addSwcTree(tree);
+      reader.addObject(tree);
+      //reader.addSwcTree(tree);
 #ifdef _DEBUG_2
       tree->print();
       std::cout << (ZStackObject*) tree << std::endl;
@@ -5538,7 +5539,7 @@ ZStackDocReader *MainWindow::hotSpotDemo(
 
   ZStackDocReader *docReader = new ZStackDocReader();
   docReader->setStack(stack);
-  docReader->addSwcTree(tree);
+  docReader->addObject(tree);
 
   //ZStackDoc *doc = new ZStackDoc(stack, NULL);
   //doc->addSwcTree(tree, false);
@@ -5681,7 +5682,9 @@ ZStackDocReader *MainWindow::hotSpotDemoFs(
 
   ZStackDocReader *docReader = new ZStackDocReader();
   docReader->setStack(stack);
-  docReader->addSwcTree(tree);
+
+  docReader->addObject(tree);
+  //docReader->addSwcTree(tree);
   //ZStackDoc *doc = new ZStackDoc(stack, NULL);
   //doc->addSwcTree(tree, false);
 

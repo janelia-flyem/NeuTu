@@ -6,6 +6,8 @@ class Z3DSphereRenderer;
 class Z3DLineWithFixedWidthColorRenderer;
 
 #include <QObject>
+#include <QSet>
+
 #include "z3dgeometryfilter.h"
 #include "zoptionparameter.h"
 #include <map>
@@ -16,6 +18,8 @@ class Z3DLineWithFixedWidthColorRenderer;
 #include "zwidgetsgroup.h"
 #include "znumericparameter.h"
 
+class ZStackObject;
+
 class Z3DPunctaFilter : public Z3DGeometryFilter
 {
   Q_OBJECT
@@ -23,9 +27,9 @@ public:
   explicit Z3DPunctaFilter();
   virtual ~Z3DPunctaFilter();
 
-  void setData(std::vector<ZPunctum*> *punctaList);
-  void setData(QList<ZPunctum*> *punctaList);
-  inline void setSelectedPuncta(std::set<ZPunctum*> *list) { m_selectedPuncta = list; }
+  void setData(const std::vector<ZPunctum*> &punctaList);
+  void setData(const QList<ZPunctum*> &punctaList);
+  void setSelectedPuncta(const QSet<ZStackObject*> &list);
 
   std::vector<double> getPunctumBound(ZPunctum* p) const;
 
@@ -94,7 +98,7 @@ private:
   ZEventListenerParameter* m_selectPunctumEvent;
   glm::ivec2 m_startCoord;
   ZPunctum *m_pressedPunctum;
-  std::set<ZPunctum*> *m_selectedPuncta;   //point to all selected puncta, managed by other class
+  std::set<ZPunctum*> m_selectedPuncta;   //point to all selected puncta, managed by other class
 
   std::vector<glm::vec4> m_pointAndRadius;
   std::vector<glm::vec4> m_specularAndShininess;

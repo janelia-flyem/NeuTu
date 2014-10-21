@@ -20,7 +20,7 @@ Z3DPunctaFilter::Z3DPunctaFilter()
                                                        1.f))
   , m_useSameSizeForAllPuncta("Use Same Size", false)
   , m_pressedPunctum(NULL)
-  , m_selectedPuncta(NULL)
+  //, m_selectedPuncta(NULL)
   , m_xCut("X Cut", glm::ivec2(0,0), 0, 0)
   , m_yCut("Y Cut", glm::ivec2(0,0), 0, 0)
   , m_zCut("Z Cut", glm::ivec2(0,0), 0, 0)
@@ -89,26 +89,33 @@ void Z3DPunctaFilter::process(Z3DEye)
   }
 }
 
-void Z3DPunctaFilter::setData(std::vector<ZPunctum *> *punctaList)
+void Z3DPunctaFilter::setData(const std::vector<ZPunctum *> &punctaList)
 {
+  m_origPunctaList = punctaList;
+  /*
   m_origPunctaList.clear();
   if (punctaList) {
-    m_origPunctaList = *punctaList;
+    m_origPunctaList = punctaList;
     LINFO() << getClassName() << "Read" << m_origPunctaList.size() << "puncta.";
   }
+  */
   getVisibleData();
   m_dataIsInvalid = true;
   invalidateResult();
 }
 
-void Z3DPunctaFilter::setData(QList<ZPunctum *> *punctaList)
+void Z3DPunctaFilter::setData(const QList<ZPunctum *> &punctaList)
 {
   m_origPunctaList.clear();
+  m_origPunctaList.insert(m_origPunctaList.end(), punctaList.begin(),
+                          punctaList.end());
+#if 0
   if (punctaList) {
-    for (int i=0; i<punctaList->size(); i++)
-      m_origPunctaList.push_back(punctaList->at(i));
+    for (int i=0; i<punctaList.size(); i++)
+      m_origPunctaList.push_back(punctaList.at(i));
     LINFO() << getClassName() << "Read" << m_origPunctaList.size() << "puncta.";
   }
+#endif
   getVisibleData();
   m_dataIsInvalid = true;
   invalidateResult();
@@ -234,10 +241,11 @@ void Z3DPunctaFilter::renderPicking(Z3DEye eye)
 
 void Z3DPunctaFilter::renderSelectionBox(Z3DEye eye)
 {
-  if (m_selectedPuncta && m_selectedPuncta->size() > 0) {
+  if (m_selectedPuncta.size() > 0) {
     std::vector<glm::vec3> lines;
 
-    for (std::set<ZPunctum*>::iterator it=m_selectedPuncta->begin(); it != m_selectedPuncta->end(); it++) {
+    for (std::set<ZPunctum*>::iterator it=m_selectedPuncta.begin();
+         it != m_selectedPuncta.end(); it++) {
       ZPunctum *selectedPunctum = *it;
       if (!selectedPunctum->isVisible())
         return;
@@ -704,3 +712,11 @@ void Z3DPunctaFilter::deinitialize()
   Z3DGeometryFilter::deinitialize();
 }
 
+void Z3DPunctaFilter::setSelectedPuncta(const QSet<ZStackObject*> &selected)
+{
+  for (QSet<ZStackObject *>::const_iterator iter = selected.begin();
+       iter != selected.end(); ++iter) {
+    m_selectedPuncta.insert(
+          const_cast<ZPunctum*>(dynamic_cast<const ZPunctum*>(*iter)));
+  }
+}

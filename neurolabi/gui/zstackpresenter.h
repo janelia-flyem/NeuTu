@@ -195,13 +195,13 @@ public slots:
   void dropSegment();
   void enterMouseCapturingMode();
   //void refineChainEnd();
-  void bringSelectedToFront();
-  void sendSelectedToBack();
+  //void bringSelectedToFront();
+  //void sendSelectedToBack();
   //void selectNeighbor();
   //void selectConnectedTube();
   void markPuncta();
   void deleteSelected();
-  void deleteAllPuncta();
+  //void deleteAllPuncta();
   void enlargePuncta();
   void narrowPuncta();
   void meanshiftPuncta();
@@ -318,8 +318,8 @@ private:
   //QAction *m_spHookAction;
   //QAction *m_linkAction;
   //QAction *m_mergeAction;
-  QAction *m_frontAction;
-  QAction *m_backAction;
+  //QAction *m_frontAction;
+  //QAction *m_backAction;
   //QAction *m_refineEndAction;
   //QAction *m_connectAction;
   //QAction *m_extendAction;
@@ -330,7 +330,7 @@ private:
   //QAction *m_selectConnectedTubeAction;
   QAction *m_markPunctaAction;
   QAction *m_deleteSelectedAction;
-  QAction *m_deleteAllPunctaAction;
+  //QAction *m_deleteAllPunctaAction;
   QAction *m_enlargePunctaAction;
   QAction *m_narrowPunctaAction;
   QAction *m_meanshiftPunctaAction;

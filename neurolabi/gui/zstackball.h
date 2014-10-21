@@ -84,6 +84,9 @@ public:
   void scaleCenter(double sx, double sy, double sz);
   void scale(double sx, double sy, double sz);
 
+  bool hit(double x, double y, double z);
+  bool hit(double x, double y);
+
 private:
   double getAdjustedRadius(double r) const;
   void _init(double x, double y, double z, double r);

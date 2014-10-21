@@ -114,6 +114,15 @@ public:
   inline std::string getSource() const { return m_source; }
   inline void setSource(const std::string &source) { m_source = source; }
 
+  /*!
+   * \brief Test if two objects are from the same source
+   *
+   * \return true if the two objects have the same type and non-empty source.
+   */
+  bool fromSameSource(const ZStackObject *obj) const;
+
+  static bool fromSameSource(const ZStackObject *obj1, const ZStackObject *obj2);
+
   inline void setZScale(double scale) { m_zScale = scale; }
 
   /*!
@@ -153,6 +162,13 @@ public:
     m_isHittable = state;
   }
 
+public:
+  static bool isEmptyTree(const ZStackObject *obj);
+  static bool isSameSource(const std::string &s1, const std::string &s2);
+  static bool isSelected(const ZStackObject *obj);
+  template <typename T>
+  static T* CastVoidPointer(void *p);
+
 protected:
   bool m_selected;
   bool m_isVisible;
@@ -169,6 +185,12 @@ protected:
 
   static const char *m_nodeAdapterId;
 };
+
+template <typename T>
+T* ZStackObject::CastVoidPointer(void *p)
+{
+  return dynamic_cast<T*>(static_cast<ZStackObject*>(p));
+}
 
 #define ZSTACKOBJECT_DEFINE_CLASS_NAME(c) \
   const std::string& c::className() const {\

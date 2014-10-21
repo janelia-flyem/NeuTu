@@ -400,9 +400,20 @@ public:
    * \param appending Add the node to the selection set with in appending way
    *      or not.
    */
-  void setNodeSelected(Swc_Tree_Node *tn, bool appending);
+  void selectNode(Swc_Tree_Node *tn, bool appending);
+  void deselectNode(Swc_Tree_Node *tn);
+  void selectAllNode();
+  void deselectAllNode();
+
+  Swc_Tree_Node* selectHitNode(bool appending);
+  Swc_Tree_Node* deselectHitNode();
+
+  void selectHitNodeConnection();
+  void selectHitNodeFloodFilling();
 
   const std::set<Swc_Tree_Node*>& getSelectedNode() const;
+  bool hasSelectedNode() const;
+  bool isNodeSelected(const Swc_Tree_Node *tn) const;
 
   Swc_Tree_Node* getHitNode() const { return m_hitSwcNode; }
 

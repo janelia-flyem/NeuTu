@@ -97,19 +97,22 @@ ZStackOperator ZMouseEventLeftButtonReleaseMapper::getOperation(
           } else {
             hitManager.hitTest(const_cast<ZStackDoc*>(getDocument()), stackPosition);
           }
-          op.setHitSwcNode(hitManager.getHitSwcNode());
-          op.setHitStroke2d(hitManager.getHitStroke2d());
-          op.setHitObj3d(hitManager.getObj3d());
+          op.setHitObject(hitManager.getHitObject<ZStackObject>());
+          //op.setHitSwcNode(hitManager.getHitObject<Swc_Tree_Node>());
+          //op.setHitObject(hitManager.getHitObject<ZStackObject>());
+          /*
+          op.setHitStroke2d(hitManager.getHitObject<ZStroke2d>());
+          op.setHitObj3d(hitManager.getHitObject<ZObject3d>());
+*/
 
-
-          if (op.getHitSwcNode() != NULL) { //SWC select operation
+          if (op.getHitObject<Swc_Tree_Node>() != NULL) { //SWC select operation
             if (event.getModifiers() == Qt::NoModifier) {
               op.setOperation(ZStackOperator::OP_SWC_SELECT_SINGLE_NODE);
             } else if (event.getModifiers() == Qt::ShiftModifier) {
               op.setOperation(ZStackOperator::OP_SWC_SELECT_CONNECTION);
             } else if (event.getModifiers() == Qt::ControlModifier) {
-              if (getDocument()->selectedSwcTreeNodes()->count(
-                    op.getHitSwcNode()) > 0) {
+              if (getDocument()->isSwcNodeSelected(
+                    op.getHitObject<Swc_Tree_Node>())) {
                 op.setOperation(ZStackOperator::OP_SWC_DESELECT_SINGLE_NODE);
               } else {
                 op.setOperation(ZStackOperator::OP_SWC_SELECT_MULTIPLE_NODE);
@@ -117,19 +120,33 @@ ZStackOperator ZMouseEventLeftButtonReleaseMapper::getOperation(
             } else if (event.getModifiers() & Qt::AltModifier) {
               op.setOperation(ZStackOperator::OP_SWC_SELECT_FLOOD);
             }
-          } else if (op.getHitStroke2d() != NULL) {
-            if (event.getModifiers() == Qt::NoModifier) {
-              op.setOperation(ZStackOperator::OP_STROKE_SELECT_SINGLE);
-            } else if (event.getModifiers() == Qt::ShiftModifier ||
-                       event.getModifiers() == Qt::ControlModifier) {
-              op.setOperation(ZStackOperator::OP_STROKE_SELECT_MULTIPLE);
-            }
-          } else if (op.getHitObj3d() != NULL) {
-            if (event.getModifiers() == Qt::NoModifier) {
-              op.setOperation(ZStackOperator::OP_OBJECT3D_SELECT_SINGLE);
-            } else if (event.getModifiers() == Qt::ShiftModifier ||
-                       event.getModifiers() == Qt::ControlModifier) {
-              op.setOperation(ZStackOperator::OP_OBJECT3D_SELECT_MULTIPLE);
+          } else if (op.getHitObject<ZStackObject>() != NULL) {
+            switch (op.getHitObject()->getType()) {
+            case ZStackObject::TYPE_STROKE:
+              if (event.getModifiers() == Qt::NoModifier) {
+                op.setOperation(ZStackOperator::OP_STROKE_SELECT_SINGLE);
+              } else if (event.getModifiers() == Qt::ShiftModifier ||
+                         event.getModifiers() == Qt::ControlModifier) {
+                op.setOperation(ZStackOperator::OP_STROKE_SELECT_MULTIPLE);
+              }
+              break;
+            case ZStackObject::TYPE_OBJ3D:
+              if (event.getModifiers() == Qt::NoModifier) {
+                op.setOperation(ZStackOperator::OP_OBJECT3D_SELECT_SINGLE);
+              } else if (event.getModifiers() == Qt::ShiftModifier ||
+                         event.getModifiers() == Qt::ControlModifier) {
+                op.setOperation(ZStackOperator::OP_OBJECT3D_SELECT_MULTIPLE);
+              }
+              break;
+            case ZStackObject::TYPE_PUNCTUM:
+              if (event.getModifiers() == Qt::NoModifier) {
+                op.setOperation(ZStackOperator::OP_PUNCTA_SELECT_SINGLE);
+              } else if (event.getModifiers() == Qt::ShiftModifier ||
+                         event.getModifiers() == Qt::ControlModifier) {
+                op.setOperation(ZStackOperator::OP_PUNCTA_SELECT_MULTIPLE);
+              }
+            default:
+              break;
             }
           } else {
             op.setOperation(ZStackOperator::OP_DESELECT_ALL);
@@ -142,7 +159,7 @@ ZStackOperator ZMouseEventLeftButtonReleaseMapper::getOperation(
       switch (m_context->swcEditMode()) {
       case ZInteractiveContext::SWC_EDIT_SELECT:
         if (event.getModifiers() == Qt::NoModifier) {
-          if (getDocument()->selectedSwcTreeNodes()->empty()) {
+          if (!getDocument()->hasSelectedSwcNode()) {
             op.setOperation(ZStackOperator::OP_SHOW_TRACE_CONTEXT_MENU);
           } else {
             op.setOperation(ZStackOperator::OP_SWC_DESELECT_ALL_NODE);
@@ -168,23 +185,11 @@ ZStackOperator ZMouseEventLeftButtonReleaseMapper::getOperation(
     }
 
     if (op.isNull()) {
-      int index = getDocument()->pickPunctaIndex(event.getStackPosition().x(),
-                                                 event.getStackPosition().y(),
-                                                 event.getStackPosition().z());
-      if (index >= 0) {
-        op.setHitPuncta(index);
-        if (event.getModifiers() != Qt::ControlModifier) {
-          op.setOperation(ZStackOperator::OP_PUNCTA_SELECT_SINGLE);
-        } else {
-          op.setOperation(ZStackOperator::OP_PUNCTA_SELECT_MULTIPLE);
-        }
-      } else {
-        if (m_context->isNormalView()) {
-          if (m_context->isContextMenuActivated() &&
-              m_context->markPuncta() &&
-              getDocument()->hasStackData()) {
-            op.setOperation(ZStackOperator::OP_SHOW_PUNCTA_MENU);
-          }
+      if (m_context->isNormalView()) {
+        if (m_context->isContextMenuActivated() &&
+            m_context->markPuncta() &&
+            getDocument()->hasStackData()) {
+          op.setOperation(ZStackOperator::OP_SHOW_PUNCTA_MENU);
         }
       }
     }
@@ -214,15 +219,17 @@ ZStackOperator ZMouseEventLeftButtonDoubleClickMapper::getOperation(
   } else {
     hitManager.hitTest(const_cast<ZStackDoc*>(getDocument()), stackPosition);
   }
-  op.setHitSwcNode(hitManager.getHitSwcNode());
-  op.setHitStroke2d(hitManager.getHitStroke2d());
+  //op.setHitSwcNode(hitManager.getHitObject<Swc_Tree_Node>());
+  op.setHitObject(hitManager.getHitObject<ZStackObject>());
 
 
-  if (op.getHitSwcNode() != NULL) {
+  if (op.getHitObject<Swc_Tree_Node>() != NULL) {
     op.setOperation(ZStackOperator::OP_SWC_LOCATE_FOCUS);
-  } else if (op.getHitStroke2d() != NULL) {
-    if (m_context->isProjectView()) {
-      op.setOperation(ZStackOperator::OP_STROKE_LOCATE_FOCUS);
+  } else if (op.getHitObject() != NULL) {
+    if (op.getHitObject()->getType() == ZStackObject::TYPE_STROKE) {
+      if (m_context->isProjectView()) {
+        op.setOperation(ZStackOperator::OP_STROKE_LOCATE_FOCUS);
+      }
     }
   }
 
