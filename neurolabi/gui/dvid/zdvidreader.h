@@ -76,6 +76,10 @@ public:
 
   ZFlyEmNeuronBodyInfo readBodyInfo(int bodyId);
 
+  inline const ZDvidTarget& getDvidTarget() const {
+    return m_dvidTarget;
+  }
+
 signals:
   void readingDone();
 
@@ -92,7 +96,7 @@ private:
   bool isReadingDone();
   void waitForReading();
 
-private:
+protected:
   QEventLoop *m_eventLoop;
   ZDvidClient *m_dvidClient;
   QTimer *m_timer;

@@ -213,3 +213,13 @@ std::string ZDvidUrl::getBodyLabelUrl(
          << x0 << "_" << y0 << "_" << z0;
   return getBodyLabelUrl() + stream.str();
 }
+
+std::string ZDvidUrl::getSynapseListUrl() const
+{
+  return getAnnotationUrl() + "/allsynapse";
+}
+
+std::string ZDvidUrl::getSynapseAnnotationUrl(const std::string &name) const
+{
+  return getAnnotationUrl() + "/" + name;
+}

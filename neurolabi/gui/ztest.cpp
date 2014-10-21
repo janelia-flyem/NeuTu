@@ -13357,7 +13357,7 @@ void ZTest::test(MainWindow *host)
   std::cout << "Hit: " << sideBodySet.count(30155) << std::endl;
 #endif
 
-#if 1
+#if 0
   std::string synapseFile =
       GET_DATA_DIR + "/flyem/AL/al7-origroi-tbar-predict_0.86.txt";
 
@@ -13394,5 +13394,30 @@ void ZTest::test(MainWindow *host)
     stream << pt.x() << " " << pt.y() << " " << pt.z() << " " << v << std::endl;
   }
   stream.close();
+#endif
+
+#if 0
+  ZDvidTarget dvidTarget;
+  dvidTarget.set("emdata2.int.janelia.org", "2b6c");
+
+  ZFlyEmDvidReader reader;
+  if (reader.open(dvidTarget)) {
+    QStringList synapseList = reader.readSynapseList();
+    qDebug() << synapseList;
+  }
+#endif
+
+#if 1
+  ZDvidTarget dvidTarget;
+  dvidTarget.set("emdata2.int.janelia.org", "2b6c");
+
+  ZFlyEmDvidReader reader;
+  if (reader.open(dvidTarget)) {
+    QStringList synapseList = reader.readSynapseList();
+    qDebug() << synapseList;
+
+    ZJsonObject obj = reader.readSynapseAnnotation(synapseList[0]);
+    obj.print();
+  }
 #endif
 }

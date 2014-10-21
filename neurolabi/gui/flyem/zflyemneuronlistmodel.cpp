@@ -215,9 +215,9 @@ void ZFlyEmNeuronListModel::retrieveModel(
 
       if (model != NULL) {
         ZSwcTree *tree = model->clone();
-        qDebug() << neuron->getClass();
-        qDebug() << colorMap[neuron->getClass()];
-        qDebug() << colorMap["L1"];
+        //qDebug() << neuron->getClass();
+        //qDebug() << colorMap[neuron->getClass()];
+        //qDebug() << colorMap["L1"];
         tree->setColor(colorMap[neuron->getClass()]);
         doc->addSwcTree(tree, true);
       }
