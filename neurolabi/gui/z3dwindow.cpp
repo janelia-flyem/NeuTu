@@ -230,7 +230,7 @@ void Z3DWindow::init(EInitMode mode)
   }
 
   m_decorationFilter = new Z3DGraphFilter();
-  m_decorationFilter->setStayOnTop(false);
+  m_decorationFilter->setStayOnTop(true);
   m_decorationFilter->setData(m_doc->get3DGraphDecoration());
 
   connect(getDocument(), SIGNAL(punctaModified()), this, SLOT(punctaChanged()));
@@ -3216,11 +3216,9 @@ void Z3DWindow::addPolyplaneFrom3dPaint(ZStroke2d *stroke)
           processedObj->append(x, y, z);
         }
       }
+      delete obj;
+      obj = processedObj;
     }
-
-    delete obj;
-    obj = processedObj;
-
 
     if (obj != NULL) {
 #ifdef _DEBUG_2

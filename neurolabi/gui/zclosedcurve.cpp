@@ -344,3 +344,10 @@ void ZClosedCurve::scale(double sx, double sy, double sz)
     pt *= ZPoint(sx, sy, sz);
   }
 }
+
+ZClosedCurve* ZClosedCurve::clone() const
+{
+  ZClosedCurve *curve = new ZClosedCurve(*this);
+
+  return curve;
+}

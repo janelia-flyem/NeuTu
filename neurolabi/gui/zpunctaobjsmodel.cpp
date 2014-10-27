@@ -1,13 +1,16 @@
 #include "zpunctaobjsmodel.h"
 
-#include "zstackdoc.h"
-#include "zpunctum.h"
-#include "zobjsitem.h"
 #include <QsLog.h>
 #include <QFileInfo>
 
+#include "zstackdoc.h"
+#include "zpunctum.h"
+#include "zobjsitem.h"
+#include "misc/miscutility.h"
+
 namespace {
 // generic solution
+#if 0
 template <class T>
 int numDigits(T number)
 {
@@ -52,7 +55,7 @@ int numDigits(int32_t x)
     return 2;
   return 1;
 }
-
+#endif
 //// partial-specialization optimization for 8-bit numbers
 //template <>
 //int numDigits(char n)

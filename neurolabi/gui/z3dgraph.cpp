@@ -3,6 +3,7 @@
 #include "z3dgraph.h"
 #include "znormcolormap.h"
 #include "zobject3d.h"
+#include "zstackball.h"
 
 using namespace std;
 
@@ -278,6 +279,13 @@ void Z3DGraph::print()
   }
 }
 
+void Z3DGraph::addNode(const ZStackBall &ball)
+{
+  m_nodeArray.push_back(
+        Z3DGraphNode(ball.getX(), ball.getY(), ball.getZ(), ball.getRadius()));
+  m_nodeArray.back().setColor(ball.getColor());
+}
+
 void Z3DGraph::importObject3d(
     const ZObject3d &obj, double radius, int sampleStep)
 {
@@ -285,7 +293,8 @@ void Z3DGraph::importObject3d(
   m_edgeArray.clear();
 
   for (size_t i = 0; i < obj.size(); i += sampleStep) {
-    m_nodeArray.push_back(Z3DGraphNode(obj.getX(i), obj.getY(i), obj.getZ(i), radius));
+    m_nodeArray.push_back(Z3DGraphNode(
+                            obj.getX(i), obj.getY(i), obj.getZ(i), radius));
     m_nodeArray.back().setColor(obj.getColor());
   }
 }

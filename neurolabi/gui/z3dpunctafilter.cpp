@@ -1,5 +1,6 @@
 #include "z3dpunctafilter.h"
 
+#include <QSet>
 #include <iostream>
 
 #include "zpunctum.h"
@@ -32,7 +33,7 @@ Z3DPunctaFilter::Z3DPunctaFilter()
 
   // Color Mode
   m_colorMode.addOptions("Same Color", "Random Color", "Based on Point Source",
-                         "Based on Name", "Original Point Color");
+                         "Original Point Color");
   m_colorMode.select("Based on Point Source");
 
   connect(&m_colorMode, SIGNAL(valueChanged()), this, SLOT(prepareColor()));
@@ -74,11 +75,12 @@ Z3DPunctaFilter::~Z3DPunctaFilter()
        it != m_sourceColorMapper.end(); ++it) {
     delete it->second;
   }
-
+#if 0
   for (std::map<QString, ZVec4Parameter*>::iterator it = m_nameColorMapper.begin();
        it != m_nameColorMapper.end(); ++it) {
     delete it->second;
   }
+#endif
   delete m_selectPunctumEvent;
 }
 
@@ -175,6 +177,7 @@ ZWidgetsGroup *Z3DPunctaFilter::getWidgetsGroup()
       m_colorsForDifferentSourceWidgetsGroup.push_back(new ZWidgetsGroup(allPunctaColorParas[i], m_widgetsGroup, 1));
     }
 
+#if 0
     allPunctaColorParas.clear();
     for (std::map<QString, ZVec4Parameter*>::iterator it = m_nameColorMapper.begin();
          it != m_nameColorMapper.end(); ++it) {
@@ -184,7 +187,7 @@ ZWidgetsGroup *Z3DPunctaFilter::getWidgetsGroup()
     for (size_t i=0; i<allPunctaColorParas.size(); ++i) {
       m_colorsForDifferentNameWidgetsGroup.push_back(new ZWidgetsGroup(allPunctaColorParas[i], m_widgetsGroup, 1));
     }
-
+#endif
 
     new ZWidgetsGroup(&m_useSameSizeForAllPuncta, m_widgetsGroup, 1);
 
@@ -241,51 +244,50 @@ void Z3DPunctaFilter::renderPicking(Z3DEye eye)
 
 void Z3DPunctaFilter::renderSelectionBox(Z3DEye eye)
 {
-  if (m_selectedPuncta.size() > 0) {
+  if (m_punctaList.size() > 0) {
     std::vector<glm::vec3> lines;
 
-    for (std::set<ZPunctum*>::iterator it=m_selectedPuncta.begin();
-         it != m_selectedPuncta.end(); it++) {
+    for (std::vector<ZPunctum*>::iterator it=m_punctaList.begin();
+         it != m_punctaList.end(); it++) {
       ZPunctum *selectedPunctum = *it;
-      if (!selectedPunctum->isVisible())
-        return;
+      if (selectedPunctum->isVisible() && selectedPunctum->isSelected()) {
+        std::vector<double> bound = getPunctumBound(selectedPunctum);
+        float xmin = bound[0];
+        float xmax = bound[1];
+        float ymin = bound[2];
+        float ymax = bound[3];
+        float zmin = bound[4];
+        float zmax = bound[5];
+        lines.push_back(glm::vec3(xmin, ymin, zmin));
+        lines.push_back(glm::vec3(xmin, ymin, zmax));
+        lines.push_back(glm::vec3(xmin, ymax, zmin));
+        lines.push_back(glm::vec3(xmin, ymax, zmax));
 
-      std::vector<double> bound = getPunctumBound(selectedPunctum);
-      float xmin = bound[0];
-      float xmax = bound[1];
-      float ymin = bound[2];
-      float ymax = bound[3];
-      float zmin = bound[4];
-      float zmax = bound[5];
-      lines.push_back(glm::vec3(xmin, ymin, zmin));
-      lines.push_back(glm::vec3(xmin, ymin, zmax));
-      lines.push_back(glm::vec3(xmin, ymax, zmin));
-      lines.push_back(glm::vec3(xmin, ymax, zmax));
+        lines.push_back(glm::vec3(xmax, ymin, zmin));
+        lines.push_back(glm::vec3(xmax, ymin, zmax));
+        lines.push_back(glm::vec3(xmax, ymax, zmin));
+        lines.push_back(glm::vec3(xmax, ymax, zmax));
 
-      lines.push_back(glm::vec3(xmax, ymin, zmin));
-      lines.push_back(glm::vec3(xmax, ymin, zmax));
-      lines.push_back(glm::vec3(xmax, ymax, zmin));
-      lines.push_back(glm::vec3(xmax, ymax, zmax));
+        lines.push_back(glm::vec3(xmin, ymin, zmin));
+        lines.push_back(glm::vec3(xmax, ymin, zmin));
+        lines.push_back(glm::vec3(xmin, ymax, zmin));
+        lines.push_back(glm::vec3(xmax, ymax, zmin));
 
-      lines.push_back(glm::vec3(xmin, ymin, zmin));
-      lines.push_back(glm::vec3(xmax, ymin, zmin));
-      lines.push_back(glm::vec3(xmin, ymax, zmin));
-      lines.push_back(glm::vec3(xmax, ymax, zmin));
+        lines.push_back(glm::vec3(xmin, ymin, zmax));
+        lines.push_back(glm::vec3(xmax, ymin, zmax));
+        lines.push_back(glm::vec3(xmin, ymax, zmax));
+        lines.push_back(glm::vec3(xmax, ymax, zmax));
 
-      lines.push_back(glm::vec3(xmin, ymin, zmax));
-      lines.push_back(glm::vec3(xmax, ymin, zmax));
-      lines.push_back(glm::vec3(xmin, ymax, zmax));
-      lines.push_back(glm::vec3(xmax, ymax, zmax));
+        lines.push_back(glm::vec3(xmin, ymin, zmin));
+        lines.push_back(glm::vec3(xmin, ymax, zmin));
+        lines.push_back(glm::vec3(xmax, ymin, zmin));
+        lines.push_back(glm::vec3(xmax, ymax, zmin));
 
-      lines.push_back(glm::vec3(xmin, ymin, zmin));
-      lines.push_back(glm::vec3(xmin, ymax, zmin));
-      lines.push_back(glm::vec3(xmax, ymin, zmin));
-      lines.push_back(glm::vec3(xmax, ymax, zmin));
-
-      lines.push_back(glm::vec3(xmin, ymin, zmax));
-      lines.push_back(glm::vec3(xmin, ymax, zmax));
-      lines.push_back(glm::vec3(xmax, ymin, zmax));
-      lines.push_back(glm::vec3(xmax, ymax, zmax));
+        lines.push_back(glm::vec3(xmin, ymin, zmax));
+        lines.push_back(glm::vec3(xmin, ymax, zmax));
+        lines.push_back(glm::vec3(xmax, ymin, zmax));
+        lines.push_back(glm::vec3(xmax, ymax, zmax));
+      }
     }
     m_rendererBase->activateRenderer(m_boundBoxRenderer);
     m_boundBoxRenderer->setData(&lines);
@@ -409,28 +411,37 @@ void Z3DPunctaFilter::prepareData()
   //  }
 
   bool needUpdateWidget = false;
-  QList<QString> allSources;
+  //QList<QString> allSources;
+  QSet<QString> allSources;
   for (size_t i=0; i<m_origPunctaList.size(); ++i) {
+    const std::string &source = m_origPunctaList[i]->getSource();
+    if (!allSources.contains(source.c_str())) {
+      allSources.insert(source.c_str());
+    }
+    /*
     int idx = allSources.indexOf(m_origPunctaList[i]->getSource().c_str());
     if (idx == -1) {
       allSources.push_back(m_origPunctaList[i]->getSource().c_str());
       idx = allSources.size() - 1;
     }
-    QString guiname = QString("Source %1 Color").arg(idx + 1);
-    if (m_sourceColorMapper.find(m_origPunctaList[i]->getSource().c_str())
+    */
+    //QString guiname = QString("Source %1 Color").arg(idx + 1);
+    QString guiname = QString("Source: %1").arg(source.c_str());
+
+    if (m_sourceColorMapper.find(source.c_str())
         == m_sourceColorMapper.end()) {
-      m_sourceColorMapper[m_origPunctaList[i]->getSource().c_str()] =
+      m_sourceColorMapper[source.c_str()] =
           new ZVec4Parameter(guiname, glm::vec4(ZRandomInstance.randReal<float>(),
                                                 ZRandomInstance.randReal<float>(),
                                                 ZRandomInstance.randReal<float>(),
                                                 1.f));
-      m_sourceColorMapper[m_origPunctaList[i]->getSource().c_str()]->setStyle("COLOR");
-      connect(m_sourceColorMapper[m_origPunctaList[i]->getSource().c_str()], SIGNAL(valueChanged()),
+      m_sourceColorMapper[source.c_str()]->setStyle("COLOR");
+      connect(m_sourceColorMapper[source.c_str()], SIGNAL(valueChanged()),
           this, SLOT(prepareColor()));
-      addParameter(m_sourceColorMapper[m_origPunctaList[i]->getSource().c_str()]);
+      addParameter(m_sourceColorMapper[source.c_str()]);
       needUpdateWidget = true;
     } else {
-      m_sourceColorMapper[m_origPunctaList[i]->getSource().c_str()]->setName(guiname);
+      m_sourceColorMapper[source.c_str()]->setName(guiname);
     }
   }
   // remove colors for not exist puncta source
@@ -447,6 +458,7 @@ void Z3DPunctaFilter::prepareData()
       ++it;
   }
 
+#if 0
   QList<QString> allNames;
   for (size_t i=0; i<m_origPunctaList.size(); ++i) {
     int idx = allNames.indexOf(m_origPunctaList[i]->name());
@@ -485,7 +497,7 @@ void Z3DPunctaFilter::prepareData()
     } else
       ++it;
   }
-
+#endif
   if (needUpdateWidget)
     updateWidgetsGroup();
 
@@ -512,10 +524,12 @@ void Z3DPunctaFilter::prepareColor()
       m_pointColors.push_back(color);
     }
   } else if (m_colorMode.isSelected("Based on Name")) {
+#if 0
     for (size_t i=0; i<m_punctaList.size(); i++) {
       glm::vec4 color = m_nameColorMapper[m_punctaList[i]->name()]->get();
       m_pointColors.push_back(color);
     }
+#endif
   } else if (m_colorMode.isSelected("Random Color")) {
     for (size_t i=0; i<m_punctaList.size(); i++) {
       glm::vec4 color(ZRandomInstance.randReal<float>(), ZRandomInstance.randReal<float>(), ZRandomInstance.randReal<float>(), 1.0f);
@@ -561,10 +575,12 @@ void Z3DPunctaFilter::adjustWidgets()
     it->second->setVisible(m_colorMode.isSelected("Based on Point Source"));
   }
 
+#if 0
   for (std::map<QString, ZVec4Parameter*>::iterator it = m_nameColorMapper.begin();
        it != m_nameColorMapper.end(); ++it) {
     it->second->setVisible(m_colorMode.isSelected("Based on Name"));
   }
+#endif
 
   if (m_colorMode.isSelected("Same Color"))
     m_singleColorForAllPuncta.setVisible(true);
@@ -585,13 +601,15 @@ void Z3DPunctaFilter::selectPuncta(QMouseEvent *e, int, int h)
   if (e->type() == QEvent::MouseButtonPress) {
     m_startCoord.x = e->x();
     m_startCoord.y = e->y();
-    const void* obj = getPickingManager()->getObjectAtPos(glm::ivec2(e->x(), h - e->y()));
+    const void* obj = getPickingManager()->getObjectAtPos(
+          glm::ivec2(e->x(), h - e->y()));
     if (obj == NULL) {
       return;
     }
 
     // Check if any point was selected...
-    for (std::vector<ZPunctum*>::iterator it=m_punctaList.begin(); it!=m_punctaList.end(); ++it)
+    for (std::vector<ZPunctum*>::iterator it=m_punctaList.begin();
+         it!=m_punctaList.end(); ++it)
       if (*it == obj) {
         m_pressedPunctum = *it;
         break;
@@ -632,15 +650,17 @@ void Z3DPunctaFilter::updateWidgetsGroup()
     for (size_t i=0; i<allPunctaColorParas.size(); ++i) {
       m_colorsForDifferentSourceWidgetsGroup.push_back(new ZWidgetsGroup(allPunctaColorParas[i], m_widgetsGroup, 1));
     }
-
-    for (size_t i=0; i<m_colorsForDifferentSourceWidgetsGroup.size(); i++) {
+#if 0
+    for (size_t i=0; i<m_colorsForDifferentNameWidgetsGroup.size(); i++) {
       delete m_colorsForDifferentSourceWidgetsGroup[i];
     }
-    m_colorsForDifferentSourceWidgetsGroup.clear();
+    m_colorsForDifferentNameWidgetsGroup.clear();
+#endif
 
     //    for(size_t i=0; i<m_colorsForDifferentSource.size(); i++) {
     //      m_colorsForDifferentSourceWidgetsGroup.push_back(new ZWidgetsGroup(m_colorsForDifferentSource[i], m_widgetsGroup, 1));
     //    }
+#if 0
     allPunctaColorParas.clear();
     for (std::map<QString, ZVec4Parameter*>::iterator it = m_nameColorMapper.begin();
          it != m_nameColorMapper.end(); ++it) {
@@ -651,6 +671,7 @@ void Z3DPunctaFilter::updateWidgetsGroup()
       m_colorsForDifferentNameWidgetsGroup.push_back(
             new ZWidgetsGroup(allPunctaColorParas[i], m_widgetsGroup, 1));
     }
+#endif
 
     m_widgetsGroup->emitWidgetsGroupChangedSignal();
   }

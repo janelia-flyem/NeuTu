@@ -10,6 +10,7 @@
 
 class ZNormColorMap;
 class ZObject3d;
+class ZStackBall;
 
 enum EGraphShape {
   GRAPH_NO_SHAPE, GRAPH_BALL, GRAPH_CYLINDER, GRAPH_LINE
@@ -117,6 +118,7 @@ public:
                           ZNormColorMap *colorMap = NULL);
   void importJsonFile(const std::string &filePath);
   void importObject3d(const ZObject3d &obj, double radius, int sampleStep);
+  void addNode(const ZStackBall &ball);
 
   void print();
 

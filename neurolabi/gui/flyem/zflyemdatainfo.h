@@ -5,12 +5,15 @@
 #include <string>
 #include "flyem/zflyem.h"
 
+class ZDvidInfo;
+
 class ZFlyEmDataInfo
 {
 public:
   ZFlyEmDataInfo(FlyEm::EDataSet dataSet);
 
   void configure(FlyEm::EDataSet dataSet);
+  void configure(const ZDvidInfo &info);
 
   inline const std::vector<int>& getStackSize() const {
     return m_stackSize;

@@ -790,10 +790,12 @@ void ZStackDocCommand::SwcEdit::SetParent::undo()
 }
 
 ////////////////////////////////
-#if 0
+#if 1
 ZStackDocCommand::SwcEdit::SetSwcNodeSeletion::SetSwcNodeSeletion(
-    ZStackDoc *doc, const std::set<Swc_Tree_Node *> nodeSet,
-    QUndoCommand *parent) : ZUndoCommand(parent), m_doc(doc), m_nodeSet(nodeSet)
+    ZStackDoc *doc, ZSwcTree *host, const std::set<Swc_Tree_Node *> nodeSet,
+    bool appending, QUndoCommand *parent) :
+  ZUndoCommand(parent), m_doc(doc), m_host(host), m_nodeSet(nodeSet),
+  m_appending(appending)
 {
 }
 
@@ -803,15 +805,24 @@ ZStackDocCommand::SwcEdit::SetSwcNodeSeletion::~SetSwcNodeSeletion()
 
 void ZStackDocCommand::SwcEdit::SetSwcNodeSeletion::redo()
 {
-  m_oldNodeSet = *(m_doc->selectedSwcTreeNodes());
-  m_doc->selectedSwcTreeNodes()->clear();
-  m_doc->setSwcTreeNodeSelected(m_nodeSet.begin(), m_nodeSet.end(), true);
+  if (m_host != NULL) {
+    m_oldNodeSet = m_host->getSelectedNode();
+    //m_host->deselectAllNode();
+    m_host->selectNode(m_nodeSet.begin(), m_nodeSet.end(), m_appending);
+    m_doc->notifySelectionAdded(m_oldNodeSet, m_nodeSet);
+    m_doc->notifySelectionRemoved(m_oldNodeSet, m_nodeSet);
+  }
 }
 
 void ZStackDocCommand::SwcEdit::SetSwcNodeSeletion::undo()
 {
-  m_doc->selectedSwcTreeNodes()->clear();
-  m_doc->setSwcTreeNodeSelected(m_oldNodeSet.begin(), m_oldNodeSet.end(), true);
+  if (m_host != NULL) {
+    //m_nodeSet = m_host->getSelectedNode();
+    m_host->deselectAllNode();
+    m_host->selectNode(m_oldNodeSet.begin(), m_oldNodeSet.end(), true);
+    m_doc->notifySelectionAdded(m_nodeSet, m_oldNodeSet);
+    m_doc->notifySelectionRemoved(m_nodeSet, m_oldNodeSet);
+  }
 }
 #endif
 

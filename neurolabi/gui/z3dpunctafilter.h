@@ -85,7 +85,7 @@ private:
   ZVec4Parameter m_singleColorForAllPuncta;
   //std::vector<ZVec4Parameter*> m_colorsForDifferentSource;
   std::map<QString, ZVec4Parameter*> m_sourceColorMapper;
-  std::map<QString, ZVec4Parameter*> m_nameColorMapper;
+  //std::map<QString, ZVec4Parameter*> m_nameColorMapper;
   ZBoolParameter m_useSameSizeForAllPuncta;
 
   //std::map<QString, size_t> m_sourceColorMapper;   // should use unordered_map
@@ -111,7 +111,7 @@ private:
 
   ZWidgetsGroup *m_widgetsGroup;
   std::vector<ZWidgetsGroup*> m_colorsForDifferentSourceWidgetsGroup;
-  std::vector<ZWidgetsGroup*> m_colorsForDifferentNameWidgetsGroup;
+  //std::vector<ZWidgetsGroup*> m_colorsForDifferentNameWidgetsGroup;
   bool m_dataIsInvalid;
 
   std::vector<ZPunctum*> m_origPunctaList;

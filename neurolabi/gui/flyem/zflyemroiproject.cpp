@@ -60,6 +60,11 @@ void ZFlyEmRoiProject::clear()
   shallowClear();
 }
 
+void ZFlyEmRoiProject::deleteAllData()
+{
+  clear();
+}
+
 void ZFlyEmRoiProject::shallowClear()
 {
   m_dataFrame = NULL;
@@ -992,10 +997,10 @@ void ZFlyEmRoiProject::importRoiFromSwc(ZSwcTree *tree)
     for (ZSwcForest::iterator iter = forest->begin();
          iter != forest->end(); ++iter) {
       ZSwcTree *roiSwc = *iter;
-      ZSwcTree::DepthFirstIterator iter(roiSwc);
+      ZSwcTree::DepthFirstIterator swcIter(roiSwc);
       ZClosedCurve *roiCurve = new ZClosedCurve;
       double z = 0.0;
-      for (Swc_Tree_Node *tn = iter.begin(); tn != NULL; tn = iter.next()) {
+      for (Swc_Tree_Node *tn = swcIter.begin(); tn != NULL; tn = swcIter.next()) {
         if (SwcTreeNode::isRegular(tn)) {
           z = SwcTreeNode::z(tn);
           roiCurve->append(SwcTreeNode::pos(tn));
@@ -1005,4 +1010,18 @@ void ZFlyEmRoiProject::importRoiFromSwc(ZSwcTree *tree)
     }
     delete forest;
   }
+}
+
+ZFlyEmRoiProject* ZFlyEmRoiProject::clone(const std::string &name) const
+{
+  ZFlyEmRoiProject *project = new ZFlyEmRoiProject(name, parent());
+  project->setDvidTarget(m_dvidTarget);
+  project->m_curveArray.resize(m_curveArray.size());
+  for (size_t i = 0; i < m_curveArray.size(); ++i) {
+    if (m_curveArray[i] != NULL) {
+      project->m_curveArray[i] = m_curveArray[i]->clone();
+    }
+  }
+
+  return project;
 }

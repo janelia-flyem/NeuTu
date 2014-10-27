@@ -58,6 +58,8 @@ ZFlyEmRoiDialog::ZFlyEmRoiDialog(QWidget *parent) :
           this, SLOT(viewAllSynapseIn3D()));
   connect(this, SIGNAL(currentSliceLoaded(int)),
           this, SLOT(loadNextSlice(int)));
+  connect(ui->cloneProjectPushButton, SIGNAL(clicked()),
+          this, SLOT(cloneProject()));
 
 #if 0
   QSize iconSize(24, 24);
@@ -217,7 +219,7 @@ bool ZFlyEmRoiDialog::appendProject(ZFlyEmRoiProject *project)
         }
       }
       if (isValidProject) {
-        project->downloadAllRoi();
+        //project->downloadAllRoi();
         m_projectList.append(project);
         ui->projectComboBox->addItem(project->getName().c_str());
         return true;
@@ -527,9 +529,15 @@ void ZFlyEmRoiDialog::loadGrayscaleFunc(int z, bool lowres)
       ZSwcTree *tree = m_project->getRoiSwc(
             z, FlyEm::GetFlyEmRoiMarkerRadius(stack->width(), stack->height()));
       if (tree != NULL) {
-        m_docReader.addObject(
-              tree, NeuTube::Documentable_SWC, ZDocPlayer::ROLE_ROI);
+        m_docReader.addObject(tree, ZDocPlayer::ROLE_ROI);
       }
+#ifdef _DEBUG_
+      std::cout << "Object count in docreader: "
+                << m_docReader.getObjectGroup().size() << std::endl;
+      std::cout << "Swc count in docreader: "
+                << m_docReader.getObjectGroup().getObjectList(ZStackObject::TYPE_SWC).size()
+                << std::endl;
+#endif
       emit newDocReady();
     } else {
       emit progressFailed();
@@ -1017,11 +1025,16 @@ void ZFlyEmRoiDialog::closeEvent(QCloseEvent *event)
   }
 }
 
-void ZFlyEmRoiDialog::loadProject(int index)
+void ZFlyEmRoiDialog::closeCurrentProject()
 {
-  if (m_project != NULL) { //will be modified for better switching
+  if (m_project != NULL) {
     m_project->closeDataFrame();
   }
+}
+
+void ZFlyEmRoiDialog::loadProject(int index)
+{
+  closeCurrentProject();
   m_project = getProject(index);
   updateWidget();
 }
@@ -1056,6 +1069,33 @@ ZFlyEmRoiProject* ZFlyEmRoiDialog::newProject(const std::string &name)
   }
 
   return project;
+}
+
+void ZFlyEmRoiDialog::cloneProject(const std::string &name)
+{
+  if (isValidName(name)) {
+    ZFlyEmRoiProject *project = m_project->clone(name);
+    appendProject(project);
+    ui->projectComboBox->setCurrentIndex(ui->projectComboBox->count() - 1);
+    uploadProjectList();
+  } else {
+    QMessageBox::warning(
+              this, "Failed to Clone A Project",
+              "Invalid project name: no space is allowed; "
+              "no duplicated name is allowed.",
+              QMessageBox::Ok);
+  }
+}
+
+void ZFlyEmRoiDialog::cloneProject()
+{
+  bool ok;
+  QString text = QInputDialog::getText(this, tr("New ROI Project"),
+                                       tr("Project name:"), QLineEdit::Normal,
+                                       "", &ok);
+  if (ok && !text.isEmpty()) {
+    cloneProject(text.toStdString());
+  }
 }
 
 void ZFlyEmRoiDialog::on_pushButton_clicked() //new project
@@ -1254,5 +1294,34 @@ void ZFlyEmRoiDialog::setQuickMode(bool quickMode)
     }
 
     updateWidget();
+  }
+}
+
+void ZFlyEmRoiDialog::deleteProject(ZFlyEmRoiProject *project)
+{
+  if (project != NULL) {
+    m_projectList.removeOne(project);
+    project->deleteAllData();
+    delete project;
+    uploadProjectList();
+  }
+}
+
+void ZFlyEmRoiDialog::deleteProject()
+{
+  if (m_project != NULL) {
+    bool deleting = false;
+    int ret = QMessageBox::warning(
+          this, "Delete Project",
+          QString("You are about to deleting the project '%1'. "
+                  "Do you want to continue?").arg(m_project->getName().c_str()),
+          QMessageBox::Yes | QMessageBox::No);
+    deleting = (ret == QMessageBox::Yes);
+    if (deleting) {
+      ZFlyEmRoiProject *project = m_project;
+      closeCurrentProject();
+      ui->projectComboBox->removeItem(ui->projectComboBox->currentIndex());
+      deleteProject(project);
+    }
   }
 }

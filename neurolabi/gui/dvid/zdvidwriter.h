@@ -57,6 +57,8 @@ public:
    */
   void createKeyvalue(const std::string &name);
 
+  void deleteKey(const std::string &dataName, const std::string &key);
+
 private:
   std::string getJsonStringForCurl(const ZJsonValue &obj) const;
   void writeJson(const std::string url, const ZJsonValue &value);

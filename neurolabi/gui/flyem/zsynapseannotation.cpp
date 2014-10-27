@@ -20,13 +20,14 @@ SynapseLocation::SynapseLocation(EType type)
   m_bodyId = -1;
   m_confidence = 0.0;
   m_multi = false;
+  m_convergent = false;
 }
 
 SynapseLocation::SynapseLocation(EType type, int x, int y, int z, int bodyId,
                                  double confidence, const std::string &status,
-                                 bool multi)
+                                 bool multi, bool convergent)
 {
-  set(type, x, y, z, bodyId, confidence, status, multi);
+  set(type, x, y, z, bodyId, confidence, status, multi, convergent);
 }
 
 void SynapseLocation::setLocation(int x, int y, int z)
@@ -38,7 +39,7 @@ void SynapseLocation::setLocation(int x, int y, int z)
 
 void SynapseLocation::set(EType type, int x, int y, int z, int bodyId,
                           double confidence, const std::string &status,
-                          bool multi)
+                          bool multi, bool convergent)
 {
   m_type = type;
   m_x = x;
@@ -48,6 +49,7 @@ void SynapseLocation::set(EType type, int x, int y, int z, int bodyId,
   m_confidence = confidence;
   m_status = status;
   m_multi = multi;
+  m_convergent = convergent;
 }
 
 void SynapseLocation::loadJsonObject(json_t *object, EType type)
@@ -75,6 +77,15 @@ void SynapseLocation::loadJsonObject(json_t *object, EType type)
         m_multi = true;
       } else {
         m_multi = false;
+      }
+    } else if (strcmp(key, "convergent") == 0) {
+#ifdef _DEBUG_2
+      std::cout << json_string_value(value) << std::endl;
+#endif
+      if (strcmp(json_string_value(value), "convergent") == 0) {
+        m_convergent = true;
+      } else {
+        m_convergent = false;
       }
     }
   }
@@ -193,6 +204,26 @@ ZJsonObject SynapseLocation::toJsonObject() const
   json.setEntry("location", locationJson);
 
   return json;
+}
+
+std::string SynapseLocation::getPunctumSource() const
+{
+  std::string source = "";
+  if (isTBar()) {
+    source += "tbar";
+    if (isMulti()) {
+      source += "_multi";
+    }
+    if (isConvergent()) {
+      source += "_conv";
+    }
+  } else if (isPartner()) {
+    source += "psd";
+  } else {
+    source += "unknown";
+  }
+
+  return source;
 }
 
 ZSynapseAnnotation::ZSynapseAnnotation() : m_tBar(SynapseLocation::TBAR)

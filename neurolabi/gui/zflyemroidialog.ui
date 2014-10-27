@@ -144,6 +144,13 @@
           </property>
          </widget>
         </item>
+        <item>
+         <widget class="QPushButton" name="cloneProjectPushButton">
+          <property name="text">
+           <string>Clone</string>
+          </property>
+         </widget>
+        </item>
        </layout>
       </item>
       <item>

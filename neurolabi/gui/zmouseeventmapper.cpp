@@ -148,8 +148,6 @@ ZStackOperator ZMouseEventLeftButtonReleaseMapper::getOperation(
             default:
               break;
             }
-          } else {
-            op.setOperation(ZStackOperator::OP_DESELECT_ALL);
           }
         }
       }
@@ -162,7 +160,7 @@ ZStackOperator ZMouseEventLeftButtonReleaseMapper::getOperation(
           if (!getDocument()->hasSelectedSwcNode()) {
             op.setOperation(ZStackOperator::OP_SHOW_TRACE_CONTEXT_MENU);
           } else {
-            op.setOperation(ZStackOperator::OP_SWC_DESELECT_ALL_NODE);
+            op.setOperation(ZStackOperator::OP_DESELECT_ALL);
           }
         }
         break;
@@ -229,6 +227,10 @@ ZStackOperator ZMouseEventLeftButtonDoubleClickMapper::getOperation(
     if (op.getHitObject()->getType() == ZStackObject::TYPE_STROKE) {
       if (m_context->isProjectView()) {
         op.setOperation(ZStackOperator::OP_STROKE_LOCATE_FOCUS);
+      }
+    } else if (op.getHitObject()->getType() == ZStackObject::TYPE_OBJ3D) {
+      if (m_context->isProjectView()) {
+        op.setOperation(ZStackOperator::OP_OBJECT3D_LOCATE_FOCUS);
       }
     }
   }

@@ -14,6 +14,8 @@
 #include "flyem/zflyemneuronimagefactory.h"
 #include "zdviddialog.h"
 #include "zdialogfactory.h"
+#include "dvid/zdvidwriter.h"
+#include "flyem/zflyemneuronbodyinfo.h"
 
 FlyEmBodySplitProjectDialog::FlyEmBodySplitProjectDialog(QWidget *parent) :
   QDialog(parent),
@@ -299,6 +301,8 @@ void FlyEmBodySplitProjectDialog::updateSideView()
   //startProgress("Generating side view ...");
   //getProgressDialog()->setRange(0, 100);
 
+  initSideViewScene();
+
   /*QFuture<void> res = */QtConcurrent::run(
         this, &FlyEmBodySplitProjectDialog::updateSideViewFunc);
 }
@@ -309,71 +313,136 @@ void FlyEmBodySplitProjectDialog::resetSideView()
   ui->sideViewLabel->setText("Side view");
 }
 
+void FlyEmBodySplitProjectDialog::initSideViewScene()
+{
+  m_sideViewScene->clear();
+  m_sideViewScene->setSceneRect(ui->sideView->viewport()->rect());
+  m_sideViewScene->setBackgroundBrush(QBrush(Qt::gray));
+}
+
 void FlyEmBodySplitProjectDialog::updateSideViewFunc()
 {
   int bodyId = getBodyId();
 
   ui->sideViewLabel->setText("Side view: generating ...");
-  m_sideViewScene->clear();
+  //m_sideViewScene->clear();
 
+
+  QGraphicsPixmapItem *thumbnailItem = new QGraphicsPixmapItem;
   QPixmap pixmap;
-  //Stack *stack = C_Stack::readSc(GET_TEST_DATA_DIR + "/benchmark/bfork_2d.tif");
+  bool thumbnailReady = false;
 
-  ZFlyEmNeuronImageFactory factory;
-  factory.setDownsampleInterval(9, 9, 9);
-
-  //getProgressDialog()->setValue(10);
-
-  ZObject3dScan obj;
+  Stack *stack = NULL;
   ZDvidReader reader;
   if (reader.open(getDvidTarget())) {
-    reader.readBody(bodyId, &obj);
+    if (reader.hasBodyInfo(bodyId)) {
+      ZStack *stackObj = reader.readThumbnail(getBodyId());
+      if (stackObj != NULL) {
+        stack = C_Stack::clone(stackObj->c_stack());
+        delete stackObj;
+      }
+    }
+
+    ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
+
+    if (stack == NULL) {
+      ZDvidWriter writer;
+      if (writer.open(getDvidTarget())) {
+        ZObject3dScan body;
+        reader.readBody(bodyId, &body);
+        ZFlyEmNeuronImageFactory factory;
+
+        factory.setSizePolicy(ZFlyEmNeuronImageFactory::SIZE_BOUND_BOX,
+                              ZFlyEmNeuronImageFactory::SIZE_BOUND_BOX,
+                              ZFlyEmNeuronImageFactory::SIZE_BOUND_BOX);
+        factory.setDownsampleInterval(7, 7, 7);
+        factory.setSourceDimension(dvidInfo.getStackSize()[0],
+            dvidInfo.getStackSize()[1], dvidInfo.getStackSize()[2]);
+
+        stack = factory.createSurfaceImage(body);
+        writer.writeThumbnail(bodyId, stack);
+        ZFlyEmNeuronBodyInfo bodyInfo;
+        bodyInfo.setBodySize(body.getVoxelNumber());
+        bodyInfo.setBoundBox(body.getBoundBox());
+        writer.writeBodyInfo(bodyId, bodyInfo.toJsonObject());
+      }
+    }
+
+    if (stack != NULL) {
+      ZImage image(C_Stack::width(stack), C_Stack::height(stack));
+      image.setData(C_Stack::array8(stack));
+      if (pixmap.convertFromImage(image)) {
+        thumbnailReady = true;
+      } else {
+        dump("Failed to load the thumbnail.");
+      }
+      C_Stack::kill(stack);
+    }
+
+    if (thumbnailReady) {
+      thumbnailItem->setPixmap(pixmap);
+      QTransform transform;
+
+      double sceneWidth = m_sideViewScene->width();
+      double sceneHeight = m_sideViewScene->height();
+      double scale = std::min(
+            double(sceneWidth - 10) / pixmap.width(),
+            double(sceneHeight - 10) / pixmap.height());
+      if (scale > 5) {
+        scale = 5;
+      }
+
+      transform.scale(scale, scale);
+      thumbnailItem->setTransform(transform);
+      m_sideViewScene->addItem(thumbnailItem);
+
+      int sourceZDim = dvidInfo.getStackSize()[2];
+      int sourceYDim = dvidInfo.getStackSize()[1];
+
+      ZFlyEmNeuronBodyInfo bodyInfo =
+          reader.readBodyInfo(bodyId);
+      int startY = bodyInfo.getBoundBox().getFirstCorner().getY();
+      int startZ = bodyInfo.getBoundBox().getFirstCorner().getZ();
+      int bodyHeight = bodyInfo.getBoundBox().getDepth();
+      int bodySpan = bodyInfo.getBoundBox().getHeight();
+
+      if (sourceZDim == 0) {
+        QGraphicsTextItem *textItem = new QGraphicsTextItem;
+        textItem->setHtml(
+              QString("<p><font color=\"red\">Z = %1</font></p>"
+                      "<p><font color=\"red\">Height = %2</font></p>").
+              arg(startZ).arg(bodyHeight));
+        m_sideViewScene->addItem(textItem);
+      } else { //Draw range rect
+        double x = 10;
+        double y = 10;
+
+        double scale = sceneWidth * 0.5 / sourceYDim;
+        double height = sourceZDim * scale;
+        double width = sourceYDim * scale;
+
+        QGraphicsRectItem *rectItem = new QGraphicsRectItem(
+              sceneWidth - width - x, y, width, height);
+        rectItem->setPen(QPen(QColor(255, 0, 0, 164)));
+        m_sideViewScene->addItem(rectItem);
+
+        int z0 = dvidInfo.getStartCoordinates().getZ();
+        int y0 = dvidInfo.getStartCoordinates().getY();
+        rectItem = new QGraphicsRectItem(
+              sceneWidth - width - x + (startY - y0) * scale,
+              y + (startZ - z0) * scale,
+              bodySpan * scale, bodyHeight * scale);
+        rectItem->setPen(QPen(QColor(0, 255, 0, 164)));
+        m_sideViewScene->addItem(rectItem);
+      }
+    }
   }
-
-  //getProgressDialog()->setValue(30);
-
-  //obj.load(GET_DATA_DIR + "/benchmark/432.sobj");
-  QGraphicsPixmapItem *thumbnailItem = new QGraphicsPixmapItem;
-  tic();
-  Stack *stack = factory.createSurfaceImage(obj);
-  ptoc();
-
-  //getProgressDialog()->setValue(80);
-
-  int targetWidth = ui->sideView->width() - 10;
-  int targetHeight = ui->sideView->height() - 10;
-  double ratio = std::min(double(targetWidth) / C_Stack::width(stack),
-                          double(targetHeight) / C_Stack::height(stack));
-
-  Stack *stack2 = C_Stack::resize(stack, iround(C_Stack::width(stack) * ratio),
-                                  iround(C_Stack::height(stack) * ratio), 1);
-  C_Stack::kill(stack);
-  stack = stack2;
-
-  //getProgressDialog()->setValue(90);
-
-  ZImage image(C_Stack::width(stack), C_Stack::height(stack));
-  image.setData(C_Stack::array8(stack));
-  if (!pixmap.convertFromImage(image)) {
-    dump("Failed to load the thumbnail.");
-  }
-  C_Stack::kill(stack);
-
-  thumbnailItem->setPixmap(pixmap);
-
-  //thumbnailItem->setOffset(0, 0);
 
   if (bodyId == getBodyId()) {
     m_sideViewScene->addItem(thumbnailItem);
     ui->sideViewLabel->setText(QString("Side view: %1").arg(bodyId));
     emit sideViewReady();
   }
-
-  //emit messageDumped("Side view ready.", true);
-
-  //emit progressDone();
-
-
 }
 
 void FlyEmBodySplitProjectDialog::startProgress(const QString &label)

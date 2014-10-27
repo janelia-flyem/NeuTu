@@ -408,14 +408,24 @@ public:
   Swc_Tree_Node* selectHitNode(bool appending);
   Swc_Tree_Node* deselectHitNode();
 
+  template<class InputIterator>
+  void selectNode(
+      InputIterator first, InputIterator last, bool appending);
+
+  void selectNodeConnection(Swc_Tree_Node *seed);
+  void selectNodeFloodFilling(Swc_Tree_Node *seed);
+
   void selectHitNodeConnection();
   void selectHitNodeFloodFilling();
+  void selectNeighborNode();
+  void selectConnectedNode();
 
   const std::set<Swc_Tree_Node*>& getSelectedNode() const;
   bool hasSelectedNode() const;
   bool isNodeSelected(const Swc_Tree_Node *tn) const;
 
   Swc_Tree_Node* getHitNode() const { return m_hitSwcNode; }
+  void setHitNode(Swc_Tree_Node *tn) { m_hitSwcNode = tn; }
 
   void toSvgFile(const char *filePath);
 
@@ -729,4 +739,17 @@ private:
 #define REGULAR_SWC_NODE_BEGIN(tn, start) \
   (Swc_Tree_Node_Is_Regular(tn) ? (start) : ((start) + 1))
 
+template<class InputIterator>
+void ZSwcTree::selectNode(
+    InputIterator first, InputIterator last, bool appending)
+{
+  if (!appending) {
+    deselectAllNode();
+  }
+
+  for (InputIterator it = first; it != last; ++it) {
+    Swc_Tree_Node *tn = *it;
+    selectNode(tn, true);
+  }
+}
 #endif /* _ZSWCTREE_H_ */

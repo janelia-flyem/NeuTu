@@ -12,6 +12,8 @@ class ZFlyEmDvidReader : public ZDvidReader
 public:
   ZStack* readThumbnail(int bodyId);
   ZFlyEmBodyAnnotation readAnnotation(int bodyId);
+  QStringList readSynapseList();
+  ZJsonObject readSynapseAnnotation(const QString &name);
 };
 
 #endif // ZFLYEMDVIDREADER_H

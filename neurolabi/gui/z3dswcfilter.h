@@ -190,7 +190,8 @@ private:
   std::vector<glm::vec4> m_pointColors;
   std::vector<glm::vec4> m_pointPickingColors;
 
-  std::vector<std::vector<std::pair<Swc_Tree_Node*, Swc_Tree_Node*> > > m_decompsedNodePairs;
+  std::vector<std::vector<std::pair<Swc_Tree_Node*, Swc_Tree_Node*> > >
+  m_decompsedNodePairs;
   std::vector<std::vector<Swc_Tree_Node* > > m_decomposedNodes;
   std::set<Swc_Tree_Node*> m_allNodesSet;  // for fast search
   std::set<int> m_allNodeType;   // all node type of current opened swc, used for adjust widget (hide irrelavant stuff)
@@ -212,6 +213,8 @@ private:
 
   InteractionMode m_interactionMode;
   ZSwcColorScheme m_colorScheme;
+
+  bool m_enableCutting;
 };
 
 #endif // Z3DSWCFILTER_H

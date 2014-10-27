@@ -12,18 +12,19 @@ ZFlyEmBookmarkArray::ZFlyEmBookmarkArray()
 {
 }
 
-void ZFlyEmBookmarkArray::importJsonFile(const std::string &filePath)
+void ZFlyEmBookmarkArray::importJsonFile(
+    const std::string &filePath, const ZFlyEmCoordinateConverter *converter)
 {
   clear();
 
   ZJsonObject obj;
   obj.load(filePath);
 
+  /*
   ZFlyEmCoordinateConverter converter;
-  ZFlyEmDataInfo dataInfo(FlyEm::DATA_FIB25);
+  ZFlyEmDataInfo dataInfo(FlyEm::DATA_FIB25_7C);
   converter.configure(dataInfo);
-
-
+*/
   ZJsonArray bookmarkArrayObj(obj["data"], false);
   for (size_t i = 0; i < bookmarkArrayObj.size(); ++i) {
     ZJsonObject bookmarkObj(bookmarkArrayObj.at(i), false);
@@ -39,8 +40,11 @@ void ZFlyEmBookmarkArray::importJsonFile(const std::string &filePath)
           double x = coordinates[0];
           double y = coordinates[1];
           double z = coordinates[2];
-          converter.convert(&x, &y, &z, ZFlyEmCoordinateConverter::RAVELER_SPACE,
-                            ZFlyEmCoordinateConverter::IMAGE_SPACE);
+          if (converter != NULL) {
+            converter->convert(
+                  &x, &y, &z, ZFlyEmCoordinateConverter::RAVELER_SPACE,
+                  ZFlyEmCoordinateConverter::IMAGE_SPACE);
+          }
           bookmark.setLocation(iround(x), iround(y), iround(z));
           bookmark.setBodyId(bodyId);
           append(bookmark);

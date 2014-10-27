@@ -102,13 +102,13 @@ void ZObjsManagerWidget::updateSelectionFromCategorizedSwcNode(
   for (int i=0; i<indexes.size(); i++) {
     Swc_Tree_Node *p3 = m_doc->swcNodeObjsModel()->getSwcTreeNode(indexes[i]);
     if (p3 != NULL) {
-      m_doc->selectSwcTreeNode(p3);
+      m_doc->selectSwcTreeNode(p3, true);
     } else {
       std::set<Swc_Tree_Node*> nodeSet =
           m_doc->swcNodeObjsModel()->getSwcTreeNodeSet(indexes[i]);
       for (std::set<Swc_Tree_Node*>::const_iterator iter = nodeSet.begin();
            iter != nodeSet.end(); ++iter) {
-        m_doc->selectSwcTreeNode(*iter);
+        m_doc->selectSwcTreeNode(*iter, true);
       }
     }
   }
@@ -185,7 +185,8 @@ void ZObjsManagerWidget::punctaSelectionChanged(QList<ZPunctum *> selected, QLis
   }
 }
 
-void ZObjsManagerWidget::swcSelectionChanged(QList<ZSwcTree *> selected, QList<ZSwcTree *> deselected)
+void ZObjsManagerWidget::swcSelectionChanged(
+    QList<ZSwcTree *> selected, QList<ZSwcTree *> deselected)
 {
   if (!selected.empty()) {
     QItemSelection is;

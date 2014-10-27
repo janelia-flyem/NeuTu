@@ -240,7 +240,8 @@ void ZPunctum::setFromMarker(const ZVaa3dMarker &marker)
   setColor(marker.colorR(), marker.colorG(), marker.colorB());
   setComment(marker.comment().c_str());
   setName(marker.name().c_str());
-  setSource(QString("%1").arg(marker.type()).toStdString());
+//  setSource(QString("%1").arg(marker.type()).toStdString());
+  setSource(marker.source());
 }
 
 ZSTACKOBJECT_DEFINE_CLASS_NAME(ZPunctum)

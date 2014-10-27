@@ -2226,34 +2226,6 @@ void ZFlyEmDataFrame::exportThumbnail(
   }
 
   endProgress();
-
-  /*
-  const std::vector<ZFlyEmNeuron>& neuronArray =
-      m_dataArray[0]->getNeuronArray();
-  startProgress();
-  for (std::vector<ZFlyEmNeuron>::const_iterator iter = neuronArray.begin();
-       iter != neuronArray.end(); ++iter) {
-    advanceProgress(1.0 / neuronArray.size());
-    const ZFlyEmNeuron &neuron = *iter;
-    const ZObject3dScan *obj = neuron.getBody();
-    if (obj != NULL) {
-      ZObject3dScan yProj = obj->makeYProjection();
-      yProj.downsampleMax(5, 2, 0);
-      int offset[3];
-      Stack *stack = yProj.toStack(offset);
-      for (int i = 0; i < 3; ++i) {
-        offset[i] = -offset[i];
-      }
-      yProj.drawStack(stack, 255, offset);
-      C_Stack::write(
-            QString("%1/%2.tif").arg(saveDir).arg(neuron.getId()).
-            toStdString().c_str(),
-            stack);
-      C_Stack::kill(stack);
-    }
-  }
-  endProgress();
-  */
 }
 
 void ZFlyEmDataFrame::exportBundle(const QString &savePath)

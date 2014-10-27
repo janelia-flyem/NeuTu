@@ -14,6 +14,7 @@
 #include "zstackobject.h"
 #include "tz_fmatrix.h"
 #include "zpoint.h"
+#include "zintpoint.h"
 #include "tz_stack_utils.h"
 
 #ifndef INT_VOXEL_TYPE
@@ -205,11 +206,16 @@ public:
   bool hit(double x, double y);
   bool hit(double x, double y, double z);
 
+  bool hasHitVoxel() const;
+  ZIntPoint getHitVoxel() const;
+
 private:
   int m_conn;
   int m_label;
   std::vector<int> m_voxelArray;
   mutable Object_3d m_objWrapper;
+
+  int m_hitVoxelIndex;
 };
 
 template <typename T>

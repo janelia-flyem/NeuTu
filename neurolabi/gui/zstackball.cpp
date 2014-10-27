@@ -1,6 +1,7 @@
 #include "zstackball.h"
 
-#include <QDebug>
+#include "zqtheader.h"
+
 #include <math.h>
 #include "tz_math.h"
 #include "zintpoint.h"
@@ -178,6 +179,13 @@ void ZStackBall::displayHelper(
 
 //  const QBrush &oldBrush = painter->brush();
   const QPen &oldPen = painter->pen();
+
+  QPen pen;
+  pen.setWidthF(getPenWidth());
+  pen.setCosmetic(m_usingCosmeticPen);
+  if (hasVisualEffect(VE_DASH_PATTERN)) {
+    pen.setStyle(Qt::DashLine);
+  }
   double alpha = oldPen.color().alphaF();
 
   if (slice == -1) {
@@ -209,33 +217,31 @@ void ZStackBall::displayHelper(
       //qDebug() << painter->brush().color();
       QColor color = painter->pen().color();
       color.setAlphaF(alpha);
-      painter->setPen(color);
+      pen.setColor(color);
+      painter->setPen(pen);
       painter->drawEllipse(QPointF(m_center.x(), m_center.y()),
                            adjustedRadius, adjustedRadius);
     }
   }
 
+  bool drawingBoundBox = false;
+
+  adjustedRadius = getAdjustedRadius(m_r);
   if (isSelected()) {
-    QRectF rect;
-    rect.setLeft(m_center.x() - m_r);
-    rect.setTop(m_center.y() - m_r);
-    rect.setWidth(m_r + m_r);
-    rect.setHeight(m_r + m_r);
-
-    painter->setBrush(Qt::NoBrush);
-
-    QColor color(255, 255, 0);
-    color.setAlphaF(alpha);
-
-    QPen pen(color);
+    drawingBoundBox = true;
+    QColor color;
+    color.setRgb(255, 255, 0);
+    //color.setAlphaF(alpha);
+    pen.setColor(color);
+    pen.setCosmetic(true);
+  } else if (hasVisualEffect(VE_BOUND_BOX)) {
+    drawingBoundBox = true;
+    pen = oldPen;
     pen.setStyle(Qt::SolidLine);
     pen.setCosmetic(m_usingCosmeticPen);
-    painter->setPen(pen);
-
-    painter->drawRect(rect);
   }
 
-  if (hasVisualEffect(VE_BOUND_BOX)) {
+  if (drawingBoundBox) {
     QRectF rect;
     rect.setLeft(m_center.x() - adjustedRadius);
     rect.setTop(m_center.y() - adjustedRadius);
@@ -243,10 +249,6 @@ void ZStackBall::displayHelper(
     rect.setHeight(adjustedRadius + adjustedRadius);
 
     painter->setBrush(Qt::NoBrush);
-
-    QPen pen = oldPen;
-    pen.setStyle(Qt::SolidLine);
-    pen.setCosmetic(m_usingCosmeticPen);
     painter->setPen(pen);
 
 #if 0 //for future versions

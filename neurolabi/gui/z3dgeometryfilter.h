@@ -19,9 +19,12 @@ public:
   virtual bool isStayOnTop() const { return m_stayOnTop.get(); }
   virtual void setStayOnTop(bool s) { m_stayOnTop.set(s); }
 
-  inline void setCamera(const Z3DCamera& c) {m_rendererBase->setCamera(c);}
-  inline void setViewport(glm::ivec2 viewport) {m_rendererBase->setViewport(viewport);}
-  inline void setViewport(glm::ivec4 viewport) {m_rendererBase->setViewport(viewport);}
+  inline void setCamera(const Z3DCamera& c) {
+    m_rendererBase->setCamera(c);}
+  inline void setViewport(glm::ivec2 viewport) {
+    m_rendererBase->setViewport(viewport);}
+  inline void setViewport(glm::ivec4 viewport) {
+    m_rendererBase->setViewport(viewport);}
   void setPickingManager(Z3DPickingManager* pm);
   inline Z3DCamera& getCamera() const {return m_rendererBase->getCamera();}
   inline glm::ivec4 getViewport() const {return m_rendererBase->getViewport();}
@@ -35,9 +38,12 @@ public:
   // "Old openGL" or "GLSL" (default)
   inline QString getRendererMethod() const { return m_rendererBase->getRenderMethod(); }
 
-  inline void setShaderHookType(Z3DRendererBase::ShaderHookType t) { m_rendererBase->setShaderHookType(t); }
-  inline Z3DRendererBase::ShaderHookType getShaderHookType() const { return m_rendererBase->getShaderHookType(); }
-  inline Z3DRendererBase::ShaderHookParameter& shaderHookPara() { return m_rendererBase->shaderHookPara(); }
+  inline void setShaderHookType(Z3DRendererBase::ShaderHookType t) {
+    m_rendererBase->setShaderHookType(t); }
+  inline Z3DRendererBase::ShaderHookType getShaderHookType() const {
+    return m_rendererBase->getShaderHookType(); }
+  inline Z3DRendererBase::ShaderHookParameter& shaderHookPara() {
+    return m_rendererBase->shaderHookPara(); }
 
   // need blending if it will render objects with less than 1.0 alpha value
   // Z3Dcompositor will call this function to decide how to render this filter. This is important

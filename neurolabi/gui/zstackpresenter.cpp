@@ -526,7 +526,7 @@ const QPointF ZStackPresenter::stackPositionFromMouse(MouseButtonAction mba)
 const Swc_Tree_Node* ZStackPresenter::getSelectedSwcNode() const
 {
   std::set<Swc_Tree_Node*> nodeSet =
-      buddyDocument()->getSelectedSwcTreeSet();
+      buddyDocument()->getSelectedSwcTreeNodeSet();
   if (!nodeSet.empty()) {
     return *(nodeSet.begin());
   }
@@ -1135,6 +1135,19 @@ void ZStackPresenter::processMouseDoubleClickEvent(QMouseEvent *event)
       }
     }
     break;
+  case ZStackOperator::OP_OBJECT3D_LOCATE_FOCUS:
+    if (op.getHitObject<ZObject3d>() != NULL) {
+      ZIntPoint pt = op.getHitObject<ZObject3d>()->getHitVoxel();
+      int sliceIndex = pt.getZ();
+      sliceIndex -= buddyDocument()->getStackOffset().getZ();
+      if (sliceIndex >= 0 &&
+          sliceIndex < buddyDocument()->getStackSize().getZ()) {
+        buddyView()->setSliceIndex(sliceIndex);
+        interactiveContext().setViewMode(ZInteractiveContext::VIEW_NORMAL);
+        interactionEvent.setEvent(ZInteractionEvent::EVENT_VIEW_SLICE);
+      }
+    }
+    break;
   default:
     break;
   }
@@ -1726,7 +1739,7 @@ void ZStackPresenter::processEvent(ZInteractionEvent &event)
     if (buddyDocument()->getSelectedSwcNodeNumber() != 1) {
       exitSwcExtendMode();
     }
-    updateView();
+    buddyView()->redrawObject();
     break;
   case ZInteractionEvent::EVENT_VIEW_PROJECTION:
   case ZInteractionEvent::EVENT_VIEW_SLICE:
@@ -1739,7 +1752,7 @@ void ZStackPresenter::processEvent(ZInteractionEvent &event)
   case ZInteractionEvent::EVENT_STROKE_SELECTED:
   case ZInteractionEvent::EVENT_ALL_OBJECT_DESELCTED:
   case ZInteractionEvent::EVENT_OBJ3D_SELECTED:
-    updateView();
+    buddyView()->redrawObject();
     break;
   default:
     break;
@@ -1806,7 +1819,7 @@ void ZStackPresenter::process(const ZStackOperator &op)
   {
     if (buddyDocument()->hasSelectedSwcNode()) {
       std::set<Swc_Tree_Node*> nodeSet =
-          buddyDocument()->getSelectedSwcTreeSet();
+          buddyDocument()->getSelectedSwcTreeNodeSet();
       Swc_Tree_Node *prevNode = *(nodeSet.begin());
       if (prevNode != NULL) {
         Swc_Tree_Node *tn = op.getHitObject<Swc_Tree_Node>();
@@ -1923,6 +1936,10 @@ void ZStackPresenter::process(const ZStackOperator &op)
     break;
   case ZStackOperator::OP_OBJECT3D_SELECT_SINGLE:
     buddyDocument()->deselectAllObject();
+    buddyDocument()->setSelected(op.getHitObject<ZObject3d>());
+    interactionEvent.setEvent(ZInteractionEvent::EVENT_OBJ3D_SELECTED);
+    break;
+  case ZStackOperator::OP_OBJECT3D_SELECT_MULTIPLE:
     buddyDocument()->setSelected(op.getHitObject<ZObject3d>());
     interactionEvent.setEvent(ZInteractionEvent::EVENT_OBJ3D_SELECTED);
     break;

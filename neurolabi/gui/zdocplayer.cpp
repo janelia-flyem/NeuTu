@@ -6,6 +6,7 @@
 #include "zswcgenerator.h"
 #include "zswctree.h"
 #include "zjsonobject.h"
+#include "zstackball.h"
 
 const ZDocPlayer::TRole ZDocPlayer::ROLE_NONE = 0;
 const ZDocPlayer::TRole ZDocPlayer::ROLE_DISPLAY = 1;
@@ -393,4 +394,31 @@ ZStack* ZSparseObjectPlayer::toStack() const
   }
 
   return NULL;
+}
+
+/*******************************/
+ZStackBallPlayer::ZStackBallPlayer() : ZDocPlayer()
+{
+}
+
+ZStackBallPlayer::ZStackBallPlayer(ZStackObject *data, TRole role) :
+  ZDocPlayer(data, role)
+{
+}
+
+ZStackBall* ZStackBallPlayer::getCompleteData() const
+{
+  return dynamic_cast<ZStackBall*>(m_data);
+}
+
+Z3DGraph ZStackBallPlayer::get3DGraph() const
+{
+  Z3DGraph graph;
+
+  const ZStackBall *obj = getCompleteData();
+  if (obj != NULL) {
+    graph.addNode(*obj);
+  }
+
+  return graph;
 }

@@ -145,6 +145,9 @@ bool ZFlyEmDataBundle::loadDvid(const ZDvidFilter &dvidFilter)
 
   ZFlyEmDvidReader fdReader;
   fdReader.open(dvidFilter.getDvidTarget());
+
+   m_synapseAnnotationFile = dvidTarget.getSourceString();
+
   size_t i = 0;
   for (std::set<int>::const_iterator iter = bodySet.begin();
        iter != bodySet.end(); ++iter, ++i) {
@@ -156,6 +159,8 @@ bool ZFlyEmDataBundle::loadDvid(const ZDvidFilter &dvidFilter)
       neuron.setVolumePath(m_source);
       neuron.setThumbnailPath(m_source);
       neuron.setResolution(m_swcResolution);
+      neuron.setSynapseAnnotation(getSynapseAnnotation());
+      neuron.setSynapseScale(90);
 
       ZFlyEmBodyAnnotation annotation = fdReader.readAnnotation(bodyId);
       if (!annotation.getName().empty()) {
@@ -173,6 +178,16 @@ bool ZFlyEmDataBundle::loadDvid(const ZDvidFilter &dvidFilter)
     }
   }
   m_neuronArray.resize(realSize);
+
+  //Load synapses
+//  if (fdReader.open(dvidTarget)) {
+//    QStringList synapseList = fdReader.readSynapseList();
+//    //qDebug() << synapseList;
+
+//    ZJsonObject obj = fdReader.readSynapseAnnotation(synapseList[0]);
+
+//    //obj.print();
+//  }
 
   return true;
 }
@@ -510,22 +525,18 @@ FlyEm::ZSynapseAnnotationArray* ZFlyEmDataBundle::getSynapseAnnotation() const
 {
   if (isDeprecated(SYNAPSE_ANNOTATION)) {
     ZString path = m_synapseAnnotationFile;
-    if (path.startsWith("http")) {
-
-    } else {
-      if (!path.empty()) {
-        if (!path.isAbsolutePath()) {
-          path = ZString::absolutePath(ZString(m_source).dirPath(), path);
-        }
-
-        if (fexist(path.c_str())) {
-          m_synaseAnnotation = new FlyEm::ZSynapseAnnotationArray;
-          m_synaseAnnotation->loadJson(path);
-          m_synaseAnnotation->setResolution(m_imageResolution);
-          m_synaseAnnotation->setSourceOffset(m_sourceOffset);
-          m_synaseAnnotation->setSourceDimension(m_sourceDimension);
-        }
+    if (!path.startsWith("http:") && !path.empty()) {
+      if (!path.isAbsolutePath()) {
+        path = ZString::absolutePath(ZString(m_source).dirPath(), path);
       }
+    }
+
+    if (fexist(path.c_str()) || ZString(path).startsWith("http:")) {
+      m_synaseAnnotation = new FlyEm::ZSynapseAnnotationArray;
+      m_synaseAnnotation->loadJson(path);
+      m_synaseAnnotation->setResolution(m_imageResolution);
+      m_synaseAnnotation->setSourceOffset(m_sourceOffset);
+      m_synaseAnnotation->setSourceDimension(m_sourceDimension);
     }
   }
 

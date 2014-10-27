@@ -84,6 +84,7 @@ private slots:
 private:
   void updateSideView();
   void updateSideViewFunc();
+  void initSideViewScene();
   void startProgress(const QString &label);
   void connectSignalSlot();
 

@@ -194,6 +194,20 @@ public:
 };
 
 /***************************************************/
+class ZStackBallPlayer : public ZDocPlayer
+{
+public:
+  ZStackBallPlayer();
+  ZStackBallPlayer(ZStackObject* data, TRole role);
+
+public:
+  QString getTypeName() const { return "StackBall"; }
+
+  Z3DGraph get3DGraph() const;
+  ZStackBall *getCompleteData() const;
+};
+
+/***************************************************/
 class ZPlanePlayer : public ZDocPlayer
 {
 public:

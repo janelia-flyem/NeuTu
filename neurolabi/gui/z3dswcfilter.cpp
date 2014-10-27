@@ -38,6 +38,7 @@ Z3DSwcFilter::Z3DSwcFilter()
   , m_widgetsGroup(NULL)
   , m_dataIsInvalid(false)
   , m_interactionMode(Select)
+  , m_enableCutting(true)
 {
   initTopologyColor();
   initTypeColor();
@@ -698,73 +699,41 @@ void Z3DSwcFilter::addSelectionBox(
 
 void Z3DSwcFilter::renderSelectionBox(Z3DEye eye)
 {
-  if (m_selectedSwcs.size() > 0) {
+  if (m_swcList.size() > 0) {
     std::vector<glm::vec3> lines;
-    for (std::set<ZSwcTree*>::iterator it=m_selectedSwcs.begin();
-         it != m_selectedSwcs.end(); it++) {
-      ZSwcTree *selectedSwc = *it;
-      int index = -1;
-      for (size_t i = 0; i<m_swcList.size(); i++) {
-        if (m_swcList.at(i) == selectedSwc) {
-          index = i;
-          break;
+    for (std::vector<ZSwcTree*>::iterator it=m_swcList.begin();
+         it != m_swcList.end(); it++) {
+      ZSwcTree *tree = *it;
+      if (tree->isSelected()) {
+        int index = -1;
+        for (size_t i = 0; i<m_swcList.size(); i++) {
+          if (m_swcList.at(i) == tree) {
+            index = i;
+            break;
+          }
         }
-      }
-      if (index == -1) {
-        if (selectedSwc->isVisible()) {
-          LERROR() << "selected swc not found.. Need Check..";
+        if (index == -1) {
+          if (tree->isVisible()) {
+            LERROR() << "selected swc not found.. Need Check..";
+          }
+          continue;
         }
-        continue;
-      }
 
-      for (size_t j=0; j<m_decompsedNodePairs[index].size(); j++) {
-        addSelectionBox(m_decompsedNodePairs[index][j], lines);
-#if 0
-        Swc_Tree_Node *n1 = m_decompsedNodePairs[index][j].first;
-        Swc_Tree_Node *n2 = m_decompsedNodePairs[index][j].second;
-        glm::vec3 bPos(n1->node.x * getCoordScales().x,
-                       n1->node.y * getCoordScales().y,
-                       n1->node.z * getCoordScales().z);
-        glm::vec3 tPos(n2->node.x * getCoordScales().x,
-                       n2->node.y * getCoordScales().y,
-                       n2->node.z * getCoordScales().z);
-        float bRadius = n1->node.d * m_rendererBase->getSizeScale();
-        float tRadius = n2->node.d * m_rendererBase->getSizeScale();
-        glm::vec3 axis = tPos - bPos;
-        // vector perpendicular to axis
-        glm::vec3 v1, v2;
-        glm::getOrthogonalVectors(axis, v1, v2);
+        for (size_t j=0; j<m_decompsedNodePairs[index].size(); j++) {
+          addSelectionBox(m_decompsedNodePairs[index][j], lines);
+        }
 
-        glm::vec3 p1 = bPos - bRadius * v1  - v2 * bRadius;
-        glm::vec3 p2 = bPos - v1 * bRadius + v2 * bRadius;
-        glm::vec3 p3 = bPos + v1 * bRadius + v2 * bRadius;
-        glm::vec3 p4 = bPos + v1 * bRadius - v2 * bRadius;
-        glm::vec3 p5 = tPos - v1 * tRadius - v2 * tRadius;
-        glm::vec3 p6 = tPos - v1 * tRadius + v2 * tRadius;
-        glm::vec3 p7 = tPos + v1 * tRadius + v2 * tRadius;
-        glm::vec3 p8 = tPos + v1 * tRadius - v2 * tRadius;
-
-        lines.push_back(p1); lines.push_back(p2);
-        lines.push_back(p2); lines.push_back(p3);
-        lines.push_back(p3); lines.push_back(p4);
-        lines.push_back(p4); lines.push_back(p1);
-
-        lines.push_back(p5); lines.push_back(p6);
-        lines.push_back(p6); lines.push_back(p7);
-        lines.push_back(p7); lines.push_back(p8);
-        lines.push_back(p8); lines.push_back(p5);
-
-        lines.push_back(p1); lines.push_back(p5);
-        lines.push_back(p2); lines.push_back(p6);
-        lines.push_back(p3); lines.push_back(p7);
-        lines.push_back(p4); lines.push_back(p8);
-#endif
-      }
-
-      for (size_t j=0; j<m_decomposedNodes[index].size(); j++) {
-        Swc_Tree_Node *tn = m_decomposedNodes[index][j];
-        if (SwcTreeNode::isRoot(tn) && !SwcTreeNode::hasChild(tn)) {
-          addSelectionBox(m_decomposedNodes[index][j], lines);
+        for (size_t j=0; j<m_decomposedNodes[index].size(); j++) {
+          Swc_Tree_Node *tn = m_decomposedNodes[index][j];
+          if (SwcTreeNode::isRoot(tn) && !SwcTreeNode::hasChild(tn)) {
+            addSelectionBox(m_decomposedNodes[index][j], lines);
+          }
+        }
+      } else {
+        const std::set<Swc_Tree_Node*> nodeSet = tree->getSelectedNode();
+        for (std::set<Swc_Tree_Node*>::const_iterator it=nodeSet.begin();
+             it != nodeSet.end(); it++) {
+          addSelectionBox(*it, lines);
         }
       }
     }
@@ -776,19 +745,15 @@ void Z3DSwcFilter::renderSelectionBox(Z3DEye eye)
   }
 
   //QList<Swc_Tree_Node*> nodeList;
-  std::vector<glm::vec3> lines;
-  foreach (ZSwcTree *tree, m_swcList) {
-    const std::set<Swc_Tree_Node*> nodeSet = tree->getSelectedNode();
-    for (std::set<Swc_Tree_Node*>::const_iterator it=nodeSet.begin();
-         it != nodeSet.end(); it++) {
-      addSelectionBox(*it, lines);
-    }
-  }
+//  std::vector<glm::vec3> lines;
+//  foreach (ZSwcTree *tree, m_swcList) {
 
-  m_rendererBase->activateRenderer(m_boundBoxRenderer);
-  m_boundBoxRenderer->setData(&lines);
-  m_rendererBase->render(eye);
-  m_boundBoxRenderer->setData(NULL); // lines will go out of scope
+//  }
+
+//  m_rendererBase->activateRenderer(m_boundBoxRenderer);
+//  m_boundBoxRenderer->setData(&lines);
+//  m_rendererBase->render(eye);
+//  m_boundBoxRenderer->setData(NULL); // lines will go out of scope
 }
 
 void Z3DSwcFilter::prepareData()
@@ -901,15 +866,16 @@ void Z3DSwcFilter::prepareData()
     m_sourceColorMapper.insert(std::pair<std::string, size_t>(m_origSwcList[i]->source(), 0));
     */
 
-  /*
   //Causing lag
-  m_xCut.setRange(xMin, xMax);
-  m_xCut.set(glm::ivec2(xMin, xMax));
-  m_yCut.setRange(yMin, yMax);
-  m_yCut.set(glm::ivec2(yMin, yMax));
-  m_zCut.setRange(zMin, zMax);
-  m_zCut.set(glm::ivec2(zMin, zMax));
-*/
+  if (m_enableCutting) {
+    m_xCut.setRange(xMin, xMax);
+    m_xCut.set(glm::ivec2(xMin, xMax));
+    m_yCut.setRange(yMin, yMax);
+    m_yCut.set(glm::ivec2(yMin, yMax));
+    m_zCut.setRange(zMin, zMax);
+    m_zCut.set(glm::ivec2(zMin, zMax));
+  }
+
   //std::map<std::string,size_t>::iterator it;
 
   std::set<ZSwcTree*> allSources;

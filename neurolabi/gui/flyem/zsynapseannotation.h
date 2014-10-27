@@ -67,10 +67,11 @@ public:
   SynapseLocation(EType type = UNKNOWN_TYPE);
   SynapseLocation(EType type, int x, int y, int z, int bodyId,
                   double confidence,
-                  const std::string &status, bool multi = false);
+                  const std::string &status, bool multi = false,
+                  bool convergent = false);
 
   void set(EType type, int x, int y, int z, int bodyId, double confidence,
-      const std::string &status, bool multi = false);
+      const std::string &status, bool multi = false, bool convergent = false);
   void setLocation(int x, int y, int z);
 
   void loadJsonObject(json_t *object, EType type);
@@ -99,6 +100,7 @@ public:
   inline ZPoint pos() const { return ZPoint(m_x, m_y, m_z); }
   inline double confidence() const { return m_confidence; }
   bool isMulti() const { return m_multi; }
+  bool isConvergent() const { return m_convergent; }
 
   void print() const;
 
@@ -112,8 +114,9 @@ public:
    */
   void convertRavelerToImageSpace(int startZ, int height);
 
-
   ZJsonObject toJsonObject() const;
+
+  std::string getPunctumSource() const;
 
 private:
   EType m_type;
@@ -126,6 +129,7 @@ private:
   std::string m_uid;
   double m_confidence;
   bool m_multi;
+  bool m_convergent;
 
   SwcLocation m_swcLocation;
 };

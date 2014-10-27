@@ -36,6 +36,11 @@ public:
   void shallowClear();
 
   /*!
+   * \brief Clone a project with a specified name
+   */
+  ZFlyEmRoiProject* clone(const std::string &name) const;
+
+  /*!
    * \brief Set the dvid target
    *
    * It will create the project in the DVID key if necessary.
@@ -138,6 +143,8 @@ public:
   }
 
   void importRoiFromSwc(ZSwcTree *tree);
+
+  void deleteAllData();
 
 private:
   ZObject3dScan* getFilledRoi(

@@ -14,6 +14,9 @@
 #include "zpoint.h"
 #include "zvaa3dmarker.h"
 
+/*!
+ * \brief The punctum (synapse) class
+ */
 class ZPunctum : public ZStackBall
 {
 public:

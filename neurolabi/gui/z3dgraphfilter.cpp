@@ -308,6 +308,7 @@ ZWidgetsGroup *Z3DGraphFilter::getWidgetsGroup()
   if (!m_widgetsGroup) {
     m_widgetsGroup = new ZWidgetsGroup("Graph", NULL, 1);
 
+    new ZWidgetsGroup(&m_stayOnTop, m_widgetsGroup, 1);
     std::vector<ZParameter*> paras = m_rendererBase->getParameters();
     for (size_t i=0; i<paras.size(); i++) {
       ZParameter *para = paras[i];

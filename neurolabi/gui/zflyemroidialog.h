@@ -2,7 +2,7 @@
 #define ZFLYEMROIDIALOG_H
 
 #include <QDialog>
-#include <QVector>
+#include <QList>
 #include <QMap>
 #include <QFuture>
 
@@ -43,6 +43,11 @@ public:
   ZFlyEmRoiProject* getProject(size_t index);
 
   ZFlyEmRoiProject* newProject(const std::string &name);
+
+  void cloneProject(const std::string &name);
+
+  void deleteProject(ZFlyEmRoiProject *project);
+  void deleteProject();
 
   bool isValidName(const std::string &name) const;
 
@@ -136,6 +141,7 @@ private slots:
 
   void exportResult();
   void importRoi();
+  void cloneProject();
 
 private:
   void loadGrayscaleFunc(int z, bool lowres);
@@ -160,12 +166,13 @@ private:
   void quickLoad(int z);
 
   void startBackgroundJob();
+  void closeCurrentProject();
 
 private:
   Ui::ZFlyEmRoiDialog *ui;
   ZDvidDialog *m_dvidDlg;
   ZSpinBoxDialog *m_zDlg;
-  QVector<ZFlyEmRoiProject*> m_projectList;
+  QList<ZFlyEmRoiProject*> m_projectList;
   ZFlyEmRoiProject *m_project;
   ZDvidTarget m_dvidTarget;
   ZStackDocReader m_docReader;

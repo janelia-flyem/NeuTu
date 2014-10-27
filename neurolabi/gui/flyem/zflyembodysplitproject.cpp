@@ -19,6 +19,8 @@
 #include "dvid/zdvidwriter.h"
 #include "dvid/zdviddata.h"
 #include "zstring.h"
+#include "zflyemcoordinateconverter.h"
+#include "flyem/zflyemneuron.h"
 
 ZFlyEmBodySplitProject::ZFlyEmBodySplitProject(QObject *parent) :
   QObject(parent), m_bodyId(-1), m_dataFrame(NULL), m_resultWindow(NULL),
@@ -267,7 +269,13 @@ void ZFlyEmBodySplitProject::setDataFrame(ZStackFrame *frame)
 
 void ZFlyEmBodySplitProject::loadBookmark(const QString &filePath)
 {
-  m_bookmarkArray.importJsonFile(filePath.toStdString());
+  ZDvidReader reader;
+  ZFlyEmCoordinateConverter converter;
+  if (reader.open(m_dvidTarget)) {
+    ZDvidInfo info = reader.readGrayScaleInfo();
+    converter.configure(info);
+    m_bookmarkArray.importJsonFile(filePath.toStdString(), &converter);
+  }
 }
 
 void ZFlyEmBodySplitProject::locateBookmark(const ZFlyEmBookmark &bookmark)
@@ -308,7 +316,8 @@ void ZFlyEmBodySplitProject::addBookmarkDecoration(
       circle->set(bookmark.getLocation(), 5);
       circle->setColor(255, 0, 0);
       circle->setVisible(m_isBookmarkVisible);
-      m_dataFrame->document()->addObject(circle);
+      m_dataFrame->document()->addObject(
+            circle, ZDocPlayer::ROLE_3DGRAPH_DECORATOR);
       m_bookmarkDecoration.push_back(circle);
     }
   }
@@ -431,4 +440,13 @@ void ZFlyEmBodySplitProject::downloadSeed()
       }
     }
   }
+}
+
+ZFlyEmNeuron ZFlyEmBodySplitProject::getFlyEmNeuron() const
+{
+  ZFlyEmNeuron neuron;
+  neuron.setId(getBodyId());
+  neuron.setPath(getDvidTarget());
+
+  return neuron;
 }

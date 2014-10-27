@@ -119,6 +119,7 @@ public:
 public slots:
   void updateView();
   void redraw();
+  void redrawObject();
   //void updateData(int nslice, int threshold = -1);
   //void updateData();
   //void updateSlice(int nslide);

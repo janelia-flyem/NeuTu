@@ -866,6 +866,11 @@ void ZStackView::resizeEvent(QResizeEvent *event)
   //buddyPresenter()->updateInteractiveContext();
 }
 
+void ZStackView::redrawObject()
+{
+  paintObjectBuffer();
+  updateImageScreen();
+}
 
 void ZStackView::redraw()
 {

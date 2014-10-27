@@ -85,6 +85,8 @@ public:
 
   void scale(double sx, double sy, double sz);
 
+  ZClosedCurve* clone() const;
+
 private:
   ZPointArray m_landmarkArray;
   static const ZPoint m_emptyPlaceHolder;

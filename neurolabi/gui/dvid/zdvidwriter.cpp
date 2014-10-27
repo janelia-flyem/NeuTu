@@ -301,6 +301,16 @@ void ZDvidWriter::createData(const std::string &type, const std::string &name)
   QProcess::execute(command);
 }
 
+void ZDvidWriter::deleteKey(const std::string &dataName, const std::string &key)
+{
+  ZDvidUrl dvidUrl(m_dvidTarget);
+  std::string url = dvidUrl.getKeyUrl(dataName, key);
+  QString command = QString("curl -X DEL %1").arg(url.c_str());
+  qDebug() << command;
+
+  QProcess::execute(command);
+}
+
 void ZDvidWriter::writeBodyInfo(int bodyId)
 {
   ZDvidReader reader;

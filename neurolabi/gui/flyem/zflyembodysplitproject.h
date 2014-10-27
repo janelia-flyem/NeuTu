@@ -11,6 +11,7 @@ class Z3DWindow;
 class ZStackObject;
 class ZSwcTree;
 class ZObject3dScan;
+class ZFlyEmNeuron;
 
 class ZFlyEmBodySplitProject : public QObject
 {
@@ -30,6 +31,9 @@ public:
 
   inline int getBodyId() const { return m_bodyId; }
   inline const ZDvidTarget& getDvidTarget() const { return m_dvidTarget; }
+
+  ZFlyEmNeuron getFlyEmNeuron() const;
+
   bool hasDataFrame() const;
   void setDataFrame(ZStackFrame *frame);
 

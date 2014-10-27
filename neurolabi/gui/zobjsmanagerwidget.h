@@ -31,11 +31,17 @@ public slots:
   void updateSelectionFromCategorizedSwcNode(
       QItemSelection selected, QItemSelection deselected);
   void punctaItemDoubleClicked(QModelIndex index);
-  void punctaSelectionChangedFromTreeView(QItemSelection selected, QItemSelection deselected);
+  void punctaSelectionChangedFromTreeView(
+      QItemSelection selected, QItemSelection deselected);
 
-  void punctaSelectionChanged(QList<ZPunctum*> selected, QList<ZPunctum*> deselected);
-  void swcSelectionChanged(QList<ZSwcTree*> selected, QList<ZSwcTree*> deselected);
-  void swcTreeNodeSelectionChanged(QList<Swc_Tree_Node*> selected, QList<Swc_Tree_Node*> deselected);
+  void punctaSelectionChanged(
+      QList<ZPunctum*> selected, QList<ZPunctum*> deselected);
+  void swcSelectionChanged(
+      QList<ZSwcTree*> selected, QList<ZSwcTree*> deselected);
+  void swcTreeNodeSelectionChanged(
+      QList<Swc_Tree_Node*> selected, QList<Swc_Tree_Node*> deselected);
+
+  //void updateSelection();
 
 protected:
   void createWidget();
@@ -49,7 +55,7 @@ protected:
   QList<Swc_Tree_Node*> getSwcNodeList(QItemSelection &is);
 
   ZStackDoc *m_doc;
-  
+  //old selection
   QTreeView *m_swcObjsTreeView;
   QTreeView *m_swcNodeObjsTreeView;
   QTreeView *m_punctaObjsTreeView;
