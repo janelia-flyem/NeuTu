@@ -1326,9 +1326,9 @@ Stack* Stack_Majority_Filter_R(const Stack *in, Stack *out, int conn, int mnbr)
 }
 
 #define STACK_PERIMETER(in_array, out_array)				\
-  for (k = 0; k < in->depth; k++) {					\
-    for (j = 0; j < in->height; j++) {					\
-      for (i = 0; i < in->width; i++) {					\
+  for (k = 0; k <= cdepth; k++) {					\
+    for (j = 0; j <= cheight; j++) {					\
+      for (i = 0; i <= cwidth; i++) {					\
 	out_array[offset] = 0;						\
 	if (in_array[offset] > 0) {					\
 	  n_in_bound = Stack_Neighbor_Bound_Test_S(conn, cwidth, cheight,	\
@@ -1342,18 +1342,7 @@ Stack* Stack_Majority_Filter_R(const Stack *in, Stack *out, int conn, int mnbr)
 	      }								\
 	    }								\
 	  } else {							\
-	    for (n = 0; n < n_in_bound; n++) {				\
-	      if (is_in_bound[n]) {					\
-		if (in_array[offset + neighbor[n]] != in_array[offset]) { \
-		  out_array[offset] = 1;				\
-		  break;						\
-		}							\
-	      }								\
-	    }								\
-									\
-	    if (out_array[offset] == 0) {				\
-	      out_array[offset] = 0;					\
-	    }								\
+            out_array[offset] = 1;                                      \
 	  }								\
 	}								\
 	offset++;							\
@@ -1371,7 +1360,7 @@ Stack* Stack_Perimeter(const Stack *in, Stack *out, int conn)
     }   
   }
 
-  int offset = 0;
+  size_t offset = 0;
   int i, j, k;
   int n;
   int neighbor[26];
@@ -2096,7 +2085,7 @@ Stack* Stack_Bwinterp(const Stack *stack, Stack *out)
   Stack_Not(perim, perim);
   Stack *dist = Stack_Bwdist_L_U16P(perim, NULL, 0);
 
-  Free_Stack(perim);
+  Kill_Stack(perim);
 
   if (out == NULL) {
     out = Copy_Stack((Stack*) stack);
@@ -2139,6 +2128,8 @@ Stack* Stack_Bwinterp(const Stack *stack, Stack *out)
       }
     }
   }
+
+  Kill_Stack(dist);
 
   return out;
 }

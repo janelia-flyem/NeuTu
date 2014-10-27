@@ -3,9 +3,10 @@
 
 #include <vector>
 #include "tz_cdefs.h"
+#include "zuncopyable.h"
 
 template<typename T>
-class ZTreeNode
+class ZTreeNode : public ZUncopyable
 {
 public:
     ZTreeNode();
@@ -22,14 +23,6 @@ public:
     ZTreeNode<T>* getNextAt(int index) const;
 
 public:
-    virtual inline bool isVirtual(bool virtualCheck = true) const {
-      UNUSED_PARAMETER(virtualCheck);
-      return true;
-    }
-    inline bool isRegular(bool virtualCheck = true) const {
-        return !isVirtual(virtualCheck);
-    }
-
     inline T& data() { return m_data; }
     inline T* dataRef() { return &m_data; }
     inline const T* constDataRef() const { return &m_data; }
@@ -56,13 +49,18 @@ public:
     ZTreeNode<T>* previousSibling() const;
 
 public:
-    bool isRoot(bool virtualCheck = true) const;
+    bool isRoot() const;
     bool isLastChild() const;
-    bool isLeaf(bool virtualCheck = true) const;
-    bool isBranchPoint(bool virtualCheck = true) const;
-    bool isContinuation(bool virtualCheck = true) const;
-    bool isSpur(bool virtualCheck = true) const;
+    bool isLeaf() const;
+    bool isBranchPoint() const;
+    bool isContinuation() const;
+    bool isSpur() const;
     bool isSibling(const ZTreeNode<T> *node) const;
+
+    /*!
+     * \brief A node is an orphan if it has no linked node.
+     */
+    bool isOrphan() const;
 
 
     ZTreeNode<T>* addChild(ZTreeNode<T> *node);
@@ -83,23 +81,23 @@ public:
 
     void becomeRoot(bool virtualCheck = true);
 
-    double getBacktraceWeight(int n, bool virtualCheck = true) const;
+    double getBacktraceWeight(int n) const;
 
-    void labelBranch(int label, bool virtualCheck = true);
+    void labelBranch(int label);
 
     virtual inline int id() const { return m_index; }
     int parentId() const;
     virtual inline void setId(int id) { m_index = id; }
 
 protected:
-    double m_weight;                    //weight to connect to its parent
-    std::vector<double> m_featureVector;              //feature of the node
-    int m_label;                   //label of identifying the node
-    int m_index;                   //0-based index in iteration
-    T m_data;                           //data
+    T m_data;                      //data
     ZTreeNode<T> *m_parent;        //parent
     ZTreeNode<T> *m_firstChild;    //first child
     ZTreeNode<T> *m_nextSibling;   //next sibling
+    double m_weight;               //weight to connect to its parent
+    int m_label;                   //label of identifying the node
+    int m_index;                   //0-based index in iteration
+    std::vector<double> m_featureVector;              //feature of the node
 };
 
 #include "ztreenode.cpp"

@@ -4,11 +4,12 @@
 #include <QStringList>
 #include <vector>
 #include "z3dgl.h"
+#include "zstackobject.h"
 #include "zglmutils.h"
 #include "z3dshaderprogram.h"
 #include "zstackdrawable.h"
 
-class Z3DTriangleList : public ZStackDrawable
+class Z3DTriangleList : public ZStackObject
 {
 public:
   // one of GL_TRIANGLES, GL_TRIANGLE_STRIP and GL_TRIANGLE_FAN
@@ -134,7 +135,7 @@ private:
   std::vector<glm::vec3> m_normals;
   std::vector<glm::vec4> m_colors;
   std::vector<GLuint> m_indices;
-  QString m_source;
+  //QString m_source;
 };
 
 #endif // ZMESH_H

@@ -21,6 +21,7 @@
 #include "tz_image_io.h"
 #include "zresolution.h"
 #include "zpoint.h"
+#include "zintcuboid.h"
 
 
 //! Stack class
@@ -71,6 +72,10 @@ public:
   ZStack(Mc_Stack *stack,
          C_Stack::Mc_Stack_Deallocator *dealloc = C_Stack::kill);
 
+  ZStack(int kind, const ZIntCuboid &box, int nchannel, bool isVirtual = false);
+
+  ZStack(const ZStack &src);
+
   //! Destructor
   virtual ~ZStack();
 
@@ -106,7 +111,8 @@ public: /* attributes */
    * \a stack will be destroyed after function call. It does nothing if \a stack
    * is NULL.
    */
-  void consumeData(Stack *stack);
+  void consume(Stack *stack);
+  void consume(ZStack *stack);
 
   //! Get the C-compatible data
   /*!
@@ -116,6 +122,14 @@ public: /* attributes */
   Stack* c_stack(int c = 0);
   ZSingleChannelStack* singleChannelStack(int c = 0);
   const ZSingleChannelStack* singleChannelStack(int c = 0) const;
+
+  /*!
+   * \brief Get a single channel
+   *
+   * The data pointer is shared but the user is responsible for deleting the
+   * returned pointer.
+   */
+  ZStack* getSingleChannel(int c) const;
 
   //! Width of the stack.
   inline int width() const {
@@ -154,10 +168,34 @@ public: /* attributes */
   //! Set voxel value at a given position and channel.
   void setValue(int x, int y, int z, int c, double v);
 
+  /*!
+   * \brief Get the intensity value as an integer
+   *
+   * A float value will be rounded to return. It returns 0 if the coordinates
+   * are out of range. The position is adjusted by the stack offset.
+   */
+  int getIntValue(int x, int y, int z, int c = 0) const;
+
+  /*!
+   * \brief Get the intensity value as an integer
+   *
+   * (\a x, \a y, \a z) are coordinates relative to the stack origin.
+   */
+  int getIntValueLocal(int x, int y, int z, int c = 0) const;
+
+  /*!
+   * \brief Set the intensity value of a voxel.
+   *
+   * It does nothing if the coordinates are out of range.
+   * The position is adjusted by the stack offset. for any value bigger than
+   * the voxel maximum / minimum, it is set to maximum / minimum.
+   */
+  void setIntValue(int x, int y, int z, int c, int v);
+
   /** @name raw data access
    *  array8(), array16(), array32(), array64() or arrayc() can be used to otain
    *  the raw data array of the stack. The choice of the function depends on the
-   *  voxel type.
+   *  voxel type. Those functions do not perform kind check.
    */
   ///@{
   /** Array for 8-bit unsigned integer. */
@@ -228,20 +266,28 @@ public: /* attributes */
    */
   bool isVirtual() const;
 
-  //shift one channel
-  void shiftLocation(int *offset, int c = 0, int width = -1, int height = -1, int depth = -1);
+  /*!
+   * \brief Test if a stack has data.
+   *
+   * \return A stack has data if it is not empty and virtual.
+   */
+  bool hasData() const;
+
 
   // make mc_stack
-  static Mc_Stack* makeMcStack(const Stack *stack1, const Stack *stack2, const Stack *stack3);
-  // subtract most common value of the histogram from this stack, use Stack_Sub_Common
-  void subMostCommonValue(int c);
-  // get average of all channels
-  Stack* averageOfAllChannels();
+  static Mc_Stack* makeMcStack(
+      const Stack *stack1, const Stack *stack2, const Stack *stack3);
 
-  //Source of the stack. Usually it is the file where the image is originally read
+  //Source of the stack. Usually it is the file where the image is originally
+  //read
   //from.
+  /*!
+   * \brief Get the source path of the stack.
+   *
+   * The source path of the stack is defined as the path from which the stack is
+   * loaded.
+   */
   std::string sourcePath() const;
-  //inline Stack_Document* source() const { return m_source; }
 
   //Preferred z scale is the preferred scale ratio between z-axis and xy-plane
   //for anisotropic operations
@@ -255,6 +301,27 @@ public: /* attributes */
   double max(int c) const;
 
   /*!
+   * \brief Determine if a point is within a stack
+   *
+   * The input coordinates are supposed to be global.
+   */
+  bool contains(int x, int y, int z) const;
+  bool contains(const ZPoint &pt) const;
+  bool contains(const ZIntPoint &pt) const;
+  bool contains(double x, double y) const;
+
+  /*!
+   * \brief containsRaw
+   *
+   * It return true if (\a x, \a y, \a z) is in the raw stack box, which is
+   * defined as (0, width - 1) x (0, height - 1) x (0, depth - 1), with \a z
+   * treated a little specially. If \a z is negative, only \a x and \a y are
+   * tested, as if testing (\a x, \a y, 0).
+   */
+  bool containsRaw(double x, double y, double z) const;
+  bool containsRaw(const ZPoint &pt) const;
+
+  /*!
    * \brief Reshape the stack.
    *
    * If the reshaped the volume is the same as the stack voxel number, the stack
@@ -262,8 +329,6 @@ public: /* attributes */
    * true. Otherwise it returns false and nothing is done.
    */
   bool reshape(int width, int height, int depth);
-
-  double saturatedIntensity() const;
 
   int autoThreshold(int ch = 0) const;
 
@@ -282,6 +347,11 @@ public: /* attributes */
    * \brief Set all voxel values to 0.
    */
   void setZero();
+
+  /*!
+   * \brief Set all voxel values to 1.
+   */
+  void setOne();
 
   //Maximum voxel value along a z-parallel line passing (<x>, <y>).
   int maxIntensityDepth(int x, int y, int c = 0) const;
@@ -303,6 +373,8 @@ public: /* attributes */
    */
   void *getDataPointer(int c, int slice) const;
 
+  const uint8_t *getDataPointer(int x, int y, int z) const;
+
   /*!
    * \brief Print information of the stack
    */
@@ -316,7 +388,7 @@ public: /* attributes */
   /*!
    * \brief Source of the stack.
    */
-  ZStackFile* source() { return &m_source; }
+  const ZStackFile& source() const { return m_source; }
 
   void deprecateDependent(EComponent component);
   void deprecateSingleChannelView(int channel);
@@ -333,7 +405,7 @@ public: /* data operation */
   bool load(Stack *stack, bool isOwner = true);
 
   //Load stack from a file
-  bool load(const std::string &filepath);
+  bool load(const std::string &filepath, bool initColor = true);
   //bool loadImageSequence(const char *filePath);
 
   //bool importJsonFile(const std::string &filePath);
@@ -384,9 +456,19 @@ public: /* operations */
 
   void loadValue(const void *buffer, size_t length, void *loc);
 
-  void setOffset(double dx, double dy, double dz);
-  void setOffset(const ZPoint &pt);
-  inline const ZPoint& getOffset() const { return m_offset; }
+  void setOffset(int dx, int dy, int dz);
+  void setOffset(const ZIntPoint &pt);
+  inline const ZIntPoint& getOffset() const { return m_offset; }
+  inline ZIntPoint& getOffset() { return m_offset; }
+
+  /*!
+   * \brief Translate the stack.
+   *
+   * Add (\a dx, \a dy, \a dz) to the stack offset.
+   */
+  void translate(int dx, int dy, int dz);
+
+  void translate(const ZIntPoint &pt);
 
   /*!
    * \brief Test if a stack has non-zero offset
@@ -405,7 +487,7 @@ public: /* operations */
    *
    * \return true iff the pasting can be performed.
    */
-  bool paste(ZStack *dst, int valueIgnored = -1) const;
+  bool paste(ZStack *dst, int valueIgnored = -1, double alpha = 1.0) const;
 
   /*!
    * \brief Get the bound box of the stack.
@@ -414,6 +496,10 @@ public: /* operations */
    * just the foreground.
    */
   void getBoundBox(Cuboid_I *box) const;
+
+  ZIntCuboid getBoundBox() const;
+
+  void setBlockValue(int x0, int y0, int z0, const ZStack *stack);
 
 public: /* processing routines */
   bool binarize(int threshold = 0);
@@ -424,6 +510,22 @@ public: /* processing routines */
   Stack* copyChannel(int c);
   bool watershed(int c = 0);
   inline const ZResolution& resolution() const { return m_resolution; }
+
+  /*!
+   * \brief Downsample the stack with maximum assignment.
+   *
+   * The offset postion is adjusted accordingly.
+   */
+  void downsampleMax(int xintv, int yintv, int zintv);
+
+  /*!
+   * \brief Downsample the stack with mininum assignment.
+   *
+   * The offset postion is adjusted accordingly.
+   */
+  void downsampleMin(int xintv, int yintv, int zintv);
+
+  void crop(const ZIntCuboid &cuboid);
 
 public:
   void initChannelColors();
@@ -438,11 +540,20 @@ public:
 #endif
 
 private:
-  ZStack(const ZStack &src); //uncopyable
+  //ZStack(const ZStack &src); //uncopyable
 
   void init();
   bool canMerge(const Stack *s1, const Stack *s2);
   void setChannelNumber(int nchannel);
+  //shift one channel
+  void shiftLocation(
+      int *offset, int c = 0, int width = -1, int height = -1, int depth = -1);
+
+  // subtract most common value of the histogram from this stack, use Stack_Sub_Common
+  void subMostCommonValue(int c);
+  // get average of all channels
+  Stack* averageOfAllChannels();
+  double saturatedIntensity() const;
 
 
 private:
@@ -453,7 +564,7 @@ private:
   ZStackFile m_source;
   double m_preferredZScale;
   ZResolution m_resolution;
-  ZPoint m_offset;
+  ZIntPoint m_offset;
   mutable std::vector<Stack> m_stackView;
   mutable std::vector<ZSingleChannelStack*> m_singleChannelStack;
   mutable char m_buffer[1]; //Buffer of text field of temporary stack

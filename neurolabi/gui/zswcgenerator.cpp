@@ -7,6 +7,16 @@
 #include "zpointarray.h"
 #include "zlinesegmentarray.h"
 #include "zintcuboidface.h"
+#if _QT_GUI_USED_
+#include "zstroke2d.h"
+#endif
+#include "zobject3d.h"
+#include "zobject3dscan.h"
+#include "zstack.hxx"
+#include "tz_stack_bwmorph.h"
+#include "neutubeconfig.h"
+#include "tz_math.h"
+#include "zclosedcurve.h"
 
 ZSwcGenerator::ZSwcGenerator()
 {
@@ -56,6 +66,15 @@ ZSwcTree* ZSwcGenerator::createCircleSwc(double cx, double cy, double cz, double
 ZSwcTree* ZSwcGenerator::createBoxSwc(const ZCuboid &box)
 {
   return ZSwcTree::createCuboidSwc(box);
+}
+
+ZSwcTree* ZSwcGenerator::createBoxSwc(const ZIntCuboid &box)
+{
+  ZCuboid cuboid;
+  cuboid.setFirstCorner(ZPoint(box.getFirstCorner().toPoint()));
+  cuboid.setSize(box.getWidth(), box.getHeight(), box.getDepth());
+
+  return createBoxSwc(cuboid);
 }
 
 ZSwcTree* ZSwcGenerator::createSwc(const ZFlyEmNeuronRange &range)
@@ -296,6 +315,7 @@ ZSwcTree* ZSwcGenerator::createSwc(
     const ZPointArray &pointArray, double radius, bool isConnected)
 {
   ZSwcTree *tree = new ZSwcTree;
+  tree->useCosmeticPen(true);
 
   Swc_Tree_Node *root = tree->forceVirtualRoot();
   Swc_Tree_Node *parent = root;
@@ -377,4 +397,208 @@ ZSwcTree* ZSwcGenerator::createSwc(
   }
 
   return tree;
+}
+
+ZSwcTree* ZSwcGenerator::createSwc(const ZStroke2d &stroke)
+{
+#if _QT_GUI_USED_
+  if (stroke.isEmpty()) {
+    return NULL;
+  }
+
+  double z = stroke.getZ();
+  double r = stroke.getWidth() / 2.0;
+  ZSwcTree *tree = new ZSwcTree();
+  tree->forceVirtualRoot();
+  Swc_Tree_Node *parent = tree->root();
+  for (size_t i = 0; i < stroke.getPointNumber(); ++i) {
+    double x, y;
+    stroke.getPoint(&x, &y, i);
+    Swc_Tree_Node *tn = SwcTreeNode::makePointer(x, y, z, r);
+    SwcTreeNode::setParent(tn, parent);
+    parent = tn;
+  }
+
+  tree->resortId();
+  return tree;
+#else
+  return NULL;
+#endif
+}
+
+ZSwcTree* ZSwcGenerator::createSwc(
+    const ZObject3d &obj, double radius, int sampleStep)
+{
+  if (obj.isEmpty()) {
+    return NULL;
+  }
+
+  ZSwcTree *tree = new ZSwcTree();
+  tree->forceVirtualRoot();
+  Swc_Tree_Node *parent = tree->root();
+  for (size_t i = 0; i < obj.size(); i += sampleStep) {
+    Swc_Tree_Node *tn =
+        SwcTreeNode::makePointer(obj.getX(i), obj.getY(i), obj.getZ(i), radius);
+    SwcTreeNode::setParent(tn, parent);
+  }
+
+  tree->resortId();
+
+  return tree;
+}
+
+ZSwcTree* ZSwcGenerator::createSwc(const ZObject3dScan &obj)
+{
+  if (obj.isEmpty()) {
+    return NULL;
+  }
+
+  ZSwcTree *tree = new ZSwcTree();
+  tree->forceVirtualRoot();
+  Swc_Tree_Node *root = tree->root();
+
+  size_t stripeNumber = obj.getStripeNumber();
+  for (size_t i = 0; i < stripeNumber; ++i) {
+    const ZObject3dStripe &stripe = obj.getStripe(i);
+    int segNumber = stripe.getSegmentNumber();
+    int y = stripe.getY();
+    int z = stripe.getZ();
+    for (int j = 0; j < segNumber; ++j) {
+      Swc_Tree_Node *tn =
+          SwcTreeNode::makePointer(stripe.getSegmentStart(j), y, z, 2.0);
+      SwcTreeNode::setFirstChild(root, tn);
+      Swc_Tree_Node *tn2 =
+          SwcTreeNode::makePointer(stripe.getSegmentEnd(j), y, z, 2.0);
+      SwcTreeNode::setFirstChild(tn, tn2);
+    }
+  }
+
+  tree->resortId();
+
+  return tree;
+}
+
+ZSwcTree* ZSwcGenerator::createSurfaceSwc(
+    const ZObject3dScan &obj, int sparseLevel)
+{
+  size_t volume = obj.getBoundBox().getVolume();
+
+  int intv = 0;
+  if (volume > MAX_INT32) {
+    intv = iround(Cube_Root((double) volume / MAX_INT32));
+  }
+
+  ZStack *stack = NULL;
+  if (intv > 0) {
+    ZObject3dScan obj2 = obj;
+    obj2.downsampleMax(intv, intv, intv);
+    stack = obj2.toStackObject();
+  } else {
+    stack = obj.toStackObject();
+  }
+
+  ZSwcTree *tree = NULL;
+  if (stack != NULL) {
+    tree = createSurfaceSwc(*stack, sparseLevel);
+  }
+  tree->rescale(intv + 1, intv + 1, intv + 1);
+
+  return tree;
+}
+
+ZSwcTree* ZSwcGenerator::createSurfaceSwc(const ZStack &stack, int sparseLevel)
+{
+  if (stack.kind() != GREY) {
+    return NULL;
+  }
+
+  Stack *surface = Stack_Perimeter(stack.c_stack(), NULL, 6);
+
+#ifdef _DEBUG_2
+  C_Stack::write(GET_DATA_DIR + "/test.tif", surface);
+#endif
+
+  ZSwcTree *tree = NULL;
+  if (surface != NULL) {
+    tree = new ZSwcTree();
+    tree->forceVirtualRoot();
+    Swc_Tree_Node *root = tree->root();
+
+    int width = C_Stack::width(surface);
+    int height = C_Stack::height(surface);
+    int depth = C_Stack::depth(surface);
+
+    size_t offset = 0;
+    int count = 0;
+    for (int z = 0; z < depth; ++z) {
+      for (int y = 0; y < height; ++y) {
+        for (int x = 0; x < width; ++x) {
+          if ((surface->array[offset++]) > 0) {
+            if (count++ % sparseLevel == 0) {
+              SwcTreeNode::makePointer(x + stack.getOffset().getX(),
+                                       y + stack.getOffset().getY(),
+                                       z + stack.getOffset().getY(),
+                                       1.5 * sparseLevel, root);
+            }
+          }
+        }
+      }
+    }
+
+    C_Stack::kill(surface);
+  }
+
+  return tree;
+}
+
+ZSwcTree* ZSwcGenerator::createSwc(const ZClosedCurve &curve, double radius)
+{
+  ZSwcTree *tree = NULL;
+  if (!curve.isEmpty()) {
+    tree = new ZSwcTree();
+    tree->setStructrualMode(ZSwcTree::STRUCT_CLOSED_CURVE);
+    Swc_Tree_Node *parent =
+        SwcTreeNode::makePointer(curve.getLandmark(0), radius);
+    tree->addRegularRoot(parent);
+    for (size_t i = 1; i < curve.getLandmarkNumber(); ++i) {
+      Swc_Tree_Node *tn =
+          SwcTreeNode::makePointer(curve.getLandmark(i), radius);
+      SwcTreeNode::setParent(tn, parent);
+      parent = tn;
+    }
+  }
+
+  return tree;
+}
+
+ZSwcTree* ZSwcGenerator::createSwc(
+    const ZObject3dScan &blockObj, int z, const ZDvidInfo &dvidInfo)
+{
+#ifdef _FLYEM_
+  ZObject3dScan slice = blockObj.getSlice(z);
+  size_t stripeNumber = slice.getStripeNumber();
+
+  ZSwcTree *tree = new ZSwcTree;
+  for (size_t s = 0; s < stripeNumber; ++s) {
+    const ZObject3dStripe &stripe = slice.getStripe(s);
+    int nseg = stripe.getSegmentNumber();
+    int y = stripe.getY();
+    int z = stripe.getZ();
+    for (int i = 0; i < nseg; ++i) {
+      int x0 = stripe.getSegmentStart(i);
+      int x1 = stripe.getSegmentEnd(i);
+      for (int x = x0; x <= x1; ++x) {
+        ZIntCuboid cuboid = dvidInfo.getBlockBox(x, y, z);
+        tree->merge(createBoxSwc(cuboid));
+      }
+    }
+  }
+
+  return tree;
+#else
+  UNUSED_PARAMETER(&blockObj);
+  UNUSED_PARAMETER(z);
+  UNUSED_PARAMETER(&dvidInfo);
+  return NULL;
+#endif
 }

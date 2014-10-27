@@ -35,7 +35,7 @@ void ZSwcTrunkAnalyzer::labelTraffic(ZSwcTree *tree, ETrafficRule rule)
   switch (rule) {
   case FURTEST_PAIR:
   {
-    vector<Swc_Tree_Node*> leafArray = tree->terminalArray();
+    vector<Swc_Tree_Node*> leafArray = tree->getTerminalArray();
 
     //Calculate the distance of all the node to the regular root
     tree->updateIterator(SWC_TREE_ITERATOR_DEPTH_FIRST, true);

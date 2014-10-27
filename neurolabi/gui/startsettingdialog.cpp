@@ -14,14 +14,14 @@ StartSettingDialog::~StartSettingDialog()
   delete ui;
 }
 
-QString StartSettingDialog::getAutosaveDir()
+QString StartSettingDialog::getWorkDir()
 {
-  return ui->autoSaveLineEdit->text();
+  return ui->workDirLineEdit->text();
 }
 
-void StartSettingDialog::setAutoSaveDir(const QString &dir)
+void StartSettingDialog::setWorkDir(const QString &dir)
 {
-  ui->autoSaveLineEdit->setText(dir);
+  ui->workDirLineEdit->setText(dir);
 }
 
 void StartSettingDialog::on_pushButton_clicked()
@@ -29,6 +29,6 @@ void StartSettingDialog::on_pushButton_clicked()
   QString fileName = QFileDialog::getExistingDirectory(this, tr("Autosave"),
         ".", QFileDialog::ShowDirsOnly/* | QFileDialog::DontUseNativeDialog*/);
   if (!fileName.isEmpty()) {
-    ui->autoSaveLineEdit->setText(fileName);
+    setWorkDir(fileName);
   }
 }

@@ -9,6 +9,7 @@
 #include "tz_json.h"
 #include "zpoint.h"
 #include "tz_swc_tree.h"
+#include "zjsonobject.h"
 
 namespace FlyEm {
 
@@ -70,6 +71,7 @@ public:
 
   void set(EType type, int x, int y, int z, int bodyId, double confidence,
       const std::string &status, bool multi = false);
+  void setLocation(int x, int y, int z);
 
   void loadJsonObject(json_t *object, EType type);
 
@@ -109,6 +111,9 @@ public:
    * \param height Height of the source image to flip Y.
    */
   void convertRavelerToImageSpace(int startZ, int height);
+
+
+  ZJsonObject toJsonObject() const;
 
 private:
   EType m_type;

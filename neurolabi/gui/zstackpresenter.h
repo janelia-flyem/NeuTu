@@ -12,11 +12,13 @@
 #include <vector>
 #include <QMap>
 
-#include "zstackdrawable.h"
 #include "zinteractivecontext.h"
 #include "zstroke2d.h"
 #include "swctreenode.h"
 #include "zactionactivator.h"
+#include "zkeyeventswcmapper.h"
+#include "zmouseeventmapper.h"
+#include "zmouseeventprocessor.h"
 
 class ZStackView;
 class ZStackDoc;
@@ -26,6 +28,7 @@ class QKeyEvent;
 class QAction;
 class QMenu;
 class ZInteractionEvent;
+class ZStackOperator;
 
 class ZStackPresenter : public QObject {
   Q_OBJECT
@@ -53,26 +56,29 @@ public:
     ACTION_LOCK_SWC_NODE_FOCUS, ACTION_CHANGE_SWC_NODE_FOCUS,
     ACTION_MOVE_SWC_NODE,
     ACTION_ESTIMATE_SWC_NODE_RADIUS,
-    ACTION_PAINT_STROKE, ACTION_ERASE_STROKE
+    ACTION_PAINT_STROKE, ACTION_ERASE_STROKE,
+    ACTION_LOCATE_SELECTED_SWC_NODES_IN_3D
   };
 
   inline double greyScale(int c = 0) const {return m_greyScale[c];}
   inline double greyOffset(int c = 0) const {return m_greyOffset[c];}
   //inline int zoomRatio() const { return m_zoomRatio; }
   int zoomRatio() const;
-  inline QList<ZStackDrawable*>* decorations() { return &m_decorationList; }
-  inline const QList<ZStackDrawable*>& getActiveDecorationList() const {
+  inline QList<ZStackObject*>* decorations() { return &m_decorationList; }
+  inline const QList<ZStackObject*>& getActiveDecorationList() const {
     return m_activeDecorationList;
   }
-  inline ZStackDrawable::Display_Style objectStyle() { return m_objStyle; }
+  inline ZStackObject::Display_Style objectStyle() { return m_objStyle; }
   inline ZInteractiveContext& interactiveContext() {
     return m_interactiveContext;
   }
 
+  void clearData();
+
   bool hasObjectToShow() const;
   void setObjectVisible(bool v);
   bool isObjectVisible();
-  void setObjectStyle(ZStackDrawable::Display_Style style);
+  void setObjectStyle(ZStackObject::Display_Style style);
 
   void initInteractiveContext();
 
@@ -81,17 +87,17 @@ public:
   void updateZoomOffset(int cx, int cy, int wx, int wy);
   void setZoomOffset(int x, int y);
 */
-  void processMouseReleaseEvent(QMouseEvent *event, int sliceIndex);
+  void processMouseReleaseEvent(QMouseEvent *event);
   void processKeyPressEvent(QKeyEvent *event);
   void processMouseMoveEvent(QMouseEvent *event);
   void processMousePressEvent(QMouseEvent *event);
-  void processMouseDoubleClickEvent(QMouseEvent *eventint, int sliceIndex);
+  void processMouseDoubleClickEvent(QMouseEvent *eventint);
 
   void createActions();
   void createTraceActions();
   void createPunctaActions();
   void createSwcActions();
-  void createTubeActions();
+  //void createTubeActions();
   void createStrokeActions();
   void createDocDependentActions();
 
@@ -107,6 +113,8 @@ public:
 
   void createStackContextMenu();
   QMenu* getStackContextMenu();
+
+  bool isContextMenuOn();
 
   void setStackBc(double scale, double offset, int c = 0);
 
@@ -126,7 +134,7 @@ public:
   void updateRightMenu(QMenu *submenu, bool clear = true);
   void updateLeftMenu();
 
-  void addTubeEditFunctionToRightMenu();
+  //void addTubeEditFunctionToRightMenu();
   void addPunctaEditFunctionToRightMenu();
   //void addSwcEditFunctionToRightMenu();
 
@@ -144,32 +152,53 @@ public:
 
   void setZoomRatio(int ratio);
 
+  inline ZStackFrame* getParentFrame() {
+    return m_parent;
+  }
+
+  inline const ZStackFrame* getParentFrame() const {
+    return m_parent;
+  }
+
+  void setViewMode(ZInteractiveContext::ViewMode mode);
+
+  //void updateInteractiveContext();
+
+  void moveImage(int mouseX, int mouseY);
+  void moveViewPort(int dx, int dy);
+  void moveViewPortTo(int x, int y);
+  /*!
+   * \brief Move a data point to the specified mouse position.
+   * (\a srcX, \a srcY) are the raw stack coordinates.
+   */
+  void moveImageToMouse(double srcX, double srcY, int mouseX, int mouseY);
+
+  void increaseZoomRatio();
+  void decreaseZoomRatio();
+
+  /*!
+   * \brief Get the current slice index.
+   *
+   * It returns the index of the current active slice. When no slice is active,
+   * such as in the senario of the projection mode, the index is set to -1.
+   */
+  int getSliceIndex() const;
+
 public slots:
-  void addDecoration(ZStackDrawable *obj, bool tail = true);
-  void removeLastDecoration(ZInterface *obj);
-  void removeDecoration(ZStackDrawable *obj, bool redraw = true);
+  void addDecoration(ZStackObject *obj, bool tail = true);
+  void removeLastDecoration(ZStackObject *obj);
+  void removeDecoration(ZStackObject *obj, bool redraw = true);
   void removeAllDecoration();
   void traceTube();
   void fitSegment();
   void fitEllipse();
   void dropSegment();
-  void enterHookMode();
-  void enterSpHookMode();
-  void enterLinkMode();
-  void enterMergeMode();
-  void enterWalkMode();
-  void enterCheckConnMode();
-  void enterExtendMode();
-  void enterConnectMode();
-  void enterDisconnectMode();
   void enterMouseCapturingMode();
-  void cutTube();
-  void breakTube();
-  void refineChainEnd();
+  //void refineChainEnd();
   void bringSelectedToFront();
   void sendSelectedToBack();
-  void selectNeighbor();
-  void selectConnectedTube();
+  //void selectNeighbor();
+  //void selectConnectedTube();
   void markPuncta();
   void deleteSelected();
   void deleteAllPuncta();
@@ -180,7 +209,7 @@ public slots:
   void updateStackBc();
 
   void enterSwcConnectMode();
-  void enterSwcExtendMode();
+  bool enterSwcExtendMode();
   void exitSwcExtendMode();
   //void enterSwcSmartExtendMode();
   void enterSwcMoveMode();
@@ -234,13 +263,15 @@ signals:
 
 private:
   EMouseEventProcessStatus processMouseReleaseForPuncta(
-      QMouseEvent *event, double *positionInStack);
+      QMouseEvent *event, const ZPoint &positionInStack);
+  /*
   EMouseEventProcessStatus processMouseReleaseForTube(
       QMouseEvent *event, double *positionInStack);
+      */
   EMouseEventProcessStatus processMouseReleaseForSwc(
-      QMouseEvent *event, double *positionInStack);
+      QMouseEvent *event, const ZPoint &positionInStack);
   EMouseEventProcessStatus processMouseReleaseForStroke(
-      QMouseEvent *event, double *positionInStack);
+      QMouseEvent *event, const ZPoint &positionInStack);
 
   bool processKeyPressEventForSwc(QKeyEvent *event);
   bool processKeyPressEventForStroke(QKeyEvent *event);
@@ -251,12 +282,15 @@ private:
 
   bool estimateActiveStrokeWidth();
 
-  void processEvent(const ZInteractionEvent &event);
+  void processEvent(ZInteractionEvent &event);
+  void process(const ZStackOperator &op);
+
+  void acceptActiveStroke();
 
 private:
   ZStackFrame *m_parent;
-  QList<ZStackDrawable*> m_decorationList;
-  QList<ZStackDrawable*> m_activeDecorationList;
+  QList<ZStackObject*> m_decorationList;
+  QList<ZStackObject*> m_activeDecorationList;
 
   //Mode m_mode;
   //InteractiveMode m_intMode[2];
@@ -266,7 +300,7 @@ private:
   std::vector<double> m_greyScale;
   std::vector<double> m_greyOffset;
   int m_threshold;
-  ZStackDrawable::Display_Style m_objStyle;
+  ZStackObject::Display_Style m_objStyle;
   //MouseState m_mouseState;
   bool m_mouseLeftButtonPressed;
   bool m_mouseRightButtonPressed;
@@ -278,22 +312,22 @@ private:
   QAction *m_fitsegAction;
   QAction *m_fitEllipseAction;
   QAction *m_dropsegAction;
-  QAction *m_cutAction;
-  QAction *m_breakAction;
-  QAction *m_hookAction;
-  QAction *m_spHookAction;
-  QAction *m_linkAction;
-  QAction *m_mergeAction;
+  //QAction *m_cutAction;
+  //QAction *m_breakAction;
+  //QAction *m_hookAction;
+  //QAction *m_spHookAction;
+  //QAction *m_linkAction;
+  //QAction *m_mergeAction;
   QAction *m_frontAction;
   QAction *m_backAction;
-  QAction *m_refineEndAction;
-  QAction *m_connectAction;
-  QAction *m_extendAction;
-  QAction *m_walkAction;
-  QAction *m_checkConnAction;
-  QAction *m_disconnectAction;
-  QAction *m_neighborAction;
-  QAction *m_selectConnectedTubeAction;
+  //QAction *m_refineEndAction;
+  //QAction *m_connectAction;
+  //QAction *m_extendAction;
+  //QAction *m_walkAction;
+  //QAction *m_checkConnAction;
+  //QAction *m_disconnectAction;
+  //QAction *m_neighborAction;
+  //QAction *m_selectConnectedTubeAction;
   QAction *m_markPunctaAction;
   QAction *m_deleteSelectedAction;
   QAction *m_deleteAllPunctaAction;
@@ -341,13 +375,22 @@ private:
   int m_mouseRightPressPosition[3];
   int m_mouseLeftDoubleClickPosition[3];
   QPointF m_grabPosition;
-  QPointF m_lastMouseDataCoord;
+  ZPoint m_lastMouseDataCoord;
 
   ZStroke2d m_stroke;
+  ZStroke2d m_swcStroke;
   bool m_isStrokeOn;
 
   ZSingleSwcNodeActionActivator m_singleSwcNodeActionActivator;
   bool m_skipMouseReleaseEvent;
+
+  ZKeyEventSwcMapper m_swcKeyMapper;
+  //ZMouseEventLeftButtonReleaseMapper m_leftButtonReleaseMapper;
+  //ZMouseEventMoveMapper m_moveMapper;
+
+  ZMouseEventProcessor m_mouseEventProcessor;
+
+  int m_zOrder;
 
 signals:
   void viewModeChanged();

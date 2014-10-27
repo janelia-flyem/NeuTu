@@ -3,12 +3,23 @@
 
 #include "z3dgl.h"
 #include <QGraphicsView>
+#include <QWidget>
 #include <QGLWidget>
 #include <QInputEvent>
+#include <deque>
+#include <QList>
+#include "zstroke2d.h"
+
+#ifdef _FLYEM_
+#  include "flyem/zinteractionengine.h"
+#endif
+
 class Z3DScene;
 class Z3DNetworkEvaluator;
 class Z3DCanvasEventListener;
-#include <deque>
+class ZStackObject;
+class ZStroke2d;
+class Z3DTrackballInteractionHandler;
 
 class Z3DCanvas : public QGraphicsView
 {
@@ -35,7 +46,9 @@ public:
   // Set the opengl context of this canvas as the current one.
   inline void getGLFocus() { m_glWidget->makeCurrent(); }
   void toggleFullScreen();
-  void forceUpdate() { QPaintEvent *pe = new QPaintEvent(rect()); paintEvent(pe); delete pe; }
+  void forceUpdate() {
+    QPaintEvent *pe = new QPaintEvent(rect()); paintEvent(pe); delete pe;
+  }
   void updateAll() { m_glWidget->update(); }
 
   // for high dpi support like retina
@@ -64,9 +77,21 @@ public:
   void setCursor(const QCursor &c) { viewport()->setCursor(c); }
 #endif
 
+  virtual void drawBackground(QPainter *painter, const QRectF &rect);
+
+  bool processMouseMoveEventForPaint(QMouseEvent *e);
+  bool suppressingContextMenu() const;
+  void disableKeyEvent();
+
+  void set3DInteractionHandler(Z3DTrackballInteractionHandler *handler);
+
+  void updateCursor();
+
 signals:
   // w and h is physical size not logical size, opengl works in physical pixel
   void canvasSizeChanged(int w, int h);
+  void activeDecorationUpdated();
+  void strokePainted(ZStroke2d*);
 
 protected:
   double getDevicePixelRatio();
@@ -74,8 +99,17 @@ protected:
   bool m_fullscreen;
 
   QGLWidget* m_glWidget;
-  Z3DScene* m_3dScene;
+  QGraphicsScene* m_3dScene;
   std::deque<Z3DCanvasEventListener*> m_listeners;
+
+  Z3DNetworkEvaluator* m_networkEvaluator;
+  bool m_isStereoScene;
+  bool m_fakeStereoOnce;
+
+private:
+#if defined(_FLYEM_)
+  ZInteractionEngine m_interaction;
+#endif
 };
 
 #endif // Z3DCANVAS_H

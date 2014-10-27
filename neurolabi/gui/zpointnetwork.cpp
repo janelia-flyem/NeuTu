@@ -61,3 +61,10 @@ double ZPointNetwork::getEdgeWeight(int index) const
 {
   return m_graph->weights[index];
 }
+
+void ZPointNetwork::clear()
+{
+  m_pointArray.clear();
+  m_graph->nvertex = 0;
+  m_graph->nedge = 0;
+}

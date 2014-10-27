@@ -632,7 +632,7 @@ static mylib::Array *make_shape(mylib::Array_Kind kind, mylib::Value_Type type,
   return (a);
 }
 
-mylib::Array *G(mylib::Make_Array)(mylib::Array_Kind kind, mylib::Value_Type type, int ndims, mylib::Dimn_Type *dims)
+mylib::Array *_G(mylib::Make_Array)(mylib::Array_Kind kind, mylib::Value_Type type, int ndims, mylib::Dimn_Type *dims)
 { mylib::Array *a;
 
   a = make_shape(kind,type,ndims,dims,NCC("Make_Array"));
@@ -642,9 +642,9 @@ mylib::Array *G(mylib::Make_Array)(mylib::Array_Kind kind, mylib::Value_Type typ
   return (a);
 }
 
-mylib::Array *G(mylib::Make_Array_With_Shape)(mylib::Array_Kind kind,
+mylib::Array *_G(mylib::Make_Array_With_Shape)(mylib::Array_Kind kind,
                                               mylib::Value_Type type,
-                                              mylib::Coordinate *F(shape))
+                                              mylib::Coordinate *_F(shape))
 { mylib::Array *a;
 
   a = make_shape(kind,type,shape->dims[0],ADIMN(shape),NCC("Make_Array_With_Shape"));
@@ -656,7 +656,7 @@ mylib::Array *G(mylib::Make_Array_With_Shape)(mylib::Array_Kind kind,
   return (a);
 }
 
-mylib::Array *G(mylib::Make_Array_Of_Data)(mylib::Array_Kind kind,
+mylib::Array *_G(mylib::Make_Array_Of_Data)(mylib::Array_Kind kind,
                                            mylib::Value_Type type, int ndims,
                                     mylib::Dimn_Type *dims, void *data)
 { mylib::Array *a;
@@ -673,7 +673,7 @@ mylib::Array *G(mylib::Make_Array_Of_Data)(mylib::Array_Kind kind,
   return (a);
 }
 
-mylib::Array *G(mylib::Make_Array_From_Arrays)(mylib::Array_Kind kind, int n,
+mylib::Array *_G(mylib::Make_Array_From_Arrays)(mylib::Array_Kind kind, int n,
                                                mylib::Array **arrays)
 { mylib::Array    *a, *a0;
   int       i, ndims;
@@ -742,7 +742,7 @@ static mylib::Array_Kind Coord_Kind;
 
 static pthread_mutex_t Coord_Mutex = PTHREAD_MUTEX_INITIALIZER;
 
-void mylib::Set_Coord_Basis(Coordinate *F(point), mylib::Array_Kind kind)
+void mylib::Set_Coord_Basis(Coordinate *_F(point), mylib::Array_Kind kind)
 { pthread_mutex_lock(&Coord_Mutex);
   if (point == NULL)
     { Coord_Dims = NULL;
@@ -766,7 +766,7 @@ void mylib::Set_Coord_Basis(Coordinate *F(point), mylib::Array_Kind kind)
   Free_Array(point);
 }
 
-mylib::Coordinate *G(mylib::Get_Coord_Basis)(mylib::Array_Kind *kind)
+mylib::Coordinate *_G(mylib::Get_Coord_Basis)(mylib::Array_Kind *kind)
 { mylib::Dimn_Type  dim[1];
   mylib::Array     *point;
 
@@ -795,7 +795,7 @@ void mylib::Use_Array_Basis(mylib::Array *a)
   pthread_mutex_unlock(&Coord_Mutex);
 }
 
-mylib::Coordinate *G(mylib::Coord)(mylib::string list)
+mylib::Coordinate *_G(mylib::Coord)(mylib::string list)
 { mylib::Array     *coord;
   mylib::Dimn_Type  dim[1], *c;
   int        i, n;
@@ -912,7 +912,7 @@ void mylib::Print_Coord(FILE *file, mylib::Coordinate *point)
   mylib::Free_Array(point);
 }
 
- mylib::Coordinate *G(mylib::Coord1)(mylib::Dimn_Type d1)
+ mylib::Coordinate *_G(mylib::Coord1)(mylib::Dimn_Type d1)
 { mylib::Array     *coord;
   mylib::Dimn_Type  dim[1], *c;
 
@@ -923,7 +923,7 @@ void mylib::Print_Coord(FILE *file, mylib::Coordinate *point)
   return (coord);
 }
 
-mylib::Coordinate *G(mylib::Coord2)(mylib::Dimn_Type d2, mylib::Dimn_Type d1)
+mylib::Coordinate *_G(mylib::Coord2)(mylib::Dimn_Type d2, mylib::Dimn_Type d1)
 { mylib::Array     *coord;
   mylib::Dimn_Type  dim[1], *c;
 
@@ -935,7 +935,7 @@ mylib::Coordinate *G(mylib::Coord2)(mylib::Dimn_Type d2, mylib::Dimn_Type d1)
   return (coord);
 }
 
-mylib::Coordinate *G(mylib::Coord3)(mylib::Dimn_Type d3, mylib::Dimn_Type d2,
+mylib::Coordinate *_G(mylib::Coord3)(mylib::Dimn_Type d3, mylib::Dimn_Type d2,
                                     mylib::Dimn_Type d1)
 { mylib::Array     *coord;
   mylib::Dimn_Type  dim[1], *c;
@@ -949,7 +949,7 @@ mylib::Coordinate *G(mylib::Coord3)(mylib::Dimn_Type d3, mylib::Dimn_Type d2,
   return (coord);
 }
 
-mylib::Coordinate *G(mylib::Coord4)(mylib::Dimn_Type d4, mylib::Dimn_Type d3,
+mylib::Coordinate *_G(mylib::Coord4)(mylib::Dimn_Type d4, mylib::Dimn_Type d3,
                                     mylib::Dimn_Type d2, mylib::Dimn_Type d1)
 { mylib::Array     *coord;
   mylib::Dimn_Type  dim[1], *c;
@@ -964,7 +964,7 @@ mylib::Coordinate *G(mylib::Coord4)(mylib::Dimn_Type d4, mylib::Dimn_Type d3,
   return (coord);
 }
 
-mylib::Indx_Type mylib::Coord2Idx(Coordinate *F(point))
+mylib::Indx_Type mylib::Coord2Idx(Coordinate *_F(point))
 { mylib::Dimn_Type *x, y;
   mylib::Indx_Type  p;
   int        i;
@@ -1006,7 +1006,7 @@ mylib::Indx_Type mylib::Coord2Idx(Coordinate *F(point))
   return (p);
 }
 
-mylib::Indx_Type mylib::Coord2IdxA(mylib::Array *a, mylib::Coordinate *F(point))
+mylib::Indx_Type mylib::Coord2IdxA(mylib::Array *a, mylib::Coordinate *_F(point))
 { mylib::Dimn_Type *x, *d, y;
   mylib::Indx_Type  p;
   int        n, i;
@@ -1046,7 +1046,7 @@ mylib::Indx_Type mylib::Coord2IdxA(mylib::Array *a, mylib::Coordinate *F(point))
   return (p);
 }
 
-mylib::Coordinate *mylib::AppendCoord(Dimn_Type d, mylib::Coordinate *R(M(c)))
+mylib::Coordinate *mylib::AppendCoord(Dimn_Type d, mylib::Coordinate *_R(_M(c)))
 { mylib::Dimn_Type n;
   n = c->dims[0];
   allocate_array_data(c,(n+1)*SIZEOF(mylib::Dimn_Type),NCC("AppendCoord"));
@@ -1056,7 +1056,7 @@ mylib::Coordinate *mylib::AppendCoord(Dimn_Type d, mylib::Coordinate *R(M(c)))
   return (c);
 }
 
-mylib::Coordinate *mylib::PrependCoord(Coordinate *R(M(c)), mylib::Dimn_Type d)
+mylib::Coordinate *mylib::PrependCoord(Coordinate *_R(_M(c)), mylib::Dimn_Type d)
 { mylib::Dimn_Type *x = ADIMN(c);
   mylib::Dimn_Type  n;
   int        i;
@@ -1071,7 +1071,7 @@ mylib::Coordinate *mylib::PrependCoord(Coordinate *R(M(c)), mylib::Dimn_Type d)
   return (c);
 }
 
-static inline mylib::Coordinate *G(coord4idx)(
+static inline mylib::Coordinate *_G(coord4idx)(
     int n, mylib::Dimn_Type *d, mylib::Indx_Type idx, mylib::string routine)
 { mylib::Dimn_Type   dims[1], m, *l;
   mylib::Coordinate *lat;
@@ -1093,7 +1093,7 @@ static inline mylib::Coordinate *G(coord4idx)(
   return (lat);
 }
 
-mylib::Coordinate *G(mylib::Idx2Coord)(Indx_Type idx)
+mylib::Coordinate *_G(mylib::Idx2Coord)(Indx_Type idx)
 { mylib::Coordinate *p;
   if (Coord_Dims == NULL)
     { fprintf(stderr,"Coordinate basis is not set (Idx2Coord)\n");
@@ -1105,10 +1105,10 @@ mylib::Coordinate *G(mylib::Idx2Coord)(Indx_Type idx)
   return (p);
 }
 
-mylib::Coordinate *G(mylib::Idx2CoordA)(mylib::Array *a, mylib::Indx_Type idx)
+mylib::Coordinate *_G(mylib::Idx2CoordA)(mylib::Array *a, mylib::Indx_Type idx)
 { return (coord4idx(a->ndims,a->dims,idx,NCC("Idx2CoordA"))); }
 
-mylib::Coordinate *G(mylib::Idx2Core)(Indx_Type idx)
+mylib::Coordinate *_G(mylib::Idx2Core)(Indx_Type idx)
 { mylib::Dimn_Type  *d;
   int         n;
   mylib::Coordinate *p;
@@ -1133,7 +1133,7 @@ mylib::Coordinate *G(mylib::Idx2Core)(Indx_Type idx)
   return (p);
 }
 
-mylib::Coordinate *G(mylib::Idx2CoreA)(mylib::Array *a, mylib::Indx_Type idx)
+mylib::Coordinate *_G(mylib::Idx2CoreA)(mylib::Array *a, mylib::Indx_Type idx)
 { mylib::Dimn_Type  *d;
   int         n;
 
@@ -1191,7 +1191,7 @@ Value mylib::Get_Array_Value(mylib::Array *a, mylib::Coordinate *coord)
   return (v);
 }
 
-void mylib::Set_Array_Value(mylib::Array *M(a), mylib::Coordinate *coord, Value v)
+void mylib::Set_Array_Value(mylib::Array *_M(a), mylib::Coordinate *coord, Value v)
 { mylib::Indx_Type p = Coord2IdxA(a,coord);
   switch (a->type) {
       case mylib::UINT8_TYPE:
@@ -1229,7 +1229,7 @@ void mylib::Set_Array_Value(mylib::Array *M(a), mylib::Coordinate *coord, Value 
   }
 }
 
-mylib::Coordinate *G(mylib::Floor_Coord)(Double_Vector *point)
+mylib::Coordinate *_G(mylib::Floor_Coord)(Double_Vector *point)
 { mylib::Array     *lat;
   double    *p;
   mylib::Dimn_Type *c, k;
@@ -1249,7 +1249,7 @@ mylib::Coordinate *G(mylib::Floor_Coord)(Double_Vector *point)
   return (lat);
 }
 
-mylib::Coordinate *G(mylib::Ceiling_Coord)(Double_Vector *point)
+mylib::Coordinate *_G(mylib::Ceiling_Coord)(Double_Vector *point)
 { mylib::Array     *lat;
   double    *p;
   mylib::Dimn_Type *c, k;
@@ -1269,7 +1269,7 @@ mylib::Coordinate *G(mylib::Ceiling_Coord)(Double_Vector *point)
   return (lat);
 }
 
-mylib::Coordinate *G(mylib::Nearest_Coord)(Double_Vector *point)
+mylib::Coordinate *_G(mylib::Nearest_Coord)(Double_Vector *point)
 { mylib::Array     *lat;
   double    *p;
   mylib::Dimn_Type *c, k;
@@ -1561,7 +1561,7 @@ mylib::Slice *mylib::Pack_Slice(Slice *s)
   return (s);
 }
 
-mylib::Slice *G(mylib::Make_Slice)(mylib::Array *I(target), mylib::Coordinate *S(beg), mylib::Coordinate *S(end))
+mylib::Slice *_G(mylib::Make_Slice)(mylib::Array *_I(target), mylib::Coordinate *_S(beg), mylib::Coordinate *_S(end))
 { Slicer    *slice;
   mylib::Dimn_Type *ecrd = ADIMN(end);
   mylib::Dimn_Type *bcrd = ADIMN(beg);
@@ -1680,7 +1680,7 @@ mylib::Coordinate *mylib::Slice_Last(Slice *slicer)
 mylib::boolean mylib::Inside_Slice(Slice *slicer)
 { return (((Slicer *) slicer)->clip < 0);  }
 
-mylib::boolean mylib::Set_Slice_To_Index(Slice *M(slicer), mylib::Size_Type idx)
+mylib::boolean mylib::Set_Slice_To_Index(Slice *_M(slicer), mylib::Size_Type idx)
 { Slicer    *slice = (Slicer *) slicer;
   mylib::Dimn_Type *bcrd  = slice->bcrd;
   mylib::Dimn_Type *ecrd  = slice->ecrd;
@@ -1707,7 +1707,7 @@ mylib::boolean mylib::Set_Slice_To_Index(Slice *M(slicer), mylib::Size_Type idx)
   return (slice->clip < 0);
 }
 
-mylib::Indx_Type mylib::Set_Slice_To_First(Slice *M(slicer))
+mylib::Indx_Type mylib::Set_Slice_To_First(Slice *_M(slicer))
 { Slicer    *slice = (Slicer *) slicer;
   mylib::Dimn_Type *bcrd  = slice->bcrd;
   mylib::Dimn_Type *dim   = slice->trg_ref->dims;
@@ -1724,7 +1724,7 @@ mylib::Indx_Type mylib::Set_Slice_To_First(Slice *M(slicer))
   return (slice->p);
 }
 
-mylib::Indx_Type mylib::Set_Slice_To_Last(Slice *M(slicer))
+mylib::Indx_Type mylib::Set_Slice_To_Last(Slice *_M(slicer))
 { Slicer    *slice = (Slicer *) slicer;
   mylib::Dimn_Type *ecrd  = slice->ecrd;
   mylib::Dimn_Type *dim   = slice->trg_ref->dims;
@@ -1741,7 +1741,7 @@ mylib::Indx_Type mylib::Set_Slice_To_Last(Slice *M(slicer))
   return (slice->p);
 }
 
-mylib::Indx_Type mylib::Next_Slice_Index(Slice *M(slicer))
+mylib::Indx_Type mylib::Next_Slice_Index(Slice *_M(slicer))
 { Slicer    *slice = (Slicer *) slicer;
   mylib::Dimn_Type *ecrd  = slice->ecrd;
   mylib::Dimn_Type *cnt   = slice->acnt;
@@ -1769,7 +1769,7 @@ mylib::Indx_Type mylib::Next_Slice_Index(Slice *M(slicer))
   return (slice->p);
 }
 
-mylib::Indx_Type mylib::Prev_Slice_Index(Slice *M(slicer))
+mylib::Indx_Type mylib::Prev_Slice_Index(Slice *_M(slicer))
 { Slicer    *slice = (Slicer *) slicer;
   mylib::Dimn_Type *bcrd  = slice->bcrd;
   mylib::Dimn_Type *cnt   = slice->acnt;
@@ -1797,7 +1797,7 @@ mylib::Indx_Type mylib::Prev_Slice_Index(Slice *M(slicer))
   return (slice->p);
 }
 
-mylib::boolean mylib::Inc_Slice_Index(Slice *M(slicer))
+mylib::boolean mylib::Inc_Slice_Index(Slice *_M(slicer))
 { Slicer    *slice = (Slicer *) slicer;
   mylib::Dimn_Type *tcrd  = slice->trg_ref->dims;
   mylib::Dimn_Type *bcrd  = slice->bcrd;
@@ -1833,7 +1833,7 @@ mylib::boolean mylib::Inc_Slice_Index(Slice *M(slicer))
   return (clip < 0);
 }
 
-mylib::boolean mylib::Dec_Slice_Index(Slice *M(slicer))
+mylib::boolean mylib::Dec_Slice_Index(Slice *_M(slicer))
 { Slicer    *slice = (Slicer *) slicer;
   mylib::Dimn_Type *tcrd  = slice->trg_ref->dims;
   mylib::Dimn_Type *bcrd  = slice->bcrd;
@@ -1869,7 +1869,7 @@ mylib::boolean mylib::Dec_Slice_Index(Slice *M(slicer))
   return (clip < 0);
 }
 
-mylib::Array *G(mylib::Make_Array_From_Slice)(Slice *slice)
+mylib::Array *_G(mylib::Make_Array_From_Slice)(Slice *slice)
 { mylib::Array *source = AForm_Array(slice);
   mylib::Array *target = Make_Array_With_Shape(PLAIN_KIND,source->type,AForm_Shape(slice));
   mylib::Size_Type n   = AForm_Size(slice);
@@ -8744,7 +8744,7 @@ static void expand_invert_float64(int d, int out, mylib::int64 q, mylib::int64 t
  *                                                                                      *
  ****************************************************************************************/
 
-mylib::Frame *G(mylib::Make_Frame)(mylib::Array *I(target), mylib::Coordinate *S(shape), mylib::Coordinate *S(anchor))
+mylib::Frame *_G(mylib::Make_Frame)(mylib::Array *_I(target), mylib::Coordinate *_S(shape), mylib::Coordinate *_S(anchor))
 { Framer    *frame;
   mylib::Dimn_Type *scrd = ADIMN(shape);
   mylib::int32     *ccrd = AINT32(anchor);
@@ -8883,17 +8883,17 @@ mylib::Indx_Type mylib::Frame_Index(Frame *frame)
 mylib::Coordinate *mylib::Frame_Coordinate(Frame *frame)
 { return (FRAME_COORDINATE(frame));  }
 
-mylib::boolean mylib::Place_Frame(Frame *M(frame), mylib::Indx_Type p)
+mylib::boolean mylib::Place_Frame(Frame *_M(frame), mylib::Indx_Type p)
 { FRAME(frame)->mode = NOT_SET;
   return (Set_Slice_To_Index(FRAME_SLICE(frame),p) && FRAME(frame)->notempty);
 }
 
-mylib::boolean mylib::Move_Frame_Forward(Frame *M(frame))
+mylib::boolean mylib::Move_Frame_Forward(Frame *_M(frame))
 { FRAME(frame)->mode = NOT_SET;
   return (Inc_Slice_Index(FRAME_SLICE(frame)) && FRAME(frame)->notempty);
 }
 
-mylib::boolean mylib::Move_Frame_Backward(Frame *M(frame))
+mylib::boolean mylib::Move_Frame_Backward(Frame *_M(frame))
 { FRAME(frame)->mode = NOT_SET;
   return (Dec_Slice_Index(FRAME_SLICE(frame)) && FRAME(frame)->notempty);
 }
@@ -9405,7 +9405,7 @@ void *mylib::Frame_Values(Frame *framer)
 mylib::Offs_Type *mylib::Frame_Offsets(Frame *f)
 { return (FRAME(f)->offs); }
 
-mylib::Array_Bundle *mylib::Frame_Array(Array_Bundle *R(O(a)), Frame *framer)
+mylib::Array_Bundle *mylib::Frame_Array(Array_Bundle *_R(_O(a)), Frame *framer)
 { static char text[1] = { '\0' };
   Framer *frame = (Framer *) framer;
   a->type   = frame->trg_ref->type;
@@ -9420,7 +9420,7 @@ mylib::Array_Bundle *mylib::Frame_Array(Array_Bundle *R(O(a)), Frame *framer)
   return (a);
 }
 
-mylib::Array *G(mylib::Make_Array_From_Frame)(Frame *framer)
+mylib::Array *_G(mylib::Make_Array_From_Frame)(Frame *framer)
 { Framer *frame = (Framer *) framer;
   mylib::Array  *a     = frame->trg_ref;
   
@@ -9673,7 +9673,7 @@ mylib::Array_Kind mylib::AForm_Kind(AForm *form)
   return (PLAIN_KIND);
 }
 
-mylib::Coordinate *G(mylib::AForm_Shape)(AForm *form)
+mylib::Coordinate *_G(mylib::AForm_Shape)(AForm *form)
 { mylib::Coordinate *coord;
 
   switch (AForm_Class(form))
@@ -9701,7 +9701,7 @@ mylib::Coordinate *G(mylib::AForm_Shape)(AForm *form)
   return (NULL);
 }
 
-mylib::Array *G(mylib::Make_Array_From_AForm)(AForm *form)
+mylib::Array *_G(mylib::Make_Array_From_AForm)(AForm *form)
 { switch (AForm_Class(form))
   { case SLICE_CLASS:
       return (Make_Array_From_Slice((Slice *) form));
@@ -9713,7 +9713,7 @@ mylib::Array *G(mylib::Make_Array_From_AForm)(AForm *form)
   return (NULL);
 }
 
-mylib::AForm *G(mylib::Copy_AForm)(AForm *form)
+mylib::AForm *_G(mylib::Copy_AForm)(AForm *form)
 { switch (AForm_Class(form))
   { case SLICE_CLASS:
       return ((AForm *) Copy_Slice((Slice *) form));
@@ -9725,7 +9725,7 @@ mylib::AForm *G(mylib::Copy_AForm)(AForm *form)
   return (NULL);
 }
 
-mylib::AForm *mylib::Pack_AForm(AForm *R(M(form)))
+mylib::AForm *mylib::Pack_AForm(AForm *_R(_M(form)))
 { switch (AForm_Class(form))
   { case SLICE_CLASS:
       return ((AForm *) Pack_Slice((Slice *) form));
@@ -9737,7 +9737,7 @@ mylib::AForm *mylib::Pack_AForm(AForm *R(M(form)))
   return (NULL);
 }
 
-mylib::AForm *mylib::Inc_AForm(AForm *R(I(form)))
+mylib::AForm *mylib::Inc_AForm(AForm *_R(_I(form)))
 { switch (AForm_Class(form))
   { case SLICE_CLASS:
       return ((AForm *) Inc_Slice((Slice *) form));
@@ -9749,7 +9749,7 @@ mylib::AForm *mylib::Inc_AForm(AForm *R(I(form)))
   return (NULL);
 }
 
-void mylib::Free_AForm(AForm *F(form))
+void mylib::Free_AForm(AForm *_F(form))
 { switch (AForm_Class(form))
   { case SLICE_CLASS:
       Free_Slice((Slice *) form);
@@ -9763,7 +9763,7 @@ void mylib::Free_AForm(AForm *F(form))
   }
 }
 
-void mylib::Kill_AForm(AForm *K(form))
+void mylib::Kill_AForm(AForm *_K(form))
 { switch (AForm_Class(form))
   { case SLICE_CLASS:
       Kill_Slice((Slice *) form);
@@ -12328,14 +12328,14 @@ void mylib::Print_Array(AForm *o, FILE *output, int indent, string format)
  *                                                                                      *
  ****************************************************************************************/
 
-void mylib::Set_Array_Text(mylib::Array *M(a), string text)
+void mylib::Set_Array_Text(mylib::Array *_M(a), string text)
 { int len = (int) strlen(text);
   allocate_array_text(a,len+1,NCC("Set_Array_Text"));
   a->tlen = len;
   strcpy(a->text,text);
 }
 
-void mylib::Append_To_Array_Text(mylib::Array *M(a), string text)
+void mylib::Append_To_Array_Text(mylib::Array *_M(a), string text)
 { int sen = (int) strlen(a->text);
   allocate_array_text(a,sen+a->tlen+1,NCC("Append_To_Array_Text"));
   a->tlen += sen;
@@ -12350,7 +12350,7 @@ void mylib::Append_To_Array_Text(mylib::Array *M(a), string text)
  ****************************************************************************************/
 
 
-mylib::Array_Bundle *mylib::Get_Array_Plane(Array_Bundle *R(M(a)), mylib::Dimn_Type plane)
+mylib::Array_Bundle *mylib::Get_Array_Plane(Array_Bundle *_R(_M(a)), mylib::Dimn_Type plane)
 { mylib::Dimn_Type nplanes = a->dims[a->ndims-1];
   mylib::Size_Type offset  = array_dsize(a)/nplanes;
 
@@ -12377,7 +12377,7 @@ mylib::Array_Bundle *mylib::Get_Array_Plane(Array_Bundle *R(M(a)), mylib::Dimn_T
 
 //  Compute min and max values in 'a' of type 'type' with 'length' elements
 
-mylib::Range_Bundle *mylib::Array_Range(Range_Bundle *R(O(rng)), AForm *o)
+mylib::Range_Bundle *mylib::Array_Range(Range_Bundle *_R(_O(rng)), AForm *o)
 { mylib::Array    *a = AForm_Array(o);
   mylib::Size_Type n = AForm_Size(o);
 
@@ -12877,7 +12877,7 @@ mylib::Range_Bundle *mylib::Array_Range(Range_Bundle *R(O(rng)), AForm *o)
   return (rng);
 }
 
-mylib::APart *mylib::Scale_Array(APart *R(M(o)), double factor, double offset)
+mylib::APart *mylib::Scale_Array(APart *_R(_M(o)), double factor, double offset)
 { mylib::Size_Type n;
   mylib::Indx_Type e;
   mylib::Array    *a = AForm_Array(o);
@@ -12994,7 +12994,7 @@ mylib::APart *mylib::Scale_Array(APart *R(M(o)), double factor, double offset)
   return (o);
 }
 
-mylib::APart *mylib::Scale_Array_To_Range(APart *R(M(o)), Value min, Value max)
+mylib::APart *mylib::Scale_Array_To_Range(APart *_R(_M(o)), Value min, Value max)
 { Range_Bundle crn;
   double       f;
   mylib::Array       *a = AForm_Array(o);
@@ -13108,7 +13108,7 @@ mylib::APart *mylib::Scale_Array_To_Range(APart *R(M(o)), Value min, Value max)
  *                                                                                      *
  ****************************************************************************************/
 
-mylib::APart *mylib::Array_Op_Scalar(APart *R(M(o)), Operator op, Value_Type type, Value value)
+mylib::APart *mylib::Array_Op_Scalar(APart *_R(_M(o)), Operator op, Value_Type type, Value value)
 { mylib::Array    *a = AForm_Array(o);
   AForm    *m = o;
   mylib::uint64     uval = 0;
@@ -15822,7 +15822,7 @@ mylib::APart *mylib::Array_Op_Scalar(APart *R(M(o)), Operator op, Value_Type typ
   return (o);
 }
 
-mylib::APart *mylib::Complex_Op_Scalar(APart *R(M(o)), Operator op,
+mylib::APart *mylib::Complex_Op_Scalar(APart *_R(_M(o)), Operator op,
                          Value_Type type, Value rpart, Value ipart)
 { mylib::Array    *a = AForm_Array(o);
   AForm    *m = o;
@@ -21167,7 +21167,7 @@ static void Release_AOA_Buffer(void *buf)
     return (j);
   }
 
-APart *Array_Op_Array(APart *R(M(o)), Operator op, AForm *q)
+APart *Array_Op_Array(APart *_R(_M(o)), Operator op, AForm *q)
 { mylib::Array *a = AForm_Array(o);
   mylib::Array *b = AForm_Array(q);
   AForm *m = o;
@@ -25001,7 +25001,7 @@ APart *Array_Op_Array(APart *R(M(o)), Operator op, AForm *q)
   return (o);
 }
 
-APart *Complex_Op_Array(APart *R(M(o)), Operator op, AForm *q)
+APart *Complex_Op_Array(APart *_R(_M(o)), Operator op, AForm *q)
 { mylib::Array *a = AForm_Array(o);
   mylib::Array *b = AForm_Array(q);
   AForm *m = o;
@@ -30103,7 +30103,7 @@ APart *Complex_Op_Array(APart *R(M(o)), Operator op, AForm *q)
   return (o);
 }
 
-APart *Complex_Op_Complex(APart *R(M(o)), Operator op, AForm *q)
+APart *Complex_Op_Complex(APart *_R(_M(o)), Operator op, AForm *q)
 { mylib::Array *a = AForm_Array(o);
   mylib::Array *b = AForm_Array(q);
   AForm *m = o;
@@ -35805,7 +35805,7 @@ APart *Complex_Op_Complex(APart *R(M(o)), Operator op, AForm *q)
  *                                                                                      *
  ****************************************************************************************/
 
-APart *Array_Fct_Val(APart *R(M(o)), Value (*fct)(void *valp))
+APart *Array_Fct_Val(APart *_R(_M(o)), Value (*fct)(void *valp))
 { mylib::Indx_Type i, e;
   Slice    *s = (Slice *) o;
   mylib::Array    *a = AForm_Array(o);
@@ -35961,7 +35961,7 @@ APart *Array_Fct_Val(APart *R(M(o)), Value (*fct)(void *valp))
   return (o);
 }
 
-APart *Array_Fct_Idx(APart *R(M(o)), Value (*fct)(Coordinate *coord))
+APart *Array_Fct_Idx(APart *_R(_M(o)), Value (*fct)(Coordinate *coord))
 { mylib::Indx_Type p, e;
   Slice    *s = (Slice *) o;
   mylib::Array    *a = (mylib::Array *) AForm_Array(o);
@@ -36075,7 +36075,7 @@ APart *Array_Fct_Idx(APart *R(M(o)), Value (*fct)(Coordinate *coord))
 
 //  Threshold values less than cutoff to black, all others to white
 
-APart *Threshold_Array(APart *R(M(o)), Value cutoff)
+APart *Threshold_Array(APart *_R(_M(o)), Value cutoff)
 { mylib::Indx_Type i, e;
   Slice    *s = (Slice *) o;
   mylib::Array    *a = AForm_Array(o);
@@ -44316,7 +44316,7 @@ static mylib::Array *convert_array(mylib::Array *sarray, mylib::Array_Kind tkind
   return (tarray);
 }
 
-mylib::Array *Convert_Array_Inplace(mylib::Array *R(M(sarray)), mylib::Array_Kind tkind, Value_Type ttype,
+mylib::Array *Convert_Array_Inplace(mylib::Array *_R(_M(sarray)), mylib::Array_Kind tkind, Value_Type ttype,
                              int tscale, ...)
 { Variable_Scale var;
   va_list        ap;
@@ -44337,7 +44337,7 @@ mylib::Array *Convert_Array_Inplace(mylib::Array *R(M(sarray)), mylib::Array_Kin
   return (convert_array(sarray,tkind,ttype,tscale,&var,1));
 }
 
-mylib::Array *G(Convert_Array)(mylib::Array *sarray, mylib::Array_Kind tkind, Value_Type ttype, int tscale, ...)
+mylib::Array *_G(Convert_Array)(mylib::Array *sarray, mylib::Array_Kind tkind, Value_Type ttype, int tscale, ...)
 { Variable_Scale var;
   va_list        ap;
 
@@ -44516,10 +44516,10 @@ mylib::Array *convert_image(mylib::Array *array, mylib::Array_Kind kind, Value_T
   return (rez);
 }
 
-mylib::Array *Convert_Image_Inplace(mylib::Array *R(M(array)), mylib::Array_Kind kind, Value_Type type, int scale)
+mylib::Array *Convert_Image_Inplace(mylib::Array *_R(_M(array)), mylib::Array_Kind kind, Value_Type type, int scale)
 { return (convert_image(array,kind,type,scale,1)); }
 
-mylib::Array *G(Convert_Image)(mylib::Array *array, mylib::Array_Kind kind, Value_Type type, int scale)
+mylib::Array *_G(Convert_Image)(mylib::Array *array, mylib::Array_Kind kind, Value_Type type, int scale)
 { return (convert_image(array,kind,type,scale,0)); }
 
 /****************************************************************************************
@@ -44528,7 +44528,7 @@ mylib::Array *G(Convert_Image)(mylib::Array *array, mylib::Array_Kind kind, Valu
  *                                                                                      *
  ****************************************************************************************/
 
-mylib::Array *G(Array_Multiply)(mylib::Array *a, mylib::Array *b)
+mylib::Array *_G(Array_Multiply)(mylib::Array *a, mylib::Array *b)
 { int       acmplx  = (a->kind == COMPLEX_KIND);
   int       bcmplx  = (b->kind == COMPLEX_KIND);
 
@@ -45529,7 +45529,7 @@ mylib::Array *G(Array_Multiply)(mylib::Array *a, mylib::Array *b)
 
 #define Apply_Map mylib::Apply_Map
 
-mylib::Array *G(Apply_Map)(mylib::Array *image, mylib::Array *map)
+mylib::Array *_G(Apply_Map)(mylib::Array *image, mylib::Array *map)
 { mylib::Array     *rez;
   mylib::Size_Type  inner;
 
@@ -46098,7 +46098,7 @@ mylib::Array *G(Apply_Map)(mylib::Array *image, mylib::Array *map)
 #define Dec_Slice_Index mylib::Dec_Slice_Index
 #define AForm_Size mylib::AForm_Size
 
-static void down_sample(AForm *source, void *target, mylib::Coordinate *F(voxel), mylib::Coordinate *F(basis))
+static void down_sample(AForm *source, void *target, mylib::Coordinate *_F(voxel), mylib::Coordinate *_F(basis))
 { mylib::Size_Type Sdinc[10], *dinc;
   mylib::Size_Type Stinc[10], *tinc;
   mylib::Dimn_Type Sdcnt[10], *dcnt;
@@ -47360,7 +47360,7 @@ static void down_sample(AForm *source, void *target, mylib::Coordinate *F(voxel)
   Free_Array(basis);
 }
  
-static void check_dsample_args(AForm *source, mylib::Coordinate *M(point), string routine)
+static void check_dsample_args(AForm *source, mylib::Coordinate *_M(point), string routine)
 { mylib::Dimn_Type  *crd;
   int         i, ndims;
   mylib::Array      *a = AForm_Array(source);
@@ -47387,7 +47387,7 @@ static void check_dsample_args(AForm *source, mylib::Coordinate *M(point), strin
     }
 }
 
-mylib::Array *Down_Sample_Inplace(mylib::Array *R(M(source)), mylib::Coordinate *F(ipoint))
+mylib::Array *Down_Sample_Inplace(mylib::Array *_R(_M(source)), mylib::Coordinate *_F(ipoint))
 { mylib::Coordinate *basis, *point;
   mylib::Dimn_Type  *dims, *crd;
   int         i;
@@ -47417,7 +47417,7 @@ mylib::Array *Down_Sample_Inplace(mylib::Array *R(M(source)), mylib::Coordinate 
 }
     
 
-mylib::Array *G(Down_Sample)(AForm *source, mylib::Coordinate *F(ipoint))
+mylib::Array *_G(Down_Sample)(AForm *source, mylib::Coordinate *_F(ipoint))
 { mylib::Coordinate *basis, *point;
   mylib::Array      *target;
   mylib::Dimn_Type  *dims, *crd;
@@ -47450,7 +47450,7 @@ mylib::Array *G(Down_Sample)(AForm *source, mylib::Coordinate *F(ipoint))
  *                                                                                      *
  ****************************************************************************************/
 
-void clip_array(mylib::Array *source, void *target, mylib::Coordinate *S(beg), mylib::Coordinate *S(end))
+void clip_array(mylib::Array *source, void *target, mylib::Coordinate *_S(beg), mylib::Coordinate *_S(end))
 { Slice    *slice;
   mylib::Indx_Type p, r, e;
 
@@ -47582,7 +47582,7 @@ void clip_array(mylib::Array *source, void *target, mylib::Coordinate *S(beg), m
   Kill_Slice(slice);
 }
 
-void clip_frame(Frame *frame, void *target, mylib::Coordinate *S(beg), mylib::Coordinate *S(end))
+void clip_frame(Frame *frame, void *target, mylib::Coordinate *_S(beg), mylib::Coordinate *_S(end))
 { _Array       _bundle;
   Array_Bundle *bundle = &_bundle.array;
   Slice        *slice;
@@ -47880,7 +47880,7 @@ void check_clip_args(AForm *source, mylib::Coordinate *beg, mylib::Coordinate *e
   Free_Array(basis);
 }
  
-mylib::Array *Clip_Array_Inplace(mylib::Array *R(M(source)), mylib::Coordinate *F(beg), mylib::Coordinate *F(end))
+mylib::Array *Clip_Array_Inplace(mylib::Array *_R(_M(source)), mylib::Coordinate *_F(beg), mylib::Coordinate *_F(end))
 { mylib::Coordinate *shape;
   mylib::Dimn_Type  *bcrd, *scrd, *dims, s;
   int         i, ndims;
@@ -47917,7 +47917,7 @@ mylib::Array *Clip_Array_Inplace(mylib::Array *R(M(source)), mylib::Coordinate *
 }
     
 
-mylib::Array *G(Clip_Array)(AForm *source, mylib::Coordinate *F(beg), mylib::Coordinate *F(end))
+mylib::Array *_G(Clip_Array)(AForm *source, mylib::Coordinate *_F(beg), mylib::Coordinate *_F(end))
 { mylib::Coordinate *shape;
   mylib::Dimn_Type  *bcrd, *scrd;
   mylib::Array      *target;
@@ -47987,7 +47987,7 @@ mylib::Array *G(Clip_Array)(AForm *source, mylib::Coordinate *F(beg), mylib::Coo
  ****************************************************************************************/
 
 void expand_array(mylib::Array *target, AForm *source, mylib::Size_Type size,
-                  mylib::Coordinate *S(beg), mylib::Coordinate *S(end))
+                  mylib::Coordinate *_S(beg), mylib::Coordinate *_S(end))
 { Slice     *slice;
   mylib::Indx_Type  p, q, x;
   int        in;
@@ -48970,7 +48970,7 @@ void check_expand_args(AForm *source, mylib::Coordinate *anchor, mylib::Coordina
   Free_Array(basis);
 }
  
-mylib::Array *Pad_Array_Inplace(mylib::Array *R(M(source)), mylib::Coordinate *F(anchor), mylib::Coordinate *F(shape))
+mylib::Array *Pad_Array_Inplace(mylib::Array *_R(_M(source)), mylib::Coordinate *_F(anchor), mylib::Coordinate *_F(shape))
 { mylib::Coordinate *end;
   mylib::Dimn_Type  *ecrd, *acrd, *dims;
   mylib::Size_Type   size;
@@ -49009,7 +49009,7 @@ mylib::Array *Pad_Array_Inplace(mylib::Array *R(M(source)), mylib::Coordinate *F
 }
 
 
-mylib::Array *G(Pad_Array)(AForm *source, mylib::Coordinate *F(anchor), mylib::Coordinate *F(shape))
+mylib::Array *_G(Pad_Array)(AForm *source, mylib::Coordinate *_F(anchor), mylib::Coordinate *_F(shape))
 { mylib::Array      *target;
   mylib::Coordinate *end, *basis;
   mylib::Dimn_Type  *ecrd, *acrd, *dims;
@@ -49619,7 +49619,7 @@ static double sum_array(AForm *o)
 #define Coord2 mylib::Coord2
 #define Coord1 mylib::Coord1
 
-static Double_Matrix *G(correlate)(int n, AForm *a1, va_list *ap, string routine)
+static Double_Matrix *_G(correlate)(int n, AForm *a1, va_list *ap, string routine)
 { AForm         *Sargs[20], **args;
   Double_Matrix *rez;
 
@@ -49661,7 +49661,7 @@ static Double_Matrix *G(correlate)(int n, AForm *a1, va_list *ap, string routine
   return (rez);
 }
 
-static Double_Vector *G(array_sums)(int n, AForm *a1, va_list *ap)
+static Double_Vector *_G(array_sums)(int n, AForm *a1, va_list *ap)
 { Double_Vector *rez;
 
   rez = Make_Array_With_Shape(PLAIN_KIND,mylib::FLOAT64_TYPE,Coord1(n));
@@ -49680,7 +49680,7 @@ static Double_Vector *G(array_sums)(int n, AForm *a1, va_list *ap)
 double A_Correlation(AForm *a1, AForm *a2)
 { return (inner_product_arrays(a1,a2)); }
 
-Double_Matrix *G(Correlations)(int n, AForm *a1, ...)
+Double_Matrix *_G(Correlations)(int n, AForm *a1, ...)
 { va_list        ap;
   Double_Matrix *rez;
 
@@ -49697,7 +49697,7 @@ double A_Covariance(AForm *a1, AForm *a2)
   return ((prod - sum1*sum2)/AForm_Size(a1));
 }
 
-Double_Matrix *G(Covariances)(int n, AForm *a1, ...)
+Double_Matrix *_G(Covariances)(int n, AForm *a1, ...)
 { va_list        ap;
   Double_Matrix *rez;
   Double_Vector *sum;
@@ -49744,7 +49744,7 @@ double A_Pearson_Correlation(AForm *a1, AForm *a2)
   return ((prod - sum1*(sum2/N))/sqrt(sig1*sig2));
 }
 
-Double_Matrix *G(Pearson_Correlations)(int n, AForm *a1, ...)
+Double_Matrix *_G(Pearson_Correlations)(int n, AForm *a1, ...)
 { va_list        ap;
   Double_Matrix *rez;
   Double_Vector *sum;

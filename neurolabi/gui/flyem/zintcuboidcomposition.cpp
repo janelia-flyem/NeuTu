@@ -17,8 +17,8 @@ bool FlyEm::ZIntCuboidComposition::hitTestF(double x, double y, double z)
 }
 
 void FlyEm::ZIntCuboidComposition::setComposition(
-    std::tr1::shared_ptr<ZIntCuboidComposition> firstComponent,
-    std::tr1::shared_ptr<ZIntCuboidComposition> secondComponent,
+    shared_ptr<ZIntCuboidComposition> firstComponent,
+    shared_ptr<ZIntCuboidComposition> secondComponent,
     EOperator opr)
 {
   m_firstComponent = firstComponent;
@@ -31,10 +31,10 @@ bool FlyEm::ZIntCuboidComposition::hitTest(int x, int y, int z)
   if (m_operator == SINGULAR) {
     return Cuboid_I_Hit(&m_cuboid, x, y, z);
   } else {
-    if (m_firstComponent == NULL || m_secondComponent == NULL) {
-      if (m_firstComponent != NULL) {
+    if (!m_firstComponent || !m_secondComponent) {
+      if (m_firstComponent) {
         return m_firstComponent->hitTest(x, y, z);
-      } else if (m_secondComponent != NULL) {
+      } else if (m_secondComponent) {
         return m_secondComponent->hitTest(x, y, z);
       } else {
         return false;

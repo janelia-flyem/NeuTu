@@ -58,7 +58,7 @@ void ZPunctumIO::readV3DApoFile(const QString &file, QList<ZPunctum *> &punctaLi
     QStringList fieldList = line.split(",");
     if (fieldList.size() >= 12) {
       ZPunctum* punctum = new ZPunctum();
-      punctum->setSource(file);
+      punctum->setSource(file.toStdString());
       bool ok;
       fieldList[0].toInt(&ok);
       if (!ok) {
@@ -107,9 +107,11 @@ void ZPunctumIO::readV3DApoFile(const QString &file, QList<ZPunctum *> &punctaLi
         delete punctum;
         continue;
       }
-      punctum->setProperty1(fieldList[12]);
-      punctum->setProperty2(fieldList[13]);
-      punctum->setProperty3(fieldList[14]);
+      if (fieldList.size() > 14) {
+        punctum->setProperty1(fieldList[12]);
+        punctum->setProperty2(fieldList[13]);
+        punctum->setProperty3(fieldList[14]);
+      }
       if (fieldList.size() >= 18) {
         bool ok1, ok2;
 
@@ -177,7 +179,7 @@ void ZPunctumIO::readRavelerBookmarkFile(const QString &file, QList<ZPunctum *> 
           punctum->setX(coordinates[0]);
           punctum->setY(coordinates[1]);
           punctum->setZ(coordinates[2]);
-          punctum->setSource(file);
+          punctum->setSource(file.toStdString());
           punctaList.push_back(punctum);
         }
       }
@@ -203,7 +205,7 @@ void ZPunctumIO::readJsonFile(const QString &file, QList<ZPunctum *> &punctaList
         punctum->setY(coordinates[1]);
         punctum->setZ(coordinates[2]);
         punctum->setRadius(20);
-        punctum->setSource(file);
+        punctum->setSource(file.toStdString());
         punctaList.push_back(punctum);
       }
     }

@@ -61,6 +61,7 @@ void Default_Swc_Tree_Node(Swc_Tree_Node *node)
     node->feature = 0.0;
     node->index = -1;
     node->flag = 0;
+    node->tree_state = 0;
   }
 }
 
@@ -832,6 +833,7 @@ void Swc_Tree_Node_Set_Parent(Swc_Tree_Node *tn, Swc_Tree_Node *parent)
       Swc_Tree_Node_Data(tn)->parent_id = Swc_Tree_Node_Id(parent);
       Swc_Tree_Node_Add_Child(parent, tn);
     }
+    tn->tree_state = parent->tree_state;
   } 
 }
 
@@ -2025,6 +2027,7 @@ void Default_Swc_Tree(Swc_Tree *tree)
     tree->root = NULL;
     tree->iterator = NULL;
     tree->begin = NULL;
+    tree->tree_state = 0;
   }
 }
 
@@ -2919,6 +2922,7 @@ Swc_Tree_Node* Swc_Tree_Next(Swc_Tree *tree)
 
   if (tn != NULL) {
     //tree->iterator = Swc_Tree_Node_Next(tn);
+    tn->tree_state = tree->tree_state;
     tree->iterator = tn->next;
   }
 
@@ -5972,13 +5976,14 @@ void Swc_Tree_Resize(Swc_Tree *tree, double x_scale, double y_scale,
 {
   Swc_Tree_Iterator_Start(tree, 1, FALSE);
   Swc_Tree_Node *tn = tree->root;
+  double d_scale = sqrt(x_scale * y_scale);
   while ((tn = Swc_Tree_Next(tree)) != NULL) {
     if (Swc_Tree_Node_Is_Regular(tn)) {
       Swc_Tree_Node_Data(tn)->x *= x_scale;
       Swc_Tree_Node_Data(tn)->y *= y_scale;
       Swc_Tree_Node_Data(tn)->z *= z_scale;
       if (change_node_size == TRUE) {
-        Swc_Tree_Node_Data(tn)->d *= sqrt(x_scale * y_scale);
+        Swc_Tree_Node_Data(tn)->d *= d_scale;
       }
     }
   }
@@ -6621,16 +6626,18 @@ void Swc_Tree_Reconnect(Swc_Tree *tree, double z_scale, double distThre)
           Swc_Tree_Node *ctn;
           double dist = Swc_Tree_Point_Dist_N_Z(
               &subtree, pos[0], pos[1], pos[2], z_scale, &ctn);
-          if (dist < 0.0) {
-            dist = 0.0;
-          }
+          if(dist <= distThre || distThre < 0.0) {
+            if (dist < 0.0) {
+              dist = 0.0;
+            }
 #ifdef _DEBUG_2
-          if (tn->index == ctn->index) {
-            printf("Debug here\n");
-          }
+            if (tn->index == ctn->index) {
+              printf("Debug here\n");
+            }
 #endif
 
-          Graph_Add_Weighted_Edge(graph, tn->index, ctn->index, dist);
+            Graph_Add_Weighted_Edge(graph, tn->index, ctn->index, dist);
+          }
         }
         root = root->next_sibling;
       }

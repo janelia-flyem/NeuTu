@@ -20,7 +20,8 @@ FlyEmBodyFilterDialog::~FlyEmBodyFilterDialog()
 
 size_t FlyEmBodyFilterDialog::getMinBodySize() const
 {
-  if (ui->minSizeSpinBox->value() < 0) {
+  if (ui->minSizeSpinBox->value() < 0 ||
+      !ui->minBodySizeCheckBox->isChecked()) {
     return 0;
   }
 
@@ -49,4 +50,24 @@ std::vector<int> FlyEmBodyFilterDialog::getExcludedBodies() const
 {
   ZString str =  ui->excludedBodyLineEdit->text().toStdString();
   return str.toIntegerArray();
+}
+
+std::set<int> FlyEmBodyFilterDialog::getExcludedBodySet() const
+{
+  std::vector<int> bodyArray = getExcludedBodies();
+  std::set<int> bodySet;
+  bodySet.insert(bodyArray.begin(), bodyArray.end());
+
+  return bodySet;
+}
+
+ZDvidFilter FlyEmBodyFilterDialog::getDvidFilter() const
+{
+  ZDvidFilter filter;
+  filter.setMinBodySize(getMinBodySize());
+  filter.setMaxBodySize(getMaxBodySize());
+  filter.setUpperBodySizeEnabled(hasUpperBodySize());
+  filter.exclude(getExcludedBodies());
+
+  return filter;
 }

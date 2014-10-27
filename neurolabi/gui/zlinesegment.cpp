@@ -1,4 +1,5 @@
 #include "zlinesegment.h"
+#include "tz_utilities.h"
 
 ZLineSegment::ZLineSegment()
 {
@@ -35,4 +36,49 @@ void ZLineSegment::setEndPoint(double x, double y, double z)
 void ZLineSegment::setEndPoint(const ZPoint &pt)
 {
   m_end = pt;
+}
+
+void ZLineSegment::set(const ZPoint &start, const ZPoint &end)
+{
+  setStartPoint(start);
+  setEndPoint(end);
+}
+
+void ZLineSegment::print() const
+{
+  std::cout << "Line segment: " << m_start.toString() << " --> "
+            << m_end.toString() << std::endl;
+}
+
+double ZLineSegment::getLength() const
+{
+  return m_start.distanceTo(m_end);
+}
+
+void ZLineSegment::invert()
+{
+  ZPoint tmp;
+  SWAP2(m_start, m_end, tmp);
+}
+
+ZPoint ZLineSegment::getDirection() const
+{
+  ZPoint direction = m_end - m_start;
+  direction.normalize();
+  return direction;
+}
+
+ZPoint ZLineSegment::getVector() const
+{
+  return m_end - m_start;
+}
+
+ZPoint ZLineSegment::getInterpolation(double ds) const
+{
+  double length = getLength();
+  if (length == 0.0) {
+    return m_start;
+  }
+
+  return m_start + getDirection() * ds;
 }

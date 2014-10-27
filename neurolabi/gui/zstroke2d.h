@@ -7,13 +7,16 @@
 #include <QColor>
 #include <QImage>
 
-#include "zdocumentable.h"
-#include "zstackdrawable.h"
+#include "zstackobject.h"
 #include "c_stack.h"
+#include "zlabelcolortable.h"
+#include "zcuboid.h"
 
 class ZStack;
+class ZObject3d;
+class ZJsonObject;
 
-class ZStroke2d : public ZDocumentable, public ZStackDrawable {
+class ZStroke2d : public ZStackObject {
 public:
   ZStroke2d();
   ZStroke2d(const ZStroke2d &stroke);
@@ -21,9 +24,11 @@ public:
 
 public:
   virtual void save(const char *filePath);
-  virtual void load(const char *filePath);
+  virtual bool load(const char *filePath);
 
-  virtual void display(ZPainter &painter, int z = 0, Display_Style option = NORMAL) const;
+  void display(ZPainter &painter, int slice, Display_Style option) const;
+  void display(QPainter *rawPainter, int z, Display_Style option,
+               EDisplaySliceMode sliceMode) const;
 
   void labelBinary(Stack *stack) const;
 
@@ -48,6 +53,12 @@ public:
   void set(const QPoint &pt);
   void set(double x, double y);
   void setLabel(int label);
+  int getLabel() const;
+
+  /*!
+   * \brief Toggle the label.
+   */
+  void toggleLabel(bool toggling);
 
   void clear();
 
@@ -63,11 +74,13 @@ public:
     m_isFilled = isFilled;
   }
   inline void setZ(int z) { m_z = z; }
+  inline int getZ() const { return m_z; }
 
-  double inline getWidth() { return m_width; }
+  double inline getWidth() const { return m_width; }
 
   bool getLastPoint(int *x, int *y) const;
   bool getLastPoint(double *x, double *y) const;
+  bool getPoint(double *x, double *y, size_t index) const;
 
   inline size_t getPointNumber() const { return m_pointArray.size(); }
 
@@ -76,7 +89,8 @@ public:
   /*!
    * \brief Translate the stroke
    */
-  void translate(const ZPoint offset);
+  void translate(const ZPoint &offset);
+  void translate(const ZIntPoint &offset);
 
   /*!
    * \brief Convert the stroke to a stack.
@@ -85,6 +99,27 @@ public:
    * taken.
    */
   ZStack *toStack() const;
+
+  ZCuboid getBoundBox() const;
+
+  ZObject3d* toObject3d() const;
+
+  void labelStack(ZStack *stack) const;
+
+  ZJsonObject toJsonObject() const;
+  void loadJsonObject(const ZJsonObject &obj);
+
+  bool isSliceVisible(int z) const;
+
+  inline void setPenetrating(bool p) {
+    m_isPenetrating = p;
+  }
+
+  bool hitTest(double x, double y) const;
+  bool hitTest(double x, double y, double z) const;
+
+  bool hit(double x, double y);
+  bool hit(double x, double y, double z);
 
 private:
   static QVector<QColor> constructColorTable();
@@ -97,16 +132,19 @@ private:
   double m_width;
 
   int m_label; //Label = 0 is reserved for eraser
+  int m_originalLabel; //for label toggling
   int m_z;
 
   //bool m_isEraser;
   bool m_isFilled;
+  bool m_isPenetrating; //Visible on any slice
 
   static const double m_minWidth;
   static const double m_maxWidth;
 
-  const static QVector<QColor> m_colorTable;
-  const static QColor m_blackColor;
+  const static ZLabelColorTable m_colorTable;
+  //const static QVector<QColor> m_colorTable;
+  //const static QColor m_blackColor;
 };
 
 #endif // ZSTROKE2D_H

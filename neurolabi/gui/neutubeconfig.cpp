@@ -12,21 +12,37 @@ using namespace std;
 NeutubeConfig::NeutubeConfig() : m_segmentationClassifThreshold(0.5),
   m_isSettingOn(true), m_isStereoOn(true), m_autoSaveInterval(600000),
   m_autoSaveEnabled(true), m_usingNativeDialog(true)
+#ifdef _QT_GUI_USED_
+  ,m_settings(QSettings::UserScope, "NeuTu-be")
+#endif
 {
   m_messageReporter = new ZLogMessageReporter;
   m_softwareName = "NeuTu";
+#ifdef _QT_GUI_USED_
+  m_workDir = m_settings.value("workDir").toString().toStdString();
+  std::cout << m_settings.fileName().toStdString() << std::endl;
+#endif
 }
-
+/*
 NeutubeConfig::NeutubeConfig(const NeutubeConfig& config) :
   m_segmentationClassifThreshold(0.5), m_isSettingOn(true)
 {
   UNUSED_PARAMETER(&config);
   m_messageReporter = new ZLogMessageReporter;
 }
+*/
 
 NeutubeConfig::~NeutubeConfig()
 {
   delete m_messageReporter;
+}
+
+void NeutubeConfig::setWorkDir(const string str)
+{
+  m_workDir = str;
+#ifdef _QT_GUI_USED_
+  getSettings().setValue("workDir", m_workDir.c_str());
+#endif
 }
 
 void NeutubeConfig::operator=(const NeutubeConfig& config)
@@ -55,6 +71,9 @@ bool NeutubeConfig::load(const std::string &filePath)
 
     node = doc.getRootElement().queryNode("dataPath");
     m_dataPath = node.stringValue();
+
+    node = doc.getRootElement().queryNode("docUrl");
+    m_docUrl = node.stringValue();
 
     node = doc.getRootElement().queryNode("developPath");
     m_developPath = node.stringValue();
@@ -149,17 +168,20 @@ bool NeutubeConfig::load(const std::string &filePath)
     ZLogMessageReporter *reporter =
         dynamic_cast<ZLogMessageReporter*>(m_messageReporter);
     if (reporter != NULL) {
-      reporter->setInfoFile(
-            ZString::fullPath(getApplicatinDir(), "neutube_appout", "txt"));
-      reporter->setWarnFile(
-            ZString::fullPath(getApplicatinDir(), "neutube_warn", "txt"));
-      reporter->setErrorFile(
-            ZString::fullPath(getApplicatinDir(), "neutube_error", "txt"));
+      reporter->setInfoFile(getPath(LOG_APPOUT));
+      reporter->setErrorFile(getPath(LOG_WARN));
+      reporter->setErrorFile(getPath(LOG_ERROR));
     }
 
     if (GET_APPLICATION_NAME == "General") {
       m_softwareName = "neuTube";
     }
+
+#ifdef _FLYEM_
+    getFlyEmConfig().loadConfig(
+          ZString::fullPath(
+            GET_APPLICATION_DIR, "json", "", "flyem_config.json"));
+#endif
 
     return true;
   }
@@ -170,6 +192,7 @@ bool NeutubeConfig::load(const std::string &filePath)
 void NeutubeConfig::print()
 {
   cout << m_dataPath << endl;
+#if 0
   cout << "SWC repository: " << m_swcRepository << endl;
   cout << "Body connection classifier: " << m_segmentationClassifierPath << endl;
   cout << "Body connection training: " << endl;
@@ -185,6 +208,7 @@ void NeutubeConfig::print()
     cout << *iter << " ";
   }
   cout << endl;
+#endif
   cout << "Application dir: " << getApplicatinDir() << endl;
   cout << "Autosave dir: " << getPath(AUTO_SAVE) << endl;
   cout << "Autosave interval: " << m_autoSaveInterval << endl;
@@ -215,13 +239,56 @@ std::string NeutubeConfig::getPath(Config_Item item) const
   case SWC_REPOSOTARY:
     return m_swcRepository;
   case AUTO_SAVE:
-    if (m_autoSaveDir.empty()) {
-      return getApplicatinDir() + ZString::FileSeparator + "autosave";
-    }
-    return m_autoSaveDir;
+#ifdef _QT_GUI_USED_
+      return
+          QDir(getPath(WORKING_DIR).c_str()).filePath("autosave").toStdString();
+#else
+      return ZString::fullPath(getPath(WORKING_DIR), "autosave");
+#endif
   case SKELETONIZATION_CONFIG:
     return getApplicatinDir() + ZString::FileSeparator + "json" +
         ZString::FileSeparator + "skeletonize_fib25_len40.json";
+  case DOCUMENT:
+    return m_docUrl;
+  case TMP_DATA:
+#if _QT_GUI_USED_
+    return QDir::tempPath().toStdString();
+#else
+    return "/tmp";
+#endif
+  case WORKING_DIR:
+    if (m_workDir.empty()) {
+#ifdef _QT_GUI_USED_
+      return QDir::home().filePath(".neutube.z").toStdString();
+#else
+      return getApplicatinDir();
+#endif
+    }
+    return m_workDir;
+  case LOG_FILE:
+#ifdef _QT_GUI_USED_
+    return QDir(getPath(WORKING_DIR).c_str()).filePath("log.txt").toStdString();
+#else
+    return ZString::fullPath(getPath(WORKING_DIR), "log.txt");
+#endif
+  case LOG_APPOUT:
+#ifdef _QT_GUI_USED_
+    return QDir(getPath(WORKING_DIR).c_str()).filePath("log_appout.txt").toStdString();
+#else
+    return ZString::fullPath(getPath(WORKING_DIR), "log_appout.txt");
+#endif
+  case LOG_WARN:
+#ifdef _QT_GUI_USED_
+    return QDir(getPath(WORKING_DIR).c_str()).filePath("log_warn.txt").toStdString();
+#else
+    return ZString::fullPath(getPath(WORKING_DIR), "log_warn.txt");
+#endif
+  case LOG_ERROR:
+#ifdef _QT_GUI_USED_
+    return QDir(getPath(WORKING_DIR).c_str()).filePath("log_error.txt").toStdString();
+#else
+    return ZString::fullPath(getPath(WORKING_DIR), "log_error.txt");
+#endif
   default:
     break;
   }

@@ -8,29 +8,50 @@ const char* ZDvidTarget::m_portKey = "port";
 const char* ZDvidTarget::m_uuidKey = "uuid";
 const char* ZDvidTarget::m_commentKey = "comment";
 const char* ZDvidTarget::m_nameKey = "name";
+const char* ZDvidTarget::m_localKey = "local";
+const char* ZDvidTarget::m_debugKey = "debug";
 
-ZDvidTarget::ZDvidTarget()
+ZDvidTarget::ZDvidTarget() : m_port(-1)
 {
 }
 
 ZDvidTarget::ZDvidTarget(
-    const std::string &address, const std::string &uuid, int port) :
-  m_address(address), m_uuid(uuid), m_port(port)
+    const std::string &address, const std::string &uuid, int port)
 {
+  set(address, uuid, port);
 }
 
 std::string ZDvidTarget::getSourceString(bool withHttpPrefix) const
 {
-  std::string source = getAddress() + ":" + ZString::num2str(getPort()) + ":" +
-      getUuid();
-  if (withHttpPrefix) {
-    source = "http:" + source;
+  std::string source;
+
+  if (!getAddress().empty()) {
+    source = getAddress() + ":" + ZString::num2str(getPort()) + ":" + getUuid();
+    if (withHttpPrefix) {
+      source = "http:" + source;
+    }
   }
+
   return source;
 }
 
 void ZDvidTarget::set(
     const std::string &address, const std::string &uuid, int port)
+{
+  setServer(address);
+  setUuid(uuid);
+  setPort(port);
+}
+
+void ZDvidTarget::clear()
+{
+  set("", "", -1);
+  m_name = "";
+  m_comment = "";
+  m_localFolder = "";
+}
+
+void ZDvidTarget::setServer(const std::string &address)
 {
   if (ZString(address).startsWith("http://")) {
     m_address = address.substr(7);
@@ -39,11 +60,20 @@ void ZDvidTarget::set(
   } else {
     m_address = address;
   }
+}
+
+void ZDvidTarget::setUuid(const std::string &uuid)
+{
   m_uuid = uuid;
+}
+
+void ZDvidTarget::setPort(int port)
+{
   m_port = port;
 }
 
-void ZDvidTarget::set(const std::string &sourceString)
+
+void ZDvidTarget::setFromSourceString(const std::string &sourceString)
 {
   set("", "", -1);
 
@@ -63,6 +93,11 @@ void ZDvidTarget::set(const std::string &sourceString)
   }
 }
 
+bool ZDvidTarget::hasPort() const
+{
+  return getPort() >= 0;
+}
+
 bool ZDvidTarget::isValid() const
 {
   return !getAddress().empty() && !getUuid().empty();
@@ -70,11 +105,16 @@ bool ZDvidTarget::isValid() const
 
 std::string ZDvidTarget::getAddressWithPort() const
 {
-  if (getPort() < 0) {
-    return getAddress();
+  std::string address;
+
+  if (!getAddress().empty()) {
+    address = getAddress();
+    if (hasPort()) {
+      address += ":" + ZString::num2str(getPort());
+    }
   }
 
-  return getAddress() + ":" + ZString::num2str(getPort());
+  return address;
 }
 
 void ZDvidTarget::print() const
@@ -89,9 +129,73 @@ std::string ZDvidTarget::getBodyPath(int bodyId) const
 
 void ZDvidTarget::loadJsonObject(const ZJsonObject &obj)
 {
-  m_address = ZJsonParser::stringValue(obj[m_addressKey]);
-  m_port = ZJsonParser::integerValue(obj[m_portKey]);
-  m_uuid = ZJsonParser::stringValue(obj[m_uuidKey]);
-  m_comment = ZJsonParser::stringValue(obj[m_commentKey]);
-  m_name = ZJsonParser::stringValue(obj[m_nameKey]);
+  clear();
+
+  bool isValidJson = true;
+
+  if (obj.hasKey(m_debugKey)) {
+#ifndef _DEBUG_
+    isValidJson = !ZJsonParser::booleanValue(obj[m_debugKey]);
+#endif
+  }
+
+  if (isValidJson) {
+    setServer(ZJsonParser::stringValue(obj[m_addressKey]));
+    if (obj.hasKey(m_portKey)) {
+      setPort(ZJsonParser::integerValue(obj[m_portKey]));
+    } else {
+      setPort(-1);
+    }
+    setUuid(ZJsonParser::stringValue(obj[m_uuidKey]));
+    m_comment = ZJsonParser::stringValue(obj[m_commentKey]);
+    m_name = ZJsonParser::stringValue(obj[m_nameKey]);
+    m_localFolder = ZJsonParser::stringValue(obj[m_localKey]);
+  }
+}
+
+std::string ZDvidTarget::getUrl() const
+{
+  ZString url = "http://" + m_address;
+  if (m_port >= 0) {
+    url += ":";
+    url.appendNumber(m_port);
+  }
+  url += "/api/node/" + m_uuid;
+
+  return url;
+}
+
+std::string ZDvidTarget::getLocalLowResGrayScalePath(
+    int xintv, int yintv, int zintv) const
+{
+  if (getLocalFolder().empty()) {
+    return "";
+  }
+
+  ZString path = getLocalFolder() + "/grayscale/";
+  path.appendNumber(xintv);
+  path += "_";
+  path.appendNumber(yintv);
+  path += "_";
+  path.appendNumber(zintv);
+
+  return path;
+}
+
+
+std::string ZDvidTarget::getLocalLowResGrayScalePath(
+    int xintv, int yintv, int zintv, int z) const
+{
+  if (getLocalFolder().empty()) {
+    return "";
+  }
+
+  const int padding = 6;
+
+  ZString path = getLocalLowResGrayScalePath(xintv, yintv, zintv);
+  path += "/";
+  path.appendNumber(z, padding);
+  path += ".tif";
+
+  return path;
 }

@@ -47,3 +47,13 @@ void ZStackArray::getBoundBox(Cuboid_I *box) const
     }
   }
 }
+
+void ZStackArray::downsampleMax(int xIntv, int yIntv, int zIntv)
+{
+  if (xIntv > 0 || yIntv > 0 || zIntv > 0) {
+    for (iterator iter = begin(); iter != end(); ++iter) {
+      ZStack *stack = *iter;
+      stack->downsampleMax(xIntv, yIntv, zIntv);
+    }
+  }
+}

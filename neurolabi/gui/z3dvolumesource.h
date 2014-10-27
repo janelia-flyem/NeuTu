@@ -32,6 +32,8 @@ public:
   inline float getXScale() {return m_xScale.get();}
   inline float getYScale() {return m_yScale.get();}
   inline float getZScale() {return m_zScale.get();}
+  inline void setXScale(float s) { m_xScale.set(s); }
+  inline void setYScale(float s) { m_yScale.set(s); }
   inline void setZScale(float s) { m_zScale.set(s); }
 
   bool volumeNeedDownsample() const;
@@ -62,15 +64,23 @@ protected:
   virtual void deinitialize();
 
   // once processed, should be valid for both stereo view and mono view
-  virtual void setValid(Z3DEye eye) { Z3DProcessor::setValid(eye); m_invalidationState = Valid; }
+  virtual void setValid(Z3DEye eye) {
+    Z3DProcessor::setValid(eye); m_invalidationState = Valid; }
 
 private:
   void clearVolume();
   void clearZoomInVolume();
   void readVolumes();
+  void readVolumesWithObject();
   void readSubVolumes(int left, int top, int front, int width, int height, int depth);
   void sendData();
   void sendZoomInVolumeData();
+  void readSparseVolume();
+  void readSparseVolumeWithObject();
+
+  void readSparseStack();
+
+  void loadData();
 
   std::vector<Z3DVolume*> m_volumes;
   std::vector<Z3DVolume*> m_zoomInVolumes;

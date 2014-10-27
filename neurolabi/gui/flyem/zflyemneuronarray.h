@@ -26,6 +26,43 @@ public:
                         const ZFlyEmNeuronFilter &filter);
 
   void exportBodyToHdf5(const std::string &filePath);
+
+  /*!
+   * \brief Import named body from body annotation file exported from raveler
+   *
+   * It clears old elements before loading.
+   */
+  void importNamedBody(const std::string &filePath);
+
+  void importFromDataBundle(const std::string &filePath);
+
+  /*!
+   * \brief Assign classes to the bodies
+   *
+   * The classes are stored in \a filePath as JSON format:
+   *   "neuron": [
+   *     {
+   *       "id": <int>,
+   *       "class": <str>
+   *     },
+   *     ...
+   *   ]
+   */
+  void assignClass(const std::string &filePath);
+
+  /*!
+   * \brief Assign names to the bodies
+   *
+   * The classes are stored in \a filePath as JSON format:
+   *   "data": [
+   *     {
+   *       "body ID": <int>,
+   *       "name": <str>
+   *     },
+   *     ...
+   *   ]
+   */
+  void assignName(const std::string &filePath);
 };
 
 #endif // ZFLYEMNEURONARRAY_H

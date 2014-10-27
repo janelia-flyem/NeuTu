@@ -35,7 +35,7 @@ ZFlyEmStackFrame::~ZFlyEmStackFrame()
 
 void ZFlyEmStackFrame::createDocument()
 {
-  setDocument(tr1::shared_ptr<ZStackDoc>(new ZFlyEmStackDoc(NULL, NULL)));
+  setDocument(ZSharedPointer<ZStackDoc>(new ZFlyEmStackDoc(NULL, NULL)));
 }
 
 bool ZFlyEmStackFrame::importSegmentationBundle(const std::string &filePath)
@@ -107,7 +107,7 @@ ZStack* ZFlyEmStackFrame::spinoffStackSelection(
 
 void ZFlyEmStackFrame::copyDocument(ZStackFrame *frame)
 {
-  document()->loadStack(frame->document()->stack()->clone());
+  document()->loadStack(frame->document()->getStack()->clone());
   /*
   document()->setStackMask(
         frame->document()->stackMask()->clone());

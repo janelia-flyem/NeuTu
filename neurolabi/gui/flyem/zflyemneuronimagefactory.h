@@ -30,6 +30,8 @@ public:
 
   Stack* createSurfaceImage(const ZObject3dScan &obj) const;
 
+  int getSourceDimension(NeuTube::EAxis axis) const;
+
 private:
   ESizePolicy m_sizePolicy[3];
   int m_sourceDimension[3];

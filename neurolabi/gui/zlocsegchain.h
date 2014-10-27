@@ -10,10 +10,7 @@
 #include <QList>
 #include <QColor>
 
-#include "zstackdrawable.h"
-#include "zdocumentable.h"
-#include "zswcexportable.h"
-#include "zvrmlexportable.h"
+#include "zstackobject.h"
 #include "tz_locseg_chain.h"
 #include "zlocalneuroseg.h"
 
@@ -27,8 +24,7 @@ ZlocsegChain defines the class of locseg chains.
     ...
 */
 
-class ZLocsegChain : public ZDocumentable, public ZStackDrawable,
-		     public ZSwcExportable, public ZVrmlExportable {
+class ZLocsegChain : public ZStackObject {
 public:
   ZLocsegChain(Locseg_Chain *chain = NULL);
   ZLocsegChain(Local_Neuroseg *locseg);
@@ -43,7 +39,7 @@ public:
 
 public: // I/O functions
   virtual void save(const char *filePath);
-  virtual void load(const char *filePath);
+  virtual bool load(const char *filePath);
 
   virtual int swcFprint(FILE *fp, int start_id = 0, int parent_id = -1,
 			double z_scale = 1.0);
@@ -57,7 +53,7 @@ public:
   inline Locseg_Chain *data() { return m_chain; }
   void setId(int id) { m_id = id; }
   inline int id() const { return m_id; }
-  inline const QString source() const { return m_source; }
+  //inline const QString source() const { return m_source; }
   inline int heldNode() const { return m_heldNode; }
   inline double zScale() const { return m_zscale; }
   inline void setZScale(double zScale) { m_zscale = zScale; }
@@ -120,7 +116,7 @@ private:
   double m_zscale;
   int m_id;
   int m_heldNode;
-  QString m_source;
+  //QString m_source;
   bool m_ignorable;
 
   QColor m_oddColor;

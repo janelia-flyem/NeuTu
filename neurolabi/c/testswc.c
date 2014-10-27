@@ -1573,7 +1573,7 @@ int main(int argc, char *argv[])
   darray_print2(feature, feature_number, fileList->file_number);
 #endif
 
-#if 0
+#if 1
   Swc_Tree *tree = Read_Swc_Tree("../data/benchmark/swc/multi_tree2.swc");
   /*
   Swc_Tree subtree;
@@ -1582,7 +1582,7 @@ int main(int argc, char *argv[])
   Print_Swc_Tree(&subtree);
   */
 
-  Swc_Tree_Reconnect(tree, 1.6);
+  Swc_Tree_Reconnect(tree, 1.0, 1.6);
 
   Print_Swc_Tree(tree);
 
@@ -1647,7 +1647,7 @@ int main(int argc, char *argv[])
 
 #endif
 
-#if 1
+#if 0
   const char *file_path = "../data/benchmark/swc/tree1.swc";
   //const char *file_path = "/Users/zhaot/Work/neutube/neurolabi/data/system/mouse_neuron_single/stack/graph_d.swc";
   size_t s = fsize(file_path);
@@ -1667,6 +1667,23 @@ int main(int argc, char *argv[])
   tree = Read_Swc_Tree_E(file_path);
   Print_Swc_Tree(tree);
 #endif
+
+#if 0
+  Swc_Tree *tree = Read_Swc_Tree_E("../data/benchmark/209.swc");
+  Swc_Tree_Iterator_Start(tree, SWC_TREE_ITERATOR_DEPTH_FIRST, FALSE);
+  Swc_Tree_Node *tn = NULL;
+  tic();
+  int i = 0;
+  for (i = 0; i < 100000; ++i) {
+    tn = Swc_Tree_Next(tree);
+    while (tn != NULL) {
+      tn = Swc_Tree_Next(tree);
+    }
+    Swc_Tree_Iterator_Start(tree, SWC_TREE_ITERATOR_NO_UPDATE, FALSE);
+  }
+  ptoc();
+#endif
+
 
   return 0;
 }

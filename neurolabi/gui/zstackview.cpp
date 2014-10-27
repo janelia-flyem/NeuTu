@@ -14,12 +14,13 @@
 #include "zstackdoc.h"
 #include "zclickablelabel.h"
 #include "tz_error.h"
-#include "zcircle.h"
+#include "zstackball.h"
 #include "swctreenode.h"
 #include "QsLog.h"
 #include "zstroke2d.h"
 #include "tz_rastergeom.h"
 #include "neutubeconfig.h"
+#include "zsparsestack.h"
 
 #include <QtGui>
 #ifdef _QT5_
@@ -55,11 +56,11 @@ ZStackView::ZStackView(ZStackFrame *parent) : QWidget(parent)
   m_progress->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
   m_progress->setFocusPolicy(Qt::NoFocus);
 
-
   m_topLayout = new QHBoxLayout;
   m_topLayout->addWidget(m_infoLabel);
   m_topLayout->addWidget(m_activeLabel);
   //m_topLayout->addWidget(m_progress);
+
 
   m_secondTopLayout = new QHBoxLayout;
 
@@ -124,6 +125,9 @@ ZStackView::~ZStackView()
   if (m_image != NULL) {
     delete m_image;
   }
+
+  delete m_objectCanvas;
+  delete m_activeDecorationCanvas;
 
   if (m_ctrlLayout != NULL) {
     if (m_ctrlLayout->parent() == NULL) {
@@ -294,6 +298,8 @@ void ZStackView::autoThreshold()
 #endif
 }
 
+#define MULTI_THREAD_VIEW_SIZE_THRESHOLD 65536
+
 #if 0
 void ZStackView::updateData(int nslice, int threshold)
 {
@@ -357,7 +363,7 @@ void ZStackView::updateData(int nslice, int threshold)
       } else if (stackMask->kind() == GREY16) {
         m_imageMask->setCData(stackMask->array16(0) + area * nslice, 100);
       }
-      if (buddyPresenter()->objectStyle() == ZStackDrawable::BOUNDARY) {
+      if (buddyPresenter()->objectStyle() == ZStackObject::BOUNDARY) {
         m_imageMask->enhanceEdge();
       }
     }
@@ -575,8 +581,8 @@ void ZStackView::updateData(int nslice, int threshold)
         }
       } else {
         if (buddyDocument()->hasDrawable()) {
-          QList<ZStackDrawable*> *objs = buddyDocument()->drawableList();
-          for (QList<ZStackDrawable*>::const_iterator obj = objs->end() - 1;
+          QList<ZStackObject*> *objs = buddyDocument()->drawableList();
+          for (QList<ZStackObject*>::const_iterator obj = objs->end() - 1;
           obj != objs->begin() - 1; --obj) {
             (*obj)->display(m_image, nslice, buddyPresenter()->objectStyle());
           }
@@ -586,8 +592,8 @@ void ZStackView::updateData(int nslice, int threshold)
           if (buddyPresenter()->interactiveContext().isProjectView()) {
             nslice = -1;
           }
-          QList<ZStackDrawable*> *objs = buddyPresenter()->decorations();
-          for (QList<ZStackDrawable*>::const_iterator obj = objs->end() - 1;
+          QList<ZStackObject*> *objs = buddyPresenter()->decorations();
+          for (QList<ZStackObject*>::const_iterator obj = objs->end() - 1;
           obj != objs->begin() - 1; --obj) {
             (*obj)->display(m_image, nslice, buddyPresenter()->objectStyle());
           }
@@ -655,7 +661,7 @@ QImage::Format ZStackView::stackKindToImageFormat(int kind)
 
 ZStack* ZStackView::stackData()
 {
-  return (buddyDocument() != NULL) ? buddyDocument()->stack() : NULL;
+  return (buddyDocument()) ? buddyDocument()->getStack() : NULL;
 }
 
 int ZStackView::maxSliceIndex()
@@ -663,9 +669,14 @@ int ZStackView::maxSliceIndex()
   return m_depthControl->maximum();
 }
 
-int ZStackView::sliceIndex()
+int ZStackView::sliceIndex() const
 {
   return m_depthControl->value();
+}
+
+int ZStackView::getCurrentZ() const
+{
+  return sliceIndex() + buddyDocument()->getStackOffset().getZ();
 }
 
 void ZStackView::setSliceIndex(int slice)
@@ -703,7 +714,7 @@ void ZStackView::updateImageScreen()
 {
   m_paintBundle.unsetSwcNodeList();
   m_paintBundle.clearAllDrawableLists();
-  if (buddyDocument() != NULL) {
+  if (buddyDocument()) {
     m_paintBundle.setStackOffset(buddyDocument()->getStackOffset());
   }
 
@@ -786,7 +797,7 @@ QSize ZStackView::sizeHint() const
 
 void ZStackView::mouseReleasedInImageWidget(QMouseEvent *event)
 {
-  buddyPresenter()->processMouseReleaseEvent(event, sliceIndex());
+  buddyPresenter()->processMouseReleaseEvent(event);
 }
 
 void ZStackView::mousePressedInImageWidget(QMouseEvent *event)
@@ -801,7 +812,7 @@ void ZStackView::mouseMovedInImageWidget(QMouseEvent *event)
 
 void ZStackView::mouseDoubleClickedInImageWidget(QMouseEvent *event)
 {
-  buddyPresenter()->processMouseDoubleClickEvent(event, sliceIndex());
+  buddyPresenter()->processMouseDoubleClickEvent(event);
 }
 
 bool ZStackView::isDepthChangable()
@@ -852,6 +863,7 @@ void ZStackView::resizeEvent(QResizeEvent *event)
 {
   setInfo();
   event->accept();
+  //buddyPresenter()->updateInteractiveContext();
 }
 
 
@@ -885,19 +897,19 @@ QMenu* ZStackView::rightMenu()
   return m_imageWidget->rightMenu();
 }
 
-void ZStackView::popLeftMenu(const QPoint &pos)
+bool ZStackView::popLeftMenu(const QPoint &pos)
 {
-  m_imageWidget->popLeftMenu(pos);
+  return m_imageWidget->popLeftMenu(pos);
 }
 
-void ZStackView::popRightMenu(const QPoint &pos)
+bool ZStackView::popRightMenu(const QPoint &pos)
 {
-  m_imageWidget->popRightMenu(pos);
+  return m_imageWidget->popRightMenu(pos);
 }
 
-void ZStackView::showContextMenu(QMenu *menu, const QPoint &pos)
+bool ZStackView::showContextMenu(QMenu *menu, const QPoint &pos)
 {
-  m_imageWidget->showContextMenu(menu, pos);
+  return m_imageWidget->showContextMenu(menu, pos);
 }
 
 QStringList ZStackView::toStringList() const
@@ -945,14 +957,19 @@ void ZStackView::takeScreenshot(const QString &filename)
   writer.setCompression(1);
 
   QImage image(m_imageWidget->projectSize(), QImage::Format_ARGB32);
+
+  m_imageWidget->setViewHintVisible(false);
   m_imageWidget->render(&image);
-  //const QRect& viewPort = m_imageWidget->viewPort();
-  //if(!writer.write(m_image->copy(viewPort))) {
-  if(!writer.write(image)) {
-    LERROR() << writer.errorString();
-  } else {
-    LINFO() << "wrote screenshot:" << filename;
-  }
+  m_imageWidget->setViewHintVisible(true);
+  ZImage::writeImage(image, filename);
+
+//  const QRect& viewPort = m_imageWidget->viewPort();
+//  if(!writer.write(m_image->copy(viewPort))) {
+//  if(!writer.write(image)) {
+//    LERROR() << writer.errorString();
+//  } else {
+//    LINFO() << "wrote screenshot:" << filename;
+//  }
 }
 
 void ZStackView::updateView()
@@ -1002,6 +1019,12 @@ void ZStackView::paintSingleChannelStackSlice(ZStack *stack, int slice)
 
 void ZStackView::paintMultipleChannelStackSlice(ZStack *stack, int slice)
 {
+  bool usingMt = false;
+
+  if (stack->width() * stack->height() > MULTI_THREAD_VIEW_SIZE_THRESHOLD) {
+    usingMt = true;
+  }
+
   switch (stack->kind()) {
   case GREY: {
     std::vector<ZImage::DataSource<uint8_t> > stackData8;
@@ -1013,9 +1036,12 @@ void ZStackView::paintMultipleChannelStackSlice(ZStack *stack, int slice)
                 buddyPresenter()->greyScale(i),
                 buddyPresenter()->greyOffset(i),
                 stack->getChannelColor(i)));
+#ifdef _DEBUG_
+        std::cout <<  stack->getChannelColor(i) << std::endl;
+#endif
       }
     }
-    m_image->setData(stackData8);
+    m_image->setData(stackData8, 255, usingMt);
   }
     break;
   case GREY16: {
@@ -1030,7 +1056,7 @@ void ZStackView::paintMultipleChannelStackSlice(ZStack *stack, int slice)
                 stack->getChannelColor(i)));
       }
     }
-    m_image->setData(stackData16);
+    m_image->setData(stackData16, 255, usingMt);
   }
     break;
   default:
@@ -1074,6 +1100,11 @@ void ZStackView::paintSingleChannelStackMip(ZStack *stack)
 
 void ZStackView::paintMultipleChannelStackMip(ZStack *stack)
 {
+  bool usingMt = false;
+
+  if (stack->width() * stack->height() > MULTI_THREAD_VIEW_SIZE_THRESHOLD) {
+    usingMt = true;
+  }
   switch (stack->kind()) {
   case GREY: {
     std::vector<ZImage::DataSource<uint8_t> > stackData8;
@@ -1088,7 +1119,7 @@ void ZStackView::paintMultipleChannelStackMip(ZStack *stack)
                                                          stack->getChannelColor(i)));
       }
     }
-    m_image->setData(stackData8);
+    m_image->setData(stackData8, 255, usingMt);
   }
     break;
   case GREY16: {
@@ -1104,7 +1135,7 @@ void ZStackView::paintMultipleChannelStackMip(ZStack *stack)
                                                            stack->getChannelColor(i)));
       }
     }
-    m_image->setData(stackData16);
+    m_image->setData(stackData16, 255, usingMt);
   }
     break;
   }
@@ -1250,6 +1281,16 @@ void ZStackView::paintStackBuffer()
       }
     } else {
       m_image->setBackground();
+      if (buddyDocument()->hasSparseStack()) {
+        ZStack *slice =
+            buddyDocument()->getSparseStack()->getSlice(getCurrentZ());
+        //paintSingleChannelStackSlice(slice, 0);
+        slice->translate(-buddyDocument()->getStackOffset());
+        slice->getOffset().setZ(0);
+
+        m_image->setData(slice, 0);
+        delete slice;
+      }
     }
      //m_scrollEnabled = true;
   } else if (buddyPresenter()->interactiveContext().isProjectView()) {
@@ -1262,6 +1303,17 @@ void ZStackView::paintStackBuffer()
       }
     } else {
       m_image->setBackground();
+      if (buddyDocument()->hasSparseStack()) {
+        ZStack *slice =
+            buddyDocument()->getSparseStack()->getMip();
+        if (slice != NULL) {
+          slice->translate(-buddyDocument()->getStackOffset());
+          slice->getOffset().setZ(0);
+
+          m_image->setData(slice, 0);
+          delete slice;
+        }
+      }
     }
   }
 }
@@ -1302,7 +1354,7 @@ void ZStackView::paintMaskBuffer()
     m_imageMask->setCData(static_cast<uint8_t*>(
                             stackMask->getDataPointer(0, slice)), 100);
   }
-  if (buddyPresenter()->objectStyle() == ZStackDrawable::BOUNDARY) {
+  if (buddyPresenter()->objectStyle() == ZStackObject::BOUNDARY) {
     m_imageMask->enhanceEdge();
   }
 }
@@ -1322,6 +1374,7 @@ void ZStackView::paintObjectBuffer()
 
   if (buddyPresenter()->isObjectVisible()) {
     int slice = m_depthControl->value();
+    int z = slice + buddyDocument()->getStackOffset().getZ();
     if (buddyPresenter()->interactiveContext().isProjectView()) {
       slice = -1;
     }
@@ -1330,13 +1383,24 @@ void ZStackView::paintObjectBuffer()
     painter.setStackOffset(buddyDocument()->getStackOffset());
 
     if (buddyDocument()->hasDrawable()) {
-      QList<ZStackDrawable*> *objs = buddyDocument()->drawableList();
-      for (QList<ZStackDrawable*>::const_iterator obj = objs->end() - 1;
-           obj != objs->begin() - 1; --obj) {
-        //(*obj)->display(m_objectCanvas, slice, buddyPresenter()->objectStyle());
-        if ((*obj)->getTarget() == ZStackDrawable::OBJECT_CANVAS) {
-          (*obj)->display(painter, slice, buddyPresenter()->objectStyle());
+      QList<ZStackObject*> *objs = buddyDocument()->drawableList();
+      QList<const ZStackObject*> visibleObject;
+      QList<ZStackObject*>::const_iterator iter = objs->end() - 1;
+      for (;iter != objs->begin() - 1; --iter) {
+        const ZStackObject *obj = *iter;
+        if ((obj->isSliceVisible(z) || slice == -1) &&
+            obj->getTarget() == ZStackObject::OBJECT_CANVAS) {
+          visibleObject.append(obj);
         }
+      }
+      std::sort(visibleObject.begin(), visibleObject.end(),
+                ZStackObject::ZOrderCompare());
+
+      for (QList<const ZStackObject*>::const_iterator
+           iter = visibleObject.begin(); iter != visibleObject.end(); ++iter) {
+        //(*obj)->display(m_objectCanvas, slice, buddyPresenter()->objectStyle());
+        const ZStackObject *obj = *iter;
+        obj->display(painter, slice, buddyPresenter()->objectStyle());
       }
     }
 
@@ -1344,11 +1408,11 @@ void ZStackView::paintObjectBuffer()
       if (buddyPresenter()->interactiveContext().isProjectView()) {
         slice = -1;
       }
-      QList<ZStackDrawable*> *objs = buddyPresenter()->decorations();
-      for (QList<ZStackDrawable*>::const_iterator obj = objs->end() - 1;
+      QList<ZStackObject*> *objs = buddyPresenter()->decorations();
+      for (QList<ZStackObject*>::const_iterator obj = objs->end() - 1;
            obj != objs->begin() - 1; --obj) {
         //(*obj)->display(m_objectCanvas, slice, buddyPresenter()->objectStyle());
-        if ((*obj)->getTarget() == ZStackDrawable::OBJECT_CANVAS) {
+        if ((*obj)->getTarget() == ZStackObject::OBJECT_CANVAS) {
           (*obj)->display(painter, slice, buddyPresenter()->objectStyle());
         }
       }
@@ -1377,8 +1441,8 @@ void ZStackView::paintObjectBuffer()
       }
     } else {
       if (buddyDocument()->hasDrawable()) {
-        QList<ZStackDrawable*> *objs = buddyDocument()->drawableList();
-        for (QList<ZStackDrawable*>::const_iterator obj = objs->end() - 1;
+        QList<ZStackObject*> *objs = buddyDocument()->drawableList();
+        for (QList<ZStackObject*>::const_iterator obj = objs->end() - 1;
         obj != objs->begin() - 1; --obj) {
 #ifdef _DEBUG_2
           std::cout << (*obj)->className() << std::endl;
@@ -1394,8 +1458,8 @@ void ZStackView::paintObjectBuffer()
         if (buddyPresenter()->interactiveContext().isProjectView()) {
           slice = -1;
         }
-        QList<ZStackDrawable*> *objs = buddyPresenter()->decorations();
-        for (QList<ZStackDrawable*>::const_iterator obj = objs->end() - 1;
+        QList<ZStackObject*> *objs = buddyPresenter()->decorations();
+        for (QList<ZStackObject*>::const_iterator obj = objs->end() - 1;
         obj != objs->begin() - 1; --obj) {
           //(*obj)->display(m_objectCanvas, slice, buddyPresenter()->objectStyle());
           (*obj)->display(m_objectCanvas, m_imageWidget->viewPort().x(), m_imageWidget->viewPort().y(),
@@ -1438,16 +1502,16 @@ void ZStackView::paintActiveDecorationBuffer()
 {
 #if 1
   updateActiveDecorationCanvas();
-  const QList<ZStackDrawable*>& drawableList =
+  const QList<ZStackObject*>& drawableList =
       buddyPresenter()->getActiveDecorationList();
 
   if (!drawableList.isEmpty()) {
     ZPainter painter(m_activeDecorationCanvas);
     painter.setStackOffset(buddyDocument()->getStackOffset());
 
-    foreach (ZStackDrawable *obj, drawableList) {
-      if (obj->getTarget() == ZStackDrawable::OBJECT_CANVAS) {
-        obj->display(painter, sliceIndex());
+    foreach (ZStackObject *obj, drawableList) {
+      if (obj->getTarget() == ZStackObject::OBJECT_CANVAS) {
+        obj->display(painter, sliceIndex(), ZStackObject::NORMAL);
       }
     }
   }
@@ -1455,10 +1519,10 @@ void ZStackView::paintActiveDecorationBuffer()
 
 #if 0
   updateActiveDecorationCanvas();
-  const QList<ZStackDrawable*>& drawableList =
+  const QList<ZStackObject*>& drawableList =
       buddyPresenter()->getActiveDecorationList();
 
-  for (QList<ZStackDrawable*>::const_iterator iter = drawableList.begin();
+  for (QList<ZStackObject*>::const_iterator iter = drawableList.begin();
        iter != drawableList.end(); ++iter) {
     (*iter)->display(m_activeDecorationCanvas, m_imageWidget->viewPort().x(), m_imageWidget->viewPort().y(),
                      m_imageWidget->projectSize().width() * 1.0 / m_imageWidget->viewPort().width(), sliceIndex());

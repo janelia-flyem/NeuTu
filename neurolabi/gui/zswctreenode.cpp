@@ -59,12 +59,10 @@ double ZSwcTreeNode::computeDistance(
     double distance = 0.0;
 
     if (node != NULL) {
-        if (node->isRegular()) {
-            double dx = x() - node->x();
-            double dy = y() - node->y();
-            double dz = z() - node->z();
-            distance = sqrt(dx * dx + dy * dy + dz * dz);
-        }
+      double dx = x() - node->x();
+      double dy = y() - node->y();
+      double dz = z() - node->z();
+      distance = sqrt(dx * dx + dy * dy + dz * dz);
     }
 
     return distance;

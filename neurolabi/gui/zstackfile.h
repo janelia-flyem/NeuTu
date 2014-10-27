@@ -23,7 +23,7 @@ public:
   };
 
 public:
-  ZStack *readStack(ZStack *data = NULL);
+  ZStack *readStack(ZStack *data = NULL, bool initColor = true) const;
   File_Bundle_S toFileBundleS() const;
   ZFileList *toFileList() const;
   void import(const std::string &filePath);
@@ -50,7 +50,7 @@ public:
 
   int countImageSeries() const;
 
-  void print();
+  void print() const;
 
   static bool isStackTag(const std::string &tag);
   static bool isUrlTag(const std::string &tag);
@@ -66,7 +66,7 @@ public:
   std::string fileBundlePath(int n) const;
 
   void setType(const std::string &str);
-  EFileType type() { return m_type; }
+  EFileType type() const { return m_type; }
 
   void appendUrl(const std::string &path);
 

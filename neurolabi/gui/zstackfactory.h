@@ -5,6 +5,12 @@
 #include "zstack.hxx"
 #include "tz_math.h"
 #include "tz_stack_lib.h"
+#include "zintcuboid.h"
+
+class ZClosedCurve;
+class ZStroke2d;
+class ZPointArray;
+class ZWeightedPointArray;
 
 /*!
  * \brief The class of creating a stack
@@ -13,10 +19,52 @@ class ZStackFactory
 {
 public:
   ZStackFactory();
+  virtual ~ZStackFactory();
+
+  virtual ZStack* makeStack(ZStack *stack = NULL) const;
+
+  /*!
+   * \brief Make a virtual stack
+   *
+   * \return It returns NULL if any dimension is not positive.
+   */
+  static ZStack* makeVirtualStack(int width, int height, int depth);
+
+
+  static ZStack* makeVirtualStack(const ZIntCuboid &box);
 
 public:
   template<class InputIterator>
   static ZStack* composite(InputIterator begin, InputIterator end);
+
+  static ZStack* makeOneStack(int width, int height, int depth,
+                              int nchannel = 1);
+  static ZStack* makeZeroStack(int width, int height, int depth,
+                               int nchannel = 1);
+
+  static ZStack* makeZeroStack(int kind, int width, int height, int depth,
+                               int nchannel);
+
+
+  static ZStack* makeZeroStack(const ZIntCuboid box, int nchannel = 1);
+  static ZStack* makeZeroStack(int kind, const ZIntCuboid box, int nchannel = 1);
+
+  static ZStack* makeIndexStack(int width, int height, int depth);
+  static ZStack* makeUniformStack(int width, int height, int depth, int v);
+
+  static ZStack* makePolygonPicture(const ZStroke2d &stroke);
+
+  static ZStack* makeDensityMap(const ZPointArray &ptArray, double sigma);
+  static ZStack* makeDensityMap(
+      const ZWeightedPointArray &ptArray, double sigma);
+
+  static ZStack* makeSeedStack(const ZWeightedPointArray &ptArray);
+
+  /*!
+   * \brief Only support GREY data
+   */
+  static ZStack* makeAlphaBlend(const ZStack &stack1, const ZStack &stack2,
+                                double alpha);
 
 private:
   static Stack* pileMatched(const std::vector<Stack*> stackArray);
@@ -46,9 +94,9 @@ ZStack* ZStackFactory::composite(InputIterator begin, InputIterator end)
   for (InputIterator iter = begin; iter != end; ++iter) {
     ZStack *stack = *iter;
     stackArray[i] = stack->c_stack();
-    offset[i][0] = iround(stack->getOffset().x());
-    offset[i][1] = iround(stack->getOffset().y());
-    offset[i][2] = iround(stack->getOffset().z());
+    offset[i][0] = iround(stack->getOffset().getX());
+    offset[i][1] = iround(stack->getOffset().getY());
+    offset[i][2] = iround(stack->getOffset().getZ());
     if (i > 0) {
       if (offset[i][0] != offset[i-1][0]) {
         isPilable = false;
@@ -94,7 +142,7 @@ ZStack* ZStackFactory::composite(InputIterator begin, InputIterator end)
   FREE_2D_ARRAY(offset, stackNumber);
 
   ZStack *stack = new ZStack;
-  stack->consumeData(merged);
+  stack->consume(merged);
   stack->setOffset(corner[0], corner[1], corner[2]);
 
   return stack;

@@ -31,7 +31,8 @@ Z3DPunctaFilter::Z3DPunctaFilter()
   connect(&m_singleColorForAllPuncta, SIGNAL(valueChanged()), this, SLOT(prepareColor()));
 
   // Color Mode
-  m_colorMode.addOptions("Same Color", "Random Color", "Based on Point Source", "Original Point Color");
+  m_colorMode.addOptions("Same Color", "Random Color", "Based on Point Source",
+                         "Based on Name", "Original Point Color");
   m_colorMode.select("Based on Point Source");
 
   connect(&m_colorMode, SIGNAL(valueChanged()), this, SLOT(prepareColor()));
@@ -71,6 +72,11 @@ Z3DPunctaFilter::~Z3DPunctaFilter()
   //}
   for (std::map<QString, ZVec4Parameter*>::iterator it = m_sourceColorMapper.begin();
        it != m_sourceColorMapper.end(); ++it) {
+    delete it->second;
+  }
+
+  for (std::map<QString, ZVec4Parameter*>::iterator it = m_nameColorMapper.begin();
+       it != m_nameColorMapper.end(); ++it) {
     delete it->second;
   }
   delete m_selectPunctumEvent;
@@ -161,6 +167,17 @@ ZWidgetsGroup *Z3DPunctaFilter::getWidgetsGroup()
     for (size_t i=0; i<allPunctaColorParas.size(); ++i) {
       m_colorsForDifferentSourceWidgetsGroup.push_back(new ZWidgetsGroup(allPunctaColorParas[i], m_widgetsGroup, 1));
     }
+
+    allPunctaColorParas.clear();
+    for (std::map<QString, ZVec4Parameter*>::iterator it = m_nameColorMapper.begin();
+         it != m_nameColorMapper.end(); ++it) {
+      allPunctaColorParas.push_back(it->second);
+    }
+    std::sort(allPunctaColorParas.begin(), allPunctaColorParas.end(), compareParameterName);
+    for (size_t i=0; i<allPunctaColorParas.size(); ++i) {
+      m_colorsForDifferentNameWidgetsGroup.push_back(new ZWidgetsGroup(allPunctaColorParas[i], m_widgetsGroup, 1));
+    }
+
 
     new ZWidgetsGroup(&m_useSameSizeForAllPuncta, m_widgetsGroup, 1);
 
@@ -386,25 +403,26 @@ void Z3DPunctaFilter::prepareData()
   bool needUpdateWidget = false;
   QList<QString> allSources;
   for (size_t i=0; i<m_origPunctaList.size(); ++i) {
-    int idx = allSources.indexOf(m_origPunctaList[i]->source());
+    int idx = allSources.indexOf(m_origPunctaList[i]->getSource().c_str());
     if (idx == -1) {
-      allSources.push_back(m_origPunctaList[i]->source());
+      allSources.push_back(m_origPunctaList[i]->getSource().c_str());
       idx = allSources.size() - 1;
     }
     QString guiname = QString("Source %1 Color").arg(idx + 1);
-    if (m_sourceColorMapper.find(m_origPunctaList[i]->source()) == m_sourceColorMapper.end()) {
-      m_sourceColorMapper[m_origPunctaList[i]->source()] =
+    if (m_sourceColorMapper.find(m_origPunctaList[i]->getSource().c_str())
+        == m_sourceColorMapper.end()) {
+      m_sourceColorMapper[m_origPunctaList[i]->getSource().c_str()] =
           new ZVec4Parameter(guiname, glm::vec4(ZRandomInstance.randReal<float>(),
                                                 ZRandomInstance.randReal<float>(),
                                                 ZRandomInstance.randReal<float>(),
                                                 1.f));
-      m_sourceColorMapper[m_origPunctaList[i]->source()]->setStyle("COLOR");
-      connect(m_sourceColorMapper[m_origPunctaList[i]->source()], SIGNAL(valueChanged()),
+      m_sourceColorMapper[m_origPunctaList[i]->getSource().c_str()]->setStyle("COLOR");
+      connect(m_sourceColorMapper[m_origPunctaList[i]->getSource().c_str()], SIGNAL(valueChanged()),
           this, SLOT(prepareColor()));
-      addParameter(m_sourceColorMapper[m_origPunctaList[i]->source()]);
+      addParameter(m_sourceColorMapper[m_origPunctaList[i]->getSource().c_str()]);
       needUpdateWidget = true;
     } else {
-      m_sourceColorMapper[m_origPunctaList[i]->source()]->setName(guiname);
+      m_sourceColorMapper[m_origPunctaList[i]->getSource().c_str()]->setName(guiname);
     }
   }
   // remove colors for not exist puncta source
@@ -420,6 +438,46 @@ void Z3DPunctaFilter::prepareData()
     } else
       ++it;
   }
+
+  QList<QString> allNames;
+  for (size_t i=0; i<m_origPunctaList.size(); ++i) {
+    int idx = allNames.indexOf(m_origPunctaList[i]->name());
+    if (idx == -1) {
+      allNames.push_back(m_origPunctaList[i]->name());
+      idx = allNames.size() - 1;
+    }
+    QString guiname = QString("Source %1 Color").arg(idx + 1);
+    if (m_nameColorMapper.find(m_origPunctaList[i]->name()) ==
+        m_nameColorMapper.end()) {
+      m_nameColorMapper[m_origPunctaList[i]->name()] =
+          new ZVec4Parameter(guiname, glm::vec4(ZRandomInstance.randReal<float>(),
+                                                ZRandomInstance.randReal<float>(),
+                                                ZRandomInstance.randReal<float>(),
+                                                1.f));
+      m_nameColorMapper[m_origPunctaList[i]->name()]->setStyle("COLOR");
+      connect(m_nameColorMapper[m_origPunctaList[i]->name()],
+          SIGNAL(valueChanged()),
+          this, SLOT(prepareColor()));
+      addParameter(m_nameColorMapper[m_origPunctaList[i]->name()]);
+      needUpdateWidget = true;
+    } else {
+      m_nameColorMapper[m_origPunctaList[i]->name()]->setName(guiname);
+    }
+  }
+
+  it = m_nameColorMapper.begin();
+  while (it != m_nameColorMapper.end()) {
+    if (!allNames.contains(it->first)) {
+      std::map<QString, ZVec4Parameter*>::iterator itCopy = it;
+      ++it;
+      removeParameter(itCopy->second);
+      delete itCopy->second;
+      m_nameColorMapper.erase(itCopy);
+      needUpdateWidget = true;
+    } else
+      ++it;
+  }
+
   if (needUpdateWidget)
     updateWidgetsGroup();
 
@@ -442,10 +500,12 @@ void Z3DPunctaFilter::prepareColor()
     }
   } else if (m_colorMode.isSelected("Based on Point Source")) {
     for (size_t i=0; i<m_punctaList.size(); i++) {
-#ifdef _DEBUG_
-      //std::cout << m_punctaList[i]->source().toStdString() << std::endl;
-#endif
-      glm::vec4 color = m_sourceColorMapper[m_punctaList[i]->source()]->get();
+      glm::vec4 color = m_sourceColorMapper[m_punctaList[i]->getSource().c_str()]->get();
+      m_pointColors.push_back(color);
+    }
+  } else if (m_colorMode.isSelected("Based on Name")) {
+    for (size_t i=0; i<m_punctaList.size(); i++) {
+      glm::vec4 color = m_nameColorMapper[m_punctaList[i]->name()]->get();
       m_pointColors.push_back(color);
     }
   } else if (m_colorMode.isSelected("Random Color")) {
@@ -490,11 +550,14 @@ void Z3DPunctaFilter::adjustWidgets()
   //  }
   for (std::map<QString, ZVec4Parameter*>::iterator it = m_sourceColorMapper.begin();
        it != m_sourceColorMapper.end(); ++it) {
-    if (m_colorMode.isSelected("Based on Point Source"))
-      it->second->setVisible(true);
-    else
-      it->second->setVisible(false);
+    it->second->setVisible(m_colorMode.isSelected("Based on Point Source"));
   }
+
+  for (std::map<QString, ZVec4Parameter*>::iterator it = m_nameColorMapper.begin();
+       it != m_nameColorMapper.end(); ++it) {
+    it->second->setVisible(m_colorMode.isSelected("Based on Name"));
+  }
+
   if (m_colorMode.isSelected("Same Color"))
     m_singleColorForAllPuncta.setVisible(true);
   else
@@ -561,6 +624,26 @@ void Z3DPunctaFilter::updateWidgetsGroup()
     for (size_t i=0; i<allPunctaColorParas.size(); ++i) {
       m_colorsForDifferentSourceWidgetsGroup.push_back(new ZWidgetsGroup(allPunctaColorParas[i], m_widgetsGroup, 1));
     }
+
+    for (size_t i=0; i<m_colorsForDifferentSourceWidgetsGroup.size(); i++) {
+      delete m_colorsForDifferentSourceWidgetsGroup[i];
+    }
+    m_colorsForDifferentSourceWidgetsGroup.clear();
+
+    //    for(size_t i=0; i<m_colorsForDifferentSource.size(); i++) {
+    //      m_colorsForDifferentSourceWidgetsGroup.push_back(new ZWidgetsGroup(m_colorsForDifferentSource[i], m_widgetsGroup, 1));
+    //    }
+    allPunctaColorParas.clear();
+    for (std::map<QString, ZVec4Parameter*>::iterator it = m_nameColorMapper.begin();
+         it != m_nameColorMapper.end(); ++it) {
+      allPunctaColorParas.push_back(it->second);
+    }
+    std::sort(allPunctaColorParas.begin(), allPunctaColorParas.end(), compareParameterName);
+    for (size_t i=0; i<allPunctaColorParas.size(); ++i) {
+      m_colorsForDifferentNameWidgetsGroup.push_back(
+            new ZWidgetsGroup(allPunctaColorParas[i], m_widgetsGroup, 1));
+    }
+
     m_widgetsGroup->emitWidgetsGroupChangedSignal();
   }
 }

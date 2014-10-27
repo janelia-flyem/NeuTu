@@ -6,6 +6,8 @@
 #include "tz_stack_attribute.h"
 #include "swctreenode.h"
 #include "tz_geo3d_utils.h"
+#include "zswctree.h"
+#include "swc/zswcresampler.h"
 
 using namespace std;
 
@@ -112,6 +114,8 @@ Swc_Tree* ZVoxelArray::toSwcTree(size_t startIndex, size_t endIndex) const
     endIndex = size() - 1;
   }
 
+  ZSwcTree treeWrapper;
+
   Swc_Tree *tree = New_Swc_Tree();
 
   ZVoxel prevVoxel = (*this)[startIndex];
@@ -123,8 +127,9 @@ Swc_Tree* ZVoxelArray::toSwcTree(size_t startIndex, size_t endIndex) const
   Swc_Tree_Node *prevTn = tn;
 
   for (size_t i = startIndex + 1; i < endIndex; i++) {
-    double dist = at(i).distanceTo(prevVoxel);
-    bool sampling = false;
+    //double dist = at(i).distanceTo(prevVoxel);
+    bool sampling = true;
+#if 0
     if ((dist > prevVoxel.value()) && (dist > at(i).value())) {
       if (dist > prevVoxel.value() + at(i).value()) {
         sampling = true;
@@ -140,7 +145,7 @@ Swc_Tree* ZVoxelArray::toSwcTree(size_t startIndex, size_t endIndex) const
         sampling = true;
       }
     }*/ //for further development
-
+#endif
     if (sampling) {
       tn = New_Swc_Tree_Node();
 
@@ -165,6 +170,10 @@ Swc_Tree* ZVoxelArray::toSwcTree(size_t startIndex, size_t endIndex) const
   }
 
   tree->root = tn;
+  treeWrapper.setData(tree);
+  ZSwcResampler sampler;
+  sampler.optimalDownsample(&treeWrapper);
+  treeWrapper.setData(NULL, ZSwcTree::LEAVE_ALONE);
 
   return tree;
 }

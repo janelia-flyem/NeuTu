@@ -61,29 +61,29 @@ void ZTraceProject::save()
   out << "<trace version = \"1.0\">" << endl;
   out << "<data>" << endl;
   out << "<image type=";
-  ZStackFile *stackSource = m_parent->document()->stack()->source();
+  const ZStackFile &stackSource = m_parent->document()->getStack()->source();
 
   //Stack_Document *stackSource = m_parent->document()->stack()->source();
 
-  switch (stackSource->type()) {
+  switch (stackSource.type()) {
   case ZStackFile::SINGLE_FILE:
   {
-    switch (ZFileType::fileType(stackSource->firstUrl())) {
+    switch (ZFileType::fileType(stackSource.firstUrl())) {
     case ZFileType::TIFF_FILE:
       out << "\"tif\">" << endl;
-      out << "<url>" << stackSource->firstUrl().c_str() << "</url>" << endl;
+      out << "<url>" << stackSource.firstUrl().c_str() << "</url>" << endl;
       break;
     case ZFileType::LSM_FILE:
     //STACK_DOC_LSM_FILE:
       out << "\"lsm\">" << endl;
-      out << "<url>" << stackSource->firstUrl().c_str() << "</url>" << endl;;
+      out << "<url>" << stackSource.firstUrl().c_str() << "</url>" << endl;;
       break;
     case ZFileType::V3D_RAW_FILE:
       out << "\"raw\">" << endl;
-      out << "<url>" << stackSource->firstUrl().c_str() << "</url>" << endl;;
+      out << "<url>" << stackSource.firstUrl().c_str() << "</url>" << endl;;
       break;
     default:
-      out << "unknown>" << stackSource->firstUrl().c_str() << endl;
+      out << "unknown>" << stackSource.firstUrl().c_str() << endl;
     }
   }
     break;
@@ -91,26 +91,25 @@ void ZTraceProject::save()
   {
     out << "\"bundle\">" << endl;
     //File_Bundle_S *fb = (File_Bundle_S*) stackSource->ci;
-    out << "<prefix>" << stackSource->prefix().c_str() << "</prefix>" << endl;
-    out << "<suffix>" << stackSource->suffix().c_str() << "</suffix" << endl;
-    out << "<num_width>" << stackSource->numWidth() << "</num_width>" << endl;
-    out << "<first_num>" << stackSource->firstNum() << "</first_num>" << endl;
+    out << "<prefix>" << stackSource.prefix().c_str() << "</prefix>" << endl;
+    out << "<suffix>" << stackSource.suffix().c_str() << "</suffix" << endl;
+    out << "<num_width>" << stackSource.numWidth() << "</num_width>" << endl;
+    out << "<first_num>" << stackSource.firstNum() << "</first_num>" << endl;
   }
     break;
   default:
-    out << "unknown>" << stackSource->firstUrl().c_str() << endl;
+    out << "unknown>" << stackSource.firstUrl().c_str() << endl;
   }
 
   out << "</image>" << endl;
 
-  ZResolution resolution = m_parent->document()->stack()->resolution();
-  const double *voxelSize = resolution.voxelSize();
-  out << "<resolution>" << "<x>" << voxelSize[0] << "</x>"
-      << "<y>" << voxelSize[1] << "</y>"
-      << "<z>" << voxelSize[2] << "</z>"
+  ZResolution resolution = m_parent->document()->getStack()->resolution();
+  out << "<resolution>" << "<x>" << resolution.voxelSizeX() << "</x>"
+      << "<y>" << resolution.voxelSizeY() << "</y>"
+      << "<z>" << resolution.voxelSizeZ() << "</z>"
       << "</resolution>" << endl;
   out << "<unit>" << resolution.unit() << "</unit>" << endl;
-  out << "<channel>" << stackSource->channel() << "</channel>" << endl;
+  out << "<channel>" << stackSource.channel() << "</channel>" << endl;
 
   out << "</data>" << endl;
 

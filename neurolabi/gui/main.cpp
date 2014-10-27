@@ -114,18 +114,21 @@ int main(int argc, char *argv[])
 
   QStringList fileList;
 
+  bool guiEnabled = true;
 
   if (argc > 1) {
     if (strcmp(argv[1], "d") == 0) {
       debugging = true;
     }
+
+    if (strcmp(argv[1], "--command") == 0) {
+      runCommandLine = true;
+    }
+
 #ifndef QT_NO_DEBUG
     if (strcmp(argv[1], "u") == 0 || QString(argv[1]).startsWith("--gtest")) {
       unitTest = true;
       debugging = true;
-    }
-    if (strcmp(argv[1], "--command") == 0) {
-      runCommandLine = true;
     }
 
     if (strcmp(argv[1], "--load") == 0) {
@@ -135,9 +138,13 @@ int main(int argc, char *argv[])
     }
 #endif
   }
+  if (debugging || runCommandLine) {
+    guiEnabled = false;
+  }
 
 
-  QApplication app(argc, argv);     // call first otherwise it will cause runtime warning: Please instantiate the QApplication object first
+  // call first otherwise it will cause runtime warning: Please instantiate the QApplication object first
+  QApplication app(argc, argv, guiEnabled);
 
   //load config
   NeutubeConfig &config = NeutubeConfig::getInstance();
@@ -168,13 +175,17 @@ int main(int argc, char *argv[])
 #endif
 #endif
 
+    MainWindow::createWorkDir();
+
 
     // init the logging mechanism
     QsLogging::Logger& logger = QsLogging::Logger::instance();
-    const QString sLogPath(QDir(app.applicationDirPath()).filePath("neuTube_log.txt"));
+    const QString sLogPath(
+          NeutubeConfig::getInstance().getPath(NeutubeConfig::LOG_FILE).c_str());
     QsLogging::DestinationPtr fileDestination(
-          QsLogging::DestinationFactory::MakeFileDestination(sLogPath, QsLogging::EnableLogRotation,
-                                                             QsLogging::MaxSizeBytes(1e7), QsLogging::MaxOldLogCount(20)));
+          QsLogging::DestinationFactory::MakeFileDestination(
+            sLogPath, QsLogging::EnableLogRotation,
+            QsLogging::MaxSizeBytes(1e7), QsLogging::MaxOldLogCount(20)));
     QsLogging::DestinationPtr debugDestination(
           QsLogging::DestinationFactory::MakeDebugOutputDestination());
     logger.addDestination(debugDestination);
@@ -202,6 +213,7 @@ int main(int argc, char *argv[])
     MainWindow *mainWin = new MainWindow();
     mainWin->config();
     mainWin->show();
+    mainWin->raise();
     mainWin->initOpenglContext();
 
     if (!fileList.isEmpty()) {
@@ -242,6 +254,7 @@ int main(int argc, char *argv[])
     }
 #endif
     if (!unitTest) {
+      std::cout << "Running test function" << std::endl;
       ZTest::test(NULL);
     }
 

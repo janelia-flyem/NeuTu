@@ -56,16 +56,17 @@ public:
   QSize canvasSize() const;
   QSize screenSize() const;
   inline QSize projectSize() const { return m_projRegion.size(); }
+  inline const QRect& projectRegion() const { return m_projRegion; }
   inline const QRect& viewPort() const { return m_viewPort; }
 
   QPointF canvasCoordinate(QPoint widgetCoord) const;
 
   void paintEvent(QPaintEvent *event);
 
-  void popLeftMenu(const QPoint &pos);
-  void popRightMenu(const QPoint &pos);
+  bool popLeftMenu(const QPoint &pos);
+  bool popRightMenu(const QPoint &pos);
 
-  void showContextMenu(QMenu *menu, const QPoint &pos);
+  bool showContextMenu(QMenu *menu, const QPoint &pos);
 
   QMenu* leftMenu();
   QMenu* rightMenu();
@@ -92,6 +93,10 @@ public:
    */
   double getActualOffsetY() const;
   ///}
+
+  inline void setViewHintVisible(bool visible) {
+    m_isViewHintVisible = visible;
+  }
 
 public:
   virtual void mouseReleaseEvent(QMouseEvent *event);
@@ -123,6 +128,7 @@ private:
   QMenu *m_leftButtonMenu;
   QMenu *m_rightButtonMenu;
   ZPaintBundle *m_paintBundle;
+  bool m_isViewHintVisible;
 };
 
 #endif

@@ -4,9 +4,11 @@
 #include <cstddef>
 #include <iostream>
 
-#include "zpoint.h"
 #include "tz_error.h"
 #include "tz_utilities.h"
+#include "zintpoint.h"
+#include "zintcuboid.h"
+#include "zlinesegment.h"
 
 #ifndef NULL
 #  define NULL 0x0
@@ -53,6 +55,16 @@ void ZCuboid::set(const double *corner)
   set(corner[0], corner[1], corner[2], corner[3], corner[4], corner[5]);
 }
 
+void ZCuboid::setFirstCorner(const ZPoint &pt)
+{
+  m_firstCorner = pt;
+}
+
+void ZCuboid::setSize(double width, double height, double depth)
+{
+  m_lastCorner = m_firstCorner + ZPoint(width, height, depth);
+}
+
 bool ZCuboid::isValid() const
 {
   return (m_lastCorner.x() > m_firstCorner.x()) &&
@@ -65,22 +77,22 @@ void ZCuboid::invalidate()
   m_firstCorner.setX(m_lastCorner.x());
 }
 
-double ZCuboid::width()
+double ZCuboid::width() const
 {
   return (m_lastCorner.x() - m_firstCorner.x());
 }
 
-double ZCuboid::height()
+double ZCuboid::height() const
 {
   return (m_lastCorner.y() - m_firstCorner.y());
 }
 
-double ZCuboid::depth()
+double ZCuboid::depth() const
 {
   return (m_lastCorner.z() - m_firstCorner.z());
 }
 
-double ZCuboid::volume()
+double ZCuboid::volume() const
 {
   return width() * height() * depth();
 }
@@ -338,4 +350,277 @@ void ZCuboid::include(const ZPoint &point) {
   joinX(point.x());
   joinY(point.y());
   joinZ(point.z());
+}
+
+void ZCuboid::translate(const ZPoint &pt)
+{
+  m_firstCorner += pt;
+  m_lastCorner += pt;
+}
+
+#define SET_HIT_POINT(x, y, z) \
+{ \
+  ZPoint hitPoint(x, y, z);\
+  if (hitCount == 0) {\
+    segBuffer.setStartPoint(hitPoint);\
+  } else if (hitCount == 1) {\
+    segBuffer.setEndPoint(hitPoint);\
+  } else if (segBuffer.getLength() <\
+             segBuffer.getStartPoint().distanceTo(hitPoint)) {\
+    segBuffer.setEndPoint(hitPoint);\
+  }\
+  ++hitCount;\
+}
+
+bool ZCuboid::intersectLine(
+    const ZPoint &p0, const ZPoint &slope, ZLineSegment *seg) const
+{
+  if (slope.x() == 0.0 && slope.y() == 0.0 && slope.z() == 0.0) {
+    return false;
+  }
+
+  ZPoint firstCorner = m_firstCorner - p0;
+  ZPoint lastCorner = m_lastCorner - p0;
+
+  //For a line parallel to an axis
+  //parallel to X
+  if (slope.y() == 0 && slope.z() == 0) {
+    if (IS_IN_CLOSE_RANGE(0.0, firstCorner.y(), lastCorner.y()) &&
+        IS_IN_CLOSE_RANGE(0.0, firstCorner.z(), lastCorner.z())) {
+      if (seg != NULL) {
+        seg->setStartPoint(m_firstCorner.x(), p0.y(), p0.z());
+        seg->setEndPoint(m_lastCorner.x(), p0.y(), p0.z());
+      }
+      return true;
+    }
+  }
+
+  //parallel to Y
+  if (slope.x() == 0 && slope.z() == 0) {
+    if (IS_IN_CLOSE_RANGE(0.0, firstCorner.x(), lastCorner.x()) &&
+        IS_IN_CLOSE_RANGE(0.0, firstCorner.z(), lastCorner.z())) {
+      if (seg != NULL) {
+        seg->setStartPoint(p0.x(), m_firstCorner.y(), p0.z());
+        seg->setEndPoint(p0.x(), m_lastCorner.y(), p0.z());
+      }
+      return true;
+    }
+  }
+
+  //parallel to Z
+  if (slope.x() == 0 && slope.y() == 0) {
+    if (IS_IN_CLOSE_RANGE(0.0, firstCorner.x(), lastCorner.x()) &&
+        IS_IN_CLOSE_RANGE(0.0, firstCorner.y(), lastCorner.y())) {
+      if (seg != NULL) {
+        seg->setStartPoint(p0.x(), p0.y(), m_firstCorner.z());
+        seg->setEndPoint(p0.x(), p0.y(), m_lastCorner.z());
+      }
+      return true;
+    }
+  }
+
+  ZLineSegment segBuffer;
+
+  //For a line parallel to a face
+  //parallel to X-Y
+  if (slope.z() == 0) {
+    if (IS_IN_CLOSE_RANGE(0.0, firstCorner.z(), lastCorner.z())) {
+      //face x0
+      double t = firstCorner.x() / slope.x();
+      double y = t * slope.y();
+      //double z = 0;
+      int hitCount = 0;
+      if (IS_IN_CLOSE_RANGE(y, firstCorner.y(), lastCorner.y())) {
+        segBuffer.setStartPoint(m_firstCorner.x(), p0.y() + y, p0.z());
+        /*
+        if (seg != NULL) {
+          seg->setStartPoint(m_firstCorner.x(), p0.y() + y, p0.z());
+        }
+        */
+        ++hitCount;
+      }
+
+      //face x1
+      t = lastCorner.x() / slope.x();
+      y = t * slope.y();
+      if (IS_IN_CLOSE_RANGE(y, firstCorner.y(), lastCorner.y())) {
+        SET_HIT_POINT(m_lastCorner.x(), p0.y() + y, p0.z());
+      }
+
+      //face y0
+      t = firstCorner.y() / slope.y();
+      double x = t * slope.x();
+      if (IS_IN_CLOSE_RANGE(x, firstCorner.x(), lastCorner.x())) {
+        SET_HIT_POINT(p0.x() + x, m_firstCorner.y(), p0.z());
+      }
+
+      //face y1
+      t = lastCorner.y() / slope.y();
+      x = t * slope.x();
+      if (IS_IN_CLOSE_RANGE(x, firstCorner.x(), lastCorner.x())) {
+        SET_HIT_POINT(p0.x() + x, m_lastCorner.y(), p0.z());
+      }
+      if (hitCount > 1) {
+        if (seg != NULL) {
+          seg->set(segBuffer.getStartPoint(), segBuffer.getEndPoint());
+        }
+        return true;
+      }
+    }
+  }
+
+  //parallel to X-Z
+  if (slope.y() == 0) {
+    if (IS_IN_CLOSE_RANGE(0.0, firstCorner.y(), lastCorner.y())) {
+      //face x0
+      double t = firstCorner.x() / slope.x();
+      double z = t * slope.z();
+      int hitCount = 0;
+      if (IS_IN_CLOSE_RANGE(z, firstCorner.z(), lastCorner.z())) {
+        SET_HIT_POINT(m_firstCorner.x(), p0.y(), p0.z() + z);
+      }
+
+      //face x1
+      t = lastCorner.x() / slope.x();
+      z = t * slope.z();
+      if (IS_IN_CLOSE_RANGE(z, firstCorner.z(), lastCorner.z())) {
+        SET_HIT_POINT(m_lastCorner.x(), p0.y(), p0.z() + z);
+      }
+
+      //face z0
+      t = firstCorner.z() / slope.z();
+      double x = t * slope.x();
+      if (IS_IN_CLOSE_RANGE(x, firstCorner.x(), lastCorner.x())) {
+        SET_HIT_POINT(p0.x() + x, p0.y(), m_firstCorner.z());
+      }
+
+      //face y1
+      t = lastCorner.z() / slope.z();
+      x = t * slope.x();
+      if (IS_IN_CLOSE_RANGE(x, firstCorner.x(), lastCorner.x())) {
+        SET_HIT_POINT(p0.x() + x, p0.y(), m_lastCorner.z());
+      }
+      if (hitCount > 1) {
+        if (seg != NULL) {
+          *seg = segBuffer;
+        }
+        return true;
+      }
+    }
+  }
+
+  //parallel to Y-Z
+  if (slope.x() == 0) {
+    if (IS_IN_CLOSE_RANGE(0.0, firstCorner.x(), lastCorner.x())) {
+      //face y0
+      double t = firstCorner.y() / slope.y();
+      double z = t * slope.z();
+      int hitCount = 0;
+      if (IS_IN_CLOSE_RANGE(z, firstCorner.z(), lastCorner.z())) {
+        SET_HIT_POINT(p0.x(), m_firstCorner.y(), p0.z() + z);
+      }
+
+      //face y1
+      t = lastCorner.y() / slope.y();
+      z = t * slope.z();
+      if (IS_IN_CLOSE_RANGE(z, firstCorner.z(), lastCorner.z())) {
+        SET_HIT_POINT(p0.x(), m_lastCorner.y(), p0.z() + z);
+      }
+
+      //face z0
+      t = firstCorner.z() / slope.z();
+      double y = t * slope.y();
+      if (IS_IN_CLOSE_RANGE(y, firstCorner.y(), lastCorner.y())) {
+        SET_HIT_POINT(p0.x(), p0.y() + y, m_firstCorner.z());
+      }
+
+      //face z1
+      t = lastCorner.z() / slope.z();
+      y = t * slope.y();
+      if (IS_IN_CLOSE_RANGE(y, firstCorner.y(), lastCorner.y())) {
+        SET_HIT_POINT(p0.x(), p0.y() + y, m_lastCorner.z());
+      }
+
+      if (hitCount > 1) {
+        if (seg != NULL) {
+          seg->set(segBuffer.getStartPoint(), segBuffer.getEndPoint());
+        }
+        return true;
+      }
+    }
+  }
+
+  //Non-parallel case
+  //face x0
+  double t = firstCorner.x() / slope.x();
+  double y = t * slope.y();
+  double z = t * slope.z();
+  int hitCount = 0;
+  if (IS_IN_CLOSE_RANGE(y, firstCorner.y(), lastCorner.y()) &&
+      IS_IN_CLOSE_RANGE(z, firstCorner.z(), lastCorner.z())) {
+    SET_HIT_POINT(m_firstCorner.x(), p0.y() + y, p0.z() + z);
+  }
+
+  //face x1
+  t = lastCorner.x() / slope.x();
+  y = t * slope.y();
+  z = t * slope.z();
+  if (IS_IN_CLOSE_RANGE(y, firstCorner.y(), lastCorner.y()) &&
+      IS_IN_CLOSE_RANGE(z, firstCorner.z(), lastCorner.z())) {
+    SET_HIT_POINT(m_lastCorner.x(), p0.y() + y, p0.z() + z);
+  }
+
+  //face y0
+  t = firstCorner.y() / slope.y();
+  double x = t * slope.x();
+  z = t * slope.z();
+  if (IS_IN_CLOSE_RANGE(x, firstCorner.x(), lastCorner.x()) &&
+      IS_IN_CLOSE_RANGE(z, firstCorner.z(), lastCorner.z())) {
+    SET_HIT_POINT(p0.x() + x, m_firstCorner.y(), p0.z() + z);
+  }
+
+  //face y1
+  t = lastCorner.y() / slope.y();
+  x = t * slope.x();
+  z = t * slope.z();
+  if (IS_IN_CLOSE_RANGE(x, firstCorner.x(), lastCorner.x()) &&
+      IS_IN_CLOSE_RANGE(z, firstCorner.z(), lastCorner.z())) {
+    SET_HIT_POINT(p0.x() + x, m_lastCorner.y(), p0.z() + z);
+  }
+
+
+  //face z0
+  t = firstCorner.z() / slope.z();
+  x = t * slope.x();
+  y = t * slope.y();
+  if (IS_IN_CLOSE_RANGE(x, firstCorner.x(), lastCorner.x()) &&
+      IS_IN_CLOSE_RANGE(y, firstCorner.y(), lastCorner.y())) {
+    SET_HIT_POINT(p0.x() + x, p0.y() + y, m_firstCorner.z());
+  }
+
+  //face z1
+  t = lastCorner.z() / slope.z();
+  x = t * slope.x();
+  y = t * slope.y();
+  if (IS_IN_CLOSE_RANGE(x, firstCorner.x(), lastCorner.x()) &&
+      IS_IN_CLOSE_RANGE(y, firstCorner.y(), lastCorner.y())) {
+    SET_HIT_POINT(p0.x() + x, p0.y() + y, m_lastCorner.z());
+  }
+  if (hitCount > 1) {
+    if (seg != NULL) {
+      *seg = segBuffer;
+    }
+    return true;
+  }
+
+  return false;
+}
+
+ZIntCuboid ZCuboid::toIntCuboid() const
+{
+  ZIntCuboid cuboid;
+  cuboid.setFirstCorner(m_firstCorner.toIntPoint());
+  cuboid.setLastCorner(m_lastCorner.toIntPoint());
+
+  return cuboid;
 }

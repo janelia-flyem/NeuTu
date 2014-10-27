@@ -9,11 +9,10 @@
 #include <QFuture>
 #endif
 
-#include "zdocumentable.h"
-#include "zstackdrawable.h"
+#include "zstackobject.h"
 #include "tz_local_neuroseg.h"
 
-class ZLocalNeuroseg : public ZDocumentable, public ZStackDrawable
+class ZLocalNeuroseg : public ZStackObject
 {
 public:
   ZLocalNeuroseg(Local_Neuroseg *locseg, bool isOwner = true);
@@ -29,15 +28,14 @@ public:
                       Display_Style style = NORMAL, int label = 0);
 
 public:
-  virtual void display(ZPainter &painter, int z = 0, Display_Style option = NORMAL)
-  const;
+  virtual void display(ZPainter &painter, int slice, Display_Style option) const;
   virtual void display(QImage *image, int n, Palette_Color color,
                        Display_Style style = NORMAL, int label = 0) const;
   virtual void display(ZPainter &painter, int z, Display_Style option,
                        const QColor &color) const;
 
   virtual void save(const char *filePath);
-  virtual void load(const char *filePath);
+  virtual bool load(const char *filePath);
 
   void updateProfile(const Stack *stack, int option);
 

@@ -208,6 +208,57 @@ bool ZMatrix::exportCsv(const string &path)
   return true;
 }
 
+bool ZMatrix::exportCsv(
+    const string &path, const std::vector<string> &rowName,
+    const std::vector<string> &columnName)
+{
+  if (isEmpty()) {
+    return false;
+  }
+
+  if (getRowNumber() != (int) rowName.size() ||
+      getColumnNumber() != (int) columnName.size()) {
+    return false;
+  }
+
+  std::ofstream stream(path.c_str());
+
+  if (!stream.is_open()) {
+    return false;
+  }
+
+  if (getColumnNumber() == (int) columnName.size()) {
+    if (getRowNumber() == (int) rowName.size()) {
+      stream << "name,";
+    }
+
+    for (int j = 0; j < getColumnNumber(); j++) {
+      stream << columnName[j];
+      if (j != getColumnNumber() - 1) {
+        stream << ",";
+      }
+    }
+    stream << endl;
+  }
+
+  for (int i = 0; i < m_rowNumber; i++) {
+    if (getRowNumber() == (int) rowName.size()) {
+      stream << rowName[i] << ",";
+    }
+    for (int j = 0; j < m_columnNumber; j++) {
+      stream << at(i, j);
+      if (j != m_columnNumber - 1) {
+        stream << ",";
+      }
+    }
+    stream << endl;
+  }
+
+  stream.close();
+
+  return true;
+}
+
 double ZMatrix::getRowMax(int row, int *index) const
 {
   size_t arrayIndex;

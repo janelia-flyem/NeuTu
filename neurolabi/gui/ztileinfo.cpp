@@ -1,5 +1,7 @@
 #include "ztileinfo.h"
 #include "zjsonparser.h"
+#include <QFileInfo>
+#include <QDir>
 
 ZTileInfo::ZTileInfo()
 {
@@ -8,14 +10,13 @@ ZTileInfo::ZTileInfo()
   }
 }
 
-bool ZTileInfo::loadJsonObject(const ZJsonObject &obj)
+
+bool ZTileInfo::loadJsonObject(const ZJsonObject &obj, QString tileFilePath)
 {
   if (obj.hasKey("source")) {
     m_source = ZJsonParser::stringValue(obj["source"]);
-  }
-
-  if (obj.hasKey("swc")) {
-    m_swcSource = ZJsonParser::stringValue(obj["swc"]);
+    QString fn = tileFilePath+QDir::separator()+QFileInfo(m_source.c_str()).fileName();
+    m_source = fn.toStdString();
   }
 
   if (obj.hasKey("offset")) {
@@ -35,6 +36,7 @@ bool ZTileInfo::loadJsonObject(const ZJsonObject &obj)
     return false;
   }
 
+
   if (obj.hasKey("size")) {
     const json_t *value = obj["size"];
     if (ZJsonParser::isArray(value)) {
@@ -48,6 +50,12 @@ bool ZTileInfo::loadJsonObject(const ZJsonObject &obj)
     } else {
       return false;
     }
+  }
+
+  if (obj.hasKey("image")) {
+      m_imageSourse = ZJsonParser::stringValue(obj["image"]);
+      QString fn = tileFilePath+QDir::separator()+QFileInfo(m_imageSourse.c_str()).fileName();
+      m_imageSourse = fn.toStdString();
   }
 
   return true;

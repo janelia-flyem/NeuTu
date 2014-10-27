@@ -125,6 +125,9 @@ public:
    * \return true iff the matrix is exported successfully.
    */
   bool exportCsv(const std::string &path);
+  bool exportCsv(const std::string &path,
+                 const std::vector<std::string> &rowName,
+                 const std::vector<std::string> &columnName);
 
 public: //Feature matrix functions
   std::vector<int> kmeans(int k);

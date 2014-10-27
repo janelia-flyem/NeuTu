@@ -17,6 +17,7 @@
 #include "tz_stack.h"
 #include "neutubeconfig.h"
 #include "zerror.h"
+#include "zweightedpointarray.h"
 
 using namespace std;
 
@@ -49,9 +50,16 @@ Swc_Tree_Node* SwcTreeNode::makePointer(int id, int type, double x, double y,
 }
 
 Swc_Tree_Node* SwcTreeNode::makePointer(
-    double x, double y, double z, double radius)
+    double x, double y, double z, double radius, Swc_Tree_Node *parent)
 {
-  return SwcTreeNode::makePointer(1, 0, x, y, z, radius, -1);
+  Swc_Tree_Node *tn = SwcTreeNode::makePointer(1, 0, x, y, z, radius, -1);
+
+  if (parent != NULL) {
+    setFirstChild(parent, tn);
+    //setParent(tn, parent);
+  }
+
+  return tn;
 }
 
 Swc_Tree_Node* SwcTreeNode::makePointer(const ZPoint &pos, double radius)
@@ -220,18 +228,17 @@ Swc_Tree_Node* SwcTreeNode::regularRoot(Swc_Tree_Node *tn)
   return root;
 }
 
-Swc_Tree_Node* SwcTreeNode::root(Swc_Tree_Node *tn)
+Swc_Tree_Node* SwcTreeNode::root(const Swc_Tree_Node *tn)
 {
-  Swc_Tree_Node *root = tn;
+  const Swc_Tree_Node *root = tn;
 
   while (tn != NULL) {
     root = tn;
     tn = tn->parent;
   }
 
-  return root;
+  return const_cast<Swc_Tree_Node*>(root);
 }
-
 
 ZPoint SwcTreeNode::pos(const Swc_Tree_Node *tn)
 {
@@ -666,9 +673,37 @@ int SwcTreeNode::labelDifference(Swc_Tree_Node *lhs, Swc_Tree_Node *rhs)
   return SwcTreeNode::label(lhs) - SwcTreeNode::label(rhs);
 }
 
-void SwcTreeNode::setParent(Swc_Tree_Node *tn, Swc_Tree_Node *parent)
+void SwcTreeNode::setParent(Swc_Tree_Node *tn, Swc_Tree_Node *parent,
+                            EChildPosition childPos)
 {
-  Swc_Tree_Node_Set_Parent(tn, parent);
+  switch (childPos) {
+  case CHILD_POS_FIRST:
+    setFirstChild(parent, tn);
+    break;
+  case CHILD_POS_LAST:
+    Swc_Tree_Node_Set_Parent(tn, parent);
+    break;
+  }
+}
+
+void SwcTreeNode::setFirstChild(Swc_Tree_Node *tn, Swc_Tree_Node *child)
+{
+  if (child == NULL) {
+    return;
+  }
+
+  Swc_Tree_Node *oldFirstChild = firstChild(tn);
+  if (oldFirstChild == child) {
+    return;
+  }
+
+  detachParent(child);
+  if (tn != NULL) {
+    SwcTreeNode::setLink(child, tn, SwcTreeNode::PARENT);
+    SwcTreeNode::setLink(tn, child, SwcTreeNode::FIRST_CHILD);
+    SwcTreeNode::setLink(child, oldFirstChild, SwcTreeNode::NEXT_SIBLING);
+    child->tree_state = tn->tree_state;
+  }
 }
 
 bool SwcTreeNode::isRegularRoot(const Swc_Tree_Node *tn)
@@ -1360,7 +1395,7 @@ bool SwcTreeNode::fitSignal(Swc_Tree_Node *tn, const Stack *stack,
   double r2 = C_Stack::value(dist, index);
 
   if (r2 > 0) {
-    if (Geo3d_Dist_Sqr(nx, ny, 0, x(tn) - x1, y(tn) - y1, 0) < r2) {
+    if (Geo3d_Dist_Sqr(nx, ny, 0, x(tn) - x1, y(tn) - y1, 0) <= r2 * 2) {
       SwcTreeNode::setRadius(tn, sqrt(r2));
       SwcTreeNode::setX(tn, nx + x1);
       SwcTreeNode::setY(tn, ny + y1);

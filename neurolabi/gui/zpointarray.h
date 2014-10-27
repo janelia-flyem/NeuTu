@@ -5,6 +5,9 @@
 #include <zpoint.h>
 #include <string>
 #include "zcuboid.h"
+#include "tz_utilities.h"
+
+class ZGraph;
 
 class ZPointArray : public std::vector<ZPoint>
 {
@@ -18,6 +21,8 @@ public:
   void exportTxtFile(const std::string &filePath) const;
   void print() const;
 
+  void importTxtFile(const std::string &filePath);
+
   /*!
    * \brief Append a point
    */
@@ -27,10 +32,18 @@ public:
 
   std::string toJsonString() const;
 
+  ZPoint computeCenter() const;
+
   /*!
    * \brief Bounding box of the point array
    */
   ZCuboid getBoundBox() const;
+
+  std::vector<double> computePlaneCov() const;
+
+  bool isEmpty() const;
+
+  ZGraph *computeDistanceGraph(double maxDist = Infinity) const;
 };
 
 #endif // ZPOINTARRAY_H

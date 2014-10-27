@@ -311,6 +311,12 @@
          <verstretch>0</verstretch>
         </sizepolicy>
        </property>
+       <property name="frameShape">
+        <enum>QFrame::Panel</enum>
+       </property>
+       <property name="frameShadow">
+        <enum>QFrame::Raised</enum>
+       </property>
       </widget>
      </widget>
     </item>

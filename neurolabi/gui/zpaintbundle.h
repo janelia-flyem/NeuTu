@@ -4,9 +4,11 @@
 #include <QList>
 #include "zstackdrawable.h"
 #include "swctreenode.h"
-#include "zcircle.h"
+#include "zstackball.h"
 #include "tz_math.h"
 #include "zpoint.h"
+#include "zswctree.h"
+#include "zintpoint.h"
 
 #include <boost/iterator/iterator_facade.hpp>
 #include <boost/type_traits/is_convertible.hpp>
@@ -14,8 +16,9 @@
 
 namespace impl {
 
-// note: dereference of this iterator return a pointer to [const] ZStackDrawable, not reference to pointer,
-// so you can not use it to change pointer itself
+// note: dereference of this iterator return a pointer to [const] ZStackObject
+//       instead of a reference to the pointer, so you can not use it to change
+//       the pointer itself.
 template<class TPaintBundle, class TStackDrawablePtr>
 class drawable_iter
     : public boost::iterator_facade<
@@ -103,24 +106,36 @@ private:
 
   TStackDrawablePtr dereference() const
   {
-    return m_listIdx < m_bundle->m_objLists.size() ? m_bundle->m_objLists[m_listIdx]->at(m_drawableIdx) :
-                                                     (ZStackDrawable*)(&m_nodeAdaptor);
+    return m_listIdx < m_bundle->m_objLists.size() ?
+          m_bundle->m_objLists[m_listIdx]->at(m_drawableIdx) :
+          dynamic_cast<TStackDrawablePtr>(&m_nodeAdaptor);
   }
 
   void setSwcNodeAdaptor()
   {
     if (m_swcNodeIter != m_bundle->m_swcNodes->end()) { // update ZCircle
-      if ((iround(SwcTreeNode::z(*m_swcNodeIter)) == m_bundle->m_sliceIndex) ||
+      /*
+      if ((iround(SwcTreeNode::z(*m_swcNodeIter)) ==
+           m_bundle->m_sliceIndex + m_bundle->getStackOffset().getZ()) ||
           (m_bundle->m_sliceIndex == -1)) {
         m_nodeAdaptor.setColor(255, 255, 0);
       } else {
         m_nodeAdaptor.setColor(164, 164, 0);
       }
+      */
       m_nodeAdaptor.set(SwcTreeNode::x(*m_swcNodeIter), SwcTreeNode::y(*m_swcNodeIter),
                         SwcTreeNode::z(*m_swcNodeIter), SwcTreeNode::radius(*m_swcNodeIter));
-      m_nodeAdaptor.setVisualEffect(ZCircle::VE_BOUND_BOX |
-                                    ZCircle::VE_DASH_PATTERN |
-                                    ZCircle::VE_NO_FILL);
+
+      m_nodeAdaptor.setColor(255, 255, 0);
+      m_nodeAdaptor.setSelected(true);
+      /*
+      m_nodeAdaptor.setVisualEffect(ZStackBall::VE_BOUND_BOX |
+                                    ZStackBall::VE_DASH_PATTERN |
+                                    ZStackBall::VE_NO_FILL);
+                                    */
+      m_nodeAdaptor.useCosmeticPen(
+            ZSwcTree::getHostState(*m_swcNodeIter, ZSwcTree::NODE_STATE_COSMETIC));
+      m_nodeAdaptor.setSource(ZStackObject::getNodeAdapterId());
     }
   }
 
@@ -129,7 +144,7 @@ private:
   int m_drawableIdx;
   std::set<Swc_Tree_Node*>::const_iterator m_swcNodeIter;
 
-  ZCircle m_nodeAdaptor;
+  ZStackBall m_nodeAdaptor;
 };
 
 } // namespace impl
@@ -137,8 +152,8 @@ private:
 class ZPaintBundle
 {
 public:
-  typedef impl::drawable_iter<ZPaintBundle, ZStackDrawable*> iterator;
-  typedef impl::drawable_iter<ZPaintBundle const, const ZStackDrawable*> const_iterator;
+  typedef impl::drawable_iter<ZPaintBundle, ZStackObject*> iterator;
+  typedef impl::drawable_iter<ZPaintBundle const, const ZStackObject*> const_iterator;
 
   ZPaintBundle();
 
@@ -148,11 +163,16 @@ public:
   inline iterator begin() { return iterator(this, iterator::Begin); }
   inline iterator end() { return iterator(this, iterator::End); }
 
-  inline void clearAllDrawableLists() { m_objLists.clear(); m_otherDrawables.clear(); m_objLists.push_back(&m_otherDrawables); }
-  inline void addDrawable(ZStackDrawable* obj) { if (obj) m_otherDrawables.push_back(obj); }
-  inline void removeDrawable(ZStackDrawable* obj) { m_otherDrawables.removeAll(obj); }
-  inline void addDrawableList(const QList<ZStackDrawable*>* lst) { if (lst) m_objLists.push_back(lst); }
-  inline void removeDrawableList(const QList<ZStackDrawable*>* lst) { m_objLists.removeAll(lst); }
+  inline void clearAllDrawableLists() {
+    m_objLists.clear();
+    m_otherDrawables.clear();
+    m_objLists.push_back(&m_otherDrawables);
+  }
+
+  inline void addDrawable(ZStackObject* obj) { if (obj) m_otherDrawables.push_back(obj); }
+  inline void removeDrawable(ZStackObject* obj) { m_otherDrawables.removeAll(obj); }
+  inline void addDrawableList(const QList<ZStackObject*>* lst) { if (lst) m_objLists.push_back(lst); }
+  inline void removeDrawableList(const QList<ZStackObject*>* lst) { m_objLists.removeAll(lst); }
 
   inline void setSwcNodeList(const std::set<Swc_Tree_Node*>* lst) { if (lst) m_swcNodes = lst; }
   inline void unsetSwcNodeList() { m_swcNodes = &m_emptyNodeSet; }
@@ -160,31 +180,33 @@ public:
   inline void setSliceIndex(int idx) { m_sliceIndex = idx; }
   inline int sliceIndex() const { return m_sliceIndex; }
 
-  inline void setDisplayStyle(ZStackDrawable::Display_Style style) { m_style = style; }
-  inline ZStackDrawable::Display_Style displayStyle() const { return m_style; }
+  inline int getZ() const { return m_sliceIndex + m_stackOffset.getZ(); }
 
-  inline void setStackOffset(double x, double y, double z) {
+  inline void setDisplayStyle(ZStackObject::Display_Style style) { m_style = style; }
+  inline ZStackObject::Display_Style displayStyle() const { return m_style; }
+
+  inline void setStackOffset(int x, int y, int z) {
     m_stackOffset.set(x, y, z);
   }
-  inline void setStackOffset(const ZPoint &offset) {
+  inline void setStackOffset(const ZIntPoint &offset) {
     m_stackOffset = offset;
   }
-  inline const ZPoint& getStackOffset() const {
+  inline const ZIntPoint& getStackOffset() const {
     return m_stackOffset;
   }
 
 private:
   template<typename T1, typename T2> friend class impl::drawable_iter;
 
-  QList<const QList<ZStackDrawable*>*> m_objLists;
+  QList<const QList<ZStackObject*>*> m_objLists;
   const std::set<Swc_Tree_Node*>* m_swcNodes;
   int m_sliceIndex;
-  ZStackDrawable::Display_Style m_style;
+  ZStackObject::Display_Style m_style;
 
-  QList<ZStackDrawable*> m_otherDrawables; // collect single input
+  QList<ZStackObject*> m_otherDrawables; // collect single input
   std::set<Swc_Tree_Node*> m_emptyNodeSet; // make sure m_swcNodes always point to something
 
-  ZPoint m_stackOffset;
+  ZIntPoint m_stackOffset;
 };
 
 #endif // ZPAINTBUNDLE_H

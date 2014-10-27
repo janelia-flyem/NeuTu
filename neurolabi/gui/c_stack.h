@@ -58,6 +58,8 @@ void systemKill(Stack *stack);
 //Delete the stack by 'delete' in C++
 inline void cppDelete(Stack *stack) { delete stack; }
 
+int stackUsage();
+
 /** @name Make copies
  */
 ///@{
@@ -186,6 +188,8 @@ Stack* channelExtraction(const Stack *stack, int channel);
  */
 bool setValue(Stack *stack, size_t offset, const void *buffer, size_t length);
 
+bool setValue(Mc_Stack *stack, size_t offset, const void *buffer, size_t length);
+
 //Stack manipulation
 //Crop a stack
 Stack* crop(const Stack *stack,int left,int top,int front,
@@ -208,16 +212,21 @@ Stack* resize(const Stack* stack,int width,int height,int depth);
 Stack* translate(Stack *stack, int kind, int in_place);
 
 /*!
- * \brief Downsample a stack
+ * \brief Downsample a stack with maximum assignment.
  *
  * \param stack source stack
  * \param xintv X interval
  * \param yintv Y interval
  * \param zintv Z interval
+ * \param result object to hold the result. It must have have enough
+ *    preallocated memory to hold the results if it is not NULL.
+ *    If it is NULL, a new object is returned.
  * \return The result.
  */
-Stack* downsampleMax(const Stack *stack, int xintv, int yintv, int zintv);
-Stack* downsampleMin(const Stack *stack, int xintv, int yintv, int zintv);
+Stack* downsampleMax(const Stack *stack, int xintv, int yintv, int zintv,
+                     Stack *result = NULL);
+Stack* downsampleMin(const Stack *stack, int xintv, int yintv, int zintv,
+                     Stack *result = NULL);
 
 void print(const Stack *stack);
 
@@ -299,6 +308,8 @@ bool hasValue(Mc_Stack *stack, size_t index,
 
 void view(const Stack *src, Mc_Stack *dst);
 void view(const Mc_Stack *src, Stack *dst, int channel);
+void view(const Mc_Stack *src, Mc_Stack *dst, int channel);
+void view(const Stack *src, Image_Array *dst);
 
 Mc_Stack* translate(const Mc_Stack *stack, int targetKind);
 
@@ -333,9 +344,13 @@ ssize_t indexFromCoord(int x, int y, int z, int width, int height, int depth);
 void indexToCoord(size_t index, int width, int height, int *x, int *y, int *z);
 
 void write(const std::string &filePath, const Stack *stack);
-void write(const std::string &filePath, const Mc_Stack *stack);
+void write(const std::string &filePath, const Mc_Stack *stack,
+           const char *meta = NULL);
 Mc_Stack* read(const std::string &filePath, int channel = -1);
 Stack* readSc(const std::string &filePath);
+Mc_Stack* readMrawFromBuffer(const char *buffer, int channel = -1);
+void readStackOffset(const std::string &filePath, int *x, int *y, int *z);
+
 
 Mc_Stack* resize(const Mc_Stack *stack, int width, int height, int depth);
 
@@ -358,7 +373,15 @@ void setZero(Mc_Stack *stack, int x0, int y0, int z0, int sw, int sh, int sd);
  */
 //void setBlockValue(Stack *stack, const Stack *block, int x0, int y0, int z0);
 void setBlockValue(Stack *stack, const Stack *block, int x0, int y0, int z0,
-                   int srcValueIgnored = -1, int dstValueIgnored = -1);
+                   int srcValueIgnored = -1, int dstValueIgnored = -1,
+                   double alpha = 1.0);
+
+/*!
+ * \brief Check if a stack is binary
+ *
+ * A stack is binary if it has GREY kind and the maximum voxel value is 1.
+ */
+bool isBinary(const Stack *stack);
 
 //Paint routines
 void drawPatch(Stack *canvas, const Stack *patch,

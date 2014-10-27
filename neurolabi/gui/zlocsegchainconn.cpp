@@ -15,33 +15,33 @@
 
 ZLocsegChainConn::ZLocsegChainConn()
 {
-  m_hook = -1;
-  m_loop = -1;
-  m_hookChain = NULL;
-  m_loopChain = NULL;
-  m_mode = NEUROCOMP_CONN_HL;
+  _init(-1, -1, NULL, NULL, NEUROCOMP_CONN_HL);
 }
 
 ZLocsegChainConn::ZLocsegChainConn(int hook, int link,
                                    int hookSpot, int loopSpot, int mode)
 {
-  m_hook = hook;
-  m_loop = link;
-  m_hookSpot = hookSpot;
-  m_loopSpot = loopSpot;
-  m_mode = mode;
+  _init(hook, link, hookSpot, loopSpot, mode);
 }
 
 ZLocsegChainConn::ZLocsegChainConn(ZLocsegChain *hook, ZLocsegChain *loop,
                                    int hookSpot, int loopSpot, int mode)
 {
-  m_hook = hook->id();
-  m_loop = loop->id();
-  m_hookChain = hook;
-  m_loopChain = loop;
+  _init(hook->id(), loop->id(), hookSpot, loopSpot, mode, hook, loop);
+}
+
+void ZLocsegChainConn::_init(int hook, int loop, int hookSpot, int loopSpot,
+                             int mode, ZLocsegChain *hookChain,
+                             ZLocsegChain *loopChain)
+{
+  m_hook = hook;
+  m_loop = loop;
   m_hookSpot = hookSpot;
   m_loopSpot = loopSpot;
   m_mode = mode;
+  m_hookChain = hookChain;
+  m_loopChain = loopChain;
+  m_type = ZStackObject::TYPE_CONN;
 }
 
 ZLocsegChainConn::~ZLocsegChainConn()
@@ -53,9 +53,11 @@ void ZLocsegChainConn::save(const char *filePath)
   UNUSED_PARAMETER(filePath);
 }
 
-void ZLocsegChainConn::load(const char *filePath)
+bool ZLocsegChainConn::load(const char *filePath)
 {
   UNUSED_PARAMETER(filePath);
+
+  return false;
 }
 
 void ZLocsegChainConn::display(ZPainter &painter, int z, Display_Style option) const
@@ -175,12 +177,12 @@ void ZLocsegChainConn::writeXml(QXmlStreamWriter &xml)
   xml.writeStartElement("connection");
 
   xml.writeStartElement("hook");
-  xml.writeTextElement("filePath", m_hookChain->source());
+  xml.writeTextElement("filePath", m_hookChain->getSource().c_str());
   xml.writeTextElement("spot", QString("%1").arg(m_hookSpot));
   xml.writeEndElement();
 
   xml.writeStartElement("loop");
-  xml.writeTextElement("filePath", m_loopChain->source());
+  xml.writeTextElement("filePath", m_loopChain->getSource().c_str());
   xml.writeTextElement("spot", QString("%1").arg(m_loopSpot));
   xml.writeEndElement();
 
@@ -195,9 +197,9 @@ void ZLocsegChainConn::print()
 {
   std::cout << "conn" << std::endl;
   std::cout << m_mode << std::endl;
-  std::cout << m_hookChain->source().toLocal8Bit().constData() << std::endl;
+  std::cout << m_hookChain->getSource() << std::endl;
   std::cout << m_hookSpot << std::endl;
-  std::cout << m_loopChain->source().toLocal8Bit().constData() << std::endl;
+  std::cout << m_loopChain->getSource() << std::endl;
   std::cout << m_loopSpot << std::endl;
 }
 
@@ -215,4 +217,4 @@ void ZLocsegChainConn::translateMode()
   }
 }
 
-ZINTERFACE_DEFINE_CLASS_NAME(ZLocsegChainConn)
+ZSTACKOBJECT_DEFINE_CLASS_NAME(ZLocsegChainConn)

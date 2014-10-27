@@ -3,6 +3,8 @@
 #include <iostream>
 #include "zjsonobject.h"
 #include "zjsonparser.h"
+#include "zstring.h"
+#include "zgraph.h"
 
 ZPointArray::ZPointArray()
 {
@@ -122,4 +124,100 @@ ZCuboid ZPointArray::getBoundBox() const
   }
 
   return boundBox;
+}
+
+ZPoint ZPointArray::computeCenter() const
+{
+  ZPoint center(0.0, 0.0, 0.0);
+  if (!empty()) {
+    for (const_iterator iter = begin(); iter != end(); ++iter) {
+      center += *iter;
+    }
+
+    center /= size();
+  }
+
+  return center;
+}
+
+bool ZPointArray::isEmpty() const
+{
+  return empty();
+}
+
+std::vector<double> ZPointArray::computePlaneCov() const
+{
+  std::vector<double> cov(3, 0.0);
+
+  if (!isEmpty()) {
+    double xMean = 0.0;
+    double yMean = 0.0;
+    double xSquareMean = 0.0;
+    double ySquareMean = 0.0;
+    double xyCorr = 0.0;
+
+    size_t count = 0;
+    for (ZPointArray::const_iterator iter = begin(); iter != end(); ++iter) {
+      const ZPoint &pt = *iter;
+      xMean += pt.x();
+      xSquareMean += pt.x() * pt.x();
+      yMean += pt.y();
+      ySquareMean += pt.y() * pt.y();
+      xyCorr += pt.x() * pt.y();
+      ++count;
+    }
+
+    xMean /= count;
+    yMean /= count;
+    xSquareMean /= count;
+    ySquareMean /= count;
+    xyCorr /= count;
+
+#ifdef _DEBUG_2
+    std::cout << count << std::endl;
+#endif
+
+    double factor = 1.0;
+    if (count > 1) {
+      factor = static_cast<double>(count) / (count - 1);
+    }
+
+    cov[0] = (xSquareMean - xMean * xMean) * factor;
+    cov[1] = (ySquareMean - yMean * yMean) * factor;
+    cov[2] = (xyCorr - xMean * yMean) * factor;
+  }
+
+  return cov;
+}
+
+void ZPointArray::importTxtFile(const std::string &filePath)
+{
+  clear();
+  ZString str;
+  FILE *fp = fopen(filePath.c_str(), "r");
+  if (fp != NULL) {
+    while (str.readLine(fp)) {
+      std::vector<int> coord = str.toIntegerArray();
+      if (coord.size() == 3) {
+        append(coord[0], coord[1], coord[2]);
+      }
+    }
+  }
+  fclose(fp);
+}
+
+ZGraph* ZPointArray::computeDistanceGraph(double maxDist) const
+{
+  ZGraph *graph = new ZGraph(ZGraph::UNDIRECTED_WITH_WEIGHT);
+  for (size_t i = 0; i < size(); ++i) {
+    const ZPoint &pt1 = (*this)[i];
+    for (size_t j = i + 1; j < size(); ++j) {
+      const ZPoint &pt2 = (*this)[j];
+      double d = pt1.distanceTo(pt2);
+      if (d <= maxDist) {
+        graph->addEdgeFast(i, j, d);
+      }
+    }
+  }
+  return graph;
 }

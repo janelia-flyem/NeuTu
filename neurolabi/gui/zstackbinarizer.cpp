@@ -47,7 +47,7 @@ bool ZStackBinarizer::binarize(Stack *stack)
     hist = Stack_Hist(refStack);
     break;
   case BM_LOCMAX:
-    hist = computLocmaxHist(refStack);
+    hist = computeLocmaxHist(refStack);
   default:
     break;
   }
@@ -115,7 +115,7 @@ bool ZStackBinarizer::binarize(Stack *stack)
   return true;
 }
 
-int* ZStackBinarizer::computLocmaxHist(const Stack *stack)
+int* ZStackBinarizer::computeLocmaxHist(const Stack *stack)
 {
   int conn = 18;
   Stack *locmax = Stack_Locmax_Region(stack, conn);

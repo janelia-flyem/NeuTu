@@ -1,0 +1,43 @@
+{
+  "dvid repo": [
+    {
+      "address": "emdata.janelia.org",
+      "uuid": "bf1",
+      "name": "FIB-external",
+      "comment": "One column data"
+    },
+    {
+      "address": "emdata2.int.janelia.org",
+      "uuid": "faa",
+      "name": "FIB25-0715",
+      "comment": "FIB-25 export 2014-07-15"
+    },
+    {
+      "address": "emdata2.int.janelia.org",
+      "uuid": "2b6c",
+      "name": "FIB25-0926",
+      "comment": "FIB-25 export 2014-09-26"
+    },
+    {
+      "address": "emdata2.int.janelia.org",
+      "uuid": "628",
+      "name": "MB-6",
+      "comment": "Mushroom body MB-6 (7567 x 11140 x 14625)"
+    },
+    {
+      "address": "emdata2.int.janelia.org",
+      "uuid": "134",
+      "name": "AL-7-DEBUG",
+      "comment": "AL-Z1213-07",
+      "local": "/Users/zhaot/Work/neutube/neurolabi/data/flyem/AL",
+      "debug": true
+    },
+    {
+      "address": "emdata2.int.janelia.org",
+      "uuid": "134",
+      "name": "AL-7",
+      "comment": "AL-Z1213-07",
+      "local": "/groups/flyem/data/zhaot/local/AL"
+    }
+  ]
+}

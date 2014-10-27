@@ -9,6 +9,7 @@
 #include "zjsonparser.h"
 
 class ZNormColorMap;
+class ZObject3d;
 
 enum EGraphShape {
   GRAPH_NO_SHAPE, GRAPH_BALL, GRAPH_CYLINDER, GRAPH_LINE
@@ -86,8 +87,11 @@ class Z3DGraph
 public:
   Z3DGraph();
 
-  inline size_t getNodeNumber() { return m_nodeArray.size(); }
-  inline size_t getEdgeNumber() { return m_edgeArray.size(); }
+public:
+  bool isEmpty() const;
+
+  inline size_t getNodeNumber() const { return m_nodeArray.size(); }
+  inline size_t getEdgeNumber() const { return m_edgeArray.size(); }
 
   inline Z3DGraphNode getNode(size_t index) {
     return m_nodeArray[index];
@@ -104,10 +108,15 @@ public:
     return m_nodeArray[m_edgeArray[index].vt()];
   }
 
+  void append(const Z3DGraph &graph);
+
+  void clear();
+
 public:
   void importPointNetwork(const ZPointNetwork &pointNetwork,
                           ZNormColorMap *colorMap = NULL);
   void importJsonFile(const std::string &filePath);
+  void importObject3d(const ZObject3d &obj, double radius, int sampleStep);
 
   void print();
 

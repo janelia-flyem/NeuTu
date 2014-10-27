@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>ShapePaperDialog</class>
+ <widget class="QDialog" name="ShapePaperDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>234</width>
+    <height>444</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Shape Analysis</string>
+  </property>
+  <widget class="QWidget" name="layoutWidget">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>10</y>
+     <width>212</width>
+     <height>423</height>
+    </rect>
+   </property>
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <item>
+     <widget class="QPushButton" name="configPushButton">
+      <property name="text">
+       <string>Config</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QPushButton" name="sparseObjectPushButton">
+      <property name="text">
+       <string>Generate Sparse Objects</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QPushButton" name="dataBundlePushButton">
+      <property name="text">
+       <string>Load Data Bundle</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QPushButton" name="allResultPushButton">
+      <property name="text">
+       <string>Generate All Result Files</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QPushButton" name="simmatPushButton">
+      <property name="text">
+       <string>Compute Similarity Matrix</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QPushButton" name="featurePushButton">
+      <property name="text">
+       <string>Compute Features</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QPushButton" name="predictPushButton">
+      <property name="text">
+       <string>Class Prediction</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QPushButton" name="pushButton_6">
+      <property name="text">
+       <string>Generate Confusion Matrix</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QPushButton" name="clusteringPushButton">
+      <property name="text">
+       <string>Clustering</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QPushButton" name="dendrogramPushButton">
+      <property name="text">
+       <string>Dendrogram</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QTextEdit" name="messageTextEdit">
+      <property name="readOnly">
+       <bool>true</bool>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

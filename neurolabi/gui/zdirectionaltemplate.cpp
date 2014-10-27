@@ -13,7 +13,7 @@ ZDirectionalTemplate::ZDirectionalTemplate(const Trace_Record &tr)
 }
 
 ZDirectionalTemplate::ZDirectionalTemplate(const ZDirectionalTemplate &dt) :
-    ZInterface(dt.isSelected()), ZStackDrawable(dt)
+    ZStackObject(dt)
 {
   Trace_Record_Copy(&m_tr, &dt.m_tr);
 }

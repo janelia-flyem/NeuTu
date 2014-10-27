@@ -89,6 +89,8 @@ public:
   std::set<int> getNeighborSet(const std::vector<int> &vertexArray) const;
 
   void print() const;
+  void printInfo() const;
+
   void exportDotFile(const std::string &filePath) const;
   void exportDotFile(const std::string &filePath,
                      const std::vector<bool> &labeled) const;

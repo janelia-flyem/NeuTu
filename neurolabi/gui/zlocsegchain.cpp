@@ -18,8 +18,7 @@ ZLocsegChain::ZLocsegChain(Local_Neuroseg *locseg)
   init(chain);
 }
 
-ZLocsegChain::ZLocsegChain(const ZLocsegChain &zlocseg)
-  : ZInterface(), ZDocumentable(), ZStackDrawable(), ZSwcExportable(), ZVrmlExportable()
+ZLocsegChain::ZLocsegChain(const ZLocsegChain &zlocseg) : ZStackObject(zlocseg)
 {
   m_chain = NULL;
   copyData(zlocseg.m_chain);
@@ -52,7 +51,8 @@ void ZLocsegChain::init(Locseg_Chain *chain)
   m_endColor.setRgb(0, 0, 255, 255);
 
   m_source = "traced";
-  setTarget(ZStackDrawable::OBJECT_CANVAS);
+  setTarget(ZStackObject::OBJECT_CANVAS);
+  m_type = ZStackObject::TYPE_LOCSEG_CHAIN;
 }
 
 ZLocsegChain::~ZLocsegChain()
@@ -215,10 +215,10 @@ void ZLocsegChain::vrmlFprint(FILE *fp, const Vrml_Material *material,
 void ZLocsegChain::save(const char *filePath)
 {
   Write_Locseg_Chain(filePath, m_chain);
-  m_source = QString(filePath);
+  m_source = filePath;
 }
 
-void ZLocsegChain::load(const char *filePath)
+bool ZLocsegChain::load(const char *filePath)
 {
   if (m_chain != NULL) {
     Kill_Locseg_Chain(m_chain);
@@ -226,7 +226,9 @@ void ZLocsegChain::load(const char *filePath)
 
   m_chain = Read_Locseg_Chain(filePath);
   updateBufferChain();
-  m_source = QString(filePath);
+  m_source = filePath;
+
+  return true;
 }
 
 void ZLocsegChain::labelTraceMask(Stack *mask, int overwrite)
@@ -282,7 +284,7 @@ double ZLocsegChain::holdClosestSeg(double x, double y, double z)
 
 void ZLocsegChain::setSelected(bool selected)
 {
-  ZStackDrawable::setSelected(selected);
+  ZStackObject::setSelected(selected);
 }
 
 Local_Neuroseg* ZLocsegChain::heldNeuroseg()
@@ -384,8 +386,8 @@ QStringList ZLocsegChain::toStringList(const Stack *stack)
 {
   QStringList list;
   list.append(QString("Chain %1: %2 segments").arg(m_id).arg(length()));
-  if (m_source.isEmpty() == false) {
-    list.append(m_source);
+  if (m_source.empty() == false) {
+    list.append(m_source.c_str());
   }
 
   if (stack != NULL) {
@@ -779,4 +781,4 @@ void ZLocsegChain::tailPosition(double pos[]) const
     m_bufferChain[m_bufferChain.size()-1].bottomPosition(pos);
 }
 
-ZINTERFACE_DEFINE_CLASS_NAME(ZLocsegChain)
+ZSTACKOBJECT_DEFINE_CLASS_NAME(ZLocsegChain)

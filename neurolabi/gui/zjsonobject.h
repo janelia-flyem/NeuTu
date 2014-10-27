@@ -13,6 +13,7 @@ class ZJsonObject : public ZJsonValue
 {
 public:
   explicit ZJsonObject(json_t *json, bool asNew);
+  explicit ZJsonObject(json_t *data, ESetDataOption option);
   ZJsonObject();
   ZJsonObject(const ZJsonObject &obj);
   virtual ~ZJsonObject();
@@ -43,11 +44,6 @@ public:
 
   std::string summary();
   std::map<std::string, json_t*> toEntryMap(bool recursive = true) const;
-
-  /*!
-   * \brief Dump the object to a string.
-   */
-  std::string dumpString();
 
   /*!
    * \brief Test if a key is valid
@@ -111,12 +107,6 @@ public:
    */
   void setEntry(const char *key, ZJsonValue &value);
 
-  /*!
-   * \brief Save the json object into a file
-   *
-   * \return true iff write succeeds.
-   */
-  bool dump(const std::string &path) const;
 
   /*!
    * \brief Test if a key exists

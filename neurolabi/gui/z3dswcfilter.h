@@ -140,6 +140,8 @@ private:
       const std::map<ZSwcTree*, ZVec4Parameter*>& mapper,
       std::vector<ZWidgetsGroup*> &widgetGroup);
 
+  void clearDecorateSwcList();
+
 private:
   Z3DLineRenderer *m_lineRenderer;
   Z3DConeRenderer *m_coneRenderer;
@@ -167,6 +169,7 @@ private:
   // the visibility of each single swc tree.
   std::vector<ZSwcTree*> m_swcList;
   std::vector<ZSwcTree*> m_registeredSwcList;    // used for picking
+  std::vector<ZSwcTree*> m_decorateSwcList;  //For decoration. Self-owned.
   std::vector<Swc_Tree_Node*> m_registeredSwcTreeNodeList;    // used for picking
 
   ZEventListenerParameter* m_selectSwcEvent;

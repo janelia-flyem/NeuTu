@@ -105,7 +105,7 @@ ZStack* ZFlyEmStackDoc::stackMask() const
   return getSegmentation();
 }
 
-ZStack* ZFlyEmStackDoc::stack() const
+ZStack* ZFlyEmStackDoc::getStack() const
 {
   if (m_segmentationBundle.getGreyScaleStack() != NULL) {
     return m_segmentationBundle.getGreyScaleStack();

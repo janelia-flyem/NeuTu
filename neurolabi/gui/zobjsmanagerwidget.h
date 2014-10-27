@@ -53,6 +53,7 @@ protected:
   QTreeView *m_swcObjsTreeView;
   QTreeView *m_swcNodeObjsTreeView;
   QTreeView *m_punctaObjsTreeView;
+  QTreeView *m_seedObjsTreeView;
   QSortFilterProxyModel *m_punctaProxyModel;
 };
 

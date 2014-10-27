@@ -15,8 +15,8 @@ public:
   explicit StartSettingDialog(QWidget *parent = 0);
   ~StartSettingDialog();
 
-  QString getAutosaveDir();
-  void setAutoSaveDir(const QString &dir);
+  QString getWorkDir();
+  void setWorkDir(const QString &dir);
   
 private slots:
   void on_pushButton_clicked();

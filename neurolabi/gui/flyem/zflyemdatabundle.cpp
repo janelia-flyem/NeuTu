@@ -16,7 +16,10 @@
 #include "dvid/zdvidreader.h"
 #include "dvid/zdvidtarget.h"
 #include "dvid/zdvidfilter.h"
+#include "dvid/zdvidwriter.h"
 #include "zflyemdvidreader.h"
+#include "flyem/zintcuboidarray.h"
+#include "zfiletype.h"
 
 using namespace std;
 
@@ -41,7 +44,7 @@ const double ZFlyEmDataBundle::m_layerRatio[11] = {
   0.0, 0.1, 0.2, 0.3, 0.35, 0.43, 0.54, 0.66, 0.73, 0.91, 1.0};
 */
 ZFlyEmDataBundle::ZFlyEmDataBundle() : m_synapseScale(10.0),
-  m_synaseAnnotation(NULL), m_colorMap(NULL)
+  m_boundBox(NULL), m_synaseAnnotation(NULL), m_colorMap(NULL)
 {
   for (int k = 0; k < 3; ++k) {
     m_swcResolution[k] = 1.0;
@@ -54,6 +57,7 @@ ZFlyEmDataBundle::ZFlyEmDataBundle() : m_synapseScale(10.0),
 ZFlyEmDataBundle::~ZFlyEmDataBundle()
 {
   deprecate(ALL_COMPONENT);
+  delete m_boundBox;
 }
 
 bool ZFlyEmDataBundle::isDeprecated(EComponent comp) const
@@ -122,7 +126,7 @@ bool ZFlyEmDataBundle::loadDvid(const ZDvidFilter &dvidFilter)
   dvidInfo.setFromJsonString(info.toStdString());
   dvidInfo.print();
 
-  const std::vector<double> &voxelResolution = dvidInfo.getVoxelResolution();
+  const ZResolution &voxelResolution = dvidInfo.getVoxelResolution();
   const ZIntPoint &sourceOffset = dvidInfo.getStartCoordinates();
   const std::vector<int> &stackSize = dvidInfo.getStackSize();
 
@@ -141,6 +145,9 @@ bool ZFlyEmDataBundle::loadDvid(const ZDvidFilter &dvidFilter)
 
   ZFlyEmDvidReader fdReader;
   fdReader.open(dvidFilter.getDvidTarget());
+
+   m_synapseAnnotationFile = dvidTarget.getSourceString();
+
   size_t i = 0;
   for (std::set<int>::const_iterator iter = bodySet.begin();
        iter != bodySet.end(); ++iter, ++i) {
@@ -150,7 +157,10 @@ bool ZFlyEmDataBundle::loadDvid(const ZDvidFilter &dvidFilter)
       neuron.setId(bodyId);
       neuron.setModelPath(m_source);
       neuron.setVolumePath(m_source);
+      neuron.setThumbnailPath(m_source);
       neuron.setResolution(m_swcResolution);
+      neuron.setSynapseAnnotation(getSynapseAnnotation());
+      neuron.setSynapseScale(90);
 
       ZFlyEmBodyAnnotation annotation = fdReader.readAnnotation(bodyId);
       if (!annotation.getName().empty()) {
@@ -168,6 +178,16 @@ bool ZFlyEmDataBundle::loadDvid(const ZDvidFilter &dvidFilter)
     }
   }
   m_neuronArray.resize(realSize);
+
+  //Load synapses
+//  if (fdReader.open(dvidTarget)) {
+//    QStringList synapseList = fdReader.readSynapseList();
+//    //qDebug() << synapseList;
+
+//    ZJsonObject obj = fdReader.readSynapseAnnotation(synapseList[0]);
+
+//    //obj.print();
+//  }
 
   return true;
 }
@@ -274,9 +294,7 @@ bool ZFlyEmDataBundle::loadJsonFile(const std::string &filePath)
       if (!path.isAbsolutePath()) {
         path = ZString::absolutePath(ZString(m_source).dirPath(), path);
       }
-      m_boundBox.load(path);
-      m_boundBox.rescale(
-            m_swcResolution[0], m_swcResolution[1], m_swcResolution[2]);
+      importBoundBox(path);
     }
 
     json_t *serverObj = bundleObject[ZFlyEmDataBundle::m_serverKey];
@@ -512,7 +530,7 @@ FlyEm::ZSynapseAnnotationArray* ZFlyEmDataBundle::getSynapseAnnotation() const
         path = ZString::absolutePath(ZString(m_source).dirPath(), path);
       }
 
-      if (fexist(path.c_str())) {
+      if (fexist(path.c_str()) || ZString(path).startsWith("http:")) {
         m_synaseAnnotation = new FlyEm::ZSynapseAnnotationArray;
         m_synaseAnnotation->loadJson(path);
         m_synaseAnnotation->setResolution(m_imageResolution);
@@ -619,6 +637,20 @@ int ZFlyEmDataBundle::getSourceDimension(NeuTube::EAxis axis) const
   return 0;
 }
 
+int ZFlyEmDataBundle::getSourceOffset(NeuTube::EAxis axis) const
+{
+  switch (axis) {
+  case NeuTube::X_AXIS:
+    return m_sourceOffset[0];
+  case NeuTube::Y_AXIS:
+    return m_sourceOffset[1];
+  case NeuTube::Z_AXIS:
+    return m_sourceOffset[2];
+  }
+
+  return 0;
+}
+
 void ZFlyEmDataBundle::exportJsonFile(const string &path) const
 {
   ZJsonObject jsonObj(C_Json::makeObject(), true);
@@ -632,7 +664,8 @@ void ZFlyEmDataBundle::exportJsonFile(const string &path) const
   for (std::vector<ZFlyEmNeuron>::const_iterator iter = m_neuronArray.begin();
        iter != m_neuronArray.end(); ++iter) {
     const ZFlyEmNeuron &neuron = *iter;
-    neuronArrayWrapper.append(neuron.makeJsonObject(exportDir));
+    ZJsonObject obj = neuron.makeJsonObject(exportDir);
+    neuronArrayWrapper.append(obj);
   }
 
 #ifdef _DEBUG_2
@@ -786,7 +819,7 @@ void ZFlyEmDataBundle::submitSkeletonizeService() const
     const ZFlyEmNeuron &neuron = *iter;
     std::string path = neuron.getModelPath();
     ZDvidTarget target;
-    target.set(path);
+    target.setFromSourceString(path);
 
     if (target.isValid()) {
       /*
@@ -810,6 +843,50 @@ void ZFlyEmDataBundle::submitSkeletonizeService() const
       qDebug() << args;
       process.start(command, args);
       process.waitForFinished(300000);
+    }
+  }
+}
+
+bool ZFlyEmDataBundle::hasBoundBox() const
+{
+  if (m_boundBox != NULL) {
+    return !m_boundBox->isEmpty();
+  }
+
+  return false;
+}
+
+void ZFlyEmDataBundle::importBoundBox(const string &filePath)
+{
+  if (m_boundBox != NULL) {
+    delete m_boundBox;
+    m_boundBox = NULL;
+  }
+
+  if (ZFileType::fileType(filePath) == ZFileType::SWC_FILE) {
+    m_boundBox = new ZSwcTree;
+    m_boundBox->load(filePath);
+  } else {
+    FlyEm::ZIntCuboidArray blockArray;
+    blockArray.loadSubstackList(filePath);
+    m_boundBox = blockArray.toSwc();
+  }
+
+  m_boundBox->rescale(
+        m_swcResolution[0], m_swcResolution[1], m_swcResolution[2]);
+}
+
+void ZFlyEmDataBundle::uploadAnnotation(const ZDvidTarget &dvidTarget) const
+{
+  ZDvidWriter writer;
+  if (writer.open(dvidTarget)) {
+    //for each neuron, update annotation
+    for (ZFlyEmNeuronArray::const_iterator iter = m_neuronArray.begin();
+         iter != m_neuronArray.end(); ++iter) {
+      const ZFlyEmNeuron &neuron = *iter;
+      if (!neuron.getName().empty() || !neuron.getClass().empty()) {
+        writer.writeAnnotation(neuron);
+      }
     }
   }
 }

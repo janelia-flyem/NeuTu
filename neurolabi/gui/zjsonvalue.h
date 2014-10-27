@@ -10,8 +10,13 @@
 class ZJsonValue
 {
 public:
+  enum ESetDataOption {
+    SET_INCREASE_REF_COUNT, SET_AS_IT_IS, SET_DEEP_COPY, SET_SHALLOW_COPY
+  };
+
   ZJsonValue();
   ZJsonValue(const ZJsonValue &value);
+
   /*!
    * \brief Constructor
    *
@@ -19,6 +24,8 @@ public:
    * \param asNew Take it as a new value or just increase its reference count
    */
   ZJsonValue(json_t *data, bool asNew);
+
+  ZJsonValue(json_t *data, ESetDataOption option);
 
   /*!
    * \brief Constructor
@@ -28,6 +35,7 @@ public:
    * \param data The input integer
    */
   ZJsonValue(int data);
+  ZJsonValue(double data);
   ZJsonValue(const char *data);
 
   ZJsonValue& operator= (const ZJsonValue &value);
@@ -47,11 +55,18 @@ public:
   bool isBoolean();
   virtual bool isEmpty() const;
 
-  int getInteger();
-  double getReal();
-  const char *getString();
+  /*!
+   * \brief Get the integer value of the json value.
+   *
+   * \return 0 if the object is not a json integer.
+   */
+  int toInteger() const;
+
+  double toReal();
+  const char *toString();
 
   void set(json_t *data, bool asNew);
+  void set(json_t *data, ESetDataOption option);
 
   /*!
    * \brief Obsolete. Will be removed.
@@ -72,6 +87,18 @@ public:
    * \brief Get a string describing the current error
    */
   std::string getErrorString() const;
+
+  /*!
+   * \brief Dump the object to a string.
+   */
+  std::string dumpString(int indent = 2) const;
+
+  /*!
+   * \brief Save the json value into a file
+   *
+   * \return true iff write succeeds.
+   */
+  bool dump(const std::string &path) const;
 
 protected:
   json_error_t m_error;

@@ -20,20 +20,20 @@
                          //    your machine (not the number of threads you can spawn).
                          //    Typically this equals the number of cores.
 
-#define  M(x) x   //  parameter x is (M)odified by the routine, i.e. input & output
-#define  O(x) x   //  parameter x is set by the routine, i.e. (O)utput only
+#define  _M(x) x   //  parameter x is (M)odified by the routine, i.e. input & output
+#define  _O(x) x   //  parameter x is set by the routine, i.e. (O)utput only
 
-#define  G(x) x   //  function is a (G)enerator.  If function returns a bundle then all objects of
+#define  _G(x) x   //  function is a (G)enerator.  If function returns a bundle then all objects of
                   //    the bundle are generated (but not the bundle!)
-#define  R(x) x   //  parameter x is the (R)eturn value
+#define  _R(x) x   //  parameter x is the (R)eturn value
 
-#define  I(x) x   //  parameter x has its reference count (I)ncremented
-#define  C(x) x   //  a reference to parameter x is (C) consumed
-#define  S(x) x   //  a reference to parameter x is (S) subsumed, i.e. made a (S)ub-object
-#define  F(x) x   //  parameter x is (F)reed by the routine
-#define  K(x) x   //  parameter x is (K)illed by the routine
+#define  _I(x) x   //  parameter x has its reference count (I)ncremented
+#define  _C(x) x   //  a reference to parameter x is (C) consumed
+#define  _S(x) x   //  a reference to parameter x is (S) subsumed, i.e. made a (S)ub-object
+#define  _F(x) x   //  parameter x is (F)reed by the routine
+#define  _K(x) x   //  parameter x is (K)illed by the routine
 
-#define  X(x)     //  comment on parameters or effect of routine
+#define  _X(x)     //  comment on parameters or effect of routine
 
 #define DIMN_TYPE  INT32_TYPE
 #define INDX_TYPE  INT64_TYPE

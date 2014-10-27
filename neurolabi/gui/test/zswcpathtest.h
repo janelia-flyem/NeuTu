@@ -23,7 +23,7 @@ static void createSwcPath(ZSwcPath *path)
 TEST(TestSwcPath, TestGetProperty) {
   ZSwcPath path;
   createSwcPath(&path);
-  ASSERT_EQ(path.isContinuous(), true);
+  ASSERT_TRUE(path.isContinuous());
   ASSERT_EQ((int) path.size(), 3);
   for (ZSwcPath::const_iterator iter = path.begin();
        iter != path.end(); ++iter) {

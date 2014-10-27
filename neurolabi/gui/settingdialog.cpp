@@ -2,6 +2,7 @@
 
 #include "settingdialog.h"
 #include "neutubeconfig.h"
+#include "zresolution.h"
 
 SettingDialog::SettingDialog(QWidget *parent) : QDialog(parent)
 {
@@ -75,11 +76,31 @@ void SettingDialog::resetWidgetValue()
   updateOverview();
 }
 
-void SettingDialog::setResolution(const double *res, int unit)
+void SettingDialog::setResolution(const ZResolution &res)
 {
-  m_resolution[0] = res[0];
-  m_resolution[1] = res[1];
-  m_resolution[2] = res[2];
+  int unit = 0;
+  switch (res.unit()) {
+  case 'p':
+    unit = 0;
+    break;
+  case 'u':
+    unit = 1;
+    break;
+  case 'n':
+    unit = 2;
+    break;
+  default:
+    break;
+  }
+
+  setResolution(res.voxelSizeX(), res.voxelSizeY(), res.voxelSizeZ(), unit);
+}
+
+void SettingDialog::setResolution(double x, double y, double z, int unit)
+{
+  m_resolution[0] = x;
+  m_resolution[1] = y;
+  m_resolution[2] = z;
   XResSpinBox->setValue(m_resolution[0]);
   YResSpinBox->setValue(m_resolution[1]);
   ZResSpinBox->setValue(m_resolution[2]);

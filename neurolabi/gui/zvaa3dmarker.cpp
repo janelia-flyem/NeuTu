@@ -38,7 +38,7 @@ void ZVaa3dMarker::moveToSurface(Swc_Tree *tree)
   m_center += ZPoint(tn->node.x, tn->node.y, tn->node.z);
 }
 
-string ZVaa3dMarker::toString()
+string ZVaa3dMarker::toString() const
 {
   ostringstream stream;
 

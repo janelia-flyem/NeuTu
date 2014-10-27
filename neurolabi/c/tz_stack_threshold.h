@@ -74,6 +74,7 @@ int Stack_Threshold_Quantile(Stack* stack, double q);
 
 /**@brief RC thresholding.
  */
+int Stack_Find_Threshold_RC(Stack* stack, int low, int high);
 int Stack_Threshold_RC(Stack* stack, int low, int high);
 
 /**@brief Triangle thresholding.

@@ -69,7 +69,7 @@ std::vector<double> ZFlyEmNeuronFeatureAnalyzer::computeFeatureSet(
 
   std::vector<double> featureSet =
       ZSwcGlobalFeatureAnalyzer::computeFeatureSet(
-        *tree, ZSwcGlobalFeatureAnalyzer::NGF1);
+        *tree, ZSwcGlobalFeatureAnalyzer::NGF2);
 
   int layer = computeMostSpreadedLayer(neuron);
   featureSet.push_back(layer);

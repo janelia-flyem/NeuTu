@@ -92,11 +92,18 @@ public:
 
   void print() const;
 
+  inline void useOriginalSignal(bool state) {
+    m_usingOriginalSignal = state;
+  }
+
 private:
   /*!
    * \a stack will be destroyed after the function call.
    */
   ZSwcTree *makeSkeletonWithoutDs(Stack *stack);
+
+  ZSwcTree *makeSkeletonWithoutDsTest(Stack *stack);
+
 
 private:
   double m_lengthThreshold;
@@ -111,6 +118,7 @@ private:
   bool m_connectingBranch;
   double m_resolution[3];
   int m_downsampleInterval[3];
+  bool m_usingOriginalSignal;
 };
 
 #endif // ZSTACKSKELETONIZER_H

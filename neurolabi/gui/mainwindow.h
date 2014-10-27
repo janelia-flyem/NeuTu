@@ -8,6 +8,7 @@
 #include <QMainWindow>
 #include <QMap>
 #include <QFileDialog>
+#include <QSettings>
 
 #include "tz_image_lib_defs.h"
 #include "frameinfodialog.h"
@@ -18,6 +19,7 @@
 #include "zactionactivator.h"
 #include "flyemneuronthumbnaildialog.h"
 #include "zstackdoc.h"
+#include "newprojectmainwindow.h"
 
 class ZStackFrame;
 class QMdiArea;
@@ -39,12 +41,19 @@ class ZDvidClient;
 class DvidObjectDialog;
 class ResolutionDialog;
 class DvidImageDialog;
-class TileManagerDialog;
+class TileManager;
 class ZTiledStackFrame;
 class FlyEmBodyIdDialog;
 class FlyEmHotSpotDialog;
 class ZDvidDialog;
 class FlyEmBodyFilterDialog;
+class FlyEmBodySplitProjectDialog;
+class ZFlyEmNewBodySplitProjectDialog;
+class DvidSkeletonizeDialog;
+class ZFlyEmRoiDialog;
+class NewProjectMainWindow;
+class ShapePaperDialog;
+class DvidOperateDialog;
 
 namespace Ui {
     class MainWindow;
@@ -67,6 +76,33 @@ public: /* frame operation */
   void initOpenglContext();
   void config();
 
+  bool initBodySplitProject();
+  //void initBodySplitProjectFunc();
+
+  QString getOpenFileName(const QString &caption,
+                          const QString &filter = QString());
+  QStringList getOpenFileNames(const QString &caption,
+                               const QString &filter = QString());
+  QString getSaveFileName(const QString &caption,
+                          const QString &filter = QString());
+  QString getSaveFileName(const QString &caption,
+                          const QString &filter,
+                          const QString &dir);
+  QString getDirectory(const QString &caption);
+
+  //Error handling
+  void report(const std::string &title, const std::string &msg,
+              ZMessageReporter::EMessageType msgType);
+  bool ask(const std::string &title, const std::string &msg);
+
+  QProgressDialog* getProgressDialog();
+  QProgressBar* getProgressBar();
+
+  static void createWorkDir();
+
+  //Add a flyem data frame. Nothing happens if <frame> is NULL.
+  void addFlyEmDataFrame(ZFlyEmDataFrame *frame);
+
 signals:
   void dvidRequestCanceled();
   void progressDone();
@@ -77,11 +113,14 @@ public slots:
   void addStackFrame(ZStackFrame *frame, bool isReady = true);
   void presentStackFrame(ZStackFrame *frame);
   void openFile(const QString &fileName);
+  void openFile(const QStringList &fileNameList);
   void advanceProgress();
 
   void updateAction();
   void updateMenu();
   void updateStatusBar();
+
+  void on_actionTile_Manager_2_triggered();
 
   ZStackFrame* createEmptyStackFrame(ZStackFrame *parentFrame = NULL);
 
@@ -103,6 +142,9 @@ public slots:
 */
   ZStackFrame* createStackFrame(
       ZStackDocReader *reader, ZStackFrame *parentFrame = NULL);
+  ZStackFrame* createStackFrame(
+      const ZStackDocReader &reader,
+      NeuTube::Document::ETag tag = NeuTube::Document::NORMAL);
 
   void showStackFrame(
       const QStringList &fileList, bool opening3DWindow = false);
@@ -115,10 +157,12 @@ public slots:
 private:
   Ui::MainWindow *m_ui;
 
-  QProgressDialog* getProgressDialog();
-  QProgressBar* getProgressBar();
-
   void setActionActivity();
+
+  void initDialog();
+  void checkVersion();
+
+  void testProgressBarFunc();
 
 protected:
   //a virtual function from QWidget. It is called when the window is closed.
@@ -127,16 +171,6 @@ protected:
   virtual void dragEnterEvent(QDragEnterEvent *event);
   virtual void dropEvent(QDropEvent *event);
 
-  QString getOpenFileName(const QString &caption,
-                          const QString &filter = QString());
-  QStringList getOpenFileNames(const QString &caption,
-                               const QString &filter = QString());
-  QString getSaveFileName(const QString &caption,
-                          const QString &filter = QString());
-  QString getSaveFileName(const QString &caption,
-                          const QString &filter,
-                          const QString &dir);
-  QString getDirectory(const QString &caption);
   void createActionMap();
 
   ZStackDocReader* openFileFunc(const QString &filePath);
@@ -161,7 +195,7 @@ private slots:
   void on_actionAbout_iTube_triggered();
   void on_actionBrightnessContrast_triggered();
   void on_actionProject_triggered();
-  void on_actionRefine_Ends_triggered();
+  //void on_actionRefine_Ends_triggered();
   void on_actionRemove_Small_triggered();
   void on_actionUpdate_triggered();
   void on_actionAutomatic_triggered();
@@ -182,14 +216,11 @@ private slots:
   void expandCurrentFrame();
 
   // for 'File->Export'
-  void exportSwc();
-  void exportVrml();
+  //void exportSwc();
   void exportBinary();
-  void exportNeuronStructureAsMultipleSwc();
-  void exportNeuronStructure();
   void exportChainFileList();
-  void exportTubeConnection();
-  void exportTubeConnectionFeat();
+  //void exportTubeConnection();
+  //void exportTubeConnectionFeat();
   void exportSvg();
   void exportTraceProject();
   void exportPuncta();
@@ -200,7 +231,7 @@ private slots:
   void importSwc();
   void importGoodTube();
   void importBadTube();
-  void importTubeConnection();
+  //void importTubeConnection();
   void importPuncta();
   void importImageSequence();
 
@@ -219,7 +250,7 @@ private slots:
   // slots for 'Tools' menu
   void activateInteractiveTrace(QAction *action);
   void activateInteractiveMarkPuncta(QAction *action);
-  void buildConn();
+  //void buildConn();
   void manageObjs();
   void binarize();
   void bwsolid();
@@ -248,157 +279,119 @@ private slots:
   void on_actionMedian_Filter_triggered();
 
   void on_actionDistance_Map_triggered();
-
   void on_actionShortest_Path_Flow_triggered();
-
   void on_actionExpand_Region_triggered();
-
   void on_actionDilate_triggered();
-
   void on_actionExtract_Neuron_triggered();
-
   void on_actionSkeletonization_triggered();
-
   void on_actionPixel_triggered();
 
   //Addictional actions of an frame when it's activated
   void evokeStackFrame(QMdiSubWindow *frame);
-
   void on_actionImport_Network_triggered();
-
   void on_actionAddSWC_triggered();
-
   void on_actionImage_Sequence_triggered();
-
   void on_actionAddFlyEmNeuron_Network_triggered();
-
   void on_actionSynapse_Annotation_triggered();
-
   void on_actionPosition_triggered();
-
   void on_actionImportMask_triggered();
-
   void on_actionFlyEmSelect_triggered();
-
   void on_actionImportSegmentation_triggered();
-
   void on_actionFlyEmClone_triggered();
-
   void on_actionClear_Decoration_triggered();
-
   void on_actionFlyEmGrow_triggered();
-
   void on_actionFlyEmSelect_connection_triggered();
-
   void on_actionAxon_Export_triggered();
-
   void on_actionExtract_body_triggered();
-
   void on_actionPredict_errors_triggered();
-
   void on_actionCompute_Features_triggered();
-
   void on_actionMexican_Hat_triggered();
-
   void on_actionInvert_triggered();
-
   void on_actionFlyEmQATrain_triggered();
-
   void on_actionUpdate_Configuration_triggered();
-
   void on_actionErrorClassifcationTrain_triggered();
-
   void on_actionErrorClassifcationPredict_triggered();
-
   void on_actionErrorClassifcationEvaluate_triggered();
-
   void on_actionErrorClassifcationComputeFeatures_triggered();
-
   void on_actionTem_Paper_Volume_Rendering_triggered();
-
   void on_actionTem_Paper_Neuron_Type_Figure_triggered();
-
   void on_actionBinary_SWC_triggered();
-
   void on_actionImportFlyEmDatabase_triggered();
-
   void on_actionMake_Movie_triggered();
-
   void on_actionOpen_3D_View_Without_Volume_triggered();
-
   void on_actionLoop_Analysis_triggered();
-
   void on_actionMorphological_Thinning_triggered();
-
   void on_actionAddMask_triggered();
-
   void on_actionMask_triggered();
-
   void on_actionShortcut_triggered();
-
   void on_actionMake_Projection_triggered();
-
   void on_actionMask_SWC_triggered();
-
   void on_actionAutosaved_Files_triggered();
-
   void on_actionDiagnosis_triggered();
-
   void on_actionSave_SWC_triggered();
-
   void on_actionSimilarity_Matrix_triggered();
-
   void on_actionSparse_objects_triggered();
-
   void on_actionDendrogram_triggered();
-
   void on_actionPen_Width_for_SWC_Display_triggered();
-
   void on_actionDVID_Object_triggered();
-
   void on_actionDvid_Object_triggered();
-
   void on_actionAssign_Clustering_triggered();
-
   void on_actionSWC_Rescaling_triggered();
-
   void on_actionSurface_detection_triggered();
-
   void on_actionMorphological_Features_triggered();
-
   void on_actionFeature_Selection_triggered();
-
   void on_actionGet_Grayscale_triggered();
-
-  void on_actionTile_Manager_2_triggered();
-
   void on_actionTiles_triggered();
-
+  void on_actionNewProject_triggered();
   void on_actionThumbnails_triggered();
-
   void on_actionBundle_triggered();
-
   void on_actionVolume_field_triggered();
-
   void on_actionThumbnails_2_triggered();
-
   void on_actionJSON_Point_List_triggered();
-
   void on_actionIdentify_Hot_Spot_triggered();
-
   void on_actionHot_Spot_Demo_triggered();
-
   void on_actionHDF5_Body_triggered();
-
   void on_actionDVID_Bundle_triggered();
-
   void on_actionSubmit_Skeletonize_triggered();
-
   void on_actionSplit_Region_triggered();
-
   void on_actionLoad_Body_with_Grayscale_triggered();
-
   void on_actionFlyEmSettings_triggered();
+
+  void on_actionView_Labeled_Regions_triggered();
+
+  void on_actionLoad_Large_Body_triggered();
+
+  void on_actionBody_Split_Project_triggered();
+
+  void on_actionSplit_Body_triggered();
+
+  void on_actionUpdate_Skeletons_triggered();
+
+  void on_actionCreate_Databundle_triggered();
+
+  void on_actionCreate_Thumbnails_triggered();
+  
+  void on_actionCreate_ROI_triggered();
+
+  void on_actionFlyEmROI_triggered();
+
+  void on_actionShape_Matching_triggered();
+
+  void on_actionOne_Column_triggered();
+
+  void on_actionOperateDvid_triggered();
+
+  void on_actionGenerate_Local_Grayscale_triggered();
+
+  void on_actionExport_Segmentation_Result_triggered();
+
+  void on_actionBody_Touching_Analysis_triggered();
+
+  void on_actionImportBoundBox_triggered();
+
+  void on_actionImportSeeds_triggered();
+
+  void on_actionUpload_Annotations_triggered();
 
 private:
   void createActions();
@@ -423,9 +416,10 @@ private:
   void saveFile(const QString &fileName);
   void openTraceProject(QString fileName);
   void setCurrentFile(const QString &fileName);
-  void createAutoSaveDir();
   void updateRecentFileActions();
   QString strippedName(const QString &fullFileName);
+
+  static QSettings& getSettings();
 
   void enableStackActions(bool b);
   void createUndoView();
@@ -440,14 +434,6 @@ private:
   //Report the problem when a file cannot be opened correctly.
   void reportFileOpenProblem(const QString &filePath,
                              const QString &reason = "");
-
-  //Add a flyem data frame. Nothing happens if <frame> is NULL.
-  void addFlyEmDataFrame(ZFlyEmDataFrame *frame);
-
-  //Error handling
-  void report(const std::string &title, const std::string &msg,
-              ZMessageReporter::EMessageType msgType);
-  bool ask(const std::string &title, const std::string &msg);
 
   ZStackDocReader* hotSpotDemo(int bodyId, const QString &dvidAddress,
                            const QString &dvidUuid);
@@ -574,7 +560,7 @@ private:
   ZSwcActionActivator m_swcActionActivator;
   QVector<ZActionActivator*> m_actionActivatorList;
 
-  FrameInfoDialog m_frameInfoDlg;
+  FrameInfoDialog *m_frameInfoDlg;
   QProgressDialog *m_progress;
   BcAdjustDialog *m_bcDlg;
   HelpDialog *m_helpDlg;
@@ -593,8 +579,8 @@ private:
   int m_frameCount;
 
 
-  MovieDialog m_movieDlg;
-  AutosaveSwcListDialog m_autosaveSwcDialog;
+  MovieDialog *m_movieDlg;
+  AutosaveSwcListDialog *m_autosaveSwcDialog;
 
   PenWidthDialog *m_penWidthDialog;
 
@@ -602,17 +588,29 @@ private:
 
   ZDvidClient *m_dvidClient;
   ZStackFrame *m_dvidFrame;
-  DvidObjectDialog *m_dvidObjectDlg;
+  //DvidObjectDialog *m_dvidObjectDlg;
   DvidImageDialog *m_dvidImageDlg;
-  TileManagerDialog *m_tileDlg;
+  TileManager *m_tileDlg;
   FlyEmBodyIdDialog *m_bodyDlg;
   FlyEmHotSpotDialog *m_hotSpotDlg;
   ZDvidDialog *m_dvidDlg;
   FlyEmBodyFilterDialog *m_bodyFilterDlg;
+  FlyEmBodySplitProjectDialog *m_bodySplitProjectDialog;
+  ZFlyEmNewBodySplitProjectDialog *m_newBsProjectDialog;
+  DvidSkeletonizeDialog *m_dvidSkeletonizeDialog;
+  ZFlyEmRoiDialog *m_roiDlg;
+  ShapePaperDialog *m_shapePaperDlg;
+  DvidOperateDialog *m_dvidOpDlg;
 
+
+  //new project main window
+  NewProjectMainWindow *m_newProject;
 
   //FlyEmNeuronThumbnailDialog *m_thumbnailDlg;
   QFileDialog::Options m_fileDialogOption;
+
+  //QSettings m_settings;
+  QString m_version;
 
   //ZStackDocReader *m_docReader;
 };

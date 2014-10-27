@@ -1,6 +1,15 @@
 #!/bin/bash
 
+uncompress_lib () {
+  if [ ! -f $1.tar ]
+  then
+    gunzip < $1.tar.gz > $1.tar
+  fi
+  tar -xvf $1.tar
+}
+
 libdir=`pwd`
+export CFLAGS="-fPIC"
 
 if [ ! -f fftw3/lib/libfftw3.a ]
 then
@@ -10,13 +19,13 @@ then
   fi
 
   echo 'Building libfftw3 ...'
-  tar -xvf fftw-3.3.2.tar.gz
+  uncompress_lib fftw-3.3.2
   cd fftw-3.3.2
-  ./configure --enable-shared=no --with-pic --prefix=${libdir}/fftw3 
+  ./configure --enable-shared=no --with-pic --prefix=${libdir}/fftw3
   make
   make install
 
-  ./configure --enable-shared=no --enable-float --with-pic --prefix=${libdir}/fftw3 
+  ./configure --enable-shared=no --enable-float --with-pic --prefix=${libdir}/fftw3
   make
   make install
   cd ..
@@ -24,12 +33,12 @@ fi
 
 if [ ! -f jansson/lib/libjansson.a ]
 then
-  echo 'Building libjansson ...' 
+  echo 'Building libjansson ...'
   if [ ! -d jansson ]
   then
     mkdir jansson
   fi
-  tar -xvf jansson-2.5.tar.gz
+  uncompress_lib jansson-2.5
   cd jansson-2.5
   ./configure --enable-shared=no --with-pic --prefix=${libdir}/jansson
   make
@@ -45,9 +54,9 @@ then
   then
     mkdir xml
   fi
-  tar -xvf libxml2-2.9.1.tar.gz
+  uncompress_lib libxml2-2.9.1
   cd libxml2-2.9.1
-  ./configure --without-iconv --without-zlib --with-pic --enable-shared=no --prefix=${libdir}/xml
+  ./configure --without-iconv --without-zlib --without-lzma --with-pic --enable-shared=no --prefix=${libdir}/xml --without-python
   make
   make install
   cd ..
@@ -60,7 +69,7 @@ then
   then
     mkdir png
   fi
-  tar -xvf libpng-1.6.7.tar.gz
+  uncompress_lib libpng-1.6.7
   cd libpng-1.6.7
   ./configure --enable-shared=no --with-pic --prefix=${libdir}/png
   make
@@ -75,7 +84,7 @@ then
   then
     mkdir hdf5
   fi
-  tar -xvf hdf5-1.8.12.tar.gz
+  uncompress_lib hdf5-1.8.12
   cd hdf5-1.8.12
   ./configure --enable-shared=no --with-pic --prefix=${libdir}/hdf5
   make

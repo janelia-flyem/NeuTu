@@ -20,7 +20,7 @@
 #include "zobject3d.h"
 #include "neutubeconfig.h"
 #include "zerror.h"
-
+#include "tz_math.h"
 
 using namespace std;
 
@@ -227,6 +227,21 @@ bool C_Stack::setValue(
   return false;
 }
 
+bool C_Stack::setValue(
+    Mc_Stack *stack, size_t offset, const void *buffer, size_t length)
+{
+  if (stack != NULL) {
+    uint8_t *stackBuffer = array8(stack);
+    if (stackBuffer != NULL && allByteNumber(stack) >= offset + length) {
+      memcpy(stackBuffer + offset, buffer, length);
+
+      return true;
+    }
+  }
+
+  return false;
+}
+
 Stack* C_Stack::resize(const Stack *stack, int width, int height, int depth)
 {
   return Resize_Stack(stack, width, height, depth);
@@ -273,10 +288,16 @@ Stack* C_Stack::resize(const Stack *stack, int width, int height, int depth)
 #define DOWNSAMPLE_MIN(srcArray, dstArray) \
   DOWNSAMPLE_GENERAL(srcArray, dstArray, (*srcArray < *dstArray))
 
-Stack* C_Stack::downsampleMax(const Stack *stack, int xintv, int yintv, int zintv)
+Stack* C_Stack::downsampleMax(
+    const Stack *stack, int xintv, int yintv, int zintv, Stack *out)
 {
   if (xintv == 0 && yintv == 0 && zintv == 0) {
-    return clone(stack);
+    if (out == NULL) {
+      return clone(stack);
+    } else {
+      C_Stack::copyValue(stack, out);
+      return out;
+    }
   }
 
   int xCounter = 0;
@@ -290,7 +311,14 @@ Stack* C_Stack::downsampleMax(const Stack *stack, int xintv, int yintv, int zint
   int sheight = h / (yintv + 1) + (h % (yintv + 1) > 0);
   int sdepth = d / (zintv + 1) + (d % (zintv + 1) > 0);
 
-  Stack *out = make(kind(stack), swidth, sheight, sdepth);
+  if (out == NULL) {
+    out = make(kind(stack), swidth, sheight, sdepth);
+  } else {
+    out->kind = kind(stack);
+    out->width = swidth;
+    out->height = sheight;
+    out->depth = sdepth;
+  }
   //setZero(out);
 
   size_t outArea = area(out);
@@ -320,7 +348,8 @@ Stack* C_Stack::downsampleMax(const Stack *stack, int xintv, int yintv, int zint
   return out;
 }
 
-Stack* C_Stack::downsampleMin(const Stack *stack, int xintv, int yintv, int zintv)
+Stack* C_Stack::downsampleMin(
+    const Stack *stack, int xintv, int yintv, int zintv, Stack *out)
 {
   if (xintv == 0 && yintv == 0 && zintv == 0) {
     return clone(stack);
@@ -337,7 +366,14 @@ Stack* C_Stack::downsampleMin(const Stack *stack, int xintv, int yintv, int zint
   int sheight = h / (yintv + 1) + (h % (yintv + 1) > 0);
   int sdepth = d / (zintv + 1) + (d % (zintv + 1) > 0);
 
-  Stack *out = make(kind(stack), swidth, sheight, sdepth);
+  if (out == NULL) {
+    out = make(kind(stack), swidth, sheight, sdepth);
+  } else {
+    out->kind = kind(stack);
+    out->width = swidth;
+    out->height = sheight;
+    out->depth = sdepth;
+  }
   setZero(out);
 
   size_t outArea = area(out);
@@ -443,6 +479,11 @@ void C_Stack::kill(Stack *stack)
   }
 }
 
+int C_Stack::stackUsage()
+{
+  return Stack_Usage();
+}
+
 void C_Stack::view(const Stack *src, Mc_Stack *dst)
 {
   TZ_ASSERT(src != NULL && dst != NULL, "Null pointer");
@@ -461,6 +502,23 @@ void C_Stack::view(const Mc_Stack *src, Stack *dst, int channel)
   dst->array = src->array + volumeByteNumber(src) * channel;
   setAttribute(dst, C_Stack::kind(src), C_Stack::width(src),
                C_Stack::height(src), C_Stack::depth(src));
+}
+
+void C_Stack::view(const Mc_Stack *src, Mc_Stack *dst, int channel)
+{
+  TZ_ASSERT(src != NULL && dst != NULL, "Null pointer");
+  TZ_ASSERT(channel >= 0 && channel < C_Stack::channelNumber(src),
+            "Invalide channel");
+
+  dst->array = src->array + volumeByteNumber(src) * channel;
+  setAttribute(dst, C_Stack::kind(src), C_Stack::width(src),
+               C_Stack::height(src), C_Stack::depth(src), 1);
+}
+
+void C_Stack::view(const Stack *src, Image_Array *dst)
+{
+  TZ_ASSERT(src != NULL && dst != NULL, "Null pointer");
+  dst->array = src->array;
 }
 
 bool C_Stack::hasSameValue(Mc_Stack *stack, size_t index1, size_t index2,
@@ -560,9 +618,42 @@ int C_Stack::neighborTest(int conn, int width, int height, int depth,
   return nnbr;
 }
 
-void C_Stack::write(const std::string &filePath, const Mc_Stack *stack)
+
+#define MRAW_MAGIC_NUMBER 1836212599
+
+void C_Stack::write(
+    const std::string &filePath, const Mc_Stack *stack, const char *meta)
 {
-  Write_Mc_Stack(filePath.c_str(), stack, NULL);
+  if (stack == NULL) {
+    return;
+  }
+
+  ZFileType::EFileType fileType = ZFileType::fileType(filePath) ;
+
+  switch (fileType) {
+  case ZFileType::MC_STACK_RAW_FILE:
+  {
+    FILE *fp = fopen(filePath.c_str(), "w");
+    if (fp != NULL) {
+      int magicNumber = MRAW_MAGIC_NUMBER;
+      int reserved = 0;
+      fwrite(&magicNumber, 4, 1, fp);
+      fwrite(&(stack->kind), 4, 1, fp);
+      fwrite(&(stack->width), 4, 1, fp);
+      fwrite(&(stack->height), 4, 1, fp);
+      fwrite(&(stack->depth), 4, 1, fp);
+      fwrite(&(stack->nchannel), 4, 1, fp);
+      fwrite(&reserved, 4, 1, fp);
+      size_t byteNumber = C_Stack::volumeByteNumber(stack);
+      fwrite(stack->array, 1, byteNumber, fp);
+      fclose(fp);
+    }
+  }
+    break;
+  default:
+    Write_Mc_Stack(filePath.c_str(), stack, meta);
+    break;
+  }
 }
 
 void C_Stack::write(const std::string &filePath, const Stack *stack)
@@ -570,11 +661,103 @@ void C_Stack::write(const std::string &filePath, const Stack *stack)
   Write_Stack_U(filePath.c_str(), stack, NULL);
 }
 
-Mc_Stack* C_Stack::read(const std::string &filePath, int channel)
+void C_Stack::readStackOffset(const string &filePath, int *x, int *y, int *z)
+{
+  *x = 0;
+  *y = 0;
+  *z = 0;
+
+  Read_Stack_Offset(filePath.c_str(), x, y, z);
+}
+
+Mc_Stack* C_Stack::readMrawFromBuffer(const char *buffer, int channel)
 {
   Mc_Stack *stack = NULL;
+  if (buffer != NULL) {
+    int magicNumber;
+    int kind;
+    int width;
+    int height;
+    int depth;
+    int nchannel;
 
-  if (ZFileType::fileType(filePath) == ZFileType::OBJECT_SCAN_FILE) {
+    int *intBuffer = (int*) buffer;
+
+    magicNumber = *(intBuffer++);
+    if (magicNumber != MRAW_MAGIC_NUMBER) {
+      return NULL;
+    }
+
+    kind = *(intBuffer++);
+    if (kind <= 0 || kind > 8) {
+      return NULL;
+    }
+
+    width = *(intBuffer++);
+    if (width <= 0) {
+      return NULL;
+    }
+
+    height = *(intBuffer++);
+    if (height <= 0) {
+      return NULL;
+    }
+
+    depth = *(intBuffer++);
+    if (depth <= 0) {
+      return NULL;
+    }
+
+    nchannel = *(intBuffer++);
+    if (nchannel <= 0) {
+      return NULL;
+    }
+
+    intBuffer++; //reserved field
+
+
+    if (channel >= 0) {
+      if (channel >= nchannel) {
+        return NULL;
+      } else {
+        nchannel = 1;
+      }
+    }
+
+    stack = make(kind, width, height, depth, nchannel);
+    size_t byteNumber = C_Stack::volumeByteNumber(stack);
+
+    uint8_t *currentBuffer = (uint8_t*) intBuffer;
+    if (channel >= 0) {
+      currentBuffer += byteNumber * channel;
+    }
+
+    if (setValue(stack, 0, currentBuffer, byteNumber) == false) {
+      kill(stack);
+      stack = NULL;
+    }
+  }
+
+  return stack;
+}
+
+void readStackOffset(const std::string &filePath, int *x, int *y, int *z)
+{
+  C_Stack::readStackOffset(filePath, x, y, z);
+}
+
+Mc_Stack* C_Stack::read(const std::string &filePath, int channel)
+{
+  if (!fexist(filePath.c_str())) {
+    return NULL;
+  }
+
+  Mc_Stack *stack = NULL;
+  ZFileType::EFileType fileType = ZFileType::fileType(filePath) ;
+
+  switch (fileType) {
+  case ZFileType::OBJECT_SCAN_FILE:
+  {
     ZObject3dScan obj;
     if (obj.load(filePath)) {
       ZObject3d *obj3d = obj.toObject3d();
@@ -585,7 +768,78 @@ Mc_Stack* C_Stack::read(const std::string &filePath, int channel)
       C_Stack::kill(tmpstack);
       delete obj3d;
     }
-  } else {
+  }
+    break;
+  case ZFileType::MC_STACK_RAW_FILE:
+  {
+    FILE *fp = fopen(filePath.c_str(), "r");
+    if (fp != NULL) {
+      int magicNumber = 0;
+      int kind = 0;
+      int width = 0;
+      int height = 0;
+      int depth = 0;
+      int nchannel = 0;
+      int reserved = 0;
+      size_t byteNumber = 0;
+
+      if (fread(&magicNumber, 4, 1, fp) != 1) {
+        goto _read_failed;
+      }
+
+      if (magicNumber != MRAW_MAGIC_NUMBER) {
+        goto _read_failed;
+      }
+
+      if (fread(&kind, 4, 1, fp) != 1) {
+        goto _read_failed;
+      }
+      if (fread(&width, 4, 1, fp) != 1) {
+        goto _read_failed;
+      }
+
+      if (fread(&height, 4, 1, fp) != 1) {
+        goto _read_failed;
+      }
+      if (fread(&depth, 4, 1, fp) != 1) {
+        goto _read_failed;
+      }
+      if (fread(&nchannel, 4, 1, fp) != 1) {
+        goto _read_failed;
+      }
+      if (fread(&reserved, 4, 1, fp) != 1) {
+        goto _read_failed;
+      }
+      if (kind <= 0 || kind > 8 || width <= 0 || height <= 0 || depth <= 0) {
+        goto _read_failed;
+      }
+
+      if (channel >= 0) {
+        if (channel >= nchannel) {
+          goto _read_failed;
+        } else {
+          nchannel = 1;
+        }
+      }
+
+      stack = make(kind, width, height, depth, nchannel);
+      byteNumber = C_Stack::volumeByteNumber(stack);
+
+      if (channel >= 0) {
+        fseek(fp, byteNumber * channel, SEEK_CUR);
+      }
+
+      if (fread(stack->array, 1, byteNumber, fp) != byteNumber) {
+        kill(stack);
+        stack = NULL;
+      }
+
+_read_failed:
+      fclose(fp);
+    }
+  }
+    break;
+  default:
     stack = Read_Mc_Stack(filePath.c_str(), channel);
     if ((size_t)stack->width * stack->height * 4 >= (size_t)1024*1024*1024*2) {
       double scale =  (1024.0*1024*1024*2) / ((double)stack->width * stack->height * 4);
@@ -1159,25 +1413,45 @@ void C_Stack::setZero(
 }
 
 #define STACK_SET_BLOCK_VALUE(dstArray, srcArray) \
-for (int z = 0; z < sd; ++z) {\
-  for (int y = 0; y < sh; ++y) {\
-    for (int x = 0; x < sw; ++x) {\
-      if ((int) srcArray[offset2] != srcValueIgnored && \
-          (int) dstArray[offset] != dstValueIgnored) {\
-        dstArray[offset] = srcArray[offset2];\
+  if (alpha == 1.0) {\
+    for (int z = 0; z < sd; ++z) {\
+      for (int y = 0; y < sh; ++y) {\
+        for (int x = 0; x < sw; ++x) {\
+          if ((int) srcArray[offset2] != srcValueIgnored && \
+              (int) dstArray[offset] != dstValueIgnored) {\
+            dstArray[offset] = srcArray[offset2];\
+          }\
+          offset += p1;\
+          offset2 += bp1;\
+        }\
+        offset += p2;\
+        offset2 += bp2;\
       }\
-      offset += p1;\
-      offset2 += bp1;\
+      offset += p3;\
+      offset2 += bp3;\
     }\
-    offset += p2;\
-    offset2 += bp2;\
-  }\
-  offset += p3;\
-  offset2 += bp3;\
-}
+  } else {\
+    for (int z = 0; z < sd; ++z) {\
+      for (int y = 0; y < sh; ++y) {\
+        for (int x = 0; x < sw; ++x) {\
+          if ((int) srcArray[offset2] != srcValueIgnored && \
+              (int) dstArray[offset] != dstValueIgnored) {\
+            double v = alpha * srcArray[offset2] + (1 - alpha) * dstArray[offset];\
+            dstArray[offset] = iround(v);\
+          }\
+          offset += p1;\
+          offset2 += bp1;\
+        }\
+        offset += p2;\
+        offset2 += bp2;\
+      }\
+      offset += p3;\
+      offset2 += bp3;\
+    }\
+  }
 
 void C_Stack::setBlockValue(Stack *stack, const Stack *block, int x0, int y0, int z0,
-    int srcValueIgnored, int dstValueIgnored)
+    int srcValueIgnored, int dstValueIgnored, double alpha)
 {
   if (kind(stack) != kind(block) || stack == NULL || block == NULL) {
     return;
@@ -1249,4 +1523,24 @@ void C_Stack::setBlockValue(Stack *stack, const Stack *block, int x0, int y0, in
     }
 
   }
+}
+
+bool C_Stack::isBinary(const Stack *stack)
+{
+  if (kind(stack) != GREY) {
+    return false;
+  }
+
+  bool state = false;
+  size_t v = voxelNumber(stack);
+  for (size_t i = 0; i < v; ++i) {
+    if (stack->array[i] == 1) {
+      state = true;
+    } else if (stack->array[i] > 1) {
+      state = false;
+      break;
+    }
+  }
+
+  return state;
 }

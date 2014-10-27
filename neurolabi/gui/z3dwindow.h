@@ -5,11 +5,6 @@
 #include <vector>
 #include <set>
 #include <map>
-#ifdef __GLIBCXX__
-#include <tr1/memory>
-#else
-#include <memory>
-#endif
 #include <QDir>
 #include "zparameter.h"
 #include "znumericparameter.h"
@@ -17,6 +12,8 @@
 #include "z3dcameraparameter.h"
 #include "zactionactivator.h"
 #include "z3dvolumeraycasterrenderer.h"
+#include "zsharedpointer.h"
+
 
 class ZStackDoc;
 class Z3DTrackballInteractionHandler;
@@ -38,6 +35,8 @@ class Z3DCanvas;
 class Z3DNetworkEvaluator;
 class Z3DProcessorNetwork;
 class Z3DTriangleList;
+class QToolBar;
+class ZStroke2d;
 
 class Z3DWindow : public QMainWindow
 {
@@ -47,13 +46,14 @@ public:
     NORMAL_INIT, EXCLUDE_VOLUME
   };
 
-  explicit Z3DWindow(std::tr1::shared_ptr<ZStackDoc> doc, EInitMode initMode,
+  explicit Z3DWindow(ZSharedPointer<ZStackDoc> doc, EInitMode initMode,
                      bool stereoView = false, QWidget *parent = 0);
   virtual ~Z3DWindow();
 
   void gotoPosition(double x, double y, double z, double radius = 64);
   void gotoPosition(std::vector<double> bound, double minRadius = 64,
                     double range = 128);
+  void zoomToSelectedSwcNodes();
 
   // useful stuff
   Z3DCameraParameter* getCamera();
@@ -63,6 +63,7 @@ public:
   inline Z3DPunctaFilter* getPunctaFilter() { return m_punctaFilter; }
   inline Z3DSwcFilter* getSwcFilter() { return m_swcFilter; }
   inline Z3DVolumeRaycaster* getVolumeRaycaster() { return m_volumeRaycaster; }
+  inline Z3DCanvas* getCanvas() { return m_canvas; }
 
   Z3DVolumeRaycasterRenderer* getVolumeRaycasterRenderer();
   inline Z3DGraphFilter* getGraphFilter() { return m_graphFilter; }
@@ -74,6 +75,7 @@ public:
   void updateVolumeBoundBox();
   void updateSwcBoundBox();
   void updateGraphBoundBox();
+  void updateDecorationBoundBox();
   void updatePunctaBoundBox();
   void updateOverallBoundBox(std::vector<double> bound);
   void updateOverallBoundBox();       //get bounding box of all objects in world coordinate :[xmin xmax ymin ymax zmin zmax]
@@ -82,6 +84,10 @@ public:
    * \brief Get the document associated with the window
    */
   inline ZStackDoc* getDocument() const { return m_doc.get(); }
+
+  void createToolBar();
+
+  void setBackgroundColor(const glm::vec3 &color1, const glm::vec3 &color2);
 
 protected:
 
@@ -128,6 +134,7 @@ public slots:
   void swcChanged();
   void punctaChanged();
   void updateNetworkDisplay();
+  void updateDecorationDisplay();
   void updateDisplay();
 
   void volumeScaleChanged();
@@ -205,6 +212,7 @@ public slots:
   void saveAllPunctaAs();
   void markPunctum();
   void locatePunctumIn2DView();
+  void changeSelectedPunctaName();
 
   void takeScreenShot(QString filename, int width, int height, Z3DScreenShotType sst);
   void takeScreenShot(QString filename, Z3DScreenShotType sst);
@@ -227,6 +235,9 @@ public slots:
   void toogleMoveSelectedObjectsMode(bool checked);
   void moveSelectedObjects(double x, double y, double z);
   void notifyUser(const QString &message);
+
+  void addStrokeFrom3dPaint(ZStroke2d*stroke);
+  void addPolyplaneFrom3dPaint(ZStroke2d*stroke);
 
 protected:
   virtual void dragEnterEvent(QDragEnterEvent *event);
@@ -292,6 +303,7 @@ private:
   QAction *m_resolveCrossoverAction;
 
   QAction *m_saveSelectedPunctaAsAction;
+  QAction *m_changePunctaNameAction;
   QAction *m_saveAllPunctaAsAction;
   QAction *m_locatePunctumIn2DAction;
 
@@ -305,8 +317,7 @@ private:
   ZSingleSwcNodeActionActivator m_singleSwcNodeActionActivator;
 
 
-  std::tr1::shared_ptr<ZStackDoc> m_doc;
-
+  ZSharedPointer<ZStackDoc> m_doc;
   Z3DNetworkEvaluator *m_networkEvaluator;
   Z3DCanvas *m_canvas;
 
@@ -319,11 +330,13 @@ private:
   Z3DSwcFilter *m_swcFilter;
   Z3DVolumeSource *m_volumeSource;
   Z3DGraphFilter *m_graphFilter;
+  Z3DGraphFilter *m_decorationFilter;
 
   std::vector<double> m_volumeBoundBox;
   std::vector<double> m_swcBoundBox;
   std::vector<double> m_punctaBoundBox;
   std::vector<double> m_graphBoundBox;
+  std::vector<double> m_decorationBoundBox;
   std::vector<double> m_boundBox;    //overall bound box
 
   bool m_isClean;   //already cleanup?
@@ -343,6 +356,8 @@ private:
   Z3DCamera m_cameraRecord;
 
   QString m_lastOpenedFilePath;
+
+  QToolBar *m_toolBar;
 };
 
 #endif // Z3DWINDOW_H

@@ -3,17 +3,29 @@
 #include "swctreenode.h"
 #include "zswcdisttrunkanalyzer.h"
 #include "zvectorgenerator.h"
+#include "zpointarray.h"
+#include "zeigensolver.h"
+#include "zdoublevector.h"
+
+
+#define GENERATE_NGF1_FEATURE \
+  ZVectorGenerator<std::string>() << "Number of leaves"\
+                                << "number of branch points"\
+                                << "box volume"\
+                                << "maximum segment length"\
+                                << "maximum path length"\
+                                << "average radius"\
+                                << "radius variance"\
+                                << "lateral/vertical ratio"\
+                                << "Average curvature"
 
 std::vector<std::string> ZSwcGlobalFeatureAnalyzer::m_ngf1FeatureName =
-    ZVectorGenerator<std::string>() << "Number of leaves"
-                                  << "number of branch points"
-                                  << "box volume"
-                                  << "maximum segment length"
-                                  << "maximum path length"
-                                  << "average radius"
-                                  << "radius variance"
-                                  << "lateral/vertical ratio"
-                                  << "Average curvature";
+    GENERATE_NGF1_FEATURE;
+
+std::vector<std::string> ZSwcGlobalFeatureAnalyzer::m_ngf3FeatureName =
+    GENERATE_NGF1_FEATURE
+    << "laberal span"
+    << "vertical span";
 
 std::string ZSwcGlobalFeatureAnalyzer::m_emptyFeatureName = "";
 
@@ -21,7 +33,7 @@ ZSwcGlobalFeatureAnalyzer::ZSwcGlobalFeatureAnalyzer()
 {
 }
 
-double ZSwcGlobalFeatureAnalyzer::computeLateralVerticalRatio(
+double ZSwcGlobalFeatureAnalyzer::computeBoxLateralVerticalRatio(
     const ZSwcTree &tree)
 {
   ZCuboid box =tree.getBoundBox();
@@ -30,11 +42,19 @@ double ZSwcGlobalFeatureAnalyzer::computeLateralVerticalRatio(
       box.depth();
 }
 
+double ZSwcGlobalFeatureAnalyzer::computeLateralVerticalRatio(
+    const ZSwcTree &tree)
+{
+  return computeLateralSpan(tree) / computeVerticalSpan(tree);
+}
+
 int ZSwcGlobalFeatureAnalyzer::getFeatureNumber(EFeatureSet setName)
 {
   switch (setName) {
   case NGF1:
-    return 9;
+    return m_ngf1FeatureName.size();
+  case NGF3:
+    return m_ngf3FeatureName.size();
   default:
     return 0;
   }
@@ -134,11 +154,34 @@ std::vector<double> ZSwcGlobalFeatureAnalyzer::computeFeatureSet(
     featureSet[8] = averageCurvature;
   }
     break;
+  case NGF3:
+    featureSet = computeFeatureSet(tree, NGF1);
+    featureSet.push_back(computeLateralSpan(tree));
+    featureSet.push_back(computeVerticalSpan(tree));
+    break;
   default:
     break;
   }
 
   return featureSet;
+}
+
+std::vector<std::string>
+ZSwcGlobalFeatureAnalyzer::getFeatureNameArray(EFeatureSet setName)
+{
+  std::vector<std::string> nameArray;
+  switch(setName) {
+  case NGF1:
+    nameArray = m_ngf1FeatureName;
+    break;
+  case NGF3:
+    nameArray = m_ngf3FeatureName;
+    break;
+  default:
+    break;
+  }
+
+  return nameArray;
 }
 
 const std::string& ZSwcGlobalFeatureAnalyzer::getFeatureName(
@@ -155,9 +198,54 @@ const std::string& ZSwcGlobalFeatureAnalyzer::getFeatureName(
     } else {
       return m_ngf1FeatureName[index];
     }
+    break;
+  case NGF3:
+    if (index >= (int) m_ngf1FeatureName.size()) {
+      return m_emptyFeatureName;
+    } else {
+      return m_ngf3FeatureName[index];
+    }
+    break;
   default:
     break;
   }
 
   return m_emptyFeatureName;
+}
+
+double ZSwcGlobalFeatureAnalyzer::computeLateralSpan(const ZSwcTree &tree)
+{
+  ZSwcTree::DepthFirstIterator treeIter(&tree);
+  ZPointArray ptArray;
+  for (Swc_Tree_Node *tn = treeIter.begin(); tn != NULL;
+       tn = treeIter.next()) {
+    if (SwcTreeNode::isRegular(tn)) {
+      ptArray.append(SwcTreeNode::pos(tn));
+    }
+  }
+
+  std::vector<double> cov = ptArray.computePlaneCov();
+  ZEigenSolver solver;
+  solver.solveCovEigen(cov);
+  double span = sqrt(solver.getEigenValue(0));
+
+  return span;
+}
+
+double ZSwcGlobalFeatureAnalyzer::computeVerticalSpan(const ZSwcTree &tree)
+{
+  ZDoubleVector zArray;
+  ZSwcTree::DepthFirstIterator treeIter(&tree);
+  for (Swc_Tree_Node *tn = treeIter.begin(); tn != NULL;
+       tn = treeIter.next()) {
+    zArray.push_back(SwcTreeNode::z(tn));
+  }
+
+#ifdef _DEBUG_2
+  std::vector<int> indexArray;
+  zArray.sort(indexArray);
+  zArray.print();
+#endif
+
+  return sqrt(zArray.var());
 }

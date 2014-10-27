@@ -7,6 +7,8 @@
 #include "tz_object_3d.h"
 #include "zglmutils.h"
 
+class ZStack;
+
 /** A class to load image / stack data structure from neurolabi and to display
  *  the data. The default format is Format_ARGB32_Premultiplied.
  */
@@ -28,6 +30,9 @@ public:
          QImage::Format format = QImage::Format_ARGB32_Premultiplied);
 
   void setData(const uint8 *data, int threshold = -1);
+
+  void setData(const ZStack *stack, int z);
+
   void setData(const color_t *data, int alpha = 255);
   void setCData(const color_t *data, double scale, double offset);
   void setCData(const uint16_t *data, uint8_t alpha);
@@ -92,6 +97,8 @@ public:
 
   void enhanceEdge();
   //void drawObject(Object_3d *obj, int z);
+
+  static bool writeImage(const QImage &image, const QString &filePath);
 
 private:
   static bool hasSameColor(uchar *pt1, uchar *pt2);

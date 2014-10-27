@@ -6,7 +6,8 @@
 #include "zpainter.h"
 #include "zpaintbundle.h"
 
-ZImageWidget::ZImageWidget(QWidget *parent, QImage *image) : QWidget(parent)
+ZImageWidget::ZImageWidget(QWidget *parent, QImage *image) : QWidget(parent),
+  m_isViewHintVisible(true)
 {
   if (image != NULL) {
     m_viewPort.setRect(0, 0, image->width(), image->height());
@@ -339,25 +340,59 @@ void ZImageWidget::paintEvent(QPaintEvent * /*event*/)
       painter1.setTransform(transform);
 
       painter1.setStackOffset(m_paintBundle->getStackOffset());
-      for (ZPaintBundle::const_iterator it = m_paintBundle->begin();
-           it != m_paintBundle->end(); ++it) {
+      std::vector<const ZStackObject*> visibleObject;
+      ZPaintBundle::const_iterator iter = m_paintBundle->begin();
 #ifdef _DEBUG_2
-          std::cout << (*it)->className() << std::endl;
+      std::cout << "visible: " << std::endl;
 #endif
-        if ((*it)->getTarget() == ZStackDrawable::WIDGET) {
-          (*it)->display(painter1, m_paintBundle->sliceIndex(),
-                         m_paintBundle->displayStyle());
+
+      for (;iter != m_paintBundle->end(); ++iter) {
+        const ZStackObject *obj = *iter;
+        if (obj->getTarget() == ZStackObject::WIDGET &&
+            obj->isSliceVisible(m_paintBundle->getZ())) {
+//          obj->display(painter1, m_paintBundle->sliceIndex(),
+//                       m_paintBundle->displayStyle());
+#ifdef _DEBUG_2
+          std::cout << obj << obj->className() << std::endl;
+#endif
+          if (obj->getSource() != ZStackObject::getNodeAdapterId()) {
+            visibleObject.push_back(obj);
+          }
         }
-#ifdef _DEBUG_2
-        std::cout << "object painted" << std::endl;
-#endif
       }
+
+#ifdef _DEBUG_2
+      std::cout << "---" << std::endl;
+#endif
+      std::sort(visibleObject.begin(), visibleObject.end(),
+                ZStackObject::ZOrderCompare());
+      for (std::vector<const ZStackObject*>::const_iterator
+           iter = visibleObject.begin(); iter != visibleObject.end(); ++iter) {
+        const ZStackObject *obj = *iter;
+#ifdef _DEBUG_2
+          std::cout << obj << std::endl;
+#endif
+        obj->display(painter1, m_paintBundle->sliceIndex(),
+                     m_paintBundle->displayStyle());
+      }
+
+      for (iter = m_paintBundle->begin();iter != m_paintBundle->end(); ++iter) {
+        const ZStackObject *obj = *iter;
+        if (obj->getTarget() == ZStackObject::WIDGET &&
+            obj->isSliceVisible(m_paintBundle->getZ())) {
+          if (obj->getSource() == ZStackObject::getNodeAdapterId()) {
+            obj->display(painter1, m_paintBundle->sliceIndex(),
+                         m_paintBundle->displayStyle());
+          }
+        }
+      }
+
       painter1.end();
     }
 
     painter.begin(this);
     painter.setRenderHint(QPainter::Antialiasing, false);
-    if (m_zoomRatio > 1) {
+    if (m_zoomRatio > 1 && m_isViewHintVisible) {
       painter.setPen(QPen(QColor(0, 0, 255, 128)));
       double ratio = (double) projectSize().width() /
                      canvasSize().width() / 5.0;
@@ -473,21 +508,36 @@ QMenu* ZImageWidget::rightMenu()
   return m_rightButtonMenu;
 }
 
-void ZImageWidget::popLeftMenu(const QPoint &pos)
+bool ZImageWidget::popLeftMenu(const QPoint &pos)
 {
-  m_leftButtonMenu->popup(mapToGlobal(pos));
+  if (!m_leftButtonMenu->isEmpty()) {
+    m_leftButtonMenu->popup(mapToGlobal(pos));
+    return true;
+  }
+
+  return false;
 }
 
-void ZImageWidget::popRightMenu(const QPoint &pos)
+bool ZImageWidget::popRightMenu(const QPoint &pos)
 {
-  m_rightButtonMenu->popup(mapToGlobal(pos));
+  if (!m_rightButtonMenu->isEmpty()) {
+    m_rightButtonMenu->popup(mapToGlobal(pos));
+    return true;
+  }
+
+  return false;
 }
 
-void ZImageWidget::showContextMenu(QMenu *menu, const QPoint &pos)
+bool ZImageWidget::showContextMenu(QMenu *menu, const QPoint &pos)
 {
   if (menu != NULL) {
-    menu->popup(mapToGlobal(pos));
+    if (!menu->isEmpty()) {
+      menu->popup(mapToGlobal(pos));
+      return true;
+    }
   }
+
+  return false;
 }
 
 void ZImageWidget::mouseReleaseEvent(QMouseEvent *event)

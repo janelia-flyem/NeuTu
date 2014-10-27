@@ -187,7 +187,7 @@ ZSwcTree* ZFlyEmNeuron::getModel(const string &bundleSource) const
         if (m_model == NULL) {
           ZSkeletonizeService service;
           ZDvidTarget dvidTarget;
-          dvidTarget.set(m_modelPath);
+          dvidTarget.setFromSourceString(m_modelPath);
           service.callService(dvidTarget, getId());
 
           if (reader.open(m_modelPath.c_str())) {
@@ -267,6 +267,15 @@ string ZFlyEmNeuron::getAbsolutePath(const ZString &path, const string &source)
   return path;
 }
 
+ZJsonObject ZFlyEmNeuron::getAnnotationJson() const
+{
+  ZJsonObject obj;
+  obj.setEntry(m_nameKey, m_name);
+  obj.setEntry(m_classKey, m_class);
+
+  return obj;
+}
+
 void ZFlyEmNeuron::loadJsonObject(ZJsonObject &obj, const string &source)
 {
   m_id = ZJsonParser::integerValue(obj[m_idKey]);
@@ -295,7 +304,7 @@ void ZFlyEmNeuron::loadJsonObject(ZJsonObject &obj, const string &source)
   deprecate(ALL_COMPONENT);
 }
 
-json_t* ZFlyEmNeuron::makeJsonObject() const
+ZJsonObject ZFlyEmNeuron::makeJsonObject() const
 {
   json_t *obj = C_Json::makeObject();
 
@@ -318,10 +327,10 @@ json_t* ZFlyEmNeuron::makeJsonObject() const
     objWrapper.setEntry(m_volumeKey, m_volumePath);
   }
 
-  return obj;
+  return objWrapper;
 }
 
-json_t* ZFlyEmNeuron::makeJsonObject(const std::string &bundleDir) const
+ZJsonObject ZFlyEmNeuron::makeJsonObject(const std::string &bundleDir) const
 {
   json_t *obj = C_Json::makeObject();
 
@@ -351,7 +360,7 @@ json_t* ZFlyEmNeuron::makeJsonObject(const std::string &bundleDir) const
           m_thumbnailKey, ZString::relativePath(m_thumbnailPath, bundleDir));
   }
 
-  return obj;
+  return objWrapper;
 }
 
 

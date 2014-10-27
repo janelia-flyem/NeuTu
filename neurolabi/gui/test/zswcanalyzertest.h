@@ -133,9 +133,9 @@ TEST(ZSwcGlobalFeatureAnalyzer, computeFeature)
 {
   ZSwcTree tree;
   tree.load(GET_TEST_DATA_DIR + "/benchmark/swc/single_node.swc");
-  double ratio = ZSwcGlobalFeatureAnalyzer::computeLateralVerticalRatio(tree);
-  EXPECT_LT(1.0, ratio);
-  EXPECT_GT(2.0, ratio);
+  double ratio = ZSwcGlobalFeatureAnalyzer::computeBoxLateralVerticalRatio(tree);
+  ASSERT_LT(1.0, ratio);
+  ASSERT_GT(2.0, ratio);
 
   tree.load(GET_TEST_DATA_DIR + "/benchmark/swc/length_test.swc");
   ZDoubleVector feature = ZSwcGlobalFeatureAnalyzer::computeFeatureSet(

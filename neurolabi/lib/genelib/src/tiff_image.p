@@ -725,9 +725,11 @@ Tiff_Image *Extract_Image_From_IFD(Tiff_IFD *ifd)
       { if (ecount != samples_per_pixel - photo_samples)
           {error("Extra_samples tag has wrong number of samples");
 		  return NULL;} 
+#if 0 //bug. it should be TIFF_SHORT.
         if (etype != TIFF_BYTE)
           {error("Extra_samples tag is not of type BYTE");
 		  return NULL;}
+#endif
       }
   }
 
@@ -1426,7 +1428,7 @@ Tiff_IFD *Make_IFD_For_Image(Tiff_Image *image, int compression)
           Extra_Samples[i-photo_samples] = TIFF_VALUE_EXTRA_BLUE;
         else //  image->channels[i]->interpretation == CHAN_OTHER
           Extra_Samples[i-photo_samples] = TIFF_VALUE_UNSPECIFIED_DATA;
-      Set_Tiff_Tag(ifd,TIFF_EXTRA_SAMPLES,TIFF_BYTE,
+      Set_Tiff_Tag(ifd,TIFF_EXTRA_SAMPLES,TIFF_SHORT,
                    image->number_channels-photo_samples,Extra_Samples);
     }
 

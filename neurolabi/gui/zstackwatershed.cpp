@@ -38,7 +38,7 @@ Stack_Watershed_Workspace* ZStackWatershed::createWorkspace(const Stack *stack)
 }
 
 void ZStackWatershed::addSeed(Stack_Watershed_Workspace *ws,
-                              const ZPoint &offset,
+                              const ZIntPoint &offset,
                               const std::vector<ZStack*> &seedMask)
 {
   if (ws != NULL) {
@@ -46,9 +46,9 @@ void ZStackWatershed::addSeed(Stack_Watershed_Workspace *ws,
          iter != seedMask.end(); ++iter) {
       ZStack *seed = *iter;
       Stack *block = seed->c_stack();
-      int x0 = iround(seed->getOffset().x() - offset.x());
-      int y0 = iround(seed->getOffset().y() - offset.y());
-      int z0 = iround(seed->getOffset().z() - offset.z());
+      int x0 = seed->getOffset().getX() - offset.getX();
+      int y0 = seed->getOffset().getY() - offset.getY();
+      int z0 = seed->getOffset().getZ() - offset.getZ();
 
       C_Stack::setBlockValue(
             ws->mask, block, x0, y0, z0, 0, STACK_WATERSHED_BARRIER);
@@ -91,7 +91,7 @@ ZStack *ZStackWatershed::run(
     Cuboid_I_Intersect(&stackBox, &box, &box);
 
     if (Cuboid_I_Is_Valid(&box)) {
-      ZPoint sourceOffset = ZPoint(box.cb[0], box.cb[1], box.cb[2]);
+      ZIntPoint sourceOffset = ZIntPoint(box.cb[0], box.cb[1], box.cb[2]);
       Cuboid_I_Translate(
             &box, -stackBox.cb[0], -stackBox.cb[1], -stackBox.cb[2]);
       source = C_Stack::crop(stack->c_stack(), box, NULL);
@@ -100,13 +100,13 @@ ZStack *ZStackWatershed::run(
 
       addSeed(ws, sourceOffset, seedMask);
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
       C_Stack::write(GET_DATA_DIR + "/test.tif", ws->mask);
 #endif
 
       Stack *out = Stack_Watershed(source, ws);
       result = new ZStack;
-      result->consumeData(out);
+      result->consume(out);
       result->setOffset(sourceOffset);
 
       if (source != stack->c_stack()) {

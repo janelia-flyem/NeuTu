@@ -8,7 +8,15 @@
 
 #ifdef _USE_GTEST_
 
-TEST(tree, iterator)
+TEST(ZTreeNode, basic)
+{
+  ZTreeNode<int> *tn = new ZTreeNode<int>;
+  ASSERT_TRUE(tn->isRoot());
+  ASSERT_TRUE(tn->isOrphan());
+
+}
+
+TEST(ZTree, iterator)
 {
   ZTree<int> tree;
   EXPECT_TRUE(tree.isEmpty());

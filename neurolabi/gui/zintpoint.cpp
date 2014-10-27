@@ -2,6 +2,7 @@
 #include <iostream>
 #include "tz_error.h"
 #include "zerror.h"
+#include "zpoint.h"
 
 ZIntPoint::ZIntPoint() : m_x(0), m_y(0), m_z(0)
 {
@@ -77,4 +78,54 @@ bool ZIntPoint::operator < (const ZIntPoint &pt) const
 bool ZIntPoint::operator ==(const ZIntPoint &pt) const
 {
   return getX() == pt.getX() && getY() == pt.getY() && getZ() == pt.getZ();
+}
+
+ZIntPoint operator + (const ZIntPoint &pt1, const ZIntPoint &pt2)
+{
+  return ZIntPoint(pt1.getX() + pt2.getX(), pt1.getY() + pt2.getY(),
+                   pt1.getZ() + pt2.getZ());
+}
+
+ZIntPoint operator + (const ZIntPoint &pt1, int v)
+{
+  return ZIntPoint(pt1.getX() + v, pt1.getY() + v, pt1.getZ() + v);
+}
+
+ZIntPoint operator - (const ZIntPoint &pt1, const ZIntPoint &pt2)
+{
+  return ZIntPoint(pt1.getX() - pt2.getX(), pt1.getY() - pt2.getY(),
+                   pt1.getZ() - pt2.getZ());
+}
+
+ZIntPoint operator / (const ZIntPoint &pt1, const ZIntPoint &pt2)
+{
+  if (pt2.getX() == 0 || pt2.getY() == 0 || pt2.getZ() == 0) {
+    return ZIntPoint(0, 0, 0);
+  }
+
+  return ZIntPoint(pt1.getX() / pt2.getX(), pt1.getY() / pt2.getY(),
+                   pt1.getZ() / pt2.getZ());
+}
+
+std::string ZIntPoint::toString() const
+{
+  std::ostringstream stream;
+  stream << "(" << getX() << ", " << getY() << ", " << getZ() << ")";
+
+  return stream.str();
+}
+
+ZIntPoint ZIntPoint::operator - () const
+{
+  return ZIntPoint(-getX(), -getY(), -getZ());
+}
+
+ZPoint ZIntPoint::toPoint() const
+{
+  return ZPoint(getX(), getY(), getZ());
+}
+
+bool ZIntPoint::isZero() const
+{
+  return (getX() == 0) && (getY() == 0) && (getZ() == 0);
 }

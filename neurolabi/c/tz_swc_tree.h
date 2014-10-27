@@ -30,6 +30,8 @@ typedef struct _Swc_Tree_Node {
   int index;                           /**< 0-based index in iteration */ 
   int flag;                            /**< a flag for temporary operation */
                                        /*Must reset to 0 after usage*/
+  int tree_state;                      /**< State of the host tree. 
+                                        *Reserved for high-level data structure. */
 } Swc_Tree_Node;
 
 typedef struct _Swc_Tree_Node_Map {
@@ -44,6 +46,7 @@ typedef struct _Swc_Tree {
   Swc_Tree_Node *root;         /**< root of the tree */
   Swc_Tree_Node *iterator;     /**< iterator */
   Swc_Tree_Node *begin;        /**< begin of the iterator */
+  int tree_state;
 } Swc_Tree;
 
 typedef struct _Swc_Tree_Branch {

@@ -11,6 +11,12 @@ class ZPointArray;
 class ZLineSegmentArray;
 class ZIntCuboidFace;
 class ZIntCuboidFaceArray;
+class ZStroke2d;
+class ZObject3d;
+class ZObject3dScan;
+class ZStack;
+class ZClosedCurve;
+class ZDvidInfo;
 
 class ZSwcGenerator
 {
@@ -25,6 +31,7 @@ public:
   static ZSwcTree* createVirtualRootSwc();
   static ZSwcTree* createCircleSwc(double cx, double cy, double cz, double r);
   static ZSwcTree* createBoxSwc(const ZCuboid &box);
+  static ZSwcTree* createBoxSwc(const ZIntCuboid &box);
   static ZSwcTree* createSwc(const ZFlyEmNeuronRange &range);
   static ZSwcTree* createSwc(const ZFlyEmNeuronRange &range,
                              const ZFlyEmNeuronAxis &axis);
@@ -41,6 +48,21 @@ public:
 
   static ZSwcTree* createSwc(const ZIntCuboidFace &face, double radius);
   static ZSwcTree* createSwc(const ZIntCuboidFaceArray &faceArray, double radius);
+
+  static ZSwcTree* createSwc(const ZStroke2d &stroke);
+  static ZSwcTree* createSwc(
+      const ZObject3d &obj, double radius, int sampleStep);
+
+  static ZSwcTree* createSwc(const ZObject3dScan &obj);
+
+  static ZSwcTree* createSurfaceSwc(const ZStack &stack, int sparseLevel = 1);
+  static ZSwcTree* createSurfaceSwc(const ZObject3dScan &obj,
+                                    int sparseLevel = 1);
+
+  static ZSwcTree* createSwc(const ZClosedCurve &curve, double radius);
+
+  static ZSwcTree* createSwc(const ZObject3dScan &blockObj, int z,
+                             const ZDvidInfo &dvidInfo);
 
 private:
   static ZSwcTree* createSwcByRegionSampling(const ZVoxelArray &voxelArray,

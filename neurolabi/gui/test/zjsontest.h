@@ -19,6 +19,49 @@ TEST(Json, basic)
   ASSERT_EQ(true, ZJsonParser::booleanValue(obj["test2"]));
 
   obj.print();
+
+  json_t *value = json_integer(1);
+  ZJsonObject obj2(value, ZJsonValue::SET_AS_IT_IS);
+  ASSERT_TRUE(obj2.isEmpty());
+
+  ZJsonValue obj3(value, ZJsonValue::SET_AS_IT_IS);
+  ASSERT_FALSE(obj.isEmpty());
+
+  ASSERT_EQ(1, obj3.toInteger());
+
+  ZJsonArray arrayObj;
+  ASSERT_TRUE(arrayObj.isEmpty());
+  arrayObj.append(obj);
+  ASSERT_EQ(1, (int) arrayObj.size());
+
+  arrayObj.append(2);
+  ASSERT_EQ(2, (int) arrayObj.size());
+  ASSERT_EQ(2, ZJsonParser::integerValue(arrayObj.at(1)));
+
+  arrayObj.append(3.0);
+  ASSERT_EQ(3, (int) arrayObj.size());
+  ASSERT_EQ(0, ZJsonParser::integerValue(arrayObj.at(2)));
+}
+
+TEST(ZJsonArray, basic)
+{
+  ZJsonArray arrayObj;
+  ASSERT_TRUE(arrayObj.isEmpty());
+  arrayObj.append(ZJsonObject());
+  ASSERT_EQ(0, (int) arrayObj.size());
+
+  ZJsonObject obj;
+  obj.setEntry("test", 1);
+  arrayObj.append(obj);
+  ASSERT_EQ(1, (int) arrayObj.size());
+
+  arrayObj.append(2);
+  ASSERT_EQ(2, (int) arrayObj.size());
+  ASSERT_EQ(2, ZJsonParser::integerValue(arrayObj.at(1)));
+
+  arrayObj.append(3.0);
+  ASSERT_EQ(3, (int) arrayObj.size());
+  ASSERT_EQ(0, ZJsonParser::integerValue(arrayObj.at(2)));
 }
 
 #endif

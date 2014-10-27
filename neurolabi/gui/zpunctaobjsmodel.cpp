@@ -83,7 +83,8 @@ QModelIndex ZPunctaObjsModel::getIndex(ZPunctum *punctum, int col) const
 {
   std::map<ZPunctum*, int>::const_iterator pun2rIt = m_punctaToRow.find(punctum);
   if (pun2rIt != m_punctaToRow.end()) {
-    std::map<QString, ZObjsItem*>::const_iterator s2pIt = m_punctaSourceToParent.find(punctum->source());
+    std::map<QString, ZObjsItem*>::const_iterator s2pIt =
+        m_punctaSourceToParent.find(punctum->getSource().c_str());
     std::map<ZObjsItem*, int>::const_iterator p2rIt = m_punctaSourceParentToRow.find(s2pIt->second);
     return index(pun2rIt->second, col, index(p2rIt->second, 0));
   }
@@ -136,7 +137,7 @@ void ZPunctaObjsModel::updateData(ZPunctum *punctum)
   data << p->score() << p->name() << p->comment() << p->x() << p->y() <<
           p->z() << p->sDevOfIntensity() << p->volSize() << p->mass() << p->radius() <<
           p->meanIntensity() << p->maxIntensity() << p->property1() << p->property2() <<
-          p->property3() << p->color() << p->source();
+          p->property3() << p->color() << p->getSource().c_str();
   emit dataChanged(index, getIndex(punctum, item->parent()->columnCount()-1));
 }
 
@@ -167,18 +168,21 @@ void ZPunctaObjsModel::setupModelData(ZObjsItem *parent)
   for (int i=0; i<m_doc->punctaList()->size(); i++) {
     data.clear();
     ZPunctum *p = m_doc->punctaList()->at(i);
-    QFileInfo sourceInfo(p->source());
-    if (m_punctaSourceToParent.find(p->source()) != m_punctaSourceToParent.end()) {
-      ZObjsItem *sourceParent = m_punctaSourceToParent[p->source()];
-      data << QString("puncta %1").arg(m_punctaSourceToCount[p->source()] + 1, numDigit, 10, QLatin1Char('0')) << p->score() << p->name() << p->comment() << p->x() << p->y() <<
+    QFileInfo sourceInfo(p->getSource().c_str());
+    if (m_punctaSourceToParent.find(p->getSource().c_str()) != m_punctaSourceToParent.end()) {
+      ZObjsItem *sourceParent = m_punctaSourceToParent[p->getSource().c_str()];
+      data << QString("puncta %1").
+              arg(m_punctaSourceToCount[p->getSource().c_str()] + 1,
+          numDigit, 10, QLatin1Char('0')) << p->score() << p->name() <<
+                                             p->comment() << p->x() << p->y() <<
               p->z() << p->sDevOfIntensity() << p->volSize() << p->mass() << p->radius() <<
               p->meanIntensity() << p->maxIntensity() << p->property1() << p->property2() <<
               p->property3() << p->color() << sourceInfo.fileName();
-      m_punctaToRow[p] = m_punctaSourceToCount[p->source()];
-      m_punctaSourceToCount[p->source()]++;
+      m_punctaToRow[p] = m_punctaSourceToCount[p->getSource().c_str()];
+      m_punctaSourceToCount[p->getSource().c_str()]++;
       ZObjsItem *punctum = new ZObjsItem(data, p, sourceParent);
       punctum->setCheckState(p->isVisible() ? Qt::Checked : Qt::Unchecked);
-      punctum->setToolTip(QString("puncta from: %1").arg(p->source()));
+      punctum->setToolTip(QString("puncta from: %1").arg(p->getSource().c_str()));
       sourceParent->appendChild(punctum);
       m_punctaSeparatedByFile[m_punctaSourceParentToRow[sourceParent]].push_back(m_doc->punctaList()->at(i));
     } else {
@@ -187,22 +191,22 @@ void ZPunctaObjsModel::setupModelData(ZObjsItem *parent)
               "property1" << "property2" << "property3" << "color" << "source";
       m_punctaSeparatedByFile.push_back(std::vector<ZPunctum*>());
       ZObjsItem *sourceParent = new ZObjsItem(data, NULL, parent);
-      sourceParent->setToolTip(QString("puncta source: %1").arg(p->source()));
-      m_punctaSourceToParent[p->source()] = sourceParent;
-      m_punctaSourceToCount[p->source()] = 0;
+      sourceParent->setToolTip(QString("puncta source: %1").arg(p->getSource().c_str()));
+      m_punctaSourceToParent[p->getSource().c_str()] = sourceParent;
+      m_punctaSourceToCount[p->getSource().c_str()] = 0;
       parent->appendChild(sourceParent);
       m_punctaSourceParentToRow[sourceParent] = sourceParentRow++;
 
       data.clear();
-      data << QString("puncta %1").arg(m_punctaSourceToCount[p->source()] + 1, numDigit, 10, QLatin1Char('0')) << p->score() << p->name() << p->comment() << p->x() << p->y() <<
+      data << QString("puncta %1").arg(m_punctaSourceToCount[p->getSource().c_str()] + 1, numDigit, 10, QLatin1Char('0')) << p->score() << p->name() << p->comment() << p->x() << p->y() <<
               p->z() << p->sDevOfIntensity() << p->volSize() << p->mass() << p->radius() <<
               p->meanIntensity() << p->maxIntensity() << p->property1() << p->property2() <<
               p->property3() << p->color() << sourceInfo.fileName();
-      m_punctaToRow[p] = m_punctaSourceToCount[p->source()];
-      m_punctaSourceToCount[p->source()]++;
+      m_punctaToRow[p] = m_punctaSourceToCount[p->getSource().c_str()];
+      m_punctaSourceToCount[p->getSource().c_str()]++;
       ZObjsItem *punctum = new ZObjsItem(data, p, sourceParent);
       punctum->setCheckState(p->isVisible() ? Qt::Checked : Qt::Unchecked);
-      punctum->setToolTip(QString("puncta from: %1").arg(p->source()));
+      punctum->setToolTip(QString("puncta from: %1").arg(p->getSource().c_str()));
       sourceParent->appendChild(punctum);
       m_punctaSeparatedByFile[m_punctaSourceParentToRow[sourceParent]].push_back(m_doc->punctaList()->at(i));
     }

@@ -8,6 +8,8 @@
 #include <iostream>
 #include <string>
 
+class ZIntPoint;
+
 class ZPoint {
 public:
   ZPoint();
@@ -36,6 +38,8 @@ public:
   double& operator[] (int index);
   ZPoint& operator= (const ZPoint &pt);
 
+  bool operator < (const ZPoint &pt) const;
+
   inline void setX(double x) { m_x = x; }
   inline void setY(double y) { m_y = y; }
   inline void setZ(double z) { m_z = z; }
@@ -45,7 +49,9 @@ public:
   double length() const;
 
   ZPoint& operator += (const ZPoint &pt);
+  ZPoint& operator += (const ZIntPoint &pt);
   ZPoint& operator -= (const ZPoint &pt);
+  ZPoint& operator *= (const ZPoint &pt);
   ZPoint& operator /= (const ZPoint &pt);
   ZPoint& operator += (double offset);
   ZPoint& operator -= (double offset);
@@ -54,6 +60,7 @@ public:
   ZPoint operator - () const;
 
   friend ZPoint operator + (const ZPoint &pt1, const ZPoint &pt2);
+  friend ZPoint operator + (const ZPoint &pt1, const ZIntPoint &pt2);
   friend ZPoint operator - (const ZPoint &pt1, const ZPoint &pt2);
   friend ZPoint operator * (const ZPoint &pt1, double scale);
 
@@ -62,6 +69,7 @@ public:
   void normalize();
   double dot(const ZPoint &pt) const;
   double cosAngle(const ZPoint &pt) const;
+  ZPoint cross(const ZPoint &pt) const;
 
   bool isApproxOrigin() const;
   bool approxEquals(const ZPoint &pt) const;
@@ -74,6 +82,12 @@ public:
     m_y += dy;
     m_z += dz;
   }
+  void translate(const ZPoint &dp);
+
+  void rotate(double theta, double psi);
+  void rotate(double theta, double psi, const ZPoint &center);
+
+  ZIntPoint toIntPoint() const;
 
 public:
   //virtual void display(ZPainter &painter, int n = 0, Display_Style style = NORMAL) const;
@@ -82,6 +96,24 @@ public:
   virtual void load(const char *filePath);
 
   static inline double minimalDistance() { return m_minimalDistance; }
+
+  struct ZCompare {
+    bool operator() (const ZPoint &pt1, const ZPoint &pt2) {
+      return (pt1.z() < pt2.z());
+    }
+  };
+
+  struct YCompare {
+    bool operator() (const ZPoint &pt1, const ZPoint &pt2) {
+      return (pt1.y() < pt2.y());
+    }
+  };
+
+  struct XCompare {
+    bool operator() (const ZPoint &pt1, const ZPoint &pt2) {
+      return (pt1.x() < pt2.x());
+    }
+  };
 
 private:
   double m_x;

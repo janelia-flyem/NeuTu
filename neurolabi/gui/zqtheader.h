@@ -25,6 +25,18 @@ class QColor{};
 class QRectF{};
 class QRect{};
 typedef double qreal;
+#else
+#include <QObject>
+#include <QColor>
+#include <QPainter>
+#include <QImage>
+#include <QPoint>
+#include <QPointF>
+#include <QPaintDevice>
+#include <QString>
+#include <QList>
+#include <QRectF>
+#include <QRect>
 #endif
 
 #endif // ZQTHEADER_H

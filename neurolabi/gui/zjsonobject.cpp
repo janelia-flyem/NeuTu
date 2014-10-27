@@ -18,6 +18,13 @@ ZJsonObject::ZJsonObject(json_t *json, bool asNew) : ZJsonValue()
   }
 }
 
+ZJsonObject::ZJsonObject(json_t *data, ESetDataOption option) : ZJsonValue()
+{
+  if (ZJsonParser::isObject(data)) {
+    set(data, option);
+  }
+}
+
 ZJsonObject::ZJsonObject()
 {
 }
@@ -108,18 +115,6 @@ bool ZJsonObject::decode(const string &str)
   }
 
   return true;
-}
-
-string ZJsonObject::dumpString()
-{
-  string str;
-  if (!isEmpty()) {
-    char *cstr = json_dumps(getValue(), JSON_INDENT(2));
-    str = cstr;
-    free(cstr);
-  }
-
-  return str;
 }
 
 string ZJsonObject::summary()
@@ -300,11 +295,6 @@ void ZJsonObject::setEntry(const char *key, ZJsonValue &value)
   }
 
   setEntryWithoutKeyCheck(key, value.getValue());
-}
-
-bool ZJsonObject::dump(const string &path) const
-{
-  return C_Json::dump(m_data, path.c_str());
 }
 
 json_t* ZJsonObject::setArrayEntry(const char *key)

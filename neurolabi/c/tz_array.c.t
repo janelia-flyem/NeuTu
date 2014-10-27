@@ -1374,7 +1374,7 @@ double <2t>_simscore(<1t> *d1, <1t> *d2, size_t length)
   return d1;
 }
 
-<1t> <2t>_mean(<1t>* d1,size_t length)
+<1t> <2t>_mean(const <1t>* d1,size_t length)
 {
   return <2t>_sum(d1,length)/((<1t>)length);
 }
@@ -1425,7 +1425,7 @@ double <2t>_mean_d_m(const <1t> *d1,size_t length, const int *mask)
   }
 }
 
-double <2t>_var(<1t> *d1, size_t length)
+double <2t>_var(const <1t> *d1, size_t length)
 {
   if (length <= 1) {
     return 0.0;
@@ -1444,7 +1444,7 @@ double <2t>_var(<1t> *d1, size_t length)
   return v - mu * mu / length / (length - 1);
 }
 
-double <2t>_cov(<1t> *d1, <1t> *d2, size_t length)
+double <2t>_cov(const <1t> *d1, <1t> *d2, size_t length)
 {
   if (length <= 1) {
     return 0.0;

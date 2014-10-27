@@ -343,6 +343,11 @@ void Z3DApplication::detectOS()
     m_osString = "Mac OS X MOUNTAIN LION";
     break;
 #endif
+#if (QT_VERSION >= QT_VERSION_CHECK(4, 8, 6))
+  case QSysInfo::MV_10_9:
+    m_osString = "Mac OS X MAVERICKS";
+    break;
+#endif
   default:
     m_osString = "unsupported mac os";
     return;

@@ -5,14 +5,21 @@
 #include "tz_geo3d_scalar_field.h"
 #include "zweightedpoint.h"
 
+class ZCuboid;
+
 class ZWeightedPointArray : public std::vector<ZWeightedPoint>
 {
 public:
   ZWeightedPointArray();
 
 public:
-  Geo3d_Scalar_Field *toScalarField();
-  ZPoint principalDirection();
+  void append(const ZWeightedPoint &pt);
+  void append(double x, double y, double z, double weight);
+
+  Geo3d_Scalar_Field *toScalarField() const;
+  ZPoint principalDirection() const;
+  ZPoint computeCentroid() const;
+  ZCuboid getBoundBox() const;
 };
 
 #endif // ZWEIGHTEDPOINTARRAY_H

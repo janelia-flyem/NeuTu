@@ -7,7 +7,8 @@
 #include "z3drenderport.h"
 #include "z3drendererbase.h"
 
-// The base class for all processor classes that render to Z3DRenderOutputPort or screen
+// The base class for all processor classes that render to Z3DRenderOutputPort
+// or screen
 class Z3DRenderProcessor : public Z3DProcessor
 {
   Q_OBJECT
@@ -24,10 +25,11 @@ signals:
   void requestUpstreamSizeChange(Z3DRenderProcessor*);
 
 public slots:
-  // 1. for each outport, get all expected size from all connected inports, and use the maximum one
-  //    as the new size of the outport
+  // 1. for each outport, get all expected size from all connected inports,
+  //    and use the maximum one as the new size of the outport
   // 2. update private port size
-  // 3. Once we get the newsize of all outports, we calculate a expected size for each inport and set it.
+  // 3. Once we get the newsize of all outports, we calculate a expected size
+  //    for each inport and set it.
   //    default choice for inport expected size is the maximum new outport size
   // 4. notify camera parameter about the change
   // reimplement this if you want different behavior

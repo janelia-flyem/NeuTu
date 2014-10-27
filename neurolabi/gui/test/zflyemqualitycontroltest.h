@@ -104,8 +104,9 @@ TEST(ZFlyEmQualityAnalyzer, isStitchedOrphanBody)
   obj.addSegment(6, 1, 1, 1);
 
   analyzer.setSubstackRegion(roi);
-  EXPECT_TRUE(analyzer.isStitchedOrphanBody(obj));
-  EXPECT_FALSE(analyzer.isOrphanBody(obj));
+  obj.print();
+  ASSERT_TRUE(analyzer.isStitchedOrphanBody(obj));
+  ASSERT_FALSE(analyzer.isOrphanBody(obj));
 
   obj.clear();
   obj.addSegment(2, 1, 1, 2);

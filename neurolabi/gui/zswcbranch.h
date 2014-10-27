@@ -42,11 +42,13 @@ public:
   void save(const char *filePath);
 
   std::vector<ZPoint> sample(double step);
+  //std::vector<ZPoint> sampleFix(int n);
 
   std::string toString();
 
   //Note: resample() modifies the intermediate
   void resample(double step);
+  //void upsample(double step, int maxNewNodeNumber);
 
   void removeSmallEnds(double ratio);
 

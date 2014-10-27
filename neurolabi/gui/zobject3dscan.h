@@ -8,11 +8,12 @@
 #include <utility>
 #include "zqtheader.h"
 #include "c_stack.h"
-#include "zcuboid.h"
-#include "zstackdrawable.h"
+#include "zintcuboid.h"
+#include "zstackobject.h"
 #include "tz_cuboid_i.h"
 #include "zhistogram.h"
 #include "zvoxel.h"
+#include "zstackdocument.h"
 
 class ZObject3d;
 class ZGraph;
@@ -66,6 +67,7 @@ public:
 
   void downsample(int xintv);
   void downsampleMax(int xintv);
+  void upSample(int xIntv);
 
   void clearSegment();
 
@@ -119,7 +121,7 @@ private:
 };
 
 //Scan-line representation of a 3D object
-class ZObject3dScan : public ZStackDrawable
+class ZObject3dScan : public ZStackObject
 {
 public:
   ZObject3dScan();
@@ -158,6 +160,7 @@ public:
   std::map<int, size_t>& getSlicewiseVoxelNumber();
 
   const ZObject3dStripe& getStripe(size_t index) const;
+  ZObject3dStripe& getStripe(size_t index);
 
   /*
   const int* getFirstStripe() const;
@@ -177,11 +180,14 @@ public:
 
   //Turn a binary stack into scanlines
   void loadStack(const Stack *stack);
+  void loadStack(const ZStack &stack);
 
   void print() const;
 
+  void save(const char *filePath);
   void save(const char *filePath) const;
   void save(const std::string &filePath) const;
+  bool load(const char *filePath);
   bool load(const std::string &filePath);
 
   /*!
@@ -246,10 +252,14 @@ public:
   void downsample(int xintv, int yintv, int zintv);
   void downsampleMax(int xintv, int yintv, int zintv);
 
-  Stack* toStack(int *offset = NULL) const;
-  ZStack* toStackObject() const;
+  void upSample(int xIntv, int yIntv, int zIntv);
 
-  ZCuboid getBoundBox() const;
+  Stack* toStack(int *offset = NULL, int v = 1) const;
+  ZStack* toStackObject() const;
+  ZStack* toVirtualStack() const;
+  //ZStack* toDownsampledStack(int xIntv, int yIntv, int zIntv);
+
+  ZIntCuboid getBoundBox() const;
   void getBoundBox(Cuboid_I *box) const;
 
   template<class T>
@@ -291,8 +301,8 @@ public:
   ZObject3dScan getSlice(int minZ, int maxZ) const;
 
 
-  virtual void display(ZPainter &painter, int z = 0, Display_Style option = NORMAL)
-  const;
+  virtual void display(
+      ZPainter &painter, int slice, Display_Style option) const;
   virtual const std::string& className() const;
 
   void dilate();
@@ -337,9 +347,27 @@ public:
   int getMaxZ() const;
 
   /*!
+   * \brief Get minimal Y
+   *
+   * \return The minimal Y value of the object. If the object is empty,
+   *         it returns 0.
+   */
+  int getMinY() const;
+
+  /*!
+   * \brief Get maximal Y
+   *
+   * \return The maximal Y value of the object. If the object is empty,
+   *         it returns 0.
+   */
+  int getMaxY() const;
+
+  /*!
    * \brief Test if two objects are the same with respect to internal representation
    */
   bool equalsLiterally(const ZObject3dScan &obj) const;
+
+  size_t getSurfaceArea() const;
 
   /*!
    * \brief Get the complement of the object
@@ -440,9 +468,58 @@ public:
    *
    * \return true iff the object is saved successfully
    */
-  bool exportHdf5(const std::string &filePath, const std::string &key) const;
+  //bool exportHdf5(const std::string &filePath, const std::string &key) const;
 
-private:
+  /*!
+   * \brief Check if two objects have overlap
+   *
+   * 26-neighborhood.
+   */
+  bool hasOverlap(ZObject3dScan &obj);
+
+
+  /*!
+   * \brief Check if an object is ajacent to another
+   */
+  bool isAdjacentTo(ZObject3dScan &obj);
+
+  class Segment {
+  public:
+    Segment(int z = 0, int y = 0, int x0 = 0, int x1 = 0) :
+      m_x0(x0), m_x1(x1), m_y(y), m_z(z) {}
+    inline int getZ() const { return m_z; }
+    inline int getY() const { return m_y; }
+    inline int getStart() const { return m_x0; }
+    inline int getEnd() const { return m_x1; }
+    inline void set(int z = 0, int y = 0, int x0 = 0, int x1 = 0) {
+      m_x0 = x0;
+      m_x1 = x1;
+      m_y = y;
+      m_z = z;
+    }
+
+  private:
+    int m_x0;
+    int m_x1;
+    int m_y;
+    int m_z;
+  };
+
+  class ConstSegmentIterator {
+  public:
+    ConstSegmentIterator(const ZObject3dScan *obj = NULL);
+    const Segment& next();
+    bool hasNext() const;
+    void advance();
+
+  private:
+    const ZObject3dScan *m_obj;
+    size_t m_stripeIndex;
+    int m_segmentIndex;
+    Segment m_seg;
+  };
+
+protected:
   std::vector<ZObject3dStripe> m_stripeArray;
   /*
   int m_stripeNumber;

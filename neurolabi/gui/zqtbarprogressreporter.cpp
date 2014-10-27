@@ -40,3 +40,4 @@ void ZQtBarProgressReporter::pull()
 {
   m_progress = 0.01 * m_progressBar->value();
 }
+

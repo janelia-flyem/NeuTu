@@ -16,6 +16,21 @@ ZDvidDialog::ZDvidDialog(QWidget *parent) :
   target.setName("Custom");
   m_dvidRepo.push_back(target);
 
+#if defined(_FLYEM_)
+  const std::vector<ZDvidTarget> dvidRepo =
+      NeutubeConfig::getInstance().getFlyEmConfig().getDvidRepo();
+  m_dvidRepo.insert(m_dvidRepo.end(), dvidRepo.begin(), dvidRepo.end());
+#endif
+  for (std::vector<ZDvidTarget>::const_iterator iter = m_dvidRepo.begin();
+       iter != m_dvidRepo.end(); ++iter) {
+    const ZDvidTarget &target = *iter;
+    if (!target.getName().empty()) {
+      ui->serverComboBox->addItem(target.getName().c_str());
+    } else {
+      ui->serverComboBox->addItem(target.getSourceString(false).c_str());
+    }
+  }
+
   setServer(0);
   connect(ui->serverComboBox, SIGNAL(currentIndexChanged(int)),
           this, SLOT(setServer(int)));
@@ -26,6 +41,7 @@ ZDvidDialog::~ZDvidDialog()
   delete ui;
 }
 
+/*
 void ZDvidDialog::loadConfig(const std::string &filePath)
 {
   m_dvidRepo.resize(1);
@@ -51,10 +67,11 @@ void ZDvidDialog::loadConfig(const std::string &filePath)
   }
 
   if (m_dvidRepo.size() > 1) {
-    setServer(1);
+    ui->serverComboBox->setCurrentIndex(1);
+    //setServer(1);
   }
 }
-
+*/
 int ZDvidDialog::getPort() const
 {
   return ui->portSpinBox->value();
@@ -70,10 +87,19 @@ QString ZDvidDialog::getUuid() const
   return ui->uuidLineEdit->text();
 }
 
-ZDvidTarget ZDvidDialog::getDvidTarget() const
+const ZDvidTarget &ZDvidDialog::getDvidTarget() const
 {
-  return
-      ZDvidTarget(getAddress().toStdString(), getUuid().toStdString(), getPort());
+  return m_dvidRepo[ui->serverComboBox->currentIndex()];
+  /*
+  ZDvidTarget target(
+        getAddress().toStdString(), getUuid().toStdString(), getPort());
+  target.setName(
+        ui->serverComboBox->itemText(ui->serverComboBox->currentIndex()).
+        toStdString());
+  target.setComment(ui->infoLabel->text().toStdString());
+
+  return target;
+  */
 }
 
 void ZDvidDialog::setServer(int index)

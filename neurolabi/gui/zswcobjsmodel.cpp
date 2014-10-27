@@ -90,12 +90,12 @@ void ZSwcObjsModel::setupModelData(ZObjsItem *parent)
     ZSwcTree *swcTree = m_doc->swcList()->at(i);
 
     data << QString("Neuron %1").arg(i+1)
-         << QString::fromStdString(swcTree->source());
+         << QString::fromStdString(swcTree->getSource());
 
     ZObjsItem *nodeParent = new ZObjsItem(data, swcTree, parent);
     nodeParent->setCheckState(swcTree->isVisible() ? Qt::Checked : Qt::Unchecked);
     nodeParent->setToolTip(QString("Neuron %1: %2").arg(i + 1).arg(
-                             QString::fromStdString(swcTree->source())));
+                             QString::fromStdString(swcTree->getSource())));
     parent->appendChild(nodeParent);
     m_swcToRow[swcTree] = i;
 

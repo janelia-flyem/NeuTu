@@ -60,6 +60,7 @@ ZFileType::EFileType ZFileType::fileType(const std::string &filePath)
         return RAVELER_BOOKMARK;
       }
     }
+    return TXT_FILE;
   } else if (str.endsWith(".nsp", ZString::CASE_INSENSITIVE)) {
     return MYERS_NSP_FILE;
   } else if (str.endsWith(".sobj", ZString::CASE_INSENSITIVE)) {
@@ -70,6 +71,8 @@ ZFileType::EFileType ZFileType::fileType(const std::string &filePath)
     return DVID_OBJECT_FILE;
   } else if (str.endsWith(".hf5", ZString::CASE_INSENSITIVE)) {
     return HDF5_FILE;
+  } else if (str.endsWith("mraw"), ZString::CASE_INSENSITIVE) {
+    return MC_STACK_RAW_FILE;
   }
 
 
@@ -123,7 +126,8 @@ bool ZFileType::isImageFile(EFileType type)
   return (type == TIFF_FILE) || (type == LSM_FILE) || (type == PNG_FILE) ||
       (type == V3D_RAW_FILE) || (type == V3D_PBD_FILE) ||
       (type == MYERS_NSP_FILE) || (type == OBJECT_SCAN_FILE) ||
-      (type == JPG_FILE) || (type == DVID_OBJECT_FILE);
+      (type == JPG_FILE) || (type == DVID_OBJECT_FILE) ||
+      (type == MC_STACK_RAW_FILE);
 }
 
 bool ZFileType::isImageFile(const std::string &filePath)

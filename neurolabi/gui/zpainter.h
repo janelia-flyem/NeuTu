@@ -12,6 +12,8 @@
 
 #include "zpoint.h"
 
+class ZIntPoint;
+
 /*!
  * \brief The painter class using QPainter to draw objects with extended options
  */
@@ -20,12 +22,9 @@ class ZPainter : public QPainter
 public:
   ZPainter();
   ZPainter(QPaintDevice * device);
-  inline void setStackOffset(double x, double y, double z) {
-    m_offset.set(-x, -y, -z);
-  }
-  inline void setStackOffset(const ZPoint &offset) {
-    setStackOffset(offset.x(), offset.y(), offset.z());
-  }
+  void setStackOffset(int x, int y, int z);
+  void setStackOffset(const ZIntPoint &offset);
+  void setStackOffset(const ZPoint &offset);
 
   inline const ZPoint& getOffset() { return m_offset; }
 

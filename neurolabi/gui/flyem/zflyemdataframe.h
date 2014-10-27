@@ -18,6 +18,8 @@
 #include "flyem/zflyemneuronmatchtaskmanager.h"
 #include "flyem/zflyemneuronfiltertaskmanager.h"
 #include "flyem/zflyemqualityanalyzertaskmanager.h"
+#include "dvid/zdvidtarget.h"
+#include "flyem/zflyemneuronimagefactory.h"
 
 class ZSwcTrunkAnalyzer;
 class ZSwcFeatureAnalyzer;
@@ -50,6 +52,12 @@ public:
     MATCH, SORT_SHAPE, PREDICT_CLASS, PREDICT_ERROR, UNKNOWN_ACTION
   };
 
+  enum EScoreOption {
+    SCORE_MATCH, //matching score only
+    SCORE_ORTREG, //regularized by orientation
+    SCORE_ORTDIV  //separated by orientation
+  };
+
   //Load a data bundle file. It returns false if the file cannot be loaded
   //correctly.
   bool load(const std::string &filePath, bool appending = false);
@@ -75,6 +83,7 @@ public:
 
   void predictClass(ZFlyEmNeuron *neuron);
   void predictClass(const QVector<ZFlyEmNeuron*> &neuronArray);
+  void predictClass();
 
   /*!
    * \brief Reassign classes to neurons
@@ -97,6 +106,10 @@ public:
     return (index < m_dataArray.size()) ? m_dataArray[index] : NULL;
   }
 
+  inline const ZFlyEmDataBundle* getDataBundle(int index = 0) const {
+    return (index < m_dataArray.size()) ? m_dataArray[index] : NULL;
+  }
+
   /*!
    * \brief Compute and save morphological features of all the neurons
    *
@@ -113,10 +126,27 @@ public:
    */
   void exportThumbnail(const QString &saveDir, bool thumbnailUpdate,
                        const ZFlyEmNeuronImageFactory &imageFactory);
-
   void exportThumbnail();
 
+  /*!
+   * \brief Export layer features
+   */
+  void exportLayerFeature(const QString &savePath) const;
+
   void exportBundle(const QString &savePath);
+
+  void exportSideBoundaryAnalysis(
+      const QString &savePath, const QString &substackPath,
+      const QString &synapsePath);
+
+  void importBoundBox(const QString &substackPath);
+
+  /*!
+   * \brief Upload annotations to DVID server.
+   *
+   * Empty annotations will be ignored.
+   */
+  void uploadAnnotation() const;
 
   /*!
    * \brief Set volume entries based on a directory
@@ -142,6 +172,19 @@ public:
   void identifyHotSpot(int id);
 
   void submitSkeletonizeService() const;
+
+  const ZFlyEmNeuron *getNeuronFromIndex(
+      size_t idx, int *bundleIndex = NULL) const;
+
+  void setDvidTarget(const ZDvidTarget &target);
+  const ZDvidTarget& getDvidTarget() const;
+
+  inline ZFlyEmNeuronImageFactory* getImageFactory() {
+    return &m_imageFactory;
+  }
+
+  ZFlyEmDataBundle* getMasterData();
+  const ZFlyEmDataBundle* getMasterData() const;
 
 signals:
   void volumeTriggered(const QString &path);
@@ -179,7 +222,6 @@ private:
   ZFlyEmNeuron* getNeuron(int id, int bundleIndex = -1);
   const ZFlyEmNeuron* getNeuron(const std::pair<int, int> &bodyId) const;
 
-  const ZFlyEmNeuron *getNeuronFromIndex(size_t idx, int *bundleIndex) const;
   size_t getNeuronNumber() const;
 
   ZSwcTree* getModel(int id, int bundleIndex = -1);
@@ -190,6 +232,9 @@ private:
   void prepareClassPrediction(ZFlyEmNeuron *neuron);
 
   bool initTaskManager(ZMultiTaskManager *taskManager);
+
+  std::vector<std::vector<double> > computeLayerFeature(
+      const ZFlyEmNeuron &neuron) const;
 
 private:
   void parseCommand(const std::string &command);
@@ -236,7 +281,7 @@ private:
 
 private:
   //Main data
-  QVector<ZFlyEmDataBundle*> m_dataArray;
+  QVector<ZFlyEmDataBundle*> m_dataArray; //The first bundle is treated as the master
   
   //View
   FlyEmDataForm *m_centralWidget;
@@ -258,7 +303,8 @@ private:
   FlyEmDataFrameOptionDialog m_optionDialog;
   FlyEmDataQueryDialog m_queryDialog;
   FlyEmDataProcessDialog m_processDialog;
-  bool m_checkOrientation;
+  //bool m_checkOrientation;
+  EScoreOption m_scoreOption;
 
   ZFlyEmNeuronInfoPresenter *m_infoPresenter;
   ZFlyEmNeuronFeaturePresenter *m_featurePresenter;
@@ -278,6 +324,9 @@ private:
   //ZSwcTreeBatchMatcher *m_batchMatcher;
 
   QVector<ZFlyEmNeuron*> m_foregroundNeuronArray;
+
+  ZDvidTarget m_dvidTarget;
+  ZFlyEmNeuronImageFactory m_imageFactory;
 };
 
 #endif // ZFLYEMDATAFRAME_H

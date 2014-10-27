@@ -5,13 +5,9 @@
 #include "neutubeconfig.h"
 #include "flyem/zintcuboidarray.h"
 #include "flyem/zintcuboidcomposition.h"
-#ifdef __GLIBCXX__
-#include <tr1/memory>
-#else
-#include <memory>
-#endif
 #include "zcuboid.h"
 #include "zintcuboidface.h"
+#include "zsharedpointer.h"
 
 #ifdef _USE_GTEST_
 
@@ -166,15 +162,15 @@ TEST(ZIntCuboidComposition, hitTest)
   EXPECT_TRUE(cuboid.hitTest(2, 2, 2));
   EXPECT_FALSE(cuboid.hitTest(3, 3, 3));
 
-  std::tr1::shared_ptr<FlyEm::ZIntCuboidComposition> comp1(
+  ZSharedPointer<FlyEm::ZIntCuboidComposition> comp1(
         new FlyEm::ZIntCuboidComposition);
   comp1->setSingular(0, 0, 0, 3, 3, 3);
 
-  std::tr1::shared_ptr<FlyEm::ZIntCuboidComposition> comp2(
+  ZSharedPointer<FlyEm::ZIntCuboidComposition> comp2(
         new FlyEm::ZIntCuboidComposition);
   comp2->setSingular(0, 0, 0, 3, 3, 3);
 
-  std::tr1::shared_ptr<FlyEm::ZIntCuboidComposition> comp3(
+  ZSharedPointer<FlyEm::ZIntCuboidComposition> comp3(
         new FlyEm::ZIntCuboidComposition);
   comp3->setComposition(comp1, comp2, FlyEm::ZIntCuboidComposition::OR);
   EXPECT_TRUE(comp3->hitTest(0, 0, 0));
@@ -326,6 +322,307 @@ TEST(ZIntCuboidFaceArray, basic)
   faceArray3.print();
 
   ASSERT_EQ(7, (int) faceArray3.size());
+}
+
+TEST(ZCuboid, intersectLine)
+{
+  ZCuboid cuboid(0, 0, 0, 0, 0, 0);
+  ZLineSegment seg;
+  ASSERT_FALSE(cuboid.intersectLine(ZPoint(0, 0, 0), ZPoint(0, 0, 0), NULL));
+  ASSERT_FALSE(cuboid.intersectLine(ZPoint(1, 0, 0), ZPoint(1, 1, 1), NULL));
+  ASSERT_FALSE(cuboid.intersectLine(ZPoint(1, 0, 0), ZPoint(0, 1, 0), NULL));
+  ASSERT_TRUE(cuboid.intersectLine(ZPoint(0, 0, 0), ZPoint(1, 0, 0), &seg));
+  ASSERT_DOUBLE_EQ(0, seg.getStartPoint().x());
+  ASSERT_DOUBLE_EQ(0, seg.getStartPoint().y());
+  ASSERT_DOUBLE_EQ(0, seg.getStartPoint().z());
+  ASSERT_DOUBLE_EQ(0, seg.getEndPoint().x());
+  ASSERT_DOUBLE_EQ(0, seg.getEndPoint().y());
+  ASSERT_DOUBLE_EQ(0, seg.getEndPoint().z());
+
+  ASSERT_TRUE(cuboid.intersectLine(ZPoint(0, 0, 0), ZPoint(0, 1, 0), &seg));
+  ASSERT_DOUBLE_EQ(0, seg.getStartPoint().x());
+  ASSERT_DOUBLE_EQ(0, seg.getStartPoint().y());
+  ASSERT_DOUBLE_EQ(0, seg.getStartPoint().z());
+  ASSERT_DOUBLE_EQ(0, seg.getEndPoint().x());
+  ASSERT_DOUBLE_EQ(0, seg.getEndPoint().y());
+  ASSERT_DOUBLE_EQ(0, seg.getEndPoint().z());
+
+  ASSERT_TRUE(cuboid.intersectLine(ZPoint(0, 0, 0), ZPoint(0, 0, 1), &seg));
+  ASSERT_DOUBLE_EQ(0, seg.getStartPoint().x());
+  ASSERT_DOUBLE_EQ(0, seg.getStartPoint().y());
+  ASSERT_DOUBLE_EQ(0, seg.getStartPoint().z());
+  ASSERT_DOUBLE_EQ(0, seg.getEndPoint().x());
+  ASSERT_DOUBLE_EQ(0, seg.getEndPoint().y());
+  ASSERT_DOUBLE_EQ(0, seg.getEndPoint().z());
+
+
+  cuboid.set(0, 0, 0, 1, 1, 1);
+  ASSERT_TRUE(cuboid.intersectLine(ZPoint(0, 0, 0), ZPoint(1, 0, 0), &seg));
+  ASSERT_DOUBLE_EQ(0, seg.getStartPoint().x());
+  ASSERT_DOUBLE_EQ(0, seg.getStartPoint().y());
+  ASSERT_DOUBLE_EQ(0, seg.getStartPoint().z());
+  ASSERT_DOUBLE_EQ(1, seg.getEndPoint().x());
+  ASSERT_DOUBLE_EQ(0, seg.getEndPoint().y());
+  ASSERT_DOUBLE_EQ(0, seg.getEndPoint().z());
+
+  ASSERT_TRUE(cuboid.intersectLine(ZPoint(0, 0, 0), ZPoint(0, 1, 0), &seg));
+  ASSERT_DOUBLE_EQ(0, seg.getStartPoint().x());
+  ASSERT_DOUBLE_EQ(0, seg.getStartPoint().y());
+  ASSERT_DOUBLE_EQ(0, seg.getStartPoint().z());
+  ASSERT_DOUBLE_EQ(0, seg.getEndPoint().x());
+  ASSERT_DOUBLE_EQ(1, seg.getEndPoint().y());
+  ASSERT_DOUBLE_EQ(0, seg.getEndPoint().z());
+
+  ASSERT_TRUE(cuboid.intersectLine(ZPoint(0, 0, 0), ZPoint(0, 0, 1), &seg));
+  ASSERT_DOUBLE_EQ(0, seg.getStartPoint().x());
+  ASSERT_DOUBLE_EQ(0, seg.getStartPoint().y());
+  ASSERT_DOUBLE_EQ(0, seg.getStartPoint().z());
+  ASSERT_DOUBLE_EQ(0, seg.getEndPoint().x());
+  ASSERT_DOUBLE_EQ(0, seg.getEndPoint().y());
+  ASSERT_DOUBLE_EQ(1, seg.getEndPoint().z());
+
+  ASSERT_TRUE(cuboid.intersectLine(ZPoint(0, 0.5, 0.6), ZPoint(1, 0, 0), &seg));
+  ASSERT_DOUBLE_EQ(0, seg.getStartPoint().x());
+  ASSERT_DOUBLE_EQ(0.5, seg.getStartPoint().y());
+  ASSERT_DOUBLE_EQ(0.6, seg.getStartPoint().z());
+  ASSERT_DOUBLE_EQ(1, seg.getEndPoint().x());
+  ASSERT_DOUBLE_EQ(0.5, seg.getEndPoint().y());
+  ASSERT_DOUBLE_EQ(0.6, seg.getEndPoint().z());
+
+  ASSERT_TRUE(cuboid.intersectLine(ZPoint(0.5, 10, 0.6), ZPoint(0, 1, 0), &seg));
+  ASSERT_DOUBLE_EQ(0.5, seg.getStartPoint().x());
+  ASSERT_DOUBLE_EQ(0, seg.getStartPoint().y());
+  ASSERT_DOUBLE_EQ(0.6, seg.getStartPoint().z());
+  ASSERT_DOUBLE_EQ(0.5, seg.getEndPoint().x());
+  ASSERT_DOUBLE_EQ(1, seg.getEndPoint().y());
+  ASSERT_DOUBLE_EQ(0.6, seg.getEndPoint().z());
+
+
+  cuboid.set(0.5, 0, 0, 1, 1, 1);
+  ASSERT_TRUE(cuboid.intersectLine(ZPoint(10, 0.5, 0.5), ZPoint(1, 0, 0), &seg));
+  ASSERT_DOUBLE_EQ(0.5, seg.getStartPoint().x());
+  ASSERT_DOUBLE_EQ(0.5, seg.getStartPoint().y());
+  ASSERT_DOUBLE_EQ(0.5, seg.getStartPoint().z());
+  ASSERT_DOUBLE_EQ(1, seg.getEndPoint().x());
+  ASSERT_DOUBLE_EQ(0.5, seg.getEndPoint().y());
+  ASSERT_DOUBLE_EQ(0.5, seg.getEndPoint().z());
+
+  ASSERT_FALSE(cuboid.intersectLine(ZPoint(0, 2.5, 0.5), ZPoint(1, 0, 0), &seg));
+
+  cuboid.set(0, 0, 0, 1, 1, 1);
+  ASSERT_TRUE(cuboid.intersectLine(ZPoint(0, 0, 0), ZPoint(1, 1, 0), &seg));
+  ASSERT_DOUBLE_EQ(0, seg.getStartPoint().x());
+  ASSERT_DOUBLE_EQ(0, seg.getStartPoint().y());
+  ASSERT_DOUBLE_EQ(0, seg.getStartPoint().z());
+  ASSERT_DOUBLE_EQ(1, seg.getEndPoint().x());
+  ASSERT_DOUBLE_EQ(1, seg.getEndPoint().y());
+  ASSERT_DOUBLE_EQ(0, seg.getEndPoint().z());
+
+  ASSERT_TRUE(cuboid.intersectLine(ZPoint(0.5, 0, 0), ZPoint(1, 1, 0), &seg));
+  ASSERT_DOUBLE_EQ(1, seg.getStartPoint().x());
+  ASSERT_DOUBLE_EQ(0.5, seg.getStartPoint().y());
+  ASSERT_DOUBLE_EQ(0, seg.getStartPoint().z());
+  ASSERT_DOUBLE_EQ(0.5, seg.getEndPoint().x());
+  ASSERT_DOUBLE_EQ(0, seg.getEndPoint().y());
+  ASSERT_DOUBLE_EQ(0, seg.getEndPoint().z());
+
+  ASSERT_TRUE(cuboid.intersectLine(ZPoint(0, 0.5, 0), ZPoint(1, 1, 0), &seg));
+  ASSERT_DOUBLE_EQ(0, seg.getStartPoint().x());
+  ASSERT_DOUBLE_EQ(0.5, seg.getStartPoint().y());
+  ASSERT_DOUBLE_EQ(0, seg.getStartPoint().z());
+  ASSERT_DOUBLE_EQ(0.5, seg.getEndPoint().x());
+  ASSERT_DOUBLE_EQ(1, seg.getEndPoint().y());
+  ASSERT_DOUBLE_EQ(0, seg.getEndPoint().z());
+
+  ASSERT_TRUE(cuboid.intersectLine(ZPoint(0, 0.2, 0), ZPoint(0.5, 0.5, 0), &seg));
+  //seg.print();
+  ASSERT_DOUBLE_EQ(0, seg.getStartPoint().x());
+  ASSERT_DOUBLE_EQ(0.2, seg.getStartPoint().y());
+  ASSERT_DOUBLE_EQ(0, seg.getStartPoint().z());
+  ASSERT_DOUBLE_EQ(1, seg.getEndPoint().y());
+  ASSERT_DOUBLE_EQ(0, seg.getEndPoint().z());
+
+
+  ASSERT_TRUE(cuboid.intersectLine(ZPoint(0.3, 0.2, 0), ZPoint(0.5, 0.5, 0), &seg));
+  //seg.print();
+  ASSERT_DOUBLE_EQ(1, seg.getStartPoint().x());
+  ASSERT_DOUBLE_EQ(0, seg.getStartPoint().z());
+  ASSERT_DOUBLE_EQ(0, seg.getEndPoint().y());
+  ASSERT_DOUBLE_EQ(0, seg.getEndPoint().z());
+
+  ASSERT_TRUE(cuboid.intersectLine(ZPoint(0.3, 0.2, 0.5), ZPoint(0.1, 0.5, 0.0), &seg));
+  ASSERT_DOUBLE_EQ(0, seg.getStartPoint().y());
+  ASSERT_DOUBLE_EQ(0.5, seg.getStartPoint().z());
+  ASSERT_DOUBLE_EQ(1, seg.getEndPoint().y());
+  ASSERT_DOUBLE_EQ(0.5, seg.getEndPoint().z());
+  //seg.print();
+
+  cuboid.set(0, 0, 0, 1, 1, 1);
+  ASSERT_TRUE(cuboid.intersectLine(ZPoint(0, 0, 0), ZPoint(1, 0, 1), &seg));
+  ASSERT_DOUBLE_EQ(0, seg.getStartPoint().x());
+  ASSERT_DOUBLE_EQ(0, seg.getStartPoint().y());
+  ASSERT_DOUBLE_EQ(0, seg.getStartPoint().z());
+  ASSERT_DOUBLE_EQ(1, seg.getEndPoint().x());
+  ASSERT_DOUBLE_EQ(0, seg.getEndPoint().y());
+  ASSERT_DOUBLE_EQ(1, seg.getEndPoint().z());
+
+  ASSERT_TRUE(cuboid.intersectLine(ZPoint(0.5, 0, 0), ZPoint(1, 0, 1), &seg));
+  ASSERT_DOUBLE_EQ(1, seg.getStartPoint().x());
+  ASSERT_DOUBLE_EQ(0.5, seg.getStartPoint().z());
+  ASSERT_DOUBLE_EQ(0, seg.getStartPoint().y());
+  ASSERT_DOUBLE_EQ(0.5, seg.getEndPoint().x());
+  ASSERT_DOUBLE_EQ(0, seg.getEndPoint().z());
+  ASSERT_DOUBLE_EQ(0, seg.getEndPoint().y());
+
+  ASSERT_TRUE(cuboid.intersectLine(ZPoint(0, 0, 0.5), ZPoint(1, 0, 1), &seg));
+  ASSERT_DOUBLE_EQ(0, seg.getStartPoint().x());
+  ASSERT_DOUBLE_EQ(0.5, seg.getStartPoint().z());
+  ASSERT_DOUBLE_EQ(0, seg.getStartPoint().y());
+  ASSERT_DOUBLE_EQ(0.5, seg.getEndPoint().x());
+  ASSERT_DOUBLE_EQ(1, seg.getEndPoint().z());
+  ASSERT_DOUBLE_EQ(0, seg.getEndPoint().y());
+
+  ASSERT_TRUE(cuboid.intersectLine(ZPoint(0, 0, 0.2), ZPoint(0.5, 0, 0.5), &seg));
+  //seg.print();
+  ASSERT_DOUBLE_EQ(0, seg.getStartPoint().x());
+  ASSERT_DOUBLE_EQ(0.2, seg.getStartPoint().z());
+  ASSERT_DOUBLE_EQ(0, seg.getStartPoint().y());
+  ASSERT_DOUBLE_EQ(1, seg.getEndPoint().z());
+  ASSERT_DOUBLE_EQ(0, seg.getEndPoint().y());
+
+  ASSERT_TRUE(cuboid.intersectLine(ZPoint(0.3, 0, 0.2), ZPoint(0.5, 0, 0.5), &seg));
+  //seg.print();
+  ASSERT_DOUBLE_EQ(1, seg.getStartPoint().x());
+  ASSERT_DOUBLE_EQ(0, seg.getStartPoint().y());
+  ASSERT_DOUBLE_EQ(0, seg.getEndPoint().z());
+  ASSERT_DOUBLE_EQ(0, seg.getEndPoint().y());
+
+  ASSERT_TRUE(cuboid.intersectLine(ZPoint(0.3, 0.5, 0.2), ZPoint(0.1, 0.0, 0.5), &seg));
+  ASSERT_DOUBLE_EQ(0, seg.getStartPoint().z());
+  ASSERT_DOUBLE_EQ(0.5, seg.getStartPoint().y());
+  ASSERT_DOUBLE_EQ(1, seg.getEndPoint().z());
+  ASSERT_DOUBLE_EQ(0.5, seg.getEndPoint().y());
+  //seg.print();
+
+  cuboid.set(0, 0, 0, 1, 1, 1);
+  ASSERT_TRUE(cuboid.intersectLine(ZPoint(0, 0, 0), ZPoint(1, 0, 1), &seg));
+  ASSERT_DOUBLE_EQ(0, seg.getStartPoint().x());
+  ASSERT_DOUBLE_EQ(0, seg.getStartPoint().y());
+  ASSERT_DOUBLE_EQ(0, seg.getStartPoint().z());
+  ASSERT_DOUBLE_EQ(1, seg.getEndPoint().x());
+  ASSERT_DOUBLE_EQ(0, seg.getEndPoint().y());
+  ASSERT_DOUBLE_EQ(1, seg.getEndPoint().z());
+
+  ASSERT_TRUE(cuboid.intersectLine(ZPoint(0.5, 0, 0), ZPoint(1, 0, 1), &seg));
+  ASSERT_DOUBLE_EQ(1, seg.getStartPoint().x());
+  ASSERT_DOUBLE_EQ(0.5, seg.getStartPoint().z());
+  ASSERT_DOUBLE_EQ(0, seg.getStartPoint().y());
+  ASSERT_DOUBLE_EQ(0.5, seg.getEndPoint().x());
+  ASSERT_DOUBLE_EQ(0, seg.getEndPoint().z());
+  ASSERT_DOUBLE_EQ(0, seg.getEndPoint().y());
+
+  ASSERT_TRUE(cuboid.intersectLine(ZPoint(0, 0, 0.5), ZPoint(1, 0, 1), &seg));
+  ASSERT_DOUBLE_EQ(0, seg.getStartPoint().x());
+  ASSERT_DOUBLE_EQ(0.5, seg.getStartPoint().z());
+  ASSERT_DOUBLE_EQ(0, seg.getStartPoint().y());
+  ASSERT_DOUBLE_EQ(0.5, seg.getEndPoint().x());
+  ASSERT_DOUBLE_EQ(1, seg.getEndPoint().z());
+  ASSERT_DOUBLE_EQ(0, seg.getEndPoint().y());
+
+  ASSERT_TRUE(cuboid.intersectLine(ZPoint(0, 0, 0.2), ZPoint(0.5, 0, 0.5), &seg));
+  //seg.print();
+  ASSERT_DOUBLE_EQ(0, seg.getStartPoint().x());
+  ASSERT_DOUBLE_EQ(0.2, seg.getStartPoint().z());
+  ASSERT_DOUBLE_EQ(0, seg.getStartPoint().y());
+  ASSERT_DOUBLE_EQ(1, seg.getEndPoint().z());
+  ASSERT_DOUBLE_EQ(0, seg.getEndPoint().y());
+
+  ASSERT_TRUE(cuboid.intersectLine(ZPoint(0.3, 0, 0.2), ZPoint(0.5, 0, 0.5), &seg));
+  //seg.print();
+  ASSERT_DOUBLE_EQ(1, seg.getStartPoint().x());
+  ASSERT_DOUBLE_EQ(0, seg.getStartPoint().y());
+  ASSERT_DOUBLE_EQ(0, seg.getEndPoint().z());
+  ASSERT_DOUBLE_EQ(0, seg.getEndPoint().y());
+
+  ASSERT_TRUE(cuboid.intersectLine(ZPoint(0.3, 0.5, 0.2), ZPoint(0.1, 0.0, 0.5), &seg));
+  ASSERT_DOUBLE_EQ(0, seg.getStartPoint().z());
+  ASSERT_DOUBLE_EQ(0.5, seg.getStartPoint().y());
+  ASSERT_DOUBLE_EQ(1, seg.getEndPoint().z());
+  ASSERT_DOUBLE_EQ(0.5, seg.getEndPoint().y());
+  //seg.print();
+
+  //Y-Z
+  cuboid.set(0, 0, 0, 1, 1, 1);
+  ASSERT_TRUE(cuboid.intersectLine(ZPoint(0, 0, 0), ZPoint(0, 1, 1), &seg));
+  ASSERT_DOUBLE_EQ(0, seg.getStartPoint().x());
+  ASSERT_DOUBLE_EQ(0, seg.getStartPoint().y());
+  ASSERT_DOUBLE_EQ(0, seg.getStartPoint().z());
+  ASSERT_DOUBLE_EQ(1, seg.getEndPoint().y());
+  ASSERT_DOUBLE_EQ(0, seg.getEndPoint().x());
+  ASSERT_DOUBLE_EQ(1, seg.getEndPoint().z());
+
+  ASSERT_TRUE(cuboid.intersectLine(ZPoint(0, 0.5, 0), ZPoint(0, 1, 1), &seg));
+  ASSERT_DOUBLE_EQ(1, seg.getStartPoint().y());
+  ASSERT_DOUBLE_EQ(0.5, seg.getStartPoint().z());
+  ASSERT_DOUBLE_EQ(0, seg.getStartPoint().x());
+  ASSERT_DOUBLE_EQ(0.5, seg.getEndPoint().y());
+  ASSERT_DOUBLE_EQ(0, seg.getEndPoint().z());
+  ASSERT_DOUBLE_EQ(0, seg.getEndPoint().x());
+
+  ASSERT_TRUE(cuboid.intersectLine(ZPoint(0, 0, 0.5), ZPoint(0, 1, 1), &seg));
+  ASSERT_DOUBLE_EQ(0, seg.getStartPoint().y());
+  ASSERT_DOUBLE_EQ(0.5, seg.getStartPoint().z());
+  ASSERT_DOUBLE_EQ(0, seg.getStartPoint().x());
+  ASSERT_DOUBLE_EQ(0.5, seg.getEndPoint().y());
+  ASSERT_DOUBLE_EQ(1, seg.getEndPoint().z());
+  ASSERT_DOUBLE_EQ(0, seg.getEndPoint().x());
+
+  ASSERT_TRUE(cuboid.intersectLine(ZPoint(0, 0, 0.2), ZPoint(0, 0.5, 0.5), &seg));
+  //seg.print();
+  ASSERT_DOUBLE_EQ(0, seg.getStartPoint().y());
+  ASSERT_DOUBLE_EQ(0.2, seg.getStartPoint().z());
+  ASSERT_DOUBLE_EQ(0, seg.getStartPoint().x());
+  ASSERT_DOUBLE_EQ(1, seg.getEndPoint().z());
+  ASSERT_DOUBLE_EQ(0, seg.getEndPoint().x());
+
+  ASSERT_TRUE(cuboid.intersectLine(ZPoint(0, 0.3, 0.2), ZPoint(0, 0.5, 0.5), &seg));
+  //seg.print();
+  ASSERT_DOUBLE_EQ(1, seg.getStartPoint().y());
+  ASSERT_DOUBLE_EQ(0, seg.getStartPoint().x());
+  ASSERT_DOUBLE_EQ(0, seg.getEndPoint().z());
+  ASSERT_DOUBLE_EQ(0, seg.getEndPoint().x());
+
+  ASSERT_TRUE(cuboid.intersectLine(ZPoint(0.5, 0.3, 0.2), ZPoint(0.0, 0.1, 0.5), &seg));
+  ASSERT_DOUBLE_EQ(0, seg.getStartPoint().z());
+  ASSERT_DOUBLE_EQ(0.5, seg.getStartPoint().x());
+  ASSERT_DOUBLE_EQ(1, seg.getEndPoint().z());
+  ASSERT_DOUBLE_EQ(0.5, seg.getEndPoint().x());
+  //seg.print();
+
+  cuboid.set(0, 0, 0, 1, 1, 1);
+  ASSERT_TRUE(cuboid.intersectLine(ZPoint(0, 0, 0), ZPoint(1, 1, 1), &seg));
+  ASSERT_DOUBLE_EQ(0, seg.getStartPoint().x());
+  ASSERT_DOUBLE_EQ(0, seg.getStartPoint().y());
+  ASSERT_DOUBLE_EQ(0, seg.getStartPoint().z());
+  ASSERT_DOUBLE_EQ(1, seg.getEndPoint().y());
+  ASSERT_DOUBLE_EQ(1, seg.getEndPoint().x());
+  ASSERT_DOUBLE_EQ(1, seg.getEndPoint().z());
+
+  ASSERT_TRUE(cuboid.intersectLine(ZPoint(0.1, 0.2, 0.3), ZPoint(1, 1, 1), &seg));
+  ASSERT_TRUE(cuboid.intersectLine(ZPoint(0.1, 0.2, 0.3), ZPoint(0.1, 10, 3), &seg));
+
+  for (double z = 0.0; z <= 1.0; z += 0.1) {
+    for (double y = 0.0; y <= 1.0; y += 0.1) {
+      for (double x = 0.0; x <= 1.0; x += 0.1) {
+        for (double nx = 0.0; nx < 10.0; nx += 1.0) {
+          ASSERT_TRUE(cuboid.intersectLine(ZPoint(x, y, z ),
+                                           ZPoint(nx, 10, 3), &seg));
+        }
+      }
+    }
+  }
+
+  std::cout << "v2" << std::endl;
 }
 
 #endif

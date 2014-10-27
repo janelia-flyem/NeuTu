@@ -50,7 +50,7 @@ static void createStripe4(ZObject3dStripe *stripe)
   stripe->addSegment(3, 1, false);
 }
 
-TEST(TestObject3dStripe, TestGetProperty) {
+TEST(ZObject3dStripe, TestGetProperty) {
   ZObject3dStripe stripe;
   createStripe(&stripe);
   EXPECT_EQ(stripe.getMinX(), 0);
@@ -102,7 +102,7 @@ TEST(TestObject3dStripe, TestGetProperty) {
   EXPECT_EQ((int) stripe.getVoxelNumber(), 6);
 }
 
-TEST(TestObject3dStripe, TestUnify) {
+TEST(ZObject3dStripe, TestUnify) {
   ZObject3dStripe stripe;
   stripe.setY(3);
   stripe.setZ(5);
@@ -157,7 +157,7 @@ TEST(TestObject3dStripe, TestUnify) {
   EXPECT_EQ(9, (int) stripe.getVoxelNumber());
 }
 
-TEST(TestObject3dStripe, TestIO) {
+TEST(ZObject3dStripe, TestIO) {
   FILE *fp = fopen((GET_TEST_DATA_DIR + "/test.sobj").c_str(), "w");
   ZObject3dStripe stripe;
   createStripe2(&stripe);
@@ -191,7 +191,7 @@ bool isSorted(const ZObject3dStripe &stripe)
   return true;
 }
 
-TEST(TestObject3dStripe, TestSort) {
+TEST(ZObject3dStripe, TestSort) {
   ZObject3dStripe stripe;
   createStripe2(&stripe);
   EXPECT_FALSE(isSorted(stripe));
@@ -223,7 +223,7 @@ TEST(TestObject3dStripe, TestSort) {
   EXPECT_TRUE(isSorted(stripe));
 }
 
-TEST(TestObject3dStripe, TestCanonize) {
+TEST(ZObject3dStripe, TestCanonize) {
   ZObject3dStripe stripe;
   createStripe2(&stripe);
   EXPECT_FALSE(stripe.isCanonized());
@@ -315,77 +315,84 @@ static void createObject3(ZObject3dScan *obj)
   obj->addSegment(5, 7);
 }
 
-TEST(TestObject3dScan, TestGetProperty) {
+TEST(ZObject3dScan, TestGetProperty) {
   ZObject3dScan obj;
   createObject(&obj);
+  obj.print();
   ASSERT_EQ((int) obj.getStripeNumber(), 2);
-  ZCuboid box = obj.getBoundBox();
-  ASSERT_EQ(box.firstCorner().x(), 0);
-  ASSERT_EQ(box.firstCorner().y(), 0);
-  ASSERT_EQ(box.firstCorner().z(), 0);
+  ZIntCuboid box = obj.getBoundBox();
+  ASSERT_EQ(box.getFirstCorner().getX(), 0);
+  ASSERT_EQ(box.getFirstCorner().getY(), 0);
+  ASSERT_EQ(box.getFirstCorner().getZ(), 0);
 
-  ASSERT_EQ(box.lastCorner().x(), 8);
-  ASSERT_EQ(box.lastCorner().y(), 1);
-  ASSERT_EQ(box.lastCorner().z(), 0);
+  ASSERT_EQ(box.getLastCorner().getX(), 8);
+  ASSERT_EQ(box.getLastCorner().getY(), 1);
+  ASSERT_EQ(box.getLastCorner().getZ(), 0);
 
   ASSERT_EQ((int) obj.getVoxelNumber(), 12);
 
   obj.canonize();
   ASSERT_EQ((int) obj.getStripeNumber(), 2);
   box = obj.getBoundBox();
-  ASSERT_EQ(box.firstCorner().x(), 0);
-  ASSERT_EQ(box.firstCorner().y(), 0);
-  ASSERT_EQ(box.firstCorner().z(), 0);
+  ASSERT_EQ(box.getFirstCorner().getX(), 0);
+  ASSERT_EQ(box.getFirstCorner().getY(), 0);
+  ASSERT_EQ(box.getFirstCorner().getZ(), 0);
 
-  ASSERT_EQ(box.lastCorner().x(), 8);
-  ASSERT_EQ(box.lastCorner().y(), 1);
-  ASSERT_EQ(box.lastCorner().z(), 0);
+  ASSERT_EQ(box.getLastCorner().getX(), 8);
+  ASSERT_EQ(box.getLastCorner().getY(), 1);
+  ASSERT_EQ(box.getLastCorner().getZ(), 0);
 
   ASSERT_EQ((int) obj.getVoxelNumber(), 12);
 
   createObject2(&obj);
   ASSERT_EQ((int) obj.getStripeNumber(), 2);
   box = obj.getBoundBox();
-  ASSERT_EQ(box.firstCorner().x(), 0);
-  ASSERT_EQ(box.firstCorner().y(), 0);
-  ASSERT_EQ(box.firstCorner().z(), 0);
+  ASSERT_EQ(box.getFirstCorner().getX(), 0);
+  ASSERT_EQ(box.getFirstCorner().getY(), 0);
+  ASSERT_EQ(box.getFirstCorner().getZ(), 0);
 
-  ASSERT_EQ(box.lastCorner().x(), 8);
-  ASSERT_EQ(box.lastCorner().y(), 1);
-  ASSERT_EQ(box.lastCorner().z(), 0);
+  ASSERT_EQ(box.getLastCorner().getX(), 8);
+  ASSERT_EQ(box.getLastCorner().getY(), 1);
+  ASSERT_EQ(box.getLastCorner().getZ(), 0);
 
   ASSERT_EQ((int) obj.getVoxelNumber(), 15);
 
+  obj.print();
   obj.canonize();
-  //obj.print();
+  obj.print();
   ASSERT_EQ((int) obj.getStripeNumber(), 2);
   box = obj.getBoundBox();
-  ASSERT_EQ(box.firstCorner().x(), 0);
-  ASSERT_EQ(box.firstCorner().y(), 0);
-  ASSERT_EQ(box.firstCorner().z(), 0);
+  ASSERT_EQ(box.getFirstCorner().getX(), 0);
+  ASSERT_EQ(box.getFirstCorner().getY(), 0);
+  ASSERT_EQ(box.getFirstCorner().getZ(), 0);
 
-  ASSERT_EQ(box.lastCorner().x(), 8);
-  ASSERT_EQ(box.lastCorner().y(), 1);
-  ASSERT_EQ(box.lastCorner().z(), 0);
+  ASSERT_EQ(box.getLastCorner().getX(), 8);
+  ASSERT_EQ(box.getLastCorner().getY(), 1);
+  ASSERT_EQ(box.getLastCorner().getZ(), 0);
 
   ASSERT_EQ((int) obj.getVoxelNumber(), 15);
 
   createObject3(&obj);
   ASSERT_EQ((int) obj.getStripeNumber(), 2);
   box = obj.getBoundBox();
-  ASSERT_EQ(box.firstCorner().x(), 0);
-  ASSERT_EQ(box.firstCorner().y(), 0);
-  ASSERT_EQ(box.firstCorner().z(), 0);
+  ASSERT_EQ(box.getFirstCorner().getX(), 0);
+  ASSERT_EQ(box.getFirstCorner().getY(), 0);
+  ASSERT_EQ(box.getFirstCorner().getZ(), 0);
 
-  ASSERT_EQ(box.lastCorner().x(), 8);
-  ASSERT_EQ(box.lastCorner().y(), 1);
-  ASSERT_EQ(box.lastCorner().z(), 0);
+  ASSERT_EQ(box.getLastCorner().getX(), 8);
+  ASSERT_EQ(box.getLastCorner().getY(), 1);
+  ASSERT_EQ(box.getLastCorner().getZ(), 0);
 
   ASSERT_EQ((int) obj.getVoxelNumber(), 15);
 
+//  obj.load(GET_TEST_DATA_DIR + "/benchmark/29.sobj");
+//  size_t area = obj.getSurfaceArea();
+//  std::cout << area << std::endl;
+//  std::cout << obj.getVoxelNumber() << std::endl;
+
 }
 
-TEST(TestObject3dScan, TestAddSegment) {
+TEST(ZObject3dScan, TestAddSegment) {
   ZObject3dScan obj;
   obj.addStripe(1, 0);
   obj.addSegment(1, 2, false);
@@ -445,10 +452,9 @@ TEST(TestObject3dScan, TestAddSegment) {
   EXPECT_EQ(15, (int) obj.getVoxelNumber());
 }
 
-TEST(TestObject3dScan, TestDownsample) {
+TEST(ZObject3dScan, downsample) {
   ZObject3dScan obj;
   createObject(&obj);
-
 
   obj.downsample(1, 1, 1);
   EXPECT_EQ(1, (int) obj.getStripeNumber());
@@ -460,9 +466,14 @@ TEST(TestObject3dScan, TestDownsample) {
   obj.print();
   EXPECT_EQ(1, (int) obj.getStripeNumber());
   EXPECT_EQ(5, (int) obj.getVoxelNumber());
+
+  createObject(&obj);
+  obj.downsampleMax(1, 0, 0);
+  EXPECT_EQ(2, (int) obj.getStripeNumber());
+  EXPECT_EQ(8, (int) obj.getVoxelNumber());
 }
 
-TEST(TestObject3dScan, TestObjectSize){
+TEST(ZObject3dScan, TestObjectSize){
   ZObject3dScan obj;
 
   std::vector<size_t> sizeArray = obj.getConnectedObjectSize();
@@ -531,7 +542,7 @@ TEST(TestObject3dScan, TestObjectSize){
   //EXPECT_EQ(616, (int) sizeArray[0]);
 }
 
-TEST(TestObject3dScan, TestBuildGraph) {
+TEST(ZObject3dScan, TestBuildGraph) {
   ZObject3dScan obj;
   //createObject(&obj);
   obj.addStripe(0, 0, false);
@@ -653,7 +664,7 @@ static void createObject(ZObject3dScan *obj)
 }
 */
 
-TEST(TestObject3dScan, TestGetSegment) {
+TEST(ZObject3dScan, TestGetSegment) {
   ZObject3dScan obj;
   createObject(&obj);
   int z, y, x1, x2;
@@ -694,7 +705,7 @@ TEST(TestObject3dScan, TestGetSegment) {
   EXPECT_EQ(7, x2);
 }
 
-TEST(TestObject3dScan, TestGetConnectedComponent) {
+TEST(ZObject3dScan, TestGetConnectedComponent) {
   ZObject3dScan obj;
   createObject(&obj);
 
@@ -743,7 +754,7 @@ TEST(TestObject3dScan, TestGetConnectedComponent) {
 */
 }
 
-TEST(TestObject3dScan, duplicateAcrossZ)
+TEST(ZObject3dScan, duplicateAcrossZ)
 {
   ZObject3dScan obj;
   obj.addSegment(0, 0, 1, 2);
@@ -765,7 +776,7 @@ TEST(TestObject3dScan, duplicateAcrossZ)
   //obj.print();
 }
 
-TEST(TestObject3dScan, TestScanArray) {
+TEST(ZObject3dScan, TestScanArray) {
   Stack *stack = C_Stack::readSc(GET_TEST_DATA_DIR +
                                  "/benchmark/binary/3d/diadem_e1.tif");
 
@@ -785,7 +796,7 @@ TEST(TestObject3dScan, TestScanArray) {
   //obj.scanArray(array, )
 }
 
-TEST(TestObject3dScan, TestIO) {
+TEST(ZObject3dScan, TestIO) {
   ZObject3dScan obj;
   obj.load(GET_TEST_DATA_DIR + "/benchmark/29.sobj");
 
@@ -857,7 +868,7 @@ TEST(ZObject3dScan, overlap)
   EXPECT_EQ(1, (int) obj.countForegroundOverlap(stack));
 }
 
-class Object3dScanTestF1 : public ::testing::Test {
+class ZObject3dScanTestF1 : public ::testing::Test {
 protected:
   virtual void SetUp() {
     m_obj.clear();
@@ -875,7 +886,7 @@ protected:
   ZObject3dScan m_obj;
 };
 
-TEST_F(Object3dScanTestF1, Slice)
+TEST_F(ZObject3dScanTestF1, Slice)
 {
   ZObject3dScan obj = m_obj;
   obj.addSegment(0, 1, 0, 2);
@@ -895,7 +906,7 @@ TEST_F(Object3dScanTestF1, Slice)
   EXPECT_EQ(11, (int) slice.getVoxelNumber());
 }
 
-TEST_F(Object3dScanTestF1, Statistics)
+TEST_F(ZObject3dScanTestF1, Statistics)
 {
   ZObject3dScan obj = m_obj;
   obj.addSegment(0, 1, 0, 2);
@@ -912,7 +923,7 @@ TEST_F(Object3dScanTestF1, Statistics)
   EXPECT_DOUBLE_EQ(1.0, center.z());
 }
 
-TEST_F(Object3dScanTestF1, equal)
+TEST_F(ZObject3dScanTestF1, equal)
 {
   ZObject3dScan obj = m_obj;
   EXPECT_TRUE(m_obj.equalsLiterally(obj));
@@ -926,7 +937,7 @@ TEST_F(Object3dScanTestF1, equal)
   EXPECT_TRUE(m_obj.equalsLiterally(obj));
 }
 
-TEST_F(Object3dScanTestF1, complement)
+TEST_F(ZObject3dScanTestF1, complement)
 {
   ZObject3dScan obj = m_obj;
   ZObject3dScan compObj = obj.getComplementObject();
@@ -942,7 +953,7 @@ TEST_F(Object3dScanTestF1, complement)
   C_Stack::kill(stack);
 }
 
-TEST(Object3dScanTest, findHole)
+TEST(ZObject3dScanTest, findHole)
 {
   ZObject3dScan obj;
   Stack *stack = C_Stack::make(GREY, 3, 3, 3);
@@ -1129,8 +1140,55 @@ TEST(ZObject3dScan, load)
   ASSERT_TRUE(obj.load(&(array[0]), array.size()));
   obj.print();
   ASSERT_EQ(2, (int) obj.getVoxelNumber());
+}
 
+TEST(ZObject3dScan, relation)
+{
+  ZObject3dScan obj1;
+  obj1.addStripe(0, 0);
+  obj1.addSegment(0, 2);
 
+  ZObject3dScan obj2;
+  obj2.addStripe(1, 0);
+  obj2.addSegment(0, 1);
+
+  ASSERT_FALSE(obj1.hasOverlap(obj2));
+
+  obj2.addSegment(0, 0, 0, 1);
+
+  obj2.print();
+  ASSERT_TRUE(obj1.hasOverlap(obj2));
+
+  obj2.clear();
+  ASSERT_FALSE(obj1.hasOverlap(obj2));
+
+  obj1.clear();
+  ASSERT_FALSE(obj1.hasOverlap(obj2));
+
+  obj1.addStripe(10, 20);
+  obj1.addSegment(30, 40);
+
+  obj2.addStripe(10, 20);
+  obj2.addSegment(30, 30);
+  ASSERT_TRUE(obj1.hasOverlap(obj2));
+
+  obj2.clear();
+  obj2.addStripe(10, 20);
+  obj2.addSegment(29, 29);
+  ASSERT_FALSE(obj1.hasOverlap(obj2));
+}
+
+TEST(ZObject3dScan, upSample)
+{
+  ZObject3dScan obj;
+  createObject(&obj);
+  obj.print();
+
+  obj.upSample(1, 0, 0);
+  obj.print();
+
+  obj.downsampleMax(1, 0, 0);
+  obj.print();
 }
 
 #endif

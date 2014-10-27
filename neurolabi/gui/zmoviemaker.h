@@ -4,12 +4,7 @@
 #include <QColor>
 #include <string>
 #include <vector>
-#ifdef __GLIBCXX__
-#include <tr1/memory>
-#else
-#include <memory>
-#endif
-
+#include "zsharedpointer.h"
 #include "zmoviescript.h"
 #include "zmovieactor.h"
 #include "zmoviescene.h"
@@ -78,7 +73,7 @@ public:
   }
 
 private:
-  std::tr1::shared_ptr<ZStackDoc> m_academy;
+  ZSharedPointer<ZStackDoc> m_academy;
   ZMovieStage *m_stage;
   ZMovieSceneClipperState m_clipperState; //To store double values for integer parameters
   std::vector<ZMovieActor*> m_cast;

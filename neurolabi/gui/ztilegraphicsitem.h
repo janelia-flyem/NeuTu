@@ -5,14 +5,14 @@
 #include "ztileinfo.h"
 #include "zjsonobject.h"
 
-class ZTileGraphicsItem : public QGraphicsRectItem
+class ZTileGraphicsItem : public QGraphicsPixmapItem
 {
 public:
   inline const ZTileInfo& getTileInfo() const {
     return m_tileInfo;
   }
 
-  bool loadJsonObject(const ZJsonObject &obj);
+  bool loadJsonObject(const ZJsonObject &obj, QString tileFilePath);
 
 private:
   ZTileInfo m_tileInfo;

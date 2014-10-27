@@ -10,12 +10,14 @@ namespace NeuTube {
 
 enum EDocumentableType {
   Documentable_SWC, Documentable_PUNCTUM, Documentable_OBJ3D,
-  Documentable_STROKE, Documentable_LOCSEG_CHAIN, Documentable_CONN
+  Documentable_STROKE, Documentable_LOCSEG_CHAIN, Documentable_CONN,
+  Documentable_SPARSE_OBJECT, Documentable_Circle
 };
 
 namespace Document {
 enum ETag {
-  NORMAL, BIOCYTIN_PROJECTION, BIOCYTIN_STACK, FLYEM_BODY
+  NORMAL, BIOCYTIN_PROJECTION, BIOCYTIN_STACK, FLYEM_BODY, FLYEM_STACK,
+  FLYEM_SPLIT, FLYEM_ROI
 };
 }
 

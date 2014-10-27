@@ -12,6 +12,7 @@
 #include "zswcobjsmodel.h"
 #include "zswcnodeobjsmodel.h"
 #include "zpunctaobjsmodel.h"
+#include "zdocplayerobjsmodel.h"
 #include "QsLog/QsLog.h"
 #include "neutubeconfig.h"
 
@@ -277,6 +278,16 @@ void ZObjsManagerWidget::createWidget()
     tabs->addTab(m_punctaObjsTreeView, "Puncta");
   }
 
+  if (GET_APPLICATION_NAME == "FlyEM") {
+    m_seedObjsTreeView = new QTreeView(this);
+    m_seedObjsTreeView->setSortingEnabled(false);
+    m_seedObjsTreeView->setExpandsOnDoubleClick(false);
+    m_seedObjsTreeView->setModel(m_doc->seedObjsModel());
+    m_seedObjsTreeView->setSelectionMode(QAbstractItemView::ExtendedSelection);
+    m_seedObjsTreeView->setContextMenuPolicy(Qt::CustomContextMenu);
+    tabs->addTab(m_seedObjsTreeView, "Seeds");
+  }
+
   QHBoxLayout *layout = new QHBoxLayout;
   layout->addWidget(tabs);
   setLayout(layout);
@@ -321,7 +332,7 @@ void ZObjsManagerWidget::keyPressEvent(QKeyEvent *event)
   case Qt::Key_Backspace:
   case Qt::Key_Delete:
   {
-    m_doc->executeRemoveObjectCommand();
+    m_doc->executeRemoveSelectedObjectCommand();
 #if 0
     if (m_doc->selectedChains()->empty() && m_doc->selectedPuncta()->empty() && m_doc->selectedSwcs()->empty())
       return;

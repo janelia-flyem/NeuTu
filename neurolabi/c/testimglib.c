@@ -3103,7 +3103,7 @@ int main(int argc, char* argv[])
   Print_Mc_Stack_Info(mstack);
 #endif
 
-#if 1
+#if 0
   Cuboid_I cuboid;
   Cuboid_I_Set_S(&cuboid, 1, 2, 3, 4, 5, 6);
   Print_Cuboid_I(&cuboid);
@@ -3116,6 +3116,25 @@ int main(int argc, char* argv[])
   printf("%p %p\n", (void*) cuboid2.cb, (void*) cuboid2.ce);
 
 #endif
+
+#if 0
+  File_Bundle_S fb;
+  fb.prefix = "../data/benchmark/series2/image";
+  fb.suffix = NULL;
+  fb.num_width = 3;
+  fb.first_num = 0;
+  fb.last_num = 14;
+
+  Mc_Stack *stack = Read_Stack_Planes_M(&fb);
+  Write_Mc_Stack("../data/test.tif", stack, NULL);
+#endif
+
+#if 1
+  Mc_Stack *stack = Read_Mc_Stack("../data/biocytin/JL_07_19_14_2_100x_z004m01_imagej.tif", -1);
+  Print_Mc_Stack_Info(stack);
+  Write_Mc_Stack("../data/test.tif", stack, NULL);
+#endif
+
 
   return 0;  
 }

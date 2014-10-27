@@ -10,6 +10,8 @@
 #include "ui_settingdialog.h"
 #include "neutube.h"
 
+class ZResolution;
+
 class SettingDialog : public QDialog, public Ui_SettingDialog
 {
   Q_OBJECT
@@ -44,7 +46,8 @@ public:
   void setBackground(NeuTube::EImageBackground bg);
 
 public:
-  void setResolution(const double *res, int unit = 1);
+  void setResolution(const ZResolution &res);
+  void setResolution(double x, double y, double z, int unit = 1);
   void setUnit(char unit);
 
 public slots:

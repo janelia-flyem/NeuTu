@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <neutube>
+  <docUrl>https://wiki.janelia.org/wiki/display/flyem/NeuTu</docUrl>
   <dataPath>/Users/zhaot/Work/neutube/neurolabi/data</dataPath>
   <FlyEmQASegmentationTraining>
     <test>/Users/zhaot/Work/neutube/neurolabi/data/flyem/segmentation/assignments/assignment_1/segmentation.json</test>

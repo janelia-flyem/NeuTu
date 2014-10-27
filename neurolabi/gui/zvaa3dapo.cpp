@@ -9,7 +9,7 @@ ZVaa3dApo::ZVaa3dApo() : m_id(0), m_orderInfo(1), m_maxIntensity(255),
 {
 }
 
-string ZVaa3dApo::toString()
+string ZVaa3dApo::toString() const
 {
   ostringstream stream;
 

@@ -86,6 +86,7 @@ public:
    * \brief Get source dimension.
    */
   int getSourceDimension(NeuTube::EAxis axis) const;
+  int getSourceOffset(NeuTube::EAxis axis) const;
 
   /*!
    * \brief Export the bundle into a json file
@@ -156,9 +157,26 @@ public:
   /*!
    * \brief Get the boundbox of the databundle.
    */
-  inline const ZSwcTree& getBoundBox() const { return m_boundBox; }
+  inline const ZSwcTree* getBoundBox() const { return m_boundBox; }
+
+  /*!
+   * \brief Test if a bundle has a bound box
+   */
+  bool hasBoundBox() const;
+
+  /*!
+   * \brief Import bound box from a file.
+   */
+  void importBoundBox(const std::string &filePath);
 
   void submitSkeletonizeService() const;
+
+  /*!
+   * \brief Upload annotations to DVID server
+   *
+   * Empty annotations will be ignored.
+   */
+  void uploadAnnotation(const ZDvidTarget &dvidTarget) const;
 
 private:
   ZFlyEmNeuronArray m_neuronArray;
@@ -172,7 +190,7 @@ private:
   int m_sourceDimension[3];
   double m_synapseScale;
   std::vector<double> m_layerRatio;
-  ZSwcTree m_boundBox;
+  ZSwcTree *m_boundBox;
 
   std::string m_source;
   std::map<std::string, double> m_matchThreshold;

@@ -27,6 +27,13 @@ public:
    */
   int optimalDownsample(ZSwcTree *tree);
 
+  /*!
+   * \brief Usample a tree so that it has a given node number
+   *
+   * If the tree has no less than \a n nodes, nothing will be done.
+   */
+  static void upsampleAsFixedNodeNumber(ZSwcTree *tree, int n);
+
 private:
   /*!
    * \brief Optimize continuous parents of critical nodes

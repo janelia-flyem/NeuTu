@@ -295,7 +295,8 @@ void Z3DNetworkEvaluator::updateNetwork()
 
 void Z3DNetworkEvaluator::buildNetwork()
 {
-  std::set<Z3DProcessor*> prevProcessors(m_renderingOrder.begin(), m_renderingOrder.end());
+  std::set<Z3DProcessor*> prevProcessors(
+        m_renderingOrder.begin(), m_renderingOrder.end());
 
   m_renderingOrder.clear();
   m_processorToVertexMapper.clear();
@@ -321,7 +322,8 @@ void Z3DNetworkEvaluator::buildNetwork()
       const std::vector<Z3DOutputPortBase*> connected = inports[i]->getConnected();
       for (size_t j = 0; j < connected.size(); ++j) {
         Z3DProcessor *outProcessor = connected[j]->getProcessor();
-        if (m_processorToVertexMapper.find(outProcessor) == m_processorToVertexMapper.end()) {
+        if (m_processorToVertexMapper.find(outProcessor) ==
+            m_processorToVertexMapper.end()) {
           processQueue.push(outProcessor);
           Vertex v = boost::add_vertex(VertexInfo(outProcessor), m_processorGraph);
           m_processorToVertexMapper[outProcessor] = v;
@@ -356,7 +358,8 @@ void Z3DNetworkEvaluator::buildNetwork()
   // compare processors in network before and after updating, deinitialize removed processors
   std::set<Z3DProcessor*> currProcessors(m_renderingOrder.begin(), m_renderingOrder.end());
   std::set<Z3DProcessor*> removedProcessors;
-  std::set_difference(prevProcessors.begin(), prevProcessors.end(), currProcessors.begin(), currProcessors.end(),
+  std::set_difference(prevProcessors.begin(), prevProcessors.end(),
+                      currProcessors.begin(), currProcessors.end(),
                       std::inserter(removedProcessors, removedProcessors.end()));
 
   if (!removedProcessors.empty()) {

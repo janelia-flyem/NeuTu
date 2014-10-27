@@ -3789,10 +3789,25 @@ Stack* Stack_Median_Filter_N(const Stack *stack, int conn, Stack *out)
   return out;
 }
 
+#define STACK_BOUND_BOX(array) \
+  for (k = 0; k < stack->depth; k++) {\
+    pt[2] = k;\
+    for (j = 0; j < stack->height; j++) {\
+      pt[1] = j;\
+      for (i = 0; i < stack->width; i++) {\
+        pt[0] = i;\
+        if (array[offset++] > 0) {\
+          Cuboid_I_Expand_P(bound_box, pt);\ 
+        }\
+      }\
+    }\
+  }
+
 void Stack_Bound_Box(const Stack *stack, Cuboid_I *bound_box)
 {
   TZ_ASSERT(bound_box != NULL, "null pointer");
-  TZ_ASSERT(stack->kind == GREY, "Only GREY stack supported.");
+  TZ_ASSERT(stack->kind == GREY || stack->kind == GREY16,
+      "Only GREY or GREY16 stack is supported.");
 
   int i, j, k;
   size_t offset = 0;
@@ -3804,17 +3819,18 @@ void Stack_Bound_Box(const Stack *stack, Cuboid_I *bound_box)
   bound_box->cb[2] = stack->depth - 1;
   
   int pt[3];
-  for (k = 0; k < stack->depth; k++) {
-    pt[2] = k;
-    for (j = 0; j < stack->height; j++) {
-      pt[1] = j;
-      for (i = 0; i < stack->width; i++) {
-        pt[0] = i;
-        if (stack->array[offset++] > 0) {
-          Cuboid_I_Expand_P(bound_box, pt); 
-        }
-      }
-    }
+  Image_Array ima;
+  ima.array = stack->array;
+
+  switch (stack->kind) {
+    case GREY:
+      STACK_BOUND_BOX(ima.array8);
+      break;
+    case GREY16:
+      STACK_BOUND_BOX(ima.array16);
+      break;
+    default:
+      break;
   }
 }
 

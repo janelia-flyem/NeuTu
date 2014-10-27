@@ -35,6 +35,20 @@ void ZFlyEmNeuronImageFactory::setSizePolicy(
   }
 }
 
+int ZFlyEmNeuronImageFactory::getSourceDimension(NeuTube::EAxis axis) const
+{
+  switch (axis) {
+  case NeuTube::X_AXIS:
+    return m_sourceDimension[0];
+  case NeuTube::Y_AXIS:
+    return m_sourceDimension[1];
+  case NeuTube::Z_AXIS:
+    return m_sourceDimension[2];
+  }
+
+  return 0;
+}
+
 void ZFlyEmNeuronImageFactory::setDownsampleInterval(int dx, int dy, int dz)
 {
   m_downsampleInterval[0] = dx;

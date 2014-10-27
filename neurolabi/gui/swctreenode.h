@@ -7,10 +7,11 @@
 #include <map>
 
 #include "tz_swc_tree.h"
-#include "zpoint.h"
-#include "zweightedpointarray.h"
 #include "neutube.h"
 #include "zcuboid.h"
+#include "zpoint.h"
+
+class ZWeightedPointArray;
 
 typedef int (*Swc_Tree_Node_Compare) (Swc_Tree_Node* lhs, Swc_Tree_Node *rhs);
 typedef bool (*Swc_Tree_Node_Compare_B) (Swc_Tree_Node* lhs, Swc_Tree_Node *rhs);
@@ -60,9 +61,12 @@ Swc_Tree_Node* makePointer(int id, int type, double x, double y, double z,
  * \param y Y coordinate of the node cebter
  * \param z Z coordinate of the node center
  * \param radius Radius of the node
+ * \param parent Parent of the node
+ *
  * \return A pointer of Swc_Tree_Node, which must be freed by kill()
  */
-Swc_Tree_Node* makePointer(double x, double y, double z, double radius);
+Swc_Tree_Node* makePointer(double x, double y, double z, double radius,
+                           Swc_Tree_Node *parent = NULL);
 
 /*!
  * \brief Create a pointer of Swc_Tree_Node with default id and type
@@ -206,7 +210,7 @@ bool isRegularRoot(const Swc_Tree_Node *tn);
 bool isRoot(const Swc_Tree_Node *tn);
 
 Swc_Tree_Node* regularRoot(Swc_Tree_Node *tn);
-Swc_Tree_Node* root(Swc_Tree_Node *tn);
+Swc_Tree_Node* root(const Swc_Tree_Node *tn);
 Swc_Tree_Node* commonAncestor(Swc_Tree_Node *tn1, Swc_Tree_Node *tn2);
 const Swc_Tree_Node* commonAncestor(const Swc_Tree_Node *tn1,
                                     const Swc_Tree_Node *tn2);
@@ -323,6 +327,10 @@ enum EKnowingLink {
   FIRST_CHILD, PARENT, NEXT_SIBLING
 };
 
+enum EChildPosition {
+  CHILD_POS_FIRST, CHILD_POS_LAST
+};
+
 /*!
  * \brief Set the link between two nodes
  *
@@ -345,7 +353,17 @@ void setLink(Swc_Tree_Node *tn, Swc_Tree_Node *target, EKnowingLink link);
  * \param Input node
  */
 void setAsRoot(Swc_Tree_Node *tn);
-void setParent(Swc_Tree_Node *tn, Swc_Tree_Node *parent);
+
+/*!
+ * \brief Set the parent of a node
+ *
+ * \a parent becomes the parent of \a tn. The postion \a tn in the children of
+ * \a parent is defined by \a childPos.
+ */
+void setParent(Swc_Tree_Node *tn, Swc_Tree_Node *parent,
+               EChildPosition childPos = CHILD_POS_LAST);
+
+void setFirstChild(Swc_Tree_Node *tn, Swc_Tree_Node *child);
 void detachParent(Swc_Tree_Node *tn);
 void adoptChildren(Swc_Tree_Node *newParent, Swc_Tree_Node *oldParent);
 void mergeToParent(Swc_Tree_Node *tn);

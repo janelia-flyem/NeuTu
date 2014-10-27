@@ -365,7 +365,8 @@ void Z3DVolume::generateTexture()
   }
 
   // Create texture
-  Z3DTexture* tex = new Z3DTexture(glm::ivec3(getDimensions()), format, internalFormat, dataType);
+  Z3DTexture* tex = new Z3DTexture(
+        glm::ivec3(getDimensions()), format, internalFormat, dataType);
 
   CHECK_GL_ERROR;
   tex->setData(m_stack->array);

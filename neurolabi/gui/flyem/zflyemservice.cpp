@@ -213,16 +213,16 @@ ZStack* FlyEm::Service::FaceOrphanOverlap::transformStack(ZStack *stack)
 
   if (stack->width() == 1) {
     out->reshape(stack->height(), stack->depth(), 1);
-    out->setOffset(stack->getOffset().y(), stack->getOffset().z(),
-                   stack->getOffset().x());
+    out->setOffset(stack->getOffset().getY(), stack->getOffset().getZ(),
+                   stack->getOffset().getX());
   } else if (stack->height() == 1) {
     out->reshape(stack->width(), stack->depth(), 1);
-    out->setOffset(stack->getOffset().x(), stack->getOffset().z(),
-                   stack->getOffset().y());
+    out->setOffset(stack->getOffset().getX(), stack->getOffset().getZ(),
+                   stack->getOffset().getY());
   } else if (stack->depth() == 1) {
     out->reshape(stack->width(), stack->height(), 1);
-    out->setOffset(stack->getOffset().x(), stack->getOffset().y(),
-                   stack->getOffset().z());
+    out->setOffset(stack->getOffset().getX(), stack->getOffset().getY(),
+                   stack->getOffset().getZ());
   }
 
   return out;
@@ -232,17 +232,17 @@ void FlyEm::Service::FaceOrphanOverlap::transformCoordinates(
     ZStack *stack, int x, int y, int *cx, int *cy, int *cz)
 {
   if (stack->width() == 1) {
-    *cx = stack->getOffset().x();
-    *cy = stack->getOffset().y() + x;
-    *cz = stack->getOffset().z() + y;
+    *cx = stack->getOffset().getX();
+    *cy = stack->getOffset().getY() + x;
+    *cz = stack->getOffset().getZ() + y;
   } else if (stack->height() == 1) {
-    *cx = stack->getOffset().x() + x;
-    *cy = stack->getOffset().y();
-    *cz = stack->getOffset().z() + y;
+    *cx = stack->getOffset().getX() + x;
+    *cy = stack->getOffset().getY();
+    *cz = stack->getOffset().getZ() + y;
   } else if (stack->depth() == 1) {
-    *cx = stack->getOffset().x() + x;
-    *cy = stack->getOffset().y() + y;
-    *cz = stack->getOffset().z();
+    *cx = stack->getOffset().getX() + x;
+    *cy = stack->getOffset().getY() + y;
+    *cz = stack->getOffset().getZ();
   }
 }
 
@@ -272,10 +272,10 @@ ZIntPairMap FlyEm::Service::FaceOrphanOverlap::countVoxelTouch(
 
   ZIntPairMap crossMap;
 
-  int tx1 = iround(tstack1->getOffset().x());
-  int ty1 = iround(tstack1->getOffset().y());
-  int tx2 = iround(tstack2->getOffset().x());
-  int ty2 = iround(tstack2->getOffset().y());
+  int tx1 = tstack1->getOffset().getX();
+  int ty1 = tstack1->getOffset().getY();
+  int tx2 = tstack2->getOffset().getX();
+  int ty2 = tstack2->getOffset().getY();
 
   size_t offset1 = 0;
   size_t offset2 = 0;
@@ -576,15 +576,19 @@ void FlyEm::Service::FaceOrphanOverlap::exportJsonFile(
     m_coordConverter.convert(&x, &y, &z, ZFlyEmCoordinateConverter::IMAGE_SPACE,
                              ZFlyEmCoordinateConverter::RAVELER_SPACE);
 
-    pt.append(json_integer(iround(x)));
-    pt.append(json_integer(iround(y)));
-    pt.append(json_integer(iround(z)));
+    pt.append(iround(x));
+    pt.append(iround(y));
+    pt.append(iround(z));
     obj.setEntry("marker", pt);
 
-    ZCuboid box = body.getBoundBox();
+    ZIntCuboid box = body.getBoundBox();
     bool isOrphan = true;
-    int hitIndex1 = m_cuboidArray.hitTest(box.firstCorner());
-    int hitIndex2 = m_cuboidArray.hitTest(box.lastCorner());
+    int hitIndex1 = m_cuboidArray.hitTest(
+          box.getFirstCorner().getX(), box.getFirstCorner().getY(),
+          box.getFirstCorner().getZ());
+    int hitIndex2 = m_cuboidArray.hitTest(
+          box.getLastCorner().getX(), box.getLastCorner().getY(),
+          box.getLastCorner().getZ());
     if ( hitIndex1 < 0 || hitIndex2 < 0 || hitIndex1 != hitIndex2) {
       isOrphan = false;
     }
@@ -611,9 +615,9 @@ void FlyEm::Service::FaceOrphanOverlap::exportJsonFile(
     double z = m_marker[i].getZ();
     m_coordConverter.convert(&x, &y, &z, ZFlyEmCoordinateConverter::IMAGE_SPACE,
                              ZFlyEmCoordinateConverter::RAVELER_SPACE);
-    pt.append(json_integer(iround(x)));
-    pt.append(json_integer(iround(y)));
-    pt.append(json_integer(iround(z)));
+    pt.append(iround(x));
+    pt.append(iround(y));
+    pt.append(iround(z));
     obj.setEntry("marker", pt);
     edgeArray.append(obj);
   }

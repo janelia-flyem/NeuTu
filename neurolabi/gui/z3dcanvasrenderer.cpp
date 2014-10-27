@@ -8,6 +8,7 @@
 #include "z3dtexturecopyrenderer.h"
 #include "zfiletype.h"
 #include "c_stack.h"
+#include "zimage.h"
 
 #include <QImage>
 #include <QImageWriter>
@@ -223,33 +224,10 @@ void Z3DCanvasRenderer::renderInportToImage(const QString &filename, Z3DEye eye)
     QImage upsideDownImage((const uchar*)colorBuffer, size.x, size.y,
                            QImage::Format_ARGB32_Premultiplied);
     QImage image = upsideDownImage.mirrored(false, true);
-    QImageWriter writer(filename);
-    writer.setCompression(1);
-    if (!writer.write(image)) {
-      writer.setCompression(0);
-      if (!writer.write(image)) {
-        if (ZFileType::fileType(filename.toStdString()) == ZFileType::TIFF_FILE) {
-          Stack *stack = C_Stack::make(COLOR, image.width(), image.height(), 1);
-          color_t *arrayc = (color_t*) stack->array;
-          size_t index = 0;
-          for (int y = 0; y < image.height(); ++y) {
-            for (int x = 0; x < image.width(); ++x) {
-              QRgb color = image.pixel(x, y);
-              arrayc[index][0] = qRed(color);
-              arrayc[index][1] = qGreen(color);
-              arrayc[index][2] = qBlue(color);
 
-              index++;
-            }
-          }
-          C_Stack::write(filename.toStdString(), stack);
-          C_Stack::kill(stack);
-        } else {
-          //LERROR() << writer.errorString();
-          delete[] colorBuffer;
-          throw Exception(writer.errorString().toStdString());
-        }
-      }
+    if (!ZImage::writeImage(image, filename)) {
+      delete[] colorBuffer;
+      throw Exception("Image writing error");
     }
     delete[] colorBuffer;
     //}

@@ -14,12 +14,8 @@
 #include <vector>
 #include "tz_image_lib_defs.h"
 #include "neutube.h"
-#ifdef __GLIBCXX__
-#include <tr1/memory>
-#else
-#include <memory>
-#endif
 #include "zpaintbundle.h"
+#include "zsharedpointer.h"
 
 class ZStackPresenter;
 class QSlider;
@@ -51,12 +47,12 @@ public:
 
   QSize sizeHint() const;
   inline ZImageWidget* imageWidget() const { return m_imageWidget; }
-  inline std::tr1::shared_ptr<ZStackDoc> buddyDocument()
+  inline ZSharedPointer<ZStackDoc> buddyDocument()
   { return (m_parent != NULL) ? m_parent->document() :
-                                std::tr1::shared_ptr<ZStackDoc>(); }
-  inline const std::tr1::shared_ptr<ZStackDoc> buddyDocument() const
+                                ZSharedPointer<ZStackDoc>(); }
+  inline const ZSharedPointer<ZStackDoc> buddyDocument() const
   { return (m_parent != NULL) ? m_parent->document() :
-                                std::tr1::shared_ptr<ZStackDoc>(); }
+                                ZSharedPointer<ZStackDoc>(); }
 
   inline ZStackPresenter* buddyPresenter()
   { return (m_parent != NULL) ? m_parent->presenter() : NULL; }
@@ -64,10 +60,19 @@ public:
   inline QProgressBar* progressBar() { return m_progress; }
 
   int maxSliceIndex();
-  int sliceIndex();
+  int sliceIndex() const;
   void setSliceIndex(int slice);
   void stepSlice(int step);
   int threshold();
+
+  /*!
+   * \brief Get the current Z position.
+   *
+   * \return The current Z position, which is defined as the slice index plus
+   * the Z coordinate of the stack offset.
+   */
+  int getCurrentZ() const;
+
   ZStack *stackData();
 
   void connectSignalSlot();
@@ -133,10 +138,10 @@ public slots:
   void mouseDoubleClickedInImageWidget(QMouseEvent *event);
   void mouseRolledInImageWidget(QWheelEvent *event);
 
-  void popLeftMenu(const QPoint &pos);
-  void popRightMenu(const QPoint &pos);
+  bool popLeftMenu(const QPoint &pos);
+  bool popRightMenu(const QPoint &pos);
 
-  void showContextMenu(QMenu *menu, const QPoint &pos);
+  bool showContextMenu(QMenu *menu, const QPoint &pos);
 
   QMenu* leftMenu();
   QMenu* rightMenu();

@@ -6,6 +6,7 @@
 #include "swctreenode.h"
 #include "neutube.h"
 #include "zswcpath.h"
+#include "zdocplayer.h"
 #include <QMap>
 
 class ZSwcTree;
@@ -19,9 +20,22 @@ class ZStroke2d;
 class ZStackDoc;
 class ZDocumentable;
 
+class ZUndoCommand : public QUndoCommand
+{
+public:
+  explicit ZUndoCommand(QUndoCommand *parent = 0);
+  explicit ZUndoCommand(const QString &text, QUndoCommand *parent = 0);
+
+  bool isSaved(NeuTube::EDocumentableType type) const;
+  void setSaved(NeuTube::EDocumentableType type, bool state);
+
+private:
+  bool m_isSwcSaved;
+};
+
 namespace ZStackDocCommand {
 namespace SwcEdit {
-class TranslateRoot : public QUndoCommand
+class TranslateRoot : public ZUndoCommand
 {
 public:
   TranslateRoot(ZStackDoc *doc, double x, double y, double z,
@@ -38,7 +52,7 @@ private:
   double m_z;
 };
 
-class Rescale : public QUndoCommand
+class Rescale : public ZUndoCommand
 {
 public:
   Rescale(ZStackDoc *doc, double scaleX, double scaleY, double scaleZ,
@@ -58,7 +72,7 @@ private:
   double m_scaleZ;
 };
 
-class RescaleRadius : public QUndoCommand
+class RescaleRadius : public ZUndoCommand
 {
 public:
   RescaleRadius(ZStackDoc *doc, double scale, int startdepth,
@@ -75,7 +89,7 @@ private:
   int m_enddepth;
 };
 
-class ReduceNodeNumber : public QUndoCommand
+class ReduceNodeNumber : public ZUndoCommand
 {
 public:
   ReduceNodeNumber(ZStackDoc *doc, double lengthThre, QUndoCommand *parent = NULL);
@@ -89,7 +103,7 @@ private:
   double m_lengthThre;
 };
 
-class CompositeCommand : public QUndoCommand
+class CompositeCommand : public ZUndoCommand
 {
 public:
   CompositeCommand(ZStackDoc *doc, QUndoCommand *parent = NULL);
@@ -101,7 +115,7 @@ protected:
   ZStackDoc *m_doc;
 };
 
-class AddSwc : public QUndoCommand
+class AddSwc : public ZUndoCommand
 {
 public:
   AddSwc(ZStackDoc *doc, ZSwcTree *tree, QUndoCommand *parent = NULL);
@@ -115,7 +129,7 @@ private:
   bool m_isInDoc;
 };
 
-class AddSwcNode : public QUndoCommand
+class AddSwcNode : public ZUndoCommand
 {
 public:
   AddSwcNode(ZStackDoc *doc, Swc_Tree_Node* tn, QUndoCommand *parent = NULL);
@@ -131,7 +145,7 @@ private:
   static int m_index;  // used to generate unique source for each new swc tree
 };
 
-class ExtendSwcNode : public QUndoCommand
+class ExtendSwcNode : public ZUndoCommand
 {
 public:
   ExtendSwcNode(ZStackDoc *doc, Swc_Tree_Node* node, Swc_Tree_Node* pnode,
@@ -154,7 +168,7 @@ public:
   virtual ~MergeSwcNode();
 };
 
-class ChangeSwcNodeGeometry : public QUndoCommand
+class ChangeSwcNodeGeometry : public ZUndoCommand
 {
 public:
   ChangeSwcNodeGeometry(ZStackDoc *doc, Swc_Tree_Node* node, double x, double y,
@@ -176,7 +190,7 @@ private:
   double m_backupR;
 };
 
-class ChangeSwcNodeZ : public QUndoCommand
+class ChangeSwcNodeZ : public ZUndoCommand
 {
 public:
   ChangeSwcNodeZ(ZStackDoc *doc, Swc_Tree_Node* node, double z,
@@ -192,7 +206,7 @@ private:
   double m_backup;
 };
 
-class ChangeSwcNodeRadius : public QUndoCommand
+class ChangeSwcNodeRadius : public ZUndoCommand
 {
 public:
   ChangeSwcNodeRadius(ZStackDoc *doc, Swc_Tree_Node* node, double radius,
@@ -208,7 +222,7 @@ private:
   double m_backup;
 };
 
-class ChangeSwcNode : public QUndoCommand
+class ChangeSwcNode : public ZUndoCommand
 {
 public:
   ChangeSwcNode(ZStackDoc *doc, Swc_Tree_Node* node,
@@ -224,7 +238,7 @@ private:
   Swc_Tree_Node m_newNode;
 };
 
-class DeleteSwcNode : public QUndoCommand
+class DeleteSwcNode : public ZUndoCommand
 {
 public:
   DeleteSwcNode(ZStackDoc *doc, Swc_Tree_Node* node, Swc_Tree_Node *root,
@@ -243,7 +257,7 @@ private:
   bool m_nodeInDoc;
 };
 
-class SetParent : public QUndoCommand
+class SetParent : public ZUndoCommand
 {
 public:
   SetParent(ZStackDoc *doc, Swc_Tree_Node *node, Swc_Tree_Node *parentNode,
@@ -261,7 +275,7 @@ private:
   Swc_Tree_Node *m_prevSibling;
 };
 
-class SetSwcNodeSeletion : public QUndoCommand
+class SetSwcNodeSeletion : public ZUndoCommand
 {
 public:
   SetSwcNodeSeletion(ZStackDoc *doc, const std::set<Swc_Tree_Node*> nodeSet,
@@ -288,7 +302,7 @@ private:
   Swc_Tree_Node *m_node;
 };
 
-class SwcTreeLabeTraceMask : public QUndoCommand
+class SwcTreeLabeTraceMask : public ZUndoCommand
 {
 public:
   SwcTreeLabeTraceMask(ZStackDoc *doc, Swc_Tree *tree, QUndoCommand *parent = NULL);
@@ -302,7 +316,7 @@ private:
   Swc_Tree *m_tree;
 };
 
-class SwcPathLabeTraceMask : public QUndoCommand
+class SwcPathLabeTraceMask : public ZUndoCommand
 {
 public:
   SwcPathLabeTraceMask(ZStackDoc *doc, const ZSwcPath& branch,
@@ -317,7 +331,7 @@ private:
   ZSwcPath m_branch;
 };
 
-class SetRoot : public QUndoCommand//: public CompositeCommand
+class SetRoot : public ZUndoCommand//: public CompositeCommand
 {
 public:
   SetRoot(ZStackDoc *doc, Swc_Tree_Node *tn, QUndoCommand *parent = NULL);
@@ -336,7 +350,7 @@ public:
   ConnectSwcNode(ZStackDoc *doc, QUndoCommand *parent = NULL);
 };
 
-class RemoveSwc : public QUndoCommand
+class RemoveSwc : public ZUndoCommand
 {
 public:
   RemoveSwc(ZStackDoc *doc, ZSwcTree *tree, QUndoCommand *parent = NULL);
@@ -347,10 +361,11 @@ public:
 private:
   ZStackDoc *m_doc;
   ZSwcTree *m_tree;
+  ZDocPlayer::TRole m_role;
   bool m_isInDoc;
 };
 
-class RemoveEmptyTree : public QUndoCommand
+class RemoveEmptyTree : public ZUndoCommand
 {
 public:
   RemoveEmptyTree(ZStackDoc *doc, QUndoCommand *parent = NULL);
@@ -403,6 +418,23 @@ private:
 }
 
 namespace ObjectEdit {
+class AddObject : public ZUndoCommand
+{
+public:
+  AddObject(ZStackDoc *doc, ZStackObject *obj, NeuTube::EDocumentableType type,
+            ZDocPlayer::TRole role, QUndoCommand *parent = NULL);
+  ~AddObject();
+  void redo();
+  void undo();
+
+private:
+  ZStackDoc *m_doc;
+  ZStackObject *m_obj;
+  NeuTube::EDocumentableType m_type;
+  ZDocPlayer::TRole m_role;
+  bool m_isInDoc;
+};
+
 class RemoveSelected : public QUndoCommand
 {
 public:
@@ -453,22 +485,6 @@ public:
   virtual bool mergeWith(const QUndoCommand *other);
   void undo();
   void redo();
-};
-
-class AddObject : public QUndoCommand
-{
-public:
-  AddObject(ZStackDoc *doc, ZDocumentable *obj, NeuTube::EDocumentableType type,
-            QUndoCommand *parent = NULL);
-  ~AddObject();
-  void redo();
-  void undo();
-
-private:
-  ZStackDoc *m_doc;
-  ZDocumentable *m_obj;
-  NeuTube::EDocumentableType m_type;
-  bool m_isInDoc;
 };
 }
 
@@ -610,6 +626,18 @@ private:
   ZStackDoc *m_doc;
   ZStroke2d *m_stroke;
   bool m_isInDoc;
+};
+
+class CompositeCommand : public QUndoCommand
+{
+public:
+  CompositeCommand(ZStackDoc *doc, QUndoCommand *parent = NULL);
+  virtual ~CompositeCommand();
+
+  void redo();
+  void undo();
+protected:
+  ZStackDoc *m_doc;
 };
 }
 

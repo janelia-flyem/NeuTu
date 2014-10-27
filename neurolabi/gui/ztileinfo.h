@@ -4,6 +4,7 @@
 #include <string>
 #include "zpoint.h"
 #include "zjsonobject.h"
+#include <QString>
 
 class ZTileInfo
 {
@@ -30,11 +31,16 @@ public:
     return m_dim[2];
   }
 
-  bool loadJsonObject(const ZJsonObject &obj);
+
+  inline const std::string& getImageSource() const {
+      return m_imageSourse;
+  }
+
+  bool loadJsonObject(const ZJsonObject &obj,QString tileFilePath);
 
 private:
   std::string m_source;
-  std::string m_swcSource;
+  std::string m_imageSourse;
   ZPoint m_offset;
   int m_dim[3];
 };

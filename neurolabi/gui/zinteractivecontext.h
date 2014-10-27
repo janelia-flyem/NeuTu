@@ -5,6 +5,11 @@
 #ifndef ZINTERACTIVECONTEXT_H
 #define ZINTERACTIVECONTEXT_H
 
+#include <QRect>
+
+class ZPoint;
+class ZImageWidget;
+
 class ZInteractiveContext
 {
 public:
@@ -79,7 +84,7 @@ public:
   inline ViewMode viewMode() { return m_viewMode; }
   inline ExploreMode exploreMode() { return m_exploreMode; }
   inline MarkPunctaMode editPunctaMode() {return m_markPunctaMode;}
-  inline StrokeEditMode strokeEditMode() { return m_strokeEditMode; }
+  inline StrokeEditMode strokeEditMode() const { return m_strokeEditMode; }
 
   bool isTraceModeOff()  const;
   inline bool isReconPreview() const {
@@ -98,10 +103,12 @@ public:
   inline bool isStrokeEditModeOff() const { return m_strokeEditMode == STROKE_EDIT_OFF; }
 
   bool isContextMenuActivated() const;
+  void blockContextMenu(bool blocking = true);
 
   inline void setExitingEdit(bool s) { m_exitingEdit = s; }
   inline bool isExitingEdit() const { return m_exitingEdit; }
 
+  //void setView(const QRect &projRegion, const QRect &viewPort);
 
 private:
   MarkPunctaMode m_markPunctaMode;
@@ -113,6 +120,10 @@ private:
   SwcEditMode m_swcEditMode;
   StrokeEditMode m_strokeEditMode;
   bool m_exitingEdit;
+  bool m_blockingContextMenu;
+  //ZImageWidget *m_imageWidget;
+  //QRect m_projRegion;
+  //QRect m_viewPort;
 };
 
 #endif // ZINTERACTIVECONTEXT_H

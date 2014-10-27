@@ -27,4 +27,18 @@ HEADERS +=     test/zswctreetest.h \
     test/zswcgeneratortest.h \
     test/zflyemneuronimagefactorytest.h \
     test/zspgrowtest.h \
-    test/zflyemneuronmatchtest.h
+    test/zflyemneuronmatchtest.h \
+    test/z3dinteracttest.h \
+    test/zvoxelgraphicstest.h \
+    test/zdocplayertest.h \
+    test/zopenvdbtest.h \
+    test/zdvidtest.h \
+    test/zblockgridtest.h \
+    test/zsparsestacktest.h \
+    test/zimagetest.h \
+    test/z3dgraphtest.h \
+    test/zobject3dfactorytest.h \
+    test/zdvidiotest.h \
+    test/zlinesegmenttest.h \
+    test/zclosedcurvetest.h \
+    test/zarraytest.h

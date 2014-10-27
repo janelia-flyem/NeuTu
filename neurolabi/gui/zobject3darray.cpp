@@ -16,6 +16,12 @@ ZObject3dArray::ZObject3dArray() : m_width(1), m_height(1), m_depth(1)
 {
 }
 
+ZObject3dArray::ZObject3dArray(size_t s) : std::vector<ZObject3d*>(s, NULL),
+  m_width(1), m_height(1), m_depth(1)
+
+{
+}
+
 ZObject3dArray::~ZObject3dArray()
 {
   clearAll();
@@ -58,10 +64,10 @@ void ZObject3dArray::append(const ZObject3d &obj,
 
     for (size_t i = 0; i < labelArray.size(); i++) {
       if (objMap.count(labelArray[i]) > 0) {
-        objMap[labelArray[i]]->append(obj.x(i), obj.y(i), obj.z(i));
+        objMap[labelArray[i]]->append(obj.getX(i), obj.getY(i), obj.getZ(i));
       } else { //new object
         ZObject3d *newobj = new ZObject3d;
-        newobj->append(obj.x(i), obj.y(i), obj.z(i));
+        newobj->append(obj.getX(i), obj.getY(i), obj.getZ(i));
         objMap[labelArray[i]] = newobj;
       }
     }
@@ -266,4 +272,16 @@ ZPoint ZObject3dArray::averageDirection()
   }
 
   return vec;
+}
+
+ZObject3d* ZObject3dArray::take(size_t index)
+{
+  if (index >= size()) {
+    return NULL;
+  }
+
+  ZObject3d *obj = (*this)[index];
+  (*this)[index] = NULL;
+
+  return obj;
 }

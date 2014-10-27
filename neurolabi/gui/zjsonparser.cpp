@@ -140,6 +140,26 @@ int ZJsonParser::integerValue(const json_t *value, size_t index)
   return integerValue(arrayValue(value, index));
 }
 
+std::vector<int> ZJsonParser::integerArray(const json_t *value)
+{
+  std::vector<int> array;
+  if (value != NULL) {
+    if (isArray(value)) {
+      int s = arraySize(value);
+      for (int i = 0; i < s; ++i) {
+        json_t *a = ZJsonParser::arrayValue(value, i);
+        if (a != NULL) {
+          if (ZJsonParser::isInteger(a)) {
+            array.push_back(ZJsonParser::integerValue(a));
+          }
+        }
+      }
+    }
+  }
+
+  return array;
+}
+
 void ZJsonParser::print(const char *key, json_t *object, int indent)
 {
   for (int i = 0; i < indent; ++i) {

@@ -17,6 +17,12 @@ void ZDvidRequest::setGetSwcRequest(int bodyId)
   m_parameter = bodyId;
 }
 
+void ZDvidRequest::setGetThumbnailRequest(int bodyId)
+{
+  m_requestType = ZDvidRequest::DVID_GET_THUMBNAIL;
+  m_parameter = bodyId;
+}
+
 void ZDvidRequest::setGetImageRequest(
     int x0, int y0, int z0, int width, int height)
 {
@@ -48,6 +54,8 @@ void ZDvidRequest::setGetInfoRequest(const QString &dataType)
 {
   if (dataType == "superpixels") {
     m_requestType = ZDvidRequest::DVID_GET_SUPERPIXEL_INFO;
+  } else if (dataType == "grayscale") {
+    m_requestType = ZDvidRequest::DVID_GET_GRAYSCALE_INFO;
   } else {
     m_requestType = ZDvidRequest::DVID_NULL_REQUEST;
   }
@@ -62,12 +70,20 @@ void ZDvidRequest::setGetStringRequest(const QString &dataType)
   }
 }
 
-void ZDvidRequest::setGetKeyValueRequest(
-    const QString &dataName, const QString key)
+void ZDvidRequest::setGetKeyValueRequest(const QString &dataName, const QString &key)
 {
   m_requestType = ZDvidRequest::DVID_GET_KEYVALUE;
   QList<QVariant> parameter;
   parameter << dataName << key;
+  m_parameter = parameter;
+}
+
+void ZDvidRequest::setGetKeysRequest(
+    const QString &dataName, const QString &minKey, const QString &maxKey)
+{
+  m_requestType = ZDvidRequest::DVID_GET_KEYS;
+  QList<QVariant> parameter;
+  parameter << dataName << minKey << maxKey;
   m_parameter = parameter;
 }
 

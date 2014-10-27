@@ -16,7 +16,19 @@
    </font>
   </property>
   <property name="windowTitle">
-   <string>1.0</string>
+   <string>1.0r</string>
+  </property>
+  <property name="iconSize">
+   <size>
+    <width>32</width>
+    <height>32</height>
+   </size>
+  </property>
+  <property name="toolButtonStyle">
+   <enum>Qt::ToolButtonIconOnly</enum>
+  </property>
+  <property name="dockOptions">
+   <set>QMainWindow::AllowTabbedDocks|QMainWindow::AnimatedDocks</set>
   </property>
   <widget class="QWidget" name="centralwidget"/>
   <widget class="QMenuBar" name="menubar">
@@ -59,7 +71,7 @@
      </property>
      <addaction name="actionImage_Sequence"/>
      <addaction name="actionSparse_objects"/>
-     <addaction name="actionTiles"/>
+     <addaction name="actionTiles2"/>
     </widget>
     <widget class="QMenu" name="menuExport">
      <property name="title">
@@ -76,6 +88,9 @@
       <string>Open Recent</string>
      </property>
     </widget>
+    <addaction name="actionNewProject"/>
+    <addaction name="actionTiles"/>
+    <addaction name="separator"/>
     <addaction name="actionOpen"/>
     <addaction name="menuOpen_Recent"/>
     <addaction name="menuLoad_into"/>
@@ -247,17 +262,19 @@
       <property name="title">
        <string>Import</string>
       </property>
+      <addaction name="actionImportFlyEmDatabase"/>
+      <addaction name="actionDVID_Bundle"/>
+      <addaction name="separator"/>
       <addaction name="actionAddFlyEmNeuron_Network"/>
       <addaction name="actionSynapse_Annotation"/>
       <addaction name="actionImportMask"/>
       <addaction name="actionImportSegmentation"/>
       <addaction name="actionAxon_Export"/>
-      <addaction name="actionImportFlyEmDatabase"/>
-      <addaction name="actionDvid_Object"/>
       <addaction name="actionVolume_field"/>
       <addaction name="actionThumbnails_2"/>
       <addaction name="actionHDF5_Body"/>
-      <addaction name="actionDVID_Bundle"/>
+      <addaction name="actionImportBoundBox"/>
+      <addaction name="actionImportSeeds"/>
      </widget>
      <widget class="QMenu" name="menuQuality_Control">
       <property name="title">
@@ -281,6 +298,7 @@
       <addaction name="actionExtract_body"/>
       <addaction name="actionLoop_Analysis"/>
       <addaction name="actionIdentify_Hot_Spot"/>
+      <addaction name="actionBody_Touching_Analysis"/>
      </widget>
      <widget class="QMenu" name="menuTEM_Paper">
       <property name="title">
@@ -289,6 +307,9 @@
       <addaction name="actionTem_Paper_Volume_Rendering"/>
       <addaction name="actionTem_Paper_Neuron_Type_Figure"/>
       <addaction name="actionMake_Movie"/>
+      <addaction name="actionLoad_Data_Bundle"/>
+      <addaction name="separator"/>
+      <addaction name="actionShape_Matching"/>
      </widget>
      <widget class="QMenu" name="menuStatistics">
       <property name="title">
@@ -309,6 +330,12 @@
       <addaction name="actionHot_Spot_Demo"/>
       <addaction name="actionSubmit_Skeletonize"/>
       <addaction name="actionLoad_Body_with_Grayscale"/>
+      <addaction name="actionLoad_Large_Body"/>
+      <addaction name="actionUpdate_Skeletons"/>
+      <addaction name="actionCreate_Databundle"/>
+      <addaction name="actionOperateDvid"/>
+      <addaction name="actionGenerate_Local_Grayscale"/>
+      <addaction name="actionUpload_Annotations"/>
      </widget>
      <widget class="QMenu" name="menuExport_2">
       <property name="title">
@@ -316,13 +343,31 @@
       </property>
       <addaction name="actionBundle"/>
       <addaction name="actionThumbnails"/>
+      <addaction name="separator"/>
+      <addaction name="actionOne_Column"/>
      </widget>
      <widget class="QMenu" name="menuSegmentation_2">
       <property name="title">
        <string>Segmentation</string>
       </property>
       <addaction name="actionSplit_Region"/>
+      <addaction name="actionView_Labeled_Regions"/>
+      <addaction name="actionCreate_ROI"/>
+      <addaction name="actionExport_Segmentation_Result"/>
      </widget>
+     <widget class="QMenu" name="menuNew">
+      <property name="title">
+       <string>New</string>
+      </property>
+      <addaction name="actionBody_Split_Project"/>
+     </widget>
+     <widget class="QMenu" name="menuProject">
+      <property name="title">
+       <string>Project</string>
+      </property>
+      <addaction name="actionFlyEmROI"/>
+     </widget>
+     <addaction name="menuNew"/>
      <addaction name="menuFlyEmOpen"/>
      <addaction name="menuExport_2"/>
      <addaction name="menuQuality_Control"/>
@@ -333,6 +378,8 @@
      <addaction name="menuSegmentation_2"/>
      <addaction name="actionSkeletonization"/>
      <addaction name="actionExtract_Neuron"/>
+     <addaction name="menuProject"/>
+     <addaction name="actionSplit_Body"/>
      <addaction name="separator"/>
      <addaction name="actionFlyEmSettings"/>
     </widget>
@@ -370,7 +417,7 @@
      <normaloff>:/images/open.png</normaloff>:/images/open.png</iconset>
    </property>
    <property name="text">
-    <string>Open</string>
+    <string>Open Stack</string>
    </property>
    <property name="toolTip">
     <string>Open a file</string>
@@ -1051,24 +1098,6 @@
     <string>Pen Width for SWC Display</string>
    </property>
   </action>
-  <action name="actionDVID_Object">
-   <property name="icon">
-    <iconset resource="gui.qrc">
-     <normaloff>:/images/open_dvid.png</normaloff>:/images/open_dvid.png</iconset>
-   </property>
-   <property name="text">
-    <string>DVID Object</string>
-   </property>
-  </action>
-  <action name="actionDvid_Object">
-   <property name="icon">
-    <iconset resource="gui.qrc">
-     <normaloff>:/images/open_dvid.png</normaloff>:/images/open_dvid.png</iconset>
-   </property>
-   <property name="text">
-    <string>DVID Object</string>
-   </property>
-  </action>
   <action name="actionAssign_Clustering">
    <property name="text">
     <string>Assign Clustering</string>
@@ -1115,7 +1144,7 @@
     <string>Tile Manager</string>
    </property>
   </action>
-  <action name="actionTiles">
+  <action name="actionTiles2">
    <property name="text">
     <string>Tiles</string>
    </property>
@@ -1161,6 +1190,10 @@
    </property>
   </action>
   <action name="actionDVID_Bundle">
+   <property name="icon">
+    <iconset resource="gui.qrc">
+     <normaloff>:/images/open_dvid.png</normaloff>:/images/open_dvid.png</iconset>
+   </property>
    <property name="text">
     <string>DVID Bundle</string>
    </property>
@@ -1191,6 +1224,120 @@
   <action name="actionFlyEmSettings">
    <property name="text">
     <string>Settings</string>
+   </property>
+  </action>
+  <action name="actionView_Labeled_Regions">
+   <property name="text">
+    <string>View Labeled Regions</string>
+   </property>
+  </action>
+  <action name="actionTiles">
+   <property name="text">
+    <string>Open Project</string>
+   </property>
+  </action>
+  <action name="actionLoad_Large_Body">
+   <property name="text">
+    <string>Load Large Body</string>
+   </property>
+  </action>
+  <action name="actionBody_Split_Project">
+   <property name="text">
+    <string>Body Split Project</string>
+   </property>
+  </action>
+  <action name="actionSplit_Body">
+   <property name="icon">
+    <iconset>
+     <normalon>:/images/bodysplit.png</normalon>
+    </iconset>
+   </property>
+   <property name="text">
+    <string>Split Body Project</string>
+   </property>
+  </action>
+  <action name="actionUpdate_Skeletons">
+   <property name="text">
+    <string>Update Skeletons</string>
+   </property>
+  </action>
+  <action name="actionCreate_Databundle">
+   <property name="text">
+    <string>Create Data Bundle</string>
+   </property>
+  </action>
+  <action name="actionCreate_ROI">
+   <property name="text">
+    <string>Create ROI</string>
+   </property>
+  </action>
+  <action name="actionCreate_ROI_Project">
+   <property name="text">
+    <string>Create ROI Project</string>
+   </property>
+  </action>
+  <action name="actionFlyEmROI">
+   <property name="icon">
+    <iconset resource="gui.qrc">
+     <normaloff>:/images/roi.png</normaloff>:/images/roi.png</iconset>
+   </property>
+   <property name="text">
+    <string>ROI</string>
+   </property>
+  </action>
+  <action name="actionNewProject">
+   <property name="text">
+    <string>New Project</string>
+   </property>
+  </action>
+  <action name="actionLoad_Data_Bundle">
+   <property name="text">
+    <string>Load Data Bundle</string>
+   </property>
+  </action>
+  <action name="actionShape_Matching">
+   <property name="text">
+    <string>Shape Analysis</string>
+   </property>
+  </action>
+  <action name="actionOne_Column">
+   <property name="text">
+    <string>One Column</string>
+   </property>
+  </action>
+  <action name="actionOperateDvid">
+   <property name="text">
+    <string>Operate</string>
+   </property>
+  </action>
+  <action name="actionGenerate_Local_Grayscale">
+   <property name="text">
+    <string>Generate Local Grayscale</string>
+   </property>
+  </action>
+  <action name="actionExport_Segmentation_Result">
+   <property name="text">
+    <string>Export Result</string>
+   </property>
+  </action>
+  <action name="actionBody_Touching_Analysis">
+   <property name="text">
+    <string>Side Boundary Analysis</string>
+   </property>
+  </action>
+  <action name="actionImportBoundBox">
+   <property name="text">
+    <string>Bound Box</string>
+   </property>
+  </action>
+  <action name="actionImportSeeds">
+   <property name="text">
+    <string>Seeds</string>
+   </property>
+  </action>
+  <action name="actionUpload_Annotations">
+   <property name="text">
+    <string>Upload Annotations</string>
    </property>
   </action>
  </widget>

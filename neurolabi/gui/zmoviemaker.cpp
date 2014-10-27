@@ -103,7 +103,7 @@ void ZMovieMaker::recruitCast()
       ZStack *stack = new ZStack();
       stack->load(iter->second);
 
-      if (academy->stack() != NULL) {
+      if (academy->getStack() != NULL) {
         cout << "Warning: " << "multiple volume detected. Only one allowed."
              << endl;
       } else {
@@ -325,8 +325,8 @@ void ZMovieMaker::act(int timeStep)
 
 ZStackDoc* ZMovieMaker::getAcademy()
 {
-  if (m_academy == NULL) {
-    m_academy = tr1::shared_ptr<ZStackDoc>(new ZStackDoc(NULL, NULL));
+  if (!m_academy) {
+    m_academy = ZSharedPointer<ZStackDoc>(new ZStackDoc(NULL, NULL));
   }
 
   return m_academy.get();

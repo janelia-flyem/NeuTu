@@ -22,7 +22,7 @@ public:
   Local_Neuroseg* toLocalNeuroseg() const;
 
 public:
-  virtual void display(ZPainter &painter, int z = 0, Display_Style option = NORMAL) const;
+  virtual void display(ZPainter &painter, int slice, Display_Style option) const;
 
 public:
     virtual void fitStack(const Stack *stack, Receptor_Fit_Workspace *ws);

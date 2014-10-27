@@ -4,9 +4,6 @@ include($${PWD}/mylib/mylib.pri)
 HEADERS +=$${PWD}/zstackprocessor.h \
    $${PWD}/zstack.hxx \
    $${PWD}/zlocalneuroseg.h \
-   $${PWD}/zswcexportable.h \
-   $${PWD}/zdocumentable.h \
-   $${PWD}/zinterface.h \
    $${PWD}/zellipse.h \
    $${PWD}/zswctree.h \
    $${PWD}/zobject3d.h \
@@ -164,6 +161,7 @@ HEADERS +=$${PWD}/zstackprocessor.h \
    $${PWD}/flyem/zflyemneuronfeaturefactory.h \
    $${PWD}/flyem/zflyemneuronarray.h \
    $${PWD}/swc/zswcpruner.h \
+   $${PWD}/zneurontracer.h \
    $${PWD}/flyem/zflyemneuronlayermatcher.h \
    $${PWD}/zdynamicprogrammer.h \
    $${PWD}/flyem/zhotspot.h \
@@ -190,7 +188,27 @@ HEADERS +=$${PWD}/zstackprocessor.h \
    $${PWD}/flyem/zflyemsubstackroi.h \
    $${PWD}/zstackwatershed.h \
    $${PWD}/zstackarray.h \
-   $${PWD}/flyem/zflyemconfig.h
+   $${PWD}/flyem/zflyemconfig.h \
+   $${PWD}/tr1_header.h \
+   $${PWD}/zsharedpointer.h \
+   $${PWD}/geometry/zgeo3dtransform.h \
+   $${PWD}/geometry/zgeometry.h \
+   $${PWD}/geometry/zgeo3dscalarfield.h \
+   $${PWD}/zvoxelgraphics.h \
+   $${PWD}/zintcuboid.h \
+   $${PWD}/bigdata/zdvidblockgrid.h \
+   $${PWD}/bigdata/zstackblockgrid.h \
+   $${PWD}/bigdata/zblockgrid.h \
+   $${PWD}/bigdata/zblockgridfactory.h \
+   $${PWD}/zsparsestack.h \
+   $${PWD}/zstackobject.h \
+   $${PWD}/zobject3dfactory.h \
+   $${PWD}/zclosedcurve.h \
+   $${PWD}/zflyemutilities.h \
+   $${PWD}/dvid/zdvidurl.h \
+   $${PWD}/zstackobjectsourcefactory.h \
+   $${PWD}/dvid/zdviddata.h \
+   $${PWD}/flyem/zflyemneuronbodyinfo.h
 
 SOURCES +=$${PWD}/zstackprocessor.cpp \
    $${PWD}/zstack.cxx \
@@ -242,6 +260,7 @@ SOURCES +=$${PWD}/zstackprocessor.cpp \
    $${PWD}/zswcsizefeatureanalyzer.cpp \
    $${PWD}/zobject3darray.cpp \
    $${PWD}/zdoublevector.cpp \
+   $${PWD}/zneurontracer.cpp \
    $${PWD}/zkmeansclustering.cpp \
    $${PWD}/zswcshollfeatureanalyzer.cpp \
    $${PWD}/zswcspatialfeatureanalyzer.cpp \
@@ -315,7 +334,6 @@ SOURCES +=$${PWD}/zstackprocessor.cpp \
    $${PWD}/flyem/zflyemneuronrange.cpp \
    $${PWD}/flyem/zflyemneuronaxis.cpp \
    $${PWD}/zswcgenerator.cpp \
-   $${PWD}/zstackdrawable.cpp \
    $${PWD}/zswcnodebufferfeatureanalyzer.cpp \
    $${PWD}/flyem/zflyemneuronrangecompare.cpp \
    $${PWD}/swc/zswcresampler.cpp \
@@ -366,4 +384,22 @@ SOURCES +=$${PWD}/zstackprocessor.cpp \
    $${PWD}/flyem/zflyemsubstackroi.cpp \
    $${PWD}/zstackwatershed.cpp \
    $${PWD}/zstackarray.cpp \
-   $${PWD}/flyem/zflyemconfig.cpp
+   $${PWD}/flyem/zflyemconfig.cpp \
+   $${PWD}/geometry/zgeo3dtransform.cpp \
+   $${PWD}/geometry/zgeometry.cpp \
+   $${PWD}/geometry/zgeo3dscalarfield.cpp \
+   $${PWD}/zvoxelgraphics.cpp \
+   $${PWD}/zintcuboid.cpp \
+   $${PWD}/bigdata/zdvidblockgrid.cpp \
+   $${PWD}/bigdata/zstackblockgrid.cpp \
+   $${PWD}/bigdata/zblockgrid.cpp \
+   $${PWD}/bigdata/zblockgridfactory.cpp \
+   $${PWD}/zsparsestack.cpp \
+   $${PWD}/zstackobject.cpp \
+   $${PWD}/zobject3dfactory.cpp \
+   $${PWD}/zclosedcurve.cpp \
+   $${PWD}/zflyemutilities.cpp \
+   $${PWD}/dvid/zdvidurl.cpp \
+   $${PWD}/zstackobjectsourcefactory.cpp \
+   $${PWD}/dvid/zdviddata.cpp \
+   $${PWD}/flyem/zflyemneuronbodyinfo.cpp

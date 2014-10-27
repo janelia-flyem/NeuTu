@@ -11,23 +11,19 @@
 #include <QStringList>
 #include <QUrl>
 #include <QStatusBar>
-#ifdef __GLIBCXX__
-#include <tr1/memory>
-#else
-#include <memory>
-#endif
-
 #include "tz_image_lib_defs.h"
 #include "plotsettings.h"
 #include "zinteractivecontext.h"
 #include "zstackdrawable.h"
-#include "z3dwindow.h"
 #include "zqtbarprogressreporter.h"
 #include "zrescaleswcdialog.h"
 #include "zdocumentable.h"
 #include "neutube.h"
 #include "zreportable.h"
 #include "neutube.h"
+#include "ztilemanager.h"
+#include "z3dwindow.h"
+#include "zsharedpointer.h"
 
 class ZStackView;
 class ZStackPresenter;
@@ -40,7 +36,9 @@ class ZCurve;
 class QUndoCommand;
 class ZStack;
 class ZStackDoc;
+class ZTileManager;
 class ZStackDocReader;
+class MainWindow;
 
 class ZStackFrame : public QMdiSubWindow, public ZReportable
 {
@@ -53,7 +51,7 @@ public:
 public:
   // A frame has three parts: view, document and presenter
   inline ZStackView* view() const { return m_view; }
-  inline std::tr1::shared_ptr<ZStackDoc> document() const { return m_doc; }
+  inline ZSharedPointer<ZStackDoc> document() const { return m_doc; }
   inline ZStackPresenter *presenter() const { return m_presenter; }
 
   virtual void constructFrame();
@@ -83,9 +81,8 @@ public:
   void saveProject();
   void saveProjectAs(const QString &path);
   void importSwcAsReference(const QStringList &pathList);
-  void exportSwc(const QString &filePath);
+  //void exportSwc(const QString &filePath);
   void exportPuncta(const QString &filePath);
-  int exportSwcReconstruct(const QString &filePath, bool multiple = false);
 
   void importMask(const QString &filePath);
   void importSwc(const QString &filePath);
@@ -94,16 +91,20 @@ public:
 
   void importPointList(const QString &filePath);
 
-  void exportVrml(const QString &filePath);
+  void importSeedMask(const QString &filePath);
+
+  //void exportVrml(const QString &filePath);
   void exportTube(const QString &filePath);
   void exportChainFileList(const QString &filePath);
-  void exportChainConnection(const QString &filePath);
-  void exportChainConnectionFeat(const QString &filePath);
+  //void exportChainConnection(const QString &filePath);
+  //void exportChainConnectionFeat(const QString &filePath);
   void exportObjectMask(const QString &filePath);
   void exportObjectMask(NeuTube::EColor color, const QString &filePath);
   ZStack* getObjectMask();
   ZStack* getObjectMask(NeuTube::EColor color);
   ZStack* getStrokeMask();
+  ZTileManager* getTileManager() {return m_tile;}
+  void setTileManager(ZTileManager *p) {m_tile = p; }
 
   void saveStack(const QString &filePath);
 
@@ -115,20 +116,29 @@ public:
 
   void displayActiveDecoration(bool enabled = true);
 
+  ZInteractiveContext::ViewMode getViewMode() const;
   void setViewMode(ZInteractiveContext::ViewMode mode);
-  void setObjectDisplayStyle(ZStackDrawable::Display_Style style);
+  void setObjectDisplayStyle(ZStackObject::Display_Style style);
   void setViewPortCenter(int x, int y, int z);
   void viewRoi(int x, int y, int z, int radius);
+
+  ZStackObject::Display_Style getObjectStyle() const;
+  void setObjectStyle(ZStackObject::Display_Style style);
 
   void hideObject();
   void showObject();
 
   Z3DWindow* open3DWindow(QWidget *parent,
                           Z3DWindow::EInitMode mode = Z3DWindow::NORMAL_INIT);
+  /*!
+   * \brief Get the main window ancestor of the frame.
+   */
+  MainWindow* getMainWindow();
 
   void load(const QList<QUrl> &urls);
   void load(const QStringList &fileList);
   void load(const QString &filePath);
+  void load(const std::string &filePath);
 
   void disconnectAll();
 
@@ -174,7 +184,7 @@ public: //set frame parameters
   void autoBcAdjust();
 
 public:
-  void addDecoration(ZStackDrawable *obj);
+  void addDecoration(ZStackObject *obj);
   void clearDecoration();
   void updateView();
   void undo();
@@ -189,7 +199,8 @@ public:
   void executeAutoTraceAxonCommand();
   void executeWatershedCommand();
 
-  void executeAddObjectCommand(ZDocumentable *obj, NeuTube::EDocumentableType type);
+  void executeAddObjectCommand(
+      ZStackObject *obj, NeuTube::EDocumentableType type);
 
   //void importStackMask(const std::string &filePath);
   //void setStackMask(ZStack *stack);
@@ -207,12 +218,20 @@ public:
   inline ZStackFrame* getParentFrame() { return m_parentFrame; }
 
   void setSizeHintOption(NeuTube::ESizeHintOption option);
-  void loadRoi(const QString &filePath);
-  void loadRoi();
+  /*!
+   * Remove all existing decorations if isExclusive is true.
+   */
+  void loadRoi(const QString &filePath, bool isExclusive);
+  void loadRoi(bool isExclusive);
 
   void prepareDisplay();
 
   void runSeededWatershed();
+
+  QString swcFilename;
+  void makeSwcProjection(ZStackDoc *doc);
+
+  void clearData();
 
 public slots:
   void setLocsegChainInfo(ZLocsegChain *chain, QString prefix = "",
@@ -222,6 +241,7 @@ public slots:
   void setupDisplay();
   void zoomToSelectedSwcNodes();
   void notifyUser(const QString &message);
+  void locateSwcNodeIn3DView();
 
 signals:
   void infoChanged();
@@ -234,14 +254,14 @@ protected: // Events
   virtual void keyPressEvent(QKeyEvent *event);
 
 protected:
-  void cleanUp();
+  void clear();
   void closeEvent(QCloseEvent *event);
   void resizeEvent(QResizeEvent *event);
   virtual void dragEnterEvent(QDragEnterEvent *event);
   virtual void dropEvent(QDropEvent *event);
 
   void consumeDocument(ZStackDoc *doc);
-  void setDocument(std::tr1::shared_ptr<ZStackDoc> doc);
+  void setDocument(ZSharedPointer<ZStackDoc> doc);
 
 private:
   void setView(ZStackView *view);
@@ -250,11 +270,12 @@ protected:
   SettingDialog *m_settingDlg;
   QDialog *m_manageObjsDlg;
 
-  std::tr1::shared_ptr<ZStackDoc> m_doc;
+  ZSharedPointer<ZStackDoc> m_doc;
   ZStackPresenter *m_presenter;
   ZStackView *m_view;
   ZStackFrame *m_parentFrame;
   QList<ZStackFrame*> m_childFrameList;
+  ZTileManager* m_tile;
 
   ZTraceProject *m_traceProject;
 

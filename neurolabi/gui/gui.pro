@@ -74,25 +74,23 @@ unix:!macx {
 } # static glew
 
 contains(CONFIG, static_gtest) { # gtest from ext folder
+    #DEFINES += _USE_GTEST_
     include($$PWD/ext/gtest.pri)
-} else { # use your own gtest
+} #else { # use your own gtest
+#
+#CONFIG(debug, debug|release) {
+#    exists($${LOCAL_INSTALL_DIR}/lib/libgtest.a) {
+#        DEFINES += _USE_GTEST_
+#        LIBS += -lgtest
+#    }
+#}
 
-CONFIG(debug, debug|release) {
-    exists($${LOCAL_INSTALL_DIR}/lib/libgtest.a) {
-        DEFINES += _USE_GTEST_
-        LIBS += -lgtest
-    }
-}
-
-} # static gtest
+#} # static gtest
 
 LIBS += -lstdc++
 unix:!macx {
     DEFINES += _LINUX_
-    LIBS += -lQtGui -lQtCore \
-      -lQtOpenGL -lQtNetwork \
-      -lQtGui \
-      -lXt -lSM -lICE \
+    LIBS += -lXt -lSM -lICE \
       -lX11 -lm \
       -lpthread \
       -lGL -lrt -lGLU
@@ -116,6 +114,10 @@ macx {
     QMAKE_INFO_PLIST = images/Info.plist
     QMAKE_CXXFLAGS += -m64
 
+    exists($${NEUROLABI_DIR}/macosx10.9) {
+        QMAKE_CXXFLAGS += -std=c++11 -stdlib=libc++
+    }
+
     doc.files = doc
     doc.path = Contents/MacOS
     QMAKE_BUNDLE_DATA += doc
@@ -123,6 +125,11 @@ macx {
     config.files = config.xml
     config.path = Contents/MacOS
     QMAKE_BUNDLE_DATA += config
+
+    exists($${NEUROLABI_DIR}/macosx10.9) {
+        QMAKE_MAC_SDK = macosx10.9
+        QMAKE_MACOSX_DEPLOYMENT_TARGET=10.9
+    }
 }
 
 win32 {
@@ -147,6 +154,14 @@ CONFIG(debug, debug|release) {
         LIBS += -L../lib/opencv/lib -lopencv_core -lopencv_ml
     }
 }
+
+#exists($$HOME/local/lib/OpenVDB) {
+#    system(echo 'openvdb found')
+#    DEFINES += _USE_OPENVDB_
+#    INCLUDEPATH += $$HOME/local/lib/OpenVDB/include $$HOME/local/lib/tbb/include
+#    LIBS += -L$$HOME/local/lib/OpenVDB/lib -L$$HOME/local/lib/tbb/lib \
+#        -lopenvdb -ltbb -lHalf
+#}
 
 # Input
 RESOURCES = gui.qrc
@@ -339,7 +354,6 @@ HEADERS += mainwindow.h \
     flyem/zflyemneuronpresenter.h \
     biocytin/zbiocytinfilenameparser.h \
     diagnosisdialog.h \
-    zneurontracer.h \
     zerror.h \
     zhistogram.h \
     flyem/zflyemneuronrange.h \
@@ -372,7 +386,6 @@ HEADERS += mainwindow.h \
     ztilemanagerview.h \
     ztilegraphicsitem.h \
     ztileinfo.h \
-    tilemanagerdialog.h \
     flyem/zflyemneuronimagefactory.h \
     flyem/zflyemneuronfeatureanalyzer.h \
     flyemneuronthumbnaildialog.h \
@@ -392,8 +405,64 @@ HEADERS += mainwindow.h \
     flyem/zskeletonizeservice.h \
     zflyemdvidreader.h \
     zstroke2darray.h \
+    tilemanager.h \
     flyem/zflyemservice.h \
-    zactionfactory.h
+    zactionfactory.h \
+    zstackreadfactory.h \
+    zstackdoclabelstackfactory.h \
+    flyem/zinteractionengine.h \
+    zsparseobject.h \
+    zlabelcolortable.h \
+    zdocplayer.h \
+    zlinesegmentobject.h \
+    openvdb_header.h \
+    zopenvdbobject.h \
+    flyembodysplitprojectdialog.h \
+    flyem/zflyembodysplitproject.h \
+    zflyemnewbodysplitprojectdialog.h \
+    zstroke2dobjsmodel.h \
+    zdocplayerobjsmodel.h \
+    flyem/zflyembookmarklistmodel.h \
+    flyem/zflyembookmark.h \
+    zabstractmodelpresenter.h \
+    flyem/zflyembookmarkpresenter.h \
+    flyem/zflyembookmarkarray.h \
+    zstackobjectarray.h \
+    zwindowfactory.h \
+    dvid/zdvidwriter.h \
+    dvidskeletonizedialog.h \
+    zdialogfactory.h \
+    zdvidserverwidget.h \
+    zwidgetfactory.h \
+    zlabelededitwidget.h \
+    zlabeledcombowidget.h \
+    zspinboxdialog.h \
+    zbuttonbox.h \
+    zkeyeventswcmapper.h \
+    zflyemroidialog.h \
+    flyem/zflyemroiproject.h \
+    newprojectmainwindow.h \
+    zmouseeventmapper.h \
+    shapepaperdialog.h \
+    zparameterarray.h \
+    zframefactory.h \
+    zactionbutton.h \
+    dvid/zdvidbufferreader.h \
+    zmouseevent.h \
+    zmouseeventrecorder.h \
+    zmouseeventprocessor.h \
+    zstackoperator.h \
+    zsleeper.h \
+    dvid/libdvidheader.h \
+    dvidoperatedialog.h \
+    z3dwindowfactory.h \
+    qthreadfuturemap.h \
+    zstackball.h \
+    zstackdochittest.h \
+    zkeyeventmapper.h \
+    zuserinputevent.h \
+    zstackobjectmanager.h \
+    zstackobjectgroup.h
 
 FORMS += settingdialog.ui \
     frameinfodialog.ui \
@@ -436,12 +505,19 @@ FORMS += settingdialog.ui \
     dvidobjectdialog.ui \
     resolutiondialog.ui \
     dvidimagedialog.ui \
-    tilemanagerdialog.ui \
     flyemneuronthumbnaildialog.ui \
     flyemhotspotdialog.ui \
     flyembodyiddialog.ui \
     zdviddialog.ui \
-    flyembodyfilterdialog.ui
+    flyembodyfilterdialog.ui \
+    tilemanager.ui \
+    flyembodysplitprojectdialog.ui \
+    zflyemnewbodysplitprojectdialog.ui \
+    dvidskeletonizedialog.ui \
+    zflyemroidialog.ui \
+    newprojectmainwindow.ui \
+    shapepaperdialog.ui \
+    dvidoperatedialog.ui
 SOURCES += main.cpp \
     mainwindow.cpp \
     zstackview.cpp \
@@ -464,7 +540,6 @@ SOURCES += main.cpp \
     zeditswcdialog.cpp \
     cannyedgedialog.cpp \
     zdirectionaltemplatechain.cpp \
-    zneurontracer.cpp \
     medianfilterdialog.cpp \
     diffusiondialog.cpp \
     connectedthresholddialog.cpp \
@@ -628,7 +703,6 @@ SOURCES += main.cpp \
     ztilemanagerview.cpp \
     ztilegraphicsitem.cpp \
     ztileinfo.cpp \
-    tilemanagerdialog.cpp \
     flyem/zflyemneuronimagefactory.cpp \
     flyem/zflyemneuronfeatureanalyzer.cpp \
     flyemneuronthumbnaildialog.cpp \
@@ -648,8 +722,62 @@ SOURCES += main.cpp \
     flyem/zskeletonizeservice.cpp \
     zflyemdvidreader.cpp \
     zstroke2darray.cpp \
+    tilemanager.cpp \
     flyem/zflyemservice.cpp \
-    zactionfactory.cpp
+    zactionfactory.cpp \
+    zstackreadfactory.cpp \
+    zstackdoclabelstackfactory.cpp \
+    flyem/zinteractionengine.cpp \
+    zsparseobject.cpp \
+    zlabelcolortable.cpp \
+    zdocplayer.cpp \
+    zlinesegmentobject.cpp \
+    zopenvdbobject.cpp \
+    flyembodysplitprojectdialog.cpp \
+    flyem/zflyembodysplitproject.cpp \
+    zflyemnewbodysplitprojectdialog.cpp \
+    zstroke2dobjsmodel.cpp \
+    zdocplayerobjsmodel.cpp \
+    flyem/zflyembookmarklistmodel.cpp \
+    flyem/zflyembookmark.cpp \
+    zabstractmodelpresenter.cpp \
+    flyem/zflyembookmarkpresenter.cpp \
+    flyem/zflyembookmarkarray.cpp \
+    zstackobjectarray.cpp \
+    zwindowfactory.cpp \
+    dvid/zdvidwriter.cpp \
+    dvidskeletonizedialog.cpp \
+    zdialogfactory.cpp \
+    zdvidserverwidget.cpp \
+    zwidgetfactory.cpp \
+    zlabelededitwidget.cpp \
+    zlabeledcombowidget.cpp \
+    zspinboxdialog.cpp \
+    zbuttonbox.cpp \
+    zkeyeventswcmapper.cpp \
+    zflyemroidialog.cpp \
+    flyem/zflyemroiproject.cpp \
+    newprojectmainwindow.cpp \
+    zmouseeventmapper.cpp \
+    shapepaperdialog.cpp \
+    zparameterarray.cpp \
+    zframefactory.cpp \
+    zactionbutton.cpp \
+    dvid/zdvidbufferreader.cpp \
+    zmouseevent.cpp \
+    zmouseeventrecorder.cpp \
+    zmouseeventprocessor.cpp \
+    zstackoperator.cpp \
+    zsleeper.cpp \
+    dvidoperatedialog.cpp \
+    z3dwindowfactory.cpp \
+    qthreadfuturemap.cpp \
+    zstackball.cpp \
+    zstackdochittest.cpp \
+    zkeyeventmapper.cpp \
+    zuserinputevent.cpp \
+    zstackobjectmanager.cpp \
+    zstackobjectgroup.cpp
 
 OTHER_FILES += \
     extlib.pri
