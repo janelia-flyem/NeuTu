@@ -1,4 +1,4 @@
-NeuTu
+NeuTu (a.k.a. neuTube)
 =====
 
 [![Build Status](https://drone.io/github.com/janelia-flyem/NeuTu/status.png)](https://drone.io/github.com/janelia-flyem/NeuTu/latest)
@@ -26,6 +26,18 @@ by specifying the qmake command path and the corresponding spec path.
 
 See neurolabi/Compile_Windows.txt for more details.
 
-## Need help?
+## Configuration
 
-Contact Ting Zhao: zhaot@janelia.hhmi.org or tingzhao@gmail.com (preferred)
+### The edition for dark field neuron reconstruction
+Copy neurolabi/gui/config.xml to the folder containing the executable 
+
+### The edition for FLyEM
+Copy config_flyem.xml and neurolabi/json to the folder containing the executable
+
+## Other information
+ 
+The binary version for dark field neuron reconstruction can be downloaded from 
+
+    http://www.neutracing.com
+
+Contact Ting Zhao: zhaot@janelia.hhmi.org for any questions or comments.
