@@ -3253,7 +3253,7 @@ void MainWindow::test()
 {
   //QFuture<void> res = QtConcurrent::run(ZTest::test, this);
 
-#if 1
+#if 0
   m_progress->setRange(0, 100);
   m_progress->setLabelText("Progressing");
   m_progress->show();
@@ -3267,7 +3267,7 @@ void MainWindow::test()
 #endif
 
 
-#if 0
+#if 1
   m_progress->setRange(0, 2);
   m_progress->setLabelText(QString("Testing ..."));
   int currentProgress = 0;

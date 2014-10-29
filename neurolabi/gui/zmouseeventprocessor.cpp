@@ -17,6 +17,7 @@ void ZMouseEventProcessor::registerMapper()
   m_mapperList.append(&m_moveMapper);
   m_mapperList.append(&m_rightButtonReleaseMapper);
   m_mapperList.append(&m_leftButtonDoubleClickMapper);
+  m_mapperList.append(&m_leftButtonPressMapper);
   foreach (ZMouseEventMapper *mapper, m_mapperList) {
     mapper->setRecorder(&m_recorder);
   }
@@ -96,10 +97,16 @@ const ZMouseEventMapper& ZMouseEventProcessor::getMouseEventMapper(
       return m_rightButtonReleaseMapper;
     }
     break;
+  case ZMouseEvent::ACTION_PRESS:
+    if (event.getButtons() == Qt::LeftButton) {
+      return m_leftButtonPressMapper;
+    }
+    break;
   case ZMouseEvent::ACTION_DOUBLE_CLICK:
     if (event.getButtons() == Qt::LeftButton) {
       return m_leftButtonDoubleClickMapper;
     }
+    break;
   default:
     break;
   }

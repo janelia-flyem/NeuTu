@@ -184,7 +184,7 @@ void ZStackBall::displayHelper(
   pen.setWidthF(getPenWidth());
   pen.setCosmetic(m_usingCosmeticPen);
   if (hasVisualEffect(VE_DASH_PATTERN)) {
-    pen.setStyle(Qt::DashLine);
+    pen.setStyle(Qt::DotLine);
   }
   double alpha = oldPen.color().alphaF();
 
@@ -231,12 +231,15 @@ void ZStackBall::displayHelper(
     drawingBoundBox = true;
     QColor color;
     color.setRgb(255, 255, 0);
-    //color.setAlphaF(alpha);
+    color.setAlphaF(alpha);
     pen.setColor(color);
     pen.setCosmetic(true);
   } else if (hasVisualEffect(VE_BOUND_BOX)) {
     drawingBoundBox = true;
     pen = oldPen;
+    QColor color = oldPen.color();
+    color.setAlphaF(1.0);
+    pen.setColor(color);
     pen.setStyle(Qt::SolidLine);
     pen.setCosmetic(m_usingCosmeticPen);
   }

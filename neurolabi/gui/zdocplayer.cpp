@@ -78,6 +78,24 @@ ZDocPlayerList::~ZDocPlayerList()
   clear();
 }
 
+QList<ZDocPlayer*> ZDocPlayerList::takePlayer(ZStackObject *data)
+{
+  QList<ZDocPlayer*> playerList;
+  ZDocPlayerList::iterator iter = begin();
+  while (iter != end()) {
+    ZDocPlayer *player = *iter;
+    if (player->hasData(data)) {
+      //role |= player->getRole();
+      iter = erase(iter);
+      playerList.append(player);
+    } else {
+      ++iter;
+    }
+  }
+
+  return playerList;
+}
+
 ZDocPlayer::TRole ZDocPlayerList::removePlayer(ZStackObject *data)
 {
   ZDocPlayer::TRole role = ZDocPlayer::ROLE_NONE;

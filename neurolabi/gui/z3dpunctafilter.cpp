@@ -8,6 +8,7 @@
 #include "z3dsphererenderer.h"
 #include "z3dlinewithfixedwidthcolorrenderer.h"
 #include "zeventlistenerparameter.h"
+#include "zpunctumcolorscheme.h"
 
 Z3DPunctaFilter::Z3DPunctaFilter()
   : Z3DGeometryFilter()
@@ -376,45 +377,17 @@ void Z3DPunctaFilter::prepareData()
   m_zCut.setRange(zMin, zMax);
   m_zCut.set(glm::ivec2(zMin, zMax));
 
-  //  std::map<QString,size_t>::iterator it;
-  //  size_t index = 0;
-  //  size_t numOfPrevColor = m_colorsForDifferentSource.size();
-  //  for (it = m_sourceColorMapper.begin(); it != m_sourceColorMapper.end(); it++) {
-  //    m_sourceColorMapper[it->first] = index++;
-  //    if (index > numOfPrevColor) {
-  //      QString guiname = QString("Source %1 Color").arg(index);
-  //      m_colorsForDifferentSource.push_back(new ZVec4Parameter(guiname, glm::vec4(
-  //                                                                ZRandomInstance.randReal<float>(),
-  //                                                                ZRandomInstance.randReal<float>(),
-  //                                                                ZRandomInstance.randReal<float>(),
-  //                                                                1.f)));
-  //      m_colorsForDifferentSource[index-1]->setStyle("COLOR");
-  //      connect(m_colorsForDifferentSource[index-1], SIGNAL(valueChanged()), this, SLOT(prepareColor()));
-  //    }
-  //  }
-  //  if (m_widgetsGroup) {
-  //    for (size_t i=0; i<m_colorsForDifferentSourceWidgetsGroup.size(); i++) {
-  //      delete m_colorsForDifferentSourceWidgetsGroup[i];
-  //    }
-  //    m_colorsForDifferentSourceWidgetsGroup.clear();
-  //  }
-  //  if (numOfPrevColor < index) {
-  //    for (size_t i=numOfPrevColor; i<m_colorsForDifferentSource.size(); i++) {
-  //      addParameter(m_colorsForDifferentSource[i]);
-  //    }
-  //  } else if (numOfPrevColor > index) {
-  //    for (size_t i=index; i<m_colorsForDifferentSource.size(); i++) {
-  //      removeParameter(m_colorsForDifferentSource[i]);
-  //      delete m_colorsForDifferentSource[i];
-  //    }
-  //    m_colorsForDifferentSource.resize(index);
-  //  }
+  ZPunctumColorScheme colorScheme;
+  colorScheme.setColorScheme(ZColorScheme::PUNCTUM_TYPE_COLOR);
 
   bool needUpdateWidget = false;
   //QList<QString> allSources;
   QSet<QString> allSources;
   for (size_t i=0; i<m_origPunctaList.size(); ++i) {
-    const std::string &source = m_origPunctaList[i]->getSource();
+    ZPunctum *punctum = m_origPunctaList[i];
+    const std::string &source = punctum->getSource();
+    int type = punctum->getTypeFromSource();
+
     if (!allSources.contains(source.c_str())) {
       allSources.insert(source.c_str());
     }
@@ -428,13 +401,22 @@ void Z3DPunctaFilter::prepareData()
     //QString guiname = QString("Source %1 Color").arg(idx + 1);
     QString guiname = QString("Source: %1").arg(source.c_str());
 
-    if (m_sourceColorMapper.find(source.c_str())
-        == m_sourceColorMapper.end()) {
-      m_sourceColorMapper[source.c_str()] =
-          new ZVec4Parameter(guiname, glm::vec4(ZRandomInstance.randReal<float>(),
-                                                ZRandomInstance.randReal<float>(),
-                                                ZRandomInstance.randReal<float>(),
-                                                1.f));
+    if (m_sourceColorMapper.count(source.c_str()) == 0) {
+      ZVec4Parameter *colorParam = NULL;
+      if (type >= 0) {
+        QColor color = colorScheme.getColor(type);
+        colorParam = new ZVec4Parameter(
+              guiname, glm::vec4(color.redF(), color.greenF(), color.blueF(),
+                                 color.alphaF()));
+      } else {
+        colorParam = new ZVec4Parameter(
+              guiname, glm::vec4(ZRandomInstance.randReal<float>(),
+                                 ZRandomInstance.randReal<float>(),
+                                 ZRandomInstance.randReal<float>(),
+                                 1.f));
+      }
+      m_sourceColorMapper[source.c_str()] = colorParam;
+
       m_sourceColorMapper[source.c_str()]->setStyle("COLOR");
       connect(m_sourceColorMapper[source.c_str()], SIGNAL(valueChanged()),
           this, SLOT(prepareColor()));

@@ -114,6 +114,15 @@ TStackObjectList ZStackObjectGroup::take(TObjectTest testFunc)
   return objSet;
 }
 
+TStackObjectList ZStackObjectGroup::takeSameSource(
+    ZStackObject::EType type, const std::string &source)
+{
+  TStackObjectList objList = findSameSource(type, source);
+  removeObject(objList.begin(), objList.end(), false);
+
+  return objList;
+}
+
 TStackObjectList ZStackObjectGroup::take(ZStackObject::EType type)
 {
   TStackObjectList objSet = getObjectList(type);
@@ -288,7 +297,22 @@ ZStackObject* ZStackObjectGroup::findFirstSameSource(
   return NULL;
 }
 
-QList<ZStackObject*> ZStackObjectGroup::findSameSource(
+ZStackObject* ZStackObjectGroup::findFirstSameSource(
+    ZStackObject::EType type, const std::string &source) const
+{
+  const TStackObjectList &objList = getObjectList(type);
+  for (ZStackObjectGroup::const_iterator iter = objList.begin();
+       iter != objList.end(); ++iter) {
+    const ZStackObject *checkObj = *iter;
+    if (checkObj->isSameSource(checkObj->getSource(), source)) {
+      return const_cast<ZStackObject*>(checkObj);
+    }
+  }
+
+  return NULL;
+}
+
+TStackObjectList ZStackObjectGroup::findSameSource(
     const ZStackObject *obj) const
 {
   QList<ZStackObject*> objList;
@@ -304,7 +328,7 @@ QList<ZStackObject*> ZStackObjectGroup::findSameSource(
   return objList;
 }
 
-QList<ZStackObject*> ZStackObjectGroup::findSameSource(
+TStackObjectList ZStackObjectGroup::findSameSource(
     ZStackObject::EType type, const std::string &source) const
 {
   QList<ZStackObject*> objList;
@@ -330,6 +354,19 @@ void ZStackObjectGroup::add(const ZStackObject *obj, bool uniqueSource)
     append(const_cast<ZStackObject*>(obj));
     getObjectList(obj->getType()).append(const_cast<ZStackObject*>(obj));
   }
+}
+
+QList<ZStackObject*> ZStackObjectGroup::addU(const ZStackObject *obj)
+{
+  QList<ZStackObject*> objList;
+  if (obj != NULL) {
+    objList = findSameSource(obj);
+    removeObject(objList.begin(), objList.end(), false);
+    append(const_cast<ZStackObject*>(obj));
+    getObjectList(obj->getType()).append(const_cast<ZStackObject*>(obj));
+  }
+
+  return objList;
 }
 
 void ZStackObjectGroup::addInFront(ZStackObject *obj, bool uniqueSource)
@@ -374,22 +411,6 @@ TStackObjectList ZStackObjectGroup::takeSelected()
   }
 
   return take(ZStackObject::isSelected);
-
-//  TStackObjectSet objSet;
-//  for (ZStackObjectGroup::iterator iter = begin(); iter != end();
-//       ++iter) {
-//    ZStackObject *obj = *iter;
-//    if (obj->isSelected()) {
-//      objSet.insert(obj);
-//    }
-//  }
-
-//  for (TStackObjectSet::iterator iter = objSet.begin(); iter != objSet.end();
-//       ++iter) {
-//    removeObject(*iter, false);
-//  }
-
-//  return objSet;
 }
 
 TStackObjectList ZStackObjectGroup::takeSelected(ZStackObject::EType type)

@@ -233,6 +233,11 @@ public slots:
   void tryEraseStrokeMode();
   void tryDrawStrokeMode(double x, double y, bool isEraser);
 
+  void tryDrawRectMode(double x, double y);
+  void enterDrawRectMode(double x, double y);
+  void tryDrawRectMode();
+  void exitRectEdit();
+
   void selectDownstreamNode();
   void selectSwcNodeConnection(Swc_Tree_Node *lastSelected = NULL);
   void selectUpstreamNode();

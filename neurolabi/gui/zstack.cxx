@@ -107,6 +107,12 @@ size_t ZStack::getByteNumber(EStackUnit unit) const
   }
 }
 
+void ZStack::setOffset(int dx, int dy)
+{
+  m_offset.setX(dx);
+  m_offset.setY(dy);
+}
+
 void ZStack::setOffset(int dx, int dy, int dz)
 {
   m_offset.set(dx, dy, dz);

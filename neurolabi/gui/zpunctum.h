@@ -105,6 +105,8 @@ public:
     }
   };
 
+  int getTypeFromSource() const;
+
 private:
   QColor highlightingColor(const QColor &color) const;
   QColor selectingColor(const QColor &color) const;

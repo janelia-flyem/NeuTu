@@ -139,21 +139,6 @@ void ZStackFrame::consumeDocument(ZStackDoc *doc)
   setDocument(docPtr);
 }
 
-#if 0
-  connect(m_doc.get(), SIGNAL(objectModified()), m_view, SLOT(paintObject()));\
-  connect(m_doc.get(), SIGNAL(chainModified()),\
-          m_view, SLOT(paintObject()));\
-  connect(m_doc.get(), SIGNAL(swcModified()),\
-          m_view, SLOT(paintObject()));\
-  connect(m_doc.get(), SIGNAL(punctaModified()),\
-          m_view, SLOT(paintObject()));\
-  connect(m_doc.get(), SIGNAL(obj3dModified()),\
-          m_view, SLOT(paintObject()));\
-  connect(m_doc.get(), SIGNAL(sparseObjectModified()),\
-          m_view, SLOT(paintObject()));\
-  connect(m_doc.get(), SIGNAL(strokeModified()), m_view, SLOT(paintObject()));
-#endif
-
 #define UPDATE_DOC_SIGNAL_SLOT(connect) \
   connect(m_doc.get(), SIGNAL(locsegChainSelected(ZLocsegChain*)), \
       this, SLOT(setLocsegChainInfo(ZLocsegChain*)));\
@@ -202,42 +187,6 @@ void ZStackFrame::connectSignalSlot()
 void ZStackFrame::disconnectAll()
 {
   UPDATE_SIGNAL_SLOT(disconnect);
-#if 0
-  disconnect(m_doc.get(), SIGNAL(locsegChainSelected(ZLocsegChain*)),
-      this, SLOT(setLocsegChainInfo(ZLocsegChain*)));
-  disconnect(m_doc.get(), SIGNAL(stackModified()),
-          m_view, SLOT(updateThresholdSlider()));
-  disconnect(m_doc.get(), SIGNAL(stackModified()),
-          m_view, SLOT(updateSlider()));
-  disconnect(m_doc.get(), SIGNAL(stackModified()),
-          m_presenter, SLOT(updateStackBc()));
-  disconnect(m_doc.get(), SIGNAL(stackModified()),
-          m_view, SLOT(updateView()));
-  disconnect(m_doc.get(), SIGNAL(chainModified()),
-          m_view, SLOT(updateView()));
-  disconnect(m_doc.get(), SIGNAL(swcModified()),
-          m_view, SLOT(updateView()));
-
-  disconnect(m_doc.get(), SIGNAL(holdSegChanged()), m_view, SLOT(paintObject()));
-  disconnect(m_doc.get(), SIGNAL(punctaModified()),
-          m_view, SLOT(paintObject()));
-  disconnect(m_doc.get(), SIGNAL(obj3dModified()),
-             m_view, SLOT(paintObject()));
-  disconnect(m_doc.get(), SIGNAL(cleanChanged(bool)),
-             this, SLOT(changeWindowTitle(bool)));
-  disconnect(m_doc.get(), SIGNAL(chainSelectionChanged(QList<ZLocsegChain*>,QList<ZLocsegChain*>)),
-             m_view, SLOT(paintObject()));
-  disconnect(m_doc.get(), SIGNAL(swcSelectionChanged(QList<ZSwcTree*>,QList<ZSwcTree*>)),
-             m_view, SLOT(paintObject()));
-  disconnect(m_doc.get(), SIGNAL(punctaSelectionChanged(QList<ZPunctum*>,QList<ZPunctum*>)),
-             m_view, SLOT(paintObject()));
-  disconnect(m_doc.get(), SIGNAL(chainVisibleStateChanged(ZLocsegChain*,bool)),
-             m_view, SLOT(paintObject()));
-  disconnect(m_doc.get(), SIGNAL(swcVisibleStateChanged(ZSwcTree*,bool)),
-             m_view, SLOT(paintObject()));
-  disconnect(m_doc.get(), SIGNAL(punctumVisibleStateChanged()),
-             m_view, SLOT(paintObject()));
-#endif
 }
 
 void ZStackFrame::setDocument(ZSharedPointer<ZStackDoc> doc)

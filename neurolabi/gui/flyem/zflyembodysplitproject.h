@@ -36,6 +36,9 @@ public:
 
   bool hasDataFrame() const;
   void setDataFrame(ZStackFrame *frame);
+  inline ZStackFrame* getDataFrame() const {
+    return m_dataFrame;
+  }
 
   void loadBookmark(const QString &filePath);
   std::set<int> getBookmarkBodySet() const;
@@ -57,6 +60,10 @@ public:
 
   void saveSeed();
   void downloadSeed();
+
+  void viewPreviousSlice();
+  void viewNextSlice();
+  void viewFullGrayscale();
 
 public slots:
   void showDataFrame() const;

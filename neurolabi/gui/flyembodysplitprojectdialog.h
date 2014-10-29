@@ -65,6 +65,8 @@ public slots:
   void loadBookmark();
   void locateBookmark(const QModelIndex &index);
   void quickView();
+  void viewPreviousSlice();
+  void viewNextSlice();
 
   void resetSideView();
 

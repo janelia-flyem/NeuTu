@@ -428,7 +428,7 @@ class AddObject : public ZUndoCommand
 {
 public:
   AddObject(ZStackDoc *doc, ZStackObject *obj, ZDocPlayer::TRole role,
-            QUndoCommand *parent = NULL);
+            bool uniqueSource, QUndoCommand *parent = NULL);
   ~AddObject();
   void redo();
   void undo();
@@ -437,6 +437,9 @@ private:
   ZStackDoc *m_doc;
   ZStackObject *m_obj;
   ZDocPlayer::TRole m_role;
+  bool m_uniqueSource;
+  QList<ZStackObject*> m_uniqueObjectList;
+  QList<ZDocPlayer::TRole> m_roleList;
   bool m_isInDoc;
 };
 

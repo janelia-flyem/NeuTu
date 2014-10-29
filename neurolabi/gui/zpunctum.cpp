@@ -244,4 +244,24 @@ void ZPunctum::setFromMarker(const ZVaa3dMarker &marker)
   setSource(marker.source());
 }
 
+int ZPunctum::getTypeFromSource() const
+{
+  int type = -1;
+  if (getSource() == "unknown") {
+    type = 0;
+  } else if (getSource() == "tbar") {
+    type = 1;
+  } else if (getSource() == "psd") {
+    type = 2;
+  } else if (getSource() == "tbar_multi") {
+    type = 3;
+  } else if (getSource() == "tbar_conv") {
+    type = 4;
+  } else if (getSource() == "tbar_multi_conv") {
+    type = 5;
+  }
+
+  return type;
+}
+
 ZSTACKOBJECT_DEFINE_CLASS_NAME(ZPunctum)

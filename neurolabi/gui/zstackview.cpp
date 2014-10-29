@@ -185,8 +185,8 @@ void ZStackView::setInfo()
 {
   if (m_infoLabel != NULL) {
     setInfo(QString("%1 x %2 => %3 x %4").
-                         arg(buddyDocument()->stackWidth()).
-                         arg(buddyDocument()->stackHeight()).
+                         arg(buddyDocument()->getStackWidth()).
+                         arg(buddyDocument()->getStackHeight()).
 			 arg(m_imageWidget->screenSize().width()).
 			 arg(m_imageWidget->screenSize().height()));
   }
@@ -1423,78 +1423,6 @@ void ZStackView::paintObjectBuffer()
       }
     }
   }
-
-#if 0
-  updateObjectCanvas();
-  if (m_objectCanvas == NULL) {
-    return;
-  }
-
-  if (buddyPresenter()->isObjectVisible()) {
-    int slice = m_depthControl->value();
-    if (buddyPresenter()->interactiveContext().isProjectView()) {
-      slice = -1;
-    }
-
-    if (buddyPresenter()->interactiveContext().isReconPreview()) {
-      if (buddyDocument()->previewSwc() != NULL) {
-        //buddyDocument()->previewSwc()->display(m_objectCanvas, slice,
-        //                                     buddyPresenter()->objectStyle());
-        buddyDocument()->previewSwc()->display(m_objectCanvas, m_imageWidget->viewPort().x(), m_imageWidget->viewPort().y(),
-                                               m_imageWidget->projectSize().width() * 1.0 / m_imageWidget->viewPort().width(),
-                                               slice, buddyPresenter()->objectStyle());
-      }
-    } else {
-      if (buddyDocument()->hasDrawable()) {
-        QList<ZStackObject*> *objs = buddyDocument()->drawableList();
-        for (QList<ZStackObject*>::const_iterator obj = objs->end() - 1;
-        obj != objs->begin() - 1; --obj) {
-#ifdef _DEBUG_2
-          std::cout << (*obj)->className() << std::endl;
-#endif
-          //(*obj)->display(m_objectCanvas, slice, buddyPresenter()->objectStyle());
-          (*obj)->display(m_objectCanvas, m_imageWidget->viewPort().x(), m_imageWidget->viewPort().y(),
-                          m_imageWidget->projectSize().width() * 1.0 / m_imageWidget->viewPort().width(),
-                          slice, buddyPresenter()->objectStyle());
-        }
-      }
-
-      if (buddyPresenter()->hasObjectToShow()) {
-        if (buddyPresenter()->interactiveContext().isProjectView()) {
-          slice = -1;
-        }
-        QList<ZStackObject*> *objs = buddyPresenter()->decorations();
-        for (QList<ZStackObject*>::const_iterator obj = objs->end() - 1;
-        obj != objs->begin() - 1; --obj) {
-          //(*obj)->display(m_objectCanvas, slice, buddyPresenter()->objectStyle());
-          (*obj)->display(m_objectCanvas, m_imageWidget->viewPort().x(), m_imageWidget->viewPort().y(),
-                          m_imageWidget->projectSize().width() * 1.0 / m_imageWidget->viewPort().width(),
-                          slice, buddyPresenter()->objectStyle());
-        }
-      }
-
-      //For special handling
-      if (!buddyDocument()->selectedSwcTreeNodes()->empty()) {
-        for (std::set<Swc_Tree_Node*>::const_iterator iter =
-             buddyDocument()->selectedSwcTreeNodes()->begin();
-             iter != buddyDocument()->selectedSwcTreeNodes()->end(); ++iter) {
-          ZCircle circle;
-          if ((iround(SwcTreeNode::z(*iter)) == slice) || (slice == -1)) {
-            circle.setColor(255, 255, 0);
-          } else {
-            circle.setColor(128, 128, 64);
-          }
-          circle.set(SwcTreeNode::x(*iter), SwcTreeNode::y(*iter),
-                     SwcTreeNode::z(*iter), SwcTreeNode::radius(*iter));
-          //circle.display(m_objectCanvas, slice);
-          circle.display(m_objectCanvas, m_imageWidget->viewPort().x(), m_imageWidget->viewPort().y(),
-                         m_imageWidget->projectSize().width() * 1.0 / m_imageWidget->viewPort().width(),
-                         slice, buddyPresenter()->objectStyle());
-        }
-      }
-    }
-  }
-#endif
 }
 
 void ZStackView::paintObject()

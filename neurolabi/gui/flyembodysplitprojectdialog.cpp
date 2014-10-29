@@ -6,6 +6,8 @@
 #include "ui_flyembodysplitprojectdialog.h"
 #include "mainwindow.h"
 #include "zstackframe.h"
+#include "zstackview.h"
+#include "zstackdoc.h"
 #include "zflyemnewbodysplitprojectdialog.h"
 #include "dvid/zdvidreader.h"
 #include "zstackskeletonizer.h"
@@ -16,6 +18,7 @@
 #include "zdialogfactory.h"
 #include "dvid/zdvidwriter.h"
 #include "flyem/zflyemneuronbodyinfo.h"
+#include "zstackpatch.h"
 
 FlyEmBodySplitProjectDialog::FlyEmBodySplitProjectDialog(QWidget *parent) :
   QDialog(parent),
@@ -39,6 +42,10 @@ FlyEmBodySplitProjectDialog::FlyEmBodySplitProjectDialog(QWidget *parent) :
   connect(ui->bookmarkVisibleCheckBox, SIGNAL(toggled(bool)),
           &m_project, SLOT(showBookmark(bool)));
   connect(ui->quickViewPushButton, SIGNAL(clicked()), this, SLOT(quickView()));
+  connect(ui->prevPushButton, SIGNAL(clicked()),
+          this, SLOT(viewPreviousSlice()));
+  connect(ui->nextPushButton, SIGNAL(clicked()),
+          this, SLOT(viewNextSlice()));
 
   ui->bookmarkView->setModel(&m_bookmarkList);
 
@@ -454,7 +461,7 @@ void FlyEmBodySplitProjectDialog::startProgress(const QString &label)
 
 void FlyEmBodySplitProjectDialog::on_pushButton_clicked()
 {
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
   //updateSideView();
   startProgress("Test ...");
   ZObject3dScan obj;
@@ -467,6 +474,26 @@ void FlyEmBodySplitProjectDialog::on_pushButton_clicked()
   ptoc();
   C_Stack::kill(stack);
   emit progressDone();
+#endif
+
+#ifdef _DEBUG_
+  ZDvidReader reader;
+  if (reader.open(getDvidTarget())) {
+    ZStackFrame *frame = m_project.getDataFrame();
+    if (frame != NULL) {
+      int currentSlice = frame->view()->sliceIndex();
+      int width = frame->document()->getStackWidth();
+      int height = frame->document()->getStackHeight();
+      ZIntPoint offset = frame->document()->getStackOffset();
+      int z = currentSlice + offset.getZ();
+      ZStack *stack = reader.readGrayScale(offset.getX(), offset.getY(), z,
+                                           width, height, 1);
+      ZStackPatch *patch = new ZStackPatch(stack);
+      patch->setZOrder(-1);
+      patch->setSource("#testpatch");
+      frame->document()->addStackPatch(patch);
+    }
+  }
 #endif
 }
 
@@ -500,4 +527,14 @@ void FlyEmBodySplitProjectDialog::on_commitPushButton_clicked()
 void FlyEmBodySplitProjectDialog::downloadSeed()
 {
   m_project.downloadSeed();
+}
+
+void FlyEmBodySplitProjectDialog::viewPreviousSlice()
+{
+  m_project.viewPreviousSlice();
+}
+
+void FlyEmBodySplitProjectDialog::viewNextSlice()
+{
+  m_project.viewNextSlice();
 }

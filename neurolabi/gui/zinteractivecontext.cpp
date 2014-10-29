@@ -12,6 +12,7 @@ ZInteractiveContext::ZInteractiveContext()
   m_markPunctaMode = MARK_PUNCTA_OFF;
   m_swcEditMode = SWC_EDIT_SELECT;
   m_strokeEditMode = STROKE_EDIT_OFF;
+  m_rectEditMode = RECT_EDIT_OFF;
   m_exitingEdit = false;
   m_blockingContextMenu = false;
 }
@@ -31,7 +32,9 @@ bool ZInteractiveContext::isContextMenuActivated() const
 {
   return ((m_swcEditMode == SWC_EDIT_OFF || m_swcEditMode == SWC_EDIT_SELECT) &&
           m_tubeEditMode == TUBE_EDIT_OFF &&
-          m_strokeEditMode == STROKE_EDIT_OFF && !m_exitingEdit &&
+          m_strokeEditMode == STROKE_EDIT_OFF &&
+          m_rectEditMode == RECT_EDIT_OFF &&
+          !m_exitingEdit &&
           !m_blockingContextMenu);
 }
 

@@ -23,6 +23,7 @@
 #include "zinteractionevent.h"
 #include "zellipse.h"
 #include "zstackoperator.h"
+#include "zrect2d.h"
 
 ZStackPresenter::ZStackPresenter(ZStackFrame *parent) : QObject(parent),
   m_parent(parent),
@@ -676,22 +677,25 @@ bool ZStackPresenter::isContextMenuOn()
 
 void ZStackPresenter::processMousePressEvent(QMouseEvent *event)
 {
-  const ZMouseEvent &zevent = m_mouseEventProcessor.process(
+  const ZMouseEvent &mouseEvent = m_mouseEventProcessor.process(
         event, ZMouseEvent::ACTION_PRESS, buddyView()->sliceIndex());
-  if (zevent.isNull()) {
+  if (mouseEvent.isNull()) {
     return;
   }
 
+  ZStackOperator op = m_mouseEventProcessor.getOperator();
+  process(op);
+
   m_interactiveContext.setExitingEdit(false);
 
-  ZStackOperator op =m_mouseEventProcessor.getOperator();
-  switch (op.getOperation()) {
-  case ZStackOperator::OP_STROKE_START_PAINT:
-    m_stroke.set(zevent.getStackPosition().x(), zevent.getStackPosition().y());
-    break;
-  default:
-    break;
-  }
+//  ZStackOperator op =m_mouseEventProcessor.getOperator();
+//  switch (op.getOperation()) {
+//  case ZStackOperator::OP_STROKE_START_PAINT:
+//    m_stroke.set(zevent.getStackPosition().x(), zevent.getStackPosition().y());
+//    break;
+//  default:
+//    break;
+//  }
 
   if (event->button() == Qt::RightButton) {
     m_mouseRightButtonPressed = true;
@@ -839,6 +843,8 @@ bool ZStackPresenter::processKeyPressEventForStroke(QKeyEvent *event)
       if (m_paintStrokeAction->isEnabled()) {
         m_paintStrokeAction->trigger();
       }
+    } else if (event->modifiers() == Qt::ShiftModifier) {
+      tryDrawRectMode();
     }
     break;
   case Qt::Key_E:
@@ -1525,6 +1531,12 @@ void ZStackPresenter::tryPaintStrokeMode()
   tryDrawStrokeMode(pos.x(), pos.y(), false);
 }
 
+void ZStackPresenter::tryDrawRectMode()
+{
+  QPointF pos = mapFromGlobalToStack(QCursor::pos());
+  tryDrawRectMode(pos.x(), pos.y());
+}
+
 void ZStackPresenter::tryEraseStrokeMode()
 {
   QPointF pos = mapFromGlobalToStack(QCursor::pos());
@@ -1536,13 +1548,26 @@ void ZStackPresenter::tryDrawStrokeMode(double x, double y, bool isEraser)
   if (GET_APPLICATION_NAME == "Biocytin" ||
       GET_APPLICATION_NAME == "FlyEM") {
     if ((interactiveContext().swcEditMode() == ZInteractiveContext::SWC_EDIT_OFF ||
-         interactiveContext().swcEditMode() == ZInteractiveContext::SWC_EDIT_SELECT) &&
-        interactiveContext().tubeEditMode() == ZInteractiveContext::TUBE_EDIT_OFF) {
+        interactiveContext().swcEditMode() == ZInteractiveContext::SWC_EDIT_SELECT) &&
+        interactiveContext().tubeEditMode() == ZInteractiveContext::TUBE_EDIT_OFF &&
+        interactiveContext().isRectEditModeOff()) {
       if (isEraser) {
         enterEraseStrokeMode(x, y);
       } else {
         enterDrawStrokeMode(x, y);
       }
+    }
+  }
+}
+
+void ZStackPresenter::tryDrawRectMode(double x, double y)
+{
+  if (GET_APPLICATION_NAME == "FlyEM") {
+    if ((interactiveContext().swcEditMode() == ZInteractiveContext::SWC_EDIT_OFF ||
+         interactiveContext().swcEditMode() == ZInteractiveContext::SWC_EDIT_SELECT) &&
+        interactiveContext().tubeEditMode() == ZInteractiveContext::TUBE_EDIT_OFF &&
+        interactiveContext().isStrokeEditModeOff()) {
+      enterDrawRectMode(x, y);
     }
   }
 }
@@ -1557,6 +1582,13 @@ void ZStackPresenter::enterDrawStrokeMode(double x, double y)
   turnOnStroke();
   //buddyView()->paintActiveDecoration();
   interactiveContext().setStrokeEditMode(ZInteractiveContext::STROKE_DRAW);
+  updateCursor();
+}
+
+void ZStackPresenter::enterDrawRectMode(double x, double y)
+{
+  buddyDocument()->mapToDataCoord(&x, &y, NULL);
+  interactiveContext().setRectEditMode(ZInteractiveContext::RECT_DRAW);
   updateCursor();
 }
 
@@ -1577,6 +1609,14 @@ void ZStackPresenter::exitStrokeEdit()
 {
   turnOffStroke();
   interactiveContext().setStrokeEditMode(ZInteractiveContext::STROKE_EDIT_OFF);
+  updateCursor();
+
+  m_interactiveContext.setExitingEdit(true);
+}
+
+void ZStackPresenter::exitRectEdit()
+{
+  interactiveContext().setRectEditMode(ZInteractiveContext::RECT_EDIT_OFF);
   updateCursor();
 
   m_interactiveContext.setExitingEdit(true);
@@ -1654,7 +1694,9 @@ void ZStackPresenter::updateCursor()
   if (this->interactiveContext().swcEditMode() ==
       ZInteractiveContext::SWC_EDIT_EXTEND ||
       this->interactiveContext().swcEditMode() ==
-      ZInteractiveContext::SWC_EDIT_SMART_EXTEND) {
+      ZInteractiveContext::SWC_EDIT_SMART_EXTEND ||
+      this->interactiveContext().rectEditMode() ==
+      ZInteractiveContext::RECT_DRAW) {
     buddyView()->setScreenCursor(Qt::PointingHandCursor);
   } else if (this->interactiveContext().swcEditMode() ==
       ZInteractiveContext::SWC_EDIT_MOVE_NODE) {
@@ -1900,6 +1942,7 @@ void ZStackPresenter::process(const ZStackOperator &op)
       turnOffStroke();
     }
     exitStrokeEdit();
+    exitRectEdit();
     enterSwcSelectMode();
     break;
   case ZStackOperator::OP_PUNCTA_SELECT_SINGLE:
@@ -1980,6 +2023,27 @@ void ZStackPresenter::process(const ZStackOperator &op)
   {
     m_stroke.append(currentStackPos.x(), currentStackPos.y());
     buddyView()->paintActiveDecoration();
+  }
+    break;
+  case ZStackOperator::OP_RECT_ROI_INIT:
+  {
+    ZRect2d *rect = new ZRect2d(currentStackPos.x(), currentStackPos.y(),
+                                1, 1);
+    rect->setSource("#rect_roi");
+    rect->setPenetrating(true);
+    rect->setColor(0, 255, 0);
+    buddyDocument()->executeAddObjectCommand(rect);
+  }
+    break;
+  case ZStackOperator::OP_RECT_ROI_UPDATE:
+  {
+    ZStackObject *obj = buddyDocument()->getObjectGroup().findFirstSameSource(
+          ZStackObject::TYPE_RECT2D, "#rect_roi");
+    ZRect2d *rect = dynamic_cast<ZRect2d*>(obj);
+    if (rect != NULL) {
+      rect->setLastCorner(currentStackPos.x(), currentStackPos.y());
+      buddyDocument()->notifyObjectModified();
+    }
   }
     break;
   case ZStackOperator::OP_START_MOVE_IMAGE:

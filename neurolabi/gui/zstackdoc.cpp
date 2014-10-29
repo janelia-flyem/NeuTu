@@ -95,6 +95,7 @@
 #include "zobject3dfactory.h"
 #include "zobject3darray.h"
 #include "zstackobjectsourcefactory.h"
+#include "zstackpatch.h"
 
 using namespace std;
 
@@ -269,6 +270,7 @@ void ZStackDoc::connectSignalSlot()
   connect(this, SIGNAL(chainModified()), this, SIGNAL(objectModified()));
   connect(this, SIGNAL(punctaModified()), this, SIGNAL(objectModified()));
   connect(this, SIGNAL(obj3dModified()), this, SIGNAL(objectModified()));
+  connect(this, SIGNAL(stackPatchModified()), this, SIGNAL(objectModified()));
   connect(this, SIGNAL(sparseObjectModified()), this, SIGNAL(objectModified()));
   connect(this, SIGNAL(strokeModified()), this, SIGNAL(objectModified()));
   connect(this, SIGNAL(swcModified()), this, SIGNAL(objectModified()));
@@ -1069,7 +1071,7 @@ bool ZStackDoc::hasDrawable()
   return !m_objectGroup.isEmpty();
 }
 
-int ZStackDoc::stackWidth() const
+int ZStackDoc::getStackWidth() const
 {
   if (getStack() == NULL) {
     return 0;
@@ -1078,7 +1080,7 @@ int ZStackDoc::stackWidth() const
   return getStack()->width();
 }
 
-int ZStackDoc::stackHeight() const
+int ZStackDoc::getStackHeight() const
 {
   if (getStack() == NULL) {
     return 0;
@@ -2047,6 +2049,22 @@ void ZStackDoc::addPunctum(ZPunctum *obj)
     setPunctumSelected(obj, true);
   }
   notifyPunctumModified();
+}
+
+void ZStackDoc::addStackPatch(ZStackPatch *patch, bool uniqueSource)
+{
+  if (patch == NULL) {
+    return;
+  }
+
+  m_objectGroup.add(patch, uniqueSource);
+
+
+  if (patch->isSelected()) {
+    setSelected(patch, true);
+  }
+
+  notifyStackPatchModified();
 }
 
 void ZStackDoc::addObj3d(ZObject3d *obj)
@@ -4788,6 +4806,11 @@ void ZStackDoc::notifyObj3dModified()
   emit obj3dModified();
 }
 
+void ZStackDoc::notifyStackPatchModified()
+{
+  emit stackPatchModified();
+}
+
 void ZStackDoc::notifySparseObjectModified()
 {
   emit sparseObjectModified();
@@ -6299,6 +6322,17 @@ void ZStackDoc::addObject(
     return;
   }
 
+  TStackObjectList objList;
+  if (uniqueSource) {
+    objList = m_objectGroup.takeSameSource(obj->getType(), obj->getSource());
+    for (TStackObjectList::iterator iter = objList.begin();
+         iter != objList.end(); ++iter) {
+      ZStackObject *obj = *iter;
+      m_playerList.removePlayer(obj);
+      delete obj;
+    }
+  }
+
   switch (obj->getType()) {
   case ZStackObject::TYPE_SWC:
   {
@@ -6327,9 +6361,13 @@ void ZStackDoc::addObject(
   case ZStackObject::TYPE_SPARSE_OBJECT:
     addSparseObject(dynamic_cast<ZSparseObject*>(obj));
     break;
+  case ZStackObject::TYPE_STACK_PATCH:
+    addStackPatch(dynamic_cast<ZStackPatch*>(obj));
+    break;
   default:
     //addObject(obj);
-    m_objectGroup.add(obj, uniqueSource);
+    m_objectGroup.add(obj, false);
+    notifyObjectModified();
     break;
   }
 
@@ -6384,11 +6422,12 @@ bool ZStackDoc::hasObjectSelected()
 }
 
 bool ZStackDoc::executeAddObjectCommand(
-    ZStackObject *obj, ZDocPlayer::TRole role)
+    ZStackObject *obj, ZDocPlayer::TRole role, bool uniqueSource)
 {
   if (obj != NULL) {
     ZStackDocCommand::ObjectEdit::AddObject *command =
-        new ZStackDocCommand::ObjectEdit::AddObject(this, obj, role);
+        new ZStackDocCommand::ObjectEdit::AddObject(
+          this, obj, role, uniqueSource);
     pushUndoCommand(command);
 
     return true;
@@ -7989,19 +8028,6 @@ void ZStackDocReader::loadSwc(const QString &filePath)
     delete tree;
   }
 }
-
-#if 0
-void ZStackDocReader::addSwcTree(ZSwcTree *tree)
-{
-  addObject(tree, false);
-
-  /*
-  if (tree != NULL) {
-    m_swcList.append(tree);
-  }
-  */
-}
-#endif
 
 void ZStackDocReader::loadLocsegChain(const QString &filePath)
 {

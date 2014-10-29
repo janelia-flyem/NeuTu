@@ -1723,9 +1723,9 @@ ZStackDocCommand::ObjectEdit::MoveSelected::~MoveSelected()
 }
 
 ZStackDocCommand::ObjectEdit::AddObject::AddObject(ZStackDoc *doc, ZStackObject *obj,
-    ZDocPlayer::TRole role, QUndoCommand *parent)
+    ZDocPlayer::TRole role, bool uniqueSource, QUndoCommand *parent)
   : ZUndoCommand(parent), m_doc(doc), m_obj(obj), m_role(role),
-    m_isInDoc(false)
+    m_uniqueSource(uniqueSource), m_isInDoc(false)
 {
   setText(QObject::tr("Add Object"));
 }
@@ -1734,13 +1734,30 @@ ZStackDocCommand::ObjectEdit::AddObject::~AddObject()
 {
   if (!m_isInDoc) {
     delete m_obj;
+  } else {
+    for (TStackObjectList::iterator iter = m_uniqueObjectList.begin();
+         iter != m_uniqueObjectList.end(); ++iter) {
+      delete *iter;
+    }
   }
 }
 
 void ZStackDocCommand::ObjectEdit::AddObject::redo()
 {
-  m_doc->addObject(m_obj, m_role);
-  m_doc->notifyObjectModified();
+  if (m_uniqueSource) {
+    if (m_uniqueSource) {
+      m_uniqueObjectList = m_doc->getObjectGroup().takeSameSource(
+            m_obj->getType(), m_obj->getSource());
+      m_roleList.clear();
+      for (TStackObjectList::iterator iter = m_uniqueObjectList.begin();
+           iter != m_uniqueObjectList.end(); ++iter) {
+        m_roleList.append(m_doc->getPlayerList().removePlayer(*iter));
+      }
+    }
+  }
+
+  m_doc->addObject(m_obj, m_role, false);
+
   /*
   if ((m_role & ZDocPlayer::ROLE_3DPAINT) > 0) {
     m_doc->notifyVolumeModified();
@@ -1755,6 +1772,13 @@ void ZStackDocCommand::ObjectEdit::AddObject::redo()
 void ZStackDocCommand::ObjectEdit::AddObject::undo()
 {
   m_doc->removeObject(m_obj, false);
+
+  //Add unique source back
+  for (int i = 0; i < m_uniqueObjectList.size(); ++i) {
+    m_doc->addObject(m_uniqueObjectList[i], m_roleList[i], false);
+  }
+  m_uniqueObjectList.clear();
+  m_roleList.clear();
   /*
   m_doc->notifyObjectModified();
   if ((role & ZDocPlayer::ROLE_3DPAINT) > 0) {

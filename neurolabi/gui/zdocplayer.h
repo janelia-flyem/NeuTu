@@ -106,6 +106,8 @@ public:
    */
   ZDocPlayer::TRole removePlayer(ZStackObject *data);
 
+  QList<ZDocPlayer*> takePlayer(ZStackObject *data);
+
   /*!
    * \brief Remove players with certain roles.
    *

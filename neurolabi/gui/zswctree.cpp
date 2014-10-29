@@ -601,8 +601,10 @@ void ZSwcTree::display(ZPainter &painter, int slice,
 
     circle.setColor(255, 255, 0);
     circle.setVisualEffect(ZStackBall::VE_BOUND_BOX |
-                           ZStackBall::VE_NO_FILL);
-    circle.useCosmeticPen(true);
+                           ZStackBall::VE_NO_FILL |
+                           ZStackBall::VE_OUT_FOCUS_DIM |
+                           ZStackBall::VE_DASH_PATTERN);
+    circle.useCosmeticPen(m_usingCosmeticPen);
     circle.display(painter, slice, BOUNDARY);
   }
 

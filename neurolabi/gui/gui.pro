@@ -462,7 +462,11 @@ HEADERS += mainwindow.h \
     zkeyeventmapper.h \
     zuserinputevent.h \
     zstackobjectmanager.h \
-    zstackobjectgroup.h
+    zstackobjectgroup.h \
+    zcolorscheme.h \
+    zpunctumcolorscheme.h \
+    zstackpatch.h \
+    zrect2d.h
 
 FORMS += settingdialog.ui \
     frameinfodialog.ui \
@@ -777,7 +781,11 @@ SOURCES += main.cpp \
     zkeyeventmapper.cpp \
     zuserinputevent.cpp \
     zstackobjectmanager.cpp \
-    zstackobjectgroup.cpp
+    zstackobjectgroup.cpp \
+    zcolorscheme.cpp \
+    zpunctumcolorscheme.cpp \
+    zstackpatch.cpp \
+    zrect2d.cpp
 
 OTHER_FILES += \
     extlib.pri

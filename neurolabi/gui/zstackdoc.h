@@ -67,6 +67,7 @@ class ZSparseObject;
 class ZSparseStack;
 class ZStackBall;
 class ZUndoCommand;
+class ZStackPatch;
 
 /*!
  * \brief The class of stack document
@@ -153,8 +154,8 @@ public: //attributes
   int getSelectedSwcNodeNumber() const;
   bool hasMultipleSelectedSwcNode() const;
 
-  int stackWidth() const;
-  int stackHeight() const;
+  int getStackWidth() const;
+  int getStackHeight() const;
   int stackChannelNumber() const;
 
   virtual void deprecateDependent(EComponent component);
@@ -428,6 +429,7 @@ public: /* puncta related methods */
 
 
   void addObj3d(ZObject3d *obj);
+  void addStackPatch(ZStackPatch *patch, bool uniqueSource = true);
   void addStroke(ZStroke2d *obj);
   void addSparseObject(ZSparseObject *obj);
 
@@ -704,6 +706,7 @@ public:
   void notifyPunctumModified();
   void notifyChainModified();
   void notifyObj3dModified();
+  void notifyStackPatchModified();
   void notifySparseObjectModified();
   void notifyStackModified();
   void notifySparseStackModified();
@@ -764,7 +767,8 @@ public:
 
 public slots: //undoable commands
   bool executeAddObjectCommand(ZStackObject *obj,
-      ZDocPlayer::TRole role = ZDocPlayer::ROLE_NONE);
+                               ZDocPlayer::TRole role = ZDocPlayer::ROLE_NONE,
+                               bool uniqueSource = true);
   bool executeRemoveSelectedObjectCommand();
   //bool executeRemoveUnselectedObjectCommand();
   bool executeMoveObjectCommand(
@@ -885,6 +889,7 @@ signals:
   void seedModified();
   void chainModified();
   void obj3dModified();
+  void stackPatchModified();
   void sparseObjectModified();
   void strokeModified();
   void graph3dModified();
@@ -1240,9 +1245,7 @@ private:
   ZSparseStack *m_sparseStack;
   ZStackFile m_stackSource;
 
-
   ZStackObjectGroup m_objectGroup;
-
   ZDocPlayerList m_playerList;
 
   //Special object

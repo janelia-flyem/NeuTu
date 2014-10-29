@@ -55,6 +55,11 @@ public:
     STROKE_DRAW
   };
 
+  enum RectEditMode {
+    RECT_EDIT_OFF = 0,
+    RECT_DRAW
+  };
+
   enum ViewMode {
     VIEW_NORMAL,
     VIEW_PROJECT
@@ -77,6 +82,7 @@ public:
   inline void setExploreMode(ExploreMode mode) { m_exploreMode = mode; }
   inline void setSwcEditMode(SwcEditMode mode) { m_swcEditMode = mode; }
   inline void setStrokeEditMode(StrokeEditMode mode) { m_strokeEditMode = mode; }
+  inline void setRectEditMode(RectEditMode mode) { m_rectEditMode = mode; }
 
   inline TraceMode traceMode() { return m_traceMode; }
   inline TubeEditMode tubeEditMode() { return m_tubeEditMode; }
@@ -85,6 +91,7 @@ public:
   inline ExploreMode exploreMode() { return m_exploreMode; }
   inline MarkPunctaMode editPunctaMode() {return m_markPunctaMode;}
   inline StrokeEditMode strokeEditMode() const { return m_strokeEditMode; }
+  inline RectEditMode rectEditMode() const { return m_rectEditMode; }
 
   bool isTraceModeOff()  const;
   inline bool isReconPreview() const {
@@ -100,7 +107,11 @@ public:
   inline bool markPuncta() {return m_markPunctaMode == MARK_PUNCTA;}
   inline void backupExploreMode() { m_oldExploreMode = m_exploreMode; }
   inline void restoreExploreMode() { m_exploreMode = m_oldExploreMode; }
-  inline bool isStrokeEditModeOff() const { return m_strokeEditMode == STROKE_EDIT_OFF; }
+  inline bool isStrokeEditModeOff() const {
+    return m_strokeEditMode == STROKE_EDIT_OFF; }
+  inline bool isRectEditModeOff() const {
+    return m_rectEditMode == RECT_EDIT_OFF;
+  }
 
   bool isContextMenuActivated() const;
   void blockContextMenu(bool blocking = true);
@@ -119,6 +130,7 @@ private:
   ExploreMode m_oldExploreMode;
   SwcEditMode m_swcEditMode;
   StrokeEditMode m_strokeEditMode;
+  RectEditMode m_rectEditMode;
   bool m_exitingEdit;
   bool m_blockingContextMenu;
   //ZImageWidget *m_imageWidget;

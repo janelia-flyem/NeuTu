@@ -58,6 +58,7 @@ using namespace std;
 #include "zjsonobject.h"
 #include "zpoint.h"
 #include "flyem/zfileparser.h"
+#include "zstackpatch.h"
 #include "zswcgenerator.h"
 #include "zpunctumio.h"
 #include "flyem/zsynapseannotationarray.h"
@@ -184,6 +185,7 @@ using namespace std;
 #include "test/zobject3dfactorytest.h"
 #include "test/zstacktest.h"
 #include "zswcgenerator.h"
+#include "zrect2d.h"
 #include "test/zswcgeneratortest.h"
 #include "test/zflyemneuronimagefactorytest.h"
 #include "test/zspgrowtest.h"
@@ -12027,16 +12029,27 @@ void ZTest::test(MainWindow *host)
   bookmarkArray.print();
 #endif
 
-#if 0
+#if 1
   ZStackFrame *frame = new ZStackFrame;
   frame->load(GET_TEST_DATA_DIR + "/benchmark/em_stack.tif");
   host->addStackFrame(frame);
   host->presentStackFrame(frame);
 
-  ZCircle *circle = new ZCircle(100, 100, 0, 10);
+  ZStack *stack = frame->document()->getStack()->clone();
+  //stack->setOffset(20, 30, 0);
+  ZStackPatch *patch = new ZStackPatch(stack);
+  patch->setScale(0.2, 0.2);
+  patch->setFinalOffset(20, 30);
+  frame->document()->addObject(patch);
+
+  ZStackBall *circle = new ZStackBall(100, 100, 0, 10);
   circle->setColor(255, 0, 0, 255);
-  frame->document()->addObject(circle, NeuTube::Documentable_Circle,
-                               ZDocPlayer::ROLE_TMP_BOOKMARK);
+  frame->document()->addObject(circle, ZDocPlayer::ROLE_TMP_BOOKMARK);
+
+  ZRect2d *rect = new ZRect2d(30, 40, 100, 200);
+  rect->setPenetrating(true);
+  rect->setColor(0, 255, 0);
+  frame->document()->addObject(rect);
 #endif
 
 #if 0
@@ -13421,7 +13434,7 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
-#if 1
+#if 0
   ZDvidTarget dvidTarget;
   dvidTarget.set("emdata2.int.janelia.org", "134");
 

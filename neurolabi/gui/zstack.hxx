@@ -456,6 +456,7 @@ public: /* operations */
 
   void loadValue(const void *buffer, size_t length, void *loc);
 
+  void setOffset(int dx, int dy);
   void setOffset(int dx, int dy, int dz);
   void setOffset(const ZIntPoint &pt);
   inline const ZIntPoint& getOffset() const { return m_offset; }

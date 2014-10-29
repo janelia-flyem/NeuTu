@@ -38,8 +38,10 @@ public:
   const ZStackObject *getLastObject(ZStackObject::EType type) const;
 
   ZStackObject* findFirstSameSource(const ZStackObject *obj) const;
-  QList<ZStackObject*> findSameSource(const ZStackObject *obj) const;
-  QList<ZStackObject*> findSameSource(
+  ZStackObject* findFirstSameSource(
+      ZStackObject::EType type, const std::string &source) const;
+  TStackObjectList findSameSource(const ZStackObject *obj) const;
+  TStackObjectList findSameSource(
       ZStackObject::EType type, const std::string &source) const;
 
 
@@ -48,6 +50,7 @@ public:
       const InputIterator begin, const InputIterator end) const;
 
   void add(const ZStackObject *obj, bool uniqueSource);
+  QList<ZStackObject*> addU(const ZStackObject *obj);
 
   template <typename InputIterator>
   void add(const InputIterator begin, const InputIterator end,
@@ -67,6 +70,9 @@ public:
   TStackObjectList take(ZStackObject::EType type);
   TStackObjectList takeSelected();
   TStackObjectList takeSelected(ZStackObject::EType type);
+  TStackObjectList takeSameSource(
+      ZStackObject::EType type, const std::string &source);
+
 
   /*!
    * \brief Remove an object

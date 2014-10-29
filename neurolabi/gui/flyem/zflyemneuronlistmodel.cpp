@@ -193,7 +193,7 @@ void ZFlyEmNeuronListModel::retrieveModel(
   QVector<const ZFlyEmNeuron*> neuronArray;
   QMap<std::string, QColor> colorMap;
   ZSwcColorScheme colorScheme;
-  colorScheme.setColorScheme(ZSwcColorScheme::UNIQUE_COLOR);
+  colorScheme.setColorScheme(ZColorScheme::UNIQUE_COLOR);
 
   foreach (QModelIndex index, indexList) {
     QVector<const ZFlyEmNeuron*> subArray = getNeuronArray(index);

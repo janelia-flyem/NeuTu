@@ -21,6 +21,8 @@
 #include "zstring.h"
 #include "zflyemcoordinateconverter.h"
 #include "flyem/zflyemneuron.h"
+#include "zstackview.h"
+#include "zstackpatch.h"
 
 ZFlyEmBodySplitProject::ZFlyEmBodySplitProject(QObject *parent) :
   QObject(parent), m_bodyId(-1), m_dataFrame(NULL), m_resultWindow(NULL),
@@ -449,4 +451,41 @@ ZFlyEmNeuron ZFlyEmBodySplitProject::getFlyEmNeuron() const
   neuron.setPath(getDvidTarget());
 
   return neuron;
+}
+
+void ZFlyEmBodySplitProject::viewPreviousSlice()
+{
+  if (getDataFrame() != NULL) {
+    getDataFrame()->view()->stepSlice(-1);
+    viewFullGrayscale();
+  }
+}
+
+void ZFlyEmBodySplitProject::viewNextSlice()
+{
+  if (getDataFrame() != NULL) {
+    getDataFrame()->view()->stepSlice(1);
+    viewFullGrayscale();
+  }
+}
+
+void ZFlyEmBodySplitProject::viewFullGrayscale()
+{
+  ZDvidReader reader;
+  if (reader.open(getDvidTarget())) {
+    ZStackFrame *frame = getDataFrame();
+    if (frame != NULL) {
+      int currentSlice = frame->view()->sliceIndex();
+      int width = frame->document()->getStackWidth();
+      int height = frame->document()->getStackHeight();
+      ZIntPoint offset = frame->document()->getStackOffset();
+      int z = currentSlice + offset.getZ();
+      ZStack *stack = reader.readGrayScale(offset.getX(), offset.getY(), z,
+                                           width, height, 1);
+      ZStackPatch *patch = new ZStackPatch(stack);
+      patch->setZOrder(-1);
+      patch->setSource("#grayscale_patch");
+      frame->document()->addStackPatch(patch);
+    }
+  }
 }

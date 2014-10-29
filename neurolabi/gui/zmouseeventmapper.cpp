@@ -81,6 +81,8 @@ ZStackOperator ZMouseEventLeftButtonReleaseMapper::getOperation(
       //Add new stroke
       if (m_context->strokeEditMode() == ZInteractiveContext::STROKE_DRAW) {
         op.setOperation(ZStackOperator::OP_STROKE_ADD_NEW);
+      } else if (m_context->rectEditMode() == ZInteractiveContext::RECT_DRAW) {
+        op.setOperation(ZStackOperator::OP_EXIT_EDIT_MODE);
       }
     }
 
@@ -265,6 +267,8 @@ ZStackOperator ZMouseEventLeftButtonPressMapper::getOperation(
     if (m_context->strokeEditMode() ==
         ZInteractiveContext::STROKE_DRAW) {
       op.setOperation(ZStackOperator::OP_STROKE_START_PAINT);
+    } else if (m_context->rectEditMode() == ZInteractiveContext::RECT_DRAW) {
+      op.setOperation(ZStackOperator::OP_RECT_ROI_INIT);
     }
   }
 
@@ -333,6 +337,8 @@ ZStackOperator ZMouseEventMoveMapper::getOperation(
       if (op.isNull()) {
         if (m_context->strokeEditMode() == ZInteractiveContext::STROKE_DRAW) {
           op.setOperation(ZStackOperator::OP_PAINT_STROKE);
+        } else if (m_context->rectEditMode() == ZInteractiveContext::RECT_DRAW) {
+          op.setOperation(ZStackOperator::OP_RECT_ROI_UPDATE);
         }
       }
 
