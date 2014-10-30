@@ -419,6 +419,9 @@ public:
   void selectHitNodeFloodFilling();
   void selectNeighborNode();
   void selectConnectedNode();
+  void selectUpstreamNode();
+  void selectDownstreamNode();
+  void selectBranchNode();
 
   const std::set<Swc_Tree_Node*>& getSelectedNode() const;
   bool hasSelectedNode() const;

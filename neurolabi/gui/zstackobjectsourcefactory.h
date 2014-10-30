@@ -10,6 +10,7 @@ public:
 
 public:
   static std::string MakeWatershedBoundarySource(int label);
+  static std::string MakeRectRoiSource(const std::string &suffix = "");
 };
 
 #endif // ZSTACKOBJECTSOURCEFACTORY_H

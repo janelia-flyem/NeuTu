@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>484</width>
+    <width>501</width>
     <height>767</height>
    </rect>
   </property>
@@ -24,7 +24,7 @@
     <rect>
      <x>10</x>
      <y>10</y>
-     <width>461</width>
+     <width>481</width>
      <height>751</height>
     </rect>
    </property>
@@ -294,6 +294,13 @@
                <widget class="QPushButton" name="nextPushButton">
                 <property name="text">
                  <string>&gt;&gt;</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QCheckBox" name="fullGrayscaleCheckBox">
+                <property name="text">
+                 <string>Full</string>
                 </property>
                </widget>
               </item>

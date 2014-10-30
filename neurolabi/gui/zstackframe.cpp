@@ -157,7 +157,8 @@ void ZStackFrame::consumeDocument(ZStackDoc *doc)
   connect(m_doc.get(), SIGNAL(cleanChanged(bool)),\
           this, SLOT(changeWindowTitle(bool)));\
   connect(m_doc.get(), SIGNAL(holdSegChanged()), m_view, SLOT(paintObject()));\
-  connect(m_doc.get(), SIGNAL(chainSelectionChanged(QList<ZLocsegChain*>,QList<ZLocsegChain*>)),\
+  connect(m_doc.get(), SIGNAL(chainSelectionChanged(QList<ZLocsegChain*>,\
+          QList<ZLocsegChain*>)),\
           m_view, SLOT(paintObject()));\
   connect(m_doc.get(), SIGNAL(swcTreeNodeSelectionChanged(\
                                 QList<Swc_Tree_Node*>,QList<Swc_Tree_Node*>)),\
@@ -171,7 +172,8 @@ void ZStackFrame::consumeDocument(ZStackDoc *doc)
   connect(m_doc.get(), SIGNAL(punctumVisibleStateChanged()),\
           m_view, SLOT(paintObject()));\
   connect(m_doc.get(), SIGNAL(statusMessageUpdated(QString)),\
-          this, SLOT(notifyUser(QString)));
+          this, SLOT(notifyUser(QString)));\
+  connect(m_doc.get(), SIGNAL(stackTargetModified()), m_view, SLOT(paintStack()));
 
 #define UPDATE_SIGNAL_SLOT(connect) \
   UPDATE_DOC_SIGNAL_SLOT(connect) \

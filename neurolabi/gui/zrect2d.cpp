@@ -18,6 +18,14 @@ ZRect2d::ZRect2d(int x0, int y0, int width, int height) :
   m_type = ZStackObject::TYPE_RECT2D;
 }
 
+void ZRect2d::set(int x0, int y0, int width, int height)
+{
+  m_x0 = x0;
+  m_y0 = y0;
+  m_width = width;
+  m_height = height;
+}
+
 bool ZRect2d::isValid() const
 {
   return m_width > 0 && m_height > 0;

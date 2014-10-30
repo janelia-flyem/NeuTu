@@ -23,6 +23,7 @@
 #include "flyem/zflyemneuron.h"
 #include "zstackview.h"
 #include "zstackpatch.h"
+#include "zstackobjectsource.h"
 
 ZFlyEmBodySplitProject::ZFlyEmBodySplitProject(QObject *parent) :
   QObject(parent), m_bodyId(-1), m_dataFrame(NULL), m_resultWindow(NULL),
@@ -456,7 +457,9 @@ ZFlyEmNeuron ZFlyEmBodySplitProject::getFlyEmNeuron() const
 void ZFlyEmBodySplitProject::viewPreviousSlice()
 {
   if (getDataFrame() != NULL) {
+    getDataFrame()->view()->blockRedraw(true);
     getDataFrame()->view()->stepSlice(-1);
+    getDataFrame()->view()->blockRedraw(false);
     viewFullGrayscale();
   }
 }
@@ -464,7 +467,9 @@ void ZFlyEmBodySplitProject::viewPreviousSlice()
 void ZFlyEmBodySplitProject::viewNextSlice()
 {
   if (getDataFrame() != NULL) {
+    getDataFrame()->view()->blockRedraw(true);
     getDataFrame()->view()->stepSlice(1);
+    getDataFrame()->view()->blockRedraw(false);
     viewFullGrayscale();
   }
 }
@@ -476,15 +481,24 @@ void ZFlyEmBodySplitProject::viewFullGrayscale()
     ZStackFrame *frame = getDataFrame();
     if (frame != NULL) {
       int currentSlice = frame->view()->sliceIndex();
-      int width = frame->document()->getStackWidth();
-      int height = frame->document()->getStackHeight();
+
+      ZRect2d rectRoi = frame->document()->getRect2dRoi();
       ZIntPoint offset = frame->document()->getStackOffset();
+      if (!rectRoi.isValid()) {
+        int width = frame->document()->getStackWidth();
+        int height = frame->document()->getStackHeight();
+        rectRoi.set(offset.getX(), offset.getY(), width, height);
+      }
+
       int z = currentSlice + offset.getZ();
-      ZStack *stack = reader.readGrayScale(offset.getX(), offset.getY(), z,
-                                           width, height, 1);
+      ZStack *stack = reader.readGrayScale(
+            rectRoi.getX0(), rectRoi.getY0(), z,
+            rectRoi.getWidth(), rectRoi.getHeight(), 1);
       ZStackPatch *patch = new ZStackPatch(stack);
       patch->setZOrder(-1);
-      patch->setSource("#grayscale_patch");
+      patch->setSource(ZStackObjectSource::getSource(
+                         ZStackObjectSource::ID_BODY_GRAYSCALE_PATCH));
+      patch->setTarget(ZStackObject::STACK_CANVAS);
       frame->document()->addStackPatch(patch);
     }
   }

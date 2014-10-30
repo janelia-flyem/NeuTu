@@ -44,6 +44,7 @@
 #include "zstackobjectgroup.h"
 #include "tz_error.h"
 #include "misc/miscutility.h"
+#include "zrect2d.h"
 
 class ZStackFrame;
 class ZLocalNeuroseg;
@@ -540,36 +541,8 @@ public: /* puncta related methods */
   bool mergeChain(int id);
   bool connectChain(int id);
   bool disconnectChain(int id);
-  //bool isMasterChainId(int id);
-  /*
-  inline bool isMasterChain(const ZLocsegChain *chain) const {
-    return m_masterChain == chain;
-  }
-  inline void setMasterChain(ZLocsegChain *chain) {
-    m_masterChain = chain;
-  }
-*/
   void eraseTraceMask(const ZLocsegChain *chain);
-
-  //bool chainShortestPath(int id);
-  //void chainConnInfo(int id);
-
-  //void extendChain(double x, double y, double z);
-
-  //ZStackObject *bringChainToFront();
-  //ZStackObject* sendChainToBack();
-  //void refineSelectedChainEnd();
-  //void refineLocsegChainEnd();
   void mergeAllChain();
-
-  //void importLocsegChainConn(const char *filePath);
-  //void exportLocsegChainConn(const char *filePath);
-  //void exportLocsegChainConnFeat(const char *filePath);
-
-  //void buildLocsegChainConn();
-  //void clearLocsegChainConn();
-  //void selectNeighbor();
-  //void selectConnectedChain();
 
   void setWorkdir(const QString &filePath);
   void setWorkdir(const char *filePath);
@@ -655,6 +628,8 @@ public: /* puncta related methods */
   std::set<T*> getSelectedObjectSet(ZStackObject::EType type) const;
 
   void clearSelectedSet();
+
+  ZRect2d getRect2dRoi() const;
 
 
 public:
@@ -894,6 +869,7 @@ signals:
   void strokeModified();
   void graph3dModified();
   void objectModified();
+  void stackTargetModified();
   void swcNetworkModified();
   void punctaSelectionChanged(QList<ZPunctum*> selected,
                               QList<ZPunctum*> deselected);

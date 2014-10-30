@@ -24,6 +24,8 @@
 #include "zellipse.h"
 #include "zstackoperator.h"
 #include "zrect2d.h"
+#include "zstackobjectsource.h"
+#include "zstackobjectsourcefactory.h"
 
 ZStackPresenter::ZStackPresenter(ZStackFrame *parent) : QObject(parent),
   m_parent(parent),
@@ -2029,7 +2031,7 @@ void ZStackPresenter::process(const ZStackOperator &op)
   {
     ZRect2d *rect = new ZRect2d(currentStackPos.x(), currentStackPos.y(),
                                 1, 1);
-    rect->setSource("#rect_roi");
+    rect->setSource(ZStackObjectSourceFactory::MakeRectRoiSource());
     rect->setPenetrating(true);
     rect->setColor(0, 255, 0);
     buddyDocument()->executeAddObjectCommand(rect);
@@ -2038,7 +2040,8 @@ void ZStackPresenter::process(const ZStackOperator &op)
   case ZStackOperator::OP_RECT_ROI_UPDATE:
   {
     ZStackObject *obj = buddyDocument()->getObjectGroup().findFirstSameSource(
-          ZStackObject::TYPE_RECT2D, "#rect_roi");
+          ZStackObject::TYPE_RECT2D,
+          ZStackObjectSourceFactory::MakeRectRoiSource());
     ZRect2d *rect = dynamic_cast<ZRect2d*>(obj);
     if (rect != NULL) {
       rect->setLastCorner(currentStackPos.x(), currentStackPos.y());

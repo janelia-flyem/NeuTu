@@ -350,11 +350,6 @@ void ZImageWidget::paintEvent(QPaintEvent * /*event*/)
         const ZStackObject *obj = *iter;
         if (obj->getTarget() == ZStackObject::WIDGET &&
             obj->isSliceVisible(m_paintBundle->getZ())) {
-//          obj->display(painter1, m_paintBundle->sliceIndex(),
-//                       m_paintBundle->displayStyle());
-#ifdef _DEBUG_2
-          std::cout << obj << obj->className() << std::endl;
-#endif
           if (obj->getSource() != ZStackObject::getNodeAdapterId()) {
             visibleObject.push_back(obj);
           }

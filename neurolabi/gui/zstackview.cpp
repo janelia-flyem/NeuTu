@@ -118,6 +118,8 @@ ZStackView::ZStackView(ZStackFrame *parent) : QWidget(parent)
 
   setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
   m_sizeHintOption = NeuTube::SIZE_HINT_DEFAULT;
+
+  m_isRedrawBlocked = false;
 }
 
 ZStackView::~ZStackView()
@@ -156,7 +158,8 @@ void ZStackView::setInfo(QString info)
 
 void ZStackView::connectSignalSlot()
 {
-  connect(m_depthControl, SIGNAL(valueChanged(int)), this, SIGNAL(currentSliceChanged(int)));
+  connect(m_depthControl, SIGNAL(valueChanged(int)),
+          this, SIGNAL(currentSliceChanged(int)));
   connect(this, SIGNAL(currentSliceChanged(int)), this, SLOT(redraw()));
 
   connect(m_imageWidget, SIGNAL(mouseReleased(QMouseEvent*)),
@@ -747,10 +750,13 @@ void ZStackView::updateImageScreen()
       //m_paintBundle.setSwcNodeList(buddyDocument()->selectedSwcTreeNodes());
     }
   }
+
   // active deco
   m_paintBundle.addDrawableList(&(buddyPresenter()->getActiveDecorationList()));
 
-  m_imageWidget->update(QRect(QPoint(0, 0), m_imageWidget->screenSize()));
+  if (!m_isRedrawBlocked) {
+    m_imageWidget->update(QRect(QPoint(0, 0), m_imageWidget->screenSize()));
+  }
 }
 
 QSize ZStackView::sizeHint() const
@@ -1286,6 +1292,8 @@ void ZStackView::paintStackBuffer()
       }
     } else {
       m_image->setBackground();
+      paintObjectBuffer(m_image, ZStackObject::STACK_CANVAS);
+
       if (buddyDocument()->hasSparseStack()) {
         ZStack *slice =
             buddyDocument()->getSparseStack()->getSlice(getCurrentZ());
@@ -1293,7 +1301,7 @@ void ZStackView::paintStackBuffer()
         slice->translate(-buddyDocument()->getStackOffset());
         slice->getOffset().setZ(0);
 
-        m_image->setData(slice, 0);
+        m_image->setData(slice, 0, true);
         delete slice;
       }
     }
@@ -1370,6 +1378,56 @@ void ZStackView::paintMask()
   updateImageScreen();
 }
 
+void ZStackView::paintObjectBuffer(ZImage *canvas, ZStackObject::ETarget target)
+{
+  if (buddyPresenter()->isObjectVisible()) {
+    int slice = m_depthControl->value();
+    int z = slice + buddyDocument()->getStackOffset().getZ();
+    if (buddyPresenter()->interactiveContext().isProjectView()) {
+      slice = -1;
+    }
+
+    ZPainter painter(canvas);
+    painter.setStackOffset(buddyDocument()->getStackOffset());
+
+    if (buddyDocument()->hasDrawable()) {
+      QList<ZStackObject*> *objs = buddyDocument()->drawableList();
+      QList<const ZStackObject*> visibleObject;
+      QList<ZStackObject*>::const_iterator iter = objs->end() - 1;
+      for (;iter != objs->begin() - 1; --iter) {
+        const ZStackObject *obj = *iter;
+        if ((obj->isSliceVisible(z) || slice == -1) &&
+            obj->getTarget() == target) {
+          visibleObject.append(obj);
+        }
+      }
+      std::sort(visibleObject.begin(), visibleObject.end(),
+                ZStackObject::ZOrderCompare());
+
+      for (QList<const ZStackObject*>::const_iterator
+           iter = visibleObject.begin(); iter != visibleObject.end(); ++iter) {
+        //(*obj)->display(m_objectCanvas, slice, buddyPresenter()->objectStyle());
+        const ZStackObject *obj = *iter;
+        obj->display(painter, slice, buddyPresenter()->objectStyle());
+      }
+    }
+
+    if (buddyPresenter()->hasObjectToShow()) {
+      if (buddyPresenter()->interactiveContext().isProjectView()) {
+        slice = -1;
+      }
+      QList<ZStackObject*> *objs = buddyPresenter()->decorations();
+      for (QList<ZStackObject*>::const_iterator obj = objs->end() - 1;
+           obj != objs->begin() - 1; --obj) {
+        //(*obj)->display(m_objectCanvas, slice, buddyPresenter()->objectStyle());
+        if ((*obj)->getTarget() == target) {
+          (*obj)->display(painter, slice, buddyPresenter()->objectStyle());
+        }
+      }
+    }
+  }
+}
+
 void ZStackView::paintObjectBuffer()
 {
   updateObjectCanvas();
@@ -1377,6 +1435,8 @@ void ZStackView::paintObjectBuffer()
     return;
   }
 
+  paintObjectBuffer(m_objectCanvas, ZStackObject::OBJECT_CANVAS);
+#if 0
   if (buddyPresenter()->isObjectVisible()) {
     int slice = m_depthControl->value();
     int z = slice + buddyDocument()->getStackOffset().getZ();
@@ -1394,7 +1454,8 @@ void ZStackView::paintObjectBuffer()
       for (;iter != objs->begin() - 1; --iter) {
         const ZStackObject *obj = *iter;
         if ((obj->isSliceVisible(z) || slice == -1) &&
-            obj->getTarget() == ZStackObject::OBJECT_CANVAS) {
+            obj->getTarget() == ZStackObject::OBJECT_CANVAS /*&&
+            obj->getZOrder() > 0*/) {
           visibleObject.append(obj);
         }
       }
@@ -1423,6 +1484,7 @@ void ZStackView::paintObjectBuffer()
       }
     }
   }
+#endif
 }
 
 void ZStackView::paintObject()

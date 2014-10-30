@@ -54,7 +54,7 @@ public:
   };
 
   enum ETarget {
-    STACK, OBJECT_CANVAS, WIDGET
+    STACK_CANVAS, OBJECT_CANVAS, WIDGET
   };
 
   enum EDisplaySliceMode {

@@ -875,6 +875,19 @@ void ZStackDoc::selectSwcNodeConnection(Swc_Tree_Node *lastSelectedNode)
 
 void ZStackDoc::selectUpstreamNode()
 {
+  std::set<Swc_Tree_Node*> oldSelected = getSelectedSwcNodeSet();
+
+  TStackObjectList &objList =
+      m_objectGroup.getObjectList(ZStackObject::TYPE_SWC);
+  for (TStackObjectList::iterator iter= objList.begin(); iter != objList.end();
+       ++iter) {
+    ZSwcTree *tree = dynamic_cast<ZSwcTree*>(*iter);
+    tree->selectUpstreamNode();
+  }
+
+  std::set<Swc_Tree_Node*> newSelected = getSelectedSwcNodeSet();
+  notifySelectionAdded(oldSelected, newSelected);
+
 #if 0
   std::set<Swc_Tree_Node*> *nodeSet = selectedSwcTreeNodes();
   std::set<Swc_Tree_Node*> upstreamNodes;
@@ -893,6 +906,19 @@ void ZStackDoc::selectUpstreamNode()
 
 void ZStackDoc::selectBranchNode()
 {
+  std::set<Swc_Tree_Node*> oldSelected = getSelectedSwcNodeSet();
+
+  TStackObjectList &objList =
+      m_objectGroup.getObjectList(ZStackObject::TYPE_SWC);
+  for (TStackObjectList::iterator iter= objList.begin(); iter != objList.end();
+       ++iter) {
+    ZSwcTree *tree = dynamic_cast<ZSwcTree*>(*iter);
+    tree->selectBranchNode();
+  }
+
+  std::set<Swc_Tree_Node*> newSelected = getSelectedSwcNodeSet();
+  notifySelectionAdded(oldSelected, newSelected);
+
 #if 0
   std::set<Swc_Tree_Node*> *nodeSet = selectedSwcTreeNodes();
   std::set<Swc_Tree_Node*> branchNodes;
@@ -1162,6 +1188,18 @@ void ZStackDoc::loadReaderResult()
 
 void ZStackDoc::selectDownstreamNode()
 {
+  std::set<Swc_Tree_Node*> oldSelected = getSelectedSwcNodeSet();
+
+  TStackObjectList &objList =
+      m_objectGroup.getObjectList(ZStackObject::TYPE_SWC);
+  for (TStackObjectList::iterator iter= objList.begin(); iter != objList.end();
+       ++iter) {
+    ZSwcTree *tree = dynamic_cast<ZSwcTree*>(*iter);
+    tree->selectDownstreamNode();
+  }
+
+  std::set<Swc_Tree_Node*> newSelected = getSelectedSwcNodeSet();
+  notifySelectionAdded(oldSelected, newSelected);
 #if 0
 #ifdef _DEBUG_
   std::cout << "Select downstream" << std::endl;
@@ -1971,9 +2009,6 @@ void ZStackDoc::addSwcTree(ZSwcTree *obj, bool uniqueSource)
   }
 #endif
 
-//  m_swcList.append(obj);
-//  m_objectList.append(obj);
-
   if (obj->isSelected()) {
     setSwcSelected(obj, true);
   }
@@ -2062,6 +2097,10 @@ void ZStackDoc::addStackPatch(ZStackPatch *patch, bool uniqueSource)
 
   if (patch->isSelected()) {
     setSelected(patch, true);
+  }
+
+  if (patch->getTarget() == ZStackObject::STACK_CANVAS) {
+    emit stackTargetModified();
   }
 
   notifyStackPatchModified();
@@ -2165,13 +2204,7 @@ void ZStackDoc::addStroke(ZStroke2d *obj)
     //m_selectedStroke.insert(obj);
   }
 
-
-  //m_playerList.append(new ZStroke2dPlayer(obj, ZDocPlayer::ROLE_SEED));
-
-#ifdef _DEBUG_2
-  std::cout << "New stroke added" << std::endl;
-  obj->print();
-#endif
+  notifyObjectModified();
 }
 
 void ZStackDoc::addLocsegChain(const QList<ZLocsegChain *> &chainList)
@@ -7947,19 +7980,21 @@ void ZStackDoc::clearSelectedSet()
 {
   deselectAllSwcTreeNodes();
   m_objectGroup.setSelected(false);
-#if 0
-  selectedChains()->clear();
-  selectedPuncta()->clear();
-  selectedSwcs()->clear();
-  selectedSwcTreeNodes()->clear();
+}
 
-  for (QMap<ZStackObject::EType, std::set<ZStackObject*> >::iterator
-       iter = m_selectedObjectMap.begin(); iter != m_selectedObjectMap.end();
-       ++iter) {
-    std::set<ZStackObject*> &objSet = iter.value();
-    objSet.clear();
+ZRect2d ZStackDoc::getRect2dRoi() const
+{
+  ZRect2d rect;
+
+  ZRect2d *rectObj = dynamic_cast<ZRect2d*>(
+        getObjectGroup().findFirstSameSource(
+          ZStackObject::TYPE_RECT2D,
+          ZStackObjectSourceFactory::MakeRectRoiSource()));
+  if (rectObj != NULL) {
+    rect = *rectObj;
   }
-#endif
+
+  return rect;
 }
 
 ///////////Stack Reader///////////

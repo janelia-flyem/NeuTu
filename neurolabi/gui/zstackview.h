@@ -99,6 +99,14 @@ public:
   void paintStackBuffer();
   void paintMaskBuffer();
   void paintObjectBuffer();
+  /*!
+   * \brief paintObjectBuffer
+   * \param canvas
+   * \param target
+   * \param zOrder -1: < 0; 0: 0; 1: > 0
+   */
+  void paintObjectBuffer(ZImage *canvas, ZStackObject::ETarget target);
+
   void paintActiveDecorationBuffer();
 
   ZStack* getObjectMask(uint8_t maskValue);
@@ -114,6 +122,10 @@ public:
 
   inline void setSizeHintOption(NeuTube::ESizeHintOption option) {
     m_sizeHintOption = option;
+  }
+
+  inline void blockRedraw(bool state) {
+    m_isRedrawBlocked = state;
   }
 
 public slots:
@@ -200,6 +212,7 @@ private:
   NeuTube::ESizeHintOption m_sizeHintOption;
 
   ZPaintBundle m_paintBundle;
+  bool m_isRedrawBlocked;
 };
 
 #endif

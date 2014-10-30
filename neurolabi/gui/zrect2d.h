@@ -10,6 +10,14 @@ public:
   ZRect2d(int x0, int y0, int width, int height);
   virtual ~ZRect2d() {}
 
+  void set(int x0, int y0, int width, int height);
+
+  inline int getX0() const { return m_x0; }
+  inline int getY0() const { return m_y0; }
+  inline int getWidth() const { return m_width; }
+  inline int getHeight() const { return m_height; }
+
+
 public:
   virtual void display(ZPainter &painter, int slice, Display_Style option) const;
   virtual const std::string& className() const;

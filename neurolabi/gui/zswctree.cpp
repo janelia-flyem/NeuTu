@@ -3480,6 +3480,48 @@ void ZSwcTree::selectNeighborNode()
   }
 }
 
+void ZSwcTree::selectUpstreamNode()
+{
+  for (std::set<Swc_Tree_Node*>::iterator iter = m_selectedNode.begin();
+       iter != m_selectedNode.end(); ++iter) {
+    Swc_Tree_Node* tn = *iter;
+    while (tn != NULL && SwcTreeNode::isRegular(tn)) {
+      m_selectedNode.insert(tn);
+      tn = tn->parent;
+    }
+  }
+}
+
+void ZSwcTree::selectDownstreamNode()
+{
+  for (std::set<Swc_Tree_Node*>::iterator iter = m_selectedNode.begin();
+       iter != m_selectedNode.end(); ++iter) {
+    Swc_Tree_Node_Build_Downstream_List(*iter);
+    Swc_Tree_Node *tn = *iter;
+    while (tn != NULL) {
+      m_selectedNode.insert(tn);
+      tn = tn->next;
+    }
+  }
+}
+
+void ZSwcTree::selectBranchNode()
+{
+  for (std::set<Swc_Tree_Node*>::iterator iter = m_selectedNode.begin();
+       iter != m_selectedNode.end(); ++iter) {
+    Swc_Tree_Node* tn = *iter;
+    while (SwcTreeNode::isRegular(tn) && !Swc_Tree_Node_Is_Branch_Point_S(tn)) {
+      m_selectedNode.insert(tn);
+      tn = tn->parent;
+    }
+    tn = *iter;
+    while (SwcTreeNode::isRegular(tn) && !Swc_Tree_Node_Is_Branch_Point_S(tn)) {
+      m_selectedNode.insert(tn);
+      tn = tn->first_child;
+    }
+  }
+}
+
 void ZSwcTree::selectConnectedNode()
 {
   std::set<Swc_Tree_Node*> nodeSet = getSelectedNode();
