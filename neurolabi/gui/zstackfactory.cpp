@@ -456,3 +456,8 @@ ZStack* ZStackFactory::makeSeedStack(const ZWeightedPointArray &ptArray)
 
   return stack;
 }
+
+//ZStack* ZStackFactory::makeSeedStack(const ZObject3dScanArray &objArray)
+//{
+
+//}

@@ -886,14 +886,16 @@ Tiff_IFD *Read_Tiff_IFD(Tiff_Reader *rtif)
 
       slot = ifd->veof;
 
-      ifd->vsize += (vsize - LSM_TAG_COUNT);
+      //ifd->vsize += (vsize - LSM_TAG_COUNT);
+      ifd->vsize += (vsize - lsm_tag->count);
       ifd->veof  += WORD_MULTIPLE(vsize);
       ifd->vmax   = ifd->veof + 1024;
   
       allocate_tifd_values(ifd,ifd->vmax,"Read_Tiff_IFD");
 
       valI = (uint32 *) (ifd->values + slot);
-      memcpy(valI,ifd->values + lsm_tag->value,LSM_TAG_COUNT);
+      //memcpy(valI,ifd->values + lsm_tag->value,LSM_TAG_COUNT);
+      memcpy(valI,ifd->values + lsm_tag->value,lsm_tag->count);
       lsm_tag->value = slot;
       slot += LSM_TAG_COUNT;
       lsm_tag->count = vsize;

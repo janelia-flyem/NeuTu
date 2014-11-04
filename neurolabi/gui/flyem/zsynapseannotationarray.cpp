@@ -18,6 +18,8 @@
 #include "zflyemdvidreader.h"
 #endif
 #include "zstring.h"
+#include "zweightedpointarray.h"
+#include "zpointarray.h"
 
 using namespace FlyEm;
 using namespace std;
@@ -1307,6 +1309,11 @@ void FlyEm::ZSynapseAnnotationArray::convertRavelerToImageSpace(
   }
 }
 
+void FlyEm::ZSynapseAnnotationArray::convertRavelerToDvidSpace()
+{
+  convertRavelerToImageSpace(0, m_metadata.getSourceYDim());
+}
+
 #ifdef _QT_GUI_USED_
 vector<ZPunctum*> FlyEm::ZSynapseAnnotationArray::toPuncta(
     const SynapseAnnotationConfig &config,
@@ -1372,6 +1379,33 @@ FlyEm::ZSynapseAnnotationArray::toTBarPuncta(
 }
 
 #endif
+
+ZWeightedPointArray ZSynapseAnnotationArray::toTBarPointArray(
+    double radius, double minConfidence) const
+{
+  ZWeightedPointArray ptArray;
+  for (const SynapseLocation *synapse = beginSynapseLocation();
+       synapse != NULL; synapse = nextSynapseLocation()) {
+    if (synapse->isTBar() && synapse->confidence() >= minConfidence) {
+      ptArray.append(synapse->pos(), radius);
+    }
+  }
+
+  return ptArray;
+}
+
+ZWeightedPointArray ZSynapseAnnotationArray::toTBarConfidencePointArray() const
+{
+  ZWeightedPointArray ptArray;
+  for (const SynapseLocation *synapse = beginSynapseLocation();
+       synapse != NULL; synapse = nextSynapseLocation()) {
+    if (synapse->isTBar()) {
+      ptArray.append(synapse->pos(), synapse->confidence());
+    }
+  }
+
+  return ptArray;
+}
 
 int FlyEm::ZSynapseAnnotationArray::getStrongestInput(int bodyId) const
 {

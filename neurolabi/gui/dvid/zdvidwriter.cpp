@@ -311,6 +311,29 @@ void ZDvidWriter::deleteKey(const std::string &dataName, const std::string &key)
   QProcess::execute(command);
 }
 
+void ZDvidWriter::deleteKey(const QString &dataName, const QString &key)
+{
+  deleteKey(dataName.toStdString(), key.toStdString());
+}
+
+void deleteKey(const std::string &dataName,
+               const std::string &minKey, const std::string &maxKey)
+{
+  deleteKey(dataName.c_str(), minKey.c_str(), maxKey.c_str());
+}
+
+void ZDvidWriter::deleteKey(const QString &dataName, const QString &minKey,
+    const QString &maxKey)
+{
+  ZDvidReader reader;
+  if (reader.open(m_dvidTarget)) {
+    QStringList keyList = reader.readKeys(dataName, minKey, maxKey);
+    foreach (const QString& key, keyList) {
+      deleteKey(dataName, key);
+    }
+  }
+}
+
 void ZDvidWriter::writeBodyInfo(int bodyId)
 {
   ZDvidReader reader;

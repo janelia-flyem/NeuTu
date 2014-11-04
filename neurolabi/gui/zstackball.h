@@ -35,6 +35,7 @@ public:
   inline double getY() const { return m_center.y(); }
   inline double getZ() const { return m_center.z(); }
   inline double getRadius() const { return m_r; }
+  inline const ZPoint& getCenter() const { return m_center; }
 
   inline double x() const { return getX(); }
   inline double y() const { return getY(); }

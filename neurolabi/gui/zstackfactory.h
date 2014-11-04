@@ -11,6 +11,7 @@ class ZClosedCurve;
 class ZStroke2d;
 class ZPointArray;
 class ZWeightedPointArray;
+class ZObject3dScanArray;
 
 /*!
  * \brief The class of creating a stack
@@ -59,6 +60,7 @@ public:
       const ZWeightedPointArray &ptArray, double sigma);
 
   static ZStack* makeSeedStack(const ZWeightedPointArray &ptArray);
+  static ZStack* makeSeedStack(const ZObject3dScanArray &objArray);
 
   /*!
    * \brief Only support GREY data

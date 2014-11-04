@@ -1443,10 +1443,10 @@ Stack* ZObject3dScan::toStack(int *offset, int v) const
   return stack;
 }
 
-ZStack* ZObject3dScan::toStackObject() const
+ZStack* ZObject3dScan::toStackObject(int v) const
 {
   int offset[3] = {0, 0, 0};
-  Stack *stack = toStack(offset);
+  Stack *stack = toStack(offset, v);
 
   ZStack *stackObject = new ZStack;
 

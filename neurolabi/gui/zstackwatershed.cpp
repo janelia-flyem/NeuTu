@@ -71,6 +71,14 @@ void ZStackWatershed::setRange(const Cuboid_I &box)
   m_range = box;
 }
 
+ZStack* ZStackWatershed::run(const ZStack *stack, const ZStack* seedMask)
+{
+  std::vector<ZStack *> seedArray;
+  seedArray.push_back(const_cast<ZStack*>(seedMask));
+
+  return run(stack, seedArray);
+}
+
 ZStack *ZStackWatershed::run(
     const ZStack *stack, const std::vector<ZStack *> &seedMask)
 {
@@ -100,8 +108,8 @@ ZStack *ZStackWatershed::run(
 
       addSeed(ws, sourceOffset, seedMask);
 
-#ifdef _DEBUG_2
-      C_Stack::write(GET_DATA_DIR + "/test.tif", ws->mask);
+#ifdef _DEBUG_
+      C_Stack::write(GET_DATA_DIR + "/test_seed.tif", ws->mask);
 #endif
 
       Stack *out = Stack_Watershed(source, ws);

@@ -28,8 +28,8 @@ ZFlyEmRoiProject::ZFlyEmRoiProject(const std::string &name, QObject *parent) :
   m_punctaColorMap.push_back(QColor(0, 0, 255, 255));
   m_punctaColorMap.push_back(QColor(255, 0, 255, 255));
   m_punctaColorMap.push_back(QColor(127, 0, 255, 255));
-  m_punctaColorMap.push_back(QColor(0, 255, 0, 0));
-  m_punctaColorMap.push_back(QColor(255, 255, 0, 0));
+  m_punctaColorMap.push_back(QColor(0, 255, 0, 255));
+  m_punctaColorMap.push_back(QColor(255, 255, 0, 255));
 }
 
 ZFlyEmRoiProject::~ZFlyEmRoiProject()

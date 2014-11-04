@@ -223,6 +223,12 @@ public:
   template<class T>
   int scanArray(const T *array, int x, int y, int z, int width);
 
+  /*!
+   * \brief Draw a stack
+   * \param stack
+   * \param v
+   * \param offset Offset of translating the object
+   */
   void drawStack(Stack *stack, int v, const int *offset = NULL) const;
   void drawStack(Stack *stack, uint8_t red, uint8_t green, uint8_t blue,
                  const int *offset = NULL) const;
@@ -255,7 +261,7 @@ public:
   void upSample(int xIntv, int yIntv, int zIntv);
 
   Stack* toStack(int *offset = NULL, int v = 1) const;
-  ZStack* toStackObject() const;
+  ZStack* toStackObject(int v = 1) const;
   ZStack* toVirtualStack() const;
   //ZStack* toDownsampledStack(int xIntv, int yIntv, int zIntv);
 

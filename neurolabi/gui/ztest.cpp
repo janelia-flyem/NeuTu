@@ -67,7 +67,9 @@ using namespace std;
 #include "flyem/zneuronnetwork.h"
 #include "tz_geo3d_utils.h"
 #include "zsvggenerator.h"
+#include "flyem/zfileparser.h"
 #include "zdendrogram.h"
+#include "zobject3dscanarray.h"
 #include "zcuboid.h"
 #include "zstringparameter.h"
 #include "zswcsizefeatureanalyzer.h"
@@ -219,7 +221,7 @@ using namespace std;
 #include "test/zclosedcurvetest.h"
 #include "dvid/libdvidheader.h"
 #include "test/zarraytest.h"
-
+#include "zstackwatershed.h"
 
 using namespace std;
 
@@ -12029,7 +12031,7 @@ void ZTest::test(MainWindow *host)
   bookmarkArray.print();
 #endif
 
-#if 1
+#if 0
   ZStackFrame *frame = new ZStackFrame;
   frame->load(GET_TEST_DATA_DIR + "/benchmark/em_stack.tif");
   host->addStackFrame(frame);
@@ -13452,5 +13454,201 @@ void ZTest::test(MainWindow *host)
   tree = generator.createBoxSwc(cuboid);
 
   tree->save(GET_DATA_DIR + "/test.swc");
+#endif
+
+#if 0
+  FlyEm::ZSynapseAnnotationArray synapseArray;
+  synapseArray.loadJson(GET_DATA_DIR +
+                        "/flyem/FIB/FIB25/annotations-synapse.json");
+
+  ZDvidReader reader;
+  ZDvidTarget target;
+  target.setFromSourceString("http:emdata2.int.janelia.org:-1:2b6c");
+
+  if (reader.open(target)) {
+    ZDvidInfo info = reader.readGrayScaleInfo();
+    synapseArray.convertRavelerToImageSpace(0, info.getStackSize()[1]);
+    ZWeightedPointArray ptArray = synapseArray.toTBarConfidencePointArray();
+    ZCuboid box = ptArray.getBoundBox();
+    box.print();
+
+    ZStackFactory factory;
+    int dsScale = 10;
+    for (ZWeightedPointArray::iterator iter = ptArray.begin();
+         iter != ptArray.end(); ++iter) {
+      *iter *= 1.0 / dsScale;
+    }
+
+    ZStack *stack = factory.makeDensityMap(ptArray, 15.0);
+    stack->save(GET_DATA_DIR + "/flyem/FIB/FIB25/density_map_ds10.tif");
+  }
+#endif
+
+#if 1
+  FlyEm::ZSynapseAnnotationArray synapseArray;
+  synapseArray.loadJson(GET_DATA_DIR +
+                        "/flyem/FIB/FIB25/annotations-synapse.json");
+
+  ZDvidReader reader;
+  ZDvidTarget target;
+  target.setFromSourceString("http:emdata2.int.janelia.org:-1:2b6c");
+  double dsScale = 10.0;
+
+  ZStack seg;
+  seg.load(GET_DATA_DIR + "/flyem/FIB/FIB25/seg_ds10.tif");
+
+  ofstream stream((GET_DATA_DIR + "/test.txt").c_str());
+
+  if (reader.open(target)) {
+    ZLabelColorTable colorTable;
+    ZDvidInfo info = reader.readGrayScaleInfo();
+    synapseArray.convertRavelerToImageSpace(0, info.getStackSize()[1]);
+    std::vector<ZPunctum*> puncta = synapseArray.toTBarPuncta(10.0);
+
+    std::vector<ZVaa3dMarker> markerArray;
+    for (std::vector<ZPunctum*>::iterator iter = puncta.begin();
+         iter != puncta.end(); ++iter) {
+      ZPunctum *p = *iter;
+      ZIntPoint originalCenter = p->getCenter().toIntPoint();
+
+      p->scaleCenter(1 / dsScale, 1 / dsScale, 1 / dsScale);
+      ZIntPoint center = p->getCenter().toIntPoint();
+      int v = seg.getIntValue(center.getX(), center.getY(), center.getZ());
+
+      if (v > 7) {
+        v = 0;
+      }
+
+      stream << originalCenter.getX() << " " << originalCenter.getY() << " "
+             << originalCenter.getZ() << " " << v << std::endl;
+
+      //p->setSource(ZString::num2str(v));
+      p->setColor(colorTable.getColor(v));
+      p->scaleCenter(dsScale, dsScale, dsScale);
+      markerArray.push_back(p->toVaa3dMarker());
+    }
+
+    FlyEm::ZFileParser::writeVaa3dMakerFile(GET_DATA_DIR + "/test.marker",
+                                            markerArray);
+  }
+
+#endif
+
+#if 0
+  ZDvidReader reader;
+  ZDvidTarget target;
+  target.setFromSourceString("http:emdata2.int.janelia.org:-1:2b6c");
+  reader.open(target);
+  //column string
+
+  std::vector<std::string> columnList;
+  columnList.push_back("H");
+  columnList.push_back("a");
+  columnList.push_back("b");
+  columnList.push_back("c");
+  columnList.push_back("d");
+  columnList.push_back("e");
+  columnList.push_back("f");
+  columnList.push_back("o");
+
+  //string->label map
+  std::map<std::string, int> columnLabelMap;
+  for (size_t i = 0; i < columnList.size(); ++i) {
+    columnLabelMap[columnList[i]] = i + 1;
+  }
+  //columnLabelMap['']
+
+  std::map<int, std::string> neuronColumnMap;
+
+  neuronColumnMap[50] = "a";
+
+  ZJsonObject json;
+  json.load(GET_DATA_DIR + "/flyem/FIB/FIB25/test.json");
+
+  ZJsonObject neuronGroupJson(
+        json["neuron"], ZJsonValue::SET_INCREASE_REF_COUNT);
+  std::map<std::string, std::vector<int> > neuronGroup;
+
+
+  for (size_t i = 0; i < columnList.size(); ++i) {
+    const std::string &column = columnList[i];
+    ZJsonArray idJson(neuronGroupJson[column.c_str()],
+                      ZJsonValue::SET_INCREASE_REF_COUNT);
+    neuronGroup[column] = std::vector<int>(idJson.size());
+    for (size_t k = 0; k < idJson.size(); ++k) {
+      neuronGroup[column][k] = ZJsonParser::integerValue(idJson.at(k));
+    }
+  }
+
+
+  std::vector<ZStack*> seedArray;
+
+  for (std::map<std::string, std::vector<int> >::const_iterator
+       iter = neuronGroup.begin(); iter != neuronGroup.end(); ++iter) {
+    std::cout << iter->first << ": ";
+    const std::vector<int> &idArray = iter->second;
+    for (std::vector<int>::const_iterator idIter = idArray.begin();
+         idIter != idArray.end(); ++idIter) {
+      std::cout << *idIter << ", ";
+    }
+    std::cout << std::endl;
+
+    int label = columnLabelMap[iter->first];
+
+    ZObject3dScan labelObj;
+    for (std::vector<int>::const_iterator idIter = idArray.begin();
+         idIter != idArray.end(); ++idIter) {
+      ZObject3dScan obj = reader.readBody(*idIter);
+      obj.downsample(9, 9, 9);
+      labelObj.concat(obj);
+      //objArray.push_back(obj);
+    }
+    seedArray.push_back(labelObj.toStackObject(label));
+  }
+
+  ZStackWatershed engine;
+  engine.setFloodingZero(false);
+  ZStack signal;
+  signal.load(GET_DATA_DIR + "/flyem/FIB/FIB25/density_map_ds10.tif");
+  signal.binarize();
+
+  ZStack seed;
+  seed.load(GET_DATA_DIR + "/flyem/FIB/FIB25/seed_ds10.tif");
+  ZStack *result = engine.run(&signal, seedArray);
+
+  result->save(GET_DATA_DIR + "/test.tif");
+
+//  int bodyId[] = {50, 2158, 2515, 5048, 7021, 10319, 14879, 22045, 26353,
+//                  30155, 236065, 238814, 805065};
+
+//  int bodyId[] = {50};
+//  size_t nbody = sizeof(bodyId) / sizeof(int);
+
+//  ZObject3dScanArray objArray;
+//  if (reader.open(target)) {
+//    for (size_t i = 0; i < nbody; ++i) {
+//      ZObject3dScan obj = reader.readBody(bodyId[i]);
+//      obj.downsample(9, 9, 9);
+//      objArray.push_back(obj);
+//    }
+//  }
+//  //objArray.downsample(9, 9, 9);
+//  ZStack *stack = objArray.toLabelField();
+//  stack->save(GET_DATA_DIR + "/flyem/FIB/FIB25/seed_ds10.tif");
+
+#endif
+
+#if 0
+  ZStackWatershed engine;
+  engine.setFloodingZero(false);
+  ZStack signal;
+  signal.load(GET_DATA_DIR + "/flyem/FIB/FIB25/density_map_ds10.tif");
+  signal.binarize();
+
+  ZStack seed;
+  seed.load(GET_DATA_DIR + "/flyem/FIB/FIB25/seed_ds10.tif");
+  ZStack *result = engine.run(&signal, &seed);
+//  engine.setFloodingZero(false);
+  result->save(GET_DATA_DIR + "/test.tif");
 #endif
 }
