@@ -6280,7 +6280,7 @@ bool ZStackDoc::executeReplaceSwcCommand(ZSwcTree *tree, ZDocPlayer::TRole role)
   }
   if (tree != NULL) {
     new ZStackDocCommand::ObjectEdit::AddObject(
-          this, tree, role, command);
+          this, tree, role, false, command);
   }
 
   if (command->childCount() > 0) {
@@ -7979,7 +7979,7 @@ void ZStackDoc::importSeedMask(const QString &filePath)
         ZObject3d *obj = *iter;
         if (obj != NULL) {
           new ZStackDocCommand::ObjectEdit::AddObject(
-                this, obj, ZDocPlayer::ROLE_SEED, command);
+                this, obj, ZDocPlayer::ROLE_SEED, false, command);
         }
       }
       pushUndoCommand(command);

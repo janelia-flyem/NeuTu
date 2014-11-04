@@ -1745,14 +1745,12 @@ ZStackDocCommand::ObjectEdit::AddObject::~AddObject()
 void ZStackDocCommand::ObjectEdit::AddObject::redo()
 {
   if (m_uniqueSource) {
-    if (m_uniqueSource) {
-      m_uniqueObjectList = m_doc->getObjectGroup().takeSameSource(
-            m_obj->getType(), m_obj->getSource());
-      m_roleList.clear();
-      for (TStackObjectList::iterator iter = m_uniqueObjectList.begin();
-           iter != m_uniqueObjectList.end(); ++iter) {
-        m_roleList.append(m_doc->getPlayerList().removePlayer(*iter));
-      }
+    m_uniqueObjectList = m_doc->getObjectGroup().takeSameSource(
+          m_obj->getType(), m_obj->getSource());
+    m_roleList.clear();
+    for (TStackObjectList::iterator iter = m_uniqueObjectList.begin();
+         iter != m_uniqueObjectList.end(); ++iter) {
+      m_roleList.append(m_doc->getPlayerList().removePlayer(*iter));
     }
   }
 

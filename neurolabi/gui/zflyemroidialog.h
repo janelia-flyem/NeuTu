@@ -78,6 +78,7 @@ public slots:
 
   void runAutoStep(bool ok);
   void setQuickMode(bool quickMode);
+  void applyTranslate();
 
   void processLoadGrayscaleFailure();
 
@@ -186,6 +187,7 @@ private:
 
   QAction *m_autoStepAction;
   QAction *m_importRoiAction;
+  QAction *m_applyTranslateAction;
 
   int m_xintv;
   int m_yintv;

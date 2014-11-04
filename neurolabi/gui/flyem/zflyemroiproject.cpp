@@ -65,6 +65,25 @@ void ZFlyEmRoiProject::deleteAllData()
   clear();
 }
 
+void ZFlyEmRoiProject::applyTranslate()
+{
+  if (m_dataFrame != NULL) {
+    QList<ZSwcTree*> swcList = m_dataFrame->document()->getSwcList();
+    if (swcList.size() == 1) {
+      ZSwcTree *tree = swcList[0];
+      ZPoint newCenter = tree->computeCentroid();
+      ZPoint oldCenter = getRoi(getDataZ())->computeCenter();
+
+      ZPoint offset = newCenter - oldCenter;
+      for (std::vector<ZClosedCurve*>::iterator iter = m_curveArray.begin();
+           iter != m_curveArray.end(); ++iter) {
+        ZClosedCurve *curve = *iter;
+        curve->translate(offset.x(), offset.y());
+      }
+    }
+  }
+}
+
 void ZFlyEmRoiProject::shallowClear()
 {
   m_dataFrame = NULL;

@@ -345,6 +345,15 @@ void ZClosedCurve::scale(double sx, double sy, double sz)
   }
 }
 
+void ZClosedCurve::translate(double dx, double dy)
+{
+  for (ZPointArray::iterator iter = m_landmarkArray.begin();
+       iter != m_landmarkArray.end(); ++iter) {
+    ZPoint &pt = *iter;
+    pt += ZPoint(dx, dy, 0);
+  }
+}
+
 ZClosedCurve* ZClosedCurve::clone() const
 {
   ZClosedCurve *curve = new ZClosedCurve(*this);

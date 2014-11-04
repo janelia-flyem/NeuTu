@@ -156,6 +156,12 @@ void ZFlyEmRoiDialog::createMenu()
   m_autoStepAction->setCheckable(true);
   connect(m_autoStepAction, SIGNAL(toggled(bool)),
           this, SLOT(runAutoStep(bool)));
+
+  m_applyTranslateAction = new QAction("Apply Translation", this);
+  m_mainMenu->addAction(m_applyTranslateAction);
+  m_applyTranslateAction->setCheckable(true);
+  connect(m_applyTranslateAction, SIGNAL(triggered()),
+          this, SLOT(applyTranslate()));
 }
 
 void ZFlyEmRoiDialog::clear()
@@ -1312,6 +1318,13 @@ void ZFlyEmRoiDialog::setQuickMode(bool quickMode)
     }
 
     updateWidget();
+  }
+}
+
+void ZFlyEmRoiDialog::applyTranslate()
+{
+  if (m_project != NULL) {
+    m_project->applyTranslate();
   }
 }
 

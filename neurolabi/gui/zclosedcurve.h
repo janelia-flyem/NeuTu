@@ -84,6 +84,7 @@ public:
   ZCuboid getBoundBox() const;
 
   void scale(double sx, double sy, double sz);
+  void translate(double dx, double dy);
 
   ZClosedCurve* clone() const;
 

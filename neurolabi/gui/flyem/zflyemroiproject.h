@@ -146,6 +146,8 @@ public:
 
   void deleteAllData();
 
+  void applyTranslate();
+
 private:
   ZObject3dScan* getFilledRoi(
       const ZClosedCurve *curve, int z, ZObject3dScan *result) const;
