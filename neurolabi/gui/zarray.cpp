@@ -187,3 +187,14 @@ void ZArray::print() const
     }
   }
 }
+
+uint64_t ZArray::getUint64Value(size_t index) const
+{
+  if (index > getElementNumber()) {
+    return 0;
+  }
+
+  uint64_t *array = getDataPointer<uint64_t>();
+
+  return array[index];
+}

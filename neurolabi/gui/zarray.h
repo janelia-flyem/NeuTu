@@ -44,9 +44,25 @@ public:
 
   void print() const;
 
+  template<typename T>
+  T* getDataPointer() const;
+
+  /*!
+   * \brief Get the unit64 value
+   *
+   * \return 0 if the array type is not UINT64_TYPE or the index is out of range.
+   */
+  uint64_t getUint64Value(size_t index) const;
+
 private:
   mylib::Array *m_data;
   std::vector<int> m_startCoordinates;
 };
+
+template<typename T>
+T* ZArray::getDataPointer() const
+{
+  return (T*) m_data->data;
+}
 
 #endif // ZARRAY_H

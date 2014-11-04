@@ -4669,9 +4669,14 @@ void ZStackDoc::selectHitSwcTreeNode(ZSwcTree *tree, bool append)
 
 void ZStackDoc::deselectHitSwcTreeNode(ZSwcTree *tree)
 {
+  QList<Swc_Tree_Node*> deselected;
   if (tree != NULL) {
-    tree->deselectHitNode();
+    Swc_Tree_Node *tn = tree->deselectHitNode();
+    if (tn != NULL) {
+      deselected.append(tn);
+    }
   }
+  notifyDeselected(deselected);
 }
 
 void ZStackDoc::expandSwcNodeList(QList<Swc_Tree_Node*> *swcList,
@@ -6855,8 +6860,10 @@ ZStack* ZStackDoc::projectBiocytinStack(
 
 void ZStackDoc::selectAllSwcTreeNode()
 {
-  QList<Swc_Tree_Node*> selected;
-  QList<Swc_Tree_Node*> deselected;
+//  QList<Swc_Tree_Node*> selected;
+//  QList<Swc_Tree_Node*> deselected;
+
+  std::set<Swc_Tree_Node*> oldSelectedSet = getSelectedSwcNodeSet();
 
   QList<ZSwcTree*> swcList = getSwcList();
   foreach (ZSwcTree *tree, swcList) {
@@ -6875,9 +6882,15 @@ void ZStackDoc::selectAllSwcTreeNode()
     }
     */
   }
+  /*
   if (!selected.empty() || !deselected.empty()) {
     emit swcTreeNodeSelectionChanged(selected, deselected);
   }
+  */
+
+  std::set<Swc_Tree_Node*> newSelectedSet = getSelectedSwcNodeSet();
+
+  notifySelectionAdded(oldSelectedSet, newSelectedSet);
 }
 
 bool ZStackDoc::getLastStrokePoint(int *x, int *y) const

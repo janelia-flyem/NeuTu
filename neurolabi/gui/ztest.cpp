@@ -13484,7 +13484,7 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
-#if 1
+#if 0
   FlyEm::ZSynapseAnnotationArray synapseArray;
   synapseArray.loadJson(GET_DATA_DIR +
                         "/flyem/FIB/FIB25/annotations-synapse.json");
@@ -13650,5 +13650,33 @@ void ZTest::test(MainWindow *host)
   ZStack *result = engine.run(&signal, &seed);
 //  engine.setFloodingZero(false);
   result->save(GET_DATA_DIR + "/test.tif");
+#endif
+
+#if 1
+  ZDvidReader reader;
+  ZDvidTarget target;
+  target.setFromSourceString("http:emdata2.int.janelia.org:-1:2b6c");
+  reader.open(target);
+
+  ZJsonObject jsonObj;
+  jsonObj.load(GET_DATA_DIR + "/flyem/FIB/FIB25/bookmarks-no-data.json");
+  ZJsonArray bodyArrayJson(jsonObj["data"], ZJsonValue::SET_INCREASE_REF_COUNT);
+  std::cout << "Processing " << bodyArrayJson.size() << " bodies." << std::endl;
+  ZObject3dScan allObj;
+  for (size_t i = 0; i < bodyArrayJson.size(); ++i) {
+    ZJsonObject jsonObj(
+          bodyArrayJson.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
+    int bodyId = ZJsonParser::integerValue(jsonObj["body ID"]);
+
+    std::cout << "Body: " << bodyId << std::endl;
+
+    ZObject3dScan obj = reader.readBody(bodyId);
+    allObj.concat(obj);
+//    ZString fileName = ZString::num2str(bodyId);
+//    fileName += ".sobj";
+    //obj.save(GET_DATA_DIR + "/flyem/FIB/FIB25/border_obj/" + fileName);
+  }
+  allObj.canonize();
+  allObj.save(GET_DATA_DIR + "/flyem/FIB/FIB25/border_obj/all.sobj");
 #endif
 }

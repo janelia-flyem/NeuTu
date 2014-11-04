@@ -312,6 +312,7 @@ public:
   virtual const std::string& className() const;
 
   void dilate();
+  void dilatePlane();
 
   ZPoint getCentroid() const;
   /*!

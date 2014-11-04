@@ -651,6 +651,7 @@ const ZObject3dScan::TEvent ZObject3dScan::EVENT_OBJECT_CANONIZED =
 
 ZObject3dScan::ZObject3dScan() : m_isCanonized(true)
 {
+  setTarget(OBJECT_CANVAS);
 }
 
 ZObject3dScan::~ZObject3dScan()
@@ -1791,7 +1792,7 @@ void ZObject3dScan::display(
 #if _QT_GUI_USED_
   bool isProj = (slice == -1);
 
-  int z = slice - iround(painter.getOffset().z());
+  int z = slice + iround(painter.getOffset().z());
 
   QPen pen(m_color);
   painter.setPen(pen);
@@ -1814,6 +1815,36 @@ void ZObject3dScan::display(
   UNUSED_PARAMETER(z);
   UNUSED_PARAMETER(style);
 #endif
+}
+
+void ZObject3dScan::dilatePlane()
+{
+  size_t oldStripeNumber = getStripeNumber();
+  for (size_t i = 0; i < oldStripeNumber; ++i) {
+    ZObject3dStripe baseStripe = m_stripeArray[i];
+    ZObject3dStripe stripe = baseStripe;
+    stripe.setY(stripe.getY() - 1);
+    m_stripeArray.push_back(stripe);
+    //addStripe(stripe, false);
+    stripe = baseStripe;
+    stripe.setY(stripe.getY() + 1);
+    m_stripeArray.push_back(stripe);
+    //addStripe(stripe, false);
+//    stripe = baseStripe;
+//    stripe.setZ(stripe.getZ() - 1);
+//    m_stripeArray.push_back(stripe);
+//    //addStripe(stripe, false);
+//    stripe = baseStripe;
+//    stripe.setZ(stripe.getZ() + 1);
+//    m_stripeArray.push_back(stripe);
+    //addStripe(stripe, false);
+    m_stripeArray[i].dilate();
+  }
+
+  setCanonized(false);
+  canonize();
+
+  processEvent(EVENT_OBJECT_MODEL_CHANGED);
 }
 
 void ZObject3dScan::dilate()
