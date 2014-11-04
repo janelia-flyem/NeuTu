@@ -159,7 +159,7 @@ void ZFlyEmRoiDialog::createMenu()
 
   m_applyTranslateAction = new QAction("Apply Translation", this);
   m_mainMenu->addAction(m_applyTranslateAction);
-  m_applyTranslateAction->setCheckable(true);
+  //m_applyTranslateAction->setCheckable(true);
   connect(m_applyTranslateAction, SIGNAL(triggered()),
           this, SLOT(applyTranslate()));
 }

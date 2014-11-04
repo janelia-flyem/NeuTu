@@ -71,14 +71,21 @@ void ZFlyEmRoiProject::applyTranslate()
     QList<ZSwcTree*> swcList = m_dataFrame->document()->getSwcList();
     if (swcList.size() == 1) {
       ZSwcTree *tree = swcList[0];
-      ZPoint newCenter = tree->computeCentroid();
-      ZPoint oldCenter = getRoi(getDataZ())->computeCenter();
 
-      ZPoint offset = newCenter - oldCenter;
-      for (std::vector<ZClosedCurve*>::iterator iter = m_curveArray.begin();
-           iter != m_curveArray.end(); ++iter) {
-        ZClosedCurve *curve = *iter;
-        curve->translate(offset.x(), offset.y());
+      const ZClosedCurve *roiCurve = getRoi(getDataZ());
+      if (roiCurve != NULL) {
+        ZPoint newCenter = tree->computeCentroid();
+
+        ZPoint oldCenter = roiCurve->computeCenter();
+
+        ZPoint offset = newCenter - oldCenter;
+        for (std::vector<ZClosedCurve*>::iterator iter = m_curveArray.begin();
+             iter != m_curveArray.end(); ++iter) {
+          ZClosedCurve *curve = *iter;
+          if (curve != NULL) {
+            curve->translate(offset.x(), offset.y());
+          }
+        }
       }
     }
   }
