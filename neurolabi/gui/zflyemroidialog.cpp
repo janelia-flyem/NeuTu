@@ -542,11 +542,20 @@ void ZFlyEmRoiDialog::loadGrayscaleFunc(int z, bool lowres)
 #endif
       emit newDocReady();
     } else {
-      emit progressFailed();
+      processLoadGrayscaleFailure();
     }
   } else {
-    emit progressFailed();
+    processLoadGrayscaleFailure();
   }
+}
+
+void ZFlyEmRoiDialog::processLoadGrayscaleFailure()
+{
+#ifdef _DEBUG_
+  std::cout << "Failed to load grayscale data." << std::endl;
+#endif
+  m_isLoadingGrayScale = false;
+  emit progressFailed();
 }
 
 void ZFlyEmRoiDialog::newDataFrame()
@@ -1256,6 +1265,13 @@ void ZFlyEmRoiDialog::viewAllSynapseIn3D()
       ZWindowFactory factory;
       factory.setParentWidget(this);
       factory.setWindowTitle("Syanpse View");
+      ZStack *stack = doc->getStack();
+      if (stack != NULL) {
+        stack->setOffset(
+              stack->getOffset().getX() * (m_project->getCurrentDsIntv().getX() + 1),
+              stack->getOffset().getY() * (m_project->getCurrentDsIntv().getY() + 1),
+              stack->getOffset().getZ());
+      }
       Z3DWindow *window = factory.make3DWindow(doc);
       window->getVolumeSource()->setXScale(
             m_project->getCurrentDsIntv().getX() + 1);

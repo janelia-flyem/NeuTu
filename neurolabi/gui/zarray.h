@@ -2,6 +2,7 @@
 #define ZARRAY_H
 
 #include "mylib/array.h"
+#include "tz_stdint.h"
 #include <vector>
 
 class ZArray

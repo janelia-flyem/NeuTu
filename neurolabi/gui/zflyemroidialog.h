@@ -79,6 +79,8 @@ public slots:
   void runAutoStep(bool ok);
   void setQuickMode(bool quickMode);
 
+  void processLoadGrayscaleFailure();
+
 signals:
   void newDocReady();
   void progressFailed();
