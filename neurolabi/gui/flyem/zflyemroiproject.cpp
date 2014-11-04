@@ -763,9 +763,9 @@ void ZFlyEmRoiProject::rotateRoiSwc(double theta)
   }
 }
 
-ZIntCuboid ZFlyEmRoiProject::estimateBoundBox(const ZStack &stack)
+ZIntCuboid ZFlyEmRoiProject::estimateBoundBox(const ZStack &stack, int bgValue)
 {
-  const static uint8_t fgValue = 255;
+  const static uint8_t fgValue = bgValue;
   int width = stack.width();
   int height = stack.height();
   const uint8_t *array = stack.array8();
@@ -780,6 +780,7 @@ ZIntCuboid ZFlyEmRoiProject::estimateBoundBox(const ZStack &stack)
       if (array[offset++] != fgValue) {
         if (x < cuboid.getFirstCorner().getX()) {
           cuboid.setFirstX(x);
+          break;
         }
       }
     }
@@ -792,6 +793,7 @@ ZIntCuboid ZFlyEmRoiProject::estimateBoundBox(const ZStack &stack)
       if (array[offset--] != fgValue) {
         if (x > cuboid.getLastCorner().getX()) {
           cuboid.setLastX(x);
+          break;
         }
       }
     }
@@ -804,6 +806,7 @@ ZIntCuboid ZFlyEmRoiProject::estimateBoundBox(const ZStack &stack)
       if (array[offset] != fgValue) {
         if (y < cuboid.getFirstCorner().getY()) {
           cuboid.setFirstY(y);
+          break;
         }
       }
       offset += width;
@@ -818,6 +821,7 @@ ZIntCuboid ZFlyEmRoiProject::estimateBoundBox(const ZStack &stack)
       if (array[offset] != fgValue) {
         if (y > cuboid.getLastCorner().getY()) {
           cuboid.setLastY(y);
+          break;
         }
       }
       offset -= width;

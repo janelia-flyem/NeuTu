@@ -10,8 +10,9 @@ const char* ZDvidTarget::m_commentKey = "comment";
 const char* ZDvidTarget::m_nameKey = "name";
 const char* ZDvidTarget::m_localKey = "local";
 const char* ZDvidTarget::m_debugKey = "debug";
+const char* ZDvidTarget::m_bgValueKey = "background";
 
-ZDvidTarget::ZDvidTarget() : m_port(-1)
+ZDvidTarget::ZDvidTarget() : m_port(-1), m_bgValue(255)
 {
 }
 
@@ -150,6 +151,9 @@ void ZDvidTarget::loadJsonObject(const ZJsonObject &obj)
     m_comment = ZJsonParser::stringValue(obj[m_commentKey]);
     m_name = ZJsonParser::stringValue(obj[m_nameKey]);
     m_localFolder = ZJsonParser::stringValue(obj[m_localKey]);
+    if (obj.hasKey(m_bgValueKey)) {
+      m_bgValue = ZJsonParser::integerValue(obj[m_bgValueKey]);
+    }
   }
 }
 

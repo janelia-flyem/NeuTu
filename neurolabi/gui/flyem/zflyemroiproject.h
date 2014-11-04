@@ -116,7 +116,7 @@ public:
   void rotateRoiSwc(double theta);
   void translateRoiSwc(double dx, double dy);
 
-  static ZIntCuboid estimateBoundBox(const ZStack &stack);
+  static ZIntCuboid estimateBoundBox(const ZStack &stack, int bgValue);
 
   bool isRoiSaved() const;
   void setRoiSaved(bool state);

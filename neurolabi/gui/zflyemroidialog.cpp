@@ -357,7 +357,8 @@ void ZFlyEmRoiDialog::prepareQuickLoadFunc(
                 z, dvidInfo.getStackSize()[0],
               dvidInfo.getStackSize()[1], 1);
           if (stack != NULL) {
-            boundBox = ZFlyEmRoiProject::estimateBoundBox(*stack);
+            boundBox = ZFlyEmRoiProject::estimateBoundBox(
+                  *stack, getDvidTarget().getBgValue());
             if (!boundBox.isEmpty()) {
               stack->crop(boundBox);
             }
@@ -498,7 +499,8 @@ void ZFlyEmRoiDialog::loadGrayscaleFunc(int z, bool lowres)
               z, dvidInfo.getStackSize()[0],
             dvidInfo.getStackSize()[1], 1);
         if (stack != NULL) {
-          boundBox = ZFlyEmRoiProject::estimateBoundBox(*stack);
+          boundBox = ZFlyEmRoiProject::estimateBoundBox(
+                *stack, getDvidTarget().getBgValue());
           if (!boundBox.isEmpty()) {
             stack->crop(boundBox);
           }
