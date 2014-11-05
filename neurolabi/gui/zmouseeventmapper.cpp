@@ -59,6 +59,55 @@ ZMouseEventMapper::getPosition(Qt::MouseButton button,
 }
 ///////////////ZMouseEventLeftButtonReleaseMapper/////////////////////
 ////////             UO             ////////////////////////////
+void ZMouseEventLeftButtonReleaseMapper::processSelectionOperation(
+    ZStackOperator &op, const ZMouseEvent &event) const
+{
+  if (op.getHitObject<Swc_Tree_Node>() != NULL) { //SWC select operation
+    if (event.getModifiers() == Qt::NoModifier) {
+      op.setOperation(ZStackOperator::OP_SWC_SELECT_SINGLE_NODE);
+    } else if (event.getModifiers() == Qt::ShiftModifier) {
+      op.setOperation(ZStackOperator::OP_SWC_SELECT_CONNECTION);
+    } else if (event.getModifiers() == Qt::ControlModifier) {
+      if (getDocument()->isSwcNodeSelected(
+            op.getHitObject<Swc_Tree_Node>())) {
+        op.setOperation(ZStackOperator::OP_SWC_DESELECT_SINGLE_NODE);
+      } else {
+        op.setOperation(ZStackOperator::OP_SWC_SELECT_MULTIPLE_NODE);
+      }
+    } else if (event.getModifiers() & Qt::AltModifier) {
+      op.setOperation(ZStackOperator::OP_SWC_SELECT_FLOOD);
+    }
+  } else if (op.getHitObject<ZStackObject>() != NULL) {
+    switch (op.getHitObject()->getType()) {
+    case ZStackObject::TYPE_STROKE:
+      if (event.getModifiers() == Qt::NoModifier) {
+        op.setOperation(ZStackOperator::OP_STROKE_SELECT_SINGLE);
+      } else if (event.getModifiers() == Qt::ShiftModifier ||
+                 event.getModifiers() == Qt::ControlModifier) {
+        op.setOperation(ZStackOperator::OP_STROKE_SELECT_MULTIPLE);
+      }
+      break;
+    case ZStackObject::TYPE_OBJ3D:
+      if (event.getModifiers() == Qt::NoModifier) {
+        op.setOperation(ZStackOperator::OP_OBJECT3D_SELECT_SINGLE);
+      } else if (event.getModifiers() == Qt::ShiftModifier ||
+                 event.getModifiers() == Qt::ControlModifier) {
+        op.setOperation(ZStackOperator::OP_OBJECT3D_SELECT_MULTIPLE);
+      }
+      break;
+    case ZStackObject::TYPE_PUNCTUM:
+      if (event.getModifiers() == Qt::NoModifier) {
+        op.setOperation(ZStackOperator::OP_PUNCTA_SELECT_SINGLE);
+      } else if (event.getModifiers() == Qt::ShiftModifier ||
+                 event.getModifiers() == Qt::ControlModifier) {
+        op.setOperation(ZStackOperator::OP_PUNCTA_SELECT_MULTIPLE);
+      }
+    default:
+      break;
+    }
+  }
+}
+
 ZStackOperator ZMouseEventLeftButtonReleaseMapper::getOperation(
     const ZMouseEvent &event) const
 {
@@ -90,8 +139,11 @@ ZStackOperator ZMouseEventLeftButtonReleaseMapper::getOperation(
       ZPoint rawStackPosition = event.getRawStackPosition();
       ZPoint stackPosition = rawStackPosition + getDocument()->getStackOffset();
       if (m_doc->getStack()->containsRaw(rawStackPosition)) {
-        if (m_context->swcEditMode() == ZInteractiveContext::SWC_EDIT_SELECT &&
-            m_context->strokeEditMode() == ZInteractiveContext::STROKE_EDIT_OFF) {
+        bool hitTestOn =
+            (m_context->swcEditMode() == ZInteractiveContext::SWC_EDIT_SELECT ||
+            m_context->swcEditMode() == ZInteractiveContext::SWC_EDIT_CONNECT) &&
+            m_context->strokeEditMode() == ZInteractiveContext::STROKE_EDIT_OFF;
+        if (hitTestOn) {
           ZStackDocHitTest hitManager;
           if (rawStackPosition.z() < 0) {
             hitManager.hitTest(
@@ -100,56 +152,13 @@ ZStackOperator ZMouseEventLeftButtonReleaseMapper::getOperation(
             hitManager.hitTest(const_cast<ZStackDoc*>(getDocument()), stackPosition);
           }
           op.setHitObject(hitManager.getHitObject<ZStackObject>());
-          //op.setHitSwcNode(hitManager.getHitObject<Swc_Tree_Node>());
-          //op.setHitObject(hitManager.getHitObject<ZStackObject>());
-          /*
-          op.setHitStroke2d(hitManager.getHitObject<ZStroke2d>());
-          op.setHitObj3d(hitManager.getHitObject<ZObject3d>());
-*/
 
-          if (op.getHitObject<Swc_Tree_Node>() != NULL) { //SWC select operation
-            if (event.getModifiers() == Qt::NoModifier) {
-              op.setOperation(ZStackOperator::OP_SWC_SELECT_SINGLE_NODE);
-            } else if (event.getModifiers() == Qt::ShiftModifier) {
-              op.setOperation(ZStackOperator::OP_SWC_SELECT_CONNECTION);
-            } else if (event.getModifiers() == Qt::ControlModifier) {
-              if (getDocument()->isSwcNodeSelected(
-                    op.getHitObject<Swc_Tree_Node>())) {
-                op.setOperation(ZStackOperator::OP_SWC_DESELECT_SINGLE_NODE);
-              } else {
-                op.setOperation(ZStackOperator::OP_SWC_SELECT_MULTIPLE_NODE);
-              }
-            } else if (event.getModifiers() & Qt::AltModifier) {
-              op.setOperation(ZStackOperator::OP_SWC_SELECT_FLOOD);
-            }
-          } else if (op.getHitObject<ZStackObject>() != NULL) {
-            switch (op.getHitObject()->getType()) {
-            case ZStackObject::TYPE_STROKE:
-              if (event.getModifiers() == Qt::NoModifier) {
-                op.setOperation(ZStackOperator::OP_STROKE_SELECT_SINGLE);
-              } else if (event.getModifiers() == Qt::ShiftModifier ||
-                         event.getModifiers() == Qt::ControlModifier) {
-                op.setOperation(ZStackOperator::OP_STROKE_SELECT_MULTIPLE);
-              }
-              break;
-            case ZStackObject::TYPE_OBJ3D:
-              if (event.getModifiers() == Qt::NoModifier) {
-                op.setOperation(ZStackOperator::OP_OBJECT3D_SELECT_SINGLE);
-              } else if (event.getModifiers() == Qt::ShiftModifier ||
-                         event.getModifiers() == Qt::ControlModifier) {
-                op.setOperation(ZStackOperator::OP_OBJECT3D_SELECT_MULTIPLE);
-              }
-              break;
-            case ZStackObject::TYPE_PUNCTUM:
-              if (event.getModifiers() == Qt::NoModifier) {
-                op.setOperation(ZStackOperator::OP_PUNCTA_SELECT_SINGLE);
-              } else if (event.getModifiers() == Qt::ShiftModifier ||
-                         event.getModifiers() == Qt::ControlModifier) {
-                op.setOperation(ZStackOperator::OP_PUNCTA_SELECT_MULTIPLE);
-              }
-            default:
-              break;
-            }
+          bool selectionOn =
+              (m_context->swcEditMode() == ZInteractiveContext::SWC_EDIT_SELECT &&
+               m_context->strokeEditMode() == ZInteractiveContext::STROKE_EDIT_OFF);
+
+          if (selectionOn) {
+            processSelectionOperation(op, event);
           }
         }
       }

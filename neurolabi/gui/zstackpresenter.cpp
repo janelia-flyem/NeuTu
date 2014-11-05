@@ -772,7 +772,7 @@ bool ZStackPresenter::processKeyPressEventForSwc(QKeyEvent *event)
     }
     break;
   case ZSwcTree::OPERATION_CONNECT_NODE:
-    if (!buddyDocument()->hasSelectedSwcNode()) {
+    if (buddyDocument()->hasSelectedSwcNode()) {
       if (buddyDocument()->getSelectedSwcNodeNumber() == 1) {
         enterSwcConnectMode();
         taken = true;

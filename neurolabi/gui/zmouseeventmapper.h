@@ -88,6 +88,10 @@ class ZMouseEventLeftButtonReleaseMapper : public ZMouseEventMapper
 {
 public:
   ZStackOperator getOperation(const ZMouseEvent &event) const;
+
+private:
+  void processSelectionOperation(
+      ZStackOperator &op, const ZMouseEvent &event) const;
 };
 
 ////////////////////////////////////

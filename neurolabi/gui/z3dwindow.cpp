@@ -1287,7 +1287,7 @@ void Z3DWindow::startConnectingSwcNode()
 
 void Z3DWindow::connectSwcTreeNode(Swc_Tree_Node *tn)
 {
-  if (!getDocument()->hasSelectedSwcNode()) {
+  if (getDocument()->hasSelectedSwcNode()) {
     Swc_Tree_Node *target = SwcTreeNode::findClosestNode(
           getDocument()->getSelectedSwcNodeSet(), tn);
     m_doc->executeConnectSwcNodeCommand(target, tn);
@@ -2013,6 +2013,9 @@ void Z3DWindow::keyPressEvent(QKeyEvent *event)
     if (event->modifiers() == Qt::ControlModifier) {
       m_doc->saveSwc(this);
     }
+    break;
+  case Qt::Key_I:
+    getDocument()->executeInsertSwcNode();
     break;
   case Qt::Key_B:
 #ifdef _DEBUG_2
