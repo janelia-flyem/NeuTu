@@ -162,6 +162,11 @@ void ZFlyEmRoiDialog::createMenu()
   //m_applyTranslateAction->setCheckable(true);
   connect(m_applyTranslateAction, SIGNAL(triggered()),
           this, SLOT(applyTranslate()));
+
+  m_deleteProjectAction = new QAction("Delete Project", this);
+  m_mainMenu->addAction(m_deleteProjectAction);
+  connect(m_deleteProjectAction, SIGNAL(triggered()),
+          this, SLOT(deleteProject()));
 }
 
 void ZFlyEmRoiDialog::clear()
@@ -1335,6 +1340,7 @@ void ZFlyEmRoiDialog::deleteProject(ZFlyEmRoiProject *project)
     project->deleteAllData();
     delete project;
     uploadProjectList();
+    //updateWidget();
   }
 }
 

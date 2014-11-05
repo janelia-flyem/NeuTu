@@ -127,6 +127,8 @@ public:
 
   inline std::string getName() const { return m_name; }
 
+  std::string getMinRoiKey() const;
+  std::string getMaxRoiKey() const;
   std::string getRoiKey(int z) const;
 
   double estimateRoiVolume(char unit = 'p') const;

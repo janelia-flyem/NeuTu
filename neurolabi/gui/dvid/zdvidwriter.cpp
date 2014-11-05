@@ -305,7 +305,7 @@ void ZDvidWriter::deleteKey(const std::string &dataName, const std::string &key)
 {
   ZDvidUrl dvidUrl(m_dvidTarget);
   std::string url = dvidUrl.getKeyUrl(dataName, key);
-  QString command = QString("curl -X DEL %1").arg(url.c_str());
+  QString command = QString("curl -X DELETE %1").arg(url.c_str());
   qDebug() << command;
 
   QProcess::execute(command);
@@ -316,10 +316,10 @@ void ZDvidWriter::deleteKey(const QString &dataName, const QString &key)
   deleteKey(dataName.toStdString(), key.toStdString());
 }
 
-void deleteKey(const std::string &dataName,
+void ZDvidWriter::deleteKey(const std::string &dataName,
                const std::string &minKey, const std::string &maxKey)
 {
-  deleteKey(dataName.c_str(), minKey.c_str(), maxKey.c_str());
+  deleteKey(QString(dataName.c_str()), minKey.c_str(), maxKey.c_str());
 }
 
 void ZDvidWriter::deleteKey(const QString &dataName, const QString &minKey,

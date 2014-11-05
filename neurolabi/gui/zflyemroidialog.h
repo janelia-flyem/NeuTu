@@ -47,7 +47,6 @@ public:
   void cloneProject(const std::string &name);
 
   void deleteProject(ZFlyEmRoiProject *project);
-  void deleteProject();
 
   bool isValidName(const std::string &name) const;
 
@@ -81,6 +80,7 @@ public slots:
   void applyTranslate();
 
   void processLoadGrayscaleFailure();
+  void deleteProject();
 
 signals:
   void newDocReady();
@@ -188,6 +188,7 @@ private:
   QAction *m_autoStepAction;
   QAction *m_importRoiAction;
   QAction *m_applyTranslateAction;
+  QAction *m_deleteProjectAction;
 
   int m_xintv;
   int m_yintv;

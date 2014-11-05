@@ -62,6 +62,13 @@ void ZFlyEmRoiProject::clear()
 
 void ZFlyEmRoiProject::deleteAllData()
 {
+  //Delete data from DVID server
+  ZDvidWriter writer;
+  if (writer.open(m_dvidTarget)) {
+    writer.deleteKey(ZDvidData::getName(ZDvidData::ROLE_ROI_CURVE),
+                     getMinRoiKey(), getMaxRoiKey());
+  }
+
   clear();
 }
 
@@ -86,6 +93,8 @@ void ZFlyEmRoiProject::applyTranslate()
             curve->translate(offset.x(), offset.y());
           }
         }
+        m_isRoiCurveUploaded.clear();
+        setRoiSaved(true);
       }
     }
   }
@@ -363,6 +372,7 @@ ZSwcTree* ZFlyEmRoiProject::getRoiSwc(int z, double radius) const
                     1.0 / (m_currentDsIntv.getY() + 1),
                     1.0 / (m_currentDsIntv.getZ() + 1), false);
     }
+    tree->useCosmeticPen(true);
   }
 
   return tree;
@@ -571,6 +581,10 @@ bool ZFlyEmRoiProject::isRoiCurveUploaded(int z) const
   if (z >= (int) m_isRoiCurveUploaded.size()) {
     return false;
   }
+
+#ifdef _DEBUG_
+  std::cout << z << " uploaded: " << m_isRoiCurveUploaded[z] << std::endl;
+#endif
 
   return m_isRoiCurveUploaded[z];
 }
@@ -855,6 +869,16 @@ ZIntCuboid ZFlyEmRoiProject::estimateBoundBox(const ZStack &stack, int bgValue)
   }
 
   return cuboid;
+}
+
+std::string ZFlyEmRoiProject::getMinRoiKey() const
+{
+  return getRoiKey(m_dvidInfo.getMinZ());
+}
+
+std::string ZFlyEmRoiProject::getMaxRoiKey() const
+{
+  return getRoiKey(m_dvidInfo.getMaxZ());
 }
 
 std::string ZFlyEmRoiProject::getRoiKey(int z) const
