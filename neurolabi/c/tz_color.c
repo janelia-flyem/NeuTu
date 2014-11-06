@@ -120,6 +120,14 @@ void Set_Color_Jet(Rgb_Color *color, int index)
   color->b = Jet_Colormap[index * 3 + 2];
 }
 
+void Set_Color_Discrete(Rgb_Color *color, int index)
+{
+  index %= Discrete_Color_Number;
+  color->r = Discrete_Colormap[index * 3];
+  color->g = Discrete_Colormap[index * 3 + 1];
+  color->b = Discrete_Colormap[index * 3 + 2];
+}
+
 void Print_Rgb_Color(const Rgb_Color *color)
 {
   printf("R: %u, G: %u, B: %u\n", color->r, color->g, color->b);

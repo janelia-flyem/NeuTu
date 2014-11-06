@@ -10,6 +10,8 @@ class MainWindow;
 class ZFlyEmNewBodySplitProjectDialog;
 class QProgressDialog;
 class ZDvidDialog;
+class QMenu;
+class QAction;
 
 namespace Ui {
 class FlyEmBodySplitProjectDialog;
@@ -82,6 +84,7 @@ private slots:
   void on_dvidPushButton_clicked();
 
   void on_commitPushButton_clicked();
+  void showBodyMask(bool on);
 
 private:
   void updateSideView();
@@ -89,6 +92,7 @@ private:
   void initSideViewScene();
   void startProgress(const QString &label);
   void connectSignalSlot();
+  void createMenu();
 
 private:
   Ui::FlyEmBodySplitProjectDialog *ui;
@@ -97,6 +101,8 @@ private:
   ZFlyEmBookmarkListModel m_bookmarkList;
   QGraphicsScene *m_sideViewScene;
   ZDvidDialog *m_dvidDlg;
+  QMenu *m_mainMenu;
+  QAction *m_showBodyMaskAction;
 };
 
 #endif // FLYEMBODYSPLITPROJECTDIALOG_H

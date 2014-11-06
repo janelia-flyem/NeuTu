@@ -2,6 +2,8 @@
 #include <QFileDialog>
 #include <QProgressDialog>
 #include <QtConcurrentRun>
+#include <QMenu>
+#include <QAction>
 
 #include "ui_flyembodysplitprojectdialog.h"
 #include "mainwindow.h"
@@ -60,6 +62,7 @@ FlyEmBodySplitProjectDialog::FlyEmBodySplitProjectDialog(QWidget *parent) :
 
   m_dvidDlg = ZDialogFactory::makeDvidDialog(this);
 
+  createMenu();
   connectSignalSlot();
 }
 
@@ -81,6 +84,18 @@ void FlyEmBodySplitProjectDialog::connectSignalSlot()
   connect(this, SIGNAL(messageDumped(QString,bool)),
           this, SLOT(dump(QString,bool)));
   connect(this, SIGNAL(sideViewCanceled()), this, SLOT(resetSideView()));
+}
+
+void FlyEmBodySplitProjectDialog::createMenu()
+{
+  m_mainMenu = new QMenu(this);
+  ui->menuPushButton->setMenu(m_mainMenu);
+
+  m_showBodyMaskAction = new QAction("Show Body Mask", this);
+  m_mainMenu->addAction(m_showBodyMaskAction);
+  m_showBodyMaskAction->setCheckable(true);
+  connect(m_showBodyMaskAction, SIGNAL(triggered(bool)),
+          this, SLOT(showBodyMask(bool)));
 }
 
 void FlyEmBodySplitProjectDialog::closeEvent(QCloseEvent */*event*/)
@@ -537,4 +552,13 @@ void FlyEmBodySplitProjectDialog::viewPreviousSlice()
 void FlyEmBodySplitProjectDialog::viewNextSlice()
 {
   m_project.viewNextSlice();
+}
+
+void FlyEmBodySplitProjectDialog::showBodyMask(bool on)
+{
+  if (on) {
+    m_project.showBodyMask();
+  } else {
+    //m_project.hideBodyMask();
+  }
 }

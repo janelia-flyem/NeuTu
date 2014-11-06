@@ -418,7 +418,7 @@ void ZFlyEmBodySplitProject::downloadSeed()
             stroke->loadJsonObject(seedJson);
             if (!stroke->isEmpty()) {
               m_dataFrame->document()->addObject(
-                    stroke, NeuTube::Documentable_STROKE, ZDocPlayer::ROLE_SEED);
+                    stroke, ZDocPlayer::ROLE_SEED);
             } else {
               delete stroke;
             }
@@ -429,7 +429,7 @@ void ZFlyEmBodySplitProject::downloadSeed()
 
             if (!obj3d->isEmpty()) {
               m_dataFrame->document()->addObject(
-                    obj3d, NeuTube::Documentable_OBJ3D,
+                    obj3d,
                     ZDocPlayer::ROLE_SEED | ZDocPlayer::ROLE_3DGRAPH_DECORATOR);
             } else {
               delete obj3d;
@@ -500,6 +500,47 @@ void ZFlyEmBodySplitProject::viewFullGrayscale()
                          ZStackObjectSource::ID_BODY_GRAYSCALE_PATCH));
       patch->setTarget(ZStackObject::STACK_CANVAS);
       frame->document()->addStackPatch(patch);
+    }
+  }
+}
+
+void ZFlyEmBodySplitProject::showBodyMask()
+{
+  ZDvidReader reader;
+  if (reader.open(getDvidTarget())) {
+    ZStackFrame *frame = getDataFrame();
+    if (frame != NULL) {
+      int currentSlice = frame->view()->sliceIndex();
+
+      ZRect2d rectRoi = frame->document()->getRect2dRoi();
+      ZIntPoint offset = frame->document()->getStackOffset();
+      if (!rectRoi.isValid()) {
+        int width = frame->document()->getStackWidth();
+        int height = frame->document()->getStackHeight();
+        rectRoi.set(offset.getX(), offset.getY(), width, height);
+      }
+
+      int z = currentSlice + offset.getZ();
+      ZStack *stack = reader.readBodyLabel(
+            rectRoi.getX0(), rectRoi.getY0(), z,
+            rectRoi.getWidth(), rectRoi.getHeight(), 1);
+      std::map<int, ZObject3dScan*> *bodySet =
+          ZObject3dScan::extractAllObject(
+            (uint64_t*) stack->array8(), stack->width(), stack->height(), 1,
+            stack->getOffset().getZ(), NULL);
+
+      for (std::map<int, ZObject3dScan*>::const_iterator iter = bodySet->begin();
+           iter != bodySet->end(); ++iter) {
+        int label = iter->first;
+        ZObject3dScan *obj = iter->second;
+        if (label > 0) {
+          frame->document()->addObject(obj, ZDocPlayer::ROLE_MASK, false);
+        } else {
+          delete obj;
+        }
+      }
+
+      delete stack;
     }
   }
 }

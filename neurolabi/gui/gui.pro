@@ -466,7 +466,8 @@ HEADERS += mainwindow.h \
     zcolorscheme.h \
     zpunctumcolorscheme.h \
     zstackpatch.h \
-    zrect2d.h
+    zrect2d.h \
+    zobjectcolorscheme.h
 
 FORMS += settingdialog.ui \
     frameinfodialog.ui \
@@ -785,7 +786,8 @@ SOURCES += main.cpp \
     zcolorscheme.cpp \
     zpunctumcolorscheme.cpp \
     zstackpatch.cpp \
-    zrect2d.cpp
+    zrect2d.cpp \
+    zobjectcolorscheme.cpp
 
 OTHER_FILES += \
     extlib.pri

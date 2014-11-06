@@ -45,6 +45,7 @@
 #include "tz_error.h"
 #include "misc/miscutility.h"
 #include "zrect2d.h"
+#include "zobjectcolorscheme.h"
 
 class ZStackFrame;
 class ZLocalNeuroseg;
@@ -210,6 +211,7 @@ public: //attributes
   QList<ZLocsegChain*> getLocsegChainList() const;
   QList<ZPunctum*> getPunctumList() const;
   QList<ZSparseObject*> getSparseObjectList() const;
+  QList<ZObject3dScan*> getObject3dScanList() const;
 
   bool hasSwcList();       //to test swctree
   //inline QList<ZLocsegChain*>* chainList() {return &m_chainList;}
@@ -430,6 +432,7 @@ public: /* puncta related methods */
 
 
   void addObj3d(ZObject3d *obj);
+  void addObject3dScan(ZObject3dScan *obj);
   void addStackPatch(ZStackPatch *patch, bool uniqueSource = true);
   void addStroke(ZStroke2d *obj);
   void addSparseObject(ZSparseObject *obj);
@@ -563,7 +566,7 @@ public: /* puncta related methods */
     m_additionalSource = filePath;
   }
 
-  bool hasObjectSelected();
+  bool hasObjectSelected() const;
 
   inline const ZStackObjectGroup& getObjectGroup() const {
     return m_objectGroup; }
@@ -681,6 +684,7 @@ public:
   void notifyPunctumModified();
   void notifyChainModified();
   void notifyObj3dModified();
+  void notifyObject3dScanModified();
   void notifyStackPatchModified();
   void notifySparseObjectModified();
   void notifyStackModified();
@@ -864,6 +868,7 @@ signals:
   void seedModified();
   void chainModified();
   void obj3dModified();
+  void object3dScanModified();
   void stackPatchModified();
   void sparseObjectModified();
   void strokeModified();
@@ -914,31 +919,14 @@ private:
   //Main stack
   ZStack *m_stack;
   ZSparseStack *m_sparseStack; //Serve as main data when m_stack is virtual.
-  //Concrete objects
-//  QList<ZSwcTree*> m_swcList;
-//  QList<ZPunctum*> m_punctaList;
-//  QList<ZStroke2d*> m_strokeList;
-//  QList<ZObject3d*> m_obj3dList;
-//  QList<ZSparseObject*> m_sparseObjectList;
 
   ZDocPlayerList m_playerList;
 
   //Special object
   ZSwcNetwork *m_swcNetwork;
 
-  //Roles
-  //QList<ZStackObject*> m_objectList;
-
   ZStackObjectGroup m_objectGroup;
-
-  //Subset of selected objects
-  //std::set<ZPunctum*> m_selectedPuncta;
-  //std::set<ZSwcTree*> m_selectedSwcs;
-  //std::set<Swc_Tree_Node*> m_selectedSwcTreeNodes;
   Swc_Tree_Node *m_lastAddedSwcNode;
-  //std::set<ZStroke2d*> m_selectedStroke;
-
-  //QMap<ZStackObject::EType, std::set<ZStackObject*> > m_selectedObjectMap;
 
   //model-view structure for obj list and edit
   ZSwcObjsModel *m_swcObjsModel;
@@ -988,6 +976,8 @@ private:
   ZStackFactory *m_stackFactory;
 
   bool m_selectionSilent;
+
+  ZObjectColorScheme m_objColorSheme;
 };
 
 //   template  //

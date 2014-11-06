@@ -1906,7 +1906,7 @@ void ZStackPresenter::process(const ZStackOperator &op)
       interactionEvent.setEvent(ZInteractionEvent::EVENT_SWC_NODE_ADDED);
     }
     break;
-  case ZStackOperator::OP_RESOTRE_EXPLORE_MODE:
+  case ZStackOperator::OP_RESTORE_EXPLORE_MODE:
     this->interactiveContext().restoreExploreMode();
     break;
   case ZStackOperator::OP_SHOW_STACK_CONTEXT_MENU:
@@ -1973,8 +1973,7 @@ void ZStackPresenter::process(const ZStackOperator &op)
   case ZStackOperator::OP_STROKE_SELECT_SINGLE:
     buddyDocument()->deselectAllObject();
     if (op.getHitObject<ZStroke2d>() != NULL) {
-      buddyDocument()->setSelected(
-            op.getHitObject<ZStroke2d>(), NeuTube::Documentable_STROKE);
+      buddyDocument()->setSelected(op.getHitObject<ZStroke2d>(), true);
 //      op.getHitStroke2d()->setSelected(true);
       interactionEvent.setEvent(
             ZInteractionEvent::EVENT_STROKE_SELECTED);

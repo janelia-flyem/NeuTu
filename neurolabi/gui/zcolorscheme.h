@@ -12,13 +12,16 @@ public:
 
   enum EColorScheme {
     VAA3D_TYPE_COLOR, BIOCYTIN_TYPE_COLOR, JIN_TYPE_COLOR, UNIQUE_COLOR,
-    PUNCTUM_TYPE_COLOR
+    PUNCTUM_TYPE_COLOR, RANDOM_COLOR
   };
 
   QColor getColor(int index) const;
   int getColorNumber() const { return m_colorTable.size(); }
 
   virtual void setColorScheme(EColorScheme scheme);
+
+protected:
+  void buildRandomColorTable(int n);
 
 protected:
   EColorScheme m_colorScheme;

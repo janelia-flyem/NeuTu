@@ -17,6 +17,7 @@ const ZDocPlayer::TRole ZDocPlayer::ROLE_MANAGED_OBJECT = 16;
 const ZDocPlayer::TRole ZDocPlayer::ROLE_3DGRAPH_DECORATOR = 32;
 const ZDocPlayer::TRole ZDocPlayer::ROLE_TMP_BOOKMARK = 64;
 const ZDocPlayer::TRole ZDocPlayer::ROLE_ROI = 128;
+const ZDocPlayer::TRole ZDocPlayer::ROLE_MASK = 256;
 
 ZDocPlayer::ZDocPlayer() : m_data(NULL), m_role(ZDocPlayer::ROLE_NONE)
 {
@@ -375,6 +376,23 @@ Z3DGraph ZObject3dPlayer::get3DGraph() const
 ZJsonObject ZObject3dPlayer::toJsonObject() const
 {
   return getCompleteData()->toJsonObject();
+}
+
+/*************************************/
+
+ZObject3dScanPlayer::ZObject3dScanPlayer() : ZDocPlayer()
+{
+}
+
+ZObject3dScanPlayer::ZObject3dScanPlayer(ZStackObject *data, TRole role) :
+  ZDocPlayer(data, role)
+{
+}
+
+
+const ZObject3dScan* ZObject3dScanPlayer::getCompleteData() const
+{
+  return dynamic_cast<const ZObject3dScan*>(m_data);
 }
 
 /*************************************/

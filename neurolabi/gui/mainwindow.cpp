@@ -1387,7 +1387,6 @@ void MainWindow::openFile(const QStringList &fileNameList)
 
 void MainWindow::openFile(const QString &fileName)
 {
-#if 1
   /*
   if (m_docReader != NULL) {
     RECORD_WARNING_UNCOND("Bad buffer");
@@ -1404,111 +1403,6 @@ void MainWindow::openFile(const QString &fileName)
 
   //QFuture<ZStackDocReader*> res =
   QtConcurrent::run(this, &MainWindow::openFileFunc, fileName);
-
-  //res.waitForFinished();
-
-  //createStackFrameFromDocReader(res.result());
-  /*
-  ZStackDocReader *docReader = res.result();
-
-  //ZStackDocReader *docReader = openFileFunc(fileName);
-
-  ZStackDoc *doc = NULL;
-  if (docReader != NULL) {
-    doc = new ZStackDoc(NULL, NULL);
-    doc->addData(*docReader);
-
-    delete docReader;
-    docReader = NULL;
-  }
-
-  if (doc != NULL) {
-    ZStackFrame *frame = createStackFrame(doc);
-    if (doc->hasStackData()) {
-      if (GET_APPLICATION_NAME == "Biocytin") {
-        doc->setStackBackground(NeuTube::IMAGE_BACKGROUND_BRIGHT);
-        doc->setTag(NeuTube::Document::BIOCYTIN_STACK);
-      }
-      addStackFrame(frame);
-      presentStackFrame(frame);
-      m_progress->reset();
-    } else {
-      m_progress->reset();
-      frame->open3DWindow(this);
-      delete frame;
-    }
-    setCurrentFile(fileName);
-  } else {
-    m_progress->reset();
-    reportFileOpenProblem(fileName);
-  }
-  */
-#else
-  ZFileType::EFileType fileType = ZFileType::fileType(fileName.toStdString());
-
-  if (ZFileType::isNeutubeOpenable(fileType)) {
-    m_progress->setRange(0, 3);
-
-    int currentProgress = 0;
-    m_progress->open();
-    m_progress->setLabelText(QString("Loading " + fileName + " ..."));
-
-    m_progress->setValue(++currentProgress);
-
-    ZStackFrame *frame = NULL;
-    if (ZFileType::isImageFile(fileType)) {
-      frame = new ZStackFrame(mdiArea);
-      connect(frame, SIGNAL(ready(ZStackFrame*)),
-              this, SLOT(presentStackFrame(ZStackFrame*)));
-      connect(frame, SIGNAL(ready(ZStackFrame*)),
-              this, SIGNAL(progressDone()));
-      frame->createDocument();
-      frame->show();
-      frame->setViewInfo("Loading data ...");
-    } else {
-      frame = new ZStackFrame;
-
-      if (fileType == ZFileType::JSON_FILE) {
-        frame->document()->setAdditionalSource(fileName.toStdString());
-        m_progress->reset();
-        frame->open3DWindow(this);
-        delete frame;
-        frame = NULL;
-      }
-    }
-
-
-    if (frame != NULL) {
-      m_progress->setValue(++currentProgress);
-      m_progress->show();
-
-      if (frame->readStack(fileName.toStdString().c_str()) == SUCCESS) {
-        setCurrentFile(fileName);
-        if (ZFileType::isImageFile(fileType)) {
-          addStackFrame(frame, false);
-          if (GET_APPLICATION_NAME == "Biocytin") {
-            frame->document()->setStackBackground(NeuTube::IMAGE_BACKGROUND_BRIGHT);
-            frame->document()->setTag(NeuTube::Document::BIOCYTIN_STACK);
-          }
-        } else { //Not an image, no need to show the 2D window
-          m_progress->reset();
-          frame->open3DWindow(this);
-          delete frame;
-          frame = NULL;
-        }
-      } else {
-        delete frame;
-        frame = NULL;
-        m_progress->reset();
-        reportFileOpenProblem(fileName);
-      }
-    }
-
-    //m_progress->reset();
-  } else {
-    reportFileOpenProblem(fileName, " unrecognized file name extension");
-  }
-#endif
 }
 
 void MainWindow::openTraceProject(QString fileName)
@@ -2665,18 +2559,6 @@ void MainWindow::dropEvent(QDropEvent *event)
 
   openFile(fileList);
   m_lastOpenedFilePath = fileList.back();
-
-  //QString file = urls.first().toLocalFile();
-
-  /*
-  if (file.endsWith(".xml") || file.endsWith(".trace")
-    || file.endsWith(".trace/")) {
-    openTraceProject(file);
-  } else {
-    m_lastOpenedFilePath = QFileInfo(file).absoluteDir().path();
-    openFile(file);
-  }
-  */
 }
 
 void MainWindow::on_actionSave_triggered()
@@ -3173,7 +3055,7 @@ void MainWindow::on_actionSkeletonization_triggered()
       wholeTree->translate(frame->document()->getStackOffset());
 
       if (wholeTree != NULL) {
-        frame->executeAddObjectCommand(wholeTree, NeuTube::Documentable_SWC);
+        frame->executeAddObjectCommand(wholeTree);
         frame->open3DWindow(this, Z3DWindow::EXCLUDE_VOLUME);
       } else {
         report("Skeletonization failed", "No SWC tree generated.",

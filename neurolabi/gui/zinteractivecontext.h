@@ -73,6 +73,14 @@ public:
     EXPLORE_CAPTURE_MOUSE
   };
 
+  enum EUniqueMode{
+    INTERACT_NONE = 0, INTERACT_FREE, INTERACT_SWC_CONNECT, INTERACT_SWC_EXTEND,
+    INTERACT_SWC_SMART_EXTEND, INTERACT_SWC_LOCK_FOCUS, INTERACT_SWC_ADD_NODE,
+    INTERACT_SWC_MOVE_NODE, INTERACT_OBJECT_MOVE, INTERACT_STROKE_DRAW,
+    INTERACT_RECT_DRAW, INTERACT_PUNCTA_MARK, INTERACT_IMAGE_MOVE,
+    INTERACT_IMAGE_CAPTURE, INTERACT_IMAGE_ZOOM_IN, INTERACT_IMAGE_ZOOM_OUT
+  };
+
 public:
   ZInteractiveContext();
   inline void setTraceMode(TraceMode mode) { m_traceMode = mode; }
@@ -84,12 +92,12 @@ public:
   inline void setStrokeEditMode(StrokeEditMode mode) { m_strokeEditMode = mode; }
   inline void setRectEditMode(RectEditMode mode) { m_rectEditMode = mode; }
 
-  inline TraceMode traceMode() { return m_traceMode; }
-  inline TubeEditMode tubeEditMode() { return m_tubeEditMode; }
-  inline SwcEditMode swcEditMode() { return m_swcEditMode; }
-  inline ViewMode viewMode() { return m_viewMode; }
-  inline ExploreMode exploreMode() { return m_exploreMode; }
-  inline MarkPunctaMode editPunctaMode() {return m_markPunctaMode;}
+  inline TraceMode traceMode() const { return m_traceMode; }
+  inline TubeEditMode tubeEditMode() const { return m_tubeEditMode; }
+  inline SwcEditMode swcEditMode() const { return m_swcEditMode; }
+  inline ViewMode viewMode() const { return m_viewMode; }
+  inline ExploreMode exploreMode() const { return m_exploreMode; }
+  inline MarkPunctaMode editPunctaMode() const {return m_markPunctaMode;}
   inline StrokeEditMode strokeEditMode() const { return m_strokeEditMode; }
   inline RectEditMode rectEditMode() const { return m_rectEditMode; }
 
@@ -119,6 +127,7 @@ public:
   inline void setExitingEdit(bool s) { m_exitingEdit = s; }
   inline bool isExitingEdit() const { return m_exitingEdit; }
 
+  EUniqueMode getUniqueMode() const;
   //void setView(const QRect &projRegion, const QRect &viewPort);
 
 private:

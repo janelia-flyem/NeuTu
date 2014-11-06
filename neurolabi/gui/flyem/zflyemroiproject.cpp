@@ -557,10 +557,6 @@ void ZFlyEmRoiProject::estimateRoi()
                       1.0 / (m_currentDsIntv.getZ() + 1), false);
       }
 
-      /*
-      m_dataFrame->document()->executeAddObjectCommand(
-            tree, NeuTube::Documentable_SWC, ZDocPlayer::ROLE_ROI);
-            */
       m_dataFrame->document()->executeReplaceSwcCommand(
             tree, ZDocPlayer::ROLE_ROI);
     }

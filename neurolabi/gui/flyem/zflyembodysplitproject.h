@@ -64,6 +64,7 @@ public:
   void viewPreviousSlice();
   void viewNextSlice();
   void viewFullGrayscale();
+  void showBodyMask();
 
 public slots:
   void showDataFrame() const;

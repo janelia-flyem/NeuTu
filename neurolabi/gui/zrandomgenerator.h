@@ -10,6 +10,9 @@ public:
   ZRandomGenerator(int seed);
 
 public:
+  /*!
+   * \brief Permute 1...n randomly
+   */
   std::vector<int> randperm(int n);
   int rndint(int maxValue);
   void setSeed(int seed);

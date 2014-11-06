@@ -330,7 +330,7 @@ void ZStackDocCommand::SwcEdit::AddSwcNode::undo()
 void ZStackDocCommand::SwcEdit::AddSwcNode::redo()
 {
   if (m_doc->getTag() == NeuTube::Document::FLYEM_ROI) {
-    m_doc->addObject(m_tree, NeuTube::Documentable_SWC, ZDocPlayer::ROLE_ROI);
+    m_doc->addObject(m_tree, ZDocPlayer::ROLE_ROI);
   } else {
     m_doc->addSwcTree(m_tree);
   }
@@ -1022,7 +1022,7 @@ void ZStackDocCommand::SwcEdit::RemoveSwc::undo()
 {
   if (m_tree != NULL) {
     //m_doc->addSwcTree(m_tree);
-    m_doc->addObject(m_tree, NeuTube::Documentable_SWC, m_role);
+    m_doc->addObject(m_tree, m_role);
     m_isInDoc = true;
   }
 }

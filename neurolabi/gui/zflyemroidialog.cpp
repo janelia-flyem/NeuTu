@@ -326,8 +326,7 @@ void ZFlyEmRoiDialog::loadPartialGrayscaleFunc(
 
       ZSwcTree *tree = m_project->getRoiSwc(z);
       if (tree != NULL) {
-        m_docReader.addObject(
-              tree, NeuTube::Documentable_SWC, ZDocPlayer::ROLE_ROI);
+        m_docReader.addObject(tree, ZDocPlayer::ROLE_ROI);
       }
       emit newDocReady();
     } else {

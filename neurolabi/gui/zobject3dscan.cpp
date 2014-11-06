@@ -652,6 +652,7 @@ const ZObject3dScan::TEvent ZObject3dScan::EVENT_OBJECT_CANONIZED =
 ZObject3dScan::ZObject3dScan() : m_isCanonized(true)
 {
   setTarget(OBJECT_CANVAS);
+  m_type = ZStackObject::TYPE_OBJECT3D_SCAN;
 }
 
 ZObject3dScan::~ZObject3dScan()
@@ -1110,6 +1111,10 @@ bool ZObject3dScan::load(const string &filePath)
 
       succ = true;
     }
+  }
+
+  if (succ) {
+    setSource(filePath);
   }
 
   RECORD_WARNING(!succ, "Cannont open file " + filePath);

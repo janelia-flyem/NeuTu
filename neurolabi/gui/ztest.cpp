@@ -12016,8 +12016,7 @@ void ZTest::test(MainWindow *host)
   obj2->append(4, 15, 6);
 
   obj2->setColor(255, 255, 0, 255);
-  frame->document()->addObject(obj2, NeuTube::Documentable_OBJ3D,
-                               ZDocPlayer::ROLE_3DGRAPH_DECORATOR);
+  frame->document()->addObject(obj2, ZDocPlayer::ROLE_3DGRAPH_DECORATOR);
   frame->document()->loadSwc(
         (GET_TEST_DATA_DIR + "/benchmark/swc/fork.swc").c_str());
   frame->open3DWindow(NULL);

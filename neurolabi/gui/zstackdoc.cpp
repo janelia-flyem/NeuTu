@@ -96,6 +96,7 @@
 #include "zobject3darray.h"
 #include "zstackobjectsourcefactory.h"
 #include "zstackpatch.h"
+#include "zobjectcolorscheme.h"
 
 using namespace std;
 
@@ -132,6 +133,8 @@ ZStackDoc::ZStackDoc(ZStack *stack, QObject *parent) : QObject(parent),
 
   setTag(NeuTube::Document::NORMAL);
   setStackBackground(NeuTube::IMAGE_BACKGROUND_DARK);
+
+  m_objColorSheme.setColorScheme(ZColorScheme::RANDOM_COLOR);
 }
 
 ZStackDoc::~ZStackDoc()
@@ -270,6 +273,7 @@ void ZStackDoc::connectSignalSlot()
   connect(this, SIGNAL(chainModified()), this, SIGNAL(objectModified()));
   connect(this, SIGNAL(punctaModified()), this, SIGNAL(objectModified()));
   connect(this, SIGNAL(obj3dModified()), this, SIGNAL(objectModified()));
+  connect(this, SIGNAL(object3dScanModified()), this, SIGNAL(objectModified()));
   connect(this, SIGNAL(stackPatchModified()), this, SIGNAL(objectModified()));
   connect(this, SIGNAL(sparseObjectModified()), this, SIGNAL(objectModified()));
   connect(this, SIGNAL(strokeModified()), this, SIGNAL(objectModified()));
@@ -2112,18 +2116,28 @@ void ZStackDoc::addObj3d(ZObject3d *obj)
     return;
   }
 
-  //obj->setTarget(ZStackObject::OBJECT_CANVAS);
-
   m_objectGroup.add(obj, false);
-
-//  m_obj3dList.prepend(obj);
-//  m_objectList.prepend(obj);
 
   if (obj->isSelected()) {
     setSelected(obj, true);
   }
 
   notifyObj3dModified();
+}
+
+void ZStackDoc::addObject3dScan(ZObject3dScan *obj)
+{
+  if (obj == NULL) {
+    return;
+  }
+
+  m_objectGroup.add(obj, false);
+  if (obj->isSelected()) {
+    setSelected(obj, true);
+  }
+
+  //notifyObjectModified();
+  notifyObject3dScanModified();
 }
 
 #define DEFINE_GET_OBJECT_LIST(Function, ObjectClass, OBJECT_TYPE) \
@@ -2164,6 +2178,7 @@ DEFINE_GET_OBJECT_LIST(getStrokeList, ZStroke2d, TYPE_STROKE)
 DEFINE_GET_OBJECT_LIST(getLocsegChainList, ZLocsegChain, TYPE_LOCSEG_CHAIN)
 DEFINE_GET_OBJECT_LIST(getPunctumList, ZPunctum, TYPE_PUNCTUM)
 DEFINE_GET_OBJECT_LIST(getSparseObjectList, ZSparseObject, TYPE_SPARSE_OBJECT)
+DEFINE_GET_OBJECT_LIST(getObject3dScanList, ZObject3dScan, TYPE_OBJECT3D_SCAN)
 
 
 void ZStackDoc::addSparseObject(ZSparseObject *obj)
@@ -2174,11 +2189,6 @@ void ZStackDoc::addSparseObject(ZSparseObject *obj)
 
   obj->setTarget(ZStackObject::OBJECT_CANVAS);
   m_objectGroup.add(obj, false);
-
-  /*
-  m_sparseObjectList.prepend(obj);
-  m_objectList.prepend(obj);
-  */
 
   m_playerList.append(new ZSparseObjectPlayer(obj, ZDocPlayer::ROLE_SEED));
   emit seedModified();
@@ -2194,14 +2204,8 @@ void ZStackDoc::addStroke(ZStroke2d *obj)
 
   m_objectGroup.add(obj, false);
 
-  /*
-  m_strokeList.prepend(obj);
-  m_objectList.prepend(obj);
-  */
   if (obj->isSelected()) {
     setSelected(obj, true);
-    //m_selectedObjectMap[obj->getType()].insert(obj);
-    //m_selectedStroke.insert(obj);
   }
 
   notifyObjectModified();
@@ -3067,24 +3071,6 @@ std::set<ZSwcTree *> ZStackDoc::removeEmptySwcTree(bool deleteObject)
     }
   }
 
-  /*
-
-  QMutableListIterator<ZSwcTree*> swcIter(m_swcList);
-
-  blockSignals(true);
-  while (swcIter.hasNext()) {
-    ZSwcTree *tree = swcIter.next();
-    if (!tree->hasRegularNode()) {
-      swcIter.remove();
-      removeObject(tree, deleteObject);
-      if (!deleteObject) {
-        emptyTreeSet.insert(tree);
-      }
-    }
-  }
-  blockSignals(false);
-*/
-
   if (!emptyTreeSet.empty()) {
     notifySwcModified();
   }
@@ -3268,7 +3254,7 @@ void ZStackDoc::deselectAllPuncta()
   notifyDeselected(deselected);
 }
 #if 1
-void ZStackDoc::setChainSelected(ZLocsegChain *chain, bool select)
+void ZStackDoc::setChainSelected(ZLocsegChain */*chain*/, bool /*select*/)
 {
 #if 0
   if (chain->isSelected() != select) {
@@ -3289,7 +3275,8 @@ void ZStackDoc::setChainSelected(ZLocsegChain *chain, bool select)
 #endif
 }
 
-void ZStackDoc::setChainSelected(const std::vector<ZLocsegChain *> &chains, bool select)
+void ZStackDoc::setChainSelected(const std::vector<ZLocsegChain *> &/*chains*/,
+                                 bool /*select*/)
 {
 #if 0
   QList<ZLocsegChain*> selected;
@@ -3359,7 +3346,7 @@ void ZStackDoc::setSwcSelected(ZSwcTree *tree, bool select)
         //m_selectedSwcs.insert(tree);
         selected.push_back(tree);
         // deselect its nodes
-        std::vector<Swc_Tree_Node *> tns;
+//        std::vector<Swc_Tree_Node *> tns;
         for (std::set<Swc_Tree_Node*>::iterator it = tree->getSelectedNode().begin();
              it != tree->getSelectedNode().end(); ++it) {
           deselectedSwcTreeNode.append(*it);
@@ -4208,34 +4195,6 @@ const TStackObjectSet &ZStackDoc::getSelected(
   return const_cast<ZStackDoc&>(*this).getSelected(type);
 }
 
-#if 0
-void ZStackDoc::setSelected(
-    ZStackObject *obj, NeuTube::EDocumentableType type, bool selecting)
-{
-  if (obj != NULL) {
-    switch (type) {
-    case NeuTube::Documentable_STROKE:
-    {
-      ZStroke2d *stroke = dynamic_cast<ZStroke2d*>(obj);
-      if (stroke != NULL) {
-        if (selecting) {
-          stroke->setSelected(true);
-          m_selectedStroke.insert(stroke);
-        } else {
-          stroke->setSelected(false);
-          m_selectedStroke.erase(stroke);
-        }
-      }
-    }
-      break;
-    default:
-      break;
-    }
-  }
-}
-#endif
-
-
 bool ZStackDoc::binarize(int threshold)
 {
   ZStack *mainStack = getStack();
@@ -4358,6 +4317,7 @@ void ZStackDoc::loadFileList(const QStringList &fileList)
   bool chainLoaded = false;
   bool networkLoaded = false;
   bool punctaLoaded = false;
+  bool obj3dScanLoaded = false;
   //bool apoLoaded = false;
 
   for (QStringList::const_iterator iter = fileList.begin(); iter != fileList.end();
@@ -4379,6 +4339,9 @@ void ZStackDoc::loadFileList(const QStringList &fileList)
     case ZFileType::V3D_MARKER_FILE:
     case ZFileType::RAVELER_BOOKMARK:
       punctaLoaded = true;
+      break;
+    case ZFileType::OBJECT_SCAN_FILE:
+      obj3dScanLoaded = true;
       break;
     default:
       break;
@@ -4403,6 +4366,10 @@ void ZStackDoc::loadFileList(const QStringList &fileList)
 
   if (punctaLoaded) {
     emit punctaModified();
+  }
+
+  if (obj3dScanLoaded) {
+    notifyObject3dScanModified();
   }
 
 #ifdef _FLYEM_2
@@ -4437,7 +4404,16 @@ bool ZStackDoc::loadFile(const QString &filePath, bool emitMessage)
     break;
   case ZFileType::OBJECT_SCAN_FILE:
     setTag(NeuTube::Document::FLYEM_BODY);
-  {
+  if (hasStackData()){
+    ZObject3dScan *obj = new ZObject3dScan;
+    obj->load(filePath.toStdString());
+    int index = m_objectGroup.getObjectList(
+          ZStackObject::TYPE_OBJECT3D_SCAN).size() + 1;
+    QColor color = m_objColorSheme.getColor(index);
+    color.setAlpha(128);
+    obj->setColor(color);
+    executeAddObjectCommand(obj);
+  } else {
     ZSparseObject *sobj = new ZSparseObject;
     sobj->load(filePath.toStdString().c_str());
     addSparseObject(sobj);
@@ -4844,6 +4820,11 @@ void ZStackDoc::notifyObj3dModified()
   emit obj3dModified();
 }
 
+void ZStackDoc::notifyObject3dScanModified()
+{
+  emit object3dScanModified();
+}
+
 void ZStackDoc::notifyStackPatchModified()
 {
   emit stackPatchModified();
@@ -4905,6 +4886,9 @@ void ZStackDoc::notifyObjectModified(ZStackObject::EType type)
     break;
   case ZStackObject::TYPE_SPARSE_OBJECT:
     notifySparseObjectModified();
+    break;
+  case ZStackObject::TYPE_OBJECT3D_SCAN:
+    notifyObject3dScanModified();
     break;
   default:
     notifyObjectModified();;
@@ -6390,6 +6374,16 @@ void ZStackDoc::addObject(
   case ZStackObject::TYPE_OBJ3D:
     addObj3d(dynamic_cast<ZObject3d*>(obj));
     break;
+  case ZStackObject::TYPE_OBJECT3D_SCAN:
+    if (role == ZDocPlayer::ROLE_MASK) {
+      int index = m_objectGroup.getObjectList(
+            ZStackObject::TYPE_OBJECT3D_SCAN).size() + 1;
+      QColor color = m_objColorSheme.getColor(index);
+      color.setAlpha(64);
+      obj->setColor(color);
+    }
+    addObject3dScan(dynamic_cast<ZObject3dScan*>(obj));
+    break;
   case ZStackObject::TYPE_LOCSEG_CHAIN:
     addLocsegChain(dynamic_cast<ZLocsegChain*>(obj));
     break;
@@ -6444,6 +6438,9 @@ void ZStackDoc::addPlayer(ZStackObject *obj, ZDocPlayer::TRole role)
     case ZStackObject::TYPE_STACK_BALL:
       player = new ZStackBallPlayer(obj, role);
       break;
+    case ZStackObject::TYPE_OBJECT3D_SCAN:
+      player = new ZObject3dScanPlayer(obj, role);
+      break;
     default:
       player = new ZDocPlayer(obj, role);
       break;
@@ -6454,7 +6451,7 @@ void ZStackDoc::addPlayer(ZStackObject *obj, ZDocPlayer::TRole role)
   }
 }
 
-bool ZStackDoc::hasObjectSelected()
+bool ZStackDoc::hasObjectSelected() const
 {
   return m_objectGroup.hasSelected() || hasSelectedSwcNode();
 }
@@ -8247,30 +8244,7 @@ void ZStackDocReader::addPlayer(ZStackObject *obj, ZDocPlayer::TRole role)
     m_playerList.append(player);
   }
 }
-/*
-void ZStackDocReader::addPlayer(
-    ZStackObject *obj, NeuTube::EDocumentableType type, ZDocPlayer::TRole role)
-{
-  if (role != ZDocPlayer::ROLE_NONE) {
-    ZDocPlayer *player = NULL;
-    switch (type) {
-    case NeuTube::Documentable_OBJ3D:
-      player = new ZObject3dPlayer(obj, role);
-      break;
-    default:
-      player = new ZDocPlayer(obj, role);
-      break;
-    }
-    m_playerList.append(player);
-  }
-}
-*/
-/*
-void ZStackDocReader::addObj3d(ZObject3d *obj)
-{
-  m_obj3dList.append(obj);
-}
-*/
+
 void ZStackDocReader::addObject(
     ZStackObject *obj, ZDocPlayer::TRole role, bool uniqueSource)
 {
@@ -8279,50 +8253,3 @@ void ZStackDocReader::addObject(
     addPlayer(obj, role);
   }
 }
-
-#if 0
-void ZStackDocReader::addObject(
-    ZStackObject *obj, NeuTube::EDocumentableType type, ZDocPlayer::TRole role)
-{
-  bool isTypeSupported = true;
-
-  switch (type) {
-  case NeuTube::Documentable_SWC:
-  {
-    ZSwcTree *tree = dynamic_cast<ZSwcTree*>(obj);
-    //addSwcTree(tree);
-    if (role & ZDocPlayer::ROLE_ROI) {
-      tree->useCosmeticPen(true);
-      tree->updateHostState();
-    }
-  }
-    break;
-  case NeuTube::Documentable_PUNCTUM:
-    addPunctum(dynamic_cast<ZPunctum*>(obj));
-    break;
-  case NeuTube::Documentable_OBJ3D:
-    addObj3d(dynamic_cast<ZObject3d*>(obj));
-    break;
-  case NeuTube::Documentable_LOCSEG_CHAIN:
-    addLocsegChain(dynamic_cast<ZLocsegChain*>(obj));
-    break;
-  case NeuTube::Documentable_STROKE:
-    addStroke(dynamic_cast<ZStroke2d*>(obj));
-    break;
-  case NeuTube::Documentable_SPARSE_OBJECT:
-    addSparseObject(dynamic_cast<ZSparseObject*>(obj));
-    break;
-  default:
-    isTypeSupported = false;
-    break;
-  }
-
-  if (isTypeSupported) {
-    addPlayer(obj, type, role);
-  } else {
-    RECORD_WARNING_UNCOND("Failed to add an unknown object");
-  }
-}
-#endif
-
-

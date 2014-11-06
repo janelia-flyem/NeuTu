@@ -120,18 +120,22 @@ ZStackOperator ZMouseEventLeftButtonReleaseMapper::getOperation(
       }
       break;
     case ZInteractiveContext::EXPLORE_MOVE_IMAGE:
-      op.setOperation(ZStackOperator::OP_RESOTRE_EXPLORE_MODE);
+      op.setOperation(ZStackOperator::OP_RESTORE_EXPLORE_MODE);
       break;
     default:
       break;
     }
 
     if (op.isNull()) {
-      //Add new stroke
-      if (m_context->strokeEditMode() == ZInteractiveContext::STROKE_DRAW) {
+      switch (m_context->getUniqueMode()) {
+      case ZInteractiveContext::INTERACT_STROKE_DRAW:
         op.setOperation(ZStackOperator::OP_STROKE_ADD_NEW);
-      } else if (m_context->rectEditMode() == ZInteractiveContext::RECT_DRAW) {
+        break;
+      case ZInteractiveContext::INTERACT_RECT_DRAW:
         op.setOperation(ZStackOperator::OP_EXIT_EDIT_MODE);
+        break;
+      default:
+        break;
       }
     }
 
@@ -168,7 +172,7 @@ ZStackOperator ZMouseEventLeftButtonReleaseMapper::getOperation(
       switch (m_context->swcEditMode()) {
       case ZInteractiveContext::SWC_EDIT_SELECT:
         if (event.getModifiers() == Qt::NoModifier) {
-          if (!getDocument()->hasSelectedSwcNode()) {
+          if (!getDocument()->hasObjectSelected()) {
             op.setOperation(ZStackOperator::OP_SHOW_TRACE_CONTEXT_MENU);
           } else {
             op.setOperation(ZStackOperator::OP_DESELECT_ALL);
@@ -273,11 +277,15 @@ ZStackOperator ZMouseEventLeftButtonPressMapper::getOperation(
   ZStackOperator op = initOperation();
 
   if (event.isInStack()) {
-    if (m_context->strokeEditMode() ==
-        ZInteractiveContext::STROKE_DRAW) {
+    switch (m_context->getUniqueMode()) {
+    case ZInteractiveContext::INTERACT_STROKE_DRAW:
       op.setOperation(ZStackOperator::OP_STROKE_START_PAINT);
-    } else if (m_context->rectEditMode() == ZInteractiveContext::RECT_DRAW) {
+      break;
+    case ZInteractiveContext::INTERACT_RECT_DRAW:
       op.setOperation(ZStackOperator::OP_RECT_ROI_INIT);
+      break;
+    default:
+      break;
     }
   }
 
@@ -324,13 +332,16 @@ ZStackOperator ZMouseEventMoveMapper::getOperation(
 
     if (event.getButtons() == Qt::LeftButton) {
       if (event.getModifiers() == Qt::ShiftModifier) {
-        if (m_context->swcEditMode() == ZInteractiveContext::SWC_EDIT_MOVE_NODE) {
+        if (m_context->getUniqueMode() ==
+            ZInteractiveContext::INTERACT_OBJECT_MOVE ||
+            m_context->getUniqueMode() ==
+            ZInteractiveContext::INTERACT_SWC_MOVE_NODE) {
           op.setOperation(ZStackOperator::OP_MOVE_OBJECT);
         }
         canMoveImage = true;
       } else {
-        if (m_context->swcEditMode() == ZInteractiveContext::SWC_EDIT_EXTEND ||
-            m_context->swcEditMode() == ZInteractiveContext::SWC_EDIT_SMART_EXTEND) {
+        if (m_context->getUniqueMode() ==
+            ZInteractiveContext::INTERACT_SWC_EXTEND) {
           ZIntPoint pressPos =
               getPosition(Qt::LeftButton, ZMouseEvent::ACTION_PRESS);
           int dx = pressPos.getX() - event.getX();
@@ -344,16 +355,19 @@ ZStackOperator ZMouseEventMoveMapper::getOperation(
       }
 
       if (op.isNull()) {
-        if (m_context->strokeEditMode() == ZInteractiveContext::STROKE_DRAW) {
+        if (m_context->getUniqueMode() ==
+            ZInteractiveContext::INTERACT_STROKE_DRAW) {
           op.setOperation(ZStackOperator::OP_PAINT_STROKE);
-        } else if (m_context->rectEditMode() == ZInteractiveContext::RECT_DRAW) {
+        } else if (m_context->getUniqueMode() ==
+                   ZInteractiveContext::INTERACT_RECT_DRAW) {
           op.setOperation(ZStackOperator::OP_RECT_ROI_UPDATE);
         }
       }
 
       if (op.isNull()) {
         if (canMoveImage) {
-          if (m_context->exploreMode() == ZInteractiveContext::EXPLORE_MOVE_IMAGE) {
+          if (m_context->exploreMode() ==
+              ZInteractiveContext::EXPLORE_MOVE_IMAGE) {
             op.setOperation(ZStackOperator::OP_MOVE_IMAGE);
           } else {
             op.setOperation(ZStackOperator::OP_START_MOVE_IMAGE);
@@ -365,7 +379,8 @@ ZStackOperator ZMouseEventMoveMapper::getOperation(
     if (op.isNull()) {
       op.setOperation(ZStackOperator::OP_TRACK_MOUSE_MOVE);
       if (event.getModifiers() == Qt::ShiftModifier &&
-          m_context->strokeEditMode() == ZInteractiveContext::STROKE_DRAW) {
+          m_context->getUniqueMode() ==
+          ZInteractiveContext::INTERACT_STROKE_DRAW) {
         op.setTogglingStrokeLabel(true);
       }
       /*

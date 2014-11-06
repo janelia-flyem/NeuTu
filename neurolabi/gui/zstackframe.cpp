@@ -1025,10 +1025,9 @@ void ZStackFrame::executeWatershedCommand()
   document()->executeWatershedCommand();
 }
 
-void ZStackFrame::executeAddObjectCommand(ZStackObject *obj,
-                                          NeuTube::EDocumentableType type)
+void ZStackFrame::executeAddObjectCommand(ZStackObject *obj)
 {
-  document()->executeAddObjectCommand(obj, type);
+  document()->executeAddObjectCommand(obj);
 }
 
 double ZStackFrame::displayGreyMin(int c) const
@@ -1407,7 +1406,7 @@ void ZStackFrame::importMask(const QString &filePath)
                        iround(document()->getStackOffset().getY()),
                        iround(document()->getStackOffset().getZ()));
                        */
-        executeAddObjectCommand(obj, NeuTube::Documentable_OBJ3D);
+        executeAddObjectCommand(obj);
       } else {
         delete obj;
         report("Loading mask failed", "Cannot convert the image into mask",

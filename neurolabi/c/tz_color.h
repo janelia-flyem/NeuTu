@@ -88,6 +88,11 @@ void Set_Color_Hsv(Rgb_Color *color, double h, double s, double v);
  */
 void Set_Color_Jet(Rgb_Color *color, int index);
 
+
+/**@brief Set RGB color from the Discrete map.
+ */
+void Set_Color_Discrete(Rgb_Color *color, int index);
+
 void Print_Rgb_Color(const Rgb_Color *color);
 
 /**@brief Print RGB color.

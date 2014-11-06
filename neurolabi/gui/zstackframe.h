@@ -199,11 +199,7 @@ public:
   void executeAutoTraceAxonCommand();
   void executeWatershedCommand();
 
-  void executeAddObjectCommand(
-      ZStackObject *obj, NeuTube::EDocumentableType type);
-
-  //void importStackMask(const std::string &filePath);
-  //void setStackMask(ZStack *stack);
+  void executeAddObjectCommand(ZStackObject *obj);
 
   ZStackFrame *spinoffStackSelection(const std::vector<int> &selected);
 

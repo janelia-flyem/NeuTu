@@ -17,6 +17,7 @@ class ZSparseObject;
 class ZObject3d;
 class ZSwcTree;
 class ZJsonObject;
+class ZObject3dScan;
 
 class ZDocPlayer
 {
@@ -32,6 +33,7 @@ public:
   const static TRole ROLE_3DGRAPH_DECORATOR;
   const static TRole ROLE_TMP_BOOKMARK;
   const static TRole ROLE_ROI;
+  const static TRole ROLE_MASK;
 
 public:
   ZDocPlayer();
@@ -178,6 +180,36 @@ public:
   const ZObject3d *getCompleteData() const;
 
 };
+
+/***************************************************/
+class ZObject3dScanPlayer : public ZDocPlayer
+{
+public:
+  ZObject3dScanPlayer();
+  ZObject3dScanPlayer(ZStackObject* data, TRole role);
+
+public:
+//  void labelStack(ZStack *stack) const;
+//  void labelStack(ZStack *stack, int value) const;
+//  void labelStack(Stack *stack, int *offset, int value) const;
+//  void labelStack(Stack *stack, int *offset, int value,
+//                  int xIntv, int yIntv, int zIntv) const;
+//  ZStack* toStack() const;
+//  void paintStack(ZStack *stack) const;
+//  void paintStack(
+//        const std::vector<Stack*> &stackArray,
+//        const int *offset, int xIntv, int yIntv, int zIntv) const;
+
+//  int getLabel() const;
+//  ZSwcTree* getSwcDecoration() const;
+//  Z3DGraph get3DGraph() const;
+//  ZJsonObject toJsonObject() const;
+  QString getTypeName() const { return "Object3dScan"; }
+
+  const ZObject3dScan *getCompleteData() const;
+
+};
+
 
 /***************************************************/
 class ZSparseObjectPlayer : public ZDocPlayer
