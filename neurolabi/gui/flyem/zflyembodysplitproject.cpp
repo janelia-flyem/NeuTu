@@ -27,7 +27,7 @@
 
 ZFlyEmBodySplitProject::ZFlyEmBodySplitProject(QObject *parent) :
   QObject(parent), m_bodyId(-1), m_dataFrame(NULL), m_resultWindow(NULL),
-  m_quickViewWindow(NULL), m_isBookmarkVisible(true)
+  m_quickViewWindow(NULL), m_isBookmarkVisible(true), m_showingBodyMask(false)
 {
 }
 
@@ -461,6 +461,7 @@ void ZFlyEmBodySplitProject::viewPreviousSlice()
     getDataFrame()->view()->stepSlice(-1);
     getDataFrame()->view()->blockRedraw(false);
     viewFullGrayscale();
+    updateBodyMask();
   }
 }
 
@@ -471,6 +472,7 @@ void ZFlyEmBodySplitProject::viewNextSlice()
     getDataFrame()->view()->stepSlice(1);
     getDataFrame()->view()->blockRedraw(false);
     viewFullGrayscale();
+    updateBodyMask();
   }
 }
 
@@ -504,43 +506,52 @@ void ZFlyEmBodySplitProject::viewFullGrayscale()
   }
 }
 
-void ZFlyEmBodySplitProject::showBodyMask()
+void ZFlyEmBodySplitProject::updateBodyMask()
 {
-  ZDvidReader reader;
-  if (reader.open(getDvidTarget())) {
-    ZStackFrame *frame = getDataFrame();
-    if (frame != NULL) {
-      int currentSlice = frame->view()->sliceIndex();
+  ZStackFrame *frame = getDataFrame();
+  if (frame != NULL) {
+    frame->document()->removeObject(ZDocPlayer::ROLE_MASK, true);
+    if (showingBodyMask()) {
+      ZDvidReader reader;
+      if (reader.open(getDvidTarget())) {
+        int currentSlice = frame->view()->sliceIndex();
 
-      ZRect2d rectRoi = frame->document()->getRect2dRoi();
-      ZIntPoint offset = frame->document()->getStackOffset();
-      if (!rectRoi.isValid()) {
-        int width = frame->document()->getStackWidth();
-        int height = frame->document()->getStackHeight();
-        rectRoi.set(offset.getX(), offset.getY(), width, height);
-      }
-
-      int z = currentSlice + offset.getZ();
-      ZStack *stack = reader.readBodyLabel(
-            rectRoi.getX0(), rectRoi.getY0(), z,
-            rectRoi.getWidth(), rectRoi.getHeight(), 1);
-      std::map<int, ZObject3dScan*> *bodySet =
-          ZObject3dScan::extractAllObject(
-            (uint64_t*) stack->array8(), stack->width(), stack->height(), 1,
-            stack->getOffset().getZ(), NULL);
-
-      for (std::map<int, ZObject3dScan*>::const_iterator iter = bodySet->begin();
-           iter != bodySet->end(); ++iter) {
-        int label = iter->first;
-        ZObject3dScan *obj = iter->second;
-        if (label > 0) {
-          frame->document()->addObject(obj, ZDocPlayer::ROLE_MASK, false);
-        } else {
-          delete obj;
+        ZRect2d rectRoi = frame->document()->getRect2dRoi();
+        ZIntPoint offset = frame->document()->getStackOffset();
+        if (!rectRoi.isValid()) {
+          int width = frame->document()->getStackWidth();
+          int height = frame->document()->getStackHeight();
+          rectRoi.set(offset.getX(), offset.getY(), width, height);
         }
-      }
 
-      delete stack;
+        int z = currentSlice + offset.getZ();
+        ZStack *stack = reader.readBodyLabel(
+              rectRoi.getX0(), rectRoi.getY0(), z,
+              rectRoi.getWidth(), rectRoi.getHeight(), 1);
+        std::map<int, ZObject3dScan*> *bodySet =
+            ZObject3dScan::extractAllObject(
+              (uint64_t*) stack->array8(), stack->width(), stack->height(), 1,
+              stack->getOffset().getZ(), NULL);
+
+        frame->document()->blockSignals(true);
+        for (std::map<int, ZObject3dScan*>::const_iterator iter = bodySet->begin();
+             iter != bodySet->end(); ++iter) {
+          int label = iter->first;
+          ZObject3dScan *obj = iter->second;
+          if (label > 0) {
+            obj->translate(
+                  stack->getOffset().getX(), stack->getOffset().getY(), 0);
+            frame->document()->addObject(obj, ZDocPlayer::ROLE_MASK, false);
+          } else {
+            delete obj;
+          }
+        }
+        frame->document()->blockSignals(false);
+        frame->document()->notifyObject3dScanModified();
+        frame->document()->notifyPlayerChanged(ZDocPlayer::ROLE_MASK);
+
+        delete stack;
+      }
     }
   }
 }

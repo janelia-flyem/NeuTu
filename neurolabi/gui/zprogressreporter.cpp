@@ -2,14 +2,14 @@
 #include <iostream>
 
 ZProgressReporter::ZProgressReporter() : m_progress(0), m_scale(1.0),
-  m_sectionCount(0)
+  m_sessionCount(0)
 {
 }
 
 void ZProgressReporter::start()
 {
-  m_sectionCount++;
-  if (m_sectionCount == 1) {
+  m_sessionCount++;
+  if (m_sessionCount == 1) {
     open();
     m_progress = 0;
     m_scale = 1.0;
@@ -19,8 +19,8 @@ void ZProgressReporter::start()
 
 void ZProgressReporter::end()
 {
-  m_sectionCount--;
-  if (m_sectionCount == 0) {
+  m_sessionCount--;
+  if (m_sessionCount == 0) {
     close();
   }
 }
@@ -63,13 +63,13 @@ void ZProgressReporter::pull()
 void ZProgressReporter::start(double scale)
 {
   startSubprogress(scale);
-  ++m_sectionCount;
+  ++m_sessionCount;
 }
 
 void ZProgressReporter::end(double scale)
 {
   endSubprogress(scale);
-  --m_sectionCount;
+  --m_sessionCount;
 }
 
 void ZProgressReporter::startSubprogress(double scale)

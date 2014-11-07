@@ -556,9 +556,6 @@ void FlyEmBodySplitProjectDialog::viewNextSlice()
 
 void FlyEmBodySplitProjectDialog::showBodyMask(bool on)
 {
-  if (on) {
-    m_project.showBodyMask();
-  } else {
-    //m_project.hideBodyMask();
-  }
+  m_project.setShowingBodyMask(on);
+  m_project.updateBodyMask();
 }

@@ -428,7 +428,7 @@ void ZFlyEmRoiDialog::prepareQuickLoad(int z, bool waitForDone)
     std::string lowresPath =
         target.getLocalLowResGrayScalePath(m_xintv, m_xintv, 0, z);
 
-    if (!QFileInfo(lowresPath.c_str()).exists()) {
+    if (!lowresPath.empty() && !QFileInfo(lowresPath.c_str()).exists()) {
       QString threadId = getQuickLoadThreadId(z);
       if (!isPreparingQuickLoad(z)) { //Create new thread
           QFuture<void> future =QtConcurrent::run(
@@ -673,6 +673,7 @@ void ZFlyEmRoiDialog::loadGrayscale(int z)
 
   if (loading) {
     m_isLoadingGrayScale = true;
+    resetProgress();
     startProgress();
     QtConcurrent::run(
           this, &ZFlyEmRoiDialog::loadGrayscaleFunc, z, lowres);

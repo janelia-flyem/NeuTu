@@ -64,7 +64,11 @@ public:
   void viewPreviousSlice();
   void viewNextSlice();
   void viewFullGrayscale();
-  void showBodyMask();
+  void updateBodyMask();
+
+  void setShowingBodyMask(bool state){
+    m_showingBodyMask = state;
+  }
 
 public slots:
   void showDataFrame() const;
@@ -83,6 +87,9 @@ public slots:
   void shallowClearQuickViewWindow();
 
 private:
+  bool showingBodyMask() const { return m_showingBodyMask; }
+
+private:
   ZDvidTarget m_dvidTarget;
   int m_bodyId;
   ZStackFrame *m_dataFrame;
@@ -91,6 +98,7 @@ private:
   ZFlyEmBookmarkArray m_bookmarkArray;
   std::vector<ZStackObject*> m_bookmarkDecoration;
   bool m_isBookmarkVisible;
+  bool m_showingBodyMask;
 };
 
 #endif // ZFLYEMBODYSPLITPROJECT_H
