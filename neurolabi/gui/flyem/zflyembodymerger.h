@@ -5,6 +5,8 @@
 #include <QMap>
 #include <QQueue>
 
+#include "tz_stdint.h"
+
 class ZFlyEmBodyMerger
 {
 public:
