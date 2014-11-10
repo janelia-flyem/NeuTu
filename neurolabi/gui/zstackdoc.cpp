@@ -804,50 +804,23 @@ void ZStackDoc::selectHitSwcTreeNodeFloodFilling(ZSwcTree *tree)
   notifySelectionAdded(oldSelected, newSelected);
 }
 
-void ZStackDoc::notifySelectionChanged(
-    const QList<Swc_Tree_Node *> &selected,
-    const QList<Swc_Tree_Node *> &deselected)
-{
-  if (!isSelectionSlient()) {
-    if (!selected.empty() || !deselected.empty()) {
-      emit swcTreeNodeSelectionChanged(selected, deselected);
-    }
+#define DEFINE_NOTIFY_SELECTION_CHANGED(Type, Signal) \
+  void ZStackDoc::notifySelectionChanged(\
+     const QList<Type *> &selected, \
+     const QList<Type *> &deselected) \
+  {\
+    if (!isSelectionSlient()) {\
+      if (!selected.empty() || !deselected.empty()) {\
+        emit Signal(selected, deselected);\
+      }\
+    }\
   }
-}
 
-void ZStackDoc::notifySelectionChanged(
-    const QList<ZSwcTree *> &selected,
-    const QList<ZSwcTree *> &deselected)
-{
-  if (!isSelectionSlient()) {
-    if (!selected.empty() || !deselected.empty()) {
-      emit swcSelectionChanged(selected, deselected);
-    }
-  }
-}
-
-void ZStackDoc::notifySelectionChanged(
-    const QList<ZPunctum *> &selected,
-    const QList<ZPunctum *> &deselected)
-{
-  if (!isSelectionSlient()) {
-    if (!selected.empty() || !deselected.empty()) {
-      emit punctaSelectionChanged(selected, deselected);
-    }
-  }
-}
-
-void ZStackDoc::notifySelectionChanged(
-    const QList<ZLocsegChain *> &selected,
-    const QList<ZLocsegChain *> &deselected)
-{
-  if (!isSelectionSlient()) {
-    if (!selected.empty() || !deselected.empty()) {
-      emit chainSelectionChanged(selected, deselected);
-    }
-  }
-}
-
+DEFINE_NOTIFY_SELECTION_CHANGED(Swc_Tree_Node, swcTreeNodeSelectionChanged)
+DEFINE_NOTIFY_SELECTION_CHANGED(ZSwcTree, swcSelectionChanged)
+DEFINE_NOTIFY_SELECTION_CHANGED(ZPunctum, punctaSelectionChanged)
+DEFINE_NOTIFY_SELECTION_CHANGED(ZLocsegChain, chainSelectionChanged)
+DEFINE_NOTIFY_SELECTION_CHANGED(ZStackObject, objectSelectionChanged)
 
 void ZStackDoc::selectHitSwcTreeNodeConnection(ZSwcTree *tree)
 {
@@ -2599,9 +2572,9 @@ void ZStackDoc::importSwc(QStringList fileList, LoadObjectOption objopt)
       ZSwcTree *tree = new ZSwcTree();
       tree->load(file.toStdString());
       addSwcTree(tree, true);
-    } else if (file.endsWith(".json", Qt::CaseInsensitive))  {
-      importSynapseAnnotation(file.toStdString());
-    }
+    } /*else if (file.endsWith(".json", Qt::CaseInsensitive))  {
+      importSynapseAnnotation(file.toStdString(), 0);
+    }*/
   }
   emit swcModified();
 }
@@ -4177,6 +4150,13 @@ void ZStackDoc::setSelected(ZStackObject *obj,  bool selecting)
   }
 }
 
+void ZStackDoc::toggleSelected(ZStackObject *obj)
+{
+  if (obj != NULL) {
+    setSelected(obj, !obj->isSelected());
+  }
+}
+
 TStackObjectSet &ZStackDoc::getSelected(ZStackObject::EType type)
 {
   return m_objectGroup.getSelectedSet(type);
@@ -4263,11 +4243,25 @@ bool ZStackDoc::enhanceLine()
   return false;
 }
 
-bool ZStackDoc::importSynapseAnnotation(const std::string &filePath)
+bool ZStackDoc::importSynapseAnnotation(const std::string &filePath,
+                                        int s)
 {
   FlyEm::ZSynapseAnnotationArray synapseArray;
   if (synapseArray.loadJson(filePath)) {
-    std::vector<ZPunctum*> puncta = synapseArray.toPuncta(10.0);
+    std::vector<ZPunctum*> puncta;
+    switch (s) {
+    case 0:
+      puncta = synapseArray.toPuncta(10.0);
+      break;
+    case 1:
+      puncta = synapseArray.toTBarPuncta(10.0);
+      break;
+    case 2:
+      puncta = synapseArray.toPsdPuncta(10.0);
+      break;
+    }
+
+//    = synapseArray.toPuncta(10.0);
     blockSignals(true);
     for (std::vector<ZPunctum*>::iterator iter = puncta.begin();
          iter != puncta.end(); ++iter) {
@@ -4448,7 +4442,7 @@ bool ZStackDoc::loadFile(const QString &filePath, bool emitMessage)
   case ZFileType::SYNAPSE_ANNOTATON_FILE:
     if (importSynapseAnnotation(filePath.toStdString())) {
       if (emitMessage) {
-        emit swcModified();
+        emit punctaModified();
       }
     } else {
       return false;

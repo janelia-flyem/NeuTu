@@ -37,6 +37,15 @@ void Set_Color(Rgb_Color *color, uint8_t r, uint8_t g, uint8_t b)
   color->b = b;
 }
 
+void Set_Color_From_Int(Rgb_Color *color, int c)
+{
+  c <<= 8;
+  c >>= 8;
+  color->b = c >> 16;
+  color->g = (c >> 8) & 0x000000FF;
+  color->r = c & 0x000000FF;
+}
+
 /*
  * See http://alvyray.com/Papers/hsv2rgb.htm for more details.
  */

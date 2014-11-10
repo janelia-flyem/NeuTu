@@ -467,7 +467,9 @@ HEADERS += mainwindow.h \
     zpunctumcolorscheme.h \
     zstackpatch.h \
     zrect2d.h \
-    zobjectcolorscheme.h
+    zobjectcolorscheme.h \
+    flyem/zflyembodymerger.h \
+    synapseimportdialog.h
 
 FORMS += settingdialog.ui \
     frameinfodialog.ui \
@@ -522,7 +524,8 @@ FORMS += settingdialog.ui \
     zflyemroidialog.ui \
     newprojectmainwindow.ui \
     shapepaperdialog.ui \
-    dvidoperatedialog.ui
+    dvidoperatedialog.ui \
+    synapseimportdialog.ui
 SOURCES += main.cpp \
     mainwindow.cpp \
     zstackview.cpp \
@@ -787,7 +790,9 @@ SOURCES += main.cpp \
     zpunctumcolorscheme.cpp \
     zstackpatch.cpp \
     zrect2d.cpp \
-    zobjectcolorscheme.cpp
+    zobjectcolorscheme.cpp \
+    flyem/zflyembodymerger.cpp \
+    synapseimportdialog.cpp
 
 OTHER_FILES += \
     extlib.pri

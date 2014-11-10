@@ -673,7 +673,7 @@ int main(int argc, char *argv[])
   Kill_Stack(stack);
 #endif
 
-#if 1
+#if 0
   Stack *stack = Read_Stack("../data/test.tif");
   Sp_Grow_Workspace *sgw = New_Sp_Grow_Workspace();
   sgw->wf = Stack_Voxel_Weight_I;
@@ -748,6 +748,10 @@ int main(int argc, char *argv[])
 
   Stack_Sp_Grow_Draw_Result(canvas, path, sgw);
   Write_Stack("../data/test2.tif", canvas);
+#endif
+
+#if 1
+
 #endif
 
   return 0;

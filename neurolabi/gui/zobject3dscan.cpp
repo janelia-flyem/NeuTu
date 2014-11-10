@@ -649,7 +649,7 @@ const ZObject3dScan::TEvent ZObject3dScan::EVENT_OBJECT_CANONIZED =
     0x8 | ZObject3dScan::EVENT_OBJECT_VIEW_CHANGED;
 
 
-ZObject3dScan::ZObject3dScan() : m_isCanonized(true)
+ZObject3dScan::ZObject3dScan() : m_isCanonized(true), m_label(0)
 {
   setTarget(OBJECT_CANVAS);
   m_type = ZStackObject::TYPE_OBJECT3D_SCAN;
@@ -1795,6 +1795,10 @@ void ZObject3dScan::display(
 {
   UNUSED_PARAMETER(style);
 #if _QT_GUI_USED_
+  if (isSelected()) {
+    return;
+  }
+
   bool isProj = (slice == -1);
 
   int z = slice + iround(painter.getOffset().z());
@@ -1900,14 +1904,31 @@ ZObject3dScan ZObject3dScan::getSlice(int minZ, int maxZ) const
 {
   ZObject3dScan slice;
   for (size_t i = 0; i < getStripeNumber(); ++i) {
-    if (m_stripeArray[i].getZ() >= minZ) {
-      if (m_stripeArray[i].getZ() <= maxZ) {
-        slice.addStripe(m_stripeArray[i], false);
+    const ZObject3dStripe &stripe = m_stripeArray[i];
+    if (stripe.getZ() >= minZ) {
+      if (stripe.getZ() <= maxZ) {
+        slice.addStripe(stripe, false);
       }
     }
   }
 
+  if (isCanonized()) {
+    slice.setCanonized(true);
+  }
+
   return slice;
+}
+
+bool ZObject3dScan::hit(double x, double y, double z)
+{
+  for (size_t i = 0; i < getStripeNumber(); ++i) {
+    const ZObject3dStripe &stripe = m_stripeArray[i];
+    if (stripe.contains(x, y, z)) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 ZPoint ZObject3dScan::getCentroid() const

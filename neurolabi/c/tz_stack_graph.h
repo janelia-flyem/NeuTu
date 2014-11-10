@@ -72,13 +72,16 @@ double Stack_Graph_Workspace_Dist(const Stack_Graph_Workspace *sgw, int index);
 /*@brief Geodesic distance functions
  *
  */
-/* argv[0]: d; argv[1]: v1; argv[2]: v2;*/
+/* argv[0]: d; argv[1]: v1; argv[2]: v2; additional parameters: ...*/
 double Stack_Voxel_Weight(void *argv);
 double Stack_Voxel_Weight_I(void *argv);
 double Stack_Voxel_Weight_R(void *argv);
 double Stack_Voxel_Weight_A(void *argv);
 /* argv[3]: alpha; argv[4]: beta */
 double Stack_Voxel_Weight_S(void *argv);
+
+/* color weight */
+double Stack_Voxel_Weight_C(void *argv);
 
 Graph* Stack_Graph(const Stack *stack, int conn, const int *range, 
 		   Weight_Func_t *wf);

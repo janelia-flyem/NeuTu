@@ -8,6 +8,7 @@
 #include "tz_stack.h"
 #include "tz_stack_draw.h"
 #include "tz_stack_lib.h"
+#include "tz_sp_grow.h"
 #include "tz_stack_threshold.h"
 #include "tz_stack_utils.h"
 #include "tz_int_histogram.h"
@@ -835,7 +836,7 @@ int main(int argc, char *argv[])
 
 #endif
 
-#if 1
+#if 0
   Stack *stack = Make_Stack(GREY, 3, 3, 1);
   Zero_Stack(stack);
   Set_Stack_Pixel(stack, 1, 1, 0, 0, 1);
@@ -846,6 +847,105 @@ int main(int argc, char *argv[])
   Print_Stack_Value(out);
 #endif
 
+#if 0
+  double t[3] = {1, 2 * 256 + 12, 255 * 256};
+  printf("%g\n", Stack_Voxel_Weight_C(t));
+
+#endif
+
+#if 0
+  Stack *stack = Read_Stack_U("../data/vr/label.tif");
+  Stack_Binarize_Level(stack, 1);
+  Stack_Label_Large_Objects_N(stack, NULL, 1, 2, 2000, 4);
+
+  Stack_Threshold_Binarize(stack, 2);
+  Write_Stack("../data/vr/label1.tif", stack);
+#endif
+
+#if 0
+  Stack *stack = Read_Stack_U("../data/vr/label.tif");
+  Stack_Binarize_Level(stack, 5);
+  Stack_Label_Large_Objects_N(stack, NULL, 1, 2, 5000, 4);
+
+  Stack_Threshold_Binarize(stack, 2);
+  Write_Stack("../data/vr/label5.tif", stack);
+#endif
+
+
+#if 1
+  Stack *stack = Read_Stack_U("../data/vr/original.tif");
+
+  /* Make mask */
+  Stack *mask = Make_Stack(GREY, Stack_Width(stack), Stack_Height(stack),
+			   Stack_Depth(stack));
+  Zero_Stack(mask);
+
+  Stack *overallLabel = Copy_Stack(mask);
+
+  Stack *labelStack[5];
+
+  size_t voxelNumber = Stack_Voxel_Number(mask);
+  size_t k;
+
+  Struct_Element *se = Make_Disc_Se(5);
+
+  int i;
+  char filePath[100];
+  for (i = 0; i < 5; ++i) {
+    sprintf(filePath, "../data/vr/label%d.tif", i + 1);
+    labelStack[i] = Read_Stack_U(filePath);
+    //labelStack[i] = Stack_Erode_Fast(labelStack[i], NULL, se);
+    Stack_Or(mask, labelStack[i], mask);
+    for (k = 0; k < voxelNumber; ++k) {
+      if (labelStack[i]->array[k] == 1) {
+        overallLabel->array[k] = i + 1;
+      }
+    }
+  }
+  
+  for (k = 0; k < voxelNumber; ++k) {
+    if (mask->array[k] == 1) {
+      mask->array[k] = SP_GROW_SOURCE;
+    }
+  }
+
+  Sp_Grow_Workspace *sgw = New_Sp_Grow_Workspace();
+  sgw->size = voxelNumber;
+  Sp_Grow_Workspace_Set_Mask(sgw, mask->array);
+  sgw->wf = Stack_Voxel_Weight_C;
+  sgw->sp_option = 1;
+
+  tic();
+  Int_Arraylist *path = Stack_Sp_Grow(stack, NULL, 0, NULL, 0, sgw);
+  printf("time: %llu\n", toc());
+
+  Kill_Int_Arraylist(path);
+
+  for (k = 0; k < voxelNumber; ++k) {
+    if (mask->array[k] == 0) {
+      int idx = (int) k;
+      while (overallLabel->array[idx] == 0) {
+        idx = sgw->path[idx];
+      }
+      int label = overallLabel->array[idx];
+      idx = (int) k;
+      while (overallLabel->array[idx] == 0) {
+        overallLabel->array[idx] = label;
+        idx = sgw->path[idx];
+      }
+    }
+  }
+
+  for (k = 0; k < voxelNumber; ++k) {
+    if (overallLabel->array[k] == 1 || overallLabel->array[k] == 5) {
+      overallLabel->array[k] = 0;
+    }
+  }
+
+  Write_Stack("../data/test.tif", overallLabel);   
+  
+  Kill_Stack(stack);
+#endif
 
   return 0;
 }

@@ -146,6 +146,7 @@
 #include "shapepaperdialog.h"
 #include "zsleeper.h"
 #include "dvidoperatedialog.h"
+#include "synapseimportdialog.h"
 
 #include "z3dcanvas.h"
 #include "z3dapplication.h"
@@ -358,6 +359,7 @@ void MainWindow::initDialog()
         getSettings().value("ShapePaperDialogGeometry").toByteArray());
 
   m_dvidOpDlg = new DvidOperateDialog;
+  m_synapseDlg = new SynapseImportDialog;
 #endif
 }
 
@@ -3296,25 +3298,52 @@ void MainWindow::on_actionAddFlyEmNeuron_Network_triggered()
 
 void MainWindow::on_actionSynapse_Annotation_triggered()
 {
+#ifdef _FLYEM_
   QStringList fileList = getOpenFileNames(
         "Load Synapse Annotations", "JSON files (*.json)");
 
-#if 0
-      QFileDialog::getOpenFileNames(this, tr("Load Synapse Annotations"),
-                                   m_lastOpenedFilePath,
-                                   tr("JSON files (*.json)"),
-                                    NULL/*, QFileDialog::DontUseNativeDialog*/);
-#endif
   if (!fileList.isEmpty()) {
-    ZStackFrame *frame = new ZStackFrame;
-    frame->load(fileList);
+    if (m_synapseDlg->exec()) {
+      ZStackFrame *frame = new ZStackFrame;
 
-    frame->open3DWindow(this);
-    delete frame;
+      FlyEm::ZSynapseAnnotationArray synapseArray;
 
-    QApplication::processEvents(); //force file dialog to close.
+      double radius = 10.0;
+      frame->document()->blockSignals(true);
+      foreach (QString filePath, fileList) {
+        std::vector<ZPunctum*> puncta;
+        if (synapseArray.loadJson(filePath.toStdString())) {
+          switch (m_synapseDlg->getSynapseSelection()) {
+          case 0:
+            puncta = synapseArray.toPuncta(radius);
+            break;
+          case 1:
+            puncta = synapseArray.toTBarPuncta(radius);
+            break;
+          case 2:
+            puncta = synapseArray.toPsdPuncta(radius);
+            break;
+          }
+        }
+
+        for (std::vector<ZPunctum*>::iterator iter = puncta.begin();
+             iter != puncta.end(); ++iter) {
+          frame->document()->addPunctum(*iter);
+        }
+      }
+      frame->document()->blockSignals(false);
+      frame->document()->notifyPunctumModified();
+
+      frame->open3DWindow(this);
+      delete frame;
+
+
+    }
+
+//    QApplication::processEvents(); //force file dialog to close.
                                    //might be a bug in qt
   }
+#endif
 }
 
 void MainWindow::on_actionPosition_triggered()

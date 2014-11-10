@@ -479,7 +479,18 @@ public: /* puncta related methods */
   bool pushLocsegChain(ZStackObject *obj);
   void pushSelectedLocsegChain();
 
-  bool importSynapseAnnotation(const std::string &filePath);
+//  enum ESynapseSelection {
+//    SYNAPSE_ALL, SYNAPSE_TBAR, SYNAPSE_PSD
+//  };
+
+  /*!
+   * \brief importSynapseAnnotation
+   * \param filePath
+   * \param s 0: SYNAPSE_ALL; 1: SYNAPSE_TBAR; 2: SYNAPSE_PSD
+   * \return
+   */
+  bool importSynapseAnnotation(const std::string &filePath,
+                               int s = 0);
 
   ZStackObject *hitTest(double x, double y, double z);
   ZStackObject *hitTest(double x, double y);
@@ -617,6 +628,7 @@ public: /* puncta related methods */
   bool getLastStrokePoint(double *x, double *y) const;
 
   void setSelected(ZStackObject *obj,  bool selecting = true);
+  void toggleSelected(ZStackObject *obj);
   const TStackObjectSet& getSelected(ZStackObject::EType type) const;
   TStackObjectSet &getSelected(ZStackObject::EType type);
 
@@ -708,15 +720,15 @@ public:
   template <typename T>
   void notifyDeselected(const QList<T*> &deselected);
 
-  void notifySelectionChanged(const QList<Swc_Tree_Node *> &selected,
-                              const QList<Swc_Tree_Node *> &deselected);
-  void notifySelectionChanged(const QList<ZSwcTree*> &selected,
-                              const QList<ZSwcTree*> &deselected);
-  void notifySelectionChanged(const QList<ZPunctum*> &selected,
-                              const QList<ZPunctum*> &deselected);
-  void notifySelectionChanged(const QList<ZLocsegChain*> &selected,
-                              const QList<ZLocsegChain*> &deselected);
+#define DECLARE_NOTIFY_SELECTION_CHANGED(Type)\
+  void notifySelectionChanged(const QList<Type *> &selected,\
+                              const QList<Type *> &deselected)
 
+  DECLARE_NOTIFY_SELECTION_CHANGED(Swc_Tree_Node);
+  DECLARE_NOTIFY_SELECTION_CHANGED(ZSwcTree);
+  DECLARE_NOTIFY_SELECTION_CHANGED(ZPunctum);
+  DECLARE_NOTIFY_SELECTION_CHANGED(ZLocsegChain);
+  DECLARE_NOTIFY_SELECTION_CHANGED(ZStackObject);
 
 public:
   inline QAction* getUndoAction() { return m_undoAction; }
@@ -876,6 +888,9 @@ signals:
   void objectModified();
   void stackTargetModified();
   void swcNetworkModified();
+
+  void objectSelectionChanged(QList<ZStackObject*> selected,
+                              QList<ZStackObject*> deselected);
   void punctaSelectionChanged(QList<ZPunctum*> selected,
                               QList<ZPunctum*> deselected);
   void chainSelectionChanged(QList<ZLocsegChain*> selected,
@@ -884,6 +899,8 @@ signals:
                            QList<ZSwcTree*> deselected);
   void swcTreeNodeSelectionChanged(QList<Swc_Tree_Node*> selected,
                                    QList<Swc_Tree_Node*> deselected);
+
+
   void punctumVisibleStateChanged();
   void chainVisibleStateChanged(ZLocsegChain* chain, bool visible);
   void swcVisibleStateChanged(ZSwcTree* swctree, bool visible);

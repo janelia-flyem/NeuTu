@@ -1797,6 +1797,7 @@ void ZStackPresenter::processEvent(ZInteractionEvent &event)
   case ZInteractionEvent::EVENT_STROKE_SELECTED:
   case ZInteractionEvent::EVENT_ALL_OBJECT_DESELCTED:
   case ZInteractionEvent::EVENT_OBJ3D_SELECTED:
+  case ZInteractionEvent::EVENT_OBJECT3D_SCAN_SELECTED:
     buddyView()->redrawObject();
     break;
   default:
@@ -1979,10 +1980,34 @@ void ZStackPresenter::process(const ZStackOperator &op)
             ZInteractionEvent::EVENT_STROKE_SELECTED);
     }
     break;
+  case ZStackOperator::OP_OBJECT3D_SCAN_SELECT_SINGLE:
+    buddyDocument()->deselectAllObject();
+    buddyDocument()->setSelected(op.getHitObject<ZObject3dScan>());
+    interactionEvent.setEvent(ZInteractionEvent::EVENT_OBJECT3D_SCAN_SELECTED);
+    break;
+  case ZStackOperator::OP_OBJECT3D_SCAN_SELECT_MULTIPLE:
+    buddyDocument()->setSelected(op.getHitObject<ZObject3dScan>());
+    interactionEvent.setEvent(ZInteractionEvent::EVENT_OBJECT3D_SCAN_SELECTED);
+    break;
   case ZStackOperator::OP_OBJECT3D_SELECT_SINGLE:
     buddyDocument()->deselectAllObject();
     buddyDocument()->setSelected(op.getHitObject<ZObject3d>());
     interactionEvent.setEvent(ZInteractionEvent::EVENT_OBJ3D_SELECTED);
+    break;
+  case ZStackOperator::OP_OBJECT3D_SCAN_TOGGLE_SELECT:
+    buddyDocument()->toggleSelected(op.getHitObject<ZObject3dScan>());
+    interactionEvent.setEvent(ZInteractionEvent::EVENT_OBJ3D_SELECTED);
+    break;
+  case ZStackOperator::OP_OBJECT3D_SCAN_TOGGLE_SELECT_SINGLE:
+  {
+    if (!op.getHitObject()->isSelected()) {
+      buddyDocument()->deselectAllObject();
+      buddyDocument()->setSelected(op.getHitObject<ZObject3dScan>());
+    } else {
+      buddyDocument()->deselectAllObject();
+    }
+    interactionEvent.setEvent(ZInteractionEvent::EVENT_OBJ3D_SELECTED);
+  }
     break;
   case ZStackOperator::OP_OBJECT3D_SELECT_MULTIPLE:
     buddyDocument()->setSelected(op.getHitObject<ZObject3d>());

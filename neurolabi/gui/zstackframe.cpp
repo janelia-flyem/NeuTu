@@ -163,6 +163,9 @@ void ZStackFrame::consumeDocument(ZStackDoc *doc)
   connect(m_doc.get(), SIGNAL(swcTreeNodeSelectionChanged(\
                                 QList<Swc_Tree_Node*>,QList<Swc_Tree_Node*>)),\
           m_view, SLOT(paintObject()));\
+  connect(m_doc.get(), SIGNAL(objectSelectionChanged(\
+                                QList<ZStackObject*>,QList<ZStackObject*>)),\
+          m_view, SLOT(paintObject(QList<ZStackObject*>,QList<ZStackObject*>)));\
   connect(m_doc.get(), SIGNAL(punctaSelectionChanged(QList<ZPunctum*>,QList<ZPunctum*>)),\
           m_view, SLOT(paintObject()));\
   connect(m_doc.get(), SIGNAL(chainVisibleStateChanged(ZLocsegChain*,bool)),\
@@ -348,7 +351,7 @@ int ZStackFrame::readStack(const char *filePath)
     emit stackLoaded();
     break;
   case ZFileType::JSON_FILE:
-    if (!m_doc->importSynapseAnnotation(filePath)) {
+    if (!m_doc->importSynapseAnnotation(filePath, 0)) {
       return ERROR_IO_READ;
     }
     break;

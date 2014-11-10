@@ -1493,6 +1493,39 @@ void ZStackView::paintObject()
   updateImageScreen();
 }
 
+void ZStackView::paintObject(
+    QList<ZStackObject *> &selected,
+    QList<ZStackObject *> &deselected)
+{
+  bool updatingObjectCanvas = false;
+  bool updatingImageCanvas = false;
+  foreach (ZStackObject *obj, selected) {
+    if (obj->getTarget() == ZStackObject::OBJECT_CANVAS) {
+      updatingObjectCanvas = true;
+    } else if (obj->getTarget() == ZStackObject::STACK_CANVAS) {
+      updatingImageCanvas = true;
+    }
+  }
+
+  foreach (ZStackObject *obj, deselected) {
+    if (obj->getTarget() == ZStackObject::OBJECT_CANVAS) {
+      updatingObjectCanvas = true;
+    } else if (obj->getTarget() == ZStackObject::STACK_CANVAS) {
+      updatingImageCanvas = true;
+    }
+  }
+
+  if (updatingObjectCanvas) {
+    paintObjectBuffer();
+  }
+
+  if (updatingImageCanvas) {
+    paintStackBuffer();
+  }
+
+  updateImageScreen();
+}
+
 void ZStackView::paintActiveDecorationBuffer()
 {
 #if 1

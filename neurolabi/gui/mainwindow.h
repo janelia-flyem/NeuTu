@@ -54,6 +54,7 @@ class ZFlyEmRoiDialog;
 class NewProjectMainWindow;
 class ShapePaperDialog;
 class DvidOperateDialog;
+class SynapseImportDialog;
 
 namespace Ui {
     class MainWindow;
@@ -601,6 +602,7 @@ private:
   ZFlyEmRoiDialog *m_roiDlg;
   ShapePaperDialog *m_shapePaperDlg;
   DvidOperateDialog *m_dvidOpDlg;
+  SynapseImportDialog *m_synapseDlg;
 
 
   //new project main window

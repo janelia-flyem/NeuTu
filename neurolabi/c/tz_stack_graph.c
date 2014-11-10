@@ -17,6 +17,7 @@
 #include "tz_geo3d_utils.h"
 #include "tz_math.h"
 #include "private/tz_graph_utils.c"
+#include "tz_color.h"
 
 Stack_Graph_Workspace* New_Stack_Graph_Workspace()
 {
@@ -251,6 +252,21 @@ double Stack_Voxel_Weight_S(void *argv)
      + 0.00001);
 
   return weight;
+}
+
+double Stack_Voxel_Weight_C(void *argv)
+{
+  double v1 = ((double*) argv)[1];
+  double v2 = ((double*) argv)[2];
+  double d = ((double*) argv)[0];
+  int c1 = iround(v1);
+  int c2 = iround(v2);
+  Rgb_Color color1;
+  Rgb_Color color2;
+  Set_Color_From_Int(&color1, c1);
+  Set_Color_From_Int(&color2, c2);
+
+  return (Rgb_Color_Hue_Diff(&color1, &color2) + 0.1) * d;
 }
 
 Graph* Stack_Graph(const Stack *stack, int conn, const int *range, 

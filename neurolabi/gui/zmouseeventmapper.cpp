@@ -102,6 +102,16 @@ void ZMouseEventLeftButtonReleaseMapper::processSelectionOperation(
                  event.getModifiers() == Qt::ControlModifier) {
         op.setOperation(ZStackOperator::OP_PUNCTA_SELECT_MULTIPLE);
       }
+      break;
+    case ZStackObject::TYPE_OBJECT3D_SCAN:
+      if (event.getModifiers() == Qt::NoModifier) {
+        op.setOperation(ZStackOperator::OP_OBJECT3D_SCAN_TOGGLE_SELECT_SINGLE);
+      } else if (event.getModifiers() == Qt::ShiftModifier) {
+        op.setOperation(ZStackOperator::OP_OBJECT3D_SCAN_SELECT_MULTIPLE);
+      } else if (event.getModifiers() == Qt::ControlModifier) {
+        op.setOperation(ZStackOperator::OP_OBJECT3D_SCAN_TOGGLE_SELECT);
+      }
+      break;
     default:
       break;
     }

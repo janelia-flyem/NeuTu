@@ -143,6 +143,8 @@ public slots:
   void paintStack();
   void paintMask();
   void paintObject();
+  void paintObject(QList<ZStackObject *> &selected,
+                   QList<ZStackObject *> &deselected);
   void paintActiveDecoration();
 
   void mouseReleasedInImageWidget(QMouseEvent *event);

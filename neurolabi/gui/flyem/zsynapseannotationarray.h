@@ -192,6 +192,9 @@ public:
 
   std::vector<ZPunctum*> toTBarPuncta(
       double radius, double minConfidence = 0.0) const;
+
+  std::vector<ZPunctum*> toPsdPuncta(
+      double radius, double minConfidence = 0.0) const;
 #endif
 
   ZWeightedPointArray toTBarPointArray(double radius,

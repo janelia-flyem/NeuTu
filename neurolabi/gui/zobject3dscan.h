@@ -190,6 +190,8 @@ public:
   bool load(const char *filePath);
   bool load(const std::string &filePath);
 
+  bool hit(double x, double y, double z);
+
   /*!
    * \brief Import a dvid object
    *
@@ -538,6 +540,7 @@ protected:
   mutable std::map<std::pair<int, int>, size_t> m_stripeMap;
   mutable std::map<size_t, std::pair<size_t, size_t> > m_indexSegmentMap;
   bool m_isCanonized;
+  uint64_t m_label;
   //mutable int *m_lastStripe;
 
   //SWIG has some problem recognizing const static type
