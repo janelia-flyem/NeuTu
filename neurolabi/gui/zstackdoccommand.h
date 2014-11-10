@@ -371,17 +371,15 @@ private:
   bool m_isInDoc;
 };
 
-class RemoveEmptyTree : public ZUndoCommand
+class RemoveEmptyTree : public CompositeCommand
 {
 public:
   RemoveEmptyTree(ZStackDoc *doc, QUndoCommand *parent = NULL);
   virtual ~RemoveEmptyTree();
-  void redo();
-  void undo();
 
 private:
   ZStackDoc *m_doc;
-  std::set<ZSwcTree*> m_emptyTreeSet;
+//  std::set<ZSwcTree*> m_emptyTreeSet;
 };
 
 //Not operation invariant

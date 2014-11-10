@@ -352,6 +352,8 @@ public:
   //void removeAllObj3d();
   //void removeAllSparseObject();
   std::set<ZSwcTree*> removeEmptySwcTree(bool deleteObject = true);
+  std::set<ZSwcTree*> getEmptySwcTreeSet() const;
+
   void removeAllSwcTree(bool deleteObject = true);
 
   //void addObject(ZStackObject *obj);

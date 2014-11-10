@@ -114,6 +114,24 @@ TStackObjectList ZStackObjectGroup::take(TObjectTest testFunc)
   return objSet;
 }
 
+TStackObjectList ZStackObjectGroup::take(
+    ZStackObject::EType type, TObjectTest testFunc)
+{
+  TStackObjectList objSet;
+  TStackObjectList &objList = getObjectList(type);
+  for (TStackObjectList::iterator iter = objList.begin();
+       iter != objList.end(); ++iter) {
+    ZStackObject *obj = *iter;
+    if (testFunc(obj)) {
+      objSet.append(obj);
+    }
+  }
+
+  removeObject(objSet.begin(), objSet.end(), false);
+
+  return objSet;
+}
+
 TStackObjectList ZStackObjectGroup::takeSameSource(
     ZStackObject::EType type, const std::string &source)
 {
@@ -429,6 +447,22 @@ TStackObjectList ZStackObjectGroup::takeSelected(ZStackObject::EType type)
 
   getObjectList(type).clear();
   getSelectedSet(type).clear();
+
+  return objSet;
+}
+
+TStackObjectList ZStackObjectGroup::getObjectList(
+    ZStackObject::EType type, TObjectTest testFunc) const
+{
+  TStackObjectList objSet;
+  const TStackObjectList &objList = getObjectList(type);
+  for (TStackObjectList::const_iterator iter = objList.begin();
+       iter != objList.end(); ++iter) {
+    ZStackObject *obj = const_cast<ZStackObject*>(*iter);
+    if (testFunc(obj)) {
+      objSet.append(obj);
+    }
+  }
 
   return objSet;
 }

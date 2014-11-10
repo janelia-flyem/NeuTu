@@ -3051,6 +3051,24 @@ std::set<ZSwcTree *> ZStackDoc::removeEmptySwcTree(bool deleteObject)
   return emptyTreeSet;
 }
 
+std::set<ZSwcTree*> ZStackDoc::getEmptySwcTreeSet() const
+{
+  std::set<ZSwcTree*> treeSet;
+
+  TStackObjectList objList = m_objectGroup.getObjectList(
+        ZStackObject::TYPE_SWC, ZStackObject::isEmptyTree);
+  for (TStackObjectList::iterator iter = objList.begin();
+       iter != objList.end(); ++iter) {
+    ZSwcTree *tree = dynamic_cast<ZSwcTree*>(*iter);
+    if (tree != NULL) {
+      treeSet.insert(tree);
+    }
+  }
+
+  return treeSet;
+}
+
+
 void ZStackDoc::removeAllSwcTree(bool deleteObject)
 {
   if (m_objectGroup.removeObject(ZStackObject::TYPE_SWC, deleteObject)) {

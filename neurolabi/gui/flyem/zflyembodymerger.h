@@ -14,6 +14,8 @@ public:
   typedef QQueue<TLableMapGroup> TLabelMapStack;
 
 private:
+  TLabelMapStack m_mapStack;
+  TLabelMapStack m_undoneMapStack;
 
 };
 

@@ -67,6 +67,7 @@ public:
    */
   ZStackObject* take(ZStackObject *obj);
   TStackObjectList take(TObjectTest testFunc);
+  TStackObjectList take(ZStackObject::EType type, TObjectTest testFunc);
   TStackObjectList take(ZStackObject::EType type);
   TStackObjectList takeSelected();
   TStackObjectList takeSelected(ZStackObject::EType type);
@@ -100,6 +101,8 @@ public:
 
   TStackObjectList& getObjectList(ZStackObject::EType type);
   const TStackObjectList& getObjectList(ZStackObject::EType type) const;
+  TStackObjectList getObjectList(ZStackObject::EType type,
+                                 TObjectTest testFunc) const;
 
   TStackObjectSet& getSelectedSet(ZStackObject::EType type);
   const TStackObjectSet& getSelectedSet(ZStackObject::EType type) const;

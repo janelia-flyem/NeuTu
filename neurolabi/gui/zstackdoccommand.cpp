@@ -1028,35 +1028,32 @@ void ZStackDocCommand::SwcEdit::RemoveSwc::undo()
 }
 
 ZStackDocCommand::SwcEdit::RemoveEmptyTree::RemoveEmptyTree(
-    ZStackDoc *doc, QUndoCommand *parent) : ZUndoCommand(parent), m_doc(doc)
+    ZStackDoc *doc, QUndoCommand *parent) :
+  CompositeCommand(doc, parent), m_doc(doc)
 {
-
+  if (doc != NULL) {
+    std::set<ZSwcTree*> emptyTreeSet = doc->getEmptySwcTreeSet();
+    for (std::set<ZSwcTree*>::iterator iter = emptyTreeSet.begin();
+         iter != emptyTreeSet.end(); ++iter) {
+      ZSwcTree *tree = *iter;
+      new ZStackDocCommand::SwcEdit::RemoveSwc(doc, tree, this);
+    }
+  }
 }
 
 ZStackDocCommand::SwcEdit::RemoveEmptyTree::~RemoveEmptyTree()
 {
-  for (std::set<ZSwcTree*>::iterator iter = m_emptyTreeSet.begin();
-       iter != m_emptyTreeSet.end(); ++iter) {
-    delete *iter;
-  }
+#ifdef _DEBUG_
+  std::cout << "RemoveEmptyTree destroyed" << std::endl;
+#endif
+
+
+//  for (std::set<ZSwcTree*>::iterator iter = m_emptyTreeSet.begin();
+//       iter != m_emptyTreeSet.end(); ++iter) {
+//    delete *iter;
+//  }
 }
 
-void ZStackDocCommand::SwcEdit::RemoveEmptyTree::redo()
-{
-  m_emptyTreeSet = m_doc->removeEmptySwcTree(false);
-  if (!m_emptyTreeSet.empty()) {
-    m_doc->notifySwcModified();
-  }
-}
-
-void ZStackDocCommand::SwcEdit::RemoveEmptyTree::undo()
-{
-  for (std::set<ZSwcTree*>::iterator iter = m_emptyTreeSet.begin();
-       iter != m_emptyTreeSet.end(); ++iter) {
-    m_doc->addSwcTree(*iter);
-  }
-  m_emptyTreeSet.clear();
-}
 
 ZStackDocCommand::SwcEdit::BreakForest::BreakForest(
     ZStackDoc *doc, QUndoCommand *parent) :
