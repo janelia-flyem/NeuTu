@@ -469,7 +469,10 @@ HEADERS += mainwindow.h \
     zrect2d.h \
     zobjectcolorscheme.h \
     flyem/zflyembodymerger.h \
-    synapseimportdialog.h
+    synapseimportdialog.h \
+    flyem/zflyembodymergeproject.h \
+    flyembodymergeprojectdialog.h \
+    zstackdvidgrayscalefactory.h
 
 FORMS += settingdialog.ui \
     frameinfodialog.ui \
@@ -525,7 +528,8 @@ FORMS += settingdialog.ui \
     newprojectmainwindow.ui \
     shapepaperdialog.ui \
     dvidoperatedialog.ui \
-    synapseimportdialog.ui
+    synapseimportdialog.ui \
+    flyembodymergeprojectdialog.ui
 SOURCES += main.cpp \
     mainwindow.cpp \
     zstackview.cpp \
@@ -792,7 +796,10 @@ SOURCES += main.cpp \
     zrect2d.cpp \
     zobjectcolorscheme.cpp \
     flyem/zflyembodymerger.cpp \
-    synapseimportdialog.cpp
+    synapseimportdialog.cpp \
+    flyem/zflyembodymergeproject.cpp \
+    flyembodymergeprojectdialog.cpp \
+    zstackdvidgrayscalefactory.cpp
 
 OTHER_FILES += \
     extlib.pri

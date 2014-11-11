@@ -192,6 +192,14 @@ public: /* attributes */
    */
   void setIntValue(int x, int y, int z, int c, int v);
 
+  /*!
+   * \brief Add value to the intensity of a voxel
+   *
+   * The resulted value will always be clipped to the largest possible pixel
+   * valuel.
+   */
+  void addIntValue(int x, int y, int z, int c, int v);
+
   /** @name raw data access
    *  array8(), array16(), array32(), array64() or arrayc() can be used to otain
    *  the raw data array of the stack. The choice of the function depends on the
@@ -527,6 +535,8 @@ public: /* processing routines */
   void downsampleMin(int xintv, int yintv, int zintv);
 
   void crop(const ZIntCuboid &cuboid);
+
+  void swapData(ZStack *stack);
 
 public:
   void initChannelColors();

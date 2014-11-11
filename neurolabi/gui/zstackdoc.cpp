@@ -6387,14 +6387,19 @@ void ZStackDoc::addObject(
     addObj3d(dynamic_cast<ZObject3d*>(obj));
     break;
   case ZStackObject::TYPE_OBJECT3D_SCAN:
-    if (role == ZDocPlayer::ROLE_MASK) {
-      int index = m_objectGroup.getObjectList(
-            ZStackObject::TYPE_OBJECT3D_SCAN).size() + 1;
-      QColor color = m_objColorSheme.getColor(index);
-      color.setAlpha(64);
-      obj->setColor(color);
+  {
+    ZObject3dScan *comObj = dynamic_cast<ZObject3dScan*>(obj);
+    if (comObj != NULL) {
+      if (role == ZDocPlayer::ROLE_MASK) {
+        int index = m_objectGroup.getObjectList(
+              ZStackObject::TYPE_OBJECT3D_SCAN).size() + 1;
+        QColor color = m_objColorSheme.getColor(abs((int) comObj->getLabel()));
+        color.setAlpha(64);
+        obj->setColor(color);
+      }
+      addObject3dScan(comObj);
     }
-    addObject3dScan(dynamic_cast<ZObject3dScan*>(obj));
+  }
     break;
   case ZStackObject::TYPE_LOCSEG_CHAIN:
     addLocsegChain(dynamic_cast<ZLocsegChain*>(obj));

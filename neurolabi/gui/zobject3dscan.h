@@ -492,6 +492,14 @@ public:
    */
   bool isAdjacentTo(ZObject3dScan &obj);
 
+  uint64_t getLabel() const {
+    return m_label;
+  }
+
+  void setLabel(uint64_t label) {
+    m_label = label;
+  }
+
   class Segment {
   public:
     Segment(int z = 0, int y = 0, int x0 = 0, int x1 = 0) :
@@ -606,6 +614,7 @@ std::map<int, ZObject3dScan*>* ZObject3dScan::extractAllObject(
         std::map<int, ZObject3dScan*>::iterator iter = bodySet->find(v);
         if (iter == bodySet->end()) {
           obj = new ZObject3dScan;
+          obj->setLabel(v);
           //(*bodySet)[v] = obj;
           bodySet->insert(std::map<int, ZObject3dScan*>::value_type(v, obj));
         } else {

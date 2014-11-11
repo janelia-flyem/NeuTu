@@ -853,6 +853,64 @@ void ZStack::setIntValue(int x, int y, int z, int c, int v)
   }
 }
 
+void ZStack::addIntValue(int x, int y, int z, int c, int v)
+{
+  if (isVirtual()) {
+    return;
+  }
+
+  x -= getOffset().getX();
+  y -= getOffset().getY();
+  z -= getOffset().getZ();
+
+  if (x < 0 || x >= width() || y < 0 || y >= height() || z < 0 || z >= depth() ||
+      c < 0 || c >= channelNumber()) {
+    return;
+  }
+
+  size_t stride_y = C_Stack::width(m_stack);
+  size_t stride_z = stride_y * C_Stack::height(m_stack);
+  size_t stride_c = stride_z * C_Stack::depth(m_stack);
+
+  Image_Array ima;
+  ima.array = m_stack->array;
+  size_t offset = stride_c * c + stride_z * z + stride_y * y +  x;
+
+  switch(kind()) {
+  case GREY:
+    v += ima.array[offset];
+    CLIP_VALUE(v, 0, 255);
+    ima.array[offset] = v;
+    break;
+  case GREY16:
+    v += ima.array16[offset];
+    CLIP_VALUE(v, 0, 65535);
+    ima.array16[offset] = v;
+    break;
+  case FLOAT32:
+    ima.array32[offset] += v;
+    break;
+  case FLOAT64:
+    ima.array64[offset] += v;
+    break;
+  case COLOR:
+  {
+    int rv = (v & 0x000000FF) + ima.arrayc[offset][0];
+    CLIP_VALUE(rv, 0, 255);
+    ima.arrayc[offset][0] = (uint8_t) (rv);
+
+    rv = ((v & 0x0000FF00) >> 8) + ima.arrayc[offset][1];
+    CLIP_VALUE(rv, 0, 255);
+    ima.arrayc[offset][1] = (uint8_t) (rv);
+
+    rv = ((v & 0x00FF0000) >> 16) + ima.arrayc[offset][2];
+    CLIP_VALUE(rv, 0, 255);
+    ima.arrayc[offset][2] = (uint8_t) (rv);
+  }
+    break;
+  }
+}
+
 int ZStack::getIntValue(int x, int y, int z, int c) const
 {
   if (isVirtual()) {
@@ -1918,4 +1976,26 @@ void ZStack::downsampleMin(int xintv, int yintv, int zintv)
 
     setData(result);
   }
+}
+
+#define ZSTACK_SWAP(v1, v2, T) \
+{\
+  T tmp;\
+  tmp = v1;\
+  v1 = v2;\
+  v2 = tmp;\
+}
+
+
+void ZStack::swapData(ZStack *stack)
+{
+  std::swap(m_stack, stack->m_stack);
+  std::swap(m_delloc, stack->m_delloc);
+  std::swap(m_source, stack->m_source);
+  std::swap(m_preferredZScale, stack->m_preferredZScale);
+  std::swap(m_resolution, stack->m_resolution);
+  std::swap(m_offset, stack->m_offset);
+
+  deprecateDependent(MC_STACK);
+  stack->deprecateDependent(MC_STACK);
 }

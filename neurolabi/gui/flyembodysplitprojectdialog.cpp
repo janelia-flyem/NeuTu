@@ -48,6 +48,8 @@ FlyEmBodySplitProjectDialog::FlyEmBodySplitProjectDialog(QWidget *parent) :
           this, SLOT(viewPreviousSlice()));
   connect(ui->nextPushButton, SIGNAL(clicked()),
           this, SLOT(viewNextSlice()));
+  connect(ui->fullGrayscalePushButton, SIGNAL(clicked()),
+          this, SLOT(viewFullGrayscale()));
 
   ui->bookmarkView->setModel(&m_bookmarkList);
 
@@ -552,6 +554,12 @@ void FlyEmBodySplitProjectDialog::viewPreviousSlice()
 void FlyEmBodySplitProjectDialog::viewNextSlice()
 {
   m_project.viewNextSlice();
+}
+
+void FlyEmBodySplitProjectDialog::viewFullGrayscale()
+{
+  m_project.viewFullGrayscale();
+  m_project.updateBodyMask();
 }
 
 void FlyEmBodySplitProjectDialog::showBodyMask(bool on)

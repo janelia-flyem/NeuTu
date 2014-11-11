@@ -222,6 +222,8 @@ using namespace std;
 #include "dvid/libdvidheader.h"
 #include "test/zarraytest.h"
 #include "zstackwatershed.h"
+#include "flyem/zflyembodymerger.h"
+#include "test/zflyembodymergertest.h"
 
 using namespace std;
 
@@ -250,6 +252,7 @@ int ZTest::runUnitTest(int argc, char *argv[])
   return 0;
 #endif
 }
+
 
 void ZTest::test(MainWindow *host)
 {
@@ -330,6 +333,7 @@ void ZTest::test(MainWindow *host)
   gv->show();
 
 #endif
+
 
 #if 0
   QProgressDialog *pd = new QProgressDialog("Testing", "Cancel", 0, 100, this);
@@ -13651,7 +13655,7 @@ void ZTest::test(MainWindow *host)
   result->save(GET_DATA_DIR + "/test.tif");
 #endif
 
-#if 1
+#if 0
   ZDvidReader reader;
   ZDvidTarget target;
   target.setFromSourceString("http:emdata2.int.janelia.org:-1:2b6c");
@@ -13677,5 +13681,28 @@ void ZTest::test(MainWindow *host)
   }
   allObj.canonize();
   allObj.save(GET_DATA_DIR + "/flyem/FIB/FIB25/border_obj/all.sobj");
+#endif
+
+#if 1
+  FlyEm::ZSynapseAnnotationArray synapseArray;
+  synapseArray.loadJson(GET_DATA_DIR +
+                        "/flyem/AL/al7d_whole448_tbar-predict_0.81.json");
+
+  ZWeightedPointArray ptArray = synapseArray.toTBarConfidencePointArray();
+  std::cout << ptArray.size() << " TBars" << std::endl;
+
+  int dsScale = 20;
+  for (ZWeightedPointArray::iterator iter = ptArray.begin();
+       iter != ptArray.end(); ++iter) {
+    *iter *= 1.0 / dsScale;
+  }
+
+  ZCuboid box = ptArray.getBoundBox();
+  box.print();
+
+  ZStackFactory factory;
+  ZStack *stack = factory.makeDensityMap(ptArray, 10.0);
+  stack->save(GET_DATA_DIR +
+              "/flyem/AL/al7d_whole448_tbar-predict_0.81_ds10.tif");
 #endif
 }

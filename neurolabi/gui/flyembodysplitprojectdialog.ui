@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>501</width>
-    <height>767</height>
+    <width>531</width>
+    <height>769</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -24,7 +24,7 @@
     <rect>
      <x>10</x>
      <y>10</y>
-     <width>481</width>
+     <width>511</width>
      <height>751</height>
     </rect>
    </property>
@@ -291,6 +291,23 @@
                </widget>
               </item>
               <item>
+               <widget class="Line" name="line_3">
+                <property name="orientation">
+                 <enum>Qt::Vertical</enum>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="fullGrayscalePushButton">
+                <property name="toolTip">
+                 <string>Full Grayscale</string>
+                </property>
+                <property name="text">
+                 <string>G</string>
+                </property>
+               </widget>
+              </item>
+              <item>
                <widget class="QPushButton" name="prevPushButton">
                 <property name="text">
                  <string>&lt;&lt;</string>
@@ -301,13 +318,6 @@
                <widget class="QPushButton" name="nextPushButton">
                 <property name="text">
                  <string>&gt;&gt;</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QCheckBox" name="fullGrayscaleCheckBox">
-                <property name="text">
-                 <string>Full</string>
                 </property>
                </widget>
               </item>

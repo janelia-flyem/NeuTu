@@ -69,6 +69,7 @@ public slots:
   void quickView();
   void viewPreviousSlice();
   void viewNextSlice();
+  void viewFullGrayscale();
 
   void resetSideView();
 

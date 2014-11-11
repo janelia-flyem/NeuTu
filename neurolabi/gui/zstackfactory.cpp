@@ -398,7 +398,6 @@ ZStack* ZStackFactory::makeDensityMap(
     }
   } else {
     stack = makeZeroStack(GREY, stackBox);
-    Filter_3d *filter = Gaussian_Filter_3d(sigma, sigma, sigma);
 
     for (ZWeightedPointArray::const_iterator iter = ptArray.begin();
          iter != ptArray.end(); ++iter) {
@@ -407,16 +406,19 @@ ZStack* ZStackFactory::makeDensityMap(
                          iround(pt.weight()));
     }
 
-    Stack *stack2 = Filter_Stack(stack->c_stack(), filter);
+    if (sigma > 0.0) {
+      Filter_3d *filter = Gaussian_Filter_3d(sigma, sigma, sigma);
+      Stack *stack2 = Filter_Stack(stack->c_stack(), filter);
 
-    Kill_FMatrix(filter);
+      Kill_FMatrix(filter);
 
-    ZStack *out = new ZStack;
-    out->consume(stack2);
-    out->setOffset(stack->getOffset());
+      ZStack *out = new ZStack;
+      out->consume(stack2);
+      out->setOffset(stack->getOffset());
 
-    delete stack;
-    stack = out;
+      delete stack;
+      stack = out;
+    }
   }
 
   return stack;
