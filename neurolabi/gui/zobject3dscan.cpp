@@ -1821,7 +1821,7 @@ void ZObject3dScan::display(
   }
 #else
   UNUSED_PARAMETER(&painter);
-  UNUSED_PARAMETER(z);
+  UNUSED_PARAMETER(slice);
   UNUSED_PARAMETER(style);
 #endif
 }

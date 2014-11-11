@@ -199,7 +199,7 @@ void ZObject3d::display(ZPainter &painter, int slice, Display_Style option) cons
   painter.restore();
 #else
   UNUSED_PARAMETER(&painter);
-  UNUSED_PARAMETER(z);
+  UNUSED_PARAMETER(slice);
   UNUSED_PARAMETER(option);
 #endif
 }
