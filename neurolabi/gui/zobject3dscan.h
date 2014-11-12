@@ -223,7 +223,7 @@ public:
   bool importDvidObjectBuffer(const std::vector<char> &byteArray);
 
   template<class T>
-  int scanArray(const T *array, int x, int y, int z, int width);
+  int scanArray(const T *array, int x, int y, int z, int width, int x0 = 0);
 
   /*!
    * \brief Draw a stack
@@ -563,7 +563,8 @@ protected:
 
 
 template<class T>
-int ZObject3dScan::scanArray(const T *array, int x, int y, int z, int width)
+int ZObject3dScan::scanArray(
+    const T *array, int x, int y, int z, int width, int x0)
 {
   if (array == NULL) {
     return 0;
@@ -591,6 +592,7 @@ int ZObject3dScan::scanArray(const T *array, int x, int y, int z, int width)
     }
   }
 
+  x += x0;
   addSegment(x, x + length - 1, false);
 
   return length;

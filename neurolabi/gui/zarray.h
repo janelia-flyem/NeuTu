@@ -2,8 +2,8 @@
 #define ZARRAY_H
 
 #include "mylib/array.h"
-#include "tz_stdint.h"
 #include <vector>
+#include "tz_stdint.h"
 
 class ZArray
 {
@@ -25,6 +25,13 @@ public:
   size_t getByteNumber() const;
 
   bool isEmpty() const;
+
+  /*!
+   * \brief Get the size of a certain dimension
+   *
+   * \return 1 if index is out of range
+   */
+  int getDim(int index);
 
   /*!
    * \brief Set all array elements to 0
@@ -54,6 +61,13 @@ public:
    * \return 0 if the array type is not UINT64_TYPE or the index is out of range.
    */
   uint64_t getUint64Value(size_t index) const;
+
+  /*!
+   * \brief Get the start coordinate of a certain dimension
+   *
+   * \return 0 if \a index is out of range.
+   */
+  int getStartCoordinate(int index) const;
 
 private:
   mylib::Array *m_data;

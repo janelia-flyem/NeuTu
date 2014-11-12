@@ -472,7 +472,9 @@ HEADERS += mainwindow.h \
     synapseimportdialog.h \
     flyem/zflyembodymergeproject.h \
     flyembodymergeprojectdialog.h \
-    zstackdvidgrayscalefactory.h
+    zstackdvidgrayscalefactory.h \
+    zstackdocreader.h \
+    flyem/zflyembodymergedoc.h
 
 FORMS += settingdialog.ui \
     frameinfodialog.ui \
@@ -799,7 +801,9 @@ SOURCES += main.cpp \
     synapseimportdialog.cpp \
     flyem/zflyembodymergeproject.cpp \
     flyembodymergeprojectdialog.cpp \
-    zstackdvidgrayscalefactory.cpp
+    zstackdvidgrayscalefactory.cpp \
+    zstackdocreader.cpp \
+    flyem/zflyembodymergedoc.cpp
 
 OTHER_FILES += \
     extlib.pri

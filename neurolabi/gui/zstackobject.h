@@ -15,6 +15,7 @@
  * for special purposes. There are some special characters put in the front
  * to specify the role of source IDs:
  *   '#': unique ID
+ *   '#.': source class (the class part should always ends with '#')
  *   '!': reserved ID
  */
 class ZStackObject

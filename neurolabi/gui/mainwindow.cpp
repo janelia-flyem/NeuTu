@@ -1407,52 +1407,6 @@ void MainWindow::openFile(const QString &fileName)
   QtConcurrent::run(this, &MainWindow::openFileFunc, fileName);
 }
 
-void MainWindow::openTraceProject(QString fileName)
-{
-  if (!fileName.isEmpty()) {
-    m_progress->setRange(0, 100);
-    m_progress->setValue(0);
-    m_progress->setLabelText(QString("Loading " + fileName + " ..."));
-    m_progress->show();
-
-    m_progress->setValue(25);
-    ZStackFrame *frame = new ZStackFrame(NULL);
-    fileName = QDir::cleanPath(fileName);
-    QString projFilePath = fileName;
-    if (projFilePath.endsWith(".trace")) {
-      projFilePath += "/" + ZStackFrame::defaultTraceProjectFile();
-    }
-
-    if (frame->loadTraceProject(projFilePath.toLocal8Bit().constData(),
-                                m_progress->findChild<QProgressBar*>())
-      == 0) {
-      setCurrentFile(fileName);
-      addStackFrame(frame);
-      m_progress->reset();
-    } else {
-      delete frame;
-      m_progress->reset();
-      reportFileOpenProblem(fileName);
-    }
-  }
-}
-
-void MainWindow::openTraceProject()
-{
-  QString fileName =
-      getOpenFileName(tr("Open Project"), tr("XML files (*.xml)"));
-#if 0
-      QFileDialog::getOpenFileName(this, tr("Open Project"),
-                                   m_lastOpenedFilePath,
-                                   tr("XML files (*.xml)"),
-                                   NULL/*, QFileDialog::DontUseNativeDialog*/);
-#endif
-  if (!fileName.isEmpty()) {
-    m_lastOpenedFilePath = fileName;
-    openTraceProject(fileName);
-  }
-}
-
 void MainWindow::addStackFrame(Stack *stack, bool isOwner)
 {
   if (stack != NULL) {
@@ -1742,32 +1696,6 @@ void MainWindow::importPuncta()
   }
 }
 
-void MainWindow::importGoodTube()
-{
-  QString dirpath = QFileDialog::getExistingDirectory(this, tr("Good Tube"),
-    ".", QFileDialog::ShowDirsOnly);
-
-  if (!dirpath.isEmpty()) {
-    if (currentStackFrame() != NULL) {
-      currentStackFrame()->document()->importGoodTube(dirpath.toLocal8Bit().constData());
-      currentStackFrame()->updateView();
-    }
-  }
-}
-
-void MainWindow::importBadTube()
-{
-  QString dirpath = QFileDialog::getExistingDirectory(this, tr("Bad Tube"),
-    ".", QFileDialog::ShowDirsOnly);
-
-  if (!dirpath.isEmpty()) {
-    if (currentStackFrame() != NULL) {
-      currentStackFrame()->document()->importBadTube(dirpath.toLocal8Bit().constData());
-      currentStackFrame()->updateView();
-    }
-  }
-}
-
 QString MainWindow::getOpenFileName(const QString &caption, const QString &filter)
 {
   QString fileName =
@@ -1990,13 +1918,8 @@ void MainWindow::openRecentFile()
   QAction *action = qobject_cast<QAction *>(sender());
   if (action) {
     QString filePath = action->data().toString();
-    if (filePath.endsWith(".xml") || filePath.endsWith(".trace")
-      || filePath.endsWith(".trace/")) {
-      openTraceProject(filePath);
-    } else {
-      m_lastOpenedFilePath = filePath;
-      openFile(filePath);
-    }
+    m_lastOpenedFilePath = filePath;
+    openFile(filePath);
   }
 }
 
@@ -2597,6 +2520,7 @@ void MainWindow::on_actionSave_triggered()
 
 void MainWindow::on_actionLoad_triggered()
 {
+#if 0
   QString dirpath =/*
       QFileDialog::getExistingDirectory(this, tr("Tracing Project"),
                                         ".", QFileDialog::ShowDirsOnly);*/
@@ -2644,6 +2568,7 @@ void MainWindow::on_actionLoad_triggered()
       }
     }
   }
+#endif
 }
 
 
@@ -2705,6 +2630,7 @@ void MainWindow::on_actionSave_As_triggered()
 
 void MainWindow::on_actionLoad_from_a_file_triggered()
 {
+#if 0
   QString fileName = getOpenFileName("Open Project", "XML files (*.xml)");
 
 #if 0
@@ -2713,6 +2639,7 @@ void MainWindow::on_actionLoad_from_a_file_triggered()
 #endif
   m_lastOpenedFilePath = fileName;
   openTraceProject(fileName);
+#endif
 }
 
 void MainWindow::on_actionAutoMerge_triggered()

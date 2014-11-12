@@ -26,3 +26,11 @@ std::string ZStackObjectSourceFactory::MakeRectRoiSource(
 
   return source;
 }
+
+std::string ZStackObjectSourceFactory::MakeFlyEmBodyMaskSource(int bodyId)
+{
+  ZString source = "#.FlyEmBodyMaskSource#";
+  source.appendNumber(bodyId);
+
+  return source;
+}

@@ -206,6 +206,33 @@ void ZPointArray::importTxtFile(const std::string &filePath)
   fclose(fp);
 }
 
+void ZPointArray::importPcdFile(const std::string &filePath)
+{
+  clear();
+  ZString str;
+  FILE *fp = fopen(filePath.c_str(), "r");
+  if (fp != NULL) {
+    while (str.readLine(fp)) {
+      str.trim();
+      if (str.empty()) {
+        continue;
+      }
+
+      if (str.startsWith("#")) {
+        continue;
+      }
+
+      if (std::isdigit(str[0]) || str[0] == '-' || str[0] == '.') {
+        std::vector<double> coord = str.toDoubleArray();
+        if (coord.size() == 3) {
+          append(coord[0], coord[1], coord[2]);
+        }
+      }
+    }
+  }
+  fclose(fp);
+}
+
 ZGraph* ZPointArray::computeDistanceGraph(double maxDist) const
 {
   ZGraph *graph = new ZGraph(ZGraph::UNDIRECTED_WITH_WEIGHT);

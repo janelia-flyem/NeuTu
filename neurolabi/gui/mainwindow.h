@@ -227,11 +227,11 @@ private slots:
   void exportPuncta();
 
   // for 'File->Import'
-  void openTraceProject();
+  //void openTraceProject();
   void importBinary();
   void importSwc();
-  void importGoodTube();
-  void importBadTube();
+  //void importGoodTube();
+  //void importBadTube();
   //void importTubeConnection();
   void importPuncta();
   void importImageSequence();
@@ -415,7 +415,7 @@ private:
   void writeSettings();
   bool okToContinue();
   void saveFile(const QString &fileName);
-  void openTraceProject(QString fileName);
+  //void openTraceProject(QString fileName);
   void setCurrentFile(const QString &fileName);
   void updateRecentFileActions();
   QString strippedName(const QString &fullFileName);

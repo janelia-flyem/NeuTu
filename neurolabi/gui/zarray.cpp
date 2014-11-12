@@ -198,3 +198,21 @@ uint64_t ZArray::getUint64Value(size_t index) const
 
   return array[index];
 }
+
+int ZArray::getDim(int index)
+{
+  if (index < 0 || index >= ndims()) {
+    return 1;
+  }
+
+  return dim(index);
+}
+
+int ZArray::getStartCoordinate(int index) const
+{
+  if (index < 0 || index >= ndims()) {
+    return 0;
+  }
+
+  return m_startCoordinates[index];
+}

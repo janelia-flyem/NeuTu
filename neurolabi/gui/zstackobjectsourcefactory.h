@@ -11,6 +11,7 @@ public:
 public:
   static std::string MakeWatershedBoundarySource(int label);
   static std::string MakeRectRoiSource(const std::string &suffix = "");
+  static std::string MakeFlyEmBodyMaskSource(int bodyId);
 };
 
 #endif // ZSTACKOBJECTSOURCEFACTORY_H

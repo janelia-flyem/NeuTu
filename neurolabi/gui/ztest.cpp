@@ -13683,7 +13683,7 @@ void ZTest::test(MainWindow *host)
   allObj.save(GET_DATA_DIR + "/flyem/FIB/FIB25/border_obj/all.sobj");
 #endif
 
-#if 1
+#if 0
   FlyEm::ZSynapseAnnotationArray synapseArray;
   synapseArray.loadJson(GET_DATA_DIR +
                         "/flyem/AL/al7d_whole448_tbar-predict_0.81.json");
@@ -13704,5 +13704,24 @@ void ZTest::test(MainWindow *host)
   ZStack *stack = factory.makeDensityMap(ptArray, 10.0);
   stack->save(GET_DATA_DIR +
               "/flyem/AL/al7d_whole448_tbar-predict_0.81_ds10.tif");
+#endif
+
+#if 1
+  ZPointArray ptArray;
+  ptArray.importPcdFile(GET_DATA_DIR + "/test/pc519f.pcd");
+
+  int dsScale = 10;
+  for (ZPointArray::iterator iter = ptArray.begin();
+       iter != ptArray.end(); ++iter) {
+    *iter *= 1.0 / dsScale;
+  }
+
+  ZCuboid box = ptArray.getBoundBox();
+  box.print();
+
+  ZStackFactory factory;
+  ZStack *stack = factory.makeDensityMap(ptArray, 5.0);
+  stack->save(GET_DATA_DIR + "/test2.tif");
+
 #endif
 }

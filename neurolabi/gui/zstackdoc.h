@@ -70,6 +70,7 @@ class ZSparseStack;
 class ZStackBall;
 class ZUndoCommand;
 class ZStackPatch;
+class ZStackDocReader;
 
 /*!
  * \brief The class of stack document
@@ -464,9 +465,6 @@ public: /* puncta related methods */
   void importLocsegChain(const QStringList &files,
                          TubeImportOption option = ALL_TUBE,
                          LoadObjectOption objopt = APPEND_OBJECT);
-  void importGoodTube(const char *dirpath = NULL, const char *prefix = NULL,
-                      QProgressBar *pb = NULL);
-  void importBadTube(const char *dirpath, const char *prefix = NULL);
   void importSwc(QStringList files, LoadObjectOption objopt = APPEND_OBJECT);
   void importPuncta(const QStringList &files,
                     LoadObjectOption objopt = APPEND_OBJECT);
@@ -563,7 +561,6 @@ public: /* puncta related methods */
   void setWorkdir(const QString &filePath);
   void setWorkdir(const char *filePath);
   void setTubePrefix(const char *filePath);
-  void setBadChainScreen(const char *screen);
 
   //void autoTrace();
   //void autoTrace(Stack* stack);
@@ -982,12 +979,6 @@ private:
 
   ZSingleSwcNodeActionActivator m_singleSwcNodeActionActivator;
 
-  //obsolete fields
-  //QList<ZLocsegChain*> m_chainList;
-  //std::set<ZLocsegChain*> m_selectedChains;
-  //ZLocsegChain *m_masterChain;
-  QString m_badChainScreen;
-
   NeuTube::Document::ETag m_tag;
   NeuTube::EImageBackground m_stackBackground;
 
@@ -1178,62 +1169,4 @@ std::set<T*> ZStackDoc::getSelectedObjectSet(ZStackObject::EType type) const
   return objList;
 }
 
-////////////////////////////////////////////////////
-/// \brief The ZStackDocReader class
-///
-class ZStackDocReader {
-public:
-  ZStackDocReader();
-  ~ZStackDocReader();
-
-  bool readFile(const QString &filePath);
-  void clear();
-  void loadSwc(const QString &filePath);
-  void loadLocsegChain(const QString &filePath);
-  void loadStack(const QString &filePath);
-  void loadSwcNetwork(const QString &filePath);
-  void loadPuncta(const QString &filePath);
-
-  inline ZStack* getStack() const { return m_stack; }
-  inline ZSparseStack* getSparseStack() const { return m_sparseStack; }
-  inline const ZStackFile& getStackSource() const { return m_stackSource; }
-
-  inline const ZStackObjectGroup& getObjectGroup() const {
-    return m_objectGroup;
-  }
-
-  inline const ZDocPlayerList& getPlayerList() const {
-    return m_playerList;
-  }
-
-  bool hasData() const;
-  inline const QString& getFileName() const {
-    return m_filePath;
-  }
-
-  //void addPlayer(ZStackObject *obj, NeuTube::EDocumentableType type,
-  //               ZDocPlayer::TRole role);
-  void addPlayer(ZStackObject *obj, ZDocPlayer::TRole role);
-  void addObject(
-      ZStackObject *obj, ZDocPlayer::TRole role = ZDocPlayer::ROLE_NONE,
-      bool uniqueSource = true);
-
-public:
-  void setStack(ZStack *stack);
-  void setStackSource(const ZStackFile &stackFile);
-  void setSparseStack(ZSparseStack *spStack);
-private:
-  QString m_filePath;
-
-  //Main stack
-  ZStack *m_stack;
-  ZSparseStack *m_sparseStack;
-  ZStackFile m_stackSource;
-
-  ZStackObjectGroup m_objectGroup;
-  ZDocPlayerList m_playerList;
-
-  //Special object
-  ZSwcNetwork *m_swcNetwork;
-};
 #endif

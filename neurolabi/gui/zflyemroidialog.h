@@ -11,6 +11,7 @@
 #include "zqtbarprogressreporter.h"
 #include "zstackdoc.h"
 #include "zintcuboid.h"
+#include "zstackdocreader.h"
 
 class MainWindow;
 class ZDvidTarget;
