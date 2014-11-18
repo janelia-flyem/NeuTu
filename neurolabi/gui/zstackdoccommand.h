@@ -367,7 +367,20 @@ public:
 private:
   ZStackDoc *m_doc;
   ZSwcTree *m_tree;
-  ZDocPlayer::TRole m_role;
+  bool m_isInDoc;
+};
+
+class RemoveSwcIfEmpty : public ZUndoCommand
+{
+public:
+  RemoveSwcIfEmpty(ZStackDoc *doc, ZSwcTree *tree, QUndoCommand *parent = NULL);
+  ~RemoveSwcIfEmpty();
+  void redo();
+  void undo();
+
+private:
+  ZStackDoc *m_doc;
+  ZSwcTree *m_tree;
   bool m_isInDoc;
 };
 
@@ -425,7 +438,7 @@ namespace ObjectEdit {
 class AddObject : public ZUndoCommand
 {
 public:
-  AddObject(ZStackDoc *doc, ZStackObject *obj, ZDocPlayer::TRole role,
+  AddObject(ZStackDoc *doc, ZStackObject *obj,
             bool uniqueSource, QUndoCommand *parent = NULL);
   ~AddObject();
   void redo();
@@ -434,10 +447,8 @@ public:
 private:
   ZStackDoc *m_doc;
   ZStackObject *m_obj;
-  ZDocPlayer::TRole m_role;
   bool m_uniqueSource;
   QList<ZStackObject*> m_uniqueObjectList;
-  QList<ZDocPlayer::TRole> m_roleList;
   bool m_isInDoc;
 };
 
@@ -451,13 +462,11 @@ public:
   void redo();
 
 private:
-  void notifyObjectChanged(const QList<ZStackObject*> &selectedObject,
-      ZDocPlayer::TRole role) const;
+  void notifyObjectChanged(const QList<ZStackObject*> &selectedObject) const;
 
 private:
   ZStackDoc *doc;
   QList<ZStackObject*> m_selectedObject;
-  QList<ZDocPlayer::TRole> m_roleList;
 };
 
 class MoveSelected : public QUndoCommand

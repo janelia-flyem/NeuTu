@@ -117,7 +117,8 @@ ZStackDoc::ZStackDoc(ZStack *stack, QObject *parent) : QObject(parent),
   m_swcObjsModel = new ZSwcObjsModel(this, this);
   m_swcNodeObjsModel = new ZSwcNodeObjsModel(this, this);
   m_punctaObjsModel = new ZPunctaObjsModel(this, this);
-  m_seedObjsModel = new ZDocPlayerObjsModel(this, ZDocPlayer::ROLE_SEED, this);
+  m_seedObjsModel = new ZDocPlayerObjsModel(
+        this, ZStackObjectRole::ROLE_SEED, this);
   m_undoStack = new QUndoStack(this);
 
   connectSignalSlot();
@@ -267,6 +268,44 @@ void ZStackDoc::connectSignalSlot()
   connect(&m_reader, SIGNAL(finished()), this, SIGNAL(stackReadDone()));
   connect(this, SIGNAL(stackReadDone()), this, SLOT(loadReaderResult()));
   connect(this, SIGNAL(stackModified()), this, SIGNAL(volumeModified()));
+
+  connect(this, SIGNAL(progressAdvanced(double)),
+          this, SLOT(advanceProgressSlot(double)));
+  connect(this, SIGNAL(progressStarted()), this, SLOT(startProgressSlot()));
+  connect(this, SIGNAL(progressEnded()), this, SLOT(endProgressSlot()));
+
+  connect(this, SIGNAL(newDocReady(ZStackDocReader)),
+          this, SLOT(reloadData(ZStackDocReader)));
+}
+
+void ZStackDoc::advanceProgressSlot(double dp)
+{
+  advanceProgress(dp);
+}
+
+void ZStackDoc::startProgressSlot()
+{
+  startProgress();
+}
+
+void ZStackDoc::endProgressSlot()
+{
+  endProgress();
+}
+
+void ZStackDoc::notifyProgressStart()
+{
+  emit startProgress();
+}
+
+void ZStackDoc::notifyProgressEnd()
+{
+  emit endProgress();
+}
+
+void ZStackDoc::notifyProgressAdvanced(double dp)
+{
+  emit progressAdvanced(dp);
 }
 
 void ZStackDoc::createActions()
@@ -1884,13 +1923,13 @@ int ZStackDoc::autoThreshold(Stack *stack)
   return thre;
 }
 
-int ZStackDoc::autoThreshold()
+void ZStackDoc::autoThreshold()
 {
   int thre = 0;
   ZStack *mainStack = getStack();
 
   if (!mainStack->isVirtual()) {
-    m_progressReporter->start();
+    notifyProgressStart();
     Stack *stack = mainStack->c_stack();
     double scale = 1.0*stack->width * stack->height * stack->depth * stack->kind /
         (2.0*1024*1024*1024);
@@ -1900,11 +1939,14 @@ int ZStackDoc::autoThreshold()
     }
 
     int conn = 18;
-    m_progressReporter->advance(0.1);
+    notifyProgressAdvanced(0.1);
+//    m_progressReporter->advance(0.1);
     Stack *locmax = Stack_Locmax_Region(stack, conn);
-    m_progressReporter->advance(0.1);
+    notifyProgressAdvanced(0.1);
+//    m_progressReporter->advance(0.1);
     Stack_Label_Objects_Ns(locmax, NULL, 1, 2, 3, conn);
-    m_progressReporter->advance(0.2);
+    notifyProgressAdvanced(0.1);
+//    m_progressReporter->advance(0.2);
     int nvoxel = Stack_Voxel_Number(locmax);
     int i;
 
@@ -1915,15 +1957,18 @@ int ZStackDoc::autoThreshold()
         locmax->array[i] = 1;
       }
     }
-    m_progressReporter->advance(0.1);
+//    m_progressReporter->advance(0.1);
+    notifyProgressAdvanced(0.1);
 
     int *hist = Stack_Hist_M(stack, locmax);
-    m_progressReporter->advance(0.1);
+//    m_progressReporter->advance(0.1);
+    notifyProgressAdvanced(0.1);
     Kill_Stack(locmax);
 
     int low, high;
     Int_Histogram_Range(hist, &low, &high);
-    m_progressReporter->advance(0.1);
+//    m_progressReporter->advance(0.1);
+    notifyProgressAdvanced(0.1);
 
     if (high > low) {
       thre = Int_Histogram_Triangle_Threshold(hist, low, high - 1);
@@ -1933,14 +1978,18 @@ int ZStackDoc::autoThreshold()
       Int_Histogram_Range(hist, &low, &high);
       thre = Int_Histogram_Rc_Threshold(hist, low, high);
     }
-    m_progressReporter->advance(0.1);
+//    m_progressReporter->advance(0.1);
+    notifyProgressAdvanced(0.1);
     free(hist);
 
     if (stack != mainStack->c_stack())
       C_Stack::kill(stack);
-    m_progressReporter->end();
+    notifyProgressEnd();
+
+    emit thresholdChanged(thre);
   }
-  return thre;
+
+  //return thre;
 }
 
 void ZStackDoc::addSwcTree(ZSwcTree *obj, bool uniqueSource)
@@ -2146,7 +2195,8 @@ void ZStackDoc::addSparseObject(ZSparseObject *obj)
   obj->setTarget(ZStackObject::OBJECT_CANVAS);
   m_objectGroup.add(obj, false);
 
-  m_playerList.append(new ZSparseObjectPlayer(obj, ZDocPlayer::ROLE_SEED));
+  obj->setRole(ZStackObjectRole::ROLE_SEED);
+  m_playerList.append(new ZSparseObjectPlayer(obj));
   emit seedModified();
 }
 
@@ -2842,22 +2892,11 @@ ZSwcTree* ZStackDoc::getSwcTree(size_t index)
   return const_cast<ZSwcTree*>(dynamic_cast<const ZSwcTree*>(objList.at(index)));
 }
 
-ZDocPlayer::TRole ZStackDoc::removeObject(ZStackObject *obj, bool deleteObject)
+ZStackObjectRole::TRole ZStackDoc::removeObject(
+    ZStackObject *obj, bool deleteObject)
 {
-//  REMOVE_OBJECT(m_swcList, obj);
-//  REMOVE_OBJECT(m_obj3dList, obj);
-//  REMOVE_OBJECT(m_punctaList, obj);
-//  REMOVE_OBJECT(m_strokeList, obj);
-//  REMOVE_OBJECT(m_sparseObjectList, obj);
-//  REMOVE_OBJECT(m_chainList, obj);
-//  REMOVE_OBJECT(m_objectList, obj);
-
-  ZDocPlayer::TRole role = m_playerList.removePlayer(obj);
+  ZStackObjectRole::TRole role = m_playerList.removePlayer(obj);
   m_objectGroup.removeObject(obj, deleteObject);
-
-//  if (deleteObject == true) {
-//    delete obj;
-//  }
 
   notifyObjectModified();
   notifyPlayerChanged(role);
@@ -2865,14 +2904,18 @@ ZDocPlayer::TRole ZStackDoc::removeObject(ZStackObject *obj, bool deleteObject)
   return role;
 }
 
-void ZStackDoc::removeObject(ZDocPlayer::TRole role, bool deleteObject)
+void ZStackDoc::removeObject(ZStackObjectRole::TRole role, bool deleteObject)
 {
   std::set<ZStackObject*> removeSet;
   for (ZDocPlayerList::iterator iter = m_playerList.begin();
-       iter != m_playerList.end(); ++iter) {
+       iter != m_playerList.end(); /*++iter*/) {
     ZDocPlayer *player = *iter;
     if (player->hasRole(role)) {
       removeSet.insert(player->getData());
+      iter = m_playerList.erase(iter);
+      delete player;
+    } else {
+      ++iter;
     }
   }
 
@@ -6111,7 +6154,7 @@ bool ZStackDoc::executeAddSwcCommand(ZSwcTree *tree)
   return false;
 }
 
-bool ZStackDoc::executeReplaceSwcCommand(ZSwcTree *tree, ZDocPlayer::TRole role)
+bool ZStackDoc::executeReplaceSwcCommand(ZSwcTree *tree)
 {
   QUndoCommand *command = new ZStackDocCommand::SwcEdit::CompositeCommand(this);
 
@@ -6119,7 +6162,7 @@ bool ZStackDoc::executeReplaceSwcCommand(ZSwcTree *tree, ZDocPlayer::TRole role)
   for (ZDocPlayerList::const_iterator iter = playerList.begin();
        iter != playerList.end(); ++iter) {
     ZDocPlayer *player = *iter;
-    if (player->hasRole(role)) {
+    if (player->hasRole(tree->getRole().getRole())) {
       ZSwcTree *roleTree = dynamic_cast<ZSwcTree*>(player->getData());
       if (roleTree != NULL) {
         new ZStackDocCommand::SwcEdit::RemoveSwc(this, roleTree, command);
@@ -6127,8 +6170,7 @@ bool ZStackDoc::executeReplaceSwcCommand(ZSwcTree *tree, ZDocPlayer::TRole role)
     }
   }
   if (tree != NULL) {
-    new ZStackDocCommand::ObjectEdit::AddObject(
-          this, tree, role, false, command);
+    new ZStackDocCommand::ObjectEdit::AddObject(this, tree, false, command);
   }
 
   if (command->childCount() > 0) {
@@ -6201,8 +6243,7 @@ bool ZStackDoc::executeAddStrokeCommand(const QList<ZStroke2d*> &strokeList)
 }
 */
 
-void ZStackDoc::addObject(
-    ZStackObject *obj, ZDocPlayer::TRole role, bool uniqueSource)
+void ZStackDoc::addObject(ZStackObject *obj, bool uniqueSource)
 {
   if (obj == NULL) {
     return;
@@ -6225,7 +6266,7 @@ void ZStackDoc::addObject(
     ZSwcTree *tree = dynamic_cast<ZSwcTree*>(obj);
     if (tree != NULL) {
       addSwcTree(tree, false);
-      if (role & ZDocPlayer::ROLE_ROI) {
+      if (obj->hasRole(ZStackObjectRole::ROLE_ROI)) {
         tree->useCosmeticPen(true);
         tree->updateHostState();
       }
@@ -6242,7 +6283,7 @@ void ZStackDoc::addObject(
   {
     ZObject3dScan *comObj = dynamic_cast<ZObject3dScan*>(obj);
     if (comObj != NULL) {
-      if (role == ZDocPlayer::ROLE_MASK) {
+      if (obj->hasRole(ZStackObjectRole::ROLE_MASK)) {
         int index = m_objectGroup.getObjectList(
               ZStackObject::TYPE_OBJECT3D_SCAN).size() + 1;
         QColor color = m_objColorSheme.getColor(abs((int) comObj->getLabel()));
@@ -6272,51 +6313,61 @@ void ZStackDoc::addObject(
     break;
   }
 
-  addPlayer(obj, role);
+  addPlayer(obj);
 }
 
-void ZStackDoc::notifyPlayerChanged(ZDocPlayer::TRole role)
+void ZStackDoc::notifyPlayerChanged(const ZStackObjectRole &role)
 {
-  if (role & ZDocPlayer::ROLE_SEED) {
+  notifyPlayerChanged(role.getRole());
+}
+
+void ZStackDoc::notifyPlayerChanged(ZStackObjectRole::TRole role)
+{
+  ZStackObjectRole roleObj(role);
+  if (roleObj.hasRole(ZStackObjectRole::ROLE_SEED)) {
     emit seedModified();
   }
 
-  if (role & ZDocPlayer::ROLE_3DPAINT) {
+  if (roleObj.hasRole(ZStackObjectRole::ROLE_3DPAINT)) {
     notifyVolumeModified();
   }
 
-  if (role & ZDocPlayer::ROLE_3DGRAPH_DECORATOR) {
+  if (roleObj.hasRole(ZStackObjectRole::ROLE_3DGRAPH_DECORATOR)) {
     notify3DGraphModified();
   }
 }
 
-void ZStackDoc::addPlayer(ZStackObject *obj, ZDocPlayer::TRole role)
+void ZStackDoc::addPlayer(ZStackObject *obj)
 {
-  if (obj != NULL && role != ZDocPlayer::ROLE_NONE) {
-    ZDocPlayer *player = NULL;
-    switch (obj->getType()) {
-    case ZStackObject::TYPE_OBJ3D:
-      player = new ZObject3dPlayer(obj, role);
-      break;
-    case ZStackObject::TYPE_STROKE:
-      player = new ZStroke2dPlayer(obj, role);
-      break;
-    case ZStackObject::TYPE_SPARSE_OBJECT:
-      player = new ZSparseObjectPlayer(obj, role);
-      break;
-    case ZStackObject::TYPE_STACK_BALL:
-      player = new ZStackBallPlayer(obj, role);
-      break;
-    case ZStackObject::TYPE_OBJECT3D_SCAN:
-      player = new ZObject3dScanPlayer(obj, role);
-      break;
-    default:
-      player = new ZDocPlayer(obj, role);
-      break;
-    }
+  if (obj != NULL) {
+    if (obj->hasRole()) {
+      ZDocPlayer *player = NULL;
+      switch (obj->getType()) {
+      case ZStackObject::TYPE_OBJ3D:
+        player = new ZObject3dPlayer(obj);
+        break;
+      case ZStackObject::TYPE_STROKE:
+        player = new ZStroke2dPlayer(obj);
+        break;
+      case ZStackObject::TYPE_SPARSE_OBJECT:
+        player = new ZSparseObjectPlayer(obj);
+        break;
+      case ZStackObject::TYPE_STACK_BALL:
+        player = new ZStackBallPlayer(obj);
+        break;
+      case ZStackObject::TYPE_OBJECT3D_SCAN:
+        player = new ZObject3dScanPlayer(obj);
+        break;
+      default:
+        player = NULL;
+        break;
+      }
 
-    m_playerList.append(player);
-    notifyPlayerChanged(player->getRole());
+      if (player != NULL) {
+        m_playerList.append(player);
+      }
+      notifyPlayerChanged(obj->getRole().getRole());
+    }
   }
 }
 
@@ -6325,13 +6376,11 @@ bool ZStackDoc::hasObjectSelected() const
   return m_objectGroup.hasSelected() || hasSelectedSwcNode();
 }
 
-bool ZStackDoc::executeAddObjectCommand(
-    ZStackObject *obj, ZDocPlayer::TRole role, bool uniqueSource)
+bool ZStackDoc::executeAddObjectCommand(ZStackObject *obj, bool uniqueSource)
 {
   if (obj != NULL) {
     ZStackDocCommand::ObjectEdit::AddObject *command =
-        new ZStackDocCommand::ObjectEdit::AddObject(
-          this, obj, role, uniqueSource);
+        new ZStackDocCommand::ObjectEdit::AddObject(this, obj, uniqueSource);
     pushUndoCommand(command);
 
     return true;
@@ -7438,6 +7487,12 @@ void ZStackDoc::addData(const ZStackDocReader &reader)
   m_playerList.append(reader.getPlayerList());
 }
 
+void ZStackDoc::reloadData(const ZStackDocReader &reader)
+{
+  clearData();
+  addData(reader);
+}
+
 
 std::vector<ZStack*> ZStackDoc::createWatershedMask(bool selectedOnly)
 {
@@ -7448,7 +7503,7 @@ std::vector<ZStack*> ZStackDoc::createWatershedMask(bool selectedOnly)
     for (ZDocPlayerList::const_iterator iter = m_playerList.begin();
          iter != m_playerList.end(); ++iter) {
       const ZDocPlayer *player = *iter;
-      if (player->hasRole(ZDocPlayer::ROLE_SEED) &&
+      if (player->hasRole(ZStackObjectRole::ROLE_SEED) &&
           player->getData()->isSelected()) {
         hasSelected = true;
         break;
@@ -7460,7 +7515,7 @@ std::vector<ZStack*> ZStackDoc::createWatershedMask(bool selectedOnly)
        iter != m_playerList.end(); ++iter) {
     const ZDocPlayer *player = *iter;
 
-    if (player->hasRole(ZDocPlayer::ROLE_SEED) &&
+    if (player->hasRole(ZStackObjectRole::ROLE_SEED) &&
         (!hasSelected || player->getData()->isSelected())) {
       ZStack *stack = player->toStack();
       if (stack != NULL) {
@@ -7489,7 +7544,8 @@ void ZStackDoc::updateWatershedBoundaryObject(ZStack *out, ZIntPoint dsIntv)
         }
       }
 
-      QList<const ZDocPlayer*> playerList = getPlayerList(ZDocPlayer::ROLE_SEED);
+      QList<const ZDocPlayer*> playerList =
+          getPlayerList(ZStackObjectRole::ROLE_SEED);
       //foreach (ZStroke2d *stroke, m_strokeList) {
       foreach (const ZDocPlayer *player, playerList) {
         ZObject3d *obj = objArray->take(player->getLabel());
@@ -7501,7 +7557,8 @@ void ZStackDoc::updateWatershedBoundaryObject(ZStack *out, ZIntPoint dsIntv)
                 ZStackObjectSourceFactory::MakeWatershedBoundarySource(
                   player->getLabel()));
           obj->setHittable(false);
-          addObject(obj, ZDocPlayer::ROLE_TMP_RESULT, true);
+          obj->setRole(ZStackObjectRole::ROLE_TMP_RESULT);
+          addObject(obj, true);
         }
       }
 
@@ -7512,7 +7569,7 @@ void ZStackDoc::updateWatershedBoundaryObject(ZStack *out, ZIntPoint dsIntv)
 
 void ZStackDoc::localSeededWatershed()
 {
-  removeObject(ZDocPlayer::ROLE_TMP_RESULT, true);
+  removeObject(ZStackObjectRole::ROLE_TMP_RESULT, true);
   ZStackArray seedMask = createWatershedMask(true);
   if (!seedMask.empty()) {
     ZStackWatershed engine;
@@ -7617,7 +7674,7 @@ void ZStackDoc::localSeededWatershed()
 
 void ZStackDoc::seededWatershed()
 {
-  removeObject(ZDocPlayer::ROLE_TMP_RESULT, true);
+  removeObject(ZStackObjectRole::ROLE_TMP_RESULT, true);
   //removeAllObj3d();
   ZStackWatershed engine;
   ZStackArray seedMask = createWatershedMask(false);
@@ -7771,7 +7828,8 @@ void ZStackDoc::setStackFactory(ZStackFactory *factory)
   m_stackFactory = factory;
 }
 
-QList<const ZDocPlayer*> ZStackDoc::getPlayerList(ZDocPlayer::TRole role) const
+QList<const ZDocPlayer*> ZStackDoc::getPlayerList(
+    ZStackObjectRole::TRole role) const
 {
 
   return m_playerList.getPlayerList(role);
@@ -7789,7 +7847,7 @@ QList<const ZDocPlayer*> ZStackDoc::getPlayerList(ZDocPlayer::TRole role) const
   */
 }
 
-bool ZStackDoc::hasPlayer(ZDocPlayer::TRole role) const
+bool ZStackDoc::hasPlayer(ZStackObjectRole::TRole role) const
 {
   return m_playerList.hasPlayer(role);
 }
@@ -7798,7 +7856,7 @@ Z3DGraph ZStackDoc::get3DGraphDecoration() const
 {
   Z3DGraph graph;
   QList<const ZDocPlayer *> playerList =
-      getPlayerList(ZDocPlayer::ROLE_3DGRAPH_DECORATOR);
+      getPlayerList(ZStackObjectRole::ROLE_3DGRAPH_DECORATOR);
   foreach(const ZDocPlayer *player, playerList) {
     graph.append(player->get3DGraph());
   }
@@ -7844,8 +7902,9 @@ void ZStackDoc::importSeedMask(const QString &filePath)
            iter != objArray.end(); ++iter) {
         ZObject3d *obj = *iter;
         if (obj != NULL) {
+          obj->setRole(ZStackObjectRole::ROLE_SEED);
           new ZStackDocCommand::ObjectEdit::AddObject(
-                this, obj, ZDocPlayer::ROLE_SEED, false, command);
+                this, obj, false, command);
         }
       }
       pushUndoCommand(command);

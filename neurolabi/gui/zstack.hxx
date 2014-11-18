@@ -183,6 +183,8 @@ public: /* attributes */
    */
   int getIntValueLocal(int x, int y, int z, int c = 0) const;
 
+  int getIntValue(size_t index, int c = 0) const;
+
   /*!
    * \brief Set the intensity value of a voxel.
    *
@@ -199,6 +201,8 @@ public: /* attributes */
    * valuel.
    */
   void addIntValue(int x, int y, int z, int c, int v);
+
+
 
   /** @name raw data access
    *  array8(), array16(), array32(), array64() or arrayc() can be used to otain

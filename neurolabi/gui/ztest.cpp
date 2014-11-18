@@ -13683,7 +13683,7 @@ void ZTest::test(MainWindow *host)
   allObj.save(GET_DATA_DIR + "/flyem/FIB/FIB25/border_obj/all.sobj");
 #endif
 
-#if 0
+#if 1
   FlyEm::ZSynapseAnnotationArray synapseArray;
   synapseArray.loadJson(GET_DATA_DIR +
                         "/flyem/AL/al7d_whole448_tbar-predict_0.81.json");
@@ -13691,22 +13691,30 @@ void ZTest::test(MainWindow *host)
   ZWeightedPointArray ptArray = synapseArray.toTBarConfidencePointArray();
   std::cout << ptArray.size() << " TBars" << std::endl;
 
+  ZWeightedPointArray newPtArray;
+
   int dsScale = 20;
   for (ZWeightedPointArray::iterator iter = ptArray.begin();
        iter != ptArray.end(); ++iter) {
-    *iter *= 1.0 / dsScale;
+    ZWeightedPoint &pt = *iter;
+    pt *= 1.0 / dsScale;
+    if (pt.z() > 50) {
+      newPtArray.append(pt);
+    }
+
   }
 
-  ZCuboid box = ptArray.getBoundBox();
+  ZCuboid box = newPtArray.getBoundBox();
   box.print();
 
   ZStackFactory factory;
-  ZStack *stack = factory.makeDensityMap(ptArray, 10.0);
+  ZStack *stack = factory.makeDensityMap(newPtArray, 10.0);
   stack->save(GET_DATA_DIR +
-              "/flyem/AL/al7d_whole448_tbar-predict_0.81_ds10.tif");
+              "/flyem/AL/al7d_whole448_tbar-predict_0.81_ds20_s10.tif");
+
 #endif
 
-#if 1
+#if 0
   ZPointArray ptArray;
   ptArray.importPcdFile(GET_DATA_DIR + "/test/pc519f.pcd");
 
@@ -13723,5 +13731,13 @@ void ZTest::test(MainWindow *host)
   ZStack *stack = factory.makeDensityMap(ptArray, 5.0);
   stack->save(GET_DATA_DIR + "/test2.tif");
 
+#endif
+
+#if 0
+  ZStack stack;
+  stack.load(GET_DATA_DIR + "/benchmark/em_stack.tif");
+
+  Stack stackView = C_Stack::sliceView(stack.c_stack(), 100, 100);
+  C_Stack::write(GET_DATA_DIR + "/benchmark/em_stack_slice.tif", &stackView);
 #endif
 }

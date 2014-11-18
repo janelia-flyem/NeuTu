@@ -19,6 +19,7 @@
 #include "zkeyeventswcmapper.h"
 #include "zmouseeventmapper.h"
 #include "zmouseeventprocessor.h"
+#include "qthreadfuturemap.h"
 
 class ZStackView;
 class ZStackDoc;
@@ -194,11 +195,6 @@ public slots:
   void fitEllipse();
   void dropSegment();
   void enterMouseCapturingMode();
-  //void refineChainEnd();
-  //void bringSelectedToFront();
-  //void sendSelectedToBack();
-  //void selectNeighbor();
-  //void selectConnectedTube();
   void markPuncta();
   void deleteSelected();
   //void deleteAllPuncta();
@@ -317,22 +313,6 @@ private:
   QAction *m_fitsegAction;
   QAction *m_fitEllipseAction;
   QAction *m_dropsegAction;
-  //QAction *m_cutAction;
-  //QAction *m_breakAction;
-  //QAction *m_hookAction;
-  //QAction *m_spHookAction;
-  //QAction *m_linkAction;
-  //QAction *m_mergeAction;
-  //QAction *m_frontAction;
-  //QAction *m_backAction;
-  //QAction *m_refineEndAction;
-  //QAction *m_connectAction;
-  //QAction *m_extendAction;
-  //QAction *m_walkAction;
-  //QAction *m_checkConnAction;
-  //QAction *m_disconnectAction;
-  //QAction *m_neighborAction;
-  //QAction *m_selectConnectedTubeAction;
   QAction *m_markPunctaAction;
   QAction *m_deleteSelectedAction;
   //QAction *m_deleteAllPunctaAction;
@@ -396,6 +376,8 @@ private:
   ZMouseEventProcessor m_mouseEventProcessor;
 
   int m_zOrder;
+
+  QThreadFutureMap m_futureMap;
 
 signals:
   void viewModeChanged();

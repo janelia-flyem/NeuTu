@@ -37,6 +37,7 @@ public:
   void writeAnnotation(int bodyId, const ZJsonObject &obj);
   void writeAnnotation(const ZFlyEmNeuron &neuron);
   void writeRoiCurve(const ZClosedCurve &curve, const std::string &key);
+  void deleteRoiCurve(const std::string &key);
   void writeJsonString(const std::string &dataName, const std::string &key,
                        const std::string jsonString);
   void writeJson(const std::string &dataName, const std::string &key,

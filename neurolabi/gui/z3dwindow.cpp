@@ -3156,7 +3156,8 @@ void Z3DWindow::addStrokeFrom3dPaint(ZStroke2d *stroke)
   delete baseObj;
 
   if (!obj->isEmpty()) {
-    m_doc->executeAddObjectCommand(obj, ZDocPlayer::ROLE_SEED);
+    obj->setRole(ZStackObjectRole::ROLE_SEED);
+    m_doc->executeAddObjectCommand(obj);
   } else {
     delete obj;
   }
@@ -3240,8 +3241,9 @@ void Z3DWindow::addPolyplaneFrom3dPaint(ZStroke2d *stroke)
         ZLabelColorTable colorTable;
         obj->setColor(colorTable.getColor(obj->getLabel()));
 
-        m_doc->executeAddObjectCommand(
-              obj, ZDocPlayer::ROLE_SEED | ZDocPlayer::ROLE_3DGRAPH_DECORATOR);
+        obj->setRole(ZStackObjectRole::ROLE_SEED |
+                     ZStackObjectRole::ROLE_3DGRAPH_DECORATOR);
+        m_doc->executeAddObjectCommand(obj);
         //m_doc->notifyVolumeModified();
       } else {
         delete obj;

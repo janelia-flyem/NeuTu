@@ -299,6 +299,9 @@ ZStackDocCommand::SwcEdit::AddSwcNode::AddSwcNode(
     m_tree->useCosmeticPen(true);
     m_tree->setStructrualMode(ZSwcTree::STRUCT_CLOSED_CURVE);
   }
+  if (doc->getTag() == NeuTube::Document::FLYEM_ROI) {
+    m_tree->setRole(ZStackObjectRole::ROLE_ROI);
+  }
 
   m_tree->setDataFromNode(m_node);
   m_tree->setSource(QString("#added by add neuron node command %1").
@@ -329,11 +332,7 @@ void ZStackDocCommand::SwcEdit::AddSwcNode::undo()
 
 void ZStackDocCommand::SwcEdit::AddSwcNode::redo()
 {
-  if (m_doc->getTag() == NeuTube::Document::FLYEM_ROI) {
-    m_doc->addObject(m_tree, ZDocPlayer::ROLE_ROI);
-  } else {
-    m_doc->addSwcTree(m_tree);
-  }
+  m_doc->addSwcTree(m_tree);
   m_treeInDoc = true;
 }
 
@@ -994,8 +993,7 @@ ZStackDocCommand::SwcEdit::ConnectSwcNode::ConnectSwcNode(
 
 ZStackDocCommand::SwcEdit::RemoveSwc::RemoveSwc(
     ZStackDoc *doc, ZSwcTree *tree, QUndoCommand *parent) :
-  ZUndoCommand(parent), m_doc(doc), m_tree(tree), m_role(ZDocPlayer::ROLE_NONE),
-  m_isInDoc(true)
+  ZUndoCommand(parent), m_doc(doc), m_tree(tree), m_isInDoc(true)
 {
 }
 
@@ -1012,7 +1010,7 @@ ZStackDocCommand::SwcEdit::RemoveSwc::~RemoveSwc()
 void ZStackDocCommand::SwcEdit::RemoveSwc::redo()
 {
   if (m_tree != NULL) {
-    m_role = m_doc->removeObject(m_tree, false);
+    m_doc->removeObject(m_tree, false);
     m_isInDoc = false;
     m_doc->notifySwcModified();
   }
@@ -1022,22 +1020,68 @@ void ZStackDocCommand::SwcEdit::RemoveSwc::undo()
 {
   if (m_tree != NULL) {
     //m_doc->addSwcTree(m_tree);
-    m_doc->addObject(m_tree, m_role);
+    m_doc->addObject(m_tree);
     m_isInDoc = true;
   }
 }
+
+////////////////////////////
+ZStackDocCommand::SwcEdit::RemoveSwcIfEmpty::RemoveSwcIfEmpty(
+    ZStackDoc *doc, ZSwcTree *tree, QUndoCommand *parent) :
+  ZUndoCommand(parent), m_doc(doc), m_tree(tree), m_isInDoc(true)
+{
+}
+
+ZStackDocCommand::SwcEdit::RemoveSwcIfEmpty::~RemoveSwcIfEmpty()
+{
+#ifdef _DEBUG_
+  std::cout << "ZStackDocCommand::SwcEdit::RemoveSwc destroyed" << std::endl;
+#endif
+  if (!m_isInDoc) {
+    delete m_tree;
+  }
+}
+
+void ZStackDocCommand::SwcEdit::RemoveSwcIfEmpty::redo()
+{
+  if (m_tree != NULL) {
+    if (m_tree->isEmpty()) {
+      m_doc->removeObject(m_tree, false);
+      m_isInDoc = false;
+      m_doc->notifySwcModified();
+    }
+  }
+}
+
+void ZStackDocCommand::SwcEdit::RemoveSwcIfEmpty::undo()
+{
+  if (m_tree != NULL) {
+    //m_doc->addSwcTree(m_tree);
+    m_doc->addObject(m_tree);
+    m_isInDoc = true;
+  }
+}
+
+//////////////////////////////
 
 ZStackDocCommand::SwcEdit::RemoveEmptyTree::RemoveEmptyTree(
     ZStackDoc *doc, QUndoCommand *parent) :
   CompositeCommand(doc, parent), m_doc(doc)
 {
   if (doc != NULL) {
+    QList<ZSwcTree*> treeList = doc->getSwcList();
+    foreach (ZSwcTree *tree, treeList) {
+      new ZStackDocCommand::SwcEdit::RemoveSwcIfEmpty(doc, tree, this);
+    }
+
+    /*
     std::set<ZSwcTree*> emptyTreeSet = doc->getEmptySwcTreeSet();
     for (std::set<ZSwcTree*>::iterator iter = emptyTreeSet.begin();
          iter != emptyTreeSet.end(); ++iter) {
       ZSwcTree *tree = *iter;
       new ZStackDocCommand::SwcEdit::RemoveSwc(doc, tree, this);
     }
+    */
   }
 }
 
@@ -1164,28 +1208,31 @@ void ZStackDocCommand::ObjectEdit::RemoveSelected::undo()
 {
   //Add the objects back
   doc->blockSignals(true);
-  ZDocPlayer::TRole role = ZDocPlayer::ROLE_NONE;
+  //ZDocPlayer::TRole role = ZDocPlayer::ROLE_NONE;
   for (int i = 0; i < m_selectedObject.size(); ++i) {
-    doc->addObject(m_selectedObject[i], m_roleList[i], false);
-    role |= m_roleList[i];
+    doc->addObject(m_selectedObject[i], false);
+    //role |= m_roleList[i];
   }
   doc->blockSignals(false);
 
-  notifyObjectChanged(m_selectedObject, role);
+  notifyObjectChanged(m_selectedObject);
 
   m_selectedObject.clear();
-  m_roleList.clear();
+  //m_roleList.clear();
 }
 
 void ZStackDocCommand::ObjectEdit::RemoveSelected::notifyObjectChanged(
-    const QList<ZStackObject *> &selectedObject, ZDocPlayer::TRole role) const
+    const QList<ZStackObject *> &selectedObject) const
 {
+  ZStackObjectRole role;
+
   //Send notifications
   std::set<ZStackObject::EType> typeSet;
   for (QList<ZStackObject*>::const_iterator iter = selectedObject.begin();
        iter != selectedObject.end(); ++iter) {
     const ZStackObject *obj = *iter;
     typeSet.insert(obj->getType());
+    role.addRole(obj->getRole().getRole());
   }
 
   size_t s = typeSet.size();
@@ -1214,21 +1261,22 @@ void ZStackDocCommand::ObjectEdit::RemoveSelected::notifyObjectChanged(
     doc->notifyObjectModified();
   }
 
-  doc->notifyPlayerChanged(role);
+  doc->notifyPlayerChanged(role.getRole());
 }
 
 void ZStackDocCommand::ObjectEdit::RemoveSelected::redo()
 {
   //Remove and backup selected objects
   m_selectedObject = doc->getObjectGroup().takeSelected();
-  ZDocPlayer::TRole allRole = ZDocPlayer::ROLE_NONE;
+  //ZStackObjectRole allRole;
   foreach (ZStackObject *obj, m_selectedObject) {
-    ZDocPlayer::TRole role = doc->getPlayerList().removePlayer(obj);
+    doc->getPlayerList().removePlayer(obj);
+    /*
+    allRole.addRole(doc->getPlayerList().removePlayer(obj));
     m_roleList.append(role);
     allRole |= role;
+    */
   }
-
-  notifyObjectChanged(m_selectedObject, allRole);
 }
 
 ZStackDocCommand::TubeEdit::Trace::Trace(
@@ -1719,9 +1767,9 @@ ZStackDocCommand::ObjectEdit::MoveSelected::~MoveSelected()
 {
 }
 
-ZStackDocCommand::ObjectEdit::AddObject::AddObject(ZStackDoc *doc, ZStackObject *obj,
-    ZDocPlayer::TRole role, bool uniqueSource, QUndoCommand *parent)
-  : ZUndoCommand(parent), m_doc(doc), m_obj(obj), m_role(role),
+ZStackDocCommand::ObjectEdit::AddObject::AddObject(
+    ZStackDoc *doc, ZStackObject *obj, bool uniqueSource, QUndoCommand *parent)
+  : ZUndoCommand(parent), m_doc(doc), m_obj(obj),
     m_uniqueSource(uniqueSource), m_isInDoc(false)
 {
   setText(QObject::tr("Add Object"));
@@ -1744,23 +1792,14 @@ void ZStackDocCommand::ObjectEdit::AddObject::redo()
   if (m_uniqueSource) {
     m_uniqueObjectList = m_doc->getObjectGroup().takeSameSource(
           m_obj->getType(), m_obj->getSource());
-    m_roleList.clear();
     for (TStackObjectList::iterator iter = m_uniqueObjectList.begin();
          iter != m_uniqueObjectList.end(); ++iter) {
-      m_roleList.append(m_doc->getPlayerList().removePlayer(*iter));
+      m_doc->getPlayerList().removePlayer(*iter);
     }
   }
 
-  m_doc->addObject(m_obj, m_role, false);
+  m_doc->addObject(m_obj, false);
 
-  /*
-  if ((m_role & ZDocPlayer::ROLE_3DPAINT) > 0) {
-    m_doc->notifyVolumeModified();
-  }
-  if ((m_role & ZDocPlayer::ROLE_3DGRAPH_DECORATOR) > 0) {
-    m_doc->notify3DGraphModified();
-  }
-  */
   m_isInDoc = true;
 }
 
@@ -1770,18 +1809,10 @@ void ZStackDocCommand::ObjectEdit::AddObject::undo()
 
   //Add unique source back
   for (int i = 0; i < m_uniqueObjectList.size(); ++i) {
-    m_doc->addObject(m_uniqueObjectList[i], m_roleList[i], false);
+    m_doc->addObject(m_uniqueObjectList[i], false);
   }
   m_uniqueObjectList.clear();
-  m_roleList.clear();
-  /*
-  m_doc->notifyObjectModified();
-  if ((role & ZDocPlayer::ROLE_3DPAINT) > 0) {
-    m_doc->notifyVolumeModified();
-  }
-  if ((m_role & ZDocPlayer::ROLE_3DGRAPH_DECORATOR)) {
-    m_doc->notify3DGraphModified();
-  }*/
+
   m_isInDoc = false;
 }
 

@@ -216,3 +216,10 @@ int ZArray::getStartCoordinate(int index) const
 
   return m_startCoordinates[index];
 }
+
+void ZArray::setStartCoordinate(int index, int x)
+{
+  if (index >= 0 && index < ndims()) {
+    m_startCoordinates[index] = x;
+  }
+}

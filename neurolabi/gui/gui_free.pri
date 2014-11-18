@@ -209,7 +209,9 @@ HEADERS +=$${PWD}/zstackprocessor.h \
    $${PWD}/zstackobjectsourcefactory.h \
    $${PWD}/dvid/zdviddata.h \
    $${PWD}/flyem/zflyemneuronbodyinfo.h \
-   $${PWD}/zstackobjectsource.h
+   $${PWD}/zstackobjectsource.h \
+    zstackobjectrole.h \
+    zarrayfactory.h
 
 SOURCES +=$${PWD}/zstackprocessor.cpp \
    $${PWD}/zstack.cxx \
@@ -404,4 +406,6 @@ SOURCES +=$${PWD}/zstackprocessor.cpp \
    $${PWD}/zstackobjectsourcefactory.cpp \
    $${PWD}/dvid/zdviddata.cpp \
    $${PWD}/flyem/zflyemneuronbodyinfo.cpp \
-   $${PWD}/zstackobjectsource.cpp
+   $${PWD}/zstackobjectsource.cpp \
+    zstackobjectrole.cpp \
+    zarrayfactory.cpp

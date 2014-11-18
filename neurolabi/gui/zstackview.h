@@ -87,8 +87,6 @@ public:
   void setImageWidgetCursor(const QCursor &cursor);
   void setScreenCursor(const QCursor &cursor);
   void resetScreenCursor();
-
-  void setThreshold(int thre);
   int getIntensityThreshold();
 
   //void open3DWindow();
@@ -143,8 +141,8 @@ public slots:
   void paintStack();
   void paintMask();
   void paintObject();
-  void paintObject(QList<ZStackObject *> &selected,
-                   QList<ZStackObject *> &deselected);
+  void paintObject(QList<ZStackObject *> selected,
+                   QList<ZStackObject *> deselected);
   void paintActiveDecoration();
 
   void mouseReleasedInImageWidget(QMouseEvent *event);
@@ -163,6 +161,7 @@ public slots:
 
   void setInfo(QString info);
   void autoThreshold();
+  void setThreshold(int thre);
 
   void displayActiveDecoration(bool display = true);
 

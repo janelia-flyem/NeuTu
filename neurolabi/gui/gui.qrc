@@ -103,5 +103,6 @@
         <file>images/vstretch.png</file>
         <file>images/squeeze.png</file>
         <file>images/stretch.png</file>
+        <file>images/bodymerge.png</file>
     </qresource>
 </RCC>

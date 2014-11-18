@@ -234,16 +234,30 @@ void ZFlyEmRoiProject::shallowClearDataFrame()
 
 void ZFlyEmRoiProject::setRoi(ZClosedCurve *roi, int z)
 {
-  if (roi != NULL && z >= 0) {
-    if (z >= (int) m_curveArray.size()) {
-      m_curveArray.resize(z + 1, NULL);
+  if (z >= 0) {
+    if (roi != NULL) {
+      if (z >= (int) m_curveArray.size()) {
+        m_curveArray.resize(z + 1, NULL);
+      }
+      if (m_curveArray[z] != NULL) {
+        delete m_curveArray[z];
+      }
+      m_curveArray[z] = roi;
+      setRoiUploaded(z, false);
     }
-    if (m_curveArray[z] != NULL) {
-      delete m_curveArray[z];
-    }
-    m_curveArray[z] = roi;
-    setRoiUploaded(z, false);
   }
+#if 0
+  else {
+    if (m_curveArray[z] != NULL) {
+      m_curveArray[z].clear();
+      /*
+      delete m_curveArray[z];
+      m_curveArray[z] = NULL;
+      */
+      setRoiUploaded(z, false);
+    }
+  }
+#endif
 }
 
 int ZFlyEmRoiProject::getDataZ() const
@@ -284,16 +298,22 @@ bool ZFlyEmRoiProject::addRoi()
 {
   if (m_dataFrame != NULL) {
     QList<ZSwcTree*> swcList = m_dataFrame->document()->getSwcList();
+    ZClosedCurve *roi = NULL;
+
     if (swcList.size() == 1) {
       ZClosedCurve curve = swcList.front()->toClosedCurve();
-      if(!curve.isEmpty()) {
-        ZClosedCurve *roi = new ZClosedCurve(curve);
-        if (!m_currentDsIntv.isZero()) {
-          roi->scale(m_currentDsIntv.getX() + 1, m_currentDsIntv.getY() + 1,
-                     m_currentDsIntv.getZ() + 1);
-        }
-        setRoi(roi, getDataZ());
-        setRoiSaved(true);
+      //if(!curve.isEmpty()) {
+      roi = new ZClosedCurve(curve);
+      if (!m_currentDsIntv.isZero()) {
+        roi->scale(m_currentDsIntv.getX() + 1, m_currentDsIntv.getY() + 1,
+                   m_currentDsIntv.getZ() + 1);
+      }
+    } else if (swcList.isEmpty()) {
+      roi = new ZClosedCurve;
+    }
+
+    setRoi(roi, getDataZ());
+    setRoiSaved(true);
 
 #ifdef _DEBUG_2
       ZObject3dScan *obj = getFilledRoi(getDataZ(), NULL);
@@ -301,9 +321,14 @@ bool ZFlyEmRoiProject::addRoi()
       delete obj;
 #endif
 
-        return true;
-      }
-    }
+      return true;
+      //}
+
+  /* else if (swcList.isEmpty()) {
+      setRoi(NULL, getDataZ());
+      setRoiSaved(true);
+      return true;
+    }*/
   }
 
   return false;
@@ -373,6 +398,7 @@ ZSwcTree* ZFlyEmRoiProject::getRoiSwc(int z, double radius) const
                     1.0 / (m_currentDsIntv.getZ() + 1), false);
     }
     tree->useCosmeticPen(true);
+    tree->setRole(ZStackObjectRole::ROLE_ROI);
   }
 
   return tree;
@@ -550,15 +576,15 @@ void ZFlyEmRoiProject::estimateRoi()
     if (!roiCurve.isEmpty()) {
       //m_dataFrame->document()->removeObject(ZDocPlayer::ROLE_ROI, true);
       ZSwcTree *tree = ZSwcGenerator::createSwc(roiCurve, getMarkerRadius());
+      tree->setRole(ZStackObjectRole::ROLE_ROI);
 
       if (!m_currentDsIntv.isZero()) {
         tree->rescale(1.0 / (m_currentDsIntv.getX() + 1),
                       1.0 / (m_currentDsIntv.getY() + 1),
                       1.0 / (m_currentDsIntv.getZ() + 1), false);
       }
-
-      m_dataFrame->document()->executeReplaceSwcCommand(
-            tree, ZDocPlayer::ROLE_ROI);
+      tree->useCosmeticPen(true);
+      m_dataFrame->document()->executeReplaceSwcCommand(tree);
     }
   }
 }

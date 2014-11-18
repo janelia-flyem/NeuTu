@@ -63,13 +63,13 @@ void Z3DVolumeSource::loadData()
 {
   if (m_doc != NULL) {
     if (m_doc->hasStackData()) {
-      if (m_doc->hasPlayer(ZDocPlayer::ROLE_3DPAINT)) {
+      if (m_doc->hasPlayer(ZStackObjectRole::ROLE_3DPAINT)) {
         readVolumesWithObject();
       } else {
         readVolumes();
       }
     } else if (m_doc->hasStack() && m_doc->hasSparseObject()) {
-      if (m_doc->hasPlayer(ZDocPlayer::ROLE_3DPAINT)) {
+      if (m_doc->hasPlayer(ZStackObjectRole::ROLE_3DPAINT)) {
         readSparseVolumeWithObject();
       } else {
         readSparseVolume();
@@ -340,7 +340,7 @@ void Z3DVolumeSource::readSparseStack()
     offset[2] = -stackData->getOffset().getZ() * (dsIntv.getZ() + 1);
 
     QList<const ZDocPlayer*> playerList =
-        m_doc->getPlayerList(ZDocPlayer::ROLE_3DPAINT);
+        m_doc->getPlayerList(ZStackObjectRole::ROLE_3DPAINT);
     foreach (const ZDocPlayer *player, playerList) {
       //player->paintStack(colorStack);
       if (player->getLabel() > 0 && player->getLabel() < 10) {
@@ -437,7 +437,7 @@ void Z3DVolumeSource::readVolumesWithObject()
   //                   colorStack->c_stack(2));
 
   QList<const ZDocPlayer*> playerList =
-      m_doc->getPlayerList(ZDocPlayer::ROLE_3DPAINT);
+      m_doc->getPlayerList(ZStackObjectRole::ROLE_3DPAINT);
   foreach (const ZDocPlayer *player, playerList) {
     //player->paintStack(colorStack);
     if (player->getLabel() > 0 && player->getLabel() < 10) {

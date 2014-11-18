@@ -41,38 +41,62 @@ TEST(ZStackDoc, Player)
   ZStackDoc doc(NULL, NULL);
   ZObject3d *obj = new ZObject3d;
   obj->append(0, 0, 0);
-  doc.addObject(obj, ZDocPlayer::ROLE_SEED);
+  obj->setRole(ZStackObjectRole::ROLE_SEED);
+  doc.addObject(obj);
   ASSERT_EQ(1, doc.getPlayerList().size());
   ASSERT_EQ(1, doc.getObjectGroup().size());
 
-  doc.addObject(obj, ZDocPlayer::ROLE_NONE);
+  ZObject3d *obj4 = new ZObject3d();
+  doc.addObject(obj4);
   ASSERT_EQ(1, doc.getPlayerList().size());
   ASSERT_EQ(2, doc.getObjectGroup().size());
 
-  doc.removeObject(ZDocPlayer::ROLE_SEED, false);
+  doc.removeObject(ZStackObjectRole::ROLE_SEED, false);
   ASSERT_EQ(0, doc.getPlayerList().size());
   ASSERT_EQ(1, doc.getObjectGroup().size());
 
-  doc.addObject(obj, ZDocPlayer::ROLE_SEED);
-  doc.addObject(obj, ZDocPlayer::ROLE_SEED);
+  ZObject3d *obj5 = new ZObject3d();
+  obj5->setRole(ZStackObjectRole::ROLE_SEED);
+  doc.addObject(obj5);
+
+  ZObject3d *obj6 = new ZObject3d();
+  obj6->setRole(ZStackObjectRole::ROLE_SEED);
+  doc.addObject(obj6);
+
   ASSERT_EQ(2, doc.getPlayerList().size());
   ASSERT_EQ(3, doc.getObjectGroup().size());
 
-  doc.removeObject(ZDocPlayer::ROLE_SEED, false);
+  doc.removeObject(ZStackObjectRole::ROLE_SEED, false);
   ASSERT_EQ(0, doc.getPlayerList().size());
   ASSERT_EQ(2, doc.getObjectGroup().size());
 
   doc.removeAllObject(false);
   ASSERT_EQ(0, doc.getObjectGroup().size());
 
-  doc.addObject(obj, ZDocPlayer::ROLE_SEED);
-  doc.removeObject(ZDocPlayer::ROLE_SEED, true);
+  doc.addObject(obj6);
+  doc.removeObject(ZStackObjectRole::ROLE_SEED, true);
   ASSERT_EQ(0, doc.getObjectGroup().size());
 
-  doc.addObject(new ZObject3d, ZDocPlayer::ROLE_DISPLAY);
-  doc.addObject(new ZObject3d, ZDocPlayer::ROLE_SEED);
-  doc.addObject(new ZObject3d, ZDocPlayer::ROLE_SEED | ZDocPlayer::ROLE_DISPLAY);
-  doc.addObject(new ZObject3d, ZDocPlayer::ROLE_NONE);
+  {
+    ZObject3d *obj = new ZObject3d();
+    obj->setRole(ZStackObjectRole::ROLE_DISPLAY);
+    doc.addObject(obj);
+  }
+  {
+    ZObject3d *obj = new ZObject3d();
+    obj->setRole(ZStackObjectRole::ROLE_SEED);
+    doc.addObject(obj);
+  }
+  {
+    ZObject3d *obj = new ZObject3d();
+    obj->setRole(ZStackObjectRole::ROLE_SEED | ZStackObjectRole::ROLE_DISPLAY);
+    doc.addObject(obj);
+  }
+  {
+    ZObject3d *obj = new ZObject3d();
+    doc.addObject(obj);
+  }
+
   ASSERT_EQ(3, doc.getPlayerList().size());
   ASSERT_EQ(4, doc.getObjectGroup().size());
 
@@ -81,23 +105,38 @@ TEST(ZStackDoc, Player)
   ASSERT_EQ(0, doc.getObjectGroup().size());
 
 
-  doc.addObject(new ZObject3d, ZDocPlayer::ROLE_DISPLAY);
-  doc.addObject(new ZObject3d, ZDocPlayer::ROLE_SEED);
-  doc.addObject(new ZObject3d, ZDocPlayer::ROLE_SEED | ZDocPlayer::ROLE_DISPLAY);
-  doc.addObject(new ZObject3d, ZDocPlayer::ROLE_NONE);
+  {
+    ZObject3d *obj = new ZObject3d();
+    obj->setRole(ZStackObjectRole::ROLE_DISPLAY);
+    doc.addObject(obj);
+  }
+  {
+    ZObject3d *obj = new ZObject3d();
+    obj->setRole(ZStackObjectRole::ROLE_SEED);
+    doc.addObject(obj);
+  }
+  {
+    ZObject3d *obj = new ZObject3d();
+    obj->setRole(ZStackObjectRole::ROLE_SEED | ZStackObjectRole::ROLE_DISPLAY);
+    doc.addObject(obj);
+  }
+  {
+    ZObject3d *obj = new ZObject3d();
+    doc.addObject(obj);
+  }
 
-  ASSERT_TRUE(doc.hasPlayer(ZDocPlayer::ROLE_DISPLAY));
-  ASSERT_TRUE(doc.hasPlayer(ZDocPlayer::ROLE_SEED));
-  ASSERT_FALSE(doc.hasPlayer(ZDocPlayer::ROLE_NONE));
-  ASSERT_FALSE(doc.hasPlayer(ZDocPlayer::ROLE_3DPAINT));
-  ASSERT_EQ(2, doc.getPlayerList(ZDocPlayer::ROLE_SEED).size());
+  ASSERT_TRUE(doc.hasPlayer(ZStackObjectRole::ROLE_DISPLAY));
+  ASSERT_TRUE(doc.hasPlayer(ZStackObjectRole::ROLE_SEED));
+  ASSERT_FALSE(doc.hasPlayer(ZStackObjectRole::ROLE_NONE));
+  ASSERT_FALSE(doc.hasPlayer(ZStackObjectRole::ROLE_3DPAINT));
+  ASSERT_EQ(2, doc.getPlayerList(ZStackObjectRole::ROLE_SEED).size());
 
   std::cout << "ZStackDocTest: v5" << std::endl;
 
   ZObject3d *obj2 = new ZObject3d;
   obj2->append(1, 2, 3);
   obj2->append(4, 5, 6);
-  doc.addObject(obj2, ZDocPlayer::ROLE_3DGRAPH_DECORATOR);
+  obj2->setRole(ZStackObjectRole::ROLE_3DGRAPH_DECORATOR);
 
   Z3DGraph graph = doc.get3DGraphDecoration();
   ASSERT_EQ(1, (int) graph.getNodeNumber());
@@ -108,7 +147,7 @@ TEST(ZStackDoc, Player)
   for (int i = 0; i < 10; ++i) {
     obj3->append(i, 10, 10);
   }
-  doc.addObject(obj3, ZDocPlayer::ROLE_3DGRAPH_DECORATOR);
+  obj3->setRole(ZStackObjectRole::ROLE_3DGRAPH_DECORATOR);
 
   graph = doc.get3DGraphDecoration();
   ASSERT_EQ(5, (int) graph.getNodeNumber());

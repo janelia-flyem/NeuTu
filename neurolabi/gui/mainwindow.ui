@@ -366,6 +366,7 @@
        <string>Project</string>
       </property>
       <addaction name="actionFlyEmROI"/>
+      <addaction name="actionMerge_Body_Project"/>
      </widget>
      <addaction name="menuNew"/>
      <addaction name="menuFlyEmOpen"/>
@@ -1338,6 +1339,15 @@
   <action name="actionUpload_Annotations">
    <property name="text">
     <string>Upload Annotations</string>
+   </property>
+  </action>
+  <action name="actionMerge_Body_Project">
+   <property name="icon">
+    <iconset resource="gui.qrc">
+     <normaloff>:/images/bodymerge.png</normaloff>:/images/bodymerge.png</iconset>
+   </property>
+   <property name="text">
+    <string>Merge Body</string>
    </property>
   </action>
  </widget>

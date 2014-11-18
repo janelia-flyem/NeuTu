@@ -327,7 +327,7 @@
     <item>
      <layout class="QHBoxLayout" name="horizontalLayout_19">
       <item>
-       <widget class="QPushButton" name="estimateRoiPushButton">
+       <widget class="QPushButton" name="mergePushButton">
         <property name="text">
          <string>Merge</string>
         </property>

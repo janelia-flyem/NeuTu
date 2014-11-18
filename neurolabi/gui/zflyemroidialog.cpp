@@ -326,7 +326,8 @@ void ZFlyEmRoiDialog::loadPartialGrayscaleFunc(
 
       ZSwcTree *tree = m_project->getRoiSwc(z);
       if (tree != NULL) {
-        m_docReader.addObject(tree, ZDocPlayer::ROLE_ROI);
+        //tree->setRole(ZStackObjectRole::ROLE_ROI);
+        m_docReader.addObject(tree);
       }
       emit newDocReady();
     } else {
@@ -541,7 +542,7 @@ void ZFlyEmRoiDialog::loadGrayscaleFunc(int z, bool lowres)
       ZSwcTree *tree = m_project->getRoiSwc(
             z, FlyEm::GetFlyEmRoiMarkerRadius(stack->width(), stack->height()));
       if (tree != NULL) {
-        m_docReader.addObject(tree, ZDocPlayer::ROLE_ROI);
+        m_docReader.addObject(tree);
       }
 #ifdef _DEBUG_
       std::cout << "Object count in docreader: "

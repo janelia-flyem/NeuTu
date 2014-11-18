@@ -188,6 +188,13 @@ void ZDvidWriter::writeRoiCurve(
   }
 }
 
+void ZDvidWriter::deleteRoiCurve(const std::string &key)
+{
+  if (!key.empty()) {
+    deleteKey(ZDvidData::getName(ZDvidData::ROLE_ROI_CURVE), key);
+  }
+}
+
 void ZDvidWriter::writeJsonString(
     const std::string &dataName, const std::string &key,
     const std::string jsonString)

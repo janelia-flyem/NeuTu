@@ -1263,7 +1263,13 @@ void ZStackPresenter::optimizeStackBc()
 
 void ZStackPresenter::autoThreshold()
 {
-  buddyView()->setThreshold(buddyDocument()->autoThreshold());
+  QString id = "ZStackDoc::autoThreshold";
+  if (!m_futureMap.isAlive(id)) {
+    QFuture<void> future =
+        QtConcurrent::run(buddyDocument(), &ZStackDoc::autoThreshold);
+    m_futureMap[id] = future;
+  }
+  //buddyView()->setThreshold(buddyDocument()->autoThreshold());
 }
 
 void ZStackPresenter::binarizeStack()
@@ -2213,13 +2219,14 @@ void ZStackPresenter::acceptActiveStroke()
                   buddyDocument()->getStackOffset().getZ());
   newStroke->setPenetrating(false);
 
-  ZDocPlayer::TRole role = ZDocPlayer::ROLE_NONE;
+  ZStackObjectRole::TRole role = ZStackObjectRole::ROLE_NONE;
   if (GET_APPLICATION_NAME == "FlyEM") {
-    role = ZDocPlayer::ROLE_SEED;
+    role = ZStackObjectRole::ROLE_SEED;
   }
 
   newStroke->setZOrder(m_zOrder++);
-  buddyDocument()->executeAddObjectCommand(newStroke, role);
+  newStroke->setRole(role);
+  buddyDocument()->executeAddObjectCommand(newStroke);
   //buddyDocument()->executeAddStrokeCommand(newStroke);
 
   m_stroke.clear();

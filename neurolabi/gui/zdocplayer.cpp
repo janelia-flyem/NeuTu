@@ -8,31 +8,14 @@
 #include "zjsonobject.h"
 #include "zstackball.h"
 
-const ZDocPlayer::TRole ZDocPlayer::ROLE_NONE = 0;
-const ZDocPlayer::TRole ZDocPlayer::ROLE_DISPLAY = 1;
-const ZDocPlayer::TRole ZDocPlayer::ROLE_SEED = 2;
-const ZDocPlayer::TRole ZDocPlayer::ROLE_TMP_RESULT = 4;
-const ZDocPlayer::TRole ZDocPlayer::ROLE_3DPAINT = 8;
-const ZDocPlayer::TRole ZDocPlayer::ROLE_MANAGED_OBJECT = 16;
-const ZDocPlayer::TRole ZDocPlayer::ROLE_3DGRAPH_DECORATOR = 32;
-const ZDocPlayer::TRole ZDocPlayer::ROLE_TMP_BOOKMARK = 64;
-const ZDocPlayer::TRole ZDocPlayer::ROLE_ROI = 128;
-const ZDocPlayer::TRole ZDocPlayer::ROLE_MASK = 256;
-
-ZDocPlayer::ZDocPlayer() : m_data(NULL), m_role(ZDocPlayer::ROLE_NONE)
-{
-}
-
 ZDocPlayer::~ZDocPlayer()
 {
   m_data = NULL;
-  m_role = ZDocPlayer::ROLE_NONE;
 }
 
-ZDocPlayer::ZDocPlayer(ZStackObject *data, TRole role)
+ZDocPlayer::ZDocPlayer(ZStackObject *data)
 {
   m_data = data;
-  m_role = role;
 }
 
 bool ZDocPlayer::hasData(ZStackObject *data) const
@@ -44,14 +27,13 @@ bool ZDocPlayer::hasData(ZStackObject *data) const
   return (m_data == data);
 }
 
-bool ZDocPlayer::hasRole(TRole role) const
+bool ZDocPlayer::hasRole(ZStackObjectRole::TRole role) const
 {
-  if (role == ROLE_NONE) {
-    return (m_role == ROLE_NONE);
+  if (m_data != NULL) {
+    return m_data->hasRole(role);
   }
 
-  return role == (m_role & role);
-  //return (m_role == role) || ((m_role & role) > 0);
+  return false;
 }
 
 bool ZDocPlayer::isEmpty() const
@@ -97,34 +79,37 @@ QList<ZDocPlayer*> ZDocPlayerList::takePlayer(ZStackObject *data)
   return playerList;
 }
 
-ZDocPlayer::TRole ZDocPlayerList::removePlayer(ZStackObject *data)
+ZStackObjectRole::TRole ZDocPlayerList::removePlayer(ZStackObject *data)
 {
-  ZDocPlayer::TRole role = ZDocPlayer::ROLE_NONE;
+  ZStackObjectRole::TRole role = ZStackObjectRole::ROLE_NONE;
+  if (data != NULL) {
+    role = data->getRole().getRole();
 
-  ZDocPlayerList::iterator iter = begin();
-  while (iter != end()) {
-    ZDocPlayer *player = *iter;
-    if (player->hasData(data)) {
-      role |= player->getRole();
-      iter = erase(iter);
-      delete player;
-    } else {
-      ++iter;
+    ZDocPlayerList::iterator iter = begin();
+    while (iter != end()) {
+      ZDocPlayer *player = *iter;
+      if (player->hasData(data)) {
+//        role |= player->getRole();
+        iter = erase(iter);
+        delete player;
+      } else {
+        ++iter;
+      }
     }
   }
 
   return role;
 }
 
-ZDocPlayer::TRole ZDocPlayerList::removePlayer(ZDocPlayer::TRole role)
+ZStackObjectRole::TRole ZDocPlayerList::removePlayer(
+    ZStackObjectRole::TRole role)
 {
-  ZDocPlayer::TRole result = ZDocPlayer::ROLE_NONE;
-
+  ZStackObjectRole roleObj;
   ZDocPlayerList::iterator iter = begin();
   while (iter != end()) {
     ZDocPlayer *player = *iter;
     if (player->hasRole(role)) {
-      result |= player->getRole();
+      roleObj.addRole(player->getRole());
       iter = erase(iter);
       delete player;
     } else {
@@ -132,10 +117,10 @@ ZDocPlayer::TRole ZDocPlayerList::removePlayer(ZDocPlayer::TRole role)
     }
   }
 
-  return result;
+  return roleObj.getRole();
 }
 
-QList<ZDocPlayer*> ZDocPlayerList::getPlayerList(ZDocPlayer::TRole role)
+QList<ZDocPlayer*> ZDocPlayerList::getPlayerList(ZStackObjectRole::TRole role)
 {
   QList<ZDocPlayer*> playerList;
 
@@ -150,7 +135,7 @@ QList<ZDocPlayer*> ZDocPlayerList::getPlayerList(ZDocPlayer::TRole role)
 }
 
 QList<const ZDocPlayer*>
-ZDocPlayerList::getPlayerList(ZDocPlayer::TRole role) const
+ZDocPlayerList::getPlayerList(ZStackObjectRole::TRole role) const
 {
   QList<const ZDocPlayer*> playerList;
 
@@ -164,7 +149,7 @@ ZDocPlayerList::getPlayerList(ZDocPlayer::TRole role) const
   return playerList;
 }
 
-bool ZDocPlayerList::hasPlayer(ZDocPlayer::TRole role) const
+bool ZDocPlayerList::hasPlayer(ZStackObjectRole::TRole role) const
 {
   for(ZDocPlayerList::const_iterator iter = begin(); iter != end(); ++iter) {
     ZDocPlayer *player = *iter;
@@ -187,13 +172,8 @@ void ZDocPlayerList::print() const
 
 
 /*************************************/
-
-ZStroke2dPlayer::ZStroke2dPlayer() : ZDocPlayer()
-{
-}
-
-ZStroke2dPlayer::ZStroke2dPlayer(ZStackObject *data, TRole role) :
-  ZDocPlayer(data, role)
+ZStroke2dPlayer::ZStroke2dPlayer(ZStackObject *data) :
+  ZDocPlayer(data)
 {
 }
 
@@ -241,13 +221,8 @@ ZStack* ZStroke2dPlayer::toStack() const
 }
 
 /*************************************/
-
-ZObject3dPlayer::ZObject3dPlayer() : ZDocPlayer()
-{
-}
-
-ZObject3dPlayer::ZObject3dPlayer(ZStackObject *data, TRole role) :
-  ZDocPlayer(data, role)
+ZObject3dPlayer::ZObject3dPlayer(ZStackObject *data) :
+  ZDocPlayer(data)
 {
 }
 
@@ -379,13 +354,8 @@ ZJsonObject ZObject3dPlayer::toJsonObject() const
 }
 
 /*************************************/
-
-ZObject3dScanPlayer::ZObject3dScanPlayer() : ZDocPlayer()
-{
-}
-
-ZObject3dScanPlayer::ZObject3dScanPlayer(ZStackObject *data, TRole role) :
-  ZDocPlayer(data, role)
+ZObject3dScanPlayer::ZObject3dScanPlayer(ZStackObject *data) :
+  ZDocPlayer(data)
 {
 }
 
@@ -396,13 +366,8 @@ const ZObject3dScan* ZObject3dScanPlayer::getCompleteData() const
 }
 
 /*************************************/
-
-ZSparseObjectPlayer::ZSparseObjectPlayer() : ZDocPlayer()
-{
-}
-
-ZSparseObjectPlayer::ZSparseObjectPlayer(ZStackObject *data, TRole role) :
-  ZDocPlayer(data, role)
+ZSparseObjectPlayer::ZSparseObjectPlayer(ZStackObject *data) :
+  ZDocPlayer(data)
 {
 }
 
@@ -433,12 +398,8 @@ ZStack* ZSparseObjectPlayer::toStack() const
 }
 
 /*******************************/
-ZStackBallPlayer::ZStackBallPlayer() : ZDocPlayer()
-{
-}
-
-ZStackBallPlayer::ZStackBallPlayer(ZStackObject *data, TRole role) :
-  ZDocPlayer(data, role)
+ZStackBallPlayer::ZStackBallPlayer(ZStackObject *data) :
+  ZDocPlayer(data)
 {
 }
 

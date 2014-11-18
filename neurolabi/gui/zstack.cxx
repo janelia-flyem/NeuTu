@@ -995,6 +995,44 @@ int ZStack::getIntValueLocal(int x, int y, int z, int c) const
   return 0;
 }
 
+int ZStack::getIntValue(size_t index, int c) const
+{
+  if (isVirtual()) {
+    return 0;
+  }
+
+  size_t voxelNumber = getVoxelNumber();
+
+  if (index >= voxelNumber) {
+    return 0;
+  }
+
+
+  Image_Array ima;
+  ima.array = m_stack->array;
+  size_t offset = voxelNumber * c + index;
+
+  switch (kind()) {
+  case GREY:
+    return ima.array8[offset];
+  case COLOR:
+  {
+    int v = ima.arrayc[offset][2];
+    v = (v << 8) + ima.arrayc[offset][1];
+    v = (v << 8) + ima.arrayc[offset][0];
+    return v;
+  }
+  case GREY16:
+    return ima.array16[offset];
+  case FLOAT32:
+    return ima.array32[offset];
+  case FLOAT64:
+    return ima.array64[offset];
+  }
+
+  return 0;
+}
+
 double ZStack::saturatedIntensity() const
 {
   if (kind() == 1)

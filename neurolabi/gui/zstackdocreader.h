@@ -46,10 +46,8 @@ public:
 
   //void addPlayer(ZStackObject *obj, NeuTube::EDocumentableType type,
   //               ZDocPlayer::TRole role);
-  void addPlayer(ZStackObject *obj, ZDocPlayer::TRole role);
-  void addObject(
-      ZStackObject *obj, ZDocPlayer::TRole role = ZDocPlayer::ROLE_NONE,
-      bool uniqueSource = true);
+  void addPlayer(ZStackObject *obj);
+  void addObject(ZStackObject *obj, bool uniqueSource = true);
 
 public:
   void setStack(ZStack *stack);

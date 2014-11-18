@@ -69,6 +69,8 @@ public:
    */
   int getStartCoordinate(int index) const;
 
+  void setStartCoordinate(int index, int x);
+
 private:
   mylib::Array *m_data;
   std::vector<int> m_startCoordinates;

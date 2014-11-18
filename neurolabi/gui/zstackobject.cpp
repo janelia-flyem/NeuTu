@@ -7,7 +7,7 @@ const char* ZStackObject::m_nodeAdapterId = "!NodeAdapter";
 ZStackObject::ZStackObject() : m_selected(false), m_isVisible(true),
   m_isHittable(true),
   m_style(SOLID), m_target(WIDGET), m_usingCosmeticPen(false), m_zScale(1.0),
-  m_zOrder(1), m_type(TYPE_UNIDENTIFIED)
+  m_zOrder(1), m_type(TYPE_UNIDENTIFIED), m_role(ZStackObjectRole::ROLE_NONE)
 {
 }
 

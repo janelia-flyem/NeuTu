@@ -3,7 +3,7 @@
 #include "zobjsitem.h"
 
 ZDocPlayerObjsModel::ZDocPlayerObjsModel(
-    ZStackDoc *doc, ZDocPlayer::TRole role, QObject *parent) :
+    ZStackDoc *doc, ZStackObjectRole::TRole role, QObject *parent) :
   ZObjsModel(parent), m_doc(doc), m_role(role)
 {
   updateModelData();

@@ -7,7 +7,8 @@ using namespace std;
 
 
 Z3DGraphFilter::Z3DGraphFilter() : m_lineRenderer(NULL),
-  m_coneRenderer(NULL), m_arrowRenderer(NULL), m_sphereRenderer(NULL), m_dataIsInvalid(true)
+  m_coneRenderer(NULL), m_arrowRenderer(NULL), m_sphereRenderer(NULL),
+  m_dataIsInvalid(true)
   , m_xCut("X Cut", glm::ivec2(0,0), 0, 0)
   , m_yCut("Y Cut", glm::ivec2(0,0), 0, 0)
   , m_zCut("Z Cut", glm::ivec2(0,0), 0, 0)

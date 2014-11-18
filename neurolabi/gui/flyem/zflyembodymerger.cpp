@@ -5,9 +5,27 @@ ZFlyEmBodyMerger::ZFlyEmBodyMerger()
 {
 }
 
-uint64_t ZFlyEmBodyMerger::getFinalLabel(uint64_t label)
+uint64_t ZFlyEmBodyMerger::getFinalLabel(uint64_t label) const
 {
   return mapLabel(m_mapList, label);
+}
+
+ZFlyEmBodyMerger::TLabelMap ZFlyEmBodyMerger::getFinalMap() const
+{
+  ZFlyEmBodyMerger::TLabelMap labelMap;
+  std::cout << "Body merger:" << std::endl;
+  for (TLabelMapList::const_iterator iter = m_mapList.begin();
+       iter != m_mapList.end(); ++iter) {
+    const TLabelMap &currentLabelMap = *iter;
+    for (TLabelMap::const_iterator mapIter = currentLabelMap.begin();
+         mapIter != currentLabelMap.end(); ++mapIter) {
+      if (!labelMap.contains(mapIter.key())) {
+        labelMap[mapIter.key()] = getFinalLabel(mapIter.key());
+      }
+    }
+  }
+
+  return labelMap;
 }
 
 uint64_t ZFlyEmBodyMerger::mapLabel(const TLabelMap &labelMap, uint64_t label)
@@ -41,7 +59,33 @@ void ZFlyEmBodyMerger::pushMap(uint64_t label1, uint64_t label2)
 
 void ZFlyEmBodyMerger::pushMap(const TLabelMap &map)
 {
-  m_mapList.append(map);
+  if (!map.isEmpty()) {
+    m_mapList.append(map);
+  }
+}
+
+void ZFlyEmBodyMerger::pushMap(const TLabelSet &labelSet)
+{
+  if (labelSet.size() > 1) {
+    uint64_t minLabel = 0;
+    for (TLabelSet::const_iterator iter = labelSet.begin();
+         iter != labelSet.end(); ++iter) {
+      if (minLabel == 0 || minLabel > *iter) {
+        minLabel = *iter;
+      }
+    }
+
+    TLabelMap labelMap;
+    if (minLabel > 0) {
+      for (TLabelSet::const_iterator iter = labelSet.begin();
+           iter != labelSet.end(); ++iter) {
+        if (*iter != minLabel) {
+          labelMap[*iter] = minLabel;
+        }
+      }
+      pushMap(labelMap);
+    }
+  }
 }
 
 void ZFlyEmBodyMerger::undo()

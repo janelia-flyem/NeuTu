@@ -147,6 +147,7 @@
 #include "zsleeper.h"
 #include "dvidoperatedialog.h"
 #include "synapseimportdialog.h"
+#include "flyembodymergeprojectdialog.h"
 
 #include "z3dcanvas.h"
 #include "z3dapplication.h"
@@ -273,6 +274,7 @@ MainWindow::~MainWindow()
 {
   m_bodySplitProjectDialog->clear();
   m_roiDlg->clear();
+  m_mergeBodyDlg->clear();
 
   delete m_ui;
   delete m_reporter;
@@ -340,17 +342,24 @@ void MainWindow::initDialog()
   //m_dvidImageDlg->setAddress(m_dvidClient->getServer());
   m_dvidImageDlg = ZDialogFactory::makeDvidImageDialog(m_dvidDlg, this);
 
-  m_newBsProjectDialog = new ZFlyEmNewBodySplitProjectDialog(this);
-  m_newBsProjectDialog->setDvidDialog(m_dvidDlg);
 
-  m_bodySplitProjectDialog = new FlyEmBodySplitProjectDialog(this);
-  m_bodySplitProjectDialog->setLoadBodyDialog(m_newBsProjectDialog);
 
   m_dvidSkeletonizeDialog = new DvidSkeletonizeDialog(this);
   m_roiDlg = new ZFlyEmRoiDialog(this);
   m_shapePaperDlg = new ShapePaperDialog(this);
 
 #if defined(_FLYEM_)
+  m_newBsProjectDialog = new ZFlyEmNewBodySplitProjectDialog(this);
+  m_newBsProjectDialog->setDvidDialog(m_dvidDlg);
+
+  m_bodySplitProjectDialog = new FlyEmBodySplitProjectDialog(this);
+  m_bodySplitProjectDialog->setLoadBodyDialog(m_newBsProjectDialog);
+
+  m_mergeBodyDlg = new FlyEmBodyMergeProjectDialog(this);
+  m_mergeBodyDlg->setDvidDialog(m_dvidDlg);
+
+  m_mergeBodyDlg->restoreGeometry(
+        getSettings().value("BodyMergeProjectGeometry").toByteArray());
   m_bodySplitProjectDialog->restoreGeometry(
           getSettings().value("BodySplitProjectGeometry").toByteArray());
   m_roiDlg->restoreGeometry(
@@ -413,10 +422,10 @@ void MainWindow::createFileActions()
   connect(swcImportAction, SIGNAL(triggered()), this, SLOT(importSwc()));
 
   gtImportAction = new QAction(tr("&Good tubes"), m_readActionGroup);
-  connect(gtImportAction, SIGNAL(triggered()), this, SLOT(importGoodTube()));
+  //connect(gtImportAction, SIGNAL(triggered()), this, SLOT(importGoodTube()));
 
   btImportAction = new QAction(tr("&Bad tubes"), m_readActionGroup);
-  connect(btImportAction, SIGNAL(triggered()), this, SLOT(importBadTube()));
+  //connect(btImportAction, SIGNAL(triggered()), this, SLOT(importBadTube()));
 
   connImportAction = new QAction(tr("&Tube connection"), m_readActionGroup);
   /*
@@ -908,6 +917,7 @@ void MainWindow::createToolBars()
     m_ui->toolBar->addAction(m_ui->actionDVID_Bundle);
     //m_ui->toolBar->addAction(m_ui->actionDvid_Object);
     m_ui->toolBar->addAction(m_ui->actionSplit_Body);
+    m_ui->toolBar->addAction(m_ui->actionMerge_Body_Project);
     m_ui->toolBar->addAction(m_ui->actionFlyEmROI);
 #ifdef _DEBUG_2
     m_ui->toolBar->addAction(m_ui->actionShape_Matching);
@@ -1970,6 +1980,8 @@ void MainWindow::writeSettings()
   getSettings().setValue("lastPath", m_lastOpenedFilePath);
   getSettings().setValue("geometry", saveGeometry());
 #if defined(_FLYEM_)
+  getSettings().setValue(
+        "BodyMergeProjectGeometry", m_mergeBodyDlg->saveGeometry());
   getSettings().setValue(
         "BodySplitProjectGeometry", m_bodySplitProjectDialog->saveGeometry());
   getSettings().setValue(
@@ -6592,4 +6604,10 @@ void MainWindow::on_actionUpload_Annotations_triggered()
   if (frame != NULL) {
     frame->uploadAnnotation();
   }
+}
+
+void MainWindow::on_actionMerge_Body_Project_triggered()
+{
+  m_mergeBodyDlg->show();
+  m_mergeBodyDlg->raise();
 }

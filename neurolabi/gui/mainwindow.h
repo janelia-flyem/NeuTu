@@ -55,6 +55,7 @@ class NewProjectMainWindow;
 class ShapePaperDialog;
 class DvidOperateDialog;
 class SynapseImportDialog;
+class FlyEmBodyMergeProjectDialog;
 
 namespace Ui {
     class MainWindow;
@@ -394,6 +395,8 @@ private slots:
 
   void on_actionUpload_Annotations_triggered();
 
+  void on_actionMerge_Body_Project_triggered();
+
 private:
   void createActions();
   void createFileActions();
@@ -603,6 +606,7 @@ private:
   ShapePaperDialog *m_shapePaperDlg;
   DvidOperateDialog *m_dvidOpDlg;
   SynapseImportDialog *m_synapseDlg;
+  FlyEmBodyMergeProjectDialog *m_mergeBodyDlg;
 
 
   //new project main window

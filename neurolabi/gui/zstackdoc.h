@@ -264,7 +264,6 @@ public: //attributes
 
   void addData(const ZStackDocReader &reader);
 
-
   bool isUndoClean() const;
   bool isSwcSavingRequired() const;
   void setSaved(NeuTube::EDocumentableType type, bool state);
@@ -341,11 +340,11 @@ public:
   //Those functions do not notify object modification
   //void removeLastObject(bool deleteObject = false);
   void removeAllObject(bool deleteObject = true);
-  ZDocPlayer::TRole removeObject(ZStackObject *obj, bool deleteObject = false);
+  ZStackObjectRole::TRole removeObject(ZStackObject *obj, bool deleteObject = false);
   void removeSelectedObject(bool deleteObject = false);
 
   /* Remove object with specific roles */
-  void removeObject(ZDocPlayer::TRole role, bool deleteObject = false);
+  void removeObject(ZStackObjectRole::TRole role, bool deleteObject = false);
 
   void removeSelectedPuncta(bool deleteObject = false);
   void removeSmallLocsegChain(double thre);   //remove small locseg chain (geolen < thre)
@@ -383,7 +382,7 @@ public:
 
 public: //Image processing
   static int autoThreshold(Stack* getStack);
-  int autoThreshold();
+  void autoThreshold();
   bool binarize(int threshold);
   bool bwsolid();
   bool enhanceLine();
@@ -448,9 +447,7 @@ public: /* puncta related methods */
    *        is true. Note that if there are multiple objects with the same source
    *        existing in the doc, only the first one is replaced.
    */
-  void addObject(
-      ZStackObject *obj, ZDocPlayer::TRole role = ZDocPlayer::ROLE_NONE,
-      bool uniqueSource = true);
+  void addObject(ZStackObject *obj, bool uniqueSource = true);
 
   /*!
    * \brief Add a palyer
@@ -459,7 +456,7 @@ public: /* puncta related methods */
    */
 //  void addPlayer(ZStackObject *obj, NeuTube::EDocumentableType type,
 //                 ZDocPlayer::TRole role);
-  void addPlayer(ZStackObject *obj, ZDocPlayer::TRole role);
+  void addPlayer(ZStackObject *obj);
 
   void updateLocsegChain(ZLocsegChain *chain);
   void importLocsegChain(const QStringList &files,
@@ -606,9 +603,9 @@ public: /* puncta related methods */
     return m_sparseStack;
   }
 
-  QList<const ZDocPlayer*> getPlayerList(ZDocPlayer::TRole role) const;
+  QList<const ZDocPlayer*> getPlayerList(ZStackObjectRole::TRole role) const;
 
-  bool hasPlayer(ZDocPlayer::TRole role) const;
+  bool hasPlayer(ZStackObjectRole::TRole role) const;
 
   Z3DGraph get3DGraphDecoration() const;
 
@@ -706,6 +703,10 @@ public:
   void notify3DGraphModified();
   void notifyStatusMessageUpdated(const QString &message);
 
+  void notifyProgressStart();
+  void notifyProgressEnd();
+  void notifyProgressAdvanced(double dp);
+
   template <typename T>
   void notifySelectionAdded(const std::set<T*> &oldSelected,
                             const std::set<T*> &newSelected);
@@ -745,7 +746,8 @@ public:
 
   ZStack* makeLabelStack(ZStack *stack = NULL) const;
 
-  void notifyPlayerChanged(ZDocPlayer::TRole role);
+  void notifyPlayerChanged(const ZStackObjectRole &role);
+  void notifyPlayerChanged(ZStackObjectRole::TRole role);
 
   inline void setLastAddedSwcNode(Swc_Tree_Node *tn) {
     m_lastAddedSwcNode = tn;
@@ -757,7 +759,6 @@ public:
 
 public slots: //undoable commands
   bool executeAddObjectCommand(ZStackObject *obj,
-                               ZDocPlayer::TRole role = ZDocPlayer::ROLE_NONE,
                                bool uniqueSource = true);
   bool executeRemoveSelectedObjectCommand();
   //bool executeRemoveUnselectedObjectCommand();
@@ -772,8 +773,7 @@ public slots: //undoable commands
   bool executeAutoTraceAxonCommand();
 
   bool executeAddSwcCommand(ZSwcTree *tree);
-  bool executeReplaceSwcCommand(
-      ZSwcTree *tree, ZDocPlayer::TRole role = ZDocPlayer::ROLE_NONE);
+  bool executeReplaceSwcCommand(ZSwcTree *tree);
   void executeSwcRescaleCommand(const ZRescaleSwcSetting &setting);
   bool executeSwcNodeExtendCommand(const ZPoint &center);
   bool executeSwcNodeExtendCommand(const ZPoint &center, double radius);
@@ -824,6 +824,10 @@ public slots: //undoable commands
   bool executeEnhanceLineCommand();
   bool executeWatershedCommand();
 
+  void advanceProgressSlot(double dp);
+  void startProgressSlot();
+  void endProgressSlot();
+
   //bool executeAddStrokeCommand(ZStroke2d *stroke);
   //bool executeAddStrokeCommand(const QList<ZStroke2d*> &strokeList);
 
@@ -858,6 +862,8 @@ public slots:
   void emptySlot();
 
   void reloadStack();
+
+  void reloadData(const ZStackDocReader &reader);
 
 /*
 public:
@@ -907,10 +913,17 @@ signals:
   void holdSegChanged();
   void statusMessageUpdated(QString message) const;
 
+  void thresholdChanged(int thre);
+
   /*!
    * \brief A signal indicating modification of volume rendering
    */
   void volumeModified();
+
+  void progressStarted();
+  void progressEnded();
+  void progressAdvanced(double dp);
+  void newDocReady(const ZStackDocReader &reader);
 
 private:
   void connectSignalSlot();
@@ -987,6 +1000,7 @@ private:
 
   bool m_selectionSilent;
 
+protected:
   ZObjectColorScheme m_objColorSheme;
 };
 

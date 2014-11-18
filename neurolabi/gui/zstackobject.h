@@ -3,6 +3,7 @@
 
 #include "zqtheader.h"
 #include "zpainter.h"
+#include "zstackobjectrole.h"
 
 /*!
  * \brief The abstract class of representing an 3D object
@@ -154,6 +155,27 @@ public:
     return m_type;
   }
 
+  inline const ZStackObjectRole& getRole() const {
+    return m_role;
+  }
+
+  inline bool hasRole() const {
+    return !m_role.isNone();
+  }
+
+  inline bool hasRole(ZStackObjectRole::TRole role) const
+  {
+    return m_role.hasRole(role);
+  }
+
+  inline void setRole(ZStackObjectRole::TRole role) {
+    m_role.setRole(role);
+  }
+
+  inline void addRole(ZStackObjectRole::TRole role) {
+    m_role.addRole(role);
+  }
+
   static inline const char* getNodeAdapterId() {
     return m_nodeAdapterId;
   }
@@ -186,6 +208,7 @@ protected:
   std::string m_source;
   int m_zOrder;
   EType m_type;
+  ZStackObjectRole m_role;
 
   static const char *m_nodeAdapterId;
 };

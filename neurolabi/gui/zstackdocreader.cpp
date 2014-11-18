@@ -150,7 +150,7 @@ void ZStackDocReader::loadPuncta(const QString &filePath)
   if (!filePath.isEmpty()) {
     QList<ZPunctum*> plist = ZPunctumIO::load(filePath);
     foreach (ZPunctum* punctum, plist) {
-      addObject(punctum, ZDocPlayer::ROLE_NONE, false);
+      addObject(punctum, false);
       //addPunctum(punctum);
     }
   }
@@ -232,27 +232,28 @@ bool ZStackDocReader::hasData() const
   return false;
 }
 
-void ZStackDocReader::addPlayer(ZStackObject *obj, ZDocPlayer::TRole role)
+void ZStackDocReader::addPlayer(ZStackObject *obj)
 {
-  if ((role != ZDocPlayer::ROLE_NONE) && (obj != NULL)) {
-    ZDocPlayer *player = NULL;
-    switch (obj->getType()) {
-    case ZStackObject::TYPE_OBJ3D:
-      player = new ZObject3dPlayer(obj, role);
-      break;
-    default:
-      player = new ZDocPlayer(obj, role);
-      break;
+  if (obj != NULL) {
+    if (obj->hasRole()) {
+      ZDocPlayer *player = NULL;
+      switch (obj->getType()) {
+      case ZStackObject::TYPE_OBJ3D:
+        player = new ZObject3dPlayer(obj);
+        break;
+      default:
+        player = new ZDocPlayer(obj);
+        break;
+      }
+      m_playerList.append(player);
     }
-    m_playerList.append(player);
   }
 }
 
-void ZStackDocReader::addObject(
-    ZStackObject *obj, ZDocPlayer::TRole role, bool uniqueSource)
+void ZStackDocReader::addObject(ZStackObject *obj, bool uniqueSource)
 {
   if (obj != NULL) {
     m_objectGroup.add(obj, uniqueSource);
-    addPlayer(obj, role);
+    addPlayer(obj);
   }
 }

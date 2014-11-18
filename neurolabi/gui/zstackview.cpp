@@ -1494,8 +1494,8 @@ void ZStackView::paintObject()
 }
 
 void ZStackView::paintObject(
-    QList<ZStackObject *> &selected,
-    QList<ZStackObject *> &deselected)
+    QList<ZStackObject *> selected,
+    QList<ZStackObject *> deselected)
 {
   bool updatingObjectCanvas = false;
   bool updatingImageCanvas = false;

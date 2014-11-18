@@ -176,7 +176,8 @@ void ZStackFrame::consumeDocument(ZStackDoc *doc)
           m_view, SLOT(paintObject()));\
   connect(m_doc.get(), SIGNAL(statusMessageUpdated(QString)),\
           this, SLOT(notifyUser(QString)));\
-  connect(m_doc.get(), SIGNAL(stackTargetModified()), m_view, SLOT(paintStack()));
+  connect(m_doc.get(), SIGNAL(stackTargetModified()), m_view, SLOT(paintStack()));\
+  connect(m_doc.get(), SIGNAL(thresholdChanged(int)), m_view, SLOT(setThreshold(int)));
 
 #define UPDATE_SIGNAL_SLOT(connect) \
   UPDATE_DOC_SIGNAL_SLOT(connect) \
