@@ -13683,7 +13683,7 @@ void ZTest::test(MainWindow *host)
   allObj.save(GET_DATA_DIR + "/flyem/FIB/FIB25/border_obj/all.sobj");
 #endif
 
-#if 1
+#if 0
   FlyEm::ZSynapseAnnotationArray synapseArray;
   synapseArray.loadJson(GET_DATA_DIR +
                         "/flyem/AL/al7d_whole448_tbar-predict_0.81.json");
@@ -13739,5 +13739,13 @@ void ZTest::test(MainWindow *host)
 
   Stack stackView = C_Stack::sliceView(stack.c_stack(), 100, 100);
   C_Stack::write(GET_DATA_DIR + "/benchmark/em_stack_slice.tif", &stackView);
+#endif
+
+#if 1
+  ZStack stack;
+  stack.load(GET_DATA_DIR + "/flyem/AL/label/ds20_s10_signal1_1_1_1_1_thre.tif");
+  Stack_Label_Objects_N(stack.c_stack(), NULL, 1, 2, 26);
+  stack.save(GET_DATA_DIR +
+             "/flyem/AL/label/ds20_s10_signal1_1_1_1_1_thre_labled.tif");
 #endif
 }

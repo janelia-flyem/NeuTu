@@ -405,6 +405,63 @@ int ZCommandLine::runComputeFlyEmNeuronFeature()
   return 0;
 }
 
+int ZCommandLine::runImageSeparation()
+{
+  if (m_input.size() < 2) {
+    return 0;
+  }
+
+  ZStack signal;
+  signal.load(m_input[0]);
+  ZStack mask;
+  mask.load(m_input[1]);
+
+  std::map<int, ZObject3dScan*> *objMap =
+      ZObject3dScan::extractAllObject(
+        mask.array8(), mask.width(), mask.height(),
+        mask.depth(), 0, NULL);
+
+  std::cout << objMap->size() << " objects extracted." << std::endl;
+
+  for (std::map<int, ZObject3dScan*>::iterator iter = objMap->begin();
+       iter != objMap->end(); ++iter) {
+    ZObject3dScan *obj = iter->second;
+    if (iter->first > 0) {
+      ZString outputPath = m_output + "_";
+      outputPath.appendNumber(iter->first);
+      outputPath += ".tif";
+
+
+      obj->translate(mask.getOffset().getX(), mask.getOffset().getY(),
+                     mask.getOffset().getZ());
+      ZStack *substack = obj->toStackObject();
+      size_t offset = 0;
+      for (int z = 0; z < substack->depth(); ++z) {
+        for (int y = 0; y < substack->height(); ++y) {
+          for (int x = 0; x < substack->width(); ++x) {
+            if (substack->array8()[offset] == 1) {
+              int v = signal.getIntValue(x + substack->getOffset().getX(),
+                                         y + substack->getOffset().getY(),
+                                         z + substack->getOffset().getZ());
+              substack->array8()[offset] = v;
+            }
+            ++offset;
+          }
+        }
+      }
+      std::cout << "Saving " << outputPath << "..." << std::endl;
+      substack->save(outputPath);
+      std::cout << "Done." << std::endl;
+      delete substack;
+    }
+    delete obj;
+  }
+
+  delete objMap;
+
+  return 0;
+}
+
 int ZCommandLine::runSkeletonize()
 {
   if (m_input.empty()) {
@@ -463,7 +520,7 @@ int ZCommandLine::run(int argc, char *argv[])
     "[--no_block_adjust]",
     "[--sobj_overlap]", "[--intv <int> <int> <int>]", "[--fulloverlap_screen]",
     "[--synapse_object]", "[--flyem_neuron_feature]", "[--classlist]",
-    "[--skeletonize]", 0
+    "[--skeletonize]", "[--separate <string>]", 0
   };
 
   ZArgumentProcessor::processArguments(
@@ -549,6 +606,11 @@ int ZCommandLine::run(int argc, char *argv[])
   } else if (ZArgumentProcessor::isArgMatched("--skeletonize")) {
     command = SKELETONIZE;
     m_input.push_back(ZArgumentProcessor::getStringArg("input", 0));
+  } else if (ZArgumentProcessor::isArgMatched("--separate")) {
+    command = SEPARATE_IMAGE;
+    m_input.push_back(ZArgumentProcessor::getStringArg("input", 0));
+    m_input.push_back(ZArgumentProcessor::getStringArg("--separate"));
+    m_output = ZArgumentProcessor::getStringArg("-o");
   }
 
   switch (command) {
@@ -566,6 +628,8 @@ int ZCommandLine::run(int argc, char *argv[])
     return runComputeFlyEmNeuronFeature();
   case SKELETONIZE:
     return runSkeletonize();
+  case SEPARATE_IMAGE:
+    return runImageSeparation();
   default:
     std::cout << "Unknown command" << std::endl;
     return 1;

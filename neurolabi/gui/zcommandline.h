@@ -12,7 +12,7 @@ public:
   enum ECommand {
     OBJECT_MARKER, BOUNDARY_ORPHAN, OBJECT_OVERLAP,
     SYNAPSE_OBJECT, CLASS_LIST, FLYEM_NEURON_FEATURE,
-    SKELETONIZE,
+    SKELETONIZE, SEPARATE_IMAGE,
     UNKNOWN_COMMAND
   };
 
@@ -28,6 +28,7 @@ private:
   int runOutputClassList();
   int runComputeFlyEmNeuronFeature();
   int runSkeletonize();
+  int runImageSeparation();
 
 private:
   std::vector<std::string> m_input;

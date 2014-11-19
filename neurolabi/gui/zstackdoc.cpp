@@ -6359,7 +6359,7 @@ void ZStackDoc::addPlayer(ZStackObject *obj)
         player = new ZObject3dScanPlayer(obj);
         break;
       default:
-        player = NULL;
+        player = new ZDocPlayer(obj);
         break;
       }
 
