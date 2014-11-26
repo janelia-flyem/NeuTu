@@ -8,6 +8,13 @@
     },
     {
       "address": "emdata2.int.janelia.org",
+      "uuid": "32fb",
+      "name": "FIB19",
+      "comment": "FIB-19 data at MLOLP-Z1112-19R/align2/iso_rav",
+      "local": "/groups/flyem/data/zhaot/local/FIB19"
+    },
+    {
+      "address": "emdata2.int.janelia.org",
       "uuid": "faa",
       "name": "FIB25-0715",
       "comment": "FIB-25 export 2014-07-15"
