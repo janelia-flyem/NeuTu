@@ -35,6 +35,10 @@ public:
   void setDvidDialog(ZDvidDialog *dvidDlg);
   void setDvidTargetD(const ZDvidTarget &dvidTarget);
 
+  inline ZDvidTarget getDvidTarget() const {
+    return m_dvidTarget;
+  }
+
   void setProgressSignalSlot();
   void notifyProgressAdvanced(double dp);
   void notifyProgressStarted();

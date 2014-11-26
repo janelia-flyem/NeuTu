@@ -34,13 +34,34 @@ void FlyEmBodyMergeProjectDialog::setPushButtonSlots()
   connect(ui->dvidServerPushButton, SIGNAL(clicked()),
           this, SLOT(setDvidTarget()));
   connect(ui->mergePushButton, SIGNAL(clicked()), m_project, SLOT(mergeBody()));
-
+  connect(ui->loadGrayScalePushButton, SIGNAL(clicked()),
+          this, SLOT(loadSlice()));
+  connect(ui->moveyDecPushButton, SIGNAL(clicked()),
+          this, SLOT(moveSliceUp()));
+  connect(ui->moveyIncPushButton, SIGNAL(clicked()),
+          this, SLOT(moveSliceDown()));
 }
 
 void FlyEmBodyMergeProjectDialog::test()
 {
   if (m_project != NULL) {
     m_project->test();
+  }
+}
+
+void FlyEmBodyMergeProjectDialog::moveSliceUp()
+{
+  if (m_project != NULL) {
+    ui->ySpinBox->setValue(ui->ySpinBox->value() - 512);
+    loadSlice();
+  }
+}
+
+void FlyEmBodyMergeProjectDialog::moveSliceDown()
+{
+  if (m_project != NULL) {
+    ui->ySpinBox->setValue(ui->ySpinBox->value() + 512);
+    loadSlice();
   }
 }
 
@@ -96,6 +117,9 @@ void FlyEmBodyMergeProjectDialog::setDvidTarget()
 {
   if (m_dvidDlg->exec()) {
     setDvidTargetD(m_dvidDlg->getDvidTarget());
+    if (m_project != NULL) {
+      m_project->setDvidTarget(getDvidTarget());
+    }
   }
 }
 

@@ -33,6 +33,8 @@ public slots:
   void setDvidTarget();
   void consumeNewDoc(ZStackDocReader *docReader);
   void loadSlice();
+  void moveSliceUp();
+  void moveSliceDown();
 
 private:
   Ui::FlyEmBodyMergeProjectDialog *ui;

@@ -728,6 +728,10 @@ ZArray* ZDvidReader::readLabels64(
   dims[2] = depth;
   ZArray *array = new ZArray(mylib::UINT64_TYPE, 3, dims);
 
+  array->setStartCoordinate(0, x0);
+  array->setStartCoordinate(1, y0);
+  array->setStartCoordinate(2, z0);
+
   array->copyDataFrom(bufferReader.getBuffer().constData());
 
   return array;

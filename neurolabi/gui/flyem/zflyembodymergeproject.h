@@ -38,6 +38,10 @@ public:
     return m_dvidTarget;
   }
 
+  inline void setDvidTarget(const ZDvidTarget &target) {
+    m_dvidTarget = target;
+  }
+
   inline ZFlyEmBodyMergeFrame* getDataFrame() {
     return m_dataFrame;
   }

@@ -12,6 +12,7 @@
 #include "zstackdocreader.h"
 #include "flyem/zflyembodymergedoc.h"
 #include "zarrayfactory.h"
+#include "dvid/zdviddata.h"
 
 ZFlyEmBodyMergeProject::ZFlyEmBodyMergeProject(QObject *parent) :
   QObject(parent), m_dataFrame(NULL)
@@ -64,6 +65,13 @@ void ZFlyEmBodyMergeProject::loadSliceFunc(int x, int y, int z)
     ZStackDocReader *docReader = new ZStackDocReader;
     docReader->setStack(stack);
     emit newDocReady(docReader);
+
+    ZArray *array = reader.readLabels64(
+          ZDvidData::getName(ZDvidData::ROLE_BODY_LABEL),
+          x - width / 2,
+          y - height / 2,
+          z, width, height, 1);
+    emit originalLabelUpdated(array);
   }
 }
 
