@@ -13697,11 +13697,12 @@ void ZTest::test(MainWindow *host)
   for (ZWeightedPointArray::iterator iter = ptArray.begin();
        iter != ptArray.end(); ++iter) {
     ZWeightedPoint &pt = *iter;
-    pt *= 1.0 / dsScale;
-    if (pt.z() > 50) {
-      newPtArray.append(pt);
+    if (pt.weight() >= 0.86) {
+      pt *= 1.0 / dsScale;
+      if (pt.z() > 50) {
+        newPtArray.append(pt);
+      }
     }
-
   }
 
   ZCuboid box = newPtArray.getBoundBox();
@@ -13710,8 +13711,7 @@ void ZTest::test(MainWindow *host)
   ZStackFactory factory;
   ZStack *stack = factory.makeDensityMap(newPtArray, 10.0);
   stack->save(GET_DATA_DIR +
-              "/flyem/AL/al7d_whole448_tbar-predict_0.81_ds20_s10.tif");
-
+              "/flyem/AL/al7d_whole448_tbar-predict_0.86_ds20_s10.tif");
 #endif
 
 #if 0
@@ -13741,11 +13741,126 @@ void ZTest::test(MainWindow *host)
   C_Stack::write(GET_DATA_DIR + "/benchmark/em_stack_slice.tif", &stackView);
 #endif
 
-#if 1
+#if 0
   ZStack stack;
   stack.load(GET_DATA_DIR + "/flyem/AL/label/ds20_s10_signal1_1_1_1_1_thre.tif");
   Stack_Label_Objects_N(stack.c_stack(), NULL, 1, 2, 26);
   stack.save(GET_DATA_DIR +
              "/flyem/AL/label/ds20_s10_signal1_1_1_1_1_thre_labled.tif");
 #endif
+
+#if 0
+  ZFileList fileList;
+  fileList.load(GET_DATA_DIR + "/flyem/AL/label", "tif");
+
+  ZObject3dScanArray objArray;
+
+  for (int i = 0; i < fileList.size(); ++i) {
+    ZString filePath = fileList.getFilePath(i);
+    std::cout << "Path: " << filePath << std::endl;
+    if (filePath.startsWith(GET_DATA_DIR + "/flyem/AL/label/final_ds20_s10_label")) {
+      ZStack stack;
+      stack.load(filePath);
+      std::map<int, ZObject3dScan*> *objList =
+          ZObject3dScan::extractAllObject(
+            stack.array8(), stack.width(), stack.height(), stack.depth(),
+            0, NULL);
+
+      for (std::map<int, ZObject3dScan*>::iterator iter = objList->begin();
+           iter != objList->end(); ++iter) {
+        if (iter->first > 0) {
+          ZObject3dScan *obj = iter->second;
+          obj->translate(stack.getOffset());
+          objArray.push_back(*obj);
+        }
+        delete iter->second;
+      }
+    }/* else if (filePath.startsWith(GET_DATA_DIR + "/flyem/AL/label/final_ds20_s10_signal")) {
+      ZStack stack;
+      stack.load(filePath);
+      stack.binarize();
+      std::map<int, ZObject3dScan*> *objList =
+          ZObject3dScan::extractAllObject(
+            stack.array8(), stack.width(), stack.height(), stack.depth(),
+            0, NULL);
+
+      for (std::map<int, ZObject3dScan*>::iterator iter = objList->begin();
+           iter != objList->end(); ++iter) {
+        if (iter->first > 0) {
+          ZObject3dScan *obj = iter->second;
+          obj->translate(stack.getOffset());
+          objArray.push_back(*obj);
+        }
+        delete iter->second;
+      }
+    }*/
+  }
+  std::cout << objArray.size() << " objects extracted." << std::endl;
+
+  ZStack *stack = objArray.toLabelField();
+  stack->save(GET_DATA_DIR + "/test.tif");
+#endif
+
+#if 0
+  FlyEm::ZSynapseAnnotationArray synapseArray;
+  synapseArray.loadJson(GET_DATA_DIR +
+                        "/flyem/AL/al7d_whole448_tbar-predict_0.81.json");
+
+  ZWeightedPointArray ptArray = synapseArray.toTBarConfidencePointArray();
+  std::cout << ptArray.size() << " TBars" << std::endl;
+
+  ZStack stack;
+  stack.load(GET_DATA_DIR + "/flyem/AL/label/label_field.tif");
+
+  ofstream stream(
+        (GET_DATA_DIR + "/flyem/AL/label/labeled_synapse_confidence.txt").c_str());
+
+  int dsScale = 20;
+  for (ZWeightedPointArray::iterator iter = ptArray.begin();
+       iter != ptArray.end(); ++iter) {
+    ZWeightedPoint pt = *iter;
+    pt *= 1.0 / dsScale;
+    ZIntPoint ipt = pt.toIntPoint();
+    int label = stack.getIntValue(ipt.getX(), ipt.getY(), ipt.getZ());
+
+    stream << iter->x() << " " << iter->y() << " " << iter->z() << " "
+           << label << " " << pt.weight() << std::endl;
+
+  }
+
+  stream.close();
+#endif
+
+#if 0
+  FlyEm::ZSynapseAnnotationArray synapseArray;
+  synapseArray.loadJson(GET_DATA_DIR +
+                        "/flyem/AL/al7d_whole448_tbar-predict_0.81.json");
+
+  ZWeightedPointArray ptArray = synapseArray.toTBarConfidencePointArray();
+  std::cout << ptArray.size() << " TBars" << std::endl;
+
+
+#endif
+
+#if 1
+  ZStack signal;
+  signal.load(GET_DATA_DIR +
+              "/flyem/AL/al7d_whole448_tbar-predict_0.86_ds20_s10.tif");
+
+//  ZStack mask;
+//  mask.load(GET_DATA_DIR +
+//            "/flyem/AL/label/final_ds20_s10_label1_2_2_2_3_2_2_3.tif");
+
+//  ZStack *colorStack = ZStackFactory::MakeColorStack(signal, mask, 1, 1);
+
+  ZStack labelField;
+  labelField.load(GET_DATA_DIR + "/flyem/AL/label/label_field.tif");
+
+  ZStack *colorStack = ZStackFactory::MakeColorStack(signal, labelField);
+
+  colorStack->save(GET_DATA_DIR + "/test.tif");
+
+  delete colorStack;
+#endif
+
 }

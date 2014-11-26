@@ -2939,8 +2939,10 @@ std::set<ZSwcTree *> ZStackDoc::removeEmptySwcTree(bool deleteObject)
 
   TStackObjectList objSet = m_objectGroup.take(ZStackObject::isEmptyTree);
 
+  ZStackObjectRole role;
   for (TStackObjectList::iterator iter = objSet.begin(); iter != objSet.end();
        ++iter) {
+    role.addRole(m_playerList.removePlayer(*iter));
     if (deleteObject) {
       delete *iter;
     } else {
@@ -2950,6 +2952,7 @@ std::set<ZSwcTree *> ZStackDoc::removeEmptySwcTree(bool deleteObject)
 
   if (!emptyTreeSet.empty()) {
     notifySwcModified();
+    notifyPlayerChanged(role.getRole());
   }
 
   return emptyTreeSet;
@@ -5096,10 +5099,10 @@ bool ZStackDoc::executeSwcNodeSmartExtendCommand(
             //new ZStackDocCommand::SwcEdit::SetSwcNodeSeletion(
            //       this, nodeSet, command);
             new ZStackDocCommand::SwcEdit::SetParent(
-                  this, begin, prevNode, command);
+                  this, begin, prevNode, false, command);
             new ZStackDocCommand::SwcEdit::SetSwcNodeSeletion(
                   this, hostTree, nodeSet, false, command);
-            new ZStackDocCommand::SwcEdit::RemoveEmptyTree(this, command);
+            new ZStackDocCommand::SwcEdit::RemoveEmptyTreePost(this, command);
             /*
             new ZStackDocCommand::SwcEdit::SwcPathLabeTraceMask(
                   this, path, command);
@@ -5778,23 +5781,28 @@ bool ZStackDoc::executeResolveCrossoverCommand()
         if (SwcTreeNode::parent(iter->first) == center &&
             SwcTreeNode::parent(iter->second) == center) {
           new ZStackDocCommand::SwcEdit::SetParent(
-                this, iter->first, iter->second, command);
+                this, iter->first, iter->second, false, command);
           new ZStackDocCommand::SwcEdit::SetParent(
-                this, iter->second, root, command);
+                this, iter->second, root, false, command);
         } else {
-          new ZStackDocCommand::SwcEdit::SetParent(this, center, root, command);
+          new ZStackDocCommand::SwcEdit::SetParent(
+                this, center, root, false, command);
           if (SwcTreeNode::parent(iter->first) == center) {
             new ZStackDocCommand::SwcEdit::SetParent(
-                this, iter->first, iter->second, command);
+                this, iter->first, iter->second, false, command);
           } else {
             new ZStackDocCommand::SwcEdit::SetParent(
-                  this, iter->second, iter->first, command);
+                  this, iter->second, iter->first, false, command);
           }
         }
 
         if (matched.size() * 2 == SwcTreeNode::neighborArray(center).size()) {
+          new ZStackDocCommand::SwcEdit::SetParent(
+                this, center, NULL, true, command);
+          /*
           new ZStackDocCommand::SwcEdit::DeleteSwcNode(
                 this, center, root, command);
+                */
         }
       }
       pushUndoCommand(command);
@@ -5879,7 +5887,11 @@ bool ZStackDoc::executeDeleteSwcNodeCommand()
       }
     }
 
-    QList<Swc_Tree_Node*> nodeList = getSelectedSwcNodeList();
+    std::set<Swc_Tree_Node*> nodeSet = getSelectedSwcNodeSet();
+    new ZStackDocCommand::SwcEdit::DeleteSwcNodeSet(this, nodeSet, allCommand);
+
+#if 0
+        QList<Swc_Tree_Node*> nodeList = getSelectedSwcNodeList();
     for (QList<Swc_Tree_Node*>::iterator iter = nodeList.begin();
          iter != nodeList.end(); ++iter) {
       if (*iter != NULL) {
@@ -5887,10 +5899,11 @@ bool ZStackDoc::executeDeleteSwcNodeCommand()
               this, *iter, SwcTreeNode::root(*iter), allCommand);
       }
     }
-    new ZStackDocCommand::SwcEdit::RemoveEmptyTree(this, allCommand);
+#endif
+    new ZStackDocCommand::SwcEdit::RemoveEmptyTreePost(this, allCommand);
 
     if (allCommand->childCount() > 0) {
-      message = QString("%1 node(s) are deleted").arg(nodeList.size());
+      message = QString("%1 node(s) are deleted").arg(nodeSet.size());
       allCommand->setText(QObject::tr("Delete Selected Node"));
       blockSignals(true);
       pushUndoCommand(allCommand);
@@ -5961,8 +5974,8 @@ bool ZStackDoc::executeConnectSwcNodeCommand(
   QUndoCommand *command =
       new ZStackDocCommand::SwcEdit::CompositeCommand(this);
   new ZStackDocCommand::SwcEdit::SetRoot(this, tn2, command);
-  new ZStackDocCommand::SwcEdit::SetParent(this, tn2, tn1, command);
-  new ZStackDocCommand::SwcEdit::RemoveEmptyTree(this, command);
+  new ZStackDocCommand::SwcEdit::SetParent(this, tn2, tn1, false, command);
+  new ZStackDocCommand::SwcEdit::RemoveEmptyTreePost(this, command);
 
   pushUndoCommand(command);
   deprecateTraceMask();
@@ -6058,12 +6071,15 @@ bool ZStackDoc::executeSmartConnectSwcNodeCommand(
         SwcTreeNode::detachParent(leaf);
         SwcTreeNode::kill(leaf);
         //ZSwcPath path(begin, terminal);
-        new ZStackDocCommand::SwcEdit::SetParent(this, tn2, terminal, command);
-        new ZStackDocCommand::SwcEdit::SetParent(this, begin, tn1, command);
+        new ZStackDocCommand::SwcEdit::SetParent(
+              this, tn2, terminal, false, command);
+        new ZStackDocCommand::SwcEdit::SetParent(
+              this, begin, tn1, false, command);
       } else {
-        new ZStackDocCommand::SwcEdit::SetParent(this, tn2, tn1, command);
+        new ZStackDocCommand::SwcEdit::SetParent(
+              this, tn2, tn1, false, command);
       }
-      new ZStackDocCommand::SwcEdit::RemoveEmptyTree(this, command);
+      new ZStackDocCommand::SwcEdit::RemoveEmptyTreePost(this, command);
 
       pushUndoCommand(command);
       deprecateTraceMask();
@@ -6092,7 +6108,7 @@ bool ZStackDoc::executeBreakSwcConnectionCommand()
          iter != nodeSet.end(); ++iter) {
       if (nodeSet.count(SwcTreeNode::parent(*iter)) > 0) {
         new ZStackDocCommand::SwcEdit::SetParent(
-              this, *iter, SwcTreeNode::root(*iter), allCommand);
+              this, *iter, SwcTreeNode::root(*iter), false, allCommand);
       }
     }
 
@@ -6596,8 +6612,8 @@ bool ZStackDoc::executeTraceSwcBranchCommand(
 
     if (conn.first != NULL) {
       new ZStackDocCommand::SwcEdit::SetParent(
-            this, hook, loop, command);
-      new ZStackDocCommand::SwcEdit::RemoveEmptyTree(this, command);
+            this, hook, loop, false, command);
+      new ZStackDocCommand::SwcEdit::RemoveEmptyTreePost(this, command);
     }
 
     new ZStackDocCommand::SwcEdit::SwcPathLabeTraceMask(this, path, command);
@@ -6976,8 +6992,10 @@ bool ZStackDoc::executeInsertSwcNode()
       if (nodeSet.count(parent) > 0) {
         Swc_Tree_Node *tn = SwcTreeNode::makePointer();
         SwcTreeNode::interpolate(*iter, parent, 0.5, tn);
-        new ZStackDocCommand::SwcEdit::SetParent(this, tn, parent, command);
-        new ZStackDocCommand::SwcEdit::SetParent(this, *iter, tn, command);
+        new ZStackDocCommand::SwcEdit::SetParent(
+              this, tn, parent, false, command);
+        new ZStackDocCommand::SwcEdit::SetParent(
+              this, *iter, tn, false, command);
         ++insertionCount;
       }
     }
@@ -7047,7 +7065,7 @@ bool ZStackDoc::executeSetBranchPoint()
         new ZStackDocCommand::SwcEdit::SetRoot(this, closestNode, command);
       }
       new ZStackDocCommand::SwcEdit::SetParent(
-            this, closestNode, branchPoint, command);
+            this, closestNode, branchPoint, false, command);
 
       pushUndoCommand(command);
       deprecateTraceMask();
@@ -7129,8 +7147,8 @@ bool ZStackDoc::executeConnectIsolatedSwc()
           new ZStackDocCommand::SwcEdit::SetRoot(this, closestNode, command);
         }
         new ZStackDocCommand::SwcEdit::SetParent(
-              this, closestNode, branchPoint, command);
-        new ZStackDocCommand::SwcEdit::RemoveEmptyTree(this, command);
+              this, closestNode, branchPoint, false, command);
+        new ZStackDocCommand::SwcEdit::RemoveEmptyTreePost(this, command);
         pushUndoCommand(command);
         deprecateTraceMask();
 
@@ -7175,12 +7193,17 @@ bool ZStackDoc::executeResetBranchPoint()
         if (hook != NULL) {
           QUndoCommand *command =
               new ZStackDocCommand::SwcEdit::CompositeCommand(this);
-          new ZStackDocCommand::SwcEdit::SetParent(this, hook, NULL, command);
-          if (SwcTreeNode::parent(hook) != tn) {
-            new ZStackDocCommand::SwcEdit::SetRoot(this, hook, command);
-          }
 
-          new ZStackDocCommand::SwcEdit::SetParent(this, hook, loop, command);
+          if (SwcTreeNode::parent(tn) == hook) { //hook is the parent of tn
+            new ZStackDocCommand::SwcEdit::SetParent(
+                  this, tn, NULL, false, command);
+            new ZStackDocCommand::SwcEdit::SetRoot(this, loop, command);
+            new ZStackDocCommand::SwcEdit::SetParent(
+                  this, loop, hook, false, command);
+          } else { //tn is the parent of hook
+            new ZStackDocCommand::SwcEdit::SetParent(
+                  this, hook, loop, false, command);
+          }
           pushUndoCommand(command);
           deprecateTraceMask();
         }

@@ -354,6 +354,7 @@
       <addaction name="actionView_Labeled_Regions"/>
       <addaction name="actionCreate_ROI"/>
       <addaction name="actionExport_Segmentation_Result"/>
+      <addaction name="actionHierarchical_Split"/>
      </widget>
      <widget class="QMenu" name="menuNew">
       <property name="title">
@@ -1348,6 +1349,11 @@
    </property>
    <property name="text">
     <string>Merge Body</string>
+   </property>
+  </action>
+  <action name="actionHierarchical_Split">
+   <property name="text">
+    <string>Hierarchical Split</string>
    </property>
   </action>
  </widget>

@@ -13,6 +13,7 @@
 #include "tz_stack.h"
 #include "zweightedpointarray.h"
 #include "math.h"
+#include "tz_color.h"
 
 ZStackFactory::ZStackFactory()
 {
@@ -457,6 +458,129 @@ ZStack* ZStackFactory::makeSeedStack(const ZWeightedPointArray &ptArray)
   }
 
   return stack;
+}
+
+ZStack* ZStackFactory::MakeColorStack(const ZStack &stack, double h, double s)
+{
+  ZStack *colorStack = makeZeroStack(COLOR, stack.getBoundBox(), 1);
+
+  Rgb_Color color;
+
+  size_t voxelNumber = stack.getVoxelNumber();
+
+  const uint8_t *signalArray = stack.array8();
+  color_t *colorArray = colorStack->arrayc();
+
+  for (size_t i = 0; i < voxelNumber; ++i) {
+    double v = signalArray[i];
+    v /= 255.0;
+    Set_Color_Hsv(&color, h, s, v);
+    colorArray[i][0] = color.r;
+    colorArray[i][1] = color.g;
+    colorArray[i][2] = color.b;
+  }
+
+  return colorStack;
+}
+
+ZStack* ZStackFactory::MakeColorStack(
+    const ZStack &stack, const ZStack &mask, double h, double s)
+{
+  ZIntCuboid boundBox = stack.getBoundBox();
+  ZStack *colorStack = makeZeroStack(COLOR, boundBox, 1);
+
+  Rgb_Color color;
+
+  //size_t voxelNumber = stack.getVoxelNumber();
+
+  const uint8_t *signalArray = stack.array8();
+  color_t *colorArray = colorStack->arrayc();
+
+  size_t i = 0;
+
+  int minX = boundBox.getFirstCorner().getX();
+  int minY = boundBox.getFirstCorner().getY();
+  int minZ = boundBox.getFirstCorner().getZ();
+  int maxX = boundBox.getLastCorner().getX();
+  int maxY = boundBox.getLastCorner().getY();
+  int maxZ = boundBox.getLastCorner().getZ();
+
+
+  for (int z = minZ; z <= maxZ; ++z) {
+    for (int y = minY; y <= maxY; ++y) {
+      for (int x = minX; x <= maxX; ++x) {
+        if (mask.getIntValue(x, y, z) > 0) {
+          double v = signalArray[i];
+          v /= 255.0;
+          Set_Color_Hsv(&color, h, s, v);
+          colorArray[i][0] = color.r;
+          colorArray[i][1] = color.g;
+          colorArray[i][2] = color.b;
+        } else {
+          colorArray[i][0] = signalArray[i];
+          colorArray[i][1] = signalArray[i];
+          colorArray[i][2] = signalArray[i];
+        }
+        ++i;
+      }
+    }
+  }
+
+  return colorStack;
+}
+
+ZStack* ZStackFactory::MakeColorStack(const ZStack &stack, const ZStack &labelField)
+{
+  ZIntCuboid boundBox = stack.getBoundBox();
+  ZStack *colorStack = makeZeroStack(COLOR, boundBox, 1);
+
+  Rgb_Color color;
+
+  //size_t voxelNumber = stack.getVoxelNumber();
+
+  const uint8_t *signalArray = stack.array8();
+  color_t *colorArray = colorStack->arrayc();
+
+  size_t i = 0;
+
+  int minX = boundBox.getFirstCorner().getX();
+  int minY = boundBox.getFirstCorner().getY();
+  int minZ = boundBox.getFirstCorner().getZ();
+  int maxX = boundBox.getLastCorner().getX();
+  int maxY = boundBox.getLastCorner().getY();
+  int maxZ = boundBox.getLastCorner().getZ();
+
+
+  for (int z = minZ; z <= maxZ; ++z) {
+    for (int y = minY; y <= maxY; ++y) {
+      for (int x = minX; x <= maxX; ++x) {
+        int label = labelField.getIntValue(x, y, z);
+        if (label > 0) {
+          double v = 0.0;
+          double h = 0.0;
+          double s = 0.0;
+
+          Set_Color_Discrete(&color, label - 1);
+          Rgb_Color_To_Hsv(&color, &h, &s, &v);
+
+          v = signalArray[i];
+          v /= 255.0;
+
+          Set_Color_Hsv(&color, h, s, v);
+          colorArray[i][0] = color.r;
+          colorArray[i][1] = color.g;
+          colorArray[i][2] = color.b;
+        } else {
+          colorArray[i][0] = signalArray[i];
+          colorArray[i][1] = signalArray[i];
+          colorArray[i][2] = signalArray[i];
+        }
+        ++i;
+      }
+    }
+  }
+
+  return colorStack;
 }
 
 //ZStack* ZStackFactory::makeSeedStack(const ZObject3dScanArray &objArray)

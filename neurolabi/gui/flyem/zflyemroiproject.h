@@ -150,6 +150,8 @@ public:
 
   void applyTranslate();
 
+  void test();
+
 private:
   ZObject3dScan* getFilledRoi(
       const ZClosedCurve *curve, int z, ZObject3dScan *result) const;

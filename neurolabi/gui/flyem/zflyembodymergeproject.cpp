@@ -53,7 +53,6 @@ void ZFlyEmBodyMergeProject::loadSlice(int x, int y, int z)
 
 void ZFlyEmBodyMergeProject::loadSliceFunc(int x, int y, int z)
 {
-  /*
   ZDvidReader reader;
   if (reader.open(getDvidTarget())) {
     int width = 512;
@@ -66,24 +65,20 @@ void ZFlyEmBodyMergeProject::loadSliceFunc(int x, int y, int z)
     docReader->setStack(stack);
     emit newDocReady(docReader);
   }
-  */
 }
 
 void ZFlyEmBodyMergeProject::viewGrayscale(
     const ZIntPoint &offset, int width, int height)
 {
-  /*
   ZDvidReader reader;
   if (reader.open(getDvidTarget())) {
     ZStackFrame *frame = getDataFrame();
     if (frame != NULL) {
-      int z = currentSlice + offset.getZ();
       ZStack *stack = reader.readGrayScale(
             offset.getX(), offset.getY(), offset.getZ(), width, height, 1);
       frame->loadStack(stack);
     }
   }
-  */
 }
 
 void ZFlyEmBodyMergeProject::loadGrayscaleFunc(int z, bool lowres)

@@ -272,9 +272,17 @@ MainWindow::MainWindow(QWidget *parent) :
 
 MainWindow::~MainWindow()
 {
-  m_bodySplitProjectDialog->clear();
-  m_roiDlg->clear();
-  m_mergeBodyDlg->clear();
+  if (m_bodySplitProjectDialog != NULL) {
+    m_bodySplitProjectDialog->clear();
+  }
+
+  if (m_roiDlg != NULL) {
+    m_roiDlg->clear();
+  }
+
+  if (m_mergeBodyDlg != NULL) {
+    m_mergeBodyDlg->clear();
+  }
 
   delete m_ui;
   delete m_reporter;
@@ -369,6 +377,12 @@ void MainWindow::initDialog()
 
   m_dvidOpDlg = new DvidOperateDialog;
   m_synapseDlg = new SynapseImportDialog;
+#else
+  m_bodySplitProjectDialog = NULL;
+  m_newBsProjectDialog = NULL;
+  m_mergeBodyDlg = NULL;
+  m_dvidOpDlg = NULL;
+  m_synapseDlg = NULL;
 #endif
 }
 
@@ -6610,4 +6624,9 @@ void MainWindow::on_actionMerge_Body_Project_triggered()
 {
   m_mergeBodyDlg->show();
   m_mergeBodyDlg->raise();
+}
+
+void MainWindow::on_actionHierarchical_Split_triggered()
+{
+
 }

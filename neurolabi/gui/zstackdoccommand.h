@@ -113,6 +113,7 @@ public:
   void undo();
 protected:
   ZStackDoc *m_doc;
+  bool m_isExecuted;
 };
 
 class AddSwc : public ZUndoCommand
@@ -238,14 +239,17 @@ private:
   Swc_Tree_Node m_newNode;
 };
 
-class DeleteSwcNode : public ZUndoCommand
+class DeleteSwcNode : public CompositeCommand
 {
 public:
   DeleteSwcNode(ZStackDoc *doc, Swc_Tree_Node* node, Swc_Tree_Node *root,
                 QUndoCommand *parent = NULL);
   virtual ~DeleteSwcNode();
+
+#if 0
   void undo();
   void redo();
+#endif
 
 private:
   ZStackDoc *m_doc;
@@ -257,11 +261,23 @@ private:
   bool m_nodeInDoc;
 };
 
+class DeleteSwcNodeSet : public CompositeCommand
+{
+public:
+  DeleteSwcNodeSet(ZStackDoc *doc, std::set<Swc_Tree_Node*> &nodeSet,
+                   QUndoCommand *parent = NULL);
+  virtual ~DeleteSwcNodeSet();
+private:
+  ZStackDoc *m_doc;
+  std::set<Swc_Tree_Node*> m_nodeSet;
+  bool m_nodeInDoc;
+};
+
 class SetParent : public ZUndoCommand
 {
 public:
   SetParent(ZStackDoc *doc, Swc_Tree_Node *node, Swc_Tree_Node *parentNode,
-               QUndoCommand *parent = NULL);
+            bool deletingOrphan, QUndoCommand *parent);
   virtual ~SetParent();
 
   void undo();
@@ -273,6 +289,8 @@ private:
   Swc_Tree_Node *m_newParent;
   Swc_Tree_Node *m_oldParent;
   Swc_Tree_Node *m_prevSibling;
+  bool m_deletingOrphan;
+  bool m_isExecuted;
 };
 
 
@@ -393,6 +411,23 @@ public:
 private:
   ZStackDoc *m_doc;
 //  std::set<ZSwcTree*> m_emptyTreeSet;
+};
+
+/*!
+ * \brief Remove empty trees at the action point
+ */
+class RemoveEmptyTreePost : public CompositeCommand
+{
+public:
+  RemoveEmptyTreePost(ZStackDoc *doc, QUndoCommand *parent = NULL);
+  virtual ~RemoveEmptyTreePost();
+
+  void undo();
+  void redo();
+
+private:
+  ZStackDoc *m_doc;
+  std::set<ZSwcTree*> m_emptyTreeSet;
 };
 
 //Not operation invariant

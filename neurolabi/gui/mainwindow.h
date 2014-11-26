@@ -397,6 +397,8 @@ private slots:
 
   void on_actionMerge_Body_Project_triggered();
 
+  void on_actionHierarchical_Split_triggered();
+
 private:
   void createActions();
   void createFileActions();

@@ -68,6 +68,12 @@ public:
   static ZStack* makeAlphaBlend(const ZStack &stack1, const ZStack &stack2,
                                 double alpha);
 
+  static ZStack* MakeColorStack(const ZStack &stack, double h, double s);
+  static ZStack* MakeColorStack(
+      const ZStack &stack, const ZStack &mask, double h, double s);
+
+  static ZStack* MakeColorStack(const ZStack &stack, const ZStack &labelField);
+
 private:
   static Stack* pileMatched(const std::vector<Stack*> stackArray);
 };

@@ -293,6 +293,7 @@ public:
   size_t getSegmentNumber();
 
   void translate(int dx, int dy, int dz);
+  void translate(const ZIntPoint &dp);
 
   /*!
    * \brief Add z value

@@ -1,5 +1,8 @@
 #include "zflyemroiproject.h"
 #include <QStringList>
+#include <ostream>
+#include <fstream>
+
 #include "neutubeconfig.h"
 #include "zstackframe.h"
 #include "zswcgenerator.h"
@@ -1100,4 +1103,19 @@ ZFlyEmRoiProject* ZFlyEmRoiProject::clone(const std::string &name) const
   }
 
   return project;
+}
+
+void ZFlyEmRoiProject::test()
+{
+  std::ofstream stream((GET_TEST_DATA_DIR + "/flyem/AL/roi_area.txt").c_str());
+  for (size_t z = 0; z < m_curveArray.size(); ++z) {
+    const ZClosedCurve *curve = m_curveArray[z];
+    if (curve != NULL) {
+      if (!curve->isEmpty()) {
+        size_t v = getFilledRoi(z).getVoxelNumber();
+        stream << z << " " << v << std::endl;
+      }
+    }
+  }
+  stream.close();
 }

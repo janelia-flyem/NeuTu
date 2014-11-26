@@ -839,9 +839,12 @@ void ZFlyEmRoiDialog::loadNextSlice(int currentZ)
 
 void ZFlyEmRoiDialog::on_testPushButton_clicked()
 {
-  m_isAutoStepping = true;
-  loadGrayscale(ui->zSpinBox->value());
+//  m_isAutoStepping = true;
+//  loadGrayscale(ui->zSpinBox->value());
 
+  if (m_project != NULL) {
+    m_project->test();
+  }
 #if 0
   if (m_project == NULL) {
     return;

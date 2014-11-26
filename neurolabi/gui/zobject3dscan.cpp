@@ -1732,6 +1732,11 @@ void ZObject3dScan::translate(int dx, int dy, int dz)
   processEvent(EVENT_OBJECT_MODEL_CHANGED);
 }
 
+void ZObject3dScan::translate(const ZIntPoint &dp)
+{
+  translate(dp.getX(), dp.getY(), dp.getZ());
+}
+
 void ZObject3dScan::addZ(int dz)
 {
   for (size_t i = 0; i < getStripeNumber(); ++i) {

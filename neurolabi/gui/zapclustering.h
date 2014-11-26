@@ -2,7 +2,7 @@
 #define ZAPCLUSTERING_H
 
 /*!
- * \brief The class of performing affinity propgation
+ * \brief The class of performing affinity propagation
  */
 class ZApClustering
 {

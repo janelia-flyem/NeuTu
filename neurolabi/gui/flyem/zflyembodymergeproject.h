@@ -34,6 +34,14 @@ public:
   void loadSlice(int x, int y, int z);
   void loadSliceFunc(int x, int y, int z);
 
+  inline const ZDvidTarget& getDvidTarget() const {
+    return m_dvidTarget;
+  }
+
+  inline ZFlyEmBodyMergeFrame* getDataFrame() {
+    return m_dataFrame;
+  }
+
 signals:
   void progressAdvanced(double dp);
   void progressStarted();
@@ -49,6 +57,7 @@ public slots:
 
 private:
   ZFlyEmBodyMergeFrame *m_dataFrame;
+  ZDvidTarget m_dvidTarget;
 //  Z3DWindow *m_resultWindow;
 //  Z3DWindow *m_quickViewWindow;
 //  ZFlyEmBookmarkArray m_bookmarkArray;
