@@ -13919,12 +13919,24 @@ void ZTest::test(MainWindow *host)
   ZDvidReader reader;
   reader.open(dvidTarget);
 
-  ZObject3dScan obj = reader.readBody(50);
+  int dsIntv = 3;
+  int dataRangeZ = 8089 / (dsIntv + 1);
 
-  int dsIntv = 1;
+  ZObject3dScan obj = reader.readBody(29);
   obj.downsampleMax(dsIntv, dsIntv, dsIntv);
 
+//  ZObject3dScan obj;
+
+//  for (int z = 0; z < dataRangeZ; ++z) {
+//    for (int y = 0; y < 10; y += 1) {
+//      obj.addSegment(z, y, 0, z % 100, false);
+//    }
+//  }
+
+
   ZStack *stack = obj.toStackObject(255);
+
+  //stack->save(GET_TEST_DATA_DIR + "/test.tif");
 
   ZSharedPointer<ZStackDoc> academy =
       ZSharedPointer<ZStackDoc>(new ZStackDoc(NULL, NULL));
@@ -13943,11 +13955,10 @@ void ZTest::test(MainWindow *host)
 
   glm::vec3 referenceCenter = camera->getCenter();
 
-  int dataRangeZ = 8089 / (dsIntv + 1);
 
-  double distEyeToNear = dataRangeZ / 2;
-  double distNear = 8000;
-  double eyeDistance = distEyeToNear + distNear;
+  double distEyeToNear = dataRangeZ * 0.5 / tan(camera->getFieldOfView() * 0.5);
+  double distNearToCenter = 4000;
+  double eyeDistance = distEyeToNear + distNearToCenter;
 
  // double eyeDistance = eyeDistance;//boundBox[3] - referenceCenter[1] + 2500;
   //double eyeDistance = 2000 - referenceCenter[1];
@@ -13956,15 +13967,14 @@ void ZTest::test(MainWindow *host)
   viewVector *= eyeDistance;
   glm::vec3 eyePosition = referenceCenter - viewVector;
 
-  referenceCenter[2] = dataRangeZ - stack->getOffset().getZ();
+  referenceCenter[2] = dataRangeZ / 2;// - stack->getOffset().getZ();
   camera->setCenter(referenceCenter);
-  eyePosition[2] = dataRangeZ - stack->getOffset().getZ();
+  eyePosition[2] = dataRangeZ / 2;// - stack->getOffset().getZ();
   camera->setEye(eyePosition);
   camera->setUpVector(glm::vec3(0, 0, -1));
 
-  camera->setNearDist(distNear);
-
   stage->resetCameraClippingRange();
+  camera->setNearDist(distEyeToNear);
 
   stage->getCompositor()->setBackgroundFirstColor(0, 0, 0, 1);
   stage->getCompositor()->setBackgroundSecondColor(0, 0, 0, 1);

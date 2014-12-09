@@ -912,26 +912,34 @@ void FlyEmDataForm::saveVolumeRenderingFigure(ZFlyEmNeuron *neuron, const QStrin
 
     glm::vec3 referenceCenter = camera->getCenter();
 
-    int dataRangeZ = 8089 / (dsIntv + 1);
-    double distEyeToNear = dataRangeZ / 2;
-    double distNear = 8000;
-    double eyeDistance = distEyeToNear + distNear;
+    int maxZ = 8089;
+    ZFlyEmDataFrame *parentFrame = getParentFrame();
+    ZDvidReader dvidReader;
+    if (dvidReader.open(parentFrame->getDvidTarget())) {
+      ZDvidInfo dvidInfo = dvidReader.readGrayScaleInfo();
+      maxZ = dvidInfo.getMaxZ();
+    }
+
+    int dataRangeZ = (maxZ + 1) / (dsIntv + 1);
+    double distEyeToNear = dataRangeZ * 0.5 / tan(camera->getFieldOfView() * 0.5);
+    double distNearToCenter = 4000;
+    double eyeDistance = distEyeToNear + distNearToCenter;
+
+   // double eyeDistance = eyeDistance;//boundBox[3] - referenceCenter[1] + 2500;
+    //double eyeDistance = 2000 - referenceCenter[1];
     glm::vec3 viewVector(0, -1, 0);
 
     viewVector *= eyeDistance;
     glm::vec3 eyePosition = referenceCenter - viewVector;
 
-    camera->setNearDist(distNear);
-
-    referenceCenter[2] = dataRangeZ - stack->getOffset().getZ();
+    referenceCenter[2] = dataRangeZ / 2;// - stack->getOffset().getZ();
     camera->setCenter(referenceCenter);
-    eyePosition[2] = dataRangeZ - stack->getOffset().getZ();
+    eyePosition[2] = dataRangeZ / 2;// - stack->getOffset().getZ();
     camera->setEye(eyePosition);
     camera->setUpVector(glm::vec3(0, 0, -1));
 
-
-
     stage->resetCameraClippingRange();
+    camera->setNearDist(distEyeToNear);
 
     stage->getCompositor()->setBackgroundFirstColor(0, 0, 0, 1);
     stage->getCompositor()->setBackgroundSecondColor(0, 0, 0, 1);

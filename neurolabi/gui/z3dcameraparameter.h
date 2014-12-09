@@ -57,6 +57,7 @@ public:
   inline float getTop() const { return m_value.getTop(); }
   inline float getNearDist() const { return m_value.getNearDist(); }
   inline float getFarDist() const { return m_value.getFarDist(); }
+  inline float getFieldOfView() const { return m_value.getFieldOfView(); }
 
   inline void dolly(float value) { m_value.dolly(value); updatePara(); }
   inline void roll(float angle) { m_value.roll(angle); updatePara(); }
