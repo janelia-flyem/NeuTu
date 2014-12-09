@@ -22,19 +22,30 @@ public:
   void setPushButtonSlots();
   void connectSignalSlot();
   void dump(const QString &str, bool appending = false);
+  void showInfo(const QString &str, bool appending = false);
 
-  void updateDataFrame(ZStackDocReader &docReader);
+  void updateDataFrame(ZStackDocReader &docReader, bool readyForPaint);
   void clear();
 
   void setupProgress();
 
+  void updateInfo();
+
 public slots:
   void test();
   void setDvidTarget();
-  void consumeNewDoc(ZStackDocReader *docReader);
+  void consumeNewDoc(ZStackDocReader *docReader, bool readyForPaint);
   void loadSlice();
   void moveSliceUp();
   void moveSliceDown();
+  void moveSliceLeft();
+  void moveSliceRight();
+  void moveSliceUpLeft();
+  void moveSliceDownRight();
+  void showPreviousSlice();
+  void showNextSlice();
+  void notifySelection(ZStackObjectSelector *selector);
+  void notifyBodyMerged(QList<uint64_t> bodyLabelList);
 
 private:
   Ui::FlyEmBodyMergeProjectDialog *ui;

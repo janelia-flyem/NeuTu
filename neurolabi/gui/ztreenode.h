@@ -22,6 +22,8 @@ public:
     void setNextSibling(ZTreeNode<T> *sibling, bool updatingConsistency = true);
     ZTreeNode<T>* getNextAt(int index) const;
 
+    ZTreeNode<T>* getChild(int index) const;
+
 public:
     inline T& data() { return m_data; }
     inline T* dataRef() { return &m_data; }
@@ -48,6 +50,8 @@ public:
 
     ZTreeNode<T>* previousSibling() const;
 
+    int getSiblingIndex() const;
+
 public:
     bool isRoot() const;
     bool isLastChild() const;
@@ -67,6 +71,13 @@ public:
     ZTreeNode<T>* addChild(const T& data);
     void removeChild(ZTreeNode<T> *child);
     void replaceChild(ZTreeNode<T> *oldChild, ZTreeNode<T> *newChild);
+
+    /*!
+     * \brief Remove all descendents of the node
+     *
+     * The children of the node and their descendents will be deleted from memory.
+     */
+    void killDownstream();
 
     ZTreeNode<T>* detachParent();
     void setParent(ZTreeNode<T> *p, bool updatingConsistency = true);

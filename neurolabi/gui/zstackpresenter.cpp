@@ -1805,6 +1805,7 @@ void ZStackPresenter::processEvent(ZInteractionEvent &event)
   case ZInteractionEvent::EVENT_OBJ3D_SELECTED:
   case ZInteractionEvent::EVENT_OBJECT3D_SCAN_SELECTED:
     buddyView()->redrawObject();
+    buddyDocument()->notifySelectorChanged();
     break;
   default:
     break;
@@ -1827,6 +1828,8 @@ void ZStackPresenter::process(const ZStackOperator &op)
              event.getPosition().getY());
   ZPoint currentStackPos = event.getPosition(ZMouseEvent::COORD_STACK);
   ZPoint currentRawStackPos = event.getPosition(ZMouseEvent::COORD_RAW_STACK);
+
+  buddyDocument()->getObjectGroup().resetSelection();
 
   switch (op.getOperation()) {
   case ZStackOperator::OP_SWC_SELECT_SINGLE_NODE:

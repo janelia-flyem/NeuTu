@@ -98,6 +98,14 @@ public:
     m_isViewHintVisible = visible;
   }
 
+  inline void blockPaint(bool state) {
+    m_paintBlocked = state;
+  }
+
+  bool isPaintBlocked() const {
+    return m_paintBlocked;
+  }
+
 public:
   virtual void mouseReleaseEvent(QMouseEvent *event);
   virtual void mouseMoveEvent(QMouseEvent *event);
@@ -129,6 +137,7 @@ private:
   QMenu *m_rightButtonMenu;
   ZPaintBundle *m_paintBundle;
   bool m_isViewHintVisible;
+  bool m_paintBlocked;
 };
 
 #endif

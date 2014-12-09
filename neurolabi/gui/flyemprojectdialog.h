@@ -25,6 +25,7 @@ public:
   //virtual void connectSignalSlot();
   //virtual void createMenu();
   virtual void dump(const QString& str, bool appending = false);
+  virtual void showInfo(const QString &str, bool appending = false);
 
   ZStackFrame *newDataFrame(ZStackDocReader &reader);
 
@@ -47,13 +48,13 @@ public:
   void setProgressReporter(ZProgressReporter *reporter);
 
 signals:
-  void newDocReady(ZStackDocReader *m_docReader);
+  void newDocReady(ZStackDocReader *m_docReader, bool readyForPaint);
   void progressAdvanced(double dp);
   void progressStarted();
   void progressEnded();
 
 public slots:
-  virtual void consumeNewDoc(ZStackDocReader *m_docReader);
+  virtual void consumeNewDoc(ZStackDocReader *m_docReader, bool readyForPaint);
 
   void advanceProgressSlot(double dp);
   void startProgressSlot();

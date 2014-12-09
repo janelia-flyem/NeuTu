@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>492</width>
+    <width>508</width>
     <height>714</height>
    </rect>
   </property>
@@ -26,7 +26,7 @@
     <enum>Qt::Horizontal</enum>
    </property>
    <property name="standardButtons">
-    <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+    <set>QDialogButtonBox::Close</set>
    </property>
   </widget>
   <widget class="QWidget" name="layoutWidget">
@@ -34,7 +34,7 @@
     <rect>
      <x>10</x>
      <y>10</y>
-     <width>476</width>
+     <width>491</width>
      <height>661</height>
     </rect>
    </property>
@@ -145,7 +145,7 @@
              <number>999999</number>
             </property>
             <property name="value">
-             <number>1000</number>
+             <number>3000</number>
             </property>
            </widget>
           </item>
@@ -162,7 +162,7 @@
              <number>999999</number>
             </property>
             <property name="value">
-             <number>1000</number>
+             <number>3000</number>
             </property>
            </widget>
           </item>
@@ -186,7 +186,17 @@
           <item>
            <widget class="QPushButton" name="loadGrayScalePushButton">
             <property name="text">
-             <string>Load Slice</string>
+             <string>Load </string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="labelCheckBox">
+            <property name="text">
+             <string>Labels</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
             </property>
            </widget>
           </item>
@@ -211,6 +221,46 @@
        <layout class="QHBoxLayout" name="horizontalLayout_22">
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_18">
+          <item>
+           <widget class="QLabel" name="label_6">
+            <property name="text">
+             <string>Width</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QSpinBox" name="widthSpinBox">
+            <property name="minimum">
+             <number>64</number>
+            </property>
+            <property name="maximum">
+             <number>512</number>
+            </property>
+            <property name="value">
+             <number>512</number>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="label_8">
+            <property name="text">
+             <string>Height</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QSpinBox" name="heightSpinBox">
+            <property name="minimum">
+             <number>64</number>
+            </property>
+            <property name="maximum">
+             <number>512</number>
+            </property>
+            <property name="value">
+             <number>512</number>
+            </property>
+           </widget>
+          </item>
           <item>
            <widget class="QLabel" name="label_5">
             <property name="text">
@@ -353,13 +403,6 @@
        <widget class="QPushButton" name="uploadResultPushButton">
         <property name="text">
          <string>Upload</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="fullRoiPreviewPushButton">
-        <property name="text">
-         <string>Preview</string>
         </property>
        </widget>
       </item>

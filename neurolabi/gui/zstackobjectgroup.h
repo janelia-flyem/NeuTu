@@ -7,6 +7,7 @@
 #include <set>
 
 #include "zstackobject.h"
+#include "zstackobjectselector.h"
 
 /*!
  * \brief The aggregate class of ZStackObject
@@ -34,6 +35,15 @@ public:
   void setSelected(ZStackObject *obj, bool selected);
   void setSelected(bool selected);
   void setSelected(ZStackObject::EType type, bool selected);
+
+  /*!
+   * \brief Reset selection recorder
+   */
+  void resetSelection();
+
+  inline ZStackObjectSelector* getSelector() {
+    return &m_selector;
+  }
 
   const ZStackObject *getLastObject(ZStackObject::EType type) const;
 
@@ -121,6 +131,8 @@ private:
 private:
   TObjectListMap m_sortedGroup;
   TObjectSetMap m_selectedSet;
+
+  ZStackObjectSelector m_selector;
 };
 
 template <typename InputIterator>

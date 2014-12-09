@@ -208,33 +208,19 @@
            <item>
             <widget class="QLabel" name="label_3">
              <property name="text">
-              <string>Query output</string>
+              <string>Query output                                                    </string>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QPushButton" name="showModelPushButton">
+            <widget class="QPushButton" name="menuButton">
              <property name="text">
-              <string>Show Model</string>
+              <string>View</string>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QPushButton" name="savePushButton">
-             <property name="text">
-              <string>Export CSV</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QPushButton" name="saveSwcPushButton">
-             <property name="text">
-              <string>Export SWC</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QPushButton" name="exportPushButton">
+            <widget class="QPushButton" name="exportButton">
              <property name="text">
               <string>Export</string>
              </property>

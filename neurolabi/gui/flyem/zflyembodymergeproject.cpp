@@ -13,9 +13,11 @@
 #include "flyem/zflyembodymergedoc.h"
 #include "zarrayfactory.h"
 #include "dvid/zdviddata.h"
+#include "zobject3dscan.h"
+#include "dvid/zdvidwriter.h"
 
 ZFlyEmBodyMergeProject::ZFlyEmBodyMergeProject(QObject *parent) :
-  QObject(parent), m_dataFrame(NULL)
+  QObject(parent), m_dataFrame(NULL), m_showingBodyMask(true)
 {
 }
 
@@ -38,40 +40,57 @@ void ZFlyEmBodyMergeProject::test()
   ZStackDocReader *reader = new ZStackDocReader();
   reader->loadStack(
         (GET_TEST_DATA_DIR + "/benchmark/em_stack_slice.tif").c_str());
-  emit newDocReady(reader);
 
-  ZStack stack;
-  stack.load(GET_TEST_DATA_DIR + "/benchmark/em_stack_slice_seg.tif");
-  ZArray *array = ZArrayFactory::MakeArray(&stack);
-  emit originalLabelUpdated(array);
+  if (m_showingBodyMask) {
+    emit newDocReady(reader, false);
+    ZStack stack;
+    stack.load(GET_TEST_DATA_DIR + "/benchmark/em_stack_slice_seg.tif");
+    ZArray *array = ZArrayFactory::MakeArray(&stack);
+    emit originalLabelUpdated(array);
+  } else {
+    emit newDocReady(reader, true);
+  }
 }
 
-void ZFlyEmBodyMergeProject::loadSlice(int x, int y, int z)
+void ZFlyEmBodyMergeProject::loadSlice(
+    int x, int y, int z, int width, int height)
 {
   QtConcurrent::run(
-          this, &ZFlyEmBodyMergeProject::loadSliceFunc, x, y, z);
+          this, &ZFlyEmBodyMergeProject::loadSliceFunc, x, y, z, width, height);
 }
 
-void ZFlyEmBodyMergeProject::loadSliceFunc(int x, int y, int z)
+void ZFlyEmBodyMergeProject::loadSliceFunc(
+    int x, int y, int z, int width, int height)
 {
   ZDvidReader reader;
   if (reader.open(getDvidTarget())) {
-    int width = 512;
-    int height = 512;
+    //int width = 512;
+    //int height = 512;
 
-    ZStack *stack = reader.readGrayScale(x - width / 2,
-                                         y - height / 2,
-                                         z, width, height, 1);
+    int x0 = x - width / 2;
+    int y0 = y - height / 2;
+
     ZStackDocReader *docReader = new ZStackDocReader;
-    docReader->setStack(stack);
-    emit newDocReady(docReader);
 
-    ZArray *array = reader.readLabels64(
-          ZDvidData::getName(ZDvidData::ROLE_BODY_LABEL),
-          x - width / 2,
-          y - height / 2,
-          z, width, height, 1);
-    emit originalLabelUpdated(array);
+    ZStack *stack = reader.readGrayScale(x0, y0, z, width, height, 1);
+    docReader->setStack(stack);
+
+    if (m_showingBodyMask) {
+      emit newDocReady(docReader, false);
+
+#ifdef _DEBUG_
+      ZArray *array = reader.readLabels64(
+            ZDvidData::getName(ZDvidData::ROLE_MERGE_TEST_BODY_LABEL),
+            x0, y0, z, width, height, 1);
+#else
+      ZArray *array = reader.readLabels64(
+            ZDvidData::getName(ZDvidData::ROLE_BODY_LABEL),
+            x0, y0, z, width, height, 1);
+#endif
+      emit originalLabelUpdated(array);
+    } else {
+      emit newDocReady(docReader, true);
+    }
   }
 }
 
@@ -222,6 +241,11 @@ void ZFlyEmBodyMergeProject::setDataFrame(ZStackFrame *frame)
   connect(this, SIGNAL(originalLabelUpdated(ZArray*)),
           m_dataFrame->getCompleteDocument(),
           SLOT(updateOriginalLabel(ZArray*)));
+
+  connect(m_dataFrame->getCompleteDocument(),
+          SIGNAL(objectSelectorChanged(ZStackObjectSelector*)),
+          this, SIGNAL(selectionChanged(ZStackObjectSelector*)));
+  //connect(this, SIGNAL())
 }
 
 void ZFlyEmBodyMergeProject::closeDataFrame()
@@ -241,6 +265,49 @@ void ZFlyEmBodyMergeProject::shallowClear()
 void ZFlyEmBodyMergeProject::mergeBody()
 {
   if (m_dataFrame != NULL) {
+    QList<uint64_t> objLabelList;
+    const QList<ZObject3dScan*> &objList = m_dataFrame->getCompleteDocument()->
+        getSelectedObjectList<ZObject3dScan>(ZStackObject::TYPE_OBJECT3D_SCAN);
+    for (QList<ZObject3dScan*>::const_iterator iter = objList.begin();
+         iter != objList.end(); ++iter) {
+      const ZObject3dScan *obj = *iter;
+      objLabelList.append(obj->getLabel());
+    }
     m_dataFrame->getCompleteDocument()->mergeSelected();
+    emit bodyMerged(objLabelList);
+  }
+}
+
+void ZFlyEmBodyMergeProject::setLoadingLabel(bool state)
+{
+  m_showingBodyMask = state;
+}
+
+void ZFlyEmBodyMergeProject::uploadResult()
+{
+  ZDvidWriter dvidWriter;
+  if (dvidWriter.open(m_dvidTarget)) {
+    ZFlyEmBodyMerger *bodyMerger =
+        m_dataFrame->getCompleteDocument()->getBodyMerger();
+    ZFlyEmBodyMerger::TLabelMap labelMap = bodyMerger->getFinalMap();
+
+    //reorganize the map
+    QMap<int, std::vector<int> > mergeMap;
+    foreach (int sourceId, labelMap.keys()) {
+      int targetId = labelMap.value(sourceId);
+      if (mergeMap.contains(targetId)) {
+        std::vector<int> &idArray = mergeMap[targetId];
+        idArray.push_back(sourceId);
+      } else {
+        mergeMap[targetId] = std::vector<int>();
+        mergeMap[targetId].push_back(sourceId);
+      }
+    }
+
+    foreach (int targetId, mergeMap.keys()) {
+      dvidWriter.mergeBody(
+            ZDvidData::getName(ZDvidData::ROLE_MERGE_TEST_BODY_LABEL),
+            targetId, mergeMap.value(targetId));
+    }
   }
 }

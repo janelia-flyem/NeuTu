@@ -355,6 +355,7 @@
       <addaction name="actionCreate_ROI"/>
       <addaction name="actionExport_Segmentation_Result"/>
       <addaction name="actionHierarchical_Split"/>
+      <addaction name="actionSegmentation_Project"/>
      </widget>
      <widget class="QMenu" name="menuNew">
       <property name="title">
@@ -1354,6 +1355,11 @@
   <action name="actionHierarchical_Split">
    <property name="text">
     <string>Hierarchical Split</string>
+   </property>
+  </action>
+  <action name="actionSegmentation_Project">
+   <property name="text">
+    <string>Segmentation Project</string>
    </property>
   </action>
  </widget>

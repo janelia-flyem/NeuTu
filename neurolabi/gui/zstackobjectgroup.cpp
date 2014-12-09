@@ -37,7 +37,8 @@ const ZStackObject* ZStackObjectGroup::getLastObject(
 void ZStackObjectGroup::setSelected(ZStackObject *obj, bool selected)
 {
   if (obj != NULL) {
-    obj->setSelected(selected);
+    //obj->setSelected(selected);
+    getSelector()->setSelection(obj, selected);
     if (selected) {
       m_selectedSet[obj->getType()].insert(obj);
     } else {
@@ -50,7 +51,8 @@ void ZStackObjectGroup::setSelected(bool selected)
 {
   for (ZStackObjectGroup::iterator iter = begin(); iter != end(); ++iter) {
     ZStackObject *obj = *iter;
-    obj->setSelected(selected);
+    getSelector()->setSelection(obj, selected);
+    //obj->setSelected(selected);
     getSelectedSet(obj->getType()).insert(obj);
   }
 
@@ -72,7 +74,8 @@ void ZStackObjectGroup::setSelected(ZStackObject::EType type, bool selected)
        ++iter) {
     ZStackObject *obj = *iter;
     if (obj->isSelected() != selected) {
-      obj->setSelected(selected);
+      getSelector()->setSelection(obj, selected);
+      //obj->setSelected(selected);
       if (selected) {
         selectedSet.insert(obj);
       }
@@ -465,4 +468,9 @@ TStackObjectList ZStackObjectGroup::getObjectList(
   }
 
   return objSet;
+}
+
+void ZStackObjectGroup::resetSelection()
+{
+  m_selector.reset();
 }

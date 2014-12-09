@@ -754,9 +754,11 @@ void ZStackView::updateImageScreen()
   // active deco
   m_paintBundle.addDrawableList(&(buddyPresenter()->getActiveDecorationList()));
 
-  if (!m_isRedrawBlocked) {
+  m_imageWidget->blockPaint(m_isRedrawBlocked ||
+                            !buddyDocument()->isReadyForPaint());
+  //if (!m_isRedrawBlocked && buddyDocument()->isReadyForPaint()) {
     m_imageWidget->update(QRect(QPoint(0, 0), m_imageWidget->screenSize()));
-  }
+  //}
 }
 
 QSize ZStackView::sizeHint() const

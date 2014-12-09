@@ -42,4 +42,5 @@ HEADERS +=     test/zswctreetest.h \
     test/zlinesegmenttest.h \
     test/zclosedcurvetest.h \
     test/zarraytest.h \
-    test/zflyembodymergertest.h
+    test/zflyembodymergertest.h \
+    test/zstackobjectgrouptest.h

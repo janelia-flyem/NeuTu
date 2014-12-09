@@ -82,9 +82,13 @@ void ZFlyEmBodyMergeDoc::updateBodyObject()
   removeObject(ZStackObjectRole::ROLE_SEGMENTATION, true);
   if (m_originalLabel != NULL) {
     QList<ZObject3dScan*> objList = extractAllObject();
+    blockSignals(true);
     foreach (ZObject3dScan *obj, objList) {
       addObject(obj);
     }
+    blockSignals(false);
+
+    notifyObject3dScanModified();
   }
 }
 
@@ -121,6 +125,7 @@ void ZFlyEmBodyMergeDoc::updateOriginalLabel(ZArray *array)
 {
   delete m_originalLabel;
   m_originalLabel = array;
+  setReadForPaint(true);
   updateBodyObject();
 }
 

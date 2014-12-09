@@ -248,6 +248,23 @@ void ZDvidWriter::writeJson(const std::string url, const ZJsonValue &value)
   writeJsonString(url, value.dumpString(0));
 }
 
+void ZDvidWriter::mergeBody(const std::string &dataName,
+                            int targetId, const std::vector<int> &bodyId)
+{
+  ZJsonArray jsonArray(json_array(), ZJsonValue::SET_AS_IT_IS);
+  jsonArray.append(targetId);
+  for (std::vector<int>::const_iterator iter = bodyId.begin();
+       iter != bodyId.end(); ++iter) {
+    jsonArray.append(*iter);
+  }
+
+  ZJsonArray mergeArray(json_array(), ZJsonValue::SET_AS_IT_IS);
+  mergeArray.append(jsonArray);
+
+  ZDvidUrl dvidUrl(m_dvidTarget);
+  writeJson(dvidUrl.getMergeUrl(dataName), mergeArray);
+}
+
 void ZDvidWriter::writeBoundBox(const ZIntCuboid &cuboid, int z)
 {
   ZJsonArray obj;

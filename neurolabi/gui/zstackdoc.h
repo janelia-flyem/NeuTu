@@ -659,6 +659,14 @@ public:
     return m_selectionSilent;
   }
 
+  inline bool isReadyForPaint() const {
+    return m_isReadyForPaint;
+  }
+
+  inline void setReadForPaint(bool ready) {
+    m_isReadyForPaint = ready;
+  }
+
 public:
   inline void deprecateTraceMask() { m_isTraceMaskObsolete = true; }
   void updateTraceWorkspace(int traceEffort, bool traceMasked,
@@ -706,6 +714,8 @@ public:
   void notifyProgressStart();
   void notifyProgressEnd();
   void notifyProgressAdvanced(double dp);
+
+  void notifySelectorChanged();
 
   template <typename T>
   void notifySelectionAdded(const std::set<T*> &oldSelected,
@@ -904,6 +914,7 @@ signals:
                            QList<ZSwcTree*> deselected);
   void swcTreeNodeSelectionChanged(QList<Swc_Tree_Node*> selected,
                                    QList<Swc_Tree_Node*> deselected);
+  void objectSelectorChanged(ZStackObjectSelector *selector);
 
 
   void punctumVisibleStateChanged();
@@ -999,6 +1010,7 @@ private:
   ZStackFactory *m_stackFactory;
 
   bool m_selectionSilent;
+  bool m_isReadyForPaint;
 
 protected:
   ZObjectColorScheme m_objColorSheme;

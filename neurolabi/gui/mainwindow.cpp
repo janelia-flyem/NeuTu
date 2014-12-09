@@ -148,6 +148,7 @@
 #include "dvidoperatedialog.h"
 #include "synapseimportdialog.h"
 #include "flyembodymergeprojectdialog.h"
+#include "zsegmentationprojectdialog.h"
 
 #include "z3dcanvas.h"
 #include "z3dapplication.h"
@@ -356,6 +357,10 @@ void MainWindow::initDialog()
   m_roiDlg = new ZFlyEmRoiDialog(this);
   m_shapePaperDlg = new ShapePaperDialog(this);
 
+  m_segmentationDlg = new ZSegmentationProjectDialog(this);
+  m_segmentationDlg->restoreGeometry(
+        getSettings().value("SegmentationProjectGeometry").toByteArray());
+
 #if defined(_FLYEM_)
   m_newBsProjectDialog = new ZFlyEmNewBodySplitProjectDialog(this);
   m_newBsProjectDialog->setDvidDialog(m_dvidDlg);
@@ -375,8 +380,8 @@ void MainWindow::initDialog()
   m_shapePaperDlg->restoreGeometry(
         getSettings().value("ShapePaperDialogGeometry").toByteArray());
 
-  m_dvidOpDlg = new DvidOperateDialog;
-  m_synapseDlg = new SynapseImportDialog;
+  m_dvidOpDlg = new DvidOperateDialog(this);
+  m_synapseDlg = new SynapseImportDialog(this);
 #else
   m_bodySplitProjectDialog = NULL;
   m_newBsProjectDialog = NULL;
@@ -1993,6 +1998,8 @@ void MainWindow::writeSettings()
 {
   getSettings().setValue("lastPath", m_lastOpenedFilePath);
   getSettings().setValue("geometry", saveGeometry());
+  getSettings().setValue(
+        "SegmentationProjectGeometry", m_segmentationDlg->saveGeometry());
 #if defined(_FLYEM_)
   getSettings().setValue(
         "BodyMergeProjectGeometry", m_mergeBodyDlg->saveGeometry());
@@ -6629,4 +6636,10 @@ void MainWindow::on_actionMerge_Body_Project_triggered()
 void MainWindow::on_actionHierarchical_Split_triggered()
 {
 
+}
+
+void MainWindow::on_actionSegmentation_Project_triggered()
+{
+  m_segmentationDlg->show();
+  m_segmentationDlg->raise();
 }

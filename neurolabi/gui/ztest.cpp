@@ -224,6 +224,8 @@ using namespace std;
 #include "zstackwatershed.h"
 #include "flyem/zflyembodymerger.h"
 #include "test/zflyembodymergertest.h"
+#include "test/zstackobjectgrouptest.h"
+#include "z3daxis.h"
 
 using namespace std;
 
@@ -12919,6 +12921,7 @@ void ZTest::test(MainWindow *host)
   C_Stack::write(GET_DATA_DIR + "/test.tif", stack);
 #endif
 
+
 #if 0
   ZStackFactory factory;
   ZPointArray ptArray;
@@ -13842,7 +13845,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   ZStack signal;
   signal.load(GET_DATA_DIR +
               "/flyem/AL/al7d_whole448_tbar-predict_0.86_ds20_s10.tif");
@@ -13863,4 +13866,115 @@ void ZTest::test(MainWindow *host)
   delete colorStack;
 #endif
 
+#if 0
+  FlyEm::ZSynapseAnnotationArray synapseArray;
+  synapseArray.loadJson(GET_DATA_DIR +
+                        "/flyem/MB/tbars_annotated_20141201T131652.json");
+
+  ZWeightedPointArray ptArray = synapseArray.toTBarConfidencePointArray();
+  std::cout << ptArray.size() << " TBars" << std::endl;
+
+  ZWeightedPointArray newPtArray;
+
+  int dsScale = 20;
+  for (ZWeightedPointArray::iterator iter = ptArray.begin();
+       iter != ptArray.end(); ++iter) {
+    ZWeightedPoint &pt = *iter;
+    pt *= 1.0 / dsScale;
+    newPtArray.append(pt);
+  }
+
+  ZCuboid box = newPtArray.getBoundBox();
+  box.print();
+
+  ZStackFactory factory;
+  ZStack *stack = factory.makeDensityMap(newPtArray, 5.0);
+  stack->save(GET_DATA_DIR +
+              "/flyem/MB/tbars_annotated_20141201T131652_ds20_s5.tif");
+#endif
+
+#if 0
+  FlyEm::ZSynapseAnnotationArray synapseArray;
+  synapseArray.loadJson(GET_DATA_DIR +
+                        "/flyem/MB/tbars_annotated_20141201T131652.json");
+
+  ZWeightedPointArray ptArray = synapseArray.toTBarConfidencePointArray();
+  std::cout << ptArray.size() << " TBars" << std::endl;
+
+  ofstream stream((GET_DATA_DIR +
+                   "/flyem/MB/tbars_annotated_20141201T131652.txt").c_str());
+
+  for (ZWeightedPointArray::iterator iter = ptArray.begin();
+       iter != ptArray.end(); ++iter) {
+    ZWeightedPoint &pt = *iter;
+    stream << pt.x() << " " << pt.y() << " " << pt.z() << std::endl;
+  }
+  stream.close();
+#endif
+
+#if 1
+  ZDvidTarget dvidTarget;
+  dvidTarget.set("emdata2.int.janelia.org", "2b6c");
+
+  ZDvidReader reader;
+  reader.open(dvidTarget);
+
+  ZObject3dScan obj = reader.readBody(50);
+
+  int dsIntv = 1;
+  obj.downsampleMax(dsIntv, dsIntv, dsIntv);
+
+  ZStack *stack = obj.toStackObject(255);
+
+  ZSharedPointer<ZStackDoc> academy =
+      ZSharedPointer<ZStackDoc>(new ZStackDoc(NULL, NULL));
+  academy->loadStack(stack);
+
+  Z3DWindow *stage = new Z3DWindow(academy, Z3DWindow::NORMAL_INIT,
+                                   false, NULL);
+
+  stage->getVolumeRaycaster()->hideBoundBox();
+  stage->getVolumeRaycasterRenderer()->setCompositeMode(
+        "Direct Volume Rendering");
+  stage->getAxis()->setVisible(false);
+
+  Z3DCameraParameter* camera = stage->getCamera();
+  camera->setProjectionType(Z3DCamera::Orthographic);
+
+  glm::vec3 referenceCenter = camera->getCenter();
+
+  int dataRangeZ = 8089 / (dsIntv + 1);
+
+  double distEyeToNear = dataRangeZ / 2;
+  double distNear = 8000;
+  double eyeDistance = distEyeToNear + distNear;
+
+ // double eyeDistance = eyeDistance;//boundBox[3] - referenceCenter[1] + 2500;
+  //double eyeDistance = 2000 - referenceCenter[1];
+  glm::vec3 viewVector(0, -1, 0);
+
+  viewVector *= eyeDistance;
+  glm::vec3 eyePosition = referenceCenter - viewVector;
+
+  referenceCenter[2] = dataRangeZ - stack->getOffset().getZ();
+  camera->setCenter(referenceCenter);
+  eyePosition[2] = dataRangeZ - stack->getOffset().getZ();
+  camera->setEye(eyePosition);
+  camera->setUpVector(glm::vec3(0, 0, -1));
+
+  camera->setNearDist(distNear);
+
+  stage->resetCameraClippingRange();
+
+  stage->getCompositor()->setBackgroundFirstColor(0, 0, 0, 1);
+  stage->getCompositor()->setBackgroundSecondColor(0, 0, 0, 1);
+
+  stage->show();
+
+  std::string output = GET_DATA_DIR + "/test.tif";
+  std::cout << output << std::endl;
+  stage->takeScreenShot(output.c_str(), 2000, dataRangeZ, MonoView);
+  //stage->close();
+  //delete stage;
+#endif
 }

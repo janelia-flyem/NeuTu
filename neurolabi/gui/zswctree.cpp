@@ -1167,6 +1167,7 @@ bool ZSwcTree::hit(double x, double y, double z)
 
 Swc_Tree_Node* ZSwcTree::hitTest(double x, double y, double z, double margin)
 {
+#ifdef _QT_GUI_USED_
   const std::vector<Swc_Tree_Node *> &nodeArray = getSwcTreeNodeArray();
 
   const Swc_Tree_Node *hit = NULL;
@@ -1192,6 +1193,9 @@ Swc_Tree_Node* ZSwcTree::hitTest(double x, double y, double z, double margin)
   }
 
   return const_cast<Swc_Tree_Node*>(hit);
+#else
+  return NULL;
+#endif
 }
 
 Swc_Tree_Node* ZSwcTree::hitTest(double x, double y)

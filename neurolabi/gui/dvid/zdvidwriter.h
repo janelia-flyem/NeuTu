@@ -51,6 +51,9 @@ public:
   void writeBodyInfo(int bodyId, const ZJsonObject &obj);
   void writeBodyInfo(int bodyId);
 
+  void mergeBody(const std::string &dataName, int targetId,
+                 const std::vector<int> &bodyId);
+
   /*!
    * \brief Create a new keyvalue data in DVID.
    *

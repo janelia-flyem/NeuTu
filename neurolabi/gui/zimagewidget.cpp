@@ -18,6 +18,8 @@ ZImageWidget::ZImageWidget(QWidget *parent, QImage *image) : QWidget(parent),
   m_zoomRatio = 1;
 
   setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
+  setAttribute(Qt::WA_OpaquePaintEvent);
+  //setAttribute(Qt::WA_NoSystemBackground);
   setImage(image);
   setCursor(Qt::CrossCursor);
   setMouseTracking(true);
@@ -305,7 +307,7 @@ void ZImageWidget::zoom(int zoomRatio)
 
 void ZImageWidget::paintEvent(QPaintEvent * /*event*/)
 {
-  if (m_image != NULL) {
+  if (m_image != NULL && !isPaintBlocked()) {
     ZPainter painter(this);
     painter.setRenderHint(QPainter::Antialiasing, false);
     //zoom(m_zoomRatio);
@@ -314,6 +316,14 @@ void ZImageWidget::paintEvent(QPaintEvent * /*event*/)
     QSize size = projectSize();
     painter.drawImage(m_projRegion, *m_image,
                       m_viewPort);
+
+    QRect rightRect(m_projRegion.width(), 0,
+                    width() - m_projRegion.width(), height());
+    painter.fillRect(rightRect, Qt::gray);
+
+    QRect downRect(0, m_projRegion.height(),
+                   width(), height() - m_projRegion.height());
+    painter.fillRect(downRect, Qt::gray);
 
     for (int i = 0; i < m_mask.size(); ++i) {
       if (m_mask[i] != NULL) {

@@ -2,6 +2,7 @@
 #define ZFLYEMBODYMERGEPROJECT_H
 
 #include <QObject>
+#include <QList>
 #include "dvid/zdvidtarget.h"
 
 class ZStackFrame;
@@ -14,6 +15,7 @@ class ZFlyEmNeuron;
 class ZIntPoint;
 class ZStackDocReader;
 class ZArray;
+class ZStackObjectSelector;
 
 class ZFlyEmBodyMergeProject : public QObject
 {
@@ -31,8 +33,8 @@ public:
 
   void setDocData(ZStackDocReader &reader);
 
-  void loadSlice(int x, int y, int z);
-  void loadSliceFunc(int x, int y, int z);
+  void loadSlice(int x, int y, int z, int width, int height);
+  void loadSliceFunc(int x, int y, int z, int width, int height);
 
   inline const ZDvidTarget& getDvidTarget() const {
     return m_dvidTarget;
@@ -50,14 +52,18 @@ signals:
   void progressAdvanced(double dp);
   void progressStarted();
   void progressEnded();
-  void newDocReady(ZStackDocReader *reader);
+  void newDocReady(ZStackDocReader *reader, bool readyForPaint);
   void originalLabelUpdated(ZArray *label);
+  void selectionChanged(ZStackObjectSelector *selector);
+  void bodyMerged(QList<uint64_t> objLabelList);
 
 public slots:
   void viewGrayscale(const ZIntPoint &offset, int width, int height);
   void loadGrayscaleFunc(int z, bool lowres);
   void shallowClear();
   void mergeBody();
+  void setLoadingLabel(bool state);
+  void uploadResult();
 
 private:
   ZFlyEmBodyMergeFrame *m_dataFrame;

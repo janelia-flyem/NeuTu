@@ -15,8 +15,8 @@ FlyEmProjectDialog::FlyEmProjectDialog(QWidget *parent) :
 {
   m_dvidDlg = NULL;
 
-  connect(this, SIGNAL(newDocReady(ZStackDocReader*)),
-          this, SLOT(consumeNewDoc(ZStackDocReader*)));
+  connect(this, SIGNAL(newDocReady(ZStackDocReader*, bool)),
+          this, SLOT(consumeNewDoc(ZStackDocReader*, bool)));
 }
 
 FlyEmProjectDialog::~FlyEmProjectDialog()
@@ -29,7 +29,8 @@ MainWindow* FlyEmProjectDialog::getMainWindow()
   return dynamic_cast<MainWindow*>(this->parentWidget());
 }
 
-void FlyEmProjectDialog::consumeNewDoc(ZStackDocReader *m_docReader)
+void FlyEmProjectDialog::consumeNewDoc(ZStackDocReader *m_docReader,
+                                       bool /*readyForPaint*/)
 {
   delete m_docReader;
 }
@@ -47,6 +48,11 @@ ZStackFrame* FlyEmProjectDialog::newDataFrame(ZStackDocReader &reader)
 }
 
 void FlyEmProjectDialog::dump(const QString &/*str*/, bool /*appending*/)
+{
+
+}
+
+void FlyEmProjectDialog::showInfo(const QString &/*str*/, bool /*appending*/)
 {
 
 }

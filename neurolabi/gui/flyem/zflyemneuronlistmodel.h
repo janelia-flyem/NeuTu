@@ -30,6 +30,7 @@ public:
   const ZFlyEmNeuron *getNeuron(int row, int col) const;
   const ZFlyEmNeuron *getNeuron(const QModelIndex &index) const;
   ZFlyEmNeuron *getNeuron(const QModelIndex &index);
+  QVector<ZFlyEmNeuron*> getNeuronArray(const QModelIndexList &indexList);
 
   QVector<const ZFlyEmNeuron*> getNeuronArray(const QModelIndex &index) const;
 

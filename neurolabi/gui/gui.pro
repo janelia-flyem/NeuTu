@@ -476,7 +476,10 @@ HEADERS += mainwindow.h \
     zstackdocreader.h \
     flyem/zflyembodymergedoc.h \
     flyemprojectdialog.h \
-    flyem/zflyembodymergeframe.h
+    flyem/zflyembodymergeframe.h \
+    zsegmentationprojectdialog.h \
+    zsegmentationproject.h \
+    zsegmentationprojectmodel.h
 
 FORMS += settingdialog.ui \
     frameinfodialog.ui \
@@ -533,7 +536,8 @@ FORMS += settingdialog.ui \
     shapepaperdialog.ui \
     dvidoperatedialog.ui \
     synapseimportdialog.ui \
-    flyembodymergeprojectdialog.ui
+    flyembodymergeprojectdialog.ui \
+    zsegmentationprojectdialog.ui
 SOURCES += main.cpp \
     mainwindow.cpp \
     zstackview.cpp \
@@ -807,7 +811,10 @@ SOURCES += main.cpp \
     zstackdocreader.cpp \
     flyem/zflyembodymergedoc.cpp \
     flyemprojectdialog.cpp \
-    flyem/zflyembodymergeframe.cpp
+    flyem/zflyembodymergeframe.cpp \
+    zsegmentationprojectdialog.cpp \
+    zsegmentationproject.cpp \
+    zsegmentationprojectmodel.cpp
 
 OTHER_FILES += \
     extlib.pri

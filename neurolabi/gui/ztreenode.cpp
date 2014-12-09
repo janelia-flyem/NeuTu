@@ -219,7 +219,7 @@ void ZTreeNode<T>::removeChild(ZTreeNode<T> *child)
     bool succ = false;
 
     if (m_firstChild == child) {
-      setFirstChild(child->nextSibling());
+      setFirstChild(child->nextSibling(), false);
       succ = true;
     } else {
       ZTreeNode<T> *sibling = firstChild();
@@ -228,7 +228,7 @@ void ZTreeNode<T>::removeChild(ZTreeNode<T> *child)
       }
 
       if ((sibling != NULL) && (sibling->nextSibling() == child)) {
-        sibling->setNextSibling(child->nextSibling());
+        sibling->setNextSibling(child->nextSibling(), false);
         succ = true;
       }
     }
@@ -537,3 +537,52 @@ ZTreeNode<T>* ZTreeNode<T>::getNextAt(int index) const
 
   return next;
 }
+
+template <typename T>
+ZTreeNode<T>* ZTreeNode<T>::getChild(int index) const
+{
+  ZTreeNode<T> *child = NULL;
+
+  if (index >= 0) {
+    child = firstChild();
+  }
+  while (index-- > 0) {
+    child = child->nextSibling();
+  }
+
+  return child;
+}
+
+template <typename T>
+int ZTreeNode<T>::getSiblingIndex() const
+{
+  int index = 0;
+  if (parent() != NULL) {
+    ZTreeNode<T> *sibling =  parent()->firstChild();
+
+    while (sibling != this) {
+      sibling = sibling->nextSibling();
+      ++index;
+
+      if (sibling == NULL) {
+        break;
+      }
+    }
+  }
+
+  return index;
+}
+
+template <typename T>
+void ZTreeNode<T>::killDownstream()
+{
+  ZTreeNode<T> *child = firstChild();
+  while (child != NULL) {
+    child->killDownstream();
+    ZTreeNode<T> *nextChild = child->nextSibling();
+    child->detachParent();
+    delete child;
+    child = nextChild;
+  }
+}
+

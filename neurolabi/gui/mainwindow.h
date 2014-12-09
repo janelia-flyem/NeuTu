@@ -56,6 +56,7 @@ class ShapePaperDialog;
 class DvidOperateDialog;
 class SynapseImportDialog;
 class FlyEmBodyMergeProjectDialog;
+class ZSegmentationProjectDialog;
 
 namespace Ui {
     class MainWindow;
@@ -399,6 +400,8 @@ private slots:
 
   void on_actionHierarchical_Split_triggered();
 
+  void on_actionSegmentation_Project_triggered();
+
 private:
   void createActions();
   void createFileActions();
@@ -609,6 +612,7 @@ private:
   DvidOperateDialog *m_dvidOpDlg;
   SynapseImportDialog *m_synapseDlg;
   FlyEmBodyMergeProjectDialog *m_mergeBodyDlg;
+  ZSegmentationProjectDialog *m_segmentationDlg;
 
 
   //new project main window

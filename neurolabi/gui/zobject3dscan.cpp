@@ -1811,19 +1811,54 @@ void ZObject3dScan::display(
   QPen pen(m_color);
   painter.setPen(pen);
 
+  //QImage *targetImage = dynamic_cast<QImage*>(painter.device());
+
   size_t stripeNumber = getStripeNumber();
+  std::vector<QLine> lineArray;
+  int offsetX = iround(painter.getOffset().x());
+  int offsetY = iround(painter.getOffset().y());
   for (size_t i = 0; i < stripeNumber; ++i) {
     const ZObject3dStripe &stripe = getStripe(i);
     if (stripe.getZ() == z || isProj) {
       int nseg = stripe.getSegmentNumber();
       for (int j = 0; j < nseg; ++j) {
-        int x0 = stripe.getSegmentStart(j);
-        int x1 = stripe.getSegmentEnd(j);
-        int y = stripe.getY();
-        painter.drawLine(x0, y, x1, y);
+        int x0 = stripe.getSegmentStart(j) - offsetX;
+        int x1 = stripe.getSegmentEnd(j) - offsetX;
+        int y = stripe.getY() - offsetY;
+//        for (int x = x0; x <= x1; ++x) {
+//          //painter.drawPoint(QPoint(x, y));
+//          ptArray.push_back(QPoint(x, y));
+//        }
+
+       // if (targetImage == NULL) {
+          lineArray.push_back(QLine(x0, y, x1, y));
+#if 0
+        } else {
+          if (y < targetImage->height()) {
+            uchar *scanLine = targetImage->scanLine(y);
+            scanLine += x0 * 4;
+            x1 = imin2(x1, targetImage->width() - 1);
+            for (int x = x0; x <= x1; ++x) {
+              scanLine[0] = m_color.red();
+              scanLine[1] = m_color.green();
+              scanLine[2] = m_color.blue();
+              scanLine[3] = m_color.alpha();
+              scanLine += 4;
+            }
+          }
+        }
+#endif
+//        QPainter::drawLine(pt1 - QPointF(m_offset.x(), m_offset.y()),
+//                           pt2 - QPointF(m_offset.x(), m_offset.y()));
+        //painter.drawLine(x0, y, x1, y);
       }
     }
   }
+
+  if (!lineArray.empty()) {
+    painter.drawLines(&(lineArray[0]), lineArray.size());
+  }
+  //painter.drawPoints(&(ptArray[0]), ptArray.size());
 #else
   UNUSED_PARAMETER(&painter);
   UNUSED_PARAMETER(slice);

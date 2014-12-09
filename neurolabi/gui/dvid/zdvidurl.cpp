@@ -223,3 +223,8 @@ std::string ZDvidUrl::getSynapseAnnotationUrl(const std::string &name) const
 {
   return getAnnotationUrl() + "/" + name;
 }
+
+std::string ZDvidUrl::getMergeUrl(const std::string &dataName) const
+{
+  return getDataUrl(dataName) + "/merge";
+}

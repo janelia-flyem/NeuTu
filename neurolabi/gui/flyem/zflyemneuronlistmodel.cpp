@@ -170,6 +170,19 @@ ZFlyEmNeuron* ZFlyEmNeuronListModel::getNeuron(const QModelIndex &index)
         static_cast<const ZFlyEmNeuronListModel&>(*this).getNeuron(index));
 }
 
+QVector<ZFlyEmNeuron*> ZFlyEmNeuronListModel::getNeuronArray(
+    const QModelIndexList &indexList)
+{
+  QVector<ZFlyEmNeuron*> neuronArray;
+  foreach (const QModelIndex &index, indexList) {
+    if (index.row() >= 0 || index.row() < rowCount()) {
+      neuronArray.append(const_cast<ZFlyEmNeuron*>(m_neuronList[index.row()]));
+    }
+  }
+
+  return neuronArray;
+}
+
 QVector<const ZFlyEmNeuron*> ZFlyEmNeuronListModel::getNeuronArray(
     const QModelIndex &index) const
 {

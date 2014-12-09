@@ -102,7 +102,8 @@
 using namespace std;
 
 ZStackDoc::ZStackDoc(ZStack *stack, QObject *parent) : QObject(parent),
-  m_lastAddedSwcNode(NULL), m_resDlg(NULL), m_selectionSilent(false)
+  m_lastAddedSwcNode(NULL), m_resDlg(NULL), m_selectionSilent(false),
+  m_isReadyForPaint(true)
 {
   m_stack = stack;
   m_sparseStack = NULL;
@@ -3415,30 +3416,6 @@ bool ZStackDoc::isSwcNodeSelected(const Swc_Tree_Node *tn) const
 
 void ZStackDoc::deselectAllObject()
 {
-#if 0
-  deselectAllPuncta();
-  deselectAllChains();
-  deselectAllSwcs();
-  deselectAllSwcTreeNodes();
-  //deselectAllStroke();
-
-//  QList<zobject*> objectList = getLocsegChainList();
-//  foreach (ZStackObject *obj, m_objectList) {
-//    obj->setSelected(false);
-//  }
-
-  for (QMap<ZStackObject::EType, std::set<ZStackObject*> >::iterator
-       iter = m_selectedObjectMap.begin(); iter != m_selectedObjectMap.end();
-       ++iter) {
-    std::set<ZStackObject*> &objSet = iter.value();
-//    for (std::set<ZStackObject*>::iterator iter = objSet.begin();
-//         iter != objSet.end(); ++iter) {
-//      ZStackObject *obj = *iter;
-//      obj->setSelected(false);
-//    }
-    objSet.clear();
-  }
-#endif
   //m_selectedSwcTreeNodes.clear();
   deselectAllSwcTreeNodes();
 
@@ -3448,16 +3425,6 @@ void ZStackDoc::deselectAllObject()
                      ZStackObject::TYPE_LOCSEG_CHAIN));
 
   m_objectGroup.setSelected(false);
-
-  /*
-  QMutableListIterator<ZStackObject*> iter0(m_objectList);
-  while (iter0.hasNext()) {
-    ZStackObject *obj = iter0.next();
-    if (obj->isSelected()) {
-      obj->setSelected(false);
-    }
-  }
-  */
 }
 
 void ZStackDoc::setPunctumVisible(ZPunctum *punctum, bool visible)
@@ -4056,7 +4023,8 @@ void ZStackDoc::setSelected(ZStackObject *obj,  bool selecting)
     ZStackObject::EType type = obj->getType();
     TStackObjectSet &selectedSet = getSelected(type);
 
-    obj->setSelected(selecting);
+    m_objectGroup.setSelected(obj, selecting);
+    //obj->setSelected(selecting);
 
     if (selecting) {
       selectedSet.insert(obj);
@@ -7956,4 +7924,12 @@ ZRect2d ZStackDoc::getRect2dRoi() const
   }
 
   return rect;
+}
+
+void ZStackDoc::notifySelectorChanged()
+{
+  ZStackObjectSelector *selector = m_objectGroup.getSelector();
+  if (!selector->isEmpty()) {
+    emit objectSelectorChanged(selector);
+  }
 }
