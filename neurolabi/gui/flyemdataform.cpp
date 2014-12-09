@@ -889,7 +889,7 @@ void FlyEmDataForm::saveVolumeRenderingFigure(ZFlyEmNeuron *neuron, const QStrin
   if (neuron != NULL) {
     ZObject3dScan *obj = neuron->getBody();
 
-    int dsIntv = 1;
+    int dsIntv = 3;
     obj->downsampleMax(dsIntv, dsIntv, dsIntv);
 
     ZStack *stack = obj->toStackObject(255);
@@ -921,13 +921,15 @@ void FlyEmDataForm::saveVolumeRenderingFigure(ZFlyEmNeuron *neuron, const QStrin
     viewVector *= eyeDistance;
     glm::vec3 eyePosition = referenceCenter - viewVector;
 
+    camera->setNearDist(distNear);
+
     referenceCenter[2] = dataRangeZ - stack->getOffset().getZ();
     camera->setCenter(referenceCenter);
     eyePosition[2] = dataRangeZ - stack->getOffset().getZ();
     camera->setEye(eyePosition);
     camera->setUpVector(glm::vec3(0, 0, -1));
 
-    camera->setNearDist(distNear);
+
 
     stage->resetCameraClippingRange();
 
@@ -936,7 +938,7 @@ void FlyEmDataForm::saveVolumeRenderingFigure(ZFlyEmNeuron *neuron, const QStrin
 
     stage->show();
 
-    stage->takeScreenShot(output, 2000, dataRangeZ, MonoView);
+    stage->takeScreenShot(output, 1000, dataRangeZ, MonoView);
     stage->close();
     delete stage;
   }
@@ -951,9 +953,12 @@ void FlyEmDataForm::exportVolumeRenderingFigure()
     QItemSelectionModel *sel = ui->queryView->selectionModel();
     QVector<ZFlyEmNeuron*> neuronArray =
         m_neuronList->getNeuronArray(sel->selectedIndexes());
+    dump(QString("Saving %1 figures ...").arg(neuronArray.size()));
     foreach (ZFlyEmNeuron *neuron, neuronArray) {
       QString output = dirpath + QString("/body_%1.tif").arg(neuron->getId());
       saveVolumeRenderingFigure(neuron, output);
+      dump(output + " saved");
     }
+    dump("Done.");
   }
 }

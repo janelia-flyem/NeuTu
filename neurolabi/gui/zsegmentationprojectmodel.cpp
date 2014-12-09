@@ -38,7 +38,7 @@ QVariant ZSegmentationProjectModel::data(const QModelIndex &index, int role) con
     {
       ZTreeNode<ZObject3dScan> *labelNode = getLabelNode(index);
       if (labelNode != NULL) {
-        return labelNode->data().getLabel();
+        return (int) labelNode->data().getLabel();
       }
     }
     default:

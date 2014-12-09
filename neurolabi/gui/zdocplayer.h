@@ -74,7 +74,7 @@ public:
   }
   */
 
-  const ZStackObjectRole::TRole getRole() const {
+  const ZStackObjectRole::TRole& getRole() const {
     if (m_data == NULL) {
       return ZStackObjectRole::ROLE_NONE;
     }

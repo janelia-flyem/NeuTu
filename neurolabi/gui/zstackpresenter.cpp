@@ -1093,8 +1093,8 @@ void ZStackPresenter::processMouseDoubleClickEvent(QMouseEvent *event)
     return;
   }
 
-  ZPoint currentStackPos = op.getMouseEventRecorder()->getLatestMouseEvent().
-      getPosition(ZMouseEvent::COORD_STACK);
+//  ZPoint currentStackPos = op.getMouseEventRecorder()->getLatestMouseEvent().
+//      getPosition(ZMouseEvent::COORD_STACK);
   ZPoint currentRawStackPos = op.getMouseEventRecorder()->getLatestMouseEvent().
       getPosition(ZMouseEvent::COORD_RAW_STACK);
 

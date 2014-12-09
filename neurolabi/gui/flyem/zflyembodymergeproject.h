@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QList>
 #include "dvid/zdvidtarget.h"
+#include "tz_stdint.h"
 
 class ZStackFrame;
 class ZFlyEmBodyMergeFrame;

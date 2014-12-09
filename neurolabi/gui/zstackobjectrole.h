@@ -25,7 +25,7 @@ public:
 
 
 
-  inline TRole getRole() const {
+  inline const TRole& getRole() const {
     return m_role;
   }
 
