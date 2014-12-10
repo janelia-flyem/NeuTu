@@ -43,7 +43,7 @@ class Z3DWindow : public QMainWindow
   Q_OBJECT
 public:
   enum EInitMode {
-    NORMAL_INIT, EXCLUDE_VOLUME
+    NORMAL_INIT, EXCLUDE_VOLUME, FULL_RES_VOLUME
   };
 
   explicit Z3DWindow(ZSharedPointer<ZStackDoc> doc, EInitMode initMode,

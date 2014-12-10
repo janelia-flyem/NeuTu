@@ -13981,9 +13981,9 @@ void ZTest::test(MainWindow *host)
 
   stage->show();
 
-  std::string output = GET_DATA_DIR + "/test.tif";
-  std::cout << output << std::endl;
-  stage->takeScreenShot(output.c_str(), 2000, dataRangeZ, MonoView);
+  //std::string output = GET_DATA_DIR + "/test.tif";
+  //std::cout << output << std::endl;
+  //stage->takeScreenShot(output.c_str(), 2000, dataRangeZ, MonoView);
   //stage->close();
   //delete stage;
 #endif

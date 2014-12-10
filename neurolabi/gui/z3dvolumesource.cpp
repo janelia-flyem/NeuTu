@@ -10,7 +10,7 @@
 
 const size_t Z3DVolumeSource::m_nChannelSupport = 10;
 
-Z3DVolumeSource::Z3DVolumeSource(ZStackDoc *doc)
+Z3DVolumeSource::Z3DVolumeSource(ZStackDoc *doc, size_t maxVoxelNumber)
   : Z3DProcessor()
   , m_stackOutputPort("Stack")
   , m_xScale("X Scale", 1.0f, 0.1f, 50.f)
@@ -22,11 +22,15 @@ Z3DVolumeSource::Z3DVolumeSource(ZStackDoc *doc)
   , m_doc(doc)
   , m_widgetsGroup(NULL)
 {
-  int currentAvailableTexMem = Z3DGpuInfoInstance.getAvailableTextureMemory();
-  if (currentAvailableTexMem != -1 && currentAvailableTexMem <= 256000)
-    m_maxVoxelNumber = 256 * 256 * 256 * 2;
-  else
-    m_maxVoxelNumber = 512 * 512 * 512 * 1;
+  if (maxVoxelNumber == 0) {
+    int currentAvailableTexMem = Z3DGpuInfoInstance.getAvailableTextureMemory();
+    if (currentAvailableTexMem != -1 && currentAvailableTexMem <= 256000)
+      m_maxVoxelNumber = 256 * 256 * 256 * 2;
+    else
+      m_maxVoxelNumber = 512 * 512 * 512 * 1;
+  } else {
+    m_maxVoxelNumber = maxVoxelNumber;
+  }
 
   for (size_t i=0; i<m_nChannelSupport; i++) {
     QString name = QString("Volume%1").arg(i+1);

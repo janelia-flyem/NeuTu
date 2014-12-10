@@ -899,7 +899,7 @@ void FlyEmDataForm::saveVolumeRenderingFigure(ZFlyEmNeuron *neuron, const QStrin
         ZSharedPointer<ZStackDoc>(new ZStackDoc(NULL, NULL));
     academy->loadStack(stack);
 
-    Z3DWindow *stage = new Z3DWindow(academy, Z3DWindow::NORMAL_INIT,
+    Z3DWindow *stage = new Z3DWindow(academy, Z3DWindow::FULL_RES_VOLUME,
                                      false, NULL);
 
     stage->getVolumeRaycaster()->hideBoundBox();
@@ -944,7 +944,8 @@ void FlyEmDataForm::saveVolumeRenderingFigure(ZFlyEmNeuron *neuron, const QStrin
     stage->getCompositor()->setBackgroundFirstColor(0, 0, 0, 1);
     stage->getCompositor()->setBackgroundSecondColor(0, 0, 0, 1);
 
-    stage->show();
+    //stage->show();
+    //stage->showMaximized();
 
     stage->takeScreenShot(output, 1000, dataRangeZ, MonoView);
     stage->close();
