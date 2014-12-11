@@ -64,7 +64,7 @@ public:
             const glm::vec3& downsampleSpacing = glm::vec3(1.f),
             const glm::vec3& scaleSpacing = glm::vec3(1.f),
             const glm::vec3& offset = glm::vec3(0.f),
-            const glm::mat4& transformation = glm::mat4(),
+            const glm::mat4& transformation = glm::mat4(1.0),
             QObject *parent = 0);
   virtual ~Z3DVolume();
 

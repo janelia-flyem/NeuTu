@@ -12,6 +12,10 @@
 /// The above copyright notice and this permission notice shall be included in
 /// all copies or substantial portions of the Software.
 /// 
+/// Restrictions:
+///		By making use of the Software for military purposes, you choose to make
+///		a Bunny unhappy.
+/// 
 /// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 /// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 /// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -36,8 +40,7 @@
 /// <glm/gtx/perpendicular.hpp> need to be included to use these functionalities.
 ///////////////////////////////////////////////////////////////////////////////////
 
-#ifndef GLM_GTX_perpendicular
-#define GLM_GTX_perpendicular
+#pragma once
 
 // Dependency:
 #include "../glm.hpp"
@@ -55,7 +58,7 @@ namespace glm
 	//! Projects x a perpendicular axis of Normal.
 	//! From GLM_GTX_perpendicular extension.
 	template <typename vecType> 
-	vecType perp(
+	GLM_FUNC_DECL vecType perp(
 		vecType const & x, 
 		vecType const & Normal);
 
@@ -63,5 +66,3 @@ namespace glm
 }//namespace glm
 
 #include "perpendicular.inl"
-
-#endif//GLM_GTX_perpendicular

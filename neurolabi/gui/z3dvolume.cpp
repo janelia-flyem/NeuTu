@@ -266,7 +266,7 @@ std::vector<double> Z3DVolume::getWorldBoundBox() const
 void Z3DVolume::setPhysicalToWorldMatrix(const glm::mat4 &transformationMatrix)
 {
   m_transformationMatrix = transformationMatrix;
-  if (m_transformationMatrix != glm::mat4())
+  if (m_transformationMatrix != glm::mat4(1.0))
     m_hasTransformMatrix = true;
 }
 
@@ -293,13 +293,13 @@ glm::mat4 Z3DVolume::getTextureToWorldMatrix() const
 glm::mat4 Z3DVolume::getVoxelToPhysicalMatrix() const
 {
   // 1. Multiply by spacing 2. Apply offset
-  glm::mat4 scale = glm::scale(glm::mat4(), getSpacing());
+  glm::mat4 scale = glm::scale(glm::mat4(1.0), getSpacing());
   return glm::translate(scale, getOffset());
 }
 
 glm::mat4 Z3DVolume::getPhysicalToVoxelMatrix() const
 {
-  glm::mat4 translate = glm::translate(glm::mat4(), -getOffset());
+  glm::mat4 translate = glm::translate(glm::mat4(1.0), -getOffset());
   return glm::scale(translate, 1.f/getSpacing());
 }
 
@@ -320,12 +320,12 @@ glm::mat4 Z3DVolume::getPhysicalToTextureMatrix() const
 
 glm::mat4 Z3DVolume::getTextureToVoxelMatrix() const
 {
-  return glm::scale(glm::mat4(), glm::vec3(getDimensions()));
+  return glm::scale(glm::mat4(1.0), glm::vec3(getDimensions()));
 }
 
 glm::mat4 Z3DVolume::getVoxelToTextureMatrix() const
 {
-  return glm::scale(glm::mat4(), 1.0f/glm::vec3(getDimensions()));
+  return glm::scale(glm::mat4(1.0), 1.0f/glm::vec3(getDimensions()));
 }
 
 void Z3DVolume::setHistogram()
@@ -437,6 +437,6 @@ void Z3DVolume::translate(double dx, double dy, double dz)
   m_transformationMatrix[3][1] += dy;
   m_transformationMatrix[3][2] += dz;
 
-  if (m_transformationMatrix != glm::mat4())
+  if (m_transformationMatrix != glm::mat4(1.0))
     m_hasTransformMatrix = true;
 }
