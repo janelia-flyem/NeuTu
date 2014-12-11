@@ -348,6 +348,11 @@ void Z3DApplication::detectOS()
     m_osString = "Mac OS X MAVERICKS";
     break;
 #endif
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 4, 0))
+  case QSysInfo::MV_10_10:
+    m_osString = "Mac OS X YOSEMITE";
+    break;
+#endif
   default:
     m_osString = "unsupported mac os";
     return;

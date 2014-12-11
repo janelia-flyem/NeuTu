@@ -3,7 +3,7 @@
 
 #include <QEvent>
 
-// interface for all class that can receive z3dcanvas (QGLWidget) event
+// interface for all class that can receive z3dcanvas event
 // listener can be registed with the addEventListener(tofront or toback) function of Z3DCanvas
 // note: the listeners are called from front to back until event is accepted, so the order does matter.
 //       If you want other listeners to receive the event too, don't accept it (set the sharing of ZEventListenerParameter

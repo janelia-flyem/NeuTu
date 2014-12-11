@@ -285,7 +285,7 @@ void Z3DTrackballInteractionHandler::wheelEvent(QWheelEvent *e, int, int)
 {
   e->ignore();
 
-#ifdef _QT5_
+#ifdef NOUSENOW
   if (m_delta > 0 && e->delta() < 0)
     m_delta = e->delta();
   else if (m_delta < 0 && e->delta() > 0)

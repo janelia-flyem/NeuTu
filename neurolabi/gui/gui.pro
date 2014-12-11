@@ -47,9 +47,22 @@ include(add_itk.pri)
 #Qt5
 QT += opengl xml network
 isEqual(QT_MAJOR_VERSION,5) | greaterThan(QT_MAJOR_VERSION,5) {
-message("Qt 5")
+
+isEqual(QT_MAJOR_VERSION,5) {
+  lessThan(QT_MINOR_VERSION,4) {
+    message("Cannot build neuTube with Qt version $${QT_VERSION}.")
+    error("Use at least Qt 5.4.0.")
+  }
+}
+    message("Qt 5")
     QT += concurrent gui
     DEFINES += _QT5_
+    CONFIG += c++11
+}
+
+#Qt4
+isEqual(QT_MAJOR_VERSION,4) {
+    message("Qt 4")
 }
 
 #QT += webkit
