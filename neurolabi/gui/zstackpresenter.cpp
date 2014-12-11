@@ -1,8 +1,10 @@
 #include "z3dgl.h"
 #include <QtGui>
-#include <QtConcurrent>
 #ifdef _QT5_
 #include <QtWidgets>
+#include <QtConcurrent>
+#else
+#include <QtConcurrentRun>
 #endif
 
 #include "zstackpresenter.h"
