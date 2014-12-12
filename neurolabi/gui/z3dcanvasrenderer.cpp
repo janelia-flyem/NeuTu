@@ -226,10 +226,10 @@ void Z3DCanvasRenderer::renderInportToImage(const QString &filename, Z3DEye eye)
     QImage image = upsideDownImage.mirrored(false, true);
 
     if (!ZImage::writeImage(image, filename)) {
-      delete[] colorBuffer;
+      delete[] reinterpret_cast<GLubyte*>(colorBuffer);
       throw Exception("Image writing error");
     }
-    delete[] colorBuffer;
+    delete[] reinterpret_cast<GLubyte*>(colorBuffer);
     //}
     //}
   } else if (eye == RightEye) {
@@ -242,12 +242,12 @@ void Z3DCanvasRenderer::renderInportToImage(const QString &filename, Z3DEye eye)
     QImage upsideDownImageLeft((const uchar*)colorBuffer, size.x, size.y,
                                QImage::Format_ARGB32_Premultiplied);
     painter.drawImage(0, 0, upsideDownImageLeft);
-    delete[] colorBuffer;
+    delete[] reinterpret_cast<GLubyte*>(colorBuffer);
     colorBuffer = readBGRAColorBuffer<uint8_t>(RightEye);
     QImage upsideDownImageRight((const uchar*)colorBuffer, size.x, size.y,
                                 QImage::Format_ARGB32_Premultiplied);
     painter.drawImage(size.x, 0, upsideDownImageRight);
-    delete[] colorBuffer;
+    delete[] reinterpret_cast<GLubyte*>(colorBuffer);
 
     if (m_renderToImageType == HalfSideBySideStereoView) {
       QImage halfSideBySideImage = sideBySideImage.scaled(

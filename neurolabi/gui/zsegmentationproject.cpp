@@ -121,5 +121,20 @@ void ZSegmentationProject::save(const QString &fileName)
     projectJson.setEntry(
           "stack", saveDir.absoluteFilePath("signal.tif").toStdString());
     m_stack->save(fileName.toStdString());
+
+    //Saving regions
+    ZTree<ZObject3dScan> m_labelTree;
+    ZTreeIterator<ZObject3dScan> iterator(m_labelTree);
+    while (iterator.hasNext()) {
+      ZTreeNode<ZObject3dScan> *node = iterator.nextNode();
+      if (!node->isRoot()) {
+        QString parentSource = node->parent()->data().getSource().c_str();
+        parentSource = parentSource.remove(".sobj");
+        QString output = QString("%1_%2.sobj").arg(parentSource).arg(
+              node->data().getLabel());
+        node->data().save(saveDir.absoluteFilePath(output).toStdString());
+        node->data().setSource(output.toStdString());
+      }
+    }
   }
 }
