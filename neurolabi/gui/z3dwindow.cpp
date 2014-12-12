@@ -298,6 +298,9 @@ void Z3DWindow::init(EInitMode mode)
   setWindowSize();
 
   // init canvas and opengl context
+#ifdef _QT5_
+  m_canvas = new Z3DCanvas("", 512, 512);
+#else
   QGLFormat format = QGLFormat();
   format.setAlpha(true);
   format.setDepth(true);
@@ -307,6 +310,7 @@ void Z3DWindow::init(EInitMode mode)
   if (m_isStereoView)
     format.setStereo(true);
   m_canvas = new Z3DCanvas("", 512, 512, format);
+#endif
   setCentralWidget(m_canvas);
   m_canvas->setContextMenuPolicy(Qt::CustomContextMenu);
   connect(m_canvas, SIGNAL(customContextMenuRequested(QPoint)),

@@ -7,35 +7,35 @@ class Z3DUtils
 {
 public:
   template<typename Real>
-  static bool isApproxEqual(const glm::detail::tvec3<Real,glm::highp> &vertex1, const glm::detail::tvec3<Real,glm::highp> &vertex2, Real epsilon = 1e-6);
+  static bool isApproxEqual(const glm::tvec3<Real,glm::highp> &vertex1, const glm::tvec3<Real,glm::highp> &vertex2, Real epsilon = 1e-6);
 
   template<typename Real>
-  static Real vertexPlaneDistance(const glm::detail::tvec3<Real,glm::highp> &vertex, const glm::detail::tvec4<Real,glm::highp>& plane, Real epsilon = 1e-6);
+  static Real vertexPlaneDistance(const glm::tvec3<Real,glm::highp> &vertex, const glm::tvec4<Real,glm::highp>& plane, Real epsilon = 1e-6);
 
   //
   // Determine the distance of the current vertex to the edge defined by
   // the vertices provided.  Returns distance squared. Note: line is assumed
   // infinite in extent.
   template<typename Real>
-  static Real vertexLineSquaredDistance(const glm::detail::tvec3<Real,glm::highp> &x, const glm::detail::tvec3<Real,glm::highp> &p1, const glm::detail::tvec3<Real,glm::highp> &p2);
+  static Real vertexLineSquaredDistance(const glm::tvec3<Real,glm::highp> &x, const glm::tvec3<Real,glm::highp> &p1, const glm::tvec3<Real,glm::highp> &p2);
 
   // Compute distance to finite line. Returns parametric coordinate t
   // and point location on line.
   template<typename Real>
-  static Real vertexLineSegmentSquaredDistance(const glm::detail::tvec3<Real,glm::highp> &x, const glm::detail::tvec3<Real,glm::highp> &p1, const glm::detail::tvec3<Real,glm::highp> &p2,
-                                               Real &t, glm::detail::tvec3<Real,glm::highp> &closestPoint);
+  static Real vertexLineSegmentSquaredDistance(const glm::tvec3<Real,glm::highp> &x, const glm::tvec3<Real,glm::highp> &p1, const glm::tvec3<Real,glm::highp> &p2,
+                                               Real &t, glm::tvec3<Real,glm::highp> &closestPoint);
 
   // Note: This method assume that P is on triangle plane. P = A + u * (B - A) + v * (C - A)
   // vertex inside tirangle if (u >= 0) && (v >= 0) && (u + v < 1)
   template<typename Real>
-  static bool vertexInsideTriangle(const glm::detail::tvec3<Real,glm::highp> &P, const glm::detail::tvec3<Real,glm::highp> &A, const glm::detail::tvec3<Real,glm::highp> &B,
-                                   const glm::detail::tvec3<Real,glm::highp> &C, Real epsilon, Real &u, Real &v);
+  static bool vertexInsideTriangle(const glm::tvec3<Real,glm::highp> &P, const glm::tvec3<Real,glm::highp> &A, const glm::tvec3<Real,glm::highp> &B,
+                                   const glm::tvec3<Real,glm::highp> &C, Real epsilon, Real &u, Real &v);
 
   // distance between P and Triangle A + s * (B - A) + t * (C - A)
   // return value s and t can be used for intepolation
   template<typename Real>
-  static Real vertexTriangleSquaredDistance(glm::detail::tvec3<Real,glm::highp> P, glm::detail::tvec3<Real,glm::highp> A,
-                                            glm::detail::tvec3<Real,glm::highp> B, glm::detail::tvec3<Real,glm::highp> C, Real &s, Real &t);
+  static Real vertexTriangleSquaredDistance(glm::tvec3<Real,glm::highp> P, glm::tvec3<Real,glm::highp> A,
+                                            glm::tvec3<Real,glm::highp> B, glm::tvec3<Real,glm::highp> C, Real &s, Real &t);
 
   // from VTK
   static Z3DTriangleList clipClosedSurface(const Z3DTriangleList &mesh, std::vector<glm::vec4> clipPlanes, double epsilon = 1e-6);
@@ -45,13 +45,13 @@ public:
 // -------------------------------------------------------------------------------------------
 
 template<typename Real>
-bool Z3DUtils::isApproxEqual(const glm::detail::tvec3<Real,glm::highp> &vertex1, const glm::detail::tvec3<Real,glm::highp> &vertex2, Real epsilon)
+bool Z3DUtils::isApproxEqual(const glm::tvec3<Real,glm::highp> &vertex1, const glm::tvec3<Real,glm::highp> &vertex2, Real epsilon)
 {
   return glm::length(vertex1 - vertex2) <= epsilon;
 }
 
 template<typename Real>
-Real Z3DUtils::vertexPlaneDistance(const glm::detail::tvec3<Real,glm::highp> &vertex, const glm::detail::tvec4<Real,glm::highp> &plane, Real epsilon)
+Real Z3DUtils::vertexPlaneDistance(const glm::tvec3<Real,glm::highp> &vertex, const glm::tvec4<Real,glm::highp> &plane, Real epsilon)
 {
   double distance = glm::dot(plane.xyz(), vertex) - plane.w;
   if (std::abs(distance) <= epsilon)
@@ -61,12 +61,12 @@ Real Z3DUtils::vertexPlaneDistance(const glm::detail::tvec3<Real,glm::highp> &ve
 }
 
 template<typename Real>
-Real Z3DUtils::vertexTriangleSquaredDistance(glm::detail::tvec3<Real,glm::highp> P, glm::detail::tvec3<Real,glm::highp> A,
-                                                      glm::detail::tvec3<Real,glm::highp> B, glm::detail::tvec3<Real,glm::highp> C, Real &s, Real &t)
+Real Z3DUtils::vertexTriangleSquaredDistance(glm::tvec3<Real,glm::highp> P, glm::tvec3<Real,glm::highp> A,
+                                                      glm::tvec3<Real,glm::highp> B, glm::tvec3<Real,glm::highp> C, Real &s, Real &t)
 {
-  glm::detail::tvec3<Real,glm::highp> diff = A - P;
-  glm::detail::tvec3<Real,glm::highp> edge0 = B - A;
-  glm::detail::tvec3<Real,glm::highp> edge1 = C - A;
+  glm::tvec3<Real,glm::highp> diff = A - P;
+  glm::tvec3<Real,glm::highp> edge0 = B - A;
+  glm::tvec3<Real,glm::highp> edge1 = C - A;
   Real a00 = glm::dot(edge0, edge0);
   Real a01 = glm::dot(edge0, edge1);
   Real a11 = glm::dot(edge1, edge1);
@@ -294,10 +294,10 @@ Real Z3DUtils::vertexTriangleSquaredDistance(glm::detail::tvec3<Real,glm::highp>
 }
 
 template<typename Real>
-Real Z3DUtils::vertexLineSquaredDistance(const glm::detail::tvec3<Real,glm::highp> &x, const glm::detail::tvec3<Real,glm::highp> &p1, const glm::detail::tvec3<Real,glm::highp> &p2)
+Real Z3DUtils::vertexLineSquaredDistance(const glm::tvec3<Real,glm::highp> &x, const glm::tvec3<Real,glm::highp> &p1, const glm::tvec3<Real,glm::highp> &p2)
 {
   Real proj, den;
-  glm::detail::tvec3<Real,glm::highp> np1, p1p2;
+  glm::tvec3<Real,glm::highp> np1, p1p2;
 
   np1 = x - p1;
   p1p2 = p1 - p2;
@@ -320,16 +320,16 @@ Real Z3DUtils::vertexLineSquaredDistance(const glm::detail::tvec3<Real,glm::high
 }
 
 template<typename Real>
-Real Z3DUtils::vertexLineSegmentSquaredDistance(const glm::detail::tvec3<Real,glm::highp> &x, const glm::detail::tvec3<Real,glm::highp> &p1, const glm::detail::tvec3<Real,glm::highp> &p2,
-                                                Real &t, glm::detail::tvec3<Real,glm::highp> &closestPoint)
+Real Z3DUtils::vertexLineSegmentSquaredDistance(const glm::tvec3<Real,glm::highp> &x, const glm::tvec3<Real,glm::highp> &p1, const glm::tvec3<Real,glm::highp> &p2,
+                                                Real &t, glm::tvec3<Real,glm::highp> &closestPoint)
 {
   Real denom, num;
-  glm::detail::tvec3<Real,glm::highp> closest;
+  glm::tvec3<Real,glm::highp> closest;
   Real tolerance;
   //
   //   Determine appropriate vectors
   //
-  glm::detail::tvec3<Real,glm::highp> p21 = p2 - p1;
+  glm::tvec3<Real,glm::highp> p21 = p2 - p1;
 
   //
   //   Get parametric location
@@ -374,13 +374,13 @@ Real Z3DUtils::vertexLineSegmentSquaredDistance(const glm::detail::tvec3<Real,gl
 }
 
 template<typename Real>
-bool Z3DUtils::vertexInsideTriangle(const glm::detail::tvec3<Real,glm::highp> &P, const glm::detail::tvec3<Real,glm::highp> &A, const glm::detail::tvec3<Real,glm::highp> &B,
-                                    const glm::detail::tvec3<Real,glm::highp> &C, Real epsilon, Real &u, Real &v)
+bool Z3DUtils::vertexInsideTriangle(const glm::tvec3<Real,glm::highp> &P, const glm::tvec3<Real,glm::highp> &A, const glm::tvec3<Real,glm::highp> &B,
+                                    const glm::tvec3<Real,glm::highp> &C, Real epsilon, Real &u, Real &v)
 {
   // Compute vectors
-  glm::detail::tvec3<Real,glm::highp> v0 = C - A;
-  glm::detail::tvec3<Real,glm::highp> v1 = B - A;
-  glm::detail::tvec3<Real,glm::highp> v2 = P - A;
+  glm::tvec3<Real,glm::highp> v0 = C - A;
+  glm::tvec3<Real,glm::highp> v1 = B - A;
+  glm::tvec3<Real,glm::highp> v2 = P - A;
 
   // Compute dot products
   Real dot00 = glm::dot(v0, v0);

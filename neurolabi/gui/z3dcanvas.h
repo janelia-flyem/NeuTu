@@ -4,7 +4,11 @@
 #include "z3dgl.h"
 #include <QGraphicsView>
 #include <QWidget>
+#ifdef _QT5_
+#include <QOpenGLWidget>
+#else
 #include <QGLWidget>
+#endif
 #include <QInputEvent>
 #include <deque>
 #include <QList>
@@ -25,14 +29,23 @@ class Z3DCanvas : public QGraphicsView
 {
   Q_OBJECT
 public:
+#ifdef _QT5_
+  Z3DCanvas(const QString &title, int width = 512, int height = 512,
+            QWidget* parent = 0, Qt::WindowFlags f = 0);
+#else
   Z3DCanvas(const QString &title, int width = 512, int height = 512,
             const QGLFormat &format = QGLFormat(QGL::DoubleBuffer | QGL::DepthBuffer | QGL::Rgba | QGL::SampleBuffers | QGL::AlphaChannel),
             QWidget* parent = 0, const QGLWidget * shareWidget = 0, Qt::WindowFlags f = 0);
+#endif
 
 
   virtual ~Z3DCanvas();
 
+#ifdef _QT5_
+  inline QSurfaceFormat format() const { return m_glWidget->format(); }
+#else
   inline QGLFormat format() const { return m_glWidget->format(); }
+#endif
 
   void setNetworkEvaluator(Z3DNetworkEvaluator *n);
   void setFakeStereoOnce();
@@ -44,7 +57,11 @@ public:
   void broadcastEvent(QEvent* e, int w, int h);
 
   // Set the opengl context of this canvas as the current one.
+#ifdef _QT5_
+  inline void getGLFocus() {}
+#else
   inline void getGLFocus() { m_glWidget->makeCurrent(); }
+#endif
   void toggleFullScreen();
   void forceUpdate() {
     QPaintEvent *pe = new QPaintEvent(rect()); paintEvent(pe); delete pe;
@@ -98,7 +115,11 @@ protected:
 
   bool m_fullscreen;
 
+#ifdef _QT5_
+  QOpenGLWidget* m_glWidget;
+#else
   QGLWidget* m_glWidget;
+#endif
   QGraphicsScene* m_3dScene;
   std::deque<Z3DCanvasEventListener*> m_listeners;
 

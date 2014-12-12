@@ -3,7 +3,6 @@
 #include <QFile>
 #include <QTextStream>
 #include <QStringList>
-#include <QGLWidget>
 #include "QsLog.h"
 
 Z3DSDFont::Z3DSDFont(const QString &imageFileName, const QString &txtFileName)

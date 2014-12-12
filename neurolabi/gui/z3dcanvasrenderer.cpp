@@ -218,7 +218,7 @@ void Z3DCanvasRenderer::renderInportToImage(const QString &filename, Z3DEye eye)
   if (eye == CenterEye) {
     //if (m_inport.isReady()) {
     // get color buffer content
-    glm::detail::tvec4<uint8_t,glm::highp>* colorBuffer = readBGRAColorBuffer<uint8_t>(eye);
+    glm::tvec4<uint8_t,glm::highp>* colorBuffer = readBGRAColorBuffer<uint8_t>(eye);
     //if (colorBuffer) {
     glm::ivec2 size = m_inport.getSize();
     QImage upsideDownImage((const uchar*)colorBuffer, size.x, size.y,
@@ -233,7 +233,7 @@ void Z3DCanvasRenderer::renderInportToImage(const QString &filename, Z3DEye eye)
     //}
     //}
   } else if (eye == RightEye) {
-    glm::detail::tvec4<uint8_t,glm::highp>* colorBuffer = readBGRAColorBuffer<uint8_t>(LeftEye);
+    glm::tvec4<uint8_t,glm::highp>* colorBuffer = readBGRAColorBuffer<uint8_t>(LeftEye);
     glm::ivec2 size = m_rightEyeInport.getSize();
     QImage sideBySideImage(size.x * 2, size.y, QImage::Format_ARGB32_Premultiplied);
     QPainter painter(&sideBySideImage);

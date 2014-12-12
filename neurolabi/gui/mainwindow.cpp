@@ -222,6 +222,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
   // init openGL context
   RECORD_INFORMATION("Initializing OpenGL context ...");
+#ifdef _QT5_
+  m_sharedContext = new Z3DCanvas("Init Canvas", 32, 32, this);
+#else
   QGLFormat format = QGLFormat();
   format.setAlpha(true);
   format.setDepth(true);
@@ -230,6 +233,7 @@ MainWindow::MainWindow(QWidget *parent) :
   format.setSampleBuffers(true);
   //format.setStereo(true);
   m_sharedContext = new Z3DCanvas("Init Canvas", 32, 32, format, this);
+#endif
 
   m_frameCount = 0;
 

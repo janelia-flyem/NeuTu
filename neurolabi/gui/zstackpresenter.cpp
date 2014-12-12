@@ -2,6 +2,9 @@
 #include <QtGui>
 #ifdef _QT5_
 #include <QtWidgets>
+#include <QtConcurrent>
+#else
+#include <QtConcurrentRun>
 #endif
 
 #include "zstackpresenter.h"

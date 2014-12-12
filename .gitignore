@@ -12,6 +12,7 @@
 .DS_Store
 
 !/neurolabi/lib/Mingw/*.zip
+/neurolabi/lib/*.tar
 
 # qtcreator c project file
 /neurolabi/c/clib.*

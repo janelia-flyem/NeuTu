@@ -15,6 +15,8 @@
 #include "neutubeconfig.h"
 
 #ifdef _QT5_
+#include <QSurfaceFormat>
+
 #include <QStack>
 #include <QPointer>
 // thanks to Daniel Price for this workaround
@@ -99,6 +101,16 @@ void myMessageOutput(QtMsgType type, const char *msg)
 
 int main(int argc, char *argv[])
 {
+#ifdef _QT5_
+  QCoreApplication::setAttribute(Qt::AA_ShareOpenGLContexts, true);
+#endif
+  QCoreApplication::setAttribute(Qt::AA_DontCreateNativeWidgetSiblings, true);
+
+#ifdef _QT5_
+  QSurfaceFormat format;
+  //format.setStereo(true);
+  QSurfaceFormat::setDefaultFormat(format);
+#endif
 
 #ifndef _FLYEM_
 #ifdef _QT5_

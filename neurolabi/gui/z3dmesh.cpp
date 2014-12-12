@@ -289,7 +289,7 @@ glm::vec3 Z3DTriangleList::getTriangleVertex(size_t triangleIndex, size_t vertex
 
 void Z3DTriangleList::transformVerticesByMatrix(const glm::mat4 &tfmat)
 {
-  if (tfmat == glm::mat4())
+  if (tfmat == glm::mat4(1.0))
     return;
   for (size_t i=0; i<m_vertices.size(); ++i) {
     m_vertices[i] = glm::applyMatrix(tfmat, m_vertices[i]);
