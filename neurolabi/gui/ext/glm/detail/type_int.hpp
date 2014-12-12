@@ -33,7 +33,10 @@
 #pragma once
 
 #include "setup.hpp"
-#include <type_traits>
+
+#if defined(CPP_11)
+#  include <type_traits>
+#endif
 
 #if GLM_HAS_EXTENDED_INTEGER_TYPE
 #	include <cstdint>
