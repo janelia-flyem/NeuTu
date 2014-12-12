@@ -436,10 +436,10 @@ ZJsonObject Z3DCamera::toJsonObject() const
 
   switch (m_projectionType) {
   case Perspective:
-    cameraJson.setEntry("projection", "Perspective");
+    cameraJson.setEntry("projection", std::string("Perspective"));
     break;
   case Orthographic:
-    cameraJson.setEntry("projection", "Orthographic");
+    cameraJson.setEntry("projection", std::string("Orthographic"));
     break;
   }
 

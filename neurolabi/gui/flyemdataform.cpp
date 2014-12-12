@@ -925,7 +925,7 @@ void FlyEmDataForm::saveVolumeRenderingFigure(
     stage->getAxis()->setVisible(false);
 
     Z3DCameraParameter* camera = stage->getCamera();
-    camera->setProjectionType(Z3DCamera::Orthographic);
+
 
     ZPoint vec = ZPoint(0, 1, 0);
 
@@ -944,7 +944,7 @@ void FlyEmDataForm::saveVolumeRenderingFigure(
       upVector = camera->getUpVector();
     }
 
-
+    camera->setProjectionType(Z3DCamera::Orthographic);
 //    glm::vec3 eyeSpec = camera->getEye();
 //    glm::vec3 centerSpec = camera->getCenter();
 
