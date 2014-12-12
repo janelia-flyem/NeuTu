@@ -35,6 +35,7 @@ public:
   }
 
   void loadStack(const QString &fileName);
+  void save(const QString &fileName);
 
 signals:
 

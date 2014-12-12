@@ -2,6 +2,9 @@
 #include <QWidget>
 #include <QGroupBox>
 #include "zwidgetsgroup.h"
+#include "zjsonobject.h"
+#include "zjsonparser.h"
+#include "zjsonarray.h"
 
 Z3DCameraParameter::Z3DCameraParameter(const QString &name, const Z3DCamera &value, QObject *parent)
   : ZSingleValueParameter<Z3DCamera>(name, value, parent)
@@ -69,6 +72,17 @@ void Z3DCameraParameter::flipViewDirection()
 
   glm::vec3 viewVector = eyePosition - referenceCenter;
   setEye(referenceCenter - viewVector);
+}
+
+void Z3DCameraParameter::rotate90X()
+{
+  rotate(glm::radians(90.f), glm::vec3(1, 0, 0));
+}
+
+void Z3DCameraParameter::rotate90XZ()
+{
+  rotate(glm::radians(90.f), glm::vec3(1, 0, 0));
+  rotate(glm::radians(90.f), glm::vec3(0, 0, 1));
 }
 
 void Z3DCameraParameter::viewportChanged(const glm::ivec2 &viewport)
@@ -196,4 +210,50 @@ void Z3DCameraParameter::updateWidget(Z3DCamera &value)
   m_nearDist.setRange(1e-10, value.getFarDist());
   m_farDist.setRange(value.getNearDist(), std::numeric_limits<float>::max());
   m_receiveWidgetSignal = true;
+}
+
+void Z3DCameraParameter::set(const ZJsonObject &cameraJson)
+{
+  if (cameraJson.hasKey("eye")) {
+    for (int i = 0; i < 3; ++i) {
+      m_eye.set(glm::vec3(ZJsonParser::numberValue(cameraJson["eye"], 0),
+                ZJsonParser::numberValue(cameraJson["eye"], 1),
+          ZJsonParser::numberValue(cameraJson["eye"], 2)));
+    }
+  }
+
+  if (cameraJson.hasKey("center")) {
+    for (int i = 0; i < 3; ++i) {
+      m_center.set(glm::vec3(ZJsonParser::numberValue(cameraJson["center"], 0),
+                ZJsonParser::numberValue(cameraJson["center"], 1),
+          ZJsonParser::numberValue(cameraJson["center"], 2)));
+    }
+  }
+
+  if (cameraJson.hasKey("up_vector")) {
+    for (int i = 0; i < 3; ++i) {
+      m_upVector.set(glm::vec3(ZJsonParser::numberValue(cameraJson["up_vector"], 0),
+                ZJsonParser::numberValue(cameraJson["up_vector"], 1),
+          ZJsonParser::numberValue(cameraJson["up_vector"], 2)));
+    }
+  }
+
+  if (cameraJson.hasKey("projection")) {
+    m_projectionType.select(ZJsonParser::stringValue(cameraJson["projection"]));
+  }
+
+  if (cameraJson.hasKey("field_of_view")) {
+    m_fieldOfView.set(ZJsonParser::numberValue(cameraJson["field_of_view"]));
+  }
+
+  if (cameraJson.hasKey("near_dist")) {
+    m_nearDist.set(ZJsonParser::numberValue(cameraJson["near_dist"]));
+  }
+
+  if (cameraJson.hasKey("far_dist")) {
+    m_farDist.set(ZJsonParser::numberValue(cameraJson["far_dist"]));
+  }
+
+  m_nearDist.setRange(1e-10, m_farDist.get());
+  m_farDist.setRange(m_nearDist.get(), std::numeric_limits<float>::max());
 }

@@ -6409,6 +6409,17 @@ void MainWindow::on_actionOne_Column_triggered()
     if (stack->getIntValue(
           blockIndex.getX(), blockIndex.getY(), blockIndex.getZ()) > 0) {
       ZJsonObject newSynapseJson;
+
+      ZJsonObject tbarJson(
+            synapseJson["T-bar"], ZJsonObject::SET_INCREASE_REF_COUNT);
+      json_array_set(tbarJson["location"], 1, json_integer(iround(y)));
+//      ZJsonArray tbarLocationJson(
+//            tbarJson["location"], ZJsonObject::SET_INCREASE_REF_COUNT);
+
+      //tbarLocationJson.at()
+      //tbarJson.setEntry("location", tbarLocationJson);
+
+
       newSynapseJson.setEntry("T-bar", synapseJson["T-bar"]);
 
       //add the synapse
@@ -6432,7 +6443,11 @@ void MainWindow::on_actionOne_Column_triggered()
         if (stack->getIntValue(
               blockIndex.getX(), blockIndex.getY(), blockIndex.getZ()) > 0) {
           bodyIdSet.insert(partner.getBodyId());
-          newPartnerArrayJson.append(partner.toJsonObject());
+
+          ZJsonObject partnerJson = partner.toJsonObject();
+          json_array_set(partnerJson["location"], 1, json_integer(iround(y)));
+
+          newPartnerArrayJson.append(partnerJson);
         }
       }
       newSynapseJson.setEntry("partners", newPartnerArrayJson);
@@ -6445,6 +6460,10 @@ void MainWindow::on_actionOne_Column_triggered()
   //newSynapseAnnotationJson.print();
 
   newSynapseAnnotationJson.dump(dataPath + "/annotations-synapse-cropped.json");
+
+#ifdef _DEBUG_
+  return;
+#endif
 
   //Make body ID object
   ZJsonObject bodyAnnotationJson;

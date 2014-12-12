@@ -6,6 +6,8 @@
 #include "zoptionparameter.h"
 #include "z3dcamera.h"
 
+class ZJsonObject;
+
 class Z3DCameraParameter : public ZSingleValueParameter<Z3DCamera>
 {
   Q_OBJECT
@@ -27,7 +29,11 @@ public:
   inline void setProjectionType(Z3DCamera::ProjectionType pt)
       { m_projectionType.select(pt == Z3DCamera::Perspective ? "Perspective" : "Orthographic"); }
 
+  void set(const ZJsonObject &cameraJson);
+
   void flipViewDirection();
+  void rotate90X();
+  void rotate90XZ();
 
   inline void resetCamera(const std::vector<double> &bound,
                           Z3DCamera::ResetCameraOptions options = Z3DCamera::ResetAll)
@@ -82,6 +88,8 @@ public:
   inline glm::vec3 screenToWorld(glm::vec3 spt, glm::ivec4 viewport, Z3DEye eye = CenterEye)
       { return m_value.screenToWorld(spt, viewport, eye); }
 
+  inline void updatePara() { updateWidget(m_value); emit valueChanged(); }
+
 public slots:
   void viewportChanged(const glm::ivec2& viewport);
 
@@ -99,8 +107,6 @@ protected:
   virtual void beforeChange(Z3DCamera &value);
 
   void updateWidget(Z3DCamera &value);
-
-  inline void updatePara() { updateWidget(m_value); emit valueChanged(); }
 
 private:
   ZOptionParameter<QString> m_projectionType;

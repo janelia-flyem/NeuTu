@@ -65,7 +65,8 @@ void ZSegmentationProjectDialog::on_updatePushButton_clicked()
 
 void ZSegmentationProjectDialog::on_openPushButton_clicked()
 {
-  QString fileName = getMainWindow()->getOpenFileName("Load a stack", "*.tif");
+  QString fileName = getMainWindow()->getOpenFileName(
+        "Load a project or a stack", "*.tif *.json");
   if (!fileName.isEmpty()) {
     if (m_dataFrame == NULL) {
       ZSegmentationProject *proj = new ZSegmentationProject(this);
@@ -82,5 +83,14 @@ void ZSegmentationProjectDialog::on_openPushButton_clicked()
     } else {
       m_dataFrame->show();
     }
+  }
+}
+
+void ZSegmentationProjectDialog::on_savePushButton_clicked()
+{
+  QString fileName = getMainWindow()->getSaveFileName(
+        "Save a project", "*.json");
+  if (!fileName.isEmpty()) {
+    m_model->getProject()->save(fileName);
   }
 }

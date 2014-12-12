@@ -6,35 +6,35 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>391</width>
-    <height>441</height>
+    <width>463</width>
+    <height>448</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Segmentation</string>
+   <string>Segmentation (NeuSplitter)</string>
   </property>
   <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
      <x>10</x>
      <y>11</y>
-     <width>371</width>
+     <width>437</width>
      <height>421</height>
     </rect>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
+     <widget class="QPushButton" name="testPushButton">
+      <property name="text">
+       <string>Test</string>
+      </property>
+     </widget>
+    </item>
+    <item>
      <widget class="QTreeView" name="treeView"/>
     </item>
     <item>
      <layout class="QHBoxLayout" name="horizontalLayout">
-      <item>
-       <widget class="QPushButton" name="testPushButton">
-        <property name="text">
-         <string>Test</string>
-        </property>
-       </widget>
-      </item>
       <item>
        <widget class="QPushButton" name="openPushButton">
         <property name="text">
@@ -53,6 +53,13 @@
        <widget class="QPushButton" name="updatePushButton">
         <property name="text">
          <string>Update</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="exportPushButton">
+        <property name="text">
+         <string>Export</string>
         </property>
        </widget>
       </item>

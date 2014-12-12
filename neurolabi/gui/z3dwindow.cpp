@@ -814,12 +814,42 @@ void Z3DWindow::createDockWindows()
   m_settingsDockWidget->setAllowedAreas(Qt::RightDockWidgetArea);
 
   m_widgetsGroup = new ZWidgetsGroup("All", NULL, 1);
-  // reset camera button and some other utils
-  QPushButton *resetCameraButton = new QPushButton(tr("Reset Camera"));
-  resetCameraButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-  connect(resetCameraButton, SIGNAL(clicked()), this, SLOT(resetCamera()));
 
-#ifdef _FLYEM_
+  QMenu *cameraMenu = new QMenu(this);
+  QPushButton *cameraMenuButton = new QPushButton(tr("Camera"));
+  cameraMenuButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+  cameraMenuButton->setMenu(cameraMenu);
+
+  QAction *resetCameraAction = new QAction("Reset Camera", this);
+  connect(resetCameraAction, SIGNAL(triggered()), this, SLOT(resetCamera()));
+  cameraMenu->addAction(resetCameraAction);
+
+  QAction *flipViewAction = new QAction("Back View", this);
+  connect(flipViewAction, SIGNAL(triggered()), this, SLOT(flipView()));
+  cameraMenu->addAction(flipViewAction);
+
+  QAction *xzViewAction = new QAction("X-Z View", this);
+  connect(xzViewAction, SIGNAL(triggered()), this, SLOT(setXZView()));
+  cameraMenu->addAction(xzViewAction);
+
+  QAction *yzViewAction = new QAction("Y-Z View", this);
+  connect(yzViewAction, SIGNAL(triggered()), this, SLOT(setYZView()));
+  cameraMenu->addAction(yzViewAction);
+
+  QAction *saveViewAction = new QAction("Save View", this);
+  connect(saveViewAction, SIGNAL(triggered()), this, SLOT(saveView()));
+  cameraMenu->addAction(saveViewAction);
+
+  QAction *loadViewAction = new QAction("Load View", this);
+  connect(loadViewAction, SIGNAL(triggered()), this, SLOT(loadView()));
+  cameraMenu->addAction(loadViewAction);
+
+  // reset camera button and some other utils
+//  QPushButton *resetCameraButton = new QPushButton(tr("Reset Camera"));
+//  resetCameraButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+//  connect(resetCameraButton, SIGNAL(clicked()), this, SLOT(resetCamera()));
+
+#if 0
   QPushButton *flipViewButton = new QPushButton(tr("Back view"));
   flipViewButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
   connect(flipViewButton, SIGNAL(clicked()), this, SLOT(flipView()));
@@ -829,9 +859,13 @@ void Z3DWindow::createDockWindows()
   recordViewButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
   connect(recordViewButton, SIGNAL(clicked()), this, SLOT(recordView()));
 
-  QPushButton *diffViewButton = new QPushButton(tr("Calculate view difference"));
-  diffViewButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-  connect(diffViewButton, SIGNAL(clicked()), this, SLOT(diffView()));
+  QPushButton *saveViewButton = new QPushButton(tr("Save view"));
+  saveViewButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+  connect(saveViewButton, SIGNAL(clicked()), this, SLOT(saveView()));
+
+//  QPushButton *diffViewButton = new QPushButton(tr("Calculate view difference"));
+//  diffViewButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+//  connect(diffViewButton, SIGNAL(clicked()), this, SLOT(diffView()));
 #  endif
 
 #endif
@@ -841,13 +875,14 @@ void Z3DWindow::createDockWindows()
 
   if (config.getZ3DWindowConfig().isUtilsOn()) {
     ZWidgetsGroup *utils = new ZWidgetsGroup("General", m_widgetsGroup, 1);
-    new ZWidgetsGroup(resetCameraButton, utils, 1);
-#ifdef _FLYEM_
+    new ZWidgetsGroup(cameraMenuButton, utils, 1);
+#if 0
     new ZWidgetsGroup(flipViewButton, utils, 1);
 
 #  ifdef _DEBUG_
     new ZWidgetsGroup(recordViewButton, utils, 1);
-    new ZWidgetsGroup(diffViewButton, utils, 1);
+    new ZWidgetsGroup(saveViewButton, utils, 1);
+    //new ZWidgetsGroup(diffViewButton, utils, 1);
 #  endif
 #endif
     new ZWidgetsGroup(getCamera(), utils, 1);
@@ -991,6 +1026,18 @@ void Z3DWindow::flipView()
   getCamera()->flipViewDirection();
 }
 
+void Z3DWindow::setXZView()
+{
+  resetCamera();
+  getCamera()->rotate90X();
+}
+
+void Z3DWindow::setYZView()
+{
+  resetCamera();
+  getCamera()->rotate90XZ();
+}
+
 void Z3DWindow::recordView()
 {
   m_cameraRecord = getCamera()->get();
@@ -1004,6 +1051,34 @@ void Z3DWindow::diffView()
             << getCamera()->getCenter() - m_cameraRecord.getCenter() << std::endl;
   std::cout << "Up vector: "
             << getCamera()->getUpVector() - m_cameraRecord.getUpVector() << std::endl;
+}
+
+void Z3DWindow::saveView()
+{
+  QString filename = QFileDialog::getSaveFileName(
+        this, tr("Save View Parameters"), m_lastOpenedFilePath,
+         tr("Json files (*.json) "));
+
+
+  if (!filename.isEmpty()) {
+    m_lastOpenedFilePath = filename;
+    ZJsonObject cameraJson =getCamera()->get().toJsonObject();
+    cameraJson.dump(filename.toStdString());
+  }
+}
+
+void Z3DWindow::loadView()
+{
+  QString fileName = QFileDialog::getOpenFileName(
+        this, tr("Load View Parameters"), m_lastOpenedFilePath,
+        tr("Json files (*.json) "));
+
+  if (!fileName.isEmpty()) {
+    ZJsonObject cameraJson;
+    cameraJson.load(fileName.toStdString());
+    getCamera()->get().set(cameraJson);
+    getCamera()->updatePara();
+  }
 }
 
 void Z3DWindow::resetCameraClippingRange()

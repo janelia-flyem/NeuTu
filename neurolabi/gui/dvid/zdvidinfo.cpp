@@ -279,6 +279,16 @@ ZIntPoint ZDvidInfo::getGridSize() const
                    m_endBlockIndex.getZ() - m_startBlockIndex.getZ() + 1);
 }
 
+int ZDvidInfo::getMinX() const
+{
+  return m_startCoordinates.getX();
+}
+
+int ZDvidInfo::getMinY() const
+{
+  return m_startCoordinates.getY();
+}
+
 int ZDvidInfo::getMinZ() const
 {
   return m_startCoordinates.getZ();
@@ -287,6 +297,16 @@ int ZDvidInfo::getMinZ() const
 int ZDvidInfo::getMaxZ() const
 {
   return getMinZ() + m_stackSize[2] - 1;
+}
+
+int ZDvidInfo::getMaxX() const
+{
+  return getMinX() + m_stackSize[0] - 1;
+}
+
+int ZDvidInfo::getMaxY() const
+{
+  return getMinY() + m_stackSize[1] - 1;
 }
 
 ZIntCuboid ZDvidInfo::getBlockBox(int x, int y, int z) const

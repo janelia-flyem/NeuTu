@@ -144,7 +144,8 @@ private:
   ZStackDoc* showViewSelectedBody(ZFlyEmQueryView *view);
   void updateThumbnail(ZFlyEmNeuron *neuron);
   void computeThumbnailFunc(ZFlyEmNeuron *neuron);
-  void saveVolumeRenderingFigure(ZFlyEmNeuron *neuron, const QString &output);
+  void saveVolumeRenderingFigure(
+      ZFlyEmNeuron *neuron, const QString &output, const QString cameraFile);
 
 private:
   Ui::FlyEmDataForm *ui;

@@ -125,8 +125,12 @@ public slots:
   void resetCamera();  // set up camera based on visible objects in scene, original position
 
   void flipView(); //Look from the oppsite side
+  void setXZView();
+  void setYZView();
   void recordView(); //Record the current view parameters
   void diffView(); //Output difference between current view and recorded view
+  void saveView(); //Save the view parameters into a file
+  void loadView();
 
   void resetCameraClippingRange(); // // Reset the camera clipping range to include this entire bounding box
   // redraw changed parts

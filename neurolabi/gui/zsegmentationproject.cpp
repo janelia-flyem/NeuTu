@@ -110,3 +110,16 @@ void ZSegmentationProject::setDataFrame(ZStackFrame *frame)
 {
   m_dataFrame = frame;
 }
+
+void ZSegmentationProject::save(const QString &fileName)
+{
+  if (!fileName.isEmpty()) {
+    ZJsonObject projectJson;
+    QDir saveDir(fileName + ".dir");
+
+    saveDir.mkdir(".");
+    projectJson.setEntry(
+          "stack", saveDir.absoluteFilePath("signal.tif").toStdString());
+    m_stack->save(fileName.toStdString());
+  }
+}

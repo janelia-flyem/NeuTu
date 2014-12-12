@@ -884,7 +884,8 @@ void FlyEmDataForm::showEvent(QShowEvent *)
   initThumbnailScene();
 }
 
-void FlyEmDataForm::saveVolumeRenderingFigure(ZFlyEmNeuron *neuron, const QString &output)
+void FlyEmDataForm::saveVolumeRenderingFigure(
+    ZFlyEmNeuron *neuron, const QString &output, const QString cameraFile)
 {
   if (neuron != NULL) {
     ZObject3dScan *obj = neuron->getBody();
@@ -899,6 +900,22 @@ void FlyEmDataForm::saveVolumeRenderingFigure(ZFlyEmNeuron *neuron, const QStrin
         ZSharedPointer<ZStackDoc>(new ZStackDoc(NULL, NULL));
     academy->loadStack(stack);
 
+    int maxX = 0;
+    int maxY = 0;
+    int maxZ = 8089;
+    ZFlyEmDataFrame *parentFrame = getParentFrame();
+    ZDvidReader dvidReader;
+    if (dvidReader.open(parentFrame->getDvidTarget())) {
+      ZDvidInfo dvidInfo = dvidReader.readGrayScaleInfo();
+      maxZ = dvidInfo.getMaxZ();
+      maxX = dvidInfo.getMaxX();
+      maxY = dvidInfo.getMaxY();
+    }
+
+    int dataRangeZ = (maxZ + 1) / (dsIntv + 1);
+    int dataRangeX = (maxX + 1) / (dsIntv + 1);
+    int dataRangeY = (maxY + 1) / (dsIntv + 1);
+
     Z3DWindow *stage = new Z3DWindow(academy, Z3DWindow::FULL_RES_VOLUME,
                                      false, NULL);
 
@@ -910,33 +927,53 @@ void FlyEmDataForm::saveVolumeRenderingFigure(ZFlyEmNeuron *neuron, const QStrin
     Z3DCameraParameter* camera = stage->getCamera();
     camera->setProjectionType(Z3DCamera::Orthographic);
 
-    glm::vec3 referenceCenter = camera->getCenter();
+    ZPoint vec = ZPoint(0, 1, 0);
 
-    int maxZ = 8089;
-    ZFlyEmDataFrame *parentFrame = getParentFrame();
-    ZDvidReader dvidReader;
-    if (dvidReader.open(parentFrame->getDvidTarget())) {
-      ZDvidInfo dvidInfo = dvidReader.readGrayScaleInfo();
-      maxZ = dvidInfo.getMaxZ();
+    glm::vec3 upVector = glm::vec3(0, 0, -1);
+
+    if (!cameraFile.isEmpty()) {
+      ZJsonObject cameraJson;
+      cameraJson.load(cameraFile.toStdString());
+      camera->set(cameraJson);
+      glm::vec3 eyeSpec = camera->getEye();
+      glm::vec3 centerSpec = camera->getCenter();
+      vec = ZPoint(eyeSpec[0], eyeSpec[1], eyeSpec[2]) -
+              ZPoint(centerSpec[0], centerSpec[1], centerSpec[2]);
+      vec.normalize();
+
+      upVector = camera->getUpVector();
     }
 
-    int dataRangeZ = (maxZ + 1) / (dsIntv + 1);
+
+//    glm::vec3 eyeSpec = camera->getEye();
+//    glm::vec3 centerSpec = camera->getCenter();
+
+    ZPoint referenceCenter;
+    referenceCenter.set(dataRangeX / 2, dataRangeY / 2, dataRangeZ / 2);
+
+    double distNearToCenter = referenceCenter.length() * 2.0;
     double distEyeToNear = dataRangeZ * 0.5 / tan(camera->getFieldOfView() * 0.5);
-    double distNearToCenter = 4000;
-    double eyeDistance = distEyeToNear + distNearToCenter;
+    double distEyeToCenter = distEyeToNear + distNearToCenter;
+
+    ZPoint eyePosition = referenceCenter + vec * distEyeToCenter;
+    camera->setCenter(glm::vec3(referenceCenter[0], referenceCenter[1],
+        referenceCenter[2]));
+    camera->setEye(glm::vec3(eyePosition[0], eyePosition[1], eyePosition[2]));
+
+    camera->setUpVector(upVector);
 
    // double eyeDistance = eyeDistance;//boundBox[3] - referenceCenter[1] + 2500;
     //double eyeDistance = 2000 - referenceCenter[1];
-    glm::vec3 viewVector(0, -1, 0);
+//    glm::vec3 viewVector(vec.x(), vec.y(), vec.z());
 
-    viewVector *= eyeDistance;
-    glm::vec3 eyePosition = referenceCenter - viewVector;
+//    viewVector *= eyeDistance;
+//    glm::vec3 eyePosition = referenceCenter - viewVector;
 
-    referenceCenter[2] = dataRangeZ / 2;// - stack->getOffset().getZ();
-    camera->setCenter(referenceCenter);
-    eyePosition[2] = dataRangeZ / 2;// - stack->getOffset().getZ();
-    camera->setEye(eyePosition);
-    camera->setUpVector(glm::vec3(0, 0, -1));
+//    referenceCenter[2] = dataRangeZ / 2;// - stack->getOffset().getZ();
+
+//    eyePosition[2] = dataRangeZ / 2;// - stack->getOffset().getZ();
+
+
 
     stage->resetCameraClippingRange();
     camera->setNearDist(distEyeToNear);
@@ -947,7 +984,7 @@ void FlyEmDataForm::saveVolumeRenderingFigure(ZFlyEmNeuron *neuron, const QStrin
     //stage->show();
     //stage->showMaximized();
 
-    stage->takeScreenShot(output, 1000, dataRangeZ, MonoView);
+    stage->takeScreenShot(output, 4000, 4000, MonoView);
     stage->close();
     delete stage;
   }
@@ -959,13 +996,21 @@ void FlyEmDataForm::exportVolumeRenderingFigure()
     "", QFileDialog::ShowDirsOnly);
 
   if (!dirpath.isEmpty()) {
+    QString cameraFile;
+    if(QMessageBox::information(
+         this, "Camera Setting", "Do you want to sepcify camera settings?",
+         QMessageBox::No | QMessageBox::Yes) == QMessageBox::Yes) {
+      cameraFile = QFileDialog::getOpenFileName(
+            this, tr("Load Camera Settings"), "", "*.json");
+    }
+
     QItemSelectionModel *sel = ui->queryView->selectionModel();
     QVector<ZFlyEmNeuron*> neuronArray =
         m_neuronList->getNeuronArray(sel->selectedIndexes());
     dump(QString("Saving %1 figures ...").arg(neuronArray.size()));
     foreach (ZFlyEmNeuron *neuron, neuronArray) {
       QString output = dirpath + QString("/body_%1.tif").arg(neuron->getId());
-      saveVolumeRenderingFigure(neuron, output);
+      saveVolumeRenderingFigure(neuron, output, cameraFile);
       dump(output + " saved");
     }
     dump("Done.");

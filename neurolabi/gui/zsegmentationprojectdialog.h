@@ -31,6 +31,8 @@ private slots:
 
   void on_openPushButton_clicked();
 
+  void on_savePushButton_clicked();
+
 private:
   Ui::ZSegmentationProjectDialog *ui;
   ZSegmentationProjectModel *m_model;
