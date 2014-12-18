@@ -49,8 +49,11 @@ bool ZDvidWriter::open(const ZDvidTarget &target)
     return false;
   }
 
-  return open(("http://" + target.getAddress()).c_str(),
-              target.getUuid().c_str(), target.getPort());
+  m_dvidTarget = target;
+  m_dvidClient->reset();
+  m_dvidClient->setDvidTarget(target);
+
+  return true;
 }
 
 bool ZDvidWriter::open(const QString &sourceString)
@@ -149,7 +152,8 @@ void ZDvidWriter::writeAnnotation(const ZFlyEmNeuron &neuron)
 void ZDvidWriter::writeBodyInfo(int bodyId, const ZJsonObject &obj)
 {
   if (bodyId > 0 && !obj.isEmpty()) {
-    writeJsonString(ZDvidData::getName(ZDvidData::ROLE_BODY_INFO),
+    writeJsonString(ZDvidData::getName(ZDvidData::ROLE_BODY_INFO,
+                                       m_dvidTarget.getBodyLabelName()),
                     ZString::num2str(bodyId).c_str(),
                     obj.dumpString(0).c_str());
   }
@@ -370,7 +374,8 @@ void ZDvidWriter::writeBodyInfo(int bodyId)
       bodyInfo.setBoundBox(obj.getBoundBox());
       ZJsonObject obj = bodyInfo.toJsonObject();
       ZDvidUrl dvidUrl(m_dvidTarget);
-      writeJson(dvidUrl.getBodyInfoUrl(bodyId), obj);
+      writeJson(dvidUrl.getBodyInfoUrl(
+                  bodyId, m_dvidTarget.getBodyLabelName()), obj);
     }
   }
 }

@@ -87,33 +87,33 @@ ZTreeNode<ZObject3dScan>* ZSegmentationProjectModel::getLabelNode(
 void ZSegmentationProjectModel::updateSegmentation()
 {
   ZTreeNode<ZObject3dScan> *labelNode = getLabelNode(m_currentIndex);
+  if (labelNode != NULL) {
+    removeRows(0, labelNode->childNumber(), m_currentIndex);
+    labelNode->killDownstream();
 
-  removeRows(0, labelNode->childNumber(), m_currentIndex);
-  labelNode->killDownstream();
+    const ZStack *stack = getProject()->getDataFrame()->document()->getLabelField();
+    ZObject3dScanArray *objArray = NULL;
+    if (stack != NULL) {
+      objArray = ZObject3dFactory::MakeObject3dScanArray(*stack);
 
-  const ZStack *stack = getProject()->getDataFrame()->document()->getLabelField();
-  ZObject3dScanArray *objArray = NULL;
-  if (stack != NULL) {
-    objArray = ZObject3dFactory::MakeObject3dScanArray(*stack);
-
-    if (objArray != NULL) {
-      if (!objArray->empty()) {
-        //beginInsertRows(m_currentIndex, 0, objArray->size());
-        int row = 0;
-        for (ZObject3dScanArray::iterator iter = objArray->begin();
-             iter != objArray->end(); ++iter) {
-          ZObject3dScan &obj = *iter;
-          ZTreeNode<ZObject3dScan> *childNode = new ZTreeNode<ZObject3dScan>;
-          childNode->setData(obj);
-          childNode->setParent(labelNode);
-          insertRow(row++, m_currentIndex);
+      if (objArray != NULL) {
+        if (!objArray->empty()) {
+          //beginInsertRows(m_currentIndex, 0, objArray->size());
+          int row = 0;
+          for (ZObject3dScanArray::iterator iter = objArray->begin();
+               iter != objArray->end(); ++iter) {
+            ZObject3dScan &obj = *iter;
+            ZTreeNode<ZObject3dScan> *childNode = new ZTreeNode<ZObject3dScan>;
+            childNode->setData(obj);
+            childNode->setParent(labelNode);
+            insertRow(row++, m_currentIndex);
+          }
+          //endInsertRows();
         }
-        //endInsertRows();
       }
+      delete objArray;
     }
-    delete objArray;
   }
-
   //emit dataChanged(index(0, 0, ));
 }
 

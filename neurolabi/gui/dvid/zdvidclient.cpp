@@ -84,7 +84,8 @@ bool ZDvidClient::postRequest(
     break;
   case ZDvidRequest::DVID_GET_OBJECT:
   case ZDvidRequest::DVID_SAVE_OBJECT:
-    urlString = dvidUrl.getSparsevolUrl(parameter.toInt()).c_str();
+    urlString = dvidUrl.getSparsevolUrl(
+          parameter.toInt(), m_dvidTarget.getBodyLabelName()).c_str();
     /*
     QString("%1/%2/sp2body/sparsevol/%3").
         arg(m_serverAddress).arg(m_dataPath).
@@ -101,7 +102,8 @@ bool ZDvidClient::postRequest(
         */
     break;
   case ZDvidRequest::DVID_GET_THUMBNAIL:
-    urlString = dvidUrl.getThumbnailUrl(parameter.toInt()).c_str();
+    urlString = dvidUrl.getThumbnailUrl(
+          parameter.toInt(), m_dvidTarget.getBodyLabelName()).c_str();
     /*
     urlString = QString("%1/%2/thumbnails/%3.mraw").arg(m_serverAddress).
         arg(m_dataPath).arg(parameter.toInt());
@@ -152,8 +154,9 @@ bool ZDvidClient::postRequest(
 //          arg(parameterList[3].toInt()).arg(parameterList[4].toInt()).
 //          arg(parameterList[0].toInt()).arg(parameterList[1].toInt()).
 //          arg(parameterList[2].toInt());
-    } else {
+    } else if (parameterList.size() == 6) {
       urlString = dvidUrl.getBodyLabelUrl(
+            m_dvidTarget.getBodyLabelName(),
             parameterList[0].toInt(), parameterList[1].toInt(),
           parameterList[2].toInt(), parameterList[3].toInt(),
           parameterList[4].toInt(), parameterList[5].toInt()).c_str();
@@ -164,6 +167,12 @@ bool ZDvidClient::postRequest(
 //          arg(parameterList[5].toInt()).
 //          arg(parameterList[0].toInt()).arg(parameterList[1].toInt()).
 //          arg(parameterList[2].toInt());
+    } else if (parameterList.size() == 7) {
+      urlString = dvidUrl.getBodyLabelUrl(
+            parameterList[6].toString().toStdString(),
+            parameterList[0].toInt(), parameterList[1].toInt(),
+          parameterList[2].toInt(), parameterList[3].toInt(),
+          parameterList[4].toInt(), parameterList[5].toInt()).c_str();
     }
 #endif
   }
@@ -477,7 +486,7 @@ void ZDvidClient::finishRequest(QNetworkReply::NetworkError error)
         m_image.setOffset(parameterList.at(0).toInt(),
                           parameterList.at(1).toInt(),
                           parameterList.at(2).toInt());
-      } else if (m_currentRequest.getParameter().toList().size() == 6){
+      } else if (m_currentRequest.getParameter().toList().size() >= 6){
         int width = parameterList.at(3).toInt();
         int height = parameterList.at(4).toInt();
         int depth = parameterList.at(5).toInt();

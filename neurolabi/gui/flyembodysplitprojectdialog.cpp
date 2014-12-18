@@ -478,6 +478,28 @@ void FlyEmBodySplitProjectDialog::startProgress(const QString &label)
 
 void FlyEmBodySplitProjectDialog::on_pushButton_clicked()
 {
+#ifdef _DEBUG_
+  const ZStack *stack = m_project.getDataFrame()->document()->getLabelField();
+  std::map<int, ZObject3dScan*> *objSet = ZObject3dScan::extractAllObject(
+        stack->array8(), stack->width(), stack->height(), stack->depth(),
+        0, NULL);
+
+  for (std::map<int, ZObject3dScan*>::const_iterator iter = objSet->begin();
+       iter != objSet->end(); ++iter) {
+    if (iter->first > 0) {
+      ZObject3dScan *obj = iter->second;
+      obj->translate(stack->getOffset().getX(), stack->getOffset().getY(),
+                     stack->getOffset().getZ());
+      ZString output = GET_TEST_DATA_DIR + "/body_";
+      output.appendNumber(iter->first);
+      obj->save(output + ".sobj");
+      delete obj;
+    }
+  }
+
+  delete objSet;
+#endif
+
 #ifdef _DEBUG_2
   //updateSideView();
   startProgress("Test ...");
@@ -493,7 +515,7 @@ void FlyEmBodySplitProjectDialog::on_pushButton_clicked()
   emit progressDone();
 #endif
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
   ZDvidReader reader;
   if (reader.open(getDvidTarget())) {
     ZStackFrame *frame = m_project.getDataFrame();

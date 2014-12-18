@@ -1807,6 +1807,7 @@ void ZStackPresenter::processEvent(ZInteractionEvent &event)
   case ZInteractionEvent::EVENT_ALL_OBJECT_DESELCTED:
   case ZInteractionEvent::EVENT_OBJ3D_SELECTED:
   case ZInteractionEvent::EVENT_OBJECT3D_SCAN_SELECTED:
+  case ZInteractionEvent::EVENT_OBJECT_SELECTED:
     buddyView()->redrawObject();
     buddyDocument()->notifySelectorChanged();
     break;
@@ -1983,11 +1984,25 @@ void ZStackPresenter::process(const ZStackOperator &op)
     buddyDocument()->deselectAllObject();
     interactionEvent.setEvent(ZInteractionEvent::EVENT_ALL_OBJECT_DESELCTED);
     break;
+  case ZStackOperator::OP_OBJECT_SELECT_SINGLE:
+    buddyDocument()->deselectAllObject();
+    if (op.getHitObject<ZStackObject>() != NULL) {
+      buddyDocument()->setSelected(op.getHitObject<ZStackObject>(), true);
+      interactionEvent.setEvent(
+            ZInteractionEvent::EVENT_OBJECT_SELECTED);
+    }
+    break;
+  case ZStackOperator::OP_OBJECT_SELECT_MULTIPLE:
+    if (op.getHitObject<ZStackObject>() != NULL) {
+      buddyDocument()->setSelected(op.getHitObject<ZStackObject>(), true);
+      interactionEvent.setEvent(
+            ZInteractionEvent::EVENT_OBJECT_SELECTED);
+    }
+    break;
   case ZStackOperator::OP_STROKE_SELECT_SINGLE:
     buddyDocument()->deselectAllObject();
     if (op.getHitObject<ZStroke2d>() != NULL) {
       buddyDocument()->setSelected(op.getHitObject<ZStroke2d>(), true);
-//      op.getHitStroke2d()->setSelected(true);
       interactionEvent.setEvent(
             ZInteractionEvent::EVENT_STROKE_SELECTED);
     }

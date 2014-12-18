@@ -67,3 +67,12 @@ const char* ZDvidData::getName(EType type)
 
   return m_emptyName;
 }
+
+std::string ZDvidData::getName(ERole role, const std::string &prefix)
+{
+  if (prefix.empty()) {
+    return ZDvidData::getName(role);
+  }
+
+  return prefix + "_" + ZDvidData::getName(role);
+}

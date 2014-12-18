@@ -39,6 +39,7 @@
       "name": "AL-7-DEBUG",
       "comment": "AL-Z1213-07",
       "local": "/Users/zhaot/Work/neutube/neurolabi/data/flyem/AL",
+      "body_label": "segmentation120114",
       "debug": true
     },
     {
@@ -46,6 +47,7 @@
       "uuid": "134",
       "name": "AL-7",
       "comment": "AL-Z1213-07",
+      "body_label": "segmentation121714",
       "local": "/groups/flyem/data/zhaot/local/AL"
     }
   ]

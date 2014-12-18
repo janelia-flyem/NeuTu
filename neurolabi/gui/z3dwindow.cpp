@@ -3300,7 +3300,7 @@ void Z3DWindow::addPolyplaneFrom3dPaint(ZStroke2d *stroke)
           }
         }
         if (v > 0) {
-          processedObj->append(x, y, z);
+          processedObj->append(obj->getX(i), obj->getY(i), obj->getZ(i));
         }
       }
       delete obj;

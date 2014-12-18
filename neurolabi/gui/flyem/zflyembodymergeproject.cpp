@@ -78,13 +78,14 @@ void ZFlyEmBodyMergeProject::loadSliceFunc(
     if (m_showingBodyMask) {
       emit newDocReady(docReader, false);
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
       ZArray *array = reader.readLabels64(
             ZDvidData::getName(ZDvidData::ROLE_MERGE_TEST_BODY_LABEL),
             x0, y0, z, width, height, 1);
 #else
       ZArray *array = reader.readLabels64(
-            ZDvidData::getName(ZDvidData::ROLE_BODY_LABEL),
+            m_dvidTarget.getBodyLabelName(),
+            //ZDvidData::getName(ZDvidData::ROLE_BODY_LABEL),
             x0, y0, z, width, height, 1);
 #endif
       emit originalLabelUpdated(array);

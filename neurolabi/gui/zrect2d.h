@@ -17,6 +17,8 @@ public:
   inline int getWidth() const { return m_width; }
   inline int getHeight() const { return m_height; }
 
+  bool hit(double x, double y);
+  bool hit(double x, double y, double z);
 
 public:
   virtual void display(ZPainter &painter, int slice, Display_Style option) const;

@@ -113,6 +113,12 @@ void ZMouseEventLeftButtonReleaseMapper::processSelectionOperation(
       }
       break;
     default:
+      if (event.getModifiers() == Qt::NoModifier) {
+        op.setOperation(ZStackOperator::OP_OBJECT_SELECT_SINGLE);
+      } else if (event.getModifiers() == Qt::ShiftModifier ||
+                 event.getModifiers() == Qt::ControlModifier) {
+        op.setOperation(ZStackOperator::OP_OBJECT_SELECT_MULTIPLE);
+      }
       break;
     }
   }

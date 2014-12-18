@@ -41,6 +41,10 @@ public:
     return m_dvidTarget;
   }
 
+  inline void setDvidTarget(const ZDvidTarget &dvidTarget) {
+    m_dvidTarget = dvidTarget;
+  }
+
   /*
   inline const QString &getServer() {
     return m_serverAddress;

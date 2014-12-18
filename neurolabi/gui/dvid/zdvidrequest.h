@@ -25,6 +25,8 @@ public:
   void setGetThumbnailRequest(int bodyId);
   void setGetBodyLabelRequest(
       int x0, int y0, int z0, int width, int height, int depth);
+  void setGetBodyLabelRequest(const QString &dataName,
+      int x0, int y0, int z0, int width, int height, int depth);
   void setGetInfoRequest(const QString &dataType);
   void setGetStringRequest(const QString &dataType);
   void setGetKeyValueRequest(const QString &dataName, const QString &key);
