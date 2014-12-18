@@ -26,6 +26,7 @@ public:
 
 public:
     inline T& data() { return m_data; }
+    inline const T& data() const { return m_data; }
     inline T* dataRef() { return &m_data; }
     inline const T* constDataRef() const { return &m_data; }
 

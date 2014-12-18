@@ -1,6 +1,8 @@
 #ifndef ZDVIDDATA_H
 #define ZDVIDDATA_H
 
+#include <string>
+
 /*!
  * \brief The class of dvid data
  */
@@ -23,6 +25,8 @@ public:
 
   static const char* getName(ERole role);
   static const char* getName(EType type);
+
+  static std::string getName(ERole role, const std::string &prefix);
 
 private:
   static const char *m_grayScaleName;

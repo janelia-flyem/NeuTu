@@ -216,18 +216,9 @@ int main(int argc, char *argv[])
   int maxDist = ZArgumentProcessor::getIntArg("--maxdist");
   int minLen = ZArgumentProcessor::getIntArg("--minlen");
 
-  if (ZArgumentProcessor::isArgMatched("--minobj")) {
-    skeletonizer.setMinObjSize(minObjSize);
-  }
-
-
-  if (ZArgumentProcessor::isArgMatched("--maxdist")) {
-    skeletonizer.setDistanceThreshold(maxDist);
-  }
-
-  if (ZArgumentProcessor::isArgMatched("--minlen")) {
-    skeletonizer.setLengthThreshold(minLen);
-  }
+  skeletonizer.setMinObjSize(minObjSize);
+  skeletonizer.setDistanceThreshold(maxDist);
+  skeletonizer.setLengthThreshold(minLen);
 
   skeletonizer.print();
 

@@ -96,15 +96,7 @@ ZTreeNode<T>* ZTreeNode<T>::previousSibling() const
 template<typename T>
 bool ZTreeNode<T>::isRoot() const
 {
-  bool bIsRoot = true;
-
-  ZTreeNode<T> *p = parent();
-
-  while (p != NULL) {
-    p = p->parent();
-  }
-
-  return bIsRoot;
+  return parent() == NULL;
 }
 
 template<typename T>

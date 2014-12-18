@@ -1,5 +1,6 @@
 #include "zsegmentationproject.h"
 #include <QString>
+#include <QFileInfo>
 
 #include "zstack.hxx"
 #include "zstackdocreader.h"
@@ -111,19 +112,49 @@ void ZSegmentationProject::setDataFrame(ZStackFrame *frame)
   m_dataFrame = frame;
 }
 
+ZJsonObject ZSegmentationProject::getNodeJson(
+    const ZTreeNode<ZObject3dScan> *node)
+{
+  ZJsonObject jsonObject;
+
+  if (!node->data().getSource().empty()) {
+    jsonObject.setEntry("source", node->data().getSource());
+  }
+
+  //For each child
+  ZTreeNode<ZObject3dScan> *child = node->firstChild();
+  ZJsonArray jsonChildren;
+  while (child != NULL) {
+    //Add to the node array
+    jsonChildren.append(getNodeJson(child));
+    child = child->nextSibling();
+  }
+
+  jsonObject.setEntry("child", jsonChildren);
+
+  return jsonObject;
+}
+
 void ZSegmentationProject::save(const QString &fileName)
 {
   if (!fileName.isEmpty()) {
     ZJsonObject projectJson;
-    QDir saveDir(fileName + ".dir");
 
-    saveDir.mkdir(".");
-    projectJson.setEntry(
-          "stack", saveDir.absoluteFilePath("signal.tif").toStdString());
-    m_stack->save(fileName.toStdString());
+    QFileInfo fileInfo(fileName);
+
+    QDir saveDir(fileInfo.absoluteDir());
+
+    qDebug() << "Saving directory: " << saveDir.absolutePath();
+
+    //saveDir.mkdir(".");
+
+    QString signalPath = saveDir.absoluteFilePath("signal.tif");
+    projectJson.setEntry("stack", signalPath.toStdString());
+
+    qDebug() <<"Saving signal: " << signalPath;
+    m_stack->save(signalPath.toStdString());
 
     //Saving regions
-    ZTree<ZObject3dScan> m_labelTree;
     ZTreeIterator<ZObject3dScan> iterator(m_labelTree);
     while (iterator.hasNext()) {
       ZTreeNode<ZObject3dScan> *node = iterator.nextNode();
@@ -136,5 +167,11 @@ void ZSegmentationProject::save(const QString &fileName)
         node->data().setSource(output.toStdString());
       }
     }
+
+    ZJsonObject labelJson = getNodeJson(m_labelTree.getRoot());
+    projectJson.setEntry("label", labelJson);
+
+    qDebug() << "Saving project: " << fileName;
+    projectJson.dump(fileName.toStdString());
   }
 }

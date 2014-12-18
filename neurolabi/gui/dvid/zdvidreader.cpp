@@ -81,8 +81,23 @@ bool ZDvidReader::open(
 
 bool ZDvidReader::open(const ZDvidTarget &target)
 {
-  return open(("http://" + target.getAddress()).c_str(),
-              target.getUuid().c_str(), target.getPort());
+  m_dvidClient->reset();
+
+  if (!target.isValid()) {
+    return false;
+  }
+
+  ZDvidBufferReader bufferReader;
+  ZDvidUrl dvidUrl(target);
+  if (!bufferReader.isReadable(dvidUrl.getHelpUrl().c_str())) {
+    return false;
+  }
+
+  m_dvidClient->setDvidTarget(target);
+
+  m_dvidTarget = target;
+
+  return true;
 }
 
 bool ZDvidReader::open(const QString &sourceString)
@@ -232,7 +247,7 @@ ZSparseStack* ZDvidReader::readSparseStack(int bodyId)
     spStack->setObjectMask(body);
 
     ZDvidInfo dvidInfo;
-    dvidInfo.setFromJsonString(readInfo("superpixels").toStdString());
+    dvidInfo.setFromJsonString(readInfo("grayscale").toStdString());
     ZObject3dScan blockObj = dvidInfo.getBlockIndex(*body);;
     ZStackBlockGrid *grid = new ZStackBlockGrid;
     spStack->setGreyScale(grid);
@@ -581,7 +596,9 @@ ZStack* ZDvidReader::readBodyLabel(
       partitionStack(x0, y0, z0, width, height, depth);
   for (std::vector<std::pair<int, int> >::const_iterator
        iter = partition.begin(); iter != partition.end(); ++iter) {
-    request.setGetBodyLabelRequest(x0, y0, iter->first, width, height, iter->second);
+    request.setGetBodyLabelRequest(
+          m_dvidTarget.getBodyLabelName().c_str(),
+          x0, y0, iter->first, width, height, iter->second);
     m_dvidClient->appendRequest(request);
     m_dvidClient->postNextRequest();
   }
@@ -739,7 +756,9 @@ ZArray* ZDvidReader::readLabels64(
 
 bool ZDvidReader::hasSparseVolume() const
 {
-  return hasData(ZDvidData::getName(ZDvidData::ROLE_SP2BODY));
+  return hasData(m_dvidTarget.getBodyLabelName());
+  //return true;
+  //return hasData(ZDvidData::getName(ZDvidData::ROLE_SP2BODY));
 }
 
 bool ZDvidReader::hasBodyInfo(int bodyId) const
@@ -748,7 +767,8 @@ bool ZDvidReader::hasBodyInfo(int bodyId) const
 
   ZDvidBufferReader bufferReader;
 
-  return  bufferReader.isReadable(dvidUrl.getBodyInfoUrl(bodyId).c_str());
+  return  bufferReader.isReadable(
+        dvidUrl.getBodyInfoUrl(bodyId, m_dvidTarget.getBodyLabelName()).c_str());
 }
 
 ZFlyEmNeuronBodyInfo ZDvidReader::readBodyInfo(int bodyId)
@@ -756,7 +776,8 @@ ZFlyEmNeuronBodyInfo ZDvidReader::readBodyInfo(int bodyId)
   ZJsonObject obj;
 
   QByteArray byteArray = readKeyValue(
-        ZDvidData::getName(ZDvidData::ROLE_BODY_INFO),
+        ZDvidData::getName(ZDvidData::ROLE_BODY_INFO,
+                           m_dvidTarget.getBodyLabelName()).c_str(),
         ZString::num2str(bodyId).c_str());
   if (!byteArray.isEmpty()) {
     obj.decode(byteArray.constData());

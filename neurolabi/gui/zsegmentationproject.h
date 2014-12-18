@@ -8,6 +8,7 @@
 class ZStack;
 class ZStackFrame;
 class ZStackDocReader;
+class ZJsonObject;
 
 class ZSegmentationProject : public QObject
 {
@@ -36,6 +37,12 @@ public:
 
   void loadStack(const QString &fileName);
   void save(const QString &fileName);
+
+private:
+  static ZJsonObject getNodeJson(const ZTreeNode<ZObject3dScan> *node);
+  void loadJsonNode(ZTreeNode<ZObject3dScan> *parent,
+                    const ZJsonObject &nodeJson);
+
 
 signals:
 
