@@ -1,4 +1,7 @@
 #include "zflyembodysplitproject.h"
+
+#include <QProcess>
+
 #include "zstackframe.h"
 #include "z3dwindow.h"
 #include "zstackdoclabelstackfactory.h"
@@ -362,6 +365,62 @@ std::set<int> ZFlyEmBodySplitProject::getBookmarkBodySet() const
   }
 
   return bodySet;
+}
+
+void ZFlyEmBodySplitProject::commitResult()
+{
+  const ZStack *stack = getDataFrame()->document()->getLabelField();
+  std::map<int, ZObject3dScan*> *objSet = ZObject3dScan::extractAllObject(
+        stack->array8(), stack->width(), stack->height(), stack->depth(),
+        0, NULL);
+
+  const ZIntPoint &dsIntv =
+      getDataFrame()->document()->getSparseStack()->getDownsampleInterval();
+
+  QStringList filePathList;
+
+  for (std::map<int, ZObject3dScan*>::const_iterator iter = objSet->begin();
+       iter != objSet->end(); ++iter) {
+    if (iter->first > 0) {
+      ZObject3dScan *obj = iter->second;
+      obj->translate(stack->getOffset().getX(), stack->getOffset().getY(),
+                     stack->getOffset().getZ());
+      obj->upSample(dsIntv.getX(), dsIntv.getY(), dsIntv.getZ());
+      ZString output = QDir::tempPath() + "/body_";
+      output.appendNumber(iter->first);
+      obj->save(output + ".sobj");
+      filePathList << (output + ".sobj").c_str();
+      delete obj;
+    }
+  }
+
+  delete objSet;
+
+#ifdef _DEBUG_
+  QString buildemPath = "/groups/flyem/home/zhaot/Downloads";
+#else
+  QString buildemPath = "/opt/Download/buildem";
+#endif
+
+
+  ZDvidReader reader;
+  reader.open(m_dvidTarget);
+  int bodyId = reader.readMaxBodyId() + 1;
+  foreach (QString objFile, filePathList) {
+    QString command = buildemPath +
+        QString("/bin/dvid_load_sparse http://emdata2:8000 %1 %2 %3 %4").
+        arg(m_dvidTarget.getUuid().c_str()).
+        arg(m_dvidTarget.getBodyLabelName().c_str()).
+        arg(objFile).arg(bodyId++);
+
+    qDebug() << command;
+
+    QProcess::execute(command);
+  }
+
+  ZDvidWriter writer;
+  writer.open(m_dvidTarget);
+  writer.writeMaxBodyId(bodyId - 1);
 }
 
 void ZFlyEmBodySplitProject::saveSeed()

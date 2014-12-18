@@ -12,7 +12,8 @@ const char* ZDvidData::m_sp2bodyName = "sp2body";
 const char* ZDvidData::m_sparsevolName = "sparsevol";
 const char* ZDvidData::m_splitLabelName = "splits";
 const char* ZDvidData::m_bodyInfoName = "bodyinfo";
-const char *ZDvidData::m_mergeTestBodyLabelName = "merge_test";
+const char* ZDvidData::m_mergeTestBodyLabelName = "merge_test";
+const char* ZDvidData::m_maxBodyIdName = "max_body_id";
 
 const char* ZDvidData::m_keyValueTypeName = "keyvalue";
 
@@ -51,6 +52,8 @@ const char* ZDvidData::getName(ERole role)
     return m_bodyInfoName;
   case ROLE_MERGE_TEST_BODY_LABEL:
     return m_mergeTestBodyLabelName;
+  case ROLE_MAX_BODY_ID:
+    return m_maxBodyIdName;
   }
 
   return m_emptyName;

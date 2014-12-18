@@ -788,3 +788,22 @@ ZFlyEmNeuronBodyInfo ZDvidReader::readBodyInfo(int bodyId)
 
   return bodyInfo;
 }
+
+int ZDvidReader::readMaxBodyId()
+{
+  ZJsonObject obj;
+
+  QByteArray byteArray = readKeyValue(
+        ZDvidData::getName(ZDvidData::ROLE_MAX_BODY_ID),
+        m_dvidTarget.getBodyLabelName().c_str());
+  if (!byteArray.isEmpty()) {
+    obj.decode(byteArray.constData());
+  }
+
+  int id = 50000000;
+  if (obj.hasKey("max_body_id")) {
+    id = ZJsonParser::integerValue(obj["max_body_id"]);
+  }
+
+  return id;
+}

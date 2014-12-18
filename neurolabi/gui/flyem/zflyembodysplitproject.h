@@ -61,6 +61,8 @@ public:
   void saveSeed();
   void downloadSeed();
 
+  void commitResult();
+
   void viewPreviousSlice();
   void viewNextSlice();
   void viewFullGrayscale();

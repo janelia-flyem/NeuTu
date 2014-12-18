@@ -80,6 +80,8 @@ public:
     return m_dvidTarget;
   }
 
+  int readMaxBodyId();
+
 signals:
   void readingDone();
 

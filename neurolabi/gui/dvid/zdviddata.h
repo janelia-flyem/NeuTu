@@ -15,7 +15,7 @@ public:
     ROLE_GRAY_SCALE, ROLE_BODY_LABEL, ROLE_ROI_CURVE, ROLE_BODY_ANNOTATION,
     ROLE_BOUND_BOX, ROLE_SKELETON, ROLE_THUMBNAIL, ROLE_SUPERPIXEL,
     ROLE_SP2BODY, ROLE_SPARSEVOL, ROLE_SPLIT_LABEL, ROLE_BODY_INFO,
-    ROLE_MERGE_TEST_BODY_LABEL
+    ROLE_MERGE_TEST_BODY_LABEL, ROLE_MAX_BODY_ID
   };
 
   enum EType {
@@ -42,6 +42,7 @@ private:
   static const char *m_splitLabelName;
   static const char *m_bodyInfoName;
   static const char *m_mergeTestBodyLabelName;
+  static const char *m_maxBodyIdName;
 
   static const char *m_keyValueTypeName;
 

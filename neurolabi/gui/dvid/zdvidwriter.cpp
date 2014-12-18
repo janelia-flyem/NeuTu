@@ -379,3 +379,11 @@ void ZDvidWriter::writeBodyInfo(int bodyId)
     }
   }
 }
+
+void ZDvidWriter::writeMaxBodyId(int bodyId)
+{
+  ZJsonObject idJson;
+  idJson.setEntry("max_body_id", bodyId);
+  ZDvidUrl dvidUrl(m_dvidTarget);
+  writeJson(dvidUrl.getMaxBodyIdUrl(), idJson);
+}

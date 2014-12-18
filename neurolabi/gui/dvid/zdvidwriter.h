@@ -50,6 +50,7 @@ public:
 
   void writeBodyInfo(int bodyId, const ZJsonObject &obj);
   void writeBodyInfo(int bodyId);
+  void writeMaxBodyId(int bodyId);
 
   void mergeBody(const std::string &dataName, int targetId,
                  const std::vector<int> &bodyId);
