@@ -403,22 +403,24 @@ void ZFlyEmBodySplitProject::commitResult()
 
   if (!body.isEmpty()) {
     std::vector<ZObject3dScan> objArray = body.getConnectedComponent();
-    if (objArray.size() > 1 || !filePathList.isEmpty()) {
+    //if (objArray.size() > 1 || !filePathList.isEmpty()) {
       for (std::vector<ZObject3dScan>::const_iterator iter = objArray.begin();
            iter != objArray.end(); ++iter) {
         const ZObject3dScan &obj = *iter;
-        ZString output = QDir::tempPath() + "/body_";
-        output.appendNumber(getBodyId());
-        output += "_";
-        output.appendNumber(maxNum++);
-        obj.save(output + ".sobj");
-        filePathList << (output + ".sobj").c_str();
+        if (obj.getVoxelNumber() > 20) {
+          ZString output = QDir::tempPath() + "/body_";
+          output.appendNumber(getBodyId());
+          output += "_";
+          output.appendNumber(maxNum++);
+          obj.save(output + ".sobj");
+          filePathList << (output + ".sobj").c_str();
+        }
       }
-    }
+    //}
   }
 
 #ifdef _DEBUG_
-  QString buildemPath = "/groups/flyem/home/zhaot/Downloads";
+  QString buildemPath = "/groups/flyem/home/zhaot/Downloads/buildem";
 #else
   QString buildemPath = "/opt/Download/buildem";
 #endif

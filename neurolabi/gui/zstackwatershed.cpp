@@ -108,7 +108,7 @@ ZStack *ZStackWatershed::run(
 
       addSeed(ws, sourceOffset, seedMask);
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
       C_Stack::write(GET_DATA_DIR + "/test_seed.tif", ws->mask);
 #endif
 
