@@ -789,6 +789,7 @@ ZFlyEmNeuronBodyInfo ZDvidReader::readBodyInfo(int bodyId)
   return bodyInfo;
 }
 
+#define MAX_BODY_ID_START 50000000
 int ZDvidReader::readMaxBodyId()
 {
   ZJsonObject obj;
@@ -800,7 +801,7 @@ int ZDvidReader::readMaxBodyId()
     obj.decode(byteArray.constData());
   }
 
-  int id = 50000000;
+  int id = MAX_BODY_ID_START;
   if (obj.hasKey("max_body_id")) {
     id = ZJsonParser::integerValue(obj["max_body_id"]);
   }

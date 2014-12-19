@@ -479,6 +479,17 @@ void FlyEmBodySplitProjectDialog::startProgress(const QString &label)
 void FlyEmBodySplitProjectDialog::on_pushButton_clicked()
 {
 #if 1
+  ZDvidWriter writer;
+  writer.open(m_project.getDvidTarget());
+  writer.writeMaxBodyId(50000000);
+
+  ZDvidReader reader;
+  reader.open(m_project.getDvidTarget());
+  int id = reader.readMaxBodyId();
+  std::cout << id << std::endl;
+#endif
+
+#if 0
   const ZObject3dScan *wholeBody =
       m_project.getDataFrame()->document()->getSparseStack()->getObjectMask();
   wholeBody->save(GET_TEST_DATA_DIR + "/body_0.sobj");
