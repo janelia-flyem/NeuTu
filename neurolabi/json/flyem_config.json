@@ -45,6 +45,13 @@
     {
       "address": "emdata2.int.janelia.org",
       "uuid": "134",
+      "name": "AL-7-TEST",
+      "comment": "AL-Z1213-07",
+      "body_label": "segmentation120114"
+    },
+    {
+      "address": "emdata2.int.janelia.org",
+      "uuid": "134",
       "name": "AL-7",
       "comment": "AL-Z1213-07",
       "body_label": "segmentation121714",

@@ -13912,7 +13912,7 @@ void ZTest::test(MainWindow *host)
   stream.close();
 #endif
 
-#if 1
+#if 0
   ZDvidTarget dvidTarget;
   dvidTarget.set("emdata2.int.janelia.org", "2b6c");
 
@@ -13986,5 +13986,28 @@ void ZTest::test(MainWindow *host)
   //stage->takeScreenShot(output.c_str(), 2000, dataRangeZ, MonoView);
   //stage->close();
   //delete stage;
+#endif
+
+#if 0
+  ZObject3dScan obj;
+  obj.load(GET_TEST_DATA_DIR+ "/body_1.sobj");
+  obj.upSample(1, 1, 1);
+  obj.save(GET_TEST_DATA_DIR + "/test.sobj");
+#endif
+
+#if 1
+  ZObject3dScan obj1;
+  obj1.load(GET_TEST_DATA_DIR + "/body_0.sobj");
+  std::cout << obj1.isCanonized() << std::endl;
+  obj1.canonize();
+  std::cout << obj1.isCanonizedActually() << std::endl;
+
+  ZObject3dScan obj2;
+  obj2.load(GET_TEST_DATA_DIR + "/body_1.sobj");
+  std::cout << obj2.isCanonizedActually() << std::endl;
+
+  ZObject3dScan remained = obj1.subtract(obj2);
+  obj1.save(GET_TEST_DATA_DIR + "/test.sobj");
+  remained.save(GET_TEST_DATA_DIR + "/test2.sobj");
 #endif
 }

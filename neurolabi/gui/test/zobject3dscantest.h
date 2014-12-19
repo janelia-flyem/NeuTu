@@ -8,6 +8,7 @@
 #include "tz_iarray.h"
 #include "zdebug.h"
 #include "zdoublevector.h"
+#include "zstack.hxx"
 
 #ifdef _USE_GTEST_
 
@@ -1184,11 +1185,70 @@ TEST(ZObject3dScan, upSample)
   createObject(&obj);
   obj.print();
 
+  std::cout << "Upsampling" << std::endl;
   obj.upSample(1, 0, 0);
+  ASSERT_TRUE(obj.contains(0, 0, 0));
+  ASSERT_TRUE(obj.contains(15, 0, 0));
+  ASSERT_FALSE(obj.contains(15, 0, 1));
+  ASSERT_TRUE(obj.contains(15, 1, 0));
+
+  //obj.print();
+
+//  std::cout << "Upsampling" << std::endl;
+//  obj.upSample(1, 1, 1);
+//  obj.print();
+
+//  obj.downsampleMax(1, 0, 0);
+//  obj.print();
+
+
+//  ZObject3dScan obj1;
+//  obj1.addStripe(1, 1);
+//  obj1.addSegment(0, 2);
+
+//  std::cout << "Upsampling" << std::endl;
+//  obj1.upSample(1, 1, 1);
+//  obj1.print();
+
+}
+
+TEST(ZObject3dScan, Stack)
+{
+  ZObject3dScan obj;
+  obj.addStripe(1, 1);
+  obj.addSegment(1, 1);
+  ZStack *stack = obj.toStackObject(1);
+  stack->printInfo();
+
+  std::vector<ZObject3dScan*> objArray =
+      ZObject3dScan::extractAllObject(*stack);
+  ASSERT_EQ(1, (int) objArray.size());
+  //objArray[0]->print();
+
+  obj.addStripe(1, 0, false);
+  obj.addSegment(0, 0);
+  obj.addStripe(1, 2, false);
+  obj.addSegment(2, 2);
+
+  obj.canonize();
+
   obj.print();
 
-  obj.downsampleMax(1, 0, 0);
+  delete stack;
+  stack = obj.toStackObject(2);
+  Print_Stack_Value(stack->c_stack());
+  objArray = ZObject3dScan::extractAllObject(*stack);
+  ASSERT_EQ(1, (int) objArray.size());
+  objArray[0]->print();
+
+  ZObject3dScan obj2;
+  obj2.addStripe(1, 1);
+  obj2.addSegment(1, 1);
+
+  ZObject3dScan obj3 = obj.subtract(obj2);
   obj.print();
+  obj2.print();
+  obj3.print();
 }
 
 #endif

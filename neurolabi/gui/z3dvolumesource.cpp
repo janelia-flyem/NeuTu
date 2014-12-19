@@ -636,6 +636,10 @@ void Z3DVolumeSource::readSparseVolume()
     xIntv = 1;
     yIntv = 1;
     zIntv = 1;
+  } else if (m_doc->getStack()->getVoxelNumber() * nchannel > m_maxVoxelNumber * 3) {
+    xIntv = 2;
+    yIntv = 2;
+    zIntv = 2;
   }
 
   int height = m_doc->getStack()->width();

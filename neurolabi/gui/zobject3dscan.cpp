@@ -629,10 +629,16 @@ void ZObject3dStripe::upSample(int xIntv)
   setCanonized(false);
 }
 
-void ZObject3dStripe::print() const
+void ZObject3dStripe::print(int indent) const
 {
+  for (int k = 0; k < indent; ++k) {
+    std::cout << " ";
+  }
   cout << "Segments at " << "." << m_z << "|" << m_y << ": " << endl;
   for (size_t i = 0; i < m_segmentArray.size(); i += 2) {
+    for (int k = 0; k < indent; ++k) {
+      std::cout << " ";
+    }
     cout << "  " << m_segmentArray[i] << " - " << m_segmentArray[i+1] << endl;
   }
 }
@@ -1057,9 +1063,9 @@ void ZObject3dScan::print() const
   cout << getStripeNumber() << " stripes" << endl;
   for (vector<ZObject3dStripe>::const_iterator iter = m_stripeArray.begin();
        iter != m_stripeArray.end(); ++iter) {
-    cout << "  Z:" << iter->getZ() << " Y:" << iter->getY() << " #S:"
-         << iter->getSegmentNumber() << " #V:" << iter->getVoxelNumber() << endl;
-    iter->print();
+    //cout << "  Z:" << iter->getZ() << " Y:" << iter->getY() << " #S:"
+    //     << iter->getSegmentNumber() << " #V:" << iter->getVoxelNumber() << endl;
+    iter->print(2);
   }
 }
 
@@ -1355,24 +1361,40 @@ void ZObject3dScan::upSample(int xIntv, int yIntv, int zIntv)
     stripe.upSample(xIntv);
   }
 
+  ZObject3dScan grownPart;
+
   for (int i = 0; i < stripeNumber; ++i) {
     ZObject3dStripe &stripe = getStripe(i);
+
     int y = stripe.getY();
     int z = stripe.getZ();
+
     int z0 = z * (zIntv + 1);
     int z1 = z0 + zIntv;
     int y0 = y * (yIntv + 1);
-    int y1 = y + yIntv;
+    int y1 = y0 + yIntv;
+
+#ifdef _DEBUG_2
+    std::cout << y0 << ", " << y1 << std::endl;
+#endif
 
     for (z = z0; z <= z1; ++z) {
       for (y = y0; y <= y1; ++y) {
         ZObject3dStripe newStripe = stripe;
         newStripe.setY(y);
         newStripe.setZ(z);
-        addStripe(newStripe, false);
+        grownPart.addStripe(newStripe, false);
       }
     }
+
+#ifdef _DEBUG_2
+        std::cout << "New Stripe: ";
+        stripe.print();
+        std::cout << "---" << std::endl;
+#endif
   }
+
+  *this = grownPart;
 
   canonize();
 }
@@ -2475,6 +2497,61 @@ bool ZObject3dScan::importDvidObjectBuffer(const std::vector<char> &byteArray)
   return importDvidObjectBuffer(&(byteArray[0]), byteArray.size());
 }
 
+void ZObject3dScan::addForeground(ZStack *stack)
+{
+  ConstSegmentIterator iterator(this);
+  while (iterator.hasNext()) {
+    const ZObject3dScan::Segment &seg = iterator.next();
+    int z = seg.getZ();
+    int y = seg.getY();
+    for (int x = seg.getStart(); x <= seg.getEnd(); ++x) {
+      if (stack->getIntValue(x, y, z) > 0) {
+        stack->addIntValue(x, y, z, 0, 1);
+      }
+    }
+  }
+}
+
+ZObject3dScan ZObject3dScan::subtract(const ZObject3dScan &obj)
+{
+  int minZ = getMinZ();
+  int maxZ = getMaxZ();
+
+  ZObject3dScan subtracted;
+  ZObject3dScan remained;
+
+  for (int z = minZ; z <= maxZ; ++z) {
+    ZObject3dScan slice = getSlice(z);
+    ZObject3dScan slice2 = obj.getSlice(z);
+    if (slice2.isEmpty()) {
+      remained.concat(slice);
+    } else {
+      ZStack *plane = slice.toStackObject();
+      slice2.addForeground(plane); //1: remained; 2: subtracted
+
+      std::vector<ZObject3dScan*> objArray = extractAllObject(*plane);
+      for (std::vector<ZObject3dScan*>::const_iterator iter = objArray.begin();
+           iter != objArray.end(); ++iter) {
+        ZObject3dScan *obj = *iter;
+        if (obj->getLabel() == 1) {
+          remained.concat(*obj);
+        } else if (obj->getLabel() == 2) {
+          subtracted.concat(*obj);
+        }
+        delete obj;
+      }
+      delete plane;
+    }
+  }
+
+  remained.canonize();
+  subtracted.canonize();
+
+  *this = remained;
+
+  return subtracted;
+}
+
 void ZObject3dScan::switchYZ()
 {
   for (size_t i = 0; i < m_stripeArray.size(); ++i) {
@@ -2775,6 +2852,40 @@ void ZObject3dScan::ConstSegmentIterator::advance()
       ++m_stripeIndex;
     }
   }
+}
+
+std::vector<ZObject3dScan*> ZObject3dScan::extractAllObject(const ZStack &stack)
+{
+  std::vector<ZObject3dScan*> result;
+  std::map<int, ZObject3dScan*> *objMap = NULL;
+
+  switch (stack.kind()) {
+  case GREY:
+    objMap = extractAllForegroundObject(
+          stack.array8(), stack.width(), stack.height(), stack.depth(),
+          stack.getOffset().getX(), stack.getOffset().getY(),
+          stack.getOffset().getZ(), NULL);
+    break;
+  case GREY16:
+    objMap = extractAllForegroundObject(
+          stack.array16(), stack.width(), stack.height(), stack.depth(),
+          stack.getOffset().getX(), stack.getOffset().getY(),
+          stack.getOffset().getZ(), NULL);
+    break;
+  default:
+    break;
+  }
+
+  if (objMap != NULL) {
+    for (std::map<int, ZObject3dScan*>::iterator iter = objMap->begin();
+         iter != objMap->end(); ++iter) {
+      result.push_back(iter->second);
+    }
+
+    delete objMap;
+  }
+
+  return result;
 }
 
 ZSTACKOBJECT_DEFINE_CLASS_NAME(ZObject3dScan)

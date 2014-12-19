@@ -3987,7 +3987,7 @@ QString ZStackDoc::dataInfo(double cx, double cy, int z) const
       }
 
       if (getStack()->hasOffset()) {
-        info += QString("; Data coordinates: (%1, %2, %3)").
+        info += QString("; (%1, %2, %3) - Data coordinates").
             arg(getStackOffset().getX() + x).arg(getStackOffset().getY() + y).
             arg(getStackOffset().getZ() + z);
       }

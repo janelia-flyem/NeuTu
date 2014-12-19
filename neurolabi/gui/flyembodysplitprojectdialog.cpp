@@ -478,11 +478,18 @@ void FlyEmBodySplitProjectDialog::startProgress(const QString &label)
 
 void FlyEmBodySplitProjectDialog::on_pushButton_clicked()
 {
-#ifdef _DEBUG_
+#if 1
+  const ZObject3dScan *wholeBody =
+      m_project.getDataFrame()->document()->getSparseStack()->getObjectMask();
+  wholeBody->save(GET_TEST_DATA_DIR + "/body_0.sobj");
+
   const ZStack *stack = m_project.getDataFrame()->document()->getLabelField();
   std::map<int, ZObject3dScan*> *objSet = ZObject3dScan::extractAllObject(
         stack->array8(), stack->width(), stack->height(), stack->depth(),
         0, NULL);
+
+  const ZIntPoint &dsIntv =
+      m_project.getDataFrame()->document()->getSparseStack()->getDownsampleInterval();
 
   for (std::map<int, ZObject3dScan*>::const_iterator iter = objSet->begin();
        iter != objSet->end(); ++iter) {
@@ -490,6 +497,7 @@ void FlyEmBodySplitProjectDialog::on_pushButton_clicked()
       ZObject3dScan *obj = iter->second;
       obj->translate(stack->getOffset().getX(), stack->getOffset().getY(),
                      stack->getOffset().getZ());
+      obj->upSample(dsIntv.getX(), dsIntv.getY(), dsIntv.getZ());
       ZString output = GET_TEST_DATA_DIR + "/body_";
       output.appendNumber(iter->first);
       obj->save(output + ".sobj");
@@ -560,7 +568,8 @@ void FlyEmBodySplitProjectDialog::on_dvidPushButton_clicked()
 
 void FlyEmBodySplitProjectDialog::on_commitPushButton_clicked()
 {
-  m_project.saveSeed();
+  //m_project.saveSeed();
+  m_project.commitResult();
 }
 
 void FlyEmBodySplitProjectDialog::downloadSeed()

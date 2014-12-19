@@ -369,32 +369,53 @@ std::set<int> ZFlyEmBodySplitProject::getBookmarkBodySet() const
 
 void ZFlyEmBodySplitProject::commitResult()
 {
+  const ZObject3dScan *wholeBody =
+      getDataFrame()->document()->getSparseStack()->getObjectMask();
+
+  ZObject3dScan body = *wholeBody;
   const ZStack *stack = getDataFrame()->document()->getLabelField();
-  std::map<int, ZObject3dScan*> *objSet = ZObject3dScan::extractAllObject(
-        stack->array8(), stack->width(), stack->height(), stack->depth(),
-        0, NULL);
-
-  const ZIntPoint &dsIntv =
-      getDataFrame()->document()->getSparseStack()->getDownsampleInterval();
-
   QStringList filePathList;
+  int maxNum = 1;
+  if (stack != NULL) {
+    const ZIntPoint &dsIntv =
+        getDataFrame()->document()->getSparseStack()->getDownsampleInterval();
+    std::vector<ZObject3dScan*> objArray =
+        ZObject3dScan::extractAllObject(*stack);
 
-  for (std::map<int, ZObject3dScan*>::const_iterator iter = objSet->begin();
-       iter != objSet->end(); ++iter) {
-    if (iter->first > 0) {
-      ZObject3dScan *obj = iter->second;
-      obj->translate(stack->getOffset().getX(), stack->getOffset().getY(),
-                     stack->getOffset().getZ());
+    for (std::vector<ZObject3dScan*>::iterator iter = objArray.begin();
+         iter != objArray.end(); ++iter) {
+      ZObject3dScan *obj = *iter;
       obj->upSample(dsIntv.getX(), dsIntv.getY(), dsIntv.getZ());
-      ZString output = QDir::tempPath() + "/body_";
-      output.appendNumber(iter->first);
-      obj->save(output + ".sobj");
-      filePathList << (output + ".sobj").c_str();
+
+      ZObject3dScan currentBody = body.subtract(*obj);
+
+      if (!currentBody.isEmpty()) {
+        ZString output = QDir::tempPath() + "/body_";
+        output.appendNumber(getBodyId());
+        output += "_";
+        output.appendNumber(maxNum++);
+        currentBody.save(output + ".sobj");
+        filePathList << (output + ".sobj").c_str();
+      }
       delete obj;
     }
   }
 
-  delete objSet;
+  if (!body.isEmpty()) {
+    std::vector<ZObject3dScan> objArray = body.getConnectedComponent();
+    if (objArray.size() > 1 || !filePathList.isEmpty()) {
+      for (std::vector<ZObject3dScan>::const_iterator iter = objArray.begin();
+           iter != objArray.end(); ++iter) {
+        const ZObject3dScan &obj = *iter;
+        ZString output = QDir::tempPath() + "/body_";
+        output.appendNumber(getBodyId());
+        output += "_";
+        output.appendNumber(maxNum++);
+        obj.save(output + ".sobj");
+        filePathList << (output + ".sobj").c_str();
+      }
+    }
+  }
 
 #ifdef _DEBUG_
   QString buildemPath = "/groups/flyem/home/zhaot/Downloads";
