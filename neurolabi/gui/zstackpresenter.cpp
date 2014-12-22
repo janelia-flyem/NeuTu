@@ -186,7 +186,7 @@ void ZStackPresenter::createDocDependentActions()
 }
 
 void ZStackPresenter::createSwcActions()
-{
+{ 
   QAction *action = new QAction(tr("Add Neuron Node"), parent());
   connect(action, SIGNAL(triggered()),
           this, SLOT(trySwcAddNodeMode()));
@@ -271,6 +271,14 @@ void ZStackPresenter::createStrokeActions()
   connect(m_eraseStrokeAction, SIGNAL(triggered()),
           this, SLOT(tryEraseStrokeMode()));
   m_actionMap[ACTION_ERASE_STROKE] = m_eraseStrokeAction;
+}
+
+void ZStackPresenter::createMainWindowActions()
+{
+  QAction *action = getParentFrame()->getBodySplitAction();
+  if (action != NULL) {
+    m_actionMap[ACTION_SPLIT_DATA] = action;
+  }
 }
 
 void ZStackPresenter::createActions()

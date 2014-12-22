@@ -106,6 +106,8 @@ public: /* frame operation */
   //Add a flyem data frame. Nothing happens if <frame> is NULL.
   void addFlyEmDataFrame(ZFlyEmDataFrame *frame);
 
+  QAction* getBodySplitAction() const;
+
 signals:
   void dvidRequestCanceled();
   void progressDone();

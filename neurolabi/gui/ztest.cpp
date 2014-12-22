@@ -226,6 +226,7 @@ using namespace std;
 #include "test/zflyembodymergertest.h"
 #include "test/zstackobjectgrouptest.h"
 #include "z3daxis.h"
+#include "tz_int_histogram.h"
 
 using namespace std;
 
@@ -13995,7 +13996,7 @@ void ZTest::test(MainWindow *host)
   obj.save(GET_TEST_DATA_DIR + "/test.sobj");
 #endif
 
-#if 1
+#if 0
   ZObject3dScan obj1;
   obj1.load(GET_TEST_DATA_DIR + "/body_0.sobj");
   std::cout << obj1.isCanonized() << std::endl;
@@ -14010,4 +14011,44 @@ void ZTest::test(MainWindow *host)
   obj1.save(GET_TEST_DATA_DIR + "/test.sobj");
   remained.save(GET_TEST_DATA_DIR + "/test2.sobj");
 #endif
+
+#if 1
+  std::vector<ZPointArray> synapseGroup;
+  std::string synapseFile =
+      GET_TEST_DATA_DIR + "/flyem/AL/label/whole_AL_synapse_labeled.txt";
+
+  FILE *fp = fopen(synapseFile.c_str(), "r");
+
+  ZString line;
+  while (line.readLine(fp)) {
+    std::vector<int> pt = line.toIntegerArray();
+    if (pt.size() == 4) {
+      int label = pt[3];
+      //std::cout << pt[3] << std::endl;
+
+      if (label > 0) {
+        if (label >= (int) synapseGroup.size()) {
+          synapseGroup.resize(label + 1);
+        }
+        synapseGroup[label].push_back(ZPoint(pt[0], pt[1], pt[2]));
+      }
+    }
+  }
+
+  ZStack labelField;
+  labelField.load(GET_DATA_DIR + "/flyem/AL/label/label_field.tif");
+  int *hist = Stack_Hist(labelField.c_stack());
+  int *histArray = Int_Histogram_Array(hist);
+
+  std::cout << synapseGroup.size() - 1 << " labels" << std::endl;
+  for (size_t label = 1; label < synapseGroup.size(); ++label) {
+    const ZPointArray &pt = synapseGroup[label];
+    ZPoint center = pt.computeCenter();
+    std::cout << label << ": " << center.toString() << " " << pt.size()
+              << ", " << histArray[label] * 0.16 * 0.16 *0.16  << std::endl;
+  }
+
+
+#endif
+
 }

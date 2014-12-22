@@ -134,6 +134,7 @@ public:
    * \brief Get the main window ancestor of the frame.
    */
   MainWindow* getMainWindow();
+  QAction* getBodySplitAction();
 
   void load(const QList<QUrl> &urls);
   void load(const QStringList &fileList);
@@ -228,6 +229,8 @@ public:
   void makeSwcProjection(ZStackDoc *doc);
 
   void clearData();
+
+  void createMainWindowActions();
 
 public slots:
   void setLocsegChainInfo(ZLocsegChain *chain, QString prefix = "",

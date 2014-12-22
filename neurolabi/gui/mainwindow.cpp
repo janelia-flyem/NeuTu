@@ -5914,6 +5914,11 @@ void MainWindow::on_actionSplit_Region_triggered()
   }
 }
 
+QAction* MainWindow::getBodySplitAction() const
+{
+  return m_ui->actionSplit_Region;
+}
+
 void MainWindow::on_actionLoad_Body_with_Grayscale_triggered()
 {
 #if defined(_FLYEM_)
@@ -6211,13 +6216,15 @@ bool MainWindow::initBodySplitProject()
         //docReader.setStack(out);
         docReader.setSparseStack(spStack);
         ZStackFrame *frame = createStackFrame(&docReader);
-        frame->document()->setTag(NeuTube::Document::FLYEM_BODY);
+        frame->document()->setTag(NeuTube::Document::FLYEM_SPLIT);
 
         m_bodySplitProjectDialog->setDataFrame(frame);
         m_bodySplitProjectDialog->downloadSeed();
 
         addStackFrame(frame);
         presentStackFrame(frame);
+
+        frame->createMainWindowActions();
 
         succ = true;
       } else {
