@@ -63,6 +63,10 @@ FlyEmBodySplitProjectDialog::FlyEmBodySplitProjectDialog(QWidget *parent) :
   ui->sideView->setScene(m_sideViewScene);
   //ui->outputWidget->setText("Load a body to start.");
 
+#ifndef _DEBUG_
+  ui->pushButton->hide();
+#endif
+
   m_dvidDlg = ZDialogFactory::makeDvidDialog(this);
 
   createMenu();

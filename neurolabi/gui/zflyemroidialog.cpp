@@ -1174,13 +1174,15 @@ void ZFlyEmRoiDialog::exportResult()
 
     ZObject3dScan blockObj = m_project->getDvidInfo().getBlockIndex(obj);
 
-    blockObj.save(GET_DATA_DIR + "/test.sobj");
+    std::string fileName = GET_DATA_DIR + "/roi_" + m_project->getName();
+
+    blockObj.save(fileName + ".sobj");
 
     ZJsonArray array = ZJsonFactory::makeJsonArray(
           blockObj, ZJsonFactory::OBJECT_SPARSE);
     //ZJsonObject jsonObj;
     //jsonObj.setEntry("data", array);
-    array.dump(GET_DATA_DIR + "/test.json");
+    array.dump(fileName + ".json");
   }
 }
 
