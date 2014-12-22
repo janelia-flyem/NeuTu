@@ -50,7 +50,7 @@ public:
 signals:
   //void progressStarted();
   void progressDone();
-  void messageDumped(const QString &message, bool appending);
+  void messageDumped(const QString &message, bool appending = true);
   void sideViewReady();
   void sideViewCanceled();
 
