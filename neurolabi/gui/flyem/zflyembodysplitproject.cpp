@@ -139,6 +139,8 @@ ZObject3dScan* ZFlyEmBodySplitProject::readBody(ZObject3dScan *out) const
 void ZFlyEmBodySplitProject::quickView()
 {
   if (m_quickViewWindow == NULL) {
+    emit messageGenerated("Generating quick view ...");
+
     const ZDvidTarget &target = getDvidTarget();
 
     ZDvidReader reader;
@@ -190,7 +192,12 @@ void ZFlyEmBodySplitProject::quickView()
   if (m_quickViewWindow != NULL) {
     m_quickViewWindow->show();
     m_quickViewWindow->raise();
+    emit messageGenerated("Done.");
+  } else {
+    emit messageGenerated("Failed to lauch quick view.");
   }
+
+
 }
 
 void ZFlyEmBodySplitProject::showSkeleton(ZSwcTree *tree)
@@ -428,22 +435,25 @@ void ZFlyEmBodySplitProject::commitResult()
 
   ZDvidReader reader;
   reader.open(m_dvidTarget);
-  int bodyId = reader.readMaxBodyId() + 1;
+  int bodyId = reader.readMaxBodyId();
   foreach (QString objFile, filePathList) {
     QString command = buildemPath +
         QString("/bin/dvid_load_sparse http://emdata2:8000 %1 %2 %3 %4").
         arg(m_dvidTarget.getUuid().c_str()).
         arg(m_dvidTarget.getBodyLabelName().c_str()).
-        arg(objFile).arg(bodyId++);
+        arg(objFile).arg(++bodyId);
 
     qDebug() << command;
 
     QProcess::execute(command);
+
+    QString msg = QString("%1 saved").arg(bodyId);
+    emit messageGenerated(msg);
   }
 
   ZDvidWriter writer;
   writer.open(m_dvidTarget);
-  writer.writeMaxBodyId(bodyId - 1);
+  writer.writeMaxBodyId(bodyId);
 }
 
 void ZFlyEmBodySplitProject::saveSeed()

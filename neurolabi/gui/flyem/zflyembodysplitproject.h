@@ -72,6 +72,9 @@ public:
     m_showingBodyMask = state;
   }
 
+signals:
+  void messageGenerated(QString);
+
 public slots:
   void showDataFrame() const;
   void showDataFrame3d();

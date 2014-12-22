@@ -4,6 +4,7 @@
 #include <QtConcurrentRun>
 #include <QMenu>
 #include <QAction>
+#include <QScrollBar>
 
 #include "ui_flyembodysplitprojectdialog.h"
 #include "mainwindow.h"
@@ -86,6 +87,9 @@ void FlyEmBodySplitProjectDialog::connectSignalSlot()
   connect(this, SIGNAL(messageDumped(QString,bool)),
           this, SLOT(dump(QString,bool)));
   connect(this, SIGNAL(sideViewCanceled()), this, SLOT(resetSideView()));
+
+  connect(&m_project, SIGNAL(messageGenerated(QString)),
+          this, SIGNAL(messageDumped(QString)));
 }
 
 void FlyEmBodySplitProjectDialog::createMenu()
@@ -148,7 +152,7 @@ void FlyEmBodySplitProjectDialog::shallowClearDataFrame()
 
 void FlyEmBodySplitProjectDialog::showData2d()
 {
-  dump("Showing body in 2D ...");
+  dump("Showing body in 2D ...", true);
 
   if (m_project.hasDataFrame()) {
     m_project.showDataFrame();
@@ -158,6 +162,8 @@ void FlyEmBodySplitProjectDialog::showData2d()
     if (getMainWindow()->initBodySplitProject()) {
       updateWidget();
       dump("Done.", true);
+    } else {
+      dump("Failed.", true);
     }
   }
 }
@@ -165,7 +171,7 @@ void FlyEmBodySplitProjectDialog::showData2d()
 void FlyEmBodySplitProjectDialog::showData3d()
 {
   if (m_project.hasDataFrame()) {
-    dump("Showing body in 3D ...");
+    dump("Showing body in 3D ...", true);
     m_project.showDataFrame3d();
     dump("done", true);
   }
@@ -173,7 +179,7 @@ void FlyEmBodySplitProjectDialog::showData3d()
 
 void FlyEmBodySplitProjectDialog::showResult3d()
 {
-  dump("Showing splitting result ...");
+  dump("Showing splitting result ...", true);
   m_project.showResult3d();
   dump("Done.", true);
 }
@@ -217,6 +223,8 @@ void FlyEmBodySplitProjectDialog::loadBody()
     updateSideView();
 
     dump("Body loaded.");
+
+    showData2d();
   //}
 }
 
@@ -276,9 +284,11 @@ void FlyEmBodySplitProjectDialog::updateWidget()
 }
 
 void FlyEmBodySplitProjectDialog::dump(const QString &info, bool appending)
-{
+{    
   if (appending) {
     ui->outputWidget->append(info);
+    ui->outputWidget->verticalScrollBar()->setValue(
+          ui->outputWidget->verticalScrollBar()->maximum());
   } else {
     ui->outputWidget->setText(info);
   }
