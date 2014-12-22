@@ -58,7 +58,8 @@ public:
     ACTION_MOVE_SWC_NODE,
     ACTION_ESTIMATE_SWC_NODE_RADIUS,
     ACTION_PAINT_STROKE, ACTION_ERASE_STROKE,
-    ACTION_LOCATE_SELECTED_SWC_NODES_IN_3D
+    ACTION_LOCATE_SELECTED_SWC_NODES_IN_3D,
+    ACTION_SPLIT_DATA
   };
 
   inline double greyScale(int c = 0) const {return m_greyScale[c];}
@@ -101,6 +102,7 @@ public:
   //void createTubeActions();
   void createStrokeActions();
   void createDocDependentActions();
+  void createMainWindowActions();
 
   inline QAction* getAction(EActionItem item) const {
     return m_actionMap[item];

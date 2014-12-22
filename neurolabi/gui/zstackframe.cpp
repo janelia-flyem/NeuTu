@@ -1079,6 +1079,16 @@ void ZStackFrame::load(const std::string &filePath)
   m_doc->loadFile(filePath.c_str(), true);
 }
 
+QAction* ZStackFrame::getBodySplitAction()
+{
+  QAction *action = NULL;
+  if (getMainWindow() != NULL) {
+    action = getMainWindow()->getBodySplitAction();
+  }
+
+  return action;
+}
+
 MainWindow* ZStackFrame::getMainWindow()
 {
   MainWindow *mainwin = NULL;
@@ -1461,4 +1471,9 @@ ZStackObject::Display_Style ZStackFrame::getObjectStyle() const
 void ZStackFrame::setObjectStyle(ZStackObject::Display_Style style)
 {
   m_presenter->setObjectStyle(style);
+}
+
+void ZStackFrame::createMainWindowActions()
+{
+  m_presenter->createMainWindowActions();
 }
