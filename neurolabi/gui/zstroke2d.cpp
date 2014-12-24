@@ -160,8 +160,8 @@ void ZStroke2d::display(ZPainter &painter, int slice, Display_Style option) cons
         painter.setPen(Qt::NoPen);
         painter.setBrush(brush);
       } else {
-        painter.setPen(pen);
         pen.setWidthF(getDefaultPenWidth());
+        painter.setPen(pen);
         painter.setBrush(Qt::NoBrush);
         painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
       }
