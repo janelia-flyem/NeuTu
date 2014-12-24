@@ -21,10 +21,10 @@
 /neurolabi/data/
 
 # binary file
-obj/*.*
-bin/*.*
-obj64/*.*
-release/*.*
+obj/
+bin/
+obj64/
+release/
 /neurolabi/app/
 /neurolabi/lib/genelib/src/*.c
 /neurolabi/c/config.log

@@ -58,6 +58,7 @@ isEqual(QT_MAJOR_VERSION,5) {
     QT += concurrent gui
     DEFINES += _QT5_
     CONFIG += c++11
+    QMAKE_MACOSX_DEPLOYMENT_TARGET=10.7
 }
 
 #Qt4

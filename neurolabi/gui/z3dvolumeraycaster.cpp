@@ -288,9 +288,9 @@ ZWidgetsGroup *Z3DVolumeRaycaster::getWidgetsGroup()
       else if (para->getName() == "Compositing")
         new ZWidgetsGroup(para, m_widgetsGroup, 2);
       else if (para->getName() == "ISO Value")
-        new ZWidgetsGroup(para, m_widgetsGroup, 9);
+        new ZWidgetsGroup(para, m_widgetsGroup, 2);
       else if (para->getName() == "Local MIP Threshold")
-        new ZWidgetsGroup(para, m_widgetsGroup, 9);
+        new ZWidgetsGroup(para, m_widgetsGroup, 2);
       else if (para->getName() == "Sampling Rate")
         new ZWidgetsGroup(para, m_widgetsGroup, 15);
       else if (para->getName().contains("Texture"))
