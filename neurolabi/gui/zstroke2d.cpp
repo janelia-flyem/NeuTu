@@ -161,7 +161,9 @@ void ZStroke2d::display(ZPainter &painter, int slice, Display_Style option) cons
         painter.setBrush(brush);
       } else {
         painter.setPen(pen);
+        pen.setWidthF(getDefaultPenWidth());
         painter.setBrush(Qt::NoBrush);
+        painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
       }
       painter.drawEllipse(QPointF(m_pointArray[0]), m_width / 2, m_width / 2);
     } else {

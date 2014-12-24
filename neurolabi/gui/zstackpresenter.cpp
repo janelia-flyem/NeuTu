@@ -1729,7 +1729,7 @@ void ZStackPresenter::updateCursor()
     if (buddyDocument()->getTag() == NeuTube::Document::FLYEM_ROI) {
       buddyView()->setScreenCursor(Qt::PointingHandCursor);
     } else {
-      buddyView()->setScreenCursor(Qt::CrossCursor);
+      buddyView()->setScreenCursor(Qt::PointingHandCursor);
     }
     /*
     buddyView()->setScreenCursor(
