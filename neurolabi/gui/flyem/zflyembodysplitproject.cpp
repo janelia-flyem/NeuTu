@@ -376,6 +376,8 @@ std::set<int> ZFlyEmBodySplitProject::getBookmarkBodySet() const
 
 void ZFlyEmBodySplitProject::commitResult()
 {
+  emit messageGenerated("Uploading results ...");
+
   const ZObject3dScan *wholeBody =
       getDataFrame()->document()->getSparseStack()->getObjectMask();
 
@@ -383,6 +385,7 @@ void ZFlyEmBodySplitProject::commitResult()
   const ZStack *stack = getDataFrame()->document()->getLabelField();
   QStringList filePathList;
   int maxNum = 1;
+
   if (stack != NULL) {
     const ZIntPoint &dsIntv =
         getDataFrame()->document()->getSparseStack()->getDownsampleInterval();
@@ -447,13 +450,15 @@ void ZFlyEmBodySplitProject::commitResult()
 
     QProcess::execute(command);
 
-    QString msg = QString("%1 saved").arg(bodyId);
+    QString msg = QString("%1 uploaded.").arg(bodyId);
     emit messageGenerated(msg);
   }
 
   ZDvidWriter writer;
   writer.open(m_dvidTarget);
   writer.writeMaxBodyId(bodyId);
+
+  emit messageGenerated("Done.");
 }
 
 void ZFlyEmBodySplitProject::saveSeed()
