@@ -20,6 +20,7 @@
 #include "QsLog.h"
 #include "z3drendertarget.h"
 #include <QApplication>
+#include "zsharedpointer.h"
 
 Z3DPickingManager::Z3DPickingManager()
   : m_renderTarget(NULL)
@@ -98,19 +99,24 @@ const void* Z3DPickingManager::getObjectAtPos(glm::ivec2 pos)
 std::vector<const void *> Z3DPickingManager::sortObjectsByDistanceToPos(glm::ivec2 pos, int radius, bool ascend)
 {
   std::map<glm::col4, int, colComp> col2dist;
-  glm::col4* buf = m_renderTarget->downloadColorBuffer();
+  const Z3DTexture *tex = m_renderTarget->getAttachment(GL_COLOR_ATTACHMENT0);
+  GLenum dataFormat = GL_BGRA;
+  GLenum dataType = GL_UNSIGNED_INT_8_8_8_8_REV;
+  ZSharedPointer<glm::col4> buf(new glm::col4[tex->getBypePerPixel(dataFormat, dataType) * tex->getNumPixels() / 4], array_deleter<glm::col4>());
+  tex->downloadTextureToBuffer(dataFormat, dataType, buf.get());
   glm::ivec2 texSize = m_renderTarget->getSize();
   if (radius < 0)
     radius = std::max(texSize.x, texSize.y);
-  for(int y = std::max(0, pos.y-radius); y <= std::min(texSize.y-1, pos.y+radius); ++y)
+  for(int y = std::max(0, pos.y-radius); y <= std::min(texSize.y-1, pos.y+radius); ++y) {
     for(int x = std::max(0, pos.x-radius); x <= std::min(texSize.x-1, pos.x+radius); ++x) {
-      glm::col4 col = buf[(y*texSize.x) + x];
+      glm::col4 col = buf.get()[(y*texSize.x) + x];
+      std::swap(col.r, col.b);
       if (col2dist[col] == 0)
         col2dist[col] = (x-pos.x)*(x-pos.x) + (y-pos.y)*(y-pos.y);
       else
         col2dist[col] = std::min(col2dist[col], (x-pos.x)*(x-pos.x) + (y-pos.y)*(y-pos.y));
     }
-  delete[] buf;
+  }
   std::vector<const void *> res;
   if (ascend) {
     std::multimap<int, const void *> dist2obj;

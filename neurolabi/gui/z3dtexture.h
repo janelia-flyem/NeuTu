@@ -37,9 +37,8 @@ public:
   bool is2DTexture() const;
   bool is3DTexture() const;
 
-  // download texture to buffer. paramerter bufferSize is used to get returned buffer size (in byte).
-  // returned buffer should be deleted by caller using delete[] buffer;
-  GLubyte* downloadTextureToBuffer(GLint dataFormat, GLenum dataType, size_t *bufferSize = NULL) const;
+  // buffer must have at least getBypePerPixel(dataFormat, dataType) * getNumPixels() bytes space, crash otherwise
+  void downloadTextureToBuffer(GLenum dataFormat, GLenum dataType, GLvoid* buffer) const;
 
   int getTextureSizeOnGPU() const;
 
@@ -48,7 +47,7 @@ public:
   int getWidth() const { return m_dimensions.x; }
   int getHeight() const { return m_dimensions.y; }
   int getDepth() const { return m_dimensions.z; }
-  int getNumPixels() const { return m_dimensions.x * m_dimensions.y * m_dimensions.z; }
+  size_t getNumPixels() const { return m_dimensions.x * m_dimensions.y * m_dimensions.z; }
   GLint getDataFormat() const { return m_dataFormat; }
   GLint getInternalFormat() const { return m_internalFormat; }
   GLint getMinFilter() const { return m_minFilter; }
@@ -66,6 +65,18 @@ public:
   void setInternalFormat(GLint internalformat) { m_internalFormat = internalformat; }
   void setDataType(GLenum dataType) { m_dataType = dataType; }
 
+  // calculates the bytes per pixel from dataFormat and dataType
+  static size_t getBypePerPixel(GLenum dataFormat, GLenum dataType);
+  // calculates the bytes per pixel from the internal format
+  static size_t getBypePerPixel(GLint internalFormat);
+
+private:
+  void deriveTextureTarget();
+  void applyFilter();
+  void applyWrap();
+  bool useMipmap() const;
+  void init();
+
 protected:
   glm::ivec3 m_dimensions;
   GLenum m_textureTarget;
@@ -80,18 +91,6 @@ protected:
   GLuint m_id; // texture id
 
   GLvoid *m_data;
-
-private:
-  void deriveTextureTarget();
-  void applyFilter();
-  void applyWrap();
-  bool useMipmap() const;
-  void init();
-
-  // calculates the bytes per pixel from dataFormat and dataType
-  static int getBypePerPixel(GLint dataFormat, GLenum dataType);
-  // calculates the bytes per pixel from the internal format
-  static int getBypePerPixel(GLint internalFormat);
 };
 
 // provide unique texture units

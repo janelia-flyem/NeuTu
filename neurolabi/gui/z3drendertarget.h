@@ -42,8 +42,6 @@ public:
   //Get the color at position pos. This method will bind the RenderTarget!
   glm::vec4 getFloatColorAtPos(glm::ivec2 pos);
   glm::col4 getColorAtPos(glm::ivec2 pos);
-  // returned buffer should be deleted by caller using delete[] buffer;
-  glm::col4* downloadColorBuffer(GLenum attachment = GL_COLOR_ATTACHMENT0) const;
 
   glm::ivec2 getSize() const;
   void resize(glm::ivec2 newsize);

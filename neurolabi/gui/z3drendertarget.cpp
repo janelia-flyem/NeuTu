@@ -201,17 +201,6 @@ glm::col4 Z3DRenderTarget::getColorAtPos(glm::ivec2 pos)
   return pixel;
 }
 
-glm::col4 *Z3DRenderTarget::downloadColorBuffer(GLenum attachment) const
-{
-  const Z3DTexture *tex = getAttachment(attachment);
-  //GLubyte* buf = tex->downloadTextureToBuffer(GL_RGBA, GL_UNSIGNED_INT_8_8_8_8_REV);
-  // even with swap, BGRA is faster than RGBA
-  GLubyte* buf = tex->downloadTextureToBuffer(GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV);
-  for (int i=0; i<getSize().x * getSize().y * 4; i+=4)
-    std::swap(buf[i], buf[i+2]);
-  return reinterpret_cast<glm::col4*>(buf);
-}
-
 glm::ivec2 Z3DRenderTarget::getSize() const
 {
   return m_size;

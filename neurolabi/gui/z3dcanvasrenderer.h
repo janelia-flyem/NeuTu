@@ -31,12 +31,6 @@ public:
 
   QString getRenderToImageError() const;
 
-  template<typename T>
-  glm::tvec4<T,glm::highp>* readBGRAColorBuffer(Z3DEye eye);
-
-  template<typename T>
-  glm::tvec3<T,glm::highp>* readRGBColorBuffer(Z3DEye eye);
-
 protected slots:
   void onCanvasResized(int w, int h);
 
@@ -61,77 +55,5 @@ protected:
   QString m_renderToImageError;
   Z3DScreenShotType m_renderToImageType;
 };
-
-template<typename T>
-glm::tvec4<T, glm::highp> *Z3DCanvasRenderer::readBGRAColorBuffer(Z3DEye eye)
-{
-  if (!getImageColorTexture(eye)) {
-    //LERROR() << "no texture to read";
-    //return NULL;
-    throw Exception("no texture to read");
-  }
-
-  // determine OpenGL data type from template parameter
-  GLenum dataType;
-  if (typeid(T) == typeid(uint8_t))
-    dataType = GL_UNSIGNED_INT_8_8_8_8_REV;
-  else if (typeid(T) == typeid(uint16_t))
-    dataType = GL_UNSIGNED_SHORT;
-  else if (typeid(T) == typeid(float))
-    dataType = GL_FLOAT;
-  else {
-    //LERROR() << "unsupported data type. Expected: uint8_t, uint16_t, float";
-    //return NULL;
-    throw Exception("unsupported data type. Expected: uint8_t, uint16_t, float");
-  }
-
-  GLubyte* pixels = 0;
-  pixels = getImageColorTexture(eye)->downloadTextureToBuffer(GL_BGRA, dataType);
-  CHECK_GL_ERROR;
-
-  if (pixels)
-    return reinterpret_cast<glm::tvec4<T,glm::highp>*>(pixels);
-  else {
-    //LERROR() << "failed to download texture";
-    //return NULL;
-    throw Exception("failed to download texture");
-  }
-}
-
-template<typename T>
-glm::tvec3<T,glm::highp>* Z3DCanvasRenderer::readRGBColorBuffer(Z3DEye eye)
-{
-  if (!getImageColorTexture(eye)) {
-    //LERROR() << "no texture to read";
-    //return NULL;
-    throw Exception("no texture to read");
-  }
-
-  // determine OpenGL data type from template parameter
-  GLenum dataType;
-  if (typeid(T) == typeid(uint8_t))
-    dataType = GL_UNSIGNED_BYTE;
-  else if (typeid(T) == typeid(uint16_t))
-    dataType = GL_UNSIGNED_SHORT;
-  else if (typeid(T) == typeid(float))
-    dataType = GL_FLOAT;
-  else {
-    //    LERROR() << "unsupported data type. Expected: uint8_t, uint16_t, float";
-    //    return NULL;
-    throw Exception("unsupported data type. Expected: uint8_t, uint16_t, float");
-  }
-
-  GLubyte* pixels = 0;
-  pixels = getImageColorTexture(eye)->downloadTextureToBuffer(GL_RGB, dataType);
-  CHECK_GL_ERROR;
-
-  if (pixels)
-    return reinterpret_cast<glm::tvec3<T,glm::highp>*>(pixels);
-  else {
-    //    LERROR() << "failed to download texture";
-    //    return NULL;
-    throw Exception("failed to download texture");
-  }
-}
 
 #endif // Z3DCANVASRENDERER_H
