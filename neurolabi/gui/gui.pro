@@ -493,7 +493,8 @@ HEADERS += mainwindow.h \
     flyem/zflyembodymergeframe.h \
     zsegmentationprojectdialog.h \
     zsegmentationproject.h \
-    zsegmentationprojectmodel.h
+    zsegmentationprojectmodel.h \
+    zsubtractswcsdialog.h
 
 FORMS += settingdialog.ui \
     frameinfodialog.ui \
@@ -828,7 +829,8 @@ SOURCES += main.cpp \
     flyem/zflyembodymergeframe.cpp \
     zsegmentationprojectdialog.cpp \
     zsegmentationproject.cpp \
-    zsegmentationprojectmodel.cpp
+    zsegmentationprojectmodel.cpp \
+    zsubtractswcsdialog.cpp
 
 OTHER_FILES += \
     extlib.pri

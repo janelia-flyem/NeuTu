@@ -260,6 +260,7 @@ private slots:
   void binarize();
   void bwsolid();
   void enhanceLine();
+  void subtractSwcs();
 
   // slots for 'Options'
   void setOption();
@@ -411,6 +412,7 @@ private:
   void createViewActions();
   void createToolActions();
   void createTraceActions();
+  void createSwcActions();
 
   void updateActionGroup(QActionGroup *group, QAction *triggeredAction);
   void updateObjectDisplayStyle(ZStackFrame *frame, QAction *action);
@@ -546,6 +548,7 @@ private:
   QAction *fitsegAction;
   QAction *traceTubeAction;
   QAction *autoTraceAction;
+  QAction *subtractSwcsAction;
 
   QActionGroup *interactiveMarkPuncta;
   QAction *noMarkPunctaAction;

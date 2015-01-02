@@ -149,6 +149,7 @@
 #include "synapseimportdialog.h"
 #include "flyembodymergeprojectdialog.h"
 #include "zsegmentationprojectdialog.h"
+#include "zsubtractswcsdialog.h"
 
 #include "z3dcanvas.h"
 #include "z3dapplication.h"
@@ -603,12 +604,21 @@ void MainWindow::createTraceActions()
   interactiveTrace->addAction(m_ui->actionTree_Preview);
 
   connect(interactiveTrace, SIGNAL(triggered(QAction*)),
-    this, SLOT(activateInteractiveTrace(QAction*)));
+          this, SLOT(activateInteractiveTrace(QAction*)));
+}
+
+void MainWindow::createSwcActions()
+{
+  subtractSwcsAction = new QAction(tr("&Subtract SWCs..."), this);
+  subtractSwcsAction->setStatusTip("Subtract SWC trees from input SWC");
+  connect(subtractSwcsAction, SIGNAL(triggered()), this, SLOT(subtractSwcs()));
+  m_ui->menuSwc->addAction(subtractSwcsAction);
 }
 
 void MainWindow::createToolActions()
 {
   createTraceActions();
+  createSwcActions();
 }
 
 void MainWindow::updateActionGroup(
@@ -835,7 +845,9 @@ void MainWindow::customizeActions()
   m_ui->actionAutomatic_Axon->setVisible(false);
   m_ui->actionDisable->setVisible(false);
   m_ui->menuPuncta->menuAction()->setVisible(false);
-  m_ui->menuSwc->menuAction()->setVisible(false);
+  //m_ui->menuSwc->menuAction()->setVisible(false);
+  m_ui->actionEdit_Swc->setVisible(false);
+  m_ui->actionRescale_Swc->setVisible(false);
   m_ui->menuQuery->menuAction()->setVisible(false);
   m_ui->menuOptions->menuAction()->setVisible(false);
 #endif
@@ -2198,6 +2210,12 @@ void MainWindow::enhanceLine()
     m_progress->reset();
     //currentStackFrame()->updateView();
   }
+}
+
+void MainWindow::subtractSwcs()
+{
+  ZSubtractSWCsDialog dlg(this);
+  dlg.exec();
 }
 
 void MainWindow::setOption()
