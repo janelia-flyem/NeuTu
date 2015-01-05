@@ -394,11 +394,14 @@ ZStackOperator ZMouseEventMoveMapper::getOperation(
 
     if (op.isNull()) {
       op.setOperation(ZStackOperator::OP_TRACK_MOUSE_MOVE);
+
+#ifdef _FLYEM_
       if (event.getModifiers() == Qt::ShiftModifier &&
           m_context->getUniqueMode() ==
           ZInteractiveContext::INTERACT_STROKE_DRAW) {
         op.setTogglingStrokeLabel(true);
       }
+#endif
       /*
       if (event.getModifiers() == Qt::ShiftModifier &&
           m_context->strokeEditMode() == ZInteractiveContext::STROKE_DRAW) {

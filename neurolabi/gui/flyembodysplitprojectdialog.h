@@ -70,6 +70,7 @@ public slots:
   void viewPreviousSlice();
   void viewNextSlice();
   void viewFullGrayscale();
+  void saveSeed();
 
   void resetSideView();
 

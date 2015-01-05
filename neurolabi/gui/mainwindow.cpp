@@ -2289,7 +2289,7 @@ void MainWindow::bcAdjust()
   ZStackFrame *frame = currentStackFrame();
   if (frame != NULL) {
     for (int i = 0; i < m_bcDlg->getMaxNumOfChannel(); i++) {
-      frame->setBc(m_bcDlg->greyScale(i), m_bcDlg->greyOffset(i), i);
+      frame->setBc(m_bcDlg->getGreyScale(i), m_bcDlg->getGreyOffset(i), i);
     }
     frame->updateView();
   }
@@ -2300,21 +2300,7 @@ void MainWindow::autoBcAdjust()
   ZStackFrame *frame = currentStackFrame();
   if (frame != NULL) {
     frame->autoBcAdjust();
-    /*
-    frame->document()->startProgress();
-    for (int i = 0; i < frame->document()->stackChannelNumber(); i++) {
-      frame->document()->advanceProgress(0.1);
-      double lower, upper;
-      ZStackStatistics::getGreyMapHint(*frame->document()->stack(), i,
-                                       &lower, &upper);
-      frame->document()->advanceProgress(0.2);
-      m_bcDlg->setValue(lower, upper, i);
-      frame->setBc(m_bcDlg->greyScale(i), m_bcDlg->greyOffset(i), i);
-    }
-    frame->document()->endProgress();
-
-    frame->updateView();
-    */
+    updateBcDlg(frame);
   }
 }
 

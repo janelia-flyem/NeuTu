@@ -6,6 +6,9 @@
 #define BCADJUSTDIALOG_H
 
 #include <QDialog>
+#include <QVector>
+#include <QScrollBar>
+#include <QLabel>
 
 namespace Ui {
     class BcAdjustDialog;
@@ -32,8 +35,8 @@ public: // attribute access
   void setValue(int lower, int upper, int c=0);
   void setRange(int min, int max, int c=0);
 
-  double greyScale(int c=0);
-  double greyOffset(int c=0);
+  double getGreyScale(int c=0);
+  double getGreyOffset(int c=0);
 
   void setNumOfChannel(int c=1);
   int getMaxNumOfChannel() const { return 4; }
@@ -61,7 +64,15 @@ private slots:
   void on_pushButton_clicked();
 
 private:
+  void init(); //Should only be called in the constructor
+  void connectSignalSlot();
+
+private:
   Ui::BcAdjustDialog *m_ui;
+  QVector<QScrollBar*> m_lowerValueScrollBar;
+  QVector<QScrollBar*> m_upperValueScrollBar;
+  QVector<QLabel*> m_lowerValueLabel;
+  QVector<QLabel*> m_upperValueLabel;
 };
 
 #endif // BCADJUSTDIALOG_H

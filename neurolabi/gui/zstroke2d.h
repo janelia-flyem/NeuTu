@@ -16,6 +16,13 @@ class ZStack;
 class ZObject3d;
 class ZJsonObject;
 
+/*!
+ * \brief The class of plane strokes.
+ *
+ * ZStroke2d represents the class of plane strokes, each composed of a polyline
+ * with a certain width. A plane stroke also has a Z postion, which is an
+ * integer value specifying which plane the stroke is located in a 3D stack.
+ */
 class ZStroke2d : public ZStackObject {
 public:
   ZStroke2d();

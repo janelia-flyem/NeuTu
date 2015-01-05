@@ -175,6 +175,13 @@
            </widget>
           </item>
           <item>
+           <widget class="QPushButton" name="saveSeedPushButton">
+            <property name="text">
+             <string>Save Seeds</string>
+            </property>
+           </widget>
+          </item>
+          <item>
            <widget class="QPushButton" name="commitPushButton">
             <property name="text">
              <string>Commit</string>

@@ -8,6 +8,21 @@
 /*!
  * \brief The abstract class of representing an 3D object
  *
+ * ZStackObject is a class of objects in a stack. We call those objects stack
+ * objects. The common properties of a stack object are:
+ *
+ *  Source: a string telling where the object is from. It can be empty, meaning
+ *          that the object is from unknown source.
+ *  Visibility: the object is visible or not.
+ *  Color: color of the object.
+ *  Role: role of the object when it exists in a document.
+ *  Selection: the object is selected or not.
+ *  Type: type of an object. The types are predefined.
+ *  Z Order: Z Order of the object to specify the order of painting for
+ *           multiple objects on the same plane.
+ *  Z Scale: Z Scale of the object.
+ *  Target: painting target (canvas) of the object.
+ *
  * Each object has a source string, which helps identifying its identity. The
  * source can be the file path where the object is loaded, it can also be a
  * string serving as an ID. If the source is empty, it means the object does
@@ -18,6 +33,8 @@
  *   '#': unique ID
  *   '#.': source class (the class part should always ends with '#')
  *   '!': reserved ID
+ *
+ * The class also provides the interface for object display and hit test.
  */
 class ZStackObject
 {
@@ -25,28 +42,21 @@ public:
   ZStackObject();
   virtual ~ZStackObject() {}
 
-  virtual const std::string& className() const = 0;
-
   enum EType {
-    TYPE_UNIDENTIFIED = 0,
-    TYPE_SWC, TYPE_PUNCTUM, TYPE_OBJ3D,
-    TYPE_STROKE, TYPE_LOCSEG_CHAIN, TYPE_CONN,
+    TYPE_UNIDENTIFIED = 0, //Unidentified type
+    TYPE_SWC,
+    TYPE_PUNCTUM,
+    TYPE_OBJ3D,
+    TYPE_STROKE,
+    TYPE_LOCSEG_CHAIN,
+    TYPE_CONN,
     TYPE_OBJECT3D_SCAN,
-    TYPE_SPARSE_OBJECT, TYPE_CIRCLE, TYPE_STACK_BALL,
-    TYPE_STACK_PATCH, TYPE_RECT2D
+    TYPE_SPARSE_OBJECT,
+    TYPE_CIRCLE,
+    TYPE_STACK_BALL,
+    TYPE_STACK_PATCH,
+    TYPE_RECT2D
   };
-
-  /*!
-   * \brief Set the selection state
-   */
-  void setSelected(bool selected) { m_selected = selected; }
-
-  /*!
-   * \brief Get the selection state
-   *
-   * \return true iff the object is selected.
-   */
-  bool isSelected() const { return m_selected; }
 
   enum Palette_Color {
     BLUE = 0, GREEN, RED, ALPHA
@@ -61,8 +71,29 @@ public:
   };
 
   enum EDisplaySliceMode {
-    DISPLAY_SLICE_PROJECTION, DISPLAY_SLICE_SINGLE
+    DISPLAY_SLICE_PROJECTION, //Display Z-projection of the object
+    DISPLAY_SLICE_SINGLE      //Display a cross section of the object
   };
+
+  /*!
+   * \brief Name of the class
+   *
+   * This function is mainly used for debugging.
+   */
+  virtual const std::string& className() const = 0;
+
+  /*!
+   * \brief Set the selection state
+   */
+  void setSelected(bool selected) { m_selected = selected; }
+
+  /*!
+   * \brief Get the selection state
+   *
+   * \return true iff the object is selected.
+   */
+  bool isSelected() const { return m_selected; }
+
 
   // Display an object to widget, xoffset and yoffset is top left corner of widget
   // zoom ratio is ratio of widget pixel to object pixel

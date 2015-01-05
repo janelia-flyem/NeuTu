@@ -52,7 +52,7 @@ Z3DWindow* ZWindowFactory::make3DWindow(ZSharedPointer<ZStackDoc> doc,
       window->getVolumeRaycasterRenderer()->setCompositeMode(
             "Direct Volume Rendering");
     }
-    if (doc->getTag() == NeuTube::Document::FLYEM_SPLIT) {
+    if (doc->getTag() != NeuTube::Document::FLYEM_SPLIT) {
       window->getCanvas()->disableKeyEvent();
     }
     if (!m_showVolumeBoundBox) {

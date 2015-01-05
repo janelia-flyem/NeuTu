@@ -515,6 +515,7 @@ void ZFlyEmBodySplitProject::downloadSeed()
             stroke->loadJsonObject(seedJson);
             if (!stroke->isEmpty()) {
               stroke->setRole(ZStackObjectRole::ROLE_SEED);
+              stroke->setPenetrating(false);
               m_dataFrame->document()->addObject(stroke);
             } else {
               delete stroke;

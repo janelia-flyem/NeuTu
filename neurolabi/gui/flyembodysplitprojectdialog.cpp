@@ -51,6 +51,8 @@ FlyEmBodySplitProjectDialog::FlyEmBodySplitProjectDialog(QWidget *parent) :
           this, SLOT(viewNextSlice()));
   connect(ui->fullGrayscalePushButton, SIGNAL(clicked()),
           this, SLOT(viewFullGrayscale()));
+  connect(ui->saveSeedPushButton, SIGNAL(clicked()),
+          this, SLOT(saveSeed()));
 
   ui->bookmarkView->setModel(&m_bookmarkList);
 
@@ -254,6 +256,7 @@ void FlyEmBodySplitProjectDialog::updateButton()
   ui->view3dBodyPushButton->setEnabled(m_project.hasDataFrame());
   ui->viewSplitPushButton->setEnabled(m_project.hasDataFrame());
   ui->commitPushButton->setEnabled(m_project.hasDataFrame());
+  ui->saveSeedPushButton->setEnabled(m_project.hasDataFrame());
   ui->donePushButton->setEnabled(isBodyLoaded());
 }
 
@@ -616,6 +619,11 @@ void FlyEmBodySplitProjectDialog::viewFullGrayscale()
 {
   m_project.viewFullGrayscale();
   m_project.updateBodyMask();
+}
+
+void FlyEmBodySplitProjectDialog::saveSeed()
+{
+  m_project.saveSeed();
 }
 
 void FlyEmBodySplitProjectDialog::showBodyMask(bool on)
