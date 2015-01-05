@@ -2549,6 +2549,40 @@ void ZSwcTree::labelTrunkLevel(ZSwcTrunkAnalyzer *trunkAnalyzer)
   }
 }
 
+void ZSwcTree::markSoma(double radiusThre, int somaType, int otherType)
+{
+  std::vector<Swc_Tree_Node*> treeRoots;
+  Swc_Tree_Node *root = firstRegularRoot();
+  while (root != NULL) {
+    treeRoots.push_back(root);
+    root = root->next_sibling;
+  }
+  // tree by tree process
+  for (size_t i=0; i<treeRoots.size(); ++i) {
+    Swc_Tree_Node *root = treeRoots[i];
+    double maxRadius = -std::numeric_limits<double>::max();
+    Swc_Tree_Node *maxRadiusNode = NULL;
+    updateIterator(SWC_TREE_ITERATOR_BREADTH_FIRST, root, FALSE);
+    for (Swc_Tree_Node *tn = begin(); tn != NULL; tn = next()) {
+      if (SwcTreeNode::radius(tn) > maxRadius) {
+        maxRadius = SwcTreeNode::radius(tn);
+        maxRadiusNode = tn;
+      }
+    }
+    SwcTreeNode::setAsRoot(maxRadiusNode);
+
+    updateIterator(SWC_TREE_ITERATOR_BREADTH_FIRST, maxRadiusNode, FALSE);
+    for (Swc_Tree_Node *tn = begin(); tn != NULL; tn = next()) {
+      if (maxRadius >= radiusThre &&
+          (tn == maxRadiusNode || (SwcTreeNode::type(SwcTreeNode::parent(tn)) == somaType && SwcTreeNode::radius(tn) * 3.0 >= maxRadius))) {
+        SwcTreeNode::setType(tn, somaType);
+      } else {
+        SwcTreeNode::setType(tn, otherType);
+      }
+    }
+  }
+}
+
 bool ZSwcTree::contains(const Swc_Tree_Node *tn) const
 {
   return (data()->root == SwcTreeNode::root(tn));

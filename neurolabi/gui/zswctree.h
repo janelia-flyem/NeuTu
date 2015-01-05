@@ -556,6 +556,17 @@ public:
   //void labelTrunk(int flag, int setLabel, Swc_Tree_Node *start);
   void labelTrunkLevel(ZSwcTrunkAnalyzer *trunkAnalyzer);
 
+  /*!
+   * \brief Mark soma nodes
+   *
+   * Set type of soma nodes to <somaType> and type of other nodes to <otherType>. The thickest node
+   * of each tree will be set as root.
+   *
+   * \param radiusThre the radius threshold of the soma nodes. Soma is marked only if the radius of
+   * the thickest node is larger than or equal to <radiusThre>, otherwise set all nodes type to <otherType>
+   */
+  void markSoma(double radiusThre = 0, int somaType = 1, int otherType = 0);
+
   int regularDepth();
 
   ZSwcPath mainTrunk(ZSwcTrunkAnalyzer *trunkAnalyzer);

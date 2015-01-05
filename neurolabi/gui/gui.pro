@@ -493,7 +493,9 @@ HEADERS += mainwindow.h \
     flyem/zflyembodymergeframe.h \
     zsegmentationprojectdialog.h \
     zsegmentationproject.h \
-    zsegmentationprojectmodel.h
+    zsegmentationprojectmodel.h \
+    zsubtractswcsdialog.h \
+    zmarkswcsomadialog.h
 
 FORMS += settingdialog.ui \
     frameinfodialog.ui \
@@ -551,7 +553,8 @@ FORMS += settingdialog.ui \
     dvidoperatedialog.ui \
     synapseimportdialog.ui \
     flyembodymergeprojectdialog.ui \
-    zsegmentationprojectdialog.ui
+    zsegmentationprojectdialog.ui \
+    zmarkswcsomadialog.ui
 SOURCES += main.cpp \
     mainwindow.cpp \
     zstackview.cpp \
@@ -828,7 +831,9 @@ SOURCES += main.cpp \
     flyem/zflyembodymergeframe.cpp \
     zsegmentationprojectdialog.cpp \
     zsegmentationproject.cpp \
-    zsegmentationprojectmodel.cpp
+    zsegmentationprojectmodel.cpp \
+    zsubtractswcsdialog.cpp \
+    zmarkswcsomadialog.cpp
 
 OTHER_FILES += \
     extlib.pri
