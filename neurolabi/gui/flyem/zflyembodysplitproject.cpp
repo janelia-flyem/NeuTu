@@ -115,7 +115,9 @@ void ZFlyEmBodySplitProject::showDataFrame() const
 void ZFlyEmBodySplitProject::showDataFrame3d()
 {
   if (m_dataFrame != NULL) {
+    //emit messageGenerated("Showing data in 3D ...");
     m_dataFrame->open3DWindow(m_dataFrame);
+    //emit messageGenerated("Done.");
   }
 }
 
@@ -225,6 +227,7 @@ void ZFlyEmBodySplitProject::showResult3d()
 {
   if (m_dataFrame != NULL) {
     if (m_resultWindow == NULL) {
+      //emit messageGenerated("Showing results in 3D ...");
       //ZStackDocReader docReader;
       ZStackDocLabelStackFactory *factory = new ZStackDocLabelStackFactory;
       factory->setDocument(m_dataFrame->document().get());
@@ -262,6 +265,8 @@ void ZFlyEmBodySplitProject::showResult3d()
     }
     m_resultWindow->show();
     m_resultWindow->raise();
+
+    //emit messageGenerated("Done.");
   }
 }
 
@@ -480,12 +485,20 @@ void ZFlyEmBodySplitProject::saveSeed()
     */
   }
 
-  ZJsonObject rootObj;
-  rootObj.setEntry("seeds", jsonArray);
+
   ZDvidWriter writer;
   if (writer.open(getDvidTarget())) {
-    writer.writeJson(ZDvidData::getName(ZDvidData::ROLE_SPLIT_LABEL),
-                     ZString::num2str(getBodyId()), rootObj);
+    if (jsonArray.isEmpty()) {
+      writer.deleteKey(ZDvidData::getName(ZDvidData::ROLE_SPLIT_LABEL),
+                       getSeedKey(getBodyId()));
+      emit messageGenerated("All seeds deleted");
+    } else {
+      ZJsonObject rootObj;
+      rootObj.setEntry("seeds", jsonArray);
+      writer.writeJson(ZDvidData::getName(ZDvidData::ROLE_SPLIT_LABEL),
+                       getSeedKey(getBodyId()), rootObj);
+      emit messageGenerated("All seeds saved");
+    }
   }
 }
 
@@ -495,7 +508,7 @@ void ZFlyEmBodySplitProject::downloadSeed()
   if (reader.open(getDvidTarget())) {
     QByteArray seedData = reader.readKeyValue(
           ZDvidData::getName(ZDvidData::ROLE_SPLIT_LABEL),
-          ZString::num2str(getBodyId()).c_str());
+          getSeedKey(getBodyId()).c_str());
     if (!seedData.isEmpty()) {
       ZJsonObject obj;
       obj.decode(seedData.constData());
@@ -653,4 +666,9 @@ void ZFlyEmBodySplitProject::updateBodyMask()
       }
     }
   }
+}
+
+std::string ZFlyEmBodySplitProject::getSeedKey(int bodyId) const
+{
+  return m_dvidTarget.getBodyLabelName() + "_seed_" + ZString::num2str(bodyId);
 }

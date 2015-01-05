@@ -93,6 +93,7 @@ public slots:
 
 private:
   bool showingBodyMask() const { return m_showingBodyMask; }
+  std::string getSeedKey(int bodyId) const;
 
 private:
   ZDvidTarget m_dvidTarget;
