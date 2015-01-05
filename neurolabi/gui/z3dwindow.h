@@ -243,6 +243,8 @@ public slots:
   void addStrokeFrom3dPaint(ZStroke2d*stroke);
   void addPolyplaneFrom3dPaint(ZStroke2d*stroke);
 
+  void markSwcSoma();
+
 protected:
   virtual void dragEnterEvent(QDragEnterEvent *event);
   virtual void dropEvent(QDropEvent *event);
@@ -274,7 +276,8 @@ private:
   QAction *m_locateSwcNodeIn2DAction;
 
   QAction *m_undoAction;
-  QAction *m_redoAction ;
+  QAction *m_redoAction;
+  QAction *m_markSwcSomaAction;
   QAction *m_changeSwcNodeTypeAction;
   QAction *m_setSwcRootAction;
   QAction *m_breakSwcConnectionAction;

@@ -69,6 +69,7 @@
 #include "zswcgenerator.h"
 #include "zstroke2d.h"
 #include "zsparsestack.h"
+#include "zmarkswcsomadialog.h"
 
 class Sleeper : public QThread
 {
@@ -441,6 +442,9 @@ void Z3DWindow::createActions()
   m_undoAction = m_doc->getUndoAction();
   m_redoAction = m_doc->getRedoAction();
 
+  m_markSwcSomaAction = new QAction("Mark SWC Soma...", this);
+  connect(m_markSwcSomaAction, SIGNAL(triggered()), this, SLOT(markSwcSoma()));
+
   m_removeSelectedObjectsAction = new QAction("Delete", this);
   if (NeutubeConfig::getInstance().getApplication() != "Biocytin") {
     connect(m_removeSelectedObjectsAction, SIGNAL(triggered()), this,
@@ -636,6 +640,8 @@ void Z3DWindow::createMenus()
   m_editMenu = menuBar()->addMenu(tr("&Edit"));
   m_editMenu->addAction(m_undoAction);
   m_editMenu->addAction(m_redoAction);
+  m_editMenu->addSeparator();
+  m_editMenu->addAction(m_markSwcSomaAction);
 
   createContextMenu();
   customizeContextMenu();
@@ -3335,6 +3341,18 @@ void Z3DWindow::addPolyplaneFrom3dPaint(ZStroke2d *stroke)
   }
 
   delete stroke;
+}
+
+void Z3DWindow::markSwcSoma()
+{
+  ZMarkSwcSomaDialog dlg;
+  if (dlg.exec()) {
+    QList<ZSwcTree*> trees = m_doc->getSwcList();
+    for (int i=0; i<trees.size(); ++i) {
+      trees.at(i)->markSoma(dlg.getRadiusThre(), dlg.getSomaType(), dlg.getOtherType());
+    }
+    m_doc->notifySwcModified();
+  }
 }
 
 void Z3DWindow::setBackgroundColor(
