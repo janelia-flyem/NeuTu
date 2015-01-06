@@ -1,6 +1,7 @@
 #include "zflyembodysplitproject.h"
 
 #include <QProcess>
+#include <QByteArray>
 
 #include "zstackframe.h"
 #include "z3dwindow.h"
@@ -671,4 +672,45 @@ void ZFlyEmBodySplitProject::updateBodyMask()
 std::string ZFlyEmBodySplitProject::getSeedKey(int bodyId) const
 {
   return m_dvidTarget.getBodyLabelName() + "_seed_" + ZString::num2str(bodyId);
+}
+
+void ZFlyEmBodySplitProject::runSplit()
+{
+  ZStackFrame *frame = getDataFrame();
+  if (frame != NULL) {
+    frame->document()->runSeededWatershed();
+  }
+}
+
+void ZFlyEmBodySplitProject::setSeedProcessed(int bodyId)
+{
+  ZDvidWriter writer;
+  if (writer.open(getDvidTarget())) {
+    ZJsonObject statusJson;
+    statusJson.setEntry("processed", true);
+    writer.writeJson(ZDvidData::getName(ZDvidData::ROLE_SPLIT_STATUS),
+                     getSeedKey(bodyId), statusJson);
+  }
+}
+
+bool ZFlyEmBodySplitProject::isSeedProcessed(int bodyId) const
+{
+  bool isProcessed = false;
+
+  ZDvidReader reader;
+  if (reader.open(getDvidTarget())) {
+    QByteArray value = reader.readKeyValue(
+          ZDvidData::getName(ZDvidData::ROLE_SPLIT_STATUS),
+          getSeedKey(bodyId).c_str());
+
+    if (!value.isEmpty()) {
+      ZJsonObject statusJson;
+      statusJson.decodeString(value.data());
+      if (statusJson.hasKey("processed")) {
+        isProcessed = ZJsonParser::booleanValue(statusJson["processed"]);
+      }
+    }
+  }
+
+  return isProcessed;
 }

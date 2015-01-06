@@ -72,6 +72,10 @@ public:
     m_showingBodyMask = state;
   }
 
+  std::string getSeedKey(int bodyId) const;
+  bool isSeedProcessed(int bodyId) const;
+  void setSeedProcessed(int bodyId);
+
 signals:
   void messageGenerated(QString);
 
@@ -80,6 +84,7 @@ public slots:
   void showDataFrame3d();
   void showResult3d();
   void showBookmark(bool visible);
+  void runSplit();
 
   /*!
    * \brief Clear the project without deleting the associated widgets
@@ -93,7 +98,6 @@ public slots:
 
 private:
   bool showingBodyMask() const { return m_showingBodyMask; }
-  std::string getSeedKey(int bodyId) const;
 
 private:
   ZDvidTarget m_dvidTarget;

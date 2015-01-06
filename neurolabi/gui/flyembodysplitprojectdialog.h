@@ -25,15 +25,33 @@ public:
   explicit FlyEmBodySplitProjectDialog(QWidget *parent = 0);
   ~FlyEmBodySplitProjectDialog();
 
+  /*!
+   * \brief Set DVID target.
+   *
+   * This function does not check if \a target is valid.
+   */
   void setDvidTarget(const ZDvidTarget &target);
+
+  /*!
+   * \brief Set the current body ID.
+   *
+   * \param id The ID of the body to work on.
+   */
   void setBodyId(int id);
 
+  /*!
+   * \brief Get the current body ID.
+   */
   int getBodyId() const;
+
   const ZDvidTarget& getDvidTarget() const;
 
   MainWindow* getMainWindow();
   QProgressDialog* getProgressDialog();
 
+  /*!
+   * \brief Set the data frame.
+   */
   void setDataFrame(ZStackFrame *frame);
 
   void closeEvent(QCloseEvent *event);
@@ -60,10 +78,10 @@ public slots:
   void shallowClearResultWindow();
   void shallowClearDataFrame();
 
-  void showData2d();
+  bool showData2d();
   void showData3d();
   void showResult3d();
-  void loadBody();
+  bool loadBody();
   void loadBookmark();
   void locateBookmark(const QModelIndex &index);
   void quickView();
@@ -87,6 +105,14 @@ private slots:
 
   void on_commitPushButton_clicked();
   void showBodyMask(bool on);
+  void checkAllSeed();
+
+  /*!
+   * \brief Process all stored seeds.
+   *
+   * After processing the seeds will be labeled as "processed"
+   */
+  void processAllSeed();
 
 private:
   void updateSideView();

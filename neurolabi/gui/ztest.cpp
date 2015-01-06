@@ -13894,6 +13894,34 @@ void ZTest::test(MainWindow *host)
               "/flyem/MB/tbars_annotated_20141201T131652_ds20_s5.tif");
 #endif
 
+#if 1
+  FlyEm::ZSynapseAnnotationArray synapseArray;
+  synapseArray.loadJson(GET_DATA_DIR +
+                        "/flyem/MB/mb06_all_dvid_final_tbar-predict_0.74.json");
+
+  ZWeightedPointArray ptArray = synapseArray.toTBarConfidencePointArray();
+  std::cout << ptArray.size() << " TBars" << std::endl;
+
+  ZWeightedPointArray newPtArray;
+
+  int dsScale = 20;
+  for (ZWeightedPointArray::iterator iter = ptArray.begin();
+       iter != ptArray.end(); ++iter) {
+    ZWeightedPoint &pt = *iter;
+    pt *= 1.0 / dsScale;
+    newPtArray.append(pt);
+  }
+
+  ZCuboid box = newPtArray.getBoundBox();
+  box.print();
+
+  ZStackFactory factory;
+  ZStack *stack = factory.makeDensityMap(newPtArray, 5.0);
+  stack->save(GET_DATA_DIR +
+              "/flyem/MB/mb06_all_dvid_final_tbar-predict_0.74_ds20_s5.tif");
+#endif
+
+
 #if 0
   FlyEm::ZSynapseAnnotationArray synapseArray;
   synapseArray.loadJson(GET_DATA_DIR +
@@ -14012,7 +14040,7 @@ void ZTest::test(MainWindow *host)
   remained.save(GET_TEST_DATA_DIR + "/test2.sobj");
 #endif
 
-#if 1
+#if 0
   std::vector<ZPointArray> synapseGroup;
   std::string synapseFile =
       GET_TEST_DATA_DIR + "/flyem/AL/label/whole_AL_synapse_labeled.txt";
