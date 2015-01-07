@@ -29,6 +29,7 @@
 #include "zstackview.h"
 #include "zstackpatch.h"
 #include "zstackobjectsource.h"
+#include "neutubeconfig.h"
 
 ZFlyEmBodySplitProject::ZFlyEmBodySplitProject(QObject *parent) :
   QObject(parent), m_bodyId(-1), m_dataFrame(NULL), m_resultWindow(NULL),
@@ -383,26 +384,41 @@ std::set<int> ZFlyEmBodySplitProject::getBookmarkBodySet() const
 
 void ZFlyEmBodySplitProject::commitResult()
 {
-  QtConcurrent::run(this, &ZFlyEmBodySplitProject::commitResultFunc);
+  ZFlyEmBodySplitProject::commitResultFunc(
+        getDataFrame()->document()->getSparseStack()->getObjectMask(),
+        getDataFrame()->document()->getLabelField(),
+        getDataFrame()->document()->getSparseStack()->getDownsampleInterval());
+  /*
+  QtConcurrent::run(this, &ZFlyEmBodySplitProject::commitResultFunc,
+                    getDataFrame()->document()->getSparseStack()->getObjectMask(),
+                    getDataFrame()->document()->getLabelField(),
+                    getDataFrame()->document()->getSparseStack()->getDownsampleInterval());
+                    */
 }
 
-void ZFlyEmBodySplitProject::commitResultFunc()
+void ZFlyEmBodySplitProject::commitResultFunc(
+    const ZObject3dScan *wholeBody, const ZStack *stack, const ZIntPoint &dsIntv)
 {
   emit progressStarted("Uploading splitted bodies", 100);
 
   emit messageGenerated("Uploading results ...");
 
-  const ZObject3dScan *wholeBody =
-      getDataFrame()->document()->getSparseStack()->getObjectMask();
+//  const ZObject3dScan *wholeBody =
+//      getDataFrame()->document()->getSparseStack()->getObjectMask();
 
   ZObject3dScan body = *wholeBody;
-  const ZStack *stack = getDataFrame()->document()->getLabelField();
+
+  emit messageGenerated(QString("Backup ").arg(getBodyId()));
+
+  //body.save(GET_DATA_DIR + "/test/")
+
+//  const ZStack *stack = getDataFrame()->document()->getLabelField();
   QStringList filePathList;
   int maxNum = 1;
 
   if (stack != NULL) {
-    const ZIntPoint &dsIntv =
-        getDataFrame()->document()->getSparseStack()->getDownsampleInterval();
+//    const ZIntPoint &dsIntv =
+//        getDataFrame()->document()->getSparseStack()->getDownsampleInterval();
     std::vector<ZObject3dScan*> objArray =
         ZObject3dScan::extractAllObject(*stack);
 
@@ -499,7 +515,9 @@ void ZFlyEmBodySplitProject::commitResultFunc()
   writer.open(m_dvidTarget);
   writer.writeMaxBodyId(bodyId);
 
+  emit progressDone();
   emit messageGenerated("Done.");
+  emit resultCommitted();
 }
 
 void ZFlyEmBodySplitProject::saveSeed()

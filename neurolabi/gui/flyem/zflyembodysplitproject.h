@@ -13,6 +13,7 @@ class ZStackObject;
 class ZSwcTree;
 class ZObject3dScan;
 class ZFlyEmNeuron;
+class ZStack;
 
 class ZFlyEmBodySplitProject : public QObject
 {
@@ -63,7 +64,8 @@ public:
   void downloadSeed();
 
   void commitResult();
-  void commitResultFunc();
+  void commitResultFunc(
+      const ZObject3dScan *wholeBody, const ZStack *stack, const ZIntPoint &dsIntv);
 
   void viewPreviousSlice();
   void viewNextSlice();
@@ -93,6 +95,7 @@ public:
 
 signals:
   void messageGenerated(QString);
+  void resultCommitted();
 
   void progressStarted(const QString &title, int nticks);
   void progressDone();

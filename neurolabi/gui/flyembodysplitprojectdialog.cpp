@@ -697,9 +697,20 @@ void FlyEmBodySplitProjectDialog::checkAllSeed()
 
 void FlyEmBodySplitProjectDialog::processAllSeed()
 {
+  int maxBodyCount = -1;
+  ZSpinBoxDialog *dlg = ZDialogFactory::makeSpinBoxDialog(this);
+  dlg->setValueLabel("Max number of bodies to process:");
+  dlg->setWindowTitle("Specifying #bodies to process");
+  if (dlg->exec()) {
+    maxBodyCount = dlg->getValue();
+  } else {
+    return;
+  }
+
   m_project.clear();
 
   ZDvidReader reader;
+
 
   if (reader.open(getDvidTarget())) {
     //int maxId = reader.readMaxBodyId();
@@ -712,10 +723,14 @@ void FlyEmBodySplitProjectDialog::processAllSeed()
     if (keyList.empty()) {
       emit messageDumped(QString("No seed is available in the database."));
     } else {
-      emit messageDumped(QString("Start processing %1 seeds...").
+      emit messageDumped(QString("Start processing %1 bodies...").
                          arg(keyList.size()));
       std::vector<int> processedSeed;
       for (int i = 0; i < keyList.size(); ++i) {
+        if ((int) processedSeed.size() >= maxBodyCount && maxBodyCount >= 0) {
+          emit messageDumped(QString("Max count reached."));
+          break;
+        }
         const QString &key = keyList[i];
         ZString str = key.toStdString();
         int bodyId = str.lastInteger();
@@ -730,6 +745,7 @@ void FlyEmBodySplitProjectDialog::processAllSeed()
             ui->bodyIdSpinBox->setValue(bodyId);
             if (loadBody()) {
               processedSeed.push_back(bodyId);
+              emit messageDumped("Running split ...");
               m_project.runSplit();
               m_project.commitResult();
               m_project.setSeedProcessed(bodyId);
@@ -746,7 +762,7 @@ void FlyEmBodySplitProjectDialog::processAllSeed()
       if (processedSeed.empty()) {
         emit messageDumped("No seed is processed");
       } else {
-        QString message = QString("%1 seeds are processed: ").
+        QString message = QString("%1 bodies are processed: ").
             arg(processedSeed.size());
         for (size_t i = 0; i < processedSeed.size(); ++i) {
           message += QString("%1 ").arg(processedSeed[i]);

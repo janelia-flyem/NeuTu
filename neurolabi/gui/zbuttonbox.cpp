@@ -6,10 +6,11 @@ const ZButtonBox::TRole ZButtonBox::ROLE_YES = 1;
 const ZButtonBox::TRole ZButtonBox::ROLE_NO = 2;
 const ZButtonBox::TRole ZButtonBox::ROLE_CONTINUE = 4;
 const ZButtonBox::TRole ZButtonBox::ROLE_PAUSE = 8;
+const ZButtonBox::TRole ZButtonBox::ROLE_SKIP = 16;
 
 ZButtonBox::ZButtonBox(QWidget *parent) :
   QWidget(parent), m_yesButton(NULL), m_noButton(NULL), m_continueButton(NULL),
-  m_paushButton(NULL)
+  m_paushButton(NULL), m_skipButton(NULL)
 {
   m_layout = new QHBoxLayout;
   setLayout(m_layout);
@@ -56,5 +57,39 @@ QPushButton* ZButtonBox::activate(ZButtonBox::TRole role)
     }
   }
 
+  if (role & ROLE_SKIP) {
+    if (m_skipButton == NULL) {
+      m_skipButton = new QPushButton(this);
+      m_skipButton->setText("Skip");
+      button = m_skipButton;
+
+      connect(m_skipButton, SIGNAL(clicked()),
+              this, SIGNAL(clickedSkip()));
+
+      m_layout->addWidget(m_skipButton);
+    }
+  }
+
+
   return button;
+}
+
+QPushButton* ZButtonBox::getButton(TRole role)
+{
+  switch (role) {
+  case ROLE_YES:
+    return m_yesButton;
+  case ROLE_NO:
+    return m_noButton;
+  case ROLE_CONTINUE:
+    return m_continueButton;
+  case ROLE_PAUSE:
+    return m_paushButton;
+  case ROLE_SKIP:
+    return m_skipButton;
+  default:
+    return NULL;
+  }
+
+  return NULL;
 }

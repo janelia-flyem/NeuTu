@@ -4,7 +4,7 @@
 #include "zbuttonbox.h"
 
 ZSpinBoxDialog::ZSpinBoxDialog(QWidget *parent) :
-  QDialog(parent)
+  QDialog(parent), m_isSkipped(false), m_skippedValue(-1)
 {
   QVBoxLayout *layout = new QVBoxLayout(this);
   setLayout(layout);
@@ -24,7 +24,12 @@ ZSpinBoxDialog::ZSpinBoxDialog(QWidget *parent) :
   buttonLayout->addSpacerItem(ZWidgetFactory::makeHSpacerItem());
 
   ZButtonBox *buttonBox = ZWidgetFactory::makeButtonBox(
-        ZButtonBox::ROLE_YES | ZButtonBox::ROLE_NO, this);
+        ZButtonBox::ROLE_YES | ZButtonBox::ROLE_NO | ZButtonBox::ROLE_SKIP,
+        this);
+
+  connect(buttonBox->getButton(ZButtonBox::ROLE_SKIP), SIGNAL(clicked()),
+          this, SLOT(skip()));
+
   buttonLayout->addWidget(buttonBox);
 
   layout->addLayout(spinBoxLayout);
@@ -33,5 +38,20 @@ ZSpinBoxDialog::ZSpinBoxDialog(QWidget *parent) :
 
 int ZSpinBoxDialog::getValue() const
 {
+  if (m_isSkipped) {
+    return m_skippedValue;
+  }
+
   return m_spinBox->value();
+}
+
+void ZSpinBoxDialog::setValueLabel(const QString &label)
+{
+  m_label->setText(label);
+}
+
+void ZSpinBoxDialog::skip()
+{
+  m_isSkipped = true;
+  accept();
 }
