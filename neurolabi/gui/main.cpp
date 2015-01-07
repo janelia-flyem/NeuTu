@@ -223,7 +223,7 @@ int main(int argc, char *argv[])
     z3dApp.initialize();
 
     MainWindow *mainWin = new MainWindow();
-    mainWin->config();
+    mainWin->configure();
     mainWin->show();
     mainWin->raise();
     mainWin->initOpenglContext();

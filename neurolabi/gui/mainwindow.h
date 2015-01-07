@@ -69,19 +69,30 @@ public:
   MainWindow(QWidget *parent = 0);
   ~MainWindow();
 
+  /*!
+   * \brief Run configuration.
+   */
+  void configure();
+
+  void initOpenglContext();
+
 public: /* frame operation */
   ZStackFrame* activeStackFrame();
   ZStackFrame* currentStackFrame();
   ZFlyEmDataFrame* currentFlyEmDataFrame();
   ZTiledStackFrame* currentTiledStackFrame();
   int frameNumber();
+
+  //Add a flyem data frame. Nothing happens if <frame> is NULL.
+  void addFlyEmDataFrame(ZFlyEmDataFrame *frame);
+
+public: /* Get useful widgets/objects */
+  QProgressDialog* getProgressDialog();
+  QProgressBar* getProgressBar();
+
   inline QUndoGroup* undoGroup() const { return m_undoGroup; }
-  void initOpenglContext();
-  void config();
 
-  bool initBodySplitProject();
-  //void initBodySplitProjectFunc();
-
+public: /* File and message dialogs */
   QString getOpenFileName(const QString &caption,
                           const QString &filter = QString());
   QStringList getOpenFileNames(const QString &caption,
@@ -93,18 +104,14 @@ public: /* frame operation */
                           const QString &dir);
   QString getDirectory(const QString &caption);
 
-  //Error handling
   void report(const std::string &title, const std::string &msg,
               ZMessageReporter::EMessageType msgType);
   bool ask(const std::string &title, const std::string &msg);
 
-  QProgressDialog* getProgressDialog();
-  QProgressBar* getProgressBar();
+public:
+  bool initBodySplitProject();
 
   static void createWorkDir();
-
-  //Add a flyem data frame. Nothing happens if <frame> is NULL.
-  void addFlyEmDataFrame(ZFlyEmDataFrame *frame);
 
   QAction* getBodySplitAction() const;
 
@@ -119,13 +126,18 @@ public slots:
   void presentStackFrame(ZStackFrame *frame);
   void openFile(const QString &fileName);
   void openFile(const QStringList &fileNameList);
-  void advanceProgress();
+
+  void initProgress(int maxValue);
+  void advanceProgress(double dp);
+  void startProgress(const QString &title, int nticks);
+  void endProgress();
 
   void updateAction();
   void updateMenu();
   void updateStatusBar();
 
   void on_actionTile_Manager_2_triggered();
+  void cancelDvidRequest();
 
   ZStackFrame* createEmptyStackFrame(ZStackFrame *parentFrame = NULL);
 
@@ -136,15 +148,7 @@ public slots:
   ZStackFrame* createStackFrame(
       Stack *stack,NeuTube::Document::ETag tag = NeuTube::Document::NORMAL,
       ZStackFrame *parentFrame = NULL);
-  /*
-  ZStackFrame* createStackFrame(
-      ZStackDoc *doc,NeuTube::Document::ETag tag,
-      ZStackFrame *parentFrame = NULL);
 
-
-  ZStackFrame* createStackFrame(
-      ZStackDoc *doc, ZStackFrame *parentFrame = NULL);
-*/
   ZStackFrame* createStackFrame(
       ZStackDocReader *reader, ZStackFrame *parentFrame = NULL);
   ZStackFrame* createStackFrame(
@@ -154,9 +158,6 @@ public slots:
   void showStackFrame(
       const QStringList &fileList, bool opening3DWindow = false);
   void createDvidFrame();
-
-  void cancelDvidRequest();
-
   void createStackFrameFromDocReader(ZStackDocReader *reader);
 
 private:

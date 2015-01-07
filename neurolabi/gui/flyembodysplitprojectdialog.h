@@ -66,8 +66,10 @@ public:
   void downloadSeed();
 
 signals:
-  //void progressStarted();
+  void progressStarted(const QString &title, int nticks);
   void progressDone();
+  void progressAdvanced(double dp);
+
   void messageDumped(const QString &message, bool appending = true);
   void sideViewReady();
   void sideViewCanceled();

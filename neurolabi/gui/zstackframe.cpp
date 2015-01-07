@@ -1042,10 +1042,18 @@ void ZStackFrame::showObject()
 Z3DWindow* ZStackFrame::open3DWindow(QWidget *parent, Z3DWindow::EInitMode mode)
 {
   if (m_3dWindow == NULL) {
+    if (getMainWindow() != NULL) {
+      getMainWindow()->startProgress("Opening 3D View ...", 0);
+    }
+
     ZWindowFactory factory;
     factory.setParentWidget(parent);
     m_3dWindow = factory.make3DWindow(document(), mode);
+    m_3dWindow->setWindowTitle(windowTitle());
     connect(m_3dWindow, SIGNAL(destroyed()), this, SLOT(detach3DWindow()));
+    if (getMainWindow() != NULL) {
+      getMainWindow()->endProgress();
+    }
   }
 
   if (m_3dWindow != NULL) {

@@ -396,7 +396,7 @@ void MainWindow::initDialog()
 #endif
 }
 
-void MainWindow::config()
+void MainWindow::configure()
 {
   if (!NeutubeConfig::getInstance().getApplication().empty()) {
     setWindowTitle(windowTitle() + " - " +
@@ -1366,36 +1366,32 @@ void MainWindow::presentStackFrame(ZStackFrame *frame)
   if (NeutubeConfig::getInstance().getApplication() == "Biocytin") {
     frame->autoBcAdjust();
     frame->loadRoi(false);
-#if 0
-    if (!frame->document()->stackSourcePath().isEmpty()) {
-      ZString sourcePath = frame->document()->stackSourcePath().toStdString();
-
-      ZString suffix =
-          ZBiocytinFileNameParser::getSuffix(ZBiocytinFileNameParser::ROI);
-
-      sourcePath = sourcePath.dirPath() + ZString::FileSeparator +
-          ZBiocytinFileNameParser::getCoreName(sourcePath);
-
-      QFileInfo fileInfo((sourcePath + suffix + ".tif").c_str());
-      if (!fileInfo.exists()) {
-        fileInfo.setFile(
-              (sourcePath + static_cast<const ZString&>(suffix).toLower() + ".tif").c_str());
-      } else if (!fileInfo.exists()) {
-        fileInfo.setFile(
-              (sourcePath + static_cast<const ZString&>(suffix).toUpper() + ".tif").c_str());
-      }
-
-      if (fileInfo.exists()) {
-        frame->loadRoi(fileInfo.absoluteFilePath());
-      }
-    }
-#endif
   }
 }
 
-void MainWindow::advanceProgress()
+void MainWindow::initProgress(int maxValue)
 {
-  m_progress->setValue(m_progress->value() + 1);
+  getProgressDialog()->setRange(0, maxValue);
+}
+
+void MainWindow::advanceProgress(double dp)
+{
+  if (m_progress->value() < m_progress->maximum()) {
+    int range = m_progress->maximum() - m_progress->minimum();
+    m_progress->setValue(m_progress->value() + iround(dp * range));
+  }
+}
+
+void MainWindow::startProgress(const QString &title, int nticks)
+{
+  initProgress(nticks);
+  m_progress->setLabelText(title);
+  m_progress->show();
+}
+
+void MainWindow::endProgress()
+{
+  m_progress->reset();
 }
 
 ZStackDocReader* MainWindow::openFileFunc(const QString &fileName)
@@ -2288,7 +2284,11 @@ void MainWindow::on_action3DView_triggered()
 {
   ZStackFrame *frame = currentStackFrame();
   if (frame != NULL) {
+//    getProgressDialog()->setRange(0, 0);
+    //startProgress("Open 3D Window ...");
     frame->open3DWindow(frame);
+//    endProgress();
+//    window->raise();
   }
 }
 
@@ -3095,7 +3095,7 @@ void MainWindow::on_actionPixel_triggered()
 void MainWindow::testProgressBarFunc()
 {
   for (int i = 0; i < 100; ++i) {
-    advanceProgress();
+    advanceProgress(0.01);
     ZSleeper::msleep(100);
   }
   emit progressDone();
@@ -3103,7 +3103,11 @@ void MainWindow::testProgressBarFunc()
 
 void MainWindow::test()
 {
+#if 1
   //QFuture<void> res = QtConcurrent::run(ZTest::test, this);
+
+  QFuture<void> res = QtConcurrent::run(this, &MainWindow::testProgressBarFunc);
+#endif
 
 #if 0
   m_progress->setRange(0, 100);
@@ -3119,7 +3123,7 @@ void MainWindow::test()
 #endif
 
 
-#if 1
+#if 0
   m_progress->setRange(0, 2);
   m_progress->setLabelText(QString("Testing ..."));
   int currentProgress = 0;

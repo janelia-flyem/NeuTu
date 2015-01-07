@@ -97,6 +97,18 @@ void FlyEmBodySplitProjectDialog::connectSignalSlot()
 
   connect(&m_project, SIGNAL(messageGenerated(QString)),
           this, SIGNAL(messageDumped(QString)));
+
+  connect(&m_project, SIGNAL(progressStarted(QString,int)),
+          this, SIGNAL(progressStarted(QString,int)));
+  connect(&m_project, SIGNAL(progressAdvanced(double)),
+          this, SIGNAL(progressAdvanced(double)));
+  connect(&m_project, SIGNAL(progressDone()), this, SIGNAL(progressDone()));
+
+  connect(this, SIGNAL(progressStarted(QString, int)),
+          getMainWindow(), SLOT(startProgress(QString, int)));
+  connect(this, SIGNAL(progressAdvanced(double)),
+          getMainWindow(), SLOT(advanceProgress(double)));
+  connect(this, SIGNAL(progressDone()), getMainWindow(), SLOT(endProgress()));
 }
 
 void FlyEmBodySplitProjectDialog::createMenu()

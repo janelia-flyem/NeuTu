@@ -5,6 +5,7 @@
 #include <set>
 #include "dvid/zdvidtarget.h"
 #include "flyem/zflyembookmarklistmodel.h"
+#include "qthreadfuturemap.h"
 
 class ZStackFrame;
 class Z3DWindow;
@@ -62,6 +63,7 @@ public:
   void downloadSeed();
 
   void commitResult();
+  void commitResultFunc();
 
   void viewPreviousSlice();
   void viewNextSlice();
@@ -76,8 +78,25 @@ public:
   bool isSeedProcessed(int bodyId) const;
   void setSeedProcessed(int bodyId);
 
+  class ThreadManager {
+  public:
+    enum EThreadName {
+      THREAD_SPLIT, THREAD_PROCESS_ALL_SEED
+    };
+
+    void updateThread(EThreadName name, QFuture<void> future);
+    bool isAlive(EThreadName);
+
+  private:
+    QThreadFutureMap m_futureMap;
+  };
+
 signals:
   void messageGenerated(QString);
+
+  void progressStarted(const QString &title, int nticks);
+  void progressDone();
+  void progressAdvanced(double dp);
 
 public slots:
   void showDataFrame() const;
