@@ -168,6 +168,7 @@ void Z3DRenderTarget::release()
   //LINFO() << m_previousDrawFBOID << m_previousReadFBOID;
   glBindFramebuffer(GL_READ_FRAMEBUFFER, m_previousReadFBOID);
   glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_previousDrawFBOID);
+  glGetError(); // there should be no error according to openGL doc, but some drivers report error, ignore
 }
 
 bool Z3DRenderTarget::isBound() const
