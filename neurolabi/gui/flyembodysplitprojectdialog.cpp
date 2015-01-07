@@ -157,7 +157,7 @@ int FlyEmBodySplitProjectDialog::getBodyId() const
 void FlyEmBodySplitProjectDialog::clear()
 {
   m_project.clear();
-  updateWidget();
+  //updateWidget();
   resetSideView();
 
   //dump("Load a body to start.");
@@ -712,8 +712,9 @@ void FlyEmBodySplitProjectDialog::processAllSeed()
     if (keyList.empty()) {
       emit messageDumped(QString("No seed is available in the database."));
     } else {
-      emit messageDumped(QString("Starting process %1 seeds...").
+      emit messageDumped(QString("Start processing %1 seeds...").
                          arg(keyList.size()));
+      std::vector<int> processedSeed;
       for (int i = 0; i < keyList.size(); ++i) {
         const QString &key = keyList[i];
         ZString str = key.toStdString();
@@ -726,7 +727,9 @@ void FlyEmBodySplitProjectDialog::processAllSeed()
             emit messageDumped(
                   QString("Processing %1/%2: %3").
                   arg(i + 1).arg(keyList.size()).arg(bodyId));
+            ui->bodyIdSpinBox->setValue(bodyId);
             if (loadBody()) {
+              processedSeed.push_back(bodyId);
               m_project.runSplit();
               m_project.commitResult();
               m_project.setSeedProcessed(bodyId);
@@ -740,6 +743,17 @@ void FlyEmBodySplitProjectDialog::processAllSeed()
           emit messageDumped("Invalid seed");
         }
       }
+      if (processedSeed.empty()) {
+        emit messageDumped("No seed is processed");
+      } else {
+        QString message = QString("%1 seeds are processed: ").
+            arg(processedSeed.size());
+        for (size_t i = 0; i < processedSeed.size(); ++i) {
+          message += QString("%1 ").arg(processedSeed[i]);
+        }
+        emit messageDumped(message);
+      }
+
       emit messageDumped("Done.");
     }
   }

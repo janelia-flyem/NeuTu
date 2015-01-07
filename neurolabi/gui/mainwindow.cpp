@@ -2520,7 +2520,15 @@ void MainWindow::dropEvent(QDropEvent *event)
 
   QStringList fileList;
   foreach (QUrl url, urls) {
+#ifdef _WIN32
+    // remove leading slash
+    if (url.path().at(0) == QChar('/'))
+      fileList.append(url.path().mid(1));
+    else
+      fileList.append(url.path());
+#else
     fileList.append(url.path());
+#endif
   }
 
   openFile(fileList);
