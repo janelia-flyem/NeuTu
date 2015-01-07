@@ -123,7 +123,7 @@
   <widget class="QLabel" name="label">
    <property name="geometry">
     <rect>
-     <x>50</x>
+     <x>30</x>
      <y>160</y>
      <width>291</width>
      <height>81</height>
@@ -136,7 +136,7 @@
     </font>
    </property>
    <property name="text">
-    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Set different node type for soma nodes and other &lt;/p&gt;&lt;p&gt;nodes. To visualize the result, change Neurons &lt;/p&gt;&lt;p&gt;render setting &amp;quot;Color Mode&amp;quot; to &amp;quot;Branch Type&amp;quot;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;Set different node type for soma nodes and other &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;nodes. To visualize the result, change Neurons &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;render setting &amp;quot;Color Mode&amp;quot; to &amp;quot;Branch Type&amp;quot;.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
   </widget>
  </widget>

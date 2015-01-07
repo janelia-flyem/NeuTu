@@ -29,8 +29,8 @@ Z3DWindow* ZWindowFactory::make3DWindow(ZSharedPointer<ZStackDoc> doc,
   if (Z3DApplication::app()->is3DSupported() && doc) {
 #ifdef _WIN32
     window = new Z3DWindow(doc, mode, false, NULL);
-    connect(m_parentWindow, SIGNAL(destroyed()), window, SLOT(close()));
-    connect(m_parentWindow, SIGNAL(destroyed(QObject*)), window, SLOT(close()));
+    QObject::connect(m_parentWidget, SIGNAL(destroyed()), window, SLOT(close()));
+    QObject::connect(m_parentWidget, SIGNAL(destroyed(QObject*)), window, SLOT(close()));
 #else
     window = new Z3DWindow(doc, mode, false, m_parentWidget);
 #endif
