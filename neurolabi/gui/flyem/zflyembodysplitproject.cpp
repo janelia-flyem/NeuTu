@@ -408,9 +408,9 @@ void ZFlyEmBodySplitProject::commitResultFunc(
 
   ZObject3dScan body = *wholeBody;
 
-  emit messageGenerated(QString("Backup ").arg(getBodyId()));
+  emit messageGenerated(QString("Backup ... ").arg(getBodyId()));
 
-  body.save(GET_DATA_DIR + "/test/" + getSeedKey(getBodyId()) + ".sobj");
+  body.save(GET_TEST_DATA_DIR + "/backup/" + getSeedKey(getBodyId()) + ".sobj");
 
 //  const ZStack *stack = getDataFrame()->document()->getLabelField();
   QStringList filePathList;

@@ -318,7 +318,6 @@ private:
 #  define GET_TEST_DATA_DIR GET_DATA_DIR
 #endif
 
-
 #define GET_MESSAGE_REPORTER (NeutubeConfig::getInstance().getMessageReporter())
 #define GET_APPLICATION_NAME (NeutubeConfig::getInstance().getApplication())
 #define GET_APPLICATION_DIR (NeutubeConfig::getInstance().getApplicatinDir())
