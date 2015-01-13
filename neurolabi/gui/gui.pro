@@ -16,6 +16,18 @@ QMAKE_EXTRA_TARGETS += neurolabi
 NEUROLABI_DIR = $${PWD}/..
 EXTLIB_DIR = $${NEUROLABI_DIR}/lib
 
+win32 {
+  DEPLOYMENT_COMMAND = $$PWD/deploy_win.bat $(QMAKE) $$OUT_PWD
+}
+
+macx {
+  DEPLOYMENT_COMMAND = $$PWD/deploy_mac $(QMAKE) $$OUT_PWD
+}
+
+unix:!macx {
+  DEPLOYMENT_COMMAND = $$PWD/deploy_linux $(QMAKE) $OUT_PWD
+}
+
 include(extlib.pri)
 
 #neurolabi
@@ -24,8 +36,8 @@ CONFIG(debug, debug|release) {
     DEFINES += _DEBUG_ _ADVANCED_ PROJECT_PATH=\"\\\"$$PWD\\\"\"
 } else {
     TARGET = neuTube
+    QMAKE_POST_LINK += $$DEPLOYMENT_COMMAND
 }
-
 
 # suppress warnings from 3rd party library, works for gcc and clang
 QMAKE_CXXFLAGS += -isystem ../gui/ext
