@@ -569,7 +569,7 @@ std::vector<Locseg_Chain*> ZNeuronTracer::screenChain(
   return goodChainArray;
 }
 
-ZSwcTree* ZNeuronTracer::trace(Stack *stack)
+ZSwcTree* ZNeuronTracer::trace(Stack *stack, bool doResampleAfterTracing)
 {
   startProgress();
 
@@ -674,8 +674,10 @@ ZSwcTree* ZNeuronTracer::trace(Stack *stack)
   Swc_Tree_Merge_Close_Node(tree->data(), 0.01);
   Swc_Tree_Remove_Overshoot(tree->data());
 
-  ZSwcResampler resampler;
-  resampler.optimalDownsample(tree);
+  if (doResampleAfterTracing) {
+    ZSwcResampler resampler;
+    resampler.optimalDownsample(tree);
+  }
   advanceProgress(0.1);
 
   std::cout << "Done!" << std::endl;

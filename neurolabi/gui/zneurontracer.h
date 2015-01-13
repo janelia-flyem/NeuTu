@@ -95,7 +95,7 @@ public:
    *
    * It will also create workspaces automatically if necessary.
    */
-  ZSwcTree* trace(Stack *stack);
+  ZSwcTree* trace(Stack *stack, bool doResampleAfterTracing);
 
   //Autotrace configuration
 
