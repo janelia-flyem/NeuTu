@@ -34,3 +34,6 @@ xcopy %libDIR%\libxml2-2.dll %deployDIR%
 xcopy %libDIR%\libjansson-4.dll %deployDIR%
 xcopy %libDIR%\libzlib.dll %deployDIR%
 xcopy %libDIR%\libpng16.dll %deployDIR%
+
+cd /d %deployDIR%\plugins
+del /F /S /Q *d4.dll
