@@ -22,6 +22,8 @@ endif(LIBXML2_STATIC_LIBRARY)
 # additional hints
 if(MINGW)
   set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${CMAKE_SOURCE_DIR}/../lib/Mingw/64)
+else(MINGW)
+  set(CMAKE_PREFIX_PATH ${CMAKE_SOURCE_DIR}/../lib/xml)
 endif(MINGW)
 
 # Include dir
