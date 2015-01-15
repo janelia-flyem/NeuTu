@@ -1300,7 +1300,7 @@ void ZStackPresenter::solidifyStack()
 
 void ZStackPresenter::autoTrace()
 {
-  buddyDocument()->executeAutoTraceCommand();
+  buddyDocument()->executeAutoTraceCommand(false);
 }
 
 void ZStackPresenter::traceTube()

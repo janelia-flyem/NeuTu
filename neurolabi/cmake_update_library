@@ -1,10 +1,14 @@
 #!/bin/bash
 
 DIR="$( cd -P "$( dirname "$0" )" && pwd )"
+
+cd $DIR/lib
+./build.sh
+
 cd $DIR
 
 if [ -d ./__tmp_cmake_tmp__ ]
-then 
+then
 	rm -rf __tmp_cmake_tmp__
 fi
 
@@ -22,7 +26,7 @@ cmake ../c -DCMAKE_BUILD_TYPE=Debug
 fi
 
 make clean
-make
+make install
 make clean
 
 if [[ "$unamestr" == MINGW32* ]]; then

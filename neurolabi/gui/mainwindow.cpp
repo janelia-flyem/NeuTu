@@ -150,6 +150,7 @@
 #include "flyembodymergeprojectdialog.h"
 #include "zsegmentationprojectdialog.h"
 #include "zsubtractswcsdialog.h"
+#include "zautotracedialog.h"
 
 #include "z3dcanvas.h"
 #include "z3dapplication.h"
@@ -2404,7 +2405,7 @@ void MainWindow::on_actionDisable_triggered()
 
 }
 
-void MainWindow::autoTrace(ZStackFrame *frame)
+void MainWindow::autoTrace(ZStackFrame *frame, bool doResample)
 {
   ZQtBarProgressReporter reporter;
   reporter.setProgressBar(getProgressBar());
@@ -2413,7 +2414,7 @@ void MainWindow::autoTrace(ZStackFrame *frame)
       frame->document()->getProgressReporter();
   frame->document()->setProgressReporter(&reporter);
 
-  frame->executeAutoTraceCommand();
+  frame->executeAutoTraceCommand(doResample);
 
   frame->document()->setProgressReporter(oldReporter);
 
@@ -2422,13 +2423,17 @@ void MainWindow::autoTrace(ZStackFrame *frame)
 
 void MainWindow::on_actionAutomatic_triggered()
 {
+  ZAutoTraceDialog dlg(this);
+  if (!dlg.exec())
+    return;
+
   ZStackFrame *frame = currentStackFrame();
   if (frame != NULL) {
     m_progress->setRange(0, 100);
     m_progress->setValue(1);
     m_progress->setLabelText("Tracing");
     m_progress->show();
-    QtConcurrent::run(this, &MainWindow::autoTrace, frame);
+    QtConcurrent::run(this, &MainWindow::autoTrace, frame, dlg.getDoResample());
   }
 }
 

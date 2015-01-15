@@ -69,7 +69,7 @@ rd /q/s ../c/CMakeCache.txt
 
 cmake ../c -DCMAKE_BUILD_TYPE=Debug -G "MinGW Makefiles"
 mingw32-make clean
-mingw32-make
+mingw32-make install
 mingw32-make clean
 cmake ../c -DCMAKE_BUILD_TYPE=Release -G "MinGW Makefiles"
 mingw32-make

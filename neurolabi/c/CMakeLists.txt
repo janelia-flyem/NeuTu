@@ -61,30 +61,18 @@ if (USE_LIBZ)
 endif (USE_LIBZ)
 
 if (USE_LIBXML2)
-  if (WIN32)
-    find_package(LibXml2_MY REQUIRED)
-    include_directories(${LIBXML2_INCLUDE_DIRS})
-  else (WIN32)
-    find_package(LibXml2 REQUIRED)
-    include_directories(${LIBXML2_INCLUDE_DIR})
-  endif (WIN32)
+  find_package(LibXml2_MY REQUIRED)
+  include_directories(${LIBXML2_INCLUDE_DIRS})
   set(EXT_LIBS ${EXT_LIBS} ${LIBXML2_LIBRARIES})
   check_library_exists(${LIBXML2_LIBRARIES} xmlParseFile "" HAVE_LIBXML2)
 endif (USE_LIBXML2)
 
 if (USE_LIBPNG)
-  if (WIN32)
-    find_package(PNG_MY REQUIRED)
-  else (WIN32)
-    find_package(PNG REQUIRED)
-  endif (WIN32)
+  find_package(PNG_MY REQUIRED)
   include_directories(${PNG_INCLUDE_DIRS})
   set(EXT_LIBS ${EXT_LIBS} ${PNG_LIBRARIES})
-  if (MSVC)
-    check_library_exists(${PNG_LIBRARIES} png_read_image "" HAVE_LIBPNG)
-  else (MSVC)
-    check_library_exists(png png_read_image "/usr/X11/lib" HAVE_LIBPNG)
-  endif (MSVC)
+  #check_library_exists(${PNG_LIBRARIES} png_read_image "" HAVE_LIBPNG)
+  set(HAVE_LIBPNG TRUE)
 endif(USE_LIBPNG)
 
 if (USE_LIBJANSSON)
@@ -238,24 +226,6 @@ message("library name: ${LIBRARY_NAME}")
 add_library(${LIBRARY_NAME} STATIC ${NEULIB_SRCS} ${GENERATED_NEULIB_SRCS}
   ${GENELIB_SRCS} ${GENERATED_GENELIB_SRCS})
 
-#set_target_properties (neurolabi PROPERTIES
-#  PREFIX ${PROJECT_SOURCE_DIR}/lib/)
-get_target_property (LIBRARY_LOC ${LIBRARY_NAME} LOCATION)
-
-add_custom_command(TARGET ${LIBRARY_NAME}
-  POST_BUILD
-  COMMAND ${CMAKE_COMMAND}
-  ARGS -E copy ${LIBRARY_LOC} ${PROJECT_SOURCE_DIR}/lib/
-  COMMENT "${LIBRARY_NAME} copied")
-
-#add_custom_target(neulib ALL
-#  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/lib/libneurolabi.a)
-
-#add_custom_command(OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/lib/libneurolabi.a
-#  DEPENDS ${LIBRARY_LOC}
-#  COMMAND cp ${LIBRARY_LOC} ${CMAKE_CURRENT_SOURCE_DIR}/lib/
-#  COMMENT "libneurolabi.a copied")
-
 # install library
 install (TARGETS ${LIBRARY_NAME} ARCHIVE DESTINATION ${PROJECT_SOURCE_DIR}/lib)
 
@@ -334,36 +304,6 @@ if (NOT CMAKE_BUILD_TYPE STREQUAL Debug)
     DESTINATION ${PROJECT_SOURCE_DIR}/../app/trace_package/bin)
   install (FILES ${PROJECT_SOURCE_DIR}/../shell/assert_succ.sh ${PROJECT_SOURCE_DIR}/trace_all.sh
     DESTINATION ${PROJECT_SOURCE_DIR}/../app/trace_package/bin)
-
-  if (APPLE)
-    foreach (LBNM ${EXT_LIBS})
-      if (NOT ${LBNM} MATCHES "^/usr/lib/.*.dylib$")
-        get_filename_component (fn ${LBNM} REALPATH)
-        get_filename_component (fnbase ${fn} NAME)
-        install (FILES ${fn}
-          DESTINATION ${PROJECT_SOURCE_DIR}/../app/trace_package/lib)
-
-        install (CODE "
-          execute_process (COMMAND install_name_tool -id
-            @executable_path/../lib/${fnbase}
-            ${PROJECT_SOURCE_DIR}/../app/trace_package/lib/${fnbase})
-        ")
-
-        foreach (BNNM ${TRACE_PACKAGE_TARGETS})
-          install (CODE "
-            execute_process (COMMAND install_name_tool -change
-              ${fn} @executable_path/../lib/${fnbase}
-              ${PROJECT_SOURCE_DIR}/../app/trace_package/bin/${BNNM})
-          ")
-          install (CODE "
-            execute_process (COMMAND install_name_tool -change
-              /usr/local/lib/${fnbase} @executable_path/../lib/${fnbase}
-              ${PROJECT_SOURCE_DIR}/../app/trace_package/bin/${BNNM})
-          ")
-        endforeach (BNNM ${TRACE_PACKAGE_TARGETS})
-      endif ()
-    endforeach (LBNM ${EXT_LIBS})
-  endif (APPLE)
 
 endif (NOT CMAKE_BUILD_TYPE STREQUAL Debug)
 

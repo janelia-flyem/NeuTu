@@ -178,9 +178,12 @@ int main(int argc, char *argv[])
 #else
 #if defined(QT_NO_DEBUG)
     QDir dir(QApplication::applicationDirPath());
+    dir.cd("plugins");
+    QApplication::addLibraryPath(dir.absolutePath());  // for windows version
+    dir.cdUp();
     dir.cdUp();
     dir.cd("plugins");
-    QApplication::setLibraryPaths(QStringList(dir.absolutePath()));
+    QApplication::addLibraryPath(dir.absolutePath());
     dir.cdUp();
     dir.cd("lib");
     QApplication::addLibraryPath(dir.absolutePath());
