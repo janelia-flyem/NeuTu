@@ -9,6 +9,7 @@
 #include "zstackdoc.h"
 #include "zfiletype.h"
 #include "zlabelcolortable.h"
+#include "zstackview.h"
 
 ZSegmentationProject::ZSegmentationProject(QObject *parent) :
   QObject(parent), m_stack(NULL), m_dataFrame(NULL)
@@ -31,6 +32,7 @@ void ZSegmentationProject::clear()
   delete m_stack;
   m_stack = NULL;
   m_labelTree.clear();
+  m_source.clear();
 }
 
 ZTreeNode<ZObject3dScan>* ZSegmentationProject::getRootLabel() const
@@ -58,6 +60,7 @@ void ZSegmentationProject::loadStack(const QString &fileName)
       loadJsonNode(root, nodeJson,
                    QFileInfo(fileName).absoluteDir().absolutePath());
     }
+    m_source = fileName;
   }
 }
 
@@ -145,6 +148,8 @@ void ZSegmentationProject::setDocData(ZStackDocReader &reader)
 {
   if (m_dataFrame != NULL) {
     m_dataFrame->document()->reloadData(reader);
+    m_dataFrame->view()->setSliceIndex(
+          m_dataFrame->document()->getStackSize().getZ() / 2);
   }
 }
 
@@ -257,6 +262,8 @@ void ZSegmentationProject::save(const QString &fileName)
 
     qDebug() << "Saving project: " << fileName;
     projectJson.dump(fileName.toStdString());
+
+    m_source = fileName;
   }
 }
 

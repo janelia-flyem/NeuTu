@@ -44,6 +44,10 @@ public:
     return &m_labelTree;
   }
 
+  const QString &getSource() const {
+    return m_source;
+  }
+
 private:
   static ZJsonObject getNodeJson(const ZTreeNode<ZObject3dScan> *node);
   void loadJsonNode(ZTreeNode<ZObject3dScan> *parent,
@@ -59,6 +63,7 @@ private:
   ZStack *m_stack; //owned
   ZTree<ZObject3dScan> m_labelTree;
   ZStackFrame *m_dataFrame; //not owned
+  QString m_source;
 };
 
 #endif // ZSEGMENTATIONPROJECT_H

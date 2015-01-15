@@ -14082,7 +14082,7 @@ void ZTest::test(MainWindow *host)
 
 #if 0
   ZStack labelField;
-  labelField.load(GET_DATA_DIR + "/flyem/AL/label/label_field.tif");
+  labelField.load(GET_DATA_DIR + "/flyem/AL/glomeruli/label.tif");
 
   ZObject3dScan obj;
   obj.load(GET_DATA_DIR + "/test.sobj");
@@ -14091,13 +14091,13 @@ void ZTest::test(MainWindow *host)
   labelField.save(GET_DATA_DIR + "/test.tif");
 #endif
 
-#if 1
+#if 0
   ZStack labelField;
-  labelField.load(GET_DATA_DIR + "/flyem/AL/label/label_field.tif");
+  labelField.load(GET_DATA_DIR + "/flyem/AL/glomeruli/label.tif");
 
   C_Stack::shrinkBorder(labelField.c_stack(), 3);
 
-  labelField.save(GET_TEST_DATA_DIR + "/flyem/AL/label/label_field_shrinked_3.tif");
+  labelField.save(GET_TEST_DATA_DIR + "/flyem/AL/glomeruli/label_shrinked_3.tif");
 
 #endif
 
@@ -14193,6 +14193,22 @@ void ZTest::test(MainWindow *host)
   obj.load(GET_DATA_DIR + "/flyem/AL/whole_roi_ds20.sobj");
   ZStack *signal = obj.toStackObject();
 
+  ZStack densityMap;
+  densityMap.load(GET_DATA_DIR +
+                  "/flyem/AL/al7d_whole_wfix_tbar-predict_0.81_ds20_s5.tif");
+  densityMap.crop(signal->getBoundBox());
+
+  size_t voxelNumber = signal->getVoxelNumber();
+  for (size_t i = 0; i < voxelNumber; ++i) {
+    if (signal->array8()[i] > 0) {
+      if (densityMap.array8()[i] > 0) {
+        signal->array8()[i] = densityMap.array8()[i];
+      } else {
+        signal->array8()[i] = 1;
+      }
+    }
+  }
+
 
   ZStack *result = watershedEngine.run(signal, &labelField);
   result->save(GET_DATA_DIR + "/test.tif");
@@ -14235,7 +14251,7 @@ void ZTest::test(MainWindow *host)
   ZJsonObject stackJson;
   stackJson.setEntry(
         "url", GET_DATA_DIR +
-        "/flyem/AL/al7d_whole448_tbar-predict_0.81_ds20_s5.tif");
+        "/flyem/AL/glomeruli/al7d_whole_wfix_tbar-predict_0.81_ds20_s5.tif");
   stackJson.setEntry("type", std::string("single"));
 
   rootJson.setEntry("zstack", stackJson);
@@ -14244,7 +14260,7 @@ void ZTest::test(MainWindow *host)
 //  ZJsonArray labelArrayJson;
 
   ZStack stack;
-  stack.load(GET_DATA_DIR + "/flyem/AL/label/label_field.tif");
+  stack.load(GET_DATA_DIR + "/flyem/AL/glomeruli/label.tif");
 
   ZTree<int> *segTree = misc::buildSegmentationTree(stack.c_stack());
 
@@ -14275,7 +14291,7 @@ void ZTest::test(MainWindow *host)
       ZObject3dScan *obj = sortedObjArray[label];
       QString file = QString("_%1.sobj").arg(obj->getLabel());
       QString output = QString("%1/%2").
-          arg((GET_DATA_DIR + "/flyem/AL/label/segcheck").c_str()).
+          arg((GET_DATA_DIR + "/flyem/AL/glomeruli/segcheck").c_str()).
           arg(file);
       obj->save(output.toStdString());
       labelJson.setEntry("source", file.toStdString());
@@ -14311,15 +14327,16 @@ void ZTest::test(MainWindow *host)
   rootJson.setEntry("segmentation", segJsonArray[0]);
 //  std::cout << rootJson.dumpString(2) << std::endl;
 
-  rootJson.dump(GET_DATA_DIR + "/flyem/AL/label/segcheck/seg.json");
+  rootJson.dump(GET_DATA_DIR + "/flyem/AL/glomeruli/segcheck/seg.json");
 #endif
 
-#if 0
+#if 1
   ZJsonObject rootJson;
   ZJsonObject stackJson;
-  stackJson.setEntry(
-        "url", GET_DATA_DIR +
-        "/flyem/AL/al7d_whole448_tbar-predict_0.81_ds20_s5.tif");
+  std::string signalPath = GET_DATA_DIR +
+      "/flyem/AL/glomeruli/al7d_whole_wfix_tbar-predict_0.81_ds20_s5.tif";
+
+  stackJson.setEntry("url", signalPath);
   stackJson.setEntry("type", std::string("single"));
 
   rootJson.setEntry("zstack", stackJson);
@@ -14328,7 +14345,7 @@ void ZTest::test(MainWindow *host)
 //  ZJsonArray labelArrayJson;
 
   ZStack stack;
-  stack.load(GET_DATA_DIR + "/flyem/AL/label/label_field.tif");
+  stack.load(GET_DATA_DIR + "/flyem/AL/glomeruli/label.tif");
 
   ZTree<int> *segTree = misc::buildSegmentationTree(stack.c_stack());
 
@@ -14384,11 +14401,10 @@ void ZTest::test(MainWindow *host)
   }
 
   ZStack *signal = new ZStack;
-  signal->load(GET_DATA_DIR +
-              "/flyem/AL/al7d_whole448_tbar-predict_0.81_ds20_s5.tif");
+  signal->load(signalPath);
   segProj.setStack(signal);
 
-  segProj.save((GET_DATA_DIR + "/flyem/AL/label/segcheck2/seg.json").c_str());
+  segProj.save((GET_DATA_DIR + "/flyem/AL/glomeruli/segcheck/seg.json").c_str());
 
 //  for (std::vector<ZObject3dScan*>::iterator iter = objArray.begin();
 //       iter != objArray.end(); ++iter) {

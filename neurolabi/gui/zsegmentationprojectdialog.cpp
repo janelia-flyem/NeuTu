@@ -99,10 +99,15 @@ void ZSegmentationProjectDialog::on_openPushButton_clicked()
 
 void ZSegmentationProjectDialog::on_savePushButton_clicked()
 {
-  QString fileName = getMainWindow()->getSaveFileName(
-        "Save a project", "*.json");
-  if (!fileName.isEmpty()) {
-    m_model->getProject()->save(fileName);
+  if (m_model->getProject() != NULL) {
+    QString fileName = m_model->getProject()->getSource();
+    if (fileName.isEmpty()) {
+      fileName = getMainWindow()->getSaveFileName(
+            "Save a project", "*.json");
+    }
+    if (!fileName.isEmpty()) {
+      m_model->getProject()->save(fileName);
+    }
   }
 }
 
