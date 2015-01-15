@@ -237,6 +237,11 @@ public:
   void labelStack(Stack *stack, int startLabel, const int *offset = NULL);
 
   /*!
+   * \brief Mask a stack with the foreground defined by the object.
+   */
+  void maskStack(ZStack *stack);
+
+  /*!
    * \brief Count overlap between the object and a stack
    *
    * Count the overlap between the object and \a stack. Any voxel in the object

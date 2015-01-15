@@ -9,6 +9,7 @@
 #include "zdebug.h"
 #include "zdoublevector.h"
 #include "zstack.hxx"
+#include "zstackfactory.h"
 
 #ifdef _USE_GTEST_
 
@@ -1249,6 +1250,22 @@ TEST(ZObject3dScan, Stack)
   obj.print();
   obj2.print();
   obj3.print();
+
+  obj.clear();
+  obj.addStripe(1, 1);
+  obj.addSegment(1, 1);
+  obj.addSegment(1, 3);
+  obj.addStripe(0, 0, false);
+  obj.addSegment(1, 3);
+
+  obj.print();
+
+  delete stack;
+  stack = ZStackFactory::makeIndexStack(3, 3, 3);
+
+  obj.maskStack(stack);
+
+  Print_Stack_Value(stack->c_stack());
 }
 
 #endif

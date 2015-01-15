@@ -8,7 +8,7 @@
 
 ZSegmentationProjectDialog::ZSegmentationProjectDialog(QWidget *parent) :
   QDialog(parent),
-  ui(new Ui::ZSegmentationProjectDialog), m_model(NULL), m_dataFrame(NULL)
+  ui(new Ui::ZSegmentationProjectDialog), m_model(NULL)
 {
   ui->setupUi(this);
   m_model = new ZSegmentationProjectModel(this);
@@ -20,6 +20,7 @@ ZSegmentationProjectDialog::ZSegmentationProjectDialog(QWidget *parent) :
 
 ZSegmentationProjectDialog::~ZSegmentationProjectDialog()
 {
+  m_model->clear();
   delete ui;
 }
 
@@ -31,6 +32,9 @@ MainWindow* ZSegmentationProjectDialog::getMainWindow()
 ZStackFrame *ZSegmentationProjectDialog::newDataFrame(ZStackDocReader &reader)
 {
   ZStackFrame *frame = ZFrameFactory::MakeStackFrame(reader);
+
+  connect(frame, SIGNAL(closed(ZStackFrame*)),
+          m_model->getProject(), SLOT(detachFrame()));
 //  getMainWindow()->addStackFrame(frame);
 //  getMainWindow()->presentStackFrame(frame);
 
@@ -39,13 +43,13 @@ ZStackFrame *ZSegmentationProjectDialog::newDataFrame(ZStackDocReader &reader)
 
 void ZSegmentationProjectDialog::on_testPushButton_clicked()
 {
-  if (m_dataFrame == NULL) {
+  if (m_model->getProject() == NULL) {
     ZSegmentationProject *proj = new ZSegmentationProject(this);
 
     ZStackDocReader reader;
-    m_dataFrame = newDataFrame(reader);
+    ZStackFrame *dataFrame = newDataFrame(reader);
 
-    proj->setDataFrame(m_dataFrame);
+    proj->setDataFrame(dataFrame);
     m_model->setInternalData(proj);
 
     m_model->generateTestData();
@@ -53,8 +57,8 @@ void ZSegmentationProjectDialog::on_testPushButton_clicked()
 
     ui->treeView->setModel(m_model);
 
-    getMainWindow()->addStackFrame(m_dataFrame);
-    getMainWindow()->presentStackFrame(m_dataFrame);
+    getMainWindow()->addStackFrame(dataFrame);
+    getMainWindow()->presentStackFrame(dataFrame);
   }
 }
 
@@ -68,21 +72,27 @@ void ZSegmentationProjectDialog::on_openPushButton_clicked()
   QString fileName = getMainWindow()->getOpenFileName(
         "Load a project or a stack", "*.tif *.json");
   if (!fileName.isEmpty()) {
-    if (m_dataFrame == NULL) {
-      ZSegmentationProject *proj = new ZSegmentationProject(this);
-
-      ZStackDocReader reader;
-      m_dataFrame = newDataFrame(reader);
-
-      proj->setDataFrame(m_dataFrame);
+    ZSegmentationProject *proj = NULL;
+    if (m_model->getProject() == NULL) {
+      proj = new ZSegmentationProject(this);
       m_model->setInternalData(proj);
-      m_model->loadStack(fileName);
-      ui->treeView->setModel(m_model);
-      getMainWindow()->addStackFrame(m_dataFrame);
-      getMainWindow()->presentStackFrame(m_dataFrame);
     } else {
-      m_dataFrame->show();
+      proj = m_model->getProject();
     }
+
+    if (proj->getDataFrame() == NULL) {
+      ZStackDocReader reader;
+      ZStackFrame *dataFrame = newDataFrame(reader);
+
+      proj->setDataFrame(dataFrame);
+      m_model->loadStack(fileName);
+
+
+      ui->treeView->setModel(m_model);
+      getMainWindow()->addStackFrame(dataFrame);
+      getMainWindow()->presentStackFrame(dataFrame);
+    }
+    proj->getDataFrame()->show();
   }
 }
 
@@ -93,4 +103,9 @@ void ZSegmentationProjectDialog::on_savePushButton_clicked()
   if (!fileName.isEmpty()) {
     m_model->getProject()->save(fileName);
   }
+}
+
+void ZSegmentationProjectDialog::on_donePushButton_clicked()
+{
+  m_model->clear();
 }

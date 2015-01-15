@@ -94,3 +94,13 @@ bool ZDialogFactory::ask(
         parent, title, msg, QMessageBox::No | QMessageBox::Yes) ==
       QMessageBox::Yes;
 }
+
+ZSpinBoxGroupDialog* ZDialogFactory::makeDownsampleDialog(QWidget *parent)
+{
+  ZSpinBoxGroupDialog *dlg = new ZSpinBoxGroupDialog(parent);
+  dlg->setWindowTitle("Set Downsample Interval");
+  dlg->addSpinBox("X", 0, 100, 0, 0);
+  dlg->addSpinBox("Y", 0, 100, 0, 0);
+  dlg->addSpinBox("Z", 0, 100, 0, 0);
+  return dlg;
+}

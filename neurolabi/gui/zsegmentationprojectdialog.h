@@ -33,10 +33,12 @@ private slots:
 
   void on_savePushButton_clicked();
 
+  void on_donePushButton_clicked();
+
 private:
   Ui::ZSegmentationProjectDialog *ui;
   ZSegmentationProjectModel *m_model;
-  ZStackFrame *m_dataFrame;
+  //ZStackFrame *m_dataFrame;
 };
 
 #endif // ZSEGMENTATIONPROJECTDIALOG_H

@@ -12,6 +12,9 @@
 #include "neutube.h"
 #include "flyem/zintcuboidarray.h"
 #include "zpointarray.h"
+#include "ztree.h"
+
+class ZGraph;
 
 namespace misc {
 
@@ -29,6 +32,7 @@ int computeRavelerHeight(const FlyEm::ZIntCuboidArray &blockArray, int margin);
 
 bool exportPointList(const std::string &filePath, const ZPointArray &pointArray);
 
+ZGraph* makeCoOccurGraph(const Stack *stack, int nnbr);
 
 /*!
  * \brief A function for computing confidence
@@ -37,6 +41,8 @@ bool exportPointList(const std::string &filePath, const ZPointArray &pointArray)
  * \param p95 The value where confidence = 0.95
  */
 double computeConfidence(double v, double median, double p95);
+
+ZTree<int> *buildSegmentationTree(const Stack *stack);
 
 /*!
  * \brief Parse hdf5 path

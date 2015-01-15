@@ -107,6 +107,7 @@ private slots:
   void viewModel(const QModelIndex &index);
   void showSelectedModel();
   void showSelectedBody();
+  //void showSelectedBodyCoarse();
   void showSelectedModelWithBoundBox();
   void showNearbyNeuron();
   void searchNeighborNeuron();

@@ -10,6 +10,7 @@ const char* ZDvidData::m_thumbnailName = "thumbnails";
 const char* ZDvidData::m_superpixelName = "superpixels";
 const char* ZDvidData::m_sp2bodyName = "sp2body";
 const char* ZDvidData::m_sparsevolName = "sparsevol";
+const char* ZDvidData::m_coarseSparsevolName = "sparsevol-coarse";
 const char* ZDvidData::m_splitLabelName = "splits";
 const char* ZDvidData::m_bodyInfoName = "bodyinfo";
 const char* ZDvidData::m_mergeTestBodyLabelName = "merge_test";
@@ -57,6 +58,8 @@ const char* ZDvidData::getName(ERole role)
     return m_mergeTestBodyLabelName;
   case ROLE_MAX_BODY_ID:
     return m_maxBodyIdName;
+  case ROLE_SPARSEVOL_COARSE:
+    return m_coarseSparsevolName;
   }
 
   return m_emptyName;

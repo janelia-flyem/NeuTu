@@ -8,6 +8,7 @@
 #include "zstack.hxx"
 #include "zdebug.h"
 #include "zintcuboid.h"
+#include "zstackfactory.h"
 
 #ifdef _USE_GTEST_
 TEST(ZStack, Basic)
@@ -233,6 +234,26 @@ TEST(ZStack, array)
   ASSERT_EQ(stack->array8() + 12, stack->getDataPointer(1, 2, 4));
 
   delete stack;
+}
+
+TEST(ZStack, Gradient)
+{
+  ZStack *stack = ZStackFactory::makeIndexStack(5, 5, 5);
+  Print_Stack_Value(stack->c_stack());
+  Stack *out = C_Stack::computeGradient(stack->c_stack());
+  Print_Stack_Value(out);
+
+
+  delete stack;
+  C_Stack::kill(out);
+}
+
+TEST(ZStack, BorderShrink)
+{
+  ZStack *stack = ZStackFactory::makeOneStack(3, 3, 3);
+  C_Stack::shrinkBorder(stack->c_stack(), 1);
+
+  Print_Stack_Value(stack->c_stack());
 }
 
 #endif

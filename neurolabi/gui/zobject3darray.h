@@ -6,6 +6,8 @@
 #include "zobject3d.h"
 #include "tz_object_3d_linked_list.h"
 
+class ZStack;
+
 class ZObject3dArray : public std::vector<ZObject3d*>
 {
 public:
@@ -27,6 +29,7 @@ public:
 
   void labelStack(Stack *stack);
   Stack* toStack();
+  ZStack* toStackObject();
 
   void setSourceSize(int width, int height, int depth);
 

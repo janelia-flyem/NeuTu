@@ -17,6 +17,7 @@ class ZIntPoint;
 class ZStackDocReader;
 class ZArray;
 class ZStackObjectSelector;
+class Z3DWindow;
 
 class ZFlyEmBodyMergeProject : public QObject
 {
@@ -65,9 +66,12 @@ public slots:
   void mergeBody();
   void setLoadingLabel(bool state);
   void uploadResult();
+  void update3DBodyView(ZStackObjectSelector *selector);
+  void showBody3d();
 
 private:
   ZFlyEmBodyMergeFrame *m_dataFrame;
+  Z3DWindow *m_bodyWindow;
   ZDvidTarget m_dvidTarget;
 //  Z3DWindow *m_resultWindow;
 //  Z3DWindow *m_quickViewWindow;

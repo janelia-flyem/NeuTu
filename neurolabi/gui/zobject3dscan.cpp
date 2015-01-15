@@ -32,6 +32,8 @@
 #include "zstringarray.h"
 #include "tz_math.h"
 #include "tz_stack_bwmorph.h"
+#include "zstackfactory.h"
+#include "tz_stack_bwmorph.h"
 
 using namespace std;
 
@@ -393,6 +395,17 @@ void ZObject3dScan::labelStack(Stack *stack, int startLabel, const int *offset)
   for (size_t i = 0; i < objArray.size(); ++i) {
     objArray[i].drawStack(stack, startLabel  + i, offset);
   }
+}
+
+void ZObject3dScan::maskStack(ZStack *stack)
+{
+  ZStack *mask = ZStackFactory::makeZeroStack(
+        stack->kind(), stack->getBoundBox());
+  drawStack(mask->c_stack(), 1);
+  for (int c = 0; c < stack->channelNumber(); ++c) {
+    Stack_Mul(stack->c_stack(c), mask->c_stack(), stack->c_stack(c));
+  }
+  delete mask;
 }
 
 static int ZObject3dSegmentCompare(const void *e1, const void *e2)
@@ -1822,7 +1835,7 @@ void ZObject3dScan::display(
 {
   UNUSED_PARAMETER(style);
 #if _QT_GUI_USED_
-  if (isSelected()) {
+  if (isSelected() && style == ZStackObject::SOLID) {
     return;
   }
 
@@ -1831,56 +1844,73 @@ void ZObject3dScan::display(
   int z = slice + iround(painter.getOffset().z());
 
   QPen pen(m_color);
-  painter.setPen(pen);
 
   //QImage *targetImage = dynamic_cast<QImage*>(painter.device());
 
-  size_t stripeNumber = getStripeNumber();
-  std::vector<QLine> lineArray;
-  int offsetX = iround(painter.getOffset().x());
-  int offsetY = iround(painter.getOffset().y());
-  for (size_t i = 0; i < stripeNumber; ++i) {
-    const ZObject3dStripe &stripe = getStripe(i);
-    if (stripe.getZ() == z || isProj) {
-      int nseg = stripe.getSegmentNumber();
-      for (int j = 0; j < nseg; ++j) {
-        int x0 = stripe.getSegmentStart(j) - offsetX;
-        int x1 = stripe.getSegmentEnd(j) - offsetX;
-        int y = stripe.getY() - offsetY;
-//        for (int x = x0; x <= x1; ++x) {
-//          //painter.drawPoint(QPoint(x, y));
-//          ptArray.push_back(QPoint(x, y));
-//        }
-
-       // if (targetImage == NULL) {
+  switch (style) {
+  case ZStackObject::SOLID:
+  {
+    painter.setPen(pen);
+    size_t stripeNumber = getStripeNumber();
+    std::vector<QLine> lineArray;
+    int offsetX = iround(painter.getOffset().x());
+    int offsetY = iround(painter.getOffset().y());
+    for (size_t i = 0; i < stripeNumber; ++i) {
+      const ZObject3dStripe &stripe = getStripe(i);
+      if (stripe.getZ() == z || isProj) {
+        int nseg = stripe.getSegmentNumber();
+        for (int j = 0; j < nseg; ++j) {
+          int x0 = stripe.getSegmentStart(j) - offsetX;
+          int x1 = stripe.getSegmentEnd(j) - offsetX;
+          int y = stripe.getY() - offsetY;
           lineArray.push_back(QLine(x0, y, x1, y));
-#if 0
-        } else {
-          if (y < targetImage->height()) {
-            uchar *scanLine = targetImage->scanLine(y);
-            scanLine += x0 * 4;
-            x1 = imin2(x1, targetImage->width() - 1);
-            for (int x = x0; x <= x1; ++x) {
-              scanLine[0] = m_color.red();
-              scanLine[1] = m_color.green();
-              scanLine[2] = m_color.blue();
-              scanLine[3] = m_color.alpha();
-              scanLine += 4;
-            }
-          }
         }
-#endif
-//        QPainter::drawLine(pt1 - QPointF(m_offset.x(), m_offset.y()),
-//                           pt2 - QPointF(m_offset.x(), m_offset.y()));
-        //painter.drawLine(x0, y, x1, y);
       }
     }
+    if (!lineArray.empty()) {
+      painter.drawLines(&(lineArray[0]), lineArray.size());
+    }
+  }
+    break;
+  case ZStackObject::BOUNDARY:
+  {
+    QColor color = pen.color();
+    color.setAlpha(255);
+    pen.setColor(color);
+    painter.setPen(pen);
+    std::vector<QPoint> ptArray;
+    ZObject3dScan slice = getSlice(z);
+
+    if (!slice.isEmpty()) {
+      ZStack *stack = slice.toStackObject();
+      int conn = 4;
+      if (isSelected()) {
+        conn = 8;
+      }
+      Stack *pre = Stack_Perimeter(stack->c_stack(), NULL, conn);
+      size_t offset = 0;
+      for (int y = 0; y < stack->height(); ++y) {
+        for (int x = 0; x < stack->width(); ++x) {
+          if (pre->array[offset++] > 0) {
+            ptArray.push_back(QPoint(x + stack->getOffset().getX(),
+                                     y + stack->getOffset().getY()));
+          }
+        }
+      }
+    }
+    if (!ptArray.empty()) {
+      painter.drawPoints(&(ptArray[0]), ptArray.size());
+    }
+  }
+    break;
+  default:
+    break;
   }
 
-  if (!lineArray.empty()) {
-    painter.drawLines(&(lineArray[0]), lineArray.size());
-  }
-  //painter.drawPoints(&(ptArray[0]), ptArray.size());
+
+
+
+
 #else
   UNUSED_PARAMETER(&painter);
   UNUSED_PARAMETER(slice);
@@ -2492,7 +2522,8 @@ bool ZObject3dScan::importDvidObjectBuffer(
   return true;
 }
 
-bool ZObject3dScan::importDvidObjectBuffer(const std::vector<char> &byteArray)
+bool ZObject3dScan::importDvidObjectBuffer(
+    const std::vector<char> &byteArray)
 {
   return importDvidObjectBuffer(&(byteArray[0]), byteArray.size());
 }

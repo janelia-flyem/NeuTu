@@ -37,6 +37,7 @@ ZFlyEmRoiDialog::ZFlyEmRoiDialog(QWidget *parent) :
 
   m_dvidDlg = ZDialogFactory::makeDvidDialog(this);
   m_zDlg = ZDialogFactory::makeSpinBoxDialog(this);
+  m_dsDlg = ZDialogFactory::makeDownsampleDialog(this);
 
   connect(ui->loadGrayScalePushButton, SIGNAL(clicked()),
           this, SLOT(loadGrayscale()));
@@ -93,11 +94,14 @@ ZFlyEmRoiDialog::ZFlyEmRoiDialog(QWidget *parent) :
   ui->yIncPushButton->setMaximumSize(buttonSize);
 #endif
 
+  ui->progressBar->setRange(0, 100);
+
+  connect(this, SIGNAL(progressStart()), this, SLOT(startProgressSlot()));
   connect(this, SIGNAL(newDocReady()), this, SLOT(updateDataFrame()));
-  connect(this, SIGNAL(progressFailed()), ui->progressBar, SLOT(reset()));
+  connect(this, SIGNAL(progressFailed()), this, SLOT(endProgressSlot()));
   connect(this, SIGNAL(progressAdvanced(double)),
           this, SLOT(advanceProgressSlot(double)));
-  connect(this, SIGNAL(progressDone()), ui->progressBar, SLOT(reset()));
+  connect(this, SIGNAL(progressDone()), this, SLOT(endProgressSlot()));
   connect(ui->projectComboBox, SIGNAL(currentIndexChanged(int)),
           this, SLOT(loadProject(int)));
   connect(this, SIGNAL(messageDumped(QString, bool)),
@@ -145,6 +149,12 @@ void ZFlyEmRoiDialog::createMenu()
   QAction *exportAction = new QAction("Export", this);
   m_mainMenu->addAction(exportAction);
   connect(exportAction, SIGNAL(triggered()), this, SLOT(exportResult()));
+
+  QAction *exportRoiObjectAction = new QAction("Export ROI Object", this);
+  m_mainMenu->addAction(exportRoiObjectAction);
+  connect(exportRoiObjectAction, SIGNAL(triggered()),
+          this, SLOT(exportRoiObject()));
+
 
   m_importRoiAction = new QAction("Import ROI", this);
   m_mainMenu->addAction(m_importRoiAction);
@@ -1018,6 +1028,16 @@ void ZFlyEmRoiDialog::advanceProgressSlot(double p)
   advanceProgress(p);
 }
 
+void ZFlyEmRoiDialog::startProgressSlot()
+{
+  startProgress();
+}
+
+void ZFlyEmRoiDialog::endProgressSlot()
+{
+  endProgress();
+}
+
 void ZFlyEmRoiDialog::closeEvent(QCloseEvent *event)
 {
   if (m_project == NULL) {
@@ -1164,6 +1184,48 @@ void ZFlyEmRoiDialog::on_estimateVolumePushButton_clicked()
   if (m_project != NULL) {
     double volume = m_project->estimateRoiVolume('u');
     dump(QString("ROI Volume: ~%1 um^3").arg(volume));
+  }
+}
+
+void ZFlyEmRoiDialog::exportRoiObjectFunc(
+    const QString &fileName, int xintv, int yintv, int zintv)
+{
+//  emit progressStart();
+  emit messageDumped("Generating ROI object ...", true);
+  emit progressAdvanced(0.1);
+  ZObject3dScan obj = m_project->getRoiObject(xintv, yintv, zintv);
+//  obj.downsampleMax(xintv, yintv, zintv);
+  emit progressAdvanced(0.5);
+  if (!obj.isEmpty()) {
+    emit messageDumped("Saving ...", true);
+    obj.save(fileName.toStdString());
+    emit messageDumped("Done.", true);
+    emit progressAdvanced(0.4);
+  } else {
+    emit messageDumped("No ROI found in this project. Nothing is saved", true);
+  }
+  endProgress();
+  //emit progressDone();
+}
+
+void ZFlyEmRoiDialog::exportRoiObject()
+{
+  if (m_project != NULL) {
+    QString fileName = getMainWindow()->getSaveFileName(
+          "Export ROI Object", "Sparse object files (*.sobj)");
+    if (!fileName.isEmpty()) {
+      if (m_dsDlg->exec()) {
+        int xIntv = m_dsDlg->getValue("X");
+        int yIntv = m_dsDlg->getValue("Y");
+        int zIntv = m_dsDlg->getValue("Z");
+
+        startProgress();
+        QtConcurrent::run(
+              this, &ZFlyEmRoiDialog::exportRoiObjectFunc, fileName,
+              xIntv, yIntv, zIntv);
+        //endProgress();
+      }
+    }
   }
 }
 

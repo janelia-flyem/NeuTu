@@ -11,7 +11,7 @@ class ZTree
 {
 public:
   ZTree(void);
-  ZTree(ZTreeNode<T> *root);
+  explicit ZTree(ZTreeNode<T> *root);
   virtual ~ZTree(void);
 
   inline ZTreeNode<T>* getRoot() { return m_root; }
@@ -42,8 +42,12 @@ public:
     NO_FILTER, LEAF, BRANCH_POINT, CONTIUATION
   };
 
+  ZTreeIterator(const ZTreeNode<T>* startNode,
+                EIteratorOption option = DEPTH_FIRST);
   ZTreeIterator(const ZTree<T> &tree,
                 EIteratorOption option = DEPTH_FIRST);
+  void update(const ZTreeNode<T>* startNode,
+              EIteratorOption option = DEPTH_FIRST);
   void update(const ZTree<T> &tree,
               EIteratorOption option = DEPTH_FIRST);
   bool hasNext();

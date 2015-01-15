@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>531</width>
+    <width>533</width>
     <height>769</height>
    </rect>
   </property>
@@ -361,17 +361,28 @@
               </item>
              </layout>
             </item>
-            <item>
-             <widget class="QPushButton" name="viewSplitPushButton">
-              <property name="text">
-               <string>View Split</string>
-              </property>
-             </widget>
-            </item>
            </layout>
           </item>
           <item>
            <layout class="QVBoxLayout" name="verticalLayout_6">
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_9">
+              <item>
+               <widget class="QPushButton" name="viewSplitPushButton">
+                <property name="text">
+                 <string>View Split</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="viewResultQuickPushButton">
+                <property name="text">
+                 <string>Split Quick View</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
             <item>
              <layout class="QHBoxLayout" name="horizontalLayout_2">
               <item>

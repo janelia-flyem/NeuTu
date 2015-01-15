@@ -163,7 +163,8 @@ Z3DRendererBase::Z3DRendererBase(QObject *parent)
   connect(&m_sizeScale, SIGNAL(valueChanged()), this, SLOT(invalidatePickingDisplayList()));
   connect(&m_opacity, SIGNAL(valueChanged()), this, SLOT(invalidateDisplayList()));
   connect(&m_materialShininess, SIGNAL(valueChanged()), this, SLOT(invalidateDisplayList()));
-  connect(&m_materialSpecular, SIGNAL(valueChanged()), this, SLOT(invalidateDisplayList()));
+  connect(&m_materialSpecular, SIGNAL(valueChanged()),
+          this, SLOT(invalidateDisplayList()));
 
   for (size_t i=0; i<m_lightPositions.size(); i++) {
     connect(m_lightPositions[i], SIGNAL(valueChanged()), this, SLOT(invalidateDisplayList()));

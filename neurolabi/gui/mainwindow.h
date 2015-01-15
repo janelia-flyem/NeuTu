@@ -118,7 +118,7 @@ public:
 signals:
   void dvidRequestCanceled();
   void progressDone();
-  void progressAdvanced();
+  void progressAdvanced(double dp);
   void docReaderReady(ZStackDocReader*);
 
 public slots:

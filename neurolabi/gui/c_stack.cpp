@@ -21,6 +21,8 @@
 #include "neutubeconfig.h"
 #include "zerror.h"
 #include "tz_math.h"
+#include "tz_stack_bwmorph.h"
+#include "tz_stack_math.h"
 
 using namespace std;
 
@@ -174,6 +176,18 @@ void C_Stack::setPixel(Stack *stack, int x, int y, int z, int c, double v)
 size_t C_Stack::voxelNumber(const Stack *stack)
 {
   return Stack_Voxel_Number(stack);
+}
+
+uint16_t* C_Stack::guardedArray16(const Stack *stack)
+{
+  uint16_t *array = NULL;
+  if (stack != NULL) {
+    if (kind(stack) == GREY16) {
+      array = (uint16_t*) stack->array;
+    }
+  }
+
+  return array;
 }
 
 double C_Stack::value(const Stack *stack, size_t index)
@@ -1543,4 +1557,109 @@ bool C_Stack::isBinary(const Stack *stack)
   }
 
   return state;
+}
+
+Stack* C_Stack::computeGradient(const Stack *stack)
+{
+  Stack *out = NULL;
+  if (stack != NULL) {
+    out = make(GREY, C_Stack::width(stack), C_Stack::height(stack),
+               C_Stack::depth(stack));
+    Zero_Stack(out);
+
+    size_t offset = 0;
+    int width = C_Stack::width(stack);
+    int area = C_Stack::area(stack);
+    int cwidth = C_Stack::width(stack) - 1;
+    int cheight = C_Stack::height(stack) - 1;
+    int cdepth = C_Stack::depth(stack) - 1;
+
+    if (cdepth == 0) {
+      offset = width;
+      for (int y = 1; y < cheight; ++y) {
+        ++offset;
+        for (int x = 1; x < cwidth; ++x) {
+          int dx = ((int) stack->array[offset + 1] -
+              (int) stack->array[offset - 1]);
+          int dy = ((int) stack->array[offset + width] -
+              (int) stack->array[offset - width]);
+          int v = iround(sqrt((dx * dx + dy * dy) / 8.0));
+          out->array[offset++] = v;
+        }
+        ++offset;
+      }
+    } else {
+      offset = area;
+      for (int z = 1; z < cdepth; ++z) {
+        offset += width;
+        for (int y = 1; y < cheight; ++y) {
+          ++offset;
+          for (int x = 1; x < cwidth; ++x) {
+            int dx = ((int) stack->array[offset + 1] -
+                (int) stack->array[offset - 1]);
+            int dy = ((int) stack->array[offset + width] -
+                (int) stack->array[offset - width]);
+            int dz = ((int) stack->array[offset + area] -
+                (int) stack->array[offset - area]);
+            int v = iround(sqrt((dx * dx + dy * dy + dz * dz) / 12.0));
+            out->array[offset++] = v;
+          }
+          ++offset;
+        }
+        offset += width;
+      }
+    }
+  }
+
+  return out;
+}
+
+void C_Stack::shrinkBorder(const Stack *stack, int r, int nnbr)
+{
+  if (r == 0) {
+    return;
+  }
+
+  int is_in_bound[26];
+  int width = C_Stack::width(stack);
+  int height = C_Stack::height(stack);
+  int depth = C_Stack::depth(stack);
+
+  /* alloc <mask> */
+  Stack *mask = C_Stack::make(GREY, width, height, depth);
+  Zero_Stack(mask);
+
+  int neighbor[26];
+  Stack_Neighbor_Offset(nnbr, width, height, neighbor);
+  size_t index;
+  size_t voxelNumber = Stack_Voxel_Number(stack);
+  size_t count = 0;
+  for (index = 0; index < voxelNumber; ++index) {
+    if (stack->array[index] > 0) {
+      int n_in_bound = Stack_Neighbor_Bound_Test_I(nnbr, width, height, depth,
+          index, is_in_bound);
+      int j;
+      for (j = 0; j < nnbr; ++j) {
+        if (n_in_bound == nnbr || is_in_bound[j]) {
+          size_t neighbor_index = index + neighbor[j];
+          if (stack->array[neighbor_index] != stack->array[index]) {
+            mask->array[index] = 1;
+            ++count;
+            break;
+          }
+        }
+      }
+    }
+  }
+
+  Stack_Not(mask, mask);
+  Stack *dist = Stack_Bwdist_L_U16(mask, NULL, 0);
+  uint16* distArray = C_Stack::guardedArray16(dist);
+  //Generate new mask
+  int r2 = r * r;
+  for (index = 0; index < voxelNumber; ++index) {
+    if (distArray[index] <= r2) {
+      stack->array[index] = 0;
+    }
+  }
 }

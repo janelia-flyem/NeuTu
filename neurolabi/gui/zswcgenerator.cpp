@@ -437,12 +437,15 @@ ZSwcTree* ZSwcGenerator::createSwc(
   tree->forceVirtualRoot();
   Swc_Tree_Node *parent = tree->root();
   for (size_t i = 0; i < obj.size(); i += sampleStep) {
-    Swc_Tree_Node *tn =
-        SwcTreeNode::makePointer(obj.getX(i), obj.getY(i), obj.getZ(i), radius);
-    SwcTreeNode::setParent(tn, parent);
+    Swc_Tree_Node *tn = SwcTreeNode::makePointer(
+          obj.getX(i), obj.getY(i), obj.getZ(i), radius);
+    SwcTreeNode::setId(tn, i + 1);
+    SwcTreeNode::setFirstChild(parent, tn);
+//    SwcTreeNode::setParent(tn, parent);
   }
 
-  tree->resortId();
+//  tree->resortId();
+  tree->setColor(obj.getColor());
 
   return tree;
 }
@@ -500,8 +503,9 @@ ZSwcTree* ZSwcGenerator::createSurfaceSwc(
   ZSwcTree *tree = NULL;
   if (stack != NULL) {
     tree = createSurfaceSwc(*stack, sparseLevel);
+    tree->setColor(obj.getColor());
+    tree->rescale(intv + 1, intv + 1, intv + 1);
   }
-  tree->rescale(intv + 1, intv + 1, intv + 1);
 
   return tree;
 }
@@ -538,7 +542,7 @@ ZSwcTree* ZSwcGenerator::createSurfaceSwc(const ZStack &stack, int sparseLevel)
               SwcTreeNode::makePointer(x + stack.getOffset().getX(),
                                        y + stack.getOffset().getY(),
                                        z + stack.getOffset().getY(),
-                                       1.5 * sparseLevel, root);
+                                       sparseLevel * 0.7, root);
             }
           }
         }

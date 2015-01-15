@@ -319,7 +319,8 @@ void MainWindow::initDialog()
   m_progress->setCancelButton(0);
 
   connect(this, SIGNAL(progressDone()), m_progress, SLOT(reset()));
-  connect(this, SIGNAL(progressAdvanced()), this, SLOT(advanceProgress()));
+  connect(this, SIGNAL(progressAdvanced(double)),
+          this, SLOT(advanceProgress(double)));
 
   m_bcDlg = new BcAdjustDialog(this);
   connect(m_bcDlg, SIGNAL(valueChanged()), this, SLOT(bcAdjust()));
@@ -1401,12 +1402,12 @@ ZStackDocReader* MainWindow::openFileFunc(const QString &fileName)
 
   if (ZFileType::isNeutubeOpenable(fileType)) {
     reader = new ZStackDocReader;
-    emit progressAdvanced();
+    emit progressAdvanced(0.2);
     if (reader->readFile(fileName) == false) {
       delete reader;
       reader = NULL;
     }
-    emit progressAdvanced();
+    emit progressAdvanced(0.3);
   }
 
   emit docReaderReady(reader);
@@ -3111,7 +3112,7 @@ void MainWindow::testProgressBarFunc()
 
 void MainWindow::test()
 {
-#if 1
+#if 0
   //QFuture<void> res = QtConcurrent::run(ZTest::test, this);
 
   QFuture<void> res = QtConcurrent::run(this, &MainWindow::testProgressBarFunc);
@@ -3131,7 +3132,7 @@ void MainWindow::test()
 #endif
 
 
-#if 0
+#if 1
   m_progress->setRange(0, 2);
   m_progress->setLabelText(QString("Testing ..."));
   int currentProgress = 0;
@@ -4768,13 +4769,44 @@ void MainWindow::on_actionSimilarity_Matrix_triggered()
 void MainWindow::on_actionSparse_objects_triggered()
 {
   QStringList fileList =
-      getOpenFileNames("Load Multiple Objects", "*.sobj");
+      getOpenFileNames("Load Multiple Objects", "*.sobj *.tif");
 
   if (!fileList.isEmpty()) {
-    ZStackFrame *frame = new ZStackFrame;
-    frame->importSobj(fileList);
-    addStackFrame(frame);
-    presentStackFrame(frame);
+    ZStackFrame *frame = currentStackFrame();
+    if (frame == NULL) {
+      frame = new ZStackFrame;
+      frame->importSobj(fileList);
+      addStackFrame(frame);
+      presentStackFrame(frame);
+    } else {
+      foreach (QString file, fileList) {
+        if (ZFileType::fileType(file.toStdString()) ==
+            ZFileType::OBJECT_SCAN_FILE) {
+          ZObject3dScan *obj = new ZObject3dScan;
+          obj->setColor(QColor(0, 0, 255, 128));
+          obj->load(file.toStdString());
+          frame->document()->addObject(obj);
+        } else {
+          if (ZFileType::fileType(file.toStdString()) ==
+              ZFileType::TIFF_FILE) {
+            ZStack stack;
+            stack.load(file.toStdString());
+            ZObjectColorScheme colorScheme;
+            colorScheme.setColorScheme(ZObjectColorScheme::RANDOM_COLOR);
+            std::vector<ZObject3dScan*> objArray =
+                ZObject3dScan::extractAllObject(stack);
+            for (std::vector<ZObject3dScan*>::iterator iter = objArray.begin();
+                 iter != objArray.end(); ++iter) {
+              ZObject3dScan *obj = *iter;
+              QColor color = colorScheme.getColor(obj->getLabel());
+              color.setAlpha(32);
+              obj->setColor(color);
+              frame->document()->addObject(obj);
+            }
+          }
+        }
+      }
+    }
   }
 }
 

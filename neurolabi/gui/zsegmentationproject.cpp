@@ -1,20 +1,36 @@
 #include "zsegmentationproject.h"
 #include <QString>
 #include <QFileInfo>
+#include <QDir>
 
 #include "zstack.hxx"
 #include "zstackdocreader.h"
 #include "zstackframe.h"
 #include "zstackdoc.h"
+#include "zfiletype.h"
+#include "zlabelcolortable.h"
 
 ZSegmentationProject::ZSegmentationProject(QObject *parent) :
-  QObject(parent), m_stack(NULL)
+  QObject(parent), m_stack(NULL), m_dataFrame(NULL)
 {
 }
 
 ZSegmentationProject::~ZSegmentationProject()
 {
+  clear();
+}
+
+void ZSegmentationProject::clear()
+{
+  if (m_dataFrame != NULL) {
+    m_dataFrame->hide();
+    delete m_dataFrame;
+    m_dataFrame = NULL;
+  }
+
   delete m_stack;
+  m_stack = NULL;
+  m_labelTree.clear();
 }
 
 ZTreeNode<ZObject3dScan>* ZSegmentationProject::getRootLabel() const
@@ -32,6 +48,17 @@ void ZSegmentationProject::loadStack(const QString &fileName)
 
   ZTreeNode<ZObject3dScan> *root = new ZTreeNode<ZObject3dScan>;
   m_labelTree.setRoot(root);
+
+  if (ZFileType::fileType(fileName.toStdString()) == ZFileType::JSON_FILE) {
+    ZJsonObject dataJson;
+    dataJson.load(fileName.toStdString());
+    if (dataJson.hasKey("segmentation")) {
+      ZJsonObject nodeJson(
+            dataJson["segmentation"], ZJsonValue::SET_INCREASE_REF_COUNT);
+      loadJsonNode(root, nodeJson,
+                   QFileInfo(fileName).absoluteDir().absolutePath());
+    }
+  }
 }
 
 void ZSegmentationProject::generateTestData()
@@ -68,6 +95,7 @@ void ZSegmentationProject::generateTestData()
 void ZSegmentationProject::loadSegmentationTarget(
     ZTreeNode<ZObject3dScan> *node)
 {
+  ZStackDocReader docReader;
   if (node != NULL) {
     const ZObject3dScan &obj = node->data();
     if (!obj.isEmpty()) {
@@ -87,16 +115,29 @@ void ZSegmentationProject::loadSegmentationTarget(
         }
       }
 
-      ZStackDocReader docReader;
       docReader.setStack(substack);
-      setDocData(docReader);
     } else {
       if (node->isRoot()) {
-        ZStackDocReader docReader;
         docReader.setStack(m_stack->clone());
-        setDocData(docReader);
       }
     }
+  }
+
+  //Add child objects
+  ZTreeNode<ZObject3dScan> *child = node->firstChild();
+  ZLabelColorTable colorTable;
+  while (child != NULL) {
+    ZObject3dScan *obj = new ZObject3dScan;
+    *obj = child->data();
+    QColor color = colorTable.getColor(obj->getLabel());
+    color.setAlpha(32);
+    obj->setColor(color);
+    docReader.addObject(obj);
+    child = child->nextSibling();
+  }
+
+  if (docReader.hasData()) {
+    setDocData(docReader);
   }
 }
 
@@ -112,6 +153,43 @@ void ZSegmentationProject::setDataFrame(ZStackFrame *frame)
   m_dataFrame = frame;
 }
 
+void ZSegmentationProject::loadJsonNode(
+    ZTreeNode<ZObject3dScan> *parent, const ZJsonObject &nodeJson,
+    const QString &rootDir)
+{
+  if (nodeJson.hasKey("source")) {
+    ZTreeNode<ZObject3dScan> *node = new ZTreeNode<ZObject3dScan>();
+    QString sourceFile(ZJsonParser::stringValue(nodeJson["source"]));
+
+    QFileInfo fileInfo(sourceFile);
+    if (!fileInfo.isAbsolute()) {
+      QDir dir(rootDir);
+      sourceFile = dir.absoluteFilePath(sourceFile);
+    }
+
+//    ZObject3dScan obj;
+//    node->setData(obj);
+
+    node->data().load(sourceFile.toStdString());
+    if (nodeJson.hasKey("label")) {
+      node->data().setLabel(ZJsonParser::integerValue(nodeJson["label"]));
+    }
+
+    node->setParent(parent);
+    parent = node;
+  }
+
+  if (nodeJson.hasKey("child")) {
+    ZJsonArray childJson(
+          nodeJson["child"], ZJsonValue::SET_INCREASE_REF_COUNT);
+    for (size_t i = 0; i < childJson.size(); ++i) {
+      ZJsonObject childNodeJson(
+            childJson.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
+      loadJsonNode(parent, childNodeJson, rootDir);
+    }
+  }
+}
+
 ZJsonObject ZSegmentationProject::getNodeJson(
     const ZTreeNode<ZObject3dScan> *node)
 {
@@ -119,6 +197,7 @@ ZJsonObject ZSegmentationProject::getNodeJson(
 
   if (!node->data().getSource().empty()) {
     jsonObject.setEntry("source", node->data().getSource());
+    jsonObject.setEntry("label", (int) node->data().getLabel());
   }
 
   //For each child
@@ -149,7 +228,12 @@ void ZSegmentationProject::save(const QString &fileName)
     //saveDir.mkdir(".");
 
     QString signalPath = saveDir.absoluteFilePath("signal.tif");
-    projectJson.setEntry("stack", signalPath.toStdString());
+
+    ZJsonObject stackJson;
+    stackJson.setEntry("url", signalPath.toStdString());
+    stackJson.setEntry("type", std::string("single"));
+
+    projectJson.setEntry("zstack", stackJson);
 
     qDebug() <<"Saving signal: " << signalPath;
     m_stack->save(signalPath.toStdString());
@@ -169,9 +253,14 @@ void ZSegmentationProject::save(const QString &fileName)
     }
 
     ZJsonObject labelJson = getNodeJson(m_labelTree.getRoot());
-    projectJson.setEntry("label", labelJson);
+    projectJson.setEntry("segmentation", labelJson);
 
     qDebug() << "Saving project: " << fileName;
     projectJson.dump(fileName.toStdString());
   }
+}
+
+void ZSegmentationProject::detachFrame()
+{
+  m_dataFrame = NULL;
 }

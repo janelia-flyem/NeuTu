@@ -34,3 +34,11 @@ std::string ZStackObjectSourceFactory::MakeFlyEmBodyMaskSource(int bodyId)
 
   return source;
 }
+
+std::string ZStackObjectSourceFactory::MakeFlyEmBodySource(int bodyId)
+{
+  ZString source = "#.FlyEmBody#";
+  source.appendNumber(bodyId);
+
+  return source;
+}

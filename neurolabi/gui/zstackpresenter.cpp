@@ -372,6 +372,11 @@ QMenu* ZStackPresenter::getStackContextMenu()
 
 void ZStackPresenter::turnOnStroke()
 {
+  if (buddyDocument()->getTag() == NeuTube::Document::FLYEM_ROI) {
+    m_stroke.useCosmeticPen(true);
+  } else {
+    m_stroke.useCosmeticPen(false);
+  }
   buddyView()->paintActiveDecoration();
   m_isStrokeOn = true;
 }
@@ -2037,7 +2042,12 @@ void ZStackPresenter::process(const ZStackOperator &op)
   {
     if (!op.getHitObject()->isSelected()) {
       buddyDocument()->deselectAllObject();
-      buddyDocument()->setSelected(op.getHitObject<ZObject3dScan>());
+      ZObject3dScan *obj = op.getHitObject<ZObject3dScan>();
+      buddyDocument()->setSelected(obj);
+
+      m_parent->notifyUser(
+            QString("%1 (%2)").
+            arg(obj->getSource().c_str()).arg(obj->getLabel()));
     } else {
       buddyDocument()->deselectAllObject();
     }

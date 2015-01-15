@@ -495,7 +495,9 @@ HEADERS += mainwindow.h \
     zsegmentationproject.h \
     zsegmentationprojectmodel.h \
     zsubtractswcsdialog.h \
-    zmarkswcsomadialog.h
+    zmarkswcsomadialog.h \
+    zlabeledspinboxwidget.h \
+    zspinboxgroupdialog.h
 
 FORMS += settingdialog.ui \
     frameinfodialog.ui \
@@ -833,7 +835,9 @@ SOURCES += main.cpp \
     zsegmentationproject.cpp \
     zsegmentationprojectmodel.cpp \
     zsubtractswcsdialog.cpp \
-    zmarkswcsomadialog.cpp
+    zmarkswcsomadialog.cpp \
+    zlabeledspinboxwidget.cpp \
+    zspinboxgroupdialog.cpp
 
 OTHER_FILES += \
     extlib.pri

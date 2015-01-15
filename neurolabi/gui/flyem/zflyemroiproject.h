@@ -107,6 +107,10 @@ public:
   ZObject3dScan getFilledRoi(int z) const;
   ZObject3dScan* getFilledRoi(int z, ZObject3dScan *result) const;
 
+  /*!
+   * \brief Get downsampled ROI object
+   */
+  ZObject3dScan getRoiObject(int xIntv, int yIntv, int zIntv) const;
   ZObject3dScan getRoiObject() const;
 
   int getFirstRoiZ() const;

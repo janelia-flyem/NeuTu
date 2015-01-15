@@ -200,7 +200,8 @@ void ZStackGraph::setWeightFunction(Weight_Func_t f)
 
 void ZStackGraph::inferWeightParameter(const Stack *stack)
 {
-  if (m_workspace.wf == Stack_Voxel_Weight_S) {
+  if (m_workspace.wf == Stack_Voxel_Weight_S
+      || m_workspace.wf == Stack_Voxel_Weight_Sr) {
     int *hist = Stack_Hist(stack);
 
     double c1, c2;
@@ -246,6 +247,22 @@ void ZStackGraph::updateRange(int x1, int y1, int z1, int x2, int y2, int z2,
         margin[1], margin[1], margin[2], margin[2]);
     Stack_Graph_Workspace_Validate_Range(&m_workspace, width, height, depth);
   }
+}
+
+void ZStackGraph::setRange(int x1, int y1, int z1, int x2, int y2, int z2)
+{
+  Stack_Graph_Workspace_Set_Range(&m_workspace, x1, x2, y1, y2, z1, z2);
+}
+
+ZIntCuboid ZStackGraph::getRange()
+{
+  ZIntCuboid cuboid;
+  if (m_workspace.range != NULL) {
+    cuboid.set(m_workspace.range[0], m_workspace.range[2], m_workspace.range[4],
+        m_workspace.range[1], m_workspace.range[3], m_workspace.range[5]);
+  }
+
+  return cuboid;
 }
 
 size_t ZStackGraph::getRoiVolume() const

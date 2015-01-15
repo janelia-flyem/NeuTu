@@ -5035,6 +5035,10 @@ bool ZStackDoc::executeSwcNodeSmartExtendCommand(
 
         m_neuronTracer.setStackOffset(getStackOffset());
 
+//        if (getTag() == NeuTube::Document::FLYEM_ROI) {
+//          m_neuronTracer.useEdgePath(true);
+//        }
+
         Swc_Tree *branch = m_neuronTracer.trace(
               SwcTreeNode::x(prevNode), SwcTreeNode::y(prevNode),
               SwcTreeNode::z(prevNode), SwcTreeNode::radius(prevNode),

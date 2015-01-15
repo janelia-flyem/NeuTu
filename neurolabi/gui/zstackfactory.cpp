@@ -209,7 +209,10 @@ ZStack* ZStackFactory::makePolygonPicture(const ZStroke2d &curve)
 #endif
   stack->setOffset(stackBox.getFirstCorner().getX(),
                    stackBox.getFirstCorner().getY(), curve.getZ());
+
+#ifdef _DEBUG_
   stack->printInfo();
+#endif
 
   delete painter;
   delete pix;

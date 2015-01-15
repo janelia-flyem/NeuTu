@@ -749,6 +749,39 @@ int ZFlyEmRoiProject::getLastRoiZ() const
   return -1;
 }
 
+ZObject3dScan ZFlyEmRoiProject::getRoiObject(
+    int xIntv, int yIntv, int zIntv) const
+{
+  ZObject3dScan obj;
+
+  ZObject3dScan sliceObj;
+
+  int minZ = getFirstRoiZ();
+  int maxZ = getLastRoiZ();
+
+  for (int z = minZ; z <= maxZ; ++z) {
+    const ZClosedCurve *originalRoiCurve = getRoi(z);
+    ZClosedCurve *roiCurve = NULL;
+    if (originalRoiCurve == NULL) {
+      roiCurve = estimateRoi(z, NULL);
+    } else {
+      roiCurve = originalRoiCurve->clone();
+    }
+
+    if (!roiCurve->isEmpty()) {
+      roiCurve->scale(1.0 / (1 + xIntv), 1.0 / (1 + yIntv), 1);
+      getFilledRoi(roiCurve, z, &sliceObj);
+      obj.concat(sliceObj);
+    }
+
+    delete roiCurve;
+  }
+
+  obj.downsampleMax(0, 0, zIntv);
+
+  return obj;
+}
+
 ZObject3dScan ZFlyEmRoiProject::getRoiObject() const
 {
   ZObject3dScan obj;

@@ -39,6 +39,8 @@ FlyEmBodySplitProjectDialog::FlyEmBodySplitProjectDialog(QWidget *parent) :
           this, SLOT(showData3d()));
   connect(ui->viewSplitPushButton,
           SIGNAL(clicked()), this, SLOT(showResult3d()));
+  connect(ui->viewResultQuickPushButton,
+          SIGNAL(clicked()), this, SLOT(showResult3dQuick()));
   connect(ui->donePushButton, SIGNAL(clicked()), this, SLOT(clear()));
   connect(ui->loadBodyPushButton, SIGNAL(clicked()), this, SLOT(loadBody()));
   connect(ui->loadBookmarkButton, SIGNAL(clicked()),
@@ -217,6 +219,14 @@ void FlyEmBodySplitProjectDialog::showResult3d()
   m_project.showResult3d();
   dump("Done.", true);
 }
+
+void FlyEmBodySplitProjectDialog::showResult3dQuick()
+{
+  dump("Showing splitting result ...", true);
+  m_project.showResult3dQuick();
+  dump("Done.", true);
+}
+
 
 MainWindow* FlyEmBodySplitProjectDialog::getMainWindow()
 {
@@ -523,7 +533,14 @@ void FlyEmBodySplitProjectDialog::startProgress(const QString &label)
 
 void FlyEmBodySplitProjectDialog::on_pushButton_clicked()
 {
-#if 1
+  ZDvidReader reader;
+  reader.open(m_project.getDvidTarget());
+
+  int id = reader.readMaxBodyId();
+  dump(QString("Max body ID: %1").arg(id));
+//  std::cout << id << std::endl;
+
+#if 0
   ZDvidWriter writer;
   writer.open(m_project.getDvidTarget());
   writer.writeMaxBodyId(50000000);
@@ -679,19 +696,22 @@ void FlyEmBodySplitProjectDialog::checkAllSeed()
           m_project.getSeedKey(0).c_str(),
           (m_project.getSeedKey(9) + "a").c_str());
     emit messageDumped("<i>Work summary</i>: ");
+    int processedCount = 0;
     foreach (QString key, keyList) {
       QString message = QString("..%1").arg(key);
       ZString str = key.toStdString();
       int bodyId = str.lastInteger();
 
       if (m_project.isSeedProcessed(bodyId)) {
+        ++processedCount;
         message += " processed.";
       }
       emit messageDumped(message, true);
     }
     emit messageDumped(
-          QString("..#Seeded bodies: <font color=\"green\">%1</font>.").
-          arg(keyList.size()));
+          QString("..#Seeded bodies: <font color=\"blue\">%1</font> "
+                  "(<font color=\"green\">%2</font> processed).").
+          arg(keyList.size()).arg(processedCount));
   }
 }
 

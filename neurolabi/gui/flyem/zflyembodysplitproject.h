@@ -14,6 +14,7 @@ class ZSwcTree;
 class ZObject3dScan;
 class ZFlyEmNeuron;
 class ZStack;
+class ZStackDoc;
 
 class ZFlyEmBodySplitProject : public QObject
 {
@@ -105,8 +106,10 @@ public slots:
   void showDataFrame() const;
   void showDataFrame3d();
   void showResult3d();
+  void showResult3dQuick();
   void showBookmark(bool visible);
   void runSplit();
+  void updateResult3dQuick();
 
   /*!
    * \brief Clear the project without deleting the associated widgets
@@ -116,16 +119,20 @@ public slots:
   void shallowClear();
   void shallowClearDataFrame();
   void shallowClearResultWindow();
+  void shallowClearQuickResultWindow();
   void shallowClearQuickViewWindow();
 
 private:
   bool showingBodyMask() const { return m_showingBodyMask; }
+  void clear(QWidget *widget);
+  void loadResult3dQuick(ZStackDoc *doc);
 
 private:
   ZDvidTarget m_dvidTarget;
   int m_bodyId;
   ZStackFrame *m_dataFrame;
   Z3DWindow *m_resultWindow;
+  Z3DWindow *m_quickResultWindow;
   Z3DWindow *m_quickViewWindow;
   ZFlyEmBookmarkArray m_bookmarkArray;
   std::vector<ZStackObject*> m_bookmarkDecoration;

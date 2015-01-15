@@ -450,6 +450,12 @@ void FlyEmDataForm::showSelectedBody()
   showViewSelectedBody(ui->queryView);
 }
 
+/*
+void FlyEmDataForm::showSelectedBodyCoarse()
+{
+  showViewSelectedBodyCoarse(ui->queryView);
+}
+*/
 
 void FlyEmDataForm::showSelectedModelWithBoundBox()
 {

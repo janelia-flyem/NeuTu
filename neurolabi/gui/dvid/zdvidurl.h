@@ -41,6 +41,13 @@ public:
   std::string getSparsevolUrl(const std::string &dataName) const;
   std::string getSparsevolUrl(int bodyId, const std::string &dataName) const;
 
+  std::string getCoarseSparsevolUrl() const;
+  std::string getCoarseSparsevolUrl(int bodyId) const;
+
+  std::string getCoarseSparsevolUrl(const std::string &dataName) const;
+  std::string getCoarseSparsevolUrl(int bodyId, const std::string &dataName) const;
+
+
   std::string getGrayscaleUrl() const;
   std::string getGrayscaleUrl(int sx, int sy, int x0, int y0, int z0) const;
   std::string getGrayscaleUrl(int sx, int sy, int sz, int x0, int y0, int z0)

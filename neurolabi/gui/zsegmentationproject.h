@@ -38,20 +38,27 @@ public:
   void loadStack(const QString &fileName);
   void save(const QString &fileName);
 
+  void clear();
+
+  ZTree<ZObject3dScan>* getLabelTree() {
+    return &m_labelTree;
+  }
+
 private:
   static ZJsonObject getNodeJson(const ZTreeNode<ZObject3dScan> *node);
   void loadJsonNode(ZTreeNode<ZObject3dScan> *parent,
-                    const ZJsonObject &nodeJson);
+                    const ZJsonObject &nodeJson, const QString &rootDir);
 
 
 signals:
 
 public slots:
+  void detachFrame();
 
 private:
-  ZStack *m_stack;
+  ZStack *m_stack; //owned
   ZTree<ZObject3dScan> m_labelTree;
-  ZStackFrame *m_dataFrame;
+  ZStackFrame *m_dataFrame; //not owned
 };
 
 #endif // ZSEGMENTATIONPROJECT_H

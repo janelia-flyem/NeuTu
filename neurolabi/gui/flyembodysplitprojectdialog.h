@@ -83,6 +83,7 @@ public slots:
   bool showData2d();
   void showData3d();
   void showResult3d();
+  void showResult3dQuick();
   bool loadBody();
   void loadBookmark();
   void locateBookmark(const QModelIndex &index);

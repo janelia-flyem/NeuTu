@@ -13,6 +13,15 @@ ZSegmentationProjectModel::~ZSegmentationProjectModel()
 {
 }
 
+void ZSegmentationProjectModel::clear()
+{
+  reset();
+  //removeAllRows();
+  if (m_data != NULL) {
+    m_data->clear();
+  }
+}
+
 int ZSegmentationProjectModel::columnCount(const QModelIndex &/*parent*/) const
 {
   return 1;
@@ -27,6 +36,12 @@ int ZSegmentationProjectModel::rowCount(const QModelIndex &parent) const
   }
 
   return count;
+}
+
+void ZSegmentationProjectModel::removeAllRows()
+{
+  removeRows(0, rowCount(index(0, 0)), index(0, 0));
+  removeRows(0, 1, QModelIndex());
 }
 
 QVariant ZSegmentationProjectModel::data(const QModelIndex &index, int role) const
@@ -57,7 +72,13 @@ QModelIndex ZSegmentationProjectModel::index(
   if (parent.isValid()) {
     ZTreeNode<ZObject3dScan> *parentLabel =
         static_cast<ZTreeNode<ZObject3dScan>*>(parent.internalPointer());
-    return createIndex(row, column, parentLabel->getChild(row));
+    if (parentLabel != NULL) {
+      return createIndex(row, column, parentLabel->getChild(row));
+    }
+  }
+
+  if (m_data->getRootLabel() == NULL) {
+    return QModelIndex();
   }
 
   return createIndex(row, column, m_data->getRootLabel());

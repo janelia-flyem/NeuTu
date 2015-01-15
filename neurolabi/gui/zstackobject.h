@@ -95,8 +95,11 @@ public:
   bool isSelected() const { return m_selected; }
 
 
-  // Display an object to widget, xoffset and yoffset is top left corner of widget
-  // zoom ratio is ratio of widget pixel to object pixel
+  /*!
+   * \brief Display an object to widget
+   *
+   * \a painter is expected to be restored after painting
+   */
   virtual void display(
       ZPainter &painter, int slice, Display_Style option) const = 0;
 

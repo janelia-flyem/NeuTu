@@ -86,6 +86,7 @@ public slots:
 signals:
   void newDocReady();
   void progressFailed();
+  void progressStart();
   void progressAdvanced(double);
   void progressDone();
   void messageDumped(QString str, bool appending);
@@ -127,6 +128,8 @@ private slots:
 
   void on_moveyIncPushButton_clicked();
 
+  void startProgressSlot();
+  void endProgressSlot();
   void advanceProgressSlot(double p);
 
   void on_pushButton_clicked();
@@ -144,6 +147,7 @@ private slots:
   void on_quickNextPushButton_3_clicked();
 
   void exportResult();
+  void exportRoiObject();
   void importRoi();
   void cloneProject();
 
@@ -153,6 +157,8 @@ private:
   void downloadAllProject();
   void uploadProjectList();
   void createMenu();
+  void exportRoiObjectFunc(
+      const QString &fileName, int xintv, int yintv, int zintv);
 
   void prepareQuickLoadFunc(
       const ZDvidTarget &target,const std::string &lowresPath, int z);
@@ -176,6 +182,7 @@ private:
   Ui::ZFlyEmRoiDialog *ui;
   ZDvidDialog *m_dvidDlg;
   ZSpinBoxDialog *m_zDlg;
+  ZSpinBoxGroupDialog *m_dsDlg;
   QList<ZFlyEmRoiProject*> m_projectList;
   ZFlyEmRoiProject *m_project;
   ZDvidTarget m_dvidTarget;

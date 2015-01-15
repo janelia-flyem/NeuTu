@@ -80,6 +80,9 @@ double Stack_Voxel_Weight_A(void *argv);
 /* argv[3]: alpha; argv[4]: beta */
 double Stack_Voxel_Weight_S(void *argv);
 
+/* Reflected version of Stack_Voxel_Weight_S for bright background */
+double Stack_Voxel_Weight_Sr(void *argv);
+
 /* color weight */
 double Stack_Voxel_Weight_C(void *argv);
 

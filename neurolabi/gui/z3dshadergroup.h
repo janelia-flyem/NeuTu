@@ -35,6 +35,7 @@ private:
   Z3DRendererBase* m_base;
   QStringList m_normalShaderFiles;
   std::map<Z3DRendererBase::ShaderHookType, Z3DShaderProgram*> m_shaders;
+  bool m_usingSpecialShader;
 };
 
 #endif // Z3DSHADERGROUP_H

@@ -5,10 +5,11 @@
 #include <QDialog>
 #include <QVector>
 #include <QPointer>
-#include <zdviddialog.h>
-#include <dvidimagedialog.h>
-#include <zspinboxdialog.h>
+#include "zdviddialog.h"
+#include "dvidimagedialog.h"
+#include "zspinboxdialog.h"
 #include "zparameter.h"
+#include"zspinboxgroupdialog.h"
 
 class QSpacerItem;
 class ZParameterArray;
@@ -24,6 +25,7 @@ public:
   static DvidImageDialog *makeDvidImageDialog(
       ZDvidDialog *dvidDlg, QWidget *parent = 0);
   static ZSpinBoxDialog *makeSpinBoxDialog(QWidget *parent = 0);
+  static ZSpinBoxGroupDialog *makeDownsampleDialog(QWidget *parent);
   static QDialog* makeParameterDialog(
       const ZParameterArray &parameterArray,
       QWidget *parent);

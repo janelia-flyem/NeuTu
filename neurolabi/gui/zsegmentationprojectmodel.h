@@ -12,6 +12,8 @@ public:
   explicit ZSegmentationProjectModel(QObject *parent = 0);
   ~ZSegmentationProjectModel();
 
+  void clear();
+
   int columnCount(const QModelIndex &parent) const;
   int rowCount(const QModelIndex &parent) const;
 
@@ -28,6 +30,7 @@ public:
 
   void setInternalData(ZSegmentationProject *data) {
     m_data = data;
+    m_currentIndex = QModelIndex();
   }
 
   ZTreeNode<ZObject3dScan>* getLabelNode(const QModelIndex &index) const;
@@ -39,6 +42,7 @@ public:
   void generateTestData();
 
   void loadStack(const QString &fileName);
+  void removeAllRows();
 
 signals:
 

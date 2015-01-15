@@ -33,6 +33,7 @@
 
 ZFlyEmBodySplitProject::ZFlyEmBodySplitProject(QObject *parent) :
   QObject(parent), m_bodyId(-1), m_dataFrame(NULL), m_resultWindow(NULL),
+  m_quickResultWindow(NULL),
   m_quickViewWindow(NULL), m_isBookmarkVisible(true), m_showingBodyMask(false)
 {
 }
@@ -42,6 +43,15 @@ ZFlyEmBodySplitProject::~ZFlyEmBodySplitProject()
   clear();
 }
 
+void ZFlyEmBodySplitProject::clear(QWidget *widget)
+{
+  if (widget != NULL) {
+    widget->hide();
+    delete widget;
+    widget = NULL;
+  }
+}
+
 void ZFlyEmBodySplitProject::clear()
 {
   if (m_resultWindow != NULL) {
@@ -49,6 +59,8 @@ void ZFlyEmBodySplitProject::clear()
     delete m_resultWindow;
     m_resultWindow = NULL;
   }
+
+  clear(m_quickResultWindow);
 
   if (m_dataFrame != NULL) {
     m_dataFrame->hide();
@@ -73,6 +85,8 @@ void ZFlyEmBodySplitProject::shallowClearDataFrame()
     m_resultWindow = NULL;
   }
 
+  clear(m_quickResultWindow);
+
   if (m_quickViewWindow != NULL) {
     m_quickViewWindow->hide();
     delete m_quickViewWindow;
@@ -85,6 +99,7 @@ void ZFlyEmBodySplitProject::shallowClearDataFrame()
 void ZFlyEmBodySplitProject::shallowClear()
 {
   m_resultWindow = NULL;
+  m_quickResultWindow = NULL;
   m_quickViewWindow = NULL;
   m_dataFrame = NULL;
 
@@ -96,6 +111,11 @@ void ZFlyEmBodySplitProject::shallowClear()
 void ZFlyEmBodySplitProject::shallowClearResultWindow()
 {
   m_resultWindow = NULL;
+}
+
+void ZFlyEmBodySplitProject::shallowClearQuickResultWindow()
+{
+  m_quickResultWindow = NULL;
 }
 
 void ZFlyEmBodySplitProject::shallowClearQuickViewWindow()
@@ -223,6 +243,60 @@ void ZFlyEmBodySplitProject::showSkeleton(ZSwcTree *tree)
 
     m_quickViewWindow->show();
     m_quickViewWindow->raise();
+  }
+}
+
+void ZFlyEmBodySplitProject::loadResult3dQuick(ZStackDoc *doc)
+{
+  if (doc != NULL) {
+    doc->removeAllSwcTree();
+    TStackObjectList objList =
+        m_dataFrame->document()->getObjectList(ZStackObject::TYPE_OBJ3D);
+    int maxSwcNodeNumber = 10000;
+    for (TStackObjectList::const_iterator iter = objList.begin();
+         iter != objList.end(); ++iter) {
+      ZObject3d *obj = dynamic_cast<ZObject3d*>(*iter);
+      if (obj != NULL) {
+        int ds = obj->size() / maxSwcNodeNumber + 1;
+        ZSwcTree *tree = ZSwcGenerator::createSwc(
+              *obj, ds / 2.0, ds);
+        tree->setAlpha(255);
+        if (tree != NULL) {
+          doc->addSwcTree(tree);
+        }
+      }
+    }
+  }
+}
+
+void ZFlyEmBodySplitProject::updateResult3dQuick()
+{
+  if (m_quickResultWindow != NULL) {
+    ZStackDoc *doc = m_quickResultWindow->getDocument();
+    loadResult3dQuick(doc);
+  }
+}
+
+void ZFlyEmBodySplitProject::showResult3dQuick()
+{
+  if (m_dataFrame != NULL) {
+    if (m_quickResultWindow == NULL) {
+      ZWindowFactory windowFactory;
+      windowFactory.setWindowTitle("Splitting Result");
+      ZStackDoc *doc = new ZStackDoc(NULL, NULL);
+      loadResult3dQuick(doc);
+      m_quickResultWindow = windowFactory.make3DWindow(doc);
+      m_quickResultWindow->getSwcFilter()->setColorMode("Intrinsic");
+      m_quickResultWindow->getSwcFilter()->setRenderingPrimitive("Sphere");
+
+      connect(m_quickResultWindow, SIGNAL(destroyed()),
+              this, SLOT(shallowClearQuickResultWindow()));
+      connect(m_dataFrame->document().get(), SIGNAL(labelFieldModified()),
+              this, SLOT(updateResult3dQuick()));
+    }
+
+    m_quickResultWindow->show();
+    m_quickResultWindow->raise();
   }
 }
 

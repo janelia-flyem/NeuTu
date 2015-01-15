@@ -76,6 +76,12 @@ std::string ZDvidUrl::getSparsevolUrl() const
       ZDvidData::getName(ZDvidData::ROLE_SPARSEVOL);
 }
 
+std::string ZDvidUrl::getCoarseSparsevolUrl() const
+{
+  return getDataUrl(m_dvidTarget.getBodyLabelName()) + "/" +
+      ZDvidData::getName(ZDvidData::ROLE_SPARSEVOL_COARSE);
+}
+
 std::string ZDvidUrl::getSparsevolUrl(int bodyId) const
 {
   if (bodyId < 0) {
@@ -88,10 +94,28 @@ std::string ZDvidUrl::getSparsevolUrl(int bodyId) const
   return getSparsevolUrl() + "/" + str;
 }
 
+std::string ZDvidUrl::getCoarseSparsevolUrl(int bodyId) const
+{
+  if (bodyId < 0) {
+    return "";
+  }
+
+  ZString str;
+  str.appendNumber(bodyId);
+
+  return getCoarseSparsevolUrl() + "/" + str;
+}
+
 std::string ZDvidUrl::getSparsevolUrl(const std::string &dataName) const
 {
   return getDataUrl(dataName) + "/" +
       ZDvidData::getName(ZDvidData::ROLE_SPARSEVOL);
+}
+
+std::string ZDvidUrl::getCoarseSparsevolUrl(const std::string &dataName) const
+{
+  return getDataUrl(dataName) + "/" +
+      ZDvidData::getName(ZDvidData::ROLE_SPARSEVOL_COARSE);
 }
 
 std::string ZDvidUrl::getSparsevolUrl(
@@ -105,6 +129,19 @@ std::string ZDvidUrl::getSparsevolUrl(
   str.appendNumber(bodyId);
 
   return getSparsevolUrl(dataName) + "/" + str;
+}
+
+std::string ZDvidUrl::getCoarseSparsevolUrl(
+    int bodyId, const std::string &dataName) const
+{
+  if (bodyId < 0) {
+    return "";
+  }
+
+  ZString str;
+  str.appendNumber(bodyId);
+
+  return getCoarseSparsevolUrl(dataName) + "/" + str;
 }
 
 std::string ZDvidUrl::getThumbnailUrl() const
