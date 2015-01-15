@@ -31,7 +31,8 @@ MainWindow* ZSegmentationProjectDialog::getMainWindow()
 
 ZStackFrame *ZSegmentationProjectDialog::newDataFrame(ZStackDocReader &reader)
 {
-  ZStackFrame *frame = ZFrameFactory::MakeStackFrame(reader);
+  ZStackFrame *frame = ZFrameFactory::MakeStackFrame(
+        reader, NeuTube::Document::SEGMENTATION_TARGET);
 
   connect(frame, SIGNAL(closed(ZStackFrame*)),
           m_model->getProject(), SLOT(detachFrame()));

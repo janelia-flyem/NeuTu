@@ -3288,30 +3288,40 @@ void Z3DWindow::addPolyplaneFrom3dPaint(ZStroke2d *stroke)
 
     ZObject3d *processedObj = NULL;
 
-    if (getDocument()->hasSparseStack()) {
-      const ZStack *stack = getDocument()->getSparseStack()->getStack();
-      ZIntPoint dsIntv = getDocument()->getSparseStack()->getDownsampleInterval();
+    const ZStack *stack = NULL;
+    int xIntv = 0;
+    int yIntv = 0;
+    int zIntv = 0;
 
-      processedObj = new ZObject3d;
-      for (size_t i = 0; i < obj->size(); ++i) {
-        int x = obj->getX(i) / (dsIntv.getX() + 1);
-        int y = obj->getY(i) / (dsIntv.getY() + 1);
-        int z = obj->getZ(i) / (dsIntv.getZ() + 1);
-        int v = 0;
-        for (int dz = -1; dz <= 1; ++dz) {
-          for (int dy = -1; dy <= 1; ++dy) {
-            for (int dx = -1; dx <= 1; ++dx) {
-              v += stack->getIntValue(x + dx, y + dy, z + dz);
-            }
+    if (getDocument()->hasSparseStack()) {
+      stack = getDocument()->getSparseStack()->getStack();
+      ZIntPoint dsIntv = getDocument()->getSparseStack()->getDownsampleInterval();
+      xIntv = dsIntv.getX();
+      yIntv = dsIntv.getY();
+      zIntv = dsIntv.getZ();
+    } else {
+      stack = getDocument()->getStack();
+    }
+
+    processedObj = new ZObject3d;
+    for (size_t i = 0; i < obj->size(); ++i) {
+      int x = obj->getX(i) / (xIntv + 1);
+      int y = obj->getY(i) / (yIntv + 1);
+      int z = obj->getZ(i) / (zIntv + 1);
+      int v = 0;
+      for (int dz = -1; dz <= 1; ++dz) {
+        for (int dy = -1; dy <= 1; ++dy) {
+          for (int dx = -1; dx <= 1; ++dx) {
+            v += stack->getIntValue(x + dx, y + dy, z + dz);
           }
         }
-        if (v > 0) {
-          processedObj->append(obj->getX(i), obj->getY(i), obj->getZ(i));
-        }
       }
-      delete obj;
-      obj = processedObj;
+      if (v > 0) {
+        processedObj->append(obj->getX(i), obj->getY(i), obj->getZ(i));
+      }
     }
+    delete obj;
+    obj = processedObj;
 
     if (obj != NULL) {
 #ifdef _DEBUG_2

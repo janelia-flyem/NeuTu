@@ -42,11 +42,13 @@ Z3DWindow* ZWindowFactory::make3DWindow(ZSharedPointer<ZStackDoc> doc,
       window->getCompositor()->setShowBackground(false);
     }
     if (doc->getTag() == NeuTube::Document::FLYEM_BODY ||
-        doc->getTag() == NeuTube::Document::FLYEM_SPLIT) {
+        doc->getTag() == NeuTube::Document::FLYEM_SPLIT ||
+        doc->getTag() != NeuTube::Document::SEGMENTATION_TARGET) {
       window->getVolumeRaycasterRenderer()->setCompositeMode(
             "Direct Volume Rendering");
     }
-    if (doc->getTag() != NeuTube::Document::FLYEM_SPLIT) {
+    if (doc->getTag() != NeuTube::Document::FLYEM_SPLIT &&
+        doc->getTag() != NeuTube::Document::SEGMENTATION_TARGET) {
       window->getCanvas()->disableKeyEvent();
     }
     if (!m_showVolumeBoundBox) {
