@@ -148,7 +148,7 @@ QVariant ZSegmentationProjectModel::headerData(
   return QVariant();
 }
 
-void ZSegmentationProjectModel::loadSegmentationTarget(QModelIndex index)
+void ZSegmentationProjectModel::loadSegmentationTarget(const QModelIndex &index)
 {
   ZTreeNode<ZObject3dScan> *labelNode = getLabelNode(index);
   m_data->loadSegmentationTarget(labelNode);

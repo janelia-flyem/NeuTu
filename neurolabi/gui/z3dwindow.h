@@ -120,6 +120,7 @@ private:
   bool hasMultipleSelectedSwcNode() const;
 
 signals:
+  void closed();
   
 public slots:
   void resetCamera();  // set up camera based on visible objects in scene, original position
@@ -249,6 +250,7 @@ protected:
   virtual void dragEnterEvent(QDragEnterEvent *event);
   virtual void dropEvent(QDropEvent *event);
   virtual void keyPressEvent(QKeyEvent *event);
+  void closeEvent(QCloseEvent * event);
 
 private:
   QTabWidget* createBasicSettingTabWidget();

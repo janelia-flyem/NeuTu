@@ -47,7 +47,7 @@ public:
 signals:
 
 public slots:
-  void loadSegmentationTarget(QModelIndex index);
+  void loadSegmentationTarget(const QModelIndex &index);
   void updateSegmentation();
 
 private:

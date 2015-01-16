@@ -1859,8 +1859,14 @@ void MainWindow::importImageSequence()
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
+  //Make sure the closed signal of each frame is sent
   if (okToContinue()) {
     writeSettings();
+    QList<QMdiSubWindow*> frameList = mdiArea->subWindowList();
+    foreach (QMdiSubWindow* window, frameList) {
+      window->close();
+    }
+
     event->accept();
   } else {
     event->ignore();

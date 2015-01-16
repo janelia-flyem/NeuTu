@@ -15,7 +15,7 @@ ZSegmentationProjectDialog::ZSegmentationProjectDialog(QWidget *parent) :
 
   ui->treeView->setExpandsOnDoubleClick(false);
   connect(ui->treeView, SIGNAL(doubleClicked(QModelIndex)),
-          m_model, SLOT(loadSegmentationTarget(QModelIndex)));
+          this, SLOT(loadSegmentationTarget(QModelIndex)));
 }
 
 ZSegmentationProjectDialog::~ZSegmentationProjectDialog()
@@ -24,9 +24,28 @@ ZSegmentationProjectDialog::~ZSegmentationProjectDialog()
   delete ui;
 }
 
+void ZSegmentationProjectDialog::loadSegmentationTarget(
+    const QModelIndex &index)
+{
+  prepareDataFrame();
+  m_model->loadSegmentationTarget(index);
+  m_model->getProject()->getDataFrame()->show();
+}
+
 MainWindow* ZSegmentationProjectDialog::getMainWindow()
 {
   return dynamic_cast<MainWindow*>(this->parentWidget());
+}
+
+ZStackFrame* ZSegmentationProjectDialog::newDataFrame()
+{
+  ZStackFrame *frame = ZFrameFactory::MakeStackFrame(
+        NeuTube::Document::SEGMENTATION_TARGET);
+
+  connect(frame, SIGNAL(closed(ZStackFrame*)),
+          m_model->getProject(), SLOT(detachFrame()));
+
+  return frame;
 }
 
 ZStackFrame *ZSegmentationProjectDialog::newDataFrame(ZStackDocReader &reader)
@@ -66,6 +85,18 @@ void ZSegmentationProjectDialog::on_testPushButton_clicked()
 void ZSegmentationProjectDialog::on_updatePushButton_clicked()
 {
   m_model->updateSegmentation();
+}
+
+void ZSegmentationProjectDialog::prepareDataFrame()
+{
+  if (m_model->getProject() != NULL) {
+    if (m_model->getProject()->getDataFrame() == NULL) {
+      ZStackFrame *dataFrame = newDataFrame();
+      m_model->getProject()->setDataFrame(dataFrame);
+      getMainWindow()->addStackFrame(dataFrame);
+      getMainWindow()->presentStackFrame(dataFrame);
+    }
+  }
 }
 
 void ZSegmentationProjectDialog::on_openPushButton_clicked()

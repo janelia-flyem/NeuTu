@@ -21,11 +21,14 @@ ZSegmentationProject::~ZSegmentationProject()
   clear();
 }
 
-void ZSegmentationProject::clear()
+void ZSegmentationProject::clear(bool deletingFrame)
 {
   if (m_dataFrame != NULL) {
     m_dataFrame->hide();
-    delete m_dataFrame;
+    if (deletingFrame) {
+      delete m_dataFrame;
+    }
+
     m_dataFrame = NULL;
   }
 
@@ -156,6 +159,7 @@ void ZSegmentationProject::setDocData(ZStackDocReader &reader)
 void ZSegmentationProject::setDataFrame(ZStackFrame *frame)
 {
   m_dataFrame = frame;
+  connect(m_dataFrame, SIGNAL(closed(ZStackFrame*)), this, SLOT(detachFrame()));
 }
 
 void ZSegmentationProject::loadJsonNode(

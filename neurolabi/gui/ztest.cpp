@@ -14160,7 +14160,7 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
-#if 0
+#if 1
   std::vector<ZPointArray> synapseGroup;
   std::string synapseFile =
       GET_TEST_DATA_DIR + "/flyem/AL/label/whole_AL_synapse_labeled.txt";
@@ -14195,7 +14195,7 @@ void ZTest::test(MainWindow *host)
 
   ZStack densityMap;
   densityMap.load(GET_DATA_DIR +
-                  "/flyem/AL/al7d_whole_wfix_tbar-predict_0.81_ds20_s5.tif");
+                  "/flyem/AL/al7d_whole_wfix_tbar-predict_0.81_ds20_s10.tif");
   densityMap.crop(signal->getBoundBox());
 
   size_t voxelNumber = signal->getVoxelNumber();
@@ -14209,6 +14209,7 @@ void ZTest::test(MainWindow *host)
     }
   }
 
+  C_Stack::shrinkBorder(labelField.c_stack(), 5);
 
   ZStack *result = watershedEngine.run(signal, &labelField);
   result->save(GET_DATA_DIR + "/test.tif");
@@ -14330,7 +14331,7 @@ void ZTest::test(MainWindow *host)
   rootJson.dump(GET_DATA_DIR + "/flyem/AL/glomeruli/segcheck/seg.json");
 #endif
 
-#if 1
+#if 0
   ZJsonObject rootJson;
   ZJsonObject stackJson;
   std::string signalPath = GET_DATA_DIR +
@@ -14457,5 +14458,37 @@ void ZTest::test(MainWindow *host)
   stack.load(GET_TEST_DATA_DIR + "/benchmark/em_stack_slice.tif");
   Stack *out = C_Stack::computeGradient(stack.c_stack());
   C_Stack::write(GET_TEST_DATA_DIR + "/test.tif", out);
+#endif
+
+#if 1
+  FlyEm::ZSynapseAnnotationArray synapseArray;
+  synapseArray.loadJson(GET_DATA_DIR +
+                        "/flyem/AL/al7d_whole_wfix_tbar-predict_0.81.json");
+
+  ZWeightedPointArray ptArray = synapseArray.toTBarConfidencePointArray();
+  std::cout << ptArray.size() << " TBars" << std::endl;
+
+  ZStack stack;
+  stack.load(GET_DATA_DIR + "/flyem/AL/glomeruli/label.tif");
+
+  ofstream stream(
+        (GET_DATA_DIR + "/flyem/AL/glomeruli/al7d_whole_wfix_tbar-predict_0.81_labeled.txt").c_str());
+
+  int dsScale = 20;
+  for (ZWeightedPointArray::iterator iter = ptArray.begin();
+       iter != ptArray.end(); ++iter) {
+    ZWeightedPoint pt = *iter;
+    pt *= 1.0 / dsScale;
+    ZIntPoint ipt = pt.toIntPoint();
+    int label = stack.getIntValue(ipt.getX(), ipt.getY(), ipt.getZ());
+
+    if (label > 0) {
+      stream << iter->x() << " " << iter->y() << " " << iter->z() << " "
+             << label << " " << pt.weight() << std::endl;
+    }
+
+  }
+
+  stream.close();
 #endif
 }

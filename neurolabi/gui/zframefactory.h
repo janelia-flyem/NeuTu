@@ -21,6 +21,9 @@ public:
       ZStackDocReader &reader,
       NeuTube::Document::ETag tag = NeuTube::Document::NORMAL,
       ZStackFrame *parentFrame = NULL);
+  static ZStackFrame* MakeStackFrame(
+      NeuTube::Document::ETag tag = NeuTube::Document::NORMAL,
+      ZStackFrame *parentFrame = NULL);
 };
 
 #endif // ZFRAMEFACTORY_H

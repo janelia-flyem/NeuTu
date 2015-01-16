@@ -2045,6 +2045,11 @@ void Z3DWindow::dropEvent(QDropEvent *event)
   m_doc->loadFileList(urls);
 }
 
+void Z3DWindow::closeEvent(QCloseEvent */*event*/)
+{
+  emit closed();
+}
+
 void Z3DWindow::keyPressEvent(QKeyEvent *event)
 {
   switch(event->key())

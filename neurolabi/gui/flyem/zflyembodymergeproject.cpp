@@ -322,12 +322,18 @@ void ZFlyEmBodyMergeProject::uploadResult()
   }
 }
 
+void ZFlyEmBodyMergeProject::detachBodyWindow()
+{
+  m_bodyWindow = NULL;
+}
+
 void ZFlyEmBodyMergeProject::showBody3d()
 {
   if (m_bodyWindow == NULL) {
     ZStackDoc *doc = new ZStackDoc(NULL, NULL);
     ZWindowFactory factory;
     m_bodyWindow = factory.make3DWindow(doc);
+    connect(m_bodyWindow, SIGNAL(closed()), this, SLOT(detachBodyWindow()));
     m_bodyWindow->getSwcFilter()->setColorMode("Intrinsic");
     m_bodyWindow->getSwcFilter()->setRenderingPrimitive("Sphere");
   }

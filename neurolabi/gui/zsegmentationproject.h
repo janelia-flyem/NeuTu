@@ -38,7 +38,7 @@ public:
   void loadStack(const QString &fileName);
   void save(const QString &fileName);
 
-  void clear();
+  void clear(bool deletingFrame = true);
 
   ZTree<ZObject3dScan>* getLabelTree() {
     return &m_labelTree;

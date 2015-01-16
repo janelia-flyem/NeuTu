@@ -68,6 +68,7 @@ public slots:
   void uploadResult();
   void update3DBodyView(ZStackObjectSelector *selector);
   void showBody3d();
+  void detachBodyWindow();
 
 private:
   ZFlyEmBodyMergeFrame *m_dataFrame;

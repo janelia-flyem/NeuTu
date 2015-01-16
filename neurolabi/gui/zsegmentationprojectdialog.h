@@ -7,6 +7,7 @@ class ZSegmentationProjectModel;
 class MainWindow;
 class ZStackFrame;
 class ZStackDocReader;
+class QModelIndex;
 
 namespace Ui {
 class ZSegmentationProjectDialog;
@@ -23,6 +24,9 @@ public:
   MainWindow* getMainWindow();
 
   ZStackFrame *newDataFrame(ZStackDocReader &reader);
+  ZStackFrame *newDataFrame();
+
+  void prepareDataFrame();
 
 private slots:
   void on_testPushButton_clicked();
@@ -34,6 +38,8 @@ private slots:
   void on_savePushButton_clicked();
 
   void on_donePushButton_clicked();
+
+  void loadSegmentationTarget(const QModelIndex &index);
 
 private:
   Ui::ZSegmentationProjectDialog *ui;

@@ -52,3 +52,28 @@ ZFrameFactory::MakeStackFrame(ZStackDocReader &reader,
 
   return frame;
 }
+
+ZStackFrame*
+ZFrameFactory::MakeStackFrame(
+    NeuTube::Document::ETag tag, ZStackFrame *parentFrame)
+{
+  ZStackFrame *frame = NULL;
+  switch (tag) {
+  case NeuTube::Document::FLYEM_MERGE:
+    frame = new ZFlyEmBodyMergeFrame;
+    frame->document()->setStackBackground(NeuTube::IMAGE_BACKGROUND_BRIGHT);
+    break;
+  default:
+    frame = new ZStackFrame;
+    break;
+  }
+
+  frame->setParentFrame(parentFrame);
+  frame->document()->setTag(tag);
+  if (parentFrame != NULL) {
+    frame->document()->setStackBackground(
+          parentFrame->document()->getStackBackground());
+  }
+
+  return frame;
+}
