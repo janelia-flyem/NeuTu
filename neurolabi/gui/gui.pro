@@ -59,13 +59,12 @@ include(add_itk.pri)
 #Qt5
 QT += opengl xml network
 isEqual(QT_MAJOR_VERSION,5) | greaterThan(QT_MAJOR_VERSION,5) {
-
-isEqual(QT_MAJOR_VERSION,5) {
-  lessThan(QT_MINOR_VERSION,4) {
-    message("Cannot build neuTube with Qt version $${QT_VERSION}.")
-    error("Use at least Qt 5.4.0.")
-  }
-}
+    isEqual(QT_MAJOR_VERSION,5) {
+      lessThan(QT_MINOR_VERSION,4) {
+        message("Cannot build neuTube with Qt version $${QT_VERSION}.")
+        error("Use at least Qt 5.4.0.")
+      }
+    }
     message("Qt 5")
     QT += concurrent gui
     DEFINES += _QT5_
@@ -78,6 +77,14 @@ isEqual(QT_MAJOR_VERSION,4) {
     message("Qt 4")
 }
 
+macx {
+    DEFINES += _NEUTUBE_MAC_
+}
+
+unix:!macx {
+  DEFINES += _NEUTUBE_LINUX_
+}
+
 #QT += webkit
 
 contains(CONFIG, static_glew) { # glew from ext folder
@@ -88,14 +95,13 @@ win32 {
   LIBS += -lglew32 -lopengl32 -lglu32
 }
 
+
 macx {
   LIBS += -lGLEW -framework AGL -framework OpenGL
-  DEFINES += _MAC_
 }
 
 unix:!macx {
   LIBS += -lGL -lGLEW -lGLU
-  DEFINES += _LINUX_
 }
 
 } # static glew

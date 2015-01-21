@@ -577,6 +577,7 @@ int ZImageWidget::getMaxZoomRatio() const
   return std::max(ratio, 16);
 }
 
+
 double ZImageWidget::getAcutalZoomRatioX() const
 {
   return static_cast<double>(m_projRegion.width()) / m_viewPort.width();
