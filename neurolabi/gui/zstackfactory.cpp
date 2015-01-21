@@ -590,3 +590,65 @@ ZStack* ZStackFactory::MakeColorStack(const ZStack &stack, const ZStack &labelFi
 //{
 
 //}
+
+ZStack* ZStackFactory::MakeRgbStack(
+      const ZStack &redStack, const ZStack &greenStack, const ZStack &blueStack)
+{
+  if (redStack.kind() != GREY || greenStack.kind() != GREY ||
+      blueStack.kind() != GREY) {
+    return NULL;
+  }
+
+  ZIntCuboid boundBox = redStack.getBoundBox();
+
+  //Get bound box
+  boundBox.join(greenStack.getBoundBox());
+  boundBox.join(blueStack.getBoundBox());
+
+  if (boundBox.isEmpty()) {
+    return NULL;
+  }
+
+  ZStack *output = ZStackFactory::makeZeroStack(COLOR, boundBox, 1);
+
+  ZStack* channels[3];
+
+  //Paste all stacks into the bound box
+  channels[0] = ZStackFactory::makeZeroStack(GREY, boundBox, 1);
+  redStack.paste(channels[0]);
+
+  channels[1] = ZStackFactory::makeZeroStack(GREY, boundBox, 1);
+  greenStack.paste(channels[1]);
+
+  channels[2] = ZStackFactory::makeZeroStack(GREY, boundBox, 1);
+  blueStack.paste(channels[2]);
+
+  size_t voxelNumber = output->getVoxelNumber();
+  color_t *outputArray = output->arrayc();
+  for (int c = 0; c < 3; ++c) {
+    uint8_t *array = channels[c]->array8();
+    for (size_t i = 0; i < voxelNumber; ++i) {
+      outputArray[i][c] = array[i];
+    }
+    delete channels[c];
+  }
+
+  return output;
+}
+
+ZStack* ZStackFactory::CompositeForeground(
+    const ZStack &stack1, const ZStack &stack2)
+{
+  if (stack1.kind() != stack2.kind()) {
+    return NULL;
+  }
+
+  ZIntCuboid boundBox = stack1.getBoundBox();
+  boundBox.join(stack2.getBoundBox());
+
+  ZStack *stack = ZStackFactory::makeZeroStack(stack1.kind(), boundBox, 1);
+  stack1.paste(stack, 0);
+  stack2.paste(stack, 0);
+
+  return stack;
+}

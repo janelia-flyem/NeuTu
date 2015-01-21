@@ -38,6 +38,8 @@
 #include "mainwindow.h"
 #include "z3dcanvas.h"
 #include "zwindowfactory.h"
+#include "zobject3dscanarray.h"
+#include "zsparseobject.h"
 
 using namespace std;
 
@@ -985,8 +987,21 @@ void ZStackFrame::exportObjectMask(
 
 void ZStackFrame::saveStack(const QString &filePath)
 {
-  document()->getStack()->save(filePath.toStdString());
-  document()->setStackSource(filePath.toStdString().c_str());
+  if (document()->hasStackData()) {
+    document()->getStack()->save(filePath.toStdString());
+    document()->setStackSource(filePath.toStdString().c_str());
+  } else {
+    QList<ZSparseObject*> objList = document()->getSparseObjectList();
+    ZObject3dScanArray objArray;
+    foreach (ZSparseObject *obj, objList) {
+      objArray.push_back(*dynamic_cast<ZObject3dScan*>(obj));
+    }
+    ZStack *stack = objArray.toStackObject();
+    if (stack != NULL) {
+      stack->save(filePath.toStdString().c_str());
+      delete stack;
+    }
+  }
 }
 
 void ZStackFrame::displayActiveDecoration(bool enabled)

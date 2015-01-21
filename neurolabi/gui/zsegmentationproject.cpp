@@ -10,6 +10,7 @@
 #include "zfiletype.h"
 #include "zlabelcolortable.h"
 #include "zstackview.h"
+#include "zobject3dscanarray.h"
 
 ZSegmentationProject::ZSegmentationProject(QObject *parent) :
   QObject(parent), m_stack(NULL), m_dataFrame(NULL)
@@ -274,4 +275,43 @@ void ZSegmentationProject::save(const QString &fileName)
 void ZSegmentationProject::detachFrame()
 {
   m_dataFrame = NULL;
+}
+
+void ZSegmentationProject::exportLeafObjects(const QString &dirName)
+{
+  if (!dirName.isEmpty()) {
+    //Saving regions
+    ZTreeIterator<ZObject3dScan> iterator(m_labelTree);
+    while (iterator.hasNext()) {
+      ZTreeNode<ZObject3dScan> *node = iterator.nextNode();
+      if (node->isLeaf()) {
+        QString source = node->data().getSource().c_str();
+        if (!source.isEmpty()) {
+          QString output;
+          QFileInfo fileInfo(source);
+          QDir dir(dirName);
+          output = dir.absoluteFilePath(fileInfo.fileName());
+          node->data().save(output.toStdString());
+        }
+      }
+    }
+  }
+}
+
+void ZSegmentationProject::exportLabelField(const QString &fileName)
+{
+  ZObject3dScanArray objArray;
+
+  ZTreeIterator<ZObject3dScan> iterator(m_labelTree);
+  while (iterator.hasNext()) {
+    ZTreeNode<ZObject3dScan> *node = iterator.nextNode();
+    if (node->isLeaf()) {
+      objArray.push_back(node->data());
+    }
+  }
+
+  ZStack *stack = objArray.toStackObject();
+  stack->save(fileName.toStdString());
+
+  delete stack;
 }

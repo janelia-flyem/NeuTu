@@ -831,6 +831,11 @@ bool ZStackView::isDepthChangable()
 void ZStackView::mouseRolledInImageWidget(QWheelEvent *event)
 {
   int numSteps = event->delta();
+
+#ifndef _MAC_
+  numSteps = -numSteps;
+#endif
+
   if ((abs(numSteps) > 0) && (abs(numSteps) < 120)) {
     if (numSteps > 0) {
       numSteps = 1;

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>463</width>
-    <height>448</height>
+    <width>467</width>
+    <height>451</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -24,11 +24,22 @@
    </property>
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
-     <widget class="QPushButton" name="testPushButton">
-      <property name="text">
-       <string>Test</string>
-      </property>
-     </widget>
+     <layout class="QHBoxLayout" name="horizontalLayout_2">
+      <item>
+       <widget class="QPushButton" name="menuButton">
+        <property name="text">
+         <string>Menu</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="testPushButton">
+        <property name="text">
+         <string>Test</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </item>
     <item>
      <widget class="QTreeView" name="treeView"/>

@@ -41,6 +41,12 @@ private slots:
 
   void loadSegmentationTarget(const QModelIndex &index);
 
+  void exportLeafObjects();
+  void exportLabelField();
+
+private:
+  void createMenu();
+
 private:
   Ui::ZSegmentationProjectDialog *ui;
   ZSegmentationProjectModel *m_model;

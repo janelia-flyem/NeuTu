@@ -960,35 +960,73 @@ std::string ZFlyEmRoiProject::getRoiKey(int z) const
 
 double ZFlyEmRoiProject::estimateRoiVolume(char unit) const
 {
-  double totalVolume = 0;
-  size_t z1 = 0;
-  size_t z2 = 0;
-  size_t v1 = 0;
-  size_t v2 = 0;
-  for (size_t z = 0; z < m_curveArray.size(); ++z) {
-    const ZClosedCurve *curve = m_curveArray[z];
-    if (curve != NULL) {
-      if (!curve->isEmpty()) {
-        size_t v = getFilledRoi(z).getVoxelNumber();
-        totalVolume += v;
-        if (v1 == 0) {
-          v1 = v;
-          z1 = z;
-        } else {
-          v2 = v;
-          z2 = z;
-        }
-        if (v1 > 0 && v2 > 0) {
-          totalVolume += 0.5 * (v1 + v2) * (z2 - z1 - 1);
-          v1 = v2;
-          z1 = z2;
-          v2 = 0;
-          z2 = 0;
-        }
-      }
-    }
-  }
+//  double totalVolume = 0;
+////  size_t z1 = 0;
+////  size_t z2 = 0;
+////  size_t v1 = 0;
+////  size_t v2 = 0;
 
+////  bool hitFirst = false;
+
+//  int z1 = getFirstRoiZ();
+//  int z2 = getLastRoiZ();
+
+//  ZObject3dScan obj;
+//  for (int z = z1; z <= z2; ++z) {
+//    ZClosedCurve *curve = m_curveArray[z];
+//    ZClosedCurve *tmpCurve = NULL;
+//    if (curve == NULL) {
+//      tmpCurve = estimateRoi(z, NULL);
+//      curve = tmpCurve;
+//    }
+//    getFilledRoi(curve, z, &obj);
+//    size_t v = obj.getVoxelNumber();
+//    totalVolume += v;
+
+//    delete tmpCurve;
+//  }
+
+
+////  for (size_t z = 0; z < m_curveArray.size(); ++z) {
+////     else {
+////      hitFirst = true;
+////    }
+
+////    if (curve != NULL) {
+////      if (!curve->isEmpty()) {
+////         = getFilledRoi(z);
+//////        obj.downsampleMax(19, 19, 19);
+////#ifdef _DEBUG_2
+////        obj.save(GET_TEST_DATA_DIR + "/test.sobj");
+////#endif
+//////        size_t v = obj.getVoxelNumber() * 20 * 20;
+////        totalVolume += v;
+////        if (v1 == 0) {
+////          v1 = v;
+////          z1 = z;
+////        } else {
+////          v2 = v;
+////          z2 = z;
+////        }
+////        if (v1 > 0 && v2 > 0) {
+////          totalVolume += 0.5 * (v1 + v2) * (z2 - z1 - 1);
+////          v1 = v2;
+////          z1 = z2;
+////          v2 = 0;
+////          z2 = 0;
+////        }
+////      }
+////    }
+////  }
+
+
+  ZObject3dScan obj = getRoiObject(19, 19, 19);
+
+#ifdef _DEBUG_
+  obj.save(GET_TEST_DATA_DIR + "/test.sobj");
+#endif
+
+  size_t totalVolume = obj.getVoxelNumber() * 20 * 20 * 20;
   ZResolution res = m_dvidInfo.getVoxelResolution();
   res.convertUnit(unit);
 

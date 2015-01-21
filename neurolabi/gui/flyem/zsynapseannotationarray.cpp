@@ -1355,7 +1355,7 @@ vector<ZPunctum*> FlyEm::ZSynapseAnnotationArray::toPuncta(double radius) const
   displayConfig.psdColor.green = 0;
   displayConfig.psdColor.blue = 0;
 
-  return toPuncta(config, FlyEm::SynapseLocation::PHYSICAL_SPACE, displayConfig);
+  return toPuncta(config, FlyEm::SynapseLocation::CURRENT_SPACE, displayConfig);
 }
 
 std::vector<ZPunctum*>

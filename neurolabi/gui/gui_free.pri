@@ -212,7 +212,8 @@ HEADERS +=$${PWD}/zstackprocessor.h \
    $${PWD}/zstackobjectsource.h \
    $${PWD}/zstackobjectrole.h \
    $${PWD}/zarrayfactory.h \
-   $${PWD}/zstackobjectselector.h
+   $${PWD}/zstackobjectselector.h \
+    zinthistogram.h
 
 SOURCES +=$${PWD}/zstackprocessor.cpp \
    $${PWD}/zstack.cxx \
@@ -410,4 +411,5 @@ SOURCES +=$${PWD}/zstackprocessor.cpp \
    $${PWD}/zstackobjectsource.cpp \
    $${PWD}/zstackobjectrole.cpp \
    $${PWD}/zarrayfactory.cpp \
-   $${PWD}/zstackobjectselector.cpp
+   $${PWD}/zstackobjectselector.cpp \
+    zinthistogram.cpp

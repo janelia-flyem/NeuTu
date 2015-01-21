@@ -1552,9 +1552,13 @@ void MainWindow::saveAs()
   ZStackFrame *frame = currentStackFrame();
 
   if (frame != NULL) {
+    QString openFileName = m_lastOpenedFilePath;
+
+    if (frame->document()->hasStackData()) {
+      openFileName = frame->document()->getStack()->sourcePath().c_str();
+    }
     QString fileName = getSaveFileName(
-          "Save stack", "Tiff stack files (*.tif) ",
-          frame->document()->getStack()->sourcePath().c_str());
+          "Save stack", "Tiff stack files (*.tif) ", openFileName);
 #if 0
         QFileDialog::getSaveFileName(
           this, tr("Save stack"),
@@ -2888,7 +2892,6 @@ void MainWindow::on_actionExpand_Region_triggered()
 
 void MainWindow::on_actionDilate_triggered()
 {
-
 }
 
 void MainWindow::on_actionExtract_Neuron_triggered()

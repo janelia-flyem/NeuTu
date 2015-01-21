@@ -14,8 +14,11 @@ ZSegmentationProjectDialog::ZSegmentationProjectDialog(QWidget *parent) :
   m_model = new ZSegmentationProjectModel(this);
 
   ui->treeView->setExpandsOnDoubleClick(false);
+  ui->treeView->setSelectionMode(QAbstractItemView::ExtendedSelection);
   connect(ui->treeView, SIGNAL(doubleClicked(QModelIndex)),
           this, SLOT(loadSegmentationTarget(QModelIndex)));
+
+  createMenu();
 }
 
 ZSegmentationProjectDialog::~ZSegmentationProjectDialog()
@@ -145,4 +148,37 @@ void ZSegmentationProjectDialog::on_savePushButton_clicked()
 void ZSegmentationProjectDialog::on_donePushButton_clicked()
 {
   m_model->clear();
+}
+
+void ZSegmentationProjectDialog::createMenu()
+{
+  QMenu *mainMenu = new QMenu(this);
+  ui->menuButton->setMenu(mainMenu);
+
+  QAction *exportLeafAction = new QAction("Export Leaf Objects", this);
+  connect(exportLeafAction, SIGNAL(triggered()),
+          this, SLOT(exportLeafObjects()));
+  mainMenu->addAction(exportLeafAction);
+
+  QAction *exportLabelAction = new QAction("Export Label Field", this);
+  connect(exportLabelAction, SIGNAL(triggered()),
+          this, SLOT(exportLabelField()));
+  mainMenu->addAction(exportLabelAction);
+}
+
+void ZSegmentationProjectDialog::exportLeafObjects()
+{
+  QString fileName = getMainWindow()->getDirectory("Export Objects");
+  if (!fileName.isEmpty()) {
+    m_model->getProject()->exportLeafObjects(fileName);
+  }
+}
+
+void ZSegmentationProjectDialog::exportLabelField()
+{
+  QString fileName = getMainWindow()->getSaveFileName(
+        "Export Label Field", "*.tif");
+  if (!fileName.isEmpty()) {
+    m_model->getProject()->exportLabelField(fileName);
+  }
 }

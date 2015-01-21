@@ -48,6 +48,9 @@ public:
     return m_source;
   }
 
+  void exportLeafObjects(const QString &dirName);
+  void exportLabelField(const QString &fileName);
+
 private:
   static ZJsonObject getNodeJson(const ZTreeNode<ZObject3dScan> *node);
   void loadJsonNode(ZTreeNode<ZObject3dScan> *parent,

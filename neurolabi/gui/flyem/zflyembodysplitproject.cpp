@@ -257,12 +257,14 @@ void ZFlyEmBodySplitProject::loadResult3dQuick(ZStackDoc *doc)
          iter != objList.end(); ++iter) {
       ZObject3d *obj = dynamic_cast<ZObject3d*>(*iter);
       if (obj != NULL) {
-        int ds = obj->size() / maxSwcNodeNumber + 1;
-        ZSwcTree *tree = ZSwcGenerator::createSwc(
-              *obj, ds / 2.0, ds);
-        tree->setAlpha(255);
-        if (tree != NULL) {
-          doc->addSwcTree(tree);
+        if (!obj->getRole().hasRole(ZStackObjectRole::ROLE_SEED)) {
+          int ds = obj->size() / maxSwcNodeNumber + 1;
+          ZSwcTree *tree = ZSwcGenerator::createSwc(
+                *obj, dmin2(3.0, ds / 2.0), ds);
+          tree->setAlpha(255);
+          if (tree != NULL) {
+            doc->addSwcTree(tree);
+          }
         }
       }
     }
@@ -273,7 +275,15 @@ void ZFlyEmBodySplitProject::updateResult3dQuick()
 {
   if (m_quickResultWindow != NULL) {
     ZStackDoc *doc = m_quickResultWindow->getDocument();
+    bool resetCamera = true;
+    if (doc->hasSwc()) {
+      resetCamera = false;
+    }
+
     loadResult3dQuick(doc);
+    if (resetCamera) {
+      m_quickResultWindow->resetCamera();
+    }
   }
 }
 

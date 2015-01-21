@@ -73,6 +73,10 @@ public:
       const ZStack &stack, const ZStack &mask, double h, double s);
 
   static ZStack* MakeColorStack(const ZStack &stack, const ZStack &labelField);
+  static ZStack* MakeRgbStack(
+      const ZStack &redStack, const ZStack &greenStack, const ZStack &blueStack);
+
+  static ZStack* CompositeForeground(const ZStack &stack1, const ZStack &stack2);
 
 private:
   static Stack* pileMatched(const std::vector<Stack*> stackArray);

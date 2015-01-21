@@ -122,6 +122,24 @@ void ZInteractionEngine::processKeyPressEvent(QKeyEvent *event)
       emit decorationUpdated();
     }
     break;
+  case Qt::Key_5:
+    if (isStateOn(STATE_DRAW_STROKE)) {
+      m_stroke.setLabel(5);
+      emit decorationUpdated();
+    }
+    break;
+  case Qt::Key_6:
+    if (isStateOn(STATE_DRAW_STROKE)) {
+      m_stroke.setLabel(6);
+      emit decorationUpdated();
+    }
+    break;
+  case Qt::Key_7:
+    if (isStateOn(STATE_DRAW_STROKE)) {
+      m_stroke.setLabel(7);
+      emit decorationUpdated();
+    }
+    break;
   case Qt::Key_QuoteLeft:
     if (isStateOn(STATE_DRAW_STROKE)) {
       m_stroke.setLabel(255);

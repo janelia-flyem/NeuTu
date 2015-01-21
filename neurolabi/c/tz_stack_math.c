@@ -297,7 +297,9 @@ Stack *Stack_Or_E(Stack *stack1, Stack *stack2, Stack *out)
   for (i = 0; i < length; i++) {					\
     if (array2[i] > 0) {						\
       TZ_CONCATU(array_out, suffix)[i] = TZ_CONCATU(array1, suffix)[i];	\
-    }									\
+    } else { \
+      TZ_CONCATU(array_out, suffix)[i] = 0;\
+    }\
   }
 
 /* Stack_Mask(): Mask a stack.

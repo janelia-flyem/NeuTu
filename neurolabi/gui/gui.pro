@@ -90,6 +90,7 @@ win32 {
 
 macx {
   LIBS += -lGLEW -framework AGL -framework OpenGL
+  DEFINES += _MAC_
 }
 
 unix:!macx {
