@@ -14775,7 +14775,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   ZStack labelField;
   labelField.load(GET_DATA_DIR + "/flyem/AL/glomeruli/new_label_field.tif");
 
@@ -14823,5 +14823,12 @@ void ZTest::test(MainWindow *host)
     std::cout << label << ": " << center.toString() << " " << pt.size()
               << ", " << histArray[label] * 0.16 * 0.16 *0.16  << std::endl;
   }
+#endif
+
+#if 1
+  ZObject3dScan obj;
+//  obj.load(GET_TEST_DATA_DIR + "/flyem/AL/glomeruli/segcheck8/_31.sobj");
+  obj.load(GET_TEST_DATA_DIR + "/test.sobj");
+  std::cout << obj.getVoxelNumber() << std::endl;
 #endif
 }
