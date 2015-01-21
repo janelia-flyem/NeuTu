@@ -255,7 +255,13 @@ QMenu* ZStackDocMenuFactory::makeStackContextMenu(
     menu = new QMenu(NULL);
   }
 
-  menu->addAction(presenter->getAction(ZStackPresenter::ACTION_ADD_SWC_NODE));
+  if (presenter->buddyDocument()->getTag() == NeuTube::Document::FLYEM_SPLIT ||
+      presenter->buddyDocument()->getTag() ==
+      NeuTube::Document::SEGMENTATION_TARGET) {
+    menu->addAction(presenter->getAction(ZStackPresenter::ACTION_SPLIT_DATA));
+  } else {
+    menu->addAction(presenter->getAction(ZStackPresenter::ACTION_ADD_SWC_NODE));
+  }
 
   return menu;
 }

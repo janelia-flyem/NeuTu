@@ -3,9 +3,25 @@
 
 #include "zqtheader.h"
 #include "zpainter.h"
+#include "zstackobjectrole.h"
 
 /*!
  * \brief The abstract class of representing an 3D object
+ *
+ * ZStackObject is a class of objects in a stack. We call those objects stack
+ * objects. The common properties of a stack object are:
+ *
+ *  Source: a string telling where the object is from. It can be empty, meaning
+ *          that the object is from unknown source.
+ *  Visibility: the object is visible or not.
+ *  Color: color of the object.
+ *  Role: role of the object when it exists in a document.
+ *  Selection: the object is selected or not.
+ *  Type: type of an object. The types are predefined.
+ *  Z Order: Z Order of the object to specify the order of painting for
+ *           multiple objects on the same plane.
+ *  Z Scale: Z Scale of the object.
+ *  Target: painting target (canvas) of the object.
  *
  * Each object has a source string, which helps identifying its identity. The
  * source can be the file path where the object is loaded, it can also be a
@@ -15,7 +31,10 @@
  * for special purposes. There are some special characters put in the front
  * to specify the role of source IDs:
  *   '#': unique ID
+ *   '#.': source class (the class part should always ends with '#')
  *   '!': reserved ID
+ *
+ * The class also provides the interface for object display and hit test.
  */
 class ZStackObject
 {
@@ -23,13 +42,45 @@ public:
   ZStackObject();
   virtual ~ZStackObject() {}
 
-  virtual const std::string& className() const = 0;
-
   enum EType {
-    TYPE_SWC, TYPE_PUNCTUM, TYPE_OBJ3D,
-    TYPE_STROKE, TYPE_LOCSEG_CHAIN, TYPE_CONN,
-    TYPE_SPARSE_OBJECT, TYPE_CIRCLE, TYPE_STACK_BALL, TYPE_UNIDENTIFIED
+    TYPE_UNIDENTIFIED = 0, //Unidentified type
+    TYPE_SWC,
+    TYPE_PUNCTUM,
+    TYPE_OBJ3D,
+    TYPE_STROKE,
+    TYPE_LOCSEG_CHAIN,
+    TYPE_CONN,
+    TYPE_OBJECT3D_SCAN,
+    TYPE_SPARSE_OBJECT,
+    TYPE_CIRCLE,
+    TYPE_STACK_BALL,
+    TYPE_STACK_PATCH,
+    TYPE_RECT2D
   };
+
+  enum Palette_Color {
+    BLUE = 0, GREEN, RED, ALPHA
+  };
+
+  enum Display_Style {
+    NORMAL, SOLID, BOUNDARY, SKELETON
+  };
+
+  enum ETarget {
+    STACK_CANVAS, OBJECT_CANVAS, WIDGET
+  };
+
+  enum EDisplaySliceMode {
+    DISPLAY_SLICE_PROJECTION, //Display Z-projection of the object
+    DISPLAY_SLICE_SINGLE      //Display a cross section of the object
+  };
+
+  /*!
+   * \brief Name of the class
+   *
+   * This function is mainly used for debugging.
+   */
+  virtual const std::string& className() const = 0;
 
   /*!
    * \brief Set the selection state
@@ -43,24 +94,12 @@ public:
    */
   bool isSelected() const { return m_selected; }
 
-  enum Palette_Color {
-    BLUE = 0, GREEN, RED, ALPHA
-  };
 
-  enum Display_Style {
-    NORMAL, SOLID, BOUNDARY, SKELETON
-  };
-
-  enum ETarget {
-    STACK, OBJECT_CANVAS, WIDGET
-  };
-
-  enum EDisplaySliceMode {
-    DISPLAY_SLICE_PROJECTION, DISPLAY_SLICE_SINGLE
-  };
-
-  // Display an object to widget, xoffset and yoffset is top left corner of widget
-  // zoom ratio is ratio of widget pixel to object pixel
+  /*!
+   * \brief Display an object to widget
+   *
+   * \a painter is expected to be restored after painting
+   */
   virtual void display(
       ZPainter &painter, int slice, Display_Style option) const = 0;
 
@@ -114,6 +153,15 @@ public:
   inline std::string getSource() const { return m_source; }
   inline void setSource(const std::string &source) { m_source = source; }
 
+  /*!
+   * \brief Test if two objects are from the same source
+   *
+   * \return true if the two objects have the same type and non-empty source.
+   */
+  bool fromSameSource(const ZStackObject *obj) const;
+
+  static bool fromSameSource(const ZStackObject *obj1, const ZStackObject *obj2);
+
   inline void setZScale(double scale) { m_zScale = scale; }
 
   /*!
@@ -141,6 +189,27 @@ public:
     return m_type;
   }
 
+  inline const ZStackObjectRole& getRole() const {
+    return m_role;
+  }
+
+  inline bool hasRole() const {
+    return !m_role.isNone();
+  }
+
+  inline bool hasRole(ZStackObjectRole::TRole role) const
+  {
+    return m_role.hasRole(role);
+  }
+
+  inline void setRole(ZStackObjectRole::TRole role) {
+    m_role.setRole(role);
+  }
+
+  inline void addRole(ZStackObjectRole::TRole role) {
+    m_role.addRole(role);
+  }
+
   static inline const char* getNodeAdapterId() {
     return m_nodeAdapterId;
   }
@@ -152,6 +221,13 @@ public:
   inline void setHittable(bool state) {
     m_isHittable = state;
   }
+
+public:
+  static bool isEmptyTree(const ZStackObject *obj);
+  static bool isSameSource(const std::string &s1, const std::string &s2);
+  static bool isSelected(const ZStackObject *obj);
+  template <typename T>
+  static T* CastVoidPointer(void *p);
 
 protected:
   bool m_selected;
@@ -166,9 +242,16 @@ protected:
   std::string m_source;
   int m_zOrder;
   EType m_type;
+  ZStackObjectRole m_role;
 
   static const char *m_nodeAdapterId;
 };
+
+template <typename T>
+T* ZStackObject::CastVoidPointer(void *p)
+{
+  return dynamic_cast<T*>(static_cast<ZStackObject*>(p));
+}
 
 #define ZSTACKOBJECT_DEFINE_CLASS_NAME(c) \
   const std::string& c::className() const {\

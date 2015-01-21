@@ -77,6 +77,12 @@ public:
   int getMinZ() const;
   int getMaxZ() const;
 
+  int getMinX() const;
+  int getMaxX() const;
+
+  int getMinY() const;
+  int getMaxY() const;
+
 private:
   std::vector<int> m_stackSize;
   //std::vector<double> m_voxelResolution;

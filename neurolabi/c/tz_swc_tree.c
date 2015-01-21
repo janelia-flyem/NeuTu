@@ -2160,6 +2160,11 @@ Swc_Tree* Swc_Tree_Parse_String(char *swc_string)
         }
       }
 
+#ifdef _DEBUG_
+      printf("%s\n", line);
+      fflush(stdout);
+#endif
+
       String_To_Double_Array(line, value, &field_number);
 
       if (field_number >= 7) {

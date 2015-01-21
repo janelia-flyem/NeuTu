@@ -9,6 +9,7 @@
 #include "tz_stack_utils.h"
 #include "c_stack.h"
 #include "tz_darray.h"
+#include "zstackfactory.h"
 
 using namespace std;
 
@@ -112,6 +113,29 @@ void ZObject3dArray::getRange(int *corner)
       }
     }
   }
+}
+
+ZStack* ZObject3dArray::toStackObject()
+{
+  int corner[6];
+  getRange(corner);
+
+  int kind = GREY;
+  if (size() >= 255) {
+    kind = GREY16;
+  }
+
+  ZIntCuboid box;
+  box.setFirstCorner(corner[0], corner[1], corner[2]);
+  box.setLastCorner(corner[3], corner[4], corner[5]);
+  ZStack *stack = ZStackFactory::makeZeroStack(kind, box);
+
+  for (size_t i = 0; i < size(); ++i) {
+    ZObject3d *obj = (*this)[i];
+    obj->labelStack(stack, i+1);
+  }
+
+  return stack;
 }
 
 Stack* ZObject3dArray::toStack()

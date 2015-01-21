@@ -134,6 +134,8 @@ inline size_t allByteNumber(const Stack *stack) {
  */
 inline uint8_t* array8(const Stack *stack) { return (uint8_t*) stack->array; }
 
+uint16_t* guardedArray16(const Stack *stack);
+
 /*!
  * \brief Voxel value at a certain index
  *
@@ -351,7 +353,6 @@ Stack* readSc(const std::string &filePath);
 Mc_Stack* readMrawFromBuffer(const char *buffer, int channel = -1);
 void readStackOffset(const std::string &filePath, int *x, int *y, int *z);
 
-
 Mc_Stack* resize(const Mc_Stack *stack, int width, int height, int depth);
 
 //Routines for substack
@@ -391,6 +392,11 @@ int digitWidth(int n);
 int integerWidth(int n, int interval);
 int drawDigit(Stack *canvas, int n, int dx, int dy, int dz);
 void drawInteger(Stack *canvas, int n, int dx, int dy, int dz, int interval = 10);
+
+//Experimenting APIs
+Stack* computeGradient(const Stack *stack);
+void shrinkBorder(const Stack *stack, int r, int nnbr = 6);
+
 }
 
 #endif // C_STACK_H

@@ -50,7 +50,8 @@ void ZObjsManagerWidget::processDoubleClickOnCategorizedSwcNode(
   }
 }
 
-void ZObjsManagerWidget::swcSelectionChangedFromTreeView(QItemSelection selected, QItemSelection deselected)
+void ZObjsManagerWidget::swcSelectionChangedFromTreeView(
+    QItemSelection selected, QItemSelection deselected)
 {
   QModelIndexList indexes = deselected.indexes();
   for (int i=0; i<indexes.size(); i++) {
@@ -60,7 +61,8 @@ void ZObjsManagerWidget::swcSelectionChangedFromTreeView(QItemSelection selected
     } else {
       Swc_Tree_Node *p3 = m_doc->swcObjsModel()->getSwcTreeNode(indexes[i]);
       if (p3 != NULL) {
-        m_doc->setSwcTreeNodeSelected(p3, false);
+        m_doc->deselectSwcTreeNode(p3);
+        //m_doc->setSwcTreeNodeSelected(p3, false);
       }
     }
   }
@@ -72,7 +74,8 @@ void ZObjsManagerWidget::swcSelectionChangedFromTreeView(QItemSelection selected
     } else {
       Swc_Tree_Node *p3 = m_doc->swcObjsModel()->getSwcTreeNode(indexes[i]);
       if (p3 != NULL) {
-        m_doc->setSwcTreeNodeSelected(p3, true);
+        //m_doc->setSwcTreeNodeSelected(p3, true);
+        m_doc->selectSwcTreeNode(p3, true);
       }
     }
   }
@@ -85,13 +88,13 @@ void ZObjsManagerWidget::updateSelectionFromCategorizedSwcNode(
   for (int i=0; i<indexes.size(); i++) {
     Swc_Tree_Node *p3 = m_doc->swcNodeObjsModel()->getSwcTreeNode(indexes[i]);
     if (p3 != NULL) {
-      m_doc->setSwcTreeNodeSelected(p3, false);
+      m_doc->deselectSwcTreeNode(p3);
     } else {
       std::set<Swc_Tree_Node*> nodeSet =
           m_doc->swcNodeObjsModel()->getSwcTreeNodeSet(indexes[i]);
       for (std::set<Swc_Tree_Node*>::const_iterator iter = nodeSet.begin();
            iter != nodeSet.end(); ++iter) {
-        m_doc->setSwcTreeNodeSelected(*iter, false);
+        m_doc->deselectSwcTreeNode(*iter);
       }
     }
   }
@@ -99,13 +102,13 @@ void ZObjsManagerWidget::updateSelectionFromCategorizedSwcNode(
   for (int i=0; i<indexes.size(); i++) {
     Swc_Tree_Node *p3 = m_doc->swcNodeObjsModel()->getSwcTreeNode(indexes[i]);
     if (p3 != NULL) {
-      m_doc->setSwcTreeNodeSelected(p3, true);
+      m_doc->selectSwcTreeNode(p3, true);
     } else {
       std::set<Swc_Tree_Node*> nodeSet =
           m_doc->swcNodeObjsModel()->getSwcTreeNodeSet(indexes[i]);
       for (std::set<Swc_Tree_Node*>::const_iterator iter = nodeSet.begin();
            iter != nodeSet.end(); ++iter) {
-        m_doc->setSwcTreeNodeSelected(*iter, true);
+        m_doc->selectSwcTreeNode(*iter, true);
       }
     }
   }
@@ -182,7 +185,8 @@ void ZObjsManagerWidget::punctaSelectionChanged(QList<ZPunctum *> selected, QLis
   }
 }
 
-void ZObjsManagerWidget::swcSelectionChanged(QList<ZSwcTree *> selected, QList<ZSwcTree *> deselected)
+void ZObjsManagerWidget::swcSelectionChanged(
+    QList<ZSwcTree *> selected, QList<ZSwcTree *> deselected)
 {
   if (!selected.empty()) {
     QItemSelection is;
@@ -292,25 +296,28 @@ void ZObjsManagerWidget::createWidget()
   layout->addWidget(tabs);
   setLayout(layout);
 
-  if (!m_doc->selectedPuncta()->empty()) {
-    std::set<ZPunctum*> *selectedPuncta = m_doc->selectedPuncta();
-    QList<ZPunctum*> selected;
+  if (m_doc->hasSelectedPuncta()) {
+    //std::set<ZPunctum*> *selectedPuncta = m_doc->selectedPuncta();
+    QList<ZPunctum*> selected =
+        m_doc->getSelectedObjectList<ZPunctum>(ZStackObject::TYPE_PUNCTUM);
     QList<ZPunctum*> deselected;
-    std::copy(selectedPuncta->begin(), selectedPuncta->end(), std::back_inserter(selected));
+    //std::copy(selectedPuncta->begin(), selectedPuncta->end(), std::back_inserter(selected));
     punctaSelectionChanged(selected, deselected);
   }
-  if (!m_doc->selectedSwcs()->empty()) {
-    std::set<ZSwcTree*> *selectedSwcs = m_doc->selectedSwcs();
-    QList<ZSwcTree*> selected;
+  if (!m_doc->hasSelectedSwc()) {
+    //std::set<ZSwcTree*> *selectedSwcs = m_doc->selectedSwcs();
+    QList<ZSwcTree*> selected =
+        m_doc->getSelectedObjectList<ZSwcTree>(ZStackObject::TYPE_SWC);
     QList<ZSwcTree*> deselected;
-    std::copy(selectedSwcs->begin(), selectedSwcs->end(), std::back_inserter(selected));
+    //std::copy(selectedSwcs->begin(), selectedSwcs->end(), std::back_inserter(selected));
     swcSelectionChanged(selected, deselected);
   }
-  if (!m_doc->selectedSwcTreeNodes()->empty()) {
-    std::set<Swc_Tree_Node*> *selectedTreeNodes = m_doc->selectedSwcTreeNodes();
+  if (m_doc->hasSelectedSwcNode()) {
+    std::set<Swc_Tree_Node*> nodeSet = m_doc->getSelectedSwcNodeSet();
     QList<Swc_Tree_Node*> selected;
     QList<Swc_Tree_Node*> deselected;
-    std::copy(selectedTreeNodes->begin(), selectedTreeNodes->end(), std::back_inserter(selected));
+    std::copy(nodeSet.begin(), nodeSet.end(),
+              std::back_inserter(selected));
     swcTreeNodeSelectionChanged(selected, deselected);
   }
 

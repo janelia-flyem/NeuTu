@@ -2,10 +2,15 @@
 #include <QFileDialog>
 #include <QProgressDialog>
 #include <QtConcurrentRun>
+#include <QMenu>
+#include <QAction>
+#include <QScrollBar>
 
 #include "ui_flyembodysplitprojectdialog.h"
 #include "mainwindow.h"
 #include "zstackframe.h"
+#include "zstackview.h"
+#include "zstackdoc.h"
 #include "zflyemnewbodysplitprojectdialog.h"
 #include "dvid/zdvidreader.h"
 #include "zstackskeletonizer.h"
@@ -14,6 +19,10 @@
 #include "flyem/zflyemneuronimagefactory.h"
 #include "zdviddialog.h"
 #include "zdialogfactory.h"
+#include "dvid/zdvidwriter.h"
+#include "flyem/zflyemneuronbodyinfo.h"
+#include "zstackpatch.h"
+#include "dvid/zdviddata.h"
 
 FlyEmBodySplitProjectDialog::FlyEmBodySplitProjectDialog(QWidget *parent) :
   QDialog(parent),
@@ -30,6 +39,8 @@ FlyEmBodySplitProjectDialog::FlyEmBodySplitProjectDialog(QWidget *parent) :
           this, SLOT(showData3d()));
   connect(ui->viewSplitPushButton,
           SIGNAL(clicked()), this, SLOT(showResult3d()));
+  connect(ui->viewResultQuickPushButton,
+          SIGNAL(clicked()), this, SLOT(showResult3dQuick()));
   connect(ui->donePushButton, SIGNAL(clicked()), this, SLOT(clear()));
   connect(ui->loadBodyPushButton, SIGNAL(clicked()), this, SLOT(loadBody()));
   connect(ui->loadBookmarkButton, SIGNAL(clicked()),
@@ -37,6 +48,14 @@ FlyEmBodySplitProjectDialog::FlyEmBodySplitProjectDialog(QWidget *parent) :
   connect(ui->bookmarkVisibleCheckBox, SIGNAL(toggled(bool)),
           &m_project, SLOT(showBookmark(bool)));
   connect(ui->quickViewPushButton, SIGNAL(clicked()), this, SLOT(quickView()));
+  connect(ui->prevPushButton, SIGNAL(clicked()),
+          this, SLOT(viewPreviousSlice()));
+  connect(ui->nextPushButton, SIGNAL(clicked()),
+          this, SLOT(viewNextSlice()));
+  connect(ui->fullGrayscalePushButton, SIGNAL(clicked()),
+          this, SLOT(viewFullGrayscale()));
+  connect(ui->saveSeedPushButton, SIGNAL(clicked()),
+          this, SLOT(saveSeed()));
 
   ui->bookmarkView->setModel(&m_bookmarkList);
 
@@ -49,8 +68,13 @@ FlyEmBodySplitProjectDialog::FlyEmBodySplitProjectDialog(QWidget *parent) :
   ui->sideView->setScene(m_sideViewScene);
   //ui->outputWidget->setText("Load a body to start.");
 
+#ifndef _DEBUG_
+  ui->pushButton->hide();
+#endif
+
   m_dvidDlg = ZDialogFactory::makeDvidDialog(this);
 
+  createMenu();
   connectSignalSlot();
 }
 
@@ -72,6 +96,44 @@ void FlyEmBodySplitProjectDialog::connectSignalSlot()
   connect(this, SIGNAL(messageDumped(QString,bool)),
           this, SLOT(dump(QString,bool)));
   connect(this, SIGNAL(sideViewCanceled()), this, SLOT(resetSideView()));
+
+  connect(&m_project, SIGNAL(messageGenerated(QString)),
+          this, SIGNAL(messageDumped(QString)));
+
+  connect(&m_project, SIGNAL(progressStarted(QString,int)),
+          this, SIGNAL(progressStarted(QString,int)));
+  connect(&m_project, SIGNAL(progressAdvanced(double)),
+          this, SIGNAL(progressAdvanced(double)));
+  connect(&m_project, SIGNAL(progressDone()), this, SIGNAL(progressDone()));
+
+  connect(this, SIGNAL(progressStarted(QString, int)),
+          getMainWindow(), SLOT(startProgress(QString, int)));
+  connect(this, SIGNAL(progressAdvanced(double)),
+          getMainWindow(), SLOT(advanceProgress(double)));
+  connect(this, SIGNAL(progressDone()), getMainWindow(), SLOT(endProgress()));
+}
+
+void FlyEmBodySplitProjectDialog::createMenu()
+{
+  m_mainMenu = new QMenu(this);
+  ui->menuPushButton->setMenu(m_mainMenu);
+
+  m_showBodyMaskAction = new QAction("Show Body Mask", this);
+  m_mainMenu->addAction(m_showBodyMaskAction);
+  m_showBodyMaskAction->setCheckable(true);
+  connect(m_showBodyMaskAction, SIGNAL(triggered(bool)),
+          this, SLOT(showBodyMask(bool)));
+
+  QMenu *batchMenu = m_mainMenu->addMenu("Batch");
+  QAction *allSeedSummaryAction = new QAction("Check Work Progress", this);
+  batchMenu->addAction(allSeedSummaryAction);
+  connect(allSeedSummaryAction, SIGNAL(triggered()),
+          this, SLOT(checkAllSeed()));
+
+  QAction *allSeedProcessAction = new QAction("Process All Seeds", this);
+  batchMenu->addAction(allSeedProcessAction);
+  connect(allSeedProcessAction, SIGNAL(triggered()),
+          this, SLOT(processAllSeed()));
 }
 
 void FlyEmBodySplitProjectDialog::closeEvent(QCloseEvent */*event*/)
@@ -97,7 +159,7 @@ int FlyEmBodySplitProjectDialog::getBodyId() const
 void FlyEmBodySplitProjectDialog::clear()
 {
   m_project.clear();
-  updateWidget();
+  //updateWidget();
   resetSideView();
 
   //dump("Load a body to start.");
@@ -120,26 +182,32 @@ void FlyEmBodySplitProjectDialog::shallowClearDataFrame()
   updateWidget();
 }
 
-void FlyEmBodySplitProjectDialog::showData2d()
+bool FlyEmBodySplitProjectDialog::showData2d()
 {
-  dump("Showing body in 2D ...");
+  dump("Showing body in 2D ...", true);
 
   if (m_project.hasDataFrame()) {
     m_project.showDataFrame();
     getMainWindow()->raise();
     dump("Done.", true);
+    return true;
   } else {
     if (getMainWindow()->initBodySplitProject()) {
       updateWidget();
       dump("Done.", true);
+      return true;
+    } else {
+      dump("Failed.", true);
     }
   }
+
+  return false;
 }
 
 void FlyEmBodySplitProjectDialog::showData3d()
 {
   if (m_project.hasDataFrame()) {
-    dump("Showing body in 3D ...");
+    dump("Showing body in 3D ...", true);
     m_project.showDataFrame3d();
     dump("done", true);
   }
@@ -147,10 +215,18 @@ void FlyEmBodySplitProjectDialog::showData3d()
 
 void FlyEmBodySplitProjectDialog::showResult3d()
 {
-  dump("Showing splitting result ...");
+  dump("Showing splitting result ...", true);
   m_project.showResult3d();
   dump("Done.", true);
 }
+
+void FlyEmBodySplitProjectDialog::showResult3dQuick()
+{
+  dump("Showing splitting result ...", true);
+  m_project.showResult3dQuick();
+  dump("Done.", true);
+}
+
 
 MainWindow* FlyEmBodySplitProjectDialog::getMainWindow()
 {
@@ -180,7 +256,7 @@ void FlyEmBodySplitProjectDialog::setLoadBodyDialog(
   m_loadBodyDlg = dlg;
 }
 
-void FlyEmBodySplitProjectDialog::loadBody()
+bool FlyEmBodySplitProjectDialog::loadBody()
 {
  // if (m_loadBodyDlg->exec()) {
     //setDvidTarget(m_loadBodyDlg->getDvidTarget());
@@ -191,6 +267,8 @@ void FlyEmBodySplitProjectDialog::loadBody()
     updateSideView();
 
     dump("Body loaded.");
+
+    return showData2d();
   //}
 }
 
@@ -216,6 +294,7 @@ void FlyEmBodySplitProjectDialog::updateButton()
   ui->view3dBodyPushButton->setEnabled(m_project.hasDataFrame());
   ui->viewSplitPushButton->setEnabled(m_project.hasDataFrame());
   ui->commitPushButton->setEnabled(m_project.hasDataFrame());
+  ui->saveSeedPushButton->setEnabled(m_project.hasDataFrame());
   ui->donePushButton->setEnabled(isBodyLoaded());
 }
 
@@ -250,9 +329,11 @@ void FlyEmBodySplitProjectDialog::updateWidget()
 }
 
 void FlyEmBodySplitProjectDialog::dump(const QString &info, bool appending)
-{
+{    
   if (appending) {
     ui->outputWidget->append(info);
+    ui->outputWidget->verticalScrollBar()->setValue(
+          ui->outputWidget->verticalScrollBar()->maximum());
   } else {
     ui->outputWidget->setText(info);
   }
@@ -299,6 +380,8 @@ void FlyEmBodySplitProjectDialog::updateSideView()
   //startProgress("Generating side view ...");
   //getProgressDialog()->setRange(0, 100);
 
+  initSideViewScene();
+
   /*QFuture<void> res = */QtConcurrent::run(
         this, &FlyEmBodySplitProjectDialog::updateSideViewFunc);
 }
@@ -309,71 +392,136 @@ void FlyEmBodySplitProjectDialog::resetSideView()
   ui->sideViewLabel->setText("Side view");
 }
 
+void FlyEmBodySplitProjectDialog::initSideViewScene()
+{
+  m_sideViewScene->clear();
+  m_sideViewScene->setSceneRect(ui->sideView->viewport()->rect());
+  m_sideViewScene->setBackgroundBrush(QBrush(Qt::gray));
+}
+
 void FlyEmBodySplitProjectDialog::updateSideViewFunc()
 {
   int bodyId = getBodyId();
 
   ui->sideViewLabel->setText("Side view: generating ...");
-  m_sideViewScene->clear();
+  //m_sideViewScene->clear();
 
+
+  QGraphicsPixmapItem *thumbnailItem = new QGraphicsPixmapItem;
   QPixmap pixmap;
-  //Stack *stack = C_Stack::readSc(GET_TEST_DATA_DIR + "/benchmark/bfork_2d.tif");
+  bool thumbnailReady = false;
 
-  ZFlyEmNeuronImageFactory factory;
-  factory.setDownsampleInterval(9, 9, 9);
-
-  //getProgressDialog()->setValue(10);
-
-  ZObject3dScan obj;
+  Stack *stack = NULL;
   ZDvidReader reader;
   if (reader.open(getDvidTarget())) {
-    reader.readBody(bodyId, &obj);
+    if (reader.hasBodyInfo(bodyId)) {
+      ZStack *stackObj = reader.readThumbnail(getBodyId());
+      if (stackObj != NULL) {
+        stack = C_Stack::clone(stackObj->c_stack());
+        delete stackObj;
+      }
+    }
+
+    ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
+
+    if (stack == NULL) {
+      ZDvidWriter writer;
+      if (writer.open(getDvidTarget())) {
+        ZObject3dScan body;
+        reader.readBody(bodyId, &body);
+        ZFlyEmNeuronImageFactory factory;
+
+        factory.setSizePolicy(ZFlyEmNeuronImageFactory::SIZE_BOUND_BOX,
+                              ZFlyEmNeuronImageFactory::SIZE_BOUND_BOX,
+                              ZFlyEmNeuronImageFactory::SIZE_BOUND_BOX);
+        factory.setDownsampleInterval(7, 7, 7);
+        factory.setSourceDimension(dvidInfo.getStackSize()[0],
+            dvidInfo.getStackSize()[1], dvidInfo.getStackSize()[2]);
+
+        stack = factory.createSurfaceImage(body);
+        writer.writeThumbnail(bodyId, stack);
+        ZFlyEmNeuronBodyInfo bodyInfo;
+        bodyInfo.setBodySize(body.getVoxelNumber());
+        bodyInfo.setBoundBox(body.getBoundBox());
+        writer.writeBodyInfo(bodyId, bodyInfo.toJsonObject());
+      }
+    }
+
+    if (stack != NULL) {
+      ZImage image(C_Stack::width(stack), C_Stack::height(stack));
+      image.setData(C_Stack::array8(stack));
+      if (pixmap.convertFromImage(image)) {
+        thumbnailReady = true;
+      } else {
+        dump("Failed to load the thumbnail.");
+      }
+      C_Stack::kill(stack);
+    }
+
+    if (thumbnailReady) {
+      thumbnailItem->setPixmap(pixmap);
+      QTransform transform;
+
+      double sceneWidth = m_sideViewScene->width();
+      double sceneHeight = m_sideViewScene->height();
+      double scale = std::min(
+            double(sceneWidth - 10) / pixmap.width(),
+            double(sceneHeight - 10) / pixmap.height());
+      if (scale > 5) {
+        scale = 5;
+      }
+
+      transform.scale(scale, scale);
+      thumbnailItem->setTransform(transform);
+      m_sideViewScene->addItem(thumbnailItem);
+
+      int sourceZDim = dvidInfo.getStackSize()[2];
+      int sourceYDim = dvidInfo.getStackSize()[1];
+
+      ZFlyEmNeuronBodyInfo bodyInfo =
+          reader.readBodyInfo(bodyId);
+      int startY = bodyInfo.getBoundBox().getFirstCorner().getY();
+      int startZ = bodyInfo.getBoundBox().getFirstCorner().getZ();
+      int bodyHeight = bodyInfo.getBoundBox().getDepth();
+      int bodySpan = bodyInfo.getBoundBox().getHeight();
+
+      if (sourceZDim == 0) {
+        QGraphicsTextItem *textItem = new QGraphicsTextItem;
+        textItem->setHtml(
+              QString("<p><font color=\"red\">Z = %1</font></p>"
+                      "<p><font color=\"red\">Height = %2</font></p>").
+              arg(startZ).arg(bodyHeight));
+        m_sideViewScene->addItem(textItem);
+      } else { //Draw range rect
+        double x = 10;
+        double y = 10;
+
+        double scale = sceneWidth * 0.5 / sourceYDim;
+        double height = sourceZDim * scale;
+        double width = sourceYDim * scale;
+
+        QGraphicsRectItem *rectItem = new QGraphicsRectItem(
+              sceneWidth - width - x, y, width, height);
+        rectItem->setPen(QPen(QColor(255, 0, 0, 164)));
+        m_sideViewScene->addItem(rectItem);
+
+        int z0 = dvidInfo.getStartCoordinates().getZ();
+        int y0 = dvidInfo.getStartCoordinates().getY();
+        rectItem = new QGraphicsRectItem(
+              sceneWidth - width - x + (startY - y0) * scale,
+              y + (startZ - z0) * scale,
+              bodySpan * scale, bodyHeight * scale);
+        rectItem->setPen(QPen(QColor(0, 255, 0, 164)));
+        m_sideViewScene->addItem(rectItem);
+      }
+    }
   }
-
-  //getProgressDialog()->setValue(30);
-
-  //obj.load(GET_DATA_DIR + "/benchmark/432.sobj");
-  QGraphicsPixmapItem *thumbnailItem = new QGraphicsPixmapItem;
-  tic();
-  Stack *stack = factory.createSurfaceImage(obj);
-  ptoc();
-
-  //getProgressDialog()->setValue(80);
-
-  int targetWidth = ui->sideView->width() - 10;
-  int targetHeight = ui->sideView->height() - 10;
-  double ratio = std::min(double(targetWidth) / C_Stack::width(stack),
-                          double(targetHeight) / C_Stack::height(stack));
-
-  Stack *stack2 = C_Stack::resize(stack, iround(C_Stack::width(stack) * ratio),
-                                  iround(C_Stack::height(stack) * ratio), 1);
-  C_Stack::kill(stack);
-  stack = stack2;
-
-  //getProgressDialog()->setValue(90);
-
-  ZImage image(C_Stack::width(stack), C_Stack::height(stack));
-  image.setData(C_Stack::array8(stack));
-  if (!pixmap.convertFromImage(image)) {
-    dump("Failed to load the thumbnail.");
-  }
-  C_Stack::kill(stack);
-
-  thumbnailItem->setPixmap(pixmap);
-
-  //thumbnailItem->setOffset(0, 0);
 
   if (bodyId == getBodyId()) {
     m_sideViewScene->addItem(thumbnailItem);
     ui->sideViewLabel->setText(QString("Side view: %1").arg(bodyId));
     emit sideViewReady();
   }
-
-  //emit messageDumped("Side view ready.", true);
-
-  //emit progressDone();
-
-
 }
 
 void FlyEmBodySplitProjectDialog::startProgress(const QString &label)
@@ -385,7 +533,55 @@ void FlyEmBodySplitProjectDialog::startProgress(const QString &label)
 
 void FlyEmBodySplitProjectDialog::on_pushButton_clicked()
 {
-#ifdef _DEBUG_
+  ZDvidReader reader;
+  reader.open(m_project.getDvidTarget());
+
+  int id = reader.readMaxBodyId();
+  dump(QString("Max body ID: %1").arg(id));
+//  std::cout << id << std::endl;
+
+#if 0
+  ZDvidWriter writer;
+  writer.open(m_project.getDvidTarget());
+  writer.writeMaxBodyId(50000000);
+
+  ZDvidReader reader;
+  reader.open(m_project.getDvidTarget());
+  int id = reader.readMaxBodyId();
+  std::cout << id << std::endl;
+#endif
+
+#if 0
+  const ZObject3dScan *wholeBody =
+      m_project.getDataFrame()->document()->getSparseStack()->getObjectMask();
+  wholeBody->save(GET_TEST_DATA_DIR + "/body_0.sobj");
+
+  const ZStack *stack = m_project.getDataFrame()->document()->getLabelField();
+  std::map<int, ZObject3dScan*> *objSet = ZObject3dScan::extractAllObject(
+        stack->array8(), stack->width(), stack->height(), stack->depth(),
+        0, NULL);
+
+  const ZIntPoint &dsIntv =
+      m_project.getDataFrame()->document()->getSparseStack()->getDownsampleInterval();
+
+  for (std::map<int, ZObject3dScan*>::const_iterator iter = objSet->begin();
+       iter != objSet->end(); ++iter) {
+    if (iter->first > 0) {
+      ZObject3dScan *obj = iter->second;
+      obj->translate(stack->getOffset().getX(), stack->getOffset().getY(),
+                     stack->getOffset().getZ());
+      obj->upSample(dsIntv.getX(), dsIntv.getY(), dsIntv.getZ());
+      ZString output = GET_TEST_DATA_DIR + "/body_";
+      output.appendNumber(iter->first);
+      obj->save(output + ".sobj");
+      delete obj;
+    }
+  }
+
+  delete objSet;
+#endif
+
+#ifdef _DEBUG_2
   //updateSideView();
   startProgress("Test ...");
   ZObject3dScan obj;
@@ -398,6 +594,26 @@ void FlyEmBodySplitProjectDialog::on_pushButton_clicked()
   ptoc();
   C_Stack::kill(stack);
   emit progressDone();
+#endif
+
+#ifdef _DEBUG_2
+  ZDvidReader reader;
+  if (reader.open(getDvidTarget())) {
+    ZStackFrame *frame = m_project.getDataFrame();
+    if (frame != NULL) {
+      int currentSlice = frame->view()->sliceIndex();
+      int width = frame->document()->getStackWidth();
+      int height = frame->document()->getStackHeight();
+      ZIntPoint offset = frame->document()->getStackOffset();
+      int z = currentSlice + offset.getZ();
+      ZStack *stack = reader.readGrayScale(offset.getX(), offset.getY(), z,
+                                           width, height, 1);
+      ZStackPatch *patch = new ZStackPatch(stack);
+      patch->setZOrder(-1);
+      patch->setSource("#testpatch");
+      frame->document()->addStackPatch(patch);
+    }
+  }
 #endif
 }
 
@@ -425,10 +641,156 @@ void FlyEmBodySplitProjectDialog::on_dvidPushButton_clicked()
 
 void FlyEmBodySplitProjectDialog::on_commitPushButton_clicked()
 {
-  m_project.saveSeed();
+  //m_project.saveSeed();
+
+  if (ZDialogFactory::ask("Commit Confirmation",
+                          "Do you want to upload the splitting results now? "
+                          "It may take several minutes to several hours, "
+                          "depending on how large the body is.",
+                          this)) {
+    m_project.commitResult();
+  }
 }
 
 void FlyEmBodySplitProjectDialog::downloadSeed()
 {
   m_project.downloadSeed();
+}
+
+void FlyEmBodySplitProjectDialog::viewPreviousSlice()
+{
+  m_project.viewPreviousSlice();
+}
+
+void FlyEmBodySplitProjectDialog::viewNextSlice()
+{
+  m_project.viewNextSlice();
+}
+
+void FlyEmBodySplitProjectDialog::viewFullGrayscale()
+{
+  m_project.viewFullGrayscale();
+  m_project.updateBodyMask();
+}
+
+void FlyEmBodySplitProjectDialog::saveSeed()
+{
+  m_project.saveSeed();
+}
+
+void FlyEmBodySplitProjectDialog::showBodyMask(bool on)
+{
+  m_project.setShowingBodyMask(on);
+  m_project.updateBodyMask();
+}
+
+void FlyEmBodySplitProjectDialog::checkAllSeed()
+{
+  ZDvidReader reader;
+
+  if (reader.open(getDvidTarget())) {
+    //int maxId = reader.readMaxBodyId();
+
+    QStringList keyList = reader.readKeys(
+          ZDvidData::getName(ZDvidData::ROLE_SPLIT_LABEL),
+          m_project.getSeedKey(0).c_str(),
+          (m_project.getSeedKey(9) + "a").c_str());
+    emit messageDumped("<i>Work summary</i>: ");
+    int processedCount = 0;
+    foreach (QString key, keyList) {
+      QString message = QString("..%1").arg(key);
+      ZString str = key.toStdString();
+      int bodyId = str.lastInteger();
+
+      if (m_project.isSeedProcessed(bodyId)) {
+        ++processedCount;
+        message += " processed.";
+      }
+      emit messageDumped(message, true);
+    }
+    emit messageDumped(
+          QString("..#Seeded bodies: <font color=\"blue\">%1</font> "
+                  "(<font color=\"green\">%2</font> processed).").
+          arg(keyList.size()).arg(processedCount));
+  }
+}
+
+void FlyEmBodySplitProjectDialog::processAllSeed()
+{
+  int maxBodyCount = -1;
+  ZSpinBoxDialog *dlg = ZDialogFactory::makeSpinBoxDialog(this);
+  dlg->setValueLabel("Max number of bodies to process:");
+  dlg->setWindowTitle("Specifying #bodies to process");
+  if (dlg->exec()) {
+    maxBodyCount = dlg->getValue();
+  } else {
+    return;
+  }
+
+  m_project.clear();
+
+  ZDvidReader reader;
+
+
+  if (reader.open(getDvidTarget())) {
+    //int maxId = reader.readMaxBodyId();
+
+    QStringList keyList = reader.readKeys(
+          ZDvidData::getName(ZDvidData::ROLE_SPLIT_LABEL),
+          m_project.getSeedKey(0).c_str(),
+          (m_project.getSeedKey(9) + "a").c_str());
+
+    if (keyList.empty()) {
+      emit messageDumped(QString("No seed is available in the database."));
+    } else {
+      emit messageDumped(QString("Start processing %1 bodies...").
+                         arg(keyList.size()));
+      std::vector<int> processedSeed;
+      for (int i = 0; i < keyList.size(); ++i) {
+        if ((int) processedSeed.size() >= maxBodyCount && maxBodyCount >= 0) {
+          emit messageDumped(QString("Max count reached."));
+          break;
+        }
+        const QString &key = keyList[i];
+        ZString str = key.toStdString();
+        int bodyId = str.lastInteger();
+
+        if (bodyId > 0) {
+          if (m_project.isSeedProcessed(bodyId)) {
+            emit messageDumped("Already processed.");
+          } else {
+            emit messageDumped(
+                  QString("Processing %1/%2: %3").
+                  arg(i + 1).arg(keyList.size()).arg(bodyId));
+            ui->bodyIdSpinBox->setValue(bodyId);
+            if (loadBody()) {
+              processedSeed.push_back(bodyId);
+              emit messageDumped("Running split ...");
+              m_project.runSplit();
+              m_project.commitResult();
+              m_project.setSeedProcessed(bodyId);
+              m_project.clear();
+            } else {
+              emit messageDumped(QString("Failed to load the body %1.").
+                                 arg(bodyId));
+            }
+          }
+        } else {
+          emit messageDumped("Invalid seed");
+        }
+      }
+      if (processedSeed.empty()) {
+        emit messageDumped("No seed is processed");
+      } else {
+        QString message = QString("%1 bodies are processed: ").
+            arg(processedSeed.size());
+        for (size_t i = 0; i < processedSeed.size(); ++i) {
+          message += QString("%1 ").arg(processedSeed[i]);
+        }
+        emit messageDumped(message);
+      }
+
+      emit messageDumped("Done.");
+    }
+  }
 }

@@ -8,6 +8,13 @@
     },
     {
       "address": "emdata2.int.janelia.org",
+      "uuid": "32fb",
+      "name": "FIB19",
+      "comment": "FIB-19 data at MLOLP-Z1112-19R/align2/iso_rav",
+      "local": "/groups/flyem/data/zhaot/local/FIB19"
+    },
+    {
+      "address": "emdata2.int.janelia.org",
       "uuid": "faa",
       "name": "FIB25-0715",
       "comment": "FIB-25 export 2014-07-15"
@@ -16,7 +23,9 @@
       "address": "emdata2.int.janelia.org",
       "uuid": "2b6c",
       "name": "FIB25-0926",
-      "comment": "FIB-25 export 2014-09-26"
+      "background": 0,
+      "comment": "FIB-25 export 2014-09-26",
+      "local": "/groups/flyem/data/zhaot/local/FIB25"
     },
     {
       "address": "emdata2.int.janelia.org",
@@ -30,13 +39,22 @@
       "name": "AL-7-DEBUG",
       "comment": "AL-Z1213-07",
       "local": "/Users/zhaot/Work/neutube/neurolabi/data/flyem/AL",
+      "body_label": "segmentation120114",
       "debug": true
+    },
+    {
+      "address": "emdata2.int.janelia.org",
+      "uuid": "134",
+      "name": "AL-7-TEST",
+      "comment": "AL-Z1213-07",
+      "body_label": "segmentation120114"
     },
     {
       "address": "emdata2.int.janelia.org",
       "uuid": "134",
       "name": "AL-7",
       "comment": "AL-Z1213-07",
+      "body_label": "segmentation121714",
       "local": "/groups/flyem/data/zhaot/local/AL"
     }
   ]

@@ -1,12 +1,13 @@
 #include "zstackobject.h"
 #include "tz_cdefs.h"
+#include "zswctree.h"
 
 const char* ZStackObject::m_nodeAdapterId = "!NodeAdapter";
 
 ZStackObject::ZStackObject() : m_selected(false), m_isVisible(true),
   m_isHittable(true),
   m_style(SOLID), m_target(WIDGET), m_usingCosmeticPen(false), m_zScale(1.0),
-  m_zOrder(1), m_type(TYPE_UNIDENTIFIED)
+  m_zOrder(1), m_type(TYPE_UNIDENTIFIED), m_role(ZStackObjectRole::ROLE_NONE)
 {
 }
 
@@ -131,5 +132,60 @@ bool ZStackObject::hit(double /*x*/, double /*y*/)
 
 bool ZStackObject::hit(double /*x*/, double /*y*/, double /*z*/)
 {
+  return false;
+}
+
+bool ZStackObject::fromSameSource(const ZStackObject *obj) const
+{
+  bool sameSource = false;
+  if (obj != NULL) {
+    if ((getType() == obj->getType()) &&
+        !getSource().empty() && !obj->getSource().empty()) {
+      if (getSource() == obj->getSource()) {
+        sameSource = true;
+      }
+    }
+  }
+
+  return sameSource;
+}
+
+bool ZStackObject::fromSameSource(
+    const ZStackObject *obj1, const ZStackObject *obj2)
+{
+  bool sameSource = false;
+  if (obj1 != NULL) {
+    sameSource = obj1->fromSameSource(obj2);
+  }
+
+  return sameSource;
+}
+
+bool ZStackObject::isSameSource(const std::string &s1, const std::string &s2)
+{
+  return (!s1.empty() && !s2.empty() && s1 == s2);
+}
+
+bool ZStackObject::isEmptyTree(const ZStackObject *obj)
+{
+  bool passed = false;
+  if (obj != NULL) {
+    if (obj->getType() == ZStackObject::TYPE_SWC) {
+      const ZSwcTree *tree = dynamic_cast<const ZSwcTree*>(obj);
+      if (tree != NULL) {
+        passed = tree->isEmpty();
+      }
+    }
+  }
+
+  return passed;
+}
+
+bool ZStackObject::isSelected(const ZStackObject *obj)
+{
+  if (obj != NULL) {
+    return obj->isSelected();
+  }
+
   return false;
 }

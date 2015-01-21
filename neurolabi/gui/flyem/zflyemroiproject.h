@@ -36,6 +36,11 @@ public:
   void shallowClear();
 
   /*!
+   * \brief Clone a project with a specified name
+   */
+  ZFlyEmRoiProject* clone(const std::string &name) const;
+
+  /*!
    * \brief Set the dvid target
    *
    * It will create the project in the DVID key if necessary.
@@ -102,6 +107,10 @@ public:
   ZObject3dScan getFilledRoi(int z) const;
   ZObject3dScan* getFilledRoi(int z, ZObject3dScan *result) const;
 
+  /*!
+   * \brief Get downsampled ROI object
+   */
+  ZObject3dScan getRoiObject(int xIntv, int yIntv, int zIntv) const;
   ZObject3dScan getRoiObject() const;
 
   int getFirstRoiZ() const;
@@ -111,7 +120,7 @@ public:
   void rotateRoiSwc(double theta);
   void translateRoiSwc(double dx, double dy);
 
-  static ZIntCuboid estimateBoundBox(const ZStack &stack);
+  static ZIntCuboid estimateBoundBox(const ZStack &stack, int bgValue);
 
   bool isRoiSaved() const;
   void setRoiSaved(bool state);
@@ -122,6 +131,8 @@ public:
 
   inline std::string getName() const { return m_name; }
 
+  std::string getMinRoiKey() const;
+  std::string getMaxRoiKey() const;
   std::string getRoiKey(int z) const;
 
   double estimateRoiVolume(char unit = 'p') const;
@@ -138,6 +149,12 @@ public:
   }
 
   void importRoiFromSwc(ZSwcTree *tree);
+
+  void deleteAllData();
+
+  void applyTranslate();
+
+  void test();
 
 private:
   ZObject3dScan* getFilledRoi(

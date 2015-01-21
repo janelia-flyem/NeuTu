@@ -177,6 +177,16 @@ public:
    */
   std::map<int, int> runMinWeightSumMatch();
 
+  /*!
+   * \brief Convert a graph into directed by bread-first traversal
+   *
+   * It only applies to an undirected graph. Nothing is done if the graph is
+   * directed.
+   */
+  void traverseDirect(int root);
+
+  const int* topologicalSort();
+
 private:
   void initWorkspace();
   const Hash_Table* getEdgeTable() const;

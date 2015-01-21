@@ -5,7 +5,7 @@
 
 if [ $# -lt 2 ]
 then
-  echo "Usage: sh build.sh <qmake_path> <qmake_spec_path> [-d cxx_define -e edition]"
+  echo "Usage: sh build.sh <qmake_path> <qmake_spec_path> [-d cxx_define] [-e edition] [-c debug|release]"
   echo "Example: "
   echo 'sh build.sh $HOME/local/lib/Trolltech/Qt-4.8.5/bin/qmake $HOME/local/lib/Trolltech/Qt-4.8.5/mkspecs/macx-g++'
   exit 1
@@ -17,7 +17,8 @@ shift
 shift
 
 edition=general
-while getopts d:e: option
+debug_config=release
+while getopts d:e:c: option
 do
   echo $option
   case $option in
@@ -25,6 +26,8 @@ do
       cxx_define=$OPTARG;;
     e)
       edition=$OPTARG;;
+    c)
+      debug_config=$OPTARG;;
   esac
 done
 
@@ -51,7 +54,7 @@ else
   fi
 fi
 
-qmake_args="-spec $QMAKE_SPEC CONFIG+=release CONFIG+=x86_64 -o Makefile ../gui/gui.pro"
+qmake_args="-spec $QMAKE_SPEC CONFIG+=$debug_config CONFIG+=x86_64 -o Makefile ../gui/gui.pro"
 if [ -n "$cxx_define" ]
 then
   qmake_args="$qmake_args DEFINES+=\"$cxx_define\""
@@ -69,17 +72,24 @@ sh build.sh
 cd ..
 
 echo 'Building libneurolabi ...'
-./update_library --release 
-
-if [ ! -d build ]
+build_dir=build
+if [ $debug_config = "debug" ]
 then
-  mkdir build
+  ./update_library
+  build_dir=build_debug
+else
+  ./update_library --release 
 fi
 
-cd build
+if [ ! -d $build_dir ]
+then
+  mkdir $build_dir
+fi
+
+cd $build_dir
 echo $qmake_args > source.qmake
 $QMAKE $qmake_args 
-make
+make -j3
 
 if [ $edition = "flyem" ]
 then

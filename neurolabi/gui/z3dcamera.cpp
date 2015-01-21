@@ -1,5 +1,8 @@
 #include "z3dcamera.h"
 #include <cmath>
+#include "zjsonobject.h"
+#include "zjsonarray.h"
+#include "zjsonparser.h"
 
 Z3DCamera::Z3DCamera()
   : m_eye(0.f, 0.f, 0.f)
@@ -407,4 +410,95 @@ void Z3DCamera::updateFrustum()
   float halfwidth = halfheight * m_aspectRatio * m_windowAspectRatio;
   m_left = -halfwidth;
   m_right = halfwidth;
+}
+
+ZJsonObject Z3DCamera::toJsonObject() const
+{
+  ZJsonObject cameraJson;
+
+  ZJsonArray eyeJson;
+  eyeJson.append(m_eye[0]);
+  eyeJson.append(m_eye[1]);
+  eyeJson.append(m_eye[2]);
+  cameraJson.setEntry("eye", eyeJson);
+
+  ZJsonArray centerJson;
+  centerJson.append(m_center[0]);
+  centerJson.append(m_center[1]);
+  centerJson.append(m_center[2]);
+  cameraJson.setEntry("center", centerJson);
+
+  ZJsonArray upVectorJson;
+  upVectorJson.append(m_upVector[0]);
+  upVectorJson.append(m_upVector[1]);
+  upVectorJson.append(m_upVector[2]);
+  cameraJson.setEntry("up_vector", upVectorJson);
+
+  switch (m_projectionType) {
+  case Perspective:
+    cameraJson.setEntry("projection", std::string("Perspective"));
+    break;
+  case Orthographic:
+    cameraJson.setEntry("projection", std::string("Orthographic"));
+    break;
+  }
+
+  cameraJson.setEntry("field_of_view", m_fieldOfView);
+  cameraJson.setEntry("aspect_ratio", m_aspectRatio);
+  cameraJson.setEntry("near_dist", m_nearDist);
+  cameraJson.setEntry("far_dist", m_farDist);
+
+  return cameraJson;
+}
+
+void Z3DCamera::set(const ZJsonObject &cameraJson)
+{
+  if (cameraJson.hasKey("eye")) {
+    for (int i = 0; i < 3; ++i) {
+      m_eye[i] = ZJsonParser::numberValue(cameraJson["eye"], i);
+    }
+  }
+
+  if (cameraJson.hasKey("center")) {
+    for (int i = 0; i < 3; ++i) {
+      m_center[i] = ZJsonParser::numberValue(cameraJson["center"], i);
+    }
+  }
+
+  if (cameraJson.hasKey("up_vector")) {
+    for (int i = 0; i < 3; ++i) {
+      m_upVector[i] = ZJsonParser::numberValue(cameraJson["up_vector"], i);
+    }
+  }
+
+  if (cameraJson.hasKey("projection")) {
+    if (strcmp(ZJsonParser::stringValue(cameraJson["projection"]),
+               "Perspective") == 0) {
+      m_projectionType = Perspective;
+    } else if (strcmp(ZJsonParser::stringValue(cameraJson["projection"]),
+                      "Orthographic") == 0) {
+      m_projectionType = Orthographic;
+    }
+  }
+
+  if (cameraJson.hasKey("field_of_view")) {
+    m_fieldOfView = ZJsonParser::numberValue(cameraJson["field_of_view"]);
+  }
+
+  if (cameraJson.hasKey("aspect_ratio")) {
+    m_aspectRatio = ZJsonParser::numberValue(cameraJson["aspect_ratio"]);
+  }
+
+  if (cameraJson.hasKey("near_dist")) {
+    m_nearDist = ZJsonParser::numberValue(cameraJson["near_dist"]);
+  }
+
+  if (cameraJson.hasKey("far_dist")) {
+    m_farDist = ZJsonParser::numberValue(cameraJson["far_dist"]);
+  }
+
+  updateCamera();
+  updateFrustum();
+  invalidViewMatrix();
+  invalidProjectionMatrix();
 }

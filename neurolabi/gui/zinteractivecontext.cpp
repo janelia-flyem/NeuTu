@@ -12,6 +12,7 @@ ZInteractiveContext::ZInteractiveContext()
   m_markPunctaMode = MARK_PUNCTA_OFF;
   m_swcEditMode = SWC_EDIT_SELECT;
   m_strokeEditMode = STROKE_EDIT_OFF;
+  m_rectEditMode = RECT_EDIT_OFF;
   m_exitingEdit = false;
   m_blockingContextMenu = false;
 }
@@ -31,7 +32,9 @@ bool ZInteractiveContext::isContextMenuActivated() const
 {
   return ((m_swcEditMode == SWC_EDIT_OFF || m_swcEditMode == SWC_EDIT_SELECT) &&
           m_tubeEditMode == TUBE_EDIT_OFF &&
-          m_strokeEditMode == STROKE_EDIT_OFF && !m_exitingEdit &&
+          m_strokeEditMode == STROKE_EDIT_OFF &&
+          m_rectEditMode == RECT_EDIT_OFF &&
+          !m_exitingEdit &&
           !m_blockingContextMenu);
 }
 
@@ -40,3 +43,81 @@ void ZInteractiveContext::blockContextMenu(bool blocking)
   m_blockingContextMenu = blocking;
 }
 
+ZInteractiveContext::EUniqueMode ZInteractiveContext::getUniqueMode() const
+{
+  EUniqueMode mode = INTERACT_FREE;
+
+//  if (isExploreModeOff()) {
+    switch (swcEditMode()) {
+    case SWC_EDIT_ADD_NODE:
+      mode = INTERACT_SWC_ADD_NODE;
+      break;
+    case SWC_EDIT_CONNECT:
+      mode = INTERACT_SWC_CONNECT;
+      break;
+    case SWC_EDIT_EXTEND:
+    case SWC_EDIT_SMART_EXTEND:
+      mode = INTERACT_SWC_EXTEND;
+      break;
+    case SWC_EDIT_MOVE_NODE:
+      mode = INTERACT_SWC_MOVE_NODE;
+      break;
+    case SWC_EDIT_LOCK_FOCUS:
+      mode = INTERACT_SWC_LOCK_FOCUS;
+      break;
+    default:
+      break;
+    }
+
+    if (mode == INTERACT_FREE) {
+      switch (strokeEditMode()) {
+      case STROKE_DRAW:
+        mode = INTERACT_STROKE_DRAW;
+        break;
+      default:
+        break;
+      }
+    }
+
+    if (mode == INTERACT_FREE) {
+      switch (rectEditMode()) {
+      case RECT_DRAW:
+        mode = INTERACT_RECT_DRAW;
+        break;
+      default:
+        break;
+      }
+    }
+
+    if (mode == INTERACT_FREE) {
+      switch (MarkPunctaMode()) {
+      case MARK_PUNCTA:
+        mode = INTERACT_PUNCTA_MARK;
+        break;
+      default:
+        break;
+      }
+    }
+
+//  } else {
+//    if (mode == INTERACT_FREE) {
+//    switch (exploreMode()) {
+//    case EXPLORE_MOVE_IMAGE:
+//      mode = INTERACT_IMAGE_MOVE;
+//      break;
+//    case EXPLORE_CAPTURE_MOUSE:
+//      mode = INTERACT_IMAGE_CAPTURE;
+//      break;
+//    case EXPLORE_ZOOM_IN_IMAGE:
+//      mode = INTERACT_IMAGE_ZOOM_IN;
+//      break;
+//    case EXPLORE_ZOOM_OUT_IMAGE:
+//      mode = INTERACT_IMAGE_ZOOM_OUT;
+//      break;
+//    default:
+//      break;
+//    }
+//  }
+
+  return mode;
+}

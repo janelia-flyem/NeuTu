@@ -531,16 +531,16 @@ int main(int argc, char *argv[])
   fclose(fp);
 #endif
 
-#if 0
-  printf("double number: %d\n", count_double(".9 3.4 e +3.3e-3 4"));
-  printf("double number: %d\n", count_double(".9-.9.9.9.9"));
+#if 1
+  //printf("double number: %d\n", count_double(".9 3.4 e +3.3e-3 4"));
+  //printf("double number: %d\n", count_double(".9-.9.9.9.9"));
 
   char *str = ".9 3.4 e +3.3e-3 4";
   //char *str = ".9-.9.9.9.9E-41.23.4e0r2.1";
   int n;
   double *array = 
-    String_To_Double_Array(str, NULL, &n);
-    //String_To_Double_Array(" -345.4e-.23, --2.324e-05, - nubmer, hello - 3.0, .10 ,", NULL, &n);
+    //String_To_Double_Array(str, NULL, &n);
+  String_To_Double_Array(" -345.4e-.23, --2.324e-05, - nubmer, hello - 3.0, .10 ,", NULL, &n);
   darray_printf(array, n, "%g");
 
 #endif

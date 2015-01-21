@@ -778,7 +778,9 @@ double Stack_Array_Value(const Stack *stack, size_t index)
   case FLOAT64:
     return ima.array64[index];
   case COLOR:
-    return ima.array8[index];
+    return ima.arrayc[index][0] + 256 * ima.arrayc[index][1] + 
+      65536 * ima.arrayc[index][2];
+    //return ima.array8[index];
   default:
     TZ_ERROR(ERROR_DATA_TYPE);
     break;

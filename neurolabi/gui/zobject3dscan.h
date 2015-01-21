@@ -63,7 +63,7 @@ public:
   void canonize();
   bool unify(const ZObject3dStripe &stripe, bool canonizing = true);
 
-  void print() const;
+  void print(int indent = 0) const;
 
   void downsample(int xintv);
   void downsampleMax(int xintv);
@@ -190,6 +190,8 @@ public:
   bool load(const char *filePath);
   bool load(const std::string &filePath);
 
+  bool hit(double x, double y, double z);
+
   /*!
    * \brief Import a dvid object
    *
@@ -221,12 +223,23 @@ public:
   bool importDvidObjectBuffer(const std::vector<char> &byteArray);
 
   template<class T>
-  int scanArray(const T *array, int x, int y, int z, int width);
+  int scanArray(const T *array, int x, int y, int z, int width, int x0 = 0);
 
+  /*!
+   * \brief Draw a stack
+   * \param stack
+   * \param v
+   * \param offset Offset of translating the object
+   */
   void drawStack(Stack *stack, int v, const int *offset = NULL) const;
   void drawStack(Stack *stack, uint8_t red, uint8_t green, uint8_t blue,
                  const int *offset = NULL) const;
   void labelStack(Stack *stack, int startLabel, const int *offset = NULL);
+
+  /*!
+   * \brief Mask a stack with the foreground defined by the object.
+   */
+  void maskStack(ZStack *stack);
 
   /*!
    * \brief Count overlap between the object and a stack
@@ -249,13 +262,15 @@ public:
   void unify(const ZObject3dScan &obj);
   void concat(const ZObject3dScan &obj);
 
+  ZObject3dScan subtract(const ZObject3dScan &obj);
+
   void downsample(int xintv, int yintv, int zintv);
   void downsampleMax(int xintv, int yintv, int zintv);
 
   void upSample(int xIntv, int yIntv, int zIntv);
 
   Stack* toStack(int *offset = NULL, int v = 1) const;
-  ZStack* toStackObject() const;
+  ZStack* toStackObject(int v = 1) const;
   ZStack* toVirtualStack() const;
   //ZStack* toDownsampledStack(int xIntv, int yIntv, int zIntv);
 
@@ -266,6 +281,19 @@ public:
   static std::map<int, ZObject3dScan*>* extractAllObject(
       const T *array, int width, int height, int depth, int startPlane,
       std::map<int, ZObject3dScan*> *bodySet);
+
+  template<class T>
+  static std::map<int, ZObject3dScan*>* extractAllObject(
+      const T *array, int width, int height, int depth, int x0, int y0, int z0,
+      std::map<int, ZObject3dScan*> *bodySet);
+
+  template<class T>
+  static std::map<int, ZObject3dScan*>* extractAllForegroundObject(
+      const T *array, int width, int height, int depth, int x0, int y0, int z0,
+      std::map<int, ZObject3dScan*> *bodySet);
+
+  //Foreground only
+  static std::vector<ZObject3dScan*> extractAllObject(const ZStack &stack);
 
   ZGraph* buildConnectionGraph();
 
@@ -285,6 +313,7 @@ public:
   size_t getSegmentNumber();
 
   void translate(int dx, int dy, int dz);
+  void translate(const ZIntPoint &dp);
 
   /*!
    * \brief Add z value
@@ -306,6 +335,7 @@ public:
   virtual const std::string& className() const;
 
   void dilate();
+  void dilatePlane();
 
   ZPoint getCentroid() const;
   /*!
@@ -483,6 +513,14 @@ public:
    */
   bool isAdjacentTo(ZObject3dScan &obj);
 
+  uint64_t getLabel() const {
+    return m_label;
+  }
+
+  void setLabel(uint64_t label) {
+    m_label = label;
+  }
+
   class Segment {
   public:
     Segment(int z = 0, int y = 0, int x0 = 0, int x1 = 0) :
@@ -519,6 +557,9 @@ public:
     Segment m_seg;
   };
 
+private:
+  void addForeground(ZStack *stack);
+
 protected:
   std::vector<ZObject3dStripe> m_stripeArray;
   /*
@@ -531,6 +572,7 @@ protected:
   mutable std::map<std::pair<int, int>, size_t> m_stripeMap;
   mutable std::map<size_t, std::pair<size_t, size_t> > m_indexSegmentMap;
   bool m_isCanonized;
+  uint64_t m_label;
   //mutable int *m_lastStripe;
 
   //SWIG has some problem recognizing const static type
@@ -545,7 +587,8 @@ protected:
 
 
 template<class T>
-int ZObject3dScan::scanArray(const T *array, int x, int y, int z, int width)
+int ZObject3dScan::scanArray(
+    const T *array, int x, int y, int z, int width, int x0)
 {
   if (array == NULL) {
     return 0;
@@ -573,6 +616,7 @@ int ZObject3dScan::scanArray(const T *array, int x, int y, int z, int width)
     }
   }
 
+  x += x0;
   addSegment(x, x + length - 1, false);
 
   return length;
@@ -596,6 +640,7 @@ std::map<int, ZObject3dScan*>* ZObject3dScan::extractAllObject(
         std::map<int, ZObject3dScan*>::iterator iter = bodySet->find(v);
         if (iter == bodySet->end()) {
           obj = new ZObject3dScan;
+          obj->setLabel(v);
           //(*bodySet)[v] = obj;
           bodySet->insert(std::map<int, ZObject3dScan*>::value_type(v, obj));
         } else {
@@ -611,6 +656,81 @@ std::map<int, ZObject3dScan*>* ZObject3dScan::extractAllObject(
 
   return bodySet;
 }
+
+template<class T>
+std::map<int, ZObject3dScan*>* ZObject3dScan::extractAllObject(
+    const T *array, int width, int height, int depth, int x0, int y0, int z0,
+    std::map<int, ZObject3dScan*> *bodySet)
+{
+  if (bodySet == NULL) {
+    bodySet = new std::map<int, ZObject3dScan*>;
+  }
+
+  ZObject3dScan *obj = NULL;
+  for (int z = 0; z < depth; ++z) {
+    for (int y = 0; y < height; ++y) {
+      int x = 0;
+      while (x < width) {
+        int v = array[x];
+        std::map<int, ZObject3dScan*>::iterator iter = bodySet->find(v);
+        if (iter == bodySet->end()) {
+          obj = new ZObject3dScan;
+          obj->setLabel(v);
+          //(*bodySet)[v] = obj;
+          bodySet->insert(std::map<int, ZObject3dScan*>::value_type(v, obj));
+        } else {
+          obj = iter->second;
+        }
+        int length = obj->scanArray(array, x, y + y0, z + z0, width, x0);
+
+        x += length;
+      }
+      array += width;
+    }
+  }
+
+  return bodySet;
+}
+
+template<class T>
+std::map<int, ZObject3dScan*>* ZObject3dScan::extractAllForegroundObject(
+    const T *array, int width, int height, int depth, int x0, int y0, int z0,
+    std::map<int, ZObject3dScan*> *bodySet)
+{
+  if (bodySet == NULL) {
+    bodySet = new std::map<int, ZObject3dScan*>;
+  }
+
+  ZObject3dScan *obj = NULL;
+  for (int z = 0; z < depth; ++z) {
+    for (int y = 0; y < height; ++y) {
+      int x = 0;
+      while (x < width) {
+        int v = array[x];
+        if (v > 0) {
+          std::map<int, ZObject3dScan*>::iterator iter = bodySet->find(v);
+          if (iter == bodySet->end()) {
+            obj = new ZObject3dScan;
+            obj->setLabel(v);
+            //(*bodySet)[v] = obj;
+            bodySet->insert(std::map<int, ZObject3dScan*>::value_type(v, obj));
+          } else {
+            obj = iter->second;
+          }
+          int length = obj->scanArray(array, x, y + y0, z + z0, width, x0);
+
+          x += length;
+        } else {
+          ++x;
+        }
+      }
+      array += width;
+    }
+  }
+
+  return bodySet;
+}
+
 
 template<class InputIterator>
 Stack* ZObject3dScan::makeStack(InputIterator startObject,

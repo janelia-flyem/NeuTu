@@ -10,7 +10,7 @@
 
 const size_t Z3DVolumeSource::m_nChannelSupport = 10;
 
-Z3DVolumeSource::Z3DVolumeSource(ZStackDoc *doc)
+Z3DVolumeSource::Z3DVolumeSource(ZStackDoc *doc, size_t maxVoxelNumber)
   : Z3DProcessor()
   , m_stackOutputPort("Stack")
   , m_xScale("X Scale", 1.0f, 0.1f, 50.f)
@@ -22,11 +22,15 @@ Z3DVolumeSource::Z3DVolumeSource(ZStackDoc *doc)
   , m_doc(doc)
   , m_widgetsGroup(NULL)
 {
-  int currentAvailableTexMem = Z3DGpuInfoInstance.getAvailableTextureMemory();
-  if (currentAvailableTexMem != -1 && currentAvailableTexMem <= 256000)
-    m_maxVoxelNumber = 256 * 256 * 256 * 2;
-  else
-    m_maxVoxelNumber = 512 * 512 * 512 * 1;
+  if (maxVoxelNumber == 0) {
+    int currentAvailableTexMem = Z3DGpuInfoInstance.getAvailableTextureMemory();
+    if (currentAvailableTexMem != -1 && currentAvailableTexMem <= 256000)
+      m_maxVoxelNumber = 256 * 256 * 256 * 2;
+    else
+      m_maxVoxelNumber = 512 * 512 * 512 * 1;
+  } else {
+    m_maxVoxelNumber = maxVoxelNumber;
+  }
 
   for (size_t i=0; i<m_nChannelSupport; i++) {
     QString name = QString("Volume%1").arg(i+1);
@@ -63,13 +67,13 @@ void Z3DVolumeSource::loadData()
 {
   if (m_doc != NULL) {
     if (m_doc->hasStackData()) {
-      if (m_doc->hasPlayer(ZDocPlayer::ROLE_3DPAINT)) {
+      if (m_doc->hasPlayer(ZStackObjectRole::ROLE_3DPAINT)) {
         readVolumesWithObject();
       } else {
         readVolumes();
       }
     } else if (m_doc->hasStack() && m_doc->hasSparseObject()) {
-      if (m_doc->hasPlayer(ZDocPlayer::ROLE_3DPAINT)) {
+      if (m_doc->hasPlayer(ZStackObjectRole::ROLE_3DPAINT)) {
         readSparseVolumeWithObject();
       } else {
         readSparseVolume();
@@ -340,7 +344,7 @@ void Z3DVolumeSource::readSparseStack()
     offset[2] = -stackData->getOffset().getZ() * (dsIntv.getZ() + 1);
 
     QList<const ZDocPlayer*> playerList =
-        m_doc->getPlayerList(ZDocPlayer::ROLE_3DPAINT);
+        m_doc->getPlayerList(ZStackObjectRole::ROLE_3DPAINT);
     foreach (const ZDocPlayer *player, playerList) {
       //player->paintStack(colorStack);
       if (player->getLabel() > 0 && player->getLabel() < 10) {
@@ -437,7 +441,7 @@ void Z3DVolumeSource::readVolumesWithObject()
   //                   colorStack->c_stack(2));
 
   QList<const ZDocPlayer*> playerList =
-      m_doc->getPlayerList(ZDocPlayer::ROLE_3DPAINT);
+      m_doc->getPlayerList(ZStackObjectRole::ROLE_3DPAINT);
   foreach (const ZDocPlayer *player, playerList) {
     //player->paintStack(colorStack);
     if (player->getLabel() > 0 && player->getLabel() < 10) {
@@ -632,6 +636,10 @@ void Z3DVolumeSource::readSparseVolume()
     xIntv = 1;
     yIntv = 1;
     zIntv = 1;
+  } else if (m_doc->getStack()->getVoxelNumber() * nchannel > m_maxVoxelNumber * 3) {
+    xIntv = 2;
+    yIntv = 2;
+    zIntv = 2;
   }
 
   int height = m_doc->getStack()->width();
@@ -779,7 +787,7 @@ void Z3DVolumeSource::readSparseVolumeWithObject()
   originalOffset[1] = offset[1] * (yIntv + 1);
   originalOffset[2] = offset[2] * (zIntv + 1);
 
-  QList<ZObject3d*> &objList = m_doc->getObj3dList();
+  QList<ZObject3d*>objList = m_doc->getObj3dList();
   foreach(ZObject3d *obj, objList) {
     obj->drawStack(stackArray, originalOffset, xIntv, yIntv, zIntv);
   }

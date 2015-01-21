@@ -43,7 +43,7 @@ class Z3DWindow : public QMainWindow
   Q_OBJECT
 public:
   enum EInitMode {
-    NORMAL_INIT, EXCLUDE_VOLUME
+    NORMAL_INIT, EXCLUDE_VOLUME, FULL_RES_VOLUME
   };
 
   explicit Z3DWindow(ZSharedPointer<ZStackDoc> doc, EInitMode initMode,
@@ -120,13 +120,18 @@ private:
   bool hasMultipleSelectedSwcNode() const;
 
 signals:
+  void closed();
   
 public slots:
   void resetCamera();  // set up camera based on visible objects in scene, original position
 
   void flipView(); //Look from the oppsite side
+  void setXZView();
+  void setYZView();
   void recordView(); //Record the current view parameters
   void diffView(); //Output difference between current view and recorded view
+  void saveView(); //Save the view parameters into a file
+  void loadView();
 
   void resetCameraClippingRange(); // // Reset the camera clipping range to include this entire bounding box
   // redraw changed parts
@@ -239,10 +244,13 @@ public slots:
   void addStrokeFrom3dPaint(ZStroke2d*stroke);
   void addPolyplaneFrom3dPaint(ZStroke2d*stroke);
 
+  void markSwcSoma();
+
 protected:
   virtual void dragEnterEvent(QDragEnterEvent *event);
   virtual void dropEvent(QDropEvent *event);
   virtual void keyPressEvent(QKeyEvent *event);
+  void closeEvent(QCloseEvent * event);
 
 private:
   QTabWidget* createBasicSettingTabWidget();
@@ -270,7 +278,8 @@ private:
   QAction *m_locateSwcNodeIn2DAction;
 
   QAction *m_undoAction;
-  QAction *m_redoAction ;
+  QAction *m_redoAction;
+  QAction *m_markSwcSomaAction;
   QAction *m_changeSwcNodeTypeAction;
   QAction *m_setSwcRootAction;
   QAction *m_breakSwcConnectionAction;

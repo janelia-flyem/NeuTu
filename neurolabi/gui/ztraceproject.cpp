@@ -21,11 +21,14 @@ ZTraceProject::~ZTraceProject()
 
 }
 
-int ZTraceProject::load(const QString path)
+int ZTraceProject::load(const QString /*path*/)
 {
+  /*
   return m_parent->loadTraceProject((path
                                      + m_parent->defaultTraceProjectFile())
                                     .toLocal8Bit().constData());
+                                    */
+  return 0;
 }
 
 void ZTraceProject::save()

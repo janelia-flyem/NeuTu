@@ -44,7 +44,7 @@ ZSwcTree *ZSwcObjsModel::getSwcTree(const QModelIndex &index) const
   ZObjsItem *item = static_cast<ZObjsItem*>(index.internalPointer());
 
   if (item->parent() == m_rootItem)
-    return static_cast<ZSwcTree*>(item->getObj());
+    return ZStackObject::CastVoidPointer<ZSwcTree>(item->getActuralData());
   else
     return NULL;
 }
@@ -57,7 +57,7 @@ Swc_Tree_Node *ZSwcObjsModel::getSwcTreeNode(const QModelIndex &index) const
   ZObjsItem *item = static_cast<ZObjsItem*>(index.internalPointer());
 
   if (item->parent() && item->parent()->parent() == m_rootItem)
-    return static_cast<Swc_Tree_Node*>(item->getObj());
+    return static_cast<Swc_Tree_Node*>(item->getActuralData());
   else
     return NULL;
 }
@@ -73,7 +73,8 @@ void ZSwcObjsModel::updateModelData()
               "parent_id" << "label" << "weight" << "feature" << "index" << "source";
               */
   rootData << "Neuron" << "Source";
-  m_rootItem = new ZObjsItem(rootData, m_doc->swcList());
+  m_rootItem = new ZObjsItem(
+        rootData, &(m_doc->getObjectList(ZStackObject::TYPE_SWC)));
   setupModelData(m_rootItem);
   endResetModel();
 }
@@ -85,9 +86,10 @@ void ZSwcObjsModel::setupModelData(ZObjsItem *parent)
   m_swcToRow.clear();
   m_swcTreeNodeToRow.clear();
   m_swcTreeNodeToSwc.clear();
-  for (int i=0; i<m_doc->swcList()->size(); i++) {
+  QList<ZSwcTree*> swcList = m_doc->getSwcList();
+  for (int i=0; i<swcList.size(); i++) {
     data.clear();
-    ZSwcTree *swcTree = m_doc->swcList()->at(i);
+    ZSwcTree *swcTree = swcList.at(i);
 
     data << QString("Neuron %1").arg(i+1)
          << QString::fromStdString(swcTree->getSource());

@@ -16,6 +16,7 @@ int main(int argc, char *argv[])
 			 "[-us <int> <int> <int>]",
 			 "[-crop <int> <int> <int> <int> <int> <int>]",
 			 "[-dark_cover] [-binarize <int> <int>]",
+                         "[--separate <string>]",
 			 NULL};
   Process_Arguments(argc, argv, Spec, 1);
 
@@ -76,7 +77,10 @@ int main(int argc, char *argv[])
     Mc_Stack_Binarize(out, low, high);
   }
 
-  Write_Mc_Stack(Get_String_Arg("-o"), out, NULL);
+  if (Is_Arg_Matched("--separate")) {
+  } else {
+    Write_Mc_Stack(Get_String_Arg("-o"), out, NULL);
+  }
 
   Kill_Mc_Stack(stack);
 

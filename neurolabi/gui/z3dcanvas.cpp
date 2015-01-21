@@ -10,8 +10,12 @@
 #include "zpainter.h"
 #include "zstackdrawable.h"
 
+#ifdef _QT5_
+Z3DCanvas::Z3DCanvas(const QString &title, int width, int height, QWidget* parent, Qt::WindowFlags f)
+#else
 Z3DCanvas::Z3DCanvas(const QString &title, int width, int height, const QGLFormat &format,
                      QWidget* parent, const QGLWidget *shareWidget, Qt::WindowFlags f)
+#endif
   : QGraphicsView(parent)
   , m_fullscreen(false)
   , m_glWidget(NULL)
@@ -22,8 +26,12 @@ Z3DCanvas::Z3DCanvas(const QString &title, int width, int height, const QGLForma
   setAlignment(Qt::AlignLeft | Qt::AlignTop);
   resize(width, height);
 
+#ifdef _QT5_
+  m_glWidget = new QOpenGLWidget(nullptr, f);
+#else
   m_glWidget = new QGLWidget(format, NULL, shareWidget, f);
   m_glWidget->makeCurrent();
+#endif
   m_isStereoScene = m_glWidget->format().stereo();
   m_3dScene = new QGraphicsScene(0, 0, width, height, this);
 

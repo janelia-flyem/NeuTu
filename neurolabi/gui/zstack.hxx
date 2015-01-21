@@ -183,6 +183,8 @@ public: /* attributes */
    */
   int getIntValueLocal(int x, int y, int z, int c = 0) const;
 
+  int getIntValue(size_t index, int c = 0) const;
+
   /*!
    * \brief Set the intensity value of a voxel.
    *
@@ -191,6 +193,16 @@ public: /* attributes */
    * the voxel maximum / minimum, it is set to maximum / minimum.
    */
   void setIntValue(int x, int y, int z, int c, int v);
+
+  /*!
+   * \brief Add value to the intensity of a voxel
+   *
+   * The resulted value will always be clipped to the largest possible pixel
+   * valuel.
+   */
+  void addIntValue(int x, int y, int z, int c, int v);
+
+
 
   /** @name raw data access
    *  array8(), array16(), array32(), array64() or arrayc() can be used to otain
@@ -456,6 +468,7 @@ public: /* operations */
 
   void loadValue(const void *buffer, size_t length, void *loc);
 
+  void setOffset(int dx, int dy);
   void setOffset(int dx, int dy, int dz);
   void setOffset(const ZIntPoint &pt);
   inline const ZIntPoint& getOffset() const { return m_offset; }
@@ -526,6 +539,8 @@ public: /* processing routines */
   void downsampleMin(int xintv, int yintv, int zintv);
 
   void crop(const ZIntCuboid &cuboid);
+
+  void swapData(ZStack *stack);
 
 public:
   void initChannelColors();

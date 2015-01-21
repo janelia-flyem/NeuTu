@@ -287,7 +287,7 @@ void ZClosedCurve::clear()
 ZJsonObject ZClosedCurve::toJsonObject() const
 {
   ZJsonObject obj;
-  ZJsonArray curveObj;
+  ZJsonArray curveObj(json_array(), ZJsonValue::SET_AS_IT_IS);
 
   for (size_t i = 0; i < m_landmarkArray.size(); ++i) {
     const ZPoint &pt = m_landmarkArray[i];
@@ -343,4 +343,20 @@ void ZClosedCurve::scale(double sx, double sy, double sz)
     ZPoint &pt = *iter;
     pt *= ZPoint(sx, sy, sz);
   }
+}
+
+void ZClosedCurve::translate(double dx, double dy)
+{
+  for (ZPointArray::iterator iter = m_landmarkArray.begin();
+       iter != m_landmarkArray.end(); ++iter) {
+    ZPoint &pt = *iter;
+    pt += ZPoint(dx, dy, 0);
+  }
+}
+
+ZClosedCurve* ZClosedCurve::clone() const
+{
+  ZClosedCurve *curve = new ZClosedCurve(*this);
+
+  return curve;
 }

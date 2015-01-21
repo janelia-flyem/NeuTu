@@ -1,10 +1,11 @@
 #include "zstackoperator.h"
 #include "zmouseeventrecorder.h"
 #include "zstroke2d.h"
+#include "zswctree.h"
 
 ZStackOperator::ZStackOperator() :
-  m_op(OP_NULL), m_hitNode(NULL),
-  m_hitStroke(NULL), m_hitObj3d(NULL),
+  m_op(OP_NULL),
+  m_hitObject(NULL),
   m_punctaIndex(-1), m_togglingStrokeLabel(false), m_mouseEventRecorder(NULL)
 {
 }
@@ -23,4 +24,16 @@ ZPoint ZStackOperator::getMouseOffset(ZMouseEvent::ECoordinateSystem cs) const
   }
 
   return offset;
+}
+
+template<>
+Swc_Tree_Node* ZStackOperator::getHitObject<Swc_Tree_Node>() const
+{
+  Swc_Tree_Node *tn = NULL;
+  ZSwcTree *tree = getHitObject<ZSwcTree>();
+  if (tree != NULL) {
+    tn = tree->getHitNode();
+  }
+
+  return tn;
 }

@@ -417,6 +417,7 @@ void ZSwcTree::display(ZPainter &painter, int slice,
   }
 
 #if defined(_QT_GUI_USED_)
+
   painter.save();
 
   double dataFocus = slice + painter.getOffset().z();
@@ -432,7 +433,6 @@ void ZSwcTree::display(ZPainter &painter, int slice,
   QPen pen;
   pen.setColor(m_nodeFocusColor);
   pen.setWidth(strokeWidth);
-  pen.setCosmetic(m_usingCosmeticPen);
   painter.setPen(pen);
   painter.setBrush(Qt::NoBrush);
 
@@ -489,10 +489,21 @@ void ZSwcTree::display(ZPainter &painter, int slice,
       }
     }
   }
-  pen.setCosmetic(false);
+  //pen.setCosmetic(false);
+
+  pen.setCosmetic(m_usingCosmeticPen);
 
   pen.setWidthF(strokeWidth);
+#ifdef _DEBUG_2
+  QPen tpen;
+  tpen.setWidth(getPenWidth());
+  tpen.setBrush(Qt::NoBrush);
+  tpen.setCosmetic(true);
+  qDebug() << tpen.isCosmetic();
 
+  tpen.setCosmetic(false);
+  qDebug() << tpen.isCosmetic();
+#endif
   for (const Swc_Tree_Node *tn = begin(); tn != end(); tn = next()) {
     if (SwcTreeNode::isVirtual(tn)) { //Skip virtual node
       continue;
@@ -542,6 +553,9 @@ void ZSwcTree::display(ZPainter &painter, int slice,
       {
           ZStackBall circle(SwcTreeNode::x(tn), SwcTreeNode::y(tn), SwcTreeNode::z(tn),
                          SwcTreeNode::radius(tn));
+//          if (isNodeSelected(tn)) {
+//            circle.setSelected(true);
+//          }
           circle.setColor(nodeColor);
           circle.useCosmeticPen(m_usingCosmeticPen);
           circle.display(painter, slice, style);
@@ -556,6 +570,9 @@ void ZSwcTree::display(ZPainter &painter, int slice,
         painter.setBrush(brushColor);
         ZStackBall circle(SwcTreeNode::x(tn), SwcTreeNode::y(tn), SwcTreeNode::z(tn),
                        SwcTreeNode::radius(tn));
+//        if (isNodeSelected(tn)) {
+//          circle.setSelected(true);
+//        }
         circle.setColor(nodeColor);
         circle.useCosmeticPen(m_usingCosmeticPen);
         circle.display(painter, slice, style);
@@ -572,6 +589,23 @@ void ZSwcTree::display(ZPainter &painter, int slice,
         break;
       }
     }
+  }
+
+  //Draw selected nodes
+  for (std::set<Swc_Tree_Node*>::const_iterator iter = m_selectedNode.begin();
+       iter != m_selectedNode.end(); ++iter) {
+    const Swc_Tree_Node *tn = *iter;
+    ZStackBall circle;
+    circle.set(SwcTreeNode::x(tn), SwcTreeNode::y(tn), SwcTreeNode::z(tn),
+               SwcTreeNode::radius(tn));
+
+    circle.setColor(255, 255, 0);
+    circle.setVisualEffect(ZStackBall::VE_BOUND_BOX |
+                           ZStackBall::VE_NO_FILL |
+                           ZStackBall::VE_OUT_FOCUS_DIM |
+                           ZStackBall::VE_DASH_PATTERN);
+    circle.useCosmeticPen(m_usingCosmeticPen);
+    circle.display(painter, slice, BOUNDARY);
   }
 
   painter.restore();
@@ -1133,6 +1167,7 @@ bool ZSwcTree::hit(double x, double y, double z)
 
 Swc_Tree_Node* ZSwcTree::hitTest(double x, double y, double z, double margin)
 {
+#ifdef _QT_GUI_USED_
   const std::vector<Swc_Tree_Node *> &nodeArray = getSwcTreeNodeArray();
 
   const Swc_Tree_Node *hit = NULL;
@@ -1158,6 +1193,9 @@ Swc_Tree_Node* ZSwcTree::hitTest(double x, double y, double z, double margin)
   }
 
   return const_cast<Swc_Tree_Node*>(hit);
+#else
+  return NULL;
+#endif
 }
 
 Swc_Tree_Node* ZSwcTree::hitTest(double x, double y)
@@ -2511,6 +2549,40 @@ void ZSwcTree::labelTrunkLevel(ZSwcTrunkAnalyzer *trunkAnalyzer)
   }
 }
 
+void ZSwcTree::markSoma(double radiusThre, int somaType, int otherType)
+{
+  std::vector<Swc_Tree_Node*> treeRoots;
+  Swc_Tree_Node *root = firstRegularRoot();
+  while (root != NULL) {
+    treeRoots.push_back(root);
+    root = root->next_sibling;
+  }
+  // tree by tree process
+  for (size_t i=0; i<treeRoots.size(); ++i) {
+    Swc_Tree_Node *root = treeRoots[i];
+    double maxRadius = -std::numeric_limits<double>::max();
+    Swc_Tree_Node *maxRadiusNode = NULL;
+    updateIterator(SWC_TREE_ITERATOR_BREADTH_FIRST, root, FALSE);
+    for (Swc_Tree_Node *tn = begin(); tn != NULL; tn = next()) {
+      if (SwcTreeNode::radius(tn) > maxRadius) {
+        maxRadius = SwcTreeNode::radius(tn);
+        maxRadiusNode = tn;
+      }
+    }
+    SwcTreeNode::setAsRoot(maxRadiusNode);
+
+    updateIterator(SWC_TREE_ITERATOR_BREADTH_FIRST, maxRadiusNode, FALSE);
+    for (Swc_Tree_Node *tn = begin(); tn != NULL; tn = next()) {
+      if (maxRadius >= radiusThre &&
+          (tn == maxRadiusNode || (SwcTreeNode::type(SwcTreeNode::parent(tn)) == somaType && SwcTreeNode::radius(tn) * 3.0 >= maxRadius))) {
+        SwcTreeNode::setType(tn, somaType);
+      } else {
+        SwcTreeNode::setType(tn, otherType);
+      }
+    }
+  }
+}
+
 bool ZSwcTree::contains(const Swc_Tree_Node *tn) const
 {
   return (data()->root == SwcTreeNode::root(tn));
@@ -3232,7 +3304,7 @@ Swc_Tree_Node* ZSwcTree::DepthFirstIterator::next()
   return m_currentNode;
 }
 
-void ZSwcTree::setNodeSelected(Swc_Tree_Node *tn, bool appending)
+void ZSwcTree::selectNode(Swc_Tree_Node *tn, bool appending)
 {
   if (!appending) {
     m_selectedNode.clear();
@@ -3243,7 +3315,271 @@ void ZSwcTree::setNodeSelected(Swc_Tree_Node *tn, bool appending)
   }
 }
 
+Swc_Tree_Node* ZSwcTree::selectHitNode(bool appending)
+{
+  Swc_Tree_Node *tn = getHitNode();
+
+  selectNode(tn, appending);
+
+  m_hitSwcNode = NULL;
+
+  return tn;
+}
+
+Swc_Tree_Node* ZSwcTree::deselectHitNode()
+{
+  Swc_Tree_Node *tn = getHitNode();
+
+  deselectNode(tn);
+
+  m_hitSwcNode = NULL;
+
+  return tn;
+}
+
+void ZSwcTree::deselectNode(Swc_Tree_Node *tn)
+{
+  std::set<Swc_Tree_Node*>::iterator iter = m_selectedNode.find(tn);
+  if (iter != m_selectedNode.end()) {
+    m_selectedNode.erase(iter);
+  }
+}
+
+void ZSwcTree::selectAllNode()
+{
+  updateIterator();
+  for (Swc_Tree_Node *tn = begin(); tn != NULL; tn = next()) {
+    if (SwcTreeNode::isRegular(tn)) {
+      m_selectedNode.insert(tn);
+    }
+  }
+}
+
+void ZSwcTree::deselectAllNode()
+{
+  m_selectedNode.clear();
+}
+
 const std::set<Swc_Tree_Node*>& ZSwcTree::getSelectedNode() const
 {
   return m_selectedNode;
+}
+
+bool ZSwcTree::hasSelectedNode() const
+{
+  return !getSelectedNode().empty();
+}
+
+bool ZSwcTree::isNodeSelected(const Swc_Tree_Node *tn) const
+{
+  return getSelectedNode().count(const_cast<Swc_Tree_Node*>(tn)) > 0;
+}
+
+void ZSwcTree::selectNodeFloodFilling(Swc_Tree_Node *seed)
+{
+  if (seed != NULL) {
+    const std::set<Swc_Tree_Node*> &nodeSet = getSelectedNode();
+    std::set<Swc_Tree_Node*> newSelectedSet = nodeSet;
+
+    Swc_Tree_Node *lastSelectedNode = seed;
+
+    std::queue<Swc_Tree_Node*> tnQueue;
+    tnQueue.push(lastSelectedNode);
+
+    while (!tnQueue.empty()) {
+      Swc_Tree_Node *tn = tnQueue.front();
+      tnQueue.pop();
+      std::vector<Swc_Tree_Node*> neighborArray =
+          SwcTreeNode::neighborArray(tn);
+      for (std::vector<Swc_Tree_Node*>::iterator
+           iter = neighborArray.begin(); iter != neighborArray.end();
+           ++iter) {
+        if (nodeSet.count(*iter) == 0 &&
+            newSelectedSet.count(*iter) == 0) {
+          newSelectedSet.insert(*iter);
+          tnQueue.push(*iter);
+        }
+      }
+    }
+
+    m_selectedNode = newSelectedSet;
+  }
+}
+
+void ZSwcTree::selectHitNodeFloodFilling()
+{
+  selectNodeFloodFilling(getHitNode());
+  setHitNode(NULL);
+}
+
+void ZSwcTree::selectNodeConnection(Swc_Tree_Node *seed)
+{
+  const std::set<Swc_Tree_Node*> &nodeSet = getSelectedNode();
+  std::set<Swc_Tree_Node*> newSelectedSet = nodeSet;
+  std::vector<bool> labeled(nodeSet.size(), false);
+
+  if (seed != NULL) {
+    for (std::set<Swc_Tree_Node*>::iterator targetIter = nodeSet.begin();
+         targetIter != nodeSet.end(); ++targetIter) {
+      Swc_Tree_Node *tn = *targetIter;
+      Swc_Tree_Node *ancestor = SwcTreeNode::commonAncestor(seed, tn);
+      if (SwcTreeNode::isRegular(ancestor)) {
+        if (seed == ancestor) {
+          std::vector<Swc_Tree_Node*> tnArray;
+          while (tn != seed) {
+            tnArray.push_back(tn);
+            tn = SwcTreeNode::parent(tn);
+          }
+          for (std::vector<Swc_Tree_Node*>::reverse_iterator iter = tnArray.rbegin();
+               iter != tnArray.rend(); ++iter) {
+            if (nodeSet.count(*iter) == 0) {
+              newSelectedSet.insert(*iter);
+            } else {
+              break;
+            }
+          }
+        } else {
+          ZSwcPath path(seed, tn);
+          ZSwcPath::iterator iter = path.begin();
+          ++iter;
+          for (; iter != path.end(); ++iter) {
+            if (nodeSet.count(*iter) == 0) {
+              newSelectedSet.insert(*iter);
+            } else {
+              break;
+            }
+          }
+        }
+      }
+    }
+    newSelectedSet.insert(seed);
+  } else {
+    int sourceIndex = 0;
+    for (std::set<Swc_Tree_Node*>::iterator sourceIter = nodeSet.begin();
+         sourceIter != nodeSet.end(); ++sourceIter, ++sourceIndex) {
+      if (!labeled[sourceIndex]) {
+        //Swc_Tree_Node *ancestor = *sourceIter;
+
+        //Swc_Tree_Node *ancestor = *(nodeSet->begin());
+
+        int index = sourceIndex + 1;
+        std::set<Swc_Tree_Node*>::iterator targetIter = sourceIter;
+        ++targetIter;
+        for (; targetIter != nodeSet.end(); ++targetIter, ++index) {
+          Swc_Tree_Node *ancestor =
+              SwcTreeNode::commonAncestor(*sourceIter, *targetIter);
+          if (SwcTreeNode::isRegular(ancestor)) {
+            labeled[index] = true;
+
+            Swc_Tree_Node *tn = *sourceIter;
+            while (SwcTreeNode::isRegular(tn)) {
+              newSelectedSet.insert(tn);
+              if (tn == ancestor) {
+                break;
+              }
+              tn = SwcTreeNode::parent(tn);
+            }
+
+            tn = *targetIter;
+            while (SwcTreeNode::isRegular(tn)) {
+              newSelectedSet.insert(tn);
+              if (tn == ancestor) {
+                break;
+              }
+              tn = SwcTreeNode::parent(tn);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  m_selectedNode = newSelectedSet;
+}
+
+void ZSwcTree::selectHitNodeConnection()
+{
+  selectNodeConnection(getHitNode());
+  m_hitSwcNode = NULL;
+}
+
+void ZSwcTree::selectNeighborNode()
+{
+  std::set<Swc_Tree_Node*> oldSelected = m_selectedNode;
+  //QList<Swc_Tree_Node*> deselected;
+  for (std::set<Swc_Tree_Node*>::const_iterator iter = oldSelected.begin();
+       iter != oldSelected.end(); ++iter) {
+    const Swc_Tree_Node *tn = *iter;
+    std::vector<Swc_Tree_Node*> neighborArray = SwcTreeNode::neighborArray(tn);
+    for (std::vector<Swc_Tree_Node*>::iterator nbrIter = neighborArray.begin();
+         nbrIter != neighborArray.end(); ++nbrIter) {
+      m_selectedNode.insert(*nbrIter);
+    }
+  }
+}
+
+void ZSwcTree::selectUpstreamNode()
+{
+  for (std::set<Swc_Tree_Node*>::iterator iter = m_selectedNode.begin();
+       iter != m_selectedNode.end(); ++iter) {
+    Swc_Tree_Node* tn = *iter;
+    while (tn != NULL && SwcTreeNode::isRegular(tn)) {
+      m_selectedNode.insert(tn);
+      tn = tn->parent;
+    }
+  }
+}
+
+void ZSwcTree::selectDownstreamNode()
+{
+  for (std::set<Swc_Tree_Node*>::iterator iter = m_selectedNode.begin();
+       iter != m_selectedNode.end(); ++iter) {
+    Swc_Tree_Node_Build_Downstream_List(*iter);
+    Swc_Tree_Node *tn = *iter;
+    while (tn != NULL) {
+      m_selectedNode.insert(tn);
+      tn = tn->next;
+    }
+  }
+}
+
+void ZSwcTree::selectBranchNode()
+{
+  for (std::set<Swc_Tree_Node*>::iterator iter = m_selectedNode.begin();
+       iter != m_selectedNode.end(); ++iter) {
+    Swc_Tree_Node* tn = *iter;
+    while (SwcTreeNode::isRegular(tn) && !Swc_Tree_Node_Is_Branch_Point_S(tn)) {
+      m_selectedNode.insert(tn);
+      tn = tn->parent;
+    }
+    tn = *iter;
+    while (SwcTreeNode::isRegular(tn) && !Swc_Tree_Node_Is_Branch_Point_S(tn)) {
+      m_selectedNode.insert(tn);
+      tn = tn->first_child;
+    }
+  }
+}
+
+void ZSwcTree::selectConnectedNode()
+{
+  std::set<Swc_Tree_Node*> nodeSet = getSelectedNode();
+  std::set<Swc_Tree_Node*> regularRoots;
+  for (std::set<Swc_Tree_Node*>::iterator iter = nodeSet.begin();
+       iter != nodeSet.end(); ++iter) {
+    Swc_Tree_Node* tn = *iter;
+    while (tn != NULL && !Swc_Tree_Node_Is_Regular_Root(tn)) {
+      tn = tn->parent;
+    }
+    if (tn) {
+      regularRoots.insert(tn);
+    }
+  }
+
+  for (std::set<Swc_Tree_Node*>::iterator iter = regularRoots.begin();
+       iter != regularRoots.end(); ++iter) {
+    updateIterator(SWC_TREE_ITERATOR_DEPTH_FIRST, *iter, FALSE);
+    for (Swc_Tree_Node *tn = begin(); tn != end(); tn = tn->next) {
+      m_selectedNode.insert(tn);
+    }
+  }
 }

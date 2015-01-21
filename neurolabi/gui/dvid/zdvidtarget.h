@@ -124,6 +124,16 @@ public:
   std::string getLocalLowResGrayScalePath(
       int xintv, int yintv, int zintv, int z) const;
 
+  inline int getBgValue() const {
+    return m_bgValue;
+  }
+
+  inline void setBgValue(int v) {
+    m_bgValue = v;
+  }
+
+  std::string getBodyLabelName() const;
+
 private:
   std::string m_address;
   std::string m_uuid;
@@ -131,6 +141,8 @@ private:
   std::string m_name;
   std::string m_comment;
   std::string m_localFolder;
+  std::string m_bodyLabelName;
+  int m_bgValue; //grayscale background
 
   const static char* m_addressKey;
   const static char* m_portKey;
@@ -139,6 +151,8 @@ private:
   const static char* m_nameKey;
   const static char* m_localKey;
   const static char* m_debugKey;
+  const static char* m_bgValueKey;
+  const static char* m_bodyLabelNameKey;
 };
 
 #endif // ZDVIDTARGET_H

@@ -59,6 +59,71 @@ ZMouseEventMapper::getPosition(Qt::MouseButton button,
 }
 ///////////////ZMouseEventLeftButtonReleaseMapper/////////////////////
 ////////             UO             ////////////////////////////
+void ZMouseEventLeftButtonReleaseMapper::processSelectionOperation(
+    ZStackOperator &op, const ZMouseEvent &event) const
+{
+  if (op.getHitObject<Swc_Tree_Node>() != NULL) { //SWC select operation
+    if (event.getModifiers() == Qt::NoModifier) {
+      op.setOperation(ZStackOperator::OP_SWC_SELECT_SINGLE_NODE);
+    } else if (event.getModifiers() == Qt::ShiftModifier) {
+      op.setOperation(ZStackOperator::OP_SWC_SELECT_CONNECTION);
+    } else if (event.getModifiers() == Qt::ControlModifier) {
+      if (getDocument()->isSwcNodeSelected(
+            op.getHitObject<Swc_Tree_Node>())) {
+        op.setOperation(ZStackOperator::OP_SWC_DESELECT_SINGLE_NODE);
+      } else {
+        op.setOperation(ZStackOperator::OP_SWC_SELECT_MULTIPLE_NODE);
+      }
+    } else if (event.getModifiers() & Qt::AltModifier) {
+      op.setOperation(ZStackOperator::OP_SWC_SELECT_FLOOD);
+    }
+  } else if (op.getHitObject<ZStackObject>() != NULL) {
+    switch (op.getHitObject()->getType()) {
+    case ZStackObject::TYPE_STROKE:
+      if (event.getModifiers() == Qt::NoModifier) {
+        op.setOperation(ZStackOperator::OP_STROKE_SELECT_SINGLE);
+      } else if (event.getModifiers() == Qt::ShiftModifier ||
+                 event.getModifiers() == Qt::ControlModifier) {
+        op.setOperation(ZStackOperator::OP_STROKE_SELECT_MULTIPLE);
+      }
+      break;
+    case ZStackObject::TYPE_OBJ3D:
+      if (event.getModifiers() == Qt::NoModifier) {
+        op.setOperation(ZStackOperator::OP_OBJECT3D_SELECT_SINGLE);
+      } else if (event.getModifiers() == Qt::ShiftModifier ||
+                 event.getModifiers() == Qt::ControlModifier) {
+        op.setOperation(ZStackOperator::OP_OBJECT3D_SELECT_MULTIPLE);
+      }
+      break;
+    case ZStackObject::TYPE_PUNCTUM:
+      if (event.getModifiers() == Qt::NoModifier) {
+        op.setOperation(ZStackOperator::OP_PUNCTA_SELECT_SINGLE);
+      } else if (event.getModifiers() == Qt::ShiftModifier ||
+                 event.getModifiers() == Qt::ControlModifier) {
+        op.setOperation(ZStackOperator::OP_PUNCTA_SELECT_MULTIPLE);
+      }
+      break;
+    case ZStackObject::TYPE_OBJECT3D_SCAN:
+      if (event.getModifiers() == Qt::NoModifier) {
+        op.setOperation(ZStackOperator::OP_OBJECT3D_SCAN_TOGGLE_SELECT_SINGLE);
+      } else if (event.getModifiers() == Qt::ShiftModifier) {
+        op.setOperation(ZStackOperator::OP_OBJECT3D_SCAN_SELECT_MULTIPLE);
+      } else if (event.getModifiers() == Qt::ControlModifier) {
+        op.setOperation(ZStackOperator::OP_OBJECT3D_SCAN_TOGGLE_SELECT);
+      }
+      break;
+    default:
+      if (event.getModifiers() == Qt::NoModifier) {
+        op.setOperation(ZStackOperator::OP_OBJECT_SELECT_SINGLE);
+      } else if (event.getModifiers() == Qt::ShiftModifier ||
+                 event.getModifiers() == Qt::ControlModifier) {
+        op.setOperation(ZStackOperator::OP_OBJECT_SELECT_MULTIPLE);
+      }
+      break;
+    }
+  }
+}
+
 ZStackOperator ZMouseEventLeftButtonReleaseMapper::getOperation(
     const ZMouseEvent &event) const
 {
@@ -71,16 +136,22 @@ ZStackOperator ZMouseEventLeftButtonReleaseMapper::getOperation(
       }
       break;
     case ZInteractiveContext::EXPLORE_MOVE_IMAGE:
-      op.setOperation(ZStackOperator::OP_RESOTRE_EXPLORE_MODE);
+      op.setOperation(ZStackOperator::OP_RESTORE_EXPLORE_MODE);
       break;
     default:
       break;
     }
 
     if (op.isNull()) {
-      //Add new stroke
-      if (m_context->strokeEditMode() == ZInteractiveContext::STROKE_DRAW) {
+      switch (m_context->getUniqueMode()) {
+      case ZInteractiveContext::INTERACT_STROKE_DRAW:
         op.setOperation(ZStackOperator::OP_STROKE_ADD_NEW);
+        break;
+      case ZInteractiveContext::INTERACT_RECT_DRAW:
+        op.setOperation(ZStackOperator::OP_EXIT_EDIT_MODE);
+        break;
+      default:
+        break;
       }
     }
 
@@ -88,8 +159,11 @@ ZStackOperator ZMouseEventLeftButtonReleaseMapper::getOperation(
       ZPoint rawStackPosition = event.getRawStackPosition();
       ZPoint stackPosition = rawStackPosition + getDocument()->getStackOffset();
       if (m_doc->getStack()->containsRaw(rawStackPosition)) {
-        if (m_context->swcEditMode() == ZInteractiveContext::SWC_EDIT_SELECT &&
-            m_context->strokeEditMode() == ZInteractiveContext::STROKE_EDIT_OFF) {
+        bool hitTestOn =
+            (m_context->swcEditMode() == ZInteractiveContext::SWC_EDIT_SELECT ||
+            m_context->swcEditMode() == ZInteractiveContext::SWC_EDIT_CONNECT) &&
+            m_context->strokeEditMode() == ZInteractiveContext::STROKE_EDIT_OFF;
+        if (hitTestOn) {
           ZStackDocHitTest hitManager;
           if (rawStackPosition.z() < 0) {
             hitManager.hitTest(
@@ -97,42 +171,14 @@ ZStackOperator ZMouseEventLeftButtonReleaseMapper::getOperation(
           } else {
             hitManager.hitTest(const_cast<ZStackDoc*>(getDocument()), stackPosition);
           }
-          op.setHitSwcNode(hitManager.getHitSwcNode());
-          op.setHitStroke2d(hitManager.getHitStroke2d());
-          op.setHitObj3d(hitManager.getObj3d());
+          op.setHitObject(hitManager.getHitObject<ZStackObject>());
 
+          bool selectionOn =
+              (m_context->swcEditMode() == ZInteractiveContext::SWC_EDIT_SELECT &&
+               m_context->strokeEditMode() == ZInteractiveContext::STROKE_EDIT_OFF);
 
-          if (op.getHitSwcNode() != NULL) { //SWC select operation
-            if (event.getModifiers() == Qt::NoModifier) {
-              op.setOperation(ZStackOperator::OP_SWC_SELECT_SINGLE_NODE);
-            } else if (event.getModifiers() == Qt::ShiftModifier) {
-              op.setOperation(ZStackOperator::OP_SWC_SELECT_CONNECTION);
-            } else if (event.getModifiers() == Qt::ControlModifier) {
-              if (getDocument()->selectedSwcTreeNodes()->count(
-                    op.getHitSwcNode()) > 0) {
-                op.setOperation(ZStackOperator::OP_SWC_DESELECT_SINGLE_NODE);
-              } else {
-                op.setOperation(ZStackOperator::OP_SWC_SELECT_MULTIPLE_NODE);
-              }
-            } else if (event.getModifiers() & Qt::AltModifier) {
-              op.setOperation(ZStackOperator::OP_SWC_SELECT_FLOOD);
-            }
-          } else if (op.getHitStroke2d() != NULL) {
-            if (event.getModifiers() == Qt::NoModifier) {
-              op.setOperation(ZStackOperator::OP_STROKE_SELECT_SINGLE);
-            } else if (event.getModifiers() == Qt::ShiftModifier ||
-                       event.getModifiers() == Qt::ControlModifier) {
-              op.setOperation(ZStackOperator::OP_STROKE_SELECT_MULTIPLE);
-            }
-          } else if (op.getHitObj3d() != NULL) {
-            if (event.getModifiers() == Qt::NoModifier) {
-              op.setOperation(ZStackOperator::OP_OBJECT3D_SELECT_SINGLE);
-            } else if (event.getModifiers() == Qt::ShiftModifier ||
-                       event.getModifiers() == Qt::ControlModifier) {
-              op.setOperation(ZStackOperator::OP_OBJECT3D_SELECT_MULTIPLE);
-            }
-          } else {
-            op.setOperation(ZStackOperator::OP_DESELECT_ALL);
+          if (selectionOn) {
+            processSelectionOperation(op, event);
           }
         }
       }
@@ -142,10 +188,10 @@ ZStackOperator ZMouseEventLeftButtonReleaseMapper::getOperation(
       switch (m_context->swcEditMode()) {
       case ZInteractiveContext::SWC_EDIT_SELECT:
         if (event.getModifiers() == Qt::NoModifier) {
-          if (getDocument()->selectedSwcTreeNodes()->empty()) {
+          if (!getDocument()->hasObjectSelected()) {
             op.setOperation(ZStackOperator::OP_SHOW_TRACE_CONTEXT_MENU);
           } else {
-            op.setOperation(ZStackOperator::OP_SWC_DESELECT_ALL_NODE);
+            op.setOperation(ZStackOperator::OP_DESELECT_ALL);
           }
         }
         break;
@@ -168,23 +214,11 @@ ZStackOperator ZMouseEventLeftButtonReleaseMapper::getOperation(
     }
 
     if (op.isNull()) {
-      int index = getDocument()->pickPunctaIndex(event.getStackPosition().x(),
-                                                 event.getStackPosition().y(),
-                                                 event.getStackPosition().z());
-      if (index >= 0) {
-        op.setHitPuncta(index);
-        if (event.getModifiers() != Qt::ControlModifier) {
-          op.setOperation(ZStackOperator::OP_PUNCTA_SELECT_SINGLE);
-        } else {
-          op.setOperation(ZStackOperator::OP_PUNCTA_SELECT_MULTIPLE);
-        }
-      } else {
-        if (m_context->isNormalView()) {
-          if (m_context->isContextMenuActivated() &&
-              m_context->markPuncta() &&
-              getDocument()->hasStackData()) {
-            op.setOperation(ZStackOperator::OP_SHOW_PUNCTA_MENU);
-          }
+      if (m_context->isNormalView()) {
+        if (m_context->isContextMenuActivated() &&
+            m_context->markPuncta() &&
+            getDocument()->hasStackData()) {
+          op.setOperation(ZStackOperator::OP_SHOW_PUNCTA_MENU);
         }
       }
     }
@@ -214,15 +248,21 @@ ZStackOperator ZMouseEventLeftButtonDoubleClickMapper::getOperation(
   } else {
     hitManager.hitTest(const_cast<ZStackDoc*>(getDocument()), stackPosition);
   }
-  op.setHitSwcNode(hitManager.getHitSwcNode());
-  op.setHitStroke2d(hitManager.getHitStroke2d());
+  //op.setHitSwcNode(hitManager.getHitObject<Swc_Tree_Node>());
+  op.setHitObject(hitManager.getHitObject<ZStackObject>());
 
 
-  if (op.getHitSwcNode() != NULL) {
+  if (op.getHitObject<Swc_Tree_Node>() != NULL) {
     op.setOperation(ZStackOperator::OP_SWC_LOCATE_FOCUS);
-  } else if (op.getHitStroke2d() != NULL) {
-    if (m_context->isProjectView()) {
-      op.setOperation(ZStackOperator::OP_STROKE_LOCATE_FOCUS);
+  } else if (op.getHitObject() != NULL) {
+    if (op.getHitObject()->getType() == ZStackObject::TYPE_STROKE) {
+      if (m_context->isProjectView()) {
+        op.setOperation(ZStackOperator::OP_STROKE_LOCATE_FOCUS);
+      }
+    } else if (op.getHitObject()->getType() == ZStackObject::TYPE_OBJ3D) {
+      if (m_context->isProjectView()) {
+        op.setOperation(ZStackOperator::OP_OBJECT3D_LOCATE_FOCUS);
+      }
     }
   }
 
@@ -253,9 +293,15 @@ ZStackOperator ZMouseEventLeftButtonPressMapper::getOperation(
   ZStackOperator op = initOperation();
 
   if (event.isInStack()) {
-    if (m_context->strokeEditMode() ==
-        ZInteractiveContext::STROKE_DRAW) {
+    switch (m_context->getUniqueMode()) {
+    case ZInteractiveContext::INTERACT_STROKE_DRAW:
       op.setOperation(ZStackOperator::OP_STROKE_START_PAINT);
+      break;
+    case ZInteractiveContext::INTERACT_RECT_DRAW:
+      op.setOperation(ZStackOperator::OP_RECT_ROI_INIT);
+      break;
+    default:
+      break;
     }
   }
 
@@ -302,13 +348,16 @@ ZStackOperator ZMouseEventMoveMapper::getOperation(
 
     if (event.getButtons() == Qt::LeftButton) {
       if (event.getModifiers() == Qt::ShiftModifier) {
-        if (m_context->swcEditMode() == ZInteractiveContext::SWC_EDIT_MOVE_NODE) {
+        if (m_context->getUniqueMode() ==
+            ZInteractiveContext::INTERACT_OBJECT_MOVE ||
+            m_context->getUniqueMode() ==
+            ZInteractiveContext::INTERACT_SWC_MOVE_NODE) {
           op.setOperation(ZStackOperator::OP_MOVE_OBJECT);
         }
         canMoveImage = true;
       } else {
-        if (m_context->swcEditMode() == ZInteractiveContext::SWC_EDIT_EXTEND ||
-            m_context->swcEditMode() == ZInteractiveContext::SWC_EDIT_SMART_EXTEND) {
+        if (m_context->getUniqueMode() ==
+            ZInteractiveContext::INTERACT_SWC_EXTEND) {
           ZIntPoint pressPos =
               getPosition(Qt::LeftButton, ZMouseEvent::ACTION_PRESS);
           int dx = pressPos.getX() - event.getX();
@@ -322,14 +371,19 @@ ZStackOperator ZMouseEventMoveMapper::getOperation(
       }
 
       if (op.isNull()) {
-        if (m_context->strokeEditMode() == ZInteractiveContext::STROKE_DRAW) {
+        if (m_context->getUniqueMode() ==
+            ZInteractiveContext::INTERACT_STROKE_DRAW) {
           op.setOperation(ZStackOperator::OP_PAINT_STROKE);
+        } else if (m_context->getUniqueMode() ==
+                   ZInteractiveContext::INTERACT_RECT_DRAW) {
+          op.setOperation(ZStackOperator::OP_RECT_ROI_UPDATE);
         }
       }
 
       if (op.isNull()) {
         if (canMoveImage) {
-          if (m_context->exploreMode() == ZInteractiveContext::EXPLORE_MOVE_IMAGE) {
+          if (m_context->exploreMode() ==
+              ZInteractiveContext::EXPLORE_MOVE_IMAGE) {
             op.setOperation(ZStackOperator::OP_MOVE_IMAGE);
           } else {
             op.setOperation(ZStackOperator::OP_START_MOVE_IMAGE);
@@ -340,10 +394,14 @@ ZStackOperator ZMouseEventMoveMapper::getOperation(
 
     if (op.isNull()) {
       op.setOperation(ZStackOperator::OP_TRACK_MOUSE_MOVE);
+
+#ifdef _FLYEM_
       if (event.getModifiers() == Qt::ShiftModifier &&
-          m_context->strokeEditMode() == ZInteractiveContext::STROKE_DRAW) {
+          m_context->getUniqueMode() ==
+          ZInteractiveContext::INTERACT_STROKE_DRAW) {
         op.setTogglingStrokeLabel(true);
       }
+#endif
       /*
       if (event.getModifiers() == Qt::ShiftModifier &&
           m_context->strokeEditMode() == ZInteractiveContext::STROKE_DRAW) {

@@ -126,7 +126,7 @@ clean:
 
 tags:
 	etags  *.c *.h $(MYERS_DIR)/*.c $(MYERS_DIR)/*.h private/*.c
-	ctags -w -R --language-force=C --fields=+ias --extra=+q *.c *.h $(MYERS_DIR)/*.c $(MYERS_DIR)/*.h private/*.c
+	@if [ $(UNAME) == Darwin ]; then ctags -w  *.c *.h $(MYERS_DIR)/*.c $(MYERS_DIR)/*.h private/*.c; else ctags -w -R --language-force=C --fields=+ias --extra=+q *.c *.h $(MYERS_DIR)/*.c $(MYERS_DIR)/*.h private/*.c; fi
 
 package:
 	tar -zcf neurolabi.tar *.t *.c *.h run Makefile

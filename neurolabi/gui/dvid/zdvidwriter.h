@@ -37,6 +37,7 @@ public:
   void writeAnnotation(int bodyId, const ZJsonObject &obj);
   void writeAnnotation(const ZFlyEmNeuron &neuron);
   void writeRoiCurve(const ZClosedCurve &curve, const std::string &key);
+  void deleteRoiCurve(const std::string &key);
   void writeJsonString(const std::string &dataName, const std::string &key,
                        const std::string jsonString);
   void writeJson(const std::string &dataName, const std::string &key,
@@ -49,6 +50,10 @@ public:
 
   void writeBodyInfo(int bodyId, const ZJsonObject &obj);
   void writeBodyInfo(int bodyId);
+  void writeMaxBodyId(int bodyId);
+
+  void mergeBody(const std::string &dataName, int targetId,
+                 const std::vector<int> &bodyId);
 
   /*!
    * \brief Create a new keyvalue data in DVID.
@@ -56,6 +61,14 @@ public:
    * It does nothing if the data has already existed.
    */
   void createKeyvalue(const std::string &name);
+
+  void deleteKey(const std::string &dataName, const std::string &key);
+  void deleteKey(const QString &dataName, const QString &key);
+
+  void deleteKey(const std::string &dataName,
+                 const std::string &minKey, const std::string &maxKey);
+  void deleteKey(const QString &dataName,
+                 const QString &minKey, const QString &maxKey);
 
 private:
   std::string getJsonStringForCurl(const ZJsonValue &obj) const;

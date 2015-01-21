@@ -15,7 +15,7 @@
 
 ZLocsegChainConn::ZLocsegChainConn()
 {
-  _init(-1, -1, NULL, NULL, NEUROCOMP_CONN_HL);
+  _init(-1, -1, 0, 0, NEUROCOMP_CONN_HL);
 }
 
 ZLocsegChainConn::ZLocsegChainConn(int hook, int link,

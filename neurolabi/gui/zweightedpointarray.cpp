@@ -85,3 +85,8 @@ void ZWeightedPointArray::append(double x, double y, double z, double weight)
 {
   push_back(ZWeightedPoint(x, y, z, weight));
 }
+
+void ZWeightedPointArray::append(const ZPoint &center, double weight)
+{
+  append(center.x(), center.y(), center.z(), weight);
+}

@@ -52,7 +52,7 @@
         <item>
          <widget class="QLabel" name="labelMinmax">
           <property name="text">
-           <string>Not exist</string>
+           <string>N/A</string>
           </property>
          </widget>
         </item>
@@ -157,7 +157,7 @@
         <item>
          <widget class="QLabel" name="labelMinmax_2">
           <property name="text">
-           <string>Not exist</string>
+           <string>N/A</string>
           </property>
          </widget>
         </item>
@@ -262,7 +262,7 @@
         <item>
          <widget class="QLabel" name="labelMinmax_3">
           <property name="text">
-           <string>Not exist</string>
+           <string>N/A</string>
           </property>
          </widget>
         </item>
@@ -367,7 +367,7 @@
         <item>
          <widget class="QLabel" name="labelMinmax_4">
           <property name="text">
-           <string>Not exist</string>
+           <string>N/A</string>
           </property>
          </widget>
         </item>

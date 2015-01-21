@@ -17,25 +17,12 @@ class ZSparseObject;
 class ZObject3d;
 class ZSwcTree;
 class ZJsonObject;
+class ZObject3dScan;
 
 class ZDocPlayer
 {
 public:
-  typedef uint32_t TRole;
-  const static TRole ROLE_NONE;
-  const static TRole ROLE_SEED;
-  const static TRole ROLE_DISPLAY;
-  const static TRole ROLE_TMP_RESULT; //Temporary result
-  const static TRole ROLE_3DPAINT;
-  const static TRole ROLE_MANAGED_OBJECT;
-  const static TRole ROLE_3DSWC_DECORATOR;
-  const static TRole ROLE_3DGRAPH_DECORATOR;
-  const static TRole ROLE_TMP_BOOKMARK;
-  const static TRole ROLE_ROI;
-
-public:
-  ZDocPlayer();
-  ZDocPlayer(ZStackObject* data, TRole role);
+  ZDocPlayer(ZStackObject* data = NULL);
   virtual ~ZDocPlayer();
 
   /*!
@@ -51,7 +38,7 @@ public:
    *   1) The player has all roles specified by non-empty \a role
    *   2) Both the player's role and \a role are ROLE_NONE
    */
-  bool hasRole(TRole role) const;
+  bool hasRole(ZStackObjectRole::TRole role) const;
 
   bool isEmpty() const;
 
@@ -81,13 +68,23 @@ public:
   inline ZStackObject* getData() const {
     return m_data;
   }
+  /*
   inline TRole getRole() const {
     return m_role;
+  }
+  */
+
+  const ZStackObjectRole::TRole& getRole() const {
+    if (m_data == NULL) {
+      return ZStackObjectRole::ROLE_NONE;
+    }
+
+    return m_data->getRole().getRole();
   }
 
 protected:
   ZStackObject *m_data; //not owned by the player
-  TRole m_role;
+  //TRole m_role;
 };
 
 /********************************************************/
@@ -104,7 +101,9 @@ public:
    *
    * \return The roles of \a data.
    */
-  ZDocPlayer::TRole removePlayer(ZStackObject *data);
+  ZStackObjectRole::TRole removePlayer(ZStackObject *data);
+
+  QList<ZDocPlayer*> takePlayer(ZStackObject *data);
 
   /*!
    * \brief Remove players with certain roles.
@@ -114,19 +113,19 @@ public:
    *
    * \return The roles of the removed data.
    */
-  ZDocPlayer::TRole removePlayer(ZDocPlayer::TRole role);
+  ZStackObjectRole::TRole removePlayer(ZStackObjectRole::TRole role);
 
   /*!
    * \brief Get all players with specific roles
    */
-  QList<ZDocPlayer*> getPlayerList(ZDocPlayer::TRole role);
+  QList<ZDocPlayer*> getPlayerList(ZStackObjectRole::TRole role);
 
-  QList<const ZDocPlayer*> getPlayerList(ZDocPlayer::TRole role) const;
+  QList<const ZDocPlayer*> getPlayerList(ZStackObjectRole::TRole role) const;
 
   /*!
    * \brief Check if any player with specific roles exists
    */
-  bool hasPlayer(ZDocPlayer::TRole role) const;
+  bool hasPlayer(ZStackObjectRole::TRole role) const;
 
   void print() const;
 };
@@ -135,8 +134,7 @@ public:
 class ZStroke2dPlayer : public ZDocPlayer
 {
 public:
-  ZStroke2dPlayer();
-  ZStroke2dPlayer(ZStackObject* data, TRole role);
+  ZStroke2dPlayer(ZStackObject* data = NULL);
 
 public:
   void labelStack(ZStack*stack) const;
@@ -152,8 +150,7 @@ public:
 class ZObject3dPlayer : public ZDocPlayer
 {
 public:
-  ZObject3dPlayer();
-  ZObject3dPlayer(ZStackObject* data, TRole role);
+  ZObject3dPlayer(ZStackObject* data = NULL);
 
 public:
   void labelStack(ZStack *stack) const;
@@ -178,11 +175,39 @@ public:
 };
 
 /***************************************************/
+class ZObject3dScanPlayer : public ZDocPlayer
+{
+public:
+  ZObject3dScanPlayer(ZStackObject* data = NULL);
+
+public:
+//  void labelStack(ZStack *stack) const;
+//  void labelStack(ZStack *stack, int value) const;
+//  void labelStack(Stack *stack, int *offset, int value) const;
+//  void labelStack(Stack *stack, int *offset, int value,
+//                  int xIntv, int yIntv, int zIntv) const;
+//  ZStack* toStack() const;
+//  void paintStack(ZStack *stack) const;
+//  void paintStack(
+//        const std::vector<Stack*> &stackArray,
+//        const int *offset, int xIntv, int yIntv, int zIntv) const;
+
+//  int getLabel() const;
+//  ZSwcTree* getSwcDecoration() const;
+//  Z3DGraph get3DGraph() const;
+//  ZJsonObject toJsonObject() const;
+  QString getTypeName() const { return "Object3dScan"; }
+
+  const ZObject3dScan *getCompleteData() const;
+
+};
+
+
+/***************************************************/
 class ZSparseObjectPlayer : public ZDocPlayer
 {
 public:
-  ZSparseObjectPlayer();
-  ZSparseObjectPlayer(ZStackObject* data, TRole role);
+  ZSparseObjectPlayer(ZStackObject* data = NULL);
 
 public:
   void labelStack(ZStack*stack) const;
@@ -191,6 +216,19 @@ public:
   QString getTypeName() const { return "SparseObject"; }
 
   ZSparseObject *getCompleteData() const;
+};
+
+/***************************************************/
+class ZStackBallPlayer : public ZDocPlayer
+{
+public:
+  ZStackBallPlayer(ZStackObject* data = NULL);
+
+public:
+  QString getTypeName() const { return "StackBall"; }
+
+  Z3DGraph get3DGraph() const;
+  ZStackBall *getCompleteData() const;
 };
 
 /***************************************************/

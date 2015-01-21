@@ -187,3 +187,39 @@ void ZArray::print() const
     }
   }
 }
+
+uint64_t ZArray::getUint64Value(size_t index) const
+{
+  if (index > getElementNumber()) {
+    return 0;
+  }
+
+  uint64_t *array = getDataPointer<uint64_t>();
+
+  return array[index];
+}
+
+int ZArray::getDim(int index)
+{
+  if (index < 0 || index >= ndims()) {
+    return 1;
+  }
+
+  return dim(index);
+}
+
+int ZArray::getStartCoordinate(int index) const
+{
+  if (index < 0 || index >= ndims()) {
+    return 0;
+  }
+
+  return m_startCoordinates[index];
+}
+
+void ZArray::setStartCoordinate(int index, int x)
+{
+  if (index >= 0 && index < ndims()) {
+    m_startCoordinates[index] = x;
+  }
+}

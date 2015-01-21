@@ -15,6 +15,7 @@ public:
 public:
   void append(const ZWeightedPoint &pt);
   void append(double x, double y, double z, double weight);
+  void append(const ZPoint &center, double weight);
 
   Geo3d_Scalar_Field *toScalarField() const;
   ZPoint principalDirection() const;

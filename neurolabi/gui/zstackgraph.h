@@ -4,6 +4,7 @@
 #include <vector>
 #include "tz_image_lib_defs.h"
 #include "tz_stack_graph.h"
+#include "zintcuboid.h"
 
 class ZGraph;
 
@@ -110,6 +111,9 @@ public:
                    int width, int height, int depth);
   void updateRange(int x1, int y1, int z1, int x2, int y2, int z2,
                    int width, int height, int depth);
+  void setRange(int x1, int y1, int z1, int x2, int y2, int z2);
+
+  ZIntCuboid getRange();
 
   size_t getRoiVolume() const;
 

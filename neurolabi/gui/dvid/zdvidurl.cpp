@@ -76,6 +76,12 @@ std::string ZDvidUrl::getSparsevolUrl() const
       ZDvidData::getName(ZDvidData::ROLE_SPARSEVOL);
 }
 
+std::string ZDvidUrl::getCoarseSparsevolUrl() const
+{
+  return getDataUrl(m_dvidTarget.getBodyLabelName()) + "/" +
+      ZDvidData::getName(ZDvidData::ROLE_SPARSEVOL_COARSE);
+}
+
 std::string ZDvidUrl::getSparsevolUrl(int bodyId) const
 {
   if (bodyId < 0) {
@@ -86,6 +92,56 @@ std::string ZDvidUrl::getSparsevolUrl(int bodyId) const
   str.appendNumber(bodyId);
 
   return getSparsevolUrl() + "/" + str;
+}
+
+std::string ZDvidUrl::getCoarseSparsevolUrl(int bodyId) const
+{
+  if (bodyId < 0) {
+    return "";
+  }
+
+  ZString str;
+  str.appendNumber(bodyId);
+
+  return getCoarseSparsevolUrl() + "/" + str;
+}
+
+std::string ZDvidUrl::getSparsevolUrl(const std::string &dataName) const
+{
+  return getDataUrl(dataName) + "/" +
+      ZDvidData::getName(ZDvidData::ROLE_SPARSEVOL);
+}
+
+std::string ZDvidUrl::getCoarseSparsevolUrl(const std::string &dataName) const
+{
+  return getDataUrl(dataName) + "/" +
+      ZDvidData::getName(ZDvidData::ROLE_SPARSEVOL_COARSE);
+}
+
+std::string ZDvidUrl::getSparsevolUrl(
+    int bodyId, const std::string &dataName) const
+{
+  if (bodyId < 0) {
+    return "";
+  }
+
+  ZString str;
+  str.appendNumber(bodyId);
+
+  return getSparsevolUrl(dataName) + "/" + str;
+}
+
+std::string ZDvidUrl::getCoarseSparsevolUrl(
+    int bodyId, const std::string &dataName) const
+{
+  if (bodyId < 0) {
+    return "";
+  }
+
+  ZString str;
+  str.appendNumber(bodyId);
+
+  return getCoarseSparsevolUrl(dataName) + "/" + str;
 }
 
 std::string ZDvidUrl::getThumbnailUrl() const
@@ -102,7 +158,25 @@ std::string ZDvidUrl::getThumbnailUrl(int bodyId) const
   ZString str;
   str.appendNumber(bodyId);
 
-  return getThumbnailUrl() + "/" + str + ".mraw";
+  return getThumbnailUrl(m_dvidTarget.getBodyLabelName()) + "/" + str + ".mraw";
+}
+
+std::string ZDvidUrl::getThumbnailUrl(const std::string &dataName) const
+{
+  return getDataUrl(ZDvidData::getName(ZDvidData::ROLE_THUMBNAIL, dataName));
+}
+
+std::string ZDvidUrl::getThumbnailUrl(
+    int bodyId, const std::string &dataName) const
+{
+  if (bodyId < 0) {
+    return "";
+  }
+
+  ZString str;
+  str.appendNumber(bodyId);
+
+  return getThumbnailUrl(dataName) + "/" + str + ".mraw";
 }
 
 std::string ZDvidUrl::getRepoUrl() const
@@ -190,6 +264,17 @@ std::string ZDvidUrl::getBodyInfoUrl(int bodyId) const
   return getBodyInfoUrl() + "/" + ZString::num2str(bodyId);
 }
 
+std::string ZDvidUrl::getBodyInfoUrl(const std::string &bodyName) const
+{
+  return getDataUrl(ZDvidData::getName(ZDvidData::ROLE_BODY_INFO, bodyName));
+}
+
+std::string ZDvidUrl::getBodyInfoUrl(
+    int bodyId, const std::string &bodyName) const
+{
+  return getBodyInfoUrl(bodyName) + "/" + ZString::num2str(bodyId);
+}
+
 std::string ZDvidUrl::getBoundBoxUrl() const
 {
   return getDataUrl(ZDvidData::ROLE_BOUND_BOX);
@@ -200,9 +285,24 @@ std::string ZDvidUrl::getBoundBoxUrl(int z) const
   return getBoundBoxUrl() + "/" + ZString::num2str(z);
 }
 
+std::string ZDvidUrl::getBodyLabelUrl(const std::string &dataName) const
+{
+  return getDataUrl(dataName);
+}
+
 std::string ZDvidUrl::getBodyLabelUrl() const
 {
-  return getDataUrl(ZDvidData::ROLE_BODY_LABEL);
+  return getDataUrl(m_dvidTarget.getBodyLabelName());
+  //return getDataUrl(ZDvidData::ROLE_BODY_LABEL);
+}
+
+std::string ZDvidUrl::getBodyLabelUrl(const std::string &dataName,
+    int x0, int y0, int z0, int width, int height, int depth) const
+{
+  std::ostringstream stream;
+  stream << "/raw/0_1_2/" << width << "_" << height << "_" << depth << "/"
+         << x0 << "_" << y0 << "_" << z0;
+  return getBodyLabelUrl(dataName) + stream.str();
 }
 
 std::string ZDvidUrl::getBodyLabelUrl(
@@ -222,4 +322,15 @@ std::string ZDvidUrl::getSynapseListUrl() const
 std::string ZDvidUrl::getSynapseAnnotationUrl(const std::string &name) const
 {
   return getAnnotationUrl() + "/" + name;
+}
+
+std::string ZDvidUrl::getMergeUrl(const std::string &dataName) const
+{
+  return getDataUrl(dataName) + "/merge";
+}
+
+std::string ZDvidUrl::getMaxBodyIdUrl() const
+{
+  return getKeyUrl(ZDvidData::getName(ZDvidData::ROLE_MAX_BODY_ID),
+                   m_dvidTarget.getBodyLabelName());
 }

@@ -7,7 +7,11 @@ allvar=$@
 echo $allvar
 make -f configure.makefile CONFIG_OPTION="--enable-64bit CFLAGS=-I$HOME/local/include LDFLAGS=-L$HOME/local/lib $allvar"
 
-AFLAGS=-D_OPTIONAL_FLAGS
+if [ "$(uname)" == "Darwin" ]; then
+  AFLAGS="-D_OPTIONAL_FLAGS -mmacosx-version-min=10.7"
+else
+  AFLAGS=-D_OPTIONAL_FLAGS
+fi
 
 for var in "$@"
 do

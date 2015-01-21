@@ -38,6 +38,8 @@
 #include "mainwindow.h"
 #include "z3dcanvas.h"
 #include "zwindowfactory.h"
+#include "zobject3dscanarray.h"
+#include "zsparseobject.h"
 
 using namespace std;
 
@@ -139,21 +141,6 @@ void ZStackFrame::consumeDocument(ZStackDoc *doc)
   setDocument(docPtr);
 }
 
-#if 0
-  connect(m_doc.get(), SIGNAL(objectModified()), m_view, SLOT(paintObject()));\
-  connect(m_doc.get(), SIGNAL(chainModified()),\
-          m_view, SLOT(paintObject()));\
-  connect(m_doc.get(), SIGNAL(swcModified()),\
-          m_view, SLOT(paintObject()));\
-  connect(m_doc.get(), SIGNAL(punctaModified()),\
-          m_view, SLOT(paintObject()));\
-  connect(m_doc.get(), SIGNAL(obj3dModified()),\
-          m_view, SLOT(paintObject()));\
-  connect(m_doc.get(), SIGNAL(sparseObjectModified()),\
-          m_view, SLOT(paintObject()));\
-  connect(m_doc.get(), SIGNAL(strokeModified()), m_view, SLOT(paintObject()));
-#endif
-
 #define UPDATE_DOC_SIGNAL_SLOT(connect) \
   connect(m_doc.get(), SIGNAL(locsegChainSelected(ZLocsegChain*)), \
       this, SLOT(setLocsegChainInfo(ZLocsegChain*)));\
@@ -172,21 +159,27 @@ void ZStackFrame::consumeDocument(ZStackDoc *doc)
   connect(m_doc.get(), SIGNAL(cleanChanged(bool)),\
           this, SLOT(changeWindowTitle(bool)));\
   connect(m_doc.get(), SIGNAL(holdSegChanged()), m_view, SLOT(paintObject()));\
-  connect(m_doc.get(), SIGNAL(chainSelectionChanged(QList<ZLocsegChain*>,QList<ZLocsegChain*>)),\
+  connect(m_doc.get(), SIGNAL(chainSelectionChanged(QList<ZLocsegChain*>,\
+          QList<ZLocsegChain*>)),\
           m_view, SLOT(paintObject()));\
   connect(m_doc.get(), SIGNAL(swcTreeNodeSelectionChanged(\
                                 QList<Swc_Tree_Node*>,QList<Swc_Tree_Node*>)),\
           m_view, SLOT(paintObject()));\
+  connect(m_doc.get(), SIGNAL(objectSelectionChanged(\
+                                QList<ZStackObject*>,QList<ZStackObject*>)),\
+          m_view, SLOT(paintObject(QList<ZStackObject*>,QList<ZStackObject*>)));\
   connect(m_doc.get(), SIGNAL(punctaSelectionChanged(QList<ZPunctum*>,QList<ZPunctum*>)),\
           m_view, SLOT(paintObject()));\
   connect(m_doc.get(), SIGNAL(chainVisibleStateChanged(ZLocsegChain*,bool)),\
           m_view, SLOT(paintObject()));\
   connect(m_doc.get(), SIGNAL(swcVisibleStateChanged(ZSwcTree*,bool)),\
           m_view, SLOT(paintObject()));\
-  connect(m_doc.get(), SIGNAL(punctumVisibleStateChanged(ZPunctum*,bool)),\
+  connect(m_doc.get(), SIGNAL(punctumVisibleStateChanged()),\
           m_view, SLOT(paintObject()));\
   connect(m_doc.get(), SIGNAL(statusMessageUpdated(QString)),\
-          this, SLOT(notifyUser(QString)));
+          this, SLOT(notifyUser(QString)));\
+  connect(m_doc.get(), SIGNAL(stackTargetModified()), m_view, SLOT(paintStack()));\
+  connect(m_doc.get(), SIGNAL(thresholdChanged(int)), m_view, SLOT(setThreshold(int)));
 
 #define UPDATE_SIGNAL_SLOT(connect) \
   UPDATE_DOC_SIGNAL_SLOT(connect) \
@@ -202,42 +195,6 @@ void ZStackFrame::connectSignalSlot()
 void ZStackFrame::disconnectAll()
 {
   UPDATE_SIGNAL_SLOT(disconnect);
-#if 0
-  disconnect(m_doc.get(), SIGNAL(locsegChainSelected(ZLocsegChain*)),
-      this, SLOT(setLocsegChainInfo(ZLocsegChain*)));
-  disconnect(m_doc.get(), SIGNAL(stackModified()),
-          m_view, SLOT(updateThresholdSlider()));
-  disconnect(m_doc.get(), SIGNAL(stackModified()),
-          m_view, SLOT(updateSlider()));
-  disconnect(m_doc.get(), SIGNAL(stackModified()),
-          m_presenter, SLOT(updateStackBc()));
-  disconnect(m_doc.get(), SIGNAL(stackModified()),
-          m_view, SLOT(updateView()));
-  disconnect(m_doc.get(), SIGNAL(chainModified()),
-          m_view, SLOT(updateView()));
-  disconnect(m_doc.get(), SIGNAL(swcModified()),
-          m_view, SLOT(updateView()));
-
-  disconnect(m_doc.get(), SIGNAL(holdSegChanged()), m_view, SLOT(paintObject()));
-  disconnect(m_doc.get(), SIGNAL(punctaModified()),
-          m_view, SLOT(paintObject()));
-  disconnect(m_doc.get(), SIGNAL(obj3dModified()),
-             m_view, SLOT(paintObject()));
-  disconnect(m_doc.get(), SIGNAL(cleanChanged(bool)),
-             this, SLOT(changeWindowTitle(bool)));
-  disconnect(m_doc.get(), SIGNAL(chainSelectionChanged(QList<ZLocsegChain*>,QList<ZLocsegChain*>)),
-             m_view, SLOT(paintObject()));
-  disconnect(m_doc.get(), SIGNAL(swcSelectionChanged(QList<ZSwcTree*>,QList<ZSwcTree*>)),
-             m_view, SLOT(paintObject()));
-  disconnect(m_doc.get(), SIGNAL(punctaSelectionChanged(QList<ZPunctum*>,QList<ZPunctum*>)),
-             m_view, SLOT(paintObject()));
-  disconnect(m_doc.get(), SIGNAL(chainVisibleStateChanged(ZLocsegChain*,bool)),
-             m_view, SLOT(paintObject()));
-  disconnect(m_doc.get(), SIGNAL(swcVisibleStateChanged(ZSwcTree*,bool)),
-             m_view, SLOT(paintObject()));
-  disconnect(m_doc.get(), SIGNAL(punctumVisibleStateChanged(ZPunctum*,bool)),
-             m_view, SLOT(paintObject()));
-#endif
 }
 
 void ZStackFrame::setDocument(ZSharedPointer<ZStackDoc> doc)
@@ -397,7 +354,7 @@ int ZStackFrame::readStack(const char *filePath)
     emit stackLoaded();
     break;
   case ZFileType::JSON_FILE:
-    if (!m_doc->importSynapseAnnotation(filePath)) {
+    if (!m_doc->importSynapseAnnotation(filePath, 0)) {
       return ERROR_IO_READ;
     }
     break;
@@ -425,182 +382,6 @@ int ZStackFrame::importImageSequence(const char *filePath)
   m_view->reset();
 
   return SUCCESS;
-}
-
-int ZStackFrame::loadTraceProject(const char *filePath, QProgressBar *pb)
-{
-  xmlDocPtr doc;
-  xmlNodePtr cur;
-
-  doc = xmlParseFile(filePath);
-  if (doc == NULL) {
-    return 1;
-  }
-
-  cur = xmlDocGetRootElement(doc);
-  if (cur == NULL) {
-    xmlFreeDoc(doc);
-    return 2;
-  }
-
-  if (Xml_Node_Is_Element(cur, "trace") == FALSE) {
-    xmlFreeDoc(doc);
-    return 3;
-  }
-
-  if (m_traceProject == NULL) {
-    m_traceProject = new ZTraceProject(this);
-  }
-
-  m_traceProject->setProjFilePath(filePath);
-  QString curdir = QString(filePath);
-  curdir.truncate(curdir.lastIndexOf("/")+1);
-
-  Stack_Document *stack_doc = NULL;
-
-  cur = cur->xmlChildrenNode;
-  while (cur != NULL) {
-    if (Xml_Node_Is_Element(cur, "data") == TRUE) {
-      stack_doc = Xml_Stack_Document_R(doc, cur, curdir.toLocal8Bit().constData(), NULL);
-      if (stack_doc != NULL) {
-        Stack *stack = Import_Stack_Document(stack_doc);
-        if (stack != NULL) {
-          char *stackFile = Stack_Document_File_Path(stack_doc);
-          loadStack(stack, true);
-          document()->getStack()->setSource(stack_doc);
-          if (stack_doc->channel == -1) {
-            setWindowTitle(stackFile);
-          } else {
-            QString title(stackFile);
-            title += QString("_Channel_%1").arg(stack_doc->channel+1);
-            setWindowTitle(title);
-          }
-          m_statusInfo =  QString("%1 loaded").arg(stackFile);
-        } else {
-          Kill_Stack_Document(stack_doc);
-        }
-        if (stack == NULL) {
-          xmlFreeDoc(doc);
-          return 5;
-        }
-      } else {
-        xmlFreeDoc(doc);
-        return 4;
-      }
-      if (pb != NULL) {
-        if (pb->value() < 50) {
-          pb->setValue(50);
-        }
-        QApplication::processEvents();
-      }
-    } else if (Xml_Node_Is_Element(cur, "output")) {
-      xmlNodePtr child = cur->xmlChildrenNode;
-      while (child != NULL) {
-        if (Xml_Node_Is_Element(child, "workdir")) {
-          char *value = Xml_Node_String_Value(doc, child);
-          QString workdir = QString(value);
-          free(value);
-          if (!QDir::isAbsolutePath(workdir)) {
-            workdir = curdir + workdir;
-          }
-          m_doc->setWorkdir(workdir.toLocal8Bit().constData());
-          m_traceProject->setWorkDir(workdir.toLocal8Bit().constData());
-        } else if (Xml_Node_Is_Element(child, "tube")) {
-          char *prefix = Xml_Node_String_Value(doc, child);
-          m_doc->setTubePrefix(prefix);
-          free(prefix);
-          char *screen =
-              Xml_String_To_String(xmlGetProp(child,
-                                              CONST_XML_STRING("screen")));
-          m_doc->setBadChainScreen(screen);
-          if (screen != NULL) {
-            free(screen);
-          }
-          m_doc->importGoodTube();
-          updateView();
-        }
-        child = child->next;
-      }
-    } else if (Xml_Node_Is_Element(cur, "object")) {
-      xmlNodePtr child = cur->xmlChildrenNode;
-      while (child != NULL) {
-        if (Xml_Node_Is_Element(child, "swc")) {
-          ZSwcTree *tree = new ZSwcTree;
-          char *value = Xml_Node_String_Value(doc, child);
-          char *filePath = value;
-          if (!QDir::isAbsolutePath(QString(filePath))) {
-            filePath = fullpath(curdir.toLocal8Bit().constData(), value, NULL);
-            free(value);
-          }
-
-          if (fexist(filePath)) {
-            tree->load(filePath);
-            //m_doc->addSwcTree(tree);
-            m_presenter->addDecoration(tree);
-            m_traceProject->addDecoration(filePath, "swc");
-          } else {
-            QMessageBox::warning(this, tr("Problem"),
-                    tr("The file %1 cannot be found.").arg(filePath),
-                    QMessageBox::Ok);
-          }
-          free(filePath);
-        } else if (Xml_Node_Is_Element(child, "tube")) {
-          char *dirpath = Xml_Node_String_Value(doc, child);
-          const char *pattern = strsplit(dirpath, '/', -1);
-          QStringList filters;
-
-          if (pattern != NULL) {
-            if (pattern[0] == '\0') {
-              pattern = "*.tb";
-            }
-          } else {
-            pattern = "*.tb";
-          }
-
-          filters << pattern;
-
-          QDir dir(dirpath);
-          QStringList fileList = dir.entryList(filters);
-
-          if (!fileList.isEmpty()) {
-            QStringList::Iterator file;
-            for (file = fileList.begin(); file != fileList.end(); ++file) {
-              *file = dir.filePath(*file);
-            }
-            m_doc->importLocsegChain(fileList, ZStackDoc::ALL_TUBE,
-                                     ZStackDoc::APPEND_OBJECT);
-          }
-
-          m_traceProject->addDecoration(dirpath, "tube");
-
-          free(dirpath);
-        }
-        child = child->next;
-      }
-      updateView();
-    }
-
-    if (pb != NULL) {
-      if (pb->value() < 75) {
-        pb->setValue(75);
-      }
-      QApplication::processEvents();
-    }
-
-    cur = cur->next;
-  }
-  xmlFreeDoc(doc);
-
-  synchronizeSetting();
-  m_doc->updateTraceWorkspace(traceEffort(), traceMasked(),
-                              xResolution(), yResolution(), zResolution());
-  m_doc->updateConnectionTestWorkspace(xResolution(), yResolution(),
-                                       zResolution(), unit(),
-                                       reconstructDistThre(),
-                                       reconstructSpTest(),
-                                       crossoverTest());
-
-  return 0;
 }
 
 void ZStackFrame::saveTraceProject(const QString &filePath,
@@ -740,7 +521,7 @@ QString ZStackFrame::info() const
       arg(view()->imageWidget()->screenSize().width()).
       arg(view()->imageWidget()->screenSize().height());
     info += QString("\n zoom ratio: %1").arg(presenter()->zoomRatio());
-    info += QString("\n") + document()->toString();
+    //info += QString("\n") + document()->toString();
     info += QString("\n") + m_statusInfo;
     return info;
   } else {
@@ -1059,9 +840,9 @@ void ZStackFrame::executeSwcRescaleCommand(const ZRescaleSwcSetting &setting)
   document()->executeSwcRescaleCommand(setting);
 }
 
-void ZStackFrame::executeAutoTraceCommand()
+void ZStackFrame::executeAutoTraceCommand(bool doResample)
 {
-  document()->executeAutoTraceCommand();
+  document()->executeAutoTraceCommand(doResample);
 }
 
 void ZStackFrame::executeAutoTraceAxonCommand()
@@ -1074,10 +855,9 @@ void ZStackFrame::executeWatershedCommand()
   document()->executeWatershedCommand();
 }
 
-void ZStackFrame::executeAddObjectCommand(ZStackObject *obj,
-                                          NeuTube::EDocumentableType type)
+void ZStackFrame::executeAddObjectCommand(ZStackObject *obj)
 {
-  document()->executeAddObjectCommand(obj, type);
+  document()->executeAddObjectCommand(obj);
 }
 
 double ZStackFrame::displayGreyMin(int c) const
@@ -1207,8 +987,21 @@ void ZStackFrame::exportObjectMask(
 
 void ZStackFrame::saveStack(const QString &filePath)
 {
-  document()->getStack()->save(filePath.toStdString());
-  document()->setStackSource(filePath.toStdString().c_str());
+  if (document()->hasStackData()) {
+    document()->getStack()->save(filePath.toStdString());
+    document()->setStackSource(filePath.toStdString().c_str());
+  } else {
+    QList<ZSparseObject*> objList = document()->getSparseObjectList();
+    ZObject3dScanArray objArray;
+    foreach (ZSparseObject *obj, objList) {
+      objArray.push_back(*dynamic_cast<ZObject3dScan*>(obj));
+    }
+    ZStack *stack = objArray.toStackObject();
+    if (stack != NULL) {
+      stack->save(filePath.toStdString().c_str());
+      delete stack;
+    }
+  }
 }
 
 void ZStackFrame::displayActiveDecoration(bool enabled)
@@ -1264,10 +1057,18 @@ void ZStackFrame::showObject()
 Z3DWindow* ZStackFrame::open3DWindow(QWidget *parent, Z3DWindow::EInitMode mode)
 {
   if (m_3dWindow == NULL) {
+    if (getMainWindow() != NULL) {
+      getMainWindow()->startProgress("Opening 3D View ...", 0);
+    }
+
     ZWindowFactory factory;
     factory.setParentWidget(parent);
     m_3dWindow = factory.make3DWindow(document(), mode);
+    m_3dWindow->setWindowTitle(windowTitle());
     connect(m_3dWindow, SIGNAL(destroyed()), this, SLOT(detach3DWindow()));
+    if (getMainWindow() != NULL) {
+      getMainWindow()->endProgress();
+    }
   }
 
   if (m_3dWindow != NULL) {
@@ -1299,6 +1100,16 @@ void ZStackFrame::load(const QString &filePath)
 void ZStackFrame::load(const std::string &filePath)
 {
   m_doc->loadFile(filePath.c_str(), true);
+}
+
+QAction* ZStackFrame::getBodySplitAction()
+{
+  QAction *action = NULL;
+  if (getMainWindow() != NULL) {
+    action = getMainWindow()->getBodySplitAction();
+  }
+
+  return action;
 }
 
 MainWindow* ZStackFrame::getMainWindow()
@@ -1456,7 +1267,7 @@ void ZStackFrame::importMask(const QString &filePath)
                        iround(document()->getStackOffset().getY()),
                        iround(document()->getStackOffset().getZ()));
                        */
-        executeAddObjectCommand(obj, NeuTube::Documentable_OBJ3D);
+        executeAddObjectCommand(obj);
       } else {
         delete obj;
         report("Loading mask failed", "Cannot convert the image into mask",
@@ -1596,8 +1407,9 @@ void ZStackFrame::loadRoi(const QString &filePath, bool isExclusive)
 
 void ZStackFrame::zoomToSelectedSwcNodes()
 {
-  if (!document()->selectedSwcTreeNodes()->empty()) {
-    ZCuboid cuboid = SwcTreeNode::boundBox(*document()->selectedSwcTreeNodes());
+  if (document()->hasSelectedSwcNode()) {
+    std::set<Swc_Tree_Node*> nodeSet = document()->getSelectedSwcTreeNodeSet();
+    ZCuboid cuboid = SwcTreeNode::boundBox(nodeSet);
     ZPoint center = cuboid.center();
 
     //check which stack the selected points belong to. If needed, load the corresponding stack.
@@ -1646,7 +1458,7 @@ void ZStackFrame::notifyUser(const QString &message)
 
 void ZStackFrame::locateSwcNodeIn3DView()
 {
-  if (!document()->selectedSwcTreeNodes()->empty()) {
+  if (document()->hasSelectedSwcNode()) {
     if (!m_3dWindow) {
       open3DWindow(this);
     }
@@ -1663,8 +1475,8 @@ void ZStackFrame::runSeededWatershed()
 void ZStackFrame::makeSwcProjection(ZStackDoc *doc)
 {
     if (doc == NULL) return;
-    QList<ZSwcTree*> *swclist= doc->swcList();
-    foreach (ZSwcTree* swc, *swclist) {
+    QList<ZSwcTree*> swclist= doc->getSwcList();
+    foreach (ZSwcTree* swc, swclist) {
         ZSwcTree *swcClone = swc->clone();
         std::vector<Swc_Tree_Node*> nodes = swcClone->getSwcTreeNodeArray();
         foreach (Swc_Tree_Node *nd, nodes) {
@@ -1682,4 +1494,9 @@ ZStackObject::Display_Style ZStackFrame::getObjectStyle() const
 void ZStackFrame::setObjectStyle(ZStackObject::Display_Style style)
 {
   m_presenter->setObjectStyle(style);
+}
+
+void ZStackFrame::createMainWindowActions()
+{
+  m_presenter->createMainWindowActions();
 }

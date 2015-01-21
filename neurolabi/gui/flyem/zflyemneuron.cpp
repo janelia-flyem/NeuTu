@@ -11,6 +11,8 @@
 #include "c_json.h"
 #include "tz_error.h"
 #include "zhdf5reader.h"
+#include "dvid/zdvidtarget.h"
+#include "dvid/zdvidurl.h"
 
 #if defined(_QT_GUI_USED_)
 #include "dvid/zdvidreader.h"
@@ -126,6 +128,14 @@ void ZFlyEmNeuron::deprecateDependent(EComponent comp) const
   default:
     break;
   }
+}
+
+void ZFlyEmNeuron::setPath(const ZDvidTarget &target)
+{
+  ZDvidUrl dvidUrl(target);
+  m_modelPath = dvidUrl.getSkeletonUrl(getId());
+  m_volumePath = dvidUrl.getSparsevolUrl(getId());
+  m_thumbnailPath = dvidUrl.getThumbnailUrl(getId());
 }
 
 ZSwcTree* ZFlyEmNeuron::getResampleBuddyModel(double rs) const

@@ -55,6 +55,11 @@ public:
     STROKE_DRAW
   };
 
+  enum RectEditMode {
+    RECT_EDIT_OFF = 0,
+    RECT_DRAW
+  };
+
   enum ViewMode {
     VIEW_NORMAL,
     VIEW_PROJECT
@@ -68,6 +73,14 @@ public:
     EXPLORE_CAPTURE_MOUSE
   };
 
+  enum EUniqueMode{
+    INTERACT_NONE = 0, INTERACT_FREE, INTERACT_SWC_CONNECT, INTERACT_SWC_EXTEND,
+    INTERACT_SWC_SMART_EXTEND, INTERACT_SWC_LOCK_FOCUS, INTERACT_SWC_ADD_NODE,
+    INTERACT_SWC_MOVE_NODE, INTERACT_OBJECT_MOVE, INTERACT_STROKE_DRAW,
+    INTERACT_RECT_DRAW, INTERACT_PUNCTA_MARK, INTERACT_IMAGE_MOVE,
+    INTERACT_IMAGE_CAPTURE, INTERACT_IMAGE_ZOOM_IN, INTERACT_IMAGE_ZOOM_OUT
+  };
+
 public:
   ZInteractiveContext();
   inline void setTraceMode(TraceMode mode) { m_traceMode = mode; }
@@ -77,14 +90,16 @@ public:
   inline void setExploreMode(ExploreMode mode) { m_exploreMode = mode; }
   inline void setSwcEditMode(SwcEditMode mode) { m_swcEditMode = mode; }
   inline void setStrokeEditMode(StrokeEditMode mode) { m_strokeEditMode = mode; }
+  inline void setRectEditMode(RectEditMode mode) { m_rectEditMode = mode; }
 
-  inline TraceMode traceMode() { return m_traceMode; }
-  inline TubeEditMode tubeEditMode() { return m_tubeEditMode; }
-  inline SwcEditMode swcEditMode() { return m_swcEditMode; }
-  inline ViewMode viewMode() { return m_viewMode; }
-  inline ExploreMode exploreMode() { return m_exploreMode; }
-  inline MarkPunctaMode editPunctaMode() {return m_markPunctaMode;}
+  inline TraceMode traceMode() const { return m_traceMode; }
+  inline TubeEditMode tubeEditMode() const { return m_tubeEditMode; }
+  inline SwcEditMode swcEditMode() const { return m_swcEditMode; }
+  inline ViewMode viewMode() const { return m_viewMode; }
+  inline ExploreMode exploreMode() const { return m_exploreMode; }
+  inline MarkPunctaMode editPunctaMode() const {return m_markPunctaMode;}
   inline StrokeEditMode strokeEditMode() const { return m_strokeEditMode; }
+  inline RectEditMode rectEditMode() const { return m_rectEditMode; }
 
   bool isTraceModeOff()  const;
   inline bool isReconPreview() const {
@@ -100,7 +115,11 @@ public:
   inline bool markPuncta() {return m_markPunctaMode == MARK_PUNCTA;}
   inline void backupExploreMode() { m_oldExploreMode = m_exploreMode; }
   inline void restoreExploreMode() { m_exploreMode = m_oldExploreMode; }
-  inline bool isStrokeEditModeOff() const { return m_strokeEditMode == STROKE_EDIT_OFF; }
+  inline bool isStrokeEditModeOff() const {
+    return m_strokeEditMode == STROKE_EDIT_OFF; }
+  inline bool isRectEditModeOff() const {
+    return m_rectEditMode == RECT_EDIT_OFF;
+  }
 
   bool isContextMenuActivated() const;
   void blockContextMenu(bool blocking = true);
@@ -108,6 +127,7 @@ public:
   inline void setExitingEdit(bool s) { m_exitingEdit = s; }
   inline bool isExitingEdit() const { return m_exitingEdit; }
 
+  EUniqueMode getUniqueMode() const;
   //void setView(const QRect &projRegion, const QRect &viewPort);
 
 private:
@@ -119,6 +139,7 @@ private:
   ExploreMode m_oldExploreMode;
   SwcEditMode m_swcEditMode;
   StrokeEditMode m_strokeEditMode;
+  RectEditMode m_rectEditMode;
   bool m_exitingEdit;
   bool m_blockingContextMenu;
   //ZImageWidget *m_imageWidget;

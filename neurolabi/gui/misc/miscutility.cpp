@@ -8,6 +8,8 @@
 #include "tz_stack_math.h"
 #include "flyem/zflyemqualityanalyzer.h"
 #include "zfiletype.h"
+#include "zgraph.h"
+#include "tz_stack_neighborhood.h"
 
 using namespace std;
 
@@ -343,4 +345,155 @@ std::vector<std::string> misc::parseHdf5Path(const string &path)
   }
 
   return pathArray;
+}
+
+#if 0
+// partial specialization optimization for 32-bit numbers
+template<>
+int numDigits(int32_t x)
+{
+  if (x == std::numeric_limits<int>::min()) return 10 + 1;
+  if (x < 0) return numDigits(-x) + 1;
+
+  if (x >= 10000) {
+    if (x >= 10000000) {
+      if (x >= 100000000) {
+        if (x >= 1000000000)
+          return 10;
+        return 9;
+      }
+      return 8;
+    }
+    if (x >= 100000) {
+      if (x >= 1000000)
+        return 7;
+      return 6;
+    }
+    return 5;
+  }
+  if (x >= 100) {
+    if (x >= 1000)
+      return 4;
+    return 3;
+  }
+  if (x >= 10)
+    return 2;
+  return 1;
+}
+#endif
+
+ZGraph* misc::makeCoOccurGraph(const Stack *stack, int nnbr)
+{
+  ZGraph *graph = NULL;
+  if (stack != NULL) {
+    graph = new ZGraph(ZGraph::UNDIRECTED_WITH_WEIGHT);
+    int is_in_bound[26];
+    int width = C_Stack::width(stack);
+    int height = C_Stack::height(stack);
+    int depth = C_Stack::depth(stack);
+
+    /* alloc <mask> */
+    Stack *mask = C_Stack::make(GREY, width, height, depth);
+    Zero_Stack(mask);
+
+    int neighbor[26];
+    Stack_Neighbor_Offset(nnbr, width, height, neighbor);
+    size_t index;
+    size_t voxelNumber = Stack_Voxel_Number(stack);
+    for (index = 0; index < voxelNumber; ++index) {
+      int v1 = stack->array[index];
+      if (v1 > 0) {
+        int n_in_bound = Stack_Neighbor_Bound_Test_I(nnbr, width, height, depth,
+                                                     index, is_in_bound);
+        int j;
+        for (j = 0; j < nnbr; ++j) {
+          if (n_in_bound == nnbr || is_in_bound[j]) {
+            size_t neighbor_index = index + neighbor[j];
+            int v2 = stack->array[neighbor_index];
+
+            if (v1 < v2) {
+              graph->addEdge(v1, v2);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return graph;
+}
+
+ZTree<int>* misc::buildSegmentationTree(const Stack *stack)
+{
+  ZGraph *graph = misc::makeCoOccurGraph(stack, 6);
+
+  Graph *rawGraph = graph->getRawGraph();
+  double maxWeight = 0.0;
+  int root = 0;
+  int rootBuddy = 0;
+  for (int i = 0; i < rawGraph->nedge; ++i) {
+    if (maxWeight < rawGraph->weights[i]) {
+      maxWeight = rawGraph->weights[i];
+      root = graph->getEdgeBegin(i);
+      rootBuddy = graph->getEdgeEnd(i);
+    }
+    rawGraph->weights[i] = 1.0 / (1 + rawGraph->weights[i]);
+  }
+  graph->toMst();
+
+#ifdef _DEBUG_
+  std::cout << "Root: " << root << std::endl;
+#endif
+
+  graph->traverseDirect(root);
+  graph->print();
+//  const int *index = graph->topologicalSort();
+//  iarray_print2(index, graph->getVertexNumber(), 1);
+
+  //Build real tree
+  std::vector<ZTreeNode<int>*> treeNodeArray(graph->getVertexNumber() + 1);
+  treeNodeArray[0] = new ZTreeNode<int>; //root
+  treeNodeArray[0]->setData(0);
+  for (int i = 0; i < graph->getEdgeNumber(); ++i) {
+    int v1 = graph->getEdgeBegin(i);
+    int v2 = graph->getEdgeEnd(i);
+
+    //v1 is the parent of v2
+    if (treeNodeArray[v1] == NULL) {
+      treeNodeArray[v1] = new ZTreeNode<int>;
+      treeNodeArray[v1]->setData(v1);
+    }
+    if (treeNodeArray[v2] == NULL) {
+      treeNodeArray[v2] = new ZTreeNode<int>;
+      treeNodeArray[v2]->setData(v2);
+    }
+    if (v1 == root) {
+      treeNodeArray[v1]->setParent(treeNodeArray[0]);
+      if (v2 == rootBuddy) {
+        treeNodeArray[v2]->setParent(treeNodeArray[0]);
+      }
+    }
+
+    if (v2 != rootBuddy) {
+      treeNodeArray[v2]->setParent(treeNodeArray[v1]);
+    }
+  }
+
+//  return treeNodeArray;
+
+  ZTree<int> *tree = new ZTree<int>;
+
+  tree->setRoot(treeNodeArray[0]);
+
+#ifdef _DEBUG_
+  ZTreeIterator<int> iterator(*tree);
+  int count = 0;
+  while (iterator.hasNext()) {
+    ++count;
+    std::cout << iterator.next() << std::endl;
+  }
+  std::cout << count << " nodes" << std::endl;
+#endif
+
+  return tree;
 }

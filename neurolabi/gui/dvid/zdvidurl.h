@@ -29,11 +29,24 @@ public:
   std::string getThumbnailUrl() const;
   std::string getThumbnailUrl(int bodyId) const;
 
+  std::string getThumbnailUrl(const std::string &dataName) const;
+  std::string getThumbnailUrl(int bodyId, const std::string &dataName) const;
+
   std::string getSp2bodyUrl() const;
   std::string getSp2bodyUrl(const std::string &suffix) const;
 
   std::string getSparsevolUrl() const;
   std::string getSparsevolUrl(int bodyId) const;
+
+  std::string getSparsevolUrl(const std::string &dataName) const;
+  std::string getSparsevolUrl(int bodyId, const std::string &dataName) const;
+
+  std::string getCoarseSparsevolUrl() const;
+  std::string getCoarseSparsevolUrl(int bodyId) const;
+
+  std::string getCoarseSparsevolUrl(const std::string &dataName) const;
+  std::string getCoarseSparsevolUrl(int bodyId, const std::string &dataName) const;
+
 
   std::string getGrayscaleUrl() const;
   std::string getGrayscaleUrl(int sx, int sy, int x0, int y0, int z0) const;
@@ -55,15 +68,25 @@ public:
   std::string getBodyInfoUrl() const;
   std::string getBodyInfoUrl(int bodyId) const;
 
+  std::string getBodyInfoUrl(const std::string &dataName) const;
+  std::string getBodyInfoUrl(int bodyId, const std::string &dataName) const;
+
   std::string getBoundBoxUrl() const;
   std::string getBoundBoxUrl(int z) const;
 
   std::string getBodyLabelUrl() const;
+  std::string getBodyLabelUrl(const std::string &dataName) const;
+  std::string getBodyLabelUrl(const std::string &dataName,
+      int x0, int y0, int z0, int width, int height, int depth) const;
   std::string getBodyLabelUrl(
       int x0, int y0, int z0, int width, int height, int depth) const;
 
+  std::string getMaxBodyIdUrl() const;
+
   std::string getSynapseListUrl() const;
   std::string getSynapseAnnotationUrl(const std::string &name) const;
+
+  std::string getMergeUrl(const std::string &dataName) const;
 
 private:
   ZDvidTarget m_dvidTarget;

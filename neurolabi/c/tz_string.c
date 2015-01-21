@@ -807,7 +807,9 @@ double *String_To_Double_Array(const char *str, double *array, int *n)
   int i = 0;
   int state = 0;
 
-  char *numstr = strdup(str);
+  //char *numstr = strdup(str);
+  char *numstr = malloc(strlen(str) + 1);
+  memcpy(numstr, str, strlen(str) + 1);
   char *numstr_end = numstr;
   char *numstr_head = numstr;
 

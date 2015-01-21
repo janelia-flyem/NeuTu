@@ -12,6 +12,7 @@
 .DS_Store
 
 !/neurolabi/lib/Mingw/*.zip
+/neurolabi/lib/*.tar
 
 # qtcreator c project file
 /neurolabi/c/clib.*
@@ -20,10 +21,10 @@
 /neurolabi/data/
 
 # binary file
-obj/*.*
-bin/*.*
-obj64/*.*
-release/*.*
+obj/
+bin/
+obj64/
+release/
 /neurolabi/app/
 /neurolabi/lib/genelib/src/*.c
 /neurolabi/c/config.log
@@ -151,3 +152,8 @@ neurolabi/lib/Mingw/64/
 /neurolabi/cpp/lib/build/
 /neurolabi/python/CMakeParser.pyc
 /neurolabi/python/QMakeParser.pyc
+
+#deploy folder
+/neuTube.app/
+/neuTube_win64/
+/neuTube/

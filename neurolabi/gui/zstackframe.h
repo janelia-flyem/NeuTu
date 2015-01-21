@@ -72,7 +72,7 @@ public:
   void loadStack(Stack *stack, bool isOwner = true);
   void loadStack(ZStack *stack);
   int readStack(const char *filePath);
-  int loadTraceProject(const char *filePath, QProgressBar *pb = NULL);
+  //int loadTraceProject(const char *filePath, QProgressBar *pb = NULL);
   void saveTraceProject(const QString &filePath, const QString &output,
                         const QString &prefix);
   void readLocsegChain(const char *filePath);
@@ -134,6 +134,7 @@ public:
    * \brief Get the main window ancestor of the frame.
    */
   MainWindow* getMainWindow();
+  QAction* getBodySplitAction();
 
   void load(const QList<QUrl> &urls);
   void load(const QStringList &fileList);
@@ -195,15 +196,11 @@ public:
   void pushEnhanceLineCommand();
 
   void executeSwcRescaleCommand(const ZRescaleSwcSetting &setting);
-  void executeAutoTraceCommand();
+  void executeAutoTraceCommand(bool doResample);
   void executeAutoTraceAxonCommand();
   void executeWatershedCommand();
 
-  void executeAddObjectCommand(
-      ZStackObject *obj, NeuTube::EDocumentableType type);
-
-  //void importStackMask(const std::string &filePath);
-  //void setStackMask(ZStack *stack);
+  void executeAddObjectCommand(ZStackObject *obj);
 
   ZStackFrame *spinoffStackSelection(const std::vector<int> &selected);
 
@@ -232,6 +229,8 @@ public:
   void makeSwcProjection(ZStackDoc *doc);
 
   void clearData();
+
+  void createMainWindowActions();
 
 public slots:
   void setLocsegChainInfo(ZLocsegChain *chain, QString prefix = "",

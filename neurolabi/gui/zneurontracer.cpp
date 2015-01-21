@@ -14,6 +14,7 @@
 #include "zstack.hxx"
 #include "swc/zswcresampler.h"
 #include "zintpoint.h"
+#include "neutubeconfig.h"
 
 ZNeuronTraceSeeder::ZNeuronTraceSeeder()
 {
@@ -156,7 +157,7 @@ ZNeuronTracer::ZNeuronTracer() : m_stack(NULL), m_traceWorkspace(NULL),
   m_backgroundType(NeuTube::IMAGE_BACKGROUND_DARK),
   m_vertexOption(ZStackGraph::VO_ALL),
   m_seedMinScore(0.35), m_autoTraceMinScore(0.35), m_traceMinScore(0.3),
-  m_2dTraceMinScore(0.5)
+  m_2dTraceMinScore(0.5), m_usingEdgePath(false)
 {
   m_swcConnector = new ZSwcConnector;
   for (int i = 0; i < 3; ++i) {
@@ -348,32 +349,91 @@ Swc_Tree* ZNeuronTracer::trace(double x1, double y1, double z1, double r1,
   if (m_vertexOption == ZStackGraph::VO_SURFACE) {
     stackGraph.setWeightFunction(Stack_Voxel_Weight_I);
   } else {
-    if (m_backgroundType == NeuTube::IMAGE_BACKGROUND_BRIGHT) {
-      stackGraph.setWeightFunction(Stack_Voxel_Weight);
-    } else {
+    if (m_usingEdgePath) {
       stackGraph.setWeightFunction(Stack_Voxel_Weight_S);
+    } else {
+      if (m_backgroundType == NeuTube::IMAGE_BACKGROUND_BRIGHT) {
+        stackGraph.setWeightFunction(Stack_Voxel_Weight_Sr);
+      } else {
+        stackGraph.setWeightFunction(Stack_Voxel_Weight_S);
+      }
     }
   }
 
-  stackGraph.inferWeightParameter(m_stack);
+  ZIntCuboid box = stackGraph.getRange();
+//  if (m_usingEdgePath) {
+//    box.setFirstCorner(imin2(x1, x2), imin2(y1, y2), imin2(z1, z2));
+//    box.setLastCorner(imax2(x1, x2), imax2(y1, y2), imax2(z1, z2));
+//  }
 
-  int startIndex = C_Stack::indexFromCoord(x1, y1, z1, C_Stack::width(m_stack),
-                                           C_Stack::height(m_stack),
-                                           C_Stack::depth(m_stack));
-  int endIndex = C_Stack::indexFromCoord(x2, y2, z2, C_Stack::width(m_stack),
-                                         C_Stack::height(m_stack),
-                                         C_Stack::depth(m_stack));
+  Stack *partial = C_Stack::crop(
+        m_stack, box.getFirstCorner().getX(), box.getFirstCorner().getY(),
+        box.getFirstCorner().getZ(), box.getWidth(), box.getHeight(),
+        box.getDepth(), NULL);
+  if (m_usingEdgePath) {
+    Stack *partialEdge = C_Stack::computeGradient(partial);
+    C_Stack::kill(partial);
+    partial = partialEdge;
 
-  std::vector<int> path = stackGraph.computeShortestPath(
-        m_stack, startIndex, endIndex, m_vertexOption);
+#ifdef _DEBUG_2
+    C_Stack::write(GET_TEST_DATA_DIR + "/test.tif", partial);
+#endif
+  }
+
+  stackGraph.inferWeightParameter(partial);
 
   ZVoxelArray voxelArray;
-  for (size_t i = path.size(); i > 0; --i) {
-    int x, y, z;
-    C_Stack::indexToCoord(path[i - 1], C_Stack::width(m_stack),
-                          C_Stack::height(m_stack), &x, &y, &z);
-    voxelArray.append(ZVoxel(x, y, z));
+  std::vector<int> path;
+
+  if (m_usingEdgePath) {
+    int x0 = box.getFirstCorner().getX();
+    int y0 = box.getFirstCorner().getY();
+    int z0 = box.getFirstCorner().getZ();
+
+    int startIndex = C_Stack::indexFromCoord(
+          x1 - x0, y1 - y0 , z1 - z0, C_Stack::width(partial),
+          C_Stack::height(partial),
+          C_Stack::depth(partial));
+    int endIndex = C_Stack::indexFromCoord(
+          x2 - x0, y2 - y0, z2 - z0, C_Stack::width(partial),
+          C_Stack::height(partial),
+          C_Stack::depth(partial));
+
+    stackGraph.setRange(0, 0, 0, C_Stack::width(partial) - 1,
+                        C_Stack::height(partial) - 1,
+                        C_Stack::depth(partial) - 1);
+    path = stackGraph.computeShortestPath(
+          partial, startIndex, endIndex, m_vertexOption);
+
+
+    for (size_t i = path.size(); i > 0; --i) {
+      int x, y, z;
+      C_Stack::indexToCoord(path[i - 1], C_Stack::width(partial),
+          C_Stack::height(partial), &x, &y, &z);
+      voxelArray.append(ZVoxel(x + x0, y + y0, z + z0));
+    }
+
+  } else {
+    int startIndex = C_Stack::indexFromCoord(x1, y1, z1, C_Stack::width(m_stack),
+                                             C_Stack::height(m_stack),
+                                             C_Stack::depth(m_stack));
+    int endIndex = C_Stack::indexFromCoord(x2, y2, z2, C_Stack::width(m_stack),
+                                           C_Stack::height(m_stack),
+                                           C_Stack::depth(m_stack));
+
+    path = stackGraph.computeShortestPath(
+          m_stack, startIndex, endIndex, m_vertexOption);
+
+
+    for (size_t i = path.size(); i > 0; --i) {
+      int x, y, z;
+      C_Stack::indexToCoord(path[i - 1], C_Stack::width(m_stack),
+          C_Stack::height(m_stack), &x, &y, &z);
+      voxelArray.append(ZVoxel(x, y, z));
+    }
   }
+
+  C_Stack::kill(partial);
 
   double length = voxelArray.getCurveLength();
   double dist = 0.0;
@@ -569,7 +629,7 @@ std::vector<Locseg_Chain*> ZNeuronTracer::screenChain(
   return goodChainArray;
 }
 
-ZSwcTree* ZNeuronTracer::trace(Stack *stack)
+ZSwcTree* ZNeuronTracer::trace(Stack *stack, bool doResampleAfterTracing)
 {
   startProgress();
 
@@ -674,8 +734,10 @@ ZSwcTree* ZNeuronTracer::trace(Stack *stack)
   Swc_Tree_Merge_Close_Node(tree->data(), 0.01);
   Swc_Tree_Remove_Overshoot(tree->data());
 
-  ZSwcResampler resampler;
-  resampler.optimalDownsample(tree);
+  if (doResampleAfterTracing) {
+    ZSwcResampler resampler;
+    resampler.optimalDownsample(tree);
+  }
   advanceProgress(0.1);
 
   std::cout << "Done!" << std::endl;

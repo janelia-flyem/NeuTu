@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>430</width>
-    <height>760</height>
+    <width>533</width>
+    <height>769</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -24,8 +24,8 @@
     <rect>
      <x>10</x>
      <y>10</y>
-     <width>411</width>
-     <height>741</height>
+     <width>511</width>
+     <height>751</height>
     </rect>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout_10">
@@ -35,6 +35,13 @@
        <widget class="QPushButton" name="dvidPushButton">
         <property name="text">
          <string>Select Database</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="menuPushButton">
+        <property name="text">
+         <string>Menu</string>
         </property>
        </widget>
       </item>
@@ -168,6 +175,13 @@
            </widget>
           </item>
           <item>
+           <widget class="QPushButton" name="saveSeedPushButton">
+            <property name="text">
+             <string>Save Seeds</string>
+            </property>
+           </widget>
+          </item>
+          <item>
            <widget class="QPushButton" name="commitPushButton">
             <property name="text">
              <string>Commit</string>
@@ -275,37 +289,100 @@
           <item>
            <layout class="QVBoxLayout" name="verticalLayout">
             <item>
-             <widget class="QPushButton" name="quickViewPushButton">
-              <property name="text">
-               <string>Quick View</string>
-              </property>
-             </widget>
+             <layout class="QHBoxLayout" name="horizontalLayout_7">
+              <item>
+               <widget class="QPushButton" name="view2dBodyPushButton">
+                <property name="text">
+                 <string>View 2D Body</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="Line" name="line_3">
+                <property name="orientation">
+                 <enum>Qt::Vertical</enum>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="fullGrayscalePushButton">
+                <property name="toolTip">
+                 <string>Full Grayscale</string>
+                </property>
+                <property name="text">
+                 <string>G</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="prevPushButton">
+                <property name="text">
+                 <string>&lt;&lt;</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="nextPushButton">
+                <property name="text">
+                 <string>&gt;&gt;</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <spacer name="horizontalSpacer_2">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+             </layout>
             </item>
             <item>
-             <widget class="QPushButton" name="view2dBodyPushButton">
-              <property name="text">
-               <string>View 2D Body</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QPushButton" name="view3dBodyPushButton">
-              <property name="text">
-               <string>View 3D Body</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QPushButton" name="viewSplitPushButton">
-              <property name="text">
-               <string>View Split</string>
-              </property>
-             </widget>
+             <layout class="QHBoxLayout" name="horizontalLayout_8">
+              <item>
+               <widget class="QPushButton" name="view3dBodyPushButton">
+                <property name="text">
+                 <string>View 3D Body</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="quickViewPushButton">
+                <property name="text">
+                 <string>Quick View</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
             </item>
            </layout>
           </item>
           <item>
            <layout class="QVBoxLayout" name="verticalLayout_6">
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_9">
+              <item>
+               <widget class="QPushButton" name="viewSplitPushButton">
+                <property name="text">
+                 <string>View Split</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="viewResultQuickPushButton">
+                <property name="text">
+                 <string>Split Quick View</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
             <item>
              <layout class="QHBoxLayout" name="horizontalLayout_2">
               <item>

@@ -6,6 +6,8 @@
 #include <map>
 #include <QFlags>
 
+class ZJsonObject;
+
 //Z3DCamera is used for view transformation and projection transformation.
 
 //During the view transformation, the eye, center, and upVector are used to
@@ -173,6 +175,9 @@ public:
   // world to screen, if point is clipped, its screen coord will be (-1,-1,-1)
   glm::vec3 worldToScreen(glm::vec3 wpt, glm::ivec4 viewport, Z3DEye eye = CenterEye);
   glm::vec3 screenToWorld(glm::vec3 spt, glm::ivec4 viewport, Z3DEye eye = CenterEye);
+
+  ZJsonObject toJsonObject() const;
+  void set(const ZJsonObject &cameraJson);
 
 protected:
   void invalidViewMatrix()

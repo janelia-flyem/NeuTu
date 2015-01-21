@@ -2,6 +2,8 @@
 #define ZHISTOGRAMTEST_H
 
 #include "zhistogram.h"
+#include "zinthistogram.h"
+#include "tz_iarray.h"
 
 #ifdef _USE_GTEST_
 
@@ -180,6 +182,34 @@ TEST(ZHistogram, Divergence)
   hist2[3] = 0.5;
   hist2[4] = 0.5;
   EXPECT_DOUBLE_EQ(0.21576155433883565, ZHistogram::computeJsDivergence(hist1, hist2));
+}
+
+TEST(ZIntHistogram, basic)
+{
+  int *hist = iarray_malloc(5);
+  hist[0] = 3;
+  hist[1] = 1;
+  hist[2] = 2;
+  hist[3] = 3;
+  hist[4] = 4;
+
+  ZIntHistogram histObj(hist);
+  histObj.print();
+
+  ASSERT_EQ(1, histObj.getMinValue());
+  ASSERT_EQ(3, histObj.getMaxValue());
+  ASSERT_EQ(3, histObj.getCount(2));
+  ASSERT_EQ(0, histObj.getCount(5));
+  ASSERT_EQ(0, histObj.getCount(0));
+
+  ZIntHistogram histObj2(histObj);
+  ASSERT_EQ(1, histObj2.getMinValue());
+  ASSERT_EQ(3, histObj2.getMaxValue());
+  ASSERT_EQ(3, histObj2.getCount(2));
+  ASSERT_EQ(0, histObj2.getCount(5));
+  ASSERT_EQ(0, histObj2.getCount(0));
+
+
 }
 
 #endif

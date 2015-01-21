@@ -7,7 +7,7 @@ const QColor ZLabelColorTable::m_transparentColor = QColor(0, 0, 0, 0);
 
 QVector<QColor> ZLabelColorTable::constructColorTable()
 {
-  QVector<QColor> colorTable(7);
+  QVector<QColor> colorTable(8);
 
   colorTable[0] = QColor(Qt::white);
   colorTable[1] = QColor(Qt::red);
@@ -16,6 +16,7 @@ QVector<QColor> ZLabelColorTable::constructColorTable()
   colorTable[4] = QColor(Qt::cyan);
   colorTable[5] = QColor(Qt::magenta);
   colorTable[6] = QColor(Qt::yellow);
+  colorTable[7] = QColor(Qt::darkCyan);
 
   for (QVector<QColor>::iterator iter = colorTable.begin();
        iter != colorTable.end(); ++iter) {

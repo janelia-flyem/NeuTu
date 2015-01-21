@@ -18,6 +18,8 @@
 #include "zflyemdvidreader.h"
 #endif
 #include "zstring.h"
+#include "zweightedpointarray.h"
+#include "zpointarray.h"
 
 using namespace FlyEm;
 using namespace std;
@@ -88,6 +90,7 @@ bool ZSynapseAnnotationArray::loadJson(const std::string &filePath,
                                        ELoadDataMode mode)
 {
   ZJsonObject jsonObject;
+
   if (ZString(filePath).startsWith("http:")) {
 #ifdef _QT_GUI_USED_
     ZFlyEmDvidReader reader;
@@ -101,6 +104,7 @@ bool ZSynapseAnnotationArray::loadJson(const std::string &filePath,
   } else {
     jsonObject.load(filePath);
   }
+
   bool hasTBar = loadJson(jsonObject, mode);
 
   m_source = filePath;
@@ -587,6 +591,7 @@ ZSynapseAnnotationArray::toMarkerArray(
                         displayConfig.psdColor.blue);
         marker.setType(2);
       }
+      marker.setSource(synapse->getPunctumSource());
       ostringstream nameStream;
 
       nameStream << currentTBarId;
@@ -1304,6 +1309,11 @@ void FlyEm::ZSynapseAnnotationArray::convertRavelerToImageSpace(
   }
 }
 
+void FlyEm::ZSynapseAnnotationArray::convertRavelerToDvidSpace()
+{
+  convertRavelerToImageSpace(0, m_metadata.getSourceYDim());
+}
+
 #ifdef _QT_GUI_USED_
 vector<ZPunctum*> FlyEm::ZSynapseAnnotationArray::toPuncta(
     const SynapseAnnotationConfig &config,
@@ -1324,6 +1334,30 @@ vector<ZPunctum*> FlyEm::ZSynapseAnnotationArray::toPuncta(
   return puncta;
 }
 
+vector<ZPunctum*> FlyEm::ZSynapseAnnotationArray::toPuncta(double radius) const
+{
+  FlyEm::SynapseAnnotationConfig config;
+  config.startNumber = getMetaData().getSourceZOffset();
+  config.height = getMetaData().getSourceYDim();
+  config.xResolution = getMetaData().getXResolution();
+  config.yResolution = getMetaData().getYResolution();
+  config.zResolution = getMetaData().getZResolution();
+  config.swcDownsample1 = 1;
+  config.swcDownsample2 = 1;
+  config.sizeScale = radius;
+
+  FlyEm::SynapseDisplayConfig displayConfig;
+  displayConfig.mode = FlyEm::SynapseDisplayConfig::HALF_SYNAPSE;
+  displayConfig.tBarColor.red = 255;
+  displayConfig.tBarColor.green = 255;
+  displayConfig.tBarColor.blue = 0;
+  displayConfig.psdColor.red = 0;
+  displayConfig.psdColor.green = 0;
+  displayConfig.psdColor.blue = 0;
+
+  return toPuncta(config, FlyEm::SynapseLocation::CURRENT_SPACE, displayConfig);
+}
+
 std::vector<ZPunctum*>
 FlyEm::ZSynapseAnnotationArray::toTBarPuncta(
     double radius, double minConfidence) const
@@ -1336,6 +1370,7 @@ FlyEm::ZSynapseAnnotationArray::toTBarPuncta(
       punctum->setColor(0, 0, 255);
       punctum->setCenter(synapse->pos());
       punctum->setRadius(radius);
+      punctum->setSource(synapse->getPunctumSource());
       puncta.push_back(punctum);
     }
   }
@@ -1343,7 +1378,55 @@ FlyEm::ZSynapseAnnotationArray::toTBarPuncta(
   return puncta;
 }
 
+std::vector<ZPunctum*>
+FlyEm::ZSynapseAnnotationArray::toPsdPuncta(
+    double radius, double minConfidence) const
+{
+  std::vector<ZPunctum*> puncta;
+  for (const SynapseLocation *synapse = beginSynapseLocation();
+       synapse != NULL; synapse = nextSynapseLocation()) {
+    if (synapse->isPartner() && synapse->confidence() >= minConfidence) {
+      ZPunctum *punctum = new ZPunctum;
+      punctum->setColor(0, 0, 255);
+      punctum->setCenter(synapse->pos());
+      punctum->setRadius(radius);
+      punctum->setSource(synapse->getPunctumSource());
+      puncta.push_back(punctum);
+    }
+  }
+
+  return puncta;
+}
+
+
 #endif
+
+ZWeightedPointArray ZSynapseAnnotationArray::toTBarPointArray(
+    double radius, double minConfidence) const
+{
+  ZWeightedPointArray ptArray;
+  for (const SynapseLocation *synapse = beginSynapseLocation();
+       synapse != NULL; synapse = nextSynapseLocation()) {
+    if (synapse->isTBar() && synapse->confidence() >= minConfidence) {
+      ptArray.append(synapse->pos(), radius);
+    }
+  }
+
+  return ptArray;
+}
+
+ZWeightedPointArray ZSynapseAnnotationArray::toTBarConfidencePointArray() const
+{
+  ZWeightedPointArray ptArray;
+  for (const SynapseLocation *synapse = beginSynapseLocation();
+       synapse != NULL; synapse = nextSynapseLocation()) {
+    if (synapse->isTBar()) {
+      ptArray.append(synapse->pos(), synapse->confidence());
+    }
+  }
+
+  return ptArray;
+}
 
 int FlyEm::ZSynapseAnnotationArray::getStrongestInput(int bodyId) const
 {

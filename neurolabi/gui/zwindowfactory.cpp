@@ -27,13 +27,7 @@ Z3DWindow* ZWindowFactory::make3DWindow(ZSharedPointer<ZStackDoc> doc,
   Z3DWindow *window = NULL;
 
   if (Z3DApplication::app()->is3DSupported() && doc) {
-#ifdef _WIN32
-    window = new Z3DWindow(doc, mode, false, NULL);
-    connect(m_parentWindow, SIGNAL(destroyed()), window, SLOT(close()));
-    connect(m_parentWindow, SIGNAL(destroyed(QObject*)), window, SLOT(close()));
-#else
     window = new Z3DWindow(doc, mode, false, m_parentWidget);
-#endif
     if (m_windowTitle.isEmpty()) {
       window->setWindowTitle("3D View");
     } else {
@@ -48,11 +42,13 @@ Z3DWindow* ZWindowFactory::make3DWindow(ZSharedPointer<ZStackDoc> doc,
       window->getCompositor()->setShowBackground(false);
     }
     if (doc->getTag() == NeuTube::Document::FLYEM_BODY ||
-        doc->getTag() == NeuTube::Document::FLYEM_SPLIT) {
+        doc->getTag() == NeuTube::Document::FLYEM_SPLIT ||
+        doc->getTag() != NeuTube::Document::SEGMENTATION_TARGET) {
       window->getVolumeRaycasterRenderer()->setCompositeMode(
             "Direct Volume Rendering");
     }
-    if (doc->getTag() == NeuTube::Document::FLYEM_SPLIT) {
+    if (doc->getTag() != NeuTube::Document::FLYEM_SPLIT &&
+        doc->getTag() != NeuTube::Document::SEGMENTATION_TARGET) {
       window->getCanvas()->disableKeyEvent();
     }
     if (!m_showVolumeBoundBox) {

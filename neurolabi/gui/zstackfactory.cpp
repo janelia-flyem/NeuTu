@@ -13,6 +13,7 @@
 #include "tz_stack.h"
 #include "zweightedpointarray.h"
 #include "math.h"
+#include "tz_color.h"
 
 ZStackFactory::ZStackFactory()
 {
@@ -208,7 +209,10 @@ ZStack* ZStackFactory::makePolygonPicture(const ZStroke2d &curve)
 #endif
   stack->setOffset(stackBox.getFirstCorner().getX(),
                    stackBox.getFirstCorner().getY(), curve.getZ());
+
+#ifdef _DEBUG_
   stack->printInfo();
+#endif
 
   delete painter;
   delete pix;
@@ -398,7 +402,6 @@ ZStack* ZStackFactory::makeDensityMap(
     }
   } else {
     stack = makeZeroStack(GREY, stackBox);
-    Filter_3d *filter = Gaussian_Filter_3d(sigma, sigma, sigma);
 
     for (ZWeightedPointArray::const_iterator iter = ptArray.begin();
          iter != ptArray.end(); ++iter) {
@@ -407,16 +410,19 @@ ZStack* ZStackFactory::makeDensityMap(
                          iround(pt.weight()));
     }
 
-    Stack *stack2 = Filter_Stack(stack->c_stack(), filter);
+    if (sigma > 0.0) {
+      Filter_3d *filter = Gaussian_Filter_3d(sigma, sigma, sigma);
+      Stack *stack2 = Filter_Stack(stack->c_stack(), filter);
 
-    Kill_FMatrix(filter);
+      Kill_FMatrix(filter);
 
-    ZStack *out = new ZStack;
-    out->consume(stack2);
-    out->setOffset(stack->getOffset());
+      ZStack *out = new ZStack;
+      out->consume(stack2);
+      out->setOffset(stack->getOffset());
 
-    delete stack;
-    stack = out;
+      delete stack;
+      stack = out;
+    }
   }
 
   return stack;
@@ -453,6 +459,196 @@ ZStack* ZStackFactory::makeSeedStack(const ZWeightedPointArray &ptArray)
     stack->setIntValue(x, y, z - 1, 0, v);
     stack->setIntValue(x, y, z + 1, 0, v);
   }
+
+  return stack;
+}
+
+ZStack* ZStackFactory::MakeColorStack(const ZStack &stack, double h, double s)
+{
+  ZStack *colorStack = makeZeroStack(COLOR, stack.getBoundBox(), 1);
+
+  Rgb_Color color;
+
+  size_t voxelNumber = stack.getVoxelNumber();
+
+  const uint8_t *signalArray = stack.array8();
+  color_t *colorArray = colorStack->arrayc();
+
+  for (size_t i = 0; i < voxelNumber; ++i) {
+    double v = signalArray[i];
+    v /= 255.0;
+    Set_Color_Hsv(&color, h, s, v);
+    colorArray[i][0] = color.r;
+    colorArray[i][1] = color.g;
+    colorArray[i][2] = color.b;
+  }
+
+  return colorStack;
+}
+
+ZStack* ZStackFactory::MakeColorStack(
+    const ZStack &stack, const ZStack &mask, double h, double s)
+{
+  ZIntCuboid boundBox = stack.getBoundBox();
+  ZStack *colorStack = makeZeroStack(COLOR, boundBox, 1);
+
+  Rgb_Color color;
+
+  //size_t voxelNumber = stack.getVoxelNumber();
+
+  const uint8_t *signalArray = stack.array8();
+  color_t *colorArray = colorStack->arrayc();
+
+  size_t i = 0;
+
+  int minX = boundBox.getFirstCorner().getX();
+  int minY = boundBox.getFirstCorner().getY();
+  int minZ = boundBox.getFirstCorner().getZ();
+  int maxX = boundBox.getLastCorner().getX();
+  int maxY = boundBox.getLastCorner().getY();
+  int maxZ = boundBox.getLastCorner().getZ();
+
+
+  for (int z = minZ; z <= maxZ; ++z) {
+    for (int y = minY; y <= maxY; ++y) {
+      for (int x = minX; x <= maxX; ++x) {
+        if (mask.getIntValue(x, y, z) > 0) {
+          double v = signalArray[i];
+          v /= 255.0;
+          Set_Color_Hsv(&color, h, s, v);
+          colorArray[i][0] = color.r;
+          colorArray[i][1] = color.g;
+          colorArray[i][2] = color.b;
+        } else {
+          colorArray[i][0] = signalArray[i];
+          colorArray[i][1] = signalArray[i];
+          colorArray[i][2] = signalArray[i];
+        }
+        ++i;
+      }
+    }
+  }
+
+  return colorStack;
+}
+
+ZStack* ZStackFactory::MakeColorStack(const ZStack &stack, const ZStack &labelField)
+{
+  ZIntCuboid boundBox = stack.getBoundBox();
+  ZStack *colorStack = makeZeroStack(COLOR, boundBox, 1);
+
+  Rgb_Color color;
+
+  //size_t voxelNumber = stack.getVoxelNumber();
+
+  const uint8_t *signalArray = stack.array8();
+  color_t *colorArray = colorStack->arrayc();
+
+  size_t i = 0;
+
+  int minX = boundBox.getFirstCorner().getX();
+  int minY = boundBox.getFirstCorner().getY();
+  int minZ = boundBox.getFirstCorner().getZ();
+  int maxX = boundBox.getLastCorner().getX();
+  int maxY = boundBox.getLastCorner().getY();
+  int maxZ = boundBox.getLastCorner().getZ();
+
+
+  for (int z = minZ; z <= maxZ; ++z) {
+    for (int y = minY; y <= maxY; ++y) {
+      for (int x = minX; x <= maxX; ++x) {
+        int label = labelField.getIntValue(x, y, z);
+        if (label > 0) {
+          double v = 0.0;
+          double h = 0.0;
+          double s = 0.0;
+
+          Set_Color_Discrete(&color, label - 1);
+          Rgb_Color_To_Hsv(&color, &h, &s, &v);
+
+          v = signalArray[i];
+          v /= 255.0;
+
+          Set_Color_Hsv(&color, h, s, v);
+          colorArray[i][0] = color.r;
+          colorArray[i][1] = color.g;
+          colorArray[i][2] = color.b;
+        } else {
+          colorArray[i][0] = signalArray[i];
+          colorArray[i][1] = signalArray[i];
+          colorArray[i][2] = signalArray[i];
+        }
+        ++i;
+      }
+    }
+  }
+
+  return colorStack;
+}
+
+//ZStack* ZStackFactory::makeSeedStack(const ZObject3dScanArray &objArray)
+//{
+
+//}
+
+ZStack* ZStackFactory::MakeRgbStack(
+      const ZStack &redStack, const ZStack &greenStack, const ZStack &blueStack)
+{
+  if (redStack.kind() != GREY || greenStack.kind() != GREY ||
+      blueStack.kind() != GREY) {
+    return NULL;
+  }
+
+  ZIntCuboid boundBox = redStack.getBoundBox();
+
+  //Get bound box
+  boundBox.join(greenStack.getBoundBox());
+  boundBox.join(blueStack.getBoundBox());
+
+  if (boundBox.isEmpty()) {
+    return NULL;
+  }
+
+  ZStack *output = ZStackFactory::makeZeroStack(COLOR, boundBox, 1);
+
+  ZStack* channels[3];
+
+  //Paste all stacks into the bound box
+  channels[0] = ZStackFactory::makeZeroStack(GREY, boundBox, 1);
+  redStack.paste(channels[0]);
+
+  channels[1] = ZStackFactory::makeZeroStack(GREY, boundBox, 1);
+  greenStack.paste(channels[1]);
+
+  channels[2] = ZStackFactory::makeZeroStack(GREY, boundBox, 1);
+  blueStack.paste(channels[2]);
+
+  size_t voxelNumber = output->getVoxelNumber();
+  color_t *outputArray = output->arrayc();
+  for (int c = 0; c < 3; ++c) {
+    uint8_t *array = channels[c]->array8();
+    for (size_t i = 0; i < voxelNumber; ++i) {
+      outputArray[i][c] = array[i];
+    }
+    delete channels[c];
+  }
+
+  return output;
+}
+
+ZStack* ZStackFactory::CompositeForeground(
+    const ZStack &stack1, const ZStack &stack2)
+{
+  if (stack1.kind() != stack2.kind()) {
+    return NULL;
+  }
+
+  ZIntCuboid boundBox = stack1.getBoundBox();
+  boundBox.join(stack2.getBoundBox());
+
+  ZStack *stack = ZStackFactory::makeZeroStack(stack1.kind(), boundBox, 1);
+  stack1.paste(stack, 0);
+  stack2.paste(stack, 0);
 
   return stack;
 }

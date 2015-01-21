@@ -28,6 +28,7 @@ public:
 private:
   ZDvidTarget m_dvidTarget;
   std::vector<ZDvidTarget> m_dvidRepo;
+  std::string m_bodyLabelName;
   const static char *m_dvidRepoKey;
 };
 

@@ -18,6 +18,7 @@ public:
   void startProgress(double scale);
   void endProgress(double scale);
   void advanceProgress(double dp);
+  void resetProgress();
 
   inline ZProgressReporter* getProgressReporter() { return m_progressReporter; }
 

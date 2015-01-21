@@ -37,6 +37,8 @@ typedef double qreal;
 #include <QList>
 #include <QRectF>
 #include <QRect>
+#include <QDebug>
+#include <QPen>
 #endif
 
 #endif // ZQTHEADER_H

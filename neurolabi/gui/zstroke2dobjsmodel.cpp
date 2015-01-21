@@ -1,6 +1,7 @@
 #include "zstroke2dobjsmodel.h"
 #include "zstackdoc.h"
 #include "zobjsitem.h"
+#include "zstroke2d.h"
 
 ZStroke2dObjsModel::ZStroke2dObjsModel(ZStackDoc *doc, QObject *parent) :
   ZObjsModel(parent), m_doc(doc)
@@ -33,7 +34,7 @@ ZStroke2d* ZStroke2dObjsModel::getStroke2d(const QModelIndex &index) const
     ZObjsItem *item = static_cast<ZObjsItem*>(index.internalPointer());
 
     if (item->parent() == m_rootItem) {
-      stroke = static_cast<ZStroke2d*>(item->getObj());
+      stroke = ZStackObject::CastVoidPointer<ZStroke2d>(item->getActuralData());
     }
   }
 

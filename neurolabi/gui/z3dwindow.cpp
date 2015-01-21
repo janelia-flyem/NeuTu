@@ -69,6 +69,7 @@
 #include "zswcgenerator.h"
 #include "zstroke2d.h"
 #include "zsparsestack.h"
+#include "zmarkswcsomadialog.h"
 
 class Sleeper : public QThread
 {
@@ -178,8 +179,9 @@ void Z3DWindow::gotoPosition(std::vector<double> bound, double minRadius,
 
 void Z3DWindow::zoomToSelectedSwcNodes()
 {
-  if (!getDocument()->selectedSwcTreeNodes()->empty()) {
-    ZCuboid cuboid = SwcTreeNode::boundBox(*getDocument()->selectedSwcTreeNodes());
+  std::set<Swc_Tree_Node*> nodeSet = m_doc->getSelectedSwcNodeSet();
+  if (!nodeSet.empty()) {
+    ZCuboid cuboid = SwcTreeNode::boundBox(nodeSet);
     std::vector<double> bound(6);
     bound[0] = cuboid.firstCorner().x();
     bound[2] = cuboid.firstCorner().y();
@@ -200,7 +202,11 @@ void Z3DWindow::init(EInitMode mode)
   if (mode == EXCLUDE_VOLUME) {
     m_volumeSource = new Z3DVolumeSource(NULL);
   } else {
-    m_volumeSource = new Z3DVolumeSource(m_doc.get());
+    if (mode == NORMAL_INIT) {
+      m_volumeSource = new Z3DVolumeSource(m_doc.get());
+    } else if (mode == FULL_RES_VOLUME) {
+      m_volumeSource = new Z3DVolumeSource(m_doc.get(), MAX_INT32);
+    }
     connect(m_volumeSource, SIGNAL(xScaleChanged()), this, SLOT(volumeScaleChanged()));
     connect(m_volumeSource, SIGNAL(yScaleChanged()), this, SLOT(volumeScaleChanged()));
     connect(m_volumeSource, SIGNAL(zScaleChanged()), this, SLOT(volumeScaleChanged()));
@@ -210,9 +216,9 @@ void Z3DWindow::init(EInitMode mode)
   // more processors: init geometry filters
   m_compositor = new Z3DCompositor();
   m_punctaFilter = new Z3DPunctaFilter();
-  m_punctaFilter->setData(m_doc->punctaList());
+  m_punctaFilter->setData(m_doc->getPunctumList());
   m_swcFilter = new Z3DSwcFilter();
-  m_swcFilter->setData(m_doc->swcList());
+  m_swcFilter->setData(m_doc->getSwcList());
   m_graphFilter = new Z3DGraphFilter();
   if (m_doc->swcNetwork() != NULL) {
     ZPointNetwork *network = m_doc->swcNetwork()->toPointNetwork();
@@ -229,7 +235,7 @@ void Z3DWindow::init(EInitMode mode)
   }
 
   m_decorationFilter = new Z3DGraphFilter();
-  m_decorationFilter->setStayOnTop(false);
+  m_decorationFilter->setStayOnTop(true);
   m_decorationFilter->setData(m_doc->get3DGraphDecoration());
 
   connect(getDocument(), SIGNAL(punctaModified()), this, SLOT(punctaChanged()));
@@ -248,7 +254,10 @@ void Z3DWindow::init(EInitMode mode)
           SIGNAL(swcTreeNodeSelectionChanged(QList<Swc_Tree_Node*>,QList<Swc_Tree_Node*>)),
           this, SLOT(swcTreeNodeSelectionChanged()));
   connect(getDocument(),
-          SIGNAL(punctumVisibleStateChanged(ZPunctum*, bool)),
+          SIGNAL(punctumVisibleStateChanged()),
+          m_punctaFilter, SLOT(updatePunctumVisibleState()));
+  connect(getDocument(),
+          SIGNAL(punctumVisibleStateChanged()),
           m_punctaFilter, SLOT(updatePunctumVisibleState()));
   connect(getDocument(),
           SIGNAL(swcVisibleStateChanged(ZSwcTree*, bool)),
@@ -280,14 +289,19 @@ void Z3DWindow::init(EInitMode mode)
   connect(m_doc.get(), SIGNAL(statusMessageUpdated(QString)),
           this, SLOT(notifyUser(QString)));
 
-  m_swcFilter->setSelectedSwcs(m_doc->selectedSwcs());
-  m_swcFilter->setSelectedSwcTreeNodes(m_doc->selectedSwcTreeNodes());
-  m_punctaFilter->setSelectedPuncta(m_doc->selectedPuncta());
+  m_swcFilter->setSelectedSwcs(
+        m_doc->getObjectGroup().getSelectedSet(ZStackObject::TYPE_SWC));
+  //m_swcFilter->setSelectedSwcTreeNodes(m_doc->getSelectedSwcTreeSet());
+  m_punctaFilter->setSelectedPuncta(
+        m_doc->getObjectGroup().getSelectedSet(ZStackObject::TYPE_PUNCTUM));
 
   // init windows size based on data
   setWindowSize();
 
   // init canvas and opengl context
+#ifdef _QT5_
+  m_canvas = new Z3DCanvas("", 512, 512);
+#else
   QGLFormat format = QGLFormat();
   format.setAlpha(true);
   format.setDepth(true);
@@ -297,6 +311,7 @@ void Z3DWindow::init(EInitMode mode)
   if (m_isStereoView)
     format.setStereo(true);
   m_canvas = new Z3DCanvas("", 512, 512, format);
+#endif
   setCentralWidget(m_canvas);
   m_canvas->setContextMenuPolicy(Qt::CustomContextMenu);
   connect(m_canvas, SIGNAL(customContextMenuRequested(QPoint)),
@@ -426,6 +441,9 @@ void Z3DWindow::createActions()
 
   m_undoAction = m_doc->getUndoAction();
   m_redoAction = m_doc->getRedoAction();
+
+  m_markSwcSomaAction = new QAction("Mark SWC Soma...", this);
+  connect(m_markSwcSomaAction, SIGNAL(triggered()), this, SLOT(markSwcSoma()));
 
   m_removeSelectedObjectsAction = new QAction("Delete", this);
   if (NeutubeConfig::getInstance().getApplication() != "Biocytin") {
@@ -622,6 +640,8 @@ void Z3DWindow::createMenus()
   m_editMenu = menuBar()->addMenu(tr("&Edit"));
   m_editMenu->addAction(m_undoAction);
   m_editMenu->addAction(m_redoAction);
+  m_editMenu->addSeparator();
+  m_editMenu->addAction(m_markSwcSomaAction);
 
   createContextMenu();
   customizeContextMenu();
@@ -804,12 +824,42 @@ void Z3DWindow::createDockWindows()
   m_settingsDockWidget->setAllowedAreas(Qt::RightDockWidgetArea);
 
   m_widgetsGroup = new ZWidgetsGroup("All", NULL, 1);
-  // reset camera button and some other utils
-  QPushButton *resetCameraButton = new QPushButton(tr("Reset Camera"));
-  resetCameraButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-  connect(resetCameraButton, SIGNAL(clicked()), this, SLOT(resetCamera()));
 
-#ifdef _FLYEM_
+  QMenu *cameraMenu = new QMenu(this);
+  QPushButton *cameraMenuButton = new QPushButton(tr("Camera"));
+  cameraMenuButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+  cameraMenuButton->setMenu(cameraMenu);
+
+  QAction *resetCameraAction = new QAction("Reset Camera", this);
+  connect(resetCameraAction, SIGNAL(triggered()), this, SLOT(resetCamera()));
+  cameraMenu->addAction(resetCameraAction);
+
+  QAction *flipViewAction = new QAction("Back View", this);
+  connect(flipViewAction, SIGNAL(triggered()), this, SLOT(flipView()));
+  cameraMenu->addAction(flipViewAction);
+
+  QAction *xzViewAction = new QAction("X-Z View", this);
+  connect(xzViewAction, SIGNAL(triggered()), this, SLOT(setXZView()));
+  cameraMenu->addAction(xzViewAction);
+
+  QAction *yzViewAction = new QAction("Y-Z View", this);
+  connect(yzViewAction, SIGNAL(triggered()), this, SLOT(setYZView()));
+  cameraMenu->addAction(yzViewAction);
+
+  QAction *saveViewAction = new QAction("Save View", this);
+  connect(saveViewAction, SIGNAL(triggered()), this, SLOT(saveView()));
+  cameraMenu->addAction(saveViewAction);
+
+  QAction *loadViewAction = new QAction("Load View", this);
+  connect(loadViewAction, SIGNAL(triggered()), this, SLOT(loadView()));
+  cameraMenu->addAction(loadViewAction);
+
+  // reset camera button and some other utils
+//  QPushButton *resetCameraButton = new QPushButton(tr("Reset Camera"));
+//  resetCameraButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+//  connect(resetCameraButton, SIGNAL(clicked()), this, SLOT(resetCamera()));
+
+#if 0
   QPushButton *flipViewButton = new QPushButton(tr("Back view"));
   flipViewButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
   connect(flipViewButton, SIGNAL(clicked()), this, SLOT(flipView()));
@@ -819,9 +869,13 @@ void Z3DWindow::createDockWindows()
   recordViewButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
   connect(recordViewButton, SIGNAL(clicked()), this, SLOT(recordView()));
 
-  QPushButton *diffViewButton = new QPushButton(tr("Calculate view difference"));
-  diffViewButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-  connect(diffViewButton, SIGNAL(clicked()), this, SLOT(diffView()));
+  QPushButton *saveViewButton = new QPushButton(tr("Save view"));
+  saveViewButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+  connect(saveViewButton, SIGNAL(clicked()), this, SLOT(saveView()));
+
+//  QPushButton *diffViewButton = new QPushButton(tr("Calculate view difference"));
+//  diffViewButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+//  connect(diffViewButton, SIGNAL(clicked()), this, SLOT(diffView()));
 #  endif
 
 #endif
@@ -831,13 +885,14 @@ void Z3DWindow::createDockWindows()
 
   if (config.getZ3DWindowConfig().isUtilsOn()) {
     ZWidgetsGroup *utils = new ZWidgetsGroup("General", m_widgetsGroup, 1);
-    new ZWidgetsGroup(resetCameraButton, utils, 1);
-#ifdef _FLYEM_
+    new ZWidgetsGroup(cameraMenuButton, utils, 1);
+#if 0
     new ZWidgetsGroup(flipViewButton, utils, 1);
 
 #  ifdef _DEBUG_
     new ZWidgetsGroup(recordViewButton, utils, 1);
-    new ZWidgetsGroup(diffViewButton, utils, 1);
+    new ZWidgetsGroup(saveViewButton, utils, 1);
+    //new ZWidgetsGroup(diffViewButton, utils, 1);
 #  endif
 #endif
     new ZWidgetsGroup(getCamera(), utils, 1);
@@ -981,6 +1036,18 @@ void Z3DWindow::flipView()
   getCamera()->flipViewDirection();
 }
 
+void Z3DWindow::setXZView()
+{
+  resetCamera();
+  getCamera()->rotate90X();
+}
+
+void Z3DWindow::setYZView()
+{
+  resetCamera();
+  getCamera()->rotate90XZ();
+}
+
 void Z3DWindow::recordView()
 {
   m_cameraRecord = getCamera()->get();
@@ -994,6 +1061,34 @@ void Z3DWindow::diffView()
             << getCamera()->getCenter() - m_cameraRecord.getCenter() << std::endl;
   std::cout << "Up vector: "
             << getCamera()->getUpVector() - m_cameraRecord.getUpVector() << std::endl;
+}
+
+void Z3DWindow::saveView()
+{
+  QString filename = QFileDialog::getSaveFileName(
+        this, tr("Save View Parameters"), m_lastOpenedFilePath,
+         tr("Json files (*.json) "));
+
+
+  if (!filename.isEmpty()) {
+    m_lastOpenedFilePath = filename;
+    ZJsonObject cameraJson =getCamera()->get().toJsonObject();
+    cameraJson.dump(filename.toStdString());
+  }
+}
+
+void Z3DWindow::loadView()
+{
+  QString fileName = QFileDialog::getOpenFileName(
+        this, tr("Load View Parameters"), m_lastOpenedFilePath,
+        tr("Json files (*.json) "));
+
+  if (!fileName.isEmpty()) {
+    ZJsonObject cameraJson;
+    cameraJson.load(fileName.toStdString());
+    getCamera()->get().set(cameraJson);
+    getCamera()->updatePara();
+  }
 }
 
 void Z3DWindow::resetCameraClippingRange()
@@ -1014,8 +1109,11 @@ void Z3DWindow::updateSwcBoundBox()
 {
   m_swcBoundBox[0] = m_swcBoundBox[2] = m_swcBoundBox[4] = std::numeric_limits<double>::max();
   m_swcBoundBox[1] = m_swcBoundBox[3] = m_swcBoundBox[5] = -std::numeric_limits<double>::max();
-  for (int i=0; i<m_doc->swcList()->size(); i++) {
-    std::vector<double> boundBox = m_swcFilter->getTreeBound(m_doc->swcList()->at(i));
+
+  QList<ZSwcTree*> swcList = m_doc->getSwcList();
+
+  for (int i=0; i< swcList.size(); i++) {
+    std::vector<double> boundBox = m_swcFilter->getTreeBound(swcList.at(i));
     m_swcBoundBox[0] = std::min(boundBox[0], m_swcBoundBox[0]);
     m_swcBoundBox[1] = std::max(boundBox[1], m_swcBoundBox[1]);
     m_swcBoundBox[2] = std::min(boundBox[2], m_swcBoundBox[2]);
@@ -1039,8 +1137,10 @@ void Z3DWindow::updatePunctaBoundBox()
 {
   m_punctaBoundBox[0] = m_punctaBoundBox[2] = m_punctaBoundBox[4] = std::numeric_limits<double>::max();
   m_punctaBoundBox[1] = m_punctaBoundBox[3] = m_punctaBoundBox[5] = -std::numeric_limits<double>::max();
-  for (int i=0; i<m_doc->punctaList()->size(); i++) {
-    std::vector<double> boundBox = m_punctaFilter->getPunctumBound(m_doc->punctaList()->at(i));
+
+  QList<ZPunctum*> punctaList = m_doc->getPunctumList();
+  for (int i=0; i<punctaList.size(); i++) {
+    std::vector<double> boundBox = m_punctaFilter->getPunctumBound(punctaList.at(i));
     m_punctaBoundBox[0] = std::min(boundBox[0], m_punctaBoundBox[0]);
     m_punctaBoundBox[1] = std::max(boundBox[1], m_punctaBoundBox[1]);
     m_punctaBoundBox[2] = std::min(boundBox[2], m_punctaBoundBox[2]);
@@ -1108,7 +1208,7 @@ void Z3DWindow::volumeChanged()
 
 void Z3DWindow::swcChanged()
 {
-  m_swcFilter->setData(m_doc->swcList());
+  m_swcFilter->setData(m_doc->getSwcList());
   updateSwcBoundBox();
   updateOverallBoundBox();
   resetCameraClippingRange();
@@ -1144,7 +1244,7 @@ void Z3DWindow::updateDisplay()
 
 void Z3DWindow::punctaChanged()
 {
-  m_punctaFilter->setData(m_doc->punctaList());
+  m_punctaFilter->setData(m_doc->getPunctumList());
   updatePunctaBoundBox();
   updateOverallBoundBox();
   resetCameraClippingRange();
@@ -1162,7 +1262,7 @@ void Z3DWindow::volumeScaleChanged()
 
 void Z3DWindow::swcCoordScaleChanged()
 {
-  if (m_doc->swcList()->empty())
+  if (!m_doc->hasSwc())
     return;
   updateSwcBoundBox();
   updateOverallBoundBox();
@@ -1172,7 +1272,7 @@ void Z3DWindow::swcCoordScaleChanged()
 
 void Z3DWindow::punctaCoordScaleChanged()
 {
-  if (m_doc->punctaList()->empty())
+  if (m_doc->getObjectList(ZStackObject::TYPE_PUNCTUM).empty())
     return;
   updatePunctaBoundBox();
   updateOverallBoundBox();
@@ -1243,7 +1343,7 @@ void Z3DWindow::selectedSwcTreeNodeChangedFrom3D(Swc_Tree_Node *p, bool append)
     m_doc->deselectAllObject();
   }
 
-  if (m_doc->selectedSwcTreeNodes()->count(p) == 0) {
+  if (m_doc->isSwcNodeSelected(p) == 0) {
     m_doc->setSwcTreeNodeSelected(p, true);
   } else {
     m_doc->setSwcTreeNodeSelected(p, false);
@@ -1276,9 +1376,9 @@ void Z3DWindow::startConnectingSwcNode()
 
 void Z3DWindow::connectSwcTreeNode(Swc_Tree_Node *tn)
 {
-  if (!getDocument()->selectedSwcTreeNodes()->empty()) {
+  if (getDocument()->hasSelectedSwcNode()) {
     Swc_Tree_Node *target = SwcTreeNode::findClosestNode(
-          *getDocument()->selectedSwcTreeNodes(), tn);
+          getDocument()->getSelectedSwcNodeSet(), tn);
     m_doc->executeConnectSwcNodeCommand(target, tn);
     getSwcFilter()->setInteractionMode(Z3DSwcFilter::Select);
     m_canvas->setCursor(Qt::ArrowCursor);
@@ -1331,7 +1431,7 @@ void Z3DWindow::pointInVolumeLeftClicked(
   // only do tracing when we are not editing swc nodes or the preconditions for editing swc node are not met
   if (hasVolume() && channelNumber() == 1 &&
       m_toggleSmartExtendSelectedSwcNodeAction->isChecked() &&
-      m_doc->selectedSwcTreeNodes()->size() == 1) {
+      m_doc->getSelectedSwcNodeNumber() == 1) {
     if (modifiers == Qt::ControlModifier) {
       m_doc->executeSwcNodeExtendCommand(ZPoint(fpos[0], fpos[1], fpos[2]));
     } else {
@@ -1375,7 +1475,7 @@ void Z3DWindow::show3DViewContextMenu(QPoint pt)
 
   QList<QAction*> actions;
 
-  if (m_doc->selectedSwcTreeNodes()->size() > 0) {
+  if (m_doc->hasSelectedSwcNode()) {
     updateContextMenu("swcnode");
     //m_contextMenuGroup["swcnode"]->popup(m_canvas->mapToGlobal(pt));
     QList<QAction*> acts = m_contextMenuGroup["swcnode"]->actions();
@@ -1399,7 +1499,7 @@ void Z3DWindow::show3DViewContextMenu(QPoint pt)
     }
   }
 
-  if (m_doc->selectedSwcs()->size() > 0) {
+  if (m_doc->hasSelectedSwc() > 0) {
     //m_contextMenuGroup["swc"]->popup(m_canvas->mapToGlobal(pt));
     QList<QAction*> acts = m_contextMenuGroup["swc"]->actions();
     if (actions.empty()) {
@@ -1422,7 +1522,7 @@ void Z3DWindow::show3DViewContextMenu(QPoint pt)
     }
   }
 
-  if (m_doc->selectedPuncta()->size() > 0) {
+  if (m_doc->hasSelectedPuncta() > 0) {
     updateContextMenu("puncta");
     //m_contextMenuGroup["puncta"]->popup(m_canvas->mapToGlobal(pt));
     QList<QAction*> acts = m_contextMenuGroup["puncta"]->actions();
@@ -1446,9 +1546,9 @@ void Z3DWindow::show3DViewContextMenu(QPoint pt)
     }
   }
 
-  if (m_doc->selectedPuncta()->empty() &&
-      m_doc->selectedSwcs()->empty() &&
-      m_doc->selectedSwcTreeNodes()->empty()) {
+  if (!m_doc->hasSelectedPuncta() &&
+      !m_doc->hasSelectedSwc() &&
+      !m_doc->hasSelectedSwcNode()) {
 
     // first see if pt hit any position in volume
     if (channelNumber() > 0) {
@@ -1551,49 +1651,61 @@ void Z3DWindow::removeSelectedObject()
 
 void Z3DWindow::markSelectedPunctaProperty1()
 {
-  for (std::set<ZPunctum*>::iterator it=m_doc->selectedPuncta()->begin(); it != m_doc->selectedPuncta()->end(); it++) {
-    (*it)->setProperty1("true");
-    m_doc->punctaObjsModel()->updateData(*it);
+  TStackObjectSet &objSet = m_doc->getSelected(ZStackObject::TYPE_PUNCTUM);
+  for (TStackObjectSet::iterator it=objSet.begin(); it != objSet.end(); it++) {
+    ZPunctum *punctum = dynamic_cast<ZPunctum*>(*it);
+    punctum->setProperty1("true");
+    m_doc->punctaObjsModel()->updateData(punctum);
   }
 }
 
 void Z3DWindow::markSelectedPunctaProperty2()
 {
-  for (std::set<ZPunctum*>::iterator it=m_doc->selectedPuncta()->begin(); it != m_doc->selectedPuncta()->end(); it++) {
-    (*it)->setProperty2("true");
-    m_doc->punctaObjsModel()->updateData(*it);
+  TStackObjectSet &objSet = m_doc->getSelected(ZStackObject::TYPE_PUNCTUM);
+  for (TStackObjectSet::iterator it=objSet.begin(); it != objSet.end(); it++) {
+    ZPunctum *punctum = dynamic_cast<ZPunctum*>(*it);
+    punctum->setProperty2("true");
+    m_doc->punctaObjsModel()->updateData(punctum);
   }
 }
 
 void Z3DWindow::markSelectedPunctaProperty3()
 {
-  for (std::set<ZPunctum*, int>::iterator it=m_doc->selectedPuncta()->begin(); it != m_doc->selectedPuncta()->end(); it++) {
-    (*it)->setProperty3("true");
-    m_doc->punctaObjsModel()->updateData(*it);
+  TStackObjectSet &objSet = m_doc->getSelected(ZStackObject::TYPE_PUNCTUM);
+  for (TStackObjectSet::iterator it=objSet.begin(); it != objSet.end(); it++) {
+    ZPunctum *punctum = dynamic_cast<ZPunctum*>(*it);
+    punctum->setProperty3("true");
+    m_doc->punctaObjsModel()->updateData(punctum);
   }
 }
 
 void Z3DWindow::unmarkSelectedPunctaProperty1()
 {
-  for (std::set<ZPunctum*>::iterator it=m_doc->selectedPuncta()->begin(); it != m_doc->selectedPuncta()->end(); it++) {
-    (*it)->setProperty1("");
-    m_doc->punctaObjsModel()->updateData(*it);
+  TStackObjectSet &objSet = m_doc->getSelected(ZStackObject::TYPE_PUNCTUM);
+  for (TStackObjectSet::iterator it=objSet.begin(); it != objSet.end(); it++) {
+    ZPunctum *punctum = dynamic_cast<ZPunctum*>(*it);
+    punctum->setProperty1("");
+    m_doc->punctaObjsModel()->updateData(punctum);
   }
 }
 
 void Z3DWindow::unmarkSelectedPunctaProperty2()
 {
-  for (std::set<ZPunctum*>::iterator it=m_doc->selectedPuncta()->begin(); it != m_doc->selectedPuncta()->end(); it++) {
-    (*it)->setProperty2("");
-    m_doc->punctaObjsModel()->updateData(*it);
+  TStackObjectSet &objSet = m_doc->getSelected(ZStackObject::TYPE_PUNCTUM);
+  for (TStackObjectSet::iterator it=objSet.begin(); it != objSet.end(); it++) {
+    ZPunctum *punctum = dynamic_cast<ZPunctum*>(*it);
+    punctum->setProperty2("");
+    m_doc->punctaObjsModel()->updateData(punctum);
   }
 }
 
 void Z3DWindow::unmarkSelectedPunctaProperty3()
 {
-  for (std::set<ZPunctum*>::iterator it=m_doc->selectedPuncta()->begin(); it != m_doc->selectedPuncta()->end(); it++) {
-    (*it)->setProperty3("");
-    m_doc->punctaObjsModel()->updateData(*it);
+  TStackObjectSet &objSet = m_doc->getSelected(ZStackObject::TYPE_PUNCTUM);
+  for (TStackObjectSet::iterator it=objSet.begin(); it != objSet.end(); it++) {
+    ZPunctum *punctum = dynamic_cast<ZPunctum*>(*it);
+    punctum->setProperty3("");
+    m_doc->punctaObjsModel()->updateData(punctum);
   }
 }
 
@@ -1605,7 +1717,9 @@ void Z3DWindow::saveSelectedPunctaAs()
 
   if (!filename.isEmpty()) {
     m_lastOpenedFilePath = filename;
-    ZPunctumIO::save(filename, m_doc->selectedPuncta()->begin(), m_doc->selectedPuncta()->end());
+    QList<ZPunctum*> punctaList =
+        m_doc->getSelectedObjectList<ZPunctum>(ZStackObject::TYPE_PUNCTUM);
+    ZPunctumIO::save(filename, punctaList.begin(), punctaList.end());
   }
 }
 
@@ -1616,9 +1730,11 @@ void Z3DWindow::changeSelectedPunctaName()
                                        tr("Punctum name:"), QLineEdit::Normal,
                                        "", &ok);
   if (ok) {
-    std::set<ZPunctum*> *punctumSet = m_doc->selectedPuncta();
-    for (std::set<ZPunctum*>::iterator iter = punctumSet->begin();
-         iter != punctumSet->end(); ++iter) {
+    //std::set<ZPunctum*> *punctumSet = m_doc->selectedPuncta();
+    QList<ZPunctum*> punctumSet =
+        m_doc->getSelectedObjectList<ZPunctum>(ZStackObject::TYPE_PUNCTUM);
+    for (QList<ZPunctum*>::iterator iter = punctumSet.begin();
+         iter != punctumSet.end(); ++iter) {
       ZPunctum *punctum = *iter;
       punctum->setName(text);
     }
@@ -1634,7 +1750,8 @@ void Z3DWindow::saveAllPunctaAs()
 
   if (!filename.isEmpty()) {
     m_lastOpenedFilePath = filename;
-    ZPunctumIO::save(filename, m_doc->punctaList()->begin(), m_doc->punctaList()->end());
+    QList<ZPunctum*> punctaList = m_doc->getPunctumList();
+    ZPunctumIO::save(filename, punctaList.begin(), punctaList.end());
   }
 }
 
@@ -1645,9 +1762,11 @@ void Z3DWindow::markPunctum()
 
 void Z3DWindow::locatePunctumIn2DView()
 {
-  if (m_doc->selectedPuncta()->size() == 1) {
+  QList<ZPunctum*> punctumList =
+      m_doc->getSelectedObjectList<ZPunctum>(ZStackObject::TYPE_PUNCTUM);
+  if (punctumList.size() == 1) {
     if (m_doc->getParentFrame() != NULL) {
-      ZPunctum* punc = *(m_doc->selectedPuncta()->begin());
+      ZPunctum* punc = *(punctumList.begin());
       m_doc->getParentFrame()->viewRoi(punc->x(), punc->y(), iround(punc->z()), punc->radius() * 4);
     }
   }
@@ -1926,6 +2045,11 @@ void Z3DWindow::dropEvent(QDropEvent *event)
   m_doc->loadFileList(urls);
 }
 
+void Z3DWindow::closeEvent(QCloseEvent */*event*/)
+{
+  emit closed();
+}
+
 void Z3DWindow::keyPressEvent(QKeyEvent *event)
 {
   switch(event->key())
@@ -1945,17 +2069,17 @@ void Z3DWindow::keyPressEvent(QKeyEvent *event)
   case Qt::Key_C:
   {
     if (event->modifiers() == Qt::ControlModifier) {
-      std::set<Swc_Tree_Node*> *nodeSet = m_doc->selectedSwcTreeNodes();
-      if (nodeSet->size() > 0) {
+      std::set<Swc_Tree_Node*> nodeSet = m_doc->getSelectedSwcNodeSet();
+      if (nodeSet.size() > 0) {
         SwcTreeNode::clearClipboard();
       }
-      for (std::set<Swc_Tree_Node*>::const_iterator iter = nodeSet->begin();
-           iter != nodeSet->end(); ++iter) {
+      for (std::set<Swc_Tree_Node*>::const_iterator iter = nodeSet.begin();
+           iter != nodeSet.end(); ++iter) {
         SwcTreeNode::addToClipboard(*iter);
       }
     } else if (event->modifiers() == Qt::NoModifier) {
-      if (!m_doc->selectedSwcTreeNodes()->empty()) {
-        if (m_doc->selectedSwcTreeNodes()->size() > 1) {
+      if (m_doc->hasSelectedSwcNode()) {
+        if (m_doc->getSelectedSwcNodeNumber() > 1) {
           m_doc->executeConnectSwcNodeCommand();
         } else {
           if (m_toggleMoveSelectedObjectsAction->isChecked()) {
@@ -1983,6 +2107,9 @@ void Z3DWindow::keyPressEvent(QKeyEvent *event)
     if (event->modifiers() == Qt::ControlModifier) {
       m_doc->saveSwc(this);
     }
+    break;
+  case Qt::Key_I:
+    getDocument()->executeInsertSwcNode();
     break;
   case Qt::Key_B:
 #ifdef _DEBUG_2
@@ -2060,7 +2187,7 @@ void Z3DWindow::keyPressEvent(QKeyEvent *event)
     }
     break;
   case Qt::Key_Space:
-    if (getDocument()->selectedSwcTreeNodes()->size() == 1) {
+    if (getDocument()->getSelectedSwcNodeNumber() == 1) {
       if (!m_toggleSmartExtendSelectedSwcNodeAction->isChecked()) {
         if (m_toggleMoveSelectedObjectsAction->isChecked()) {
           m_toggleMoveSelectedObjectsAction->toggle();
@@ -2135,9 +2262,9 @@ void Z3DWindow::updateContextMenu(const QString &group)
     if (channelNumber() > 0 && !m_doc->swcList()->empty() && m_swcFilter->isNodeRendering())
       m_contextMenuGroup["empty"]->addAction(m_toogleSmartExtendSelectedSwcNodeAction);
 */
-    if (!m_doc->swcList()->empty() && m_swcFilter->isNodeRendering())
+    if (m_doc->hasSwc() && m_swcFilter->isNodeRendering())
       m_contextMenuGroup["empty"]->addAction(m_toogleAddSwcNodeModeAction);
-    if (!m_doc->swcList()->empty() || !m_doc->punctaList()->empty())
+    if (m_doc->hasSwc() || m_doc->hasPuncta())
       m_contextMenuGroup["empty"]->addAction(m_toggleMoveSelectedObjectsAction);
     m_contextMenuGroup["empty"]->addAction(m_changeBackgroundAction);
   }
@@ -2157,9 +2284,9 @@ void Z3DWindow::updateContextMenu(const QString &group)
     if (!m_doc->swcList()->empty() && m_swcFilter->isNodeRendering())
       m_contextMenuGroup["volume"]->addAction(m_toogleSmartExtendSelectedSwcNodeAction);
 */
-    if (!m_doc->swcList()->empty() && m_swcFilter->isNodeRendering())
+    if (m_doc->hasSwc() && m_swcFilter->isNodeRendering())
       m_contextMenuGroup["volume"]->addAction(m_toogleAddSwcNodeModeAction);
-    if (!m_doc->swcList()->empty() || !m_doc->punctaList()->empty())
+    if (m_doc->hasSwc() || m_doc->hasPuncta())
       m_contextMenuGroup["volume"]->addAction(m_toggleMoveSelectedObjectsAction);
     m_contextMenuGroup["volume"]->addAction(m_changeBackgroundAction);
     m_contextMenuGroup["volume"]->addAction(m_refreshTraceMaskAction);
@@ -2169,9 +2296,10 @@ void Z3DWindow::updateContextMenu(const QString &group)
     m_singleSwcNodeActionActivator.update(this);
   }
   if (group == "puncta") {
-    m_saveSelectedPunctaAsAction->setEnabled(!m_doc->selectedPuncta()->empty());
-    m_saveAllPunctaAsAction->setEnabled(!m_doc->punctaList()->isEmpty());
-    m_locatePunctumIn2DAction->setEnabled(m_doc->selectedPuncta()->size() == 1);
+    m_saveSelectedPunctaAsAction->setEnabled(!m_doc->hasSelectedPuncta());
+    m_saveAllPunctaAsAction->setEnabled(m_doc->hasPuncta());
+    m_locatePunctumIn2DAction->setEnabled(
+          m_doc->getSelected(ZStackObject::TYPE_PUNCTUM).size() == 1);
   }
 }
 
@@ -2207,43 +2335,43 @@ void Z3DWindow::updateOverallBoundBox()
 
 void Z3DWindow::changeSelectedSwcNodeType()
 {
-  std::set<Swc_Tree_Node*> *nodeSet = m_doc->selectedSwcTreeNodes();
-  if (nodeSet->size() > 0) {
+  std::set<Swc_Tree_Node*> nodeSet = m_doc->getSelectedSwcNodeSet();
+  if (nodeSet.size() > 0) {
     SwcTypeDialog dlg(ZSwcTree::SWC_NODE, NULL);
     if (dlg.exec()) {
       switch (dlg.pickingMode()) {
       case SwcTypeDialog::INDIVIDUAL:
-        for (std::set<Swc_Tree_Node*>::iterator iter = nodeSet->begin();
-             iter != nodeSet->end(); ++iter) {
+        for (std::set<Swc_Tree_Node*>::iterator iter = nodeSet.begin();
+             iter != nodeSet.end(); ++iter) {
           SwcTreeNode::setType(*iter, dlg.type());
         }
         break;
       case SwcTypeDialog::DOWNSTREAM:
-        for (std::set<Swc_Tree_Node*>::iterator iter = nodeSet->begin();
-             iter != nodeSet->end(); ++iter) {
+        for (std::set<Swc_Tree_Node*>::iterator iter = nodeSet.begin();
+             iter != nodeSet.end(); ++iter) {
           SwcTreeNode::setDownstreamType(*iter, dlg.type());
         }
         break;
       case SwcTypeDialog::CONNECTION:
       {
-        Swc_Tree_Node *ancestor = *(nodeSet->begin());
+        Swc_Tree_Node *ancestor = *(nodeSet.begin());
 
-        for (std::set<Swc_Tree_Node*>::iterator iter = nodeSet->begin();
-             iter != nodeSet->end(); ++iter) {
+        for (std::set<Swc_Tree_Node*>::iterator iter = nodeSet.begin();
+             iter != nodeSet.end(); ++iter) {
           ancestor = SwcTreeNode::commonAncestor(ancestor, *iter);
         }
 
-        for (std::set<Swc_Tree_Node*>::iterator iter = nodeSet->begin();
-             iter != nodeSet->end(); ++iter) {
+        for (std::set<Swc_Tree_Node*>::iterator iter = nodeSet.begin();
+             iter != nodeSet.end(); ++iter) {
           SwcTreeNode::setUpstreamType(*iter, dlg.type(), ancestor);
         }
       }
         break;
       case SwcTypeDialog::LONGEST_LEAF:
       {
-        Swc_Tree_Node *tn = SwcTreeNode::furthestNode(*(nodeSet->begin()),
+        Swc_Tree_Node *tn = SwcTreeNode::furthestNode(*(nodeSet.begin()),
                                                       SwcTreeNode::GEODESIC);
-        SwcTreeNode::setPathType(*(nodeSet->begin()), tn, dlg.type());
+        SwcTreeNode::setPathType(*(nodeSet.begin()), tn, dlg.type());
       }
         break;
       default:
@@ -2272,8 +2400,8 @@ void Z3DWindow::setRootAsSelectedSwcNode()
 
 void Z3DWindow::breakSelectedSwcNode()
 {
-  std::set<Swc_Tree_Node*> *nodeSet = m_doc->selectedSwcTreeNodes();
-  if (nodeSet->size() >= 2) {
+  std::set<Swc_Tree_Node*> nodeSet = m_doc->getSelectedSwcNodeSet();
+  if (nodeSet.size() >= 2) {
     m_doc->executeBreakSwcConnectionCommand();
 #if 0
     for (std::set<Swc_Tree_Node*>::iterator iter = nodeSet->begin();
@@ -2348,7 +2476,7 @@ void Z3DWindow::deleteSelectedSwcNode()
 
 void Z3DWindow::locateSwcNodeIn2DView()
 {
-  if (!m_doc->selectedSwcTreeNodes()->empty()) {
+  if (m_doc->hasSelectedSwcNode()) {
     if (m_doc->getParentFrame() != NULL) {
       m_doc->getParentFrame()->zoomToSelectedSwcNodes();
       m_doc->getParentFrame()->raise();
@@ -2368,9 +2496,9 @@ void Z3DWindow::locateSwcNodeIn2DView()
 
 void Z3DWindow::tranlateSelectedSwcNode()
 {
-  std::set<Swc_Tree_Node*> *nodeSet = m_doc->selectedSwcTreeNodes();
+  std::set<Swc_Tree_Node*> nodeSet = m_doc->getSelectedSwcNodeSet();
 
-  if (!nodeSet->empty()) {
+  if (!nodeSet.empty()) {
     SwcSkeletonTransformDialog dlg(NULL);
     if (SwcTreeNode::clipboard().size() >= 2) {
       Swc_Tree_Node node[2];
@@ -2386,8 +2514,8 @@ void Z3DWindow::tranlateSelectedSwcNode()
       double dy = dlg.getTranslateValue(SwcSkeletonTransformDialog::Y);
       double dz = dlg.getTranslateValue(SwcSkeletonTransformDialog::Z);
 
-      for (std::set<Swc_Tree_Node*>::iterator iter = nodeSet->begin();
-           iter != nodeSet->end(); ++iter) {
+      for (std::set<Swc_Tree_Node*>::iterator iter = nodeSet.begin();
+           iter != nodeSet.end(); ++iter) {
         if (dlg.isTranslateFirst()) {
           SwcTreeNode::translate(*iter, dx, dy, dz);
         }
@@ -2421,22 +2549,24 @@ void Z3DWindow::connectSelectedSwcNode()
 
 void Z3DWindow::changeSelectedSwcType()
 {
-  std::set<ZSwcTree*> *treeSet = m_doc->selectedSwcs();
+  //std::set<ZSwcTree*> *treeSet = m_doc->selectedSwcs();
+  std::set<ZSwcTree*> treeSet =
+      m_doc->getSelectedObjectSet<ZSwcTree>(ZStackObject::TYPE_SWC);
 
-  if (!treeSet->empty()) {
+  if (!treeSet.empty()) {
     SwcTypeDialog dlg(ZSwcTree::WHOLE_TREE, NULL);
 
     if (dlg.exec()) {
       switch (dlg.pickingMode()) {
       case SwcTypeDialog::INDIVIDUAL:
-        for (std::set<ZSwcTree*>::iterator iter = treeSet->begin();
-             iter != treeSet->end(); ++iter) {
+        for (std::set<ZSwcTree*>::iterator iter = treeSet.begin();
+             iter != treeSet.end(); ++iter) {
           (*iter)->setType(dlg.type());
         }
         break;
       case SwcTypeDialog::MAIN_TRUNK:
-        for (std::set<ZSwcTree*>::iterator iter = treeSet->begin();
-             iter != treeSet->end(); ++iter) {
+        for (std::set<ZSwcTree*>::iterator iter = treeSet.begin();
+             iter != treeSet.end(); ++iter) {
           ZSwcBranchingTrunkAnalyzer trunkAnalyzer;
           trunkAnalyzer.setDistanceWeight(15.0, 1.0);
           ZSwcPath branch = (*iter)->mainTrunk(&trunkAnalyzer);
@@ -2444,8 +2574,8 @@ void Z3DWindow::changeSelectedSwcType()
         }
         break;
       case SwcTypeDialog::LONGEST_LEAF:
-        for (std::set<ZSwcTree*>::iterator iter = treeSet->begin();
-             iter != treeSet->end(); ++iter) {
+        for (std::set<ZSwcTree*>::iterator iter = treeSet.begin();
+             iter != treeSet.end(); ++iter) {
           ZSwcBranchingTrunkAnalyzer trunkAnalyzer;
           trunkAnalyzer.setDistanceWeight(0.0, 1.0);
           ZSwcPath branch = (*iter)->mainTrunk(&trunkAnalyzer);
@@ -2453,8 +2583,8 @@ void Z3DWindow::changeSelectedSwcType()
         }
         break;
       case SwcTypeDialog::FURTHEST_LEAF:
-        for (std::set<ZSwcTree*>::iterator iter = treeSet->begin();
-             iter != treeSet->end(); ++iter) {
+        for (std::set<ZSwcTree*>::iterator iter = treeSet.begin();
+             iter != treeSet.end(); ++iter) {
           ZSwcBranchingTrunkAnalyzer trunkAnalyzer;
           trunkAnalyzer.setDistanceWeight(1.0, 0.0);
           ZSwcPath branch = (*iter)->mainTrunk(&trunkAnalyzer);
@@ -2462,16 +2592,16 @@ void Z3DWindow::changeSelectedSwcType()
         }
         break;
       case SwcTypeDialog::TRAFFIC:
-        for (std::set<ZSwcTree*>::iterator iter = treeSet->begin();
-             iter != treeSet->end(); ++iter) {
+        for (std::set<ZSwcTree*>::iterator iter = treeSet.begin();
+             iter != treeSet.end(); ++iter) {
           ZSwcDistTrunkAnalyzer trunkAnalyzer;
           trunkAnalyzer.labelTraffic(*iter, ZSwcTrunkAnalyzer::REACH_ROOT);
           (*iter)->setTypeByLabel();
         }
         break;
       case SwcTypeDialog::TRUNK_LEVEL:
-        for (std::set<ZSwcTree*>::iterator iter = treeSet->begin();
-             iter != treeSet->end(); ++iter) {
+        for (std::set<ZSwcTree*>::iterator iter = treeSet.begin();
+             iter != treeSet.end(); ++iter) {
           //ZSwcDistTrunkAnalyzer trunkAnalyzer;
           ZSwcWeightTrunkAnalyzer trunkAnalyzer;
           (*iter)->setBranchSizeWeight();
@@ -2481,16 +2611,16 @@ void Z3DWindow::changeSelectedSwcType()
         }
         break;
       case SwcTypeDialog::BRANCH_LEVEL:
-        for (std::set<ZSwcTree*>::iterator iter = treeSet->begin();
-             iter != treeSet->end(); ++iter) {
+        for (std::set<ZSwcTree*>::iterator iter = treeSet.begin();
+             iter != treeSet.end(); ++iter) {
           //(*iter)->labelBranchLevel(0);
           (*iter)->labelBranchLevelFromLeaf();
           (*iter)->setTypeByLabel();
         }
         break;
       case SwcTypeDialog::ROOT:
-        for (std::set<ZSwcTree*>::iterator iter = treeSet->begin();
-             iter != treeSet->end(); ++iter) {
+        for (std::set<ZSwcTree*>::iterator iter = treeSet.begin();
+             iter != treeSet.end(); ++iter) {
           Swc_Tree_Node *tn = (*iter)->firstRegularRoot();
           while (tn != NULL) {
             SwcTreeNode::setType(tn, dlg.type());
@@ -2502,8 +2632,8 @@ void Z3DWindow::changeSelectedSwcType()
       {
         ZSwcSubtreeAnalyzer analyzer;
         analyzer.setMinLength(10000.0);
-        for (std::set<ZSwcTree*>::iterator iter = treeSet->begin();
-             iter != treeSet->end(); ++iter) {
+        for (std::set<ZSwcTree*>::iterator iter = treeSet.begin();
+             iter != treeSet.end(); ++iter) {
           ZSwcTree *tree = *iter;
           analyzer.decompose(tree);
           tree->setTypeByLabel();
@@ -2520,13 +2650,14 @@ void Z3DWindow::changeSelectedSwcType()
 
 void Z3DWindow::changeSelectedSwcSize()
 {
-  std::set<ZSwcTree*> *treeSet = m_doc->selectedSwcs();
+  std::set<ZSwcTree*> treeSet =
+      m_doc->getSelectedObjectSet<ZSwcTree>(ZStackObject::TYPE_SWC);
 
-  if (!treeSet->empty()) {
+  if (!treeSet.empty()) {
     SwcSizeDialog dlg(NULL);
     if (dlg.exec()) {
-      for (std::set<ZSwcTree*>::iterator iter = treeSet->begin();
-           iter != treeSet->end(); ++iter) {
+      for (std::set<ZSwcTree*>::iterator iter = treeSet.begin();
+           iter != treeSet.end(); ++iter) {
         (*iter)->changeRadius(dlg.getAddValue(), dlg.getMulValue());
       }
       m_doc->notifySwcModified();
@@ -2536,13 +2667,13 @@ void Z3DWindow::changeSelectedSwcSize()
 
 void Z3DWindow::changeSelectedSwcNodeSize()
 {
-  std::set<Swc_Tree_Node*> *nodeSet = m_doc->selectedSwcTreeNodes();
+  std::set<Swc_Tree_Node*> nodeSet = m_doc->getSelectedSwcNodeSet();
 
-  if (!nodeSet->empty()) {
+  if (!nodeSet.empty()) {
     SwcSizeDialog dlg(NULL);
     if (dlg.exec()) {
-      for (std::set<Swc_Tree_Node*>::iterator iter = nodeSet->begin();
-           iter != nodeSet->end(); ++iter) {
+      for (std::set<Swc_Tree_Node*>::iterator iter = nodeSet.begin();
+           iter != nodeSet.end(); ++iter) {
         SwcTreeNode::changeRadius(*iter, dlg.getAddValue(), dlg.getMulValue());
       }
 
@@ -2553,8 +2684,9 @@ void Z3DWindow::changeSelectedSwcNodeSize()
 
 void Z3DWindow::transformSelectedPuncta()
 {
-  std::set<ZPunctum*> *punctaSet = m_doc->selectedPuncta();
-  if (!punctaSet->empty()) {
+  std::set<ZPunctum*> punctaSet =
+      m_doc->getSelectedObjectSet<ZPunctum>(ZStackObject::TYPE_PUNCTUM);
+  if (!punctaSet.empty()) {
     SwcSkeletonTransformDialog dlg(NULL);
     dlg.setWindowTitle("Transform Puncta");
     if (dlg.exec()) {
@@ -2563,15 +2695,15 @@ void Z3DWindow::transformSelectedPuncta()
       double dz = dlg.getTranslateValue(SwcSkeletonTransformDialog::Z);
 
       if (dlg.isTranslateFirst()) {
-        for (std::set<ZPunctum*>::iterator iter = punctaSet->begin();
-             iter != punctaSet->end(); ++iter) {
+        for (std::set<ZPunctum*>::iterator iter = punctaSet.begin();
+             iter != punctaSet.end(); ++iter) {
           (*iter)->setCenter(
                 (*iter)->x() + dx, (*iter)->y() + dy, (*iter)->z() + dz);
         }
       }
 
-      for (std::set<ZPunctum*>::iterator iter = punctaSet->begin();
-           iter != punctaSet->end(); ++iter) {
+      for (std::set<ZPunctum*>::iterator iter = punctaSet.begin();
+           iter != punctaSet.end(); ++iter) {
         (*iter)->setCenter(
               (*iter)->x() * dlg.getScaleValue(SwcSkeletonTransformDialog::X),
               (*iter)->y() * dlg.getScaleValue(SwcSkeletonTransformDialog::Y),
@@ -2579,8 +2711,8 @@ void Z3DWindow::transformSelectedPuncta()
       }
 
       if (!dlg.isTranslateFirst()) {
-        for (std::set<ZPunctum*>::iterator iter = punctaSet->begin();
-             iter != punctaSet->end(); ++iter) {
+        for (std::set<ZPunctum*>::iterator iter = punctaSet.begin();
+             iter != punctaSet.end(); ++iter) {
           (*iter)->setCenter(
                 (*iter)->x() + dx, (*iter)->y() + dy, (*iter)->z() + dz);
         }
@@ -2592,8 +2724,8 @@ void Z3DWindow::transformSelectedPuncta()
 
 void Z3DWindow::transformAllPuncta()
 {
-  QList<ZPunctum*> *punctaSet = m_doc->punctaList();
-  if (!punctaSet->empty()) {
+  QList<ZPunctum*> punctaSet = m_doc->getPunctumList();
+  if (!punctaSet.empty()) {
     SwcSkeletonTransformDialog dlg(NULL);
     dlg.setWindowTitle("Transform Puncta");
     if (dlg.exec()) {
@@ -2602,15 +2734,15 @@ void Z3DWindow::transformAllPuncta()
       double dz = dlg.getTranslateValue(SwcSkeletonTransformDialog::Z);
 
       if (dlg.isTranslateFirst()) {
-        for (QList<ZPunctum*>::iterator iter = punctaSet->begin();
-             iter != punctaSet->end(); ++iter) {
+        for (QList<ZPunctum*>::iterator iter = punctaSet.begin();
+             iter != punctaSet.end(); ++iter) {
           ZPunctum *punctum = *iter;
           punctum->translate(dx, dy, dz);
         }
       }
 
-      for (QList<ZPunctum*>::iterator iter = punctaSet->begin();
-           iter != punctaSet->end(); ++iter) {
+      for (QList<ZPunctum*>::iterator iter = punctaSet.begin();
+           iter != punctaSet.end(); ++iter) {
         (*iter)->setCenter(
               (*iter)->x() * dlg.getScaleValue(SwcSkeletonTransformDialog::X),
               (*iter)->y() * dlg.getScaleValue(SwcSkeletonTransformDialog::Y),
@@ -2618,8 +2750,8 @@ void Z3DWindow::transformAllPuncta()
       }
 
       if (!dlg.isTranslateFirst()) {
-        for (QList<ZPunctum*>::iterator iter = punctaSet->begin();
-             iter != punctaSet->end(); ++iter) {
+        for (QList<ZPunctum*>::iterator iter = punctaSet.begin();
+             iter != punctaSet.end(); ++iter) {
           ZPunctum *punctum = *iter;
           punctum->translate(dx, dy, dz);
         }
@@ -2631,11 +2763,11 @@ void Z3DWindow::transformAllPuncta()
 
 void Z3DWindow::convertPunctaToSwc()
 {
-  QList<ZPunctum*> *punctaSet = m_doc->punctaList();
-  if (!punctaSet->empty()) {
+  QList<ZPunctum*> punctaSet = m_doc->getPunctumList();
+  if (!punctaSet.empty()) {
     ZSwcTree *tree = new ZSwcTree();
-    for (QList<ZPunctum*>::iterator iter = punctaSet->begin();
-         iter != punctaSet->end(); ++iter) {
+    for (QList<ZPunctum*>::iterator iter = punctaSet.begin();
+         iter != punctaSet.end(); ++iter) {
       ZPoint pos((*iter)->x(), (*iter)->y(), (*iter)->z());
       Swc_Tree_Node *tn = SwcTreeNode::makePointer(pos, (*iter)->radius());
       tree->addRegularRoot(tn);
@@ -2651,9 +2783,10 @@ void Z3DWindow::convertPunctaToSwc()
 
 void Z3DWindow::transformSelectedSwc()
 {
-  std::set<ZSwcTree*> *treeSet = m_doc->selectedSwcs();
+  std::set<ZSwcTree*> treeSet =
+      m_doc->getSelectedObjectSet<ZSwcTree>(ZStackObject::TYPE_SWC);
 
-  if (!treeSet->empty()) {
+  if (!treeSet.empty()) {
     SwcSkeletonTransformDialog dlg(NULL);
     if (SwcTreeNode::clipboard().size() >= 2) {
       Swc_Tree_Node node[2];
@@ -2668,8 +2801,8 @@ void Z3DWindow::transformSelectedSwc()
       dlg.setTranslateValue(-offset[0], -offset[1], -offset[2]);
     }
     if (dlg.exec()) {
-      for (std::set<ZSwcTree*>::iterator iter = treeSet->begin();
-           iter != treeSet->end(); ++iter) {
+      for (std::set<ZSwcTree*>::iterator iter = treeSet.begin();
+           iter != treeSet.end(); ++iter) {
         if (dlg.isTranslateFirst()) {
           (*iter)->translate(dlg.getTranslateValue(SwcSkeletonTransformDialog::X),
                              dlg.getTranslateValue(SwcSkeletonTransformDialog::Y),
@@ -2713,7 +2846,8 @@ void Z3DWindow::groupSelectedSwc()
 
 void Z3DWindow::showSeletedSwcNodeLength()
 {
-  double length = SwcTreeNode::segmentLength(*(m_doc->selectedSwcTreeNodes()));
+  std::set<Swc_Tree_Node*> nodeSet = m_doc->getSelectedSwcNodeSet();
+  double length = SwcTreeNode::segmentLength(nodeSet);
 
   InformationDialog dlg;
 
@@ -2721,9 +2855,8 @@ void Z3DWindow::showSeletedSwcNodeLength()
 
   textStream << "<p>Overall length of selected branches: " << length << "</p>";
 
-  if (m_doc->selectedSwcTreeNodes()->size() == 2) {
-    std::set<Swc_Tree_Node*>::const_iterator iter =
-        m_doc->selectedSwcTreeNodes()->begin();
+  if (nodeSet.size() == 2) {
+    std::set<Swc_Tree_Node*>::const_iterator iter = nodeSet.begin();
     Swc_Tree_Node *tn1 = *iter;
     ++iter;
     Swc_Tree_Node *tn2 = *iter;
@@ -2737,15 +2870,16 @@ void Z3DWindow::showSeletedSwcNodeLength()
 
 void Z3DWindow::showSelectedSwcInfo()
 {
-  std::set<ZSwcTree*> *treeSet = m_doc->selectedSwcs();
+  std::set<ZSwcTree*> treeSet =
+      m_doc->getSelectedObjectSet<ZSwcTree>(ZStackObject::TYPE_SWC);
 
   InformationDialog dlg;
 
   std::ostringstream textStream;
 
-  if (!treeSet->empty()) {
-    for (std::set<ZSwcTree*>::iterator iter = treeSet->begin();
-         iter != treeSet->end(); ++iter) {
+  if (!treeSet.empty()) {
+    for (std::set<ZSwcTree*>::iterator iter = treeSet.begin();
+         iter != treeSet.end(); ++iter) {
       textStream << "<p><font color=\"blue\">" + (*iter)->getSource() + "</font></p>";
       textStream << "<p>Overall length: " << (*iter)->length() << "</p>";
       std::set<int> typeList = (*iter)->typeSet();
@@ -2777,14 +2911,15 @@ void Z3DWindow::refreshTraceMask()
 
 void Z3DWindow::changeSelectedSwcColor()
 {
-  std::set<ZSwcTree*> *treeSet = m_doc->selectedSwcs();
-  if (!treeSet->empty()) {
+  std::set<ZSwcTree*> treeSet =
+      m_doc->getSelectedObjectSet<ZSwcTree>(ZStackObject::TYPE_SWC);
+  if (!treeSet.empty()) {
     QColorDialog dlg;
-    dlg.setCurrentColor((*treeSet->begin())->getColor());
+    dlg.setCurrentColor((*treeSet.begin())->getColor());
 
     if (dlg.exec()) {
-      for (std::set<ZSwcTree*>::iterator iter = treeSet->begin();
-           iter != treeSet->end(); ++iter) {
+      for (std::set<ZSwcTree*>::iterator iter = treeSet.begin();
+           iter != treeSet.end(); ++iter) {
         (*iter)->setColor(dlg.currentColor().red(),
                           dlg.currentColor().green(),
                           dlg.currentColor().blue());
@@ -2796,13 +2931,14 @@ void Z3DWindow::changeSelectedSwcColor()
 
 void Z3DWindow::changeSelectedSwcAlpha()
 {
-  std::set<ZSwcTree*> *treeSet = m_doc->selectedSwcs();
-  if (!treeSet->empty()) {
+  std::set<ZSwcTree*> treeSet =
+      m_doc->getSelectedObjectSet<ZSwcTree>(ZStackObject::TYPE_SWC);
+  if (!treeSet.empty()) {
     ZAlphaDialog dlg;
     if (dlg.exec()) {
       int alpha = dlg.getAlpha();
-      for (std::set<ZSwcTree*>::iterator iter = treeSet->begin();
-           iter != treeSet->end(); ++iter) {
+      for (std::set<ZSwcTree*>::iterator iter = treeSet.begin();
+           iter != treeSet.end(); ++iter) {
         (*iter)->setAlpha(alpha);
       }
       m_doc->notifySwcModified();
@@ -2914,14 +3050,15 @@ void Z3DWindow::breakSelectedSwc()
 
 void Z3DWindow::saveSelectedSwc()
 {
-  std::set<ZSwcTree*> *treeSet = m_doc->selectedSwcs();
+  std::set<ZSwcTree*> treeSet =
+      m_doc->getSelectedObjectSet<ZSwcTree>(ZStackObject::TYPE_SWC);
 
   QString fileName = "";
 
-  if (!treeSet->empty()) {
-    if (!(*treeSet->begin())->getSource().empty()) {
-      if ((*treeSet->begin())->getSource()[0] != '#') {
-        fileName = QString((*treeSet->begin())->getSource().c_str());
+  if (!treeSet.empty()) {
+    if (!(*treeSet.begin())->getSource().empty()) {
+      if ((*treeSet.begin())->getSource()[0] != '#') {
+        fileName = QString((*treeSet.begin())->getSource().c_str());
       }
     }
   }
@@ -2951,18 +3088,18 @@ void Z3DWindow::saveSelectedSwc()
       fileName += ".swc";
     }
 
-    if (treeSet->size() > 1) {
+    if (treeSet.size() > 1) {
       ZSwcTree tree;
 
-      for (std::set<ZSwcTree*>::iterator iter = treeSet->begin();
-           iter != treeSet->end(); ++iter) {
+      for (std::set<ZSwcTree*>::iterator iter = treeSet.begin();
+           iter != treeSet.end(); ++iter) {
         tree.merge((*iter)->cloneData(), true);
       }
 
       tree.resortId();
       tree.save(fileName.toStdString().c_str());
     } else {
-      ZSwcTree *tree = *(treeSet->begin());
+      ZSwcTree *tree = *(treeSet.begin());
       tree->resortId();
       tree->save(fileName.toStdString().c_str());
       tree->setSource(fileName.toStdString().c_str());
@@ -2973,9 +3110,10 @@ void Z3DWindow::saveSelectedSwc()
 
 void Z3DWindow::convertSelectedChainToSwc()
 {
-  std::set<ZLocsegChain*> *chainSet = m_doc->selectedChains();
-  for (std::set<ZLocsegChain*>::iterator iter = chainSet->begin();
-       iter != chainSet->end(); ++iter) {
+  std::set<ZLocsegChain*> chainSet =
+      m_doc->getSelectedObjectSet<ZLocsegChain>(ZStackObject::TYPE_LOCSEG_CHAIN);
+  for (std::set<ZLocsegChain*>::iterator iter = chainSet.begin();
+       iter != chainSet.end(); ++iter) {
     Swc_Tree_Node *tn = TubeModel::createSwc((*iter)->data());
     if (tn != NULL) {
       ZSwcTree *tree = new ZSwcTree;
@@ -2983,7 +3121,7 @@ void Z3DWindow::convertSelectedChainToSwc()
       m_doc->addSwcTree(tree, false);
     }
   }
-  chainSet->clear();
+  //chainSet->clear();
 
   m_doc->executeRemoveTubeCommand();
 
@@ -2998,12 +3136,12 @@ bool Z3DWindow::hasSwc() const
 
 bool Z3DWindow::hasSelectedSwc() const
 {
-  return !m_doc->selectedSwcs()->empty();
+  return m_doc->hasSelectedSwc();
 }
 
 bool Z3DWindow::hasSelectedSwcNode() const
 {
-  return !m_doc->selectedSwcTreeNodes()->empty();
+  return !m_doc->hasSelectedSwcNode();
 }
 
 bool Z3DWindow::hasMultipleSelectedSwcNode() const
@@ -3112,8 +3250,8 @@ void Z3DWindow::addStrokeFrom3dPaint(ZStroke2d *stroke)
   delete baseObj;
 
   if (!obj->isEmpty()) {
-    m_doc->executeAddObjectCommand(
-          obj, NeuTube::Documentable_OBJ3D, ZDocPlayer::ROLE_SEED);
+    obj->setRole(ZStackObjectRole::ROLE_SEED);
+    m_doc->executeAddObjectCommand(obj);
   } else {
     delete obj;
   }
@@ -3155,32 +3293,40 @@ void Z3DWindow::addPolyplaneFrom3dPaint(ZStroke2d *stroke)
 
     ZObject3d *processedObj = NULL;
 
-    if (getDocument()->hasSparseStack()) {
-      const ZStack *stack = getDocument()->getSparseStack()->getStack();
-      ZIntPoint dsIntv = getDocument()->getSparseStack()->getDownsampleInterval();
+    const ZStack *stack = NULL;
+    int xIntv = 0;
+    int yIntv = 0;
+    int zIntv = 0;
 
-      processedObj = new ZObject3d;
-      for (size_t i = 0; i < obj->size(); ++i) {
-        int x = obj->getX(i) / (dsIntv.getX() + 1);
-        int y = obj->getY(i) / (dsIntv.getY() + 1);
-        int z = obj->getZ(i) / (dsIntv.getZ() + 1);
-        int v = 0;
-        for (int dz = -1; dz <= 1; ++dz) {
-          for (int dy = -1; dy <= 1; ++dy) {
-            for (int dx = -1; dx <= 1; ++dx) {
-              v += stack->getIntValue(x + dx, y + dy, z + dz);
-            }
-          }
-        }
-        if (v > 0) {
-          processedObj->append(x, y, z);
-        }
-      }
+    if (getDocument()->hasSparseStack()) {
+      stack = getDocument()->getSparseStack()->getStack();
+      ZIntPoint dsIntv = getDocument()->getSparseStack()->getDownsampleInterval();
+      xIntv = dsIntv.getX();
+      yIntv = dsIntv.getY();
+      zIntv = dsIntv.getZ();
+    } else {
+      stack = getDocument()->getStack();
     }
 
+    processedObj = new ZObject3d;
+    for (size_t i = 0; i < obj->size(); ++i) {
+      int x = obj->getX(i) / (xIntv + 1);
+      int y = obj->getY(i) / (yIntv + 1);
+      int z = obj->getZ(i) / (zIntv + 1);
+      int v = 0;
+      for (int dz = -1; dz <= 1; ++dz) {
+        for (int dy = -1; dy <= 1; ++dy) {
+          for (int dx = -1; dx <= 1; ++dx) {
+            v += stack->getIntValue(x + dx, y + dy, z + dz);
+          }
+        }
+      }
+      if (v > 0) {
+        processedObj->append(obj->getX(i), obj->getY(i), obj->getZ(i));
+      }
+    }
     delete obj;
     obj = processedObj;
-
 
     if (obj != NULL) {
 #ifdef _DEBUG_2
@@ -3199,9 +3345,9 @@ void Z3DWindow::addPolyplaneFrom3dPaint(ZStroke2d *stroke)
         ZLabelColorTable colorTable;
         obj->setColor(colorTable.getColor(obj->getLabel()));
 
-        m_doc->executeAddObjectCommand(
-              obj, NeuTube::Documentable_OBJ3D,
-              ZDocPlayer::ROLE_SEED | ZDocPlayer::ROLE_3DGRAPH_DECORATOR);
+        obj->setRole(ZStackObjectRole::ROLE_SEED |
+                     ZStackObjectRole::ROLE_3DGRAPH_DECORATOR);
+        m_doc->executeAddObjectCommand(obj);
         //m_doc->notifyVolumeModified();
       } else {
         delete obj;
@@ -3210,6 +3356,18 @@ void Z3DWindow::addPolyplaneFrom3dPaint(ZStroke2d *stroke)
   }
 
   delete stroke;
+}
+
+void Z3DWindow::markSwcSoma()
+{
+  ZMarkSwcSomaDialog dlg;
+  if (dlg.exec()) {
+    QList<ZSwcTree*> trees = m_doc->getSwcList();
+    for (int i=0; i<trees.size(); ++i) {
+      trees.at(i)->markSoma(dlg.getRadiusThre(), dlg.getSomaType(), dlg.getOtherType());
+    }
+    m_doc->notifySwcModified();
+  }
 }
 
 void Z3DWindow::setBackgroundColor(

@@ -234,13 +234,52 @@ std::string ZPunctum::toString()
   return stream.str();
 }
 
+ZVaa3dMarker ZPunctum::toVaa3dMarker() const
+{
+  ZVaa3dMarker marker;
+  marker.setCenter(getX(), getY(), getZ());
+  marker.setRadius(getRadius());
+#if defined(_QT_GUI_USED_)
+  marker.setColor(m_color.red(), m_color.green(), m_color.blue());
+#endif
+  marker.setSource(getSource());
+#ifdef _DEBUG_2
+  std::cout << marker.source() << std::endl;
+#endif
+  marker.setName(m_name.toStdString());
+  marker.setComment(m_comment.toStdString());
+
+  return marker;
+}
+
 void ZPunctum::setFromMarker(const ZVaa3dMarker &marker)
 {
   set(marker.x(), marker.y(), marker.z(), marker.radius());
   setColor(marker.colorR(), marker.colorG(), marker.colorB());
   setComment(marker.comment().c_str());
   setName(marker.name().c_str());
-  setSource(QString("%1").arg(marker.type()).toStdString());
+//  setSource(QString("%1").arg(marker.type()).toStdString());
+  setSource(marker.source());
+}
+
+int ZPunctum::getTypeFromSource() const
+{
+  int type = -1;
+  if (getSource() == "unknown") {
+    type = 0;
+  } else if (getSource() == "tbar") {
+    type = 1;
+  } else if (getSource() == "psd") {
+    type = 2;
+  } else if (getSource() == "tbar_multi") {
+    type = 3;
+  } else if (getSource() == "tbar_conv") {
+    type = 4;
+  } else if (getSource() == "tbar_multi_conv") {
+    type = 5;
+  }
+
+  return type;
 }
 
 ZSTACKOBJECT_DEFINE_CLASS_NAME(ZPunctum)

@@ -4,7 +4,7 @@
 #include "z3dgpuinfo.h"
 
 Z3DShaderGroup::Z3DShaderGroup()
-  : m_base(NULL)
+  : m_base(NULL), m_usingSpecialShader(true)
 {
 }
 
@@ -37,8 +37,10 @@ void Z3DShaderGroup::removeAllShaders()
 
 void Z3DShaderGroup::addAllSupportedPostShaders()
 {
-  addDualDepthPeelingShaders();
-  addWeightedAverageShaders();
+  if (m_usingSpecialShader) {
+    addDualDepthPeelingShaders();
+    addWeightedAverageShaders();
+  }
 }
 
 void Z3DShaderGroup::addDualDepthPeelingShaders()

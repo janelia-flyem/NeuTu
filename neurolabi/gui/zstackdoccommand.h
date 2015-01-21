@@ -113,6 +113,7 @@ public:
   void undo();
 protected:
   ZStackDoc *m_doc;
+  bool m_isExecuted;
 };
 
 class AddSwc : public ZUndoCommand
@@ -238,14 +239,17 @@ private:
   Swc_Tree_Node m_newNode;
 };
 
-class DeleteSwcNode : public ZUndoCommand
+class DeleteSwcNode : public CompositeCommand
 {
 public:
   DeleteSwcNode(ZStackDoc *doc, Swc_Tree_Node* node, Swc_Tree_Node *root,
                 QUndoCommand *parent = NULL);
   virtual ~DeleteSwcNode();
+
+#if 0
   void undo();
   void redo();
+#endif
 
 private:
   ZStackDoc *m_doc;
@@ -257,11 +261,23 @@ private:
   bool m_nodeInDoc;
 };
 
+class DeleteSwcNodeSet : public CompositeCommand
+{
+public:
+  DeleteSwcNodeSet(ZStackDoc *doc, std::set<Swc_Tree_Node*> &nodeSet,
+                   QUndoCommand *parent = NULL);
+  virtual ~DeleteSwcNodeSet();
+private:
+  ZStackDoc *m_doc;
+  std::set<Swc_Tree_Node*> m_nodeSet;
+  bool m_nodeInDoc;
+};
+
 class SetParent : public ZUndoCommand
 {
 public:
   SetParent(ZStackDoc *doc, Swc_Tree_Node *node, Swc_Tree_Node *parentNode,
-               QUndoCommand *parent = NULL);
+            bool deletingOrphan, QUndoCommand *parent);
   virtual ~SetParent();
 
   void undo();
@@ -273,12 +289,17 @@ private:
   Swc_Tree_Node *m_newParent;
   Swc_Tree_Node *m_oldParent;
   Swc_Tree_Node *m_prevSibling;
+  bool m_deletingOrphan;
+  bool m_isExecuted;
 };
+
 
 class SetSwcNodeSeletion : public ZUndoCommand
 {
 public:
-  SetSwcNodeSeletion(ZStackDoc *doc, const std::set<Swc_Tree_Node*> nodeSet,
+  SetSwcNodeSeletion(ZStackDoc *doc, ZSwcTree *host,
+                     const std::set<Swc_Tree_Node*> nodeSet,
+                     bool appending,
                      QUndoCommand *parent = NULL);
   virtual ~SetSwcNodeSeletion();
 
@@ -287,9 +308,12 @@ public:
 
 private:
   ZStackDoc *m_doc;
+  ZSwcTree *m_host;
   std::set<Swc_Tree_Node*> m_nodeSet;
+  bool m_appending;
   std::set<Swc_Tree_Node*> m_oldNodeSet;
 };
+
 
 class RemoveSubtree : public CompositeCommand
 {
@@ -361,17 +385,45 @@ public:
 private:
   ZStackDoc *m_doc;
   ZSwcTree *m_tree;
-  ZDocPlayer::TRole m_role;
   bool m_isInDoc;
 };
 
-class RemoveEmptyTree : public ZUndoCommand
+class RemoveSwcIfEmpty : public ZUndoCommand
+{
+public:
+  RemoveSwcIfEmpty(ZStackDoc *doc, ZSwcTree *tree, QUndoCommand *parent = NULL);
+  ~RemoveSwcIfEmpty();
+  void redo();
+  void undo();
+
+private:
+  ZStackDoc *m_doc;
+  ZSwcTree *m_tree;
+  bool m_isInDoc;
+};
+
+class RemoveEmptyTree : public CompositeCommand
 {
 public:
   RemoveEmptyTree(ZStackDoc *doc, QUndoCommand *parent = NULL);
   virtual ~RemoveEmptyTree();
-  void redo();
+
+private:
+  ZStackDoc *m_doc;
+//  std::set<ZSwcTree*> m_emptyTreeSet;
+};
+
+/*!
+ * \brief Remove empty trees at the action point
+ */
+class RemoveEmptyTreePost : public CompositeCommand
+{
+public:
+  RemoveEmptyTreePost(ZStackDoc *doc, QUndoCommand *parent = NULL);
+  virtual ~RemoveEmptyTreePost();
+
   void undo();
+  void redo();
 
 private:
   ZStackDoc *m_doc;
@@ -421,8 +473,8 @@ namespace ObjectEdit {
 class AddObject : public ZUndoCommand
 {
 public:
-  AddObject(ZStackDoc *doc, ZStackObject *obj, NeuTube::EDocumentableType type,
-            ZDocPlayer::TRole role, QUndoCommand *parent = NULL);
+  AddObject(ZStackDoc *doc, ZStackObject *obj,
+            bool uniqueSource, QUndoCommand *parent = NULL);
   ~AddObject();
   void redo();
   void undo();
@@ -430,8 +482,8 @@ public:
 private:
   ZStackDoc *m_doc;
   ZStackObject *m_obj;
-  NeuTube::EDocumentableType m_type;
-  ZDocPlayer::TRole m_role;
+  bool m_uniqueSource;
+  QList<ZStackObject*> m_uniqueObjectList;
   bool m_isInDoc;
 };
 
@@ -445,24 +497,18 @@ public:
   void redo();
 
 private:
+  void notifyObjectChanged(const QList<ZStackObject*> &selectedObject) const;
+
+private:
   ZStackDoc *doc;
-  QList<ZLocsegChain*> m_chainList;
-  QList<ZSwcTree*> m_swcList;
-  QList<ZLocsegChainConn*> m_connList;
-  QList<ZObject3d*> m_obj3dList;
-  QList<ZPunctum*> m_punctaList;
-  QList<ZStroke2d*> m_strokeList;
-  QMap<Swc_Tree_Node*, Swc_Tree_Node*> m_deletedNodes;
-  QMap<Swc_Tree_Node*, Swc_Tree_Node*> m_childrenOfDeletedNodes;
-  QList<ZSwcTree*> m_newTreesAfterDeleteNodes;
-  QList<ZSwcTree*> m_emptyTreeAfterDeleteNodes;
+  QList<ZStackObject*> m_selectedObject;
 };
 
 class MoveSelected : public QUndoCommand
 {
   ZStackDoc *m_doc;
-  std::set<ZSwcTree*> m_swcList;
-  std::set<ZPunctum*> m_punctaList;
+  QList<ZSwcTree*> m_swcList;
+  QList<ZPunctum*> m_punctaList;
   std::set<Swc_Tree_Node*> m_swcNodeList;
   double m_x;
   double m_y;

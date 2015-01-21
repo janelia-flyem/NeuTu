@@ -3,12 +3,18 @@
 
 #include <vector>
 #include <string>
+#include <set>
+#include <algorithm>
+
 #include "zhistogram.h"
 #include "zstack.hxx"
 #include "zobject3dscan.h"
 #include "neutube.h"
 #include "flyem/zintcuboidarray.h"
 #include "zpointarray.h"
+#include "ztree.h"
+
+class ZGraph;
 
 namespace misc {
 
@@ -26,6 +32,7 @@ int computeRavelerHeight(const FlyEm::ZIntCuboidArray &blockArray, int margin);
 
 bool exportPointList(const std::string &filePath, const ZPointArray &pointArray);
 
+ZGraph* makeCoOccurGraph(const Stack *stack, int nnbr);
 
 /*!
  * \brief A function for computing confidence
@@ -35,6 +42,8 @@ bool exportPointList(const std::string &filePath, const ZPointArray &pointArray)
  */
 double computeConfidence(double v, double median, double p95);
 
+ZTree<int> *buildSegmentationTree(const Stack *stack);
+
 /*!
  * \brief Parse hdf5 path
  *
@@ -43,9 +52,15 @@ double computeConfidence(double v, double median, double p95);
  * \return empty array if the parsing failed
  */
 std::vector<std::string> parseHdf5Path(const std::string &path);
+
+template<typename T>
+std::set<T> intersect(const std::set<T> &s1, const std::set<T> &s2);
+
+template<typename T>
+std::set<T> setdiff(const std::set<T> &s1, const std::set<T> &s2);
+
 }
 
-namespace {
 // generic solution
 template <class T>
 int numDigits(T number)
@@ -59,37 +74,25 @@ int numDigits(T number)
   return digits;
 }
 
-// partial specialization optimization for 32-bit numbers
-template<>
-int numDigits(int32_t x)
-{
-  if (x == std::numeric_limits<int>::min()) return 10 + 1;
-  if (x < 0) return numDigits(-x) + 1;
+//template<>
+//int numDigits(int32_t x);
 
-  if (x >= 10000) {
-    if (x >= 10000000) {
-      if (x >= 100000000) {
-        if (x >= 1000000000)
-          return 10;
-        return 9;
-      }
-      return 8;
-    }
-    if (x >= 100000) {
-      if (x >= 1000000)
-        return 7;
-      return 6;
-    }
-    return 5;
-  }
-  if (x >= 100) {
-    if (x >= 1000)
-      return 4;
-    return 3;
-  }
-  if (x >= 10)
-    return 2;
-  return 1;
+template<typename T>
+std::set<T> misc::intersect(const std::set<T> &s1, const std::set<T> &s2)
+{
+  std::set<T> result;
+  std::set_intersection(s1.begin(), s1.end(), s2.begin(), s2.end(),
+                        std::inserter(result, result.begin()));
+  return result;
+}
+
+template<typename T>
+std::set<T> misc::setdiff(const std::set<T> &s1, const std::set<T> &s2)
+{
+  std::set<T> result;
+  std::set_difference(s1.begin(), s1.end(), s2.begin(), s2.end(),
+                      std::inserter(result, result.begin()));
+  return result;
 }
 
 //// partial-specialization optimization for 8-bit numbers
@@ -106,7 +109,6 @@ int numDigits(int32_t x)
 //  }
 //  return x[static_cast<int>(n)];
 //}
-}
 
 
 #endif // MISCUTILITY_H

@@ -5,20 +5,7 @@ ZSwcColorScheme::ZSwcColorScheme()
 {
 }
 
-QColor ZSwcColorScheme::getColor(int index) const
-{
-  QColor color;
 
-  if (m_colorTable.isEmpty()) {
-    color = QColor(0, 0, 0);
-  } else {
-    color = m_colorTable[index % m_colorTable.size()];
-  }
-
-  //qDebug() << color;
-
-  return color;
-}
 
 void ZSwcColorScheme::buildVaa3dColorTable()
 {
@@ -95,6 +82,8 @@ void ZSwcColorScheme::setColorScheme(EColorScheme scheme)
       break;
     case JIN_TYPE_COLOR:
       buildJinTypeColorTable();
+      break;
+    default:
       break;
     }
   }

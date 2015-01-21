@@ -11,6 +11,7 @@ class ZClosedCurve;
 class ZStroke2d;
 class ZPointArray;
 class ZWeightedPointArray;
+class ZObject3dScanArray;
 
 /*!
  * \brief The class of creating a stack
@@ -59,12 +60,23 @@ public:
       const ZWeightedPointArray &ptArray, double sigma);
 
   static ZStack* makeSeedStack(const ZWeightedPointArray &ptArray);
+  static ZStack* makeSeedStack(const ZObject3dScanArray &objArray);
 
   /*!
    * \brief Only support GREY data
    */
   static ZStack* makeAlphaBlend(const ZStack &stack1, const ZStack &stack2,
                                 double alpha);
+
+  static ZStack* MakeColorStack(const ZStack &stack, double h, double s);
+  static ZStack* MakeColorStack(
+      const ZStack &stack, const ZStack &mask, double h, double s);
+
+  static ZStack* MakeColorStack(const ZStack &stack, const ZStack &labelField);
+  static ZStack* MakeRgbStack(
+      const ZStack &redStack, const ZStack &greenStack, const ZStack &blueStack);
+
+  static ZStack* CompositeForeground(const ZStack &stack1, const ZStack &stack2);
 
 private:
   static Stack* pileMatched(const std::vector<Stack*> stackArray);

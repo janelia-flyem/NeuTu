@@ -1,5 +1,8 @@
 #include "zflyemroiproject.h"
 #include <QStringList>
+#include <ostream>
+#include <fstream>
+
 #include "neutubeconfig.h"
 #include "zstackframe.h"
 #include "zswcgenerator.h"
@@ -28,8 +31,16 @@ ZFlyEmRoiProject::ZFlyEmRoiProject(const std::string &name, QObject *parent) :
   m_punctaColorMap.push_back(QColor(0, 0, 255, 255));
   m_punctaColorMap.push_back(QColor(255, 0, 255, 255));
   m_punctaColorMap.push_back(QColor(127, 0, 255, 255));
-  m_punctaColorMap.push_back(QColor(0, 255, 0, 0));
-  m_punctaColorMap.push_back(QColor(255, 255, 0, 0));
+  m_punctaColorMap.push_back(QColor(0, 255, 0, 255));
+  m_punctaColorMap.push_back(QColor(255, 255, 0, 255));
+
+  m_punctaColorMap.push_back(QColor(128, 255, 255, 255));
+  m_punctaColorMap.push_back(QColor(255, 128, 128, 255));
+  m_punctaColorMap.push_back(QColor(128, 128, 255, 255));
+  m_punctaColorMap.push_back(QColor(255, 128, 255, 255));
+  m_punctaColorMap.push_back(QColor(127, 128, 255, 255));
+  m_punctaColorMap.push_back(QColor(128, 255, 128, 255));
+  m_punctaColorMap.push_back(QColor(255, 255, 128, 255));
 }
 
 ZFlyEmRoiProject::~ZFlyEmRoiProject()
@@ -58,6 +69,46 @@ void ZFlyEmRoiProject::clear()
   m_puncta.clear();
 
   shallowClear();
+}
+
+void ZFlyEmRoiProject::deleteAllData()
+{
+  //Delete data from DVID server
+  ZDvidWriter writer;
+  if (writer.open(m_dvidTarget)) {
+    writer.deleteKey(ZDvidData::getName(ZDvidData::ROLE_ROI_CURVE),
+                     getMinRoiKey(), getMaxRoiKey());
+  }
+
+  clear();
+}
+
+void ZFlyEmRoiProject::applyTranslate()
+{
+  if (m_dataFrame != NULL) {
+    QList<ZSwcTree*> swcList = m_dataFrame->document()->getSwcList();
+    if (swcList.size() == 1) {
+      ZSwcTree *tree = swcList[0];
+
+      const ZClosedCurve *roiCurve = getRoi(getDataZ());
+      if (roiCurve != NULL) {
+        ZPoint newCenter = tree->computeCentroid();
+
+        ZPoint oldCenter = roiCurve->computeCenter();
+
+        ZPoint offset = newCenter - oldCenter;
+        for (std::vector<ZClosedCurve*>::iterator iter = m_curveArray.begin();
+             iter != m_curveArray.end(); ++iter) {
+          ZClosedCurve *curve = *iter;
+          if (curve != NULL) {
+            curve->translate(offset.x(), offset.y());
+          }
+        }
+        m_isRoiCurveUploaded.clear();
+        setRoiSaved(true);
+      }
+    }
+  }
 }
 
 void ZFlyEmRoiProject::shallowClear()
@@ -194,16 +245,30 @@ void ZFlyEmRoiProject::shallowClearDataFrame()
 
 void ZFlyEmRoiProject::setRoi(ZClosedCurve *roi, int z)
 {
-  if (roi != NULL && z >= 0) {
-    if (z >= (int) m_curveArray.size()) {
-      m_curveArray.resize(z + 1, NULL);
+  if (z >= 0) {
+    if (roi != NULL) {
+      if (z >= (int) m_curveArray.size()) {
+        m_curveArray.resize(z + 1, NULL);
+      }
+      if (m_curveArray[z] != NULL) {
+        delete m_curveArray[z];
+      }
+      m_curveArray[z] = roi;
+      setRoiUploaded(z, false);
     }
-    if (m_curveArray[z] != NULL) {
-      delete m_curveArray[z];
-    }
-    m_curveArray[z] = roi;
-    setRoiUploaded(z, false);
   }
+#if 0
+  else {
+    if (m_curveArray[z] != NULL) {
+      m_curveArray[z].clear();
+      /*
+      delete m_curveArray[z];
+      m_curveArray[z] = NULL;
+      */
+      setRoiUploaded(z, false);
+    }
+  }
+#endif
 }
 
 int ZFlyEmRoiProject::getDataZ() const
@@ -243,17 +308,23 @@ void ZFlyEmRoiProject::setRoiSaved(bool state)
 bool ZFlyEmRoiProject::addRoi()
 {
   if (m_dataFrame != NULL) {
-    QList<ZSwcTree*>& swcList = m_dataFrame->document()->getSwcList();
+    QList<ZSwcTree*> swcList = m_dataFrame->document()->getSwcList();
+    ZClosedCurve *roi = NULL;
+
     if (swcList.size() == 1) {
       ZClosedCurve curve = swcList.front()->toClosedCurve();
-      if(!curve.isEmpty()) {
-        ZClosedCurve *roi = new ZClosedCurve(curve);
-        if (!m_currentDsIntv.isZero()) {
-          roi->scale(m_currentDsIntv.getX() + 1, m_currentDsIntv.getY() + 1,
-                     m_currentDsIntv.getZ() + 1);
-        }
-        setRoi(roi, getDataZ());
-        setRoiSaved(true);
+      //if(!curve.isEmpty()) {
+      roi = new ZClosedCurve(curve);
+      if (!m_currentDsIntv.isZero()) {
+        roi->scale(m_currentDsIntv.getX() + 1, m_currentDsIntv.getY() + 1,
+                   m_currentDsIntv.getZ() + 1);
+      }
+    } else if (swcList.isEmpty()) {
+      roi = new ZClosedCurve;
+    }
+
+    setRoi(roi, getDataZ());
+    setRoiSaved(true);
 
 #ifdef _DEBUG_2
       ZObject3dScan *obj = getFilledRoi(getDataZ(), NULL);
@@ -261,9 +332,14 @@ bool ZFlyEmRoiProject::addRoi()
       delete obj;
 #endif
 
-        return true;
-      }
-    }
+      return true;
+      //}
+
+  /* else if (swcList.isEmpty()) {
+      setRoi(NULL, getDataZ());
+      setRoiSaved(true);
+      return true;
+    }*/
   }
 
   return false;
@@ -332,6 +408,8 @@ ZSwcTree* ZFlyEmRoiProject::getRoiSwc(int z, double radius) const
                     1.0 / (m_currentDsIntv.getY() + 1),
                     1.0 / (m_currentDsIntv.getZ() + 1), false);
     }
+    tree->useCosmeticPen(true);
+    tree->setRole(ZStackObjectRole::ROLE_ROI);
   }
 
   return tree;
@@ -509,19 +587,15 @@ void ZFlyEmRoiProject::estimateRoi()
     if (!roiCurve.isEmpty()) {
       //m_dataFrame->document()->removeObject(ZDocPlayer::ROLE_ROI, true);
       ZSwcTree *tree = ZSwcGenerator::createSwc(roiCurve, getMarkerRadius());
+      tree->setRole(ZStackObjectRole::ROLE_ROI);
 
       if (!m_currentDsIntv.isZero()) {
         tree->rescale(1.0 / (m_currentDsIntv.getX() + 1),
                       1.0 / (m_currentDsIntv.getY() + 1),
                       1.0 / (m_currentDsIntv.getZ() + 1), false);
       }
-
-      /*
-      m_dataFrame->document()->executeAddObjectCommand(
-            tree, NeuTube::Documentable_SWC, ZDocPlayer::ROLE_ROI);
-            */
-      m_dataFrame->document()->executeReplaceSwcCommand(
-            tree, ZDocPlayer::ROLE_ROI);
+      tree->useCosmeticPen(true);
+      m_dataFrame->document()->executeReplaceSwcCommand(tree);
     }
   }
 }
@@ -540,6 +614,10 @@ bool ZFlyEmRoiProject::isRoiCurveUploaded(int z) const
   if (z >= (int) m_isRoiCurveUploaded.size()) {
     return false;
   }
+
+#ifdef _DEBUG_
+  std::cout << z << " uploaded: " << m_isRoiCurveUploaded[z] << std::endl;
+#endif
 
   return m_isRoiCurveUploaded[z];
 }
@@ -671,6 +749,39 @@ int ZFlyEmRoiProject::getLastRoiZ() const
   return -1;
 }
 
+ZObject3dScan ZFlyEmRoiProject::getRoiObject(
+    int xIntv, int yIntv, int zIntv) const
+{
+  ZObject3dScan obj;
+
+  ZObject3dScan sliceObj;
+
+  int minZ = getFirstRoiZ();
+  int maxZ = getLastRoiZ();
+
+  for (int z = minZ; z <= maxZ; ++z) {
+    const ZClosedCurve *originalRoiCurve = getRoi(z);
+    ZClosedCurve *roiCurve = NULL;
+    if (originalRoiCurve == NULL) {
+      roiCurve = estimateRoi(z, NULL);
+    } else {
+      roiCurve = originalRoiCurve->clone();
+    }
+
+    if (!roiCurve->isEmpty()) {
+      roiCurve->scale(1.0 / (1 + xIntv), 1.0 / (1 + yIntv), 1);
+      getFilledRoi(roiCurve, z, &sliceObj);
+      obj.concat(sliceObj);
+    }
+
+    delete roiCurve;
+  }
+
+  obj.downsampleMax(0, 0, zIntv);
+
+  return obj;
+}
+
 ZObject3dScan ZFlyEmRoiProject::getRoiObject() const
 {
   ZObject3dScan obj;
@@ -758,9 +869,9 @@ void ZFlyEmRoiProject::rotateRoiSwc(double theta)
   }
 }
 
-ZIntCuboid ZFlyEmRoiProject::estimateBoundBox(const ZStack &stack)
+ZIntCuboid ZFlyEmRoiProject::estimateBoundBox(const ZStack &stack, int bgValue)
 {
-  const static uint8_t fgValue = 255;
+  const static uint8_t fgValue = bgValue;
   int width = stack.width();
   int height = stack.height();
   const uint8_t *array = stack.array8();
@@ -775,6 +886,7 @@ ZIntCuboid ZFlyEmRoiProject::estimateBoundBox(const ZStack &stack)
       if (array[offset++] != fgValue) {
         if (x < cuboid.getFirstCorner().getX()) {
           cuboid.setFirstX(x);
+          break;
         }
       }
     }
@@ -787,6 +899,7 @@ ZIntCuboid ZFlyEmRoiProject::estimateBoundBox(const ZStack &stack)
       if (array[offset--] != fgValue) {
         if (x > cuboid.getLastCorner().getX()) {
           cuboid.setLastX(x);
+          break;
         }
       }
     }
@@ -799,6 +912,7 @@ ZIntCuboid ZFlyEmRoiProject::estimateBoundBox(const ZStack &stack)
       if (array[offset] != fgValue) {
         if (y < cuboid.getFirstCorner().getY()) {
           cuboid.setFirstY(y);
+          break;
         }
       }
       offset += width;
@@ -813,6 +927,7 @@ ZIntCuboid ZFlyEmRoiProject::estimateBoundBox(const ZStack &stack)
       if (array[offset] != fgValue) {
         if (y > cuboid.getLastCorner().getY()) {
           cuboid.setLastY(y);
+          break;
         }
       }
       offset -= width;
@@ -820,6 +935,16 @@ ZIntCuboid ZFlyEmRoiProject::estimateBoundBox(const ZStack &stack)
   }
 
   return cuboid;
+}
+
+std::string ZFlyEmRoiProject::getMinRoiKey() const
+{
+  return getRoiKey(m_dvidInfo.getMinZ());
+}
+
+std::string ZFlyEmRoiProject::getMaxRoiKey() const
+{
+  return getRoiKey(m_dvidInfo.getMaxZ());
 }
 
 std::string ZFlyEmRoiProject::getRoiKey(int z) const
@@ -835,35 +960,73 @@ std::string ZFlyEmRoiProject::getRoiKey(int z) const
 
 double ZFlyEmRoiProject::estimateRoiVolume(char unit) const
 {
-  double totalVolume = 0;
-  size_t z1 = 0;
-  size_t z2 = 0;
-  size_t v1 = 0;
-  size_t v2 = 0;
-  for (size_t z = 0; z < m_curveArray.size(); ++z) {
-    const ZClosedCurve *curve = m_curveArray[z];
-    if (curve != NULL) {
-      if (!curve->isEmpty()) {
-        size_t v = getFilledRoi(z).getVoxelNumber();
-        totalVolume += v;
-        if (v1 == 0) {
-          v1 = v;
-          z1 = z;
-        } else {
-          v2 = v;
-          z2 = z;
-        }
-        if (v1 > 0 && v2 > 0) {
-          totalVolume += 0.5 * (v1 + v2) * (z2 - z1 - 1);
-          v1 = v2;
-          z1 = z2;
-          v2 = 0;
-          z2 = 0;
-        }
-      }
-    }
-  }
+//  double totalVolume = 0;
+////  size_t z1 = 0;
+////  size_t z2 = 0;
+////  size_t v1 = 0;
+////  size_t v2 = 0;
 
+////  bool hitFirst = false;
+
+//  int z1 = getFirstRoiZ();
+//  int z2 = getLastRoiZ();
+
+//  ZObject3dScan obj;
+//  for (int z = z1; z <= z2; ++z) {
+//    ZClosedCurve *curve = m_curveArray[z];
+//    ZClosedCurve *tmpCurve = NULL;
+//    if (curve == NULL) {
+//      tmpCurve = estimateRoi(z, NULL);
+//      curve = tmpCurve;
+//    }
+//    getFilledRoi(curve, z, &obj);
+//    size_t v = obj.getVoxelNumber();
+//    totalVolume += v;
+
+//    delete tmpCurve;
+//  }
+
+
+////  for (size_t z = 0; z < m_curveArray.size(); ++z) {
+////     else {
+////      hitFirst = true;
+////    }
+
+////    if (curve != NULL) {
+////      if (!curve->isEmpty()) {
+////         = getFilledRoi(z);
+//////        obj.downsampleMax(19, 19, 19);
+////#ifdef _DEBUG_2
+////        obj.save(GET_TEST_DATA_DIR + "/test.sobj");
+////#endif
+//////        size_t v = obj.getVoxelNumber() * 20 * 20;
+////        totalVolume += v;
+////        if (v1 == 0) {
+////          v1 = v;
+////          z1 = z;
+////        } else {
+////          v2 = v;
+////          z2 = z;
+////        }
+////        if (v1 > 0 && v2 > 0) {
+////          totalVolume += 0.5 * (v1 + v2) * (z2 - z1 - 1);
+////          v1 = v2;
+////          z1 = z2;
+////          v2 = 0;
+////          z2 = 0;
+////        }
+////      }
+////    }
+////  }
+
+
+  ZObject3dScan obj = getRoiObject(19, 19, 19);
+
+#ifdef _DEBUG_
+  obj.save(GET_TEST_DATA_DIR + "/test.sobj");
+#endif
+
+  size_t totalVolume = obj.getVoxelNumber() * 20 * 20 * 20;
   ZResolution res = m_dvidInfo.getVoxelResolution();
   res.convertUnit(unit);
 
@@ -934,7 +1097,7 @@ void ZFlyEmRoiProject::loadSynapse(const std::string &filePath, bool isVisible)
 void ZFlyEmRoiProject::setSynapseVisible(bool isVisible)
 {
   if (m_dataFrame != NULL) {
-    QList<ZPunctum*>& puncta = m_dataFrame->document()->getPunctaList();
+    QList<ZPunctum*> puncta = m_dataFrame->document()->getPunctumList();
     for (QList<ZPunctum*>::iterator iter = puncta.begin();
          iter != puncta.end(); ++iter) {
       ZPunctum *punctum = *iter;
@@ -1005,4 +1168,33 @@ void ZFlyEmRoiProject::importRoiFromSwc(ZSwcTree *tree)
     }
     delete forest;
   }
+}
+
+ZFlyEmRoiProject* ZFlyEmRoiProject::clone(const std::string &name) const
+{
+  ZFlyEmRoiProject *project = new ZFlyEmRoiProject(name, parent());
+  project->setDvidTarget(m_dvidTarget);
+  project->m_curveArray.resize(m_curveArray.size());
+  for (size_t i = 0; i < m_curveArray.size(); ++i) {
+    if (m_curveArray[i] != NULL) {
+      project->m_curveArray[i] = m_curveArray[i]->clone();
+    }
+  }
+
+  return project;
+}
+
+void ZFlyEmRoiProject::test()
+{
+  std::ofstream stream((GET_TEST_DATA_DIR + "/flyem/AL/roi_area.txt").c_str());
+  for (size_t z = 0; z < m_curveArray.size(); ++z) {
+    const ZClosedCurve *curve = m_curveArray[z];
+    if (curve != NULL) {
+      if (!curve->isEmpty()) {
+        size_t v = getFilledRoi(z).getVoxelNumber();
+        stream << z << " " << v << std::endl;
+      }
+    }
+  }
+  stream.close();
 }

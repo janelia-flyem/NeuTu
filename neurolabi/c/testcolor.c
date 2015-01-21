@@ -23,7 +23,7 @@ int main()
   printf("%g, %g, %g\n", h, s, v);
 #endif
 
-#if 1
+#if 0
   Rgb_Color color;
   Set_Color(&color, 128, 255, 0);
   Print_Rgb_Color(&color);
@@ -52,5 +52,16 @@ int main()
   Write_Stack("../data/test.tif", stack);
 #endif
 
+#if 1
+  Rgb_Color color;
+  int c = 228 + 251 * 256 + 213 * 65536;
+  Set_Color_From_Int(&color, c);
+  Print_Rgb_Color(&color);
+
+  double h, s, v;
+  Rgb_Color_To_Hsv(&color, &h, &s, &v);
+
+  printf("%g, %g, %g\n", h, s, v);
+#endif
   return 1;
 }

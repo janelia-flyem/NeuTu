@@ -14,6 +14,8 @@
 class ZSwcTree;
 class ZGraph;
 class ZPunctum;
+class ZWeightedPointArray;
+class ZPointArray;
 
 namespace FlyEm {
 
@@ -121,6 +123,7 @@ public:
    * \param height Height of the source image to flip Y.
    */
   void convertRavelerToImageSpace(int startZ, int height);
+  void convertRavelerToDvidSpace();
 
 public:
   bool exportMarkerFile(std::string filePath,
@@ -185,9 +188,18 @@ public:
   std::vector<ZPunctum*> toPuncta(const SynapseAnnotationConfig &config,
                                   SynapseLocation::ELocationSpace spaceOption,
                                   const SynapseDisplayConfig &displayConfig) const;
+  std::vector<ZPunctum*> toPuncta(double radius) const;
+
   std::vector<ZPunctum*> toTBarPuncta(
       double radius, double minConfidence = 0.0) const;
+
+  std::vector<ZPunctum*> toPsdPuncta(
+      double radius, double minConfidence = 0.0) const;
 #endif
+
+  ZWeightedPointArray toTBarPointArray(double radius,
+                                       double minConfidence = 0.0) const;
+  ZWeightedPointArray toTBarConfidencePointArray() const;
 
   ZSwcTree* toSwcTree(const SynapseAnnotationConfig &config,
                       SynapseLocation::ELocationSpace spaceOption,

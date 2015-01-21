@@ -14,6 +14,11 @@
 #include "zpoint.h"
 #include "zvaa3dmarker.h"
 
+class ZJsonObject;
+
+/*!
+ * \brief The punctum (synapse) class
+ */
 class ZPunctum : public ZStackBall
 {
 public:
@@ -85,6 +90,7 @@ public:
   inline void setScore(double s) { m_score = s; }
 
   void setFromMarker(const ZVaa3dMarker &marker);
+  ZVaa3dMarker toVaa3dMarker() const;
 
   // update radius from volSize
   inline void updateRadius() { setRadius(Cube_Root(0.75 / M_PI * m_volSize)); }
@@ -101,6 +107,10 @@ public:
       return (p1->z() < p2->z());
     }
   };
+
+  int getTypeFromSource() const;
+
+  //ZJsonObject toJsonObject() const;
 
 private:
   QColor highlightingColor(const QColor &color) const;

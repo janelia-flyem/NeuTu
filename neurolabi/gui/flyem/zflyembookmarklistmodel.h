@@ -30,7 +30,7 @@ public:
   const ZFlyEmBookmark& getBookmark(int row) const;
   const ZFlyEmBookmarkArray& getBookmarkArray() const;
 
-  void load(const QString &filePath);
+  //void load(const QString &filePath);
 
 signals:
 

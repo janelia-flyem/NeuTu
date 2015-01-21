@@ -1,12 +1,13 @@
 #include "zdialogfactory.h"
 #include <QVBoxLayout>
 #include <QPushButton>
+#include <QMessageBox>
+
 #include "zwidgetfactory.h"
 #include "zdviddialog.h"
 #include "neutubeconfig.h"
 #include "zstring.h"
 #include "zparameterarray.h"
-
 
 ZDialogFactory::ZDialogFactory(QWidget *parentWidget)
 {
@@ -83,5 +84,23 @@ QDialog* ZDialogFactory::makeParameterDialog(
     }
   }
 
+  return dlg;
+}
+
+bool ZDialogFactory::ask(
+    const QString &title, const QString &msg, QWidget *parent)
+{
+  return QMessageBox::question(
+        parent, title, msg, QMessageBox::No | QMessageBox::Yes) ==
+      QMessageBox::Yes;
+}
+
+ZSpinBoxGroupDialog* ZDialogFactory::makeDownsampleDialog(QWidget *parent)
+{
+  ZSpinBoxGroupDialog *dlg = new ZSpinBoxGroupDialog(parent);
+  dlg->setWindowTitle("Set Downsample Interval");
+  dlg->addSpinBox("X", 0, 100, 0, 0);
+  dlg->addSpinBox("Y", 0, 100, 0, 0);
+  dlg->addSpinBox("Z", 0, 100, 0, 0);
   return dlg;
 }

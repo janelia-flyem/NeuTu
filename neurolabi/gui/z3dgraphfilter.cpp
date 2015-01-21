@@ -7,7 +7,8 @@ using namespace std;
 
 
 Z3DGraphFilter::Z3DGraphFilter() : m_lineRenderer(NULL),
-  m_coneRenderer(NULL), m_arrowRenderer(NULL), m_sphereRenderer(NULL), m_dataIsInvalid(true)
+  m_coneRenderer(NULL), m_arrowRenderer(NULL), m_sphereRenderer(NULL),
+  m_dataIsInvalid(true)
   , m_xCut("X Cut", glm::ivec2(0,0), 0, 0)
   , m_yCut("Y Cut", glm::ivec2(0,0), 0, 0)
   , m_zCut("Z Cut", glm::ivec2(0,0), 0, 0)
@@ -308,6 +309,7 @@ ZWidgetsGroup *Z3DGraphFilter::getWidgetsGroup()
   if (!m_widgetsGroup) {
     m_widgetsGroup = new ZWidgetsGroup("Graph", NULL, 1);
 
+    new ZWidgetsGroup(&m_stayOnTop, m_widgetsGroup, 1);
     std::vector<ZParameter*> paras = m_rendererBase->getParameters();
     for (size_t i=0; i<paras.size(); i++) {
       ZParameter *para = paras[i];

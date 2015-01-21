@@ -35,6 +35,7 @@ public:
   void endSubprogress(double scale);
   void advance(double dp);
   inline double getProgress() { return m_progress; }
+  inline void resetSessionCount() { m_sessionCount = 0; }
   //void advanceTo(double progress); //progress from 0 to 1
 
   virtual void setTitle(const std::string &title);
@@ -46,7 +47,7 @@ public:
 protected:
   double m_progress;
   double m_scale;
-  int m_sectionCount;
+  int m_sessionCount;
 };
 
 #endif // ZPROGRESSREPORTER_H

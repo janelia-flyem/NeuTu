@@ -18,14 +18,19 @@ public:
   const static TRole ROLE_NO;
   const static TRole ROLE_CONTINUE;
   const static TRole ROLE_PAUSE;
+  const static TRole ROLE_SKIP;
 
   QPushButton* activate(TRole role);
+
+  QPushButton* getButton(TRole role);
+
 
 signals:
   void clickedYes();
   void clickedNo();
   void clickedContinue();
   void clickedPause();
+  void clickedSkip();
 
 public slots:
 
@@ -35,6 +40,7 @@ private:
   QPushButton *m_noButton;
   QPushButton *m_continueButton;
   QPushButton *m_paushButton;
+  QPushButton *m_skipButton;
 };
 
 #endif // ZBUTTONBOX_H

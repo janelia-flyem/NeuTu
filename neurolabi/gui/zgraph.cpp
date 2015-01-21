@@ -901,3 +901,23 @@ std::map<int, int> ZGraph::runMinWeightSumMatch()
 
   return matchMap;
 }
+
+const int* ZGraph::topologicalSort()
+{
+  const int* idx = NULL;
+  if (m_graph != NULL) {
+    idx = Graph_Toposort(m_graph, m_workspace);
+  }
+
+  return idx;
+}
+
+void ZGraph::traverseDirect(int root)
+{
+  if (m_graph != NULL) {
+    if (isDirected() == false) {
+      Graph_Traverse_Direct(m_graph, root, m_workspace);
+      setDirected(true);
+    }
+  }
+}

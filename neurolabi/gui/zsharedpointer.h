@@ -20,6 +20,15 @@ public:
 
 #define ZSharedPointer ztr1::shared_ptr
 
+template<typename T>
+struct array_deleter
+{
+  void operator()(T const * p)
+  {
+    delete[] p;
+  }
+};
+
 //#include "zsharedpointer.cpp"
 
 

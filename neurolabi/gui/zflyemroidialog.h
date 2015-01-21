@@ -2,7 +2,7 @@
 #define ZFLYEMROIDIALOG_H
 
 #include <QDialog>
-#include <QVector>
+#include <QList>
 #include <QMap>
 #include <QFuture>
 
@@ -11,6 +11,7 @@
 #include "zqtbarprogressreporter.h"
 #include "zstackdoc.h"
 #include "zintcuboid.h"
+#include "zstackdocreader.h"
 
 class MainWindow;
 class ZDvidTarget;
@@ -44,6 +45,10 @@ public:
 
   ZFlyEmRoiProject* newProject(const std::string &name);
 
+  void cloneProject(const std::string &name);
+
+  void deleteProject(ZFlyEmRoiProject *project);
+
   bool isValidName(const std::string &name) const;
 
 public slots:
@@ -73,10 +78,15 @@ public slots:
 
   void runAutoStep(bool ok);
   void setQuickMode(bool quickMode);
+  void applyTranslate();
+
+  void processLoadGrayscaleFailure();
+  void deleteProject();
 
 signals:
   void newDocReady();
   void progressFailed();
+  void progressStart();
   void progressAdvanced(double);
   void progressDone();
   void messageDumped(QString str, bool appending);
@@ -118,6 +128,8 @@ private slots:
 
   void on_moveyIncPushButton_clicked();
 
+  void startProgressSlot();
+  void endProgressSlot();
   void advanceProgressSlot(double p);
 
   void on_pushButton_clicked();
@@ -135,7 +147,9 @@ private slots:
   void on_quickNextPushButton_3_clicked();
 
   void exportResult();
+  void exportRoiObject();
   void importRoi();
+  void cloneProject();
 
 private:
   void loadGrayscaleFunc(int z, bool lowres);
@@ -143,6 +157,8 @@ private:
   void downloadAllProject();
   void uploadProjectList();
   void createMenu();
+  void exportRoiObjectFunc(
+      const QString &fileName, int xintv, int yintv, int zintv);
 
   void prepareQuickLoadFunc(
       const ZDvidTarget &target,const std::string &lowresPath, int z);
@@ -160,12 +176,14 @@ private:
   void quickLoad(int z);
 
   void startBackgroundJob();
+  void closeCurrentProject();
 
 private:
   Ui::ZFlyEmRoiDialog *ui;
   ZDvidDialog *m_dvidDlg;
   ZSpinBoxDialog *m_zDlg;
-  QVector<ZFlyEmRoiProject*> m_projectList;
+  ZSpinBoxGroupDialog *m_dsDlg;
+  QList<ZFlyEmRoiProject*> m_projectList;
   ZFlyEmRoiProject *m_project;
   ZDvidTarget m_dvidTarget;
   ZStackDocReader m_docReader;
@@ -177,6 +195,8 @@ private:
 
   QAction *m_autoStepAction;
   QAction *m_importRoiAction;
+  QAction *m_applyTranslateAction;
+  QAction *m_deleteProjectAction;
 
   int m_xintv;
   int m_yintv;

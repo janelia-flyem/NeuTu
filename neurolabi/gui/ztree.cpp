@@ -28,6 +28,7 @@ void ZTree<T>::clear()
     ZTreeNode<T> *node = iterator.nextNode();
     delete node;
   }
+  m_root = NULL;
 }
 
 
@@ -60,11 +61,103 @@ ZTreeIterator<T>::ZTreeIterator(const ZTree<T> &tree, EIteratorOption option)
 }
 
 template <typename T>
+ZTreeIterator<T>::ZTreeIterator(
+    const ZTreeNode<T>* startNode, EIteratorOption option)
+{
+    m_filter = NO_FILTER;
+    update(startNode, option);
+}
+
+template <typename T>
+void ZTreeIterator<T>::update(
+    const ZTreeNode<T> *startNode, EIteratorOption option)
+{
+  m_nodeArray.clear();
+
+  const ZTreeNode<T> *root = startNode;
+  const ZTreeNode<T> *tn = root;
+  const ZTreeNode<T> *lastNode = startNode;
+
+  if (tn != NULL) {
+    switch(option) {
+    case DEPTH_FIRST:
+    {
+      //m_nodeArray.push_back(const_cast<ZTreeNode<T>*>(tree.getRoot()));
+
+      tryAppendingNode(lastNode);
+
+      while (tn != NULL) {
+        if (tn->firstChild() != NULL) { //Add first child
+          lastNode = tn->firstChild();
+          tryAppendingNode(lastNode);
+
+          //m_nodeArray.push_back(tn->firstChild());
+          //tn->setNext(tn->firstChild());
+        } else { //No child
+          if (tn->nextSibling() != NULL) { //Add next sibling
+              lastNode = tn->nextSibling();
+              tryAppendingNode(lastNode);
+            //m_nodeArray.push_back(tn->nextSibling());
+            //tn->setNext(tn->nextSibling());
+          } else { //No sibling
+            ZTreeNode<T> *parent_tn = tn->parent();
+            /* trace back until an ancestor has the next sibling */
+            while (parent_tn != NULL && parent_tn != root) {
+              if (parent_tn->nextSibling() != NULL) { //sibling found
+                  lastNode = parent_tn->nextSibling();
+                  tryAppendingNode(lastNode);
+                //m_nodeArray.push_back(parent_tn->nextSibling());
+                //tn->setNext(parent_tn->nextSibling());
+                break;
+              } else { //keep tracing back
+                parent_tn = parent_tn->parent();
+              }
+            }
+            if (parent_tn == NULL || parent_tn == root) { //hit root. Done.
+              tn = NULL;
+            }
+          }
+        }
+
+        if (tn != NULL) {
+          //tn = m_nodeArray.back();
+          tn = lastNode;
+        }
+      }
+    }
+      break;
+    case BREADTH_FIRST:
+    {
+      std::queue<const ZTreeNode<T>*> currentSiblingQueue;
+      currentSiblingQueue.push(lastNode);
+      while (!currentSiblingQueue.empty()) {
+        tn = currentSiblingQueue.front();
+        tryAppendingNode(tn);
+        currentSiblingQueue.pop();
+
+        const ZTreeNode<T> *child = tn->firstChild();
+        while (child != NULL) {
+          currentSiblingQueue.push(child);
+          child = child->nextSibling();
+        }
+      }
+    }
+      break;
+    default:
+      break;
+    }
+  }
+
+  m_currentIndex = 0;
+}
+
+template <typename T>
 void ZTreeIterator<T>::update(const ZTree<T> &tree, EIteratorOption option)
 {
   m_nodeArray.clear();
 
-  const ZTreeNode<T> *tn = tree.getRoot();
+  const ZTreeNode<T> *root = tree.getRoot();
+  const ZTreeNode<T> *tn = root;
   const ZTreeNode<T> *lastNode = tree.getRoot();
 
   if (tn != NULL) {
@@ -76,32 +169,33 @@ void ZTreeIterator<T>::update(const ZTree<T> &tree, EIteratorOption option)
       tryAppendingNode(lastNode);
 
       while (tn != NULL) {
-        if (tn->firstChild() != NULL) {
+        if (tn->firstChild() != NULL) { //Add first child
           lastNode = tn->firstChild();
           tryAppendingNode(lastNode);
 
           //m_nodeArray.push_back(tn->firstChild());
           //tn->setNext(tn->firstChild());
-        } else {
-          if (tn->nextSibling() != NULL) {
+        } else { //No child
+          if (tn->nextSibling() != NULL) { //Add next sibling
               lastNode = tn->nextSibling();
               tryAppendingNode(lastNode);
             //m_nodeArray.push_back(tn->nextSibling());
             //tn->setNext(tn->nextSibling());
-          } else {
+          } else { //No sibling
             ZTreeNode<T> *parent_tn = tn->parent();
-            while (parent_tn != NULL) {
-              if (parent_tn->nextSibling() != NULL) {
+            /* trace back until an ancestor has the next sibling */
+            while (parent_tn != NULL && parent_tn != root) {
+              if (parent_tn->nextSibling() != NULL) { //sibling found
                   lastNode = parent_tn->nextSibling();
                   tryAppendingNode(lastNode);
                 //m_nodeArray.push_back(parent_tn->nextSibling());
                 //tn->setNext(parent_tn->nextSibling());
                 break;
-              } else {
+              } else { //keep tracing back
                 parent_tn = parent_tn->parent();
               }
             }
-            if (parent_tn == NULL) {
+            if (parent_tn == NULL || parent_tn == root) { //hit root. Done.
               tn = NULL;
             }
           }
@@ -109,7 +203,7 @@ void ZTreeIterator<T>::update(const ZTree<T> &tree, EIteratorOption option)
 
         if (tn != NULL) {
           //tn = m_nodeArray.back();
-            tn = lastNode;
+          tn = lastNode;
         }
       }
     }

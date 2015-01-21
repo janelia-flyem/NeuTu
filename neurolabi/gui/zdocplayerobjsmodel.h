@@ -12,7 +12,7 @@ class ZDocPlayerObjsModel : public ZObjsModel
   Q_OBJECT
 public:
   explicit ZDocPlayerObjsModel(
-      ZStackDoc *doc, ZDocPlayer::TRole role, QObject *parent = 0);
+      ZStackDoc *doc, ZStackObjectRole::TRole role, QObject *parent = 0);
   virtual ~ZDocPlayerObjsModel();
 
   QModelIndex getIndex(const ZDocPlayer *tree, int col = 0) const;
@@ -28,7 +28,7 @@ protected:
 
 protected:
   ZStackDoc *m_doc;
-  ZDocPlayer::TRole m_role;
+  ZStackObjectRole::TRole m_role;
   std::map<const ZDocPlayer*, int> m_objToRow;
 };
 

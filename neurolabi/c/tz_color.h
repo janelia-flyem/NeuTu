@@ -75,6 +75,12 @@ Rgb_Color* Make_Rgb_Color(uint8_t r, uint8_t g, uint8_t b);
  */
 void Set_Color(Rgb_Color *color, uint8_t r, uint8_t g, uint8_t b);
 
+/**@brief Set RGB color from an integer value
+ *
+ * r (0-7); g (8-15); b(16-23); (24-) ignored
+ */
+void Set_Color_From_Int(Rgb_Color *color, int c);
+
 /**@brief Set RGB color form HSV.
  *
  * Set_Color() sets <color> from the HSV space.
@@ -87,6 +93,11 @@ void Set_Color_Hsv(Rgb_Color *color, double h, double s, double v);
  * as its mod to 64.
  */
 void Set_Color_Jet(Rgb_Color *color, int index);
+
+
+/**@brief Set RGB color from the Discrete map.
+ */
+void Set_Color_Discrete(Rgb_Color *color, int index);
 
 void Print_Rgb_Color(const Rgb_Color *color);
 

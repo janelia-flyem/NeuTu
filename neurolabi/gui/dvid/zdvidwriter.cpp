@@ -49,8 +49,11 @@ bool ZDvidWriter::open(const ZDvidTarget &target)
     return false;
   }
 
-  return open(("http://" + target.getAddress()).c_str(),
-              target.getUuid().c_str(), target.getPort());
+  m_dvidTarget = target;
+  m_dvidClient->reset();
+  m_dvidClient->setDvidTarget(target);
+
+  return true;
 }
 
 bool ZDvidWriter::open(const QString &sourceString)
@@ -149,7 +152,8 @@ void ZDvidWriter::writeAnnotation(const ZFlyEmNeuron &neuron)
 void ZDvidWriter::writeBodyInfo(int bodyId, const ZJsonObject &obj)
 {
   if (bodyId > 0 && !obj.isEmpty()) {
-    writeJsonString(ZDvidData::getName(ZDvidData::ROLE_BODY_INFO),
+    writeJsonString(ZDvidData::getName(ZDvidData::ROLE_BODY_INFO,
+                                       m_dvidTarget.getBodyLabelName()),
                     ZString::num2str(bodyId).c_str(),
                     obj.dumpString(0).c_str());
   }
@@ -185,6 +189,13 @@ void ZDvidWriter::writeRoiCurve(
 
     QProcess::execute(command);
     */
+  }
+}
+
+void ZDvidWriter::deleteRoiCurve(const std::string &key)
+{
+  if (!key.empty()) {
+    deleteKey(ZDvidData::getName(ZDvidData::ROLE_ROI_CURVE), key);
   }
 }
 
@@ -239,6 +250,23 @@ void ZDvidWriter::writeJsonString(
 void ZDvidWriter::writeJson(const std::string url, const ZJsonValue &value)
 {
   writeJsonString(url, value.dumpString(0));
+}
+
+void ZDvidWriter::mergeBody(const std::string &dataName,
+                            int targetId, const std::vector<int> &bodyId)
+{
+  ZJsonArray jsonArray(json_array(), ZJsonValue::SET_AS_IT_IS);
+  jsonArray.append(targetId);
+  for (std::vector<int>::const_iterator iter = bodyId.begin();
+       iter != bodyId.end(); ++iter) {
+    jsonArray.append(*iter);
+  }
+
+  ZJsonArray mergeArray(json_array(), ZJsonValue::SET_AS_IT_IS);
+  mergeArray.append(jsonArray);
+
+  ZDvidUrl dvidUrl(m_dvidTarget);
+  writeJson(dvidUrl.getMergeUrl(dataName), mergeArray);
 }
 
 void ZDvidWriter::writeBoundBox(const ZIntCuboid &cuboid, int z)
@@ -301,6 +329,39 @@ void ZDvidWriter::createData(const std::string &type, const std::string &name)
   QProcess::execute(command);
 }
 
+void ZDvidWriter::deleteKey(const std::string &dataName, const std::string &key)
+{
+  ZDvidUrl dvidUrl(m_dvidTarget);
+  std::string url = dvidUrl.getKeyUrl(dataName, key);
+  QString command = QString("curl -X DELETE %1").arg(url.c_str());
+  qDebug() << command;
+
+  QProcess::execute(command);
+}
+
+void ZDvidWriter::deleteKey(const QString &dataName, const QString &key)
+{
+  deleteKey(dataName.toStdString(), key.toStdString());
+}
+
+void ZDvidWriter::deleteKey(const std::string &dataName,
+               const std::string &minKey, const std::string &maxKey)
+{
+  deleteKey(QString(dataName.c_str()), minKey.c_str(), maxKey.c_str());
+}
+
+void ZDvidWriter::deleteKey(const QString &dataName, const QString &minKey,
+    const QString &maxKey)
+{
+  ZDvidReader reader;
+  if (reader.open(m_dvidTarget)) {
+    QStringList keyList = reader.readKeys(dataName, minKey, maxKey);
+    foreach (const QString& key, keyList) {
+      deleteKey(dataName, key);
+    }
+  }
+}
+
 void ZDvidWriter::writeBodyInfo(int bodyId)
 {
   ZDvidReader reader;
@@ -313,7 +374,16 @@ void ZDvidWriter::writeBodyInfo(int bodyId)
       bodyInfo.setBoundBox(obj.getBoundBox());
       ZJsonObject obj = bodyInfo.toJsonObject();
       ZDvidUrl dvidUrl(m_dvidTarget);
-      writeJson(dvidUrl.getBodyInfoUrl(bodyId), obj);
+      writeJson(dvidUrl.getBodyInfoUrl(
+                  bodyId, m_dvidTarget.getBodyLabelName()), obj);
     }
   }
+}
+
+void ZDvidWriter::writeMaxBodyId(int bodyId)
+{
+  ZJsonObject idJson;
+  idJson.setEntry("max_body_id", bodyId);
+  ZDvidUrl dvidUrl(m_dvidTarget);
+  writeJson(dvidUrl.getMaxBodyIdUrl(), idJson);
 }

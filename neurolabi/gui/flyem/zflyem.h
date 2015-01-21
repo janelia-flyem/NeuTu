@@ -7,7 +7,7 @@
 namespace FlyEm {
 
 enum EDataSet {
-  DATA_TEM, DATA_FIB19, DATA_FIB25, DATA_UNKOWN
+  DATA_TEM, DATA_FIB19, DATA_FIB25, DATA_FIB25_7C, DATA_UNKOWN
 };
 
 typedef tz_uint64 TBodyLabel;

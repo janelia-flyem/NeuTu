@@ -176,17 +176,11 @@ bool Z3DTexture::is3DTexture() const
       m_textureTarget == GL_PROXY_TEXTURE_2D_ARRAY;
 }
 
-GLubyte *Z3DTexture::downloadTextureToBuffer(GLint dataFormat, GLenum dataType, size_t *bufferSize) const
+void Z3DTexture::downloadTextureToBuffer(GLenum dataFormat, GLenum dataType, GLvoid *buffer) const
 {
   bind();
-
-  GLubyte* data = new GLubyte[getBypePerPixel(dataFormat, dataType) * getNumPixels()];
-  glGetTexImage(m_textureTarget, 0, dataFormat, dataType, data);
-
-  if (bufferSize != NULL) {
-    *bufferSize = getBypePerPixel(dataFormat, dataType) * getNumPixels();
-  }
-  return data;
+  glGetTexImage(m_textureTarget, 0, dataFormat, dataType, buffer);
+  CHECK_GL_ERROR;
 }
 
 int Z3DTexture::getTextureSizeOnGPU() const
@@ -194,53 +188,7 @@ int Z3DTexture::getTextureSizeOnGPU() const
   return getBypePerPixel(m_internalFormat) * getNumPixels();
 }
 
-void Z3DTexture::deriveTextureTarget()
-{
-  if (m_dimensions.z == 1) {
-    if (m_dimensions.y == 1  || m_dimensions.x == 1)
-      m_textureTarget = GL_TEXTURE_1D;
-    else
-      m_textureTarget = GL_TEXTURE_2D;
-  } else {
-    m_textureTarget = GL_TEXTURE_3D;
-  }
-}
-
-void Z3DTexture::applyFilter()
-{
-  glTexParameteri(m_textureTarget, GL_TEXTURE_MAG_FILTER, m_magFilter);
-  glTexParameteri(m_textureTarget, GL_TEXTURE_MIN_FILTER, m_minFilter);
-}
-
-void Z3DTexture::applyWrap()
-{
-  glTexParameteri(m_textureTarget, GL_TEXTURE_WRAP_S, m_wrap);
-  if (m_textureTarget == GL_TEXTURE_2D || m_textureTarget == GL_TEXTURE_3D ||
-      m_textureTarget == GL_TEXTURE_RECTANGLE)
-    glTexParameteri(m_textureTarget, GL_TEXTURE_WRAP_T, m_wrap);
-  if (m_textureTarget == GL_TEXTURE_3D)
-    glTexParameteri(m_textureTarget, GL_TEXTURE_WRAP_R, m_wrap);
-}
-
-bool Z3DTexture::useMipmap() const
-{
-  if (m_minFilter == GL_LINEAR || m_minFilter == GL_NEAREST)
-    return false;
-  else
-    return true;
-}
-
-void Z3DTexture::init()
-{
-  glGenTextures(1, &m_id);
-
-  bind();
-  applyFilter();
-  applyWrap();
-  CHECK_GL_ERROR;
-}
-
-int Z3DTexture::getBypePerPixel(GLint dataFormat, GLenum dataType)
+size_t Z3DTexture::getBypePerPixel(GLenum dataFormat, GLenum dataType)
 {
   int numChannels = 0;
   switch (dataFormat) {
@@ -307,7 +255,7 @@ int Z3DTexture::getBypePerPixel(GLint dataFormat, GLenum dataType)
   return typeSize * numChannels;
 }
 
-int Z3DTexture::getBypePerPixel(GLint internalFormat)
+size_t Z3DTexture::getBypePerPixel(GLint internalFormat)
 {
   int bpp = 0;
   switch (internalFormat) {
@@ -413,6 +361,52 @@ int Z3DTexture::getBypePerPixel(GLint internalFormat)
   }
 
   return bpp;
+}
+
+void Z3DTexture::deriveTextureTarget()
+{
+  if (m_dimensions.z == 1) {
+    if (m_dimensions.y == 1  || m_dimensions.x == 1)
+      m_textureTarget = GL_TEXTURE_1D;
+    else
+      m_textureTarget = GL_TEXTURE_2D;
+  } else {
+    m_textureTarget = GL_TEXTURE_3D;
+  }
+}
+
+void Z3DTexture::applyFilter()
+{
+  glTexParameteri(m_textureTarget, GL_TEXTURE_MAG_FILTER, m_magFilter);
+  glTexParameteri(m_textureTarget, GL_TEXTURE_MIN_FILTER, m_minFilter);
+}
+
+void Z3DTexture::applyWrap()
+{
+  glTexParameteri(m_textureTarget, GL_TEXTURE_WRAP_S, m_wrap);
+  if (m_textureTarget == GL_TEXTURE_2D || m_textureTarget == GL_TEXTURE_3D ||
+      m_textureTarget == GL_TEXTURE_RECTANGLE)
+    glTexParameteri(m_textureTarget, GL_TEXTURE_WRAP_T, m_wrap);
+  if (m_textureTarget == GL_TEXTURE_3D)
+    glTexParameteri(m_textureTarget, GL_TEXTURE_WRAP_R, m_wrap);
+}
+
+bool Z3DTexture::useMipmap() const
+{
+  if (m_minFilter == GL_LINEAR || m_minFilter == GL_NEAREST)
+    return false;
+  else
+    return true;
+}
+
+void Z3DTexture::init()
+{
+  glGenTextures(1, &m_id);
+
+  bind();
+  applyFilter();
+  applyWrap();
+  CHECK_GL_ERROR;
 }
 
 Z3DTextureUnitManager::Z3DTextureUnitManager()

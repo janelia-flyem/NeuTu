@@ -9,6 +9,7 @@
 #include <QMenu>
 #include <QMessageBox>
 #include <QGraphicsPixmapItem>
+#include <QMenu>
 
 #include "neutubeconfig.h"
 #include "tz_error.h"
@@ -24,6 +25,9 @@
 #include "dvid/zdvidwriter.h"
 #include "flyem/zflyemneuronbodyinfo.h"
 #include "z3dpunctafilter.h"
+#include "z3dcompositor.h"
+#include "z3dvolumeraycaster.h"
+#include "z3daxis.h"
 
 FlyEmDataForm::FlyEmDataForm(QWidget *parent) :
   QWidget(parent),
@@ -90,6 +94,8 @@ FlyEmDataForm::FlyEmDataForm(QWidget *parent) :
   ui->thumbnailView->resize(256, ui->thumbnailView->height());
   ui->outputTextEdit->resize(190, ui->outputTextEdit->height());
   setLayout(ui->overallLayout);
+
+  createMenu();
 }
 
 FlyEmDataForm::~FlyEmDataForm()
@@ -107,6 +113,63 @@ QSize FlyEmDataForm::sizeHint() const
 #endif
 
   return geometry().size();
+}
+
+void FlyEmDataForm::createMenu()
+{
+  m_mainMenu = new QMenu(this);
+  ui->menuButton->setMenu(m_mainMenu);
+
+  m_exportMenu = new QMenu(this);
+  ui->exportButton->setMenu(m_exportMenu);
+
+  QAction *showModelAction = new QAction("Show Model", this);
+  m_mainMenu->addAction(showModelAction);
+  connect(showModelAction, SIGNAL(triggered()),
+          this, SLOT(on_showModelPushButton_clicked()));
+
+  QAction *exportCsvAction = new QAction("CSV", this);
+  m_exportMenu->addAction(exportCsvAction);
+  connect(exportCsvAction, SIGNAL(triggered()),
+          this, SLOT(on_savePushButton_clicked()));
+
+  QAction *exportSwcAction = new QAction("SWC", this);
+  m_exportMenu->addAction(exportSwcAction);
+  connect(exportSwcAction, SIGNAL(triggered()),
+          this, SLOT(on_exportPushButton_clicked()));
+
+  QAction *exportVolumeRenderAction = new QAction("Figure (3D Body)", this);
+  m_exportMenu->addAction(exportVolumeRenderAction);
+  connect(exportVolumeRenderAction, SIGNAL(triggered()),
+          this, SLOT(exportVolumeRenderingFigure()));
+
+/*
+  QAction *exportAction = new QAction("Export", this);
+  m_mainMenu->addAction(exportAction);
+  connect(exportAction, SIGNAL(triggered()), this, SLOT(exportResult()));
+
+  m_importRoiAction = new QAction("Import ROI", this);
+  m_mainMenu->addAction(m_importRoiAction);
+  m_importRoiAction->setCheckable(true);
+  connect(m_importRoiAction, SIGNAL(triggered()), this, SLOT(importRoi()));
+
+  m_autoStepAction = new QAction("Auto Step", this);
+  m_mainMenu->addAction(m_autoStepAction);
+  m_autoStepAction->setCheckable(true);
+  connect(m_autoStepAction, SIGNAL(toggled(bool)),
+          this, SLOT(runAutoStep(bool)));
+
+  m_applyTranslateAction = new QAction("Apply Translation", this);
+  m_mainMenu->addAction(m_applyTranslateAction);
+  //m_applyTranslateAction->setCheckable(true);
+  connect(m_applyTranslateAction, SIGNAL(triggered()),
+          this, SLOT(applyTranslate()));
+
+  m_deleteProjectAction = new QAction("Delete Project", this);
+  m_mainMenu->addAction(m_deleteProjectAction);
+  connect(m_deleteProjectAction, SIGNAL(triggered()),
+          this, SLOT(deleteProject()));
+          */
 }
 
 void FlyEmDataForm::on_pushButton_clicked()
@@ -387,6 +450,12 @@ void FlyEmDataForm::showSelectedBody()
   showViewSelectedBody(ui->queryView);
 }
 
+/*
+void FlyEmDataForm::showSelectedBodyCoarse()
+{
+  showViewSelectedBodyCoarse(ui->queryView);
+}
+*/
 
 void FlyEmDataForm::showSelectedModelWithBoundBox()
 {
@@ -604,8 +673,6 @@ void FlyEmDataForm::computeThumbnailFunc(ZFlyEmNeuron *neuron)
           bodyInfo.setBodySize(body.getVoxelNumber());
           bodyInfo.setBoundBox(body.getBoundBox());
           writer.writeBodyInfo(neuron->getId(), bodyInfo.toJsonObject());
-
-          //neuron->deprecate(ZFlyEmNeuron::BODY);
         }
       }
     }
@@ -682,16 +749,6 @@ void FlyEmDataForm::updateThumbnail(ZFlyEmNeuron *neuron)
                         "<p><font %1>Please come back later.</font></p>").
                       arg(font));
                 m_thumbnailScene->addItem(textItem);
-
-                /*
-
-                stack = getParentFrame()->getImageFactory()->createSurfaceImage(
-                      *neuron->getBody());
-                ZDvidWriter writer;
-                if (writer.open(target)) {
-                  writer.writeThumbnail(neuron->getId(), stack);
-                }
-                */
               }
             }
           }
@@ -831,4 +888,137 @@ void FlyEmDataForm::resizeEvent(QResizeEvent *)
 void FlyEmDataForm::showEvent(QShowEvent *)
 {
   initThumbnailScene();
+}
+
+void FlyEmDataForm::saveVolumeRenderingFigure(
+    ZFlyEmNeuron *neuron, const QString &output, const QString cameraFile)
+{
+  if (neuron != NULL) {
+    ZObject3dScan *obj = neuron->getBody();
+
+    int dsIntv = 3;
+    obj->downsampleMax(dsIntv, dsIntv, dsIntv);
+
+    ZStack *stack = obj->toStackObject(255);
+    neuron->deprecate(ZFlyEmNeuron::BODY);
+
+    ZSharedPointer<ZStackDoc> academy =
+        ZSharedPointer<ZStackDoc>(new ZStackDoc(NULL, NULL));
+    academy->loadStack(stack);
+
+    int maxX = 0;
+    int maxY = 0;
+    int maxZ = 8089;
+    ZFlyEmDataFrame *parentFrame = getParentFrame();
+    ZDvidReader dvidReader;
+    if (dvidReader.open(parentFrame->getDvidTarget())) {
+      ZDvidInfo dvidInfo = dvidReader.readGrayScaleInfo();
+      maxZ = dvidInfo.getMaxZ();
+      maxX = dvidInfo.getMaxX();
+      maxY = dvidInfo.getMaxY();
+    }
+
+    int dataRangeZ = (maxZ + 1) / (dsIntv + 1);
+    int dataRangeX = (maxX + 1) / (dsIntv + 1);
+    int dataRangeY = (maxY + 1) / (dsIntv + 1);
+
+    Z3DWindow *stage = new Z3DWindow(academy, Z3DWindow::FULL_RES_VOLUME,
+                                     false, NULL);
+
+    stage->getVolumeRaycaster()->hideBoundBox();
+    stage->getVolumeRaycasterRenderer()->setCompositeMode(
+          "Direct Volume Rendering");
+    stage->getAxis()->setVisible(false);
+
+    Z3DCameraParameter* camera = stage->getCamera();
+
+
+    ZPoint vec = ZPoint(0, 1, 0);
+
+    glm::vec3 upVector = glm::vec3(0, 0, -1);
+
+    if (!cameraFile.isEmpty()) {
+      ZJsonObject cameraJson;
+      cameraJson.load(cameraFile.toStdString());
+      camera->set(cameraJson);
+      glm::vec3 eyeSpec = camera->getEye();
+      glm::vec3 centerSpec = camera->getCenter();
+      vec = ZPoint(eyeSpec[0], eyeSpec[1], eyeSpec[2]) -
+              ZPoint(centerSpec[0], centerSpec[1], centerSpec[2]);
+      vec.normalize();
+
+      upVector = camera->getUpVector();
+    }
+
+    camera->setProjectionType(Z3DCamera::Orthographic);
+//    glm::vec3 eyeSpec = camera->getEye();
+//    glm::vec3 centerSpec = camera->getCenter();
+
+    ZPoint referenceCenter;
+    referenceCenter.set(dataRangeX / 2, dataRangeY / 2, dataRangeZ / 2);
+
+    double distNearToCenter = referenceCenter.length() * 2.0;
+    double distEyeToNear = dataRangeZ * 0.5 / tan(camera->getFieldOfView() * 0.5);
+    double distEyeToCenter = distEyeToNear + distNearToCenter;
+
+    ZPoint eyePosition = referenceCenter + vec * distEyeToCenter;
+    camera->setCenter(glm::vec3(referenceCenter[0], referenceCenter[1],
+        referenceCenter[2]));
+    camera->setEye(glm::vec3(eyePosition[0], eyePosition[1], eyePosition[2]));
+
+    camera->setUpVector(upVector);
+
+   // double eyeDistance = eyeDistance;//boundBox[3] - referenceCenter[1] + 2500;
+    //double eyeDistance = 2000 - referenceCenter[1];
+//    glm::vec3 viewVector(vec.x(), vec.y(), vec.z());
+
+//    viewVector *= eyeDistance;
+//    glm::vec3 eyePosition = referenceCenter - viewVector;
+
+//    referenceCenter[2] = dataRangeZ / 2;// - stack->getOffset().getZ();
+
+//    eyePosition[2] = dataRangeZ / 2;// - stack->getOffset().getZ();
+
+
+
+    stage->resetCameraClippingRange();
+    camera->setNearDist(distEyeToNear);
+
+    stage->getCompositor()->setBackgroundFirstColor(0, 0, 0, 1);
+    stage->getCompositor()->setBackgroundSecondColor(0, 0, 0, 1);
+
+    //stage->show();
+    //stage->showMaximized();
+
+    stage->takeScreenShot(output, 4000, 4000, MonoView);
+    stage->close();
+    delete stage;
+  }
+}
+
+void FlyEmDataForm::exportVolumeRenderingFigure()
+{
+  QString dirpath = QFileDialog::getExistingDirectory(this, tr("Export Figure"),
+    "", QFileDialog::ShowDirsOnly);
+
+  if (!dirpath.isEmpty()) {
+    QString cameraFile;
+    if(QMessageBox::information(
+         this, "Camera Setting", "Do you want to sepcify camera settings?",
+         QMessageBox::No | QMessageBox::Yes) == QMessageBox::Yes) {
+      cameraFile = QFileDialog::getOpenFileName(
+            this, tr("Load Camera Settings"), "", "*.json");
+    }
+
+    QItemSelectionModel *sel = ui->queryView->selectionModel();
+    QVector<ZFlyEmNeuron*> neuronArray =
+        m_neuronList->getNeuronArray(sel->selectedIndexes());
+    dump(QString("Saving %1 figures ...").arg(neuronArray.size()));
+    foreach (ZFlyEmNeuron *neuron, neuronArray) {
+      QString output = dirpath + QString("/body_%1.tif").arg(neuron->getId());
+      saveVolumeRenderingFigure(neuron, output, cameraFile);
+      dump(output + " saved");
+    }
+    dump("Done.");
+  }
 }

@@ -2,6 +2,7 @@
 #include "zstring.h"
 #include "zerror.h"
 #include "zjsonparser.h"
+#include "zdviddata.h"
 
 const char* ZDvidTarget::m_addressKey = "address";
 const char* ZDvidTarget::m_portKey = "port";
@@ -10,8 +11,10 @@ const char* ZDvidTarget::m_commentKey = "comment";
 const char* ZDvidTarget::m_nameKey = "name";
 const char* ZDvidTarget::m_localKey = "local";
 const char* ZDvidTarget::m_debugKey = "debug";
+const char* ZDvidTarget::m_bgValueKey = "background";
+const char* ZDvidTarget::m_bodyLabelNameKey = "body_label";
 
-ZDvidTarget::ZDvidTarget() : m_port(-1)
+ZDvidTarget::ZDvidTarget() : m_port(-1), m_bgValue(255)
 {
 }
 
@@ -150,6 +153,12 @@ void ZDvidTarget::loadJsonObject(const ZJsonObject &obj)
     m_comment = ZJsonParser::stringValue(obj[m_commentKey]);
     m_name = ZJsonParser::stringValue(obj[m_nameKey]);
     m_localFolder = ZJsonParser::stringValue(obj[m_localKey]);
+    if (obj.hasKey(m_bgValueKey)) {
+      m_bgValue = ZJsonParser::integerValue(obj[m_bgValueKey]);
+    }
+    if (obj.hasKey(m_bodyLabelNameKey)) {
+      m_bodyLabelName = ZJsonParser::stringValue(obj[m_bodyLabelNameKey]);
+    }
   }
 }
 
@@ -198,4 +207,13 @@ std::string ZDvidTarget::getLocalLowResGrayScalePath(
   path += ".tif";
 
   return path;
+}
+
+std::string ZDvidTarget::getBodyLabelName() const
+{
+  if (m_bodyLabelName.empty()) {
+    return ZDvidData::getName(ZDvidData::ROLE_BODY_LABEL);
+  }
+
+  return m_bodyLabelName;
 }

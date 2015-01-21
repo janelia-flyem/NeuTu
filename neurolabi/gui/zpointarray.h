@@ -22,6 +22,7 @@ public:
   void print() const;
 
   void importTxtFile(const std::string &filePath);
+  void importPcdFile(const std::string &filePath);
 
   /*!
    * \brief Append a point

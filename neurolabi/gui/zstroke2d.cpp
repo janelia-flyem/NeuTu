@@ -137,6 +137,8 @@ void ZStroke2d::display(ZPainter &painter, int slice, Display_Style option) cons
     return;
   }
 
+  painter.save();
+
   QColor color = m_color;
 //  if (m_z >= 0 && m_z != z) {
 //    if (isEraser()) {
@@ -147,6 +149,8 @@ void ZStroke2d::display(ZPainter &painter, int slice, Display_Style option) cons
 //  }
   QPen pen(color);
   QBrush brush(color);
+
+  pen.setCosmetic(m_usingCosmeticPen);
 
   if (isEraser()) {
     painter.setCompositionMode(QPainter::CompositionMode_Source);
@@ -160,8 +164,10 @@ void ZStroke2d::display(ZPainter &painter, int slice, Display_Style option) cons
         painter.setPen(Qt::NoPen);
         painter.setBrush(brush);
       } else {
+        pen.setWidthF(getPenWidth());
         painter.setPen(pen);
         painter.setBrush(Qt::NoBrush);
+        painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
       }
       painter.drawEllipse(QPointF(m_pointArray[0]), m_width / 2, m_width / 2);
     } else {
@@ -183,6 +189,8 @@ void ZStroke2d::display(ZPainter &painter, int slice, Display_Style option) cons
       }
     }
   }
+
+  painter.restore();
 }
 
 void ZStroke2d::display(QPainter *rawPainter, int z, Display_Style option,

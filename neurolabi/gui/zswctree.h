@@ -400,11 +400,35 @@ public:
    * \param appending Add the node to the selection set with in appending way
    *      or not.
    */
-  void setNodeSelected(Swc_Tree_Node *tn, bool appending);
+  void selectNode(Swc_Tree_Node *tn, bool appending);
+  void deselectNode(Swc_Tree_Node *tn);
+  void selectAllNode();
+  void deselectAllNode();
+
+  Swc_Tree_Node* selectHitNode(bool appending);
+  Swc_Tree_Node* deselectHitNode();
+
+  template<class InputIterator>
+  void selectNode(
+      InputIterator first, InputIterator last, bool appending);
+
+  void selectNodeConnection(Swc_Tree_Node *seed);
+  void selectNodeFloodFilling(Swc_Tree_Node *seed);
+
+  void selectHitNodeConnection();
+  void selectHitNodeFloodFilling();
+  void selectNeighborNode();
+  void selectConnectedNode();
+  void selectUpstreamNode();
+  void selectDownstreamNode();
+  void selectBranchNode();
 
   const std::set<Swc_Tree_Node*>& getSelectedNode() const;
+  bool hasSelectedNode() const;
+  bool isNodeSelected(const Swc_Tree_Node *tn) const;
 
   Swc_Tree_Node* getHitNode() const { return m_hitSwcNode; }
+  void setHitNode(Swc_Tree_Node *tn) { m_hitSwcNode = tn; }
 
   void toSvgFile(const char *filePath);
 
@@ -531,6 +555,17 @@ public:
 
   //void labelTrunk(int flag, int setLabel, Swc_Tree_Node *start);
   void labelTrunkLevel(ZSwcTrunkAnalyzer *trunkAnalyzer);
+
+  /*!
+   * \brief Mark soma nodes
+   *
+   * Set type of soma nodes to <somaType> and type of other nodes to <otherType>. The thickest node
+   * of each tree will be set as root.
+   *
+   * \param radiusThre the radius threshold of the soma nodes. Soma is marked only if the radius of
+   * the thickest node is larger than or equal to <radiusThre>, otherwise set all nodes type to <otherType>
+   */
+  void markSoma(double radiusThre = 0, int somaType = 1, int otherType = 0);
 
   int regularDepth();
 
@@ -718,4 +753,17 @@ private:
 #define REGULAR_SWC_NODE_BEGIN(tn, start) \
   (Swc_Tree_Node_Is_Regular(tn) ? (start) : ((start) + 1))
 
+template<class InputIterator>
+void ZSwcTree::selectNode(
+    InputIterator first, InputIterator last, bool appending)
+{
+  if (!appending) {
+    deselectAllNode();
+  }
+
+  for (InputIterator it = first; it != last; ++it) {
+    Swc_Tree_Node *tn = *it;
+    selectNode(tn, true);
+  }
+}
 #endif /* _ZSWCTREE_H_ */

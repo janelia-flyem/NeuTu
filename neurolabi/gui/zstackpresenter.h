@@ -19,6 +19,7 @@
 #include "zkeyeventswcmapper.h"
 #include "zmouseeventmapper.h"
 #include "zmouseeventprocessor.h"
+#include "qthreadfuturemap.h"
 
 class ZStackView;
 class ZStackDoc;
@@ -57,7 +58,8 @@ public:
     ACTION_MOVE_SWC_NODE,
     ACTION_ESTIMATE_SWC_NODE_RADIUS,
     ACTION_PAINT_STROKE, ACTION_ERASE_STROKE,
-    ACTION_LOCATE_SELECTED_SWC_NODES_IN_3D
+    ACTION_LOCATE_SELECTED_SWC_NODES_IN_3D,
+    ACTION_SPLIT_DATA
   };
 
   inline double greyScale(int c = 0) const {return m_greyScale[c];}
@@ -100,6 +102,7 @@ public:
   //void createTubeActions();
   void createStrokeActions();
   void createDocDependentActions();
+  void createMainWindowActions();
 
   inline QAction* getAction(EActionItem item) const {
     return m_actionMap[item];
@@ -194,14 +197,9 @@ public slots:
   void fitEllipse();
   void dropSegment();
   void enterMouseCapturingMode();
-  //void refineChainEnd();
-  void bringSelectedToFront();
-  void sendSelectedToBack();
-  //void selectNeighbor();
-  //void selectConnectedTube();
   void markPuncta();
   void deleteSelected();
-  void deleteAllPuncta();
+  //void deleteAllPuncta();
   void enlargePuncta();
   void narrowPuncta();
   void meanshiftPuncta();
@@ -232,6 +230,11 @@ public slots:
   void tryPaintStrokeMode();
   void tryEraseStrokeMode();
   void tryDrawStrokeMode(double x, double y, bool isEraser);
+
+  void tryDrawRectMode(double x, double y);
+  void enterDrawRectMode(double x, double y);
+  void tryDrawRectMode();
+  void exitRectEdit();
 
   void selectDownstreamNode();
   void selectSwcNodeConnection(Swc_Tree_Node *lastSelected = NULL);
@@ -312,25 +315,9 @@ private:
   QAction *m_fitsegAction;
   QAction *m_fitEllipseAction;
   QAction *m_dropsegAction;
-  //QAction *m_cutAction;
-  //QAction *m_breakAction;
-  //QAction *m_hookAction;
-  //QAction *m_spHookAction;
-  //QAction *m_linkAction;
-  //QAction *m_mergeAction;
-  QAction *m_frontAction;
-  QAction *m_backAction;
-  //QAction *m_refineEndAction;
-  //QAction *m_connectAction;
-  //QAction *m_extendAction;
-  //QAction *m_walkAction;
-  //QAction *m_checkConnAction;
-  //QAction *m_disconnectAction;
-  //QAction *m_neighborAction;
-  //QAction *m_selectConnectedTubeAction;
   QAction *m_markPunctaAction;
   QAction *m_deleteSelectedAction;
-  QAction *m_deleteAllPunctaAction;
+  //QAction *m_deleteAllPunctaAction;
   QAction *m_enlargePunctaAction;
   QAction *m_narrowPunctaAction;
   QAction *m_meanshiftPunctaAction;
@@ -391,6 +378,8 @@ private:
   ZMouseEventProcessor m_mouseEventProcessor;
 
   int m_zOrder;
+
+  QThreadFutureMap m_futureMap;
 
 signals:
   void viewModeChanged();

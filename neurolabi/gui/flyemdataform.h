@@ -19,6 +19,7 @@ class ZFlyEmDataFrame;
 class ZFlyEmQueryView;
 class ZImageWidget;
 class QGraphicsScene;
+class QMenu;
 
 namespace Ui {
 class FlyEmDataForm;
@@ -70,6 +71,7 @@ protected:
   void showEvent(QShowEvent *);
 
   void initThumbnailScene();
+  void createMenu();
 
 signals:
   void showSummaryTriggered();
@@ -105,6 +107,7 @@ private slots:
   void viewModel(const QModelIndex &index);
   void showSelectedModel();
   void showSelectedBody();
+  //void showSelectedBodyCoarse();
   void showSelectedModelWithBoundBox();
   void showNearbyNeuron();
   void searchNeighborNeuron();
@@ -135,11 +138,15 @@ private slots:
 
   void on_exportPushButton_clicked();
 
+  void exportVolumeRenderingFigure();
+
 private:
   ZStackDoc* showViewSelectedModel(ZFlyEmQueryView *view);
   ZStackDoc* showViewSelectedBody(ZFlyEmQueryView *view);
   void updateThumbnail(ZFlyEmNeuron *neuron);
   void computeThumbnailFunc(ZFlyEmNeuron *neuron);
+  void saveVolumeRenderingFigure(
+      ZFlyEmNeuron *neuron, const QString &output, const QString cameraFile);
 
 private:
   Ui::FlyEmDataForm *ui;
@@ -167,6 +174,8 @@ private:
   //ZFlyEmNeuronImageFactory m_imageFactory;
 
   QMap<QString, QFuture<void> > m_threadFutureMap;
+  QMenu *m_mainMenu;
+  QMenu *m_exportMenu;
 };
 
 #endif // FLYEMDATAFORM_H

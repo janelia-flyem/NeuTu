@@ -16,7 +16,7 @@ class Z3DVolumeSource : public Z3DProcessor
 {
   Q_OBJECT
 public:
-  Z3DVolumeSource(ZStackDoc *doc);
+  Z3DVolumeSource(ZStackDoc *doc, size_t maxVoxelNumber = 0);
   virtual ~Z3DVolumeSource();
 
   void reloadVolume();

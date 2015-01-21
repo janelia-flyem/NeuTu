@@ -9,6 +9,7 @@
 #include "zfiletype.h"
 #include "c_stack.h"
 #include "zimage.h"
+#include "zsharedpointer.h"
 
 #include <QImage>
 #include <QImageWriter>
@@ -215,54 +216,54 @@ bool Z3DCanvasRenderer::renderToImage(const QString &filename, int width, int he
 
 void Z3DCanvasRenderer::renderInportToImage(const QString &filename, Z3DEye eye)
 {
+  const Z3DTexture* tex = getImageColorTexture(eye);
+  if (!tex) {
+    throw Exception("not ready to capture image");
+  }
+  GLenum dataFormat = GL_BGRA;
+  GLenum dataType = GL_UNSIGNED_INT_8_8_8_8_REV;
+
   if (eye == CenterEye) {
-    //if (m_inport.isReady()) {
-    // get color buffer content
-    glm::detail::tvec4<uint8_t,glm::highp>* colorBuffer = readBGRAColorBuffer<uint8_t>(eye);
-    //if (colorBuffer) {
-    glm::ivec2 size = m_inport.getSize();
-    QImage upsideDownImage((const uchar*)colorBuffer, size.x, size.y,
+    ZSharedPointer<uint8_t> colorBuffer(new uint8_t[tex->getBypePerPixel(dataFormat, dataType) * tex->getNumPixels()], array_deleter<uint8_t>());
+    tex->downloadTextureToBuffer(dataFormat, dataType, colorBuffer.get());
+    QImage upsideDownImage(colorBuffer.get(), tex->getWidth(), tex->getHeight(),
                            QImage::Format_ARGB32_Premultiplied);
     QImage image = upsideDownImage.mirrored(false, true);
 
     if (!ZImage::writeImage(image, filename)) {
-      delete[] colorBuffer;
       throw Exception("Image writing error");
     }
-    delete[] colorBuffer;
-    //}
-    //}
   } else if (eye == RightEye) {
-    glm::detail::tvec4<uint8_t,glm::highp>* colorBuffer = readBGRAColorBuffer<uint8_t>(LeftEye);
-    glm::ivec2 size = m_rightEyeInport.getSize();
-    QImage sideBySideImage(size.x * 2, size.y, QImage::Format_ARGB32_Premultiplied);
+    const Z3DTexture* leftTex = getImageColorTexture(LeftEye);
+    if (!leftTex) {
+      throw Exception("not ready to capture image");
+    }
+    ZSharedPointer<uint8_t> colorBuffer(new uint8_t[leftTex->getBypePerPixel(dataFormat, dataType) * leftTex->getNumPixels()], array_deleter<uint8_t>());
+    leftTex->downloadTextureToBuffer(dataFormat, dataType, colorBuffer.get());
+    QImage sideBySideImage(tex->getWidth() * 2, tex->getHeight(), QImage::Format_ARGB32_Premultiplied);
     QPainter painter(&sideBySideImage);
     painter.scale(1, -1);
-    painter.translate(0, -size.y);
-    QImage upsideDownImageLeft((const uchar*)colorBuffer, size.x, size.y,
+    painter.translate(0, -tex->getHeight());
+    QImage upsideDownImageLeft(colorBuffer.get(), tex->getWidth(), tex->getHeight(),
                                QImage::Format_ARGB32_Premultiplied);
     painter.drawImage(0, 0, upsideDownImageLeft);
-    delete[] colorBuffer;
-    colorBuffer = readBGRAColorBuffer<uint8_t>(RightEye);
-    QImage upsideDownImageRight((const uchar*)colorBuffer, size.x, size.y,
+    tex->downloadTextureToBuffer(dataFormat, dataType, colorBuffer.get());
+    QImage upsideDownImageRight(colorBuffer.get(), tex->getWidth(), tex->getHeight(),
                                 QImage::Format_ARGB32_Premultiplied);
-    painter.drawImage(size.x, 0, upsideDownImageRight);
-    delete[] colorBuffer;
+    painter.drawImage(tex->getWidth(), 0, upsideDownImageRight);
 
     if (m_renderToImageType == HalfSideBySideStereoView) {
       QImage halfSideBySideImage = sideBySideImage.scaled(
-            size.x, size.y, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+            tex->getWidth(), tex->getHeight(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
       QImageWriter writer(filename);
       writer.setCompression(1);
       if(!writer.write(halfSideBySideImage)) {
-        //LERROR() << writer.errorString();
         throw Exception(writer.errorString().toStdString());
       }
     } else {
       QImageWriter writer(filename);
       writer.setCompression(1);
       if(!writer.write(sideBySideImage)) {
-        //LERROR() << writer.errorString();
         throw Exception(writer.errorString().toStdString());
       }
     }

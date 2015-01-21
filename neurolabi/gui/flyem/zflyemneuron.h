@@ -13,6 +13,7 @@
 class ZSwcTree;
 class ZPunctum;
 class ZObject3dScan;
+class ZDvidTarget;
 
 /*!
  * \brief The class of Fly EM neuron
@@ -88,6 +89,8 @@ public:
   inline int getId() const { return m_id; }
   inline int getSourceId() const { return m_sourceId; }
   inline void setSourceId(int id) { m_sourceId = id; }
+
+  void setPath(const ZDvidTarget &target);
 
   inline void setModelPath(const std::string &path) {
     m_modelPath = path;

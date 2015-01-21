@@ -3,7 +3,7 @@
 #include "zobjsitem.h"
 
 ZDocPlayerObjsModel::ZDocPlayerObjsModel(
-    ZStackDoc *doc, ZDocPlayer::TRole role, QObject *parent) :
+    ZStackDoc *doc, ZStackObjectRole::TRole role, QObject *parent) :
   ZObjsModel(parent), m_doc(doc), m_role(role)
 {
   updateModelData();
@@ -66,7 +66,7 @@ ZDocPlayer* ZDocPlayerObjsModel::getDocPlayer(const QModelIndex &index) const
     ZObjsItem *item = static_cast<ZObjsItem*>(index.internalPointer());
 
     if (item->parent() == m_rootItem) {
-      obj = static_cast<ZDocPlayer*>(item->getObj());
+      obj = static_cast<ZDocPlayer*>(item->getActuralData());
     }
   }
 

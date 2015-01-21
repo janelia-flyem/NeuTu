@@ -16,7 +16,7 @@
    </font>
   </property>
   <property name="windowTitle">
-   <string>1.0r</string>
+   <string>1.0w</string>
   </property>
   <property name="iconSize">
    <size>
@@ -354,6 +354,8 @@
       <addaction name="actionView_Labeled_Regions"/>
       <addaction name="actionCreate_ROI"/>
       <addaction name="actionExport_Segmentation_Result"/>
+      <addaction name="actionHierarchical_Split"/>
+      <addaction name="actionSegmentation_Project"/>
      </widget>
      <widget class="QMenu" name="menuNew">
       <property name="title">
@@ -366,6 +368,7 @@
        <string>Project</string>
       </property>
       <addaction name="actionFlyEmROI"/>
+      <addaction name="actionMerge_Body_Project"/>
      </widget>
      <addaction name="menuNew"/>
      <addaction name="menuFlyEmOpen"/>
@@ -1338,6 +1341,25 @@
   <action name="actionUpload_Annotations">
    <property name="text">
     <string>Upload Annotations</string>
+   </property>
+  </action>
+  <action name="actionMerge_Body_Project">
+   <property name="icon">
+    <iconset resource="gui.qrc">
+     <normaloff>:/images/bodymerge.png</normaloff>:/images/bodymerge.png</iconset>
+   </property>
+   <property name="text">
+    <string>Merge Body</string>
+   </property>
+  </action>
+  <action name="actionHierarchical_Split">
+   <property name="text">
+    <string>Hierarchical Split</string>
+   </property>
+  </action>
+  <action name="actionSegmentation_Project">
+   <property name="text">
+    <string>Segmentation Project</string>
    </property>
   </action>
  </widget>

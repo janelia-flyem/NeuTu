@@ -3,6 +3,9 @@
 #Example:
 #sh build_debug.sh /Users/zhaot/local/lib/Trolltech/Qt-4.8.5/bin/qmake /Users/zhaot/local/lib/Trolltech/Qt-4.8.5/mkspecs/macx-g++
 
+echo 'Obsolete script. Abort.'
+exit
+
 if [ $# -lt 2 ]
 then
   echo "Usage: sh build_debug.sh <qmake_path> <qmake_spec_path>"

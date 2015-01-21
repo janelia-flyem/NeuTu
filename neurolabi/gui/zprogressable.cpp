@@ -42,6 +42,12 @@ void ZProgressable::endProgress()
   m_progressReporter->end();
 }
 
+void ZProgressable::resetProgress()
+{
+  m_progressReporter->resetSessionCount();
+  m_progressReporter->close();
+}
+
 void ZProgressable::startProgress(double scale)
 {
   m_progressReporter->start(scale);

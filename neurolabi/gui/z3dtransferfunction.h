@@ -16,7 +16,8 @@ class Z3DTransferFunction : public ZColorMap
   Q_OBJECT
 public:
 
-  Z3DTransferFunction(double min = 0.0, double max = 1.0, const glm::col4 &minColor = glm::col4(0,0,0,0),
+  Z3DTransferFunction(double min = 0.0, double max = 1.0,
+                      const glm::col4 &minColor = glm::col4(0,0,0,0),
                       const glm::col4 &maxColor = glm::col4(255,255,255,255),
                       int width = 256,
                       QObject *parent = 0);

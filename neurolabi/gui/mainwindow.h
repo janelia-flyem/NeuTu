@@ -54,6 +54,9 @@ class ZFlyEmRoiDialog;
 class NewProjectMainWindow;
 class ShapePaperDialog;
 class DvidOperateDialog;
+class SynapseImportDialog;
+class FlyEmBodyMergeProjectDialog;
+class ZSegmentationProjectDialog;
 
 namespace Ui {
     class MainWindow;
@@ -66,19 +69,30 @@ public:
   MainWindow(QWidget *parent = 0);
   ~MainWindow();
 
+  /*!
+   * \brief Run configuration.
+   */
+  void configure();
+
+  void initOpenglContext();
+
 public: /* frame operation */
   ZStackFrame* activeStackFrame();
   ZStackFrame* currentStackFrame();
   ZFlyEmDataFrame* currentFlyEmDataFrame();
   ZTiledStackFrame* currentTiledStackFrame();
   int frameNumber();
+
+  //Add a flyem data frame. Nothing happens if <frame> is NULL.
+  void addFlyEmDataFrame(ZFlyEmDataFrame *frame);
+
+public: /* Get useful widgets/objects */
+  QProgressDialog* getProgressDialog();
+  QProgressBar* getProgressBar();
+
   inline QUndoGroup* undoGroup() const { return m_undoGroup; }
-  void initOpenglContext();
-  void config();
 
-  bool initBodySplitProject();
-  //void initBodySplitProjectFunc();
-
+public: /* File and message dialogs */
   QString getOpenFileName(const QString &caption,
                           const QString &filter = QString());
   QStringList getOpenFileNames(const QString &caption,
@@ -90,23 +104,21 @@ public: /* frame operation */
                           const QString &dir);
   QString getDirectory(const QString &caption);
 
-  //Error handling
   void report(const std::string &title, const std::string &msg,
               ZMessageReporter::EMessageType msgType);
   bool ask(const std::string &title, const std::string &msg);
 
-  QProgressDialog* getProgressDialog();
-  QProgressBar* getProgressBar();
+public:
+  bool initBodySplitProject();
 
   static void createWorkDir();
 
-  //Add a flyem data frame. Nothing happens if <frame> is NULL.
-  void addFlyEmDataFrame(ZFlyEmDataFrame *frame);
+  QAction* getBodySplitAction() const;
 
 signals:
   void dvidRequestCanceled();
   void progressDone();
-  void progressAdvanced();
+  void progressAdvanced(double dp);
   void docReaderReady(ZStackDocReader*);
 
 public slots:
@@ -114,13 +126,18 @@ public slots:
   void presentStackFrame(ZStackFrame *frame);
   void openFile(const QString &fileName);
   void openFile(const QStringList &fileNameList);
-  void advanceProgress();
+
+  void initProgress(int maxValue);
+  void advanceProgress(double dp);
+  void startProgress(const QString &title, int nticks);
+  void endProgress();
 
   void updateAction();
   void updateMenu();
   void updateStatusBar();
 
   void on_actionTile_Manager_2_triggered();
+  void cancelDvidRequest();
 
   ZStackFrame* createEmptyStackFrame(ZStackFrame *parentFrame = NULL);
 
@@ -131,15 +148,7 @@ public slots:
   ZStackFrame* createStackFrame(
       Stack *stack,NeuTube::Document::ETag tag = NeuTube::Document::NORMAL,
       ZStackFrame *parentFrame = NULL);
-  /*
-  ZStackFrame* createStackFrame(
-      ZStackDoc *doc,NeuTube::Document::ETag tag,
-      ZStackFrame *parentFrame = NULL);
 
-
-  ZStackFrame* createStackFrame(
-      ZStackDoc *doc, ZStackFrame *parentFrame = NULL);
-*/
   ZStackFrame* createStackFrame(
       ZStackDocReader *reader, ZStackFrame *parentFrame = NULL);
   ZStackFrame* createStackFrame(
@@ -149,9 +158,6 @@ public slots:
   void showStackFrame(
       const QStringList &fileList, bool opening3DWindow = false);
   void createDvidFrame();
-
-  void cancelDvidRequest();
-
   void createStackFrameFromDocReader(ZStackDocReader *reader);
 
 private:
@@ -226,11 +232,11 @@ private slots:
   void exportPuncta();
 
   // for 'File->Import'
-  void openTraceProject();
+  //void openTraceProject();
   void importBinary();
   void importSwc();
-  void importGoodTube();
-  void importBadTube();
+  //void importGoodTube();
+  //void importBadTube();
   //void importTubeConnection();
   void importPuncta();
   void importImageSequence();
@@ -255,6 +261,7 @@ private slots:
   void binarize();
   void bwsolid();
   void enhanceLine();
+  void subtractSwcs();
 
   // slots for 'Options'
   void setOption();
@@ -393,6 +400,12 @@ private slots:
 
   void on_actionUpload_Annotations_triggered();
 
+  void on_actionMerge_Body_Project_triggered();
+
+  void on_actionHierarchical_Split_triggered();
+
+  void on_actionSegmentation_Project_triggered();
+
 private:
   void createActions();
   void createFileActions();
@@ -400,6 +413,7 @@ private:
   void createViewActions();
   void createToolActions();
   void createTraceActions();
+  void createSwcActions();
 
   void updateActionGroup(QActionGroup *group, QAction *triggeredAction);
   void updateObjectDisplayStyle(ZStackFrame *frame, QAction *action);
@@ -414,7 +428,7 @@ private:
   void writeSettings();
   bool okToContinue();
   void saveFile(const QString &fileName);
-  void openTraceProject(QString fileName);
+  //void openTraceProject(QString fileName);
   void setCurrentFile(const QString &fileName);
   void updateRecentFileActions();
   QString strippedName(const QString &fullFileName);
@@ -453,7 +467,7 @@ private:
                                        int x, int y, int z,
                                        int width, int height, int depth);
 
-  void autoTrace(ZStackFrame *frame);
+  void autoTrace(ZStackFrame *frame, bool doResample);
 
 private:
   QMdiArea *mdiArea;
@@ -535,6 +549,7 @@ private:
   QAction *fitsegAction;
   QAction *traceTubeAction;
   QAction *autoTraceAction;
+  QAction *subtractSwcsAction;
 
   QActionGroup *interactiveMarkPuncta;
   QAction *noMarkPunctaAction;
@@ -601,6 +616,9 @@ private:
   ZFlyEmRoiDialog *m_roiDlg;
   ShapePaperDialog *m_shapePaperDlg;
   DvidOperateDialog *m_dvidOpDlg;
+  SynapseImportDialog *m_synapseDlg;
+  FlyEmBodyMergeProjectDialog *m_mergeBodyDlg;
+  ZSegmentationProjectDialog *m_segmentationDlg;
 
 
   //new project main window

@@ -1,6 +1,8 @@
 #ifndef ZDVIDDATA_H
 #define ZDVIDDATA_H
 
+#include <string>
+
 /*!
  * \brief The class of dvid data
  */
@@ -12,7 +14,10 @@ public:
   enum ERole {
     ROLE_GRAY_SCALE, ROLE_BODY_LABEL, ROLE_ROI_CURVE, ROLE_BODY_ANNOTATION,
     ROLE_BOUND_BOX, ROLE_SKELETON, ROLE_THUMBNAIL, ROLE_SUPERPIXEL,
-    ROLE_SP2BODY, ROLE_SPARSEVOL, ROLE_SPLIT_LABEL, ROLE_BODY_INFO
+    ROLE_SP2BODY, ROLE_SPARSEVOL, ROLE_SPARSEVOL_COARSE,
+    ROLE_SPLIT_LABEL, ROLE_SPLIT_STATUS,
+    ROLE_BODY_INFO,
+    ROLE_MERGE_TEST_BODY_LABEL, ROLE_MAX_BODY_ID
   };
 
   enum EType {
@@ -22,6 +27,8 @@ public:
 
   static const char* getName(ERole role);
   static const char* getName(EType type);
+
+  static std::string getName(ERole role, const std::string &prefix);
 
 private:
   static const char *m_grayScaleName;
@@ -34,8 +41,12 @@ private:
   static const char *m_superpixelName;
   static const char *m_sp2bodyName;
   static const char *m_sparsevolName;
+  static const char *m_coarseSparsevolName;
   static const char *m_splitLabelName;
+  static const char *m_splitStatusName;
   static const char *m_bodyInfoName;
+  static const char *m_mergeTestBodyLabelName;
+  static const char *m_maxBodyIdName;
 
   static const char *m_keyValueTypeName;
 

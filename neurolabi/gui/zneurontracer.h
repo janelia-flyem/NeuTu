@@ -95,7 +95,7 @@ public:
    *
    * It will also create workspaces automatically if necessary.
    */
-  ZSwcTree* trace(Stack *stack);
+  ZSwcTree* trace(Stack *stack, bool doResampleAfterTracing);
 
   //Autotrace configuration
 
@@ -130,6 +130,10 @@ public:
   };
   void setTraceScoreThreshold(ETracingMode mode);
 
+  void useEdgePath(bool state) {
+    m_usingEdgePath = state;
+  }
+
 private:
   //Helper functions
   Stack* binarize(const Stack *stack);
@@ -157,6 +161,7 @@ private:
   double m_autoTraceMinScore;
   double m_traceMinScore;
   double m_2dTraceMinScore;
+  bool m_usingEdgePath;
 
   //Intermedite buffer
   std::vector<Locseg_Chain*> m_chainArray;

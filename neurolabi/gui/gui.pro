@@ -16,6 +16,18 @@ QMAKE_EXTRA_TARGETS += neurolabi
 NEUROLABI_DIR = $${PWD}/..
 EXTLIB_DIR = $${NEUROLABI_DIR}/lib
 
+win32 {
+  DEPLOYMENT_COMMAND = $$PWD/deploy_win.bat $(QMAKE) $$OUT_PWD
+}
+
+macx {
+  DEPLOYMENT_COMMAND = $$PWD/deploy_mac $(QMAKE) $$OUT_PWD
+}
+
+unix:!macx {
+  DEPLOYMENT_COMMAND = $$PWD/deploy_linux $(QMAKE) $OUT_PWD
+}
+
 include(extlib.pri)
 
 #neurolabi
@@ -24,8 +36,8 @@ CONFIG(debug, debug|release) {
     DEFINES += _DEBUG_ _ADVANCED_ PROJECT_PATH=\"\\\"$$PWD\\\"\"
 } else {
     TARGET = neuTube
+    QMAKE_POST_LINK += $$DEPLOYMENT_COMMAND
 }
-
 
 # suppress warnings from 3rd party library, works for gcc and clang
 QMAKE_CXXFLAGS += -isystem ../gui/ext
@@ -47,9 +59,23 @@ include(add_itk.pri)
 #Qt5
 QT += opengl xml network
 isEqual(QT_MAJOR_VERSION,5) | greaterThan(QT_MAJOR_VERSION,5) {
-message("Qt 5")
+
+isEqual(QT_MAJOR_VERSION,5) {
+  lessThan(QT_MINOR_VERSION,4) {
+    message("Cannot build neuTube with Qt version $${QT_VERSION}.")
+    error("Use at least Qt 5.4.0.")
+  }
+}
+    message("Qt 5")
     QT += concurrent gui
     DEFINES += _QT5_
+    CONFIG += c++11
+    QMAKE_MACOSX_DEPLOYMENT_TARGET=10.7
+}
+
+#Qt4
+isEqual(QT_MAJOR_VERSION,4) {
+    message("Qt 4")
 }
 
 #QT += webkit
@@ -64,6 +90,7 @@ win32 {
 
 macx {
   LIBS += -lGLEW -framework AGL -framework OpenGL
+  DEFINES += _MAC_
 }
 
 unix:!macx {
@@ -462,7 +489,29 @@ HEADERS += mainwindow.h \
     zkeyeventmapper.h \
     zuserinputevent.h \
     zstackobjectmanager.h \
-    zstackobjectgroup.h
+    zstackobjectgroup.h \
+    zcolorscheme.h \
+    zpunctumcolorscheme.h \
+    zstackpatch.h \
+    zrect2d.h \
+    zobjectcolorscheme.h \
+    flyem/zflyembodymerger.h \
+    synapseimportdialog.h \
+    flyem/zflyembodymergeproject.h \
+    flyembodymergeprojectdialog.h \
+    zstackdvidgrayscalefactory.h \
+    zstackdocreader.h \
+    flyem/zflyembodymergedoc.h \
+    flyemprojectdialog.h \
+    flyem/zflyembodymergeframe.h \
+    zsegmentationprojectdialog.h \
+    zsegmentationproject.h \
+    zsegmentationprojectmodel.h \
+    zsubtractswcsdialog.h \
+    zmarkswcsomadialog.h \
+    zlabeledspinboxwidget.h \
+    zspinboxgroupdialog.h \
+    zautotracedialog.h
 
 FORMS += settingdialog.ui \
     frameinfodialog.ui \
@@ -517,7 +566,11 @@ FORMS += settingdialog.ui \
     zflyemroidialog.ui \
     newprojectmainwindow.ui \
     shapepaperdialog.ui \
-    dvidoperatedialog.ui
+    dvidoperatedialog.ui \
+    synapseimportdialog.ui \
+    flyembodymergeprojectdialog.ui \
+    zsegmentationprojectdialog.ui \
+    zmarkswcsomadialog.ui
 SOURCES += main.cpp \
     mainwindow.cpp \
     zstackview.cpp \
@@ -777,7 +830,29 @@ SOURCES += main.cpp \
     zkeyeventmapper.cpp \
     zuserinputevent.cpp \
     zstackobjectmanager.cpp \
-    zstackobjectgroup.cpp
+    zstackobjectgroup.cpp \
+    zcolorscheme.cpp \
+    zpunctumcolorscheme.cpp \
+    zstackpatch.cpp \
+    zrect2d.cpp \
+    zobjectcolorscheme.cpp \
+    flyem/zflyembodymerger.cpp \
+    synapseimportdialog.cpp \
+    flyem/zflyembodymergeproject.cpp \
+    flyembodymergeprojectdialog.cpp \
+    zstackdvidgrayscalefactory.cpp \
+    zstackdocreader.cpp \
+    flyem/zflyembodymergedoc.cpp \
+    flyemprojectdialog.cpp \
+    flyem/zflyembodymergeframe.cpp \
+    zsegmentationprojectdialog.cpp \
+    zsegmentationproject.cpp \
+    zsegmentationprojectmodel.cpp \
+    zsubtractswcsdialog.cpp \
+    zmarkswcsomadialog.cpp \
+    zlabeledspinboxwidget.cpp \
+    zspinboxgroupdialog.cpp \
+    zautotracedialog.cpp
 
 OTHER_FILES += \
     extlib.pri

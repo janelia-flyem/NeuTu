@@ -15,6 +15,8 @@
 #include "neutubeconfig.h"
 
 #ifdef _QT5_
+#include <QSurfaceFormat>
+
 #include <QStack>
 #include <QPointer>
 // thanks to Daniel Price for this workaround
@@ -99,6 +101,16 @@ void myMessageOutput(QtMsgType type, const char *msg)
 
 int main(int argc, char *argv[])
 {
+#ifdef _QT5_
+  QCoreApplication::setAttribute(Qt::AA_ShareOpenGLContexts, true);
+#endif
+  QCoreApplication::setAttribute(Qt::AA_DontCreateNativeWidgetSiblings, true);
+
+#ifdef _QT5_
+  QSurfaceFormat format;
+  //format.setStereo(true);
+  QSurfaceFormat::setDefaultFormat(format);
+#endif
 
 #ifndef _FLYEM_
 #ifdef _QT5_
@@ -166,9 +178,12 @@ int main(int argc, char *argv[])
 #else
 #if defined(QT_NO_DEBUG)
     QDir dir(QApplication::applicationDirPath());
+    dir.cd("plugins");
+    QApplication::addLibraryPath(dir.absolutePath());  // for windows version
+    dir.cdUp();
     dir.cdUp();
     dir.cd("plugins");
-    QApplication::setLibraryPaths(QStringList(dir.absolutePath()));
+    QApplication::addLibraryPath(dir.absolutePath());
     dir.cdUp();
     dir.cd("lib");
     QApplication::addLibraryPath(dir.absolutePath());
@@ -211,7 +226,7 @@ int main(int argc, char *argv[])
     z3dApp.initialize();
 
     MainWindow *mainWin = new MainWindow();
-    mainWin->config();
+    mainWin->configure();
     mainWin->show();
     mainWin->raise();
     mainWin->initOpenglContext();

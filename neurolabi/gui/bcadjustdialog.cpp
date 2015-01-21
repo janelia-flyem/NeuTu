@@ -6,15 +6,51 @@ BcAdjustDialog::BcAdjustDialog(QWidget *parent) :
     m_ui(new Ui::BcAdjustDialog)
 {
   m_ui->setupUi(this);
-  m_ui->lowerScrollBar->setRange(0, 0);
-  m_ui->upperScrollBar->setRange(0, 0);
-  m_ui->lowerScrollBar_2->setRange(0, 0);
-  m_ui->upperScrollBar_2->setRange(0, 0);
-  m_ui->lowerScrollBar_3->setRange(0, 0);
-  m_ui->upperScrollBar_3->setRange(0, 0);
-  m_ui->lowerScrollBar_4->setRange(0, 0);
-  m_ui->upperScrollBar_4->setRange(0, 0);
 
+  init();
+  connectSignalSlot();
+
+  setLayout(m_ui->overallLayout);
+}
+
+BcAdjustDialog::~BcAdjustDialog()
+{
+  delete m_ui;
+}
+
+void BcAdjustDialog::init()
+{
+  m_lowerValueScrollBar.append(m_ui->lowerScrollBar);
+  m_lowerValueScrollBar.append(m_ui->lowerScrollBar_2);
+  m_lowerValueScrollBar.append(m_ui->lowerScrollBar_3);
+  m_lowerValueScrollBar.append(m_ui->lowerScrollBar_4);
+
+  m_upperValueScrollBar.append(m_ui->upperScrollBar);
+  m_upperValueScrollBar.append(m_ui->upperScrollBar_2);
+  m_upperValueScrollBar.append(m_ui->upperScrollBar_3);
+  m_upperValueScrollBar.append(m_ui->upperScrollBar_4);
+
+  m_lowerValueLabel.append(m_ui->labelLowerValue);
+  m_lowerValueLabel.append(m_ui->labelLowerValue_2);
+  m_lowerValueLabel.append(m_ui->labelLowerValue_3);
+  m_lowerValueLabel.append(m_ui->labelLowerValue_4);
+
+  m_upperValueLabel.append(m_ui->labelUpperValue);
+  m_upperValueLabel.append(m_ui->labelUpperValue_2);
+  m_upperValueLabel.append(m_ui->labelUpperValue_3);
+  m_upperValueLabel.append(m_ui->labelUpperValue_4);
+
+  for (int i = 0; i < m_lowerValueScrollBar.size(); ++i) {
+    m_lowerValueScrollBar[i]->setRange(0, 0);
+    m_upperValueScrollBar[i]->setRange(0, 0);
+
+    m_lowerValueLabel[i]->setFixedSize(m_lowerValueLabel[i]->sizeHint());
+    m_upperValueLabel[i]->setFixedSize(m_upperValueLabel[i]->sizeHint());
+  }
+}
+
+void BcAdjustDialog::connectSignalSlot()
+{
   connect(m_ui->lowerScrollBar, SIGNAL(valueChanged(int)),
           this, SLOT(setLowerValueLabel(int)));
   connect(m_ui->upperScrollBar, SIGNAL(valueChanged(int)),
@@ -31,21 +67,6 @@ BcAdjustDialog::BcAdjustDialog(QWidget *parent) :
           this, SLOT(setLowerValueLabel_4(int)));
   connect(m_ui->upperScrollBar_4, SIGNAL(valueChanged(int)),
           this, SLOT(setUpperValueLabel_4(int)));
-  m_ui->labelLowerValue->setFixedSize(m_ui->labelLowerValue->sizeHint());
-  m_ui->labelUpperValue->setFixedSize(m_ui->labelUpperValue->sizeHint());
-  m_ui->labelLowerValue_2->setFixedSize(m_ui->labelLowerValue->sizeHint());
-  m_ui->labelUpperValue_2->setFixedSize(m_ui->labelUpperValue->sizeHint());
-  m_ui->labelLowerValue_3->setFixedSize(m_ui->labelLowerValue->sizeHint());
-  m_ui->labelUpperValue_3->setFixedSize(m_ui->labelUpperValue->sizeHint());
-  m_ui->labelLowerValue_4->setFixedSize(m_ui->labelLowerValue->sizeHint());
-  m_ui->labelUpperValue_4->setFixedSize(m_ui->labelUpperValue->sizeHint());
-
-  setLayout(m_ui->overallLayout);
-}
-
-BcAdjustDialog::~BcAdjustDialog()
-{
-  delete m_ui;
 }
 
 void BcAdjustDialog::changeEvent(QEvent *e)
@@ -134,49 +155,17 @@ void BcAdjustDialog::setUpperValueLabel_4(int value)
 
 void BcAdjustDialog::setValue(int lower, int upper, int c)
 {
-  if (c==0) {
-    disconnect(m_ui->lowerScrollBar, SIGNAL(valueChanged(int)),
+  if (c >= 0 && c < m_lowerValueScrollBar.size()) {
+    disconnect(m_lowerValueScrollBar[c], SIGNAL(valueChanged(int)),
                this, SIGNAL(valueChanged()));
-    disconnect(m_ui->upperScrollBar, SIGNAL(valueChanged(int)),
-               this, SIGNAL(valueChanged()));
-    m_ui->lowerScrollBar->setValue(lower);
-    m_ui->upperScrollBar->setValue(upper);
-    connect(m_ui->lowerScrollBar, SIGNAL(valueChanged(int)),
+    m_lowerValueScrollBar[c]->setValue(lower);
+    connect(m_lowerValueScrollBar[c], SIGNAL(valueChanged(int)),
             this, SIGNAL(valueChanged()));
-    connect(m_ui->upperScrollBar, SIGNAL(valueChanged(int)),
-            this, SIGNAL(valueChanged()));
-  } else if (c==1) {
-    disconnect(m_ui->lowerScrollBar_2, SIGNAL(valueChanged(int)),
+
+    disconnect(m_upperValueScrollBar[c], SIGNAL(valueChanged(int)),
                this, SIGNAL(valueChanged()));
-    disconnect(m_ui->upperScrollBar_2, SIGNAL(valueChanged(int)),
-               this, SIGNAL(valueChanged()));
-    m_ui->lowerScrollBar_2->setValue(lower);
-    m_ui->upperScrollBar_2->setValue(upper);
-    connect(m_ui->lowerScrollBar_2, SIGNAL(valueChanged(int)),
-            this, SIGNAL(valueChanged()));
-    connect(m_ui->upperScrollBar_2, SIGNAL(valueChanged(int)),
-            this, SIGNAL(valueChanged()));
-  } else if (c==2) {
-    disconnect(m_ui->lowerScrollBar_3, SIGNAL(valueChanged(int)),
-               this, SIGNAL(valueChanged()));
-    disconnect(m_ui->upperScrollBar_3, SIGNAL(valueChanged(int)),
-               this, SIGNAL(valueChanged()));
-    m_ui->lowerScrollBar_3->setValue(lower);
-    m_ui->upperScrollBar_3->setValue(upper);
-    connect(m_ui->lowerScrollBar_3, SIGNAL(valueChanged(int)),
-            this, SIGNAL(valueChanged()));
-    connect(m_ui->upperScrollBar_3, SIGNAL(valueChanged(int)),
-            this, SIGNAL(valueChanged()));
-  } else if (c==3) {
-    disconnect(m_ui->lowerScrollBar_4, SIGNAL(valueChanged(int)),
-               this, SIGNAL(valueChanged()));
-    disconnect(m_ui->upperScrollBar_4, SIGNAL(valueChanged(int)),
-               this, SIGNAL(valueChanged()));
-    m_ui->lowerScrollBar_4->setValue(lower);
-    m_ui->upperScrollBar_4->setValue(upper);
-    connect(m_ui->lowerScrollBar_4, SIGNAL(valueChanged(int)),
-            this, SIGNAL(valueChanged()));
-    connect(m_ui->upperScrollBar_4, SIGNAL(valueChanged(int)),
+    m_upperValueScrollBar[c]->setValue(upper);
+    connect(m_upperValueScrollBar[c], SIGNAL(valueChanged(int)),
             this, SIGNAL(valueChanged()));
   }
 }
@@ -213,7 +202,7 @@ void BcAdjustDialog::setRange(int min, int max, int c)
 // if low == high, we will map [low-1, low] to [0, 255] to make sure
 // pixel < low be zero and pixel >= low be 255
 
-double BcAdjustDialog::greyScale(int c)
+double BcAdjustDialog::getGreyScale(int c)
 {
   if (c==0) {
     if ((m_ui->upperScrollBar->value() == m_ui->upperScrollBar->minimum()) &&
@@ -266,7 +255,7 @@ double BcAdjustDialog::greyScale(int c)
   }
 }
 
-double BcAdjustDialog::greyOffset(int c)
+double BcAdjustDialog::getGreyOffset(int c)
 {
   if (c==0) {
     if ((m_ui->upperScrollBar->value() == m_ui->upperScrollBar->minimum()) &&
@@ -276,9 +265,9 @@ double BcAdjustDialog::greyOffset(int c)
     }
 
     if (m_ui->upperScrollBar->value() == m_ui->lowerScrollBar->value())
-      return -greyScale(c) * (m_ui->lowerScrollBar->value() - 1);
+      return -getGreyScale(c) * (m_ui->lowerScrollBar->value() - 1);
 
-    return -greyScale(c) * m_ui->lowerScrollBar->value();
+    return -getGreyScale(c) * m_ui->lowerScrollBar->value();
   } else if (c==1) {
     if ((m_ui->upperScrollBar_2->value() == m_ui->upperScrollBar_2->minimum()) &&
         (m_ui->lowerScrollBar_2->value() == m_ui->lowerScrollBar_2->minimum()) &&
@@ -287,9 +276,9 @@ double BcAdjustDialog::greyOffset(int c)
     }
 
     if (m_ui->upperScrollBar_2->value() == m_ui->lowerScrollBar_2->value())
-      return -greyScale(c) * (m_ui->lowerScrollBar_2->value() - 1);
+      return -getGreyScale(c) * (m_ui->lowerScrollBar_2->value() - 1);
 
-    return -greyScale(c) * m_ui->lowerScrollBar_2->value();
+    return -getGreyScale(c) * m_ui->lowerScrollBar_2->value();
   } else if (c==2) {
     if ((m_ui->upperScrollBar_3->value() == m_ui->upperScrollBar_3->minimum()) &&
         (m_ui->lowerScrollBar_3->value() == m_ui->lowerScrollBar_3->minimum()) &&
@@ -298,9 +287,9 @@ double BcAdjustDialog::greyOffset(int c)
     }
 
     if (m_ui->upperScrollBar_3->value() == m_ui->lowerScrollBar_3->value())
-      return -greyScale(c) * (m_ui->lowerScrollBar_3->value() - 1);
+      return -getGreyScale(c) * (m_ui->lowerScrollBar_3->value() - 1);
 
-    return -greyScale(c) * m_ui->lowerScrollBar_3->value();
+    return -getGreyScale(c) * m_ui->lowerScrollBar_3->value();
   } else {
     if ((m_ui->upperScrollBar_4->value() == m_ui->upperScrollBar_4->minimum()) &&
         (m_ui->lowerScrollBar_4->value() == m_ui->lowerScrollBar_4->minimum()) &&
@@ -309,9 +298,9 @@ double BcAdjustDialog::greyOffset(int c)
     }
 
     if (m_ui->upperScrollBar_4->value() == m_ui->lowerScrollBar_4->value())
-      return -greyScale(c) * (m_ui->lowerScrollBar_4->value() - 1);
+      return -getGreyScale(c) * (m_ui->lowerScrollBar_4->value() - 1);
 
-    return -greyScale(c) * m_ui->lowerScrollBar_4->value();
+    return -getGreyScale(c) * m_ui->lowerScrollBar_4->value();
   }
 }
 

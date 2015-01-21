@@ -5,6 +5,7 @@
 #include "zobject3darray.h"
 #include "zobject3dscan.h"
 #include "neutubeconfig.h"
+#include "zobject3dscanarray.h"
 
 ZObject3dFactory::ZObject3dFactory()
 {
@@ -164,4 +165,28 @@ ZObject3dScan ZObject3dFactory::MakeObject3dScan(const ZStack &stack)
   MakeObject3dScan(stack, &obj);
 
   return obj;
+}
+
+ZObject3dScanArray* ZObject3dFactory::MakeObject3dScanArray(const ZStack &stack)
+{
+  ZObject3dScanArray *objArray = NULL;
+
+  if (stack.hasData()) {
+    std::map<int, ZObject3dScan*> *bodySet =
+        ZObject3dScan::extractAllObject(
+          stack.array8(), stack.width(), stack.height(), stack.depth(), 0, NULL);
+    objArray = new ZObject3dScanArray;
+    for (std::map<int, ZObject3dScan*>::const_iterator iter = bodySet->begin();
+         iter != bodySet->end(); ++iter) {
+      ZObject3dScan *obj = iter->second;
+      if (iter->first > 0) {
+        obj->translate(stack.getOffset());
+        obj->setLabel(iter->first);
+        objArray->push_back(*obj);
+      }
+      delete obj;
+    }
+  }
+
+  return objArray;
 }

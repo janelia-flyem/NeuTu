@@ -26,7 +26,7 @@ ZImage::ZImage(int width, int height, QImage::Format format) :
 
 }
 
-void ZImage::setData(const ZStack *stack, int z)
+void ZImage::setData(const ZStack *stack, int z, bool ignoringZero)
 {
   if (stack != NULL) {
     if (stack->kind() == GREY) {
@@ -49,10 +49,14 @@ void ZImage::setData(const ZStack *stack, int z)
           uchar *line = scanLine(y) + tx0 * 4;
           const uint8_t *data = stack->getDataPointer(sx, sy, z);
           for (int x = tx0; x < tx1; ++x) {
-            *line++ = *data;
-            *line++ = *data;
-            *line++ = *data;
-            *line++ = 255;
+            if (!ignoringZero || *data > 0) {
+              *line++ = *data;
+              *line++ = *data;
+              *line++ = *data;
+              *line++ = 255;
+            } else {
+              line += 4;
+            }
             ++data;
           }
           ++sy;
@@ -327,6 +331,7 @@ void ZImage::setBackground()
   //memset_pattern4(scanLine(0), "\xef\xef\xef\xff", w * h);
   //bzero(scanLine(0), w * h);
   //memset_pattern4(scanLine(0), "\xef\xef\xef\xff", w * h);
+  //fill(Qt::transparent);
   fill(Qt::black);
 }
 

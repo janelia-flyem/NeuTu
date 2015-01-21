@@ -49,7 +49,7 @@ Swc_Tree_Node *ZSwcNodeObjsModel::getSwcTreeNode(const QModelIndex &index) const
   ZObjsItem *item = static_cast<ZObjsItem*>(index.internalPointer());
 
   if (item->parent() && item->parent()->parent() == m_rootItem)
-    return static_cast<Swc_Tree_Node*>(item->getObj());
+    return static_cast<Swc_Tree_Node*>(item->getActuralData());
   else
     return NULL;
 }
@@ -64,7 +64,7 @@ std::set<Swc_Tree_Node*> ZSwcNodeObjsModel::getSwcTreeNodeSet(
       int childNumber = item->childCount();
       for (int i = 0; i < childNumber; ++i) {
         ZObjsItem *childItem = item->child(i);
-        Swc_Tree_Node *tn = static_cast<Swc_Tree_Node*>(childItem->getObj());
+        Swc_Tree_Node *tn = static_cast<Swc_Tree_Node*>(childItem->getActuralData());
         if (tn != NULL) {
           nodeSet.insert(tn);
         }
@@ -121,9 +121,10 @@ void ZSwcNodeObjsModel::setupModelData(ZObjsItem *parent)
   int terminalRow = 0;
   int branchPointRow = 0;
 
-  for (int i=0; i<m_doc->swcList()->size(); i++) {
+  QList<ZSwcTree*> swcList = m_doc->getSwcList();
+  for (int i=0; i<swcList.size(); i++) {
     data.clear();
-    ZSwcTree *swcTree = m_doc->swcList()->at(i);
+    ZSwcTree *swcTree = swcList.at(i);
 
     //ZObjsItem *nodeParent = new ZObjsItem(data, swcTree, parent);
     //nodeParent->setCheckState(swcTree->isVisible() ? Qt::Checked : Qt::Unchecked);

@@ -525,18 +525,18 @@ FlyEm::ZSynapseAnnotationArray* ZFlyEmDataBundle::getSynapseAnnotation() const
 {
   if (isDeprecated(SYNAPSE_ANNOTATION)) {
     ZString path = m_synapseAnnotationFile;
-    if (!path.empty()) {
+    if (!path.startsWith("http:") && !path.empty()) {
       if (!path.isAbsolutePath()) {
         path = ZString::absolutePath(ZString(m_source).dirPath(), path);
       }
+    }
 
-      if (fexist(path.c_str()) || ZString(path).startsWith("http:")) {
-        m_synaseAnnotation = new FlyEm::ZSynapseAnnotationArray;
-        m_synaseAnnotation->loadJson(path);
-        m_synaseAnnotation->setResolution(m_imageResolution);
-        m_synaseAnnotation->setSourceOffset(m_sourceOffset);
-        m_synaseAnnotation->setSourceDimension(m_sourceDimension);
-      }
+    if (fexist(path.c_str()) || ZString(path).startsWith("http:")) {
+      m_synaseAnnotation = new FlyEm::ZSynapseAnnotationArray;
+      m_synaseAnnotation->loadJson(path);
+      m_synaseAnnotation->setResolution(m_imageResolution);
+      m_synaseAnnotation->setSourceOffset(m_sourceOffset);
+      m_synaseAnnotation->setSourceDimension(m_sourceDimension);
     }
   }
 

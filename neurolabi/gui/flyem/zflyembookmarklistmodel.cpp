@@ -47,11 +47,12 @@ QVariant ZFlyEmBookmarkListModel::data(const QModelIndex &index, int role) const
   return m_presenter->data(bookmark, index.column(), role);
 }
 
+/*
 void ZFlyEmBookmarkListModel::load(const QString &filePath)
 {
   m_bookmarkArray.importJsonFile(filePath.toStdString());
 }
-
+*/
 void ZFlyEmBookmarkListModel::clear()
 {
   removeRows(0, rowCount());

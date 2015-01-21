@@ -87,8 +87,6 @@ public:
   void setImageWidgetCursor(const QCursor &cursor);
   void setScreenCursor(const QCursor &cursor);
   void resetScreenCursor();
-
-  void setThreshold(int thre);
   int getIntensityThreshold();
 
   //void open3DWindow();
@@ -99,6 +97,14 @@ public:
   void paintStackBuffer();
   void paintMaskBuffer();
   void paintObjectBuffer();
+  /*!
+   * \brief paintObjectBuffer
+   * \param canvas
+   * \param target
+   * \param zOrder -1: < 0; 0: 0; 1: > 0
+   */
+  void paintObjectBuffer(ZImage *canvas, ZStackObject::ETarget target);
+
   void paintActiveDecorationBuffer();
 
   ZStack* getObjectMask(uint8_t maskValue);
@@ -116,9 +122,14 @@ public:
     m_sizeHintOption = option;
   }
 
+  inline void blockRedraw(bool state) {
+    m_isRedrawBlocked = state;
+  }
+
 public slots:
   void updateView();
   void redraw();
+  void redrawObject();
   //void updateData(int nslice, int threshold = -1);
   //void updateData();
   //void updateSlice(int nslide);
@@ -130,6 +141,8 @@ public slots:
   void paintStack();
   void paintMask();
   void paintObject();
+  void paintObject(QList<ZStackObject *> selected,
+                   QList<ZStackObject *> deselected);
   void paintActiveDecoration();
 
   void mouseReleasedInImageWidget(QMouseEvent *event);
@@ -148,6 +161,7 @@ public slots:
 
   void setInfo(QString info);
   void autoThreshold();
+  void setThreshold(int thre);
 
   void displayActiveDecoration(bool display = true);
 
@@ -199,6 +213,7 @@ private:
   NeuTube::ESizeHintOption m_sizeHintOption;
 
   ZPaintBundle m_paintBundle;
+  bool m_isRedrawBlocked;
 };
 
 #endif

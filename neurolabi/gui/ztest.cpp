@@ -58,15 +58,19 @@ using namespace std;
 #include "zjsonobject.h"
 #include "zpoint.h"
 #include "flyem/zfileparser.h"
+#include "zstackpatch.h"
 #include "zswcgenerator.h"
 #include "zpunctumio.h"
+#include "tz_stack_math.h"
 #include "flyem/zsynapseannotationarray.h"
 #include "flyem/zfileparser.h"
 #include "flyem/zsynapseannotationanalyzer.h"
 #include "flyem/zneuronnetwork.h"
 #include "tz_geo3d_utils.h"
 #include "zsvggenerator.h"
+#include "flyem/zfileparser.h"
 #include "zdendrogram.h"
+#include "zobject3dscanarray.h"
 #include "zcuboid.h"
 #include "zstringparameter.h"
 #include "zswcsizefeatureanalyzer.h"
@@ -184,6 +188,7 @@ using namespace std;
 #include "test/zobject3dfactorytest.h"
 #include "test/zstacktest.h"
 #include "zswcgenerator.h"
+#include "zrect2d.h"
 #include "test/zswcgeneratortest.h"
 #include "test/zflyemneuronimagefactorytest.h"
 #include "test/zspgrowtest.h"
@@ -217,7 +222,13 @@ using namespace std;
 #include "test/zclosedcurvetest.h"
 #include "dvid/libdvidheader.h"
 #include "test/zarraytest.h"
-
+#include "zstackwatershed.h"
+#include "flyem/zflyembodymerger.h"
+#include "test/zflyembodymergertest.h"
+#include "test/zstackobjectgrouptest.h"
+#include "z3daxis.h"
+#include "tz_int_histogram.h"
+#include "zsegmentationproject.h"
 
 using namespace std;
 
@@ -246,6 +257,7 @@ int ZTest::runUnitTest(int argc, char *argv[])
   return 0;
 #endif
 }
+
 
 void ZTest::test(MainWindow *host)
 {
@@ -326,6 +338,7 @@ void ZTest::test(MainWindow *host)
   gv->show();
 
 #endif
+
 
 #if 0
   QProgressDialog *pd = new QProgressDialog("Testing", "Cancel", 0, 100, this);
@@ -12012,8 +12025,7 @@ void ZTest::test(MainWindow *host)
   obj2->append(4, 15, 6);
 
   obj2->setColor(255, 255, 0, 255);
-  frame->document()->addObject(obj2, NeuTube::Documentable_OBJ3D,
-                               ZDocPlayer::ROLE_3DGRAPH_DECORATOR);
+  frame->document()->addObject(obj2, ZDocPlayer::ROLE_3DGRAPH_DECORATOR);
   frame->document()->loadSwc(
         (GET_TEST_DATA_DIR + "/benchmark/swc/fork.swc").c_str());
   frame->open3DWindow(NULL);
@@ -12033,10 +12045,21 @@ void ZTest::test(MainWindow *host)
   host->addStackFrame(frame);
   host->presentStackFrame(frame);
 
-  ZCircle *circle = new ZCircle(100, 100, 0, 10);
+  ZStack *stack = frame->document()->getStack()->clone();
+  //stack->setOffset(20, 30, 0);
+  ZStackPatch *patch = new ZStackPatch(stack);
+  patch->setScale(0.2, 0.2);
+  patch->setFinalOffset(20, 30);
+  frame->document()->addObject(patch);
+
+  ZStackBall *circle = new ZStackBall(100, 100, 0, 10);
   circle->setColor(255, 0, 0, 255);
-  frame->document()->addObject(circle, NeuTube::Documentable_Circle,
-                               ZDocPlayer::ROLE_TMP_BOOKMARK);
+  frame->document()->addObject(circle, ZDocPlayer::ROLE_TMP_BOOKMARK);
+
+  ZRect2d *rect = new ZRect2d(30, 40, 100, 200);
+  rect->setPenetrating(true);
+  rect->setColor(0, 255, 0);
+  frame->document()->addObject(rect);
 #endif
 
 #if 0
@@ -12901,6 +12924,7 @@ void ZTest::test(MainWindow *host)
   C_Stack::write(GET_DATA_DIR + "/test.tif", stack);
 #endif
 
+
 #if 0
   ZStackFactory factory;
   ZPointArray ptArray;
@@ -13407,7 +13431,7 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
-#if 1
+#if 0
   ZDvidTarget dvidTarget;
   dvidTarget.set("emdata2.int.janelia.org", "2b6c");
 
@@ -13418,6 +13442,1386 @@ void ZTest::test(MainWindow *host)
 
     ZJsonObject obj = reader.readSynapseAnnotation(synapseList[0]);
     obj.print();
+  }
+#endif
+
+#if 0
+  ZDvidTarget dvidTarget;
+  dvidTarget.set("emdata2.int.janelia.org", "134");
+
+  ZDvidReader reader;
+  reader.open(dvidTarget);
+
+  ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
+
+  ZSwcTree *tree;
+  ZSwcGenerator generator;
+  ZIntCuboid cuboid;
+  cuboid.setFirstCorner(dvidInfo.getStartCoordinates());
+  cuboid.setSize(dvidInfo.getStackSize()[0], dvidInfo.getStackSize()[1],
+      dvidInfo.getStackSize()[2]);
+  tree = generator.createBoxSwc(cuboid);
+
+  tree->save(GET_DATA_DIR + "/test.swc");
+#endif
+
+#if 0
+  FlyEm::ZSynapseAnnotationArray synapseArray;
+  synapseArray.loadJson(GET_DATA_DIR +
+                        "/flyem/FIB/FIB25/annotations-synapse.json");
+
+  ZDvidReader reader;
+  ZDvidTarget target;
+  target.setFromSourceString("http:emdata2.int.janelia.org:-1:2b6c");
+
+  if (reader.open(target)) {
+    ZDvidInfo info = reader.readGrayScaleInfo();
+    synapseArray.convertRavelerToImageSpace(0, info.getStackSize()[1]);
+    ZWeightedPointArray ptArray = synapseArray.toTBarConfidencePointArray();
+    ZCuboid box = ptArray.getBoundBox();
+    box.print();
+
+    ZStackFactory factory;
+    int dsScale = 10;
+    for (ZWeightedPointArray::iterator iter = ptArray.begin();
+         iter != ptArray.end(); ++iter) {
+      *iter *= 1.0 / dsScale;
+    }
+
+    ZStack *stack = factory.makeDensityMap(ptArray, 15.0);
+    stack->save(GET_DATA_DIR + "/flyem/FIB/FIB25/density_map_ds10.tif");
+  }
+#endif
+
+#if 0
+  FlyEm::ZSynapseAnnotationArray synapseArray;
+  synapseArray.loadJson(GET_DATA_DIR +
+                        "/flyem/FIB/FIB25/annotations-synapse.json");
+
+  ZDvidReader reader;
+  ZDvidTarget target;
+  target.setFromSourceString("http:emdata2.int.janelia.org:-1:2b6c");
+  double dsScale = 10.0;
+
+  ZStack seg;
+  seg.load(GET_DATA_DIR + "/flyem/FIB/FIB25/seg_ds10.tif");
+
+  ofstream stream((GET_DATA_DIR + "/test.txt").c_str());
+
+  if (reader.open(target)) {
+    ZLabelColorTable colorTable;
+    ZDvidInfo info = reader.readGrayScaleInfo();
+    synapseArray.convertRavelerToImageSpace(0, info.getStackSize()[1]);
+    std::vector<ZPunctum*> puncta = synapseArray.toTBarPuncta(10.0);
+
+    std::vector<ZVaa3dMarker> markerArray;
+    for (std::vector<ZPunctum*>::iterator iter = puncta.begin();
+         iter != puncta.end(); ++iter) {
+      ZPunctum *p = *iter;
+      ZIntPoint originalCenter = p->getCenter().toIntPoint();
+
+      p->scaleCenter(1 / dsScale, 1 / dsScale, 1 / dsScale);
+      ZIntPoint center = p->getCenter().toIntPoint();
+      int v = seg.getIntValue(center.getX(), center.getY(), center.getZ());
+
+      if (v > 7) {
+        v = 0;
+      }
+
+      stream << originalCenter.getX() << " " << originalCenter.getY() << " "
+             << originalCenter.getZ() << " " << v << std::endl;
+
+      //p->setSource(ZString::num2str(v));
+      p->setColor(colorTable.getColor(v));
+      p->scaleCenter(dsScale, dsScale, dsScale);
+      markerArray.push_back(p->toVaa3dMarker());
+    }
+
+    FlyEm::ZFileParser::writeVaa3dMakerFile(GET_DATA_DIR + "/test.marker",
+                                            markerArray);
+  }
+
+#endif
+
+#if 0
+  ZDvidReader reader;
+  ZDvidTarget target;
+  target.setFromSourceString("http:emdata2.int.janelia.org:-1:2b6c");
+  reader.open(target);
+  //column string
+
+  std::vector<std::string> columnList;
+  columnList.push_back("H");
+  columnList.push_back("a");
+  columnList.push_back("b");
+  columnList.push_back("c");
+  columnList.push_back("d");
+  columnList.push_back("e");
+  columnList.push_back("f");
+  columnList.push_back("o");
+
+  //string->label map
+  std::map<std::string, int> columnLabelMap;
+  for (size_t i = 0; i < columnList.size(); ++i) {
+    columnLabelMap[columnList[i]] = i + 1;
+  }
+  //columnLabelMap['']
+
+  std::map<int, std::string> neuronColumnMap;
+
+  neuronColumnMap[50] = "a";
+
+  ZJsonObject json;
+  json.load(GET_DATA_DIR + "/flyem/FIB/FIB25/test.json");
+
+  ZJsonObject neuronGroupJson(
+        json["neuron"], ZJsonValue::SET_INCREASE_REF_COUNT);
+  std::map<std::string, std::vector<int> > neuronGroup;
+
+
+  for (size_t i = 0; i < columnList.size(); ++i) {
+    const std::string &column = columnList[i];
+    ZJsonArray idJson(neuronGroupJson[column.c_str()],
+                      ZJsonValue::SET_INCREASE_REF_COUNT);
+    neuronGroup[column] = std::vector<int>(idJson.size());
+    for (size_t k = 0; k < idJson.size(); ++k) {
+      neuronGroup[column][k] = ZJsonParser::integerValue(idJson.at(k));
+    }
+  }
+
+
+  std::vector<ZStack*> seedArray;
+
+  for (std::map<std::string, std::vector<int> >::const_iterator
+       iter = neuronGroup.begin(); iter != neuronGroup.end(); ++iter) {
+    std::cout << iter->first << ": ";
+    const std::vector<int> &idArray = iter->second;
+    for (std::vector<int>::const_iterator idIter = idArray.begin();
+         idIter != idArray.end(); ++idIter) {
+      std::cout << *idIter << ", ";
+    }
+    std::cout << std::endl;
+
+    int label = columnLabelMap[iter->first];
+
+    ZObject3dScan labelObj;
+    for (std::vector<int>::const_iterator idIter = idArray.begin();
+         idIter != idArray.end(); ++idIter) {
+      ZObject3dScan obj = reader.readBody(*idIter);
+      obj.downsample(9, 9, 9);
+      labelObj.concat(obj);
+      //objArray.push_back(obj);
+    }
+    seedArray.push_back(labelObj.toStackObject(label));
+  }
+
+  ZStackWatershed engine;
+  engine.setFloodingZero(false);
+  ZStack signal;
+  signal.load(GET_DATA_DIR + "/flyem/FIB/FIB25/density_map_ds10.tif");
+  signal.binarize();
+
+  ZStack seed;
+  seed.load(GET_DATA_DIR + "/flyem/FIB/FIB25/seed_ds10.tif");
+  ZStack *result = engine.run(&signal, seedArray);
+
+  result->save(GET_DATA_DIR + "/test.tif");
+
+//  int bodyId[] = {50, 2158, 2515, 5048, 7021, 10319, 14879, 22045, 26353,
+//                  30155, 236065, 238814, 805065};
+
+//  int bodyId[] = {50};
+//  size_t nbody = sizeof(bodyId) / sizeof(int);
+
+//  ZObject3dScanArray objArray;
+//  if (reader.open(target)) {
+//    for (size_t i = 0; i < nbody; ++i) {
+//      ZObject3dScan obj = reader.readBody(bodyId[i]);
+//      obj.downsample(9, 9, 9);
+//      objArray.push_back(obj);
+//    }
+//  }
+//  //objArray.downsample(9, 9, 9);
+//  ZStack *stack = objArray.toLabelField();
+//  stack->save(GET_DATA_DIR + "/flyem/FIB/FIB25/seed_ds10.tif");
+
+#endif
+
+#if 0
+  ZStackWatershed engine;
+  engine.setFloodingZero(false);
+  ZStack signal;
+  signal.load(GET_DATA_DIR + "/flyem/FIB/FIB25/density_map_ds10.tif");
+  signal.binarize();
+
+  ZStack seed;
+  seed.load(GET_DATA_DIR + "/flyem/FIB/FIB25/seed_ds10.tif");
+  ZStack *result = engine.run(&signal, &seed);
+//  engine.setFloodingZero(false);
+  result->save(GET_DATA_DIR + "/test.tif");
+#endif
+
+#if 0
+  ZDvidReader reader;
+  ZDvidTarget target;
+  target.setFromSourceString("http:emdata2.int.janelia.org:-1:2b6c");
+  reader.open(target);
+
+  ZJsonObject jsonObj;
+  jsonObj.load(GET_DATA_DIR + "/flyem/FIB/FIB25/bookmarks-no-data.json");
+  ZJsonArray bodyArrayJson(jsonObj["data"], ZJsonValue::SET_INCREASE_REF_COUNT);
+  std::cout << "Processing " << bodyArrayJson.size() << " bodies." << std::endl;
+  ZObject3dScan allObj;
+  for (size_t i = 0; i < bodyArrayJson.size(); ++i) {
+    ZJsonObject jsonObj(
+          bodyArrayJson.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
+    int bodyId = ZJsonParser::integerValue(jsonObj["body ID"]);
+
+    std::cout << "Body: " << bodyId << std::endl;
+
+    ZObject3dScan obj = reader.readBody(bodyId);
+    allObj.concat(obj);
+//    ZString fileName = ZString::num2str(bodyId);
+//    fileName += ".sobj";
+    //obj.save(GET_DATA_DIR + "/flyem/FIB/FIB25/border_obj/" + fileName);
+  }
+  allObj.canonize();
+  allObj.save(GET_DATA_DIR + "/flyem/FIB/FIB25/border_obj/all.sobj");
+#endif
+
+#if 0
+  FlyEm::ZSynapseAnnotationArray synapseArray;
+  synapseArray.loadJson(GET_DATA_DIR +
+                        "/flyem/AL/al7d_whole448_tbar-predict_0.81.json");
+
+  ZWeightedPointArray ptArray = synapseArray.toTBarConfidencePointArray();
+  std::cout << ptArray.size() << " TBars" << std::endl;
+
+  ZWeightedPointArray newPtArray;
+
+  int dsScale = 20;
+  for (ZWeightedPointArray::iterator iter = ptArray.begin();
+       iter != ptArray.end(); ++iter) {
+    ZWeightedPoint &pt = *iter;
+    if (pt.weight() >= 0.86) {
+      pt *= 1.0 / dsScale;
+      if (pt.z() > 50) {
+        newPtArray.append(pt);
+      }
+    }
+  }
+
+  ZCuboid box = newPtArray.getBoundBox();
+  box.print();
+
+  ZStackFactory factory;
+  ZStack *stack = factory.makeDensityMap(newPtArray, 10.0);
+  stack->save(GET_DATA_DIR +
+              "/flyem/AL/al7d_whole448_tbar-predict_0.86_ds20_s10.tif");
+#endif
+
+#if 0
+  ZPointArray ptArray;
+  ptArray.importPcdFile(GET_DATA_DIR + "/test/pc519f.pcd");
+
+  int dsScale = 10;
+  for (ZPointArray::iterator iter = ptArray.begin();
+       iter != ptArray.end(); ++iter) {
+    *iter *= 1.0 / dsScale;
+  }
+
+  ZCuboid box = ptArray.getBoundBox();
+  box.print();
+
+  ZStackFactory factory;
+  ZStack *stack = factory.makeDensityMap(ptArray, 5.0);
+  stack->save(GET_DATA_DIR + "/test2.tif");
+
+#endif
+
+#if 0
+  ZStack stack;
+  stack.load(GET_DATA_DIR + "/benchmark/em_stack.tif");
+
+  Stack stackView = C_Stack::sliceView(stack.c_stack(), 100, 100);
+  C_Stack::write(GET_DATA_DIR + "/benchmark/em_stack_slice.tif", &stackView);
+#endif
+
+#if 0
+  ZStack stack;
+  stack.load(GET_DATA_DIR + "/flyem/AL/label/ds20_s10_signal1_1_1_1_1_thre.tif");
+  Stack_Label_Objects_N(stack.c_stack(), NULL, 1, 2, 26);
+  stack.save(GET_DATA_DIR +
+             "/flyem/AL/label/ds20_s10_signal1_1_1_1_1_thre_labled.tif");
+#endif
+
+#if 0
+  ZFileList fileList;
+  fileList.load(GET_DATA_DIR + "/flyem/AL/label", "tif");
+
+  ZObject3dScanArray objArray;
+
+  for (int i = 0; i < fileList.size(); ++i) {
+    ZString filePath = fileList.getFilePath(i);
+    std::cout << "Path: " << filePath << std::endl;
+    if (filePath.startsWith(GET_DATA_DIR + "/flyem/AL/label/final_ds20_s10_label")) {
+      ZStack stack;
+      stack.load(filePath);
+      std::map<int, ZObject3dScan*> *objList =
+          ZObject3dScan::extractAllObject(
+            stack.array8(), stack.width(), stack.height(), stack.depth(),
+            0, NULL);
+
+      for (std::map<int, ZObject3dScan*>::iterator iter = objList->begin();
+           iter != objList->end(); ++iter) {
+        if (iter->first > 0) {
+          ZObject3dScan *obj = iter->second;
+          obj->translate(stack.getOffset());
+          objArray.push_back(*obj);
+        }
+        delete iter->second;
+      }
+    }/* else if (filePath.startsWith(GET_DATA_DIR + "/flyem/AL/label/final_ds20_s10_signal")) {
+      ZStack stack;
+      stack.load(filePath);
+      stack.binarize();
+      std::map<int, ZObject3dScan*> *objList =
+          ZObject3dScan::extractAllObject(
+            stack.array8(), stack.width(), stack.height(), stack.depth(),
+            0, NULL);
+
+      for (std::map<int, ZObject3dScan*>::iterator iter = objList->begin();
+           iter != objList->end(); ++iter) {
+        if (iter->first > 0) {
+          ZObject3dScan *obj = iter->second;
+          obj->translate(stack.getOffset());
+          objArray.push_back(*obj);
+        }
+        delete iter->second;
+      }
+    }*/
+  }
+  std::cout << objArray.size() << " objects extracted." << std::endl;
+
+  ZStack *stack = objArray.toLabelField();
+  stack->save(GET_DATA_DIR + "/test.tif");
+#endif
+
+#if 0
+  FlyEm::ZSynapseAnnotationArray synapseArray;
+  synapseArray.loadJson(GET_DATA_DIR +
+                        "/flyem/AL/al7d_whole_wfix_tbar-predict_0.81.json");
+
+  ZWeightedPointArray ptArray = synapseArray.toTBarConfidencePointArray();
+  std::cout << ptArray.size() << " TBars" << std::endl;
+
+  ZStack stack;
+  stack.load(GET_DATA_DIR + "/flyem/AL/glomeruli/new_label_field.tif");
+
+  ofstream stream(
+        (GET_DATA_DIR + "/flyem/AL/glomeruli/labeled_synapse_confidence.txt").c_str());
+  int dsScale = 20;
+  for (ZWeightedPointArray::iterator iter = ptArray.begin();
+       iter != ptArray.end(); ++iter) {
+    ZWeightedPoint pt = *iter;
+    pt *= 1.0 / dsScale;
+    ZIntPoint ipt = pt.toIntPoint();
+    if (ipt.getZ() >= 50) {
+      int label = stack.getIntValue(ipt.getX(), ipt.getY(), ipt.getZ());
+
+      if (label > 0) {
+        stream << iter->x() << " " << iter->y() << " " << iter->z() << " "
+               << label << " " << pt.weight() << std::endl;
+      }
+    }
+  }
+  stream.close();
+#endif
+
+#if 0
+  FlyEm::ZSynapseAnnotationArray synapseArray;
+  synapseArray.loadJson(GET_DATA_DIR +
+                        "/flyem/AL/al7d_whole448_tbar-predict_0.81.json");
+
+  ZWeightedPointArray ptArray = synapseArray.toTBarConfidencePointArray();
+  std::cout << ptArray.size() << " TBars" << std::endl;
+
+
+#endif
+
+#if 0
+  ZStack signal;
+  signal.load(GET_DATA_DIR +
+              "/flyem/AL/al7d_whole448_tbar-predict_0.86_ds20_s10.tif");
+
+//  ZStack mask;
+//  mask.load(GET_DATA_DIR +
+//            "/flyem/AL/label/final_ds20_s10_label1_2_2_2_3_2_2_3.tif");
+
+//  ZStack *colorStack = ZStackFactory::MakeColorStack(signal, mask, 1, 1);
+
+  ZStack labelField;
+  labelField.load(GET_DATA_DIR + "/flyem/AL/label/label_field.tif");
+
+  ZStack *colorStack = ZStackFactory::MakeColorStack(signal, labelField);
+
+  colorStack->save(GET_DATA_DIR + "/test.tif");
+
+  delete colorStack;
+#endif
+
+#if 0
+  FlyEm::ZSynapseAnnotationArray synapseArray;
+  synapseArray.loadJson(GET_DATA_DIR +
+                        "/flyem/MB/tbars_annotated_20141201T131652.json");
+
+  ZWeightedPointArray ptArray = synapseArray.toTBarConfidencePointArray();
+  std::cout << ptArray.size() << " TBars" << std::endl;
+
+  ZWeightedPointArray newPtArray;
+
+  int dsScale = 20;
+  for (ZWeightedPointArray::iterator iter = ptArray.begin();
+       iter != ptArray.end(); ++iter) {
+    ZWeightedPoint &pt = *iter;
+    pt *= 1.0 / dsScale;
+    newPtArray.append(pt);
+  }
+
+  ZCuboid box = newPtArray.getBoundBox();
+  box.print();
+
+  ZStackFactory factory;
+  ZStack *stack = factory.makeDensityMap(newPtArray, 5.0);
+  stack->save(GET_DATA_DIR +
+              "/flyem/MB/tbars_annotated_20141201T131652_ds20_s5.tif");
+#endif
+
+#if 0
+  FlyEm::ZSynapseAnnotationArray synapseArray;
+  synapseArray.loadJson(GET_DATA_DIR +
+                        "/flyem/AL/al7d_whole_wfix_tbar-predict_0.81.json");
+
+  ZWeightedPointArray ptArray = synapseArray.toTBarConfidencePointArray();
+  std::cout << ptArray.size() << " TBars" << std::endl;
+
+  ZWeightedPointArray newPtArray;
+
+  int dsScale = 20;
+  for (ZWeightedPointArray::iterator iter = ptArray.begin();
+       iter != ptArray.end(); ++iter) {
+    ZWeightedPoint &pt = *iter;
+    pt *= 1.0 / dsScale;
+    newPtArray.append(pt);
+  }
+
+  ZCuboid box = newPtArray.getBoundBox();
+  box.print();
+
+  ZStackFactory factory;
+  ZStack *stack = factory.makeDensityMap(newPtArray, 10.0);
+  stack->save(GET_DATA_DIR +
+              "/flyem/AL/al7d_whole_wfix_tbar-predict_0.81_ds20_s10.tif");
+#endif
+
+
+#if 0
+  FlyEm::ZSynapseAnnotationArray synapseArray;
+  synapseArray.loadJson(GET_DATA_DIR +
+                        "/flyem/MB/tbars_annotated_20141201T131652.json");
+
+  ZWeightedPointArray ptArray = synapseArray.toTBarConfidencePointArray();
+  std::cout << ptArray.size() << " TBars" << std::endl;
+
+  ofstream stream((GET_DATA_DIR +
+                   "/flyem/MB/tbars_annotated_20141201T131652.txt").c_str());
+
+  for (ZWeightedPointArray::iterator iter = ptArray.begin();
+       iter != ptArray.end(); ++iter) {
+    ZWeightedPoint &pt = *iter;
+    stream << pt.x() << " " << pt.y() << " " << pt.z() << std::endl;
+  }
+  stream.close();
+#endif
+
+#if 0
+  ZDvidTarget dvidTarget;
+  dvidTarget.set("emdata2.int.janelia.org", "2b6c");
+
+  ZDvidReader reader;
+  reader.open(dvidTarget);
+
+  int dsIntv = 3;
+  int dataRangeZ = 8089 / (dsIntv + 1);
+
+  ZObject3dScan obj = reader.readBody(29);
+  obj.downsampleMax(dsIntv, dsIntv, dsIntv);
+
+//  ZObject3dScan obj;
+
+//  for (int z = 0; z < dataRangeZ; ++z) {
+//    for (int y = 0; y < 10; y += 1) {
+//      obj.addSegment(z, y, 0, z % 100, false);
+//    }
+//  }
+
+
+  ZStack *stack = obj.toStackObject(255);
+
+  //stack->save(GET_TEST_DATA_DIR + "/test.tif");
+
+  ZSharedPointer<ZStackDoc> academy =
+      ZSharedPointer<ZStackDoc>(new ZStackDoc(NULL, NULL));
+  academy->loadStack(stack);
+
+  Z3DWindow *stage = new Z3DWindow(academy, Z3DWindow::NORMAL_INIT,
+                                   false, NULL);
+
+  stage->getVolumeRaycaster()->hideBoundBox();
+  stage->getVolumeRaycasterRenderer()->setCompositeMode(
+        "Direct Volume Rendering");
+  stage->getAxis()->setVisible(false);
+
+  Z3DCameraParameter* camera = stage->getCamera();
+  camera->setProjectionType(Z3DCamera::Orthographic);
+
+  glm::vec3 referenceCenter = camera->getCenter();
+
+
+  double distEyeToNear = dataRangeZ * 0.5 / tan(camera->getFieldOfView() * 0.5);
+  double distNearToCenter = 4000;
+  double eyeDistance = distEyeToNear + distNearToCenter;
+
+ // double eyeDistance = eyeDistance;//boundBox[3] - referenceCenter[1] + 2500;
+  //double eyeDistance = 2000 - referenceCenter[1];
+  glm::vec3 viewVector(0, -1, 0);
+
+  viewVector *= eyeDistance;
+  glm::vec3 eyePosition = referenceCenter - viewVector;
+
+  referenceCenter[2] = dataRangeZ / 2;// - stack->getOffset().getZ();
+  camera->setCenter(referenceCenter);
+  eyePosition[2] = dataRangeZ / 2;// - stack->getOffset().getZ();
+  camera->setEye(eyePosition);
+  camera->setUpVector(glm::vec3(0, 0, -1));
+
+  stage->resetCameraClippingRange();
+  camera->setNearDist(distEyeToNear);
+
+  stage->getCompositor()->setBackgroundFirstColor(0, 0, 0, 1);
+  stage->getCompositor()->setBackgroundSecondColor(0, 0, 0, 1);
+
+  stage->show();
+
+  //std::string output = GET_DATA_DIR + "/test.tif";
+  //std::cout << output << std::endl;
+  //stage->takeScreenShot(output.c_str(), 2000, dataRangeZ, MonoView);
+  //stage->close();
+  //delete stage;
+#endif
+
+#if 0
+  ZObject3dScan obj;
+  obj.load(GET_TEST_DATA_DIR+ "/body_1.sobj");
+  obj.upSample(1, 1, 1);
+  obj.save(GET_TEST_DATA_DIR + "/test.sobj");
+#endif
+
+#if 0
+  ZObject3dScan obj1;
+  obj1.load(GET_TEST_DATA_DIR + "/body_0.sobj");
+  std::cout << obj1.isCanonized() << std::endl;
+  obj1.canonize();
+  std::cout << obj1.isCanonizedActually() << std::endl;
+
+  ZObject3dScan obj2;
+  obj2.load(GET_TEST_DATA_DIR + "/body_1.sobj");
+  std::cout << obj2.isCanonizedActually() << std::endl;
+
+  ZObject3dScan remained = obj1.subtract(obj2);
+  obj1.save(GET_TEST_DATA_DIR + "/test.sobj");
+  remained.save(GET_TEST_DATA_DIR + "/test2.sobj");
+#endif
+
+#if 0
+  std::vector<ZPointArray> synapseGroup;
+  std::string synapseFile =
+      GET_TEST_DATA_DIR + "/flyem/AL/label/whole_AL_synapse_labeled.txt";
+
+  FILE *fp = fopen(synapseFile.c_str(), "r");
+
+  ZString line;
+  while (line.readLine(fp)) {
+    std::vector<int> pt = line.toIntegerArray();
+    if (pt.size() == 4) {
+      int label = pt[3];
+      //std::cout << pt[3] << std::endl;
+
+      if (label > 0) {
+        if (label >= (int) synapseGroup.size()) {
+          synapseGroup.resize(label + 1);
+        }
+        synapseGroup[label].push_back(ZPoint(pt[0], pt[1], pt[2]));
+      }
+    }
+  }
+
+
+  ZStack labelField;
+  labelField.load(GET_DATA_DIR + "/flyem/AL/glomeruli/new_label_field.tif");
+  int *hist = Stack_Hist(labelField.c_stack());
+  int *histArray = Int_Histogram_Array(hist);
+
+  std::cout << synapseGroup.size() - 1 << " labels" << std::endl;
+  for (size_t label = 1; label < synapseGroup.size(); ++label) {
+    const ZPointArray &pt = synapseGroup[label];
+    ZPoint center = pt.computeCenter();
+    std::cout << label << ": " << center.toString() << " " << pt.size()
+              << ", " << histArray[label] * 0.16 * 0.16 *0.16  << std::endl;
+  }
+#endif
+
+#if 0
+  ZStack labelField;
+  labelField.load(GET_DATA_DIR + "/flyem/AL/glomeruli/label.tif");
+
+  ZObject3dScan obj;
+  obj.load(GET_DATA_DIR + "/test.sobj");
+
+  obj.maskStack(&labelField);
+  labelField.save(GET_DATA_DIR + "/test.tif");
+#endif
+
+#if 0
+  ZStack labelField;
+  labelField.load(GET_DATA_DIR + "/flyem/AL/glomeruli/label.tif");
+
+  C_Stack::shrinkBorder(labelField.c_stack(), 3);
+
+  labelField.save(GET_TEST_DATA_DIR + "/flyem/AL/glomeruli/label_shrinked_3.tif");
+
+#endif
+
+#if 0
+//  ZStack *stack = ZStackFactory::makeIndexStack(3, 3, 1);
+  ZStack stack;
+  stack.load(GET_DATA_DIR + "/flyem/AL/label/label_field.tif");
+//  Print_Stack_Value(stack.c_stack());
+  ZGraph *graph = misc::makeCoOccurGraph(stack.c_stack(), 6);
+
+  Graph *rawGraph = graph->getRawGraph();
+  double maxWeight = 0.0;
+  int root = 0;
+  for (int i = 0; i < rawGraph->nedge; ++i) {
+    if (maxWeight < rawGraph->weights[i]) {
+      maxWeight = rawGraph->weights[i];
+      root = graph->getEdgeBegin(i);
+    }
+    rawGraph->weights[i] = 1.0 / (1 + rawGraph->weights[i]);
+  }
+  graph->toMst();
+  graph->print();
+
+  std::cout << "Root: " << root << std::endl;
+
+  graph->traverseDirect(root);
+  const int *index = graph->topologicalSort();
+  iarray_print2(index, graph->getVertexNumber(), 1);
+
+  //Build real tree
+  std::vector<ZTreeNode<int>*> treeNodeArray(graph->getVertexNumber() + 1);
+  treeNodeArray[0] = new ZTreeNode<int>; //root
+  treeNodeArray[0]->setData(0);
+  for (int i = 0; i < graph->getEdgeNumber(); ++i) {
+    int v1 = graph->getEdgeBegin(i);
+    int v2 = graph->getEdgeEnd(i);
+
+    //v1 is the parent of v2
+    if (treeNodeArray[v1] == NULL) {
+      treeNodeArray[v1] = new ZTreeNode<int>;
+      treeNodeArray[v1]->setData(v1);
+    }
+    if (treeNodeArray[v2] == NULL) {
+      treeNodeArray[v2] = new ZTreeNode<int>;
+      treeNodeArray[v2]->setData(v2);
+    }
+    if (v1 == root) {
+      treeNodeArray[v1]->setParent(treeNodeArray[0]);
+      treeNodeArray[v2]->setParent(treeNodeArray[0]);
+    } else {
+      treeNodeArray[v2]->setParent(treeNodeArray[v1]);
+    }
+  }
+
+  ZTree<int> tree;
+  tree.setRoot(treeNodeArray[0]);
+  ZTreeIterator<int> iterator(tree);
+  while (iterator.hasNext()) {
+    std::cout << iterator.next() << std::endl;
+  }
+#endif
+
+#if 0
+  std::vector<ZPointArray> synapseGroup;
+  std::string synapseFile =
+      GET_TEST_DATA_DIR + "/flyem/AL/label/whole_AL_synapse_labeled.txt";
+
+  FILE *fp = fopen(synapseFile.c_str(), "r");
+
+  ZString line;
+  while (line.readLine(fp)) {
+    std::vector<int> pt = line.toIntegerArray();
+    if (pt.size() == 4) {
+      int label = pt[3];
+      //std::cout << pt[3] << std::endl;
+
+      if (label > 0) {
+        if (label >= (int) synapseGroup.size()) {
+          synapseGroup.resize(label + 1);
+        }
+        synapseGroup[label].push_back(ZPoint(pt[0], pt[1], pt[2]));
+      }
+    }
+  }
+  fclose(fp);
+
+  ZStackWatershed watershedEngine;
+
+  ZStack labelField;
+  labelField.load(GET_DATA_DIR + "/flyem/AL/label/label_field.tif");
+
+  ZObject3dScan obj;
+  obj.load(GET_DATA_DIR + "/flyem/AL/whole_roi_ds20.sobj");
+  ZStack *signal = obj.toStackObject();
+
+  ZStack densityMap;
+  densityMap.load(GET_DATA_DIR +
+                  "/flyem/AL/al7d_whole_wfix_tbar-predict_0.81_ds20_s10.tif");
+  densityMap.crop(signal->getBoundBox());
+
+  size_t voxelNumber = signal->getVoxelNumber();
+  for (size_t i = 0; i < voxelNumber; ++i) {
+    if (signal->array8()[i] > 0) {
+      if (densityMap.array8()[i] > 0) {
+        signal->array8()[i] = densityMap.array8()[i];
+      } else {
+        signal->array8()[i] = 1;
+      }
+    }
+  }
+
+  C_Stack::shrinkBorder(labelField.c_stack(), 5);
+
+  ZStack *result = watershedEngine.run(signal, &labelField);
+  result->save(GET_DATA_DIR + "/test.tif");
+
+  int *hist = Stack_Hist(result->c_stack());
+  int *histArray = Int_Histogram_Array(hist);
+
+  double totalVolume = 0;
+
+  std::cout << synapseGroup.size() - 1 << " labels" << std::endl;
+  for (size_t label = 1; label < synapseGroup.size(); ++label) {
+    const ZPointArray &pt = synapseGroup[label];
+    ZPoint center = pt.computeCenter();
+    double volume = histArray[label] * 0.16 * 0.16 *0.16;
+    totalVolume += volume;
+    std::cout << label << ": " << center.toString() << " " << pt.size()
+              << ", " << volume << std::endl;
+  }
+
+  std::cout << "Total volume: " << totalVolume << std::endl;
+#endif
+
+#if 0
+  ZStack labelField;
+  labelField.load(GET_DATA_DIR + "/flyem/AL/label/label_field.tif");
+  ZObject3dArray *objArray = ZObject3dFactory::MakeRegionBoundary(
+        labelField, ZObject3dFactory::OUTPUT_SPARSE);
+
+  ZStack *stack = objArray->toStackObject();
+  stack->binarize();
+  ZObject3dScan obj;
+  obj.loadStack(*stack);
+  delete stack;
+
+  obj.save(GET_DATA_DIR + "/test.sobj");
+#endif
+
+#if 0
+  ZJsonObject rootJson;
+  ZJsonObject stackJson;
+  stackJson.setEntry(
+        "url", GET_DATA_DIR +
+        "/flyem/AL/glomeruli/al7d_whole_wfix_tbar-predict_0.81_ds20_s5.tif");
+  stackJson.setEntry("type", std::string("single"));
+
+  rootJson.setEntry("zstack", stackJson);
+//  ZJsonObject segJson;
+
+//  ZJsonArray labelArrayJson;
+
+  ZStack stack;
+  stack.load(GET_DATA_DIR + "/flyem/AL/glomeruli/label.tif");
+
+  ZTree<int> *segTree = misc::buildSegmentationTree(stack.c_stack());
+
+  std::vector<ZObject3dScan*> objArray =
+      ZObject3dScan::extractAllObject(stack);
+
+  std::vector<ZObject3dScan*> sortedObjArray;
+  for (std::vector<ZObject3dScan*>::iterator iter = objArray.begin();
+       iter != objArray.end(); ++iter) {
+    ZObject3dScan *obj = *iter;
+    if (obj->getLabel() >= sortedObjArray.size()) {
+      sortedObjArray.resize(obj->getLabel() + 1);
+    }
+    sortedObjArray[obj->getLabel()] = obj;
+  }
+
+  std::vector<ZJsonObject> segJsonArray(sortedObjArray.size());
+
+  ZTreeIterator<int> treeIter(*segTree);
+
+  while (treeIter.hasNext()) {
+    ZTreeNode<int> *node = treeIter.nextNode();
+    int label = node->data();
+    if (label > 0) {
+      ZJsonObject &labelJson = segJsonArray[label];
+      labelJson.setEntry("label", label);
+
+      ZObject3dScan *obj = sortedObjArray[label];
+      QString file = QString("_%1.sobj").arg(obj->getLabel());
+      QString output = QString("%1/%2").
+          arg((GET_DATA_DIR + "/flyem/AL/glomeruli/segcheck").c_str()).
+          arg(file);
+      obj->save(output.toStdString());
+      labelJson.setEntry("source", file.toStdString());
+
+      int parentLabel = node->parent()->data();
+      std::cout << parentLabel << std::endl;
+      ZJsonObject &parentJson = segJsonArray[parentLabel];
+      if (parentJson.hasKey("child") == false) {
+        parentJson.setEntry("child", json_array());
+      }
+
+      ZJsonArray arrayJson(
+            parentJson["child"], ZJsonValue::SET_INCREASE_REF_COUNT);
+      arrayJson.append(labelJson);
+
+//      std::cout << segJsonArray[0].dumpString(2) << std::endl;
+    }
+  }
+
+
+//  for (std::vector<ZObject3dScan*>::iterator iter = objArray.begin();
+//       iter != objArray.end(); ++iter) {
+//    ZJsonObject labelJson;
+
+
+//    labelJson.setEntry("label", (int) obj->getLabel());
+//    labelJson.setEntry("source", file.toStdString());
+//    labelArrayJson.append(labelJson);
+//  }
+
+//  segJson.setEntry("child", segJsonArray[0]);
+
+  rootJson.setEntry("segmentation", segJsonArray[0]);
+//  std::cout << rootJson.dumpString(2) << std::endl;
+
+  rootJson.dump(GET_DATA_DIR + "/flyem/AL/glomeruli/segcheck/seg.json");
+#endif
+
+#if 0
+  ZJsonObject rootJson;
+  ZJsonObject stackJson;
+  std::string signalPath = GET_DATA_DIR +
+      "/flyem/AL/glomeruli/al7d_whole_wfix_tbar-predict_0.81_ds20_s5.tif";
+
+  stackJson.setEntry("url", signalPath);
+  stackJson.setEntry("type", std::string("single"));
+
+  rootJson.setEntry("zstack", stackJson);
+//  ZJsonObject segJson;
+
+//  ZJsonArray labelArrayJson;
+
+  ZStack stack;
+  stack.load(GET_DATA_DIR + "/flyem/AL/glomeruli/label.tif");
+
+  ZTree<int> *segTree = misc::buildSegmentationTree(stack.c_stack());
+
+  std::vector<ZObject3dScan*> objArray =
+      ZObject3dScan::extractAllObject(stack);
+
+  std::vector<ZObject3dScan*> sortedObjArray;
+  for (std::vector<ZObject3dScan*>::iterator iter = objArray.begin();
+       iter != objArray.end(); ++iter) {
+    ZObject3dScan *obj = *iter;
+    if (obj->getLabel() >= sortedObjArray.size()) {
+      sortedObjArray.resize(obj->getLabel() + 1);
+    }
+    sortedObjArray[obj->getLabel()] = obj;
+  }
+
+//  std::vector<ZJsonObject> segJsonArray(sortedObjArray.size());
+
+//  ZJsonObject segJson;
+//  segJson.setEntry("child", json_array());
+
+  ZSegmentationProject segProj;
+  ZTree<ZObject3dScan> *labelTree = segProj.getLabelTree();
+  ZTreeNode<ZObject3dScan> *root = new ZTreeNode<ZObject3dScan>;
+  labelTree->setRoot(root);
+
+  ZTreeNode<int> *rootNode = segTree->getRoot();
+  std::cout << "#child " << rootNode->childNumber() << std::endl;
+  for (int i = 0; i < rootNode->childNumber(); ++i) {
+    ZTreeNode<int> *node = rootNode->getChild(i);
+    ZTreeIterator<int> treeIter(node, ZTreeIterator<int>::BREADTH_FIRST);
+
+    ZTreeNode<ZObject3dScan> *objNode = new ZTreeNode<ZObject3dScan>;
+
+    ZObject3dScan &parentObj = objNode->data();
+    std::cout << ">>>Label" << std::endl;
+    while (treeIter.hasNext()) {
+      ZTreeNode<int> *node = treeIter.nextNode();
+      int label = node->data();
+      ZObject3dScan *obj = sortedObjArray[label];
+      parentObj.concat(*obj);
+
+      std::cout << label << std::endl;
+
+      ZTreeNode<ZObject3dScan> *childObjNode = new ZTreeNode<ZObject3dScan>;
+      childObjNode->setData(*obj);
+      childObjNode->setParent(objNode);
+    }
+    parentObj.canonize();
+    parentObj.setLabel(i + 1);
+
+    objNode->setParent(root);
+  }
+
+  ZStack *signal = new ZStack;
+  signal->load(signalPath);
+  segProj.setStack(signal);
+
+  segProj.save((GET_DATA_DIR + "/flyem/AL/glomeruli/segcheck/seg.json").c_str());
+
+//  for (std::vector<ZObject3dScan*>::iterator iter = objArray.begin();
+//       iter != objArray.end(); ++iter) {
+//    ZJsonObject labelJson;
+
+
+//    labelJson.setEntry("label", (int) obj->getLabel());
+//    labelJson.setEntry("source", file.toStdString());
+//    labelArrayJson.append(labelJson);
+//  }
+
+//  segJson.setEntry("child", segJsonArray[0]);
+
+//  rootJson.setEntry("segmentation", segJsonArray[0]);
+//  std::cout << rootJson.dumpString(2) << std::endl;
+
+//  rootJson.dump(GET_DATA_DIR + "/flyem/AL/label/segcheck/seg.json");
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "2b6c", -1);
+
+  ZFlyEmDvidReader reader;
+  if (reader.open(target)) {
+    ZObject3dScan obj = reader.readCoarseBody(117);
+    obj.setColor(QColor(0, 0, 255));
+    ZStackFrame *frame = new ZStackFrame;
+    tic();
+    ZSwcTree *tree = ZSwcGenerator::createSurfaceSwc(obj);
+    ptoc();
+
+    ZStackDoc *doc = new ZStackDoc(NULL, NULL);
+    doc->addObject(tree);
+    tic();
+    ZWindowFactory factory;
+    Z3DWindow *window = factory.make3DWindow(doc);
+    window->getSwcFilter()->setColorMode("Intrinsic");
+    window->getSwcFilter()->setRenderingPrimitive("Sphere");
+    window->show();
+    window->raise();
+    ptoc();
+    delete frame;
+  }
+
+#endif
+
+#if 0
+  ZStack stack;
+  stack.load(GET_TEST_DATA_DIR + "/benchmark/em_stack_slice.tif");
+  Stack *out = C_Stack::computeGradient(stack.c_stack());
+  C_Stack::write(GET_TEST_DATA_DIR + "/test.tif", out);
+#endif
+
+#if 0
+  FlyEm::ZSynapseAnnotationArray synapseArray;
+  synapseArray.loadJson(GET_DATA_DIR +
+                        "/flyem/AL/al7d_whole_wfix_tbar-predict_0.81.json");
+
+  ZWeightedPointArray ptArray = synapseArray.toTBarConfidencePointArray();
+  std::cout << ptArray.size() << " TBars" << std::endl;
+
+  ZStack stack;
+  stack.load(GET_DATA_DIR + "/flyem/AL/glomeruli/label.tif");
+
+  ofstream stream(
+        (GET_DATA_DIR + "/flyem/AL/glomeruli/al7d_whole_wfix_tbar-predict_0.81_labeled.txt").c_str());
+
+  int dsScale = 20;
+  for (ZWeightedPointArray::iterator iter = ptArray.begin();
+       iter != ptArray.end(); ++iter) {
+    ZWeightedPoint pt = *iter;
+    pt *= 1.0 / dsScale;
+    ZIntPoint ipt = pt.toIntPoint();
+    int label = stack.getIntValue(ipt.getX(), ipt.getY(), ipt.getZ());
+
+    if (label > 0) {
+      stream << iter->x() << " " << iter->y() << " " << iter->z() << " "
+             << label << " " << pt.weight() << std::endl;
+    }
+
+  }
+
+  stream.close();
+#endif
+
+#if 0
+  ZDvidTarget dvidTarget("emdata2.int.janelia.org", "134");
+  ZDvidReader reader;
+  reader.open(dvidTarget);
+  ZDvidInfo info = reader.readGrayScaleInfo();
+  info.print();
+#endif
+
+#if 0
+  //merging objects
+  std::string dataFolder = GET_TEST_DATA_DIR + "/flyem/AL/glomeruli/segcheck3";
+  std::string outputFolder = GET_TEST_DATA_DIR + "/flyem/AL/glomeruli/segcheck4";
+  ZFileList fileList;
+  fileList.load(dataFolder, "sobj");
+
+  std::set<std::string> mergeSet;
+
+  ZObject3dScan masterObj;
+  masterObj.load(dataFolder + "/_2_46_2.sobj");
+  mergeSet.insert(ZString::getBaseName(masterObj.getSource()));
+
+  ZObject3dScan slaveObj;
+  slaveObj.load(dataFolder + "/_2_47.sobj");
+  mergeSet.insert(ZString::getBaseName(slaveObj.getSource()));
+  masterObj.concat(slaveObj);
+
+  masterObj.canonize();
+  masterObj.save(outputFolder + "/" +
+                 ZString::getBaseName(masterObj.getSource()));
+
+
+  masterObj.load(dataFolder + "/_2_5.sobj");
+  mergeSet.insert(ZString::getBaseName(masterObj.getSource()));
+
+  slaveObj.load(dataFolder + "/_2_6.sobj");
+  mergeSet.insert(ZString::getBaseName(slaveObj.getSource()));
+  masterObj.concat(slaveObj);
+
+  slaveObj.load(dataFolder + "/_2_7.sobj");
+  mergeSet.insert(ZString::getBaseName(slaveObj.getSource()));
+  masterObj.concat(slaveObj);
+
+  slaveObj.load(dataFolder + "/_2_8_2.sobj");
+  mergeSet.insert(ZString::getBaseName(slaveObj.getSource()));
+  masterObj.concat(slaveObj);
+
+  slaveObj.load(dataFolder + "/_2_9_2.sobj");
+  mergeSet.insert(ZString::getBaseName(slaveObj.getSource()));
+  masterObj.concat(slaveObj);
+
+  masterObj.canonize();
+  masterObj.save(outputFolder + "/" +
+                 ZString::getBaseName(masterObj.getSource()));
+
+//  2-8-1 + 2-9-1
+  masterObj.load(dataFolder + "/_2_8_1.sobj");
+  mergeSet.insert(ZString::getBaseName(masterObj.getSource()));
+
+  slaveObj.load(dataFolder + "/_2_9_1.sobj");
+  mergeSet.insert(ZString::getBaseName(slaveObj.getSource()));
+  masterObj.concat(slaveObj);
+
+  masterObj.canonize();
+  masterObj.save(outputFolder + "/" +
+                 ZString::getBaseName(masterObj.getSource()));
+
+//  2-53-2 + 2-49-2
+  masterObj.load(dataFolder + "/_2_53_2.sobj");
+  mergeSet.insert(ZString::getBaseName(masterObj.getSource()));
+
+  slaveObj.load(dataFolder + "/_2_49_2.sobj");
+  mergeSet.insert(ZString::getBaseName(slaveObj.getSource()));
+  masterObj.concat(slaveObj);
+
+  masterObj.canonize();
+  masterObj.save(outputFolder + "/" +
+                 ZString::getBaseName(masterObj.getSource()));
+
+//  2-39 + 2-56
+  masterObj.load(dataFolder + "/_2_39.sobj");
+  mergeSet.insert(ZString::getBaseName(masterObj.getSource()));
+
+  slaveObj.load(dataFolder + "/_2_56.sobj");
+  mergeSet.insert(ZString::getBaseName(slaveObj.getSource()));
+  masterObj.concat(slaveObj);
+
+  masterObj.canonize();
+  masterObj.save(outputFolder + "/" +
+                 ZString::getBaseName(masterObj.getSource()));
+
+//  2-45 + 2-19 + 2-20
+  masterObj.load(dataFolder + "/_2_45_1.sobj");
+  mergeSet.insert(ZString::getBaseName(masterObj.getSource()));
+
+  slaveObj.load(dataFolder + "/_2_45_2.sobj");
+  mergeSet.insert(ZString::getBaseName(slaveObj.getSource()));
+  masterObj.concat(slaveObj);
+
+  slaveObj.load(dataFolder + "/_2_19.sobj");
+  mergeSet.insert(ZString::getBaseName(slaveObj.getSource()));
+  masterObj.concat(slaveObj);
+
+  slaveObj.load(dataFolder + "/_2_20.sobj");
+  mergeSet.insert(ZString::getBaseName(slaveObj.getSource()));
+  masterObj.concat(slaveObj);
+
+  masterObj.canonize();
+  masterObj.save(outputFolder + "/" +
+                 ZString::getBaseName(masterObj.getSource()));
+
+//  2-1 + 2-2 + 2-3 + 2-4
+  masterObj.load(dataFolder + "/_2_1.sobj");
+  mergeSet.insert(ZString::getBaseName(masterObj.getSource()));
+
+  slaveObj.load(dataFolder + "/_2_2.sobj");
+  mergeSet.insert(ZString::getBaseName(slaveObj.getSource()));
+  masterObj.concat(slaveObj);
+
+  slaveObj.load(dataFolder + "/_2_3.sobj");
+  mergeSet.insert(ZString::getBaseName(slaveObj.getSource()));
+  masterObj.concat(slaveObj);
+
+  slaveObj.load(dataFolder + "/_2_4.sobj");
+  mergeSet.insert(ZString::getBaseName(slaveObj.getSource()));
+  masterObj.concat(slaveObj);
+
+  masterObj.canonize();
+  masterObj.save(outputFolder + "/" +
+                 ZString::getBaseName(masterObj.getSource()));
+
+//  2-25 + 1-26
+  masterObj.load(dataFolder + "/_2_25.sobj");
+  mergeSet.insert(ZString::getBaseName(masterObj.getSource()));
+
+  slaveObj.load(dataFolder + "/_1_26.sobj");
+  mergeSet.insert(ZString::getBaseName(slaveObj.getSource()));
+  masterObj.concat(slaveObj);
+
+  masterObj.canonize();
+  masterObj.save(outputFolder + "/" +
+                 ZString::getBaseName(masterObj.getSource()));
+
+//  1-44 + 1-21 + 1-22 + 1-24
+  masterObj.load(dataFolder + "/_1_44.sobj");
+  mergeSet.insert(ZString::getBaseName(masterObj.getSource()));
+
+  slaveObj.load(dataFolder + "/_1_21.sobj");
+  mergeSet.insert(ZString::getBaseName(slaveObj.getSource()));
+  masterObj.concat(slaveObj);
+
+  slaveObj.load(dataFolder + "/_1_22.sobj");
+  mergeSet.insert(ZString::getBaseName(slaveObj.getSource()));
+  masterObj.concat(slaveObj);
+
+  slaveObj.load(dataFolder + "/_1_24.sobj");
+  mergeSet.insert(ZString::getBaseName(slaveObj.getSource()));
+  masterObj.concat(slaveObj);
+
+  masterObj.canonize();
+  masterObj.save(outputFolder + "/" +
+                 ZString::getBaseName(masterObj.getSource()));
+
+//  2-27 + 2-28
+  masterObj.load(dataFolder + "/_2_27.sobj");
+  mergeSet.insert(ZString::getBaseName(masterObj.getSource()));
+
+  slaveObj.load(dataFolder + "/_2_28.sobj");
+  mergeSet.insert(ZString::getBaseName(slaveObj.getSource()));
+  masterObj.concat(slaveObj);
+
+  masterObj.canonize();
+  masterObj.save(outputFolder + "/" +
+                 ZString::getBaseName(masterObj.getSource()));
+
+//  2-58-1 + 2-55-2
+  masterObj.load(dataFolder + "/_2_58_1.sobj");
+  mergeSet.insert(ZString::getBaseName(masterObj.getSource()));
+
+  slaveObj.load(dataFolder + "/_2_55_2.sobj");
+  mergeSet.insert(ZString::getBaseName(slaveObj.getSource()));
+  masterObj.concat(slaveObj);
+
+  masterObj.canonize();
+  masterObj.save(outputFolder + "/" +
+                 ZString::getBaseName(masterObj.getSource()));
+
+
+  for (int i = 0; i < fileList.size(); ++i) {
+    std::string filePath = fileList.getFilePath(i);
+    if (mergeSet.count(ZString::getBaseName(filePath)) == 0) {
+      std::cout << filePath << std::endl;
+      masterObj.load(filePath);
+      masterObj.save(outputFolder + "/" +
+                     ZString::getBaseName(masterObj.getSource()));
+    }
+  }
+#endif
+
+#if 0
+  ZSegmentationProject segProj;
+  ZTree<ZObject3dScan> *labelTree = segProj.getLabelTree();
+  ZTreeNode<ZObject3dScan> *root = new ZTreeNode<ZObject3dScan>;
+  labelTree->setRoot(root);
+
+  std::string dataFolder = GET_TEST_DATA_DIR + "/flyem/AL/glomeruli/segcheck4";
+  std::string outputFolder = GET_TEST_DATA_DIR + "/flyem/AL/glomeruli/segcheck5";
+  ZFileList fileList;
+  fileList.load(dataFolder, "sobj");
+
+  for (int i = 0; i < fileList.size(); ++i) {
+    std::string filePath = fileList.getFilePath(i);
+    ZTreeNode<ZObject3dScan> *node = new ZTreeNode<ZObject3dScan>;
+    node->setParent(root);
+    node->data().setLabel(i + 1);
+    node->data().load(filePath);
+  }
+
+  std::string signalPath = GET_DATA_DIR +
+      "/flyem/AL/glomeruli/al7d_whole_wfix_tbar-predict_0.81_ds20_s5.tif";
+
+  ZStack *signal = new ZStack;
+  signal->load(signalPath);
+  segProj.setStack(signal);
+
+  segProj.save((outputFolder + "/seg.json").c_str());
+#endif
+
+#if 0
+  ZStack redStack;
+  ZStack greenStack;
+  ZStack blueStack;
+
+  redStack.load(GET_TEST_DATA_DIR + "/flyem/MB/mblight.tif");
+  blueStack.load(GET_TEST_DATA_DIR + "/flyem/MB/C2-alphalobealigned.tif");
+  greenStack.load(GET_TEST_DATA_DIR + "/flyem/MB/C3-alphalobealigned.tif");
+
+  greenStack.setOffset(blueStack.getOffset() - ZIntPoint(6, 4, 0));
+
+  ZStack *stack = ZStackFactory::MakeRgbStack(redStack, greenStack, blueStack);
+  stack->save(GET_TEST_DATA_DIR + "/test.tif");
+
+#endif
+
+#if 0
+  ZStack stack1;
+  ZStack stack2;
+  stack1.load(GET_TEST_DATA_DIR + "/flyem/AL/lightseg.tif");
+  stack2.load(GET_TEST_DATA_DIR + "/flyem/AL/em_registered.tif");
+  stack2.translate(312, 0, 0);
+
+  ZStack *stack = ZStackFactory::CompositeForeground(stack1, stack2);
+  ZIntCuboid cuboid = stack->getBoundBox();
+  cuboid.setFirstZ(30);
+  cuboid.setLastZ(210);
+  stack->crop(cuboid);
+
+  stack->save(GET_TEST_DATA_DIR + "/test.tif");
+#endif
+
+#if 0
+  ZStack stack;
+  stack.load(GET_TEST_DATA_DIR + "/flyem/AL/glomeruli/segcheck5/signal.tif");
+  ZIntCuboid cuboid = stack.getBoundBox();
+  cuboid.setFirstZ(50);
+  stack.crop(cuboid);
+  stack.save(GET_TEST_DATA_DIR + "/flyem/AL/glomeruli/segcheck6/signal.tif");
+
+#endif
+
+#if 0
+  ZObject3dScan obj1;
+  ZObject3dScan obj2;
+
+  obj1.load(GET_TEST_DATA_DIR + "/flyem/AL/glomeruli/segcheck5/_39.sobj");
+  obj2.load(GET_TEST_DATA_DIR + "/flyem/AL/glomeruli/segcheck5/_40.sobj");
+
+  obj1.unify(obj2);
+
+  obj1.save(GET_TEST_DATA_DIR + "/flyem/AL/glomeruli/segcheck6/_39.sobj");
+
+#endif
+
+#if 1
+  ZStack labelField;
+  labelField.load(GET_DATA_DIR + "/flyem/AL/glomeruli/new_label_field.tif");
+
+  ZStack signal;
+  signal.load(GET_DATA_DIR + "/flyem/AL/glomeruli/segcheck8/signal.tif");
+  Stack_Threshold_Binarize(signal.c_stack(), 5);
+
+  //masking
+  labelField.crop(signal.getBoundBox());
+  Stack_Mask(labelField.c_stack(), signal.c_stack(), labelField.c_stack());
+
+  std::vector<ZPointArray> synapseGroup;
+  FlyEm::ZSynapseAnnotationArray synapseArray;
+  synapseArray.loadJson(GET_DATA_DIR +
+                        "/flyem/AL/al7d_whole_wfix_tbar-predict_0.81.json");
+
+  ZWeightedPointArray ptArray = synapseArray.toTBarConfidencePointArray();
+  std::cout << ptArray.size() << " TBars" << std::endl;
+
+  int dsScale = 20;
+  for (ZWeightedPointArray::iterator iter = ptArray.begin();
+       iter != ptArray.end(); ++iter) {
+    ZWeightedPoint pt = *iter;
+    pt *= 1.0 / dsScale;
+    ZIntPoint ipt = pt.toIntPoint();
+    int label = labelField.getIntValue(ipt.getX(), ipt.getY(), ipt.getZ());
+
+    if (label > 0) {
+      if (label >= (int) synapseGroup.size()) {
+        synapseGroup.resize(label + 1);
+      }
+      synapseGroup[label].push_back(pt);
+    }
+  }
+
+//  labelField.save(GET_TEST_DATA_DIR + "/test.tif");
+
+  int *hist = Stack_Hist(labelField.c_stack());
+  int *histArray = Int_Histogram_Array(hist);
+
+  std::cout << synapseGroup.size() - 1 << " labels" << std::endl;
+  for (size_t label = 1; label < synapseGroup.size(); ++label) {
+    const ZPointArray &pt = synapseGroup[label];
+    ZPoint center = pt.computeCenter();
+    std::cout << label << ": " << center.toString() << " " << pt.size()
+              << ", " << histArray[label] * 0.16 * 0.16 *0.16  << std::endl;
   }
 #endif
 }

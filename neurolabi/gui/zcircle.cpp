@@ -68,6 +68,8 @@ void ZCircle::display(ZPainter &painter, int n,
 
   UNUSED_PARAMETER(style);
 #if _QT_GUI_USED_
+  painter.save();
+
   QPen pen(m_color, getPenWidth());
   pen.setCosmetic(m_usingCosmeticPen);
 
@@ -99,6 +101,8 @@ void ZCircle::display(ZPainter &painter, int n,
   }
   displayHelper(&painter, n, style);
   painter.setBrush(oldBrush);
+
+  painter.restore();
 #endif
 }
 

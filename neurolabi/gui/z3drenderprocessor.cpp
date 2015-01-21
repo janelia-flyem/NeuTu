@@ -6,6 +6,7 @@
 #include "QsLog.h"
 #include "z3dgpuinfo.h"
 #include <QImageWriter>
+#include "zsharedpointer.h"
 
 Z3DRenderProcessor::Z3DRenderProcessor()
   : Z3DProcessor()
@@ -164,19 +165,18 @@ const std::vector<Z3DRenderOutputPort*> &Z3DRenderProcessor::getPrivateRenderPor
 void Z3DRenderProcessor::saveTextureAsImage(Z3DTexture *tex, const QString &filename)
 {
   try {
-    GLubyte* colorBuffer = 0;
-    colorBuffer = tex->downloadTextureToBuffer(GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV);
-    glm::ivec2 size = glm::ivec2(tex->getDimensions());
-    QImage upsideDownImage((const uchar*)colorBuffer, size.x, size.y,
+    GLenum dataFormat = GL_BGRA;
+    GLenum dataType = GL_UNSIGNED_INT_8_8_8_8_REV;
+    ZSharedPointer<uint8_t> colorBuffer(new uint8_t[tex->getBypePerPixel(dataFormat, dataType) * tex->getNumPixels()], array_deleter<uint8_t>());
+    tex->downloadTextureToBuffer(dataFormat, dataType, colorBuffer.get());
+    QImage upsideDownImage(colorBuffer.get(), tex->getWidth(), tex->getHeight(),
                            QImage::Format_ARGB32);
     QImage image = upsideDownImage.mirrored(false, true);
     QImageWriter writer(filename);
     writer.setCompression(1);
     if(!writer.write(image)) {
       LERROR() << writer.errorString();
-      delete[] colorBuffer;
     }
-    delete[] colorBuffer;
   }
   catch (Exception const & e) {
     LERROR() << "Exception:" << e.what();

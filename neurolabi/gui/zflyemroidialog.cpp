@@ -37,6 +37,7 @@ ZFlyEmRoiDialog::ZFlyEmRoiDialog(QWidget *parent) :
 
   m_dvidDlg = ZDialogFactory::makeDvidDialog(this);
   m_zDlg = ZDialogFactory::makeSpinBoxDialog(this);
+  m_dsDlg = ZDialogFactory::makeDownsampleDialog(this);
 
   connect(ui->loadGrayScalePushButton, SIGNAL(clicked()),
           this, SLOT(loadGrayscale()));
@@ -58,6 +59,8 @@ ZFlyEmRoiDialog::ZFlyEmRoiDialog(QWidget *parent) :
           this, SLOT(viewAllSynapseIn3D()));
   connect(this, SIGNAL(currentSliceLoaded(int)),
           this, SLOT(loadNextSlice(int)));
+  connect(ui->cloneProjectPushButton, SIGNAL(clicked()),
+          this, SLOT(cloneProject()));
 
 #if 0
   QSize iconSize(24, 24);
@@ -91,11 +94,14 @@ ZFlyEmRoiDialog::ZFlyEmRoiDialog(QWidget *parent) :
   ui->yIncPushButton->setMaximumSize(buttonSize);
 #endif
 
+  ui->progressBar->setRange(0, 100);
+
+  connect(this, SIGNAL(progressStart()), this, SLOT(startProgressSlot()));
   connect(this, SIGNAL(newDocReady()), this, SLOT(updateDataFrame()));
-  connect(this, SIGNAL(progressFailed()), ui->progressBar, SLOT(reset()));
+  connect(this, SIGNAL(progressFailed()), this, SLOT(endProgressSlot()));
   connect(this, SIGNAL(progressAdvanced(double)),
           this, SLOT(advanceProgressSlot(double)));
-  connect(this, SIGNAL(progressDone()), ui->progressBar, SLOT(reset()));
+  connect(this, SIGNAL(progressDone()), this, SLOT(endProgressSlot()));
   connect(ui->projectComboBox, SIGNAL(currentIndexChanged(int)),
           this, SLOT(loadProject(int)));
   connect(this, SIGNAL(messageDumped(QString, bool)),
@@ -144,6 +150,12 @@ void ZFlyEmRoiDialog::createMenu()
   m_mainMenu->addAction(exportAction);
   connect(exportAction, SIGNAL(triggered()), this, SLOT(exportResult()));
 
+  QAction *exportRoiObjectAction = new QAction("Export ROI Object", this);
+  m_mainMenu->addAction(exportRoiObjectAction);
+  connect(exportRoiObjectAction, SIGNAL(triggered()),
+          this, SLOT(exportRoiObject()));
+
+
   m_importRoiAction = new QAction("Import ROI", this);
   m_mainMenu->addAction(m_importRoiAction);
   m_importRoiAction->setCheckable(true);
@@ -154,6 +166,17 @@ void ZFlyEmRoiDialog::createMenu()
   m_autoStepAction->setCheckable(true);
   connect(m_autoStepAction, SIGNAL(toggled(bool)),
           this, SLOT(runAutoStep(bool)));
+
+  m_applyTranslateAction = new QAction("Apply Translation", this);
+  m_mainMenu->addAction(m_applyTranslateAction);
+  //m_applyTranslateAction->setCheckable(true);
+  connect(m_applyTranslateAction, SIGNAL(triggered()),
+          this, SLOT(applyTranslate()));
+
+  m_deleteProjectAction = new QAction("Delete Project", this);
+  m_mainMenu->addAction(m_deleteProjectAction);
+  connect(m_deleteProjectAction, SIGNAL(triggered()),
+          this, SLOT(deleteProject()));
 }
 
 void ZFlyEmRoiDialog::clear()
@@ -217,7 +240,7 @@ bool ZFlyEmRoiDialog::appendProject(ZFlyEmRoiProject *project)
         }
       }
       if (isValidProject) {
-        project->downloadAllRoi();
+        //project->downloadAllRoi();
         m_projectList.append(project);
         ui->projectComboBox->addItem(project->getName().c_str());
         return true;
@@ -313,8 +336,8 @@ void ZFlyEmRoiDialog::loadPartialGrayscaleFunc(
 
       ZSwcTree *tree = m_project->getRoiSwc(z);
       if (tree != NULL) {
-        m_docReader.addObject(
-              tree, NeuTube::Documentable_SWC, ZDocPlayer::ROLE_ROI);
+        //tree->setRole(ZStackObjectRole::ROLE_ROI);
+        m_docReader.addObject(tree);
       }
       emit newDocReady();
     } else {
@@ -355,7 +378,8 @@ void ZFlyEmRoiDialog::prepareQuickLoadFunc(
                 z, dvidInfo.getStackSize()[0],
               dvidInfo.getStackSize()[1], 1);
           if (stack != NULL) {
-            boundBox = ZFlyEmRoiProject::estimateBoundBox(*stack);
+            boundBox = ZFlyEmRoiProject::estimateBoundBox(
+                  *stack, getDvidTarget().getBgValue());
             if (!boundBox.isEmpty()) {
               stack->crop(boundBox);
             }
@@ -415,7 +439,7 @@ void ZFlyEmRoiDialog::prepareQuickLoad(int z, bool waitForDone)
     std::string lowresPath =
         target.getLocalLowResGrayScalePath(m_xintv, m_xintv, 0, z);
 
-    if (!QFileInfo(lowresPath.c_str()).exists()) {
+    if (!lowresPath.empty() && !QFileInfo(lowresPath.c_str()).exists()) {
       QString threadId = getQuickLoadThreadId(z);
       if (!isPreparingQuickLoad(z)) { //Create new thread
           QFuture<void> future =QtConcurrent::run(
@@ -496,7 +520,8 @@ void ZFlyEmRoiDialog::loadGrayscaleFunc(int z, bool lowres)
               z, dvidInfo.getStackSize()[0],
             dvidInfo.getStackSize()[1], 1);
         if (stack != NULL) {
-          boundBox = ZFlyEmRoiProject::estimateBoundBox(*stack);
+          boundBox = ZFlyEmRoiProject::estimateBoundBox(
+                *stack, getDvidTarget().getBgValue());
           if (!boundBox.isEmpty()) {
             stack->crop(boundBox);
           }
@@ -527,16 +552,31 @@ void ZFlyEmRoiDialog::loadGrayscaleFunc(int z, bool lowres)
       ZSwcTree *tree = m_project->getRoiSwc(
             z, FlyEm::GetFlyEmRoiMarkerRadius(stack->width(), stack->height()));
       if (tree != NULL) {
-        m_docReader.addObject(
-              tree, NeuTube::Documentable_SWC, ZDocPlayer::ROLE_ROI);
+        m_docReader.addObject(tree);
       }
+#ifdef _DEBUG_
+      std::cout << "Object count in docreader: "
+                << m_docReader.getObjectGroup().size() << std::endl;
+      std::cout << "Swc count in docreader: "
+                << m_docReader.getObjectGroup().getObjectList(ZStackObject::TYPE_SWC).size()
+                << std::endl;
+#endif
       emit newDocReady();
     } else {
-      emit progressFailed();
+      processLoadGrayscaleFailure();
     }
   } else {
-    emit progressFailed();
+    processLoadGrayscaleFailure();
   }
+}
+
+void ZFlyEmRoiDialog::processLoadGrayscaleFailure()
+{
+#ifdef _DEBUG_
+  std::cout << "Failed to load grayscale data." << std::endl;
+#endif
+  m_isLoadingGrayScale = false;
+  emit progressFailed();
 }
 
 void ZFlyEmRoiDialog::newDataFrame()
@@ -644,6 +684,7 @@ void ZFlyEmRoiDialog::loadGrayscale(int z)
 
   if (loading) {
     m_isLoadingGrayScale = true;
+    resetProgress();
     startProgress();
     QtConcurrent::run(
           this, &ZFlyEmRoiDialog::loadGrayscaleFunc, z, lowres);
@@ -808,9 +849,12 @@ void ZFlyEmRoiDialog::loadNextSlice(int currentZ)
 
 void ZFlyEmRoiDialog::on_testPushButton_clicked()
 {
-  m_isAutoStepping = true;
-  loadGrayscale(ui->zSpinBox->value());
+//  m_isAutoStepping = true;
+//  loadGrayscale(ui->zSpinBox->value());
 
+  if (m_project != NULL) {
+    m_project->test();
+  }
 #if 0
   if (m_project == NULL) {
     return;
@@ -984,6 +1028,16 @@ void ZFlyEmRoiDialog::advanceProgressSlot(double p)
   advanceProgress(p);
 }
 
+void ZFlyEmRoiDialog::startProgressSlot()
+{
+  startProgress();
+}
+
+void ZFlyEmRoiDialog::endProgressSlot()
+{
+  endProgress();
+}
+
 void ZFlyEmRoiDialog::closeEvent(QCloseEvent *event)
 {
   if (m_project == NULL) {
@@ -1017,11 +1071,16 @@ void ZFlyEmRoiDialog::closeEvent(QCloseEvent *event)
   }
 }
 
-void ZFlyEmRoiDialog::loadProject(int index)
+void ZFlyEmRoiDialog::closeCurrentProject()
 {
-  if (m_project != NULL) { //will be modified for better switching
+  if (m_project != NULL) {
     m_project->closeDataFrame();
   }
+}
+
+void ZFlyEmRoiDialog::loadProject(int index)
+{
+  closeCurrentProject();
   m_project = getProject(index);
   updateWidget();
 }
@@ -1056,6 +1115,33 @@ ZFlyEmRoiProject* ZFlyEmRoiDialog::newProject(const std::string &name)
   }
 
   return project;
+}
+
+void ZFlyEmRoiDialog::cloneProject(const std::string &name)
+{
+  if (isValidName(name)) {
+    ZFlyEmRoiProject *project = m_project->clone(name);
+    appendProject(project);
+    ui->projectComboBox->setCurrentIndex(ui->projectComboBox->count() - 1);
+    uploadProjectList();
+  } else {
+    QMessageBox::warning(
+              this, "Failed to Clone A Project",
+              "Invalid project name: no space is allowed; "
+              "no duplicated name is allowed.",
+              QMessageBox::Ok);
+  }
+}
+
+void ZFlyEmRoiDialog::cloneProject()
+{
+  bool ok;
+  QString text = QInputDialog::getText(this, tr("New ROI Project"),
+                                       tr("Project name:"), QLineEdit::Normal,
+                                       "", &ok);
+  if (ok && !text.isEmpty()) {
+    cloneProject(text.toStdString());
+  }
 }
 
 void ZFlyEmRoiDialog::on_pushButton_clicked() //new project
@@ -1101,6 +1187,48 @@ void ZFlyEmRoiDialog::on_estimateVolumePushButton_clicked()
   }
 }
 
+void ZFlyEmRoiDialog::exportRoiObjectFunc(
+    const QString &fileName, int xintv, int yintv, int zintv)
+{
+//  emit progressStart();
+  emit messageDumped("Generating ROI object ...", true);
+  emit progressAdvanced(0.1);
+  ZObject3dScan obj = m_project->getRoiObject(xintv, yintv, zintv);
+//  obj.downsampleMax(xintv, yintv, zintv);
+  emit progressAdvanced(0.5);
+  if (!obj.isEmpty()) {
+    emit messageDumped("Saving ...", true);
+    obj.save(fileName.toStdString());
+    emit messageDumped("Done.", true);
+    emit progressAdvanced(0.4);
+  } else {
+    emit messageDumped("No ROI found in this project. Nothing is saved", true);
+  }
+  endProgress();
+  //emit progressDone();
+}
+
+void ZFlyEmRoiDialog::exportRoiObject()
+{
+  if (m_project != NULL) {
+    QString fileName = getMainWindow()->getSaveFileName(
+          "Export ROI Object", "Sparse object files (*.sobj)");
+    if (!fileName.isEmpty()) {
+      if (m_dsDlg->exec()) {
+        int xIntv = m_dsDlg->getValue("X");
+        int yIntv = m_dsDlg->getValue("Y");
+        int zIntv = m_dsDlg->getValue("Z");
+
+        startProgress();
+        QtConcurrent::run(
+              this, &ZFlyEmRoiDialog::exportRoiObjectFunc, fileName,
+              xIntv, yIntv, zIntv);
+        //endProgress();
+      }
+    }
+  }
+}
+
 void ZFlyEmRoiDialog::exportResult()
 {
   if (m_project != NULL) {
@@ -1108,13 +1236,15 @@ void ZFlyEmRoiDialog::exportResult()
 
     ZObject3dScan blockObj = m_project->getDvidInfo().getBlockIndex(obj);
 
-    blockObj.save(GET_DATA_DIR + "/test.sobj");
+    std::string fileName = GET_DATA_DIR + "/roi_" + m_project->getName();
+
+    blockObj.save(fileName + ".sobj");
 
     ZJsonArray array = ZJsonFactory::makeJsonArray(
           blockObj, ZJsonFactory::OBJECT_SPARSE);
     //ZJsonObject jsonObj;
     //jsonObj.setEntry("data", array);
-    array.dump(GET_DATA_DIR + "/test.json");
+    array.dump(fileName + ".json");
   }
 }
 
@@ -1214,6 +1344,13 @@ void ZFlyEmRoiDialog::viewAllSynapseIn3D()
       ZWindowFactory factory;
       factory.setParentWidget(this);
       factory.setWindowTitle("Syanpse View");
+      ZStack *stack = doc->getStack();
+      if (stack != NULL) {
+        stack->setOffset(
+              stack->getOffset().getX() * (m_project->getCurrentDsIntv().getX() + 1),
+              stack->getOffset().getY() * (m_project->getCurrentDsIntv().getY() + 1),
+              stack->getOffset().getZ());
+      }
       Z3DWindow *window = factory.make3DWindow(doc);
       window->getVolumeSource()->setXScale(
             m_project->getCurrentDsIntv().getX() + 1);
@@ -1254,5 +1391,42 @@ void ZFlyEmRoiDialog::setQuickMode(bool quickMode)
     }
 
     updateWidget();
+  }
+}
+
+void ZFlyEmRoiDialog::applyTranslate()
+{
+  if (m_project != NULL) {
+    m_project->applyTranslate();
+  }
+}
+
+void ZFlyEmRoiDialog::deleteProject(ZFlyEmRoiProject *project)
+{
+  if (project != NULL) {
+    m_projectList.removeOne(project);
+    project->deleteAllData();
+    delete project;
+    uploadProjectList();
+    //updateWidget();
+  }
+}
+
+void ZFlyEmRoiDialog::deleteProject()
+{
+  if (m_project != NULL) {
+    bool deleting = false;
+    int ret = QMessageBox::warning(
+          this, "Delete Project",
+          QString("You are about to deleting the project '%1'. "
+                  "Do you want to continue?").arg(m_project->getName().c_str()),
+          QMessageBox::Yes | QMessageBox::No);
+    deleting = (ret == QMessageBox::Yes);
+    if (deleting) {
+      ZFlyEmRoiProject *project = m_project;
+      closeCurrentProject();
+      ui->projectComboBox->removeItem(ui->projectComboBox->currentIndex());
+      deleteProject(project);
+    }
   }
 }

@@ -10,6 +10,8 @@ class MainWindow;
 class ZFlyEmNewBodySplitProjectDialog;
 class QProgressDialog;
 class ZDvidDialog;
+class QMenu;
+class QAction;
 
 namespace Ui {
 class FlyEmBodySplitProjectDialog;
@@ -23,15 +25,33 @@ public:
   explicit FlyEmBodySplitProjectDialog(QWidget *parent = 0);
   ~FlyEmBodySplitProjectDialog();
 
+  /*!
+   * \brief Set DVID target.
+   *
+   * This function does not check if \a target is valid.
+   */
   void setDvidTarget(const ZDvidTarget &target);
+
+  /*!
+   * \brief Set the current body ID.
+   *
+   * \param id The ID of the body to work on.
+   */
   void setBodyId(int id);
 
+  /*!
+   * \brief Get the current body ID.
+   */
   int getBodyId() const;
+
   const ZDvidTarget& getDvidTarget() const;
 
   MainWindow* getMainWindow();
   QProgressDialog* getProgressDialog();
 
+  /*!
+   * \brief Set the data frame.
+   */
   void setDataFrame(ZStackFrame *frame);
 
   void closeEvent(QCloseEvent *event);
@@ -46,9 +66,11 @@ public:
   void downloadSeed();
 
 signals:
-  //void progressStarted();
+  void progressStarted(const QString &title, int nticks);
   void progressDone();
-  void messageDumped(const QString &message, bool appending);
+  void progressAdvanced(double dp);
+
+  void messageDumped(const QString &message, bool appending = true);
   void sideViewReady();
   void sideViewCanceled();
 
@@ -58,13 +80,18 @@ public slots:
   void shallowClearResultWindow();
   void shallowClearDataFrame();
 
-  void showData2d();
+  bool showData2d();
   void showData3d();
   void showResult3d();
-  void loadBody();
+  void showResult3dQuick();
+  bool loadBody();
   void loadBookmark();
   void locateBookmark(const QModelIndex &index);
   void quickView();
+  void viewPreviousSlice();
+  void viewNextSlice();
+  void viewFullGrayscale();
+  void saveSeed();
 
   void resetSideView();
 
@@ -80,12 +107,23 @@ private slots:
   void on_dvidPushButton_clicked();
 
   void on_commitPushButton_clicked();
+  void showBodyMask(bool on);
+  void checkAllSeed();
+
+  /*!
+   * \brief Process all stored seeds.
+   *
+   * After processing the seeds will be labeled as "processed"
+   */
+  void processAllSeed();
 
 private:
   void updateSideView();
   void updateSideViewFunc();
+  void initSideViewScene();
   void startProgress(const QString &label);
   void connectSignalSlot();
+  void createMenu();
 
 private:
   Ui::FlyEmBodySplitProjectDialog *ui;
@@ -94,6 +132,8 @@ private:
   ZFlyEmBookmarkListModel m_bookmarkList;
   QGraphicsScene *m_sideViewScene;
   ZDvidDialog *m_dvidDlg;
+  QMenu *m_mainMenu;
+  QAction *m_showBodyMaskAction;
 };
 
 #endif // FLYEMBODYSPLITPROJECTDIALOG_H

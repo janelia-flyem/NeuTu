@@ -17,7 +17,8 @@
 
 using namespace std;
 
-ZObject3d::ZObject3d(Object_3d *obj) : m_conn(0), m_label(-1)
+ZObject3d::ZObject3d(Object_3d *obj) : m_conn(0), m_label(-1),
+  m_hitVoxelIndex(-1)
 {
   if (obj != NULL) {
     m_voxelArray.resize(obj->size * 3);
@@ -26,16 +27,13 @@ ZObject3d::ZObject3d(Object_3d *obj) : m_conn(0), m_label(-1)
     }
   }
 
-#if _QT_GUI_USED_
-  m_color.setRed(100);
-  m_color.setGreen(200);
-  m_color.setBlue(0);
-  m_color.setAlpha(100);
-#endif
+  setTarget(OBJECT_CANVAS);
+  m_type = ZStackObject::TYPE_OBJ3D;
 }
 
 ZObject3d::ZObject3d(const vector<size_t> &indexArray, int width, int height,
-                     int dx, int dy, int dz) : m_conn(0)
+                     int dx, int dy, int dz) : m_conn(0), m_label(-1),
+  m_hitVoxelIndex(-1)
 {
   setSize(indexArray.size());
 
@@ -44,6 +42,9 @@ ZObject3d::ZObject3d(const vector<size_t> &indexArray, int width, int height,
        iter != indexArray.end(); ++iter, ++i) {
     set(i, *iter, width, height, dx, dy, dz);
   }
+
+  setTarget(OBJECT_CANVAS);
+  m_type = ZStackObject::TYPE_OBJ3D;
 }
 
 ZObject3d::~ZObject3d()
@@ -175,7 +176,11 @@ void ZObject3d::display(ZPainter &painter, int slice, Display_Style option) cons
   painter.drawPoints(&(pointArray[0]), pointArray.size());
 
   if (isSelected()) {
-    QPen pen(QColor(255, 255, 0));
+    QColor color;
+    color.setRedF(m_color.redF() * 0.5 + 0.5);
+    color.setGreenF(m_color.greenF() * 0.5 + 0.5);
+    color.setBlueF(m_color.blueF() * 0.5 + 0.5);
+    QPen pen(color);
     painter.setPen(pen);
     for (std::vector<QPoint>::iterator iter = pointArray.begin();
          iter != pointArray.end(); ++iter) {
@@ -194,7 +199,7 @@ void ZObject3d::display(ZPainter &painter, int slice, Display_Style option) cons
   painter.restore();
 #else
   UNUSED_PARAMETER(&painter);
-  UNUSED_PARAMETER(z);
+  UNUSED_PARAMETER(slice);
   UNUSED_PARAMETER(option);
 #endif
 }
@@ -850,6 +855,8 @@ void ZObject3d::loadJsonObject(const ZJsonObject &jsonObj)
 
 bool ZObject3d::hit(double x, double y)
 {
+  m_hitVoxelIndex = -1;
+
   if (!isHittable()) {
     return false;
   }
@@ -857,8 +864,9 @@ bool ZObject3d::hit(double x, double y)
   int ix = iround(x);
   int iy = iround(y);
 
-  for (size_t i = 0; i < m_voxelArray.size(); ++i) {
+  for (size_t i = 0; i < size(); ++i) {
     if (ix == getX(i) && iy == getY(i)) {
+      m_hitVoxelIndex = i;
       return true;
     }
   }
@@ -868,6 +876,8 @@ bool ZObject3d::hit(double x, double y)
 
 bool ZObject3d::hit(double x, double y, double z)
 {
+  m_hitVoxelIndex = -1;
+
   if (!isHittable()) {
     return false;
   }
@@ -878,11 +888,27 @@ bool ZObject3d::hit(double x, double y, double z)
 
   for (size_t i = 0; i < size(); ++i) {
     if (ix == getX(i) && iy == getY(i) && iz == getZ(i)) {
+      m_hitVoxelIndex = i;
       return true;
     }
   }
 
   return false;
+}
+
+bool ZObject3d::hasHitVoxel() const
+{
+  return m_hitVoxelIndex >= 0 && m_hitVoxelIndex < (int) size();
+}
+
+ZIntPoint ZObject3d::getHitVoxel() const
+{
+  ZIntPoint pt;
+  if (hasHitVoxel()) {
+    pt.set(getX(m_hitVoxelIndex), getY(m_hitVoxelIndex), getZ(m_hitVoxelIndex));
+  }
+
+  return pt;
 }
 
 ZSTACKOBJECT_DEFINE_CLASS_NAME(ZObject3d)

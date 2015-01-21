@@ -26,7 +26,8 @@ class ZEditSwcDialog : public QDialog
 #define SVG_VIEW_MAX_X 800
 #define SVG_VIEW_MAX_Y 600
 public:
-  ZEditSwcDialog(QWidget *parent, QList<ZSwcTree*> *swcTreeList = NULL);
+  ZEditSwcDialog(QWidget *parent);
+  ZEditSwcDialog(QWidget *parent, const QList<ZSwcTree*> &swcTreeList);
   virtual ~ZEditSwcDialog();
 signals:
 
@@ -81,6 +82,7 @@ private:
   QDoubleSpinBox* createDoubleSpinBox();
   QSpinBox* createIntSpinBox();
 
+  void _init();
 
 private:
   QGroupBox *m_inputGroupBox;
@@ -176,7 +178,7 @@ private:
   QCheckBox *m_analysisCheckBox;
   QCheckBox *m_featFileCheckBox;
 
-  QList<ZSwcTree*> *m_swcTreeList;
+  QList<ZSwcTree*> m_swcTreeList;
 
 };
 

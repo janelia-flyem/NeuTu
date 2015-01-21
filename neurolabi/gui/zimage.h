@@ -31,7 +31,7 @@ public:
 
   void setData(const uint8 *data, int threshold = -1);
 
-  void setData(const ZStack *stack, int z);
+  void setData(const ZStack *stack, int z, bool ignoringZero = false);
 
   void setData(const color_t *data, int alpha = 255);
   void setCData(const color_t *data, double scale, double offset);

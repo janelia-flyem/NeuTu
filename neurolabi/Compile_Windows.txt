@@ -14,5 +14,5 @@ Compile neuTube in Windows using Mingw64
 
 5.  Open QtCreator, configure Kits with qmake.exe in "$INS_DIR/qt-4.8.6-x64-mingw-seh/bin" (refer to QtCreator document for how). 
 
-6.  Open project /neurolabi/gui/gui.pro in QtCreator, Build. After building, add /neurolabi/lib/Mingw/64/bin to system path so that neuTube.exe can run.
+6.  Open project /neurolabi/gui/gui.pro in QtCreator, Build. After building, go to folder /neuTube_win64 and run neuTube.exe
 
