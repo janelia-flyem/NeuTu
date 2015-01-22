@@ -44,7 +44,7 @@ public slots:
   void moveSliceDownRight();
   void showPreviousSlice();
   void showNextSlice();
-  void notifySelection(ZStackObjectSelector *selector);
+  void notifySelection(const ZStackObjectSelector &selector);
   void notifyBodyMerged(QList<uint64_t> bodyLabelList);
 
 private:

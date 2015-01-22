@@ -250,11 +250,11 @@ void ZFlyEmBodyMergeProject::setDataFrame(ZStackFrame *frame)
           SLOT(updateOriginalLabel(ZArray*)));
 
   connect(m_dataFrame->getCompleteDocument(),
-          SIGNAL(objectSelectorChanged(ZStackObjectSelector*)),
-          this, SIGNAL(selectionChanged(ZStackObjectSelector*)));
+          SIGNAL(objectSelectorChanged(ZStackObjectSelector)),
+          this, SIGNAL(selectionChanged(ZStackObjectSelector)));
 
-  connect(this, SIGNAL(selectionChanged(ZStackObjectSelector*)),
-          this, SLOT(update3DBodyView(ZStackObjectSelector*)));
+  connect(this, SIGNAL(selectionChanged(ZStackObjectSelector)),
+          this, SLOT(update3DBodyView(ZStackObjectSelector)));
   //connect(this, SIGNAL())
 }
 
@@ -342,12 +342,12 @@ void ZFlyEmBodyMergeProject::showBody3d()
   m_bodyWindow->raise();
 }
 
-void ZFlyEmBodyMergeProject::update3DBodyView(ZStackObjectSelector* selector)
+void ZFlyEmBodyMergeProject::update3DBodyView(const ZStackObjectSelector &selector)
 {
   if (m_bodyWindow != NULL) {
 //    m_bodyWindow->getDocument()->removeAllObject();
     std::vector<ZStackObject*> objList =
-        selector->getSelectedList(ZStackObject::TYPE_OBJECT3D_SCAN);
+        selector.getSelectedList(ZStackObject::TYPE_OBJECT3D_SCAN);
     ZFlyEmDvidReader reader;
     reader.open(getDvidTarget());
     m_bodyWindow->getDocument()->blockSignals(true);
@@ -371,7 +371,10 @@ void ZFlyEmBodyMergeProject::update3DBodyView(ZStackObjectSelector* selector)
       }
     }
 
-    objList = selector->getDeselectedList(ZStackObject::TYPE_OBJECT3D_SCAN);
+    objList = selector.getDeselectedList(ZStackObject::TYPE_OBJECT3D_SCAN);
+#ifdef _DEBUG_
+    std::cout << "Deselected: " << objList.size() << std::endl;
+#endif
     for (std::vector<ZStackObject*>::const_iterator iter = objList.begin();
          iter != objList.end(); ++iter) {
       ZStackObject *obj = *iter;

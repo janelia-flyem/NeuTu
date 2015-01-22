@@ -7934,6 +7934,6 @@ void ZStackDoc::notifySelectorChanged()
 {
   ZStackObjectSelector *selector = m_objectGroup.getSelector();
   if (!selector->isEmpty()) {
-    emit objectSelectorChanged(selector);
+    emit objectSelectorChanged(*selector);
   }
 }

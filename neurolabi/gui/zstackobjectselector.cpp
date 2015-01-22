@@ -82,7 +82,7 @@ bool ZStackObjectSelector::isEmpty() const
 }
 
 std::vector<ZStackObject*> ZStackObjectSelector::getSelectedList(
-    ZStackObject::EType type)
+    ZStackObject::EType type) const
 {
   std::vector<ZStackObject*> objList;
   for (std::set<ZStackObject*>::const_iterator iter = m_selectedSet.begin();
@@ -97,7 +97,7 @@ std::vector<ZStackObject*> ZStackObjectSelector::getSelectedList(
 }
 
 std::vector<ZStackObject*> ZStackObjectSelector::getDeselectedList(
-    ZStackObject::EType type)
+    ZStackObject::EType type) const
 {
   std::vector<ZStackObject*> objList;
   for (std::set<ZStackObject*>::const_iterator iter = m_deselectedSet.begin();

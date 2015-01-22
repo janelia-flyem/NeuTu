@@ -5,6 +5,7 @@
 #include <QList>
 #include "dvid/zdvidtarget.h"
 #include "tz_stdint.h"
+#include "zstackobjectselector.h"
 
 class ZStackFrame;
 class ZFlyEmBodyMergeFrame;
@@ -16,7 +17,6 @@ class ZFlyEmNeuron;
 class ZIntPoint;
 class ZStackDocReader;
 class ZArray;
-class ZStackObjectSelector;
 class Z3DWindow;
 
 class ZFlyEmBodyMergeProject : public QObject
@@ -56,7 +56,7 @@ signals:
   void progressEnded();
   void newDocReady(ZStackDocReader *reader, bool readyForPaint);
   void originalLabelUpdated(ZArray *label);
-  void selectionChanged(ZStackObjectSelector *selector);
+  void selectionChanged(ZStackObjectSelector selector);
   void bodyMerged(QList<uint64_t> objLabelList);
 
 public slots:
@@ -66,7 +66,7 @@ public slots:
   void mergeBody();
   void setLoadingLabel(bool state);
   void uploadResult();
-  void update3DBodyView(ZStackObjectSelector *selector);
+  void update3DBodyView(const ZStackObjectSelector &selector);
   void showBody3d();
   void detachBodyWindow();
 
