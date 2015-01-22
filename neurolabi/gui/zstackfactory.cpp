@@ -5,6 +5,7 @@
 #include <QPainter>
 #endif
 
+#include <algorithm>
 #include "neutubeconfig.h"
 #if _QT_GUI_USED_
 #include "zstroke2d.h"
