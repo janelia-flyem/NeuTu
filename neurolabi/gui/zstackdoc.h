@@ -914,7 +914,7 @@ signals:
                            QList<ZSwcTree*> deselected);
   void swcTreeNodeSelectionChanged(QList<Swc_Tree_Node*> selected,
                                    QList<Swc_Tree_Node*> deselected);
-  void objectSelectorChanged(ZStackObjectSelector *selector);
+  void objectSelectorChanged(ZStackObjectSelector selector);
 
 
   void punctumVisibleStateChanged();

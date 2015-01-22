@@ -182,8 +182,8 @@ void FlyEmBodyMergeProjectDialog::connectSignalSlot()
           this, SIGNAL(progressEnded()));
   connect(m_project, SIGNAL(newDocReady(ZStackDocReader*, bool)),
           this, SIGNAL(newDocReady(ZStackDocReader*, bool)));
-  connect(m_project, SIGNAL(selectionChanged(ZStackObjectSelector*)),
-          this, SLOT(notifySelection(ZStackObjectSelector*)));
+  connect(m_project, SIGNAL(selectionChanged(ZStackObjectSelector)),
+          this, SLOT(notifySelection(ZStackObjectSelector)));
   connect(m_project, SIGNAL(bodyMerged(QList<uint64_t>)),
           this, SLOT(notifyBodyMerged(QList<uint64_t>)));
 }
@@ -257,9 +257,9 @@ void FlyEmBodyMergeProjectDialog::setupProgress()
 }
 
 void FlyEmBodyMergeProjectDialog::notifySelection(
-    ZStackObjectSelector *selector)
+    const ZStackObjectSelector &selector)
 {
-  if (selector != NULL) {
+  if (!selector.isEmpty()) {
 //    std::set<ZStackObject*> newSelectedSet =
 //        selector->getSelectedSet(ZStackObject::TYPE_OBJECT3D_SCAN);
     QString info;
@@ -271,7 +271,7 @@ void FlyEmBodyMergeProjectDialog::notifySelection(
          iter != objSet.end(); ++iter) {
       const ZObject3dScan *obj = dynamic_cast<ZObject3dScan*>(*iter);
       if (obj != NULL) {
-        if (selector->isInSelectedSet(obj)) {
+        if (selector.isInSelectedSet(obj)) {
           info += QString("<b>%1</b> ").arg(obj->getLabel());
         } else {
           info += QString("%1 ").arg(obj->getLabel());
@@ -292,7 +292,7 @@ void FlyEmBodyMergeProjectDialog::notifySelection(
 //    }
 
     std::vector<ZStackObject*>objList =
-        selector->getDeselectedList(ZStackObject::TYPE_OBJECT3D_SCAN);
+        selector.getDeselectedList(ZStackObject::TYPE_OBJECT3D_SCAN);
     for (std::vector<ZStackObject*>::const_iterator iter = objList.begin();
          iter != objList.end(); ++iter) {
       const ZObject3dScan *obj = dynamic_cast<ZObject3dScan*>(*iter);

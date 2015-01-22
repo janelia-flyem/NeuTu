@@ -412,4 +412,4 @@ SOURCES +=$${PWD}/zstackprocessor.cpp \
    $${PWD}/zstackobjectrole.cpp \
    $${PWD}/zarrayfactory.cpp \
    $${PWD}/zstackobjectselector.cpp \
-    zinthistogram.cpp
+   $${PWD}/zinthistogram.cpp
