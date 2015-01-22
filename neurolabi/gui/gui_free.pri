@@ -213,7 +213,7 @@ HEADERS +=$${PWD}/zstackprocessor.h \
    $${PWD}/zstackobjectrole.h \
    $${PWD}/zarrayfactory.h \
    $${PWD}/zstackobjectselector.h \
-    zinthistogram.h
+   $${PWD}/zinthistogram.h
 
 SOURCES +=$${PWD}/zstackprocessor.cpp \
    $${PWD}/zstack.cxx \
