@@ -22,6 +22,11 @@ then
   mkdir release
 fi
 
+if [ ! -d lib ]
+then
+  mkdir lib
+fi
+
 cdir=`pwd`
 allvar=$@
 echo $allvar
