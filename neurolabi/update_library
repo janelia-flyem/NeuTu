@@ -1,6 +1,27 @@
 #!/bin/bash
 BASEDIR=$(dirname $0)
 cd $BASEDIR/c
+
+if [ ! -d obj ]
+then
+  mkdir obj
+fi
+
+if [ ! -d bin ]
+then
+  mkdir bin
+fi
+
+if [ ! -d obj64 ]
+then
+  mkdir obj64
+fi
+
+if [ ! -d release ]
+then
+  mkdir release
+fi
+
 cdir=`pwd`
 allvar=$@
 echo $allvar
