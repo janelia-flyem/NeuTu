@@ -143,6 +143,9 @@ public:
   QString getTypeName() const;
   ZJsonObject toJsonObject() const;
 
+  ZSwcTree* getSwcDecoration() const;
+  Z3DGraph get3DGraph() const;
+
   ZStroke2d* getCompleteData() const;
 };
 

@@ -65,6 +65,7 @@ ZStackPresenter::ZStackPresenter(ZStackFrame *parent) : QObject(parent),
   m_cursorRadius = 10;
 
   m_stroke.setPenetrating(true);
+  m_stroke.hideStart(true);
   m_swcStroke.setPenetrating(true);
   m_activeDecorationList.append(&m_stroke);
   m_activeDecorationList.append(&m_swcStroke);
@@ -1469,6 +1470,18 @@ void ZStackPresenter::enterSwcConnectMode()
   updateCursor();
 }
 
+void ZStackPresenter::updateSwcExtensionHint()
+{
+  if (isStrokeOn()) {
+    const Swc_Tree_Node *tn = getSelectedSwcNode();
+    if (tn != NULL) {
+      m_stroke.set(SwcTreeNode::x(tn), SwcTreeNode::y(tn));
+      QPointF pos = mapFromGlobalToStack(QCursor::pos());
+      m_stroke.append(pos.x(), pos.y());
+    }
+  }
+}
+
 bool ZStackPresenter::enterSwcExtendMode()
 {
   bool succ = false;
@@ -1480,7 +1493,9 @@ bool ZStackPresenter::enterSwcExtendMode()
 
       m_stroke.setFilled(false);
       QPointF pos = mapFromGlobalToStack(QCursor::pos());
-      m_stroke.set(pos.x(), pos.y());
+
+      m_stroke.set(SwcTreeNode::x(tn), SwcTreeNode::y(tn));
+      m_stroke.append(pos.x(), pos.y());
       //m_stroke.set(SwcTreeNode::x(tn), SwcTreeNode::y(tn));
       m_stroke.setWidth(SwcTreeNode::radius(tn) * 2.0);
       turnOnStroke();
@@ -2134,7 +2149,7 @@ void ZStackPresenter::process(const ZStackOperator &op)
             currentRawStackPos.z()));
 
     if (isStrokeOn()) {
-      m_stroke.set(currentStackPos.x(), currentStackPos.y());
+      m_stroke.setLast(currentStackPos.x(), currentStackPos.y());
       if (m_interactiveContext.strokeEditMode() !=
           ZInteractiveContext::STROKE_DRAW) {
         m_stroke.setFilled(false);

@@ -162,6 +162,8 @@ void ZStackFrame::consumeDocument(ZStackDoc *doc)
   connect(m_doc.get(), SIGNAL(chainSelectionChanged(QList<ZLocsegChain*>,\
           QList<ZLocsegChain*>)),\
           m_view, SLOT(paintObject()));\
+  connect(m_doc.get(), SIGNAL(swcTreeNodeSelectionChanged()),\
+          this, SLOT(updateSwcExtensionHint()));\
   connect(m_doc.get(), SIGNAL(swcTreeNodeSelectionChanged(\
                                 QList<Swc_Tree_Node*>,QList<Swc_Tree_Node*>)),\
           m_view, SLOT(paintObject()));\
@@ -231,6 +233,13 @@ void ZStackFrame::takeScreenshot(const QString &filename)
 {
   if (m_view != NULL)
     m_view->takeScreenshot(filename);
+}
+
+void ZStackFrame::updateSwcExtensionHint()
+{
+  if (m_presenter != NULL) {
+    m_presenter->updateSwcExtensionHint();
+  }
 }
 
 void ZStackFrame::clearData()

@@ -261,6 +261,8 @@ public slots:
 
   const Swc_Tree_Node* getSelectedSwcNode() const;
 
+  void updateSwcExtensionHint();
+
 signals:
   void mousePositionCaptured(double x, double y, double z);
 

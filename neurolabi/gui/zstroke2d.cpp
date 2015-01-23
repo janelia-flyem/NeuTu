@@ -18,7 +18,8 @@ const double ZStroke2d::m_maxWidth = 100.0;
 const ZLabelColorTable ZStroke2d::m_colorTable;
 
 ZStroke2d::ZStroke2d() :
-  m_width(10.0), m_z(-1), m_isFilled(true), m_isPenetrating(true)
+  m_width(10.0), m_z(-1), m_isFilled(true), m_hideStart(false),
+  m_isPenetrating(true)
 {
   setLabel(1);
   m_type = ZStackObject::TYPE_STROKE;
@@ -74,6 +75,17 @@ void ZStroke2d::set(double x, double y)
 {
   clear();
   append(x, y);
+}
+
+void ZStroke2d::setLast(double x, double y)
+{
+  if (isEmpty()) {
+    append(x, y);
+  } else {
+    QPointF &pt = m_pointArray[m_pointArray.size() - 1];
+    pt.setX(x);
+    pt.setY(y);
+  }
 }
 
 void ZStroke2d::setLabel(int label)
@@ -171,12 +183,32 @@ void ZStroke2d::display(ZPainter &painter, int slice, Display_Style option) cons
       }
       painter.drawEllipse(QPointF(m_pointArray[0]), m_width / 2, m_width / 2);
     } else {
-      pen.setCapStyle(Qt::RoundCap);
-      pen.setWidthF(m_width);
-      painter.setPen(pen);
-      painter.setBrush(Qt::NoBrush);
-      painter.setOpacity(1.0);
-      painter.drawPolyline(&(m_pointArray[0]), m_pointArray.size());
+      if (m_isFilled) {
+        pen.setCapStyle(Qt::RoundCap);
+        pen.setWidthF(m_width);
+        painter.setPen(pen);
+        painter.setBrush(Qt::NoBrush);
+        painter.setOpacity(1.0);
+        painter.drawPolyline(&(m_pointArray[0]), m_pointArray.size());
+      } else {
+        pen.setWidthF(getPenWidth());
+        painter.setPen(pen);
+        painter.setBrush(Qt::NoBrush);
+        painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
+
+        for (size_t i =0; i < m_pointArray.size(); ++i) {
+          if (i == 0) {
+            if (!m_hideStart) {
+              painter.drawEllipse(
+                    QPointF(m_pointArray[i]), m_width / 2, m_width / 2);
+            }
+          } else {
+            painter.drawEllipse(
+                  QPointF(m_pointArray[i]), m_width / 2, m_width / 2);
+            painter.drawLine(m_pointArray[i-1], m_pointArray[i]);
+          }
+        }
+      }
     }
 
     if (isSelected()) {

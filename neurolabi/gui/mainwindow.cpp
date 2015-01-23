@@ -1871,7 +1871,11 @@ void MainWindow::closeEvent(QCloseEvent *event)
       window->close();
     }
 
-    event->accept();
+    if (currentStackFrame() == NULL) {
+      event->accept();
+    } else {
+      event->ignore();
+    }
   } else {
     event->ignore();
   }

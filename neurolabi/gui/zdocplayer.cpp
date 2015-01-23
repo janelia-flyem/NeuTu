@@ -7,6 +7,7 @@
 #include "zswctree.h"
 #include "zjsonobject.h"
 #include "zstackball.h"
+#include "swctreenode.h"
 
 ZDocPlayer::~ZDocPlayer()
 {
@@ -207,6 +208,50 @@ QString ZStroke2dPlayer::getTypeName() const
 ZJsonObject ZStroke2dPlayer::toJsonObject() const
 {
   return getCompleteData()->toJsonObject();
+}
+
+Z3DGraph ZStroke2dPlayer::get3DGraph() const
+{
+  Z3DGraph graph;
+
+  ZStroke2d *stroke = getCompleteData();
+  if (stroke != NULL) {
+    if (!stroke->isEmpty()) {
+      double z = stroke->getZ();
+      double radius = stroke->getWidth() / 2.0;
+      for (size_t i = 0; i < stroke->getPointNumber(); ++i) {
+        double x = 0;
+        double y = 0;
+        ZStackBall stackBall(x, y, z, radius);
+        stackBall.setColor(stroke->getColor());
+        graph.addNode(x, y, z, radius);
+      }
+    }
+  }
+
+  return graph;
+}
+
+ZSwcTree* ZStroke2dPlayer::getSwcDecoration() const
+{
+  ZSwcTree *tree = NULL;
+  ZStroke2d *stroke = getCompleteData();
+  if (stroke != NULL) {
+    if (!stroke->isEmpty()) {
+      tree->forceVirtualRoot();
+      Swc_Tree_Node *parent = tree->root();
+      double z = stroke->getZ();
+      double radius = stroke->getWidth() / 2.0;
+      for (size_t i = 0; i < stroke->getPointNumber(); ++i) {
+        double x = 0;
+        double y = 0;
+        stroke->getPoint(&x, &y, i);
+        Swc_Tree_Node *tn = SwcTreeNode::makePointer(x, y, z, radius, parent);
+        parent = tn;
+      }
+    }
+  }
+  return tree;
 }
 
 ZStack* ZStroke2dPlayer::toStack() const

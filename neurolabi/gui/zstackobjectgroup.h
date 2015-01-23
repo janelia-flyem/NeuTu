@@ -22,6 +22,7 @@ class ZStackObjectGroup : public QList<ZStackObject*>
 {
 public:
   ZStackObjectGroup();
+  ~ZStackObjectGroup();
   typedef QMap<ZStackObject::EType, TStackObjectList> TObjectListMap;
   typedef QMap<ZStackObject::EType, TStackObjectSet> TObjectSetMap;
 

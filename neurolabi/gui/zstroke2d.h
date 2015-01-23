@@ -59,6 +59,7 @@ public:
   void append(double x, double y);
   void set(const QPoint &pt);
   void set(double x, double y);
+  void setLast(double x, double y);
   void setLabel(int label);
   int getLabel() const;
 
@@ -122,6 +123,10 @@ public:
     m_isPenetrating = p;
   }
 
+  inline void hideStart(bool s) {
+    m_hideStart = s;
+  }
+
   bool hitTest(double x, double y) const;
   bool hitTest(double x, double y, double z) const;
 
@@ -143,7 +148,9 @@ private:
   int m_z;
 
   //bool m_isEraser;
+  //Customized styles
   bool m_isFilled;
+  bool m_hideStart;
   bool m_isPenetrating; //Visible on any slice
 
   static const double m_minWidth;
