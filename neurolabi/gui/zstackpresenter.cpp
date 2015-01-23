@@ -2149,13 +2149,23 @@ void ZStackPresenter::process(const ZStackOperator &op)
             currentRawStackPos.z()));
 
     if (isStrokeOn()) {
-      m_stroke.setLast(currentStackPos.x(), currentStackPos.y());
       if (m_interactiveContext.strokeEditMode() !=
           ZInteractiveContext::STROKE_DRAW) {
         m_stroke.setFilled(false);
+        if (m_interactiveContext.swcEditMode() ==
+            ZInteractiveContext::SWC_EDIT_EXTEND ||
+            m_interactiveContext.swcEditMode() ==
+            ZInteractiveContext::SWC_EDIT_SMART_EXTEND) {
+          const Swc_Tree_Node *tn = getSelectedSwcNode();
+          if (tn != NULL) {
+            m_stroke.set(SwcTreeNode::x(tn), SwcTreeNode::y(tn));
+            m_stroke.append(currentStackPos.x(), currentStackPos.y());
+          }
+        }
       } else {
         m_stroke.toggleLabel(op.togglingStrokeLabel());
       }
+      m_stroke.setLast(currentStackPos.x(), currentStackPos.y());
       interactionEvent.setEvent(
             ZInteractionEvent::EVENT_ACTIVE_DECORATION_UPDATED);
       //turnOnStroke();
