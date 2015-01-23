@@ -716,6 +716,7 @@ public:
   void notifyProgressAdvanced(double dp);
 
   void notifySelectorChanged();
+  void notifySwcTreeNodeSelectionChanged();
 
   template <typename T>
   void notifySelectionAdded(const std::set<T*> &oldSelected,
@@ -916,6 +917,7 @@ signals:
                                    QList<Swc_Tree_Node*> deselected);
   void objectSelectorChanged(ZStackObjectSelector selector);
 
+  void swcTreeNodeSelectionChanged();
 
   void punctumVisibleStateChanged();
   void chainVisibleStateChanged(ZLocsegChain* chain, bool visible);

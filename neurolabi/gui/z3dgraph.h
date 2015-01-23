@@ -119,6 +119,7 @@ public:
   void importJsonFile(const std::string &filePath);
   void importObject3d(const ZObject3d &obj, double radius, int sampleStep);
   void addNode(const ZStackBall &ball);
+  void addNode(double x, double y, double z, double radius);
 
   void print();
 

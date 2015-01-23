@@ -7937,3 +7937,8 @@ void ZStackDoc::notifySelectorChanged()
     emit objectSelectorChanged(*selector);
   }
 }
+
+void ZStackDoc::notifySwcTreeNodeSelectionChanged()
+{
+  emit swcTreeNodeSelectionChanged();
+}

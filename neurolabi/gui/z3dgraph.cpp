@@ -286,6 +286,11 @@ void Z3DGraph::addNode(const ZStackBall &ball)
   m_nodeArray.back().setColor(ball.getColor());
 }
 
+void Z3DGraph::addNode(double x, double y, double z, double radius)
+{
+  m_nodeArray.push_back(Z3DGraphNode(x, y, z, radius));
+}
+
 void Z3DGraph::importObject3d(
     const ZObject3d &obj, double radius, int sampleStep)
 {

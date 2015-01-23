@@ -14736,6 +14736,14 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
+#if 1
+  ZStack stack;
+  stack.load(GET_TEST_DATA_DIR + "/flyem/MB/C3-alphalobealigned.tif");
+  stack.translate(-6, -4, 0);
+  stack.save(GET_TEST_DATA_DIR + "/flyem/MB/C3-alphalobealigned_adjusted.tif");
+
+#endif
+
 #if 0
   ZStack stack1;
   ZStack stack2;
@@ -14825,7 +14833,7 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
-#if 1
+#if 0
   ZObject3dScan obj;
 //  obj.load(GET_TEST_DATA_DIR + "/flyem/AL/glomeruli/segcheck8/_31.sobj");
   obj.load(GET_TEST_DATA_DIR + "/test.sobj");

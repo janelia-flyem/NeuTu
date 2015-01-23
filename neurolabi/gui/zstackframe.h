@@ -242,6 +242,9 @@ public slots:
   void notifyUser(const QString &message);
   void locateSwcNodeIn3DView();
 
+private slots:
+  void updateSwcExtensionHint();
+
 signals:
   void infoChanged();
   void closed(ZStackFrame*);

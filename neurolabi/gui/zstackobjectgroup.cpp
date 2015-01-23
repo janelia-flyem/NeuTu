@@ -4,6 +4,11 @@ ZStackObjectGroup::ZStackObjectGroup()
 {
 }
 
+ZStackObjectGroup::~ZStackObjectGroup()
+{
+  removeAllObject(true);
+}
+
 int ZStackObjectGroup::getMaxZOrder() const
 {
   int maxZOrder = 0;

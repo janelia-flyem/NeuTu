@@ -274,12 +274,6 @@ void ZImageWidget::zoom(int zoomRatio, const QPoint &ref)
   } else {
     setView(QRect(te, td, ev, dv), QRect(0, 0, ep, dp));
   }
-
-  /*
-  m_srcrect.setRect(zoomOffset.x(), zoomOffset.y(),
-                    canvasSize().width() / zoomRatio,
-                    canvasSize().height() / zoomRatio);
-                    */
 }
 
 void ZImageWidget::zoom(int zoomRatio)
