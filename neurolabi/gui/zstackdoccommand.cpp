@@ -472,6 +472,7 @@ void ZStackDocCommand::SwcEdit::ExtendSwcNode::undo()
   m_doc->selectSwcTreeNode(m_parentNode);
   m_doc->blockSignals(false);
   m_doc->notifySwcModified();
+  m_doc->notifySwcTreeNodeSelectionChanged();
   m_nodeInDoc = false;
 }
 
@@ -799,6 +800,7 @@ void ZStackDocCommand::SwcEdit::CompositeCommand::undo()
   QUndoCommand::undo();
   m_doc->blockSignals(false);
   m_doc->notifySwcModified();
+  m_doc->notifySwcTreeNodeSelectionChanged();
   m_isExecuted = false;
 }
 
