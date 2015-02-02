@@ -697,7 +697,7 @@ void ZStackView::setSliceIndex(int slice)
 {
   m_depthControl->setValue(slice);
 
-  emit viewChanged(getViewParameter(NeuTube::COORD_STACK));
+  //emit viewChanged(getViewParameter(NeuTube::COORD_STACK));
 }
 
 void ZStackView::stepSlice(int step)
@@ -879,9 +879,9 @@ void ZStackView::mouseRolledInImageWidget(QWheelEvent *event)
     }
   } else if (event->modifiers() == Qt::ShiftModifier) {
     if (numSteps > 0) {
-      m_imageWidget->increaseZoomRatio();
+      increaseZoomRatio();
     } else if (numSteps < 0) {
-      m_imageWidget->decreaseZoomRatio();
+      decreaseZoomRatio();
     }
   }
 }
@@ -1690,11 +1690,15 @@ void ZStackView::exportObjectMask(
 void ZStackView::increaseZoomRatio()
 {
   imageWidget()->increaseZoomRatio();
+
+  notifyViewChanged();
 }
 
 void ZStackView::decreaseZoomRatio()
 {
   imageWidget()->decreaseZoomRatio();
+
+  notifyViewChanged();
 }
 
 int ZStackView::getZ(NeuTube::ECoordinateSystem coordSys) const
@@ -1741,6 +1745,7 @@ void ZStackView::setView(const ZStackViewParam &param)
     QRect viewPort = param.getViewPort();
     viewPort.moveCenter(QPoint(-buddyDocument()->getStackOffset().getX(),
                                -buddyDocument()->getStackOffset().getY()));
+    //m_imageWidget->setViewPort(viewPort);
     setSliceIndex(param.getZ() - buddyDocument()->getStackOffset().getZ());
   }
     break;
@@ -1753,6 +1758,11 @@ void ZStackView::processDepthSliderValueChange(int /*sliceIndex*/)
 {
   redraw();
 
+  notifyViewChanged();
+}
+
+void ZStackView::notifyViewChanged()
+{
   notifyViewChanged(getViewParameter(NeuTube::COORD_STACK));
 }
 

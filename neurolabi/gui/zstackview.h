@@ -200,6 +200,7 @@ private:
   void paintMultipleChannelStackMip(ZStack *stack);
 
   void notifyViewChanged(const ZStackViewParam &param);
+  void notifyViewChanged();
 
 private:
   ZStackFrame *m_parent;
