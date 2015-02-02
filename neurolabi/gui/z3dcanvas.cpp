@@ -41,7 +41,8 @@ Z3DCanvas::Z3DCanvas(const QString &title, int width, int height, const QGLForma
 
   setWindowTitle(title);
   setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
-  setOptimizationFlags(QGraphicsView::DontSavePainterState | QGraphicsView::DontAdjustForAntialiasing);
+  setOptimizationFlags(QGraphicsView::DontSavePainterState |
+                       QGraphicsView::DontAdjustForAntialiasing);
 
   setAcceptDrops(true);
   setFocusPolicy(Qt::StrongFocus);
@@ -86,10 +87,7 @@ void Z3DCanvas::mousePressEvent(QMouseEvent* e)
 {
   broadcastEvent(e, width(), height());
 
-
-#if defined(_FLYEM_)
   m_interaction.processMousePressEvent(e);
-#endif
 }
 
 bool Z3DCanvas::suppressingContextMenu() const
@@ -106,23 +104,15 @@ bool Z3DCanvas::suppressingContextMenu() const
 void Z3DCanvas::mouseReleaseEvent (QMouseEvent* e)
 {
   broadcastEvent(e, width(), height());
-#if defined(_FLYEM_)
   m_interaction.processMouseReleaseEvent(e);
   setCursor(m_interaction.getCursorShape());
-#endif
 }
 
 void Z3DCanvas::mouseMoveEvent(QMouseEvent*  e)
 {
-#if defined(_FLYEM_)
   m_interaction.processMouseMoveEvent(e);
-#endif
 
-#if defined(_FLYEM_)
   if (!m_interaction.lockingMouseMoveEvent()) {
-#else
-  {
-#endif
     broadcastEvent(e, width(), height());
   }
 }
@@ -141,10 +131,8 @@ void Z3DCanvas::keyPressEvent(QKeyEvent* event)
 {
   broadcastEvent(event, width(), height());
 
-#if defined(_FLYEM_)
   m_interaction.processKeyPressEvent(event);
   setCursor(m_interaction.getCursorShape());
-#endif
 }
 
 void Z3DCanvas::keyReleaseEvent(QKeyEvent* event)
@@ -282,23 +270,16 @@ double Z3DCanvas::getDevicePixelRatio()
 
 void Z3DCanvas::disableKeyEvent()
 {
-#if defined(_FLYEM_)
   m_interaction.setKeyEventEnabled(false);
-#endif
 }
 
 void Z3DCanvas::set3DInteractionHandler(Z3DTrackballInteractionHandler *handler)
 {
-#if defined(_FLYEM_)
   m_interaction.set3DInteractionHandler(handler);
-#else
-  UNUSED_PARAMETER(handler);
-#endif
 }
 
 void Z3DCanvas::updateCursor()
 {
-#if defined(_FLYEM_)
   setCursor(m_interaction.getCursorShape());
-#endif
 }
+

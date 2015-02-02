@@ -318,7 +318,18 @@ void Z3DVolumeSource::readSparseStack()
       if (C_Stack::width(stack) != width || C_Stack::height(stack) != height ||
           C_Stack::depth(stack) != depth) {
         m_isVolumeDownsampled.set(true);
-        stack2 = Resize_Stack(stack, width, height, depth);
+
+        int xIntv = C_Stack::width(stack) / width;
+        int yIntv = C_Stack::height(stack) / height;
+        int zIntv = C_Stack::depth(stack) / depth;
+
+        stack2 = Downsample_Stack_Max(stack, xIntv, yIntv, zIntv, NULL);
+
+        widthScale = 1.0 / ((xIntv + 1) * (dsIntv.getX() + 1));
+        heightScale = 1.0 / ((yIntv + 1) * (dsIntv.getY() + 1));
+        depthScale = 1.0 / ((zIntv + 1) * (dsIntv.getZ() + 1));
+
+//        stack2 = Resize_Stack(stack, width, height, depth);
       } else {
         stack2 = C_Stack::clone(stack);
       }
@@ -627,6 +638,14 @@ void Z3DVolumeSource::readSparseVolume()
   }
 
 
+  ZIntPoint dsIntv =
+      misc::getDsIntvFor3DVolume(m_doc->getStack()->getBoundBox());
+
+
+  int xIntv = dsIntv.getX();
+  int yIntv = dsIntv.getY();
+  int zIntv = dsIntv.getZ();
+  /*
   int xIntv = 0;
   int yIntv = 0;
   int zIntv = 0;
@@ -641,7 +660,7 @@ void Z3DVolumeSource::readSparseVolume()
     yIntv = 2;
     zIntv = 2;
   }
-
+*/
   int height = m_doc->getStack()->width();
   int width = m_doc->getStack()->height();
   int depth = m_doc->getStack()->depth();
@@ -719,16 +738,21 @@ void Z3DVolumeSource::readSparseVolumeWithObject()
   QColor color = obj.getColor();
   int nchannel = 3;
 
-  int xIntv = 0;
-  int yIntv = 0;
-  int zIntv = 0;
+  ZIntPoint dsIntv =
+      misc::getDsIntvFor3DVolume(m_doc->getStack()->getBoundBox());
 
+
+  int xIntv = dsIntv.getX();
+  int yIntv = dsIntv.getY();
+  int zIntv = dsIntv.getZ();
+  /*
   if (m_doc->getStack()->getVoxelNumber() * nchannel > m_maxVoxelNumber) { //Downsample big stack
     //m_isVolumeDownsampled.set(true);
     xIntv = 1;
     yIntv = 1;
     zIntv = 1;
   }
+  */
 
   int height = m_doc->getStack()->width();
   int width = m_doc->getStack()->height();
@@ -980,8 +1004,11 @@ bool Z3DVolumeSource::openZoomInView(const glm::ivec3& volPos)
   if (getVolume(0) == NULL)
     return false;
   glm::ivec3 voldim = glm::ivec3(getVolume(0)->getCubeSize());
-  if (!(volPos[0] >= 0 && volPos[0] < voldim.x  && volPos[1] >= 0 && volPos[1] < voldim.y && volPos[2] >= 0 && volPos[2] < voldim.z))
+  if (!(volPos[0] >= 0 && volPos[0] < voldim.x  &&
+        volPos[1] >= 0 && volPos[1] < voldim.y &&
+        volPos[2] >= 0 && volPos[2] < voldim.z)) {
     return false;
+  }
 
   glm::vec3 offset = getVolume(0)->getOffset();
   m_zoomInPos = volPos;

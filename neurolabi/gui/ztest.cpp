@@ -229,6 +229,7 @@ using namespace std;
 #include "z3daxis.h"
 #include "tz_int_histogram.h"
 #include "zsegmentationproject.h"
+#include "zstackviewmanager.h"
 
 using namespace std;
 
@@ -13341,6 +13342,7 @@ void ZTest::test(MainWindow *host)
   stack->save(GET_DATA_DIR + "/test2.tif");
 #endif
 
+
 #if 0
   ZDvidTarget dvidTarget;
   dvidTarget.set("emdata2.int.janelia.org", "2b6c");
@@ -13718,6 +13720,33 @@ void ZTest::test(MainWindow *host)
   ZStack *stack = factory.makeDensityMap(newPtArray, 10.0);
   stack->save(GET_DATA_DIR +
               "/flyem/AL/al7d_whole448_tbar-predict_0.86_ds20_s10.tif");
+#endif
+
+#if 1
+  FlyEm::ZSynapseAnnotationArray synapseArray;
+  synapseArray.loadJson(GET_DATA_DIR +
+                        "/flyem/FIB/fib19_all_dvid_final_tbar-predict_0.74.json");
+
+  ZWeightedPointArray ptArray = synapseArray.toTBarConfidencePointArray();
+  std::cout << ptArray.size() << " TBars" << std::endl;
+
+  ZWeightedPointArray newPtArray;
+
+  int dsScale = 20;
+  for (ZWeightedPointArray::iterator iter = ptArray.begin();
+       iter != ptArray.end(); ++iter) {
+    ZWeightedPoint &pt = *iter;
+    pt /= dsScale;
+    newPtArray.append(pt);
+  }
+
+  ZCuboid box = newPtArray.getBoundBox();
+  box.print();
+
+  ZStackFactory factory;
+  ZStack *stack = factory.makeDensityMap(newPtArray, 10.0);
+  stack->save(GET_DATA_DIR +
+              "/flyem/FIB/fib19_all_dvid_final_tbar-predict_0.74_ds20_s10.tif");
 #endif
 
 #if 0
@@ -14736,7 +14765,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   ZStack stack;
   stack.load(GET_TEST_DATA_DIR + "/flyem/MB/C3-alphalobealigned.tif");
   stack.translate(-6, -4, 0);
@@ -14838,5 +14867,17 @@ void ZTest::test(MainWindow *host)
 //  obj.load(GET_TEST_DATA_DIR + "/flyem/AL/glomeruli/segcheck8/_31.sobj");
   obj.load(GET_TEST_DATA_DIR + "/test.sobj");
   std::cout << obj.getVoxelNumber() << std::endl;
+#endif
+
+#if 0
+  ZStackFrame *w1 = new ZStackFrame;
+  ZStackFrame *w2 = new ZStackFrame;
+
+  ZStackViewManager manager;
+  manager.registerWindowPair(w1, w2);
+  manager.registerWindowPair(w1, w2);
+
+  manager.print();
+
 #endif
 }

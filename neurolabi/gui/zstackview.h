@@ -32,6 +32,7 @@ class QProgressBar;
 class QRadioButton;
 class ZStackDoc;
 class ZStack;
+class ZStackViewParam;
 
 class ZStackView : public QWidget {
   Q_OBJECT
@@ -137,6 +138,7 @@ public slots:
   void updateThresholdSlider();
   void updateSlider();
   void updateChannelControl();
+  void processDepthSliderValueChange(int sliceIndex);
 
   void paintStack();
   void paintMask();
@@ -167,11 +169,23 @@ public slots:
 
 signals:
   void currentSliceChanged(int);
+  void viewChanged(ZStackViewParam param);
 
 public:
   static QImage::Format stackKindToImageFormat(int kind);
   double getZoomRatio() const;
   void setInfo();
+
+  int getZ(NeuTube::ECoordinateSystem coordSys) const;
+  QRect getViewPort(NeuTube::ECoordinateSystem coordSys) const;
+  ZStackViewParam getViewParameter(NeuTube::ECoordinateSystem coordSys) const;
+
+  void setView(const ZStackViewParam &param);
+
+
+public: //Change view parameters
+  void increaseZoomRatio();
+  void decreaseZoomRatio();
 
 private:
   void updateCanvas();
@@ -184,6 +198,8 @@ private:
   void paintMultipleChannelStackSlice(ZStack *stack, int slice);
   void paintSingleChannelStackMip(ZStack *stack);
   void paintMultipleChannelStackMip(ZStack *stack);
+
+  void notifyViewChanged(const ZStackViewParam &param);
 
 private:
   ZStackFrame *m_parent;

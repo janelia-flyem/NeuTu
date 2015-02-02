@@ -19,16 +19,16 @@ void ZMouseEvent::setStackPosition(double x, double y, double z)
 }
 */
 
-ZPoint ZMouseEvent::getPosition(ECoordinateSystem cs) const
+ZPoint ZMouseEvent::getPosition(NeuTube::ECoordinateSystem cs) const
 {
   switch (cs) {
-  case COORD_WIDGET:
+  case NeuTube::COORD_WIDGET:
     return m_position.toPoint();
-  case COORD_STACK:
+  case NeuTube::COORD_STACK:
     return m_stackPosition;
-  case COORD_RAW_STACK:
+  case NeuTube::COORD_RAW_STACK:
     return m_rawStackPosition;
-  case COORD_GLOBAL:
+  case NeuTube::COORD_GLOBAL:
     return m_globalPosition.toPoint();
   }
 

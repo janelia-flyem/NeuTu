@@ -15,7 +15,7 @@ bool ZStackOperator::isNull() const
   return getOperation() == OP_NULL;
 }
 
-ZPoint ZStackOperator::getMouseOffset(ZMouseEvent::ECoordinateSystem cs) const
+ZPoint ZStackOperator::getMouseOffset(NeuTube::ECoordinateSystem cs) const
 {
   ZPoint offset(0, 0, 0);
 

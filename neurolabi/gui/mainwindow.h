@@ -57,6 +57,7 @@ class DvidOperateDialog;
 class SynapseImportDialog;
 class FlyEmBodyMergeProjectDialog;
 class ZSegmentationProjectDialog;
+class ZStackViewManager;
 
 namespace Ui {
     class MainWindow;
@@ -620,6 +621,7 @@ private:
   FlyEmBodyMergeProjectDialog *m_mergeBodyDlg;
   ZSegmentationProjectDialog *m_segmentationDlg;
 
+  ZStackViewManager *m_stackViewManager;
 
   //new project main window
   NewProjectMainWindow *m_newProject;

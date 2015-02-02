@@ -181,7 +181,9 @@ void ZStackFrame::consumeDocument(ZStackDoc *doc)
   connect(m_doc.get(), SIGNAL(statusMessageUpdated(QString)),\
           this, SLOT(notifyUser(QString)));\
   connect(m_doc.get(), SIGNAL(stackTargetModified()), m_view, SLOT(paintStack()));\
-  connect(m_doc.get(), SIGNAL(thresholdChanged(int)), m_view, SLOT(setThreshold(int)));
+  connect(m_doc.get(), SIGNAL(thresholdChanged(int)), m_view, SLOT(setThreshold(int)));\
+  connect(m_view, SIGNAL(viewChanged(ZStackViewParam)), \
+          this, SLOT(notifyViewChanged(ZStackViewParam)));
 
 #define UPDATE_SIGNAL_SLOT(connect) \
   UPDATE_DOC_SIGNAL_SLOT(connect) \
@@ -1508,4 +1510,13 @@ void ZStackFrame::setObjectStyle(ZStackObject::Display_Style style)
 void ZStackFrame::createMainWindowActions()
 {
   m_presenter->createMainWindowActions();
+}
+
+void ZStackFrame::notifyViewChanged(const ZStackViewParam &param)
+{
+#ifdef _DEBUG_
+  std::cout << "Signal: ZStackFrame::notifyViewChanged" << std::endl;
+#endif
+
+  emit viewChanged(param);
 }

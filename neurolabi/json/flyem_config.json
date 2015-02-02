@@ -8,10 +8,20 @@
     },
     {
       "address": "emdata2.int.janelia.org",
+      "port": 8000,
       "uuid": "32fb",
       "name": "FIB19",
       "comment": "FIB-19 data at MLOLP-Z1112-19R/align2/iso_rav",
       "local": "/groups/flyem/data/zhaot/local/FIB19"
+    },
+    {
+      "address": "emdata1.int.janelia.org",
+      "port": 8000,
+      "uuid": "1c6e",
+      "name": "FIB19 (emdata1)",
+      "body_label": "segmentation122914nograph",
+      "comment": "FIB-19 data at MLOLP-Z1112-19R/align2/iso_rav (emdata1)",
+      "local": "/groups/flyem/data/zhaot/local/FIB19-emdata1"
     },
     {
       "address": "emdata2.int.janelia.org",
@@ -25,6 +35,7 @@
       "name": "FIB25-0926",
       "background": 0,
       "comment": "FIB-25 export 2014-09-26",
+      "body_label": "segmentation121814",
       "local": "/groups/flyem/data/zhaot/local/FIB25"
     },
     {

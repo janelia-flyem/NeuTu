@@ -60,7 +60,7 @@ int Z3DVolume::getBitsStored() const
   if (m_stack->kind == GREY)
     return 8;
   else if (m_stack->kind == GREY16) {
-    if (getMaxValue() >= 4096)
+    if (getMaxValue() <= 4096)
       return 12;
     else
       return 16;
@@ -71,7 +71,12 @@ int Z3DVolume::getBitsStored() const
 
 size_t Z3DVolume::getNumVoxels() const
 {
-  return (size_t)m_stack->depth * (size_t)m_stack->height * (size_t)m_stack->width;
+  if (m_stack == NULL) {
+    return 0;
+  }
+
+  return C_Stack::voxelNumber(m_stack);
+//  return (size_t)m_stack->depth * (size_t)m_stack->height * (size_t)m_stack->width;
 }
 
 QString Z3DVolume::getSamplerType() const

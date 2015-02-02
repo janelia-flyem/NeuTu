@@ -44,8 +44,10 @@ const ZMouseEvent& ZMouseEventProcessor::process(
   const ZIntPoint &pt = zevent.getPosition();
   zevent.setRawStackPosition(mapPositionFromWidgetToRawStack(pt));
 
-  if (m_doc->getStack()->containsRaw(zevent.getRawStackPosition())) {
-    zevent.setInStack(true);
+  if (m_doc->hasStack()) {
+    if (m_doc->getStack()->containsRaw(zevent.getRawStackPosition())) {
+      zevent.setInStack(true);
+    }
   }
 
   ZPoint stackPosition = zevent.getRawStackPosition();

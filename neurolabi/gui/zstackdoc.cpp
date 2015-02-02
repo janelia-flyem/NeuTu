@@ -2839,52 +2839,6 @@ void ZStackDoc::removeSmallLocsegChain(double thre)
   notifyChainModified();
 }
 
-/*
-void ZStackDoc::removeAllLocsegChain()
-{
-  QList<ZLocsegChain*> chainList = getLocsegChainList();
-  QMutableListIterator<ZLocsegChain*> chainIter(chainList);
-  while (chainIter.hasNext()) {
-    ZLocsegChain *chain = chainIter.next();
-    removeObject(chain, true);
-  }
-
-  notifyChainModified();
-}
-
-void ZStackDoc::removeAllObj3d()
-{
-  QMutableListIterator<ZObject3d*> objIter(m_obj3dList);
-  while (objIter.hasNext()) {
-    ZObject3d *obj = objIter.next();
-    removeObject(obj, true);
-  }
-
-  notifyObj3dModified();
-}
-
-void ZStackDoc::removeAllSparseObject()
-{
-  QMutableListIterator<ZSparseObject*> objIter(m_sparseObjectList);
-  while (objIter.hasNext()) {
-    ZSparseObject *obj = objIter.next();
-    removeObject(obj, true);
-  }
-
-  notifySparseObjectModified();
-}
-*/
-
-/*
-#define REMOVE_OBJECT(list, obj)				\
-  for (int i = 0; i < list.size(); i++) {			\
-    if (static_cast<ZStackObject*>(list.at(i)) == obj) {		\
-      list.removeAt(i);					\
-      break;					\
-    }						\
-  }
-*/
-
 ZSwcTree* ZStackDoc::getSwcTree(size_t index)
 {
   const TStackObjectList &objList =

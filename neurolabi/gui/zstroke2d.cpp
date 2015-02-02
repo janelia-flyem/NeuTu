@@ -170,6 +170,11 @@ void ZStroke2d::display(ZPainter &painter, int slice, Display_Style option) cons
     painter.setCompositionMode(QPainter::CompositionMode_Source);
   }
 
+  double radius = m_width * 0.5;
+  if (!m_isFilled) {
+    radius += getPenWidth() * 0.5;
+  }
+
   if (!m_pointArray.empty()) {
     if (m_pointArray.size() == 1) {
       if (m_isFilled) {
@@ -181,8 +186,9 @@ void ZStroke2d::display(ZPainter &painter, int slice, Display_Style option) cons
         painter.setBrush(Qt::NoBrush);
         painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
       }
-      painter.drawEllipse(QPointF(m_pointArray[0]), m_width / 2, m_width / 2);
+      painter.drawEllipse(QPointF(m_pointArray[0]), radius, radius);
     } else {
+
       if (m_isFilled) {
         pen.setCapStyle(Qt::RoundCap);
         pen.setWidthF(m_width);
@@ -200,11 +206,11 @@ void ZStroke2d::display(ZPainter &painter, int slice, Display_Style option) cons
           if (i == 0) {
             if (!m_hideStart) {
               painter.drawEllipse(
-                    QPointF(m_pointArray[i]), m_width / 2, m_width / 2);
+                    QPointF(m_pointArray[i]), radius, radius);
             }
           } else {
             painter.drawEllipse(
-                  QPointF(m_pointArray[i]), m_width / 2, m_width / 2);
+                  QPointF(m_pointArray[i]), radius, radius);
             painter.drawLine(m_pointArray[i-1], m_pointArray[i]);
           }
         }

@@ -137,8 +137,14 @@ bool ZFlyEmDataBundle::loadDvid(const ZDvidFilter &dvidFilter)
     m_sourceDimension[i] = stackSize[i];
   }
 
-  std::set<int> bodySet = reader.readBodyId(dvidFilter.getMinBodySize(),
-                                                dvidFilter.getMaxBodySize());
+  std::set<int> bodySet;
+
+  if (dvidFilter.hasUpperBodySize()) {
+    bodySet = reader.readBodyId(dvidFilter.getMinBodySize(),
+                                dvidFilter.getMaxBodySize());
+  } else {
+    bodySet = reader.readBodyId(dvidFilter.getMinBodySize());
+  }
 
   m_neuronArray.resize(bodySet.size());
   size_t realSize = 0;

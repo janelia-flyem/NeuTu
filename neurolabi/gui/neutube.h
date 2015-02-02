@@ -33,6 +33,10 @@ enum EAxis {
   X_AXIS, Y_AXIS, Z_AXIS
 };
 
+enum ECoordinateSystem {
+  COORD_WIDGET, COORD_GLOBAL, COORD_RAW_STACK, COORD_STACK
+};
+
 enum EColor {
   RED, GREEN, BLUE
 };

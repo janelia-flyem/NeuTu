@@ -70,6 +70,7 @@
 #include "zstroke2d.h"
 #include "zsparsestack.h"
 #include "zmarkswcsomadialog.h"
+#include "zinteractivecontext.h"
 
 class Sleeper : public QThread
 {
@@ -1371,7 +1372,10 @@ void Z3DWindow::startConnectingSwcNode()
 {
   notifyUser("Click on the target node to connect.");
   getSwcFilter()->setInteractionMode(Z3DSwcFilter::ConnectSwcNode);
-  m_canvas->setCursor(Qt::SizeBDiagCursor);
+  m_canvas->getInteractionContext().setSwcEditMode(
+        ZInteractiveContext::SWC_EDIT_CONNECT);
+  m_canvas->updateCursor();
+  //m_canvas->setCursor(Qt::SizeBDiagCursor);
 }
 
 void Z3DWindow::connectSwcTreeNode(Swc_Tree_Node *tn)
@@ -1381,7 +1385,10 @@ void Z3DWindow::connectSwcTreeNode(Swc_Tree_Node *tn)
           getDocument()->getSelectedSwcNodeSet(), tn);
     m_doc->executeConnectSwcNodeCommand(target, tn);
     getSwcFilter()->setInteractionMode(Z3DSwcFilter::Select);
-    m_canvas->setCursor(Qt::ArrowCursor);
+    m_canvas->getInteractionContext().setSwcEditMode(
+          ZInteractiveContext::SWC_EDIT_SELECT);
+    m_canvas->updateCursor();
+    //m_canvas->setCursor(Qt::ArrowCursor);
   }
 }
 
@@ -1939,12 +1946,17 @@ void Z3DWindow::toogleAddSwcNodeMode(bool checked)
       m_toggleSmartExtendSelectedSwcNodeAction->blockSignals(false);
     }
     m_swcFilter->setInteractionMode(Z3DSwcFilter::AddSwcNode);
-    m_canvas->setCursor(Qt::PointingHandCursor);
+    m_canvas->getInteractionContext().setSwcEditMode(
+          ZInteractiveContext::SWC_EDIT_ADD_NODE);
+    //m_canvas->setCursor(Qt::PointingHandCursor);
     notifyUser("Click to add a node");
   } else {
     m_swcFilter->setInteractionMode(Z3DSwcFilter::Select);
-    m_canvas->setCursor(Qt::ArrowCursor);
+    m_canvas->getInteractionContext().setSwcEditMode(
+          ZInteractiveContext::SWC_EDIT_SELECT);
+    //m_canvas->setCursor(Qt::ArrowCursor);
   }
+  m_canvas->updateCursor();
 }
 
 //void Z3DWindow::toogleExtendSelectedSwcNodeMode(bool checked)
@@ -1982,11 +1994,16 @@ void Z3DWindow::toogleSmartExtendSelectedSwcNodeMode(bool checked)
     notifyUser("Left click to extend. Path calculation is off when 'Cmd/Ctrl' is held."
                "Right click to exit extending mode.");
     m_swcFilter->setInteractionMode(Z3DSwcFilter::SmartExtendSwcNode);
-    m_canvas->setCursor(Qt::PointingHandCursor);
+    m_canvas->getInteractionContext().setSwcEditMode(
+          ZInteractiveContext::SWC_EDIT_SMART_EXTEND);
+    //m_canvas->setCursor(Qt::PointingHandCursor);
   } else {
     m_swcFilter->setInteractionMode(Z3DSwcFilter::Select);
-    m_canvas->setCursor(Qt::ArrowCursor);
+    m_canvas->getInteractionContext().setSwcEditMode(
+          ZInteractiveContext::SWC_EDIT_SELECT);
+    //m_canvas->setCursor(Qt::ArrowCursor);
   }
+  m_canvas->updateCursor();
 }
 
 void Z3DWindow::changeBackground()

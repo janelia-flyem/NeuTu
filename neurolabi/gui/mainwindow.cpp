@@ -151,6 +151,7 @@
 #include "zsegmentationprojectdialog.h"
 #include "zsubtractswcsdialog.h"
 #include "zautotracedialog.h"
+#include "zstackviewmanager.h"
 
 #include "z3dcanvas.h"
 #include "z3dapplication.h"
@@ -275,6 +276,8 @@ MainWindow::MainWindow(QWidget *parent) :
           this, SLOT(createStackFrameFromDocReader(ZStackDocReader*)));
 
   initDialog();
+
+  m_stackViewManager = new ZStackViewManager(this);
 }
 
 MainWindow::~MainWindow()
@@ -3511,9 +3514,20 @@ void MainWindow::on_actionFlyEmClone_triggered()
   ZStackFrame *frame = activeStackFrame();
 
   if (frame != NULL) {
+    ZStackDocReader reader;
+    reader.setStack(frame->document()->getStack()->clone());
+    ZStackFrame *newFrame =
+        createStackFrame(reader, frame->document()->getTag());
+    addStackFrame(newFrame);
+    presentStackFrame(newFrame);
+
+    m_stackViewManager->registerWindowPair(frame, newFrame);
+    /*
     ZFlyEmStackFrame *flyemFrame = new ZFlyEmStackFrame;
     flyemFrame->copyDocument(frame);
     addStackFrame(flyemFrame);
+    presentStackFrame(flyemFrame);
+    */
   }
 }
 
@@ -5919,18 +5933,19 @@ void MainWindow::on_actionDVID_Bundle_triggered()
 
     m_progress->setValue(++currentProgress);
 
-    ZDvidTarget target;
+    ZDvidTarget target = m_dvidDlg->getDvidTarget();/*
     target.set(
           m_dvidDlg->getAddress().toStdString(),
-          m_dvidDlg->getUuid().toStdString(), m_dvidDlg->getPort());
+          m_dvidDlg->getUuid().toStdString(), m_dvidDlg->getPort());*/
     ZDvidFilter dvidFilter;
     dvidFilter.setDvidTarget(target);
     dvidFilter.setMinBodySize(m_bodyFilterDlg->getMinBodySize());
+    dvidFilter.setUpperBodySizeEnabled(m_bodyFilterDlg->hasUpperBodySize());
     if (m_bodyFilterDlg->hasUpperBodySize()) {
       dvidFilter.setMaxBodySize(m_bodyFilterDlg->getMaxBodySize());
-    } else {
+    }/* else {
       dvidFilter.setMaxBodySize(std::numeric_limits<std::size_t>::max());
-    }
+    }*/
 
     std::vector<int> excludedBodyArray = m_bodyFilterDlg->getExcludedBodies();
     dvidFilter.exclude(excludedBodyArray);

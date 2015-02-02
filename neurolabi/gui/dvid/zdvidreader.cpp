@@ -472,54 +472,46 @@ std::set<int> ZDvidReader::readBodyId(const ZDvidFilter &filter)
 
 std::set<int> ZDvidReader::readBodyId(size_t minSize)
 {
-  return readBodyId(QString("%1").arg(minSize));
+  ZDvidBufferReader bufferReader;
+  ZDvidUrl dvidUrl(m_dvidTarget);
+  bufferReader.read(dvidUrl.getBodyListUrl(minSize).c_str());
+
+  std::set<int> bodySet;
+
+  QString idStr = bufferReader.getBuffer().data();
+
+  if (!idStr.isEmpty()) {
+    std::vector<int> idArray;
+    ZJsonArray array;
+      //qDebug() << infoArray[0];
+    array.decode(idStr.toStdString());
+    idArray = array.toIntegerArray();
+    bodySet.insert(idArray.begin(), idArray.end());
+  }
+
+  return bodySet;
 }
 
 std::set<int> ZDvidReader::readBodyId(size_t minSize, size_t maxSize)
 {
-  QString sizeRange;
+  ZDvidBufferReader bufferReader;
+  ZDvidUrl dvidUrl(m_dvidTarget);
+  bufferReader.read(dvidUrl.getBodyListUrl(minSize, maxSize).c_str());
 
-  if (minSize <= maxSize) {
-    sizeRange = QString("%1/%2").arg(minSize).arg(maxSize);
-  }
-
-  return readBodyId(sizeRange);
-
-#if 0
   std::set<int> bodySet;
 
-  std::vector<int> idArray;
+  QString idStr = bufferReader.getBuffer().data();
 
-  if (minSize <= maxSize) {
-    startReading();
-
-    ZDvidRequest request;
-    request.setGetStringRequest("sp2body");
-
-    request.setParameter(QVariant(QString("sizerange/%1/%2").
-                                  arg(minSize).arg(maxSize)));
-    m_dvidClient->appendRequest(request);
-    m_dvidClient->postNextRequest();
-
-    waitForReading();
-
-    ZDvidBuffer *dvidBuffer = m_dvidClient->getDvidBuffer();
-
-    const QStringList& infoArray = dvidBuffer->getInfoArray();
-
-    if (infoArray.size() > 0) {
-      ZJsonArray array;
+  if (!idStr.isEmpty()) {
+    std::vector<int> idArray;
+    ZJsonArray array;
       //qDebug() << infoArray[0];
-      array.decode(infoArray[0].toStdString());
-      idArray = array.toIntegerArray();
-      bodySet.insert(idArray.begin(), idArray.end());
-    }
-
-    dvidBuffer->clearInfoArray();
+    array.decode(idStr.toStdString());
+    idArray = array.toIntegerArray();
+    bodySet.insert(idArray.begin(), idArray.end());
   }
 
   return bodySet;
-#endif
 }
 
 QByteArray ZDvidReader::readKeyValue(const QString &dataName, const QString &key)
