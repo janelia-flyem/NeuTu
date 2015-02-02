@@ -497,3 +497,16 @@ ZTree<int>* misc::buildSegmentationTree(const Stack *stack)
 
   return tree;
 }
+
+ZIntPoint misc::getDsIntvFor3DVolume(const ZIntCuboid &box)
+{
+  static const size_t maxVolume = 1024 * 1024 * 200;
+  ZIntPoint dsIntv;
+  int s = 0;
+  if (box.getVolume() > maxVolume) {
+    s =  iround(Cube_Root(((double)  box.getVolume()) / maxVolume)) - 1;
+  }
+  dsIntv.set(s, s, s);
+
+  return dsIntv;
+}

@@ -1113,7 +1113,7 @@ void ZStackPresenter::processMouseDoubleClickEvent(QMouseEvent *event)
 //  ZPoint currentStackPos = op.getMouseEventRecorder()->getLatestMouseEvent().
 //      getPosition(ZMouseEvent::COORD_STACK);
   ZPoint currentRawStackPos = op.getMouseEventRecorder()->getLatestMouseEvent().
-      getPosition(ZMouseEvent::COORD_RAW_STACK);
+      getPosition(NeuTube::COORD_RAW_STACK);
 
   ZInteractionEvent interactionEvent;
 
@@ -1375,7 +1375,7 @@ void ZStackPresenter::markPuncta()
 {
   const ZMouseEvent& event = m_mouseEventProcessor.getMouseEvent(
         Qt::LeftButton, ZMouseEvent::ACTION_RELEASE);
-  ZPoint currentStackPos = event.getPosition(ZMouseEvent::COORD_STACK);
+  ZPoint currentStackPos = event.getPosition(NeuTube::COORD_STACK);
   buddyDocument()->markPunctum(currentStackPos.x(), currentStackPos.y(),
                                currentStackPos.z());
 
@@ -1858,8 +1858,8 @@ void ZStackPresenter::process(const ZStackOperator &op)
   const ZMouseEvent& event = m_mouseEventProcessor.getLatestMouseEvent();
   QPoint pos(event.getPosition().getX(),
              event.getPosition().getY());
-  ZPoint currentStackPos = event.getPosition(ZMouseEvent::COORD_STACK);
-  ZPoint currentRawStackPos = event.getPosition(ZMouseEvent::COORD_RAW_STACK);
+  ZPoint currentStackPos = event.getPosition(NeuTube::COORD_STACK);
+  ZPoint currentRawStackPos = event.getPosition(NeuTube::COORD_RAW_STACK);
 
   buddyDocument()->getObjectGroup().resetSelection();
 
@@ -2090,7 +2090,7 @@ void ZStackPresenter::process(const ZStackOperator &op)
   case ZStackOperator::OP_MOVE_OBJECT:
   {
     ZPoint offset = op.getMouseEventRecorder()->
-        getPositionOffset(ZMouseEvent::COORD_STACK);
+        getPositionOffset(NeuTube::COORD_STACK);
 
     buddyDocument()->executeMoveObjectCommand(offset.x(), offset.y(),
                                               0,
@@ -2101,7 +2101,7 @@ void ZStackPresenter::process(const ZStackOperator &op)
   {
     ZPoint grabPosition = op.getMouseEventRecorder()->getPosition(
           Qt::LeftButton, ZMouseEvent::ACTION_PRESS,
-          ZMouseEvent::COORD_RAW_STACK);
+          NeuTube::COORD_RAW_STACK);
     moveImageToMouse(
           grabPosition.x(), grabPosition.y(), pos.x(), pos.y());
   }

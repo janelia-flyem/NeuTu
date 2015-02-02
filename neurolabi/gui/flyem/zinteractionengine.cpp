@@ -202,6 +202,19 @@ bool ZInteractionEngine::isStateOn(EState status) const
     if (m_interactionHandler != NULL) {
       return m_interactionHandler->isMovingObjects();
     }
+    break;
+  case STATE_SWC_EXTEND:
+    return m_interactiveContext.swcEditMode() ==
+        ZInteractiveContext::SWC_EDIT_EXTEND;
+  case STATE_SWC_SMART_EXTEND:
+    return m_interactiveContext.swcEditMode() ==
+        ZInteractiveContext::SWC_EDIT_SMART_EXTEND;
+  case STATE_SWC_CONNECT:
+    return m_interactiveContext.swcEditMode() ==
+        ZInteractiveContext::SWC_EDIT_CONNECT;
+  case STATE_SWC_ADD_NODE:
+    return m_interactiveContext.swcEditMode() ==
+        ZInteractiveContext::SWC_EDIT_ADD_NODE;
   }
 
   return false;
@@ -213,6 +226,12 @@ Qt::CursorShape ZInteractionEngine::getCursorShape() const
     return Qt::PointingHandCursor;
   } else if (isStateOn(STATE_MOVE_OBJECT)) {
     return Qt::ClosedHandCursor;
+  } else if (isStateOn(STATE_SWC_EXTEND) || isStateOn(STATE_SWC_SMART_EXTEND)) {
+    return Qt::PointingHandCursor;
+  } else if (isStateOn(STATE_SWC_CONNECT)) {
+    return Qt::SizeBDiagCursor;
+  } else if (isStateOn(STATE_SWC_ADD_NODE)) {
+    return Qt::PointingHandCursor;
   }
 
   return Qt::ArrowCursor;

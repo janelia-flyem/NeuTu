@@ -314,6 +314,22 @@ std::string ZDvidUrl::getBodyLabelUrl(
   return getBodyLabelUrl() + stream.str();
 }
 
+std::string ZDvidUrl::getBodyListUrl(int minSize) const
+{
+  std::ostringstream stream;
+  stream << "/sizerange/" << minSize;
+
+  return getBodyLabelUrl() + stream.str();
+}
+
+std::string ZDvidUrl::getBodyListUrl(int minSize, int maxSize) const
+{
+  std::ostringstream stream;
+  stream << "/sizerange/" << minSize << "/" << maxSize;
+
+  return getBodyLabelUrl() + stream.str();
+}
+
 std::string ZDvidUrl::getSynapseListUrl() const
 {
   return getAnnotationUrl() + "/allsynapse";

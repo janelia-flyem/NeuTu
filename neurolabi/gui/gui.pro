@@ -517,7 +517,9 @@ HEADERS += mainwindow.h \
     zmarkswcsomadialog.h \
     zlabeledspinboxwidget.h \
     zspinboxgroupdialog.h \
-    zautotracedialog.h
+    zautotracedialog.h \
+    zstackviewmanager.h \
+    zstackviewparam.h
 
 FORMS += settingdialog.ui \
     frameinfodialog.ui \
@@ -858,7 +860,9 @@ SOURCES += main.cpp \
     zmarkswcsomadialog.cpp \
     zlabeledspinboxwidget.cpp \
     zspinboxgroupdialog.cpp \
-    zautotracedialog.cpp
+    zautotracedialog.cpp \
+    zstackviewmanager.cpp \
+    zstackviewparam.cpp
 
 OTHER_FILES += \
     extlib.pri

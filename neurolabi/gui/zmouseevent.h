@@ -4,6 +4,7 @@
 #include <qnamespace.h>
 #include "zintpoint.h"
 #include "zpoint.h"
+#include "neutube.h"
 
 class QMouseEvent;
 
@@ -16,9 +17,9 @@ public:
     ACTION_NONE, ACTION_PRESS, ACTION_RELEASE, ACTION_MOVE, ACTION_DOUBLE_CLICK
   };
 
-  enum ECoordinateSystem {
-    COORD_WIDGET, COORD_GLOBAL, COORD_RAW_STACK, COORD_STACK
-  };
+//  enum ECoordinateSystem {
+//    COORD_WIDGET, COORD_GLOBAL, COORD_RAW_STACK, COORD_STACK
+//  };
 
   bool isNull() const;
 
@@ -62,7 +63,7 @@ public:
     return m_position;
   }
 
-  ZPoint getPosition(ECoordinateSystem cs) const;
+  ZPoint getPosition(NeuTube::ECoordinateSystem cs) const;
 
   inline int getX() const {
     return getPosition().getX();

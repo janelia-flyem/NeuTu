@@ -382,7 +382,7 @@ void ZFlyEmDataFrame::parseCommand(
   } else if (actionStr == "predict_class" || actionStr == "predict class") {
     m_action = PREDICT_CLASS;
     m_target = TOP_MATCH;
-  } else if (actionStr == "predict_error" || actionStr == "predict erro") {
+  } else if (actionStr == "predict_error" || actionStr == "predict error") {
     m_action = PREDICT_ERROR;
   } else {
     m_action = UNKNOWN_ACTION;

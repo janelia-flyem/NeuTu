@@ -15,6 +15,7 @@
 #include "ztree.h"
 
 class ZGraph;
+class ZIntPoint;
 
 namespace misc {
 
@@ -33,6 +34,8 @@ int computeRavelerHeight(const FlyEm::ZIntCuboidArray &blockArray, int margin);
 bool exportPointList(const std::string &filePath, const ZPointArray &pointArray);
 
 ZGraph* makeCoOccurGraph(const Stack *stack, int nnbr);
+
+ZIntPoint getDsIntvFor3DVolume(const ZIntCuboid &box);
 
 /*!
  * \brief A function for computing confidence

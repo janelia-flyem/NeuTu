@@ -14,9 +14,7 @@
 #include <QList>
 #include "zstroke2d.h"
 
-#ifdef _FLYEM_
 #  include "flyem/zinteractionengine.h"
-#endif
 
 class Z3DScene;
 class Z3DNetworkEvaluator;
@@ -104,6 +102,14 @@ public:
 
   void updateCursor();
 
+  inline ZInteractionEngine* getInteractionEngine() {
+    return &m_interaction;
+  }
+
+  inline ZInteractiveContext& getInteractionContext() {
+    return getInteractionEngine()->getInteractiveContext();
+  }
+
 signals:
   // w and h is physical size not logical size, opengl works in physical pixel
   void canvasSizeChanged(int w, int h);
@@ -128,9 +134,7 @@ protected:
   bool m_fakeStereoOnce;
 
 private:
-#if defined(_FLYEM_)
   ZInteractionEngine m_interaction;
-#endif
 };
 
 #endif // Z3DCANVAS_H

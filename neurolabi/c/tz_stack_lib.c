@@ -3799,7 +3799,7 @@ Stack* Stack_Median_Filter_N(const Stack *stack, int conn, Stack *out)
       for (i = 0; i < stack->width; i++) {\
         pt[0] = i;\
         if (array[offset++] > 0) {\
-          Cuboid_I_Expand_P(bound_box, pt);\ 
+          Cuboid_I_Expand_P(bound_box, pt);\
         }\
       }\
     }\

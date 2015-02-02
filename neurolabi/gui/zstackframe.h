@@ -24,6 +24,7 @@
 #include "ztilemanager.h"
 #include "z3dwindow.h"
 #include "zsharedpointer.h"
+#include "zstackviewparam.h"
 
 class ZStackView;
 class ZStackPresenter;
@@ -241,6 +242,7 @@ public slots:
   void zoomToSelectedSwcNodes();
   void notifyUser(const QString &message);
   void locateSwcNodeIn3DView();
+  void notifyViewChanged(const ZStackViewParam &param);
 
 private slots:
   void updateSwcExtensionHint();
@@ -251,6 +253,7 @@ signals:
   void presenterChanged();
   void stackLoaded();
   void ready(ZStackFrame*);
+  void viewChanged(ZStackViewParam param);
 
 protected: // Events
   virtual void keyPressEvent(QKeyEvent *event);

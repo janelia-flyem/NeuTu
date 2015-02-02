@@ -81,6 +81,9 @@ public:
   std::string getBodyLabelUrl(
       int x0, int y0, int z0, int width, int height, int depth) const;
 
+  std::string getBodyListUrl(int minSize) const;
+  std::string getBodyListUrl(int minSize, int maxSize) const;
+
   std::string getMaxBodyIdUrl() const;
 
   std::string getSynapseListUrl() const;

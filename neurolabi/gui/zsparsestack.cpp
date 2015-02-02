@@ -121,17 +121,7 @@ ZStack* ZSparseStack::getStack()
 
         ZStackBlockGrid *dsGrid = m_stackGrid->makeDownsample(
               m_dsIntv.getX(), m_dsIntv.getY(), m_dsIntv.getZ());
-#ifdef _DEBUG_2
-        //dsGrid->getStackArray()[3]->save(GET_TEST_DATA_DIR + "/test.tif");
-        m_stackGrid->getStackArray()[7]->printInfo();
-        dsGrid->getStackArray()[7]->printInfo();
-#endif
 
-        /*
-        dsGrid.setBlockSize(m_stackGrid->getBlockSize() / (m_dsIntv + 1));
-        dsGrid.setGridSize(m_stackGrid->getGridSize());
-        dsGrid.setMinPoint(m_stackGrid->getMinPoint() / (m_dsIntv + 1));
-        */
         m_stack =  new ZStack(GREY, obj.getBoundBox(), 1);
         m_stack->setZero();
         assignStackValue(m_stack, obj, *dsGrid);
@@ -151,6 +141,49 @@ const ZStack* ZSparseStack::getStack() const
 {
   return dynamic_cast<const ZStack*>(
         const_cast<ZSparseStack*>(this)->getStack());
+}
+
+
+ZStack* ZSparseStack::toDownsampledStack(int xIntv, int yIntv, int zIntv)
+{
+  if (m_objectMask == NULL || m_stackGrid == NULL) {
+    return NULL;
+  }
+
+  ZStack *stack = NULL;
+#if 0
+  ZIntCuboid cuboid = m_objectMask->getBoundBox();
+  if (!m_objectMask->isEmpty()) {
+    ZObject3dScan obj = *m_objectMask;
+    obj.downsampleMax(xIntv, yIntv, zIntv);
+
+
+    size_t volume = cuboid.getVolume();
+    if (volume > MAX_STACK_VOLUME) {
+      ZObject3dScan obj = *m_objectMask;
+
+      if (volume / 8 > MAX_STACK_VOLUME) {
+        m_dsIntv.set(3, 3, 1);
+      } else {
+        m_dsIntv.set(1, 1, 1);
+      }
+      obj.downsampleMax(m_dsIntv.getX(), m_dsIntv.getY(), m_dsIntv.getZ());
+
+      ZStackBlockGrid *dsGrid = m_stackGrid->makeDownsample(
+            m_dsIntv.getX(), m_dsIntv.getY(), m_dsIntv.getZ());
+
+      m_stack =  new ZStack(GREY, obj.getBoundBox(), 1);
+      m_stack->setZero();
+      assignStackValue(m_stack, obj, *dsGrid);
+      delete dsGrid;
+    } else {
+      m_stack = new ZStack(GREY, cuboid, 1);
+      m_stack->setZero();
+      assignStackValue(m_stack, *m_objectMask, *m_stackGrid);
+    }
+  }
+#endif
+  return stack;
 }
 
 size_t ZSparseStack::getObjectVolume() const

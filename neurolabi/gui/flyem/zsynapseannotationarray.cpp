@@ -98,7 +98,9 @@ bool ZSynapseAnnotationArray::loadJson(const std::string &filePath,
       QStringList synapseList = reader.readSynapseList();
       //qDebug() << synapseList;
 
-      jsonObject = reader.readSynapseAnnotation(synapseList[0]);
+      if (!synapseList.isEmpty()) {
+        jsonObject = reader.readSynapseAnnotation(synapseList[0]);
+      }
     }
 #endif
   } else {

@@ -305,6 +305,8 @@ void ZImageWidget::paintEvent(QPaintEvent * /*event*/)
     ZPainter painter(this);
     painter.setRenderHint(QPainter::Antialiasing, false);
     //zoom(m_zoomRatio);
+
+    //Compute real viewport and projregion
     setView(m_zoomRatio, m_viewPort.topLeft());
 
     QSize size = projectSize();

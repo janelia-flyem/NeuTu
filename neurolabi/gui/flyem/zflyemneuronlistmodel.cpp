@@ -260,22 +260,31 @@ void ZFlyEmNeuronListModel::retrieveBody(
     }
   }
 
+  ZObject3dScanArray bodyArray;
+
   foreach (const ZFlyEmNeuron *neuron, neuronArray) {
     if (neuron != NULL) {
       //doc->addSwcTree(neuron->getModel()->clone(), true);
       ZObject3dScan *body = neuron->getBody();
-      ZObject3dScanArray bodyArray;
 
       if (body != NULL) {
         bodyArray.push_back(*body);
       }
-
-      ZStack *stack = bodyArray.toStackObject();
-      if (stack != NULL) {
-        doc->loadStack(stack);
-        doc->setTag(NeuTube::Document::FLYEM_BODY);
-      }
     }
+  }
+
+  const size_t maxVolume = 1024*1024*100;
+
+  if (bodyArray.getBoundBox().getVolume() > maxVolume) {
+    int dsIntv =  iround(Cube_Root(
+          ((double)  bodyArray.getBoundBox().getVolume()) / maxVolume)) - 1;
+    bodyArray.downsample(dsIntv, dsIntv, dsIntv);
+  }
+
+  ZStack *stack = bodyArray.toStackObject();
+  if (stack != NULL) {
+    doc->loadStack(stack);
+    doc->setTag(NeuTube::Document::FLYEM_BODY);
   }
 }
 
