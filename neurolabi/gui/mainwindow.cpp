@@ -2052,6 +2052,7 @@ void MainWindow::writeSettings()
 
 void MainWindow::checkVersion()
 {
+#ifdef _FLYEM_
   QString version = getSettings().value("version").toString();
   if (version.isEmpty()) {
     getSettings().setValue("version", m_version);
@@ -2070,6 +2071,7 @@ void MainWindow::checkVersion()
            ZMessageReporter::Information);
     getSettings().setValue("version", m_version);
   }
+#endif
 }
 
 void MainWindow::readSettings()
