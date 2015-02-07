@@ -3,7 +3,7 @@
  * 22-May-2008 Initial write: Ting Zhao
  */
 #include <stdlib.h>
-#include <utilities.h>
+#include "tz_utilities.h"
 #include "tz_error.h"
 #include "tz_arrayqueue.h"
 

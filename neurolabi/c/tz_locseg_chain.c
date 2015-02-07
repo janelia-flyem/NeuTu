@@ -18,7 +18,7 @@
 #else
 #include "tz_dirent.h"
 #endif
-#include <utilities.h>
+#include "tz_utilities.h"
 #include "tz_constant.h"
 #include "tz_error.h"
 #define FORCE_PROGRESS

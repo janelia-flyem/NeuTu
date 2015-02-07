@@ -11,12 +11,12 @@
 #include <process.h>
 #define getpid _getpid
 #endif
-#include <utilities.h>
 #ifndef __USE_BSD
 #  define __USE_BSD
 #endif
 #include <string.h>
 #include <ctype.h>
+#include "tz_utilities.h"
 #include "tz_error.h"
 #include "tz_swc_tree.h"
 #include "tz_swc.h"

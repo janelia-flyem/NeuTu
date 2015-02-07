@@ -4,7 +4,7 @@
  */
 
 #include <stdlib.h>
-#include <utilities.h>
+#include "tz_utilities.h"
 #include "tz_error.h"
 #include "tz_swc_cell.h"
 #include "tz_iarray.h"

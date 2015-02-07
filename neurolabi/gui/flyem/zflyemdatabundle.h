@@ -67,7 +67,7 @@ public:
   }
 
   int countClass() const;
-  int countNeuronByClass(const std::string &className) const;
+  int countNeuronByType(const std::string &className) const;
   //double getZResolution() const { return m_swcResolution[2]; }
 
   void updateNeuronConnection();

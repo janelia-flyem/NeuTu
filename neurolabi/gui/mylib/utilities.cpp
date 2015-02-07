@@ -3273,7 +3273,7 @@ static Value *get_value(char *name, int n, int k, int j, int type)
     }					\
   va_end(ap);
 
-int Get_Int_Arg(char *name, ... /* [int no [ int an]] */ )
+int mylib::Get_Int_Arg(char *name, ... /* [int no [ int an]] */ )
 { int        n, k, j;
   va_list    ap;
 
@@ -3281,7 +3281,7 @@ int Get_Int_Arg(char *name, ... /* [int no [ int an]] */ )
   return (get_value(name,n,k,j,INT_TYPE)->value.intval);
 }
 
-double Get_Double_Arg(char *name, ... /* [int no [ int an]] */ )
+double mylib::Get_Double_Arg(char *name, ... /* [int no [ int an]] */ )
 { int        n, k, j;
   va_list    ap;
 
@@ -3289,7 +3289,7 @@ double Get_Double_Arg(char *name, ... /* [int no [ int an]] */ )
   return (get_value(name,n,k,j,DOUBLE_TYPE)->value.dblval);
 }
 
-char *Get_String_Arg(char *name, ... /* [int no [ int an]] */ )
+char *mylib::Get_String_Arg(char *name, ... /* [int no [ int an]] */ )
 { int        n, k, j;
   va_list    ap;
 
@@ -3320,7 +3320,7 @@ void mylib::Print_Argument_Usage(FILE *file, int no_escapes)
     fputc('\n',file);
 }
 
-char *Program_Name()
+char *mylib::Program_Name()
 { return (Program); }
 
 #undef  SPEC1

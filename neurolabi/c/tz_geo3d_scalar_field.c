@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <string.h>
-#include <utilities.h>
+#include "tz_utilities.h"
 #include "tz_error.h"
 #include "tz_darray.h"
 #include "tz_stack_sampling.h"

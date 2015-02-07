@@ -151,7 +151,7 @@ ZFlyEmDataFrame::ZFlyEmDataFrame(QWidget *parent) :
 
   m_matchManager = new ZFlyEmNeuronMatchTaskManager(this);
   connect(m_matchManager, SIGNAL(finished()),
-          this, SLOT(updateClassPrediction()));
+          this, SLOT(updateTypePrediction()));
   m_matchManager->setProgressReporter(&m_specialProgressReporter);
 
   m_filterManager = new ZFlyEmNeuronFilterTaskManager(this);
@@ -404,8 +404,8 @@ void ZFlyEmDataFrame::updateSource(
              data->getNeuronArray().begin();
              neuronIter != data->getNeuronArray().end();
              ++neuronIter) {
-          if (!neuronIter->getClass().empty()) {
-            if (regexp.exactMatch(neuronIter->getClass().c_str())) {
+          if (!neuronIter->getType().empty()) {
+            if (regexp.exactMatch(neuronIter->getType().c_str())) {
               m_sourceIdArray.push_back(pair<int, int>(neuronIter->getId(),
                                                        bundleIndex));
             }
@@ -466,7 +466,7 @@ void ZFlyEmDataFrame::updateSource(
                neuronIter != data->getNeuronArray().end();
                ++neuronIter) {
             if (*nameIter == "?") {
-              if (neuronIter->getClass().empty()) {
+              if (neuronIter->getType().empty()) {
                 m_sourceIdArray.push_back(pair<int, int>(neuronIter->getId(),
                                                          bundleIndex));
               }
@@ -480,7 +480,7 @@ void ZFlyEmDataFrame::updateSource(
                 }
               }
 
-              if (neuronIter->getClass() == className) {
+              if (neuronIter->getType() == className) {
                 m_sourceIdArray.push_back(pair<int, int>(neuronIter->getId(),
                                                          bundleIndex));
               }
@@ -694,7 +694,7 @@ std::vector<double> ZFlyEmDataFrame::getMatchingScore(
         }
         break;
       case MATCH_KNOWN_CLASS:
-        if (neuronIter->getClass().empty() ||
+        if (neuronIter->getType().empty() ||
             neuronIter->getId() == sourceNeuron->getId()) {
           comparing = false;
         }
@@ -813,7 +813,7 @@ std::vector<double> ZFlyEmDataFrame::getMatchingScore(
         }
         break;
       case MATCH_KNOWN_CLASS:
-        if (neuronIter->getClass().empty() ||
+        if (neuronIter->getType().empty() ||
             neuronIter->getId() == sourceNeuron->getId()) {
           comparing = false;
         }
@@ -1020,7 +1020,7 @@ void ZFlyEmDataFrame::prepareClassPrediction(ZFlyEmNeuron *neuron)
            iter = bundle->getNeuronArray().begin();
            iter != bundle->getNeuronArray().end(); ++iter) {
         ZFlyEmNeuron *target = &(*iter);
-        if (neuron != target && target->hasClass()) {
+        if (neuron != target && target->hasType()) {
           //target->getBody();
           ZFlyEmNeuronMatchTask *task = new ZFlyEmNeuronMatchTask;
           task->setSource(neuron);
@@ -1033,14 +1033,14 @@ void ZFlyEmDataFrame::prepareClassPrediction(ZFlyEmNeuron *neuron)
   }
 }
 
-void ZFlyEmDataFrame::updateClassPrediction()
+void ZFlyEmDataFrame::updateTypePrediction()
 {
   //ZFlyEmNeuron *neuron = m_matchManager->getSourceNeuron();
   int count = 0;
   foreach (ZFlyEmNeuron *neuron, m_foregroundNeuronArray) {
     displayQueryOutput(neuron, true);
     if (!neuron->getTopMatch().empty()) {
-      if (neuron->getClass() == neuron->getTopMatch()[0]->getClass()) {
+      if (neuron->getType() == neuron->getTopMatch()[0]->getType()) {
         ++count;
       }
     }
@@ -1167,7 +1167,7 @@ void ZFlyEmDataFrame::process()
         displayQueryOutput(neuron, true);
         ++count;
         if (!topMatch.isEmpty()) {
-          if (topMatch[0]->getClass() == neuron->getClass()) {
+          if (topMatch[0]->getType() == neuron->getType()) {
             ++correctCount;
           }
 
@@ -2089,7 +2089,7 @@ void ZFlyEmDataFrame::assignClass(const string &classFile)
     for (std::vector<ZFlyEmNeuron>::iterator iter = neuronArray.begin();
          iter != neuronArray.end(); ++iter) {
       ZFlyEmNeuron &neuron = *iter;
-      neuron.setClass(classArray[index++]);
+      neuron.setType(classArray[index++]);
     }
   }
 
@@ -2121,8 +2121,8 @@ bool ZFlyEmDataFrame::saveNeuronFeature(
          iter != neuronArray.end(); ++iter) {
       ZFlyEmNeuron &neuron = *iter;
       int classLabel = -1;
-      if (classIdMap.count(neuron.getClass()) > 0) {
-        classLabel = classIdMap[neuron.getClass()];
+      if (classIdMap.count(neuron.getType()) > 0) {
+        classLabel = classIdMap[neuron.getType()];
       }
       std::vector<double> featureArray =
           ZFlyEmNeuronFeatureAnalyzer::computeFeatureSet(neuron);

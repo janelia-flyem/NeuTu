@@ -5,11 +5,11 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <utilities.h>
 #include <string.h>
 #include "tz_stack_bwmorph.h"
 #include "tz_stack_lib.h"
 #include "tz_stack_math.h"
+#include "tz_utilities.h"
 
 /*
  * bwdist - build a distance map for a binary stack

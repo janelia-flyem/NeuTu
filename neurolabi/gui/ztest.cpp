@@ -13722,7 +13722,7 @@ void ZTest::test(MainWindow *host)
               "/flyem/AL/al7d_whole448_tbar-predict_0.86_ds20_s10.tif");
 #endif
 
-#if 1
+#if 0
   FlyEm::ZSynapseAnnotationArray synapseArray;
   synapseArray.loadJson(GET_DATA_DIR +
                         "/flyem/FIB/fib19_all_dvid_final_tbar-predict_0.74.json");
@@ -14879,5 +14879,35 @@ void ZTest::test(MainWindow *host)
 
   manager.print();
 
+#endif
+
+#if 1
+  FILE *fp = fopen((GET_DATA_DIR +
+                   "/flyem/AL/glomeruli/labeled_synapse_confidence.txt").c_str(), "r");
+
+  std::vector<ZPointArray> synapseGroup(60);
+
+  ZString str;
+  while (str.readLine(fp)) {
+    std::vector<double> valueArray = str.toDoubleArray();
+    int label = valueArray[3];
+    if (label == 49) {
+      label = 7;
+    }
+    if (valueArray.size() >= 5) {
+      ZPointArray &ptArray = synapseGroup[label];
+      ptArray.append(ZPoint(valueArray[0], valueArray[1], valueArray[2]));
+    }
+  }
+
+  fclose(fp);
+
+  int labelArray[] = {14, 15, 17, 18, 24, 25, 31, 33, 45, 46 };
+
+  for (size_t i = 0; i < sizeof(labelArray) / sizeof(int); ++i) {
+    int label = labelArray[i];
+    ZPoint pt = synapseGroup[label].computeCenter();
+    std::cout << label << ": " << pt.toIntPoint().toString() << std::endl;
+  }
 #endif
 }

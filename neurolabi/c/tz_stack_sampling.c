@@ -5,7 +5,6 @@
 
 #include <stdlib.h>
 #include <math.h>
-#include <utilities.h>
 #include "tz_error.h"
 #include "tz_image_lib.h"
 #include "tz_stack_utils.h"

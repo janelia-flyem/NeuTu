@@ -70,7 +70,7 @@ QString ZFlyEmNeuronPresenter::getIdString(const ZFlyEmNeuron &neuron) const
 ZFlyEmNeuronInfoPresenter::ZFlyEmNeuronInfoPresenter(QObject *parent) :
   ZFlyEmNeuronPresenter(parent)
 {
-  m_fieldList << "ID" << "Name" << "Class" << "Model Path" << "Volume Path";
+  m_fieldList << "ID" << "Name" << "Type" << "Class" << "Superclass";
 }
 
 QVariant ZFlyEmNeuronInfoPresenter::data(
@@ -84,11 +84,11 @@ QVariant ZFlyEmNeuronInfoPresenter::data(
     case 1:
       return neuron.getName().c_str();
     case 2:
-      return neuron.getClass().c_str();
+      return neuron.getType().c_str();
     case 3:
-      return neuron.getModelPath().c_str();
+      return neuron.getClass().c_str();
     case 4:
-      return neuron.getVolumePath().c_str();
+      return neuron.getSuperclass().c_str();
     }
     break;
   case Qt::ToolTipRole:
@@ -143,7 +143,7 @@ QVariant ZFlyEmNeuronFeaturePresenter::data(
     case 0:
       return getIdString(neuron);
     case 1:
-      return neuron.getClass().c_str();
+      return neuron.getType().c_str();
     case 2:
       return neuron.getModel()->length();
     case 3:
@@ -370,16 +370,16 @@ QVariant ZFlyEmNeuronTopMatchPresenter::data(
   switch(role) {
   case Qt::DisplayRole:
     if (index == 0) {
-      if (neuron.getClass().empty()) {
+      if (neuron.getType().empty()) {
         return getIdString(neuron);
       } else {
-        return QString("%1 (%2)").arg(getIdString(neuron)).arg(neuron.getClass().c_str());
+        return QString("%1 (%2)").arg(getIdString(neuron)).arg(neuron.getType().c_str());
       }
     } else {
       const std::vector<const ZFlyEmNeuron*> &topMatch = neuron.getTopMatch();
       if (index <= (int) topMatch.size()) {
         return QString("%1 (%2)").arg(getIdString(*(topMatch[index - 1]))).
-            arg(topMatch[index - 1]->getClass().c_str());
+            arg(topMatch[index - 1]->getType().c_str());
       } else {
         return "N/A";
       }

@@ -16,6 +16,9 @@ public:
   std::string getNodeUrl() const;
   std::string getDataUrl(const std::string &dataName) const;
   std::string getDataUrl(ZDvidData::ERole role) const;
+  std::string getDataUrl(
+      ZDvidData::ERole role, ZDvidData::ERole prefixRole,
+      const std::string &prefixName);
   std::string getInfoUrl(const std::string &dataName) const;
   std::string getHelpUrl() const;
   std::string getServerInfoUrl() const;
@@ -23,26 +26,27 @@ public:
   std::string getRepoUrl() const;
   std::string getInstanceUrl() const;
 
-  std::string getSkeletonUrl() const;
-  std::string getSkeletonUrl(int bodyId) const;
+  std::string getSkeletonUrl(const std::string &dataName) const;
+  std::string getSkeletonUrl(int bodyId, const std::string &dataName) const;
 
-  std::string getThumbnailUrl() const;
-  std::string getThumbnailUrl(int bodyId) const;
+//  std::string getThumbnailUrl(const std::string &bodyLableName) const;
+//  std::string getThumbnailUrl(int bodyId) const;
 
-  std::string getThumbnailUrl(const std::string &dataName) const;
-  std::string getThumbnailUrl(int bodyId, const std::string &dataName) const;
+  std::string getThumbnailUrl(const std::string &bodyLabelName) const;
+  std::string
+  getThumbnailUrl(int bodyId, const std::string &bodyLabelName) const;
 
   std::string getSp2bodyUrl() const;
   std::string getSp2bodyUrl(const std::string &suffix) const;
 
-  std::string getSparsevolUrl() const;
-  std::string getSparsevolUrl(int bodyId) const;
+//  std::string getSparsevolUrl() const;
+//  std::string getSparsevolUrl(int bodyId) const;
 
   std::string getSparsevolUrl(const std::string &dataName) const;
   std::string getSparsevolUrl(int bodyId, const std::string &dataName) const;
 
-  std::string getCoarseSparsevolUrl() const;
-  std::string getCoarseSparsevolUrl(int bodyId) const;
+//  std::string getCoarseSparsevolUrl() const;
+//  std::string getCoarseSparsevolUrl(int bodyId) const;
 
   std::string getCoarseSparsevolUrl(const std::string &dataName) const;
   std::string getCoarseSparsevolUrl(int bodyId, const std::string &dataName) const;
@@ -62,11 +66,12 @@ public:
       const std::string &name,
       const std::string &key1, const std::string &key2) const;
 
-  std::string getAnnotationUrl() const;
-  std::string getAnnotationUrl(int bodyId) const;
+  std::string getAnnotationUrl(const std::string &bodyLabelName) const;
+  std::string getAnnotationUrl(
+      int bodyId, const std::string &bodyLabelName) const;
 
-  std::string getBodyInfoUrl() const;
-  std::string getBodyInfoUrl(int bodyId) const;
+//  std::string getBodyInfoUrl() const;
+//  std::string getBodyInfoUrl(int bodyId) const;
 
   std::string getBodyInfoUrl(const std::string &dataName) const;
   std::string getBodyInfoUrl(int bodyId, const std::string &dataName) const;

@@ -2817,6 +2817,7 @@ void ZStackDoc::removeLastObject(bool deleteObject)
 void ZStackDoc::removeAllObject(bool deleteObject)
 {
   m_objectGroup.removeAllObject(deleteObject);
+  m_playerList.removeAll();
   /*
   while (!m_objectList.isEmpty()) {
     removeLastObject(deleteObject);

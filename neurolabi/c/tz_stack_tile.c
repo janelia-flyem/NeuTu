@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <utilities.h>
+#include "tz_utilities.h"
 #include "tz_error.h"
 #include "tz_stack_tile.h"
 #include "tz_stack_io.h"

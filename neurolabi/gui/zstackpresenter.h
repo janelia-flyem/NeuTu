@@ -65,7 +65,7 @@ public:
   inline double greyScale(int c = 0) const {return m_greyScale[c];}
   inline double greyOffset(int c = 0) const {return m_greyOffset[c];}
   //inline int zoomRatio() const { return m_zoomRatio; }
-  int zoomRatio() const;
+  //int zoomRatio() const;
   inline QList<ZStackObject*>* decorations() { return &m_decorationList; }
   inline const QList<ZStackObject*>& getActiveDecorationList() const {
     return m_activeDecorationList;

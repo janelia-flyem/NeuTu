@@ -213,8 +213,8 @@ void ZFlyEmNeuronListModel::retrieveModel(
     foreach (const ZFlyEmNeuron *neuron, subArray) {
       neuronArray.append(neuron);
 
-      if (colorMap.count(neuron->getClass()) == 0) {
-        colorMap[neuron->getClass()] = colorScheme.getColor(colorMap.size());
+      if (colorMap.count(neuron->getType()) == 0) {
+        colorMap[neuron->getType()] = colorScheme.getColor(colorMap.size());
       }
     }
   }
@@ -231,7 +231,7 @@ void ZFlyEmNeuronListModel::retrieveModel(
         //qDebug() << neuron->getClass();
         //qDebug() << colorMap[neuron->getClass()];
         //qDebug() << colorMap["L1"];
-        tree->setColor(colorMap[neuron->getClass()]);
+        tree->setColor(colorMap[neuron->getType()]);
         doc->addSwcTree(tree, true);
       }
 
@@ -361,7 +361,7 @@ void ZFlyEmNeuronListModel::exportSwc(const QString &path)
     ZSwcTree *tree = neuron->getModel();
     if (tree != NULL) {
       QDir dir(path);
-      QString fileName = QString("%1_%2.swc").arg(neuron->getClass().c_str()).
+      QString fileName = QString("%1_%2.swc").arg(neuron->getType().c_str()).
           arg(neuron->getId());
       fileName.replace('/', "_or_");
       tree->save(dir.absoluteFilePath(fileName).toStdString());

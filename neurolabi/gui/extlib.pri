@@ -19,7 +19,7 @@ CONFIG(debug, debug|release) {
 unix {
     INCLUDEPATH += $${EXTLIB_DIR}/xml/include/libxml2 \
         $${EXTLIB_DIR}/fftw3/include \
-        $${EXTLIB_DIR}/png/include \
+#        $${EXTLIB_DIR}/png/include \
         $${EXTLIB_DIR}/jansson/include
 }
 
@@ -31,18 +31,19 @@ win32 {
         -lfftw3 \
         -lfftw3f \
         -lxml2 \
-        -lpng \
+#        -lpng \
         -mwin32 -mthreads -lpcreposix -lpcre -ljansson -lpthread
 }
 
 #Self-contained libraries
 unix {
     LIBS += -L$${EXTLIB_DIR}/xml/lib -L$${EXTLIB_DIR}/fftw3/lib \
-        -L$${EXTLIB_DIR}/png/lib -L$${EXTLIB_DIR}/jansson/lib \
+#        -L$${EXTLIB_DIR}/png/lib \
+        -L$${EXTLIB_DIR}/jansson/lib \
         -lfftw3 \
         -lfftw3f \
         -lxml2 \
-        -lpng \
+#        -lpng \
         -ljansson
 }
 

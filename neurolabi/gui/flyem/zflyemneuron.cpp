@@ -13,6 +13,7 @@
 #include "zhdf5reader.h"
 #include "dvid/zdvidtarget.h"
 #include "dvid/zdvidurl.h"
+#include "flyem/zflyemneuroninfo.h"
 
 #if defined(_QT_GUI_USED_)
 #include "dvid/zdvidreader.h"
@@ -28,7 +29,9 @@ const int ZFlyEmNeuron::TopMatchCapacity = 10;
 
 const char *ZFlyEmNeuron::m_idKey = "id";
 const char *ZFlyEmNeuron::m_nameKey = "name";
+const char *ZFlyEmNeuron::m_typeKey = "type";
 const char *ZFlyEmNeuron::m_classKey = "class";
+const char *ZFlyEmNeuron::m_superclassKey = "superclass";
 const char *ZFlyEmNeuron::m_modelKey = "model";
 const char *ZFlyEmNeuron::m_volumeKey = "volume";
 const char *ZFlyEmNeuron::m_thumbnailKey = "thumbnail";
@@ -54,7 +57,7 @@ ZFlyEmNeuron::ZFlyEmNeuron(const ZFlyEmNeuron &neuron) : CONSTRUCTOR_INIT
   m_sourceId = neuron.m_sourceId;
   m_id = neuron.m_id;
   m_name = neuron.m_name;
-  m_class = neuron.m_class;
+  m_type = neuron.m_type;
   m_modelPath = neuron.m_modelPath;
   m_volumePath = neuron.m_volumePath;
   m_thumbnailPath = neuron.m_thumbnailPath;
@@ -133,9 +136,10 @@ void ZFlyEmNeuron::deprecateDependent(EComponent comp) const
 void ZFlyEmNeuron::setPath(const ZDvidTarget &target)
 {
   ZDvidUrl dvidUrl(target);
-  m_modelPath = dvidUrl.getSkeletonUrl(getId());
-  m_volumePath = dvidUrl.getSparsevolUrl(getId());
-  m_thumbnailPath = dvidUrl.getThumbnailUrl(getId());
+  m_modelPath = dvidUrl.getSkeletonUrl(getId(), target.getBodyLabelName());
+  m_volumePath = dvidUrl.getSparsevolUrl(getId(), target.getBodyLabelName());
+  m_thumbnailPath = dvidUrl.getThumbnailUrl(
+        getId(), target.getBodyLabelName());
 }
 
 ZSwcTree* ZFlyEmNeuron::getResampleBuddyModel(double rs) const
@@ -281,7 +285,7 @@ ZJsonObject ZFlyEmNeuron::getAnnotationJson() const
 {
   ZJsonObject obj;
   obj.setEntry(m_nameKey, m_name);
-  obj.setEntry(m_classKey, m_class);
+  obj.setEntry(m_typeKey, m_type);
 
   return obj;
 }
@@ -290,7 +294,9 @@ void ZFlyEmNeuron::loadJsonObject(ZJsonObject &obj, const string &source)
 {
   m_id = ZJsonParser::integerValue(obj[m_idKey]);
   m_name = ZJsonParser::stringValue(obj[m_nameKey]);
-  m_class = ZJsonParser::stringValue(obj[m_classKey]);
+  m_type = ZJsonParser::stringValue(obj[m_typeKey]);
+  //m_type = ZFlyEmNeuronInfo::GuessTypeFromName(m_name);
+
 
   m_modelPath = ZJsonParser::stringValue(obj[m_modelKey]);
   if (!m_modelPath.empty()) {
@@ -325,8 +331,8 @@ ZJsonObject ZFlyEmNeuron::makeJsonObject() const
     objWrapper.setEntry(m_nameKey, m_name);
   }
 
-  if (!m_class.empty()) {
-    objWrapper.setEntry(m_classKey, m_class);
+  if (!m_type.empty()) {
+    objWrapper.setEntry(m_typeKey, m_type);
   }
 
   if (!m_modelPath.empty()) {
@@ -351,8 +357,8 @@ ZJsonObject ZFlyEmNeuron::makeJsonObject(const std::string &bundleDir) const
     objWrapper.setEntry(m_nameKey, m_name);
   }
 
-  if (!m_class.empty()) {
-    objWrapper.setEntry(m_classKey, m_class);
+  if (!m_type.empty()) {
+    objWrapper.setEntry(m_typeKey, m_type);
   }
 
   if (!m_modelPath.empty()) {
@@ -384,7 +390,7 @@ void ZFlyEmNeuron::print(ostream &stream) const
   stream << "Neuron: " << endl;
   stream << "  Id: " << m_id << endl;
   stream << "  Name: " << m_name << endl;
-  stream << "  Class: " << m_class << endl;
+  stream << "  Type: " << m_type << endl;
   stream << "  Model: " << m_modelPath << endl;
   stream << "  Volume: " << m_volumePath << endl;
   stream << "  Thumbnail: " << m_thumbnailPath << endl;
@@ -405,7 +411,7 @@ void ZFlyEmNeuron::printJson(ostream &stream, int indent) const
   stream << setw(indent) << "";
   stream << "  \"name\": \"" << m_name << "\"," << endl;
   stream << setw(indent) << "";
-  stream << "  \"class\": \"" << m_class << "\"," << endl;
+  stream << "  \"type\": \"" << m_type << "\"," << endl;
   stream << setw(indent) << "";
   stream << "  \"model\": \"" << m_modelPath << "\"" << endl;
   stream << setw(indent) << "";
@@ -635,7 +641,7 @@ const ZFlyEmNeuron* ZFlyEmNeuron::getOutputNeuron(size_t index) const
 string ZFlyEmNeuron::toString() const
 {
   ostringstream stream;
-  stream << m_id << " (" << m_class << ") : " << m_modelPath;
+  stream << m_id << " (" << m_type << ") : " << m_modelPath;
 
   return stream.str();
 }
@@ -740,9 +746,19 @@ ZFlyEmNeuronRange ZFlyEmNeuron::getRange(double xyRes, double zRes) const
   return range;
 }
 
-bool ZFlyEmNeuron::hasClass() const
+bool ZFlyEmNeuron::hasType() const
 {
-  return !getClass().empty();
+  return !getType().empty();
+}
+
+std::string ZFlyEmNeuron::getClass() const
+{
+  return ZFlyEmNeuronInfo::GetClassFromType(getType());
+}
+
+std::string ZFlyEmNeuron::getSuperclass() const
+{
+  return ZFlyEmNeuronInfo::GetSuperclassFromType(getType());
 }
 
 void ZFlyEmNeuron::releaseBody()

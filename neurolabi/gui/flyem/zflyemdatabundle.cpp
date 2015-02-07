@@ -20,6 +20,7 @@
 #include "zflyemdvidreader.h"
 #include "flyem/zintcuboidarray.h"
 #include "zfiletype.h"
+#include "flyem/zflyemneuroninfo.h"
 
 using namespace std;
 
@@ -174,7 +175,9 @@ bool ZFlyEmDataBundle::loadDvid(const ZDvidFilter &dvidFilter)
       }
 
       if (!annotation.getClass().empty()) {
-        neuron.setClass(annotation.getClass());
+        neuron.setType(annotation.getClass());
+      } else {
+        neuron.setType(ZFlyEmNeuronInfo::GuessTypeFromName(neuron.getName()));
       }
 #ifdef _DEBUG_
       if (neuron.getId() == 16493) {
@@ -320,7 +323,7 @@ bool ZFlyEmDataBundle::loadJsonFile(const std::string &filePath)
             neuron.setName(annotation.getName());
           }
           if (!annotation.getClass().empty()) {
-            neuron.setClass(annotation.getClass());
+            neuron.setType(annotation.getClass());
           }
         }
       }
@@ -353,26 +356,26 @@ int ZFlyEmDataBundle::countClass() const
   std::set<std::string> classSet;
   for (std::vector<ZFlyEmNeuron>::const_iterator iter = getNeuronArray().begin();
        iter != getNeuronArray().end(); ++iter) {
-    if (!iter->getClass().empty()) {
-      classSet.insert(iter->getClass());
+    if (!iter->getType().empty()) {
+      classSet.insert(iter->getType());
     }
   }
 
   return classSet.size();
 }
 
-int ZFlyEmDataBundle::countNeuronByClass(const string &className) const
+int ZFlyEmDataBundle::countNeuronByType(const string &className) const
 {
   int count = 0;
 
   for (std::vector<ZFlyEmNeuron>::const_iterator iter = getNeuronArray().begin();
        iter != getNeuronArray().end(); ++iter) {
     if (className == "?") {
-      if (iter->getClass().empty()) {
+      if (iter->getType().empty()) {
         ++count;
       }
     } else {
-      if (iter->getClass() == className) {
+      if (iter->getType() == className) {
         ++count;
       }
     }
@@ -388,7 +391,7 @@ string ZFlyEmDataBundle::toDetailString() const
   //stream << m_neuronArray.size() << " neurons" << endl;
   stream << "Details: " << endl;
   stream << "  " << countClass() << " types" << endl;
-  stream << "  " << countNeuronByClass("?") << " unknown types"
+  stream << "  " << countNeuronByType("?") << " unknown types"
          << endl;
   if (getSynapseAnnotation() != NULL) {
     stream << "  " << getSynapseAnnotation()->getTBarNumber() << " TBars" << endl;
@@ -780,9 +783,9 @@ std::map<string, int> ZFlyEmDataBundle::getClassIdMap() const
   const std::vector<ZFlyEmNeuron> &neuronArray = getNeuronArray();
   for (std::vector<ZFlyEmNeuron>::const_iterator iter = neuronArray.begin();
        iter != neuronArray.end(); ++iter) {
-    if (classMap.count(iter->getClass()) == 0) {
+    if (classMap.count(iter->getType()) == 0) {
       int newClassId = classMap.size() + 1;
-      classMap[iter->getClass()] = newClassId;
+      classMap[iter->getType()] = newClassId;
     }
   }
 
@@ -890,7 +893,7 @@ void ZFlyEmDataBundle::uploadAnnotation(const ZDvidTarget &dvidTarget) const
     for (ZFlyEmNeuronArray::const_iterator iter = m_neuronArray.begin();
          iter != m_neuronArray.end(); ++iter) {
       const ZFlyEmNeuron &neuron = *iter;
-      if (!neuron.getName().empty() || !neuron.getClass().empty()) {
+      if (!neuron.getName().empty() || !neuron.getType().empty()) {
         writer.writeAnnotation(neuron);
       }
     }

@@ -121,6 +121,21 @@ ZStackObjectRole::TRole ZDocPlayerList::removePlayer(
   return roleObj.getRole();
 }
 
+ZStackObjectRole::TRole ZDocPlayerList::removeAll()
+{
+  ZStackObjectRole roleObj;
+  ZDocPlayerList::iterator iter = begin();
+  while (iter != end()) {
+    ZDocPlayer *player = *iter;
+    roleObj.addRole(player->getRole());
+    delete player;
+    ++iter;
+  }
+  clear();
+
+  return roleObj.getRole();
+}
+
 QList<ZDocPlayer*> ZDocPlayerList::getPlayerList(ZStackObjectRole::TRole role)
 {
   QList<ZDocPlayer*> playerList;
@@ -387,7 +402,7 @@ Z3DGraph ZObject3dPlayer::get3DGraph() const
 
   const ZObject3d *obj = getCompleteData();
   if (obj != NULL) {
-    graph.importObject3d(*obj, 1.0, 3);
+    graph.importObject3d(*obj, 1.0);
   }
 
   return graph;

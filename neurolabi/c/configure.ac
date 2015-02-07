@@ -37,7 +37,7 @@ if test "$disable_xml" = "no"; then
 fi
 
 AC_ARG_ENABLE(png, [AC_HELP_STRING([--disable-png], [disable png])],
-    disable_png=$enablval, disable_png=no)
+    disable_png=$enablval, disable_png=yes)
 if test "$disable_png" = "no"; then
   AC_CHECK_LIB(png, png_read_image)
 fi

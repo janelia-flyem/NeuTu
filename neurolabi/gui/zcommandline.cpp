@@ -393,7 +393,7 @@ int ZCommandLine::runComputeFlyEmNeuronFeature()
     const ZFlyEmNeuron &neuron = *iter;
     featureAnalyzer.computeFeatureSet(neuron, featureSet);
     stream << "\"" << neuron.getId() << "\"," << "\""
-           << neuron.getClass() << "\"";
+           << neuron.getType() << "\"";
     for (size_t i = 0; i < featureSet.size(); ++i) {
       stream << "," << featureSet[i].getValue();
     }

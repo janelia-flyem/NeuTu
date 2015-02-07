@@ -1,6 +1,6 @@
 #include <string.h>
-#include <utilities.h>
 #include <math.h>
+#include "tz_utilities.h"
 #include "tz_math.h"
 #include "tz_workspace.h"
 #include "tz_stack_io.h"

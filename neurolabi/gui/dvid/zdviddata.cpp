@@ -85,3 +85,21 @@ std::string ZDvidData::getName(ERole role, const std::string &prefix)
 
   return prefix + "_" + ZDvidData::getName(role);
 }
+
+std::string ZDvidData::getName(
+    ZDvidData::ERole role, ZDvidData::ERole prefixRole,
+    const std::string &prefixName)
+{
+
+  std::string prefix = "";
+  if (!isStandardName(prefixRole, prefixName)) {
+    prefix = prefixName;
+  }
+
+  return getName(role, prefix);
+}
+
+bool ZDvidData::isStandardName(ERole role, const std::string &name)
+{
+  return ZDvidData::getName(role) == name;
+}

@@ -17,7 +17,7 @@
 #    define HAVE_INLINE
 #  endif
 #endif
-#include <utilities.h>
+#include "tz_utilities.h"
 #include "tz_error.h"
 #include "tz_darray.h"
 #include "tz_gsl_linalg.h"

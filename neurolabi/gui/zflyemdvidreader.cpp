@@ -7,7 +7,8 @@ ZObject3dScan ZFlyEmDvidReader::readCoarseBody(int bodyId)
 {
   ZDvidBufferReader reader;
   ZDvidUrl dvidUrl(m_dvidTarget);
-  reader.read(dvidUrl.getCoarseSparsevolUrl(bodyId).c_str());
+  reader.read(dvidUrl.getCoarseSparsevolUrl(
+                bodyId, m_dvidTarget.getBodyLabelName()).c_str());
 
   ZObject3dScan obj;
   obj.importDvidObjectBuffer(

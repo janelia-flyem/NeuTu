@@ -4,7 +4,6 @@
  */
 
 #include <math.h>
-#include <utilities.h>
 
 #include "tz_cdefs.h"
 #ifdef HAVE_LIBGSL

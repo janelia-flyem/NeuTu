@@ -13,6 +13,15 @@
 
 __BEGIN_DECLS
 
+//Redefine genelib function names to avoid name conflict
+
+#define Mylib_Guarded_Malloc Guarded_Malloc
+#define Mylib_Guarded_Realloc Guarded_Realloc
+#define Mylib_Guarded_Strdup Guarded_Strdup
+#define Mylib_Guarded_Fopen Guarded_Fopen
+#define Mylib_Process_Arguments Guarded_Process_Arguments
+#define Mylib_Program_Name Guarded_Program_Name
+
 #include <utilities.h>
 
 typedef uint8_t tz_uint8;

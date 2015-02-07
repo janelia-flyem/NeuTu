@@ -126,7 +126,7 @@ void ZFlyEmNeuronArray::importFromDataBundle(const std::string &filePath)
           ZFlyEmNeuron neuron;
           neuron.setId(bodyId);
           if (bodyObj.hasKey("class")) {
-            neuron.setClass(ZJsonParser::stringValue(bodyObj["class"]));
+            neuron.setType(ZJsonParser::stringValue(bodyObj["class"]));
           }
           push_back(neuron);
         }
@@ -158,7 +158,7 @@ void ZFlyEmNeuronArray::assignClass(const std::string &filePath)
         for (ZFlyEmNeuronArray::iterator iter = begin(); iter != end(); ++iter) {
           ZFlyEmNeuron &neuron = *iter;
           if (idClassMap.count(neuron.getId()) > 0) {
-            neuron.setClass(idClassMap[neuron.getId()]);
+            neuron.setType(idClassMap[neuron.getId()]);
           }
         }
       }

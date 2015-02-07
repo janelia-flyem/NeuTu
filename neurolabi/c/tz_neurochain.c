@@ -5,10 +5,10 @@
 
 #include <stdlib.h>
 #include <math.h>
-#include <utilities.h>
 #include <regex.h>
 #include <string.h>
 #include <dirent.h>
+#include "tz_utilities.h"
 #include "tz_error.h"
 #include "tz_string.h"
 #include "tz_vrml_io.h"

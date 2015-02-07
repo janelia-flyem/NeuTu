@@ -70,19 +70,22 @@ public:
   }
 
 
-  inline void setClass(const std::string &c) {
-    m_class = c;
+  inline void setType(const std::string &c) {
+    m_type = c;
   }
 
-  inline std::string getClass() const {
-    return m_class;
+  inline const std::string& getType() const {
+    return m_type;
   }
+
+  std::string getClass() const;
+  std::string getSuperclass() const;
 
   /*!
    * \brief hasClass
    * \return true if the neuron has been assigned to a class
    */
-  bool hasClass() const;
+  bool hasType() const;
 
   void setId(const std::string &str);
 
@@ -263,7 +266,7 @@ private:
   int m_sourceId;
   int m_id;
   std::string m_name;
-  std::string m_class;
+  std::string m_type;
   std::string m_modelPath;
   std::string m_volumePath;
   std::string m_thumbnailPath;
@@ -287,7 +290,9 @@ private:
 
   static const char *m_idKey;
   static const char *m_nameKey;
+  static const char *m_typeKey;
   static const char *m_classKey;
+  static const char *m_superclassKey;
   static const char *m_modelKey;
   static const char *m_volumeKey;
   static const char *m_thumbnailKey;

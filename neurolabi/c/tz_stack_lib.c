@@ -11,7 +11,6 @@
 #include <strings.h>
 #endif
 #include <math.h>
-#include <utilities.h>
 #include "tz_image_lib.h"
 #include "tz_iimage_lib.h"
 #include "tz_utilities.h"

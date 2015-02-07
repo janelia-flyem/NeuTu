@@ -282,14 +282,14 @@ void FlyEmDataForm::updateSlaveQuery(const QModelIndex &index)
   if (frame != NULL) {
     if (m_neuronList->getColumnName(index.column()) == "Class") {
       const ZFlyEmNeuron *neuron = m_neuronList->getNeuron(index.row());
-      if (neuron->hasClass()) {
+      if (neuron->hasType()) {
         m_secondaryNeuronList->clear();
         ZFlyEmDataBundle *bundle = frame->getDataBundle();
         std::vector<ZFlyEmNeuron> &neuronArray = bundle->getNeuronArray();
         for (std::vector<ZFlyEmNeuron>::iterator iter = neuronArray.begin();
              iter != neuronArray.end(); ++iter) {
           ZFlyEmNeuron &buddyNeuron = *iter;
-          if (buddyNeuron.getClass() == neuron->getClass()) {
+          if (buddyNeuron.getType() == neuron->getType()) {
             m_secondaryNeuronList->append(&buddyNeuron);
           }
         }
@@ -311,7 +311,7 @@ void FlyEmDataForm::assignClass(const QModelIndex &index)
       const std::vector<const ZFlyEmNeuron*> &topMatch = neuron->getTopMatch();
       QString className = "";
       if (!topMatch.empty()) {
-        className = topMatch[0]->getClass().c_str();
+        className = topMatch[0]->getType().c_str();
       }
 
       //Popup dialog
@@ -320,7 +320,7 @@ void FlyEmDataForm::assignClass(const QModelIndex &index)
                                         tr("Class name:"), QLineEdit::Normal,
                                         className, &ok);
       if (ok) {
-        neuron->setClass(className.toStdString());
+        neuron->setType(className.toStdString());
         m_neuronList->notifyRowDataChanged(index.row());
       }
     }
@@ -529,7 +529,7 @@ void FlyEmDataForm::changeNeuronClass()
         if (m_neuronList->isNeuronKey(index)) {
           ZFlyEmNeuron *neuron = m_neuronList->getNeuron(index);
           if (neuron != NULL) {
-            neuron->setClass(className.toStdString());
+            neuron->setType(className.toStdString());
             m_neuronList->notifyRowDataChanged(index.row());
           }
         }

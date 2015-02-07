@@ -5,7 +5,7 @@
 
 #include <stdlib.h>
 #include <assert.h>
-#include <utilities.h>
+#include "tz_utilities.h"
 #include "tz_image_code.h"
 #include "tz_stack_code.h"
 #include "tz_stack_lib.h"

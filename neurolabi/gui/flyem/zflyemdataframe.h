@@ -208,7 +208,7 @@ public slots:
   void showNearbyNeuron(const ZFlyEmNeuron *neuron);
   void searchNeighborNeuron(const ZFlyEmNeuron *neuron);
 
-  void updateClassPrediction();
+  void updateTypePrediction();
   void updateSearchResult();
   void updateQualityControl();
 

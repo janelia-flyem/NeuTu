@@ -115,6 +115,8 @@ public:
    */
   ZStackObjectRole::TRole removePlayer(ZStackObjectRole::TRole role);
 
+  ZStackObjectRole::TRole removeAll();
+
   /*!
    * \brief Get all players with specific roles
    */

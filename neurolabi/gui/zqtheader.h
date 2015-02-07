@@ -2,29 +2,55 @@
 #define ZQTHEADER_H
 
 #ifndef _QT_GUI_USED_
-class QObject {
-  QObject(QObject *parent = 0x0) {}
+
+class ZQObject {
+  ZQObject(ZQObject *parent = 0x0) {}
 };
-class QImage {};
-class QPainter{};
-class QPoint {
+#define QObject ZObject
+
+class ZQImage {};
+#define QImage ZQImage
+
+class ZQPainter{};
+#define QPainter ZQPainter
+
+class ZQPoint {
 public:
-  QPoint() {}
-  QPoint(int, int) {}
+  ZQPoint() {}
+  ZQPoint(int, int) {}
 };
-class QPointF {
+#define QPoint ZQPoint
+
+class ZQPointF {
 public:
-  QPointF() {}
-  QPointF(double, double) {}
+  ZQPointF() {}
+  ZQPointF(double, double) {}
 };
-class QPaintDevice{};
-class QString{};
-class QStringList{};
-class QList{};
-class QColor{};
-class QRectF{};
-class QRect{};
-typedef double qreal;
+#define QPointF ZQPointF
+
+class ZQPaintDevice{};
+#define QPaintDevice ZQPaintDevice
+
+class ZQString{};
+#define QString ZQString
+
+class ZQStringList{};
+#define QStringList ZQStringList
+
+class ZQList{};
+#define QList ZQList
+
+class ZQColor{};
+#define QColor ZQColor
+
+class ZQRectF{};
+#define QRectF ZQRectF
+
+class ZQRect{};
+#define QRect ZQRect
+
+typedef double Zqreal;
+#define qreal Zqreal
 #else
 #include <QObject>
 #include <QColor>

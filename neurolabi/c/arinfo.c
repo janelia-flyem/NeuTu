@@ -5,7 +5,6 @@
 
 #include <stdio.h>
 #include <sys/stat.h>
-#include <utilities.h>
 #include "tz_utilities.h"
 
 int main(int argc, char *argv[])

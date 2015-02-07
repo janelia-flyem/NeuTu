@@ -310,7 +310,7 @@ void ShapePaperDialog::on_predictPushButton_clicked()
 
     const ZFlyEmNeuron *neuron1 = m_frame->getNeuronFromIndex(neuronIndex);
     const ZFlyEmNeuron *neuron2 = m_frame->getNeuronFromIndex(matchedIndex);
-    if (neuron1->getClass() == neuron2->getClass()) {
+    if (neuron1->getType() == neuron2->getType()) {
       ++correctNumber;
     } else {
       /*
@@ -456,7 +456,7 @@ void ShapePaperDialog::predictFromOrtAdjustment()
 
     const ZFlyEmNeuron *neuron1 = m_frame->getNeuronFromIndex(neuronIndex);
     const ZFlyEmNeuron *neuron2 = m_frame->getNeuronFromIndex(matchedIndex);
-    if (neuron1->getClass() == neuron2->getClass()) {
+    if (neuron1->getType() == neuron2->getType()) {
       ++correctNumber;
     } else {
       /*
@@ -585,7 +585,7 @@ void ShapePaperDialog::exportClassLabel()
          iter != neuronArray->end(); ++iter) {
       //get class label
       const ZFlyEmNeuron neuron = *iter;
-      int id = classIdMap[neuron.getClass()];
+      int id = classIdMap[neuron.getType()];
       idArray.push_back(id);
     }
 
@@ -617,7 +617,7 @@ void ShapePaperDialog::exportNeuronInfo()
 
       ZJsonObject neuronObj;
       neuronObj.setEntry("index", index);
-      neuronObj.setEntry("class", classIdMap[neuron.getClass()]);
+      neuronObj.setEntry("class", classIdMap[neuron.getType()]);
       neuronObj.setEntry("id", neuron.getId());
       neuronObj.setEntry("name", neuron.getName());
       neuronObj.setEntry("path", neuron.getModelPath());

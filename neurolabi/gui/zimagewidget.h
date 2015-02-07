@@ -41,7 +41,7 @@ public:
   void setViewPortOffset(int x, int y);
   void moveViewPort(int x, int y);
   void setZoomRatio(int zoomRatio);
-  inline int zoomRatio() const { return m_zoomRatio; }
+  //inline int zoomRatio() const { return m_zoomRatio; }
   void increaseZoomRatio();
   void decreaseZoomRatio();
   void zoom(int zoomRatio);
@@ -112,6 +112,7 @@ public:
   virtual void mousePressEvent(QMouseEvent *event);
   virtual void mouseDoubleClickEvent(QMouseEvent *event);
   virtual void wheelEvent(QWheelEvent *event);
+  virtual void resizeEvent(QResizeEvent *event);
 
 public slots:
   void updateView();
@@ -127,11 +128,14 @@ protected:
   int getMaxZoomRatio() const;
 
 private:
+  void setValidViewPort(const QRect &viewPort);
+
+private:
   QImage *m_image;
   QVector<QImage*> m_mask;
   QRect m_viewPort; /* viewport */
   QRect m_projRegion; /* projection region */
-  int m_zoomRatio;
+  //int m_zoomRatio;
   bool m_isowner;
   QMenu *m_leftButtonMenu;
   QMenu *m_rightButtonMenu;
