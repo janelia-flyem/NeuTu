@@ -13,6 +13,7 @@
 #include <QInputDialog>
 #include <QApplication>
 #include <QtConcurrentRun>
+#include <QMutexLocker>
 
 #include "QsLog.h"
 
@@ -2816,6 +2817,8 @@ void ZStackDoc::removeLastObject(bool deleteObject)
 
 void ZStackDoc::removeAllObject(bool deleteObject)
 {
+  QMutexLocker locker(&m_mutex);
+
   m_objectGroup.removeAllObject(deleteObject);
   m_playerList.removeAll();
   /*
@@ -2828,6 +2831,8 @@ void ZStackDoc::removeAllObject(bool deleteObject)
 
 void ZStackDoc::removeSmallLocsegChain(double thre)
 {
+  QMutexLocker locker(&m_mutex);
+
   QList<ZLocsegChain*> chainList = getLocsegChainList();
   QMutableListIterator<ZLocsegChain*> chainIter(chainList);
   while (chainIter.hasNext()) {
@@ -2851,6 +2856,8 @@ ZSwcTree* ZStackDoc::getSwcTree(size_t index)
 ZStackObjectRole::TRole ZStackDoc::removeObject(
     ZStackObject *obj, bool deleteObject)
 {
+  QMutexLocker locker(&m_mutex);
+
   ZStackObjectRole::TRole role = m_playerList.removePlayer(obj);
   m_objectGroup.removeObject(obj, deleteObject);
 
@@ -2862,6 +2869,7 @@ ZStackObjectRole::TRole ZStackDoc::removeObject(
 
 void ZStackDoc::removeObject(ZStackObjectRole::TRole role, bool deleteObject)
 {
+  QMutexLocker locker(&m_mutex);
   std::set<ZStackObject*> removeSet;
   for (ZDocPlayerList::iterator iter = m_playerList.begin();
        iter != m_playerList.end(); /*++iter*/) {
@@ -2891,6 +2899,8 @@ void ZStackDoc::removeObject(ZStackObjectRole::TRole role, bool deleteObject)
 
 std::set<ZSwcTree *> ZStackDoc::removeEmptySwcTree(bool deleteObject)
 { 
+  QMutexLocker locker(&m_mutex);
+
   std::set<ZSwcTree *> emptyTreeSet;
 
   TStackObjectList objSet = m_objectGroup.take(ZStackObject::isEmptyTree);
@@ -2934,6 +2944,8 @@ std::set<ZSwcTree*> ZStackDoc::getEmptySwcTreeSet() const
 
 void ZStackDoc::removeAllSwcTree(bool deleteObject)
 {
+  QMutexLocker locker(&m_mutex);
+
   if (m_objectGroup.removeObject(ZStackObject::TYPE_SWC, deleteObject)) {
     notifySwcModified();
   }
@@ -2956,6 +2968,8 @@ void ZStackDoc::removeAllSwcTree(bool deleteObject)
 
 void ZStackDoc::removeSelectedObject(bool deleteObject)
 {
+  QMutexLocker locker(&m_mutex);
+
   m_objectGroup.removeSelected(deleteObject);
 
 #if 0
@@ -3013,6 +3027,8 @@ void ZStackDoc::removeSelectedPuncta(bool deleteObject)
     }
   }
   */
+
+  QMutexLocker locker(&m_mutex);
 
   if (m_objectGroup.removeSelected(ZStackObject::TYPE_PUNCTUM, deleteObject)) {
     notifyPunctumModified();
@@ -6140,54 +6156,10 @@ bool ZStackDoc::executeAddSwcNodeCommand(const ZPoint &center, double radius)
   return false;
 }
 
-/*
-bool ZStackDoc::executeAddStrokeCommand(ZStroke2d *stroke)
-{
-  if (stroke != NULL) {
-    QUndoCommand *command =
-        new ZStackDocCommand::StrokeEdit::AddStroke(this, stroke);
-    if (!stroke->isEmpty()) {
-      pushUndoCommand(command);
-      return true;
-    } else {
-      delete command;
-    }
-  }
-
-  return false;
-}
-
-bool ZStackDoc::executeAddStrokeCommand(const QList<ZStroke2d*> &strokeList)
-{
-  bool succ = false;
-  QString message;
-  if (!strokeList.isEmpty()) {
-    QUndoCommand *allCommand =
-        new ZStackDocCommand::StrokeEdit::CompositeCommand(this);
-
-    foreach (ZStroke2d* stroke, strokeList) {
-      if (stroke != NULL) {
-        new ZStackDocCommand::StrokeEdit::AddStroke(this, stroke, allCommand);
-      }
-    }
-
-    if (allCommand->childCount() > 0) {
-      pushUndoCommand(allCommand);
-      message = QString("%1 stroke(s) added").arg(allCommand->childCount());
-      succ = true;
-    } else {
-      delete allCommand;
-    }
-  }
-
-  emit statusMessageUpdated(message);
-
-  return succ;
-}
-*/
-
 void ZStackDoc::addObject(ZStackObject *obj, bool uniqueSource)
 {
+  QMutexLocker locker(&m_mutex);
+
   if (obj == NULL) {
     return;
   }

@@ -34,7 +34,7 @@
     <rect>
      <x>10</x>
      <y>10</y>
-     <width>491</width>
+     <width>498</width>
      <height>661</height>
     </rect>
    </property>
@@ -234,7 +234,7 @@
              <number>64</number>
             </property>
             <property name="maximum">
-             <number>512</number>
+             <number>2048</number>
             </property>
             <property name="value">
              <number>512</number>
@@ -254,7 +254,7 @@
              <number>64</number>
             </property>
             <property name="maximum">
-             <number>512</number>
+             <number>2048</number>
             </property>
             <property name="value">
              <number>512</number>

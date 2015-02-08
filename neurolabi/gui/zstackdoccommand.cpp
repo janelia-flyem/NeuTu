@@ -1914,6 +1914,7 @@ ZStackDocCommand::ObjectEdit::AddObject::~AddObject()
 
 void ZStackDocCommand::ObjectEdit::AddObject::redo()
 {
+  //backup old objects
   if (m_uniqueSource) {
     m_uniqueObjectList = m_doc->getObjectGroup().takeSameSource(
           m_obj->getType(), m_obj->getSource());

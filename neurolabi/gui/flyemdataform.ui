@@ -173,7 +173,7 @@
          </sizepolicy>
         </property>
         <property name="text">
-         <string>Process output</string>
+         <string>Message</string>
         </property>
        </widget>
       </item>
@@ -208,7 +208,7 @@
            <item>
             <widget class="QLabel" name="label_3">
              <property name="text">
-              <string>Query output                                                    </string>
+              <string>Query result                                                   </string>
              </property>
             </widget>
            </item>

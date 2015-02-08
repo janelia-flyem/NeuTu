@@ -280,7 +280,7 @@ void FlyEmDataForm::updateSlaveQuery(const QModelIndex &index)
 {
   ZFlyEmDataFrame *frame = getParentFrame();
   if (frame != NULL) {
-    if (m_neuronList->getColumnName(index.column()) == "Class") {
+    if (m_neuronList->getColumnName(index.column()) == "Type") {
       const ZFlyEmNeuron *neuron = m_neuronList->getNeuron(index.row());
       if (neuron->hasType()) {
         m_secondaryNeuronList->clear();
@@ -293,6 +293,13 @@ void FlyEmDataForm::updateSlaveQuery(const QModelIndex &index)
             m_secondaryNeuronList->append(&buddyNeuron);
           }
         }
+      }
+    } else {
+      QVector<const ZFlyEmNeuron*> neuronArray =
+          m_neuronList->getNeuronArray(index);
+      m_secondaryNeuronList->clear();
+      foreach (const ZFlyEmNeuron *neuron, neuronArray) {
+        m_secondaryNeuronList->append(neuron);
       }
     }
   }

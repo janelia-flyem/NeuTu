@@ -21,6 +21,7 @@
 #include <QMenu>
 #include <QPair>
 #include <QMap>
+#include <QMutex>
 
 #include "neutube.h"
 #include "zcurve.h"
@@ -1013,6 +1014,8 @@ private:
 
   bool m_selectionSilent;
   bool m_isReadyForPaint;
+
+  QMutex m_mutex;
 
 protected:
   ZObjectColorScheme m_objColorSheme;

@@ -130,7 +130,7 @@ QVariant ZFlyEmNeuronInfoPresenter::data(
 ZFlyEmNeuronFeaturePresenter::ZFlyEmNeuronFeaturePresenter(QObject *parent) :
   ZFlyEmNeuronPresenter(parent)
 {
-  m_fieldList << "ID" << "Class" << "Length" << "#Branch" << "#TBar" << "#PSD"
+  m_fieldList << "ID" << "Type" << "Length" << "#Branch" << "#TBar" << "#PSD"
               << "X" << "Y";
 }
 
@@ -295,10 +295,20 @@ QVector<const ZFlyEmNeuron*> ZFlyEmNeuronConnectionPresenter::getNeuronArray(
     }
     break;
   case 3:
-    neuronArray.append(neuron.getStrongestInput());
+  {
+    const ZFlyEmNeuron *target = neuron.getStrongestInput();
+    if (target != NULL) {
+      neuronArray.append(target);
+    }
+  }
     break;
   case 4:
-    neuronArray.append(neuron.getStrongestOutput());
+  {
+    const ZFlyEmNeuron *target = neuron.getStrongestOutput();
+    if (target != NULL) {
+      neuronArray.append(target);
+    }
+  }
     break;
   default:
     break;

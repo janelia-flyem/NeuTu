@@ -9,7 +9,8 @@
 Z3DCameraParameter::Z3DCameraParameter(const QString &name, const Z3DCamera &value, QObject *parent)
   : ZSingleValueParameter<Z3DCamera>(name, value, parent)
   , m_projectionType("Projection Type")
-  , m_eye("Eye Position", m_value.getEye(), glm::vec3(-std::numeric_limits<float>::max()),
+  , m_eye("Eye Position", m_value.getEye(),
+          glm::vec3(-std::numeric_limits<float>::max()),
           glm::vec3(std::numeric_limits<float>::max()))
   , m_center("Center Position", m_value.getCenter(), glm::vec3(-std::numeric_limits<float>::max()),
              glm::vec3(std::numeric_limits<float>::max()))
@@ -27,20 +28,22 @@ Z3DCameraParameter::Z3DCameraParameter(const QString &name, const Z3DCamera &val
     m_projectionType.select("Orthographic");
   connect(&m_projectionType, SIGNAL(valueChanged()), this, SLOT(updateProjectionType()));
 
-  m_eye.setSingleStep(1e-10);
-  m_eye.setDecimal(10);
+//  static const double step = 0.5;
+//  static const int decimal = 1;
+  m_eye.setSingleStep(1.0);
+  m_eye.setDecimal(1);
   //m_eye.setWidgetOrientation(Qt::Horizontal);
   m_eye.setStyle("SPINBOX");
   connect(&m_eye, SIGNAL(valueChanged()), this, SLOT(updateEye()));
 
-  m_center.setSingleStep(1e-10);
-  m_center.setDecimal(10);
+  m_center.setSingleStep(1.0);
+  m_center.setDecimal(1);
   //m_center.setWidgetOrientation(Qt::Horizontal);
   m_center.setStyle("SPINBOX");
   connect(&m_center, SIGNAL(valueChanged()), this, SLOT(updateCenter()));
 
-  m_upVector.setSingleStep(1e-10);
-  m_upVector.setDecimal(10);
+  m_upVector.setSingleStep(0.01);
+  m_upVector.setDecimal(2);
   m_upVector.setStyle("SPINBOX");
   connect(&m_upVector, SIGNAL(valueChanged()), this, SLOT(updateUpVector()));
 
@@ -52,14 +55,14 @@ Z3DCameraParameter::Z3DCameraParameter(const QString &name, const Z3DCamera &val
   m_fieldOfView.setDecimal(1);
   connect(&m_fieldOfView, SIGNAL(valueChanged()), this, SLOT(updateFieldOfView()));
 
-  m_nearDist.setSingleStep(1e-10);
-  m_nearDist.setDecimal(10);
+  m_nearDist.setSingleStep(1.0);
+  m_nearDist.setDecimal(1);
   m_nearDist.setStyle("SPINBOX");
-  m_nearDist.setRange(1e-10, m_value.getFarDist());
+  m_nearDist.setRange(1.0, m_value.getFarDist());
   connect(&m_nearDist, SIGNAL(valueChanged()), this, SLOT(updateNearDist()));
 
-  m_farDist.setSingleStep(1e-10);
-  m_farDist.setDecimal(10);
+  m_farDist.setSingleStep(1.0);
+  m_farDist.setDecimal(1);
   m_farDist.setStyle("SPINBOX");
   m_farDist.setRange(m_value.getNearDist(), std::numeric_limits<float>::max());
   connect(&m_farDist, SIGNAL(valueChanged()), this, SLOT(updateFarDist()));

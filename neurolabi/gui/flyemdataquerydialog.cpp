@@ -46,11 +46,8 @@ bool FlyEmDataQueryDialog::usingRegularExpression() const
 
 void FlyEmDataQueryDialog::updateWidget(const QString &text)
 {
-  if (text.toLower() != "class") {
-    ui->regexpCheckBox->setVisible(false);
-  } else {
-    ui->regexpCheckBox->setVisible(true);
-  }
+  ui->regexpCheckBox->setVisible(text.toLower() == "type" ||
+                                 text.toLower() == "name");
 
   if (text.toLower() == "all") {
     ui->sourceLineEdit->setEnabled(false);

@@ -346,7 +346,7 @@ int ZFlyEmDataFrame::updateQuery(
       case ID:
         //stream << id << ": \"" << neuron->getName() << "\"" << endl;
         //break;
-      case CLASS:
+      case TYPE:
       case SUMMARY:
       case FEATURE:
       case CONNECTION:
@@ -397,7 +397,7 @@ void ZFlyEmDataFrame::updateSource(
   std::transform(source.begin(), source.end(), source.begin(), ::tolower);
   if (usingRegexp) {
     QRegExp regexp(sourceValue.c_str());
-    if (source == "class") {
+    if (source == "type") {
       int bundleIndex = 0;
       foreach (ZFlyEmDataBundle *data, m_dataArray) {
         for (vector<ZFlyEmNeuron>::const_iterator neuronIter =
@@ -406,6 +406,21 @@ void ZFlyEmDataFrame::updateSource(
              ++neuronIter) {
           if (!neuronIter->getType().empty()) {
             if (regexp.exactMatch(neuronIter->getType().c_str())) {
+              m_sourceIdArray.push_back(pair<int, int>(neuronIter->getId(),
+                                                       bundleIndex));
+            }
+          }
+        }
+      }
+    } else if (source == "name") {
+      int bundleIndex = 0;
+      foreach (ZFlyEmDataBundle *data, m_dataArray) {
+        for (vector<ZFlyEmNeuron>::const_iterator neuronIter =
+             data->getNeuronArray().begin();
+             neuronIter != data->getNeuronArray().end();
+             ++neuronIter) {
+          if (!neuronIter->getName().empty()) {
+            if (regexp.exactMatch(neuronIter->getName().c_str())) {
               m_sourceIdArray.push_back(pair<int, int>(neuronIter->getId(),
                                                        bundleIndex));
             }
@@ -455,7 +470,7 @@ void ZFlyEmDataFrame::updateSource(
           ++bundleIndex;
         }
       }
-    } else if (source == "class") {
+    } else if (source == "type") {
       vector<string> queryWordArray = queryString.toWordArray(", =>;:\n");
       vector<string>::const_iterator nameIter = queryWordArray.begin();
       for (; nameIter != queryWordArray.end(); ++nameIter) {
@@ -531,8 +546,8 @@ void ZFlyEmDataFrame::parseQuery(
     m_target = SUMMARY;
   } else if (target == "connection") {
     m_target = CONNECTION;
-  } else if (target == "class") {
-    m_target = CLASS;
+  } else if (target == "type") {
+    m_target = TYPE;
   } else if (target == "feature") {
     m_target = FEATURE;
   } else if (target == "volume") {
@@ -586,7 +601,7 @@ void ZFlyEmDataFrame::query()
     case ID:
     case SUMMARY:
     case CONNECTION:
-    case CLASS:
+    case TYPE:
     case FEATURE:
     case VOLUME:
     case TOP_MATCH:
@@ -1359,7 +1374,7 @@ void ZFlyEmDataFrame::query() const
           }
         }
       }
-    } else if (source == "class") {
+    } else if (source == "type") {
       vector<string>::const_iterator nameIter = queryWordArray.begin();
       ++nameIter;
       ++nameIter;
@@ -1515,7 +1530,7 @@ void ZFlyEmDataFrame::process() const
           }
         }
       }
-    } else if (source == "class") {
+    } else if (source == "type") {
       vector<string>::const_iterator nameIter = queryWordArray.begin();
       ++nameIter;
       ++nameIter;

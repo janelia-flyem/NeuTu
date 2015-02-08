@@ -259,10 +259,11 @@ bool ZFlyEmDataBundle::loadJsonFile(const std::string &filePath)
 
     m_neuronArray.resize(neuronJsonArray.size());
     for (size_t i = 0; i < neuronJsonArray.size(); ++i) {
+      ZFlyEmNeuron &neuron = m_neuronArray[i];
       ZJsonObject neuronJson(neuronJsonArray.at(i), false);
-      m_neuronArray[i].loadJsonObject(neuronJson, getSource());
-      m_neuronArray[i].setSynapseAnnotation(getSynapseAnnotation());
-      m_neuronArray[i].setSynapseScale(m_synapseScale);
+      neuron.loadJsonObject(neuronJson, getSource());
+      neuron.setSynapseAnnotation(getSynapseAnnotation());
+      neuron.setSynapseScale(m_synapseScale);
     }
 
 

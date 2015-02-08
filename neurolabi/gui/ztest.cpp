@@ -14881,7 +14881,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   FILE *fp = fopen((GET_DATA_DIR +
                    "/flyem/AL/glomeruli/labeled_synapse_confidence.txt").c_str(), "r");
 
@@ -14908,6 +14908,16 @@ void ZTest::test(MainWindow *host)
     int label = labelArray[i];
     ZPoint pt = synapseGroup[label].computeCenter();
     std::cout << label << ": " << pt.toIntPoint().toString() << std::endl;
+  }
+#endif
+
+#if 0
+  if (host != NULL) {
+    ZStackFrame *frame = host->currentStackFrame();
+    if (frame != NULL) {
+      frame->view()->setSizeHintOption(NeuTube::SIZE_HINT_TAKING_SPACE);
+      frame->resize(frame->sizeHint());
+    }
   }
 #endif
 }

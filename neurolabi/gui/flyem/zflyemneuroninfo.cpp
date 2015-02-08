@@ -30,7 +30,7 @@ std::string ZFlyEmNeuronInfo::GetSuperclassFromType(const std::string &type)
 
   std::string className = GetClassFromType(type);
 
-  if (m_classSuperMap.count(className) > 0) {
+  if (m_classSuperMap.count(className) == 0) {
     return "";
   }
 
