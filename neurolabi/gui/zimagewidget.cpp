@@ -352,14 +352,20 @@ void ZImageWidget::increaseZoomRatio()
 
 void ZImageWidget::decreaseZoomRatio()
 {
+  int oldWidth = m_viewPort.width();
+  int oldHeight = m_viewPort.height();
+
   int zoomRatio = imax2(
         iround(static_cast<double>(canvasSize().width()) /m_viewPort.width()),
         iround(static_cast<double>(canvasSize().height()) / m_viewPort.height())
         );
 
   if (zoomRatio > 1) {
-    zoomRatio -= 1;
-    zoom(zoomRatio);
+    zoom(--zoomRatio);
+    if (m_viewPort.width() == oldWidth && m_viewPort.height() == oldHeight) {
+      zoom(--zoomRatio);
+    }
+
     update();
   }
 
