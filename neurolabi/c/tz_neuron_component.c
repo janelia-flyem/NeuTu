@@ -5,7 +5,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <utilities.h>
+#include "tz_utilities.h"
 #include "tz_error.h"
 #include "tz_neuron_component.h"
 #include "tz_locseg_chain.h"

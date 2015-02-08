@@ -491,10 +491,12 @@ void ZStackPresenter::updateView() const
   buddyView()->redraw();
 }
 
+/*
 int ZStackPresenter::zoomRatio() const
 {
   return buddyView()->imageWidget()->zoomRatio();
 }
+*/
 
 bool ZStackPresenter::hasObjectToShow() const
 {
@@ -623,18 +625,18 @@ void ZStackPresenter::moveViewPort(int dx, int dy)
 
 void ZStackPresenter::moveViewPortTo(int x, int y)
 {
-  buddyView()->imageWidget()->setViewPortOffset(x, y);
+  buddyView()->setViewPortOffset(x, y);
   buddyView()->updateImageScreen();
 }
 
 void ZStackPresenter::increaseZoomRatio()
 {
-  buddyView()->imageWidget()->increaseZoomRatio();
+  buddyView()->increaseZoomRatio();
 }
 
 void ZStackPresenter::decreaseZoomRatio()
 {
-  buddyView()->imageWidget()->decreaseZoomRatio();
+  buddyView()->decreaseZoomRatio();
   //buddyView()->updateImageScreen();
   /*
   m_interactiveContext.setView(buddyView()->imageWidget()->projectRegion(),
@@ -2135,7 +2137,8 @@ void ZStackPresenter::process(const ZStackOperator &op)
   }
     break;
   case ZStackOperator::OP_START_MOVE_IMAGE:
-    if (buddyView()->imageWidget()->zoomRatio() > 1) {
+    //if (buddyView()->imageWidget()->zoomRatio() > 1) {
+    if (buddyView()->isImageMovable()) {
       this->interactiveContext().backupExploreMode();
       this->interactiveContext().
           setExploreMode(ZInteractiveContext::EXPLORE_MOVE_IMAGE);

@@ -73,7 +73,8 @@ void ZDvidWriter::writeSwc(int bodyId, ZSwcTree *tree)
 
     ZDvidUrl dvidUrl(m_dvidTarget);
     QString command = QString("curl -X POST %1 --data-binary @%2").
-        arg(dvidUrl.getSkeletonUrl(bodyId).c_str()).arg(tmpPath);
+        arg(dvidUrl.getSkeletonUrl(
+              bodyId, m_dvidTarget.getBodyLabelName()).c_str()).arg(tmpPath);
     /*
     QString command = QString(
           "curl -X POST %1/api/node/%2/skeletons/%3.swc"
@@ -98,7 +99,8 @@ void ZDvidWriter::writeThumbnail(int bodyId, ZStack *stack)
     ZDvidUrl dvidUrl(m_dvidTarget);
 
     QString command = QString("curl -X POST %1 --data-binary @%2").
-        arg(dvidUrl.getThumbnailUrl(bodyId).c_str()).
+        arg(dvidUrl.getThumbnailUrl(
+              bodyId, m_dvidTarget.getBodyLabelName()).c_str()).
         arg(tmpPath);
 
     qDebug() << command;
@@ -136,7 +138,8 @@ void ZDvidWriter::writeAnnotation(int bodyId, const ZJsonObject &obj)
     QString command = QString(
           "curl -g -X POST -H \"Content-Type: application/json\" "
           "-d \"%1\" %2").arg(getJsonStringForCurl(obj).c_str()).
-        arg(ZDvidUrl(m_dvidTarget).getAnnotationUrl(bodyId).c_str());
+        arg(ZDvidUrl(m_dvidTarget).getAnnotationUrl(
+              bodyId, m_dvidTarget.getBodyLabelName()).c_str());
 
     qDebug() << command;
 

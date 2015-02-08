@@ -48,7 +48,8 @@ void ZIntParameter::changeRange()
   emit rangeChanged(m_min, m_max);
 }
 
-ZDoubleParameter::ZDoubleParameter(const QString &name, double value, double min, double max, QObject *parent)
+ZDoubleParameter::ZDoubleParameter(
+    const QString &name, double value, double min, double max, QObject *parent)
   : ZNumericParameter<double>(name, value, min, max, parent)
 {
   addStyle("SPINBOX");

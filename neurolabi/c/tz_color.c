@@ -6,7 +6,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include <utilities.h>
 #include "tz_color.h"
 #include "tz_error.h"
 #include "tz_utilities.h"

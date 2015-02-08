@@ -531,7 +531,7 @@ QString ZStackFrame::info() const
       arg(document()->getStack()->height()).
       arg(view()->imageWidget()->screenSize().width()).
       arg(view()->imageWidget()->screenSize().height());
-    info += QString("\n zoom ratio: %1").arg(presenter()->zoomRatio());
+    //info += QString("\n zoom ratio: %1").arg(presenter()->zoomRatio());
     //info += QString("\n") + document()->toString();
     info += QString("\n") + m_statusInfo;
     return info;

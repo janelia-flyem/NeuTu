@@ -5,8 +5,8 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <utilities.h>
 #include <math.h>
+#include "tz_utilities.h"
 #include "tz_error.h"
 #include "tz_constant.h"
 #include "tz_string.h"

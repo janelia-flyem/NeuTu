@@ -3,7 +3,7 @@
  * 05-Nov-2007 Initial write: Ting Zhao
  */
 
-#include <utilities.h>
+#include "tz_utilities.h"
 #include "tz_objdef.h"
 #include "tz_object_tmpl.h"
 

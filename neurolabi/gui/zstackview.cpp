@@ -1715,8 +1715,8 @@ QRect ZStackView::getViewPort(NeuTube::ECoordinateSystem coordSys) const
 {
   QRect rect = m_imageWidget->viewPort();
   if (coordSys == NeuTube::COORD_STACK) {
-    rect.moveCenter(QPoint(buddyDocument()->getStackOffset().getX(),
-                           buddyDocument()->getStackOffset().getY()));
+    rect.translate(QPoint(buddyDocument()->getStackOffset().getX(),
+                          buddyDocument()->getStackOffset().getY()));
   }
 
   return rect;
@@ -1733,6 +1733,12 @@ ZStackViewParam ZStackView::getViewParameter(
   return param;
 }
 
+void ZStackView::setViewPortOffset(int x, int y)
+{
+  imageWidget()->setViewPortOffset(x, y);
+  notifyViewChanged();
+}
+
 void ZStackView::setView(const ZStackViewParam &param)
 {
   switch (param.getCoordinateSystem()) {
@@ -1743,15 +1749,17 @@ void ZStackView::setView(const ZStackViewParam &param)
   case NeuTube::COORD_STACK:
   {
     QRect viewPort = param.getViewPort();
-    viewPort.moveCenter(QPoint(-buddyDocument()->getStackOffset().getX(),
-                               -buddyDocument()->getStackOffset().getY()));
-    //m_imageWidget->setViewPort(viewPort);
+    viewPort.translate(QPoint(-buddyDocument()->getStackOffset().getX(),
+                              -buddyDocument()->getStackOffset().getY()));
+    m_imageWidget->setViewPort(viewPort);
     setSliceIndex(param.getZ() - buddyDocument()->getStackOffset().getZ());
   }
     break;
   default:
     break;
   }
+
+  updateView();
 }
 
 void ZStackView::processDepthSliderValueChange(int /*sliceIndex*/)
@@ -1773,4 +1781,14 @@ void ZStackView::notifyViewChanged(const ZStackViewParam &param)
 #endif
 
   emit viewChanged(param);
+}
+
+bool ZStackView::isImageMovable() const
+{
+  return (imageWidget()->viewPort().top() != 0 ||
+      imageWidget()->viewPort().left() != 0 ||
+      imageWidget()->viewPort().bottom() !=
+      imageWidget()->canvasSize().height() - 1 ||
+      imageWidget()->viewPort().right() !=
+      imageWidget()->canvasSize().width() - 1);
 }

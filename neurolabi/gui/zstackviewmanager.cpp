@@ -37,6 +37,9 @@ void ZStackViewManager::registerWindowPair(
 {
   registerWindow(sender);
   registerWindow(receiver);
+
+  receiver->view()->setView(sender->view()->getViewParameter());
+
   registerWidgetPair(sender, receiver);
 }
 

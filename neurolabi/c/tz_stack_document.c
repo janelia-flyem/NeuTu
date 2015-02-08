@@ -1,5 +1,5 @@
 #include <string.h>
-#include <utilities.h>
+#include "tz_utilities.h"
 #include "tz_stack_document.h"
 #include "tz_image_io.h"
 #include "tz_file_list.h"

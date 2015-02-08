@@ -4,7 +4,7 @@
  */
 
 #include <stdlib.h>
-#include <utilities.h>
+#include "tz_utilities.h"
 #include "tz_stack_neighborhood.h"
 #include "tz_stack_watershed.h"
 #include "tz_iarray.h"

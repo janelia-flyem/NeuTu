@@ -5,7 +5,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <utilities.h>
+#include "tz_utilities.h"
 #include "tz_vrml_material.h"
 
 Vrml_Material* New_Vrml_Material()

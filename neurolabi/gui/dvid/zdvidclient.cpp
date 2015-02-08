@@ -94,7 +94,8 @@ bool ZDvidClient::postRequest(
     break;
   case ZDvidRequest::DVID_GET_SWC:
   case ZDvidRequest::DVID_UPLOAD_SWC:
-    urlString = dvidUrl.getSkeletonUrl(parameter.toInt()).c_str();
+    urlString = dvidUrl.getSkeletonUrl(
+          parameter.toInt(), m_dvidTarget.getBodyLabelName()).c_str();
     /*
     urlString = QString("%1/%2/skeletons/%3.swc").
         arg(m_serverAddress).arg(m_dataPath).

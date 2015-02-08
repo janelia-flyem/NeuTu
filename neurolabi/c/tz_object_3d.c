@@ -19,7 +19,6 @@
 #    define HAVE_INLINE
 #  endif
 #endif
-#include <utilities.h>
 #include "tz_utilities.h"
 #include "tz_stack_lib.h"
 //#include "tz_stack_bwdist.h"

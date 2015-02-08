@@ -1,8 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <utilities.h>
+
 #include "tz_intpair_map.h"
+#include "tz_utilities.h"
 
 Intpair_Map_Entry* New_Intpair_Map_Entry()
 {

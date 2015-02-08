@@ -44,7 +44,7 @@ public:
   ~ZFlyEmDataFrame();
   
   enum EDataForm {
-    ID, NAME, CLASS, MODEL, SUMMARY, CONNECTION, FEATURE, VOLUME, TOP_MATCH,
+    ID, NAME, TYPE, MODEL, SUMMARY, CONNECTION, FEATURE, VOLUME, TOP_MATCH,
     CONNECTION_MODEL, UNKNOWN_DATA_FORM
   };
 
@@ -208,7 +208,7 @@ public slots:
   void showNearbyNeuron(const ZFlyEmNeuron *neuron);
   void searchNeighborNeuron(const ZFlyEmNeuron *neuron);
 
-  void updateClassPrediction();
+  void updateTypePrediction();
   void updateSearchResult();
   void updateQualityControl();
 

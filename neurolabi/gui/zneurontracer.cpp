@@ -629,6 +629,20 @@ std::vector<Locseg_Chain*> ZNeuronTracer::screenChain(
   return goodChainArray;
 }
 
+ZSwcTree* ZNeuronTracer::trace(ZStack *stack, bool doResampleAfterTracing)
+{
+  ZSwcTree *tree = NULL;
+
+  if (stack != NULL) {
+    tree = trace(stack->c_stack(), doResampleAfterTracing);
+    if (tree != NULL) {
+      tree->translate(stack->getOffset());
+    }
+  }
+
+  return tree;
+}
+
 ZSwcTree* ZNeuronTracer::trace(Stack *stack, bool doResampleAfterTracing)
 {
   startProgress();

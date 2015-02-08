@@ -68,7 +68,7 @@ TEST(ZStackDoc, Player)
 
   doc.removeObject(ZStackObjectRole::ROLE_SEED, false);
   ASSERT_EQ(0, doc.getPlayerList().size());
-  ASSERT_EQ(2, doc.getObjectGroup().size());
+  ASSERT_EQ(1, doc.getObjectGroup().size());
 
   doc.removeAllObject(false);
   ASSERT_EQ(0, doc.getObjectGroup().size());
@@ -137,9 +137,10 @@ TEST(ZStackDoc, Player)
   obj2->append(1, 2, 3);
   obj2->append(4, 5, 6);
   obj2->setRole(ZStackObjectRole::ROLE_3DGRAPH_DECORATOR);
+  doc.addObject(obj2);
 
   Z3DGraph graph = doc.get3DGraphDecoration();
-  ASSERT_EQ(1, (int) graph.getNodeNumber());
+  ASSERT_EQ(2, (int) graph.getNodeNumber());
   ASSERT_EQ(0, (int) graph.getEdgeNumber());
 
   ZObject3d *obj3 = new ZObject3d;
@@ -148,9 +149,10 @@ TEST(ZStackDoc, Player)
     obj3->append(i, 10, 10);
   }
   obj3->setRole(ZStackObjectRole::ROLE_3DGRAPH_DECORATOR);
+  doc.addObject(obj3);
 
   graph = doc.get3DGraphDecoration();
-  ASSERT_EQ(5, (int) graph.getNodeNumber());
+  ASSERT_EQ(13, (int) graph.getNodeNumber());
   ASSERT_EQ(0, (int) graph.getEdgeNumber());
 }
 

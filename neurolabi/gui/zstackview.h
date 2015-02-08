@@ -175,12 +175,15 @@ public:
   static QImage::Format stackKindToImageFormat(int kind);
   double getZoomRatio() const;
   void setInfo();
+  bool isImageMovable() const;
 
   int getZ(NeuTube::ECoordinateSystem coordSys) const;
   QRect getViewPort(NeuTube::ECoordinateSystem coordSys) const;
-  ZStackViewParam getViewParameter(NeuTube::ECoordinateSystem coordSys) const;
+  ZStackViewParam getViewParameter(
+      NeuTube::ECoordinateSystem coordSys = NeuTube::COORD_STACK) const;
 
   void setView(const ZStackViewParam &param);
+  void setViewPortOffset(int x, int y);
 
 
 public: //Change view parameters

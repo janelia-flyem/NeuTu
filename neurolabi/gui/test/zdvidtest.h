@@ -42,9 +42,9 @@ TEST(ZDvidTest, ZDvidUrl)
   std::cout << dvidUrl.getHelpUrl() << std::endl;
   ASSERT_EQ("http://emdata.janelia.org/api/help", dvidUrl.getHelpUrl());
 
-  std::cout << dvidUrl.getSkeletonUrl() << std::endl;
+  std::cout << dvidUrl.getSkeletonUrl("") << std::endl;
   ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/skeletons",
-            dvidUrl.getSkeletonUrl());
+            dvidUrl.getSkeletonUrl(""));
 }
 
 #endif

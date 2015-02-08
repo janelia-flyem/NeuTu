@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
-#include <utilities.h>
+#include "tz_utilities.h"
 #include "tz_error.h"
 #include "tz_geo3d_utils.h"
 #include "tz_locnp_chain.h"

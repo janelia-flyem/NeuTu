@@ -29,6 +29,11 @@ public:
   static const char* getName(EType type);
 
   static std::string getName(ERole role, const std::string &prefix);
+  static std::string getName(
+      ZDvidData::ERole role, ZDvidData::ERole prefixRole,
+      const std::string &prefixName);
+
+  static bool isStandardName(ERole role, const std::string &name);
 
 private:
   static const char *m_grayScaleName;

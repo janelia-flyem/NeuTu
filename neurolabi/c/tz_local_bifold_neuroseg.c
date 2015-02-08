@@ -5,8 +5,8 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <utilities.h>
 #include <math.h>
+#include "tz_utilities.h"
 #include "tz_error.h"
 #include "tz_darray.h"
 #include "tz_perceptor.h"

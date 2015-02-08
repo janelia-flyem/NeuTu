@@ -151,7 +151,7 @@ ZFlyEmDataFrame::ZFlyEmDataFrame(QWidget *parent) :
 
   m_matchManager = new ZFlyEmNeuronMatchTaskManager(this);
   connect(m_matchManager, SIGNAL(finished()),
-          this, SLOT(updateClassPrediction()));
+          this, SLOT(updateTypePrediction()));
   m_matchManager->setProgressReporter(&m_specialProgressReporter);
 
   m_filterManager = new ZFlyEmNeuronFilterTaskManager(this);
@@ -346,7 +346,7 @@ int ZFlyEmDataFrame::updateQuery(
       case ID:
         //stream << id << ": \"" << neuron->getName() << "\"" << endl;
         //break;
-      case CLASS:
+      case TYPE:
       case SUMMARY:
       case FEATURE:
       case CONNECTION:
@@ -397,15 +397,30 @@ void ZFlyEmDataFrame::updateSource(
   std::transform(source.begin(), source.end(), source.begin(), ::tolower);
   if (usingRegexp) {
     QRegExp regexp(sourceValue.c_str());
-    if (source == "class") {
+    if (source == "type") {
       int bundleIndex = 0;
       foreach (ZFlyEmDataBundle *data, m_dataArray) {
         for (vector<ZFlyEmNeuron>::const_iterator neuronIter =
              data->getNeuronArray().begin();
              neuronIter != data->getNeuronArray().end();
              ++neuronIter) {
-          if (!neuronIter->getClass().empty()) {
-            if (regexp.exactMatch(neuronIter->getClass().c_str())) {
+          if (!neuronIter->getType().empty()) {
+            if (regexp.exactMatch(neuronIter->getType().c_str())) {
+              m_sourceIdArray.push_back(pair<int, int>(neuronIter->getId(),
+                                                       bundleIndex));
+            }
+          }
+        }
+      }
+    } else if (source == "name") {
+      int bundleIndex = 0;
+      foreach (ZFlyEmDataBundle *data, m_dataArray) {
+        for (vector<ZFlyEmNeuron>::const_iterator neuronIter =
+             data->getNeuronArray().begin();
+             neuronIter != data->getNeuronArray().end();
+             ++neuronIter) {
+          if (!neuronIter->getName().empty()) {
+            if (regexp.exactMatch(neuronIter->getName().c_str())) {
               m_sourceIdArray.push_back(pair<int, int>(neuronIter->getId(),
                                                        bundleIndex));
             }
@@ -455,7 +470,7 @@ void ZFlyEmDataFrame::updateSource(
           ++bundleIndex;
         }
       }
-    } else if (source == "class") {
+    } else if (source == "type") {
       vector<string> queryWordArray = queryString.toWordArray(", =>;:\n");
       vector<string>::const_iterator nameIter = queryWordArray.begin();
       for (; nameIter != queryWordArray.end(); ++nameIter) {
@@ -466,7 +481,7 @@ void ZFlyEmDataFrame::updateSource(
                neuronIter != data->getNeuronArray().end();
                ++neuronIter) {
             if (*nameIter == "?") {
-              if (neuronIter->getClass().empty()) {
+              if (neuronIter->getType().empty()) {
                 m_sourceIdArray.push_back(pair<int, int>(neuronIter->getId(),
                                                          bundleIndex));
               }
@@ -480,7 +495,7 @@ void ZFlyEmDataFrame::updateSource(
                 }
               }
 
-              if (neuronIter->getClass() == className) {
+              if (neuronIter->getType() == className) {
                 m_sourceIdArray.push_back(pair<int, int>(neuronIter->getId(),
                                                          bundleIndex));
               }
@@ -531,8 +546,8 @@ void ZFlyEmDataFrame::parseQuery(
     m_target = SUMMARY;
   } else if (target == "connection") {
     m_target = CONNECTION;
-  } else if (target == "class") {
-    m_target = CLASS;
+  } else if (target == "type") {
+    m_target = TYPE;
   } else if (target == "feature") {
     m_target = FEATURE;
   } else if (target == "volume") {
@@ -586,7 +601,7 @@ void ZFlyEmDataFrame::query()
     case ID:
     case SUMMARY:
     case CONNECTION:
-    case CLASS:
+    case TYPE:
     case FEATURE:
     case VOLUME:
     case TOP_MATCH:
@@ -694,7 +709,7 @@ std::vector<double> ZFlyEmDataFrame::getMatchingScore(
         }
         break;
       case MATCH_KNOWN_CLASS:
-        if (neuronIter->getClass().empty() ||
+        if (neuronIter->getType().empty() ||
             neuronIter->getId() == sourceNeuron->getId()) {
           comparing = false;
         }
@@ -813,7 +828,7 @@ std::vector<double> ZFlyEmDataFrame::getMatchingScore(
         }
         break;
       case MATCH_KNOWN_CLASS:
-        if (neuronIter->getClass().empty() ||
+        if (neuronIter->getType().empty() ||
             neuronIter->getId() == sourceNeuron->getId()) {
           comparing = false;
         }
@@ -1020,7 +1035,7 @@ void ZFlyEmDataFrame::prepareClassPrediction(ZFlyEmNeuron *neuron)
            iter = bundle->getNeuronArray().begin();
            iter != bundle->getNeuronArray().end(); ++iter) {
         ZFlyEmNeuron *target = &(*iter);
-        if (neuron != target && target->hasClass()) {
+        if (neuron != target && target->hasType()) {
           //target->getBody();
           ZFlyEmNeuronMatchTask *task = new ZFlyEmNeuronMatchTask;
           task->setSource(neuron);
@@ -1033,14 +1048,14 @@ void ZFlyEmDataFrame::prepareClassPrediction(ZFlyEmNeuron *neuron)
   }
 }
 
-void ZFlyEmDataFrame::updateClassPrediction()
+void ZFlyEmDataFrame::updateTypePrediction()
 {
   //ZFlyEmNeuron *neuron = m_matchManager->getSourceNeuron();
   int count = 0;
   foreach (ZFlyEmNeuron *neuron, m_foregroundNeuronArray) {
     displayQueryOutput(neuron, true);
     if (!neuron->getTopMatch().empty()) {
-      if (neuron->getClass() == neuron->getTopMatch()[0]->getClass()) {
+      if (neuron->getType() == neuron->getTopMatch()[0]->getType()) {
         ++count;
       }
     }
@@ -1167,7 +1182,7 @@ void ZFlyEmDataFrame::process()
         displayQueryOutput(neuron, true);
         ++count;
         if (!topMatch.isEmpty()) {
-          if (topMatch[0]->getClass() == neuron->getClass()) {
+          if (topMatch[0]->getType() == neuron->getType()) {
             ++correctCount;
           }
 
@@ -1359,7 +1374,7 @@ void ZFlyEmDataFrame::query() const
           }
         }
       }
-    } else if (source == "class") {
+    } else if (source == "type") {
       vector<string>::const_iterator nameIter = queryWordArray.begin();
       ++nameIter;
       ++nameIter;
@@ -1515,7 +1530,7 @@ void ZFlyEmDataFrame::process() const
           }
         }
       }
-    } else if (source == "class") {
+    } else if (source == "type") {
       vector<string>::const_iterator nameIter = queryWordArray.begin();
       ++nameIter;
       ++nameIter;
@@ -2089,7 +2104,7 @@ void ZFlyEmDataFrame::assignClass(const string &classFile)
     for (std::vector<ZFlyEmNeuron>::iterator iter = neuronArray.begin();
          iter != neuronArray.end(); ++iter) {
       ZFlyEmNeuron &neuron = *iter;
-      neuron.setClass(classArray[index++]);
+      neuron.setType(classArray[index++]);
     }
   }
 
@@ -2121,8 +2136,8 @@ bool ZFlyEmDataFrame::saveNeuronFeature(
          iter != neuronArray.end(); ++iter) {
       ZFlyEmNeuron &neuron = *iter;
       int classLabel = -1;
-      if (classIdMap.count(neuron.getClass()) > 0) {
-        classLabel = classIdMap[neuron.getClass()];
+      if (classIdMap.count(neuron.getType()) > 0) {
+        classLabel = classIdMap[neuron.getType()];
       }
       std::vector<double> featureArray =
           ZFlyEmNeuronFeatureAnalyzer::computeFeatureSet(neuron);

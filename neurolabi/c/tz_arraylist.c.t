@@ -6,7 +6,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <utilities.h>
 #include "tz_error.h"
 #include "tz_utilities.h"
 #include "tz_<1t>_arraylist.h"

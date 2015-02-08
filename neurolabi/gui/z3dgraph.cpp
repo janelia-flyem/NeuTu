@@ -304,6 +304,15 @@ void Z3DGraph::importObject3d(
   }
 }
 
+void Z3DGraph::importObject3d(
+    const ZObject3d &obj, double radius)
+{
+  const static int maxSampleStep = 3;
+  const static size_t maxNodeNumber = 10000;
+  int sampleStep = imin2(maxSampleStep, obj.size() / maxNodeNumber + 1);
+  importObject3d(obj, radius, sampleStep);
+}
+
 void Z3DGraph::clear()
 {
   m_nodeArray.clear();

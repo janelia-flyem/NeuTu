@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <utilities.h>
 #include <draw_lib.h>
 #include <math.h>
 #include "tz_geo3d_ball.h"
@@ -10,6 +9,7 @@
 #include "tz_arrayview.h"
 #include "tz_cuboid_i.h"
 #include "tz_stack_attribute.h"
+#include "tz_utilities.h"
 
 #include "private/tzp_geo3d_ball.c"
 

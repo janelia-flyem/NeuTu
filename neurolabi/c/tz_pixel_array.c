@@ -4,7 +4,7 @@
  */
 
 #include <image_lib.h>
-#include <utilities.h>
+#include "tz_utilities.h"
 #include "tz_error.h"
 #include "tz_objdef.h"
 #include "tz_image_lib.h"

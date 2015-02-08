@@ -6,8 +6,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <utilities.h>
+
 #include "tz_neurocomp_conn.h"
+#include "tz_utilities.h"
 
 Neurocomp_Conn* New_Neurocomp_Conn()
 {
