@@ -118,6 +118,9 @@ void ZImageWidget::setView(int zoomRatio, const QPoint &zoomOffset)
 
   dp = ds;
   dv = dc / zoomRatio;
+  if (dv == 0) {
+    dv = 1;
+  }
   ev = dv * es / dp;
   if (ev > ec - te) {
     ev = ec - te;
@@ -235,6 +238,9 @@ void ZImageWidget::zoom(int zoomRatio, const QPoint &ref)
 
   dp = ds;
   dv = dc / zoomRatio;
+  if (dv == 0) {
+    dv = 1;
+  }
   td = td0 + cd * (dv0 - dv) / (dp - 1);
   if (td < 0) {
     td = 0;
@@ -568,9 +574,11 @@ void ZImageWidget::wheelEvent(QWheelEvent *event)
 
 int ZImageWidget::getMaxZoomRatio() const
 {
-  int ratio = static_cast<int>(std::ceil(std::min(canvasSize().width()*16.0/screenSize().width(),
-                                                  canvasSize().height()*16.0/screenSize().height())));
-  return std::max(ratio, 16);
+  int ratio = static_cast<int>(
+        std::ceil(std::min(canvasSize().width()*16.0/screenSize().width(),
+                           canvasSize().height()*16.0/screenSize().height())));
+  return std::min(std::min(canvasSize().width(), canvasSize().height()),
+                  std::max(ratio, 16));
 }
 
 
