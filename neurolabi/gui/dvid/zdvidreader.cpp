@@ -769,6 +769,7 @@ ZFlyEmNeuronBodyInfo ZDvidReader::readBodyInfo(int bodyId)
 
   QByteArray byteArray = readKeyValue(
         ZDvidData::getName(ZDvidData::ROLE_BODY_INFO,
+                           ZDvidData::ROLE_BODY_LABEL,
                            m_dvidTarget.getBodyLabelName()).c_str(),
         ZString::num2str(bodyId).c_str());
   if (!byteArray.isEmpty()) {

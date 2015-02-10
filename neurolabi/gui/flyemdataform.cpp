@@ -663,7 +663,13 @@ void FlyEmDataForm::computeThumbnailFunc(ZFlyEmNeuron *neuron)
       ZString str(neuron->getThumbnailPath());
       if (str.startsWith("http")) {
         ZDvidTarget target;
+
         target.setFromSourceString(str);
+        if (target.getAddress() == "emrecon100.janelia.priv" &&
+            target.getUuid() == "2a3") {
+          target.setBodyLabelName("sp2body");
+        }
+
         ZDvidWriter writer;
         if (writer.open(target)) {
           //ZObject3dScan *body = neuron->getBody();

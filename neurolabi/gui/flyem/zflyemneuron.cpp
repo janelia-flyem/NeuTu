@@ -198,6 +198,7 @@ ZSwcTree* ZFlyEmNeuron::getModel(const string &bundleSource) const
           m_model = reader.readSwc(getId());
         }
 
+#if 0 //Stop service
         if (m_model == NULL) {
           ZSkeletonizeService service;
           ZDvidTarget dvidTarget;
@@ -208,6 +209,7 @@ ZSwcTree* ZFlyEmNeuron::getModel(const string &bundleSource) const
             m_model = reader.readSwc(getId());
           }
         }
+#endif
 
         if (m_model != NULL) {
           m_model->setSource(m_modelPath + ":" + ZString::num2str(getId()));

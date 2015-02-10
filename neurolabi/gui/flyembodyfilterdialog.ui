@@ -120,7 +120,7 @@
       <item>
        <widget class="QLineEdit" name="excludedBodyLineEdit">
         <property name="text">
-         <string>16493 662773</string>
+         <string/>
         </property>
        </widget>
       </item>
