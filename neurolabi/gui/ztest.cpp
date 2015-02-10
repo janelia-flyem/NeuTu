@@ -14968,7 +14968,7 @@ void ZTest::test(MainWindow *host)
   obj.save(GET_TEST_DATA_DIR + "/test.sobj");
 #endif
 
-#if 1
+#if 0
   FILE *fp = fopen((GET_TEST_DATA_DIR + "/flyem/FIB/roi/layer_roi.txt").c_str(),
                    "r");
   ZString str;
@@ -14999,4 +14999,30 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
+#if 1
+
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "2b6c", -1);
+
+  ZDvidReader reader;
+  reader.open(target);
+  ZDvidInfo dvidInfo;
+  dvidInfo = reader.readGrayScaleInfo();
+  dvidInfo.print();
+
+  ZObject3dScan obj;
+  for (size_t i = 1; i < 11; ++i) {
+    std::cout << "Object " << i << std::endl;
+    obj.load(GET_TEST_DATA_DIR +
+             QString("/flyem/FIB/roi/layer_roi_%1.sobj").arg(i).toStdString());
+    ZObject3dScan blockObj = dvidInfo.getBlockIndex(obj);
+    blockObj.save(GET_TEST_DATA_DIR +
+                  QString("/flyem/FIB/roi/layer_roi_%1_block.sobj").
+                  arg(i).toStdString());
+    ZJsonArray array = ZJsonFactory::makeJsonArray(
+          blockObj, ZJsonFactory::OBJECT_SPARSE);
+    array.dump(GET_TEST_DATA_DIR +
+               QString("/flyem/FIB/roi/layer_roi_%1.json").arg(i).toStdString());
+  }
+#endif
 }

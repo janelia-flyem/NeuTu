@@ -133,6 +133,7 @@ public:
   }
 
   std::string getBodyLabelName() const;
+  void setBodyLabelName(const std::string &name);
 
 private:
   std::string m_address;

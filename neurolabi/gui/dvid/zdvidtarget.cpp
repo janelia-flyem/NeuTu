@@ -217,3 +217,8 @@ std::string ZDvidTarget::getBodyLabelName() const
 
   return m_bodyLabelName;
 }
+
+void ZDvidTarget::setBodyLabelName(const std::string &name)
+{
+  m_bodyLabelName = name;
+}

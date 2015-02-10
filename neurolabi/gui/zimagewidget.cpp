@@ -133,6 +133,9 @@ void ZImageWidget::zoom(int zoomRatio, const QPoint &ref)
 
   dp = ds;
   dv = dc / zoomRatio;
+  if (dv == 0) {
+    dv = 1;
+  }
   td = td0 + cd * (dv0 - dv) / (dp - 1);
   if (td < 0) {
     td = 0;
@@ -268,6 +271,9 @@ void ZImageWidget::setView(int zoomRatio, const QPoint &zoomOffset)
 
   dp = ds;
   dv = dc / zoomRatio;
+  if (dv == 0) {
+    dv = 1;
+  }
   ev = dv * es / dp;
   if (ev > ec - te) {
     ev = ec - te;
@@ -362,7 +368,7 @@ void ZImageWidget::decreaseZoomRatio()
 
   if (zoomRatio > 1) {
     zoom(--zoomRatio);
-    if (m_viewPort.width() == oldWidth && m_viewPort.height() == oldHeight) {
+    while (m_viewPort.width() == oldWidth && m_viewPort.height() == oldHeight) {
       zoom(--zoomRatio);
     }
 
@@ -382,7 +388,6 @@ void ZImageWidget::moveViewPort(int x, int y)
 {
   setViewPortOffset(m_viewPort.left() + x, m_viewPort.top() + y);
 }
-
 
 void ZImageWidget::zoom(int zoomRatio)
 {
@@ -702,9 +707,11 @@ void ZImageWidget::resizeEvent(QResizeEvent */*event*/)
 
 int ZImageWidget::getMaxZoomRatio() const
 {
-  int ratio = static_cast<int>(std::ceil(std::min(canvasSize().width()*16.0/screenSize().width(),
-                                                  canvasSize().height()*16.0/screenSize().height())));
-  return std::max(ratio, 16);
+  int ratio = static_cast<int>(
+        std::ceil(std::min(canvasSize().width()*16.0/screenSize().width(),
+                           canvasSize().height()*16.0/screenSize().height())));
+  return std::min(std::min(canvasSize().width(), canvasSize().height()),
+                  std::max(ratio, 16));
 }
 
 

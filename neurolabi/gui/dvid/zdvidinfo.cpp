@@ -225,7 +225,7 @@ ZObject3dScan ZDvidInfo::getBlockIndex(const ZObject3dScan &obj) const
   ZObject3dScan blockObj;
 
   for (size_t i = 0; i < obj.getStripeNumber(); ++i) {
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
     if (i % 10000 == 0) {
       std::cout << i << "/" << obj.getStripeNumber() << std::endl;
     }
@@ -233,36 +233,37 @@ ZObject3dScan ZDvidInfo::getBlockIndex(const ZObject3dScan &obj) const
     const ZObject3dStripe &stripe = obj.getStripe(i);
     int y = stripe.getY();
     int z = stripe.getZ();
-    for (int j = 0; j < stripe.getSegmentNumber(); ++j) {
-      ZIntPoint block1 = getBlockIndex(stripe.getSegmentStart(j), y, z);
-      size_t blockIndex1 = area * block1.getZ() +
-          gridSize.getY() * block1.getY() + block1.getX();
-      ZIntPoint block2 = getBlockIndex(stripe.getSegmentEnd(j), y, z);
-      size_t blockIndex2 = area * block2.getZ() +
-          gridSize.getY() * block2.getY() + block2.getX();
-
-      if (!isAdded[blockIndex1] || !isAdded[blockIndex2]) {
-        blockObj.addSegment(
-              block1.getZ(), block1.getY(), block1.getX(), block2.getX(), false);
-        isAdded[blockIndex1] = true;
-        isAdded[blockIndex2] = true;
-      }
-      //ZDVIDINFO_ADD_BLOCK(block1);
-      //ZDVIDINFO_ADD_BLOCK(block2);
-
-#if 0
-      for (int x = block1.getX(); x <= block2.getX(); ++x) {
-        ZIntPoint block(x, block1.getY(), block1.getZ());
-        size_t blockIndex =
-            area * block.getZ() + gridSize.getY() * block.getY() +
-            block.getX();
-        if (!isAdded[blockIndex]) {
-          blockArray.append(block);
-          isAdded[blockIndex] = true;
+    if (y > 0 && z > 0 && y < m_startCoordinates[1] + m_stackSize[1] &&
+        z < m_startCoordinates[2] + m_stackSize[2]) {
+      for (int j = 0; j < stripe.getSegmentNumber(); ++j) {
+        int x0 = stripe.getSegmentStart(j);
+        int x1 = stripe.getSegmentEnd(j);
+        if (x0 < 0) {
+          x0 = 0;
+        } else if (x0 >= m_startCoordinates[0] + m_stackSize[0]) {
+          x0 = m_startCoordinates[0] + m_stackSize[0] - 1;
         }
-          //blockSet.insert(block);
+
+        if (x1 < 0) {
+          x1 = 0;
+        } else if (x1 >= m_startCoordinates[0] + m_stackSize[0]) {
+          x1 = m_startCoordinates[0] + m_stackSize[0] - 1;
+        }
+
+        ZIntPoint block1 = getBlockIndex(x0, y, z);
+        size_t blockIndex1 = area * block1.getZ() +
+            gridSize.getY() * block1.getY() + block1.getX();
+        ZIntPoint block2 = getBlockIndex(x1, y, z);
+        size_t blockIndex2 = area * block2.getZ() +
+            gridSize.getY() * block2.getY() + block2.getX();
+
+        if (!isAdded[blockIndex1] || !isAdded[blockIndex2]) {
+          blockObj.addSegment(
+                block1.getZ(), block1.getY(), block1.getX(), block2.getX(), false);
+          isAdded[blockIndex1] = true;
+          isAdded[blockIndex2] = true;
+        }
       }
-#endif
     }
   }
 
