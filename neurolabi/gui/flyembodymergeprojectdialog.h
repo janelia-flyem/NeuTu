@@ -20,7 +20,6 @@ public:
 
   void createMenu();
   void setPushButtonSlots();
-  void connectSignalSlot();
   void dump(const QString &str, bool appending = false);
   void showInfo(const QString &str, bool appending = false);
 
@@ -30,6 +29,10 @@ public:
   void setupProgress();
 
   void updateInfo();
+
+  inline ZFlyEmBodyMergeProject* getProject() {
+    return m_project;
+  }
 
 public slots:
   void test();
@@ -46,6 +49,9 @@ public slots:
   void showNextSlice();
   void notifySelection(const ZStackObjectSelector &selector);
   void notifyBodyMerged(QList<uint64_t> bodyLabelList);
+
+private:
+    void connectSignalSlot();
 
 private:
   Ui::FlyEmBodyMergeProjectDialog *ui;

@@ -1497,14 +1497,18 @@ ZStack* ZStack::createSubstack(const std::vector<std::vector<double> > &selected
 
 ZStack* ZStack::clone() const
 {
-  ZStack *stack = new ZStack(
-        kind(), width(), height(), depth(), channelNumber());
-  memcpy(stack->rawChannelData(), rawChannelData(), getByteNumber());
+  ZStack *stack = NULL;
 
-  stack->m_resolution = m_resolution;
-  stack->m_preferredZScale = m_preferredZScale;
-  stack->m_source = m_source;
-  stack->m_offset = m_offset;
+  if (hasData()) {
+    stack = new ZStack(
+          kind(), width(), height(), depth(), channelNumber());
+    memcpy(stack->rawChannelData(), rawChannelData(), getByteNumber());
+
+    stack->m_resolution = m_resolution;
+    stack->m_preferredZScale = m_preferredZScale;
+    stack->m_source = m_source;
+    stack->m_offset = m_offset;
+  }
 
   return stack;
 }

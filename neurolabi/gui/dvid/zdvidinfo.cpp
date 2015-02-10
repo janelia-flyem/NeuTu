@@ -324,3 +324,8 @@ ZIntCuboid ZDvidInfo::getBlockBox(int x, int y, int z) const
 
   return cuboid;
 }
+
+ZIntCuboid ZDvidInfo::getBlockBox(const ZIntPoint &blockIndex)
+{
+  return getBlockBox(blockIndex.getX(), blockIndex.getY(), blockIndex.getZ());
+}

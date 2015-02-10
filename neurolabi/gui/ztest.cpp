@@ -14920,4 +14920,83 @@ void ZTest::test(MainWindow *host)
     }
   }
 #endif
+
+#if 0 //Estimate bound box
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "2b6c", -1);
+
+  ZDvidReader reader;
+  reader.open(target);
+  ZDvidInfo dvidInfo;
+  dvidInfo = reader.readGrayScaleInfo();
+  dvidInfo.print();
+
+  ZObject3dScan roiList[7];
+
+  roiList[0].load(GET_TEST_DATA_DIR + "/flyem/FIB/roi/roi_A.sobj");
+  roiList[1].load(GET_TEST_DATA_DIR + "/flyem/FIB/roi/roi_B.sobj");
+  roiList[2].load(GET_TEST_DATA_DIR + "/flyem/FIB/roi/roi_C.sobj");
+  roiList[3].load(GET_TEST_DATA_DIR + "/flyem/FIB/roi/roi_D.sobj");
+  roiList[4].load(GET_TEST_DATA_DIR + "/flyem/FIB/roi/roi_E.sobj");
+  roiList[5].load(GET_TEST_DATA_DIR + "/flyem/FIB/roi/roi_F.sobj");
+  roiList[6].load(GET_TEST_DATA_DIR + "/flyem/FIB/roi/roi_homev2.sobj");
+
+  ZIntCuboid box = roiList[0].getBoundBox();
+
+  for (size_t i = 1; i < 7; ++i) {
+    box.join(roiList[i].getBoundBox());
+  }
+
+  ZIntCuboid box1 = dvidInfo.getBlockBox(box.getFirstCorner());
+
+  ZIntCuboid box2 = dvidInfo.getBlockBox(box.getLastCorner());
+
+  std::cout << "Bound box: " << box1.getFirstCorner().toString() << " => "
+            << box2.getLastCorner().toString() << std::endl;
+#endif
+
+#if 0
+  ZClosedCurve curve;
+  curve.append(4.5, 0.0, 0);
+  curve.append(0.0, 0.0, 0);
+  curve.append(0.0, 2.7, 0);
+
+  ZObject3dScan obj;
+  ZObject3dFactory::MakeFilledMask(curve, 992, &obj);
+
+  obj.print();
+  obj.save(GET_TEST_DATA_DIR + "/test.sobj");
+#endif
+
+#if 1
+  FILE *fp = fopen((GET_TEST_DATA_DIR + "/flyem/FIB/roi/layer_roi.txt").c_str(),
+                   "r");
+  ZString str;
+  ZObject3dScan obj[11];
+  while (str.readLine(fp)) {
+    std::vector<double> valueArray = str.toDoubleArray();
+    if (valueArray.size() >= 4) {
+      //std::cout << valueArray[1] << std::endl;
+      int layer = iround(valueArray[0]);
+      ZClosedCurve curve;
+      for (size_t i = 2; i < valueArray.size(); i += 2) {
+        curve.append(valueArray[i], valueArray[i + 1], 0);
+      }
+      ZObject3dScan *layerObj =
+          ZObject3dFactory::MakeFilledMask(curve, valueArray[1]);
+      if (layerObj != NULL) {
+        obj[layer].concat(*layerObj);
+      }
+      delete layerObj;
+    }
+  }
+
+  fclose(fp);
+
+  for (size_t i = 1; i < 11; ++i) {
+    obj[i].save(GET_TEST_DATA_DIR +
+                QString("/flyem/FIB/roi/layer_roi_%1.sobj").arg(i).toStdString());
+  }
+#endif
+
 }

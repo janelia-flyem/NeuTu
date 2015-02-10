@@ -152,6 +152,7 @@
 #include "zsubtractswcsdialog.h"
 #include "zautotracedialog.h"
 #include "zstackviewmanager.h"
+#include "zflyemprojectmanager.h"
 
 #include "z3dcanvas.h"
 #include "z3dapplication.h"
@@ -375,10 +376,14 @@ void MainWindow::initDialog()
   m_newBsProjectDialog = new ZFlyEmNewBodySplitProjectDialog(this);
   m_newBsProjectDialog->setDvidDialog(m_dvidDlg);
 
-  m_bodySplitProjectDialog = new FlyEmBodySplitProjectDialog(this);
+  m_flyemProjectManager = new ZFlyEmProjectManager(this);
+
+  //m_bodySplitProjectDialog = new FlyEmBodySplitProjectDialog(this);
+  m_bodySplitProjectDialog = m_flyemProjectManager->getSplitDialog();
   m_bodySplitProjectDialog->setLoadBodyDialog(m_newBsProjectDialog);
 
-  m_mergeBodyDlg = new FlyEmBodyMergeProjectDialog(this);
+  //m_mergeBodyDlg = new FlyEmBodyMergeProjectDialog(this);
+  m_mergeBodyDlg = m_flyemProjectManager->getMergeDialog();
   m_mergeBodyDlg->setDvidDialog(m_dvidDlg);
 
   m_mergeBodyDlg->restoreGeometry(

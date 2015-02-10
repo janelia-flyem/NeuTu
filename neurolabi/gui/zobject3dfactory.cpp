@@ -6,6 +6,9 @@
 #include "zobject3dscan.h"
 #include "neutubeconfig.h"
 #include "zobject3dscanarray.h"
+#include "zstackfactory.h"
+#include "zclosedcurve.h"
+#include "zstroke2d.h"
 
 ZObject3dFactory::ZObject3dFactory()
 {
@@ -189,4 +192,33 @@ ZObject3dScanArray* ZObject3dFactory::MakeObject3dScanArray(const ZStack &stack)
   }
 
   return objArray;
+}
+
+ZObject3dScan* ZObject3dFactory::MakeFilledMask(
+    const ZClosedCurve &curve, int z, ZObject3dScan *result)
+{
+  if (result != NULL) {
+    result->clear();
+  }
+
+  if (!curve.isEmpty()) {
+    ZStroke2d stroke;
+    stroke.setZ(z);
+    stroke.setWidth(1.0);
+    for (size_t i = 0; i < curve.getLandmarkNumber(); ++i) {
+      ZPoint pt = curve.getLandmark(i);
+      stroke.append(pt.x(), pt.y());
+    }
+    ZStack *stack = ZStackFactory::makePolygonPicture(stroke);
+    if (stack != NULL) {
+      if (result == NULL) {
+        result = new ZObject3dScan;
+      }
+
+      result->loadStack(*stack);
+      delete stack;
+    }
+  }
+
+  return result;
 }

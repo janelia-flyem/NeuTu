@@ -398,3 +398,27 @@ void ZFlyEmBodyMergeProject::update3DBodyView(const ZStackObjectSelector &select
     m_bodyWindow->resetCamera();
   }
 }
+
+int ZFlyEmBodyMergeProject::getSelectedBodyId() const
+{
+  int bodyId = -1;
+  if (m_dataFrame != NULL) {
+    const TStackObjectSet &objSet =
+        m_dataFrame->document()->getSelected(ZStackObject::TYPE_OBJECT3D_SCAN);
+    if (objSet.size() == 1) {
+      const ZObject3dScan* obj =
+          dynamic_cast<ZObject3dScan*>(*(objSet.begin()));
+      bodyId = obj->getLabel();
+    }
+  }
+
+  return bodyId;
+}
+
+void ZFlyEmBodyMergeProject::notifySplit()
+{
+  int bodyId = getSelectedBodyId();
+  if (bodyId > 0) {
+    emit splitSent(m_dvidTarget, bodyId);
+  }
+}

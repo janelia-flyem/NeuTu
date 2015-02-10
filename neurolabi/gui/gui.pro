@@ -519,7 +519,8 @@ HEADERS += mainwindow.h \
     zspinboxgroupdialog.h \
     zautotracedialog.h \
     zstackviewmanager.h \
-    zstackviewparam.h
+    zstackviewparam.h \
+    zflyemprojectmanager.h
 
 FORMS += settingdialog.ui \
     frameinfodialog.ui \
@@ -862,7 +863,8 @@ SOURCES += main.cpp \
     zspinboxgroupdialog.cpp \
     zautotracedialog.cpp \
     zstackviewmanager.cpp \
-    zstackviewparam.cpp
+    zstackviewparam.cpp \
+    zflyemprojectmanager.cpp
 
 OTHER_FILES += \
     extlib.pri

@@ -187,7 +187,7 @@ ZStack* ZStackFactory::makePolygonPicture(const ZStroke2d &curve)
 #ifdef _DEBUG_2
   pix->save((GET_DATA_DIR + "/test.tif").c_str());
   //delete pix;
-  delete painter;
+  //delete painter;
 #endif
 
   stack = new ZStack(GREY, pix->width(), pix->height(), 1, 1);

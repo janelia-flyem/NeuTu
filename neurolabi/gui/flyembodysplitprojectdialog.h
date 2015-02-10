@@ -100,6 +100,8 @@ public slots:
    */
   void dump(const QString &info, bool appending = false);
 
+  void startSplit(const ZDvidTarget &dvidTarget, int bodyId);
+
 
 private slots:
   void on_pushButton_clicked();

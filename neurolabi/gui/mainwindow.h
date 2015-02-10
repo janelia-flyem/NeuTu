@@ -58,9 +58,10 @@ class SynapseImportDialog;
 class FlyEmBodyMergeProjectDialog;
 class ZSegmentationProjectDialog;
 class ZStackViewManager;
+class ZFlyEmProjectManager;
 
 namespace Ui {
-    class MainWindow;
+  class MainWindow;
 }
 
 class MainWindow : public QMainWindow {
@@ -622,6 +623,7 @@ private:
   ZSegmentationProjectDialog *m_segmentationDlg;
 
   ZStackViewManager *m_stackViewManager;
+  ZFlyEmProjectManager *m_flyemProjectManager;
 
   //new project main window
   NewProjectMainWindow *m_newProject;
