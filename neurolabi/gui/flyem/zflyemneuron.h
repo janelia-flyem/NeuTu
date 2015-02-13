@@ -220,7 +220,7 @@ public:
    * \brief Compute the volume of the orignal body (before skeletonization)
    * \return Volume in number of voxels. 0 if the volume data is not available.
    */
-  double getBodyVolume() const;
+  double getBodyVolume(bool cacheBody = true) const;
 
   /*!
    * \brief Set the volume path

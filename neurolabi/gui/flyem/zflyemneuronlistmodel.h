@@ -7,6 +7,8 @@
 #include <QtCore>
 #include <QString>
 
+#include "zflyemcoordinateconverter.h"
+
 class ZFlyEmNeuron;
 class ZStackDoc;
 class ZFlyEmNeuronPresenter;
@@ -43,7 +45,8 @@ public:
   bool removeColumns(int col, int count, const QModelIndex &parent = QModelIndex());
 
   void exportCsv(const QString &path);
-  void exportSwc(const QString &swc);
+  void exportSwc(const QString &swc,
+                 ZFlyEmCoordinateConverter::ESpace coordSpace);
 
   void setPresenter(ZFlyEmNeuronPresenter *presenter);
 

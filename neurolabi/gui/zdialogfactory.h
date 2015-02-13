@@ -31,6 +31,9 @@ public:
       QWidget *parent);
   static bool ask(const QString &title, const QString &msg, QWidget *parent);
 
+  static QString GetDirectory(
+      const QString &caption, const QString &filePath, QWidget *parent);
+
 private:
   QWidget *m_parentWidget;
 

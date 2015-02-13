@@ -14,6 +14,7 @@
 #include "dvid/zdvidtarget.h"
 #include "dvid/zdvidurl.h"
 #include "flyem/zflyemneuroninfo.h"
+#include "neutubeconfig.h"
 
 #if defined(_QT_GUI_USED_)
 #include "dvid/zdvidreader.h"
@@ -171,13 +172,25 @@ ZSwcTree* ZFlyEmNeuron::getUnscaledModel(const string &bundleSource) const
     if (!m_modelPath.empty()) {
       m_unscaledModel = new ZSwcTree;
       ZString path(m_modelPath);
-      if (!path.isAbsolutePath()) {
-        path = path.absolutePath(ZString::dirPath(bundleSource));
-      }
-      m_unscaledModel->load(path.c_str());
-      if (m_unscaledModel->data() == NULL) {
-        delete m_unscaledModel;
-        m_unscaledModel = NULL;
+      if (path.startsWith("http:")) {
+#if defined(_QT_GUI_USED_)
+        ZDvidReader reader;
+        if (reader.open(m_modelPath.c_str())) {
+          m_unscaledModel = reader.readSwc(getId());
+        }
+        if (m_unscaledModel != NULL) {
+          m_unscaledModel->setSource(m_modelPath + ":" + ZString::num2str(getId()));
+        }
+#endif
+      } else {
+        if (!path.isAbsolutePath()) {
+          path = path.absolutePath(ZString::dirPath(bundleSource));
+        }
+        m_unscaledModel->load(path.c_str());
+        if (m_unscaledModel->data() == NULL) {
+          delete m_unscaledModel;
+          m_unscaledModel = NULL;
+        }
       }
     }
   }
@@ -249,6 +262,10 @@ ZObject3dScan* ZFlyEmNeuron::getBody() const
       if (reader.open(m_volumePath.c_str())) {
         m_body = new ZObject3dScan;
         *m_body = reader.readBody(getId());
+
+#ifdef _DEBUG_
+        m_body->save(GET_TEST_DATA_DIR + "/test.sobj");
+#endif
       }
 #endif
     } else {
@@ -648,10 +665,16 @@ string ZFlyEmNeuron::toString() const
   return stream.str();
 }
 
-double ZFlyEmNeuron::getBodyVolume() const
+double ZFlyEmNeuron::getBodyVolume(bool cacheBody) const
 {
-  return getBody()->getVoxelNumber()/* * m_resolution[0] * m_resolution[1] *
+  size_t voxelNumber = getBody()->getVoxelNumber()/* * m_resolution[0] * m_resolution[1] *
       m_resolution[2]*/;
+
+  if (!cacheBody) {
+    deprecate(ZFlyEmNeuron::BODY);
+  }
+
+  return voxelNumber;
 #if 0
   if (m_volumePath.empty()) {
     return 0.0;

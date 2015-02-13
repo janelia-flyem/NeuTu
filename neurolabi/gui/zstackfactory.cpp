@@ -15,6 +15,7 @@
 #include "zweightedpointarray.h"
 #include "math.h"
 #include "tz_color.h"
+#include "zobject3dscanarray.h"
 
 ZStackFactory::ZStackFactory()
 {
@@ -650,6 +651,53 @@ ZStack* ZStackFactory::CompositeForeground(
   ZStack *stack = ZStackFactory::makeZeroStack(stack1.kind(), boundBox, 1);
   stack1.paste(stack, 0);
   stack2.paste(stack, 0);
+
+  return stack;
+}
+
+ZStack* ZStackFactory::MakeBinaryStack(
+    const ZObject3dScanArray &objArray, int v)
+{
+  ZStack *stack = NULL;
+  if (!objArray.empty()) {
+    ZIntCuboid boundBox = objArray.getBoundBox();
+    stack = makeZeroStack(GREY, boundBox);
+
+    int offset[3];
+    offset[0] = -stack->getOffset().getX();
+    offset[1] = -stack->getOffset().getY();
+    offset[2] = -stack->getOffset().getZ();
+
+    for (ZObject3dScanArray::const_iterator iter = objArray.begin();
+         iter != objArray.end(); ++iter) {
+      const ZObject3dScan &obj = *iter;
+      obj.drawStack(stack->c_stack(), v, offset);
+    }
+  }
+
+  return stack;
+}
+
+ZStack* ZStackFactory::MakeColorStack(const ZObject3dScanArray &objArray)
+{
+  ZStack *stack = NULL;
+  if (!objArray.empty()) {
+    ZIntCuboid boundBox = objArray.getBoundBox();
+    stack = makeZeroStack(GREY, boundBox, 3);
+
+    int offset[3];
+    offset[0] = -stack->getOffset().getX();
+    offset[1] = -stack->getOffset().getY();
+    offset[2] = -stack->getOffset().getZ();
+
+    for (ZObject3dScanArray::const_iterator iter = objArray.begin();
+         iter != objArray.end(); ++iter) {
+      const ZObject3dScan &obj = *iter;
+      obj.drawStack(stack->c_stack(0), obj.getColor().red(), offset);
+      obj.drawStack(stack->c_stack(1), obj.getColor().green(), offset);
+      obj.drawStack(stack->c_stack(2), obj.getColor().blue(), offset);
+    }
+  }
 
   return stack;
 }

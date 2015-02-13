@@ -188,16 +188,6 @@ bool ZFlyEmDataBundle::loadDvid(const ZDvidFilter &dvidFilter)
   }
   m_neuronArray.resize(realSize);
 
-  //Load synapses
-//  if (fdReader.open(dvidTarget)) {
-//    QStringList synapseList = fdReader.readSynapseList();
-//    //qDebug() << synapseList;
-
-//    ZJsonObject obj = fdReader.readSynapseAnnotation(synapseList[0]);
-
-//    //obj.print();
-//  }
-
   return true;
 }
 

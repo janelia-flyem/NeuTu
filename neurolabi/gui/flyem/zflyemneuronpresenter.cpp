@@ -334,7 +334,7 @@ QVariant ZFlyEmNeuronVolumePresenter::data(
     case 0:
       return getIdString(neuron);
     case 1:
-      return neuron.getBodyVolume();
+      return neuron.getBodyVolume(false);
     default:
       break;
     }

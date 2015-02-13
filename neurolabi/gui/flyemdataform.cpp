@@ -28,6 +28,8 @@
 #include "z3dcompositor.h"
 #include "z3dvolumeraycaster.h"
 #include "z3daxis.h"
+#include "swcexportdialog.h"
+#include "zdialogfactory.h"
 
 FlyEmDataForm::FlyEmDataForm(QWidget *parent) :
   QWidget(parent),
@@ -96,6 +98,8 @@ FlyEmDataForm::FlyEmDataForm(QWidget *parent) :
   setLayout(ui->overallLayout);
 
   createMenu();
+
+  m_swcExportDlg = new SwcExportDialog(this);
 }
 
 FlyEmDataForm::~FlyEmDataForm()
@@ -136,7 +140,7 @@ void FlyEmDataForm::createMenu()
   QAction *exportSwcAction = new QAction("SWC", this);
   m_exportMenu->addAction(exportSwcAction);
   connect(exportSwcAction, SIGNAL(triggered()),
-          this, SLOT(on_exportPushButton_clicked()));
+          this, SLOT(on_saveSwcPushButton_clicked()));
 
   QAction *exportVolumeRenderAction = new QAction("Figure (3D Body)", this);
   m_exportMenu->addAction(exportVolumeRenderAction);
@@ -433,7 +437,8 @@ ZStackDoc *FlyEmDataForm::showViewSelectedBody(ZFlyEmQueryView *view)
 
   ZStackFrame *frame = new ZStackFrame;
 
-  view->getModel()->retrieveBody(sel->selectedIndexes(), frame->document().get());
+  view->getModel()->retrieveBody(
+        sel->selectedIndexes(), frame->document().get());
   ui->progressBar->setValue(75);
   //QApplication::processEvents();
 
@@ -493,11 +498,18 @@ void FlyEmDataForm::setPresenter(ZFlyEmNeuronPresenter *presenter)
 
 void FlyEmDataForm::on_saveSwcPushButton_clicked()
 {
-  QString dirpath = QFileDialog::getExistingDirectory(this, tr("Export SWC"),
-    "", QFileDialog::ShowDirsOnly);
+  if (m_swcExportDlg->exec()) {
+    QString dirPath = m_swcExportDlg->getSavePath();
+    if (!dirPath.isEmpty()) {
+      m_neuronList->exportSwc(dirPath, m_swcExportDlg->getCoordSpace());
+    }
 
-  if (!dirpath.isEmpty()) {
-    m_neuronList->exportSwc(dirpath);
+//  QString dirpath = QFileDialog::getExistingDirectory(this, tr("Export SWC"),
+//    "", QFileDialog::ShowDirsOnly);
+
+//  if (!dirpath.isEmpty()) {
+//    m_neuronList->exportSwc(dirpath);
+//  }
   }
 }
 
@@ -665,11 +677,12 @@ void FlyEmDataForm::computeThumbnailFunc(ZFlyEmNeuron *neuron)
         ZDvidTarget target;
 
         target.setFromSourceString(str);
+#if 0
         if (target.getAddress() == "emrecon100.janelia.priv" &&
             target.getUuid() == "2a3") {
           target.setBodyLabelName("sp2body");
         }
-
+#endif
         ZDvidWriter writer;
         if (writer.open(target)) {
           //ZObject3dScan *body = neuron->getBody();

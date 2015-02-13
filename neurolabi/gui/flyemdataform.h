@@ -20,6 +20,7 @@ class ZFlyEmQueryView;
 class ZImageWidget;
 class QGraphicsScene;
 class QMenu;
+class SwcExportDialog;
 
 namespace Ui {
 class FlyEmDataForm;
@@ -176,6 +177,8 @@ private:
   QMap<QString, QFuture<void> > m_threadFutureMap;
   QMenu *m_mainMenu;
   QMenu *m_exportMenu;
+
+  SwcExportDialog *m_swcExportDlg;
 };
 
 #endif // FLYEMDATAFORM_H

@@ -520,7 +520,9 @@ HEADERS += mainwindow.h \
     zautotracedialog.h \
     zstackviewmanager.h \
     zstackviewparam.h \
-    zflyemprojectmanager.h
+    zflyemprojectmanager.h \
+    zflyemdataloader.h \
+    swcexportdialog.h
 
 FORMS += settingdialog.ui \
     frameinfodialog.ui \
@@ -579,7 +581,8 @@ FORMS += settingdialog.ui \
     synapseimportdialog.ui \
     flyembodymergeprojectdialog.ui \
     zsegmentationprojectdialog.ui \
-    zmarkswcsomadialog.ui
+    zmarkswcsomadialog.ui \
+    swcexportdialog.ui
 SOURCES += main.cpp \
     mainwindow.cpp \
     zstackview.cpp \
@@ -864,7 +867,9 @@ SOURCES += main.cpp \
     zautotracedialog.cpp \
     zstackviewmanager.cpp \
     zstackviewparam.cpp \
-    zflyemprojectmanager.cpp
+    zflyemprojectmanager.cpp \
+    zflyemdataloader.cpp \
+    swcexportdialog.cpp
 
 OTHER_FILES += \
     extlib.pri

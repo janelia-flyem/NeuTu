@@ -2423,7 +2423,7 @@ void ZFlyEmDataFrame::exportSideBoundaryAnalysis(
     std::set<int> bodySet =
         reader.readBodyId(face.getCornerCoordinates(0),
                           face.getCornerCoordinates(3));
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
     if (bodySet.count(791843) > 0) {
       std::cout << "debug here" << std::endl;
     }

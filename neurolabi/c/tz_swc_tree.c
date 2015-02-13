@@ -2107,7 +2107,7 @@ Swc_Tree* Swc_Tree_Parse_String(char *swc_string)
   }
 
   int max_id = swc_tree_string_max_id(swc_string);
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
   printf("%d\n", max_id);
 #endif
 
@@ -2160,7 +2160,7 @@ Swc_Tree* Swc_Tree_Parse_String(char *swc_string)
         }
       }
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
       printf("%s\n", line);
       fflush(stdout);
 #endif

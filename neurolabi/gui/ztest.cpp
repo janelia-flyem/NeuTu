@@ -14999,7 +14999,7 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
-#if 1
+#if 0
 
   ZDvidTarget target;
   target.set("emdata2.int.janelia.org", "2b6c", -1);
@@ -15024,5 +15024,172 @@ void ZTest::test(MainWindow *host)
     array.dump(GET_TEST_DATA_DIR +
                QString("/flyem/FIB/roi/layer_roi_%1.json").arg(i).toStdString());
   }
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emrecon100.janelia.priv", "2a3", -1);
+
+  ZDvidReader reader;
+  reader.open(target);
+  ZDvidInfo dvidInfo;
+  dvidInfo = reader.readGrayScaleInfo();
+  dvidInfo.print();
+
+  ZJsonObject rootJson;
+  rootJson.load(GET_TEST_DATA_DIR +
+                "/flyem/FIB/hackathon/annotations-synapse.json");
+  ZJsonArray synapseArrayJson(
+        rootJson["data"], ZJsonValue::SET_INCREASE_REF_COUNT);
+  for (size_t i = 0; i < synapseArrayJson.size(); ++i) {
+    ZJsonObject synapseJson(synapseArrayJson.at(i),
+                            ZJsonValue::SET_INCREASE_REF_COUNT);
+    ZJsonObject tbarJson(synapseJson["T-bar"],
+        ZJsonValue::SET_INCREASE_REF_COUNT);
+    ZJsonArray locationJson(tbarJson["location"],
+        ZJsonValue::SET_INCREASE_REF_COUNT);
+    if (locationJson.size() == 3) {
+      json_t *yJson = locationJson.at(1);
+      int y = ZJsonParser::integerValue(yJson);
+      json_integer_set(yJson, dvidInfo.getMaxY() - y);
+    }
+
+    ZJsonArray psdJsonArray(synapseJson["partners"],
+        ZJsonValue::SET_INCREASE_REF_COUNT);
+    for (size_t j = 0; j < psdJsonArray.size(); ++j) {
+      ZJsonObject psdJson(psdJsonArray.at(j),
+                          ZJsonValue::SET_INCREASE_REF_COUNT);
+      ZJsonArray locationJson(psdJson["location"],
+          ZJsonValue::SET_INCREASE_REF_COUNT);
+      if (locationJson.size() == 3) {
+        json_t *yJson = locationJson.at(1);
+        int y = ZJsonParser::integerValue(yJson);
+        json_integer_set(yJson, dvidInfo.getMaxY() - y);
+      }
+    }
+  }
+
+  ZJsonObject metadataJson(rootJson["metadata"],
+      ZJsonValue::SET_INCREASE_REF_COUNT);
+  metadataJson.setEntry("coordinate", std::string("DVID"));
+
+  rootJson.dump(GET_TEST_DATA_DIR + "/test.json");
+#endif
+
+#if 0
+  FlyEm::ZIntCuboidArray blockArray;
+  blockArray.loadSubstackList(dataPath + "/flyem/FIB/block_13layer_extended.txt");
+  blockArray.exportSwc(dataPath + "/flyem/FIB/block_13layer_extended.swc");
+#endif
+
+#if 1
+  FlyEm::ZIntCuboidArray blockArray;
+  blockArray.loadSubstackList(dataPath + "/flyem/FIB/block_13layer_extended.txt");
+
+  ZDvidTarget target;
+  target.set("emrecon100.janelia.priv", "2a3", -1);
+
+  ZDvidReader reader;
+  reader.open(target);
+  QStringList swcKeys = reader.readKeys("skeletons", "0");
+
+  int count = 0;
+  foreach (const QString &swcKey, swcKeys) {
+
+    int bodyId = ZString(swcKey.toStdString()).firstInteger();
+    if (bodyId > 0) {
+      ZSwcTree *tree = reader.readSwc(bodyId);
+
+      ZSwcTree::DepthFirstIterator iter(tree);
+      while (iter.hasNext()) {
+        Swc_Tree_Node *tn = iter.next();
+        if (SwcTreeNode::isRegular(tn)) {
+          if (blockArray.hitTest(SwcTreeNode::x(tn), SwcTreeNode::y(tn),
+                                 SwcTreeNode::z(tn)) >= 0) {
+            qDebug() << swcKey;
+            ++count;
+            break;
+          }
+        }
+      }
+
+      delete tree;
+      //tree->save(GET_TEST_DATA_DIR + "/test.swc");
+    }
+  }
+
+  std::cout << count << "/" << swcKeys.size() << " neurons" << std::endl;
+
+#endif
+
+
+#if 0
+  ZObject3dScanArray objArray;
+  ZObject3dScan obj;
+  obj.load(GET_TEST_DATA_DIR + "/flyem/FIB/roi/roi_A.sobj");
+  objArray.push_back(obj);
+  obj.load(GET_TEST_DATA_DIR + "/flyem/FIB/roi/roi_B.sobj");
+  objArray.push_back(obj);
+  obj.load(GET_TEST_DATA_DIR + "/flyem/FIB/roi/roi_C.sobj");
+  objArray.push_back(obj);
+  obj.load(GET_TEST_DATA_DIR + "/flyem/FIB/roi/roi_D.sobj");
+  objArray.push_back(obj);
+  obj.load(GET_TEST_DATA_DIR + "/flyem/FIB/roi/roi_E.sobj");
+  objArray.push_back(obj);
+  obj.load(GET_TEST_DATA_DIR + "/flyem/FIB/roi/roi_F.sobj");
+  objArray.push_back(obj);
+  obj.load(GET_TEST_DATA_DIR + "/flyem/FIB/roi/roi_homev2.sobj");
+  objArray.push_back(obj);
+
+
+  ZStack *stack = ZStackFactory::MakeBinaryStack(objArray, 1);
+  stack->printInfo();
+
+#  if 1
+  ZDvidTarget target;
+  target.set("emrecon100.janelia.priv", "2a3", -1);
+
+  ZDvidReader reader;
+  reader.open(target);
+  QStringList swcKeys = reader.readKeys("skeletons", "0");
+
+
+  foreach (const QString &swcKey, swcKeys) {
+    qDebug() << swcKey;
+  }
+
+  std::cout << swcKeys.size() << " neurons" << std::endl;
+
+#  endif
+
+#if 0
+  ZFileList fileList;
+  int count = 0;
+  fileList.load("/Users/zhaot/Work/ConnectomeHackathon2015/skeletons", "swc");
+  for (int i = 0; i < fileList.size(); ++i) {
+    const char *filePath = fileList.getFilePath(i);
+    ZSwcTree tree;
+    tree.load(filePath);
+    ZSwcTree::DepthFirstIterator iter(&tree);
+    while (iter.hasNext()) {
+      Swc_Tree_Node *tn = iter.next();
+      if (SwcTreeNode::isRegular(tn)) {
+        int x = iround(SwcTreeNode::x(tn) / 32);
+        int y = iround(SwcTreeNode::y(tn) / 32);
+        int z = iround(SwcTreeNode::z(tn) / 32);
+        if (stack->getIntValue(x, y, z) > 0) {
+          std::cout << filePath << endl;
+          ++count;
+          break;
+        }
+      }
+    }
+  }
+
+  std::cout << count << " neurons" << std::endl;
+
+  delete stack;
+#endif
+
 #endif
 }

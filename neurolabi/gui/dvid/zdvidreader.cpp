@@ -541,6 +541,30 @@ QByteArray ZDvidReader::readKeyValue(const QString &dataName, const QString &key
 }
 
 QStringList ZDvidReader::readKeys(
+    const QString &dataName, const QString &minKey)
+{
+  ZDvidBufferReader reader;
+  ZDvidUrl dvidUrl(m_dvidTarget);
+  const std::string &maxKey = "\xff";
+
+  reader.read(dvidUrl.getKeyRangeUrl(
+                dataName.toStdString(), minKey.toStdString(), maxKey).c_str());
+  QByteArray keyBuffer = reader.getBuffer();
+
+  QStringList keys;
+
+  if (!keyBuffer.isEmpty()) {
+    ZJsonArray obj;
+    obj.decode(keyBuffer.data());
+    for (size_t i = 0; i < obj.size(); ++i) {
+      keys << ZJsonParser::stringValue(obj.at(i));
+    }
+  }
+
+  return keys;
+}
+
+QStringList ZDvidReader::readKeys(
     const QString &dataName, const QString &minKey, const QString &maxKey)
 {
   startReading();

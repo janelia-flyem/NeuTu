@@ -35,6 +35,10 @@ std::string ZDvidTarget::getSourceString(bool withHttpPrefix) const
     }
   }
 
+  if (!m_bodyLabelName.empty()) {
+    source += ":" + m_bodyLabelName;
+  }
+
   return source;
 }
 
@@ -93,6 +97,9 @@ void ZDvidTarget::setFromSourceString(const std::string &sourceString)
       }
     }
     set(tokens[1], tokens[3], port);
+    if (tokens.size() >= 5) {
+      setBodyLabelName(tokens[4]);
+    }
   }
 }
 
