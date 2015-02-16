@@ -16,7 +16,7 @@
    </font>
   </property>
   <property name="windowTitle">
-   <string>1.0x</string>
+   <string>1.0y</string>
   </property>
   <property name="iconSize">
    <size>
@@ -420,7 +420,7 @@
      <normaloff>:/images/open.png</normaloff>:/images/open.png</iconset>
    </property>
    <property name="text">
-    <string>Open Stack</string>
+    <string>Open</string>
    </property>
    <property name="toolTip">
     <string>Open a file</string>

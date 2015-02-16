@@ -21,6 +21,7 @@
 #include "flyem/zintcuboidarray.h"
 #include "zfiletype.h"
 #include "flyem/zflyemneuroninfo.h"
+#include "dvid/zdviddata.h"
 
 using namespace std;
 
@@ -153,7 +154,14 @@ bool ZFlyEmDataBundle::loadDvid(const ZDvidFilter &dvidFilter)
   ZFlyEmDvidReader fdReader;
   fdReader.open(dvidFilter.getDvidTarget());
 
-   m_synapseAnnotationFile = dvidTarget.getSourceString();
+  m_synapseAnnotationFile = dvidTarget.getSourceString();
+
+  QStringList annotationList = fdReader.readKeys(
+        ZDvidData::getName(ZDvidData::ROLE_BODY_ANNOTATION), "0");
+  std::set<int> annotationSet;
+  foreach (const QString &idStr, annotationList) {
+    annotationSet.insert(ZString(idStr.toStdString()).firstInteger());
+  }
 
   size_t i = 0;
   for (std::set<int>::const_iterator iter = bodySet.begin();
@@ -169,17 +177,19 @@ bool ZFlyEmDataBundle::loadDvid(const ZDvidFilter &dvidFilter)
       neuron.setSynapseAnnotation(getSynapseAnnotation());
       neuron.setSynapseScale(90);
 
-      ZFlyEmBodyAnnotation annotation = fdReader.readAnnotation(bodyId);
-      if (!annotation.getName().empty()) {
-        neuron.setName(annotation.getName());
-      }
+      if (annotationSet.count(bodyId) > 0) {
+        ZFlyEmBodyAnnotation annotation = fdReader.readAnnotation(bodyId);
+        if (!annotation.getName().empty()) {
+          neuron.setName(annotation.getName());
+        }
 
-      if (!annotation.getClass().empty()) {
-        neuron.setType(annotation.getClass());
-      } else {
-        neuron.setType(ZFlyEmNeuronInfo::GuessTypeFromName(neuron.getName()));
+        if (!annotation.getClass().empty()) {
+          neuron.setType(annotation.getClass());
+        } else {
+          neuron.setType(ZFlyEmNeuronInfo::GuessTypeFromName(neuron.getName()));
+        }
       }
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
       if (neuron.getId() == 16493) {
         std::cout << "Potential bug" << std::endl;
       }

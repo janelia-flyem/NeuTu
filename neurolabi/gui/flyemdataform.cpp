@@ -10,6 +10,7 @@
 #include <QMessageBox>
 #include <QGraphicsPixmapItem>
 #include <QMenu>
+#include <QtConcurrentRun>
 
 #include "neutubeconfig.h"
 #include "tz_error.h"
@@ -30,6 +31,7 @@
 #include "z3daxis.h"
 #include "swcexportdialog.h"
 #include "zdialogfactory.h"
+#include "zprogressmanager.h"
 
 FlyEmDataForm::FlyEmDataForm(QWidget *parent) :
   QWidget(parent),
@@ -67,6 +69,8 @@ FlyEmDataForm::FlyEmDataForm(QWidget *parent) :
           this, SLOT(updateThumbnail(QModelIndex)));
   connect(ui->slaveQueryView, SIGNAL(clicked(QModelIndex)),
           this, SLOT(updateThumbnailSecondary(QModelIndex)));
+  connect(this, SIGNAL(thumbnailItemReady(QList<QGraphicsItem*>,int)),
+          this, SLOT(updateThumbnail(QList<QGraphicsItem*>,int)));
 
   //customize
   //ui->testPushButton->hide();
@@ -77,20 +81,15 @@ FlyEmDataForm::FlyEmDataForm(QWidget *parent) :
   ui->queryView->setContextMenu(m_neuronContextMenu);
   ui->slaveQueryView->setContextMenu(m_secondaryNeuronContextMenu);
 
+  m_progressManager = new ZProgressManager(this);
   m_specialProgressReporter.setProgressBar(ui->progressBar);
-  setProgressReporter(&m_specialProgressReporter);
+  m_progressManager->setProgressReporter(&m_specialProgressReporter);
 
   setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
-  //m_thumbnailImage = new QImage;
-  //m_thumbnailImage->load(":/images/hideobj.png");
+
   m_thumbnailScene = new QGraphicsScene;
   ui->thumbnailView->setScene(m_thumbnailScene);
-  /*
-  m_thumbnailWidget = new ZImageWidget(ui->thumnailContainer, m_thumbnailImage);
-  m_thumbnailWidget->setProjRegion(
-        QRect(QPoint(0, 0), ui->thumnailContainer->size()));
-        */
 
   ui->overallLayout->setMargin(10);
   ui->thumbnailView->resize(256, ui->thumbnailView->height());
@@ -345,8 +344,10 @@ void FlyEmDataForm::viewModel(const QModelIndex &index)
     return;
   }
 
-  ui->progressBar->setValue(50);
-  ui->progressBar->show();
+  getProgressManager()->notifyProgressStarted();
+  getProgressManager()->notifyProgressAdvanced(0.5);
+//  ui->progressBar->setValue(50);
+//  ui->progressBar->show();
   //QApplication::processEvents();
 
   //const ZFlyEmNeuron *neuron = m_neuronList->getNeuron(index);
@@ -390,7 +391,9 @@ void FlyEmDataForm::viewModel(const QModelIndex &index)
     }
   }
 
-  ui->progressBar->hide();
+  getProgressManager()->notifyProgressEnded();
+
+  //ui->progressBar->hide();
 }
 
 ZStackDoc *FlyEmDataForm::showViewSelectedModel(ZFlyEmQueryView *view)
@@ -659,7 +662,42 @@ void FlyEmDataForm::updateSlaveQueryTable()
 void FlyEmDataForm::updateThumbnail(const QModelIndex &index)
 {
   ZFlyEmNeuron *neuron = m_neuronList->getNeuron(index);
-  updateThumbnail(neuron);
+  updateThumbnailLive(neuron);
+}
+
+QList<int> FlyEmDataForm::getSelectedNeuronList() const
+{
+  QList<int> neuronIdList;
+
+  QItemSelectionModel *sel = ui->queryView->selectionModel();
+  QVector<ZFlyEmNeuron*> neuronArray =
+      m_neuronList->getNeuronArray(sel->selectedIndexes());
+  foreach (ZFlyEmNeuron* neuron, neuronArray) {
+    neuronIdList.append(neuron->getId());
+  }
+
+  return neuronIdList;
+}
+
+void FlyEmDataForm::updateThumbnail(
+    QList<QGraphicsItem *> itemList, int bodyId)
+{
+  QList<int> bodyList = getSelectedNeuronList();
+  bool itemAdded = false;
+  if (!bodyList.isEmpty()) {
+    if (bodyList.last() == bodyId) {
+      initThumbnailScene();
+      foreach (QGraphicsItem* item, itemList) {
+        m_thumbnailScene->addItem(item);
+      }
+      itemAdded = true;
+    }
+  }
+  if (!itemAdded) {
+    foreach (QGraphicsItem* item, itemList) {
+      delete item;
+    }
+  }
 }
 
 void FlyEmDataForm::updateThumbnailSecondary(const QModelIndex &index)
@@ -699,10 +737,315 @@ void FlyEmDataForm::computeThumbnailFunc(ZFlyEmNeuron *neuron)
           bodyInfo.setBodySize(body.getVoxelNumber());
           bodyInfo.setBoundBox(body.getBoundBox());
           writer.writeBodyInfo(neuron->getId(), bodyInfo.toJsonObject());
+
+          QList<QGraphicsItem *> currentItemList;
+          generateThumbnailItem(currentItemList, neuron);
         }
       }
     }
   }
+}
+
+Stack* FlyEmDataForm::loadThumbnailImage(ZFlyEmNeuron *neuron)
+{
+  Stack *stack;
+  if (ZFileType::fileType(neuron->getThumbnailPath()) ==
+      ZFileType::TIFF_FILE) {
+    stack = C_Stack::readSc(neuron->getThumbnailPath().c_str());
+  } else {
+    ZString str(neuron->getThumbnailPath());
+    if (str.startsWith("http")) {
+      ZDvidTarget target;
+      target.setFromSourceString(str);
+      ZDvidReader reader;
+      if (reader.open(target)) {
+        bool isDataReady = false;
+        if (reader.hasBodyInfo(neuron->getId())) {
+          ZStack *stackObj = reader.readThumbnail(neuron->getId());
+          if (stackObj != NULL) {
+            stack = C_Stack::clone(stackObj->c_stack());
+            delete stackObj;
+            isDataReady = true;
+          }
+        }
+      }
+    }
+  }
+
+  return stack;
+}
+
+void FlyEmDataForm::generateThumbnailItem(
+    QList<QGraphicsItem *> currentItemList, ZFlyEmNeuron *neuron)
+{
+  bool thumbnailReady = false;
+  if (neuron != NULL) {
+    if (!neuron->getThumbnailPath().empty()) {
+      QGraphicsPixmapItem *thumbnailItem = new QGraphicsPixmapItem;
+      QPixmap pixmap;
+      if (pixmap.load(neuron->getThumbnailPath().c_str())) {
+        thumbnailReady = true;
+      } else {
+        Stack *stack = loadThumbnailImage(neuron);
+
+        if (stack != NULL) {
+          ZImage image(C_Stack::width(stack), C_Stack::height(stack));
+          image.setData(C_Stack::array8(stack));
+          if (pixmap.convertFromImage(image)) {
+            thumbnailReady = true;
+          } else {
+            dump("Failed to load the thumbnail.");
+          }
+          C_Stack::kill(stack);
+        } else {
+          //dump("Failed to load the thumbnail.");
+        }
+      }
+
+      if (thumbnailReady) {
+        thumbnailItem->setPixmap(pixmap);
+        QTransform transform;
+
+        double sceneWidth = m_thumbnailScene->width();
+        double sceneHeight = m_thumbnailScene->height();
+        double scale = std::min(
+              double(sceneWidth - 10) / pixmap.width(),
+              double(sceneHeight - 10) / pixmap.height());
+        if (scale > 5) {
+          scale = 5;
+        }
+        transform.scale(scale, scale);
+        thumbnailItem->setTransform(transform);
+        currentItemList.append(thumbnailItem);
+
+        int sourceZDim = getParentFrame()->
+            getMasterData()->getSourceDimension(NeuTube::Z_AXIS);
+        int sourceYDim = getParentFrame()->getMasterData()->
+            getSourceDimension(NeuTube::Y_AXIS);
+
+        ZDvidTarget dvidTarget;
+        dvidTarget.setFromSourceString(neuron->getThumbnailPath());
+        ZDvidReader reader;
+        if (reader.open(dvidTarget)) {
+          ZFlyEmNeuronBodyInfo bodyInfo =
+              reader.readBodyInfo(neuron->getId());
+          int startY = bodyInfo.getBoundBox().getFirstCorner().getY();
+          int startZ = bodyInfo.getBoundBox().getFirstCorner().getZ();
+          int bodyHeight = bodyInfo.getBoundBox().getDepth();
+          int bodySpan = bodyInfo.getBoundBox().getHeight();
+
+          if (sourceZDim == 0) {
+            QGraphicsTextItem *textItem = new QGraphicsTextItem;
+            textItem->setHtml(
+                  QString("<p><font color=\"red\">Z = %1</font></p>"
+                          "<p><font color=\"red\">Height = %2</font></p>").
+                  arg(startZ).arg(bodyHeight));
+            currentItemList.append(textItem);
+//            m_thumbnailScene->addItem(textItem);
+          } else { //Draw range rect
+            double x = 10;
+            double y = 10;
+
+            double scale = sceneWidth * 0.5 / sourceYDim;
+            double height = sourceZDim * scale;
+            double width = sourceYDim * scale;
+
+            QGraphicsRectItem *rectItem = new QGraphicsRectItem(
+                  sceneWidth - width - x, y, width, height);
+            rectItem->setPen(QPen(QColor(255, 0, 0, 164)));
+            currentItemList.append(rectItem);
+//            m_thumbnailScene->addItem(rectItem);
+
+            int z0 = getParentFrame()->
+                getMasterData()->getSourceOffset(NeuTube::Z_AXIS);
+            int y0 = getParentFrame()->
+                getMasterData()->getSourceOffset(NeuTube::Y_AXIS);
+            rectItem = new QGraphicsRectItem(
+                  sceneWidth - width - x + (startY - y0) * scale,
+                  y + (startZ - z0) * scale,
+                  bodySpan * scale, bodyHeight * scale);
+            rectItem->setPen(QPen(QColor(0, 255, 0, 164)));
+            currentItemList.append(rectItem);
+//            m_thumbnailScene->addItem(rectItem);
+          }
+        }
+      } else {
+        //fire off computation thread
+        QString threadId =
+            QString("computeThumbnailFunc:%1").arg(neuron->getId());
+        QFuture<void> future =
+            QtConcurrent::run(
+              this, &FlyEmDataForm::computeThumbnailFunc, neuron);
+        m_threadFutureMap[threadId] = future;
+      }
+    }
+    emit thumbnailItemReady(currentItemList, neuron->getId());
+  }
+}
+
+void FlyEmDataForm::updateThumbnailLive(ZFlyEmNeuron *neuron)
+{
+  if (neuron == NULL) {
+    return;
+  }
+
+  //initThumbnailScene();
+
+  bool isWaiting = false;
+  QString threadId =
+      QString("computeThumbnailFunc:%1").arg(neuron->getId());
+  QList<QGraphicsItem*> itemList;
+
+  if (m_threadFutureMap.contains(threadId)) {
+    if (m_threadFutureMap[threadId].isRunning()) {
+      isWaiting = true;
+      QGraphicsTextItem *textItem = new QGraphicsTextItem;
+      textItem->setHtml(
+            QString("<p><font color=\"green\">The thumbail is being computed.</font></p>"
+                    "<p><font color=\"green\">It may take several minutes.</p>"
+                    "<p><font color=\"green\">Please come back later.</font></p>"));
+
+      itemList.append(textItem);
+      //m_thumbnailScene->addItem(textItem);
+    }
+  } else {
+    generateThumbnailItem(itemList, neuron);
+  }
+#if 0
+  bool thumbnailReady = false;
+  if (neuron != NULL && !isWaiting) {
+    if (!neuron->getThumbnailPath().empty()) {
+      QGraphicsPixmapItem *thumbnailItem = new QGraphicsPixmapItem;
+      QPixmap pixmap;
+      if (pixmap.load(neuron->getThumbnailPath().c_str())) {
+        thumbnailReady = true;
+      } else {
+        Stack *stack = NULL;
+        if (ZFileType::fileType(neuron->getThumbnailPath()) ==
+            ZFileType::TIFF_FILE) {
+          stack = C_Stack::readSc(neuron->getThumbnailPath().c_str());
+        } else {
+          ZString str(neuron->getThumbnailPath());
+          if (str.startsWith("http")) {
+            ZDvidTarget target;
+            target.setFromSourceString(str);
+            ZDvidReader reader;
+            if (reader.open(target)) {
+              bool isDataReady = false;
+              if (reader.hasBodyInfo(neuron->getId())) {
+                ZStack *stackObj = reader.readThumbnail(neuron->getId());
+                if (stackObj != NULL) {
+                  stack = C_Stack::clone(stackObj->c_stack());
+                  delete stackObj;
+                  isDataReady = true;
+                }
+              }
+
+              if (!isDataReady) {
+                //fire off computation thread
+                QFuture<void> future =
+                    QtConcurrent::run(
+                      this, &FlyEmDataForm::computeThumbnailFunc, neuron);
+                m_threadFutureMap[threadId] = future;
+                QGraphicsTextItem *textItem = new QGraphicsTextItem;
+                QString font = "color=\"green\"";
+                textItem->setHtml(
+                      QString(
+                        "<p><font %1>The thumbail is being computed.</font></p>"
+                        "<p><font %1>It may take several minutes.</font></p>"
+                        "<p><font %1>Please come back later.</font></p>").
+                      arg(font));
+                m_thumbnailScene->addItem(textItem);
+              }
+            }
+          }
+        }
+
+        if (stack != NULL) {
+          ZImage image(C_Stack::width(stack), C_Stack::height(stack));
+          image.setData(C_Stack::array8(stack));
+#ifdef _DEBUG_2
+          image.save((GET_DATA_DIR + "/test.png").c_str());
+#endif
+          if (pixmap.convertFromImage(image)) {
+            thumbnailReady = true;
+          } else {
+            dump("Failed to load the thumbnail.");
+          }
+          C_Stack::kill(stack);
+        } else {
+          //dump("Failed to load the thumbnail.");
+        }
+      }
+
+      if (thumbnailReady) {
+        thumbnailItem->setPixmap(pixmap);
+        QTransform transform;
+
+        double sceneWidth = m_thumbnailScene->width();
+        double sceneHeight = m_thumbnailScene->height();
+        double scale = std::min(
+              double(sceneWidth - 10) / pixmap.width(),
+              double(sceneHeight - 10) / pixmap.height());
+        if (scale > 5) {
+          scale = 5;
+        }
+        transform.scale(scale, scale);
+        thumbnailItem->setTransform(transform);
+        m_thumbnailScene->addItem(thumbnailItem);
+
+        int sourceZDim = getParentFrame()->
+            getMasterData()->getSourceDimension(NeuTube::Z_AXIS);
+        int sourceYDim = getParentFrame()->getMasterData()->
+            getSourceDimension(NeuTube::Y_AXIS);
+
+        ZDvidTarget dvidTarget;
+        dvidTarget.setFromSourceString(neuron->getThumbnailPath());
+        ZDvidReader reader;
+        if (reader.open(dvidTarget)) {
+          ZFlyEmNeuronBodyInfo bodyInfo =
+              reader.readBodyInfo(neuron->getId());
+          int startY = bodyInfo.getBoundBox().getFirstCorner().getY();
+          int startZ = bodyInfo.getBoundBox().getFirstCorner().getZ();
+          int bodyHeight = bodyInfo.getBoundBox().getDepth();
+          int bodySpan = bodyInfo.getBoundBox().getHeight();
+
+          if (sourceZDim == 0) {
+            QGraphicsTextItem *textItem = new QGraphicsTextItem;
+            textItem->setHtml(
+                  QString("<p><font color=\"red\">Z = %1</font></p>"
+                          "<p><font color=\"red\">Height = %2</font></p>").
+                  arg(startZ).arg(bodyHeight));
+            m_thumbnailScene->addItem(textItem);
+          } else { //Draw range rect
+            double x = 10;
+            double y = 10;
+
+            double scale = sceneWidth * 0.5 / sourceYDim;
+            double height = sourceZDim * scale;
+            double width = sourceYDim * scale;
+
+            QGraphicsRectItem *rectItem = new QGraphicsRectItem(
+                  sceneWidth - width - x, y, width, height);
+            rectItem->setPen(QPen(QColor(255, 0, 0, 164)));
+            m_thumbnailScene->addItem(rectItem);
+
+            int z0 = getParentFrame()->
+                getMasterData()->getSourceOffset(NeuTube::Z_AXIS);
+            int y0 = getParentFrame()->
+                getMasterData()->getSourceOffset(NeuTube::Y_AXIS);
+            rectItem = new QGraphicsRectItem(
+                  sceneWidth - width - x + (startY - y0) * scale,
+                  y + (startZ - z0) * scale,
+                  bodySpan * scale, bodyHeight * scale);
+            rectItem->setPen(QPen(QColor(0, 255, 0, 164)));
+            m_thumbnailScene->addItem(rectItem);
+          }
+        }
+      }
+    }
+  }
+#endif
 }
 
 void FlyEmDataForm::updateThumbnail(ZFlyEmNeuron *neuron)
@@ -812,14 +1155,6 @@ void FlyEmDataForm::updateThumbnail(ZFlyEmNeuron *neuron)
         transform.scale(scale, scale);
         thumbnailItem->setTransform(transform);
         m_thumbnailScene->addItem(thumbnailItem);
-#if 0
-        ZObject3dScan *body = neuron->getBody();
-        int startZ = body->getMinZ();
-        int bodyHeight = body->getMaxZ() - startZ + 1;
-        int startY = body->getMinY();
-        int bodySpan = body->getMaxY() - startY + 1;
-        neuron->deprecate(ZFlyEmNeuron::BODY);
-#endif
 
         int sourceZDim = getParentFrame()->
             getMasterData()->getSourceDimension(NeuTube::Z_AXIS);
@@ -885,25 +1220,6 @@ void FlyEmDataForm::initThumbnailScene()
   m_thumbnailScene->clear();
   m_thumbnailScene->setSceneRect(ui->thumbnailView->viewport()->rect());
   m_thumbnailScene->setBackgroundBrush(QBrush(Qt::gray));
-
-  /*
-
-  double x0 = 0;
-  double y0 = 0;
-  double w = ui->thumbnailView->size().width() - 10;
-  double h = ui->thumbnailView->size().height() - 10;
-
-  m_thumbnailScene->setSceneRect(x0, y0, w, h);
-  m_thumbnailScene->addRect(
-        m_thumbnailScene->sceneRect(), QPen(QColor(255, 0, 0)));
-
-  QGraphicsRectItem *item = new QGraphicsRectItem;
-  int sourceWidth = 400;
-  int sourceHeight = 8000;
-
-  item->setRect(QRect(100, 1000, sourceWidth, sourceHeight));
-  double ratio = std::min(double(sourceWidth) / w, double(sourceHeight) / h);
-  */
 }
 
 void FlyEmDataForm::resizeEvent(QResizeEvent *)

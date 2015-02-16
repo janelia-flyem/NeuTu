@@ -38,16 +38,18 @@ QVariant ZSwcFileListModel::data(const QModelIndex &index, int role) const
 }
 
 bool ZSwcFileListModel::removeRows(int row, int count,
-                                   const QModelIndex &/*parent*/)
+                                   const QModelIndex &parent)
 {
   bool removed = false;
 
+  beginRemoveRows(parent, row, row + count - 1);
   for (int i = 0; i < count; ++i) {
     if (row < m_fileList.size()) {
       m_fileList.removeAt(row);
       removed = true;
     }
   }
+  endRemoveRows();
 
   return removed;
 }
@@ -63,4 +65,10 @@ void ZSwcFileListModel::deleteAll()
     QFile::remove(getFilePath(i));
   }
   removeRows(0, rowCount());
+}
+
+void ZSwcFileListModel::deleteFile(int index)
+{
+  QFile::remove(getFilePath(index));
+  removeRows(index, 1);
 }

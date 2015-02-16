@@ -19,10 +19,14 @@ public:
   void updateFile();
 
 public slots:
+  void deleteSelected();
   void viewSwc(const QModelIndex &index);
 
 private slots:
   void on_pushButton_clicked();
+
+private:
+  QModelIndexList getSelected() const;
 
 private:
   Ui::AutosaveSwcListDialog *ui;

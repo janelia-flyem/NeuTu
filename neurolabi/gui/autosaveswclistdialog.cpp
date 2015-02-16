@@ -12,8 +12,11 @@ AutosaveSwcListDialog::AutosaveSwcListDialog(QWidget *parent) :
 {
   ui->setupUi(this);
   ui->listView->setModel(&m_fileList);
+  ui->listView->setSelectionMode(QAbstractItemView::ExtendedSelection);
   connect(ui->listView, SIGNAL(doubleClicked(QModelIndex)),
           this, SLOT(viewSwc(QModelIndex)));
+  connect(ui->deleteSelectedPushButton, SIGNAL(clicked()),
+          this, SLOT(deleteSelected()));
 }
 
 AutosaveSwcListDialog::~AutosaveSwcListDialog()
@@ -25,6 +28,28 @@ void AutosaveSwcListDialog::updateFile()
 {
   m_fileList.loadDir(
         NeutubeConfig::getInstance().getPath(NeutubeConfig::AUTO_SAVE).c_str());
+}
+
+QModelIndexList AutosaveSwcListDialog::getSelected() const
+{
+  QItemSelectionModel *model = ui->listView->selectionModel();
+
+  return model->selectedIndexes();
+}
+
+void AutosaveSwcListDialog::deleteSelected()
+{
+  QModelIndexList indexList = getSelected();
+  if (!indexList.isEmpty()) {
+    QList<int> rowList;
+    foreach (const QModelIndex &index, indexList) {
+      rowList.append(index.row());
+    }
+    qSort(rowList);
+    for (int i = rowList.size() - 1; i >= 0; --i) {
+      m_fileList.deleteFile(rowList[i]);
+    }
+  }
 }
 
 void AutosaveSwcListDialog::viewSwc(const QModelIndex &index)

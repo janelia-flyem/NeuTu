@@ -15082,7 +15082,16 @@ void ZTest::test(MainWindow *host)
   blockArray.exportSwc(dataPath + "/flyem/FIB/block_13layer_extended.swc");
 #endif
 
-#if 1
+#if 0
+  FlyEm::ZIntCuboidArray blockArray;
+  blockArray.loadSubstackList(
+        dataPath + "/flyem/FIB/block_13layer_extended_surround.txt");
+
+  Cuboid_I box = blockArray.getBoundBox();
+  Print_Cuboid_I(&box);
+#endif
+
+#if 0
   FlyEm::ZIntCuboidArray blockArray;
   blockArray.loadSubstackList(dataPath + "/flyem/FIB/block_13layer_extended.txt");
 
@@ -15094,6 +15103,7 @@ void ZTest::test(MainWindow *host)
   QStringList swcKeys = reader.readKeys("skeletons", "0");
 
   int count = 0;
+  ZString outputDir = GET_TEST_DATA_DIR + "/flyem/FIB/hackathon/skeletons";
   foreach (const QString &swcKey, swcKeys) {
 
     int bodyId = ZString(swcKey.toStdString()).firstInteger();
@@ -15107,6 +15117,7 @@ void ZTest::test(MainWindow *host)
           if (blockArray.hitTest(SwcTreeNode::x(tn), SwcTreeNode::y(tn),
                                  SwcTreeNode::z(tn)) >= 0) {
             qDebug() << swcKey;
+            tree->save(outputDir + "/" + swcKey.toStdString());
             ++count;
             break;
           }
@@ -15122,6 +15133,37 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
+#if 0
+  ZIntCuboid box;
+  box.setFirstCorner(1568, 1664, 1376);
+  box.setLastCorner(5183, 4223, 7807);
+
+  size_t totalVolume = box.getVolume();
+  ZObject3dScanArray objArray;
+  ZObject3dScan obj;
+  obj.load(GET_TEST_DATA_DIR + "/flyem/FIB/roi/roi_A.sobj");
+  objArray.push_back(obj);
+  obj.load(GET_TEST_DATA_DIR + "/flyem/FIB/roi/roi_B.sobj");
+  objArray.push_back(obj);
+  obj.load(GET_TEST_DATA_DIR + "/flyem/FIB/roi/roi_C.sobj");
+  objArray.push_back(obj);
+  obj.load(GET_TEST_DATA_DIR + "/flyem/FIB/roi/roi_D.sobj");
+  objArray.push_back(obj);
+  obj.load(GET_TEST_DATA_DIR + "/flyem/FIB/roi/roi_E.sobj");
+  objArray.push_back(obj);
+  obj.load(GET_TEST_DATA_DIR + "/flyem/FIB/roi/roi_F.sobj");
+  objArray.push_back(obj);
+  obj.load(GET_TEST_DATA_DIR + "/flyem/FIB/roi/roi_homev2.sobj");
+  objArray.push_back(obj);
+
+  for (size_t i = 0; i < objArray.size(); ++i) {
+    const ZObject3dScan &obj = objArray[i];
+    double ratio = (double) obj.getVoxelNumber() * 32 * 32 * 32 / totalVolume;
+
+    std::cout << obj.getSource() << ": " << ratio << std::endl;
+  }
+
+#endif
 
 #if 0
   ZObject3dScanArray objArray;

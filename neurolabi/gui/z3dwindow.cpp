@@ -651,18 +651,7 @@ void Z3DWindow::createMenus()
 void Z3DWindow::createContextMenu()
 {
   QMenu *contextMenu = new QMenu(this);
-  //  contextMenu->addAction("mark selected Puncta Property 1",
-  //                         this, SLOT(markSelectedPunctaProperty1()));
-  //  contextMenu->addAction("mark selected Puncta Property 2",
-  //                         this, SLOT(markSelectedPunctaProperty2()));
-  //  contextMenu->addAction("mark selected Puncta Property 3",
-  //                         this, SLOT(markSelectedPunctaProperty3()));
-  //  contextMenu->addAction("unmark selected Puncta Property 1",
-  //                         this, SLOT(unmarkSelectedPunctaProperty1()));
-  //  contextMenu->addAction("unmark selected Puncta Property 2",
-  //                         this, SLOT(unmarkSelectedPunctaProperty2()));
-  //  contextMenu->addAction("unmark selected Puncta Property 3",
-  //                         this, SLOT(unmarkSelectedPunctaProperty3()));
+
   m_saveSelectedPunctaAsAction = new QAction("save selected puncta as ...", this);
   connect(m_saveSelectedPunctaAsAction, SIGNAL(triggered()), this,
           SLOT(saveSelectedPunctaAs()));
@@ -700,34 +689,10 @@ void Z3DWindow::createContextMenu()
 
 
   contextMenu->addAction(m_toggleSmartExtendSelectedSwcNodeAction);
-
-  //QMenu *selectMenu = new QMenu("Select", contextMenu);
-  //contextMenu->addAction(m_setSwcRootAction);
-  //contextMenu->addAction(m_breakSwcConnectionAction);
   contextMenu->addAction(m_connectToSwcNodeAction);
-  //contextMenu->addAction(m_connectSwcNodeAction);
-  //contextMenu->addAction(m_mergeSwcNodeAction);
-  //selectMenu->addAction(m_selectSwcNodeDownstreamAction);
-  //selectMenu->addAction(m_selectSwcConnectionAction);
-  //selectMenu->addAction(m_selectSwcNodeUpstreamAction);
-  //selectMenu->addAction(m_selectSwcNodeBranchAction);
-  //qDebug() << m_selectSwcNodeTreeAction;
-
   contextMenu->addAction(m_selectSwcNodeTreeAction);
-  //selectMenu->addAction(m_selectAllConnectedSwcNodeAction);
-  //selectMenu->addAction(m_selectAllSwcNodeAction);
-  //contextMenu->addMenu(selectMenu);
-  //contextMenu->addAction(m_changeSwcNodeTypeAction);
-  //contextMenu->addAction(m_translateSwcNodeAction);
-  //contextMenu->addAction(m_changeSwcNodeSizeAction);
-  //contextMenu->addAction(m_removeSelectedObjectsAction);
-
-  //contextMenu->addAction(m_toogleExtendSelectedSwcNodeAction);
-
   contextMenu->addAction(m_toggleMoveSelectedObjectsAction);
-  //contextMenu->addAction(m_removeSwcTurnAction);
-  //contextMenu->addAction(m_resolveCrossoverAction);
-  //contextMenu->addAction(m_swcNodeLengthAction);
+
   ZStackDocMenuFactory menuFactory;
   menuFactory.setSingleSwcNodeActionActivator(&m_singleSwcNodeActionActivator);
   menuFactory.makeSwcNodeContextMenu(getDocument(), this, contextMenu);
