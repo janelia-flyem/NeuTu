@@ -16,6 +16,13 @@ public:
   ZSharedPointer(T *p = NULL);
   ZSharedPointer(const ZSharedPointer<T> &p);
 };
+
+template <typename T>
+class ZUniquePointer : public ztr1::auto_ptr<T> {
+public:
+  ZUniquePointer(T *p = NULL);
+  ZUniquePointer(const ZUniquePointer<T> &p);
+};
 #endif
 
 #define ZSharedPointer ztr1::shared_ptr

@@ -50,6 +50,8 @@ public:
     return m_dataFrame;
   }
 
+  int getSelectedBodyId() const;
+
 signals:
   void progressAdvanced(double dp);
   void progressStarted();
@@ -58,6 +60,7 @@ signals:
   void originalLabelUpdated(ZArray *label);
   void selectionChanged(ZStackObjectSelector selector);
   void bodyMerged(QList<uint64_t> objLabelList);
+  void splitSent(ZDvidTarget target, int bodyId);
 
 public slots:
   void viewGrayscale(const ZIntPoint &offset, int width, int height);
@@ -69,6 +72,7 @@ public slots:
   void update3DBodyView(const ZStackObjectSelector &selector);
   void showBody3d();
   void detachBodyWindow();
+  void notifySplit();
 
 private:
   ZFlyEmBodyMergeFrame *m_dataFrame;

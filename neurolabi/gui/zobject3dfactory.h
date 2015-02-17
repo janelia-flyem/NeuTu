@@ -1,11 +1,14 @@
 #ifndef ZOBJECT3DFACTORY_H
 #define ZOBJECT3DFACTORY_H
 
+#include "tz_cdefs.h"
+
 class ZStack;
 class ZObject3d;
 class ZObject3dArray;
 class ZObject3dScan;
 class ZObject3dScanArray;
+class ZClosedCurve;
 
 class ZObject3dFactory
 {
@@ -23,6 +26,9 @@ public:
   static ZObject3dScan* MakeObject3dScan(
       const ZStack &stack, ZObject3dScan *out);
   static ZObject3dScanArray* MakeObject3dScanArray(const ZStack &stack);
+
+  static ZObject3dScan* MakeFilledMask(const ZClosedCurve &curve, int z,
+                                       ZObject3dScan *result = NULL);
 };
 
 #endif // ZOBJECT3DFACTORY_H

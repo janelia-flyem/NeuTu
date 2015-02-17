@@ -1267,6 +1267,14 @@ void C_Stack::drawInteger(Stack *canvas, int n, int dx, int dy, int dz,
   }
 }
 
+Stack C_Stack::sliceView(const Mc_Stack *stack, int slice, int channel)
+{
+  Stack scStack;
+  C_Stack::view(stack, &scStack, channel);
+
+  return sliceView(&scStack, slice);
+}
+
 Stack C_Stack::sliceView(const Stack *stack, int slice)
 {
   TZ_ASSERT(slice >= 0 && slice < C_Stack::depth(stack), "Invalide slice");

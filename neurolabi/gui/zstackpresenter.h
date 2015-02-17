@@ -297,10 +297,6 @@ private:
   QList<ZStackObject*> m_decorationList;
   QList<ZStackObject*> m_activeDecorationList;
 
-  //Mode m_mode;
-  //InteractiveMode m_intMode[2];
-  //int m_zoomRatio;
-  //QPoint m_zoomOffset;
   bool m_showObject;
   std::vector<double> m_greyScale;
   std::vector<double> m_greyOffset;

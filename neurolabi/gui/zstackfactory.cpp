@@ -15,6 +15,7 @@
 #include "zweightedpointarray.h"
 #include "math.h"
 #include "tz_color.h"
+#include "zobject3dscanarray.h"
 
 ZStackFactory::ZStackFactory()
 {
@@ -107,6 +108,31 @@ ZStack* ZStackFactory::makeZeroStack(
   return stack;
 }
 
+ZStack* ZStackFactory::makeSlice(const ZStack &stack, int z)
+{
+  ZStack *out = NULL;
+
+  int slice = z - stack.getOffset().getZ();
+  if (stack.channelNumber() == 1) {
+    Stack sliceView = C_Stack::sliceView(stack.c_stack(), slice);
+    out = new ZStack;
+    out->consume(C_Stack::clone(&sliceView));
+  } else if (stack.channelNumber() > 1) {
+    out = makeZeroStack(stack.kind(), stack.width(), stack.height(), 1,
+                        stack.channelNumber());
+    for (int c = 0; c < stack.channelNumber(); ++c) {
+      Stack sliceView = C_Stack::sliceView(stack.data(), slice, c);
+      C_Stack::copyValue(&sliceView, out->c_stack(c));
+    }
+  }
+
+  if (out != NULL) {
+    out->setOffset(stack.getOffset().getX(), stack.getOffset().getY(), z);
+  }
+
+  return out;
+}
+
 ZStack* ZStackFactory::makeZeroStack(const ZIntCuboid box, int nchannel)
 {
   ZStack *stack = makeZeroStack(
@@ -187,7 +213,7 @@ ZStack* ZStackFactory::makePolygonPicture(const ZStroke2d &curve)
 #ifdef _DEBUG_2
   pix->save((GET_DATA_DIR + "/test.tif").c_str());
   //delete pix;
-  delete painter;
+  //delete painter;
 #endif
 
   stack = new ZStack(GREY, pix->width(), pix->height(), 1, 1);
@@ -650,6 +676,56 @@ ZStack* ZStackFactory::CompositeForeground(
   ZStack *stack = ZStackFactory::makeZeroStack(stack1.kind(), boundBox, 1);
   stack1.paste(stack, 0);
   stack2.paste(stack, 0);
+
+  return stack;
+}
+
+ZStack* ZStackFactory::MakeBinaryStack(
+    const ZObject3dScanArray &objArray, int v)
+{
+  ZStack *stack = NULL;
+  if (!objArray.empty()) {
+    ZIntCuboid boundBox = objArray.getBoundBox();
+    stack = makeZeroStack(GREY, boundBox);
+
+    int offset[3];
+    offset[0] = -stack->getOffset().getX();
+    offset[1] = -stack->getOffset().getY();
+    offset[2] = -stack->getOffset().getZ();
+
+    for (ZObject3dScanArray::const_iterator iter = objArray.begin();
+         iter != objArray.end(); ++iter) {
+      const ZObject3dScan &obj = *iter;
+      obj.drawStack(stack->c_stack(), v, offset);
+    }
+  }
+
+  return stack;
+}
+
+ZStack* ZStackFactory::MakeColorStack(const ZObject3dScanArray &objArray)
+{
+  ZStack *stack = NULL;
+
+#if defined(_QT_GUI_USED_)
+  if (!objArray.empty()) {
+    ZIntCuboid boundBox = objArray.getBoundBox();
+    stack = makeZeroStack(GREY, boundBox, 3);
+
+    int offset[3];
+    offset[0] = -stack->getOffset().getX();
+    offset[1] = -stack->getOffset().getY();
+    offset[2] = -stack->getOffset().getZ();
+
+    for (ZObject3dScanArray::const_iterator iter = objArray.begin();
+         iter != objArray.end(); ++iter) {
+      const ZObject3dScan &obj = *iter;
+      obj.drawStack(stack->c_stack(0), obj.getColor().red(), offset);
+      obj.drawStack(stack->c_stack(1), obj.getColor().green(), offset);
+      obj.drawStack(stack->c_stack(2), obj.getColor().blue(), offset);
+    }
+  }
+#endif
 
   return stack;
 }

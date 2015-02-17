@@ -34,6 +34,7 @@ public:
   bool open(const ZDvidTarget &target);
   bool open(const QString &sourceString);
 
+  //ZSwcTree* readSwc(const QString &key);
   ZSwcTree *readSwc(int bodyId);
   ZObject3dScan readBody(int bodyId);
   ZObject3dScan* readBody(int bodyId, ZObject3dScan *result);
@@ -58,6 +59,7 @@ public:
   std::set<int> readBodyId(const ZDvidFilter &filter);
 
   QByteArray readKeyValue(const QString &dataName, const QString &key);
+  QStringList readKeys(const QString &dataName, const QString &minKey);
   QStringList readKeys(const QString &dataName,
                        const QString &minKey, const QString &maxKey);
 

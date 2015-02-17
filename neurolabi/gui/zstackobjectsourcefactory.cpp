@@ -42,3 +42,11 @@ std::string ZStackObjectSourceFactory::MakeFlyEmBodySource(int bodyId)
 
   return source;
 }
+
+std::string ZStackObjectSourceFactory::MakeCurrentMsTileSource(int resLevel)
+{
+  ZString source = "#.MutliResTile#";
+  source.appendNumber(resLevel);
+
+  return source;
+}

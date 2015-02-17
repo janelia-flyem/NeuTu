@@ -1084,6 +1084,8 @@ void ZObject3dScan::print() const
 
 bool ZObject3dScan::load(const string &filePath)
 {
+  clear();
+
   bool succ = false;
   ZString filePath2(filePath);
 #ifdef _DEBUG_2

@@ -7,7 +7,7 @@
 #include "zpaintbundle.h"
 
 ZImageWidget::ZImageWidget(QWidget *parent, QImage *image) : QWidget(parent),
-  m_isViewHintVisible(true)
+  m_isViewHintVisible(true), m_freeMoving(false)
 {
   if (image != NULL) {
     m_viewPort.setRect(0, 0, image->width(), image->height());
@@ -133,6 +133,9 @@ void ZImageWidget::zoom(int zoomRatio, const QPoint &ref)
 
   dp = ds;
   dv = dc / zoomRatio;
+  if (dv == 0) {
+    dv = 1;
+  }
   td = td0 + cd * (dv0 - dv) / (dp - 1);
   if (td < 0) {
     td = 0;
@@ -174,6 +177,28 @@ void ZImageWidget::zoom(int zoomRatio, const QPoint &ref)
   }
 }
 #endif
+
+void ZImageWidget::setValidViewPortBackup(const QRect &viewPort)
+{
+  double wRatio = (double) screenSize().width() / viewPort.width();
+  double hRatio = (double) screenSize().height() / viewPort.height();
+  double ratio = 1.0;
+  m_viewPort.setTop(imax2(0, viewPort.top()));
+  m_viewPort.setLeft(imax2(0, viewPort.left()));
+  m_projRegion.setTopLeft(QPoint(0, 0));
+  if (wRatio <= hRatio) {
+    m_viewPort.setHeight(
+          imin2(canvasSize().height(), iround(screenSize().height() / wRatio)));
+    ratio = wRatio;
+  } else {
+    m_viewPort.setWidth(
+          imin2(canvasSize().width(), iround(screenSize().width() / hRatio)));
+    ratio = hRatio;
+  }
+
+  m_projRegion.setWidth(iround(ratio * m_viewPort.width()));
+  m_projRegion.setHeight(iround(ratio * m_viewPort.height()));
+}
 
 void ZImageWidget::setValidViewPort(const QRect &viewPort)
 {
@@ -268,6 +293,9 @@ void ZImageWidget::setView(int zoomRatio, const QPoint &zoomOffset)
 
   dp = ds;
   dv = dc / zoomRatio;
+  if (dv == 0) {
+    dv = 1;
+  }
   ev = dv * es / dp;
   if (ev > ec - te) {
     ev = ec - te;
@@ -285,12 +313,14 @@ void ZImageWidget::setView(int zoomRatio, const QPoint &zoomOffset)
 
 void ZImageWidget::setViewPortOffset(int x, int y)
 {
-  if (x < 0) {
-    x = 0;
-  }
+  if (!m_freeMoving) {
+    if (x < 0) {
+      x = 0;
+    }
 
-  if (y < 0) {
-    y = 0;
+    if (y < 0) {
+      y = 0;
+    }
   }
 
   if (x + m_viewPort.width() > canvasSize().width()) {
@@ -362,7 +392,7 @@ void ZImageWidget::decreaseZoomRatio()
 
   if (zoomRatio > 1) {
     zoom(--zoomRatio);
-    if (m_viewPort.width() == oldWidth && m_viewPort.height() == oldHeight) {
+    while (m_viewPort.width() == oldWidth && m_viewPort.height() == oldHeight) {
       zoom(--zoomRatio);
     }
 
@@ -382,7 +412,6 @@ void ZImageWidget::moveViewPort(int x, int y)
 {
   setViewPortOffset(m_viewPort.left() + x, m_viewPort.top() + y);
 }
-
 
 void ZImageWidget::zoom(int zoomRatio)
 {
@@ -435,10 +464,10 @@ void ZImageWidget::paintEvent(QPaintEvent * /*event*/)
     }
 #endif
 
-    QSize size = projectSize();
-    painter.drawImage(m_projRegion, *m_image,
-                      m_viewPort);
-
+    /* draw gray regions */
+    painter.fillRect(QRect(0, 0, screenSize().width(), screenSize().height()),
+                     Qt::gray);
+#if 0
     QRect rightRect(m_projRegion.width(), 0,
                     width() - m_projRegion.width(), height());
     painter.fillRect(rightRect, Qt::gray);
@@ -446,6 +475,10 @@ void ZImageWidget::paintEvent(QPaintEvent * /*event*/)
     QRect downRect(0, m_projRegion.height(),
                    width(), height() - m_projRegion.height());
     painter.fillRect(downRect, Qt::gray);
+#endif
+    QSize size = projectSize();
+    painter.drawImage(m_projRegion, *m_image,
+                      m_viewPort);
 
     for (int i = 0; i < m_mask.size(); ++i) {
       if (m_mask[i] != NULL) {
@@ -702,9 +735,11 @@ void ZImageWidget::resizeEvent(QResizeEvent */*event*/)
 
 int ZImageWidget::getMaxZoomRatio() const
 {
-  int ratio = static_cast<int>(std::ceil(std::min(canvasSize().width()*16.0/screenSize().width(),
-                                                  canvasSize().height()*16.0/screenSize().height())));
-  return std::max(ratio, 16);
+  int ratio = static_cast<int>(
+        std::ceil(std::min(canvasSize().width()*16.0/screenSize().width(),
+                           canvasSize().height()*16.0/screenSize().height())));
+  return std::min(std::min(canvasSize().width(), canvasSize().height()),
+                  std::max(ratio, 16));
 }
 
 

@@ -163,6 +163,7 @@ void setOne(Stack *stack);
  * \brief View a single slice
  */
 Stack sliceView(const Stack *stack, int slice);
+Stack sliceView(const Mc_Stack *stack, int slice, int channel);
 
 /*!
  * \brief View one or more slices

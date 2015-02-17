@@ -794,3 +794,12 @@ void FlyEmBodySplitProjectDialog::processAllSeed()
     }
   }
 }
+
+void FlyEmBodySplitProjectDialog::startSplit(
+    const ZDvidTarget &dvidTarget, int bodyId)
+{
+  clear();
+  setDvidTarget(dvidTarget);
+  ui->bodyIdSpinBox->setValue(bodyId);
+  loadBody();
+}

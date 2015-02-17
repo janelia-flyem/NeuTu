@@ -45,6 +45,7 @@ public:
 
   static ZStack* makeZeroStack(int kind, int width, int height, int depth,
                                int nchannel);
+  static ZStack* makeSlice(const ZStack& stack, int z);
 
 
   static ZStack* makeZeroStack(const ZIntCuboid box, int nchannel = 1);
@@ -61,6 +62,8 @@ public:
 
   static ZStack* makeSeedStack(const ZWeightedPointArray &ptArray);
   static ZStack* makeSeedStack(const ZObject3dScanArray &objArray);
+  static ZStack* MakeBinaryStack(const ZObject3dScanArray &objArray, int v = 1);
+  static ZStack* MakeColorStack(const ZObject3dScanArray &objArray);
 
   /*!
    * \brief Only support GREY data

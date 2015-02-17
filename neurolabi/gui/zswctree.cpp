@@ -658,9 +658,12 @@ int ZSwcTree::size(Swc_Tree_Node *start)
 int ZSwcTree::updateIterator(int option, BOOL indexing) const
 {
   if (isEmpty()) {
-    if (m_tree->root != NULL) {
-      m_tree->root->next = NULL;
+    if (m_tree != NULL) {
+      if (m_tree->root != NULL) {
+        m_tree->root->next = NULL;
+      }
     }
+
     return 0;
   }
 
@@ -3586,6 +3589,10 @@ Swc_Tree_Node* ZSwcTree::DepthFirstIterator::begin()
 
 bool ZSwcTree::DepthFirstIterator::hasNext() const
 {
+  if (m_tree == NULL) {
+    return false;
+  }
+
   if (m_currentNode == NULL) {
     return (m_tree->begin() != NULL);
   }
@@ -3595,6 +3602,10 @@ bool ZSwcTree::DepthFirstIterator::hasNext() const
 
 Swc_Tree_Node* ZSwcTree::DepthFirstIterator::next()
 {
+  if (m_tree == NULL) {
+    return NULL;
+  }
+
   if (m_currentNode == NULL) {
     m_currentNode = m_tree->begin();
   } else {

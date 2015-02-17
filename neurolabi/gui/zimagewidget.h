@@ -128,6 +128,7 @@ protected:
   int getMaxZoomRatio() const;
 
 private:
+  void setValidViewPortBackup(const QRect &viewPort);
   void setValidViewPort(const QRect &viewPort);
 
 private:
@@ -142,6 +143,8 @@ private:
   ZPaintBundle *m_paintBundle;
   bool m_isViewHintVisible;
   bool m_paintBlocked;
+
+  bool m_freeMoving;
 };
 
 #endif

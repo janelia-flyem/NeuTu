@@ -101,5 +101,13 @@ std::string ZDvidData::getName(
 
 bool ZDvidData::isStandardName(ERole role, const std::string &name)
 {
+  /*
+  if (role == ZDvidData::ROLE_BODY_LABEL) {
+    if (name == m_sp2bodyName) {
+      return true;
+    }
+  }
+  */
+
   return ZDvidData::getName(role) == name;
 }

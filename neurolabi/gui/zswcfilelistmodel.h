@@ -17,6 +17,7 @@ public:
   QVariant data( const QModelIndex & index, int role = Qt::DisplayRole) const;
 
   void deleteAll();
+  void deleteFile(int index);
 
   bool removeRows(int row, int count, const QModelIndex & parent = QModelIndex());
 

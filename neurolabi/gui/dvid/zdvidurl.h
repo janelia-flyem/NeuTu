@@ -26,8 +26,9 @@ public:
   std::string getRepoUrl() const;
   std::string getInstanceUrl() const;
 
-  std::string getSkeletonUrl(const std::string &dataName) const;
-  std::string getSkeletonUrl(int bodyId, const std::string &dataName) const;
+  std::string getSkeletonUrl(const std::string &bodyLabelName) const;
+  std::string getSkeletonUrl(
+      int bodyId, const std::string &bodyLabelName) const;
 
 //  std::string getThumbnailUrl(const std::string &bodyLableName) const;
 //  std::string getThumbnailUrl(int bodyId) const;

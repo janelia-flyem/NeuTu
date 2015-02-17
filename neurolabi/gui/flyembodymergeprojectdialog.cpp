@@ -60,6 +60,8 @@ void FlyEmBodyMergeProjectDialog::setPushButtonSlots()
           m_project, SLOT(setLoadingLabel(bool)));
   connect(ui->uploadResultPushButton, SIGNAL(clicked()),
           m_project, SLOT(uploadResult()));
+  connect(ui->startSplitPushButton, SIGNAL(clicked()),
+          m_project, SLOT(notifySplit()));
 }
 
 void FlyEmBodyMergeProjectDialog::test()

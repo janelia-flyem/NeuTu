@@ -8,6 +8,8 @@
 #include "zswccolorscheme.h"
 #include "QsLog.h"
 #include "zobject3dscanarray.h"
+#include "zstackfactory.h"
+#include "zlabelcolortable.h"
 
 ZFlyEmNeuronListModel::ZFlyEmNeuronListModel(QObject *parent) :
   QAbstractTableModel(parent)
@@ -248,7 +250,7 @@ void ZFlyEmNeuronListModel::retrieveModel(
   doc->punctaObjsModel()->updateModelData();
 }
 
-void ZFlyEmNeuronListModel::retrieveBody(
+ZIntPoint ZFlyEmNeuronListModel::retrieveBody(
     const QModelIndexList &indexList, ZStackDoc *doc) const
 {
   QVector<const ZFlyEmNeuron*> neuronArray;
@@ -273,19 +275,44 @@ void ZFlyEmNeuronListModel::retrieveBody(
     }
   }
 
-  const size_t maxVolume = 1024*1024*100;
+  ZStack *stack = NULL;
 
-  if (bodyArray.getBoundBox().getVolume() > maxVolume) {
-    int dsIntv =  iround(Cube_Root(
-          ((double)  bodyArray.getBoundBox().getVolume()) / maxVolume)) - 1;
-    bodyArray.downsample(dsIntv, dsIntv, dsIntv);
+  ZIntPoint dsIntvPt;
+  if (!bodyArray.empty()) {
+    const size_t maxVolume = 1024*1024*100 / bodyArray.size();
+
+
+    if (bodyArray.getBoundBox().getVolume() > maxVolume) {
+      int dsIntv =
+          iround(Cube_Root(
+                   static_cast<double>(bodyArray.getBoundBox().getVolume()) /
+                   maxVolume)) - 1;
+      bodyArray.downsample(dsIntv, dsIntv, dsIntv);
+      dsIntvPt.set(dsIntv, dsIntv, dsIntv);
+    }
+
+    ZLabelColorTable colorTable;
+    for (size_t i = 0; i < bodyArray.size(); ++i) {
+      ZObject3dScan &obj = bodyArray[i];
+      obj.setColor(colorTable.getColor(i));
+    }
+
+    //ZStack *stack = bodyArray.toStackObject();
+
+
+    if (bodyArray.size() == 1) {
+      stack = ZStackFactory::MakeBinaryStack(bodyArray, 255);
+    } else {
+      stack = ZStackFactory::MakeColorStack(bodyArray);
+    }
   }
 
-  ZStack *stack = bodyArray.toStackObject();
   if (stack != NULL) {
     doc->loadStack(stack);
     doc->setTag(NeuTube::Document::FLYEM_BODY);
   }
+
+  return dsIntvPt;
 }
 
 
@@ -355,15 +382,33 @@ void ZFlyEmNeuronListModel::exportCsv(const QString &path)
   }
 }
 
-void ZFlyEmNeuronListModel::exportSwc(const QString &path)
+void ZFlyEmNeuronListModel::exportSwc(
+    const QString &path, ZFlyEmCoordinateConverter::ESpace coordSpace)
 {
   foreach (const ZFlyEmNeuron *neuron, m_neuronList) {
-    ZSwcTree *tree = neuron->getModel();
+    ZSwcTree *tree = NULL;
+
+    switch (coordSpace) {
+    case ZFlyEmCoordinateConverter::PHYSICAL_SPACE:
+      tree = neuron->getModel();
+      break;
+    case ZFlyEmCoordinateConverter::IMAGE_SPACE:
+      tree = neuron->getUnscaledModel();
+      break;
+    default:
+      break;
+    }
+
     if (tree != NULL) {
       QDir dir(path);
-      QString fileName = QString("%1_%2.swc").arg(neuron->getType().c_str()).
-          arg(neuron->getId());
-      fileName.replace('/', "_or_");
+
+      QString fileName = QString("%1.swc").arg(neuron->getId());
+
+      if (!neuron->getType().empty()) {
+        fileName = QString("%1_").arg(neuron->getType().c_str()) + fileName;
+        fileName.replace('/', "_or_");
+      }
+
       tree->save(dir.absoluteFilePath(fileName).toStdString());
     }
   }

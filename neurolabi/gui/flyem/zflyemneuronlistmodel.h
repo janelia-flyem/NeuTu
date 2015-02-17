@@ -7,9 +7,12 @@
 #include <QtCore>
 #include <QString>
 
+#include "zflyemcoordinateconverter.h"
+
 class ZFlyEmNeuron;
 class ZStackDoc;
 class ZFlyEmNeuronPresenter;
+class ZIntPoint;
 
 class ZFlyEmNeuronListModel : public QAbstractTableModel
 {
@@ -35,7 +38,8 @@ public:
   QVector<const ZFlyEmNeuron*> getNeuronArray(const QModelIndex &index) const;
 
   void retrieveModel(const QModelIndexList &indexList, ZStackDoc *doc) const;
-  void retrieveBody(const QModelIndexList &indexList, ZStackDoc *doc) const;
+  ZIntPoint retrieveBody(
+      const QModelIndexList &indexList, ZStackDoc *doc) const;
 
   bool insertRows(int row, int count, const QModelIndex &parent = QModelIndex());
   bool insertColumns(int col, int count, const QModelIndex &parent = QModelIndex());
@@ -43,7 +47,8 @@ public:
   bool removeColumns(int col, int count, const QModelIndex &parent = QModelIndex());
 
   void exportCsv(const QString &path);
-  void exportSwc(const QString &swc);
+  void exportSwc(const QString &swc,
+                 ZFlyEmCoordinateConverter::ESpace coordSpace);
 
   void setPresenter(ZFlyEmNeuronPresenter *presenter);
 

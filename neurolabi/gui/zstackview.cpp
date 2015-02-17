@@ -22,6 +22,9 @@
 #include "neutubeconfig.h"
 #include "zsparsestack.h"
 #include "zstackviewparam.h"
+#include "zstackfactory.h"
+#include "zstackpatch.h"
+#include "zstackobjectsourcefactory.h"
 
 #include <QtGui>
 #ifdef _QT5_
@@ -906,13 +909,6 @@ void ZStackView::redraw()
   paintObjectBuffer();
   paintActiveDecorationBuffer();
   updateImageScreen();
-  /*
-#ifdef _ADVANCED_
-  updateData(sliceIndex(), getIntensityThreshold());
-#else
-  updateData(sliceIndex());
-#endif
-*/
 }
 
 void ZStackView::prepareDocument()
@@ -1255,8 +1251,36 @@ void ZStackView::updateActiveDecorationCanvas()
   }
 }
 
+void ZStackView::paintMultiresImageTest(int resLevel)
+{
+  ZStackPatch *patch = new ZStackPatch(
+        ZStackFactory::makeSlice(*(buddyDocument()->getStack()), getCurrentZ()));
+  patch->setSource(ZStackObjectSourceFactory::MakeCurrentMsTileSource(resLevel));
+  if (resLevel > 0) {
+    patch->getStack()->downsampleMax(resLevel, resLevel, 0);
+    patch->setXScale(resLevel + 1);
+    patch->setYScale(resLevel + 1);
+  }
+  buddyDocument()->blockSignals(true);
+  buddyDocument()->addObject(patch);
+  buddyDocument()->blockSignals(false);
+  //paintObjectBuffer();
+
+  if (resLevel > 0) {
+    paintMultiresImageTest(resLevel - 1);
+    //QtConcurrent::run(this, &ZStackView::paintMultiresImageTest, resLevel - 1);
+  }
+}
+
 void ZStackView::paintStackBuffer()
 {
+#if 0
+  updateCanvas();
+
+  paintMultiresImageTest(1);
+#endif
+
+#if 1
   ZStack *stack = stackData();
 
   if (stack == NULL) {
@@ -1319,6 +1343,7 @@ void ZStackView::paintStackBuffer()
       }
     }
   }
+#endif
 }
 
 void ZStackView::paintStack()

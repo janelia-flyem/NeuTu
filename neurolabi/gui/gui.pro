@@ -77,97 +77,75 @@ isEqual(QT_MAJOR_VERSION,4) {
     message("Qt 4")
 }
 
-macx {
-    DEFINES += _NEUTUBE_MAC_
-}
-
-unix:!macx {
-  DEFINES += _NEUTUBE_LINUX_
-}
-
 #QT += webkit
 
 contains(CONFIG, static_glew) { # glew from ext folder
     include($$PWD/ext/glew.pri)
 } else { # use your own glew
 
-win32 {
-  LIBS += -lglew32 -lopengl32 -lglu32
-}
+  win32 {
+    LIBS += -lglew32 -lopengl32 -lglu32
+  }
 
 
-macx {
-  LIBS += -lGLEW -framework AGL -framework OpenGL
-}
+  macx {
+    LIBS += -lGLEW -framework AGL -framework OpenGL
+  }
 
-unix:!macx {
-  LIBS += -lGL -lGLEW -lGLU
-}
-
+  unix:!macx {
+    LIBS += -lGL -lGLEW -lGLU
+  }
 } # static glew
 
 contains(CONFIG, static_gtest) { # gtest from ext folder
-    #DEFINES += _USE_GTEST_
     include($$PWD/ext/gtest.pri)
-} #else { # use your own gtest
-#
-#CONFIG(debug, debug|release) {
-#    exists($${LOCAL_INSTALL_DIR}/lib/libgtest.a) {
-#        DEFINES += _USE_GTEST_
-#        LIBS += -lgtest
-#    }
-#}
-
-#} # static gtest
-
-LIBS += -lstdc++
-unix:!macx {
-    DEFINES += _LINUX_
-    LIBS += -lXt -lSM -lICE \
-      -lX11 -lm \
-      -lpthread \
-      -lGL -lrt -lGLU
-
-    message(Checking arch...)
-    contains(QMAKE_HOST.arch, x86_64) {
-        message($$QMAKE_HOST.arch)
-        QMAKE_CXXFLAGS += -m64
-    }
-    RC_FILE = images/app.icns
 }
 
-macx {
-#INCLUDEPATH += /usr/X11/include
+LIBS += -lstdc++
 
-    LIBS += -framework AppKit -framework IOKit \
-        -framework ApplicationServices \
-        -framework CoreFoundation
+unix {
 
-    ICON = images/app.icns
-    QMAKE_INFO_PLIST = images/Info.plist
-    QMAKE_CXXFLAGS += -m64
+    macx {
+        DEFINES += _NEUTUBE_MAC_
+        LIBS += -framework AppKit -framework IOKit \
+            -framework ApplicationServices \
+            -framework CoreFoundation
 
-    exists($${NEUROLABI_DIR}/macosx10.9) {
-        QMAKE_CXXFLAGS += -std=c++11 -stdlib=libc++
-    }
+        ICON = images/app.icns
+        QMAKE_INFO_PLIST = images/Info.plist
+        QMAKE_CXXFLAGS += -m64
 
-    doc.files = doc
-    doc.path = Contents/MacOS
-    QMAKE_BUNDLE_DATA += doc
+        exists($${NEUROLABI_DIR}/macosx10.9) {
+            QMAKE_CXXFLAGS += -std=c++11 -stdlib=libc++
+            QMAKE_MAC_SDK = macosx10.9
+            QMAKE_MACOSX_DEPLOYMENT_TARGET=10.9
+        }
 
-    config.files = config.xml
-    config.path = Contents/MacOS
-    QMAKE_BUNDLE_DATA += config
+        doc.files = doc
+        doc.path = Contents/MacOS
+        QMAKE_BUNDLE_DATA += doc
 
-    exists($${NEUROLABI_DIR}/macosx10.9) {
-        QMAKE_MAC_SDK = macosx10.9
-        QMAKE_MACOSX_DEPLOYMENT_TARGET=10.9
+        config.files = config.xml
+        config.path = Contents/MacOS
+        QMAKE_BUNDLE_DATA += config
+    } else {
+        DEFINES += _NEUTUBE_LINUX_
+        DEFINES += _LINUX_
+        LIBS += -lXt -lSM -lICE \
+          -lX11 -lm \
+          -lpthread \
+          -lGL -lrt -lGLU
+        message(Checking arch...)
+        contains(QMAKE_HOST.arch, x86_64) {
+            message($$QMAKE_HOST.arch)
+            QMAKE_CXXFLAGS += -m64
+        }
+        RC_FILE = images/app.icns
     }
 }
 
 win32 {
     DEFINES += _NEUTUBE_WINDOWS_
-
     RC_FILE = images/app.rc
 }
 
@@ -178,23 +156,14 @@ include(ext/libqxt.pri)
 include (gui_free.pri)
 include(test/test.pri)
 
-
 CONFIG(debug, debug|release) {
     exists(../lib/opencv) {
-        system(echo 'opencv found')
+        message(opencv found)
         DEFINES += _USE_OPENCV_
         INCLUDEPATH += ../lib/opencv/include ../lib/opencv/include/opencv
         LIBS += -L../lib/opencv/lib -lopencv_core -lopencv_ml
     }
 }
-
-#exists($$HOME/local/lib/OpenVDB) {
-#    system(echo 'openvdb found')
-#    DEFINES += _USE_OPENVDB_
-#    INCLUDEPATH += $$HOME/local/lib/OpenVDB/include $$HOME/local/lib/tbb/include
-#    LIBS += -L$$HOME/local/lib/OpenVDB/lib -L$$HOME/local/lib/tbb/lib \
-#        -lopenvdb -ltbb -lHalf
-#}
 
 # Input
 RESOURCES = gui.qrc
@@ -519,7 +488,11 @@ HEADERS += mainwindow.h \
     zspinboxgroupdialog.h \
     zautotracedialog.h \
     zstackviewmanager.h \
-    zstackviewparam.h
+    zstackviewparam.h \
+    zflyemprojectmanager.h \
+    zflyemdataloader.h \
+    swcexportdialog.h \
+    zprogressmanager.h
 
 FORMS += settingdialog.ui \
     frameinfodialog.ui \
@@ -578,7 +551,8 @@ FORMS += settingdialog.ui \
     synapseimportdialog.ui \
     flyembodymergeprojectdialog.ui \
     zsegmentationprojectdialog.ui \
-    zmarkswcsomadialog.ui
+    zmarkswcsomadialog.ui \
+    swcexportdialog.ui
 SOURCES += main.cpp \
     mainwindow.cpp \
     zstackview.cpp \
@@ -862,7 +836,11 @@ SOURCES += main.cpp \
     zspinboxgroupdialog.cpp \
     zautotracedialog.cpp \
     zstackviewmanager.cpp \
-    zstackviewparam.cpp
+    zstackviewparam.cpp \
+    zflyemprojectmanager.cpp \
+    zflyemdataloader.cpp \
+    swcexportdialog.cpp \
+    zprogressmanager.cpp
 
 OTHER_FILES += \
     extlib.pri

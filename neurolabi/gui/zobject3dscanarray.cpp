@@ -83,6 +83,6 @@ void ZObject3dScanArray::downsample(int xintv, int yintv, int zintv)
 {
   for (ZObject3dScanArray::iterator iter = begin(); iter != end(); ++iter) {
     ZObject3dScan &obj = *iter;
-    obj.downsample(xintv, yintv, zintv);
+    obj.downsampleMax(xintv, yintv, zintv);
   }
 }

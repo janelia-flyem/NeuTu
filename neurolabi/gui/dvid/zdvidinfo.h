@@ -65,9 +65,12 @@ public:
   /*!
    * \brief Get the bound box of a block
    *
-   * (\a x, \a y, \a z) is the block index.
+   * Get the bound box of a block in DVID coordinates. (\a x, \a y, \a z) is
+   * the block index.
    */
   ZIntCuboid getBlockBox(int x, int y, int z) const;
+
+  ZIntCuboid getBlockBox(const ZIntPoint &blockIndex);
 
   ZIntPoint getBlockSize() const;
   ZIntPoint getGridSize() const;

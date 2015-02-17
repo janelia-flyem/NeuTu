@@ -46,7 +46,7 @@ class ZStackFrame : public QMdiSubWindow, public ZReportable
   Q_OBJECT
 
 public:
-  ZStackFrame(QWidget *parent = 0, bool preparingModel = true);
+  explicit ZStackFrame(QWidget *parent = 0, bool preparingModel = true);
   virtual ~ZStackFrame();
 
 public:

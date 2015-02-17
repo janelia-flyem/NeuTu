@@ -152,6 +152,8 @@
 #include "zsubtractswcsdialog.h"
 #include "zautotracedialog.h"
 #include "zstackviewmanager.h"
+#include "zflyemprojectmanager.h"
+#include "zflyemdataloader.h"
 
 #include "z3dcanvas.h"
 #include "z3dapplication.h"
@@ -278,6 +280,7 @@ MainWindow::MainWindow(QWidget *parent) :
   initDialog();
 
   m_stackViewManager = new ZStackViewManager(this);
+  m_flyemDataLoader = new ZFlyEmDataLoader(this);
 }
 
 MainWindow::~MainWindow()
@@ -375,10 +378,14 @@ void MainWindow::initDialog()
   m_newBsProjectDialog = new ZFlyEmNewBodySplitProjectDialog(this);
   m_newBsProjectDialog->setDvidDialog(m_dvidDlg);
 
-  m_bodySplitProjectDialog = new FlyEmBodySplitProjectDialog(this);
+  m_flyemProjectManager = new ZFlyEmProjectManager(this);
+
+  //m_bodySplitProjectDialog = new FlyEmBodySplitProjectDialog(this);
+  m_bodySplitProjectDialog = m_flyemProjectManager->getSplitDialog();
   m_bodySplitProjectDialog->setLoadBodyDialog(m_newBsProjectDialog);
 
-  m_mergeBodyDlg = new FlyEmBodyMergeProjectDialog(this);
+  //m_mergeBodyDlg = new FlyEmBodyMergeProjectDialog(this);
+  m_mergeBodyDlg = m_flyemProjectManager->getMergeDialog();
   m_mergeBodyDlg->setDvidDialog(m_dvidDlg);
 
   m_mergeBodyDlg->restoreGeometry(
@@ -1391,6 +1398,11 @@ void MainWindow::startProgress(const QString &title, int nticks)
 {
   initProgress(nticks);
   m_progress->setLabelText(title);
+  m_progress->show();
+}
+
+void MainWindow::startProgress()
+{
   m_progress->show();
 }
 
@@ -5900,17 +5912,6 @@ void MainWindow::on_actionHDF5_Body_triggered()
 void MainWindow::on_actionDVID_Bundle_triggered()
 {
 #if defined(_FLYEM_)
-  /*
-  ZDvidTarget target =
-      NeutubeConfig::getInstance().getFlyEmConfig().getDvidTarget();
-  bool continueLoading = false;
-  if (target.isValid()) {
-    if (ask("Load DVID Data",
-            "Load data from " + target.getSourceString() + "?")) {
-      continueLoading = true;
-    }
-  } else {
-  */
   bool continueLoading = false;
   ZDvidTarget target;
   if (m_dvidDlg->exec()) {
@@ -5923,35 +5924,33 @@ void MainWindow::on_actionDVID_Bundle_triggered()
       continueLoading = true;
     }
   }
-  //}
 
   if (continueLoading && m_bodyFilterDlg->exec()) {
-    m_progress->setRange(0, 3);
+//    m_progress->setRange(0, 3);
 
-    int currentProgress = 0;
-    m_progress->show();
+//    int currentProgress = 0;
+//    m_progress->show();
+    m_progress->setRange(0, 100);
     m_progress->setLabelText(QString("Loading ") +
                              target.getSourceString().c_str() + "...");
 
-    m_progress->setValue(++currentProgress);
+//    m_progress->setValue(++currentProgress);
 
-    ZDvidTarget target = m_dvidDlg->getDvidTarget();/*
-    target.set(
-          m_dvidDlg->getAddress().toStdString(),
-          m_dvidDlg->getUuid().toStdString(), m_dvidDlg->getPort());*/
+    ZDvidTarget target = m_dvidDlg->getDvidTarget();
     ZDvidFilter dvidFilter;
     dvidFilter.setDvidTarget(target);
     dvidFilter.setMinBodySize(m_bodyFilterDlg->getMinBodySize());
     dvidFilter.setUpperBodySizeEnabled(m_bodyFilterDlg->hasUpperBodySize());
     if (m_bodyFilterDlg->hasUpperBodySize()) {
       dvidFilter.setMaxBodySize(m_bodyFilterDlg->getMaxBodySize());
-    }/* else {
-      dvidFilter.setMaxBodySize(std::numeric_limits<std::size_t>::max());
-    }*/
+    }
 
     std::vector<int> excludedBodyArray = m_bodyFilterDlg->getExcludedBodies();
     dvidFilter.exclude(excludedBodyArray);
 
+    m_flyemDataLoader->loadDataBundle(dvidFilter);
+
+#if 0
     ZFlyEmDataBundle *dataBundle = new ZFlyEmDataBundle;
     if (dataBundle->loadDvid(dvidFilter)) {
       ZFlyEmDataFrame *frame = new ZFlyEmDataFrame;
@@ -5964,6 +5963,7 @@ void MainWindow::on_actionDVID_Bundle_triggered()
     }
     m_progress->reset();
     m_progress->hide();
+#endif
   }
 #endif
 }

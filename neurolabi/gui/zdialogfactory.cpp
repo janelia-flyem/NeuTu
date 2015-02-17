@@ -2,6 +2,8 @@
 #include <QVBoxLayout>
 #include <QPushButton>
 #include <QMessageBox>
+#include <QFileDialog>
+#include <QFileInfo>
 
 #include "zwidgetfactory.h"
 #include "zdviddialog.h"
@@ -103,4 +105,15 @@ ZSpinBoxGroupDialog* ZDialogFactory::makeDownsampleDialog(QWidget *parent)
   dlg->addSpinBox("Y", 0, 100, 0, 0);
   dlg->addSpinBox("Z", 0, 100, 0, 0);
   return dlg;
+}
+
+QString ZDialogFactory::GetDirectory(
+    const QString &caption, const QString &filePath, QWidget *parent)
+{
+  QString fileName;
+  fileName = QFileDialog::getExistingDirectory(
+        parent, caption, filePath,
+        QFileDialog::ShowDirsOnly);
+
+  return fileName;
 }

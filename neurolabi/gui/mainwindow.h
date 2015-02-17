@@ -58,9 +58,11 @@ class SynapseImportDialog;
 class FlyEmBodyMergeProjectDialog;
 class ZSegmentationProjectDialog;
 class ZStackViewManager;
+class ZFlyEmProjectManager;
+class ZFlyEmDataLoader;
 
 namespace Ui {
-    class MainWindow;
+  class MainWindow;
 }
 
 class MainWindow : public QMainWindow {
@@ -116,6 +118,10 @@ public:
 
   QAction* getBodySplitAction() const;
 
+  //Report the problem when a file cannot be opened correctly.
+  void reportFileOpenProblem(const QString &filePath,
+                             const QString &reason = "");
+
 signals:
   void dvidRequestCanceled();
   void progressDone();
@@ -131,6 +137,7 @@ public slots:
   void initProgress(int maxValue);
   void advanceProgress(double dp);
   void startProgress(const QString &title, int nticks);
+  void startProgress();
   void endProgress();
 
   void updateAction();
@@ -446,10 +453,6 @@ private:
   //Get the path opened last time.
   QString getLastOpenPath() const;
 
-  //Report the problem when a file cannot be opened correctly.
-  void reportFileOpenProblem(const QString &filePath,
-                             const QString &reason = "");
-
   ZStackDocReader* hotSpotDemo(int bodyId, const QString &dvidAddress,
                            const QString &dvidUuid);
   /*!
@@ -622,7 +625,8 @@ private:
   ZSegmentationProjectDialog *m_segmentationDlg;
 
   ZStackViewManager *m_stackViewManager;
-
+  ZFlyEmProjectManager *m_flyemProjectManager;
+  ZFlyEmDataLoader *m_flyemDataLoader;
   //new project main window
   NewProjectMainWindow *m_newProject;
 

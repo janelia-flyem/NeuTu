@@ -6,9 +6,9 @@
 #include <QImage>
 #include <QMap>
 #include <QFuture>
+#include <QList>
 
 #include "flyem/zflyemneuronlistmodel.h"
-#include "zprogressable.h"
 #include "zqtbarprogressreporter.h"
 #include "flyem/zflyemneuronimagefactory.h"
 
@@ -20,12 +20,15 @@ class ZFlyEmQueryView;
 class ZImageWidget;
 class QGraphicsScene;
 class QMenu;
+class SwcExportDialog;
+class ZProgressManager;
+class QGraphicsItem;
 
 namespace Ui {
 class FlyEmDataForm;
 }
 
-class FlyEmDataForm : public QWidget, ZProgressable
+class FlyEmDataForm : public QWidget
 {
   Q_OBJECT
   
@@ -40,6 +43,9 @@ public:
   void appendQueryOutput(const ZFlyEmNeuron *neuron);
 
   QProgressBar* getProgressBar();
+  ZProgressManager* getProgressManager() {
+    return m_progressManager;
+  }
 
   void setPresenter(ZFlyEmNeuronPresenter *presenter);
 
@@ -66,6 +72,8 @@ public:
 
   void dump(const QString &message);
 
+  QList<int> getSelectedNeuronList() const;
+
 protected:
   void resizeEvent(QResizeEvent *);
   void showEvent(QShowEvent *);
@@ -84,6 +92,7 @@ signals:
   void saveBundleTriggered(int, const QString&);
   void showNearbyNeuronTriggered(const ZFlyEmNeuron *neuron);
   void searchNeighborNeuronTriggered(const ZFlyEmNeuron *neuron);
+  void thumbnailItemReady(QList<QGraphicsItem*> itemList, int bodyId);
 
 private slots:
   void on_pushButton_clicked();
@@ -116,6 +125,10 @@ private slots:
   void updateThumbnail(const QModelIndex &index);
   void updateThumbnailSecondary(const QModelIndex &index);
 
+  void updateThumbnail(QList<QGraphicsItem *> itemList, int bodyId);
+  void generateThumbnailItem(
+      QList<QGraphicsItem *> currentItemList, ZFlyEmNeuron *neuron);
+
   /*!
    * \brief Change class of selected neurons
    *
@@ -144,9 +157,11 @@ private:
   ZStackDoc* showViewSelectedModel(ZFlyEmQueryView *view);
   ZStackDoc* showViewSelectedBody(ZFlyEmQueryView *view);
   void updateThumbnail(ZFlyEmNeuron *neuron);
+  void updateThumbnailLive(ZFlyEmNeuron *neuron);
   void computeThumbnailFunc(ZFlyEmNeuron *neuron);
   void saveVolumeRenderingFigure(
       ZFlyEmNeuron *neuron, const QString &output, const QString cameraFile);
+  Stack *loadThumbnailImage(ZFlyEmNeuron *neuron);
 
 private:
   Ui::FlyEmDataForm *ui;
@@ -176,6 +191,10 @@ private:
   QMap<QString, QFuture<void> > m_threadFutureMap;
   QMenu *m_mainMenu;
   QMenu *m_exportMenu;
+
+  SwcExportDialog *m_swcExportDlg;
+
+  ZProgressManager *m_progressManager;
 };
 
 #endif // FLYEMDATAFORM_H

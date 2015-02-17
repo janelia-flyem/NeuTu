@@ -60,13 +60,16 @@ std::string ZDvidUrl::getServerInfoUrl() const
   return getApiUrl() + "/server/info";
 }
 
-std::string ZDvidUrl::getSkeletonUrl(const std::string &dataName) const
+std::string ZDvidUrl::getSkeletonUrl(const std::string &bodyLabelName) const
 {
-  return getDataUrl(ZDvidData::getName(ZDvidData::ROLE_SKELETON, dataName));
+  return getDataUrl(
+        ZDvidData::getName(ZDvidData::ROLE_SKELETON,
+                           ZDvidData::ROLE_BODY_LABEL,
+                           bodyLabelName));
 }
 
 std::string
-ZDvidUrl::getSkeletonUrl(int bodyId, const std::string &dataName) const
+ZDvidUrl::getSkeletonUrl(int bodyId, const std::string &bodyLabelName) const
 {
   if (bodyId < 0) {
     return "";
@@ -77,7 +80,7 @@ ZDvidUrl::getSkeletonUrl(int bodyId, const std::string &dataName) const
 
   return getDataUrl(ZDvidData::getName(
                       ZDvidData::ROLE_SKELETON, ZDvidData::ROLE_BODY_LABEL,
-                      dataName)) + "/" + str + ".swc";
+                      bodyLabelName)) + "/" + str + ".swc";
 
 #if 0
   ZString str;
@@ -271,6 +274,15 @@ std::string ZDvidUrl::getKeyRangeUrl(
     const std::string &key1, const std::string &key2) const
 {
   return getDataUrl(name) + "/" + key1 + "/" + key2;
+
+  /*
+  std::string url = getDataUrl(name) + "/" + key1;
+  if (!key2.empty()) {
+    url += "/" + key2;
+  }
+
+  return url;
+  */
 }
 
 std::string ZDvidUrl::getAnnotationUrl(const std::string &bodyLabelName) const
