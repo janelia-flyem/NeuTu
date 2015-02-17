@@ -24,6 +24,10 @@ public:
   int getZOffset() const;
   void setScale(double sx, double sy);
 
+  ZStack* getStack() { return m_stack; }
+
+  inline void setXScale(double sx) { m_sx = sx; }
+  inline void setYScale(double sy) { m_sy = sy; }
 
 private:
   ZStack *m_stack;

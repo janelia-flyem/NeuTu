@@ -108,6 +108,31 @@ ZStack* ZStackFactory::makeZeroStack(
   return stack;
 }
 
+ZStack* ZStackFactory::makeSlice(const ZStack &stack, int z)
+{
+  ZStack *out = NULL;
+
+  int slice = z - stack.getOffset().getZ();
+  if (stack.channelNumber() == 1) {
+    Stack sliceView = C_Stack::sliceView(stack.c_stack(), slice);
+    out = new ZStack;
+    out->consume(C_Stack::clone(&sliceView));
+  } else if (stack.channelNumber() > 1) {
+    out = makeZeroStack(stack.kind(), stack.width(), stack.height(), 1,
+                        stack.channelNumber());
+    for (int c = 0; c < stack.channelNumber(); ++c) {
+      Stack sliceView = C_Stack::sliceView(stack.data(), slice, c);
+      C_Stack::copyValue(&sliceView, out->c_stack(c));
+    }
+  }
+
+  if (out != NULL) {
+    out->setOffset(stack.getOffset().getX(), stack.getOffset().getY(), z);
+  }
+
+  return out;
+}
+
 ZStack* ZStackFactory::makeZeroStack(const ZIntCuboid box, int nchannel)
 {
   ZStack *stack = makeZeroStack(
@@ -681,6 +706,8 @@ ZStack* ZStackFactory::MakeBinaryStack(
 ZStack* ZStackFactory::MakeColorStack(const ZObject3dScanArray &objArray)
 {
   ZStack *stack = NULL;
+
+#if defined(_QT_GUI_USED_)
   if (!objArray.empty()) {
     ZIntCuboid boundBox = objArray.getBoundBox();
     stack = makeZeroStack(GREY, boundBox, 3);
@@ -698,6 +725,7 @@ ZStack* ZStackFactory::MakeColorStack(const ZObject3dScanArray &objArray)
       obj.drawStack(stack->c_stack(2), obj.getColor().blue(), offset);
     }
   }
+#endif
 
   return stack;
 }

@@ -185,6 +185,8 @@ public:
   void setView(const ZStackViewParam &param);
   void setViewPortOffset(int x, int y);
 
+  void paintMultiresImageTest(int resLevel);
+
 
 public: //Change view parameters
   void increaseZoomRatio();

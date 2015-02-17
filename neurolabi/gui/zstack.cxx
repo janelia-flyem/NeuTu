@@ -1970,7 +1970,8 @@ void ZStack::downsampleMax(int xintv, int yintv, int zintv)
   } else {
     Stack dst;
     Stack src;
-    Mc_Stack *result = C_Stack::make(GREY, swidth, sheight, sdepth, 1);
+    Mc_Stack *result = C_Stack::make(
+          kind(), swidth, sheight, sdepth, channelNumber());
     Mc_Stack *original = m_stack;
 
     for (int c = 0; c < channelNumber(); ++c) {

@@ -8,7 +8,9 @@
 #include "zobject3dscanarray.h"
 #include "zstackfactory.h"
 #include "zclosedcurve.h"
-#include "zstroke2d.h"
+#if defined(_QT_GUI_USED_)
+#  include "zstroke2d.h"
+#endif
 
 ZObject3dFactory::ZObject3dFactory()
 {
@@ -201,6 +203,7 @@ ZObject3dScan* ZObject3dFactory::MakeFilledMask(
     result->clear();
   }
 
+#if defined(_QT_GUI_USED_)
   if (!curve.isEmpty()) {
     ZStroke2d stroke;
     stroke.setZ(z);
@@ -219,6 +222,7 @@ ZObject3dScan* ZObject3dFactory::MakeFilledMask(
       delete stack;
     }
   }
+#endif
 
   return result;
 }

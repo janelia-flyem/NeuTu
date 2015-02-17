@@ -45,6 +45,7 @@ public:
 
   static ZStack* makeZeroStack(int kind, int width, int height, int depth,
                                int nchannel);
+  static ZStack* makeSlice(const ZStack& stack, int z);
 
 
   static ZStack* makeZeroStack(const ZIntCuboid box, int nchannel = 1);

@@ -61,7 +61,23 @@ ZImage ZStackPatch::getImage(int z) const
     int slice = z - getZOffset();
     if (slice >= 0 && slice < m_stack->depth()) {
       ZImage image(m_stack->width(), m_stack->height());
-      image.setData((uint8_t*) m_stack->getDataPointer(0, slice), -1);
+      switch (m_stack->kind()) {
+      case GREY:
+        image.setData((uint8_t*) m_stack->getDataPointer(0, slice), -1);
+        break;
+      case GREY16:
+      {
+        std::vector<ZImage::DataSource<uint16_t> > stackData16;
+        for (int i=0; i<m_stack->channelNumber(); ++i) {
+          stackData16.push_back(
+                ZImage::DataSource<uint16_t>(
+                  static_cast<uint16_t*>(m_stack->getDataPointer(i, slice)),
+                  0.07, 0, m_stack->getChannelColor(i)));
+        }
+        image.setData(stackData16, 255, false);
+      }
+        break;
+      }
       return image;
     }
   }

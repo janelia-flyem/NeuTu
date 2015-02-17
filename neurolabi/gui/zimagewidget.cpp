@@ -7,7 +7,7 @@
 #include "zpaintbundle.h"
 
 ZImageWidget::ZImageWidget(QWidget *parent, QImage *image) : QWidget(parent),
-  m_isViewHintVisible(true)
+  m_isViewHintVisible(true), m_freeMoving(false)
 {
   if (image != NULL) {
     m_viewPort.setRect(0, 0, image->width(), image->height());
@@ -178,6 +178,28 @@ void ZImageWidget::zoom(int zoomRatio, const QPoint &ref)
 }
 #endif
 
+void ZImageWidget::setValidViewPortBackup(const QRect &viewPort)
+{
+  double wRatio = (double) screenSize().width() / viewPort.width();
+  double hRatio = (double) screenSize().height() / viewPort.height();
+  double ratio = 1.0;
+  m_viewPort.setTop(imax2(0, viewPort.top()));
+  m_viewPort.setLeft(imax2(0, viewPort.left()));
+  m_projRegion.setTopLeft(QPoint(0, 0));
+  if (wRatio <= hRatio) {
+    m_viewPort.setHeight(
+          imin2(canvasSize().height(), iround(screenSize().height() / wRatio)));
+    ratio = wRatio;
+  } else {
+    m_viewPort.setWidth(
+          imin2(canvasSize().width(), iround(screenSize().width() / hRatio)));
+    ratio = hRatio;
+  }
+
+  m_projRegion.setWidth(iround(ratio * m_viewPort.width()));
+  m_projRegion.setHeight(iround(ratio * m_viewPort.height()));
+}
+
 void ZImageWidget::setValidViewPort(const QRect &viewPort)
 {
   int dc, ec, dv, ev, dp, ep, ds, es;
@@ -291,12 +313,14 @@ void ZImageWidget::setView(int zoomRatio, const QPoint &zoomOffset)
 
 void ZImageWidget::setViewPortOffset(int x, int y)
 {
-  if (x < 0) {
-    x = 0;
-  }
+  if (!m_freeMoving) {
+    if (x < 0) {
+      x = 0;
+    }
 
-  if (y < 0) {
-    y = 0;
+    if (y < 0) {
+      y = 0;
+    }
   }
 
   if (x + m_viewPort.width() > canvasSize().width()) {
@@ -440,10 +464,10 @@ void ZImageWidget::paintEvent(QPaintEvent * /*event*/)
     }
 #endif
 
-    QSize size = projectSize();
-    painter.drawImage(m_projRegion, *m_image,
-                      m_viewPort);
-
+    /* draw gray regions */
+    painter.fillRect(QRect(0, 0, screenSize().width(), screenSize().height()),
+                     Qt::gray);
+#if 0
     QRect rightRect(m_projRegion.width(), 0,
                     width() - m_projRegion.width(), height());
     painter.fillRect(rightRect, Qt::gray);
@@ -451,6 +475,10 @@ void ZImageWidget::paintEvent(QPaintEvent * /*event*/)
     QRect downRect(0, m_projRegion.height(),
                    width(), height() - m_projRegion.height());
     painter.fillRect(downRect, Qt::gray);
+#endif
+    QSize size = projectSize();
+    painter.drawImage(m_projRegion, *m_image,
+                      m_viewPort);
 
     for (int i = 0; i < m_mask.size(); ++i) {
       if (m_mask[i] != NULL) {

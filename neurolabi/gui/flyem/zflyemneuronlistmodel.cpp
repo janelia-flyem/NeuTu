@@ -250,7 +250,7 @@ void ZFlyEmNeuronListModel::retrieveModel(
   doc->punctaObjsModel()->updateModelData();
 }
 
-void ZFlyEmNeuronListModel::retrieveBody(
+ZIntPoint ZFlyEmNeuronListModel::retrieveBody(
     const QModelIndexList &indexList, ZStackDoc *doc) const
 {
   QVector<const ZFlyEmNeuron*> neuronArray;
@@ -277,6 +277,7 @@ void ZFlyEmNeuronListModel::retrieveBody(
 
   ZStack *stack = NULL;
 
+  ZIntPoint dsIntvPt;
   if (!bodyArray.empty()) {
     const size_t maxVolume = 1024*1024*100 / bodyArray.size();
 
@@ -287,6 +288,7 @@ void ZFlyEmNeuronListModel::retrieveBody(
                    static_cast<double>(bodyArray.getBoundBox().getVolume()) /
                    maxVolume)) - 1;
       bodyArray.downsample(dsIntv, dsIntv, dsIntv);
+      dsIntvPt.set(dsIntv, dsIntv, dsIntv);
     }
 
     ZLabelColorTable colorTable;
@@ -309,6 +311,8 @@ void ZFlyEmNeuronListModel::retrieveBody(
     doc->loadStack(stack);
     doc->setTag(NeuTube::Document::FLYEM_BODY);
   }
+
+  return dsIntvPt;
 }
 
 

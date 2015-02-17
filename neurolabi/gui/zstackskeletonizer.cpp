@@ -645,6 +645,7 @@ ZSwcTree* ZStackSkeletonizer::makeSkeletonWithoutDs(Stack *stackData)
             objectOffset[2]);
 
         //branch = (*iter).toSwcTree();
+        /********* Removel small temini ************/
         if (SwcTreeNode::firstChild(branch->root) != NULL) {
           if (SwcTreeNode::radius(branch->root) * 2.0 <
               SwcTreeNode::radius(SwcTreeNode::firstChild(branch->root))) {
@@ -668,6 +669,7 @@ ZSwcTree* ZStackSkeletonizer::makeSkeletonWithoutDs(Stack *stackData)
             SwcTreeNode::kill(leaf);
           }
         }
+        /****************************/
 
         Swc_Tree_Node *tn = Swc_Tree_Connect_Branch(subtree, branch->root);
 
