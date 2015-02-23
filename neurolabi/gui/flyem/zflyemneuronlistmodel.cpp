@@ -10,6 +10,7 @@
 #include "zobject3dscanarray.h"
 #include "zstackfactory.h"
 #include "zlabelcolortable.h"
+#include "zscalablestack.h"
 
 ZFlyEmNeuronListModel::ZFlyEmNeuronListModel(QObject *parent) :
   QAbstractTableModel(parent)
@@ -248,6 +249,66 @@ void ZFlyEmNeuronListModel::retrieveModel(
   doc->blockSignals(false);
   doc->swcObjsModel()->updateModelData();
   doc->punctaObjsModel()->updateModelData();
+}
+
+ZScalableStack* ZFlyEmNeuronListModel::retrieveBody(
+    const QModelIndexList &indexList) const
+{
+  QVector<const ZFlyEmNeuron*> neuronArray;
+
+  foreach (QModelIndex index, indexList) {
+    QVector<const ZFlyEmNeuron*> subArray = getNeuronArray(index);
+    foreach (const ZFlyEmNeuron *neuron, subArray) {
+      neuronArray.append(neuron);
+    }
+  }
+
+  ZObject3dScanArray bodyArray;
+
+  foreach (const ZFlyEmNeuron *neuron, neuronArray) {
+    if (neuron != NULL) {
+      //doc->addSwcTree(neuron->getModel()->clone(), true);
+      ZObject3dScan *body = neuron->getBody();
+
+      if (body != NULL) {
+        bodyArray.push_back(*body);
+      }
+    }
+  }
+
+  ZScalableStack *stack = NULL;
+
+  if (!bodyArray.empty()) {
+    const size_t maxVolume = 1024*1024*100 / bodyArray.size();
+
+    ZIntPoint dsIntvPt;
+
+    if (bodyArray.getBoundBox().getVolume() > maxVolume) {
+      int dsIntv =
+          iround(Cube_Root(
+                   static_cast<double>(bodyArray.getBoundBox().getVolume()) /
+                   maxVolume)) - 1;
+      bodyArray.downsample(dsIntv, dsIntv, dsIntv);
+      dsIntvPt.set(dsIntv, dsIntv, dsIntv);
+    }
+
+    ZLabelColorTable colorTable;
+    for (size_t i = 0; i < bodyArray.size(); ++i) {
+      ZObject3dScan &obj = bodyArray[i];
+      obj.setColor(colorTable.getColor(i));
+    }
+    if (bodyArray.size() == 1) {
+      stack = new ZScalableStack(
+            ZStackFactory::MakeBinaryStack(bodyArray, 255));
+    } else {
+      stack = new ZScalableStack(ZStackFactory::MakeColorStack(bodyArray));
+    }
+
+    stack->setScale(
+          dsIntvPt.getX() + 1, dsIntvPt.getY() + 1, dsIntvPt.getZ() + 1);
+  }
+
+  return stack;
 }
 
 ZIntPoint ZFlyEmNeuronListModel::retrieveBody(

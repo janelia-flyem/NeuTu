@@ -30,7 +30,7 @@ public:
   }
 
 
-  ZStack* toDownsampledStack(int xIntv, int yIntv, int zIntv);
+  //ZStack* toDownsampledStack(int xIntv, int yIntv, int zIntv);
 
   /*!
    * \brief Get a slice of the sparse stack

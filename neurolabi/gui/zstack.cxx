@@ -123,6 +123,11 @@ void ZStack::setOffset(const ZIntPoint &pt)
   m_offset = pt;
 }
 
+void ZStack::setZOffset(int z)
+{
+  m_offset.setZ(z);
+}
+
 void ZStack::translate(int dx, int dy, int dz)
 {
   m_offset += ZIntPoint(dx, dy, dz);

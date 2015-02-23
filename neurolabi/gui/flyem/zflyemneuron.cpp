@@ -25,8 +25,9 @@ using namespace std;
 
 const int ZFlyEmNeuron::TopMatchCapacity = 10;
 
-#define CONSTRUCTOR_INIT m_sourceId(0), m_id(0), m_synapseScale(10.0), m_model(NULL), \
-  m_unscaledModel(NULL), m_buddyModel(NULL), m_body(NULL), m_synapseAnnotation(NULL)
+#define CONSTRUCTOR_INIT m_sourceId(0), m_id(0), m_synapseScale(10.0), \
+    m_model(NULL), m_unscaledModel(NULL), m_buddyModel(NULL), m_body(NULL), \
+    m_synapseAnnotation(NULL), m_bodyVolume(0)
 
 const char *ZFlyEmNeuron::m_idKey = "id";
 const char *ZFlyEmNeuron::m_nameKey = "name";
@@ -667,14 +668,15 @@ string ZFlyEmNeuron::toString() const
 
 double ZFlyEmNeuron::getBodyVolume(bool cacheBody) const
 {
-  size_t voxelNumber = getBody()->getVoxelNumber()/* * m_resolution[0] * m_resolution[1] *
-      m_resolution[2]*/;
+  if (m_bodyVolume == 0) {
+    m_bodyVolume = getBody()->getVoxelNumber();
+  }
 
   if (!cacheBody) {
     deprecate(ZFlyEmNeuron::BODY);
   }
 
-  return voxelNumber;
+  return m_bodyVolume;
 #if 0
   if (m_volumePath.empty()) {
     return 0.0;

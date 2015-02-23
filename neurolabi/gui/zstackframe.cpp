@@ -68,6 +68,29 @@ ZStackFrame::ZStackFrame(QWidget *parent, bool preparingModel) :
 #endif
 }
 
+ZStackFrame::ZStackFrame(QWidget *parent, ZSharedPointer<ZStackDoc> doc) :
+  QMdiSubWindow(parent), m_parentFrame(NULL),
+  m_tile(NULL), m_traceProject(NULL), m_isClosing(false),
+  m_3dWindow(NULL)
+{
+  setAttribute(Qt::WA_DeleteOnClose, true);
+  setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+  setAcceptDrops(true);
+  m_settingDlg = new SettingDialog(this);
+  m_manageObjsDlg = NULL;
+
+  m_presenter = NULL;
+  m_view = NULL;
+  constructFrame(doc);
+
+#if defined(_QT5_) && defined(Q_OS_WIN)
+  showMaximized();
+  showNormal();
+#endif
+}
+
+
+
 ZStackFrame::~ZStackFrame()
 {
 #ifdef _DEBUG_
@@ -81,6 +104,17 @@ void ZStackFrame::constructFrame()
 {
   createView();
   createDocument();
+  createPresenter();
+
+  setView(m_view);
+  m_view->prepareDocument();
+  m_presenter->prepareView();
+}
+
+void ZStackFrame::constructFrame(ZSharedPointer<ZStackDoc> doc)
+{
+  createView();
+  setDocument(ZSharedPointer<ZStackDoc>(doc));
   createPresenter();
 
   setView(m_view);
@@ -1030,7 +1064,7 @@ void ZStackFrame::setViewMode(ZInteractiveContext::ViewMode mode)
   presenter()->setViewMode(mode);
 }
 
-void ZStackFrame::setObjectDisplayStyle(ZStackObject::Display_Style style)
+void ZStackFrame::setObjectDisplayStyle(ZStackObject::EDisplayStyle style)
 {
   presenter()->setObjectStyle(style);
 }
@@ -1497,12 +1531,12 @@ void ZStackFrame::makeSwcProjection(ZStackDoc *doc)
     }
 }
 
-ZStackObject::Display_Style ZStackFrame::getObjectStyle() const
+ZStackObject::EDisplayStyle ZStackFrame::getObjectStyle() const
 {
   return m_presenter->objectStyle();
 }
 
-void ZStackFrame::setObjectStyle(ZStackObject::Display_Style style)
+void ZStackFrame::setObjectStyle(ZStackObject::EDisplayStyle style)
 {
   m_presenter->setObjectStyle(style);
 }

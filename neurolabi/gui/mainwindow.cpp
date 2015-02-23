@@ -6005,82 +6005,79 @@ QAction* MainWindow::getBodySplitAction() const
 void MainWindow::on_actionLoad_Body_with_Grayscale_triggered()
 {
 #if defined(_FLYEM_)
-  if (m_bodyDlg->exec()) {
-    m_progress->setLabelText("Loading ...");
-    m_progress->setRange(0, 0);
-    m_progress->open();
+  if (m_dvidDlg->exec()) {
+    ZDvidTarget dvidTarget = m_dvidDlg->getDvidTarget();
 
-    /*
-    ZFlyEmDataInfo dataInfo(FlyEm::DATA_FIB25);
-    ZDvidReader reader;
-    */
+    if (m_bodyDlg->exec()) {
+      m_progress->setLabelText("Loading ...");
+      m_progress->setRange(0, 0);
+      m_progress->open();
 
-    const ZDvidTarget &target = GET_FLYEM_CONFIG.getDvidTarget();
-
-    ZDvidReader reader;
-    if (reader.open(target)) {
-      std::vector<int> bodyIdArray = m_bodyDlg->getBodyIdArray();
-      if (!bodyIdArray.empty()) {
-        int bodyId = bodyIdArray[0];
-        ZObject3dScan body = reader.readBody(bodyId);
+      ZDvidReader reader;
+      if (reader.open(dvidTarget)) {
+        std::vector<int> bodyIdArray = m_bodyDlg->getBodyIdArray();
+        if (!bodyIdArray.empty()) {
+          int bodyId = bodyIdArray[0];
+          ZObject3dScan body = reader.readBody(bodyId);
 
 #ifdef _DEBUG_
-        std::cout << "Body size: " << body.getVoxelNumber() << std::endl;
+          std::cout << "Body size: " << body.getVoxelNumber() << std::endl;
 #endif
 
-        if (!body.isEmpty()) {
-          ZStack *stack = body.toStackObject();
-          int x = stack->getOffset().getX();
-          int y = stack->getOffset().getY();
-          int z = stack->getOffset().getZ();
-          int width = stack->width();
-          int height = stack->height();
-          int depth = stack->depth();
+          if (!body.isEmpty()) {
+            ZStack *stack = body.toStackObject();
+            int x = stack->getOffset().getX();
+            int y = stack->getOffset().getY();
+            int z = stack->getOffset().getZ();
+            int width = stack->width();
+            int height = stack->height();
+            int depth = stack->depth();
 
-          ZStack *grayStack = reader.readGrayScale(x, y, z, width, height, depth);
+            ZStack *grayStack = reader.readGrayScale(x, y, z, width, height, depth);
 
-          if (grayStack != NULL) {
-            TZ_ASSERT(grayStack->kind() == GREY, "Unsuppored kind.");
-            if (Stack_Same_Size(grayStack->c_stack(), stack->c_stack())) {
-              size_t voxelNumber = stack->getVoxelNumber();
-              uint8_t *maskArray = stack->array8();
-              uint8_t *signalArray = grayStack->array8();
-              for (size_t i = 0; i < voxelNumber; ++i) {
-                if (maskArray[i] > 0) {
-                  if (signalArray[i] < 255) {
-                    maskArray[i] = signalArray[i] + 1;
-                  } else {
-                    maskArray[i] = 255;
+            if (grayStack != NULL) {
+              TZ_ASSERT(grayStack->kind() == GREY, "Unsuppored kind.");
+              if (Stack_Same_Size(grayStack->c_stack(), stack->c_stack())) {
+                size_t voxelNumber = stack->getVoxelNumber();
+                uint8_t *maskArray = stack->array8();
+                uint8_t *signalArray = grayStack->array8();
+                for (size_t i = 0; i < voxelNumber; ++i) {
+                  if (maskArray[i] > 0) {
+                    if (signalArray[i] < 255) {
+                      maskArray[i] = signalArray[i] + 1;
+                    } else {
+                      maskArray[i] = 255;
+                    }
                   }
                 }
               }
+              //Stack_Mul(stack->c_stack(), grayStack->c_stack(), stack->c_stack());
+              delete grayStack;
             }
-            //Stack_Mul(stack->c_stack(), grayStack->c_stack(), stack->c_stack());
-            delete grayStack;
-          }
 
-          ZStack *out = stack;
-          std::vector<int> dsIntv = m_bodyDlg->getDownsampleInterval();
-          if (dsIntv[0] > 0 || dsIntv[1] > 0 || dsIntv[2] > 0) {
-            Stack *outData = C_Stack::downsampleMin(
-                  stack->c_stack(), dsIntv[0], dsIntv[1], dsIntv[2]);
-            out = new ZStack();
-            out->consume(outData);
-            delete stack;
-          }
+            ZStack *out = stack;
+            std::vector<int> dsIntv = m_bodyDlg->getDownsampleInterval();
+            if (dsIntv[0] > 0 || dsIntv[1] > 0 || dsIntv[2] > 0) {
+              Stack *outData = C_Stack::downsampleMin(
+                    stack->c_stack(), dsIntv[0], dsIntv[1], dsIntv[2]);
+              out = new ZStack();
+              out->consume(outData);
+              delete stack;
+            }
 
-          //ZStackDoc *doc = new ZStackDoc(NULL, NULL);
-          //doc->loadStack(stack);
-          ZStackDocReader docReader;
-          docReader.setStack(out);
-          ZStackFrame *frame = createStackFrame(&docReader);
-          frame->document()->setTag(NeuTube::Document::FLYEM_BODY);
-          addStackFrame(frame);
-          presentStackFrame(frame);
+            //ZStackDoc *doc = new ZStackDoc(NULL, NULL);
+            //doc->loadStack(stack);
+            ZStackDocReader docReader;
+            docReader.setStack(out);
+            ZStackFrame *frame = createStackFrame(&docReader);
+            frame->document()->setTag(NeuTube::Document::FLYEM_BODY);
+            addStackFrame(frame);
+            presentStackFrame(frame);
+          }
         }
       }
+      m_progress->reset();
     }
-    m_progress->reset();
   }
 #endif
 }

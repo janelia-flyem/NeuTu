@@ -13,7 +13,7 @@ public:
   ~ZStackPatch();
 
 public:
-  virtual void display(ZPainter &painter, int slice, Display_Style option)
+  virtual void display(ZPainter &painter, int slice, EDisplayStyle option)
   const;
 
   virtual const std::string& className() const;

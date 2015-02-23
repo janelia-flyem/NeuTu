@@ -42,12 +42,12 @@ public:
 
 public:
   virtual void display(ZPainter &painter, int z = 0,
-                       Display_Style option = NORMAL) const;
+                       EDisplayStyle option = NORMAL) const;
 
   virtual void save(const char *filePath);
   virtual bool load(const char *filePath);
 
-  void displayHelper(ZPainter *painter, int n, Display_Style style) const;
+  void displayHelper(ZPainter *painter, int n, EDisplayStyle style) const;
 
   /*!
    * \brief Test if a circle is cut by a plane.

@@ -21,7 +21,7 @@ public:
   bool hit(double x, double y, double z);
 
 public:
-  virtual void display(ZPainter &painter, int slice, Display_Style option) const;
+  virtual void display(ZPainter &painter, int slice, EDisplayStyle option) const;
   virtual const std::string& className() const;
   bool isSliceVisible(int z) const;
   inline void setPenetrating(bool p) {

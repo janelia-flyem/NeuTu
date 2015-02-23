@@ -9,11 +9,11 @@
 #include "zflyemneuron.h"
 #include "flyem/zsynapseannotationarray.h"
 #include "neutube.h"
-#include "zswctree.h"
 #include "zflyemneuronarray.h"
 #include "flyem/zflyemcoordinateconverter.h"
 
 class ZDvidFilter;
+class ZSwcTree;
 
 class ZFlyEmDataBundle
 {

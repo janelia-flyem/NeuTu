@@ -16,7 +16,7 @@ ZDirectionalTemplateChain::~ZDirectionalTemplateChain()
   m_chain.clear();
 }
 
-void ZDirectionalTemplateChain::display(ZPainter &painter, int z, Display_Style option) const
+void ZDirectionalTemplateChain::display(ZPainter &painter, int z, EDisplayStyle option) const
 {
   for (int i = 0; i < m_chain.size(); i++) {
     m_chain.at(i)->display(painter, z, option);

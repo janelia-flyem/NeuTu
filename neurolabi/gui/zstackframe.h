@@ -47,6 +47,7 @@ class ZStackFrame : public QMdiSubWindow, public ZReportable
 
 public:
   explicit ZStackFrame(QWidget *parent = 0, bool preparingModel = true);
+  explicit ZStackFrame(QWidget *parent, ZSharedPointer<ZStackDoc> doc);
   virtual ~ZStackFrame();
 
 public:
@@ -56,6 +57,7 @@ public:
   inline ZStackPresenter *presenter() const { return m_presenter; }
 
   virtual void constructFrame();
+  virtual void constructFrame(ZSharedPointer<ZStackDoc> doc);
   virtual void createView();
   virtual void createPresenter();
   virtual void createDocument();
@@ -119,12 +121,12 @@ public:
 
   ZInteractiveContext::ViewMode getViewMode() const;
   void setViewMode(ZInteractiveContext::ViewMode mode);
-  void setObjectDisplayStyle(ZStackObject::Display_Style style);
+  void setObjectDisplayStyle(ZStackObject::EDisplayStyle style);
   void setViewPortCenter(int x, int y, int z);
   void viewRoi(int x, int y, int z, int radius);
 
-  ZStackObject::Display_Style getObjectStyle() const;
-  void setObjectStyle(ZStackObject::Display_Style style);
+  ZStackObject::EDisplayStyle getObjectStyle() const;
+  void setObjectStyle(ZStackObject::EDisplayStyle style);
 
   void hideObject();
   void showObject();

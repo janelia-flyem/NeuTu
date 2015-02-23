@@ -183,8 +183,8 @@ bool ZFlyEmDataBundle::loadDvid(const ZDvidFilter &dvidFilter)
           neuron.setName(annotation.getName());
         }
 
-        if (!annotation.getClass().empty()) {
-          neuron.setType(annotation.getClass());
+        if (!annotation.getType().empty()) {
+          neuron.setType(annotation.getType());
         } else {
           neuron.setType(ZFlyEmNeuronInfo::GuessTypeFromName(neuron.getName()));
         }
@@ -197,6 +197,7 @@ bool ZFlyEmDataBundle::loadDvid(const ZDvidFilter &dvidFilter)
     }
   }
   m_neuronArray.resize(realSize);
+  updateNeuronConnection();
 
   return true;
 }
@@ -323,8 +324,8 @@ bool ZFlyEmDataBundle::loadJsonFile(const std::string &filePath)
           if (!annotation.getName().empty()) {
             neuron.setName(annotation.getName());
           }
-          if (!annotation.getClass().empty()) {
-            neuron.setType(annotation.getClass());
+          if (!annotation.getType().empty()) {
+            neuron.setType(annotation.getType());
           }
         }
       }

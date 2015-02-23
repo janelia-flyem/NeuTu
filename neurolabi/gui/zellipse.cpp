@@ -18,7 +18,7 @@ ZEllipse::ZEllipse(const QPointF &center, double rx, double ry) : m_angle(0)
   m_ry = ry;
 }
 
-void ZEllipse::display(ZPainter &painter, int z, Display_Style option) const
+void ZEllipse::display(ZPainter &painter, int z, EDisplayStyle option) const
 {
   UNUSED_PARAMETER(z);
   UNUSED_PARAMETER(option);

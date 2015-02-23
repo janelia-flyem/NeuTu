@@ -7,7 +7,6 @@
 #include <string>
 #include <vector>
 #include "zobject3dscan.h"
-#include "zswctree.h"
 #include "zstack.hxx"
 #include "zdvidclient.h"
 #include "flyem/zflyem.h"
@@ -19,6 +18,7 @@
 class ZFlyEmNeuron;
 class ZClosedCurve;
 class ZIntCuboid;
+class ZSwcTree;
 
 class ZDvidWriter : public QObject
 {

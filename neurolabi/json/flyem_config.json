@@ -1,6 +1,20 @@
 {
   "dvid repo": [
     {
+      "address": "hackathon.janelia.org",
+      "uuid": "2a3",
+      "name": "FIB25-Hackathon",
+      "background": 0,
+      "comment": "FIB-25 export for hackathon"
+    },
+    {
+      "address": "emdata1.int.janelia.org",
+      "uuid": "2a3",
+      "name": "FIB25-Hackathon (internal)",
+      "background": 0,
+      "comment": "FIB-25 export for hackathon (internal access)"
+    },
+    {
       "address": "emdata.janelia.org",
       "uuid": "bf1",
       "name": "FIB-external",
@@ -36,13 +50,6 @@
       "background": 0,
       "comment": "FIB-25 export 2014-09-26",
       "local": "/groups/flyem/data/zhaot/local/FIB25"
-    },
-    {
-      "address": "emrecon100.janelia.priv",
-      "uuid": "2a3",
-      "name": "FIB25-Hackathon",
-      "background": 0,
-      "comment": "FIB-25 export for hackathon"
     },
     {
       "address": "emdata2.int.janelia.org",

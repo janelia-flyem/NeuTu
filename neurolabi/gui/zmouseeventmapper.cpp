@@ -319,6 +319,10 @@ ZMouseEventRightButtonReleaseMapper::getOperation(const ZMouseEvent &event) cons
       if (m_context->isContextMenuActivated()) {
         if (m_doc->hasSelectedSwcNode()) {
           op.setOperation(ZStackOperator::OP_SHOW_SWC_CONTEXT_MENU);
+        } else if (m_doc->getTag() == NeuTube::Document::FLYEM_MERGE) {
+          if (m_doc->getSelected(ZStackObject::TYPE_OBJECT3D_SCAN).size() == 1) {
+            op.setOperation(ZStackOperator::OP_SHOW_BODY_CONTEXT_MENU);
+          }
         } else {
           if (m_doc->getTag() == NeuTube::Document::BIOCYTIN_PROJECTION) {
             op.setOperation(ZStackOperator::OP_SHOW_STROKE_CONTEXT_MENU);

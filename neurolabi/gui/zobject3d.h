@@ -42,7 +42,7 @@ public:
   virtual void save(const char *filePath);
   virtual bool load(const char *filePath);
   virtual void display(
-      ZPainter &painter, int slice, Display_Style option)
+      ZPainter &painter, int slice, EDisplayStyle option)
   const;
 
 public:

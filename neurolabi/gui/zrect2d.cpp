@@ -36,7 +36,7 @@ bool ZRect2d::isSliceVisible(int z) const
   return isValid() && (m_isPenetrating || z == m_z);
 }
 
-void ZRect2d::display(ZPainter &painter, int slice, Display_Style /*option*/) const
+void ZRect2d::display(ZPainter &painter, int slice, EDisplayStyle /*option*/) const
 {
   int z = slice + iround(painter.getOffset().z());
   if (!(isSliceVisible(z) || (slice == -1))) {

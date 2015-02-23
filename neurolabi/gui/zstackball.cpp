@@ -74,7 +74,7 @@ void ZStackBall::setCenter(const ZIntPoint &center)
 //}
 
 void ZStackBall::display(ZPainter &painter, int slice,
-                         ZStackObject::Display_Style style) const
+                         ZStackObject::EDisplayStyle style) const
 {
   if (!isVisible()) {
     return;
@@ -168,7 +168,7 @@ double ZStackBall::getAdjustedRadius(double r) const
 }
 
 void ZStackBall::displayHelper(
-    ZPainter *painter, int slice, Display_Style style) const
+    ZPainter *painter, int slice, EDisplayStyle style) const
 {
   UNUSED_PARAMETER(style);
 #if defined(_QT_GUI_USED_)

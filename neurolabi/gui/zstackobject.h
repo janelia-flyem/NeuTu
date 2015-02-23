@@ -62,7 +62,7 @@ public:
     BLUE = 0, GREEN, RED, ALPHA
   };
 
-  enum Display_Style {
+  enum EDisplayStyle {
     NORMAL, SOLID, BOUNDARY, SKELETON
   };
 
@@ -101,17 +101,17 @@ public:
    * \a painter is expected to be restored after painting
    */
   virtual void display(
-      ZPainter &painter, int slice, Display_Style option) const = 0;
+      ZPainter &painter, int slice, EDisplayStyle option) const = 0;
 
   /* For special painting when ZPainter cannot be created */
   virtual void display(
-      QPainter *painter, int z, Display_Style option,
+      QPainter *painter, int z, EDisplayStyle option,
       EDisplaySliceMode sliceMode) const;
 
   inline bool isVisible() const { return m_isVisible; }
   inline void setVisible(bool visible) { m_isVisible = visible; }
-  inline void setDisplayStyle(Display_Style style) { m_style = style; }
-  inline Display_Style displayStyle() const { return m_style; }
+  inline void setDisplayStyle(EDisplayStyle style) { m_style = style; }
+  inline EDisplayStyle displayStyle() const { return m_style; }
 
   inline ETarget getTarget() const { return m_target; }
   inline void setTarget(ETarget target) { m_target = target; }
@@ -233,7 +233,7 @@ protected:
   bool m_selected;
   bool m_isVisible;
   bool m_isHittable;
-  Display_Style m_style;
+  EDisplayStyle m_style;
   QColor m_color;
   ETarget m_target;
   static double m_defaultPenWidth;

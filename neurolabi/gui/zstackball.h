@@ -56,13 +56,13 @@ public:
 
 public:
   virtual void display(ZPainter &painter, int slice,
-                       Display_Style option) const;
+                       EDisplayStyle option) const;
 
   virtual void save(const char *filePath);
   virtual bool load(const char *filePath);
 
   void displayHelper(
-      ZPainter *painter, int slice, Display_Style style) const;
+      ZPainter *painter, int slice, EDisplayStyle style) const;
 
   bool isSliceVisible(int z) const;
 

@@ -156,7 +156,7 @@ bool ZObject3d::load(const char *filePath)
   return false;
 }
 
-void ZObject3d::display(ZPainter &painter, int slice, Display_Style option) const
+void ZObject3d::display(ZPainter &painter, int slice, EDisplayStyle option) const
 {  
   UNUSED_PARAMETER(option);
 #if _QT_GUI_USED_

@@ -318,3 +318,17 @@ void ZJsonObject::setValue(const ZJsonValue &value)
     clear();
   }
 }
+
+std::vector<std::string> ZJsonObject::getAllKey() const
+{
+  std::vector<std::string> keyList;
+  if (!isEmpty()) {
+    const char *key;
+    json_t *value;
+    json_object_foreach(m_data, key, value) {
+      keyList.push_back(key);
+    }
+  }
+
+  return keyList;
+}

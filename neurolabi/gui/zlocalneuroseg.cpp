@@ -41,7 +41,7 @@ ZLocalNeuroseg::~ZLocalNeuroseg()
   }
 }
 
-void ZLocalNeuroseg::display(ZPainter &painter, int z, Display_Style option,
+void ZLocalNeuroseg::display(ZPainter &painter, int z, EDisplayStyle option,
                              const QColor &color) const
 { //todo
 #if defined(_QT_GUI_USED_)
@@ -271,7 +271,7 @@ void ZLocalNeuroseg::display(ZPainter &painter, int z, Display_Style option,
 }
 
 void ZLocalNeuroseg::display(QImage *image, int n, Palette_Color color,
-                             Display_Style style, int label) const
+                             EDisplayStyle style, int label) const
 {
 #if defined(_QT_GUI_USED_)
   double center_position[3];
@@ -471,7 +471,7 @@ void ZLocalNeuroseg::display(QImage *image, int n, Palette_Color color,
 }
 
 
-void ZLocalNeuroseg::display(ZPainter &/*painter*/, int /*z*/, Display_Style /*option*/) const
+void ZLocalNeuroseg::display(ZPainter &/*painter*/, int /*z*/, EDisplayStyle /*option*/) const
 {
 #if 0
   display(painter, z, option, RED);

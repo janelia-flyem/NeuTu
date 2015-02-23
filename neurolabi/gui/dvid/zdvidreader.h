@@ -4,10 +4,11 @@
 #include <QObject>
 #include <QEventLoop>
 #include <QTimer>
+#include <QImage>
+
 #include <string>
 #include <vector>
 #include "zobject3dscan.h"
-#include "zswctree.h"
 #include "zstack.hxx"
 #include "zdvidclient.h"
 #include "flyem/zflyem.h"
@@ -22,6 +23,9 @@ class ZDvidFilter;
 class ZArray;
 class ZJsonObject;
 class ZFlyEmNeuronBodyInfo;
+class ZDvidTile;
+class ZDvidTileInfo;
+class ZSwcTree;
 
 class ZDvidReader : public QObject
 {
@@ -83,6 +87,11 @@ public:
   }
 
   int readMaxBodyId();
+
+  ZDvidTileInfo readTileInfo(const std::string &dataName) const;
+
+  ZDvidTile *readTile(const std::string &dataName, int resLevel,
+                     int xi0, int yi0, int z0) const;
 
 signals:
   void readingDone();

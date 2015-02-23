@@ -1,6 +1,8 @@
 #ifndef ZSHAREDPOINTER_H
 #define ZSHAREDPOINTER_H
 
+#include <utility>
+
 #ifdef __GLIBCXX__
 #include <tr1/memory>
 namespace ztr1 = std::tr1;

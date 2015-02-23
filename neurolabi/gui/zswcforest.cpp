@@ -169,3 +169,29 @@ ZSwcTree* ZSwcForest::toSwcTree()
 
   return result;
 }
+
+ZSwcTree* ZSwcForest::getSwcTreeWithMaxLength() const
+{
+  double maxLength = 0.0;
+  ZSwcTree *masterTree = NULL;
+
+  for (size_t i = 0; i < size(); ++i) {
+    ZSwcTree *subtree = (*this)[i];
+    double length = subtree->length();
+    if (length > maxLength) {
+      masterTree = subtree;
+      maxLength = length;
+    }
+  }
+
+  return masterTree;
+}
+
+ZSwcTree* ZSwcForest::getSwcTree(size_t index) const
+{
+  if (index >= size()) {
+    return NULL;
+  }
+
+  return (*this)[index];
+}

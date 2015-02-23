@@ -492,7 +492,10 @@ HEADERS += mainwindow.h \
     zflyemprojectmanager.h \
     zflyemdataloader.h \
     swcexportdialog.h \
-    zprogressmanager.h
+    zprogressmanager.h \
+    dvid/zdvidtile.h \
+    dvid/zdvidresolution.h \
+    dvid/zdvidtileinfo.h
 
 FORMS += settingdialog.ui \
     frameinfodialog.ui \
@@ -840,7 +843,10 @@ SOURCES += main.cpp \
     zflyemprojectmanager.cpp \
     zflyemdataloader.cpp \
     swcexportdialog.cpp \
-    zprogressmanager.cpp
+    zprogressmanager.cpp \
+    dvid/zdvidtile.cpp \
+    dvid/zdvidresolution.cpp \
+    dvid/zdvidtileinfo.cpp
 
 OTHER_FILES += \
     extlib.pri

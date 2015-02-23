@@ -25,8 +25,8 @@
 
 #include "neutube.h"
 #include "zcurve.h"
-#include "zswctree.h"
 #include "zobject3d.h"
+#include "zswctree.h"
 #include "tz_local_neuroseg.h"
 #include "tz_locseg_chain.h"
 #include "tz_trace_defs.h"

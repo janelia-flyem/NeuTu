@@ -8,6 +8,7 @@
 #include <QUndoStack>
 #include <QImage>
 #include <QPainter>
+#include <QProcess>
 #include <iostream>
 #include <ostream>
 #include <fstream>
@@ -230,6 +231,9 @@ using namespace std;
 #include "tz_int_histogram.h"
 #include "zsegmentationproject.h"
 #include "zstackviewmanager.h"
+#include "dvid/zdvidtile.h"
+#include "dvid/zdvidtileinfo.h"
+#include "flyem/zflyemneuronbodyinfo.h"
 
 using namespace std;
 
@@ -15103,7 +15107,7 @@ void ZTest::test(MainWindow *host)
   QStringList swcKeys = reader.readKeys("skeletons", "0");
 
   int count = 0;
-  ZString outputDir = GET_TEST_DATA_DIR + "/flyem/FIB/hackathon/skeletons";
+  ZString outputDir = GET_TEST_DATA_DIR + "/flyem/FIB/hackathon/skeletons_original";
   foreach (const QString &swcKey, swcKeys) {
 
     int bodyId = ZString(swcKey.toStdString()).firstInteger();
@@ -15204,7 +15208,7 @@ void ZTest::test(MainWindow *host)
 
 #  endif
 
-#if 0
+#  if 0
   ZFileList fileList;
   int count = 0;
   fileList.load("/Users/zhaot/Work/ConnectomeHackathon2015/skeletons", "swc");
@@ -15231,7 +15235,324 @@ void ZTest::test(MainWindow *host)
   std::cout << count << " neurons" << std::endl;
 
   delete stack;
+#  endif
+
 #endif
+
+#if 0
+  ZFileList fileList;
+  int count = 0;
+  fileList.load(GET_TEST_DATA_DIR + "/flyem/FIB/hackathon/skeletons", "swc");
+
+  QSet<int> excludeSet;
+  excludeSet << 141559 << 14678 << 197198 << 236103 << 28639 << 316822
+             << 3353 << 5027 << 532540 << 535565 << 548083 << 598789 << 601420
+             << 622288 << 641004 << 91300 << 5211;
+
+  ZString outputDir =
+      GET_TEST_DATA_DIR + "/flyem/FIB/hackathon/skeletons_processed";
+
+//  double lengthThre = 300.0;
+  for (int i = 0; i < fileList.size(); ++i) {
+    const char *filePath = fileList.getFilePath(i);
+    int bodyId = ZString(filePath).lastInteger();
+    ZString outputPath = outputDir + "/";
+    outputPath.appendNumber(bodyId);
+    outputPath += ".swc";
+
+    if (!excludeSet.contains(bodyId)) {
+      ZSwcTree tree;
+      tree.load(filePath);
+
+      ZSwcForest *forest = tree.toSwcTreeArray();
+
+      if (forest->size() > 1) {
+        double maxLength = 0.0;
+        ZSwcTree *masterTree = NULL;
+
+        for (size_t i = 0; i < forest->size(); ++i) {
+          ZSwcTree *subtree = (*forest)[i];
+          double length = subtree->length();
+          if (length > maxLength) {
+            masterTree = subtree;
+            maxLength = length;
+          }
+        }
+        masterTree->save(outputPath);
+        ++count;
+      } else {
+        tree.load(filePath);
+        tree.save(outputPath);
+      }
+
+      delete forest;
+    }
+  }
+
+  std::cout << count << " trees" << std::endl;
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "2a3", -1);
+
+  ZDvidReader reader;
+  reader.open(target);
+  ZDvidTileInfo tileInfo = reader.readTileInfo("graytiles");
+
+  tileInfo.print();
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "2a3", -1);
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  ZDvidTile *tile = reader.readTile("graytiles", 4, 0, 0, 6000);
+  tile->printInfo();
+  delete tile;
+
+#endif
+
+#if 0
+  ZFileList fileList;
+//  int count = 0;
+  fileList.load("/Users/zhaot/Work/ConnectomeHackathon2015/skeletons", "swc");
+  ZDvidTarget target;
+  target.set("hackathon.janelia.org", "2a3", -1);
+  ZDvidUrl dvidUrl(target);
+  for (int i = 0; i < fileList.size(); ++i) {
+    const char *filePath = fileList.getFilePath(i);
+    int bodyId = ZString(filePath).lastInteger();
+
+    QString command = QString("curl -X POST %1 --data-binary @%2").
+        arg(dvidUrl.getSkeletonUrl(
+              bodyId, target.getBodyLabelName()).c_str()).arg(filePath);
+    /*
+    QString command = QString(
+          "curl -X POST %1/api/node/%2/skeletons/%3.swc"
+          " --data-binary @%4").arg(m_dvidClient->getServer()).
+        arg(m_dvidClient->getUuid()).
+        arg(bodyId).arg(tmpPath);
+        */
+
+    qDebug() << command;
+
+    QProcess::execute(command);
+  }
+
+#endif
+
+
+#if 0
+  ZFileList fileList;
+  int count = 0;
+  fileList.load(
+        GET_TEST_DATA_DIR + "/flyem/FIB/hackathon/skeletons", "swc");
+
+  QSet<int> excludeSet;
+  excludeSet << 197198 << 236103;
+
+  QSet<int> namedBodySet;
+  namedBodySet << 14678 << 5027 << 548083 << 598789 << 2158;
+
+  ZString outputDir =
+      GET_TEST_DATA_DIR + "/flyem/FIB/hackathon/skeletons_labeled";
+
+  double lengthThre = 300.0;
+  const int smallLabel = 20;
+  const int largeLabel = 21;
+  for (int i = 0; i < fileList.size(); ++i) {
+    const char *filePath = fileList.getFilePath(i);
+    int bodyId = ZString(filePath).lastInteger();
+    ZString outputPath = outputDir + "/";
+    outputPath.appendNumber(bodyId);
+    outputPath += ".swc";
+    ZSwcTree tree;
+    tree.load(filePath);
+
+    if (tree.regularRootNumber() == 1) {
+      tree.setType(0);
+      tree.save(outputPath);
+    } else {
+      ++count;
+      ZSwcForest *forest = tree.toSwcTreeArray();
+
+      std::string comment;
+      if (excludeSet.contains(bodyId)) {
+        comment = "Bad segmentation";
+        for (size_t i = 0; i < forest->size(); ++i) {
+          ZSwcTree *tree = forest->getSwcTree(i);
+          if (tree->length() >= lengthThre) {
+            tree->setType(largeLabel);
+          } else {
+            tree->setType(smallLabel);
+          }
+        }
+      } else if (namedBodySet.contains(bodyId)) {
+        comment = "Reliable large fragments";
+        for (size_t i = 0; i < forest->size(); ++i) {
+          ZSwcTree *tree = forest->getSwcTree(i);
+          if (tree->length() >= lengthThre) {
+            tree->setType(0);
+          } else {
+            tree->setType(smallLabel);
+          }
+        }
+      } else {
+        ZSwcTree *masterTree = forest->getSwcTreeWithMaxLength();
+        masterTree->setType(0);
+        for (size_t i = 0; i < forest->size(); ++i) {
+          ZSwcTree *tree = forest->getSwcTree(i);
+          if (tree != masterTree) {
+            if (tree->length() >= lengthThre) {
+              tree->setType(largeLabel);
+            } else {
+              tree->setType(smallLabel);
+            }
+          }
+        }
+      }
+
+      ZSwcTree *labeledTree = forest->toSwcTree();
+      labeledTree->setComment(comment);
+      labeledTree->save(outputPath);
+      delete forest;
+    }
+  }
+
+  std::cout << count << " trees" << std::endl;
+#endif
+
+#if 0
+
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "2a3", -1);
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  ZObject3dScan obj = reader.readBody(568121);
+
+  ZIntCuboid box = obj.getBoundBox();
+  std::cout << box.getFirstCorner().toString() << std::endl;
+  std::cout << box.getLastCorner().toString() << std::endl;
+
+  ZObject3dScan slice = obj.getSlice(7999);
+  std::cout << slice.getVoxelNumber() << std::endl;
+
+#endif
+
+#if 0
+  ZJsonObject neuronJson;
+  neuronJson.load("/Users/zhaot/Work/ConnectomeHackathon2015/neuronsinfo.json");
+
+  ZDvidTarget target;
+  target.set("hackathon.janelia.org", "2a3", -1);
+  ZDvidWriter writer;
+  writer.open(target);
+
+  const char *key;
+  json_t *value;
+  ZJsonObject_foreach(neuronJson, key, value) {
+    ZFlyEmBodyAnnotation annotation;
+
+    ZJsonObject bodyJson;
+    bodyJson.setEntry(key, value);
+    annotation.loadJsonObject(bodyJson);
+    annotation.print();
+
+    ZJsonObject obj;
+    obj.setEntry("name", annotation.getName());
+    obj.setEntry("class", annotation.getType());
+
+    writer.writeAnnotation(annotation.getBodyId(), obj);
+  }
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "2a3", -1);
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  std::set<int> bodyIdSet = reader.readBodyId(10000000);
+  std::cout << bodyIdSet.size() << " bodies" << std::endl;
+
+  std::vector<int> bodyIdArray;
+  std::vector<int> bodySizeArray;
+  std::vector<size_t> boundBoxSizeArray;
+
+  for (std::set<int>::const_iterator iter = bodyIdSet.begin();
+       iter != bodyIdSet.end(); ++iter) {
+    int bodyId = *iter;
+    bodyIdArray.push_back(bodyId);
+    ZFlyEmNeuronBodyInfo bodyInfo = reader.readBodyInfo(*iter);
+    bodySizeArray.push_back(bodyInfo.getBodySize());
+    boundBoxSizeArray.push_back(bodyInfo.getBoundBox().getVolume());
+  }
+
+  size_t maxSizeIndex = 0;
+  size_t maxBoxIndex = 0;
+  int maxBodySize= 0;
+  size_t maxBoxSize = 0;
+  for (size_t i = 0; i < bodyIdArray.size(); ++i) {
+    if (maxBodySize < bodySizeArray[i]) {
+      maxBodySize = bodySizeArray[i];
+      maxSizeIndex = bodyIdArray[i];
+    }
+    if (maxBoxSize < boundBoxSizeArray[i]) {
+      maxBoxIndex = bodyIdArray[i];
+      maxBoxSize = boundBoxSizeArray[i];
+    }
+  }
+
+  std::cout << "Max body size: " << maxSizeIndex << ": " << maxBodySize
+            << std::endl;
+  std::cout << "Max box size: " << maxBoxIndex << ": " << maxBoxSize
+            << std::endl;
+#endif
+
+#if 1 //Generate thumbnail for large bodies
+  ZDvidTarget target;
+  target.set("hackathon.janelia.org", "2a3", -1);
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  ZDvidWriter writer;
+  writer.open(target);
+
+  std::set<int> bodyIdSet = reader.readBodyId(1000000);
+  std::cout << bodyIdSet.size() << " bodies" << std::endl;
+
+  ZFlyEmNeuronImageFactory imageFactory;
+  imageFactory.setDownsampleInterval(7, 7, 7);
+  imageFactory.setSizePolicy(ZFlyEmNeuronImageFactory::SIZE_BOUND_BOX,
+                             ZFlyEmNeuronImageFactory::SIZE_BOUND_BOX,
+                             ZFlyEmNeuronImageFactory::SIZE_BOUND_BOX);
+  size_t index = 0;
+  for (std::set<int>::const_iterator iter = bodyIdSet.begin();
+       iter != bodyIdSet.end(); ++iter, ++index) {
+    std::cout << index << " / " << bodyIdSet.size() << std::endl;
+    int bodyId = *iter;
+    ZFlyEmNeuronBodyInfo bodyInfo = reader.readBodyInfo(*iter);
+    if (bodyInfo.getBodySize() == 0) {
+      ZObject3dScan body;
+      reader.readBody(bodyId, &body);
+
+      Stack *stack = imageFactory.createSurfaceImage(body);
+      writer.writeThumbnail(bodyId, stack);
+
+      ZFlyEmNeuronBodyInfo bodyInfo;
+      bodyInfo.setBodySize(body.getVoxelNumber());
+      bodyInfo.setBoundBox(body.getBoundBox());
+      writer.writeBodyInfo(bodyId, bodyInfo.toJsonObject());
+    }
+  }
 
 #endif
 }

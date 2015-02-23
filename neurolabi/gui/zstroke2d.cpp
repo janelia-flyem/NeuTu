@@ -138,7 +138,7 @@ void ZStroke2d::setEraser(bool enabled)
   */
 }
 
-void ZStroke2d::display(ZPainter &painter, int slice, Display_Style option) const
+void ZStroke2d::display(ZPainter &painter, int slice, EDisplayStyle option) const
 {
   //UNUSED_PARAMETER(z);
   UNUSED_PARAMETER(option);
@@ -231,7 +231,7 @@ void ZStroke2d::display(ZPainter &painter, int slice, Display_Style option) cons
   painter.restore();
 }
 
-void ZStroke2d::display(QPainter *rawPainter, int z, Display_Style option,
+void ZStroke2d::display(QPainter *rawPainter, int z, EDisplayStyle option,
                         EDisplaySliceMode sliceMode) const
 {
   //UNUSED_PARAMETER(z);

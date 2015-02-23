@@ -120,26 +120,6 @@
             <string>Connection</string>
            </property>
           </item>
-          <item>
-           <property name="text">
-            <string>Volume</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>Top matches</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>Model</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>Connection model</string>
-           </property>
-          </item>
          </widget>
         </item>
        </layout>

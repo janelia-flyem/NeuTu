@@ -32,6 +32,8 @@ public:
       ZStackPresenter *presenter, QWidget *parentWidget, QMenu *menu);
   QMenu* makeStackContextMenu(
       ZStackPresenter *presenter, QWidget *parentWidget, QMenu *menu);
+  QMenu* makeBodyContextMenu(
+      ZStackPresenter *presenter, QWidget *parentWidget, QMenu *menu);
 
 private:
   ZSingleSwcNodeActionActivator *m_singleSwcNodeActionActivator;

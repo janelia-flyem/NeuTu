@@ -15,6 +15,13 @@ public:
   ~ZSwcForest();
 
   /*!
+   * \brief Get a tree given a certain index
+   *
+   * \return NULL if \a index is out of range.
+   */
+  ZSwcTree* getSwcTree(size_t index) const;
+
+  /*!
    * \brief Convert the forest into a tree object.
    *
    * The forest becomes empty after conversion. It returns NULL if there's no
@@ -23,6 +30,13 @@ public:
    * \return The tree object containing all regular nodes in the tree elements.
    */
   ZSwcTree* toSwcTree();
+
+  /*!
+   * \brief Get the tree with the maximum length
+   *
+   * The returned object is still owned the by the forest.
+   */
+  ZSwcTree* getSwcTreeWithMaxLength() const;
 
 public:
   //Graph* buildConnectionGraph(bool mst = false, double distThre = -1.0);
