@@ -603,6 +603,9 @@ ZSynapseAnnotationArray::toMarkerArray(
       ostringstream commentStream;
       if (synapse->isPartner()) {
         commentStream << currentTBarId << "_";
+#ifdef _DEBUG_2
+        marker.setSource(commentStream.str());
+#endif
       }
       commentStream << synapse->bodyId();
 

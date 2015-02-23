@@ -59,7 +59,8 @@ public:
     ACTION_ESTIMATE_SWC_NODE_RADIUS,
     ACTION_PAINT_STROKE, ACTION_ERASE_STROKE,
     ACTION_LOCATE_SELECTED_SWC_NODES_IN_3D,
-    ACTION_SPLIT_DATA
+    ACTION_SPLIT_DATA, ACTION_SHOW_BODY_IN_3D,
+    ACTION_BODY_SPLIT_START
   };
 
   inline double greyScale(int c = 0) const {return m_greyScale[c];}
@@ -70,7 +71,7 @@ public:
   inline const QList<ZStackObject*>& getActiveDecorationList() const {
     return m_activeDecorationList;
   }
-  inline ZStackObject::Display_Style objectStyle() { return m_objStyle; }
+  inline ZStackObject::EDisplayStyle objectStyle() { return m_objStyle; }
   inline ZInteractiveContext& interactiveContext() {
     return m_interactiveContext;
   }
@@ -80,7 +81,7 @@ public:
   bool hasObjectToShow() const;
   void setObjectVisible(bool v);
   bool isObjectVisible();
-  void setObjectStyle(ZStackObject::Display_Style style);
+  void setObjectStyle(ZStackObject::EDisplayStyle style);
 
   void initInteractiveContext();
 
@@ -102,6 +103,7 @@ public:
   //void createTubeActions();
   void createStrokeActions();
   void createDocDependentActions();
+  void createBodyActions();
   void createMainWindowActions();
 
   inline QAction* getAction(EActionItem item) const {
@@ -116,6 +118,9 @@ public:
 
   void createStackContextMenu();
   QMenu* getStackContextMenu();
+
+  void createBodyContextMenu();
+  QMenu* getBodyContextMenu();
 
   bool isContextMenuOn();
 
@@ -243,6 +248,7 @@ public slots:
   void selectTreeNode();
   void selectConnectedNode();
 
+  void notifyBodySplitTriggered();
   void slotTest();
 
   /*!
@@ -265,6 +271,7 @@ public slots:
 
 signals:
   void mousePositionCaptured(double x, double y, double z);
+  void bodySplitTriggered();
 
 private:
   EMouseEventProcessStatus processMouseReleaseForPuncta(
@@ -301,7 +308,7 @@ private:
   std::vector<double> m_greyScale;
   std::vector<double> m_greyOffset;
   int m_threshold;
-  ZStackObject::Display_Style m_objStyle;
+  ZStackObject::EDisplayStyle m_objStyle;
   //MouseState m_mouseState;
   bool m_mouseLeftButtonPressed;
   bool m_mouseRightButtonPressed;
@@ -351,6 +358,7 @@ private:
   QMenu *m_swcNodeContextMenu;
   QMenu *m_strokePaintContextMenu;
   QMenu *m_stackContextMenu;
+  QMenu *m_bodyContextMenu;
 
   //recorded information
   int m_mouseMovePosition[3];

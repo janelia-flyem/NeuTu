@@ -204,6 +204,7 @@ public:
   void setOffset(const glm::vec3 &offset) { m_offset = offset; }
   void setPhysicalToWorldMatrix(const glm::mat4& transformationMatrix);
   void translate(double dx, double dy, double dz);
+  void scaleOffset(double sx, double sy, double sz);
 
   // color of this channel, max intensity will map to this color
   void setVolColor(const glm::vec3 &col) { m_volColor = glm::clamp(col, glm::vec3(0.f), glm::vec3(1.f)); }

@@ -61,7 +61,7 @@ void ZSparseObject::labelStack(ZStack *stack) const
   drawStack(stack->c_stack(), m_label, offset);
 }
 
-void ZSparseObject::display(ZPainter &painter, int z, Display_Style option) const
+void ZSparseObject::display(ZPainter &painter, int z, EDisplayStyle option) const
 {
   if (m_stackGrid.isEmpty() || z < 0) {
     ZObject3dScan::display(painter, z, option);

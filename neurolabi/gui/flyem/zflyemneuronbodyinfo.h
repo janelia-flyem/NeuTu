@@ -16,6 +16,10 @@ public:
     m_bodySize = bodySize;
   }
 
+  inline int getBodySize() const {
+    return m_bodySize;
+  }
+
   inline const ZIntCuboid& getBoundBox() const {
     return m_boundBox;
   }

@@ -32,6 +32,9 @@
 #include "swcexportdialog.h"
 #include "zdialogfactory.h"
 #include "zprogressmanager.h"
+#include "z3dvolumesource.h"
+#include "z3dvolume.h"
+#include "zwindowfactory.h"
 
 FlyEmDataForm::FlyEmDataForm(QWidget *parent) :
   QWidget(parent),
@@ -55,10 +58,13 @@ FlyEmDataForm::FlyEmDataForm(QWidget *parent) :
   m_secondaryNeuronList = new ZFlyEmNeuronListModel(this);
   ui->slaveQueryView->setModel(m_secondaryNeuronList);
   ui->queryView->setSelectionMode(QAbstractItemView::ExtendedSelection);
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
   connect(ui->queryView, SIGNAL(doubleClicked(QModelIndex)),
           this, SLOT(assignClass(QModelIndex)));
 #endif
+  connect(ui->queryView, SIGNAL(doubleClicked(QModelIndex)),
+          this, SLOT(viewModel(QModelIndex)));
+
   connect(ui->queryView, SIGNAL(clicked(QModelIndex)),
           this, SLOT(updateStatusBar(QModelIndex)));
   connect(ui->queryView, SIGNAL(clicked(QModelIndex)),
@@ -74,7 +80,18 @@ FlyEmDataForm::FlyEmDataForm(QWidget *parent) :
 
   //customize
   //ui->testPushButton->hide();
+
+
+#ifndef _DEBUG_
+  ui->importButton->hide();
+  ui->menuButton->hide();
+  ui->processPushButton->hide();
+  ui->testPushButton->hide();
   ui->generalPushButton->hide();
+  ui->optionPushButton->hide();
+  ui->addDataPushButton->hide();
+  ui->label->hide();
+#endif
 
   createAction();
   createContextMenu();
@@ -438,17 +455,39 @@ ZStackDoc *FlyEmDataForm::showViewSelectedBody(ZFlyEmQueryView *view)
   appendOutput(QString("%1 rows selected").arg(sel->selectedIndexes().size()).toStdString());
 #endif
 
+  ZWindowFactory factory;
+  factory.setParentWidget(this->parentWidget());
+  ZScalableStack *stack = view->getModel()->retrieveBody(
+        sel->selectedIndexes());
+  Z3DWindow *window = factory.make3DWindow(stack);
+
+  ZStackDoc *hostDoc = NULL;
+
+  if (window != NULL) {
+    hostDoc = window->getDocument();
+    window->show();
+    window->raise();
+  }
+
+
+#if 0
   ZStackFrame *frame = new ZStackFrame;
 
-  view->getModel()->retrieveBody(
+  ZIntPoint dsIntv = view->getModel()->retrieveBody(
         sel->selectedIndexes(), frame->document().get());
   ui->progressBar->setValue(75);
   //QApplication::processEvents();
 
-  frame->open3DWindow(this->parentWidget());
+  Z3DWindow *window = frame->open3DWindow(this->parentWidget());
+  window->getVolumeSource()->getVolume(0)->setScaleSpacing(
+        glm::vec3(dsIntv.getX() + 1, dsIntv.getY() + 1, dsIntv.getZ() + 1));
+  window->getVolumeSource()->getVolume(0)->scaleOffset(
+        dsIntv.getX() + 1, dsIntv.getY() + 1, dsIntv.getZ() + 1);
+
   ZStackDoc *hostDoc = frame->document().get();
 
   delete frame;
+#endif
 
   ui->progressBar->hide();
 
@@ -662,7 +701,7 @@ void FlyEmDataForm::updateSlaveQueryTable()
 void FlyEmDataForm::updateThumbnail(const QModelIndex &index)
 {
   ZFlyEmNeuron *neuron = m_neuronList->getNeuron(index);
-  updateThumbnailLive(neuron);
+  updateThumbnail(neuron);
 }
 
 QList<int> FlyEmDataForm::getSelectedNeuronList() const
@@ -738,8 +777,8 @@ void FlyEmDataForm::computeThumbnailFunc(ZFlyEmNeuron *neuron)
           bodyInfo.setBoundBox(body.getBoundBox());
           writer.writeBodyInfo(neuron->getId(), bodyInfo.toJsonObject());
 
-          QList<QGraphicsItem *> currentItemList;
-          generateThumbnailItem(currentItemList, neuron);
+          //QList<QGraphicsItem *> currentItemList;
+          //generateThumbnailItem(currentItemList, neuron);
         }
       }
     }
@@ -1211,6 +1250,7 @@ void FlyEmDataForm::updateThumbnail(ZFlyEmNeuron *neuron)
 
 void FlyEmDataForm::dump(const QString &message)
 {
+  ui->outputTextEdit->clear();
   appendOutput("<p>" + message + "</p>");
   //QApplication::processEvents();
 }

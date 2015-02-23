@@ -97,6 +97,14 @@ public:
 
   std::string getMergeUrl(const std::string &dataName) const;
 
+  std::string getTileUrl(const std::string &dataName) const;
+  std::string getTileUrl(const std::string &dataName, int resLevel) const;
+  std::string getTileUrl(
+      const std::string &dataName, int resLevel,
+      int xi0, int yi0, int z0) const;
+
+
+
 private:
   ZDvidTarget m_dvidTarget;
 };

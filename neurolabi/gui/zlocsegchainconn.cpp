@@ -60,7 +60,7 @@ bool ZLocsegChainConn::load(const char *filePath)
   return false;
 }
 
-void ZLocsegChainConn::display(ZPainter &painter, int z, Display_Style option) const
+void ZLocsegChainConn::display(ZPainter &painter, int z, EDisplayStyle option) const
 {
   UNUSED_PARAMETER(option);
 

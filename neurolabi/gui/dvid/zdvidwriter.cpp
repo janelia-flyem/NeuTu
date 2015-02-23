@@ -6,6 +6,7 @@
 #include "neutubeconfig.h"
 #include "flyem/zflyemneuron.h"
 #include "zclosedcurve.h"
+#include "zswctree.h"
 #include "dvid/zdvidurl.h"
 #include "dvid/zdviddata.h"
 #include "dvid/zdvidreader.h"

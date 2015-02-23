@@ -182,8 +182,8 @@ public:
 
   inline int getZ() const { return m_sliceIndex + m_stackOffset.getZ(); }
 
-  inline void setDisplayStyle(ZStackObject::Display_Style style) { m_style = style; }
-  inline ZStackObject::Display_Style displayStyle() const { return m_style; }
+  inline void setDisplayStyle(ZStackObject::EDisplayStyle style) { m_style = style; }
+  inline ZStackObject::EDisplayStyle displayStyle() const { return m_style; }
 
   inline void setStackOffset(int x, int y, int z) {
     m_stackOffset.set(x, y, z);
@@ -201,7 +201,7 @@ private:
   QList<const QList<ZStackObject*>*> m_objLists;
   const std::set<Swc_Tree_Node*>* m_swcNodes;
   int m_sliceIndex;
-  ZStackObject::Display_Style m_style;
+  ZStackObject::EDisplayStyle m_style;
 
   QList<ZStackObject*> m_otherDrawables; // collect single input
   std::set<Swc_Tree_Node*> m_emptyNodeSet; // make sure m_swcNodes always point to something

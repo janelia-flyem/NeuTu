@@ -287,6 +287,7 @@ private:
   mutable ZObject3dScan *m_body;
   mutable std::vector<const ZFlyEmNeuron*> m_matched;
   const FlyEm::ZSynapseAnnotationArray *m_synapseAnnotation;
+  mutable size_t m_bodyVolume;
 
   static const char *m_idKey;
   static const char *m_nameKey;

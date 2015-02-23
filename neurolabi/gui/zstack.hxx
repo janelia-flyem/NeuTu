@@ -471,6 +471,7 @@ public: /* operations */
   void setOffset(int dx, int dy);
   void setOffset(int dx, int dy, int dz);
   void setOffset(const ZIntPoint &pt);
+  void setZOffset(int z);
   inline const ZIntPoint& getOffset() const { return m_offset; }
   inline ZIntPoint& getOffset() { return m_offset; }
 

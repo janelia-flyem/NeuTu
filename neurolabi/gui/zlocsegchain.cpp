@@ -113,7 +113,7 @@ void ZLocsegChain::updateBufferChain()
   }
 }
 
-void ZLocsegChain::display(ZPainter &painter, int z, Display_Style option) const
+void ZLocsegChain::display(ZPainter &painter, int z, EDisplayStyle option) const
 {
   if (!isVisible())
     return;

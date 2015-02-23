@@ -4,6 +4,7 @@
 
 #include "zdvidbuffer.h"
 #include "zstackfactory.h"
+#include "zswctree.h"
 #include "zdvidinfo.h"
 #include "dvid/zdvidtarget.h"
 #include "dvid/zdvidfilter.h"
@@ -12,6 +13,8 @@
 #include "zarray.h"
 #include "zstring.h"
 #include "flyem/zflyemneuronbodyinfo.h"
+#include "dvid/zdvidtile.h"
+#include "zdvidtileinfo.h"
 
 ZDvidReader::ZDvidReader(QObject *parent) :
   QObject(parent)
@@ -824,4 +827,42 @@ int ZDvidReader::readMaxBodyId()
   }
 
   return id;
+}
+
+ZDvidTile* ZDvidReader::readTile(
+    const std::string &dataName, int resLevel, int xi0, int yi0, int z0) const
+{
+  ZDvidTile *tile = NULL;
+
+  ZDvidUrl dvidUrl(getDvidTarget());
+  ZDvidBufferReader bufferReader;
+  bufferReader.read(dvidUrl.getTileUrl(dataName, resLevel, xi0, yi0, z0).c_str());
+  QByteArray buffer = bufferReader.getBuffer();
+
+  ZDvidTileInfo tileInfo = readTileInfo(dataName);
+
+  if (!buffer.isEmpty()) {
+    tile = new ZDvidTile;
+    tile->loadDvidPng(buffer);
+    tile->setResolutionLevel(resLevel);
+    tile->setTileOffset(
+          xi0 * tileInfo.getWidth(), yi0 * tileInfo.getHeight(), z0);
+  }
+
+  return tile;
+}
+
+ZDvidTileInfo ZDvidReader::readTileInfo(const std::string &dataName) const
+{
+  ZDvidTileInfo tileInfo;
+  ZDvidUrl dvidUrl(getDvidTarget());
+
+  ZDvidBufferReader bufferReader;
+  bufferReader.read(dvidUrl.getInfoUrl(dataName).c_str());
+
+  ZJsonObject infoJson;
+  infoJson.decodeString(bufferReader.getBuffer().data());
+  tileInfo.load(infoJson);
+
+  return tileInfo;
 }

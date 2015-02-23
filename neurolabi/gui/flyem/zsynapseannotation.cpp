@@ -211,11 +211,11 @@ std::string SynapseLocation::getPunctumSource() const
   std::string source = "";
   if (isTBar()) {
     source += "tbar";
-    if (isMulti()) {
-      source += "_multi";
-    }
     if (isConvergent()) {
       source += "_conv";
+    }
+    if (isMulti()) {
+      source += "_multi";
     }
   } else if (isPartner()) {
     source += "psd";

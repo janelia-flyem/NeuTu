@@ -73,6 +73,7 @@ ZStackPresenter::ZStackPresenter(ZStackFrame *parent) : QObject(parent),
   m_swcNodeContextMenu = NULL;
   m_strokePaintContextMenu = NULL;
   m_stackContextMenu = NULL;
+  m_bodyContextMenu = NULL;
   createActions();
 
   //m_leftButtonReleaseMapper.setContext(&m_interactiveContext);
@@ -274,6 +275,13 @@ void ZStackPresenter::createStrokeActions()
   m_actionMap[ACTION_ERASE_STROKE] = m_eraseStrokeAction;
 }
 
+void ZStackPresenter::createBodyActions()
+{
+  QAction *action = new QAction(tr("Launch split"), this);
+  connect(action, SIGNAL(triggered()), this, SLOT(notifyBodySplitTriggered()));
+  m_actionMap[ACTION_BODY_SPLIT_START] = action;
+}
+
 void ZStackPresenter::createMainWindowActions()
 {
   QAction *action = getParentFrame()->getBodySplitAction();
@@ -286,7 +294,8 @@ void ZStackPresenter::createActions()
 {
   m_deleteSelectedAction = new QAction(tr("Delete Selected Object"), this);
   m_deleteSelectedAction->setIcon(QIcon(":/images/delete.png"));
-  connect(m_deleteSelectedAction, SIGNAL(triggered()), this, SLOT(deleteSelected()));
+  connect(m_deleteSelectedAction, SIGNAL(triggered()),
+          this, SLOT(deleteSelected()));
 
 
   m_fitEllipseAction = new QAction(tr("fit ellipse"), this);
@@ -306,6 +315,7 @@ void ZStackPresenter::createActions()
   createTraceActions();
   //createTubeActions();
   createStrokeActions();
+  createBodyActions();
 }
 
 void ZStackPresenter::createSwcNodeContextMenu()
@@ -351,6 +361,24 @@ QMenu* ZStackPresenter::getStrokeContextMenu()
   }
 
   return m_strokePaintContextMenu;
+}
+
+void ZStackPresenter::createBodyContextMenu()
+{
+  if (m_bodyContextMenu == NULL) {
+    ZStackDocMenuFactory menuFactory;
+    m_bodyContextMenu =
+        menuFactory.makeBodyContextMenu(this, m_parent, NULL);
+  }
+}
+
+QMenu* ZStackPresenter::getBodyContextMenu()
+{
+  if (m_bodyContextMenu == NULL) {
+    createBodyContextMenu();
+  }
+
+  return m_bodyContextMenu;
 }
 
 void ZStackPresenter::createStackContextMenu()
@@ -1191,7 +1219,7 @@ void ZStackPresenter::setObjectVisible(bool v)
   }
 }
 
-void ZStackPresenter::setObjectStyle(ZStackObject::Display_Style style)
+void ZStackPresenter::setObjectStyle(ZStackObject::EDisplayStyle style)
 {
   if (m_objStyle != style) {
     m_objStyle = style;
@@ -1786,6 +1814,11 @@ void ZStackPresenter::slotTest()
   buddyDocument()->selectDownstreamNode();
 }
 
+void ZStackPresenter::notifyBodySplitTriggered()
+{
+  emit bodySplitTriggered();
+}
+
 void ZStackPresenter::selectDownstreamNode()
 {
   buddyDocument()->selectDownstreamNode();
@@ -1983,6 +2016,9 @@ void ZStackPresenter::process(const ZStackOperator &op)
     buddyView()->rightMenu()->clear();
     addPunctaEditFunctionToRightMenu();
     buddyView()->popRightMenu(pos);
+    break;
+  case ZStackOperator::OP_SHOW_BODY_CONTEXT_MENU:
+    buddyView()->showContextMenu(getBodyContextMenu(), pos);
     break;
   case ZStackOperator::OP_EXIT_EDIT_MODE:
     if (isStrokeOn()) {

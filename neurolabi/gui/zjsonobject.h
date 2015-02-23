@@ -2,6 +2,7 @@
 #define ZJSONOBJECT_H
 
 #include <string>
+#include <vector>
 #include <map>
 
 #include "zjsonvalue.h"
@@ -126,6 +127,8 @@ public:
   json_t *setArrayEntry(const char *key);
 
   void setValue(const ZJsonValue &value);
+
+  std::vector<std::string> getAllKey() const;
 
 private:
   void setEntryWithoutKeyCheck(const char *key, json_t *obj, bool asNew = false);

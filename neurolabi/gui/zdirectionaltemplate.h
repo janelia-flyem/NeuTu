@@ -32,7 +32,7 @@ public:
                             };
 
 public:
-    virtual void display(ZPainter &painter, int slice, Display_Style option) const = 0;
+    virtual void display(ZPainter &painter, int slice, EDisplayStyle option) const = 0;
     virtual void fitStack(const Stack *stack, Receptor_Fit_Workspace *ws) = 0;
     virtual double fittingScore(const Stack *stack,
                                 ZDirectionalTemplate::FittingScoreOption option,

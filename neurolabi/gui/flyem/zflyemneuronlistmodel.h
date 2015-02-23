@@ -13,6 +13,8 @@ class ZFlyEmNeuron;
 class ZStackDoc;
 class ZFlyEmNeuronPresenter;
 class ZIntPoint;
+class ZStack;
+class ZScalableStack;
 
 class ZFlyEmNeuronListModel : public QAbstractTableModel
 {
@@ -40,6 +42,7 @@ public:
   void retrieveModel(const QModelIndexList &indexList, ZStackDoc *doc) const;
   ZIntPoint retrieveBody(
       const QModelIndexList &indexList, ZStackDoc *doc) const;
+  ZScalableStack* retrieveBody(const QModelIndexList &indexList) const;
 
   bool insertRows(int row, int count, const QModelIndex &parent = QModelIndex());
   bool insertColumns(int col, int count, const QModelIndex &parent = QModelIndex());

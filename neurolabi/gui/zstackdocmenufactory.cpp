@@ -265,3 +265,19 @@ QMenu* ZStackDocMenuFactory::makeStackContextMenu(
 
   return menu;
 }
+
+QMenu* ZStackDocMenuFactory::makeBodyContextMenu(
+    ZStackPresenter *presenter, QWidget */*parentWidget*/, QMenu *menu)
+{
+  if (menu == NULL) {
+    menu = new QMenu(NULL);
+  }
+
+  if (presenter->buddyDocument()->getTag() == NeuTube::Document::FLYEM_MERGE) {
+    QAction *action = presenter->getAction(
+          ZStackPresenter::ACTION_BODY_SPLIT_START);
+    menu->addAction(action);
+  }
+
+  return menu;
+}

@@ -33,8 +33,8 @@ public:
   virtual void save(const char *filePath);
   virtual bool load(const char *filePath);
 
-  void display(ZPainter &painter, int slice, Display_Style option) const;
-  void display(QPainter *rawPainter, int z, Display_Style option,
+  void display(ZPainter &painter, int slice, EDisplayStyle option) const;
+  void display(QPainter *rawPainter, int z, EDisplayStyle option,
                EDisplaySliceMode sliceMode) const;
 
   void labelBinary(Stack *stack) const;

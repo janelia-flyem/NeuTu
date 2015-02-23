@@ -277,6 +277,8 @@ int ZPunctum::getTypeFromSource() const
     type = 4;
   } else if (getSource() == "tbar_multi_conv") {
     type = 5;
+  } else {
+    type = 6;
   }
 
   return type;

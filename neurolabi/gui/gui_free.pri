@@ -215,7 +215,8 @@ HEADERS +=$${PWD}/zstackprocessor.h \
    $${PWD}/zstackobjectselector.h \
    $${PWD}/zinthistogram.h \
    $${PWD}/flyem/zflyemneuroninfo.h \
-   $${PWD}/zqtheader_undef.h
+   $${PWD}/zqtheader_undef.h \
+   $${PWD}/zscalablestack.h
 
 SOURCES +=$${PWD}/zstackprocessor.cpp \
    $${PWD}/zstack.cxx \
@@ -415,4 +416,5 @@ SOURCES +=$${PWD}/zstackprocessor.cpp \
    $${PWD}/zarrayfactory.cpp \
    $${PWD}/zstackobjectselector.cpp \
    $${PWD}/zinthistogram.cpp \
-   $${PWD}/flyem/zflyemneuroninfo.cpp
+   $${PWD}/flyem/zflyemneuroninfo.cpp \
+   $${PWD}/zscalablestack.cpp

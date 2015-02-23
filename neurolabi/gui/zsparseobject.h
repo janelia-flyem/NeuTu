@@ -25,7 +25,7 @@ public:
 
   void setLabel(int label);
 
-  void display(ZPainter &painter, int z, Display_Style option) const;
+  void display(ZPainter &painter, int z, EDisplayStyle option) const;
 
   void append(const ZObject3dScan &obj);
 

@@ -380,9 +380,10 @@ void Z3DWindow::init(EInitMode mode)
     m_axis->setVisible(false);
   }
 
-  connect(getInteractionHandler(), SIGNAL(cameraMoved()), this, SLOT(resetCameraClippingRange()));
-  connect(getInteractionHandler(), SIGNAL(objectsMoved(double,double,double)), this,
-          SLOT(moveSelectedObjects(double,double,double)));
+  connect(getInteractionHandler(), SIGNAL(cameraMoved()),
+          this, SLOT(resetCameraClippingRange()));
+  connect(getInteractionHandler(), SIGNAL(objectsMoved(double,double,double)),
+          this, SLOT(moveSelectedObjects(double,double,double)));
 
   /*
   connect(m_canvas, SIGNAL(strokePainted(ZStroke2d*)),

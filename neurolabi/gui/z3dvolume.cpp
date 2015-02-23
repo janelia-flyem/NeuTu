@@ -445,3 +445,13 @@ void Z3DVolume::translate(double dx, double dy, double dz)
   if (m_transformationMatrix != glm::mat4(1.0))
     m_hasTransformMatrix = true;
 }
+
+void Z3DVolume::scaleOffset(double sx, double sy, double sz)
+{
+  m_transformationMatrix[3][0] *= sx;
+  m_transformationMatrix[3][1] *= sy;
+  m_transformationMatrix[3][2] *= sz;
+
+  if (m_transformationMatrix != glm::mat4(1.0))
+    m_hasTransformMatrix = true;
+}

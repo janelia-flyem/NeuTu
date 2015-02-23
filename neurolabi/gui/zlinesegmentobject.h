@@ -8,7 +8,7 @@ class ZLineSegmentObject : public ZLineSegment, ZStackObject
 {
 public:
   ZLineSegmentObject();
-  void display(ZPainter &painter, int z, Display_Style option) const;
+  void display(ZPainter &painter, int z, EDisplayStyle option) const;
 
 private:
   int m_label;

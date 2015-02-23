@@ -60,7 +60,7 @@ void ZCircle::set(const ZPoint &center, double r)
 //}
 
 void ZCircle::display(ZPainter &painter, int n,
-                      ZStackObject::Display_Style style) const
+                      ZStackObject::EDisplayStyle style) const
 {
   if (!isVisible()) {
     return;
@@ -133,7 +133,7 @@ double ZCircle::getAdjustedRadius(double r) const
   return adjustedRadius;
 }
 
-void ZCircle::displayHelper(ZPainter *painter, int stackFocus, Display_Style style) const
+void ZCircle::displayHelper(ZPainter *painter, int stackFocus, EDisplayStyle style) const
 {
   UNUSED_PARAMETER(style);
 #if defined(_QT_GUI_USED_)

@@ -331,7 +331,7 @@ public:
 
 
   virtual void display(
-      ZPainter &painter, int slice, Display_Style option) const;
+      ZPainter &painter, int slice, EDisplayStyle option) const;
   virtual const std::string& className() const;
 
   void dilate();

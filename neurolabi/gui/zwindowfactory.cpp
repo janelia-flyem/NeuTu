@@ -6,6 +6,9 @@
 #include "z3dcompositor.h"
 #include "z3dcanvas.h"
 #include "z3dvolumeraycaster.h"
+#include "zscalablestack.h"
+#include "z3dvolume.h"
+#include "z3dvolumesource.h"
 
 ZWindowFactory::ZWindowFactory() : m_parentWidget(NULL),
   m_showVolumeBoundBox(false)
@@ -63,6 +66,33 @@ Z3DWindow* ZWindowFactory::make3DWindow(ZSharedPointer<ZStackDoc> doc,
     } else {
       window->setGeometry(m_windowGeometry);
     }
+  }
+
+  return window;
+}
+
+Z3DWindow* ZWindowFactory::make3DWindow(ZScalableStack *stack)
+{
+  if (stack == NULL) {
+    return NULL;
+  }
+
+  Z3DWindow *window = NULL;
+
+  if (Z3DApplication::app()->is3DSupported()) {
+    ZStackDoc *doc = new ZStackDoc(stack->getStack(), NULL);
+    window = make3DWindow(doc);
+    window->getVolumeSource()->getVolume(0)->setScaleSpacing(
+          glm::vec3(stack->getXScale(), stack->getYScale(), stack->getZScale()));
+    ZPoint offset = stack->getOffset();
+    window->getVolumeSource()->getVolume(0)->setOffset(
+          glm::vec3(offset.x(), offset.y(), offset.z()));
+    window->updateVolumeBoundBox();
+    window->updateOverallBoundBox();
+    //window->resetCameraClippingRange();
+    window->resetCamera();
+    stack->releaseStack();
+    delete stack;
   }
 
   return window;

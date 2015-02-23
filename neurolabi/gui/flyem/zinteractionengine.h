@@ -40,7 +40,7 @@ public:
   };
 
   QList<ZStackObject*> getDecorationList() const;
-  inline ZStackObject::Display_Style getObjectStyle() const { return m_objStyle; }
+  inline ZStackObject::EDisplayStyle getObjectStyle() const { return m_objStyle; }
   inline const ZInteractiveContext& getInteractiveContext() const {
     return m_interactiveContext;
   }
@@ -55,7 +55,7 @@ public:
   bool hasObjectToShow() const;
   void setObjectVisible(bool v);
   bool isObjectVisible();
-  void setObjectStyle(ZStackObject::Display_Style style);
+  void setObjectStyle(ZStackObject::EDisplayStyle style);
 
   void initInteractiveContext();
 
@@ -91,7 +91,7 @@ private:
   QList<ZStackObject*> m_namedDecorationList; //no need to free up
 
   bool m_showObject;
-  ZStackObject::Display_Style m_objStyle;
+  ZStackObject::EDisplayStyle m_objStyle;
 
   bool m_mouseLeftButtonPressed;
   bool m_mouseRightButtonPressed;

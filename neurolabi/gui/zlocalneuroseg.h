@@ -25,13 +25,13 @@ public:
 
   static void display(const Local_Neuroseg *locseg, double z_scale,
                       QImage *image, int n = 0, Palette_Color color = RED,
-                      Display_Style style = NORMAL, int label = 0);
+                      EDisplayStyle style = NORMAL, int label = 0);
 
 public:
-  virtual void display(ZPainter &painter, int slice, Display_Style option) const;
+  virtual void display(ZPainter &painter, int slice, EDisplayStyle option) const;
   virtual void display(QImage *image, int n, Palette_Color color,
-                       Display_Style style = NORMAL, int label = 0) const;
-  virtual void display(ZPainter &painter, int z, Display_Style option,
+                       EDisplayStyle style = NORMAL, int label = 0) const;
+  virtual void display(ZPainter &painter, int z, EDisplayStyle option,
                        const QColor &color) const;
 
   virtual void save(const char *filePath);

@@ -1833,7 +1833,7 @@ void ZObject3dScan::duplicateAcrossZ(int depth)
 }
 
 void ZObject3dScan::display(
-    ZPainter &painter, int slice, Display_Style style) const
+    ZPainter &painter, int slice, EDisplayStyle style) const
 {
   UNUSED_PARAMETER(style);
 #if _QT_GUI_USED_

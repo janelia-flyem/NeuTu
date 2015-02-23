@@ -20,6 +20,7 @@
 #include "zwindowfactory.h"
 #include "z3dswcfilter.h"
 #include "zstackobjectsourcefactory.h"
+#include "zstackpresenter.h"
 
 ZFlyEmBodyMergeProject::ZFlyEmBodyMergeProject(QObject *parent) :
   QObject(parent), m_dataFrame(NULL), m_bodyWindow(NULL),
@@ -252,6 +253,9 @@ void ZFlyEmBodyMergeProject::setDataFrame(ZStackFrame *frame)
   connect(m_dataFrame->getCompleteDocument(),
           SIGNAL(objectSelectorChanged(ZStackObjectSelector)),
           this, SIGNAL(selectionChanged(ZStackObjectSelector)));
+
+  connect(m_dataFrame->presenter(), SIGNAL(bodySplitTriggered()),
+          this, SLOT(notifySplit()));
 
   connect(this, SIGNAL(selectionChanged(ZStackObjectSelector)),
           this, SLOT(update3DBodyView(ZStackObjectSelector)));

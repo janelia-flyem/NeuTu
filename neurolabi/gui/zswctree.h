@@ -196,7 +196,7 @@ public:
 
 public:
 
-  virtual void display(ZPainter &painter, int slice, Display_Style option) const;
+  virtual void display(ZPainter &painter, int slice, EDisplayStyle option) const;
 
   /*!
    * \brief save Save swc
@@ -244,6 +244,10 @@ public:
   bool isDeprecated(EComponent component) const;
   void deprecateDependent(EComponent component);
   void deprecate(EComponent component);
+
+  inline void setComment(const std::string &comment) {
+    m_comment = comment;
+  }
 
 public:
   int size();
@@ -737,6 +741,7 @@ private:
   static const int m_nodeStateCosmetic;
 
   Swc_Tree_Node *m_hitSwcNode;
+  std::string m_comment;
 
 #ifdef _QT_GUI_USED_
   QColor m_rootColor;

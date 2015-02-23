@@ -143,7 +143,7 @@ const ZStack* ZSparseStack::getStack() const
         const_cast<ZSparseStack*>(this)->getStack());
 }
 
-
+#if 0
 ZStack* ZSparseStack::toDownsampledStack(int xIntv, int yIntv, int zIntv)
 {
   if (m_objectMask == NULL || m_stackGrid == NULL) {
@@ -185,6 +185,7 @@ ZStack* ZSparseStack::toDownsampledStack(int xIntv, int yIntv, int zIntv)
 #endif
   return stack;
 }
+#endif
 
 size_t ZSparseStack::getObjectVolume() const
 {

@@ -396,3 +396,32 @@ std::string ZDvidUrl::getMaxBodyIdUrl() const
   return getKeyUrl(ZDvidData::getName(ZDvidData::ROLE_MAX_BODY_ID),
                    m_dvidTarget.getBodyLabelName());
 }
+
+std::string ZDvidUrl::getTileUrl(const std::string &dataName) const
+{
+  return getDataUrl(dataName);
+}
+
+std::string ZDvidUrl::getTileUrl(
+    const std::string &dataName, int resLevel) const
+{
+  ZString url = getTileUrl(dataName);
+  url += "/tile/xy/";
+  url.appendNumber(resLevel);
+
+  return url;
+}
+
+std::string ZDvidUrl::getTileUrl(
+    const std::string &dataName, int resLevel, int xi0, int yi0, int z0) const
+{
+  ZString url = getTileUrl(dataName, resLevel);
+  url += "/";
+  url.appendNumber(xi0);
+  url += "_";
+  url.appendNumber(yi0);
+  url += "_";
+  url.appendNumber(z0);
+
+  return url;
+}

@@ -9,6 +9,7 @@
 
 class ZStackFrame;
 class QDialog;
+class ZScalableStack;
 
 /*!
  * \brief The factory class of creating windows
@@ -22,6 +23,7 @@ public:
                           Z3DWindow::EInitMode mode = Z3DWindow::NORMAL_INIT);
   Z3DWindow* make3DWindow(ZSharedPointer<ZStackDoc> doc,
                           Z3DWindow::EInitMode mode = Z3DWindow::NORMAL_INIT);
+  Z3DWindow* make3DWindow(ZScalableStack *stack);
 
   void setWindowTitle(const QString &title);
   void setParentWidget(QWidget *parentWidget);
