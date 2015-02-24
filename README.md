@@ -19,8 +19,10 @@ Software package for neuron reconstruction and visualization
 ####
 
     sh build.sh <qmake_path> <qmake_spec_path>
+
+by specifying the qmake command path and the corresponding spec path. To build a version for the FlyEM project, use the command
     
-by specifying the qmake command path and the corresponding spec path.
+    sh build.sh <qmake_path> <qmake_spec_path> -e flyem
 
 ### Windows
 
