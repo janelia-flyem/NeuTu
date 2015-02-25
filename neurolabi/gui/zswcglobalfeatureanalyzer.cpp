@@ -220,7 +220,7 @@ double ZSwcGlobalFeatureAnalyzer::computeLateralSpan(const ZSwcTree &tree)
   for (Swc_Tree_Node *tn = treeIter.begin(); tn != NULL;
        tn = treeIter.next()) {
     if (SwcTreeNode::isRegular(tn)) {
-      ptArray.append(SwcTreeNode::pos(tn));
+      ptArray.append(SwcTreeNode::center(tn));
     }
   }
 

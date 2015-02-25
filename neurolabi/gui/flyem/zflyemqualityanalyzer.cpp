@@ -197,7 +197,7 @@ void ZFlyEmQualityAnalyzer::labelSwcNodeOutOfRange(
     ZFlyEmNeuronAxis axis = neuron.getAxis();
     tree->updateIterator(SWC_TREE_ITERATOR_DEPTH_FIRST);
     for (Swc_Tree_Node *tn = tree->begin(); tn != NULL; tn = tree->next()) {
-      ZPoint pt = SwcTreeNode::pos(tn);
+      ZPoint pt = SwcTreeNode::center(tn);
       ZPoint axisCenter = axis.getCenter(pt.z());
       pt.setX(pt.x() - axisCenter.x());
       pt.setY(pt.y() - axisCenter.y());
@@ -557,8 +557,8 @@ ZFlyEmQualityAnalyzer::computeHotSpot(const ZFlyEmNeuron &neuron,
         hotSpot->setGeometry(geometry);
 
         FlyEm::ZCurveGeometry *guidance = new FlyEm::ZCurveGeometry;
-        guidance->appendPoint(SwcTreeNode::pos(tn));
-        guidance->appendPoint(SwcTreeNode::pos(metric.getSecondNode()));
+        guidance->appendPoint(SwcTreeNode::center(tn));
+        guidance->appendPoint(SwcTreeNode::center(metric.getSecondNode()));
         hotSpot->setGuidance(guidance);
 
         hotSpot->setStructure(structure);

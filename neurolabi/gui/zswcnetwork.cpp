@@ -166,7 +166,7 @@ ZPointNetwork* ZSwcNetwork::toPointNetwork()
     size_t s = indexMap.size();
     if (indexMap.count(tn1) == 0) {
       indexMap[tn1] = s;
-      network->addPoint(SwcTreeNode::pos(tn1) +
+      network->addPoint(SwcTreeNode::center(tn1) +
                         m_offsetArray[m_treeIndexMap[tn1]] +
           m_connectionArray[i].first_offset, 1.0);
     }
@@ -174,7 +174,7 @@ ZPointNetwork* ZSwcNetwork::toPointNetwork()
     s = indexMap.size();
     if (indexMap.count(tn2) == 0) {
       indexMap[tn2] = s;
-      network->addPoint(SwcTreeNode::pos(tn2) +
+      network->addPoint(SwcTreeNode::center(tn2) +
                         m_offsetArray[m_treeIndexMap[tn2]] +
           m_connectionArray[i].second_offset, 1.0);
     }

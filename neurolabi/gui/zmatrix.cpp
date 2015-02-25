@@ -261,7 +261,7 @@ bool ZMatrix::exportCsv(
 
 double ZMatrix::getRowMax(int row, int *index) const
 {
-  size_t arrayIndex;
+  size_t arrayIndex = 0;
 
   double v = darray_max(m_data[row], getColumnNumber(), &arrayIndex);
 
@@ -271,6 +271,30 @@ double ZMatrix::getRowMax(int row, int *index) const
 
   return v;
 }
+
+double ZMatrix::getColumnMax(int column, int *index) const
+{
+  if (index != NULL) {
+    *index = 0;
+  }
+  double v = 0.0;
+
+  if (getRowNumber() > 0) {
+    v = getValue(0, column);
+    for (int i = 1; i < getRowNumber(); ++i) {
+      double tv = getValue(i, column);
+      if (tv > v) {
+        v = tv;
+        if (index != NULL) {
+          *index = i;
+        }
+      }
+    }
+  }
+
+  return v;
+}
+
 
 void ZMatrix::clear()
 {
@@ -375,4 +399,9 @@ bool ZMatrix::setRowValue(
 bool ZMatrix::isEmpty() const
 {
   return (m_data == NULL) || (m_rowNumber == 0) || (m_columnNumber == 0);
+}
+
+void ZMatrix::printInfo() const
+{
+  std::cout << m_rowNumber << " x " << m_columnNumber << " matrix" << std::endl;
 }

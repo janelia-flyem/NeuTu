@@ -68,6 +68,12 @@ ZDvidFilter FlyEmBodyFilterDialog::getDvidFilter() const
   filter.setMaxBodySize(getMaxBodySize());
   filter.setUpperBodySizeEnabled(hasUpperBodySize());
   filter.exclude(getExcludedBodies());
+  filter.setNamedBodyOnly(namedBodyOnly());
 
   return filter;
+}
+
+bool FlyEmBodyFilterDialog::namedBodyOnly() const
+{
+  return ui->namedBodyCheckBox->isChecked();
 }

@@ -129,6 +129,8 @@ public:
                  const std::vector<std::string> &rowName,
                  const std::vector<std::string> &columnName);
 
+  void printInfo() const;
+
 public: //Feature matrix functions
   std::vector<int> kmeans(int k);
   std::vector<int> weightedKmeans(int k);
@@ -140,6 +142,8 @@ public: //Feature matrix functions
    *         \a index if \a index is not NULL.
    */
   double getRowMax(int row, int *index = NULL) const;
+
+  double getColumnMax(int column, int *index = NULL) const;
 
 private:
   double **m_data;

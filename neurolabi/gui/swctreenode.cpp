@@ -240,7 +240,7 @@ Swc_Tree_Node* SwcTreeNode::root(const Swc_Tree_Node *tn)
   return const_cast<Swc_Tree_Node*>(root);
 }
 
-ZPoint SwcTreeNode::pos(const Swc_Tree_Node *tn)
+ZPoint SwcTreeNode::center(const Swc_Tree_Node *tn)
 {
   return ZPoint(tn->node.x, tn->node.y, tn->node.z);
 }
@@ -724,7 +724,7 @@ ZPoint SwcTreeNode::upStreamDirection(Swc_Tree_Node *tn, int n)
   while (ancester != NULL) {
     if (isBranchPoint(ancester) || isRegularRoot(ancester) ||
         (n > 0 && upLevel >= n)) {
-      direction = pos(tn) - pos(ancester);
+      direction = center(tn) - center(ancester);
       direction.normalize();
       break;
     }
@@ -760,7 +760,7 @@ ZPoint SwcTreeNode::localDirection(const Swc_Tree_Node *tn, int extend)
     }
   }
 
-  return pos(end) - pos(start);
+  return center(end) - center(start);
 }
 
 void SwcTreeNode::killSubtree(Swc_Tree_Node *tn)
@@ -1053,7 +1053,7 @@ ZPoint SwcTreeNode::centroid(const std::set<Swc_Tree_Node*> &nodeSet)
 
   for (set<Swc_Tree_Node*>::iterator iter = nodeSet.begin();
        iter != nodeSet.end(); ++iter) {
-    pt += pos(*iter) * radius(*iter);
+    pt += center(*iter) * radius(*iter);
     weight += radius(*iter);
     ++count;
   }

@@ -168,27 +168,38 @@ bool ZFlyEmDataBundle::loadDvid(const ZDvidFilter &dvidFilter)
        iter != bodySet.end(); ++iter, ++i) {
     int bodyId = *iter;
     if (bodyId > 0 && !dvidFilter.isExcluded(bodyId)) {
-      ZFlyEmNeuron &neuron = m_neuronArray[realSize++];
-      neuron.setId(bodyId);
-      neuron.setModelPath(m_source);
-      neuron.setVolumePath(m_source);
-      neuron.setThumbnailPath(m_source);
-      neuron.setResolution(m_swcResolution);
-      neuron.setSynapseAnnotation(getSynapseAnnotation());
-      neuron.setSynapseScale(90);
-
+      std::string name;
+      std::string type;
       if (annotationSet.count(bodyId) > 0) {
         ZFlyEmBodyAnnotation annotation = fdReader.readAnnotation(bodyId);
-        if (!annotation.getName().empty()) {
-          neuron.setName(annotation.getName());
-        }
+        name = annotation.getName();
 
         if (!annotation.getType().empty()) {
-          neuron.setType(annotation.getType());
-        } else {
-          neuron.setType(ZFlyEmNeuronInfo::GuessTypeFromName(neuron.getName()));
+          type = annotation.getType();
+        } else if (!name.empty()) {
+          type = ZFlyEmNeuronInfo::GuessTypeFromName(name);
         }
       }
+
+      bool goodNeuron = true;
+      if (dvidFilter.namedBodyOnly() && name.empty()) {
+        goodNeuron = false;
+      }
+
+      if (goodNeuron) {
+        ZFlyEmNeuron &neuron = m_neuronArray[realSize++];
+        neuron.setId(bodyId);
+        neuron.setName(name);
+        neuron.setType(type);
+        neuron.setModelPath(m_source);
+        neuron.setVolumePath(m_source);
+        neuron.setThumbnailPath(m_source);
+        neuron.setResolution(m_swcResolution);
+        neuron.setSynapseAnnotation(getSynapseAnnotation());
+        neuron.setSynapseScale(100);
+      }
+
+
 #ifdef _DEBUG_2
       if (neuron.getId() == 16493) {
         std::cout << "Potential bug" << std::endl;

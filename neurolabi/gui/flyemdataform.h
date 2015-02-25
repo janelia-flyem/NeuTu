@@ -153,6 +153,8 @@ private slots:
 
   void exportVolumeRenderingFigure();
 
+  void exportTypeLabelFile();
+
 private:
   ZStackDoc* showViewSelectedModel(ZFlyEmQueryView *view);
   ZStackDoc* showViewSelectedBody(ZFlyEmQueryView *view);

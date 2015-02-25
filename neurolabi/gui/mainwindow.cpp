@@ -4903,7 +4903,7 @@ void MainWindow::on_actionDendrogram_triggered()
           dendrogram.loadLeafName(neuronNameFilePath);
           std::string svgString = dendrogram.toSvgString(15.0);
 
-          ZSvgGenerator svgGenerator(0, 0, 1000, 6000);
+          ZSvgGenerator svgGenerator(0, 0, 1000, 7000);
           svgGenerator.write(output.toStdString().c_str(), svgString);
 
           report("Dendrogram Generated", output.toStdString() + " saved.",
@@ -5577,7 +5577,7 @@ ZStackDocReader *MainWindow::hotSpotDemoFs(
   std::set<int> bodySet;
   for (ZSwcTreeNodeArray::const_iterator iter = nodeArray.begin();
        iter != nodeArray.end(); ++iter) {
-    ZPoint center = SwcTreeNode::pos(*iter);
+    ZPoint center = SwcTreeNode::center(*iter);
     std::set<int> bodyId = reader.readBodyId(
           center.x(), center.y(), center.z(),
           margin, margin, margin);
@@ -5937,8 +5937,9 @@ void MainWindow::on_actionDVID_Bundle_triggered()
 //    m_progress->setValue(++currentProgress);
 
     ZDvidTarget target = m_dvidDlg->getDvidTarget();
-    ZDvidFilter dvidFilter;
+    ZDvidFilter dvidFilter = m_bodyFilterDlg->getDvidFilter();
     dvidFilter.setDvidTarget(target);
+    /*
     dvidFilter.setMinBodySize(m_bodyFilterDlg->getMinBodySize());
     dvidFilter.setUpperBodySizeEnabled(m_bodyFilterDlg->hasUpperBodySize());
     if (m_bodyFilterDlg->hasUpperBodySize()) {
@@ -5947,6 +5948,7 @@ void MainWindow::on_actionDVID_Bundle_triggered()
 
     std::vector<int> excludedBodyArray = m_bodyFilterDlg->getExcludedBodies();
     dvidFilter.exclude(excludedBodyArray);
+    */
 
     m_flyemDataLoader->loadDataBundle(dvidFilter);
 

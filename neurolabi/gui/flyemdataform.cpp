@@ -163,6 +163,11 @@ void FlyEmDataForm::createMenu()
   connect(exportVolumeRenderAction, SIGNAL(triggered()),
           this, SLOT(exportVolumeRenderingFigure()));
 
+  QAction *exportTypeLabelAction = new QAction("Type Labels", this);
+  m_exportMenu->addAction(exportTypeLabelAction);
+  connect(exportTypeLabelAction, SIGNAL(triggered()),
+          this, SLOT(exportTypeLabelFile()));
+
 /*
   QAction *exportAction = new QAction("Export", this);
   m_mainMenu->addAction(exportAction);
@@ -1402,5 +1407,14 @@ void FlyEmDataForm::exportVolumeRenderingFigure()
       dump(output + " saved");
     }
     dump("Done.");
+  }
+}
+
+void FlyEmDataForm::exportTypeLabelFile()
+{
+  QString fileName =
+      QFileDialog::getOpenFileName(this, "Export Type Labels", "", "*.json");
+  if (!fileName.isEmpty()) {
+    //
   }
 }

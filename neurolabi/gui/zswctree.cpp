@@ -1979,7 +1979,7 @@ ZPoint ZSwcTree::computeCentroid() const
   updateIterator();
   for (Swc_Tree_Node *tn = begin(); tn != NULL; tn = next()) {
     if (SwcTreeNode::isRegular(tn)) {
-      center += SwcTreeNode::pos(tn) * SwcTreeNode::radius(tn);
+      center += SwcTreeNode::center(tn) * SwcTreeNode::radius(tn);
       weight += SwcTreeNode::radius(tn);
       ++count;
     }
@@ -3245,7 +3245,7 @@ ZClosedCurve ZSwcTree::toClosedCurve() const
     for (ZSwcPath::const_iterator iter = path.begin(); iter != path.end();
          ++iter) {
       Swc_Tree_Node *tn = *iter;
-      curve.append(SwcTreeNode::pos(tn));
+      curve.append(SwcTreeNode::center(tn));
     }
   }
 
@@ -3521,6 +3521,17 @@ void ZSwcTree::selectConnectedNode()
   }
 }
 
+void ZSwcTree::selectNode(Swc_Tree_Node *tn, bool appending)
+{
+  if (!appending) {
+    m_selectedNode.clear();
+  }
+
+  if (tn != NULL) {
+    m_selectedNode.insert(tn);
+  }
+}
+
 /////////////////////////////////////
 
 ZSwcTree::ExtIterator::ExtIterator(const ZSwcTree *tree)
@@ -3619,16 +3630,39 @@ Swc_Tree_Node* ZSwcTree::DepthFirstIterator::next()
   return m_currentNode;
 }
 
-void ZSwcTree::selectNode(Swc_Tree_Node *tn, bool appending)
-{
-  if (!appending) {
-    m_selectedNode.clear();
-  }
+///////////////////////////////////////
 
-  if (tn != NULL) {
-    m_selectedNode.insert(tn);
+ZSwcTree::LeafIterator::LeafIterator(const ZSwcTree *tree) :
+  ExtIterator(tree), m_currentIndex(0)
+{
+  if (m_tree != NULL) {
+    m_nodeArray = m_tree->getSwcTreeNodeArray(ZSwcTree::LEAF_ITERATOR);
   }
 }
 
-///////////////////////////////////////
+Swc_Tree_Node* ZSwcTree::LeafIterator::begin()
+{
+  m_currentNode = NULL;
+  m_currentIndex = 0;
+
+  if (!m_nodeArray.empty()) {
+    m_currentNode = m_nodeArray[m_currentIndex];
+  }
+
+  return m_currentNode;
+}
+
+bool ZSwcTree::LeafIterator::hasNext() const
+{
+  return (m_currentIndex < m_nodeArray.size());
+}
+
+Swc_Tree_Node* ZSwcTree::LeafIterator::next()
+{
+  if (hasNext()) {
+    return m_nodeArray[m_currentIndex++];
+  }
+
+  return NULL;
+}
 

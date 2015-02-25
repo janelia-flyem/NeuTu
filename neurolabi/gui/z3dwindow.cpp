@@ -2489,7 +2489,7 @@ void Z3DWindow::tranlateSelectedSwcNode()
         SwcTreeNode::paste(node + i, i);
       }
 
-      ZPoint offset = SwcTreeNode::pos(node + 1) - SwcTreeNode::pos(node);
+      ZPoint offset = SwcTreeNode::center(node + 1) - SwcTreeNode::center(node);
       dlg.setTranslateValue(offset.x(), offset.y(), offset.z());
     }
     if (dlg.exec()) {
@@ -2777,7 +2777,7 @@ void Z3DWindow::transformSelectedSwc()
         SwcTreeNode::paste(node + i, i);
       }
 
-      ZPoint offset = SwcTreeNode::pos(node + 1) - SwcTreeNode::pos(node);
+      ZPoint offset = SwcTreeNode::center(node + 1) - SwcTreeNode::center(node);
       dlg.setTranslateValue(offset.x(), offset.y(), offset.z());
     } else {
       ZIntPoint offset = getDocument()->getStackOffset();

@@ -691,7 +691,18 @@ public:
     DepthFirstIterator(const ZSwcTree *tree);
     Swc_Tree_Node *begin();
     bool hasNext() const;
-    Swc_Tree_Node *next();
+    Swc_Tree_Node* next();
+  };
+
+  class LeafIterator : public ExtIterator {
+  public:
+    LeafIterator(const ZSwcTree *tree);
+    Swc_Tree_Node *begin();
+    bool hasNext() const;
+    Swc_Tree_Node* next();
+  private:
+    std::vector<Swc_Tree_Node*> m_nodeArray;
+    size_t m_currentIndex;
   };
 
 public: //static functions

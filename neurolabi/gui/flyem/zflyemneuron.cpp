@@ -719,7 +719,7 @@ ZFlyEmNeuronAxis ZFlyEmNeuron::getAxis() const
           double v = SwcTreeNode::radius(nodeArray[i]) *
               SwcTreeNode::radius(nodeArray[i]) *
               SwcTreeNode::radius(nodeArray[i]) * exp(-(decay * decay));
-          center += SwcTreeNode::pos(nodeArray[i]) * v;
+          center += SwcTreeNode::center(nodeArray[i]) * v;
           weight += v;
         } else {
           if (weight > 0.0) {

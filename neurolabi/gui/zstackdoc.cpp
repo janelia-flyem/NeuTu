@@ -5397,7 +5397,7 @@ bool ZStackDoc::executeTranslateSelectedSwcNode()
         SwcTreeNode::paste(node + i, i);
       }
 
-      ZPoint offset = SwcTreeNode::pos(node + 1) - SwcTreeNode::pos(node);
+      ZPoint offset = SwcTreeNode::center(node + 1) - SwcTreeNode::center(node);
       dlg.setTranslateValue(offset.x(), offset.y(), offset.z());
     }
     if (dlg.exec()) {
@@ -6411,8 +6411,8 @@ bool ZStackDoc::executeTraceSwcBranchCommand(
     } else {
       if (SwcTreeNode::isRegular(SwcTreeNode::firstChild(branchRoot))) {
         Swc_Tree_Node *rootNeighbor = SwcTreeNode::firstChild(branchRoot);
-        ZPoint rootCenter = SwcTreeNode::pos(branchRoot);
-        ZPoint nbrCenter = SwcTreeNode::pos(rootNeighbor);
+        ZPoint rootCenter = SwcTreeNode::center(branchRoot);
+        ZPoint nbrCenter = SwcTreeNode::center(rootNeighbor);
 
         double lambda = ZNeuronTracer::findBestTerminalBreak(
               rootCenter, SwcTreeNode::radius(branchRoot),
@@ -6473,8 +6473,8 @@ bool ZStackDoc::executeTraceSwcBranchCommand(
     if (SwcTreeNode::isRegular(SwcTreeNode::firstChild(branchRoot))) {
       Swc_Tree_Node *terminal = tree->firstLeaf();
       Swc_Tree_Node *terminalNeighbor = SwcTreeNode::parent(tree->firstLeaf());
-      ZPoint terminalCenter = SwcTreeNode::pos(terminal);
-      ZPoint nbrCenter = SwcTreeNode::pos(terminalNeighbor);
+      ZPoint terminalCenter = SwcTreeNode::center(terminal);
+      ZPoint nbrCenter = SwcTreeNode::center(terminalNeighbor);
 
       double lambda = ZNeuronTracer::findBestTerminalBreak(
             terminalCenter, SwcTreeNode::radius(terminal),
@@ -7148,7 +7148,7 @@ bool ZStackDoc::executeScaleAllSwcCommand(
         center = tree->computeCentroid();
       }
       for (Swc_Tree_Node *tn = tree->begin(); tn != NULL; tn = tree->next()) {
-        ZPoint position = SwcTreeNode::pos(tn);
+        ZPoint position = SwcTreeNode::center(tn);
         if (aroundCenter) {
           position -= center;
         }
@@ -7180,7 +7180,7 @@ bool ZStackDoc::executeScaleSwcNodeCommand(
          nodeSet.begin(); iter != nodeSet.end();
          ++iter) {
       Swc_Tree_Node *tn = *iter;
-      ZPoint position = SwcTreeNode::pos(tn);
+      ZPoint position = SwcTreeNode::center(tn);
       position -= center;
       position *= ZPoint(sx, sy, sz);
       position += center;
@@ -7212,7 +7212,7 @@ bool ZStackDoc::executeRotateSwcNodeCommand(
          nodeSet.begin(); iter != nodeSet.end();
          ++iter) {
       Swc_Tree_Node *tn = *iter;
-      ZPoint position = SwcTreeNode::pos(tn);
+      ZPoint position = SwcTreeNode::center(tn);
       if (aroundCenter) {
         position.rotate(theta, psi, center);
       } else {
@@ -7243,7 +7243,7 @@ bool ZStackDoc::executeRotateAllSwcCommand(
         center = tree->computeCentroid();
       }
       for (Swc_Tree_Node *tn = tree->begin(); tn != NULL; tn = tree->next()) {
-        ZPoint position = SwcTreeNode::pos(tn);
+        ZPoint position = SwcTreeNode::center(tn);
         if (aroundCenter) {
           position.rotate(theta, psi, center);
         } else {
