@@ -7,18 +7,6 @@ ZMouseEvent::ZMouseEvent() : m_buttons(Qt::NoButton),
 {
 }
 
-/*
-void ZMouseEvent::setStackPosition(const ZPoint &pt)
-{
-  setStackPosition(pt.x(), pt.y(), pt.z());
-}
-
-void ZMouseEvent::setStackPosition(double x, double y, double z)
-{
-  m_stackPosition.set(x, y, z);
-}
-*/
-
 ZPoint ZMouseEvent::getPosition(NeuTube::ECoordinateSystem cs) const
 {
   switch (cs) {

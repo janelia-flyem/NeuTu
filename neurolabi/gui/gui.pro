@@ -495,7 +495,8 @@ HEADERS += mainwindow.h \
     zprogressmanager.h \
     dvid/zdvidtile.h \
     dvid/zdvidresolution.h \
-    dvid/zdvidtileinfo.h
+    dvid/zdvidtileinfo.h \
+    zstackmvc.h
 
 FORMS += settingdialog.ui \
     frameinfodialog.ui \
@@ -846,7 +847,8 @@ SOURCES += main.cpp \
     zprogressmanager.cpp \
     dvid/zdvidtile.cpp \
     dvid/zdvidresolution.cpp \
-    dvid/zdvidtileinfo.cpp
+    dvid/zdvidtileinfo.cpp \
+    zstackmvc.cpp
 
 OTHER_FILES += \
     extlib.pri
