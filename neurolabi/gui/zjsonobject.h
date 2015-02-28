@@ -55,6 +55,8 @@ public:
 
   /*!
    * \brief Set an entry of the object
+   *
+   * The reference count of \a obj will be increased after the function call.
    */
   void setEntry(const char *key, json_t *obj);
 

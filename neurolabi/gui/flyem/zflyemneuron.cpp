@@ -15,6 +15,7 @@
 #include "dvid/zdvidurl.h"
 #include "flyem/zflyemneuroninfo.h"
 #include "neutubeconfig.h"
+#include "tz_geo3d_utils.h"
 
 #if defined(_QT_GUI_USED_)
 #include "dvid/zdvidreader.h"
@@ -248,6 +249,15 @@ ZSwcTree* ZFlyEmNeuron::getModel(const string &bundleSource) const
     if (m_model != NULL) {
       m_model->rescale(m_resolution[0], m_resolution[1], m_resolution[2]);
     }
+
+#ifdef _DEBUG_2
+    if (m_model != NULL) {
+      double theta, psi;
+//      Geo3d_Normal_Orientation(-0.164321, -0.138413, 0.976647, &theta, &psi);
+      Geo3d_Normal_Orientation(0.1, 0.0, 0.995, &theta, &psi);
+      m_model->rotate(theta, psi, ZPoint(0, 0, 0), true);
+    }
+#endif
   }
 
   return m_model;

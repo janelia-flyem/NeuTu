@@ -26,6 +26,7 @@ public:
   void read(const QString &url);
   void readHead(const QString &url);
   bool isReadable(const QString &url);
+  bool hasHead(const QString &url);
 
   EStatus getStatus() const;
 

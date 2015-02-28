@@ -2482,11 +2482,11 @@ void ZSwcTree::scale(double x, double y, double z)
   Swc_Tree_Resize(data(), x, y, z, FALSE);
 }
 
-void ZSwcTree::rotate(double theta, double psi, const ZPoint &center)
+void ZSwcTree::rotate(double theta, double psi, const ZPoint &center, bool inverse)
 {
   updateIterator(SWC_TREE_ITERATOR_DEPTH_FIRST);
   for (Swc_Tree_Node *tn = begin(); tn != NULL; tn = next()) {
-    SwcTreeNode::rotate(tn, theta, psi, center);
+    SwcTreeNode::rotate(tn, theta, psi, center, inverse);
   }
 }
 

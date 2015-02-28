@@ -60,6 +60,7 @@ class ZSegmentationProjectDialog;
 class ZStackViewManager;
 class ZFlyEmProjectManager;
 class ZFlyEmDataLoader;
+class ZFlyEmHackathonConfigDlg;
 
 namespace Ui {
   class MainWindow;
@@ -414,6 +415,14 @@ private slots:
 
   void on_actionSegmentation_Project_triggered();
 
+  void on_actionHackathonConfigure_triggered();
+
+  void on_actionLoad_Named_Bodies_triggered();
+
+  void on_actionHackathonSimmat_triggered();
+
+  void on_actionHackathonEvaluate_triggered();
+
 private:
   void createActions();
   void createFileActions();
@@ -585,6 +594,7 @@ private:
   HelpDialog *m_helpDlg;
   DiagnosisDialog *m_DiagnosisDlg;
   ResolutionDialog *m_resDlg;
+  ZFlyEmHackathonConfigDlg *m_hackathonConfigDlg;
 
 
   // undo redo

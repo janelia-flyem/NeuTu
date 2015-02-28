@@ -495,7 +495,10 @@ HEADERS += mainwindow.h \
     zprogressmanager.h \
     dvid/zdvidtile.h \
     dvid/zdvidresolution.h \
-    dvid/zdvidtileinfo.h
+    dvid/zdvidtileinfo.h \
+    dvid/zdvidversionmodel.h \
+    flyem/zflyemhackathonconfigdlg.h \
+    flyem/zflyemmisc.h
 
 FORMS += settingdialog.ui \
     frameinfodialog.ui \
@@ -555,7 +558,8 @@ FORMS += settingdialog.ui \
     flyembodymergeprojectdialog.ui \
     zsegmentationprojectdialog.ui \
     zmarkswcsomadialog.ui \
-    swcexportdialog.ui
+    swcexportdialog.ui \
+    flyem/zflyemhackathonconfigdlg.ui
 SOURCES += main.cpp \
     mainwindow.cpp \
     zstackview.cpp \
@@ -846,7 +850,10 @@ SOURCES += main.cpp \
     zprogressmanager.cpp \
     dvid/zdvidtile.cpp \
     dvid/zdvidresolution.cpp \
-    dvid/zdvidtileinfo.cpp
+    dvid/zdvidtileinfo.cpp \
+    dvid/zdvidversionmodel.cpp \
+    flyem/zflyemhackathonconfigdlg.cpp \
+    flyem/zflyemmisc.cpp
 
 OTHER_FILES += \
     extlib.pri

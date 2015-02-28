@@ -218,6 +218,16 @@ int ZJsonValue::toInteger() const
   return ZJsonParser::integerValue(m_data);
 }
 
+double ZJsonValue::toReal() const
+{
+  return ZJsonParser::numberValue(m_data);
+}
+
+std::string ZJsonValue::toString() const
+{
+  return ZJsonParser::stringValue(m_data);
+}
+
 std::string ZJsonValue::dumpString(int indent) const
 {
   string str;

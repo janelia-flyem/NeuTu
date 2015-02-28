@@ -370,12 +370,20 @@
       <addaction name="actionFlyEmROI"/>
       <addaction name="actionMerge_Body_Project"/>
      </widget>
+     <widget class="QMenu" name="menuHackathon">
+      <property name="title">
+       <string>Hackathon</string>
+      </property>
+      <addaction name="actionHackathonConfigure"/>
+      <addaction name="actionLoad_Named_Bodies"/>
+      <addaction name="actionHackathonSimmat"/>
+      <addaction name="actionHackathonEvaluate"/>
+     </widget>
      <addaction name="menuNew"/>
      <addaction name="menuFlyEmOpen"/>
      <addaction name="menuExport_2"/>
      <addaction name="menuQuality_Control"/>
      <addaction name="actionFlyEmClone"/>
-     <addaction name="menuTEM_Paper"/>
      <addaction name="menuStatistics"/>
      <addaction name="menuDVID"/>
      <addaction name="menuSegmentation_2"/>
@@ -383,6 +391,9 @@
      <addaction name="actionExtract_Neuron"/>
      <addaction name="menuProject"/>
      <addaction name="actionSplit_Body"/>
+     <addaction name="separator"/>
+     <addaction name="menuHackathon"/>
+     <addaction name="menuTEM_Paper"/>
      <addaction name="separator"/>
      <addaction name="actionFlyEmSettings"/>
     </widget>
@@ -392,8 +403,8 @@
    <addaction name="menuEdit"/>
    <addaction name="menuView"/>
    <addaction name="menuTools"/>
-   <addaction name="menuApplications"/>
    <addaction name="menuOptions"/>
+   <addaction name="menuApplications"/>
    <addaction name="menuHelp"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
@@ -1360,6 +1371,26 @@
   <action name="actionSegmentation_Project">
    <property name="text">
     <string>Segmentation Project</string>
+   </property>
+  </action>
+  <action name="actionHackathonSimmat">
+   <property name="text">
+    <string>Generate Similarity Matrix</string>
+   </property>
+  </action>
+  <action name="actionHackathonConfigure">
+   <property name="text">
+    <string>Configure</string>
+   </property>
+  </action>
+  <action name="actionLoad_Named_Bodies">
+   <property name="text">
+    <string>Load Named Bodies</string>
+   </property>
+  </action>
+  <action name="actionHackathonEvaluate">
+   <property name="text">
+    <string>Evaluate</string>
    </property>
   </action>
  </widget>

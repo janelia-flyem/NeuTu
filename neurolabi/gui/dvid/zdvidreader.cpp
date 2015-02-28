@@ -15,6 +15,8 @@
 #include "flyem/zflyemneuronbodyinfo.h"
 #include "dvid/zdvidtile.h"
 #include "zdvidtileinfo.h"
+#include "zobject3dscan.h"
+#include "zsparsestack.h"
 
 ZDvidReader::ZDvidReader(QObject *parent) :
   QObject(parent)

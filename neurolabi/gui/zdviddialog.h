@@ -23,7 +23,7 @@ public:
   QString getAddress() const;
   QString getUuid() const;
 
-  const ZDvidTarget& getDvidTarget() const;
+  const ZDvidTarget& getDvidTarget();
 
 public slots:
   void setServer(int index);

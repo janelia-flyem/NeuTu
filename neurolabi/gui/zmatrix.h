@@ -4,6 +4,8 @@
 #include <vector>
 #include <string>
 
+#include <zsharedpointer.h>
+
 /**
  * @brief The ZMatrix class
  *
