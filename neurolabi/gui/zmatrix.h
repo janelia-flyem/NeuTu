@@ -4,7 +4,7 @@
 #include <vector>
 #include <string>
 
-#include <zsharedpointer.h>
+#include "zdoublevector.h"
 
 /**
  * @brief The ZMatrix class
@@ -33,7 +33,8 @@ public:
   bool isEmpty() const;
 
   void setConstant(double value);
-  inline void set(int i, int j, double value) { m_data[i][j] = value; }
+  inline void set(int i, int j, double value) {
+    m_data[getColumnNumber() * i + j]= value; }
 
   /*!
    * \brief Set the value of the element at \a index
@@ -42,9 +43,11 @@ public:
    */
   void set(int index, double value);
 
-  inline double getValue(int i, int j) const { return m_data[i][j]; }
+  inline double getValue(int i, int j) const {
+    return at(i, j); }
 
-  inline void addValue(int i, int j, double dv) { m_data[i][j] += dv; }
+  inline void addValue(int i, int j, double dv) {
+    m_data[getColumnNumber() * i + j] += dv; }
 
   /*!
    * \brief Get the value by index.
@@ -53,20 +56,32 @@ public:
    */
   double getValue(int index) const;
 
-  inline double& at(int i, int j) { return m_data[i][j]; }
+  inline double& at(int i, int j) { return m_data[getColumnNumber() * i + j]; }
+  inline const double& at(int i, int j) const {
+    return m_data[getColumnNumber() * i + j]; }
   inline int getSize() const { return m_rowNumber * m_columnNumber; }
 
   void resize(int rowNumber, int columnNumber);
 
   inline int getRowNumber() const { return m_rowNumber; }
   inline int getColumnNumber() const { return m_columnNumber; }
+  inline size_t getElementNumber() const {
+    return getRowNumber() * getColumnNumber(); }
+
   int sub2index(int row, int col) const;
   std::pair<int, int> index2sub(int index) const;
 
   void debugOutput();
 
-  void copyValue(double *data);
-  void copyColumnValue(double *data, int columnStart, int columnNumber);
+  double *rowPointer(int row);
+  const double *rowPointer(int row) const;
+
+  void copyValueFrom(double *data);
+
+  /*!
+   * \brief Copy a column to an array.
+   */
+  void copyColumnValueFrom(double *data, int columnStart, int columnNumber);
 
   /*!
    * \brief Copy a row to an array
@@ -79,7 +94,7 @@ public:
    *
    * \a return Actual number of values copied.
    */
-  int copyRowValue(int row, int columnStart, int columnEnd, double *dst);
+  int copyRowValueTo(int row, int columnStart, int columnEnd, double *dst) const;
 
   /*!
    * \brief Set the value of a certain row
@@ -101,6 +116,9 @@ public:
    */
   bool setRowValue(int row, int columnStart,
                    const std::vector<double> &rowValue);
+
+  ZDoubleVector getDiag() const;
+  void setDiag(double v);
 
 #if 0
   /*!
@@ -133,6 +151,10 @@ public:
 
   void printInfo() const;
 
+public:
+  ZMatrix makeRowSlice(int r0, int r1) const;
+  ZMatrix makeColumnSlice(int c0, int c1) const;
+
 public: //Feature matrix functions
   std::vector<int> kmeans(int k);
   std::vector<int> weightedKmeans(int k);
@@ -148,7 +170,7 @@ public: //Feature matrix functions
   double getColumnMax(int column, int *index = NULL) const;
 
 private:
-  double **m_data;
+  ZDoubleVector m_data;
   int m_rowNumber;
   int m_columnNumber;
 };

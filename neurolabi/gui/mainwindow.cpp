@@ -155,6 +155,7 @@
 #include "zflyemprojectmanager.h"
 #include "zflyemdataloader.h"
 #include "flyem/zflyemhackathonconfigdlg.h"
+#include "flyem/zflyemmisc.h"
 
 #include "z3dcanvas.h"
 #include "z3dapplication.h"
@@ -6803,118 +6804,14 @@ void MainWindow::on_actionHackathonSimmat_triggered()
 
 void MainWindow::on_actionHackathonEvaluate_triggered()
 {
-  ZJsonObject jsonObject;
-  jsonObject.load((m_hackathonConfigDlg->getSourceDir() + "/neuronsinfo.json").
-                  toStdString());
-
-  const char *key;
-  json_t *value;
-//  int count = 0;
-//  std::set<std::string> typeSet;
-  std::map<std::string, int> typeLabelMap;
-  std::vector<int> bodyIdArray;
-  std::vector<int> labelArray;
-  int maxLabel = 0;
-  ZJsonArray idJson;
-  ZJsonArray labelJson;
-
-  ZJsonObject_foreach(jsonObject, key, value) {
-    int bodyId = ZString(key).firstInteger();
-    ZJsonObject bodyJson(value, ZJsonValue::SET_INCREASE_REF_COUNT);
-    std::string type = ZJsonParser::stringValue(bodyJson["Type"]);
-    if (typeLabelMap.count(type) == 0) {
-      typeLabelMap[type] = ++maxLabel;
-    }
-
-    int label = typeLabelMap[type];
-
-    bodyIdArray.push_back(bodyId);
-    labelArray.push_back(label);
-    idJson.append(bodyId);
-    labelJson.append(label);
-
-//    ++count;
-  }
-
-  ZJsonObject rootJson;
-  ZJsonArray typeArray;
-  for (std::map<std::string, int>::const_iterator iter = typeLabelMap.begin();
-       iter != typeLabelMap.end(); ++iter) {
-    ZJsonObject typeJson;
-    typeJson.setEntry(iter->first.c_str(), iter->second);
-    typeArray.append(typeJson);
-  }
-
-  rootJson.setEntry("id", idJson);
-  rootJson.setEntry("label", labelJson);
-  rootJson.setEntry("label_type", typeArray);
-  std::cout << rootJson.dumpString() << std::endl;
-
-  rootJson.dump((m_hackathonConfigDlg->getWorkDir() + "/neuron_type.json").
-                toStdString());
-
-//  std::cout << count << " named neurons." << std::endl;
-
-  QString simmatFile = m_hackathonConfigDlg->getWorkDir() + "/simmat.txt";
-
-  ZMatrix matrix;
-  matrix.importTextFile(simmatFile.toStdString());
-
-  std::vector<int> idArray(matrix.getColumnNumber());
-  for (int i = 0; i < matrix.getColumnNumber(); ++i) {
-    idArray[i] = iround(matrix.getValue(0, i));
-  }
-
-  ZMatrix simmat;
-  simmat.resize(matrix.getRowNumber() - 1, matrix.getColumnNumber());
-  for (int j = 0; j < matrix.getColumnNumber(); ++j) {
-    for (int i = 1; i < matrix.getRowNumber(); ++i) {
-      simmat.set(i - 1, j, matrix.getValue(i, j));
-    }
-  }
-
-  simmat.printInfo();
-
-  for (int j = 0; j < simmat.getColumnNumber(); ++j) {
-    double maxC = matrix.getValue(j + 1, j);
-    for (int i = 0; i < simmat.getRowNumber(); ++i) {
-      if (i == j) {
-        simmat.set(i, j, 0);
-      } else {
-        double maxR = matrix.getValue(i + 1, i);
-        simmat.set(i, j, simmat.getValue(i, j) / dmax2(maxC, maxR));
-      }
-    }
-  }
-
-  std::map<int, int> idLabelMap;
-  ZJsonObject typeJson;
-  QString typeFile = m_hackathonConfigDlg->getWorkDir() + "/neuron_type.json";
-  typeJson.load(typeFile.toStdString());
-  ZJsonArray idArrayJson(typeJson["id"], ZJsonValue::SET_INCREASE_REF_COUNT);
-  ZJsonArray labelArrayJson(typeJson["label"], ZJsonValue::SET_INCREASE_REF_COUNT);
-  for (size_t i = 0; i < idArrayJson.size(); ++i) {
-    int id = ZJsonParser::integerValue(idArrayJson.at(i));
-    int label = ZJsonParser::integerValue(labelArrayJson.at(i));
-    idLabelMap[id] = label;
-  }
-
-  int count = 0;
-  for (int i = 0; i < simmat.getRowNumber(); ++i) {
-    int predictedIndex = 0;
-    simmat.getRowMax(i, &predictedIndex);
-    std::cout << i << " " << predictedIndex << std::endl;
-    int trueLabel = idLabelMap[idArray[i]];
-    int predictedLabel = idLabelMap[idArray[predictedIndex]];
-    if (trueLabel == predictedLabel) {
-      ++count;
-    }
-  }
+  ZFlyEmMisc::HackathonEvaluator evaluator(
+        m_hackathonConfigDlg->getSourceDir().toStdString(),
+        m_hackathonConfigDlg->getWorkDir().toStdString());
+  evaluator.evalulate();
 
   QString information =
-      QString("Accuracy: %1 / %2").arg(count).arg(idArray.size());
+      QString("Accuracy: %1 / %2").arg(evaluator.getAccurateCount()).
+      arg(evaluator.getNeuronCount());
 
   report("Evaluation", information.toStdString(), ZMessageReporter::Information);
-
-  //Detailed evaluation: tz_run_hackathon_test
 }

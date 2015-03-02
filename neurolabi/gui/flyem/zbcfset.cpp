@@ -29,7 +29,7 @@ ZMatrix* FlyEm::ZBcfSet::load(const std::string &name)
     cout << ((double*)array->data)[0] << endl;
 #endif
     matrix = new ZMatrix(array->dims[0], array->dims[1]);
-    matrix->copyValue((double*) array->data);
+    matrix->copyValueFrom((double*) array->data);
 
     mylib::Kill_Array(array);
 
@@ -50,12 +50,12 @@ ZMatrix* FlyEm::ZBcfSet::load(const vector<string> &name)
 
       if (matrix == NULL) {
         matrix = new ZMatrix(array->dims[0], array->dims[1]);
-        matrix->copyValue((double*) array->data);
+        matrix->copyValueFrom((double*) array->data);
       } else {
         int oldColumnNumber = matrix->getColumnNumber();
         matrix->resize(matrix->getRowNumber(),
                        matrix->getColumnNumber() + array->dims[1]);
-        matrix->copyColumnValue((double*) array->data, oldColumnNumber,
+        matrix->copyColumnValueFrom((double*) array->data, oldColumnNumber,
                                 array->dims[1]);
       }
 

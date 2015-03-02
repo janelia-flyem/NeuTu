@@ -498,7 +498,10 @@ HEADERS += mainwindow.h \
     dvid/zdvidtileinfo.h \
     dvid/zdvidversionmodel.h \
     flyem/zflyemhackathonconfigdlg.h \
-    flyem/zflyemmisc.h
+    flyem/zflyemmisc.h \
+    zmessagemanager.h \
+    zmessageprocessor.h \
+    zmessage.h
 
 FORMS += settingdialog.ui \
     frameinfodialog.ui \
@@ -853,7 +856,10 @@ SOURCES += main.cpp \
     dvid/zdvidtileinfo.cpp \
     dvid/zdvidversionmodel.cpp \
     flyem/zflyemhackathonconfigdlg.cpp \
-    flyem/zflyemmisc.cpp
+    flyem/zflyemmisc.cpp \
+    zmessagemanager.cpp \
+    zmessageprocessor.cpp \
+    zmessage.cpp
 
 OTHER_FILES += \
     extlib.pri

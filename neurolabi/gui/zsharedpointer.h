@@ -28,6 +28,7 @@ public:
 #endif
 
 #define ZSharedPointer ztr1::shared_ptr
+#define Make_Shared ztr::make_shared
 
 template<typename T>
 struct array_deleter
