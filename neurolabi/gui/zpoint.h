@@ -77,6 +77,8 @@ public:
   std::string toString() const;
   std::string toJsonString() const;
 
+  void print() const;
+
   inline void translate(double dx, double dy, double dz) {
     m_x += dx;
     m_y += dy;

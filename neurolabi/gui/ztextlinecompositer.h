@@ -10,6 +10,7 @@ public:
   ZTextLineCompositer();
 
   inline void setLevel(int level) { m_level = level; }
+  inline int getLevel() const { return m_level; }
 
   std::string toString(int indent, int level = 0) const;
   void print (int indent, int level = 0) const;

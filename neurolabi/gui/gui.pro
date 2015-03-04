@@ -496,7 +496,17 @@ HEADERS += mainwindow.h \
     dvid/zdvidtile.h \
     dvid/zdvidresolution.h \
     dvid/zdvidtileinfo.h \
-    zstackmvc.h
+    zstackmvc.h \
+    dvid/zdvidversionmodel.h \
+    flyem/zflyemhackathonconfigdlg.h \
+    flyem/zflyemmisc.h \
+    zmessagemanager.h \
+    zmessageprocessor.h \
+    zmessage.h \
+    zmainwindowmessageprocessor.h \
+    ztestdialog.h \
+    zstackdocloader.h \
+    zstackwidget.h
 
 FORMS += settingdialog.ui \
     frameinfodialog.ui \
@@ -556,7 +566,9 @@ FORMS += settingdialog.ui \
     flyembodymergeprojectdialog.ui \
     zsegmentationprojectdialog.ui \
     zmarkswcsomadialog.ui \
-    swcexportdialog.ui
+    swcexportdialog.ui \
+    flyem/zflyemhackathonconfigdlg.ui \
+    ztestdialog.ui
 SOURCES += main.cpp \
     mainwindow.cpp \
     zstackview.cpp \
@@ -848,7 +860,17 @@ SOURCES += main.cpp \
     dvid/zdvidtile.cpp \
     dvid/zdvidresolution.cpp \
     dvid/zdvidtileinfo.cpp \
-    zstackmvc.cpp
+    zstackmvc.cpp \
+    dvid/zdvidversionmodel.cpp \
+    flyem/zflyemhackathonconfigdlg.cpp \
+    flyem/zflyemmisc.cpp \
+    zmessagemanager.cpp \
+    zmessageprocessor.cpp \
+    zmessage.cpp \
+    zmainwindowmessageprocessor.cpp \
+    ztestdialog.cpp \
+    zstackdocloader.cpp \
+    zstackwidget.cpp
 
 OTHER_FILES += \
     extlib.pri

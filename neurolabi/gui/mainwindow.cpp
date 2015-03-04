@@ -154,6 +154,11 @@
 #include "zstackviewmanager.h"
 #include "zflyemprojectmanager.h"
 #include "zflyemdataloader.h"
+#include "flyem/zflyemhackathonconfigdlg.h"
+#include "flyem/zflyemmisc.h"
+#include "zmessage.h"
+#include "zmessagemanager.h"
+#include "ztestdialog.h"
 
 #include "z3dcanvas.h"
 #include "z3dapplication.h"
@@ -277,10 +282,16 @@ MainWindow::MainWindow(QWidget *parent) :
   connect(this, SIGNAL(docReaderReady(ZStackDocReader*)),
           this, SLOT(createStackFrameFromDocReader(ZStackDocReader*)));
 
+  m_messageManager = new ZMessageManager(this);
+  m_messageManager->setProcessor(
+        ZSharedPointer<MessageProcessor>(new MessageProcessor));
+  m_messageManager->registerWidget(this);
+
   initDialog();
 
   m_stackViewManager = new ZStackViewManager(this);
   m_flyemDataLoader = new ZFlyEmDataLoader(this);
+
 }
 
 MainWindow::~MainWindow()
@@ -399,6 +410,8 @@ void MainWindow::initDialog()
 
   m_dvidOpDlg = new DvidOperateDialog(this);
   m_synapseDlg = new SynapseImportDialog(this);
+  m_hackathonConfigDlg = new ZFlyEmHackathonConfigDlg(this);
+  m_testDlg = new ZTestDialog(this);
 #else
   m_bodySplitProjectDialog = NULL;
   m_newBsProjectDialog = NULL;
@@ -3166,8 +3179,11 @@ void MainWindow::test()
   future2.resume();
 #endif
 
-
 #if 1
+  m_testDlg->show();
+#endif
+
+#if 0
   m_progress->setRange(0, 2);
   m_progress->setLabelText(QString("Testing ..."));
   int currentProgress = 0;
@@ -6754,4 +6770,87 @@ void MainWindow::on_actionSegmentation_Project_triggered()
 {
   m_segmentationDlg->show();
   m_segmentationDlg->raise();
+}
+
+void MainWindow::on_actionHackathonConfigure_triggered()
+{
+  m_hackathonConfigDlg->exec();
+}
+
+void MainWindow::on_actionLoad_Named_Bodies_triggered()
+{
+  ZDvidTarget target;
+  if (m_hackathonConfigDlg->usingInternalDvid()) {
+    target.setServer("emdata1.int.janelia.org");
+  } else {
+    target.setServer("hackathon.janelia.org");
+  }
+  target.setUuid("2a3");
+
+  ZDvidFilter filter;
+  filter.setDvidTarget(target);
+  filter.setMinBodySize(1000000);
+  filter.setUpperBodySizeEnabled(false);
+
+  m_progress->setRange(0, 100);
+  m_progress->setLabelText(QString("Loading ") +
+                           target.getSourceString().c_str() + "...");
+
+  m_flyemDataLoader->loadDataBundle(filter);
+}
+
+void MainWindow::on_actionHackathonSimmat_triggered()
+{
+  ZFlyEmDataFrame *frame =
+      dynamic_cast<ZFlyEmDataFrame*>(mdiArea->currentSubWindow());
+
+  if (frame != NULL) {
+    QString fileName = m_hackathonConfigDlg->getWorkDir() + "/simmat.txt";
+    if (!fileName.isEmpty()) {
+      frame->exportSimilarityMatrix(fileName);
+    }
+  } else {
+    report("Data Not Ready", "Please load the data from DVID first",
+           ZMessageReporter::Warning);
+  }
+}
+
+void MainWindow::on_actionHackathonEvaluate_triggered()
+{
+  ZFlyEmMisc::HackathonEvaluator evaluator(
+        m_hackathonConfigDlg->getSourceDir().toStdString(),
+        m_hackathonConfigDlg->getWorkDir().toStdString());
+  evaluator.evalulate();
+
+  QString information =
+      QString("Accuracy: %1 / %2").arg(evaluator.getAccurateCount()).
+      arg(evaluator.getNeuronCount());
+
+  report("Evaluation", information.toStdString(), ZMessageReporter::Information);
+}
+
+void MainWindow::MessageProcessor::processMessage(
+    ZMessage *message, QWidget *host) const
+{
+  if (message == NULL) {
+    return;
+  }
+
+  MainWindow *realHost = dynamic_cast<MainWindow*>(host);
+  if (realHost != NULL) {
+    switch (message->getType()) {
+    case ZMessage::TYPE_INFORMATION:
+    {
+      ZJsonObject messageBody = message->getMessageBody();
+      std::string title = ZJsonParser::stringValue(messageBody["title"]);
+      std::string msg = ZJsonParser::stringValue(messageBody["body"]);
+      realHost->report(title, msg, ZMessageReporter::Information);
+
+      message->deactivate();
+    }
+      break;
+    default:
+      break;
+    }
+  }
 }

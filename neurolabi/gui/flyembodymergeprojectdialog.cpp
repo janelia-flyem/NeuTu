@@ -195,7 +195,7 @@ void FlyEmBodyMergeProjectDialog::updateDataFrame(
 {
   if (m_project->hasDataFrame()) {
     //m_project->getDataFrame()->view()->blockRedraw(true);
-    m_project->getDataFrame()->document()->setReadForPaint(readyForPaint);
+    m_project->getDataFrame()->document()->setReadyForPaint(readyForPaint);
     m_project->setDocData(docReader);
   } else {
     ZStackFrame *frame = newDataFrame(docReader);
@@ -278,6 +278,7 @@ void FlyEmBodyMergeProjectDialog::notifySelection(
         } else {
           info += QString("%1 ").arg(obj->getLabel());
         }
+        m_project->addSelected(obj->getLabel());
       } else {
         dump("NULL object in FlyEmBodyMergeProjectDialog::notifySelection");
       }
@@ -301,6 +302,8 @@ void FlyEmBodyMergeProjectDialog::notifySelection(
       if (obj != NULL) {
         info += QString("<font color=\"#808080\"><s>%1</s></font> ").
             arg(obj->getLabel());
+        m_project->removeSelected(obj->getLabel());
+//        m_currentSelected.remove(obj->getLabel());
       } else {
         dump("NULL object in FlyEmBodyMergeProjectDialog::notifySelection");
       }

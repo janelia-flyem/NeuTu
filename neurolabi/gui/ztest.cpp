@@ -234,6 +234,8 @@ using namespace std;
 #include "dvid/zdvidtile.h"
 #include "dvid/zdvidtileinfo.h"
 #include "flyem/zflyemneuronbodyinfo.h"
+#include "flyem/zflyemneurondensitymatcher.h"
+#include "flyem/zflyemneurondensity.h"
 
 using namespace std;
 
@@ -15666,4 +15668,178 @@ void ZTest::test(MainWindow *host)
   std::cout << count << std::endl;
 #endif
 
+#if 0
+  ZDvidBufferReader reader;
+  //reader.open("emdata2.int.janelia.org", "628");
+  tic();
+  reader.isReadable(
+          "http://emdata2.int.janelia.org/api/node/628/segmentation011314/info");
+  ptoc();
+  if (reader.isReadable(
+        "http://emdata2.int.janelia.org/api/node/628/segmentation011314/sparsevol/1")) {
+    std::cout << "Readable" << std::endl;
+  } else {
+    std::cout << "NOT readable" << std::endl;
+  }
+#endif
+
+#if 0
+  ZFlyEmNeuronDensity d1;
+  ZFlyEmNeuronDensity d2;
+
+  d1.append(0, 1);
+  d1.append(10, 2);
+  d1.append(20, 3);
+  d1.append(30, 3);
+
+  d2.append(0, 1);
+  d2.append(10, 1);
+  d2.append(20, 2);
+  d2.append(30, 3);
+  d2.append(40, 5);
+
+  ZFlyemNeuronDensityMatcher matcher;
+  double score = matcher.match(d1, d2);
+
+  std::cout << score << std::endl;
+#endif
+
+#if 0
+  ZWeightedPointArray pointArray;
+  ZDvidTarget target;
+  target.set("hackathon.janelia.org", "2a3", -1);
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  std::string hackathonDir =
+      "/Users/zhaot/Work/neutube/neurolabi/data/flyem/FIB/hackathon";
+
+  ZString str;
+  FILE *fp = fopen((hackathonDir + "/simmat.txt").c_str(), "r");
+  str.readLine(fp);
+  fclose(fp);
+
+  std::vector<int> bodyList = str.toIntegerArray();
+
+  for (std::vector<int>::const_iterator iter = bodyList.begin();
+       iter != bodyList.end(); ++iter) {
+    int bodyId = *iter;
+    ZSwcTree *tree = reader.readSwc(bodyId);
+    ZSwcTree::DepthFirstIterator iter(tree);
+    while (iter.hasNext()) {
+      Swc_Tree_Node *tn = iter.next();
+      pointArray.append(SwcTreeNode::center(tn), 1.0);
+    }
+    delete tree;
+  }
+
+  ZPoint pt = pointArray.principalDirection();
+  pt.print();
+#endif
+
+#if 1
+  ZPoint pt;
+  pt.set(-0.164321, -0.138413, 0.976647);
+  double theta, psi;
+  Geo3d_Normal_Orientation(-0.164321, -0.138413, 0.976647, &theta, &psi);
+  Geo3d_Rotate_Coordinate(pt.xRef(), pt.yRef(), pt.zRef(), theta, psi, TRUE);
+  pt.print();
+#endif
+
+#if 0
+  std::string hackathonDir =
+      "/Users/zhaot/Work/neutube/neurolabi/data/flyem/FIB/hackathon";
+
+  ZString str;
+  FILE *fp = fopen((hackathonDir + "/simmat.txt").c_str(), "r");
+  str.readLine(fp);
+  fclose(fp);
+
+  std::vector<int> bodyList = str.toIntegerArray();
+  std::vector<ZFlyEmNeuronDensity> densityList(bodyList.size());
+
+  ZString densityDir = hackathonDir + "/density1";
+
+
+  ZMatrix simmat;
+  simmat.resize(bodyList.size(), bodyList.size());
+
+  for (size_t i = 0; i < bodyList.size(); ++i) {
+    int bodyId = bodyList[i];
+    ZString densityPath = densityDir + "/";
+    densityPath.appendNumber(bodyId);
+    densityPath += ".txt";
+    ZFlyEmNeuronDensity &density = densityList[i];
+    density.importTxtFile(densityPath);
+  }
+
+  ZFlyemNeuronDensityMatcher matcher;
+  std::cout << "Matching ..." << std::endl;
+  for (size_t i = 0; i < bodyList.size(); ++i) {
+    std::cout << "Neuron: " << i << std::endl;
+    const ZFlyEmNeuronDensity &density1 = densityList[i];
+    for (size_t j = 0; j < bodyList.size(); ++j) {
+      if (i <= j) {
+        const ZFlyEmNeuronDensity &density2 = densityList[j];
+        simmat.set(i, j, matcher.match(density1, density2));
+      } else {
+        simmat.set(i, j, simmat.at(j, i));
+      }
+    }
+  }
+
+  fp = fopen((densityDir + "/simmat.txt").c_str(), "w");
+  for (size_t i = 0; i < bodyList.size(); ++i) {
+    fprintf(fp, "%d ", bodyList[i]);
+  }
+  fprintf(fp, "\n");
+  for (size_t i = 0; i < bodyList.size(); ++i) {
+    for (size_t j = 0; j < bodyList.size(); ++j) {
+      fprintf(fp, "%g ", simmat.at(i, j));
+    }
+    fprintf(fp, "\n");
+  }
+
+  fclose(fp);
+
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("hackathon.janelia.org", "2a3", -1);
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  std::string hackathonDir =
+      "/Users/zhaot/Work/neutube/neurolabi/data/flyem/FIB/hackathon";
+
+  std::string outputDir = hackathonDir + "/density1";
+
+  ZString str;
+  FILE *fp = fopen((hackathonDir + "/simmat.txt").c_str(), "r");
+  str.readLine(fp);
+  fclose(fp);
+
+  std::vector<int> bodyList = str.toIntegerArray();
+
+  for (std::vector<int>::const_iterator iter = bodyList.begin();
+       iter != bodyList.end(); ++iter) {
+    int bodyId = *iter;
+    ZObject3dScan obj = reader.readBody(bodyId);
+    const std::map<int, size_t> &sizeMap = obj.getSlicewiseVoxelNumber();
+
+    ZString outputPath = outputDir + "/";
+    outputPath.appendNumber(bodyId);
+    outputPath += ".txt";
+
+    std::ofstream outStream(outputPath.c_str());
+    for (std::map<int, size_t>::const_iterator iter = sizeMap.begin();
+         iter != sizeMap.end(); ++iter) {
+      outStream << iter->first << " " << iter->second << std::endl;
+    }
+    outStream.close();
+  }
+#endif
 }

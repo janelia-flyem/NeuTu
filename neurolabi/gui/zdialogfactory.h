@@ -33,6 +33,8 @@ public:
 
   static QString GetDirectory(
       const QString &caption, const QString &filePath, QWidget *parent);
+  static QString GetFileName(
+      const QString &caption, const QString &filePath, QWidget *parent);
 
 private:
   QWidget *m_parentWidget;

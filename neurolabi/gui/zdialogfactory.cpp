@@ -117,3 +117,12 @@ QString ZDialogFactory::GetDirectory(
 
   return fileName;
 }
+
+QString ZDialogFactory::GetFileName(
+    const QString &caption, const QString &filePath, QWidget *parent)
+{
+  QString fileName;
+  fileName = QFileDialog::getOpenFileName(parent, caption, filePath);
+
+  return fileName;
+}

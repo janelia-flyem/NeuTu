@@ -664,7 +664,7 @@ public:
     return m_isReadyForPaint;
   }
 
-  inline void setReadForPaint(bool ready) {
+  inline void setReadyForPaint(bool ready) {
     m_isReadyForPaint = ready;
   }
 

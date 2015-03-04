@@ -79,12 +79,22 @@ QList<ZObject3dScan*> ZFlyEmBodyMergeDoc::extractAllObject()
 
 void ZFlyEmBodyMergeDoc::updateBodyObject()
 {
+  QList<ZObject3dScan*> objList =
+      getSelectedObjectList<ZObject3dScan>(ZStackObject::TYPE_OBJECT3D_SCAN);
+  std::set<uint64_t> selectedBodySet;
+  foreach (ZObject3dScan *obj, objList) {
+    selectedBodySet.insert(obj->getLabel());
+  }
+
   removeObject(ZStackObjectRole::ROLE_SEGMENTATION, true);
   if (m_originalLabel != NULL) {
     QList<ZObject3dScan*> objList = extractAllObject();
     blockSignals(true);
     foreach (ZObject3dScan *obj, objList) {
       addObject(obj);
+      if (selectedBodySet.count(obj->getLabel()) > 0) {
+        obj->setSelected(true);
+      }
     }
     blockSignals(false);
 
@@ -125,8 +135,23 @@ void ZFlyEmBodyMergeDoc::updateOriginalLabel(ZArray *array)
 {
   delete m_originalLabel;
   m_originalLabel = array;
-  setReadForPaint(true);
+  setReadyForPaint(true);
   updateBodyObject();
+}
+
+void ZFlyEmBodyMergeDoc::updateOriginalLabel(ZArray *array, QSet<uint64_t> *selected)
+{
+  updateOriginalLabel(array);
+  TStackObjectList objList =
+      getObjectList(ZStackObject::TYPE_OBJECT3D_SCAN);
+//  std::set<uint64_t> selectedBodySet;
+  foreach (ZStackObject *plainObj, objList) {
+    ZObject3dScan *obj = dynamic_cast<ZObject3dScan*>(plainObj);
+    if (selected->contains(obj->getLabel())) {
+      obj->setSelected(true);
+    }
+  }
+  notifyObject3dScanModified();
 }
 
 

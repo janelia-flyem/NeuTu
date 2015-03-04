@@ -85,7 +85,7 @@ FlyEmDataForm::FlyEmDataForm(QWidget *parent) :
 #ifndef _DEBUG_
   ui->importButton->hide();
   ui->menuButton->hide();
-  ui->processPushButton->hide();
+//  ui->processPushButton->hide();
   ui->testPushButton->hide();
   ui->generalPushButton->hide();
   ui->optionPushButton->hide();

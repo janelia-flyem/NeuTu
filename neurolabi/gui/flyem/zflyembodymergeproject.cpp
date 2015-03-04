@@ -40,6 +40,8 @@ void ZFlyEmBodyMergeProject::clear()
     delete m_dataFrame;
     m_dataFrame = NULL;
   }
+
+  m_currentSelected.clear();
 }
 
 void ZFlyEmBodyMergeProject::test()
@@ -53,7 +55,7 @@ void ZFlyEmBodyMergeProject::test()
     ZStack stack;
     stack.load(GET_TEST_DATA_DIR + "/benchmark/em_stack_slice_seg.tif");
     ZArray *array = ZArrayFactory::MakeArray(&stack);
-    emit originalLabelUpdated(array);
+    emit originalLabelUpdated(array, &m_currentSelected);
   } else {
     emit newDocReady(reader, true);
   }
@@ -95,7 +97,7 @@ void ZFlyEmBodyMergeProject::loadSliceFunc(
             //ZDvidData::getName(ZDvidData::ROLE_BODY_LABEL),
             x0, y0, z, width, height, 1);
 #endif
-      emit originalLabelUpdated(array);
+      emit originalLabelUpdated(array, &m_currentSelected);
     } else {
       emit newDocReady(docReader, true);
     }
@@ -231,7 +233,17 @@ bool ZFlyEmBodyMergeProject::hasDataFrame() const
 void ZFlyEmBodyMergeProject::setDocData(ZStackDocReader &reader)
 {
   if (m_dataFrame != NULL) {
+//    TStackObjectList objList = m_dataFrame->document()->getObjectGroup().take(
+//          ZStackObject::TYPE_OBJECT3D_SCAN);
+#ifdef _DEBUG_
+//    std::cout << objList.size() << " objects taken" << std::endl;
+#endif
     m_dataFrame->document()->reloadData(reader);
+//    m_dataFrame->document()->getObjectGroup().add(
+//          objList.begin(), objList.end(), false);
+#ifdef _DEBUG_
+//    std::cout <<
+#endif
   }
 }
 
@@ -246,9 +258,9 @@ void ZFlyEmBodyMergeProject::setDataFrame(ZStackFrame *frame)
 
   m_dataFrame = dynamic_cast<ZFlyEmBodyMergeFrame*>(frame);
 
-  connect(this, SIGNAL(originalLabelUpdated(ZArray*)),
+  connect(this, SIGNAL(originalLabelUpdated(ZArray*, QSet<uint64_t>*)),
           m_dataFrame->getCompleteDocument(),
-          SLOT(updateOriginalLabel(ZArray*)));
+          SLOT(updateOriginalLabel(ZArray*, QSet<uint64_t>*)));
 
   connect(m_dataFrame->getCompleteDocument(),
           SIGNAL(objectSelectorChanged(ZStackObjectSelector)),
@@ -425,4 +437,14 @@ void ZFlyEmBodyMergeProject::notifySplit()
   if (bodyId > 0) {
     emit splitSent(m_dvidTarget, bodyId);
   }
+}
+
+void ZFlyEmBodyMergeProject::addSelected(uint64_t label)
+{
+  m_currentSelected.insert(label);
+}
+
+void ZFlyEmBodyMergeProject::removeSelected(uint64_t label)
+{
+  m_currentSelected.remove(label);
 }

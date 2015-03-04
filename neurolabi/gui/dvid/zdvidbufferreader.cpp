@@ -53,6 +53,23 @@ bool ZDvidBufferReader::isReadable(const QString &url)
   return m_status == READ_OK;
 }
 
+bool ZDvidBufferReader::hasHead(const QString &url)
+{
+  startReading();
+
+  qDebug() << url;
+
+  m_networkReply = m_networkManager->head(QNetworkRequest(url));
+
+  connect(m_networkReply, SIGNAL(readyRead()), this, SLOT(finishReading()));
+  connect(m_networkReply, SIGNAL(error(QNetworkReply::NetworkError)),
+          this, SLOT(handleError(QNetworkReply::NetworkError)));
+
+  waitForReading();
+
+  return m_status == READ_OK;
+}
+
 void ZDvidBufferReader::readHead(const QString &url)
 {
   startReading();

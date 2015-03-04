@@ -8,12 +8,11 @@
 
 #include <string>
 #include <vector>
-#include "zobject3dscan.h"
+
 #include "zstack.hxx"
 #include "zdvidclient.h"
 #include "flyem/zflyem.h"
 #include "zintcuboid.h"
-#include "zsparsestack.h"
 #include "zclosedcurve.h"
 #include "dvid/zdvidinfo.h"
 #include "zintcuboid.h"
@@ -26,6 +25,8 @@ class ZFlyEmNeuronBodyInfo;
 class ZDvidTile;
 class ZDvidTileInfo;
 class ZSwcTree;
+class ZObject3dScan;
+class ZSparseStack;
 
 class ZDvidReader : public QObject
 {

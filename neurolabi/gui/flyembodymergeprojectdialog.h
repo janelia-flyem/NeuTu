@@ -2,6 +2,7 @@
 #define FLYEMBODYMERGEPROJECTDIALOG_H
 
 #include <QDialog>
+#include <QSet>
 
 #include "flyem/zflyembodymergeproject.h"
 #include "flyemprojectdialog.h"

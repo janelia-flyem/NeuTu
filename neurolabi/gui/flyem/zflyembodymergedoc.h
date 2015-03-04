@@ -3,6 +3,7 @@
 
 #include "zstackdoc.h"
 #include <QList>
+#include <QSet>
 
 #include "flyem/zflyembodymerger.h"
 #include "zstackdoccommand.h"
@@ -33,6 +34,7 @@ signals:
 
 public slots:
   void updateOriginalLabel(ZArray *array);
+  void updateOriginalLabel(ZArray *array, QSet<uint64_t> *selected);
 
 private:
   ZArray *m_originalLabel;

@@ -427,20 +427,21 @@ void SwcTreeNode::translate(Swc_Tree_Node *tn, double dx, double dy, double dz)
 }
 
 void SwcTreeNode::rotate(Swc_Tree_Node *tn, double theta, double psi,
-                         const ZPoint &center)
+                         const ZPoint &center, bool inverse)
 {
   if (tn != NULL) {
     translate(tn, -center.x(), -center.y(), -center.z());
-    rotate(tn, theta, psi);
+    rotate(tn, theta, psi, inverse);
     translate(tn, center.x(), center.y(), center.z());
   }
 }
 
-void SwcTreeNode::rotate(Swc_Tree_Node *tn, double theta, double psi)
+void SwcTreeNode::rotate(
+    Swc_Tree_Node *tn, double theta, double psi, bool inverse)
 {
   if (tn != NULL) {
     Geo3d_Rotate_Coordinate(&(tn->node.x), &(tn->node.y), &(tn->node.z),
-                            theta, psi, FALSE);
+                            theta, psi, inverse);
   }
 }
 
