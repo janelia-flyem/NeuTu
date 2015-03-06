@@ -15738,7 +15738,7 @@ void ZTest::test(MainWindow *host)
   pt.print();
 #endif
 
-#if 1
+#if 0
   ZPoint pt;
   pt.set(-0.164321, -0.138413, 0.976647);
   double theta, psi;
@@ -15841,5 +15841,38 @@ void ZTest::test(MainWindow *host)
     }
     outStream.close();
   }
+#endif
+
+#if 1
+  ZStackFrame *frame = new ZStackFrame;
+  ZStack *stack = ZStackFactory::makeVirtualStack(
+        ZIntCuboid(0, 0, 0, 6445, 6642, 8089));
+
+  frame->loadStack(stack);
+
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "2a3", -1);
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  ZDvidTile *tile = reader.readTile(3, 0, 0, 6000);
+  tile->setDvidTarget(target);
+  tile->printInfo();
+
+  frame->document()->addObject(tile);
+
+  tile = reader.readTile(3, 0, 1, 6000);
+  frame->document()->addObject(tile);
+
+  tile = reader.readTile(3, 1, 0, 6000);
+  frame->document()->addObject(tile);
+
+  tile = reader.readTile(3, 1, 1, 6000);
+  frame->document()->addObject(tile);
+
+//  frame->load(GET_TEST_DATA_DIR + "/benchmark/em_stack.tif");
+  host->addStackFrame(frame);
+  host->presentStackFrame(frame);
 #endif
 }

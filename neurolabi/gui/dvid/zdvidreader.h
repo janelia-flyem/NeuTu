@@ -91,8 +91,9 @@ public:
 
   ZDvidTileInfo readTileInfo(const std::string &dataName) const;
 
-  ZDvidTile *readTile(const std::string &dataName, int resLevel,
-                     int xi0, int yi0, int z0) const;
+  //ZDvidTile *readTile(const std::string &dataName, int resLevel,
+  //                   int xi0, int yi0, int z0) const;
+  ZDvidTile *readTile(int resLevel, int xi0, int yi0, int z0) const;
 
 signals:
   void readingDone();

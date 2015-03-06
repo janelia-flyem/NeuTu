@@ -84,7 +84,94 @@ void ZImageWidget::setView(const QRect &viewPort, const QRect &projRegion)
     m_projRegion = projRegion;
   }
 }
-#if 1
+
+void ZImageWidget::maximizeViewPort()
+{
+  double wRatio = (double) m_viewPort.width() / projectRegion().width();
+  double hRatio = (double) m_viewPort.height() / projectRegion().height();
+
+  int wMargin = screenSize().width() - projectRegion().width();
+  if (wMargin > 1) {
+    int dw = iround(wRatio * wMargin);
+    if (dw > 0) {
+      m_viewPort.setWidth(imin2(canvasSize().width(), m_viewPort.width() + dw));
+      m_projRegion.setWidth(iround(m_viewPort.width() / wRatio));
+    }
+  }
+
+  int hMargin = screenSize().height() - projectRegion().height();
+  if (hMargin > 1) {
+    int dh = iround(hRatio * hMargin);
+    if (dh > 0) {
+      m_viewPort.setHeight(
+            imin2(canvasSize().height(), m_viewPort.height() + dh));
+      m_projRegion.setHeight(iround(m_viewPort.height() / hRatio));
+    }
+  }
+}
+
+QRect ZImageWidget::alignViewPort(
+    const QRect &viewPort, int vx, int vy, int px, int py) const
+{
+  QRect newViewPort = viewPort;
+
+  double wRatio = (double) viewPort.width() / projectRegion().size().width();
+  double hRatio = (double) viewPort.height() / projectRegion().size().height();
+
+  int dx = iround(wRatio * (px - projectRegion().left()));
+  int dy = iround(hRatio * (py - projectRegion().top()));
+
+  int x0 = vx - dx;
+  int y0 = vy - dy;
+
+  if (x0 < 0) {
+    x0 = 0;
+  }
+
+  if (y0 < 0) {
+    y0 = 0;
+  }
+
+  if (x0 + newViewPort.width() > canvasSize().width()) {
+    x0 = canvasSize().width() - newViewPort.width();
+  }
+
+  if (y0 + newViewPort.height() > canvasSize().height()) {
+    y0 = canvasSize().height() - newViewPort.height();
+  }
+
+  newViewPort.moveTo(x0, y0);
+
+  return newViewPort;
+}
+
+void ZImageWidget::zoom(int zoomRatio, const QPoint &ref)
+{
+  QRect viewPort;
+  viewPort.setWidth(canvasSize().width() / zoomRatio);
+  viewPort.setHeight(canvasSize().height() / zoomRatio);
+
+
+  double wRatio = (double) m_viewPort.width() / projectRegion().width();
+  double hRatio = (double) m_viewPort.height() / projectRegion().height();
+
+  int vx = iround(m_viewPort.left() + ref.x() * wRatio);
+  int vy = iround(m_viewPort.top() + ref.y() * hRatio);
+
+  double ratio = dmin2((double) screenSize().width() / viewPort.width(),
+                       (double) screenSize().height() / viewPort.height());
+  setProjRegion(QRect(0, 0, viewPort.width() * ratio,
+                      viewPort.height() * ratio));
+
+
+  m_viewPort = alignViewPort(viewPort, vx, vy, ref.x(), ref.y());
+
+  maximizeViewPort();
+
+  //setValidViewPort(viewPort);
+}
+
+#if 0
 void ZImageWidget::zoom(int zoomRatio, const QPoint &ref)
 {
   int dc, ec, dv, ev, dp, ep, ds, es;
@@ -202,6 +289,34 @@ void ZImageWidget::setValidViewPortBackup(const QRect &viewPort)
 
 void ZImageWidget::setValidViewPort(const QRect &viewPort)
 {
+  QSize vpSize = viewPort.size();
+  double wRatio = (double) screenSize().width() / vpSize.width();
+  double hRatio = (double) screenSize().height() / vpSize.height();
+  double ratio = dmin2(wRatio, hRatio);
+
+
+  QRect newViewPort = viewPort;
+
+  if (wRatio < hRatio) { //height has some margin
+    int height = iround(screenSize().height() / wRatio);
+    newViewPort.setHeight(
+          imin2(height, canvasSize().height() - viewPort.top()));
+  } else if (hRatio < wRatio) {
+    int width = iround(screenSize().width() / hRatio);
+    newViewPort.setWidth(
+          imin2(width, canvasSize().width() - viewPort.left()));
+  }
+
+  QRect projRect = QRect(
+        0, 0, iround(ratio * newViewPort.width()),
+        iround(ratio * newViewPort.height()));
+
+  setView(newViewPort, projRect);
+}
+
+#if 0
+void ZImageWidget::setValidViewPort(const QRect &viewPort)
+{
   int dc, ec, dv, ev, dp, ep, ds, es;
   int td, te;
 
@@ -249,6 +364,8 @@ void ZImageWidget::setValidViewPort(const QRect &viewPort)
     setView(QRect(te, td, ev, dv), QRect(0, 0, ep, dp));
   }
 }
+#endif
+
 
 void ZImageWidget::setView(int zoomRatio, const QPoint &zoomOffset)
 {

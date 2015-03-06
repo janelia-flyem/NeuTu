@@ -3179,11 +3179,11 @@ void MainWindow::test()
   future2.resume();
 #endif
 
-#if 1
+#if 0
   m_testDlg->show();
 #endif
 
-#if 0
+#if 1
   m_progress->setRange(0, 2);
   m_progress->setLabelText(QString("Testing ..."));
   int currentProgress = 0;

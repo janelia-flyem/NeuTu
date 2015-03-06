@@ -135,6 +135,9 @@ public:
   std::string getBodyLabelName() const;
   void setBodyLabelName(const std::string &name);
 
+  std::string getMultiscale2dName() const;
+  void setMultiscale2dName(const std::string &name);
+
 private:
   std::string m_address;
   std::string m_uuid;
@@ -143,6 +146,7 @@ private:
   std::string m_comment;
   std::string m_localFolder;
   std::string m_bodyLabelName;
+  std::string m_multiscale2dName;
   int m_bgValue; //grayscale background
 
   const static char* m_addressKey;

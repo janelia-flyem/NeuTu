@@ -831,28 +831,48 @@ int ZDvidReader::readMaxBodyId()
   return id;
 }
 
+ZDvidTile* ZDvidReader::readTile(int resLevel, int xi0, int yi0, int z0) const
+{
+  ZDvidTile *tile = new ZDvidTile;
+  tile->setResolutionLevel(resLevel);
+  tile->setDvidTarget(getDvidTarget());
+  tile->setTileIndex(xi0, yi0);
+  tile->update(z0);
+
+  return tile;
+}
+
+#if 0
 ZDvidTile* ZDvidReader::readTile(
     const std::string &dataName, int resLevel, int xi0, int yi0, int z0) const
 {
   ZDvidTile *tile = NULL;
 
-  ZDvidUrl dvidUrl(getDvidTarget());
-  ZDvidBufferReader bufferReader;
-  bufferReader.read(dvidUrl.getTileUrl(dataName, resLevel, xi0, yi0, z0).c_str());
-  QByteArray buffer = bufferReader.getBuffer();
+//  ZDvidUrl dvidUrl(getDvidTarget());
+//  ZDvidBufferReader bufferReader;
+//  bufferReader.read(dvidUrl.getTileUrl(dataName, resLevel, xi0, yi0, z0).c_str());
+//  QByteArray buffer = bufferReader.getBuffer();
 
-  ZDvidTileInfo tileInfo = readTileInfo(dataName);
+//  ZDvidTileInfo tileInfo = readTileInfo(dataName);
 
   if (!buffer.isEmpty()) {
     tile = new ZDvidTile;
+    tile->setResolutionLevel(resLevel);
+    ZDvidTarget target = dataName;
+    tile->setDvidTarget(getDvidTarget());
+    tile->update(z0);
+    /*
     tile->loadDvidPng(buffer);
     tile->setResolutionLevel(resLevel);
     tile->setTileOffset(
           xi0 * tileInfo.getWidth(), yi0 * tileInfo.getHeight(), z0);
+          */
   }
 
   return tile;
 }
+#endif
+
 
 ZDvidTileInfo ZDvidReader::readTileInfo(const std::string &dataName) const
 {

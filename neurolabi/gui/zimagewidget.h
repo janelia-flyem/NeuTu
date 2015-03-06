@@ -130,6 +130,9 @@ protected:
 private:
   void setValidViewPortBackup(const QRect &viewPort);
   void setValidViewPort(const QRect &viewPort);
+  QRect alignViewPort(
+      const QRect &viewPort, int vx, int vy, int px, int py) const;
+  void maximizeViewPort();
 
 private:
   QImage *m_image;
