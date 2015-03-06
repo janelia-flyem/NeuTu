@@ -140,7 +140,7 @@ public:
   static double computeJsDivergence(const std::vector<double> &hist1,
                                     const std::vector<double> &hist2);
 
-  inline size_t getBinNumber() const { return m_count.size(); }
+  inline std::size_t getBinNumber() const { return m_count.size(); }
 
 private:
   double m_start;

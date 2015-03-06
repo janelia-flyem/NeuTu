@@ -2,6 +2,7 @@
 #define ZFLYEMNEURONDENSITY_H
 
 #include <vector>
+#include <string>
 
 class ZHistogram;
 
