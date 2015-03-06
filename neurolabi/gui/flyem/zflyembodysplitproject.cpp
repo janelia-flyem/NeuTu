@@ -627,14 +627,12 @@ void ZFlyEmBodySplitProject::saveSeed()
   ZDvidWriter writer;
   if (writer.open(getDvidTarget())) {
     if (jsonArray.isEmpty()) {
-      writer.deleteKey(ZDvidData::getName(ZDvidData::ROLE_SPLIT_LABEL),
-                       getSeedKey(getBodyId()));
+      writer.deleteKey(getSplitLabelName(), getSeedKey(getBodyId()));
       emit messageGenerated("All seeds deleted");
     } else {
       ZJsonObject rootObj;
       rootObj.setEntry("seeds", jsonArray);
-      writer.writeJson(ZDvidData::getName(ZDvidData::ROLE_SPLIT_LABEL),
-                       getSeedKey(getBodyId()), rootObj);
+      writer.writeJson(getSplitLabelName(), getSeedKey(getBodyId()), rootObj);
       emit messageGenerated("All seeds saved");
     }
   }
@@ -645,7 +643,7 @@ void ZFlyEmBodySplitProject::downloadSeed()
   ZDvidReader reader;
   if (reader.open(getDvidTarget())) {
     QByteArray seedData = reader.readKeyValue(
-          ZDvidData::getName(ZDvidData::ROLE_SPLIT_LABEL),
+          getSplitLabelName().c_str(),
           getSeedKey(getBodyId()).c_str());
     if (!seedData.isEmpty()) {
       ZJsonObject obj;
@@ -806,6 +804,20 @@ void ZFlyEmBodySplitProject::updateBodyMask()
   }
 }
 
+std::string ZFlyEmBodySplitProject::getSplitStatusName() const
+{
+  return ZDvidData::getName(
+        ZDvidData::ROLE_SPLIT_STATUS, ZDvidData::ROLE_BODY_LABEL,
+        getDvidTarget().getBodyLabelName());
+}
+
+std::string ZFlyEmBodySplitProject::getSplitLabelName() const
+{
+  return ZDvidData::getName(ZDvidData::ROLE_SPLIT_LABEL,
+                            ZDvidData::ROLE_BODY_LABEL,
+                            getDvidTarget().getBodyLabelName());
+}
+
 std::string ZFlyEmBodySplitProject::getSeedKey(int bodyId) const
 {
   return m_dvidTarget.getBodyLabelName() + "_seed_" + ZString::num2str(bodyId);
@@ -825,7 +837,7 @@ void ZFlyEmBodySplitProject::setSeedProcessed(int bodyId)
   if (writer.open(getDvidTarget())) {
     ZJsonObject statusJson;
     statusJson.setEntry("processed", true);
-    writer.writeJson(ZDvidData::getName(ZDvidData::ROLE_SPLIT_STATUS),
+    writer.writeJson(getSplitStatusName(),
                      getSeedKey(bodyId), statusJson);
   }
 }
@@ -837,7 +849,7 @@ bool ZFlyEmBodySplitProject::isSeedProcessed(int bodyId) const
   ZDvidReader reader;
   if (reader.open(getDvidTarget())) {
     QByteArray value = reader.readKeyValue(
-          ZDvidData::getName(ZDvidData::ROLE_SPLIT_STATUS),
+          getSplitStatusName().c_str(),
           getSeedKey(bodyId).c_str());
 
     if (!value.isEmpty()) {

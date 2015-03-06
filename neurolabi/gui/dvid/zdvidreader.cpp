@@ -782,6 +782,15 @@ bool ZDvidReader::hasSparseVolume() const
   //return hasData(ZDvidData::getName(ZDvidData::ROLE_SP2BODY));
 }
 
+bool ZDvidReader::hasSparseVolume(int bodyId) const
+{
+  ZDvidBufferReader bufferReader;
+  ZDvidUrl dvidUrl(m_dvidTarget);
+
+  return  bufferReader.isReadable(
+        dvidUrl.getSparsevolUrl(bodyId, getDvidTarget().getBodyLabelName()).c_str());
+}
+
 bool ZDvidReader::hasBodyInfo(int bodyId) const
 {
   ZDvidUrl dvidUrl(m_dvidTarget);

@@ -15842,4 +15842,17 @@ void ZTest::test(MainWindow *host)
     outStream.close();
   }
 #endif
+
+#if 1
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "628");
+  target.setBodyLabelName("segmentation030115");
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  std::cout << reader.hasSparseVolume(1) << std::endl;
+//  reader.has
+
+#endif
 }

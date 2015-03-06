@@ -6315,6 +6315,8 @@ bool MainWindow::initBodySplitProject()
       } else {
         m_bodySplitProjectDialog->dump(
               QString("Cannot load body %1").arg(bodyId));
+        m_bodySplitProjectDialog->setBodyId(-1);
+        m_bodySplitProjectDialog->updateWidget();
       }
     }
   }

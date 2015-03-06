@@ -79,6 +79,7 @@ public:
                        int width, int height, int depth) const;
 
   bool hasSparseVolume() const;
+  bool hasSparseVolume(int bodyId) const;
   bool hasBodyInfo(int bodyId) const;
 
   ZFlyEmNeuronBodyInfo readBodyInfo(int bodyId);

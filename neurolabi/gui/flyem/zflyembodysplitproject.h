@@ -77,6 +77,9 @@ public:
     m_showingBodyMask = state;
   }
 
+  std::string getSplitStatusName() const;
+  std::string getSplitLabelName() const;
+
   std::string getSeedKey(int bodyId) const;
   bool isSeedProcessed(int bodyId) const;
   void setSeedProcessed(int bodyId);

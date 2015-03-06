@@ -258,17 +258,23 @@ void FlyEmBodySplitProjectDialog::setLoadBodyDialog(
 
 bool FlyEmBodySplitProjectDialog::loadBody()
 {
+  int bodyId = ui->bodyIdSpinBox->value();
+  ZDvidReader reader;
+  if (reader.open(getDvidTarget())) {
+    if (reader.hasSparseVolume(bodyId)) {
  // if (m_loadBodyDlg->exec()) {
-    //setDvidTarget(m_loadBodyDlg->getDvidTarget());
-    setBodyId(ui->bodyIdSpinBox->value());
+      //setDvidTarget(m_loadBodyDlg->getDvidTarget());
+      setBodyId(bodyId);
 
-    //updateSideView();;
-    updateWidget();
-    updateSideView();
+      //updateSideView();;
+      updateWidget();
+      updateSideView();
 
-    dump("Body loaded.");
+      dump("Body loaded.");
 
-    return showData2d();
+      return showData2d();
+    }
+  }
   //}
 }
 
