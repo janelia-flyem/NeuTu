@@ -20,6 +20,7 @@
 #include "flyemneuronthumbnaildialog.h"
 #include "zstackdoc.h"
 #include "newprojectmainwindow.h"
+#include "zqtbarprogressreporter.h"
 
 class ZStackFrame;
 class QMdiArea;
@@ -61,6 +62,7 @@ class ZStackViewManager;
 class ZFlyEmProjectManager;
 class ZFlyEmDataLoader;
 class ZFlyEmHackathonConfigDlg;
+class ZProgressManager;
 
 namespace Ui {
   class MainWindow;
@@ -189,6 +191,7 @@ protected:
   void createActionMap();
 
   ZStackDocReader* openFileFunc(const QString &filePath);
+  void runSplitFunc(ZStackFrame *frame);
 
 private slots:
   // slots for 'File' menu
@@ -645,6 +648,9 @@ private:
 
   //QSettings m_settings;
   QString m_version;
+
+  ZProgressManager *m_progressManager;
+  ZQtBarProgressReporter m_specialProgressReporter;
 
   //ZStackDocReader *m_docReader;
 };

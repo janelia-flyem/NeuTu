@@ -156,6 +156,7 @@
 #include "zflyemdataloader.h"
 #include "flyem/zflyemhackathonconfigdlg.h"
 #include "flyem/zflyemmisc.h"
+#include "zprogressmanager.h"
 
 #include "z3dcanvas.h"
 #include "z3dapplication.h"
@@ -283,6 +284,10 @@ MainWindow::MainWindow(QWidget *parent) :
 
   m_stackViewManager = new ZStackViewManager(this);
   m_flyemDataLoader = new ZFlyEmDataLoader(this);
+
+  m_progressManager = new ZProgressManager(this);
+  m_specialProgressReporter.setProgressBar(getProgressBar());
+  m_progressManager->setProgressReporter(&m_specialProgressReporter);
 }
 
 MainWindow::~MainWindow()
@@ -322,6 +327,7 @@ void MainWindow::initDialog()
   m_movieDlg = new MovieDialog(this);
 
   m_progress = new QProgressDialog(this);
+  m_progress->setRange(0, 100);
   m_progress->setWindowModality(Qt::WindowModal);
   m_progress->setAutoClose(true);
   //m_progress->setWindowFlags(Qt::Dialog|Qt::WindowStaysOnTopHint);
@@ -1421,15 +1427,19 @@ ZStackDocReader* MainWindow::openFileFunc(const QString &fileName)
 
   if (ZFileType::isNeutubeOpenable(fileType)) {
     reader = new ZStackDocReader;
+    //m_progressManager->notifyProgressAdvanced(0.2);
     emit progressAdvanced(0.2);
     if (reader->readFile(fileName) == false) {
       delete reader;
       reader = NULL;
     }
     emit progressAdvanced(0.3);
+   // m_progressManager->notifyProgressAdvanced(0.3);
   }
 
   emit docReaderReady(reader);
+
+  //m_progressManager->notifyProgressEnded();
 
   return reader;
 }
@@ -1444,7 +1454,7 @@ void MainWindow::openFile(const QStringList &fileNameList)
     m_progress->show();
     QFuture<ZStackDocReader*> res =
         QtConcurrent::run(this, &MainWindow::openFileFunc, fileName);
-    res.waitForFinished();
+   // res.waitForFinished();
   }
 }
 
@@ -5981,15 +5991,25 @@ void MainWindow::on_actionSubmit_Skeletonize_triggered()
   }
 }
 
+void MainWindow::runSplitFunc(ZStackFrame *frame)
+{
+//  emit progressAdvanced(0.3);
+  frame->runSeededWatershed();
+  emit progressDone();
+}
+
 void MainWindow::on_actionSplit_Region_triggered()
 {
   if (GET_APPLICATION_NAME == "FlyEM") {
     ZStackFrame *frame = currentStackFrame();
     if (frame != NULL) {
+      initProgress(0);
       m_progress->setLabelText("Splitting ...");
-      m_progress->setRange(0, 0);
       m_progress->open();
-      frame->runSeededWatershed();
+
+      QtConcurrent::run(this, &MainWindow::runSplitFunc, frame);
+
+      //frame->runSeededWatershed();
       /*
     if (stack != NULL) {
       ZStackFrame *frame = createStackFrame(stack);
@@ -5997,7 +6017,7 @@ void MainWindow::on_actionSplit_Region_triggered()
       presentStackFrame(frame);
     }
 */
-      m_progress->reset();
+      //m_progress->reset();
     }
   }
 }
@@ -6014,8 +6034,8 @@ void MainWindow::on_actionLoad_Body_with_Grayscale_triggered()
     ZDvidTarget dvidTarget = m_dvidDlg->getDvidTarget();
 
     if (m_bodyDlg->exec()) {
+      initProgress(0);
       m_progress->setLabelText("Loading ...");
-      m_progress->setRange(0, 0);
       m_progress->open();
 
       ZDvidReader reader;
