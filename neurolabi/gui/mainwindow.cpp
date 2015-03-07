@@ -6007,8 +6007,11 @@ void MainWindow::on_actionSplit_Region_triggered()
       m_progress->setLabelText("Splitting ...");
       m_progress->open();
 
+#if defined(_NEUTUBE_MAC_)
+      runSplitFunc(frame); //Avoid potential bug in QtConcurrent
+#else
       QtConcurrent::run(this, &MainWindow::runSplitFunc, frame);
-
+#endif
       //frame->runSeededWatershed();
       /*
     if (stack != NULL) {

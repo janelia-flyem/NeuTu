@@ -12,7 +12,8 @@ public:
   ZDvidData();
 
   enum ERole {
-    ROLE_GRAY_SCALE, ROLE_BODY_LABEL, ROLE_ROI_CURVE, ROLE_BODY_ANNOTATION,
+    ROLE_GRAY_SCALE, ROLE_BODY_LABEL, ROLE_LABEL_BLOCK, ROLE_ROI_CURVE,
+    ROLE_BODY_ANNOTATION,
     ROLE_BOUND_BOX, ROLE_SKELETON, ROLE_THUMBNAIL, ROLE_SUPERPIXEL,
     ROLE_SP2BODY, ROLE_SPARSEVOL, ROLE_SPARSEVOL_COARSE,
     ROLE_SPLIT_LABEL, ROLE_SPLIT_STATUS,
@@ -52,6 +53,7 @@ private:
   static const char *m_bodyInfoName;
   static const char *m_mergeTestBodyLabelName;
   static const char *m_maxBodyIdName;
+  static const char *m_labelBlockName;
 
   static const char *m_keyValueTypeName;
 

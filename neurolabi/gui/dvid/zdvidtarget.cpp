@@ -13,6 +13,7 @@ const char* ZDvidTarget::m_localKey = "local";
 const char* ZDvidTarget::m_debugKey = "debug";
 const char* ZDvidTarget::m_bgValueKey = "background";
 const char* ZDvidTarget::m_bodyLabelNameKey = "body_label";
+const char* ZDvidTarget::m_labelBlockNameKey = "label_block";
 
 ZDvidTarget::ZDvidTarget() : m_port(-1), m_bgValue(255)
 {
@@ -166,6 +167,9 @@ void ZDvidTarget::loadJsonObject(const ZJsonObject &obj)
     if (obj.hasKey(m_bodyLabelNameKey)) {
       m_bodyLabelName = ZJsonParser::stringValue(obj[m_bodyLabelNameKey]);
     }
+    if (obj.hasKey(m_labelBlockNameKey)) {
+      m_labelBlockName = ZJsonParser::stringValue(obj[m_labelBlockNameKey]);
+    }
   }
 }
 
@@ -223,6 +227,20 @@ std::string ZDvidTarget::getBodyLabelName() const
   }
 
   return m_bodyLabelName;
+}
+
+std::string ZDvidTarget::getLabelBlockName() const
+{
+  if (m_labelBlockName.empty()) {
+    return ZDvidData::getName(ZDvidData::ROLE_LABEL_BLOCK);
+  }
+
+  return m_labelBlockName;
+}
+
+void ZDvidTarget::setLabelBlockName(const std::string &name)
+{
+  m_labelBlockName = name;
 }
 
 void ZDvidTarget::setBodyLabelName(const std::string &name)

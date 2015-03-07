@@ -91,7 +91,7 @@ void ZFlyEmBodyMergeProject::loadSliceFunc(
             x0, y0, z, width, height, 1);
 #else
       ZArray *array = reader.readLabels64(
-            m_dvidTarget.getBodyLabelName(),
+            m_dvidTarget.getLabelBlockName(),
             //ZDvidData::getName(ZDvidData::ROLE_BODY_LABEL),
             x0, y0, z, width, height, 1);
 #endif
@@ -361,17 +361,19 @@ void ZFlyEmBodyMergeProject::update3DBodyView(const ZStackObjectSelector &select
       ZObject3dScan *sparseObject = dynamic_cast<ZObject3dScan*>(obj);
       if (sparseObject != NULL) {
         uint64_t label = sparseObject->getLabel();
-        tic();
-        ZObject3dScan body = reader.readCoarseBody(label);
-        ptoc();
-        body.setColor(sparseObject->getColor());
-        body.setAlpha(255);
 //        tic();
-        ZSwcTree *tree = ZSwcGenerator::createSurfaceSwc(body);
-        tree->setSource(ZStackObjectSourceFactory::MakeFlyEmBodySource(label));
+        ZObject3dScan body = reader.readCoarseBody(label);
 //        ptoc();
+        if (!body.isEmpty()) {
+          body.setColor(sparseObject->getColor());
+          body.setAlpha(255);
+          //        tic();
+          ZSwcTree *tree = ZSwcGenerator::createSurfaceSwc(body);
+          tree->setSource(ZStackObjectSourceFactory::MakeFlyEmBodySource(label));
+          //        ptoc();
 
-        m_bodyWindow->getDocument()->addSwcTree(tree, true);
+          m_bodyWindow->getDocument()->addSwcTree(tree, true);
+        }
       }
     }
 

@@ -275,6 +275,8 @@ bool FlyEmBodySplitProjectDialog::loadBody()
       return showData2d();
     }
   }
+
+  return false;
   //}
 }
 

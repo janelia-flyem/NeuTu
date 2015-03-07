@@ -135,6 +135,9 @@ public:
   std::string getBodyLabelName() const;
   void setBodyLabelName(const std::string &name);
 
+  std::string getLabelBlockName() const;
+  void setLabelBlockName(const std::string &name);
+
 private:
   std::string m_address;
   std::string m_uuid;
@@ -143,6 +146,7 @@ private:
   std::string m_comment;
   std::string m_localFolder;
   std::string m_bodyLabelName;
+  std::string m_labelBlockName;
   int m_bgValue; //grayscale background
 
   const static char* m_addressKey;
@@ -154,6 +158,7 @@ private:
   const static char* m_debugKey;
   const static char* m_bgValueKey;
   const static char* m_bodyLabelNameKey;
+  const static char* m_labelBlockNameKey;
 };
 
 #endif // ZDVIDTARGET_H
