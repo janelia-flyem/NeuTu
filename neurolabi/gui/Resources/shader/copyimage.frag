@@ -24,5 +24,5 @@ void main()
 
   FragData0 = fragColor;
 
-  gl_FragDepth = texture(depth_texture, texCoords).z;
+  gl_FragDepth = texture(depth_texture, texCoords).r;
 }

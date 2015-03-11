@@ -147,8 +147,8 @@ void Z3DImage2DRenderer::compile()
 void Z3DImage2DRenderer::initialize()
 {
   Z3DPrimitiveRenderer::initialize();
-  m_image2DShader.loadFromSourceFile("transform_with_2dtexture.vert", "image2d.frag", generateHeader());
   m_image2DShader.bindFragDataLocation(0, "FragData0");
+  m_image2DShader.loadFromSourceFile("transform_with_2dtexture.vert", "image2d.frag", generateHeader());
 }
 
 void Z3DImage2DRenderer::deinitialize()

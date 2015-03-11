@@ -19,9 +19,9 @@ void Z3DTextureCoordinateRenderer::compile()
 void Z3DTextureCoordinateRenderer::initialize()
 {
   Z3DPrimitiveRenderer::initialize();
+  m_renderTextureCoordinateShader.bindFragDataLocation(0, "FragData0");
   m_renderTextureCoordinateShader.loadFromSourceFile("transform_with_3dtexture.vert",
                                                      "render_3dtexture_coordinate.frag", generateHeader());
-  m_renderTextureCoordinateShader.bindFragDataLocation(0, "FragData0");
 
   glGenBuffers(m_VBOs.size(), &m_VBOs[0]);
 }

@@ -420,5 +420,5 @@ SOURCES +=$${PWD}/zstackprocessor.cpp \
    $${PWD}/zinthistogram.cpp \
    $${PWD}/flyem/zflyemneuroninfo.cpp \
    $${PWD}/zscalablestack.cpp \
-    flyem/zflyemneurondensity.cpp \
-    flyem/zflyemneurondensitymatcher.cpp
+   $${PWD}/flyem/zflyemneurondensity.cpp \
+   $${PWD}/flyem/zflyemneurondensitymatcher.cpp

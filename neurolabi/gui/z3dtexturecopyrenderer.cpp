@@ -19,8 +19,8 @@ void Z3DTextureCopyRenderer::compile()
 void Z3DTextureCopyRenderer::initialize()
 {
   Z3DPrimitiveRenderer::initialize();
-  m_copyTextureShader.loadFromSourceFile("pass.vert", "copyimage.frag", generateHeader());
   m_copyTextureShader.bindFragDataLocation(0, "FragData0");
+  m_copyTextureShader.loadFromSourceFile("pass.vert", "copyimage.frag", generateHeader());
 }
 
 void Z3DTextureCopyRenderer::deinitialize()
