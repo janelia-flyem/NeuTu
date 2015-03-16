@@ -124,6 +124,15 @@ void FlyEmBodySplitProjectDialog::createMenu()
   connect(m_showBodyMaskAction, SIGNAL(triggered(bool)),
           this, SLOT(showBodyMask(bool)));
 
+  QAction *removeBookmarkAction = new QAction("Remove All Bookmarks", this);
+  m_mainMenu->addAction(removeBookmarkAction);
+  connect(removeBookmarkAction, SIGNAL(triggered()),
+          this, SLOT(removeAllBookmark()));
+
+  QAction *exportSplitAction = new QAction("Export splits", this);
+  m_mainMenu->addAction(exportSplitAction);
+  connect(exportSplitAction, SIGNAL(triggered()), this, SLOT(exportSplits()));
+
   QMenu *batchMenu = m_mainMenu->addMenu("Batch");
   QAction *allSeedSummaryAction = new QAction("Check Work Progress", this);
   batchMenu->addAction(allSeedSummaryAction);
@@ -692,6 +701,17 @@ void FlyEmBodySplitProjectDialog::showBodyMask(bool on)
   m_project.updateBodyMask();
 }
 
+void FlyEmBodySplitProjectDialog::removeAllBookmark()
+{
+  m_project.removeAllBookmark();
+  updateWidget();
+}
+
+void FlyEmBodySplitProjectDialog::exportSplits()
+{
+  m_project.exportSplits();
+}
+
 void FlyEmBodySplitProjectDialog::checkAllSeed()
 {
   ZDvidReader reader;
@@ -700,7 +720,7 @@ void FlyEmBodySplitProjectDialog::checkAllSeed()
     //int maxId = reader.readMaxBodyId();
 
     QStringList keyList = reader.readKeys(
-          ZDvidData::getName(ZDvidData::ROLE_SPLIT_LABEL),
+          m_project.getSplitLabelName().c_str(),
           m_project.getSeedKey(0).c_str(),
           (m_project.getSeedKey(9) + "a").c_str());
     emit messageDumped("<i>Work summary</i>: ");
@@ -744,7 +764,7 @@ void FlyEmBodySplitProjectDialog::processAllSeed()
     //int maxId = reader.readMaxBodyId();
 
     QStringList keyList = reader.readKeys(
-          ZDvidData::getName(ZDvidData::ROLE_SPLIT_LABEL),
+          m_project.getSplitLabelName().c_str(),
           m_project.getSeedKey(0).c_str(),
           (m_project.getSeedKey(9) + "a").c_str());
 

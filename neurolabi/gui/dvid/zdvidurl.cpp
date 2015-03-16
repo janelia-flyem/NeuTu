@@ -391,6 +391,15 @@ std::string ZDvidUrl::getMergeUrl(const std::string &dataName) const
   return getDataUrl(dataName) + "/merge";
 }
 
+std::string ZDvidUrl::getSplitUrl(
+    const std::string &dataName, uint64_t originalLabel) const
+{
+  std::ostringstream stream;
+  stream << getDataUrl(dataName) << "/" << originalLabel;
+
+  return stream.str();
+}
+
 std::string ZDvidUrl::getMaxBodyIdUrl() const
 {
   return getKeyUrl(ZDvidData::getName(ZDvidData::ROLE_MAX_BODY_ID),
@@ -424,4 +433,19 @@ std::string ZDvidUrl::getTileUrl(
   url.appendNumber(z0);
 
   return url;
+}
+
+std::string ZDvidUrl::getRepoInfoUrl() const
+{
+  return getApiUrl() + "/repos/info";
+}
+
+std::string ZDvidUrl::getLockUrl() const
+{
+  return getNodeUrl() + "/lock";
+}
+
+std::string ZDvidUrl::getBranchUrl() const
+{
+  return getNodeUrl() + "/branch";
 }

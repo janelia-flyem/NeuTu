@@ -29,6 +29,8 @@
 #include "tz_arrayview.h"
 #include "tz_file_list.h"
 #include "tz_stack_threshold.h"
+#include "tz_stack_bwmorph.h"
+#include "tz_stack_io.h"
 
 INIT_EXCEPTION_MAIN(e)
 
@@ -1687,10 +1689,41 @@ int main(int argc, char *argv[])
   Write_Stack("../data/test.tif", stack);
 #endif
 
-#if 1
+#if 0
   Stack *stack = Make_Stack(GREY, 100, 100, 100);
   draw_sphere(stack, 0, 30, 50, 50, 50);
   Write_Stack("../data/benchmark/ball.tif", stack);
+#endif
+
+#if 1
+  Stack *stack = Make_Stack(GREY, 200, 200, 100);
+  draw_sphere(stack, 0, 20, 100, 100, 20);
+  draw_sphere(stack, 0, 40, 90, 90, 70);
+  draw_sphere(stack, 0, 30, 120, 120, 50);
+
+  Stack *dist = Stack_Bwdist_L(stack, NULL, NULL);
+  Print_Stack_Info(dist);
+
+  stack = Scale_Float_Stack((float*) dist->array, dist->width, dist->height,
+      dist->depth, GREY);
+
+  double mu = 10.0;
+  size_t nvoxel = Stack_Voxel_Number(stack);
+  size_t i;
+  for (i = 0; i < nvoxel; i++) {
+    unsigned int noise = Poissonrnd(mu);
+
+    if (stack->array[i] > 0) {
+      noise += stack->array[i] + 50;
+      if (noise > 255) {
+        noise = 255;
+      }
+      stack->array[i] = noise;
+    }
+  }
+
+
+  Write_Stack("../data/benchmark/multi_ball.tif", stack);
 #endif
 
   return 0;

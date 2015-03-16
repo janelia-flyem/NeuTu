@@ -243,7 +243,21 @@ void ZDvidTarget::setLabelBlockName(const std::string &name)
   m_labelBlockName = name;
 }
 
+std::string ZDvidTarget::getMultiscale2dName() const
+{
+  if (m_multiscale2dName.empty()) {
+    return ZDvidData::getName(ZDvidData::ROLE_MULTISCALE_2D);
+  }
+
+  return m_multiscale2dName;
+}
+
 void ZDvidTarget::setBodyLabelName(const std::string &name)
 {
   m_bodyLabelName = name;
+}
+
+void ZDvidTarget::setMultiscale2dName(const std::string &name)
+{
+  m_multiscale2dName = name;
 }

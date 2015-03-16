@@ -126,6 +126,8 @@ public:
   bool hasSelected() const;
   bool hasSelected(ZStackObject::EType type) const;
 
+  QList<ZStackObject::EType> getAllType() const;
+
 private:
   bool remove_p(TStackObjectSet &objSet, ZStackObject *obj);
 

@@ -901,6 +901,13 @@ TEST_F(ZObject3dScanTestF1, Slice)
 
   ZObject3dScan slice = obj.getSlice(0);
   EXPECT_EQ(3, (int) slice.getVoxelNumber());
+
+  slice = obj.getSlice(1);
+  EXPECT_EQ(5, (int) slice.getVoxelNumber());
+
+  slice = obj.getSlice(2);
+  EXPECT_EQ(3, (int) slice.getVoxelNumber());
+
   slice = obj.getSlice(0, 1);
   EXPECT_EQ(8, (int) slice.getVoxelNumber());
 

@@ -33,7 +33,7 @@ void ZTree<T>::clear()
 
 
 template <typename T>
-bool ZTree<T>::isEmpty()
+bool ZTree<T>::isEmpty() const
 {
   return m_root == NULL;
 }

@@ -21,6 +21,7 @@
 #include "zstackdoc.h"
 #include "newprojectmainwindow.h"
 #include "zqtbarprogressreporter.h"
+#include "zmessageprocessor.h"
 
 class ZStackFrame;
 class QMdiArea;
@@ -63,6 +64,8 @@ class ZFlyEmProjectManager;
 class ZFlyEmDataLoader;
 class ZFlyEmHackathonConfigDlg;
 class ZProgressManager;
+class ZMessageManager;
+class ZTestDialog;
 
 namespace Ui {
   class MainWindow;
@@ -81,6 +84,11 @@ public:
   void configure();
 
   void initOpenglContext();
+
+  class MessageProcessor : public ZMessageProcessor {
+  public:
+    void processMessage(ZMessage *message, QWidget *host) const;
+  };
 
 public: /* frame operation */
   ZStackFrame* activeStackFrame();
@@ -652,6 +660,8 @@ private:
   ZProgressManager *m_progressManager;
   ZQtBarProgressReporter m_specialProgressReporter;
 
+  ZMessageManager *m_messageManager;
+  ZTestDialog *m_testDlg;
   //ZStackDocReader *m_docReader;
 };
 

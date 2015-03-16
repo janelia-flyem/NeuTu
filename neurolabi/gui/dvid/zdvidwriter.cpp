@@ -1,7 +1,9 @@
 #include "zdvidwriter.h"
+#include <iostream>
 #include <QProcess>
 #include <QDebug>
 #include <QFile>
+#include <QDir>
 
 #include "neutubeconfig.h"
 #include "flyem/zflyemneuron.h"
@@ -11,6 +13,7 @@
 #include "dvid/zdviddata.h"
 #include "dvid/zdvidreader.h"
 #include "flyem/zflyemneuronbodyinfo.h"
+#include "zerror.h"
 
 #if _ENABLE_LIBDVID_
 #include "DVIDNode.h"
@@ -252,6 +255,7 @@ void ZDvidWriter::writeJsonString(
   QProcess::execute(command);
 }
 
+
 void ZDvidWriter::writeJson(const std::string url, const ZJsonValue &value)
 {
   writeJsonString(url, value.dumpString(0));
@@ -267,11 +271,12 @@ void ZDvidWriter::mergeBody(const std::string &dataName,
     jsonArray.append(*iter);
   }
 
+  /*
   ZJsonArray mergeArray(json_array(), ZJsonValue::SET_AS_IT_IS);
   mergeArray.append(jsonArray);
-
+*/
   ZDvidUrl dvidUrl(m_dvidTarget);
-  writeJson(dvidUrl.getMergeUrl(dataName), mergeArray);
+  writeJson(dvidUrl.getMergeUrl(dataName), jsonArray);
 }
 
 void ZDvidWriter::writeBoundBox(const ZIntCuboid &cuboid, int z)
@@ -391,4 +396,79 @@ void ZDvidWriter::writeMaxBodyId(int bodyId)
   idJson.setEntry("max_body_id", bodyId);
   ZDvidUrl dvidUrl(m_dvidTarget);
   writeJson(dvidUrl.getMaxBodyIdUrl(), idJson);
+}
+
+bool ZDvidWriter::lockNode(const std::string &message)
+{
+  ZJsonObject messageJson;
+  ZJsonArray messageArrayJson;
+  messageArrayJson.append(message);
+  messageJson.setEntry("log", messageArrayJson);
+
+  QString command = QString(
+        "curl -g -X POST -H \"Content-Type: application/json\" "
+        "-d \"%1\" %2").arg(getJsonStringForCurl(messageJson).c_str()).
+      arg(ZDvidUrl(m_dvidTarget).getLockUrl().c_str());
+
+  qDebug() << command;
+
+  QProcess::execute(command);
+
+  return true;
+}
+
+std::string ZDvidWriter::createBranch()
+{
+  std::string uuid;
+
+  QProcess process;
+
+  QString command = QString("curl -X POST %21").
+      arg(ZDvidUrl(m_dvidTarget).getBranchUrl().c_str());
+  process.start(command);
+  if (!process.waitForFinished(-1)) {
+    RECORD_ERROR_UNCOND(process.errorString().toStdString());
+  } else {
+    QByteArray buffer = process.readAllStandardOutput();
+
+#ifdef _DEBUG_
+    std::cout << QString(buffer.data()).toStdString() << std::endl;
+#endif
+
+    ZJsonObject obj;
+    obj.decodeString(buffer.data());
+
+    if (obj.hasKey("child")) {
+      uuid = ZJsonParser::stringValue(obj["child"]);
+    }
+  }
+
+  return uuid;
+}
+
+void ZDvidWriter::writeSplit(
+    const std::string &dataName, const ZObject3dScan &obj,
+    uint64_t oldLabel, uint64_t label)
+{
+  //POST <api URL>/node/<UUID>/<data name>/split/<label>
+  QString tmpPath = QString("%1/%2_%3.dvid").
+      //arg((GET_TEST_DATA_DIR + "/backup").c_str()).
+      arg(NeutubeConfig::getInstance().getPath(NeutubeConfig::TMP_DATA).c_str()).
+      arg(oldLabel).arg(label);
+
+  obj.exportDvidObject(tmpPath.toStdString());
+
+#ifdef _DEBUG_
+  std::cout << tmpPath.toStdString() + " saved" << std::endl;
+#endif
+
+  QString command = QString(
+        "curl -X POST %1 --data-binary \"@%2\"").
+      arg(ZDvidUrl(m_dvidTarget).getSplitUrl(dataName, oldLabel).c_str()).
+      arg(tmpPath);
+
+  qDebug() << command;
+
+  QProcess::execute(command);
+
 }

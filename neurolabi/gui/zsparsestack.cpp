@@ -67,7 +67,7 @@ bool ZSparseStack::isDeprecated(EComponent component) const
 void ZSparseStack::assignStackValue(
     ZStack *stack, const ZObject3dScan &obj, const ZStackBlockGrid &stackGrid)
 {
-  if (stackGrid.isEmpty()) {
+  if (stackGrid.isEmpty() || stackGrid.getStackArray().empty()) {
     for (size_t i = 0; i < obj.getStripeNumber(); ++i) {
       const ZObject3dStripe &stripe = obj.getStripe(i);
       int y = stripe.getY();

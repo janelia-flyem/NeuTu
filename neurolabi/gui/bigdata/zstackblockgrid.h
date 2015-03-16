@@ -48,6 +48,10 @@ public:
     return m_stackArray;
   }
 
+  inline const std::vector<ZStack*>& getStackArray() const {
+    return m_stackArray;
+  }
+
 private:
   std::vector<ZStack*> m_stackArray;
 };

@@ -236,6 +236,7 @@ using namespace std;
 #include "flyem/zflyemneuronbodyinfo.h"
 #include "flyem/zflyemneurondensitymatcher.h"
 #include "flyem/zflyemneurondensity.h"
+#include "dvid/zdvidversiondag.h"
 
 using namespace std;
 
@@ -15738,7 +15739,7 @@ void ZTest::test(MainWindow *host)
   pt.print();
 #endif
 
-#if 1
+#if 0
   ZPoint pt;
   pt.set(-0.164321, -0.138413, 0.976647);
   double theta, psi;
@@ -15843,16 +15844,191 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
-#if 1
+#if 0
   ZDvidTarget target;
   target.set("emdata2.int.janelia.org", "628");
   target.setBodyLabelName("segmentation030115");
+  //std::cout << reader.hasSparseVolume(1) << std::endl;
+  //  reader.has
+#endif
+
+#if 0
+  ZStackFrame *frame = new ZStackFrame;
+  ZStack *stack = ZStackFactory::makeVirtualStack(
+        ZIntCuboid(0, 0, 0, 6445, 6642, 8089));
+
+  frame->loadStack(stack);
+
+  ZDvidTarget target;
+  target.set("http://emrecon100.janelia.priv", "2a3", -1);
 
   ZDvidReader reader;
   reader.open(target);
 
-  std::cout << reader.hasSparseVolume(1) << std::endl;
-//  reader.has
 
+  ZDvidTile *tile = reader.readTile(3, 0, 0, 6000);
+  tile->setDvidTarget(target);
+  tile->printInfo();
+
+  frame->document()->addObject(tile);
+
+  tile = reader.readTile(3, 0, 1, 6000);
+  frame->document()->addObject(tile);
+
+  tile = reader.readTile(3, 1, 0, 6000);
+  frame->document()->addObject(tile);
+
+  tile = reader.readTile(3, 1, 1, 6000);
+  frame->document()->addObject(tile);
+
+//  frame->load(GET_TEST_DATA_DIR + "/benchmark/em_stack.tif");
+  host->addStackFrame(frame);
+  host->presentStackFrame(frame);
+#endif
+
+#if 0
+  ZObject3dScan obj;
+  obj.importDvidObject("/private/var/folders/bj/5d0p7tjx4jv12yzf0458g5fxf4nm2r/T/50000003.dvid");
+
+  std::cout << obj.getVoxelNumber() << std::endl;
+
+  obj.save(GET_TEST_DATA_DIR + "/test.sobj");
+
+#endif
+
+#if 0
+  ZObject3dScan obj;
+  obj.load(GET_TEST_DATA_DIR + "/backup/segmentation030115_seed_10492041.sobj");
+
+  ZObject3dScan objArray[4];
+//  objArray[0].importDvidObject(GET_TEST_DATA_DIR + "/backup/10492041_50000001.dvid");
+//  objArray[1].importDvidObject(GET_TEST_DATA_DIR + "/backup/10492041_50000002.dvid");
+//  objArray[2].importDvidObject(GET_TEST_DATA_DIR + "/backup/10492041_50000003.dvid");
+//  objArray[3].importDvidObject(GET_TEST_DATA_DIR + "/backup/10492041_50000004.dvid");
+
+  objArray[0].load("/private/var/folders/bj/5d0p7tjx4jv12yzf0458g5fxf4nm2r/T/body_10492041_1.sobj");
+  objArray[1].load("/private/var/folders/bj/5d0p7tjx4jv12yzf0458g5fxf4nm2r/T/body_10492041_2.sobj");
+  objArray[2].load("/private/var/folders/bj/5d0p7tjx4jv12yzf0458g5fxf4nm2r/T/body_10492041_3.sobj");
+  objArray[3].load("/private/var/folders/bj/5d0p7tjx4jv12yzf0458g5fxf4nm2r/T/body_10492041_4.sobj");
+
+
+  obj.subtract(objArray[0]);
+  obj.subtract(objArray[1]);
+  obj.subtract(objArray[2]);
+  obj.subtract(objArray[3]);
+
+
+//  ZObject3dScan remained = obj.subtract(obj2);
+
+
+  std::cout << obj.getVoxelNumber() << std::endl;
+
+  std::vector<ZObject3dScan> compArray = obj.getConnectedComponent();
+
+  std::cout << compArray.size() << " components" << std::endl;
+
+  obj.save(GET_TEST_DATA_DIR + "/test.sobj");
+
+  obj.subtract(compArray[0]);
+
+  //std::cout << compArray[0].getVoxelNumber() + compArray[1].getVoxelNumber() << std::endl;
+
+//  obj.save(GET_TEST_DATA_DIR + "/test.sobj");
+
+  ZObject3dScan wholeObj;
+  wholeObj.load(GET_TEST_DATA_DIR + "/backup/segmentation030115_seed_10492041.sobj");
+
+  ZObject3dScan wholeObj2;
+  for (size_t i = 0; i < 4; ++i) {
+    wholeObj2.concat(objArray[i]);
+  }
+
+  for (size_t i= 0; i < compArray.size(); ++i) {
+    wholeObj2.concat(compArray[i]);
+  }
+
+  std::cout << wholeObj.getVoxelNumber() << std::endl;
+  std::cout << wholeObj2.getVoxelNumber() << std::endl;
+
+  wholeObj2.canonize();
+  std::cout << wholeObj.equalsLiterally(wholeObj2) << std::endl;
+
+//  std::cout << obj2.getVoxelNumber() << std::endl;
+//  std::cout << remained.getVoxelNumber() << std::endl;
+#endif
+
+#if 0
+  ZFileList fileList;
+  fileList.load(GET_TEST_DATA_DIR + "/backup", "dvid");
+
+  ZString outputDir = GET_TEST_DATA_DIR + "/backup/splits";
+
+  for (int i = 0; i < fileList.size(); ++i) {
+    std::string filePath = fileList.getFilePath(i);
+    std::cout << filePath << std::endl;
+
+    ZObject3dScan obj;
+    obj.importDvidObject(filePath);
+
+    size_t voxelNumber = obj.getVoxelNumber();
+    std::vector<ZObject3dScan> objArray = obj.getConnectedComponent();
+
+    std::cout << objArray.size() << " components" << std::endl;
+
+    size_t checkVoxelNumber = 0;
+    int index = 1;
+    for (std::vector<ZObject3dScan>::const_iterator iter = objArray.begin();
+         iter != objArray.end(); ++iter, ++index) {
+      const ZObject3dScan &subobj = *iter;
+      checkVoxelNumber += subobj.getVoxelNumber();
+
+      ZString outputPath =
+          outputDir + "/" +
+          ZString::removeFileExt(ZString::getBaseName(filePath)) + "_";
+      outputPath.appendNumber(index, 3);
+      outputPath += ".dvid";
+      subobj.exportDvidObject(outputPath);
+    }
+
+    if (voxelNumber != checkVoxelNumber) {
+      std::cout << voxelNumber << " " << checkVoxelNumber << std::endl;
+      std::cout << "unmathced sizes" << std::endl;
+      return;
+    }
+
+  }
+
+#endif
+
+#if 0
+  ZDvidVersionDag dag;
+  dag.setRoot("root");
+  dag.addNode("v1", "root");
+  dag.addNode("v2", "root");
+  dag.addNode("v3", "v1");
+  dag.addNode("v3", "v2");
+  dag.addNode("v4", "v3");
+  dag.addNode("v5", "v4");
+  dag.addNode("v4", "v5");
+
+  dag.print();
+
+  std::cout << dag.getChild("root", 0) << std::endl;
+  std::cout << dag.getChild("root", 1) << std::endl;
+  std::cout << dag.getParentList("v3").size() << std::endl;
+
+  ZDvidVersionDag dag2;
+  dag2 = dag;
+  dag2.print();
+
+#endif
+
+#if 1
+  ZDvidTarget target("emdata1.int.janelia.org", "cf6e", 7000);
+  ZDvidReader reader;
+  reader.open(target);
+
+  ZDvidVersionDag dag = reader.readVersionDag();
+  dag.print();
 #endif
 }

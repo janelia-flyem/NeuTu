@@ -1753,7 +1753,7 @@ std::vector<ZObject3dScan> ZObject3dScan::getConnectedComponent()
   return objArray;
 }
 
-size_t ZObject3dScan::getSegmentNumber()
+size_t ZObject3dScan::getSegmentNumber() const
 {
   const std::vector<size_t>& accArray = getStripeNumberAccumulation();
 
@@ -1832,6 +1832,36 @@ void ZObject3dScan::duplicateAcrossZ(int depth)
   processEvent(EVENT_OBJECT_MODEL_CHANGED);
 }
 
+void ZObject3dScan::displaySolid(
+    ZPainter &painter, int z, bool isProj, int stride) const
+{
+  if (stride < 1) {
+    stride = 1;
+  }
+
+  ZObject3dScan slice = getSlice(z);
+
+  size_t stripeNumber = slice.getStripeNumber();
+  std::vector<QLine> lineArray;
+  int offsetX = iround(painter.getOffset().x());
+  int offsetY = iround(painter.getOffset().y());
+  for (size_t i = 0; i < stripeNumber; i += stride) {
+    const ZObject3dStripe &stripe = slice.getStripe(i);
+    if (stripe.getZ() == z || isProj) {
+      int nseg = stripe.getSegmentNumber();
+      for (int j = 0; j < nseg; ++j) {
+        int x0 = stripe.getSegmentStart(j) - offsetX;
+        int x1 = stripe.getSegmentEnd(j) - offsetX;
+        int y = stripe.getY() - offsetY;
+        lineArray.push_back(QLine(x0, y, x1, y));
+      }
+    }
+  }
+  if (!lineArray.empty()) {
+    painter.drawLines(&(lineArray[0]), lineArray.size());
+  }
+}
+
 void ZObject3dScan::display(
     ZPainter &painter, int slice, EDisplayStyle style) const
 {
@@ -1853,25 +1883,7 @@ void ZObject3dScan::display(
   case ZStackObject::SOLID:
   {
     painter.setPen(pen);
-    size_t stripeNumber = getStripeNumber();
-    std::vector<QLine> lineArray;
-    int offsetX = iround(painter.getOffset().x());
-    int offsetY = iround(painter.getOffset().y());
-    for (size_t i = 0; i < stripeNumber; ++i) {
-      const ZObject3dStripe &stripe = getStripe(i);
-      if (stripe.getZ() == z || isProj) {
-        int nseg = stripe.getSegmentNumber();
-        for (int j = 0; j < nseg; ++j) {
-          int x0 = stripe.getSegmentStart(j) - offsetX;
-          int x1 = stripe.getSegmentEnd(j) - offsetX;
-          int y = stripe.getY() - offsetY;
-          lineArray.push_back(QLine(x0, y, x1, y));
-        }
-      }
-    }
-    if (!lineArray.empty()) {
-      painter.drawLines(&(lineArray[0]), lineArray.size());
-    }
+    displaySolid(painter, z, isProj, 1);
   }
     break;
   case ZStackObject::BOUNDARY:
@@ -1880,28 +1892,30 @@ void ZObject3dScan::display(
     color.setAlpha(255);
     pen.setColor(color);
     painter.setPen(pen);
-    std::vector<QPoint> ptArray;
-    ZObject3dScan slice = getSlice(z);
 
-    if (!slice.isEmpty()) {
-      ZStack *stack = slice.toStackObject();
-      int conn = 4;
-      if (isSelected()) {
-        conn = 8;
-      }
-      Stack *pre = Stack_Perimeter(stack->c_stack(), NULL, conn);
-      size_t offset = 0;
-      for (int y = 0; y < stack->height(); ++y) {
-        for (int x = 0; x < stack->width(); ++x) {
-          if (pre->array[offset++] > 0) {
-            ptArray.push_back(QPoint(x + stack->getOffset().getX(),
-                                     y + stack->getOffset().getY()));
+    if (isSelected()) {
+      displaySolid(painter, z, isProj, 5);
+    } else {
+      std::vector<QPoint> ptArray;
+      ZObject3dScan slice = getSlice(z);
+
+      if (!slice.isEmpty()) {
+        ZStack *stack = slice.toStackObject();
+        int conn = 4;
+        Stack *pre = Stack_Perimeter(stack->c_stack(), NULL, conn);
+        size_t offset = 0;
+        for (int y = 0; y < stack->height(); ++y) {
+          for (int x = 0; x < stack->width(); ++x) {
+            if (pre->array[offset++] > 0) {
+              ptArray.push_back(QPoint(x + stack->getOffset().getX(),
+                                       y + stack->getOffset().getY()));
+            }
           }
         }
       }
-    }
-    if (!ptArray.empty()) {
-      painter.drawPoints(&(ptArray[0]), ptArray.size());
+      if (!ptArray.empty()) {
+        painter.drawPoints(&(ptArray[0]), ptArray.size());
+      }
     }
   }
     break;
@@ -1983,13 +1997,90 @@ void ZObject3dScan::dilate()
 ZObject3dScan ZObject3dScan::getSlice(int z) const
 {
   ZObject3dScan slice;
-  size_t stripeNumber = getStripeNumber();
-  for (size_t i = 0; i < stripeNumber; ++i) {
+
+  if (!isEmpty()) {
+    const_cast<ZObject3dScan&>(*this).canonize();
+
+    int stripeNumber = getStripeNumber();
+
+    int pi = stripeNumber / 2;
+    int pz = m_stripeArray[pi].getZ();
+
+    int minIndex = 0;
+    int maxIndex = stripeNumber - 1;
+
+    if (z == m_stripeArray[minIndex].getZ() &&
+        z == m_stripeArray[maxIndex].getZ()) {
+      return *this;
+    }
+
+    while (z != pz) {
+      if (z < pz) {
+        maxIndex = pi;
+      } else {
+        minIndex = pi;
+      }
+
+      pi = (minIndex + maxIndex) / 2;
+      pz = m_stripeArray[pi].getZ();
+
+      if (minIndex == pi) {
+        if (minIndex == maxIndex) {
+          break;
+        } else {
+          if (z != pz) {
+            pz = m_stripeArray[maxIndex].getZ();
+            pi = maxIndex;
+            break;
+          }
+        }
+      }
+    }
+
+    if (z == pz) {
+      //slice.addStripe(m_stripeArray[pi]);
+      int index = pi;
+      int startIndex = pi;
+      while (--index >= 0) {
+        pz = m_stripeArray[index].getZ();
+        if (z == pz) {
+          startIndex = index;
+        } else {
+          break;
+        }
+      }
+
+      for (index = startIndex; index <= pi; ++index) {
+        slice.addStripe(m_stripeArray[index], false);
+      }
+
+      index = pi;
+      while (++index < stripeNumber) {
+        pz = m_stripeArray[index].getZ();
+        if (z == pz) {
+          slice.addStripe(m_stripeArray[index], false);
+        } else {
+          break;
+        }
+      }
+    }
+
+#ifdef _DEBUG_2
+  ZObject3dScan testSlice;
+  for (int i = 0; i < stripeNumber; ++i) {
     const ZObject3dStripe &stripe = m_stripeArray[i];
     if (stripe.getZ() == z) {
-      slice.addStripe(stripe, false);
+      testSlice.addStripe(stripe, false);
     }
   }
+
+  TZ_ASSERT(slice.getVoxelNumber() == testSlice.getVoxelNumber(), "Bug?");
+  TZ_ASSERT(slice.getStripeNumber() == testSlice.getStripeNumber(), "Bug?");
+  TZ_ASSERT(slice.getSegmentNumber() == testSlice.getSegmentNumber(), "Bug?");
+#endif
+  }
+
+  slice.setCanonized(true);
 
   return slice;
 }
@@ -2357,6 +2448,45 @@ void ZObject3dScan::fillHole()
     return false; \
   }
 
+void ZObject3dScan::exportDvidObject(const string &filePath) const
+{
+  FILE *fp = fopen(filePath.c_str(), "w");
+
+  tz_uint8 flag = 0;
+  fwrite(&flag, 1, 1, fp);
+
+  tz_uint8 numberOfDimensions = 3;
+  fwrite(&numberOfDimensions, 1, 1, fp);
+
+  tz_uint8 dimOfRun = 0;
+  fwrite(&dimOfRun, 1, 1, fp);
+
+  tz_uint8 reserved = 0;
+  fwrite(&reserved, 1, 1, fp);
+
+  tz_uint32 numberOfVoxels = getVoxelNumber();
+  fwrite(&numberOfVoxels, 4, 1, fp);
+
+  tz_uint32 numberOfSpans = getSegmentNumber();
+  fwrite(&numberOfSpans, 4, 1, fp);
+
+  //For each segment
+  ConstSegmentIterator iter(this);
+  while (iter.hasNext()) {
+    const ZObject3dScan::Segment &seg = iter.next();
+    tz_int32 coord[3];
+    coord[0] = seg.getStart();
+    coord[1] = seg.getY();
+    coord[2] = seg.getZ();
+    fwrite(coord, 4, 3, fp);
+
+    tz_int32 runLength = seg.getEnd() - seg.getStart() + 1;
+    fwrite(&runLength, 4, 1, fp);
+  }
+
+  fclose(fp);
+}
+
 bool ZObject3dScan::importDvidObject(const std::string &filePath)
 {
   clear();
@@ -2426,6 +2556,12 @@ bool ZObject3dScan::importDvidObject(const std::string &filePath)
         RECORD_ERROR_UNCOND("Reading error. File ends prematurely")
       }
 
+#ifdef _DEBUG_
+      if (coord[1] == 6525 && coord[2] ==1437) {
+        std::cout << "debug here" << std::endl;
+      }
+#endif
+
       tz_int32 runLength;
       n = fread(&runLength, 4, 1, fp);
       READ_TEST(n, 1, RECORD_ERROR_UNCOND("Failed to read run length"));
@@ -2435,7 +2571,7 @@ bool ZObject3dScan::importDvidObject(const std::string &filePath)
         return false;
       }
 
-      addSegment(coord[2], coord[1], coord[0], coord[0] + runLength, false);
+      addSegment(coord[2], coord[1], coord[0], coord[0] + runLength - 1, false);
       ++readSegmentNumber;
       if (readSegmentNumber == numberOfSpans) {
         break;

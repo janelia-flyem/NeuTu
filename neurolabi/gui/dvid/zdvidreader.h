@@ -27,6 +27,7 @@ class ZDvidTileInfo;
 class ZSwcTree;
 class ZObject3dScan;
 class ZSparseStack;
+class ZDvidVersionDag;
 
 class ZDvidReader : public QObject
 {
@@ -92,8 +93,12 @@ public:
 
   ZDvidTileInfo readTileInfo(const std::string &dataName) const;
 
-  ZDvidTile *readTile(const std::string &dataName, int resLevel,
-                     int xi0, int yi0, int z0) const;
+  //ZDvidTile *readTile(const std::string &dataName, int resLevel,
+  //                   int xi0, int yi0, int z0) const;
+  ZDvidTile *readTile(int resLevel, int xi0, int yi0, int z0) const;
+
+  ZDvidVersionDag readVersionDag(const std::string &uuid) const;
+  ZDvidVersionDag readVersionDag() const;
 
 signals:
   void readingDone();

@@ -37,6 +37,7 @@ public:
 signals:
   void readingDone();
   void readingCanceled();
+  void checkingStatus();
 
 public slots:
 
@@ -46,11 +47,12 @@ private slots:
   void handleTimeout();
   void cancelReading();
   void readBuffer();
+  void waitForReading();
 
 private:
   void startReading();
   void endReading(EStatus status);
-  void waitForReading();
+
 
   bool isReadingDone() const;
 

@@ -372,6 +372,12 @@ void ZFlyEmBodySplitProject::setDataFrame(ZStackFrame *frame)
   updateBookDecoration();
 }
 
+void ZFlyEmBodySplitProject::removeAllBookmark()
+{
+  m_bookmarkArray.clear();
+  clearBookmarkDecoration();
+}
+
 void ZFlyEmBodySplitProject::loadBookmark(const QString &filePath)
 {
   ZDvidReader reader;
@@ -466,6 +472,12 @@ std::set<int> ZFlyEmBodySplitProject::getBookmarkBodySet() const
   return bodySet;
 }
 
+void ZFlyEmBodySplitProject::exportSplits()
+{
+  //ZObject3dScan body = *(getDataFrame()->document()->getSparseStack()->getObjectMask());
+
+}
+
 void ZFlyEmBodySplitProject::commitResult()
 {
   ZFlyEmBodySplitProject::commitResultFunc(
@@ -492,9 +504,10 @@ void ZFlyEmBodySplitProject::commitResultFunc(
 
   ZObject3dScan body = *wholeBody;
 
-  emit messageGenerated(QString("Backup ... ").arg(getBodyId()));
+  emit messageGenerated(QString("Backup ... %1").arg(getBodyId()));
 
-  body.save(GET_TEST_DATA_DIR + "/backup/" + getSeedKey(getBodyId()) + ".sobj");
+  std::string backupDir = GET_TEST_DATA_DIR + "/backup";
+  body.save(backupDir + "/" + getSeedKey(getBodyId()) + ".sobj");
 
 //  const ZStack *stack = getDataFrame()->document()->getLabelField();
   QStringList filePathList;
@@ -538,17 +551,22 @@ void ZFlyEmBodySplitProject::commitResultFunc(
   if (!body.isEmpty()) {
     std::vector<ZObject3dScan> objArray = body.getConnectedComponent();
 
+#ifdef _DEBUG_
+    body.save(GET_TEST_DATA_DIR + "/test.sobj");
+#endif
+
     double dp = 0.3;
 
     if (!objArray.empty()) {
       dp = 0.3 / objArray.size();
     }
 
+    const size_t sizeThreshold = 0;
     //if (objArray.size() > 1 || !filePathList.isEmpty()) {
     for (std::vector<ZObject3dScan>::const_iterator iter = objArray.begin();
          iter != objArray.end(); ++iter) {
       const ZObject3dScan &obj = *iter;
-      if (obj.getVoxelNumber() > 20) {
+      if (obj.getVoxelNumber() > sizeThreshold) {
         ZString output = QDir::tempPath() + "/body_";
         output.appendNumber(getBodyId());
         output += "_";
@@ -578,7 +596,16 @@ void ZFlyEmBodySplitProject::commitResultFunc(
   if (!filePathList.empty()) {
     dp = 0.3 / filePathList.size();
   }
+
+  ZDvidWriter writer;
+  writer.open(getDvidTarget());
   foreach (QString objFile, filePathList) {
+    ZObject3dScan obj;
+    obj.load(objFile.toStdString());
+    writer.writeSplit(getDvidTarget().getBodyLabelName(), obj, getBodyId(),
+                      ++bodyId);
+
+#if 0
     QString command = buildemPath +
         QString("/bin/dvid_load_sparse http://emdata2:8000 %1 %2 %3 %4").
         arg(m_dvidTarget.getUuid().c_str()).
@@ -588,6 +615,7 @@ void ZFlyEmBodySplitProject::commitResultFunc(
     qDebug() << command;
 
     QProcess::execute(command);
+#endif
 
     QString msg = QString("%1 uploaded.").arg(bodyId);
     emit messageGenerated(msg);
@@ -595,8 +623,6 @@ void ZFlyEmBodySplitProject::commitResultFunc(
     emit progressAdvanced(dp);
   }
 
-  ZDvidWriter writer;
-  writer.open(m_dvidTarget);
   writer.writeMaxBodyId(bodyId);
 
   emit progressDone();
@@ -820,7 +846,8 @@ std::string ZFlyEmBodySplitProject::getSplitLabelName() const
 
 std::string ZFlyEmBodySplitProject::getSeedKey(int bodyId) const
 {
-  return m_dvidTarget.getBodyLabelName() + "_seed_" + ZString::num2str(bodyId);
+  return getDvidTarget().getBodyLabelName() + "_seed_" +
+      ZString::num2str(bodyId);
 }
 
 void ZFlyEmBodySplitProject::runSplit()

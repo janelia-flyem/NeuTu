@@ -479,3 +479,8 @@ void ZStackObjectGroup::resetSelection()
 {
   m_selector.reset();
 }
+
+QList<ZStackObject::EType> ZStackObjectGroup::getAllType() const
+{
+  return m_sortedGroup.keys();
+}

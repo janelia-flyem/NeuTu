@@ -1419,11 +1419,18 @@ void ZStackView::paintObjectBuffer(ZImage *canvas, ZStackObject::ETarget target)
       std::sort(visibleObject.begin(), visibleObject.end(),
                 ZStackObject::ZOrderCompare());
 
+#ifdef _DEBUG_2
+      std::cout << "---" << std::endl;
+      std::cout << slice << " " << m_depthControl->value() <<  std::endl;
+#endif
+
       for (QList<const ZStackObject*>::const_iterator
            iter = visibleObject.begin(); iter != visibleObject.end(); ++iter) {
         //(*obj)->display(m_objectCanvas, slice, buddyPresenter()->objectStyle());
         const ZStackObject *obj = *iter;
-        obj->display(painter, slice, buddyPresenter()->objectStyle());
+        if (slice == m_depthControl->value()) {
+          obj->display(painter, slice, buddyPresenter()->objectStyle());
+        }
       }
     }
 
@@ -1445,12 +1452,17 @@ void ZStackView::paintObjectBuffer(ZImage *canvas, ZStackObject::ETarget target)
 
 void ZStackView::paintObjectBuffer()
 {
+//  std::cout << "Locking mutex" << std::endl;
+//  QMutexLocker locker(&m_mutex);
+//  std::cout << "Unlocking mutex" << std::endl;
+
   updateObjectCanvas();
   if (m_objectCanvas == NULL) {
     return;
   }
 
   paintObjectBuffer(m_objectCanvas, ZStackObject::OBJECT_CANVAS);
+
 #if 0
   if (buddyPresenter()->isObjectVisible()) {
     int slice = m_depthControl->value();
@@ -1801,7 +1813,7 @@ void ZStackView::notifyViewChanged()
 
 void ZStackView::notifyViewChanged(const ZStackViewParam &param)
 {
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
   std::cout << "Signal: ZStackView::viewChanged" << std::endl;
 #endif
 

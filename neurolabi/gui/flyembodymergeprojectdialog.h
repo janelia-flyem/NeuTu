@@ -2,9 +2,13 @@
 #define FLYEMBODYMERGEPROJECTDIALOG_H
 
 #include <QDialog>
+#include <QSet>
 
 #include "flyem/zflyembodymergeproject.h"
 #include "flyemprojectdialog.h"
+
+class QModelIndex;
+class ZDvidVersionModel;
 
 namespace Ui {
 class FlyEmBodyMergeProjectDialog;
@@ -19,7 +23,6 @@ public:
   ~FlyEmBodyMergeProjectDialog();
 
   void createMenu();
-  void setPushButtonSlots();
   void dump(const QString &str, bool appending = false);
   void showInfo(const QString &str, bool appending = false);
 
@@ -49,9 +52,19 @@ public slots:
   void showNextSlice();
   void notifySelection(const ZStackObjectSelector &selector);
   void notifyBodyMerged(QList<uint64_t> bodyLabelList);
+  void changeDvidNode(const std::string &newUuid);
+  void changeDvidNode(const QModelIndex &index);
+  void lockNode();
+  void createVersionBranch();
 
 private:
     void connectSignalSlot();
+    void connectProjectSignalSlot();
+    void setPushButtonSlots();
+    void updateVersionTree();
+    ZDvidVersionModel* getVersionModel();
+    QModelIndex getSelectedVersionIndex() const;
+    void activateCurrentNode();
 
 private:
   Ui::FlyEmBodyMergeProjectDialog *ui;

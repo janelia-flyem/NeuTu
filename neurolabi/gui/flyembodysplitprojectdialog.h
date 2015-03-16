@@ -112,6 +112,9 @@ private slots:
   void showBodyMask(bool on);
   void checkAllSeed();
 
+  void removeAllBookmark();
+  void exportSplits();
+
   /*!
    * \brief Process all stored seeds.
    *

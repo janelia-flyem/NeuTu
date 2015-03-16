@@ -218,7 +218,8 @@ HEADERS +=$${PWD}/zstackprocessor.h \
    $${PWD}/zqtheader_undef.h \
    $${PWD}/zscalablestack.h \
     flyem/zflyemneurondensity.h \
-    flyem/zflyemneurondensitymatcher.h
+    flyem/zflyemneurondensitymatcher.h \
+    zdag.h
 
 SOURCES +=$${PWD}/zstackprocessor.cpp \
    $${PWD}/zstack.cxx \
@@ -421,4 +422,5 @@ SOURCES +=$${PWD}/zstackprocessor.cpp \
    $${PWD}/flyem/zflyemneuroninfo.cpp \
    $${PWD}/zscalablestack.cpp \
     flyem/zflyemneurondensity.cpp \
-    flyem/zflyemneurondensitymatcher.cpp
+    flyem/zflyemneurondensitymatcher.cpp \
+    zdag.cpp

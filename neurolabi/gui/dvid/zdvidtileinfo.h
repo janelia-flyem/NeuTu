@@ -17,6 +17,10 @@ public:
   inline int getWidth() const { return m_tileSize.getX(); }
   inline int getHeight() const { return m_tileSize.getY(); }
 
+  static int getLevelScale() { return m_levelScale; }
+
+  bool isValid() const;
+
 private:
   int m_maxLevel;
   ZIntPoint m_tileSize;

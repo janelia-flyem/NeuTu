@@ -20,15 +20,6 @@ public:
   ZMouseEventMapper(ZInteractiveContext *context = NULL,
                     ZStackDoc *doc = NULL);
 
-  /*
-  enum EButton {
-    LEFT_BUTTON, RIGHT_BUTTON
-  };
-
-  enum EAction {
-    BUTTON_PRESS, BUTTON_RELEASE
-  };
-*/
   //virtual EOperation getOperation(QMouseEvent *event);
   virtual ZStackOperator getOperation(const ZMouseEvent &event) const;
 

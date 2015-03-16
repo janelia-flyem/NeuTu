@@ -18,7 +18,7 @@ public:
   inline const ZTreeNode<T>* getRoot() const { return m_root; }
   void setRoot(ZTreeNode<T>* root, bool clearOld = true);
 
-  bool isEmpty();
+  bool isEmpty() const;
   void clear();
 
 protected:

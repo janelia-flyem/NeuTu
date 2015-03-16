@@ -157,6 +157,9 @@
 #include "flyem/zflyemhackathonconfigdlg.h"
 #include "flyem/zflyemmisc.h"
 #include "zprogressmanager.h"
+#include "zmessage.h"
+#include "zmessagemanager.h"
+#include "ztestdialog.h"
 
 #include "z3dcanvas.h"
 #include "z3dapplication.h"
@@ -280,6 +283,11 @@ MainWindow::MainWindow(QWidget *parent) :
   connect(this, SIGNAL(docReaderReady(ZStackDocReader*)),
           this, SLOT(createStackFrameFromDocReader(ZStackDocReader*)));
 
+  m_messageManager = new ZMessageManager(this);
+  m_messageManager->setProcessor(
+        ZSharedPointer<MessageProcessor>(new MessageProcessor));
+  m_messageManager->registerWidget(this);
+
   initDialog();
 
   m_stackViewManager = new ZStackViewManager(this);
@@ -394,7 +402,7 @@ void MainWindow::initDialog()
 
   //m_mergeBodyDlg = new FlyEmBodyMergeProjectDialog(this);
   m_mergeBodyDlg = m_flyemProjectManager->getMergeDialog();
-  m_mergeBodyDlg->setDvidDialog(m_dvidDlg);
+  //m_mergeBodyDlg->setDvidDialog(m_dvidDlg);
 
   m_mergeBodyDlg->restoreGeometry(
         getSettings().value("BodyMergeProjectGeometry").toByteArray());
@@ -408,6 +416,7 @@ void MainWindow::initDialog()
   m_dvidOpDlg = new DvidOperateDialog(this);
   m_synapseDlg = new SynapseImportDialog(this);
   m_hackathonConfigDlg = new ZFlyEmHackathonConfigDlg(this);
+  m_testDlg = new ZTestDialog(this);
 #else
   m_bodySplitProjectDialog = NULL;
   m_newBsProjectDialog = NULL;
@@ -3179,8 +3188,11 @@ void MainWindow::test()
   future2.resume();
 #endif
 
-
 #if 1
+  m_testDlg->show();
+#endif
+
+#if 0
   m_progress->setRange(0, 2);
   m_progress->setLabelText(QString("Testing ..."));
   int currentProgress = 0;
@@ -6839,4 +6851,30 @@ void MainWindow::on_actionHackathonEvaluate_triggered()
       arg(evaluator.getNeuronCount());
 
   report("Evaluation", information.toStdString(), ZMessageReporter::Information);
+}
+
+void MainWindow::MessageProcessor::processMessage(
+    ZMessage *message, QWidget *host) const
+{
+  if (message == NULL) {
+    return;
+  }
+
+  MainWindow *realHost = dynamic_cast<MainWindow*>(host);
+  if (realHost != NULL) {
+    switch (message->getType()) {
+    case ZMessage::TYPE_INFORMATION:
+    {
+      ZJsonObject messageBody = message->getMessageBody();
+      std::string title = ZJsonParser::stringValue(messageBody["title"]);
+      std::string msg = ZJsonParser::stringValue(messageBody["body"]);
+      realHost->report(title, msg, ZMessageReporter::Information);
+
+      message->deactivate();
+    }
+      break;
+    default:
+      break;
+    }
+  }
 }

@@ -7619,36 +7619,6 @@ void ZStackDoc::seededWatershed()
 
       notifyObj3dModified();
 
-#ifdef _DEBUG_2
-      out->save(GET_TEST_DATA_DIR + "/test.tif");
-#endif
-#if 0
-      Object_3d *objData = Stack_Region_Border(out->c_stack(), 6, TRUE);
-
-      if (objData != NULL) {
-        ZObject3d *obj = new ZObject3d(objData);
-
-        obj->translate(out->getOffset());
-
-
-        if (dsIntv.getX() > 0 || dsIntv.getY() > 0 || dsIntv.getZ() > 0) {
-          obj->upSample(dsIntv.getX(), dsIntv.getY(), dsIntv.getZ());
-        }
-
-        /*
-      obj->translate(iround(out->getOffset().getX()),
-                     iround(out->getOffset().getY()),
-                     iround(out->getOffset().getZ()));
-                     */
-        obj->setColor(255, 255, 0, 255);
-        addObj3d(obj);
-        addPlayer(obj, NeuTube::Documentable_OBJ3D, ZDocPlayer::ROLE_TMP_RESULT);
-
-        notifyObj3dModified();
-      }
-#endif
-      //delete out;
-
       setLabelField(out);
     }
   }

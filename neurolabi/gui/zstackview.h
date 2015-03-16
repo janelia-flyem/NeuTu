@@ -236,6 +236,7 @@ private:
 
   ZPaintBundle m_paintBundle;
   bool m_isRedrawBlocked;
+  QMutex m_mutex;
 };
 
 #endif

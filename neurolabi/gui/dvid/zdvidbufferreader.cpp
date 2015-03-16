@@ -5,6 +5,8 @@
 #include <QDebug>
 #include <QNetworkReply>
 
+#include "zsleeper.h"
+
 ZDvidBufferReader::ZDvidBufferReader(QObject *parent) :
   QObject(parent), m_networkReply(NULL), m_isReadingDone(false),
   m_status(ZDvidBufferReader::READ_NULL)
@@ -18,6 +20,7 @@ ZDvidBufferReader::ZDvidBufferReader(QObject *parent) :
   connect(timer, SIGNAL(timeout()), this, SLOT(handleTimeout()));
   connect(this, SIGNAL(readingCanceled()), this, SLOT(cancelReading()));
   connect(this, SIGNAL(readingDone()), m_eventLoop, SLOT(quit()));
+  connect(this, SIGNAL(checkingStatus()), this, SLOT(waitForReading()));
 }
 
 void ZDvidBufferReader::read(const QString &url)
@@ -99,9 +102,20 @@ bool ZDvidBufferReader::isReadingDone() const
 
 void ZDvidBufferReader::waitForReading()
 {
+      /*
+  if (m_isReadingDone) {
+    return;
+  }
+
+  ZSleeper::msleep(10);
+  emit checkingStatus();
+
+  */
+
   if (!isReadingDone()) {
     m_eventLoop->exec();
   }
+
 }
 
 void ZDvidBufferReader::handleError(QNetworkReply::NetworkError /*error*/)

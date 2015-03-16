@@ -1548,7 +1548,7 @@ void ZStackFrame::createMainWindowActions()
 
 void ZStackFrame::notifyViewChanged(const ZStackViewParam &param)
 {
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
   std::cout << "Signal: ZStackFrame::notifyViewChanged" << std::endl;
 #endif
 

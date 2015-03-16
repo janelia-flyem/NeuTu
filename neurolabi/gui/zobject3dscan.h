@@ -215,6 +215,8 @@ public:
    */
   bool importDvidObject(const std::string &filePath);
 
+  void exportDvidObject(const std::string &filePath) const;
+
   /*!
    * \brief Import object from a byte array
    */
@@ -310,7 +312,7 @@ public:
   const std::map<size_t, std::pair<size_t, size_t> >&
   getIndexSegmentMap() const;
   bool getSegment(size_t index, int *z, int *y, int *x1, int *x2);
-  size_t getSegmentNumber();
+  size_t getSegmentNumber() const;
 
   void translate(int dx, int dy, int dz);
   void translate(const ZIntPoint &dp);
@@ -559,6 +561,7 @@ public:
 
 private:
   void addForeground(ZStack *stack);
+  void displaySolid(ZPainter &painter, int z, bool isProj, int stride = 1) const;
 
 protected:
   std::vector<ZObject3dStripe> m_stripeArray;

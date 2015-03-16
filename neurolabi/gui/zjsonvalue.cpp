@@ -20,7 +20,7 @@ ZJsonValue::ZJsonValue(json_t *data, bool asNew) : m_data(NULL)
 ZJsonValue::ZJsonValue(json_t *data, ESetDataOption option) : m_data(NULL)
 {
   set(data, option);
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
       std::cout << m_data << std::endl;
 #endif
 }

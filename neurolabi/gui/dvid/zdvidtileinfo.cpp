@@ -54,3 +54,8 @@ void ZDvidTileInfo::print() const
   std::cout << "Tile size: " << m_tileSize.getX() << " x " << m_tileSize.getY()
             << " x " << m_tileSize.getZ() << std::endl;
 }
+
+bool ZDvidTileInfo::isValid() const
+{
+  return getWidth() > 0 && getHeight() > 0;
+}

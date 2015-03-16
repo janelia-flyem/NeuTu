@@ -33,6 +33,13 @@ ZJsonObject::ZJsonObject(const ZJsonObject &obj) : ZJsonValue(obj)
 {
 }
 
+ZJsonObject::ZJsonObject(const ZJsonValue &obj)
+{
+  if (obj.isObject()) {
+    set(obj.getData(), ZJsonValue::SET_INCREASE_REF_COUNT);
+  }
+}
+
 ZJsonObject::~ZJsonObject()
 {
 #ifdef _DEBUG_2
@@ -74,6 +81,12 @@ const json_t* ZJsonObject::operator[] (const char *key) const
   }
 
   return NULL;
+}
+
+ZJsonValue ZJsonObject::at(const char *key) const
+{
+  return ZJsonValue(const_cast<json_t*>((*this)[key]),
+                    ZJsonValue::SET_INCREASE_REF_COUNT);
 }
 
 bool ZJsonObject::load(const string &filePath)

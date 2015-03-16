@@ -13,14 +13,18 @@
 class ZJsonObject : public ZJsonValue
 {
 public:
+  ZJsonObject();
   explicit ZJsonObject(json_t *json, bool asNew);
   explicit ZJsonObject(json_t *data, ESetDataOption option);
-  ZJsonObject();
   ZJsonObject(const ZJsonObject &obj);
+  ZJsonObject(const ZJsonValue &obj);
+
   virtual ~ZJsonObject();
 
   json_t* operator[] (const char *key);
   const json_t* operator[] (const char *key) const;
+
+  ZJsonValue at(const char *key) const;
 
   /*!
    * \brief Test if an object is empty
