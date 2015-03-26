@@ -509,7 +509,12 @@ HEADERS += mainwindow.h \
     zstackwidget.h \
     dvid/zdvidversiondag.h \
     dvid/zdvidversion.h \
-    dvid/zdvidversionnode.h
+    dvid/zdvidversionnode.h \
+    zbodysplitbutton.h \
+    zmessagefactory.h \
+    zmessagemanagermodel.h \
+    zflyemcontrolform.h \
+    dvid/zdvidtileensemble.h
 
 FORMS += settingdialog.ui \
     frameinfodialog.ui \
@@ -571,7 +576,8 @@ FORMS += settingdialog.ui \
     zmarkswcsomadialog.ui \
     swcexportdialog.ui \
     flyem/zflyemhackathonconfigdlg.ui \
-    ztestdialog.ui
+    ztestdialog.ui \
+    zflyemcontrolform.ui
 SOURCES += main.cpp \
     mainwindow.cpp \
     zstackview.cpp \
@@ -876,7 +882,12 @@ SOURCES += main.cpp \
     zstackwidget.cpp \
     dvid/zdvidversiondag.cpp \
     dvid/zdvidversion.cpp \
-    dvid/zdvidversionnode.cpp
+    dvid/zdvidversionnode.cpp \
+    zbodysplitbutton.cpp \
+    zmessagefactory.cpp \
+    zmessagemanagermodel.cpp \
+    zflyemcontrolform.cpp \
+    dvid/zdvidtileensemble.cpp
 
 OTHER_FILES += \
     extlib.pri

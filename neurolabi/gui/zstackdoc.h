@@ -132,19 +132,34 @@ public: //attributes
   // isEmpty() returns true iff it has no stack data or object.
   bool isEmpty();
 
-  // hasStackData() returns true iff it has stack array data.
+  /*!
+   * \brief Test if the document has dense stack data
+   * \return true iff it has stack array data.
+   */
   bool hasStackData() const;
+
   /*!
    * \brief Test if there is any stack (including virtual)
    */
   bool hasStack() const;
+
+  /*!
+   * \brief hasStackPaint
+   * \return true iff the document has any stack data to paint
+   */
+  bool hasStackPaint() const;
+
+
   bool hasStackMask();
 
   // hasTracable() returns true iff it has tracable data.
   bool hasTracable();
 
   // hasObject() returns true iff it has an object.
-  bool hasObject();
+  bool hasObject() const;
+
+  bool hasObject(ZStackObject::EType type) const;
+
   // hasSwc() returns true iff it has an SWC object.
   bool hasSwc() const;
   bool hasPuncta() const;
@@ -160,6 +175,7 @@ public: //attributes
 
   int getStackWidth() const;
   int getStackHeight() const;
+  int getStackDepth() const;
   int stackChannelNumber() const;
 
   virtual void deprecateDependent(EComponent component);
@@ -299,7 +315,17 @@ public: //swc selection
 public:
   void loadFileList(const QList<QUrl> &urlList);
   void loadFileList(const QStringList &filePath);
-  bool loadFile(const QString &filePath, bool emitMessage = false);
+
+  /*!
+   * \brief Load data from a file into the document.
+   *
+   * \param filePath Path of the data file.
+   * \return true iff the file is loaded successfully.
+   */
+  bool loadFile(const char *filePath);
+  bool loadFile(const std::string filePath);
+  bool loadFile(const QString &filePath);
+
   virtual void loadStack(Stack *getStack, bool isOwner = true);
   virtual void loadStack(ZStack *zstack);
 

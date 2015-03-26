@@ -8,6 +8,7 @@
 ZFlyEmBodyMergeDoc::ZFlyEmBodyMergeDoc(ZStack *stack, QObject *parent) :
   ZStackDoc(stack, parent), m_originalLabel(NULL)
 {
+  setTag(NeuTube::Document::FLYEM_MERGE);
 }
 
 ZFlyEmBodyMergeDoc::~ZFlyEmBodyMergeDoc()
@@ -124,6 +125,20 @@ void ZFlyEmBodyMergeDoc::mergeSelected()
   //return true;
 
   //updateBodyObject();
+}
+
+int64_t ZFlyEmBodyMergeDoc::getSelectedBodyId() const
+{
+  int64_t bodyId = -1;
+  const TStackObjectSet &objSet =
+      getSelected(ZStackObject::TYPE_OBJECT3D_SCAN);
+  if (objSet.size() == 1) {
+    const ZObject3dScan* obj =
+        dynamic_cast<ZObject3dScan*>(*(objSet.begin()));
+    bodyId = obj->getLabel();
+  }
+
+  return bodyId;
 }
 
 void ZFlyEmBodyMergeDoc::setOriginalLabel(const ZStack *stack)

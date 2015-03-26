@@ -22,6 +22,8 @@ public:
    */
   bool consumeStack(const ZIntPoint &blockIndex, ZStack *stack);
 
+  void consumeStack(const ZIntPoint &blockIndex, std::vector<ZStack*> stackArray);
+
   int getValue(int x, int y, int z) const;
 
   ZStack* getStack(const ZIntPoint &blockIndex) const;

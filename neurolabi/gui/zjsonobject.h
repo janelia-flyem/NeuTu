@@ -72,7 +72,7 @@ public:
   /*!
    * \brief Set an entry of the object with string value
    *
-   * The function does not if key is NULL or empty.
+   * The function does nothing if the key is empty.
    */
   void setEntry(const char *key, const std::string &value);
 
@@ -102,6 +102,8 @@ public:
   /*!
    * \brief setEntry Set an entry of the object with an integer
    */
+  void setEntry(const char *key, int64_t v);
+  void setEntry(const char *key, uint64_t v);
   void setEntry(const char *key, int v);
 
   /*!

@@ -129,3 +129,9 @@ bool ZIntPoint::isZero() const
 {
   return (getX() == 0) && (getY() == 0) && (getZ() == 0);
 }
+
+bool ZIntPoint::equals(const ZIntPoint &pt) const
+{
+  return (getX() == pt.getX()) && (getY() == pt.getY()) &&
+      (getZ() == pt.getZ());
+}

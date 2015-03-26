@@ -56,7 +56,8 @@ public:
     TYPE_STACK_BALL,
     TYPE_STACK_PATCH,
     TYPE_RECT2D,
-    TYPE_DVID_TILE
+    TYPE_DVID_TILE,
+    TYPE_DVID_TILE_ENSEMBLE
   };
 
   enum Palette_Color {

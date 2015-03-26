@@ -795,11 +795,15 @@ void ZFlyEmRoiDialog::previewFullRoi()
   ZSwcTree *tree = m_project->getAllRoiSwc();
 
   if (tree != NULL) {
-    ZStackFrame *frame = new ZStackFrame();
-    frame->document()->addSwcTree(tree);
+    ZStackDoc *doc = new ZStackDoc(NULL, NULL);
+    doc->addSwcTree(tree);
+    Z3DWindow::Open(doc, this);
 
-    frame->open3DWindow(this);
-    delete frame;
+    //ZStackFrame *frame = new ZStackFrame();
+    //frame->document()->addSwcTree(tree);
+
+    //frame->open3DWindow(this);
+    //delete frame;
   } else {
     dump("No ROI saved");
   }

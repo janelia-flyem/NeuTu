@@ -1,16 +1,36 @@
 #include "ztiledstackframe.h"
 
+#include <QMdiArea>
+
 #include "ztilemanager.h"
 #include "ztilegraphicsitem.h"
 #include "zstackdoc.h"
 #include "zstackpresenter.h"
 #include "zstackview.h"
 
-ZTiledStackFrame::ZTiledStackFrame(QWidget *parent, bool preparingModel) :
-  ZStackFrame(parent, preparingModel)
+ZTiledStackFrame::ZTiledStackFrame(QWidget *parent) :
+  ZStackFrame(parent)
 {
   m_tileManager = new ZTileManager(this);
 }
+
+ZTiledStackFrame*
+ZTiledStackFrame::Make(QMdiArea *parent)
+{
+  return Make(parent, ZSharedPointer<ZStackDoc>(
+                new ZStackDoc(NULL, NULL)));
+}
+
+ZTiledStackFrame *ZTiledStackFrame::Make(
+    QMdiArea *parent, ZSharedPointer<ZStackDoc> doc)
+{
+  ZTiledStackFrame *frame = new ZTiledStackFrame(parent);
+
+  BaseConstruct(frame, doc);
+
+  return frame;
+}
+
 
 bool ZTiledStackFrame::importTiles(const QString &path)
 {

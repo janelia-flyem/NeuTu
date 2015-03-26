@@ -116,11 +116,11 @@ void Z3DShaderGroup::buildNormalShader(Z3DShaderProgram *shader)
   if (m_normalShaderFiles.empty()) {
     QStringList allshaders(m_shaderFiles);
     allshaders << "common.frag";
+    shader->bindFragDataLocation(0, "FragData0");
     shader->loadFromSourceFile(allshaders, m_header);
-    shader->bindFragDataLocation(0, "FragData0");
   } else {
-    shader->loadFromSourceFile(m_normalShaderFiles, m_header);
     shader->bindFragDataLocation(0, "FragData0");
+    shader->loadFromSourceFile(m_normalShaderFiles, m_header);
   }
 }
 
@@ -134,9 +134,9 @@ void Z3DShaderGroup::buildDualDepthPeelingInitShader(Z3DShaderProgram *shader)
   } else {
     header += "#define FragData1 gl_FragData[1]\n";
   }
-  shader->loadFromSourceFile(allshaders, header);
   shader->bindFragDataLocation(0, "FragData0");
   shader->bindFragDataLocation(1, "FragData1");
+  shader->loadFromSourceFile(allshaders, header);
 }
 
 //#define USE_RECT_TEX
@@ -156,10 +156,10 @@ void Z3DShaderGroup::buildDualDepthPeelingPeelShader(Z3DShaderProgram *shader)
 #ifdef USE_RECT_TEX
   header += "#define USE_RECT_TEX\n";
 #endif
-  shader->loadFromSourceFile(allshaders, header);
   shader->bindFragDataLocation(0, "FragData0");
   shader->bindFragDataLocation(1, "FragData1");
   shader->bindFragDataLocation(2, "FragData2");
+  shader->loadFromSourceFile(allshaders, header);
 }
 
 void Z3DShaderGroup::buildWeightedAverageShader(Z3DShaderProgram *shader)
@@ -172,7 +172,7 @@ void Z3DShaderGroup::buildWeightedAverageShader(Z3DShaderProgram *shader)
   } else {
     header += "#define FragData1 gl_FragData[1]\n";
   }
-  shader->loadFromSourceFile(allshaders, header);
   shader->bindFragDataLocation(0, "FragData0");
   shader->bindFragDataLocation(1, "FragData1");
+  shader->loadFromSourceFile(allshaders, header);
 }

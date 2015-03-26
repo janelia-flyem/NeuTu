@@ -63,18 +63,18 @@ ZSwcTree* ZSwcGenerator::createCircleSwc(double cx, double cy, double cz, double
   return tree;
 }
 
-ZSwcTree* ZSwcGenerator::createBoxSwc(const ZCuboid &box)
+ZSwcTree* ZSwcGenerator::createBoxSwc(const ZCuboid &box, double radius)
 {
-  return ZSwcTree::createCuboidSwc(box);
+  return ZSwcTree::createCuboidSwc(box, radius);
 }
 
-ZSwcTree* ZSwcGenerator::createBoxSwc(const ZIntCuboid &box)
+ZSwcTree* ZSwcGenerator::createBoxSwc(const ZIntCuboid &box, double radius)
 {
   ZCuboid cuboid;
   cuboid.setFirstCorner(ZPoint(box.getFirstCorner().toPoint()));
   cuboid.setSize(box.getWidth(), box.getHeight(), box.getDepth());
 
-  return createBoxSwc(cuboid);
+  return createBoxSwc(cuboid, radius);
 }
 
 ZSwcTree* ZSwcGenerator::createSwc(const ZFlyEmNeuronRange &range)
@@ -541,7 +541,7 @@ ZSwcTree* ZSwcGenerator::createSurfaceSwc(const ZStack &stack, int sparseLevel)
             if (count++ % sparseLevel == 0) {
               SwcTreeNode::makePointer(x + stack.getOffset().getX(),
                                        y + stack.getOffset().getY(),
-                                       z + stack.getOffset().getY(),
+                                       z + stack.getOffset().getZ(),
                                        sparseLevel * 0.7, root);
             }
           }

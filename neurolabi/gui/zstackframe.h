@@ -25,6 +25,7 @@
 #include "z3dwindow.h"
 #include "zsharedpointer.h"
 #include "zstackviewparam.h"
+#include "zmessageprocessor.h"
 
 class ZStackView;
 class ZStackPresenter;
@@ -40,28 +41,39 @@ class ZStackDoc;
 class ZTileManager;
 class ZStackDocReader;
 class MainWindow;
+class QMdiArea;
+class ZMessage;
+class ZMessageManager;
 
 class ZStackFrame : public QMdiSubWindow, public ZReportable
 {
   Q_OBJECT
 
 public:
-  explicit ZStackFrame(QWidget *parent = 0, bool preparingModel = true);
-  explicit ZStackFrame(QWidget *parent, ZSharedPointer<ZStackDoc> doc);
+  explicit ZStackFrame(QWidget *parent = 0, Qt::WindowFlags flags = 0);
+  //explicit ZStackFrame(QWidget *parent, ZSharedPointer<ZStackDoc> doc);
+
+public:
   virtual ~ZStackFrame();
 
 public:
+  static ZStackFrame* Make(QMdiArea *parent);
+  static ZStackFrame* Make(QMdiArea *parent, ZSharedPointer<ZStackDoc> doc);
+
   // A frame has three parts: view, document and presenter
   inline ZStackView* view() const { return m_view; }
   inline ZSharedPointer<ZStackDoc> document() const { return m_doc; }
   inline ZStackPresenter *presenter() const { return m_presenter; }
 
-  virtual void constructFrame();
-  virtual void constructFrame(ZSharedPointer<ZStackDoc> doc);
-  virtual void createView();
-  virtual void createPresenter();
+  //virtual void constructFrame();
+  void constructFrame(ZSharedPointer<ZStackDoc> doc);
+  void createView();
+  void createPresenter();
+  void connectSignalSlot();
+  virtual void customizeWidget();
+
   virtual void createDocument();
-  virtual void connectSignalSlot();
+  virtual void enableMessageManager();
 
   inline bool isClosing() const { return m_isClosing; }
   inline bool hasProject() const { return (m_traceProject != NULL); }
@@ -70,6 +82,11 @@ public:
   void addDocData(const ZStackDocReader &reader);
 
   inline virtual std::string name() { return "base"; }
+
+  class MessageProcessor : public ZMessageProcessor {
+  public:
+    void processMessage(ZMessage *message, QWidget *host) const;
+  };
 
 public:
   void loadStack(Stack *stack, bool isOwner = true);
@@ -119,6 +136,12 @@ public:
 
   void displayActiveDecoration(bool enabled = true);
 
+
+  /*!
+   * \brief Get the global geometry of the view window.
+   */
+  QRect getViewGeometry() const;
+
   ZInteractiveContext::ViewMode getViewMode() const;
   void setViewMode(ZInteractiveContext::ViewMode mode);
   void setObjectDisplayStyle(ZStackObject::EDisplayStyle style);
@@ -131,8 +154,7 @@ public:
   void hideObject();
   void showObject();
 
-  Z3DWindow* open3DWindow(QWidget *parent,
-                          Z3DWindow::EInitMode mode = Z3DWindow::NORMAL_INIT);
+  Z3DWindow* open3DWindow(Z3DWindow::EInitMode mode = Z3DWindow::NORMAL_INIT);
   /*!
    * \brief Get the main window ancestor of the frame.
    */
@@ -240,6 +262,7 @@ public slots:
                           QString suffix = "");
   void changeWindowTitle(bool clean);
   void detach3DWindow();
+  void close3DWindow();
   void setupDisplay();
   void zoomToSelectedSwcNodes();
   void notifyUser(const QString &message);
@@ -270,8 +293,15 @@ protected:
   void consumeDocument(ZStackDoc *doc);
   void setDocument(ZSharedPointer<ZStackDoc> doc);
 
+  void dropDocument(ZSharedPointer<ZStackDoc> doc);
+  void updateDocument();
+
 private:
   void setView(ZStackView *view);
+  //ZMessageManager *getMessageManager();
+
+protected:
+  static void BaseConstruct(ZStackFrame *frame, ZSharedPointer<ZStackDoc> doc);
 
 protected:
   SettingDialog *m_settingDlg;
@@ -291,7 +321,10 @@ protected:
 
   Z3DWindow *m_3dWindow;
 
+  bool m_isWidgetReady;
+
   ZQtBarProgressReporter m_progressReporter;
+  ZMessageManager *m_messageManager;
 };
 
 #endif

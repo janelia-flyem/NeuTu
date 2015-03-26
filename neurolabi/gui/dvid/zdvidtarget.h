@@ -107,6 +107,7 @@ public:
    * \brief Load json object
    */
   void loadJsonObject(const ZJsonObject &obj);
+  ZJsonObject toJsonObject() const;
 
   void print() const;
 

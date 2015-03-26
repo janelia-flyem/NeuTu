@@ -60,6 +60,8 @@ public:
   bool lockNode(const QString &message);
   std::string createVersionBranch();
 
+  int getCurrentZ() const;
+
 signals:
   void progressAdvanced(double dp);
   void progressStarted();

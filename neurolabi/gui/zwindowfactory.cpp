@@ -9,9 +9,10 @@
 #include "zscalablestack.h"
 #include "z3dvolume.h"
 #include "z3dvolumesource.h"
+#include "z3dwindow.h"
 
 ZWindowFactory::ZWindowFactory() : m_parentWidget(NULL),
-  m_showVolumeBoundBox(false)
+  m_showVolumeBoundBox(false), m_showControlPanel(true), m_showObjectView(true)
 {
 }
 
@@ -22,6 +23,16 @@ Z3DWindow* ZWindowFactory::make3DWindow(
   ZSharedPointer<ZStackDoc> sharedDoc(doc);
 
   return make3DWindow(sharedDoc, mode);
+}
+
+Z3DWindow* ZWindowFactory::open3DWindow(
+    ZStackDoc *doc, Z3DWindow::EInitMode mode)
+{
+  Z3DWindow *window = make3DWindow(doc, mode);
+  window->show();
+  window->raise();
+
+  return window;
 }
 
 Z3DWindow* ZWindowFactory::make3DWindow(ZSharedPointer<ZStackDoc> doc,
@@ -58,13 +69,21 @@ Z3DWindow* ZWindowFactory::make3DWindow(ZSharedPointer<ZStackDoc> doc,
       window->getVolumeRaycaster()->hideBoundBox();
     }
 
-    if (m_windowGeometry.isEmpty()) {
+    if (m_windowGeometry.isEmpty() && m_parentWidget == NULL) {
       QRect screenRect = QApplication::desktop()->screenGeometry();
       window->setGeometry(screenRect.width() / 10, screenRect.height() / 10,
                           screenRect.width() - screenRect.width() / 5,
                           screenRect.height() - screenRect.height() / 5);
     } else {
       window->setGeometry(m_windowGeometry);
+    }
+
+    if (!isControlPanelVisible()) {
+      window->hideControlPanel();
+    }
+
+    if (!isObjectViewVisible()) {
+      window->hideObjectView();
     }
   }
 
@@ -106,4 +125,9 @@ void ZWindowFactory::setWindowTitle(const QString &title)
 void ZWindowFactory::setParentWidget(QWidget *parentWidget)
 {
   m_parentWidget = parentWidget;
+}
+
+void ZWindowFactory::setWindowGeometry(const QRect &rect)
+{
+  m_windowGeometry = rect;
 }

@@ -202,6 +202,19 @@ ZIntPoint ZDvidInfo::getBlockIndex(double x, double y, double z) const
   return blockIndex;
 }
 
+int ZDvidInfo::getBlockIndexZ(int z) const
+{
+  int bz = -1;
+  if (z < m_startCoordinates[2] ||
+      z >= m_startCoordinates[2] + m_stackSize[2]) {
+    return bz;
+  }
+
+  bz = (z - m_startCoordinates[2]) / m_blockSize[2] + m_startBlockIndex[2];
+
+  return bz;
+}
+
 bool ZDvidInfo::isValidBlockIndex(const ZIntPoint &pt)
 {
   for (int i = 0; i < 3; ++i) {
@@ -326,7 +339,15 @@ ZIntCuboid ZDvidInfo::getBlockBox(int x, int y, int z) const
   return cuboid;
 }
 
-ZIntCuboid ZDvidInfo::getBlockBox(const ZIntPoint &blockIndex)
+ZIntCuboid ZDvidInfo::getBlockBox(const ZIntPoint &blockIndex) const
 {
   return getBlockBox(blockIndex.getX(), blockIndex.getY(), blockIndex.getZ());
+}
+
+ZIntPoint ZDvidInfo::getEndCoordinates() const
+{
+  ZIntPoint pt = getStartCoordinates();
+  pt += ZIntPoint(m_stackSize[0], m_stackSize[1], m_stackSize[2]);
+
+  return pt;
 }

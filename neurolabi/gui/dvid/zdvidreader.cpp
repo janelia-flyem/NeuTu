@@ -1,6 +1,7 @@
 #include "zdvidreader.h"
 
 #include <QThread>
+#include <vector>
 
 #include "zdvidbuffer.h"
 #include "zstackfactory.h"
@@ -238,6 +239,84 @@ ZStack* ZDvidReader::readGrayScale(const ZIntCuboid &cuboid)
                        cuboid.getDepth());
 }
 
+std::vector<ZStack*> ZDvidReader::readGrayScaleBlock(
+    const ZIntPoint &blockIndex, const ZDvidInfo &dvidInfo,
+    int blockNumber)
+{
+  ZDvidBufferReader bufferReader;
+  ZDvidUrl dvidUrl(getDvidTarget());
+#ifdef _DEBUG_2
+  tic();
+#endif
+
+  bufferReader.read(dvidUrl.getGrayScaleBlockUrl(blockIndex.getX(),
+                                                 blockIndex.getY(),
+                                                 blockIndex.getZ(),
+                                                 blockNumber).c_str());
+#ifdef _DEBUG_2
+  std::cout << "reading time:" << std::endl;
+  ptoc();
+#endif
+
+#ifdef _DEBUG_2
+  tic();
+#endif
+
+  std::vector<ZStack*> stackArray(blockNumber, NULL);
+
+  if (bufferReader.getStatus() == ZDvidBufferReader::READ_OK) {
+    const QByteArray &data = bufferReader.getBuffer();
+    if (data.length() > 0) {
+//      int realBlockNumber = *((int*) data.constData());
+
+      ZIntCuboid currentBox = dvidInfo.getBlockBox(blockIndex);
+      for (int i = 0; i < blockNumber; ++i) {
+        //stackArray[i] = ZStackFactory::makeZeroStack(GREY, currentBox);
+        stackArray[i] = new ZStack(GREY, currentBox, 1);
+#ifdef _DEBUG_2
+        std::cout << data.length() << " " << stack->getVoxelNumber() << std::endl;
+#endif
+        stackArray[i]->loadValue(data.constData() + i * currentBox.getVolume(),
+                         currentBox.getVolume(), stackArray[i]->array8());
+        currentBox.translateX(currentBox.getWidth());
+      }
+    }
+  }
+
+#ifdef _DEBUG_2
+  std::cout << "parsing time:" << std::endl;
+  ptoc();
+#endif
+
+  return stackArray;
+}
+
+ZStack* ZDvidReader::readGrayScaleBlock(
+    const ZIntPoint &blockIndex, const ZDvidInfo &dvidInfo)
+{
+  ZDvidBufferReader bufferReader;
+  ZDvidUrl dvidUrl(getDvidTarget());
+  bufferReader.read(dvidUrl.getGrayScaleBlockUrl(blockIndex.getX(),
+                                                 blockIndex.getY(),
+                                                 blockIndex.getZ()).c_str());
+  ZStack *stack = NULL;
+  if (bufferReader.getStatus() == ZDvidBufferReader::READ_OK) {
+    const QByteArray &data = bufferReader.getBuffer();
+    int realBlockNumber = *((int*) data.constData());
+
+    if (!data.isEmpty() && realBlockNumber == 1) {
+      ZIntCuboid box = dvidInfo.getBlockBox(blockIndex);
+      stack = ZStackFactory::makeZeroStack(GREY, box);
+#ifdef _DEBUG_
+      std::cout << data.length() << " " << stack->getVoxelNumber() << std::endl;
+#endif
+      stack->loadValue(data.constData() + 4, data.length() - 4, stack->array8());
+    }
+  }
+
+  return stack;
+}
+
 ZSparseStack* ZDvidReader::readSparseStack(int bodyId)
 {
   ZSparseStack *spStack = NULL;
@@ -247,6 +326,9 @@ ZSparseStack* ZDvidReader::readSparseStack(int bodyId)
   //ZSparseObject *body = new ZSparseObject;
   //body->append(reader.readBody(bodyId));
   //body->canonize();
+#ifdef _DEBUG_2
+  tic();
+#endif
 
   if (!body->isEmpty()) {
     spStack = new ZSparseStack;
@@ -274,20 +356,36 @@ ZSparseStack* ZDvidReader::readSparseStack(int bodyId)
       for (int i = 0; i < segmentNumber; ++i) {
         int x0 = stripe.getSegmentStart(i);
         int x1 = stripe.getSegmentEnd(i);
+        //tic();
+#if 0
+        const ZIntPoint blockIndex =
+            ZIntPoint(x0, y, z) - dvidInfo.getStartBlockIndex();
+        std::vector<ZStack*> stackArray =
+            readGrayScaleBlock(blockIndex, dvidInfo, x1 - x0 + 1);
+        grid->consumeStack(blockIndex, stackArray);
+#else
+
         for (int x = x0; x <= x1; ++x) {
           const ZIntPoint blockIndex =
               ZIntPoint(x, y, z) - dvidInfo.getStartBlockIndex();
+          //ZStack *stack = readGrayScaleBlock(blockIndex, dvidInfo);
           //const ZIntPoint blockIndex = *iter - dvidInfo.getStartBlockIndex();
           ZIntCuboid box = grid->getBlockBox(blockIndex);
           ZStack *stack = readGrayScale(box);
           grid->consumeStack(blockIndex, stack);
         }
+#endif
+        //ptoc();
       }
     }
     //}
   } else {
     delete body;
   }
+
+#ifdef _DEBUG_2
+  ptoc();
+#endif
 
   return spStack;
 }
@@ -760,18 +858,23 @@ ZArray* ZDvidReader::readLabels64(
   ZDvidBufferReader bufferReader;
   bufferReader.read(dvidUrl.getLabels64Url(
                       dataName, width, height, depth, x0, y0, z0).c_str());
-  bufferReader.getBuffer();
-  int dims[3];
-  dims[0] = width;
-  dims[1] = height;
-  dims[2] = depth;
-  ZArray *array = new ZArray(mylib::UINT64_TYPE, 3, dims);
 
-  array->setStartCoordinate(0, x0);
-  array->setStartCoordinate(1, y0);
-  array->setStartCoordinate(2, z0);
+  ZArray *array = NULL;
 
-  array->copyDataFrom(bufferReader.getBuffer().constData());
+  if (bufferReader.getStatus() == ZDvidBufferReader::READ_OK) {
+    //bufferReader.getBuffer();
+    int dims[3];
+    dims[0] = width;
+    dims[1] = height;
+    dims[2] = depth;
+    array = new ZArray(mylib::UINT64_TYPE, 3, dims);
+
+    array->setStartCoordinate(0, x0);
+    array->setStartCoordinate(1, y0);
+    array->setStartCoordinate(2, z0);
+
+    array->copyDataFrom(bufferReader.getBuffer().constData());
+  }
 
   return array;
 }

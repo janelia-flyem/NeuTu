@@ -57,6 +57,8 @@ public:
   std::string getGrayscaleUrl(int sx, int sy, int x0, int y0, int z0) const;
   std::string getGrayscaleUrl(int sx, int sy, int sz, int x0, int y0, int z0)
    const;
+  std::string getGrayScaleBlockUrl(
+      int ix, int iy, int iz, int blockNumber = 1) const;
 
   std::string getLabels64Url(
       const std::string &name,

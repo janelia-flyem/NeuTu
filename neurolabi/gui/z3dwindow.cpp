@@ -71,6 +71,7 @@
 #include "zsparsestack.h"
 #include "zmarkswcsomadialog.h"
 #include "zinteractivecontext.h"
+#include "zwindowfactory.h"
 
 class Sleeper : public QThread
 {
@@ -778,11 +779,26 @@ void Z3DWindow::customizeContextMenu()
     m_toogleAddSwcNodeModeAction->setVisible(false);
     //m_toogleMoveSelectedObjectsAction->setVisible(false);
     m_toggleSmartExtendSelectedSwcNodeAction->setVisible(false);
+    m_refreshTraceMaskAction->setVisible(false);
   }
 }
 
 Z3DVolumeRaycasterRenderer* Z3DWindow::getVolumeRaycasterRenderer() {
   return m_volumeRaycaster->getRenderer();
+}
+
+void Z3DWindow::hideControlPanel()
+{
+  if (m_settingsDockWidget != NULL) {
+    m_settingsDockWidget->hide();
+  }
+}
+
+void Z3DWindow::hideObjectView()
+{
+  if (m_objectsDockWidget != NULL) {
+    m_objectsDockWidget->hide();
+  }
 }
 
 void Z3DWindow::createDockWindows()
@@ -990,6 +1006,11 @@ bool Z3DWindow::hasVolume()
 void Z3DWindow::resetCamera()
 {
   setupCamera(m_boundBox, Z3DCamera::ResetAll);
+}
+
+void Z3DWindow::resetCameraCenter()
+{
+  setupCamera(m_boundBox, Z3DCamera::PreserveViewVector);
 }
 
 void Z3DWindow::setupCamera(const std::vector<double> &bound,
@@ -3359,3 +3380,34 @@ void Z3DWindow::setBackgroundColor(
   getCompositor()->setBackgroundFirstColor(color1);
   getCompositor()->setBackgroundSecondColor(color2);
 }
+
+Z3DWindow* Z3DWindow::Make(
+    ZStackDoc* doc, QWidget *parent, Z3DWindow::EInitMode mode)
+{
+  return Make(ZSharedPointer<ZStackDoc>(doc), parent, mode);
+}
+
+Z3DWindow* Z3DWindow::Open(
+    ZStackDoc* doc, QWidget *parent, Z3DWindow::EInitMode mode)
+{
+  return Open(ZSharedPointer<ZStackDoc>(doc), parent, mode);
+}
+
+Z3DWindow* Z3DWindow::Make(
+    ZSharedPointer<ZStackDoc> doc, QWidget *parent, Z3DWindow::EInitMode mode)
+{
+  ZWindowFactory factory;
+  factory.setParentWidget(parent);
+  return factory.make3DWindow(doc, mode);
+}
+
+Z3DWindow* Z3DWindow::Open(
+    ZSharedPointer<ZStackDoc> doc, QWidget *parent, Z3DWindow::EInitMode mode)
+{
+  Z3DWindow *window = Make(doc, parent, mode);
+  window->show();
+  window->raise();
+
+  return window;
+}
+

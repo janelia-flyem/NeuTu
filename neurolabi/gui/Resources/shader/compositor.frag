@@ -14,9 +14,9 @@ void main()
   vec2 texCoords = gl_FragCoord.xy * screen_dim_RCP;
 
   vec4 color0 = texture(color_texture_0, texCoords);
-  float depth0 = texture(depth_texture_0, texCoords).z;
+  float depth0 = texture(depth_texture_0, texCoords).r;
   vec4 color1 = texture(color_texture_1, texCoords);
-  float depth1 = texture(depth_texture_1, texCoords).z;
+  float depth1 = texture(depth_texture_1, texCoords).r;
 
   vec4 fragColor = vec4(0.0);
   float fragDepth = 1.0;

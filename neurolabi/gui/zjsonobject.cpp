@@ -253,7 +253,9 @@ void ZJsonObject::setEntry(const char *key, const string &value)
     return;
   }
 
-  setEntryWithoutKeyCheck(key, json_string(value.c_str()), true);
+  if (!value.empty()) {
+    setEntryWithoutKeyCheck(key, json_string(value.c_str()), true);
+  }
 }
 
 void ZJsonObject::setEntry(const char *key, const double *array, size_t n)
@@ -281,6 +283,24 @@ void ZJsonObject::setEntry(const char *key, bool v)
   }
 
   setEntryWithoutKeyCheck(key, C_Json::makeBoolean(v));
+}
+
+void ZJsonObject::setEntry(const char *key, int64_t v)
+{
+  if (!isValidKey(key)) {
+    return;
+  }
+
+  setEntryWithoutKeyCheck(key, C_Json::makeInteger(v), true);
+}
+
+void ZJsonObject::setEntry(const char *key, uint64_t v)
+{
+  if (!isValidKey(key)) {
+    return;
+  }
+
+  setEntryWithoutKeyCheck(key, C_Json::makeInteger(v), true);
 }
 
 void ZJsonObject::setEntry(const char *key, int v)

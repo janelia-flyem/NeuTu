@@ -138,6 +138,25 @@ std::string ZDvidTarget::getBodyPath(int bodyId) const
   return getSourceString() + ":" + ZString::num2str(bodyId);
 }
 
+ZJsonObject ZDvidTarget::toJsonObject() const
+{
+  ZJsonObject obj;
+  if (m_port >= 0) {
+    obj.setEntry(m_portKey, m_port);
+  }
+
+  obj.setEntry(m_addressKey, m_address);
+  obj.setEntry(m_uuidKey, m_uuid);
+  obj.setEntry(m_commentKey, m_comment);
+  obj.setEntry(m_nameKey, m_name);
+  obj.setEntry(m_localKey, m_localFolder);
+  obj.setEntry(m_bgValueKey, m_bgValue);
+  obj.setEntry(m_bodyLabelNameKey, m_bodyLabelName);
+  obj.setEntry(m_labelBlockNameKey, m_labelBlockName);
+
+  return obj;
+}
+
 void ZDvidTarget::loadJsonObject(const ZJsonObject &obj)
 {
   clear();

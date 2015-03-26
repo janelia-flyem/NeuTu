@@ -10,6 +10,15 @@
 #include "neutubeconfig.h"
 #include "zstring.h"
 #include "zparameterarray.h"
+#include "zstackmvc.h"
+#include "zstackdoc.h"
+#include "zflyemcontrolform.h"
+#include "flyembodymergeprojectdialog.h"
+#include "dvid/zdvidreader.h"
+#include "zstackfactory.h"
+#include "dvid/zdvidtile.h"
+#include "zstackview.h"
+#include "dvid/zdvidtileensemble.h"
 
 ZDialogFactory::ZDialogFactory(QWidget *parentWidget)
 {
@@ -46,6 +55,68 @@ DvidImageDialog* ZDialogFactory::makeDvidImageDialog(
 ZSpinBoxDialog* ZDialogFactory::makeSpinBoxDialog(QWidget *parent)
 {
   ZSpinBoxDialog *dlg = new ZSpinBoxDialog(parent);
+  return dlg;
+}
+
+QDialog* ZDialogFactory::makeStackDialog(QWidget *parent)
+{
+  QDialog *dlg = new QDialog(parent);
+  QHBoxLayout *layout = new QHBoxLayout(dlg);
+  layout->setMargin(1);
+  dlg->setLayout(layout);
+
+  ZDvidTarget target;
+  target.set("http://emrecon100.janelia.priv", "2a3", -1);
+
+  //target.set("http://emdata1.int.janelia.org", "8e2", 9000);
+
+  ZDvidReader reader;
+  reader.open(target);
+  ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
+  ZStackDoc *doc = new ZStackDoc(NULL, NULL);
+  ZStack *stack = ZStackFactory::makeVirtualStack(
+        ZIntCuboid(dvidInfo.getStartCoordinates(),
+                   dvidInfo.getEndCoordinates()));
+  doc->loadStack(stack);
+  //doc->loadFile(GET_TEST_DATA_DIR + "/benchmark/ball.tif");
+
+  ZStackMvc *stackWidget =
+      ZStackMvc::Make(NULL, ZSharedPointer<ZStackDoc>(doc));
+
+  ZDvidTileEnsemble *ensemble = new ZDvidTileEnsemble;
+  ensemble->setDvidTarget(target);
+  ensemble->attachView(stackWidget->getView());
+  doc->addObject(ensemble);
+
+  stackWidget->getView()->reset();
+   /*
+  ZDvidReader reader;
+  reader.open(target);
+
+  ZDvidTile *tile = reader.readTile(3, 0, 0, 6000);
+  tile->setDvidTarget(target);
+  tile->printInfo();
+
+  tile->attachView(stackWidget->getView());
+  doc->addObject(tile);
+
+  tile = reader.readTile(3, 0, 1, 6000);
+  tile->attachView(stackWidget->getView());
+  doc->addObject(tile);
+
+  tile = reader.readTile(3, 1, 0, 6000);
+  tile->attachView(stackWidget->getView());
+  doc->addObject(tile);
+
+  tile = reader.readTile(3, 1, 1, 6000);
+  tile->attachView(stackWidget->getView());
+  doc->addObject(tile);
+  */
+
+
+  layout->addWidget(stackWidget);
+  layout->addWidget(new FlyEmBodyMergeProjectDialog);
+
   return dlg;
 }
 

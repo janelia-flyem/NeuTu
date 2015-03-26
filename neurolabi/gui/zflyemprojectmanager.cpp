@@ -10,6 +10,9 @@ ZFlyEmProjectManager::ZFlyEmProjectManager(QObject *parent) :
   m_splitDlg = new FlyEmBodySplitProjectDialog(dynamic_cast<QWidget*>(parent));
 
   connectSignalSlot();
+
+  m_mergeDlg->enableMessageManager();
+  m_splitDlg->enableMessageManager();
 }
 
 void ZFlyEmProjectManager::connectSignalSlot()

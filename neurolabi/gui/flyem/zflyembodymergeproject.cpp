@@ -45,6 +45,16 @@ void ZFlyEmBodyMergeProject::clear()
   m_currentSelected.clear();
 }
 
+int ZFlyEmBodyMergeProject::getCurrentZ() const
+{
+  int z = 0;
+  if (m_dataFrame != NULL) {
+    z = m_dataFrame->document()->getStackOffset().getZ();
+  }
+
+  return z;
+}
+
 void ZFlyEmBodyMergeProject::test()
 {
   ZStackDocReader *reader = new ZStackDocReader();
@@ -356,17 +366,32 @@ void ZFlyEmBodyMergeProject::showBody3d()
   if (m_bodyWindow == NULL) {
     ZStackDoc *doc = new ZStackDoc(NULL, NULL);
     ZWindowFactory factory;
+    factory.setControlPanelVisible(false);
+    factory.setObjectViewVisible(false);
+
+    if (m_dataFrame != NULL) {
+      QRect rect = m_dataFrame->getViewGeometry();
+      rect.moveTo(rect.right(), rect.top());
+      rect.setSize(rect.size() / 2);
+      factory.setWindowGeometry(rect);
+    }
+
     m_bodyWindow = factory.make3DWindow(doc);
+    //m_bodyWindow->setParent(m_dataFrame);
+
     connect(m_bodyWindow, SIGNAL(closed()), this, SLOT(detachBodyWindow()));
     m_bodyWindow->getSwcFilter()->setColorMode("Intrinsic");
     m_bodyWindow->getSwcFilter()->setRenderingPrimitive("Sphere");
+    m_bodyWindow->getSwcFilter()->setStayOnTop(false);
+    m_bodyWindow->setYZView();
   }
 
   m_bodyWindow->show();
   m_bodyWindow->raise();
 }
 
-void ZFlyEmBodyMergeProject::update3DBodyView(const ZStackObjectSelector &selector)
+void ZFlyEmBodyMergeProject::update3DBodyView(
+    const ZStackObjectSelector &selector)
 {
   if (m_bodyWindow != NULL) {
 //    m_bodyWindow->getDocument()->removeAllObject();
@@ -374,6 +399,19 @@ void ZFlyEmBodyMergeProject::update3DBodyView(const ZStackObjectSelector &select
         selector.getSelectedList(ZStackObject::TYPE_OBJECT3D_SCAN);
     ZFlyEmDvidReader reader;
     reader.open(getDvidTarget());
+
+    ZStack *oldStack = m_bodyWindow->getDocument()->getStack();
+    ZStack *newStack = getDataFrame()->document()->getStack();
+    if (oldStack != NULL) {
+      if (oldStack->getBoundBox().equals(newStack->getBoundBox())) {
+        newStack = NULL;
+      }
+    }
+    if (newStack != NULL) {
+      m_bodyWindow->getDocument()->loadStack(newStack->clone());
+    }
+
+    ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
     m_bodyWindow->getDocument()->blockSignals(true);
     for (std::vector<ZStackObject*>::const_iterator iter = objList.begin();
          iter != objList.end(); ++iter) {
@@ -389,7 +427,22 @@ void ZFlyEmBodyMergeProject::update3DBodyView(const ZStackObjectSelector &select
           body.setAlpha(255);
           //        tic();
           ZSwcTree *tree = ZSwcGenerator::createSurfaceSwc(body);
+          tree->translate(-dvidInfo.getStartBlockIndex());
+          tree->rescale(dvidInfo.getBlockSize().getX(),
+                        dvidInfo.getBlockSize().getY(),
+                        dvidInfo.getBlockSize().getZ());
+          tree->translate(dvidInfo.getStartCoordinates());
           tree->setSource(ZStackObjectSourceFactory::MakeFlyEmBodySource(label));
+
+          //Add bound box
+          /*
+          ZObject3dScan slice =
+              body.getSlice(dvidInfo.getBlockIndexZ(getCurrentZ()));
+          ZIntCuboid box = slice.getBoundBox();
+          ZSwcTree *boxTree = ZSwcGenerator::createBoxSwc(box, 0.1);
+          tree->merge(boxTree, true);
+          */
+
           //        ptoc();
 
           m_bodyWindow->getDocument()->addSwcTree(tree, true);
@@ -421,7 +474,7 @@ void ZFlyEmBodyMergeProject::update3DBodyView(const ZStackObjectSelector &select
 
     m_bodyWindow->show();
     m_bodyWindow->raise();
-    m_bodyWindow->resetCamera();
+    m_bodyWindow->resetCameraCenter();
   }
 }
 
@@ -429,6 +482,8 @@ int ZFlyEmBodyMergeProject::getSelectedBodyId() const
 {
   int bodyId = -1;
   if (m_dataFrame != NULL) {
+    bodyId = m_dataFrame->getCompleteDocument()->getSelectedBodyId();
+    /*
     const TStackObjectSet &objSet =
         m_dataFrame->document()->getSelected(ZStackObject::TYPE_OBJECT3D_SCAN);
     if (objSet.size() == 1) {
@@ -436,6 +491,7 @@ int ZFlyEmBodyMergeProject::getSelectedBodyId() const
           dynamic_cast<ZObject3dScan*>(*(objSet.begin()));
       bodyId = obj->getLabel();
     }
+    */
   }
 
   return bodyId;

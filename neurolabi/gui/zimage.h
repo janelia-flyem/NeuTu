@@ -94,6 +94,8 @@ public:
   void setBackground();
 
   ZImage *createMask();
+  static ZImage* createMask(int width, int height);
+  static ZImage* createMask(const QSize &size);
 
   void enhanceEdge();
   //void drawObject(Object_3d *obj, int z);

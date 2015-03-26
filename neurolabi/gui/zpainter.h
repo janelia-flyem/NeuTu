@@ -49,8 +49,15 @@ public:
   void	drawPolyline(const QPointF * points, int pointCount);
   void	drawPolyline(const QPoint * points, int pointCount);
 
+  /*
+  const QRect& getFieldOfView() const {
+    return m_projRegion;
+  }
+  */
+
 private:
   ZPoint m_offset;
+  //QRect m_projRegion;
 };
 
 #endif // ZPAINTER_H

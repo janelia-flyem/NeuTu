@@ -540,6 +540,7 @@ public: /* processing routines */
   void downsampleMin(int xintv, int yintv, int zintv);
 
   void crop(const ZIntCuboid &cuboid);
+  ZStack* makeCrop(const ZIntCuboid &cuboid) const;
 
   void swapData(ZStack *stack);
 

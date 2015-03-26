@@ -337,7 +337,17 @@ void ZImage::setBackground()
 
 ZImage* ZImage::createMask()
 {
-  ZImage *mask = new ZImage(width(), height(),
+  return createMask(width(), height());
+}
+
+ZImage* ZImage::createMask(const QSize &size)
+{
+  return createMask(size.width(), size.height());
+}
+
+ZImage* ZImage::createMask(int width, int height)
+{
+  ZImage *mask = new ZImage(width, height,
                             QImage::Format_ARGB32_Premultiplied);
   mask->fill(0);
 

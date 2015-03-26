@@ -57,6 +57,11 @@ void ZImageWidget::setMask(QImage *mask, int channel)
   }
 
   m_mask[channel] = mask;
+
+  if (m_image == NULL) {
+    QSize maskSize = getMaskSize();
+    m_viewPort.setRect(0, 0, maskSize.width(), maskSize.height());
+  }
 }
 
 void ZImageWidget::setViewPort(const QRect &rect)
@@ -568,9 +573,19 @@ void ZImageWidget::zoom(int zoomRatio)
 
 void ZImageWidget::paintEvent(QPaintEvent * /*event*/)
 {
-  if (m_image != NULL && !isPaintBlocked()) {
-    ZPainter painter(this);
-    painter.setRenderHint(QPainter::Antialiasing, false);
+  if (!canvasSize().isEmpty() && !isPaintBlocked()) {
+    ZPainter painter;
+
+    if (!painter.begin(this)) {
+      std::cout << "......failed to begin painter" << std::endl;
+    }
+
+    /*
+    while (!painter.isActive()) {
+      painter.begin(this);
+    }
+    */
+    painter.setRenderHint(QPainter::Antialiasing, true);
     //zoom(m_zoomRatio);
 
     //Compute real viewport and projregion
@@ -594,8 +609,11 @@ void ZImageWidget::paintEvent(QPaintEvent * /*event*/)
     painter.fillRect(downRect, Qt::gray);
 #endif
     QSize size = projectSize();
-    painter.drawImage(m_projRegion, *m_image,
-                      m_viewPort);
+#if 1
+    if (m_image != NULL) {
+      painter.drawImage(m_projRegion, *m_image, m_viewPort);
+    }
+#endif
 
     for (int i = 0; i < m_mask.size(); ++i) {
       if (m_mask[i] != NULL) {
@@ -603,11 +621,17 @@ void ZImageWidget::paintEvent(QPaintEvent * /*event*/)
                             *(m_mask[i]), m_viewPort);
       }
     }
+
     painter.end();
+
 #if 1
     if (m_paintBundle) {
       double zoomRatio = size.width() * 1.0 / m_viewPort.width();
-      ZPainter painter1(this);
+      ZPainter painter1;
+
+      if (!painter1.begin(this)) {
+        std::cout << "......failed to begin painter" << std::endl;
+      }
 #ifdef _DEBUG_2
       std::cout << x() - parentWidget()->x() << " "
                 << y() - parentWidget()->y()
@@ -668,7 +692,9 @@ void ZImageWidget::paintEvent(QPaintEvent * /*event*/)
       painter1.end();
     }
 
-    painter.begin(this);
+    if (!painter.begin(this)) {
+      std::cout << "......failed to begin painter" << std::endl;
+    }
     painter.setRenderHint(QPainter::Antialiasing, false);
     //if (m_zoomRatio > 1 && m_isViewHintVisible) {
     if ((m_viewPort.size().width() < canvasSize().width()
@@ -683,6 +709,7 @@ void ZImageWidget::paintEvent(QPaintEvent * /*event*/)
       painter.drawRect(ratio * m_viewPort.left(), ratio * m_viewPort.top(),
                        ratio * m_viewPort.width(), ratio * m_viewPort.height());
     }
+    painter.end();
 #endif
   }
 }
@@ -700,7 +727,7 @@ QSize ZImageWidget::minimumSizeHint() const
 
 QSize ZImageWidget::sizeHint() const
 {
-  if (m_image == NULL ) {
+  if (m_projRegion.size().isEmpty()) {
     return minimumSizeHint();
   } else {
     return m_projRegion.size();
@@ -731,7 +758,7 @@ void ZImageWidget::addColorTable()
 
 QSize ZImageWidget::screenSize() const
 {
-  if (m_image == NULL) {
+  if (canvasSize().isEmpty()) {
     return QSize(0, 0);
   } else {
     /*
@@ -749,7 +776,7 @@ QSize ZImageWidget::screenSize() const
 QSize ZImageWidget::canvasSize() const
 {
   if (m_image == NULL) {
-    return QSize(0, 0);
+    return getMaskSize();
   } else {
     return m_image->size();
   }
@@ -888,4 +915,23 @@ double ZImageWidget::getActualOffsetY() const
 void ZImageWidget::updateView()
 {
   update(QRect(QPoint(0, 0), screenSize()));
+}
+
+QSize ZImageWidget::getMaskSize() const
+{
+  QSize maskSize(0, 0);
+  for (QVector<QImage*>::const_iterator iter = m_mask.begin();
+       iter != m_mask.end(); ++iter) {
+    const QImage *image = *iter;
+    if (image != NULL) {
+      if (image->size().width() > maskSize.width()) {
+        maskSize.setWidth(image->size().width());
+      }
+      if (image->size().height() > maskSize.height()) {
+        maskSize.setHeight(image->size().height());
+      }
+    }
+  }
+
+  return maskSize;
 }

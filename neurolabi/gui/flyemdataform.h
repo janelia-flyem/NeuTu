@@ -11,6 +11,7 @@
 #include "flyem/zflyemneuronlistmodel.h"
 #include "zqtbarprogressreporter.h"
 #include "flyem/zflyemneuronimagefactory.h"
+#include "zwindowfactory.h"
 
 class ZFlyEmNeuronPresenter;
 class QStatusBar;
@@ -197,6 +198,7 @@ private:
   SwcExportDialog *m_swcExportDlg;
 
   ZProgressManager *m_progressManager;
+  ZWindowFactory m_3dWindowFactory;
 };
 
 #endif // FLYEMDATAFORM_H

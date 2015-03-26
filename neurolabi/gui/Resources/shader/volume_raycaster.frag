@@ -403,11 +403,11 @@ void main()
       //http://www.opengl.org/archives/resources/faq/technical/depthbuffer.htm
       // zw = a/ze + b;  ze = a/(zw - b);  a = f*n/(f-n);  b = 0.5*(f+n)/(f-n) + 0.5;
 #if GLSL_VERSION >= 130
-      float zwFront = texture(ray_entry_points_depth, texCoords).z;
-      float zwBack = texture(ray_exit_points_depth, texCoords).z;
+      float zwFront = texture(ray_entry_points_depth, texCoords).r;
+      float zwBack = texture(ray_exit_points_depth, texCoords).r;
 #else
-      float zwFront = texture2D(ray_entry_points_depth, texCoords).z;
-      float zwBack = texture2D(ray_exit_points_depth, texCoords).z;
+      float zwFront = texture2D(ray_entry_points_depth, texCoords).r;
+      float zwBack = texture2D(ray_exit_points_depth, texCoords).r;
 #endif
       float zeFront = ze_to_zw_a / (zwFront - ze_to_zw_b);
       float zeBack = ze_to_zw_a / (zwBack - ze_to_zw_b);
@@ -416,9 +416,9 @@ void main()
     } else {
 #ifdef RESULT_OPAQUE
 #if GLSL_VERSION >= 130
-      gl_FragDepth = texture(ray_entry_points_depth, texCoords).z;
+      gl_FragDepth = texture(ray_entry_points_depth, texCoords).r;
 #else
-      gl_FragDepth = texture2D(ray_entry_points_depth, texCoords).z;
+      gl_FragDepth = texture2D(ray_entry_points_depth, texCoords).r;
 #endif
 #else
       gl_FragDepth = 1.0;

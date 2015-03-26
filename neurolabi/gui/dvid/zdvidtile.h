@@ -10,6 +10,8 @@
 
 class ZPainter;
 class ZStack;
+class ZStackView;
+class ZRect2d;
 
 class ZDvidTile : public ZStackObject
 {
@@ -26,7 +28,7 @@ public:
 
   void setTileIndex(int ix, int iy);
 
-  void loadDvidPng(const QByteArray &buffer);
+  void loadDvidPng(const QByteArray &buffer, int z);
   void setResolutionLevel(int level);
 //  void setTileOffset(int x, int y, int z);
 
@@ -44,6 +46,13 @@ public:
   int getY() const;
   int getZ() const;
 
+  int getWidth() const;
+  int getHeight() const;
+
+  void attachView(ZStackView *view);
+
+  ZRect2d getBoundBox() const;
+
 private:
   QImage m_image;
   int m_ix;
@@ -53,6 +62,8 @@ private:
   ZDvidResolution m_res;
   ZDvidTileInfo m_tilingInfo;
   ZDvidTarget m_dvidTarget;
+
+  ZStackView *m_view;
 };
 
 #endif // ZDVIDTILE_H

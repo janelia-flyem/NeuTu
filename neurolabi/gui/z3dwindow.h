@@ -50,6 +50,15 @@ public:
                      bool stereoView = false, QWidget *parent = 0);
   virtual ~Z3DWindow();
 
+  static Z3DWindow* Make(ZStackDoc* doc, QWidget *parent,
+                         Z3DWindow::EInitMode mode = Z3DWindow::NORMAL_INIT);
+  static Z3DWindow* Open(ZStackDoc* doc, QWidget *parent,
+                         Z3DWindow::EInitMode mode = Z3DWindow::NORMAL_INIT);
+  static Z3DWindow* Make(ZSharedPointer<ZStackDoc> doc, QWidget *parent,
+                         Z3DWindow::EInitMode mode = Z3DWindow::NORMAL_INIT);
+  static Z3DWindow* Open(ZSharedPointer<ZStackDoc> doc, QWidget *parent,
+                         Z3DWindow::EInitMode mode = Z3DWindow::NORMAL_INIT);
+
   void gotoPosition(double x, double y, double z, double radius = 64);
   void gotoPosition(std::vector<double> bound, double minRadius = 64,
                     double range = 128);
@@ -89,6 +98,9 @@ public:
 
   void setBackgroundColor(const glm::vec3 &color1, const glm::vec3 &color2);
 
+  void hideControlPanel();
+  void hideObjectView();
+
 protected:
 
 private:
@@ -124,6 +136,7 @@ signals:
   
 public slots:
   void resetCamera();  // set up camera based on visible objects in scene, original position
+  void resetCameraCenter();
 
   void flipView(); //Look from the oppsite side
   void setXZView();

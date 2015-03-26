@@ -9,10 +9,12 @@ class QWidget;
 class ZMessage
 {
 public:
-  ZMessage();
+  ZMessage(QWidget *source = NULL);
 
   enum EType {
-    TYPE_FLYEM_SPLIT, TYPE_FLYEM_MERGE, TYPE_INFORMATION, TYPE_NULL
+    TYPE_FLYEM_SPLIT, TYPE_FLYEM_MERGE, TYPE_INFORMATION, TYPE_3D_VIS,
+    TYPE_FLYEM_COARSE_3D_VIS,
+    TYPE_FLYEM_SPLIT_VIEW_3D_BODY, TYPE_NULL
   };
 
 public:
@@ -26,7 +28,20 @@ public:
 
   void deactivate();
 
-  void setBodyEntry(std::string key, std::string value);
+  void setBodyEntry(const std::string &key, std::string value);
+  void setBodyEntry(const std::string &key, int64_t value);
+  void setBodyEntry(const std::string &key, ZJsonObject obj);
+
+  inline void setCurrentSource(const QWidget *source) {
+    m_currentSource = const_cast<QWidget*>(source);
+  }
+
+  inline void setOriginalSource(const QWidget *source) {
+    m_originalSource = const_cast<QWidget*>(source);
+  }
+
+  inline const QWidget* getCurrentSource() const { return m_currentSource; }
+  inline const QWidget* getOriginalSource() const { return m_originalSource; }
 
 private:
   EType m_type;

@@ -37,6 +37,8 @@ public:
 
   ZIntPoint getBlockIndex(int x, int y, int z) const;
 
+  int getBlockIndexZ(int z) const;
+
   /*!
    * \brief Get the indices of all blocks containing at least one voxl of an object
    */
@@ -49,6 +51,8 @@ public:
   inline const ZIntPoint& getStartCoordinates() const {
     return m_startCoordinates;
   }
+
+  ZIntPoint getEndCoordinates() const;
 
   inline const std::vector<int>& getStackSize() const {
     return m_stackSize;
@@ -70,7 +74,7 @@ public:
    */
   ZIntCuboid getBlockBox(int x, int y, int z) const;
 
-  ZIntCuboid getBlockBox(const ZIntPoint &blockIndex);
+  ZIntCuboid getBlockBox(const ZIntPoint &blockIndex) const;
 
   ZIntPoint getBlockSize() const;
   ZIntPoint getGridSize() const;

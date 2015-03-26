@@ -16023,7 +16023,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   ZDvidTarget target("emdata1.int.janelia.org", "cf6e", 7000);
   ZDvidReader reader;
   reader.open(target);
@@ -16031,4 +16031,38 @@ void ZTest::test(MainWindow *host)
   ZDvidVersionDag dag = reader.readVersionDag();
   dag.print();
 #endif
+
+#if 0
+  ZDvidBufferReader reader;
+  tic();
+  reader.read("http://emdata1.int.janelia.org:7000/api/node/cf6e/grayscale/blocks/104_174_79/10");
+  ptoc();
+
+  tic();
+  reader.read("http://emdata1.int.janelia.org:7000/api/node/cf6e/grayscale/raw/0_1_2/320_32_32/3104_5568_3520");
+  ptoc();
+
+  tic();
+  reader.read("http://emdata1.int.janelia.org:7000/api/node/cf6e/grayscale/raw/0_1_2/320_32_32/3104_5568_3520");
+  ptoc();
+
+  tic();
+  reader.read("http://emdata1.int.janelia.org:7000/api/node/cf6e/grayscale/blocks/104_174_78/10");
+  ptoc();
+
+
+  tic();
+  reader.read("http://emdata1.int.janelia.org:7000/api/node/cf6e/grayscale/raw/0_1_2/320_32_32/3104_5568_3520");
+  ptoc();
+#endif
+
+#if 1
+  ZDvidTarget target("emdata1.int.janelia.org", "cf6e", 7000);
+  ZDvidReader reader;
+  reader.open(target);
+  tic();
+  reader.readSparseStack(8376505);
+  ptoc();
+#endif
+
 }

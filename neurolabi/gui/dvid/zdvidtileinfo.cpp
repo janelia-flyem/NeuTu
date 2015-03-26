@@ -1,6 +1,7 @@
 #include "zdvidtileinfo.h"
 
 #include <iostream>
+#include <QRect>
 
 #include "zjsonobject.h"
 #include "zjsonarray.h"
@@ -58,4 +59,42 @@ void ZDvidTileInfo::print() const
 bool ZDvidTileInfo::isValid() const
 {
   return getWidth() > 0 && getHeight() > 0;
+}
+
+int ZDvidTileInfo::getWidth(int level) const
+{
+  int width = getWidth();
+  for (int i = 0; i < level; ++i) {
+    width *= getLevelScale();
+  }
+
+  return width;
+}
+
+int ZDvidTileInfo::getHeight(int level) const
+{
+  int height = getHeight();
+  for (int i = 0; i < level; ++i) {
+    height *= getLevelScale();
+  }
+
+  return height;
+}
+
+std::vector<ZDvidTileInfo::TIndex>
+ZDvidTileInfo::getCoverIndex(int resLevel, const QRect &rect) const
+{
+  int minX = rect.left() / getWidth(resLevel);
+  int maxX = rect.right() / getWidth(resLevel);
+  int minY = rect.top() / getHeight(resLevel);
+  int maxY = rect.bottom() / getHeight(resLevel);
+
+  std::vector<ZDvidTileInfo::TIndex> indexArray;
+  for (int y = minY; y <= maxY; ++y) {
+    for (int x = minX; x <= maxX; ++x) {
+      indexArray.push_back(TIndex(x, y));
+    }
+  }
+
+  return indexArray;
 }

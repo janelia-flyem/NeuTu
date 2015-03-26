@@ -104,8 +104,6 @@ private:
   Z3DRenderTarget *m_waRT;
   Z3DShaderProgram *m_waFinalShader;
 
-  GLuint m_queryId;
-
   Z3DTrackballInteractionHandler* m_interactionHandler;
 
   ZWidgetsGroup *m_backgroundWidgetsGroup;

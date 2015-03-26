@@ -22,6 +22,7 @@
 #include "newprojectmainwindow.h"
 #include "zqtbarprogressreporter.h"
 #include "zmessageprocessor.h"
+#include "zwindowfactory.h"
 
 class ZStackFrame;
 class QMdiArea;
@@ -662,6 +663,7 @@ private:
 
   ZMessageManager *m_messageManager;
   ZTestDialog *m_testDlg;
+  ZWindowFactory m_3dWindowFactory;
   //ZStackDocReader *m_docReader;
 };
 

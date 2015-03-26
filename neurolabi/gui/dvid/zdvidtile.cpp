@@ -1,6 +1,7 @@
 #include "zdvidtile.h"
 
 #include <QTransform>
+#include "zimagewidget.h"
 #include "neutubeconfig.h"
 #include "zstack.hxx"
 #include "zstackfactory.h"
@@ -11,9 +12,10 @@
 #include "zdvidurl.h"
 #include "zdvidtileinfo.h"
 #include "zdvidreader.h"
+#include "zstackview.h"
+#include "zrect2d.h"
 
-
-ZDvidTile::ZDvidTile() : m_ix(0), m_iy(0), m_z(0)
+ZDvidTile::ZDvidTile() : m_ix(0), m_iy(0), m_z(0), m_view(NULL)
 {
   setTarget(ZStackObject::OBJECT_CANVAS);
   m_type = ZStackObject::TYPE_DVID_TILE;
@@ -31,9 +33,21 @@ void ZDvidTile::clear()
   m_dvidTarget.clear();
 }
 
-void ZDvidTile::loadDvidPng(const QByteArray &buffer)
+void ZDvidTile::loadDvidPng(const QByteArray &buffer, int z)
 {
-  m_image.loadFromData(buffer);
+  bool loading = true;
+  if (m_view != NULL) {
+    if (m_view->getZ(NeuTube::COORD_STACK) != z) {
+      loading = false;
+    }
+  }
+  if (loading) {
+#ifdef _DEBUG_
+      std::cout << z << " Loaded." << std::endl;
+#endif
+    m_image.loadFromData(buffer);
+    m_z = z;
+  }
 
 //  m_image.save((GET_TEST_DATA_DIR + "/test.tif").c_str());
 }
@@ -41,13 +55,16 @@ void ZDvidTile::loadDvidPng(const QByteArray &buffer)
 void ZDvidTile::display(
     ZPainter &painter, int slice, EDisplayStyle /*option*/) const
 {
-  if (!m_image.isNull()) {
+  //if (!m_image.isNull()) {
     int z = painter.getOffset().z() + slice;
     m_latestZ = z;
 
     const_cast<ZDvidTile&>(*this).update(z);
 
-    if (z == m_z) {
+    if (z == m_z && !m_image.isNull()) {
+#ifdef _DEBUG_
+      std::cout << "Display " << z << std::endl;
+#endif
 //      ZImage image = getImage();
       int dx = getX() - painter.getOffset().x();
       int dy = getY() - painter.getOffset().y();
@@ -55,6 +72,9 @@ void ZDvidTile::display(
       QRect sourceRect = QRect(0, 0, m_image.width(), m_image.height());
       QRect targetRect = QRect(dx, dy, m_image.width() * m_res.getScale(),
                          m_image.height() * m_res.getScale());
+      if (m_res.getScale() == 1) {
+        m_image.save((GET_DATA_DIR + "/test.tif").c_str());
+      }
       painter.drawImage(targetRect, m_image, sourceRect);
 
 //      ZIntPoint pt = m_offset - painter.getOffset().toIntPoint();
@@ -71,7 +91,7 @@ void ZDvidTile::display(
 //      painter.drawImage(m_image);
 
 //      painter.restore();
-    }
+    //}
   }
 }
 #if 0
@@ -117,11 +137,11 @@ void ZDvidTile::update(int z)
 //    ZDvidTileInfo tileInfo = readTileInfo("graytiles");
 
     if (!buffer.isEmpty()) {
-      loadDvidPng(buffer);
+      loadDvidPng(buffer, z);
       //      setResolutionLevel(m_res.getLevel());
     }
   }
-  m_z = z;
+  //m_z = z;
 }
 #if 0
 void ZDvidTile::setTileOffset(int x, int y, int z)
@@ -161,6 +181,16 @@ int ZDvidTile::getX() const
   return m_ix * m_tilingInfo.getWidth() * m_res.getScale();
 }
 
+int ZDvidTile::getWidth() const
+{
+  return m_tilingInfo.getWidth() * m_res.getScale();
+}
+
+int ZDvidTile::getHeight() const
+{
+  return m_tilingInfo.getHeight() * m_res.getScale();
+}
+
 int ZDvidTile::getY() const
 {
   return m_iy * m_tilingInfo.getHeight() * m_res.getScale();
@@ -169,4 +199,17 @@ int ZDvidTile::getY() const
 int ZDvidTile::getZ() const
 {
   return m_z;
+}
+
+void ZDvidTile::attachView(ZStackView *view)
+{
+  m_view = view;
+}
+
+ZRect2d ZDvidTile::getBoundBox() const
+{
+  ZRect2d rect;
+  rect.set(getX(), getY(), getWidth(), getHeight());
+
+  return rect;
 }

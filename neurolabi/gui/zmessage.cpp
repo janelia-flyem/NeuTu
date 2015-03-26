@@ -2,8 +2,8 @@
 
 #include "tz_utilities.h"
 
-ZMessage::ZMessage() : m_type(ZMessage::TYPE_NULL),
-  m_originalSource(NULL), m_currentSource(NULL),
+ZMessage::ZMessage(QWidget *source) : m_type(ZMessage::TYPE_NULL),
+  m_originalSource(source), m_currentSource(source),
   m_isProcessed(false), m_isActive(true)
 {
 }
@@ -13,7 +13,17 @@ void ZMessage::deactivate()
   m_isActive = false;
 }
 
-void ZMessage::setBodyEntry(std::string key, std::string value)
+void ZMessage::setBodyEntry(const std::string &key, std::string value)
 {
   m_body.setEntry(key.c_str(), value);
+}
+
+void ZMessage::setBodyEntry(const std::string &key, int64_t value)
+{
+  m_body.setEntry(key.c_str(), value);
+}
+
+void ZMessage::setBodyEntry(const std::string &key, ZJsonObject obj)
+{
+  m_body.setEntry(key.c_str(), obj);
 }

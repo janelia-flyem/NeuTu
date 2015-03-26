@@ -34,12 +34,12 @@ ZFrameFactory::MakeStackFrame(ZStackDocReader &reader,
   ZStackFrame *frame = NULL;
   switch (tag) {
   case NeuTube::Document::FLYEM_MERGE:
-    frame = new ZFlyEmBodyMergeFrame;
+    frame = ZFlyEmBodyMergeFrame::Make(NULL);
     frame->document()->setStackBackground(NeuTube::IMAGE_BACKGROUND_BRIGHT);
     frame->setObjectDisplayStyle(ZStackObject::SOLID);
     break;
   default:
-    frame = new ZStackFrame;
+    frame = ZStackFrame::Make(NULL);
     break;
   }
 
@@ -50,6 +50,7 @@ ZFrameFactory::MakeStackFrame(ZStackDocReader &reader,
     frame->document()->setStackBackground(
           parentFrame->document()->getStackBackground());
   }
+  frame->customizeWidget();
 
   return frame;
 }
@@ -61,11 +62,11 @@ ZFrameFactory::MakeStackFrame(
   ZStackFrame *frame = NULL;
   switch (tag) {
   case NeuTube::Document::FLYEM_MERGE:
-    frame = new ZFlyEmBodyMergeFrame;
+    frame = ZFlyEmBodyMergeFrame::Make(NULL);
     frame->document()->setStackBackground(NeuTube::IMAGE_BACKGROUND_BRIGHT);
     break;
   default:
-    frame = new ZStackFrame;
+    frame = ZStackFrame::Make(NULL);
     break;
   }
 
@@ -75,6 +76,8 @@ ZFrameFactory::MakeStackFrame(
     frame->document()->setStackBackground(
           parentFrame->document()->getStackBackground());
   }
+
+  frame->enableMessageManager();
 
   return frame;
 }

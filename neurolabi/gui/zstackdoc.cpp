@@ -607,9 +607,14 @@ bool ZStackDoc::isEmpty()
   return (!hasStackData()) && (!hasObject());
 }
 
-bool ZStackDoc::hasObject()
+bool ZStackDoc::hasObject() const
 {
   return !m_objectGroup.isEmpty();
+}
+
+bool ZStackDoc::hasObject(ZStackObject::EType type) const
+{
+  return !m_objectGroup.getObjectList(type).isEmpty();
 }
 
 bool ZStackDoc::hasSparseObject()
@@ -1116,6 +1121,15 @@ int ZStackDoc::getStackHeight() const
   return getStack()->height();
 }
 
+int ZStackDoc::getStackDepth() const
+{
+  if (getStack() == NULL) {
+    return 0;
+  }
+
+  return getStack()->depth();
+}
+
 int ZStackDoc::stackChannelNumber() const
 {
   if (hasStackData())
@@ -1309,6 +1323,8 @@ void ZStackDoc::loadSwcNetwork(const char *filePath)
   for (size_t i = 0; i < m_swcNetwork->treeNumber(); i++) {
     addSwcTree(m_swcNetwork->getTree(i));
   }
+
+  emit swcNetworkModified();
 }
 
 void ZStackDoc::importFlyEmNetwork(const char *filePath)
@@ -1325,6 +1341,8 @@ void ZStackDoc::importFlyEmNetwork(const char *filePath)
   for (size_t i = 0; i < m_swcNetwork->treeNumber(); i++) {
     addSwcTree(m_swcNetwork->getTree(i));
   }
+
+  emit swcNetworkModified();
 }
 
 void ZStackDoc::setStackSource(const ZStackFile &stackFile)
@@ -1363,6 +1381,11 @@ bool ZStackDoc::hasStackData() const
   }
 
   return false;
+}
+
+bool ZStackDoc::hasStackPaint() const
+{
+  return hasStackData() || hasSparseStack();
 }
 
 bool ZStackDoc::hasStackMask()
@@ -2200,6 +2223,8 @@ void ZStackDoc::addSparseObject(ZSparseObject *obj)
   obj->setRole(ZStackObjectRole::ROLE_SEED);
   m_playerList.append(new ZSparseObjectPlayer(obj));
   emit seedModified();
+
+  notifySparseObjectModified();
 }
 
 void ZStackDoc::addStroke(ZStroke2d *obj)
@@ -2511,6 +2536,7 @@ void ZStackDoc::importPuncta(const QStringList &fileList, LoadObjectOption objop
   }
 
   QString file;
+  blockSignals(true);
   foreach (file, fileList) {
     if (objopt == APPEND_OBJECT) {   // if this file is already loaded, replace it
       QList<ZStackObject*> punctaToRemove = m_objectGroup.findSameSource(
@@ -2532,6 +2558,7 @@ void ZStackDoc::importPuncta(const QStringList &fileList, LoadObjectOption objop
       addPunctum(plist[i]);
     }
   }
+  blockSignals(false);
   emit punctaModified();
 }
 
@@ -4197,7 +4224,7 @@ void ZStackDoc::loadFileList(const QStringList &fileList)
     }
 
     blockSignals(true);
-    loadFile(*iter, false);
+    loadFile(*iter);
     blockSignals(false);
   }
 
@@ -4226,30 +4253,37 @@ void ZStackDoc::loadFileList(const QStringList &fileList)
 #endif
 }
 
-bool ZStackDoc::loadFile(const QString &filePath, bool emitMessage)
+bool ZStackDoc::loadFile(const std::string filePath)
 {
+  return loadFile(QString(filePath.c_str()));
+}
+
+bool ZStackDoc::loadFile(const char *filePath)
+{
+  return loadFile(QString(filePath));
+}
+
+
+bool ZStackDoc::loadFile(const QString &filePath)
+{
+  QFile file(filePath);
+
+  if (!file.exists()) {
+    return false;
+  }
+
   switch (ZFileType::fileType(filePath.toStdString())) {
   case ZFileType::SWC_FILE:
 #ifdef _FLYEM_2
     removeAllObject();
 #endif
     loadSwc(filePath);
-    if (emitMessage) {
-      emit swcModified();
-    }
     break;
   case ZFileType::LOCSEG_CHAIN_FILE:
     loadLocsegChain(filePath);
-    if (emitMessage) {
-      emit chainModified();
-    }
     break;
   case ZFileType::SWC_NETWORK_FILE:
     loadSwcNetwork(filePath);
-    if (emitMessage) {
-      emit swcModified();
-      emit swcNetworkModified();
-    }
     break;
   case ZFileType::OBJECT_SCAN_FILE:
     setTag(NeuTube::Document::FLYEM_BODY);
@@ -4273,44 +4307,26 @@ bool ZStackDoc::loadFile(const QString &filePath, bool emitMessage)
           cuboid.getWidth(), cuboid.getHeight(), cuboid.getDepth());
     stack->setOffset(cuboid.getFirstCorner());
     loadStack(stack);
-
-    emit stackModified();
-    emit sparseObjectModified();
   }
     break; //experimenting _DEBUG_
   case ZFileType::TIFF_FILE:
   case ZFileType::LSM_FILE:
   case ZFileType::V3D_RAW_FILE:
     readStack(filePath.toStdString().c_str(), false);
-    if (emitMessage) {
-      stackModified();
-    }
     break;
   case ZFileType::FLYEM_NETWORK_FILE:
     importFlyEmNetwork(filePath.toStdString().c_str());
-    if (emitMessage) {
-      emit swcModified();
-      emit swcNetworkModified();
-    }
     break;
   case ZFileType::JSON_FILE:
   case ZFileType::SYNAPSE_ANNOTATON_FILE:
-    if (importSynapseAnnotation(filePath.toStdString())) {
-      if (emitMessage) {
-        emit punctaModified();
-      }
-    } else {
+    if (!importSynapseAnnotation(filePath.toStdString())) {
       return false;
     }
     break;
   case ZFileType::V3D_APO_FILE:
   case ZFileType::V3D_MARKER_FILE:
   case ZFileType::RAVELER_BOOKMARK:
-    if (importPuncta(filePath.toStdString().c_str())) {
-      if (emitMessage) {
-        emit punctaModified();
-      }
-    } else {
+    if (!importPuncta(filePath.toStdString().c_str())) {
       return false;
     }
     break;

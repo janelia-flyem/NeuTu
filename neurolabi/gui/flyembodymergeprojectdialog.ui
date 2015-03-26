@@ -6,9 +6,15 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>529</width>
+    <width>520</width>
     <height>760</height>
    </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
   </property>
   <property name="windowTitle">
    <string>Merge Project</string>
@@ -159,7 +165,7 @@
             <number>999999</number>
            </property>
            <property name="value">
-            <number>3000</number>
+            <number>6000</number>
            </property>
           </widget>
          </item>
@@ -532,7 +538,7 @@
      <item>
       <widget class="QPushButton" name="uploadResultPushButton">
        <property name="text">
-        <string>Commit</string>
+        <string>Update DVID</string>
        </property>
       </widget>
      </item>

@@ -16,6 +16,8 @@
 #include "neutube.h"
 #include "zpaintbundle.h"
 #include "zsharedpointer.h"
+#include "zmessageprocessor.h"
+#include "zpainter.h"
 
 class ZStackPresenter;
 class QSlider;
@@ -33,12 +35,16 @@ class QRadioButton;
 class ZStackDoc;
 class ZStack;
 class ZStackViewParam;
+class ZMessageManager;
+class ZBodySplitButton;
+class ZStackMvc;
 
 class ZStackView : public QWidget {
   Q_OBJECT
 
 public:
-  ZStackView(ZStackFrame *parent = 0);
+  explicit ZStackView(ZStackFrame *parent = 0);
+  explicit ZStackView(QWidget *parent = 0);
   virtual ~ZStackView();
 
   void reset();
@@ -46,8 +52,16 @@ public:
   void updateScrollControl();
   void hideThresholdControl();
 
+  ZStackFrame* getParentFrame() const;
+  ZStackMvc* getParentMvc() const;
+
   QSize sizeHint() const;
   inline ZImageWidget* imageWidget() const { return m_imageWidget; }
+
+  ZSharedPointer<ZStackDoc> buddyDocument() const;
+  ZStackPresenter* buddyPresenter() const;
+
+  /*
   inline ZSharedPointer<ZStackDoc> buddyDocument()
   { return (m_parent != NULL) ? m_parent->document() :
                                 ZSharedPointer<ZStackDoc>(); }
@@ -57,6 +71,8 @@ public:
 
   inline ZStackPresenter* buddyPresenter()
   { return (m_parent != NULL) ? m_parent->presenter() : NULL; }
+  */
+
   inline ZImageWidget* screen() { return m_imageWidget; }
   inline QProgressBar* progressBar() { return m_progress; }
 
@@ -106,6 +122,8 @@ public:
    */
   void paintObjectBuffer(ZImage *canvas, ZStackObject::ETarget target);
 
+  void paintObjectBuffer(ZPainter &painter, ZStackObject::ETarget target);
+
   void paintActiveDecorationBuffer();
 
   ZStack* getObjectMask(uint8_t maskValue);
@@ -127,6 +145,13 @@ public:
     m_isRedrawBlocked = state;
   }
 
+  class MessageProcessor : public ZMessageProcessor {
+  public:
+    void processMessage(ZMessage *message, QWidget *host) const;
+  };
+
+  void enableMessageManager();
+
 public slots:
   void updateView();
   void redraw();
@@ -146,6 +171,7 @@ public slots:
   void paintObject(QList<ZStackObject *> selected,
                    QList<ZStackObject *> deselected);
   void paintActiveDecoration();
+  void paintActiveTile();
 
   void mouseReleasedInImageWidget(QMouseEvent *event);
   void mousePressedInImageWidget(QMouseEvent *event);
@@ -166,10 +192,15 @@ public slots:
   void setThreshold(int thre);
 
   void displayActiveDecoration(bool display = true);
+  void request3DVis();
+  void requestQuick3DVis();
+  void requestHighresQuick3DVis();
+  void requestMerge();
 
 signals:
   void currentSliceChanged(int);
   void viewChanged(ZStackViewParam param);
+  void viewPortChanged();
 
 public:
   static QImage::Format stackKindToImageFormat(int kind);
@@ -186,6 +217,9 @@ public:
   void setViewPortOffset(int x, int y);
 
   void paintMultiresImageTest(int resLevel);
+  void customizeWidget();
+
+  void notifyViewPortChanged();
 
 
 public: //Change view parameters
@@ -193,10 +227,14 @@ public: //Change view parameters
   void decreaseZoomRatio();
 
 private:
+  void clearCanvas();
   void updateCanvas();
   void updateMaskCanvas();
+  void clearObjectCanvas();
   void updateObjectCanvas();
   void updateActiveDecorationCanvas();
+
+  QSize getCanvasSize() const;
 
   //help functions
   void paintSingleChannelStackSlice(ZStack *stack, int slice);
@@ -207,15 +245,19 @@ private:
   void notifyViewChanged(const ZStackViewParam &param);
   void notifyViewChanged();
 
+  void init();
+
 private:
-  ZStackFrame *m_parent;
+  //ZStackFrame *m_parent;
   ZSlider *m_depthControl;
   //QSpinBox *m_spinBox;
   QLabel *m_infoLabel;
   QLabel *m_activeLabel;
   ZImage *m_image;
+  ZPainter m_imagePainter;
   ZImage *m_imageMask;
   ZImage *m_objectCanvas;
+  ZPainter m_objectCanvasPainter;
   ZImage *m_activeDecorationCanvas;
   ZImageWidget *m_imageWidget;
   QVBoxLayout *m_layout;
@@ -237,6 +279,9 @@ private:
   ZPaintBundle m_paintBundle;
   bool m_isRedrawBlocked;
   QMutex m_mutex;
+
+  ZBodySplitButton *m_splitButton;
+  ZMessageManager *m_messageManager;
 };
 
 #endif

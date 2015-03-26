@@ -1134,12 +1134,10 @@ const ZCuboid& ZSwcTree::getBoundBox() const
   return m_boundBox;
 }
 
-ZSwcTree* ZSwcTree::createCuboidSwc(const ZCuboid &box)
+ZSwcTree* ZSwcTree::createCuboidSwc(const ZCuboid &box, double radius)
 {
   ZSwcTree *tree = new ZSwcTree;
   tree->forceVirtualRoot();
-
-  const static double radius = 1.0;
 
   Swc_Tree_Node *parent = NULL;
   int indexArray[] = {0, 1, 2, 4, 6, 2, 4, 7, 3, 1, 2, 7, 5, 1, 4, 7};

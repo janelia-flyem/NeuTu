@@ -3,6 +3,7 @@
 #include <QProcess>
 #include <QByteArray>
 #include <QtConcurrentRun>
+#include <QWidget>
 
 #include "zstackframe.h"
 #include "z3dwindow.h"
@@ -132,6 +133,8 @@ void ZFlyEmBodySplitProject::showDataFrame() const
 {
   if (m_dataFrame != NULL) {
     m_dataFrame->show();
+    m_dataFrame->raise();
+    m_dataFrame->activateWindow();
   }
 }
 
@@ -139,7 +142,7 @@ void ZFlyEmBodySplitProject::showDataFrame3d()
 {
   if (m_dataFrame != NULL) {
     //emit messageGenerated("Showing data in 3D ...");
-    m_dataFrame->open3DWindow(m_dataFrame);
+    m_dataFrame->open3DWindow();
     //emit messageGenerated("Done.");
   }
 }
@@ -801,28 +804,30 @@ void ZFlyEmBodySplitProject::updateBodyMask()
         ZStack *stack = reader.readBodyLabel(
               rectRoi.getX0(), rectRoi.getY0(), z,
               rectRoi.getWidth(), rectRoi.getHeight(), 1);
-        std::map<int, ZObject3dScan*> *bodySet =
-            ZObject3dScan::extractAllObject(
-              (uint64_t*) stack->array8(), stack->width(), stack->height(), 1,
-              stack->getOffset().getZ(), NULL);
+        if (stack != NULL) {
+          std::map<int, ZObject3dScan*> *bodySet =
+              ZObject3dScan::extractAllObject(
+                (uint64_t*) stack->array8(), stack->width(), stack->height(), 1,
+                stack->getOffset().getZ(), NULL);
 
-        frame->document()->blockSignals(true);
-        for (std::map<int, ZObject3dScan*>::const_iterator iter = bodySet->begin();
-             iter != bodySet->end(); ++iter) {
-          int label = iter->first;
-          ZObject3dScan *obj = iter->second;
-          if (label > 0) {
-            obj->translate(
-                  stack->getOffset().getX(), stack->getOffset().getY(), 0);
-            obj->setRole(ZStackObjectRole::ROLE_MASK);
-            frame->document()->addObject(obj, false);
-          } else {
-            delete obj;
+          frame->document()->blockSignals(true);
+          for (std::map<int, ZObject3dScan*>::const_iterator iter = bodySet->begin();
+               iter != bodySet->end(); ++iter) {
+            int label = iter->first;
+            ZObject3dScan *obj = iter->second;
+            if (label > 0) {
+              obj->translate(
+                    stack->getOffset().getX(), stack->getOffset().getY(), 0);
+              obj->setRole(ZStackObjectRole::ROLE_MASK);
+              frame->document()->addObject(obj, false);
+            } else {
+              delete obj;
+            }
           }
+          frame->document()->blockSignals(false);
+          frame->document()->notifyObject3dScanModified();
+          frame->document()->notifyPlayerChanged(ZStackObjectRole::ROLE_MASK);
         }
-        frame->document()->blockSignals(false);
-        frame->document()->notifyObject3dScanModified();
-        frame->document()->notifyPlayerChanged(ZStackObjectRole::ROLE_MASK);
 
         delete stack;
       }

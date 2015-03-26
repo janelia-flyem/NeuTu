@@ -254,6 +254,14 @@ std::string ZDvidUrl::getGrayscaleUrl(int sx, int sy, int sz,
   return getGrayscaleUrl() + stream.str();
 }
 
+std::string ZDvidUrl::getGrayScaleBlockUrl(
+    int ix, int iy, int iz, int blockNumber) const
+{
+  std::ostringstream stream;
+  stream << "/blocks/" << ix << "_" << iy << "_" << iz << "/" << blockNumber;
+  return getGrayscaleUrl() + stream.str();
+}
+
 std::string ZDvidUrl::getLabels64Url(
     const std::string &name, int sx, int sy, int sz,
     int x0, int y0, int z0) const

@@ -41,6 +41,7 @@
 #include "tz_image_io.h"
 #include "distancemapdialog.h"
 #include "regionexpanddialog.h"
+#include "zstackmvc.h"
 #include "neuroniddialog.h"
 #include "zcircle.h"
 #include "zerror.h"
@@ -160,6 +161,8 @@
 #include "zmessage.h"
 #include "zmessagemanager.h"
 #include "ztestdialog.h"
+#include "dvid/zdvidtile.h"
+#include "flyem/zflyemstackdoc.h"
 
 #include "z3dcanvas.h"
 #include "z3dapplication.h"
@@ -296,6 +299,8 @@ MainWindow::MainWindow(QWidget *parent) :
   m_progressManager = new ZProgressManager(this);
   m_specialProgressReporter.setProgressBar(getProgressBar());
   m_progressManager->setProgressReporter(&m_specialProgressReporter);
+
+  m_3dWindowFactory.setParentWidget(this);
 }
 
 MainWindow::~MainWindow()
@@ -1490,7 +1495,9 @@ void MainWindow::openFile(const QString &fileName)
 void MainWindow::addStackFrame(Stack *stack, bool isOwner)
 {
   if (stack != NULL) {
-    ZStackFrame *frame = new ZStackFrame(mdiArea);
+    ZStackFrame *frame = ZStackFrame::Make(mdiArea);
+
+    //ZStackFrame *frame = new ZStackFrame(mdiArea);
     frame->loadStack(stack, isOwner);
     addStackFrame(frame);
   }
@@ -1499,7 +1506,8 @@ void MainWindow::addStackFrame(Stack *stack, bool isOwner)
 void MainWindow::addStackFrame(ZStack *stack)
 {
   if (stack != NULL) {
-    ZStackFrame *frame = new ZStackFrame(mdiArea);
+    //ZStackFrame *frame = new ZStackFrame(mdiArea);
+    ZStackFrame *frame = ZStackFrame::Make(mdiArea);
     frame->loadStack(stack);
     frame->setWindowTitle(stack->sourcePath().c_str());
     addStackFrame(frame);
@@ -1513,6 +1521,7 @@ void MainWindow::addStackFrame(ZStackFrame *frame, bool /*isReady*/)
 #endif
   if (!mdiArea->findChildren<ZStackFrame*>().contains(frame)) {
     mdiArea->addSubWindow(frame);
+    frame->enableMessageManager();
   }
   connect(frame, SIGNAL(infoChanged()), this, SLOT(updateStatusBar()));
   connect(frame, SIGNAL(closed(ZStackFrame*)), this, SLOT(updateMenu()));
@@ -1869,7 +1878,7 @@ void MainWindow::importImageSequence()
 
   if (!fileName.isEmpty()) {
     m_lastOpenedFilePath = fileName;
-    ZStackFrame *frame = new ZStackFrame;
+    ZStackFrame *frame = ZStackFrame::Make(NULL);
 
     //ZStackFrame *frame = new ZStackFrame;
 
@@ -1913,6 +1922,8 @@ void MainWindow::closeEvent(QCloseEvent *event)
     } else {
       event->ignore();
     }
+
+    qApp->exit();
   } else {
     event->ignore();
   }
@@ -2341,7 +2352,7 @@ void MainWindow::on_action3DView_triggered()
   if (frame != NULL) {
 //    getProgressDialog()->setRange(0, 0);
     //startProgress("Open 3D Window ...");
-    frame->open3DWindow(frame);
+    frame->open3DWindow();
 //    endProgress();
 //    window->raise();
   }
@@ -2777,7 +2788,8 @@ void MainWindow::on_actionExtract_Channel_triggered()
         m_progress->setRange(0, 100);
         m_progress->setLabelText(QString("Extracting Channel %1 ...").arg(channel));
         m_progress->show();
-        ZStackFrame *nframe = new ZStackFrame;
+        //ZStackFrame *nframe = new ZStackFrame;
+        ZStackFrame *nframe = ZStackFrame::Make(NULL);
         nframe->loadStack(stack, true);
         nframe->document()->getStack()->setSource(
               frame->document()->getStack()->sourcePath(), channel);
@@ -3092,7 +3104,7 @@ void MainWindow::on_actionSkeletonization_triggered()
 
       if (wholeTree != NULL) {
         frame->executeAddObjectCommand(wholeTree);
-        frame->open3DWindow(this, Z3DWindow::EXCLUDE_VOLUME);
+        frame->open3DWindow(Z3DWindow::EXCLUDE_VOLUME);
       } else {
         report("Skeletonization failed", "No SWC tree generated.",
                ZMessageReporter::Error);
@@ -3188,8 +3200,68 @@ void MainWindow::test()
   future2.resume();
 #endif
 
-#if 1
+#if 0
+  ZStackDoc *doc = new ZStackDoc(NULL, NULL);
+  doc->loadFile(GET_TEST_DATA_DIR + "/benchmark/ball.tif");
+
+    ZStackMvc *stackWidget =
+        ZStackMvc::Make(NULL, ZSharedPointer<ZStackDoc>(doc));
+  //ZStackFrame *stackWidget = ZStackFrame::Make(
+  //      NULL, ZSharedPointer<ZStackDoc>(doc));
+
+  //stackWidget->setWindowFlags(Qt::Widget);
+
+  //stackWidget->consumeDocument(doc);
+
+  //stackWidget->load(GET_TEST_DATA_DIR + "/benchmark/ball.tif");
+  m_testDlg->getMainLayout()->addWidget(stackWidget);
   m_testDlg->show();
+#endif
+
+#if 1
+  QDialog *dlg = ZDialogFactory::makeStackDialog(this);
+  dlg->exec();
+
+  delete dlg;
+#endif
+
+#if 0
+  ZStackFrame *frame = ZStackFrame::Make(NULL);
+  ZStack *stack = ZStackFactory::makeVirtualStack(
+        ZIntCuboid(0, 0, 0, 6445, 6642, 8089));
+
+  frame->loadStack(stack);
+
+  ZDvidTarget target;
+  target.set("http://emrecon100.janelia.priv", "2a3", -1);
+
+  ZDvidReader reader;
+  reader.open(target);
+
+/*
+  ZDvidTile *tile = reader.readTile(3, 0, 0, 6000);
+  tile->setDvidTarget(target);
+  tile->printInfo();
+
+  tile->attachView(frame->view());
+  frame->document()->addObject(tile);
+
+  tile = reader.readTile(3, 0, 1, 6000);
+  tile->attachView(frame->view());
+  frame->document()->addObject(tile);
+
+  tile = reader.readTile(3, 1, 0, 6000);
+  tile->attachView(frame->view());
+  frame->document()->addObject(tile);
+
+  tile = reader.readTile(3, 1, 1, 6000);
+  tile->attachView(frame->view());
+  frame->document()->addObject(tile);
+  */
+
+//  frame->load(GET_TEST_DATA_DIR + "/benchmark/em_stack.tif");
+  addStackFrame(frame);
+  presentStackFrame(frame);
 #endif
 
 #if 0
@@ -3262,12 +3334,13 @@ void MainWindow::on_actionImport_Network_triggered()
     flyemNetwork.layoutSwc();
     ZSwcNetwork *network = flyemNetwork.toSwcNetwork();
 
-    ZStackFrame *frame = new ZStackFrame;
+    //ZStackFrame *frame = new ZStackFrame;
+    ZStackFrame *frame = ZStackFrame::Make(NULL);
     frame->document()->appendSwcNetwork(*network);
     delete network;
 
     //addStackFrame(frame);
-    frame->open3DWindow(this);
+    frame->open3DWindow();
     delete frame;
 
     QApplication::processEvents(); //force file dialog to close.
@@ -3292,7 +3365,7 @@ void MainWindow::on_actionAddSWC_triggered()
       frame->load(fileList);
       if (NeutubeConfig::getInstance().getMainWindowConfig().
           isExpandSwcWith3DWindow()) {
-        frame->open3DWindow(this, Z3DWindow::EXCLUDE_VOLUME);
+        frame->open3DWindow(Z3DWindow::EXCLUDE_VOLUME);
       }
     }
   }
@@ -3322,15 +3395,21 @@ void MainWindow::on_actionAddFlyEmNeuron_Network_triggered()
     m_progress->setValue(++currentProgress);
     qApp->processEvents();
 
-    ZStackFrame *frame = new ZStackFrame;
-    frame->load(fileName);
+    //ZStackFrame *frame = new ZStackFrame;
+    //frame->load(fileName);
+
+    ZStackDoc *doc = new ZStackDoc(NULL, NULL);
+    doc->loadSwcNetwork(fileName);
 
     m_progress->setValue(++currentProgress);
     m_progress->reset();
 
+    ZWindowFactory factory;
+    factory.setParentWidget(this);
+    factory.open3DWindow(doc);
     //addStackFrame(frame);
-    frame->open3DWindow(this);
-    delete frame;
+    //frame->open3DWindow(this);
+    //delete frame;
 
     QApplication::processEvents(); //force file dialog to close.
                                    //might be a bug in qt
@@ -3345,12 +3424,13 @@ void MainWindow::on_actionSynapse_Annotation_triggered()
 
   if (!fileList.isEmpty()) {
     if (m_synapseDlg->exec()) {
-      ZStackFrame *frame = new ZStackFrame;
+      //ZStackFrame *frame = new ZStackFrame;
+      ZStackDoc *doc = new ZStackDoc(NULL, NULL);
 
       FlyEm::ZSynapseAnnotationArray synapseArray;
 
       double radius = 10.0;
-      frame->document()->blockSignals(true);
+      doc->blockSignals(true);
       foreach (QString filePath, fileList) {
         std::vector<ZPunctum*> puncta;
         if (synapseArray.loadJson(filePath.toStdString())) {
@@ -3369,15 +3449,17 @@ void MainWindow::on_actionSynapse_Annotation_triggered()
 
         for (std::vector<ZPunctum*>::iterator iter = puncta.begin();
              iter != puncta.end(); ++iter) {
-          frame->document()->addPunctum(*iter);
+          doc->addPunctum(*iter);
         }
       }
-      frame->document()->blockSignals(false);
-      frame->document()->notifyPunctumModified();
+      doc->blockSignals(false);
+      doc->notifyPunctumModified();
 
+      m_3dWindowFactory.open3DWindow(doc);
+      /*
       frame->open3DWindow(this);
       delete frame;
-
+*/
 
     }
 
@@ -3539,7 +3621,7 @@ void MainWindow::on_actionImportSegmentation_triggered()
 #endif
 
   if (!fileName.isEmpty()) {
-    ZFlyEmStackFrame *frame = new ZFlyEmStackFrame;
+    ZFlyEmStackFrame *frame = ZFlyEmStackFrame::Make(NULL);
     if (frame->importSegmentationBundle(fileName.toStdString())) {
       addStackFrame(frame);
     } else {
@@ -3629,13 +3711,12 @@ void MainWindow::on_actionAxon_Export_triggered()
 #endif
 
   if (!fileName.isEmpty()) {
-    ZFlyEmStackFrame *frame = new ZFlyEmStackFrame;
-    frame->createDocument();
-    if (frame->importAxonExport(fileName.toStdString())) {
-      frame->open3DWindow(this);
-      delete frame;
+    ZFlyEmStackDoc *doc = new ZFlyEmStackDoc(NULL, NULL);
+    if (doc->importAxonExport(fileName.toStdString())) {
+      ZWindowFactory factory;
+      factory.open3DWindow(doc);
     } else {
-      delete frame;
+      delete doc;
       QMessageBox::critical(this, tr("Error"),
                             QString("<font size=4 face=Times>I cannot open ") +
                             "<i>" + fileName + "</i>" + "</font>",
@@ -4215,7 +4296,7 @@ void MainWindow::on_actionOpen_3D_View_Without_Volume_triggered()
 {
   ZStackFrame *frame = currentStackFrame();
   if (frame != NULL) {
-    frame->open3DWindow(frame, Z3DWindow::EXCLUDE_VOLUME);
+    frame->open3DWindow(Z3DWindow::EXCLUDE_VOLUME);
   }
 }
 
@@ -4346,7 +4427,7 @@ void MainWindow::on_actionShortcut_triggered()
 
 ZStackFrame* MainWindow::createEmptyStackFrame(ZStackFrame *parentFrame)
 {
-  ZStackFrame *newFrame = new ZStackFrame;
+  ZStackFrame *newFrame = ZStackFrame::Make(NULL);
   newFrame->setParentFrame(parentFrame);
 
   return newFrame;
@@ -4356,8 +4437,9 @@ ZStackFrame *MainWindow::createStackFrame(
     Stack *stack, NeuTube::Document::ETag tag, ZStackFrame *parentFrame)
 {
   if (stack != NULL) {
-    ZStackFrame *newFrame = new ZStackFrame;
-    newFrame->setParentFrame(parentFrame);
+    ZStackFrame *newFrame = createEmptyStackFrame(parentFrame);
+        //new ZStackFrame;
+    //newFrame->setParentFrame(parentFrame);
 
     ZStack *stackObject = new ZStack;
     stackObject->consume(stack);
@@ -4382,8 +4464,9 @@ ZStackFrame *MainWindow::createStackFrame(
     ZStack *stack, NeuTube::Document::ETag tag, ZStackFrame *parentFrame)
 {
   if (stack != NULL) {
-    ZStackFrame *newFrame = new ZStackFrame;
-    newFrame->setParentFrame(parentFrame);
+    ZStackFrame *newFrame = createEmptyStackFrame(parentFrame);
+    //ZStackFrame *newFrame = new ZStackFrame;
+    //newFrame->setParentFrame(parentFrame);
     //debug
     //tic();
 
@@ -4430,7 +4513,8 @@ ZStackFrame *MainWindow::createStackFrame(
 ZStackFrame* MainWindow::createStackFrame(
     const ZStackDocReader &reader, NeuTube::Document::ETag tag)
 {
-  ZStackFrame *newFrame = new ZStackFrame;
+  //ZStackFrame *newFrame = new ZStackFrame;
+  ZStackFrame *newFrame = ZStackFrame::Make(NULL);
   newFrame->addDocData(reader);
   newFrame->document()->setTag(tag);
   return newFrame;
@@ -4440,8 +4524,9 @@ ZStackFrame *MainWindow::createStackFrame(
     ZStackDocReader *reader, ZStackFrame *parentFrame)
 {
   if (reader != NULL) {
-    ZStackFrame *newFrame = new ZStackFrame;
-    newFrame->setParentFrame(parentFrame);
+    ZStackFrame *newFrame = createEmptyStackFrame(parentFrame);
+    //ZStackFrame *newFrame = new ZStackFrame;
+    //newFrame->setParentFrame(parentFrame);
 
     newFrame->addDocData(*reader);
     //newFrame->consumeDocument(doc);
@@ -4653,8 +4738,9 @@ void MainWindow::on_actionMask_SWC_triggered()
 
         ZStackFrame *swcFrame = stackFrame;
         if (swcFrame == NULL) {
-          swcFrame = new ZStackFrame;
-          swcFrame->createDocument();
+          swcFrame = ZStackFrame::Make(NULL);
+          //swcFrame = new ZStackFrame;
+          //swcFrame->createDocument();
         }
 
         reporter.advance(0.1);
@@ -4719,7 +4805,7 @@ void MainWindow::on_actionMask_SWC_triggered()
         swcFrame->document()->notifySwcModified();
 
         if (frame != stackFrame) {
-          swcFrame->open3DWindow(this, Z3DWindow::EXCLUDE_VOLUME);
+          swcFrame->open3DWindow(Z3DWindow::EXCLUDE_VOLUME);
           if (swcFrame != stackFrame) {
             delete swcFrame;
           }
@@ -4769,7 +4855,7 @@ void MainWindow::expandCurrentFrame()
       if (swcLoaded) {
         if (NeutubeConfig::getInstance().getMainWindowConfig().
             isExpandSwcWith3DWindow()) {
-          frame->open3DWindow(this, Z3DWindow::EXCLUDE_VOLUME);
+          frame->open3DWindow(Z3DWindow::EXCLUDE_VOLUME);
         }
       }
     }
@@ -4845,7 +4931,8 @@ void MainWindow::on_actionSparse_objects_triggered()
   if (!fileList.isEmpty()) {
     ZStackFrame *frame = currentStackFrame();
     if (frame == NULL) {
-      frame = new ZStackFrame;
+      //frame = new ZStackFrame;
+      frame = ZStackFrame::Make(NULL);
       frame->importSobj(fileList);
       addStackFrame(frame);
       presentStackFrame(frame);
@@ -5019,7 +5106,7 @@ void MainWindow::createDvidFrame()
     frame->addDocData(reader);
 
     if (!frame->document()->hasStackData()) {
-      frame->open3DWindow(this);
+      frame->open3DWindow();
       delete frame;
     } else {
       addStackFrame(frame);
@@ -5348,7 +5435,7 @@ void MainWindow::on_actionTiles_triggered()
     progressDlg->setRange(0, 0);
     progressDlg->open();
 
-    ZTiledStackFrame *frame = new ZTiledStackFrame;
+    ZTiledStackFrame *frame = ZTiledStackFrame::Make(NULL);
     if (frame->importTiles(fileName)) {
       addStackFrame(frame);
       presentStackFrame(frame);
@@ -5361,7 +5448,7 @@ void MainWindow::on_actionTiles_triggered()
     if (QFile::exists(frame->swcFilename)) {
         frame->load(frame->swcFilename);
         if (NeutubeConfig::getInstance().getMainWindowConfig().isExpandSwcWith3DWindow()) {
-          frame->open3DWindow(this, Z3DWindow::EXCLUDE_VOLUME);
+          frame->open3DWindow(Z3DWindow::EXCLUDE_VOLUME);
         }
     }
 
@@ -5390,7 +5477,8 @@ void MainWindow::showStackFrame(
     progressDlg->setRange(0, 0);
     progressDlg->open();
 
-    ZStackFrame *frame = new ZStackFrame;
+    //ZStackFrame *frame = new ZStackFrame;
+    ZStackFrame *frame = ZStackFrame::Make(NULL);
     bool hasImageFile;
     bool hasSwcFile;
     foreach (QString file, fileList) {
@@ -5413,7 +5501,7 @@ void MainWindow::showStackFrame(
       }
 
       if (opening3DWindow) {
-        frame->open3DWindow(this);
+        frame->open3DWindow();
       }
 
       if (!hasImageFile) {
@@ -6159,7 +6247,7 @@ void MainWindow::createStackFrameFromDocReader(ZStackDocReader *reader)
       //QApplication::processEvents();
     } else {
       emit progressDone();
-      frame->open3DWindow(this);
+      frame->open3DWindow();
       delete frame;
     }
     if (!fileName.isEmpty()) {
@@ -6201,7 +6289,7 @@ void MainWindow::on_actionView_Labeled_Regions_triggered()
       newFrame->document()->setStackFactory(factory);
       connect(frame->document().get(), SIGNAL(labelFieldModified()),
               newFrame->document().get(), SLOT(reloadStack()));
-      newFrame->open3DWindow(NULL);
+      newFrame->open3DWindow();
       delete newFrame;
       //addStackFrame(newFrame);
       //presentStackFrame(newFrame);

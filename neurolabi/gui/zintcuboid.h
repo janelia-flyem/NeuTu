@@ -46,6 +46,8 @@ public:
   void setFirstZ(int z);
   void setLastZ(int z);
 
+  void translateX(int dx);
+
   /*!
    * \brief Change the size of the cuboid by fixing the first corner
    */
@@ -91,6 +93,8 @@ public:
    * A cuboid is empty if any of its dimension <= 0.
    */
   bool isEmpty() const;
+
+  bool equals(const ZIntCuboid &cuboid) const;
 
 private:
   ZIntPoint m_firstCorner;

@@ -51,6 +51,11 @@ public:
   ZStack* readGrayScale(
       int x0, int y0, int z0, int width, int height, int depth);
   ZStack* readGrayScale(const ZIntCuboid &cuboid);
+  ZStack* readGrayScaleBlock(
+      const ZIntPoint &blockIndex, const ZDvidInfo &dvidInfo);
+  std::vector<ZStack*> readGrayScaleBlock(
+      const ZIntPoint &blockIndex, const ZDvidInfo &dvidInfo,
+      int blockNumber);
 
   ZStack* readBodyLabel(
       int x0, int y0, int z0, int width, int height, int depth);

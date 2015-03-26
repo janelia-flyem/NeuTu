@@ -7,6 +7,7 @@
 
 #include "flyem/zflyembodymerger.h"
 #include "zstackdoccommand.h"
+#include "dvid/zdvidtarget.h"
 
 class ZArray;
 
@@ -27,6 +28,16 @@ public:
     return &m_bodyMerger;
   }
 
+  int64_t getSelectedBodyId() const;
+
+  inline void setDvidTarget(const ZDvidTarget &target) {
+    m_dvidTarget = target;
+  }
+
+  const ZDvidTarget& getDvidTarget() const {
+    return m_dvidTarget;
+  }
+
 private:
   QList<ZObject3dScan*> extractAllObject();
 
@@ -39,6 +50,7 @@ public slots:
 private:
   ZArray *m_originalLabel;
   ZFlyEmBodyMerger m_bodyMerger;
+  ZDvidTarget m_dvidTarget;
 };
 
 namespace ZFlyEmBodyMergerDocCommand {

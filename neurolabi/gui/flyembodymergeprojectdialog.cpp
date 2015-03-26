@@ -12,6 +12,8 @@
 #include "dvid/zdvidversionmodel.h"
 #include "dvid/zdvidreader.h"
 #include "zdialogfactory.h"
+#include "zmessage.h"
+#include "zmessagemanager.h"
 
 FlyEmBodyMergeProjectDialog::FlyEmBodyMergeProjectDialog(QWidget *parent) :
   FlyEmProjectDialog(parent),
@@ -21,7 +23,7 @@ FlyEmBodyMergeProjectDialog::FlyEmBodyMergeProjectDialog(QWidget *parent) :
 
   ui->verionTreeView->setSelectionMode(QAbstractItemView::NoSelection);
   ui->verionTreeView->setExpandsOnDoubleClick(false);
-  ui->infoWidget->hide();
+  //ui->infoWidget->hide();
   m_project = new ZFlyEmBodyMergeProject(this);
   m_docTag = NeuTube::Document::FLYEM_MERGE;
 
@@ -29,6 +31,8 @@ FlyEmBodyMergeProjectDialog::FlyEmBodyMergeProjectDialog(QWidget *parent) :
 
   createMenu();
   connectSignalSlot();
+
+  m_messageManager = NULL;
 }
 
 FlyEmBodyMergeProjectDialog::~FlyEmBodyMergeProjectDialog()
@@ -83,7 +87,7 @@ void FlyEmBodyMergeProjectDialog::test()
 void FlyEmBodyMergeProjectDialog::moveSliceUp()
 {
   if (m_project != NULL) {
-    ui->ySpinBox->setValue(ui->ySpinBox->value() - ui->heightSpinBox->value());
+    ui->ySpinBox->setValue(ui->ySpinBox->value() - ui->heightSpinBox->value() / 2);
     loadSlice();
   }
 }
@@ -91,7 +95,7 @@ void FlyEmBodyMergeProjectDialog::moveSliceUp()
 void FlyEmBodyMergeProjectDialog::moveSliceDown()
 {
   if (m_project != NULL) {
-    ui->ySpinBox->setValue(ui->ySpinBox->value() + ui->heightSpinBox->value());
+    ui->ySpinBox->setValue(ui->ySpinBox->value() + ui->heightSpinBox->value() / 2);
     loadSlice();
   }
 }
@@ -99,7 +103,7 @@ void FlyEmBodyMergeProjectDialog::moveSliceDown()
 void FlyEmBodyMergeProjectDialog::moveSliceLeft()
 {
   if (m_project != NULL) {
-    ui->xSpinBox->setValue(ui->xSpinBox->value() - ui->widthSpinBox->value());
+    ui->xSpinBox->setValue(ui->xSpinBox->value() - ui->widthSpinBox->value() / 2);
     loadSlice();
   }
 }
@@ -107,7 +111,7 @@ void FlyEmBodyMergeProjectDialog::moveSliceLeft()
 void FlyEmBodyMergeProjectDialog::moveSliceRight()
 {
   if (m_project != NULL) {
-    ui->xSpinBox->setValue(ui->xSpinBox->value() + ui->widthSpinBox->value());
+    ui->xSpinBox->setValue(ui->xSpinBox->value() + ui->widthSpinBox->value() / 2);
     loadSlice();
   }
 }
@@ -115,8 +119,8 @@ void FlyEmBodyMergeProjectDialog::moveSliceRight()
 void FlyEmBodyMergeProjectDialog::moveSliceUpLeft()
 {
   if (m_project != NULL) {
-    ui->xSpinBox->setValue(ui->xSpinBox->value() - ui->widthSpinBox->value());
-    ui->ySpinBox->setValue(ui->ySpinBox->value() - ui->heightSpinBox->value());
+    ui->xSpinBox->setValue(ui->xSpinBox->value() - ui->widthSpinBox->value() / 2);
+    ui->ySpinBox->setValue(ui->ySpinBox->value() - ui->heightSpinBox->value() / 2);
     loadSlice();
   }
 }
@@ -140,8 +144,8 @@ void FlyEmBodyMergeProjectDialog::showNextSlice()
 void FlyEmBodyMergeProjectDialog::moveSliceDownRight()
 {
   if (m_project != NULL) {
-    ui->xSpinBox->setValue(ui->xSpinBox->value() + ui->widthSpinBox->value());
-    ui->ySpinBox->setValue(ui->ySpinBox->value() + ui->heightSpinBox->value());
+    ui->xSpinBox->setValue(ui->xSpinBox->value() + ui->widthSpinBox->value() / 2);
+    ui->ySpinBox->setValue(ui->ySpinBox->value() + ui->heightSpinBox->value() / 2);
     loadSlice();
   }
 }
@@ -243,6 +247,8 @@ void FlyEmBodyMergeProjectDialog::updateDataFrame(
     ZStackFrame *frame = newDataFrame(docReader);
     m_project->setDataFrame(frame);
   }
+
+  m_project->getDataFrame()->setDvidTarget(getDvidTarget());
 
 //  updateWidget();
 }
@@ -471,3 +477,49 @@ void FlyEmBodyMergeProjectDialog::lockNode()
   }
 #endif
 }
+
+void FlyEmBodyMergeProjectDialog::enableMessageManager()
+{
+  if (m_messageManager == NULL) {
+    m_messageManager = ZMessageManager::Make<MessageProcessor>(this);
+  }
+}
+
+void FlyEmBodyMergeProjectDialog::MessageProcessor::processMessage(
+    ZMessage *message, QWidget *host) const
+{
+  FlyEmBodyMergeProjectDialog *dlg =
+      dynamic_cast<FlyEmBodyMergeProjectDialog*>(host);
+
+  switch (message->getType()) {
+  case ZMessage::TYPE_FLYEM_MERGE:
+    if (dlg != NULL) {
+      if (dlg->getProject() != NULL) {
+        dlg->getProject()->mergeBody();
+      }
+    }
+    break;
+  case ZMessage::TYPE_FLYEM_SPLIT:
+    if (dlg != NULL) {
+      const ZJsonObject &obj = message->getMessageBody();
+      if (obj.hasKey("body_id") && !obj.hasKey("dvid_target")) {
+        if (ZJsonParser::integerValue(obj["body_id"]) >= 0) {
+          const ZDvidTarget& dvidTarget = dlg->getDvidTarget();
+          message->setBodyEntry("dvid_target", dvidTarget.toJsonObject());
+        }
+      }
+    }
+  break;
+  case ZMessage::TYPE_FLYEM_COARSE_3D_VIS:
+    if (dlg != NULL) {
+      if (ZJsonParser::integerValue(message->getMessageBody()["coarse_level"])
+          == 1) {
+        dlg->getProject()->showBody3d();
+      }
+    }
+    break;
+  default:
+    break;
+  }
+}
+

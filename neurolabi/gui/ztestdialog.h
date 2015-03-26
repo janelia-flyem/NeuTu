@@ -9,6 +9,8 @@ namespace Ui {
 class ZTestDialog;
 }
 
+class QLayout;
+
 class ZTestDialog : public QDialog
 {
   Q_OBJECT
@@ -21,6 +23,10 @@ public:
   public:
     void processMessage(ZMessage *message, QWidget *host) const;
   };
+
+  void enableMessageManager();
+
+  QLayout* getMainLayout() const;
 
 public slots:
   void testMessage();

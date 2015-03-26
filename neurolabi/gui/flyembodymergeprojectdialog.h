@@ -6,9 +6,12 @@
 
 #include "flyem/zflyembodymergeproject.h"
 #include "flyemprojectdialog.h"
+#include "zmessageprocessor.h"
 
 class QModelIndex;
 class ZDvidVersionModel;
+class ZMessage;
+class ZMessageManager;
 
 namespace Ui {
 class FlyEmBodyMergeProjectDialog;
@@ -36,6 +39,14 @@ public:
   inline ZFlyEmBodyMergeProject* getProject() {
     return m_project;
   }
+
+  class MessageProcessor : public ZMessageProcessor {
+  public:
+    void processMessage(ZMessage *message, QWidget *host) const;
+  };
+
+  void enableMessageManager();
+
 
 public slots:
   void test();
@@ -69,6 +80,8 @@ private:
 private:
   Ui::FlyEmBodyMergeProjectDialog *ui;
   ZFlyEmBodyMergeProject *m_project;
+
+  ZMessageManager *m_messageManager;
 
 //  ZFlyEmBookmarkListModel m_bookmarkList;
 //  QGraphicsScene *m_sideViewScene;

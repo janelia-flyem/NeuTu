@@ -5,6 +5,7 @@
 #include <QGraphicsScene>
 #include "flyem/zflyembodysplitproject.h"
 #include "dvid/zdvidtarget.h"
+#include "zmessageprocessor.h"
 
 class MainWindow;
 class ZFlyEmNewBodySplitProjectDialog;
@@ -12,6 +13,8 @@ class QProgressDialog;
 class ZDvidDialog;
 class QMenu;
 class QAction;
+class ZMessage;
+class ZMessageManager;
 
 namespace Ui {
 class FlyEmBodySplitProjectDialog;
@@ -64,6 +67,13 @@ public:
   bool isBodyLoaded() const;
 
   void downloadSeed();
+
+  class MessageProcessor : public ZMessageProcessor {
+  public:
+    void processMessage(ZMessage *message, QWidget *host) const;
+  };
+
+  void enableMessageManager();
 
 signals:
   void progressStarted(const QString &title, int nticks);
@@ -139,6 +149,8 @@ private:
   ZDvidDialog *m_dvidDlg;
   QMenu *m_mainMenu;
   QAction *m_showBodyMaskAction;
+
+  ZMessageManager *m_messageManager;
 };
 
 #endif // FLYEMBODYSPLITPROJECTDIALOG_H

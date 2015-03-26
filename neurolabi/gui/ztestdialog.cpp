@@ -6,16 +6,12 @@
 
 ZTestDialog::ZTestDialog(QWidget *parent) :
   QDialog(parent),
-  ui(new Ui::ZTestDialog)
+  ui(new Ui::ZTestDialog),
+  m_messageManager(NULL)
 {
   ui->setupUi(this);
 
   connectSignalSlot();
-
-  m_messageManager = new ZMessageManager();
-  m_messageManager->setProcessor(
-        ZSharedPointer<MessageProcessor>(new MessageProcessor));
-  m_messageManager->registerWidget(this);
 
   ZDvidVersionModel *model = new ZDvidVersionModel(this);
 
@@ -30,6 +26,7 @@ ZTestDialog::ZTestDialog(QWidget *parent) :
   model->addNode("v3", "v1");
   model->addNode("v3", "v2");
 
+  enableMessageManager();
 }
 
 ZTestDialog::~ZTestDialog()
@@ -42,6 +39,13 @@ void ZTestDialog::connectSignalSlot()
   connect(ui->testPushButton, SIGNAL(clicked()), this, SLOT(testMessage()));
 }
 
+void ZTestDialog::enableMessageManager()
+{
+  if (m_messageManager == NULL) {
+    m_messageManager = ZMessageManager::Make<MessageProcessor>(this);
+  }
+}
+
 void ZTestDialog::testMessage()
 {
   ZMessage message;
@@ -49,7 +53,7 @@ void ZTestDialog::testMessage()
   message.setBodyEntry("title", "test");
   message.setBodyEntry("body", "message test");
 
-  m_messageManager->processMessage(&message);
+  m_messageManager->processMessage(&message, true);
 }
 
 void ZTestDialog::MessageProcessor::processMessage(
@@ -58,4 +62,9 @@ void ZTestDialog::MessageProcessor::processMessage(
 #ifdef _DEBUG_
   std::cout << "ZTestDialog::MessageProcessor::processMessage" << std::endl;
 #endif
+}
+
+QLayout* ZTestDialog::getMainLayout() const
+{
+  return ui->verticalLayout;
 }

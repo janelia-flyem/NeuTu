@@ -1,6 +1,7 @@
 #include "zflyemstackframe.h"
 
 #include <QDir>
+#include <QMdiArea>
 
 #include <fstream>
 
@@ -21,12 +22,10 @@
 
 using namespace std;
 
-ZFlyEmStackFrame::ZFlyEmStackFrame(QWidget *parent) :
-  ZStackFrame(parent, false)
+ZFlyEmStackFrame::ZFlyEmStackFrame(QWidget *parent) : ZStackFrame(parent)
 {
-  constructFrame();
+  //constructFrame();
 }
-
 
 ZFlyEmStackFrame::~ZFlyEmStackFrame()
 {
@@ -136,7 +135,9 @@ ZStackFrame* ZFlyEmStackFrame::spinoffSegmentationSelection(
   ZFlyEmStackDoc *doc = completeDocument();
 
   if (doc->hasStackMask()) {
-    frame = new ZStackFrame();
+    frame  = ZStackFrame::Make(NULL);
+
+    //frame = new ZStackFrame();
 #ifdef _DEBUG_
     cout << "Color selected: ";
     ZDoubleVector::print(selected);
@@ -564,4 +565,20 @@ void ZFlyEmStackFrame::computeBodyConnFeature()
   }
 }
 
+ZFlyEmStackFrame*
+ZFlyEmStackFrame::Make(QMdiArea *parent)
+{
+  return Make(parent, ZSharedPointer<ZFlyEmStackDoc>(
+                new ZFlyEmStackDoc(NULL, NULL)));
+}
+
+ZFlyEmStackFrame *ZFlyEmStackFrame::Make(
+    QMdiArea *parent, ZSharedPointer<ZFlyEmStackDoc> doc)
+{
+  ZFlyEmStackFrame *frame = new ZFlyEmStackFrame(parent);
+
+  BaseConstruct(frame, doc);
+
+  return frame;
+}
 

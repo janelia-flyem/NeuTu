@@ -23,6 +23,8 @@
 #include "flyem/zflyemneuronbodyinfo.h"
 #include "zstackpatch.h"
 #include "dvid/zdviddata.h"
+#include "zmessage.h"
+#include "zmessagemanager.h"
 
 FlyEmBodySplitProjectDialog::FlyEmBodySplitProjectDialog(QWidget *parent) :
   QDialog(parent),
@@ -76,7 +78,10 @@ FlyEmBodySplitProjectDialog::FlyEmBodySplitProjectDialog(QWidget *parent) :
 
   createMenu();
   connectSignalSlot();
+
+  m_messageManager = NULL;
 }
+
 
 FlyEmBodySplitProjectDialog::~FlyEmBodySplitProjectDialog()
 {
@@ -831,3 +836,48 @@ void FlyEmBodySplitProjectDialog::startSplit(
   ui->bodyIdSpinBox->setValue(bodyId);
   loadBody();
 }
+
+void FlyEmBodySplitProjectDialog::enableMessageManager()
+{
+  if (m_messageManager == NULL) {
+    m_messageManager = ZMessageManager::Make<MessageProcessor>(this);
+  }
+}
+
+void FlyEmBodySplitProjectDialog::MessageProcessor::processMessage(
+    ZMessage *message, QWidget *host) const
+{
+  FlyEmBodySplitProjectDialog *dlg =
+      dynamic_cast<FlyEmBodySplitProjectDialog*>(host);
+
+  switch (message->getType()) {
+  case ZMessage::TYPE_FLYEM_SPLIT:
+    if (dlg != NULL) {
+      const ZJsonObject &obj = message->getMessageBody();
+      if (obj.hasKey("body_id")) {
+        int64_t bodyId = ZJsonParser::integerValue(obj["body_id"]);
+        if (bodyId >= 0) {
+          if (obj.hasKey("dvid_target")) {
+            ZDvidTarget target;
+            target.loadJsonObject(ZJsonObject(obj.at("dvid_target")));
+            dlg->show();
+            dlg->raise();
+            dlg->startSplit(target, bodyId);
+          }
+        }
+      }
+    }
+    message->deactivate();
+    break;
+  case ZMessage::TYPE_FLYEM_SPLIT_VIEW_3D_BODY:
+    if (dlg != NULL) {
+      dlg->showData3d();
+    }
+    message->deactivate();
+    break;
+  default:
+    break;
+  }
+}
+
+

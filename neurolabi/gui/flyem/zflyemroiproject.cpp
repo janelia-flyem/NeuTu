@@ -1111,7 +1111,8 @@ ZStackFrame *ZFlyEmRoiProject::makeAllSynapseFrame() const
 {
   ZStackFrame *frame = NULL;
   if (!m_puncta.empty()) {
-    frame = new ZStackFrame();
+    //frame = new ZStackFrame();
+    frame = ZStackFrame::Make(NULL);
     frame->document()->addPunctum(makePunctumList(false));
 
     if (hasDataFrame()) {

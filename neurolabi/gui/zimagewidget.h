@@ -133,6 +133,7 @@ private:
   QRect alignViewPort(
       const QRect &viewPort, int vx, int vy, int px, int py) const;
   void maximizeViewPort();
+  QSize getMaskSize() const;
 
 private:
   QImage *m_image;

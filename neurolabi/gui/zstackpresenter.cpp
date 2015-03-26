@@ -29,24 +29,38 @@
 #include "zrect2d.h"
 #include "zstackobjectsource.h"
 #include "zstackobjectsourcefactory.h"
+#include "zstackmvc.h"
 
-ZStackPresenter::ZStackPresenter(ZStackFrame *parent) : QObject(parent),
-  m_parent(parent),
-  //m_zoomRatio(1),
-  m_showObject(true),
-  m_isStrokeOn(false),
-  m_skipMouseReleaseEvent(false),
-  m_zOrder(2)
+ZStackPresenter::ZStackPresenter(ZStackFrame *parent) : QObject(parent)
 {
+  init();
+}
+
+ZStackPresenter::ZStackPresenter(QWidget *parent) : QObject(parent)
+{
+  init();
+}
+
+ZStackPresenter::~ZStackPresenter()
+{
+  clearData();
+
+  delete m_swcNodeContextMenu;
+  delete m_strokePaintContextMenu;
+  delete m_stackContextMenu;
+}
+
+void ZStackPresenter::init()
+{
+  m_showObject = true;
+  m_isStrokeOn = false;
+  m_skipMouseReleaseEvent = false;
+  m_zOrder = 2;
+
   initInteractiveContext();
 
-  m_greyScale.resize(5);
-  m_greyOffset.resize(5);
-
-  for (size_t i = 0; i < 5; ++i) {
-    m_greyScale[i] = 1.0;
-    m_greyOffset[i] = 0.0;
-  }
+  m_greyScale.resize(5, 1.0);
+  m_greyOffset.resize(5, 0.0);
 
   m_objStyle = ZStackObject::BOUNDARY;
   m_threshold = -1;
@@ -91,15 +105,6 @@ ZStackPresenter::ZStackPresenter(ZStackFrame *parent) : QObject(parent),
   ellipse->setAngle(45);
   addDecoration(ellipse);
 #endif
-}
-
-ZStackPresenter::~ZStackPresenter()
-{
-  clearData();
-
-  delete m_swcNodeContextMenu;
-  delete m_strokePaintContextMenu;
-  delete m_stackContextMenu;
 }
 
 void ZStackPresenter::clearData()
@@ -197,11 +202,13 @@ void ZStackPresenter::createSwcActions()
   action->setIcon(QIcon(":/images/add.png"));
   m_actionMap[ACTION_ADD_SWC_NODE] = action;
 
-  action = new QAction(tr("Locate node(s) in 3D"), parent());
-  connect(action, SIGNAL(triggered()),
-          m_parent, SLOT(locateSwcNodeIn3DView()));
-  action->setStatusTip("Located selected swc nodes in 3D view.");
-  m_actionMap[ACTION_LOCATE_SELECTED_SWC_NODES_IN_3D] = action;
+  if (getParentFrame() != NULL) {
+    action = new QAction(tr("Locate node(s) in 3D"), parent());
+    connect(action, SIGNAL(triggered()),
+            getParentFrame(), SLOT(locateSwcNodeIn3DView()));
+    action->setStatusTip("Located selected swc nodes in 3D view.");
+    m_actionMap[ACTION_LOCATE_SELECTED_SWC_NODES_IN_3D] = action;
+  }
 
   m_swcConnectToAction = new QAction(tr("Connect to"), parent());
   m_swcConnectToAction->setShortcut(Qt::Key_C);
@@ -324,9 +331,9 @@ void ZStackPresenter::createSwcNodeContextMenu()
     ZStackDocMenuFactory menuFactory;
     menuFactory.setSingleSwcNodeActionActivator(&m_singleSwcNodeActionActivator);
     m_swcNodeContextMenu = menuFactory.makeSwcNodeContextMenu(
-          this, m_parent, NULL);
+          this, getParentWidget(), NULL);
     menuFactory.makeSwcNodeContextMenu(
-          buddyDocument(), m_parent, m_swcNodeContextMenu);
+          buddyDocument(), getParentWidget(), m_swcNodeContextMenu);
     m_swcNodeContextMenu->addSeparator();
     m_swcNodeContextMenu->addAction(m_actionMap[ACTION_ADD_SWC_NODE]);
     m_swcNodeContextMenu->addAction(m_actionMap[ACTION_LOCATE_SELECTED_SWC_NODES_IN_3D]);
@@ -350,7 +357,7 @@ void ZStackPresenter::createStrokeContextMenu()
   if (m_strokePaintContextMenu == NULL) {
     ZStackDocMenuFactory menuFactory;
     m_strokePaintContextMenu =
-        menuFactory.makeSrokePaintContextMenu(this, m_parent, NULL);
+        menuFactory.makeSrokePaintContextMenu(this, getParentWidget(), NULL);
   }
 }
 
@@ -368,7 +375,7 @@ void ZStackPresenter::createBodyContextMenu()
   if (m_bodyContextMenu == NULL) {
     ZStackDocMenuFactory menuFactory;
     m_bodyContextMenu =
-        menuFactory.makeBodyContextMenu(this, m_parent, NULL);
+        menuFactory.makeBodyContextMenu(this, getParentWidget(), NULL);
   }
 }
 
@@ -386,7 +393,7 @@ void ZStackPresenter::createStackContextMenu()
   if (m_stackContextMenu == NULL) {
     ZStackDocMenuFactory menuFactory;
     m_stackContextMenu =
-        menuFactory.makeStackContextMenu(this, m_parent, NULL);
+        menuFactory.makeStackContextMenu(this, getParentWidget(), NULL);
   }
 }
 
@@ -423,20 +430,24 @@ void ZStackPresenter::turnOffStroke()
 
 ZStackDoc* ZStackPresenter::buddyDocument() const
 {
-  if (m_parent == 0) {
-    return 0;
+  if (getParentFrame() != NULL) {
+    return getParentFrame()->document().get();
+  } else if (getParentMvc() != NULL) {
+    return getParentMvc()->getDocument().get();
   }
 
-  return m_parent->document().get();
+  return NULL;
 }
 
 ZStackView* ZStackPresenter::buddyView() const
 {
-  if (m_parent == 0) {
-    return 0;
+  if (getParentFrame() != NULL) {
+    return getParentFrame()->view();
+  } else if (getParentMvc() != NULL) {
+    return getParentMvc()->getView();
   }
 
-  return m_parent->view();
+  return NULL;
 }
 
 void ZStackPresenter::addPunctaEditFunctionToRightMenu()
@@ -838,7 +849,9 @@ bool ZStackPresenter::processKeyPressEventForSwc(QKeyEvent *event)
     taken = buddyDocument()->executeConnectIsolatedSwc();
     break;
   case ZSwcTree::OPERATION_ZOOM_TO_SELECTED_NODE:
-    m_parent->zoomToSelectedSwcNodes();
+    if (getParentFrame() != NULL) {
+      getParentFrame()->zoomToSelectedSwcNodes();
+    }
     taken = true;
     break;
   case ZSwcTree::OPERATION_INSERT_NODE:
@@ -1495,9 +1508,13 @@ void ZStackPresenter::enterMouseCapturingMode()
 
 void ZStackPresenter::enterSwcConnectMode()
 {
-  m_parent->notifyUser("Connecting mode is on. Click on the target node to connect.");
-  this->interactiveContext().setSwcEditMode(ZInteractiveContext::SWC_EDIT_CONNECT);
-  updateCursor();
+  if (getParentFrame() != NULL) {
+    getParentFrame()->notifyUser(
+          "Connecting mode is on. Click on the target node to connect.");
+    this->interactiveContext().setSwcEditMode(
+          ZInteractiveContext::SWC_EDIT_CONNECT);
+    updateCursor();
+  }
 }
 
 void ZStackPresenter::updateSwcExtensionHint()
@@ -1512,14 +1529,21 @@ void ZStackPresenter::updateSwcExtensionHint()
   }
 }
 
+void ZStackPresenter::notifyUser(const QString &msg)
+{
+  if (getParentFrame() != NULL) {
+    getParentFrame()->notifyUser(msg);
+  }
+}
+
 bool ZStackPresenter::enterSwcExtendMode()
 {
   bool succ = false;
   if (buddyDocument()->getSelectedSwcNodeNumber() == 1) {
     const Swc_Tree_Node *tn = getSelectedSwcNode();
     if (tn != NULL) {
-      m_parent->notifyUser("Left click to extend. Path calculation is off when 'Cmd/Ctrl' is held."
-                           "Right click to exit extending mode.");
+      notifyUser("Left click to extend. Path calculation is off when 'Cmd/Ctrl' is held."
+                 "Right click to exit extending mode.");
 
       m_stroke.setFilled(false);
       QPointF pos = mapFromGlobalToStack(QCursor::pos());
@@ -1545,7 +1569,7 @@ void ZStackPresenter::exitSwcExtendMode()
       interactiveContext().swcEditMode() == ZInteractiveContext::SWC_EDIT_SMART_EXTEND) {
     interactiveContext().setSwcEditMode(ZInteractiveContext::SWC_EDIT_SELECT);
     exitStrokeEdit();
-    m_parent->notifyUser("Exit extending mode");
+    notifyUser("Exit extending mode");
   }
 }
 
@@ -1555,8 +1579,8 @@ void ZStackPresenter::enterSwcMoveMode()
   if (tn != NULL) {
     interactiveContext().setSwcEditMode(
           ZInteractiveContext::SWC_EDIT_MOVE_NODE);
-    m_parent->notifyUser("Hold the Shift key and then move the mouse with left button pressed "
-                         "to move the selected nodes. Right click to exit moving mode.");
+    notifyUser("Hold the Shift key and then move the mouse with left button pressed "
+               "to move the selected nodes. Right click to exit moving mode.");
     updateCursor();
   }
 }
@@ -1753,7 +1777,7 @@ void ZStackPresenter::enterSwcSelectMode()
     m_interactiveContext.setExitingEdit(true);
   }
 
-  m_parent->notifyUser("Use mouse to select nodes");
+  notifyUser("Use mouse to select nodes");
 
   m_interactiveContext.setSwcEditMode(ZInteractiveContext::SWC_EDIT_SELECT);
   updateCursor();
@@ -1877,7 +1901,7 @@ void ZStackPresenter::processEvent(ZInteractionEvent &event)
   default:
     break;
   }
-  m_parent->notifyUser(event.getMessage());
+  notifyUser(event.getMessage());
   event.setEvent(ZInteractionEvent::EVENT_NULL);
 }
 
@@ -1985,6 +2009,7 @@ void ZStackPresenter::process(const ZStackOperator &op)
     break;
   case ZStackOperator::OP_RESTORE_EXPLORE_MODE:
     this->interactiveContext().restoreExploreMode();
+    buddyView()->notifyViewPortChanged();
     break;
   case ZStackOperator::OP_SHOW_STACK_CONTEXT_MENU:
     buddyView()->showContextMenu(getStackContextMenu(), pos);
@@ -2098,9 +2123,8 @@ void ZStackPresenter::process(const ZStackOperator &op)
       ZObject3dScan *obj = op.getHitObject<ZObject3dScan>();
       buddyDocument()->setSelected(obj);
 
-      m_parent->notifyUser(
-            QString("%1 (%2)").
-            arg(obj->getSource().c_str()).arg(obj->getLabel()));
+      notifyUser(QString("%1 (%2)").
+                 arg(obj->getSource().c_str()).arg(obj->getLabel()));
     } else {
       buddyDocument()->deselectAllObject();
     }
@@ -2335,3 +2359,19 @@ void ZStackPresenter::acceptActiveStroke()
   m_stroke.clear();
   buddyView()->paintActiveDecoration();
 }
+
+ZStackFrame* ZStackPresenter::getParentFrame() const
+{
+  return dynamic_cast<ZStackFrame*>(parent());
+}
+
+ZStackMvc* ZStackPresenter::getParentMvc() const
+{
+  return dynamic_cast<ZStackMvc*>(parent());
+}
+
+QWidget* ZStackPresenter::getParentWidget() const
+{
+  return dynamic_cast<QWidget*>(parent());
+}
+

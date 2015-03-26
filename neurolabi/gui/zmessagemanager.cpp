@@ -13,18 +13,22 @@ ZMessageManager::ZMessageManager(QObject *parent) :
 {
 }
 
-void ZMessageManager::registerWidget(QWidget *widget)
+void ZMessageManager::registerWidget(
+    QWidget *widget, ZMessageManager *parent, bool updatingParent)
 {
-  if (m_widget != NULL) {
-    detachWidget();
+  detachWidget();
+  m_widget = widget;
+
+  if (parent == NULL && updatingParent) {
+    parent = getPotentialParent();
   }
 
-  m_widget = widget;
-  if (widget != NULL) {
+  if (m_widget != NULL) {
     connect(static_cast<QObject*>(m_widget), SIGNAL(destroyed()),
-            this, SLOT(detachWidget()));
+            this, SLOT(deleteLater()));
   }
-  updateParent();
+
+  setParent(parent);
 }
 
 void ZMessageManager::detachWidget()
@@ -32,20 +36,24 @@ void ZMessageManager::detachWidget()
   disconnect(dynamic_cast<QObject*>(m_widget), SIGNAL(destroyed()),
              this, SLOT(detachWidget()));
   m_widget = NULL;
+  setParent(&(getRootManager()));
 }
 
-void ZMessageManager::processMessage(ZMessage *message)
+void ZMessageManager::processMessage(ZMessage *message, bool reporting)
 {
   if (message == NULL) {
     return;
   }
 
-  if (m_processor != NULL && message->isActive()) {
-    m_processor->processMessage(message, m_widget);
+  if (message->isActive()) {
+    if (m_processor != NULL) {
+      m_processor->processMessage(message, m_widget);
+    }
     if (message->isActive()) {
       dispatchMessage(message);
     }
-    if (message->isActive()) {
+    if (reporting && message->isActive()) {
+      message->setCurrentSource(getWidget());
       reportMessage(message);
     }
   }
@@ -62,7 +70,13 @@ void ZMessageManager::dispatchMessage(ZMessage *message)
     ZMessageManager *manager = const_cast<ZMessageManager*>(
           dynamic_cast<const ZMessageManager*>(child));
     if (manager != NULL) {
-      manager->processMessage(message);
+      if ((message->getCurrentSource() == NULL) ||
+          (manager->getWidget() != message->getCurrentSource())) {
+        manager->processMessage(message, false);
+        if (!message->isActive()) {
+          break;
+        }
+      }
     }
   }
 }
@@ -75,23 +89,37 @@ void ZMessageManager::reportMessage(ZMessage *message)
 
   ZMessageManager *manager = dynamic_cast<ZMessageManager*>(parent());
   if (manager != NULL) {
-    manager->processMessage(message);
+    if ((message->getOriginalSource() == NULL) ||
+        (manager->getWidget() != message->getOriginalSource())) {
+      manager->processMessage(message, true);
+    }
   }
+}
+
+ZMessageManager* ZMessageManager::getPotentialParent() const
+{
+  ZMessageManager &root = getRootManager();
+
+  ZMessageManager *parent = NULL;
+  if (m_widget == NULL) {
+    parent = &root;
+  } else {
+    QWidget *parentWidget = m_widget->parentWidget();
+    parent = root.findChildManager(parentWidget);
+    if (parent == NULL) {
+      parent = &root;
+    }
+  }
+
+  return parent;
 }
 
 void ZMessageManager::updateParent()
 {
-  ZMessageManager &root = getRootManager();
-  ZMessageManager *manager =
-      root.findChildManager(dynamic_cast<QWidget*>(m_widget->parent()));
-  if (manager != NULL) {
-    setParent(manager);
-  } else {
-    setParent(&root);
-  }
+  setParent(getPotentialParent());
 }
 
-ZMessageManager* ZMessageManager::findChildManager(QWidget *widget) const
+ZMessageManager* ZMessageManager::findChildManager(const QWidget *widget) const
 {
   QObjectList objList = children();
   ZMessageManager *target = NULL;
@@ -101,7 +129,7 @@ ZMessageManager* ZMessageManager::findChildManager(QWidget *widget) const
       if (child->getWidget() == widget) {
         target = child;
       } else {
-        target = findChildManager(widget);
+        target = child->findChildManager(widget);
       }
     }
     if (target != NULL) {
@@ -115,6 +143,11 @@ ZMessageManager* ZMessageManager::findChildManager(QWidget *widget) const
 void ZMessageManager::setProcessor(ZSharedPointer<ZMessageProcessor> processor)
 {
   m_processor = processor;
+}
+
+void ZMessageManager::setProcessor(ZMessageProcessor *processor)
+{
+  setProcessor(ZSharedPointer<ZMessageProcessor>(processor));
 }
 
 bool ZMessageManager::hasProcessor() const
@@ -154,4 +187,15 @@ void ZMessageManager::print() const
   toLineCompositer().print(2);
 }
 
+ZMessageManager* ZMessageManager::Make(QWidget *widget, ZMessageManager *parent)
+{
+  ZMessageManager *messageManager = new ZMessageManager();
+  messageManager->registerWidget(widget, parent);
 
+  return messageManager;
+}
+
+bool ZMessageManager::hasParent() const
+{
+  return parent() != NULL;
+}
