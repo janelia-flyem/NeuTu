@@ -72,16 +72,26 @@ CONFIG(debug, debug|release) {
     DVIDCPP_PATH = $${EXTLIB_DIR}/dvid-cpp
 }
 
-exists($$DVIDCPP_PATH) {
-    exists($${BUILDEM_DIR}) {
-        INCLUDEPATH +=  $${BUILDEM_DIR}/include
-        LIBS += -L$${BUILDEM_DIR}/lib -L$${BUILDEM_DIR}/lib64
-    }
 
+exists($$DVIDCPP_PATH) {
     DEFINES += _ENABLE_LIBDVIDCPP_
     INCLUDEPATH += $$DVIDCPP_PATH/include
-    LIBS += -L$$DVIDCPP_PATH/lib -ldvidcpp -llz4 -lpng -ljsoncpp -lcurl -ljpeg
+    LIBS += -L$$DVIDCPP_PATH/lib
+} else:exists($${BUILDEM_DIR}) {
+    INCLUDEPATH +=  $${BUILDEM_DIR}/include
+    LIBS += -L$${BUILDEM_DIR}/lib -L$${BUILDEM_DIR}/lib64
+    DEFINES += _ENABLE_LIBDVIDCPP_
 }
+
+contains(DEFINES, _ENABLE_LIBDVIDCPP_) {
+    LIBS *= -ldvidcpp -ljsoncpp -llz4 -lpng -lcurl -ljpeg
+    exists($$BUILDEM_DIR) {
+        LIBS *= -lssl -lcrypto
+    }
+}
+
+message($$DEFINES)
+message($$LIBS)
 
 #BUILDEM_DIR = /opt/Downloads/buildem
 #exists($${BUILDEM_DIR}/lib/libdvidcpp2.a) {
