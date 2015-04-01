@@ -148,6 +148,7 @@ private slots:
 
   void exportResult();
   void exportRoiObject();
+  void exportRoiBlockObject();
   void importRoi();
   void cloneProject();
 
@@ -159,6 +160,7 @@ private:
   void createMenu();
   void exportRoiObjectFunc(
       const QString &fileName, int xintv, int yintv, int zintv);
+  void exportRoiObjectBlockFunc(const QString &fileName);
 
   void prepareQuickLoadFunc(
       const ZDvidTarget &target,const std::string &lowresPath, int z);

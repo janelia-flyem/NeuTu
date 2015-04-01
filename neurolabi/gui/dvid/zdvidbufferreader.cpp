@@ -5,7 +5,13 @@
 #include <QDebug>
 #include <QNetworkReply>
 
+#if defined(_ENABLE_LIBDVIDCPP_)
+#include "libdvid/DVIDNodeService.h"
+#endif
+
+#include "dvid/zdvidtarget.h"
 #include "zsleeper.h"
+#include "dvid/zdvidurl.h"
 
 ZDvidBufferReader::ZDvidBufferReader(QObject *parent) :
   QObject(parent), m_networkReply(NULL), m_isReadingDone(false),
@@ -25,9 +31,21 @@ ZDvidBufferReader::ZDvidBufferReader(QObject *parent) :
 
 void ZDvidBufferReader::read(const QString &url)
 {
-  startReading();
-
   qDebug() << url;
+
+#ifdef _ENABLE_LIBDVIDCPP_
+  ZDvidTarget target;
+  target.setFromUrl(url.toStdString());
+
+  libdvid::DVIDNodeService service(target.getAddress(), target.getUuid());
+  libdvid::BinaryDataPtr data = service.custom_request(
+        ZDvidUrl::GetEndPoint(url.toStdString()), libdvid::BinaryDataPtr(),
+        libdvid::GET);
+  m_buffer.clear();
+  m_buffer.append(data->get_data().c_str(), data->length());
+
+#else
+  startReading();
 
   m_networkReply = m_networkManager->get(QNetworkRequest(url));
   connect(m_networkReply, SIGNAL(finished()), this, SLOT(finishReading()));
@@ -36,6 +54,7 @@ void ZDvidBufferReader::read(const QString &url)
           this, SLOT(handleError(QNetworkReply::NetworkError)));
 
   waitForReading();
+#endif
 }
 
 bool ZDvidBufferReader::isReadable(const QString &url)
@@ -111,6 +130,7 @@ void ZDvidBufferReader::waitForReading()
   emit checkingStatus();
 
   */
+
 
   if (!isReadingDone()) {
     m_eventLoop->exec();

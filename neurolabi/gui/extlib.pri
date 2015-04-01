@@ -1,3 +1,4 @@
+EXTLIB_DIR = $${NEUROLABI_DIR}/lib
 DEPENDPATH += . $${NEUROLABI_DIR}/c $${NEUROLABI_DIR}/c/include
 INCLUDEPATH += $${NEUROLABI_DIR}/gui \
     $${NEUROLABI_DIR}/c \
@@ -9,11 +10,9 @@ INCLUDEPATH += $${NEUROLABI_DIR}/gui \
 LIBS += -L$${NEUROLABI_DIR}/c/lib
 CONFIG(debug, debug|release) {
     LIBS += -lneurolabi_debug
-    PRE_TARGETDEPS += $${NEUROLABI_DIR}/c/lib/libneurolabi_debug.a
 } else {
     #DEFINES += _ADVANCED_
     LIBS += -lneurolabi
-    PRE_TARGETDEPS += $${NEUROLABI_DIR}/c/lib/libneurolabi.a
 }
 
 unix {
@@ -60,14 +59,36 @@ unix {
     LIBS += -ldl -lz
 }
 
-
-BUILDEM_DIR = /opt/Downloads/buildem
-exists($${BUILDEM_DIR}/lib/libdvidcpp2.a) {
-
-    DEFINES += _ENABLE_LIBDVID_
-    INCLUDEPATH +=  $${BUILDEM_DIR}/include $${BUILDEM_DIR}/include/libdvid
-    LIBS += -L$${BUILDEM_DIR}/lib -L$${BUILDEM_DIR}/lib64 -ldvidcpp \
-        -ljsoncpp -lcppnetlib-uri \
-        -lcppnetlib-client-connections -lcppnetlib-server-parsers  \
-        -lboost_system -lboost_thread -lssl -lcrypto
+CONFIG(debug, debug|release) {
+    exists($${EXTLIB_DIR}/opencv) {
+        message(opencv found)
+        DEFINES += _USE_OPENCV_
+        INCLUDEPATH += $${EXTLIB_DIR}/opencv/include $${EXTLIB_DIR}/opencv/include/opencv
+        LIBS += -L$${EXTLIB_DIR}/opencv/lib -lopencv_core -lopencv_ml
+    }
 }
+
+!exists($$DVIDCPP_PATH) {
+    DVIDCPP_PATH = $${EXTLIB_DIR}/dvid-cpp
+}
+
+exists($$DVIDCPP_PATH) {
+    exists($${BUILDEM_DIR}) {
+        INCLUDEPATH +=  $${BUILDEM_DIR}/include
+        LIBS += -L$${BUILDEM_DIR}/lib -L$${BUILDEM_DIR}/lib64
+    }
+
+    DEFINES += _ENABLE_LIBDVIDCPP_
+    INCLUDEPATH += $$DVIDCPP_PATH/include
+    LIBS += -L$$DVIDCPP_PATH/lib -ldvidcpp -llz4 -lpng -ljsoncpp -lcurl -ljpeg
+}
+
+#BUILDEM_DIR = /opt/Downloads/buildem
+#exists($${BUILDEM_DIR}/lib/libdvidcpp2.a) {
+#    DEFINES += _ENABLE_LIBDVID_
+#    INCLUDEPATH +=  $${BUILDEM_DIR}/include $${BUILDEM_DIR}/include/libdvid
+#    LIBS += -L$${BUILDEM_DIR}/lib -L$${BUILDEM_DIR}/lib64 -ldvidcpp \
+#        -ljsoncpp -lcppnetlib-uri \
+#        -lcppnetlib-client-connections -lcppnetlib-server-parsers  \
+#        -lboost_system -lboost_thread -lssl -lcrypto
+#}

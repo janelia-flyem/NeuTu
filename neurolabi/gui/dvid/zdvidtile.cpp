@@ -1,6 +1,7 @@
 #include "zdvidtile.h"
 
 #include <QTransform>
+#include <QtConcurrentRun>
 #include "zimagewidget.h"
 #include "neutubeconfig.h"
 #include "zstack.hxx"
@@ -130,6 +131,14 @@ void ZDvidTile::update(int z)
   if (m_z != z || m_image.isNull()) {
     ZDvidUrl dvidUrl(getDvidTarget());
     ZDvidBufferReader bufferReader;
+
+    /*
+    QFuture<void> result = QtConcurrent::run(
+          &bufferReader, &ZDvidBufferReader::read,
+          QString(dvidUrl.getTileUrl("graytiles", m_res.getLevel(), m_ix, m_iy, z).c_str()));
+    result.waitForFinished();
+    */
+
     bufferReader.read(
           dvidUrl.getTileUrl("graytiles", m_res.getLevel(), m_ix, m_iy, z).c_str());
     QByteArray buffer = bufferReader.getBuffer();

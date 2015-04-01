@@ -164,8 +164,9 @@ public: //attributes
   bool hasSwc() const;
   bool hasPuncta() const;
   // hasDrawable() returns true iff it has a drawable object.
-  bool hasDrawable();
-  bool hasSparseObject();
+  bool hasDrawable() const;
+  bool hasDrawable(ZStackObject::ETarget target) const;
+  bool hasSparseObject() const;
   bool hasSparseStack() const;
 
   bool hasSelectedSwc() const;

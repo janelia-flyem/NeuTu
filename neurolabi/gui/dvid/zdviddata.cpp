@@ -19,7 +19,7 @@ const char* ZDvidData::m_splitStatusName = "split_status";
 const char* ZDvidData::m_labelBlockName = "bodies";
 const char* ZDvidData::m_multiscale2dName = "graytiles";
 
-const char* ZDvidData::m_keyValueTypeName = "keyvalue";
+//const char* ZDvidData::m_keyValueTypeName = "keyvalue";
 
 const char* ZDvidData::m_emptyName = "";
 
@@ -71,6 +71,7 @@ const char* ZDvidData::getName(ERole role)
   return m_emptyName;
 }
 
+/*
 const char* ZDvidData::getName(EType type)
 {
   switch (type) {
@@ -82,7 +83,7 @@ const char* ZDvidData::getName(EType type)
 
   return m_emptyName;
 }
-
+*/
 std::string ZDvidData::getName(ERole role, const std::string &prefix)
 {
   if (prefix.empty()) {
@@ -98,14 +99,14 @@ std::string ZDvidData::getName(
 {
 
   std::string prefix = "";
-  if (!isStandardName(prefixRole, prefixName)) {
+  if (!isDefaultName(prefixRole, prefixName)) {
     prefix = prefixName;
   }
 
   return getName(role, prefix);
 }
 
-bool ZDvidData::isStandardName(ERole role, const std::string &name)
+bool ZDvidData::isDefaultName(ERole role, const std::string &name)
 {
   /*
   if (role == ZDvidData::ROLE_BODY_LABEL) {

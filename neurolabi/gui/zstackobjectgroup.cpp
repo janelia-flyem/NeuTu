@@ -409,6 +409,19 @@ bool ZStackObjectGroup::hasObject(ZStackObject::EType type) const
   return !getObjectList(type).empty();
 }
 
+bool ZStackObjectGroup::hasObject(ZStackObject::ETarget target) const
+{
+  for (ZStackObjectGroup::const_iterator iter = begin(); iter != end();
+       ++iter) {
+    const ZStackObject *obj = *iter;
+    if (obj->getTarget() == target) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 bool ZStackObjectGroup::hasSelected(ZStackObject::EType type) const
 {
   return !getSelectedSet(type).empty();

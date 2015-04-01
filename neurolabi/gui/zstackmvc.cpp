@@ -27,7 +27,7 @@ void ZStackMvc::construct(ztr1::shared_ptr<ZStackDoc> doc)
   createPresenter();
   updateDocument();
 
-  m_view->prepareDocument();
+  //m_view->prepareDocument();
   m_presenter->prepareView();
 }
 
@@ -158,4 +158,11 @@ void ZStackMvc::updateDocument()
 
   //m_progressReporter.setProgressBar(m_view->progressBar());
   //m_doc->setProgressReporter(&m_progressReporter);
+}
+
+void ZStackMvc::keyPressEvent(QKeyEvent *event)
+{
+  if (m_presenter != NULL) {
+    m_presenter->processKeyPressEvent(event);
+  }
 }

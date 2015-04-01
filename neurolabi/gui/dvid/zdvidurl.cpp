@@ -457,3 +457,12 @@ std::string ZDvidUrl::getBranchUrl() const
 {
   return getNodeUrl() + "/branch";
 }
+
+std::string ZDvidUrl::GetEndPoint(const std::string &url)
+{
+  std::string marker = "api/node/";
+  std::string::size_type markerPos = url.find(marker) + marker.size();
+  std::string::size_type uuidPos = url.find('/', markerPos);
+
+  return url.substr(uuidPos);
+}

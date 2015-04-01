@@ -16056,7 +16056,7 @@ void ZTest::test(MainWindow *host)
   ptoc();
 #endif
 
-#if 1
+#if 0
   ZDvidTarget target("emdata1.int.janelia.org", "cf6e", 7000);
   ZDvidReader reader;
   reader.open(target);
@@ -16065,4 +16065,41 @@ void ZTest::test(MainWindow *host)
   ptoc();
 #endif
 
+#if 0
+  std::string url = "http://emdata1.int.janelia.org:7000/api/node/cf6e/grayscale/raw/0_1_2/320_32_32/3104_5568_3520";
+  std::cout << url << std::endl;
+  std::cout << ZDvidUrl::GetEndPoint(url) << std::endl;
+
+  ZDvidTarget target;
+  target.setFromUrl(url);
+  target.print();
+#endif
+
+
+#if 1
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "628");
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
+  ZObject3dScan obj1;
+  obj1.load(GET_TEST_DATA_DIR + "/flyem/MB/large_outside.sobj");
+  ZObject3dScan block1 = dvidInfo.getBlockIndex(obj1);
+  obj1.clear();
+
+  ZObject3dScan obj2;
+  obj2.load(GET_TEST_DATA_DIR + "/flyem/MB/entire_mb.sobj");
+  ZObject3dScan block2 = dvidInfo.getBlockIndex(obj2);
+  obj2.clear();
+
+
+  block1.subtract(block2);
+  block1.save(GET_TEST_DATA_DIR + "/flyem/MB/ring.sobj");
+
+  ZJsonArray array = ZJsonFactory::makeJsonArray(
+        block1, ZJsonFactory::OBJECT_SPARSE);
+  array.dump(GET_TEST_DATA_DIR + "/flyem/MB/ring.json");
+#endif
 }

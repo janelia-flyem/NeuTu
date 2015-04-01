@@ -66,9 +66,10 @@ QDialog* ZDialogFactory::makeStackDialog(QWidget *parent)
   dlg->setLayout(layout);
 
   ZDvidTarget target;
+
   target.set("http://emrecon100.janelia.priv", "2a3", -1);
 
-  //target.set("http://emdata1.int.janelia.org", "8e2", 9000);
+  //target.set("http://emdata2.int.janelia.org", "628", -1);
 
   ZDvidReader reader;
   reader.open(target);
@@ -88,7 +89,7 @@ QDialog* ZDialogFactory::makeStackDialog(QWidget *parent)
   ensemble->attachView(stackWidget->getView());
   doc->addObject(ensemble);
 
-  stackWidget->getView()->reset();
+  stackWidget->getView()->reset(false);
    /*
   ZDvidReader reader;
   reader.open(target);

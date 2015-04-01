@@ -39,6 +39,9 @@ public:
   void connectSignalSlot();
   void disconnectAll();
 
+protected: // Events
+  virtual void keyPressEvent(QKeyEvent *event);
+
 signals:
   void stackChanged();
   void objectChanged();

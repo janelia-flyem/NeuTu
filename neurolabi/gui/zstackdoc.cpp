@@ -617,7 +617,7 @@ bool ZStackDoc::hasObject(ZStackObject::EType type) const
   return !m_objectGroup.getObjectList(type).isEmpty();
 }
 
-bool ZStackDoc::hasSparseObject()
+bool ZStackDoc::hasSparseObject() const
 {
   return !m_objectGroup.getObjectList(ZStackObject::TYPE_SPARSE_OBJECT).isEmpty();
 }
@@ -1098,9 +1098,14 @@ void ZStackDoc::updateVirtualStackSize()
   }
 }
 
-bool ZStackDoc::hasDrawable()
+bool ZStackDoc::hasDrawable() const
 {
   return !m_objectGroup.isEmpty();
+}
+
+bool ZStackDoc::hasDrawable(ZStackObject::ETarget target) const
+{
+  return m_objectGroup.hasObject(target);
 }
 
 int ZStackDoc::getStackWidth() const

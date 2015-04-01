@@ -6,7 +6,7 @@
 
 ZDvidTileEnsemble::ZDvidTileEnsemble()
 {
-  setTarget(ZStackObject::OBJECT_CANVAS);
+  setTarget(ZStackObject::TILE_CANVAS);
   m_type = ZStackObject::TYPE_DVID_TILE_ENSEMBLE;
 }
 
@@ -36,6 +36,7 @@ ZDvidTile* ZDvidTileEnsemble::getTile(
   std::map<ZDvidTileInfo::TIndex, ZDvidTile*> &tileMap = m_tileGroup[resLevel];
   if (tileMap.count(index) == 0) {
     ZDvidTile *tile = new ZDvidTile;
+    tile->setTarget(m_target);
     tile->setDvidTarget(m_dvidTarget);
     tile->setResolutionLevel(resLevel);
     tile->setTileIndex(index.first, index.second);
@@ -53,9 +54,13 @@ void ZDvidTileEnsemble::display(
     return;
   }
 
-  QRect fov = m_view->getViewParameter(NeuTube::COORD_STACK).getViewPort();
-  int resLevel = std::min(
-        m_tilingInfo.getMaxLevel(), fov.width() / m_view->screen()->size().width());
+  QRect fov = m_view->imageWidget()->viewPort();
+  QSize screenSize = m_view->imageWidget()->size();
+
+  m_view->getViewParameter(NeuTube::COORD_STACK).getViewPort();
+  int resLevel = std::min(m_tilingInfo.getMaxLevel() - 1,
+                          std::min(fov.width() / screenSize.width(),
+                                   fov.height() / screenSize.height()));
 
   std::vector<ZDvidTileInfo::TIndex> tileIndices =
       m_tilingInfo.getCoverIndex(resLevel, fov);

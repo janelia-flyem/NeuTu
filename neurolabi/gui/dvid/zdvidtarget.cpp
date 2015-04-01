@@ -80,6 +80,31 @@ void ZDvidTarget::setPort(int port)
   m_port = port;
 }
 
+void ZDvidTarget::setFromUrl(const std::string &url)
+{
+  ZString zurl(url);
+  if (zurl.startsWith("http:")) {
+    zurl.replace("http://", "");
+  }
+
+  std::vector<std::string> tokens = zurl.tokenize('/');
+  ZString addressToken = tokens[0];
+  std::vector<std::string> tokens2 = addressToken.tokenize(':');
+  int port = -1;
+  if (tokens2.size() > 1) {
+    if (!tokens2[1].empty()) {
+      port = ZString::firstInteger(tokens2[1]);
+      if (tokens2[1][0] == '-') {
+        port = -port;
+      }
+    }
+  }
+  std::string uuid;
+  if (tokens.size() > 3) {
+    uuid = tokens[3];
+  }
+  set(tokens2[0], uuid, port);
+}
 
 void ZDvidTarget::setFromSourceString(const std::string &sourceString)
 {
@@ -279,4 +304,29 @@ void ZDvidTarget::setBodyLabelName(const std::string &name)
 void ZDvidTarget::setMultiscale2dName(const std::string &name)
 {
   m_multiscale2dName = name;
+}
+
+std::string ZDvidTarget::getName(ZDvidData::ERole role) const
+{
+  std::string name;
+
+  switch (role) {
+  case ZDvidData::ROLE_MULTISCALE_2D:
+    name =  m_multiscale2dName;
+    break;
+  case ZDvidData::ROLE_BODY_LABEL:
+    name = m_bodyLabelName;
+    break;
+  case ZDvidData::ROLE_LABEL_BLOCK:
+    name = m_labelBlockName;
+    break;
+  default:
+    break;
+  }
+
+  if (name.empty()) {
+    name = ZDvidData::getName(role);
+  }
+
+  return name;
 }

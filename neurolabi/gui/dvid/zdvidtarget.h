@@ -3,9 +3,10 @@
 
 #include <string>
 #include "zjsonobject.h"
+#include "zdviddata.h"
 
 /*!
- * \brief The class of representing the location of a dvid server
+ * \brief The class of representing a dvid node.
  */
 class ZDvidTarget
 {
@@ -30,6 +31,8 @@ public:
    * \param sourceString Must start with "http:".
    */
   void setFromSourceString(const std::string &sourceString);
+
+  void setFromUrl(const std::string &url);
 
   inline const std::string& getAddress() const {
     return m_address;
@@ -132,6 +135,8 @@ public:
   inline void setBgValue(int v) {
     m_bgValue = v;
   }
+
+  std::string getName(ZDvidData::ERole role) const;
 
   std::string getBodyLabelName() const;
   void setBodyLabelName(const std::string &name);

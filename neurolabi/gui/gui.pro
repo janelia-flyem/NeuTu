@@ -3,41 +3,47 @@
 # #####################################################################
 TEMPLATE = app
 
-#Build neurolabi
-neurolabi.target = neurolabi
-CONFIG(debug, debug|release) {
-    neurolabi.commands = @echo "building neurolabi"; cd $${PWD}/../c; make lib VERSION=
-} else {
-    neurolabi.commands = @echo "building neurolabi"; cd $${PWD}/../c; make release VERSION=
-}
-QMAKE_EXTRA_TARGETS += neurolabi
-###################
+QMAKE_PATH = $(QMAKE)
 
-NEUROLABI_DIR = $${PWD}/..
-EXTLIB_DIR = $${NEUROLABI_DIR}/lib
-
-win32 {
-  DEPLOYMENT_COMMAND = $$PWD/deploy_win.bat $(QMAKE) $$OUT_PWD
+!exists($$QMAKE_PATH) {
+    QMAKE_PATH = $$[QT_INSTALL_BINS]/qmake
 }
 
-macx {
-  DEPLOYMENT_COMMAND = $$PWD/deploy_mac $(QMAKE) $$OUT_PWD
+
+message("qmake path: $$QMAKE_PATH")
+
+exists($$QMAKE_PATH) {
+    win32 {
+      DEPLOYMENT_COMMAND = $$PWD/deploy_win.bat $$QMAKE_PATH $$OUT_PWD
+    }
+
+    macx {
+      DEPLOYMENT_COMMAND = $$PWD/deploy_mac $$QMAKE_PATH $$OUT_PWD
+    }
+
+    unix:!macx {
+      DEPLOYMENT_COMMAND = $$PWD/deploy_linux $$QMAKE_PATH $$OUT_PWD
+    }
 }
 
-unix:!macx {
-  DEPLOYMENT_COMMAND = $$PWD/deploy_linux $(QMAKE) $OUT_PWD
-}
 
-include(extlib.pri)
-
-#neurolabi
 CONFIG(debug, debug|release) {
     TARGET = neuTube_d
     DEFINES += _DEBUG_ _ADVANCED_ PROJECT_PATH=\"\\\"$$PWD\\\"\"
 } else {
     TARGET = neuTube
+}
+
+include(extratarget.pri)
+
+CONFIG(release, debug|release):!isEmpty(DEPLOYMENT_COMMAND) {
     QMAKE_POST_LINK += $$DEPLOYMENT_COMMAND
 }
+
+message($$DEPLOYMENT_COMMAND)
+message("Post link: $$QMAKE_POST_LINK")
+
+include(extlib.pri)
 
 # suppress warnings from 3rd party library, works for gcc and clang
 QMAKE_CXXFLAGS += -isystem ../gui/ext
@@ -125,9 +131,9 @@ unix {
         doc.path = Contents/MacOS
         QMAKE_BUNDLE_DATA += doc
 
-        config.files = config.xml
-        config.path = Contents/MacOS
-        QMAKE_BUNDLE_DATA += config
+#        config.files = config.xml
+#        config.path = Contents/MacOS
+#        QMAKE_BUNDLE_DATA += config
     } else {
         DEFINES += _NEUTUBE_LINUX_
         DEFINES += _LINUX_
@@ -155,15 +161,6 @@ include(ext/QsLog/QsLog.pri)
 include(ext/libqxt.pri)
 include (gui_free.pri)
 include(test/test.pri)
-
-CONFIG(debug, debug|release) {
-    exists(../lib/opencv) {
-        message(opencv found)
-        DEFINES += _USE_OPENCV_
-        INCLUDEPATH += ../lib/opencv/include ../lib/opencv/include/opencv
-        LIBS += -L../lib/opencv/lib -lopencv_core -lopencv_ml
-    }
-}
 
 # Input
 RESOURCES = gui.qrc
@@ -890,4 +887,5 @@ SOURCES += main.cpp \
     dvid/zdvidtileensemble.cpp
 
 OTHER_FILES += \
-    extlib.pri
+    extlib.pri \
+    extratarget.pri

@@ -5,6 +5,10 @@
 
 /*!
  * \brief The class of dvid data
+ *
+ * An instance of DVID data has a type and a name. It can also have role in the
+ * framework of FlyEM reconstruction. This class has built-in correspondence
+ * between a role and a name, providing the default name of a given role.
  */
 class ZDvidData
 {
@@ -28,14 +32,14 @@ public:
   };
 
   static const char* getName(ERole role);
-  static const char* getName(EType type);
+  //static const char* getName(EType type);
 
   static std::string getName(ERole role, const std::string &prefix);
   static std::string getName(
       ZDvidData::ERole role, ZDvidData::ERole prefixRole,
       const std::string &prefixName);
 
-  static bool isStandardName(ERole role, const std::string &name);
+  static bool isDefaultName(ERole role, const std::string &name);
 
 private:
   static const char *m_grayScaleName;
@@ -57,7 +61,7 @@ private:
   static const char *m_labelBlockName;
   static const char *m_multiscale2dName;
 
-  static const char *m_keyValueTypeName;
+  //static const char *m_keyValueTypeName;
 
   static const char *m_emptyName;
 };

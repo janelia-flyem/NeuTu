@@ -155,6 +155,11 @@ void ZFlyEmRoiDialog::createMenu()
   connect(exportRoiObjectAction, SIGNAL(triggered()),
           this, SLOT(exportRoiObject()));
 
+  QAction *exportRoiBlockObjectAction = new QAction("Export ROI Block", this);
+  m_mainMenu->addAction(exportRoiBlockObjectAction);
+  connect(exportRoiBlockObjectAction, SIGNAL(triggered()),
+          this, SLOT(exportRoiBlockObject()));
+
 
   m_importRoiAction = new QAction("Import ROI", this);
   m_mainMenu->addAction(m_importRoiAction);
@@ -1191,6 +1196,25 @@ void ZFlyEmRoiDialog::on_estimateVolumePushButton_clicked()
   }
 }
 
+void ZFlyEmRoiDialog::exportRoiObjectBlockFunc(const QString &fileName)
+{
+  emit messageDumped("Generating ROI object ...", true);
+  emit progressAdvanced(0.1);
+  ZObject3dScan obj = m_project->getRoiObject(0, 0, 0);
+  emit progressAdvanced(0.5);
+  ZObject3dScan blockObj = m_project->getDvidInfo().getBlockIndex(obj);
+  emit progressAdvanced(0.2);
+  if (!obj.isEmpty()) {
+    emit messageDumped("Saving ...", true);
+    blockObj.save(fileName.toStdString());
+    emit messageDumped("Done.", true);
+    emit progressAdvanced(0.2);
+  } else {
+    emit messageDumped("No ROI found in this project. Nothing is saved", true);
+  }
+  endProgress();
+}
+
 void ZFlyEmRoiDialog::exportRoiObjectFunc(
     const QString &fileName, int xintv, int yintv, int zintv)
 {
@@ -1210,6 +1234,20 @@ void ZFlyEmRoiDialog::exportRoiObjectFunc(
   }
   endProgress();
   //emit progressDone();
+}
+
+void ZFlyEmRoiDialog::exportRoiBlockObject()
+{
+  if (m_project != NULL) {
+    QString fileName = getMainWindow()->getSaveFileName(
+          "Export ROI Object", "Sparse object files (*.sobj)");
+    if (!fileName.isEmpty()) {
+      startProgress();
+      QtConcurrent::run(
+            this, &ZFlyEmRoiDialog::exportRoiObjectBlockFunc, fileName);
+        //endProgress();
+    }
+  }
 }
 
 void ZFlyEmRoiDialog::exportRoiObject()

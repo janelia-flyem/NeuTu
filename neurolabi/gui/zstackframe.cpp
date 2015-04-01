@@ -167,7 +167,7 @@ void ZStackFrame::constructFrame(ZSharedPointer<ZStackDoc> doc)
   updateDocument();
 
   setView(m_view);
-  m_view->prepareDocument();
+  //m_view->prepareDocument();
   m_presenter->prepareView();
 
   if (doc != NULL) {

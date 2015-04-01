@@ -111,6 +111,8 @@ public:
   std::string getLockUrl() const;
   std::string getBranchUrl() const;
 
+  static std::string GetEndPoint(const std::string &url);
+
 private:
   ZDvidTarget m_dvidTarget;
 };

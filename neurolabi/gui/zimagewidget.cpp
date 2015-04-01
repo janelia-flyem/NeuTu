@@ -5,6 +5,7 @@
 #include <cmath>
 #include "zpainter.h"
 #include "zpaintbundle.h"
+#include "neutubeconfig.h"
 
 ZImageWidget::ZImageWidget(QWidget *parent, QImage *image) : QWidget(parent),
   m_isViewHintVisible(true), m_freeMoving(false)
@@ -26,6 +27,7 @@ ZImageWidget::ZImageWidget(QWidget *parent, QImage *image) : QWidget(parent),
   m_leftButtonMenu = new QMenu(this);
   m_rightButtonMenu = new QMenu(this);
   m_paintBundle = NULL;
+  m_tileCanvas = NULL;
 }
 
 ZImageWidget::~ZImageWidget()
@@ -58,6 +60,15 @@ void ZImageWidget::setMask(QImage *mask, int channel)
 
   m_mask[channel] = mask;
 
+  if (m_image == NULL) {
+    QSize maskSize = getMaskSize();
+    m_viewPort.setRect(0, 0, maskSize.width(), maskSize.height());
+  }
+}
+
+void ZImageWidget::setTileCanvas(QPixmap *canvas)
+{
+  m_tileCanvas = canvas;
   if (m_image == NULL) {
     QSize maskSize = getMaskSize();
     m_viewPort.setRect(0, 0, maskSize.width(), maskSize.height());
@@ -609,11 +620,17 @@ void ZImageWidget::paintEvent(QPaintEvent * /*event*/)
     painter.fillRect(downRect, Qt::gray);
 #endif
     QSize size = projectSize();
-#if 1
+
     if (m_image != NULL) {
       painter.drawImage(m_projRegion, *m_image, m_viewPort);
     }
+
+    if (m_tileCanvas != NULL) {
+#ifdef _DEBUG_2
+      m_tileCanvas->save((GET_TEST_DATA_DIR + "/test.tif").c_str());
 #endif
+      painter.drawPixmap(m_projRegion, *m_tileCanvas, m_viewPort);
+    }
 
     for (int i = 0; i < m_mask.size(); ++i) {
       if (m_mask[i] != NULL) {
@@ -930,6 +947,15 @@ QSize ZImageWidget::getMaskSize() const
       if (image->size().height() > maskSize.height()) {
         maskSize.setHeight(image->size().height());
       }
+    }
+  }
+
+  if (m_tileCanvas != NULL) {
+    if (m_tileCanvas->width() > maskSize.width()) {
+      maskSize.setWidth(m_tileCanvas->width());
+    }
+    if (m_tileCanvas->size().height() > maskSize.height()) {
+      maskSize.setHeight(m_tileCanvas->size().height());
     }
   }
 

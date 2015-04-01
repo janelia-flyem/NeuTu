@@ -34,6 +34,7 @@ public:
 
   void setImage(QImage *image);
   void setMask(QImage *mask, int channel);
+  void setTileCanvas(QPixmap *canvas);
   void setViewPort(const QRect &rect);
   void setProjRegion(const QRect &rect);
   void setView(int zoomRatio, const QPoint &zoomOffset);
@@ -138,6 +139,7 @@ private:
 private:
   QImage *m_image;
   QVector<QImage*> m_mask;
+  QPixmap *m_tileCanvas;
   QRect m_viewPort; /* viewport */
   QRect m_projRegion; /* projection region */
   //int m_zoomRatio;
