@@ -89,24 +89,6 @@ ZJsonValue ZJsonObject::at(const char *key) const
                     ZJsonValue::SET_INCREASE_REF_COUNT);
 }
 
-bool ZJsonObject::load(const string &filePath)
-{
-  if (m_data != NULL) {
-    json_decref(m_data);
-  }
-
-  m_data = json_load_file(filePath.c_str(), 0, &m_error);
-  if (m_data) {
-    return true;
-  }
-
-#if defined(HAVE_LIBJANSSON)
-  cout << m_error.source << endl << ": " << m_error.text << endl;
-#endif
-
-  return false;
-}
-
 bool ZJsonObject::decode(const string &str)
 {
   clear();

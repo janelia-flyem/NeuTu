@@ -72,6 +72,7 @@ class ZStackBall;
 class ZUndoCommand;
 class ZStackPatch;
 class ZStackDocReader;
+class ZDvidTileEnsemble;
 
 /*!
  * \brief The class of stack document
@@ -231,6 +232,8 @@ public: //attributes
   QList<ZPunctum*> getPunctumList() const;
   QList<ZSparseObject*> getSparseObjectList() const;
   QList<ZObject3dScan*> getObject3dScanList() const;
+  QList<ZDvidLabelSlice*> getDvidLabelSliceList() const;
+  QList<ZDvidTileEnsemble*> getDvidTileEnsembleList() const;
 
   bool hasSwcList();       //to test swctree
   //inline QList<ZLocsegChain*>* chainList() {return &m_chainList;}

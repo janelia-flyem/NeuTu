@@ -6,6 +6,8 @@
 #include "tz_image_lib_defs.h"
 #include "tz_object_3d.h"
 #include "zglmutils.h"
+#include "zintpoint.h"
+#include "zsttransform.h"
 
 class ZStack;
 
@@ -96,14 +98,23 @@ public:
   ZImage *createMask();
   static ZImage* createMask(int width, int height);
   static ZImage* createMask(const QSize &size);
+  static ZImage* createMask(const QRect &rect);
 
   void enhanceEdge();
   //void drawObject(Object_3d *obj, int z);
 
   static bool writeImage(const QImage &image, const QString &filePath);
 
+  const ZStTransform& getTransform() const;
+  void setTransform(const ZStTransform &transform);
+  void setScale(double sx, double sy);
+  void setOffset(double dx, double dy);
+
 private:
   static bool hasSameColor(uchar *pt1, uchar *pt2);
+
+  ZStTransform m_transform;
+  //ZIntPoint m_offset;
 };
 
 #include "zimage_tmpl.cpp"

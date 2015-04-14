@@ -2,6 +2,8 @@
 #include "neutubeconfig.h"
 #include "tz_cuboid_i.h"
 #include "tz_math.h"
+#include "zstack.hxx"
+
 
 ZStackWatershed::ZStackWatershed() : m_floodingZero(false)
 {

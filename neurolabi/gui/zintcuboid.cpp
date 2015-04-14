@@ -12,6 +12,12 @@ ZIntCuboid::ZIntCuboid(int x1, int y1, int z1, int x2, int y2, int z2)
   m_lastCorner.set(x2, y2, z2);
 }
 
+ZIntCuboid::ZIntCuboid(const Cuboid_I &cuboid)
+{
+  m_firstCorner.set(cuboid.cb[0], cuboid.cb[1], cuboid.cb[2]);
+  m_lastCorner.set(cuboid.ce[0], cuboid.ce[1], cuboid.ce[2]);
+}
+
 ZIntCuboid::ZIntCuboid(
     const ZIntPoint &firstCorner, const ZIntPoint &lastCorner)
 {

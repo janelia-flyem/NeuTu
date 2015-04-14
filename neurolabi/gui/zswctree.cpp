@@ -445,7 +445,7 @@ void ZSwcTree::display(ZPainter &painter, int slice,
 
   painter.save();
 
-  double dataFocus = slice + painter.getOffset().z();
+  double dataFocus = slice + painter.getZOffset();
 
   const double strokeWidth = getPenWidth();
 

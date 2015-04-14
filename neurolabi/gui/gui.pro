@@ -341,7 +341,6 @@ HEADERS += mainwindow.h \
     flyemdataquerydialog.h \
     flyemdataprocessdialog.h \
     flyem/zstitchgrid.h \
-    flyem/zintcuboidarray.h \
     autosaveswclistdialog.h \
     zswcfilelistmodel.h \
     flyem/zflyemqualityanalyzer.h \
@@ -511,7 +510,13 @@ HEADERS += mainwindow.h \
     zmessagefactory.h \
     zmessagemanagermodel.h \
     zflyemcontrolform.h \
-    dvid/zdvidtileensemble.h
+    dvid/zdvidtileensemble.h \
+    dvid/zdvidlabelslice.h \
+    zsttransform.h \
+    zpixmap.h \
+    flyem/flyemproofcontrolform.h \
+    flyem/zflyemproofmvc.h \
+    flyem/zflyemproofdoc.h
 
 FORMS += settingdialog.ui \
     frameinfodialog.ui \
@@ -574,7 +579,8 @@ FORMS += settingdialog.ui \
     swcexportdialog.ui \
     flyem/zflyemhackathonconfigdlg.ui \
     ztestdialog.ui \
-    zflyemcontrolform.ui
+    zflyemcontrolform.ui \
+    flyem/flyemproofcontrolform.ui
 SOURCES += main.cpp \
     mainwindow.cpp \
     zstackview.cpp \
@@ -884,7 +890,13 @@ SOURCES += main.cpp \
     zmessagefactory.cpp \
     zmessagemanagermodel.cpp \
     zflyemcontrolform.cpp \
-    dvid/zdvidtileensemble.cpp
+    dvid/zdvidtileensemble.cpp \
+    dvid/zdvidlabelslice.cpp \
+    zsttransform.cpp \
+    zpixmap.cpp \
+    flyem/flyemproofcontrolform.cpp \
+    flyem/zflyemproofmvc.cpp \
+    flyem/zflyemproofdoc.cpp
 
 OTHER_FILES += \
     extlib.pri \

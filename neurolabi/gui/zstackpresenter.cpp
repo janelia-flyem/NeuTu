@@ -30,6 +30,7 @@
 #include "zstackobjectsource.h"
 #include "zstackobjectsourcefactory.h"
 #include "zstackmvc.h"
+#include "dvid/zdvidlabelslice.h"
 
 ZStackPresenter::ZStackPresenter(ZStackFrame *parent) : QObject(parent)
 {
@@ -1134,6 +1135,17 @@ void ZStackPresenter::processKeyPressEvent(QKeyEvent *event)
       buddyDocument()->runLocalSeededWatershed();
     }
     break;
+  case Qt::Key_Z:
+    if (getParentMvc() != NULL) {
+      if (event->modifiers() == Qt::ShiftModifier | Qt::ControlModifier) {
+        buddyDocument()->getRedoAction()->trigger();
+//        buddyDocument()->undoStack()->redo();
+      } else if (event->modifiers() == Qt::ControlModifier) {
+        buddyDocument()->getUndoAction()->trigger();
+//        buddyDocument()->undoStack()->undo();
+      }
+    }
+    break;
   default:
     break;
   }
@@ -1895,6 +1907,7 @@ void ZStackPresenter::processEvent(ZInteractionEvent &event)
   case ZInteractionEvent::EVENT_OBJ3D_SELECTED:
   case ZInteractionEvent::EVENT_OBJECT3D_SCAN_SELECTED:
   case ZInteractionEvent::EVENT_OBJECT_SELECTED:
+  case ZInteractionEvent::EVENT_OBJECT3D_SCAN_SELECTED_IN_LABEL_SLICE:
     buddyView()->redrawObject();
     buddyDocument()->notifySelectorChanged();
     break;
@@ -2100,36 +2113,60 @@ void ZStackPresenter::process(const ZStackOperator &op)
     break;
   case ZStackOperator::OP_OBJECT3D_SCAN_SELECT_SINGLE:
     buddyDocument()->deselectAllObject();
-    buddyDocument()->setSelected(op.getHitObject<ZObject3dScan>());
-    interactionEvent.setEvent(ZInteractionEvent::EVENT_OBJECT3D_SCAN_SELECTED);
+    if (op.getHitObject<ZObject3dScan>() != NULL) {
+      buddyDocument()->setSelected(op.getHitObject<ZObject3dScan>());
+      interactionEvent.setEvent(ZInteractionEvent::EVENT_OBJECT3D_SCAN_SELECTED);
+    } else if (op.getHitObject<ZDvidLabelSlice>() != NULL) {
+      op.getHitObject<ZDvidLabelSlice>()->selectHit();
+      interactionEvent.setEvent(
+            ZInteractionEvent::EVENT_OBJECT3D_SCAN_SELECTED_IN_LABEL_SLICE);
+    }
     break;
   case ZStackOperator::OP_OBJECT3D_SCAN_SELECT_MULTIPLE:
-    buddyDocument()->setSelected(op.getHitObject<ZObject3dScan>());
-    interactionEvent.setEvent(ZInteractionEvent::EVENT_OBJECT3D_SCAN_SELECTED);
-    break;
-  case ZStackOperator::OP_OBJECT3D_SELECT_SINGLE:
-    buddyDocument()->deselectAllObject();
-    buddyDocument()->setSelected(op.getHitObject<ZObject3d>());
-    interactionEvent.setEvent(ZInteractionEvent::EVENT_OBJ3D_SELECTED);
+    if (op.getHitObject<ZObject3dScan>() != NULL) {
+      buddyDocument()->setSelected(op.getHitObject<ZObject3dScan>());
+      interactionEvent.setEvent(ZInteractionEvent::EVENT_OBJECT3D_SCAN_SELECTED);
+    } else if (op.getHitObject<ZDvidLabelSlice>() != NULL) {
+      op.getHitObject<ZDvidLabelSlice>()->selectHit(true);
+      interactionEvent.setEvent(
+            ZInteractionEvent::EVENT_OBJECT3D_SCAN_SELECTED_IN_LABEL_SLICE);
+    }
     break;
   case ZStackOperator::OP_OBJECT3D_SCAN_TOGGLE_SELECT:
-    buddyDocument()->toggleSelected(op.getHitObject<ZObject3dScan>());
-    interactionEvent.setEvent(ZInteractionEvent::EVENT_OBJ3D_SELECTED);
+    if (op.getHitObject<ZObject3dScan>() != NULL) {
+      buddyDocument()->toggleSelected(op.getHitObject<ZObject3dScan>());
+      interactionEvent.setEvent(ZInteractionEvent::EVENT_OBJ3D_SELECTED);
+    } else {
+      op.getHitObject<ZDvidLabelSlice>()->toggleHitSelection(true);
+      interactionEvent.setEvent(
+            ZInteractionEvent::EVENT_OBJECT3D_SCAN_SELECTED_IN_LABEL_SLICE);
+    }
     break;
   case ZStackOperator::OP_OBJECT3D_SCAN_TOGGLE_SELECT_SINGLE:
   {
     if (!op.getHitObject()->isSelected()) {
-      buddyDocument()->deselectAllObject();
       ZObject3dScan *obj = op.getHitObject<ZObject3dScan>();
-      buddyDocument()->setSelected(obj);
+      if (obj != NULL) {
+        buddyDocument()->deselectAllObject();
 
-      notifyUser(QString("%1 (%2)").
-                 arg(obj->getSource().c_str()).arg(obj->getLabel()));
+        buddyDocument()->setSelected(obj);
+
+        notifyUser(QString("%1 (%2)").
+                   arg(obj->getSource().c_str()).arg(obj->getLabel()));
+      } else if (op.getHitObject<ZDvidLabelSlice>() != NULL) {
+//        op.getHitObject<ZDvidLabelSlice>()->clearSelection();
+        op.getHitObject<ZDvidLabelSlice>()->toggleHitSelection(false);
+      }
     } else {
       buddyDocument()->deselectAllObject();
     }
     interactionEvent.setEvent(ZInteractionEvent::EVENT_OBJ3D_SELECTED);
   }
+    break;
+  case ZStackOperator::OP_OBJECT3D_SELECT_SINGLE:
+    buddyDocument()->deselectAllObject();
+    buddyDocument()->setSelected(op.getHitObject<ZObject3d>());
+    interactionEvent.setEvent(ZInteractionEvent::EVENT_OBJ3D_SELECTED);
     break;
   case ZStackOperator::OP_OBJECT3D_SELECT_MULTIPLE:
     buddyDocument()->setSelected(op.getHitObject<ZObject3d>());
@@ -2167,6 +2204,14 @@ void ZStackPresenter::process(const ZStackOperator &op)
     moveImageToMouse(
           grabPosition.x(), grabPosition.y(), pos.x(), pos.y());
   }
+    break;
+  case ZStackOperator::OP_ZOOM_IN:
+    m_interactiveContext.blockContextMenu();
+    increaseZoomRatio();
+    break;
+  case ZStackOperator::OP_ZOOM_OUT:
+    m_interactiveContext.blockContextMenu();
+    decreaseZoomRatio();
     break;
   case ZStackOperator::OP_PAINT_STROKE:
   {

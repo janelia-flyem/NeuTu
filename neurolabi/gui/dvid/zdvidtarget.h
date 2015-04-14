@@ -157,6 +157,7 @@ private:
   std::string m_bodyLabelName;
   std::string m_labelBlockName;
   std::string m_multiscale2dName;
+//  std::string m_tileName;
 
   int m_bgValue; //grayscale background
 

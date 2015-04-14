@@ -101,7 +101,9 @@ void ZDvidTarget::setFromUrl(const std::string &url)
   }
   std::string uuid;
   if (tokens.size() > 3) {
-    uuid = tokens[3];
+    if (tokens[2] == "node") {
+      uuid = tokens[3];
+    }
   }
   set(tokens2[0], uuid, port);
 }

@@ -3,7 +3,7 @@
 
 #include "ztestheader.h"
 #include "neutubeconfig.h"
-#include "flyem/zintcuboidarray.h"
+#include "zintcuboidarray.h"
 #include "flyem/zintcuboidcomposition.h"
 #include "zcuboid.h"
 #include "zintcuboidface.h"
@@ -13,7 +13,7 @@
 
 TEST(ZIntCuboidArray, basic)
 {
-  FlyEm::ZIntCuboidArray blockArray;
+  ZIntCuboidArray blockArray;
 
   blockArray.append(0, 0, 0, 500, 500, 500);
   blockArray.append(500, 500, 500, 500, 500, 500);
@@ -46,7 +46,7 @@ TEST(ZIntCuboidArray, basic)
 
 TEST(ZIntCuboidArray, boundBox)
 {
-  FlyEm::ZIntCuboidArray blockArray;
+  ZIntCuboidArray blockArray;
 
   blockArray.append(10, 20, 30, 10, 10, 10);
   Cuboid_I boundBox = blockArray.getBoundBox();
@@ -69,15 +69,16 @@ TEST(ZIntCuboidArray, boundBox)
 
 TEST(ZIntCuboidArray, exportSwc)
 {
-  FlyEm::ZIntCuboidArray blockArray;
+  ZIntCuboidArray blockArray;
   blockArray.loadSubstackList(GET_TEST_DATA_DIR + "/benchmark/flyem/block.txt");
+
 
   //blockArray.exportSwc(GET_TEST_DATA_DIR + "/test.swc");
 }
 
 TEST(ZIntCuboidArray, removeInvalidCublid)
 {
-  FlyEm::ZIntCuboidArray blockArray;
+  ZIntCuboidArray blockArray;
   blockArray.append(1, 1, 1, 0, 0, 0);
   blockArray.removeInvalidCuboid();
   EXPECT_EQ(0, (int) blockArray.size());
@@ -94,7 +95,7 @@ TEST(ZIntCuboidArray, removeInvalidCublid)
 
 TEST(ZIntCuboidArray, range)
 {
-  FlyEm::ZIntCuboidArray blockArray;
+  ZIntCuboidArray blockArray;
   blockArray.loadSubstackList(GET_TEST_DATA_DIR + "/benchmark/flyem/block.txt");
 
   Cuboid_I boundBox = blockArray.getBoundBox();
@@ -120,13 +121,13 @@ TEST(ZIntCuboidArray, range)
 
 TEST(ZIntCuboidArray, face)
 {
-  FlyEm::ZIntCuboidArray blockArray;
+  ZIntCuboidArray blockArray;
   blockArray.append(0, 0, 0, 3, 3, 3);
-  FlyEm::ZIntCuboidArray face = blockArray.getFace();
+  ZIntCuboidArray face = blockArray.getFace();
 
   EXPECT_EQ(6, (int) face.size());
 
-  FlyEm::ZIntCuboidArray face2 = blockArray.getInnerFace();
+  ZIntCuboidArray face2 = blockArray.getInnerFace();
   EXPECT_TRUE(face2.empty());
 
   blockArray.append(3, 0, 0, 3, 3, 3);

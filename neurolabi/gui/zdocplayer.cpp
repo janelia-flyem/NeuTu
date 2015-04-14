@@ -479,3 +479,21 @@ Z3DGraph ZStackBallPlayer::get3DGraph() const
 
   return graph;
 }
+
+ZDvidLabelSlice* ZDvidLabelSlicePlayer::getCompleteData() const
+{
+  return dynamic_cast<ZDvidLabelSlice*>(m_data);
+}
+
+void ZDvidLabelSlicePlayer::updateData(const ZStackViewParam &viewParam) const
+{
+  ZDvidLabelSlice *obj = getCompleteData();
+  if (obj != NULL) {
+    obj->update(viewParam);
+  }
+}
+
+ZDvidLabelSlicePlayer::ZDvidLabelSlicePlayer(ZStackObject *data) :
+  ZDocPlayer(data)
+{
+}

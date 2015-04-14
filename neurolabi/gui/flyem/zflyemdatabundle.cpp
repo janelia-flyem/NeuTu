@@ -18,7 +18,7 @@
 #include "dvid/zdvidfilter.h"
 #include "dvid/zdvidwriter.h"
 #include "zflyemdvidreader.h"
-#include "flyem/zintcuboidarray.h"
+#include "zintcuboidarray.h"
 #include "zfiletype.h"
 #include "flyem/zflyemneuroninfo.h"
 #include "dvid/zdviddata.h"
@@ -889,7 +889,7 @@ void ZFlyEmDataBundle::importBoundBox(const string &filePath)
     m_boundBox = new ZSwcTree;
     m_boundBox->load(filePath);
   } else {
-    FlyEm::ZIntCuboidArray blockArray;
+    ZIntCuboidArray blockArray;
     blockArray.loadSubstackList(filePath);
     m_boundBox = blockArray.toSwc();
   }

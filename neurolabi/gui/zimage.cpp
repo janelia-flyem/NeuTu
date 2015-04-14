@@ -337,7 +337,12 @@ void ZImage::setBackground()
 
 ZImage* ZImage::createMask()
 {
-  return createMask(width(), height());
+  ZImage *image = createMask(width(), height());
+  if (image != NULL) {
+    image->setTransform(image->getTransform());
+  }
+
+  return image;
 }
 
 ZImage* ZImage::createMask(const QSize &size)
@@ -347,11 +352,24 @@ ZImage* ZImage::createMask(const QSize &size)
 
 ZImage* ZImage::createMask(int width, int height)
 {
-  ZImage *mask = new ZImage(width, height,
-                            QImage::Format_ARGB32_Premultiplied);
-  mask->fill(0);
+  ZImage *mask = NULL;
+  if (width > 0 && height > 0) {
+    mask = new ZImage(width, height,
+                      QImage::Format_ARGB32_Premultiplied);
+    mask->fill(0);
+  }
 
   return mask;
+}
+
+ZImage* ZImage::createMask(const QRect &rect)
+{
+  ZImage *image = createMask(rect.width(), rect.height());
+  if (image != NULL) {
+    image->setOffset(-rect.left(), -rect.top());
+  }
+
+  return image;
 }
 
 bool ZImage::hasSameColor(uchar *pt1, uchar *pt2)
@@ -885,4 +903,24 @@ bool ZImage::writeImage(const QImage &image, const QString &filename)
   }
 
   return true;
+}
+
+const ZStTransform& ZImage::getTransform() const
+{
+  return m_transform;
+}
+
+void ZImage::setTransform(const ZStTransform &transform)
+{
+  m_transform = transform;
+}
+
+void ZImage::setScale(double sx, double sy)
+{
+  m_transform.setScale(sx, sy);
+}
+
+void ZImage::setOffset(double dx, double dy)
+{
+  m_transform.setOffset(dx, dy);
 }

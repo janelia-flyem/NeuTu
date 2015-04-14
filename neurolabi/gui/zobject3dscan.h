@@ -6,6 +6,7 @@
 #include <set>
 #include <map>
 #include <utility>
+
 #include "zqtheader.h"
 #include "c_stack.h"
 #include "zintcuboid.h"
@@ -18,7 +19,11 @@
 class ZObject3d;
 class ZGraph;
 class ZStack;
+class ZJsonArray;
 
+/*!
+ * \brief The class of RLE object stripe
+ */
 class ZObject3dStripe {
 public:
   ZObject3dStripe() : m_y(0), m_z(0), m_isCanonized(true) {
@@ -120,7 +125,14 @@ private:
   bool m_isCanonized;
 };
 
-//Scan-line representation of a 3D object
+/*!
+ * \brief The class of RLE object
+ *
+ * A RLE object is the run-length encoded representatino of a 3D object, which
+ * is defined as a set of voxels.This class encodes an object along the X,
+ * direction, i.e. a contiguous list of voxels (x_1, y, z), ..., (x_n, y, z) are
+ * encoded as ((x_1, x_n), y, z).
+ */
 class ZObject3dScan : public ZStackObject
 {
 public:
@@ -128,11 +140,10 @@ public:
   virtual ~ZObject3dScan();
 
   enum EComponent {
-    STRIPE_INDEX_MAP, INDEX_SEGMENT_MAP, ACCUMULATED_STRIPE_NUMBER,
-    SLICEWISE_VOXEL_NUMBER, ALL_COMPONENT
+    COMPONENT_STRIPE_INDEX_MAP, COMPONENT_INDEX_SEGMENT_MAP,
+    COMPONENT_ACCUMULATED_STRIPE_NUMBER,
+    COMPONENT_SLICEWISE_VOXEL_NUMBER, COMPONENT_ALL
   };
-
-  typedef int TEvent;
 
   bool isDeprecated(EComponent comp) const;
   void deprecate(EComponent comp);
@@ -224,6 +235,8 @@ public:
 
   bool importDvidObjectBuffer(const std::vector<char> &byteArray);
 
+  bool importDvidRoi(const ZJsonArray &obj);
+
   template<class T>
   int scanArray(const T *array, int x, int y, int z, int width, int x0 = 0);
 
@@ -282,20 +295,24 @@ public:
   template<class T>
   static std::map<int, ZObject3dScan*>* extractAllObject(
       const T *array, int width, int height, int depth, int startPlane,
+      int yStep,
       std::map<int, ZObject3dScan*> *bodySet);
 
   template<class T>
   static std::map<int, ZObject3dScan*>* extractAllObject(
       const T *array, int width, int height, int depth, int x0, int y0, int z0,
+      int yStep,
       std::map<int, ZObject3dScan*> *bodySet);
 
   template<class T>
   static std::map<int, ZObject3dScan*>* extractAllForegroundObject(
       const T *array, int width, int height, int depth, int x0, int y0, int z0,
+      int yStep,
       std::map<int, ZObject3dScan*> *bodySet);
 
   //Foreground only
-  static std::vector<ZObject3dScan*> extractAllObject(const ZStack &stack);
+  static std::vector<ZObject3dScan*> extractAllObject(const ZStack &stack,
+                                                      int yStep = 1);
 
   ZGraph* buildConnectionGraph();
 
@@ -450,7 +467,9 @@ public:
    */
   std::vector<double> getPlaneCov() const;
 
+  typedef int TEvent; //What's event?
   void processEvent(TEvent event);
+  void blockEvent(bool blocking);
 
 
   /*!
@@ -578,6 +597,8 @@ protected:
   uint64_t m_label;
   //mutable int *m_lastStripe;
 
+  bool m_blockingEvent;
+
   //SWIG has some problem recognizing const static type
 #ifndef SWIG
   const static TEvent EVENT_OBJECT_MODEL_CHANGED; //Note that change of model implies change of view
@@ -605,10 +626,10 @@ int ZObject3dScan::scanArray(
   T v = array[x];
 
   if (isEmpty()) {
-    addStripe(z, y);
+    addStripe(z, y, false);
   } else {
     if (m_stripeArray.back().getY() != y || m_stripeArray.back().getZ() != z) {
-      addStripe(z, y);
+      addStripe(z, y, false);
     }
   }
 
@@ -628,6 +649,7 @@ int ZObject3dScan::scanArray(
 template<class T>
 std::map<int, ZObject3dScan*>* ZObject3dScan::extractAllObject(
     const T *array, int width, int height, int depth, int startPlane,
+    int yStep,
     std::map<int, ZObject3dScan*> *bodySet)
 {
   if (bodySet == NULL) {
@@ -636,13 +658,14 @@ std::map<int, ZObject3dScan*>* ZObject3dScan::extractAllObject(
 
   ZObject3dScan *obj = NULL;
   for (int z = 0; z < depth; ++z) {
-    for (int y = 0; y < height; ++y) {
+    for (int y = 0; y < height; y += yStep) {
       int x = 0;
       while (x < width) {
         int v = array[x];
         std::map<int, ZObject3dScan*>::iterator iter = bodySet->find(v);
         if (iter == bodySet->end()) {
           obj = new ZObject3dScan;
+          obj->blockEvent(true);
           obj->setLabel(v);
           //(*bodySet)[v] = obj;
           bodySet->insert(std::map<int, ZObject3dScan*>::value_type(v, obj));
@@ -653,8 +676,14 @@ std::map<int, ZObject3dScan*>* ZObject3dScan::extractAllObject(
 
         x += length;
       }
-      array += width;
+      array += width * yStep;
     }
+  }
+
+  for (std::map<int, ZObject3dScan*>::iterator iter = bodySet->begin();
+       iter != bodySet->end(); ++iter) {
+    ZObject3dScan *obj = iter->second;
+    obj->blockEvent(false);
   }
 
   return bodySet;
@@ -663,6 +692,7 @@ std::map<int, ZObject3dScan*>* ZObject3dScan::extractAllObject(
 template<class T>
 std::map<int, ZObject3dScan*>* ZObject3dScan::extractAllObject(
     const T *array, int width, int height, int depth, int x0, int y0, int z0,
+    int yStep,
     std::map<int, ZObject3dScan*> *bodySet)
 {
   if (bodySet == NULL) {
@@ -671,7 +701,7 @@ std::map<int, ZObject3dScan*>* ZObject3dScan::extractAllObject(
 
   ZObject3dScan *obj = NULL;
   for (int z = 0; z < depth; ++z) {
-    for (int y = 0; y < height; ++y) {
+    for (int y = 0; y < height; y += yStep) {
       int x = 0;
       while (x < width) {
         int v = array[x];
@@ -688,7 +718,7 @@ std::map<int, ZObject3dScan*>* ZObject3dScan::extractAllObject(
 
         x += length;
       }
-      array += width;
+      array += width * yStep;
     }
   }
 
@@ -698,7 +728,7 @@ std::map<int, ZObject3dScan*>* ZObject3dScan::extractAllObject(
 template<class T>
 std::map<int, ZObject3dScan*>* ZObject3dScan::extractAllForegroundObject(
     const T *array, int width, int height, int depth, int x0, int y0, int z0,
-    std::map<int, ZObject3dScan*> *bodySet)
+    int yStep, std::map<int, ZObject3dScan*> *bodySet)
 {
   if (bodySet == NULL) {
     bodySet = new std::map<int, ZObject3dScan*>;
@@ -706,7 +736,7 @@ std::map<int, ZObject3dScan*>* ZObject3dScan::extractAllForegroundObject(
 
   ZObject3dScan *obj = NULL;
   for (int z = 0; z < depth; ++z) {
-    for (int y = 0; y < height; ++y) {
+    for (int y = 0; y < height; y += yStep) {
       int x = 0;
       while (x < width) {
         int v = array[x];
@@ -727,7 +757,7 @@ std::map<int, ZObject3dScan*>* ZObject3dScan::extractAllForegroundObject(
           ++x;
         }
       }
-      array += width;
+      array += width * yStep;
     }
   }
 

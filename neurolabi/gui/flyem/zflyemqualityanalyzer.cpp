@@ -69,7 +69,7 @@ bool ZFlyEmQualityAnalyzer::isStitchedOrphanBody(const ZObject3dScan &obj)
   Cuboid_I objBox;
   obj.getBoundBox(&objBox);
 
-  FlyEm::ZIntCuboidArray roi = m_substackRegion;
+  ZIntCuboidArray roi = m_substackRegion;
   roi.intersect(objBox);
 
   if (roi.size() == 1) {
@@ -77,8 +77,8 @@ bool ZFlyEmQualityAnalyzer::isStitchedOrphanBody(const ZObject3dScan &obj)
   } else {
 #if 0
 
-    FlyEm::ZIntCuboidArray innerFace = m_substackRegion.getInnerFace();
-    FlyEm::ZIntCuboidArray face = m_substackRegion.getFace();
+    ZIntCuboidArray innerFace = m_substackRegion.getInnerFace();
+    ZIntCuboidArray face = m_substackRegion.getFace();
 
 #ifdef _DEBUG_2
     innerFace.exportSwc(GET_DATA_DIR + "/test.swc");
@@ -175,13 +175,13 @@ bool ZFlyEmQualityAnalyzer::isStitchedOrphanBody(const ZObject3dScan &obj)
   return true;
 }
 
-void ZFlyEmQualityAnalyzer::setSubstackRegion(const FlyEm::ZIntCuboidArray &roi)
+void ZFlyEmQualityAnalyzer::setSubstackRegion(const ZIntCuboidArray &roi)
 {
   m_substackRegion = roi;
 }
 
 void ZFlyEmQualityAnalyzer::setSubstackRegion(
-    const FlyEm::ZIntCuboidArray &roi,
+    const ZIntCuboidArray &roi,
     const FlyEm::SubstackRegionCalbration &calbr)
 {
   m_substackRegion = roi;

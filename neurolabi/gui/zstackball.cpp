@@ -174,7 +174,7 @@ void ZStackBall::displayHelper(
 #if defined(_QT_GUI_USED_)
   double adjustedRadius = getAdjustedRadius(m_r);
 
-  double dataFocus = slice + painter->getOffset().z();
+  double dataFocus = slice + painter->getZOffset();
   bool visible = false;
 
 //  const QBrush &oldBrush = painter->brush();

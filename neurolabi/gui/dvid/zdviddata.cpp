@@ -16,8 +16,8 @@ const char* ZDvidData::m_bodyInfoName = "bodyinfo";
 const char* ZDvidData::m_mergeTestBodyLabelName = "merge_test";
 const char* ZDvidData::m_maxBodyIdName = "max_body_id";
 const char* ZDvidData::m_splitStatusName = "split_status";
-const char* ZDvidData::m_labelBlockName = "bodies";
-const char* ZDvidData::m_multiscale2dName = "graytiles";
+const char* ZDvidData::m_labelBlockName = "labels";
+const char* ZDvidData::m_multiscale2dName = "tiles";
 
 //const char* ZDvidData::m_keyValueTypeName = "keyvalue";
 

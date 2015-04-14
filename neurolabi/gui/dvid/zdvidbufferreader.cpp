@@ -39,12 +39,26 @@ void ZDvidBufferReader::read(const QString &url)
   ZDvidTarget target;
   target.setFromUrl(url.toStdString());
 
-  libdvid::DVIDNodeService service(target.getAddress(), target.getUuid());
-  libdvid::BinaryDataPtr data = service.custom_request(
-        ZDvidUrl::GetEndPoint(url.toStdString()), libdvid::BinaryDataPtr(),
-        libdvid::GET);
-  m_buffer.clear();
-  m_buffer.append(data->get_data().c_str(), data->length());
+  if (!target.getUuid().empty()) {
+    libdvid::DVIDNodeService service(
+          target.getAddressWithPort(), target.getUuid());
+    std::string endPoint = ZDvidUrl::GetEndPoint(url.toStdString());
+    libdvid::BinaryDataPtr data = service.custom_request(
+          endPoint, libdvid::BinaryDataPtr(), libdvid::GET);
+    m_buffer.clear();
+    m_buffer.append(data->get_data().c_str(), data->length());
+    m_status = READ_OK;
+  } else {
+    startReading();
+
+    m_networkReply = m_networkManager->get(QNetworkRequest(url));
+    connect(m_networkReply, SIGNAL(finished()), this, SLOT(finishReading()));
+    connect(m_networkReply, SIGNAL(readyRead()), this, SLOT(readBuffer()));
+    connect(m_networkReply, SIGNAL(error(QNetworkReply::NetworkError)),
+            this, SLOT(handleError(QNetworkReply::NetworkError)));
+
+    waitForReading();
+  }
 
 #else
   startReading();

@@ -10,7 +10,6 @@
 class ZJsonObject;
 class ZSwcTree;
 
-namespace FlyEm {
 /*!
  * \brief The class of cuboid arrays
  *
@@ -82,13 +81,14 @@ private:
   mutable ZIntCuboidFaceArray m_borderFace;
 };
 
+namespace FlyEm {
 class SubstackRegionCalbration {
 public:
   SubstackRegionCalbration();
 
   void setMargin(int x, int y, int z);
   void setBounding(bool x, bool y, bool z);
-  void calibrate(FlyEm::ZIntCuboidArray &roi) const;
+  void calibrate(ZIntCuboidArray &roi) const;
   bool importJsonObject(const ZJsonObject &obj);
 
 private:
@@ -142,5 +142,4 @@ private:
   static const char* m_cutterKey;
 };
 }
-
 #endif // ZINTCUBOIDARRAY_H

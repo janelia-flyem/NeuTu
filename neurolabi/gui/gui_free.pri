@@ -123,7 +123,7 @@ HEADERS +=$${PWD}/zstackprocessor.h \
    $${PWD}/zswcnodecompositeselector.h \
    $${PWD}/zswcnodeellipsoidrangeselector.h \
    $${PWD}/flyem/zstitchgrid.h \
-   $${PWD}/flyem/zintcuboidarray.h \
+   $${PWD}/zintcuboidarray.h \
    $${PWD}/flyem/zflyemqualityanalyzer.h \
    $${PWD}/flyem/zintcuboidcomposition.h \
    $${PWD}/zswcglobalfeatureanalyzer.h \
@@ -334,7 +334,7 @@ SOURCES +=$${PWD}/zstackprocessor.cpp \
    $${PWD}/zswcnodecompositeselector.cpp \
    $${PWD}/zswcnodeellipsoidrangeselector.cpp \
    $${PWD}/flyem/zstitchgrid.cpp \
-   $${PWD}/flyem/zintcuboidarray.cpp \
+   $${PWD}/zintcuboidarray.cpp \
    $${PWD}/flyem/zflyemqualityanalyzer.cpp \
    $${PWD}/flyem/zintcuboidcomposition.cpp \
    $${PWD}/zswcglobalfeatureanalyzer.cpp \

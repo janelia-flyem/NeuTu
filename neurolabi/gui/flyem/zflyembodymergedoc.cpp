@@ -154,7 +154,8 @@ void ZFlyEmBodyMergeDoc::updateOriginalLabel(ZArray *array)
   updateBodyObject();
 }
 
-void ZFlyEmBodyMergeDoc::updateOriginalLabel(ZArray *array, QSet<uint64_t> *selected)
+void ZFlyEmBodyMergeDoc::updateOriginalLabel(
+    ZArray *array, QSet<uint64_t> *selected)
 {
   updateOriginalLabel(array);
   TStackObjectList objList =

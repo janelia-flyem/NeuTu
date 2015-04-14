@@ -19,6 +19,12 @@
 #include "dvid/zdvidtile.h"
 #include "zstackview.h"
 #include "dvid/zdvidtileensemble.h"
+#include "flyem/zflyembodymergedoc.h"
+#include "dvid/zdvidlabelslice.h"
+#include "zstackpresenter.h"
+#include "flyem/flyemproofcontrolform.h"
+#include "flyem/zflyemproofmvc.h"
+#include "flyem/zflyemproofdoc.h"
 
 ZDialogFactory::ZDialogFactory(QWidget *parentWidget)
 {
@@ -68,28 +74,42 @@ QDialog* ZDialogFactory::makeStackDialog(QWidget *parent)
   ZDvidTarget target;
 
   target.set("http://emrecon100.janelia.priv", "2a3", -1);
+  target.setLabelBlockName("bodies");
+  target.setMultiscale2dName("graytiles");
 
-  //target.set("http://emdata2.int.janelia.org", "628", -1);
-
+//  target.set("http://emdata2.int.janelia.org", "628", -1);
+//  target.set("http://emdata1.int.janelia.org", "9db", 8500);
+#if 0
   ZDvidReader reader;
   reader.open(target);
   ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
-  ZStackDoc *doc = new ZStackDoc(NULL, NULL);
+  ZFlyEmProofDoc *doc = new ZFlyEmProofDoc(NULL, NULL);
   ZStack *stack = ZStackFactory::makeVirtualStack(
         ZIntCuboid(dvidInfo.getStartCoordinates(),
                    dvidInfo.getEndCoordinates()));
   doc->loadStack(stack);
   //doc->loadFile(GET_TEST_DATA_DIR + "/benchmark/ball.tif");
 
-  ZStackMvc *stackWidget =
-      ZStackMvc::Make(NULL, ZSharedPointer<ZStackDoc>(doc));
+  ZFlyEmProofMvc *stackWidget =
+      ZFlyEmProofMvc::Make(NULL, ZSharedPointer<ZFlyEmProofDoc>(doc));
+  stackWidget->getPresenter()->setObjectStyle(ZStackObject::SOLID);
 
   ZDvidTileEnsemble *ensemble = new ZDvidTileEnsemble;
   ensemble->setDvidTarget(target);
   ensemble->attachView(stackWidget->getView());
   doc->addObject(ensemble);
 
-  stackWidget->getView()->reset(false);
+//  target.setBodyLabelName("labels");
+
+  ZDvidLabelSlice *labelSlice = new ZDvidLabelSlice;
+  labelSlice->setRole(ZStackObjectRole::ROLE_ACTIVE_VIEW);
+  labelSlice->setDvidTarget(target);
+  doc->addObject(labelSlice);
+#endif
+
+  ZFlyEmProofMvc *stackWidget = ZFlyEmProofMvc::Make(target);
+
+
    /*
   ZDvidReader reader;
   reader.open(target);
@@ -116,7 +136,10 @@ QDialog* ZDialogFactory::makeStackDialog(QWidget *parent)
 
 
   layout->addWidget(stackWidget);
-  layout->addWidget(new FlyEmBodyMergeProjectDialog);
+  FlyEmProofControlForm *controlForm = new FlyEmProofControlForm;
+  layout->addWidget(controlForm);
+
+  stackWidget->connectControlPanel(controlForm);
 
   return dlg;
 }

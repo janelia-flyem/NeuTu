@@ -20,6 +20,8 @@
 #include "zsparsestack.h"
 #include "zdvidversiondag.h"
 
+#include "dvid/libdvidheader.h"
+
 ZDvidReader::ZDvidReader(QObject *parent) :
   QObject(parent)
 {
@@ -75,11 +77,14 @@ bool ZDvidReader::open(
   m_dvidClient->setServer(serverAddress, port);
   m_dvidClient->setUuid(uuid);
 
+  /*
   ZDvidBufferReader bufferReader;
   ZDvidUrl dvidUrl(serverAddress.toStdString(), uuid.toStdString(), port);
   if (!bufferReader.isReadable(dvidUrl.getHelpUrl().c_str())) {
     return false;
   }
+  */
+
 
   m_dvidTarget.set(serverAddress.toStdString(), uuid.toStdString(), port);
 
@@ -94,11 +99,13 @@ bool ZDvidReader::open(const ZDvidTarget &target)
     return false;
   }
 
+  /*
   ZDvidBufferReader bufferReader;
   ZDvidUrl dvidUrl(target);
   if (!bufferReader.isReadable(dvidUrl.getHelpUrl().c_str())) {
     return false;
   }
+  */
 
   m_dvidClient->setDvidTarget(target);
 
@@ -854,12 +861,50 @@ ZArray* ZDvidReader::readLabels64(
     const std::string &dataName, int x0, int y0, int z0,
     int width, int height, int depth) const
 {
+
+  ZArray *array = NULL;
+
+#if defined(_ENABLE_LIBDVIDCPP_2)
+  qDebug() << "Using libdvidcpp";
+
+  const ZDvidTarget &target = getDvidTarget();
+  if (!target.getUuid().empty()) {
+    libdvid::DVIDNodeService service(
+          target.getAddressWithPort(), target.getUuid());
+
+    libdvid::Dims_t dims(3);
+    dims[0] = width;
+    dims[1] = height;
+    dims[2] = depth;
+
+    std::vector<unsigned int> offset(3);
+    offset[0] = x0;
+    offset[1] = y0;
+    offset[2] = z0;
+
+    std::vector<unsigned int> channels(3);
+    channels[0] = 0;
+    channels[1] = 1;
+    channels[2] = 2;
+
+    libdvid::Labels3D labels = service.get_labels3D(
+          dataName, dims, offset, channels);
+
+    mylib::Dimn_Type arrayDims[3];
+    arrayDims[0] = width;
+    arrayDims[1] = height;
+    arrayDims[2] = depth;
+    array = new ZArray(mylib::UINT64_TYPE, 3, arrayDims);
+    array->copyDataFrom(labels.get_raw());
+    array->setStartCoordinate(0, x0);
+    array->setStartCoordinate(1, y0);
+    array->setStartCoordinate(2, z0);
+  }
+#else
   ZDvidUrl dvidUrl(m_dvidTarget);
   ZDvidBufferReader bufferReader;
   bufferReader.read(dvidUrl.getLabels64Url(
                       dataName, width, height, depth, x0, y0, z0).c_str());
-
-  ZArray *array = NULL;
 
   if (bufferReader.getStatus() == ZDvidBufferReader::READ_OK) {
     //bufferReader.getBuffer();
@@ -875,6 +920,7 @@ ZArray* ZDvidReader::readLabels64(
 
     array->copyDataFrom(bufferReader.getBuffer().constData());
   }
+#endif
 
   return array;
 }

@@ -784,7 +784,7 @@ TEST(ZObject3dScan, TestScanArray) {
 
   std::map<int, ZObject3dScan*> *objSet = ZObject3dScan::extractAllObject(
         stack->array, C_Stack::width(stack), C_Stack::height(stack),
-        C_Stack::depth(stack), 0, NULL);
+        C_Stack::depth(stack), 0, 1, NULL);
 
   EXPECT_EQ(2, (int) objSet->size());
   EXPECT_TRUE((*objSet)[0]->isCanonizedActually());

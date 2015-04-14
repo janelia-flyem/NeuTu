@@ -47,6 +47,7 @@ void ZDvidTile::loadDvidPng(const QByteArray &buffer, int z)
       std::cout << z << " Loaded." << std::endl;
 #endif
     m_image.loadFromData(buffer);
+//    m_image.setOffset();
     m_z = z;
   }
 
@@ -57,7 +58,7 @@ void ZDvidTile::display(
     ZPainter &painter, int slice, EDisplayStyle /*option*/) const
 {
   //if (!m_image.isNull()) {
-    int z = painter.getOffset().z() + slice;
+    int z = painter.getZOffset() + slice;
     m_latestZ = z;
 
     const_cast<ZDvidTile&>(*this).update(z);
@@ -67,16 +68,19 @@ void ZDvidTile::display(
       std::cout << "Display " << z << std::endl;
 #endif
 //      ZImage image = getImage();
-      int dx = getX() - painter.getOffset().x();
-      int dy = getY() - painter.getOffset().y();
+      //int dx = getX() - painter.getOffset().x();
+      //int dy = getY() - painter.getOffset().y();
 
-      QRect sourceRect = QRect(0, 0, m_image.width(), m_image.height());
-      QRect targetRect = QRect(dx, dy, m_image.width() * m_res.getScale(),
-                         m_image.height() * m_res.getScale());
+//      QRect sourceRect = QRect(0, 0, m_image.width(), m_image.height());
+//      QRect targetRect = QRect(getX(), getY(), m_image.width() * m_res.getScale(),
+//                         m_image.height() * m_res.getScale());
+#if 0
       if (m_res.getScale() == 1) {
         m_image.save((GET_DATA_DIR + "/test.tif").c_str());
       }
-      painter.drawImage(targetRect, m_image, sourceRect);
+#endif
+
+      painter.drawImage(getX(), getY(), m_image);
 
 //      ZIntPoint pt = m_offset - painter.getOffset().toIntPoint();
 
@@ -140,13 +144,16 @@ void ZDvidTile::update(int z)
     */
 
     bufferReader.read(
-          dvidUrl.getTileUrl("graytiles", m_res.getLevel(), m_ix, m_iy, z).c_str());
+          dvidUrl.getTileUrl(getDvidTarget().getMultiscale2dName(),
+                             m_res.getLevel(), m_ix, m_iy, z).c_str());
     QByteArray buffer = bufferReader.getBuffer();
 
 //    ZDvidTileInfo tileInfo = readTileInfo("graytiles");
 
     if (!buffer.isEmpty()) {
       loadDvidPng(buffer, z);
+      m_image.setScale(1.0 / m_res.getScale(), 1.0 / m_res.getScale());
+      m_image.setOffset(-getX(), -getY());
       //      setResolutionLevel(m_res.getLevel());
     }
   }

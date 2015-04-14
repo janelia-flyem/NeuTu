@@ -67,7 +67,7 @@ void ZSparseObject::display(ZPainter &painter, int z, EDisplayStyle option) cons
     ZObject3dScan::display(painter, z, option);
   } else {
     UNUSED_PARAMETER(option);
-    z -= iround(painter.getOffset().z());
+    z -= iround(painter.getZOffset());
     QPen pen(m_color);
     painter.setPen(pen);
 

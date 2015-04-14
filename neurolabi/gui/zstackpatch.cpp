@@ -29,18 +29,20 @@ void ZStackPatch::display(
     ZPainter &painter, int slice, EDisplayStyle /*option*/) const
 {
   if (m_stack != NULL) {
-    int dataFocus = iround(painter.getOffset().z() + slice);
+    int dataFocus = iround(painter.getZOffset() + slice);
 
     ZImage image = getImage(dataFocus);
-    ZPoint pt = getFinalOffset() - painter.getOffset();
+//    ZPoint pt = getFinalOffset() - painter.getOffset();
 
     painter.save();
 
     QTransform transform;
     transform.scale(m_sx, m_sy);
+    transform.translate(m_offset.x(), m_offset.y());
+    transform = painter.transform() * transform;
     //transform.translate(pt.x(), pt.y());
     painter.setTransform(transform);
-    painter.drawImage(pt.x(), pt.y(), image);
+    painter.drawImage(0, 0, image);
 
     painter.restore();
   }

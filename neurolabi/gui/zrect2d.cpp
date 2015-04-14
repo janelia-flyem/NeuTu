@@ -38,7 +38,7 @@ bool ZRect2d::isSliceVisible(int z) const
 
 void ZRect2d::display(ZPainter &painter, int slice, EDisplayStyle /*option*/) const
 {
-  int z = slice + iround(painter.getOffset().z());
+  int z = slice + iround(painter.getZOffset());
   if (!(isSliceVisible(z) || (slice == -1))) {
     return;
   }

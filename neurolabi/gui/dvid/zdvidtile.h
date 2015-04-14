@@ -1,7 +1,7 @@
 #ifndef ZDVIDTILE_H
 #define ZDVIDTILE_H
 
-#include <QImage>
+#include "zimage.h"
 #include "zstackobject.h"
 #include "dvid/zdvidresolution.h"
 #include "zdvidtarget.h"
@@ -27,9 +27,10 @@ public:
 //  void update(int x, int y, int z, int width, int height);
 
   void setTileIndex(int ix, int iy);
+  void setResolutionLevel(int level);
 
   void loadDvidPng(const QByteArray &buffer, int z);
-  void setResolutionLevel(int level);
+
 //  void setTileOffset(int x, int y, int z);
 
   virtual const std::string& className() const;
@@ -54,7 +55,7 @@ public:
   ZRect2d getBoundBox() const;
 
 private:
-  QImage m_image;
+  ZImage m_image;
   int m_ix;
   int m_iy;
   int m_z;

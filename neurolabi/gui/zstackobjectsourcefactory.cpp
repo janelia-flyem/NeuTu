@@ -50,3 +50,13 @@ std::string ZStackObjectSourceFactory::MakeCurrentMsTileSource(int resLevel)
 
   return source;
 }
+
+std::string ZStackObjectSourceFactory::MakeDvidTileSource()
+{
+  return "#.DVIDTileEnsemble";
+}
+
+std::string ZStackObjectSourceFactory::MakeDvidLabelSliceSource()
+{
+  return "#.DVIDLabelSlice";
+}

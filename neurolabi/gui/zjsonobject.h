@@ -35,8 +35,6 @@ public:
   bool isEmpty() const;
 
 public:
-  bool load(const std::string &filePath);
-
   /*!
    * \brief Decode a string.
    *

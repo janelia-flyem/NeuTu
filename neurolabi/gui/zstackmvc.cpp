@@ -102,7 +102,7 @@ void ZStackMvc::attachDocument(ZSharedPointer<ZStackDoc> doc)
   connect(m_doc.get(), SIGNAL(stackTargetModified()), m_view, SLOT(paintStack()));\
   connect(m_doc.get(), SIGNAL(thresholdChanged(int)), m_view, SLOT(setThreshold(int)));\
   connect(m_view, SIGNAL(viewChanged(ZStackViewParam)), \
-          this, SLOT(notifyViewChanged(ZStackViewParam)));
+          this, SLOT(processViewChange(ZStackViewParam)));
 
 #define UPDATE_SIGNAL_SLOT(connect) \
   UPDATE_DOC_SIGNAL_SLOT(connect) \
@@ -164,5 +164,23 @@ void ZStackMvc::keyPressEvent(QKeyEvent *event)
 {
   if (m_presenter != NULL) {
     m_presenter->processKeyPressEvent(event);
+  }
+}
+
+void ZStackMvc::processViewChange(const ZStackViewParam &viewParam)
+{
+  QList<const ZDocPlayer*> playerList =
+      m_doc->getPlayerList(ZStackObjectRole::ROLE_ACTIVE_VIEW);
+  if (!playerList.isEmpty()) {
+    bool updated = false;
+    foreach (const ZDocPlayer *player, playerList) {
+      if (player->getData()->isVisible()) {
+        updated = true;
+      }
+      player->updateData(viewParam);
+    }
+    if (updated) {
+      m_view->paintObject();
+    }
   }
 }

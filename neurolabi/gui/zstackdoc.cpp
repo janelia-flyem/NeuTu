@@ -99,6 +99,7 @@
 #include "zstackpatch.h"
 #include "zobjectcolorscheme.h"
 #include "zstackdocreader.h"
+#include "dvid/zdvidtileensemble.h"
 
 using namespace std;
 
@@ -147,11 +148,6 @@ ZStackDoc::~ZStackDoc()
   deprecate(SPARSE_STACK);
 
   qDebug() << "ZStackDoc destroyed";
-
-//  foreach (ZStackObject *obj, m_objectList) {
-//    delete obj;
-//  }
-//  m_objectList.clear();
 
   m_objectGroup.removeAllObject(true);
 
@@ -2214,7 +2210,8 @@ DEFINE_GET_OBJECT_LIST(getLocsegChainList, ZLocsegChain, TYPE_LOCSEG_CHAIN)
 DEFINE_GET_OBJECT_LIST(getPunctumList, ZPunctum, TYPE_PUNCTUM)
 DEFINE_GET_OBJECT_LIST(getSparseObjectList, ZSparseObject, TYPE_SPARSE_OBJECT)
 DEFINE_GET_OBJECT_LIST(getObject3dScanList, ZObject3dScan, TYPE_OBJECT3D_SCAN)
-
+DEFINE_GET_OBJECT_LIST(getDvidLabelSliceList, ZDvidLabelSlice, TYPE_DVID_LABEL_SLICE)
+DEFINE_GET_OBJECT_LIST(getDvidTileEnsembleList, ZDvidTileEnsemble, TYPE_DVID_TILE_ENSEMBLE)
 
 void ZStackDoc::addSparseObject(ZSparseObject *obj)
 {
@@ -3421,6 +3418,11 @@ void ZStackDoc::deselectAllObject()
 {
   //m_selectedSwcTreeNodes.clear();
   deselectAllSwcTreeNodes();
+
+  QList<ZDvidLabelSlice*> labelSliceList = getDvidLabelSliceList();
+  foreach (ZDvidLabelSlice *labelSlice, labelSliceList) {
+    labelSlice->deselectAll();
+  }
 
   notifyDeselected(getSelectedObjectList<ZSwcTree>(ZStackObject::TYPE_SWC));
   notifyDeselected(getSelectedObjectList<ZPunctum>(ZStackObject::TYPE_PUNCTUM));
@@ -6293,6 +6295,9 @@ void ZStackDoc::addPlayer(ZStackObject *obj)
         break;
       case ZStackObject::TYPE_OBJECT3D_SCAN:
         player = new ZObject3dScanPlayer(obj);
+        break;
+      case ZStackObject::TYPE_DVID_LABEL_SLICE:
+        player = new ZDvidLabelSlicePlayer(obj);
         break;
       default:
         player = new ZDocPlayer(obj);

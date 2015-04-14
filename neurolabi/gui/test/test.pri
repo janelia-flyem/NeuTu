@@ -1,5 +1,5 @@
 HEADERS +=     test/zswctreetest.h \
-    test/ztestheader.h \
+    test/zsttransformtest.h \
     test/zobject3dscantest.h \
     test/zswcpathtest.h \
     test/zgraphtest.h \
@@ -43,4 +43,5 @@ HEADERS +=     test/zswctreetest.h \
     test/zclosedcurvetest.h \
     test/zarraytest.h \
     test/zflyembodymergertest.h \
-    test/zstackobjectgrouptest.h
+    test/zstackobjectgrouptest.h \
+    test/ztestheader.h

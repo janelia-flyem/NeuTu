@@ -11,7 +11,14 @@
 class ZStackDoc;
 class ZStackView;
 class ZStackPresenter;
+class ZStackViewParam;
 
+/*!
+ * \brief The MVC class for stack operation
+ *
+ * This class encloses stack data, stack view and the data presenter. It is a
+ * variant of ZStackFrame, with the flexibity of not using the frame.
+ */
 class ZStackMvc : public QWidget
 {
   Q_OBJECT
@@ -48,6 +55,10 @@ signals:
   void objectSelectionChanged();
 
 public slots:
+  void processViewChange(const ZStackViewParam &viewParam);
+
+protected:
+  static void BaseConstruct(ZStackMvc *frame, ZSharedPointer<ZStackDoc> doc);
 
 private:
   void createView();
@@ -55,8 +66,6 @@ private:
   void dropDocument(ZSharedPointer<ZStackDoc> doc);
   void updateDocument();
   void construct(ZSharedPointer<ZStackDoc> doc);
-
-  static void BaseConstruct(ZStackMvc *frame, ZSharedPointer<ZStackDoc> doc);
 
 private:
   ZSharedPointer<ZStackDoc> m_doc;

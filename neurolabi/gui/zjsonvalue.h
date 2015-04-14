@@ -106,6 +106,8 @@ public:
    */
   bool dump(const std::string &path) const;
 
+  bool load(const std::string &filePath);
+
 protected:
   json_error_t m_error;
   json_t *m_data;

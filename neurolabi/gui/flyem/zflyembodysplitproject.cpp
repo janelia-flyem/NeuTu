@@ -808,7 +808,7 @@ void ZFlyEmBodySplitProject::updateBodyMask()
           std::map<int, ZObject3dScan*> *bodySet =
               ZObject3dScan::extractAllObject(
                 (uint64_t*) stack->array8(), stack->width(), stack->height(), 1,
-                stack->getOffset().getZ(), NULL);
+                stack->getOffset().getZ(), 1, NULL);
 
           frame->document()->blockSignals(true);
           for (std::map<int, ZObject3dScan*>::const_iterator iter = bodySet->begin();

@@ -869,7 +869,7 @@ void MainWindow::customizeActions()
   testAction->setVisible(
         NeutubeConfig::getInstance().getApplication() != "Biocytin");
 #else
-  testAction->setVisible(false);
+//  testAction->setVisible(false);
   this->punctaExportAction->setVisible(false);
 #endif
 
@@ -1030,9 +1030,9 @@ void MainWindow::createToolBars()
 #endif
   m_ui->toolBar->addAction(settingAction);
   m_ui->toolBar->addAction(screenshotAction);
-#ifdef _DEBUG_
+//#ifdef _DEBUG_
   m_ui->toolBar->addAction(testAction);
-#endif
+//#endif
   m_ui->toolBar->addAction(m_ui->actionShortcut);
 }
 
@@ -3221,6 +3221,7 @@ void MainWindow::test()
 #if 1
   QDialog *dlg = ZDialogFactory::makeStackDialog(this);
   dlg->exec();
+
 
   delete dlg;
 #endif

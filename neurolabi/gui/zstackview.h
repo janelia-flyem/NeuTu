@@ -39,6 +39,7 @@ class ZStackViewParam;
 class ZMessageManager;
 class ZBodySplitButton;
 class ZStackMvc;
+class ZPixmap;
 
 /*!
  * \brief The ZStackView class shows 3D data slice by slice
@@ -328,7 +329,7 @@ private:
   ZPainter m_objectCanvasPainter;
   ZPainter m_tileCanvasPainter;
   ZImage *m_activeDecorationCanvas;
-  QPixmap *m_tileCanvas;
+  ZPixmap *m_tileCanvas;
   ZImageWidget *m_imageWidget;
   QVBoxLayout *m_layout;
   QHBoxLayout *m_topLayout;

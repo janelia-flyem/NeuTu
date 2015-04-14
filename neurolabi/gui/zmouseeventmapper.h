@@ -46,8 +46,8 @@ public:
     setRecorder(recorder);
   }
 
-  void setPosition(int x, int y, int z, Qt::MouseButton button,
-                   ZMouseEvent::EAction action);
+  //void setPosition(int x, int y, int z, Qt::MouseButton button,
+  //                 ZMouseEvent::EAction action);
   ZIntPoint getPosition(Qt::MouseButton button,
                         ZMouseEvent::EAction action) const;
 
@@ -64,11 +64,18 @@ protected:
   ZInteractiveContext *m_context;
   mutable ZStackDoc *m_doc;
   ZMouseEventRecorder *m_eventRecorder;
-  TMousePosition m_position;
+  //TMousePosition m_position;
 };
 
 ////////////////////////////////////
 class ZMouseEventRightButtonReleaseMapper : public ZMouseEventMapper
+{
+public:
+  ZStackOperator getOperation(const ZMouseEvent &event) const;
+};
+
+////////////////////////////////////
+class ZMouseEventRightButtonPressMapper : public ZMouseEventMapper
 {
 public:
   ZStackOperator getOperation(const ZMouseEvent &event) const;

@@ -18,6 +18,7 @@ void ZMouseEventProcessor::registerMapper()
   m_mapperList.append(&m_rightButtonReleaseMapper);
   m_mapperList.append(&m_leftButtonDoubleClickMapper);
   m_mapperList.append(&m_leftButtonPressMapper);
+  m_mapperList.append(&m_rightButtonPressMapper);
   foreach (ZMouseEventMapper *mapper, m_mapperList) {
     mapper->setRecorder(&m_recorder);
   }
@@ -102,6 +103,8 @@ const ZMouseEventMapper& ZMouseEventProcessor::getMouseEventMapper(
   case ZMouseEvent::ACTION_PRESS:
     if (event.getButtons() == Qt::LeftButton) {
       return m_leftButtonPressMapper;
+    } else if (event.getButtons() == Qt::RightButton) {
+      return m_rightButtonPressMapper;
     }
     break;
   case ZMouseEvent::ACTION_DOUBLE_CLICK:
@@ -148,9 +151,11 @@ const
 
   if (csize.width() > 0 && csize.height() > 0) {
     *x = *x * (m_imageWidget->viewPort().width()) / csize.width() +
-        m_imageWidget->viewPort().left() - 0.5;
+        m_imageWidget->viewPort().left() -
+        m_imageWidget->canvasRegion().left() - 0.5;
     *y = *y * (m_imageWidget->viewPort().height()) / csize.height() +
-        m_imageWidget->viewPort().top() - 0.5;
+        m_imageWidget->viewPort().top() -
+        m_imageWidget->canvasRegion().top() - 0.5;
   }
 }
 

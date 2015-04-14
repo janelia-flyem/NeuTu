@@ -30,6 +30,7 @@
 #include "zmessagefactory.h"
 #include "zbodysplitbutton.h"
 #include "zstackmvc.h"
+#include "zpixmap.h"
 
 #include <QtGui>
 #ifdef _QT5_
@@ -810,6 +811,10 @@ void ZStackView::updatePaintBundle()
 
 void ZStackView::updateImageScreen()
 {
+#ifdef _DEBUG_
+  std::cout << "ZStackView::updateImageScreen" << std::endl;
+#endif
+
   updatePaintBundle();
 
   m_imageWidget->blockPaint(m_isRedrawBlocked ||
@@ -952,6 +957,12 @@ void ZStackView::redrawObject()
 
 void ZStackView::redraw()
 {
+  m_imageWidget->setCanvasRegion(
+        buddyDocument()->getStackOffset().getX(),
+        buddyDocument()->getStackOffset().getY(),
+        buddyDocument()->getStackSize().getX(),
+        buddyDocument()->getStackSize().getY());
+
   paintStackBuffer();
   paintMaskBuffer();
   paintObjectBuffer();
@@ -1240,8 +1251,10 @@ void ZStackView::updateCanvas()
     }
 
     if (m_image == NULL) {
+//      double scale = 0.5;
       m_image = new ZImage(buddyDocument()->getStackWidth(),
                            buddyDocument()->getStackHeight());
+//      m_image->setScale(scale, scale);
       m_imagePainter.begin(m_image);
       m_imageWidget->setImage(m_image);
     }
@@ -1308,11 +1321,14 @@ void ZStackView::updateObjectCanvas()
     }
     if (m_objectCanvas == NULL) {
       m_objectCanvas = ZImage::createMask(canvasSize);
+      m_objectCanvas->setOffset(-buddyDocument()->getStackOffset().getX(),
+                                -buddyDocument()->getStackOffset().getY());
       m_objectCanvasPainter.begin(m_objectCanvas);
       m_imageWidget->setMask(m_objectCanvas, 1);
     } else {
       m_objectCanvas->fill(0);
     }
+    m_objectCanvasPainter.setZOffset(buddyDocument()->getStackOffset().getZ());
   }
 }
 
@@ -1329,7 +1345,10 @@ void ZStackView::updateTileCanvas()
       }
     }
     if (m_tileCanvas == NULL) {
-      m_tileCanvas = new QPixmap(canvasSize);
+//      double scale = 0.5;
+//      m_tileCanvas = new ZPixmap(canvasSize * scale);
+//      m_tileCanvas->setScale(scale, scale);
+      m_tileCanvas = new ZPixmap(canvasSize);
       m_tileCanvasPainter.begin(m_tileCanvas);
       m_imageWidget->setTileCanvas(m_tileCanvas);
     }
@@ -1511,6 +1530,10 @@ void ZStackView::paintMask()
 
 void ZStackView::paintObjectBuffer(ZPainter &painter, ZStackObject::ETarget target)
 {
+#ifdef _DEBUG_
+    qDebug() << painter.transform();
+#endif
+
   if (buddyPresenter()->isObjectVisible()) {
     int slice = m_depthControl->value();
     int z = slice + buddyDocument()->getStackOffset().getZ();
@@ -1518,7 +1541,7 @@ void ZStackView::paintObjectBuffer(ZPainter &painter, ZStackObject::ETarget targ
       slice = -1;
     }
 
-    painter.setStackOffset(buddyDocument()->getStackOffset());
+//    painter.setStackOffset(buddyDocument()->getStackOffset());
 
     if (buddyDocument()->hasDrawable()) {
       QList<ZStackObject*> *objs = buddyDocument()->drawableList();
@@ -1626,6 +1649,10 @@ void ZStackView::paintObjectBuffer(ZImage *canvas, ZStackObject::ETarget target)
 #endif
 void ZStackView::paintObjectBuffer()
 {
+#ifdef _DEBUG_
+  std::cout << "ZStackView::paintObjectBuffer" << std::endl;
+#endif
+
   updateObjectCanvas();
   if (m_objectCanvas == NULL) {
     return;
@@ -1636,6 +1663,9 @@ void ZStackView::paintObjectBuffer()
 
 bool ZStackView::paintTileCanvasBuffer()
 {
+#ifdef _DEBUG_
+  std::cout << "ZStackView::paintTileCanvasBuffer" << std::endl;
+#endif
   bool painted = false;
 
   if (buddyDocument()->hasObject(ZStackObject::TYPE_DVID_TILE_ENSEMBLE)) {
@@ -1760,7 +1790,8 @@ ZStack* ZStackView::getStrokeMask(uint8_t maskValue)
 
       foreach (ZStroke2d *obj, buddyDocument()->getStrokeList()) {
         ZPainter painter(m_objectCanvas);
-        painter.setStackOffset(buddyDocument()->getStackOffset());
+        painter.setZOffset(buddyDocument()->getStackOffset().getZ());
+//        painter.setStackOffset(buddyDocument()->getStackOffset());
         obj->display(painter, slice, buddyPresenter()->objectStyle());
       }
     }

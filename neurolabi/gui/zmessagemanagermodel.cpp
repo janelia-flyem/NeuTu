@@ -8,7 +8,7 @@ ZMessageManagerModel::ZMessageManagerModel(QObject *parent) :
 
 int ZMessageManagerModel::rowCount(const QModelIndex &/*parent*/) const
 {
-
+  return 0;
 }
 
 int ZMessageManagerModel::columnCount(const QModelIndex &/*parent*/) const
