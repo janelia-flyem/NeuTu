@@ -13,6 +13,7 @@ const char* ZDvidTarget::m_localKey = "local";
 const char* ZDvidTarget::m_debugKey = "debug";
 const char* ZDvidTarget::m_bgValueKey = "background";
 const char* ZDvidTarget::m_bodyLabelNameKey = "body_label";
+const char* ZDvidTarget::m_labelBlockNameKey = "label_block";
 
 ZDvidTarget::ZDvidTarget() : m_port(-1), m_bgValue(255)
 {
@@ -79,6 +80,33 @@ void ZDvidTarget::setPort(int port)
   m_port = port;
 }
 
+void ZDvidTarget::setFromUrl(const std::string &url)
+{
+  ZString zurl(url);
+  if (zurl.startsWith("http:")) {
+    zurl.replace("http://", "");
+  }
+
+  std::vector<std::string> tokens = zurl.tokenize('/');
+  ZString addressToken = tokens[0];
+  std::vector<std::string> tokens2 = addressToken.tokenize(':');
+  int port = -1;
+  if (tokens2.size() > 1) {
+    if (!tokens2[1].empty()) {
+      port = ZString::firstInteger(tokens2[1]);
+      if (tokens2[1][0] == '-') {
+        port = -port;
+      }
+    }
+  }
+  std::string uuid;
+  if (tokens.size() > 3) {
+    if (tokens[2] == "node") {
+      uuid = tokens[3];
+    }
+  }
+  set(tokens2[0], uuid, port);
+}
 
 void ZDvidTarget::setFromSourceString(const std::string &sourceString)
 {
@@ -137,6 +165,25 @@ std::string ZDvidTarget::getBodyPath(int bodyId) const
   return getSourceString() + ":" + ZString::num2str(bodyId);
 }
 
+ZJsonObject ZDvidTarget::toJsonObject() const
+{
+  ZJsonObject obj;
+  if (m_port >= 0) {
+    obj.setEntry(m_portKey, m_port);
+  }
+
+  obj.setEntry(m_addressKey, m_address);
+  obj.setEntry(m_uuidKey, m_uuid);
+  obj.setEntry(m_commentKey, m_comment);
+  obj.setEntry(m_nameKey, m_name);
+  obj.setEntry(m_localKey, m_localFolder);
+  obj.setEntry(m_bgValueKey, m_bgValue);
+  obj.setEntry(m_bodyLabelNameKey, m_bodyLabelName);
+  obj.setEntry(m_labelBlockNameKey, m_labelBlockName);
+
+  return obj;
+}
+
 void ZDvidTarget::loadJsonObject(const ZJsonObject &obj)
 {
   clear();
@@ -165,6 +212,9 @@ void ZDvidTarget::loadJsonObject(const ZJsonObject &obj)
     }
     if (obj.hasKey(m_bodyLabelNameKey)) {
       m_bodyLabelName = ZJsonParser::stringValue(obj[m_bodyLabelNameKey]);
+    }
+    if (obj.hasKey(m_labelBlockNameKey)) {
+      m_labelBlockName = ZJsonParser::stringValue(obj[m_labelBlockNameKey]);
     }
   }
 }
@@ -225,7 +275,60 @@ std::string ZDvidTarget::getBodyLabelName() const
   return m_bodyLabelName;
 }
 
+std::string ZDvidTarget::getLabelBlockName() const
+{
+  if (m_labelBlockName.empty()) {
+    return ZDvidData::getName(ZDvidData::ROLE_LABEL_BLOCK);
+  }
+
+  return m_labelBlockName;
+}
+
+void ZDvidTarget::setLabelBlockName(const std::string &name)
+{
+  m_labelBlockName = name;
+}
+
+std::string ZDvidTarget::getMultiscale2dName() const
+{
+  if (m_multiscale2dName.empty()) {
+    return ZDvidData::getName(ZDvidData::ROLE_MULTISCALE_2D);
+  }
+
+  return m_multiscale2dName;
+}
+
 void ZDvidTarget::setBodyLabelName(const std::string &name)
 {
   m_bodyLabelName = name;
+}
+
+void ZDvidTarget::setMultiscale2dName(const std::string &name)
+{
+  m_multiscale2dName = name;
+}
+
+std::string ZDvidTarget::getName(ZDvidData::ERole role) const
+{
+  std::string name;
+
+  switch (role) {
+  case ZDvidData::ROLE_MULTISCALE_2D:
+    name =  m_multiscale2dName;
+    break;
+  case ZDvidData::ROLE_BODY_LABEL:
+    name = m_bodyLabelName;
+    break;
+  case ZDvidData::ROLE_LABEL_BLOCK:
+    name = m_labelBlockName;
+    break;
+  default:
+    break;
+  }
+
+  if (name.empty()) {
+    name = ZDvidData::getName(role);
+  }
+
+  return name;
 }

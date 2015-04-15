@@ -1111,7 +1111,8 @@ ZStackFrame *ZFlyEmRoiProject::makeAllSynapseFrame() const
 {
   ZStackFrame *frame = NULL;
   if (!m_puncta.empty()) {
-    frame = new ZStackFrame();
+    //frame = new ZStackFrame();
+    frame = ZStackFrame::Make(NULL);
     frame->document()->addPunctum(makePunctumList(false));
 
     if (hasDataFrame()) {
@@ -1161,7 +1162,7 @@ void ZFlyEmRoiProject::importRoiFromSwc(ZSwcTree *tree)
       for (Swc_Tree_Node *tn = swcIter.begin(); tn != NULL; tn = swcIter.next()) {
         if (SwcTreeNode::isRegular(tn)) {
           z = SwcTreeNode::z(tn);
-          roiCurve->append(SwcTreeNode::pos(tn));
+          roiCurve->append(SwcTreeNode::center(tn));
         }
       }
       setRoi(roiCurve, iround(z));

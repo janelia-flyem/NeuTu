@@ -2,6 +2,7 @@
 #define ZINTCUBOID_H
 
 #include "zintpoint.h"
+#include "tz_cuboid_i.h"
 
 class ZIntCuboid
 {
@@ -9,6 +10,8 @@ public:
   ZIntCuboid();
   ZIntCuboid(int x1, int y1, int z1, int x2, int y2, int z2);
   ZIntCuboid(const ZIntPoint &firstCorner, const ZIntPoint &lastCorner);
+  ZIntCuboid(const Cuboid_I &cuboid);
+
   //ZIntCuboid(const ZIntCuboid &cuboid);
 
   inline const ZIntPoint& getFirstCorner() const { return m_firstCorner; }
@@ -45,6 +48,8 @@ public:
   void setLastY(int y);
   void setFirstZ(int z);
   void setLastZ(int z);
+
+  void translateX(int dx);
 
   /*!
    * \brief Change the size of the cuboid by fixing the first corner
@@ -91,6 +96,8 @@ public:
    * A cuboid is empty if any of its dimension <= 0.
    */
   bool isEmpty() const;
+
+  bool equals(const ZIntCuboid &cuboid) const;
 
 private:
   ZIntPoint m_firstCorner;

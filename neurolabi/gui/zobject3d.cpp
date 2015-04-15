@@ -162,7 +162,7 @@ void ZObject3d::display(ZPainter &painter, int slice, EDisplayStyle option) cons
 #if _QT_GUI_USED_
   painter.save();
 //  z -= iround(painter.getOffset().z());
-  int z = slice + iround(painter.getOffset().z());
+  int z = slice + iround(painter.getZOffset());
 
   QPen pen(m_color);
   painter.setPen(pen);

@@ -668,7 +668,8 @@ const ZObject3dScan::TEvent ZObject3dScan::EVENT_OBJECT_CANONIZED =
     0x8 | ZObject3dScan::EVENT_OBJECT_VIEW_CHANGED;
 
 
-ZObject3dScan::ZObject3dScan() : m_isCanonized(true), m_label(0)
+ZObject3dScan::ZObject3dScan() : m_isCanonized(true), m_label(0),
+  m_blockingEvent(false)
 {
   setTarget(OBJECT_CANVAS);
   m_type = ZStackObject::TYPE_OBJECT3D_SCAN;
@@ -676,19 +677,19 @@ ZObject3dScan::ZObject3dScan() : m_isCanonized(true), m_label(0)
 
 ZObject3dScan::~ZObject3dScan()
 {
-  deprecate(ALL_COMPONENT);
+  deprecate(COMPONENT_ALL);
 }
 
 bool ZObject3dScan::isDeprecated(EComponent comp) const
 {
   switch (comp) {
-  case STRIPE_INDEX_MAP:
+  case COMPONENT_STRIPE_INDEX_MAP:
     return m_stripeMap.empty();
-  case INDEX_SEGMENT_MAP:
+  case COMPONENT_INDEX_SEGMENT_MAP:
     return m_indexSegmentMap.empty();
-  case ACCUMULATED_STRIPE_NUMBER:
+  case COMPONENT_ACCUMULATED_STRIPE_NUMBER:
     return m_accNumberArray.empty();
-  case SLICEWISE_VOXEL_NUMBER:
+  case COMPONENT_SLICEWISE_VOXEL_NUMBER:
     return m_slicewiseVoxelNumber.empty();
   default:
     break;
@@ -702,23 +703,23 @@ void ZObject3dScan::deprecate(EComponent comp)
   deprecateDependent(comp);
 
   switch (comp) {
-  case STRIPE_INDEX_MAP:
+  case COMPONENT_STRIPE_INDEX_MAP:
     m_stripeMap.clear();
     break;
-  case INDEX_SEGMENT_MAP:
+  case COMPONENT_INDEX_SEGMENT_MAP:
     m_indexSegmentMap.clear();
     break;
-  case ACCUMULATED_STRIPE_NUMBER:
+  case COMPONENT_ACCUMULATED_STRIPE_NUMBER:
     m_accNumberArray.clear();
     break;
-  case SLICEWISE_VOXEL_NUMBER:
+  case COMPONENT_SLICEWISE_VOXEL_NUMBER:
     m_slicewiseVoxelNumber.clear();
     break;
-  case ALL_COMPONENT:
-    deprecate(STRIPE_INDEX_MAP);
-    deprecate(INDEX_SEGMENT_MAP);
-    deprecate(ACCUMULATED_STRIPE_NUMBER);
-    deprecate(SLICEWISE_VOXEL_NUMBER);
+  case COMPONENT_ALL:
+    deprecate(COMPONENT_STRIPE_INDEX_MAP);
+    deprecate(COMPONENT_INDEX_SEGMENT_MAP);
+    deprecate(COMPONENT_ACCUMULATED_STRIPE_NUMBER);
+    deprecate(COMPONENT_SLICEWISE_VOXEL_NUMBER);
     break;
   }
 }
@@ -766,7 +767,7 @@ size_t ZObject3dScan::getVoxelNumber(int z) const
 
 const std::map<int, size_t> &ZObject3dScan::getSlicewiseVoxelNumber() const
 {
-  if (isDeprecated(SLICEWISE_VOXEL_NUMBER)) {
+  if (isDeprecated(COMPONENT_SLICEWISE_VOXEL_NUMBER)) {
     //std::vector<size_t> voxelNumber;
     size_t stripeNumber = getStripeNumber();
     for (size_t i = 0; i < stripeNumber; ++i) {
@@ -824,14 +825,15 @@ void ZObject3dScan::addStripe(const ZObject3dStripe &stripe, bool canonizing)
   TEvent event = EVENT_NULL;
 
   if (!m_stripeArray.empty()) {
-    if (stripe.getY() != m_stripeArray.back().getY() ||
-        stripe.getZ() != m_stripeArray.back().getZ()) {
+    const ZObject3dStripe &lastStripe = m_stripeArray.back();
+    if (stripe.getY() != lastStripe.getY() ||
+        stripe.getZ() != lastStripe.getZ()) {
       if (m_isCanonized) {
-        if (stripe.getZ() < m_stripeArray.back().getZ()) {
+        if (stripe.getZ() < lastStripe.getZ()) {
           //m_isCanonized = false;
           event = EVENT_OBJECT_UNCANONIZED;
-        } else if (stripe.getZ() == m_stripeArray.back().getZ()) {
-          if (stripe.getY() < m_stripeArray.back().getY()) {
+        } else if (stripe.getZ() == lastStripe.getZ()) {
+          if (stripe.getY() < lastStripe.getY()) {
             //m_isCanonized = false;
             event |= EVENT_OBJECT_UNCANONIZED;
           }
@@ -843,17 +845,19 @@ void ZObject3dScan::addStripe(const ZObject3dStripe &stripe, bool canonizing)
   }
 
   if (lastStripeMergable) {
+    ZObject3dStripe &lastStripe = m_stripeArray.back();
     for (int i = 0; i < stripe.getSegmentNumber(); ++i) {
-      m_stripeArray.back().addSegment(
+      lastStripe.addSegment(
             stripe.getSegmentStart(i), stripe.getSegmentEnd(i), canonizing);
     }
   } else {
     m_stripeArray.push_back(stripe);
   }
 
-  event |= EVENT_OBJECT_MODEL_CHANGED;
-
-  processEvent(event);
+  if (!m_blockingEvent) {
+    event |= EVENT_OBJECT_MODEL_CHANGED;
+    processEvent(event);
+  }
 
   if (canonizing) {
     canonize();
@@ -868,21 +872,24 @@ void ZObject3dScan::addSegment(int x1, int x2, bool canonizing)
     TEvent event = EVENT_NULL;
 
     m_stripeArray.back().addSegment(x1, x2, canonizing);
-    event |= EVENT_OBJECT_MODEL_CHANGED;
 
-    if (!m_stripeArray.back().isCanonized()) {
-      //m_isCanonized = false;
-      if (isCanonized()) {
-        event |= EVENT_OBJECT_UNCANONIZED;
+    if (!m_blockingEvent) {
+      event |= EVENT_OBJECT_MODEL_CHANGED;
+
+      if (!m_stripeArray.back().isCanonized()) {
+        //m_isCanonized = false;
+        if (isCanonized()) {
+          event |= EVENT_OBJECT_UNCANONIZED;
+        }
       }
-    }
 
-    /*
+      /*
     deprecate(INDEX_SEGMENT_MAP);
     deprecate(ACCUMULATED_STRIPE_NUMBER);
     */
 
-    processEvent(event);
+      processEvent(event);
+    }
 
     if (canonizing) {
       canonize();
@@ -973,7 +980,7 @@ ZObject3d* ZObject3dScan::toObject3d() const
 const std::map<size_t, std::pair<size_t, size_t> >&
 ZObject3dScan::getIndexSegmentMap() const
 {
-  if (isDeprecated(INDEX_SEGMENT_MAP)) {
+  if (isDeprecated(COMPONENT_INDEX_SEGMENT_MAP)) {
     m_indexSegmentMap.clear();
     size_t currentIndex = 0;
     for (size_t stripeIndex = 0; stripeIndex < getStripeNumber(); ++stripeIndex) {
@@ -1128,7 +1135,7 @@ bool ZObject3dScan::load(const string &filePath)
         m_isCanonized = false;
       }
 
-      deprecate(ALL_COMPONENT);
+      deprecate(COMPONENT_ALL);
 
       succ = true;
     }
@@ -1288,7 +1295,7 @@ void ZObject3dScan::concat(const ZObject3dScan &obj)
 {
   m_stripeArray.insert(m_stripeArray.end(), obj.m_stripeArray.begin(),
                        obj.m_stripeArray.end());
-  //m_isCanonized = false;
+
   processEvent(EVENT_OBJECT_MODEL_CHANGED | EVENT_OBJECT_UNCANONIZED);
   //deprecate(ALL_COMPONENT);
 }
@@ -1555,7 +1562,7 @@ void ZObject3dScan::getBoundBox(Cuboid_I *box) const
 
 const std::vector<size_t>& ZObject3dScan::getStripeNumberAccumulation() const
 {
-  if (isDeprecated(ACCUMULATED_STRIPE_NUMBER)) {
+  if (isDeprecated(COMPONENT_ACCUMULATED_STRIPE_NUMBER)) {
     m_accNumberArray.resize(getStripeNumber() + 1);
     m_accNumberArray[0] = 0;
     for (size_t i = 0; i < getStripeNumber(); ++i) {
@@ -1569,7 +1576,7 @@ const std::vector<size_t>& ZObject3dScan::getStripeNumberAccumulation() const
 
 const std::map<std::pair<int, int>, size_t> &ZObject3dScan::getStripeMap() const
 {
-  if (isDeprecated(STRIPE_INDEX_MAP)) {
+  if (isDeprecated(COMPONENT_STRIPE_INDEX_MAP)) {
     m_stripeMap.clear();
     for (size_t i = 0; i < getStripeNumber(); ++i) {
       m_stripeMap[std::pair<int, int>(
@@ -1651,7 +1658,7 @@ void ZObject3dScan::clear()
 {
   m_stripeArray.clear();
   m_isCanonized = true;
-  deprecate(ALL_COMPONENT);
+  deprecate(COMPONENT_ALL);
 }
 
 std::vector<size_t> ZObject3dScan::getConnectedObjectSize()
@@ -1753,7 +1760,7 @@ std::vector<ZObject3dScan> ZObject3dScan::getConnectedComponent()
   return objArray;
 }
 
-size_t ZObject3dScan::getSegmentNumber()
+size_t ZObject3dScan::getSegmentNumber() const
 {
   const std::vector<size_t>& accArray = getStripeNumberAccumulation();
 
@@ -1832,18 +1839,48 @@ void ZObject3dScan::duplicateAcrossZ(int depth)
   processEvent(EVENT_OBJECT_MODEL_CHANGED);
 }
 
+void ZObject3dScan::displaySolid(
+    ZPainter &painter, int z, bool isProj, int stride) const
+{
+  if (stride < 1) {
+    stride = 1;
+  }
+
+  ZObject3dScan slice = getSlice(z);
+
+  size_t stripeNumber = slice.getStripeNumber();
+  std::vector<QLine> lineArray;
+  //int offsetX = iround(painter.getOffset().x());
+  //int offsetY = iround(painter.getOffset().y());
+  for (size_t i = 0; i < stripeNumber; i += stride) {
+    const ZObject3dStripe &stripe = slice.getStripe(i);
+    if (stripe.getZ() == z || isProj) {
+      int nseg = stripe.getSegmentNumber();
+      for (int j = 0; j < nseg; ++j) {
+        int x0 = stripe.getSegmentStart(j);// - offsetX;
+        int x1 = stripe.getSegmentEnd(j);// - offsetX;
+        int y = stripe.getY();// - offsetY;
+        lineArray.push_back(QLine(x0, y, x1, y));
+      }
+    }
+  }
+  if (!lineArray.empty()) {
+    painter.drawLines(&(lineArray[0]), lineArray.size());
+  }
+}
+
 void ZObject3dScan::display(
     ZPainter &painter, int slice, EDisplayStyle style) const
 {
   UNUSED_PARAMETER(style);
 #if _QT_GUI_USED_
-  if (isSelected() && style == ZStackObject::SOLID) {
-    return;
-  }
+//  if (isSelected() && style == ZStackObject::SOLID) {
+//    return;
+//  }
 
   bool isProj = (slice == -1);
 
-  int z = slice + iround(painter.getOffset().z());
+  int z = slice + iround(painter.getZOffset());
 
   QPen pen(m_color);
 
@@ -1852,26 +1889,13 @@ void ZObject3dScan::display(
   switch (style) {
   case ZStackObject::SOLID:
   {
+    if (isSelected()) {
+      QColor color = pen.color();
+      color.setAlpha(10);
+      pen.setColor(color);
+    }
     painter.setPen(pen);
-    size_t stripeNumber = getStripeNumber();
-    std::vector<QLine> lineArray;
-    int offsetX = iround(painter.getOffset().x());
-    int offsetY = iround(painter.getOffset().y());
-    for (size_t i = 0; i < stripeNumber; ++i) {
-      const ZObject3dStripe &stripe = getStripe(i);
-      if (stripe.getZ() == z || isProj) {
-        int nseg = stripe.getSegmentNumber();
-        for (int j = 0; j < nseg; ++j) {
-          int x0 = stripe.getSegmentStart(j) - offsetX;
-          int x1 = stripe.getSegmentEnd(j) - offsetX;
-          int y = stripe.getY() - offsetY;
-          lineArray.push_back(QLine(x0, y, x1, y));
-        }
-      }
-    }
-    if (!lineArray.empty()) {
-      painter.drawLines(&(lineArray[0]), lineArray.size());
-    }
+    displaySolid(painter, z, isProj, 1);
   }
     break;
   case ZStackObject::BOUNDARY:
@@ -1880,28 +1904,32 @@ void ZObject3dScan::display(
     color.setAlpha(255);
     pen.setColor(color);
     painter.setPen(pen);
-    std::vector<QPoint> ptArray;
-    ZObject3dScan slice = getSlice(z);
 
-    if (!slice.isEmpty()) {
-      ZStack *stack = slice.toStackObject();
-      int conn = 4;
-      if (isSelected()) {
-        conn = 8;
-      }
-      Stack *pre = Stack_Perimeter(stack->c_stack(), NULL, conn);
-      size_t offset = 0;
-      for (int y = 0; y < stack->height(); ++y) {
-        for (int x = 0; x < stack->width(); ++x) {
-          if (pre->array[offset++] > 0) {
-            ptArray.push_back(QPoint(x + stack->getOffset().getX(),
-                                     y + stack->getOffset().getY()));
+    if (isSelected()) {
+      displaySolid(painter, z, isProj, 5);
+    } else {
+      std::vector<QPoint> ptArray;
+      ZObject3dScan slice = getSlice(z);
+
+      if (!slice.isEmpty()) {
+        ZStack *stack = slice.toStackObject();
+        int width = stack->width();
+        int height = stack->height();
+        int conn = 4;
+        Stack *pre = Stack_Perimeter(stack->c_stack(), NULL, conn);
+        size_t offset = 0;
+        for (int y = 0; y < height; ++y) {
+          for (int x = 0; x < width; ++x) {
+            if (pre->array[offset++] > 0) {
+              ptArray.push_back(QPoint(x + stack->getOffset().getX(),
+                                       y + stack->getOffset().getY()));
+            }
           }
         }
       }
-    }
-    if (!ptArray.empty()) {
-      painter.drawPoints(&(ptArray[0]), ptArray.size());
+      if (!ptArray.empty()) {
+        painter.drawPoints(&(ptArray[0]), ptArray.size());
+      }
     }
   }
     break;
@@ -1983,13 +2011,90 @@ void ZObject3dScan::dilate()
 ZObject3dScan ZObject3dScan::getSlice(int z) const
 {
   ZObject3dScan slice;
-  size_t stripeNumber = getStripeNumber();
-  for (size_t i = 0; i < stripeNumber; ++i) {
+
+  if (!isEmpty()) {
+    const_cast<ZObject3dScan&>(*this).canonize();
+
+    int stripeNumber = getStripeNumber();
+
+    int pi = stripeNumber / 2;
+    int pz = m_stripeArray[pi].getZ();
+
+    int minIndex = 0;
+    int maxIndex = stripeNumber - 1;
+
+    if (z == m_stripeArray[minIndex].getZ() &&
+        z == m_stripeArray[maxIndex].getZ()) {
+      return *this;
+    }
+
+    while (z != pz) {
+      if (z < pz) {
+        maxIndex = pi;
+      } else {
+        minIndex = pi;
+      }
+
+      pi = (minIndex + maxIndex) / 2;
+      pz = m_stripeArray[pi].getZ();
+
+      if (minIndex == pi) {
+        if (minIndex == maxIndex) {
+          break;
+        } else {
+          if (z != pz) {
+            pz = m_stripeArray[maxIndex].getZ();
+            pi = maxIndex;
+            break;
+          }
+        }
+      }
+    }
+
+    if (z == pz) {
+      //slice.addStripe(m_stripeArray[pi]);
+      int index = pi;
+      int startIndex = pi;
+      while (--index >= 0) {
+        pz = m_stripeArray[index].getZ();
+        if (z == pz) {
+          startIndex = index;
+        } else {
+          break;
+        }
+      }
+
+      for (index = startIndex; index <= pi; ++index) {
+        slice.addStripe(m_stripeArray[index], false);
+      }
+
+      index = pi;
+      while (++index < stripeNumber) {
+        pz = m_stripeArray[index].getZ();
+        if (z == pz) {
+          slice.addStripe(m_stripeArray[index], false);
+        } else {
+          break;
+        }
+      }
+    }
+
+#ifdef _DEBUG_2
+  ZObject3dScan testSlice;
+  for (int i = 0; i < stripeNumber; ++i) {
     const ZObject3dStripe &stripe = m_stripeArray[i];
     if (stripe.getZ() == z) {
-      slice.addStripe(stripe, false);
+      testSlice.addStripe(stripe, false);
     }
   }
+
+  TZ_ASSERT(slice.getVoxelNumber() == testSlice.getVoxelNumber(), "Bug?");
+  TZ_ASSERT(slice.getStripeNumber() == testSlice.getStripeNumber(), "Bug?");
+  TZ_ASSERT(slice.getSegmentNumber() == testSlice.getSegmentNumber(), "Bug?");
+#endif
+  }
+
+  slice.setCanonized(true);
 
   return slice;
 }
@@ -2017,7 +2122,7 @@ bool ZObject3dScan::hit(double x, double y, double z)
 {
   for (size_t i = 0; i < getStripeNumber(); ++i) {
     const ZObject3dStripe &stripe = m_stripeArray[i];
-    if (stripe.contains(x, y, z)) {
+    if (stripe.contains(iround(x), iround(y), iround(z))) {
       return true;
     }
   }
@@ -2357,6 +2462,45 @@ void ZObject3dScan::fillHole()
     return false; \
   }
 
+void ZObject3dScan::exportDvidObject(const string &filePath) const
+{
+  FILE *fp = fopen(filePath.c_str(), "w");
+
+  tz_uint8 flag = 0;
+  fwrite(&flag, 1, 1, fp);
+
+  tz_uint8 numberOfDimensions = 3;
+  fwrite(&numberOfDimensions, 1, 1, fp);
+
+  tz_uint8 dimOfRun = 0;
+  fwrite(&dimOfRun, 1, 1, fp);
+
+  tz_uint8 reserved = 0;
+  fwrite(&reserved, 1, 1, fp);
+
+  tz_uint32 numberOfVoxels = getVoxelNumber();
+  fwrite(&numberOfVoxels, 4, 1, fp);
+
+  tz_uint32 numberOfSpans = getSegmentNumber();
+  fwrite(&numberOfSpans, 4, 1, fp);
+
+  //For each segment
+  ConstSegmentIterator iter(this);
+  while (iter.hasNext()) {
+    const ZObject3dScan::Segment &seg = iter.next();
+    tz_int32 coord[3];
+    coord[0] = seg.getStart();
+    coord[1] = seg.getY();
+    coord[2] = seg.getZ();
+    fwrite(coord, 4, 3, fp);
+
+    tz_int32 runLength = seg.getEnd() - seg.getStart() + 1;
+    fwrite(&runLength, 4, 1, fp);
+  }
+
+  fclose(fp);
+}
+
 bool ZObject3dScan::importDvidObject(const std::string &filePath)
 {
   clear();
@@ -2426,6 +2570,12 @@ bool ZObject3dScan::importDvidObject(const std::string &filePath)
         RECORD_ERROR_UNCOND("Reading error. File ends prematurely")
       }
 
+#ifdef _DEBUG_
+      if (coord[1] == 6525 && coord[2] ==1437) {
+        std::cout << "debug here" << std::endl;
+      }
+#endif
+
       tz_int32 runLength;
       n = fread(&runLength, 4, 1, fp);
       READ_TEST(n, 1, RECORD_ERROR_UNCOND("Failed to read run length"));
@@ -2435,7 +2585,7 @@ bool ZObject3dScan::importDvidObject(const std::string &filePath)
         return false;
       }
 
-      addSegment(coord[2], coord[1], coord[0], coord[0] + runLength, false);
+      addSegment(coord[2], coord[1], coord[0], coord[0] + runLength - 1, false);
       ++readSegmentNumber;
       if (readSegmentNumber == numberOfSpans) {
         break;
@@ -2694,24 +2844,31 @@ bool ZObject3dScan::contains(int x, int y, int z)
   return false;
 }
 
+void ZObject3dScan::blockEvent(bool blocking)
+{
+  m_blockingEvent = blocking;
+}
+
 void ZObject3dScan::processEvent(TEvent event)
 {
-  if (event & EVENT_OBJECT_MODEL_CHANGED & ~EVENT_OBJECT_VIEW_CHANGED) {
-    deprecate(ACCUMULATED_STRIPE_NUMBER);
-    deprecate(SLICEWISE_VOXEL_NUMBER);
-  }
+  if (!m_blockingEvent) {
+    if (event & EVENT_OBJECT_MODEL_CHANGED & ~EVENT_OBJECT_VIEW_CHANGED) {
+      deprecate(COMPONENT_ACCUMULATED_STRIPE_NUMBER);
+      deprecate(COMPONENT_SLICEWISE_VOXEL_NUMBER);
+    }
 
-  if (event & EVENT_OBJECT_UNCANONIZED & ~EVENT_OBJECT_VIEW_CHANGED) {
-    setCanonized(false);
-  }
+    if (event & EVENT_OBJECT_UNCANONIZED & ~EVENT_OBJECT_VIEW_CHANGED) {
+      setCanonized(false);
+    }
 
-  if (event & EVENT_OBJECT_CANONIZED & ~EVENT_OBJECT_VIEW_CHANGED) {
-    setCanonized(true);
-  }
+    if (event & EVENT_OBJECT_CANONIZED & ~EVENT_OBJECT_VIEW_CHANGED) {
+      setCanonized(true);
+    }
 
-  if (event & EVENT_OBJECT_VIEW_CHANGED) {
-    deprecate(STRIPE_INDEX_MAP);
-    deprecate(INDEX_SEGMENT_MAP);
+    if (event & EVENT_OBJECT_VIEW_CHANGED) {
+      deprecate(COMPONENT_STRIPE_INDEX_MAP);
+      deprecate(COMPONENT_INDEX_SEGMENT_MAP);
+    }
   }
 }
 
@@ -2887,7 +3044,8 @@ void ZObject3dScan::ConstSegmentIterator::advance()
   }
 }
 
-std::vector<ZObject3dScan*> ZObject3dScan::extractAllObject(const ZStack &stack)
+std::vector<ZObject3dScan*> ZObject3dScan::extractAllObject(
+    const ZStack &stack, int yStep)
 {
   std::vector<ZObject3dScan*> result;
   std::map<int, ZObject3dScan*> *objMap = NULL;
@@ -2897,13 +3055,13 @@ std::vector<ZObject3dScan*> ZObject3dScan::extractAllObject(const ZStack &stack)
     objMap = extractAllForegroundObject(
           stack.array8(), stack.width(), stack.height(), stack.depth(),
           stack.getOffset().getX(), stack.getOffset().getY(),
-          stack.getOffset().getZ(), NULL);
+          stack.getOffset().getZ(), yStep, NULL);
     break;
   case GREY16:
     objMap = extractAllForegroundObject(
           stack.array16(), stack.width(), stack.height(), stack.depth(),
           stack.getOffset().getX(), stack.getOffset().getY(),
-          stack.getOffset().getZ(), NULL);
+          stack.getOffset().getZ(), yStep, NULL);
     break;
   default:
     break;
@@ -2919,6 +3077,42 @@ std::vector<ZObject3dScan*> ZObject3dScan::extractAllObject(const ZStack &stack)
   }
 
   return result;
+}
+
+bool ZObject3dScan::importDvidRoi(const ZJsonArray &obj)
+{
+  clear();
+
+  if (obj.isEmpty()) {
+    return false;
+  }
+
+  bool succ = true;
+  for (size_t i = 0; i < obj.size(); ++i) {
+    if (ZJsonParser::isArray(obj.at(i))) {
+      ZJsonArray subarray(obj.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
+      if (subarray.size() != 4) {
+        succ = false;
+        break;
+      }
+    } else {
+      succ = false;
+      break;
+    }
+  }
+
+  if (succ) {
+    for (size_t i = 0; i < obj.size(); ++i) {
+      ZJsonArray subarray(obj.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
+      int z = ZJsonParser::integerValue(subarray.at(0));
+      int y = ZJsonParser::integerValue(subarray.at(1));
+      int x0 = ZJsonParser::integerValue(subarray.at(2));
+      int x1 = ZJsonParser::integerValue(subarray.at(3));
+      addSegment(z, y, x0, x1);
+    }
+  }
+
+  return succ;
 }
 
 ZSTACKOBJECT_DEFINE_CLASS_NAME(ZObject3dScan)

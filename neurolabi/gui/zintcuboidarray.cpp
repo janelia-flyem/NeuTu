@@ -12,11 +12,11 @@
 
 using namespace std;
 
-FlyEm::ZIntCuboidArray::ZIntCuboidArray()
+ZIntCuboidArray::ZIntCuboidArray()
 {
 }
 
-void FlyEm::ZIntCuboidArray::append(
+void ZIntCuboidArray::append(
     int x, int y, int z, int width, int height, int depth)
 {
   Cuboid_I cuboid;
@@ -30,12 +30,12 @@ void FlyEm::ZIntCuboidArray::append(
   deprecate(ALL_COMPONENT);
 }
 
-int FlyEm::ZIntCuboidArray::hitTest(const ZPoint &pt) const
+int ZIntCuboidArray::hitTest(const ZPoint &pt) const
 {
   return hitTest(pt.x(), pt.y(), pt.z());
 }
 
-int FlyEm::ZIntCuboidArray::hitTest(double x, double y, double z) const
+int ZIntCuboidArray::hitTest(double x, double y, double z) const
 {
   int ix = floor(x);
   int iy = floor(y);
@@ -54,7 +54,7 @@ int FlyEm::ZIntCuboidArray::hitTest(double x, double y, double z) const
   return -1;
 }
 
-int FlyEm::ZIntCuboidArray::hitInternalTest(double x, double y, double z) const
+int ZIntCuboidArray::hitInternalTest(double x, double y, double z) const
 {
   int ix = floor(x);
   int iy = floor(y);
@@ -73,7 +73,7 @@ int FlyEm::ZIntCuboidArray::hitInternalTest(double x, double y, double z) const
   return -1;
 }
 
-std::vector<int> FlyEm::ZIntCuboidArray::loadSubstackList(
+std::vector<int> ZIntCuboidArray::loadSubstackList(
     const std::string filePath)
 {
   std::vector<int> stackIdArray;
@@ -104,7 +104,7 @@ std::vector<int> FlyEm::ZIntCuboidArray::loadSubstackList(
   return stackIdArray;
 }
 
-void FlyEm::ZIntCuboidArray::translate(int x, int y, int z)
+void ZIntCuboidArray::translate(int x, int y, int z)
 {
   for (ZIntCuboidArray::iterator iter = begin(); iter != end(); ++iter) {
     iter->cb[0] += x;
@@ -118,7 +118,7 @@ void FlyEm::ZIntCuboidArray::translate(int x, int y, int z)
   deprecate(ALL_COMPONENT);
 }
 
-void FlyEm::ZIntCuboidArray::rescale(double factor)
+void ZIntCuboidArray::rescale(double factor)
 {
   for (ZIntCuboidArray::iterator iter = begin(); iter != end(); ++iter) {
     iter->cb[0] *= factor;
@@ -132,7 +132,7 @@ void FlyEm::ZIntCuboidArray::rescale(double factor)
   deprecate(ALL_COMPONENT);
 }
 
-ZSwcTree* FlyEm::ZIntCuboidArray::toSwc() const
+ZSwcTree* ZIntCuboidArray::toSwc() const
 {
   ZSwcTree *tree = NULL;
   if (!empty()) {
@@ -154,7 +154,7 @@ ZSwcTree* FlyEm::ZIntCuboidArray::toSwc() const
   return tree;
 }
 
-void FlyEm::ZIntCuboidArray::exportSwc(const string &filePath) const
+void ZIntCuboidArray::exportSwc(const string &filePath) const
 {
   if (!empty()) {
     ZSwcTree *tree = new ZSwcTree;
@@ -176,12 +176,12 @@ void FlyEm::ZIntCuboidArray::exportSwc(const string &filePath) const
   }
 }
 
-bool FlyEm::ZIntCuboidArray::isInvalid(const Cuboid_I &cuboid)
+bool ZIntCuboidArray::isInvalid(const Cuboid_I &cuboid)
 {
   return !Cuboid_I_Is_Valid(&cuboid);
 }
 
-void FlyEm::ZIntCuboidArray::removeInvalidCuboid()
+void ZIntCuboidArray::removeInvalidCuboid()
 {
   iterator newEnd = std::remove_if(begin(), end(), isInvalid);
   if (newEnd != end()) {
@@ -189,7 +189,7 @@ void FlyEm::ZIntCuboidArray::removeInvalidCuboid()
   }
 }
 
-void FlyEm::ZIntCuboidArray::intersect(const Cuboid_I &cuboid)
+void ZIntCuboidArray::intersect(const Cuboid_I &cuboid)
 {
   for (ZIntCuboidArray::iterator iter = begin(); iter != end(); ++iter) {
     Cuboid_I_Intersect(&(*iter), &cuboid, &(*iter));
@@ -201,7 +201,7 @@ void FlyEm::ZIntCuboidArray::intersect(const Cuboid_I &cuboid)
 }
 
 
-Cuboid_I FlyEm::ZIntCuboidArray::getBoundBox() const
+Cuboid_I ZIntCuboidArray::getBoundBox() const
 {
   Cuboid_I box;
   Cuboid_I_Set_S(&box, 0, 0, 0, 0, 0, 0);
@@ -224,9 +224,9 @@ Cuboid_I FlyEm::ZIntCuboidArray::getBoundBox() const
   return box;
 }
 
-FlyEm::ZIntCuboidArray FlyEm::ZIntCuboidArray::getFace() const
+ZIntCuboidArray ZIntCuboidArray::getFace() const
 {
-  FlyEm::ZIntCuboidArray face;
+  ZIntCuboidArray face;
 
   for (ZIntCuboidArray::const_iterator iter = begin(); iter != end(); ++iter) {
     if (Cuboid_I_Is_Valid(&(*iter))) {
@@ -244,9 +244,9 @@ FlyEm::ZIntCuboidArray FlyEm::ZIntCuboidArray::getFace() const
   return face;
 }
 
-FlyEm::ZIntCuboidArray FlyEm::ZIntCuboidArray::getInnerFace() const
+ZIntCuboidArray ZIntCuboidArray::getInnerFace() const
 {
-  FlyEm::ZIntCuboidArray face;
+  ZIntCuboidArray face;
 
   int index1 = 0;
 
@@ -285,7 +285,7 @@ FlyEm::ZIntCuboidArray FlyEm::ZIntCuboidArray::getInnerFace() const
   return face;
 }
 
-void FlyEm::ZIntCuboidArray::print() const
+void ZIntCuboidArray::print() const
 {
   for (ZIntCuboidArray::const_iterator iter = begin(); iter != end();
        ++iter) {
@@ -295,7 +295,7 @@ void FlyEm::ZIntCuboidArray::print() const
   }
 }
 
-size_t FlyEm::ZIntCuboidArray::getVolume() const
+size_t ZIntCuboidArray::getVolume() const
 {
   size_t volume = 0;
   for (ZIntCuboidArray::const_iterator iter = begin(); iter != end();
@@ -306,7 +306,7 @@ size_t FlyEm::ZIntCuboidArray::getVolume() const
   return volume;
 }
 
-ZIntCuboidFaceArray FlyEm::ZIntCuboidArray::getBorderFace() const
+ZIntCuboidFaceArray ZIntCuboidArray::getBorderFace() const
 {
   if (isDeprecated(BORDER_FACE)) {
     ZIntCuboidFaceArray faceArray;
@@ -324,7 +324,7 @@ ZIntCuboidFaceArray FlyEm::ZIntCuboidArray::getBorderFace() const
   return m_borderFace;
 }
 
-ZIntCuboidFaceArray FlyEm::ZIntCuboidArray::getSideBorderFace() const
+ZIntCuboidFaceArray ZIntCuboidArray::getSideBorderFace() const
 {
   ZIntCuboidFaceArray borderFaceArray = getBorderFace();
 
@@ -341,7 +341,7 @@ ZIntCuboidFaceArray FlyEm::ZIntCuboidArray::getSideBorderFace() const
 }
 
 
-void FlyEm::ZIntCuboidArray::deprecate(EComponent component) const
+void ZIntCuboidArray::deprecate(EComponent component) const
 {
   deprecateDependent(component);
 
@@ -354,7 +354,7 @@ void FlyEm::ZIntCuboidArray::deprecate(EComponent component) const
   }
 }
 
-void FlyEm::ZIntCuboidArray::deprecateDependent(EComponent component) const
+void ZIntCuboidArray::deprecateDependent(EComponent component) const
 {
   switch (component) {
   case ALL_COMPONENT:
@@ -365,7 +365,7 @@ void FlyEm::ZIntCuboidArray::deprecateDependent(EComponent component) const
   }
 }
 
-bool FlyEm::ZIntCuboidArray::isDeprecated(EComponent component) const
+bool ZIntCuboidArray::isDeprecated(EComponent component) const
 {
   switch (component) {
   case ALL_COMPONENT: //Is any of the component deprecated?
@@ -462,7 +462,7 @@ bool FlyEm::SubstackRegionCalbration::importJsonObject(const ZJsonObject &obj)
 }
 
 void FlyEm::SubstackRegionCalbration::calibrate(
-    FlyEm::ZIntCuboidArray &roi) const
+    ZIntCuboidArray &roi) const
 {
   Cuboid_I boundBox = roi.getBoundBox();
 

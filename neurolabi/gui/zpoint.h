@@ -37,6 +37,7 @@ public:
   const double& operator[] (int index) const;
   double& operator[] (int index);
   ZPoint& operator= (const ZPoint &pt);
+  bool operator== (const ZPoint &pt);
 
   bool operator < (const ZPoint &pt) const;
 
@@ -76,6 +77,8 @@ public:
 
   std::string toString() const;
   std::string toJsonString() const;
+
+  void print() const;
 
   inline void translate(double dx, double dy, double dz) {
     m_x += dx;

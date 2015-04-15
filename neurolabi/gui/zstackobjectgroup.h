@@ -123,8 +123,11 @@ public:
   TStackObjectSet getObjectSet(ZStackObject::EType type) const;
 
   bool hasObject(ZStackObject::EType type) const;
+  bool hasObject(ZStackObject::ETarget target) const;
   bool hasSelected() const;
   bool hasSelected(ZStackObject::EType type) const;
+
+  QList<ZStackObject::EType> getAllType() const;
 
 private:
   bool remove_p(TStackObjectSet &objSet, ZStackObject *obj);

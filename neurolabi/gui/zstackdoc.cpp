@@ -99,6 +99,7 @@
 #include "zstackpatch.h"
 #include "zobjectcolorscheme.h"
 #include "zstackdocreader.h"
+#include "dvid/zdvidtileensemble.h"
 
 using namespace std;
 
@@ -147,11 +148,6 @@ ZStackDoc::~ZStackDoc()
   deprecate(SPARSE_STACK);
 
   qDebug() << "ZStackDoc destroyed";
-
-//  foreach (ZStackObject *obj, m_objectList) {
-//    delete obj;
-//  }
-//  m_objectList.clear();
 
   m_objectGroup.removeAllObject(true);
 
@@ -607,12 +603,17 @@ bool ZStackDoc::isEmpty()
   return (!hasStackData()) && (!hasObject());
 }
 
-bool ZStackDoc::hasObject()
+bool ZStackDoc::hasObject() const
 {
   return !m_objectGroup.isEmpty();
 }
 
-bool ZStackDoc::hasSparseObject()
+bool ZStackDoc::hasObject(ZStackObject::EType type) const
+{
+  return !m_objectGroup.getObjectList(type).isEmpty();
+}
+
+bool ZStackDoc::hasSparseObject() const
 {
   return !m_objectGroup.getObjectList(ZStackObject::TYPE_SPARSE_OBJECT).isEmpty();
 }
@@ -1093,9 +1094,14 @@ void ZStackDoc::updateVirtualStackSize()
   }
 }
 
-bool ZStackDoc::hasDrawable()
+bool ZStackDoc::hasDrawable() const
 {
   return !m_objectGroup.isEmpty();
+}
+
+bool ZStackDoc::hasDrawable(ZStackObject::ETarget target) const
+{
+  return m_objectGroup.hasObject(target);
 }
 
 int ZStackDoc::getStackWidth() const
@@ -1114,6 +1120,15 @@ int ZStackDoc::getStackHeight() const
   }
 
   return getStack()->height();
+}
+
+int ZStackDoc::getStackDepth() const
+{
+  if (getStack() == NULL) {
+    return 0;
+  }
+
+  return getStack()->depth();
 }
 
 int ZStackDoc::stackChannelNumber() const
@@ -1309,6 +1324,8 @@ void ZStackDoc::loadSwcNetwork(const char *filePath)
   for (size_t i = 0; i < m_swcNetwork->treeNumber(); i++) {
     addSwcTree(m_swcNetwork->getTree(i));
   }
+
+  emit swcNetworkModified();
 }
 
 void ZStackDoc::importFlyEmNetwork(const char *filePath)
@@ -1325,6 +1342,8 @@ void ZStackDoc::importFlyEmNetwork(const char *filePath)
   for (size_t i = 0; i < m_swcNetwork->treeNumber(); i++) {
     addSwcTree(m_swcNetwork->getTree(i));
   }
+
+  emit swcNetworkModified();
 }
 
 void ZStackDoc::setStackSource(const ZStackFile &stackFile)
@@ -1363,6 +1382,11 @@ bool ZStackDoc::hasStackData() const
   }
 
   return false;
+}
+
+bool ZStackDoc::hasStackPaint() const
+{
+  return hasStackData() || hasSparseStack();
 }
 
 bool ZStackDoc::hasStackMask()
@@ -2186,7 +2210,8 @@ DEFINE_GET_OBJECT_LIST(getLocsegChainList, ZLocsegChain, TYPE_LOCSEG_CHAIN)
 DEFINE_GET_OBJECT_LIST(getPunctumList, ZPunctum, TYPE_PUNCTUM)
 DEFINE_GET_OBJECT_LIST(getSparseObjectList, ZSparseObject, TYPE_SPARSE_OBJECT)
 DEFINE_GET_OBJECT_LIST(getObject3dScanList, ZObject3dScan, TYPE_OBJECT3D_SCAN)
-
+DEFINE_GET_OBJECT_LIST(getDvidLabelSliceList, ZDvidLabelSlice, TYPE_DVID_LABEL_SLICE)
+DEFINE_GET_OBJECT_LIST(getDvidTileEnsembleList, ZDvidTileEnsemble, TYPE_DVID_TILE_ENSEMBLE)
 
 void ZStackDoc::addSparseObject(ZSparseObject *obj)
 {
@@ -2200,6 +2225,8 @@ void ZStackDoc::addSparseObject(ZSparseObject *obj)
   obj->setRole(ZStackObjectRole::ROLE_SEED);
   m_playerList.append(new ZSparseObjectPlayer(obj));
   emit seedModified();
+
+  notifySparseObjectModified();
 }
 
 void ZStackDoc::addStroke(ZStroke2d *obj)
@@ -2511,6 +2538,7 @@ void ZStackDoc::importPuncta(const QStringList &fileList, LoadObjectOption objop
   }
 
   QString file;
+  blockSignals(true);
   foreach (file, fileList) {
     if (objopt == APPEND_OBJECT) {   // if this file is already loaded, replace it
       QList<ZStackObject*> punctaToRemove = m_objectGroup.findSameSource(
@@ -2532,6 +2560,7 @@ void ZStackDoc::importPuncta(const QStringList &fileList, LoadObjectOption objop
       addPunctum(plist[i]);
     }
   }
+  blockSignals(false);
   emit punctaModified();
 }
 
@@ -3390,6 +3419,11 @@ void ZStackDoc::deselectAllObject()
   //m_selectedSwcTreeNodes.clear();
   deselectAllSwcTreeNodes();
 
+  QList<ZDvidLabelSlice*> labelSliceList = getDvidLabelSliceList();
+  foreach (ZDvidLabelSlice *labelSlice, labelSliceList) {
+    labelSlice->deselectAll();
+  }
+
   notifyDeselected(getSelectedObjectList<ZSwcTree>(ZStackObject::TYPE_SWC));
   notifyDeselected(getSelectedObjectList<ZPunctum>(ZStackObject::TYPE_PUNCTUM));
   notifyDeselected(getSelectedObjectList<ZLocsegChain>(
@@ -4197,7 +4231,7 @@ void ZStackDoc::loadFileList(const QStringList &fileList)
     }
 
     blockSignals(true);
-    loadFile(*iter, false);
+    loadFile(*iter);
     blockSignals(false);
   }
 
@@ -4226,30 +4260,37 @@ void ZStackDoc::loadFileList(const QStringList &fileList)
 #endif
 }
 
-bool ZStackDoc::loadFile(const QString &filePath, bool emitMessage)
+bool ZStackDoc::loadFile(const std::string filePath)
 {
+  return loadFile(QString(filePath.c_str()));
+}
+
+bool ZStackDoc::loadFile(const char *filePath)
+{
+  return loadFile(QString(filePath));
+}
+
+
+bool ZStackDoc::loadFile(const QString &filePath)
+{
+  QFile file(filePath);
+
+  if (!file.exists()) {
+    return false;
+  }
+
   switch (ZFileType::fileType(filePath.toStdString())) {
   case ZFileType::SWC_FILE:
 #ifdef _FLYEM_2
     removeAllObject();
 #endif
     loadSwc(filePath);
-    if (emitMessage) {
-      emit swcModified();
-    }
     break;
   case ZFileType::LOCSEG_CHAIN_FILE:
     loadLocsegChain(filePath);
-    if (emitMessage) {
-      emit chainModified();
-    }
     break;
   case ZFileType::SWC_NETWORK_FILE:
     loadSwcNetwork(filePath);
-    if (emitMessage) {
-      emit swcModified();
-      emit swcNetworkModified();
-    }
     break;
   case ZFileType::OBJECT_SCAN_FILE:
     setTag(NeuTube::Document::FLYEM_BODY);
@@ -4273,44 +4314,26 @@ bool ZStackDoc::loadFile(const QString &filePath, bool emitMessage)
           cuboid.getWidth(), cuboid.getHeight(), cuboid.getDepth());
     stack->setOffset(cuboid.getFirstCorner());
     loadStack(stack);
-
-    emit stackModified();
-    emit sparseObjectModified();
   }
     break; //experimenting _DEBUG_
   case ZFileType::TIFF_FILE:
   case ZFileType::LSM_FILE:
   case ZFileType::V3D_RAW_FILE:
     readStack(filePath.toStdString().c_str(), false);
-    if (emitMessage) {
-      stackModified();
-    }
     break;
   case ZFileType::FLYEM_NETWORK_FILE:
     importFlyEmNetwork(filePath.toStdString().c_str());
-    if (emitMessage) {
-      emit swcModified();
-      emit swcNetworkModified();
-    }
     break;
   case ZFileType::JSON_FILE:
   case ZFileType::SYNAPSE_ANNOTATON_FILE:
-    if (importSynapseAnnotation(filePath.toStdString())) {
-      if (emitMessage) {
-        emit punctaModified();
-      }
-    } else {
+    if (!importSynapseAnnotation(filePath.toStdString())) {
       return false;
     }
     break;
   case ZFileType::V3D_APO_FILE:
   case ZFileType::V3D_MARKER_FILE:
   case ZFileType::RAVELER_BOOKMARK:
-    if (importPuncta(filePath.toStdString().c_str())) {
-      if (emitMessage) {
-        emit punctaModified();
-      }
-    } else {
+    if (!importPuncta(filePath.toStdString().c_str())) {
       return false;
     }
     break;
@@ -5397,7 +5420,7 @@ bool ZStackDoc::executeTranslateSelectedSwcNode()
         SwcTreeNode::paste(node + i, i);
       }
 
-      ZPoint offset = SwcTreeNode::pos(node + 1) - SwcTreeNode::pos(node);
+      ZPoint offset = SwcTreeNode::center(node + 1) - SwcTreeNode::center(node);
       dlg.setTranslateValue(offset.x(), offset.y(), offset.z());
     }
     if (dlg.exec()) {
@@ -6273,6 +6296,9 @@ void ZStackDoc::addPlayer(ZStackObject *obj)
       case ZStackObject::TYPE_OBJECT3D_SCAN:
         player = new ZObject3dScanPlayer(obj);
         break;
+      case ZStackObject::TYPE_DVID_LABEL_SLICE:
+        player = new ZDvidLabelSlicePlayer(obj);
+        break;
       default:
         player = new ZDocPlayer(obj);
         break;
@@ -6411,8 +6437,8 @@ bool ZStackDoc::executeTraceSwcBranchCommand(
     } else {
       if (SwcTreeNode::isRegular(SwcTreeNode::firstChild(branchRoot))) {
         Swc_Tree_Node *rootNeighbor = SwcTreeNode::firstChild(branchRoot);
-        ZPoint rootCenter = SwcTreeNode::pos(branchRoot);
-        ZPoint nbrCenter = SwcTreeNode::pos(rootNeighbor);
+        ZPoint rootCenter = SwcTreeNode::center(branchRoot);
+        ZPoint nbrCenter = SwcTreeNode::center(rootNeighbor);
 
         double lambda = ZNeuronTracer::findBestTerminalBreak(
               rootCenter, SwcTreeNode::radius(branchRoot),
@@ -6473,8 +6499,8 @@ bool ZStackDoc::executeTraceSwcBranchCommand(
     if (SwcTreeNode::isRegular(SwcTreeNode::firstChild(branchRoot))) {
       Swc_Tree_Node *terminal = tree->firstLeaf();
       Swc_Tree_Node *terminalNeighbor = SwcTreeNode::parent(tree->firstLeaf());
-      ZPoint terminalCenter = SwcTreeNode::pos(terminal);
-      ZPoint nbrCenter = SwcTreeNode::pos(terminalNeighbor);
+      ZPoint terminalCenter = SwcTreeNode::center(terminal);
+      ZPoint nbrCenter = SwcTreeNode::center(terminalNeighbor);
 
       double lambda = ZNeuronTracer::findBestTerminalBreak(
             terminalCenter, SwcTreeNode::radius(terminal),
@@ -7148,7 +7174,7 @@ bool ZStackDoc::executeScaleAllSwcCommand(
         center = tree->computeCentroid();
       }
       for (Swc_Tree_Node *tn = tree->begin(); tn != NULL; tn = tree->next()) {
-        ZPoint position = SwcTreeNode::pos(tn);
+        ZPoint position = SwcTreeNode::center(tn);
         if (aroundCenter) {
           position -= center;
         }
@@ -7180,7 +7206,7 @@ bool ZStackDoc::executeScaleSwcNodeCommand(
          nodeSet.begin(); iter != nodeSet.end();
          ++iter) {
       Swc_Tree_Node *tn = *iter;
-      ZPoint position = SwcTreeNode::pos(tn);
+      ZPoint position = SwcTreeNode::center(tn);
       position -= center;
       position *= ZPoint(sx, sy, sz);
       position += center;
@@ -7212,7 +7238,7 @@ bool ZStackDoc::executeRotateSwcNodeCommand(
          nodeSet.begin(); iter != nodeSet.end();
          ++iter) {
       Swc_Tree_Node *tn = *iter;
-      ZPoint position = SwcTreeNode::pos(tn);
+      ZPoint position = SwcTreeNode::center(tn);
       if (aroundCenter) {
         position.rotate(theta, psi, center);
       } else {
@@ -7243,7 +7269,7 @@ bool ZStackDoc::executeRotateAllSwcCommand(
         center = tree->computeCentroid();
       }
       for (Swc_Tree_Node *tn = tree->begin(); tn != NULL; tn = tree->next()) {
-        ZPoint position = SwcTreeNode::pos(tn);
+        ZPoint position = SwcTreeNode::center(tn);
         if (aroundCenter) {
           position.rotate(theta, psi, center);
         } else {
@@ -7618,36 +7644,6 @@ void ZStackDoc::seededWatershed()
       updateWatershedBoundaryObject(out, dsIntv);
 
       notifyObj3dModified();
-
-#ifdef _DEBUG_2
-      out->save(GET_TEST_DATA_DIR + "/test.tif");
-#endif
-#if 0
-      Object_3d *objData = Stack_Region_Border(out->c_stack(), 6, TRUE);
-
-      if (objData != NULL) {
-        ZObject3d *obj = new ZObject3d(objData);
-
-        obj->translate(out->getOffset());
-
-
-        if (dsIntv.getX() > 0 || dsIntv.getY() > 0 || dsIntv.getZ() > 0) {
-          obj->upSample(dsIntv.getX(), dsIntv.getY(), dsIntv.getZ());
-        }
-
-        /*
-      obj->translate(iround(out->getOffset().getX()),
-                     iround(out->getOffset().getY()),
-                     iround(out->getOffset().getZ()));
-                     */
-        obj->setColor(255, 255, 0, 255);
-        addObj3d(obj);
-        addPlayer(obj, NeuTube::Documentable_OBJ3D, ZDocPlayer::ROLE_TMP_RESULT);
-
-        notifyObj3dModified();
-      }
-#endif
-      //delete out;
 
       setLabelField(out);
     }

@@ -8,12 +8,13 @@
 #include "zstackframe.h"
 #include "zframefactory.h"
 #include "zprogressreporter.h"
+#include "zdialogfactory.h"
 
 FlyEmProjectDialog::FlyEmProjectDialog(QWidget *parent) :
   QDialog(parent), m_mainMenu(NULL), m_docTag(NeuTube::Document::NORMAL),
   m_progressReporter(NULL)
 {
-  m_dvidDlg = NULL;
+  m_dvidDlg = ZDialogFactory::makeDvidDialog(this);
 
   connect(this, SIGNAL(newDocReady(ZStackDocReader*, bool)),
           this, SLOT(consumeNewDoc(ZStackDocReader*, bool)));

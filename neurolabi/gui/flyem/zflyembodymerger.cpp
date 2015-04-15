@@ -118,3 +118,9 @@ void ZFlyEmBodyMerger::print() const
     }
   }
 }
+
+void ZFlyEmBodyMerger::clear()
+{
+  m_mapList.clear();
+  m_undoneMapStack.clear();
+}

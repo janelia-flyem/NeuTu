@@ -30,8 +30,8 @@ void Z3DTextureBlendRenderer::compile()
 void Z3DTextureBlendRenderer::initialize()
 {
   Z3DPrimitiveRenderer::initialize();
-  m_blendTextureShader.loadFromSourceFile("pass.vert", "compositor.frag", generateHeader());
   m_blendTextureShader.bindFragDataLocation(0, "FragData0");
+  m_blendTextureShader.loadFromSourceFile("pass.vert", "compositor.frag", generateHeader());
 }
 
 void Z3DTextureBlendRenderer::deinitialize()

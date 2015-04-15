@@ -3,41 +3,47 @@
 # #####################################################################
 TEMPLATE = app
 
-#Build neurolabi
-neurolabi.target = neurolabi
-CONFIG(debug, debug|release) {
-    neurolabi.commands = @echo "building neurolabi"; cd $${PWD}/../c; make lib VERSION=
-} else {
-    neurolabi.commands = @echo "building neurolabi"; cd $${PWD}/../c; make release VERSION=
-}
-QMAKE_EXTRA_TARGETS += neurolabi
-###################
+QMAKE_PATH = $(QMAKE)
 
-NEUROLABI_DIR = $${PWD}/..
-EXTLIB_DIR = $${NEUROLABI_DIR}/lib
-
-win32 {
-  DEPLOYMENT_COMMAND = $$PWD/deploy_win.bat $(QMAKE) $$OUT_PWD
+!exists($$QMAKE_PATH) {
+    QMAKE_PATH = $$[QT_INSTALL_BINS]/qmake
 }
 
-macx {
-  DEPLOYMENT_COMMAND = $$PWD/deploy_mac $(QMAKE) $$OUT_PWD
+
+message("qmake path: $$QMAKE_PATH")
+
+exists($$QMAKE_PATH) {
+    win32 {
+      DEPLOYMENT_COMMAND = $$PWD/deploy_win.bat $$QMAKE_PATH $$OUT_PWD
+    }
+
+    macx {
+      DEPLOYMENT_COMMAND = $$PWD/deploy_mac $$QMAKE_PATH $$OUT_PWD
+    }
+
+    unix:!macx {
+      DEPLOYMENT_COMMAND = $$PWD/deploy_linux $$QMAKE_PATH $$OUT_PWD
+    }
 }
 
-unix:!macx {
-  DEPLOYMENT_COMMAND = $$PWD/deploy_linux $(QMAKE) $OUT_PWD
-}
 
-include(extlib.pri)
-
-#neurolabi
 CONFIG(debug, debug|release) {
     TARGET = neuTube_d
     DEFINES += _DEBUG_ _ADVANCED_ PROJECT_PATH=\"\\\"$$PWD\\\"\"
 } else {
     TARGET = neuTube
+}
+
+include(extratarget.pri)
+
+CONFIG(release, debug|release):!isEmpty(DEPLOYMENT_COMMAND) {
     QMAKE_POST_LINK += $$DEPLOYMENT_COMMAND
 }
+
+message($$DEPLOYMENT_COMMAND)
+message("Post link: $$QMAKE_POST_LINK")
+
+include(extlib.pri)
 
 # suppress warnings from 3rd party library, works for gcc and clang
 QMAKE_CXXFLAGS += -isystem ../gui/ext
@@ -61,7 +67,7 @@ QT += opengl xml network
 isEqual(QT_MAJOR_VERSION,5) | greaterThan(QT_MAJOR_VERSION,5) {
     isEqual(QT_MAJOR_VERSION,5) {
       lessThan(QT_MINOR_VERSION,4) {
-        message("Cannot build neuTube with Qt version $${QT_VERSION}.")
+        message("Unstable Qt version $${QT_VERSION}.")
         error("Use at least Qt 5.4.0.")
       }
     }
@@ -125,9 +131,9 @@ unix {
         doc.path = Contents/MacOS
         QMAKE_BUNDLE_DATA += doc
 
-        config.files = config.xml
-        config.path = Contents/MacOS
-        QMAKE_BUNDLE_DATA += config
+#        config.files = config.xml
+#        config.path = Contents/MacOS
+#        QMAKE_BUNDLE_DATA += config
     } else {
         DEFINES += _NEUTUBE_LINUX_
         DEFINES += _LINUX_
@@ -155,15 +161,6 @@ include(ext/QsLog/QsLog.pri)
 include(ext/libqxt.pri)
 include (gui_free.pri)
 include(test/test.pri)
-
-CONFIG(debug, debug|release) {
-    exists(../lib/opencv) {
-        message(opencv found)
-        DEFINES += _USE_OPENCV_
-        INCLUDEPATH += ../lib/opencv/include ../lib/opencv/include/opencv
-        LIBS += -L../lib/opencv/lib -lopencv_core -lopencv_ml
-    }
-}
 
 # Input
 RESOURCES = gui.qrc
@@ -344,7 +341,6 @@ HEADERS += mainwindow.h \
     flyemdataquerydialog.h \
     flyemdataprocessdialog.h \
     flyem/zstitchgrid.h \
-    flyem/zintcuboidarray.h \
     autosaveswclistdialog.h \
     zswcfilelistmodel.h \
     flyem/zflyemqualityanalyzer.h \
@@ -495,7 +491,32 @@ HEADERS += mainwindow.h \
     zprogressmanager.h \
     dvid/zdvidtile.h \
     dvid/zdvidresolution.h \
-    dvid/zdvidtileinfo.h
+    dvid/zdvidtileinfo.h \
+    zstackmvc.h \
+    dvid/zdvidversionmodel.h \
+    flyem/zflyemhackathonconfigdlg.h \
+    flyem/zflyemmisc.h \
+    zmessagemanager.h \
+    zmessageprocessor.h \
+    zmessage.h \
+    zmainwindowmessageprocessor.h \
+    ztestdialog.h \
+    zstackdocloader.h \
+    zstackwidget.h \
+    dvid/zdvidversiondag.h \
+    dvid/zdvidversion.h \
+    dvid/zdvidversionnode.h \
+    zbodysplitbutton.h \
+    zmessagefactory.h \
+    zmessagemanagermodel.h \
+    zflyemcontrolform.h \
+    dvid/zdvidtileensemble.h \
+    dvid/zdvidlabelslice.h \
+    zsttransform.h \
+    zpixmap.h \
+    flyem/flyemproofcontrolform.h \
+    flyem/zflyemproofmvc.h \
+    flyem/zflyemproofdoc.h
 
 FORMS += settingdialog.ui \
     frameinfodialog.ui \
@@ -555,7 +576,11 @@ FORMS += settingdialog.ui \
     flyembodymergeprojectdialog.ui \
     zsegmentationprojectdialog.ui \
     zmarkswcsomadialog.ui \
-    swcexportdialog.ui
+    swcexportdialog.ui \
+    flyem/zflyemhackathonconfigdlg.ui \
+    ztestdialog.ui \
+    zflyemcontrolform.ui \
+    flyem/flyemproofcontrolform.ui
 SOURCES += main.cpp \
     mainwindow.cpp \
     zstackview.cpp \
@@ -846,7 +871,33 @@ SOURCES += main.cpp \
     zprogressmanager.cpp \
     dvid/zdvidtile.cpp \
     dvid/zdvidresolution.cpp \
-    dvid/zdvidtileinfo.cpp
+    dvid/zdvidtileinfo.cpp \
+    zstackmvc.cpp \
+    dvid/zdvidversionmodel.cpp \
+    flyem/zflyemhackathonconfigdlg.cpp \
+    flyem/zflyemmisc.cpp \
+    zmessagemanager.cpp \
+    zmessageprocessor.cpp \
+    zmessage.cpp \
+    zmainwindowmessageprocessor.cpp \
+    ztestdialog.cpp \
+    zstackdocloader.cpp \
+    zstackwidget.cpp \
+    dvid/zdvidversiondag.cpp \
+    dvid/zdvidversion.cpp \
+    dvid/zdvidversionnode.cpp \
+    zbodysplitbutton.cpp \
+    zmessagefactory.cpp \
+    zmessagemanagermodel.cpp \
+    zflyemcontrolform.cpp \
+    dvid/zdvidtileensemble.cpp \
+    dvid/zdvidlabelslice.cpp \
+    zsttransform.cpp \
+    zpixmap.cpp \
+    flyem/flyemproofcontrolform.cpp \
+    flyem/zflyemproofmvc.cpp \
+    flyem/zflyemproofdoc.cpp
 
 OTHER_FILES += \
-    extlib.pri
+    extlib.pri \
+    extratarget.pri

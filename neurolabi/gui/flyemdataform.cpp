@@ -85,7 +85,7 @@ FlyEmDataForm::FlyEmDataForm(QWidget *parent) :
 #ifndef _DEBUG_
   ui->importButton->hide();
   ui->menuButton->hide();
-  ui->processPushButton->hide();
+//  ui->processPushButton->hide();
   ui->testPushButton->hide();
   ui->generalPushButton->hide();
   ui->optionPushButton->hide();
@@ -116,6 +116,7 @@ FlyEmDataForm::FlyEmDataForm(QWidget *parent) :
   createMenu();
 
   m_swcExportDlg = new SwcExportDialog(this);
+  m_3dWindowFactory.setParentWidget(this->parentWidget());
 }
 
 FlyEmDataForm::~FlyEmDataForm()
@@ -162,6 +163,11 @@ void FlyEmDataForm::createMenu()
   m_exportMenu->addAction(exportVolumeRenderAction);
   connect(exportVolumeRenderAction, SIGNAL(triggered()),
           this, SLOT(exportVolumeRenderingFigure()));
+
+  QAction *exportTypeLabelAction = new QAction("Type Labels", this);
+  m_exportMenu->addAction(exportTypeLabelAction);
+  connect(exportTypeLabelAction, SIGNAL(triggered()),
+          this, SLOT(exportTypeLabelFile()));
 
 /*
   QAction *exportAction = new QAction("Export", this);
@@ -378,12 +384,13 @@ void FlyEmDataForm::viewModel(const QModelIndex &index)
 #endif
 
   if (!neuronArray.isEmpty()) {
-    ZStackFrame *frame = new ZStackFrame;
+    //ZStackFrame *frame = new ZStackFrame;
+    ZStackDoc *doc = new ZStackDoc(NULL, NULL);
 
     foreach (const ZFlyEmNeuron* neuron, neuronArray) {
       //doc->addSwcTree(neuron->getModel()->clone(), true);
       ZSwcTree *model = neuron->getModel();
-      ZStackDoc *doc = frame->document().get();
+      //ZStackDoc *doc = frame->document().get();
       doc->blockSignals(true);
       if (model != NULL) {
         doc->addSwcTree(model->clone(), true);
@@ -399,8 +406,12 @@ void FlyEmDataForm::viewModel(const QModelIndex &index)
       doc->updateModelData(ZStackDoc::PUNCTA_DATA);
     }
 
-    frame->open3DWindow(this->parentWidget());
-    delete frame;
+    ZWindowFactory factory;
+    factory.setParentWidget(this->parentWidget());
+    factory.open3DWindow(doc);
+
+    //frame->open3DWindow(this->parentWidget());
+    //delete frame;
   } else if (m_neuronList->headerData(index.column(), Qt::Horizontal) ==
              "Volume Path") {
     if (!m_neuronList->data(index).toString().isEmpty()) {
@@ -425,22 +436,30 @@ ZStackDoc *FlyEmDataForm::showViewSelectedModel(ZFlyEmQueryView *view)
   appendOutput(QString("%1 rows selected").arg(sel->selectedIndexes().size()).toStdString());
 #endif
 
-  ZStackFrame *frame = new ZStackFrame;
+  //ZStackFrame *frame = new ZStackFrame;
 
+  ZStackDoc *doc = new ZStackDoc(NULL, NULL);
   view->getModel()->retrieveModel(
-        sel->selectedIndexes(), frame->document().get());
+        sel->selectedIndexes(), doc);
   ui->progressBar->setValue(75);
   //QApplication::processEvents();
 
+  ZWindowFactory factory;
+  factory.setParentWidget(this->parentWidget());
+  Z3DWindow *window = factory.open3DWindow(doc);
+  window->getPunctaFilter()->setColorMode("Original Point Color");
+
+  /*
   Z3DWindow *window = frame->open3DWindow(this->parentWidget());
   window->getPunctaFilter()->setColorMode("Original Point Color");
   ZStackDoc *hostDoc = frame->document().get();
 
   delete frame;
+  */
 
   ui->progressBar->hide();
 
-  return hostDoc;
+  return doc;
 }
 
 ZStackDoc *FlyEmDataForm::showViewSelectedBody(ZFlyEmQueryView *view)
@@ -455,11 +474,9 @@ ZStackDoc *FlyEmDataForm::showViewSelectedBody(ZFlyEmQueryView *view)
   appendOutput(QString("%1 rows selected").arg(sel->selectedIndexes().size()).toStdString());
 #endif
 
-  ZWindowFactory factory;
-  factory.setParentWidget(this->parentWidget());
   ZScalableStack *stack = view->getModel()->retrieveBody(
         sel->selectedIndexes());
-  Z3DWindow *window = factory.make3DWindow(stack);
+  Z3DWindow *window = m_3dWindowFactory.make3DWindow(stack);
 
   ZStackDoc *hostDoc = NULL;
 
@@ -1402,5 +1419,14 @@ void FlyEmDataForm::exportVolumeRenderingFigure()
       dump(output + " saved");
     }
     dump("Done.");
+  }
+}
+
+void FlyEmDataForm::exportTypeLabelFile()
+{
+  QString fileName =
+      QFileDialog::getOpenFileName(this, "Export Type Labels", "", "*.json");
+  if (!fileName.isEmpty()) {
+    //
   }
 }

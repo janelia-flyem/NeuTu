@@ -147,8 +147,8 @@ void Z3DVolumeSliceRenderer::compile()
 void Z3DVolumeSliceRenderer::initialize()
 {
   Z3DPrimitiveRenderer::initialize();
-  m_volumeSliceShader.loadFromSourceFile("transform_with_3dtexture.vert", "volume_slice.frag", generateHeader());
   m_volumeSliceShader.bindFragDataLocation(0, "FragData0");
+  m_volumeSliceShader.loadFromSourceFile("transform_with_3dtexture.vert", "volume_slice.frag", generateHeader());
 }
 
 void Z3DVolumeSliceRenderer::deinitialize()

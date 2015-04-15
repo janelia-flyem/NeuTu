@@ -20,6 +20,9 @@
 #include "flyemneuronthumbnaildialog.h"
 #include "zstackdoc.h"
 #include "newprojectmainwindow.h"
+#include "zqtbarprogressreporter.h"
+#include "zmessageprocessor.h"
+#include "zwindowfactory.h"
 
 class ZStackFrame;
 class QMdiArea;
@@ -60,6 +63,10 @@ class ZSegmentationProjectDialog;
 class ZStackViewManager;
 class ZFlyEmProjectManager;
 class ZFlyEmDataLoader;
+class ZFlyEmHackathonConfigDlg;
+class ZProgressManager;
+class ZMessageManager;
+class ZTestDialog;
 
 namespace Ui {
   class MainWindow;
@@ -78,6 +85,11 @@ public:
   void configure();
 
   void initOpenglContext();
+
+  class MessageProcessor : public ZMessageProcessor {
+  public:
+    void processMessage(ZMessage *message, QWidget *host) const;
+  };
 
 public: /* frame operation */
   ZStackFrame* activeStackFrame();
@@ -188,6 +200,7 @@ protected:
   void createActionMap();
 
   ZStackDocReader* openFileFunc(const QString &filePath);
+  void runSplitFunc(ZStackFrame *frame);
 
 private slots:
   // slots for 'File' menu
@@ -414,6 +427,14 @@ private slots:
 
   void on_actionSegmentation_Project_triggered();
 
+  void on_actionHackathonConfigure_triggered();
+
+  void on_actionLoad_Named_Bodies_triggered();
+
+  void on_actionHackathonSimmat_triggered();
+
+  void on_actionHackathonEvaluate_triggered();
+
 private:
   void createActions();
   void createFileActions();
@@ -585,6 +606,7 @@ private:
   HelpDialog *m_helpDlg;
   DiagnosisDialog *m_DiagnosisDlg;
   ResolutionDialog *m_resDlg;
+  ZFlyEmHackathonConfigDlg *m_hackathonConfigDlg;
 
 
   // undo redo
@@ -636,6 +658,12 @@ private:
   //QSettings m_settings;
   QString m_version;
 
+  ZProgressManager *m_progressManager;
+  ZQtBarProgressReporter m_specialProgressReporter;
+
+  ZMessageManager *m_messageManager;
+  ZTestDialog *m_testDlg;
+  ZWindowFactory m_3dWindowFactory;
   //ZStackDocReader *m_docReader;
 };
 

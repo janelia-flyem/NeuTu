@@ -8,6 +8,7 @@
 
 #include <QImage>
 #include <QWidget>
+#include <QPixmap>
 
 #include "zstackframe.h"
 #include "zparameter.h"
@@ -16,6 +17,8 @@
 #include "neutube.h"
 #include "zpaintbundle.h"
 #include "zsharedpointer.h"
+#include "zmessageprocessor.h"
+#include "zpainter.h"
 
 class ZStackPresenter;
 class QSlider;
@@ -33,38 +36,100 @@ class QRadioButton;
 class ZStackDoc;
 class ZStack;
 class ZStackViewParam;
+class ZMessageManager;
+class ZBodySplitButton;
+class ZStackMvc;
+class ZPixmap;
 
+/*!
+ * \brief The ZStackView class shows 3D data slice by slice
+ *
+ * ZStackView provides a widget of showing 3D data slice by slice. It displays
+ * the data in an image screen with the support of slice change and zooming. It
+ * is designed to be the view component of the MVC framework, which can be
+ * represented by the ZStackFrame class (and its derivatives) or the
+ * ZStackMvc class.
+ */
 class ZStackView : public QWidget {
   Q_OBJECT
 
 public:
-  ZStackView(ZStackFrame *parent = 0);
+  explicit ZStackView(ZStackFrame *parent = 0);
+  explicit ZStackView(QWidget *parent = 0);
   virtual ~ZStackView();
 
-  void reset();
+public:
+  /*!
+   * \brief Reset the view status
+   *
+   * This function is for synchorinizing the view controls such as depth slider
+   * and channel controls with stack update in the document.
+   */
+  void reset(bool updatingScreen = true);
+
+  /*!
+   * \brief Update image screen
+   *
+   * Update the screen by assuming that all the canvas buffers are ready.
+   */
   void updateImageScreen();
-  void updateScrollControl();
-  void hideThresholdControl();
+
+  //void updateScrollControl();
+
+  /*!
+   * \brief Get the parent frame
+   *
+   * \return NULL if the parent is not ZStackFrame.
+   */
+  ZStackFrame* getParentFrame() const;
+
+  /*!
+   * \brief Get the parent MVC widget
+   *
+   * \return NULL if the parent is not ZStackMvc.
+   */
+  ZStackMvc* getParentMvc() const;
+
+  ZSharedPointer<ZStackDoc> buddyDocument() const;
+  ZStackPresenter* buddyPresenter() const;
 
   QSize sizeHint() const;
-  inline ZImageWidget* imageWidget() const { return m_imageWidget; }
-  inline ZSharedPointer<ZStackDoc> buddyDocument()
-  { return (m_parent != NULL) ? m_parent->document() :
-                                ZSharedPointer<ZStackDoc>(); }
-  inline const ZSharedPointer<ZStackDoc> buddyDocument() const
-  { return (m_parent != NULL) ? m_parent->document() :
-                                ZSharedPointer<ZStackDoc>(); }
 
-  inline ZStackPresenter* buddyPresenter()
-  { return (m_parent != NULL) ? m_parent->presenter() : NULL; }
-  inline ZImageWidget* screen() { return m_imageWidget; }
+  /*!
+   * \brief Get the widget of data display
+   */
+  inline ZImageWidget* imageWidget() const { return m_imageWidget; }
+  //inline ZImageWidget* screen() { return m_imageWidget; }
+
   inline QProgressBar* progressBar() { return m_progress; }
 
-  int maxSliceIndex();
+  /*!
+   * \brief Get the current slice index.
+   *
+   * The slice index is the z offset from the current slice to the start slice.
+   * Therefore the index of the first slice is always 0.
+   */
   int sliceIndex() const;
+
+  /*!
+   * \brief Get the max slice index
+   */
+  int maxSliceIndex();
+
+  /*!
+   * \brief Set the current slice index.
+   *
+   * The value will be clipped if \a slice is out of range.
+   */
   void setSliceIndex(int slice);
+
+  /*!
+   * \brief Increase or descrease of the slice index with a certain step.
+   *
+   * The slice index is set to the sum of the current slice and \a step, which
+   * can be either positive or negative.
+   */
   void stepSlice(int step);
-  int threshold();
 
   /*!
    * \brief Get the current Z position.
@@ -74,20 +139,27 @@ public:
    */
   int getCurrentZ() const;
 
+  //int threshold();
+
+  /*!
+   * \brief Get stack data from the buddy document
+   */
   ZStack *stackData();
 
-  void connectSignalSlot();
-
   //set up the view after the document is ready
-  void prepareDocument();
+  //void prepareDocument();
 
   virtual void resizeEvent(QResizeEvent *event);
 
   QStringList toStringList() const;
 
-  void setImageWidgetCursor(const QCursor &cursor);
+  //void setImageWidgetCursor(const QCursor &cursor);
+  /*!
+   * \brief Set the cursor of the image screen
+   */
   void setScreenCursor(const QCursor &cursor);
-  void resetScreenCursor();
+
+  //void resetScreenCursor();
   int getIntensityThreshold();
 
   //void open3DWindow();
@@ -98,21 +170,21 @@ public:
   void paintStackBuffer();
   void paintMaskBuffer();
   void paintObjectBuffer();
-  /*!
-   * \brief paintObjectBuffer
-   * \param canvas
-   * \param target
-   * \param zOrder -1: < 0; 0: 0; 1: > 0
-   */
-  void paintObjectBuffer(ZImage *canvas, ZStackObject::ETarget target);
+  bool paintTileCanvasBuffer();
+
+  //void paintObjectBuffer(ZImage *canvas, ZStackObject::ETarget target);
+
+  void paintObjectBuffer(ZPainter &painter, ZStackObject::ETarget target);
 
   void paintActiveDecorationBuffer();
 
   ZStack* getObjectMask(uint8_t maskValue);
+
   /*!
    * \brief Get object mask of a certain color
    */
   ZStack* getObjectMask(NeuTube::EColor color, uint8_t maskValue);
+
   ZStack* getStrokeMask(uint8_t maskValue);
 
 
@@ -126,6 +198,21 @@ public:
   inline void blockRedraw(bool state) {
     m_isRedrawBlocked = state;
   }
+
+public:
+  bool isViewPortFronzen() const;
+  bool isDepthFronzen() const;
+
+  void setViewPortFrozen(bool state);
+  void setDepthFrozen(bool state);
+
+public: //Message system implementation
+  class MessageProcessor : public ZMessageProcessor {
+  public:
+    void processMessage(ZMessage *message, QWidget *host) const;
+  };
+
+  void enableMessageManager();
 
 public slots:
   void updateView();
@@ -146,6 +233,7 @@ public slots:
   void paintObject(QList<ZStackObject *> selected,
                    QList<ZStackObject *> deselected);
   void paintActiveDecoration();
+  void paintActiveTile();
 
   void mouseReleasedInImageWidget(QMouseEvent *event);
   void mousePressedInImageWidget(QMouseEvent *event);
@@ -166,10 +254,15 @@ public slots:
   void setThreshold(int thre);
 
   void displayActiveDecoration(bool display = true);
+  void request3DVis();
+  void requestQuick3DVis();
+  void requestHighresQuick3DVis();
+  void requestMerge();
 
 signals:
   void currentSliceChanged(int);
   void viewChanged(ZStackViewParam param);
+  void viewPortChanged();
 
 public:
   static QImage::Format stackKindToImageFormat(int kind);
@@ -186,6 +279,9 @@ public:
   void setViewPortOffset(int x, int y);
 
   void paintMultiresImageTest(int resLevel);
+  void customizeWidget();
+
+  void notifyViewPortChanged();
 
 
 public: //Change view parameters
@@ -193,10 +289,21 @@ public: //Change view parameters
   void decreaseZoomRatio();
 
 private:
+  void clearCanvas();
   void updateCanvas();
   void updateMaskCanvas();
+  void clearObjectCanvas();
+  void clearTileCanvas();
   void updateObjectCanvas();
+  void updateTileCanvas();
   void updateActiveDecorationCanvas();
+  void updatePaintBundle();
+
+  void connectSignalSlot();
+
+  void hideThresholdControl();
+
+  QSize getCanvasSize() const;
 
   //help functions
   void paintSingleChannelStackSlice(ZStack *stack, int slice);
@@ -207,16 +314,22 @@ private:
   void notifyViewChanged(const ZStackViewParam &param);
   void notifyViewChanged();
 
+  void init();
+
 private:
-  ZStackFrame *m_parent;
+  //ZStackFrame *m_parent;
   ZSlider *m_depthControl;
   //QSpinBox *m_spinBox;
   QLabel *m_infoLabel;
   QLabel *m_activeLabel;
   ZImage *m_image;
+  ZPainter m_imagePainter;
   ZImage *m_imageMask;
   ZImage *m_objectCanvas;
+  ZPainter m_objectCanvasPainter;
+  ZPainter m_tileCanvasPainter;
   ZImage *m_activeDecorationCanvas;
+  ZPixmap *m_tileCanvas;
   ZImageWidget *m_imageWidget;
   QVBoxLayout *m_layout;
   QHBoxLayout *m_topLayout;
@@ -236,6 +349,13 @@ private:
 
   ZPaintBundle m_paintBundle;
   bool m_isRedrawBlocked;
+  QMutex m_mutex;
+
+  ZBodySplitButton *m_splitButton;
+  ZMessageManager *m_messageManager;
+
+  bool m_depthFrozen;
+  bool m_viewPortFrozen;
 };
 
 #endif

@@ -8,6 +8,8 @@
 #include "zobject3dscan.h"
 #include "zresolution.h"
 
+class ZIntCuboidArray;
+
 class ZDvidInfo
 {
 public:
@@ -36,11 +38,20 @@ public:
   ZIntPoint getBlockIndex(double x, double y, double z) const;
 
   ZIntPoint getBlockIndex(int x, int y, int z) const;
+  ZIntPoint getBlockIndex(const ZIntPoint &pt) const;
+
+  int getBlockIndexZ(int z) const;
 
   /*!
-   * \brief Get the indices of all blocks containing at least one voxl of an object
+   * \brief Get the indices of all blocks containing at least one voxel of an object
    */
   ZObject3dScan getBlockIndex(const ZObject3dScan &obj) const;
+
+  /*!
+   * \brief Get the indices of blocks covering a cuboid
+   */
+  ZObject3dScan getBlockIndex(const ZIntCuboid &box) const;
+  ZObject3dScan getBlockIndex(const ZIntCuboidArray &boxArray) const;
 
   inline const ZResolution& getVoxelResolution() const {
     return m_voxelResolution;
@@ -49,6 +60,8 @@ public:
   inline const ZIntPoint& getStartCoordinates() const {
     return m_startCoordinates;
   }
+
+  ZIntPoint getEndCoordinates() const;
 
   inline const std::vector<int>& getStackSize() const {
     return m_stackSize;
@@ -70,7 +83,7 @@ public:
    */
   ZIntCuboid getBlockBox(int x, int y, int z) const;
 
-  ZIntCuboid getBlockBox(const ZIntPoint &blockIndex);
+  ZIntCuboid getBlockBox(const ZIntPoint &blockIndex) const;
 
   ZIntPoint getBlockSize() const;
   ZIntPoint getGridSize() const;

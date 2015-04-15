@@ -46,16 +46,22 @@ public:
     m_dvidTarget = target;
   }
 
+  void setNamedBodyOnly(bool state) {
+    m_namedBodyOnly = state;
+  }
+
   void exclude(int bodyId);
   void exclude(const std::vector<int> &bodyArray);
   bool isExcluded(int bodyId) const;
   bool hasExclusion() const;
+  bool namedBodyOnly() const;
 
 private:
   ZDvidTarget m_dvidTarget;
   size_t m_minBodySize;
   size_t m_maxBodySize;
   bool m_hasUpperBodySize;
+  bool m_namedBodyOnly;
 
   std::set<int> m_excludedBodySet;
 };

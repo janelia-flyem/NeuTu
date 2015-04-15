@@ -16,8 +16,10 @@ const char* ZDvidData::m_bodyInfoName = "bodyinfo";
 const char* ZDvidData::m_mergeTestBodyLabelName = "merge_test";
 const char* ZDvidData::m_maxBodyIdName = "max_body_id";
 const char* ZDvidData::m_splitStatusName = "split_status";
+const char* ZDvidData::m_labelBlockName = "labels";
+const char* ZDvidData::m_multiscale2dName = "tiles";
 
-const char* ZDvidData::m_keyValueTypeName = "keyvalue";
+//const char* ZDvidData::m_keyValueTypeName = "keyvalue";
 
 const char* ZDvidData::m_emptyName = "";
 
@@ -60,11 +62,16 @@ const char* ZDvidData::getName(ERole role)
     return m_maxBodyIdName;
   case ROLE_SPARSEVOL_COARSE:
     return m_coarseSparsevolName;
+  case ROLE_LABEL_BLOCK:
+    return m_labelBlockName;
+  case ROLE_MULTISCALE_2D:
+    return m_multiscale2dName;
   }
 
   return m_emptyName;
 }
 
+/*
 const char* ZDvidData::getName(EType type)
 {
   switch (type) {
@@ -76,7 +83,7 @@ const char* ZDvidData::getName(EType type)
 
   return m_emptyName;
 }
-
+*/
 std::string ZDvidData::getName(ERole role, const std::string &prefix)
 {
   if (prefix.empty()) {
@@ -92,14 +99,14 @@ std::string ZDvidData::getName(
 {
 
   std::string prefix = "";
-  if (!isStandardName(prefixRole, prefixName)) {
+  if (!isDefaultName(prefixRole, prefixName)) {
     prefix = prefixName;
   }
 
   return getName(role, prefix);
 }
 
-bool ZDvidData::isStandardName(ERole role, const std::string &name)
+bool ZDvidData::isDefaultName(ERole role, const std::string &name)
 {
   /*
   if (role == ZDvidData::ROLE_BODY_LABEL) {

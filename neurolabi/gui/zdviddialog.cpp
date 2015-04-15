@@ -34,6 +34,8 @@ ZDvidDialog::ZDvidDialog(QWidget *parent) :
   setServer(0);
   connect(ui->serverComboBox, SIGNAL(currentIndexChanged(int)),
           this, SLOT(setServer(int)));
+
+  setFixedSize(size());
 }
 
 ZDvidDialog::~ZDvidDialog()
@@ -87,8 +89,18 @@ QString ZDvidDialog::getUuid() const
   return ui->uuidLineEdit->text();
 }
 
-const ZDvidTarget &ZDvidDialog::getDvidTarget() const
+const ZDvidTarget &ZDvidDialog::getDvidTarget()
 {
+  if (ui->serverComboBox->currentIndex() == 0) {
+    ZDvidTarget &target = m_dvidRepo[0];
+    target.setServer(getAddress().toStdString());
+    target.setUuid(getUuid().toStdString());
+    target.setPort(getPort());
+    target.setBodyLabelName(ui->bodyLineEdit->text().toStdString());
+
+    return target;
+  }
+
   return m_dvidRepo[ui->serverComboBox->currentIndex()];
   /*
   ZDvidTarget target(
@@ -110,8 +122,10 @@ void ZDvidDialog::setServer(int index)
   ui->portSpinBox->setValue(dvidTarget.getPort());
   ui->uuidLineEdit->setText(dvidTarget.getUuid().c_str());
   ui->infoLabel->setText(dvidTarget.getComment().c_str());
+  ui->bodyLineEdit->setText(dvidTarget.getBodyLabelName().c_str());
 
   ui->addressLineEdit->setReadOnly(index > 0);
   ui->portSpinBox->setReadOnly(index > 0);
   ui->uuidLineEdit->setReadOnly(index > 0);
+  ui->bodyLineEdit->setReadOnly(index > 0);
 }

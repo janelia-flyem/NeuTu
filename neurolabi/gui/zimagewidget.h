@@ -12,6 +12,8 @@
 
 class QPaintEvent;
 class ZPaintBundle;
+class ZImage;
+class ZPixmap;
 
 /** A class of widget for image display.
  *  Sample usage:
@@ -27,13 +29,14 @@ class ZImageWidget : public QWidget {
   Q_OBJECT
 
 public:
-  ZImageWidget(QWidget *parent, QImage *image = NULL);
+  ZImageWidget(QWidget *parent, ZImage *image = NULL);
   virtual ~ZImageWidget();
 
   inline void setPaintBundle(ZPaintBundle *bd) { m_paintBundle = bd; }
 
-  void setImage(QImage *image);
-  void setMask(QImage *mask, int channel);
+  void setImage(ZImage *image);
+  void setMask(ZImage *mask, int channel);
+  void setTileCanvas(ZPixmap *canvas);
   void setViewPort(const QRect &rect);
   void setProjRegion(const QRect &rect);
   void setView(int zoomRatio, const QPoint &zoomOffset);
@@ -45,7 +48,15 @@ public:
   void increaseZoomRatio();
   void decreaseZoomRatio();
   void zoom(int zoomRatio);
+
+  /*!
+   * \brief Zoom an image at a fixed point
+   *
+   * Zoom an image by keeping the screen point \a ref relatively constant.
+   */
   void zoom(int zoomRatio, const QPoint &ref);
+
+  void setCanvasRegion(int x0, int y0, int w, int h);
 
   //void setData(const uchar *data, int width, int height, QImage::Format format);
   QSize minimumSizeHint() const;
@@ -58,8 +69,15 @@ public:
   inline QSize projectSize() const { return m_projRegion.size(); }
   inline const QRect& projectRegion() const { return m_projRegion; }
   inline const QRect& viewPort() const { return m_viewPort; }
+  inline const QRect& canvasRegion() const { return m_canvasRegion; }
+
+  /*!
+   * \brief Map the widget coordinates to world coordinates
+   */
+  QPointF worldCoordinate(QPoint widgetCoord) const;
 
   QPointF canvasCoordinate(QPoint widgetCoord) const;
+
 
   void paintEvent(QPaintEvent *event);
 
@@ -130,10 +148,24 @@ protected:
 private:
   void setValidViewPortBackup(const QRect &viewPort);
   void setValidViewPort(const QRect &viewPort);
+  /*!
+   * \brief Align view port by aligning a point
+   *
+   * Align the view port to map the world coordinates (\a vx, \a vy) to the
+   * screen coordinates (\a px, \a py).
+   */
+  QRect alignViewPort(
+      const QRect &viewPort, int vx, int vy, int px, int py) const;
+
+  void maximizeViewPort();
+  QSize getMaskSize() const;
+  void paintObject();
+  void paintZoomHint();
 
 private:
-  QImage *m_image;
-  QVector<QImage*> m_mask;
+  ZImage *m_image;
+  QVector<ZImage*> m_mask;
+  ZPixmap *m_tileCanvas;
   QRect m_viewPort; /* viewport */
   QRect m_projRegion; /* projection region */
   //int m_zoomRatio;
@@ -143,6 +175,8 @@ private:
   ZPaintBundle *m_paintBundle;
   bool m_isViewHintVisible;
   bool m_paintBlocked;
+  QRect m_canvasRegion; //Whole canvas region
+//  QSize m_canvasSize;
 
   bool m_freeMoving;
 };

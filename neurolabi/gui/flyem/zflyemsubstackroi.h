@@ -10,7 +10,7 @@ public:
 
 
 public:
-   FlyEm::ZIntCuboidArray cuboidArray;
+   ZIntCuboidArray cuboidArray;
 
 };
 

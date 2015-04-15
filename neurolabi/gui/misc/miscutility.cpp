@@ -278,13 +278,13 @@ Stack* misc::computeNormal(const Stack *stack, NeuTube::EAxis axis)
 }
 
 int misc::computeRavelerHeight(
-    const FlyEm::ZIntCuboidArray &blockArray, int margin)
+    const ZIntCuboidArray &blockArray, int margin)
 {
   FlyEm::SubstackRegionCalbration calbr;
   calbr.setBounding(true, true, false);
   calbr.setMargin(margin, margin, 0);
 
-  FlyEm::ZIntCuboidArray calibratedBlockArray = blockArray;
+  ZIntCuboidArray calibratedBlockArray = blockArray;
 
   calbr.calibrate(calibratedBlockArray);
 

@@ -639,7 +639,7 @@ int main(int argc, char *argv[])
   Write_Stack("../data/test.tif", stack);
 #endif
 
-#if 1
+#if 0
   Stack *stack = Read_Stack("../data/leaktest/leak3.tif");
   Stack *distmap = Stack_Bwdist_L_U16P(stack, NULL, 0);
 
@@ -656,6 +656,15 @@ int main(int argc, char *argv[])
   Stack *out3 = Stack_Watershed(distmap, ws);
   Write_Stack("../data/test.tif", out3);
 
+#endif
+
+#if 0
+  Stack *stack = Read_Stack("../data/benchmark/two_disk.tif");
+  Stack_Watershed_Workspace *ws = Make_Stack_Watershed_Workspace(stack);
+  ws->conn = 26;
+  Stack *out = Stack_Watershed(stack, ws);
+
+  Write_Stack("../data/test.tif", out);
 #endif
   return 0;
 }

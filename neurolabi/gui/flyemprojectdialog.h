@@ -36,7 +36,7 @@ public:
   void setDvidDialog(ZDvidDialog *dvidDlg);
   void setDvidTargetD(const ZDvidTarget &dvidTarget);
 
-  inline ZDvidTarget getDvidTarget() const {
+  inline const ZDvidTarget& getDvidTarget() const {
     return m_dvidTarget;
   }
 

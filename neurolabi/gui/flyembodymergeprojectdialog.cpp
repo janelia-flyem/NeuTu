@@ -2,12 +2,18 @@
 #include "ui_flyembodymergeprojectdialog.h"
 
 #include <QScrollBar>
+#include <QInputDialog>
 
 #include "zdviddialog.h"
 #include "mainwindow.h"
 #include "zqtbarprogressreporter.h"
 #include "flyem/zflyembodymergeframe.h"
 #include "zstackview.h"
+#include "dvid/zdvidversionmodel.h"
+#include "dvid/zdvidreader.h"
+#include "zdialogfactory.h"
+#include "zmessage.h"
+#include "zmessagemanager.h"
 
 FlyEmBodyMergeProjectDialog::FlyEmBodyMergeProjectDialog(QWidget *parent) :
   FlyEmProjectDialog(parent),
@@ -15,14 +21,18 @@ FlyEmBodyMergeProjectDialog::FlyEmBodyMergeProjectDialog(QWidget *parent) :
 {
   ui->setupUi(this);
 
+  ui->verionTreeView->setSelectionMode(QAbstractItemView::NoSelection);
+  ui->verionTreeView->setExpandsOnDoubleClick(false);
+  //ui->infoWidget->hide();
   m_project = new ZFlyEmBodyMergeProject(this);
-  m_dvidDlg = NULL;
   m_docTag = NeuTube::Document::FLYEM_MERGE;
 
   setupProgress();
 
   createMenu();
   connectSignalSlot();
+
+  m_messageManager = NULL;
 }
 
 FlyEmBodyMergeProjectDialog::~FlyEmBodyMergeProjectDialog()
@@ -56,12 +66,15 @@ void FlyEmBodyMergeProjectDialog::setPushButtonSlots()
   connect(ui->nextSlicePushButton, SIGNAL(clicked()),
           this, SLOT(showNextSlice()));
 
-  connect(ui->labelCheckBox, SIGNAL(toggled(bool)),
-          m_project, SLOT(setLoadingLabel(bool)));
   connect(ui->uploadResultPushButton, SIGNAL(clicked()),
           m_project, SLOT(uploadResult()));
   connect(ui->startSplitPushButton, SIGNAL(clicked()),
           m_project, SLOT(notifySplit()));
+
+  connect(ui->lockNodePushButton, SIGNAL(clicked()),
+          this, SLOT(lockNode()));
+  connect(ui->branchNodePushButton, SIGNAL(clicked()),
+          this, SLOT(createVersionBranch()));
 }
 
 void FlyEmBodyMergeProjectDialog::test()
@@ -74,7 +87,7 @@ void FlyEmBodyMergeProjectDialog::test()
 void FlyEmBodyMergeProjectDialog::moveSliceUp()
 {
   if (m_project != NULL) {
-    ui->ySpinBox->setValue(ui->ySpinBox->value() - ui->heightSpinBox->value());
+    ui->ySpinBox->setValue(ui->ySpinBox->value() - ui->heightSpinBox->value() / 2);
     loadSlice();
   }
 }
@@ -82,7 +95,7 @@ void FlyEmBodyMergeProjectDialog::moveSliceUp()
 void FlyEmBodyMergeProjectDialog::moveSliceDown()
 {
   if (m_project != NULL) {
-    ui->ySpinBox->setValue(ui->ySpinBox->value() + ui->heightSpinBox->value());
+    ui->ySpinBox->setValue(ui->ySpinBox->value() + ui->heightSpinBox->value() / 2);
     loadSlice();
   }
 }
@@ -90,7 +103,7 @@ void FlyEmBodyMergeProjectDialog::moveSliceDown()
 void FlyEmBodyMergeProjectDialog::moveSliceLeft()
 {
   if (m_project != NULL) {
-    ui->xSpinBox->setValue(ui->xSpinBox->value() - ui->widthSpinBox->value());
+    ui->xSpinBox->setValue(ui->xSpinBox->value() - ui->widthSpinBox->value() / 2);
     loadSlice();
   }
 }
@@ -98,7 +111,7 @@ void FlyEmBodyMergeProjectDialog::moveSliceLeft()
 void FlyEmBodyMergeProjectDialog::moveSliceRight()
 {
   if (m_project != NULL) {
-    ui->xSpinBox->setValue(ui->xSpinBox->value() + ui->widthSpinBox->value());
+    ui->xSpinBox->setValue(ui->xSpinBox->value() + ui->widthSpinBox->value() / 2);
     loadSlice();
   }
 }
@@ -106,8 +119,8 @@ void FlyEmBodyMergeProjectDialog::moveSliceRight()
 void FlyEmBodyMergeProjectDialog::moveSliceUpLeft()
 {
   if (m_project != NULL) {
-    ui->xSpinBox->setValue(ui->xSpinBox->value() - ui->widthSpinBox->value());
-    ui->ySpinBox->setValue(ui->ySpinBox->value() - ui->heightSpinBox->value());
+    ui->xSpinBox->setValue(ui->xSpinBox->value() - ui->widthSpinBox->value() / 2);
+    ui->ySpinBox->setValue(ui->ySpinBox->value() - ui->heightSpinBox->value() / 2);
     loadSlice();
   }
 }
@@ -131,8 +144,8 @@ void FlyEmBodyMergeProjectDialog::showNextSlice()
 void FlyEmBodyMergeProjectDialog::moveSliceDownRight()
 {
   if (m_project != NULL) {
-    ui->xSpinBox->setValue(ui->xSpinBox->value() + ui->widthSpinBox->value());
-    ui->ySpinBox->setValue(ui->ySpinBox->value() + ui->heightSpinBox->value());
+    ui->xSpinBox->setValue(ui->xSpinBox->value() + ui->widthSpinBox->value() / 2);
+    ui->ySpinBox->setValue(ui->ySpinBox->value() + ui->heightSpinBox->value() / 2);
     loadSlice();
   }
 }
@@ -173,9 +186,8 @@ void FlyEmBodyMergeProjectDialog::createMenu()
 
 }
 
-void FlyEmBodyMergeProjectDialog::connectSignalSlot()
+void FlyEmBodyMergeProjectDialog::connectProjectSignalSlot()
 {
-  setPushButtonSlots();
   connect(m_project, SIGNAL(progressAdvanced(double)),
           this, SIGNAL(progressAdvanced(double)));
   connect(m_project, SIGNAL(progressStarted()),
@@ -190,17 +202,53 @@ void FlyEmBodyMergeProjectDialog::connectSignalSlot()
           this, SLOT(notifyBodyMerged(QList<uint64_t>)));
 }
 
+void FlyEmBodyMergeProjectDialog::connectSignalSlot()
+{
+  setPushButtonSlots();
+  connectProjectSignalSlot();
+
+  connect(ui->verionTreeView, SIGNAL(doubleClicked(QModelIndex)),
+          this, SLOT(changeDvidNode(QModelIndex)));
+  connect(ui->labelCheckBox, SIGNAL(toggled(bool)),
+          m_project, SLOT(setLoadingLabel(bool)));
+}
+
+void FlyEmBodyMergeProjectDialog::updateVersionTree()
+{
+  ZDvidVersionModel *model = new ZDvidVersionModel(this);
+
+  //model->getDag().setRoot("root");
+  //model->getDag().addNode("v1", "root");
+
+  ui->verionTreeView->setModel(model);
+
+  ZDvidReader reader;
+  reader.open(getDvidTarget());
+
+
+  model->setDag(reader.readVersionDag());
+
+//  model->setRoot("root");
+//  model->setRoot(getDvidTarget().getUuid());
+//  model->addNode("v1", getDvidTarget().getUuid());
+//  model->addNode("v2", getDvidTarget().getUuid());
+//  model->addNode("v3", "v1");
+//  model->addNode("v3", "v2");
+}
+
 void FlyEmBodyMergeProjectDialog::updateDataFrame(
     ZStackDocReader &docReader, bool readyForPaint)
 {
   if (m_project->hasDataFrame()) {
     //m_project->getDataFrame()->view()->blockRedraw(true);
-    m_project->getDataFrame()->document()->setReadForPaint(readyForPaint);
+    m_project->getDataFrame()->document()->setReadyForPaint(readyForPaint);
     m_project->setDocData(docReader);
   } else {
     ZStackFrame *frame = newDataFrame(docReader);
     m_project->setDataFrame(frame);
   }
+
+  m_project->getDataFrame()->setDvidTarget(getDvidTarget());
 
 //  updateWidget();
 }
@@ -212,13 +260,21 @@ void FlyEmBodyMergeProjectDialog::consumeNewDoc(
   delete docReader;
 }
 
+void FlyEmBodyMergeProjectDialog::activateCurrentNode()
+{
+  const ZDvidTarget &target = getDvidTarget();
+  if (target.isValid()) {
+    getVersionModel()->activateNode(target.getUuid());
+    m_project->setDvidTarget(target);
+  }
+}
+
 void FlyEmBodyMergeProjectDialog::setDvidTarget()
 {
   if (m_dvidDlg->exec()) {
     setDvidTargetD(m_dvidDlg->getDvidTarget());
-    if (m_project != NULL) {
-      m_project->setDvidTarget(getDvidTarget());
-    }
+    updateVersionTree();
+    activateCurrentNode();
     updateInfo();
   }
 }
@@ -278,6 +334,7 @@ void FlyEmBodyMergeProjectDialog::notifySelection(
         } else {
           info += QString("%1 ").arg(obj->getLabel());
         }
+        m_project->addSelected(obj->getLabel());
       } else {
         dump("NULL object in FlyEmBodyMergeProjectDialog::notifySelection");
       }
@@ -301,6 +358,8 @@ void FlyEmBodyMergeProjectDialog::notifySelection(
       if (obj != NULL) {
         info += QString("<font color=\"#808080\"><s>%1</s></font> ").
             arg(obj->getLabel());
+        m_project->removeSelected(obj->getLabel());
+//        m_currentSelected.remove(obj->getLabel());
       } else {
         dump("NULL object in FlyEmBodyMergeProjectDialog::notifySelection");
       }
@@ -317,6 +376,7 @@ void FlyEmBodyMergeProjectDialog::updateInfo()
   QString info;
   if (m_dvidTarget.isValid()) {
     info = QString("Database: <i>") + m_dvidTarget.getName().c_str() + "</i>";
+    info += QString("<p>Uuid: %1</p>").arg(m_dvidTarget.getUuid().c_str());
   } else {
     info = "Load a database to start";
   }
@@ -333,6 +393,133 @@ void FlyEmBodyMergeProjectDialog::notifyBodyMerged(
       info += QString("%1 ").arg(label);
     }
     dump(info, true);
+  }
+}
+
+ZDvidVersionModel* FlyEmBodyMergeProjectDialog::getVersionModel()
+{
+  return dynamic_cast<ZDvidVersionModel*>(ui->verionTreeView->model());
+}
+
+void FlyEmBodyMergeProjectDialog::changeDvidNode(const QModelIndex &index)
+{
+  changeDvidNode(getVersionModel()->getVersionUuid(index));
+}
+
+void FlyEmBodyMergeProjectDialog::changeDvidNode(const std::string &newUuid)
+{
+  if (m_project->getDvidTarget().getUuid() != newUuid) {
+    getVersionModel()->deactivateNode(getDvidTarget().getUuid());
+    m_dvidTarget.setUuid(newUuid);
+    m_project->changeDvidNode(newUuid);
+    getVersionModel()->activateNode(newUuid);
+
+    updateInfo();
+    loadSlice();
+
+    dump(QString("Uuid changed to ") + newUuid.c_str());
+  }
+}
+
+QModelIndex FlyEmBodyMergeProjectDialog::getSelectedVersionIndex() const
+{
+  QItemSelectionModel *model = ui->verionTreeView->selectionModel();
+  QModelIndexList selected = model->selectedIndexes();
+
+  QModelIndex selectedIndex = QModelIndex();
+  if (!selected.empty()) {
+    selectedIndex = selected.first();
+  }
+
+  return selectedIndex;
+}
+
+void FlyEmBodyMergeProjectDialog::createVersionBranch()
+{
+  std::string newUuid = m_project->createVersionBranch();
+  if (!newUuid.empty()) {
+    getVersionModel()->addNode(newUuid.substr(0, 4),
+                               m_project->getDvidTarget().getUuid());
+    dump(QString("New node %1 created").arg(newUuid.c_str()));
+  } else {
+    dump(QString("Failed to create a version."));
+  }
+}
+
+void FlyEmBodyMergeProjectDialog::lockNode()
+{
+#ifdef _DEBUG_
+  std::cout << "Locking node ..." << std::endl;
+#endif
+
+  bool ok;
+  QString text = QInputDialog::getText(
+        this, tr("Lock Node"),
+        QString("Lock message (%1):").arg(
+          m_project->getDvidTarget().getUuid().c_str()),
+        QLineEdit::Normal, "", &ok);
+  if (ok) {
+    if (m_project->lockNode(text)) {
+      getVersionModel()->lockNode(m_project->getDvidTarget().getUuid());
+    } else {
+      dump(("Failed to lock " + m_project->getDvidTarget().getUuid()).c_str(),
+           true);
+    }
+  }
+
+#if 0
+  QModelIndex selectedIndex = getSelectedVersionIndex();
+  if (!selectedIndex.isValid()) {
+    std::string uuid = getVersionModel()->getVersionUuid(selectedIndex);
+    if (!uuid.empty()) {
+      m_project->loadNode();
+    }
+  }
+#endif
+}
+
+void FlyEmBodyMergeProjectDialog::enableMessageManager()
+{
+  if (m_messageManager == NULL) {
+    m_messageManager = ZMessageManager::Make<MessageProcessor>(this);
+  }
+}
+
+void FlyEmBodyMergeProjectDialog::MessageProcessor::processMessage(
+    ZMessage *message, QWidget *host) const
+{
+  FlyEmBodyMergeProjectDialog *dlg =
+      dynamic_cast<FlyEmBodyMergeProjectDialog*>(host);
+
+  switch (message->getType()) {
+  case ZMessage::TYPE_FLYEM_MERGE:
+    if (dlg != NULL) {
+      if (dlg->getProject() != NULL) {
+        dlg->getProject()->mergeBody();
+      }
+    }
+    break;
+  case ZMessage::TYPE_FLYEM_SPLIT:
+    if (dlg != NULL) {
+      const ZJsonObject &obj = message->getMessageBody();
+      if (obj.hasKey("body_id") && !obj.hasKey("dvid_target")) {
+        if (ZJsonParser::integerValue(obj["body_id"]) >= 0) {
+          const ZDvidTarget& dvidTarget = dlg->getDvidTarget();
+          message->setBodyEntry("dvid_target", dvidTarget.toJsonObject());
+        }
+      }
+    }
+  break;
+  case ZMessage::TYPE_FLYEM_COARSE_3D_VIS:
+    if (dlg != NULL) {
+      if (ZJsonParser::integerValue(message->getMessageBody()["coarse_level"])
+          == 1) {
+        dlg->getProject()->showBody3d();
+      }
+    }
+    break;
+  default:
+    break;
   }
 }
 

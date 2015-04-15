@@ -55,7 +55,10 @@ public:
     TYPE_CIRCLE,
     TYPE_STACK_BALL,
     TYPE_STACK_PATCH,
-    TYPE_RECT2D
+    TYPE_RECT2D,
+    TYPE_DVID_TILE,
+    TYPE_DVID_TILE_ENSEMBLE,
+    TYPE_DVID_LABEL_SLICE
   };
 
   enum Palette_Color {
@@ -67,7 +70,7 @@ public:
   };
 
   enum ETarget {
-    STACK_CANVAS, OBJECT_CANVAS, WIDGET
+    STACK_CANVAS, OBJECT_CANVAS, WIDGET, TILE_CANVAS
   };
 
   enum EDisplaySliceMode {

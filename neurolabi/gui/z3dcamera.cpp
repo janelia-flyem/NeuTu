@@ -95,9 +95,9 @@ void Z3DCamera::resetCamera(const std::vector<double> &bound, ResetCameraOptions
     float w3 = bound[5] - bound[4];
     w1 *= w1;
     w2 *= w2;
-    w3 = 0;
-    //w3 *= w3;
-    float radius = w1 + w2 + w3;
+    //w3 = 0;
+    w3 *= w3;
+    float radius = std::max(w2 + w3, std::max(w1 + w2, w1 + w3));
     radius = (radius==0)?(1.0):(radius);
 
     // compute the radius of the enclosing sphere

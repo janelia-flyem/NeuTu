@@ -42,6 +42,7 @@ bool ZStackDocReader::readFile(const QString &filePath)
   case ZFileType::LSM_FILE:
   case ZFileType::V3D_RAW_FILE:
   case ZFileType::MC_STACK_RAW_FILE:
+  case ZFileType::DVID_OBJECT_FILE:
     loadStack(filePath);
     break;
     /*
@@ -101,9 +102,15 @@ void ZStackDocReader::addLocsegChain(ZLocsegChain *chain)
 */
 void ZStackDocReader::loadStack(const QString &filePath)
 {
-  if (ZFileType::fileType(filePath.toStdString()) == ZFileType::OBJECT_SCAN_FILE) {
+  ZFileType::EFileType type = ZFileType::fileType(filePath.toStdString());
+  if (type == ZFileType::OBJECT_SCAN_FILE ||
+      type == ZFileType::DVID_OBJECT_FILE) {
     ZSparseObject *sobj = new ZSparseObject;
-    sobj->load(filePath.toStdString().c_str());
+    if (type == ZFileType::DVID_OBJECT_FILE) {
+      sobj->importDvidObject(filePath.toStdString());
+    } else {
+      sobj->load(filePath.toStdString().c_str());
+    }
     if (!sobj->isEmpty()) {
       addObject(sobj);
       //addSparseObject(sobj);

@@ -19,6 +19,7 @@ public:
   const static TRole ROLE_ROI;
   const static TRole ROLE_MASK;
   const static TRole ROLE_SEGMENTATION;
+  const static TRole ROLE_ACTIVE_VIEW;
 
   ZStackObjectRole();
   ZStackObjectRole(TRole role);

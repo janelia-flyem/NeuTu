@@ -1,6 +1,7 @@
 #include "zstackblockgrid.h"
 #include "zstack.hxx"
 #include "zintcuboid.h"
+#include "neutubeconfig.h"
 
 ZStackBlockGrid::ZStackBlockGrid()
 {
@@ -20,26 +21,64 @@ void ZStackBlockGrid::clearStack()
   m_stackArray.clear();
 }
 
+void ZStackBlockGrid::consumeStack(
+    const ZIntPoint &blockIndex, std::vector<ZStack *> stackArray)
+{
+  ZIntPoint currentBlockIndex = blockIndex;
+  for (size_t i = 0; i < stackArray.size(); ++i) {
+    consumeStack(currentBlockIndex, stackArray[i]);
+    currentBlockIndex.setX(currentBlockIndex.getX() + 1);
+  }
+}
+
 bool ZStackBlockGrid::consumeStack(const ZIntPoint &blockIndex, ZStack *stack)
 {
-  int index = getHashIndex(blockIndex);
-  if (index < 0) {
+  if (stack == NULL) {
+    return false;
+  }
+
+  int blockNumber = stack->width() / getBlockSize().getX();
+  if (blockNumber == 0) {
     delete stack;
     return false;
   }
 
-  if (index >= (int) m_stackArray.size()) {
-    m_stackArray.resize(index + 1, NULL);
-  } else {
-    ZStack *oldStack = m_stackArray[index];
-    if (oldStack != NULL && oldStack != stack) {
-      delete oldStack;
+  if (blockNumber == 1) {
+    int index = getHashIndex(blockIndex);
+    if (index < 0) {
+      delete stack;
+      return false;
     }
+
+    if (index >= (int) m_stackArray.size()) {
+      m_stackArray.resize(index + 1, NULL);
+    } else {
+      ZStack *oldStack = m_stackArray[index];
+      if (oldStack != NULL && oldStack != stack) {
+        delete oldStack;
+      }
+    }
+
+    //stack->setOffset(getBlockPosition(blockIndex));
+
+    m_stackArray[index] = stack;
+  } else {
+#ifdef _DEBUG_2
+    stack->save(GET_DATA_DIR + "/test.tif");
+#endif
+
+    ZIntPoint currentBlockIndex = blockIndex;
+    for (int i = 0; i < blockNumber; ++i) {
+      int index = getHashIndex(currentBlockIndex);
+      if (index >= 0) {
+        ZIntCuboid box = getBlockBox(currentBlockIndex);
+        consumeStack(currentBlockIndex, stack->makeCrop(box));
+      }
+      currentBlockIndex.setX(currentBlockIndex.getX() + 1);
+    }
+
+    delete stack;
   }
-
-  stack->setOffset(getBlockPosition(blockIndex));
-
-  m_stackArray[index] = stack;
 
   return true;
 }

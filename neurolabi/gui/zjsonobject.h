@@ -6,6 +6,7 @@
 #include <map>
 
 #include "zjsonvalue.h"
+#include "tz_stdint.h"
 
 #define ZJsonObject_foreach(jsonObject, key, value) \
   json_object_foreach(jsonObject.getValue(), key, value)
@@ -13,14 +14,18 @@
 class ZJsonObject : public ZJsonValue
 {
 public:
+  ZJsonObject();
   explicit ZJsonObject(json_t *json, bool asNew);
   explicit ZJsonObject(json_t *data, ESetDataOption option);
-  ZJsonObject();
   ZJsonObject(const ZJsonObject &obj);
+  ZJsonObject(const ZJsonValue &obj);
+
   virtual ~ZJsonObject();
 
   json_t* operator[] (const char *key);
   const json_t* operator[] (const char *key) const;
+
+  ZJsonValue at(const char *key) const;
 
   /*!
    * \brief Test if an object is empty
@@ -30,8 +35,6 @@ public:
   bool isEmpty() const;
 
 public:
-  bool load(const std::string &filePath);
-
   /*!
    * \brief Decode a string.
    *
@@ -55,6 +58,8 @@ public:
 
   /*!
    * \brief Set an entry of the object
+   *
+   * The reference count of \a obj will be increased after the function call.
    */
   void setEntry(const char *key, json_t *obj);
 
@@ -66,7 +71,7 @@ public:
   /*!
    * \brief Set an entry of the object with string value
    *
-   * The function does not if key is NULL or empty.
+   * The function does nothing if the key is empty.
    */
   void setEntry(const char *key, const std::string &value);
 
@@ -96,6 +101,8 @@ public:
   /*!
    * \brief setEntry Set an entry of the object with an integer
    */
+  void setEntry(const char *key, int64_t v);
+  void setEntry(const char *key, uint64_t v);
   void setEntry(const char *key, int v);
 
   /*!

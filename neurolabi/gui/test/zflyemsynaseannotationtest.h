@@ -4,7 +4,7 @@
 #include "ztestheader.h"
 #include "neutubeconfig.h"
 #include "flyem/zsynapseannotationarray.h"
-#include "flyem/zintcuboidarray.h"
+#include "zintcuboidarray.h"
 #include "flyem/zflyemdatabundle.h"
 #include "zgraph.h"
 

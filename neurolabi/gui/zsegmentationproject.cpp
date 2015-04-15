@@ -139,6 +139,7 @@ void ZSegmentationProject::loadSegmentationTarget(
     QColor color = colorTable.getColor(obj->getLabel());
     color.setAlpha(32);
     obj->setColor(color);
+    obj->setZOrder(100);
     docReader.addObject(obj);
     child = child->nextSibling();
   }
@@ -152,6 +153,7 @@ void ZSegmentationProject::setDocData(ZStackDocReader &reader)
 {
   if (m_dataFrame != NULL) {
     m_dataFrame->document()->reloadData(reader);
+    m_dataFrame->document()->notify3DGraphModified();
     m_dataFrame->view()->setSliceIndex(
           m_dataFrame->document()->getStackSize().getZ() / 2);
   }

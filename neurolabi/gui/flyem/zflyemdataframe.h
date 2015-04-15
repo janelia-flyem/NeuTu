@@ -20,6 +20,7 @@
 #include "flyem/zflyemqualityanalyzertaskmanager.h"
 #include "dvid/zdvidtarget.h"
 #include "flyem/zflyemneuronimagefactory.h"
+#include "zwindowfactory.h"
 
 class ZSwcTrunkAnalyzer;
 class ZSwcFeatureAnalyzer;
@@ -41,6 +42,8 @@ class ZFlyEmDataFrame : public QMdiSubWindow, ZProgressable
   Q_OBJECT
 public:
   explicit ZFlyEmDataFrame(QWidget *parent = 0);
+
+public:
   ~ZFlyEmDataFrame();
   
   enum EDataForm {
@@ -327,6 +330,7 @@ private:
 
   ZDvidTarget m_dvidTarget;
   ZFlyEmNeuronImageFactory m_imageFactory;
+  ZWindowFactory m_3dWindowFactory;
 };
 
 #endif // ZFLYEMDATAFRAME_H

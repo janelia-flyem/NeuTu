@@ -5,6 +5,10 @@
 
 /*!
  * \brief The class of dvid data
+ *
+ * An instance of DVID data has a type and a name. It can also have role in the
+ * framework of FlyEM reconstruction. This class has built-in correspondence
+ * between a role and a name, providing the default name of a given role.
  */
 class ZDvidData
 {
@@ -12,12 +16,14 @@ public:
   ZDvidData();
 
   enum ERole {
-    ROLE_GRAY_SCALE, ROLE_BODY_LABEL, ROLE_ROI_CURVE, ROLE_BODY_ANNOTATION,
+    ROLE_GRAY_SCALE, ROLE_BODY_LABEL, ROLE_LABEL_BLOCK, ROLE_ROI_CURVE,
+    ROLE_BODY_ANNOTATION,
     ROLE_BOUND_BOX, ROLE_SKELETON, ROLE_THUMBNAIL, ROLE_SUPERPIXEL,
     ROLE_SP2BODY, ROLE_SPARSEVOL, ROLE_SPARSEVOL_COARSE,
     ROLE_SPLIT_LABEL, ROLE_SPLIT_STATUS,
     ROLE_BODY_INFO,
-    ROLE_MERGE_TEST_BODY_LABEL, ROLE_MAX_BODY_ID
+    ROLE_MERGE_TEST_BODY_LABEL, ROLE_MAX_BODY_ID,
+    ROLE_MULTISCALE_2D
   };
 
   enum EType {
@@ -26,14 +32,14 @@ public:
   };
 
   static const char* getName(ERole role);
-  static const char* getName(EType type);
+  //static const char* getName(EType type);
 
   static std::string getName(ERole role, const std::string &prefix);
   static std::string getName(
       ZDvidData::ERole role, ZDvidData::ERole prefixRole,
       const std::string &prefixName);
 
-  static bool isStandardName(ERole role, const std::string &name);
+  static bool isDefaultName(ERole role, const std::string &name);
 
 private:
   static const char *m_grayScaleName;
@@ -52,8 +58,10 @@ private:
   static const char *m_bodyInfoName;
   static const char *m_mergeTestBodyLabelName;
   static const char *m_maxBodyIdName;
+  static const char *m_labelBlockName;
+  static const char *m_multiscale2dName;
 
-  static const char *m_keyValueTypeName;
+  //static const char *m_keyValueTypeName;
 
   static const char *m_emptyName;
 };

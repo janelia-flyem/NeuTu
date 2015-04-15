@@ -11,8 +11,11 @@
 #endif
 
 #include "zpoint.h"
+#include "zsttransform.h"
 
 class ZIntPoint;
+class ZImage;
+class ZPixmap;
 
 /*!
  * \brief The painter class using QPainter to draw objects with extended options
@@ -21,13 +24,31 @@ class ZPainter : public QPainter
 {
 public:
   ZPainter();
-  ZPainter(QPaintDevice * device);
+  explicit ZPainter(QPaintDevice * device);
+  explicit ZPainter(ZImage *image);
+
+  bool begin(ZImage *image);
+  bool begin(ZPixmap *pixmap);
+  bool begin(QPaintDevice *device);
+
+
   void setStackOffset(int x, int y, int z);
   void setStackOffset(const ZIntPoint &offset);
   void setStackOffset(const ZPoint &offset);
+  void setZOffset(int z);
 
-  inline const ZPoint& getOffset() { return m_offset; }
+  inline int getZOffset() { return m_z; }
+  //inline ZPoint getOffset() { return m_transform.getOffset(); }
 
+  void drawImage(
+      const QRectF &targetRect, const ZImage &image, const QRectF &sourceRect);
+  void drawImage(int x, int y, const ZImage &image);
+
+  void drawPixmap(
+      const QRectF &targetRect, const ZPixmap &image, const QRectF &sourceRect);
+  void drawPixmap(int x, int y, const ZPixmap &image);
+
+#if 0
   void drawPoint(const QPointF &pt);
   void drawPoint(const QPoint &pt);
 
@@ -39,7 +60,7 @@ public:
   void	drawEllipse(const QRectF & rectangle);
   void	drawEllipse(const QRect & rectangle);
   void	drawEllipse(int x, int y, int width, int height);
-  void	drawEllipse(const QPointF & center, qreal rx, qreal ry);
+  void	drawEllipse(const QPointF & center, double rx, double ry);
   void	drawEllipse(const QPoint & center, int rx, int ry);
 
   void	drawRect(const QRectF & rectangle);
@@ -48,9 +69,18 @@ public:
 
   void	drawPolyline(const QPointF * points, int pointCount);
   void	drawPolyline(const QPoint * points, int pointCount);
+#endif
+  /*
+  const QRect& getFieldOfView() const {
+    return m_projRegion;
+  }
+  */
 
 private:
-  ZPoint m_offset;
+  int m_z;
+  //ZStTransform m_transform; //world coordinates to canvas coordinates
+//  ZPoint m_offset;
+  //QRect m_projRegion;
 };
 
 #endif // ZPAINTER_H

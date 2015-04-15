@@ -95,7 +95,7 @@ int ZCommandLine::runObjectMarker()
 
 int ZCommandLine::runBoundaryOrphan()
 {
-  FlyEm::ZIntCuboidArray blockArray;
+  ZIntCuboidArray blockArray;
   blockArray.loadSubstackList(m_blockFile);
 
   int bodyOffset[3] = {0, 0, 0};
@@ -104,7 +104,7 @@ int ZCommandLine::runBoundaryOrphan()
   bodyOffset[2] += blockBoundBox.cb[2];
 
   if (!m_referenceBlockFile.empty()) {
-    FlyEm::ZIntCuboidArray blockReference;
+    ZIntCuboidArray blockReference;
     blockReference.loadSubstackList(m_referenceBlockFile);
     Cuboid_I refBoundBox = blockReference.getBoundBox();
     std::cout << "Offset: " << refBoundBox.cb[0] << " " << refBoundBox.cb[1] << std::endl;
@@ -419,7 +419,7 @@ int ZCommandLine::runImageSeparation()
   std::map<int, ZObject3dScan*> *objMap =
       ZObject3dScan::extractAllObject(
         mask.array8(), mask.width(), mask.height(),
-        mask.depth(), 0, NULL);
+        mask.depth(), 0, 1, NULL);
 
   std::cout << objMap->size() << " objects extracted." << std::endl;
 

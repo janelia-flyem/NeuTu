@@ -38,7 +38,6 @@ Z3DCompositor::Z3DCompositor()
   , m_ddpFinalShader(NULL)
   , m_waRT(NULL)
   , m_waFinalShader(NULL)
-  , m_queryId(0)
   , m_backgroundWidgetsGroup(NULL)
 {
   addParameter(m_showBackground);
@@ -112,32 +111,31 @@ void Z3DCompositor::initialize()
   if (Z3DGpuInfoInstance.isDualDepthPeelingSupported()) {
     m_ddpBlendShader = new Z3DShaderProgram();
     m_ddpFinalShader = new Z3DShaderProgram();
+    m_ddpBlendShader->bindFragDataLocation(0, "FragData0");
 #ifdef USE_RECT_TEX
     m_ddpBlendShader->loadFromSourceFile("pass.vert", "dual_peeling_blend.frag",
                                          m_rendererBase->generateHeader() + "#define USE_RECT_TEX\n");
 #else
     m_ddpBlendShader->loadFromSourceFile("pass.vert", "dual_peeling_blend.frag", m_rendererBase->generateHeader());
 #endif
-    m_ddpBlendShader->bindFragDataLocation(0, "FragData0");
+    m_ddpFinalShader->bindFragDataLocation(0, "FragData0");
 #ifdef USE_RECT_TEX
     m_ddpFinalShader->loadFromSourceFile("pass.vert", "dual_peeling_final.frag",
                                          m_rendererBase->generateHeader() + "#define USE_RECT_TEX\n");
 #else
     m_ddpFinalShader->loadFromSourceFile("pass.vert", "dual_peeling_final.frag", m_rendererBase->generateHeader());
 #endif
-    m_ddpFinalShader->bindFragDataLocation(0, "FragData0");
-    glGenQueries(1, &m_queryId);
   }
 
   if (Z3DGpuInfoInstance.isWeightedAverageSupported()) {
     m_waFinalShader = new Z3DShaderProgram();
+    m_waFinalShader->bindFragDataLocation(0, "FragData0");
 #ifdef USE_RECT_TEX
     m_waFinalShader->loadFromSourceFile("pass.vert", "wavg_final.frag",
                                         m_rendererBase->generateHeader() + "#define USE_RECT_TEX\n");
 #else
     m_waFinalShader->loadFromSourceFile("pass.vert", "wavg_final.frag", m_rendererBase->generateHeader());
 #endif
-    m_waFinalShader->bindFragDataLocation(0, "FragData0");
   }
 
   CHECK_GL_ERROR;
@@ -162,7 +160,6 @@ void Z3DCompositor::deinitialize()
     m_ddpBlendShader = NULL;
     delete m_ddpFinalShader;
     m_ddpFinalShader = NULL;
-    glDeleteQueries(1, &m_queryId);
   }
 
   if (Z3DGpuInfoInstance.isWeightedAverageSupported()) {
@@ -756,8 +753,10 @@ void Z3DCompositor::renderTransparentDDP(const std::vector<Z3DGeometryFilter *> 
     glBlendEquation(GL_FUNC_ADD);
     glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 
+    GLuint queryId;
     if (g_useOQ) {
-      glBeginQuery(GL_SAMPLES_PASSED, m_queryId);
+      glGenQueries(1, &queryId);
+      glBeginQuery(GL_SAMPLES_PASSED, queryId);
     }
 
     m_ddpBlendShader->bind();
@@ -774,7 +773,8 @@ void Z3DCompositor::renderTransparentDDP(const std::vector<Z3DGeometryFilter *> 
     if (g_useOQ) {
       glEndQuery(GL_SAMPLES_PASSED);
       GLuint sample_count;
-      glGetQueryObjectuiv(m_queryId, GL_QUERY_RESULT, &sample_count);
+      glGetQueryObjectuiv(queryId, GL_QUERY_RESULT, &sample_count);
+      glDeleteQueries(1, &queryId);
       if (sample_count == 0) {
         break;
       }
@@ -827,56 +827,56 @@ bool Z3DCompositor::createDDPRenderTarget(glm::ivec2 size)
   {
     g_dualDepthTexId[i] = new Z3DTexture(glm::ivec3(size, 1), GL_TEXTURE_RECTANGLE,
                                          GL_RG, GL_RG32F, GL_FLOAT,
-                                         GL_NEAREST, GL_NEAREST, GL_CLAMP);
+                                         GL_NEAREST, GL_NEAREST, GL_CLAMP_TO_EDGE);
     g_dualDepthTexId[i]->uploadTexture();
 
     g_dualFrontBlenderTexId[i] = new Z3DTexture(glm::ivec3(size, 1), GL_TEXTURE_RECTANGLE,
                                                 GL_RGBA, GL_RGBA16, GL_UNSIGNED_SHORT,
-                                                GL_NEAREST, GL_NEAREST, GL_CLAMP);
+                                                GL_NEAREST, GL_NEAREST, GL_CLAMP_TO_EDGE);
     g_dualFrontBlenderTexId[i]->uploadTexture();
 
     g_dualBackTempTexId[i] = new Z3DTexture(glm::ivec3(size, 1), GL_TEXTURE_RECTANGLE,
                                             GL_RGBA, GL_RGBA16, GL_UNSIGNED_SHORT,
-                                            GL_NEAREST, GL_NEAREST, GL_CLAMP);
+                                            GL_NEAREST, GL_NEAREST, GL_CLAMP_TO_EDGE);
     g_dualBackTempTexId[i]->uploadTexture();
   }
 
   g_dualBackBlenderTexId = new Z3DTexture(glm::ivec3(size, 1), GL_TEXTURE_RECTANGLE,
                                           GL_RGBA, GL_RGBA16, GL_UNSIGNED_SHORT,
-                                          GL_NEAREST, GL_NEAREST, GL_CLAMP);
+                                          GL_NEAREST, GL_NEAREST, GL_CLAMP_TO_EDGE);
   g_dualBackBlenderTexId->uploadTexture();
 
   g_depthTex = new Z3DTexture(glm::ivec3(size, 1), GL_TEXTURE_RECTANGLE,
                               GL_RED, GL_R32F, GL_FLOAT,
-                              GL_NEAREST, GL_NEAREST, GL_CLAMP);
+                              GL_NEAREST, GL_NEAREST, GL_CLAMP_TO_EDGE);
   g_depthTex->uploadTexture();
 #else
   for (int i = 0; i < 2; i++)
   {
     g_dualDepthTexId[i] = new Z3DTexture(glm::ivec3(size, 1),
                                          GL_RG, GL_RG32F, GL_FLOAT,
-                                         GL_NEAREST, GL_NEAREST, GL_CLAMP);
+                                         GL_NEAREST, GL_NEAREST, GL_CLAMP_TO_EDGE);
     g_dualDepthTexId[i]->uploadTexture();
 
     g_dualFrontBlenderTexId[i] = new Z3DTexture(glm::ivec3(size, 1),
                                                 GL_RGBA, GL_RGBA16, GL_UNSIGNED_SHORT,
-                                                GL_NEAREST, GL_NEAREST, GL_CLAMP);
+                                                GL_NEAREST, GL_NEAREST, GL_CLAMP_TO_EDGE);
     g_dualFrontBlenderTexId[i]->uploadTexture();
 
     g_dualBackTempTexId[i] = new Z3DTexture(glm::ivec3(size, 1),
                                             GL_RGBA, GL_RGBA16, GL_UNSIGNED_SHORT,
-                                            GL_NEAREST, GL_NEAREST, GL_CLAMP);
+                                            GL_NEAREST, GL_NEAREST, GL_CLAMP_TO_EDGE);
     g_dualBackTempTexId[i]->uploadTexture();
   }
 
   g_dualBackBlenderTexId = new Z3DTexture(glm::ivec3(size, 1),
                                           GL_RGBA, GL_RGBA16, GL_UNSIGNED_SHORT,
-                                          GL_NEAREST, GL_NEAREST, GL_CLAMP);
+                                          GL_NEAREST, GL_NEAREST, GL_CLAMP_TO_EDGE);
   g_dualBackBlenderTexId->uploadTexture();
 
   g_depthTex = new Z3DTexture(glm::ivec3(size, 1),
                               GL_RED, GL_R32F, GL_FLOAT,
-                              GL_NEAREST, GL_NEAREST, GL_CLAMP);
+                              GL_NEAREST, GL_NEAREST, GL_CLAMP_TO_EDGE);
   g_depthTex->uploadTexture();
 #endif
 
@@ -981,20 +981,20 @@ bool Z3DCompositor::createWARenderTarget(glm::ivec2 size)
 #ifdef USE_RECT_TEX
   g_accumulationTexId[0] = new Z3DTexture(glm::ivec3(size, 1), GL_TEXTURE_RECTANGLE,
                                           GL_RGBA, GL_RGBA32F, GL_FLOAT,
-                                          GL_NEAREST, GL_NEAREST, GL_CLAMP);
+                                          GL_NEAREST, GL_NEAREST, GL_CLAMP_TO_EDGE);
   g_accumulationTexId[0]->uploadTexture();
   g_accumulationTexId[1] = new Z3DTexture(glm::ivec3(size, 1), GL_TEXTURE_RECTANGLE,
                                           GL_RG, GL_RG32F, GL_FLOAT,
-                                          GL_NEAREST, GL_NEAREST, GL_CLAMP);
+                                          GL_NEAREST, GL_NEAREST, GL_CLAMP_TO_EDGE);
   g_accumulationTexId[1]->uploadTexture();
 #else
   g_accumulationTexId[0] = new Z3DTexture(glm::ivec3(size, 1),
                                           GL_RGBA, GL_RGBA32F, GL_FLOAT,
-                                          GL_NEAREST, GL_NEAREST, GL_CLAMP);
+                                          GL_NEAREST, GL_NEAREST, GL_CLAMP_TO_EDGE);
   g_accumulationTexId[0]->uploadTexture();
   g_accumulationTexId[1] = new Z3DTexture(glm::ivec3(size, 1),
                                           GL_RG, GL_RG32F, GL_FLOAT,
-                                          GL_NEAREST, GL_NEAREST, GL_CLAMP);
+                                          GL_NEAREST, GL_NEAREST, GL_CLAMP_TO_EDGE);
   g_accumulationTexId[1]->uploadTexture();
 #endif
 

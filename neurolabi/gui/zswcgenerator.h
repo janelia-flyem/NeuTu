@@ -30,8 +30,8 @@ public:
 
   static ZSwcTree* createVirtualRootSwc();
   static ZSwcTree* createCircleSwc(double cx, double cy, double cz, double r);
-  static ZSwcTree* createBoxSwc(const ZCuboid &box);
-  static ZSwcTree* createBoxSwc(const ZIntCuboid &box);
+  static ZSwcTree* createBoxSwc(const ZCuboid &box, double radius = 1.0);
+  static ZSwcTree* createBoxSwc(const ZIntCuboid &box, double radius = 1.0);
   static ZSwcTree* createSwc(const ZFlyEmNeuronRange &range);
   static ZSwcTree* createSwc(const ZFlyEmNeuronRange &range,
                              const ZFlyEmNeuronAxis &axis);

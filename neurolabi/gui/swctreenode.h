@@ -38,7 +38,7 @@ Swc_Tree_Node* makePointer();
  * \param parentId Parent ID of the node
  * \return A pointer of Swc_Tree_Node, which must be freed by kill()
  */
-Swc_Tree_Node* makePointer(int id, int type, const ZPoint &pos, double radius,
+Swc_Tree_Node* makePointer(int id, int type, const ZPoint &center, double radius,
                            int parentId);
 
 /*!
@@ -74,7 +74,7 @@ Swc_Tree_Node* makePointer(double x, double y, double z, double radius,
  * \param radius Radius of the node
  * \return A pointer of Swc_Tree_Node, which must be freed by kill()
  */
-Swc_Tree_Node* makePointer(const ZPoint &pos, double radius);
+Swc_Tree_Node* makePointer(const ZPoint &center, double radius);
 
 /*!
  * \brief Make a virtual node
@@ -92,7 +92,7 @@ void setDefault(Swc_Tree_Node *tn);
 double x(const Swc_Tree_Node *tn);
 double y(const Swc_Tree_Node *tn);
 double z(const Swc_Tree_Node *tn);
-ZPoint pos(const Swc_Tree_Node *tn);
+ZPoint center(const Swc_Tree_Node *tn);
 double radius(const Swc_Tree_Node *tn);
 int id(const Swc_Tree_Node *tn);
 int parentId(const Swc_Tree_Node *tn);
@@ -108,9 +108,15 @@ int index(const Swc_Tree_Node *tn);
  */
 double length(const Swc_Tree_Node *tn);
 
+/*!
+ * \brief Weight of edge between the node and its parent
+ *
+ * It's not a part of the standard SWC definition
+ */
 inline double weight(const Swc_Tree_Node *tn) {
   return tn->weight;
 }
+
 inline void setWeight(Swc_Tree_Node *tn, double w) {
   if (tn != NULL) tn->weight = w;
 }
@@ -119,19 +125,41 @@ inline void addWeight(Swc_Tree_Node *tn, double dw) {
   if (tn != NULL) tn->weight += dw;
 }
 
-
+/*!
+ * \brief A customized feature of a node
+ */
 inline double feature(const Swc_Tree_Node *tn) {
   return tn->feature;
 }
+
 inline void setFeature(Swc_Tree_Node *tn, double v) {
   tn->feature = v;
 }
 
 //Properties
+/*!
+ * \brief Check if the parent id is consistent.
+ *
+ * \return true if the parent_id field of \a tn is the same as the id of its
+ *         parent.
+ */
 bool isParentIdConsistent(const Swc_Tree_Node *tn);
+
+/*!
+ * \brief Test if a node is regular.
+ */
 bool isRegular(const Swc_Tree_Node *tn);
+
+/*!
+ * \brief Test if a node is virtual.
+ */
 bool isVirtual(const Swc_Tree_Node *tn);
 
+/*!
+ * \brief Get the bound box of a node
+ *
+ * \return The bound box of \a tn.
+ */
 ZCuboid boundBox(const Swc_Tree_Node *tn);
 
 //Structure properties
@@ -194,6 +222,11 @@ bool isLeaf(const Swc_Tree_Node *tn);
  */
 bool isTerminal(const Swc_Tree_Node *tn);
 
+/*!
+ * \brief The number of nodes located at the downstream of a node4
+ *
+ * \return
+ */
 int downstreamSize(Swc_Tree_Node *tn);
 int downstreamSize(Swc_Tree_Node *tn, Swc_Tree_Node_Compare compfunc);
 int singleTreeSize(Swc_Tree_Node *tn);
@@ -291,8 +324,9 @@ void copyProperty(const Swc_Tree_Node *src, Swc_Tree_Node *dst);
 void setDownstreamType(Swc_Tree_Node *tn, int type);
 void setUpstreamType(Swc_Tree_Node *tn, int type, Swc_Tree_Node *stop = NULL);
 void translate(Swc_Tree_Node *tn, double dx, double dy, double dz);
-void rotate(Swc_Tree_Node *tn, double theta, double psi, const ZPoint &center);
-void rotate(Swc_Tree_Node *tn, double theta, double psi);
+void rotate(Swc_Tree_Node *tn, double theta, double psi, const ZPoint &center,
+            bool inverse = false);
+void rotate(Swc_Tree_Node *tn, double theta, double psi, bool inverse = false);
 
 /*!
  *
@@ -429,6 +463,11 @@ double distance(const Swc_Tree_Node *tn, double x, double y, double z,
 double scaledDistance(const Swc_Tree_Node *tn1, const Swc_Tree_Node *tn2,
                 double sx, double sy, double sz);
 
+/*!
+ * \brief Find the node that is the furthest one to a given node.
+ *
+ * It only checkes the nodes that are topologically connected to \a tn.
+ */
 Swc_Tree_Node*
 furthestNode(Swc_Tree_Node *tn, EDistanceType distType = EUCLIDEAN);
 
@@ -646,7 +685,7 @@ ZPoint SwcTreeNode::centroid(InputIterator first, InputIterator last)
 
   while (first != last) {
     if (isRegular(*first)) {
-      pt += pos(*first) * radius(*first);
+      pt += center(*first) * radius(*first);
       weight += radius(*first);
       ++count;
     }

@@ -8,12 +8,11 @@
 
 #include <string>
 #include <vector>
-#include "zobject3dscan.h"
+
 #include "zstack.hxx"
 #include "zdvidclient.h"
 #include "flyem/zflyem.h"
 #include "zintcuboid.h"
-#include "zsparsestack.h"
 #include "zclosedcurve.h"
 #include "dvid/zdvidinfo.h"
 #include "zintcuboid.h"
@@ -26,6 +25,9 @@ class ZFlyEmNeuronBodyInfo;
 class ZDvidTile;
 class ZDvidTileInfo;
 class ZSwcTree;
+class ZObject3dScan;
+class ZSparseStack;
+class ZDvidVersionDag;
 
 class ZDvidReader : public QObject
 {
@@ -49,6 +51,11 @@ public:
   ZStack* readGrayScale(
       int x0, int y0, int z0, int width, int height, int depth);
   ZStack* readGrayScale(const ZIntCuboid &cuboid);
+  ZStack* readGrayScaleBlock(
+      const ZIntPoint &blockIndex, const ZDvidInfo &dvidInfo);
+  std::vector<ZStack*> readGrayScaleBlock(
+      const ZIntPoint &blockIndex, const ZDvidInfo &dvidInfo,
+      int blockNumber);
 
   ZStack* readBodyLabel(
       int x0, int y0, int z0, int width, int height, int depth);
@@ -78,6 +85,7 @@ public:
                        int width, int height, int depth) const;
 
   bool hasSparseVolume() const;
+  bool hasSparseVolume(int bodyId) const;
   bool hasBodyInfo(int bodyId) const;
 
   ZFlyEmNeuronBodyInfo readBodyInfo(int bodyId);
@@ -90,8 +98,12 @@ public:
 
   ZDvidTileInfo readTileInfo(const std::string &dataName) const;
 
-  ZDvidTile *readTile(const std::string &dataName, int resLevel,
-                     int xi0, int yi0, int z0) const;
+  //ZDvidTile *readTile(const std::string &dataName, int resLevel,
+  //                   int xi0, int yi0, int z0) const;
+  ZDvidTile *readTile(int resLevel, int xi0, int yi0, int z0) const;
+
+  ZDvidVersionDag readVersionDag(const std::string &uuid) const;
+  ZDvidVersionDag readVersionDag() const;
 
 signals:
   void readingDone();

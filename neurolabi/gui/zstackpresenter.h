@@ -30,12 +30,14 @@ class QAction;
 class QMenu;
 class ZInteractionEvent;
 class ZStackOperator;
+class ZStackMvc;
 
 class ZStackPresenter : public QObject {
   Q_OBJECT
 
 public:
-  ZStackPresenter(ZStackFrame *parent = 0);
+  explicit ZStackPresenter(ZStackFrame *parent = 0);
+  explicit ZStackPresenter(QWidget *parent = 0);
   ~ZStackPresenter();
   ZStackDoc* buddyDocument() const;
   ZStackView* buddyView() const;
@@ -160,13 +162,9 @@ public:
 
   void setZoomRatio(int ratio);
 
-  inline ZStackFrame* getParentFrame() {
-    return m_parent;
-  }
-
-  inline const ZStackFrame* getParentFrame() const {
-    return m_parent;
-  }
+  ZStackFrame* getParentFrame() const;
+  ZStackMvc* getParentMvc() const;
+  QWidget* getParentWidget() const;
 
   void setViewMode(ZInteractiveContext::ViewMode mode);
 
@@ -251,6 +249,8 @@ public slots:
   void notifyBodySplitTriggered();
   void slotTest();
 
+  void notifyUser(const QString &msg);
+
   /*!
    * \brief Turn on the active stroke
    */
@@ -274,6 +274,8 @@ signals:
   void bodySplitTriggered();
 
 private:
+  void init();
+
   EMouseEventProcessStatus processMouseReleaseForPuncta(
       QMouseEvent *event, const ZPoint &positionInStack);
   /*
@@ -300,7 +302,7 @@ private:
   void acceptActiveStroke();
 
 private:
-  ZStackFrame *m_parent;
+  //ZStackFrame *m_parent;
   QList<ZStackObject*> m_decorationList;
   QList<ZStackObject*> m_activeDecorationList;
 

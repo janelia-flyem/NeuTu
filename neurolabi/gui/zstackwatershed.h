@@ -1,8 +1,13 @@
 #ifndef ZSTACKWATERSHED_H
 #define ZSTACKWATERSHED_H
 
+#include <vector>
+
 #include "tz_stack_watershed.h"
-#include "zstack.hxx"
+#include "tz_cuboid_i.h"
+
+class ZStack;
+class ZIntPoint;
 
 /*!
  * \brief The class of running watershed

@@ -12,6 +12,12 @@ ZIntCuboid::ZIntCuboid(int x1, int y1, int z1, int x2, int y2, int z2)
   m_lastCorner.set(x2, y2, z2);
 }
 
+ZIntCuboid::ZIntCuboid(const Cuboid_I &cuboid)
+{
+  m_firstCorner.set(cuboid.cb[0], cuboid.cb[1], cuboid.cb[2]);
+  m_lastCorner.set(cuboid.ce[0], cuboid.ce[1], cuboid.ce[2]);
+}
+
 ZIntCuboid::ZIntCuboid(
     const ZIntPoint &firstCorner, const ZIntPoint &lastCorner)
 {
@@ -57,6 +63,12 @@ void ZIntCuboid::set(const ZIntPoint &firstCorner, const ZIntPoint &lastCorner)
 {
   setFirstCorner(firstCorner);
   setLastCorner(lastCorner);
+}
+
+void ZIntCuboid::translateX(int dx)
+{
+  m_firstCorner.setX(m_firstCorner.getX() + dx);
+  m_lastCorner.setX(m_lastCorner.getX() + dx);
 }
 
 void ZIntCuboid::join(const ZIntCuboid &cuboid)
@@ -162,4 +174,11 @@ void ZIntCuboid::setLastZ(int z)
 void ZIntCuboid::setDepth(int depth)
 {
   m_lastCorner.setZ(m_firstCorner.getZ() + depth - 1);
+}
+
+
+bool ZIntCuboid::equals(const ZIntCuboid &cuboid) const
+{
+  return m_firstCorner.equals(cuboid.getFirstCorner()) &&
+      m_lastCorner.equals(cuboid.getLastCorner());
 }

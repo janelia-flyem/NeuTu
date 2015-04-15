@@ -5,7 +5,7 @@ buildDIR=$2
 DIR="$( cd -P "$( dirname "$0" )" && pwd )"
 deployDIR=$DIR/../../neuTube.app
 
-if [ -e $deployDIR ]; then
+if [ -d $deployDIR ]; then
   rm -rf $deployDIR
 fi
 

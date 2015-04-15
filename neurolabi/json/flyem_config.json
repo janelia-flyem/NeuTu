@@ -55,7 +55,26 @@
       "address": "emdata2.int.janelia.org",
       "uuid": "628",
       "name": "MB-6",
+      "body_label": "segmentation030115",
       "comment": "Mushroom body MB-6 (7567 x 11140 x 14625)"
+    },
+    {
+      "address": "emdata1.int.janelia.org",
+      "port": 7000,
+      "uuid": "cf6e",
+      "name": "NEW MB-6",
+      "body_label": "bodies",
+      "label_block": "labels",
+      "comment": "Mushroom body MB-6 (7567 x 11140 x 14625)"
+    },
+    {
+      "address": "emdata1.int.janelia.org",
+      "port": 9000,
+      "uuid": "8e2e",
+      "name": "AL-test",
+      "body_label": "bodies",
+      "label_block": "labels",
+      "comment": "AL-7"
     },
     {
       "address": "emdata2.int.janelia.org",

@@ -56,6 +56,8 @@ public:
   void addBookmarkDecoration(const ZFlyEmBookmarkArray &bookmarkArray);
   void updateBookDecoration();
 
+  void removeAllBookmark();
+
   void showSkeleton(ZSwcTree *tree);
   void quickView();
 
@@ -64,6 +66,7 @@ public:
   void saveSeed();
   void downloadSeed();
 
+  void exportSplits();
   void commitResult();
   void commitResultFunc(
       const ZObject3dScan *wholeBody, const ZStack *stack, const ZIntPoint &dsIntv);
@@ -76,6 +79,9 @@ public:
   void setShowingBodyMask(bool state){
     m_showingBodyMask = state;
   }
+
+  std::string getSplitStatusName() const;
+  std::string getSplitLabelName() const;
 
   std::string getSeedKey(int bodyId) const;
   bool isSeedProcessed(int bodyId) const;

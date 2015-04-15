@@ -112,7 +112,8 @@ void ZSegmentationProjectModel::updateSegmentation()
     removeRows(0, labelNode->childNumber(), m_currentIndex);
     labelNode->killDownstream();
 
-    const ZStack *stack = getProject()->getDataFrame()->document()->getLabelField();
+    const ZStack *stack =
+        getProject()->getDataFrame()->document()->getLabelField();
     ZObject3dScanArray *objArray = NULL;
     if (stack != NULL) {
       objArray = ZObject3dFactory::MakeObject3dScanArray(*stack);

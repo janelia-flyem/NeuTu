@@ -123,7 +123,7 @@ HEADERS +=$${PWD}/zstackprocessor.h \
    $${PWD}/zswcnodecompositeselector.h \
    $${PWD}/zswcnodeellipsoidrangeselector.h \
    $${PWD}/flyem/zstitchgrid.h \
-   $${PWD}/flyem/zintcuboidarray.h \
+   $${PWD}/zintcuboidarray.h \
    $${PWD}/flyem/zflyemqualityanalyzer.h \
    $${PWD}/flyem/zintcuboidcomposition.h \
    $${PWD}/zswcglobalfeatureanalyzer.h \
@@ -216,7 +216,10 @@ HEADERS +=$${PWD}/zstackprocessor.h \
    $${PWD}/zinthistogram.h \
    $${PWD}/flyem/zflyemneuroninfo.h \
    $${PWD}/zqtheader_undef.h \
-   $${PWD}/zscalablestack.h
+   $${PWD}/zscalablestack.h \
+   $${PWD}/flyem/zflyemneurondensity.h \
+   $${PWD}/flyem/zflyemneurondensitymatcher.h \
+   $${PWD}/zdag.h
 
 SOURCES +=$${PWD}/zstackprocessor.cpp \
    $${PWD}/zstack.cxx \
@@ -331,7 +334,7 @@ SOURCES +=$${PWD}/zstackprocessor.cpp \
    $${PWD}/zswcnodecompositeselector.cpp \
    $${PWD}/zswcnodeellipsoidrangeselector.cpp \
    $${PWD}/flyem/zstitchgrid.cpp \
-   $${PWD}/flyem/zintcuboidarray.cpp \
+   $${PWD}/zintcuboidarray.cpp \
    $${PWD}/flyem/zflyemqualityanalyzer.cpp \
    $${PWD}/flyem/zintcuboidcomposition.cpp \
    $${PWD}/zswcglobalfeatureanalyzer.cpp \
@@ -417,4 +420,8 @@ SOURCES +=$${PWD}/zstackprocessor.cpp \
    $${PWD}/zstackobjectselector.cpp \
    $${PWD}/zinthistogram.cpp \
    $${PWD}/flyem/zflyemneuroninfo.cpp \
-   $${PWD}/zscalablestack.cpp
+   $${PWD}/zscalablestack.cpp \
+   $${PWD}/flyem/zflyemneurondensity.cpp \
+   $${PWD}/flyem/zflyemneurondensitymatcher.cpp \
+   $${PWD}/zdag.cpp
+

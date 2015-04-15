@@ -681,10 +681,10 @@ void ZSwcTreeMatcher::matchAllG(ZSwcTree &tree1, ZSwcTree &tree2, int level)
   SwcTreeNode::setAsRoot(branch1[0]);
   tree1.setDataFromNodeRoot(branch1[0], ZSwcTree::LEAVE_ALONE);
 
-  ZPoint vec1 = SwcTreeNode::pos(branch1[0]) -
-      SwcTreeNode::pos(branch1.back());
-  ZPoint vec2 = SwcTreeNode::pos(branch2[0]) -
-      SwcTreeNode::pos(branch2.back());
+  ZPoint vec1 = SwcTreeNode::center(branch1[0]) -
+      SwcTreeNode::center(branch1.back());
+  ZPoint vec2 = SwcTreeNode::center(branch2[0]) -
+      SwcTreeNode::center(branch2.back());
 
   if (vec1.dot(vec2) < 0) {
     branch2.reverse();

@@ -12,11 +12,16 @@ class ZFlyEmStackDoc;
 class ZFlyEmStackFrame : public ZStackFrame
 {
   Q_OBJECT
-public:
+protected:
   explicit ZFlyEmStackFrame(QWidget *parent = 0);
+
+public:
   virtual ~ZFlyEmStackFrame();
   
   inline virtual std::string name() { return "flyem"; }
+
+  static ZFlyEmStackFrame* Make(QMdiArea *parent);
+  static ZFlyEmStackFrame* Make(QMdiArea *parent, ZSharedPointer<ZFlyEmStackDoc> doc);
 
 public:
   virtual void createDocument();

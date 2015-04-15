@@ -20,7 +20,7 @@ ZJsonValue::ZJsonValue(json_t *data, bool asNew) : m_data(NULL)
 ZJsonValue::ZJsonValue(json_t *data, ESetDataOption option) : m_data(NULL)
 {
   set(data, option);
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
       std::cout << m_data << std::endl;
 #endif
 }
@@ -166,6 +166,10 @@ void ZJsonValue::decodeString(const char *str)
   }
 
   m_data = json_loads(str, JSON_DECODE_ANY, &m_error);
+  if (m_error.line > 0) {
+    std::cout << m_error.source << std::endl;
+    std::cout << m_error.text << std::endl;
+  }
 }
 
 void ZJsonValue::clear()
@@ -218,6 +222,16 @@ int ZJsonValue::toInteger() const
   return ZJsonParser::integerValue(m_data);
 }
 
+double ZJsonValue::toReal() const
+{
+  return ZJsonParser::numberValue(m_data);
+}
+
+std::string ZJsonValue::toString() const
+{
+  return ZJsonParser::stringValue(m_data);
+}
+
 std::string ZJsonValue::dumpString(int indent) const
 {
   string str;
@@ -236,4 +250,24 @@ bool ZJsonValue::dump(const string &path) const
   std::cout << "Saving json file: " << path << " ..." << std::endl;
 #endif
   return C_Json::dump(m_data, path.c_str());
+}
+
+bool ZJsonValue::load(const string &filePath)
+{
+#if defined(HAVE_LIBJANSSON)
+  if (m_data != NULL) {
+    json_decref(m_data);
+  }
+
+  m_data = json_load_file(filePath.c_str(), 0, &m_error);
+  if (m_data) {
+    return true;
+  }
+
+
+  std::cout << filePath << "(" << m_error.line << ")" << ": "
+            << m_error.text << std::endl;
+#endif
+
+  return false;
 }

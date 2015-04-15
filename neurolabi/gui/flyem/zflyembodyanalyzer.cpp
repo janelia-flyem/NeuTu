@@ -84,7 +84,7 @@ ZPointArray ZFlyEmBodyAnalyzer::computeTerminalPoint(const ZObject3dScan &obj)
   pts.resize(terminalArray.size());
 
   for (size_t i = 0; i < terminalArray.size(); ++i) {
-    pts[i] = SwcTreeNode::pos(terminalArray[i]);
+    pts[i] = SwcTreeNode::center(terminalArray[i]);
   }
   pts.translate(ZPoint(offset[0], offset[1], offset[2]));
   pts.scale(m_downsampleInterval[0] + 1, m_downsampleInterval[1] + 1,

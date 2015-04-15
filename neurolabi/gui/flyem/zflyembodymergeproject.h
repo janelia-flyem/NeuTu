@@ -38,6 +38,8 @@ public:
   void loadSlice(int x, int y, int z, int width, int height);
   void loadSliceFunc(int x, int y, int z, int width, int height);
 
+  void changeDvidNode(const std::string &newUuid);
+
   inline const ZDvidTarget& getDvidTarget() const {
     return m_dvidTarget;
   }
@@ -52,12 +54,21 @@ public:
 
   int getSelectedBodyId() const;
 
+  void addSelected(uint64_t label);
+  void removeSelected(uint64_t label);
+
+  bool lockNode(const QString &message);
+  std::string createVersionBranch();
+
+  int getCurrentZ() const;
+
 signals:
   void progressAdvanced(double dp);
   void progressStarted();
   void progressEnded();
   void newDocReady(ZStackDocReader *reader, bool readyForPaint);
-  void originalLabelUpdated(ZArray *label);
+//  void originalLabelUpdated(ZArray *label);
+  void originalLabelUpdated(ZArray *label, QSet<uint64_t> *selectedSet);
   void selectionChanged(ZStackObjectSelector selector);
   void bodyMerged(QList<uint64_t> objLabelList);
   void splitSent(ZDvidTarget target, int bodyId);
@@ -84,6 +95,7 @@ private:
 //  std::vector<ZStackObject*> m_bookmarkDecoration;
 //  bool m_isBookmarkVisible;
   bool m_showingBodyMask;
+  QSet<uint64_t> m_currentSelected;
 };
 
 #endif // ZFLYEMBODYMERGEPROJECT_H

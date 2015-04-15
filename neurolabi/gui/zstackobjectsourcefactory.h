@@ -14,6 +14,8 @@ public:
   static std::string MakeFlyEmBodyMaskSource(int bodyId);
   static std::string MakeFlyEmBodySource(int bodyId);
   static std::string MakeCurrentMsTileSource(int resLevel);
+  static std::string MakeDvidTileSource();
+  static std::string MakeDvidLabelSliceSource();
 };
 
 #endif // ZSTACKOBJECTSOURCEFACTORY_H

@@ -8,6 +8,7 @@
 #include "zstackoperator.h"
 #include "zstack.hxx"
 #include "zstackdochittest.h"
+#include "dvid/zdvidlabelslice.h"
 
 ZMouseEventMapper::ZMouseEventMapper(
     ZInteractiveContext *context, ZStackDoc *doc) :
@@ -37,11 +38,13 @@ ZStackOperator ZMouseEventMapper::initOperation() const
   return op;
 }
 
+/*
 void ZMouseEventMapper::setPosition(
     int x, int y, int z, Qt::MouseButton button, ZMouseEvent::EAction action)
 {
   m_position[button][action] = ZIntPoint(x, y, z);
 }
+*/
 
 ZIntPoint
 ZMouseEventMapper::getPosition(Qt::MouseButton button,
@@ -49,11 +52,19 @@ ZMouseEventMapper::getPosition(Qt::MouseButton button,
 {
   ZIntPoint pt;
 
-  if (m_position.count(button) > 0) {
-    if (m_position.at(button).count(action) > 0) {
-      pt = m_position.at(button).at(action);
+  if (m_eventRecorder != NULL) {
+    ZMouseEvent event = m_eventRecorder->getMouseEvent(button, action);
+    pt = event.getPosition();
+  }
+  /*
+  else {
+    if (m_position.count(button) > 0) {
+      if (m_position.at(button).count(action) > 0) {
+        pt = m_position.at(button).at(action);
+      }
     }
   }
+  */
 
   return pt;
 }
@@ -104,6 +115,15 @@ void ZMouseEventLeftButtonReleaseMapper::processSelectionOperation(
       }
       break;
     case ZStackObject::TYPE_OBJECT3D_SCAN:
+      if (event.getModifiers() == Qt::NoModifier) {
+        op.setOperation(ZStackOperator::OP_OBJECT3D_SCAN_TOGGLE_SELECT_SINGLE);
+      } else if (event.getModifiers() == Qt::ShiftModifier) {
+        op.setOperation(ZStackOperator::OP_OBJECT3D_SCAN_SELECT_MULTIPLE);
+      } else if (event.getModifiers() == Qt::ControlModifier) {
+        op.setOperation(ZStackOperator::OP_OBJECT3D_SCAN_TOGGLE_SELECT);
+      }
+      break;
+    case ZStackObject::TYPE_DVID_LABEL_SLICE:
       if (event.getModifiers() == Qt::NoModifier) {
         op.setOperation(ZStackOperator::OP_OBJECT3D_SCAN_TOGGLE_SELECT_SINGLE);
       } else if (event.getModifiers() == Qt::ShiftModifier) {
@@ -275,7 +295,8 @@ ZStackOperator ZMouseEventLeftButtonDoubleClickMapper::getOperation(
           op.setOperation(ZStackOperator::OP_STACK_VIEW_SLICE);
         }
       } else {
-        if (getDocument()->getStack()->depth() > 1) {
+        if (getDocument()->getTag() != NeuTube::Document::FLYEM_DVID &&
+            getDocument()->getStack()->depth() > 1) {
           op.setOperation(ZStackOperator::OP_STACK_VIEW_PROJECTION);
         }
       }
@@ -323,12 +344,16 @@ ZMouseEventRightButtonReleaseMapper::getOperation(const ZMouseEvent &event) cons
           if (m_doc->getSelected(ZStackObject::TYPE_OBJECT3D_SCAN).size() == 1) {
             op.setOperation(ZStackOperator::OP_SHOW_BODY_CONTEXT_MENU);
           }
-        } else {
-          if (m_doc->getTag() == NeuTube::Document::BIOCYTIN_PROJECTION) {
+        } else if (m_doc->getTag() == NeuTube::Document::BIOCYTIN_PROJECTION) {
             op.setOperation(ZStackOperator::OP_SHOW_STROKE_CONTEXT_MENU);
-          } else {
-            op.setOperation(ZStackOperator::OP_SHOW_STACK_CONTEXT_MENU);
+        } else if (m_doc->getTag() == NeuTube::Document::FLYEM_DVID) {
+          if (!m_doc->getDvidLabelSliceList().empty()) {
+            if (m_doc->getDvidLabelSliceList().front()->getSelected().size() == 1) {
+              op.setOperation(ZStackOperator::OP_SHOW_BODY_CONTEXT_MENU);
+            }
           }
+        } else {
+          op.setOperation(ZStackOperator::OP_SHOW_STACK_CONTEXT_MENU);
         }
       } else {
         op.setOperation(ZStackOperator::OP_EXIT_EDIT_MODE);
@@ -339,6 +364,15 @@ ZMouseEventRightButtonReleaseMapper::getOperation(const ZMouseEvent &event) cons
   return op;
 }
 
+///////////////ZMouseEventRightButtonPressMapper/////////////////////
+////////             O-             ////////////////////////////
+ZStackOperator
+ZMouseEventRightButtonPressMapper::getOperation(const ZMouseEvent &/*event*/) const
+{
+  ZStackOperator op = initOperation();
+
+  return op;
+}
 
 //////////////ZMouseEventMapper///////////////////
 ////////             =OO             ////////////
@@ -392,6 +426,18 @@ ZStackOperator ZMouseEventMoveMapper::getOperation(
           } else {
             op.setOperation(ZStackOperator::OP_START_MOVE_IMAGE);
           }
+        }
+      }
+    } else if (event.getButtons() == Qt::RightButton) {
+      ZIntPoint pressPos =
+          getPosition(Qt::RightButton, ZMouseEvent::ACTION_PRESS);
+      int dx = event.getX() - pressPos.getX();
+      int dy = event.getY() - pressPos.getY();
+      if (dx * dx + dy * dy > MOUSE_MOVE_IMAGE_THRESHOLD) {
+        if (dx > 0) {
+          op.setOperation(ZStackOperator::OP_ZOOM_IN);
+        } else if (dx < 0) {
+          op.setOperation(ZStackOperator::OP_ZOOM_OUT);
         }
       }
     }

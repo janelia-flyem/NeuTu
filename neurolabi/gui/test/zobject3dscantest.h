@@ -784,7 +784,7 @@ TEST(ZObject3dScan, TestScanArray) {
 
   std::map<int, ZObject3dScan*> *objSet = ZObject3dScan::extractAllObject(
         stack->array, C_Stack::width(stack), C_Stack::height(stack),
-        C_Stack::depth(stack), 0, NULL);
+        C_Stack::depth(stack), 0, 1, NULL);
 
   EXPECT_EQ(2, (int) objSet->size());
   EXPECT_TRUE((*objSet)[0]->isCanonizedActually());
@@ -901,6 +901,13 @@ TEST_F(ZObject3dScanTestF1, Slice)
 
   ZObject3dScan slice = obj.getSlice(0);
   EXPECT_EQ(3, (int) slice.getVoxelNumber());
+
+  slice = obj.getSlice(1);
+  EXPECT_EQ(5, (int) slice.getVoxelNumber());
+
+  slice = obj.getSlice(2);
+  EXPECT_EQ(3, (int) slice.getVoxelNumber());
+
   slice = obj.getSlice(0, 1);
   EXPECT_EQ(8, (int) slice.getVoxelNumber());
 

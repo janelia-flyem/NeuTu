@@ -21,6 +21,7 @@ public:
   size_t getMinBodySize() const;
   size_t getMaxBodySize() const;
   bool hasUpperBodySize() const;
+  bool namedBodyOnly() const;
 
   std::vector<int> getExcludedBodies() const;
   std::set<int> getExcludedBodySet() const;

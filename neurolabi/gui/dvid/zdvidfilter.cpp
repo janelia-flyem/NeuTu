@@ -33,3 +33,8 @@ bool ZDvidFilter::hasExclusion() const
 {
   return !m_excludedBodySet.empty();
 }
+
+bool ZDvidFilter::namedBodyOnly() const
+{
+  return m_namedBodyOnly;
+}

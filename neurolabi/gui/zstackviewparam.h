@@ -29,6 +29,17 @@ public:
   void setViewPort(const QRect &rect);
   void setViewPort(int x0, int y0, int x1, int y1);
 
+  bool operator ==(const ZStackViewParam &param) const;
+  bool operator !=(const ZStackViewParam &param) const;
+
+  bool contains(const ZStackViewParam &param) const;
+
+  /*!
+   * \brief Resize the parameter by keeping the center relatively constant
+   */
+  void resize(int width, int height);
+
+
 private:
   int m_z;
   QRect m_viewPort;

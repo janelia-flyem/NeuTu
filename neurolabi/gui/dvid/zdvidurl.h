@@ -57,6 +57,8 @@ public:
   std::string getGrayscaleUrl(int sx, int sy, int x0, int y0, int z0) const;
   std::string getGrayscaleUrl(int sx, int sy, int sz, int x0, int y0, int z0)
    const;
+  std::string getGrayScaleBlockUrl(
+      int ix, int iy, int iz, int blockNumber = 1) const;
 
   std::string getLabels64Url(
       const std::string &name,
@@ -96,6 +98,8 @@ public:
   std::string getSynapseAnnotationUrl(const std::string &name) const;
 
   std::string getMergeUrl(const std::string &dataName) const;
+  std::string getSplitUrl(
+      const std::string &dataName, uint64_t originalLabel) const;
 
   std::string getTileUrl(const std::string &dataName) const;
   std::string getTileUrl(const std::string &dataName, int resLevel) const;
@@ -103,7 +107,11 @@ public:
       const std::string &dataName, int resLevel,
       int xi0, int yi0, int z0) const;
 
+  std::string getRepoInfoUrl() const;
+  std::string getLockUrl() const;
+  std::string getBranchUrl() const;
 
+  static std::string GetEndPoint(const std::string &url);
 
 private:
   ZDvidTarget m_dvidTarget;

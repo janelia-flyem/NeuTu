@@ -1,7 +1,7 @@
 #ifndef ZFLYEMQUALITYANALYZER_H
 #define ZFLYEMQUALITYANALYZER_H
 
-#include "flyem/zintcuboidarray.h"
+#include "zintcuboidarray.h"
 #include "zobject3dscan.h"
 #include "flyem/zflyemneuronrange.h"
 #include "flyem/zflyemneuron.h"
@@ -26,8 +26,8 @@ public:
   //Local orphan
   bool isOrphanBody(const ZObject3dScan &obj);
 
-  void setSubstackRegion(const FlyEm::ZIntCuboidArray &roi);
-  void setSubstackRegion(const FlyEm::ZIntCuboidArray &roi,
+  void setSubstackRegion(const ZIntCuboidArray &roi);
+  void setSubstackRegion(const ZIntCuboidArray &roi,
                          const FlyEm::SubstackRegionCalbration &calbr);
 
   /*!
@@ -73,7 +73,7 @@ public:
   FlyEm::ZHotSpotArray& computeHotSpotForSplit(const ZFlyEmNeuron &neuron);
 
 private:
-  FlyEm::ZIntCuboidArray m_substackRegion;
+  ZIntCuboidArray m_substackRegion;
   FlyEm::ZHotSpotArray m_hotSpotArray;
   ZFlyEmCoordinateConverter::ESpace m_targetSpace;
 };

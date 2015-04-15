@@ -3,6 +3,7 @@
 #include <QProcess>
 #include <QByteArray>
 #include <QtConcurrentRun>
+#include <QWidget>
 
 #include "zstackframe.h"
 #include "z3dwindow.h"
@@ -132,6 +133,8 @@ void ZFlyEmBodySplitProject::showDataFrame() const
 {
   if (m_dataFrame != NULL) {
     m_dataFrame->show();
+    m_dataFrame->raise();
+    m_dataFrame->activateWindow();
   }
 }
 
@@ -139,7 +142,7 @@ void ZFlyEmBodySplitProject::showDataFrame3d()
 {
   if (m_dataFrame != NULL) {
     //emit messageGenerated("Showing data in 3D ...");
-    m_dataFrame->open3DWindow(m_dataFrame);
+    m_dataFrame->open3DWindow();
     //emit messageGenerated("Done.");
   }
 }
@@ -372,6 +375,12 @@ void ZFlyEmBodySplitProject::setDataFrame(ZStackFrame *frame)
   updateBookDecoration();
 }
 
+void ZFlyEmBodySplitProject::removeAllBookmark()
+{
+  m_bookmarkArray.clear();
+  clearBookmarkDecoration();
+}
+
 void ZFlyEmBodySplitProject::loadBookmark(const QString &filePath)
 {
   ZDvidReader reader;
@@ -466,6 +475,12 @@ std::set<int> ZFlyEmBodySplitProject::getBookmarkBodySet() const
   return bodySet;
 }
 
+void ZFlyEmBodySplitProject::exportSplits()
+{
+  //ZObject3dScan body = *(getDataFrame()->document()->getSparseStack()->getObjectMask());
+
+}
+
 void ZFlyEmBodySplitProject::commitResult()
 {
   ZFlyEmBodySplitProject::commitResultFunc(
@@ -492,9 +507,10 @@ void ZFlyEmBodySplitProject::commitResultFunc(
 
   ZObject3dScan body = *wholeBody;
 
-  emit messageGenerated(QString("Backup ... ").arg(getBodyId()));
+  emit messageGenerated(QString("Backup ... %1").arg(getBodyId()));
 
-  body.save(GET_TEST_DATA_DIR + "/backup/" + getSeedKey(getBodyId()) + ".sobj");
+  std::string backupDir = GET_TEST_DATA_DIR + "/backup";
+  body.save(backupDir + "/" + getSeedKey(getBodyId()) + ".sobj");
 
 //  const ZStack *stack = getDataFrame()->document()->getLabelField();
   QStringList filePathList;
@@ -538,17 +554,22 @@ void ZFlyEmBodySplitProject::commitResultFunc(
   if (!body.isEmpty()) {
     std::vector<ZObject3dScan> objArray = body.getConnectedComponent();
 
+#ifdef _DEBUG_
+    body.save(GET_TEST_DATA_DIR + "/test.sobj");
+#endif
+
     double dp = 0.3;
 
     if (!objArray.empty()) {
       dp = 0.3 / objArray.size();
     }
 
+    const size_t sizeThreshold = 0;
     //if (objArray.size() > 1 || !filePathList.isEmpty()) {
     for (std::vector<ZObject3dScan>::const_iterator iter = objArray.begin();
          iter != objArray.end(); ++iter) {
       const ZObject3dScan &obj = *iter;
-      if (obj.getVoxelNumber() > 20) {
+      if (obj.getVoxelNumber() > sizeThreshold) {
         ZString output = QDir::tempPath() + "/body_";
         output.appendNumber(getBodyId());
         output += "_";
@@ -578,7 +599,16 @@ void ZFlyEmBodySplitProject::commitResultFunc(
   if (!filePathList.empty()) {
     dp = 0.3 / filePathList.size();
   }
+
+  ZDvidWriter writer;
+  writer.open(getDvidTarget());
   foreach (QString objFile, filePathList) {
+    ZObject3dScan obj;
+    obj.load(objFile.toStdString());
+    writer.writeSplit(getDvidTarget().getBodyLabelName(), obj, getBodyId(),
+                      ++bodyId);
+
+#if 0
     QString command = buildemPath +
         QString("/bin/dvid_load_sparse http://emdata2:8000 %1 %2 %3 %4").
         arg(m_dvidTarget.getUuid().c_str()).
@@ -588,6 +618,7 @@ void ZFlyEmBodySplitProject::commitResultFunc(
     qDebug() << command;
 
     QProcess::execute(command);
+#endif
 
     QString msg = QString("%1 uploaded.").arg(bodyId);
     emit messageGenerated(msg);
@@ -595,8 +626,6 @@ void ZFlyEmBodySplitProject::commitResultFunc(
     emit progressAdvanced(dp);
   }
 
-  ZDvidWriter writer;
-  writer.open(m_dvidTarget);
   writer.writeMaxBodyId(bodyId);
 
   emit progressDone();
@@ -627,14 +656,12 @@ void ZFlyEmBodySplitProject::saveSeed()
   ZDvidWriter writer;
   if (writer.open(getDvidTarget())) {
     if (jsonArray.isEmpty()) {
-      writer.deleteKey(ZDvidData::getName(ZDvidData::ROLE_SPLIT_LABEL),
-                       getSeedKey(getBodyId()));
+      writer.deleteKey(getSplitLabelName(), getSeedKey(getBodyId()));
       emit messageGenerated("All seeds deleted");
     } else {
       ZJsonObject rootObj;
       rootObj.setEntry("seeds", jsonArray);
-      writer.writeJson(ZDvidData::getName(ZDvidData::ROLE_SPLIT_LABEL),
-                       getSeedKey(getBodyId()), rootObj);
+      writer.writeJson(getSplitLabelName(), getSeedKey(getBodyId()), rootObj);
       emit messageGenerated("All seeds saved");
     }
   }
@@ -645,7 +672,7 @@ void ZFlyEmBodySplitProject::downloadSeed()
   ZDvidReader reader;
   if (reader.open(getDvidTarget())) {
     QByteArray seedData = reader.readKeyValue(
-          ZDvidData::getName(ZDvidData::ROLE_SPLIT_LABEL),
+          getSplitLabelName().c_str(),
           getSeedKey(getBodyId()).c_str());
     if (!seedData.isEmpty()) {
       ZJsonObject obj;
@@ -777,28 +804,30 @@ void ZFlyEmBodySplitProject::updateBodyMask()
         ZStack *stack = reader.readBodyLabel(
               rectRoi.getX0(), rectRoi.getY0(), z,
               rectRoi.getWidth(), rectRoi.getHeight(), 1);
-        std::map<int, ZObject3dScan*> *bodySet =
-            ZObject3dScan::extractAllObject(
-              (uint64_t*) stack->array8(), stack->width(), stack->height(), 1,
-              stack->getOffset().getZ(), NULL);
+        if (stack != NULL) {
+          std::map<int, ZObject3dScan*> *bodySet =
+              ZObject3dScan::extractAllObject(
+                (uint64_t*) stack->array8(), stack->width(), stack->height(), 1,
+                stack->getOffset().getZ(), 1, NULL);
 
-        frame->document()->blockSignals(true);
-        for (std::map<int, ZObject3dScan*>::const_iterator iter = bodySet->begin();
-             iter != bodySet->end(); ++iter) {
-          int label = iter->first;
-          ZObject3dScan *obj = iter->second;
-          if (label > 0) {
-            obj->translate(
-                  stack->getOffset().getX(), stack->getOffset().getY(), 0);
-            obj->setRole(ZStackObjectRole::ROLE_MASK);
-            frame->document()->addObject(obj, false);
-          } else {
-            delete obj;
+          frame->document()->blockSignals(true);
+          for (std::map<int, ZObject3dScan*>::const_iterator iter = bodySet->begin();
+               iter != bodySet->end(); ++iter) {
+            int label = iter->first;
+            ZObject3dScan *obj = iter->second;
+            if (label > 0) {
+              obj->translate(
+                    stack->getOffset().getX(), stack->getOffset().getY(), 0);
+              obj->setRole(ZStackObjectRole::ROLE_MASK);
+              frame->document()->addObject(obj, false);
+            } else {
+              delete obj;
+            }
           }
+          frame->document()->blockSignals(false);
+          frame->document()->notifyObject3dScanModified();
+          frame->document()->notifyPlayerChanged(ZStackObjectRole::ROLE_MASK);
         }
-        frame->document()->blockSignals(false);
-        frame->document()->notifyObject3dScanModified();
-        frame->document()->notifyPlayerChanged(ZStackObjectRole::ROLE_MASK);
 
         delete stack;
       }
@@ -806,9 +835,24 @@ void ZFlyEmBodySplitProject::updateBodyMask()
   }
 }
 
+std::string ZFlyEmBodySplitProject::getSplitStatusName() const
+{
+  return ZDvidData::getName(
+        ZDvidData::ROLE_SPLIT_STATUS, ZDvidData::ROLE_BODY_LABEL,
+        getDvidTarget().getBodyLabelName());
+}
+
+std::string ZFlyEmBodySplitProject::getSplitLabelName() const
+{
+  return ZDvidData::getName(ZDvidData::ROLE_SPLIT_LABEL,
+                            ZDvidData::ROLE_BODY_LABEL,
+                            getDvidTarget().getBodyLabelName());
+}
+
 std::string ZFlyEmBodySplitProject::getSeedKey(int bodyId) const
 {
-  return m_dvidTarget.getBodyLabelName() + "_seed_" + ZString::num2str(bodyId);
+  return getDvidTarget().getBodyLabelName() + "_seed_" +
+      ZString::num2str(bodyId);
 }
 
 void ZFlyEmBodySplitProject::runSplit()
@@ -825,7 +869,7 @@ void ZFlyEmBodySplitProject::setSeedProcessed(int bodyId)
   if (writer.open(getDvidTarget())) {
     ZJsonObject statusJson;
     statusJson.setEntry("processed", true);
-    writer.writeJson(ZDvidData::getName(ZDvidData::ROLE_SPLIT_STATUS),
+    writer.writeJson(getSplitStatusName(),
                      getSeedKey(bodyId), statusJson);
   }
 }
@@ -837,7 +881,7 @@ bool ZFlyEmBodySplitProject::isSeedProcessed(int bodyId) const
   ZDvidReader reader;
   if (reader.open(getDvidTarget())) {
     QByteArray value = reader.readKeyValue(
-          ZDvidData::getName(ZDvidData::ROLE_SPLIT_STATUS),
+          getSplitStatusName().c_str(),
           getSeedKey(bodyId).c_str());
 
     if (!value.isEmpty()) {

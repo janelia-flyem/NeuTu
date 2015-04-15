@@ -65,6 +65,8 @@ public:
    */
   bool isZero() const;
 
+  bool equals(const ZIntPoint &pt) const;
+
 public:
   int m_x;
   int m_y;

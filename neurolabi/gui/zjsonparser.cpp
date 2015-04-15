@@ -107,7 +107,7 @@ double ZJsonParser::numberValue(const json_t *value)
   return json_number_value(value);
 }
 
-int ZJsonParser::integerValue(const json_t *value)
+int64_t ZJsonParser::integerValue(const json_t *value)
 {
   if (value == NULL) {
     return 0;

@@ -62,8 +62,14 @@ public:
    */
   int toInteger() const;
 
-  double toReal();
-  const char *toString();
+  /*!
+   * \brief Get the real value of the json value
+   *
+   * \return 0 if the object is not an integer or real type.
+   */
+  double toReal() const;
+
+  std::string toString() const;
 
   void set(json_t *data, bool asNew);
   void set(json_t *data, ESetDataOption option);
@@ -99,6 +105,8 @@ public:
    * \return true iff write succeeds.
    */
   bool dump(const std::string &path) const;
+
+  bool load(const std::string &filePath);
 
 protected:
   json_error_t m_error;

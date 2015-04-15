@@ -33,6 +33,13 @@ ZJsonObject::ZJsonObject(const ZJsonObject &obj) : ZJsonValue(obj)
 {
 }
 
+ZJsonObject::ZJsonObject(const ZJsonValue &obj)
+{
+  if (obj.isObject()) {
+    set(obj.getData(), ZJsonValue::SET_INCREASE_REF_COUNT);
+  }
+}
+
 ZJsonObject::~ZJsonObject()
 {
 #ifdef _DEBUG_2
@@ -76,22 +83,10 @@ const json_t* ZJsonObject::operator[] (const char *key) const
   return NULL;
 }
 
-bool ZJsonObject::load(const string &filePath)
+ZJsonValue ZJsonObject::at(const char *key) const
 {
-  if (m_data != NULL) {
-    json_decref(m_data);
-  }
-
-  m_data = json_load_file(filePath.c_str(), 0, &m_error);
-  if (m_data) {
-    return true;
-  }
-
-#if defined(HAVE_LIBJANSSON)
-  cout << m_error.source << endl << ": " << m_error.text << endl;
-#endif
-
-  return false;
+  return ZJsonValue(const_cast<json_t*>((*this)[key]),
+                    ZJsonValue::SET_INCREASE_REF_COUNT);
 }
 
 bool ZJsonObject::decode(const string &str)
@@ -240,7 +235,9 @@ void ZJsonObject::setEntry(const char *key, const string &value)
     return;
   }
 
-  setEntryWithoutKeyCheck(key, json_string(value.c_str()), true);
+  if (!value.empty()) {
+    setEntryWithoutKeyCheck(key, json_string(value.c_str()), true);
+  }
 }
 
 void ZJsonObject::setEntry(const char *key, const double *array, size_t n)
@@ -268,6 +265,24 @@ void ZJsonObject::setEntry(const char *key, bool v)
   }
 
   setEntryWithoutKeyCheck(key, C_Json::makeBoolean(v));
+}
+
+void ZJsonObject::setEntry(const char *key, int64_t v)
+{
+  if (!isValidKey(key)) {
+    return;
+  }
+
+  setEntryWithoutKeyCheck(key, C_Json::makeInteger(v), true);
+}
+
+void ZJsonObject::setEntry(const char *key, uint64_t v)
+{
+  if (!isValidKey(key)) {
+    return;
+  }
+
+  setEntryWithoutKeyCheck(key, C_Json::makeInteger(v), true);
 }
 
 void ZJsonObject::setEntry(const char *key, int v)

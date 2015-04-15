@@ -5,6 +5,7 @@
 #include "neutubeconfig.h"
 #include "zstackframe.h"
 #include "tz_error.h"
+#include "zwindowfactory.h"
 
 AutosaveSwcListDialog::AutosaveSwcListDialog(QWidget *parent) :
   QDialog(parent),
@@ -62,15 +63,20 @@ void AutosaveSwcListDialog::viewSwc(const QModelIndex &index)
         NeutubeConfig::getInstance().getPath(NeutubeConfig::AUTO_SAVE).c_str() +
         fileName;
 
-
-    ZStackFrame *frame = new ZStackFrame;
-
-    if (frame->readStack(fileName.toStdString().c_str()) == SUCCESS) {
-      frame->open3DWindow(this->parentWidget());
+    ZStackDoc *doc = new ZStackDoc(NULL, NULL);
+    ZSwcTree *tree = new ZSwcTree;
+    tree->load(fileName.toStdString());
+    if (!tree->isEmpty()) {
+      doc->addSwcTree(tree);
+      ZWindowFactory factory;
+      factory.setParentWidget(this->parentWidget());
+      Z3DWindow *window = factory.make3DWindow(doc);
+      window->show();
+      window->raise();
     } else {
       std::cerr << "Cannot open " << fileName.toStdString() << std::endl;
+      delete doc;
     }
-    delete frame;
   }
 }
 

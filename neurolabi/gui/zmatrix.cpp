@@ -14,21 +14,22 @@
 
 using namespace std;
 
-ZMatrix::ZMatrix()
+ZMatrix::ZMatrix() : m_rowNumber(0), m_columnNumber(0)
 {
-  m_rowNumber = 0;
-  m_columnNumber = 0;
-  m_data = NULL;
 }
 
 ZMatrix::ZMatrix(int rowNumber, int columnNumber)
 {
   m_rowNumber = rowNumber;
   m_columnNumber = columnNumber;
+  int count = rowNumber * columnNumber;
+  m_data.resize(count);
+  /*
   m_data = (double**) calloc(rowNumber, sizeof(double*));
   for (int i = 0; i < rowNumber; i++) {
     m_data[i] = (double*) calloc(columnNumber, sizeof(double));
   }
+  */
 }
 
 ZMatrix::~ZMatrix()
@@ -41,6 +42,51 @@ void ZMatrix::resize(int rowNumber, int columnNumber)
   TZ_ASSERT(rowNumber >= 0, "Invalid row number");
   TZ_ASSERT(columnNumber >= 0, "Invalid column number");
 
+  if (rowNumber == getRowNumber() && columnNumber == getColumnNumber()) {
+    return;
+  }
+
+  int count = rowNumber * columnNumber;
+  m_data.resize(count, 0);
+  if (columnNumber <= getColumnNumber()) {
+    if (columnNumber < getColumnNumber()) {
+      //Move data
+      int copyRowNumber = imin2(rowNumber, getRowNumber());
+      size_t srcOffset = 0;
+      size_t dstOffset = 0;
+      int dc = getColumnNumber() - columnNumber;
+
+      //For each row
+      for (int i = 0; i < copyRowNumber; ++i) {
+        //Assign a row of values
+        for (int j = 0; j < columnNumber; ++j) {
+          m_data[dstOffset++] = m_data[srcOffset++];
+        }
+        srcOffset += dc;
+      }
+    }
+  } else {
+    ZDoubleVector data(count, 0);
+    int copyRowNumber = imin2(rowNumber, getRowNumber());
+    size_t srcOffset = 0;
+    size_t dstOffset = 0;
+    int dc = columnNumber - getColumnNumber();
+
+    //For each row
+    for (int i = 0; i < copyRowNumber; ++i) {
+      //Assign a row of values
+      for (int j = 0; j < getColumnNumber(); ++j) {
+        data[dstOffset++] = m_data[srcOffset++];
+      }
+      dstOffset += dc;
+    }
+    m_data = data;
+  }
+
+  m_rowNumber = rowNumber;
+  m_columnNumber = columnNumber;
+
+#if 0
   //Free unwanted rows
   if (rowNumber < getRowNumber()) {
     for (int i = rowNumber; i < getRowNumber(); ++i) {
@@ -69,14 +115,14 @@ void ZMatrix::resize(int rowNumber, int columnNumber)
 
   m_rowNumber = rowNumber;
   m_columnNumber = columnNumber;
+#endif
 }
 
 void ZMatrix::setConstant(double value)
 {
-  for (int i = 0; i < m_rowNumber; i++) {
-    for (int j = 0; j < m_columnNumber; j++) {
-      set(i, j, value);
-    }
+  size_t count = getElementNumber();
+  for (size_t i = 0; i < count; ++i) {
+    m_data[i] = value;
   }
 }
 
@@ -86,9 +132,7 @@ void ZMatrix::set(int index, double value)
     return;
   }
 
-  int row = index / getColumnNumber();
-  int col = index % getColumnNumber();
-  set(row, col, value);
+  m_data[index] = value;
 }
 
 double ZMatrix::getValue(int index) const
@@ -97,10 +141,7 @@ double ZMatrix::getValue(int index) const
     return 0.0;
   }
 
-  int row = index / getColumnNumber();
-  int col = index % getColumnNumber();
-
-  return getValue(row, col);
+  return m_data[index];
 }
 
 int ZMatrix::sub2index(int row, int col) const
@@ -154,12 +195,32 @@ void ZMatrix::debugOutput()
   */
 }
 
-void ZMatrix::copyValue(double *data)
+double* ZMatrix::rowPointer(int row)
 {
+  return const_cast<double*>(
+        (static_cast<const ZMatrix&>(*this)).rowPointer(row));
+}
+
+const double* ZMatrix::rowPointer(int row) const
+{
+  if (row > getRowNumber()) {
+    return NULL;
+  }
+
+  return &(m_data[row * getColumnNumber()]);
+}
+
+
+
+void ZMatrix::copyValueFrom(double *data)
+{
+  memcpy(rowPointer(0), data, getElementNumber() * sizeof(double));
+#if 0
   for (int i = 0; i < getRowNumber(); ++i) {
     memcpy(m_data[i], data + getColumnNumber() * i,
            getColumnNumber() * sizeof(double));
   }
+#endif
 
 #ifdef _DEBUG_2
   cout << "copied:" << endl;
@@ -173,14 +234,14 @@ void ZMatrix::copyValue(double *data)
 #endif
 }
 
-void ZMatrix::copyColumnValue(double *data, int columnStart, int columnNumber)
+void ZMatrix::copyColumnValueFrom(double *data, int columnStart, int columnNumber)
 {
   if (columnNumber + columnStart > getColumnNumber()) {
     resize(getRowNumber(), columnNumber + columnStart);
   }
 
   for (int i = 0; i < getRowNumber(); ++i) {
-    memcpy(m_data[i] + columnStart, data + columnNumber * i,
+    memcpy(rowPointer(i) + columnStart, data + columnNumber * i,
            columnNumber * sizeof(double));
   }
 }
@@ -261,9 +322,9 @@ bool ZMatrix::exportCsv(
 
 double ZMatrix::getRowMax(int row, int *index) const
 {
-  size_t arrayIndex;
+  size_t arrayIndex = 0;
 
-  double v = darray_max(m_data[row], getColumnNumber(), &arrayIndex);
+  double v = darray_max(rowPointer(row), getColumnNumber(), &arrayIndex);
 
   if (index != NULL) {
     *index = (int) arrayIndex;
@@ -272,15 +333,33 @@ double ZMatrix::getRowMax(int row, int *index) const
   return v;
 }
 
-void ZMatrix::clear()
+double ZMatrix::getColumnMax(int column, int *index) const
 {
-  for (int i = 0; i < m_rowNumber; i++) {
-    free(m_data[i]);
-    m_data[i] = NULL;
+  if (index != NULL) {
+    *index = 0;
+  }
+  double v = 0.0;
+
+  if (getRowNumber() > 0) {
+    v = getValue(0, column);
+    for (int i = 1; i < getRowNumber(); ++i) {
+      double tv = getValue(i, column);
+      if (tv > v) {
+        v = tv;
+        if (index != NULL) {
+          *index = i;
+        }
+      }
+    }
   }
 
-  free(m_data);
-  m_data = NULL;
+  return v;
+}
+
+
+void ZMatrix::clear()
+{
+  m_data.clear();
 
   m_rowNumber = 0;
   m_columnNumber = 0;
@@ -292,17 +371,20 @@ void ZMatrix::importTextFile(const string &filePath)
 
   double *value = darray_load_matrix(filePath.c_str(), NULL, &m_columnNumber,
                                      &m_rowNumber);
-  m_data = (double**) calloc(m_rowNumber, sizeof(double*));
-  for (int i = 0; i < m_rowNumber; i++) {
-    m_data[i] = (double*) calloc(m_columnNumber, sizeof(double));
-  }
+  m_data.resize(m_rowNumber * m_columnNumber);
 
-  copyValue(value);
+//  m_data = (double**) calloc(m_rowNumber, sizeof(double*));
+//  for (int i = 0; i < m_rowNumber; i++) {
+//    m_data[i] = (double*) calloc(m_columnNumber, sizeof(double));
+//  }
+
+  copyValueFrom(value);
 
   free(value);
 }
 
-int ZMatrix::copyRowValue(int row, int columnStart, int columnEnd, double *dst)
+int ZMatrix::copyRowValueTo(
+    int row, int columnStart, int columnEnd, double *dst) const
 {
   if (dst == NULL) {
     return 0;
@@ -330,7 +412,7 @@ int ZMatrix::copyRowValue(int row, int columnStart, int columnEnd, double *dst)
   }
 
   int length = columnEnd - columnStart + 1;
-  memcpy(dst, m_data[row] + columnStart, sizeof(double) * length);
+  memcpy(dst, rowPointer(row) + columnStart, sizeof(double) * length);
 
   return length;
 }
@@ -345,7 +427,7 @@ bool ZMatrix::setRowValue(int row, const std::vector<double> &rowValue)
     return false;
   }
 
-  memcpy(m_data[row], &(rowValue[0]), sizeof(double) * rowValue.size());
+  memcpy(rowPointer(row), &(rowValue[0]), sizeof(double) * rowValue.size());
 
   return true;
 }
@@ -366,7 +448,7 @@ bool ZMatrix::setRowValue(
     return false;
   }
 
-  memcpy(m_data[row] + columnStart, &(rowValue[0]),
+  memcpy(rowPointer(row) + columnStart, &(rowValue[0]),
       sizeof(double) * rowValue.size());
 
   return true;
@@ -374,5 +456,48 @@ bool ZMatrix::setRowValue(
 
 bool ZMatrix::isEmpty() const
 {
-  return (m_data == NULL) || (m_rowNumber == 0) || (m_columnNumber == 0);
+  return (m_rowNumber == 0) || (m_columnNumber == 0);
+}
+
+void ZMatrix::printInfo() const
+{
+  std::cout << m_rowNumber << " x " << m_columnNumber << " matrix" << std::endl;
+}
+
+ZMatrix ZMatrix::makeRowSlice(int r0, int r1) const
+{
+  ZMatrix mat(r1 - r0 + 1, getColumnNumber());
+  for (int i = r0; i <= r1; ++i) {
+    copyRowValueTo(i, 0, getColumnNumber() - 1, mat.rowPointer(i - r0));
+  }
+
+  return mat;
+}
+
+ZMatrix ZMatrix::makeColumnSlice(int c0, int c1) const
+{
+  ZMatrix mat(getRowNumber(), c1 - c0 + 1);
+  for (int i = 0; i < getRowNumber(); ++i) {
+    copyRowValueTo(i, c0, c1, mat.rowPointer(i));
+  }
+
+  return mat;
+}
+
+ZDoubleVector ZMatrix::getDiag() const
+{
+  ZDoubleVector vec(imin2(getRowNumber(), getColumnNumber()));
+  for (size_t i = 0; i < vec.size(); ++i) {
+    vec[i] = getValue(i, i);
+  }
+
+  return vec;
+}
+
+void ZMatrix::setDiag(double v)
+{
+  int n = imin2(getRowNumber(), getColumnNumber());
+  for (int i = 0; i < n; ++i) {
+    set(i, i, v);
+  }
 }

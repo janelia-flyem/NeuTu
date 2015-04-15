@@ -55,6 +55,7 @@
 #include "zjsonarray.h"
 #include "zjsonparser.h"
 #include "zintset.h"
+#include "zwindowfactory.h"
 
 using namespace std;
 
@@ -163,6 +164,8 @@ ZFlyEmDataFrame::ZFlyEmDataFrame(QWidget *parent) :
   connect(m_qualityManager, SIGNAL(finished()),
           this, SLOT(updateQualityControl()));
   m_qualityManager->setProgressReporter(&m_specialProgressReporter);
+
+  m_3dWindowFactory.setParentWidget(this->parentWidget());
 }
 
 ZFlyEmDataFrame::~ZFlyEmDataFrame()
@@ -1121,12 +1124,24 @@ void ZFlyEmDataFrame::process()
       matchingSwc->resortId();
       matchingSwc->setColor(0, 255, 0);
 
+#if 0
       ZStackFrame *swcFrame = new ZStackFrame;
       swcFrame->createDocument();
       swcFrame->document()->addSwcTree(originalTree1);
       swcFrame->document()->addSwcTree(originalTree2);
       swcFrame->document()->addSwcTree(matchingSwc);
       Z3DWindow *window = swcFrame->open3DWindow(NULL);
+#endif
+
+      ZStackDoc *doc = new ZStackDoc(NULL, NULL);
+      doc->addSwcTree(originalTree1);
+      doc->addSwcTree(originalTree2);
+      doc->addSwcTree(matchingSwc);
+      ZWindowFactory factory;
+      factory.setParentWidget(this->parentWidget());
+      Z3DWindow *window = factory.open3DWindow(doc);
+
+
       if (window != NULL) {
         window->getSwcFilter()->setRenderingPrimitive("Line");
         window->getSwcFilter()->setColorMode("Intrinsic");
@@ -1137,7 +1152,7 @@ void ZFlyEmDataFrame::process()
       delete resampledTree2;
       resampledTree2 = NULL;
 
-      delete swcFrame;
+      //delete swcFrame;
     }
       break;
     case SORT_SHAPE:
@@ -1238,6 +1253,52 @@ const QColor* ZFlyEmDataFrame::getColor(const std::pair<int, int> &bodyId) const
 
 void ZFlyEmDataFrame::showModel() const
 {
+  ZStackDoc *doc = new ZStackDoc(NULL, NULL);
+
+  //ZStackFrame *swcFrame = new ZStackFrame;
+  //swcFrame->createDocument();
+  for (size_t i = 0; i < m_sourceIdArray.size(); ++i) {
+    const ZFlyEmNeuron *neuron = getNeuron(m_sourceIdArray[i]);
+    if (neuron == NULL) {
+      dump("Invalid id");
+    } else {
+      ZSwcTree *model = neuron->getModel();
+      doc->blockSignals(true);
+      if (model != NULL) {
+        const QColor *color = getColor(m_sourceIdArray[i]);
+        if (color != NULL) {
+          model->setColor(*color);
+        }
+
+        doc->addSwcTree(model->clone());
+      }
+      vector<ZPunctum*> puncta = neuron->getSynapse();
+      for (vector<ZPunctum*>::iterator iter = puncta.begin();
+           iter != puncta.end(); ++iter) {
+        doc->addPunctum(*iter);
+      }
+      doc->blockSignals(false);
+      doc->swcObjsModel()->updateModelData();
+      doc->punctaObjsModel()->updateModelData();
+    }
+#if 0
+    string modelPath = m_data.getModelPath(m_sourceIdArray[i]);
+    if (!modelPath.empty()) {
+      swcFrame->document()->loadSwc(modelPath.c_str());
+    } else {
+     dump(QString("<font size=4 face=Times>No model path found : %1</font>")
+          .arg(m_sourceIdArray[i]).toStdString());
+    }
+#endif
+
+  }
+
+  ZWindowFactory factory;
+  factory.setParentWidget(this->parentWidget());
+  factory.open3DWindow(doc);
+  //swcFrame->open3DWindow(NULL);
+
+#if 0
   ZStackFrame *swcFrame = new ZStackFrame;
   swcFrame->createDocument();
   for (size_t i = 0; i < m_sourceIdArray.size(); ++i) {
@@ -1277,26 +1338,30 @@ void ZFlyEmDataFrame::showModel() const
   }
   swcFrame->open3DWindow(NULL);
   delete swcFrame;
+#endif
+
 }
 
 void ZFlyEmDataFrame::showConnection() const
 {
-  ZStackFrame *swcFrame = new ZStackFrame;
-  swcFrame->createDocument();
+  //ZStackFrame *swcFrame = new ZStackFrame;
+  //swcFrame->createDocument();
+
+  ZStackDoc *doc = new ZStackDoc(NULL, NULL);
   for (size_t i = 0; i < m_sourceIdArray.size(); ++i) {
     const ZFlyEmNeuron *neuron = getNeuron(m_sourceIdArray[i]);
     if (neuron == NULL) {
       dump("Invalid id");
     } else {
       ZSwcTree *model = neuron->getModel();
-      swcFrame->document()->blockSignals(true);
+      doc->blockSignals(true);
       if (model != NULL) {
         const QColor *color = getColor(m_sourceIdArray[i]);
         if (color != NULL) {
           model->setColor(*color);
         }
 
-        swcFrame->document()->addSwcTree(model->clone());
+        doc->addSwcTree(model->clone());
       }
 
       for (size_t j = 0; j < m_sourceIdArray.size(); ++j) {
@@ -1305,15 +1370,15 @@ void ZFlyEmDataFrame::showConnection() const
             vector<ZPunctum*> puncta = neuron->getSynapse(m_sourceIdArray[j].first);
             for (vector<ZPunctum*>::iterator iter = puncta.begin();
                  iter != puncta.end(); ++iter) {
-              swcFrame->document()->addPunctum(*iter);
+              doc->addPunctum(*iter);
             }
           }
         }
       }
 
-      swcFrame->document()->blockSignals(false);
-      swcFrame->document()->swcObjsModel()->updateModelData();
-      swcFrame->document()->punctaObjsModel()->updateModelData();
+      doc->blockSignals(false);
+      doc->swcObjsModel()->updateModelData();
+      doc->punctaObjsModel()->updateModelData();
     }
 #if 0
     string modelPath = m_data.getModelPath(m_sourceIdArray[i]);
@@ -1326,8 +1391,12 @@ void ZFlyEmDataFrame::showConnection() const
 #endif
 
   }
-  swcFrame->open3DWindow(NULL);
-  delete swcFrame;
+
+  ZWindowFactory factory;
+  factory.setParentWidget(this->parentWidget());
+  factory.make3DWindow(doc);
+  //swcFrame->open3DWindow(NULL);
+  //delete swcFrame;
 }
 
 #if 0
@@ -1998,10 +2067,12 @@ void ZFlyEmDataFrame::showNearbyNeuron(const ZFlyEmNeuron *neuron)
       if (m_geoSearchDlg->exec()) {
         startProgress();
 
-        ZStackFrame *swcFrame = new ZStackFrame;
-        swcFrame->createDocument();
-        swcFrame->document()->blockSignals(true);
-        swcFrame->document()->addSwcTree(tree1->clone());
+        //ZStackFrame *swcFrame = new ZStackFrame;
+        //swcFrame->createDocument();
+        ZSharedPointer<ZStackDoc> doc =
+            ZSharedPointer<ZStackDoc>(new ZStackDoc(NULL, NULL));
+        doc->blockSignals(true);
+        doc->addSwcTree(tree1->clone());
 
         int index = 0;
         foreach (ZFlyEmDataBundle *bundle, m_dataArray) {
@@ -2020,7 +2091,7 @@ void ZFlyEmDataFrame::showNearbyNeuron(const ZFlyEmNeuron *neuron)
                 ZSwcTree *tree2 = iter->getModel();
                 if (tree2 != NULL && tree1 != tree2) {
                   if (filter->isPassed(*iter)) {
-                    swcFrame->document()->addSwcTree(tree2->clone());
+                    doc->addSwcTree(tree2->clone());
                   }
                 }
                 advanceProgress(1.0 / neuronArray.size());
@@ -2029,19 +2100,20 @@ void ZFlyEmDataFrame::showNearbyNeuron(const ZFlyEmNeuron *neuron)
             }
           }
         }
-        swcFrame->document()->blockSignals(false);
+        doc->blockSignals(false);
 
-        if (swcFrame->document()->getSwcList().size() > 1) {
-          swcFrame->document()->swcObjsModel()->updateModelData();
-          Z3DWindow *window = swcFrame->open3DWindow(NULL);
-          delete swcFrame;
+        if (doc->getSwcList().size() > 1) {
+          doc->swcObjsModel()->updateModelData();
+          Z3DWindow *window = Z3DWindow::Make(doc, this);
+          //Z3DWindow *window = swcFrame->open3DWindow(NULL);
+          //delete swcFrame;
           if (window != NULL) {
             window->getSwcFilter()->setRenderingPrimitive("Normal");
             window->getSwcFilter()->setColorMode("Invididual");
           }
         } else {
           QMessageBox::information(this, "No Neuron Found", "No neuron found.");
-          delete swcFrame;
+          //delete swcFrame;
         }
         endProgress();
       }

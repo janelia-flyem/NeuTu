@@ -23,6 +23,8 @@
 #include "flyem/zflyemneuronbodyinfo.h"
 #include "zstackpatch.h"
 #include "dvid/zdviddata.h"
+#include "zmessage.h"
+#include "zmessagemanager.h"
 
 FlyEmBodySplitProjectDialog::FlyEmBodySplitProjectDialog(QWidget *parent) :
   QDialog(parent),
@@ -76,7 +78,10 @@ FlyEmBodySplitProjectDialog::FlyEmBodySplitProjectDialog(QWidget *parent) :
 
   createMenu();
   connectSignalSlot();
+
+  m_messageManager = NULL;
 }
+
 
 FlyEmBodySplitProjectDialog::~FlyEmBodySplitProjectDialog()
 {
@@ -123,6 +128,15 @@ void FlyEmBodySplitProjectDialog::createMenu()
   m_showBodyMaskAction->setCheckable(true);
   connect(m_showBodyMaskAction, SIGNAL(triggered(bool)),
           this, SLOT(showBodyMask(bool)));
+
+  QAction *removeBookmarkAction = new QAction("Remove All Bookmarks", this);
+  m_mainMenu->addAction(removeBookmarkAction);
+  connect(removeBookmarkAction, SIGNAL(triggered()),
+          this, SLOT(removeAllBookmark()));
+
+  QAction *exportSplitAction = new QAction("Export splits", this);
+  m_mainMenu->addAction(exportSplitAction);
+  connect(exportSplitAction, SIGNAL(triggered()), this, SLOT(exportSplits()));
 
   QMenu *batchMenu = m_mainMenu->addMenu("Batch");
   QAction *allSeedSummaryAction = new QAction("Check Work Progress", this);
@@ -258,17 +272,25 @@ void FlyEmBodySplitProjectDialog::setLoadBodyDialog(
 
 bool FlyEmBodySplitProjectDialog::loadBody()
 {
+  int bodyId = ui->bodyIdSpinBox->value();
+  ZDvidReader reader;
+  if (reader.open(getDvidTarget())) {
+    if (reader.hasSparseVolume(bodyId)) {
  // if (m_loadBodyDlg->exec()) {
-    //setDvidTarget(m_loadBodyDlg->getDvidTarget());
-    setBodyId(ui->bodyIdSpinBox->value());
+      //setDvidTarget(m_loadBodyDlg->getDvidTarget());
+      setBodyId(bodyId);
 
-    //updateSideView();;
-    updateWidget();
-    updateSideView();
+      //updateSideView();;
+      updateWidget();
+      updateSideView();
 
-    dump("Body loaded.");
+      dump("Body loaded.");
 
-    return showData2d();
+      return showData2d();
+    }
+  }
+
+  return false;
   //}
 }
 
@@ -684,6 +706,17 @@ void FlyEmBodySplitProjectDialog::showBodyMask(bool on)
   m_project.updateBodyMask();
 }
 
+void FlyEmBodySplitProjectDialog::removeAllBookmark()
+{
+  m_project.removeAllBookmark();
+  updateWidget();
+}
+
+void FlyEmBodySplitProjectDialog::exportSplits()
+{
+  m_project.exportSplits();
+}
+
 void FlyEmBodySplitProjectDialog::checkAllSeed()
 {
   ZDvidReader reader;
@@ -692,7 +725,7 @@ void FlyEmBodySplitProjectDialog::checkAllSeed()
     //int maxId = reader.readMaxBodyId();
 
     QStringList keyList = reader.readKeys(
-          ZDvidData::getName(ZDvidData::ROLE_SPLIT_LABEL),
+          m_project.getSplitLabelName().c_str(),
           m_project.getSeedKey(0).c_str(),
           (m_project.getSeedKey(9) + "a").c_str());
     emit messageDumped("<i>Work summary</i>: ");
@@ -736,7 +769,7 @@ void FlyEmBodySplitProjectDialog::processAllSeed()
     //int maxId = reader.readMaxBodyId();
 
     QStringList keyList = reader.readKeys(
-          ZDvidData::getName(ZDvidData::ROLE_SPLIT_LABEL),
+          m_project.getSplitLabelName().c_str(),
           m_project.getSeedKey(0).c_str(),
           (m_project.getSeedKey(9) + "a").c_str());
 
@@ -803,3 +836,48 @@ void FlyEmBodySplitProjectDialog::startSplit(
   ui->bodyIdSpinBox->setValue(bodyId);
   loadBody();
 }
+
+void FlyEmBodySplitProjectDialog::enableMessageManager()
+{
+  if (m_messageManager == NULL) {
+    m_messageManager = ZMessageManager::Make<MessageProcessor>(this);
+  }
+}
+
+void FlyEmBodySplitProjectDialog::MessageProcessor::processMessage(
+    ZMessage *message, QWidget *host) const
+{
+  FlyEmBodySplitProjectDialog *dlg =
+      dynamic_cast<FlyEmBodySplitProjectDialog*>(host);
+
+  switch (message->getType()) {
+  case ZMessage::TYPE_FLYEM_SPLIT:
+    if (dlg != NULL) {
+      const ZJsonObject &obj = message->getMessageBody();
+      if (obj.hasKey("body_id")) {
+        int64_t bodyId = ZJsonParser::integerValue(obj["body_id"]);
+        if (bodyId >= 0) {
+          if (obj.hasKey("dvid_target")) {
+            ZDvidTarget target;
+            target.loadJsonObject(ZJsonObject(obj.at("dvid_target")));
+            dlg->show();
+            dlg->raise();
+            dlg->startSplit(target, bodyId);
+          }
+        }
+      }
+    }
+    message->deactivate();
+    break;
+  case ZMessage::TYPE_FLYEM_SPLIT_VIEW_3D_BODY:
+    if (dlg != NULL) {
+      dlg->showData3d();
+    }
+    message->deactivate();
+    break;
+  default:
+    break;
+  }
+}
+
+

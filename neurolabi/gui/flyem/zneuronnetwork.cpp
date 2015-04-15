@@ -490,9 +490,9 @@ ZSwcNetwork* ZNeuronNetwork::toSwcNetwork()
 
 
       if (preNode != NULL) {
-        ZPoint prePos = SwcTreeNode::pos(preNode);
+        ZPoint prePos = SwcTreeNode::center(preNode);
         tree->moveToSurface(&prePos);
-        ZPoint offset1 = prePos - SwcTreeNode::pos(preNode);
+        ZPoint offset1 = prePos - SwcTreeNode::center(preNode);
 
         //For each post-synaptic partner
         vector<SynapseLocation> *partnerArray = synapse.getPartnerArrayRef();
@@ -513,9 +513,9 @@ ZSwcNetwork* ZNeuronNetwork::toSwcNetwork()
               //Add the connection to swc network
               postNode = tree->queryNode(pt);
               if (postNode != NULL) {
-                ZPoint postPos = SwcTreeNode::pos(postNode);
+                ZPoint postPos = SwcTreeNode::center(postNode);
                 tree->moveToSurface(&postPos);
-                ZPoint offset2 = postPos - SwcTreeNode::pos(postNode);
+                ZPoint offset2 = postPos - SwcTreeNode::center(postNode);
                 network->addConnection(preNode, offset1, preTreeIndex,
                                        postNode, offset2, postTreeIndex, .5);
               }

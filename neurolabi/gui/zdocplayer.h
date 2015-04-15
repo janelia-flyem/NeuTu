@@ -10,6 +10,7 @@
 #include "c_stack.h"
 #include "zuncopyable.h"
 #include "z3dgraph.h"
+#include "dvid/zdvidlabelslice.h"
 
 class ZStack;
 class ZStroke2d;
@@ -18,6 +19,7 @@ class ZObject3d;
 class ZSwcTree;
 class ZJsonObject;
 class ZObject3dScan;
+class ZStackViewParam;
 
 class ZDocPlayer
 {
@@ -81,6 +83,8 @@ public:
 
     return m_data->getRole().getRole();
   }
+
+  virtual void updateData(const ZStackViewParam &/*param*/) const {}
 
 protected:
   ZStackObject *m_data; //not owned by the player
@@ -241,6 +245,18 @@ class ZPlanePlayer : public ZDocPlayer
 {
 public:
   QString getTypeName() const { return "Plane"; }
+};
+
+/**************************************************/
+class ZDvidLabelSlicePlayer : public ZDocPlayer
+{
+public:
+  ZDvidLabelSlicePlayer(ZStackObject* data = NULL);
+
+public:
+  QString getTypeName() const { return "DvidLabelSlice"; }
+  void updateData(const ZStackViewParam &viewParam) const;
+  ZDvidLabelSlice *getCompleteData() const;
 };
 
 #endif // ZDOCPLAYER_H

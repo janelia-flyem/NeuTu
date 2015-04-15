@@ -4,6 +4,8 @@
 #include "zjsonobject.h"
 #include "zjsonparser.h"
 #include "tz_math.h"
+#include "zobject3dfactory.h"
+#include "zintcuboidarray.h"
 
 const int ZDvidInfo::m_defaultBlockSize = 32;
 
@@ -140,6 +142,11 @@ ZIntPoint ZDvidInfo::getBlockSize() const
   return ZIntPoint(m_blockSize[0], m_blockSize[1], m_blockSize[2]);
 }
 
+ZIntPoint ZDvidInfo::getBlockIndex(const ZIntPoint &blockIndex) const
+{
+  return getBlockIndex(blockIndex.getX(), blockIndex.getY(), blockIndex.getZ());
+}
+
 ZIntPoint ZDvidInfo::getBlockIndex(int x, int y, int z) const
 {
   ZIntPoint blockIndex(-1, -1, -1);
@@ -202,6 +209,19 @@ ZIntPoint ZDvidInfo::getBlockIndex(double x, double y, double z) const
   return blockIndex;
 }
 
+int ZDvidInfo::getBlockIndexZ(int z) const
+{
+  int bz = -1;
+  if (z < m_startCoordinates[2] ||
+      z >= m_startCoordinates[2] + m_stackSize[2]) {
+    return bz;
+  }
+
+  bz = (z - m_startCoordinates[2]) / m_blockSize[2] + m_startBlockIndex[2];
+
+  return bz;
+}
+
 bool ZDvidInfo::isValidBlockIndex(const ZIntPoint &pt)
 {
   for (int i = 0; i < 3; ++i) {
@@ -211,6 +231,27 @@ bool ZDvidInfo::isValidBlockIndex(const ZIntPoint &pt)
   }
 
   return true;
+}
+
+ZObject3dScan ZDvidInfo::getBlockIndex(const ZIntCuboid &box) const
+{
+  ZIntPoint startIndex = getBlockIndex(box.getFirstCorner());
+  ZIntPoint endIndex = getBlockIndex(box.getLastCorner());
+
+
+  return ZObject3dFactory::MakeObject3dScan(ZIntCuboid(startIndex, endIndex));
+}
+
+ZObject3dScan ZDvidInfo::getBlockIndex(const ZIntCuboidArray &boxArray) const
+{
+  ZObject3dScan obj;
+  for (ZIntCuboidArray::const_iterator iter = boxArray.begin();
+       iter != boxArray.end(); ++iter) {
+    const ZIntCuboid &box = *iter;
+    obj.unify(getBlockIndex(box));
+  }
+
+  return obj;
 }
 
 ZObject3dScan ZDvidInfo::getBlockIndex(const ZObject3dScan &obj) const
@@ -326,7 +367,15 @@ ZIntCuboid ZDvidInfo::getBlockBox(int x, int y, int z) const
   return cuboid;
 }
 
-ZIntCuboid ZDvidInfo::getBlockBox(const ZIntPoint &blockIndex)
+ZIntCuboid ZDvidInfo::getBlockBox(const ZIntPoint &blockIndex) const
 {
   return getBlockBox(blockIndex.getX(), blockIndex.getY(), blockIndex.getZ());
+}
+
+ZIntPoint ZDvidInfo::getEndCoordinates() const
+{
+  ZIntPoint pt = getStartCoordinates();
+  pt += ZIntPoint(m_stackSize[0], m_stackSize[1], m_stackSize[2]);
+
+  return pt;
 }

@@ -70,10 +70,19 @@ public:
   void deleteKey(const QString &dataName,
                  const QString &minKey, const QString &maxKey);
 
+  void postLog(const std::string &message);
+  bool lockNode(const std::string &message);
+  std::string createBranch();
+
+  void writeSplit(const std::string &dataName, const ZObject3dScan &obj,
+                  uint64_t oldLabel, uint64_t label);
+
 private:
   std::string getJsonStringForCurl(const ZJsonValue &obj) const;
   void writeJson(const std::string url, const ZJsonValue &value);
   void writeJsonString(const std::string url, const std::string jsonString);
+
+  ZJsonValue getLocMessage(const std::string &message);
 
 private:
   QEventLoop *m_eventLoop;

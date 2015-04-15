@@ -361,7 +361,7 @@ public:
    */
   const ZCuboid& getBoundBox() const;
 
-  static ZSwcTree* createCuboidSwc(const ZCuboid &box);
+  static ZSwcTree* createCuboidSwc(const ZCuboid &box, double radius = 1.0);
   ZSwcTree* createBoundBoxSwc(double margin = 0.0);
 
   /*!
@@ -536,7 +536,8 @@ public:
   void translate(double x, double y, double z);
   void scale(double sx, double sy, double sz);
   //Rotate swc tree around a point
-  void rotate(double theta, double psi, const ZPoint& center);
+  void rotate(double theta, double psi, const ZPoint& center,
+              bool inverse = false);
 
   ZPoint computeCentroid() const;
 
@@ -691,7 +692,18 @@ public:
     DepthFirstIterator(const ZSwcTree *tree);
     Swc_Tree_Node *begin();
     bool hasNext() const;
-    Swc_Tree_Node *next();
+    Swc_Tree_Node* next();
+  };
+
+  class LeafIterator : public ExtIterator {
+  public:
+    LeafIterator(const ZSwcTree *tree);
+    Swc_Tree_Node *begin();
+    bool hasNext() const;
+    Swc_Tree_Node* next();
+  private:
+    std::vector<Swc_Tree_Node*> m_nodeArray;
+    size_t m_currentIndex;
   };
 
 public: //static functions

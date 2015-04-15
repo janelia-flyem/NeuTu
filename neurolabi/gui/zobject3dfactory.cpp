@@ -8,6 +8,8 @@
 #include "zobject3dscanarray.h"
 #include "zstackfactory.h"
 #include "zclosedcurve.h"
+#include "zarray.h"
+
 #if defined(_QT_GUI_USED_)
 #  include "zstroke2d.h"
 #endif
@@ -172,14 +174,16 @@ ZObject3dScan ZObject3dFactory::MakeObject3dScan(const ZStack &stack)
   return obj;
 }
 
-ZObject3dScanArray* ZObject3dFactory::MakeObject3dScanArray(const ZStack &stack)
+ZObject3dScanArray* ZObject3dFactory::MakeObject3dScanArray(
+    const ZStack &stack, int yStep)
 {
   ZObject3dScanArray *objArray = NULL;
 
   if (stack.hasData()) {
     std::map<int, ZObject3dScan*> *bodySet =
         ZObject3dScan::extractAllObject(
-          stack.array8(), stack.width(), stack.height(), stack.depth(), 0, NULL);
+          stack.array8(), stack.width(), stack.height(), stack.depth(), 0, yStep,
+          NULL);
     objArray = new ZObject3dScanArray;
     for (std::map<int, ZObject3dScan*>::const_iterator iter = bodySet->begin();
          iter != bodySet->end(); ++iter) {
@@ -194,6 +198,38 @@ ZObject3dScanArray* ZObject3dFactory::MakeObject3dScanArray(const ZStack &stack)
   }
 
   return objArray;
+}
+
+ZObject3dScanArray* ZObject3dFactory::MakeObject3dScanArray(
+    const ZArray &array, int yStep, ZObject3dScanArray *out)
+{
+  if (out == NULL) {
+    out = new ZObject3dScanArray;
+  }
+
+  std::map<int, ZObject3dScan*> *bodySet = NULL;
+
+  if (array.valueType() == mylib::UINT64_TYPE) {
+      bodySet = ZObject3dScan::extractAllObject(
+        array.getDataPointer<uint64_t>(), array.dim(0), array.dim(1),
+            array.dim(2), 0, yStep, NULL);
+  }
+
+  if (bodySet != NULL) {
+    for (std::map<int, ZObject3dScan*>::const_iterator iter = bodySet->begin();
+         iter != bodySet->end(); ++iter) {
+      ZObject3dScan *obj = iter->second;
+      if (iter->first > 0) {
+        obj->setLabel(iter->first);
+        out->push_back(*obj);
+      }
+      delete obj;
+    }
+  } else {
+    out = NULL;
+  }
+
+  return out;
 }
 
 ZObject3dScan* ZObject3dFactory::MakeFilledMask(
@@ -225,4 +261,23 @@ ZObject3dScan* ZObject3dFactory::MakeFilledMask(
 #endif
 
   return result;
+}
+
+ZObject3dScan ZObject3dFactory::MakeObject3dScan(const ZIntCuboid &box)
+{
+  ZObject3dScan obj;
+  int z0 = box.getFirstCorner().getZ();
+  int z1 = box.getLastCorner().getZ();
+  int y0 = box.getFirstCorner().getY();
+  int y1 = box.getLastCorner().getY();
+  int x0 = box.getFirstCorner().getX();
+  int x1 = box.getLastCorner().getX();
+  for (int z = z0; z <= z1; ++z) {
+    for (int y = y0; y <= y1; ++y) {
+      obj.addSegment(z, y, x0, x1, false);
+    }
+  }
+  obj.setCanonized(true);
+
+  return obj;
 }

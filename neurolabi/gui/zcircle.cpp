@@ -139,7 +139,7 @@ void ZCircle::displayHelper(ZPainter *painter, int stackFocus, EDisplayStyle sty
 #if defined(_QT_GUI_USED_)
   double adjustedRadius = getAdjustedRadius(m_r);
 
-  double dataFocus = stackFocus - painter->getOffset().z();
+  double dataFocus = stackFocus - painter->getZOffset();
   bool visible = false;
 
   const QBrush &oldBrush = painter->brush();

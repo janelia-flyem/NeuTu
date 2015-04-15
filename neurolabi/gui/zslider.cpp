@@ -26,7 +26,7 @@ ZSlider::ZSlider(bool useArrow, QWidget *parent) : QWidget(parent)
   m_label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
   connect(m_slider, SIGNAL(valueChanged(int)), this, SIGNAL(valueChanged(int)));
-  connect(m_slider, SIGNAL(valueChanged(int)), this, SLOT(setText(int)));
+  connect(m_slider, SIGNAL(valueChanged(int)), this, SLOT(setText()));
 
   if (useArrow) {
 #if USE_TOOL_BUTTON
@@ -89,6 +89,11 @@ void ZSlider::setRangeQuietly(int min, int max)
   m_slider->setRange(min, max);
   setText(m_slider->value());
   connect(m_slider, SIGNAL(valueChanged(int)), this, SIGNAL(valueChanged(int)));
+}
+
+void ZSlider::setText()
+{
+  setText(m_slider->value());
 }
 
 void ZSlider::setText(int value)

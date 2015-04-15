@@ -163,6 +163,7 @@ using namespace std;
 #include "misc/miscutility.h"
 #include "test/zjsontest.h"
 #include "test/zswctreetest.h"
+#include "test/zsttransformtest.h"
 #include "test/zobject3dscantest.h"
 #include "test/zswcpathtest.h"
 #include "test/zgraphtest.h"
@@ -234,6 +235,9 @@ using namespace std;
 #include "dvid/zdvidtile.h"
 #include "dvid/zdvidtileinfo.h"
 #include "flyem/zflyemneuronbodyinfo.h"
+#include "flyem/zflyemneurondensitymatcher.h"
+#include "flyem/zflyemneurondensity.h"
+#include "dvid/zdvidversiondag.h"
 
 using namespace std;
 
@@ -262,7 +266,6 @@ int ZTest::runUnitTest(int argc, char *argv[])
   return 0;
 #endif
 }
-
 
 void ZTest::test(MainWindow *host)
 {
@@ -7363,7 +7366,7 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
-  FlyEm::ZIntCuboidArray blockArray;
+  ZIntCuboidArray blockArray;
   blockArray.loadSubstackList(dataPath + "/flyem/FIB/block.txt");
   Cuboid_I boundBox = blockArray.getBoundBox();
 
@@ -7503,7 +7506,7 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
-  FlyEm::ZIntCuboidArray blockArray;
+  ZIntCuboidArray blockArray;
   blockArray.loadSubstackList(dataPath + "/flyem/FIB/block.txt");
   Cuboid_I boundBox = blockArray.getBoundBox();
   std::cout << "Offset: " << boundBox.cb[0] << " " << boundBox.cb[1] << std::endl;
@@ -7527,7 +7530,7 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
-  FlyEm::ZIntCuboidArray blockArray;
+  ZIntCuboidArray blockArray;
   blockArray.loadSubstackList(dataPath + "/flyem/FIB/block.txt");
   //blockArray.print();
 
@@ -7591,7 +7594,7 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
-  FlyEm::ZIntCuboidArray blockArray;
+  ZIntCuboidArray blockArray;
   blockArray.loadSubstackList(dataPath + "/flyem/FIB/block.txt");
   //blockArray.print();
 
@@ -7655,14 +7658,14 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
-  FlyEm::ZIntCuboidArray blockArray;
+  ZIntCuboidArray blockArray;
   blockArray.loadSubstackList(dataPath + "/flyem/FIB/block.txt");
   Cuboid_I boundBox = blockArray.getBoundBox();
 
   boundBox.ce[2] = 4499;
   blockArray.intersect(boundBox);
 
-  FlyEm::ZIntCuboidArray bottomFace = blockArray;
+  ZIntCuboidArray bottomFace = blockArray;
   boundBox.cb[2] = 4499;
   bottomFace.intersect(boundBox);
 
@@ -8583,7 +8586,7 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
-  FlyEm::ZIntCuboidArray blockArray;
+  ZIntCuboidArray blockArray;
   blockArray.loadSubstackList(dataPath + "/flyem/FIB/block.txt");
   Cuboid_I boundBox = blockArray.getBoundBox();
   std::cout << "Offset: " << boundBox.cb[0] << " " << boundBox.cb[1] << std::endl;
@@ -8648,7 +8651,7 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
-  FlyEm::ZIntCuboidArray blockArray;
+  ZIntCuboidArray blockArray;
   blockArray.loadSubstackList(dataPath + "/flyem/FIB/block.txt");
   Cuboid_I boundBox = blockArray.getBoundBox();
   std::cout << "Offset: " << boundBox.cb[0] << " " << boundBox.cb[1] << std::endl;
@@ -8659,7 +8662,7 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
-  FlyEm::ZIntCuboidArray blockArray;
+  ZIntCuboidArray blockArray;
   blockArray.loadSubstackList(dataPath + "/flyem/FIB/block.txt");
   Cuboid_I boundBox = blockArray.getBoundBox();
   std::cout << "Offset: " << boundBox.cb[0] << " " << boundBox.cb[1] << std::endl;
@@ -9056,7 +9059,7 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
-  FlyEm::ZIntCuboidArray blockArray;
+  ZIntCuboidArray blockArray;
   blockArray.loadSubstackList(dataPath + "/flyem/FIB/block.txt");
   Cuboid_I boundBox = blockArray.getBoundBox();
   Print_Cuboid_I(&boundBox);
@@ -9371,7 +9374,7 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
-  FlyEm::ZIntCuboidArray blockArray;
+  ZIntCuboidArray blockArray;
   blockArray.loadSubstackList(dataPath + "/flyem/FIB/block.txt");
   Cuboid_I boundBox = blockArray.getBoundBox();
   std::cout << "Offset: " << boundBox.cb[0] << " " << boundBox.cb[1] << std::endl;
@@ -9446,7 +9449,7 @@ void ZTest::test(MainWindow *host)
   //Output a list of orphans that do not touch substack boundaries and are
   //greater than 100,000 voxels in size.
   //Please provide a list of x,y,z points along with the body ID.
-  FlyEm::ZIntCuboidArray blockArray;
+  ZIntCuboidArray blockArray;
   blockArray.loadSubstackList(dataPath + "/flyem/FIB/block.txt");
   Cuboid_I boundBox = blockArray.getBoundBox();
   std::cout << "Offset: " << boundBox.cb[0] << " " << boundBox.cb[1] << std::endl;
@@ -10052,7 +10055,7 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
-  FlyEm::ZIntCuboidArray blockArray;
+  ZIntCuboidArray blockArray;
   blockArray.loadSubstackList(dataPath + "/flyem/FIB/block_13layer.txt");
   Cuboid_I boundBox = blockArray.getBoundBox();
   std::cout << "Offset: " << boundBox.cb[0] << " " << boundBox.cb[1] << std::endl;
@@ -10061,7 +10064,7 @@ void ZTest::test(MainWindow *host)
 
   blockArray.exportSwc(dataPath + "/flyem/FIB/orphan_body_check_block_13layer.swc");
 
-  FlyEm::ZIntCuboidArray blockArray2;
+  ZIntCuboidArray blockArray2;
   blockArray2.loadSubstackList(dataPath + "/flyem/FIB/block_layer12_13.txt");
   blockArray2.translate(-boundBox.cb[0], -boundBox.cb[1], -boundBox.cb[2]);
   blockArray2.translate(10, 10, 10);
@@ -10069,7 +10072,7 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
-  FlyEm::ZIntCuboidArray blockArray;
+  ZIntCuboidArray blockArray;
   blockArray.loadSubstackList(dataPath + "/flyem/FIB/block_13layer.txt");
   ZFlyEmQualityAnalyzer::SubstackRegionCalbration calbr;
   calbr.setBounding(true, true, false);
@@ -10084,7 +10087,7 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
-  FlyEm::ZIntCuboidArray blockArray;
+  ZIntCuboidArray blockArray;
   blockArray.loadSubstackList(dataPath + "/flyem/FIB/block_13layer.txt");
   std::cout << misc::computeRavelerHeight(blockArray, 10) << std::endl;
 #endif
@@ -10155,7 +10158,7 @@ void ZTest::test(MainWindow *host)
   std::vector<int> allPsdCount = synapseArray.countPsd();
   std::vector<int> allTbarCount = synapseArray.countTBar();
 
-  FlyEm::ZIntCuboidArray blockArray;
+  ZIntCuboidArray blockArray;
   blockArray.loadSubstackList(dataPath + "/flyem/FIB/block_13layer.txt");
   ZFlyEmQualityAnalyzer::SubstackRegionCalbration calbr;
   calbr.setBounding(true, true, false);
@@ -10328,7 +10331,7 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
-  FlyEm::ZIntCuboidArray blockArray;
+  ZIntCuboidArray blockArray;
   blockArray.loadSubstackList(dataPath + "/flyem/FIB/block_13layer.txt");
 
   ZFlyEmQualityAnalyzer::SubstackRegionCalbration calbr;
@@ -10353,7 +10356,7 @@ void ZTest::test(MainWindow *host)
         GET_TEST_DATA_DIR +
         "/flyem/FIB/skeletonization/session28/annotations-synapse.json");
 
-  FlyEm::ZIntCuboidArray blockArray;
+  ZIntCuboidArray blockArray;
   blockArray.loadSubstackList(GET_TEST_DATA_DIR + "/flyem/FIB/block_13layer.txt");
   ZFlyEmQualityAnalyzer::SubstackRegionCalbration calbr;
   calbr.setBounding(true, true, false);
@@ -10390,7 +10393,7 @@ void ZTest::test(MainWindow *host)
   std::vector<ZFlyEmNeuron>& neuronArray = dataBundle.getNeuronArray();
   ZFlyEmQualityAnalyzer analyzer;
 
-  FlyEm::ZIntCuboidArray blockArray;
+  ZIntCuboidArray blockArray;
   blockArray.loadSubstackList(GET_TEST_DATA_DIR + "/flyem/FIB/block_13layer.txt");
   ZFlyEmQualityAnalyzer::SubstackRegionCalbration calbr;
   calbr.setBounding(true, true, false);
@@ -10578,7 +10581,7 @@ void ZTest::test(MainWindow *host)
 
   std::vector<int> allPsdCount = synapseArray.countPsd();
 
-  FlyEm::ZIntCuboidArray blockArray;
+  ZIntCuboidArray blockArray;
   blockArray.loadSubstackList(dataPath + "/flyem/FIB/block_13layer.txt");
   ZFlyEmQualityAnalyzer::SubstackRegionCalbration calbr;
   calbr.setBounding(true, true, false);
@@ -10829,7 +10832,7 @@ void ZTest::test(MainWindow *host)
   pruner.prune(tree);
   */
 
-  FlyEm::ZIntCuboidArray blockArray;
+  ZIntCuboidArray blockArray;
   blockArray.loadSubstackList(dataPath + "/flyem/FIB/block_13layer.txt");
   ZFlyEmQualityAnalyzer::SubstackRegionCalbration calbr;
   calbr.setBounding(true, true, false);
@@ -10928,7 +10931,7 @@ void ZTest::test(MainWindow *host)
         GET_TEST_DATA_DIR +
         "/flyem/FIB/skeletonization/session33/annotations-synapse.json");
 
-  FlyEm::ZIntCuboidArray blockArray;
+  ZIntCuboidArray blockArray;
   blockArray.loadSubstackList(GET_DATA_DIR + "/flyem/FIB/block_13layer.txt");
   ZFlyEmQualityAnalyzer::SubstackRegionCalbration calbr;
   calbr.setBounding(true, true, false);
@@ -11039,7 +11042,7 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
-  FlyEm::ZIntCuboidArray blockArray;
+  ZIntCuboidArray blockArray;
   blockArray.loadSubstackList(GET_DATA_DIR + "/flyem/FIB/block_13layer.txt");
 
   ZIntCuboidFaceArray faceArray = blockArray.getBorderFace();
@@ -11134,7 +11137,7 @@ void ZTest::test(MainWindow *host)
   std::vector<int> allPsdCount = synapseArray.countPsd();
   std::vector<int> allTbarCount = synapseArray.countTBar();
 
-  FlyEm::ZIntCuboidArray blockArray;
+  ZIntCuboidArray blockArray;
   blockArray.loadSubstackList(dataPath + "/flyem/FIB/block_13layer.txt");
   ZFlyEmQualityAnalyzer::SubstackRegionCalbration calbr;
   calbr.setBounding(true, true, false);
@@ -11231,7 +11234,7 @@ void ZTest::test(MainWindow *host)
         GET_TEST_DATA_DIR +
         "/flyem/FIB/skeletonization/session34/annotations-synapse.json");
 
-  FlyEm::ZIntCuboidArray blockArray;
+  ZIntCuboidArray blockArray;
   blockArray.loadSubstackList(GET_DATA_DIR + "/flyem/FIB/block_13layer.txt");
   ZFlyEmQualityAnalyzer::SubstackRegionCalbration calbr;
   calbr.setBounding(true, true, false);
@@ -11314,7 +11317,7 @@ void ZTest::test(MainWindow *host)
 
   std::cout << bodyIdArray.size() << std::endl;
 
-  FlyEm::ZIntCuboidArray blockArray;
+  ZIntCuboidArray blockArray;
   blockArray.loadSubstackList(GET_DATA_DIR + "/flyem/FIB/block_13layer.txt");
   ZFlyEmQualityAnalyzer::SubstackRegionCalbration calbr;
   calbr.setBounding(true, true, false);
@@ -11363,7 +11366,7 @@ void ZTest::test(MainWindow *host)
         GET_TEST_DATA_DIR +
         "/flyem/FIB/skeletonization/session34/annotations-synapse.json");
 
-  FlyEm::ZIntCuboidArray blockArray;
+  ZIntCuboidArray blockArray;
   blockArray.loadSubstackList(GET_DATA_DIR + "/flyem/FIB/block_13layer.txt");
   ZFlyEmQualityAnalyzer::SubstackRegionCalbration calbr;
   calbr.setBounding(true, true, false);
@@ -11503,7 +11506,7 @@ void ZTest::test(MainWindow *host)
         eminfo.getDvidAddress(), eminfo.getDvidUuid(), eminfo.getDvidPort());
   service.setDvidTarget(dvidTarget);
 
-  FlyEm::ZIntCuboidArray blockArray;
+  ZIntCuboidArray blockArray;
   blockArray.loadSubstackList(GET_DATA_DIR + "/flyem/FIB/block_13layer.txt");
   ZFlyEmQualityAnalyzer::SubstackRegionCalbration calbr;
   calbr.setBounding(true, true, false);
@@ -11600,7 +11603,7 @@ void ZTest::test(MainWindow *host)
         eminfo.getDvidAddress(), eminfo.getDvidUuid(), eminfo.getDvidPort());
   service.setDvidTarget(dvidTarget);
 
-  FlyEm::ZIntCuboidArray blockArray;
+  ZIntCuboidArray blockArray;
   blockArray.loadSubstackList(GET_DATA_DIR + "/flyem/FIB/block_13layer.txt");
   ZFlyEmQualityAnalyzer::SubstackRegionCalbration calbr;
   calbr.setBounding(true, true, false);
@@ -11754,7 +11757,7 @@ void ZTest::test(MainWindow *host)
         GET_TEST_DATA_DIR +
         "/flyem/FIB/skeletonization/session34/annotations-synapse.json");
 
-  FlyEm::ZIntCuboidArray blockArray;
+  ZIntCuboidArray blockArray;
   blockArray.loadSubstackList(GET_DATA_DIR + "/flyem/FIB/block_13layer.txt");
   ZFlyEmQualityAnalyzer::SubstackRegionCalbration calbr;
   calbr.setBounding(true, true, false);
@@ -13255,7 +13258,7 @@ void ZTest::test(MainWindow *host)
         GET_TEST_DATA_DIR +
         "/flyem/FIB/skeletonization/session28/annotations-synapse.json");
 
-  FlyEm::ZIntCuboidArray blockArray;
+  ZIntCuboidArray blockArray;
   blockArray.loadSubstackList(GET_TEST_DATA_DIR + "/flyem/FIB/block_13layer.txt");
   FlyEm::SubstackRegionCalbration calbr;
   calbr.setBounding(true, true, false);
@@ -15081,13 +15084,19 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
-  FlyEm::ZIntCuboidArray blockArray;
+  ZIntCuboidArray blockArray;
   blockArray.loadSubstackList(dataPath + "/flyem/FIB/block_13layer_extended.txt");
   blockArray.exportSwc(dataPath + "/flyem/FIB/block_13layer_extended.swc");
 #endif
 
 #if 0
-  FlyEm::ZIntCuboidArray blockArray;
+  ZIntCuboidArray blockArray;
+  blockArray.loadSubstackList(dataPath + "/flyem/FIB/block_13layer_extended_surround.txt");
+  blockArray.exportSwc(dataPath + "/flyem/FIB/block_13layer_extended_surround.swc");
+#endif
+
+#if 0
+  ZIntCuboidArray blockArray;
   blockArray.loadSubstackList(
         dataPath + "/flyem/FIB/block_13layer_extended_surround.txt");
 
@@ -15096,7 +15105,7 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
-  FlyEm::ZIntCuboidArray blockArray;
+  ZIntCuboidArray blockArray;
   blockArray.loadSubstackList(dataPath + "/flyem/FIB/block_13layer_extended.txt");
 
   ZDvidTarget target;
@@ -15450,7 +15459,7 @@ void ZTest::test(MainWindow *host)
   neuronJson.load("/Users/zhaot/Work/ConnectomeHackathon2015/neuronsinfo.json");
 
   ZDvidTarget target;
-  target.set("hackathon.janelia.org", "2a3", -1);
+  target.set("emdata1.int.janelia.org", "2a3", -1);
   ZDvidWriter writer;
   writer.open(target);
 
@@ -15516,7 +15525,7 @@ void ZTest::test(MainWindow *host)
             << std::endl;
 #endif
 
-#if 1 //Generate thumbnail for large bodies
+#if 0 //Generate thumbnail for large bodies
   ZDvidTarget target;
   target.set("hackathon.janelia.org", "2a3", -1);
 
@@ -15554,5 +15563,792 @@ void ZTest::test(MainWindow *host)
     }
   }
 
+#endif
+
+#if 0
+  ZJsonObject jsonObject;
+  jsonObject.load("/Users/zhaot/Work/ConnectomeHackathon2015/neuronsinfo.json");
+
+  const char *key;
+  json_t *value;
+  int count = 0;
+//  std::set<std::string> typeSet;
+  std::map<std::string, int> typeLabelMap;
+  std::vector<int> bodyIdArray;
+  std::vector<int> labelArray;
+  int maxLabel = 0;
+  ZJsonArray idJson;
+  ZJsonArray labelJson;
+
+  ZJsonObject_foreach(jsonObject, key, value) {
+    int bodyId = ZString(key).firstInteger();
+    ZJsonObject bodyJson(value, ZJsonValue::SET_INCREASE_REF_COUNT);
+    std::string type = ZJsonParser::stringValue(bodyJson["Type"]);
+    if (typeLabelMap.count(type) == 0) {
+      typeLabelMap[type] = ++maxLabel;
+    }
+
+    int label = typeLabelMap[type];
+
+    bodyIdArray.push_back(bodyId);
+    labelArray.push_back(label);
+    idJson.append(bodyId);
+    labelJson.append(label);
+
+    ++count;
+  }
+
+  ZJsonObject rootJson;
+  ZJsonArray typeArray;
+  for (std::map<std::string, int>::const_iterator iter = typeLabelMap.begin();
+       iter != typeLabelMap.end(); ++iter) {
+    ZJsonObject typeJson;
+    typeJson.setEntry(iter->first.c_str(), iter->second);
+    typeArray.append(typeJson);
+  }
+
+  rootJson.setEntry("id", idJson);
+  rootJson.setEntry("label", labelJson);
+  rootJson.setEntry("label_type", typeArray);
+  std::cout << rootJson.dumpString() << std::endl;
+
+  rootJson.dump(GET_TEST_DATA_DIR + "/flyem/FIB/hackathon/neuron_type.json");
+
+  std::cout << count << " named neurons." << std::endl;
+#endif
+
+#if 0
+  ZMatrix matrix;
+  matrix.importTextFile(GET_TEST_DATA_DIR + "/flyem/FIB/hackathon/simmat.txt");
+
+  std::vector<int> idArray(matrix.getColumnNumber());
+  for (int i = 0; i < matrix.getColumnNumber(); ++i) {
+    idArray[i] = iround(matrix.getValue(0, i));
+  }
+
+  ZMatrix simmat;
+  simmat.resize(matrix.getRowNumber() - 1, matrix.getColumnNumber());
+  for (int j = 0; j < matrix.getColumnNumber(); ++j) {
+    for (int i = 1; i < matrix.getRowNumber(); ++i) {
+      simmat.set(i - 1, j, matrix.getValue(i, j));
+    }
+  }
+
+  simmat.printInfo();
+
+  for (int j = 0; j < simmat.getColumnNumber(); ++j) {
+    double maxC = matrix.getValue(j + 1, j);
+    for (int i = 0; i < simmat.getRowNumber(); ++i) {
+      if (i == j) {
+        simmat.set(i, j, 0);
+      } else {
+        double maxR = matrix.getValue(i + 1, i);
+        //simmat.set(i, j, simmat.getValue(i, j));
+        simmat.set(i, j, simmat.getValue(i, j) / dmax2(maxC, maxR));
+      }
+    }
+  }
+
+  std::map<int, int> idLabelMap;
+  ZJsonObject typeJson;
+  typeJson.load(GET_TEST_DATA_DIR + "/flyem/FIB/hackathon/neuron_type.json");
+  ZJsonArray idArrayJson(typeJson["id"], ZJsonValue::SET_INCREASE_REF_COUNT);
+  ZJsonArray labelArrayJson(typeJson["label"], ZJsonValue::SET_INCREASE_REF_COUNT);
+  for (size_t i = 0; i < idArrayJson.size(); ++i) {
+    int id = ZJsonParser::integerValue(idArrayJson.at(i));
+    int label = ZJsonParser::integerValue(labelArrayJson.at(i));
+    idLabelMap[id] = label;
+  }
+
+  int count = 0;
+  for (int i = 0; i < simmat.getRowNumber(); ++i) {
+    int predictedIndex = 0;
+    simmat.getRowMax(i, &predictedIndex);
+    std::cout << i << " " << predictedIndex << std::endl;
+    int trueLabel = idLabelMap[idArray[i]];
+    int predictedLabel = idLabelMap[idArray[predictedIndex]];
+    if (trueLabel == predictedLabel) {
+      ++count;
+    }
+  }
+
+  std::cout << count << std::endl;
+#endif
+
+#if 0
+  ZDvidBufferReader reader;
+  //reader.open("emdata2.int.janelia.org", "628");
+  tic();
+  reader.isReadable(
+          "http://emdata2.int.janelia.org/api/node/628/segmentation011314/info");
+  ptoc();
+  if (reader.isReadable(
+        "http://emdata2.int.janelia.org/api/node/628/segmentation011314/sparsevol/1")) {
+    std::cout << "Readable" << std::endl;
+  } else {
+    std::cout << "NOT readable" << std::endl;
+  }
+#endif
+
+#if 0
+  ZFlyEmNeuronDensity d1;
+  ZFlyEmNeuronDensity d2;
+
+  d1.append(0, 1);
+  d1.append(10, 2);
+  d1.append(20, 3);
+  d1.append(30, 3);
+
+  d2.append(0, 1);
+  d2.append(10, 1);
+  d2.append(20, 2);
+  d2.append(30, 3);
+  d2.append(40, 5);
+
+  ZFlyemNeuronDensityMatcher matcher;
+  double score = matcher.match(d1, d2);
+
+  std::cout << score << std::endl;
+#endif
+
+#if 0
+  ZWeightedPointArray pointArray;
+  ZDvidTarget target;
+  target.set("hackathon.janelia.org", "2a3", -1);
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  std::string hackathonDir =
+      "/Users/zhaot/Work/neutube/neurolabi/data/flyem/FIB/hackathon";
+
+  ZString str;
+  FILE *fp = fopen((hackathonDir + "/simmat.txt").c_str(), "r");
+  str.readLine(fp);
+  fclose(fp);
+
+  std::vector<int> bodyList = str.toIntegerArray();
+
+  for (std::vector<int>::const_iterator iter = bodyList.begin();
+       iter != bodyList.end(); ++iter) {
+    int bodyId = *iter;
+    ZSwcTree *tree = reader.readSwc(bodyId);
+    ZSwcTree::DepthFirstIterator iter(tree);
+    while (iter.hasNext()) {
+      Swc_Tree_Node *tn = iter.next();
+      pointArray.append(SwcTreeNode::center(tn), 1.0);
+    }
+    delete tree;
+  }
+
+  ZPoint pt = pointArray.principalDirection();
+  pt.print();
+#endif
+
+#if 0
+  ZPoint pt;
+  pt.set(-0.164321, -0.138413, 0.976647);
+  double theta, psi;
+  Geo3d_Normal_Orientation(-0.164321, -0.138413, 0.976647, &theta, &psi);
+  Geo3d_Rotate_Coordinate(pt.xRef(), pt.yRef(), pt.zRef(), theta, psi, TRUE);
+  pt.print();
+#endif
+
+#if 0
+  std::string hackathonDir =
+      "/Users/zhaot/Work/neutube/neurolabi/data/flyem/FIB/hackathon";
+
+  ZString str;
+  FILE *fp = fopen((hackathonDir + "/simmat.txt").c_str(), "r");
+  str.readLine(fp);
+  fclose(fp);
+
+  std::vector<int> bodyList = str.toIntegerArray();
+  std::vector<ZFlyEmNeuronDensity> densityList(bodyList.size());
+
+  ZString densityDir = hackathonDir + "/density1";
+
+
+  ZMatrix simmat;
+  simmat.resize(bodyList.size(), bodyList.size());
+
+  for (size_t i = 0; i < bodyList.size(); ++i) {
+    int bodyId = bodyList[i];
+    ZString densityPath = densityDir + "/";
+    densityPath.appendNumber(bodyId);
+    densityPath += ".txt";
+    ZFlyEmNeuronDensity &density = densityList[i];
+    density.importTxtFile(densityPath);
+  }
+
+  ZFlyemNeuronDensityMatcher matcher;
+  std::cout << "Matching ..." << std::endl;
+  for (size_t i = 0; i < bodyList.size(); ++i) {
+    std::cout << "Neuron: " << i << std::endl;
+    const ZFlyEmNeuronDensity &density1 = densityList[i];
+    for (size_t j = 0; j < bodyList.size(); ++j) {
+      if (i <= j) {
+        const ZFlyEmNeuronDensity &density2 = densityList[j];
+        simmat.set(i, j, matcher.match(density1, density2));
+      } else {
+        simmat.set(i, j, simmat.at(j, i));
+      }
+    }
+  }
+
+  fp = fopen((densityDir + "/simmat.txt").c_str(), "w");
+  for (size_t i = 0; i < bodyList.size(); ++i) {
+    fprintf(fp, "%d ", bodyList[i]);
+  }
+  fprintf(fp, "\n");
+  for (size_t i = 0; i < bodyList.size(); ++i) {
+    for (size_t j = 0; j < bodyList.size(); ++j) {
+      fprintf(fp, "%g ", simmat.at(i, j));
+    }
+    fprintf(fp, "\n");
+  }
+
+  fclose(fp);
+
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("hackathon.janelia.org", "2a3", -1);
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  std::string hackathonDir =
+      "/Users/zhaot/Work/neutube/neurolabi/data/flyem/FIB/hackathon";
+
+  std::string outputDir = hackathonDir + "/density1";
+
+  ZString str;
+  FILE *fp = fopen((hackathonDir + "/simmat.txt").c_str(), "r");
+  str.readLine(fp);
+  fclose(fp);
+
+  std::vector<int> bodyList = str.toIntegerArray();
+
+  for (std::vector<int>::const_iterator iter = bodyList.begin();
+       iter != bodyList.end(); ++iter) {
+    int bodyId = *iter;
+    ZObject3dScan obj = reader.readBody(bodyId);
+    const std::map<int, size_t> &sizeMap = obj.getSlicewiseVoxelNumber();
+
+    ZString outputPath = outputDir + "/";
+    outputPath.appendNumber(bodyId);
+    outputPath += ".txt";
+
+    std::ofstream outStream(outputPath.c_str());
+    for (std::map<int, size_t>::const_iterator iter = sizeMap.begin();
+         iter != sizeMap.end(); ++iter) {
+      outStream << iter->first << " " << iter->second << std::endl;
+    }
+    outStream.close();
+  }
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "628");
+  target.setBodyLabelName("segmentation030115");
+  //std::cout << reader.hasSparseVolume(1) << std::endl;
+  //  reader.has
+#endif
+
+#if 0
+  ZStackFrame *frame = new ZStackFrame;
+  ZStack *stack = ZStackFactory::makeVirtualStack(
+        ZIntCuboid(0, 0, 0, 6445, 6642, 8089));
+
+  frame->loadStack(stack);
+
+  ZDvidTarget target;
+  target.set("http://emrecon100.janelia.priv", "2a3", -1);
+
+  ZDvidReader reader;
+  reader.open(target);
+
+
+  ZDvidTile *tile = reader.readTile(3, 0, 0, 6000);
+  tile->setDvidTarget(target);
+  tile->printInfo();
+
+  frame->document()->addObject(tile);
+
+  tile = reader.readTile(3, 0, 1, 6000);
+  frame->document()->addObject(tile);
+
+  tile = reader.readTile(3, 1, 0, 6000);
+  frame->document()->addObject(tile);
+
+  tile = reader.readTile(3, 1, 1, 6000);
+  frame->document()->addObject(tile);
+
+//  frame->load(GET_TEST_DATA_DIR + "/benchmark/em_stack.tif");
+  host->addStackFrame(frame);
+  host->presentStackFrame(frame);
+#endif
+
+#if 0
+  ZObject3dScan obj;
+  obj.importDvidObject("/private/var/folders/bj/5d0p7tjx4jv12yzf0458g5fxf4nm2r/T/50000003.dvid");
+
+  std::cout << obj.getVoxelNumber() << std::endl;
+
+  obj.save(GET_TEST_DATA_DIR + "/test.sobj");
+
+#endif
+
+#if 0
+  ZObject3dScan obj;
+  obj.load(GET_TEST_DATA_DIR + "/backup/segmentation030115_seed_10492041.sobj");
+
+  ZObject3dScan objArray[4];
+//  objArray[0].importDvidObject(GET_TEST_DATA_DIR + "/backup/10492041_50000001.dvid");
+//  objArray[1].importDvidObject(GET_TEST_DATA_DIR + "/backup/10492041_50000002.dvid");
+//  objArray[2].importDvidObject(GET_TEST_DATA_DIR + "/backup/10492041_50000003.dvid");
+//  objArray[3].importDvidObject(GET_TEST_DATA_DIR + "/backup/10492041_50000004.dvid");
+
+  objArray[0].load("/private/var/folders/bj/5d0p7tjx4jv12yzf0458g5fxf4nm2r/T/body_10492041_1.sobj");
+  objArray[1].load("/private/var/folders/bj/5d0p7tjx4jv12yzf0458g5fxf4nm2r/T/body_10492041_2.sobj");
+  objArray[2].load("/private/var/folders/bj/5d0p7tjx4jv12yzf0458g5fxf4nm2r/T/body_10492041_3.sobj");
+  objArray[3].load("/private/var/folders/bj/5d0p7tjx4jv12yzf0458g5fxf4nm2r/T/body_10492041_4.sobj");
+
+
+  obj.subtract(objArray[0]);
+  obj.subtract(objArray[1]);
+  obj.subtract(objArray[2]);
+  obj.subtract(objArray[3]);
+
+
+//  ZObject3dScan remained = obj.subtract(obj2);
+
+
+  std::cout << obj.getVoxelNumber() << std::endl;
+
+  std::vector<ZObject3dScan> compArray = obj.getConnectedComponent();
+
+  std::cout << compArray.size() << " components" << std::endl;
+
+  obj.save(GET_TEST_DATA_DIR + "/test.sobj");
+
+  obj.subtract(compArray[0]);
+
+  //std::cout << compArray[0].getVoxelNumber() + compArray[1].getVoxelNumber() << std::endl;
+
+//  obj.save(GET_TEST_DATA_DIR + "/test.sobj");
+
+  ZObject3dScan wholeObj;
+  wholeObj.load(GET_TEST_DATA_DIR + "/backup/segmentation030115_seed_10492041.sobj");
+
+  ZObject3dScan wholeObj2;
+  for (size_t i = 0; i < 4; ++i) {
+    wholeObj2.concat(objArray[i]);
+  }
+
+  for (size_t i= 0; i < compArray.size(); ++i) {
+    wholeObj2.concat(compArray[i]);
+  }
+
+  std::cout << wholeObj.getVoxelNumber() << std::endl;
+  std::cout << wholeObj2.getVoxelNumber() << std::endl;
+
+  wholeObj2.canonize();
+  std::cout << wholeObj.equalsLiterally(wholeObj2) << std::endl;
+
+//  std::cout << obj2.getVoxelNumber() << std::endl;
+//  std::cout << remained.getVoxelNumber() << std::endl;
+#endif
+
+#if 0
+  ZFileList fileList;
+  fileList.load(GET_TEST_DATA_DIR + "/backup", "dvid");
+
+  ZString outputDir = GET_TEST_DATA_DIR + "/backup/splits";
+
+  for (int i = 0; i < fileList.size(); ++i) {
+    std::string filePath = fileList.getFilePath(i);
+    std::cout << filePath << std::endl;
+
+    ZObject3dScan obj;
+    obj.importDvidObject(filePath);
+
+    size_t voxelNumber = obj.getVoxelNumber();
+    std::vector<ZObject3dScan> objArray = obj.getConnectedComponent();
+
+    std::cout << objArray.size() << " components" << std::endl;
+
+    size_t checkVoxelNumber = 0;
+    int index = 1;
+    for (std::vector<ZObject3dScan>::const_iterator iter = objArray.begin();
+         iter != objArray.end(); ++iter, ++index) {
+      const ZObject3dScan &subobj = *iter;
+      checkVoxelNumber += subobj.getVoxelNumber();
+
+      ZString outputPath =
+          outputDir + "/" +
+          ZString::removeFileExt(ZString::getBaseName(filePath)) + "_";
+      outputPath.appendNumber(index, 3);
+      outputPath += ".dvid";
+      subobj.exportDvidObject(outputPath);
+    }
+
+    if (voxelNumber != checkVoxelNumber) {
+      std::cout << voxelNumber << " " << checkVoxelNumber << std::endl;
+      std::cout << "unmathced sizes" << std::endl;
+      return;
+    }
+
+  }
+
+#endif
+
+#if 0
+  ZDvidVersionDag dag;
+  dag.setRoot("root");
+  dag.addNode("v1", "root");
+  dag.addNode("v2", "root");
+  dag.addNode("v3", "v1");
+  dag.addNode("v3", "v2");
+  dag.addNode("v4", "v3");
+  dag.addNode("v5", "v4");
+  dag.addNode("v4", "v5");
+
+  dag.print();
+
+  std::cout << dag.getChild("root", 0) << std::endl;
+  std::cout << dag.getChild("root", 1) << std::endl;
+  std::cout << dag.getParentList("v3").size() << std::endl;
+
+  ZDvidVersionDag dag2;
+  dag2 = dag;
+  dag2.print();
+
+#endif
+
+#if 0
+  ZDvidTarget target("emdata1.int.janelia.org", "cf6e", 7000);
+  ZDvidReader reader;
+  reader.open(target);
+
+  ZDvidVersionDag dag = reader.readVersionDag();
+  dag.print();
+#endif
+
+#if 0
+  ZDvidBufferReader reader;
+  tic();
+  reader.read("http://emdata1.int.janelia.org:7000/api/node/cf6e/grayscale/blocks/104_174_79/10");
+  ptoc();
+
+  tic();
+  reader.read("http://emdata1.int.janelia.org:7000/api/node/cf6e/grayscale/raw/0_1_2/320_32_32/3104_5568_3520");
+  ptoc();
+
+  tic();
+  reader.read("http://emdata1.int.janelia.org:7000/api/node/cf6e/grayscale/raw/0_1_2/320_32_32/3104_5568_3520");
+  ptoc();
+
+  tic();
+  reader.read("http://emdata1.int.janelia.org:7000/api/node/cf6e/grayscale/blocks/104_174_78/10");
+  ptoc();
+
+
+  tic();
+  reader.read("http://emdata1.int.janelia.org:7000/api/node/cf6e/grayscale/raw/0_1_2/320_32_32/3104_5568_3520");
+  ptoc();
+#endif
+
+#if 0
+  ZDvidTarget target("emdata1.int.janelia.org", "cf6e", 7000);
+  ZDvidReader reader;
+  reader.open(target);
+  tic();
+  reader.readSparseStack(8376505);
+  ptoc();
+#endif
+
+#if 0
+  std::string url = "http://emdata1.int.janelia.org:7000/api/node/cf6e/grayscale/raw/0_1_2/320_32_32/3104_5568_3520";
+  std::cout << url << std::endl;
+  std::cout << ZDvidUrl::GetEndPoint(url) << std::endl;
+
+  ZDvidTarget target;
+  target.setFromUrl(url);
+  target.print();
+#endif
+
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "628");
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
+  ZObject3dScan obj1;
+  obj1.load(GET_TEST_DATA_DIR + "/flyem/MB/large_outside.sobj");
+  ZObject3dScan block1 = dvidInfo.getBlockIndex(obj1);
+  obj1.clear();
+  block1.save(GET_TEST_DATA_DIR + "/flyem/MB/large_outside_block.sobj");
+
+  ZObject3dScan obj2;
+  obj2.load(GET_TEST_DATA_DIR + "/flyem/MB/entire_mb.sobj");
+  ZObject3dScan block2 = dvidInfo.getBlockIndex(obj2);
+  obj2.clear();
+  block2.save(GET_TEST_DATA_DIR + "/flyem/MB/entire_mb_block.sobj");
+
+  block1.subtract(block2);
+  block1.save(GET_TEST_DATA_DIR + "/flyem/MB/ring.sobj");
+
+  ZJsonArray array = ZJsonFactory::makeJsonArray(
+        block1, ZJsonFactory::OBJECT_SPARSE);
+  array.dump(GET_TEST_DATA_DIR + "/flyem/MB/ring.json");
+#endif
+
+#if 0
+  ZObject3dScan obj1;
+  obj1.load(GET_TEST_DATA_DIR + "/flyem/MB/large_outside_block.sobj");
+  std::cout << obj1.getVoxelNumber() << std::endl;
+
+  ZObject3dScan obj2;
+  obj2.load(GET_TEST_DATA_DIR + "/flyem/MB/alpha_block.sobj");
+  std::cout << obj2.getVoxelNumber() << std::endl;
+
+
+  ZJsonArray array = ZJsonFactory::makeJsonArray(
+        obj2, ZJsonFactory::OBJECT_SPARSE);
+  array.dump(GET_TEST_DATA_DIR + "/flyem/MB/alpha_block.json");
+
+  obj1.subtract(obj2);
+  obj1.save(GET_TEST_DATA_DIR + "/flyem/MB/alpha_ring.sobj");
+  std::cout << obj1.getVoxelNumber() << std::endl;
+
+//  ZJsonArray array = ZJsonFactory::makeJsonArray(
+//        obj1, ZJsonFactory::OBJECT_SPARSE);
+//  array.dump(GET_TEST_DATA_DIR + "/flyem/MB/alpha_ring.json");
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "78b6", 7000);
+
+  ZDvidReader reader1;
+  reader1.open(target);
+
+  ZObject3dScan obj = reader1.readBody(17160251);
+
+  int x1 = 0;
+  int x2 = 0;
+  int y = 0;
+  int z = 0;
+  obj.getSegment(0, &z, &y, &x1, &x2);
+  std::cout << x1 << " " << y << " " << z << std::endl;
+  std::cout << obj.getVoxelNumber() << std::endl;
+
+
+  obj = reader1.readBody(17160304);
+  obj.getSegment(0, &z, &y, &x1, &x2);
+  std::cout << x1 << " " << y << " " << z << std::endl;
+  std::cout << obj.getVoxelNumber() << std::endl;
+
+#endif
+
+
+#if 0
+  int startId = 17159585;
+//  int endId = startId + 10;
+  int endId = 17161095;
+
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "78b6", 7000);
+//  target
+  ZDvidReader reader1;
+  reader1.open(target);
+
+  ZDvidReader reader2;
+  target.set("emdata1.int.janelia.org", "cf6e", 7000);
+  reader2.open(target);
+
+//  ZObject3dScanArray objArray;
+  int x1 = 0;
+  int x2 = 0;
+  int y = 0;
+  int z = 0;
+
+  std::map<int, std::vector<int> > bodyMap;
+
+  for (int id = startId; id <= endId; ++id) {
+    ZObject3dScan obj = reader1.readBody(id);
+
+    if (!obj.isEmpty()) {
+      obj.getSegment(0, &z, &y, &x1, &x2);
+
+      ZArray *array = reader2.readLabels64("labels",
+                                           x1, y, z, 1, 1, 1);
+
+      //    std::set<int> bodySet = reader2.readBodyId(x1, y, z, 1, 1, 1);
+      //    int oldId = *(bodySet.begin());
+      int oldId = array->getUint64Value(0);
+
+      delete array;
+
+      std::cout << oldId << " => " << id << std::endl;
+
+      if (bodyMap.count(oldId) == 0) {
+        bodyMap[oldId] = std::vector<int>();
+        ZObject3dScan obj2 = reader1.readBody(oldId);
+        if (!obj2.isEmpty()) {
+          obj2.getSegment(0, &z, &y, &x1, &x2);
+          ZArray *array = reader2.readLabels64("labels",
+                                               x1, y, z, 1, 1, 1);
+          int overlapId = array->getUint64Value(0);
+          if (oldId == overlapId) {
+            bodyMap[oldId].push_back(oldId);
+          } else {
+            std::cout << "Inconsistent ID" << std::endl;
+            return;
+          }
+          delete array;
+        }
+      }
+
+      bodyMap[oldId].push_back(id);
+    }
+  }
+
+  for (std::map<int, std::vector<int> >::const_iterator iter = bodyMap.begin();
+       iter != bodyMap.end(); ++iter) {
+//    int oldId = iter->first;
+    const std::vector<int> &idArray = iter->second;
+//    std::cout << oldId << std::endl;
+    for (std::vector<int>::const_iterator iter = idArray.begin();
+         iter != idArray.end(); ++iter) {
+      std::cout << *iter << " ";
+    }
+    std::cout << std::endl;
+  }
+
+#endif
+
+#if 0
+  ZDvidBufferReader reader;
+  reader.read("http://emdata2.int.janelia.org/api/node/628/mbroi/roi");
+  QByteArray buffer = reader.getBuffer();
+
+  ZJsonArray array;
+  array.decodeString(buffer.constData());
+
+  ZObject3dScan obj;
+  obj.importDvidRoi(array);
+
+  obj.save(GET_TEST_DATA_DIR + "/test.sobj");
+#endif
+
+#if 0
+  ZObject3dScan obj1;
+  ZJsonArray array1;
+  array1.load(GET_TEST_DATA_DIR + "/flyem/MB/alpha_ring.json");
+  obj1.importDvidRoi(array1);
+
+  ZObject3dScan obj2;
+  ZJsonArray array2;
+  array2.load(GET_TEST_DATA_DIR + "/flyem/MB/alpha_ring_check.json");
+  obj2.importDvidRoi(array2);
+  obj2.save(GET_TEST_DATA_DIR + "/flyem/MB/alpha_ring_check.sobj");
+
+
+  ZIntCuboid box = obj1.getBoundBox();
+  box.join(obj2.getBoundBox());
+
+  ZStack *stack = ZStackFactory::makeZeroStack(GREY, box, 3);
+  int offset[3];
+  offset[0] = -stack->getOffset().getX();
+  offset[1] = -stack->getOffset().getY();
+  offset[2] = -stack->getOffset().getZ();
+
+  obj1.drawStack(stack->singleChannelStack(0)->data(), 255, offset);
+  obj2.drawStack(stack->singleChannelStack(1)->data(), 255, offset);
+
+  stack->save(GET_TEST_DATA_DIR + "/test.tif");
+#endif
+
+#if 0
+  ZObject3dScan obj1;
+  obj1.load(GET_TEST_DATA_DIR + "/flyem/MB/large_outside_block.sobj");
+  std::cout << obj1.getVoxelNumber() << std::endl;
+
+  ZObject3dScan obj2;
+  ZJsonArray array2;
+  array2.load(GET_TEST_DATA_DIR + "/test.json");
+  obj2.importDvidRoi(array2);
+
+  ZObject3dScan obj3 = obj1;
+
+  obj3.subtract(obj2);
+
+  ZIntCuboid box = obj1.getBoundBox();
+  box.join(obj2.getBoundBox());
+
+  ZStack *stack = ZStackFactory::makeZeroStack(GREY, box, 3);
+  int offset[3];
+  offset[0] = -stack->getOffset().getX();
+  offset[1] = -stack->getOffset().getY();
+  offset[2] = -stack->getOffset().getZ();
+
+  obj1.drawStack(stack->singleChannelStack(0)->data(), 255, offset);
+  obj2.drawStack(stack->singleChannelStack(1)->data(), 255, offset);
+  obj3.drawStack(stack->singleChannelStack(2)->data(), 255, offset);
+
+  stack->save(GET_TEST_DATA_DIR + "/test.tif");
+
+  obj3.save(GET_TEST_DATA_DIR + "/flyem/MB/alpha_ring.sobj");
+  std::cout << obj1.getVoxelNumber() << std::endl;
+
+  ZJsonArray array = ZJsonFactory::makeJsonArray(
+        obj3, ZJsonFactory::OBJECT_SPARSE);
+  array.dump(GET_TEST_DATA_DIR + "/flyem/MB/alpha_ring.json");
+#endif
+
+#if 0
+  ZImage image(5, 5);
+  ZStTransform transform;
+  transform.setOffset(-1, -2);
+  image.setTransform(transform);
+  ZPainter painter(&image);
+//  painter.drawPoint(1, 2);
+  ZObject3dScan obj;
+  obj.addSegment(0, 2, 1, 2);
+  obj.setColor(0, 0, 0);
+  obj.display(painter, 0, ZStackObject::SOLID);
+
+  image.save((GET_TEST_DATA_DIR + "/test.tif").c_str());
+#endif
+
+#if 1
+  ZIntCuboidArray blockArray;
+  blockArray.loadSubstackList(dataPath + "/flyem/FIB/block_13layer_extended.txt");
+
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "2b6c");
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
+  dvidInfo.print();
+
+  ZObject3dScan obj = dvidInfo.getBlockIndex(blockArray);
+  obj.save(GET_TEST_DATA_DIR + "/test.sobj");
+  std::cout << "Number of blocks (13layer extended): " << obj.getVoxelNumber()
+            << std::endl;
+
+  ZJsonArray jsonArray = ZJsonFactory::makeJsonArray(obj);
+  jsonArray.dump(GET_TEST_DATA_DIR +
+                 "/flyem/FIB/block_13layer_extended_roi.json");
 #endif
 }

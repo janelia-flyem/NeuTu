@@ -69,7 +69,7 @@ bool ZFlyEmQualityAnalyzer::isStitchedOrphanBody(const ZObject3dScan &obj)
   Cuboid_I objBox;
   obj.getBoundBox(&objBox);
 
-  FlyEm::ZIntCuboidArray roi = m_substackRegion;
+  ZIntCuboidArray roi = m_substackRegion;
   roi.intersect(objBox);
 
   if (roi.size() == 1) {
@@ -77,8 +77,8 @@ bool ZFlyEmQualityAnalyzer::isStitchedOrphanBody(const ZObject3dScan &obj)
   } else {
 #if 0
 
-    FlyEm::ZIntCuboidArray innerFace = m_substackRegion.getInnerFace();
-    FlyEm::ZIntCuboidArray face = m_substackRegion.getFace();
+    ZIntCuboidArray innerFace = m_substackRegion.getInnerFace();
+    ZIntCuboidArray face = m_substackRegion.getFace();
 
 #ifdef _DEBUG_2
     innerFace.exportSwc(GET_DATA_DIR + "/test.swc");
@@ -175,13 +175,13 @@ bool ZFlyEmQualityAnalyzer::isStitchedOrphanBody(const ZObject3dScan &obj)
   return true;
 }
 
-void ZFlyEmQualityAnalyzer::setSubstackRegion(const FlyEm::ZIntCuboidArray &roi)
+void ZFlyEmQualityAnalyzer::setSubstackRegion(const ZIntCuboidArray &roi)
 {
   m_substackRegion = roi;
 }
 
 void ZFlyEmQualityAnalyzer::setSubstackRegion(
-    const FlyEm::ZIntCuboidArray &roi,
+    const ZIntCuboidArray &roi,
     const FlyEm::SubstackRegionCalbration &calbr)
 {
   m_substackRegion = roi;
@@ -197,7 +197,7 @@ void ZFlyEmQualityAnalyzer::labelSwcNodeOutOfRange(
     ZFlyEmNeuronAxis axis = neuron.getAxis();
     tree->updateIterator(SWC_TREE_ITERATOR_DEPTH_FIRST);
     for (Swc_Tree_Node *tn = tree->begin(); tn != NULL; tn = tree->next()) {
-      ZPoint pt = SwcTreeNode::pos(tn);
+      ZPoint pt = SwcTreeNode::center(tn);
       ZPoint axisCenter = axis.getCenter(pt.z());
       pt.setX(pt.x() - axisCenter.x());
       pt.setY(pt.y() - axisCenter.y());
@@ -557,8 +557,8 @@ ZFlyEmQualityAnalyzer::computeHotSpot(const ZFlyEmNeuron &neuron,
         hotSpot->setGeometry(geometry);
 
         FlyEm::ZCurveGeometry *guidance = new FlyEm::ZCurveGeometry;
-        guidance->appendPoint(SwcTreeNode::pos(tn));
-        guidance->appendPoint(SwcTreeNode::pos(metric.getSecondNode()));
+        guidance->appendPoint(SwcTreeNode::center(tn));
+        guidance->appendPoint(SwcTreeNode::center(metric.getSecondNode()));
         hotSpot->setGuidance(guidance);
 
         hotSpot->setStructure(structure);

@@ -35,6 +35,7 @@ public:
   void redo();
 
   void print() const;
+  void clear();
 
 private:
   static uint64_t mapLabel(const TLabelMap &labelMap, uint64_t label);

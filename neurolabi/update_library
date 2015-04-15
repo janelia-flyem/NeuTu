@@ -78,7 +78,7 @@ if [ $force_update -eq 1 ]
 then
   make clean -f configure.makefile
 fi
-make -f configure.makefile CONFIG_OPTION="CFLAGS=-I$HOME/local/include LDFLAGS=-L$HOME/local/lib $all_config_option"
+make -f configure.makefile CONFIG_OPTION="$all_config_option"
 
 echo 'updating neurolabi ...'
 cd $cdir

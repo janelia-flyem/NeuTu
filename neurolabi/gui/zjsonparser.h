@@ -35,7 +35,7 @@ public:
    *
    * \return 0 if \a value is not in integer type or it is NULL.
    */
-  static int integerValue(const json_t *value);
+  static int64_t integerValue(const json_t *value);
 
   static bool booleanValue(const json_t *value);
 

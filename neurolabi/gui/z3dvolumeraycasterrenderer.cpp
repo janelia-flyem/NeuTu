@@ -255,12 +255,12 @@ void Z3DVolumeRaycasterRenderer::compile()
 void Z3DVolumeRaycasterRenderer::initialize()
 {
   Z3DPrimitiveRenderer::initialize();
-  m_raycasterShader.loadFromSourceFile("pass.vert", "volume_raycaster.frag", generateHeader());
   m_raycasterShader.bindFragDataLocation(0, "FragData0");
-  m_2dImageShader.loadFromSourceFile("transform_with_2dtexture.vert", "image2d_with_transfun.frag", generateHeader());
+  m_raycasterShader.loadFromSourceFile("pass.vert", "volume_raycaster.frag", generateHeader());
   m_2dImageShader.bindFragDataLocation(0, "FragData0");
-  m_volumeSliceWithTransferfunShader.loadFromSourceFile("transform_with_3dtexture.vert", "volume_slice_with_transfun.frag", generateHeader());
+  m_2dImageShader.loadFromSourceFile("transform_with_2dtexture.vert", "image2d_with_transfun.frag", generateHeader());
   m_volumeSliceWithTransferfunShader.bindFragDataLocation(0, "FragData0");
+  m_volumeSliceWithTransferfunShader.loadFromSourceFile("transform_with_3dtexture.vert", "volume_slice_with_transfun.frag", generateHeader());
 }
 
 void Z3DVolumeRaycasterRenderer::deinitialize()

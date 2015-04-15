@@ -10,7 +10,7 @@
 #include "zstack.hxx"
 #include "zobject3dscan.h"
 #include "neutube.h"
-#include "flyem/zintcuboidarray.h"
+#include "zintcuboidarray.h"
 #include "zpointarray.h"
 #include "ztree.h"
 
@@ -29,7 +29,7 @@ void paintRadialHistogram2D(const std::vector<ZHistogram> hist,
  */
 Stack* computeNormal(const Stack *stack, NeuTube::EAxis axis);
 
-int computeRavelerHeight(const FlyEm::ZIntCuboidArray &blockArray, int margin);
+int computeRavelerHeight(const ZIntCuboidArray &blockArray, int margin);
 
 bool exportPointList(const std::string &filePath, const ZPointArray &pointArray);
 

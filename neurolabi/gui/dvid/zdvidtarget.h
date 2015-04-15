@@ -3,9 +3,10 @@
 
 #include <string>
 #include "zjsonobject.h"
+#include "zdviddata.h"
 
 /*!
- * \brief The class of representing the location of a dvid server
+ * \brief The class of representing a dvid node.
  */
 class ZDvidTarget
 {
@@ -30,6 +31,8 @@ public:
    * \param sourceString Must start with "http:".
    */
   void setFromSourceString(const std::string &sourceString);
+
+  void setFromUrl(const std::string &url);
 
   inline const std::string& getAddress() const {
     return m_address;
@@ -107,6 +110,7 @@ public:
    * \brief Load json object
    */
   void loadJsonObject(const ZJsonObject &obj);
+  ZJsonObject toJsonObject() const;
 
   void print() const;
 
@@ -132,8 +136,16 @@ public:
     m_bgValue = v;
   }
 
+  std::string getName(ZDvidData::ERole role) const;
+
   std::string getBodyLabelName() const;
   void setBodyLabelName(const std::string &name);
+
+  std::string getLabelBlockName() const;
+  void setLabelBlockName(const std::string &name);
+
+  std::string getMultiscale2dName() const;
+  void setMultiscale2dName(const std::string &name);
 
 private:
   std::string m_address;
@@ -143,6 +155,10 @@ private:
   std::string m_comment;
   std::string m_localFolder;
   std::string m_bodyLabelName;
+  std::string m_labelBlockName;
+  std::string m_multiscale2dName;
+//  std::string m_tileName;
+
   int m_bgValue; //grayscale background
 
   const static char* m_addressKey;
@@ -154,6 +170,7 @@ private:
   const static char* m_debugKey;
   const static char* m_bgValueKey;
   const static char* m_bodyLabelNameKey;
+  const static char* m_labelBlockNameKey;
 };
 
 #endif // ZDVIDTARGET_H

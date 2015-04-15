@@ -3,7 +3,7 @@
 #include <ctime>
 #include <algorithm>
 
-using namespace std;
+//using namespace std;
 
 int ZRandomGenerator::count = 0;
 
@@ -29,7 +29,7 @@ int ZRandomGenerator::rndint(int maxValue)
 }
 
 struct IntLessThan {
-    bool operator() (const pair<int, int> &p1, const pair<int, int> &p2)
+    bool operator() (const std::pair<int, int> &p1, const std::pair<int, int> &p2)
     {
         if (p1.first < p2.first) {
             return true;
@@ -39,17 +39,17 @@ struct IntLessThan {
     }
 };
 
-vector<int> ZRandomGenerator::randperm(int n)
+std::vector<int> ZRandomGenerator::randperm(int n)
 {
-  vector<pair<int, int> > randArray(n);
+  std::vector<std::pair<int, int> > randArray(n);
   for (int i = 0; i < n; i++) {
     randArray[i].first = rndint(n * 5);
     randArray[i].second = i + 1;
   }
 
-  sort(randArray.begin(), randArray.end(), IntLessThan());
+  std::sort(randArray.begin(), randArray.end(), IntLessThan());
 
-  vector<int> permArray(n);
+  std::vector<int> permArray(n);
   for (int i = 0; i < n; i++) {
     permArray[i] = randArray[i].second;
   }

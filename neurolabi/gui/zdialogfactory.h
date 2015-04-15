@@ -22,6 +22,7 @@ public:
 
   static ZDvidDialog* makeDvidDialog(QWidget *parent = 0);
   static QDialog* makeTestDialog(QWidget *parent = 0);
+  static QDialog* makeStackDialog(QWidget *parent = 0);
   static DvidImageDialog *makeDvidImageDialog(
       ZDvidDialog *dvidDlg, QWidget *parent = 0);
   static ZSpinBoxDialog *makeSpinBoxDialog(QWidget *parent = 0);
@@ -32,6 +33,8 @@ public:
   static bool ask(const QString &title, const QString &msg, QWidget *parent);
 
   static QString GetDirectory(
+      const QString &caption, const QString &filePath, QWidget *parent);
+  static QString GetFileName(
       const QString &caption, const QString &filePath, QWidget *parent);
 
 private:

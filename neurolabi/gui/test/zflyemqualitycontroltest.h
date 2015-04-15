@@ -4,7 +4,7 @@
 #include "ztestheader.h"
 #include "neutubeconfig.h"
 #include "flyem/zflyemqualityanalyzer.h"
-#include "flyem/zintcuboidarray.h"
+#include "zintcuboidarray.h"
 #include "zswcgenerator.h"
 #include "zswctree.h"
 
@@ -17,7 +17,7 @@ TEST(ZFlyEmQualityAnalyzer, isStitchedOrphanBody)
   obj.addSegment(0, 2, 2, 2);
   obj.addSegment(0, 3, 1, 1);
 
-  FlyEm::ZIntCuboidArray roi;
+  ZIntCuboidArray roi;
   roi.append(0, 0, 0, 5, 5, 1);
   roi.append(5, 0, 0, 5, 5, 1);
 
@@ -51,7 +51,7 @@ TEST(ZFlyEmQualityAnalyzer, isStitchedOrphanBody)
   analyzer.setSubstackRegion(roi);
   EXPECT_TRUE(analyzer.isStitchedOrphanBody(obj));
 
-  FlyEm::ZIntCuboidArray blockArray;
+  ZIntCuboidArray blockArray;
   blockArray.loadSubstackList(GET_TEST_DATA_DIR + "/benchmark/block.txt");
   EXPECT_EQ(216, (int) blockArray.size());
 
@@ -118,7 +118,7 @@ TEST(ZFlyEmQualityAnalyzer, isStitchedOrphanBody)
 }
 
 TEST(ZFlyEmQualityAnalyzer, touchingGlobalBoundary) {
-  FlyEm::ZIntCuboidArray blockArray;
+  ZIntCuboidArray blockArray;
   blockArray.append(0, 0, 0, 100, 100, 100);
   blockArray.append(100, 0, 0, 100, 100, 100);
   blockArray.append(0, 100, 0, 100, 100, 100);
@@ -194,7 +194,7 @@ TEST(ZFlyEmQualityAnalyzer, touchingGlobalBoundary) {
 }
 
 TEST(ZFlyEmQualityAnalyzer, touchingSideBoundary) {
-  FlyEm::ZIntCuboidArray blockArray;
+  ZIntCuboidArray blockArray;
   blockArray.append(0, 0, 0, 100, 100, 100);
   blockArray.append(100, 0, 0, 100, 100, 100);
   blockArray.append(0, 100, 0, 100, 100, 100);
