@@ -12,7 +12,7 @@ ZXmlDoc::ZXmlDoc() : m_doc(NULL)
 ZXmlDoc::~ZXmlDoc()
 {
 #if defined(HAVE_LIBXML2)
-  if (!m_doc) {
+  if (m_doc != NULL) {
     xmlFreeDoc(m_doc);
     xmlCleanupParser();
   }
@@ -22,7 +22,7 @@ ZXmlDoc::~ZXmlDoc()
 void ZXmlDoc::parseFile(const std::string &filePath)
 {
 #if defined(HAVE_LIBXML2)
-  if (!m_doc) {
+  if (m_doc != NULL) {
     xmlFreeDoc(m_doc);
   }
 

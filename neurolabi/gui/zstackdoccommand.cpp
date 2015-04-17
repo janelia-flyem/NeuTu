@@ -1205,14 +1205,14 @@ ZStackDocCommand::SwcEdit::RemoveEmptyTreePost::~RemoveEmptyTreePost()
 
 void ZStackDocCommand::SwcEdit::RemoveEmptyTreePost::redo()
 {
-  if (!m_doc) {
+  if (m_doc != NULL) {
     m_emptyTreeSet = m_doc->removeEmptySwcTree(false);
   }
 }
 
 void ZStackDocCommand::SwcEdit::RemoveEmptyTreePost::undo()
 {
-  if (!m_doc) {
+  if (m_doc != NULL) {
     for (std::set<ZSwcTree*>::iterator iter = m_emptyTreeSet.begin();
          iter != m_emptyTreeSet.end(); ++iter) {
       m_doc->addSwcTree(*iter, false);
@@ -1229,7 +1229,7 @@ ZStackDocCommand::SwcEdit::BreakForest::BreakForest(
 {
   setText(QObject::tr("Break swc forest"));
 
-  if (!m_doc) {
+  if (m_doc != NULL) {
     QList<ZSwcTree*> treeSet =
         m_doc->getSelectedObjectList<ZSwcTree>(ZStackObject::TYPE_SWC);
     //std::set<ZSwcTree*> *treeSet = m_doc->selectedSwcs();

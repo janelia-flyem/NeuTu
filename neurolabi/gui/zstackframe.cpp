@@ -170,7 +170,7 @@ void ZStackFrame::constructFrame(ZSharedPointer<ZStackDoc> doc)
   //m_view->prepareDocument();
   m_presenter->prepareView();
 
-  if (doc != NULL) {
+  if (doc.get() != NULL) {
     customizeWidget();
   }
 }
@@ -222,7 +222,7 @@ void ZStackFrame::createView()
 
 void ZStackFrame::addDocData(const ZStackDocReader &reader)
 {
-  if (!m_doc) {
+  if (m_doc.get() == NULL) {
     createDocument();
   }
   m_doc->addData(reader);
@@ -409,14 +409,14 @@ void ZStackFrame::clear()
 
 void ZStackFrame::loadStack(Stack *stack, bool isOwner)
 {
-  Q_ASSERT(!m_doc);
+  Q_ASSERT(m_doc.get() != NULL);
   m_doc->loadStack(stack, isOwner);
   prepareDisplay();
 }
 
 void ZStackFrame::loadStack(ZStack *stack)
 {
-  Q_ASSERT(!m_doc);
+  Q_ASSERT(m_doc.get() != NULL);
   m_doc->loadStack(stack);
   prepareDisplay();
 }
@@ -450,7 +450,7 @@ void ZStackFrame::setSizeHintOption(NeuTube::ESizeHintOption option)
 
 int ZStackFrame::readStack(const char *filePath)
 {
-  Q_ASSERT(!m_doc);
+  Q_ASSERT(m_doc.get() != NULL);
 
   switch (ZFileType::fileType(filePath)) {
   case ZFileType::SWC_FILE:
@@ -504,7 +504,7 @@ int ZStackFrame::readStack(const char *filePath)
 
 int ZStackFrame::importImageSequence(const char *filePath)
 {
-  Q_ASSERT(!m_doc);
+  Q_ASSERT(m_doc.get() != NULL);
 
   if (m_doc->importImageSequence(filePath)) {
     if (!m_doc->hasStackData()) {

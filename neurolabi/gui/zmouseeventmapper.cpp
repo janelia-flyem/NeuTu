@@ -335,7 +335,7 @@ ZStackOperator
 ZMouseEventRightButtonReleaseMapper::getOperation(const ZMouseEvent &event) const
 {
   ZStackOperator op = initOperation();
-  if (m_context != NULL && !m_doc) {
+  if (m_context != NULL && m_doc != NULL) {
     if (event.getButtons() == Qt::RightButton) {
       if (m_context->isContextMenuActivated()) {
         if (m_doc->hasSelectedSwcNode()) {

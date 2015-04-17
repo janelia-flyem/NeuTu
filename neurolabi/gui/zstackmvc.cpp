@@ -38,7 +38,7 @@ void ZStackMvc::BaseConstruct(ZStackMvc *frame, ZSharedPointer<ZStackDoc> doc)
 
 void ZStackMvc::createView()
 {
-  if (!m_doc) {
+  if (m_doc.get() != NULL) {
     //ZIntPoint size = m_doc->getStackSize();
     m_view = new ZStackView(dynamic_cast<QWidget*>(this));
     m_layout->addWidget(m_view);
@@ -47,7 +47,7 @@ void ZStackMvc::createView()
 
 void ZStackMvc::createPresenter()
 {
-  if (!m_doc) {
+  if (m_doc.get() != NULL) {
     m_presenter = new ZStackPresenter(this);
   }
 }
@@ -124,7 +124,7 @@ void ZStackMvc::disconnectAll()
 void ZStackMvc::dropDocument(ztr1::shared_ptr<ZStackDoc> doc)
 {
   if (m_doc.get() != doc.get()) {
-    if (m_doc) {
+    if (m_doc.get() != NULL) {
       UPDATE_DOC_SIGNAL_SLOT(disconnect);
     }
     m_doc = doc;
