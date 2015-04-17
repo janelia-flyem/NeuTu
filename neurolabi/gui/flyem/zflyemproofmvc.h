@@ -35,6 +35,7 @@ public slots:
   void redo();
 
   void setSegmentationVisible(bool visible);
+//  void toggleEdgeMode(bool edgeOn);
 
 private:
   bool m_showSegmentation;
@@ -47,6 +48,8 @@ void ZFlyEmProofMvc::connectControlPanel(T *panel)
   connect(panel, SIGNAL(segmentVisibleChanged(bool)),
           this, SLOT(setSegmentationVisible(bool)));
   connect(panel, SIGNAL(mergingSelected()), this, SLOT(mergeSelected()));
+  connect(panel, SIGNAL(edgeModeToggled(bool)),
+          this, SLOT(toggleEdgeMode(bool)));
 }
 
 #endif // ZFLYEMPROOFMVC_H

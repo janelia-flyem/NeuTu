@@ -51,12 +51,14 @@ void ZDvidLabelSlice::forceUpdate(const ZStackViewParam &viewParam)
     ZDvidReader reader;
     if (reader.open(getDvidTarget())) {
       QRect viewPort = viewParam.getViewPort();
+
       ZArray *labelArray = reader.readLabels64(
             getDvidTarget().getLabelBlockName(),
             viewPort.left(), viewPort.top(), viewParam.getZ(),
             viewPort.width(), viewPort.height(), 1);
 
       ZObject3dFactory::MakeObject3dScanArray(*labelArray, yStep, &m_objArray);
+
       m_objArray.translate(viewPort.left(), viewPort.top(),
                            viewParam.getZ());
       if (m_bodyMerger != NULL) {

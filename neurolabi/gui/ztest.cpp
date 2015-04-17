@@ -16329,7 +16329,7 @@ void ZTest::test(MainWindow *host)
   image.save((GET_TEST_DATA_DIR + "/test.tif").c_str());
 #endif
 
-#if 1
+#if 0
   ZIntCuboidArray blockArray;
   blockArray.loadSubstackList(dataPath + "/flyem/FIB/block_13layer_extended.txt");
 
@@ -16350,5 +16350,27 @@ void ZTest::test(MainWindow *host)
   ZJsonArray jsonArray = ZJsonFactory::makeJsonArray(obj);
   jsonArray.dump(GET_TEST_DATA_DIR +
                  "/flyem/FIB/block_13layer_extended_roi.json");
+#endif
+
+#if 0
+  ZObject3dScan obj1;
+  obj1.addSegment(0, 0, 0, 1);
+
+//  obj1.interpolateSlice(1).print();
+
+  obj1.addSegment(2, 0, 0, 10);
+  obj1.interpolateSlice(1).print();
+
+
+#endif
+
+
+#if 1
+  ZStack stack;
+  stack.load(GET_TEST_DATA_DIR + "/benchmark/em_stack.tif");
+  stack.setOffset(10, 20, 0);
+
+  stack.save(GET_TEST_DATA_DIR + "/test.tif");
+
 #endif
 }

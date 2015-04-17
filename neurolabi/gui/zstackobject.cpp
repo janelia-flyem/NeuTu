@@ -13,9 +13,10 @@ ZStackObject::ZStackObject() : m_selected(false), m_isVisible(true),
 
 double ZStackObject::m_defaultPenWidth = 0.5;
 
-void ZStackObject::display(QPainter */*painter*/, int /*z*/,
+bool ZStackObject::display(QPainter */*painter*/, int /*z*/,
                            EDisplayStyle /*option*/, EDisplaySliceMode /*sliceMode*/) const
 {
+  return false;
 }
 
 void ZStackObject::setColor(int red, int green, int blue) {

@@ -152,7 +152,9 @@ void dt2d(float *data, long int * label, const long int *sz)
 	  ii = *(lab2 + j*sz[0] + i);
 	  jj = *(lab1 + ii*sz[1] +j);
 		  
-	  *(label + tmp) = jj*sz[0] + ii;
+          if (label != NULL) {
+            *(label + tmp) = jj*sz[0] + ii;
+          }
 	}
 		
       //delete [] d;
@@ -356,16 +358,17 @@ void dt2d_binary(float *data, long int * label, const long int *sz, unsigned cha
 	{
 	  ptr = data + tmp_j + i;
 			
-	  if (tag ==0)
+	  if (tag ==0) {
 	    if ( *ptr > 0 )
 	      *ptr = 0;
 	    else
 	      *ptr = FLOAT_INF;
-	  else
+          } else {
 	    if ( *ptr > 0 )
 	      *ptr = FLOAT_INF;
 	    else
 	      *ptr = 0;
+          }
 				
 	}
     }

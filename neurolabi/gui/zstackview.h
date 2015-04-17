@@ -174,7 +174,7 @@ public:
 
   //void paintObjectBuffer(ZImage *canvas, ZStackObject::ETarget target);
 
-  void paintObjectBuffer(ZPainter &painter, ZStackObject::ETarget target);
+  bool paintObjectBuffer(ZPainter &painter, ZStackObject::ETarget target);
 
   void paintActiveDecorationBuffer();
 
@@ -325,10 +325,10 @@ private:
   ZImage *m_image;
   ZPainter m_imagePainter;
   ZImage *m_imageMask;
-  ZImage *m_objectCanvas;
+  ZPixmap *m_objectCanvas;
   ZPainter m_objectCanvasPainter;
   ZPainter m_tileCanvasPainter;
-  ZImage *m_activeDecorationCanvas;
+  ZPixmap *m_activeDecorationCanvas;
   ZPixmap *m_tileCanvas;
   ZImageWidget *m_imageWidget;
   QVBoxLayout *m_layout;

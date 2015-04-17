@@ -3,6 +3,7 @@
 
 #include "zstackobject.h"
 #include "zimage.h"
+#include "zpoint.h"
 
 class ZStack;
 

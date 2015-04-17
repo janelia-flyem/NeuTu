@@ -1137,7 +1137,7 @@ void ZStackPresenter::processKeyPressEvent(QKeyEvent *event)
     break;
   case Qt::Key_Z:
     if (getParentMvc() != NULL) {
-      if (event->modifiers() == Qt::ShiftModifier | Qt::ControlModifier) {
+      if (event->modifiers() == (Qt::ShiftModifier | Qt::ControlModifier)) {
         buddyDocument()->getRedoAction()->trigger();
 //        buddyDocument()->undoStack()->redo();
       } else if (event->modifiers() == Qt::ControlModifier) {
@@ -1248,7 +1248,8 @@ void ZStackPresenter::setObjectStyle(ZStackObject::EDisplayStyle style)
 {
   if (m_objStyle != style) {
     m_objStyle = style;
-    updateView();
+    buddyView()->redrawObject();
+//    updateView();
   }
 }
 

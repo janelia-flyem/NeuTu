@@ -35,8 +35,11 @@ public:
   inline void setPaintBundle(ZPaintBundle *bd) { m_paintBundle = bd; }
 
   void setImage(ZImage *image);
+  void setObjectCanvas(ZPixmap *canvas);
   void setMask(ZImage *mask, int channel);
   void setTileCanvas(ZPixmap *canvas);
+  void setActiveDecorationCanvas(ZPixmap *canvas);
+
   void setViewPort(const QRect &rect);
   void setProjRegion(const QRect &rect);
   void setView(int zoomRatio, const QPoint &zoomOffset);
@@ -165,7 +168,9 @@ private:
 private:
   ZImage *m_image;
   QVector<ZImage*> m_mask;
+  ZPixmap *m_objectCanvas;
   ZPixmap *m_tileCanvas;
+  ZPixmap *m_activeDecorationCanvas;
   QRect m_viewPort; /* viewport */
   QRect m_projRegion; /* projection region */
   //int m_zoomRatio;

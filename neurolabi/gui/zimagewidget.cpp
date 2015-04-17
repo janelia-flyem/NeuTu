@@ -1,4 +1,6 @@
 #include <QtGui>
+#include <QElapsedTimer>
+
 #include <cstring>
 #include <cmath>
 
@@ -31,6 +33,8 @@ ZImageWidget::ZImageWidget(QWidget *parent, ZImage *image) : QWidget(parent),
   m_rightButtonMenu = new QMenu(this);
   m_paintBundle = NULL;
   m_tileCanvas = NULL;
+  m_objectCanvas = NULL;
+  m_activeDecorationCanvas = NULL;
 }
 
 ZImageWidget::~ZImageWidget()
@@ -75,6 +79,16 @@ void ZImageWidget::setTileCanvas(ZPixmap *canvas)
   if (m_image == NULL) {
     QSize maskSize = getMaskSize();
   }
+}
+
+void ZImageWidget::setObjectCanvas(ZPixmap *canvas)
+{
+  m_objectCanvas = canvas;
+}
+
+void ZImageWidget::setActiveDecorationCanvas(ZPixmap *canvas)
+{
+  m_activeDecorationCanvas = canvas;
 }
 
 void ZImageWidget::setViewPort(const QRect &rect)
@@ -477,6 +491,9 @@ void ZImageWidget::paintZoomHint()
 void ZImageWidget::paintEvent(QPaintEvent * /*event*/)
 {
   if (!canvasSize().isEmpty() && !isPaintBlocked()) {
+    QElapsedTimer timer;
+    timer.start();
+
     ZPainter painter;
 
     if (!painter.begin(this)) {
@@ -496,23 +513,45 @@ void ZImageWidget::paintEvent(QPaintEvent * /*event*/)
     /* draw gray regions */
     painter.fillRect(QRect(0, 0, screenSize().width(), screenSize().height()),
                      Qt::gray);
-    QSize size = projectSize();
+//    QSize size = projectSize();
 
     if (m_image != NULL) {
       painter.drawImage(m_projRegion, *m_image, m_viewPort);
     }
 
+    //tic();
     if (m_tileCanvas != NULL) {
 #ifdef _DEBUG_2
       m_tileCanvas->save((GET_TEST_DATA_DIR + "/test.tif").c_str());
 #endif
       painter.drawPixmap(m_projRegion, *m_tileCanvas, m_viewPort);
     }
+    //std::cout << "paint tile canvas: " << toc() << std::endl;
 
+
+    //tic();
     for (int i = 0; i < m_mask.size(); ++i) {
       if (m_mask[i] != NULL) {
-        painter.drawImage(QRect(0, 0, size.width(), size.height()),
-                            *(m_mask[i]), m_viewPort);
+        painter.drawImage(//QRect(0, 0, size.width(), size.height()),
+                          m_projRegion, *(m_mask[i]), m_viewPort);
+      }
+    }
+    //std::cout << "paint object canvas: " << toc() << std::endl;
+
+    //tic();
+    if (m_objectCanvas != NULL) {
+#ifdef _DEBUG_2
+      m_tileCanvas->save((GET_TEST_DATA_DIR + "/test.tif").c_str());
+#endif
+      if (m_objectCanvas->isVisible()) {
+        painter.drawPixmap(m_projRegion, *m_objectCanvas, m_viewPort);
+      }
+    }
+    //std::cout << "paint object canvas: " << toc() << std::endl;
+
+    if (m_activeDecorationCanvas != NULL) {
+      if (m_activeDecorationCanvas->isVisible()) {
+        painter.drawPixmap(m_projRegion, *m_activeDecorationCanvas, m_viewPort);
       }
     }
 
@@ -520,6 +559,8 @@ void ZImageWidget::paintEvent(QPaintEvent * /*event*/)
 
     paintObject();
     paintZoomHint();
+
+    std::cout << "Screen update time per frame: " << timer.elapsed() << std::endl;
   }
 }
 

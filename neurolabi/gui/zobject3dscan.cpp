@@ -34,6 +34,8 @@
 #include "tz_stack_bwmorph.h"
 #include "zstackfactory.h"
 #include "tz_stack_bwmorph.h"
+#include "zpainter.h"
+#include "tz_stack_bwmorph.h"
 
 using namespace std;
 
@@ -258,6 +260,7 @@ size_t ZObject3dStripe::countForegroundOverlap(
 
   return count;
 }
+
 void ZObject3dStripe::drawStack(Stack *stack, int v, const int *offset) const
 {
   if (C_Stack::kind(stack) != GREY && C_Stack::kind(stack) != GREY16) {
@@ -1200,6 +1203,16 @@ void ZObject3dScan::drawStack(Stack *stack, int v, const int *offset) const
   }
 }
 
+void ZObject3dScan::drawStack(ZStack *stack, int v) const
+{
+  int offset[3];
+  offset[0] = -stack->getOffset().getX();
+  offset[1] = -stack->getOffset().getY();
+  offset[2] = -stack->getOffset().getZ();
+
+  drawStack(stack->c_stack(0), v, offset);
+}
+
 void ZObject3dScan::drawStack(
     Stack *stack, uint8_t red, uint8_t green, uint8_t blue, const int *offset) const
 {
@@ -1846,10 +1859,17 @@ void ZObject3dScan::displaySolid(
     stride = 1;
   }
 
+//  bool painted = false;
+
   ZObject3dScan slice = getSlice(z);
 
   size_t stripeNumber = slice.getStripeNumber();
+//  std::vector<QPoint> pointArray(slice.getVoxelNumber());
+//  size_t pointIndex = 0;
+
+//  std::vector<QPoint> pointArray;
   std::vector<QLine> lineArray;
+//  size_t lineIndex = 0;
   //int offsetX = iround(painter.getOffset().x());
   //int offsetY = iround(painter.getOffset().y());
   for (size_t i = 0; i < stripeNumber; i += stride) {
@@ -1860,23 +1880,37 @@ void ZObject3dScan::displaySolid(
         int x0 = stripe.getSegmentStart(j);// - offsetX;
         int x1 = stripe.getSegmentEnd(j);// - offsetX;
         int y = stripe.getY();// - offsetY;
+
+//        lineArray[lineIndex++] = QLine(x0, y, x1, y);
+//        for (int x = x0; x <= x1; ++x) {
+//          pointArray.push_back(QPoint(x, y));
+//          pointArray[pointIndex++] = QPoint(x, y);
+//        }
         lineArray.push_back(QLine(x0, y, x1, y));
       }
     }
   }
-  if (!lineArray.empty()) {
-    painter.drawLines(&(lineArray[0]), lineArray.size());
-  }
+
+  painter.drawLines(lineArray);
+
+//  if (!lineArray.empty()) {
+//  painter.drawPoints(pointArray);
+//    painter.drawLines(&(lineArray[0]), lineArray.size());
+//    painted = true;
+//  }
+
+//  return painted;
 }
 
 void ZObject3dScan::display(
     ZPainter &painter, int slice, EDisplayStyle style) const
 {
-  UNUSED_PARAMETER(style);
 #if _QT_GUI_USED_
 //  if (isSelected() && style == ZStackObject::SOLID) {
 //    return;
 //  }
+
+//  bool painted = false;
 
   bool isProj = (slice == -1);
 
@@ -1929,6 +1963,7 @@ void ZObject3dScan::display(
       }
       if (!ptArray.empty()) {
         painter.drawPoints(&(ptArray[0]), ptArray.size());
+//        painted = true;
       }
     }
   }
@@ -1938,8 +1973,7 @@ void ZObject3dScan::display(
   }
 
 
-
-
+//  return painted;
 
 #else
   UNUSED_PARAMETER(&painter);
@@ -2006,6 +2040,133 @@ void ZObject3dScan::dilate()
   canonize();
 
   processEvent(EVENT_OBJECT_MODEL_CHANGED);
+}
+
+ZObject3dScan ZObject3dScan::interpolateSlice(int z) const
+{
+  ZObject3dScan slice;
+  if (!isEmpty()) {
+    const_cast<ZObject3dScan&>(*this).canonize();
+    int minZ = getMinZ();
+    int maxZ = getMaxZ();
+    if (z <= minZ) {
+      slice = getSlice(minZ);
+    } else if (z >= maxZ) {
+      slice = getSlice(maxZ);
+    } else {
+      int z0 = minZ;
+      int z1 = minZ;
+      int stripeNumber = getStripeNumber();
+      for (int i = 0; i < stripeNumber; ++i) {
+        const ZObject3dStripe &stripe = getStripe(i);
+        if (z < stripe.getZ()) {
+          z1 = stripe.getZ();
+          break;
+        } else {
+          z0 = stripe.getZ();
+        }
+      }
+
+      if (z0 == z) {
+        slice = getSlice(z);
+      } else {
+        ZObject3dScan slice1 = getSlice(z0);
+        ZObject3dScan slice2 = getSlice(z1);
+
+        {
+          int stripeNumber = slice1.getStripeNumber();
+          for (int i = 0; i < stripeNumber; ++i) {
+            ZObject3dStripe &stripe = slice1.getStripe(i);
+            stripe.setZ(0);
+          }
+        }
+
+        {
+          int stripeNumber = slice2.getStripeNumber();
+          for (int i = 0; i < stripeNumber; ++i) {
+            ZObject3dStripe &stripe = slice2.getStripe(i);
+            stripe.setZ(0);
+          }
+        }
+
+
+        ZIntCuboid box = slice1.getBoundBox().join(slice2.getBoundBox());
+        box.expandX(1);
+        box.expandY(1);
+//        box.setFirstX(box.getFirstCorner().getX() - 1);
+//        box.setLastX(box.getLastCorner().getX() + 1);
+
+        ZStack *stack1 = ZStackFactory::makeZeroStack(GREY, box);
+        ZStack *stack2 = ZStackFactory::makeZeroStack(GREY, box);
+
+        ZStack *negStack1 = ZStackFactory::makeZeroStack(GREY, box);
+        negStack1->setOne();
+        ZStack *negStack2 = ZStackFactory::makeZeroStack(GREY, box);
+        negStack2->setOne();
+
+
+        slice1.drawStack(stack1, 1);
+        slice2.drawStack(stack2, 1);
+
+        slice1.drawStack(negStack1, 0);
+        slice2.drawStack(negStack2, 0);
+
+        Stack *dist1 = Stack_Bwdist_L_P(stack1->c_stack(0), NULL, NULL);
+        Stack *dist2 = Stack_Bwdist_L_P(stack2->c_stack(0), NULL, NULL);
+
+        Stack *negDist1 = Stack_Bwdist_L_P(negStack1->c_stack(0), NULL, NULL);
+        Stack *negDist2 = Stack_Bwdist_L_P(negStack2->c_stack(0), NULL, NULL);
+
+
+        size_t voxelNumber = stack1->getVoxelNumber();
+        float *array1 = (float*) C_Stack::array8(dist1);
+        float *array2 = (float*) C_Stack::array8(dist2);
+
+        float *negArray1 = (float*) C_Stack::array8(negDist1);
+        float *negArray2 = (float*) C_Stack::array8(negDist2);
+
+        float beta = (float) (z - z0) / (z1 - z0);
+        float alpha = 1.0 - beta;
+
+
+        ZStack *newStack = ZStackFactory::makeZeroStack(GREY, box);
+        uint8_t *outArray = newStack->array8(0);
+
+        for (size_t i = 0; i < voxelNumber; ++i) {
+          if (array1[i] > 0.0 && array2[i] > 0.0) {
+            outArray[i] = 1;
+          } else if (array1[i] <= 0.0 && array2[i] <= 0.0) {
+            outArray[i] = 0;
+          } else if (array1[i] > 0.0) {
+            outArray[i] = ((array1[i] * alpha - negArray2[i] * beta) > 0.0);
+          } else {
+            outArray[i] = ((array2[i] * beta - negArray1[i] * alpha) > 0.0);
+          }
+        }
+
+        slice.loadStack(*newStack);
+
+        delete stack1;
+        delete stack2;
+        delete negStack1;
+        delete negStack2;
+        delete newStack;
+
+        C_Stack::kill(negDist1);
+        C_Stack::kill(negDist2);
+        C_Stack::kill(dist1);
+        C_Stack::kill(dist2);
+      }
+    }
+
+    int stripeNumber = slice.getStripeNumber();
+    for (int i = 0; i < stripeNumber; ++i) {
+      ZObject3dStripe &stripe = slice.getStripe(i);
+      stripe.setZ(z);
+    }
+  }
+
+  return slice;
 }
 
 ZObject3dScan ZObject3dScan::getSlice(int z) const

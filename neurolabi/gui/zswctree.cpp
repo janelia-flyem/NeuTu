@@ -33,6 +33,7 @@
 #include "zerror.h"
 #include "zclosedcurve.h"
 #include "zintpoint.h"
+#include "zpainter.h"
 
 using namespace std;
 

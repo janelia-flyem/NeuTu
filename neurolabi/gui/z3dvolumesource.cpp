@@ -65,7 +65,7 @@ Z3DVolumeSource::~Z3DVolumeSource()
 
 void Z3DVolumeSource::loadData()
 {
-  if (m_doc != NULL) {
+  if (!m_doc) {
     if (m_doc->hasStackData()) {
       if (m_doc->hasPlayer(ZStackObjectRole::ROLE_3DPAINT)) {
         readVolumesWithObject();

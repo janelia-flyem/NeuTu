@@ -38,7 +38,7 @@ void ZStackMvc::BaseConstruct(ZStackMvc *frame, ZSharedPointer<ZStackDoc> doc)
 
 void ZStackMvc::createView()
 {
-  if (m_doc != NULL) {
+  if (!m_doc) {
     //ZIntPoint size = m_doc->getStackSize();
     m_view = new ZStackView(dynamic_cast<QWidget*>(this));
     m_layout->addWidget(m_view);
@@ -47,7 +47,7 @@ void ZStackMvc::createView()
 
 void ZStackMvc::createPresenter()
 {
-  if (m_doc != NULL) {
+  if (!m_doc) {
     m_presenter = new ZStackPresenter(this);
   }
 }

@@ -70,7 +70,7 @@ public:
   void setDepth(int depth);
 
   //union
-  void join(const ZIntCuboid &cuboid);
+  ZIntCuboid& join(const ZIntCuboid &cuboid);
   void joinX(int x);
   void joinY(int y);
   void joinZ(int z);

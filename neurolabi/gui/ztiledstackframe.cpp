@@ -34,7 +34,7 @@ ZTiledStackFrame *ZTiledStackFrame::Make(
 
 bool ZTiledStackFrame::importTiles(const QString &path)
 {
-  Q_ASSERT(m_doc != NULL);
+  Q_ASSERT(!m_doc);
 
   if (m_tileManager->importJsonFile(path)) {
     /*

@@ -52,7 +52,7 @@ const ZMouseEvent& ZMouseEventProcessor::process(
   }
 
   ZPoint stackPosition = zevent.getRawStackPosition();
-  if (m_doc != NULL) {
+  if (!m_doc) {
     stackPosition += m_doc->getStackOffset();
   }
   zevent.setStackPosition(stackPosition);
@@ -174,7 +174,7 @@ ZPoint ZMouseEventProcessor::getLatestStackPosition() const
 {
   ZPoint pt = getLatestMouseEvent().getRawStackPosition();
 
-  if (m_doc != NULL) {
+  if (!m_doc) {
     pt += m_doc->getStackOffset();
   }
 

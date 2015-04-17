@@ -1,7 +1,10 @@
 #include "zdvidreader.h"
 
-#include <QThread>
 #include <vector>
+#include <ctime>
+
+#include <QThread>
+#include <QElapsedTimer>
 
 #include "zdvidbuffer.h"
 #include "zstackfactory.h"
@@ -888,7 +891,7 @@ ZArray* ZDvidReader::readLabels64(
     channels[2] = 2;
 
     libdvid::Labels3D labels = service.get_labels3D(
-          dataName, dims, offset, channels);
+          dataName, dims, offset, channels, false);
 
     mylib::Dimn_Type arrayDims[3];
     arrayDims[0] = width;
@@ -903,8 +906,19 @@ ZArray* ZDvidReader::readLabels64(
 #else
   ZDvidUrl dvidUrl(m_dvidTarget);
   ZDvidBufferReader bufferReader;
+//  tic();
+//  clock_t start = clock();
+  QElapsedTimer timer;
+  timer.start();
   bufferReader.read(dvidUrl.getLabels64Url(
                       dataName, width, height, depth, x0, y0, z0).c_str());
+  std::cout << "label reading time: " << timer.elapsed() << std::endl;
+
+//  qDebug() << timer.elapsed();
+//  clock_t finish = clock();
+
+//  std::cout << "label reading time: " << (finish - start) / CLOCKS_PER_SEC << std::endl;
+//  std::cout << "label reading time: " << toc() << std::endl;
 
   if (bufferReader.getStatus() == ZDvidBufferReader::READ_OK) {
     //bufferReader.getBuffer();

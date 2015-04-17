@@ -2,8 +2,10 @@
 #define ZSTACKOBJECT_H
 
 #include "zqtheader.h"
-#include "zpainter.h"
+//#include "zpainter.h"
 #include "zstackobjectrole.h"
+
+class ZPainter;
 
 /*!
  * \brief The abstract class of representing an 3D object
@@ -101,13 +103,20 @@ public:
   /*!
    * \brief Display an object to widget
    *
-   * \a painter is expected to be restored after painting
+   * \a painter stores the painting status changed by the function. The
+   * painting parameters, including pen and brush, of \a painter is expected to
+   * be restored after painting
    */
   virtual void display(
       ZPainter &painter, int slice, EDisplayStyle option) const = 0;
 
-  /* For special painting when ZPainter cannot be created */
-  virtual void display(
+  /*!
+   * For special painting when ZPainter cannot be created
+   *
+   * \return false if nothing is painted. But returning true does not mean
+   *         if there is something painted.
+   */
+  virtual bool display(
       QPainter *painter, int z, EDisplayStyle option,
       EDisplaySliceMode sliceMode) const;
 

@@ -5,7 +5,7 @@
 #include <math.h>
 #include "tz_math.h"
 #include "zintpoint.h"
-
+#include "zpainter.h"
 
 const ZStackBall::TVisualEffect ZStackBall::VE_NONE = 0;
 const ZStackBall::TVisualEffect ZStackBall::VE_DASH_PATTERN = 1;
@@ -178,7 +178,7 @@ void ZStackBall::displayHelper(
   bool visible = false;
 
 //  const QBrush &oldBrush = painter->brush();
-  const QPen &oldPen = painter->pen();
+  const QPen &oldPen = painter->getPen();
 
   QPen pen;
   pen.setWidthF(getPenWidth());
@@ -215,7 +215,7 @@ void ZStackBall::displayHelper(
   if (visible) {
     if (!hasVisualEffect(VE_NO_CIRCLE)) {
       //qDebug() << painter->brush().color();
-      QColor color = painter->pen().color();
+      QColor color = painter->getPenColor();
       color.setAlphaF(alpha);
       pen.setColor(color);
       painter->setPen(pen);

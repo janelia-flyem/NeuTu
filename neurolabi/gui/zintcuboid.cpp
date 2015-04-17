@@ -71,12 +71,14 @@ void ZIntCuboid::translateX(int dx)
   m_lastCorner.setX(m_lastCorner.getX() + dx);
 }
 
-void ZIntCuboid::join(const ZIntCuboid &cuboid)
+ZIntCuboid &ZIntCuboid::join(const ZIntCuboid &cuboid)
 {
   for (int i = 0; i < 3; i++) {
     m_firstCorner[i] = imin2(m_firstCorner[i], cuboid.m_firstCorner[i]);
     m_lastCorner[i] = imax2(m_lastCorner[i], cuboid.m_lastCorner[i]);
   }
+
+  return *this;
 }
 
 void ZIntCuboid::joinX(int x)

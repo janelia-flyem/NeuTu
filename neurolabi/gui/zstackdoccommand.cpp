@@ -920,7 +920,7 @@ ZStackDocCommand::SwcEdit::SwcTreeLabeTraceMask::~SwcTreeLabeTraceMask() {}
 
 void ZStackDocCommand::SwcEdit::SwcTreeLabeTraceMask::undo()
 {
-  if (m_doc != NULL && m_tree != NULL) {
+  if (!m_doc && m_tree != NULL) {
     Swc_Tree_Node_Label_Workspace workspace;
     Default_Swc_Tree_Node_Label_Workspace(&workspace);
     workspace.sdw.color.r = 0;
@@ -933,7 +933,7 @@ void ZStackDocCommand::SwcEdit::SwcTreeLabeTraceMask::undo()
 
 void ZStackDocCommand::SwcEdit::SwcTreeLabeTraceMask::redo()
 {
-  if (m_doc != NULL && m_tree != NULL) {
+  if (!m_doc && m_tree != NULL) {
     Swc_Tree_Node_Label_Workspace workspace;
     Default_Swc_Tree_Node_Label_Workspace(&workspace);
     Swc_Tree_Label_Stack(
@@ -1205,14 +1205,14 @@ ZStackDocCommand::SwcEdit::RemoveEmptyTreePost::~RemoveEmptyTreePost()
 
 void ZStackDocCommand::SwcEdit::RemoveEmptyTreePost::redo()
 {
-  if (m_doc != NULL) {
+  if (!m_doc) {
     m_emptyTreeSet = m_doc->removeEmptySwcTree(false);
   }
 }
 
 void ZStackDocCommand::SwcEdit::RemoveEmptyTreePost::undo()
 {
-  if (m_doc != NULL) {
+  if (!m_doc) {
     for (std::set<ZSwcTree*>::iterator iter = m_emptyTreeSet.begin();
          iter != m_emptyTreeSet.end(); ++iter) {
       m_doc->addSwcTree(*iter, false);
@@ -1229,7 +1229,7 @@ ZStackDocCommand::SwcEdit::BreakForest::BreakForest(
 {
   setText(QObject::tr("Break swc forest"));
 
-  if (m_doc != NULL) {
+  if (!m_doc) {
     QList<ZSwcTree*> treeSet =
         m_doc->getSelectedObjectList<ZSwcTree>(ZStackObject::TYPE_SWC);
     //std::set<ZSwcTree*> *treeSet = m_doc->selectedSwcs();

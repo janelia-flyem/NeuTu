@@ -91,4 +91,6 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
   }
 }
 
+//void ZFlyEmProofMvc::toggleEdgeMode(bool edgeOn)
+
 

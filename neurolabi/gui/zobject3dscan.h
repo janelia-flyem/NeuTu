@@ -51,6 +51,7 @@ public:
   void drawStack(Stack *stack, int v, const int *offset = NULL) const;
   void drawStack(Stack *stack, uint8_t red, uint8_t green, uint8_t blue,
                  const int *offset = NULL) const;
+
   /*!
    * \brief Count the overlap area between an object and a stack
    *
@@ -251,6 +252,8 @@ public:
                  const int *offset = NULL) const;
   void labelStack(Stack *stack, int startLabel, const int *offset = NULL);
 
+  void drawStack(ZStack *stack, int v) const;
+
   /*!
    * \brief Mask a stack with the foreground defined by the object.
    */
@@ -347,7 +350,7 @@ public:
 
   ZObject3dScan getSlice(int z) const;
   ZObject3dScan getSlice(int minZ, int maxZ) const;
-
+  ZObject3dScan interpolateSlice(int z) const;
 
   virtual void display(
       ZPainter &painter, int slice, EDisplayStyle option) const;

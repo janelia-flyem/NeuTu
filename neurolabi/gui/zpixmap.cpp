@@ -1,10 +1,10 @@
 #include "zpixmap.h"
 
-ZPixmap::ZPixmap()
+ZPixmap::ZPixmap() : m_isVisible(false)
 {
 }
 
-ZPixmap::ZPixmap(const QSize &size) : QPixmap(size)
+ZPixmap::ZPixmap(const QSize &size) : QPixmap(size), m_isVisible(false)
 {
 
 }
@@ -22,4 +22,10 @@ void ZPixmap::setScale(double sx, double sy)
 void ZPixmap::setOffset(double dx, double dy)
 {
   m_transform.setOffset(dx, dy);
+}
+
+void ZPixmap::clearnUp()
+{
+  fill(Qt::transparent);
+  m_isVisible = false;
 }

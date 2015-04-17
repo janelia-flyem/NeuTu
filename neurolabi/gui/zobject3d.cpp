@@ -14,6 +14,7 @@
 #include "c_stack.h"
 #include "zobject3darray.h"
 #include "zstack.hxx"
+#include "zpainter.h"
 
 using namespace std;
 

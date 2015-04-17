@@ -7,7 +7,7 @@
 #include "zcircle.h"
 #include "tz_math.h"
 #include "zintpoint.h"
-
+#include "zpainter.h"
 
 const ZCircle::TVisualEffect ZCircle::VE_NONE = 0;
 const ZCircle::TVisualEffect ZCircle::VE_DASH_PATTERN = 1;
@@ -80,7 +80,7 @@ void ZCircle::display(ZPainter &painter, int n,
   painter.setPen(pen);
 
   //qDebug() << "Internal color: " << m_color;
-  const QBrush &oldBrush = painter.brush();
+//  const QBrush &oldBrush = painter.getBrush();
   if (hasVisualEffect(VE_GRADIENT_FILL)) {
     QRadialGradient gradient(50, 50, 50, 50, 50);
     gradient.setColorAt(0, QColor::fromRgbF(0, 1, 0, 1));
@@ -100,7 +100,7 @@ void ZCircle::display(ZPainter &painter, int n,
     }
   }
   displayHelper(&painter, n, style);
-  painter.setBrush(oldBrush);
+//  painter.setBrush(oldBrush);
 
   painter.restore();
 #endif
@@ -142,8 +142,9 @@ void ZCircle::displayHelper(ZPainter *painter, int stackFocus, EDisplayStyle sty
   double dataFocus = stackFocus - painter->getZOffset();
   bool visible = false;
 
-  const QBrush &oldBrush = painter->brush();
-  const QPen &oldPen = painter->pen();
+  const QBrush &oldBrush = painter->getBrush();
+  const QPen &oldPen = painter->getPen();
+
   double alpha = oldPen.color().alphaF();
 
   if (stackFocus == -1) {
@@ -173,7 +174,7 @@ void ZCircle::displayHelper(ZPainter *painter, int stackFocus, EDisplayStyle sty
   if (visible) {
     if (!hasVisualEffect(VE_NO_CIRCLE)) {
       //qDebug() << painter->brush().color();
-      QColor color = painter->pen().color();
+      QColor color = painter->getPenColor();
       color.setAlphaF(alpha);
       painter->setPen(color);
       painter->drawEllipse(QPointF(m_center.x(), m_center.y()),

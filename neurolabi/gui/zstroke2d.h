@@ -34,7 +34,7 @@ public:
   virtual bool load(const char *filePath);
 
   void display(ZPainter &painter, int slice, EDisplayStyle option) const;
-  void display(QPainter *rawPainter, int z, EDisplayStyle option,
+  bool display(QPainter *rawPainter, int z, EDisplayStyle option,
                EDisplaySliceMode sliceMode) const;
 
   void labelBinary(Stack *stack) const;

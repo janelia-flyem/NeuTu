@@ -10,6 +10,7 @@
 #include "zobject3d.h"
 #include "zjsonobject.h"
 #include "tz_geometry.h"
+#include "zpainter.h"
 
 const double ZStroke2d::m_minWidth = 1.0;
 const double ZStroke2d::m_maxWidth = 100.0;
@@ -231,14 +232,16 @@ void ZStroke2d::display(ZPainter &painter, int slice, EDisplayStyle option) cons
   painter.restore();
 }
 
-void ZStroke2d::display(QPainter *rawPainter, int z, EDisplayStyle option,
+bool ZStroke2d::display(QPainter *rawPainter, int z, EDisplayStyle option,
                         EDisplaySliceMode sliceMode) const
 {
   //UNUSED_PARAMETER(z);
   UNUSED_PARAMETER(option);
 
+  bool painted = false;
+
   if (rawPainter == NULL || !isVisible()) {
-    return;
+    return painted;
   }
 
 #ifdef _DEBUG_2
@@ -252,7 +255,7 @@ void ZStroke2d::display(QPainter *rawPainter, int z, EDisplayStyle option,
   QColor color = m_color;
   if (sliceMode == DISPLAY_SLICE_SINGLE && m_z != z) {
     if (isEraser()) {
-      return;
+      return painted;
     }
     color.setAlphaF(color.alphaF() / (1.2 + abs(m_z - z) / 5.0));
   }
@@ -276,6 +279,7 @@ void ZStroke2d::display(QPainter *rawPainter, int z, EDisplayStyle option,
         painter.setBrush(Qt::NoBrush);
       }
       painter.drawEllipse(QPointF(m_pointArray[0]), m_width / 2, m_width / 2);
+      painted = true;
 
 #ifdef _DEBUG_
       std::cout << "Paint stroke: " << m_width << std::endl;
@@ -288,8 +292,11 @@ void ZStroke2d::display(QPainter *rawPainter, int z, EDisplayStyle option,
       painter.setBrush(Qt::NoBrush);
       painter.setOpacity(1.0);
       painter.drawPolyline(&(m_pointArray[0]), m_pointArray.size());
+      painted = true;
     }
   }
+
+  return painted;
 }
 
 void ZStroke2d::labelImage(QImage *image) const

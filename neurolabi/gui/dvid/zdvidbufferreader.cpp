@@ -5,9 +5,7 @@
 #include <QDebug>
 #include <QNetworkReply>
 
-#if defined(_ENABLE_LIBDVIDCPP_)
-#include "libdvid/DVIDNodeService.h"
-#endif
+#include "libdvidheader.h"
 
 #include "dvid/zdvidtarget.h"
 #include "zsleeper.h"
@@ -33,7 +31,7 @@ void ZDvidBufferReader::read(const QString &url)
 {
   qDebug() << url;
 
-#ifdef _ENABLE_LIBDVIDCPP_
+#if defined(_ENABLE_LIBDVIDCPP_)
   qDebug() << "Using libdvidcpp";
 
   ZDvidTarget target;

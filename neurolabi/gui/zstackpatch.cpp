@@ -1,6 +1,7 @@
 #include "zstackpatch.h"
 #include "zstack.hxx"
 #include "tz_math.h"
+#include "zpainter.h"
 
 ZStackPatch::ZStackPatch(ZStack *stack) : m_stack(stack), m_sx(1.0), m_sy(1.0)
 {
@@ -39,7 +40,7 @@ void ZStackPatch::display(
     QTransform transform;
     transform.scale(m_sx, m_sy);
     transform.translate(m_offset.x(), m_offset.y());
-    transform = painter.transform() * transform;
+    transform = painter.getTransform() * transform;
     //transform.translate(pt.x(), pt.y());
     painter.setTransform(transform);
     painter.drawImage(0, 0, image);
