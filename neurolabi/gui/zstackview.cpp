@@ -1632,7 +1632,7 @@ void ZStackView::paintObjectBuffer(
            iter = visibleObject.begin(); iter != visibleObject.end(); ++iter) {
         //(*obj)->display(m_objectCanvas, slice, buddyPresenter()->objectStyle());
         const ZStackObject *obj = *iter;
-        if (slice == m_depthControl->value()) {
+        if (slice == m_depthControl->value() || slice == -1) {
           obj->display(painter, slice, buddyPresenter()->objectStyle());
 //          painted = true;
         }
