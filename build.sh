@@ -18,7 +18,7 @@ shift
 
 edition=general
 debug_config=release
-while getopts d:e:c: option
+while getopts d:e:c:q option
 do
   echo $option
   case $option in
@@ -28,6 +28,8 @@ do
       edition=$OPTARG;;
     c)
       debug_config=$OPTARG;;
+    q)
+      ext_qmake_args=$OPTARG;;
   esac
 done
 
@@ -58,6 +60,11 @@ qmake_args="-spec $QMAKE_SPEC CONFIG+=$debug_config CONFIG+=x86_64 -o Makefile .
 if [ -n "$cxx_define" ]
 then
   qmake_args="$qmake_args DEFINES+=\"$cxx_define\""
+fi
+
+if [ -n "$ext_qmake_args" ]
+then
+  qmake_args="$qmake_args DEFINES+=\"$cxx_define\" $ext_qmake_args"
 fi
 
 #exit 1
