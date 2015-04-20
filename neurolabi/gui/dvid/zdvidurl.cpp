@@ -139,6 +139,11 @@ std::string ZDvidUrl::getSparsevolUrl(const std::string &dataName) const
       ZDvidData::getName(ZDvidData::ROLE_SPARSEVOL);
 }
 
+std::string ZDvidUrl::getSparsevolUrl(int bodyId) const
+{
+  return getSparsevolUrl(bodyId, m_dvidTarget.getBodyLabelName());
+}
+
 std::string ZDvidUrl::getSparsevolUrl(
     int bodyId, const std::string &dataName) const
 {
@@ -191,6 +196,11 @@ std::string ZDvidUrl::getThumbnailUrl(
 }
 #endif
 
+std::string ZDvidUrl::getThumbnailUrl(int bodyId) const
+{
+  return getThumbnailUrl(bodyId, m_dvidTarget.getBodyLabelName());
+}
+
 std::string ZDvidUrl::getThumbnailUrl(const std::string &bodyLabelName) const
 {
   return getDataUrl(
@@ -208,7 +218,10 @@ std::string ZDvidUrl::getThumbnailUrl(
   ZString str;
   str.appendNumber(bodyId);
 
-  return getThumbnailUrl(bodyLabelName) + "/" + str + ".mraw";
+  return getKeyUrl(ZDvidData::getName(ZDvidData::ROLE_THUMBNAIL,
+                                      ZDvidData::ROLE_BODY_LABEL, bodyLabelName),
+                   str + "_mraw");
+//  return getThumbnailUrl(bodyLabelName) + "/" + str + ".mraw";
 }
 
 std::string ZDvidUrl::getRepoUrl() const
@@ -274,7 +287,8 @@ std::string ZDvidUrl::getLabels64Url(
 
 std::string ZDvidUrl::getKeyUrl(const std::string &name, const std::string &key) const
 {
-  return getDataUrl(name) + "/" + key;
+  //new dvid api
+  return getDataUrl(name) + "/key/" + key;
 }
 
 std::string ZDvidUrl::getKeyRangeUrl(
@@ -326,7 +340,9 @@ std::string ZDvidUrl::getBodyInfoUrl(const std::string &bodyLabelName) const
 std::string ZDvidUrl::getBodyInfoUrl(
     int bodyId, const std::string &bodyName) const
 {
-  return getBodyInfoUrl(bodyName) + "/" + ZString::num2str(bodyId);
+  return getKeyUrl(ZDvidData::getName(ZDvidData::ROLE_BODY_INFO,
+                                      ZDvidData::ROLE_BODY_LABEL,
+                                      bodyName), ZString::num2str(bodyId));
 }
 
 std::string ZDvidUrl::getBoundBoxUrl() const
