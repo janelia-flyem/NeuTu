@@ -69,7 +69,11 @@ then
   echo '#!/bin/bash' > $updateFile
   echo 'cd /opt/Download/neutube' >> $updateFile
   echo '/usr/bin/git pull' >> $updateFile
-  echo 'sh build.sh /opt/Trolltech/Qt4.8.5/bin/qmake /opt/Trolltech/Qt4.8.5/mkspecs/linux-g++ -e flyem' >> $updateFile
+  if [ -d /opt/Download/buildem ]
+  then
+    ext_qmake_args='-q "BUILDEM_DIR=/opt/Download/buildem"'
+  fi
+  echo "sh build.sh /opt/Trolltech/Qt4.8.5/bin/qmake /opt/Trolltech/Qt4.8.5/mkspecs/linux-g++ -e flyem $ext_qmake_args" >> $updateFile
   chmod a+x $updateFile
 fi
 

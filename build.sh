@@ -64,7 +64,8 @@ fi
 
 if [ -n "$ext_qmake_args" ]
 then
-  qmake_args="$qmake_args DEFINES+=\"$cxx_define\" $ext_qmake_args"
+  echo $ext_qmake_args
+  qmake_args="$qmake_args $ext_qmake_args"
 fi
 
 #exit 1
