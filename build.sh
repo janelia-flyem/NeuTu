@@ -18,7 +18,7 @@ shift
 
 edition=general
 debug_config=release
-while getopts d:e:c:q option
+while getopts d:e:c:q: option
 do
   echo $option
   echo $OPTARG
