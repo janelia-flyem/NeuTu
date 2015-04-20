@@ -16110,6 +16110,17 @@ void ZTest::test(MainWindow *host)
   array.dump(GET_TEST_DATA_DIR + "/flyem/MB/ring.json");
 #endif
 
+#if 1
+  ZObject3dScan obj1;
+  obj1.load(GET_TEST_DATA_DIR + "/flyem/FIB/FIB19/synapse_roi_test.sobj");
+  std::cout << obj1.getVoxelNumber() << std::endl;
+
+
+  ZJsonArray array = ZJsonFactory::makeJsonArray(
+        obj1, ZJsonFactory::OBJECT_SPARSE);
+  array.dump(GET_TEST_DATA_DIR + "/flyem/FIB/FIB19/synapse_roi_test.json");
+#endif
+
 #if 0
   ZObject3dScan obj1;
   obj1.load(GET_TEST_DATA_DIR + "/flyem/MB/large_outside_block.sobj");
@@ -16374,7 +16385,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   ZDvidTarget target;
   target.set("emdata1.int.janelia.org", "cf6e", 7000);
 
