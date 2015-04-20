@@ -276,6 +276,12 @@ void ZStackPresenter::createStrokeActions()
           this, SLOT(tryPaintStrokeMode()));
   m_actionMap[ACTION_PAINT_STROKE] = m_paintStrokeAction;
 
+  m_paintStrokeAction = new QAction(tr("Paint Seed"), this);
+  m_paintStrokeAction->setShortcut(tr("Ctrl+R"));
+  connect(m_paintStrokeAction, SIGNAL(triggered()),
+          this, SLOT(tryPaintStrokeMode()));
+  m_actionMap[ACTION_ADD_SPLIT_SEED] = m_paintStrokeAction;
+
   m_eraseStrokeAction = new QAction(tr("Erase Mask"), this);
   m_eraseStrokeAction->setShortcut(tr("Ctrl+E"));
   connect(m_eraseStrokeAction, SIGNAL(triggered()),
@@ -288,6 +294,10 @@ void ZStackPresenter::createBodyActions()
   QAction *action = new QAction(tr("Launch split"), this);
   connect(action, SIGNAL(triggered()), this, SLOT(notifyBodySplitTriggered()));
   m_actionMap[ACTION_BODY_SPLIT_START] = action;
+
+//  action = new QAction(tr("Add split seed"), this);
+//  connect(action, SIGNAL(triggered()), this, SLOT());
+//  m_actionMap[ACTION_ADD_SPLIT_SEED] = action;
 }
 
 void ZStackPresenter::createMainWindowActions()
@@ -638,15 +648,41 @@ void ZStackPresenter::setViewPortCenter(int x, int y, int z)
   buddyView()->updateImageScreen();
 }
 
+/*
 void ZStackPresenter::moveImage(int mouseX, int mouseY)
 {
   moveImageToMouse(m_grabPosition.x(), m_grabPosition.y(), mouseX, mouseY);
 }
+*/
 
 void ZStackPresenter::moveImageToMouse(
     double srcX, double srcY, int mouseX, int mouseY)
 {
+//  QPointF targetPosition =
+//      buddyView()->imageWidget()->canvasCoordinate(QPoint(mouseX, mouseY));
+
+  /* Dist from target to the viewport start in the world coordinate */
+  double distX = double(mouseX) * buddyView()->imageWidget()->viewPort().width()
+      / buddyView()->imageWidget()->projectSize().width();
+  double distY = double(mouseY) * buddyView()->imageWidget()->viewPort().height()
+      / buddyView()->imageWidget()->projectSize().height();
+
+  /* the grabbed position keeps constant in the world coordinate */
+  double x = srcX - distX;
+  double y = srcY - distY;
+
+//  std::cout << srcX << " " << srcY << std::endl;
+//  qDebug() << "target pos: " << targetPosition;
+
+//  QPointF oldViewportOffset = buddyView()->imageWidget()->viewPort().topLeft();
+
+//  QPointF newOffset = oldViewportOffset + targetPosition - QPointF(srcX, srcY);
+
+  moveViewPortTo(iround(x), iround(y));
+
+  /*
   int x, y;
+
   x = srcX
       - double(mouseX) * buddyView()->imageWidget()->viewPort().width()
       / buddyView()->imageWidget()->projectSize().width();
@@ -655,6 +691,7 @@ void ZStackPresenter::moveImageToMouse(
       / buddyView()->imageWidget()->projectSize().height();
 
   moveViewPortTo(iround(x), iround(y));
+  */
 }
 
 void ZStackPresenter::moveViewPort(int dx, int dy)
@@ -1146,6 +1183,9 @@ void ZStackPresenter::processKeyPressEvent(QKeyEvent *event)
       }
     }
     break;
+  case Qt::Key_T:
+    toggleObjectVisible();
+    break;
   default:
     break;
   }
@@ -1242,6 +1282,11 @@ void ZStackPresenter::setObjectVisible(bool v)
     m_showObject = v;
     buddyView()->paintObject();
   }
+}
+
+void ZStackPresenter::toggleObjectVisible()
+{
+  setObjectVisible(!isObjectVisible());
 }
 
 void ZStackPresenter::setObjectStyle(ZStackObject::EDisplayStyle style)
@@ -1790,7 +1835,9 @@ void ZStackPresenter::enterSwcSelectMode()
     m_interactiveContext.setExitingEdit(true);
   }
 
-  notifyUser("Use mouse to select nodes");
+  if (buddyDocument()->hasSwc()) {
+    notifyUser("Use mouse to select nodes");
+  }
 
   m_interactiveContext.setSwcEditMode(ZInteractiveContext::SWC_EDIT_SELECT);
   updateCursor();
@@ -1929,7 +1976,7 @@ void ZStackPresenter::process(const ZStackOperator &op)
 {
   ZInteractionEvent interactionEvent;
   const ZMouseEvent& event = m_mouseEventProcessor.getLatestMouseEvent();
-  QPoint pos(event.getPosition().getX(),
+  QPoint currentWidgetPos(event.getPosition().getX(),
              event.getPosition().getY());
   ZPoint currentStackPos = event.getPosition(NeuTube::COORD_STACK);
   ZPoint currentRawStackPos = event.getPosition(NeuTube::COORD_RAW_STACK);
@@ -2026,23 +2073,23 @@ void ZStackPresenter::process(const ZStackOperator &op)
     buddyView()->notifyViewPortChanged();
     break;
   case ZStackOperator::OP_SHOW_STACK_CONTEXT_MENU:
-    buddyView()->showContextMenu(getStackContextMenu(), pos);
+    buddyView()->showContextMenu(getStackContextMenu(), currentWidgetPos);
     //status = CONTEXT_MENU_POPPED;
     break;
   case ZStackOperator::OP_SHOW_SWC_CONTEXT_MENU:
     if (getSwcNodeContextMenu()->isHidden()) {
-      buddyView()->showContextMenu(getSwcNodeContextMenu(), pos);
+      buddyView()->showContextMenu(getSwcNodeContextMenu(), currentWidgetPos);
     }
     //status = CONTEXT_MENU_POPPED;
     break;
   case ZStackOperator::OP_SHOW_STROKE_CONTEXT_MENU:
-    buddyView()->showContextMenu(getStrokeContextMenu(), pos);
+    buddyView()->showContextMenu(getStrokeContextMenu(), currentWidgetPos);
     //status = CONTEXT_MENU_POPPED;
     break;
   case ZStackOperator::OP_SHOW_TRACE_CONTEXT_MENU:
     if (buddyDocument()->hasTracable()) {
       if (m_interactiveContext.isContextMenuActivated()) {
-        if (buddyView()->popLeftMenu(pos)) {
+        if (buddyView()->popLeftMenu(currentWidgetPos)) {
           m_interactiveContext.blockContextMenu();
           //status = CONTEXT_MENU_POPPED;
         }
@@ -2054,10 +2101,10 @@ void ZStackPresenter::process(const ZStackOperator &op)
   case ZStackOperator::OP_SHOW_PUNCTA_CONTEXT_MENU:
     buddyView()->rightMenu()->clear();
     addPunctaEditFunctionToRightMenu();
-    buddyView()->popRightMenu(pos);
+    buddyView()->popRightMenu(currentWidgetPos);
     break;
   case ZStackOperator::OP_SHOW_BODY_CONTEXT_MENU:
-    buddyView()->showContextMenu(getBodyContextMenu(), pos);
+    buddyView()->showContextMenu(getBodyContextMenu(), currentWidgetPos);
     break;
   case ZStackOperator::OP_EXIT_EDIT_MODE:
     if (isStrokeOn()) {
@@ -2078,7 +2125,7 @@ void ZStackPresenter::process(const ZStackOperator &op)
     break;
   case ZStackOperator::OP_SHOW_PUNCTA_MENU:
     if (m_interactiveContext.isContextMenuActivated()) {
-      if (buddyView()->popLeftMenu(pos)) {
+      if (buddyView()->popLeftMenu(currentWidgetPos)) {
         m_interactiveContext.blockContextMenu();
       }
     } else {
@@ -2201,9 +2248,10 @@ void ZStackPresenter::process(const ZStackOperator &op)
   {
     ZPoint grabPosition = op.getMouseEventRecorder()->getPosition(
           Qt::LeftButton, ZMouseEvent::ACTION_PRESS,
-          NeuTube::COORD_RAW_STACK);
+          NeuTube::COORD_STACK);
     moveImageToMouse(
-          grabPosition.x(), grabPosition.y(), pos.x(), pos.y());
+          grabPosition.x(), grabPosition.y(),
+          currentWidgetPos.x(), currentWidgetPos.y());
   }
     break;
   case ZStackOperator::OP_ZOOM_IN:

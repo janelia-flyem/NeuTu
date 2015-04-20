@@ -174,7 +174,7 @@ public:
 
   //void paintObjectBuffer(ZImage *canvas, ZStackObject::ETarget target);
 
-  bool paintObjectBuffer(ZPainter &painter, ZStackObject::ETarget target);
+  void paintObjectBuffer(ZPainter &painter, ZStackObject::ETarget target);
 
   void paintActiveDecorationBuffer();
 
@@ -276,6 +276,13 @@ public:
       NeuTube::ECoordinateSystem coordSys = NeuTube::COORD_STACK) const;
 
   void setView(const ZStackViewParam &param);
+
+  /*!
+   * \brief Set the viewport offset
+   *
+   * (\a x, \a y) is supposed to the world coordinates of the first corner of
+   * the viewport. The real position will be adjusted to fit in the canvas.
+   */
   void setViewPortOffset(int x, int y);
 
   void paintMultiresImageTest(int resLevel);
@@ -290,7 +297,9 @@ public: //Change view parameters
 
 private:
   void clearCanvas();
-  void updateCanvas();
+  template<typename T>
+  void resetCanvasWithStack(T &canvas, ZPainter *painter);
+  void updateImageCanvas();
   void updateMaskCanvas();
   void clearObjectCanvas();
   void clearTileCanvas();

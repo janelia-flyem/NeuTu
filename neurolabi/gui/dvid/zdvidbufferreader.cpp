@@ -18,10 +18,10 @@ ZDvidBufferReader::ZDvidBufferReader(QObject *parent) :
   m_networkManager = new QNetworkAccessManager(this);
   m_eventLoop = new QEventLoop(this);
 
-  QTimer *timer = new QTimer(this);
-  timer->setInterval(60000);
+//  m_timer = new QTimer(this);
+//  m_timer->setInterval(60000);
 
-  connect(timer, SIGNAL(timeout()), this, SLOT(handleTimeout()));
+//  connect(timer, SIGNAL(timeout()), this, SLOT(handleTimeout()));
   connect(this, SIGNAL(readingCanceled()), this, SLOT(cancelReading()));
   connect(this, SIGNAL(readingDone()), m_eventLoop, SLOT(quit()));
   connect(this, SIGNAL(checkingStatus()), this, SLOT(waitForReading()));
@@ -73,6 +73,8 @@ void ZDvidBufferReader::read(const QString &url)
 
 bool ZDvidBufferReader::isReadable(const QString &url)
 {
+  QTimer::singleShot(1000, this, SLOT(handleTimeout()));
+
   startReading();
 
   qDebug() << url;

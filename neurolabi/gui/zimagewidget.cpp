@@ -247,9 +247,10 @@ void ZImageWidget::setView(int zoomRatio, const QPoint &zoomOffset)
 
 void ZImageWidget::setViewPortOffset(int x, int y)
 {
+  x -= m_canvasRegion.left();
+  y -= m_canvasRegion.top();
+
   if (!m_freeMoving) {
-    x -= m_canvasRegion.left();
-    y -= m_canvasRegion.top();
     if (x < 0) {
       x = 0;
     }
@@ -257,14 +258,14 @@ void ZImageWidget::setViewPortOffset(int x, int y)
     if (y < 0) {
       y = 0;
     }
-  }
 
-  if (x + m_viewPort.width() > canvasSize().width()) {
-    x = canvasSize().width() - m_viewPort.width();
-  }
+    if (x + m_viewPort.width() > canvasSize().width()) {
+      x = canvasSize().width() - m_viewPort.width();
+    }
 
-  if (y + m_viewPort.height() > canvasSize().height()) {
-    y = canvasSize().height() - m_viewPort.height();
+    if (y + m_viewPort.height() > canvasSize().height()) {
+      y = canvasSize().height() - m_viewPort.height();
+    }
   }
 
   setViewPort(QRect(x + m_canvasRegion.left(),

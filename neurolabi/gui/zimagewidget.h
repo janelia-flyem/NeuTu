@@ -44,8 +44,22 @@ public:
   void setProjRegion(const QRect &rect);
   void setView(int zoomRatio, const QPoint &zoomOffset);
   void setView(const QRect &viewPort, const QRect &projRegion);
+  /*!
+   * \brief Set view port offset
+   *
+   * Set the first corner of viewport to (\a x, \a y) in the world coordinate
+   * system. The position will be adjusted if (\a x, \a y) is outside the canvas.
+   */
   void setViewPortOffset(int x, int y);
+
+  /*!
+   * \brief Move viewport.
+   *
+   * Move the current viewport so that the offset between its first corner and
+   * the first corner of the canvas is (\a x, \a y).
+   */
   void moveViewPort(int x, int y);
+
   void setZoomRatio(int zoomRatio);
   //inline int zoomRatio() const { return m_zoomRatio; }
   void increaseZoomRatio();

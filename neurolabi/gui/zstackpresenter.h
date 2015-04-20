@@ -62,7 +62,7 @@ public:
     ACTION_PAINT_STROKE, ACTION_ERASE_STROKE,
     ACTION_LOCATE_SELECTED_SWC_NODES_IN_3D,
     ACTION_SPLIT_DATA, ACTION_SHOW_BODY_IN_3D,
-    ACTION_BODY_SPLIT_START
+    ACTION_BODY_SPLIT_START, ACTION_ADD_SPLIT_SEED
   };
 
   inline double greyScale(int c = 0) const {return m_greyScale[c];}
@@ -82,6 +82,7 @@ public:
 
   bool hasObjectToShow() const;
   void setObjectVisible(bool v);
+  void toggleObjectVisible();
   bool isObjectVisible();
   void setObjectStyle(ZStackObject::EDisplayStyle style);
 
@@ -170,12 +171,21 @@ public:
 
   //void updateInteractiveContext();
 
-  void moveImage(int mouseX, int mouseY);
+  //void moveImage(int mouseX, int mouseY);
   void moveViewPort(int dx, int dy);
+
+  /*!
+   * \brief Move the viewport to a certain position.
+   *
+   * Move the viewport to (\a x, \a y) if possible.
+   */
   void moveViewPortTo(int x, int y);
+
   /*!
    * \brief Move a data point to the specified mouse position.
-   * (\a srcX, \a srcY) are the raw stack coordinates.
+   *
+   * Move the point at the canvas coordinates (\a srcX, \a srcY) under
+   * the mouse point at (\a mouseX, \a mouseY), which are widget coordinates.
    */
   void moveImageToMouse(double srcX, double srcY, int mouseX, int mouseY);
 
@@ -369,7 +379,7 @@ private:
   int m_mouseLeftPressPosition[3];
   int m_mouseRightPressPosition[3];
   int m_mouseLeftDoubleClickPosition[3];
-  QPointF m_grabPosition;
+//  QPointF m_grabPosition;
   ZPoint m_lastMouseDataCoord;
 
   ZStroke2d m_stroke;

@@ -80,7 +80,7 @@ signals:
   void progressDone();
   void progressAdvanced(double dp);
 
-  void messageDumped(const QString &message, bool appending = true);
+  void messageDumped(const QString &message, bool appending = false);
   void sideViewReady();
   void sideViewCanceled();
 
@@ -109,6 +109,7 @@ public slots:
    * \brief Dump information
    */
   void dump(const QString &info, bool appending = false);
+  void dumpError(const QString &info, bool appending = false);
 
   void startSplit(const ZDvidTarget &dvidTarget, int bodyId);
 
@@ -139,6 +140,8 @@ private:
   void startProgress(const QString &label);
   void connectSignalSlot();
   void createMenu();
+  //bool checkServerStatus();
+  bool isReadyForSplit(const ZDvidTarget &target);
 
 private:
   Ui::FlyEmBodySplitProjectDialog *ui;

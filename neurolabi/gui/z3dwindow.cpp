@@ -980,7 +980,7 @@ int Z3DWindow::channelNumber()
     return 0;
   }
 
-  if (m_doc.get() != NULL) {
+  if (m_doc.get() == NULL) {
     return 0;
   }
 

@@ -83,6 +83,8 @@ public:
 
   ZArray* readLabels64(const std::string &dataName, int x0, int y0, int z0,
                        int width, int height, int depth) const;
+  ZArray* readLabels64(int x0, int y0, int z0,
+                       int width, int height, int depth) const;
 
   bool hasSparseVolume() const;
   bool hasSparseVolume(int bodyId) const;

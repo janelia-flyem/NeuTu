@@ -330,7 +330,7 @@ public:
   bool loadFile(const std::string filePath);
   bool loadFile(const QString &filePath);
 
-  virtual void loadStack(Stack *getStack, bool isOwner = true);
+  virtual void loadStack(Stack *stack, bool isOwner = true);
   virtual void loadStack(ZStack *zstack);
 
   /*!
