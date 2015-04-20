@@ -21,6 +21,7 @@ debug_config=release
 while getopts d:e:c:q option
 do
   echo $option
+  echo $OPTARG
   case $option in
     d)
       cxx_define=$OPTARG;;
