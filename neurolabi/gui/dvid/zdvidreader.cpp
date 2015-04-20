@@ -717,6 +717,7 @@ QStringList ZDvidReader::readKeys(
 ZStack* ZDvidReader::readBodyLabel(
     int x0, int y0, int z0, int width, int height, int depth)
 {
+#if 1
   startReading();
   ZDvidBuffer *dvidBuffer = m_dvidClient->getDvidBuffer();
   dvidBuffer->clearImageArray();
@@ -727,7 +728,7 @@ ZStack* ZDvidReader::readBodyLabel(
   for (std::vector<std::pair<int, int> >::const_iterator
        iter = partition.begin(); iter != partition.end(); ++iter) {
     request.setGetBodyLabelRequest(
-          m_dvidTarget.getBodyLabelName().c_str(),
+          m_dvidTarget.getLabelBlockName().c_str(),
           x0, y0, iter->first, width, height, iter->second);
     m_dvidClient->appendRequest(request);
     m_dvidClient->postNextRequest();
@@ -770,7 +771,7 @@ ZStack* ZDvidReader::readBodyLabel(
       }
     }
   }
-
+#endif
 
   return stack;
 }
@@ -858,6 +859,13 @@ bool ZDvidReader::hasData(const std::string &key) const
   ZDvidUrl dvidUrl(m_dvidTarget);
   ZDvidBufferReader bufferReader;
   return bufferReader.isReadable(dvidUrl.getInfoUrl(key).c_str());
+}
+
+ZArray* ZDvidReader::readLabels64(
+    int x0, int y0, int z0, int width, int height, int depth) const
+{
+  return readLabels64(getDvidTarget().getLabelBlockName(),
+                     x0, y0, z0, width, height, depth);
 }
 
 ZArray* ZDvidReader::readLabels64(

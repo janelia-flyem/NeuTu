@@ -31,6 +31,7 @@
 #include "zstackpatch.h"
 #include "zstackobjectsource.h"
 #include "neutubeconfig.h"
+#include "zarray.h"
 
 ZFlyEmBodySplitProject::ZFlyEmBodySplitProject(QObject *parent) :
   QObject(parent), m_bodyId(-1), m_dataFrame(NULL), m_resultWindow(NULL),
@@ -635,6 +636,17 @@ void ZFlyEmBodySplitProject::commitResultFunc(
 
 void ZFlyEmBodySplitProject::saveSeed()
 {
+  ZDvidReader reader;
+  if (reader.open(getDvidTarget())) {
+    if (!reader.hasData(getSplitLabelName())) {
+      emit messageGenerated(
+            ("Failed to save seed: " + getSplitLabelName() +
+            " has not been created on the server.").c_str());
+
+      return;
+    }
+  }
+
   QList<const ZDocPlayer*> playerList =
       m_dataFrame->document()->getPlayerList(ZStackObjectRole::ROLE_SEED);
   ZJsonArray jsonArray;
@@ -801,14 +813,27 @@ void ZFlyEmBodySplitProject::updateBodyMask()
         }
 
         int z = currentSlice + offset.getZ();
+        ZArray *array = reader.readLabels64(
+              rectRoi.getX0(), rectRoi.getY0(), z,
+              rectRoi.getWidth(), rectRoi.getHeight(), 1);
+        /*
         ZStack *stack = reader.readBodyLabel(
               rectRoi.getX0(), rectRoi.getY0(), z,
               rectRoi.getWidth(), rectRoi.getHeight(), 1);
-        if (stack != NULL) {
+              */
+        if (array != NULL) {
+          /*
           std::map<int, ZObject3dScan*> *bodySet =
               ZObject3dScan::extractAllObject(
                 (uint64_t*) stack->array8(), stack->width(), stack->height(), 1,
                 stack->getOffset().getZ(), 1, NULL);
+                */
+
+          std::map<int, ZObject3dScan*> *bodySet =
+              ZObject3dScan::extractAllObject(
+                array->getDataPointer<uint64_t>(), array->getDim(0),
+                array->getDim(1), 1,
+                array->getStartCoordinate(2), 1, NULL);
 
           frame->document()->blockSignals(true);
           for (std::map<int, ZObject3dScan*>::const_iterator iter = bodySet->begin();
@@ -817,7 +842,8 @@ void ZFlyEmBodySplitProject::updateBodyMask()
             ZObject3dScan *obj = iter->second;
             if (label > 0) {
               obj->translate(
-                    stack->getOffset().getX(), stack->getOffset().getY(), 0);
+                    array->getStartCoordinate(0),
+                    array->getStartCoordinate(1), 0);
               obj->setRole(ZStackObjectRole::ROLE_MASK);
               frame->document()->addObject(obj, false);
             } else {
@@ -829,7 +855,7 @@ void ZFlyEmBodySplitProject::updateBodyMask()
           frame->document()->notifyPlayerChanged(ZStackObjectRole::ROLE_MASK);
         }
 
-        delete stack;
+        delete array;
       }
     }
   }

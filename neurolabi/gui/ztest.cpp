@@ -16365,12 +16365,27 @@ void ZTest::test(MainWindow *host)
 #endif
 
 
-#if 1
+#if 0
   ZStack stack;
   stack.load(GET_TEST_DATA_DIR + "/benchmark/em_stack.tif");
   stack.setOffset(10, 20, 0);
 
   stack.save(GET_TEST_DATA_DIR + "/test.tif");
 
+#endif
+
+#if 1
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "cf6e", 7000);
+
+  ZDvidReader reader;
+  if (reader.open(target)) {
+    std::string dataName = ZDvidData::getName(ZDvidData::ROLE_SPLIT_STATUS);
+    if (reader.hasData(dataName)) {
+      std::cout << dataName << " exists." << std::endl;
+    } else {
+      std::cout << dataName << " does not exist." << std::endl;
+    }
+  }
 #endif
 }

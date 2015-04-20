@@ -1244,10 +1244,32 @@ void ZStackView::clearCanvas()
   m_imagePainter.end();
   delete m_image;
   m_image = NULL;
+
+  m_imageWidget->setImage(NULL);
 }
 
-void ZStackView::updateCanvas()
+template<typename T>
+void ZStackView::resetCanvasWithStack(T &canvas, ZPainter *painter)
 {
+  if (canvas != NULL) {
+    if (canvas->width() != buddyDocument()->getStackWidth() ||
+        canvas->height() != buddyDocument()->getStackHeight() ||
+        iround(canvas->getTransform().getTx()) !=
+        buddyDocument()->getStackOffset().getX() ||
+        iround(canvas->getTransform().getTy()) !=
+        buddyDocument()->getStackOffset().getY()) {
+      if (painter != NULL) {
+        painter->end();
+      }
+      delete canvas;
+      canvas = NULL;
+    }
+  }
+}
+
+void ZStackView::updateImageCanvas()
+{
+  resetCanvasWithStack(m_image, &m_imagePainter);
   if (buddyDocument()->hasStackPaint()) {
     if (m_image != NULL) {
       if ((m_image->width() != buddyDocument()->getStackWidth()) ||
@@ -1264,6 +1286,7 @@ void ZStackView::updateCanvas()
                          -buddyDocument()->getStackOffset().getY());
 //      m_image->setScale(scale, scale);
       m_imagePainter.begin(m_image);
+      m_imagePainter.setZOffset(buddyDocument()->getStackOffset().getZ());
       m_imageWidget->setImage(m_image);
     }
   }
@@ -1295,6 +1318,8 @@ void ZStackView::clearObjectCanvas()
   m_objectCanvasPainter.end();
   delete m_objectCanvas;
   m_objectCanvas = NULL;
+
+  m_imageWidget->setObjectCanvas(NULL);
 }
 
 void ZStackView::clearTileCanvas()
@@ -1302,6 +1327,8 @@ void ZStackView::clearTileCanvas()
   m_tileCanvasPainter.end();
   delete m_tileCanvas;
   m_tileCanvas = NULL;
+
+  m_imageWidget->setTileCanvas(NULL);
 }
 
 QSize ZStackView::getCanvasSize() const
@@ -1317,6 +1344,8 @@ QSize ZStackView::getCanvasSize() const
 
 void ZStackView::updateObjectCanvas()
 {
+  resetCanvasWithStack(m_objectCanvas, &m_objectCanvasPainter);
+
   QSize canvasSize = getCanvasSize();
 
   if (!canvasSize.isEmpty() &&
@@ -1332,6 +1361,7 @@ void ZStackView::updateObjectCanvas()
       m_objectCanvas = new ZPixmap(canvasSize);
       m_objectCanvas->setOffset(-buddyDocument()->getStackOffset().getX(),
                                 -buddyDocument()->getStackOffset().getY());
+      m_objectCanvas->clearnUp();
       m_objectCanvasPainter.begin(m_objectCanvas);
       m_objectCanvasPainter.setCompositionMode(
             QPainter::CompositionMode_SourceOver);
@@ -1348,11 +1378,17 @@ void ZStackView::updateObjectCanvas()
 //      m_objectCanvas->fill(0);
     }
     m_objectCanvasPainter.setZOffset(buddyDocument()->getStackOffset().getZ());
+  } else {
+    if (m_objectCanvas != NULL) {
+      m_objectCanvas->setVisible(false);
+    }
   }
 }
 
 void ZStackView::updateTileCanvas()
 {
+  resetCanvasWithStack(m_tileCanvas, &m_tileCanvasPainter);
+
   QSize canvasSize = getCanvasSize();
 
   if (!canvasSize.isEmpty() &&
@@ -1385,6 +1421,8 @@ void ZStackView::updateActiveDecorationCanvas()
 //      m_activeDecorationCanvas = NULL;
 //    }
 //  }
+
+  resetCanvasWithStack(m_activeDecorationCanvas, NULL);
 
   if (m_activeDecorationCanvas == NULL) {
     QSize canvasSize = getCanvasSize();
@@ -1439,7 +1477,7 @@ void ZStackView::paintStackBuffer()
     return;
   }
 
-  updateCanvas();
+  updateImageCanvas();
 
   bool showImage = false;
   for (size_t i=0; i<m_chVisibleState.size(); ++i) {
@@ -1553,13 +1591,14 @@ void ZStackView::paintMask()
   updateImageScreen();
 }
 
-bool ZStackView::paintObjectBuffer(ZPainter &painter, ZStackObject::ETarget target)
+void ZStackView::paintObjectBuffer(
+    ZPainter &painter, ZStackObject::ETarget target)
 {
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
     qDebug() << painter.getTransform();
 #endif
 
-  bool painted = false;
+  painter.setPainted(false);
 
   if (buddyPresenter()->isObjectVisible()) {
     int slice = m_depthControl->value();
@@ -1595,7 +1634,7 @@ bool ZStackView::paintObjectBuffer(ZPainter &painter, ZStackObject::ETarget targ
         const ZStackObject *obj = *iter;
         if (slice == m_depthControl->value()) {
           obj->display(painter, slice, buddyPresenter()->objectStyle());
-          painted = true;
+//          painted = true;
         }
       }
     }
@@ -1610,13 +1649,13 @@ bool ZStackView::paintObjectBuffer(ZPainter &painter, ZStackObject::ETarget targ
         //(*obj)->display(m_objectCanvas, slice, buddyPresenter()->objectStyle());
         if ((*obj)->getTarget() == target) {
           (*obj)->display(painter, slice, buddyPresenter()->objectStyle());
-          painted = true;
+//          painted = true;
         }
       }
     }
   }
 
-  return painted;
+//  return painted;
 }
 
 void ZStackView::paintObjectBuffer()
@@ -1630,7 +1669,9 @@ void ZStackView::paintObjectBuffer()
     return;
   }
 
-  if (paintObjectBuffer(m_objectCanvasPainter, ZStackObject::OBJECT_CANVAS)) {
+  paintObjectBuffer(m_objectCanvasPainter, ZStackObject::OBJECT_CANVAS);
+
+  if (m_objectCanvasPainter.isPainted()) {
     m_objectCanvas->setVisible(true);
   }
 }
@@ -1788,11 +1829,12 @@ ZStack* ZStackView::getStrokeMask(uint8_t maskValue)
 
 ZStack* ZStackView::getObjectMask(uint8_t maskValue)
 {
-  QImage image;
-  image = m_objectCanvas->toImage();
   ZStack *stack = NULL;
 
   if (m_objectCanvas != NULL) {
+    QImage image;
+    image = m_objectCanvas->toImage();
+
     stack = new ZStack(GREY, m_objectCanvas->width(),
                        m_objectCanvas->height(), 1, 1);
     size_t offset = 0;
@@ -1996,12 +2038,13 @@ void ZStackView::notifyViewPortChanged()
 
 bool ZStackView::isImageMovable() const
 {
-  return (imageWidget()->viewPort().top() != 0 ||
-      imageWidget()->viewPort().left() != 0 ||
-      imageWidget()->viewPort().bottom() !=
-      imageWidget()->canvasSize().height() - 1 ||
-      imageWidget()->viewPort().right() !=
-      imageWidget()->canvasSize().width() - 1);
+  return (imageWidget()->viewPort() != imageWidget()->canvasRegion());
+//  return (imageWidget()->viewPort().top() != 0 ||
+//      imageWidget()->viewPort().left() != 0 ||
+//      imageWidget()->viewPort().bottom() !=
+//      imageWidget()->canvasSize().height() - 1 ||
+//      imageWidget()->viewPort().right() !=
+//      imageWidget()->canvasSize().width() - 1);
 }
 
 void ZStackView::customizeWidget()

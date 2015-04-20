@@ -9,6 +9,8 @@
 #include <QString>
 #include <QNetworkReply>
 
+class QTimer;
+
 /*!
  * \brief The class of reading dvid data into buffer
  */
@@ -63,6 +65,7 @@ private:
   QEventLoop *m_eventLoop;
   bool m_isReadingDone;
   EStatus m_status;
+//  QTimer *m_timer;
 };
 
 #endif // ZDVIDBUFFERREADER_H

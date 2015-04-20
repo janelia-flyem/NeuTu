@@ -39,7 +39,8 @@ void ZStackPatch::display(
 
     QTransform transform;
     transform.scale(m_sx, m_sy);
-    transform.translate(m_offset.x(), m_offset.y());
+    transform.translate(m_offset.x() + m_stack->getOffset().getX(),
+                        m_offset.y() + m_stack->getOffset().getY());
     transform = painter.getTransform() * transform;
     //transform.translate(pt.x(), pt.y());
     painter.setTransform(transform);
