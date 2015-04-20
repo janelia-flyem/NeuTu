@@ -141,6 +141,13 @@ ZObject3dScan *ZDvidReader::readBody(int bodyId, ZObject3dScan *result)
     result = new ZObject3dScan;
   }
 
+  ZDvidBufferReader reader;
+  ZDvidUrl dvidUrl(getDvidTarget());
+  reader.read(dvidUrl.getSparsevolUrl(bodyId).c_str());
+  const QByteArray &buffer = reader.getBuffer();
+  result->importDvidObjectBuffer(buffer.data(), buffer.size());
+
+#if 0
   startReading();
 
   ZDvidBuffer *dvidBuffer = m_dvidClient->getDvidBuffer();
@@ -158,6 +165,7 @@ ZObject3dScan *ZDvidReader::readBody(int bodyId, ZObject3dScan *result)
   if (!bodyArray.empty()) {
     *result = bodyArray[0];
   }
+#endif
 
   return result;
 }
@@ -217,6 +225,9 @@ ZSwcTree* ZDvidReader::readSwc(int bodyId)
 
 ZStack* ZDvidReader::readThumbnail(int bodyId)
 {
+  ZDvidUrl url(getDvidTarget());
+  qDebug() << url.getThumbnailUrl(bodyId);
+
   startReading();
 
   ZDvidBuffer *dvidBuffer = m_dvidClient->getDvidBuffer();
