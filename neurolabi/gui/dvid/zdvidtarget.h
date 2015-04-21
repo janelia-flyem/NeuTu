@@ -147,6 +147,9 @@ public:
   std::string getMultiscale2dName() const;
   void setMultiscale2dName(const std::string &name);
 
+  std::string getGrayScaleName() const;
+  void setGrayScaleName(const std::string &name);
+
 private:
   std::string m_address;
   std::string m_uuid;
@@ -157,6 +160,7 @@ private:
   std::string m_bodyLabelName;
   std::string m_labelBlockName;
   std::string m_multiscale2dName;
+  std::string m_grayScaleName;
 //  std::string m_tileName;
 
   int m_bgValue; //grayscale background
@@ -169,6 +173,7 @@ private:
   const static char* m_localKey;
   const static char* m_debugKey;
   const static char* m_bgValueKey;
+  const static char* m_grayScaleNameKey;
   const static char* m_bodyLabelNameKey;
   const static char* m_labelBlockNameKey;
 };

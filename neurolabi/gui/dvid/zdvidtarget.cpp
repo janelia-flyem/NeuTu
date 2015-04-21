@@ -14,6 +14,7 @@ const char* ZDvidTarget::m_debugKey = "debug";
 const char* ZDvidTarget::m_bgValueKey = "background";
 const char* ZDvidTarget::m_bodyLabelNameKey = "body_label";
 const char* ZDvidTarget::m_labelBlockNameKey = "label_block";
+const char* ZDvidTarget::m_grayScaleNameKey = "gray_scale";
 
 ZDvidTarget::ZDvidTarget() : m_port(-1), m_bgValue(255)
 {
@@ -211,10 +212,13 @@ void ZDvidTarget::loadJsonObject(const ZJsonObject &obj)
       m_bgValue = ZJsonParser::integerValue(obj[m_bgValueKey]);
     }
     if (obj.hasKey(m_bodyLabelNameKey)) {
-      m_bodyLabelName = ZJsonParser::stringValue(obj[m_bodyLabelNameKey]);
+      setBodyLabelName(ZJsonParser::stringValue(obj[m_bodyLabelNameKey]));
     }
     if (obj.hasKey(m_labelBlockNameKey)) {
-      m_labelBlockName = ZJsonParser::stringValue(obj[m_labelBlockNameKey]);
+      setLabelBlockName(ZJsonParser::stringValue(obj[m_labelBlockNameKey]));
+    }
+    if (obj.hasKey(m_grayScaleNameKey)) {
+      setGrayScaleName(ZJsonParser::stringValue(obj[m_grayScaleNameKey]));
     }
   }
 }
@@ -296,6 +300,20 @@ std::string ZDvidTarget::getMultiscale2dName() const
   }
 
   return m_multiscale2dName;
+}
+
+std::string ZDvidTarget::getGrayScaleName() const
+{
+  if (m_grayScaleName.empty()) {
+    return ZDvidData::getName(ZDvidData::ROLE_GRAY_SCALE);
+  }
+
+  return m_grayScaleName;
+}
+
+void ZDvidTarget::setGrayScaleName(const std::string &name)
+{
+  m_grayScaleName = name;
 }
 
 void ZDvidTarget::setBodyLabelName(const std::string &name)

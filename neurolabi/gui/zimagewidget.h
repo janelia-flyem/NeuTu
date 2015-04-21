@@ -39,6 +39,8 @@ public:
   void setMask(ZImage *mask, int channel);
   void setTileCanvas(ZPixmap *canvas);
   void setActiveDecorationCanvas(ZPixmap *canvas);
+  void removeCanvas(ZPixmap *canvas);
+  void removeCanvas(ZImage *canvas);
 
   void setViewPort(const QRect &rect);
   void setProjRegion(const QRect &rect);
@@ -185,6 +187,7 @@ private:
   ZPixmap *m_objectCanvas;
   ZPixmap *m_tileCanvas;
   ZPixmap *m_activeDecorationCanvas;
+
   QRect m_viewPort; /* viewport */
   QRect m_projRegion; /* projection region */
   //int m_zoomRatio;

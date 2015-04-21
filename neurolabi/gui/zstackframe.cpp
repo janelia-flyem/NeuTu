@@ -1177,8 +1177,8 @@ void ZStackFrame::setViewPortCenter(int x, int y, int z)
 
 void ZStackFrame::viewRoi(int x, int y, int z, int radius)
 {
-  x -= document()->getStackOffset().getX();
-  y -= document()->getStackOffset().getY();
+//  x -= document()->getStackOffset().getX();
+//  y -= document()->getStackOffset().getY();
   z -= document()->getStackOffset().getZ();
 
   ZStackViewLocator locator;

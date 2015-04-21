@@ -65,6 +65,7 @@ void ZFlyEmBodySplitProject::clear()
   clear(m_quickResultWindow);
 
   if (m_dataFrame != NULL) {
+    m_dataFrame->close3DWindow();
     m_dataFrame->hide();
     delete m_dataFrame;
     m_dataFrame = NULL;

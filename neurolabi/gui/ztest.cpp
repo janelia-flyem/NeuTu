@@ -16110,7 +16110,7 @@ void ZTest::test(MainWindow *host)
   array.dump(GET_TEST_DATA_DIR + "/flyem/MB/ring.json");
 #endif
 
-#if 1
+#if 0
   ZObject3dScan obj1;
   obj1.load(GET_TEST_DATA_DIR + "/flyem/FIB/FIB19/synapse_roi_test.sobj");
   std::cout << obj1.getVoxelNumber() << std::endl;
@@ -16399,4 +16399,21 @@ void ZTest::test(MainWindow *host)
     }
   }
 #endif
+
+#if 1
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "f94a", 8500);
+  target.setBodyLabelName("bodies121714");
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  if (reader.hasSparseVolume(1)) {
+    std::cout << "body " << 1 << " exists." << std::endl;
+  } else {
+    std::cout << "body check failed." << std::endl;
+  }
+
+#endif
+
 }

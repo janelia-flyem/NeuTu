@@ -73,7 +73,8 @@
       "uuid": "f94a",
       "name": "AL-7-split",
       "comment": "AL child node for splitting",
-      "body_label": "bodies121714"
+      "body_label": "bodies121714",
+      "label_block": "segmentation121714"
     }
   ]
 }

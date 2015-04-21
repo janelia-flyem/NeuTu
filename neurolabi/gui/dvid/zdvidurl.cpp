@@ -247,7 +247,8 @@ std::string ZDvidUrl::getSp2bodyUrl(const std::string &suffix) const
 
 std::string ZDvidUrl::getGrayscaleUrl() const
 {
-  return getDataUrl(ZDvidData::getName(ZDvidData::ROLE_GRAY_SCALE));
+  return getDataUrl(m_dvidTarget.getGrayScaleName());
+//  return getDataUrl(ZDvidData::getName(ZDvidData::ROLE_GRAY_SCALE));
 }
 
 std::string ZDvidUrl::getGrayscaleUrl(int sx, int sy, int x0, int y0, int z0)
@@ -295,7 +296,7 @@ std::string ZDvidUrl::getKeyRangeUrl(
     const std::string &name,
     const std::string &key1, const std::string &key2) const
 {
-  return getDataUrl(name) + "/" + key1 + "/" + key2;
+  return getDataUrl(name) + "/keyrange/" + key1 + "/" + key2;
 
   /*
   std::string url = getDataUrl(name) + "/" + key1;
