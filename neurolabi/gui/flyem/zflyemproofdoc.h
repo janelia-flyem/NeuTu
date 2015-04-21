@@ -34,6 +34,8 @@ public:
 
   void updateBodyObject();
 
+  void clearData();
+
 signals:
 
 public slots:

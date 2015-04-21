@@ -1,5 +1,8 @@
 #include "zdvidbufferreader.h"
 
+#include <exception>
+#include <iostream>
+
 #include <QTimer>
 #include <QNetworkRequest>
 #include <QDebug>
@@ -31,6 +34,8 @@ void ZDvidBufferReader::read(const QString &url)
 {
   qDebug() << url;
 
+  m_buffer.clear();
+
 #if defined(_ENABLE_LIBDVIDCPP_)
   qDebug() << "Using libdvidcpp";
 
@@ -38,14 +43,19 @@ void ZDvidBufferReader::read(const QString &url)
   target.setFromUrl(url.toStdString());
 
   if (!target.getUuid().empty()) {
-    libdvid::DVIDNodeService service(
-          target.getAddressWithPort(), target.getUuid());
-    std::string endPoint = ZDvidUrl::GetEndPoint(url.toStdString());
-    libdvid::BinaryDataPtr data = service.custom_request(
-          endPoint, libdvid::BinaryDataPtr(), libdvid::GET);
-    m_buffer.clear();
-    m_buffer.append(data->get_data().c_str(), data->length());
-    m_status = READ_OK;
+    try {
+      libdvid::DVIDNodeService service(
+            target.getAddressWithPort(), target.getUuid());
+      std::string endPoint = ZDvidUrl::GetEndPoint(url.toStdString());
+      libdvid::BinaryDataPtr data = service.custom_request(
+            endPoint, libdvid::BinaryDataPtr(), libdvid::GET);
+
+      m_buffer.append(data->get_data().c_str(), data->length());
+      m_status = READ_OK;
+    } catch (std::exception &e) {
+      std::cout << e.what() << std::endl;
+      m_status = READ_FAILED;
+    }
   } else {
     startReading();
 

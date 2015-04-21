@@ -3,6 +3,8 @@
 
 #include <QWidget>
 
+//class ZDvidDialog;
+
 namespace Ui {
 class FlyEmProofControlForm;
 }
@@ -18,9 +20,11 @@ public:
 signals:
   void segmentVisibleChanged(bool visible);
   void mergingSelected();
+  void dvidSetTriggered();
 
 private:
   Ui::FlyEmProofControlForm *ui;
+//  ZDvidDialog *m_dvidDlg;
 };
 
 #endif // FLYEMPROOFCONTROLFORM_H

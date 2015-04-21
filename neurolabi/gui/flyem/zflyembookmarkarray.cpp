@@ -29,7 +29,9 @@ void ZFlyEmBookmarkArray::importJsonFile(
   for (size_t i = 0; i < bookmarkArrayObj.size(); ++i) {
     ZJsonObject bookmarkObj(bookmarkArrayObj.at(i), false);
     ZString text = ZJsonParser::stringValue(bookmarkObj["text"]);
-    if (text.startsWith("split") && bookmarkObj["location"] != NULL) {
+    text.toLower();
+    if ((text.startsWith("split") || text.startsWith("small split"))
+        && bookmarkObj["location"] != NULL) {
       int bodyId = ZJsonParser::integerValue(bookmarkObj["body ID"]);
       if (bodyId > 0) {
         std::vector<int> coordinates =

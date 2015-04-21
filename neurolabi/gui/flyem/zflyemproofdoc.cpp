@@ -80,6 +80,15 @@ void ZFlyEmProofDoc::updateBodyObject()
   }
 }
 
+void ZFlyEmProofDoc::clearData()
+{
+  ZStackDoc::clearData();
+  m_bodyMerger.clear();
+  m_dvidTarget.clear();
+}
+
+
+//////////////////////////////////////////
 ZFlyEmProofDocCommand::MergeBody::MergeBody(
     ZStackDoc *doc, QUndoCommand *parent)
   : ZUndoCommand(parent), m_doc(doc)

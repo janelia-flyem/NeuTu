@@ -104,7 +104,7 @@
 using namespace std;
 
 ZStackDoc::ZStackDoc(ZStack *stack, QObject *parent) : QObject(parent),
-  m_lastAddedSwcNode(NULL), m_resDlg(NULL), m_selectionSilent(false),
+  /*m_lastAddedSwcNode(NULL),*/ m_resDlg(NULL), m_selectionSilent(false),
   m_isReadyForPaint(true)
 {
   m_stack = stack;
@@ -176,6 +176,7 @@ void ZStackDoc::clearData()
 
   delete m_swcNetwork;
   m_swcNetwork = NULL;
+
   delete m_labelField;
   m_labelField = NULL;
   delete m_stackFactory;

@@ -390,7 +390,7 @@ void ZFlyEmBodySplitProject::loadBookmark(const QString &filePath)
   if (reader.open(m_dvidTarget)) {
     ZDvidInfo info = reader.readGrayScaleInfo();
     converter.configure(info);
-    m_bookmarkArray.importJsonFile(filePath.toStdString(), &converter);
+    m_bookmarkArray.importJsonFile(filePath.toStdString(), NULL/*&converter*/);
   }
 }
 

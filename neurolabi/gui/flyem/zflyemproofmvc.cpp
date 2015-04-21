@@ -4,6 +4,7 @@
 #include "zstackview.h"
 #include "dvid/zdvidtileensemble.h"
 #include "zstackpresenter.h"
+#include "zdviddialog.h"
 
 ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
   ZStackMvc(parent)
@@ -77,9 +78,20 @@ void ZFlyEmProofMvc::setSegmentationVisible(bool visible)
   getView()->redrawObject();
 }
 
+void ZFlyEmProofMvc::clear()
+{
+  if (getCompleteDocument() != NULL) {
+    getCompleteDocument()->clearData();
+    getPresenter()->clearData();
+
+  }
+}
+
 void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
 {
   if (getCompleteDocument() != NULL) {
+    clear();
+//    getCompleteDocument()->clearData();
     getCompleteDocument()->setDvidTarget(target);
     getCompleteDocument()->updateTileData();
     QList<ZDvidTileEnsemble*> teList =
@@ -88,6 +100,15 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
       te->attachView(getView());
     }
     getView()->reset(false);
+  }
+}
+
+void ZFlyEmProofMvc::setDvidTarget()
+{
+  m_dvidDlg = new ZDvidDialog(this);
+  if (m_dvidDlg->exec()) {
+    const ZDvidTarget &target = m_dvidDlg->getDvidTarget();
+    setDvidTarget(target);
   }
 }
 

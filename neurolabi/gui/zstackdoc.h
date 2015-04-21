@@ -185,7 +185,7 @@ public: //attributes
   virtual bool isDeprecated(EComponent component);
 
 
-  void clearData();
+  virtual void clearData();
 
   /*!
    * \brief The offset from stack space to data space
@@ -791,13 +791,14 @@ public:
   void notifyPlayerChanged(const ZStackObjectRole &role);
   void notifyPlayerChanged(ZStackObjectRole::TRole role);
 
+  /*
   inline void setLastAddedSwcNode(Swc_Tree_Node *tn) {
     m_lastAddedSwcNode = tn;
   }
 
   inline Swc_Tree_Node* getLastAddedSwcNode() const {
     return m_lastAddedSwcNode;
-  }
+  }*/
 
 public slots: //undoable commands
   bool executeAddObjectCommand(ZStackObject *obj,
@@ -999,7 +1000,7 @@ private:
   ZSwcNetwork *m_swcNetwork;
 
   ZStackObjectGroup m_objectGroup;
-  Swc_Tree_Node *m_lastAddedSwcNode;
+  //Swc_Tree_Node *m_lastAddedSwcNode;
 
   //model-view structure for obj list and edit
   ZSwcObjsModel *m_swcObjsModel;

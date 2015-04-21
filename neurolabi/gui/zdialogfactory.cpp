@@ -144,6 +144,7 @@ QDialog* ZDialogFactory::makeStackDialog(QWidget *parent)
   return dlg;
 }
 
+
 QDialog* ZDialogFactory::makeTestDialog(QWidget *parent)
 {
   QDialog *dlg = new QDialog(parent);
