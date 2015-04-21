@@ -352,6 +352,8 @@ bool FlyEmBodySplitProjectDialog::loadBody()
       dump("Body loaded.");
 
       return showData2d();
+    } else {
+      dumpError(QString("The body %1 seems not exist.").arg(bodyId));
     }
   }
 

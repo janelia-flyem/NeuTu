@@ -10,6 +10,7 @@
 #include "z3dvolume.h"
 #include "z3dvolumesource.h"
 #include "z3dwindow.h"
+#include "z3dswcfilter.h"
 
 ZWindowFactory::ZWindowFactory() : m_parentWidget(NULL),
   m_showVolumeBoundBox(false), m_showControlPanel(true), m_showObjectView(true)
@@ -54,6 +55,9 @@ Z3DWindow* ZWindowFactory::make3DWindow(ZSharedPointer<ZStackDoc> doc,
     }
     if (!NeutubeConfig::getInstance().getZ3DWindowConfig().isBackgroundOn()) {
       window->getCompositor()->setShowBackground(false);
+    }
+    if (doc->getTag() == NeuTube::Document::FLYEM_SPLIT) {
+      window->getSwcFilter()->setRenderingPrimitive("Sphere");
     }
     if (doc->getTag() == NeuTube::Document::FLYEM_BODY ||
         doc->getTag() == NeuTube::Document::FLYEM_SPLIT ||

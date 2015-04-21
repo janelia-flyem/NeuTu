@@ -808,3 +808,28 @@ QSize ZImageWidget::getMaskSize() const
 
   return maskSize;
 }
+
+void ZImageWidget::removeCanvas(ZImage *canvas)
+{
+  if (m_image == canvas) {
+    setImage(NULL);
+  } else {
+    for (QVector<ZImage*>::iterator iter = m_mask.begin(); iter != m_mask.end();
+         ++iter) {
+      if (*iter == canvas) {
+        *iter = NULL;
+      }
+    }
+  }
+}
+
+void ZImageWidget::removeCanvas(ZPixmap *canvas)
+{
+  if (m_objectCanvas == canvas) {
+    setObjectCanvas(NULL);
+  } else if (m_tileCanvas == canvas) {
+    setTileCanvas(NULL);
+  } else if (m_activeDecorationCanvas == canvas) {
+    setActiveDecorationCanvas(NULL);
+  }
+}

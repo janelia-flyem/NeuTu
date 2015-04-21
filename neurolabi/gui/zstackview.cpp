@@ -1255,12 +1255,13 @@ void ZStackView::resetCanvasWithStack(T &canvas, ZPainter *painter)
     if (canvas->width() != buddyDocument()->getStackWidth() ||
         canvas->height() != buddyDocument()->getStackHeight() ||
         iround(canvas->getTransform().getTx()) !=
-        buddyDocument()->getStackOffset().getX() ||
+        -buddyDocument()->getStackOffset().getX() ||
         iround(canvas->getTransform().getTy()) !=
-        buddyDocument()->getStackOffset().getY()) {
+        -buddyDocument()->getStackOffset().getY()) {
       if (painter != NULL) {
         painter->end();
       }
+      m_imageWidget->removeCanvas(canvas);
       delete canvas;
       canvas = NULL;
     }
@@ -1812,10 +1813,11 @@ ZStack* ZStackView::getStrokeMask(uint8_t maskValue)
       }
 
       foreach (ZStroke2d *obj, buddyDocument()->getStrokeList()) {
-        ZPainter painter(m_objectCanvas);
-        painter.setZOffset(buddyDocument()->getStackOffset().getZ());
+//        ZPainter painter(m_objectCanvas);
+//        painter.setZOffset(buddyDocument()->getStackOffset().getZ());
 //        painter.setStackOffset(buddyDocument()->getStackOffset());
-        obj->display(painter, slice, buddyPresenter()->objectStyle());
+        obj->display(m_objectCanvasPainter,
+                     slice, buddyPresenter()->objectStyle());
       }
     }
 
