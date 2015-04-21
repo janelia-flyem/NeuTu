@@ -42,10 +42,16 @@ public:
   void removeCanvas(ZPixmap *canvas);
   void removeCanvas(ZImage *canvas);
 
+  /*!
+   * \brief Reset the image widget by removing all canvases and view information.
+   */
+  void reset();
+
   void setViewPort(const QRect &rect);
   void setProjRegion(const QRect &rect);
   void setView(int zoomRatio, const QPoint &zoomOffset);
   void setView(const QRect &viewPort, const QRect &projRegion);
+
   /*!
    * \brief Set view port offset
    *
@@ -191,7 +197,7 @@ private:
   QRect m_viewPort; /* viewport */
   QRect m_projRegion; /* projection region */
   //int m_zoomRatio;
-  bool m_isowner;
+//  bool m_isowner;
   QMenu *m_leftButtonMenu;
   QMenu *m_rightButtonMenu;
   ZPaintBundle *m_paintBundle;

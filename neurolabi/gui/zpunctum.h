@@ -11,10 +11,12 @@
 #include "zstackball.h"
 #include "tz_swc_cell.h"
 #include "tz_math.h"
-#include "zpoint.h"
+//#include "zpoint.h"
 #include "zvaa3dmarker.h"
 
 class ZJsonObject;
+class ZIntPoint;
+class ZPoint;
 
 /*!
  * \brief The punctum (synapse) class
@@ -24,6 +26,7 @@ class ZPunctum : public ZStackBall
 public:
   ZPunctum();
   ZPunctum(double x, double y, double z, double r);
+//  ZPunctum(const ZIntPoint &center, double r);
   virtual ~ZPunctum();
 
   virtual const std::string& className() const;

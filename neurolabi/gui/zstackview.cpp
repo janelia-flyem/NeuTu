@@ -262,6 +262,7 @@ void ZStackView::reset(bool updatingScreen)
   if (stack != NULL) {
     m_depthControl->setRange(0, stack->depth() - 1);
     m_depthControl->setValue(stack->depth() / 2);
+//    m_imageWidget->reset();
 
     if (updatingScreen) {
       redraw();

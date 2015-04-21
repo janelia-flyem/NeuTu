@@ -177,10 +177,11 @@ void Z3DGraphFilter::prepareColor()
 {
   m_pointColors.resize(m_graph.getNodeNumber());
   for (size_t i = 0; i < m_graph.getNodeNumber(); i++) {
-    m_pointColors[i] = glm::vec4(m_graph.getNode(i).color().redF(),
-                                 m_graph.getNode(i).color().greenF(),
-                                 m_graph.getNode(i).color().blueF(),
-                                 m_graph.getNode(i).color().alphaF());
+    const Z3DGraphNode& node = m_graph.getNode(i);
+    QColor color =node.color();
+
+    m_pointColors[i] = glm::vec4(
+          color.redF(), color.greenF(), color.blueF(), color.alphaF());
   }
 
   //m_lineColors.resize(m_graph.getEdgeNumber() * 2);

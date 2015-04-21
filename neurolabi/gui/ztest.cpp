@@ -16400,7 +16400,7 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
-#if 1
+#if 0
   ZDvidTarget target;
   target.set("emdata1.int.janelia.org", "f94a", 8500);
   target.setBodyLabelName("bodies121714");
@@ -16414,6 +16414,73 @@ void ZTest::test(MainWindow *host)
     std::cout << "body check failed." << std::endl;
   }
 
+#endif
+
+#if 1
+  ZStack stack;
+  stack.load(GET_DATA_DIR + "/flyem/AL/glomeruli/new_label_field.tif");
+
+  int dsScale = 20;
+  ZPointArray ptArray;
+  ptArray.append(7937, 9175, 3485);
+  ptArray.append(7219,  8703, 1422);
+  ptArray.append(11326, 7040, 3131);
+  ptArray.append(7708, 10762, 2331);
+  ptArray.append(2427,  6801, 4970);
+  ptArray.append(9113,  5727, 4001);
+  ptArray.append(3260 , 8181, 2982);
+  ptArray.append(4030,  4335, 2222);
+  ptArray.append(7974,  5245, 2691);
+  ptArray.append(7816,  6988, 2723);
+
+  for (size_t i = 0; i < ptArray.size(); ++i) {
+    ZIntPoint pt = (ptArray[i] / dsScale).toIntPoint();
+    int label = stack.getIntValue(pt.getX(), pt.getY(), pt.getZ());
+    std::cout << "substack" << i + 1 << ": " << label << std::endl;
+  }
+#endif
+
+#if 0
+  FILE *fp = fopen((GET_DATA_DIR +
+                   "/flyem/AL/glomeruli/labeled_synapse_confidence.txt").c_str(), "r");
+
+//  std::vector<ZPointArray> synapseGroup(60);
+
+  std::set<int> labelSet;
+
+  ZString str;
+  while (str.readLine(fp)) {
+    std::vector<double> valueArray = str.toDoubleArray();
+    if (valueArray.size() >= 5) {
+      int label = iround(valueArray[3]);
+      if (label == 49) {
+        label = 7;
+      }
+
+      if (valueArray[2] < 3000) {
+        labelSet.insert(label);
+      }
+    }
+  }
+
+  for (std::set<int>::const_iterator iter= labelSet.begin();
+       iter != labelSet.end(); ++iter) {
+    std::cout << *iter << std::endl;
+  }
+
+//      ZPointArray &ptArray = synapseGroup[label];
+//      ptArray.append(ZPoint(valueArray[0], valueArray[1], valueArray[2]));
+
+
+  fclose(fp);
+
+//  int labelArray[] = {14, 15, 17, 18, 24, 25, 31, 33, 45, 46 };
+
+//  for (size_t i = 0; i < sizeof(labelArray) / sizeof(int); ++i) {
+//    int label = labelArray[i];
+//    ZPoint pt = synapseGroup[label].computeCenter();
+//    std::cout << label << ": " << pt.toIntPoint().toString() << std::endl;
+//  }
 #endif
 
 }

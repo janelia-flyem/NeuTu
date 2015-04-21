@@ -83,7 +83,7 @@ void ZFlyEmProofMvc::clear()
   if (getCompleteDocument() != NULL) {
     getCompleteDocument()->clearData();
     getPresenter()->clearData();
-
+//    getView()->imageWidget();
   }
 }
 

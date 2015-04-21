@@ -38,10 +38,12 @@
       "local": "/groups/flyem/data/zhaot/local/FIB19-emdata1"
     },
     {
-      "address": "emdata2.int.janelia.org",
-      "uuid": "faa",
-      "name": "FIB25-0715",
-      "comment": "FIB-25 export 2014-07-15"
+      "address": "emrecon100.janelia.priv",
+      "uuid": "2a3",
+      "name": "FIB25-Tile",
+      "comment": "FIB-25 tile test",
+      "multires_tile": "graytiles",
+      "label_block": "bodies"
     },
     {
       "address": "emdata2.int.janelia.org",

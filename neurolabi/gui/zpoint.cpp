@@ -182,6 +182,12 @@ ZPoint operator * (const ZPoint &pt1, double scale)
   return ZPoint(pt1) *= scale;
 }
 
+ZPoint operator / (const ZPoint &pt1, double scale)
+{
+  return ZPoint(pt1) /= scale;
+}
+
+
 void ZPoint::toArray(double *pt) const
 {
   pt[0] = m_x;

@@ -176,6 +176,7 @@ private:
   const static char* m_grayScaleNameKey;
   const static char* m_bodyLabelNameKey;
   const static char* m_labelBlockNameKey;
+  const static char* m_multiscale2dNameKey;
 };
 
 #endif // ZDVIDTARGET_H

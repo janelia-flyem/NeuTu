@@ -99,6 +99,7 @@ const ZDvidTarget &ZDvidDialog::getDvidTarget()
     target.setBodyLabelName(ui->bodyLineEdit->text().toStdString());
     target.setLabelBlockName(ui->labelBlockLineEdit->text().toStdString());
     target.setGrayScaleName(ui->grayScalelineEdit->text().toStdString());
+    target.setMultiscale2dName(ui->tileLineEdit->text().toStdString());
 
     return target;
   }
@@ -127,6 +128,7 @@ void ZDvidDialog::setServer(int index)
   ui->bodyLineEdit->setText(dvidTarget.getBodyLabelName().c_str());
   ui->grayScalelineEdit->setText(dvidTarget.getGrayScaleName().c_str());
   ui->labelBlockLineEdit->setText(dvidTarget.getLabelBlockName().c_str());
+  ui->tileLineEdit->setText(dvidTarget.getMultiscale2dName().c_str());
 
   ui->addressLineEdit->setReadOnly(index > 0);
   ui->portSpinBox->setReadOnly(index > 0);

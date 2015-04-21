@@ -11,6 +11,7 @@
 #include "z3dvolumesource.h"
 #include "z3dwindow.h"
 #include "z3dswcfilter.h"
+#include "z3dpunctafilter.h"
 
 ZWindowFactory::ZWindowFactory() : m_parentWidget(NULL),
   m_showVolumeBoundBox(false), m_showControlPanel(true), m_showObjectView(true)
@@ -58,6 +59,7 @@ Z3DWindow* ZWindowFactory::make3DWindow(ZSharedPointer<ZStackDoc> doc,
     }
     if (doc->getTag() == NeuTube::Document::FLYEM_SPLIT) {
       window->getSwcFilter()->setRenderingPrimitive("Sphere");
+      window->getPunctaFilter()->setColorMode("Original Point Color");
     }
     if (doc->getTag() == NeuTube::Document::FLYEM_BODY ||
         doc->getTag() == NeuTube::Document::FLYEM_SPLIT ||

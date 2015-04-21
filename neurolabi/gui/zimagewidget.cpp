@@ -39,11 +39,11 @@ ZImageWidget::ZImageWidget(QWidget *parent, ZImage *image) : QWidget(parent),
 
 ZImageWidget::~ZImageWidget()
 {
-  if (m_isowner == true) {
-    if (m_image != NULL) {
-      delete m_image;
-    }
-  }
+//  if (m_isowner == true) {
+//    if (m_image != NULL) {
+//      delete m_image;
+//    }
+//  }
 }
 
 void ZImageWidget::setImage(ZImage *image)
@@ -56,7 +56,7 @@ void ZImageWidget::setImage(ZImage *image)
 
   m_image = image;
   updateGeometry();
-  m_isowner = false;
+//  m_isowner = false;
 }
 
 void ZImageWidget::setMask(ZImage *mask, int channel)
@@ -587,10 +587,15 @@ QSize ZImageWidget::sizeHint() const
 
 void ZImageWidget::setCanvasRegion(int x0, int y0, int w, int h)
 {
-  m_canvasRegion.setLeft(x0);
-  m_canvasRegion.setTop(y0);
-  m_canvasRegion.setWidth(w);
-  m_canvasRegion.setHeight(h);
+  if ((m_canvasRegion.left() != x0) || (m_canvasRegion.top() != y0) ||
+      (m_canvasRegion.width() != w) || (m_canvasRegion.height() != h)) {
+    m_canvasRegion.setLeft(x0);
+    m_canvasRegion.setTop(y0);
+    m_canvasRegion.setWidth(w);
+    m_canvasRegion.setHeight(h);
+    m_viewPort.setSize(QSize(0, 0));
+    m_projRegion.setSize(QSize(0, 0));
+  }
 
   if (m_viewPort.width() == 0) {
     m_viewPort = m_canvasRegion;
@@ -832,4 +837,17 @@ void ZImageWidget::removeCanvas(ZPixmap *canvas)
   } else if (m_activeDecorationCanvas == canvas) {
     setActiveDecorationCanvas(NULL);
   }
+}
+
+void ZImageWidget::reset()
+{
+  m_image = NULL;
+  m_mask.clear();
+  m_objectCanvas = NULL;
+  m_tileCanvas = NULL;
+  m_activeDecorationCanvas = NULL;
+
+  m_viewPort.setSize(QSize(0, 0));
+  m_canvasRegion.setSize(QSize(0, 0));
+  m_projRegion.setSize(QSize(0, 0));
 }

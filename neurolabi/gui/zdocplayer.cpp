@@ -237,9 +237,11 @@ Z3DGraph ZStroke2dPlayer::get3DGraph() const
       for (size_t i = 0; i < stroke->getPointNumber(); ++i) {
         double x = 0;
         double y = 0;
+        stroke->getPoint(&x, &y, i);
         ZStackBall stackBall(x, y, z, radius);
         stackBall.setColor(stroke->getColor());
-        graph.addNode(x, y, z, radius);
+        graph.addNode(stackBall);
+//        graph.addNode(x, y, z, radius);
       }
     }
   }

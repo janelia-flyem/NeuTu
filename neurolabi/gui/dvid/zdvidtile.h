@@ -5,13 +5,14 @@
 #include "zstackobject.h"
 #include "dvid/zdvidresolution.h"
 #include "zdvidtarget.h"
-#include "zintpoint.h"
+//#include "zintpoint.h"
 #include "dvid/zdvidtileinfo.h"
 
 class ZPainter;
 class ZStack;
 class ZStackView;
 class ZRect2d;
+class ZIntPoint;
 
 class ZDvidTile : public ZStackObject
 {

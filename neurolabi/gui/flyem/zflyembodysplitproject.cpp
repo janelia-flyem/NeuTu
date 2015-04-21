@@ -428,11 +428,14 @@ void ZFlyEmBodySplitProject::addBookmarkDecoration(
     for (ZFlyEmBookmarkArray::const_iterator iter = bookmarkArray.begin();
          iter != bookmarkArray.end(); ++iter) {
       const ZFlyEmBookmark &bookmark = *iter;
-      ZStackBall *circle = new ZStackBall;
+      ZPunctum *circle = new ZPunctum;
       circle->set(bookmark.getLocation(), 5);
+
+//      ZStackBall *circle = new ZStackBall;
+//      circle->set(bookmark.getLocation(), 5);
       circle->setColor(255, 0, 0);
       circle->setVisible(m_isBookmarkVisible);
-      circle->setRole(ZStackObjectRole::ROLE_3DGRAPH_DECORATOR);
+//      circle->setRole(ZStackObjectRole::ROLE_3DGRAPH_DECORATOR);
       m_dataFrame->document()->addObject(circle);
       m_bookmarkDecoration.push_back(circle);
     }
@@ -705,7 +708,8 @@ void ZFlyEmBodySplitProject::downloadSeed()
             ZStroke2d *stroke = new ZStroke2d;
             stroke->loadJsonObject(seedJson);
             if (!stroke->isEmpty()) {
-              stroke->setRole(ZStackObjectRole::ROLE_SEED);
+              stroke->setRole(ZStackObjectRole::ROLE_SEED |
+                              ZStackObjectRole::ROLE_3DGRAPH_DECORATOR);
               stroke->setPenetrating(false);
               m_dataFrame->document()->addObject(stroke);
             } else {

@@ -15,6 +15,7 @@ const char* ZDvidTarget::m_bgValueKey = "background";
 const char* ZDvidTarget::m_bodyLabelNameKey = "body_label";
 const char* ZDvidTarget::m_labelBlockNameKey = "label_block";
 const char* ZDvidTarget::m_grayScaleNameKey = "gray_scale";
+const char* ZDvidTarget::m_multiscale2dNameKey = "multires_tile";
 
 ZDvidTarget::ZDvidTarget() : m_port(-1), m_bgValue(255)
 {
@@ -181,6 +182,8 @@ ZJsonObject ZDvidTarget::toJsonObject() const
   obj.setEntry(m_bgValueKey, m_bgValue);
   obj.setEntry(m_bodyLabelNameKey, m_bodyLabelName);
   obj.setEntry(m_labelBlockNameKey, m_labelBlockName);
+  obj.setEntry(m_grayScaleNameKey, m_grayScaleName);
+  obj.setEntry(m_multiscale2dNameKey, m_multiscale2dName);
 
   return obj;
 }
@@ -219,6 +222,9 @@ void ZDvidTarget::loadJsonObject(const ZJsonObject &obj)
     }
     if (obj.hasKey(m_grayScaleNameKey)) {
       setGrayScaleName(ZJsonParser::stringValue(obj[m_grayScaleNameKey]));
+    }
+    if (obj.hasKey(m_multiscale2dNameKey)) {
+      setMultiscale2dName(ZJsonParser::stringValue(obj[m_multiscale2dNameKey]));
     }
   }
 }
@@ -339,6 +345,9 @@ std::string ZDvidTarget::getName(ZDvidData::ERole role) const
     break;
   case ZDvidData::ROLE_LABEL_BLOCK:
     name = m_labelBlockName;
+    break;
+  case ZDvidData::ROLE_GRAY_SCALE:
+    name = m_grayScaleName;
     break;
   default:
     break;

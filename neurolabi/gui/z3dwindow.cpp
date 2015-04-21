@@ -749,6 +749,7 @@ void Z3DWindow::createContextMenu()
   m_changeBackgroundAction = new QAction("Change Background", this);
   connect(m_changeBackgroundAction, SIGNAL(triggered()), this,
           SLOT(changeBackground()));
+
   m_contextMenuGroup["empty"] = contextMenu;
 }
 
@@ -2173,7 +2174,11 @@ void Z3DWindow::keyPressEvent(QKeyEvent *event)
     break;
   case Qt::Key_Z:
     if (event->modifiers() == Qt::NoModifier) {
-      locateSwcNodeIn2DView();
+      if (getDocument()->hasSelectedSwcNode()) {
+        locateSwcNodeIn2DView();
+      } else if (getDocument()->hasSelectedPuncta()) {
+        locatePunctumIn2DView();
+      }
     }
     break;
   case Qt::Key_V:
@@ -2271,6 +2276,7 @@ void Z3DWindow::updateContextMenu(const QString &group)
     if (m_doc->hasSwc() || m_doc->hasPuncta())
       m_contextMenuGroup["empty"]->addAction(m_toggleMoveSelectedObjectsAction);
     m_contextMenuGroup["empty"]->addAction(m_changeBackgroundAction);
+
   }
   if (group == "volume") {
     m_contextMenuGroup["volume"]->clear();
@@ -2294,6 +2300,9 @@ void Z3DWindow::updateContextMenu(const QString &group)
       m_contextMenuGroup["volume"]->addAction(m_toggleMoveSelectedObjectsAction);
     m_contextMenuGroup["volume"]->addAction(m_changeBackgroundAction);
     m_contextMenuGroup["volume"]->addAction(m_refreshTraceMaskAction);
+    if (m_doc->getTag() == NeuTube::Document::FLYEM_SPLIT) {
+      m_contextMenuGroup["volume"]->addAction(m_markPunctumAction);
+    }
   }
   if (group == "swcnode") {
     getDocument()->updateSwcNodeAction();

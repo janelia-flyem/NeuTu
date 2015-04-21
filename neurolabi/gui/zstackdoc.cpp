@@ -7779,6 +7779,7 @@ Z3DGraph ZStackDoc::get3DGraphDecoration() const
   foreach(const ZDocPlayer *player, playerList) {
     graph.append(player->get3DGraph());
   }
+//  graph.
 
   return graph;
 }
