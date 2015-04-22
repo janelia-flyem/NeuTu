@@ -374,6 +374,8 @@ void ZFlyEmBodySplitProject::setDataFrame(ZStackFrame *frame)
   }
 
   m_dataFrame = frame;
+  connect(m_dataFrame, SIGNAL(splitStarted()), this, SLOT(backupSeed()));
+
   updateBookDecoration();
 }
 
@@ -638,6 +640,49 @@ void ZFlyEmBodySplitProject::commitResultFunc(
   emit resultCommitted();
 }
 
+void ZFlyEmBodySplitProject::selectSeed(int label)
+{
+  QList<const ZDocPlayer*> playerList =
+      m_dataFrame->document()->getPlayerList(ZStackObjectRole::ROLE_SEED);
+  m_dataFrame->document()->deselectAllObject();
+  foreach (const ZDocPlayer *player, playerList) {
+    if (player->getLabel() == label) {
+      m_dataFrame->document()->setSelected(player->getData(), true);
+    }
+  }
+  m_dataFrame->view()->paintObject();
+}
+
+void ZFlyEmBodySplitProject::backupSeed()
+{
+  if (getBodyId() < 0) {
+    return;
+  }
+
+  ZDvidReader reader;
+  if (reader.open(getDvidTarget())) {
+    QList<const ZDocPlayer*> playerList =
+        m_dataFrame->document()->getPlayerList(ZStackObjectRole::ROLE_SEED);
+    ZJsonArray jsonArray;
+    foreach (const ZDocPlayer *player, playerList) {
+      ZJsonObject jsonObj = player->toJsonObject();
+      if (!jsonObj.isEmpty()) {
+        jsonArray.append(jsonObj);
+      }
+    }
+
+    ZDvidWriter writer;
+    if (writer.open(getDvidTarget())) {
+      if (!jsonArray.isEmpty()) {
+        ZJsonObject rootObj;
+        rootObj.setEntry("seeds", jsonArray);
+        writer.writeJson(getSplitLabelName(), getBackupSeedKey(getBodyId()),
+                         rootObj);
+      }
+    }
+  }
+}
+
 void ZFlyEmBodySplitProject::saveSeed()
 {
   ZDvidReader reader;
@@ -683,13 +728,28 @@ void ZFlyEmBodySplitProject::saveSeed()
   }
 }
 
+void ZFlyEmBodySplitProject::recoverSeed()
+{
+  downloadSeed(getBackupSeedKey(getBodyId()));
+}
+
 void ZFlyEmBodySplitProject::downloadSeed()
+{
+  downloadSeed(getSeedKey(getBodyId()));
+}
+
+void ZFlyEmBodySplitProject::removeAllSeed()
+{
+  m_dataFrame->document()->removeObject(ZStackObjectRole::ROLE_SEED, true);
+}
+
+void ZFlyEmBodySplitProject::downloadSeed(const std::string &seedKey)
 {
   ZDvidReader reader;
   if (reader.open(getDvidTarget())) {
+    removeAllSeed();
     QByteArray seedData = reader.readKeyValue(
-          getSplitLabelName().c_str(),
-          getSeedKey(getBodyId()).c_str());
+          getSplitLabelName().c_str(), seedKey.c_str());
     if (!seedData.isEmpty()) {
       ZJsonObject obj;
       obj.decode(seedData.constData());
@@ -886,8 +946,16 @@ std::string ZFlyEmBodySplitProject::getSeedKey(int bodyId) const
       ZString::num2str(bodyId);
 }
 
+std::string ZFlyEmBodySplitProject::getBackupSeedKey(int bodyId) const
+{
+  return getDvidTarget().getBodyLabelName() + "_backup_seed_" +
+      ZString::num2str(bodyId);
+}
+
 void ZFlyEmBodySplitProject::runSplit()
 {
+//  backupSeed();
+
   ZStackFrame *frame = getDataFrame();
   if (frame != NULL) {
     frame->document()->runSeededWatershed();

@@ -67,6 +67,7 @@ public:
   bool isBodyLoaded() const;
 
   void downloadSeed();
+  void selectSeed(int label);
 
   class MessageProcessor : public ZMessageProcessor {
   public:
@@ -132,6 +133,9 @@ private slots:
    * After processing the seeds will be labeled as "processed"
    */
   void processAllSeed();
+
+  void recoverSeed();
+  void selectSeed();
 
 private:
   void updateSideView();

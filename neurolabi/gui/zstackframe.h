@@ -279,6 +279,7 @@ signals:
   void stackLoaded();
   void ready(ZStackFrame*);
   void viewChanged(ZStackViewParam param);
+  void splitStarted();
 
 protected: // Events
   virtual void keyPressEvent(QKeyEvent *event);

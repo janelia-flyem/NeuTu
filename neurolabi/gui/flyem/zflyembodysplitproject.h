@@ -65,6 +65,8 @@ public:
 
   void saveSeed();
   void downloadSeed();
+  void recoverSeed();
+  void selectSeed(int label);
 
   void exportSplits();
   void commitResult();
@@ -84,6 +86,7 @@ public:
   std::string getSplitLabelName() const;
 
   std::string getSeedKey(int bodyId) const;
+  std::string getBackupSeedKey(int bodyId) const;
   bool isSeedProcessed(int bodyId) const;
   void setSeedProcessed(int bodyId);
 
@@ -116,6 +119,7 @@ public slots:
   void showBookmark(bool visible);
   void runSplit();
   void updateResult3dQuick();
+  void backupSeed();
 
   /*!
    * \brief Clear the project without deleting the associated widgets
@@ -132,6 +136,8 @@ private:
   bool showingBodyMask() const { return m_showingBodyMask; }
   void clear(QWidget *widget);
   void loadResult3dQuick(ZStackDoc *doc);
+  void downloadSeed(const std::string &seedKey);
+  void removeAllSeed();
 
 private:
   ZDvidTarget m_dvidTarget;

@@ -888,7 +888,11 @@ bool ZStackPresenter::processKeyPressEventForSwc(QKeyEvent *event)
     break;
   case ZSwcTree::OPERATION_ZOOM_TO_SELECTED_NODE:
     if (getParentFrame() != NULL) {
-      getParentFrame()->zoomToSelectedSwcNodes();
+      if (getParentFrame()->document()->hasSelectedSwcNode()) {
+        getParentFrame()->zoomToSelectedSwcNodes();
+      } /*else if (getParentFrame()->document()->hasSelectedPuncta()) {
+        getParentFrame()->
+      }*/
     }
     taken = true;
     break;

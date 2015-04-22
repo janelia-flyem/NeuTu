@@ -1617,8 +1617,10 @@ void ZStackFrame::locateSwcNodeIn3DView()
 
 void ZStackFrame::runSeededWatershed()
 {
+  emit splitStarted();
   document()->runSeededWatershed();
 }
+
 void ZStackFrame::makeSwcProjection(ZStackDoc *doc)
 {
     if (doc == NULL) return;

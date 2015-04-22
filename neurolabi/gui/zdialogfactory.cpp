@@ -185,7 +185,7 @@ QDialog* ZDialogFactory::makeParameterDialog(
   return dlg;
 }
 
-bool ZDialogFactory::ask(
+bool ZDialogFactory::Ask(
     const QString &title, const QString &msg, QWidget *parent)
 {
   return QMessageBox::question(

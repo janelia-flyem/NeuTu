@@ -138,6 +138,15 @@ void FlyEmBodySplitProjectDialog::createMenu()
   m_mainMenu->addAction(exportSplitAction);
   connect(exportSplitAction, SIGNAL(triggered()), this, SLOT(exportSplits()));
 
+  QMenu *seedMenu = m_mainMenu->addMenu("Seed");
+  QAction *recoverSeedAction = new QAction("Recover", this);
+  seedMenu->addAction(recoverSeedAction);
+  connect(recoverSeedAction, SIGNAL(triggered()), this, SLOT(recoverSeed()));
+
+  QAction *selectSeedAction = new QAction("Select", this);
+  seedMenu->addAction(selectSeedAction);
+  connect(selectSeedAction, SIGNAL(triggered()), this, SLOT(selectSeed()));
+
   QMenu *batchMenu = m_mainMenu->addMenu("Batch");
   QAction *allSeedSummaryAction = new QAction("Check Work Progress", this);
   batchMenu->addAction(allSeedSummaryAction);
@@ -744,7 +753,7 @@ void FlyEmBodySplitProjectDialog::on_commitPushButton_clicked()
 {
   //m_project.saveSeed();
 
-  if (ZDialogFactory::ask("Commit Confirmation",
+  if (ZDialogFactory::Ask("Commit Confirmation",
                           "Do you want to upload the splitting results now? "
                           "It may take several minutes to several hours, "
                           "depending on how large the body is.",
@@ -916,6 +925,32 @@ void FlyEmBodySplitProjectDialog::startSplit(
   loadBody();
 }
 
+void FlyEmBodySplitProjectDialog::recoverSeed()
+{
+  if (ZDialogFactory::Ask("Recover Seed", "All current seeds might be lost. "
+                          "Do you want to continue?", this)) {
+    m_project.recoverSeed();
+  }
+}
+
+void FlyEmBodySplitProjectDialog::selectSeed()
+{
+  ZSpinBoxDialog *dlg = ZDialogFactory::makeSpinBoxDialog(this);
+  dlg->setValueLabel("Label");
+  dlg->getButton(ZButtonBox::ROLE_SKIP)->hide();
+  dlg->setValue(1);
+  if (dlg->exec()) {
+    int label = dlg->getValue();
+    selectSeed(label);
+  }
+  delete dlg;
+}
+
+void FlyEmBodySplitProjectDialog::selectSeed(int label)
+{
+  m_project.selectSeed(label);
+}
+
 void FlyEmBodySplitProjectDialog::enableMessageManager()
 {
   if (m_messageManager == NULL) {
@@ -958,5 +993,4 @@ void FlyEmBodySplitProjectDialog::MessageProcessor::processMessage(
     break;
   }
 }
-
 
