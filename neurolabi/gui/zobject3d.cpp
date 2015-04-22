@@ -160,6 +160,11 @@ bool ZObject3d::load(const char *filePath)
 void ZObject3d::display(ZPainter &painter, int slice, EDisplayStyle option) const
 {  
   UNUSED_PARAMETER(option);
+
+  if (slice == -1 && !isProjectionVisible()) {
+    return;
+  }
+
 #if _QT_GUI_USED_
   painter.save();
 //  z -= iround(painter.getOffset().z());

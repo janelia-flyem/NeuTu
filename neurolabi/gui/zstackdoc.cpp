@@ -7506,6 +7506,7 @@ void ZStackDoc::updateWatershedBoundaryObject(ZStack *out, ZIntPoint dsIntv)
                 ZStackObjectSourceFactory::MakeWatershedBoundarySource(
                   player->getLabel()));
           obj->setHittable(false);
+          obj->setProjectionVisible(false);
           obj->setRole(ZStackObjectRole::ROLE_TMP_RESULT);
           addObject(obj, true);
         }

@@ -234,6 +234,14 @@ public:
     m_isHittable = state;
   }
 
+  inline bool isProjectionVisible() const {
+    return m_projectionVisible;
+  }
+
+  inline void setProjectionVisible(bool visible) {
+    m_projectionVisible = visible;
+  }
+
 public:
   static bool isEmptyTree(const ZStackObject *obj);
   static bool isSameSource(const std::string &s1, const std::string &s2);
@@ -245,6 +253,7 @@ protected:
   bool m_selected;
   bool m_isVisible;
   bool m_isHittable;
+  bool m_projectionVisible;
   EDisplayStyle m_style;
   QColor m_color;
   ETarget m_target;
