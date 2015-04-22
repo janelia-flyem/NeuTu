@@ -60,6 +60,12 @@
    </item>
    <item>
     <widget class="QLabel" name="dvidInfoLabel">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
      <property name="text">
       <string>No Database Selected</string>
      </property>
