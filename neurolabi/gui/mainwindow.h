@@ -134,6 +134,8 @@ public:
   void reportFileOpenProblem(const QString &filePath,
                              const QString &reason = "");
 
+  void runBodySplit();
+
 signals:
   void dvidRequestCanceled();
   void progressDone();

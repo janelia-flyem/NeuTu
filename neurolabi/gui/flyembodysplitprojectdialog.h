@@ -98,6 +98,7 @@ public slots:
   bool loadBody();
   void loadBookmark();
   void locateBookmark(const QModelIndex &index);
+  //void showBookmarkContextMenu(const QModelIndex &index);
   void quickView();
   void viewPreviousSlice();
   void viewNextSlice();
@@ -136,6 +137,10 @@ private slots:
 
   void recoverSeed();
   void selectSeed();
+  void checkCurrentBookmark();
+
+protected:
+  virtual void keyPressEvent(QKeyEvent *event);
 
 private:
   void updateSideView();
@@ -155,7 +160,10 @@ private:
   QGraphicsScene *m_sideViewScene;
   ZDvidDialog *m_dvidDlg;
   QMenu *m_mainMenu;
+  QMenu *m_bookmarkContextMenu;
   QAction *m_showBodyMaskAction;
+
+  QModelIndex m_pressedIndex;
 
   ZMessageManager *m_messageManager;
 };

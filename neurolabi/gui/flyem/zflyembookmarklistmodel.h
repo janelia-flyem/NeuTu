@@ -26,8 +26,10 @@ public:
 
   void clear();
   void append(const ZFlyEmBookmark &bookmark);
+  void update(int row);
 
   const ZFlyEmBookmark& getBookmark(int row) const;
+  ZFlyEmBookmark& getBookmark(int row);
   const ZFlyEmBookmarkArray& getBookmarkArray() const;
 
   //void load(const QString &filePath);

@@ -516,7 +516,8 @@ HEADERS += mainwindow.h \
     zpixmap.h \
     flyem/flyemproofcontrolform.h \
     flyem/zflyemproofmvc.h \
-    flyem/zflyemproofdoc.h
+    flyem/zflyemproofdoc.h \
+    flyem/zflyembookmarkview.h
 
 FORMS += settingdialog.ui \
     frameinfodialog.ui \
@@ -896,7 +897,8 @@ SOURCES += main.cpp \
     zpixmap.cpp \
     flyem/flyemproofcontrolform.cpp \
     flyem/zflyemproofmvc.cpp \
-    flyem/zflyemproofdoc.cpp
+    flyem/zflyemproofdoc.cpp \
+    flyem/zflyembookmarkview.cpp
 
 OTHER_FILES += \
     extlib.pri \

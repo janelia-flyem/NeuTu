@@ -1,9 +1,10 @@
 #include "zflyembookmarkpresenter.h"
+#include <QColor>
 
 ZFlyEmBookmarkPresenter::ZFlyEmBookmarkPresenter(QObject *parent) :
   ZAbstractModelPresenter(parent)
 {
-  m_fieldList << "Body ID" << "X" << "Y" << "Z" << "User" << "Status"
+  m_fieldList << "X" << "Y" << "Z" << "Body ID" << "User" << "Status"
               << "Time";
 }
 
@@ -13,13 +14,13 @@ QVariant ZFlyEmBookmarkPresenter::data(
   switch(role) {
   case Qt::DisplayRole:
     switch (index) {
-    case 0:
-      return bookmark.getBodyId();
-    case 1:
-      return bookmark.getLocation().getX();
-    case 2:
-      return bookmark.getLocation().getY();
     case 3:
+      return bookmark.getBodyId();
+    case 0:
+      return bookmark.getLocation().getX();
+    case 1:
+      return bookmark.getLocation().getY();
+    case 2:
       return bookmark.getLocation().getZ();
     case 4:
       return bookmark.getUserName();
@@ -36,6 +37,12 @@ QVariant ZFlyEmBookmarkPresenter::data(
     default:
       break;
     }
+    break;
+  case Qt::ForegroundRole:
+    if (bookmark.isChecked()) {
+      return QColor(0, 128, 0);
+    }
+    break;
   default:
     break;
   }

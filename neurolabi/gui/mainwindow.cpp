@@ -6099,7 +6099,7 @@ void MainWindow::runSplitFunc(ZStackFrame *frame)
   emit progressDone();
 }
 
-void MainWindow::on_actionSplit_Region_triggered()
+void MainWindow::runBodySplit()
 {
   if (GET_APPLICATION_NAME == "FlyEM") {
     ZStackFrame *frame = currentStackFrame();
@@ -6124,6 +6124,12 @@ void MainWindow::on_actionSplit_Region_triggered()
       //m_progress->reset();
     }
   }
+
+}
+
+void MainWindow::on_actionSplit_Region_triggered()
+{
+  runBodySplit();
 }
 
 QAction* MainWindow::getBodySplitAction() const

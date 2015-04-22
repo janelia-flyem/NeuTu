@@ -5,6 +5,7 @@
 #include <QMenu>
 #include <QAction>
 #include <QScrollBar>
+#include <QKeyEvent>
 
 #include "ui_flyembodysplitprojectdialog.h"
 #include "mainwindow.h"
@@ -68,6 +69,9 @@ FlyEmBodySplitProjectDialog::FlyEmBodySplitProjectDialog(QWidget *parent) :
   m_sideViewScene = new QGraphicsScene(this);
   //m_sideViewScene->setSceneRect(0, 0, ui->sideView->width(), ui->sideView->height());
   ui->sideView->setScene(m_sideViewScene);
+//  ui->sideView->setFocus();
+
+  setFocusPolicy(Qt::StrongFocus);
   //ui->outputWidget->setText("Load a body to start.");
 
 #ifndef _DEBUG_
@@ -93,7 +97,10 @@ void FlyEmBodySplitProjectDialog::connectSignalSlot()
 {
   connect(ui->bookmarkView, SIGNAL(doubleClicked(QModelIndex)),
           this, SLOT(locateBookmark(QModelIndex)));
-
+  /*
+  connect(ui->bookmarkView, SIGNAL(pressed(QModelIndex)),
+          this, SLOT(showBookmarkContextMenu(QModelIndex)));
+*/
   //Progress signal-slot
   connect(this, SIGNAL(progressDone()),
           getMainWindow(), SIGNAL(progressDone()));
@@ -157,11 +164,30 @@ void FlyEmBodySplitProjectDialog::createMenu()
   batchMenu->addAction(allSeedProcessAction);
   connect(allSeedProcessAction, SIGNAL(triggered()),
           this, SLOT(processAllSeed()));
+
+  m_bookmarkContextMenu = new QMenu(this);
+  QAction *checkAction = new QAction("Set Checked", this);
+  m_bookmarkContextMenu->addAction(checkAction);
+  connect(checkAction, SIGNAL(triggered()), this, SLOT(checkCurrentBookmark()));
+
+  ui->bookmarkView->setContextMenu(m_bookmarkContextMenu);
 }
 
 void FlyEmBodySplitProjectDialog::closeEvent(QCloseEvent */*event*/)
 {
   clear();
+}
+
+void FlyEmBodySplitProjectDialog::checkCurrentBookmark()
+{
+  QItemSelectionModel *sel = ui->bookmarkView->selectionModel();
+  QModelIndexList selected = sel->selectedIndexes();
+
+  foreach (const QModelIndex &index, selected) {
+    ZFlyEmBookmark &bookmark = m_bookmarkList.getBookmark(index.row());
+    bookmark.setChecked(true);
+    m_bookmarkList.update(index.row());
+  }
 }
 
 void FlyEmBodySplitProjectDialog::setDvidTarget(const ZDvidTarget &target)
@@ -475,6 +501,16 @@ void FlyEmBodySplitProjectDialog::updateBookmarkTable()
   }
 }
 
+/*
+void FlyEmBodySplitProjectDialog::showBookmarkContextMenu(const QModelIndex &index)
+{
+  m_pressedIndex = index;
+
+//  const ZFlyEmBookmark &bookmark = m_bookmarkList.getBookmark(index.row());
+
+
+}
+*/
 void FlyEmBodySplitProjectDialog::locateBookmark(const QModelIndex &index)
 {
   const ZFlyEmBookmark &bookmark = m_bookmarkList.getBookmark(index.row());
@@ -994,3 +1030,14 @@ void FlyEmBodySplitProjectDialog::MessageProcessor::processMessage(
   }
 }
 
+void FlyEmBodySplitProjectDialog::keyPressEvent(QKeyEvent *event)
+{
+  switch(event->key())
+  {
+  case Qt::Key_Space:
+    if (event->modifiers() == Qt::ShiftModifier) {
+      getMainWindow()->runBodySplit();
+    }
+    break;
+  }
+}

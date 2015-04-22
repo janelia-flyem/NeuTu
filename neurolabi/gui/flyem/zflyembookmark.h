@@ -20,6 +20,14 @@ public:
     m_location.set(x, y, z);
   }
 
+  bool isChecked() const {
+    return m_isChecked;
+  }
+
+  void setChecked(bool checked) {
+    m_isChecked = checked;
+  }
+
   void print() const;
 
 private:
@@ -28,6 +36,7 @@ private:
   QString m_time;
   QString m_status;
   ZIntPoint m_location;
+  bool m_isChecked;
 };
 
 #endif // ZFLYEMBOOKMARK_H
