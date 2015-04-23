@@ -73,6 +73,7 @@ class ZUndoCommand;
 class ZStackPatch;
 class ZStackDocReader;
 class ZDvidTileEnsemble;
+class ZStackViewParam;
 
 /*!
  * \brief The class of stack document
@@ -254,6 +255,8 @@ public: //attributes
       const ZSwcTree *tree);
   QList<Swc_Tree_Node*> getSelectedSwcNodeList() const;
   std::set<Swc_Tree_Node*> getSelectedSwcNodeSet() const;
+
+  ZStackViewParam getSelectedSwcNodeView() const;
 
 #if 0
   inline std::set<Swc_Tree_Node*>* selectedSwcTreeNodes() {

@@ -209,6 +209,8 @@ void ZFlyEmBodySplitProject::quickView()
         m_quickViewWindow->getSwcFilter()->setRenderingPrimitive("Sphere");
         connect(m_quickViewWindow, SIGNAL(destroyed()),
                 this, SLOT(shallowClearQuickViewWindow()));
+        connect(m_quickViewWindow, SIGNAL(locating2DViewTriggered(ZStackViewParam)),
+                m_dataFrame, SLOT(setView(ZStackViewParam)));
 
         ZIntCuboid box = obj.getBoundBox();
         m_quickViewWindow->notifyUser(
@@ -308,6 +310,8 @@ void ZFlyEmBodySplitProject::showResult3dQuick()
               this, SLOT(shallowClearQuickResultWindow()));
       connect(m_dataFrame->document().get(), SIGNAL(labelFieldModified()),
               this, SLOT(updateResult3dQuick()));
+      connect(m_quickResultWindow, SIGNAL(locating2DViewTriggered(ZStackViewParam)),
+              m_dataFrame, SLOT(setView(ZStackViewParam)));
     }
 
     m_quickResultWindow->show();

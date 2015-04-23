@@ -1559,7 +1559,8 @@ void ZStackFrame::zoomToSelectedSwcNodes()
     ZCuboid cuboid = SwcTreeNode::boundBox(nodeSet);
     ZPoint center = cuboid.center();
 
-    //check which stack the selected points belong to. If needed, load the corresponding stack.
+    //check which stack the selected points belong to.
+    //If needed, load the corresponding stack.
     if (getTileManager() != NULL) {
       ZTileInfo tile = getTileManager()->getSelectedTileItem()->getTileInfo();
       QRect bound= QRect(tile.getOffset().x(),tile.getOffset().y(),tile.getWidth(),tile.getHeight());
@@ -1657,6 +1658,12 @@ void ZStackFrame::notifyViewChanged(const ZStackViewParam &param)
 #endif
 
   emit viewChanged(param);
+}
+
+void ZStackFrame::setView(const ZStackViewParam &param)
+{
+  view()->setView(param);
+//  raise();
 }
 
 void ZStackFrame::customizeWidget()

@@ -1994,14 +1994,17 @@ void ZStackView::setView(const ZStackViewParam &param)
 {
   switch (param.getCoordinateSystem()) {
   case NeuTube::COORD_RAW_STACK:
+  {
+    QRect viewPort = param.getViewPort();
+    viewPort.translate(QPoint(buddyDocument()->getStackOffset().getX(),
+                              buddyDocument()->getStackOffset().getY()));
     m_imageWidget->setViewPort(param.getViewPort());
     setSliceIndex(param.getZ());
+  }
     break;
   case NeuTube::COORD_STACK:
   {
     QRect viewPort = param.getViewPort();
-    viewPort.translate(QPoint(-buddyDocument()->getStackOffset().getX(),
-                              -buddyDocument()->getStackOffset().getY()));
     m_imageWidget->setViewPort(viewPort);
     setSliceIndex(param.getZ() - buddyDocument()->getStackOffset().getZ());
   }

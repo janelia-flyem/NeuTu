@@ -13,6 +13,7 @@
 #include "zactionactivator.h"
 #include "z3dvolumeraycasterrenderer.h"
 #include "zsharedpointer.h"
+//#include "zstackviewparam.h"
 
 
 class ZStackDoc;
@@ -37,6 +38,7 @@ class Z3DProcessorNetwork;
 class Z3DTriangleList;
 class QToolBar;
 class ZStroke2d;
+class ZStackViewParam;
 
 class Z3DWindow : public QMainWindow
 {
@@ -133,6 +135,7 @@ private:
 
 signals:
   void closed();
+  void locating2DViewTriggered(const ZStackViewParam &param);
   
 public slots:
   void resetCamera();  // set up camera based on visible objects in scene, original position

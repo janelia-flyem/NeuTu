@@ -3415,6 +3415,14 @@ bool ZStackDoc::isSwcNodeSelected(const Swc_Tree_Node *tn) const
   return false;
 }
 
+ZStackViewParam ZStackDoc::getSelectedSwcNodeView() const
+{
+  if (hasSelectedSwcNode()) {
+    ZPoint pt = SwcTreeNode::centroid(getSelectedSwcNodeSet());
+
+  }
+}
+
 void ZStackDoc::deselectAllObject()
 {
   //m_selectedSwcTreeNodes.clear();

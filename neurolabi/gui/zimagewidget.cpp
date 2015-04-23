@@ -209,13 +209,26 @@ void ZImageWidget::zoom(int zoomRatio, const QPoint &ref)
 
 void ZImageWidget::setValidViewPort(const QRect &viewPort)
 {
-  QSize vpSize = viewPort.size();
+  QRect newViewPort = viewPort;
+
+  if (newViewPort.left() < canvasRegion().left()) {
+    newViewPort.setLeft(canvasRegion().left());
+  }
+  if (newViewPort.top() < canvasRegion().top()) {
+    newViewPort.setTop(canvasRegion().top());
+  }
+  if (newViewPort.right() > canvasRegion().right()) {
+    newViewPort.setRight(canvasRegion().right());
+  }
+  if (newViewPort.bottom() > canvasRegion().bottom()) {
+    newViewPort.setBottom(canvasRegion().bottom());
+  }
+
+
+  QSize vpSize = newViewPort.size();
   double wRatio = (double) screenSize().width() / vpSize.width();
   double hRatio = (double) screenSize().height() / vpSize.height();
   double ratio = dmin2(wRatio, hRatio);
-
-
-  QRect newViewPort = viewPort;
 
   if (wRatio < hRatio) { //height has some margin
     int height = iround(screenSize().height() / wRatio);

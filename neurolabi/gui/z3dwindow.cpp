@@ -72,6 +72,7 @@
 #include "zmarkswcsomadialog.h"
 #include "zinteractivecontext.h"
 #include "zwindowfactory.h"
+#include "zstackviewparam.h"
 
 class Sleeper : public QThread
 {
@@ -1762,7 +1763,8 @@ void Z3DWindow::locatePunctumIn2DView()
   if (punctumList.size() == 1) {
     if (m_doc->getParentFrame() != NULL) {
       ZPunctum* punc = *(punctumList.begin());
-      m_doc->getParentFrame()->viewRoi(punc->x(), punc->y(), iround(punc->z()), punc->radius() * 4);
+      m_doc->getParentFrame()->viewRoi(
+            punc->x(), punc->y(), iround(punc->z()), punc->radius() * 4);
     }
   }
 }
@@ -2503,6 +2505,28 @@ void Z3DWindow::locateSwcNodeIn2DView()
       int radius = iround(std::max(cuboid.width(), cuboid.height()) / 2.0);
       m_doc->getParentFrame()->viewRoi(cx, cy, cz, radius);
       */
+    } else {
+      const std::set<Swc_Tree_Node*> &nodeSet = m_doc->getSelectedSwcNodeSet();
+
+      ZCuboid cuboid = SwcTreeNode::boundBox(nodeSet);
+      ZPoint center = cuboid.center();
+      int cx, cy, cz;
+
+      //-= document()->getStackOffset();
+      cx = iround(center.x());
+      cy = iround(center.y());
+      cz = iround(center.z());
+      int radius = iround(std::max(cuboid.width(), cuboid.height()) / 2.0);
+      const int minRadius = 100;
+      if (radius < minRadius) {
+        radius = minRadius;
+      }
+
+      ZStackViewParam param(NeuTube::COORD_STACK);
+      param.setViewPort(iround(cx - radius), iround(cy - radius),
+                        iround(cx + radius), iround(cy + radius));
+      param.setZ(iround(cz));
+      emit locating2DViewTriggered(param);
     }
   }
 }
