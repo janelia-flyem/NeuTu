@@ -294,6 +294,8 @@ public:
 public: //Change view parameters
   void increaseZoomRatio();
   void decreaseZoomRatio();
+  void increaseZoomRatio(int x, int y, bool usingRef = true);
+  void decreaseZoomRatio(int x, int y, bool usingRef = true);
 
 private:
   void clearCanvas();

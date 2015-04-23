@@ -72,6 +72,10 @@ public:
   //inline int zoomRatio() const { return m_zoomRatio; }
   void increaseZoomRatio();
   void decreaseZoomRatio();
+
+  void increaseZoomRatio(int x, int y, bool usingRef = true);
+  void decreaseZoomRatio(int x, int y, bool usingRef = true);
+
   void zoom(int zoomRatio);
 
   /*!

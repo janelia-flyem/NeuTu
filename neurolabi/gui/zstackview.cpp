@@ -937,9 +937,9 @@ void ZStackView::mouseRolledInImageWidget(QWheelEvent *event)
     }
   } else if (event->modifiers() == Qt::ShiftModifier) {
     if (numSteps > 0) {
-      increaseZoomRatio();
+      increaseZoomRatio(event->pos().x(), event->pos().y());
     } else if (numSteps < 0) {
-      decreaseZoomRatio();
+      decreaseZoomRatio(event->pos().x(), event->pos().y());
     }
   }
 }
@@ -1932,6 +1932,8 @@ void ZStackView::exportObjectMask(
 
 void ZStackView::increaseZoomRatio()
 {
+  increaseZoomRatio(0, 0, false);
+  /*
   if (!isViewPortFronzen()) {
     setViewPortFrozen(true);
     imageWidget()->increaseZoomRatio();
@@ -1939,13 +1941,40 @@ void ZStackView::increaseZoomRatio()
     notifyViewChanged();
     notifyViewPortChanged();
   }
+  */
 }
 
 void ZStackView::decreaseZoomRatio()
 {
+  decreaseZoomRatio(0, 0, false);
+  /*
   if (!isViewPortFronzen()) {
     setViewPortFrozen(true);
     imageWidget()->decreaseZoomRatio();
+
+    notifyViewChanged();
+    notifyViewPortChanged();
+  }
+  */
+}
+
+
+void ZStackView::increaseZoomRatio(int x, int y, bool usingRef)
+{
+  if (!isViewPortFronzen()) {
+    setViewPortFrozen(true);
+    imageWidget()->increaseZoomRatio(x, y, usingRef);
+
+    notifyViewChanged();
+    notifyViewPortChanged();
+  }
+}
+
+void ZStackView::decreaseZoomRatio(int x, int y, bool usingRef)
+{
+  if (!isViewPortFronzen()) {
+    setViewPortFrozen(true);
+    imageWidget()->decreaseZoomRatio(x, y, usingRef);
 
     notifyViewChanged();
     notifyViewPortChanged();

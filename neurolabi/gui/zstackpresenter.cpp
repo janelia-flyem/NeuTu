@@ -721,6 +721,16 @@ void ZStackPresenter::decreaseZoomRatio()
                                */
 }
 
+void ZStackPresenter::increaseZoomRatio(int x, int y)
+{
+  buddyView()->increaseZoomRatio(x, y);
+}
+
+void ZStackPresenter::decreaseZoomRatio(int x, int y)
+{
+  buddyView()->decreaseZoomRatio(x, y);
+}
+
 void ZStackPresenter::processMouseMoveEvent(QMouseEvent *event)
 {
 #ifdef _DEBUG_2
@@ -2265,6 +2275,12 @@ void ZStackPresenter::process(const ZStackOperator &op)
   case ZStackOperator::OP_ZOOM_OUT:
     m_interactiveContext.blockContextMenu();
     decreaseZoomRatio();
+    break;
+  case ZStackOperator::OP_ZOOM_IN_CURRENT_POS:
+    increaseZoomRatio(currentWidgetPos.x(), currentWidgetPos.y());
+    break;
+  case ZStackOperator::OP_ZOOM_OUT_CURRENT_POS:
+    decreaseZoomRatio(currentWidgetPos.x(), currentWidgetPos.y());
     break;
   case ZStackOperator::OP_PAINT_STROKE:
   {

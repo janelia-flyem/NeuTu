@@ -16509,11 +16509,13 @@ void ZTest::test(MainWindow *host)
   ZJsonArray array = ZJsonFactory::makeJsonArray(
         obj4, ZJsonFactory::OBJECT_SPARSE);
   array.dump(GET_TEST_DATA_DIR + "/flyem/MB/alpha_ring_supp_selected.json");
+  std::cout <<obj4.getVoxelNumber() << " blocks." << std::endl;
 
   obj3.unify(obj4);
   obj3.save(GET_TEST_DATA_DIR + "/flyem/MB/final_alpha_ring_fixed.sobj");
   array = ZJsonFactory::makeJsonArray(obj3, ZJsonFactory::OBJECT_SPARSE);
   array.dump(GET_TEST_DATA_DIR + "/flyem/MB/final_alpha_ring_fixed.json");
+  std::cout << obj3.getVoxelNumber() << " blocks." << std::endl;
 
   ZObject3dScan oldRingObj;
   oldRingObj.load(GET_TEST_DATA_DIR + "/flyem/MB/alpha_ring.sobj");

@@ -193,6 +193,14 @@ public:
   void decreaseZoomRatio();
 
   /*!
+   * \brief Zoom at a certain point.
+   *
+   * (\a x, \a y) is the reference point.
+   */
+  void increaseZoomRatio(int x, int y);
+  void decreaseZoomRatio(int x, int y);
+
+  /*!
    * \brief Get the current slice index.
    *
    * It returns the index of the current active slice. When no slice is active,

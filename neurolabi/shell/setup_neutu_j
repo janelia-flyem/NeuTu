@@ -1,17 +1,25 @@
 #!/bin/bash
 
-if [ ! -d /opt/bin ]
+if test $# -eq 0
 then
-  mkdir /opt/bin
+  install_dir=/opt
+else
+  install_dir=$1
+fi
+echo "Installing NeuTu under $install_dir"
+
+if [ ! -d $install_dir/bin ]
+then
+  mkdir $install_dir/bin
 fi
 
-downloadDir=/opt/Download
+downloadDir=$install_dir/Download
 if [ ! -d $downloadDir ]
 then
   mkdir $downloadDir
 fi
 
-if [ ! -f /opt/Trolltech/Qt4.8.5/bin/qmake ]
+if [ ! -f $install_dir/Trolltech/Qt4.8.5/bin/qmake ]
 then
   qtsrc='qt-everywhere-opensource-src-4.8.5'
   if [ ! -d $downloadDir/$qtsrc ]
@@ -25,57 +33,57 @@ then
   fi
 
   cd $downloadDir/$qtsrc
-  ./configure --prefix=/opt/Trolltech/Qt4.8.5 -no-webkit -qt-libpng
+  ./configure --prefix=$install_dir/Trolltech/Qt4.8.5 -no-webkit -qt-libpng
   make -j3
   make install
 fi
 
-cd /opt/Download
+cd $downloadDir
 
-if [ ! -d /opt/Download/neutube ]
+if [ ! -d $downloadDir/neutube ]
 then
   /usr/bin/git clone /groups/flyem/home/zhaot/Work/neutube_ws/.git neutube
   /usr/bin/git checkout pripublic
 fi
 
-if [ ! -d /opt/Download/buildem ]
+if [ ! -d $downloadDir/buildem ]
 then
   /usr/bin/git clone http://github.com/janelia-flyem/buildem.git
 fi
  
-if [ ! -d /opt/Download/libdvid-cpp ]
+if [ ! -d $downloadDir/libdvid-cpp ]
 then
   /usr/bin/git clone https://github.com/janelia-flyem/libdvid-cpp.git
 fi
 
-cd /opt/Download/libdvid-cpp
+cd $downloadDir/libdvid-cpp
 if [ ! -d build ]
 then
   mkdir build
   cd build
-  cmake .. -DBUILDEM_DIR=/opt/Download/buildem
+  cmake .. -DBUILDEM_DIR=$downloadDir/buildem
   make
 else
   cd build
 fi
 
-cmake .. -DBUILDEM_DIR=/opt/Download/buildem
+cmake .. -DBUILDEM_DIR=$downloadDir/buildem
 make -j3
 
-updateFile=/opt/bin/ntupd
+updateFile=$install_dir/bin/ntupd
 if [ ! -f $updateFile ]
 then
   touch $updateFile
   echo '#!/bin/bash' > $updateFile
-  echo 'cd /opt/Download/neutube' >> $updateFile
+  echo "cd $downloadDir/neutube" >> $updateFile
   echo '/usr/bin/git pull' >> $updateFile
-  if [ -d /opt/Download/buildem ]
+  if [ -d $downloadDir/buildem ]
   then
     ext_qmake_args='-q "BUILDEM_DIR=/opt/Download/buildem"'
   fi
-  echo "sh build.sh /opt/Trolltech/Qt4.8.5/bin/qmake /opt/Trolltech/Qt4.8.5/mkspecs/linux-g++ -e flyem $ext_qmake_args" >> $updateFile
+  echo "sh build.sh $install_dir/Trolltech/Qt4.8.5/bin/qmake $install_dir/Trolltech/Qt4.8.5/mkspecs/linux-g++ -e flyem $ext_qmake_args" >> $updateFile
   chmod a+x $updateFile
 fi
 
-/opt/bin/ntupd
+$install_dir/bin/ntupd
 
