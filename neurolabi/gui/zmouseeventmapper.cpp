@@ -434,10 +434,10 @@ ZStackOperator ZMouseEventMoveMapper::getOperation(
       int dx = event.getX() - pressPos.getX();
       int dy = event.getY() - pressPos.getY();
       if (dx * dx + dy * dy > MOUSE_MOVE_IMAGE_THRESHOLD) {
-        if (dx > 0) {
-          op.setOperation(ZStackOperator::OP_ZOOM_IN);
-        } else if (dx < 0) {
-          op.setOperation(ZStackOperator::OP_ZOOM_OUT);
+        if (dy > 1) {
+          op.setOperation(ZStackOperator::OP_ZOOM_IN_GRAB_POS);
+        } else if (dy < -1) {
+          op.setOperation(ZStackOperator::OP_ZOOM_OUT_GRAB_POS);
         }
       }
     }

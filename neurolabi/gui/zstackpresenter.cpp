@@ -1197,7 +1197,7 @@ void ZStackPresenter::processKeyPressEvent(QKeyEvent *event)
       }
     }
     break;
-  case Qt::Key_T:
+  case Qt::Key_F:
     toggleObjectVisible();
     break;
   default:
@@ -2269,18 +2269,30 @@ void ZStackPresenter::process(const ZStackOperator &op)
   }
     break;
   case ZStackOperator::OP_ZOOM_IN:
-    m_interactiveContext.blockContextMenu();
+
     increaseZoomRatio();
     break;
   case ZStackOperator::OP_ZOOM_OUT:
-    m_interactiveContext.blockContextMenu();
+
     decreaseZoomRatio();
     break;
-  case ZStackOperator::OP_ZOOM_IN_CURRENT_POS:
-    increaseZoomRatio(currentWidgetPos.x(), currentWidgetPos.y());
+  case ZStackOperator::OP_ZOOM_IN_GRAB_POS:
+  {
+    m_interactiveContext.blockContextMenu();
+    ZPoint grabPosition = op.getMouseEventRecorder()->getPosition(
+          Qt::RightButton, ZMouseEvent::ACTION_PRESS,
+          NeuTube::COORD_WIDGET);
+    increaseZoomRatio(grabPosition.x(), grabPosition.y());
+  }
     break;
-  case ZStackOperator::OP_ZOOM_OUT_CURRENT_POS:
-    decreaseZoomRatio(currentWidgetPos.x(), currentWidgetPos.y());
+  case ZStackOperator::OP_ZOOM_OUT_GRAB_POS:
+  {
+    m_interactiveContext.blockContextMenu();
+    ZPoint grabPosition = op.getMouseEventRecorder()->getPosition(
+          Qt::RightButton, ZMouseEvent::ACTION_PRESS,
+          NeuTube::COORD_WIDGET);
+    decreaseZoomRatio(grabPosition.x(), grabPosition.y());
+  }
     break;
   case ZStackOperator::OP_PAINT_STROKE:
   {
