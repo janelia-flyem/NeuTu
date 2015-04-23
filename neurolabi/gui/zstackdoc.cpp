@@ -7447,28 +7447,86 @@ std::vector<ZStack*> ZStackDoc::createWatershedMask(bool selectedOnly)
 {
   std::vector<ZStack*> maskArray;
 
-  bool hasSelected = false;
+  int numberOfSelected = 0;
+
+  ZStackObject *obj = NULL;
+//  bool hasSelected = false;
   if (selectedOnly) {
     for (ZDocPlayerList::const_iterator iter = m_playerList.begin();
          iter != m_playerList.end(); ++iter) {
       const ZDocPlayer *player = *iter;
       if (player->hasRole(ZStackObjectRole::ROLE_SEED) &&
           player->getData()->isSelected()) {
-        hasSelected = true;
-        break;
+        obj = player->getData();
+        ++numberOfSelected;
+//        hasSelected = true;
+//        break;
       }
     }
   }
+  if (numberOfSelected == 1) {
+    ZIntCuboid box;
+    obj->getBoundBox(&box);
+    if (!box.isEmpty()) {
+      for (ZDocPlayerList::const_iterator iter = m_playerList.begin();
+           iter != m_playerList.end(); ++iter) {
+        const ZDocPlayer *player = *iter;
+        if (player->hasRole(ZStackObjectRole::ROLE_SEED)) {
+          ZStackObject *checkObj = player->getData();
+          ZIntCuboid checkBox;
+          checkObj->getBoundBox(&checkBox);
+          int boxDist;
+          if (!checkBox.isEmpty()) {
+            if (box.contains(checkBox.getLastCorner()) ||
+                box.contains(checkBox.getFirstCorner())) {
+              boxDist = 0;
+            } else {
+              ZIntPoint cornerDiff =
+                  box.getFirstCorner() - checkBox.getFirstCorner();
 
-  for (ZDocPlayerList::const_iterator iter = m_playerList.begin();
-       iter != m_playerList.end(); ++iter) {
-    const ZDocPlayer *player = *iter;
+              boxDist = imax3(std::abs(cornerDiff.getX()),
+                              std::abs(cornerDiff.getY()),
+                              std::abs(cornerDiff.getZ()));
+              cornerDiff = box.getFirstCorner() - checkBox.getLastCorner();
+              boxDist = imin2(boxDist, imax3(std::abs(cornerDiff.getX()),
+                                             std::abs(cornerDiff.getY()),
+                                             std::abs(cornerDiff.getZ())));
 
-    if (player->hasRole(ZStackObjectRole::ROLE_SEED) &&
-        (!hasSelected || player->getData()->isSelected())) {
-      ZStack *stack = player->toStack();
-      if (stack != NULL) {
-        maskArray.push_back(stack);
+              cornerDiff = box.getFirstCorner() - checkBox.getLastCorner();
+              boxDist = imin2(boxDist, imax3(std::abs(cornerDiff.getX()),
+                                             std::abs(cornerDiff.getY()),
+                                             std::abs(cornerDiff.getZ())));
+
+              cornerDiff = box.getLastCorner() - checkBox.getLastCorner();
+              boxDist = imin2(boxDist, imax3(std::abs(cornerDiff.getX()),
+                                             std::abs(cornerDiff.getY()),
+                                             std::abs(cornerDiff.getZ())));
+
+              cornerDiff = box.getLastCorner() - checkBox.getFirstCorner();
+              boxDist = imin2(boxDist, imax3(std::abs(cornerDiff.getX()),
+                                             std::abs(cornerDiff.getY()),
+                                             std::abs(cornerDiff.getZ())));
+            }
+            if (boxDist < 100) {
+              ZStack *stack = player->toStack();
+              if (stack != NULL) {
+                maskArray.push_back(stack);
+              }
+            }
+          }
+        }
+      }
+    }
+  } else {
+    for (ZDocPlayerList::const_iterator iter = m_playerList.begin();
+         iter != m_playerList.end(); ++iter) {
+      const ZDocPlayer *player = *iter;
+      if (player->hasRole(ZStackObjectRole::ROLE_SEED) &&
+          ((numberOfSelected == 0) || player->getData()->isSelected())) {
+        ZStack *stack = player->toStack();
+        if (stack != NULL) {
+          maskArray.push_back(stack);
+        }
       }
     }
   }

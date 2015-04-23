@@ -15,6 +15,7 @@
 #include "zobject3darray.h"
 #include "zstack.hxx"
 #include "zpainter.h"
+#include "zcuboid.h"
 
 using namespace std;
 
@@ -915,6 +916,22 @@ ZIntPoint ZObject3d::getHitVoxel() const
   }
 
   return pt;
+}
+
+void ZObject3d::getBoundBox(ZIntCuboid *box) const
+{
+  if (box != NULL) {
+    if (!isEmpty()) {
+      box->setFirstCorner(getX(0), getY(0), getZ(0));
+      box->setLastCorner(getX(0), getY(0), getZ(0));
+      box->set(getX(0), getY(0), getZ(0), getX(0), getY(0), getZ(0));
+    }
+    for (size_t i = 1; i < size(); i++) {
+      box->joinX(getX(i));
+      box->joinY(getY(i));
+      box->joinZ(getZ(i));
+    }
+  }
 }
 
 ZSTACKOBJECT_DEFINE_CLASS_NAME(ZObject3d)

@@ -359,7 +359,7 @@ public:
    *
    * \return The bound box.
    */
-  const ZCuboid& getBoundBox() const;
+   const ZCuboid& getBoundBox() const;
 
   static ZSwcTree* createCuboidSwc(const ZCuboid &box, double radius = 1.0);
   ZSwcTree* createBoundBoxSwc(double margin = 0.0);

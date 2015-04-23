@@ -2445,7 +2445,8 @@ void ZStackPresenter::acceptActiveStroke()
   newStroke->setPenetrating(false);
 
   ZStackObjectRole::TRole role = ZStackObjectRole::ROLE_NONE;
-  if (buddyDocument()->getTag() == NeuTube::Document::FLYEM_SPLIT) {
+//  if (buddyDocument()->getTag() == NeuTube::Document::FLYEM_SPLIT) {
+  if (GET_APPLICATION_NAME == "FlyEM") {
     role = ZStackObjectRole::ROLE_SEED |
         ZStackObjectRole::ROLE_3DGRAPH_DECORATOR;
   }

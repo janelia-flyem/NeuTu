@@ -1573,6 +1573,13 @@ void ZObject3dScan::getBoundBox(Cuboid_I *box) const
                  boundBox.getHeight(), boundBox.getDepth());
 }
 
+void ZObject3dScan::getBoundBox(ZIntCuboid *box)
+{
+  if (box != NULL) {
+    *box = getBoundBox();
+  }
+}
+
 const std::vector<size_t>& ZObject3dScan::getStripeNumberAccumulation() const
 {
   if (isDeprecated(COMPONENT_ACCUMULATED_STRIPE_NUMBER)) {

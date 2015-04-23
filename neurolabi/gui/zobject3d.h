@@ -209,6 +209,8 @@ public:
   bool hasHitVoxel() const;
   ZIntPoint getHitVoxel() const;
 
+  void getBoundBox(ZIntCuboid *box) const;
+
 private:
   int m_conn;
   int m_label;

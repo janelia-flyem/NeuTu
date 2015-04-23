@@ -770,3 +770,12 @@ bool ZStroke2d::hit(double x, double y, double z)
 {
   return hitTest(x, y, z);
 }
+
+void ZStroke2d::getBoundBox(ZIntCuboid *box) const
+{
+  if (box != NULL) {
+    ZCuboid cuboid = getBoundBox();
+    box->setFirstCorner(cuboid.firstCorner().toIntPoint());
+    box->setLastCorner(cuboid.lastCorner().toIntPoint());
+  }
+}

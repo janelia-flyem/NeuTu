@@ -6,6 +6,7 @@
 #include "zstackobjectrole.h"
 
 class ZPainter;
+class ZIntCuboid;
 
 /*!
  * \brief The abstract class of representing an 3D object
@@ -132,6 +133,14 @@ public:
 
   virtual bool hit(double x, double y, double z);
   virtual bool hit(double x, double y);
+
+  /*!
+   * \brief Get bound box of the object.
+   *
+   * For compability purpose, it is set to take an output parameter instead of
+   * returning the result.
+   */
+  virtual void getBoundBox(ZIntCuboid *box) const;
 
   const QColor& getColor() const;
   void setColor(int red, int green, int blue);

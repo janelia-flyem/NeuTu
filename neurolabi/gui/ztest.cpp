@@ -16416,7 +16416,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   ZStack stack;
   stack.load(GET_DATA_DIR + "/flyem/AL/glomeruli/new_label_field.tif");
 
@@ -16481,6 +16481,50 @@ void ZTest::test(MainWindow *host)
 //    ZPoint pt = synapseGroup[label].computeCenter();
 //    std::cout << label << ": " << pt.toIntPoint().toString() << std::endl;
 //  }
+#endif
+
+#if 1
+  ZObject3dScan obj;
+  obj.load(GET_TEST_DATA_DIR + "/flyem/MB/large_outside_block_fixed.sobj");
+
+  ZObject3dScan obj2;
+  obj2.load(GET_TEST_DATA_DIR + "/flyem/MB/alpha_block.sobj");
+
+  obj.subtract(obj2);
+
+  obj.save(GET_TEST_DATA_DIR + "/flyem/MB/alpha_ring_fixed.sobj");
+
+  ZObject3dScan obj3;
+  obj3.load(GET_TEST_DATA_DIR + "/flyem/MB/alpha_ring.sobj");
+  obj.subtract(obj3);
+  obj.save(GET_TEST_DATA_DIR + "/flyem/MB/alpha_ring_supp.sobj");
+
+
+  ZObject3dScan obj4;
+  obj4.concat(obj.getSlice(145, 148));
+  obj4.concat(obj.getSlice(151, 161));
+  obj4.concat(obj.getSlice(294, 301));
+  obj4.save(GET_TEST_DATA_DIR + "/flyem/MB/alpha_ring_supp_selected.sobj");
+
+  ZJsonArray array = ZJsonFactory::makeJsonArray(
+        obj4, ZJsonFactory::OBJECT_SPARSE);
+  array.dump(GET_TEST_DATA_DIR + "/flyem/MB/alpha_ring_supp_selected.json");
+
+  obj3.unify(obj4);
+  obj3.save(GET_TEST_DATA_DIR + "/flyem/MB/final_alpha_ring_fixed.sobj");
+  array = ZJsonFactory::makeJsonArray(obj3, ZJsonFactory::OBJECT_SPARSE);
+  array.dump(GET_TEST_DATA_DIR + "/flyem/MB/final_alpha_ring_fixed.json");
+
+  ZObject3dScan oldRingObj;
+  oldRingObj.load(GET_TEST_DATA_DIR + "/flyem/MB/alpha_ring.sobj");
+
+  obj3.subtract(oldRingObj);
+
+  std::cout << obj3.equalsLiterally(obj4) << std::endl;
+//  obj3.subtract()
+
+
+
 #endif
 
 }

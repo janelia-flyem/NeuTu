@@ -1,6 +1,7 @@
 #include "zstackobject.h"
 #include "tz_cdefs.h"
 #include "zswctree.h"
+#include "zintcuboid.h"
 
 const char* ZStackObject::m_nodeAdapterId = "!NodeAdapter";
 
@@ -189,4 +190,11 @@ bool ZStackObject::isSelected(const ZStackObject *obj)
   }
 
   return false;
+}
+
+void ZStackObject::getBoundBox(ZIntCuboid *box) const
+{
+  if (box != NULL) {
+    *box = ZIntCuboid();
+  }
 }
