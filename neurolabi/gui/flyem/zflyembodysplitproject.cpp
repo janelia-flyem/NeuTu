@@ -259,15 +259,24 @@ void ZFlyEmBodySplitProject::loadResult3dQuick(ZStackDoc *doc)
     doc->removeAllSwcTree();
     TStackObjectList objList =
         m_dataFrame->document()->getObjectList(ZStackObject::TYPE_OBJ3D);
-    int maxSwcNodeNumber = 10000;
+    const int maxSwcNodeNumber = 200000;
+    const int maxScale = 30;
+    const int minScale = 1;
     for (TStackObjectList::const_iterator iter = objList.begin();
          iter != objList.end(); ++iter) {
       ZObject3d *obj = dynamic_cast<ZObject3d*>(*iter);
       if (obj != NULL) {
         if (!obj->getRole().hasRole(ZStackObjectRole::ROLE_SEED)) {
           int ds = obj->size() / maxSwcNodeNumber + 1;
+          if (ds < minScale) {
+            ds = minScale;
+          }
+          if (ds > maxScale) {
+            ds = maxScale;
+          }
+
           ZSwcTree *tree = ZSwcGenerator::createSwc(
-                *obj, dmin2(3.0, ds / 2.0), ds);
+                *obj, dmin2(5.0, ds / 2.0), ds);
           tree->setAlpha(255);
           if (tree != NULL) {
             doc->addSwcTree(tree);
