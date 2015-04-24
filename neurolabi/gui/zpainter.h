@@ -59,6 +59,12 @@ public:
 
   void drawImage(
       const QRectF &targetRect, const ZImage &image, const QRectF &sourceRect);
+
+  /*!
+   * \brief Draw image.
+   *
+   * (\a x, \a y) is the target position in the canvas;
+   */
   void drawImage(int x, int y, const ZImage &image);
 
   void drawPixmap(

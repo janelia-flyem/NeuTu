@@ -30,7 +30,7 @@ public:
   void setTileIndex(int ix, int iy);
   void setResolutionLevel(int level);
 
-  void loadDvidPng(const QByteArray &buffer, int z);
+  void loadDvidSlice(const QByteArray &buffer, int z);
 
 //  void setTileOffset(int x, int y, int z);
 

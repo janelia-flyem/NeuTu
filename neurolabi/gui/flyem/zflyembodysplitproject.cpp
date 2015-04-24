@@ -32,6 +32,9 @@
 #include "zstackobjectsource.h"
 #include "neutubeconfig.h"
 #include "zarray.h"
+#include "dvid/zdvidgrayslice.h"
+#include "zstackobjectsourcefactory.h"
+
 
 ZFlyEmBodySplitProject::ZFlyEmBodySplitProject(QObject *parent) :
   QObject(parent), m_bodyId(-1), m_dataFrame(NULL), m_resultWindow(NULL),
@@ -859,6 +862,15 @@ void ZFlyEmBodySplitProject::viewFullGrayscale()
       }
 
       int z = currentSlice + offset.getZ();
+      ZDvidGraySlice *graySlice = new ZDvidGraySlice();
+      graySlice->setDvidTarget(getDvidTarget());
+      graySlice->setBoundBox(rectRoi);
+      graySlice->update(z);
+      graySlice->setSource(ZStackObjectSourceFactory::MakeDvidGraySliceSource());
+
+      frame->document()->addObject(graySlice);
+
+#if 0
       ZStack *stack = reader.readGrayScale(
             rectRoi.getX0(), rectRoi.getY0(), z,
             rectRoi.getWidth(), rectRoi.getHeight(), 1);
@@ -868,6 +880,7 @@ void ZFlyEmBodySplitProject::viewFullGrayscale()
                          ZStackObjectSource::ID_BODY_GRAYSCALE_PATCH));
       patch->setTarget(ZStackObject::STACK_CANVAS);
       frame->document()->addStackPatch(patch);
+#endif
     }
   }
 }

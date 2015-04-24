@@ -251,11 +251,15 @@ std::string ZDvidUrl::getGrayscaleUrl() const
 //  return getDataUrl(ZDvidData::getName(ZDvidData::ROLE_GRAY_SCALE));
 }
 
-std::string ZDvidUrl::getGrayscaleUrl(int sx, int sy, int x0, int y0, int z0)
+std::string ZDvidUrl::getGrayscaleUrl(int sx, int sy, int x0, int y0, int z0,
+                                      const std::string &format)
 const
 {
   std::ostringstream stream;
   stream << "/raw/0_1/" << sx << "_" << sy << "/" << x0 << "_" << y0 << "_" << z0;
+  if (!format.empty()) {
+    stream << "/" << format;
+  }
   return getGrayscaleUrl() + stream.str();
 }
 

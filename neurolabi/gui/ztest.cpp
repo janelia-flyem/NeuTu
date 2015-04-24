@@ -16483,7 +16483,7 @@ void ZTest::test(MainWindow *host)
 //  }
 #endif
 
-#if 1
+#if 0
   ZObject3dScan obj;
   obj.load(GET_TEST_DATA_DIR + "/flyem/MB/large_outside_block_fixed.sobj");
 
@@ -16527,6 +16527,18 @@ void ZTest::test(MainWindow *host)
 
 
 
+#endif
+
+#if 1
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "f94a", 8500);
+
+  tic();
+  ZDvidReader reader;
+  if (reader.open(target)) {
+    reader.readGrayScale(2000, 7000, 2464, 1571, 3003, 1);
+  }
+  ptoc();
 #endif
 
 }

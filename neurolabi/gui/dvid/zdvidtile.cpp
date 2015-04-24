@@ -34,7 +34,7 @@ void ZDvidTile::clear()
   m_dvidTarget.clear();
 }
 
-void ZDvidTile::loadDvidPng(const QByteArray &buffer, int z)
+void ZDvidTile::loadDvidSlice(const QByteArray &buffer, int z)
 {
   bool loading = true;
   if (m_view != NULL) {
@@ -151,7 +151,7 @@ void ZDvidTile::update(int z)
 //    ZDvidTileInfo tileInfo = readTileInfo("graytiles");
 
     if (!buffer.isEmpty()) {
-      loadDvidPng(buffer, z);
+      loadDvidSlice(buffer, z);
       m_image.setScale(1.0 / m_res.getScale(), 1.0 / m_res.getScale());
       m_image.setOffset(-getX(), -getY());
       //      setResolutionLevel(m_res.getLevel());

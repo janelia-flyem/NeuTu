@@ -414,6 +414,31 @@ ZSparseStack* ZDvidReader::readSparseStack(int bodyId)
 ZStack* ZDvidReader::readGrayScale(
     int x0, int y0, int z0, int width, int height, int depth)
 {
+#if 1
+  ZStack *stack = NULL;
+
+  ZDvidBufferReader bufferReader;
+  ZDvidUrl url(getDvidTarget());
+  /*
+  if (depth == 1) {
+    bufferReader.read(url.getGrayscaleUrl(width, height, x0, y0, z0).c_str());
+  } else {
+  */
+    bufferReader.read(url.getGrayscaleUrl(
+                        width, height, depth, x0, y0, z0).c_str());
+  //}
+
+  const QByteArray &buffer = bufferReader.getBuffer();
+
+  if (!buffer.isEmpty()) {
+    ZIntCuboid box(x0, y0, z0, x0 + width - 1, y0 + height - 1, z0 + depth - 1);
+    stack = new ZStack(GREY, box, 1);
+
+    memcpy(stack->array8(), buffer.constData(), buffer.size());
+  }
+
+  return stack;
+#else
   startReading();
 
   ZDvidBuffer *dvidBuffer = m_dvidClient->getDvidBuffer();
@@ -451,6 +476,7 @@ ZStack* ZDvidReader::readGrayScale(
   dvidBuffer->clearImageArray();
 
   return stack;
+#endif
 
 #if 0 //old version
   ZDvidRequest request;

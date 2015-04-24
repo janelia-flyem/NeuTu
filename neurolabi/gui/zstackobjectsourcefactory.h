@@ -16,6 +16,7 @@ public:
   static std::string MakeCurrentMsTileSource(int resLevel);
   static std::string MakeDvidTileSource();
   static std::string MakeDvidLabelSliceSource();
+  static std::string MakeDvidGraySliceSource();
 };
 
 #endif // ZSTACKOBJECTSOURCEFACTORY_H

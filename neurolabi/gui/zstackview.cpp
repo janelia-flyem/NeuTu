@@ -916,11 +916,17 @@ void ZStackView::mouseRolledInImageWidget(QWheelEvent *event)
     numSteps /= 120;
   }
 
-  if (event->modifiers() == Qt::NoModifier) {
+  if (event->modifiers() == Qt::NoModifier ||
+      event->modifiers() == Qt::ShiftModifier) {
     if (isDepthChangable()) {
       //for strange mighty mouse response in Qt 4.6.2
       if (numSteps != 0) {
-        int newPos = m_depthControl->value() + numSteps;
+        int ratio = 1;
+        if (event->modifiers() == Qt::ShiftModifier) {
+          ratio = 5;
+        }
+
+        int newPos = m_depthControl->value() + numSteps * ratio;
         if ((newPos >= m_depthControl->minimum()) &&
             (newPos <= m_depthControl->maximum())) {
           setSliceIndex(newPos);
@@ -935,7 +941,7 @@ void ZStackView::mouseRolledInImageWidget(QWheelEvent *event)
         }
       }
     }
-  } else if (event->modifiers() == Qt::ShiftModifier) {
+  } else if (event->modifiers() == Qt::ControlModifier) {
     if (numSteps > 0) {
       increaseZoomRatio(event->pos().x(), event->pos().y());
     } else if (numSteps < 0) {

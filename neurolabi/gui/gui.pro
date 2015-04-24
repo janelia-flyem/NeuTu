@@ -517,7 +517,8 @@ HEADERS += mainwindow.h \
     flyem/flyemproofcontrolform.h \
     flyem/zflyemproofmvc.h \
     flyem/zflyemproofdoc.h \
-    flyem/zflyembookmarkview.h
+    flyem/zflyembookmarkview.h \
+    dvid/zdvidgrayslice.h
 
 FORMS += settingdialog.ui \
     frameinfodialog.ui \
@@ -898,7 +899,8 @@ SOURCES += main.cpp \
     flyem/flyemproofcontrolform.cpp \
     flyem/zflyemproofmvc.cpp \
     flyem/zflyemproofdoc.cpp \
-    flyem/zflyembookmarkview.cpp
+    flyem/zflyembookmarkview.cpp \
+    dvid/zdvidgrayslice.cpp
 
 OTHER_FILES += \
     extlib.pri \

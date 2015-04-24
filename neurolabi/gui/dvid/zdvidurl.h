@@ -56,7 +56,8 @@ public:
 
 
   std::string getGrayscaleUrl() const;
-  std::string getGrayscaleUrl(int sx, int sy, int x0, int y0, int z0) const;
+  std::string getGrayscaleUrl(int sx, int sy, int x0, int y0, int z0,
+                              const std::string &format = "") const;
   std::string getGrayscaleUrl(int sx, int sy, int sz, int x0, int y0, int z0)
    const;
   std::string getGrayScaleBlockUrl(

@@ -60,3 +60,8 @@ std::string ZStackObjectSourceFactory::MakeDvidLabelSliceSource()
 {
   return "#.DVIDLabelSlice";
 }
+
+std::string ZStackObjectSourceFactory::MakeDvidGraySliceSource()
+{
+  return "#.DVIDGraySlice";
+}
