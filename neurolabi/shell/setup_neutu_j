@@ -87,3 +87,13 @@ fi
 
 $install_dir/bin/ntupd
 
+run_script=$install_dir/bin/neutu
+if [ ! -f $run_script ]
+then
+  touch $run_script
+  echo '#!/bin/bash' > $run_script
+  echo "export LD_LIBRARY_PATH=$downloadDir/buildem/lib:$LD_LIBRARY_PATH" >> $run_script
+  echo "$downloadDir/neutube/neurolabi/build/neuTube" >> $run_script
+fi
+
+
