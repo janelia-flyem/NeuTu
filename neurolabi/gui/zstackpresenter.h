@@ -94,7 +94,7 @@ public:
   void setZoomOffset(int x, int y);
 */
   void processMouseReleaseEvent(QMouseEvent *event);
-  void processKeyPressEvent(QKeyEvent *event);
+  bool processKeyPressEvent(QKeyEvent *event);
   void processMouseMoveEvent(QMouseEvent *event);
   void processMousePressEvent(QMouseEvent *event);
   void processMouseDoubleClickEvent(QMouseEvent *eventint);

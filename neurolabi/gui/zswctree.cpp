@@ -541,7 +541,7 @@ void ZSwcTree::display(ZPainter &painter, int slice,
     if (fabs(SwcTreeNode::z(tn) - dataFocus) <= 0.5) {
       focused = true;
     }
-    if (focused || (slice == -1)) {
+    if (focused || (slice < 0)) {
       visible = true;
       focused = true;
     } else if (fabs(SwcTreeNode::z(tn) - dataFocus) < r) {

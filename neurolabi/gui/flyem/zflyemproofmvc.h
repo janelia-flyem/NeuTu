@@ -1,6 +1,8 @@
 #ifndef ZFLYEMPROOFMVC_H
 #define ZFLYEMPROOFMVC_H
 
+#include <QString>
+
 #include "zstackmvc.h"
 
 class QWidget;
@@ -24,6 +26,9 @@ public:
   template <typename T>
   void connectControlPanel(T *panel);
 
+  template <typename T>
+  void connectSplitControlPanel(T *panel);
+
   ZDvidTileEnsemble* getDvidTileEnsemble();
 
   void setDvidTarget(const ZDvidTarget &target);
@@ -31,6 +36,8 @@ public:
   void clear();
 
 signals:
+  void launchingSplit(const QString &message);
+  void launchingSplit(int64_t bodyId);
 
 public slots:
   void mergeSelected();
@@ -39,10 +46,19 @@ public slots:
 
   void setSegmentationVisible(bool visible);
   void setDvidTarget();
+  const ZDvidTarget &getDvidTarget() const;
+  void launchSplit(int64_t bodyId);
+  void processMessageSlot(const QString &message);
+  void notifySplitTriggered();
+  void exitSplit();
 //  void toggleEdgeMode(bool edgeOn);
+
+protected:
+  void customInit();
 
 private:
   bool m_showSegmentation;
+  bool m_splitOn;
   ZDvidDialog *m_dvidDlg;
 };
 
@@ -55,6 +71,15 @@ void ZFlyEmProofMvc::connectControlPanel(T *panel)
   connect(panel, SIGNAL(edgeModeToggled(bool)),
           this, SLOT(toggleEdgeMode(bool)));
   connect(panel, SIGNAL(dvidSetTriggered()), this, SLOT(setDvidTarget()));
+  connect(this, SIGNAL(launchingSplit(int64_t)),
+          panel, SIGNAL(splitTriggered(int64_t)));
+}
+
+template <typename T>
+void ZFlyEmProofMvc::connectSplitControlPanel(T *panel)
+{
+  connect(panel, SIGNAL(quickViewTriggered()), this, SLOT(showBodyQuickView()));
+  connect(panel, SIGNAL(exitingSplit()), this, SLOT(exitSplit));
 }
 
 

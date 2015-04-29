@@ -88,15 +88,25 @@ void ZDvidLabelSlice::update(const ZStackViewParam &viewParam)
   }
 }
 
+QColor ZDvidLabelSlice::getColor(uint64_t label) const
+{
+  return getColor((int64_t) label);
+}
+
+QColor ZDvidLabelSlice::getColor(int64_t label) const
+{
+  QColor color = m_objColorSheme.getColor(abs((int) label));
+  color.setAlpha(64);
+
+  return color;
+}
 
 void ZDvidLabelSlice::assignColorMap()
 {
   for (ZObject3dScanArray::iterator iter = m_objArray.begin();
        iter != m_objArray.end(); ++iter) {
     ZObject3dScan &obj = *iter;
-    QColor color = m_objColorSheme.getColor(abs((int) obj.getLabel()));
-    color.setAlpha(64);
-    obj.setColor(color);
+    obj.setColor(getColor(obj.getLabel()));
   }
 }
 

@@ -84,15 +84,19 @@ int ZDvidTileInfo::getHeight(int level) const
 std::vector<ZDvidTileInfo::TIndex>
 ZDvidTileInfo::getCoverIndex(int resLevel, const QRect &rect) const
 {
-  int minX = rect.left() / getWidth(resLevel);
-  int maxX = rect.right() / getWidth(resLevel);
-  int minY = rect.top() / getHeight(resLevel);
-  int maxY = rect.bottom() / getHeight(resLevel);
-
   std::vector<ZDvidTileInfo::TIndex> indexArray;
-  for (int y = minY; y <= maxY; ++y) {
-    for (int x = minX; x <= maxX; ++x) {
-      indexArray.push_back(TIndex(x, y));
+
+  if (resLevel >= 0) {
+    int minX = rect.left() / getWidth(resLevel);
+    int maxX = rect.right() / getWidth(resLevel);
+    int minY = rect.top() / getHeight(resLevel);
+    int maxY = rect.bottom() / getHeight(resLevel);
+
+
+    for (int y = minY; y <= maxY; ++y) {
+      for (int x = minX; x <= maxX; ++x) {
+        indexArray.push_back(TIndex(x, y));
+      }
     }
   }
 

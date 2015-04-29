@@ -22,7 +22,7 @@
 #include "zobject3dscan.h"
 #include "zsparsestack.h"
 #include "zdvidversiondag.h"
-
+#include "dvid/zdvidsparsestack.h"
 #include "dvid/libdvidheader.h"
 
 ZDvidReader::ZDvidReader(QObject *parent) :
@@ -146,6 +146,8 @@ ZObject3dScan *ZDvidReader::readBody(int bodyId, ZObject3dScan *result)
   reader.read(dvidUrl.getSparsevolUrl(bodyId).c_str());
   const QByteArray &buffer = reader.getBuffer();
   result->importDvidObjectBuffer(buffer.data(), buffer.size());
+
+  result->setLabel(bodyId);
 
 #if 0
   startReading();
@@ -338,6 +340,15 @@ ZStack* ZDvidReader::readGrayScaleBlock(
   return stack;
 }
 
+ZDvidSparseStack* ZDvidReader::readDvidSparseStack(int bodyId)
+{
+  ZDvidSparseStack *spStack = new ZDvidSparseStack;
+  spStack->setDvidTarget(getDvidTarget());
+  spStack->loadBody(bodyId);
+
+  return spStack;
+}
+
 ZSparseStack* ZDvidReader::readSparseStack(int bodyId)
 {
   ZSparseStack *spStack = NULL;
@@ -510,15 +521,27 @@ bool ZDvidReader::isReadingDone()
   return m_isReadingDone;
 }
 
-QString ZDvidReader::readInfo(const QString &dataType)
+QString ZDvidReader::readInfo(const QString &dataName)
 {
+  ZDvidBufferReader reader;
+  reader.read(ZDvidUrl(getDvidTarget()).getInfoUrl(dataName.toStdString()).c_str());
+  const QByteArray &buffer = reader.getBuffer();
+
+  return QString(buffer);
+  /*
+  ZDvidUrl dvidUrl(getDvidTarget());
+  dvidUrl.getInfoUrl(dataName);
+
+
+
+
   startReading();
 
   ZDvidBuffer *dvidBuffer = m_dvidClient->getDvidBuffer();
   dvidBuffer->clear();
 
   ZDvidRequest request;
-  request.setGetInfoRequest(dataType);
+  request.setGetInfoRequest(dataName);
   m_dvidClient->appendRequest(request);
   m_dvidClient->postNextRequest();
 
@@ -530,6 +553,7 @@ QString ZDvidReader::readInfo(const QString &dataType)
   dvidBuffer->clearInfoArray();
 
   return info;
+  */
 }
 
 std::set<int> ZDvidReader::readBodyId(
@@ -882,7 +906,7 @@ ZIntCuboid ZDvidReader::readBoundBox(int z)
 
 ZDvidInfo ZDvidReader::readGrayScaleInfo()
 {
-  QString infoString = readInfo("grayscale");
+  QString infoString = readInfo(getDvidTarget().getGrayScaleName().c_str());
   ZDvidInfo dvidInfo;
   if (!infoString.isEmpty()) {
     dvidInfo.setFromJsonString(infoString.toStdString());

@@ -59,6 +59,7 @@ public slots:
 
 protected:
   static void BaseConstruct(ZStackMvc *frame, ZSharedPointer<ZStackDoc> doc);
+  virtual void customInit();
 
 private:
   void createView();

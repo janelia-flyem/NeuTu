@@ -57,30 +57,38 @@ void ZDvidTile::loadDvidSlice(const QByteArray &buffer, int z)
 void ZDvidTile::display(
     ZPainter &painter, int slice, EDisplayStyle /*option*/) const
 {
+  bool isProj = false;
+  int z = painter.getZOffset() + slice;
+  if (slice < 0) {
+    isProj = true;
+    z = painter.getZOffset() - slice - 1;
+  }
   //if (!m_image.isNull()) {
-    int z = painter.getZOffset() + slice;
-    m_latestZ = z;
+//  bool isProj = (slice < 0);
 
-    const_cast<ZDvidTile&>(*this).update(z);
+//  int z = painter.getZOffset() + slice;
+  m_latestZ = z;
 
-    if (z == m_z && !m_image.isNull()) {
+  const_cast<ZDvidTile&>(*this).update(z);
+
+  if ((z == m_z)  && !m_image.isNull()) {
 #ifdef _DEBUG_
-      std::cout << "Display " << z << std::endl;
+    std::cout << "Display " << z << std::endl;
 #endif
-//      ZImage image = getImage();
-      //int dx = getX() - painter.getOffset().x();
-      //int dy = getY() - painter.getOffset().y();
+    //      ZImage image = getImage();
+    //int dx = getX() - painter.getOffset().x();
+    //int dy = getY() - painter.getOffset().y();
 
-//      QRect sourceRect = QRect(0, 0, m_image.width(), m_image.height());
-//      QRect targetRect = QRect(getX(), getY(), m_image.width() * m_res.getScale(),
-//                         m_image.height() * m_res.getScale());
+    //      QRect sourceRect = QRect(0, 0, m_image.width(), m_image.height());
+    //      QRect targetRect = QRect(getX(), getY(), m_image.width() * m_res.getScale(),
+    //                         m_image.height() * m_res.getScale());
 #if 0
-      if (m_res.getScale() == 1) {
-        m_image.save((GET_DATA_DIR + "/test.tif").c_str());
-      }
+    if (m_res.getScale() == 1) {
+      m_image.save((GET_DATA_DIR + "/test.tif").c_str());
+    }
 #endif
 
-      painter.drawImage(getX(), getY(), m_image);
+    painter.drawImage(getX(), getY(), m_image);
 
 //      ZIntPoint pt = m_offset - painter.getOffset().toIntPoint();
 

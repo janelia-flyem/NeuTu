@@ -146,7 +146,7 @@ void ZStroke2d::display(ZPainter &painter, int slice, EDisplayStyle option) cons
 
   int z = slice + iround(painter.getZOffset());
 
-  if (!(isSliceVisible(z) || (slice == -1))) {
+  if (!(isSliceVisible(z) || (slice < 0))) {
     return;
   }
 

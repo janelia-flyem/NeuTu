@@ -71,6 +71,16 @@ ZDvidTileEnsemble* ZFlyEmProofDoc::getDvidTileEnsemble() const
   return NULL;
 }
 
+ZDvidLabelSlice* ZFlyEmProofDoc::getDvidLabelSlice() const
+{
+  QList<ZDvidLabelSlice*> teList = getDvidLabelSliceList();
+  if (!teList.empty()) {
+    return teList[0];
+  }
+
+  return NULL;
+}
+
 void ZFlyEmProofDoc::updateBodyObject()
 {
   QList<ZDvidLabelSlice*> sliceList = getDvidLabelSliceList();

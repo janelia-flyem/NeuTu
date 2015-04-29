@@ -17,6 +17,7 @@ public:
   static std::string MakeDvidTileSource();
   static std::string MakeDvidLabelSliceSource();
   static std::string MakeDvidGraySliceSource();
+  static std::string MakeSplitObjectSource();
 };
 
 #endif // ZSTACKOBJECTSOURCEFACTORY_H

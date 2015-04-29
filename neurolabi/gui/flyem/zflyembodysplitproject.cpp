@@ -845,6 +845,25 @@ void ZFlyEmBodySplitProject::viewNextSlice()
   }
 }
 
+void ZFlyEmBodySplitProject::viewFullGrayscale(bool viewing)
+{
+  ZStackFrame *frame = getDataFrame();
+  if (frame != NULL) {
+    if (viewing) {
+      viewFullGrayscale();
+    } else {
+      ZStackObject *obj =
+          frame->document()->getObjectGroup().findFirstSameSource(
+            ZStackObject::TYPE_DVID_GRAY_SLICE,
+            ZStackObjectSourceFactory::MakeDvidGraySliceSource());
+      if (obj != NULL) {
+        obj->setVisible(false);
+        frame->updateView();
+      }
+    }
+  }
+}
+
 void ZFlyEmBodySplitProject::viewFullGrayscale()
 {
   ZDvidReader reader;
@@ -853,22 +872,37 @@ void ZFlyEmBodySplitProject::viewFullGrayscale()
     if (frame != NULL) {
       int currentSlice = frame->view()->sliceIndex();
 
-      ZRect2d rectRoi = frame->document()->getRect2dRoi();
+      QRect rect = frame->view()->getViewPort(NeuTube::COORD_STACK);
+      ZRect2d rectRoi;
+      rectRoi.set(rect.x(), rect.y(), rect.width(), rect.height());
+//      ZRect2d rectRoi = frame->document()->getRect2dRoi();
       ZIntPoint offset = frame->document()->getStackOffset();
-      if (!rectRoi.isValid()) {
-        int width = frame->document()->getStackWidth();
-        int height = frame->document()->getStackHeight();
-        rectRoi.set(offset.getX(), offset.getY(), width, height);
-      }
+//      if (!rectRoi.isValid()) {
+//        int width = frame->document()->getStackWidth();
+//        int height = frame->document()->getStackHeight();
+//        rectRoi.set(offset.getX(), offset.getY(), width, height);
+//      }
 
       int z = currentSlice + offset.getZ();
-      ZDvidGraySlice *graySlice = new ZDvidGraySlice();
-      graySlice->setDvidTarget(getDvidTarget());
+      ZDvidGraySlice *graySlice = dynamic_cast<ZDvidGraySlice*>(
+            frame->document()->getObjectGroup().findFirstSameSource(
+              ZStackObject::TYPE_DVID_GRAY_SLICE,
+              ZStackObjectSourceFactory::MakeDvidGraySliceSource()));
+
+      if (graySlice == NULL) {
+        graySlice = new ZDvidGraySlice();
+        graySlice->setDvidTarget(getDvidTarget());
+        graySlice->setSource(ZStackObjectSourceFactory::MakeDvidGraySliceSource());
+        frame->document()->addObject(graySlice, false);
+      }
+
+      graySlice->setVisible(true);
+
       graySlice->setBoundBox(rectRoi);
       graySlice->update(z);
-      graySlice->setSource(ZStackObjectSourceFactory::MakeDvidGraySliceSource());
 
-      frame->document()->addObject(graySlice);
+      frame->updateView();
+
 
 #if 0
       ZStack *stack = reader.readGrayScale(

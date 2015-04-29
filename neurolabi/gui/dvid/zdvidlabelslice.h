@@ -9,6 +9,7 @@
 #include "zobjectcolorscheme.h"
 
 class ZFlyEmBodyMerger;
+class QColor;
 
 class ZDvidLabelSlice : public ZStackObject
 {
@@ -40,12 +41,18 @@ public:
   void setBodyMerger(ZFlyEmBodyMerger *bodyMerger);
   void updateLabelColor();
 
+  const ZObjectColorScheme& getColorScheme() const {
+    return m_objColorSheme;
+  }
+
+  QColor getColor(uint64_t label) const;
+  QColor getColor(int64_t label) const;
+
 private:
   inline const ZDvidTarget& getDvidTarget() const { return m_dvidTarget; }
   void assignColorMap();
   void forceUpdate(const ZStackViewParam &viewParam);
   void updateLabel(const ZFlyEmBodyMerger &merger);
-
 
 private:
   ZDvidTarget m_dvidTarget;

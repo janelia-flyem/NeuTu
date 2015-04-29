@@ -672,7 +672,7 @@ const ZObject3dScan::TEvent ZObject3dScan::EVENT_OBJECT_CANONIZED =
 
 
 ZObject3dScan::ZObject3dScan() : m_isCanonized(true), m_label(0),
-  m_blockingEvent(false)
+  m_blockingEvent(false), m_zProjection(NULL)
 {
   setTarget(OBJECT_CANVAS);
   m_type = ZStackObject::TYPE_OBJECT3D_SCAN;
@@ -694,6 +694,8 @@ bool ZObject3dScan::isDeprecated(EComponent comp) const
     return m_accNumberArray.empty();
   case COMPONENT_SLICEWISE_VOXEL_NUMBER:
     return m_slicewiseVoxelNumber.empty();
+  case COMPONENT_Z_PROJECTION:
+    return m_zProjection == NULL;
   default:
     break;
   }
@@ -718,11 +720,16 @@ void ZObject3dScan::deprecate(EComponent comp)
   case COMPONENT_SLICEWISE_VOXEL_NUMBER:
     m_slicewiseVoxelNumber.clear();
     break;
+  case COMPONENT_Z_PROJECTION:
+    delete m_zProjection;
+    m_zProjection = NULL;
+    break;
   case COMPONENT_ALL:
     deprecate(COMPONENT_STRIPE_INDEX_MAP);
     deprecate(COMPONENT_INDEX_SEGMENT_MAP);
     deprecate(COMPONENT_ACCUMULATED_STRIPE_NUMBER);
     deprecate(COMPONENT_SLICEWISE_VOXEL_NUMBER);
+    deprecate(COMPONENT_Z_PROJECTION);
     break;
   }
 }
@@ -1865,18 +1872,23 @@ void ZObject3dScan::displaySolid(
   if (stride < 1) {
     stride = 1;
   }
+  std::vector<QLine> lineArray;
 
+  ZObject3dScan slice;
 //  bool painted = false;
-
-  ZObject3dScan slice = getSlice(z);
+  if (isProj) {
+    slice = *getZProjection();
+  } else {
+    slice = getSlice(z);
+  }
 
   size_t stripeNumber = slice.getStripeNumber();
-//  std::vector<QPoint> pointArray(slice.getVoxelNumber());
-//  size_t pointIndex = 0;
+  //  std::vector<QPoint> pointArray(slice.getVoxelNumber());
+  //  size_t pointIndex = 0;
 
-//  std::vector<QPoint> pointArray;
-  std::vector<QLine> lineArray;
-//  size_t lineIndex = 0;
+  //  std::vector<QPoint> pointArray;
+
+  //  size_t lineIndex = 0;
   //int offsetX = iround(painter.getOffset().x());
   //int offsetY = iround(painter.getOffset().y());
   for (size_t i = 0; i < stripeNumber; i += stride) {
@@ -1888,15 +1900,16 @@ void ZObject3dScan::displaySolid(
         int x1 = stripe.getSegmentEnd(j);// - offsetX;
         int y = stripe.getY();// - offsetY;
 
-//        lineArray[lineIndex++] = QLine(x0, y, x1, y);
-//        for (int x = x0; x <= x1; ++x) {
-//          pointArray.push_back(QPoint(x, y));
-//          pointArray[pointIndex++] = QPoint(x, y);
-//        }
+        //        lineArray[lineIndex++] = QLine(x0, y, x1, y);
+        //        for (int x = x0; x <= x1; ++x) {
+        //          pointArray.push_back(QPoint(x, y));
+        //          pointArray[pointIndex++] = QPoint(x, y);
+        //        }
         lineArray.push_back(QLine(x0, y, x1, y));
       }
     }
   }
+
 
   painter.drawLines(lineArray);
 
@@ -1919,7 +1932,7 @@ void ZObject3dScan::display(
 
 //  bool painted = false;
 
-  bool isProj = (slice == -1);
+  bool isProj = (slice < 0);
 
   int z = slice + iround(painter.getZOffset());
 
@@ -1942,7 +1955,7 @@ void ZObject3dScan::display(
   case ZStackObject::BOUNDARY:
   {
     QColor color = pen.color();
-    color.setAlpha(255);
+//    color.setAlpha(255);
     pen.setColor(color);
     painter.setPen(pen);
 
@@ -2288,14 +2301,44 @@ ZObject3dScan ZObject3dScan::getSlice(int minZ, int maxZ) const
 
 bool ZObject3dScan::hit(double x, double y, double z)
 {
+  if (!isHittable()) {
+    return false;
+  }
+
+
+  m_hitPoint.set(0, 0, 0);
   for (size_t i = 0; i < getStripeNumber(); ++i) {
     const ZObject3dStripe &stripe = m_stripeArray[i];
     if (stripe.contains(iround(x), iround(y), iround(z))) {
+      m_hitPoint.set(iround(x), iround(y), iround(z));
       return true;
     }
   }
 
   return false;
+}
+
+bool ZObject3dScan::hit(double x, double y)
+{
+  if (!isHittable()) {
+    return false;
+  }
+
+  m_hitPoint.set(0, 0, 0);
+  for (size_t i = 0; i < getStripeNumber(); ++i) {
+    const ZObject3dStripe &stripe = m_stripeArray[i];
+    if (stripe.contains(iround(x), iround(y), stripe.getZ())) {
+      m_hitPoint.set(iround(x), iround(y), stripe.getZ());
+      return true;
+    }
+  }
+
+  return false;
+}
+
+ZIntPoint ZObject3dScan::getHitPoint() const
+{
+  return m_hitPoint;
 }
 
 ZPoint ZObject3dScan::getCentroid() const
@@ -2354,20 +2397,39 @@ ZHistogram ZObject3dScan::getRadialHistogram(int z) const
   return hist;
 }
 
+const ZObject3dScan *ZObject3dScan::getZProjection() const
+{
+  if (isDeprecated(COMPONENT_Z_PROJECTION)) {
+    m_zProjection = new ZObject3dScan;
+    makeZProjection(m_zProjection);
+  }
+
+  return m_zProjection;
+}
+
+void ZObject3dScan::makeZProjection(ZObject3dScan *obj) const
+{
+  if (obj != NULL) {
+    obj->clear();
+    for (size_t i = 0; i < getStripeNumber(); ++i) {
+      obj->addStripe(0, m_stripeArray[i].getY(), false);
+      int nseg = m_stripeArray[i].getSegmentNumber();
+      for (int j = 0; j < nseg; ++j) {
+        int x1 = m_stripeArray[i].getSegmentStart(j);
+        int x2 = m_stripeArray[i].getSegmentEnd(j);
+        obj->addSegment(x1, x2, false);
+      }
+    }
+
+    obj->canonize();
+  }
+}
+
 ZObject3dScan ZObject3dScan::makeZProjection() const
 {
   ZObject3dScan proj;
-  for (size_t i = 0; i < getStripeNumber(); ++i) {
-    proj.addStripe(0, m_stripeArray[i].getY());
-    int nseg = m_stripeArray[i].getSegmentNumber();
-    for (int j = 0; j < nseg; ++j) {
-      int x1 = m_stripeArray[i].getSegmentStart(j);
-      int x2 = m_stripeArray[i].getSegmentEnd(j);
-      proj.addSegment(x1, x2, false);
-    }
-  }
 
-  proj.canonize();
+  makeZProjection(&proj);
 
   return proj;
 }
@@ -2376,7 +2438,7 @@ ZObject3dScan ZObject3dScan::makeYProjection() const
 {
   ZObject3dScan proj;
   for (size_t i = 0; i < getStripeNumber(); ++i) {
-    proj.addStripe(0, m_stripeArray[i].getZ());
+    proj.addStripe(0, m_stripeArray[i].getZ(), false);
     int nseg = m_stripeArray[i].getSegmentNumber();
     for (int j = 0; j < nseg; ++j) {
       int x1 = m_stripeArray[i].getSegmentStart(j);

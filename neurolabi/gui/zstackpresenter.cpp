@@ -95,17 +95,6 @@ void ZStackPresenter::init()
   //m_moveMapper.setContext(&m_interactiveContext);
   m_mouseEventProcessor.setInteractiveContext(&m_interactiveContext);
 
-#ifdef _DEBUG_2
-  std::cout << "Recorder address: " << &(m_mouseEventProcessor.getRecorder())
-            << std::endl;
-#endif
-
-#ifdef _DEBUG_2
-  ZEllipse *ellipse = new ZEllipse(QPointF(50, 50), 10, 5);
-  ellipse->setColor(255, 0, 0);
-  ellipse->setAngle(45);
-  addDecoration(ellipse);
-#endif
 }
 
 void ZStackPresenter::clearData()
@@ -199,7 +188,9 @@ void ZStackPresenter::createSwcActions()
   connect(action, SIGNAL(triggered()),
           this, SLOT(trySwcAddNodeMode()));
   action->setStatusTip("Add an isolated neuron node.");
-  action->setShortcut(Qt::Key_G);
+//  if (buddyDocument()->getTag() != NeuTube::Document::FLYEM_SPLIT) {
+    action->setShortcut(Qt::Key_G);
+//  }
   action->setIcon(QIcon(":/images/add.png"));
   m_actionMap[ACTION_ADD_SWC_NODE] = action;
 
@@ -484,6 +475,8 @@ void ZStackPresenter::prepareView()
   //                             buddyView()->imageWidget()->viewPort());
   m_mouseEventProcessor.setImageWidget(buddyView()->imageWidget());
   m_mouseEventProcessor.setDocument(buddyDocument());
+
+  m_swcKeyMapper.setTag(buddyDocument()->getTag());
 }
 
 void ZStackPresenter::updateLeftMenu(QAction *action, bool clear)
@@ -1034,14 +1027,16 @@ bool ZStackPresenter::estimateActiveStrokeWidth()
   return false;
 }
 
-void ZStackPresenter::processKeyPressEvent(QKeyEvent *event)
+bool ZStackPresenter::processKeyPressEvent(QKeyEvent *event)
 {
+  bool processed = true;
+
   if (processKeyPressEventForSwc(event)) {
-    return;
+    return processed;
   }
 
   if (processKeyPressEventForStroke(event)) {
-    return;
+    return processed;
   }
 
   switch (event->key()) {
@@ -1201,8 +1196,11 @@ void ZStackPresenter::processKeyPressEvent(QKeyEvent *event)
     toggleObjectVisible();
     break;
   default:
+    processed = false;
     break;
   }
+
+  return processed;
 }
 
 void ZStackPresenter::processMouseDoubleClickEvent(QMouseEvent *event)
@@ -1274,6 +1272,19 @@ void ZStackPresenter::processMouseDoubleClickEvent(QMouseEvent *event)
     if (op.getHitObject<ZObject3d>() != NULL) {
       ZIntPoint pt = op.getHitObject<ZObject3d>()->getHitVoxel();
       int sliceIndex = pt.getZ();
+      sliceIndex -= buddyDocument()->getStackOffset().getZ();
+      if (sliceIndex >= 0 &&
+          sliceIndex < buddyDocument()->getStackSize().getZ()) {
+        buddyView()->setSliceIndex(sliceIndex);
+        interactiveContext().setViewMode(ZInteractiveContext::VIEW_NORMAL);
+        interactionEvent.setEvent(ZInteractionEvent::EVENT_VIEW_SLICE);
+      }
+    }
+    break;
+  case ZStackOperator::OP_OBJECT3D_SCAN_LOCATE_FOCUS:
+    if (op.getHitObject<ZObject3dScan>() != NULL) {
+      op.getHitObject<ZObject3dScan>()->setSelected(false);
+      int sliceIndex = op.getHitObject<ZObject3dScan>()->getHitPoint().getZ();
       sliceIndex -= buddyDocument()->getStackOffset().getZ();
       if (sliceIndex >= 0 &&
           sliceIndex < buddyDocument()->getStackSize().getZ()) {

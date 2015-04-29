@@ -29,6 +29,13 @@ void ZStackMvc::construct(ztr1::shared_ptr<ZStackDoc> doc)
 
   //m_view->prepareDocument();
   m_presenter->prepareView();
+
+  customInit();
+}
+
+void ZStackMvc::customInit()
+{
+
 }
 
 void ZStackMvc::BaseConstruct(ZStackMvc *frame, ZSharedPointer<ZStackDoc> doc)

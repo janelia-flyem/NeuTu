@@ -188,7 +188,7 @@ void ZStackBall::displayHelper(
   }
   double alpha = oldPen.color().alphaF();
 
-  if (slice == -1) {
+  if (slice < 0) {
     visible = true;
   } else {
     if (isCuttingPlane(m_center.z(), m_r, dataFocus, m_zScale)) {

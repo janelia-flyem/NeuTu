@@ -13,9 +13,11 @@ public:
   ZKeyEventSwcMapper(NeuTube::Document::ETag tag = NeuTube::Document::NORMAL);
 
   ZSwcTree::EOperation getOperation(QKeyEvent *event);
+  void setTag(NeuTube::Document::ETag tag);
 
 private:
   void initKeyMap();
+  void updateKeyMap();
 
 private:
   QMap<int, ZSwcTree::EOperation> m_plainKeyMap;

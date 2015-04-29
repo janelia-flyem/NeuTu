@@ -58,6 +58,7 @@ public:
 
 public:
   static ZStackFrame* Make(QMdiArea *parent);
+  static ZStackFrame* Make(QMdiArea *parent, NeuTube::Document::ETag docTag);
   static ZStackFrame* Make(QMdiArea *parent, ZSharedPointer<ZStackDoc> doc);
 
   // A frame has three parts: view, document and presenter
@@ -281,6 +282,7 @@ signals:
   void ready(ZStackFrame*);
   void viewChanged(ZStackViewParam param);
   void splitStarted();
+  void keyEventEmitted(QKeyEvent *event);
 
 protected: // Events
   virtual void keyPressEvent(QKeyEvent *event);

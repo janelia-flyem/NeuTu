@@ -746,7 +746,7 @@ int ZStackView::getCurrentZ() const
 void ZStackView::setSliceIndex(int slice)
 {
   if (!isDepthFronzen()) {
-    setDepthFrozen(true);
+//    setDepthFrozen(true);
     m_depthControl->setValue(slice);
   }
 
@@ -789,7 +789,7 @@ void ZStackView::updatePaintBundle()
 
   int slice = m_depthControl->value();
   if (buddyPresenter()->interactiveContext().isProjectView()) {
-    slice = -1;
+    slice = -slice - 1;
   }
   m_paintBundle.setSliceIndex(slice);
   m_paintBundle.setDisplayStyle(buddyPresenter()->objectStyle());
@@ -1521,6 +1521,10 @@ void ZStackView::paintStackBuffer()
           slice->getOffset().setZ(0);
 
           m_image->setData(slice, 0, true);
+          /*
+          buddyDocument()->getSparseStack()->getObjectMask()->display(
+                m_imagePainter, sliceIndex(), ZStackObject::BOUNDARY);
+                */
           delete slice;
         }
       }
@@ -1608,11 +1612,16 @@ void ZStackView::paintObjectBuffer(
 
   painter.setPainted(false);
 
-  if (buddyPresenter()->isObjectVisible()) {
+  bool visible = true;
+  if (target == ZStackObject::OBJECT_CANVAS) {
+    visible = buddyPresenter()->isObjectVisible();
+  }
+
+  if (visible) {
     int slice = m_depthControl->value();
     int z = slice + buddyDocument()->getStackOffset().getZ();
     if (buddyPresenter()->interactiveContext().isProjectView()) {
-      slice = -1;
+      slice = -slice - 1;
     }
 
 //    painter.setStackOffset(buddyDocument()->getStackOffset());
@@ -1623,7 +1632,7 @@ void ZStackView::paintObjectBuffer(
       QList<ZStackObject*>::const_iterator iter = objs->end() - 1;
       for (;iter != objs->begin() - 1; --iter) {
         const ZStackObject *obj = *iter;
-        if ((obj->isSliceVisible(z) || slice == -1) &&
+        if ((obj->isSliceVisible(z) || slice < 0) &&
             obj->getTarget() == target) {
           visibleObject.append(obj);
         }
@@ -1640,7 +1649,7 @@ void ZStackView::paintObjectBuffer(
            iter = visibleObject.begin(); iter != visibleObject.end(); ++iter) {
         //(*obj)->display(m_objectCanvas, slice, buddyPresenter()->objectStyle());
         const ZStackObject *obj = *iter;
-        if (slice == m_depthControl->value() || slice == -1) {
+        if (slice == m_depthControl->value() || slice < 0) {
           obj->display(painter, slice, buddyPresenter()->objectStyle());
 //          painted = true;
         }
@@ -1648,9 +1657,9 @@ void ZStackView::paintObjectBuffer(
     }
 
     if (buddyPresenter()->hasObjectToShow()) {
-      if (buddyPresenter()->interactiveContext().isProjectView()) {
-        slice = -1;
-      }
+//      if (buddyPresenter()->interactiveContext().isProjectView()) {
+//        slice = -m_depthControl->value() - 1;
+//      }
       QList<ZStackObject*> *objs = buddyPresenter()->decorations();
       for (QList<ZStackObject*>::const_iterator obj = objs->end() - 1;
            obj != objs->begin() - 1; --obj) {
@@ -1692,14 +1701,14 @@ bool ZStackView::paintTileCanvasBuffer()
   bool painted = false;
 
   if (buddyDocument()->hasObject(ZStackObject::TYPE_DVID_TILE_ENSEMBLE)) {
-    updateTileCanvas();;
+    updateTileCanvas();
     if (m_tileCanvas != NULL) {
       paintObjectBuffer(m_tileCanvasPainter, ZStackObject::TILE_CANVAS);
       painted = true;
     }
   }
 
-  setDepthFrozen(false);
+//  setDepthFrozen(false);
   setViewPortFrozen(false);
 
   return painted;
@@ -1816,7 +1825,7 @@ ZStack* ZStackView::getStrokeMask(uint8_t maskValue)
 
       int slice = m_depthControl->value();
       if (buddyPresenter()->interactiveContext().isProjectView()) {
-        slice = -1;
+        slice = -slice - 1;
       }
 
       foreach (ZStroke2d *obj, buddyDocument()->getStrokeList()) {
@@ -2000,9 +2009,9 @@ int ZStackView::getZ(NeuTube::ECoordinateSystem coordSys) const
 QRect ZStackView::getViewPort(NeuTube::ECoordinateSystem coordSys) const
 {
   QRect rect = m_imageWidget->viewPort();
-  if (coordSys == NeuTube::COORD_STACK) {
-    rect.translate(QPoint(buddyDocument()->getStackOffset().getX(),
-                          buddyDocument()->getStackOffset().getY()));
+  if (coordSys == NeuTube::COORD_RAW_STACK) {
+    rect.translate(QPoint(-buddyDocument()->getStackOffset().getX(),
+                          -buddyDocument()->getStackOffset().getY()));
   }
 
   return rect;

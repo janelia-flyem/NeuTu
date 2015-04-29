@@ -28,6 +28,7 @@ class ZSwcTree;
 class ZObject3dScan;
 class ZSparseStack;
 class ZDvidVersionDag;
+class ZDvidSparseStack;
 
 class ZDvidReader : public QObject
 {
@@ -48,6 +49,7 @@ public:
   ZStack* readThumbnail(int bodyId);
 
   ZSparseStack* readSparseStack(int bodyId);
+  ZDvidSparseStack* readDvidSparseStack(int bodyId);
   ZStack* readGrayScale(
       int x0, int y0, int z0, int width, int height, int depth);
   ZStack* readGrayScale(const ZIntCuboid &cuboid);
@@ -59,7 +61,7 @@ public:
 
   ZStack* readBodyLabel(
       int x0, int y0, int z0, int width, int height, int depth);
-  QString readInfo(const QString &dataType);
+  QString readInfo(const QString &dataName);
 
   std::set<int> readBodyId(
       int x0, int y0, int z0, int width, int height, int depth);

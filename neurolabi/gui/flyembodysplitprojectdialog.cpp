@@ -51,12 +51,18 @@ FlyEmBodySplitProjectDialog::FlyEmBodySplitProjectDialog(QWidget *parent) :
   connect(ui->bookmarkVisibleCheckBox, SIGNAL(toggled(bool)),
           &m_project, SLOT(showBookmark(bool)));
   connect(ui->quickViewPushButton, SIGNAL(clicked()), this, SLOT(quickView()));
+  connect(ui->fullGrayscaleCheckBox, SIGNAL(toggled(bool)),
+          this, SLOT(viewFullGrayscale(bool)));
+  connect(ui->updatePushButton, SIGNAL(clicked()),
+          this, SLOT(viewFullGrayscale()));
+  /*
   connect(ui->prevPushButton, SIGNAL(clicked()),
           this, SLOT(viewPreviousSlice()));
   connect(ui->nextPushButton, SIGNAL(clicked()),
           this, SLOT(viewNextSlice()));
   connect(ui->fullGrayscalePushButton, SIGNAL(clicked()),
           this, SLOT(viewFullGrayscale()));
+          */
   connect(ui->saveSeedPushButton, SIGNAL(clicked()),
           this, SLOT(saveSeed()));
 
@@ -360,6 +366,8 @@ const ZDvidTarget& FlyEmBodySplitProjectDialog::getDvidTarget() const
 void FlyEmBodySplitProjectDialog::setDataFrame(ZStackFrame *frame)
 {
   connect(frame, SIGNAL(destroyed()), this, SLOT(shallowClearDataFrame()));
+  connect(frame, SIGNAL(keyEventEmitted(QKeyEvent*)),
+          this, SLOT(processKeyEvent(QKeyEvent*)));
 
   m_project.setDataFrame(frame);
 }
@@ -815,8 +823,16 @@ void FlyEmBodySplitProjectDialog::viewNextSlice()
 
 void FlyEmBodySplitProjectDialog::viewFullGrayscale()
 {
-  m_project.viewFullGrayscale();
-  m_project.updateBodyMask();
+  m_project.viewFullGrayscale(ui->fullGrayscaleCheckBox->isChecked());
+//  m_project.updateBodyMask();
+}
+
+void FlyEmBodySplitProjectDialog::viewFullGrayscale(bool viewing)
+{
+  m_project.viewFullGrayscale(viewing);
+  if (viewing) {
+    m_project.updateBodyMask();
+  }
 }
 
 void FlyEmBodySplitProjectDialog::saveSeed()
@@ -952,6 +968,25 @@ void FlyEmBodySplitProjectDialog::processAllSeed()
   }
 }
 
+void FlyEmBodySplitProjectDialog::startSplit(const QString &message)
+{
+  ZJsonObject obj;
+  obj.decodeString(message.toStdString().c_str());
+
+  if (obj.hasKey("body_id")) {
+    int64_t bodyId = ZJsonParser::integerValue(obj["body_id"]);
+    if (bodyId >= 0) {
+      if (obj.hasKey("dvid_target")) {
+        ZDvidTarget target;
+        target.loadJsonObject(ZJsonObject(obj.at("dvid_target")));
+        show();
+        raise();
+        startSplit(target, bodyId);
+      }
+    }
+  }
+}
+
 void FlyEmBodySplitProjectDialog::startSplit(
     const ZDvidTarget &dvidTarget, int bodyId)
 {
@@ -994,6 +1029,32 @@ void FlyEmBodySplitProjectDialog::enableMessageManager()
   }
 }
 
+void FlyEmBodySplitProjectDialog::processKeyEvent(QKeyEvent *event)
+{
+  switch(event->key())
+  {
+  case Qt::Key_Space:
+    if (event->modifiers() == Qt::ShiftModifier) {
+      getMainWindow()->runBodySplit();
+    }
+    break;
+  case Qt::Key_U:
+    ui->updatePushButton->click();
+    break;
+  case Qt::Key_G:
+    ui->fullGrayscaleCheckBox->toggle();
+    break;
+  default:
+    break;
+  }
+}
+
+void FlyEmBodySplitProjectDialog::keyPressEvent(QKeyEvent *event)
+{
+  processKeyEvent(event);
+}
+
+////////////////////////////////
 void FlyEmBodySplitProjectDialog::MessageProcessor::processMessage(
     ZMessage *message, QWidget *host) const
 {
@@ -1026,18 +1087,6 @@ void FlyEmBodySplitProjectDialog::MessageProcessor::processMessage(
     message->deactivate();
     break;
   default:
-    break;
-  }
-}
-
-void FlyEmBodySplitProjectDialog::keyPressEvent(QKeyEvent *event)
-{
-  switch(event->key())
-  {
-  case Qt::Key_Space:
-    if (event->modifiers() == Qt::ShiftModifier) {
-      getMainWindow()->runBodySplit();
-    }
     break;
   }
 }

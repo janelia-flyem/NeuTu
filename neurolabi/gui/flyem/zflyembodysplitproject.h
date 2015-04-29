@@ -76,6 +76,7 @@ public:
   void viewPreviousSlice();
   void viewNextSlice();
   void viewFullGrayscale();
+  void viewFullGrayscale(bool viewing);
   void updateBodyMask();
 
   void setShowingBodyMask(bool state){

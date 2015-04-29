@@ -283,6 +283,10 @@ ZStackOperator ZMouseEventLeftButtonDoubleClickMapper::getOperation(
       if (m_context->isProjectView()) {
         op.setOperation(ZStackOperator::OP_OBJECT3D_LOCATE_FOCUS);
       }
+    } else if (op.getHitObject()->getType() == ZStackObject::TYPE_OBJECT3D_SCAN) {
+      if (m_context->isProjectView()) {
+        op.setOperation(ZStackOperator::OP_OBJECT3D_SCAN_LOCATE_FOCUS);
+      }
     }
   }
 

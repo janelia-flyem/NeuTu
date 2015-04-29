@@ -518,7 +518,10 @@ HEADERS += mainwindow.h \
     flyem/zflyemproofmvc.h \
     flyem/zflyemproofdoc.h \
     flyem/zflyembookmarkview.h \
-    dvid/zdvidgrayslice.h
+    dvid/zdvidgrayslice.h \
+    flyem/zproofreadwindow.h \
+    dvid/zdvidsparsestack.h \
+    flyem/flyemsplitcontrolform.h
 
 FORMS += settingdialog.ui \
     frameinfodialog.ui \
@@ -582,7 +585,8 @@ FORMS += settingdialog.ui \
     flyem/zflyemhackathonconfigdlg.ui \
     ztestdialog.ui \
     zflyemcontrolform.ui \
-    flyem/flyemproofcontrolform.ui
+    flyem/flyemproofcontrolform.ui \
+    flyem/flyemsplitcontrolform.ui
 SOURCES += main.cpp \
     mainwindow.cpp \
     zstackview.cpp \
@@ -900,7 +904,10 @@ SOURCES += main.cpp \
     flyem/zflyemproofmvc.cpp \
     flyem/zflyemproofdoc.cpp \
     flyem/zflyembookmarkview.cpp \
-    dvid/zdvidgrayslice.cpp
+    dvid/zdvidgrayslice.cpp \
+    flyem/zproofreadwindow.cpp \
+    dvid/zdvidsparsestack.cpp \
+    flyem/flyemsplitcontrolform.cpp
 
 OTHER_FILES += \
     extlib.pri \

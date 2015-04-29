@@ -663,6 +663,9 @@ public: /* puncta related methods */
   TStackObjectSet &getSelected(ZStackObject::EType type);
 
   template <typename T>
+  QList<T*> getSelectedObjectList() const;
+
+  template <typename T>
   QList<T*> getSelectedObjectList(ZStackObject::EType type) const;
 
   /*
@@ -1196,6 +1199,13 @@ void ZStackDoc::setSwcTreeNodeSelected(
     emit swcTreeNodeSelectionChanged(selected, deselected);
   }
 #endif
+}
+
+template <typename T>
+QList<T*> ZStackDoc::getSelectedObjectList() const
+{
+  T phony;
+  return getSelectedObjectList<T>(phony.getType());
 }
 
 template <typename T>

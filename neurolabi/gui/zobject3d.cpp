@@ -162,7 +162,7 @@ void ZObject3d::display(ZPainter &painter, int slice, EDisplayStyle option) cons
 {  
   UNUSED_PARAMETER(option);
 
-  if (slice == -1 && !isProjectionVisible()) {
+  if (slice < 0 && !isProjectionVisible()) {
     return;
   }
 
@@ -176,7 +176,7 @@ void ZObject3d::display(ZPainter &painter, int slice, EDisplayStyle option) cons
   Object_3d *obj= c_obj();
   std::vector<QPoint> pointArray;
   for (size_t i = 0; i < obj->size; i++) {
-    if ((obj->voxels[i][2] == z) || (slice == -1)) {
+    if ((obj->voxels[i][2] == z) || (slice < 0)) {
       pointArray.push_back(QPoint(obj->voxels[i][0], obj->voxels[i][1]));
     }
   }

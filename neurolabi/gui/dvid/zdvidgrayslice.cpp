@@ -7,7 +7,7 @@
 ZDvidGraySlice::ZDvidGraySlice() : m_x(0), m_y(0), m_z(0), m_width(0),
   m_height(0)
 {
-  setTarget(ZStackObject::OBJECT_CANVAS);
+  setTarget(ZStackObject::STACK_CANVAS);
   m_type = ZStackObject::TYPE_DVID_GRAY_SLICE;
 }
 
@@ -55,7 +55,7 @@ void ZDvidGraySlice::updateImage()
 
   if (!buffer.isEmpty()) {
     if (m_image.width() * m_image.height() == buffer.size()) {
-      m_image.setData((uint8_t*) buffer.data());
+      m_image.setData((uint8_t*) buffer.data()/*, 1.5, 0*/);
     }
   }
 }

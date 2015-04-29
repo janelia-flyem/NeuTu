@@ -143,7 +143,9 @@ public:
   enum EComponent {
     COMPONENT_STRIPE_INDEX_MAP, COMPONENT_INDEX_SEGMENT_MAP,
     COMPONENT_ACCUMULATED_STRIPE_NUMBER,
-    COMPONENT_SLICEWISE_VOXEL_NUMBER, COMPONENT_ALL
+    COMPONENT_SLICEWISE_VOXEL_NUMBER,
+    COMPONENT_Z_PROJECTION,
+    COMPONENT_ALL
   };
 
   bool isDeprecated(EComponent comp) const;
@@ -203,6 +205,8 @@ public:
   bool load(const std::string &filePath);
 
   bool hit(double x, double y, double z);
+  bool hit(double x, double y);
+  ZIntPoint getHitPoint() const;
 
   /*!
    * \brief Import a dvid object
@@ -375,6 +379,8 @@ public:
   ZObject3dScan makeZProjection(int minZ, int maxZ);
 
   ZObject3dScan makeYProjection() const;
+
+  const ZObject3dScan* getZProjection() const;
 
   /*!
    * \brief Test if the object contains a voxel
@@ -585,6 +591,7 @@ public:
 private:
   void addForeground(ZStack *stack);
   void displaySolid(ZPainter &painter, int z, bool isProj, int stride = 1) const;
+  void makeZProjection(ZObject3dScan *obj) const;
 
 protected:
   std::vector<ZObject3dStripe> m_stripeArray;
@@ -593,15 +600,18 @@ protected:
   std::vector<int> m_sripeSize;
   */
 
-  mutable std::vector<size_t> m_accNumberArray;
-  mutable std::map<int, size_t> m_slicewiseVoxelNumber;
-  mutable std::map<std::pair<int, int>, size_t> m_stripeMap;
-  mutable std::map<size_t, std::pair<size_t, size_t> > m_indexSegmentMap;
   bool m_isCanonized;
   uint64_t m_label;
   //mutable int *m_lastStripe;
 
   bool m_blockingEvent;
+
+  ZIntPoint m_hitPoint;
+  mutable std::vector<size_t> m_accNumberArray;
+  mutable std::map<int, size_t> m_slicewiseVoxelNumber;
+  mutable std::map<std::pair<int, int>, size_t> m_stripeMap;
+  mutable std::map<size_t, std::pair<size_t, size_t> > m_indexSegmentMap;
+  mutable ZObject3dScan *m_zProjection;
 
   //SWIG has some problem recognizing const static type
 #ifndef SWIG

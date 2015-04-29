@@ -243,6 +243,11 @@ void ZSparseStack::setObjectMask(ZObject3dScan *obj)
   if (m_objectMask != obj) {
     deprecate(OBJECT_MASK);
     m_objectMask = obj;
+    /*
+    if (obj != NULL) {
+      obj->setColor(255, 255, 255, 255);
+    }
+    */
   }
 }
 

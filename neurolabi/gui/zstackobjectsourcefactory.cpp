@@ -65,3 +65,8 @@ std::string ZStackObjectSourceFactory::MakeDvidGraySliceSource()
 {
   return "#.DVIDGraySlice";
 }
+
+std::string ZStackObjectSourceFactory::MakeSplitObjectSource()
+{
+  return "#.FlyEMSplitObject";
+}

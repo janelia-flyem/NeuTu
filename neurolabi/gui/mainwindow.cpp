@@ -163,6 +163,8 @@
 #include "ztestdialog.h"
 #include "dvid/zdvidtile.h"
 #include "flyem/zflyemstackdoc.h"
+#include "flyem/zproofreadwindow.h"
+#include "dvid/zdvidsparsestack.h"
 
 #include "z3dcanvas.h"
 #include "z3dapplication.h"
@@ -3218,12 +3220,37 @@ void MainWindow::test()
   m_testDlg->show();
 #endif
 
-#if 1
+#if 0
   QDialog *dlg = ZDialogFactory::makeStackDialog(this);
   dlg->exec();
 
 
   delete dlg;
+#endif
+
+#if 1
+  ZProofreadWindow *window = ZProofreadWindow::Make();
+  window->show();
+#endif
+
+#if 0
+  ZStackFrame *frame = ZStackFrame::Make(NULL);
+
+  ZDvidTarget target("emdata1.int.janelia.org", "f94a", 8500);
+  target.setLabelBlockName("segmentation121714");
+  target.setBodyLabelName("bodies121714");
+  ZDvidReader reader;
+  reader.open(target);
+
+  ZDvidSparseStack *sparseStack = reader.readDvidSparseStack(50000097);
+
+  ZStack *stack = ZStackFactory::makeVirtualStack(sparseStack->getBoundBox());
+  frame->loadStack(stack);
+
+  frame->document()->addObject(sparseStack);
+
+  addStackFrame(frame);
+  presentStackFrame(frame);
 #endif
 
 #if 0
@@ -4515,9 +4542,9 @@ ZStackFrame* MainWindow::createStackFrame(
     const ZStackDocReader &reader, NeuTube::Document::ETag tag)
 {
   //ZStackFrame *newFrame = new ZStackFrame;
-  ZStackFrame *newFrame = ZStackFrame::Make(NULL);
+  ZStackFrame *newFrame = ZStackFrame::Make(NULL, tag);
   newFrame->addDocData(reader);
-  newFrame->document()->setTag(tag);
+//  newFrame->document()->setTag(tag);
   return newFrame;
 }
 
@@ -6430,11 +6457,14 @@ bool MainWindow::initBodySplitProject()
         ZStackDocReader docReader;
         //docReader.setStack(out);
         docReader.setSparseStack(spStack);
-        ZStackFrame *frame = createStackFrame(&docReader);
-        frame->document()->setTag(NeuTube::Document::FLYEM_SPLIT);
+        ZStackFrame *frame = createStackFrame(
+              docReader, NeuTube::Document::FLYEM_SPLIT);
+//        frame->setTag(NeuTube::Document::FLYEM_SPLIT);
+//        frame->document()->setTag(NeuTube::Document::FLYEM_SPLIT);
 
         m_bodySplitProjectDialog->setDataFrame(frame);
         m_bodySplitProjectDialog->downloadSeed();
+        m_bodySplitProjectDialog->viewFullGrayscale();
 
         addStackFrame(frame);
         presentStackFrame(frame);
@@ -6948,6 +6978,17 @@ void MainWindow::on_actionHackathonEvaluate_triggered()
   report("Evaluation", information.toStdString(), ZMessageReporter::Information);
 }
 
+void MainWindow::launchSplit(const QString &str)
+{
+//  ZJsonObject obj;
+//  obj.decodeString(str.toStdString().c_str());
+
+//  m_bodySplitProjectDialog->show();
+  m_bodySplitProjectDialog->startSplit(str);
+}
+
+
+/////////////////////
 void MainWindow::MessageProcessor::processMessage(
     ZMessage *message, QWidget *host) const
 {

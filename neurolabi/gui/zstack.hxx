@@ -385,7 +385,12 @@ public: /* attributes */
    */
   void *getDataPointer(int c, int slice) const;
 
-  const uint8_t *getDataPointer(int x, int y, int z) const;
+  /*!
+   * \brief Get data pointer starting from a certain loation
+   *
+   * (\a x, \a y, \a z) is the global coorindates of the starting point.
+   */
+  const uint8_t* getDataPointer(int x, int y, int z) const;
 
   /*!
    * \brief Print information of the stack

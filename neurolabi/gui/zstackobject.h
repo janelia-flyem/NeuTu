@@ -62,7 +62,8 @@ public:
     TYPE_DVID_TILE,
     TYPE_DVID_GRAY_SLICE,
     TYPE_DVID_TILE_ENSEMBLE,
-    TYPE_DVID_LABEL_SLICE
+    TYPE_DVID_LABEL_SLICE,
+    TYPE_DVID_SPARSE_STACK
   };
 
   enum Palette_Color {
@@ -107,7 +108,12 @@ public:
    *
    * \a painter stores the painting status changed by the function. The
    * painting parameters, including pen and brush, of \a painter is expected to
-   * be restored after painting
+   * be restored after painting.
+   *
+   * \param slice Index of the slice to display. The index is the offset from
+   *    the current Z position to the start Z position in the painter. If it is
+   *    negative, it means that the projection mode has been turned on at the
+   *    current slice -(\a slice + 1).
    */
   virtual void display(
       ZPainter &painter, int slice, EDisplayStyle option) const = 0;
@@ -236,6 +242,14 @@ public:
     return m_nodeAdapterId;
   }
 
+  inline bool isSelectable() const {
+    return m_isSelectable;
+  }
+
+  inline void setSelectable(bool state) {
+    m_isSelectable = state;
+  }
+
   inline bool isHittable() const {
     return m_isHittable;
   }
@@ -261,6 +275,7 @@ public:
 
 protected:
   bool m_selected;
+  bool m_isSelectable;
   bool m_isVisible;
   bool m_isHittable;
   bool m_projectionVisible;

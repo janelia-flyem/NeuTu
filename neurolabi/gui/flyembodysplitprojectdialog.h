@@ -103,6 +103,7 @@ public slots:
   void viewPreviousSlice();
   void viewNextSlice();
   void viewFullGrayscale();
+  void viewFullGrayscale(bool viewing);
   void saveSeed();
 
   void resetSideView();
@@ -114,6 +115,7 @@ public slots:
   void dumpError(const QString &info, bool appending = false);
 
   void startSplit(const ZDvidTarget &dvidTarget, int bodyId);
+  void startSplit(const QString &message);
 
 
 private slots:
@@ -138,6 +140,7 @@ private slots:
   void recoverSeed();
   void selectSeed();
   void checkCurrentBookmark();
+  void processKeyEvent(QKeyEvent *event);
 
 protected:
   virtual void keyPressEvent(QKeyEvent *event);

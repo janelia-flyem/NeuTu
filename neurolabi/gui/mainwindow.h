@@ -182,6 +182,8 @@ public slots:
   void createDvidFrame();
   void createStackFrameFromDocReader(ZStackDocReader *reader);
 
+  void launchSplit(const QString &str);
+
 private:
   Ui::MainWindow *m_ui;
 

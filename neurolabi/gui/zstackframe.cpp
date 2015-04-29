@@ -102,7 +102,7 @@ ZStackFrame::~ZStackFrame()
 }
 
 void ZStackFrame::BaseConstruct(
-    ZStackFrame *frame, ztr1::shared_ptr<ZStackDoc> doc)
+    ZStackFrame *frame, ZSharedPointer<ZStackDoc> doc)
 {
   if (frame != NULL) {
     frame->constructFrame(doc);
@@ -112,6 +112,16 @@ void ZStackFrame::BaseConstruct(
     frame->showNormal();
   #endif
   }
+}
+
+ZStackFrame*
+ZStackFrame::Make(QMdiArea *parent, NeuTube::Document::ETag docTag)
+{
+  ZSharedPointer<ZStackDoc> doc =
+      ZSharedPointer<ZStackDoc>(new ZStackDoc(NULL, NULL));
+  doc->setTag(docTag);
+
+  return Make(parent, doc);
 }
 
 ZStackFrame*
@@ -862,7 +872,9 @@ void ZStackFrame::changeWindowTitle(bool clean)
 void ZStackFrame::keyPressEvent(QKeyEvent *event)
 {
   if (m_presenter != NULL) {
-    m_presenter->processKeyPressEvent(event);
+    if (!m_presenter->processKeyPressEvent(event)) {
+      emit keyEventEmitted(event);
+    }
   }
 }
 
