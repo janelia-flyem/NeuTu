@@ -7,6 +7,8 @@
 #include "zstackdoccommand.h"
 #include "zflyembodysplitproject.h"
 
+class ZDvidSparseStack;
+
 class ZFlyEmProofDoc : public ZStackDoc
 {
   Q_OBJECT
@@ -29,6 +31,7 @@ public:
 
   ZDvidTileEnsemble* getDvidTileEnsemble() const;
   ZDvidLabelSlice* getDvidLabelSlice() const;
+  ZDvidSparseStack* getDvidSparseStack() const;
 
   ZFlyEmBodyMerger* getBodyMerger() {
     return &m_bodyMerger;
@@ -37,6 +40,8 @@ public:
   void updateBodyObject();
 
   void clearData();
+
+  bool isSplittable(uint64_t bodyId) const;
 
 signals:
 

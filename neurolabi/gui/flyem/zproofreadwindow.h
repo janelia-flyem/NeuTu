@@ -5,6 +5,7 @@
 
 class ZFlyEmProofMvc;
 class QStackedWidget;
+class ZFLyEmMessageWidget;
 
 class ZProofreadWindow : public QMainWindow
 {
@@ -27,6 +28,7 @@ private:
 private:
   ZFlyEmProofMvc *m_mainMvc;
   QStackedWidget *m_controlGroup;
+  ZFLyEmMessageWidget *m_messageWidget;
 
 };
 

@@ -6,6 +6,7 @@
 #include "dvid/zdvidtarget.h"
 #include "tz_stdint.h"
 #include "zstackobjectselector.h"
+#include "zsharedpointer.h"
 
 class ZStackFrame;
 class ZFlyEmBodyMergeFrame;
@@ -18,6 +19,7 @@ class ZIntPoint;
 class ZStackDocReader;
 class ZArray;
 class Z3DWindow;
+class ZStackDoc;
 
 class ZFlyEmBodyMergeProject : public QObject
 {
@@ -62,6 +64,11 @@ public:
 
   int getCurrentZ() const;
 
+  void setDocument(ZSharedPointer<ZStackDoc> doc);
+  ZStackDoc* getDocument() const;
+  template<typename T>
+  T* getDocument() const;
+
 signals:
   void progressAdvanced(double dp);
   void progressStarted();
@@ -87,6 +94,7 @@ public slots:
 
 private:
   ZFlyEmBodyMergeFrame *m_dataFrame;
+  ZSharedPointer<ZStackDoc> m_doc;
   Z3DWindow *m_bodyWindow;
   ZDvidTarget m_dvidTarget;
 //  Z3DWindow *m_resultWindow;
@@ -97,5 +105,11 @@ private:
   bool m_showingBodyMask;
   QSet<uint64_t> m_currentSelected;
 };
+
+template <typename T>
+T* ZFlyEmBodyMergeProject::getDocument() const
+{
+  return dynamic_cast<T*>(getDocument());
+}
 
 #endif // ZFLYEMBODYMERGEPROJECT_H

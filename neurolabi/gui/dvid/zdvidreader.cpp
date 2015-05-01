@@ -367,7 +367,8 @@ ZSparseStack* ZDvidReader::readSparseStack(int bodyId)
     spStack->setObjectMask(body);
 
     ZDvidInfo dvidInfo;
-    dvidInfo.setFromJsonString(readInfo("grayscale").toStdString());
+    dvidInfo.setFromJsonString(
+          readInfo(getDvidTarget().getGrayScaleName().c_str()).toStdString());
     ZObject3dScan blockObj = dvidInfo.getBlockIndex(*body);;
     ZStackBlockGrid *grid = new ZStackBlockGrid;
     spStack->setGreyScale(grid);

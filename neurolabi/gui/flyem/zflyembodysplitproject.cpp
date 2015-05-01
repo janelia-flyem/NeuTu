@@ -34,11 +34,13 @@
 #include "zarray.h"
 #include "dvid/zdvidgrayslice.h"
 #include "zstackobjectsourcefactory.h"
+#include "zflyemproofdoc.h"
+#include "dvid/zdvidsparsestack.h"
 
 
 ZFlyEmBodySplitProject::ZFlyEmBodySplitProject(QObject *parent) :
-  QObject(parent), m_bodyId(-1), m_dataFrame(NULL), m_resultWindow(NULL),
-  m_quickResultWindow(NULL),
+  QObject(parent), m_bodyId(-1), m_dataFrame(NULL),
+  m_resultWindow(NULL), m_quickResultWindow(NULL),
   m_quickViewWindow(NULL), m_isBookmarkVisible(true), m_showingBodyMask(false)
 {
 }
@@ -68,7 +70,7 @@ void ZFlyEmBodySplitProject::clear()
   clear(m_quickResultWindow);
 
   if (m_dataFrame != NULL) {
-    m_dataFrame->close3DWindow();
+//    m_dataFrame->close3DWindow();
     m_dataFrame->hide();
     delete m_dataFrame;
     m_dataFrame = NULL;
@@ -129,6 +131,12 @@ void ZFlyEmBodySplitProject::shallowClearQuickViewWindow()
   m_quickViewWindow = NULL;
 }
 
+/*
+void ZFlyEmBodySplitProject::shallowClearBodyWindow()
+{
+  m_bodyWindow = NULL;
+}
+*/
 void ZFlyEmBodySplitProject::setDvidTarget(const ZDvidTarget &target)
 {
   m_dvidTarget = target;
@@ -145,11 +153,57 @@ void ZFlyEmBodySplitProject::showDataFrame() const
 
 void ZFlyEmBodySplitProject::showDataFrame3d()
 {
+  if (getDocument() != NULL) {
+    Z3DWindow *window = getDocument()->getParent3DWindow();
+
+    if (window == NULL) {
+      /*
+      if (getMainWindow() != NULL) {
+        getMainWindow()->startProgress("Opening 3D View ...", 0);
+      }
+      */
+
+      ZWindowFactory factory;
+      //factory.setParentWidget(parent);
+      window = factory.make3DWindow(getDocument(), Z3DWindow::NORMAL_INIT);
+      window->setWindowTitle(getDocument()->getTitle());
+
+      getDocument()->registerUser(window);
+
+      if (getDocument()->getParentFrame() != NULL) {
+        connect(getDocument()->getParentFrame(), SIGNAL(closed(ZStackFrame*)),
+                window, SLOT(close()));
+      }
+
+      /*
+      if (getMainWindow() != NULL) {
+        getMainWindow()->endProgress();
+      }
+      */
+    }
+
+    if (window != NULL) {
+      window->show();
+      window->raise();
+    } else {
+      emit messageGenerated("3D functions are disabled");
+    }
+
+  }
+
+#if 0
   if (m_dataFrame != NULL) {
+    if (m_bodyWindow == NULL) {
     //emit messageGenerated("Showing data in 3D ...");
-    m_dataFrame->open3DWindow();
+      m_bodyWindow = m_dataFrame->open3DWindow();
+
+    } else {
+      m_bodyWindow->show();
+      m_bodyWindow->raise();
+    }
     //emit messageGenerated("Done.");
   }
+#endif
 }
 
 ZObject3dScan* ZFlyEmBodySplitProject::readBody(ZObject3dScan *out) const
@@ -174,54 +228,58 @@ void ZFlyEmBodySplitProject::quickView()
   if (m_quickViewWindow == NULL) {
     emit messageGenerated("Generating quick view ...");
 
-    const ZDvidTarget &target = getDvidTarget();
-
-    ZDvidReader reader;
-    if (reader.open(target)) {
-      int bodyId = getBodyId();
-      ZObject3dScan obj = reader.readBody(bodyId);
-      if (!obj.isEmpty()) {
-        obj.canonize();
-
-#if 0
-        size_t voxelNumber =obj.getVoxelNumber();
-        int intv = iround(Cube_Root((double) voxelNumber / 1000000));
-        obj.downsampleMax(intv, intv, intv);
-
-        ZSwcTree *tree = ZSwcGenerator::createSwc(obj);
-#endif
-        ZSwcTree *tree = ZSwcGenerator::createSurfaceSwc(obj);
-        /*
-        if (tree == NULL) {
-          ZStackSkeletonizer skeletonizer;
-          ZJsonObject config;
-          config.load(NeutubeConfig::getInstance().getApplicatinDir() +
-                      "/json/skeletonize.json");
-          skeletonizer.configure(config);
-          tree = skeletonizer.makeSkeleton(obj);
+    ZObject3dScan obj;
+    if (getDocument() != NULL) {
+      const ZObject3dScan *objMask = NULL;
+      if (getDocument()->getSparseStack() != NULL) {
+        objMask = getDocument()->getSparseStack()->getObjectMask();
+      } else {
+        if (getDocument<ZFlyEmProofDoc>() != NULL) {
+          objMask = getDocument<ZFlyEmProofDoc>()->getDvidSparseStack()->getObjectMask();
         }
-        */
-
-        ZStackDoc *doc = new ZStackDoc(NULL, NULL);
-        doc->addSwcTree(tree);
-
-        ZWindowFactory factory;
-        factory.setWindowTitle("Quick View");
-
-        m_quickViewWindow = factory.make3DWindow(doc);
-        m_quickViewWindow->getSwcFilter()->setRenderingPrimitive("Sphere");
-        connect(m_quickViewWindow, SIGNAL(destroyed()),
-                this, SLOT(shallowClearQuickViewWindow()));
-        connect(m_quickViewWindow, SIGNAL(locating2DViewTriggered(ZStackViewParam)),
-                m_dataFrame, SLOT(setView(ZStackViewParam)));
-
-        ZIntCuboid box = obj.getBoundBox();
-        m_quickViewWindow->notifyUser(
-              QString("Size: %1; Bounding box: %2 x %3 x %4").
-              arg(obj.getVoxelNumber()).arg(box.getWidth()).arg(box.getHeight()).
-              arg(box.getDepth()));
+      }
+      if (objMask != NULL) {
+        obj = *objMask;
       }
     }
+
+    if (obj.isEmpty()) {
+      const ZDvidTarget &target = getDvidTarget();
+
+      ZDvidReader reader;
+      if (reader.open(target)) {
+        int bodyId = getBodyId();
+        obj = reader.readBody(bodyId);
+        if (!obj.isEmpty()) {
+          obj.canonize();
+        }
+      }
+    }
+
+    ZSwcTree *tree = ZSwcGenerator::createSurfaceSwc(obj, 2);
+
+    ZStackDoc *doc = new ZStackDoc(NULL, NULL);
+    doc->addSwcTree(tree);
+
+    ZWindowFactory factory;
+    factory.setWindowTitle("Quick View");
+
+    m_quickViewWindow = factory.make3DWindow(doc);
+    m_quickViewWindow->getSwcFilter()->setRenderingPrimitive("Sphere");
+    connect(m_quickViewWindow, SIGNAL(destroyed()),
+            this, SLOT(shallowClearQuickViewWindow()));
+    if (m_dataFrame != NULL) {
+      connect(m_quickViewWindow, SIGNAL(locating2DViewTriggered(ZStackViewParam)),
+              m_dataFrame, SLOT(setView(ZStackViewParam)));
+    }
+    connect(m_quickViewWindow, SIGNAL(locating2DViewTriggered(ZStackViewParam)),
+            this, SIGNAL(locating2DViewTriggered(ZStackViewParam)));
+
+    ZIntCuboid box = obj.getBoundBox();
+    m_quickViewWindow->notifyUser(
+          QString("Size: %1; Bounding box: %2 x %3 x %4").
+          arg(obj.getVoxelNumber()).arg(box.getWidth()).arg(box.getHeight()).
+          arg(box.getDepth()));
   }
 
   if (m_quickViewWindow != NULL) {
@@ -231,8 +289,6 @@ void ZFlyEmBodySplitProject::quickView()
   } else {
     emit messageGenerated("Failed to lauch quick view.");
   }
-
-
 }
 
 void ZFlyEmBodySplitProject::showSkeleton(ZSwcTree *tree)
@@ -258,10 +314,10 @@ void ZFlyEmBodySplitProject::showSkeleton(ZSwcTree *tree)
 
 void ZFlyEmBodySplitProject::loadResult3dQuick(ZStackDoc *doc)
 {
-  if (doc != NULL) {
+  if (doc != NULL && getDocument() != NULL) {
     doc->removeAllSwcTree();
     TStackObjectList objList =
-        m_dataFrame->document()->getObjectList(ZStackObject::TYPE_OBJ3D);
+        getDocument()->getObjectList(ZStackObject::TYPE_OBJ3D);
     const int maxSwcNodeNumber = 200000;
     const int maxScale = 30;
     const int minScale = 1;
@@ -338,7 +394,7 @@ void ZFlyEmBodySplitProject::showResult3d()
       //emit messageGenerated("Showing results in 3D ...");
       //ZStackDocReader docReader;
       ZStackDocLabelStackFactory *factory = new ZStackDocLabelStackFactory;
-      factory->setDocument(m_dataFrame->document().get());
+      factory->setDocument(getDocument());
       ZStack *labeled = factory->makeStack();
       if (labeled != NULL) {
         //docReader.setStack(labeled);
@@ -442,7 +498,7 @@ void ZFlyEmBodySplitProject::clearBookmarkDecoration()
 void ZFlyEmBodySplitProject::addBookmarkDecoration(
     const ZFlyEmBookmarkArray &bookmarkArray)
 {
-  if (m_dataFrame != NULL) {
+  if (getDocument() != NULL) {
     for (ZFlyEmBookmarkArray::const_iterator iter = bookmarkArray.begin();
          iter != bookmarkArray.end(); ++iter) {
       const ZFlyEmBookmark &bookmark = *iter;
@@ -454,7 +510,7 @@ void ZFlyEmBodySplitProject::addBookmarkDecoration(
       circle->setColor(255, 0, 0);
       circle->setVisible(m_isBookmarkVisible);
 //      circle->setRole(ZStackObjectRole::ROLE_3DGRAPH_DECORATOR);
-      m_dataFrame->document()->addObject(circle);
+      getDocument()->addObject(circle);
       m_bookmarkDecoration.push_back(circle);
     }
   }
@@ -658,15 +714,17 @@ void ZFlyEmBodySplitProject::commitResultFunc(
 
 void ZFlyEmBodySplitProject::selectSeed(int label)
 {
-  QList<const ZDocPlayer*> playerList =
-      m_dataFrame->document()->getPlayerList(ZStackObjectRole::ROLE_SEED);
-  m_dataFrame->document()->deselectAllObject();
-  foreach (const ZDocPlayer *player, playerList) {
-    if (player->getLabel() == label) {
-      m_dataFrame->document()->setSelected(player->getData(), true);
+  if (m_dataFrame != NULL) {
+    QList<const ZDocPlayer*> playerList =
+        m_dataFrame->document()->getPlayerList(ZStackObjectRole::ROLE_SEED);
+    m_dataFrame->document()->deselectAllObject();
+    foreach (const ZDocPlayer *player, playerList) {
+      if (player->getLabel() == label) {
+        m_dataFrame->document()->setSelected(player->getData(), true);
+      }
     }
+    m_dataFrame->view()->paintObject();
   }
-  m_dataFrame->view()->paintObject();
 }
 
 void ZFlyEmBodySplitProject::backupSeed()
@@ -677,8 +735,11 @@ void ZFlyEmBodySplitProject::backupSeed()
 
   ZDvidReader reader;
   if (reader.open(getDvidTarget())) {
-    QList<const ZDocPlayer*> playerList =
-        m_dataFrame->document()->getPlayerList(ZStackObjectRole::ROLE_SEED);
+    QList<const ZDocPlayer*> playerList;
+    if (m_dataFrame != NULL) {
+      playerList =
+          m_dataFrame->document()->getPlayerList(ZStackObjectRole::ROLE_SEED);
+    }
     ZJsonArray jsonArray;
     foreach (const ZDocPlayer *player, playerList) {
       ZJsonObject jsonObj = player->toJsonObject();
@@ -1053,4 +1114,18 @@ bool ZFlyEmBodySplitProject::isSeedProcessed(int bodyId) const
   }
 
   return isProcessed;
+}
+
+ZStackDoc* ZFlyEmBodySplitProject::getDocument() const
+{
+  if (getDataFrame() != NULL) {
+    return getDataFrame()->document().get();
+  }
+
+  return m_doc.get();
+}
+
+void ZFlyEmBodySplitProject::setDocument(ZSharedPointer<ZStackDoc> doc)
+{
+  m_doc = doc;
 }

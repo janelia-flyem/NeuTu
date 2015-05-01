@@ -678,10 +678,32 @@ ZObject3dScan::ZObject3dScan() : m_isCanonized(true), m_label(0),
   m_type = ZStackObject::TYPE_OBJECT3D_SCAN;
 }
 
+ZObject3dScan::ZObject3dScan(const ZObject3dScan &obj) : ZStackObject(obj)
+{
+  *this = obj;
+  this->m_zProjection = NULL;
+}
+
 ZObject3dScan::~ZObject3dScan()
 {
   deprecate(COMPONENT_ALL);
 }
+
+
+ZObject3dScan& ZObject3dScan::operator=(const ZObject3dScan& obj)
+{
+  dynamic_cast<ZStackObject&>(*this) = dynamic_cast<const ZStackObject&>(obj);
+
+  m_stripeArray = obj.m_stripeArray;
+  m_isCanonized = obj.m_isCanonized;
+  m_label = obj.m_label;
+//  uint64_t m_label;
+
+//  this->m_zProjection = NULL;
+
+  return *this;
+}
+
 
 bool ZObject3dScan::isDeprecated(EComponent comp) const
 {

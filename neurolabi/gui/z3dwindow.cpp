@@ -396,6 +396,12 @@ void Z3DWindow::init(EInitMode mode)
           this, SLOT(addPolyplaneFrom3dPaint(ZStroke2d*)));
 
   m_canvas->set3DInteractionHandler(m_compositor->getInteractionHandler());
+
+#if defined(REMOTE_WORKSTATION)
+  getCompositor()->setShowBackground(false);
+#endif
+
+
   //  // if have image, try black background
   //  if (channelNumber() > 0) {
   //    m_background->setFirstColor(glm::vec3(0.f));

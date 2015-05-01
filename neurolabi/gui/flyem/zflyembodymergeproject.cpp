@@ -534,3 +534,13 @@ std::string ZFlyEmBodyMergeProject::createVersionBranch()
 
   return "";
 }
+
+void ZFlyEmBodyMergeProject::setDocument(ZSharedPointer<ZStackDoc> doc)
+{
+  m_doc = doc;
+}
+
+ZStackDoc* ZFlyEmBodyMergeProject::getDocument() const
+{
+  return m_doc.get();
+}

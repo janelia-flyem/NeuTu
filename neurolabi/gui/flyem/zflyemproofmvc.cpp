@@ -7,6 +7,7 @@
 #include "zdviddialog.h"
 #include "dvid/zdvidreader.h"
 #include "zstackobjectsourcefactory.h"
+#include "dvid/zdvidsparsestack.h"
 
 ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
   ZStackMvc(parent), m_splitOn(false)
@@ -102,6 +103,8 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
       te->attachView(getView());
     }
     getView()->reset(false);
+
+    m_splitProject.setDvidTarget(target);
   }
 }
 
@@ -111,6 +114,7 @@ void ZFlyEmProofMvc::setDvidTarget()
   if (m_dvidDlg->exec()) {
     const ZDvidTarget &target = m_dvidDlg->getDvidTarget();
     setDvidTarget(target);
+
   }
 }
 
@@ -123,6 +127,15 @@ void ZFlyEmProofMvc::customInit()
 {
   connect(getPresenter(), SIGNAL(bodySplitTriggered()),
           this, SLOT(notifySplitTriggered()));
+  m_splitProject.setDocument(getDocument());
+  connect(&m_splitProject, SIGNAL(locating2DViewTriggered(const ZStackViewParam&)),
+          this->getView(), SLOT(setView(const ZStackViewParam&)));
+
+  m_mergeProject.setDocument(getDocument());
+
+  connect(getDocument().get(), SIGNAL(messageGenerated(const QString&)),
+          this, SIGNAL(messageGenerated(const QString&)));
+
 }
 
 void ZFlyEmProofMvc::notifySplitTriggered()
@@ -140,12 +153,16 @@ void ZFlyEmProofMvc::notifySplitTriggered()
   }
 }
 
-void ZFlyEmProofMvc::launchSplit(int64_t bodyId)
+bool ZFlyEmProofMvc::launchSplit(int64_t bodyId)
 {
   if (bodyId >= 0) {
-    ZObject3dScan *body = dynamic_cast<ZObject3dScan*>(
+    if (!getCompleteDocument()->isSplittable(bodyId)) {
+      return false;
+    }
+
+    ZDvidSparseStack *body = dynamic_cast<ZDvidSparseStack*>(
           getDocument()->getObjectGroup().findFirstSameSource(
-            ZStackObject::TYPE_OBJECT3D_SCAN,
+            ZStackObject::TYPE_DVID_SPARSE_STACK,
             ZStackObjectSourceFactory::MakeSplitObjectSource()));
     ZDvidReader reader;
     if (reader.open(getDvidTarget())) {
@@ -157,11 +174,13 @@ void ZFlyEmProofMvc::launchSplit(int64_t bodyId)
 
       ZDvidLabelSlice *labelSlice = getCompleteDocument()->getDvidLabelSlice();
       if (body == NULL) {
-        body = new ZObject3dScan;
+        body = reader.readDvidSparseStack(bodyId);
+        body->setZOrder(0);
+//        body = new ZDvidSparseStack;
 
-        reader.readBody(bodyId, body);
+//        reader.readBody(bodyId, body);
         body->setSource(ZStackObjectSourceFactory::MakeSplitObjectSource());
-        body->setColor(labelSlice->getColor(bodyId));
+        body->setMaskColor(labelSlice->getColor(bodyId));
         getDocument()->addObject(body, true);
       }
 
@@ -171,58 +190,13 @@ void ZFlyEmProofMvc::launchSplit(int64_t bodyId)
       getView()->redrawObject();
 
       m_splitOn = true;
+      m_splitProject.setBodyId(bodyId);
+
+      return true;
     }
   }
 
-#if 0
-  ZDvidLabelSlice *labelSlice = getCompleteDocument()->getDvidLabelSlice();
-  ZObject3dScan *body = dynamic_cast<ZObject3dScan*>(
-        getDocument()->getObjectGroup().findFirstSameSource(
-          ZStackObject::TYPE_OBJECT3D_SCAN,
-          ZStackObjectSourceFactory::MakeSplitObjectSource()));
-
-  if (labelSlice->isVisible()) {
-    const std::set<int64_t> &selected = labelSlice->getSelected();
-
-    //  ZObject3dScan obj;
-    if (!selected.empty()) {
-      int64_t bodyId = *(selected.begin());
-      ZDvidReader reader;
-      if (reader.open(getDvidTarget())) {
-        if (body != NULL) {
-          if ((int64_t) body->getLabel() != bodyId) {
-            body = NULL;
-          }
-        }
-        if (body == NULL) {
-          body = new ZObject3dScan;
-
-          reader.readBody(bodyId, body);
-          body->setSource(ZStackObjectSourceFactory::MakeSplitObjectSource());
-          body->setColor(labelSlice->getColor(bodyId));
-          getDocument()->addObject(body, true);
-        }
-        labelSlice->setVisible(false);
-        labelSlice->setHittable(false);
-        getView()->redrawObject();
-      }
-    }
-  } else {
-    labelSlice->setVisible(true);
-    labelSlice->setHittable(true);
-    if (body != NULL) {
-      body->setVisible(false);
-    }
-    getView()->redrawObject();
-  }
-#endif
-//  emit launchingSplit(bodyId);
-
-//  ZJsonObject obj;
-//  obj
-  //QString message;
-
-  //emit launchingSplit(message);
+  return false;
 }
 
 void ZFlyEmProofMvc::exitSplit()
@@ -232,14 +206,18 @@ void ZFlyEmProofMvc::exitSplit()
     labelSlice->setVisible(true);
     labelSlice->setHittable(true);
 
-    ZObject3dScan *body = dynamic_cast<ZObject3dScan*>(
+    getDocument()->removeObject(ZStackObjectRole::ROLE_SEED);
+    getDocument()->removeObject(ZStackObjectRole::ROLE_TMP_RESULT);
+
+    ZDvidSparseStack *body = dynamic_cast<ZDvidSparseStack*>(
           getDocument()->getObjectGroup().findFirstSameSource(
-            ZStackObject::TYPE_OBJECT3D_SCAN,
+            ZStackObject::TYPE_DVID_SPARSE_STACK,
             ZStackObjectSourceFactory::MakeSplitObjectSource()));
     if (body != NULL) {
       body->setVisible(false);
     }
     getView()->redrawObject();
+    m_splitProject.clear();
 
     m_splitOn = false;
   }
@@ -256,6 +234,11 @@ void ZFlyEmProofMvc::processMessageSlot(const QString &message)
 //      viewRoi(int x, int y, int z, int radius);
     }
   }
+}
+
+void ZFlyEmProofMvc::showBodyQuickView()
+{
+  m_splitProject.quickView();
 }
 
 //void ZFlyEmProofMvc::toggleEdgeMode(bool edgeOn)

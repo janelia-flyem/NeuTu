@@ -74,6 +74,8 @@ class ZStackPatch;
 class ZStackDocReader;
 class ZDvidTileEnsemble;
 class ZStackViewParam;
+class Z3DWindow;
+class ZStackMvc;
 
 /*!
  * \brief The class of stack document
@@ -256,7 +258,7 @@ public: //attributes
   QList<Swc_Tree_Node*> getSelectedSwcNodeList() const;
   std::set<Swc_Tree_Node*> getSelectedSwcNodeSet() const;
 
-  ZStackViewParam getSelectedSwcNodeView() const;
+  //ZStackViewParam getSelectedSwcNodeView() const;
 
 #if 0
   inline std::set<Swc_Tree_Node*>* selectedSwcTreeNodes() {
@@ -347,8 +349,19 @@ public:
 
   void saveSwc(QWidget *parentWidget);
 
-  inline ZStackFrame* getParentFrame() { return m_parentFrame; }
-  void setParentFrame(ZStackFrame* parent);
+  const ZStackFrame *getParentFrame() const;
+  ZStackFrame* getParentFrame();
+
+  const Z3DWindow *getParent3DWindow() const;
+  Z3DWindow* getParent3DWindow();
+
+  const ZStackMvc *getParentMvc() const;
+  ZStackMvc* getParentMvc();
+
+  template<typename T>
+  QList<T*> getUserList() const;
+
+//  void setParentFrame(ZStackFrame* parent);
 
   virtual ZStack* getStack() const;
   virtual ZStack *stackMask() const;
@@ -396,6 +409,7 @@ public:
   //QString toString();
   QStringList toStringList() const;
   virtual QString dataInfo(double cx, double cy, int z) const;
+  QString getTitle() const;
 
   ZCurve locsegProfileCurve(int option) const;
 
@@ -704,6 +718,13 @@ public:
     m_isReadyForPaint = ready;
   }
 
+  void registerUser(QObject *user);
+
+  /*
+  template <typename T>
+  void registerUser(T *user);
+  */
+
 public:
   inline void deprecateTraceMask() { m_isTraceMaskObsolete = true; }
   void updateTraceWorkspace(int traceEffort, bool traceMasked,
@@ -914,6 +935,9 @@ public slots:
 
   void reloadData(const ZStackDocReader &reader);
 
+  void removeUser(QObject *user);
+  void removeAllUser();
+
 /*
 public:
   inline void notifyStackModified() {
@@ -976,6 +1000,8 @@ signals:
   void progressAdvanced(double dp);
   void newDocReady(const ZStackDocReader &reader);
 
+  void messageGenerated(const QString &message);
+
 private:
   void connectSignalSlot();
   void initNeuronTracer();
@@ -994,6 +1020,8 @@ private:
   static void expandSwcNodeList(QList<Swc_Tree_Node*> *swcList,
                                 const std::set<Swc_Tree_Node*> &swcSet,
                                 const Swc_Tree_Node *excluded);
+  template<typename T>
+  const T* getFirstUserByType() const;
 
 private:
   //Main stack
@@ -1053,6 +1081,8 @@ private:
   bool m_isReadyForPaint;
 
   QMutex m_mutex;
+
+  QList<QObject*> m_userList;
 
 protected:
   ZObjectColorScheme m_objColorSheme;
@@ -1243,5 +1273,35 @@ std::set<T*> ZStackDoc::getSelectedObjectSet(ZStackObject::EType type) const
 
   return objList;
 }
+
+template <typename T>
+QList<T*> ZStackDoc::getUserList() const
+{
+  QList<T*> userList;
+  for (QList<QObject*>::const_iterator iter = m_userList.begin();
+       iter != m_userList.end(); ++iter) {
+    T *user = dynamic_cast<T*>(*iter);
+    if (user != NULL) {
+      userList.append(user);
+    }
+  }
+
+  return userList;
+}
+
+#if 0
+template <typename T>
+void ZStackDoc::registerUser(T *user)
+{
+  if (!m_userList.contains(user)) {
+    m_userList.append(user);
+    connect(user, SIGNAL(destroyed(QObject*)), this, SLOT(removeUser(QObject*)));
+#ifdef _DEBUG_
+    connect(user, SIGNAL(destroyed()), this, SLOT(emptySlot()));
+    connect(user, SIGNAL(destroyed(QObject*)), this, SLOT(emptySlot()));
+#endif
+  }
+}
+#endif
 
 #endif

@@ -100,6 +100,9 @@
 #include "zobjectcolorscheme.h"
 #include "zstackdocreader.h"
 #include "dvid/zdvidtileensemble.h"
+#include "zstackmvc.h"
+#include "dvid/zdvidsparsestack.h"
+
 
 using namespace std;
 
@@ -220,11 +223,12 @@ void ZStackDoc::initNeuronTracer()
   m_neuronTracer.setStackOffset(offset.getX(), offset.getY(), offset.getZ());
 }
 
+/*
 void ZStackDoc::setParentFrame(ZStackFrame *parent)
 {
   m_parentFrame = parent;
 }
-
+*/
 ZStack* ZStackDoc::getStack() const
 {
   return m_stack;
@@ -3415,6 +3419,7 @@ bool ZStackDoc::isSwcNodeSelected(const Swc_Tree_Node *tn) const
   return false;
 }
 
+/*
 ZStackViewParam ZStackDoc::getSelectedSwcNodeView() const
 {
   if (hasSelectedSwcNode()) {
@@ -3422,7 +3427,7 @@ ZStackViewParam ZStackDoc::getSelectedSwcNodeView() const
 
   }
 }
-
+*/
 void ZStackDoc::deselectAllObject()
 {
   //m_selectedSwcTreeNodes.clear();
@@ -7596,6 +7601,13 @@ void ZStackDoc::localSeededWatershed()
       if (m_sparseStack != NULL) {
         signalStack = m_sparseStack->getStack();
         dsIntv = m_sparseStack->getDownsampleInterval();
+      } else {
+        ZStackObject *obj = getObjectGroup().findFirstSameSource(
+              ZStackObject::TYPE_DVID_SPARSE_STACK,
+              ZStackObjectSourceFactory::MakeSplitObjectSource());
+        ZDvidSparseStack *sparseStack = dynamic_cast<ZDvidSparseStack*>(obj);
+        signalStack = sparseStack->getStack(seedMask.getBoundBox());
+        dsIntv = sparseStack->getDownsampleInterval();
       }
     }
 
@@ -7636,56 +7648,8 @@ void ZStackDoc::localSeededWatershed()
       //delete out;
     }
   }
-#if 0
-  if (objArray != NULL) {
-    if (dsIntv.getX() > 0 || dsIntv.getY() > 0 || dsIntv.getZ() > 0) {
-      for (ZObject3dArray::iterator iter = objArray->begin();
-           iter != objArray->end(); ++iter) {
-        ZObject3d *obj = *iter;
-        if (obj != NULL) {
-          obj->upSample(dsIntv.getX(), dsIntv.getY(), dsIntv.getZ());
-        }
-      }
-    }
-    foreach (ZStroke2d *stroke, m_strokeList) {
-      ZObject3d *obj = objArray->take(stroke->getLabel());
-      if (obj == NULL) {
-        obj = new ZObject3d;
-      }
 
-      obj->setColor(stroke->getColor());
-      ZString objectSource = "localSeededWatershed:Temporary_Border:";
-      objectSource.appendNumber(stroke->getLabel());
-      obj->setSource(objectSource);
-      addObject(obj, NeuTube::Documentable_OBJ3D, ZDocPlayer::ROLE_TMP_RESULT,
-                true);
-    }
-
-    delete objArray;
-  }
-#endif
   notifyObj3dModified();
-
-    /*
-    ZObject3d *obj = new ZObject3d(objData);
-    if (objData != NULL) {
-      obj->translate(out->getOffset());
-      if (dsIntv.getX() > 0 || dsIntv.getY() > 0 || dsIntv.getZ() > 0) {
-        obj->upSample(dsIntv.getX(), dsIntv.getY(), dsIntv.getZ());
-      }
-    }
-    */
-
-    //obj->setColor(255, 255, 0, 180);
-
-    //std::string objectSource = "localSeededWatershed:Temporary_Border";
-    //obj->setSource(objectSource);
-
-    //addObject(obj, NeuTube::Documentable_OBJ3D, ZDocPlayer::ROLE_TMP_RESULT,
-    //          true);
-    //addObj3d(obj);
-    //addPlayer(obj, NeuTube::Documentable_OBJ3D, ZDocPlayer::ROLE_TMP_RESULT);
-    //notifyObj3dModified();
 }
 
 void ZStackDoc::seededWatershed()
@@ -7702,8 +7666,16 @@ void ZStackDoc::seededWatershed()
       if (m_sparseStack != NULL) {
         signalStack = m_sparseStack->getStack();
         dsIntv = m_sparseStack->getDownsampleInterval();
+      } else {
+        ZStackObject *obj = getObjectGroup().findFirstSameSource(
+              ZStackObject::TYPE_DVID_SPARSE_STACK,
+              ZStackObjectSourceFactory::MakeSplitObjectSource());
+        ZDvidSparseStack *sparseStack = dynamic_cast<ZDvidSparseStack*>(obj);
+        signalStack = sparseStack->getStack();
+        dsIntv = sparseStack->getDownsampleInterval();
       }
     }
+
 
     if (signalStack != NULL) {
       seedMask.downsampleMax(dsIntv.getX(), dsIntv.getY(), dsIntv.getZ());
@@ -7933,4 +7905,84 @@ void ZStackDoc::notifySelectorChanged()
 void ZStackDoc::notifySwcTreeNodeSelectionChanged()
 {
   emit swcTreeNodeSelectionChanged();
+}
+
+void ZStackDoc::registerUser(QObject *user)
+{
+  if (!m_userList.contains(user)) {
+    m_userList.append(user);
+    connect(user, SIGNAL(destroyed(QObject*)), this, SLOT(removeUser(QObject*)));
+#ifdef _DEBUG_2
+//    connect(user, SIGNAL(destroyed()), this, SLOT(emptySlot()));
+    connect(user, SIGNAL(destroyed(QObject*)), this, SLOT(emptySlot()));
+#endif
+  }
+}
+
+void ZStackDoc::removeUser(QObject *user)
+{
+  m_userList.removeOne(user);
+}
+
+void ZStackDoc::removeAllUser()
+{
+  m_userList.clear();
+}
+
+template<typename T>
+const T* ZStackDoc::getFirstUserByType() const
+{
+  for (QList<QObject*>::const_iterator iter = m_userList.begin();
+       iter != m_userList.end(); ++iter) {
+    T *parent = dynamic_cast<T*>(*iter);
+    if (parent != NULL) {
+      return parent;
+    }
+  }
+
+  return NULL;
+}
+
+const ZStackFrame* ZStackDoc::getParentFrame() const
+{
+  return getFirstUserByType<ZStackFrame>();
+}
+
+ZStackFrame* ZStackDoc::getParentFrame()
+{
+  return const_cast<ZStackFrame*>(
+        static_cast<const ZStackDoc&>(*this).getParentFrame());
+}
+
+const Z3DWindow* ZStackDoc::getParent3DWindow() const
+{
+  return getFirstUserByType<Z3DWindow>();
+}
+
+Z3DWindow* ZStackDoc::getParent3DWindow()
+{
+  return const_cast<Z3DWindow*>(
+        static_cast<const ZStackDoc&>(*this).getParent3DWindow());
+}
+
+const ZStackMvc* ZStackDoc::getParentMvc() const
+{
+  return getFirstUserByType<ZStackMvc>();
+}
+
+ZStackMvc* ZStackDoc::getParentMvc()
+{
+  return const_cast<ZStackMvc*>(
+        static_cast<const ZStackDoc&>(*this).getParentMvc());
+}
+
+QString ZStackDoc::getTitle() const
+{
+  QString title;
+
+  if (getStack() != NULL) {
+    title = getStack()->sourcePath().c_str();
+  }
+
+  return title;
 }

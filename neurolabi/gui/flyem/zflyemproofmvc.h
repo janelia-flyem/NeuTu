@@ -4,6 +4,8 @@
 #include <QString>
 
 #include "zstackmvc.h"
+#include "flyem/zflyembodysplitproject.h"
+#include "flyem/zflyembodymergeproject.h"
 
 class QWidget;
 class ZFlyEmProofDoc;
@@ -33,11 +35,13 @@ public:
 
   void setDvidTarget(const ZDvidTarget &target);
 
+
   void clear();
 
 signals:
   void launchingSplit(const QString &message);
   void launchingSplit(int64_t bodyId);
+  void messageGenerated(const QString &message);
 
 public slots:
   void mergeSelected();
@@ -47,10 +51,11 @@ public slots:
   void setSegmentationVisible(bool visible);
   void setDvidTarget();
   const ZDvidTarget &getDvidTarget() const;
-  void launchSplit(int64_t bodyId);
+  bool launchSplit(int64_t bodyId);
   void processMessageSlot(const QString &message);
   void notifySplitTriggered();
   void exitSplit();
+  void showBodyQuickView();
 //  void toggleEdgeMode(bool edgeOn);
 
 protected:
@@ -59,6 +64,9 @@ protected:
 private:
   bool m_showSegmentation;
   bool m_splitOn;
+  ZFlyEmBodySplitProject m_splitProject;
+  ZFlyEmBodyMergeProject m_mergeProject;
+
   ZDvidDialog *m_dvidDlg;
 };
 
@@ -79,7 +87,7 @@ template <typename T>
 void ZFlyEmProofMvc::connectSplitControlPanel(T *panel)
 {
   connect(panel, SIGNAL(quickViewTriggered()), this, SLOT(showBodyQuickView()));
-  connect(panel, SIGNAL(exitingSplit()), this, SLOT(exitSplit));
+  connect(panel, SIGNAL(exitingSplit()), this, SLOT(exitSplit()));
 }
 
 

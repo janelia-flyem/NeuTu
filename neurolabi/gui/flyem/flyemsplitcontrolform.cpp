@@ -1,4 +1,6 @@
 #include "flyemsplitcontrolform.h"
+
+#include <iostream>
 #include "ui_flyemsplitcontrolform.h"
 
 FlyEmSplitControlForm::FlyEmSplitControlForm(QWidget *parent) :
@@ -18,4 +20,18 @@ FlyEmSplitControlForm::~FlyEmSplitControlForm()
 void FlyEmSplitControlForm::setupWidgetBehavior()
 {
   connect(ui->exitPushButton, SIGNAL(clicked()), this, SIGNAL(exitingSplit()));
+  connect(ui->quickViewPushButton, SIGNAL(clicked()),
+          this, SIGNAL(quickViewTriggered()));
+  connect(ui->quickViewPushButton, SIGNAL(clicked()), this, SLOT(slotTest()));
 }
+
+void FlyEmSplitControlForm::slotTest()
+{
+  std::cout << "slot triggered." << std::endl;
+}
+
+void FlyEmSplitControlForm::setSplit(int64_t bodyId)
+{
+  ui->bodyIdSpinBox->setValue(bodyId);
+}
+

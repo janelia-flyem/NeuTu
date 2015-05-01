@@ -140,6 +140,8 @@ public:
   ZObject3dScan();
   virtual ~ZObject3dScan();
 
+  ZObject3dScan(const ZObject3dScan &obj);
+
   enum EComponent {
     COMPONENT_STRIPE_INDEX_MAP, COMPONENT_INDEX_SEGMENT_MAP,
     COMPONENT_ACCUMULATED_STRIPE_NUMBER,
@@ -176,17 +178,6 @@ public:
   const ZObject3dStripe& getStripe(size_t index) const;
   ZObject3dStripe& getStripe(size_t index);
 
-  /*
-  const int* getFirstStripe() const;
-  static int getY(const int *stripe);
-  static int getZ(const int *stripe);
-  //return number of scan lines
-  static int getStripeSize(const int *stripe);
-  static int* getSegment(const int *stripe);
-  static void setStripeSize(int *stripe, int size);
-  const int* getLastStripe() const;
-  int* getLastStripe();
-*/
   void addStripe(int z, int y, bool canonizing = true);
   void addSegment(int x1, int x2, bool canonizing = true);
   void addSegment(int z, int y, int x1, int x2, bool canonizing = true);
@@ -207,6 +198,9 @@ public:
   bool hit(double x, double y, double z);
   bool hit(double x, double y);
   ZIntPoint getHitPoint() const;
+
+  ZObject3dScan& operator=(const ZObject3dScan& obj);// { return *this; }
+
 
   /*!
    * \brief Import a dvid object
@@ -276,9 +270,14 @@ public:
   size_t countForegroundOverlap(Stack *stack, const int *offset = NULL);
 
   //Sort the stripes in the ascending order
-  // s1 < s2 if
-  //   z(s1) < z(s2) or
-  //   z(s1) == z(s2) and y(s1) < y(s2)
+
+  /*!
+   * \brief Sort the stripes in the ascending order
+   *
+   * s1 < s2 if
+   *   z(s1) < z(s2) or
+   *   z(s1) == z(s2) and y(s1) < y(s2)
+   */
   void sort();
   void canonize();
   void unify(const ZObject3dScan &obj);
@@ -481,7 +480,6 @@ public:
   void processEvent(TEvent event);
   void blockEvent(bool blocking);
 
-
   /*!
    * \brief Get the integer array representation of the object
    *
@@ -595,15 +593,8 @@ private:
 
 protected:
   std::vector<ZObject3dStripe> m_stripeArray;
-  /*
-  int m_stripeNumber;
-  std::vector<int> m_sripeSize;
-  */
-
   bool m_isCanonized;
   uint64_t m_label;
-  //mutable int *m_lastStripe;
-
   bool m_blockingEvent;
 
   ZIntPoint m_hitPoint;

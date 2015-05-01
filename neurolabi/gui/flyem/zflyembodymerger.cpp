@@ -124,3 +124,21 @@ void ZFlyEmBodyMerger::clear()
   m_mapList.clear();
   m_undoneMapStack.clear();
 }
+
+bool ZFlyEmBodyMerger::isMapped(uint64_t label) const
+{
+  QSet<uint64_t> labelSet;
+  for (TLabelMapList::const_iterator iter = m_mapList.begin();
+       iter != m_mapList.end(); ++iter) {
+    const TLabelMap &currentLabelMap = *iter;
+//    std::cout << "--" << index << "--" << std::endl;
+    for (TLabelMap::const_iterator mapIter = currentLabelMap.begin();
+         mapIter != currentLabelMap.end(); ++mapIter) {
+      labelSet.insert(mapIter.key());
+      labelSet.insert(mapIter.value());
+//      std::cout << mapIter.key() << " -> " << mapIter.value() << std::endl;
+    }
+  }
+
+  return labelSet.contains(label);
+}

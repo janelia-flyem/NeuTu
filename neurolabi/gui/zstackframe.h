@@ -262,8 +262,8 @@ public slots:
   void setLocsegChainInfo(ZLocsegChain *chain, QString prefix = "",
                           QString suffix = "");
   void changeWindowTitle(bool clean);
-  void detach3DWindow();
-  void close3DWindow();
+  //void detach3DWindow();
+//  void close3DWindow();
   void setupDisplay();
   void zoomToSelectedSwcNodes();
   void notifyUser(const QString &message);
@@ -323,7 +323,7 @@ protected:
   QString m_statusInfo;
   bool m_isClosing;
 
-  Z3DWindow *m_3dWindow;
+  //Z3DWindow *m_3dWindow;
 
   bool m_isWidgetReady;
 

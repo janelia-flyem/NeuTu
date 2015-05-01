@@ -259,6 +259,8 @@ public slots:
   void requestHighresQuick3DVis();
   void requestMerge();
 
+  void setView(const ZStackViewParam &param);
+
 signals:
   void currentSliceChanged(int);
   void viewChanged(ZStackViewParam param);
@@ -274,8 +276,6 @@ public:
   QRect getViewPort(NeuTube::ECoordinateSystem coordSys) const;
   ZStackViewParam getViewParameter(
       NeuTube::ECoordinateSystem coordSys = NeuTube::COORD_STACK) const;
-
-  void setView(const ZStackViewParam &param);
 
   /*!
    * \brief Set the viewport offset

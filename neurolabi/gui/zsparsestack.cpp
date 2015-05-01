@@ -121,7 +121,9 @@ ZStack* ZSparseStack::getStack()
 
         ZStackBlockGrid *dsGrid = m_stackGrid->makeDownsample(
               m_dsIntv.getX(), m_dsIntv.getY(), m_dsIntv.getZ());
-
+#ifdef _DEBUG_2
+  return NULL;
+#endif
         m_stack =  new ZStack(GREY, obj.getBoundBox(), 1);
         m_stack->setZero();
         assignStackValue(m_stack, obj, *dsGrid);

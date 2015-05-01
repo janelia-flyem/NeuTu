@@ -49,7 +49,7 @@ using namespace std;
 ZStackFrame::ZStackFrame(QWidget *parent, Qt::WindowFlags flags) :
   QMdiSubWindow(parent, flags), m_parentFrame(NULL),
   m_tile(NULL), m_traceProject(NULL), m_isClosing(false),
-  m_3dWindow(NULL), m_isWidgetReady(false), m_messageManager(NULL)
+  m_isWidgetReady(false), m_messageManager(NULL)
 {
   setAttribute(Qt::WA_DeleteOnClose, true);
   setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
@@ -186,7 +186,7 @@ void ZStackFrame::constructFrame(ZSharedPointer<ZStackDoc> doc)
 }
 
 
-
+/*
 void ZStackFrame::detach3DWindow()
 {
   m_3dWindow = NULL;
@@ -196,11 +196,12 @@ void ZStackFrame::close3DWindow()
 {
   if (m_3dWindow != NULL) {
     m_3dWindow->close();
-    delete m_3dWindow;
+//    delete m_3dWindow;
   }
 
   m_3dWindow = NULL;
 }
+*/
 
 void ZStackFrame::createDocument()
 {
@@ -326,7 +327,8 @@ void ZStackFrame::dropDocument(ZSharedPointer<ZStackDoc> doc)
       UPDATE_DOC_SIGNAL_SLOT(disconnect);
     }
     m_doc = doc;
-    m_doc->setParentFrame(this);
+    m_doc->registerUser(this);
+//    m_doc->setParentFrame(this);
   }
 }
 
@@ -391,7 +393,7 @@ void ZStackFrame::clear()
   detachParentFrame();
   removeAllChildFrame();
 
-  document()->setParentFrame(NULL);
+//  document()->setParentFrame(NULL);
   document()->setProgressReporter(NULL);
 
   // will be deleted by parent (this), so don't need, otherwise will crash
@@ -591,7 +593,7 @@ void ZStackFrame::closeEvent(QCloseEvent *event)
     }
   }
 
-  close3DWindow();
+//  close3DWindow();
 }
 
 void ZStackFrame::resizeEvent(QResizeEvent *event)
@@ -1214,30 +1216,36 @@ void ZStackFrame::showObject()
 
 Z3DWindow* ZStackFrame::open3DWindow(Z3DWindow::EInitMode mode)
 {
-  if (m_3dWindow == NULL) {
+  Z3DWindow *window = document()->getParent3DWindow();
+
+  if (window == NULL) {
     if (getMainWindow() != NULL) {
       getMainWindow()->startProgress("Opening 3D View ...", 0);
     }
 
     ZWindowFactory factory;
     //factory.setParentWidget(parent);
-    m_3dWindow = factory.make3DWindow(document(), mode);
-    m_3dWindow->setWindowTitle(windowTitle());
-    connect(m_3dWindow, SIGNAL(destroyed()), this, SLOT(detach3DWindow()));
+    window = factory.make3DWindow(document(), mode);
+    window->setWindowTitle(windowTitle());
+
+    document()->registerUser(window);
+
+    connect(this, SIGNAL(closed(ZStackFrame*)), window, SLOT(close()));
+//    connect(window, SIGNAL(destroyed()), this, SLOT(detach3DWindow()));
     if (getMainWindow() != NULL) {
       getMainWindow()->endProgress();
     }
   }
 
-  if (m_3dWindow != NULL) {
-    m_3dWindow->show();
-    m_3dWindow->raise();
+  if (window != NULL) {
+    window->show();
+    window->raise();
   } else {
     QMessageBox::critical(this, tr("3D functions are disabled"),
                           Z3DApplication::app()->getErrorMessage());
   }
 
-  return m_3dWindow;
+  return window;
 }
 
 void ZStackFrame::load(const QList<QUrl> &urls)
@@ -1619,12 +1627,13 @@ void ZStackFrame::notifyUser(const QString &message)
 void ZStackFrame::locateSwcNodeIn3DView()
 {
   if (document()->hasSelectedSwcNode()) {
-    if (!m_3dWindow) {
-      m_3dWindow = open3DWindow();
+    Z3DWindow *window = document()->getParent3DWindow();
+    if (!window) {
+      window = open3DWindow();
     }
-    QApplication::processEvents();
-    m_3dWindow->zoomToSelectedSwcNodes();
-    m_3dWindow->raise();
+    //QApplication::processEvents();
+    window->zoomToSelectedSwcNodes();
+    window->raise();
   }
 }
 

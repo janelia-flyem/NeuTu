@@ -31,8 +31,15 @@ void ZProofreadWindow::init()
 
   layout->addWidget(m_mainMvc);
 
+  QVBoxLayout *m_controlLayout = new QVBoxLayout(this);
+
   m_controlGroup = new QStackedWidget(this);
-  layout->addWidget(m_controlGroup);
+  m_controlLayout->addWidget(m_controlGroup);
+
+  layout->addLayout(m_controlLayout);
+//  m_controlLayout->addWidget();
+
+
   m_controlGroup->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Preferred);
 
   FlyEmProofControlForm *controlForm = new FlyEmProofControlForm;
@@ -47,6 +54,8 @@ void ZProofreadWindow::init()
 
   connect(controlForm, SIGNAL(splitTriggered(int64_t)),
           this, SLOT(launchSplit(int64_t)));
+  connect(controlForm, SIGNAL(splitTriggered(int64_t)),
+          splitControlForm, SLOT(setSplit(int64_t)));
   connect(splitControlForm, SIGNAL(exitingSplit()),
           this, SLOT(exitSplit()));
 
@@ -60,8 +69,10 @@ ZProofreadWindow* ZProofreadWindow::Make(QWidget *parent)
 
 void ZProofreadWindow::launchSplit(int64_t bodyId)
 {
-  m_mainMvc->launchSplit(bodyId);
-  m_controlGroup->setCurrentIndex(1);
+  if (m_mainMvc->launchSplit(bodyId)) {
+    m_controlGroup->setCurrentIndex(1);
+  }
+
 }
 
 void ZProofreadWindow::exitSplit()

@@ -5,6 +5,7 @@
 #include "dvid/zdvidtileensemble.h"
 #include "dvid/zdvidlabelslice.h"
 #include "zstackfactory.h"
+#include "dvid/zdvidsparsestack.h"
 
 ZFlyEmProofDoc::ZFlyEmProofDoc(ZStack *stack, QObject *parent) :
   ZStackDoc(stack, parent)
@@ -81,6 +82,14 @@ ZDvidLabelSlice* ZFlyEmProofDoc::getDvidLabelSlice() const
   return NULL;
 }
 
+ZDvidSparseStack* ZFlyEmProofDoc::getDvidSparseStack() const
+{
+  return dynamic_cast<ZDvidSparseStack*>(
+        getObjectGroup().findFirstSameSource(
+          ZStackObject::TYPE_DVID_SPARSE_STACK,
+          ZStackObjectSourceFactory::MakeSplitObjectSource()));
+}
+
 void ZFlyEmProofDoc::updateBodyObject()
 {
   QList<ZDvidLabelSlice*> sliceList = getDvidLabelSliceList();
@@ -95,6 +104,11 @@ void ZFlyEmProofDoc::clearData()
   ZStackDoc::clearData();
   m_bodyMerger.clear();
   m_dvidTarget.clear();
+}
+
+bool ZFlyEmProofDoc::isSplittable(uint64_t bodyId) const
+{
+  return !m_bodyMerger.isMapped(bodyId);
 }
 
 

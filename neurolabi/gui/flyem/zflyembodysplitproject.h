@@ -6,6 +6,7 @@
 #include "dvid/zdvidtarget.h"
 #include "flyem/zflyembookmarklistmodel.h"
 #include "qthreadfuturemap.h"
+#include "zsharedpointer.h"
 
 class ZStackFrame;
 class Z3DWindow;
@@ -15,6 +16,7 @@ class ZObject3dScan;
 class ZFlyEmNeuron;
 class ZStack;
 class ZStackDoc;
+class ZStackViewParam;
 
 class ZFlyEmBodySplitProject : public QObject
 {
@@ -42,6 +44,12 @@ public:
   inline ZStackFrame* getDataFrame() const {
     return m_dataFrame;
   }
+
+  void setDocument(ZSharedPointer<ZStackDoc> doc);
+  ZStackDoc* getDocument() const;
+
+  template<typename T>
+  T* getDocument() const;
 
   void loadBookmark(const QString &filePath);
   std::set<int> getBookmarkBodySet() const;
@@ -104,6 +112,8 @@ public:
     QThreadFutureMap m_futureMap;
   };
 
+  void closeBodyWindow();
+
 signals:
   void messageGenerated(QString);
   void resultCommitted();
@@ -111,6 +121,7 @@ signals:
   void progressStarted(const QString &title, int nticks);
   void progressDone();
   void progressAdvanced(double dp);
+  void locating2DViewTriggered(const ZStackViewParam&);
 
 public slots:
   void showDataFrame() const;
@@ -132,6 +143,7 @@ public slots:
   void shallowClearResultWindow();
   void shallowClearQuickResultWindow();
   void shallowClearQuickViewWindow();
+  //void shallowClearBodyWindow();
 
 private:
   bool showingBodyMask() const { return m_showingBodyMask; }
@@ -144,6 +156,8 @@ private:
   ZDvidTarget m_dvidTarget;
   int m_bodyId;
   ZStackFrame *m_dataFrame;
+  ZSharedPointer<ZStackDoc> m_doc;
+//  Z3DWindow *m_bodyWindow;
   Z3DWindow *m_resultWindow;
   Z3DWindow *m_quickResultWindow;
   Z3DWindow *m_quickViewWindow;
@@ -152,5 +166,11 @@ private:
   bool m_isBookmarkVisible;
   bool m_showingBodyMask;
 };
+
+template <typename T>
+T* ZFlyEmBodySplitProject::getDocument() const
+{
+  return dynamic_cast<T*>(getDocument());
+}
 
 #endif // ZFLYEMBODYSPLITPROJECT_H

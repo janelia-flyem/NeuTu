@@ -37,6 +37,8 @@ public:
   void print() const;
   void clear();
 
+  bool isMapped(uint64_t label) const;
+
 private:
   static uint64_t mapLabel(const TLabelMap &labelMap, uint64_t label);
   static uint64_t mapLabel(const TLabelMapList &labelMap, uint64_t label);

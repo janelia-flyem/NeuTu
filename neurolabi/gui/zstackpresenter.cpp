@@ -1178,7 +1178,11 @@ bool ZStackPresenter::processKeyPressEvent(QKeyEvent *event)
     break;
   case Qt::Key_Space:
     if (GET_APPLICATION_NAME == "FlyEM") {
-      buddyDocument()->runLocalSeededWatershed();
+      if (event->modifiers() == Qt::ShiftModifier) {
+        buddyDocument()->runSeededWatershed();
+      } else {
+        buddyDocument()->runLocalSeededWatershed();
+      }
     }
     break;
   case Qt::Key_Z:
