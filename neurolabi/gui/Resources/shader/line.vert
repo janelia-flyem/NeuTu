@@ -12,6 +12,7 @@ uniform vec3 pos_scale = vec3(1.0, 1.0, 1.0);
 
 #if GLSL_VERSION >= 130 && defined(HAS_CLIP_PLANE)
 uniform vec4 clip_planes[CLIP_PLANE_COUNT];
+out float gl_ClipDistance[CLIP_PLANE_COUNT];
 #endif
 
 #if GLSL_VERSION >= 130

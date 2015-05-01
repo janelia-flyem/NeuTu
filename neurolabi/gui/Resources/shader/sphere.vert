@@ -21,6 +21,7 @@ uniform mat4 view_matrix;
 uniform mat4 projection_view_matrix;
 #if GLSL_VERSION >= 130 && defined(HAS_CLIP_PLANE)
 uniform vec4 clip_planes[CLIP_PLANE_COUNT];
+out float gl_ClipDistance[CLIP_PLANE_COUNT];
 #endif
 
 #if GLSL_VERSION >= 130
