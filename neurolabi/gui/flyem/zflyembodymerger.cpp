@@ -1,6 +1,8 @@
 #include "zflyembodymerger.h"
 #include <iostream>
 
+#include "zjsonobject.h"
+
 ZFlyEmBodyMerger::ZFlyEmBodyMerger()
 {
 }
@@ -141,4 +143,14 @@ bool ZFlyEmBodyMerger::isMapped(uint64_t label) const
   }
 
   return labelSet.contains(label);
+}
+
+ZJsonObject ZFlyEmBodyMerger::toJsonObject() const
+{
+
+}
+
+void ZFlyEmBodyMerger::loadJsonObject(const ZJsonObject &obj)
+{
+
 }

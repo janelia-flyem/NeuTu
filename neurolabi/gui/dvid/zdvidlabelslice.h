@@ -17,6 +17,7 @@ public:
   ZDvidLabelSlice();
 
   void update(const ZStackViewParam &viewParam);
+  void update(int z);
   void update();
 
   void display(ZPainter &painter, int slice, EDisplayStyle option) const;

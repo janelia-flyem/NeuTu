@@ -2,10 +2,14 @@
 
 #include <QHBoxLayout>
 #include <QStackedWidget>
+#include <QLabel>
+
 #include "flyemsplitcontrolform.h"
 #include "dvid/zdvidtarget.h"
 #include "zflyemproofmvc.h"
 #include "flyemproofcontrolform.h"
+#include "flyem/zflyemmessagewidget.h"
+#include "zwidgetfactory.h"
 
 ZProofreadWindow::ZProofreadWindow(QWidget *parent) :
   QMainWindow(parent)
@@ -24,21 +28,32 @@ void ZProofreadWindow::init()
   widget->setLayout(layout);
 
   ZDvidTarget target;
-  target.set("http://emdata1.int.janelia.org", "9db", 8500);
+//  target.set("http://emdata1.int.janelia.org", "9db", 8500);
 
   m_mainMvc = ZFlyEmProofMvc::Make(target);
   m_mainMvc->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Preferred);
 
   layout->addWidget(m_mainMvc);
 
-  QVBoxLayout *m_controlLayout = new QVBoxLayout(this);
+  QVBoxLayout *controlLayout = new QVBoxLayout(this);
 
   m_controlGroup = new QStackedWidget(this);
-  m_controlLayout->addWidget(m_controlGroup);
+  controlLayout->addWidget(m_controlGroup);
 
-  layout->addLayout(m_controlLayout);
-//  m_controlLayout->addWidget();
 
+  QHBoxLayout *titleLayout = new QHBoxLayout(this);
+  titleLayout->addWidget(ZWidgetFactory::MakeHorizontalLine(this));
+  QLabel *titleLabel = new QLabel("<font color=\"Green\">Message</font>", this);
+  titleLabel->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Preferred);
+  titleLayout->addWidget(titleLabel);
+  titleLayout->addWidget(ZWidgetFactory::MakeHorizontalLine(this));
+  controlLayout->addLayout(titleLayout);
+
+  m_messageWidget = new ZFlyEmMessageWidget(this);
+  controlLayout->addWidget(m_messageWidget);
+
+
+  layout->addLayout(controlLayout);
 
   m_controlGroup->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Preferred);
 
@@ -59,6 +74,9 @@ void ZProofreadWindow::init()
   connect(splitControlForm, SIGNAL(exitingSplit()),
           this, SLOT(exitSplit()));
 
+  connect(m_mainMvc, SIGNAL(splitBodyLoaded(int64_t)),
+          this, SLOT(presentSplitInterface(int64_t)));
+
   setCentralWidget(widget);
 }
 
@@ -67,16 +85,39 @@ ZProofreadWindow* ZProofreadWindow::Make(QWidget *parent)
   return new ZProofreadWindow(parent);
 }
 
+void ZProofreadWindow::presentSplitInterface(int64_t bodyId)
+{
+  m_controlGroup->setCurrentIndex(1);
+  dump(QString("Body %1 loaded for split.").arg(bodyId), true);
+}
+
 void ZProofreadWindow::launchSplit(int64_t bodyId)
 {
+  dump("Launching split ...", false);
+  m_mainMvc->launchSplit(bodyId);
+
+  /*
   if (m_mainMvc->launchSplit(bodyId)) {
     m_controlGroup->setCurrentIndex(1);
+    dump(QString("Body %1 loaded for split.").arg(bodyId), true);
+  } else {
+    dumpError(QString("Failed to load %1").arg(bodyId), true);
   }
-
+  */
 }
 
 void ZProofreadWindow::exitSplit()
 {
   m_mainMvc->exitSplit();
   m_controlGroup->setCurrentIndex(0);
+}
+
+void ZProofreadWindow::dump(const QString &message, bool appending)
+{
+  m_messageWidget->dump(message, appending);
+}
+
+void ZProofreadWindow::dumpError(const QString &message, bool appending)
+{
+  m_messageWidget->dumpError(message, appending);
 }

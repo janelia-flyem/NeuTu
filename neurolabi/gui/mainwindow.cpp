@@ -991,6 +991,7 @@ void MainWindow::createToolBars()
     m_ui->toolBar->addAction(m_ui->actionSplit_Body);
     m_ui->toolBar->addAction(m_ui->actionMerge_Body_Project);
     m_ui->toolBar->addAction(m_ui->actionFlyEmROI);
+    m_ui->toolBar->addAction(m_ui->actionProof);
 #ifdef _DEBUG_2
     m_ui->toolBar->addAction(m_ui->actionShape_Matching);
 #endif
@@ -6987,6 +6988,12 @@ void MainWindow::launchSplit(const QString &str)
   m_bodySplitProjectDialog->startSplit(str);
 }
 
+
+void MainWindow::on_actionProof_triggered()
+{
+  ZProofreadWindow *window = ZProofreadWindow::Make();
+  window->showMaximized();
+}
 
 /////////////////////
 void MainWindow::MessageProcessor::processMessage(

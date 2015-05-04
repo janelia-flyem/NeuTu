@@ -1,5 +1,6 @@
 #include "zwidgetfactory.h"
 #include <QDialog>
+#include <QFrame>
 
 ZWidgetFactory::ZWidgetFactory()
 {
@@ -39,5 +40,15 @@ ZButtonBox* ZWidgetFactory::makeButtonBox(ZButtonBox::TRole role, QDialog *paren
 QSpacerItem *ZWidgetFactory::makeHSpacerItem()
 {
   return new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+}
+
+QFrame* ZWidgetFactory::MakeHorizontalLine(QWidget *parentWidget)
+{
+  QFrame *frame = new QFrame(parentWidget);
+  frame->setFrameShape(QFrame::HLine);
+  frame->setFrameShadow(QFrame::Raised);
+  frame->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+
+  return frame;
 }
 

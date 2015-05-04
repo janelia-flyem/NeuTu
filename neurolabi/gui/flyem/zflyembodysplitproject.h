@@ -114,8 +114,13 @@ public:
 
   void closeBodyWindow();
 
+  bool isReadyForSplit(const ZDvidTarget &target);
+
 signals:
   void messageGenerated(QString);
+//  void messageGenerated(QStringList);
+  void errorGenerated(QString);
+//  void errorGenerated(QStringList);
   void resultCommitted();
 
   void progressStarted(const QString &title, int nticks);

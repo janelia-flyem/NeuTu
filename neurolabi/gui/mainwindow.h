@@ -439,6 +439,8 @@ private slots:
 
   void on_actionHackathonEvaluate_triggered();
 
+  void on_actionProof_triggered();
+
 private:
   void createActions();
   void createFileActions();

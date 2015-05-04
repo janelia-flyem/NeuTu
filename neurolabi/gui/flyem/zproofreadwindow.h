@@ -5,7 +5,7 @@
 
 class ZFlyEmProofMvc;
 class QStackedWidget;
-class ZFLyEmMessageWidget;
+class ZFlyEmMessageWidget;
 
 class ZProofreadWindow : public QMainWindow
 {
@@ -21,6 +21,10 @@ signals:
 public slots:
   void launchSplit(int64_t bodyId);
   void exitSplit();
+  void presentSplitInterface(int64_t bodyId);
+
+  void dump(const QString &message, bool appending);
+  void dumpError(const QString &message, bool appending);
 
 private:
   void init();
@@ -28,7 +32,7 @@ private:
 private:
   ZFlyEmProofMvc *m_mainMvc;
   QStackedWidget *m_controlGroup;
-  ZFLyEmMessageWidget *m_messageWidget;
+  ZFlyEmMessageWidget *m_messageWidget;
 
 };
 

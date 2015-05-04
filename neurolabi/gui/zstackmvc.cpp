@@ -183,8 +183,8 @@ void ZStackMvc::processViewChange(const ZStackViewParam &viewParam)
     foreach (const ZDocPlayer *player, playerList) {
       if (player->getData()->isVisible()) {
         updated = true;
+        player->updateData(viewParam);
       }
-      player->updateData(viewParam);
     }
     if (updated) {
       m_view->paintObject();

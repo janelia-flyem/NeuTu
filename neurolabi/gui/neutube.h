@@ -45,6 +45,10 @@ enum EWindowConfig {
   WINDOW_2D, WINDOW_3D
 };
 
+enum EMessageType {
+  MSG_INFORMATION, MSG_WARING, MSG_ERROR
+};
+
 ZMessageReporter *getMessageReporter();
 ZLogMessageReporter* getLogMessageReporter();
 

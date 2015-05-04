@@ -369,6 +369,7 @@
       </property>
       <addaction name="actionFlyEmROI"/>
       <addaction name="actionMerge_Body_Project"/>
+      <addaction name="actionProof"/>
      </widget>
      <widget class="QMenu" name="menuHackathon">
       <property name="title">
@@ -1391,6 +1392,11 @@
   <action name="actionHackathonEvaluate">
    <property name="text">
     <string>Evaluate</string>
+   </property>
+  </action>
+  <action name="actionProof">
+   <property name="text">
+    <string>Proofread</string>
    </property>
   </action>
  </widget>

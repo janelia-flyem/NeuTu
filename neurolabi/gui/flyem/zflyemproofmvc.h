@@ -2,10 +2,11 @@
 #define ZFLYEMPROOFMVC_H
 
 #include <QString>
-
+#include <QMetaType>
 #include "zstackmvc.h"
 #include "flyem/zflyembodysplitproject.h"
 #include "flyem/zflyembodymergeproject.h"
+#include "qthreadfuturemap.h"
 
 class QWidget;
 class ZFlyEmProofDoc;
@@ -42,6 +43,8 @@ signals:
   void launchingSplit(const QString &message);
   void launchingSplit(int64_t bodyId);
   void messageGenerated(const QString &message);
+  void errorGenerated(const QString &message);
+  void splitBodyLoaded(int64_t bodyId);
 
 public slots:
   void mergeSelected();
@@ -51,21 +54,28 @@ public slots:
   void setSegmentationVisible(bool visible);
   void setDvidTarget();
   const ZDvidTarget &getDvidTarget() const;
-  bool launchSplit(int64_t bodyId);
+  void launchSplit(int64_t bodyId);
   void processMessageSlot(const QString &message);
   void notifySplitTriggered();
   void exitSplit();
   void showBodyQuickView();
+  void presentBodySplit(int64_t bodyId);
+
 //  void toggleEdgeMode(bool edgeOn);
 
 protected:
   void customInit();
 
 private:
+  void launchSplitFunc(int64_t bodyId);
+
+private:
   bool m_showSegmentation;
   bool m_splitOn;
   ZFlyEmBodySplitProject m_splitProject;
   ZFlyEmBodyMergeProject m_mergeProject;
+
+  QThreadFutureMap m_futureMap;
 
   ZDvidDialog *m_dvidDlg;
 };

@@ -1,5 +1,8 @@
 #include "zflyemproofmvc.h"
 
+#include <QFuture>
+#include <QtConcurrentRun>
+
 #include "flyem/zflyemproofdoc.h"
 #include "zstackview.h"
 #include "dvid/zdvidtileensemble.h"
@@ -12,6 +15,7 @@
 ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
   ZStackMvc(parent), m_splitOn(false)
 {
+  qRegisterMetaType<int64_t>("int64_t");
 }
 
 ZFlyEmProofMvc* ZFlyEmProofMvc::Make(
@@ -70,7 +74,9 @@ void ZFlyEmProofMvc::setSegmentationVisible(bool visible)
         getCompleteDocument()->getDvidLabelSliceList();
     foreach (ZDvidLabelSlice *slice, sliceList) {
       slice->setVisible(visible);
-      slice->update();
+      if (visible) {
+        slice->update(getView()->getViewParameter(NeuTube::COORD_STACK));
+      }
       /*
       if (visible) {
         slice->update();
@@ -135,6 +141,8 @@ void ZFlyEmProofMvc::customInit()
 
   connect(getDocument().get(), SIGNAL(messageGenerated(const QString&)),
           this, SIGNAL(messageGenerated(const QString&)));
+  connect(this, SIGNAL(splitBodyLoaded(int64_t)),
+          this, SLOT(presentBodySplit(int64_t)));
 
 }
 
@@ -153,13 +161,11 @@ void ZFlyEmProofMvc::notifySplitTriggered()
   }
 }
 
-bool ZFlyEmProofMvc::launchSplit(int64_t bodyId)
+void ZFlyEmProofMvc::launchSplitFunc(int64_t bodyId)
 {
-  if (bodyId >= 0) {
-    if (!getCompleteDocument()->isSplittable(bodyId)) {
-      return false;
-    }
-
+  if (!getCompleteDocument()->isSplittable(bodyId)) {
+    emit errorGenerated(QString("%1 is not ready for split.").arg(bodyId));
+  } else {
     ZDvidSparseStack *body = dynamic_cast<ZDvidSparseStack*>(
           getDocument()->getObjectGroup().findFirstSameSource(
             ZStackObject::TYPE_DVID_SPARSE_STACK,
@@ -176,9 +182,6 @@ bool ZFlyEmProofMvc::launchSplit(int64_t bodyId)
       if (body == NULL) {
         body = reader.readDvidSparseStack(bodyId);
         body->setZOrder(0);
-//        body = new ZDvidSparseStack;
-
-//        reader.readBody(bodyId, body);
         body->setSource(ZStackObjectSourceFactory::MakeSplitObjectSource());
         body->setMaskColor(labelSlice->getColor(bodyId));
         getDocument()->addObject(body, true);
@@ -187,16 +190,31 @@ bool ZFlyEmProofMvc::launchSplit(int64_t bodyId)
       labelSlice->setVisible(false);
       labelSlice->setHittable(false);
       body->setVisible(true);
-      getView()->redrawObject();
 
-      m_splitOn = true;
-      m_splitProject.setBodyId(bodyId);
-
-      return true;
+      emit splitBodyLoaded(bodyId);
     }
   }
+}
 
-  return false;
+void ZFlyEmProofMvc::presentBodySplit(int64_t bodyId)
+{
+  getView()->redrawObject();
+  m_splitOn = true;
+  m_splitProject.setBodyId(bodyId);
+}
+
+void ZFlyEmProofMvc::launchSplit(int64_t bodyId)
+{
+  if (bodyId > 0) {
+    const QString threadId = "launchSplitFunc";
+    if (!m_futureMap.isAlive(threadId)) {
+      m_futureMap.removeDeadThread();
+      QFuture<void> future =
+          QtConcurrent::run(
+            this, &ZFlyEmProofMvc::launchSplitFunc, bodyId);
+      m_futureMap[threadId] = future;
+    }
+  }
 }
 
 void ZFlyEmProofMvc::exitSplit()
@@ -204,6 +222,8 @@ void ZFlyEmProofMvc::exitSplit()
   if (m_splitOn) {
     ZDvidLabelSlice *labelSlice = getCompleteDocument()->getDvidLabelSlice();
     labelSlice->setVisible(true);
+    labelSlice->update(getView()->getViewParameter(NeuTube::COORD_STACK));
+
     labelSlice->setHittable(true);
 
     getDocument()->removeObject(ZStackObjectRole::ROLE_SEED);
@@ -216,6 +236,7 @@ void ZFlyEmProofMvc::exitSplit()
     if (body != NULL) {
       body->setVisible(false);
     }
+
     getView()->redrawObject();
     m_splitProject.clear();
 

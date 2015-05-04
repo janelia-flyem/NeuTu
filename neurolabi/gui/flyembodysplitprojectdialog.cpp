@@ -123,6 +123,10 @@ void FlyEmBodySplitProjectDialog::connectSignalSlot()
   connect(&m_project, SIGNAL(progressAdvanced(double)),
           this, SIGNAL(progressAdvanced(double)));
   connect(&m_project, SIGNAL(progressDone()), this, SIGNAL(progressDone()));
+  connect(&m_project, SIGNAL(messageGenerated(QString)),
+          this, SLOT(dump(QString)));
+  connect(&m_project, SIGNAL(errorGenerated(QString)),
+          this, SLOT(dumpError(QString)));
 
   connect(this, SIGNAL(progressStarted(QString, int)),
           getMainWindow(), SLOT(startProgress(QString, int)));
@@ -204,14 +208,19 @@ void FlyEmBodySplitProjectDialog::setDvidTarget(const ZDvidTarget &target)
 
 bool FlyEmBodySplitProjectDialog::isReadyForSplit(const ZDvidTarget &target)
 {
+  return m_project.isReadyForSplit(target);
+
+#if 0
   bool succ = true;
+
+  QStringList infoList;
 
   ZDvidReader reader;
   if (reader.open(target)) {
     if (!reader.hasSparseVolume()) {
-      dumpError(("Incomplete split database: data \"" +
-                 target.getBodyLabelName() +
-                "\" missing").c_str(), true);
+      infoList.append(("Incomplete split database: data \"" +
+                       target.getBodyLabelName() +
+                      "\" missing").c_str());
       succ = false;
     }
 
@@ -220,8 +229,8 @@ bool FlyEmBodySplitProjectDialog::isReadyForSplit(const ZDvidTarget &target)
           target.getBodyLabelName());
 
     if (!reader.hasData(splitLabelName)) {
-      dumpError(("Incomplete split database: data \"" + splitLabelName +
-                "\" missing").c_str(), true);
+      infoList.append(("Incomplete split database: data \"" + splitLabelName +
+                       "\" missing").c_str());
       succ = false;
     }
 
@@ -229,16 +238,20 @@ bool FlyEmBodySplitProjectDialog::isReadyForSplit(const ZDvidTarget &target)
           ZDvidData::ROLE_SPLIT_STATUS, ZDvidData::ROLE_BODY_LABEL,
           target.getBodyLabelName());
     if (!reader.hasData(splitStatusName)) {
-      dumpError(("Incomplete split database: data \"" + splitStatusName +
-                "\" missing").c_str(), true);
+      infoList.append(("Incomplete split database: data \"" + splitStatusName +
+                       "\" missing").c_str());
       succ = false;
     }
   } else {
-    dumpError("Cannot connect to database.", true);
+    infoList.append("Cannot connect to database.");
     succ = false;
   }
 
+  //dumpError();
+
   return succ;
+#endif
+
 }
 /*
 bool FlyEmBodySplitProjectDialog::checkServerStatus()

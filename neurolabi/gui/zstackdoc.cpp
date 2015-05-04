@@ -4410,8 +4410,10 @@ ZStackObject* ZStackDoc::hitTest(double x, double y, double z)
   for (QList<ZStackObject*>::iterator iter = sortedObjList.begin();
        iter != sortedObjList.end(); ++iter) {
     ZStackObject *obj = *iter;
-    if (obj->hit(x, y, z)) {
-      return obj;
+    if (obj->isHittable()) {
+      if (obj->hit(x, y, z)) {
+        return obj;
+      }
     }
   }
 
@@ -4427,8 +4429,10 @@ ZStackObject* ZStackDoc::hitTest(double x, double y)
   for (QList<ZStackObject*>::iterator iter = sortedObjList.begin();
        iter != sortedObjList.end(); ++iter) {
     ZStackObject *obj = *iter;
-    if (obj->hit(x, y)) {
-      return obj;
+    if (obj->isHittable() && obj->isProjectionVisible()) {
+      if (obj->hit(x, y)) {
+        return obj;
+      }
     }
   }
 

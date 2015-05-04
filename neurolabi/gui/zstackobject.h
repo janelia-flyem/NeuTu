@@ -251,7 +251,7 @@ public:
   }
 
   inline bool isHittable() const {
-    return m_isHittable;
+    return m_isHittable && isVisible();
   }
 
   inline void setHittable(bool state) {

@@ -21,14 +21,6 @@
       "comment": "One column data"
     },
     {
-      "address": "emdata2.int.janelia.org",
-      "port": 8000,
-      "uuid": "32fb",
-      "name": "FIB19",
-      "comment": "FIB-19 data at MLOLP-Z1112-19R/align2/iso_rav",
-      "local": "/groups/flyem/data/zhaot/local/FIB19"
-    },
-    {
       "address": "emdata1.int.janelia.org",
       "port": 8000,
       "uuid": "1c6e",
@@ -46,21 +38,6 @@
       "label_block": "bodies"
     },
     {
-      "address": "emdata2.int.janelia.org",
-      "uuid": "2b6c",
-      "name": "FIB25-0926",
-      "background": 0,
-      "comment": "FIB-25 export 2014-09-26",
-      "local": "/groups/flyem/data/zhaot/local/FIB25"
-    },
-    {
-      "address": "emdata2.int.janelia.org",
-      "uuid": "628",
-      "name": "MB-6",
-      "body_label": "segmentation030115",
-      "comment": "Mushroom body MB-6 (7567 x 11140 x 14625)"
-    },
-    {
       "address": "emdata1.int.janelia.org",
       "port": 7000,
       "uuid": "cf6e",
@@ -75,6 +52,15 @@
       "uuid": "f94a",
       "name": "AL-7-split",
       "comment": "AL child node for splitting",
+      "body_label": "bodies121714",
+      "label_block": "segmentation121714"
+    },
+    {
+      "address": "emdata1.int.janelia.org",
+      "port": 8500,
+      "uuid": "55ad",
+      "name": "AL-split-Test",
+      "comment": "AL child node for testing split",
       "body_label": "bodies121714",
       "label_block": "segmentation121714"
     }

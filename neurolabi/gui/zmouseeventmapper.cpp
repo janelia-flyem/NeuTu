@@ -178,27 +178,29 @@ ZStackOperator ZMouseEventLeftButtonReleaseMapper::getOperation(
     if (op.isNull()) {
       ZPoint rawStackPosition = event.getRawStackPosition();
       ZPoint stackPosition = rawStackPosition + getDocument()->getStackOffset();
-      if (m_doc->getStack()->containsRaw(rawStackPosition)) {
-        bool hitTestOn =
-            (m_context->swcEditMode() == ZInteractiveContext::SWC_EDIT_SELECT ||
-            m_context->swcEditMode() == ZInteractiveContext::SWC_EDIT_CONNECT) &&
-            m_context->strokeEditMode() == ZInteractiveContext::STROKE_EDIT_OFF;
-        if (hitTestOn) {
-          ZStackDocHitTest hitManager;
-          if (rawStackPosition.z() < 0) {
-            hitManager.hitTest(
-                  const_cast<ZStackDoc*>(getDocument()), stackPosition.x(), stackPosition.y());
-          } else {
-            hitManager.hitTest(const_cast<ZStackDoc*>(getDocument()), stackPosition);
-          }
-          op.setHitObject(hitManager.getHitObject<ZStackObject>());
+      if (m_doc->getStack() != NULL) {
+        if (m_doc->getStack()->containsRaw(rawStackPosition)) {
+          bool hitTestOn =
+              (m_context->swcEditMode() == ZInteractiveContext::SWC_EDIT_SELECT ||
+               m_context->swcEditMode() == ZInteractiveContext::SWC_EDIT_CONNECT) &&
+              m_context->strokeEditMode() == ZInteractiveContext::STROKE_EDIT_OFF;
+          if (hitTestOn) {
+            ZStackDocHitTest hitManager;
+            if (rawStackPosition.z() < 0) {
+              hitManager.hitTest(
+                    const_cast<ZStackDoc*>(getDocument()), stackPosition.x(), stackPosition.y());
+            } else {
+              hitManager.hitTest(const_cast<ZStackDoc*>(getDocument()), stackPosition);
+            }
+            op.setHitObject(hitManager.getHitObject<ZStackObject>());
 
-          bool selectionOn =
-              (m_context->swcEditMode() == ZInteractiveContext::SWC_EDIT_SELECT &&
-               m_context->strokeEditMode() == ZInteractiveContext::STROKE_EDIT_OFF);
+            bool selectionOn =
+                (m_context->swcEditMode() == ZInteractiveContext::SWC_EDIT_SELECT &&
+                 m_context->strokeEditMode() == ZInteractiveContext::STROKE_EDIT_OFF);
 
-          if (selectionOn) {
-            processSelectionOperation(op, event);
+            if (selectionOn) {
+              processSelectionOperation(op, event);
+            }
           }
         }
       }

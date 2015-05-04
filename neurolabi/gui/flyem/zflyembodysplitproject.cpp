@@ -36,7 +36,7 @@
 #include "zstackobjectsourcefactory.h"
 #include "zflyemproofdoc.h"
 #include "dvid/zdvidsparsestack.h"
-
+#include "zwidgetmessage.h"
 
 ZFlyEmBodySplitProject::ZFlyEmBodySplitProject(QObject *parent) :
   QObject(parent), m_bodyId(-1), m_dataFrame(NULL),
@@ -1128,4 +1128,48 @@ ZStackDoc* ZFlyEmBodySplitProject::getDocument() const
 void ZFlyEmBodySplitProject::setDocument(ZSharedPointer<ZStackDoc> doc)
 {
   m_doc = doc;
+}
+
+bool ZFlyEmBodySplitProject::isReadyForSplit(const ZDvidTarget &target)
+{
+  bool succ = true;
+
+  QStringList infoList;
+
+  ZDvidReader reader;
+  if (reader.open(target)) {
+    if (!reader.hasSparseVolume()) {
+      infoList.append(("Incomplete split database: data \"" +
+                       target.getBodyLabelName() +
+                       "\" missing").c_str());
+      succ = false;
+    }
+
+    std::string splitLabelName = ZDvidData::getName(
+          ZDvidData::ROLE_SPLIT_LABEL, ZDvidData::ROLE_BODY_LABEL,
+          target.getBodyLabelName());
+
+    if (!reader.hasData(splitLabelName)) {
+      infoList.append(("Incomplete split database: data \"" + splitLabelName +
+                       "\" missing").c_str());
+      succ = false;
+    }
+
+    std::string splitStatusName =  ZDvidData::getName(
+          ZDvidData::ROLE_SPLIT_STATUS, ZDvidData::ROLE_BODY_LABEL,
+          target.getBodyLabelName());
+    if (!reader.hasData(splitStatusName)) {
+      infoList.append(("Incomplete split database: data \"" + splitStatusName +
+                       "\" missing").c_str());
+      succ = false;
+    }
+  } else {
+    infoList.append("Cannot connect to database.");
+    succ = false;
+  }
+
+  emit messageGenerated(ZWidgetMessage::toHtmlString(
+                          infoList, NeuTube::MSG_ERROR));
+
+  return succ;
 }
