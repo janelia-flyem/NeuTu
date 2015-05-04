@@ -40,20 +40,33 @@ fi
 
 cd $downloadDir
 
+GIT_CMD=/usr/bin/git
+if [ -f /usr/local/git/bin/git ]
+then
+  export PATH=/usr/local/git/bin:$PATH
+  GIT_CMD=/usr/local/git/bin/git
+fi
+
 if [ ! -d $downloadDir/neutube ]
 then
-  /usr/bin/git clone /groups/flyem/home/zhaot/Work/neutube_ws/.git neutube
-  /usr/bin/git checkout pripublic
+  $GIT_CMD clone /groups/flyem/home/zhaot/Work/neutube_ws/.git neutube
+  $GIT_CMD checkout pripublic
 fi
 
 if [ ! -d $downloadDir/buildem ]
 then
-  /usr/bin/git clone http://github.com/janelia-flyem/buildem.git
+  $GIT_CMD clone http://github.com/janelia-flyem/buildem.git
 fi
  
 if [ ! -d $downloadDir/libdvid-cpp ]
 then
-  /usr/bin/git clone https://github.com/janelia-flyem/libdvid-cpp.git
+  $GIT_CMD clone https://github.com/janelia-flyem/libdvid-cpp.git
+fi
+
+CMAKE_CMD=cmake
+if [ -f /usr/local/cmake/bin/cmake ]
+then
+  CMAKE_CMD=/usr/local/cmake/bin/cmake
 fi
 
 cd $downloadDir/libdvid-cpp
@@ -61,14 +74,14 @@ if [ ! -d build ]
 then
   mkdir build
   cd build
-  cmake .. -DBUILDEM_DIR=$downloadDir/buildem
+  $CMAKE_CMD .. -DBUILDEM_DIR=$downloadDir/buildem
   make
 else
   cd build
 fi
 
-cmake .. -DBUILDEM_DIR=$downloadDir/buildem
-make -j3
+$CMAKE_CMD .. -DBUILDEM_DIR=$downloadDir/buildem
+make
 
 updateFile=$install_dir/bin/ntupd
 if [ ! -f $updateFile ]
@@ -76,10 +89,10 @@ then
   touch $updateFile
   echo '#!/bin/bash' > $updateFile
   echo "cd $downloadDir/neutube" >> $updateFile
-  echo '/usr/bin/git pull' >> $updateFile
+  echo "$GIT_CMD pull" >> $updateFile
   if [ -d $downloadDir/buildem ]
   then
-    ext_qmake_args='-q "BUILDEM_DIR=/opt/Download/buildem"'
+    ext_qmake_args="-q BUILDEM_DIR=$downloadDir/buildem"
   fi
   echo "sh build.sh $install_dir/Trolltech/Qt4.8.5/bin/qmake $install_dir/Trolltech/Qt4.8.5/mkspecs/linux-g++ -e flyem $ext_qmake_args" >> $updateFile
   chmod a+x $updateFile
@@ -94,6 +107,7 @@ then
   echo '#!/bin/bash' > $run_script
   echo "export LD_LIBRARY_PATH=$downloadDir/buildem/lib:$LD_LIBRARY_PATH" >> $run_script
   echo "$downloadDir/neutube/neurolabi/build/neuTube" >> $run_script
+  chmod a+x $run_script
 fi
 
 

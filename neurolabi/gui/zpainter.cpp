@@ -63,7 +63,7 @@ bool ZPainter::begin(ZPixmap *image)
     t.translate(imageTransform.getTx(), imageTransform.getTy());
     m_painter.setTransform(t);
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
     qDebug() << t;
     qDebug() << this->getTransform();
     //  qDebug() << this.mapRect(QRectF(100, 100, 200, 200));
@@ -177,7 +177,7 @@ void ZPainter::drawImage(
 void ZPainter::drawImage(int x, int y, const ZImage &image)
 {
   if (!image.isNull()) {
-    qDebug() << getTransform();
+    //qDebug() << getTransform();
 
     //  QRect targetRect = transform().mapRect(QRect(
     //        x, y, iround(image.width() / image.getTransform().getSx()),

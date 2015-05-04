@@ -560,8 +560,8 @@ void ZImageWidget::paintZoomHint()
 void ZImageWidget::paintEvent(QPaintEvent * /*event*/)
 {
   if (!canvasSize().isEmpty() && !isPaintBlocked()) {
-    QElapsedTimer timer;
-    timer.start();
+//    QElapsedTimer timer;
+//    timer.start();
 
     ZPainter painter;
 
@@ -629,7 +629,7 @@ void ZImageWidget::paintEvent(QPaintEvent * /*event*/)
     paintObject();
     paintZoomHint();
 
-    std::cout << "Screen update time per frame: " << timer.elapsed() << std::endl;
+//    std::cout << "Screen update time per frame: " << timer.elapsed() << std::endl;
   }
 }
 

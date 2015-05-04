@@ -975,12 +975,16 @@ void ZStackView::redraw()
         buddyDocument()->getStackSize().getY());
 
   paintStackBuffer();
+  std::cout << "paint stack per frame: " << timer.elapsed() << std::endl;
   paintMaskBuffer();
   paintTileCanvasBuffer();
+  std::cout << "paint tile per frame: " << timer.elapsed() << std::endl;
   paintActiveDecorationBuffer();
   paintObjectBuffer();
+  std::cout << "paint object per frame: " << timer.elapsed() << std::endl;
 
   updateImageScreen();
+//  std::cout << "paint time per frame: " << toc() << std::endl;
   std::cout << "paint time per frame: " << timer.elapsed() << std::endl;
 }
 
@@ -1700,12 +1704,16 @@ bool ZStackView::paintTileCanvasBuffer()
 #endif
   bool painted = false;
 
+//  QElapsedTimer timer;
+//  timer.start();
   if (buddyDocument()->hasObject(ZStackObject::TYPE_DVID_TILE_ENSEMBLE)) {
     updateTileCanvas();
+    //std::cout << "update time canvas time: " << timer.elapsed() << std::endl;
     if (m_tileCanvas != NULL) {
       paintObjectBuffer(m_tileCanvasPainter, ZStackObject::TILE_CANVAS);
       painted = true;
     }
+    //std::cout << "paint tile time: " << timer.elapsed() << std::endl;
   }
 
 //  setDepthFrozen(false);

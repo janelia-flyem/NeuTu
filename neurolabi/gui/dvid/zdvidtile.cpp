@@ -2,6 +2,8 @@
 
 #include <QTransform>
 #include <QtConcurrentRun>
+#include <QElapsedTimer>
+
 #include "zimagewidget.h"
 #include "neutubeconfig.h"
 #include "zstack.hxx"
@@ -43,10 +45,13 @@ void ZDvidTile::loadDvidSlice(const QByteArray &buffer, int z)
     }
   }
   if (loading) {
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
       std::cout << z << " Loaded." << std::endl;
 #endif
+
+
     m_image.loadFromData(buffer);
+
 //    m_image.setOffset();
     m_z = z;
   }
@@ -69,10 +74,12 @@ void ZDvidTile::display(
 //  int z = painter.getZOffset() + slice;
   m_latestZ = z;
 
+  //tic();
   const_cast<ZDvidTile&>(*this).update(z);
+  //std::cout << "tile update time: " << toc() << std::endl;
 
   if ((z == m_z)  && !m_image.isNull()) {
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
     std::cout << "Display " << z << std::endl;
 #endif
     //      ZImage image = getImage();
@@ -88,7 +95,12 @@ void ZDvidTile::display(
     }
 #endif
 
+//    QElapsedTimer timer;
+//    timer.start();
+//    tic();
     painter.drawImage(getX(), getY(), m_image);
+//    std::cout << "Draw image time: " << toc() << std::endl;
+//    std::cout << "Draw image time: " << timer.elapsed() << std::endl;
 
 //      ZIntPoint pt = m_offset - painter.getOffset().toIntPoint();
 
