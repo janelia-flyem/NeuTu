@@ -15,7 +15,7 @@
 ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
   ZStackMvc(parent), m_splitOn(false)
 {
-  qRegisterMetaType<int64_t>("int64_t");
+  qRegisterMetaType<uint64_t>("uint64_t");
 }
 
 ZFlyEmProofMvc* ZFlyEmProofMvc::Make(
@@ -111,6 +111,8 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
     getView()->reset(false);
 
     m_splitProject.setDvidTarget(target);
+    m_mergeProject.setDvidTarget(target);
+    m_mergeProject.syncWithDvid();
   }
 }
 
@@ -141,8 +143,8 @@ void ZFlyEmProofMvc::customInit()
 
   connect(getDocument().get(), SIGNAL(messageGenerated(const QString&)),
           this, SIGNAL(messageGenerated(const QString&)));
-  connect(this, SIGNAL(splitBodyLoaded(int64_t)),
-          this, SLOT(presentBodySplit(int64_t)));
+  connect(this, SIGNAL(splitBodyLoaded(uint64_t)),
+          this, SLOT(presentBodySplit(uint64_t)));
 
 }
 
@@ -151,17 +153,17 @@ void ZFlyEmProofMvc::notifySplitTriggered()
   ZDvidLabelSlice *labelSlice = getCompleteDocument()->getDvidLabelSlice();
 
   if (labelSlice->isVisible()) {
-    const std::set<int64_t> &selected = labelSlice->getSelected();
+    const std::set<uint64_t> &selected = labelSlice->getSelected();
 
     if (!selected.empty()) {
-      int64_t bodyId = *(selected.begin());
+      uint64_t bodyId = *(selected.begin());
 
       emit launchingSplit(bodyId);
     }
   }
 }
 
-void ZFlyEmProofMvc::launchSplitFunc(int64_t bodyId)
+void ZFlyEmProofMvc::launchSplitFunc(uint64_t bodyId)
 {
   if (!getCompleteDocument()->isSplittable(bodyId)) {
     emit errorGenerated(QString("%1 is not ready for split.").arg(bodyId));
@@ -173,7 +175,7 @@ void ZFlyEmProofMvc::launchSplitFunc(int64_t bodyId)
     ZDvidReader reader;
     if (reader.open(getDvidTarget())) {
       if (body != NULL) {
-        if ((int64_t) body->getLabel() != bodyId) {
+        if (body->getLabel() != bodyId) {
           body = NULL;
         }
       }
@@ -196,14 +198,14 @@ void ZFlyEmProofMvc::launchSplitFunc(int64_t bodyId)
   }
 }
 
-void ZFlyEmProofMvc::presentBodySplit(int64_t bodyId)
+void ZFlyEmProofMvc::presentBodySplit(uint64_t bodyId)
 {
   getView()->redrawObject();
   m_splitOn = true;
   m_splitProject.setBodyId(bodyId);
 }
 
-void ZFlyEmProofMvc::launchSplit(int64_t bodyId)
+void ZFlyEmProofMvc::launchSplit(uint64_t bodyId)
 {
   if (bodyId > 0) {
     const QString threadId = "launchSplitFunc";

@@ -67,15 +67,15 @@ void ZProofreadWindow::init()
   m_mainMvc->connectControlPanel(controlForm);
   m_mainMvc->connectSplitControlPanel(splitControlForm);
 
-  connect(controlForm, SIGNAL(splitTriggered(int64_t)),
-          this, SLOT(launchSplit(int64_t)));
-  connect(controlForm, SIGNAL(splitTriggered(int64_t)),
-          splitControlForm, SLOT(setSplit(int64_t)));
+  connect(controlForm, SIGNAL(splitTriggered(uint64_t)),
+          this, SLOT(launchSplit(uint64_t)));
+  connect(controlForm, SIGNAL(splitTriggered(uint64_t)),
+          splitControlForm, SLOT(setSplit(uint64_t)));
   connect(splitControlForm, SIGNAL(exitingSplit()),
           this, SLOT(exitSplit()));
 
-  connect(m_mainMvc, SIGNAL(splitBodyLoaded(int64_t)),
-          this, SLOT(presentSplitInterface(int64_t)));
+  connect(m_mainMvc, SIGNAL(splitBodyLoaded(uint64_t)),
+          this, SLOT(presentSplitInterface(uint64_t)));
 
   setCentralWidget(widget);
 }
@@ -85,13 +85,13 @@ ZProofreadWindow* ZProofreadWindow::Make(QWidget *parent)
   return new ZProofreadWindow(parent);
 }
 
-void ZProofreadWindow::presentSplitInterface(int64_t bodyId)
+void ZProofreadWindow::presentSplitInterface(uint64_t bodyId)
 {
   m_controlGroup->setCurrentIndex(1);
   dump(QString("Body %1 loaded for split.").arg(bodyId), true);
 }
 
-void ZProofreadWindow::launchSplit(int64_t bodyId)
+void ZProofreadWindow::launchSplit(uint64_t bodyId)
 {
   dump("Launching split ...", false);
   m_mainMvc->launchSplit(bodyId);

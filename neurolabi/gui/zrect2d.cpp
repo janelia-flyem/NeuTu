@@ -1,9 +1,12 @@
 #include "zrect2d.h"
 
-#include <QPainter>
+#include <cmath>
+#include <QRect>
+#include <QRectF>
 
 #include "zpainter.h"
 #include "tz_math.h"
+#include "zsttransform.h"
 
 ZRect2d::ZRect2d() : m_x0(0), m_y0(0), m_width(0), m_height(0), m_z(0),
   m_isPenetrating(false)
@@ -92,6 +95,45 @@ bool ZRect2d::hit(double x, double y, double z)
   }
 
   return false;
+}
+
+bool ZRect2d::IsEqual(const QRect &rect1, const QRect &rect2)
+{
+  return (rect1.left() == rect2.left()) && (rect1.top() == rect2.top()) &&
+      (rect1.right() == rect2.right()) && (rect1.top() == rect2.top());
+}
+
+bool ZRect2d::IsEqual(const QRectF &rect1, const QRectF &rect2)
+{
+  return (rect1.left() == rect2.left()) && (rect1.top() == rect2.top()) &&
+      (rect1.right() == rect2.right()) && (rect1.top() == rect2.top());
+}
+
+QRect ZRect2d::QRectBound(const QRectF &rect)
+{
+  QRect out;
+  out.setLeft(std::floor(rect.left()));
+  out.setTop(std::floor(rect.top()));
+  out.setBottom(std::ceil(rect.bottom()));
+  out.setRight(std::ceil(rect.right()));
+
+  return out;
+}
+
+QRectF ZRect2d::CropRect(
+    const QRectF &sourceRectIn, const QRectF &sourceRectOut,
+    const QRectF &targetRectIn)
+{
+  if (IsEqual(sourceRectIn, sourceRectOut)) {
+    return targetRectIn;
+  }
+
+  QRectF out;
+  ZStTransform transform;
+  transform.estimate(sourceRectIn, sourceRectOut);
+  out = transform.transform(targetRectIn);
+
+  return out;
 }
 
 

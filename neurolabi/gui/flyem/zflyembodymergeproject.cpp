@@ -9,9 +9,9 @@
 #include "zstackframe.h"
 #include "zstackdoc.h"
 #include "flyem/zflyembodymergeframe.h"
+#include "flyem/zflyembodymergedoc.h"
 #include "neutubeconfig.h"
 #include "zstackdocreader.h"
-#include "flyem/zflyembodymergedoc.h"
 #include "zarrayfactory.h"
 #include "dvid/zdviddata.h"
 #include "zobject3dscan.h"
@@ -22,6 +22,9 @@
 #include "z3dswcfilter.h"
 #include "zstackobjectsourcefactory.h"
 #include "zstackpresenter.h"
+#include "dvid/zdvidbufferreader.h"
+#include "dvid/zdvidurl.h"
+#include "zflyemproofdoc.h"
 
 ZFlyEmBodyMergeProject::ZFlyEmBodyMergeProject(QObject *parent) :
   QObject(parent), m_dataFrame(NULL), m_bodyWindow(NULL),
@@ -543,4 +546,50 @@ void ZFlyEmBodyMergeProject::setDocument(ZSharedPointer<ZStackDoc> doc)
 ZStackDoc* ZFlyEmBodyMergeProject::getDocument() const
 {
   return m_doc.get();
+}
+
+ZFlyEmBodyMerger* ZFlyEmBodyMergeProject::getBodyMerger()
+{
+  if (getDocument<ZFlyEmBodyMergeDoc>() != NULL) {
+    return getDocument<ZFlyEmBodyMergeDoc>()->getBodyMerger();
+  }
+
+  if (getDocument<ZFlyEmProofDoc>() != NULL) {
+    return getDocument<ZFlyEmProofDoc>()->getBodyMerger();
+  }
+
+  return NULL;
+}
+
+void ZFlyEmBodyMergeProject::syncWithDvid()
+{
+  if (getDvidTarget().isValid()) {
+    ZFlyEmBodyMerger *bodyMerger = getBodyMerger();
+    if (bodyMerger != NULL) {
+      ZDvidBufferReader reader;
+      reader.read(ZDvidUrl(getDvidTarget()).getMergeOperationUrl(
+                    ZDvidData::getName(ZDvidData::ROLE_MERGE_OPERATION)).c_str());
+      const QByteArray& buffer = reader.getBuffer();
+      bodyMerger->decodeJsonString(buffer.data());
+
+      /*
+  ZFlyEmBodyMergeDoc *doc = getDocument<ZFlyEmBodyMergeDoc>();
+  doc->getBodyMerger()->decodeJsonString(buffer.data());
+  */
+
+
+
+      QList<uint64_t> objLabelList = bodyMerger->getFinalMap().keys();
+
+      emit bodyMerged(objLabelList);
+    }
+  }
+
+  /*
+  ZDvidReader reader;
+  if (reader.open(getDvidTarget())) {
+    reader.readKeyValue(ZDvidData::getName(ZDvidData::ROLE_MERGE_OPERATION),
+                        getDvidTarget().getBodyLabelName());
+  }
+  */
 }

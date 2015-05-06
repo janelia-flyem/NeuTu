@@ -60,6 +60,14 @@ public:
   QPointF transform(const QPoint &pt) const;
   QRectF transform(const QRectF &rect) const;
 
+  /*!
+   * \brief Estimate transformation
+   *
+   * Estimate the transformation that transforms \a input to \a output. It
+   * returns idential transform if input is empty.
+   */
+  void estimate(const QRectF &input, const QRectF &output);
+
   bool isIdentity() const;
 
 private:

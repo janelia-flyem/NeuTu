@@ -4,6 +4,7 @@
 #include "zobject3dscan.h"
 #include "zarray.h"
 #include "zarrayfactory.h"
+#include "dvid/zdvidwriter.h"
 
 ZFlyEmBodyMergeDoc::ZFlyEmBodyMergeDoc(ZStack *stack, QObject *parent) :
   ZStackDoc(stack, parent), m_originalLabel(NULL)
@@ -129,9 +130,9 @@ void ZFlyEmBodyMergeDoc::mergeSelected()
   //updateBodyObject();
 }
 
-int64_t ZFlyEmBodyMergeDoc::getSelectedBodyId() const
+uint64_t ZFlyEmBodyMergeDoc::getSelectedBodyId() const
 {
-  int64_t bodyId = -1;
+  uint64_t bodyId = 0;
   const TStackObjectSet &objSet =
       getSelected(ZStackObject::TYPE_OBJECT3D_SCAN);
   if (objSet.size() == 1) {
@@ -172,7 +173,17 @@ void ZFlyEmBodyMergeDoc::updateOriginalLabel(
   notifyObject3dScanModified();
 }
 
+void ZFlyEmBodyMergeDoc::saveMergeOperation() const
+{
+  ZDvidWriter writer;
+  if (writer.open(getDvidTarget())) {
+    writer.writeMergeOperation(
+          "NeuTu_Merge_Opr", getDvidTarget().getLabelBlockName(),
+          getBodyMerger()->getFinalMap());
+  }
+}
 
+/////////////////////////////////////////////////////
 ZFlyEmBodyMergerDocCommand::MergeBody::MergeBody(
     ZStackDoc *doc, QUndoCommand *parent)
   : ZUndoCommand(parent), m_doc(doc)

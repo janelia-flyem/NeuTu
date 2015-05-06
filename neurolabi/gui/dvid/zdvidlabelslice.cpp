@@ -25,7 +25,7 @@ void ZDvidLabelSlice::display(
     for (ZObject3dScanArray::const_iterator iter = m_objArray.begin();
          iter != m_objArray.end(); ++iter) {
       ZObject3dScan &obj = const_cast<ZObject3dScan&>(*iter);
-      if (m_selectedSet.count((int64_t) obj.getLabel()) > 0) {
+      if (m_selectedSet.count(obj.getLabel()) > 0) {
         obj.setSelected(true);
       } else {
         obj.setSelected(false);
@@ -134,7 +134,7 @@ bool ZDvidLabelSlice::hit(double x, double y, double z)
 
 void ZDvidLabelSlice::selectHit(bool appending)
 {
-  if (m_hitLabel >= 0) {
+  if (m_hitLabel > 0) {
     if (!appending) {
       clearSelection();
     }

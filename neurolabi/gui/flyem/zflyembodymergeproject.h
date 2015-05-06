@@ -20,6 +20,7 @@ class ZStackDocReader;
 class ZArray;
 class Z3DWindow;
 class ZStackDoc;
+class ZFlyEmBodyMerger;
 
 class ZFlyEmBodyMergeProject : public QObject
 {
@@ -69,6 +70,8 @@ public:
   template<typename T>
   T* getDocument() const;
 
+  void syncWithDvid();
+
 signals:
   void progressAdvanced(double dp);
   void progressStarted();
@@ -91,6 +94,9 @@ public slots:
   void showBody3d();
   void detachBodyWindow();
   void notifySplit();
+
+private:
+  ZFlyEmBodyMerger* getBodyMerger();
 
 private:
   ZFlyEmBodyMergeFrame *m_dataFrame;

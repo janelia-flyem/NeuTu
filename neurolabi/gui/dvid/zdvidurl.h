@@ -103,6 +103,7 @@ public:
   std::string getMergeUrl(const std::string &dataName) const;
   std::string getSplitUrl(
       const std::string &dataName, uint64_t originalLabel) const;
+  std::string getMergeOperationUrl(const std::string &dataName) const;
 
   std::string getTileUrl(const std::string &dataName) const;
   std::string getTileUrl(const std::string &dataName, int resLevel) const;

@@ -21,7 +21,7 @@ signals:
   void segmentVisibleChanged(bool visible);
   void mergingSelected();
   void dvidSetTriggered();
-  void splitTriggered(int64_t bodyId);
+  void splitTriggered(uint64_t bodyId);
 
 private:
   Ui::FlyEmProofControlForm *ui;

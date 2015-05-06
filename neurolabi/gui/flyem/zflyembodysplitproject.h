@@ -94,10 +94,10 @@ public:
   std::string getSplitStatusName() const;
   std::string getSplitLabelName() const;
 
-  std::string getSeedKey(int bodyId) const;
-  std::string getBackupSeedKey(int bodyId) const;
-  bool isSeedProcessed(int bodyId) const;
-  void setSeedProcessed(int bodyId);
+  std::string getSeedKey(uint64_t bodyId) const;
+  std::string getBackupSeedKey(uint64_t bodyId) const;
+  bool isSeedProcessed(uint64_t bodyId) const;
+  void setSeedProcessed(uint64_t bodyId);
 
   class ThreadManager {
   public:

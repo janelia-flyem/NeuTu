@@ -37,7 +37,7 @@ public:
   void loadBody(int bodyId);
   void setMaskColor(const QColor &color);
 
-  int64_t getLabel() const;
+  uint64_t getLabel() const;
 
   const ZObject3dScan *getObjectMask() const;
 

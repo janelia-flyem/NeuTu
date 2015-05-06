@@ -16,15 +16,22 @@ public:
   static ZProofreadWindow* Make(QWidget *parent = 0);
 
 signals:
-  void splitTriggered(int64_t bodyId);
+  void splitTriggered(uint64_t bodyId);
 
 public slots:
-  void launchSplit(int64_t bodyId);
+  void launchSplit(uint64_t bodyId);
   void exitSplit();
-  void presentSplitInterface(int64_t bodyId);
+  void presentSplitInterface(uint64_t bodyId);
 
   void dump(const QString &message, bool appending);
   void dumpError(const QString &message, bool appending);
+
+  /*
+  void startProgress(const QString &title, int nticks);
+  void startProgress(const QString &title);
+  void advanceProgress(double dp);
+  void endProgress();
+  */
 
 private:
   void init();

@@ -136,3 +136,22 @@ bool ZStTransform::isIdentity() const
 {
   return !hasOffset() && !hasScale();
 }
+
+void ZStTransform::estimate(const QRectF &input, const QRectF &output)
+{
+  if (input.isEmpty()) {
+    m_sx = 1.0;
+    m_sy = 1.0;
+    m_dx = 0.0;
+    m_dy = 0.0;
+    m_sz = 1.0;
+    m_dz = 0.0;
+  } else {
+    m_sx = output.width() / input.width();
+    m_sy = output.height() / input.height();
+    m_dx = output.left() - m_sx * input.left();
+    m_dy = output.top() - m_sx * input.top();
+    m_sz = 1.0;
+    m_dz = 0.0;
+  }
+}

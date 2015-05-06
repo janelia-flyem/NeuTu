@@ -22,7 +22,7 @@ signals:
 
 private slots:
   void slotTest();
-  void setSplit(int64_t bodyId);
+  void setSplit(uint64_t bodyId);
 
 private:
   void setupWidgetBehavior();

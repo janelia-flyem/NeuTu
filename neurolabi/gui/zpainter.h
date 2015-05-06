@@ -30,6 +30,7 @@ public:
   explicit ZPainter(QPaintDevice * device);
   explicit ZPainter(ZImage *image);
   explicit ZPainter(ZPixmap *pixmap);
+  ~ZPainter();
 
   bool begin(ZImage *image);
   bool begin(ZPixmap *pixmap);
@@ -67,9 +68,24 @@ public:
    */
   void drawImage(int x, int y, const ZImage &image);
 
+  /*!
+   * \brief Draw image.
+   *
+   * \a sourceRect is in the world coordinates.
+   */
   void drawPixmap(
       const QRectF &targetRect, const ZPixmap &image, const QRectF &sourceRect);
+
+  /*!
+   * \brief Draw image.
+   *
+   * (\a x, \a y) is the target position in world coordinates.
+   */
   void drawPixmap(int x, int y, const ZPixmap &image);
+
+  void drawActivePixmap(
+      const QRectF &targetRect, const ZPixmap &image, const QRectF &sourceRect);
+  void drawActivePixmap(int x, int y, const ZPixmap &image);
 
 
   void setPen(const QColor &color);

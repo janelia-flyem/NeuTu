@@ -3,6 +3,9 @@
 
 #include "zstackobject.h"
 
+class QRect;
+class QRectF;
+
 class ZRect2d : public ZStackObject
 {
 public:
@@ -35,6 +38,15 @@ public:
    */
   void setLastCorner(int x, int y);
   void setFirstCorner(int x, int y);
+
+  //QRect/QRectF utilities
+  static bool IsEqual(const QRect &rect1, const QRect &rect2);
+  static bool IsEqual(const QRectF &rect1, const QRectF &rect2);
+  static QRect QRectBound(const QRectF &rect);
+
+  static QRectF CropRect(
+      const QRectF &sourceRectIn, const QRectF &sourceRectOut,
+      const QRectF &targetRectIn);
 
 private:
   int m_x0;

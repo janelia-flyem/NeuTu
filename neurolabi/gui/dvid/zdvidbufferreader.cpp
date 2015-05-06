@@ -32,7 +32,7 @@ ZDvidBufferReader::ZDvidBufferReader(QObject *parent) :
 
 void ZDvidBufferReader::read(const QString &url)
 {
-//  qDebug() << url;
+  qDebug() << url;
 
   m_buffer.clear();
 

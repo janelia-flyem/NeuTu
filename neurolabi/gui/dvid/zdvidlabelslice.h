@@ -35,7 +35,7 @@ public:
   void toggleHitSelection(bool appending = false);
   void clearSelection();
 
-  inline const std::set<int64_t>& getSelected() const {
+  inline const std::set<uint64_t>& getSelected() const {
     return m_selectedSet;
   }
 
@@ -60,8 +60,8 @@ private:
   ZObject3dScanArray m_objArray;
   ZStackViewParam m_currentViewParam;
   ZObjectColorScheme m_objColorSheme;
-  int64_t m_hitLabel;
-  std::set<int64_t> m_selectedSet;
+  uint64_t m_hitLabel;
+  std::set<uint64_t> m_selectedSet;
   ZFlyEmBodyMerger *m_bodyMerger;
 };
 

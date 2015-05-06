@@ -14,6 +14,7 @@
 #include "dvid/zdvidreader.h"
 #include "flyem/zflyemneuronbodyinfo.h"
 #include "zerror.h"
+#include "zjsonfactory.h"
 
 #if _ENABLE_LIBDVID_
 #include "DVIDNode.h"
@@ -471,4 +472,15 @@ void ZDvidWriter::writeSplit(
 
   QProcess::execute(command);
 
+}
+
+void ZDvidWriter::writeMergeOperation(
+    const std::string &dataName, const std::string &key,
+    const QMap<uint64_t, uint64_t> &bodyMap)
+{
+  std::string url = ZDvidUrl(m_dvidTarget).getMergeOperationUrl(dataName);
+  ZJsonArray array = ZJsonFactory::MakeJsonArray(bodyMap);
+  if (!array.isEmpty()) {
+    writeJsonString(url, key, array.toString());
+  }
 }

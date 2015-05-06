@@ -113,7 +113,14 @@ public:
   static bool writeImage(const QImage &image, const QString &filePath);
 
   const ZStTransform& getTransform() const;
+
+  /*!
+   * \brief Set the transform
+   *
+   * \a transform transforms the world coordinates to image coordintes
+   */
   void setTransform(const ZStTransform &transform);
+
   void setScale(double sx, double sy);
   void setOffset(double dx, double dy);
 

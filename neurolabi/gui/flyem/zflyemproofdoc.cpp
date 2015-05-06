@@ -20,8 +20,8 @@ void ZFlyEmProofDoc::mergeSelected()
   for (QList<ZDvidLabelSlice*>::const_iterator iter = sliceList.begin();
        iter != sliceList.end(); ++iter) {
     const ZDvidLabelSlice *labelSlice = *iter;
-    const std::set<int64_t> &selected = labelSlice->getSelected();
-    for (std::set<int64_t>::const_iterator iter = selected.begin();
+    const std::set<uint64_t> &selected = labelSlice->getSelected();
+    for (std::set<uint64_t>::const_iterator iter = selected.begin();
          iter != selected.end(); ++iter) {
       labelSet.insert(*iter);
     }

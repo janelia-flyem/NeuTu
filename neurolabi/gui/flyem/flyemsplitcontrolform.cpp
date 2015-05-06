@@ -30,7 +30,7 @@ void FlyEmSplitControlForm::slotTest()
   std::cout << "slot triggered." << std::endl;
 }
 
-void FlyEmSplitControlForm::setSplit(int64_t bodyId)
+void FlyEmSplitControlForm::setSplit(uint64_t bodyId)
 {
   ui->bodyIdSpinBox->setValue(bodyId);
 }

@@ -11,6 +11,7 @@
 #include "tz_stdint.h"
 
 class ZJsonObject;
+class ZJsonArray;
 
 /*!
  * \brief The ZFlyEmBodyMerger class
@@ -41,8 +42,11 @@ public:
 
   bool isMapped(uint64_t label) const;
 
-  ZJsonObject toJsonObject() const;
-  void loadJsonObject(const ZJsonObject &obj);
+//  ZJsonObject toJsonObject() const;
+//  ZJsonArray toJsonArray() const;
+//  void loadJsonObject(const ZJsonObject &obj);
+  void loadJson(const ZJsonArray &obj);
+  void decodeJsonString(const std::string &str);
 
 private:
   static uint64_t mapLabel(const TLabelMap &labelMap, uint64_t label);

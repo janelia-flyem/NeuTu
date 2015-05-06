@@ -1282,7 +1282,7 @@ void ZFlyEmRoiDialog::exportResult()
 
     blockObj.save(fileName + ".sobj");
 
-    ZJsonArray array = ZJsonFactory::makeJsonArray(
+    ZJsonArray array = ZJsonFactory::MakeJsonArray(
           blockObj, ZJsonFactory::OBJECT_SPARSE);
     //ZJsonObject jsonObj;
     //jsonObj.setEntry("data", array);

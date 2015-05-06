@@ -1061,13 +1061,13 @@ std::string ZFlyEmBodySplitProject::getSplitLabelName() const
                             getDvidTarget().getBodyLabelName());
 }
 
-std::string ZFlyEmBodySplitProject::getSeedKey(int bodyId) const
+std::string ZFlyEmBodySplitProject::getSeedKey(uint64_t bodyId) const
 {
   return getDvidTarget().getBodyLabelName() + "_seed_" +
       ZString::num2str(bodyId);
 }
 
-std::string ZFlyEmBodySplitProject::getBackupSeedKey(int bodyId) const
+std::string ZFlyEmBodySplitProject::getBackupSeedKey(uint64_t bodyId) const
 {
   return getDvidTarget().getBodyLabelName() + "_backup_seed_" +
       ZString::num2str(bodyId);
@@ -1083,7 +1083,7 @@ void ZFlyEmBodySplitProject::runSplit()
   }
 }
 
-void ZFlyEmBodySplitProject::setSeedProcessed(int bodyId)
+void ZFlyEmBodySplitProject::setSeedProcessed(uint64_t bodyId)
 {
   ZDvidWriter writer;
   if (writer.open(getDvidTarget())) {
@@ -1094,7 +1094,7 @@ void ZFlyEmBodySplitProject::setSeedProcessed(int bodyId)
   }
 }
 
-bool ZFlyEmBodySplitProject::isSeedProcessed(int bodyId) const
+bool ZFlyEmBodySplitProject::isSeedProcessed(uint64_t bodyId) const
 {
   bool isProcessed = false;
 

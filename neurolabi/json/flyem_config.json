@@ -63,6 +63,15 @@
       "comment": "AL child node for testing split",
       "body_label": "bodies121714",
       "label_block": "segmentation121714"
+    },
+    {
+      "address": "emdata1.int.janelia.org",
+      "port": 8500,
+      "uuid": "51db9",
+      "name": "MB_seg",
+      "comment": "MB seg",
+      "body_label": "bodies",
+      "label_block": "labels"
     }
   ]
 }

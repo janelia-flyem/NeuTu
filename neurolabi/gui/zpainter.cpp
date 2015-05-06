@@ -8,6 +8,7 @@
 #include "zimage.h"
 #include "tz_math.h"
 #include "zpixmap.h"
+#include "zrect2d.h"
 
 ZPainter::ZPainter() : m_z(0), m_isPainted(false)
 {
@@ -29,6 +30,11 @@ ZPainter::ZPainter(ZImage *image) : m_z(0)
   transform.translate(imageTransform.getTx(), imageTransform.getTy());
   setTransform(transform);
   */
+}
+
+ZPainter::~ZPainter()
+{
+  end();
 }
 
 ZPainter::ZPainter(ZPixmap *pixmap) : m_z(0)
@@ -195,25 +201,73 @@ void ZPainter::drawImage(int x, int y, const ZImage &image)
 void ZPainter::drawPixmap(
     const QRectF &targetRect, const ZPixmap &image, const QRectF &sourceRect)
 {
-  if (!sourceRect.isEmpty() && !targetRect.isEmpty() && !image.isNull()) {
+  if (sourceRect.isValid() && targetRect.isValid() && !image.isNull()) {
+    //Transform from world coordinates to image coordinates
     QRectF newSourceRect = image.getTransform().transform(sourceRect);
+
     m_painter.drawPixmap(targetRect, image, newSourceRect);
 
     setPainted(true);
   }
 }
 
+void ZPainter::drawActivePixmap(
+    const QRectF &targetRect, const ZPixmap &image, const QRectF &sourceRect)
+{
+  QRectF newSourceRect = sourceRect;
+  QRectF newTargetRect = targetRect;
+
+  if (!image.isFullyActive()) {
+    newSourceRect.intersect(image.getActiveArea(NeuTube::COORD_WORLD));
+    if (!newSourceRect.isEmpty()) {
+      newTargetRect = ZRect2d::CropRect(sourceRect, newSourceRect, targetRect);
+    }
+  }
+
+  if (!newSourceRect.isEmpty()) {
+    drawPixmap(newTargetRect, image, newSourceRect);
+  }
+}
+
 void ZPainter::drawPixmap(int x, int y, const ZPixmap &image)
 {
   if (!image.isNull()) {
-    QRect targetRect = QRect(
-          x, y, iround(image.width() / image.getTransform().getSx()),
-          iround(image.height() / image.getTransform().getSy()));
     QRect sourceRect = QRect(0, 0, image.width(), image.height());
+
+    QRectF targetRect = QRectF(
+          x, y, iround(sourceRect.width() / image.getTransform().getSx()),
+          iround(sourceRect.height() / image.getTransform().getSy()));
+
     m_painter.drawPixmap(
           targetRect, dynamic_cast<const QPixmap&>(image), sourceRect);
 
     setPainted(true);
+  }
+}
+
+void ZPainter::drawActivePixmap(int x, int y, const ZPixmap &image)
+{
+  if (!image.isNull()) {
+    QRectF sourceRect = QRect(0, 0, image.width(), image.height());
+
+    QRectF targetRect = QRectF(
+          x, y, iround(sourceRect.width() / image.getTransform().getSx()),
+          iround(sourceRect.height() / image.getTransform().getSy()));
+
+    if (!image.isFullyActive()) {
+      QRectF oldSourceRect = sourceRect;
+      sourceRect.intersect(image.getActiveArea(NeuTube::COORD_WORLD));
+      if (!sourceRect.isEmpty()) {
+        targetRect = ZRect2d::CropRect(oldSourceRect, sourceRect, targetRect);
+      }
+    }
+
+    if (sourceRect.isValid()) {
+      m_painter.drawPixmap(
+            targetRect, dynamic_cast<const QPixmap&>(image), sourceRect);
+
+      setPainted(true);
+    }
   }
 }
 

@@ -29,7 +29,7 @@ public:
   void deactivate();
 
   void setBodyEntry(const std::string &key, std::string value);
-  void setBodyEntry(const std::string &key, int64_t value);
+  void setBodyEntry(const std::string &key, uint64_t value);
   void setBodyEntry(const std::string &key, ZJsonObject obj);
 
   inline void setCurrentSource(const QWidget *source) {

@@ -988,13 +988,13 @@ void FlyEmBodySplitProjectDialog::startSplit(const QString &message)
 
   if (obj.hasKey("body_id")) {
     int64_t bodyId = ZJsonParser::integerValue(obj["body_id"]);
-    if (bodyId >= 0) {
+    if (bodyId > 0) {
       if (obj.hasKey("dvid_target")) {
         ZDvidTarget target;
         target.loadJsonObject(ZJsonObject(obj.at("dvid_target")));
         show();
         raise();
-        startSplit(target, bodyId);
+        startSplit(target, (uint64_t) bodyId);
       }
     }
   }
@@ -1080,13 +1080,13 @@ void FlyEmBodySplitProjectDialog::MessageProcessor::processMessage(
       const ZJsonObject &obj = message->getMessageBody();
       if (obj.hasKey("body_id")) {
         int64_t bodyId = ZJsonParser::integerValue(obj["body_id"]);
-        if (bodyId >= 0) {
+        if (bodyId > 0) {
           if (obj.hasKey("dvid_target")) {
             ZDvidTarget target;
             target.loadJsonObject(ZJsonObject(obj.at("dvid_target")));
             dlg->show();
             dlg->raise();
-            dlg->startSplit(target, bodyId);
+            dlg->startSplit(target, (uint64_t) bodyId);
           }
         }
       }

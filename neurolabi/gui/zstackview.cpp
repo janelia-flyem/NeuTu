@@ -966,8 +966,8 @@ void ZStackView::redrawObject()
 void ZStackView::redraw()
 {
 //  tic();
-  QElapsedTimer timer;
-  timer.start();
+//  QElapsedTimer timer;
+//  timer.start();
   m_imageWidget->setCanvasRegion(
         buddyDocument()->getStackOffset().getX(),
         buddyDocument()->getStackOffset().getY(),
@@ -975,17 +975,17 @@ void ZStackView::redraw()
         buddyDocument()->getStackSize().getY());
 
   paintStackBuffer();
-  std::cout << "paint stack per frame: " << timer.elapsed() << std::endl;
+//  std::cout << "paint stack per frame: " << timer.restart() << std::endl;
   paintMaskBuffer();
   paintTileCanvasBuffer();
-  std::cout << "paint tile per frame: " << timer.elapsed() << std::endl;
+//  std::cout << "paint tile per frame: " << timer.restart() << std::endl;
   paintActiveDecorationBuffer();
   paintObjectBuffer();
-  std::cout << "paint object per frame: " << timer.elapsed() << std::endl;
+//  std::cout << "paint object per frame: " << timer.restart() << std::endl;
 
   updateImageScreen();
 //  std::cout << "paint time per frame: " << toc() << std::endl;
-  std::cout << "paint time per frame: " << timer.elapsed() << std::endl;
+//  std::cout << "paint time per frame: " << timer.restart() << std::endl;
 }
 
 /*
@@ -1373,7 +1373,7 @@ void ZStackView::updateObjectCanvas()
       m_objectCanvas = new ZPixmap(canvasSize);
       m_objectCanvas->setOffset(-buddyDocument()->getStackOffset().getX(),
                                 -buddyDocument()->getStackOffset().getY());
-      m_objectCanvas->clearnUp();
+      m_objectCanvas->cleanUp();
       m_objectCanvasPainter.begin(m_objectCanvas);
       m_objectCanvasPainter.setCompositionMode(
             QPainter::CompositionMode_SourceOver);
@@ -1381,7 +1381,7 @@ void ZStackView::updateObjectCanvas()
 //      m_imageWidget->setMask(m_objectCanvas, 1);
     } else {
       m_objectCanvasPainter.end();
-      m_objectCanvas->clearnUp();
+      m_objectCanvas->cleanUp();
       m_objectCanvasPainter.begin(m_objectCanvas);
 //      m_objectCanvas->setAlphaChannel(
 #ifdef _DEBUG_2
@@ -1449,7 +1449,7 @@ void ZStackView::updateActiveDecorationCanvas()
   }
 
   if (m_activeDecorationCanvas != NULL) {
-    m_activeDecorationCanvas->clearnUp();
+    m_activeDecorationCanvas->cleanUp();
   }
 }
 

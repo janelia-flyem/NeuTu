@@ -18,6 +18,7 @@ const char* ZDvidData::m_maxBodyIdName = "max_body_id";
 const char* ZDvidData::m_splitStatusName = "split_status";
 const char* ZDvidData::m_labelBlockName = "labels";
 const char* ZDvidData::m_multiscale2dName = "tiles";
+const char* ZDvidData::m_mergeOperationName = "neutu_merge_opr";
 
 //const char* ZDvidData::m_keyValueTypeName = "keyvalue";
 
@@ -66,6 +67,8 @@ const char* ZDvidData::getName(ERole role)
     return m_labelBlockName;
   case ROLE_MULTISCALE_2D:
     return m_multiscale2dName;
+  case ROLE_MERGE_OPERATION:
+    return m_mergeOperationName;
   }
 
   return m_emptyName;

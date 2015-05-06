@@ -420,6 +420,11 @@ std::string ZDvidUrl::getMergeUrl(const std::string &dataName) const
   return getDataUrl(dataName) + "/merge";
 }
 
+std::string ZDvidUrl::getMergeOperationUrl(const std::string &dataName) const
+{
+  return getDataUrl(dataName);
+}
+
 std::string ZDvidUrl::getSplitUrl(
     const std::string &dataName, uint64_t originalLabel) const
 {

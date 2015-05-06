@@ -229,13 +229,13 @@ ZStack* ZDvidSparseStack::getStack(const ZIntCuboid &updateBox)
   return m_sparseStack.getStack();
 }
 
-int64_t ZDvidSparseStack::getLabel() const
+uint64_t ZDvidSparseStack::getLabel() const
 {
   if (getObjectMask() != NULL) {
     return getObjectMask()->getLabel();
   }
 
-  return -1;
+  return 0;
 }
 
 const ZObject3dScan* ZDvidSparseStack::getObjectMask() const

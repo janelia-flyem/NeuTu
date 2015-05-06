@@ -41,10 +41,10 @@ public:
 
 signals:
   void launchingSplit(const QString &message);
-  void launchingSplit(int64_t bodyId);
+  void launchingSplit(uint64_t bodyId);
   void messageGenerated(const QString &message);
   void errorGenerated(const QString &message);
-  void splitBodyLoaded(int64_t bodyId);
+  void splitBodyLoaded(uint64_t bodyId);
 
 public slots:
   void mergeSelected();
@@ -54,12 +54,12 @@ public slots:
   void setSegmentationVisible(bool visible);
   void setDvidTarget();
   const ZDvidTarget &getDvidTarget() const;
-  void launchSplit(int64_t bodyId);
+  void launchSplit(uint64_t bodyId);
   void processMessageSlot(const QString &message);
   void notifySplitTriggered();
   void exitSplit();
   void showBodyQuickView();
-  void presentBodySplit(int64_t bodyId);
+  void presentBodySplit(uint64_t bodyId);
 
 //  void toggleEdgeMode(bool edgeOn);
 
@@ -67,7 +67,7 @@ protected:
   void customInit();
 
 private:
-  void launchSplitFunc(int64_t bodyId);
+  void launchSplitFunc(uint64_t bodyId);
 
 private:
   bool m_showSegmentation;
@@ -89,8 +89,8 @@ void ZFlyEmProofMvc::connectControlPanel(T *panel)
   connect(panel, SIGNAL(edgeModeToggled(bool)),
           this, SLOT(toggleEdgeMode(bool)));
   connect(panel, SIGNAL(dvidSetTriggered()), this, SLOT(setDvidTarget()));
-  connect(this, SIGNAL(launchingSplit(int64_t)),
-          panel, SIGNAL(splitTriggered(int64_t)));
+  connect(this, SIGNAL(launchingSplit(uint64_t)),
+          panel, SIGNAL(splitTriggered(uint64_t)));
 }
 
 template <typename T>

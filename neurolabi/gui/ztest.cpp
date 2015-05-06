@@ -58,6 +58,7 @@ using namespace std;
 #include "zrandomgenerator.h"
 #include "zjsonobject.h"
 #include "zpoint.h"
+#include "zpixmap.h"
 #include "flyem/zfileparser.h"
 #include "zstackpatch.h"
 #include "zswcgenerator.h"
@@ -16529,7 +16530,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   ZDvidTarget target;
   target.set("emdata1.int.janelia.org", "f94a", 8500);
 
@@ -16541,4 +16542,96 @@ void ZTest::test(MainWindow *host)
   ptoc();
 #endif
 
+#if 0
+//  tic();
+  ZPixmap pixmap(QSize(10000, 10000));
+  pixmap.clearnUp();
+
+  tic();
+  pixmap.fill(Qt::white);
+  ptoc();
+
+  tic();
+  QPixmap pixmap2 = pixmap.copy(QRect());
+  std::cout << "Time elapsed: " << toc() << std::endl;
+
+  ZImage image(10000, 10000);
+  tic();
+  image.fill(0);
+  ptoc();
+
+  tic();
+  QPixmap pixmap3;
+  pixmap3.fromImage(image);
+  ptoc();
+
+  std::cout << std::endl;
+#endif
+
+#if 1
+  ZPixmap pixmap(10000, 10000);
+
+  tic();
+  pixmap.fill(Qt::transparent);
+  ptoc();
+
+  tic();
+  pixmap.cleanUp();
+  ptoc();
+
+  tic();
+  pixmap.cleanUp();
+  ptoc();
+
+  tic();
+  pixmap.cleanUp();
+  ptoc();
+
+  tic();
+  pixmap.cleanUp();
+  ptoc();
+
+  std::cout << std::endl;
+
+#endif
+
+#if 0
+  ZPainter painter;
+  ZPixmap pixmap(10000, 10000);
+  pixmap.fill(Qt::black);
+  painter.begin(&pixmap);
+
+  ZPixmap pixmap2(10000, 10000);
+  tic();
+  pixmap2.fill(Qt::white);
+  ptoc();
+
+  tic();
+//  pixmap2.clearnUp();
+
+  painter.drawPixmap(0, 0, pixmap2);
+  painter.end();
+  ptoc();
+
+  std::cout << std::endl;
+
+  pixmap.toImage().save((GET_TEST_DATA_DIR + "/test.tif").c_str());
+#endif
+
+#if 0
+  ZPainter painter;
+  ZImage image(256, 256);
+  image.setScale(0.5, 0.5);
+  image.setOffset(10, 20);
+  painter.begin(&image);
+
+  ZPixmap pixmap(256, 256);
+  pixmap.clearnUp();
+  pixmap.fill(Qt::blue);
+  painter.drawPixmap(30, 40, pixmap);
+
+  painter.end();
+
+  image.save((GET_TEST_DATA_DIR + "/test.tif").c_str());
+#endif
 }

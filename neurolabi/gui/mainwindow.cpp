@@ -3229,7 +3229,7 @@ void MainWindow::test()
   delete dlg;
 #endif
 
-#if 1
+#if 0
   ZProofreadWindow *window = ZProofreadWindow::Make();
   window->show();
 #endif
@@ -3293,7 +3293,7 @@ void MainWindow::test()
   presentStackFrame(frame);
 #endif
 
-#if 0
+#if 1
   m_progress->setRange(0, 2);
   m_progress->setLabelText(QString("Testing ..."));
   int currentProgress = 0;
