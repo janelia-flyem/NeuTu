@@ -2,6 +2,7 @@
 #define ZPROOFREADWINDOW_H
 
 #include <QMainWindow>
+#include "tz_stdint.h"
 
 class ZFlyEmProofMvc;
 class QStackedWidget;

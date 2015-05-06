@@ -2,7 +2,7 @@
 #define FLYEMPROOFCONTROLFORM_H
 
 #include <QWidget>
-
+#include "tz_stdint.h"
 //class ZDvidDialog;
 
 namespace Ui {

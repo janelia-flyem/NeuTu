@@ -822,7 +822,7 @@ void ZStackView::updateImageScreen()
   m_imageWidget->blockPaint(m_isRedrawBlocked ||
                             !buddyDocument()->isReadyForPaint());
 
-  qDebug() << m_imageWidget->screenSize();
+//  qDebug() << m_imageWidget->screenSize();
   m_imageWidget->update(QRect(QPoint(0, 0), m_imageWidget->screenSize()));
 }
 

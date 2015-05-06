@@ -1,7 +1,7 @@
 #ifndef ZJSONARRAY_H
 #define ZJSONARRAY_H
 
-#include <stddef.h>
+#include "tz_stdint.h"
 #include "zjsonvalue.h"
 #include "zuncopyable.h"
 

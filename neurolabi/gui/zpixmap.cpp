@@ -8,13 +8,13 @@ ZPixmap::ZPixmap() : m_isVisible(false)
 
 ZPixmap::ZPixmap(const QSize &size) : QPixmap(size), m_isVisible(false)
 {
-//  fill(Qt::transparent);
+  fill(Qt::transparent);
 }
 
 ZPixmap::ZPixmap(int width, int height) :
   QPixmap(width, height), m_isVisible(false)
 {
-//  fill(Qt::transparent);
+  fill(Qt::transparent);
 }
 
 const ZStTransform& ZPixmap::getTransform() const
