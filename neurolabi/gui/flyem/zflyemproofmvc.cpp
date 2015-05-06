@@ -208,6 +208,9 @@ void ZFlyEmProofMvc::presentBodySplit(uint64_t bodyId)
 void ZFlyEmProofMvc::launchSplit(uint64_t bodyId)
 {
   if (bodyId > 0) {
+#ifdef _DEBUG_2
+    bodyId = 14742253;
+#endif
     const QString threadId = "launchSplitFunc";
     if (!m_futureMap.isAlive(threadId)) {
       m_futureMap.removeDeadThread();

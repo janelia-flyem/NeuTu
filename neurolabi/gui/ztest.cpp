@@ -16591,6 +16591,40 @@ void ZTest::test(MainWindow *host)
   pixmap.cleanUp();
   ptoc();
 
+  tic();
+  pixmap.clean(QRect(0, 0, pixmap.width(), pixmap.height()));
+  ptoc();
+
+  std::cout << std::endl;
+#endif
+
+#if 0
+  libdvid::DVIDNodeService service("http://emrecon100.janelia.priv", "2a3");
+//  std::string endPoint = ZDvidUrl::GetEndPoint(url.toStdString());
+
+  libdvid::Dims_t dims(3);
+//  2968_3066_4045
+  dims[0] = 1024;
+  dims[1] = 1024;
+  dims[2] = 1;
+
+  std::vector<unsigned int> offset(3);
+  offset[0] = 2968;
+  offset[1] = 3066;
+  offset[2] = 4045;
+  std::vector<unsigned int> channels(3);
+  channels[0] = 0;
+  channels[1] = 1;
+  channels[2] = 2;
+
+  tic();
+  try {
+    libdvid::Labels3D data = service.get_labels3D(
+          "bodies", dims, offset, channels);
+  } catch (std::exception &e) {
+    std::cout << e.what() << std::endl;
+  }
+  ptoc();
   std::cout << std::endl;
 
 #endif

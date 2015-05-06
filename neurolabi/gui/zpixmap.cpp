@@ -41,12 +41,14 @@ void ZPixmap::cleanUp()
   }
 #endif
 
+#if 0
   if (m_cleanMask.isNull()) {
     m_cleanMask = QBitmap(width(), height());
     m_cleanMask.clear();
   }
 
   setMask(m_cleanMask);
+#endif
 
 #if 0
   QPainter painter;
@@ -59,8 +61,9 @@ void ZPixmap::cleanUp()
   painter.end();
 #endif
 
+  clean(QRect(0, 0, width(), height()));
 
-  //fill(Qt::transparent);
+//  fill(Qt::transparent);
   m_isVisible = false;
 }
 
