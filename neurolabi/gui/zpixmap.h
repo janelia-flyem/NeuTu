@@ -3,6 +3,7 @@
 
 #include <QPixmap>
 #include <QRect>
+#include <QBitmap>
 
 #include "zsttransform.h"
 #include "neutube.h"
@@ -39,6 +40,7 @@ private:
   bool m_isVisible;
 
   QPixmap m_cleanBuffer;
+  QBitmap m_cleanMask;
 };
 
 #endif // ZPIXMAP_H

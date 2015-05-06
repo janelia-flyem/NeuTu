@@ -34,15 +34,31 @@ void ZPixmap::setOffset(double dx, double dy)
 
 void ZPixmap::cleanUp()
 {
+#if 0
   if (m_cleanBuffer.isNull()) {
     m_cleanBuffer = QPixmap(width(), height());
     m_cleanBuffer.fill(Qt::transparent);
   }
+#endif
+
+  if (m_cleanMask.isNull()) {
+    m_cleanMask = QBitmap(width(), height());
+    m_cleanMask.clear();
+  }
+
+  setMask(m_cleanMask);
+
+#if 0
   QPainter painter;
   painter.begin(this);
   painter.setCompositionMode(QPainter::CompositionMode_Source);
-  painter.drawPixmap(0, 0, m_cleanBuffer);
+  painter.fillRect(QRect(0, 0, width(), height()), QColor(0, 0, 0, 0));
+
+//  painter.setCompositionMode(QPainter::CompositionMode_Source);
+//  painter.drawPixmap(0, 0, m_cleanBuffer);
   painter.end();
+#endif
+
 
   //fill(Qt::transparent);
   m_isVisible = false;
@@ -52,10 +68,18 @@ void ZPixmap::clean(const QRect &rect)
 {
   QPainter painter;
   painter.begin(this);
+  painter.setCompositionMode(QPainter::CompositionMode_Source);
+  painter.fillRect(rect, QColor(0, 0, 0, 0));
+  painter.end();
+
+  /*
+  QPainter painter;
+  painter.begin(this);
   QPixmap pixmap(rect.width(), rect.height());
   pixmap.fill(Qt::transparent);
   painter.drawPixmap(rect.left(), rect.top(), pixmap);
   painter.end();
+  */
 }
 
 QRectF ZPixmap::getActiveArea(NeuTube::ECoordinateSystem coord) const
