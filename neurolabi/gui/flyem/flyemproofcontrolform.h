@@ -22,9 +22,16 @@ signals:
   void mergingSelected();
   void dvidSetTriggered();
   void splitTriggered(uint64_t bodyId);
+  void labelSizeChanged(int width, int height);
+
+private slots:
+  void setSegmentSize();
+  void incSegmentSize();
+  void decSegmentSize();
 
 private:
   Ui::FlyEmProofControlForm *ui;
+
 //  ZDvidDialog *m_dvidDlg;
 };
 

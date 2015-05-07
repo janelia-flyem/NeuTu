@@ -17,6 +17,8 @@ public:
   ZDvidLabelSlice();
   ZDvidLabelSlice(int maxWidth, int maxHeight);
 
+  void setMaxSize(int maxWidth, int maxHeight);
+
   void update(const ZStackViewParam &viewParam);
   void update(int z);
   void update();

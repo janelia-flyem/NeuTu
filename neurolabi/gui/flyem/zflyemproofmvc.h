@@ -65,6 +65,8 @@ public slots:
   void showBody3d();
   void showSplit3d();
 
+  void setDvidLabelSliceSize(int width, int height);
+
 //  void toggleEdgeMode(bool edgeOn);
 
 protected:
@@ -95,6 +97,8 @@ void ZFlyEmProofMvc::connectControlPanel(T *panel)
   connect(panel, SIGNAL(dvidSetTriggered()), this, SLOT(setDvidTarget()));
   connect(this, SIGNAL(launchingSplit(uint64_t)),
           panel, SIGNAL(splitTriggered(uint64_t)));
+  connect(panel, SIGNAL(labelSizeChanged(int, int)),
+          this, SLOT(setDvidLabelSliceSize(int, int)));
 }
 
 template <typename T>

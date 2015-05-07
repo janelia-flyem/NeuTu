@@ -13,7 +13,20 @@ FlyEmProofControlForm::FlyEmProofControlForm(QWidget *parent) :
           this, SIGNAL(segmentVisibleChanged(bool)));
   connect(ui->mergeSegmentPushButton, SIGNAL(clicked()),
           this, SIGNAL(mergingSelected()));
-  connect(ui->dvidPushButton, SIGNAL(clicked()), this, SIGNAL(dvidSetTriggered()));
+  connect(ui->dvidPushButton, SIGNAL(clicked()),
+          this, SIGNAL(dvidSetTriggered()));
+  connect(ui->segmentSizePushButton, SIGNAL(clicked()),
+          this, SLOT(setSegmentSize()));
+
+  ui->segmentSizePushButton->hide();
+  ui->segmentSizeDecPushButton->setEnabled(false);
+
+
+  connect(ui->segmentSizeIncPushButton, SIGNAL(clicked()),
+          this, SLOT(incSegmentSize()));
+  connect(ui->segmentSizeDecPushButton, SIGNAL(clicked()),
+          this, SLOT(decSegmentSize()));
+
 }
 
 FlyEmProofControlForm::~FlyEmProofControlForm()
@@ -22,3 +35,21 @@ FlyEmProofControlForm::~FlyEmProofControlForm()
 }
 
 
+void FlyEmProofControlForm::setSegmentSize()
+{
+//  emit labelSizeChanged(1024, 1024);
+}
+
+void FlyEmProofControlForm::incSegmentSize()
+{
+  ui->segmentSizeIncPushButton->setEnabled(false);
+  ui->segmentSizeDecPushButton->setEnabled(true);
+  emit labelSizeChanged(1024, 1024);
+}
+
+void FlyEmProofControlForm::decSegmentSize()
+{
+  ui->segmentSizeIncPushButton->setEnabled(true);
+  ui->segmentSizeDecPushButton->setEnabled(false);
+  emit labelSizeChanged(512, 512);
+}

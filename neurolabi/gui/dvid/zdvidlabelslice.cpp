@@ -70,16 +70,18 @@ void ZDvidLabelSlice::forceUpdate(const ZStackViewParam &viewParam)
             viewPort.left(), viewPort.top(), viewParam.getZ(),
             viewPort.width(), viewPort.height(), 1);
 
-      ZObject3dFactory::MakeObject3dScanArray(*labelArray, yStep, &m_objArray);
+      if (labelArray != NULL) {
+        ZObject3dFactory::MakeObject3dScanArray(*labelArray, yStep, &m_objArray);
 
-      m_objArray.translate(viewPort.left(), viewPort.top(),
-                           viewParam.getZ());
-      if (m_bodyMerger != NULL) {
-        updateLabel(*m_bodyMerger);
+        m_objArray.translate(viewPort.left(), viewPort.top(),
+                             viewParam.getZ());
+        if (m_bodyMerger != NULL) {
+          updateLabel(*m_bodyMerger);
+        }
+        assignColorMap();
+
+        delete labelArray;
       }
-      assignColorMap();
-
-      delete labelArray;
     }
   }
 }
@@ -96,10 +98,10 @@ void ZDvidLabelSlice::update(const ZStackViewParam &viewParam)
 {
   ZStackViewParam newViewParam = viewParam;
   int area = viewParam.getViewPort().width() * viewParam.getViewPort().height();
-  const int maxWidth = 512;
-  const int maxHeight = 512;
-  if (area > maxWidth * maxHeight) {
-    newViewParam.resize(maxWidth, maxHeight);
+//  const int maxWidth = 512;
+//  const int maxHeight = 512;
+  if (area > m_maxWidth * m_maxHeight) {
+    newViewParam.resize(m_maxWidth, m_maxHeight);
   }
 
   if (!m_currentViewParam.contains(newViewParam)) {
@@ -202,4 +204,15 @@ void ZDvidLabelSlice::updateLabelColor()
 void ZDvidLabelSlice::setBodyMerger(ZFlyEmBodyMerger *bodyMerger)
 {
   m_bodyMerger = bodyMerger;
+}
+
+void ZDvidLabelSlice::setMaxSize(int maxWidth, int maxHeight)
+{
+  if (m_maxWidth != maxWidth || m_maxHeight != maxHeight) {
+    m_maxWidth = maxWidth;
+    m_maxHeight = maxHeight;
+    m_currentViewParam.resize(m_maxWidth, m_maxHeight);
+    m_objArray.clear();
+    update();
+  }
 }

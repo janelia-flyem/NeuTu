@@ -282,6 +282,17 @@ void ZFlyEmProofMvc::showSplit3d()
   m_splitProject.showResult3d();
 }
 
+void ZFlyEmProofMvc::setDvidLabelSliceSize(int width, int height)
+{
+  if (getCompleteDocument() != NULL) {
+    ZDvidLabelSlice *slice = getCompleteDocument()->getDvidLabelSlice();
+    if (slice != NULL) {
+      slice->setMaxSize(width, height);
+      getView()->paintObject();
+    }
+  }
+}
+
 //void ZFlyEmProofMvc::toggleEdgeMode(bool edgeOn)
 
 
