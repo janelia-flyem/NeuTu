@@ -22,7 +22,18 @@ public:
   void setOffset(double dx, double dy, double dz);
   void setScale(double sx, double sy, double sz);
 
+  /*!
+   * \brief Set X-Y offset
+   *
+   * The transformation along Z is unchanged.
+   */
   void setOffset(double dx, double dy);
+
+  /*!
+   * \brief Set X-Y scale
+   *
+   * The transformation along Z is unchanged.
+   */
   void setScale(double sx, double sy);
 
   inline double getSx() const { return m_sx; }
@@ -51,10 +62,12 @@ public:
   bool isIntTransform() const;
   bool isIntOffset() const;
   bool isIntScale() const;
+
   bool hasOffset() const;
   bool hasScale() const;
 
   ZStTransform getInverseTransform() const;
+
   ZPoint transform(const ZPoint &pt) const;
   QPointF transform(const QPointF &pt) const;
   QPointF transform(const QPoint &pt) const;
@@ -68,6 +81,9 @@ public:
    */
   void estimate(const QRectF &input, const QRectF &output);
 
+  /*!
+   * \brief Check if the transformation is identity
+   */
   bool isIdentity() const;
 
 private:

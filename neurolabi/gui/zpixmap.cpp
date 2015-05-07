@@ -1,20 +1,35 @@
 #include "zpixmap.h"
 
+#include <iostream>
+
 #include <QPainter>
+#include <QtConcurrentRun>
+#include <QApplication>
 
 ZPixmap::ZPixmap() : m_isVisible(false)
 {
+  m_cleanWatcher = new QFutureWatcher<void>(NULL);
 }
 
 ZPixmap::ZPixmap(const QSize &size) : QPixmap(size), m_isVisible(false)
 {
   fill(Qt::transparent);
+  m_cleanWatcher = new QFutureWatcher<void>(NULL);
 }
 
 ZPixmap::ZPixmap(int width, int height) :
   QPixmap(width, height), m_isVisible(false)
 {
   fill(Qt::transparent);
+  m_cleanWatcher = new QFutureWatcher<void>(NULL);
+}
+
+ZPixmap::~ZPixmap()
+{
+  if (m_cleanWatcher->isRunning()) {
+    m_cleanWatcher->waitForFinished();
+  }
+  delete m_cleanWatcher;
 }
 
 const ZStTransform& ZPixmap::getTransform() const
@@ -30,6 +45,13 @@ void ZPixmap::setScale(double sx, double sy)
 void ZPixmap::setOffset(double dx, double dy)
 {
   m_transform.setOffset(dx, dy);
+}
+
+void ZPixmap::cleanFunc(QPixmap *pixmap)
+{
+//  std::cout << "background cleaning" << std::endl;
+  pixmap->fill(Qt::transparent);
+//  std::cout << "done" << std::endl;
 }
 
 void ZPixmap::cleanUp()
@@ -61,7 +83,27 @@ void ZPixmap::cleanUp()
   painter.end();
 #endif
 
-  clean(QRect(0, 0, width(), height()));
+  if (width() * height() <= 4096 * 4096) {
+    fill(Qt::transparent);
+  } else {
+    if (m_cleanBuffer.isNull()) {
+      m_cleanBuffer = QPixmap(width(), height());
+      m_cleanBuffer.fill(Qt::transparent);
+    } else {
+      if (!m_cleanWatcher->isFinished()) {
+//        std::cout << "Waiting..." << std::endl;
+        m_cleanWatcher->waitForFinished();
+      }
+    }
+
+    swap(m_cleanBuffer);
+
+    QFuture<void> future = QtConcurrent::run(this, &ZPixmap::cleanFunc, &m_cleanBuffer);
+    m_cleanWatcher->setFuture(future);
+  }
+//  m_cleanFuture = future;
+
+  //clean(QRect(0, 0, width(), height()));
 
 //  fill(Qt::transparent);
   m_isVisible = false;

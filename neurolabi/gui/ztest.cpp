@@ -16568,32 +16568,77 @@ void ZTest::test(MainWindow *host)
   std::cout << std::endl;
 #endif
 
-#if 1
+#if 0
+  std::cout << new QFutureWatcher<void>(NULL) << std::endl;
+#endif
+
+#if 0
   ZPixmap pixmap(10000, 10000);
+
+  ZPixmap pixmap2(10000, 10000);
+
+//  ZPixmap pixmap3(10000, 10000);
+  ZImage image(10000, 10000);
 
   tic();
   pixmap.fill(Qt::transparent);
   ptoc();
 
+
   tic();
-  pixmap.cleanUp();
+  pixmap2.fill(Qt::transparent);
   ptoc();
+
+
+
+//  tic();
+//  pixmap3.fill(Qt::transparent);
+//  ptoc();
 
   tic();
   pixmap.cleanUp();
   ptoc();
+  std::cout << "1 inited" << std::endl;
 
   tic();
-  pixmap.cleanUp();
+  pixmap2.cleanUp();
   ptoc();
+  std::cout << "2 inited" << std::endl;
+
 
   tic();
-  pixmap.cleanUp();
+  for (int i = 0; i < 100; ++i) {
+//    pixmap3.fill(Qt::transparent);
+    for (int j = 0; j < 100000000; ++j);
+
+    pixmap.cleanUp();
+    std::cout << "1 cleaned" << std::endl;
+
+//    pixmap2.cleanUp();
+//    std::cout << "2 cleaned" << std::endl;
+  }
   ptoc();
 
-  tic();
-  pixmap.clean(QRect(0, 0, pixmap.width(), pixmap.height()));
-  ptoc();
+//  pixmap3.cleanUp();
+
+//  tic();
+//  pixmap.cleanUp();
+
+//  pixmap3.cleanUp();
+
+//  pixmap2.cleanUp();
+
+//  pixmap.cleanUp();
+
+//  pixmap2.cleanUp();
+//  ptoc();
+//  tic();
+//  QApplication::processEvents();
+//  ptoc();
+
+//  tic();
+//  pixmap3.cleanUp();
+//  ptoc();
 
   std::cout << std::endl;
 #endif
@@ -16667,5 +16712,16 @@ void ZTest::test(MainWindow *host)
   painter.end();
 
   image.save((GET_TEST_DATA_DIR + "/test.tif").c_str());
+#endif
+
+#if 1
+  ZDvidTarget target("emdata1", "51d", 8500);
+  target.setLabelBlockName("labels");
+  target.setBodyLabelName("bodies");
+  ZFlyEmDvidReader reader;
+  reader.open(target);
+  ZObject3dScan obj = reader.readCoarseBody(14742253);
+  obj.save(GET_TEST_DATA_DIR + "/test.sobj");
+
 #endif
 }
