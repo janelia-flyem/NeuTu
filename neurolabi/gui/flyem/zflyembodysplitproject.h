@@ -47,6 +47,7 @@ public:
 
   void setDocument(ZSharedPointer<ZStackDoc> doc);
   ZStackDoc* getDocument() const;
+  ZSharedPointer<ZStackDoc> getSharedDocument() const;
 
   template<typename T>
   T* getDocument() const;

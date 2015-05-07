@@ -9,11 +9,24 @@
 
 ZDvidLabelSlice::ZDvidLabelSlice()
 {
+  init(512, 512);
+}
+
+ZDvidLabelSlice::ZDvidLabelSlice(int maxWidth, int maxHeight)
+{
+  init(maxWidth, maxHeight);
+}
+
+void ZDvidLabelSlice::init(int maxWidth, int maxHeight)
+{
   setTarget(ZStackObject::OBJECT_CANVAS);
   m_type = ZStackObject::TYPE_DVID_LABEL_SLICE;
   m_objColorSheme.setColorScheme(ZColorScheme::RANDOM_COLOR);
   m_hitLabel = -1;
   m_bodyMerger = NULL;
+
+  m_maxWidth = maxWidth;
+  m_maxHeight = maxHeight;
 }
 
 ZSTACKOBJECT_DEFINE_CLASS_NAME(ZDvidLabelSlice)

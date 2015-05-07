@@ -15,6 +15,7 @@ class ZDvidLabelSlice : public ZStackObject
 {
 public:
   ZDvidLabelSlice();
+  ZDvidLabelSlice(int maxWidth, int maxHeight);
 
   void update(const ZStackViewParam &viewParam);
   void update(int z);
@@ -54,6 +55,7 @@ private:
   void assignColorMap();
   void forceUpdate(const ZStackViewParam &viewParam);
   void updateLabel(const ZFlyEmBodyMerger &merger);
+  void init(int maxWidth, int maxHeight);
 
 private:
   ZDvidTarget m_dvidTarget;
@@ -63,6 +65,9 @@ private:
   uint64_t m_hitLabel;
   std::set<uint64_t> m_selectedSet;
   ZFlyEmBodyMerger *m_bodyMerger;
+
+  int m_maxWidth;
+  int m_maxHeight;
 };
 
 #endif // ZDVIDLABELSLICE_H

@@ -82,12 +82,18 @@ ZDvidLabelSlice* ZFlyEmProofDoc::getDvidLabelSlice() const
   return NULL;
 }
 
-ZDvidSparseStack* ZFlyEmProofDoc::getDvidSparseStack() const
+const ZDvidSparseStack *ZFlyEmProofDoc::getDvidSparseStack() const
 {
   return dynamic_cast<ZDvidSparseStack*>(
         getObjectGroup().findFirstSameSource(
           ZStackObject::TYPE_DVID_SPARSE_STACK,
           ZStackObjectSourceFactory::MakeSplitObjectSource()));
+}
+
+ZDvidSparseStack* ZFlyEmProofDoc::getDvidSparseStack()
+{
+  return const_cast<ZDvidSparseStack*>(
+        static_cast<const ZFlyEmProofDoc&>(*this).getDvidSparseStack());
 }
 
 void ZFlyEmProofDoc::updateBodyObject()
@@ -109,6 +115,37 @@ void ZFlyEmProofDoc::clearData()
 bool ZFlyEmProofDoc::isSplittable(uint64_t bodyId) const
 {
   return !m_bodyMerger.isMapped(bodyId);
+}
+
+
+const ZSparseStack* ZFlyEmProofDoc::getSparseStack() const
+{
+  if (getDvidSparseStack() != NULL) {
+    return getDvidSparseStack()->getSparseStack();
+  }
+
+  return NULL;
+}
+
+
+ZSparseStack* ZFlyEmProofDoc::getSparseStack()
+{
+  if (getDvidSparseStack() != NULL) {
+    return getDvidSparseStack()->getSparseStack();
+  }
+
+  return NULL;
+}
+
+bool ZFlyEmProofDoc::hasVisibleSparseStack() const
+{
+  /*
+  if (hasSparseStack()) {
+    return getDvidSparseStack()->isVisible();
+  }
+  */
+
+  return false;
 }
 
 

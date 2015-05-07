@@ -41,6 +41,9 @@ public:
 
   const ZObject3dScan *getObjectMask() const;
 
+  const ZSparseStack* getSparseStack() const;
+  ZSparseStack *getSparseStack();
+
 private:
   void initBlockGrid();
   void fillValue();

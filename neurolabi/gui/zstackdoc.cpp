@@ -625,7 +625,22 @@ bool ZStackDoc::hasSparseObject() const
 
 bool ZStackDoc::hasSparseStack() const
 {
-  return m_sparseStack != NULL;
+  return getSparseStack() != NULL;
+}
+
+bool ZStackDoc::hasVisibleSparseStack() const
+{
+  return hasSparseStack();
+}
+
+const ZSparseStack* ZStackDoc::getSparseStack() const
+{
+  return m_sparseStack;
+}
+
+ZSparseStack* ZStackDoc::getSparseStack()
+{
+  return m_sparseStack;
 }
 
 bool ZStackDoc::hasSwc() const

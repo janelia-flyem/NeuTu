@@ -59,7 +59,11 @@ public slots:
   void notifySplitTriggered();
   void exitSplit();
   void showBodyQuickView();
+  void showSplitQuickView();
   void presentBodySplit(uint64_t bodyId);
+
+  void showBody3d();
+  void showSplit3d();
 
 //  void toggleEdgeMode(bool edgeOn);
 
@@ -97,6 +101,11 @@ template <typename T>
 void ZFlyEmProofMvc::connectSplitControlPanel(T *panel)
 {
   connect(panel, SIGNAL(quickViewTriggered()), this, SLOT(showBodyQuickView()));
+  connect(panel, SIGNAL(splitQuickViewTriggered()),
+          this, SLOT(showSplitQuickView()));
+  connect(panel, SIGNAL(bodyViewTriggered()), this, SLOT(showBody3d()));
+  connect(panel, SIGNAL(splitViewTriggered()), this, SLOT(showSplit3d()));
+
   connect(panel, SIGNAL(exitingSplit()), this, SLOT(exitSplit()));
 }
 

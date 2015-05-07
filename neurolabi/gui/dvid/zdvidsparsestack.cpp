@@ -243,4 +243,16 @@ const ZObject3dScan* ZDvidSparseStack::getObjectMask() const
   return m_sparseStack.getObjectMask();
 }
 
+const ZSparseStack* ZDvidSparseStack::getSparseStack() const
+{
+  return &m_sparseStack;
+}
+
+ZSparseStack* ZDvidSparseStack::getSparseStack()
+{
+  fillValue();
+
+  return &m_sparseStack;
+}
+
 ZSTACKOBJECT_DEFINE_CLASS_NAME(ZDvidSparseStack)

@@ -8,6 +8,9 @@ class ZFlyEmProofMvc;
 class QStackedWidget;
 class ZFlyEmMessageWidget;
 
+/*!
+ * \brief The mainwindow class of proofreading
+ */
 class ZProofreadWindow : public QMainWindow
 {
   Q_OBJECT

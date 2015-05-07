@@ -1500,7 +1500,7 @@ void ZStackView::paintStackBuffer()
   }
 
   if (!showImage) {
-    if (!buddyDocument()->hasSparseStack()) {
+    if (!buddyDocument()->hasVisibleSparseStack()) {
       return;
     }
   }
@@ -1517,7 +1517,7 @@ void ZStackView::paintStackBuffer()
         m_image->setBackground();
         paintObjectBuffer(m_imagePainter, ZStackObject::STACK_CANVAS);
 
-        if (buddyDocument()->hasSparseStack()) {
+        if (buddyDocument()->hasVisibleSparseStack()) {
           ZStack *slice =
               buddyDocument()->getSparseStack()->getSlice(getCurrentZ());
           //paintSingleChannelStackSlice(slice, 0);
@@ -1543,7 +1543,7 @@ void ZStackView::paintStackBuffer()
         }
       } else {
         m_image->setBackground();
-        if (buddyDocument()->hasSparseStack()) {
+        if (buddyDocument()->hasVisibleSparseStack()) {
           ZStack *slice =
               buddyDocument()->getSparseStack()->getMip();
           if (slice != NULL) {

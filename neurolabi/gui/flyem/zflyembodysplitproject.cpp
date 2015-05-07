@@ -165,7 +165,7 @@ void ZFlyEmBodySplitProject::showDataFrame3d()
 
       ZWindowFactory factory;
       //factory.setParentWidget(parent);
-      window = factory.make3DWindow(getDocument(), Z3DWindow::NORMAL_INIT);
+      window = factory.make3DWindow(getSharedDocument(), Z3DWindow::NORMAL_INIT);
       window->setWindowTitle(getDocument()->getTitle());
 
       getDocument()->registerUser(window);
@@ -364,7 +364,9 @@ void ZFlyEmBodySplitProject::updateResult3dQuick()
 
 void ZFlyEmBodySplitProject::showResult3dQuick()
 {
-  if (m_dataFrame != NULL) {
+  ZStackDoc *mainDoc = getDocument();
+
+  if (mainDoc != NULL) {
     if (m_quickResultWindow == NULL) {
       ZWindowFactory windowFactory;
       windowFactory.setWindowTitle("Splitting Result");
@@ -376,10 +378,14 @@ void ZFlyEmBodySplitProject::showResult3dQuick()
 
       connect(m_quickResultWindow, SIGNAL(destroyed()),
               this, SLOT(shallowClearQuickResultWindow()));
-      connect(m_dataFrame->document().get(), SIGNAL(labelFieldModified()),
+      connect(mainDoc, SIGNAL(labelFieldModified()),
               this, SLOT(updateResult3dQuick()));
+      if (m_dataFrame != NULL) {
+        connect(m_quickResultWindow, SIGNAL(locating2DViewTriggered(ZStackViewParam)),
+                m_dataFrame, SLOT(setView(ZStackViewParam)));
+      }
       connect(m_quickResultWindow, SIGNAL(locating2DViewTriggered(ZStackViewParam)),
-              m_dataFrame, SLOT(setView(ZStackViewParam)));
+              this, SIGNAL(locating2DViewTriggered(ZStackViewParam)));
     }
 
     m_quickResultWindow->show();
@@ -389,7 +395,7 @@ void ZFlyEmBodySplitProject::showResult3dQuick()
 
 void ZFlyEmBodySplitProject::showResult3d()
 {
-  if (m_dataFrame != NULL) {
+  if (getDocument() != NULL) {
     if (m_resultWindow == NULL) {
       //emit messageGenerated("Showing results in 3D ...");
       //ZStackDocReader docReader;
@@ -409,13 +415,18 @@ void ZFlyEmBodySplitProject::showResult3d()
         //newFrame->addDocData(docReader);
         //newFrame->document()->setTag(NeuTube::Document::FLYEM_SPLIT);
         //newFrame->document()->setStackFactory(factory);
+
+        connect(getDocument(), SIGNAL(labelFieldModified()),
+                doc, SLOT(reloadStack()));
+        /*
         m_dataFrame->connect(
               m_dataFrame->document().get(), SIGNAL(labelFieldModified()),
               doc, SLOT(reloadStack()));
+              */
         //m_resultWindow = newFrame->open3DWindow(NULL);
-        if (m_dataFrame->document()->hasSparseStack()) {
+        if (getDocument()->hasVisibleSparseStack()) {
           ZIntPoint dsIntv =
-              m_dataFrame->document()->getSparseStack()->getDownsampleInterval();
+              getDocument()->getSparseStack()->getDownsampleInterval();
           if (dsIntv.getX() != dsIntv.getZ()) {
             m_resultWindow->getVolumeSource()->setZScale(
                   ((float) (dsIntv.getZ() + 1)) / (dsIntv.getX() + 1));
@@ -1123,6 +1134,15 @@ ZStackDoc* ZFlyEmBodySplitProject::getDocument() const
   }
 
   return m_doc.get();
+}
+
+ZSharedPointer<ZStackDoc> ZFlyEmBodySplitProject::getSharedDocument() const
+{
+  if (getDataFrame() != NULL) {
+    return getDataFrame()->document();
+  }
+
+  return m_doc;
 }
 
 void ZFlyEmBodySplitProject::setDocument(ZSharedPointer<ZStackDoc> doc)

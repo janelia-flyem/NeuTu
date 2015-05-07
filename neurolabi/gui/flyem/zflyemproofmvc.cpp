@@ -267,6 +267,21 @@ void ZFlyEmProofMvc::showBodyQuickView()
   m_splitProject.quickView();
 }
 
+void ZFlyEmProofMvc::showSplitQuickView()
+{
+  m_splitProject.showResult3dQuick();
+}
+
+void ZFlyEmProofMvc::showBody3d()
+{
+  m_splitProject.showDataFrame3d();
+}
+
+void ZFlyEmProofMvc::showSplit3d()
+{
+  m_splitProject.showResult3d();
+}
+
 //void ZFlyEmProofMvc::toggleEdgeMode(bool edgeOn)
 
 

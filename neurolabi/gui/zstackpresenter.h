@@ -20,6 +20,7 @@
 #include "zmouseeventmapper.h"
 #include "zmouseeventprocessor.h"
 #include "qthreadfuturemap.h"
+#include "zsharedpointer.h"
 
 class ZStackView;
 class ZStackDoc;
@@ -41,6 +42,7 @@ public:
   ~ZStackPresenter();
   ZStackDoc* buddyDocument() const;
   ZStackView* buddyView() const;
+  ZSharedPointer<ZStackDoc> getSharedBuddyDocument() const;
 
   void updateView() const;
 

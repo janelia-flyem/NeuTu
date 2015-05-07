@@ -19,6 +19,9 @@ public:
 signals:
   void exitingSplit();
   void quickViewTriggered();
+  void splitQuickViewTriggered();
+  void bodyViewTriggered();
+  void splitViewTriggered();
 
 private slots:
   void slotTest();

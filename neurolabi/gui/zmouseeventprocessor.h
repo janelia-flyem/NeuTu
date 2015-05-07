@@ -4,6 +4,7 @@
 #include <QList>
 #include "zmouseeventrecorder.h"
 #include "zmouseeventmapper.h"
+#include "zsharedpointer.h"
 
 class ZInteractiveContext;
 class ZImageWidget;
@@ -16,7 +17,7 @@ public:
 
   void setInteractiveContext(ZInteractiveContext *context);
   void setImageWidget(ZImageWidget *widget);
-  void setDocument(ZStackDoc *doc);
+  void setDocument(ZSharedPointer<ZStackDoc> doc);
 
   const ZMouseEvent&
   process(QMouseEvent *event, ZMouseEvent::EAction action, int z);
@@ -56,7 +57,7 @@ private:
   ZMouseEventRecorder m_recorder;
   ZInteractiveContext *m_context;
   ZImageWidget *m_imageWidget;
-  ZStackDoc *m_doc;
+  ZSharedPointer<ZStackDoc> m_doc;
 
   ZMouseEvent m_emptyEvent;
 

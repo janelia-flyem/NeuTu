@@ -5,7 +5,7 @@
 #include "zflyembodymerger.h"
 #include "dvid/zdvidtarget.h"
 #include "zstackdoccommand.h"
-#include "zflyembodysplitproject.h"
+//#include "zflyembodysplitproject.h"
 
 class ZDvidSparseStack;
 
@@ -31,7 +31,14 @@ public:
 
   ZDvidTileEnsemble* getDvidTileEnsemble() const;
   ZDvidLabelSlice* getDvidLabelSlice() const;
-  ZDvidSparseStack* getDvidSparseStack() const;
+  const ZDvidSparseStack* getDvidSparseStack() const;
+  ZDvidSparseStack* getDvidSparseStack();
+
+  const ZSparseStack* getSparseStack() const;
+  ZSparseStack* getSparseStack();
+
+  //bool hasSparseStack() const;
+  bool hasVisibleSparseStack() const;
 
   ZFlyEmBodyMerger* getBodyMerger() {
     return &m_bodyMerger;
@@ -50,7 +57,7 @@ public slots:
 private:
   ZFlyEmBodyMerger m_bodyMerger;
   ZDvidTarget m_dvidTarget;
-  ZFlyEmBodySplitProject m_splitProject;
+  //ZFlyEmBodySplitProject m_splitProject;
 };
 
 namespace ZFlyEmProofDocCommand {

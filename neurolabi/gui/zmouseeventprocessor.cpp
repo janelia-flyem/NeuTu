@@ -6,7 +6,7 @@
 #include "zstack.hxx"
 
 ZMouseEventProcessor::ZMouseEventProcessor() :
-  m_context(NULL), m_imageWidget(NULL), m_doc(NULL)
+  m_context(NULL), m_imageWidget(NULL)
 {
   registerMapper();
 }
@@ -73,7 +73,7 @@ void ZMouseEventProcessor::setImageWidget(ZImageWidget *widget)
   m_imageWidget = widget;
 }
 
-void ZMouseEventProcessor::setDocument(ZStackDoc *doc)
+void ZMouseEventProcessor::setDocument(ZSharedPointer<ZStackDoc> doc)
 {
   m_doc = doc;
   m_leftButtonReleaseMapper.setDocument(doc);
@@ -84,7 +84,7 @@ void ZMouseEventProcessor::setDocument(ZStackDoc *doc)
 
 const ZStackDoc* ZMouseEventProcessor::getDocument() const
 {
-  return m_doc;
+  return m_doc.get();
 }
 
 const ZMouseEventMapper& ZMouseEventProcessor::getMouseEventMapper(

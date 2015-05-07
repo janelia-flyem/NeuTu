@@ -171,7 +171,9 @@ public: //attributes
   bool hasDrawable() const;
   bool hasDrawable(ZStackObject::ETarget target) const;
   bool hasSparseObject() const;
-  bool hasSparseStack() const;
+
+  virtual bool hasSparseStack() const;
+  virtual bool hasVisibleSparseStack() const;
 
   bool hasSelectedSwc() const;
   bool hasSelectedSwcNode() const;
@@ -647,9 +649,8 @@ public: /* puncta related methods */
     return m_playerList;
   }
 
-  inline const ZSparseStack* getSparseStack() const {
-    return m_sparseStack;
-  }
+  virtual const ZSparseStack* getSparseStack() const;
+  virtual ZSparseStack* getSparseStack();
 
   QList<const ZDocPlayer*> getPlayerList(ZStackObjectRole::TRole role) const;
 

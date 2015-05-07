@@ -22,7 +22,13 @@ void FlyEmSplitControlForm::setupWidgetBehavior()
   connect(ui->exitPushButton, SIGNAL(clicked()), this, SIGNAL(exitingSplit()));
   connect(ui->quickViewPushButton, SIGNAL(clicked()),
           this, SIGNAL(quickViewTriggered()));
-  connect(ui->quickViewPushButton, SIGNAL(clicked()), this, SLOT(slotTest()));
+  connect(ui->viewResultQuickPushButton, SIGNAL(clicked()),
+          this, SIGNAL(splitQuickViewTriggered()));
+  connect(ui->view3dBodyPushButton, SIGNAL(clicked()),
+          this, SIGNAL(bodyViewTriggered()));
+  connect(ui->viewSplitPushButton, SIGNAL(clicked()),
+          this, SIGNAL(splitViewTriggered()));
+//  connect(ui->quickViewPushButton, SIGNAL(clicked()), this, SLOT(slotTest()));
 }
 
 void FlyEmSplitControlForm::slotTest()

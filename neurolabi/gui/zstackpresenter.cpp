@@ -441,6 +441,17 @@ ZStackDoc* ZStackPresenter::buddyDocument() const
   return NULL;
 }
 
+ZSharedPointer<ZStackDoc> ZStackPresenter::getSharedBuddyDocument() const
+{
+  if (getParentFrame() != NULL) {
+    return getParentFrame()->document();
+  } else if (getParentMvc() != NULL) {
+    return getParentMvc()->getDocument();
+  }
+
+  return ZSharedPointer<ZStackDoc>();
+}
+
 ZStackView* ZStackPresenter::buddyView() const
 {
   if (getParentFrame() != NULL) {
@@ -474,7 +485,7 @@ void ZStackPresenter::prepareView()
   //m_interactiveContext.setView(buddyView()->imageWidget()->projectRegion(),
   //                             buddyView()->imageWidget()->viewPort());
   m_mouseEventProcessor.setImageWidget(buddyView()->imageWidget());
-  m_mouseEventProcessor.setDocument(buddyDocument());
+  m_mouseEventProcessor.setDocument(getSharedBuddyDocument());
 
   m_swcKeyMapper.setTag(buddyDocument()->getTag());
 }
