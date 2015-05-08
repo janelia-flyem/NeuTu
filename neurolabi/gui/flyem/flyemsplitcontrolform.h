@@ -22,10 +22,12 @@ signals:
   void splitQuickViewTriggered();
   void bodyViewTriggered();
   void splitViewTriggered();
+  void changingSplit(uint64_t);
 
 private slots:
   void slotTest();
   void setSplit(uint64_t bodyId);
+  void changeSplit();
 
 private:
   void setupWidgetBehavior();

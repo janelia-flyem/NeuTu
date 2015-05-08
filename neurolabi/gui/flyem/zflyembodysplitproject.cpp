@@ -231,8 +231,9 @@ void ZFlyEmBodySplitProject::quickView()
     ZObject3dScan obj;
     if (getDocument() != NULL) {
       const ZObject3dScan *objMask = NULL;
-      if (getDocument()->getSparseStack() != NULL) {
-        objMask = getDocument()->getSparseStack()->getObjectMask();
+      const ZStackDoc *doc = getDocument();
+      if (doc->getSparseStack() != NULL) {
+        objMask = doc->getSparseStack()->getObjectMask();
       } else {
         if (getDocument<ZFlyEmProofDoc>() != NULL) {
           objMask = getDocument<ZFlyEmProofDoc>()->getDvidSparseStack()->getObjectMask();
@@ -740,7 +741,7 @@ void ZFlyEmBodySplitProject::selectSeed(int label)
 
 void ZFlyEmBodySplitProject::backupSeed()
 {
-  if (getBodyId() < 0) {
+  if (getBodyId() == 0) {
     return;
   }
 

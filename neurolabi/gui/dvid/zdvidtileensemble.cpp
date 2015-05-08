@@ -57,10 +57,20 @@ void ZDvidTileEnsemble::display(
   QRect fov = m_view->imageWidget()->viewPort();
   QSize screenSize = m_view->imageWidget()->size();
 
+
+  int zoomRatio = std::min(fov.width() / screenSize.width(),
+                           fov.height() / screenSize.height());
+  int level = 0;
+  if (zoomRatio > 0) {
+    ++level;
+  }
+  while ((zoomRatio /= 2) > 0) {
+    ++level;
+  }
+
+
   m_view->getViewParameter(NeuTube::COORD_STACK).getViewPort();
-  int resLevel = std::min(m_tilingInfo.getMaxLevel() - 1,
-                          std::min(fov.width() / screenSize.width(),
-                                   fov.height() / screenSize.height()));
+  int resLevel = std::min(m_tilingInfo.getMaxLevel(), level);
 
   std::vector<ZDvidTileInfo::TIndex> tileIndices =
       m_tilingInfo.getCoverIndex(resLevel, fov);

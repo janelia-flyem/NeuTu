@@ -263,6 +263,17 @@ void ZFlyEmProofMvc::exitSplit()
   }
 }
 
+void ZFlyEmProofMvc::switchSplitBody(uint64_t bodyId)
+{
+  if (bodyId != m_splitProject.getBodyId()) {
+    if (m_splitOn) {
+//      exitSplit();
+      m_splitProject.clear();
+      launchSplit(bodyId);
+    }
+  }
+}
+
 void ZFlyEmProofMvc::processMessageSlot(const QString &message)
 {
   ZJsonObject obj;

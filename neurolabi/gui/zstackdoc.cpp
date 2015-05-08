@@ -5027,6 +5027,10 @@ bool ZStackDoc::executeSwcNodeSmartExtendCommand(const ZPoint &center)
 bool ZStackDoc::executeSwcNodeSmartExtendCommand(
     const ZPoint &center, double radius)
 {
+  if (!hasStackData()) {
+    return false;
+  }
+
   bool succ = false;
   QString message;
 

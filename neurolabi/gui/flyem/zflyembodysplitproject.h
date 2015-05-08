@@ -30,11 +30,11 @@ public:
   void clear();
 
   void setDvidTarget(const ZDvidTarget &target);
-  inline void setBodyId(int bodyId) {
+  inline void setBodyId(uint64_t bodyId) {
     m_bodyId = bodyId;
   }
 
-  inline int getBodyId() const { return m_bodyId; }
+  inline uint64_t getBodyId() const { return m_bodyId; }
   inline const ZDvidTarget& getDvidTarget() const { return m_dvidTarget; }
 
   ZFlyEmNeuron getFlyEmNeuron() const;
@@ -160,7 +160,7 @@ private:
 
 private:
   ZDvidTarget m_dvidTarget;
-  int m_bodyId;
+  uint64_t m_bodyId;
   ZStackFrame *m_dataFrame;
   ZSharedPointer<ZStackDoc> m_doc;
 //  Z3DWindow *m_bodyWindow;
