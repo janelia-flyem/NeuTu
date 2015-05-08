@@ -3,6 +3,7 @@
 
 #include <QString>
 #include "zintpoint.h"
+#include "tz_stdint.h"
 
 class ZFlyEmBookmark
 {

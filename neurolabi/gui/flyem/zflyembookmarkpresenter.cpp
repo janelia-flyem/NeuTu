@@ -15,7 +15,7 @@ QVariant ZFlyEmBookmarkPresenter::data(
   case Qt::DisplayRole:
     switch (index) {
     case 3:
-      return bookmark.getBodyId();
+      return (int) bookmark.getBodyId();
     case 0:
       return bookmark.getLocation().getX();
     case 1:
