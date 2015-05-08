@@ -2092,11 +2092,19 @@ void ZStackPresenter::process(const ZStackOperator &op)
     }
     break;
   case ZStackOperator::OP_SWC_SMART_EXTEND:
-    if (buddyDocument()->executeSwcNodeSmartExtendCommand(
-          m_mouseEventProcessor.getLatestStackPosition(),
-          m_stroke.getWidth() / 2.0)) {
-      //status = MOUSE_COMMAND_EXECUTED;
-      interactionEvent.setEvent(ZInteractionEvent::EVENT_SWC_NODE_EXTENDED);
+    if (buddyDocument()->hasStackData()) {
+      if (buddyDocument()->executeSwcNodeSmartExtendCommand(
+            m_mouseEventProcessor.getLatestStackPosition(),
+            m_stroke.getWidth() / 2.0)) {
+        //status = MOUSE_COMMAND_EXECUTED;
+        interactionEvent.setEvent(ZInteractionEvent::EVENT_SWC_NODE_EXTENDED);
+      }
+    } else {
+      if (buddyDocument()->executeSwcNodeExtendCommand(
+            m_mouseEventProcessor.getLatestStackPosition(),
+            m_stroke.getWidth() / 2.0)) {
+        interactionEvent.setEvent(ZInteractionEvent::EVENT_SWC_NODE_EXTENDED);
+      }
     }
     break;
   case ZStackOperator::OP_SWC_ADD_NODE:

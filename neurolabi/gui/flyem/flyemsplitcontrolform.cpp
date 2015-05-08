@@ -28,12 +28,19 @@ void FlyEmSplitControlForm::setupWidgetBehavior()
           this, SIGNAL(bodyViewTriggered()));
   connect(ui->viewSplitPushButton, SIGNAL(clicked()),
           this, SIGNAL(splitViewTriggered()));
-//  connect(ui->quickViewPushButton, SIGNAL(clicked()), this, SLOT(slotTest()));
+  connect(ui->loadBodyPushButton, SIGNAL(clicked()),
+          this, SLOT(changeSplit()));
+  connect(ui->loadBodyPushButton, SIGNAL(clicked()), this, SLOT(slotTest()));
 }
 
 void FlyEmSplitControlForm::slotTest()
 {
   std::cout << "slot triggered." << std::endl;
+}
+
+void FlyEmSplitControlForm::changeSplit()
+{
+  emit changingSplit((uint64_t) ui->bodyIdSpinBox->value());
 }
 
 void FlyEmSplitControlForm::setSplit(uint64_t bodyId)

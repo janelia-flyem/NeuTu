@@ -58,6 +58,7 @@ public slots:
   void processMessageSlot(const QString &message);
   void notifySplitTriggered();
   void exitSplit();
+  void switchSplitBody(uint64_t bodyId);
   void showBodyQuickView();
   void showSplitQuickView();
   void presentBodySplit(uint64_t bodyId);
@@ -115,6 +116,8 @@ void ZFlyEmProofMvc::connectSplitControlPanel(T *panel)
   connect(panel, SIGNAL(splitViewTriggered()), this, SLOT(showSplit3d()));
 
   connect(panel, SIGNAL(exitingSplit()), this, SLOT(exitSplit()));
+  connect(panel, SIGNAL(changingSplit(uint64_t)),
+          SLOT(switchSplitBody(uint64_t)));
 }
 
 
