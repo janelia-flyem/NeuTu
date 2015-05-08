@@ -16643,14 +16643,14 @@ void ZTest::test(MainWindow *host)
   std::cout << std::endl;
 #endif
 
-#if 0
-  libdvid::DVIDNodeService service("http://emrecon100.janelia.priv", "2a3");
+#if 1
+  libdvid::DVIDNodeService service("http://emdata1.int.janelia.org:8500", "ccf");
 //  std::string endPoint = ZDvidUrl::GetEndPoint(url.toStdString());
 
   libdvid::Dims_t dims(3);
 //  2968_3066_4045
-  dims[0] = 1024;
-  dims[1] = 1024;
+  dims[0] = 512;
+  dims[1] = 512;
   dims[2] = 1;
 
   std::vector<unsigned int> offset(3);
@@ -16665,13 +16665,12 @@ void ZTest::test(MainWindow *host)
   tic();
   try {
     libdvid::Labels3D data = service.get_labels3D(
-          "bodies", dims, offset, channels);
+          "labels", dims, offset, channels, false, true);
   } catch (std::exception &e) {
     std::cout << e.what() << std::endl;
   }
   ptoc();
   std::cout << std::endl;
-
 #endif
 
 #if 0
@@ -16714,7 +16713,7 @@ void ZTest::test(MainWindow *host)
   image.save((GET_TEST_DATA_DIR + "/test.tif").c_str());
 #endif
 
-#if 1
+#if 0
   ZDvidTarget target("emdata1", "51d", 8500);
   target.setLabelBlockName("labels");
   target.setBodyLabelName("bodies");

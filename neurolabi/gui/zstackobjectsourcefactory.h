@@ -2,6 +2,7 @@
 #define ZSTACKOBJECTSOURCEFACTORY_H
 
 #include <string>
+#include "tz_stdint.h"
 
 class ZStackObjectSourceFactory
 {
