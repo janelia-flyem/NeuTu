@@ -72,6 +72,8 @@ public:
 
   void syncWithDvid();
 
+  void setSelection(const std::set<uint64_t> &selected);
+
 signals:
   void progressAdvanced(double dp);
   void progressStarted();
@@ -80,6 +82,7 @@ signals:
 //  void originalLabelUpdated(ZArray *label);
   void originalLabelUpdated(ZArray *label, QSet<uint64_t> *selectedSet);
   void selectionChanged(ZStackObjectSelector selector);
+  void selectionChanged();
   void bodyMerged(QList<uint64_t> objLabelList);
   void splitSent(ZDvidTarget target, int bodyId);
 
@@ -91,6 +94,7 @@ public slots:
   void setLoadingLabel(bool state);
   void uploadResult();
   void update3DBodyView(const ZStackObjectSelector &selector);
+  void update3DBodyView();
   void showBody3d();
   void detachBodyWindow();
   void notifySplit();

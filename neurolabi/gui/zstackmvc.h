@@ -43,6 +43,11 @@ public:
     return m_view;
   }
 
+  /*!
+   * \brief Get the global geometry of the view window.
+   */
+  QRect getViewGeometry() const;
+
   void connectSignalSlot();
   void disconnectAll();
 

@@ -27,6 +27,8 @@ FlyEmProofControlForm::FlyEmProofControlForm(QWidget *parent) :
   connect(ui->segmentSizeDecPushButton, SIGNAL(clicked()),
           this, SLOT(decSegmentSize()));
 
+  connect(ui->coarseBodyPushButton, SIGNAL(clicked()),
+          this, SIGNAL(coarseBodyViewTriggered()));
 }
 
 FlyEmProofControlForm::~FlyEmProofControlForm()

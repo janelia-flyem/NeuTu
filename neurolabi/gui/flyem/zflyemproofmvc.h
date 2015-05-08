@@ -61,9 +61,11 @@ public slots:
   void showBodyQuickView();
   void showSplitQuickView();
   void presentBodySplit(uint64_t bodyId);
+  void updateSelection();
 
   void showBody3d();
   void showSplit3d();
+  void showCoarseBody3d();
 
   void setDvidLabelSliceSize(int width, int height);
 
@@ -99,6 +101,8 @@ void ZFlyEmProofMvc::connectControlPanel(T *panel)
           panel, SIGNAL(splitTriggered(uint64_t)));
   connect(panel, SIGNAL(labelSizeChanged(int, int)),
           this, SLOT(setDvidLabelSliceSize(int, int)));
+  connect(panel, SIGNAL(coarseBodyViewTriggered()),
+          this, SLOT(showCoarseBody3d()));
 }
 
 template <typename T>

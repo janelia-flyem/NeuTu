@@ -25,6 +25,7 @@
 #include "dvid/zdvidbufferreader.h"
 #include "dvid/zdvidurl.h"
 #include "zflyemproofdoc.h"
+#include "zstackmvc.h"
 
 ZFlyEmBodyMergeProject::ZFlyEmBodyMergeProject(QObject *parent) :
   QObject(parent), m_dataFrame(NULL), m_bodyWindow(NULL),
@@ -291,6 +292,7 @@ void ZFlyEmBodyMergeProject::setDataFrame(ZStackFrame *frame)
 
   connect(this, SIGNAL(selectionChanged(ZStackObjectSelector)),
           this, SLOT(update3DBodyView(ZStackObjectSelector)));
+  connect(this, SIGNAL(selectionChanged()), this, SLOT(update3DBodyView()));
   //connect(this, SIGNAL())
 }
 
@@ -372,8 +374,15 @@ void ZFlyEmBodyMergeProject::showBody3d()
     factory.setControlPanelVisible(false);
     factory.setObjectViewVisible(false);
 
+    QRect rect;
     if (m_dataFrame != NULL) {
-      QRect rect = m_dataFrame->getViewGeometry();
+      rect = m_dataFrame->getViewGeometry();
+    } else {
+      if (getDocument()->getParentMvc() != NULL) {
+        rect = getDocument()->getParentMvc()->getViewGeometry();
+      }
+    }
+    if (rect.isValid()) {
       rect.moveTo(rect.right(), rect.top());
       rect.setSize(rect.size() / 2);
       factory.setWindowGeometry(rect);
@@ -389,8 +398,88 @@ void ZFlyEmBodyMergeProject::showBody3d()
     m_bodyWindow->setYZView();
   }
 
+  update3DBodyView();
+
   m_bodyWindow->show();
   m_bodyWindow->raise();
+}
+
+void ZFlyEmBodyMergeProject::update3DBodyView()
+{
+  if (m_bodyWindow != NULL) {
+    std::set<std::string> currentBodySourceSet;
+    for (QSet<uint64_t>::const_iterator iter = m_currentSelected.begin();
+         iter != m_currentSelected.end(); ++iter) {
+      currentBodySourceSet.insert(
+            ZStackObjectSourceFactory::MakeFlyEmBodySource(*iter));
+    }
+
+    std::set<std::string> oldBodySourceSet;
+    QList<ZSwcTree*> bodyList = m_bodyWindow->getDocument()->getSwcList();
+    for (QList<ZSwcTree*>::iterator iter = bodyList.begin();
+         iter != bodyList.end(); ++iter) {
+      ZSwcTree *tree = *iter;
+      if (currentBodySourceSet.count(tree->getSource()) == 0) {
+        m_bodyWindow->getDocument()->removeObject(
+              dynamic_cast<ZStackObject*>(tree), true);
+      } else {
+        oldBodySourceSet.insert(tree->getSource());
+      }
+    }
+
+    ZFlyEmDvidReader reader;
+    reader.open(getDvidTarget());
+
+    if (getDataFrame() != NULL) {
+      ZStack *oldStack = m_bodyWindow->getDocument()->getStack();
+      ZStack *newStack = getDataFrame()->document()->getStack();
+      if (oldStack != NULL) {
+        if (oldStack->getBoundBox().equals(newStack->getBoundBox())) {
+          newStack = NULL;
+        }
+      }
+      if (newStack != NULL) {
+        m_bodyWindow->getDocument()->loadStack(newStack->clone());
+      }
+    }
+
+    ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
+    m_bodyWindow->getDocument()->blockSignals(true);
+
+    for (QSet<uint64_t>::const_iterator iter = m_currentSelected.begin();
+         iter != m_currentSelected.end(); ++iter) {
+      uint64_t label = *iter;
+      std::string source = ZStackObjectSourceFactory::MakeFlyEmBodySource(label);
+      if (oldBodySourceSet.count(source) == 0) {
+        ZObject3dScan body = reader.readCoarseBody(label);
+        if (!body.isEmpty()) {
+//          body.setColor(sparseObject->getColor());
+          if (getDocument<ZFlyEmProofDoc>() != NULL) {
+            ZDvidLabelSlice *labelSlice =
+                getDocument<ZFlyEmProofDoc>()->getDvidLabelSlice();
+            if (labelSlice != NULL) {
+              body.setColor(labelSlice->getColorScheme().getColor(label));
+            }
+          }
+          body.setAlpha(255);
+          ZSwcTree *tree = ZSwcGenerator::createSurfaceSwc(body);
+          tree->translate(-dvidInfo.getStartBlockIndex());
+          tree->rescale(dvidInfo.getBlockSize().getX(),
+                        dvidInfo.getBlockSize().getY(),
+                        dvidInfo.getBlockSize().getZ());
+          tree->translate(dvidInfo.getStartCoordinates());
+          tree->setSource(source);
+          m_bodyWindow->getDocument()->addSwcTree(tree, true);
+        }
+      }
+    }
+    m_bodyWindow->getDocument()->blockSignals(false);
+    m_bodyWindow->getDocument()->notifySwcModified();
+
+    m_bodyWindow->show();
+    m_bodyWindow->raise();
+    m_bodyWindow->resetCameraCenter();
+  }
 }
 
 void ZFlyEmBodyMergeProject::update3DBodyView(
@@ -427,6 +516,14 @@ void ZFlyEmBodyMergeProject::update3DBodyView(
 //        ptoc();
         if (!body.isEmpty()) {
           body.setColor(sparseObject->getColor());
+
+          if (getDocument<ZFlyEmProofDoc>() != NULL) {
+            ZDvidLabelSlice *labelSlice =
+                getDocument<ZFlyEmProofDoc>()->getDvidLabelSlice();
+            if (labelSlice != NULL) {
+              body.setColor(labelSlice->getColorScheme().getColor(label));
+            }
+          }
           body.setAlpha(255);
           //        tic();
           ZSwcTree *tree = ZSwcGenerator::createSurfaceSwc(body);
@@ -541,6 +638,14 @@ std::string ZFlyEmBodyMergeProject::createVersionBranch()
 void ZFlyEmBodyMergeProject::setDocument(ZSharedPointer<ZStackDoc> doc)
 {
   m_doc = doc;
+
+  if (m_doc.get() != NULL) {
+    connect(m_doc.get(), SIGNAL(objectSelectorChanged(ZStackObjectSelector)),
+            this, SIGNAL(selectionChanged(ZStackObjectSelector)));
+    connect(this, SIGNAL(selectionChanged(ZStackObjectSelector)),
+            this, SLOT(update3DBodyView(ZStackObjectSelector)));
+    connect(this, SIGNAL(selectionChanged()), this, SLOT(update3DBodyView()));
+  }
 }
 
 ZStackDoc* ZFlyEmBodyMergeProject::getDocument() const
@@ -559,6 +664,15 @@ ZFlyEmBodyMerger* ZFlyEmBodyMergeProject::getBodyMerger()
   }
 
   return NULL;
+}
+
+void ZFlyEmBodyMergeProject::setSelection(const std::set<uint64_t> &selected)
+{
+  m_currentSelected.clear();
+  for (std::set<uint64_t>::const_iterator iter = selected.begin();
+       iter != selected.end(); ++iter) {
+    m_currentSelected.insert(*iter);
+  }
 }
 
 void ZFlyEmBodyMergeProject::syncWithDvid()

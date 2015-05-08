@@ -23,6 +23,7 @@ signals:
   void dvidSetTriggered();
   void splitTriggered(uint64_t bodyId);
   void labelSizeChanged(int width, int height);
+  void coarseBodyViewTriggered();
 
 private slots:
   void setSegmentSize();

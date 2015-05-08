@@ -1998,6 +1998,10 @@ void ZStackPresenter::processEvent(ZInteractionEvent &event)
   case ZInteractionEvent::EVENT_OBJECT3D_SCAN_SELECTED_IN_LABEL_SLICE:
     buddyView()->redrawObject();
     buddyDocument()->notifySelectorChanged();
+    if (event.getEvent() ==
+        ZInteractionEvent::EVENT_OBJECT3D_SCAN_SELECTED_IN_LABEL_SLICE) {
+      emit labelSliceSelectionChanged();
+    }
     break;
   default:
     break;
@@ -2241,14 +2245,18 @@ void ZStackPresenter::process(const ZStackOperator &op)
 
         notifyUser(QString("%1 (%2)").
                    arg(obj->getSource().c_str()).arg(obj->getLabel()));
+        interactionEvent.setEvent(ZInteractionEvent::EVENT_OBJECT3D_SCAN_SELECTED);
       } else if (op.getHitObject<ZDvidLabelSlice>() != NULL) {
 //        op.getHitObject<ZDvidLabelSlice>()->clearSelection();
         op.getHitObject<ZDvidLabelSlice>()->toggleHitSelection(false);
+        interactionEvent.setEvent(
+              ZInteractionEvent::EVENT_OBJECT3D_SCAN_SELECTED_IN_LABEL_SLICE);
       }
     } else {
       buddyDocument()->deselectAllObject();
+      interactionEvent.setEvent(ZInteractionEvent::EVENT_OBJECT3D_SCAN_SELECTED);
     }
-    interactionEvent.setEvent(ZInteractionEvent::EVENT_OBJ3D_SELECTED);
+
   }
     break;
   case ZStackOperator::OP_OBJECT3D_SELECT_SINGLE:

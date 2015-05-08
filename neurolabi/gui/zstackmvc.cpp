@@ -133,8 +133,11 @@ void ZStackMvc::dropDocument(ztr1::shared_ptr<ZStackDoc> doc)
   if (m_doc.get() != doc.get()) {
     if (m_doc.get() != NULL) {
       UPDATE_DOC_SIGNAL_SLOT(disconnect);
+      m_doc->removeUser(this);
     }
+
     m_doc = doc;
+    m_doc->registerUser(this);
     //m_doc->setParentFrame(this);
   }
 }
@@ -190,4 +193,12 @@ void ZStackMvc::processViewChange(const ZStackViewParam &viewParam)
       m_view->paintObject();
     }
   }
+}
+
+QRect ZStackMvc::getViewGeometry() const
+{
+  QRect rect = getView()->geometry();
+  rect.moveTo(getView()->mapToGlobal(rect.topLeft()));
+
+  return rect;
 }

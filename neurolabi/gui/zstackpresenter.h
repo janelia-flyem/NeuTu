@@ -292,6 +292,7 @@ public slots:
 signals:
   void mousePositionCaptured(double x, double y, double z);
   void bodySplitTriggered();
+  void labelSliceSelectionChanged();
 
 private:
   void init();

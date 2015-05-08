@@ -135,17 +135,31 @@ void ZFlyEmProofMvc::customInit()
 {
   connect(getPresenter(), SIGNAL(bodySplitTriggered()),
           this, SLOT(notifySplitTriggered()));
+
+
   m_splitProject.setDocument(getDocument());
   connect(&m_splitProject, SIGNAL(locating2DViewTriggered(const ZStackViewParam&)),
           this->getView(), SLOT(setView(const ZStackViewParam&)));
 
   m_mergeProject.setDocument(getDocument());
+  connect(getPresenter(), SIGNAL(labelSliceSelectionChanged()),
+          this, SLOT(updateSelection()));
 
   connect(getDocument().get(), SIGNAL(messageGenerated(const QString&)),
           this, SIGNAL(messageGenerated(const QString&)));
   connect(this, SIGNAL(splitBodyLoaded(uint64_t)),
           this, SLOT(presentBodySplit(uint64_t)));
 
+}
+
+void ZFlyEmProofMvc::updateSelection()
+{
+  if (getCompleteDocument() != NULL) {
+    ZDvidLabelSlice *slice = getCompleteDocument()->getDvidLabelSlice();
+    const std::set<uint64_t> &selected = slice->getSelected();
+    m_mergeProject.setSelection(selected);
+    m_mergeProject.update3DBodyView();
+  }
 }
 
 void ZFlyEmProofMvc::notifySplitTriggered()
@@ -280,6 +294,11 @@ void ZFlyEmProofMvc::showBody3d()
 void ZFlyEmProofMvc::showSplit3d()
 {
   m_splitProject.showResult3d();
+}
+
+void ZFlyEmProofMvc::showCoarseBody3d()
+{
+  m_mergeProject.showBody3d();
 }
 
 void ZFlyEmProofMvc::setDvidLabelSliceSize(int width, int height)

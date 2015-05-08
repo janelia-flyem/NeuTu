@@ -55,7 +55,7 @@ void ZSwcNetwork::exportTxtFile(const string &filePath)
   //Save swc trees
   for (size_t i = 0; i < m_swcTreeArray.size(); i++) {
     ZString swcFilePath = filePath;
-    swcFilePath.appendNumber(i, 3);
+    swcFilePath.appendNumber((uint64_t) i, 3);
     swcFilePath += ".swc";
     m_swcTreeArray[i]->save(swcFilePath.c_str());
 
