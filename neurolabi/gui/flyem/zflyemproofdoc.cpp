@@ -6,6 +6,7 @@
 #include "dvid/zdvidlabelslice.h"
 #include "zstackfactory.h"
 #include "dvid/zdvidsparsestack.h"
+#include "dvid/zdvidwriter.h"
 
 ZFlyEmProofDoc::ZFlyEmProofDoc(ZStack *stack, QObject *parent) :
   ZStackDoc(stack, parent)
@@ -146,6 +147,14 @@ bool ZFlyEmProofDoc::hasVisibleSparseStack() const
   */
 
   return false;
+}
+
+void ZFlyEmProofDoc::saveMergeOperation()
+{
+  ZDvidWriter writer;
+  if (writer.open(getDvidTarget())) {
+    writer.writeMergeOperation(m_bodyMerger.getFinalMap());
+  }
 }
 
 

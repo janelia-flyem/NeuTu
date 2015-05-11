@@ -5,7 +5,7 @@
 #include <vector>
 #include <utility>
 #include "zpoint.h"
-#include "zjsonobject.h"
+//#include "zjsonobject.h"
 #include "z3drotation.h"
 #include "zmoviesceneclipper.h"
 #include "zmoviecamera.h"
@@ -34,6 +34,7 @@ struct MovieAction {
 
 class ZStackDoc;
 class Z3DWindow;
+class ZJsonObject;
 
 class ZMovieScene
 {

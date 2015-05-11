@@ -16723,4 +16723,27 @@ void ZTest::test(MainWindow *host)
   obj.save(GET_TEST_DATA_DIR + "/test.sobj");
 
 #endif
+
+#if 0
+  ZDvidTarget target;
+  target.set()
+#endif
+
+#if 0
+  ZFlyEmBodyMerger bodyMerger;
+  bodyMerger.pushMap(1, 2);
+  bodyMerger.pushMap(2, 3);
+  bodyMerger.pushMap(4, 3);
+  bodyMerger.pushMap(5, 3);
+  bodyMerger.pushMap(3, 6);
+  bodyMerger.pushMap(7, 8);
+
+  bodyMerger.print();
+
+  ZJsonArray jsonArray = bodyMerger.toJsonArray();
+  std::cout << jsonArray.dumpString(2) << std::endl;
+
+
+
+#endif
 }

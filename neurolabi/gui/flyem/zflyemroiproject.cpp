@@ -76,7 +76,7 @@ void ZFlyEmRoiProject::deleteAllData()
   //Delete data from DVID server
   ZDvidWriter writer;
   if (writer.open(m_dvidTarget)) {
-    writer.deleteKey(ZDvidData::getName(ZDvidData::ROLE_ROI_CURVE),
+    writer.deleteKey(ZDvidData::GetName(ZDvidData::ROLE_ROI_CURVE),
                      getMinRoiKey(), getMaxRoiKey());
   }
 
@@ -127,7 +127,7 @@ bool ZFlyEmRoiProject::setDvidTarget(const ZDvidTarget &target)
   if (reader.open(target)) {
     ZDvidWriter writer;
     if (writer.open(target)) {
-      writer.createKeyvalue(ZDvidData::getName(ZDvidData::ROLE_ROI_CURVE));
+      writer.createKeyvalue(ZDvidData::GetName(ZDvidData::ROLE_ROI_CURVE));
       m_dvidInfo = reader.readGrayScaleInfo();
       downloadAllRoi();
     }
@@ -142,7 +142,7 @@ void ZFlyEmRoiProject::downloadAllRoi()
   ZDvidReader reader;
   if (reader.open(getDvidTarget())) {
     QStringList roiIdArray = reader.readKeys(
-          ZDvidData::getName(ZDvidData::ROLE_ROI_CURVE),
+          ZDvidData::GetName(ZDvidData::ROLE_ROI_CURVE),
           QString("%1").arg(getRoiKey(m_dvidInfo.getMinZ()).c_str()),
           QString("%1").arg(getRoiKey(m_dvidInfo.getMaxZ()).c_str()));
     foreach (const QString &roiKey, roiIdArray) {

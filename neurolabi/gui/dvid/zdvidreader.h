@@ -59,8 +59,15 @@ public:
       const ZIntPoint &blockIndex, const ZDvidInfo &dvidInfo,
       int blockNumber);
 
+
+  /*!
+   * \brief Read a stack of labels (Obsolete)
+   *
+   *  Obsolete function. Use readLabels64() instead.
+   */
   ZStack* readBodyLabel(
       int x0, int y0, int z0, int width, int height, int depth);
+
   QString readInfo(const QString &dataName);
 
   std::set<int> readBodyId(

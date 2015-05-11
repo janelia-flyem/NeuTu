@@ -177,9 +177,7 @@ void ZFlyEmBodyMergeDoc::saveMergeOperation() const
 {
   ZDvidWriter writer;
   if (writer.open(getDvidTarget())) {
-    writer.writeMergeOperation(
-          "NeuTu_Merge_Opr", getDvidTarget().getLabelBlockName(),
-          getBodyMerger()->getFinalMap());
+    writer.writeMergeOperation(getBodyMerger()->getFinalMap());
   }
 }
 

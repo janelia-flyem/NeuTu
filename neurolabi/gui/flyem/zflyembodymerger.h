@@ -43,9 +43,11 @@ public:
   bool isMapped(uint64_t label) const;
 
 //  ZJsonObject toJsonObject() const;
-//  ZJsonArray toJsonArray() const;
+  ZJsonArray toJsonArray() const;
 //  void loadJsonObject(const ZJsonObject &obj);
   void loadJson(const ZJsonArray &obj);
+
+  std::string toJsonString() const;
   void decodeJsonString(const std::string &str);
 
 private:

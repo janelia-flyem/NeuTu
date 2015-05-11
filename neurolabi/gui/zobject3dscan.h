@@ -26,8 +26,8 @@ class ZJsonArray;
  */
 class ZObject3dStripe {
 public:
-  ZObject3dStripe() : m_y(0), m_z(0), m_isCanonized(true) {
-  }
+  ZObject3dStripe() :
+    m_y(0), m_z(0), m_isCanonized(true) {}
   inline int getY() const { return m_y; }
   inline int getZ() const { return m_z; }
   int getMinX() const;

@@ -214,9 +214,10 @@ void ZFlyEmProofMvc::launchSplitFunc(uint64_t bodyId)
 
 void ZFlyEmProofMvc::presentBodySplit(uint64_t bodyId)
 {
-  getView()->redrawObject();
   m_splitOn = true;
   m_splitProject.setBodyId(bodyId);
+  m_splitProject.downloadSeed();
+  getView()->redrawObject();
 }
 
 void ZFlyEmProofMvc::launchSplit(uint64_t bodyId)
@@ -269,6 +270,8 @@ void ZFlyEmProofMvc::switchSplitBody(uint64_t bodyId)
     if (m_splitOn) {
 //      exitSplit();
       m_splitProject.clear();
+      getDocument()->removeObject(ZStackObjectRole::ROLE_SEED);
+      getDocument()->removeObject(ZStackObjectRole::ROLE_TMP_RESULT);
       launchSplit(bodyId);
     }
   }
@@ -321,6 +324,16 @@ void ZFlyEmProofMvc::setDvidLabelSliceSize(int width, int height)
       getView()->paintObject();
     }
   }
+}
+
+void ZFlyEmProofMvc::saveSeed()
+{
+  m_splitProject.saveSeed();
+}
+
+void ZFlyEmProofMvc::saveMergeOperation()
+{
+  getCompleteDocument()->saveMergeOperation();
 }
 
 //void ZFlyEmProofMvc::toggleEdgeMode(bool edgeOn)

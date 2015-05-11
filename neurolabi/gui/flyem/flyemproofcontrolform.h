@@ -24,6 +24,7 @@ signals:
   void splitTriggered(uint64_t bodyId);
   void labelSizeChanged(int width, int height);
   void coarseBodyViewTriggered();
+  void savingMerge();
 
 private slots:
   void setSegmentSize();

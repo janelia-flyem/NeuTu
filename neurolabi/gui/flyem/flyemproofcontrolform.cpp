@@ -17,6 +17,8 @@ FlyEmProofControlForm::FlyEmProofControlForm(QWidget *parent) :
           this, SIGNAL(dvidSetTriggered()));
   connect(ui->segmentSizePushButton, SIGNAL(clicked()),
           this, SLOT(setSegmentSize()));
+  connect(ui->saveMergePushButton, SIGNAL(clicked()),
+          this, SIGNAL(savingMerge()));
 
   ui->segmentSizePushButton->hide();
   ui->segmentSizeDecPushButton->setEnabled(false);

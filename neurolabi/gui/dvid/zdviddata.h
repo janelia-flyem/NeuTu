@@ -19,7 +19,7 @@ public:
     ROLE_GRAY_SCALE, ROLE_BODY_LABEL, ROLE_LABEL_BLOCK, ROLE_ROI_CURVE,
     ROLE_BODY_ANNOTATION,
     ROLE_BOUND_BOX, ROLE_SKELETON, ROLE_THUMBNAIL, ROLE_SUPERPIXEL,
-    ROLE_SP2BODY, ROLE_SPARSEVOL, ROLE_SPARSEVOL_COARSE,
+    ROLE_SP2BODY, /*ROLE_SPARSEVOL, ROLE_SPARSEVOL_COARSE,*/
     ROLE_SPLIT_LABEL, ROLE_SPLIT_STATUS,
     ROLE_BODY_INFO,
     ROLE_MERGE_TEST_BODY_LABEL, ROLE_MAX_BODY_ID,
@@ -31,11 +31,11 @@ public:
     TYPE_LABELMAP, TYPE_MULTISCALE_2D, TYPE_MULTCHAN16, TYPE_KEY_VALUE
   };
 
-  static const char* getName(ERole role);
+  static const char* GetName(ERole role);
   //static const char* getName(EType type);
 
-  static std::string getName(ERole role, const std::string &prefix);
-  static std::string getName(
+  static std::string GetName(ERole role, const std::string &prefix);
+  static std::string GetName(
       ZDvidData::ERole role, ZDvidData::ERole prefixRole,
       const std::string &prefixName);
 

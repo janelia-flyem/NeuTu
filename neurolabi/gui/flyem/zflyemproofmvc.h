@@ -63,6 +63,8 @@ public slots:
   void showSplitQuickView();
   void presentBodySplit(uint64_t bodyId);
   void updateSelection();
+  void saveSeed();
+  void saveMergeOperation();
 
   void showBody3d();
   void showSplit3d();
@@ -104,6 +106,7 @@ void ZFlyEmProofMvc::connectControlPanel(T *panel)
           this, SLOT(setDvidLabelSliceSize(int, int)));
   connect(panel, SIGNAL(coarseBodyViewTriggered()),
           this, SLOT(showCoarseBody3d()));
+  connect(panel, SIGNAL(savingMerge()), this, SLOT(saveMergeOperation()));
 }
 
 template <typename T>
@@ -116,8 +119,9 @@ void ZFlyEmProofMvc::connectSplitControlPanel(T *panel)
   connect(panel, SIGNAL(splitViewTriggered()), this, SLOT(showSplit3d()));
 
   connect(panel, SIGNAL(exitingSplit()), this, SLOT(exitSplit()));
-  connect(panel, SIGNAL(changingSplit(uint64_t)),
+  connect(panel, SIGNAL(changingSplit(uint64_t)), this,
           SLOT(switchSplitBody(uint64_t)));
+  connect(panel, SIGNAL(savingSeed()), this, SLOT(saveSeed()));
 }
 
 

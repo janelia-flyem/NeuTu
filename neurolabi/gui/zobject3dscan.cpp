@@ -697,6 +697,7 @@ ZObject3dScan& ZObject3dScan::operator=(const ZObject3dScan& obj)
   m_stripeArray = obj.m_stripeArray;
   m_isCanonized = obj.m_isCanonized;
   m_label = obj.m_label;
+  m_blockingEvent = false;
 //  uint64_t m_label;
 
 //  this->m_zProjection = NULL;
