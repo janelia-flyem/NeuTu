@@ -279,7 +279,7 @@ std::string ZDvidTarget::getLocalLowResGrayScalePath(
 std::string ZDvidTarget::getBodyLabelName() const
 {
   if (m_bodyLabelName.empty()) {
-    return ZDvidData::getName(ZDvidData::ROLE_BODY_LABEL);
+    return ZDvidData::GetName(ZDvidData::ROLE_BODY_LABEL);
   }
 
   return m_bodyLabelName;
@@ -288,7 +288,7 @@ std::string ZDvidTarget::getBodyLabelName() const
 std::string ZDvidTarget::getLabelBlockName() const
 {
   if (m_labelBlockName.empty()) {
-    return ZDvidData::getName(ZDvidData::ROLE_LABEL_BLOCK);
+    return ZDvidData::GetName(ZDvidData::ROLE_LABEL_BLOCK);
   }
 
   return m_labelBlockName;
@@ -302,7 +302,7 @@ void ZDvidTarget::setLabelBlockName(const std::string &name)
 std::string ZDvidTarget::getMultiscale2dName() const
 {
   if (m_multiscale2dName.empty()) {
-    return ZDvidData::getName(ZDvidData::ROLE_MULTISCALE_2D);
+    return ZDvidData::GetName(ZDvidData::ROLE_MULTISCALE_2D);
   }
 
   return m_multiscale2dName;
@@ -311,7 +311,7 @@ std::string ZDvidTarget::getMultiscale2dName() const
 std::string ZDvidTarget::getGrayScaleName() const
 {
   if (m_grayScaleName.empty()) {
-    return ZDvidData::getName(ZDvidData::ROLE_GRAY_SCALE);
+    return ZDvidData::GetName(ZDvidData::ROLE_GRAY_SCALE);
   }
 
   return m_grayScaleName;
@@ -354,7 +354,7 @@ std::string ZDvidTarget::getName(ZDvidData::ERole role) const
   }
 
   if (name.empty()) {
-    name = ZDvidData::getName(role);
+    name = ZDvidData::GetName(role);
   }
 
   return name;

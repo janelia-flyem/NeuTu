@@ -75,7 +75,7 @@ Z3DWindow* ZWindowFactory::make3DWindow(ZSharedPointer<ZStackDoc> doc,
       window->getVolumeRaycaster()->hideBoundBox();
     }
 
-    if (m_windowGeometry.isEmpty() && m_parentWidget == NULL) {
+    if (m_windowGeometry.isEmpty()/* || m_parentWidget == NULL*/) {
       QRect screenRect = QApplication::desktop()->screenGeometry();
       window->setGeometry(screenRect.width() / 10, screenRect.height() / 10,
                           screenRect.width() - screenRect.width() / 5,

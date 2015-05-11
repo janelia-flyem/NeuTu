@@ -1618,29 +1618,11 @@ void ZStackView::exportObjectMask(
 void ZStackView::increaseZoomRatio()
 {
   increaseZoomRatio(0, 0, false);
-  /*
-  if (!isViewPortFronzen()) {
-    setViewPortFrozen(true);
-    imageWidget()->increaseZoomRatio();
-
-    notifyViewChanged();
-    notifyViewPortChanged();
-  }
-  */
 }
 
 void ZStackView::decreaseZoomRatio()
 {
   decreaseZoomRatio(0, 0, false);
-  /*
-  if (!isViewPortFronzen()) {
-    setViewPortFrozen(true);
-    imageWidget()->decreaseZoomRatio();
-
-    notifyViewChanged();
-    notifyViewPortChanged();
-  }
-  */
 }
 
 

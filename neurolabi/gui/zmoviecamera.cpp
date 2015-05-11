@@ -4,6 +4,7 @@
 
 #include "zjsonparser.h"
 #include "z3dwindow.h"
+#include "zjsonobject.h"
 
 using namespace std;
 

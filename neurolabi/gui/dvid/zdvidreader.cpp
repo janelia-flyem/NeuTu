@@ -776,6 +776,7 @@ QStringList ZDvidReader::readKeys(
   return keys;
 }
 
+#if 1
 ZStack* ZDvidReader::readBodyLabel(
     int x0, int y0, int z0, int width, int height, int depth)
 {
@@ -837,6 +838,7 @@ ZStack* ZDvidReader::readBodyLabel(
 
   return stack;
 }
+#endif
 
 std::vector<std::pair<int, int> > ZDvidReader::partitionStack(
     int x0, int y0, int z0, int width, int height, int depth)
@@ -1040,7 +1042,7 @@ ZFlyEmNeuronBodyInfo ZDvidReader::readBodyInfo(int bodyId)
   ZJsonObject obj;
 
   QByteArray byteArray = readKeyValue(
-        ZDvidData::getName(ZDvidData::ROLE_BODY_INFO,
+        ZDvidData::GetName(ZDvidData::ROLE_BODY_INFO,
                            ZDvidData::ROLE_BODY_LABEL,
                            m_dvidTarget.getBodyLabelName()).c_str(),
         ZString::num2str(bodyId).c_str());
@@ -1060,7 +1062,7 @@ int ZDvidReader::readMaxBodyId()
   ZJsonObject obj;
 
   QByteArray byteArray = readKeyValue(
-        ZDvidData::getName(ZDvidData::ROLE_MAX_BODY_ID),
+        ZDvidData::GetName(ZDvidData::ROLE_MAX_BODY_ID),
         m_dvidTarget.getBodyLabelName().c_str());
   if (!byteArray.isEmpty()) {
     obj.decode(byteArray.constData());

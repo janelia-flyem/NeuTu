@@ -491,11 +491,11 @@ void ZFlyEmBodySplitProject::locateBookmark(const ZFlyEmBookmark &bookmark)
 
 void ZFlyEmBodySplitProject::clearBookmarkDecoration()
 {
-  if (m_dataFrame != NULL) {
+  if (getDocument() != NULL) {
     for (std::vector<ZStackObject*>::iterator iter = m_bookmarkDecoration.begin();
          iter != m_bookmarkDecoration.end(); ++iter) {
       ZStackObject *obj = *iter;
-      m_dataFrame->document()->removeObject(obj, false);
+      getDocument()->removeObject(obj, false);
       delete obj;
     }
   } else {
@@ -532,7 +532,7 @@ void ZFlyEmBodySplitProject::updateBookDecoration()
 {
   clearBookmarkDecoration();
 
-  if (m_dataFrame != NULL) {
+  if (getDocument() != NULL) {
     ZFlyEmBookmarkArray bookmarkArray;
     foreach (ZFlyEmBookmark bookmark, m_bookmarkArray) {
       if (bookmark.getBodyId() == getBodyId()) {
@@ -717,7 +717,7 @@ void ZFlyEmBodySplitProject::commitResultFunc(
     emit progressAdvanced(dp);
   }
 
-  writer.writeMaxBodyId(bodyId);
+  //writer.writeMaxBodyId(bodyId);
 
   emit progressDone();
   emit messageGenerated("Done.");
@@ -726,16 +726,18 @@ void ZFlyEmBodySplitProject::commitResultFunc(
 
 void ZFlyEmBodySplitProject::selectSeed(int label)
 {
-  if (m_dataFrame != NULL) {
+  if (getDocument() != NULL) {
     QList<const ZDocPlayer*> playerList =
-        m_dataFrame->document()->getPlayerList(ZStackObjectRole::ROLE_SEED);
-    m_dataFrame->document()->deselectAllObject();
+        getDocument()->getPlayerList(ZStackObjectRole::ROLE_SEED);
+    getDocument()->deselectAllObject();
     foreach (const ZDocPlayer *player, playerList) {
       if (player->getLabel() == label) {
-        m_dataFrame->document()->setSelected(player->getData(), true);
+       getDocument()->setSelected(player->getData(), true);
       }
     }
-    m_dataFrame->view()->paintObject();
+    if (m_dataFrame != NULL) {
+      m_dataFrame->view()->paintObject();
+    }
   }
 }
 
@@ -748,9 +750,8 @@ void ZFlyEmBodySplitProject::backupSeed()
   ZDvidReader reader;
   if (reader.open(getDvidTarget())) {
     QList<const ZDocPlayer*> playerList;
-    if (m_dataFrame != NULL) {
-      playerList =
-          m_dataFrame->document()->getPlayerList(ZStackObjectRole::ROLE_SEED);
+    if (getDocument() != NULL) {
+      playerList = getDocument()->getPlayerList(ZStackObjectRole::ROLE_SEED);
     }
     ZJsonArray jsonArray;
     foreach (const ZDocPlayer *player, playerList) {
@@ -786,7 +787,7 @@ void ZFlyEmBodySplitProject::saveSeed()
   }
 
   QList<const ZDocPlayer*> playerList =
-      m_dataFrame->document()->getPlayerList(ZStackObjectRole::ROLE_SEED);
+      getDocument()->getPlayerList(ZStackObjectRole::ROLE_SEED);
   ZJsonArray jsonArray;
   foreach (const ZDocPlayer *player, playerList) {
     ZJsonObject jsonObj = player->toJsonObject();
@@ -829,7 +830,7 @@ void ZFlyEmBodySplitProject::downloadSeed()
 
 void ZFlyEmBodySplitProject::removeAllSeed()
 {
-  m_dataFrame->document()->removeObject(ZStackObjectRole::ROLE_SEED, true);
+  getDocument()->removeObject(ZStackObjectRole::ROLE_SEED, true);
 }
 
 void ZFlyEmBodySplitProject::downloadSeed(const std::string &seedKey)
@@ -846,7 +847,7 @@ void ZFlyEmBodySplitProject::downloadSeed(const std::string &seedKey)
       if (obj.hasKey("seeds")) {
         ZLabelColorTable colorTable;
 #ifdef _DEBUG_
-        std::cout << m_dataFrame->document()->getPlayerList(
+        std::cout << getDocument()->getPlayerList(
                        ZStackObjectRole::ROLE_SEED).size() << " seeds" <<  std::endl;
 #endif
         ZJsonArray jsonArray(obj["seeds"], ZJsonValue::SET_INCREASE_REF_COUNT);
@@ -860,7 +861,7 @@ void ZFlyEmBodySplitProject::downloadSeed(const std::string &seedKey)
               stroke->setRole(ZStackObjectRole::ROLE_SEED |
                               ZStackObjectRole::ROLE_3DGRAPH_DECORATOR);
               stroke->setPenetrating(false);
-              m_dataFrame->document()->addObject(stroke);
+              getDocument()->addObject(stroke);
             } else {
               delete stroke;
             }
@@ -872,14 +873,14 @@ void ZFlyEmBodySplitProject::downloadSeed(const std::string &seedKey)
             if (!obj3d->isEmpty()) {
               obj3d->setRole(ZStackObjectRole::ROLE_SEED |
                              ZStackObjectRole::ROLE_3DGRAPH_DECORATOR);
-              m_dataFrame->document()->addObject(obj3d);
+              getDocument()->addObject(obj3d);
             } else {
               delete obj3d;
             }
           }
         }
 #ifdef _DEBUG_
-        std::cout << m_dataFrame->document()->getPlayerList(
+        std::cout << getDocument()->getPlayerList(
                        ZStackObjectRole::ROLE_SEED).size() << " seeds" <<  std::endl;
 #endif
       }
@@ -1061,14 +1062,14 @@ void ZFlyEmBodySplitProject::updateBodyMask()
 
 std::string ZFlyEmBodySplitProject::getSplitStatusName() const
 {
-  return ZDvidData::getName(
+  return ZDvidData::GetName(
         ZDvidData::ROLE_SPLIT_STATUS, ZDvidData::ROLE_BODY_LABEL,
         getDvidTarget().getBodyLabelName());
 }
 
 std::string ZFlyEmBodySplitProject::getSplitLabelName() const
 {
-  return ZDvidData::getName(ZDvidData::ROLE_SPLIT_LABEL,
+  return ZDvidData::GetName(ZDvidData::ROLE_SPLIT_LABEL,
                             ZDvidData::ROLE_BODY_LABEL,
                             getDvidTarget().getBodyLabelName());
 }
@@ -1166,7 +1167,7 @@ bool ZFlyEmBodySplitProject::isReadyForSplit(const ZDvidTarget &target)
       succ = false;
     }
 
-    std::string splitLabelName = ZDvidData::getName(
+    std::string splitLabelName = ZDvidData::GetName(
           ZDvidData::ROLE_SPLIT_LABEL, ZDvidData::ROLE_BODY_LABEL,
           target.getBodyLabelName());
 
@@ -1176,7 +1177,7 @@ bool ZFlyEmBodySplitProject::isReadyForSplit(const ZDvidTarget &target)
       succ = false;
     }
 
-    std::string splitStatusName =  ZDvidData::getName(
+    std::string splitStatusName =  ZDvidData::GetName(
           ZDvidData::ROLE_SPLIT_STATUS, ZDvidData::ROLE_BODY_LABEL,
           target.getBodyLabelName());
     if (!reader.hasData(splitStatusName)) {

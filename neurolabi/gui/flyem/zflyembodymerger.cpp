@@ -4,6 +4,7 @@
 #include "zjsonobject.h"
 #include "zjsonarray.h"
 #include "zjsonparser.h"
+#include "zjsonfactory.h"
 
 ZFlyEmBodyMerger::ZFlyEmBodyMerger()
 {
@@ -17,7 +18,20 @@ uint64_t ZFlyEmBodyMerger::getFinalLabel(uint64_t label) const
 ZFlyEmBodyMerger::TLabelMap ZFlyEmBodyMerger::getFinalMap() const
 {
   ZFlyEmBodyMerger::TLabelMap labelMap;
-  std::cout << "Body merger:" << std::endl;
+
+#if 0
+  QSet<uint64_t> mappedSet;
+  for (TLabelMapList::const_iterator iter = m_mapList.begin();
+       iter != m_mapList.end(); ++iter) {
+    const TLabelMap &currentLabelMap = *iter;
+    for (TLabelMap::const_iterator mapIter = currentLabelMap.begin();
+         mapIter != currentLabelMap.end(); ++mapIter) {
+      mappedSet.insert(mapIter.value());
+    }
+  }
+#endif
+
+//  std::cout << "Body merger:" << std::endl;
   for (TLabelMapList::const_iterator iter = m_mapList.begin();
        iter != m_mapList.end(); ++iter) {
     const TLabelMap &currentLabelMap = *iter;
@@ -157,6 +171,11 @@ bool ZFlyEmBodyMerger::isMapped(uint64_t label) const
 
 //}
 
+ZJsonArray ZFlyEmBodyMerger::toJsonArray() const
+{
+  return ZJsonFactory::MakeJsonArray(getFinalMap());
+}
+
 void ZFlyEmBodyMerger::loadJson(const ZJsonArray &obj)
 {
   clear();
@@ -170,7 +189,13 @@ void ZFlyEmBodyMerger::loadJson(const ZJsonArray &obj)
         labelMap[(uint64_t) key] = (uint64_t) value;
       }
     }
+    pushMap(labelMap);
   }
+}
+
+std::string ZFlyEmBodyMerger::toJsonString() const
+{
+  return toJsonArray().dumpString(0);
 }
 
 void ZFlyEmBodyMerger::decodeJsonString(const std::string &str)

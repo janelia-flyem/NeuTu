@@ -2285,8 +2285,8 @@ void ZFlyEmDataFrame::exportThumbnail(
   if (savingToDvid) {
     ZDvidReader reader;
     reader.open(saveDir);
-    if (reader.hasData(ZDvidData::getName(ZDvidData::ROLE_THUMBNAIL))) {
-      writer.createKeyvalue(ZDvidData::getName(ZDvidData::ROLE_THUMBNAIL));
+    if (reader.hasData(ZDvidData::GetName(ZDvidData::ROLE_THUMBNAIL))) {
+      writer.createKeyvalue(ZDvidData::GetName(ZDvidData::ROLE_THUMBNAIL));
     }
   }
 

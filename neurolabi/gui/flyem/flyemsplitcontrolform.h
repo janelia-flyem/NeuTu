@@ -23,6 +23,7 @@ signals:
   void bodyViewTriggered();
   void splitViewTriggered();
   void changingSplit(uint64_t);
+  void savingSeed();
 
 private slots:
   void slotTest();

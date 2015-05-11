@@ -8,6 +8,7 @@
 #include "tz_error.h"
 #include "z3dinteractionhandler.h"
 #include "zmoviecamera.h"
+#include "zjsonobject.h"
 
 using namespace std;
 

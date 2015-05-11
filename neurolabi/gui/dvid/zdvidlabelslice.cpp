@@ -38,7 +38,8 @@ void ZDvidLabelSlice::display(
     for (ZObject3dScanArray::const_iterator iter = m_objArray.begin();
          iter != m_objArray.end(); ++iter) {
       ZObject3dScan &obj = const_cast<ZObject3dScan&>(*iter);
-      if (m_selectedSet.count(obj.getLabel()) > 0) {
+      //if (m_selectedSet.count(obj.getLabel()) > 0) {
+      if (m_selectedSet.count(getMappedLabel(obj)) > 0) {
         obj.setSelected(true);
       } else {
         obj.setSelected(false);
@@ -75,9 +76,11 @@ void ZDvidLabelSlice::forceUpdate(const ZStackViewParam &viewParam)
 
         m_objArray.translate(viewPort.left(), viewPort.top(),
                              viewParam.getZ());
+        /*
         if (m_bodyMerger != NULL) {
           updateLabel(*m_bodyMerger);
         }
+        */
         assignColorMap();
 
         delete labelArray;
@@ -129,7 +132,8 @@ void ZDvidLabelSlice::assignColorMap()
   for (ZObject3dScanArray::iterator iter = m_objArray.begin();
        iter != m_objArray.end(); ++iter) {
     ZObject3dScan &obj = *iter;
-    obj.setColor(getColor(obj.getLabel()));
+    //obj.setColor(getColor(obj.getLabel()));
+    obj.setColor(getColor(getMappedLabel(obj)));
   }
 }
 
@@ -139,7 +143,8 @@ bool ZDvidLabelSlice::hit(double x, double y, double z)
        iter != m_objArray.end(); ++iter) {
     ZObject3dScan &obj = *iter;
     if (obj.hit(x, y, z)) {
-      m_hitLabel = obj.getLabel();
+      //m_hitLabel = obj.getLabel();
+      m_hitLabel = getMappedLabel(obj);
       return true;
     }
   }
@@ -184,6 +189,7 @@ void ZDvidLabelSlice::clearSelection()
   m_selectedSet.clear();
 }
 
+/*
 void ZDvidLabelSlice::updateLabel(const ZFlyEmBodyMerger &merger)
 {
   for (ZObject3dScanArray::iterator iter = m_objArray.begin();
@@ -192,12 +198,15 @@ void ZDvidLabelSlice::updateLabel(const ZFlyEmBodyMerger &merger)
     obj.setLabel(merger.getFinalLabel(obj.getLabel()));
   }
 }
+*/
 
 void ZDvidLabelSlice::updateLabelColor()
 {
+  /*
   if (m_bodyMerger != NULL) {
     updateLabel(*m_bodyMerger);
   }
+  */
   assignColorMap();
 }
 
@@ -215,4 +224,9 @@ void ZDvidLabelSlice::setMaxSize(int maxWidth, int maxHeight)
     m_objArray.clear();
     update();
   }
+}
+
+uint64_t ZDvidLabelSlice::getMappedLabel(const ZObject3dScan &obj) const
+{
+  return m_bodyMerger->getFinalLabel(obj.getLabel());
 }

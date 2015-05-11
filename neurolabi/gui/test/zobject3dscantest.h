@@ -909,6 +909,7 @@ TEST_F(ZObject3dScanTestF1, Slice)
   EXPECT_EQ(3, (int) slice.getVoxelNumber());
 
   slice = obj.getSlice(0, 1);
+//  slice.print();
   EXPECT_EQ(8, (int) slice.getVoxelNumber());
 
   slice = obj.getSlice(0, 2);
@@ -943,6 +944,8 @@ TEST_F(ZObject3dScanTestF1, equal)
   EXPECT_FALSE(m_obj.equalsLiterally(obj));
 
   obj.canonize();
+  //obj.print();
+  //m_obj.print();
   EXPECT_TRUE(m_obj.equalsLiterally(obj));
 }
 
@@ -1147,7 +1150,7 @@ TEST(ZObject3dScan, load)
 
   ZObject3dScan obj;
   ASSERT_TRUE(obj.load(&(array[0]), array.size()));
-  obj.print();
+  //obj.print();
   ASSERT_EQ(2, (int) obj.getVoxelNumber());
 }
 
@@ -1165,7 +1168,7 @@ TEST(ZObject3dScan, relation)
 
   obj2.addSegment(0, 0, 0, 1);
 
-  obj2.print();
+  //obj2.print();
   ASSERT_TRUE(obj1.hasOverlap(obj2));
 
   obj2.clear();
@@ -1191,7 +1194,7 @@ TEST(ZObject3dScan, upSample)
 {
   ZObject3dScan obj;
   createObject(&obj);
-  obj.print();
+  //obj.print();
 
   std::cout << "Upsampling" << std::endl;
   obj.upSample(1, 0, 0);

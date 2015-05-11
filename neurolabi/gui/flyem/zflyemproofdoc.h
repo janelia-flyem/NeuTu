@@ -50,6 +50,8 @@ public:
 
   bool isSplittable(uint64_t bodyId) const;
 
+  void saveMergeOperation();
+
 signals:
 
 public slots:

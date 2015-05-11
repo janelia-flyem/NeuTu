@@ -3,10 +3,11 @@
 
 #include <utility>
 
-#include "zjsonobject.h"
+//#include "zjsonobject.h"
 
 class Z3DWindow;
 class ZMovieSceneClipperState;
+class ZJsonObject;
 
 class ZMovieSceneClipper
 {

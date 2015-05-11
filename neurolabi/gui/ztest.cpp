@@ -16714,7 +16714,7 @@ void ZTest::test(MainWindow *host)
   image.save((GET_TEST_DATA_DIR + "/test.tif").c_str());
 #endif
 
-#if 1
+#if 0
   ZDvidTarget target("emdata1", "51d", 8500);
   target.setLabelBlockName("labels");
   target.setBodyLabelName("bodies");
@@ -16722,6 +16722,29 @@ void ZTest::test(MainWindow *host)
   reader.open(target);
   ZObject3dScan obj = reader.readCoarseBody(14742253);
   obj.save(GET_TEST_DATA_DIR + "/test.sobj");
+
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set()
+#endif
+
+#if 0
+  ZFlyEmBodyMerger bodyMerger;
+  bodyMerger.pushMap(1, 2);
+  bodyMerger.pushMap(2, 3);
+  bodyMerger.pushMap(4, 3);
+  bodyMerger.pushMap(5, 3);
+  bodyMerger.pushMap(3, 6);
+  bodyMerger.pushMap(7, 8);
+
+  bodyMerger.print();
+
+  ZJsonArray jsonArray = bodyMerger.toJsonArray();
+  std::cout << jsonArray.dumpString(2) << std::endl;
+
+
 
 #endif
 }

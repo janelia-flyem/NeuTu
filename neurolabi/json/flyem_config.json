@@ -9,6 +9,16 @@
     },
     {
       "address": "emdata1.int.janelia.org",
+      "port": 8500,
+      "uuid": "dcbd",
+      "name": "debug_MB_seg",
+      "comment": "MB seg debug (branched from ccf)",
+      "body_label": "bodies",
+      "label_block": "labels",
+      "debug": true
+    },
+    {
+      "address": "emdata1.int.janelia.org",
       "uuid": "2a3",
       "name": "FIB25-Hackathon (internal)",
       "background": 0,
@@ -67,9 +77,9 @@
     {
       "address": "emdata1.int.janelia.org",
       "port": 8500,
-      "uuid": "ccf",
+      "uuid": "6f15",
       "name": "MB_seg",
-      "comment": "MB seg",
+      "comment": "MB seg (branched from ccf)",
       "body_label": "bodies",
       "label_block": "labels"
     }

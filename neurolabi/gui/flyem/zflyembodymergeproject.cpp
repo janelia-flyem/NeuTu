@@ -605,6 +605,7 @@ void ZFlyEmBodyMergeProject::notifySplit()
   }
 }
 
+
 void ZFlyEmBodyMergeProject::addSelected(uint64_t label)
 {
   m_currentSelected.insert(label);
@@ -681,8 +682,7 @@ void ZFlyEmBodyMergeProject::syncWithDvid()
     ZFlyEmBodyMerger *bodyMerger = getBodyMerger();
     if (bodyMerger != NULL) {
       ZDvidBufferReader reader;
-      reader.read(ZDvidUrl(getDvidTarget()).getMergeOperationUrl(
-                    ZDvidData::getName(ZDvidData::ROLE_MERGE_OPERATION)).c_str());
+      reader.read(ZDvidUrl(getDvidTarget()).getMergeOperationUrl().c_str());
       const QByteArray& buffer = reader.getBuffer();
       bodyMerger->decodeJsonString(buffer.data());
 
@@ -691,9 +691,11 @@ void ZFlyEmBodyMergeProject::syncWithDvid()
   doc->getBodyMerger()->decodeJsonString(buffer.data());
   */
 
-
-
       QList<uint64_t> objLabelList = bodyMerger->getFinalMap().keys();
+
+      if (getDocument<ZFlyEmProofDoc>() != NULL) {
+        return getDocument<ZFlyEmProofDoc>()->updateBodyObject();
+      }
 
       emit bodyMerged(objLabelList);
     }

@@ -3,9 +3,10 @@
 
 #include "z3drotation.h"
 #include "zpoint.h"
-#include "zjsonobject.h"
+//#include "zjsonobject.h"
 
 class Z3DWindow;
+class ZJsonObject;
 
 /**
  * @brief The ZMovieCamera class

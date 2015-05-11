@@ -31,6 +31,8 @@ void FlyEmSplitControlForm::setupWidgetBehavior()
   connect(ui->loadBodyPushButton, SIGNAL(clicked()),
           this, SLOT(changeSplit()));
   connect(ui->loadBodyPushButton, SIGNAL(clicked()), this, SLOT(slotTest()));
+  connect(ui->saveSeedPushButton, SIGNAL(clicked()),
+          this, SIGNAL(savingSeed()));
 }
 
 void FlyEmSplitControlForm::slotTest()

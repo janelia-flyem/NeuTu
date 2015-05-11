@@ -4,6 +4,7 @@
 #include "z3dwindow.h"
 #include "z3dvolumeraycaster.h"
 #include "z3dswcfilter.h"
+#include "zjsonobject.h"
 
 using namespace std;
 

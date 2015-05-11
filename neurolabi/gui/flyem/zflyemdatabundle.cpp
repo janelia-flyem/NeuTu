@@ -157,7 +157,7 @@ bool ZFlyEmDataBundle::loadDvid(const ZDvidFilter &dvidFilter)
   m_synapseAnnotationFile = dvidTarget.getSourceString();
 
   QStringList annotationList = fdReader.readKeys(
-        ZDvidData::getName(ZDvidData::ROLE_BODY_ANNOTATION), "0");
+        ZDvidData::GetName(ZDvidData::ROLE_BODY_ANNOTATION), "0");
   std::set<int> annotationSet;
   foreach (const QString &idStr, annotationList) {
     annotationSet.insert(ZString(idStr.toStdString()).firstInteger());

@@ -52,11 +52,13 @@ public:
   QColor getColor(uint64_t label) const;
   QColor getColor(int64_t label) const;
 
+  uint64_t getMappedLabel(const ZObject3dScan &obj) const;
+
 private:
   inline const ZDvidTarget& getDvidTarget() const { return m_dvidTarget; }
   void assignColorMap();
   void forceUpdate(const ZStackViewParam &viewParam);
-  void updateLabel(const ZFlyEmBodyMerger &merger);
+  //void updateLabel(const ZFlyEmBodyMerger &merger);
   void init(int maxWidth, int maxHeight);
 
 private:

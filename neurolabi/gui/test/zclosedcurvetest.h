@@ -73,7 +73,7 @@ TEST(ZClosedCurve, match)
   ASSERT_EQ(0, curve.findMatchShift(curve2));
 
   curve2.append(-4, 0, 0);
-  ASSERT_EQ(-2, curve.findMatchShift(curve2));
+  ASSERT_EQ(0, curve.findMatchShift(curve2));
 
 }
 
