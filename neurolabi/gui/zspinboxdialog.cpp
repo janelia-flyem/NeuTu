@@ -16,7 +16,7 @@ ZSpinBoxDialog::ZSpinBoxDialog(QWidget *parent) :
 
   m_spinBox = new QSpinBox(this);
   m_spinBox->setMinimum(0);
-  m_spinBox->setMaximum(99999);
+  m_spinBox->setMaximum(9999999);
   m_spinBox->setValue(0);
   spinBoxLayout->addWidget(m_spinBox);
 

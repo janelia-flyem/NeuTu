@@ -39,7 +39,7 @@
 #include "zwidgetmessage.h"
 
 ZFlyEmBodySplitProject::ZFlyEmBodySplitProject(QObject *parent) :
-  QObject(parent), m_bodyId(-1), m_dataFrame(NULL),
+  QObject(parent), m_bodyId(0), m_dataFrame(NULL),
   m_resultWindow(NULL), m_quickResultWindow(NULL),
   m_quickViewWindow(NULL), m_isBookmarkVisible(true), m_showingBodyMask(false)
 {
@@ -111,7 +111,7 @@ void ZFlyEmBodySplitProject::shallowClear()
   m_quickViewWindow = NULL;
   m_dataFrame = NULL;
 
-  m_bodyId = -1;
+  m_bodyId = 0;
 
   m_bookmarkDecoration.clear();
 }

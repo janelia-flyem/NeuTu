@@ -62,6 +62,13 @@
        </property>
       </widget>
      </item>
+     <item>
+      <widget class="QPushButton" name="splitPushButton">
+       <property name="text">
+        <string>Launch Split</string>
+       </property>
+      </widget>
+     </item>
     </layout>
    </item>
    <item>

@@ -18,6 +18,13 @@
       "debug": true
     },
     {
+      "address": "emdata2.int.janelia.org",
+      "port": 7000,
+      "uuid": "79b",
+      "name": "FIB19 (emdata2)",
+      "comment": "FIB19"
+    },
+    {
       "address": "emdata1.int.janelia.org",
       "uuid": "2a3",
       "name": "FIB25-Hackathon (internal)",

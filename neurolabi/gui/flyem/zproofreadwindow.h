@@ -7,6 +7,7 @@
 class ZFlyEmProofMvc;
 class QStackedWidget;
 class ZFlyEmMessageWidget;
+class QProgressDialog;
 
 /*!
  * \brief The mainwindow class of proofreading
@@ -19,11 +20,16 @@ public:
 
   static ZProofreadWindow* Make(QWidget *parent = 0);
 
+  QProgressDialog* getProgressDialog() {
+    return m_progressDlg;
+  }
+
 signals:
   void splitTriggered(uint64_t bodyId);
 
 public slots:
   void launchSplit(uint64_t bodyId);
+  void launchSplit();
   void exitSplit();
   void presentSplitInterface(uint64_t bodyId);
 
@@ -44,6 +50,8 @@ private:
   ZFlyEmProofMvc *m_mainMvc;
   QStackedWidget *m_controlGroup;
   ZFlyEmMessageWidget *m_messageWidget;
+
+  QProgressDialog *m_progressDlg;
 
 };
 
