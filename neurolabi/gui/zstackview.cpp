@@ -585,7 +585,7 @@ void ZStackView::mouseRolledInImageWidget(QWheelEvent *event)
       if (numSteps != 0) {
         int ratio = 1;
         if (event->modifiers() == Qt::ShiftModifier) {
-          ratio = 5;
+          ratio = 10;
         }
 
         int newPos = m_depthControl->value() + numSteps * ratio;

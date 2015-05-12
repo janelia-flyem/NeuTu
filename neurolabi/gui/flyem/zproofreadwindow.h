@@ -27,10 +27,12 @@ public:
 
 signals:
   void splitTriggered(uint64_t bodyId);
+  /*
   void progressStarted(const QString &title, int nticks);
   void progressStarted(const QString &title);
   void progressAdvanced(double dp);
   void progressEnded();
+  */
 
 public slots:
   void launchSplit(uint64_t bodyId);
@@ -57,7 +59,7 @@ private:
   ZFlyEmMessageWidget *m_messageWidget;
 
   QProgressDialog *m_progressDlg;
-
+  ZProgressSignal *m_progressSignal;
 
 };
 

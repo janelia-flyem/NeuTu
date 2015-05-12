@@ -13,6 +13,7 @@
 #include "zwidgetfactory.h"
 #include "zdialogfactory.h"
 #include "tz_math.h"
+#include "zprogresssignal.h"
 
 ZProofreadWindow::ZProofreadWindow(QWidget *parent) :
   QMainWindow(parent)
@@ -90,6 +91,9 @@ void ZProofreadWindow::init()
   m_progressDlg->setWindowModality(Qt::WindowModal);
   m_progressDlg->setAutoClose(true);
   m_progressDlg->setCancelButton(0);
+
+  m_progressSignal = new ZProgressSignal(this);
+  //m_progressSignal->connectSlot(this);
 }
 
 ZProofreadWindow* ZProofreadWindow::Make(QWidget *parent)
@@ -105,11 +109,12 @@ void ZProofreadWindow::presentSplitInterface(uint64_t bodyId)
 
 void ZProofreadWindow::launchSplit(uint64_t bodyId)
 {
-  emit progressStarted("Launching split ...");
+  m_progressSignal->startProgress("Launching split ...");
+//  emit progressStarted("Launching split ...");
   dump("Launching split ...", false);
-  advanceProgress(0.1);
+  m_progressSignal->advanceProgress(0.1);
+//  advanceProgress(0.1);
   m_mainMvc->launchSplit(bodyId);
-  endProgress();
 
   /*
   if (m_mainMvc->launchSplit(bodyId)) {
