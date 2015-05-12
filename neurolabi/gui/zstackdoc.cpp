@@ -7582,7 +7582,9 @@ void ZStackDoc::updateWatershedBoundaryObject(ZStack *out, ZIntPoint dsIntv)
              iter != objArray->end(); ++iter) {
           ZObject3d *obj = *iter;
           if (obj != NULL) {
-            obj->upSample(dsIntv.getX(), dsIntv.getY(), dsIntv.getZ());
+            if (!obj->isEmpty()) {
+              obj->upSample(dsIntv.getX(), dsIntv.getY(), dsIntv.getZ());
+            }
           }
         }
       }
@@ -7702,6 +7704,12 @@ void ZStackDoc::seededWatershed()
 
     if (signalStack != NULL) {
       seedMask.downsampleMax(dsIntv.getX(), dsIntv.getY(), dsIntv.getZ());
+
+#ifdef _DEBUG_2
+      seedMask[0]->save(GET_TEST_DATA_DIR + "/test.tif");
+      signalStack->save(GET_TEST_DATA_DIR + "/test2.tif");
+#endif
+
       ZStack *out = engine.run(signalStack, seedMask);
 
       updateWatershedBoundaryObject(out, dsIntv);

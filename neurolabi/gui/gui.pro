@@ -523,7 +523,8 @@ HEADERS += mainwindow.h \
     dvid/zdvidsparsestack.h \
     flyem/flyemsplitcontrolform.h \
     flyem/zflyemmessagewidget.h \
-    zwidgetmessage.h
+    zwidgetmessage.h \
+    zprogresssignal.h
 
 FORMS += settingdialog.ui \
     frameinfodialog.ui \
@@ -911,7 +912,8 @@ SOURCES += main.cpp \
     dvid/zdvidsparsestack.cpp \
     flyem/flyemsplitcontrolform.cpp \
     flyem/zflyemmessagewidget.cpp \
-    zwidgetmessage.cpp
+    zwidgetmessage.cpp \
+    zprogresssignal.cpp
 
 OTHER_FILES += \
     extlib.pri \
