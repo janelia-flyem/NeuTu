@@ -12,6 +12,7 @@
 #include "flyem/zflyemmessagewidget.h"
 #include "zwidgetfactory.h"
 #include "zdialogfactory.h"
+#include "tz_math.h"
 
 ZProofreadWindow::ZProofreadWindow(QWidget *parent) :
   QMainWindow(parent)
@@ -86,6 +87,9 @@ void ZProofreadWindow::init()
   setCentralWidget(widget);
 
   m_progressDlg = new QProgressDialog(this);
+  m_progressDlg->setWindowModality(Qt::WindowModal);
+  m_progressDlg->setAutoClose(true);
+  m_progressDlg->setCancelButton(0);
 }
 
 ZProofreadWindow* ZProofreadWindow::Make(QWidget *parent)
@@ -101,8 +105,11 @@ void ZProofreadWindow::presentSplitInterface(uint64_t bodyId)
 
 void ZProofreadWindow::launchSplit(uint64_t bodyId)
 {
+  emit progressStarted("Launching split ...");
   dump("Launching split ...", false);
+  advanceProgress(0.1);
   m_mainMvc->launchSplit(bodyId);
+  endProgress();
 
   /*
   if (m_mainMvc->launchSplit(bodyId)) {
@@ -118,12 +125,11 @@ void ZProofreadWindow::launchSplit()
 {
   ZSpinBoxDialog *dlg = ZDialogFactory::makeSpinBoxDialog(this);
   dlg->setValueLabel("Body ID");
-  if (dlg->exec()) {
+  if (dlg->exec()) {   
     if (dlg->getValue() > 0) {
       launchSplit(dlg->getValue());
     }
   }
-
 }
 
 void ZProofreadWindow::exitSplit()
@@ -142,29 +148,33 @@ void ZProofreadWindow::dumpError(const QString &message, bool appending)
   m_messageWidget->dumpError(message, appending);
 }
 
-/*
+
 void ZProofreadWindow::advanceProgress(double dp)
 {
-  if (m_progress->value() < m_progress->maximum()) {
-    int range = m_progress->maximum() - m_progress->minimum();
-    m_progress->setValue(m_progress->value() + iround(dp * range));
+  if (getProgressDialog()->value() < getProgressDialog()->maximum()) {
+    int range = getProgressDialog()->maximum() - getProgressDialog()->minimum();
+    getProgressDialog()->setValue(getProgressDialog()->value() + iround(dp * range));
   }
 }
 
 void ZProofreadWindow::startProgress(const QString &title, int nticks)
 {
   initProgress(nticks);
-  m_progress->setLabelText(title);
-  m_progress->show();
+  getProgressDialog()->setLabelText(title);
+  getProgressDialog()->show();
 }
 
-void ZProofreadWindow::startProgress()
+void ZProofreadWindow::startProgress(const QString &title)
 {
-  m_progress->show();
+  startProgress(title, 100);
 }
 
 void ZProofreadWindow::endProgress()
 {
-  m_progress->reset();
+  getProgressDialog()->reset();
 }
-*/
+
+void ZProofreadWindow::initProgress(int nticks)
+{
+  getProgressDialog()->setRange(0, nticks);
+}

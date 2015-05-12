@@ -516,14 +516,14 @@ ZIntPoint misc::getDsIntvFor3DVolume(double dsRatio)
   ZIntPoint dsIntv;
 
   if (dsRatio > 32) {
-    int s =  iround(Cube_Root(dsRatio)) - 1;
-    dsIntv.set(s, s, s);
+//    int s =  iround(Cube_Root(dsRatio)) - 1;
+    dsIntv.set(7, 7, 1);
   } else if (dsRatio > 27) {
     dsIntv.set(3, 3, 1);
   } else if (dsRatio > 18) {
-    dsIntv.set(2, 2, 2);
+    dsIntv.set(3, 3, 1);
   } else if (dsRatio > 8 ) {
-    dsIntv.set(2, 1, 1);
+    dsIntv.set(3, 3, 0);
   } else if (dsRatio > 4) {
     dsIntv.set(1, 1, 1);
   } else if (dsRatio > 1) {

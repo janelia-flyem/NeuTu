@@ -46,6 +46,8 @@ signals:
   void errorGenerated(const QString &message);
   void splitBodyLoaded(uint64_t bodyId);
 
+
+
 public slots:
   void mergeSelected();
   void undo();
@@ -53,7 +55,7 @@ public slots:
 
   void setSegmentationVisible(bool visible);
   void setDvidTarget();
-  const ZDvidTarget &getDvidTarget() const;
+  ZDvidTarget getDvidTarget() const;
   void launchSplit(uint64_t bodyId);
   void processMessageSlot(const QString &message);
   void notifySplitTriggered();

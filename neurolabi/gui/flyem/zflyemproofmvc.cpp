@@ -13,7 +13,7 @@
 #include "dvid/zdvidsparsestack.h"
 
 ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
-  ZStackMvc(parent), m_splitOn(false)
+  ZStackMvc(parent), m_splitOn(false), m_dvidDlg(NULL)
 {
   qRegisterMetaType<uint64_t>("uint64_t");
 }
@@ -126,9 +126,13 @@ void ZFlyEmProofMvc::setDvidTarget()
   }
 }
 
-const ZDvidTarget& ZFlyEmProofMvc::getDvidTarget() const
+ZDvidTarget ZFlyEmProofMvc::getDvidTarget() const
 {
-  return m_dvidDlg->getDvidTarget();
+  if (m_dvidDlg != NULL) {
+    return m_dvidDlg->getDvidTarget();
+  }
+
+  return ZDvidTarget();
 }
 
 void ZFlyEmProofMvc::customInit()
