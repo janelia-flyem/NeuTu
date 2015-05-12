@@ -500,13 +500,35 @@ ZTree<int>* misc::buildSegmentationTree(const Stack *stack)
 
 ZIntPoint misc::getDsIntvFor3DVolume(const ZIntCuboid &box)
 {
-  static const size_t maxVolume = 1024 * 1024 * 200;
+  static const size_t maxVolume = 512 * 512 * 256;
   ZIntPoint dsIntv;
   int s = 0;
   if (box.getVolume() > maxVolume) {
     s =  iround(Cube_Root(((double)  box.getVolume()) / maxVolume)) - 1;
   }
   dsIntv.set(s, s, s);
+
+  return dsIntv;
+}
+
+ZIntPoint misc::getDsIntvFor3DVolume(double dsRatio)
+{
+  ZIntPoint dsIntv;
+
+  if (dsRatio > 32) {
+    int s =  iround(Cube_Root(dsRatio)) - 1;
+    dsIntv.set(s, s, s);
+  } else if (dsRatio > 27) {
+    dsIntv.set(3, 3, 1);
+  } else if (dsRatio > 18) {
+    dsIntv.set(2, 2, 2);
+  } else if (dsRatio > 8 ) {
+    dsIntv.set(2, 1, 1);
+  } else if (dsRatio > 4) {
+    dsIntv.set(1, 1, 1);
+  } else if (dsRatio > 1) {
+    dsIntv.set(1, 1, 0);
+  }
 
   return dsIntv;
 }

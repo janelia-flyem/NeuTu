@@ -16747,4 +16747,25 @@ void ZTest::test(MainWindow *host)
 
 
 #endif
+
+#if 0
+  ZDvidTarget target("emdata2.int.janelia.org", "79b", 7000);
+  target.setBodyLabelName("m10_lo_bodies");
+
+  ZDvidReader reader;
+  if (reader.open(target)) {
+    ZObject3dScan obj1 = reader.readBody(24467491);
+//    ZObject3dScan obj2 = reader.readBody(21054499);
+//    obj1.concat(obj2);
+//    obj2 = reader.readBody(10362053);
+//    obj1.concat(obj2);
+//    obj1.canonize();
+    obj1.save(GET_TEST_DATA_DIR + "/test.sobj");
+  }
+#endif
+
+#if 1
+  ZIntPoint dsIntv = misc::getDsIntvFor3DVolume(29);
+  std::cout << dsIntv.toString() << std::endl;
+#endif
 }

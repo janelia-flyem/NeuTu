@@ -3,6 +3,7 @@
 #include <QHBoxLayout>
 #include <QStackedWidget>
 #include <QLabel>
+#include <QProgressDialog>
 
 #include "flyemsplitcontrolform.h"
 #include "dvid/zdvidtarget.h"
@@ -10,6 +11,7 @@
 #include "flyemproofcontrolform.h"
 #include "flyem/zflyemmessagewidget.h"
 #include "zwidgetfactory.h"
+#include "zdialogfactory.h"
 
 ZProofreadWindow::ZProofreadWindow(QWidget *parent) :
   QMainWindow(parent)
@@ -71,6 +73,10 @@ void ZProofreadWindow::init()
           this, SLOT(launchSplit(uint64_t)));
   connect(controlForm, SIGNAL(splitTriggered(uint64_t)),
           splitControlForm, SLOT(setSplit(uint64_t)));
+
+  connect(controlForm, SIGNAL(splitTriggered()),
+          this, SLOT(launchSplit()));
+
   connect(splitControlForm, SIGNAL(exitingSplit()),
           this, SLOT(exitSplit()));
 
@@ -78,6 +84,8 @@ void ZProofreadWindow::init()
           this, SLOT(presentSplitInterface(uint64_t)));
 
   setCentralWidget(widget);
+
+  m_progressDlg = new QProgressDialog(this);
 }
 
 ZProofreadWindow* ZProofreadWindow::Make(QWidget *parent)
@@ -106,6 +114,18 @@ void ZProofreadWindow::launchSplit(uint64_t bodyId)
   */
 }
 
+void ZProofreadWindow::launchSplit()
+{
+  ZSpinBoxDialog *dlg = ZDialogFactory::makeSpinBoxDialog(this);
+  dlg->setValueLabel("Body ID");
+  if (dlg->exec()) {
+    if (dlg->getValue() > 0) {
+      launchSplit(dlg->getValue());
+    }
+  }
+
+}
+
 void ZProofreadWindow::exitSplit()
 {
   m_mainMvc->exitSplit();
@@ -121,3 +141,30 @@ void ZProofreadWindow::dumpError(const QString &message, bool appending)
 {
   m_messageWidget->dumpError(message, appending);
 }
+
+/*
+void ZProofreadWindow::advanceProgress(double dp)
+{
+  if (m_progress->value() < m_progress->maximum()) {
+    int range = m_progress->maximum() - m_progress->minimum();
+    m_progress->setValue(m_progress->value() + iround(dp * range));
+  }
+}
+
+void ZProofreadWindow::startProgress(const QString &title, int nticks)
+{
+  initProgress(nticks);
+  m_progress->setLabelText(title);
+  m_progress->show();
+}
+
+void ZProofreadWindow::startProgress()
+{
+  m_progress->show();
+}
+
+void ZProofreadWindow::endProgress()
+{
+  m_progress->reset();
+}
+*/

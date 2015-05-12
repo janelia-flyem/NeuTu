@@ -22,6 +22,7 @@ signals:
   void mergingSelected();
   void dvidSetTriggered();
   void splitTriggered(uint64_t bodyId);
+  void splitTriggered();
   void labelSizeChanged(int width, int height);
   void coarseBodyViewTriggered();
   void savingMerge();

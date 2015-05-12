@@ -1,8 +1,10 @@
 #include "zsparsestack.h"
 #include "zstack.hxx"
 #include "neutubeconfig.h"
+#include "misc/miscutility.h"
 
-#define MAX_STACK_VOLUME 1847483647
+//#define MAX_STACK_VOLUME 1847483647
+#define MAX_STACK_VOLUME 923741823
 
 //#define MAX_STACK_VOLUME 1000
 
@@ -109,14 +111,28 @@ ZStack* ZSparseStack::getStack()
     ZIntCuboid cuboid = m_objectMask->getBoundBox();
     if (!m_objectMask->isEmpty()) {
       size_t volume = cuboid.getVolume();
-      if (volume > MAX_STACK_VOLUME) {
+      double dsRatio = (double) volume / MAX_STACK_VOLUME;
+      if (dsRatio > 1.0) {
         ZObject3dScan obj = *m_objectMask;
+        m_dsIntv = misc::getDsIntvFor3DVolume(dsRatio);
 
-        if (volume / 8 > MAX_STACK_VOLUME) {
+        /*
+        if (dsRatio >= 32) {
           m_dsIntv.set(3, 3, 1);
-        } else {
+        } else if (dsRatio >= 27) {
+          m_dsIntv.set(2, 2, 2);
+        } else if (dsRatio >= 18 ) {
+          m_dsIntv.set(2, 1, 1);
+        } else if (dsRatio > 8) {
           m_dsIntv.set(1, 1, 1);
         }
+        */
+
+//        if (volume / 8 > MAX_STACK_VOLUME) {
+//          m_dsIntv.set(3, 3, 1);
+//        } else {
+//          m_dsIntv.set(1, 1, 1);
+//        }
         obj.downsampleMax(m_dsIntv.getX(), m_dsIntv.getY(), m_dsIntv.getZ());
 
         ZStackBlockGrid *dsGrid = m_stackGrid->makeDownsample(

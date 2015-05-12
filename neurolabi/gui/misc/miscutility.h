@@ -37,6 +37,8 @@ ZGraph* makeCoOccurGraph(const Stack *stack, int nnbr);
 
 ZIntPoint getDsIntvFor3DVolume(const ZIntCuboid &box);
 
+ZIntPoint getDsIntvFor3DVolume(double dsRatio);
+
 /*!
  * \brief A function for computing confidence
  *

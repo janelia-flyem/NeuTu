@@ -300,6 +300,16 @@ void Z3DVolumeSource::readSparseStack()
       depth = (int) (depth * alpha);
     }
 
+    ZIntPoint dsIntv2 = misc::getDsIntvFor3DVolume(
+          ZIntCuboid(0, 0, 0, width - 1, height - 1, depth - 1));
+    width /= dsIntv2.getX() + 1;
+    height /= dsIntv2.getY() + 1;
+    depth /= dsIntv2.getZ() + 1;
+
+
+    /*
+    ZIntPoint misc::getDsIntvFor3DVolume(const ZIntCuboid &box);
+
     size_t volume = (size_t) width * height *depth * nchannel;
     if (volume > m_maxVoxelNumber) {
       //Downsample big stack
@@ -311,6 +321,7 @@ void Z3DVolumeSource::readSparseStack()
       widthScale *= scale;
       heightScale *= scale;
     }
+    */
 
     for (int i=0; i<nchannel; i++) {
       const Stack *stack = stackData->c_stack(i);
