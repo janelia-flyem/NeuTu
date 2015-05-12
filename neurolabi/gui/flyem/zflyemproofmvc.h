@@ -13,6 +13,7 @@ class ZFlyEmProofDoc;
 class ZDvidTileEnsemble;
 class ZDvidTarget;
 class ZDvidDialog;
+class ZProgressSignal;
 
 class ZFlyEmProofMvc : public ZStackMvc
 {
@@ -74,6 +75,10 @@ public slots:
 
   void setDvidLabelSliceSize(int width, int height);
 
+  ZProgressSignal* getProgressSignal() const {
+    return m_progressSignal;
+  }
+
 //  void toggleEdgeMode(bool edgeOn);
 
 protected:
@@ -91,6 +96,7 @@ private:
   QThreadFutureMap m_futureMap;
 
   ZDvidDialog *m_dvidDlg;
+  ZProgressSignal *m_progressSignal;
 };
 
 template <typename T>

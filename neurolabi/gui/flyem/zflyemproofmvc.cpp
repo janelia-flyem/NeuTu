@@ -11,11 +11,13 @@
 #include "dvid/zdvidreader.h"
 #include "zstackobjectsourcefactory.h"
 #include "dvid/zdvidsparsestack.h"
+#include "zprogresssignal.h"
 
 ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
   ZStackMvc(parent), m_splitOn(false), m_dvidDlg(NULL)
 {
   qRegisterMetaType<uint64_t>("uint64_t");
+  m_progressSignal = new ZProgressSignal(this);
 }
 
 ZFlyEmProofMvc* ZFlyEmProofMvc::Make(
