@@ -67,7 +67,8 @@ bool ZSparseStack::isDeprecated(EComponent component) const
 }
 
 void ZSparseStack::assignStackValue(
-    ZStack *stack, const ZObject3dScan &obj, const ZStackBlockGrid &stackGrid)
+    ZStack *stack, const ZObject3dScan &obj, const ZStackBlockGrid &stackGrid,
+    const int baseValue)
 {
   if (stackGrid.isEmpty() || stackGrid.getStackArray().empty()) {
     for (size_t i = 0; i < obj.getStripeNumber(); ++i) {
@@ -93,7 +94,7 @@ void ZSparseStack::assignStackValue(
         int x1 = stripe.getSegmentEnd(j);
 
         for (int x = x0; x <= x1; ++x) {
-          int v = stackGrid.getValue(x, y, z);
+          int v = stackGrid.getValue(x, y, z) + baseValue;
           stack->setIntValue(x, y, z, 0, v);
         }
       }
@@ -142,12 +143,12 @@ ZStack* ZSparseStack::getStack()
 #endif
         m_stack =  new ZStack(GREY, obj.getBoundBox(), 1);
         m_stack->setZero();
-        assignStackValue(m_stack, obj, *dsGrid);
+        assignStackValue(m_stack, obj, *dsGrid, 1);
         delete dsGrid;
       } else {
         m_stack = new ZStack(GREY, cuboid, 1);
         m_stack->setZero();
-        assignStackValue(m_stack, *m_objectMask, *m_stackGrid);
+        assignStackValue(m_stack, *m_objectMask, *m_stackGrid, 1);
       }
     }
   }
@@ -220,7 +221,7 @@ ZStack* ZSparseStack::getSlice(int z) const
   ZIntCuboid box = slice.getBoundBox();
   ZStack *stack = new ZStack(GREY, box, 1);
   stack->setZero();
-  assignStackValue(stack, slice, *m_stackGrid);
+  assignStackValue(stack, slice, *m_stackGrid, 1);
 
   return stack;
 }

@@ -43,6 +43,7 @@ public slots:
   void dump(const QString &message, bool appending);
   void dumpError(const QString &message, bool appending);
 
+  void startProgress();
   void startProgress(const QString &title, int nticks);
   void startProgress(const QString &title);
   void advanceProgress(double dp);

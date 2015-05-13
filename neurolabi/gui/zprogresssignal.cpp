@@ -1,5 +1,7 @@
 #include "zprogresssignal.h"
 
+int ZProgressSignal::m_currentLevel = 0;
+
 ZProgressSignal::ZProgressSignal(QObject *parent) :
   QObject(parent)
 {
@@ -7,13 +9,23 @@ ZProgressSignal::ZProgressSignal(QObject *parent) :
 
 void ZProgressSignal::connectProgress(const ZProgressSignal *signal)
 {
-  connect(this, SIGNAL(progressAdvanced(double)),
-          signal, SIGNAL(progressAdvanced(double)));
-  connect(this, SIGNAL(progressStarted(QString)),
-          signal, SIGNAL(progressStarted(QString)));
-  connect(this, SIGNAL(progressEnded()), this, SIGNAL(progressEnded()));
-  connect(this, SIGNAL(progressStarted(QString,int)),
-          signal, SIGNAL(progressStarted(QString,int)));
+  ConnectProgress(this, signal);
+}
+
+void ZProgressSignal::ConnectProgress(
+    const ZProgressSignal *source, const ZProgressSignal *target)
+{
+  if (source != NULL && target != NULL) {
+    connect(source, SIGNAL(progressAdvanced(double)),
+            target, SIGNAL(progressAdvanced(double)));
+    connect(source, SIGNAL(progressStarted(QString)),
+            target, SIGNAL(progressStarted(QString)));
+    connect(source, SIGNAL(progressEnded()), target, SIGNAL(progressEnded()));
+    connect(source, SIGNAL(progressStarted(QString,int)),
+            target, SIGNAL(progressStarted(QString,int)));
+    connect(source, SIGNAL(progressStarted()),
+            target, SIGNAL(progressStarted()));
+  }
 }
 
 void ZProgressSignal::advanceProgress(double dp)
@@ -24,6 +36,11 @@ void ZProgressSignal::advanceProgress(double dp)
 void ZProgressSignal::startProgress(const QString &title)
 {
   emit progressStarted(title);
+}
+
+void ZProgressSignal::startProgress()
+{
+  emit progressStarted();
 }
 
 void ZProgressSignal::startProgress(const QString &title, int nticks)
