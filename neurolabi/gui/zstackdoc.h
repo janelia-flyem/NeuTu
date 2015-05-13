@@ -76,6 +76,7 @@ class ZDvidTileEnsemble;
 class ZStackViewParam;
 class Z3DWindow;
 class ZStackMvc;
+class ZProgressSignal;
 
 /*!
  * \brief The class of stack document
@@ -819,6 +820,9 @@ public:
   void notifyPlayerChanged(const ZStackObjectRole &role);
   void notifyPlayerChanged(ZStackObjectRole::TRole role);
 
+  ZProgressSignal* getProgressSignal() const {
+    return m_progressSignal;
+  }
   /*
   inline void setLastAddedSwcNode(Swc_Tree_Node *tn) {
     m_lastAddedSwcNode = tn;
@@ -1024,6 +1028,7 @@ private:
   template<typename T>
   const T* getFirstUserByType() const;
 
+
 private:
   //Main stack
   ZStack *m_stack;
@@ -1084,6 +1089,8 @@ private:
   QMutex m_mutex;
 
   QList<QObject*> m_userList;
+
+  ZProgressSignal *m_progressSignal;
 
 protected:
   ZObjectColorScheme m_objColorSheme;

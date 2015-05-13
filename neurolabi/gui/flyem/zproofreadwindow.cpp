@@ -93,7 +93,10 @@ void ZProofreadWindow::init()
   m_progressDlg->setCancelButton(0);
 
   m_progressSignal = new ZProgressSignal(this);
-  //m_progressSignal->connectSlot(this);
+  ZProgressSignal::ConnectProgress(m_mainMvc->getProgressSignal(),
+        m_progressSignal);
+//  m_progressSignal->connectProgress(m_mainMvc->getProgressSignal());
+  m_progressSignal->connectSlot(this);
 }
 
 ZProofreadWindow* ZProofreadWindow::Make(QWidget *parent)
@@ -109,10 +112,9 @@ void ZProofreadWindow::presentSplitInterface(uint64_t bodyId)
 
 void ZProofreadWindow::launchSplit(uint64_t bodyId)
 {
-  m_progressSignal->startProgress("Launching split ...");
 //  emit progressStarted("Launching split ...");
   dump("Launching split ...", false);
-  m_progressSignal->advanceProgress(0.1);
+//  m_progressSignal->advanceProgress(0.1);
 //  advanceProgress(0.1);
   m_mainMvc->launchSplit(bodyId);
 
@@ -160,6 +162,11 @@ void ZProofreadWindow::advanceProgress(double dp)
     int range = getProgressDialog()->maximum() - getProgressDialog()->minimum();
     getProgressDialog()->setValue(getProgressDialog()->value() + iround(dp * range));
   }
+}
+
+void ZProofreadWindow::startProgress()
+{
+  getProgressDialog()->show();
 }
 
 void ZProofreadWindow::startProgress(const QString &title, int nticks)

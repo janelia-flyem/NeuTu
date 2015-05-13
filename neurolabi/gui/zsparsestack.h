@@ -69,7 +69,8 @@ public:
 
 private:
   static void assignStackValue(ZStack *stack, const ZObject3dScan &obj,
-                               const ZStackBlockGrid &stackGrid);
+                               const ZStackBlockGrid &stackGrid,
+                               const int baseValue);
 
 private:
   ZObject3dScan *m_objectMask;

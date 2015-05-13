@@ -2,6 +2,7 @@
 #include "zstackdoc.h"
 #include "zstackview.h"
 #include "zstackpresenter.h"
+#include "zprogresssignal.h"
 
 ZStackMvc::ZStackMvc(QWidget *parent) :
   QWidget(parent)
@@ -9,6 +10,7 @@ ZStackMvc::ZStackMvc(QWidget *parent) :
   m_view = NULL;
   m_presenter = NULL;
   m_layout = new QHBoxLayout(this);
+  m_progressSignal = new ZProgressSignal(this);
 }
 
 ZStackMvc* ZStackMvc::Make(QWidget *parent, ZSharedPointer<ZStackDoc> doc)
@@ -138,6 +140,8 @@ void ZStackMvc::dropDocument(ztr1::shared_ptr<ZStackDoc> doc)
 
     m_doc = doc;
     m_doc->registerUser(this);
+    ZProgressSignal::ConnectProgress(m_doc->getProgressSignal(),
+                                     getProgressSignal());
     //m_doc->setParentFrame(this);
   }
 }

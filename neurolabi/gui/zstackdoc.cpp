@@ -102,7 +102,7 @@
 #include "dvid/zdvidtileensemble.h"
 #include "zstackmvc.h"
 #include "dvid/zdvidsparsestack.h"
-
+#include "zprogresssignal.h"
 
 using namespace std;
 
@@ -143,6 +143,8 @@ ZStackDoc::ZStackDoc(ZStack *stack, QObject *parent) : QObject(parent),
   setStackBackground(NeuTube::IMAGE_BACKGROUND_DARK);
 
   m_objColorSheme.setColorScheme(ZColorScheme::RANDOM_COLOR);
+
+  m_progressSignal = new ZProgressSignal(this);
 }
 
 ZStackDoc::~ZStackDoc()
@@ -7679,10 +7681,15 @@ void ZStackDoc::localSeededWatershed()
 
 void ZStackDoc::seededWatershed()
 {
+  getProgressSignal()->startProgress("Splitting ...");
   removeObject(ZStackObjectRole::ROLE_TMP_RESULT, true);
+
+  getProgressSignal()->advanceProgress(0.1);
   //removeAllObj3d();
   ZStackWatershed engine;
   ZStackArray seedMask = createWatershedMask(false);
+
+  getProgressSignal()->advanceProgress(0.1);
 
   if (!seedMask.empty()) {
     ZStack *signalStack = m_stack;
@@ -7719,6 +7726,7 @@ void ZStackDoc::seededWatershed()
       setLabelField(out);
     }
   }
+  getProgressSignal()->endProgress();
 }
 
 void ZStackDoc::runLocalSeededWatershed()

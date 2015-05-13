@@ -12,6 +12,7 @@ class ZStackDoc;
 class ZStackView;
 class ZStackPresenter;
 class ZStackViewParam;
+class ZProgressSignal;
 
 /*!
  * \brief The MVC class for stack operation
@@ -51,6 +52,11 @@ public:
   void connectSignalSlot();
   void disconnectAll();
 
+  ZProgressSignal* getProgressSignal() const {
+    return m_progressSignal;
+  }
+
+
 protected: // Events
   virtual void keyPressEvent(QKeyEvent *event);
 
@@ -78,6 +84,7 @@ private:
   ZStackPresenter *m_presenter;
   ZStackView *m_view;
   QLayout *m_layout;
+  ZProgressSignal *m_progressSignal;
 };
 
 #endif // ZSTACKMVC_H

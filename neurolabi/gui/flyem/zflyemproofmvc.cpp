@@ -17,7 +17,6 @@ ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
   ZStackMvc(parent), m_splitOn(false), m_dvidDlg(NULL)
 {
   qRegisterMetaType<uint64_t>("uint64_t");
-  m_progressSignal = new ZProgressSignal(this);
 }
 
 ZFlyEmProofMvc* ZFlyEmProofMvc::Make(
@@ -194,13 +193,20 @@ void ZFlyEmProofMvc::launchSplitFunc(uint64_t bodyId)
             ZStackObjectSourceFactory::MakeSplitObjectSource()));
     ZDvidReader reader;
     if (reader.open(getDvidTarget())) {
+      getProgressSignal()->startProgress("Launching split ...");
+
       if (body != NULL) {
         if (body->getLabel() != bodyId) {
           body = NULL;
         }
       }
 
+      getProgressSignal()->advanceProgress(0.1);
+
       ZDvidLabelSlice *labelSlice = getCompleteDocument()->getDvidLabelSlice();
+
+      getProgressSignal()->advanceProgress(0.1);
+
       if (body == NULL) {
         body = reader.readDvidSparseStack(bodyId);
         body->setZOrder(0);
@@ -213,7 +219,11 @@ void ZFlyEmProofMvc::launchSplitFunc(uint64_t bodyId)
       labelSlice->setHittable(false);
       body->setVisible(true);
 
+      getProgressSignal()->advanceProgress(0.1);
+
       emit splitBodyLoaded(bodyId);
+
+      getProgressSignal()->endProgress();
     }
   }
 }
