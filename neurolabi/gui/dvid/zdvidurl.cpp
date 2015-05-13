@@ -8,7 +8,7 @@ const std::string ZDvidUrl::m_keyRangeCommand = "keyrange";
 const std::string ZDvidUrl::m_sparsevolCommand = "sparsevol";
 const std::string ZDvidUrl::m_coarseSparsevolCommand = "sparsevol-coarse";
 const std::string ZDvidUrl::m_infoCommand = "info";
-
+const std::string ZDvidUrl::m_splitCommand = "split";
 
 ZDvidUrl::ZDvidUrl()
 {
@@ -420,7 +420,11 @@ std::string ZDvidUrl::getSplitUrl(
     const std::string &dataName, uint64_t originalLabel) const
 {
   std::ostringstream stream;
-  stream << getDataUrl(dataName) << "/" << originalLabel;
+  if (m_splitCommand.empty()) {
+    stream << getDataUrl(dataName) << "/" << originalLabel;
+  } else {
+    stream << getDataUrl(dataName) << "/" << m_splitCommand << "/" << originalLabel;
+  }
 
   return stream.str();
 }

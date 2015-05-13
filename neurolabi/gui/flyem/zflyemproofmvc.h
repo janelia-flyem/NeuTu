@@ -67,6 +67,7 @@ public slots:
   void updateSelection();
   void saveSeed();
   void saveMergeOperation();
+  void commitCurrentSplit();
 
   void showBody3d();
   void showSplit3d();
@@ -123,6 +124,7 @@ void ZFlyEmProofMvc::connectSplitControlPanel(T *panel)
   connect(panel, SIGNAL(changingSplit(uint64_t)), this,
           SLOT(switchSplitBody(uint64_t)));
   connect(panel, SIGNAL(savingSeed()), this, SLOT(saveSeed()));
+  connect(panel, SIGNAL(committingResult()), this, SLOT(commitCurrentSplit()));
 }
 
 
