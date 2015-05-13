@@ -140,6 +140,7 @@ private:
   static const std::string m_infoCommand;
   static const std::string m_sparsevolCommand;
   static const std::string m_coarseSparsevolCommand;
+  static const std::string m_splitCommand;
 };
 
 #endif // ZDVIDURL_H

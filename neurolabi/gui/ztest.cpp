@@ -16747,13 +16747,21 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 0
+#if 1
   ZDvidTarget target("emdata2.int.janelia.org", "79b", 7000);
   target.setBodyLabelName("m10_lo_bodies");
 
+  /*
+  std::vector<int> array;
+  array.push_back(21069256);
+  array.push_back(24500537);
+  array.push_back(24467491);
+  array.push_back(24488605);
+  array.push_back(24758629);
+*/
   ZDvidReader reader;
   if (reader.open(target)) {
-    ZObject3dScan obj1 = reader.readBody(24467491);
+    ZObject3dScan obj1 = reader.readBody(24758629);
 //    ZObject3dScan obj2 = reader.readBody(21054499);
 //    obj1.concat(obj2);
 //    obj2 = reader.readBody(10362053);
@@ -16763,7 +16771,7 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
-#if 1
+#if 0
   ZIntPoint dsIntv = misc::getDsIntvFor3DVolume(29);
   std::cout << dsIntv.toString() << std::endl;
 #endif

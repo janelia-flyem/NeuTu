@@ -24,6 +24,7 @@ signals:
   void splitViewTriggered();
   void changingSplit(uint64_t);
   void savingSeed();
+  void committingResult();
 
 private slots:
   void slotTest();

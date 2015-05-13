@@ -575,9 +575,14 @@ void ZFlyEmBodySplitProject::exportSplits()
 void ZFlyEmBodySplitProject::commitResult()
 {
   ZFlyEmBodySplitProject::commitResultFunc(
-        getDataFrame()->document()->getSparseStack()->getObjectMask(),
-        getDataFrame()->document()->getLabelField(),
-        getDataFrame()->document()->getSparseStack()->getDownsampleInterval());
+        getDocument()->getSparseStack()->getObjectMask(),
+        getDocument()->getLabelField(),
+        getDocument()->getSparseStack()->getDownsampleInterval());
+
+  deleteSavedSeed();
+  getDocument()->undoStack()->clear();
+  removeAllSideSeed();
+
   /*
   QtConcurrent::run(this, &ZFlyEmBodySplitProject::commitResultFunc,
                     getDataFrame()->document()->getSparseStack()->getObjectMask(),
@@ -628,7 +633,7 @@ void ZFlyEmBodySplitProject::commitResultFunc(
 
       ZObject3dScan currentBody = body.subtract(*obj);
 
-      if (!currentBody.isEmpty()) {
+      if (!currentBody.isEmpty() && obj->getLabel() > 1) {
         ZString output = QDir::tempPath() + "/body_";
         output.appendNumber(getBodyId());
         output += "_";
@@ -674,16 +679,11 @@ void ZFlyEmBodySplitProject::commitResultFunc(
     //}
   }
 
-#ifdef _DEBUG_
-  QString buildemPath = "/groups/flyem/home/zhaot/Downloads/buildem";
-#else
-  QString buildemPath = "/opt/Download/buildem";
-#endif
-
-
   ZDvidReader reader;
   reader.open(m_dvidTarget);
-  int bodyId = reader.readMaxBodyId();
+//  int bodyId = reader.readMaxBodyId();
+
+  int bodyId = 1;
 
   double dp = 0.3;
 
@@ -773,6 +773,27 @@ void ZFlyEmBodySplitProject::backupSeed()
   }
 }
 
+void ZFlyEmBodySplitProject::deleteSavedSeed()
+{
+  ZDvidReader reader;
+  if (reader.open(getDvidTarget())) {
+    if (!reader.hasData(getSplitLabelName())) {
+      emit messageGenerated(
+            ("Failed to delete seed: " + getSplitLabelName() +
+            " has not been created on the server.").c_str());
+
+      return;
+    }
+  }
+
+  ZDvidWriter writer;
+  if (writer.open(getDvidTarget())) {
+    writer.deleteKey(getSplitLabelName(), getSeedKey(getBodyId()));
+    emit messageGenerated(QString("All seeds of %1 have been deleted").
+                          arg(getBodyId()));
+  }
+}
+
 void ZFlyEmBodySplitProject::saveSeed()
 {
   ZDvidReader reader;
@@ -794,13 +815,6 @@ void ZFlyEmBodySplitProject::saveSeed()
     if (!jsonObj.isEmpty()) {
       jsonArray.append(jsonObj);
     }
-    /*
-    ZStroke2d *stroke = dynamic_cast<ZStroke2d*>(player->getData());
-    if (stroke != NULL) {
-      ZJsonObject jsonObj = stroke->toJsonObject();
-      jsonArray.append(jsonObj);
-    }
-    */
   }
 
 
@@ -831,6 +845,31 @@ void ZFlyEmBodySplitProject::downloadSeed()
 void ZFlyEmBodySplitProject::removeAllSeed()
 {
   getDocument()->removeObject(ZStackObjectRole::ROLE_SEED, true);
+}
+
+void ZFlyEmBodySplitProject::removeAllSideSeed()
+{
+  std::set<ZStackObject*> removeSet;
+  ZDocPlayerList &playerList = getDocument()->getPlayerList();
+  for (ZDocPlayerList::iterator iter = playerList.begin();
+       iter != playerList.end(); /*++iter*/) {
+    ZDocPlayer *player = *iter;
+    if (player->hasRole(ZStackObjectRole::ROLE_SEED) && player->getLabel() > 1) {
+      removeSet.insert(player->getData());
+      iter = playerList.erase(iter);
+      delete player;
+    } else {
+      ++iter;
+    }
+  }
+
+  getDocument()->getObjectGroup().removeObject(
+        removeSet.begin(), removeSet.end(), true);
+
+  if (!removeSet.empty()) {
+    getDocument()->notifyObjectModified();
+    getDocument()->notifyPlayerChanged(ZStackObjectRole::ROLE_SEED);
+  }
 }
 
 void ZFlyEmBodySplitProject::downloadSeed(const std::string &seedKey)

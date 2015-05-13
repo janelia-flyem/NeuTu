@@ -73,6 +73,7 @@ public:
   ZObject3dScan* readBody(ZObject3dScan *out) const;
 
   void saveSeed();
+  void deleteSavedSeed();
   void downloadSeed();
   void recoverSeed();
   void selectSeed(int label);
@@ -157,6 +158,7 @@ private:
   void loadResult3dQuick(ZStackDoc *doc);
   void downloadSeed(const std::string &seedKey);
   void removeAllSeed();
+  void removeAllSideSeed();
 
 private:
   ZDvidTarget m_dvidTarget;

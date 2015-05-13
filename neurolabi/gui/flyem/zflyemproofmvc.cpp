@@ -352,6 +352,12 @@ void ZFlyEmProofMvc::saveMergeOperation()
   getCompleteDocument()->saveMergeOperation();
 }
 
+void ZFlyEmProofMvc::commitCurrentSplit()
+{
+  m_splitProject.commitResult();
+}
+
+
 //void ZFlyEmProofMvc::toggleEdgeMode(bool edgeOn)
 
 

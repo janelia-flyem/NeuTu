@@ -491,6 +491,10 @@ void ZStackDoc::updateSwcNodeAction()
 
 void ZStackDoc::autoSave()
 {
+  if (NeutubeConfig::getInstance().getApplication() == "FlyEM") { //needs modification
+    return;
+  }
+
   if (isSwcSavingRequired()) {
     qDebug() << "Auto save triggered in " << this;
     if (hasSwc()) {
