@@ -3,7 +3,7 @@
 #include "zswctree.h"
 #include "zintcuboid.h"
 
-const char* ZStackObject::m_nodeAdapterId = "!NodeAdapter";
+//const char* ZStackObject::m_nodeAdapterId = "!NodeAdapter";
 
 ZStackObject::ZStackObject() : m_selected(false), m_isSelectable(true),
   m_isVisible(true), m_isHittable(true), m_projectionVisible(true),

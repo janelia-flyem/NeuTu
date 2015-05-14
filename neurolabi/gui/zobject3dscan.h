@@ -197,7 +197,7 @@ public:
 
   bool hit(double x, double y, double z);
   bool hit(double x, double y);
-  ZIntPoint getHitPoint() const;
+  //ZIntPoint getHitPoint() const;
 
   ZObject3dScan& operator=(const ZObject3dScan& obj);// { return *this; }
 
@@ -597,7 +597,7 @@ protected:
   uint64_t m_label;
   bool m_blockingEvent;
 
-  ZIntPoint m_hitPoint;
+  //ZIntPoint m_hitPoint;
   mutable std::vector<size_t> m_accNumberArray;
   mutable std::map<int, size_t> m_slicewiseVoxelNumber;
   mutable std::map<std::pair<int, int>, size_t> m_stripeMap;

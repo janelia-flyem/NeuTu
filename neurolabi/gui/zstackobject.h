@@ -4,6 +4,7 @@
 #include "zqtheader.h"
 //#include "zpainter.h"
 #include "zstackobjectrole.h"
+#include "zintpoint.h"
 
 class ZPainter;
 class ZIntCuboid;
@@ -140,6 +141,7 @@ public:
 
   virtual bool hit(double x, double y, double z);
   virtual bool hit(double x, double y);
+  virtual inline const ZIntPoint& getHitPoint() const { return m_hitPoint; }
 
   /*!
    * \brief Get bound box of the object.
@@ -238,9 +240,11 @@ public:
     m_role.addRole(role);
   }
 
+  /*
   static inline const char* getNodeAdapterId() {
     return m_nodeAdapterId;
   }
+  */
 
   inline bool isSelectable() const {
     return m_isSelectable;
@@ -289,8 +293,9 @@ protected:
   int m_zOrder;
   EType m_type;
   ZStackObjectRole m_role;
+  ZIntPoint m_hitPoint;
 
-  static const char *m_nodeAdapterId;
+//  static const char *m_nodeAdapterId;
 };
 
 template <typename T>

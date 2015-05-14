@@ -604,9 +604,9 @@ void ZStackView::mouseRolledInImageWidget(QWheelEvent *event)
       }
     }
   } else if (event->modifiers() == Qt::ControlModifier) {
-    if (numSteps > 0) {
+    if (numSteps < 0) {
       increaseZoomRatio(event->pos().x(), event->pos().y());
-    } else if (numSteps < 0) {
+    } else if (numSteps > 0) {
       decreaseZoomRatio(event->pos().x(), event->pos().y());
     }
   }

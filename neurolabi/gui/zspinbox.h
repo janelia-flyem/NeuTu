@@ -22,12 +22,16 @@ public:
   virtual QSize sizeHint() const;
   virtual QSize minimumSizeHint() const;
 
+signals:
+  void valueConfirmed(int);
+
 public slots:
   void setDataRange(int min, int max);
 
 protected:
   virtual void focusInEvent(QFocusEvent *e);
   virtual void focusOutEvent(QFocusEvent *e);
+  void keyPressEvent(QKeyEvent *event);
 };
 
 

@@ -70,3 +70,8 @@ std::string ZStackObjectSourceFactory::MakeSplitObjectSource()
 {
   return "#.FlyEMSplitObject";
 }
+
+std::string ZStackObjectSourceFactory::MakeNodeAdaptorSource()
+{
+  return "#.NodeAdapter";
+}

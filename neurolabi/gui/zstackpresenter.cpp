@@ -31,6 +31,7 @@
 #include "zstackobjectsourcefactory.h"
 #include "zstackmvc.h"
 #include "dvid/zdvidlabelslice.h"
+#include "dvid/zdvidsparsestack.h"
 
 ZStackPresenter::ZStackPresenter(ZStackFrame *parent) : QObject(parent)
 {
@@ -1273,9 +1274,10 @@ void ZStackPresenter::processMouseDoubleClickEvent(QMouseEvent *event)
     }
     break;
   case ZStackOperator::OP_OBJECT3D_SCAN_LOCATE_FOCUS:
-    if (op.getHitObject<ZObject3dScan>() != NULL) {
-      op.getHitObject<ZObject3dScan>()->setSelected(false);
-      int sliceIndex = op.getHitObject<ZObject3dScan>()->getHitPoint().getZ();
+  case ZStackOperator::OP_DVID_SPARSE_STACK_LOCATE_FOCUS:
+    if (op.getHitObject() != NULL) {
+      op.getHitObject()->setSelected(false);
+      int sliceIndex = op.getHitObject()->getHitPoint().getZ();
       sliceIndex -= buddyDocument()->getStackOffset().getZ();
       if (sliceIndex >= 0 &&
           sliceIndex < buddyDocument()->getStackSize().getZ()) {
