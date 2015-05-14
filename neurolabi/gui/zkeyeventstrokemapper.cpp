@@ -1,18 +1,20 @@
-#include "zkeyeventswcmapper.h"
+#include "zkeyeventstrokemapper.h"
+
 #include <QKeyEvent>
 
-ZKeyEventSwcMapper::ZKeyEventSwcMapper(NeuTube::Document::ETag tag) :
+ZKeyEventStrokeMapper::ZKeyEventStrokeMapper(NeuTube::Document::ETag tag) :
   m_docTag(tag)
 {
   initKeyMap();
 }
 
-void ZKeyEventSwcMapper::initKeyMap()
+void ZKeyEventStrokeMapper::initKeyMap()
 {
-  m_plainKeyMap[Qt::Key_Backspace] = ZSwcTree::OPERATION_DELETE_NODE;
-  m_plainKeyMap[Qt::Key_Delete] = ZSwcTree::OPERATION_DELETE_NODE;
-  m_plainKeyMap[Qt::Key_X] = ZSwcTree::OPERATION_DELETE_NODE;
+  m_plainKeyMap[Qt::Key_Backspace] = ZStroke2d::OPERATION_DELETE;
+  m_plainKeyMap[Qt::Key_Delete] = ZStroke2d::OPERATION_DELETE;
+  m_plainKeyMap[Qt::Key_X] = ZStroke2d::OPERATION_DELETE;
 
+  /*
   m_plainKeyMap[Qt::Key_W] = ZSwcTree::OPERATION_MOVE_NODE_UP;
   m_plainKeyMap[Qt::Key_A] = ZSwcTree::OPERATION_MOVE_NODE_LEFT;
   m_plainKeyMap[Qt::Key_S] = ZSwcTree::OPERATION_MOVE_NODE_DOWN;
@@ -40,13 +42,13 @@ void ZKeyEventSwcMapper::initKeyMap()
   m_shiftKeyMap[Qt::Key_C] = ZSwcTree::OPERATION_CONNECT_NODE_SMART;
 
   m_controlKeyMap[Qt::Key_A] = ZSwcTree::OPERATION_SELECT_ALL_NODE;
-
+*/
   updateKeyMap();
 }
 
-ZSwcTree::EOperation ZKeyEventSwcMapper::getOperation(QKeyEvent *event)
+ZStroke2d::EOperation ZKeyEventStrokeMapper::getOperation(QKeyEvent *event)
 {
-  ZSwcTree::EOperation operation = ZSwcTree::OPERATION_NULL;
+  ZStroke2d::EOperation operation = ZStroke2d::OPERATION_NULL;
 
   if (event->modifiers() == Qt::NoModifier) {
     if (m_plainKeyMap.contains(event->key())) {
@@ -69,18 +71,14 @@ ZSwcTree::EOperation ZKeyEventSwcMapper::getOperation(QKeyEvent *event)
   return operation;
 }
 
-void ZKeyEventSwcMapper::setTag(NeuTube::Document::ETag tag)
+void ZKeyEventStrokeMapper::setTag(NeuTube::Document::ETag tag)
 {
   m_docTag = tag;
   updateKeyMap();
 }
 
-void ZKeyEventSwcMapper::updateKeyMap()
+void ZKeyEventStrokeMapper::updateKeyMap()
 {
-  if (m_docTag == NeuTube::Document::FLYEM_SPLIT ||
-      m_docTag == NeuTube::Document::FLYEM_PROOFREAD) {
-    m_plainKeyMap[Qt::Key_G] = ZSwcTree::OPERATION_NULL;
-    m_plainKeyMap[Qt::Key_R] = ZSwcTree::OPERATION_NULL;
-    m_controlKeyMap[Qt::Key_G] = ZSwcTree::OPERATION_ADD_NODE;
+  if (m_docTag == NeuTube::Document::FLYEM_SPLIT) {
   }
 }

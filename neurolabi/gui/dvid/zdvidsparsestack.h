@@ -44,6 +44,8 @@ public:
   const ZSparseStack* getSparseStack() const;
   ZSparseStack *getSparseStack();
 
+  void downloadBodyMask();
+
 private:
   void initBlockGrid();
   void fillValue();

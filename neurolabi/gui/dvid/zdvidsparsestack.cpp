@@ -255,4 +255,17 @@ ZSparseStack* ZDvidSparseStack::getSparseStack()
   return &m_sparseStack;
 }
 
+void ZDvidSparseStack::downloadBodyMask()
+{
+
+  ZDvidReader reader;
+  if (reader.open(getDvidTarget())) {
+    ZObject3dScan *obj = new ZObject3dScan;
+    reader.readBody(getObjectMask()->getLabel(), obj);
+    obj->setColor(getObjectMask()->getColor());
+    m_sparseStack.setObjectMask(obj);
+//    obj->set
+  }
+}
+
 ZSTACKOBJECT_DEFINE_CLASS_NAME(ZDvidSparseStack)

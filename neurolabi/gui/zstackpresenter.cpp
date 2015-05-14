@@ -937,32 +937,13 @@ bool ZStackPresenter::processKeyPressEventForStroke(QKeyEvent *event)
 {
   bool taken = false;
   switch (event->key()) {
-#if 0
-  case Qt::Key_Comma:
-    if (m_interactiveContext.strokeEditMode() ==
-        ZInteractiveContext::STROKE_DRAW) {
-      m_stroke.addWidth(-1.0);
-      buddyView()->paintActiveDecoration();
-      taken = true;
-    }
-    break;
-  case Qt::Key_Period:
-    if (m_interactiveContext.strokeEditMode() ==
-        ZInteractiveContext::STROKE_DRAW) {
-      m_stroke.addWidth(1.0);
-      buddyView()->paintActiveDecoration();
-      taken = true;
-    }
-    break;
-#endif
-#if 1
   case Qt::Key_R:
-    if (event->modifiers() == Qt::ControlModifier) {
+    if (event->modifiers() == Qt::ShiftModifier) {
+      tryDrawRectMode();
+    } else {
       if (m_paintStrokeAction->isEnabled()) {
         m_paintStrokeAction->trigger();
       }
-    } else if (event->modifiers() == Qt::ShiftModifier) {
-      tryDrawRectMode();
     }
     break;
   case Qt::Key_E:
@@ -993,11 +974,6 @@ bool ZStackPresenter::processKeyPressEventForStroke(QKeyEvent *event)
       buddyView()->paintActiveDecoration();
     }
     break;
-//  case Qt::Key_Delete:
-//  case Qt::Key_Backspace:
-//    buddyDocument()->executeRemoveSelectedObjectCommand();
-//    break;
-#endif
   default:
     break;
   }
@@ -2434,7 +2410,9 @@ void ZStackPresenter::acceptActiveStroke()
   if (!newStroke->isEraser()) {
     if (newStroke->getPointNumber() == 1 &&
         m_mouseEventProcessor.getLatestMouseEvent().getModifiers() ==
-        Qt::ShiftModifier) {
+        Qt::ShiftModifier &&
+        buddyDocument()->getTag() != NeuTube::Document::FLYEM_SPLIT &&
+        buddyDocument()->getTag() != NeuTube::Document::FLYEM_PROOFREAD) {
       if (!buddyDocument()->getStrokeList().empty()) {
         ZPoint start;
         ZPoint end;

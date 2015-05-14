@@ -51,6 +51,7 @@ public:
   bool isSplittable(uint64_t bodyId) const;
 
   void saveMergeOperation();
+  void downloadBodyMask();
 
 signals:
 

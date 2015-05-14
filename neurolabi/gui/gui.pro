@@ -524,7 +524,8 @@ HEADERS += mainwindow.h \
     flyem/flyemsplitcontrolform.h \
     flyem/zflyemmessagewidget.h \
     zwidgetmessage.h \
-    zprogresssignal.h
+    zprogresssignal.h \
+    zkeyeventstrokemapper.h
 
 FORMS += settingdialog.ui \
     frameinfodialog.ui \
@@ -913,7 +914,8 @@ SOURCES += main.cpp \
     flyem/flyemsplitcontrolform.cpp \
     flyem/zflyemmessagewidget.cpp \
     zwidgetmessage.cpp \
-    zprogresssignal.cpp
+    zprogresssignal.cpp \
+    zkeyeventstrokemapper.cpp
 
 OTHER_FILES += \
     extlib.pri \

@@ -260,6 +260,7 @@ void ZFlyEmBodySplitProject::quickView()
     ZSwcTree *tree = ZSwcGenerator::createSurfaceSwc(obj, 2);
 
     ZStackDoc *doc = new ZStackDoc(NULL, NULL);
+    doc->setTag(NeuTube::Document::FLYEM_BODY_DISPLAY);
     doc->addSwcTree(tree);
 
     ZWindowFactory factory;
@@ -372,6 +373,7 @@ void ZFlyEmBodySplitProject::showResult3dQuick()
       ZWindowFactory windowFactory;
       windowFactory.setWindowTitle("Splitting Result");
       ZStackDoc *doc = new ZStackDoc(NULL, NULL);
+      doc->setTag(NeuTube::Document::FLYEM_BODY_DISPLAY);
       loadResult3dQuick(doc);
       m_quickResultWindow = windowFactory.make3DWindow(doc);
       m_quickResultWindow->getSwcFilter()->setColorMode("Intrinsic");
@@ -581,7 +583,9 @@ void ZFlyEmBodySplitProject::commitResult()
 
   deleteSavedSeed();
   getDocument()->undoStack()->clear();
+//  getDocument()->removeObject(ZStackObject::TYPE_OBJ3D);
   removeAllSideSeed();
+  downloadBodyMask();
 
   /*
   QtConcurrent::run(this, &ZFlyEmBodySplitProject::commitResultFunc,
@@ -634,12 +638,17 @@ void ZFlyEmBodySplitProject::commitResultFunc(
       ZObject3dScan currentBody = body.subtract(*obj);
 
       if (!currentBody.isEmpty() && obj->getLabel() > 1) {
-        ZString output = QDir::tempPath() + "/body_";
-        output.appendNumber(getBodyId());
-        output += "_";
-        output.appendNumber(maxNum++);
-        currentBody.save(output + ".sobj");
-        filePathList << (output + ".sobj").c_str();
+        std::vector<ZObject3dScan> objArray =
+            currentBody.getConnectedComponent();
+        for (std::vector<ZObject3dScan>::iterator iter = objArray.begin();
+             iter != objArray.end(); ++iter) {
+          ZString output = QDir::tempPath() + "/body_";
+          output.appendNumber(getBodyId());
+          output += "_";
+          output.appendNumber(maxNum++);
+          iter->save(output + ".sobj");
+          filePathList << (output + ".sobj").c_str();
+        }
       }
       delete obj;
 
@@ -650,7 +659,7 @@ void ZFlyEmBodySplitProject::commitResultFunc(
   if (!body.isEmpty()) {
     std::vector<ZObject3dScan> objArray = body.getConnectedComponent();
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
     body.save(GET_TEST_DATA_DIR + "/test.sobj");
 #endif
 
@@ -1030,6 +1039,11 @@ void ZFlyEmBodySplitProject::viewFullGrayscale()
 #endif
     }
   }
+}
+
+void ZFlyEmBodySplitProject::downloadBodyMask()
+{
+  getDocument<ZFlyEmProofDoc>()->downloadBodyMask();
 }
 
 void ZFlyEmBodySplitProject::updateBodyMask()

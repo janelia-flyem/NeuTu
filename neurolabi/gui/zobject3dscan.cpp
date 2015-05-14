@@ -1459,6 +1459,7 @@ void ZObject3dScan::upSample(int xIntv, int yIntv, int zIntv)
 #endif
   }
 
+  grownPart.setLabel(this->getLabel());
   *this = grownPart;
 
   canonize();

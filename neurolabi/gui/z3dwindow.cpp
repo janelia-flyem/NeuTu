@@ -2523,7 +2523,7 @@ void Z3DWindow::locateSwcNodeIn2DView()
       cy = iround(center.y());
       cz = iround(center.z());
       int radius = iround(std::max(cuboid.width(), cuboid.height()) / 2.0);
-      const int minRadius = 100;
+      const int minRadius = 400;
       if (radius < minRadius) {
         radius = minRadius;
       }

@@ -280,7 +280,7 @@ QMenu* ZStackDocMenuFactory::makeBodyContextMenu(
   }
 
   if (presenter->buddyDocument()->getTag() == NeuTube::Document::FLYEM_MERGE ||
-      presenter->buddyDocument()->getTag() == NeuTube::Document::FLYEM_DVID) {
+      presenter->buddyDocument()->getTag() == NeuTube::Document::FLYEM_PROOFREAD) {
     QAction *action = presenter->getAction(
           ZStackPresenter::ACTION_BODY_SPLIT_START);
     menu->addAction(action);
