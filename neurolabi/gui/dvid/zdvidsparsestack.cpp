@@ -144,6 +144,8 @@ const ZIntPoint& ZDvidSparseStack::getDownsampleInterval() const
 void ZDvidSparseStack::fillValue(const ZIntCuboid &box)
 {
   if (!m_sparseStack.getObjectMask()->isEmpty()) {
+    qDebug() << "Downloading grayscale ...";
+
     ZDvidInfo dvidInfo;
     dvidInfo.setFromJsonString(
           m_dvidReader.readInfo(getDvidTarget().getGrayScaleName().c_str()).
@@ -176,6 +178,8 @@ void ZDvidSparseStack::fillValue(const ZIntCuboid &box)
         }
       }
     }
+
+    qDebug() << "Done.";
   }
 }
 
@@ -243,6 +247,12 @@ const ZObject3dScan* ZDvidSparseStack::getObjectMask() const
   return m_sparseStack.getObjectMask();
 }
 
+ZObject3dScan* ZDvidSparseStack::getObjectMask()
+{
+  return const_cast<ZObject3dScan*>(
+        static_cast<const ZDvidSparseStack&>(*this).getObjectMask());
+}
+
 const ZSparseStack* ZDvidSparseStack::getSparseStack() const
 {
   return &m_sparseStack;
@@ -266,6 +276,30 @@ void ZDvidSparseStack::downloadBodyMask()
     m_sparseStack.setObjectMask(obj);
 //    obj->set
   }
+}
+
+bool ZDvidSparseStack::hit(double x, double y, double z)
+{
+  if (getObjectMask() != NULL) {
+    if (getObjectMask()->hit(x, y, z)) {
+      m_hitPoint = getObjectMask()->getHitPoint();
+      return true;
+    }
+  }
+
+  return false;
+}
+
+bool ZDvidSparseStack::hit(double x, double y)
+{
+  if (getObjectMask() != NULL) {
+    if (getObjectMask()->hit(x, y)) {
+      m_hitPoint = getObjectMask()->getHitPoint();
+      return true;
+    }
+  }
+
+  return false;
 }
 
 ZSTACKOBJECT_DEFINE_CLASS_NAME(ZDvidSparseStack)

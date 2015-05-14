@@ -37,6 +37,8 @@ void FlyEmSplitControlForm::setupWidgetBehavior()
           this, SIGNAL(savingSeed()));
   connect(ui->commitPushButton, SIGNAL(clicked()),
           this, SLOT(commitResult()));
+  connect(ui->bodyIdSpinBox, SIGNAL(valueConfirmed(int)),
+          this, SLOT(changeSplit()));
 
   ui->commitPushButton->setEnabled(false);
 }

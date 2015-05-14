@@ -107,7 +107,7 @@ ZProofreadWindow* ZProofreadWindow::Make(QWidget *parent)
 void ZProofreadWindow::presentSplitInterface(uint64_t bodyId)
 {
   m_controlGroup->setCurrentIndex(1);
-  dump(QString("Body %1 loaded for split.").arg(bodyId), true);
+  dump(QString("Body %1 loaded for split.").arg(bodyId), false);
 }
 
 void ZProofreadWindow::launchSplit(uint64_t bodyId)

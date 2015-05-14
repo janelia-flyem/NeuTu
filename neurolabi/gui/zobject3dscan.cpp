@@ -2360,10 +2360,12 @@ bool ZObject3dScan::hit(double x, double y)
   return false;
 }
 
+/*
 ZIntPoint ZObject3dScan::getHitPoint() const
 {
   return m_hitPoint;
 }
+*/
 
 ZPoint ZObject3dScan::getCentroid() const
 {

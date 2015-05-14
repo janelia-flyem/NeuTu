@@ -40,11 +40,15 @@ public:
   uint64_t getLabel() const;
 
   const ZObject3dScan *getObjectMask() const;
+  ZObject3dScan *getObjectMask();
 
   const ZSparseStack* getSparseStack() const;
   ZSparseStack *getSparseStack();
 
   void downloadBodyMask();
+
+  bool hit(double x, double y, double z);
+  bool hit(double x, double y);
 
 private:
   void initBlockGrid();

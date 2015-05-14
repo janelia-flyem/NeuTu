@@ -30,9 +30,11 @@ ZDvidBufferReader::ZDvidBufferReader(QObject *parent) :
   connect(this, SIGNAL(checkingStatus()), this, SLOT(waitForReading()));
 }
 
-void ZDvidBufferReader::read(const QString &url)
+void ZDvidBufferReader::read(const QString &url, bool outputUrl)
 {
-  qDebug() << url;
+  if (outputUrl) {
+    qDebug() << url;
+  }
 
   m_buffer.clear();
 

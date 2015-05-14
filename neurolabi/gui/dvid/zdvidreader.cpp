@@ -437,7 +437,7 @@ ZStack* ZDvidReader::readGrayScale(
   } else {
   */
     bufferReader.read(url.getGrayscaleUrl(
-                        width, height, depth, x0, y0, z0).c_str());
+                        width, height, depth, x0, y0, z0).c_str(), false);
   //}
 
   const QByteArray &buffer = bufferReader.getBuffer();

@@ -1,5 +1,8 @@
 #include "zspinbox.h"
 #include <QEvent>
+#include <QKeyEvent>
+#include <iostream>
+
 #include "QsLog.h"
 
 ZSpinBox::ZSpinBox(QWidget *parent)
@@ -40,6 +43,25 @@ void ZSpinBox::focusOutEvent(QFocusEvent *e)
   QSpinBox::focusOutEvent(e);
   setFocusPolicy(Qt::StrongFocus);
 }
+
+void ZSpinBox::keyPressEvent(QKeyEvent *event)
+{
+  QSpinBox::keyPressEvent(event);
+
+  switch (event->key()) {
+  case Qt::Key_Enter:
+  case Qt::Key_Return:
+    emit valueConfirmed(value());
+  default:
+#ifdef _DEBUG_2
+    std::cout << "key pressed in zspinbox" << std::endl;
+    std::cout << event->key() << std::endl;
+#endif
+    break;
+  }
+}
+
+///////////////////////////////////////////
 
 ZDoubleSpinBox::ZDoubleSpinBox(QWidget *parent)
   : QDoubleSpinBox(parent)

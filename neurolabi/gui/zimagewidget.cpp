@@ -493,7 +493,7 @@ void ZImageWidget::paintObject()
       const ZStackObject *obj = *iter;
       if (obj->getTarget() == ZStackObject::WIDGET &&
           obj->isSliceVisible(m_paintBundle->getZ())) {
-        if (obj->getSource() != ZStackObject::getNodeAdapterId()) {
+        if (obj->getSource() != ZStackObjectSourceFactory::MakeNodeAdaptorSource()) {
           visibleObject.push_back(obj);
         }
       }
@@ -519,7 +519,7 @@ void ZImageWidget::paintObject()
       const ZStackObject *obj = *iter;
       if (obj->getTarget() == ZStackObject::WIDGET &&
           obj->isSliceVisible(m_paintBundle->getZ())) {
-        if (obj->getSource() == ZStackObject::getNodeAdapterId()) {
+        if (obj->getSource() == ZStackObjectSourceFactory::MakeNodeAdaptorSource()) {
           obj->display(painter, m_paintBundle->sliceIndex(),
                        m_paintBundle->displayStyle());
         }

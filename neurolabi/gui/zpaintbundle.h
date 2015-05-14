@@ -9,6 +9,7 @@
 #include "zpoint.h"
 #include "zswctree.h"
 #include "zintpoint.h"
+#include "zstackobjectsourcefactory.h"
 
 #include <boost/iterator/iterator_facade.hpp>
 #include <boost/type_traits/is_convertible.hpp>
@@ -135,7 +136,8 @@ private:
                                     */
       m_nodeAdaptor.useCosmeticPen(
             ZSwcTree::getHostState(*m_swcNodeIter, ZSwcTree::NODE_STATE_COSMETIC));
-      m_nodeAdaptor.setSource(ZStackObject::getNodeAdapterId());
+      m_nodeAdaptor.setSource(ZStackObjectSourceFactory::MakeNodeAdaptorSource());
+//      m_nodeAdaptor.setSource(ZStackObject::getNodeAdapterId());
     }
   }
 
