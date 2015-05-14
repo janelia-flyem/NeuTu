@@ -294,6 +294,7 @@ private slots:
   // slots for 'Help'
   void about();
   void test();
+  void test2();
 
   // slots for frame
   void updateFrameInfoDlg();
@@ -599,6 +600,7 @@ private:
   //QAction *aboutAction;
   //QAction *aboutQtAction;
   QAction *testAction;
+  QAction *testAction2;
 
   QAction *openTraceAction;
 
