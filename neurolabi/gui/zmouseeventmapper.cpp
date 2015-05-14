@@ -301,7 +301,7 @@ ZStackOperator ZMouseEventLeftButtonDoubleClickMapper::getOperation(
           op.setOperation(ZStackOperator::OP_STACK_VIEW_SLICE);
         }
       } else {
-        if (getDocument()->getTag() != NeuTube::Document::FLYEM_DVID &&
+        if (getDocument()->getTag() != NeuTube::Document::FLYEM_PROOFREAD &&
             getDocument()->getStack()->depth() > 1) {
           op.setOperation(ZStackOperator::OP_STACK_VIEW_PROJECTION);
         }
@@ -352,7 +352,7 @@ ZMouseEventRightButtonReleaseMapper::getOperation(const ZMouseEvent &event) cons
           }
         } else if (m_doc->getTag() == NeuTube::Document::BIOCYTIN_PROJECTION) {
             op.setOperation(ZStackOperator::OP_SHOW_STROKE_CONTEXT_MENU);
-        } else if (m_doc->getTag() == NeuTube::Document::FLYEM_DVID) {
+        } else if (m_doc->getTag() == NeuTube::Document::FLYEM_PROOFREAD) {
           if (!m_doc->getDvidLabelSliceList().empty()) {
             if (m_doc->getDvidLabelSliceList().front()->getSelected().size() == 1) {
               op.setOperation(ZStackOperator::OP_SHOW_BODY_CONTEXT_MENU);

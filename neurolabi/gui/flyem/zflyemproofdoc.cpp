@@ -11,6 +11,7 @@
 ZFlyEmProofDoc::ZFlyEmProofDoc(ZStack *stack, QObject *parent) :
   ZStackDoc(stack, parent)
 {
+  setTag(NeuTube::Document::FLYEM_PROOFREAD);
 }
 
 void ZFlyEmProofDoc::mergeSelected()
@@ -154,6 +155,14 @@ void ZFlyEmProofDoc::saveMergeOperation()
   ZDvidWriter writer;
   if (writer.open(getDvidTarget())) {
     writer.writeMergeOperation(m_bodyMerger.getFinalMap());
+  }
+}
+
+void ZFlyEmProofDoc::downloadBodyMask()
+{
+  if (getDvidSparseStack() != NULL) {
+    getDvidSparseStack()->downloadBodyMask();
+    notifyObjectModified();
   }
 }
 

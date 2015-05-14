@@ -1,7 +1,9 @@
 #include "flyemsplitcontrolform.h"
 
+#include <QMenu>
 #include <iostream>
 #include "ui_flyemsplitcontrolform.h"
+#include "zdialogfactory.h"
 
 FlyEmSplitControlForm::FlyEmSplitControlForm(QWidget *parent) :
   QWidget(parent),
@@ -34,7 +36,9 @@ void FlyEmSplitControlForm::setupWidgetBehavior()
   connect(ui->saveSeedPushButton, SIGNAL(clicked()),
           this, SIGNAL(savingSeed()));
   connect(ui->commitPushButton, SIGNAL(clicked()),
-          this, SIGNAL(committingResult()));
+          this, SLOT(commitResult()));
+
+  ui->commitPushButton->setEnabled(false);
 }
 
 void FlyEmSplitControlForm::slotTest()
@@ -52,3 +56,12 @@ void FlyEmSplitControlForm::setSplit(uint64_t bodyId)
   ui->bodyIdSpinBox->setValue(bodyId);
 }
 
+void FlyEmSplitControlForm::commitResult()
+{
+  if (ZDialogFactory::Ask("Commit Confirmation",
+                          "Do you want to upload the splitting results now? "
+                          "It cannot be undone.",
+                          this)) {
+    emit committingResult();
+  }
+}

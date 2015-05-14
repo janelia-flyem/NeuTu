@@ -5,6 +5,8 @@
 #include "tz_stdint.h"
 //class ZDvidDialog;
 
+class QMenu;
+
 namespace Ui {
 class FlyEmProofControlForm;
 }
@@ -26,14 +28,20 @@ signals:
   void labelSizeChanged(int width, int height);
   void coarseBodyViewTriggered();
   void savingMerge();
+  void zoomingTo(int x, int y, int z);
 
 private slots:
   void setSegmentSize();
   void incSegmentSize();
   void decSegmentSize();
+  void goToPosition();
+
+private:
+  void createMenu();
 
 private:
   Ui::FlyEmProofControlForm *ui;
+  QMenu *m_mainMenu;
 
 //  ZDvidDialog *m_dvidDlg;
 };

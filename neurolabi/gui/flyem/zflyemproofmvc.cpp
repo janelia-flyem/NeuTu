@@ -12,6 +12,8 @@
 #include "zstackobjectsourcefactory.h"
 #include "dvid/zdvidsparsestack.h"
 #include "zprogresssignal.h"
+#include "zstackviewlocator.h"
+#include "zimagewidget.h"
 
 ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
   ZStackMvc(parent), m_splitOn(false), m_dvidDlg(NULL)
@@ -32,7 +34,7 @@ ZFlyEmProofMvc* ZFlyEmProofMvc::Make(
 ZFlyEmProofMvc* ZFlyEmProofMvc::Make(const ZDvidTarget &target)
 {
   ZFlyEmProofDoc *doc = new ZFlyEmProofDoc(NULL, NULL);
-  doc->setTag(NeuTube::Document::FLYEM_DVID);
+//  doc->setTag(NeuTube::Document::FLYEM_DVID);
   ZFlyEmProofMvc *mvc =
       ZFlyEmProofMvc::Make(NULL, ZSharedPointer<ZFlyEmProofDoc>(doc));
   mvc->getPresenter()->setObjectStyle(ZStackObject::SOLID);
@@ -357,6 +359,20 @@ void ZFlyEmProofMvc::commitCurrentSplit()
   m_splitProject.commitResult();
 }
 
+void ZFlyEmProofMvc::zoomTo(int x, int y, int z)
+{
+  z -= getDocument()->getStackOffset().getZ();
+
+  ZStackViewLocator locator;
+  locator.setCanvasSize(getView()->imageWidget()->canvasSize().width(),
+                        getView()->imageWidget()->canvasSize().height());
+
+  const double radius = 20;
+  QRect viewPort = locator.getViewPort(x, y, radius);
+  getPresenter()->setZoomRatio(
+        locator.getZoomRatio(viewPort.width(), viewPort.height()));
+  getPresenter()->setViewPortCenter(x, y, z);
+}
 
 //void ZFlyEmProofMvc::toggleEdgeMode(bool edgeOn)
 

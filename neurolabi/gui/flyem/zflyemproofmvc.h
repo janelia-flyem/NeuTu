@@ -74,6 +74,7 @@ public slots:
   void showCoarseBody3d();
 
   void setDvidLabelSliceSize(int width, int height);
+  void zoomTo(int x, int y, int z);
 //  void toggleEdgeMode(bool edgeOn);
 
 protected:
@@ -109,6 +110,7 @@ void ZFlyEmProofMvc::connectControlPanel(T *panel)
   connect(panel, SIGNAL(coarseBodyViewTriggered()),
           this, SLOT(showCoarseBody3d()));
   connect(panel, SIGNAL(savingMerge()), this, SLOT(saveMergeOperation()));
+  connect(panel, SIGNAL(zoomingTo(int, int, int)), this, SLOT(zoomTo(int, int, int)));
 }
 
 template <typename T>

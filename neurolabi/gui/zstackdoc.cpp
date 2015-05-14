@@ -491,11 +491,16 @@ void ZStackDoc::updateSwcNodeAction()
 
 void ZStackDoc::autoSave()
 {
-  if (NeutubeConfig::getInstance().getApplication() == "FlyEM") { //needs modification
-    return;
-  }
+  if (isSwcSavingRequired()) {    
+    if (getTag() == NeuTube::Document::FLYEM_BODY_DISPLAY) {
+      return;
+    }
+    /*
+    if (NeutubeConfig::getInstance().getApplication() == "FlyEM") { //needs modification
+      return;
+    }
+    */
 
-  if (isSwcSavingRequired()) {
     qDebug() << "Auto save triggered in " << this;
     if (hasSwc()) {
       std::string autoSaveDir = NeutubeConfig::getInstance().getPath(

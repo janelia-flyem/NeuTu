@@ -4,6 +4,8 @@
 #include <QWidget>
 #include "zflyembodysplitproject.h"
 
+class QMenu;
+
 namespace Ui {
 class FlyEmSplitControlForm;
 }
@@ -30,6 +32,7 @@ private slots:
   void slotTest();
   void setSplit(uint64_t bodyId);
   void changeSplit();
+  void commitResult();
 
 private:
   void setupWidgetBehavior();
@@ -37,6 +40,7 @@ private:
 private:
   Ui::FlyEmSplitControlForm *ui;
   ZFlyEmBodySplitProject m_project;
+  QMenu *m_mainMenu;
 };
 
 #endif // FLYEMSPLITCONTROLFORM_H

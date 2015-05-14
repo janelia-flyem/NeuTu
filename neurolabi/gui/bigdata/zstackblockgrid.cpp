@@ -153,7 +153,7 @@ void ZStackBlockGrid::downsampleBlock(int xintv, int yintv, int zintv)
     for (std::vector<ZStack*>::iterator iter = m_stackArray.begin();
          iter != m_stackArray.end(); ++iter) {
       ZStack *stack = *iter;
-      stack->downsampleMin(xintv, yintv, zintv);
+      stack->downsampleMax(xintv, yintv, zintv);
     }
   }
 }
@@ -174,7 +174,7 @@ ZStackBlockGrid* ZStackBlockGrid::makeDownsample(int xintv, int yintv, int zintv
       ZStack *stack = m_stackArray[i];
       if (stack != NULL) {
         ZStack *dsStack = stack->clone();
-        dsStack->downsampleMin(xintv, yintv, zintv);
+        dsStack->downsampleMax(xintv, yintv, zintv);
         grid->m_stackArray[i] = dsStack;
       }
     }
