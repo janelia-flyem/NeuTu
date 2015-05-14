@@ -32,6 +32,7 @@
 #include "zbodysplitbutton.h"
 #include "zstackmvc.h"
 #include "zpixmap.h"
+#include "zlabeledspinboxwidget.h"
 
 #include <QtGui>
 #ifdef _QT5_
@@ -78,6 +79,9 @@ void ZStackView::init()
   m_depthControl = new ZSlider(true, this);
   m_depthControl->setFocusPolicy(Qt::NoFocus);
 
+  m_zSpinBox = new ZLabeledSpinBoxWidget(this);
+  m_zSpinBox->setLabel("Z:");
+
   m_imageWidget = new ZImageWidget(this);
   m_imageWidget->setSizePolicy(QSizePolicy::Expanding,
                                QSizePolicy::Expanding);
@@ -112,6 +116,7 @@ void ZStackView::init()
 
   m_secondTopLayout->addLayout(m_channelControlLayout);
   m_secondTopLayout->addWidget(m_progress);
+//  m_secondTopLayout->addWidget(m_zSpinBox);
   m_secondTopLayout->addSpacerItem(new QSpacerItem(1, m_progress->height(),
                                                QSizePolicy::Expanding,
                                                QSizePolicy::Fixed));
@@ -123,7 +128,13 @@ void ZStackView::init()
   m_layout->addLayout(m_secondTopLayout);
   m_layout->addSpacing(6);
   m_layout->addWidget(m_imageWidget);
-  m_layout->addWidget(m_depthControl);
+
+  m_zControlLayout = new QHBoxLayout;
+  m_zControlLayout->addWidget(m_depthControl);
+  m_zControlLayout->addWidget(m_zSpinBox);
+  m_layout->addLayout(m_zControlLayout);
+
+//  m_layout->addWidget(m_depthControl);
 
 #ifdef _ADVANCED_
   m_thresholdSlider = new ZSlider(false, this);
@@ -133,7 +144,7 @@ void ZStackView::init()
   m_autoThreButton->setFocusPolicy(Qt::NoFocus);
 
   m_ctrlLayout = new QHBoxLayout;
-  m_ctrlLayout->addWidget(m_autoThreButton);
+  m_ctrlLayout->addWidget(m_autoThreButton);  
   m_ctrlLayout->addWidget(m_thresholdSlider);
   m_layout->addLayout(m_ctrlLayout);
 
@@ -202,6 +213,8 @@ void ZStackView::setInfo(QString info)
   }
 }
 
+
+
 void ZStackView::connectSignalSlot()
 {
   /*
@@ -236,6 +249,16 @@ void ZStackView::connectSignalSlot()
   }
 
   connect(this, SIGNAL(viewPortChanged()), this, SLOT(paintActiveTile()));
+
+  connect(m_zSpinBox, SIGNAL(valueConfirmed(int)),
+          this, SLOT(setZ(int)));
+  connect(m_depthControl, SIGNAL(valueChanged(int)),
+          this, SLOT(updateZSpinBoxValue()));
+}
+
+void ZStackView::updateZSpinBoxValue()
+{
+  m_zSpinBox->setValue(getCurrentZ());
 }
 
 void ZStackView::setInfo()
@@ -310,6 +333,10 @@ void ZStackView::updateSlider()
     if (value >= stackData()->depth()) {
       m_depthControl->setValueQuietly(stackData()->depth() - 1);
     }
+
+    m_zSpinBox->setRange(
+          stackData()->getOffset().getZ(),
+          stackData()->getOffset().getZ() + stackData()->depth() - 1);
   }
 }
 
@@ -324,8 +351,13 @@ void ZStackView::updateChannelControl()
     delete child;
   }
   m_chVisibleState.clear();
+  m_zSpinBox->setVisible(false);
   ZStack *stack = stackData();
   if (stack != NULL) {
+    if (stack->depth() > 1) {
+      m_zSpinBox->setVisible(true);
+    }
+
     if (!stack->isVirtual()) {
       std::vector<ZVec3Parameter*>& channelColors = stack->channelColors();
       for (int i=0; i<stack->channelNumber(); ++i) {
@@ -403,6 +435,11 @@ int ZStackView::sliceIndex() const
 int ZStackView::getCurrentZ() const
 {
   return sliceIndex() + buddyDocument()->getStackOffset().getZ();
+}
+
+void ZStackView::setZ(int z)
+{
+  setSliceIndex(z - buddyDocument()->getStackOffset().getZ());
 }
 
 void ZStackView::setSliceIndex(int slice)

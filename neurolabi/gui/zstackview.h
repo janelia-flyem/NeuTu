@@ -40,6 +40,7 @@ class ZMessageManager;
 class ZBodySplitButton;
 class ZStackMvc;
 class ZPixmap;
+class ZLabeledSpinBoxWidget;
 
 /*!
  * \brief The ZStackView class shows 3D data slice by slice
@@ -252,6 +253,7 @@ public slots:
   void setInfo(QString info);
   void autoThreshold();
   void setThreshold(int thre);
+  void setZ(int z);
 
   void displayActiveDecoration(bool display = true);
   void request3DVis();
@@ -260,6 +262,8 @@ public slots:
   void requestMerge();
 
   void setView(const ZStackViewParam &param);
+
+  void updateZSpinBoxValue();
 
 signals:
   void currentSliceChanged(int);
@@ -342,11 +346,14 @@ private:
   ZPixmap *m_activeDecorationCanvas;
   ZPixmap *m_tileCanvas;
   ZImageWidget *m_imageWidget;
+  ZLabeledSpinBoxWidget *m_zSpinBox;
+
   QVBoxLayout *m_layout;
   QHBoxLayout *m_topLayout;
   QHBoxLayout *m_secondTopLayout;
   QHBoxLayout *m_channelControlLayout;
   QHBoxLayout *m_ctrlLayout;
+  QHBoxLayout *m_zControlLayout;
   bool m_scrollEnabled;
 
   QProgressBar *m_progress;
