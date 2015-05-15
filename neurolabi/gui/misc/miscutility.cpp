@@ -10,6 +10,7 @@
 #include "zfiletype.h"
 #include "zgraph.h"
 #include "tz_stack_neighborhood.h"
+#include "tz_utilities.h"
 
 using namespace std;
 
@@ -504,7 +505,7 @@ ZIntPoint misc::getDsIntvFor3DVolume(const ZIntCuboid &box)
   ZIntPoint dsIntv;
   int s = 0;
   if (box.getVolume() > maxVolume) {
-    s =  iround(Cube_Root(((double)  box.getVolume()) / maxVolume)) - 1;
+    s =  iround(Cube_Root(((double)  box.getVolume()) / maxVolume - 1));
   }
   dsIntv.set(s, s, s);
 
@@ -515,12 +516,18 @@ ZIntPoint misc::getDsIntvFor3DVolume(double dsRatio)
 {
   ZIntPoint dsIntv;
 
-  if (dsRatio > 32) {
+  if (dsRatio > 128) {
+    int s = iround(Cube_Root(dsRatio));
+    int k, m;
+    pow2decomp(s, &k, &m);
+    s = iround(std::pow((double) s, k + 1));
+    dsIntv.set(s, s, s);
+  } else if (dsRatio > 64) {
+    dsIntv.set(7, 7, 1);
+  } else if (dsRatio > 32) {
 //    int s =  iround(Cube_Root(dsRatio)) - 1;
     dsIntv.set(3, 3, 3);
-  } else if (dsRatio > 27) {
-    dsIntv.set(3, 3, 1);
-  } else if (dsRatio > 18) {
+  } else if (dsRatio > 16) {
     dsIntv.set(3, 3, 1);
   } else if (dsRatio > 8 ) {
     dsIntv.set(3, 3, 0);

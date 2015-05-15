@@ -2213,6 +2213,11 @@ ZObject3dScan ZObject3dScan::interpolateSlice(int z) const
   return slice;
 }
 
+ZObject3dScan ZObject3dScan::getFirstSlice() const
+{
+  return getSlice(getMinZ());
+}
+
 ZObject3dScan ZObject3dScan::getSlice(int z) const
 {
   ZObject3dScan slice;

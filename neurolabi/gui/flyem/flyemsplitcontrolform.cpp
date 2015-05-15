@@ -11,6 +11,7 @@ FlyEmSplitControlForm::FlyEmSplitControlForm(QWidget *parent) :
 {
   ui->setupUi(this);
 
+  ui->bookmarkView->setModel(&m_bookmarkList);
   setupWidgetBehavior();
 }
 
@@ -39,6 +40,10 @@ void FlyEmSplitControlForm::setupWidgetBehavior()
           this, SLOT(commitResult()));
   connect(ui->bodyIdSpinBox, SIGNAL(valueConfirmed(int)),
           this, SLOT(changeSplit()));
+  connect(ui->loadBookmarkButton, SIGNAL(clicked()),
+          this, SLOT(loadBookmark()));
+  connect(ui->bookmarkView, SIGNAL(doubleClicked(QModelIndex)),
+          this, SLOT(locateBookmark(QModelIndex)));
 
   ui->commitPushButton->setEnabled(false);
 }
@@ -65,5 +70,41 @@ void FlyEmSplitControlForm::commitResult()
                           "It cannot be undone.",
                           this)) {
     emit committingResult();
+  }
+}
+
+void FlyEmSplitControlForm::updateBookmarkTable(ZFlyEmBodySplitProject *project)
+{
+  if (project != NULL) {
+    const ZFlyEmBookmarkArray &bookmarkArray = project->getBookmarkArray();
+    m_bookmarkList.clear();
+    if (project->getBodyId() > 0) {
+      project->clearBookmarkDecoration();
+
+      foreach (ZFlyEmBookmark bookmark, bookmarkArray) {
+        if (bookmark.getBodyId() == project->getBodyId()) {
+          m_bookmarkList.append(bookmark);
+        }
+      }
+
+      project->addBookmarkDecoration(m_bookmarkList.getBookmarkArray());
+    }
+  }
+}
+
+void FlyEmSplitControlForm::locateBookmark(const QModelIndex &index)
+{
+  const ZFlyEmBookmark &bookmark = m_bookmarkList.getBookmark(index.row());
+
+  emit zoomingTo(bookmark.getLocation().getX(),
+                 bookmark.getLocation().getY(),
+                 bookmark.getLocation().getZ());
+}
+
+void FlyEmSplitControlForm::loadBookmark()
+{
+  QString fileName = ZDialogFactory::GetFileName("Load Bookmarks", "", this);
+  if (!fileName.isEmpty()) {
+    emit loadingBookmark(fileName);
   }
 }

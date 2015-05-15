@@ -235,6 +235,7 @@ void ZFlyEmProofMvc::presentBodySplit(uint64_t bodyId)
   m_splitOn = true;
   m_splitProject.setBodyId(bodyId);
   m_splitProject.downloadSeed();
+  emit bookmarkUpdated(&m_splitProject);
   getView()->redrawObject();
 }
 
@@ -373,6 +374,14 @@ void ZFlyEmProofMvc::zoomTo(int x, int y, int z)
         locator.getZoomRatio(viewPort.width(), viewPort.height()));
   getPresenter()->setViewPortCenter(x, y, z);
 }
+
+void ZFlyEmProofMvc::loadBookmark(const QString &filePath)
+{
+  m_splitProject.loadBookmark(filePath);
+
+  emit bookmarkUpdated(&m_splitProject);
+}
+
 
 //void ZFlyEmProofMvc::toggleEdgeMode(bool edgeOn)
 

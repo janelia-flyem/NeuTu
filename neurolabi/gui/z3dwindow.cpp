@@ -122,6 +122,8 @@ Z3DWindow::Z3DWindow(ZSharedPointer<ZStackDoc> doc, Z3DWindow::EInitMode initMod
   if (m_doc->getStack() != NULL) {
     setWindowTitle(m_doc->stackSourcePath().c_str());
   }
+
+  m_doc->registerUser(this);
   //createToolBar();
 }
 

@@ -504,7 +504,7 @@ void ZImageWidget::paintObject()
     std::cout << m_paintBundle->sliceIndex() << std::endl;
 #endif
     std::sort(visibleObject.begin(), visibleObject.end(),
-              ZStackObject::ZOrderCompare());
+              ZStackObject::ZOrderLessThan());
     for (std::vector<const ZStackObject*>::const_iterator
          iter = visibleObject.begin(); iter != visibleObject.end(); ++iter) {
       const ZStackObject *obj = *iter;

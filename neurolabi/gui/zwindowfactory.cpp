@@ -91,6 +91,8 @@ Z3DWindow* ZWindowFactory::make3DWindow(ZSharedPointer<ZStackDoc> doc,
     if (!isObjectViewVisible()) {
       window->hideObjectView();
     }
+
+//    doc->registerUser(window);
   }
 
   return window;

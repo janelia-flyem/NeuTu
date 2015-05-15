@@ -1341,7 +1341,7 @@ void ZStackView::paintObjectBuffer(
         }
       }
       std::sort(visibleObject.begin(), visibleObject.end(),
-                ZStackObject::ZOrderCompare());
+                ZStackObject::ZOrderLessThan());
 
 #ifdef _DEBUG_2
       std::cout << "---" << std::endl;

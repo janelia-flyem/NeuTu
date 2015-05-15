@@ -161,8 +161,20 @@ void ZStackBlockGrid::downsampleBlock(int xintv, int yintv, int zintv)
 ZStackBlockGrid* ZStackBlockGrid::makeDownsample(int xintv, int yintv, int zintv)
 {
   ZStackBlockGrid *grid = new ZStackBlockGrid;
-  grid->setBlockSize(
-        getBlockSize() / ZIntPoint(xintv + 1, yintv + 1, zintv + 1));
+  ZIntPoint newSize =
+      getBlockSize() / ZIntPoint(xintv + 1, yintv + 1, zintv + 1);
+  if (newSize.getX() % (xintv + 1) > 0) {
+    newSize.setX(newSize.getX() + 1);
+  }
+  if (newSize.getY() % (yintv + 1) > 0) {
+    newSize.setY(newSize.getY() + 1);
+  }
+  if (newSize.getZ() % (zintv + 1) > 0) {
+    newSize.setZ(newSize.getZ() + 1);
+  }
+
+  grid->setBlockSize(newSize);
+
   grid->setGridSize(getGridSize());
   grid->setMinPoint(getMinPoint() / ZIntPoint(xintv + 1, yintv + 1, zintv + 1));
 
