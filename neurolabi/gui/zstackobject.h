@@ -205,13 +205,23 @@ public:
   inline int getZOrder() const { return m_zOrder; }
   void setZOrder(int order) { m_zOrder = order; }
 
-  struct ZOrderCompare {
+  struct ZOrderLessThan {
     bool operator() (const ZStackObject &obj1, const ZStackObject &obj2) {
       return (obj1.getZOrder() < obj2.getZOrder());
     }
 
     bool operator() (const ZStackObject *obj1, const ZStackObject *obj2) {
       return (obj1->getZOrder() < obj2->getZOrder());
+    }
+  };
+
+  struct ZOrderBiggerThan {
+    bool operator() (const ZStackObject &obj1, const ZStackObject &obj2) {
+      return (obj1.getZOrder() > obj2.getZOrder());
+    }
+
+    bool operator() (const ZStackObject *obj1, const ZStackObject *obj2) {
+      return (obj1->getZOrder() > obj2->getZOrder());
     }
   };
 

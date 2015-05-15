@@ -7,6 +7,7 @@
 //#include <QtSvg>
 #include <QDir>
 #include <QtConcurrentRun>
+#include <QTimer>
 
 #include <iostream>
 #include <ostream>
@@ -303,6 +304,11 @@ MainWindow::MainWindow(QWidget *parent) :
   m_progressManager->setProgressReporter(&m_specialProgressReporter);
 
   m_3dWindowFactory.setParentWidget(this);
+
+  m_autoCheckTimer = new QTimer(this);
+  m_autoCheckTimer->setInterval(600000);
+  connect(m_autoCheckTimer, SIGNAL(timeout()), this, SLOT(runRoutineCheck()));
+
 }
 
 MainWindow::~MainWindow()
@@ -6995,6 +7001,11 @@ void MainWindow::on_actionProof_triggered()
   window->showMaximized();
 }
 
+void MainWindow::runRoutineCheck()
+{
+
+}
+
 /////////////////////
 void MainWindow::MessageProcessor::processMessage(
     ZMessage *message, QWidget *host) const
@@ -7021,3 +7032,5 @@ void MainWindow::MessageProcessor::processMessage(
     }
   }
 }
+
+

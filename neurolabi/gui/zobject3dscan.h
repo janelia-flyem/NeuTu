@@ -355,6 +355,7 @@ public:
   ZObject3dScan getSlice(int z) const;
   ZObject3dScan getSlice(int minZ, int maxZ) const;
   ZObject3dScan interpolateSlice(int z) const;
+  ZObject3dScan getFirstSlice() const;
 
   virtual void display(
       ZPainter &painter, int slice, EDisplayStyle option) const;

@@ -27,19 +27,25 @@ signals:
   void changingSplit(uint64_t);
   void savingSeed();
   void committingResult();
+  void zoomingTo(int x, int y, int z);
+  void loadingBookmark(QString);
 
 private slots:
   void slotTest();
   void setSplit(uint64_t bodyId);
   void changeSplit();
   void commitResult();
+  void updateBookmarkTable(ZFlyEmBodySplitProject *project);
+  void locateBookmark(const QModelIndex &index);
+  void loadBookmark();
 
 private:
   void setupWidgetBehavior();
 
 private:
   Ui::FlyEmSplitControlForm *ui;
-  ZFlyEmBodySplitProject m_project;
+  ZFlyEmBookmarkListModel m_bookmarkList;
+  //ZFlyEmBodySplitProject m_project;
   QMenu *m_mainMenu;
 };
 

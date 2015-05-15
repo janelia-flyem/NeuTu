@@ -168,7 +168,7 @@ void ZFlyEmBodySplitProject::showDataFrame3d()
       window = factory.make3DWindow(getSharedDocument(), Z3DWindow::NORMAL_INIT);
       window->setWindowTitle(getDocument()->getTitle());
 
-      getDocument()->registerUser(window);
+      //getDocument()->registerUser(window);
 
       if (getDocument()->getParentFrame() != NULL) {
         connect(getDocument()->getParentFrame(), SIGNAL(closed(ZStackFrame*)),

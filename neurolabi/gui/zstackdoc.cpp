@@ -4431,7 +4431,7 @@ ZStackObject* ZStackDoc::hitTest(double x, double y, double z)
 {
   QList<ZStackObject*> sortedObjList = m_objectGroup;
   sort(sortedObjList.begin(), sortedObjList.end(),
-       ZStackObject::ZOrderCompare());
+       ZStackObject::ZOrderBiggerThan());
 
   for (QList<ZStackObject*>::iterator iter = sortedObjList.begin();
        iter != sortedObjList.end(); ++iter) {
@@ -4450,7 +4450,7 @@ ZStackObject* ZStackDoc::hitTest(double x, double y)
 {
   QList<ZStackObject*> sortedObjList = m_objectGroup;
   sort(sortedObjList.begin(), sortedObjList.end(),
-       ZStackObject::ZOrderCompare());
+       ZStackObject::ZOrderBiggerThan());
 
   for (QList<ZStackObject*>::iterator iter = sortedObjList.begin();
        iter != sortedObjList.end(); ++iter) {

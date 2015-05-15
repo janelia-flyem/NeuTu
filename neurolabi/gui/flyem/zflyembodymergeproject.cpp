@@ -46,6 +46,12 @@ void ZFlyEmBodyMergeProject::clear()
     m_dataFrame = NULL;
   }
 
+  if (m_bodyWindow != NULL) {
+    m_bodyWindow->hide();
+    delete m_bodyWindow;
+    m_bodyWindow = NULL;
+  }
+
   m_currentSelected.clear();
 }
 
@@ -396,12 +402,12 @@ void ZFlyEmBodyMergeProject::showBody3d()
     m_bodyWindow->getSwcFilter()->setRenderingPrimitive("Sphere");
     m_bodyWindow->getSwcFilter()->setStayOnTop(false);
     m_bodyWindow->setYZView();
+
+    update3DBodyView();
+  } else {
+    m_bodyWindow->show();
+    m_bodyWindow->raise();
   }
-
-  update3DBodyView();
-
-  m_bodyWindow->show();
-  m_bodyWindow->raise();
 }
 
 void ZFlyEmBodyMergeProject::update3DBodyView()

@@ -45,8 +45,7 @@ signals:
   void messageGenerated(const QString &message);
   void errorGenerated(const QString &message);
   void splitBodyLoaded(uint64_t bodyId);
-
-
+  void bookmarkUpdated(ZFlyEmBodySplitProject *m_project);
 
 public slots:
   void mergeSelected();
@@ -75,6 +74,8 @@ public slots:
 
   void setDvidLabelSliceSize(int width, int height);
   void zoomTo(int x, int y, int z);
+
+  void loadBookmark(const QString &filePath);
 //  void toggleEdgeMode(bool edgeOn);
 
 protected:
@@ -110,7 +111,8 @@ void ZFlyEmProofMvc::connectControlPanel(T *panel)
   connect(panel, SIGNAL(coarseBodyViewTriggered()),
           this, SLOT(showCoarseBody3d()));
   connect(panel, SIGNAL(savingMerge()), this, SLOT(saveMergeOperation()));
-  connect(panel, SIGNAL(zoomingTo(int, int, int)), this, SLOT(zoomTo(int, int, int)));
+  connect(panel, SIGNAL(zoomingTo(int, int, int)),
+          this, SLOT(zoomTo(int, int, int)));
 }
 
 template <typename T>
@@ -127,6 +129,12 @@ void ZFlyEmProofMvc::connectSplitControlPanel(T *panel)
           SLOT(switchSplitBody(uint64_t)));
   connect(panel, SIGNAL(savingSeed()), this, SLOT(saveSeed()));
   connect(panel, SIGNAL(committingResult()), this, SLOT(commitCurrentSplit()));
+  connect(panel, SIGNAL(loadingBookmark(QString)),
+          this, SLOT(loadBookmark(QString)));
+  connect(this, SIGNAL(bookmarkUpdated(ZFlyEmBodySplitProject*)),
+          panel, SLOT(updateBookmarkTable(ZFlyEmBodySplitProject*)));
+  connect(panel, SIGNAL(zoomingTo(int, int, int)),
+          this, SLOT(zoomTo(int, int, int)));
 }
 
 
