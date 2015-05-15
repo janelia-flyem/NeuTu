@@ -16643,7 +16643,7 @@ void ZTest::test(MainWindow *host)
   std::cout << std::endl;
 #endif
 
-#if 1
+#if 0
   libdvid::DVIDNodeService service("http://emdata1.int.janelia.org:8500", "ccf");
 //  std::string endPoint = ZDvidUrl::GetEndPoint(url.toStdString());
 
