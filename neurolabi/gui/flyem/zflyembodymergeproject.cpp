@@ -510,7 +510,7 @@ void ZFlyEmBodyMergeProject::update3DBodyView(
     reader.open(getDvidTarget());
 
     ZStack *oldStack = m_bodyWindow->getDocument()->getStack();
-    ZStack *newStack = getDataFrame()->document()->getStack();
+    ZStack *newStack = getDocument()->getStack();
     if (oldStack != NULL) {
       if (oldStack->getBoundBox().equals(newStack->getBoundBox())) {
         newStack = NULL;
@@ -725,4 +725,11 @@ void ZFlyEmBodyMergeProject::syncWithDvid()
                         getDvidTarget().getBodyLabelName());
   }
   */
+}
+
+void ZFlyEmBodyMergeProject::closeBodyWindow()
+{
+  if (getBodyWindow() != NULL) {
+    getBodyWindow()->close();
+  }
 }

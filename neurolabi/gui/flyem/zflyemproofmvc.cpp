@@ -238,6 +238,9 @@ void ZFlyEmProofMvc::launchSplitFunc(uint64_t bodyId)
 void ZFlyEmProofMvc::presentBodySplit(uint64_t bodyId)
 {
   m_splitOn = true;
+
+  m_mergeProject.closeBodyWindow();
+
   m_splitProject.setBodyId(bodyId);
   m_splitProject.downloadSeed();
   emit bookmarkUpdated(&m_splitProject);
