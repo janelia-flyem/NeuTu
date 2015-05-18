@@ -76,6 +76,9 @@ public:
 
   void setSelection(const std::set<uint64_t> &selected);
 
+  Z3DWindow* getBodyWindow() { return m_bodyWindow; }
+  void closeBodyWindow();
+
 signals:
   void progressAdvanced(double dp);
   void progressStarted();
