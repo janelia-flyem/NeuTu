@@ -99,6 +99,8 @@ public:
   bool hasSparseVolume(int bodyId) const;
   bool hasBodyInfo(int bodyId) const;
 
+  bool hasCoarseSparseVolume(int bodyId) const;
+
   ZFlyEmNeuronBodyInfo readBodyInfo(int bodyId);
 
   inline const ZDvidTarget& getDvidTarget() const {

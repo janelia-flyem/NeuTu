@@ -36,16 +36,16 @@ public:
 
   void setDvidTarget(const ZDvidTarget &target);
 
-
   void clear();
 
 signals:
   void launchingSplit(const QString &message);
   void launchingSplit(uint64_t bodyId);
   void messageGenerated(const QString &message);
-  void errorGenerated(const QString &message);
+  void errorGenerated(const QString &message, bool appending = true);
   void splitBodyLoaded(uint64_t bodyId);
   void bookmarkUpdated(ZFlyEmBodySplitProject *m_project);
+  void dvidTargetChanged(ZDvidTarget);
 
 public slots:
   void mergeSelected();
@@ -74,6 +74,7 @@ public slots:
 
   void setDvidLabelSliceSize(int width, int height);
   void zoomTo(int x, int y, int z);
+  void zoomTo(int x, int y, int z, int width);
 
   void loadBookmark(const QString &filePath);
 //  void toggleEdgeMode(bool edgeOn);
@@ -135,6 +136,8 @@ void ZFlyEmProofMvc::connectSplitControlPanel(T *panel)
           panel, SLOT(updateBookmarkTable(ZFlyEmBodySplitProject*)));
   connect(panel, SIGNAL(zoomingTo(int, int, int)),
           this, SLOT(zoomTo(int, int, int)));
+  connect(this, SIGNAL(splitBodyLoaded(uint64_t)),
+          panel, SLOT(updateBodyWidget(uint64_t)));
 }
 
 

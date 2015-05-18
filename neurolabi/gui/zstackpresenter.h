@@ -21,6 +21,7 @@
 #include "zmouseeventprocessor.h"
 #include "qthreadfuturemap.h"
 #include "zsharedpointer.h"
+#include "zkeyoperationmap.h"
 
 class ZStackView;
 class ZStackDoc;
@@ -210,6 +211,11 @@ public:
    */
   int getSliceIndex() const;
 
+//  ZStackOperator makeOperator(ZStackOperator::EOperation op);
+
+  bool isOperatable(ZStackOperator::EOperation op);
+//  bool isOperatable(const ZStackOperator &op) const;
+
 public slots:
   void addDecoration(ZStackObject *obj, bool tail = true);
   void removeLastDecoration(ZStackObject *obj);
@@ -310,6 +316,7 @@ private:
 
   bool processKeyPressEventForSwc(QKeyEvent *event);
   bool processKeyPressEventForStroke(QKeyEvent *event);
+  bool processKeyPressEventForStack(QKeyEvent *event);
 
   bool isPointInStack(double x, double y);
   QPointF mapFromWidgetToStack(const QPoint &pos);
@@ -399,6 +406,9 @@ private:
 
   ZSingleSwcNodeActionActivator m_singleSwcNodeActionActivator;
   bool m_skipMouseReleaseEvent;
+
+  ZKeyOperationMap m_swcKeyOperationMap;
+  ZKeyOperationMap m_stackKeyOperationMap;
 
   ZKeyEventSwcMapper m_swcKeyMapper;
   //ZMouseEventLeftButtonReleaseMapper m_leftButtonReleaseMapper;

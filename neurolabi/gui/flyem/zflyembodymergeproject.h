@@ -7,6 +7,7 @@
 #include "tz_stdint.h"
 #include "zstackobjectselector.h"
 #include "zsharedpointer.h"
+#include "zstackviewparam.h"
 
 class ZStackFrame;
 class ZFlyEmBodyMergeFrame;
@@ -21,6 +22,7 @@ class ZArray;
 class Z3DWindow;
 class ZStackDoc;
 class ZFlyEmBodyMerger;
+//class ZStackViewParam;
 
 class ZFlyEmBodyMergeProject : public QObject
 {
@@ -85,6 +87,7 @@ signals:
   void selectionChanged();
   void bodyMerged(QList<uint64_t> objLabelList);
   void splitSent(ZDvidTarget target, int bodyId);
+  void locating2DViewTriggered(ZStackViewParam);
 
 public slots:
   void viewGrayscale(const ZIntPoint &offset, int width, int height);

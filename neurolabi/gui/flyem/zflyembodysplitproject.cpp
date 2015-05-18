@@ -320,8 +320,8 @@ void ZFlyEmBodySplitProject::loadResult3dQuick(ZStackDoc *doc)
     doc->removeAllSwcTree();
     TStackObjectList objList =
         getDocument()->getObjectList(ZStackObject::TYPE_OBJ3D);
-    const int maxSwcNodeNumber = 200000;
-    const int maxScale = 30;
+    const int maxSwcNodeNumber = 100000;
+    const int maxScale = 50;
     const int minScale = 1;
     for (TStackObjectList::const_iterator iter = objList.begin();
          iter != objList.end(); ++iter) {

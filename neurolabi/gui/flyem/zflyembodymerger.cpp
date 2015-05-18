@@ -205,3 +205,8 @@ void ZFlyEmBodyMerger::decodeJsonString(const std::string &str)
 
   loadJson(obj);
 }
+
+QList<uint64_t> ZFlyEmBodyMerger::getOriginalLabelList(uint64_t finalLabel) const
+{
+  return getFinalMap().keys(finalLabel);
+}

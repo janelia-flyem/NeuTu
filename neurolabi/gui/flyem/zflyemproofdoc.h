@@ -53,6 +53,9 @@ public:
   void saveMergeOperation();
   void downloadBodyMask();
 
+  QList<uint64_t> getMergedSource(uint64_t bodyId) const;
+
+
 signals:
 
 public slots:

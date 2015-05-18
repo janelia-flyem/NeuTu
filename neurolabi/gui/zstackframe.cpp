@@ -1198,7 +1198,7 @@ void ZStackFrame::viewRoi(int x, int y, int z, int radius)
   ZStackViewLocator locator;
   locator.setCanvasSize(view()->imageWidget()->canvasSize().width(),
                         view()->imageWidget()->canvasSize().height());
-  QRect viewPort = locator.getViewPort(x, y, radius);
+  QRect viewPort = locator.getLandmarkViewPort(x, y, radius);
   presenter()->setZoomRatio(
         locator.getZoomRatio(viewPort.width(), viewPort.height()));
   presenter()->setViewPortCenter(x, y, z);

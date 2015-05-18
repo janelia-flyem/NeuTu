@@ -35,6 +35,7 @@ private slots:
   void incSegmentSize();
   void decSegmentSize();
   void goToPosition();
+  void goToBody();
 
 private:
   void createMenu();

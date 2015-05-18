@@ -398,6 +398,9 @@ void ZFlyEmBodyMergeProject::showBody3d()
     //m_bodyWindow->setParent(m_dataFrame);
 
     connect(m_bodyWindow, SIGNAL(closed()), this, SLOT(detachBodyWindow()));
+    connect(m_bodyWindow, SIGNAL(locating2DViewTriggered(ZStackViewParam)),
+            this, SIGNAL(locating2DViewTriggered(ZStackViewParam)));
+
     m_bodyWindow->getSwcFilter()->setColorMode("Intrinsic");
     m_bodyWindow->getSwcFilter()->setRenderingPrimitive("Sphere");
     m_bodyWindow->getSwcFilter()->setStayOnTop(false);
@@ -457,7 +460,15 @@ void ZFlyEmBodyMergeProject::update3DBodyView()
       uint64_t label = *iter;
       std::string source = ZStackObjectSourceFactory::MakeFlyEmBodySource(label);
       if (oldBodySourceSet.count(source) == 0) {
-        ZObject3dScan body = reader.readCoarseBody(label);
+        ZObject3dScan body;
+
+        QList<uint64_t> bodyList = getDocument<ZFlyEmProofDoc>()->getMergedSource(label);
+        bodyList.append(label);
+
+        for (int i = 0; i < bodyList.size(); ++i) {
+          body.concat(reader.readCoarseBody(bodyList[i]));
+        }
+
         if (!body.isEmpty()) {
 //          body.setColor(sparseObject->getColor());
           if (getDocument<ZFlyEmProofDoc>() != NULL) {

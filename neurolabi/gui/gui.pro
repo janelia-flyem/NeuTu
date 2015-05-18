@@ -525,7 +525,10 @@ HEADERS += mainwindow.h \
     flyem/zflyemmessagewidget.h \
     zwidgetmessage.h \
     zprogresssignal.h \
-    zkeyeventstrokemapper.h
+    zkeyeventstrokemapper.h \
+    zkeyoperation.h \
+    zkeyoperationmap.h \
+    zkeyoperationconfig.h
 
 FORMS += settingdialog.ui \
     frameinfodialog.ui \
@@ -915,7 +918,10 @@ SOURCES += main.cpp \
     flyem/zflyemmessagewidget.cpp \
     zwidgetmessage.cpp \
     zprogresssignal.cpp \
-    zkeyeventstrokemapper.cpp
+    zkeyeventstrokemapper.cpp \
+    zkeyoperation.cpp \
+    zkeyoperationmap.cpp \
+    zkeyoperationconfig.cpp
 
 OTHER_FILES += \
     extlib.pri \

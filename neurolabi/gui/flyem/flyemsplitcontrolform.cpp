@@ -108,3 +108,15 @@ void FlyEmSplitControlForm::loadBookmark()
     emit loadingBookmark(fileName);
   }
 }
+
+void FlyEmSplitControlForm::updateBodyWidget(uint64_t bodyId)
+{
+  ui->bodyIdSpinBox->setValue(bodyId);
+  QString text;
+  if (bodyId == 0) {
+    text += "<p>No body loaded.</p>";
+  } else {
+    text += QString("<p>Body ID: %2</p>").arg(bodyId);
+  }
+  ui->infoWidget->setText(text);
+}

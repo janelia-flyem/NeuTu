@@ -9,6 +9,7 @@ class QStackedWidget;
 class ZFlyEmMessageWidget;
 class QProgressDialog;
 class ZProgressSignal;
+class ZDvidTarget;
 
 /*!
  * \brief The mainwindow class of proofreading
@@ -39,9 +40,10 @@ public slots:
   void launchSplit();
   void exitSplit();
   void presentSplitInterface(uint64_t bodyId);
+  void updateDvidTargetWidget(const ZDvidTarget &target);
 
-  void dump(const QString &message, bool appending);
-  void dumpError(const QString &message, bool appending);
+  void dump(const QString &message, bool appending = true);
+  void dumpError(const QString &message, bool appending = true);
 
   void startProgress();
   void startProgress(const QString &title, int nticks);

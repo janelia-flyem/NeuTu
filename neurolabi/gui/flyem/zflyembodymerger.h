@@ -50,6 +50,8 @@ public:
   std::string toJsonString() const;
   void decodeJsonString(const std::string &str);
 
+  QList<uint64_t> getOriginalLabelList(uint64_t finalLabel) const;
+
 private:
   static uint64_t mapLabel(const TLabelMap &labelMap, uint64_t label);
   static uint64_t mapLabel(const TLabelMapList &labelMap, uint64_t label);

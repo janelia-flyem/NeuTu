@@ -396,7 +396,7 @@ bool FlyEmBodySplitProjectDialog::loadBody()
   int bodyId = ui->bodyIdSpinBox->value();
   ZDvidReader reader;
   if (reader.open(getDvidTarget())) {
-    if (reader.hasSparseVolume(bodyId)) {
+    if (reader.hasCoarseSparseVolume(bodyId)) {
  // if (m_loadBodyDlg->exec()) {
       //setDvidTarget(m_loadBodyDlg->getDvidTarget());
       setBodyId(bodyId);
