@@ -166,6 +166,11 @@ void ZFlyEmProofDoc::downloadBodyMask()
   }
 }
 
+QList<uint64_t> ZFlyEmProofDoc::getMergedSource(uint64_t bodyId) const
+{
+  return m_bodyMerger.getOriginalLabelList(bodyId);
+}
+
 
 //////////////////////////////////////////
 ZFlyEmProofDocCommand::MergeBody::MergeBody(

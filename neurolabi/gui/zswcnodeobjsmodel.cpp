@@ -19,24 +19,27 @@ ZSwcNodeObjsModel::~ZSwcNodeObjsModel()
 QModelIndex ZSwcNodeObjsModel::getIndex(SwcTreeNode::ETopologicalType type,
                                         int col) const
 {
-  std::map<SwcTreeNode::ETopologicalType, int>::const_iterator iter =
+  QHash<SwcTreeNode::ETopologicalType, int>::const_iterator iter =
       m_typeToRow.find(type);
   if (iter != m_typeToRow.end()) {
-    return index(iter->second, col);
+    return index(iter.value(), col);
   }
   return QModelIndex();
 }
 
 QModelIndex ZSwcNodeObjsModel::getIndex(Swc_Tree_Node *tn, int col) const
 {
-  std::map<Swc_Tree_Node*, int>::const_iterator iter =
+  QHash<Swc_Tree_Node*, int>::const_iterator iter =
       m_swcTreeNodeToRow.find(tn);
   if (iter != m_swcTreeNodeToRow.end()) {
+    /*
     std::map<Swc_Tree_Node*, SwcTreeNode::ETopologicalType>::const_iterator
         s2pIt = m_swcTreeNodeToType.find(tn);
-    std::map<SwcTreeNode::ETopologicalType, int>::const_iterator p2rIt =
-        m_typeToRow.find(s2pIt->second);
-    return index(iter->second, col, index(p2rIt->second, 0));
+        */
+
+    QHash<SwcTreeNode::ETopologicalType, int>::const_iterator p2rIt =
+        m_typeToRow.find(/*s2pIt->second*/m_swcTreeNodeToType[tn]);
+    return index(iter.value(), col, index(p2rIt.value(), 0));
   }
   return QModelIndex();
 }

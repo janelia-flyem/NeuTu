@@ -193,7 +193,8 @@ private:
   std::vector<std::vector<std::pair<Swc_Tree_Node*, Swc_Tree_Node*> > >
   m_decompsedNodePairs;
   std::vector<std::vector<Swc_Tree_Node* > > m_decomposedNodes;
-  std::set<Swc_Tree_Node*> m_allNodesSet;  // for fast search
+  std::vector<Swc_Tree_Node*> m_sortedNodeList;
+//  std::set<Swc_Tree_Node*> m_allNodesSet;  // for fast search
   std::set<int> m_allNodeType;   // all node type of current opened swc, used for adjust widget (hide irrelavant stuff)
 
   ZColorMapParameter m_colorMap;
@@ -215,6 +216,8 @@ private:
   ZSwcColorScheme m_colorScheme;
 
   bool m_enableCutting;
+
+  QVector<QString> m_guiNameList;
 };
 
 #endif // Z3DSWCFILTER_H

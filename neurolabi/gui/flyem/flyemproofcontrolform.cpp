@@ -55,6 +55,10 @@ void FlyEmProofControlForm::createMenu()
   QAction *queryPixelAction = new QAction("Go to Position", this);
   m_mainMenu->addAction(queryPixelAction);
   connect(queryPixelAction, SIGNAL(triggered()), this, SLOT(goToPosition()));
+
+  QAction *queryBodyAction = new QAction("Go to Body", this);
+  m_mainMenu->addAction(queryBodyAction);
+  connect(queryBodyAction, SIGNAL(triggered()), this, SLOT(goToBody()));
 }
 
 
@@ -75,6 +79,11 @@ void FlyEmProofControlForm::decSegmentSize()
   ui->segmentSizeIncPushButton->setEnabled(true);
   ui->segmentSizeDecPushButton->setEnabled(false);
   emit labelSizeChanged(512, 512);
+}
+
+void FlyEmProofControlForm::goToBody()
+{
+
 }
 
 void FlyEmProofControlForm::goToPosition()

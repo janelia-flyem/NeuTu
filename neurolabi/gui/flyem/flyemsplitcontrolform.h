@@ -30,6 +30,9 @@ signals:
   void zoomingTo(int x, int y, int z);
   void loadingBookmark(QString);
 
+public slots:
+  void updateBodyWidget(uint64_t bodyId);
+
 private slots:
   void slotTest();
   void setSplit(uint64_t bodyId);

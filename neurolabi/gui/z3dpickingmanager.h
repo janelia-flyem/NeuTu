@@ -20,7 +20,14 @@
 #include <stdint.h>
 #include <map>
 
+//uint qHash(const glm::col4 &col);
+#include <QHash>
+
 class Z3DRenderTarget;
+
+inline uint32_t Col4ToUint(const glm::col4 &c) {
+  return reinterpret_cast<const uint32_t&>(c);
+}
 
 struct colComp
 {
@@ -44,7 +51,7 @@ public:
   void clearRegisteredObjects();
 
   glm::col4 getColorFromObject(const void* obj);
-  const void* getObjectFromColor(glm::col4 col);
+  const void* getObjectFromColor(const glm::col4 &col);
 
   const void* getObjectAtWidgetPos(glm::ivec2 pos);
   const void* getObjectAtPos(glm::ivec2 pos);
@@ -65,13 +72,18 @@ public:
   // check this before use pickingManager since setRenderTarget might fail
   bool hasRenderTarget() const { return m_renderTarget != NULL; }
 
-  bool isRegistered(const void* obj) { return m_objectToColor.find(obj) != m_objectToColor.end(); }
-  bool isRegistered(glm::col4 col) { return m_colorToObject.find(col) != m_colorToObject.end(); }
+  bool isRegistered(const void* obj) {
+    return m_objectToColor.contains(obj);
+  }
+  //  return m_objectToColor.find(obj) != m_objectToColor.end(); }
+  bool isRegistered(const glm::col4 &col) {
+    return m_colorToObject.contains(Col4ToUint(col)); }
 private:
   void increaseColor();
 
-  std::map<glm::col4, const void*, colComp> m_colorToObject;
-  std::map<const void*, glm::col4> m_objectToColor;
+  QHash<uint32_t, const void*> m_colorToObject;
+//  std::map<glm::col4, const void*, colComp> m_colorToObject;
+  QHash<const void*, glm::col4> m_objectToColor;
   Z3DRenderTarget* m_renderTarget;
   glm::col4 m_currentColor;
 };

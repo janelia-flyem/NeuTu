@@ -116,6 +116,8 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
     m_splitProject.setDvidTarget(target);
     m_mergeProject.setDvidTarget(target);
     m_mergeProject.syncWithDvid();
+
+    emit dvidTargetChanged(target);
   }
 }
 
@@ -125,7 +127,6 @@ void ZFlyEmProofMvc::setDvidTarget()
   if (m_dvidDlg->exec()) {
     const ZDvidTarget &target = m_dvidDlg->getDvidTarget();
     setDvidTarget(target);
-
   }
 }
 
@@ -151,6 +152,8 @@ void ZFlyEmProofMvc::customInit()
   m_mergeProject.setDocument(getDocument());
   connect(getPresenter(), SIGNAL(labelSliceSelectionChanged()),
           this, SLOT(updateSelection()));
+  connect(&m_mergeProject, SIGNAL(locating2DViewTriggered(ZStackViewParam)),
+          this->getView(), SLOT(setView(ZStackViewParam)));
 
   connect(getDocument().get(), SIGNAL(messageGenerated(const QString&)),
           this, SIGNAL(messageGenerated(const QString&)));
@@ -216,6 +219,8 @@ void ZFlyEmProofMvc::launchSplitFunc(uint64_t bodyId)
         body->setMaskColor(labelSlice->getColor(bodyId));
         getDocument()->addObject(body, true);
       }
+
+      m_splitProject.setBodyId(bodyId);
 
       labelSlice->setVisible(false);
       labelSlice->setHittable(false);
@@ -360,7 +365,7 @@ void ZFlyEmProofMvc::commitCurrentSplit()
   m_splitProject.commitResult();
 }
 
-void ZFlyEmProofMvc::zoomTo(int x, int y, int z)
+void ZFlyEmProofMvc::zoomTo(int x, int y, int z, int width)
 {
   z -= getDocument()->getStackOffset().getZ();
 
@@ -368,11 +373,15 @@ void ZFlyEmProofMvc::zoomTo(int x, int y, int z)
   locator.setCanvasSize(getView()->imageWidget()->canvasSize().width(),
                         getView()->imageWidget()->canvasSize().height());
 
-  const double radius = 20;
-  QRect viewPort = locator.getViewPort(x, y, radius);
+  QRect viewPort = locator.getRectViewPort(x, y, width);
   getPresenter()->setZoomRatio(
         locator.getZoomRatio(viewPort.width(), viewPort.height()));
   getPresenter()->setViewPortCenter(x, y, z);
+}
+
+void ZFlyEmProofMvc::zoomTo(int x, int y, int z)
+{
+  zoomTo(x, y, z, 400);
 }
 
 void ZFlyEmProofMvc::loadBookmark(const QString &filePath)

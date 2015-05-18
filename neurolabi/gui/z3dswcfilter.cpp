@@ -146,6 +146,11 @@ Z3DSwcFilter::Z3DSwcFilter()
   connect(&m_zCut, SIGNAL(valueChanged()), this, SLOT(setClipPlanes()));
 
   adjustWidgets();
+
+  m_guiNameList.resize(50);
+  for (int i = 0; i < m_guiNameList.size(); ++i) {
+    m_guiNameList[i] = QString("Type %1 Color").arg(i);
+  }
 }
 
 Z3DSwcFilter::~Z3DSwcFilter()
@@ -845,7 +850,12 @@ void Z3DSwcFilter::prepareData()
 
       int type = SwcTreeNode::type(tn);
       m_colorScheme.setColorScheme(ZSwcColorScheme::BIOCYTIN_TYPE_COLOR);
-      QString guiname = QString("Type %1 Color").arg(type);
+      QString guiname;
+      if (type >= m_guiNameList.size()) {
+        guiname = QString("Type %1 Color").arg(type);
+      } else {
+        guiname = m_guiNameList[type];
+      }
       if (m_biocytinColorMapper.find(type) == m_biocytinColorMapper.end()) {
         QColor color = m_colorScheme.getColor(type);
         m_biocytinColorMapper[type] =
@@ -1329,9 +1339,17 @@ void Z3DSwcFilter::selectSwc(QMouseEvent *e, int w, int h)
     //      }
     //    }
     if (isNodeRendering()) {
+      std::vector<Swc_Tree_Node*>::iterator it = std::find(
+            m_sortedNodeList.begin(), m_sortedNodeList.end(),
+            (Swc_Tree_Node*) obj);
+      if (it != m_sortedNodeList.end()) {
+        m_pressedSwcTreeNode = *it;
+      }
+      /*
       std::set<Swc_Tree_Node*>::iterator it = m_allNodesSet.find((Swc_Tree_Node*)obj);
       if (it != m_allNodesSet.end())
         m_pressedSwcTreeNode = *it;
+        */
     }
     return;
   }
@@ -1371,22 +1389,41 @@ void Z3DSwcFilter::selectSwc(QMouseEvent *e, int w, int h)
         const std::vector<const void*> &objs =
             getPickingManager()->sortObjectsByDistanceToPos(glm::ivec2(e->x(), h-e->y()), 100);
         for (size_t i=0; i<objs.size(); ++i) {
+          std::vector<Swc_Tree_Node*>::iterator it = std::find(
+                m_sortedNodeList.begin(), m_sortedNodeList.end(),
+                (Swc_Tree_Node*) objs[i]);
+          if (it != m_sortedNodeList.end()) {
+            tn = *it;
+            break;
+          }
+          /*
           std::set<Swc_Tree_Node*>::iterator it = m_allNodesSet.find((Swc_Tree_Node*)objs[i]);
           if (it != m_allNodesSet.end()) {
             tn = *it;
             break;
           }
+          */
         }
         // not found, search the whole image
         if (!tn) {
           const std::vector<const void*> &objs1 =
               getPickingManager()->sortObjectsByDistanceToPos(glm::ivec2(e->x(), h-e->y()), -1);
           for (size_t i=0; i<objs1.size(); ++i) {
+            std::vector<Swc_Tree_Node*>::iterator it = std::find(
+                  m_sortedNodeList.begin(), m_sortedNodeList.end(),
+                  (Swc_Tree_Node*) objs1[i]);
+            if (it != m_sortedNodeList.end()) {
+              tn = *it;
+              break;
+            }
+
+            /*
             std::set<Swc_Tree_Node*>::iterator it = m_allNodesSet.find((Swc_Tree_Node*)objs1[i]);
             if (it != m_allNodesSet.end()) {
               tn = *it;
               break;
             }
+            */
           }
         }
 
@@ -1424,7 +1461,8 @@ void Z3DSwcFilter::decompseSwcTree()
   m_allNodeType.clear();
   m_decompsedNodePairs.clear();
   m_decomposedNodes.clear();
-  m_allNodesSet.clear();
+  m_sortedNodeList.clear();
+  //m_allNodesSet.clear();
 
   m_decompsedNodePairs.resize(m_swcList.size());
   m_decomposedNodes.resize(m_swcList.size());
@@ -1439,15 +1477,19 @@ void Z3DSwcFilter::decompseSwcTree()
         if (!Swc_Tree_Node_Is_Virtual(tn)) {
           m_allNodeType.insert(Swc_Tree_Node_Const_Data(tn)->type);
           allNodes.push_back(tn);
-          m_allNodesSet.insert(tn);
+          m_sortedNodeList.push_back(tn);
+//          m_allNodesSet.insert(tn);
         }
         if (tn->parent != NULL && !Swc_Tree_Node_Is_Virtual(tn->parent))
           allPairs.push_back(std::pair<Swc_Tree_Node*, Swc_Tree_Node*>(tn, tn->parent));
       }
+//      m_allNodesSet.insert(allNodes.begin(), allNodes.end());
       m_decompsedNodePairs[i] = allPairs;
       m_decomposedNodes[i] = allNodes;
     }
   }
+
+  std::sort(m_sortedNodeList.begin(), m_sortedNodeList.end());
 }
 
 glm::vec4 Z3DSwcFilter::getColorByType(Swc_Tree_Node *n)
