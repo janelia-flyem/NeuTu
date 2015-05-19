@@ -15,8 +15,7 @@
       "comment": "MB seg debug (branched from ccf)",
       "body_label": "bodies",
       "label_block": "labels",
-      "user_name": "zhaot",
-      "debug": true
+      "user_name": "zhaot"
     },
     {
       "address": "emdata2.int.janelia.org",

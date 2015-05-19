@@ -583,8 +583,9 @@ void ZFlyEmBodySplitProject::commitResult()
 
   deleteSavedSeed();
   getDocument()->undoStack()->clear();
+  removeAllSeed();
 //  getDocument()->removeObject(ZStackObject::TYPE_OBJ3D);
-  removeAllSideSeed();
+//  removeAllSideSeed();
   downloadBodyMask();
 
   /*

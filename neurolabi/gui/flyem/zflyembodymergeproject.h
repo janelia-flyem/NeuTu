@@ -91,6 +91,8 @@ signals:
   void bodyMerged(QList<uint64_t> objLabelList);
   void splitSent(ZDvidTarget target, int bodyId);
   void locating2DViewTriggered(ZStackViewParam);
+  void messageGenerated(QString, bool appending = true);
+  void errorGenerated(QString, bool appending = true);
 
 public slots:
   void viewGrayscale(const ZIntPoint &offset, int width, int height);

@@ -45,7 +45,7 @@ void FlyEmSplitControlForm::setupWidgetBehavior()
   connect(ui->bookmarkView, SIGNAL(doubleClicked(QModelIndex)),
           this, SLOT(locateBookmark(QModelIndex)));
 
-  ui->commitPushButton->setEnabled(false);
+//  ui->commitPushButton->setEnabled(false);
 }
 
 void FlyEmSplitControlForm::slotTest()

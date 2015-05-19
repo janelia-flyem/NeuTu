@@ -1006,7 +1006,7 @@ signals:
   void progressAdvanced(double dp);
   void newDocReady(const ZStackDocReader &reader);
 
-  void messageGenerated(const QString &message);
+  void messageGenerated(const QString &message, bool appending = true);
 
 private:
   void connectSignalSlot();

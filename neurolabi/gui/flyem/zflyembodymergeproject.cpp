@@ -691,6 +691,20 @@ void ZFlyEmBodyMergeProject::setSelection(const std::set<uint64_t> &selected)
        iter != selected.end(); ++iter) {
     m_currentSelected.insert(*iter);
   }
+
+  QString msg;
+  for (std::set<uint64_t>::const_iterator iter = selected.begin();
+       iter != selected.end(); ++iter) {
+    msg += QString("%1 ").arg(*iter);
+  }
+
+  if (msg.isEmpty()) {
+    msg = "No body selected.";
+  } else {
+    msg += " selected.";
+  }
+
+  emit messageGenerated(msg);
 }
 
 void ZFlyEmBodyMergeProject::syncWithDvid()

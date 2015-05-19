@@ -84,12 +84,13 @@ void ZProofreadWindow::init()
 
   connect(m_mainMvc, SIGNAL(splitBodyLoaded(uint64_t)),
           this, SLOT(presentSplitInterface(uint64_t)));
+  connect(m_mainMvc, SIGNAL(dvidTargetChanged(ZDvidTarget)),
+          this, SLOT(updateDvidTargetWidget(ZDvidTarget)));
   connect(m_mainMvc, SIGNAL(messageGenerated(QString, bool)),
           this, SLOT(dump(QString,bool)));
   connect(m_mainMvc, SIGNAL(errorGenerated(QString, bool)),
           this, SLOT(dumpError(QString,bool)));
-  connect(m_mainMvc, SIGNAL(dvidTargetChanged(ZDvidTarget)),
-          this, SLOT(updateDvidTargetWidget(ZDvidTarget)));
+
 
   /*
   connect(m_mainMvc, SIGNAL(messageGenerated(QString)),

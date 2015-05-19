@@ -120,9 +120,8 @@ public:
   bool isReadyForSplit(const ZDvidTarget &target);
 
 signals:
-  void messageGenerated(QString);
-//  void messageGenerated(QStringList);
-  void errorGenerated(QString);
+  void messageGenerated(QString, bool appending = true);
+  void errorGenerated(QString, bool appending = true);
 //  void errorGenerated(QStringList);
   void resultCommitted();
 

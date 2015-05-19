@@ -1039,7 +1039,11 @@ bool ZStackPresenter::processKeyPressEventForStroke(QKeyEvent *event)
       taken = true;
     } else {
       if (m_paintStrokeAction->isEnabled()) {
-        m_paintStrokeAction->trigger();
+        if (isStrokeOn()) {
+          exitStrokeEdit();
+        } else {
+          m_paintStrokeAction->trigger();
+        }
         taken = true;
       }
     }
@@ -1287,10 +1291,14 @@ bool ZStackPresenter::processKeyPressEvent(QKeyEvent *event)
     break;
   case Qt::Key_Space:
     if (GET_APPLICATION_NAME == "FlyEM") {
-      if (event->modifiers() == Qt::ShiftModifier) {
-        buddyDocument()->runSeededWatershed();
-      } else {
-        buddyDocument()->runLocalSeededWatershed();
+      if (buddyDocument()->getTag() == NeuTube::Document::FLYEM_SPLIT ||
+          buddyDocument()->getTag() == NeuTube::Document::FLYEM_PROOFREAD ||
+          buddyDocument()->getTag() == NeuTube::Document::SEGMENTATION_TARGET) {
+        if (event->modifiers() == Qt::ShiftModifier) {
+          buddyDocument()->runSeededWatershed();
+        } else {
+          buddyDocument()->runLocalSeededWatershed();
+        }
       }
     }
     break;

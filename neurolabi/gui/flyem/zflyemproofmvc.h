@@ -41,7 +41,7 @@ public:
 signals:
   void launchingSplit(const QString &message);
   void launchingSplit(uint64_t bodyId);
-  void messageGenerated(const QString &message);
+  void messageGenerated(const QString &message, bool appending = true);
   void errorGenerated(const QString &message, bool appending = true);
   void splitBodyLoaded(uint64_t bodyId);
   void bookmarkUpdated(ZFlyEmBodySplitProject *m_project);

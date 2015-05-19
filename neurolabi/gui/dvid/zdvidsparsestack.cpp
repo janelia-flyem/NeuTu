@@ -143,7 +143,8 @@ const ZIntPoint& ZDvidSparseStack::getDownsampleInterval() const
 
 bool ZDvidSparseStack::fillValue(const ZIntCuboid &box)
 {
-  bool changed = false;
+//  bool changed = false;
+  int blockCount = 0;
   if (!m_sparseStack.getObjectMask()->isEmpty()) {
     qDebug() << "Downloading grayscale ...";
 
@@ -178,23 +179,26 @@ bool ZDvidSparseStack::fillValue(const ZIntCuboid &box)
               ZIntCuboid box = grid->getBlockBox(blockIndex);
               ZStack *stack = m_dvidReader.readGrayScale(box);
               grid->consumeStack(blockIndex, stack);
-              changed = true;
+              ++blockCount;
+//              changed = true;
             }
           }
         }
       }
     }
 
-    qDebug() << "Done.";
+    qDebug() << blockCount << " blocks downloaded.";
   }
 
-  return changed;
+  return (blockCount > 0);
 }
 
 bool ZDvidSparseStack::fillValue()
 {
-  bool changed = false;
+//  bool changed = false;
+  int blockCount = 0;
   if (!m_sparseStack.getObjectMask()->isEmpty()) {
+    qDebug() << "Downloading grayscale ...";
     ZDvidInfo dvidInfo;
     dvidInfo.setFromJsonString(
           m_dvidReader.readInfo(getDvidTarget().getGrayScaleName().c_str()).
@@ -221,14 +225,17 @@ bool ZDvidSparseStack::fillValue()
             ZIntCuboid box = grid->getBlockBox(blockIndex);
             ZStack *stack = m_dvidReader.readGrayScale(box);
             grid->consumeStack(blockIndex, stack);
-            changed = true;
+            ++blockCount;
           }
         }
       }
     }
+
+    qDebug() << blockCount << " blocks downloaded.";
   }
 
-  return changed;
+  return blockCount > 0;
+//  return changed;
 }
 
 ZStack* ZDvidSparseStack::getStack()

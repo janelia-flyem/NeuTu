@@ -148,15 +148,19 @@ void ZFlyEmProofMvc::customInit()
   m_splitProject.setDocument(getDocument());
   connect(&m_splitProject, SIGNAL(locating2DViewTriggered(const ZStackViewParam&)),
           this->getView(), SLOT(setView(const ZStackViewParam&)));
+  connect(&m_splitProject, SIGNAL(messageGenerated(QString, bool)),
+          this, SIGNAL(messageGenerated(QString, bool)));
 
   m_mergeProject.setDocument(getDocument());
   connect(getPresenter(), SIGNAL(labelSliceSelectionChanged()),
           this, SLOT(updateSelection()));
   connect(&m_mergeProject, SIGNAL(locating2DViewTriggered(ZStackViewParam)),
           this->getView(), SLOT(setView(ZStackViewParam)));
+  connect(&m_mergeProject, SIGNAL(messageGenerated(QString, bool)),
+          this, SIGNAL(messageGenerated(QString,bool)));
 
-  connect(getDocument().get(), SIGNAL(messageGenerated(const QString&)),
-          this, SIGNAL(messageGenerated(const QString&)));
+  connect(getDocument().get(), SIGNAL(messageGenerated(QString, bool)),
+          this, SIGNAL(messageGenerated(QString, bool)));
   connect(this, SIGNAL(splitBodyLoaded(uint64_t)),
           this, SLOT(presentBodySplit(uint64_t)));
 
