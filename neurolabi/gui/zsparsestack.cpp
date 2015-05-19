@@ -153,6 +153,10 @@ ZStack* ZSparseStack::getStack()
     }
   }
 
+#ifdef _DEBUG_2
+  m_stack->save(GET_TEST_DATA_DIR + "/test.tif");
+#endif
+
   return m_stack;
 }
 

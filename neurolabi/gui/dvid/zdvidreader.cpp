@@ -437,7 +437,7 @@ ZStack* ZDvidReader::readGrayScale(
   } else {
   */
     bufferReader.read(url.getGrayscaleUrl(
-                        width, height, depth, x0, y0, z0).c_str(), false);
+                        width, height, depth, x0, y0, z0).c_str(), true);
   //}
 
   const QByteArray &buffer = bufferReader.getBuffer();
@@ -939,7 +939,10 @@ ZArray* ZDvidReader::readLabels64(
 
   ZArray *array = NULL;
 
-#if defined(_ENABLE_LIBDVIDCPP_2)
+  QElapsedTimer timer;
+  timer.start();
+
+#if defined(_ENABLE_LIBDVIDCPP_)
   qDebug() << "Using libdvidcpp";
 
   const ZDvidTarget &target = getDvidTarget();
@@ -963,7 +966,7 @@ ZArray* ZDvidReader::readLabels64(
     channels[2] = 2;
 
     libdvid::Labels3D labels = service.get_labels3D(
-          dataName, dims, offset, channels, false);
+          dataName, dims, offset, channels);
 
     mylib::Dimn_Type arrayDims[3];
     arrayDims[0] = width;
@@ -980,11 +983,9 @@ ZArray* ZDvidReader::readLabels64(
   ZDvidBufferReader bufferReader;
 //  tic();
 //  clock_t start = clock();
-  QElapsedTimer timer;
-  timer.start();
+
   bufferReader.read(dvidUrl.getLabels64Url(
                       dataName, width, height, depth, x0, y0, z0).c_str());
-  std::cout << "label reading time: " << timer.elapsed() << std::endl;
 
 //  qDebug() << timer.elapsed();
 //  clock_t finish = clock();
@@ -1007,6 +1008,8 @@ ZArray* ZDvidReader::readLabels64(
     array->copyDataFrom(bufferReader.getBuffer().constData());
   }
 #endif
+
+  std::cout << "label reading time: " << timer.elapsed() << std::endl;
 
   return array;
 }

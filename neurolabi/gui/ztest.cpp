@@ -16643,7 +16643,7 @@ void ZTest::test(MainWindow *host)
   std::cout << std::endl;
 #endif
 
-#if 0
+#if 1
   libdvid::DVIDNodeService service("http://emdata1.int.janelia.org:8500", "ccf");
 //  std::string endPoint = ZDvidUrl::GetEndPoint(url.toStdString());
 
@@ -16665,7 +16665,7 @@ void ZTest::test(MainWindow *host)
   tic();
   try {
     libdvid::Labels3D data = service.get_labels3D(
-          "labels", dims, offset, channels, false, true);
+          "labels", dims, offset, channels);
   } catch (std::exception &e) {
     std::cout << e.what() << std::endl;
   }
@@ -16747,7 +16747,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   ZDvidTarget target("emdata2.int.janelia.org", "79b", 7000);
   target.setBodyLabelName("m10_lo_bodies");
 

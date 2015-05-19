@@ -665,8 +665,8 @@ void ZStackView::redrawObject()
 void ZStackView::redraw()
 {
 //  tic();
-//  QElapsedTimer timer;
-//  timer.start();
+  QElapsedTimer timer;
+  timer.start();
   m_imageWidget->setCanvasRegion(
         buddyDocument()->getStackOffset().getX(),
         buddyDocument()->getStackOffset().getY(),
@@ -684,7 +684,7 @@ void ZStackView::redraw()
 
   updateImageScreen();
 //  std::cout << "paint time per frame: " << toc() << std::endl;
-//  std::cout << "paint time per frame: " << timer.restart() << std::endl;
+  std::cout << "paint time per frame: " << timer.restart() << std::endl;
 }
 
 /*
@@ -1244,7 +1244,7 @@ void ZStackView::paintStackBuffer()
         m_image->setBackground();
         if (buddyDocument()->hasVisibleSparseStack()) {
           ZStack *slice =
-              buddyDocument()->getSparseStack()->getMip();
+              buddyDocument()->getConstSparseStack()->getMip();
           if (slice != NULL) {
             slice->translate(-buddyDocument()->getStackOffset());
             slice->getOffset().setZ(0);

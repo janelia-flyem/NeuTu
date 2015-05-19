@@ -143,6 +143,7 @@ ZStack* ZStackBlockGrid::toStack() const
   return out;
 }
 
+/*
 void ZStackBlockGrid::downsampleBlock(int xintv, int yintv, int zintv)
 {
   m_size.set(m_size.getX() / (xintv + 1), m_size.getY() / (yintv + 1),
@@ -157,19 +158,20 @@ void ZStackBlockGrid::downsampleBlock(int xintv, int yintv, int zintv)
     }
   }
 }
+*/
 
 ZStackBlockGrid* ZStackBlockGrid::makeDownsample(int xintv, int yintv, int zintv)
 {
   ZStackBlockGrid *grid = new ZStackBlockGrid;
   ZIntPoint newSize =
       getBlockSize() / ZIntPoint(xintv + 1, yintv + 1, zintv + 1);
-  if (newSize.getX() % (xintv + 1) > 0) {
+  if (getBlockSize().getX() % (xintv + 1) > 0) {
     newSize.setX(newSize.getX() + 1);
   }
-  if (newSize.getY() % (yintv + 1) > 0) {
+  if (getBlockSize().getY() % (yintv + 1) > 0) {
     newSize.setY(newSize.getY() + 1);
   }
-  if (newSize.getZ() % (zintv + 1) > 0) {
+  if (getBlockSize().getZ() % (zintv + 1) > 0) {
     newSize.setZ(newSize.getZ() + 1);
   }
 
@@ -186,7 +188,7 @@ ZStackBlockGrid* ZStackBlockGrid::makeDownsample(int xintv, int yintv, int zintv
       ZStack *stack = m_stackArray[i];
       if (stack != NULL) {
         ZStack *dsStack = stack->clone();
-        dsStack->downsampleMax(xintv, yintv, zintv);
+        dsStack->downsampleMin(xintv, yintv, zintv);
         grid->m_stackArray[i] = dsStack;
       }
     }

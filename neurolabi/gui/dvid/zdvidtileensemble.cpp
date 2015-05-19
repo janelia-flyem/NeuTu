@@ -75,7 +75,7 @@ void ZDvidTileEnsemble::display(
   std::vector<ZDvidTileInfo::TIndex> tileIndices =
       m_tilingInfo.getCoverIndex(resLevel, fov);
 
-  //tic();
+  tic();
   for (std::vector<ZDvidTileInfo::TIndex>::const_iterator iter = tileIndices.begin();
        iter != tileIndices.end(); ++iter) {
     const ZDvidTileInfo::TIndex &index = *iter;
@@ -84,7 +84,7 @@ void ZDvidTileEnsemble::display(
       tile->display(painter, slice, option);
     }
   }
- // std::cout << "Draw image time: " << toc() << std::endl;
+  std::cout << "Draw image time: " << toc() << std::endl;
 }
 
 void ZDvidTileEnsemble::setDvidTarget(const ZDvidTarget &dvidTarget)

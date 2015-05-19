@@ -50,10 +50,13 @@ public:
   bool hit(double x, double y, double z);
   bool hit(double x, double y);
 
+
+
+
 private:
   void initBlockGrid();
-  void fillValue();
-  void fillValue(const ZIntCuboid &box);
+  bool fillValue();
+  bool fillValue(const ZIntCuboid &box);
   /*
   void assignStackValue(ZStack *stack, const ZObject3dScan &obj,
                                const ZStackBlockGrid &stackGrid);

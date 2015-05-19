@@ -82,6 +82,7 @@ fi
 
 $CMAKE_CMD .. -DBUILDEM_DIR=$downloadDir/buildem
 make
+make
 
 updateFile=$install_dir/bin/ntupd
 if [ ! -f $updateFile ]
