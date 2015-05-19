@@ -67,6 +67,7 @@ class ZFlyEmHackathonConfigDlg;
 class ZProgressManager;
 class ZMessageManager;
 class ZTestDialog;
+class ZTestDialog2;
 
 namespace Ui {
   class MainWindow;
@@ -671,6 +672,7 @@ private:
 
   ZMessageManager *m_messageManager;
   ZTestDialog *m_testDlg;
+  ZTestDialog2 *m_testDlg2;
   ZWindowFactory m_3dWindowFactory;
   //ZStackDocReader *m_docReader;
 };

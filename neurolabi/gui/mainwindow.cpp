@@ -161,6 +161,7 @@
 #include "zmessage.h"
 #include "zmessagemanager.h"
 #include "ztestdialog.h"
+#include "ztestdialog2.h"
 #include "dvid/zdvidtile.h"
 #include "flyem/zflyemstackdoc.h"
 #include "flyem/zproofreadwindow.h"
@@ -424,6 +425,7 @@ void MainWindow::initDialog()
   m_synapseDlg = new SynapseImportDialog(this);
   m_hackathonConfigDlg = new ZFlyEmHackathonConfigDlg(this);
   m_testDlg = new ZTestDialog(this);
+  m_testDlg2 = new ZTestDialog2(this);
 #else
   m_bodySplitProjectDialog = NULL;
   m_newBsProjectDialog = NULL;
@@ -3318,6 +3320,8 @@ void MainWindow::test()
 
 void MainWindow::test2() {
     std::cout << "in test2" << std::endl;
+    // m_testDlg->show();
+    m_testDlg2->show();
 }
 
 void MainWindow::evokeStackFrame(QMdiSubWindow *frame)

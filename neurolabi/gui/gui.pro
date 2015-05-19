@@ -524,7 +524,8 @@ HEADERS += mainwindow.h \
     flyem/flyemsplitcontrolform.h \
     flyem/zflyemmessagewidget.h \
     zwidgetmessage.h \
-    zprogresssignal.h
+    zprogresssignal.h \
+    ztestdialog2.h
 
 FORMS += settingdialog.ui \
     frameinfodialog.ui \
@@ -589,7 +590,8 @@ FORMS += settingdialog.ui \
     ztestdialog.ui \
     zflyemcontrolform.ui \
     flyem/flyemproofcontrolform.ui \
-    flyem/flyemsplitcontrolform.ui
+    flyem/flyemsplitcontrolform.ui \
+    ztestdialog2.ui
 SOURCES += main.cpp \
     mainwindow.cpp \
     zstackview.cpp \
@@ -913,7 +915,8 @@ SOURCES += main.cpp \
     flyem/flyemsplitcontrolform.cpp \
     flyem/zflyemmessagewidget.cpp \
     zwidgetmessage.cpp \
-    zprogresssignal.cpp
+    zprogresssignal.cpp \
+    ztestdialog2.cpp
 
 OTHER_FILES += \
     extlib.pri \
