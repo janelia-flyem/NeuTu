@@ -245,7 +245,7 @@ void Z3DVolumeSource::readSparseStack()
     return;
   }
 
-  const ZSparseStack *spStack = m_doc->getSparseStack();
+  ZSparseStack *spStack = m_doc->getSparseStack();
   if (spStack->getBoundBox().isEmpty()) {
     return;
   }

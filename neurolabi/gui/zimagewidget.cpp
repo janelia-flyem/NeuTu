@@ -560,8 +560,8 @@ void ZImageWidget::paintZoomHint()
 void ZImageWidget::paintEvent(QPaintEvent * /*event*/)
 {
   if (!canvasSize().isEmpty() && !isPaintBlocked()) {
-//    QElapsedTimer timer;
-//    timer.start();
+    QElapsedTimer timer;
+    timer.start();
 
     ZPainter painter;
 
@@ -572,12 +572,12 @@ void ZImageWidget::paintEvent(QPaintEvent * /*event*/)
     painter.setRenderHint(QPainter::Antialiasing, true);
 
     //Compute real viewport and projregion
-#ifdef _DEBUG_
+//#ifdef _DEBUG_
     //setView(m_zoomRatio, m_viewPort.topLeft());
     if (m_projRegion.isEmpty() || m_viewPort.isEmpty()) {
       setView(1, QPoint(0, 0));
     }
-#endif
+//#endif
 
     /* draw gray regions */
     painter.fillRect(QRect(0, 0, screenSize().width(), screenSize().height()),
@@ -629,7 +629,7 @@ void ZImageWidget::paintEvent(QPaintEvent * /*event*/)
     paintObject();
     paintZoomHint();
 
-//    std::cout << "Screen update time per frame: " << timer.elapsed() << std::endl;
+    std::cout << "Screen update time per frame: " << timer.elapsed() << std::endl;
   }
 }
 

@@ -651,6 +651,7 @@ public: /* puncta related methods */
   }
 
   virtual const ZSparseStack* getSparseStack() const;
+  virtual const ZSparseStack* getConstSparseStack() const;
   virtual ZSparseStack* getSparseStack();
 
   QList<const ZDocPlayer*> getPlayerList(ZStackObjectRole::TRole role) const;

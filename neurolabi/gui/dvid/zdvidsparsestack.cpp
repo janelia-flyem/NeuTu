@@ -141,8 +141,9 @@ const ZIntPoint& ZDvidSparseStack::getDownsampleInterval() const
   return m_sparseStack.getDownsampleInterval();
 }
 
-void ZDvidSparseStack::fillValue(const ZIntCuboid &box)
+bool ZDvidSparseStack::fillValue(const ZIntCuboid &box)
 {
+  bool changed = false;
   if (!m_sparseStack.getObjectMask()->isEmpty()) {
     qDebug() << "Downloading grayscale ...";
 
@@ -155,6 +156,10 @@ void ZDvidSparseStack::fillValue(const ZIntCuboid &box)
     ZStackBlockGrid *grid = m_sparseStack.getStackGrid();
 
     size_t stripeNumber = blockObj.getStripeNumber();
+    ZIntCuboid blockBox;
+    blockBox.setFirstCorner(dvidInfo.getBlockIndex(box.getFirstCorner()));
+    blockBox.setLastCorner(dvidInfo.getBlockIndex(box.getLastCorner()));
+
     for (size_t s = 0; s < stripeNumber; ++s) {
       const ZObject3dStripe &stripe = blockObj.getStripe(s);
       int segmentNumber = stripe.getSegmentNumber();
@@ -165,7 +170,7 @@ void ZDvidSparseStack::fillValue(const ZIntCuboid &box)
         int x1 = stripe.getSegmentEnd(i);
 
         for (int x = x0; x <= x1; ++x) {
-          if (box.contains(x, y, z)) {
+          if (blockBox.contains(x, y, z)) {
             const ZIntPoint blockIndex =
                 ZIntPoint(x, y, z) - dvidInfo.getStartBlockIndex();
 
@@ -173,6 +178,7 @@ void ZDvidSparseStack::fillValue(const ZIntCuboid &box)
               ZIntCuboid box = grid->getBlockBox(blockIndex);
               ZStack *stack = m_dvidReader.readGrayScale(box);
               grid->consumeStack(blockIndex, stack);
+              changed = true;
             }
           }
         }
@@ -181,10 +187,13 @@ void ZDvidSparseStack::fillValue(const ZIntCuboid &box)
 
     qDebug() << "Done.";
   }
+
+  return changed;
 }
 
-void ZDvidSparseStack::fillValue()
+bool ZDvidSparseStack::fillValue()
 {
+  bool changed = false;
   if (!m_sparseStack.getObjectMask()->isEmpty()) {
     ZDvidInfo dvidInfo;
     dvidInfo.setFromJsonString(
@@ -212,23 +221,30 @@ void ZDvidSparseStack::fillValue()
             ZIntCuboid box = grid->getBlockBox(blockIndex);
             ZStack *stack = m_dvidReader.readGrayScale(box);
             grid->consumeStack(blockIndex, stack);
+            changed = true;
           }
         }
       }
     }
   }
+
+  return changed;
 }
 
 ZStack* ZDvidSparseStack::getStack()
 {
-  fillValue();
+  if (fillValue()) {
+    m_sparseStack.deprecate(ZSparseStack::STACK);
+  }
 
   return m_sparseStack.getStack();
 }
 
 ZStack* ZDvidSparseStack::getStack(const ZIntCuboid &updateBox)
 {
-  fillValue(updateBox);
+  if (fillValue(updateBox)) {
+    m_sparseStack.deprecate(ZSparseStack::STACK);
+  }
 
   return m_sparseStack.getStack();
 }

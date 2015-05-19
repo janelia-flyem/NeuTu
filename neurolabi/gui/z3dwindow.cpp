@@ -3336,42 +3336,47 @@ void Z3DWindow::addPolyplaneFrom3dPaint(ZStroke2d *stroke)
 
     ZObject3d *obj = ZVoxelGraphics::createPolyPlaneObject(polyline1, polyline2);
 
-    ZObject3d *processedObj = NULL;
+    if (obj != NULL) {
+      ZObject3d *processedObj = NULL;
 
-    const ZStack *stack = NULL;
-    int xIntv = 0;
-    int yIntv = 0;
-    int zIntv = 0;
+      const ZStack *stack = NULL;
+      int xIntv = 0;
+      int yIntv = 0;
+      int zIntv = 0;
 
-    if (getDocument()->hasSparseStack()) {
-      stack = getDocument()->getSparseStack()->getStack();
-      ZIntPoint dsIntv = getDocument()->getSparseStack()->getDownsampleInterval();
-      xIntv = dsIntv.getX();
-      yIntv = dsIntv.getY();
-      zIntv = dsIntv.getZ();
-    } else {
-      stack = getDocument()->getStack();
-    }
+      if (getDocument()->hasSparseStack()) {
+        stack = getDocument()->getSparseStack()->getStack();
+        ZIntPoint dsIntv = getDocument()->getSparseStack()->getDownsampleInterval();
+        xIntv = dsIntv.getX();
+        yIntv = dsIntv.getY();
+        zIntv = dsIntv.getZ();
+      } else {
+        stack = getDocument()->getStack();
+      }
 
-    processedObj = new ZObject3d;
-    for (size_t i = 0; i < obj->size(); ++i) {
-      int x = obj->getX(i) / (xIntv + 1);
-      int y = obj->getY(i) / (yIntv + 1);
-      int z = obj->getZ(i) / (zIntv + 1);
-      int v = 0;
-      for (int dz = -1; dz <= 1; ++dz) {
-        for (int dy = -1; dy <= 1; ++dy) {
-          for (int dx = -1; dx <= 1; ++dx) {
-            v += stack->getIntValue(x + dx, y + dy, z + dz);
+      processedObj = new ZObject3d;
+      for (size_t i = 0; i < obj->size(); ++i) {
+        int x = obj->getX(i) / (xIntv + 1) - stack->getOffset().getX();
+        int y = obj->getY(i) / (yIntv + 1) - stack->getOffset().getY();
+        int z = obj->getZ(i) / (zIntv + 1) - stack->getOffset().getZ();
+        int v = 0;
+        for (int dz = -1; dz <= 1; ++dz) {
+          for (int dy = -1; dy <= 1; ++dy) {
+            for (int dx = -1; dx <= 1; ++dx) {
+              v = stack->getIntValueLocal(x + dx, y + dy, z + dz);
+              if (v > 0) {
+                break;
+              }
+            }
           }
         }
+        if (v > 0) {
+          processedObj->append(obj->getX(i), obj->getY(i), obj->getZ(i));
+        }
       }
-      if (v > 0) {
-        processedObj->append(obj->getX(i), obj->getY(i), obj->getZ(i));
-      }
+      delete obj;
+      obj = processedObj;
     }
-    delete obj;
-    obj = processedObj;
 
     if (obj != NULL) {
 #ifdef _DEBUG_2

@@ -232,8 +232,8 @@ void ZFlyEmBodySplitProject::quickView()
     if (getDocument() != NULL) {
       const ZObject3dScan *objMask = NULL;
       const ZStackDoc *doc = getDocument();
-      if (doc->getSparseStack() != NULL) {
-        objMask = doc->getSparseStack()->getObjectMask();
+      if (doc->hasSparseStack()) {
+        objMask = doc->getConstSparseStack()->getObjectMask();
       } else {
         if (getDocument<ZFlyEmProofDoc>() != NULL) {
           objMask = getDocument<ZFlyEmProofDoc>()->getDvidSparseStack()->getObjectMask();
@@ -429,7 +429,7 @@ void ZFlyEmBodySplitProject::showResult3d()
         //m_resultWindow = newFrame->open3DWindow(NULL);
         if (getDocument()->hasVisibleSparseStack()) {
           ZIntPoint dsIntv =
-              getDocument()->getSparseStack()->getDownsampleInterval();
+              getDocument()->getConstSparseStack()->getDownsampleInterval();
           if (dsIntv.getX() != dsIntv.getZ()) {
             m_resultWindow->getVolumeSource()->setZScale(
                   ((float) (dsIntv.getZ() + 1)) / (dsIntv.getX() + 1));
@@ -577,9 +577,9 @@ void ZFlyEmBodySplitProject::exportSplits()
 void ZFlyEmBodySplitProject::commitResult()
 {
   ZFlyEmBodySplitProject::commitResultFunc(
-        getDocument()->getSparseStack()->getObjectMask(),
+        getDocument()->getConstSparseStack()->getObjectMask(),
         getDocument()->getLabelField(),
-        getDocument()->getSparseStack()->getDownsampleInterval());
+        getDocument()->getConstSparseStack()->getDownsampleInterval());
 
   deleteSavedSeed();
   getDocument()->undoStack()->clear();

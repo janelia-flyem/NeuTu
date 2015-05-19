@@ -139,6 +139,7 @@ ZSparseStack* ZFlyEmProofDoc::getSparseStack()
   return NULL;
 }
 
+
 bool ZFlyEmProofDoc::hasVisibleSparseStack() const
 {
   /*

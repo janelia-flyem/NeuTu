@@ -649,6 +649,11 @@ const ZSparseStack* ZStackDoc::getSparseStack() const
   return m_sparseStack;
 }
 
+const ZSparseStack* ZStackDoc::getConstSparseStack() const
+{
+  return getSparseStack();
+}
+
 ZSparseStack* ZStackDoc::getSparseStack()
 {
   return m_sparseStack;

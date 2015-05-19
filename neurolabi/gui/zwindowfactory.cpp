@@ -68,7 +68,8 @@ Z3DWindow* ZWindowFactory::make3DWindow(ZSharedPointer<ZStackDoc> doc,
             "Direct Volume Rendering");
     }
     if (doc->getTag() != NeuTube::Document::FLYEM_SPLIT &&
-        doc->getTag() != NeuTube::Document::SEGMENTATION_TARGET) {
+        doc->getTag() != NeuTube::Document::SEGMENTATION_TARGET &&
+        doc->getTag() != NeuTube::Document::FLYEM_PROOFREAD) {
       window->getCanvas()->disableKeyEvent();
     }
     if (!m_showVolumeBoundBox) {
