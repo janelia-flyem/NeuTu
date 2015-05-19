@@ -1,4 +1,9 @@
 #include "neutube.h"
+
+#include <QtGlobal>
+#include <QByteArray>
+#include <iostream>
+
 #include "neutubeconfig.h"
 #include "zlogmessagereporter.h"
 
@@ -39,5 +44,13 @@ std::string NeuTube::getInfoFile()
   }
 
   return "";
+}
+
+std::string NeuTube::GetUserName()
+{
+#ifdef _DEBUG_2
+  std::cout << qgetenv("USER").data() << std::endl;
+#endif
+  return qgetenv("USER").data();
 }
 

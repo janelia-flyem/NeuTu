@@ -57,6 +57,9 @@ ZLogMessageReporter* getLogMessageReporter();
 std::string getErrorFile();
 std::string getWarnFile();
 std::string getInfoFile();
+
+
+std::string GetUserName();
 }
 
 

@@ -16643,7 +16643,7 @@ void ZTest::test(MainWindow *host)
   std::cout << std::endl;
 #endif
 
-#if 1
+#if 0
   libdvid::DVIDNodeService service("http://emdata1.int.janelia.org:8500", "ccf");
 //  std::string endPoint = ZDvidUrl::GetEndPoint(url.toStdString());
 
@@ -16774,5 +16774,9 @@ void ZTest::test(MainWindow *host)
 #if 0
   ZIntPoint dsIntv = misc::getDsIntvFor3DVolume(29);
   std::cout << dsIntv.toString() << std::endl;
+#endif
+
+#if 1
+  std::cout << qgetenv("USERNAME").data() << std::endl;
 #endif
 }

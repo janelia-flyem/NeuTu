@@ -15,6 +15,7 @@
       "comment": "MB seg debug (branched from ccf)",
       "body_label": "bodies",
       "label_block": "labels",
+      "user_name": "zhaot",
       "debug": true
     },
     {
@@ -88,7 +89,18 @@
       "name": "MB_seg",
       "comment": "MB seg (branched from ccf)",
       "body_label": "bodies",
-      "label_block": "labels"
+      "label_block": "labels",
+      "user_name": "takemuras"
+    },
+    {
+      "address": "emdata1.int.janelia.org",
+      "port": 8500,
+      "uuid": "f17b",
+      "name": "MB_for_Satoko",
+      "comment": "MB seg (branched from ccf)",
+      "body_label": "bodies",
+      "label_block": "labels",
+      "user_name": "takemurasa"
     }
   ]
 }

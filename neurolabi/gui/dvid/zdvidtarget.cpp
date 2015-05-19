@@ -16,6 +16,7 @@ const char* ZDvidTarget::m_bodyLabelNameKey = "body_label";
 const char* ZDvidTarget::m_labelBlockNameKey = "label_block";
 const char* ZDvidTarget::m_grayScaleNameKey = "gray_scale";
 const char* ZDvidTarget::m_multiscale2dNameKey = "multires_tile";
+const char* ZDvidTarget::m_userNameKey = "user_name";
 
 ZDvidTarget::ZDvidTarget() : m_port(-1), m_bgValue(255)
 {
@@ -226,6 +227,9 @@ void ZDvidTarget::loadJsonObject(const ZJsonObject &obj)
     if (obj.hasKey(m_multiscale2dNameKey)) {
       setMultiscale2dName(ZJsonParser::stringValue(obj[m_multiscale2dNameKey]));
     }
+    if (obj.hasKey(m_userNameKey)) {
+      setUserName(ZJsonParser::stringValue(obj[m_userNameKey]));
+    }
   }
 }
 
@@ -330,6 +334,16 @@ void ZDvidTarget::setBodyLabelName(const std::string &name)
 void ZDvidTarget::setMultiscale2dName(const std::string &name)
 {
   m_multiscale2dName = name;
+}
+
+void ZDvidTarget::setUserName(const std::string &name)
+{
+  m_userName = name;
+}
+
+std::string ZDvidTarget::getUserName() const
+{
+  return m_userName;
 }
 
 std::string ZDvidTarget::getName(ZDvidData::ERole role) const
