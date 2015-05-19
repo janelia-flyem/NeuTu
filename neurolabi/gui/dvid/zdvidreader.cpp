@@ -955,7 +955,7 @@ ZArray* ZDvidReader::readLabels64(
     dims[1] = height;
     dims[2] = depth;
 
-    std::vector<unsigned int> offset(3);
+    std::vector<int> offset(3);
     offset[0] = x0;
     offset[1] = y0;
     offset[2] = z0;
@@ -965,8 +965,9 @@ ZArray* ZDvidReader::readLabels64(
     channels[1] = 1;
     channels[2] = 2;
 
+
     libdvid::Labels3D labels = service.get_labels3D(
-          dataName, dims, offset, channels);
+          dataName, dims, offset, channels, false, true);
 
     mylib::Dimn_Type arrayDims[3];
     arrayDims[0] = width;
