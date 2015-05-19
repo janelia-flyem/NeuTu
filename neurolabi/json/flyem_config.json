@@ -101,6 +101,16 @@
       "body_label": "bodies",
       "label_block": "labels",
       "user_name": "takemurasa"
+    },
+    {
+      "address": "emdata1.int.janelia.org",
+      "port": 8500,
+      "uuid": "afc7",
+      "name": "MB_for_Pat",
+      "comment": "MB seg (branched from ccf)",
+      "body_label": "bodies",
+      "label_block": "labels",
+      "user_name": "rivlinp"
     }
   ]
 }
