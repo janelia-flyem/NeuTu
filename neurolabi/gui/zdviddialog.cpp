@@ -27,8 +27,8 @@ ZDvidDialog::ZDvidDialog(QWidget *parent) :
            iter != dvidRepo.end(); ++iter) {
     const ZDvidTarget &target = *iter;
     bool access = true;
-    if (!target.getUserName().empty()) {
-      if (target.getUserName() != userName) {
+    if (!target.getUserNameSet().empty()) {
+      if (target.getUserNameSet().count(userName) == 0) {
         access = false;
       }
     }

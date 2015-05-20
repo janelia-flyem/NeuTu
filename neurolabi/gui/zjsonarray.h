@@ -12,6 +12,7 @@ public:
   explicit ZJsonArray(json_t *data, bool asNew);
   explicit ZJsonArray(const json_t *data, bool asNew);
   explicit ZJsonArray(json_t *data, ESetDataOption option);
+  explicit ZJsonArray(const ZJsonValue &v);
   virtual ~ZJsonArray();
 
 public:

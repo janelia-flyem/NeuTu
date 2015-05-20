@@ -991,7 +991,7 @@ void FlyEmBodySplitProjectDialog::startSplit(const QString &message)
     if (bodyId > 0) {
       if (obj.hasKey("dvid_target")) {
         ZDvidTarget target;
-        target.loadJsonObject(ZJsonObject(obj.at("dvid_target")));
+        target.loadJsonObject(ZJsonObject(obj.value("dvid_target")));
         show();
         raise();
         startSplit(target, (uint64_t) bodyId);
@@ -1083,7 +1083,7 @@ void FlyEmBodySplitProjectDialog::MessageProcessor::processMessage(
         if (bodyId > 0) {
           if (obj.hasKey("dvid_target")) {
             ZDvidTarget target;
-            target.loadJsonObject(ZJsonObject(obj.at("dvid_target")));
+            target.loadJsonObject(ZJsonObject(obj.value("dvid_target")));
             dlg->show();
             dlg->raise();
             dlg->startSplit(target, (uint64_t) bodyId);

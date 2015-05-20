@@ -181,20 +181,27 @@ void ZStackMvc::keyPressEvent(QKeyEvent *event)
   }
 }
 
+void ZStackMvc::processViewChange()
+{
+  processViewChange(getView()->getViewParameter(NeuTube::COORD_STACK));
+}
+
 void ZStackMvc::processViewChange(const ZStackViewParam &viewParam)
 {
-  QList<const ZDocPlayer*> playerList =
-      m_doc->getPlayerList(ZStackObjectRole::ROLE_ACTIVE_VIEW);
-  if (!playerList.isEmpty()) {
-    bool updated = false;
-    foreach (const ZDocPlayer *player, playerList) {
-      if (player->getData()->isVisible()) {
-        updated = true;
-        player->updateData(viewParam);
+  if (getPresenter()->isObjectVisible()) {
+    QList<const ZDocPlayer*> playerList =
+        m_doc->getPlayerList(ZStackObjectRole::ROLE_ACTIVE_VIEW);
+    if (!playerList.isEmpty()) {
+      bool updated = false;
+      foreach (const ZDocPlayer *player, playerList) {
+        if (player->getData()->isVisible()) {
+          updated = true;
+          player->updateData(viewParam);
+        }
       }
-    }
-    if (updated) {
-      m_view->paintObject();
+      if (updated) {
+        m_view->paintObject();
+      }
     }
   }
 }

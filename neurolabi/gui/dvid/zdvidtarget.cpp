@@ -60,6 +60,11 @@ void ZDvidTarget::clear()
   m_name = "";
   m_comment = "";
   m_localFolder = "";
+  m_bodyLabelName = "";
+  m_labelBlockName = "";
+  m_multiscale2dName = "";
+  m_grayScaleName = "";
+  m_userList.clear();
 }
 
 void ZDvidTarget::setServer(const std::string &address)
@@ -228,7 +233,15 @@ void ZDvidTarget::loadJsonObject(const ZJsonObject &obj)
       setMultiscale2dName(ZJsonParser::stringValue(obj[m_multiscale2dNameKey]));
     }
     if (obj.hasKey(m_userNameKey)) {
-      setUserName(ZJsonParser::stringValue(obj[m_userNameKey]));
+      ZJsonValue value = obj.value(m_userNameKey);
+      if (value.isString()) {
+        m_userList.insert(ZJsonParser::stringValue(value.getData()));
+      } else if (value.isArray()) {
+        ZJsonArray nameArray(value);
+        for (size_t i = 0; i < nameArray.size(); ++i) {
+          m_userList.insert(ZJsonParser::stringValue(nameArray.at(i)));
+        }
+      }
     }
   }
 }
@@ -336,14 +349,16 @@ void ZDvidTarget::setMultiscale2dName(const std::string &name)
   m_multiscale2dName = name;
 }
 
+/*
 void ZDvidTarget::setUserName(const std::string &name)
 {
   m_userName = name;
 }
+*/
 
-std::string ZDvidTarget::getUserName() const
+const std::set<std::string>& ZDvidTarget::getUserNameSet() const
 {
-  return m_userName;
+  return m_userList;
 }
 
 std::string ZDvidTarget::getName(ZDvidData::ERole role) const

@@ -8,6 +8,8 @@
 #include "zjsonobject.h"
 #include "zstackball.h"
 #include "swctreenode.h"
+#include "dvid/zdvidlabelslice.h"
+#include "dvid/zdvidsparsevolslice.h"
 
 ZDocPlayer::~ZDocPlayer()
 {
@@ -482,6 +484,11 @@ Z3DGraph ZStackBallPlayer::get3DGraph() const
   return graph;
 }
 
+ZDvidLabelSlicePlayer::ZDvidLabelSlicePlayer(ZStackObject *data) :
+  ZDocPlayer(data)
+{
+}
+
 ZDvidLabelSlice* ZDvidLabelSlicePlayer::getCompleteData() const
 {
   return dynamic_cast<ZDvidLabelSlice*>(m_data);
@@ -495,7 +502,25 @@ void ZDvidLabelSlicePlayer::updateData(const ZStackViewParam &viewParam) const
   }
 }
 
-ZDvidLabelSlicePlayer::ZDvidLabelSlicePlayer(ZStackObject *data) :
+/////////////////////////////
+
+ZDvidSparsevolSlicePlayer::ZDvidSparsevolSlicePlayer(ZStackObject *data) :
   ZDocPlayer(data)
 {
 }
+
+ZDvidSparsevolSlice* ZDvidSparsevolSlicePlayer::getCompleteData() const
+{
+  return dynamic_cast<ZDvidSparsevolSlice*>(m_data);
+}
+
+void ZDvidSparsevolSlicePlayer::updateData(const ZStackViewParam &viewParam) const
+{
+  ZDvidSparsevolSlice *obj = getCompleteData();
+  if (obj != NULL) {
+    obj->update(viewParam.getZ());
+  }
+}
+
+
+

@@ -1969,11 +1969,15 @@ void ZObject3dScan::display(
   {
     if (isSelected()) {
       QColor color = pen.color();
-      color.setAlpha(10);
+      color.setAlpha(50);
       pen.setColor(color);
     }
     painter.setPen(pen);
-    displaySolid(painter, z, isProj, 1);
+    if (isSelected()) {
+      displaySolid(painter, z, isProj, 5);
+    } else {
+      displaySolid(painter, z, isProj, 1);
+    }
   }
     break;
   case ZStackObject::BOUNDARY:

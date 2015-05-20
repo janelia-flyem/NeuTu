@@ -16,6 +16,7 @@ FlyEmProofControlForm::FlyEmProofControlForm(QWidget *parent) :
 
   connect(ui->segmentCheckBox, SIGNAL(clicked(bool)),
           this, SIGNAL(segmentVisibleChanged(bool)));
+  ui->segmentCheckBox->hide();
   connect(ui->mergeSegmentPushButton, SIGNAL(clicked()),
           this, SIGNAL(mergingSelected()));
   connect(ui->dvidPushButton, SIGNAL(clicked()),

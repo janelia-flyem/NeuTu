@@ -1321,7 +1321,16 @@ bool ZStackPresenter::processKeyPressEvent(QKeyEvent *event)
     break;
   }
 
+  if (!processed) {
+    processed = customKeyProcess(event);
+  }
+
   return processed;
+}
+
+bool ZStackPresenter::customKeyProcess(QKeyEvent *event)
+{
+  return false;
 }
 
 void ZStackPresenter::processMouseDoubleClickEvent(QMouseEvent *event)
@@ -1428,6 +1437,9 @@ void ZStackPresenter::setObjectVisible(bool v)
   if (m_showObject != v) {
     m_showObject = v;
     buddyView()->paintObject();
+    if (m_showObject) {
+      emit objectVisibleTurnedOn();
+    }
   }
 }
 

@@ -106,6 +106,7 @@ public slots:
   void showBody3d();
   void detachBodyWindow();
   void notifySplit();
+  void highlightSelectedObject(bool hl);
 
 private:
   ZFlyEmBodyMerger* getBodyMerger();

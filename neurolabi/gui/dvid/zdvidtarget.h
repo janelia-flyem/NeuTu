@@ -2,6 +2,8 @@
 #define ZDVIDTARGET_H
 
 #include <string>
+#include <set>
+
 #include "zjsonobject.h"
 #include "zdviddata.h"
 
@@ -150,8 +152,9 @@ public:
   std::string getGrayScaleName() const;
   void setGrayScaleName(const std::string &name);
 
-  std::string getUserName() const;
-  void setUserName(const std::string &name);
+  const std::set<std::string>& getUserNameSet() const;
+  //void setUserName(const std::string &name);
+
 
 private:
   std::string m_address;
@@ -164,7 +167,8 @@ private:
   std::string m_labelBlockName;
   std::string m_multiscale2dName;
   std::string m_grayScaleName;
-  std::string m_userName;
+  std::set<std::string> m_userList;
+//  std::string m_userName;
 //  std::string m_tileName;
 
   int m_bgValue; //grayscale background

@@ -103,6 +103,8 @@
 #include "zstackmvc.h"
 #include "dvid/zdvidsparsestack.h"
 #include "zprogresssignal.h"
+#include "dvid/zdvidlabelslice.h"
+#include "dvid/zdvidsparsevolslice.h"
 
 using namespace std;
 
@@ -2248,6 +2250,7 @@ DEFINE_GET_OBJECT_LIST(getSparseObjectList, ZSparseObject, TYPE_SPARSE_OBJECT)
 DEFINE_GET_OBJECT_LIST(getObject3dScanList, ZObject3dScan, TYPE_OBJECT3D_SCAN)
 DEFINE_GET_OBJECT_LIST(getDvidLabelSliceList, ZDvidLabelSlice, TYPE_DVID_LABEL_SLICE)
 DEFINE_GET_OBJECT_LIST(getDvidTileEnsembleList, ZDvidTileEnsemble, TYPE_DVID_TILE_ENSEMBLE)
+DEFINE_GET_OBJECT_LIST(getDvidSparsevolSliceList, ZDvidSparsevolSlice, TYPE_DVID_SPARSEVOL_SLICE)
 
 void ZStackDoc::addSparseObject(ZSparseObject *obj)
 {
@@ -4787,6 +4790,11 @@ void ZStackDoc::notifyObjectModified()
   emit objectModified();
 }
 
+void ZStackDoc::notifyActiveViewModified()
+{
+  emit activeViewModified();
+}
+
 void ZStackDoc::notifyObjectModified(ZStackObject::EType type)
 {
   switch (type) {
@@ -6325,6 +6333,10 @@ void ZStackDoc::notifyPlayerChanged(ZStackObjectRole::TRole role)
 
   if (roleObj.hasRole(ZStackObjectRole::ROLE_3DGRAPH_DECORATOR)) {
     notify3DGraphModified();
+  }
+
+  if (roleObj.hasRole(ZStackObjectRole::ROLE_ACTIVE_VIEW)) {
+    notifyActiveViewModified();
   }
 }
 

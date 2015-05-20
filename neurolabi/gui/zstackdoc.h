@@ -240,6 +240,7 @@ public: //attributes
   QList<ZObject3dScan*> getObject3dScanList() const;
   QList<ZDvidLabelSlice*> getDvidLabelSliceList() const;
   QList<ZDvidTileEnsemble*> getDvidTileEnsembleList() const;
+  QList<ZDvidSparsevolSlice*> getDvidSparsevolSliceList() const;
 
   bool hasSwcList();       //to test swctree
   //inline QList<ZLocsegChain*>* chainList() {return &m_chainList;}
@@ -770,6 +771,7 @@ public:
   void notifyStrokeModified();
   void notifyAllObjectModified();
   void notify3DGraphModified();
+  void notifyActiveViewModified();
   void notifyStatusMessageUpdated(const QString &message);
 
   void notifyProgressStart();
@@ -972,6 +974,7 @@ signals:
   void objectModified();
   void stackTargetModified();
   void swcNetworkModified();
+  void activeViewModified();
 
   void objectSelectionChanged(QList<ZStackObject*> selected,
                               QList<ZStackObject*> deselected);

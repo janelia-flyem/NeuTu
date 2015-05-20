@@ -123,6 +123,16 @@ std::string ZDvidUrl::getSparsevolUrl(int bodyId) const
   return getSparsevolUrl(bodyId, m_dvidTarget.getBodyLabelName());
 }
 
+std::string ZDvidUrl::getSparsevolUrl(int bodyId, int z) const
+{
+  ZString url = getSparsevolUrl(bodyId) + "?minz=";
+  url.appendNumber(z);
+  url += "&maxz=";
+  url.appendNumber(z);
+
+  return url;
+}
+
 std::string ZDvidUrl::getSparsevolUrl(
     int bodyId, const std::string &dataName) const
 {

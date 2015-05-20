@@ -102,6 +102,8 @@ public:
   void processMousePressEvent(QMouseEvent *event);
   void processMouseDoubleClickEvent(QMouseEvent *eventint);
 
+  virtual bool customKeyProcess(QKeyEvent *event);
+
   void createActions();
   void createTraceActions();
   void createPunctaActions();
@@ -299,6 +301,7 @@ signals:
   void mousePositionCaptured(double x, double y, double z);
   void bodySplitTriggered();
   void labelSliceSelectionChanged();
+  void objectVisibleTurnedOn();
 
 private:
   void init();

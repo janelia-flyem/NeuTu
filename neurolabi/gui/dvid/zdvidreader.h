@@ -45,6 +45,7 @@ public:
   ZSwcTree *readSwc(int bodyId);
   ZObject3dScan readBody(int bodyId);
   ZObject3dScan* readBody(int bodyId, ZObject3dScan *result);
+  ZObject3dScan* readBody(int bodyId, int z, ZObject3dScan *result);
 
   ZStack* readThumbnail(int bodyId);
 

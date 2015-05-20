@@ -13,6 +13,7 @@ class ZFlyEmProofDoc;
 class ZDvidTileEnsemble;
 class ZDvidTarget;
 class ZDvidDialog;
+class ZFlyEmProofPresenter;
 
 class ZFlyEmProofMvc : public ZStackMvc
 {
@@ -25,6 +26,7 @@ public:
   static ZFlyEmProofMvc* Make(const ZDvidTarget &target);
 
   ZFlyEmProofDoc* getCompleteDocument() const;
+  ZFlyEmProofPresenter* getCompletePresenter() const;
 
   template <typename T>
   void connectControlPanel(T *panel);
@@ -81,6 +83,7 @@ public slots:
 
 protected:
   void customInit();
+  void createPresenter();
 
 private:
   void launchSplitFunc(uint64_t bodyId);

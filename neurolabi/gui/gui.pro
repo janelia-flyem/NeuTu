@@ -528,7 +528,9 @@ HEADERS += mainwindow.h \
     zkeyeventstrokemapper.h \
     zkeyoperation.h \
     zkeyoperationmap.h \
-    zkeyoperationconfig.h
+    zkeyoperationconfig.h \
+    dvid/zdvidsparsevolslice.h \
+    flyem/zflyemproofpresenter.h
 
 FORMS += settingdialog.ui \
     frameinfodialog.ui \
@@ -921,7 +923,9 @@ SOURCES += main.cpp \
     zkeyeventstrokemapper.cpp \
     zkeyoperation.cpp \
     zkeyoperationmap.cpp \
-    zkeyoperationconfig.cpp
+    zkeyoperationconfig.cpp \
+    dvid/zdvidsparsevolslice.cpp \
+    flyem/zflyemproofpresenter.cpp
 
 OTHER_FILES += \
     extlib.pri \

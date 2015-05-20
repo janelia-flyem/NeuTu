@@ -26,6 +26,8 @@
 #include "dvid/zdvidurl.h"
 #include "zflyemproofdoc.h"
 #include "zstackmvc.h"
+#include "dvid/zdvidsparsevolslice.h"
+#include "dvid/zdvidlabelslice.h"
 
 ZFlyEmBodyMergeProject::ZFlyEmBodyMergeProject(QObject *parent) :
   QObject(parent), m_dataFrame(NULL), m_bodyWindow(NULL),
@@ -747,3 +749,29 @@ void ZFlyEmBodyMergeProject::closeBodyWindow()
     getBodyWindow()->close();
   }
 }
+
+void ZFlyEmBodyMergeProject::highlightSelectedObject(bool hl)
+{
+  ZFlyEmProofDoc *doc = getDocument<ZFlyEmProofDoc>();
+  if (doc != NULL /*&& !m_currentSelected.empty()*/) {
+    doc->getDvidLabelSlice()->setVisible(!hl);
+    doc->getObjectGroup().removeObject(
+          ZStackObject::TYPE_DVID_SPARSEVOL_SLICE, true);
+    if (hl) {
+      for (QSet<uint64_t>::const_iterator iter = m_currentSelected.begin();
+           iter != m_currentSelected.end(); ++iter) {
+        uint64_t bodyId = *iter;
+        ZDvidSparsevolSlice *obj = new ZDvidSparsevolSlice;
+        obj->setDvidTarget(getDvidTarget());
+        obj->setLabel(bodyId);
+        obj->setRole(ZStackObjectRole::ROLE_ACTIVE_VIEW);
+        obj->setColor(doc->getDvidLabelSlice()->getColor(bodyId));
+        doc->addObject(obj);
+      }
+    } else {
+      doc->notifyActiveViewModified();
+    }
+  }
+}
+
+

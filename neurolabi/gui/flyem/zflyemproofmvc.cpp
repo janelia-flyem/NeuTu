@@ -14,6 +14,8 @@
 #include "zprogresssignal.h"
 #include "zstackviewlocator.h"
 #include "zimagewidget.h"
+#include "dvid/zdvidlabelslice.h"
+#include "flyem/zflyemproofpresenter.h"
 
 ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
   ZStackMvc(parent), m_splitOn(false), m_dvidDlg(NULL)
@@ -48,6 +50,11 @@ ZFlyEmProofDoc* ZFlyEmProofMvc::getCompleteDocument() const
   return dynamic_cast<ZFlyEmProofDoc*>(getDocument().get());
 }
 
+ZFlyEmProofPresenter* ZFlyEmProofMvc::getCompletePresenter() const
+{
+  return dynamic_cast<ZFlyEmProofPresenter*>(getPresenter());
+}
+
 void ZFlyEmProofMvc::mergeSelected()
 {
   if (getCompleteDocument() != NULL) {
@@ -80,11 +87,6 @@ void ZFlyEmProofMvc::setSegmentationVisible(bool visible)
       if (visible) {
         slice->update(getView()->getViewParameter(NeuTube::COORD_STACK));
       }
-      /*
-      if (visible) {
-        slice->update();
-      }
-      */
     }
   }
   getView()->redrawObject();
@@ -139,10 +141,23 @@ ZDvidTarget ZFlyEmProofMvc::getDvidTarget() const
   return ZDvidTarget();
 }
 
+void ZFlyEmProofMvc::createPresenter()
+{
+  if (getDocument().get() != NULL) {
+    m_presenter = new ZFlyEmProofPresenter(this);
+  }
+}
+
+
 void ZFlyEmProofMvc::customInit()
 {
   connect(getPresenter(), SIGNAL(bodySplitTriggered()),
           this, SLOT(notifySplitTriggered()));
+  connect(getPresenter(), SIGNAL(objectVisibleTurnedOn()),
+          this, SLOT(processViewChange()));
+
+  connect(getDocument().get(), SIGNAL(activeViewModified()),
+          this, SLOT(processViewChange()));
 
 
   m_splitProject.setDocument(getDocument());
@@ -154,6 +169,8 @@ void ZFlyEmProofMvc::customInit()
   m_mergeProject.setDocument(getDocument());
   connect(getPresenter(), SIGNAL(labelSliceSelectionChanged()),
           this, SLOT(updateSelection()));
+  connect(getCompletePresenter(), SIGNAL(highlightingSelected(bool)),
+          &m_mergeProject, SLOT(highlightSelectedObject(bool)));
   connect(&m_mergeProject, SIGNAL(locating2DViewTriggered(ZStackViewParam)),
           this->getView(), SLOT(setView(ZStackViewParam)));
   connect(&m_mergeProject, SIGNAL(messageGenerated(QString, bool)),

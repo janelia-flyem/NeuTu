@@ -135,10 +135,31 @@ void ZDvidReader::waitForReading()
   }
 }
 
+ZObject3dScan *ZDvidReader::readBody(int bodyId, int z, ZObject3dScan *result)
+{
+  if (result == NULL) {
+    result = new ZObject3dScan;
+  } else {
+    result->clear();
+  }
+
+  ZDvidBufferReader reader;
+  ZDvidUrl dvidUrl(getDvidTarget());
+  reader.read(dvidUrl.getSparsevolUrl(bodyId, z).c_str());
+  const QByteArray &buffer = reader.getBuffer();
+  result->importDvidObjectBuffer(buffer.data(), buffer.size());
+
+  result->setLabel(bodyId);
+
+  return result;
+}
+
 ZObject3dScan *ZDvidReader::readBody(int bodyId, ZObject3dScan *result)
 {
   if (result == NULL) {
     result = new ZObject3dScan;
+  } else {
+    result->clear();
   }
 
   ZDvidBufferReader reader;
@@ -947,37 +968,41 @@ ZArray* ZDvidReader::readLabels64(
 
   const ZDvidTarget &target = getDvidTarget();
   if (!target.getUuid().empty()) {
-    libdvid::DVIDNodeService service(
-          target.getAddressWithPort(), target.getUuid());
+    try {
+      libdvid::DVIDNodeService service(
+            target.getAddressWithPort(), target.getUuid());
 
-    libdvid::Dims_t dims(3);
-    dims[0] = width;
-    dims[1] = height;
-    dims[2] = depth;
+      libdvid::Dims_t dims(3);
+      dims[0] = width;
+      dims[1] = height;
+      dims[2] = depth;
 
-    std::vector<int> offset(3);
-    offset[0] = x0;
-    offset[1] = y0;
-    offset[2] = z0;
+      std::vector<int> offset(3);
+      offset[0] = x0;
+      offset[1] = y0;
+      offset[2] = z0;
 
-    std::vector<unsigned int> channels(3);
-    channels[0] = 0;
-    channels[1] = 1;
-    channels[2] = 2;
+      std::vector<unsigned int> channels(3);
+      channels[0] = 0;
+      channels[1] = 1;
+      channels[2] = 2;
 
 
-    libdvid::Labels3D labels = service.get_labels3D(
-          dataName, dims, offset, channels, false, true);
+      libdvid::Labels3D labels = service.get_labels3D(
+            dataName, dims, offset, channels, false, true);
 
-    mylib::Dimn_Type arrayDims[3];
-    arrayDims[0] = width;
-    arrayDims[1] = height;
-    arrayDims[2] = depth;
-    array = new ZArray(mylib::UINT64_TYPE, 3, arrayDims);
-    array->copyDataFrom(labels.get_raw());
-    array->setStartCoordinate(0, x0);
-    array->setStartCoordinate(1, y0);
-    array->setStartCoordinate(2, z0);
+      mylib::Dimn_Type arrayDims[3];
+      arrayDims[0] = width;
+      arrayDims[1] = height;
+      arrayDims[2] = depth;
+      array = new ZArray(mylib::UINT64_TYPE, 3, arrayDims);
+      array->copyDataFrom(labels.get_raw());
+      array->setStartCoordinate(0, x0);
+      array->setStartCoordinate(1, y0);
+      array->setStartCoordinate(2, z0);
+    } catch (std::exception &e) {
+      std::cout << e.what() << std::endl;
+    }
   }
 #else
   ZDvidUrl dvidUrl(m_dvidTarget);

@@ -67,19 +67,20 @@ signals:
 
 public slots:
   void processViewChange(const ZStackViewParam &viewParam);
+  void processViewChange();
 
 protected:
   static void BaseConstruct(ZStackMvc *frame, ZSharedPointer<ZStackDoc> doc);
   virtual void customInit();
+  virtual void createPresenter();
 
 private:
   void createView();
-  void createPresenter();
   void dropDocument(ZSharedPointer<ZStackDoc> doc);
   void updateDocument();
   void construct(ZSharedPointer<ZStackDoc> doc);
 
-private:
+protected:
   ZSharedPointer<ZStackDoc> m_doc;
   ZStackPresenter *m_presenter;
   ZStackView *m_view;
