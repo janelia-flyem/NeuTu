@@ -10,12 +10,10 @@
 class ZFlyEmDvidReader : public ZDvidReader
 {
 public:
-  ZStack* readThumbnail(int bodyId);
   ZFlyEmBodyAnnotation readAnnotation(int bodyId);
+  ZStack* readThumbnail(int bodyId);
   QStringList readSynapseList();
   ZJsonObject readSynapseAnnotation(const QString &name);
-
-  ZObject3dScan readCoarseBody(int bodyId);
 };
 
 #endif // ZFLYEMDVIDREADER_H

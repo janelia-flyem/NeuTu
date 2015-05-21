@@ -9,6 +9,7 @@ const std::string ZDvidUrl::m_sparsevolCommand = "sparsevol";
 const std::string ZDvidUrl::m_coarseSparsevolCommand = "sparsevol-coarse";
 const std::string ZDvidUrl::m_infoCommand = "info";
 const std::string ZDvidUrl::m_splitCommand = "split";
+const std::string ZDvidUrl::m_labelCommand = "label";
 
 ZDvidUrl::ZDvidUrl()
 {
@@ -498,4 +499,16 @@ std::string ZDvidUrl::GetEndPoint(const std::string &url)
   std::string::size_type uuidPos = url.find('/', markerPos);
 
   return url.substr(uuidPos);
+}
+
+std::string ZDvidUrl::getLocalBodyIdUrl(int x, int y, int z) const
+{
+  ZString url = getLabels64Url() + "/" + m_labelCommand + "/";
+  url.appendNumber(x);
+  url += "_";
+  url.appendNumber(y);
+  url += "_";
+  url.appendNumber(z);
+
+  return url;
 }

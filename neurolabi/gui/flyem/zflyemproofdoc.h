@@ -54,9 +54,15 @@ public:
   void downloadBodyMask();
 
   QList<uint64_t> getMergedSource(uint64_t bodyId) const;
+  QSet<uint64_t> getMergedSource(const QSet<uint64_t> &bodySet) const;
 
+public:
+  void notifyBodyMerged();
+  void notifyBodyUnmerged();
 
 signals:
+  void bodyMerged();
+  void bodyUnmerged();
 
 public slots:
 

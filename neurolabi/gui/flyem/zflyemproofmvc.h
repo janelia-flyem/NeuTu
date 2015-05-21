@@ -72,16 +72,20 @@ public slots:
   void saveSeed();
   void saveMergeOperation();
   void commitCurrentSplit();
+  void locateBody(uint64_t bodyId);
 
   void showBody3d();
   void showSplit3d();
   void showCoarseBody3d();
 
   void setDvidLabelSliceSize(int width, int height);
+
+  void zoomTo(const ZIntPoint &pt);
   void zoomTo(int x, int y, int z);
   void zoomTo(int x, int y, int z, int width);
 
   void loadBookmark(const QString &filePath);
+  void addSelectionAt(int x, int y, int z);
 //  void toggleEdgeMode(bool edgeOn);
 
 protected:
@@ -120,6 +124,8 @@ void ZFlyEmProofMvc::connectControlPanel(T *panel)
   connect(panel, SIGNAL(savingMerge()), this, SLOT(saveMergeOperation()));
   connect(panel, SIGNAL(zoomingTo(int, int, int)),
           this, SLOT(zoomTo(int, int, int)));
+  connect(panel, SIGNAL(locatingBody(uint64_t)),
+          this, SLOT(locateBody(uint64_t)));
 }
 
 template <typename T>

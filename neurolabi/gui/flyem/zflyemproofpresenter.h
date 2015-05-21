@@ -17,13 +17,17 @@ public:
   void toggleHighlightMode();
   bool isHighlight() const;
   void setHighlightMode(bool hl);
+  bool isSplitOn() const;
 
   void enableSplit();
   void disableSplit();
   void setSplitEnabled(bool s);
 
+  void processCustomOperator(const ZStackOperator &op);
+
 signals:
   void highlightingSelected(bool);
+  void selectingBodyAt(int x, int y, int z);
 
 public slots:
 

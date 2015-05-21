@@ -93,6 +93,8 @@ public:
   std::string getBoundBoxUrl(int z) const;
 
 
+  std::string getLocalBodyIdUrl(int x, int y, int z) const;
+
   std::string getBodyLabelUrl() const;
   std::string getBodyLabelUrl(const std::string &dataName) const;
     /*
@@ -133,6 +135,7 @@ public:
    */
   static std::string GetKeyCommandUrl(const std::string &dataUrl);
 
+
 private:
   ZDvidTarget m_dvidTarget;
 
@@ -142,6 +145,7 @@ private:
   static const std::string m_sparsevolCommand;
   static const std::string m_coarseSparsevolCommand;
   static const std::string m_splitCommand;
+  static const std::string m_labelCommand;
 };
 
 #endif // ZDVIDURL_H

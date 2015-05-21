@@ -84,7 +84,20 @@ void FlyEmProofControlForm::decSegmentSize()
 
 void FlyEmProofControlForm::goToBody()
 {
+  bool ok;
 
+  QString text = QInputDialog::getText(this, tr("Go To"),
+                                       tr("Body:"), QLineEdit::Normal,
+                                       "", &ok);
+  if (ok) {
+    if (!text.isEmpty()) {
+      ZString str = text.toStdString();
+      std::vector<int> bodyArray = str.toIntegerArray();
+      if (bodyArray.size() == 1) {
+        emit locatingBody((uint64_t) bodyArray[0]);
+      }
+    }
+  }
 }
 
 void FlyEmProofControlForm::goToPosition()

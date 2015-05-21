@@ -2135,6 +2135,11 @@ void ZStackPresenter::setViewMode(ZInteractiveContext::ViewMode mode)
   emit viewModeChanged();
 }
 
+void ZStackPresenter::processCustomOperator(const ZStackOperator &/*op*/)
+{
+
+}
+
 void ZStackPresenter::process(const ZStackOperator &op)
 {
   ZInteractionEvent interactionEvent;
@@ -2622,6 +2627,7 @@ void ZStackPresenter::process(const ZStackOperator &op)
     break;
 #endif
   default:
+    processCustomOperator(op);
     break;
   }
 

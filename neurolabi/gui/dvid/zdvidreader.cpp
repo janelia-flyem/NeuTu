@@ -1194,3 +1194,35 @@ ZDvidVersionDag ZDvidReader::readVersionDag(const std::string &uuid) const
 
   return dag;
 }
+
+ZObject3dScan ZDvidReader::readCoarseBody(int bodyId)
+{
+  ZDvidBufferReader reader;
+  ZDvidUrl dvidUrl(m_dvidTarget);
+  reader.read(dvidUrl.getCoarseSparsevolUrl(
+                bodyId, m_dvidTarget.getBodyLabelName()).c_str());
+
+  ZObject3dScan obj;
+  obj.importDvidObjectBuffer(
+        reader.getBuffer().data(), reader.getBuffer().size());
+  obj.setLabel(bodyId);
+
+  return obj;
+}
+
+uint64_t ZDvidReader::readBodyIdAt(int x, int y, int z)
+{
+  ZDvidBufferReader bufferReader;
+  ZDvidUrl dvidUrl(m_dvidTarget);
+  bufferReader.read(dvidUrl.getLocalBodyIdUrl(x, y, z).c_str());
+
+  ZJsonObject infoJson;
+  infoJson.decodeString(bufferReader.getBuffer().data());
+
+  uint64_t bodyId = 0;
+  if (infoJson.hasKey("Label")) {
+    bodyId = (uint64_t) ZJsonParser::integerValue(infoJson["Label"]);
+  }
+
+  return bodyId;
+}

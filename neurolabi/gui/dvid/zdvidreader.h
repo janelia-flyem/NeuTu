@@ -110,6 +110,8 @@ public:
 
   int readMaxBodyId();
 
+  uint64_t readBodyIdAt(int x, int y, int z);
+
   ZDvidTileInfo readTileInfo(const std::string &dataName) const;
 
   //ZDvidTile *readTile(const std::string &dataName, int resLevel,
@@ -118,6 +120,8 @@ public:
 
   ZDvidVersionDag readVersionDag(const std::string &uuid) const;
   ZDvidVersionDag readVersionDag() const;
+
+  ZObject3dScan readCoarseBody(int bodyId);
 
 signals:
   void readingDone();

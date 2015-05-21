@@ -37,6 +37,8 @@ public:
   void deselectAll();
   void toggleHitSelection(bool appending = false);
   void clearSelection();
+  void setSelection(std::set<uint64_t> &selected);
+  void addSelection(uint64_t bodyId);
 
   inline const std::set<uint64_t>& getSelected() const {
     return m_selectedSet;

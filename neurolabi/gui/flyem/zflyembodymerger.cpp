@@ -1,5 +1,6 @@
 #include "zflyembodymerger.h"
 #include <iostream>
+#include <QList>
 
 #include "zjsonobject.h"
 #include "zjsonarray.h"
@@ -208,5 +209,8 @@ void ZFlyEmBodyMerger::decodeJsonString(const std::string &str)
 
 QList<uint64_t> ZFlyEmBodyMerger::getOriginalLabelList(uint64_t finalLabel) const
 {
-  return getFinalMap().keys(finalLabel);
+  QList<uint64_t> list = getFinalMap().keys(finalLabel);
+  list.append(finalLabel);
+
+  return list;
 }

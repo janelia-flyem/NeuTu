@@ -3,21 +3,6 @@
 #include "dvid/zdvidbufferreader.h"
 #include "dvid/zdvidurl.h"
 
-ZObject3dScan ZFlyEmDvidReader::readCoarseBody(int bodyId)
-{
-  ZDvidBufferReader reader;
-  ZDvidUrl dvidUrl(m_dvidTarget);
-  reader.read(dvidUrl.getCoarseSparsevolUrl(
-                bodyId, m_dvidTarget.getBodyLabelName()).c_str());
-
-  ZObject3dScan obj;
-  obj.importDvidObjectBuffer(
-        reader.getBuffer().data(), reader.getBuffer().size());
-  obj.setLabel(bodyId);
-
-  return obj;
-}
-
 ZFlyEmBodyAnnotation ZFlyEmDvidReader::readAnnotation(int bodyId)
 {
   QByteArray data = readKeyValue("annotations", QString("%1").arg(bodyId));

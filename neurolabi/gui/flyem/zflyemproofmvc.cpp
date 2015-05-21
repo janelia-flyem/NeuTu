@@ -158,6 +158,10 @@ void ZFlyEmProofMvc::customInit()
 
   connect(getDocument().get(), SIGNAL(activeViewModified()),
           this, SLOT(processViewChange()));
+  connect(getCompleteDocument(), SIGNAL(bodyMerged()),
+          getView(), SLOT(paintObject()));
+  connect(getCompleteDocument(), SIGNAL(bodyUnmerged()),
+          getView(), SLOT(paintObject()));
 
 
   m_splitProject.setDocument(getDocument());
@@ -181,6 +185,9 @@ void ZFlyEmProofMvc::customInit()
   connect(this, SIGNAL(splitBodyLoaded(uint64_t)),
           this, SLOT(presentBodySplit(uint64_t)));
 
+  connect(getCompletePresenter(), SIGNAL(selectingBodyAt(int,int,int)),
+          this, SLOT(addSelectionAt(int, int, int)));
+
   disableSplit();
 }
 
@@ -191,6 +198,9 @@ void ZFlyEmProofMvc::updateSelection()
     const std::set<uint64_t> &selected = slice->getSelected();
     m_mergeProject.setSelection(selected);
     m_mergeProject.update3DBodyView();
+    if (getCompletePresenter()->isHighlight()) {
+      m_mergeProject.highlightSelectedObject(true);
+    }
   }
 }
 
@@ -416,6 +426,12 @@ void ZFlyEmProofMvc::zoomTo(int x, int y, int z, int width)
   getPresenter()->setViewPortCenter(x, y, z);
 }
 
+
+void ZFlyEmProofMvc::zoomTo(const ZIntPoint &pt)
+{
+  zoomTo(pt.getX(), pt.getY(), pt.getZ());
+}
+
 void ZFlyEmProofMvc::zoomTo(int x, int y, int z)
 {
   zoomTo(x, y, z, 400);
@@ -428,6 +444,47 @@ void ZFlyEmProofMvc::loadBookmark(const QString &filePath)
   emit bookmarkUpdated(&m_splitProject);
 }
 
+void ZFlyEmProofMvc::addSelectionAt(int x, int y, int z)
+{
+  ZDvidReader reader;
+  if (reader.open(getDvidTarget())) {
+    uint64_t bodyId = reader.readBodyIdAt(x, y, z);
+    if (bodyId > 0) {
+      ZDvidLabelSlice *slice = getCompleteDocument()->getDvidLabelSlice();
+      if (slice != NULL) {
+        slice->addSelection(bodyId);
+      }
+      updateSelection();
+    }
+  }
+}
+
+void ZFlyEmProofMvc::locateBody(uint64_t bodyId)
+{
+  ZDvidReader reader;
+  if (reader.open(getDvidTarget())) {
+    ZObject3dScan body = reader.readCoarseBody(bodyId);
+
+    ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
+
+    ZVoxel voxel = body.getSlice((body.getMinZ() + body.getMaxZ()) / 2).getMarker();
+    ZIntPoint pt(voxel.x(), voxel.y(), voxel.z());
+    pt -= dvidInfo.getStartBlockIndex();
+    pt *= dvidInfo.getBlockSize();
+    pt += dvidInfo.getStartCoordinates();
+
+    std::set<uint64_t> bodySet;
+    bodySet.insert(bodyId);
+
+    ZDvidLabelSlice *slice = getCompleteDocument()->getDvidLabelSlice();
+    if (slice != NULL) {
+      slice->setSelection(bodySet);
+    }
+    updateSelection();
+
+    zoomTo(pt);
+  }
+}
 
 //void ZFlyEmProofMvc::toggleEdgeMode(bool edgeOn)
 

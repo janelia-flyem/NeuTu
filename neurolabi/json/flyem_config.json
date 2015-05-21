@@ -110,6 +110,16 @@
       "body_label": "bodies",
       "label_block": "labels",
       "user_name": "rivlinp"
+    },
+    {
+      "address": "emdata1.int.janelia.org",
+      "port": 8500,
+      "uuid": "3664",
+      "name": "MB_changl",
+      "comment": "MB seg (branched from ccf)",
+      "body_label": "bodies",
+      "label_block": "labels",
+      "user_name": ["changl", "zhaot"]
     }
   ]
 }

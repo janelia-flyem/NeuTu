@@ -29,6 +29,7 @@ signals:
   void coarseBodyViewTriggered();
   void savingMerge();
   void zoomingTo(int x, int y, int z);
+  void locatingBody(uint64_t);
 
 private slots:
   void setSegmentSize();

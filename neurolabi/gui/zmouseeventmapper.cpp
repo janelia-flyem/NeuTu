@@ -182,7 +182,8 @@ ZStackOperator ZMouseEventLeftButtonReleaseMapper::getOperation(
         if (m_doc->getStack()->containsRaw(rawStackPosition)) {
           bool hitTestOn =
               (m_context->swcEditMode() == ZInteractiveContext::SWC_EDIT_SELECT ||
-               m_context->swcEditMode() == ZInteractiveContext::SWC_EDIT_CONNECT) &&
+               m_context->swcEditMode() == ZInteractiveContext::SWC_EDIT_CONNECT ||
+               m_context->swcEditMode() == ZInteractiveContext::SWC_EDIT_OFF) &&
               m_context->strokeEditMode() == ZInteractiveContext::STROKE_EDIT_OFF;
           if (hitTestOn) {
             ZStackDocHitTest hitManager;
@@ -195,7 +196,9 @@ ZStackOperator ZMouseEventLeftButtonReleaseMapper::getOperation(
             op.setHitObject(hitManager.getHitObject<ZStackObject>());
 
             bool selectionOn =
-                (m_context->swcEditMode() == ZInteractiveContext::SWC_EDIT_SELECT &&
+                ((m_context->swcEditMode() == ZInteractiveContext::SWC_EDIT_SELECT ||
+                 m_context->swcEditMode() == ZInteractiveContext::SWC_EDIT_OFF)
+                 &&
                  m_context->strokeEditMode() == ZInteractiveContext::STROKE_EDIT_OFF);
 
             if (selectionOn) {
@@ -244,6 +247,10 @@ ZStackOperator ZMouseEventLeftButtonReleaseMapper::getOperation(
         }
       }
     }
+  }
+
+  if (op.isNull()) {
+    op.setOperation(ZStackOperator::OP_CUSTOM_MOUSE_RELEASE);
   }
 
   return op;

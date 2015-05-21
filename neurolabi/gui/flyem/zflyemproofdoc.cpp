@@ -1,4 +1,8 @@
 #include "zflyemproofdoc.h"
+
+#include <QSet>
+#include <QList>
+
 #include "dvid/zdvidlabelslice.h"
 #include "dvid/zdvidreader.h"
 #include "zstackobjectsourcefactory.h"
@@ -7,6 +11,7 @@
 #include "zstackfactory.h"
 #include "dvid/zdvidsparsestack.h"
 #include "dvid/zdvidwriter.h"
+#include "dvid/zdvidsparsevolslice.h"
 
 ZFlyEmProofDoc::ZFlyEmProofDoc(ZStack *stack, QObject *parent) :
   ZStackDoc(stack, parent)
@@ -105,6 +110,13 @@ void ZFlyEmProofDoc::updateBodyObject()
     slice->clearSelection();
     slice->updateLabelColor();
   }
+
+  QList<ZDvidSparsevolSlice*> sparsevolSliceList = getDvidSparsevolSliceList();
+  foreach (ZDvidSparsevolSlice *slice, sparsevolSliceList) {
+//    slice->setLabel(m_bodyMerger.getFinalLabel(slice->getLabel()));
+    uint64_t finalLabel = m_bodyMerger.getFinalLabel(slice->getLabel());
+    slice->setColor(getDvidLabelSlice()->getColor(finalLabel));
+  }
 }
 
 void ZFlyEmProofDoc::clearData()
@@ -172,6 +184,36 @@ QList<uint64_t> ZFlyEmProofDoc::getMergedSource(uint64_t bodyId) const
   return m_bodyMerger.getOriginalLabelList(bodyId);
 }
 
+QSet<uint64_t> ZFlyEmProofDoc::getMergedSource(const QSet<uint64_t> &bodySet)
+const
+{
+  QSet<uint64_t> source;
+
+  for (QSet<uint64_t>::const_iterator iter = bodySet.begin();
+       iter != bodySet.end(); ++iter) {
+    QList<uint64_t> merged = getMergedSource(*iter);
+#ifdef _DEBUG_
+    std::cout << "Merge list: " << merged.size() << std::endl;
+#endif
+    for (QList<uint64_t>::const_iterator bodyIter = merged.begin();
+         bodyIter != merged.end(); ++bodyIter) {
+      uint64_t label = *bodyIter;
+      source.insert(label);
+    }
+  }
+
+  return source;
+}
+
+void ZFlyEmProofDoc::notifyBodyMerged()
+{
+  emit bodyMerged();
+}
+
+void ZFlyEmProofDoc::notifyBodyUnmerged()
+{
+  emit bodyUnmerged();
+}
 
 //////////////////////////////////////////
 ZFlyEmProofDocCommand::MergeBody::MergeBody(
@@ -191,7 +233,8 @@ void ZFlyEmProofDocCommand::MergeBody::redo()
   getCompleteDocument()->getBodyMerger()->redo();
   getCompleteDocument()->updateBodyObject();
 
-  m_doc->notifyObject3dScanModified();
+  getCompleteDocument()->notifyBodyMerged();
+//  m_doc->notifyObject3dScanModified();
 }
 
 void ZFlyEmProofDocCommand::MergeBody::undo()
@@ -199,5 +242,6 @@ void ZFlyEmProofDocCommand::MergeBody::undo()
   getCompleteDocument()->getBodyMerger()->undo();
   getCompleteDocument()->updateBodyObject();
 
-  m_doc->notifyObject3dScanModified();
+  getCompleteDocument()->notifyBodyUnmerged();
+//  m_doc->notifyObject3dScanModified();
 }

@@ -464,8 +464,9 @@ void ZFlyEmBodyMergeProject::update3DBodyView()
       if (oldBodySourceSet.count(source) == 0) {
         ZObject3dScan body;
 
-        QList<uint64_t> bodyList = getDocument<ZFlyEmProofDoc>()->getMergedSource(label);
-        bodyList.append(label);
+        QList<uint64_t> bodyList =
+            getDocument<ZFlyEmProofDoc>()->getMergedSource(label);
+//        bodyList.append(label);
 
         for (int i = 0; i < bodyList.size(); ++i) {
           body.concat(reader.readCoarseBody(bodyList[i]));
@@ -758,16 +759,23 @@ void ZFlyEmBodyMergeProject::highlightSelectedObject(bool hl)
     doc->getObjectGroup().removeObject(
           ZStackObject::TYPE_DVID_SPARSEVOL_SLICE, true);
     if (hl) {
-      for (QSet<uint64_t>::const_iterator iter = m_currentSelected.begin();
-           iter != m_currentSelected.end(); ++iter) {
+      QSet<uint64_t> selected = doc->getMergedSource(m_currentSelected);
+      doc->blockSignals(true);
+      for (QSet<uint64_t>::const_iterator iter = selected.begin();
+           iter != selected.end(); ++iter) {
         uint64_t bodyId = *iter;
         ZDvidSparsevolSlice *obj = new ZDvidSparsevolSlice;
         obj->setDvidTarget(getDvidTarget());
+//        obj->setLabel(doc->getBodyMerger()->getFinalLabel(bodyId));
         obj->setLabel(bodyId);
+        uint64_t finalLabel = doc->getBodyMerger()->getFinalLabel(bodyId);
         obj->setRole(ZStackObjectRole::ROLE_ACTIVE_VIEW);
-        obj->setColor(doc->getDvidLabelSlice()->getColor(bodyId));
+        obj->setColor(doc->getDvidLabelSlice()->getColor(finalLabel));
         doc->addObject(obj);
       }
+      doc->blockSignals(false);
+//      doc->notifyObjectModified();
+      doc->notifyActiveViewModified();
     } else {
       doc->notifyActiveViewModified();
     }

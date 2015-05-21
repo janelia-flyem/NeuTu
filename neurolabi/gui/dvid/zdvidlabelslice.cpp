@@ -162,6 +162,16 @@ void ZDvidLabelSlice::selectHit(bool appending)
   }
 }
 
+void ZDvidLabelSlice::setSelection(std::set<uint64_t> &selected)
+{
+  m_selectedSet = selected;
+}
+
+void ZDvidLabelSlice::addSelection(uint64_t bodyId)
+{
+  m_selectedSet.insert(bodyId);
+}
+
 void ZDvidLabelSlice::deselectAll()
 {
   m_selectedSet.clear();

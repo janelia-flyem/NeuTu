@@ -6,12 +6,13 @@
 ZFlyEmProofPresenter::ZFlyEmProofPresenter(ZStackFrame *parent) :
   ZStackPresenter(parent), m_isHightlightMode(false)
 {
+  interactiveContext().setSwcEditMode(ZInteractiveContext::SWC_EDIT_OFF);
 }
 
 ZFlyEmProofPresenter::ZFlyEmProofPresenter(QWidget *parent) :
   ZStackPresenter(parent), m_isHightlightMode(false)
 {
-
+  interactiveContext().setSwcEditMode(ZInteractiveContext::SWC_EDIT_OFF);
 }
 
 bool ZFlyEmProofPresenter::customKeyProcess(QKeyEvent *event)
@@ -20,9 +21,11 @@ bool ZFlyEmProofPresenter::customKeyProcess(QKeyEvent *event)
 
   switch (event->key()) {
   case Qt::Key_H:
-    toggleHighlightMode();
-    emit highlightingSelected(isHighlight());
-    processed = true;
+    if (!isSplitOn()) {
+      toggleHighlightMode();
+      emit highlightingSelected(isHighlight());
+      processed = true;
+    }
     break;
   default:
     break;
@@ -33,7 +36,7 @@ bool ZFlyEmProofPresenter::customKeyProcess(QKeyEvent *event)
 
 bool ZFlyEmProofPresenter::isHighlight() const
 {
-  return m_isHightlightMode;
+  return m_isHightlightMode && !isSplitOn();
 }
 
 void ZFlyEmProofPresenter::setHighlightMode(bool hl)
@@ -44,6 +47,11 @@ void ZFlyEmProofPresenter::setHighlightMode(bool hl)
 void ZFlyEmProofPresenter::toggleHighlightMode()
 {
   setHighlightMode(!isHighlight());
+}
+
+bool ZFlyEmProofPresenter::isSplitOn() const
+{
+  return m_paintStrokeAction->isEnabled();
 }
 
 void ZFlyEmProofPresenter::enableSplit()
@@ -59,4 +67,20 @@ void ZFlyEmProofPresenter::disableSplit()
 void ZFlyEmProofPresenter::setSplitEnabled(bool s)
 {
   m_paintStrokeAction->setEnabled(s);
+}
+
+void ZFlyEmProofPresenter::processCustomOperator(const ZStackOperator &op)
+{
+  switch (op.getOperation()) {
+  case ZStackOperator::OP_CUSTOM_MOUSE_RELEASE:
+    if (isHighlight()) {
+      const ZMouseEvent& event = m_mouseEventProcessor.getLatestMouseEvent();
+      ZPoint currentStackPos = event.getPosition(NeuTube::COORD_STACK);
+      ZIntPoint pos = currentStackPos.toIntPoint();
+      emit selectingBodyAt(pos.getX(), pos.getY(), pos.getZ());
+    }
+    break;
+  default:
+    break;
+  }
 }
