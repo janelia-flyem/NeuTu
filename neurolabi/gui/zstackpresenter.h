@@ -332,7 +332,7 @@ private:
 
   void acceptActiveStroke();
 
-private:
+protected:
   //ZStackFrame *m_parent;
   QList<ZStackObject*> m_decorationList;
   QList<ZStackObject*> m_activeDecorationList;

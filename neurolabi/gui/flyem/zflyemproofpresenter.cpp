@@ -1,6 +1,7 @@
 #include "zflyemproofpresenter.h"
 
 #include <QKeyEvent>
+#include <QAction>
 
 ZFlyEmProofPresenter::ZFlyEmProofPresenter(ZStackFrame *parent) :
   ZStackPresenter(parent), m_isHightlightMode(false)
@@ -43,4 +44,19 @@ void ZFlyEmProofPresenter::setHighlightMode(bool hl)
 void ZFlyEmProofPresenter::toggleHighlightMode()
 {
   setHighlightMode(!isHighlight());
+}
+
+void ZFlyEmProofPresenter::enableSplit()
+{
+  setSplitEnabled(true);
+}
+
+void ZFlyEmProofPresenter::disableSplit()
+{
+  setSplitEnabled(false);
+}
+
+void ZFlyEmProofPresenter::setSplitEnabled(bool s)
+{
+  m_paintStrokeAction->setEnabled(s);
 }

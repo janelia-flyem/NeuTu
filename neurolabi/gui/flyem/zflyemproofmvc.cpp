@@ -181,6 +181,7 @@ void ZFlyEmProofMvc::customInit()
   connect(this, SIGNAL(splitBodyLoaded(uint64_t)),
           this, SLOT(presentBodySplit(uint64_t)));
 
+  disableSplit();
 }
 
 void ZFlyEmProofMvc::updateSelection()
@@ -258,7 +259,7 @@ void ZFlyEmProofMvc::launchSplitFunc(uint64_t bodyId)
 
 void ZFlyEmProofMvc::presentBodySplit(uint64_t bodyId)
 {
-  m_splitOn = true;
+  enableSplit();
 
   m_mergeProject.closeBodyWindow();
 
@@ -266,6 +267,18 @@ void ZFlyEmProofMvc::presentBodySplit(uint64_t bodyId)
   m_splitProject.downloadSeed();
   emit bookmarkUpdated(&m_splitProject);
   getView()->redrawObject();
+}
+
+void ZFlyEmProofMvc::enableSplit()
+{
+  m_splitOn = true;
+  getCompletePresenter()->enableSplit();
+}
+
+void ZFlyEmProofMvc::disableSplit()
+{
+  m_splitOn = false;
+  getCompletePresenter()->disableSplit();
 }
 
 void ZFlyEmProofMvc::launchSplit(uint64_t bodyId)
@@ -308,7 +321,7 @@ void ZFlyEmProofMvc::exitSplit()
     getView()->redrawObject();
     m_splitProject.clear();
 
-    m_splitOn = false;
+    disableSplit();
   }
 }
 

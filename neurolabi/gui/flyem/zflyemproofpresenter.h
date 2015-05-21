@@ -18,6 +18,10 @@ public:
   bool isHighlight() const;
   void setHighlightMode(bool hl);
 
+  void enableSplit();
+  void disableSplit();
+  void setSplitEnabled(bool s);
+
 signals:
   void highlightingSelected(bool);
 

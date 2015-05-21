@@ -40,6 +40,9 @@ public:
 
   void clear();
 
+  void enableSplit();
+  void disableSplit();
+
 signals:
   void launchingSplit(const QString &message);
   void launchingSplit(uint64_t bodyId);
