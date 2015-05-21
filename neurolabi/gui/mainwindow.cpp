@@ -3319,7 +3319,7 @@ void MainWindow::test()
 }
 
 void MainWindow::test2() {
-    std::cout << "in test2" << std::endl;
+    // std::cout << "in test2" << std::endl;
     // m_testDlg->show();
     m_testDlg2->show();
 }
