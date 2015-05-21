@@ -1,7 +1,7 @@
 #include "zdvidsparsevolslice.h"
 #include "zpainter.h"
 
-ZDvidSparsevolSlice::ZDvidSparsevolSlice() : ZObject3dScan()
+ZDvidSparsevolSlice::ZDvidSparsevolSlice() : ZObject3dScan(), m_currentZ(-1)
 {
   m_type = ZStackObject::TYPE_DVID_SPARSEVOL_SLICE;
   setHittable(false);

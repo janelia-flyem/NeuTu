@@ -186,7 +186,7 @@ void ZFlyEmProofMvc::customInit()
           this, SLOT(presentBodySplit(uint64_t)));
 
   connect(getCompletePresenter(), SIGNAL(selectingBodyAt(int,int,int)),
-          this, SLOT(addSelectionAt(int, int, int)));
+          this, SLOT(xorSelectionAt(int, int, int)));
 
   disableSplit();
 }
@@ -458,6 +458,22 @@ void ZFlyEmProofMvc::addSelectionAt(int x, int y, int z)
     }
   }
 }
+
+void ZFlyEmProofMvc::xorSelectionAt(int x, int y, int z)
+{
+  ZDvidReader reader;
+  if (reader.open(getDvidTarget())) {
+    uint64_t bodyId = reader.readBodyIdAt(x, y, z);
+    if (bodyId > 0) {
+      ZDvidLabelSlice *slice = getCompleteDocument()->getDvidLabelSlice();
+      if (slice != NULL) {
+        slice->xorSelection(bodyId);
+      }
+      updateSelection();
+    }
+  }
+}
+
 
 void ZFlyEmProofMvc::locateBody(uint64_t bodyId)
 {

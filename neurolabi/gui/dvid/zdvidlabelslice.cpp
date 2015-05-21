@@ -172,6 +172,15 @@ void ZDvidLabelSlice::addSelection(uint64_t bodyId)
   m_selectedSet.insert(bodyId);
 }
 
+void ZDvidLabelSlice::xorSelection(uint64_t bodyId)
+{
+  if (m_selectedSet.count(bodyId) > 0) {
+    m_selectedSet.erase(bodyId);
+  } else {
+    m_selectedSet.insert(bodyId);
+  }
+}
+
 void ZDvidLabelSlice::deselectAll()
 {
   m_selectedSet.clear();

@@ -214,7 +214,9 @@ ZStackOperator ZMouseEventLeftButtonReleaseMapper::getOperation(
       case ZInteractiveContext::SWC_EDIT_SELECT:
         if (event.getModifiers() == Qt::NoModifier) {
           if (!getDocument()->hasObjectSelected()) {
-            op.setOperation(ZStackOperator::OP_SHOW_TRACE_CONTEXT_MENU);
+            if (getDocument()->getTag() == NeuTube::Document::NORMAL) {
+              op.setOperation(ZStackOperator::OP_SHOW_TRACE_CONTEXT_MENU);
+            }
           } else {
             op.setOperation(ZStackOperator::OP_DESELECT_ALL);
           }

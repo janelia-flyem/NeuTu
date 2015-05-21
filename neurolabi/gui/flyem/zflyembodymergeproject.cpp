@@ -756,11 +756,12 @@ void ZFlyEmBodyMergeProject::highlightSelectedObject(bool hl)
   ZFlyEmProofDoc *doc = getDocument<ZFlyEmProofDoc>();
   if (doc != NULL /*&& !m_currentSelected.empty()*/) {
     doc->getDvidLabelSlice()->setVisible(!hl);
+    doc->blockSignals(true);
     doc->getObjectGroup().removeObject(
           ZStackObject::TYPE_DVID_SPARSEVOL_SLICE, true);
     if (hl) {
       QSet<uint64_t> selected = doc->getMergedSource(m_currentSelected);
-      doc->blockSignals(true);
+
       for (QSet<uint64_t>::const_iterator iter = selected.begin();
            iter != selected.end(); ++iter) {
         uint64_t bodyId = *iter;
@@ -773,12 +774,15 @@ void ZFlyEmBodyMergeProject::highlightSelectedObject(bool hl)
         obj->setColor(doc->getDvidLabelSlice()->getColor(finalLabel));
         doc->addObject(obj);
       }
-      doc->blockSignals(false);
+//      doc->blockSignals(false);
 //      doc->notifyObjectModified();
-      doc->notifyActiveViewModified();
+//      doc->notifyActiveViewModified();
     } else {
-      doc->notifyActiveViewModified();
+//      doc->blockSignals(false);
+//      doc->notifyActiveViewModified();
     }
+    doc->blockSignals(false);
+    doc->notifyObjectModified();
   }
 }
 
