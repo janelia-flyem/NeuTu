@@ -33,7 +33,7 @@ then
   fi
 
   cd $downloadDir/$qtsrc
-  ./configure --prefix=$install_dir/Trolltech/Qt4.8.5 -no-webkit -qt-libpng
+  { echo o; yes; } | ./configure --prefix=$install_dir/Trolltech/Qt4.8.5 -no-webkit -qt-libpng
   make -j3
   make install
 fi
@@ -70,6 +70,7 @@ then
 fi
 
 cd $downloadDir/libdvid-cpp
+$GIT_CMD pull
 if [ ! -d build ]
 then
   mkdir build
