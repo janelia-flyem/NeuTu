@@ -475,7 +475,16 @@ void ZFlyEmProofMvc::xorSelectionAt(int x, int y, int z)
     if (bodyId > 0) {
       ZDvidLabelSlice *slice = getCompleteDocument()->getDvidLabelSlice();
       if (slice != NULL) {
-        slice->xorSelection(getMappedBodyId(bodyId));
+        uint64_t finalBodyId = getMappedBodyId(bodyId);
+        QList<uint64_t> labelList =
+            getCompleteDocument()->getBodyMerger()->getOriginalLabelList(
+              finalBodyId);
+        slice->xorSelection(labelList.begin(), labelList.end());
+        /*
+        foreach (uint64_t label, labelList) {
+          slice->xorSelection(label);
+        }
+        */
       }
       updateSelection();
     }
