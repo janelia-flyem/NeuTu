@@ -40,6 +40,9 @@ public:
   void setSelection(std::set<uint64_t> &selected);
   void addSelection(uint64_t bodyId);
   void xorSelection(uint64_t bodyId);
+  template <typename InputIterator>
+  void xorSelection(const InputIterator &begin, const InputIterator &end);
+
 
   inline const std::set<uint64_t>& getSelected() const {
     return m_selectedSet;
@@ -76,5 +79,22 @@ private:
   int m_maxWidth;
   int m_maxHeight;
 };
+
+template <typename InputIterator>
+void ZDvidLabelSlice::xorSelection(
+    const InputIterator &begin, const InputIterator &end)
+{
+  std::set<uint64_t> labelSet;
+
+  for (InputIterator iter = begin; iter != end; ++iter) {
+    labelSet.insert(*iter);
+  }
+
+  for (std::set<uint64_t>::const_iterator iter  = labelSet.begin();
+       iter != labelSet.end(); ++iter) {
+    xorSelection(*iter);
+  }
+}
+
 
 #endif // ZDVIDLABELSLICE_H
