@@ -57,8 +57,8 @@ public:
     return m_dataFrame;
   }
 
+  //Obsolete functions
   int getSelectedBodyId() const;
-
   void addSelected(uint64_t label);
   void removeSelected(uint64_t label);
 
@@ -75,9 +75,12 @@ public:
   void syncWithDvid();
 
   void setSelection(const std::set<uint64_t> &selected);
+  void setSelectionFromOriginal(const std::set<uint64_t> &selected);
 
   Z3DWindow* getBodyWindow() { return m_bodyWindow; }
   void closeBodyWindow();
+
+  uint64_t getMappedBodyId(uint64_t label) const;
 
 signals:
   void progressAdvanced(double dp);
@@ -103,13 +106,14 @@ public slots:
   void uploadResult();
   void update3DBodyView(const ZStackObjectSelector &selector);
   void update3DBodyView();
+  void update3DBodyViewDeep();
   void showBody3d();
   void detachBodyWindow();
   void notifySplit();
   void highlightSelectedObject(bool hl);
 
 private:
-  ZFlyEmBodyMerger* getBodyMerger();
+  ZFlyEmBodyMerger* getBodyMerger() const;
 
 private:
   ZFlyEmBodyMergeFrame *m_dataFrame;
@@ -122,7 +126,7 @@ private:
 //  std::vector<ZStackObject*> m_bookmarkDecoration;
 //  bool m_isBookmarkVisible;
   bool m_showingBodyMask;
-  QSet<uint64_t> m_currentSelected;
+  QSet<uint64_t> m_currentSelected; //the set of mapped ids of selected bodies
 };
 
 template <typename T>

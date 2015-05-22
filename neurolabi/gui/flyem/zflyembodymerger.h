@@ -7,6 +7,7 @@
 #include <QList>
 #include <QStack>
 #include <QSet>
+#include <set>
 
 #include "tz_stdint.h"
 
@@ -29,6 +30,8 @@ public:
   typedef QStack<TLabelMap> TLabelMapStack;
 
   uint64_t getFinalLabel(uint64_t label) const;
+  std::set<uint64_t> getFinalLabel(const std::set<uint64_t> labelSet) const;
+
   TLabelMap getFinalMap() const;
 
   void pushMap(uint64_t label1, uint64_t label2);

@@ -16776,7 +16776,47 @@ void ZTest::test(MainWindow *host)
   std::cout << dsIntv.toString() << std::endl;
 #endif
 
-#if 1
+#if 0
   std::cout << qgetenv("USERNAME").data() << std::endl;
+#endif
+
+#if 1
+  ZDvidTarget target("emdata1.int.janelia.org", "6f15", 8500);
+  ZDvidReader reader;
+  reader.open(target);
+
+  ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
+  ZIntPoint index1 = dvidInfo.getBlockIndex(0, 0, 5100);
+  std::cout << index1.getZ() << std::endl;
+
+  ZIntPoint index2 = dvidInfo.getBlockIndex(0, 0, 9000);
+  std::cout << index2.getZ() << std::endl;
+
+
+  ZObject3dScan obj;
+  obj.load(GET_TEST_DATA_DIR + "/flyem/MB/alpha_block.sobj");
+
+  std::cout << obj.getVoxelNumber() << std::endl;
+
+  obj.getSlice(obj.getMinZ(), index1.getZ()).save(
+        GET_TEST_DATA_DIR + "/flyem/MB/alpha_block_cut1.sobj");
+
+  obj.getSlice(index1.getZ() + 1, index2.getZ()).save(
+        GET_TEST_DATA_DIR + "/flyem/MB/alpha_block_cut2.sobj");
+
+  obj.getSlice(index2.getZ() + 1, obj.getMaxZ()).save(
+        GET_TEST_DATA_DIR + "/flyem/MB/alpha_block_cut3.sobj");
+
+  ZObject3dScan obj1;
+  obj1.load(GET_TEST_DATA_DIR + "/flyem/MB/alpha_block_cut1.sobj");
+
+  ZObject3dScan obj2;
+  obj2.load(GET_TEST_DATA_DIR + "/flyem/MB/alpha_block_cut2.sobj");
+
+  ZObject3dScan obj3;
+  obj3.load(GET_TEST_DATA_DIR + "/flyem/MB/alpha_block_cut3.sobj");
+
+  std::cout << obj1.getVoxelNumber() + obj2.getVoxelNumber() +
+               obj3.getVoxelNumber() << std::endl;
 #endif
 }
