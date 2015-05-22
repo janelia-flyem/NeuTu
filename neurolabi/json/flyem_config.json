@@ -120,6 +120,66 @@
       "body_label": "bodies",
       "label_block": "labels",
       "user_name": ["changl", "zhaot"]
+    },
+    {
+      "address": "emdata1.int.janelia.org",
+      "port": 8500,
+      "uuid": "4a55",
+      "name": "MB_lauchies",
+      "comment": "MB seg (branched from ccf)",
+      "body_label": "bodies",
+      "label_block": "labels",
+      "user_name": ["lauchies", "zhaot"]
+    },
+    {
+      "address": "emdata1.int.janelia.org",
+      "port": 8500,
+      "uuid": "c0a5",
+      "name": "MB_ogundeyio",
+      "comment": "MB seg (branched from ccf)",
+      "body_label": "bodies",
+      "label_block": "labels",
+      "user_name": ["ogundeyio", "zhaot"]
+    },
+    {
+      "address": "emdata1.int.janelia.org",
+      "port": 8500,
+      "uuid": "3cbe",
+      "name": "MB_ordishc",
+      "comment": "MB seg (branched from ccf)",
+      "body_label": "bodies",
+      "label_block": "labels",
+      "user_name": ["ordishc", "zhaot"]
+    },
+    {
+      "address": "emdata1.int.janelia.org",
+      "port": 8500,
+      "uuid": "cb29",
+      "name": "MB_sigmundc",
+      "comment": "MB seg (branched from ccf)",
+      "body_label": "bodies",
+      "label_block": "labels",
+      "user_name": ["sigmundc", "zhaot"]
+    },
+    {
+      "address": "emdata1.int.janelia.org",
+      "port": 8500,
+      "uuid": "8366",
+      "name": "MB_shinomiyaa",
+      "comment": "MB seg (branched from ccf)",
+      "body_label": "bodies",
+      "label_block": "labels",
+      "user_name": ["shinomiyaa", "zhaot"]
+    },
+    {
+      "address": "emdata1.int.janelia.org",
+      "port": 8500,
+      "uuid": "91d9",
+      "name": "MB_tranj",
+      "comment": "MB seg (branched from ccf)",
+      "body_label": "bodies",
+      "label_block": "labels",
+      "user_name": ["tranj", "zhaot"]
     }
   ]
 }

@@ -162,6 +162,14 @@ void ZFlyEmProofMvc::customInit()
           getView(), SLOT(paintObject()));
   connect(getCompleteDocument(), SIGNAL(bodyUnmerged()),
           getView(), SLOT(paintObject()));
+  connect(getCompleteDocument(), SIGNAL(bodyMerged()),
+          &m_mergeProject, SLOT(update3DBodyViewDeep()));
+  connect(getCompleteDocument(), SIGNAL(bodyUnmerged()),
+          &m_mergeProject, SLOT(update3DBodyViewDeep()));
+
+
+  connect(getCompleteDocument(), SIGNAL(bodyUnmerged()),
+          getView(), SLOT(paintObject()));
 
 
   m_splitProject.setDocument(getDocument());
@@ -467,13 +475,17 @@ void ZFlyEmProofMvc::xorSelectionAt(int x, int y, int z)
     if (bodyId > 0) {
       ZDvidLabelSlice *slice = getCompleteDocument()->getDvidLabelSlice();
       if (slice != NULL) {
-        slice->xorSelection(bodyId);
+        slice->xorSelection(getMappedBodyId(bodyId));
       }
       updateSelection();
     }
   }
 }
 
+uint64_t ZFlyEmProofMvc::getMappedBodyId(uint64_t bodyId)
+{
+  return m_mergeProject.getMappedBodyId(bodyId);
+}
 
 void ZFlyEmProofMvc::locateBody(uint64_t bodyId)
 {

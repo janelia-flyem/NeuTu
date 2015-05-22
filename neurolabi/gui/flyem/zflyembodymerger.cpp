@@ -16,6 +16,18 @@ uint64_t ZFlyEmBodyMerger::getFinalLabel(uint64_t label) const
   return mapLabel(m_mapList, label);
 }
 
+std::set<uint64_t> ZFlyEmBodyMerger::getFinalLabel(
+    const std::set<uint64_t> labelSet) const
+{
+  std::set<uint64_t> mapped;
+  for (std::set<uint64_t>::const_iterator iter = labelSet.begin();
+       iter != labelSet.end(); ++iter) {
+    mapped.insert(getFinalLabel(*iter));
+  }
+
+  return mapped;
+}
+
 ZFlyEmBodyMerger::TLabelMap ZFlyEmBodyMerger::getFinalMap() const
 {
   ZFlyEmBodyMerger::TLabelMap labelMap;

@@ -95,6 +95,7 @@ protected:
 
 private:
   void launchSplitFunc(uint64_t bodyId);
+  uint64_t getMappedBodyId(uint64_t bodyId);
 
 private:
   bool m_showSegmentation;
