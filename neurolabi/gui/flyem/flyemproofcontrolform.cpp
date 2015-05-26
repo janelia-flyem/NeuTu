@@ -6,6 +6,7 @@
 #include "ui_flyemproofcontrolform.h"
 #include "zdviddialog.h"
 #include "zstring.h"
+#include "neutubeconfig.h"
 
 FlyEmProofControlForm::FlyEmProofControlForm(QWidget *parent) :
   QWidget(parent),
@@ -39,6 +40,11 @@ FlyEmProofControlForm::FlyEmProofControlForm(QWidget *parent) :
 
   connect(ui->coarseBodyPushButton, SIGNAL(clicked()),
           this, SIGNAL(coarseBodyViewTriggered()));
+
+  ui->helpWidget->setOpenExternalLinks(true);
+  ui->helpWidget->setSource(
+        QUrl((GET_DOC_DIR + "/flyem_proofread_help.html").c_str()));
+
 
   createMenu();
 }

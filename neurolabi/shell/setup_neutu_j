@@ -17,6 +17,7 @@ downloadDir=$install_dir/Download
 if [ ! -d $downloadDir ]
 then
   mkdir $downloadDir
+  chmod a+w $downloadDir
 fi
 
 if [ ! -f $install_dir/Trolltech/Qt4.8.5/bin/qmake ]

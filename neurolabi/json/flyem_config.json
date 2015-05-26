@@ -212,6 +212,16 @@
     {
       "address": "emdata1.int.janelia.org",
       "port": 8500,
+      "uuid": "ee10",
+      "name": "MB_shinomiyak",
+      "comment": "MB seg (branched from ccf)",
+      "body_label": "bodies",
+      "label_block": "labels",
+      "user_name": ["shinomiyak", "zhaot"]
+    },
+    {
+      "address": "emdata1.int.janelia.org",
+      "port": 8500,
       "uuid": "3771",
       "name": "MB_roi",
       "comment": "MB seg (branched from ccf)",
