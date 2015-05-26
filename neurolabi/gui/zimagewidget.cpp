@@ -326,13 +326,15 @@ void ZImageWidget::increaseZoomRatio(int x, int y, bool usingRef)
 
 void ZImageWidget::decreaseZoomRatio(int x, int y, bool usingRef)
 {
-  int oldWidth = m_viewPort.width();
-  int oldHeight = m_viewPort.height();
+//  int oldWidth = m_viewPort.width();
+//  int oldHeight = m_viewPort.height();
 
   int zoomRatio = imax2(
         iround(static_cast<double>(canvasSize().width()) /m_viewPort.width()),
         iround(static_cast<double>(canvasSize().height()) / m_viewPort.height())
         );
+
+  int oldZoomRatio = zoomRatio;
 
   if (zoomRatio > 1) {
     if (usingRef) {
@@ -340,12 +342,22 @@ void ZImageWidget::decreaseZoomRatio(int x, int y, bool usingRef)
     } else {
       zoom(--zoomRatio);
     }
-    while (m_viewPort.width() == oldWidth && m_viewPort.height() == oldHeight) {
+//    m_viewPort.width() == oldWidth && m_viewPort.height() == oldHeight;
+    int currentZoomRatio = imax2(
+            iround(static_cast<double>(canvasSize().width()) /m_viewPort.width()),
+            iround(static_cast<double>(canvasSize().height()) / m_viewPort.height())
+            );
+
+    while (oldZoomRatio == currentZoomRatio) {
       if (usingRef) {
         zoom(--zoomRatio, QPoint(x, y));
       } else {
         zoom(--zoomRatio);
       }
+      currentZoomRatio = imax2(
+              iround(static_cast<double>(canvasSize().width()) /m_viewPort.width()),
+              iround(static_cast<double>(canvasSize().height()) / m_viewPort.height())
+              );
     }
 
     update();

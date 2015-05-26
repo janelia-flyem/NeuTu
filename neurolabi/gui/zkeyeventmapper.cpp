@@ -1,7 +1,7 @@
 #include "zkeyeventmapper.h"
 #include "zstackoperator.h"
 
-ZKeyEventMapper::ZKeyEventMapper(ZInteractiveContext *context, ZStackDoc *doc)
+ZKeyEventMapper::ZKeyEventMapper()
 {
 }
 

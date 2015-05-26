@@ -29,6 +29,7 @@ TEST(ZSparseStack, basic)
   stackGrid->consumeStack(ZIntPoint(1, 1, 1), stack);
 
   spStack.setGreyScale(stackGrid);
+  spStack.setBaseValue(0);
 
   ASSERT_EQ(2, (int) spStack.getObjectVolume());
   ZStack *stack2 = spStack.getStack();

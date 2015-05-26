@@ -27,11 +27,14 @@ class ZPainter
 {
 public:
   ZPainter();
+#ifdef _QT_GUI_USED_
   explicit ZPainter(QPaintDevice * device);
   explicit ZPainter(ZImage *image);
   explicit ZPainter(ZPixmap *pixmap);
+#endif
   ~ZPainter();
 
+#ifdef _QT_GUI_USED_
   bool begin(ZImage *image);
   bool begin(ZPixmap *pixmap);
   bool begin(QPaintDevice *device);
@@ -135,6 +138,7 @@ public:
 
   void fillRect(const QRect &r, Qt::GlobalColor color);
   void setOpacity(double alpha);
+#endif
 
   /*
   const QRect& getFieldOfView() const {
@@ -143,7 +147,9 @@ public:
   */
 
 private:
+#ifdef _QT_GUI_USED_
   QPainter m_painter;
+#endif
   int m_z;
   bool m_isPainted;
 

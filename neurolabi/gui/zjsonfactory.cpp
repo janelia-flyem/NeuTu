@@ -46,6 +46,7 @@ ZJsonArray ZJsonFactory::MakeJsonArray(
   return array;
 }
 
+#if defined(_QT_GUI_USED_)
 ZJsonArray ZJsonFactory::MakeJsonArray(const QMap<uint64_t, uint64_t> &map)
 {
   ZJsonArray array;
@@ -60,3 +61,4 @@ ZJsonArray ZJsonFactory::MakeJsonArray(const QMap<uint64_t, uint64_t> &map)
 
   return array;
 }
+#endif

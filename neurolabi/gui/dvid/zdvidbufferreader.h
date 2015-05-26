@@ -36,6 +36,8 @@ public:
     return m_buffer;
   }
 
+  void readQt(const QString &url, bool outputUrl = true);
+
 signals:
   void readingDone();
   void readingCanceled();

@@ -1044,7 +1044,10 @@ void ZFlyEmBodySplitProject::viewFullGrayscale()
 
 void ZFlyEmBodySplitProject::downloadBodyMask()
 {
-  getDocument<ZFlyEmProofDoc>()->downloadBodyMask();
+  ZFlyEmProofDoc *doc = getDocument<ZFlyEmProofDoc>();
+  if (doc != NULL) {
+    getDocument<ZFlyEmProofDoc>()->downloadBodyMask();
+  }
 }
 
 void ZFlyEmBodySplitProject::updateBodyMask()

@@ -225,7 +225,7 @@ TEST(ZDvidTest, ZDvidUrl)
 
   ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/test/merge",
             dvidUrl.getMergeUrl("test"));
-  ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/test/1",
+  ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/test/split/1",
             dvidUrl.getSplitUrl("test", 1));
 
   /*

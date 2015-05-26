@@ -1328,7 +1328,7 @@ bool ZStackPresenter::processKeyPressEvent(QKeyEvent *event)
   return processed;
 }
 
-bool ZStackPresenter::customKeyProcess(QKeyEvent *event)
+bool ZStackPresenter::customKeyProcess(QKeyEvent */*event*/)
 {
   return false;
 }
@@ -2324,6 +2324,26 @@ void ZStackPresenter::process(const ZStackOperator &op)
     break;
   case ZStackOperator::OP_SWC_MOVE_NODE_RIGHT_FAST:
     buddyDocument()->executeMoveSwcNodeCommand(10.0, 0, 0);
+    break;
+  case ZStackOperator::OP_SWC_INCREASE_NODE_SIZE:
+    if (isStrokeOff()) {
+      buddyDocument()->executeSwcNodeChangeSizeCommand(0.5);
+    }
+    break;
+  case ZStackOperator::OP_SWC_DECREASE_NODE_SIZE:
+    if (isStrokeOff()) {
+      buddyDocument()->executeSwcNodeChangeSizeCommand(-0.5);
+    }
+    break;
+  case ZStackOperator::OP_SWC_CONNECT_NODE:
+    if (buddyDocument()->hasSelectedSwcNode()) {
+      if (buddyDocument()->getSelectedSwcNodeNumber() == 1) {
+        enterSwcConnectMode();
+        //taken = true;
+      } else {
+        buddyDocument()->executeConnectSwcNodeCommand();
+      }
+    }
     break;
   case ZStackOperator::OP_RESTORE_EXPLORE_MODE:
     this->interactiveContext().restoreExploreMode();

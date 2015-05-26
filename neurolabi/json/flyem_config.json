@@ -5,7 +5,8 @@
       "uuid": "2a3",
       "name": "FIB25-Hackathon",
       "background": 0,
-      "comment": "FIB-25 export for hackathon"
+      "comment": "FIB-25 export for hackathon",
+      "user_name": "zhaot"
     },
     {
       "address": "emdata1.int.janelia.org",
@@ -22,20 +23,23 @@
       "port": 7000,
       "uuid": "79b",
       "name": "FIB19 (emdata2)",
-      "comment": "FIB19"
+      "comment": "FIB19",
+      "user_name": "zhaot"
     },
     {
       "address": "emdata1.int.janelia.org",
       "uuid": "2a3",
       "name": "FIB25-Hackathon (internal)",
       "background": 0,
-      "comment": "FIB-25 export for hackathon (internal access)"
+      "comment": "FIB-25 export for hackathon (internal access)",
+      "user_name": "zhaot"
     },
     {
       "address": "emdata.janelia.org",
       "uuid": "bf1",
       "name": "FIB-external",
-      "comment": "One column data"
+      "comment": "One column data",
+      "user_name": "zhaot"
     },
     {
       "address": "emdata1.int.janelia.org",
@@ -44,7 +48,8 @@
       "name": "FIB19 (emdata1)",
       "body_label": "segmentation012915nograph",
       "comment": "FIB-19 data at MLOLP-Z1112-19R/align2/iso_rav (emdata1)",
-      "local": "/groups/flyem/data/zhaot/local/FIB19-emdata1"
+      "local": "/groups/flyem/data/zhaot/local/FIB19-emdata1",
+      "user_name": "zhaot"
     },
     {
       "address": "emrecon100.janelia.priv",
@@ -52,7 +57,8 @@
       "name": "FIB25-Tile",
       "comment": "FIB-25 tile test",
       "multires_tile": "graytiles",
-      "label_block": "bodies"
+      "label_block": "bodies",
+      "user_name": "zhaot"
     },
     {
       "address": "emdata1.int.janelia.org",
@@ -61,7 +67,8 @@
       "name": "NEW MB-6",
       "body_label": "bodies",
       "label_block": "labels",
-      "comment": "Mushroom body MB-6 (7567 x 11140 x 14625)"
+      "comment": "Mushroom body MB-6 (7567 x 11140 x 14625)",
+      "user_name": "zhaot"
     },
     {
       "address": "emdata1.int.janelia.org",
@@ -79,14 +86,35 @@
       "name": "AL-split-Test",
       "comment": "AL child node for testing split",
       "body_label": "bodies121714",
-      "label_block": "segmentation121714"
+      "label_block": "segmentation121714",
+      "user_name": "zhaot"
     },
     {
       "address": "emdata1.int.janelia.org",
       "port": 8500,
       "uuid": "6f15",
-      "name": "MB_seg",
+      "name": "MB_seg_LOCKED",
       "comment": "MB seg (branched from ccf)",
+      "body_label": "bodies",
+      "label_block": "labels",
+      "user_name": ["zhaot"]
+    },
+    {
+      "address": "emdata1.int.janelia.org",
+      "port": 8500,
+      "uuid": "2635",
+      "name": "MB_seg_TEST",
+      "comment": "MB seg (branched from Shinya's node 6f15)",
+      "body_label": "bodies",
+      "label_block": "labels",
+      "user_name": ["zhaot"]
+    },
+    {
+      "address": "emdata1.int.janelia.org",
+      "port": 8500,
+      "uuid": "98ec",
+      "name": "MB_seg",
+      "comment": "MB seg (branched from Shinya's node 6f15)",
       "body_label": "bodies",
       "label_block": "labels",
       "user_name": ["takemuras", "zhaot"]
@@ -180,6 +208,16 @@
       "body_label": "bodies",
       "label_block": "labels",
       "user_name": ["tranj", "zhaot"]
+    },
+    {
+      "address": "emdata1.int.janelia.org",
+      "port": 8500,
+      "uuid": "3771",
+      "name": "MB_roi",
+      "comment": "MB seg (branched from ccf)",
+      "body_label": "bodies",
+      "label_block": "labels",
+      "user_name": ["zhaot"]
     }
   ]
 }

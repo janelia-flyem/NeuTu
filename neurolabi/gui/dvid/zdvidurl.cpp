@@ -10,6 +10,7 @@ const std::string ZDvidUrl::m_coarseSparsevolCommand = "sparsevol-coarse";
 const std::string ZDvidUrl::m_infoCommand = "info";
 const std::string ZDvidUrl::m_splitCommand = "split";
 const std::string ZDvidUrl::m_labelCommand = "label";
+const std::string ZDvidUrl::m_roiCommand = "roi";
 
 ZDvidUrl::ZDvidUrl()
 {
@@ -154,9 +155,9 @@ std::string ZDvidUrl::getCoarseSparsevolUrl(const std::string &dataName) const
 }
 
 std::string ZDvidUrl::getCoarseSparsevolUrl(
-    int bodyId, const std::string &dataName) const
+    uint64_t bodyId, const std::string &dataName) const
 {
-  if (bodyId < 0) {
+  if (bodyId == 0) {
     return "";
   }
 
@@ -166,7 +167,7 @@ std::string ZDvidUrl::getCoarseSparsevolUrl(
   return getCoarseSparsevolUrl(dataName) + "/" + str;
 }
 
-std::string ZDvidUrl::getCoarseSparsevolUrl(int bodyId) const
+std::string ZDvidUrl::getCoarseSparsevolUrl(uint64_t bodyId) const
 {
   return getCoarseSparsevolUrl(bodyId, m_dvidTarget.getBodyLabelName());
 }
@@ -511,4 +512,9 @@ std::string ZDvidUrl::getLocalBodyIdUrl(int x, int y, int z) const
   url.appendNumber(z);
 
   return url;
+}
+
+std::string ZDvidUrl::getRoiUrl(const std::string &dataName) const
+{
+  return getDataUrl(dataName) + "/" + m_roiCommand;
 }

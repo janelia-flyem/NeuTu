@@ -67,7 +67,9 @@ void FlyEmSplitControlForm::commitResult()
 {
   if (ZDialogFactory::Ask("Commit Confirmation",
                           "Do you want to upload the splitting results now? "
-                          "It cannot be undone.",
+                          "It cannot be undone. "
+                          "***IMPORTANT**** Please make sure you have run"
+                          " the full split.***",
                           this)) {
     emit committingResult();
   }

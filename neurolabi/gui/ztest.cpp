@@ -16780,7 +16780,7 @@ void ZTest::test(MainWindow *host)
   std::cout << qgetenv("USERNAME").data() << std::endl;
 #endif
 
-#if 1
+#if 0
   ZDvidTarget target("emdata1.int.janelia.org", "6f15", 8500);
   ZDvidReader reader;
   reader.open(target);
@@ -16818,5 +16818,42 @@ void ZTest::test(MainWindow *host)
 
   std::cout << obj1.getVoxelNumber() + obj2.getVoxelNumber() +
                obj3.getVoxelNumber() << std::endl;
+#endif
+
+#if 0
+
+  {
+  ZObject3dScan obj1;
+  obj1.load(GET_TEST_DATA_DIR + "/flyem/MB/alpha_block_cut1.sobj");
+  ZJsonArray array1 = ZJsonFactory::MakeJsonArray(
+        obj1, ZJsonFactory::OBJECT_SPARSE);
+  array1.dump(GET_TEST_DATA_DIR + "/flyem/MB/alpha_block_cut1.json");
+  }
+
+
+  {
+  ZObject3dScan obj2;
+  obj2.load(GET_TEST_DATA_DIR + "/flyem/MB/alpha_block_cut2.sobj");
+  ZJsonArray array2 = ZJsonFactory::MakeJsonArray(
+        obj2, ZJsonFactory::OBJECT_SPARSE);
+  array2.dump(GET_TEST_DATA_DIR + "/flyem/MB/alpha_block_cut2.json");
+  }
+
+  {
+  ZObject3dScan obj3;
+  obj3.load(GET_TEST_DATA_DIR + "/flyem/MB/alpha_block_cut3.sobj");
+  ZJsonArray array3 = ZJsonFactory::MakeJsonArray(
+        obj3, ZJsonFactory::OBJECT_SPARSE);
+  array3.dump(GET_TEST_DATA_DIR + "/flyem/MB/alpha_block_cut3.json");
+  }
+#endif
+
+#if 1
+  ZDvidReader reader;
+  ZDvidTarget target("emdata1.int.janelia.org", "9db", 8500);
+  reader.open(target);
+
+  ZObject3dScan obj = reader.readRoi("mb_subtracted_supp");
+  obj.save(GET_TEST_DATA_DIR + "/test.sobj");
 #endif
 }

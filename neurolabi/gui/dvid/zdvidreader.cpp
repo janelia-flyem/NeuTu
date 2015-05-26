@@ -251,6 +251,23 @@ ZStack* ZDvidReader::readThumbnail(int bodyId)
   ZDvidUrl url(getDvidTarget());
   qDebug() << url.getThumbnailUrl(bodyId);
 
+  ZDvidBufferReader reader;
+  reader.read(url.getThumbnailUrl(bodyId).c_str());
+
+  Mc_Stack *rawStack =
+      C_Stack::readMrawFromBuffer(reader.getBuffer().constData());
+
+  ZStack *stack = NULL;
+  if (rawStack != NULL) {
+    stack = new ZStack;
+    stack->setData(rawStack);
+    //  m_image.setData(stack);
+  }
+
+  return stack;
+
+
+#if 0
   startReading();
 
   ZDvidBuffer *dvidBuffer = m_dvidClient->getDvidBuffer();
@@ -272,6 +289,7 @@ ZStack* ZDvidReader::readThumbnail(int bodyId)
   }
 
   return stack;
+#endif
 }
 
 ZStack* ZDvidReader::readGrayScale(const ZIntCuboid &cuboid)
@@ -1195,7 +1213,7 @@ ZDvidVersionDag ZDvidReader::readVersionDag(const std::string &uuid) const
   return dag;
 }
 
-ZObject3dScan ZDvidReader::readCoarseBody(int bodyId)
+ZObject3dScan ZDvidReader::readCoarseBody(uint64_t bodyId)
 {
   ZDvidBufferReader reader;
   ZDvidUrl dvidUrl(m_dvidTarget);
@@ -1225,4 +1243,25 @@ uint64_t ZDvidReader::readBodyIdAt(int x, int y, int z)
   }
 
   return bodyId;
+}
+
+ZObject3dScan ZDvidReader::readRoi(const std::string dataName)
+{
+  ZDvidBufferReader bufferReader;
+  ZDvidUrl dvidUrl(m_dvidTarget);
+
+  bufferReader.readQt(dvidUrl.getRoiUrl(dataName).c_str());
+  const QByteArray &buffer = bufferReader.getBuffer();
+
+#ifdef _DEBUG_
+  std::cout << buffer.constData() << std::endl;
+#endif
+
+  ZJsonArray array;
+  array.decodeString(buffer.constData());
+
+  ZObject3dScan obj;
+  obj.importDvidRoi(array);
+
+  return obj;
 }

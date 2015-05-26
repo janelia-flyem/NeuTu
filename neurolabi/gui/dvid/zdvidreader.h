@@ -121,7 +121,9 @@ public:
   ZDvidVersionDag readVersionDag(const std::string &uuid) const;
   ZDvidVersionDag readVersionDag() const;
 
-  ZObject3dScan readCoarseBody(int bodyId);
+  ZObject3dScan readCoarseBody(uint64_t bodyId);
+
+  ZObject3dScan readRoi(const std::string dataName);
 
 signals:
   void readingDone();

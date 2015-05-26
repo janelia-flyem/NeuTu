@@ -14,7 +14,7 @@ ZPainter::ZPainter() : m_z(0), m_isPainted(false)
 {
 
 }
-
+#ifdef _QT_GUI_USED_
 ZPainter::ZPainter(QPaintDevice *device) :
   m_painter(device), m_z(0), m_isPainted(false)
 {
@@ -31,12 +31,16 @@ ZPainter::ZPainter(ZImage *image) : m_z(0)
   setTransform(transform);
   */
 }
+#endif
 
 ZPainter::~ZPainter()
 {
+#ifdef _QT_GUI_USED_
   end();
+#endif
 }
 
+#ifdef _QT_GUI_USED_
 ZPainter::ZPainter(ZPixmap *pixmap) : m_z(0)
 {
   begin(pixmap);
@@ -510,3 +514,4 @@ void ZPainter::setOpacity(double alpha)
 {
   m_painter.setOpacity(alpha);
 }
+#endif

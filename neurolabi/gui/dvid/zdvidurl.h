@@ -55,8 +55,8 @@ public:
 //  std::string getCoarseSparsevolUrl(int bodyId) const;
 
   std::string getCoarseSparsevolUrl(const std::string &dataName) const;
-  std::string getCoarseSparsevolUrl(int bodyId, const std::string &dataName) const;
-  std::string getCoarseSparsevolUrl(int bodyId) const;
+  std::string getCoarseSparsevolUrl(uint64_t bodyId, const std::string &dataName) const;
+  std::string getCoarseSparsevolUrl(uint64_t bodyId) const;
 
 
   std::string getGrayscaleUrl() const;
@@ -129,12 +129,13 @@ public:
   std::string getLockUrl() const;
   std::string getBranchUrl() const;
 
+  std::string getRoiUrl(const std::string &dataName) const;
+
   static std::string GetEndPoint(const std::string &url);
   /*!
    * \brief Get entry point of getting key value entries
    */
   static std::string GetKeyCommandUrl(const std::string &dataUrl);
-
 
 private:
   ZDvidTarget m_dvidTarget;
@@ -146,6 +147,7 @@ private:
   static const std::string m_coarseSparsevolCommand;
   static const std::string m_splitCommand;
   static const std::string m_labelCommand;
+  static const std::string m_roiCommand;
 };
 
 #endif // ZDVIDURL_H
