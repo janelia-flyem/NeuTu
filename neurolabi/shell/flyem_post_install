@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [ $# -eq 2 ]
+if [ ! $# -eq 2 ]
 then
   echo './flyem_post_install <neutube_dir> <build_dir>'
   exit 1
