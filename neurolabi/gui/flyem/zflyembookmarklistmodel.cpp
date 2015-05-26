@@ -114,3 +114,11 @@ void ZFlyEmBookmarkListModel::update(int row)
 {
   emit dataChanged(index(row, 0), index(row, columnCount() - 1));
 }
+
+/*
+void ZFlyEmBookmarkListModel::append(const ZFlyEmBookmark &bookmark)
+{
+  m_bookmarkArray.push_back(bookmark);
+  insertRows(rowCount() - 1, 1);
+}
+*/

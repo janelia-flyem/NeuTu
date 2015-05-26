@@ -1,7 +1,8 @@
 #include "zflyembookmark.h"
 #include <iostream>
 
-ZFlyEmBookmark::ZFlyEmBookmark() : m_bodyId(-1), m_isChecked(false)
+ZFlyEmBookmark::ZFlyEmBookmark() :
+  m_bodyId(-1), m_type(TYPE_LOCATION), m_isChecked(false)
 {
 }
 

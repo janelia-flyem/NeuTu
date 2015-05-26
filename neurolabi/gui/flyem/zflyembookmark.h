@@ -10,6 +10,10 @@ class ZFlyEmBookmark
 public:
   ZFlyEmBookmark();
 
+  enum EType {
+    TYPE_FALSE_MERGE, TYPE_FALSE_SPLIT, TYPE_LOCATION
+  };
+
   inline uint64_t getBodyId() const { return m_bodyId; }
   inline const QString& getTime() const { return m_time; }
   inline const QString& getUserName() const { return m_userName; }
@@ -37,6 +41,7 @@ private:
   QString m_time;
   QString m_status;
   ZIntPoint m_location;
+  EType m_type;
   bool m_isChecked;
 };
 
