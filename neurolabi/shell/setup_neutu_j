@@ -82,7 +82,7 @@ else
   cd build
 fi
 
-$CMAKE_CMD .. -DBUILDEM_DIR=$downloadDir/buildem
+$CMAKE_CMD .. -DBUILDEM_DIR=$downloadDir/buildem -DWITH_ATLAS=0
 make
 make
 
@@ -93,11 +93,12 @@ then
   echo '#!/bin/bash' > $updateFile
   echo "cd $downloadDir/neutube" >> $updateFile
   echo "$GIT_CMD pull" >> $updateFile
-  if [ -d $downloadDir/buildem ]
-  then
-    ext_qmake_args="-q BUILDEM_DIR=$downloadDir/buildem"
-  fi
-  echo "sh build.sh $install_dir/Trolltech/Qt4.8.5/bin/qmake $install_dir/Trolltech/Qt4.8.5/mkspecs/linux-g++ -e flyem $ext_qmake_args" >> $updateFile
+  #if [ -d $downloadDir/buildem ]
+  #then
+  #  ext_qmake_args="-q BUILDEM_DIR=$downloadDir/buildem"
+  #fi
+  #echo "sh build.sh $install_dir/Trolltech/Qt4.8.5/bin/qmake $install_dir/Trolltech/Qt4.8.5/mkspecs/linux-g++ -e flyem $ext_qmake_args" >> $updateFile
+  echo "$downloadDir/neutube/neurolabi/shell/flyem_ntupd $install_dir"
   chmod a+x $updateFile
 fi
 
