@@ -44,10 +44,6 @@ unix {
         -ljansson
 }
 
-exists($${EXTLIB_DIR}/png/lib) {
-    LIBS += -L$${EXTLIB_DIR}/png/lib -lpng
-}
-
 exists($${EXTLIB_DIR}/hdf5/lib/libhdf5.a) {
     DEFINES += _ENABLE_HDF5_
     INCLUDEPATH += $${EXTLIB_DIR}/hdf5/include
@@ -90,7 +86,10 @@ contains(DEFINES, _ENABLE_LIBDVIDCPP_) {
     exists($$BUILDEM_DIR) {
         LIBS *= -lssl -lcrypto
     }
+} else:exists($${EXTLIB_DIR}/png/lib) {
+    LIBS += -L$${EXTLIB_DIR}/png/lib -lpng
 }
+
 
 message($$DEFINES)
 message($$LIBS)
