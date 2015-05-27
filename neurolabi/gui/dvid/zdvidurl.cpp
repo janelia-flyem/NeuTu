@@ -94,7 +94,7 @@ ZDvidUrl::getSkeletonUrl(uint64_t bodyId, const std::string &bodyLabelName) cons
   ZString str;
   str.appendNumber(bodyId);
 
-  return GetKeyCommandUrl(getSkeletonUrl(bodyLabelName)) + "/" + str + ".swc";
+  return GetKeyCommandUrl(getSkeletonUrl(bodyLabelName)) + "/" + str + "_swc";
 
 #if 0
   ZString str;
