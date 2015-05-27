@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include <set>
 
 class ZCommandLine
 {
@@ -29,6 +30,8 @@ private:
   int runComputeFlyEmNeuronFeature();
   int runSkeletonize();
   int runImageSeparation();
+
+  std::set<int> loadBodySet(const std::string &input);
 
 private:
   std::vector<std::string> m_input;
