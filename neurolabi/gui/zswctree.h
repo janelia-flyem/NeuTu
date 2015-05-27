@@ -360,6 +360,7 @@ public:
    * \return The bound box.
    */
    const ZCuboid& getBoundBox() const;
+   using ZStackObject::getBoundBox; // warning: 'ZSwcTree::getBoundBox' hides overloaded virtual function [-Woverloaded-virtual]
 
   static ZSwcTree* createCuboidSwc(const ZCuboid &box, double radius = 1.0);
   ZSwcTree* createBoundBoxSwc(double margin = 0.0);

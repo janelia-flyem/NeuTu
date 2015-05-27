@@ -193,7 +193,7 @@ public:
 
   ZIntCuboid getBoundBox() const;
   void getBoundBox(Cuboid_I *box) const;
-  void getBoundBox(ZIntCuboid *box);
+  void getBoundBox(ZIntCuboid *box) const;
 
   template<class T>
   static std::map<int, ZObject3dScan*>* extractAllObject(

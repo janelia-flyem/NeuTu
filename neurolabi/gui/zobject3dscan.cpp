@@ -1016,7 +1016,7 @@ void ZObject3dScan::getBoundBox(Cuboid_I *box) const
                  boundBox.getHeight(), boundBox.getDepth());
 }
 
-void ZObject3dScan::getBoundBox(ZIntCuboid *box)
+void ZObject3dScan::getBoundBox(ZIntCuboid *box) const
 {
   if (box != NULL) {
     *box = getBoundBox();
