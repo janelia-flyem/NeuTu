@@ -474,6 +474,7 @@ std::set<int> ZCommandLine::loadBodySet(const std::string &input)
     std::vector<int> bodyArray = str.toIntegerArray();
     bodySet.insert(bodyArray.begin(), bodyArray.end());
   }
+  fclose(fp);
 
   return bodySet;
 }
@@ -514,8 +515,13 @@ int ZCommandLine::runSkeletonize()
 
   ZStackSkeletonizer skeletonizer;
   ZJsonObject config;
-  config.load(NeutubeConfig::getInstance().getApplicatinDir() +
-              "/json/skeletonize.json");
+
+  if (m_input.size() <= 2) {
+    config.load(NeutubeConfig::getInstance().getApplicatinDir() +
+                "/json/skeletonize.json");
+  } else {
+    config.load(m_input[2]);
+  }
   skeletonizer.configure(config);
 
   for (size_t i = 0; i < bodyIdArray.size(); ++i) {

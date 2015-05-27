@@ -1,0 +1,11 @@
+{
+  "downsampleInterval": [4, 4, 4],
+  "minimalLength": 40,
+  "keepingSingleObject": true,
+  "minimalObjectSize": 128,
+  "fillingHole": true,
+  "rebase": true,
+  "maximalDistance": 50
+}
+
+

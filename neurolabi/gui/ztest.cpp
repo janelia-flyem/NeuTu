@@ -16848,12 +16848,31 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
-#if 1
+#if 0
   ZDvidReader reader;
   ZDvidTarget target("emdata1.int.janelia.org", "9db", 8500);
   reader.open(target);
 
   ZObject3dScan obj = reader.readRoi("mb_subtracted_supp");
   obj.save(GET_TEST_DATA_DIR + "/test.sobj");
+#endif
+
+#if 1
+  std::string filePath = GET_TEST_DATA_DIR + "/flyem/MB/aftersplit.results";
+  std::string outFile = GET_TEST_DATA_DIR + "/flyem/MB/aftersplit.txt";
+
+  FILE *fp = fopen(filePath.c_str(), "r");
+  FILE *outFp = fopen(outFile.c_str(), "w");
+
+  ZString str;
+  while (str.readLine(fp)) {
+    int bodyId = str.firstInteger();
+    if (bodyId > 0) {
+      fprintf(outFp, "%d\n", bodyId);
+    }
+  }
+
+  fclose(fp);
+  fclose(outFp);
 #endif
 }
