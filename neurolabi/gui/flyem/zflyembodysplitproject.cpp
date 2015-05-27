@@ -289,7 +289,7 @@ void ZFlyEmBodySplitProject::quickView()
     m_quickViewWindow->raise();
     emit messageGenerated("Done.");
   } else {
-    emit messageGenerated("Failed to lauch quick view.");
+    emit messageGenerated("Failed to launch quick view.");
   }
 }
 

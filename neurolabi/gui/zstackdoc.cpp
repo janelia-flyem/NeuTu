@@ -4073,16 +4073,18 @@ void ZStackDoc::eraseTraceMask(const ZLocsegChain *chain)
 void ZStackDoc::setSelected(ZStackObject *obj,  bool selecting)
 {
   if (obj != NULL) {
-    ZStackObject::EType type = obj->getType();
-    TStackObjectSet &selectedSet = getSelected(type);
+    if (obj->isSelectable()) {
+      ZStackObject::EType type = obj->getType();
+      TStackObjectSet &selectedSet = getSelected(type);
 
-    m_objectGroup.setSelected(obj, selecting);
-    //obj->setSelected(selecting);
+      m_objectGroup.setSelected(obj, selecting);
+      //obj->setSelected(selecting);
 
-    if (selecting) {
-      selectedSet.insert(obj);
-    } else {
-      selectedSet.remove(obj);
+      if (selecting) {
+        selectedSet.insert(obj);
+      } else {
+        selectedSet.remove(obj);
+      }
     }
   }
 }
@@ -7651,6 +7653,7 @@ void ZStackDoc::localSeededWatershed()
     ZStack *signalStack = m_stack;
     ZIntPoint dsIntv(0, 0, 0);
     if (signalStack->isVirtual()) {
+      signalStack = NULL;
       if (m_sparseStack != NULL) {
         signalStack = m_sparseStack->getStack();
         dsIntv = m_sparseStack->getDownsampleInterval();
@@ -7659,8 +7662,10 @@ void ZStackDoc::localSeededWatershed()
               ZStackObject::TYPE_DVID_SPARSE_STACK,
               ZStackObjectSourceFactory::MakeSplitObjectSource());
         ZDvidSparseStack *sparseStack = dynamic_cast<ZDvidSparseStack*>(obj);
-        signalStack = sparseStack->getStack(seedMask.getBoundBox());
-        dsIntv = sparseStack->getDownsampleInterval();
+        if (sparseStack != NULL) {
+          signalStack = sparseStack->getStack(seedMask.getBoundBox());
+          dsIntv = sparseStack->getDownsampleInterval();
+        }
       }
     }
 
@@ -7699,6 +7704,8 @@ void ZStackDoc::localSeededWatershed()
 
       // C_Stack::kill(out);
       //delete out;
+    } else {
+      std::cout << "No signal for local watershed." << std::endl;
     }
   }
 
@@ -7721,6 +7728,7 @@ void ZStackDoc::seededWatershed()
     ZStack *signalStack = m_stack;
     ZIntPoint dsIntv(0, 0, 0);
     if (signalStack->isVirtual()) {
+      signalStack = NULL;
       if (m_sparseStack != NULL) {
         signalStack = m_sparseStack->getStack();
         dsIntv = m_sparseStack->getDownsampleInterval();
@@ -7729,8 +7737,10 @@ void ZStackDoc::seededWatershed()
               ZStackObject::TYPE_DVID_SPARSE_STACK,
               ZStackObjectSourceFactory::MakeSplitObjectSource());
         ZDvidSparseStack *sparseStack = dynamic_cast<ZDvidSparseStack*>(obj);
-        signalStack = sparseStack->getStack();
-        dsIntv = sparseStack->getDownsampleInterval();
+        if (sparseStack != NULL) {
+          signalStack = sparseStack->getStack();
+          dsIntv = sparseStack->getDownsampleInterval();
+        }
       }
     }
 
@@ -7750,6 +7760,8 @@ void ZStackDoc::seededWatershed()
       notifyObj3dModified();
 
       setLabelField(out);
+    } else {
+      std::cout << "No signal for watershed." << std::endl;
     }
   }
   getProgressSignal()->endProgress();

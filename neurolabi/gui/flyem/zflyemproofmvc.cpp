@@ -257,6 +257,7 @@ void ZFlyEmProofMvc::launchSplitFunc(uint64_t bodyId)
         body->setZOrder(0);
         body->setSource(ZStackObjectSourceFactory::MakeSplitObjectSource());
         body->setMaskColor(labelSlice->getColor(bodyId));
+        body->setSelectable(false);
         getDocument()->addObject(body, true);
       }
 

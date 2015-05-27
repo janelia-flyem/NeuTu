@@ -202,7 +202,11 @@ ZStackOperator ZMouseEventLeftButtonReleaseMapper::getOperation(
                  m_context->strokeEditMode() == ZInteractiveContext::STROKE_EDIT_OFF);
 
             if (selectionOn) {
-              processSelectionOperation(op, event);
+              if (op.getHitObject() != NULL) {
+                if (op.getHitObject()->isSelectable()) {
+                  processSelectionOperation(op, event);
+                }
+              }
             }
           }
         }
