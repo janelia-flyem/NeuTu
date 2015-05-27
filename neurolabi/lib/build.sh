@@ -62,19 +62,23 @@ then
   cd ..
 fi
 
-if [ ! -f png/lib/libpng.a ]
+use_png=0
+if [ $use_png -ne 0 ]
 then
-  echo 'Building libpng ...'
-  if [ ! -d png ]
+  if [ ! -f png/lib/libpng.a ]
   then
-    mkdir png
+    echo 'Building libpng ...'
+    if [ ! -d png ]
+    then
+      mkdir png
+    fi
+    uncompress_lib libpng-1.6.7
+    cd libpng-1.6.7
+    ./configure --enable-shared=no --with-pic --prefix=${libdir}/png
+    make
+    make install
+    cd ..
   fi
-  uncompress_lib libpng-1.6.7
-  cd libpng-1.6.7
-  ./configure --enable-shared=no --with-pic --prefix=${libdir}/png
-  make
-  make install
-  cd ..
 fi
 
 if [ ! -f hdf5/lib/libhdf5.a ]

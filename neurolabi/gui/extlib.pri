@@ -37,13 +37,15 @@ win32 {
 #Self-contained libraries
 unix {
     LIBS += -L$${EXTLIB_DIR}/xml/lib -L$${EXTLIB_DIR}/fftw3/lib \
-        -L$${EXTLIB_DIR}/png/lib \
         -L$${EXTLIB_DIR}/jansson/lib \
         -lfftw3 \
         -lfftw3f \
         -lxml2 \
-        -lpng \
         -ljansson
+}
+
+exists($${EXTLIB_DIR}/png/lib) {
+    LIBS += -L$${EXTLIB_DIR}/png/lib -lpng
 }
 
 exists($${EXTLIB_DIR}/hdf5/lib/libhdf5.a) {

@@ -98,7 +98,7 @@ then
   #  ext_qmake_args="-q BUILDEM_DIR=$downloadDir/buildem"
   #fi
   #echo "sh build.sh $install_dir/Trolltech/Qt4.8.5/bin/qmake $install_dir/Trolltech/Qt4.8.5/mkspecs/linux-g++ -e flyem $ext_qmake_args" >> $updateFile
-  echo "$downloadDir/neutube/neurolabi/shell/flyem_ntupd $install_dir"
+  echo "$downloadDir/neutube/neurolabi/shell/flyem_ntupd $install_dir" >> $updateFile
   chmod a+x $updateFile
 fi
 
