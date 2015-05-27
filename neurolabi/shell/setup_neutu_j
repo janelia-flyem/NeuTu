@@ -97,6 +97,11 @@ echo "$GIT_CMD pull" >> $updateFile
 #fi
 #echo "sh build.sh $install_dir/Trolltech/Qt4.8.5/bin/qmake $install_dir/Trolltech/Qt4.8.5/mkspecs/linux-g++ -e flyem $ext_qmake_args" >> $updateFile
 echo "$downloadDir/neutube/neurolabi/shell/flyem_ntupd $install_dir" >> $updateFile
+if [ -f $install_dir/bin/ntupd_post ]
+then
+  echo "$install_dir/bin/ntupd_post $install_dir" >> $updateFile
+fi
+
 chmod a+x $updateFile
 
 $install_dir/bin/ntupd
