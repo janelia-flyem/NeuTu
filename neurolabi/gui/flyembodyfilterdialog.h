@@ -23,12 +23,18 @@ public:
   bool hasUpperBodySize() const;
   bool namedBodyOnly() const;
 
+  QString getBodyListFile() const;
+  void setBodyListFile(const QString path);
+
   std::vector<int> getExcludedBodies() const;
   std::set<int> getExcludedBodySet() const;
 
   std::vector<int> getBodyIdArray() const;
 
   ZDvidFilter getDvidFilter() const;
+
+public slots:
+  void setBodyListFile();
 
 private:
   Ui::FlyEmBodyFilterDialog *ui;

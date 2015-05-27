@@ -141,11 +141,15 @@ bool ZFlyEmDataBundle::loadDvid(const ZDvidFilter &dvidFilter)
 
   std::set<int> bodySet;
 
-  if (dvidFilter.hasUpperBodySize()) {
-    bodySet = reader.readBodyId(dvidFilter.getMinBodySize(),
-                                dvidFilter.getMaxBodySize());
+  if (!dvidFilter.getBodyListFile().empty()) {
+    bodySet = dvidFilter.loadBodySet();
   } else {
-    bodySet = reader.readBodyId(dvidFilter.getMinBodySize());
+    if (dvidFilter.hasUpperBodySize()) {
+      bodySet = reader.readBodyId(dvidFilter.getMinBodySize(),
+                                  dvidFilter.getMaxBodySize());
+    } else {
+      bodySet = reader.readBodyId(dvidFilter.getMinBodySize());
+    }
   }
 
   m_neuronArray.resize(bodySet.size());
