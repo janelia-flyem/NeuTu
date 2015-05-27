@@ -33,6 +33,7 @@ public:
   void setDvidTarget(const ZDvidTarget &target);
 
   ZIntCuboid getBoundBox() const;
+  using ZStackObject::getBoundBox; // fix warning -Woverloaded-virtual
 
   void loadBody(int bodyId);
   void setMaskColor(const QColor &color);

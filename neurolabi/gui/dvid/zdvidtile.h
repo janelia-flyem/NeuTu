@@ -54,6 +54,7 @@ public:
   void attachView(ZStackView *view);
 
   ZRect2d getBoundBox() const;
+  using ZStackObject::getBoundBox; // fix warning -Woverloaded-virtual
 
 private:
   ZImage m_image;

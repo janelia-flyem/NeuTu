@@ -47,6 +47,7 @@ public:
   int getHeight() const { return m_height; }
 
   ZRect2d getBoundBox() const;
+  using ZStackObject::getBoundBox; // fix warning -Woverloaded-virtual
 
   void setBoundBox(const ZRect2d &rect);
 
