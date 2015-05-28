@@ -123,8 +123,18 @@
       "address": "emdata1.int.janelia.org",
       "port": 8500,
       "uuid": "98ec",
-      "name": "MB_seg",
+      "name": "MB_seg_old",
       "comment": "MB seg (branched from Shinya's node 6f15)",
+      "body_label": "bodies",
+      "label_block": "labels",
+      "user_name": ["takemuras", "zhaot"]
+    },
+    {
+      "address": "emdata1.int.janelia.org",
+      "port": 8500,
+      "uuid": "c348",
+      "name": "MB_seg",
+      "comment": "MB seg (after runniing splits in node 6f15)",
       "body_label": "bodies",
       "label_block": "labels",
       "user_name": ["takemuras", "zhaot"]

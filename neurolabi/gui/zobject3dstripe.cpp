@@ -1,6 +1,7 @@
 #include "zobject3dstripe.h"
 #include "tz_error.h"
 #include "zerror.h"
+#include "tz_math.h"
 
 int ZObject3dStripe::getMinX() const
 {
@@ -346,6 +347,67 @@ void ZObject3dStripe::drawStack(
     }
   }
 }
+
+void ZObject3dStripe::drawStack(
+    Stack *stack, uint8_t red, uint8_t green, uint8_t blue, double alpha,
+    const int *offset) const
+{
+  if (C_Stack::kind(stack) != COLOR) {
+    RECORD_ERROR(true, "Unsupported kind");
+    return;
+  }
+
+  Image_Array ima;
+  ima.array = stack->array;
+
+  int y = getY();
+  int z = getZ();
+
+  if (offset != NULL) {
+    y += offset[1];
+    z += offset[2];
+  }
+
+  if (y >= C_Stack::height(stack)) {
+    RECORD_ERROR(true, "y too large");
+    return;
+  }
+
+  if (z >= C_Stack::depth(stack)) {
+    RECORD_ERROR(true, "z too large");
+    return;
+  }
+  //TZ_ASSERT(y < C_Stack::height(stack), "y too large");
+  //TZ_ASSERT(z < C_Stack::depth(stack), "z too large");
+
+  size_t area = C_Stack::width(stack) * C_Stack::height(stack);
+  size_t arrayOffset = area * z + C_Stack::width(stack) * y;
+
+  ima.arrayc += arrayOffset;
+  uint8_t color[3];
+  color[0] = red;
+  color[1] = green;
+  color[2] = blue;
+  for (size_t i = 0; i < m_segmentArray.size(); i += 2) {
+    int x0 = m_segmentArray[i];
+    int x1 = m_segmentArray[i + 1];
+    if (offset != NULL) {
+      x0 += offset[0];
+      x1 += offset[0];
+    }
+    TZ_ASSERT(x0 < C_Stack::width(stack), "x too large");
+    TZ_ASSERT(x1 < C_Stack::width(stack), "x too large");
+    for (int x = x0; x <= x1; ++x) {
+      for (int c = 0; c < 3; ++c) {
+//        if (color[c] != 0) {
+          double v = ima.arrayc[x][c] * (1.0 - alpha) + color[c] * alpha;
+          ima.arrayc[x][c] = iround(v);
+//        }
+      }
+    }
+  }
+}
+
 
 static int ZObject3dSegmentCompare(const void *e1, const void *e2)
 {

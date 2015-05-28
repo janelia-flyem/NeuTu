@@ -16848,18 +16848,21 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
-#if 0
+#if 1
   ZDvidReader reader;
   ZDvidTarget target("emdata1.int.janelia.org", "9db", 8500);
   reader.open(target);
 
-  ZObject3dScan obj = reader.readRoi("mb_subtracted_supp");
-  obj.save(GET_TEST_DATA_DIR + "/test.sobj");
+  ZObject3dScan obj = reader.readRoi("mb_subtracted");
+  std::cout << obj.getVoxelNumber() << std::endl;
+//  obj.save(GET_TEST_DATA_DIR + "/test.sobj");
 #endif
 
-#if 1
+#if 0
   std::string filePath = GET_TEST_DATA_DIR + "/flyem/MB/aftersplit.results";
-  std::string outFile = GET_TEST_DATA_DIR + "/flyem/MB/aftersplit.txt";
+  std::string outFile = GET_TEST_DATA_DIR + "/flyem/MB/aftersplit2500.txt";
+
+  int count = 0;
 
   FILE *fp = fopen(filePath.c_str(), "r");
   FILE *outFp = fopen(outFile.c_str(), "w");
@@ -16869,10 +16872,101 @@ void ZTest::test(MainWindow *host)
     int bodyId = str.firstInteger();
     if (bodyId > 0) {
       fprintf(outFp, "%d\n", bodyId);
+      ++count;
+    }
+    if (count >= 2500) {
+      break;
     }
   }
 
   fclose(fp);
   fclose(outFp);
 #endif
+
+#if 0
+  ZDvidTarget target("emdata1.int.janelia.org", "c348", 8500);
+  ZDvidReader reader;
+  if (reader.open(target)) {
+    ZStack *stack = reader.readGrayScale(2600, 5200, 3958, 3200, 2400, 1);
+    stack->save(GET_TEST_DATA_DIR + "/flyem/MB/script/cast/grayscale.tif");
+  }
+
+#endif
+
+#if 0
+  ZObject3dScan obj1;
+  obj1.load(GET_TEST_DATA_DIR + "/flyem/MB/alpha_block_cut1.sobj");
+  std::cout << "red: " << obj1.getVoxelNumber() << std::endl;
+
+
+  ZObject3dScan obj2;
+  obj2.load(GET_TEST_DATA_DIR + "/flyem/MB/alpha_block_cut2.sobj");
+  std::cout << "gree: " << obj2.getVoxelNumber() << std::endl;
+
+  ZObject3dScan obj3;
+  obj3.load(GET_TEST_DATA_DIR + "/flyem/MB/alpha_block_cut3.sobj");
+  std::cout << "blue: " << obj3.getVoxelNumber() << std::endl;
+
+  ZIntCuboid box = obj1.getBoundBox();
+  box.join(obj2.getBoundBox());
+  box.join(obj3.getBoundBox());
+
+  ZStack *stack = ZStackFactory::makeZeroStack(COLOR, box);
+
+  obj1.drawStack(stack, 255, 0, 0);
+  obj2.drawStack(stack, 0, 255, 0);
+  obj3.drawStack(stack, 0, 0, 255);
+
+  stack->save(GET_TEST_DATA_DIR + "/test.tif");
+#endif
+
+#if 0
+  ZStack stack;
+  stack.load(GET_TEST_DATA_DIR + "/flyem/MB/script/cast/grayscale.tif");
+
+  Stack *canvas = C_Stack::translate(stack.c_stack(0), COLOR, 0);
+  int offset[3];
+  offset[0] = -stack.getOffset().getX();
+  offset[1] = -stack.getOffset().getY();
+  offset[2] = -stack.getOffset().getZ();
+
+  ZStack *canvasStack = ZStackFactory::makeZeroStack(COLOR, stack.getBoundBox(), 1);
+  C_Stack::copyValue(canvas, canvasStack->c_stack(0));
+
+  ZDvidTarget target("emdata1.int.janelia.org", "c348", 8500);
+  ZDvidReader reader;
+  if (reader.open(target)) {
+    ZObject3dScan *obj = reader.readBody(7192024, 3958, NULL);
+    obj->getSlice(3958).drawStack(canvasStack->c_stack(), 255, 0, 0, 0.5, offset);
+    delete obj;
+    canvasStack->save(GET_TEST_DATA_DIR + "/flyem/MB/script/cast/color1.tif");
+
+    obj = reader.readBody(15940982, 3958, NULL);
+    obj->getSlice(3958).drawStack(canvasStack->c_stack(), 0, 255, 0, 0.5, offset);
+    delete obj;
+    canvasStack->save(GET_TEST_DATA_DIR + "/flyem/MB/script/cast/color2.tif");
+
+    obj = reader.readBody(13770783, 3958, NULL);
+    obj->getSlice(3958).drawStack(canvasStack->c_stack(), 0, 255, 255, 0.5, offset);
+    delete obj;
+    canvasStack->save(GET_TEST_DATA_DIR + "/flyem/MB/script/cast/color3.tif");
+
+    obj = reader.readBody(14571660, 3958, NULL);
+    obj->getSlice(3958).drawStack(canvasStack->c_stack(), 255, 0, 255, 0.5, offset);
+    delete obj;
+    canvasStack->save(GET_TEST_DATA_DIR + "/flyem/MB/script/cast/color4.tif");
+
+    obj = reader.readBody(12574490, 3958, NULL);
+    obj->getSlice(3958).drawStack(canvasStack->c_stack(), 255, 255, 0, 0.5, offset);
+    delete obj;
+    canvasStack->save(GET_TEST_DATA_DIR + "/flyem/MB/script/cast/color5.tif");
+
+    obj = reader.readBody(9925442, 3958, NULL);
+    obj->getSlice(3958).drawStack(canvasStack->c_stack(), 0, 0, 255, 0.5, offset);
+    delete obj;
+    canvasStack->save(GET_TEST_DATA_DIR + "/flyem/MB/script/cast/color6.tif");
+  }
+#endif
+
+
 }

@@ -144,9 +144,13 @@ public:
   void drawStack(Stack *stack, int v, const int *offset = NULL) const;
   void drawStack(Stack *stack, uint8_t red, uint8_t green, uint8_t blue,
                  const int *offset = NULL) const;
+  void drawStack(Stack *stack, uint8_t red, uint8_t green, uint8_t blue,
+                 double alpha,
+                 const int *offset) const;
   void labelStack(Stack *stack, int startLabel, const int *offset = NULL);
 
   void drawStack(ZStack *stack, int v) const;
+  void drawStack(ZStack *stack, uint8_t red, uint8_t green, uint8_t blue) const;
 
   /*!
    * \brief Mask a stack with the foreground defined by the object.
