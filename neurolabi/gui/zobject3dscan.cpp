@@ -660,9 +660,33 @@ void ZObject3dScan::drawStack(
 {
   for (vector<ZObject3dStripe>::const_iterator iter = m_stripeArray.begin();
        iter != m_stripeArray.end(); ++iter) {
-    iter->drawStack(stack, red, green, blue, offset);
+    const ZObject3dStripe &stripe = *iter;
+    stripe.drawStack(stack, red, green, blue, offset);
   }
 }
+
+void ZObject3dScan::drawStack(
+    Stack *stack, uint8_t red, uint8_t green, uint8_t blue, double alpha,
+    const int *offset) const
+{
+  for (vector<ZObject3dStripe>::const_iterator iter = m_stripeArray.begin();
+       iter != m_stripeArray.end(); ++iter) {
+    const ZObject3dStripe &stripe = *iter;
+    stripe.drawStack(stack, red, green, blue, alpha, offset);
+  }
+}
+
+void ZObject3dScan::drawStack(
+    ZStack *stack, uint8_t red, uint8_t green, uint8_t blue) const
+{
+  int offset[3];
+  offset[0] = -stack->getOffset().getX();
+  offset[1] = -stack->getOffset().getY();
+  offset[2] = -stack->getOffset().getZ();
+
+  drawStack(stack->c_stack(0), red, green, blue, offset);
+}
+
 
 static int ZObject3dStripeCompare(const void *e1, const void *e2)
 {

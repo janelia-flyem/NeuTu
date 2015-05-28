@@ -35,6 +35,9 @@ public:
   void drawStack(Stack *stack, uint8_t red, uint8_t green, uint8_t blue,
                  const int *offset = NULL) const;
 
+  void drawStack(Stack *stack, uint8_t red, uint8_t green, uint8_t blue,
+                 double alpha, const int *offset) const;
+
   /*!
    * \brief Count the overlap area between an object and a stack
    *
