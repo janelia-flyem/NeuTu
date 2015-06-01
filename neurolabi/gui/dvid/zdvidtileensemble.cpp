@@ -6,7 +6,7 @@
 
 ZDvidTileEnsemble::ZDvidTileEnsemble()
 {
-  setTarget(ZStackObject::TILE_CANVAS);
+  setTarget(ZStackObject::TARGET_TILE_CANVAS);
   m_type = ZStackObject::TYPE_DVID_TILE_ENSEMBLE;
 }
 

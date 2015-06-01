@@ -14,11 +14,23 @@
 #include "zdialogfactory.h"
 #include "tz_math.h"
 #include "zprogresssignal.h"
+#include "zwidgetmessage.h"
 
 ZProofreadWindow::ZProofreadWindow(QWidget *parent) :
   QMainWindow(parent)
 {
   init();
+}
+
+template <typename T>
+void ZProofreadWindow::connectMessagePipe(T *source)
+{
+  connect(source, SIGNAL(messageGenerated(QString, bool)),
+          this, SLOT(dump(QString,bool)));
+  connect(source, SIGNAL(errorGenerated(QString, bool)),
+          this, SLOT(dumpError(QString,bool)));
+  connect(source, SIGNAL(messageGenerated(ZWidgetMessage)),
+          this, SLOT(dump(ZWidgetMessage)));
 }
 
 void ZProofreadWindow::init()
@@ -75,21 +87,23 @@ void ZProofreadWindow::init()
           this, SLOT(launchSplit(uint64_t)));
   connect(controlForm, SIGNAL(splitTriggered(uint64_t)),
           splitControlForm, SLOT(setSplit(uint64_t)));
-
   connect(controlForm, SIGNAL(splitTriggered()),
           this, SLOT(launchSplit()));
-
   connect(splitControlForm, SIGNAL(exitingSplit()),
           this, SLOT(exitSplit()));
+
+  connectMessagePipe(m_mainMvc);
 
   connect(m_mainMvc, SIGNAL(splitBodyLoaded(uint64_t)),
           this, SLOT(presentSplitInterface(uint64_t)));
   connect(m_mainMvc, SIGNAL(dvidTargetChanged(ZDvidTarget)),
           this, SLOT(updateDvidTargetWidget(ZDvidTarget)));
-  connect(m_mainMvc, SIGNAL(messageGenerated(QString, bool)),
-          this, SLOT(dump(QString,bool)));
-  connect(m_mainMvc, SIGNAL(errorGenerated(QString, bool)),
-          this, SLOT(dumpError(QString,bool)));
+//  connect(m_mainMvc, SIGNAL(messageGenerated(QString, bool)),
+//          this, SLOT(dump(QString,bool)));
+//  connect(m_mainMvc, SIGNAL(errorGenerated(QString, bool)),
+//          this, SLOT(dumpError(QString,bool)));
+//  connect(m_mainMvc, SIGNAL(messageGenerated(ZWidgetMessage)),
+//          this, SLOT(dump(ZWidgetMessage)));
 
 
   /*
@@ -158,6 +172,7 @@ void ZProofreadWindow::exitSplit()
 {
   m_mainMvc->exitSplit();
   m_controlGroup->setCurrentIndex(0);
+  dump("Back from splitting mode.", false);
 }
 
 void ZProofreadWindow::dump(const QString &message, bool appending)
@@ -168,6 +183,11 @@ void ZProofreadWindow::dump(const QString &message, bool appending)
 void ZProofreadWindow::dumpError(const QString &message, bool appending)
 {
   m_messageWidget->dumpError(message, appending);
+}
+
+void ZProofreadWindow::dump(const ZWidgetMessage &msg)
+{
+  dump(msg.toHtmlString(), msg.isAppending());
 }
 
 

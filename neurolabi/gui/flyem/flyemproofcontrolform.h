@@ -6,6 +6,7 @@
 //class ZDvidDialog;
 
 class QMenu;
+class ZDvidTarget;
 
 namespace Ui {
 class FlyEmProofControlForm;
@@ -30,6 +31,10 @@ signals:
   void savingMerge();
   void zoomingTo(int x, int y, int z);
   void locatingBody(uint64_t);
+
+public slots:
+  void setInfo(const QString &info);
+  void setDvidInfo(const ZDvidTarget &target);
 
 private slots:
   void setSegmentSize();

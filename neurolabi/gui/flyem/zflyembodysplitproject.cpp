@@ -186,7 +186,8 @@ void ZFlyEmBodySplitProject::showDataFrame3d()
       window->show();
       window->raise();
     } else {
-      emit messageGenerated("3D functions are disabled");
+      emitError("3D functions are disabled");
+//      emit messageGenerated("3D functions are disabled");
     }
 
   }
@@ -226,7 +227,7 @@ ZObject3dScan* ZFlyEmBodySplitProject::readBody(ZObject3dScan *out) const
 void ZFlyEmBodySplitProject::quickView()
 {
   if (m_quickViewWindow == NULL) {
-    emit messageGenerated("Generating quick view ...");
+    emitMessage("Generating quick view ...");
 
     ZObject3dScan obj;
     if (getDocument() != NULL) {
@@ -261,7 +262,7 @@ void ZFlyEmBodySplitProject::quickView()
 
     ZStackDoc *doc = new ZStackDoc(NULL, NULL);
     doc->setTag(NeuTube::Document::FLYEM_BODY_DISPLAY);
-    doc->addSwcTree(tree);
+    doc->addObject(tree);
 
     ZWindowFactory factory;
     factory.setWindowTitle("Quick View");
@@ -287,9 +288,9 @@ void ZFlyEmBodySplitProject::quickView()
   if (m_quickViewWindow != NULL) {
     m_quickViewWindow->show();
     m_quickViewWindow->raise();
-    emit messageGenerated("Done.");
+    emitMessage("Done.");
   } else {
-    emit messageGenerated("Failed to launch quick view.");
+    emitError("Failed to launch quick view.");
   }
 }
 
@@ -300,13 +301,17 @@ void ZFlyEmBodySplitProject::showSkeleton(ZSwcTree *tree)
       ZWindowFactory factory;
       factory.setWindowTitle("Quick View");
       ZStackDoc *doc = new ZStackDoc(NULL, NULL);
-      doc->addSwcTree(tree);
+      doc->addObject(tree);
       m_quickViewWindow = factory.make3DWindow(doc);
       connect(m_quickViewWindow, SIGNAL(destroyed()),
               this, SLOT(shallowClearQuickViewWindow()));
     } else {
+      m_quickViewWindow->getDocument()->beginObjectModifiedMode(
+            ZStackDoc::OBJECT_MODIFIED_CACHE);
       m_quickViewWindow->getDocument()->removeAllSwcTree();
-      m_quickViewWindow->getDocument()->addSwcTree(tree);
+      m_quickViewWindow->getDocument()->addObject(tree);
+      m_quickViewWindow->getDocument()->endObjectModifiedMode();
+      m_quickViewWindow->getDocument()->notifyObjectModified();
     }
 
     m_quickViewWindow->show();
@@ -317,6 +322,7 @@ void ZFlyEmBodySplitProject::showSkeleton(ZSwcTree *tree)
 void ZFlyEmBodySplitProject::loadResult3dQuick(ZStackDoc *doc)
 {
   if (doc != NULL && getDocument() != NULL) {
+    doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
     doc->removeAllSwcTree();
     TStackObjectList objList =
         getDocument()->getObjectList(ZStackObject::TYPE_OBJ3D);
@@ -340,11 +346,13 @@ void ZFlyEmBodySplitProject::loadResult3dQuick(ZStackDoc *doc)
                 *obj, dmin2(5.0, ds / 2.0), ds);
           tree->setAlpha(255);
           if (tree != NULL) {
-            doc->addSwcTree(tree);
+            doc->addObject(tree);
           }
         }
       }
     }
+    doc->endObjectModifiedMode();
+    doc->notifyObjectModified();
   }
 }
 
@@ -601,14 +609,14 @@ void ZFlyEmBodySplitProject::commitResultFunc(
 {
   emit progressStarted("Uploading splitted bodies", 100);
 
-  emit messageGenerated("Uploading results ...");
+  emitMessage("Uploading results ...");
 
 //  const ZObject3dScan *wholeBody =
 //      getDataFrame()->document()->getSparseStack()->getObjectMask();
 
   ZObject3dScan body = *wholeBody;
 
-  emit messageGenerated(QString("Backup ... %1").arg(getBodyId()));
+  emitMessage(QString("Backup ... %1").arg(getBodyId()));
 
   std::string backupDir = GET_TEST_DATA_DIR + "/backup";
   body.save(backupDir + "/" + getSeedKey(getBodyId()) + ".sobj");
@@ -730,7 +738,7 @@ void ZFlyEmBodySplitProject::commitResultFunc(
   //writer.writeMaxBodyId(bodyId);
 
   emit progressDone();
-  emit messageGenerated("Done.");
+  emitMessage("Done.");
   emit resultCommitted();
 }
 
@@ -788,7 +796,7 @@ void ZFlyEmBodySplitProject::deleteSavedSeed()
   ZDvidReader reader;
   if (reader.open(getDvidTarget())) {
     if (!reader.hasData(getSplitLabelName())) {
-      emit messageGenerated(
+      emitError(
             ("Failed to delete seed: " + getSplitLabelName() +
             " has not been created on the server.").c_str());
 
@@ -809,7 +817,7 @@ void ZFlyEmBodySplitProject::saveSeed()
   ZDvidReader reader;
   if (reader.open(getDvidTarget())) {
     if (!reader.hasData(getSplitLabelName())) {
-      emit messageGenerated(
+      emitError(
             ("Failed to save seed: " + getSplitLabelName() +
             " has not been created on the server.").c_str());
 
@@ -832,12 +840,12 @@ void ZFlyEmBodySplitProject::saveSeed()
   if (writer.open(getDvidTarget())) {
     if (jsonArray.isEmpty()) {
       writer.deleteKey(getSplitLabelName(), getSeedKey(getBodyId()));
-      emit messageGenerated("All seeds deleted");
+      emitMessage("All seeds deleted");
     } else {
       ZJsonObject rootObj;
       rootObj.setEntry("seeds", jsonArray);
       writer.writeJson(getSplitLabelName(), getSeedKey(getBodyId()), rootObj);
-      emit messageGenerated("All seeds saved");
+      emitMessage("All seeds saved");
     }
   }
 }
@@ -1247,8 +1255,21 @@ bool ZFlyEmBodySplitProject::isReadyForSplit(const ZDvidTarget &target)
     succ = false;
   }
 
-  emit messageGenerated(ZWidgetMessage::toHtmlString(
+  emit messageGenerated(ZWidgetMessage::ToHtmlString(
                           infoList, NeuTube::MSG_ERROR));
 
   return succ;
 }
+
+void ZFlyEmBodySplitProject::emitMessage(const QString &msg, bool appending)
+{
+  emit messageGenerated(
+        ZWidgetMessage(msg, NeuTube::MSG_INFORMATION, appending));
+}
+
+void ZFlyEmBodySplitProject::emitError(const QString &msg, bool appending)
+{
+  emit messageGenerated(
+        ZWidgetMessage(msg, NeuTube::MSG_ERROR, appending));
+}
+

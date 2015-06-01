@@ -21,3 +21,8 @@ ZStackObjectRole::ZStackObjectRole(TRole role) : m_role(role)
 {
 
 }
+
+void ZStackObjectRole::clear()
+{
+  m_role = ZStackObjectRole::ROLE_NONE;
+}

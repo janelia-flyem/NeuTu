@@ -22,6 +22,9 @@ class ZStackViewParam;
 class ZDvidSparsevolSlice;
 class ZDvidLabelSlice;
 
+/*!
+ * \brief The basic class of manage roles to a stack object
+ */
 class ZDocPlayer
 {
 public:

@@ -20,7 +20,7 @@
 
 ZDvidTile::ZDvidTile() : m_ix(0), m_iy(0), m_z(0), m_view(NULL)
 {
-  setTarget(ZStackObject::OBJECT_CANVAS);
+  setTarget(ZStackObject::TARGET_OBJECT_CANVAS);
   m_type = ZStackObject::TYPE_DVID_TILE;
 }
 

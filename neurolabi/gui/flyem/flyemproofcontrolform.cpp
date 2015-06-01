@@ -123,3 +123,13 @@ void FlyEmProofControlForm::goToPosition()
     }
   }
 }
+
+void FlyEmProofControlForm::setInfo(const QString &info)
+{
+  ui->dataInfoWidget->setText(info);
+}
+
+void FlyEmProofControlForm::setDvidInfo(const ZDvidTarget &target)
+{
+  setInfo(target.toJsonObject().dumpString(2).c_str());
+}

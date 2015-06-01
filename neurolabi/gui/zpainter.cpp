@@ -46,6 +46,11 @@ ZPainter::ZPainter(ZPixmap *pixmap) : m_z(0)
   begin(pixmap);
 }
 
+bool ZPainter::isActive() const
+{
+  return m_painter.isActive();
+}
+
 bool ZPainter::begin(ZImage *image)
 {
   m_isPainted = false;

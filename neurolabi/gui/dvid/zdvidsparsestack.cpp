@@ -8,7 +8,7 @@
 
 ZDvidSparseStack::ZDvidSparseStack()
 {
-  setTarget(ZStackObject::OBJECT_CANVAS);
+  setTarget(ZStackObject::TARGET_OBJECT_CANVAS);
   m_type = ZStackObject::TYPE_DVID_SPARSE_STACK;
 }
 

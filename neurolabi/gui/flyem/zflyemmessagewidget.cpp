@@ -66,7 +66,7 @@ void ZFlyEmMessageWidget::dumpError(const QString &info, bool appending)
 void ZFlyEmMessageWidget::dump(
     const QString &info, NeuTube::EMessageType type, bool appending)
 {
-  dump(ZWidgetMessage::toHtmlString(info, type), appending);
+  dump(ZWidgetMessage::ToHtmlString(info, type), appending);
 }
 
 void ZFlyEmMessageWidget::dump(

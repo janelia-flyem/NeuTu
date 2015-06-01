@@ -16,11 +16,14 @@
 #include "zimagewidget.h"
 #include "dvid/zdvidlabelslice.h"
 #include "flyem/zflyemproofpresenter.h"
+#include "zwidgetmessage.h"
 
 ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
-  ZStackMvc(parent), m_splitOn(false), m_dvidDlg(NULL)
+  ZStackMvc(parent), m_splitOn(false)
 {
   qRegisterMetaType<uint64_t>("uint64_t");
+
+  m_dvidDlg = new ZDvidDialog(this);
 }
 
 ZFlyEmProofMvc* ZFlyEmProofMvc::Make(
@@ -125,7 +128,7 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
 
 void ZFlyEmProofMvc::setDvidTarget()
 {
-  m_dvidDlg = new ZDvidDialog(this);
+//  m_dvidDlg = new ZDvidDialog(this);
   if (m_dvidDlg->exec()) {
     const ZDvidTarget &target = m_dvidDlg->getDvidTarget();
     setDvidTarget(target);
@@ -147,7 +150,6 @@ void ZFlyEmProofMvc::createPresenter()
     m_presenter = new ZFlyEmProofPresenter(this);
   }
 }
-
 
 void ZFlyEmProofMvc::customInit()
 {
@@ -175,8 +177,10 @@ void ZFlyEmProofMvc::customInit()
   m_splitProject.setDocument(getDocument());
   connect(&m_splitProject, SIGNAL(locating2DViewTriggered(const ZStackViewParam&)),
           this->getView(), SLOT(setView(const ZStackViewParam&)));
+  /*
   connect(&m_splitProject, SIGNAL(messageGenerated(QString, bool)),
           this, SIGNAL(messageGenerated(QString, bool)));
+          */
 
   m_mergeProject.setDocument(getDocument());
   connect(getPresenter(), SIGNAL(labelSliceSelectionChanged()),
@@ -185,11 +189,18 @@ void ZFlyEmProofMvc::customInit()
           &m_mergeProject, SLOT(highlightSelectedObject(bool)));
   connect(&m_mergeProject, SIGNAL(locating2DViewTriggered(ZStackViewParam)),
           this->getView(), SLOT(setView(ZStackViewParam)));
+  /*
   connect(&m_mergeProject, SIGNAL(messageGenerated(QString, bool)),
           this, SIGNAL(messageGenerated(QString,bool)));
-
   connect(getDocument().get(), SIGNAL(messageGenerated(QString, bool)),
           this, SIGNAL(messageGenerated(QString, bool)));
+          */
+
+  ZWidgetMessage::ConnectMessagePipe(&m_splitProject, this, false);
+  ZWidgetMessage::ConnectMessagePipe(&m_mergeProject, this, false);
+//  ZWidgetMessage::ConnectMessagePipe(&getDocument().get(), this, false);
+
+
   connect(this, SIGNAL(splitBodyLoaded(uint64_t)),
           this, SLOT(presentBodySplit(uint64_t)));
 
@@ -320,6 +331,7 @@ void ZFlyEmProofMvc::launchSplit(uint64_t bodyId)
 void ZFlyEmProofMvc::exitSplit()
 {
   if (m_splitOn) {
+    emitMessage("Exiting split ...");
     ZDvidLabelSlice *labelSlice = getCompleteDocument()->getDvidLabelSlice();
     labelSlice->setVisible(true);
     labelSlice->update(getView()->getViewParameter(NeuTube::COORD_STACK));

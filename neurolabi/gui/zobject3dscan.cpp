@@ -83,7 +83,7 @@ const ZObject3dScan::TEvent ZObject3dScan::EVENT_OBJECT_CANONIZED =
 ZObject3dScan::ZObject3dScan() : m_isCanonized(true), m_label(0),
   m_blockingEvent(false), m_zProjection(NULL)
 {
-  setTarget(OBJECT_CANVAS);
+  setTarget(TARGET_OBJECT_CANVAS);
   m_type = ZStackObject::TYPE_OBJECT3D_SCAN;
 }
 

@@ -22,6 +22,8 @@
 #include <QPair>
 #include <QMap>
 #include <QMutex>
+#include <QSet>
+#include <QStack>
 
 #include "neutube.h"
 #include "zcurve.h"
@@ -77,6 +79,7 @@ class ZStackViewParam;
 class Z3DWindow;
 class ZStackMvc;
 class ZProgressSignal;
+class ZWidgetMessage;
 
 /*!
  * \brief The class of stack document
@@ -131,6 +134,10 @@ public:
     ACTION_RESOLVE_CROSSOVER, ACTION_SWC_Z_INTERPOLATION,
     ACTION_SWC_RADIUS_INTERPOLATION, ACTION_SWC_POSITION_INTERPOLATION,
     ACTION_SWC_INTERPOLATION
+  };
+
+  enum EObjectModifiedMode {
+    OBJECT_MODIFIED_SLIENT, OBJECT_MODIFIED_SIGNAL, OBJECT_MODIFIED_CACHE
   };
 
 public: //attributes
@@ -391,8 +398,12 @@ public:
   //Those functions do not notify object modification
   //void removeLastObject(bool deleteObject = false);
   void removeAllObject(bool deleteObject = true);
-  ZStackObjectRole::TRole removeObject(ZStackObject *obj, bool deleteObject = false);
+  void removeObject(
+      ZStackObject *obj, bool deleteObject = false);
+
   void removeSelectedObject(bool deleteObject = false);
+  ZStackObjectRole::TRole removeObject(
+      ZStackObject::ETarget type, bool deleteObject = false);
 
   /* Remove object with specific roles */
   void removeObject(ZStackObjectRole::TRole role, bool deleteObject = false);
@@ -449,6 +460,8 @@ public: //Image processing
 private:
   void localSeededWatershed();
   void seededWatershed();
+  template <class InputIterator>
+  void removeObjectP(InputIterator first, InputIterator last, bool deleting);
 
 public: /* tracing routines */
   ZLocsegChain* fitseg(int x, int y, int z, double r = 3.0);
@@ -474,22 +487,24 @@ public: /* puncta related methods */
     return m_objectGroup.hasSelected(ZStackObject::TYPE_PUNCTUM);
   }
 
-  void addLocsegChain(ZLocsegChain *chain);
+  void addLocsegChainP(ZLocsegChain *chain);
   void addLocsegChain(const QList<ZLocsegChain*> &chainList);
 
-  void addSwcTree(ZSwcTree *obj, bool uniqueSource = true);
+  void addSwcTreeP(ZSwcTree *obj);
+
+  //void addSwcTree(ZSwcTree *obj, bool uniqueSource = true);
   void addSwcTree(ZSwcTree *obj, bool uniqueSource, bool translatingWithStack);
   void addSwcTree(const QList<ZSwcTree*> &swcList, bool uniqueSource = true);
   void addSparseObject(const QList<ZSparseObject*> &objList);
-  void addPunctum(ZPunctum *obj);
+  void addPunctumP(ZPunctum *obj);
   void addPunctum(const QList<ZPunctum*> &punctaList);
 
 
-  void addObj3d(ZObject3d *obj);
-  void addObject3dScan(ZObject3dScan *obj);
-  void addStackPatch(ZStackPatch *patch, bool uniqueSource = true);
-  void addStroke(ZStroke2d *obj);
-  void addSparseObject(ZSparseObject *obj);
+  void addObj3dP(ZObject3d *obj);
+  void addObject3dScanP(ZObject3dScan *obj);
+  void addStackPatchP(ZStackPatch *patch, bool uniqueSource = true);
+  void addStrokeP(ZStroke2d *obj);
+  void addSparseObjectP(ZSparseObject *obj);
 
   /*!
    * \brief Add an object
@@ -749,8 +764,32 @@ public:
   inline ZSwcTree* previewSwc() { return m_previewSwc; }
   void updatePreviewSwc();
   */
+
+  EObjectModifiedMode getObjectModifiedMode() const;
+  void beginObjectModifiedMode(EObjectModifiedMode mode);
+  void endObjectModifiedMode();
+
   void notifyObjectModified();
   void notifyObjectModified(ZStackObject::EType type);
+
+  void bufferObjectModified(ZStackObject::EType type);
+  void bufferObjectModified(ZStackObject::ETarget target);
+  void bufferObjectModified(const QSet<ZStackObject::EType> &typeSet);
+  void bufferObjectModified(const QSet<ZStackObject::ETarget> &targetSet);
+  void bufferObjectModified(ZStackObject *obj);
+  void bufferObjectModified(const ZStackObjectRole &role);
+  void bufferObjectModified(ZStackObjectRole::TRole role);
+
+
+  void processObjectModified(ZStackObject::EType type);
+  void processObjectModified(ZStackObject::ETarget target);
+  void processObjectModified(const QSet<ZStackObject::EType> &typeSet);
+  void processObjectModified(const QSet<ZStackObject::ETarget> &targetSet);
+  void processObjectModified(ZStackObject *obj);
+  void processObjectModified(ZStackObjectRole::TRole role);
+  void processObjectModified(const ZStackObjectRole &role);
+
+  void processSwcModified();
 
   /*!
    * \brief Notify any connect slots about the modification of SWC objects
@@ -769,7 +808,7 @@ public:
   void notifySparseStackModified();
   void notifyVolumeModified();
   void notifyStrokeModified();
-  void notifyAllObjectModified();
+  //void notifyAllObjectModified();
   void notify3DGraphModified();
   void notifyActiveViewModified();
   void notifyStatusMessageUpdated(const QString &message);
@@ -953,6 +992,7 @@ public:
   }
 */
 signals:
+  void messageGenerated(const ZWidgetMessage&);
   void locsegChainSelected(ZLocsegChain*);
   void stackDelivered(Stack *getStack, bool beOwner);
   void frameDelivered(ZStackFrame *frame);
@@ -972,6 +1012,9 @@ signals:
   void strokeModified();
   void graph3dModified();
   void objectModified();
+  void objectModified(ZStackObject::ETarget);
+  void objectModified(QSet<ZStackObject::ETarget>);
+
   void stackTargetModified();
   void swcNetworkModified();
   void activeViewModified();
@@ -1032,7 +1075,6 @@ private:
   template<typename T>
   const T* getFirstUserByType() const;
 
-
 private:
   //Main stack
   ZStack *m_stack;
@@ -1090,11 +1132,16 @@ private:
   bool m_selectionSilent;
   bool m_isReadyForPaint;
 
-  QMutex m_mutex;
+  //QMutex m_mutex;
 
   QList<QObject*> m_userList;
 
   ZProgressSignal *m_progressSignal;
+
+  QSet<ZStackObject::ETarget> m_objectModifiedTargetBuffer;
+  QSet<ZStackObject::EType> m_objectModifiedTypeBuffer;
+  ZStackObjectRole m_objectModifiedRoleBuffer;
+  QStack<EObjectModifiedMode> m_objectModifiedMode;
 
 protected:
   ZObjectColorScheme m_objColorSheme;
@@ -1299,6 +1346,31 @@ QList<T*> ZStackDoc::getUserList() const
   }
 
   return userList;
+}
+
+template <class InputIterator>
+void ZStackDoc::removeObjectP(
+    InputIterator first, InputIterator last, bool deleting)
+{
+  QSet<ZStackObject::EType> typeSet;
+  QSet<ZStackObject::ETarget> targetSet;
+
+  ZStackObjectRole role;
+  for (InputIterator iter = first; iter != last; ++iter) {
+    ZStackObject *obj = *iter;
+    role.addRole(m_playerList.removePlayer(obj));
+    typeSet.insert(obj->getType());
+    targetSet.insert(obj->getTarget());
+    if (deleting) {
+      delete obj;
+    }
+  }
+
+  if (first != last) {
+    processObjectModified(typeSet);
+    processObjectModified(targetSet);
+    notifyPlayerChanged(role);
+  }
 }
 
 #if 0

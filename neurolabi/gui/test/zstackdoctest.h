@@ -28,7 +28,7 @@ TEST(ZStackDoc, Swc)
 
   ZSwcTree *tree = new ZSwcTree;
   tree->load(GET_TEST_DATA_DIR + "/benchmark/bundle1/swc/2.swc");
-  doc.addSwcTree(tree);
+  doc.addObject(tree);
   ASSERT_EQ(2, doc.getSwcList().size());
 
   doc.saveSwc(GET_TEST_DATA_DIR + "/test2.swc");

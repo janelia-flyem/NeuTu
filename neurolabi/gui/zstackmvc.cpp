@@ -3,6 +3,7 @@
 #include "zstackview.h"
 #include "zstackpresenter.h"
 #include "zprogresssignal.h"
+#include "zwidgetmessage.h"
 
 ZStackMvc::ZStackMvc(QWidget *parent) :
   QWidget(parent)
@@ -73,6 +74,8 @@ void ZStackMvc::attachDocument(ZSharedPointer<ZStackDoc> doc)
 
 #define UPDATE_DOC_SIGNAL_SLOT(connect) \
   connect(m_doc.get(), SIGNAL(stackLoaded()), this, SIGNAL(stackLoaded()));\
+  connect(m_doc.get(), SIGNAL(messageGenerated(ZWidgetMessage)), \
+          this, SIGNAL(messageGenerated(ZWidgetMessage)));\
   connect(m_doc.get(), SIGNAL(stackModified()),\
           m_view, SLOT(updateChannelControl()));\
   connect(m_doc.get(), SIGNAL(stackModified()),\
@@ -84,6 +87,11 @@ void ZStackMvc::attachDocument(ZSharedPointer<ZStackDoc> doc)
   connect(m_doc.get(), SIGNAL(stackModified()),\
           m_view, SLOT(updateView()));\
   connect(m_doc.get(), SIGNAL(objectModified()), m_view, SLOT(paintObject()));\
+  connect(m_doc.get(), SIGNAL(objectModified(ZStackObject::ETarget)), \
+          m_view, SLOT(paintObject(ZStackObject::ETarget)));\
+  connect(m_doc.get(), SIGNAL(objectModified()), m_view, SLOT(paintObject()));\
+  connect(m_doc.get(), SIGNAL(objectModified(QSet<ZStackObject::ETarget>)), \
+          m_view, SLOT(paintObject(QSet<ZStackObject::ETarget>)));\
   connect(m_doc.get(), SIGNAL(cleanChanged(bool)),\
           this, SLOT(changeWindowTitle(bool)));\
   connect(m_doc.get(), SIGNAL(holdSegChanged()), m_view, SLOT(paintObject()));\
@@ -212,4 +220,16 @@ QRect ZStackMvc::getViewGeometry() const
   rect.moveTo(getView()->mapToGlobal(rect.topLeft()));
 
   return rect;
+}
+
+void ZStackMvc::emitMessage(const QString &msg, bool appending)
+{
+  emit messageGenerated(
+        ZWidgetMessage(msg, NeuTube::MSG_INFORMATION, appending));
+}
+
+void ZStackMvc::emitError(const QString &msg, bool appending)
+{
+  emit messageGenerated(
+        ZWidgetMessage(msg, NeuTube::MSG_ERROR, appending));
 }

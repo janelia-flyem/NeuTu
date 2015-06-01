@@ -55,6 +55,8 @@ ZSwcTree::ZSwcTree() : m_smode(STRUCT_NORMAL), m_hitSwcNode(NULL)
   m_iteratorReady = false;
   setColorScheme(COLOR_NORMAL);
   m_type = ZStackObject::TYPE_SWC;
+
+  setTarget(GetDefaultTarget());
 }
 
 ZSwcTree::~ZSwcTree()
@@ -3665,3 +3667,7 @@ Swc_Tree_Node* ZSwcTree::LeafIterator::next()
   return NULL;
 }
 
+ZStackObject::ETarget ZSwcTree::GetDefaultTarget()
+{
+  return ZStackObject::TARGET_WIDGET;
+}
