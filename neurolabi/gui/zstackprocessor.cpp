@@ -851,7 +851,6 @@ void ZStackProcessor::RemoveBranchPoint(Stack *stack, int nnbr)
           size_t neighbor_index = index + neighbor[j];
           if (stack->array[neighbor_index] > 0) {
             ++count;
-            break;
           }
         }
       }

@@ -28,6 +28,7 @@ public:
 signals:
   void highlightingSelected(bool);
   void selectingBodyAt(int x, int y, int z);
+  void deselectingAllBody();
 
 public slots:
 
