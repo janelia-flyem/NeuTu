@@ -499,7 +499,7 @@ void ZFlyEmProofMvc::xorSelectionAt(int x, int y, int z)
         QList<uint64_t> labelList =
             getCompleteDocument()->getBodyMerger()->getOriginalLabelList(
               finalBodyId);
-        slice->xorSelection(labelList.begin(), labelList.end());
+        slice->xorSelectionGroup(labelList.begin(), labelList.end());
         /*
         foreach (uint64_t label, labelList) {
           slice->xorSelection(label);
