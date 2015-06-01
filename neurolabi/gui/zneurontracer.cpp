@@ -15,6 +15,9 @@
 #include "swc/zswcresampler.h"
 #include "zintpoint.h"
 #include "neutubeconfig.h"
+#include "zstackprocessor.h"
+#include "zobject3darray.h"
+#include "tz_objdetect.h"
 
 ZNeuronTraceSeeder::ZNeuronTraceSeeder()
 {
@@ -513,6 +516,49 @@ Stack* ZNeuronTracer::enhanceLine(const Stack *stack)
 
 
 Geo3d_Scalar_Field* ZNeuronTracer::extractSeed(const Stack *mask)
+{
+  return extractSeedSkel(mask);
+}
+
+Geo3d_Scalar_Field* ZNeuronTracer::extractSeedSkel(const Stack *mask)
+{
+  Stack *skel = Stack_Bwthin(mask, NULL);
+
+  ZStackProcessor::RemoveBranchPoint(skel, 26);
+
+  /* alloc <dist> */
+  Stack *dist = Stack_Bwdist_L_U16(mask, NULL, 0);
+
+#ifdef _DEBUG_
+  C_Stack::write(GET_TEST_DATA_DIR + "/test.tif", skel);
+#endif
+
+  Object_3d_List *objList = Stack_Find_Object_N(skel, NULL, 1, 0, 26);
+  ZObject3dArray objArray;
+  objArray.append(objList);
+
+//  Free_Object_3d_List(objList);
+
+  Geo3d_Scalar_Field *field = Make_Geo3d_Scalar_Field(objArray.size());
+  for (size_t i = 0; i < objArray.size(); ++i) {
+    ZObject3d *obj = objArray[i];
+    ZIntPoint pt = obj->getCentralVoxel();
+    field->points[i][0] = pt.getX();
+    field->points[i][1] = pt.getY();
+    field->points[i][2] = pt.getZ();
+    field->values[i] = sqrt(
+          C_Stack::value(dist, pt.getX(), pt.getY(), pt.getZ()));
+  }
+
+  /* free <dist> */
+  C_Stack::kill(dist);
+
+  C_Stack::kill(skel);
+
+  return field;
+}
+
+Geo3d_Scalar_Field* ZNeuronTracer::extractSeedOriginal(const Stack *mask)
 {
   /* alloc <dist> */
   Stack *dist = Stack_Bwdist_L_U16(mask, NULL, 0);

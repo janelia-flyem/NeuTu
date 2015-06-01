@@ -177,6 +177,8 @@ public:
   ZPoint getCenter() const;
   double getRadius() const;
 
+  ZIntPoint getCentralVoxel() const;
+
   /*!
    * \brief Duplicate the object voxels across planes
    *

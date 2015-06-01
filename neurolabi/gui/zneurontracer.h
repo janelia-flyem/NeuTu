@@ -142,6 +142,9 @@ private:
   Stack* bwsolid(Stack *stack);
   Stack* enhanceLine(const Stack *stack);
   Geo3d_Scalar_Field* extractSeed(const Stack *mask);
+  Geo3d_Scalar_Field* extractSeedOriginal(const Stack *mask);
+  Geo3d_Scalar_Field* extractSeedSkel(const Stack *mask);
+
   ZSwcTree *reconstructSwc(const Stack *stack,
                            std::vector<Locseg_Chain*> &chainArray);
   std::vector<Locseg_Chain*> trace(const Stack *stack,
