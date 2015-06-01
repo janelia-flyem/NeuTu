@@ -68,7 +68,7 @@ public slots:
   void showBodyQuickView();
   void showSplitQuickView();
   void presentBodySplit(uint64_t bodyId);
-  void updateSelection();
+  void updateBodySelection();
   void saveSeed();
   void saveMergeOperation();
   void commitCurrentSplit();
@@ -87,6 +87,7 @@ public slots:
   void loadBookmark(const QString &filePath);
   void addSelectionAt(int x, int y, int z);
   void xorSelectionAt(int x, int y, int z);
+  void deselectAllBody();
 //  void toggleEdgeMode(bool edgeOn);
 
 protected:

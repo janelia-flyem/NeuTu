@@ -187,7 +187,7 @@ void ZFlyEmProofMvc::customInit()
 
   m_mergeProject.setDocument(getDocument());
   connect(getPresenter(), SIGNAL(labelSliceSelectionChanged()),
-          this, SLOT(updateSelection()));
+          this, SLOT(updateBodySelection()));
   connect(getCompletePresenter(), SIGNAL(highlightingSelected(bool)),
           &m_mergeProject, SLOT(highlightSelectedObject(bool)));
   connect(&m_mergeProject, SIGNAL(locating2DViewTriggered(ZStackViewParam)),
@@ -209,11 +209,13 @@ void ZFlyEmProofMvc::customInit()
 
   connect(getCompletePresenter(), SIGNAL(selectingBodyAt(int,int,int)),
           this, SLOT(xorSelectionAt(int, int, int)));
+  connect(getCompletePresenter(), SIGNAL(deselectingAllBody()),
+          this, SLOT(deselectAllBody()));
 
   disableSplit();
 }
 
-void ZFlyEmProofMvc::updateSelection()
+void ZFlyEmProofMvc::updateBodySelection()
 {
   if (getCompleteDocument() != NULL) {
     ZDvidLabelSlice *slice = getCompleteDocument()->getDvidLabelSlice();
@@ -222,6 +224,8 @@ void ZFlyEmProofMvc::updateSelection()
     m_mergeProject.update3DBodyView();
     if (getCompletePresenter()->isHighlight()) {
       m_mergeProject.highlightSelectedObject(true);
+    } else {
+      getCompleteDocument()->processObjectModified(slice);
     }
   }
 }
@@ -478,7 +482,7 @@ void ZFlyEmProofMvc::addSelectionAt(int x, int y, int z)
       if (slice != NULL) {
         slice->addSelection(bodyId);
       }
-      updateSelection();
+      updateBodySelection();
     }
   }
 }
@@ -502,7 +506,19 @@ void ZFlyEmProofMvc::xorSelectionAt(int x, int y, int z)
         }
         */
       }
-      updateSelection();
+      updateBodySelection();
+    }
+  }
+}
+
+void ZFlyEmProofMvc::deselectAllBody()
+{
+  ZDvidReader reader;
+  if (reader.open(getDvidTarget())) {
+    ZDvidLabelSlice *slice = getCompleteDocument()->getDvidLabelSlice();
+    if (slice != NULL) {
+      slice->deselectAll();
+      updateBodySelection();
     }
   }
 }
@@ -533,7 +549,7 @@ void ZFlyEmProofMvc::locateBody(uint64_t bodyId)
     if (slice != NULL) {
       slice->setSelection(bodySet);
     }
-    updateSelection();
+    updateBodySelection();
 
     zoomTo(pt);
   }

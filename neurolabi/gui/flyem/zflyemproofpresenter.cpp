@@ -27,6 +27,11 @@ bool ZFlyEmProofPresenter::customKeyProcess(QKeyEvent *event)
       processed = true;
     }
     break;
+  case Qt::Key_C:
+    if (!isSplitOn()) {
+      emit deselectingAllBody();
+    }
+    break;
   default:
     break;
   }

@@ -12,6 +12,7 @@
 #include "dvid/zdvidsparsestack.h"
 #include "dvid/zdvidwriter.h"
 #include "dvid/zdvidsparsevolslice.h"
+#include "zwidgetmessage.h"
 
 ZFlyEmProofDoc::ZFlyEmProofDoc(ZStack *stack, QObject *parent) :
   ZStackDoc(stack, parent)
@@ -170,6 +171,8 @@ void ZFlyEmProofDoc::saveMergeOperation()
   ZDvidWriter writer;
   if (writer.open(getDvidTarget())) {
     writer.writeMergeOperation(m_bodyMerger.getFinalMap());
+
+    emit messageGenerated(ZWidgetMessage("Merge operation saved."));
   }
 }
 
