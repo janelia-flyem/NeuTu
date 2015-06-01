@@ -24,8 +24,30 @@ ZDvidInfo::ZDvidInfo() : m_dvidPort(7000)
   m_blockSize.resize(3, m_defaultBlockSize);
 }
 
+void ZDvidInfo::clear()
+{
+  for (size_t i = 0; i < m_stackSize.size(); ++i) {
+    m_stackSize[i] = 0;
+  }
+
+  for (size_t i = 0; i < m_blockSize.size(); ++i) {
+    m_blockSize[i] = m_defaultBlockSize;
+  }
+
+  m_startCoordinates.set(0, 0, 0);
+  m_startBlockIndex.set(0, 0, 0);
+  m_endBlockIndex.set(0, 0, 0);
+}
+
+bool ZDvidInfo::isValid() const
+{
+  return (m_stackSize[0] > 0 && m_stackSize[1] > 0 && m_stackSize[2] > 0);
+}
+
 void ZDvidInfo::setFromJsonString(const std::string &str)
 {
+  clear();
+
   ZJsonObject rootObj;
   if (rootObj.decode(str)) {
     ZJsonObject obj;

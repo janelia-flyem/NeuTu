@@ -662,7 +662,7 @@ void ZStackView::redrawObject()
   updateImageScreen();
 }
 
-void ZStackView::redraw()
+void ZStackView::redraw(bool updatingScreen)
 {
 //  tic();
   QElapsedTimer timer;
@@ -682,7 +682,9 @@ void ZStackView::redraw()
   paintObjectBuffer();
 //  std::cout << "paint object per frame: " << timer.restart() << std::endl;
 
-  updateImageScreen();
+  if (updatingScreen) {
+    updateImageScreen();
+  }
 //  std::cout << "paint time per frame: " << toc() << std::endl;
   std::cout << "paint time per frame: " << timer.restart() << std::endl;
 }
@@ -1985,9 +1987,9 @@ void ZStackView::paintObject(ZStackObject::ETarget target)
   ZPainter *painter = getPainter(target);
   if (painter != NULL) {
     paintObjectBuffer(*painter, target);
-    if (painter->isPainted()) {
+//    if (painter->isPainted()) {
       updateImageScreen();
-    }
+//    }
   } else {
     if (target == ZStackObject::TARGET_WIDGET) {
       updateImageScreen();
@@ -2004,10 +2006,11 @@ void ZStackView::paintObject(const QSet<ZStackObject::ETarget> &targetSet)
     ZPainter *painter = getPainter(target);
     if (painter != NULL) {
       paintObjectBuffer(*painter, target);
-      isPainted = isPainted || painter->isPainted();
+//      isPainted = isPainted || painter->isPainted();
       if (painter->isPainted()) {
         setCanvasVisible(target, true);
       }
+      isPainted = true;
     } else if (target == ZStackObject::TARGET_WIDGET) {
       isPainted = true;
     }

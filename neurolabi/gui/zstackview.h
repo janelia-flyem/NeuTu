@@ -217,7 +217,7 @@ public: //Message system implementation
 
 public slots:
   void updateView();
-  void redraw();
+  void redraw(bool updatingScreen = true);
   void redrawObject();
   //void updateData(int nslice, int threshold = -1);
   //void updateData();

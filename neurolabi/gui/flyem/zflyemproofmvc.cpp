@@ -110,7 +110,10 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
     clear();
 //    getCompleteDocument()->clearData();
     getCompleteDocument()->setDvidTarget(target);
+    getCompleteDocument()->beginObjectModifiedMode(
+          ZStackDoc::OBJECT_MODIFIED_CACHE);
     getCompleteDocument()->updateTileData();
+    getCompleteDocument()->endObjectModifiedMode();
     QList<ZDvidTileEnsemble*> teList =
         getCompleteDocument()->getDvidTileEnsembleList();
     foreach (ZDvidTileEnsemble *te, teList) {

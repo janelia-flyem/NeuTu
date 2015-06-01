@@ -54,8 +54,16 @@ void ZDvidTileEnsemble::display(
     return;
   }
 
+  if (m_view->imageWidget() == NULL) {
+    return;
+  }
+
   QRect fov = m_view->imageWidget()->viewPort();
   QSize screenSize = m_view->imageWidget()->size();
+
+  if (screenSize.width() == 0 || screenSize.height() == 0) {
+    return;;
+  }
 
 
   int zoomRatio = std::min(fov.width() / screenSize.width(),

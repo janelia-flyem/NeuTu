@@ -3244,6 +3244,23 @@ void ZStackDoc::removeSelectedObject(bool deleteObject)
   */
 }
 
+void ZStackDoc::removeObject(ZStackObject::EType type, bool deleteObject)
+{
+  TStackObjectList objList = m_objectGroup.take(type);
+  for (TStackObjectList::iterator iter = objList.begin(); iter != objList.end();
+       ++iter) {
+//    role.addRole(m_playerList.removePlayer(*iter));
+    bufferObjectModified(*iter);
+    m_playerList.removePlayer(*iter);
+
+    if (deleteObject) {
+      delete *iter;
+    }
+  }
+
+  notifyObjectModified();
+}
+
 void ZStackDoc::removeSelectedPuncta(bool deleteObject)
 {
   /*

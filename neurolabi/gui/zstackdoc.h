@@ -402,8 +402,12 @@ public:
       ZStackObject *obj, bool deleteObject = false);
 
   void removeSelectedObject(bool deleteObject = false);
-  ZStackObjectRole::TRole removeObject(
-      ZStackObject::ETarget type, bool deleteObject = false);
+  /*
+  void removeObject(
+      ZStackObject::ETarget target, bool deleteObject = false);
+      */
+  void removeObject(
+      ZStackObject::EType type, bool deleteObject = false);
 
   /* Remove object with specific roles */
   void removeObject(ZStackObjectRole::TRole role, bool deleteObject = false);
