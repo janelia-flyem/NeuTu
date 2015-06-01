@@ -13,6 +13,8 @@
 #endif
 #include "tz_stack.h"
 #include "tz_stack_math.h"
+#include "tz_stack_neighborhood.h"
+#include "tz_objdetect.h"
 
 ZStackProcessor::ZStackProcessor()
 {
@@ -819,5 +821,44 @@ void ZStackProcessor::invert(ZStack *stack)
   double maxValue = stack->max();
   for (int c = 0; c < stack->channelNumber(); ++c) {
     Stack_Csub(stack->c_stack(c), maxValue);
+  }
+}
+
+void ZStackProcessor::RemoveBranchPoint(Stack *stack, int nnbr)
+{
+  if (C_Stack::kind(stack) != GREY) {
+    return;
+  }
+
+  int is_in_bound[26];
+  int width = C_Stack::width(stack);
+  int height = C_Stack::height(stack);
+  int depth = C_Stack::depth(stack);
+
+  int neighbor[26];
+  Stack_Neighbor_Offset(nnbr, width, height, neighbor);
+  size_t index;
+  size_t voxelNumber = Stack_Voxel_Number(stack);
+
+  for (index = 0; index < voxelNumber; ++index) {
+    if (stack->array[index] > 0) {
+      int n_in_bound = Stack_Neighbor_Bound_Test_I(nnbr, width, height, depth,
+          index, is_in_bound);
+      int j;
+      int count = 0;
+      for (j = 0; j < nnbr; ++j) {
+        if (n_in_bound == nnbr || is_in_bound[j]) {
+          size_t neighbor_index = index + neighbor[j];
+          if (stack->array[neighbor_index] > 0) {
+            ++count;
+            break;
+          }
+        }
+      }
+
+      if (count > 2) {
+        stack->array[index] = 0;
+      }
+    }
   }
 }

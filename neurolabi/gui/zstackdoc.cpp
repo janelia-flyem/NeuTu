@@ -130,6 +130,7 @@ ZStackDoc::ZStackDoc(ZStack *stack, QObject *parent) : QObject(parent),
         this, ZStackObjectRole::ROLE_SEED, this);
   m_undoStack = new QUndoStack(this);
 
+  qRegisterMetaType<QSet<ZStackObject::ETarget> >("QSet<ZStackObject::ETarget>");
   connectSignalSlot();
 
   //setReporter(new ZQtMessageReporter());
