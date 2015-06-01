@@ -10,6 +10,7 @@ class ZFlyEmMessageWidget;
 class QProgressDialog;
 class ZProgressSignal;
 class ZDvidTarget;
+class ZWidgetMessage;
 
 /*!
  * \brief The mainwindow class of proofreading
@@ -44,6 +45,7 @@ public slots:
 
   void dump(const QString &message, bool appending = true);
   void dumpError(const QString &message, bool appending = true);
+  void dump(const ZWidgetMessage &msg);
 
   void startProgress();
   void startProgress(const QString &title, int nticks);
@@ -56,6 +58,9 @@ private:
   void init();
   void initProgress(int nticks);
 
+  template <typename T>
+  void connectMessagePipe(T *source);
+
 private:
   ZFlyEmProofMvc *m_mainMvc;
   QStackedWidget *m_controlGroup;
@@ -63,7 +68,8 @@ private:
 
   QProgressDialog *m_progressDlg;
   ZProgressSignal *m_progressSignal;
-
 };
+
+
 
 #endif // ZPROOFREADWINDOW_H

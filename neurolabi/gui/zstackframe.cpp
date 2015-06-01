@@ -275,6 +275,11 @@ void ZStackFrame::consumeDocument(ZStackDoc *doc)
   connect(m_doc.get(), SIGNAL(stackModified()),\
           m_view, SLOT(updateView()));\
   connect(m_doc.get(), SIGNAL(objectModified()), m_view, SLOT(paintObject()));\
+  connect(m_doc.get(), SIGNAL(objectModified(ZStackObject::ETarget)), \
+          m_view, SLOT(paintObject(ZStackObject::ETarget)));\
+  connect(m_doc.get(), SIGNAL(objectModified()), m_view, SLOT(paintObject()));\
+  connect(m_doc.get(), SIGNAL(objectModified(QSet<ZStackObject::ETarget>)), \
+          m_view, SLOT(paintObject(QSet<ZStackObject::ETarget>)));\
   connect(m_doc.get(), SIGNAL(cleanChanged(bool)),\
           this, SLOT(changeWindowTitle(bool)));\
   connect(m_doc.get(), SIGNAL(holdSegChanged()), m_view, SLOT(paintObject()));\
@@ -1471,10 +1476,13 @@ void ZStackFrame::importPointList(const QString &filePath)
 {
   QList<ZPunctum*> puncta = ZPunctumIO::load(filePath);
   if (!puncta.isEmpty()) {
+    document()->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
     foreach (ZPunctum* punctum, puncta) {
-      document()->addPunctum(punctum);
+      document()->addObject(punctum);
     }
-    document()->notifyPunctumModified();
+    document()->endObjectModifiedMode();
+    document()->notifyObjectModified();
+//    document()->notifyPunctumModified();
   }
 }
 
@@ -1559,7 +1567,7 @@ void ZStackFrame::loadRoi(const QString &filePath, bool isExclusive)
 
     obj->setColor(16, 16, 16, 64);
 
-    obj->setTarget(ZStackObject::OBJECT_CANVAS);
+    obj->setTarget(ZStackObject::TARGET_OBJECT_CANVAS);
     if (isExclusive) {
       clearDecoration();
     }

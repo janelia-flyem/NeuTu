@@ -142,6 +142,16 @@
     {
       "address": "emdata1.int.janelia.org",
       "port": 8500,
+      "uuid": "86e1",
+      "name": "MB_zhaot",
+      "comment": "MB seg (after runniing splits in node 6f15)",
+      "body_label": "bodies",
+      "label_block": "labels",
+      "user_name": ["zhaot"]
+    },
+    {
+      "address": "emdata1.int.janelia.org",
+      "port": 8500,
       "uuid": "f17b",
       "name": "MB_for_Satoko",
       "comment": "MB seg (branched from ccf)",

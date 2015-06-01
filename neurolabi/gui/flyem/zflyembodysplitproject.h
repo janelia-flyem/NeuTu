@@ -17,6 +17,7 @@ class ZFlyEmNeuron;
 class ZStack;
 class ZStackDoc;
 class ZStackViewParam;
+class ZWidgetMessage;
 
 class ZFlyEmBodySplitProject : public QObject
 {
@@ -119,9 +120,16 @@ public:
 
   bool isReadyForSplit(const ZDvidTarget &target);
 
+  void emitMessage(const QString &msg, bool appending = true);
+  void emitError(const QString &msg, bool appending = true);
+
 signals:
+  /*
   void messageGenerated(QString, bool appending = true);
   void errorGenerated(QString, bool appending = true);
+  */
+
+  void messageGenerated(const ZWidgetMessage&);
 //  void errorGenerated(QStringList);
   void resultCommitted();
 

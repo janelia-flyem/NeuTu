@@ -67,7 +67,7 @@ void AutosaveSwcListDialog::viewSwc(const QModelIndex &index)
     ZSwcTree *tree = new ZSwcTree;
     tree->load(fileName.toStdString());
     if (!tree->isEmpty()) {
-      doc->addSwcTree(tree);
+      doc->addObject(tree);
       ZWindowFactory factory;
       factory.setParentWidget(this->parentWidget());
       Z3DWindow *window = factory.make3DWindow(doc);

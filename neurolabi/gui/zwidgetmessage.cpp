@@ -2,17 +2,19 @@
 
 #include <QStringList>
 
-ZWidgetMessage::ZWidgetMessage() : m_type(NeuTube::MSG_INFORMATION)
+ZWidgetMessage::ZWidgetMessage() :
+  m_type(NeuTube::MSG_INFORMATION), m_appending(false)
 {
 }
 
-ZWidgetMessage::ZWidgetMessage(const QString &msg, NeuTube::EMessageType type) :
-  m_message(msg), m_type(type)
+ZWidgetMessage::ZWidgetMessage(const QString &msg, NeuTube::EMessageType type,
+                               bool appending) :
+  m_type(type), m_appending(appending)
 {
-
+  m_message.append(msg);
 }
 
-QString ZWidgetMessage::toHtmlString(
+QString ZWidgetMessage::ToHtmlString(
     const QString &msg, NeuTube::EMessageType type)
 {
   QString output = msg;
@@ -38,16 +40,16 @@ QString ZWidgetMessage::toHtmlString(
 
 QString ZWidgetMessage::toHtmlString() const
 {
-  return toHtmlString(m_message, m_type);
+  return ToHtmlString(m_message, m_type);
 }
 
-QString ZWidgetMessage::toHtmlString(
+QString ZWidgetMessage::ToHtmlString(
     const QStringList &msgList, NeuTube::EMessageType type)
 {
   QString output;
 
   foreach (const QString msg, msgList) {
-    output += toHtmlString(msg, type);
+    output += ToHtmlString(msg, type);
   }
 
   return output;

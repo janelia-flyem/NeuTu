@@ -3465,7 +3465,8 @@ void MainWindow::on_actionSynapse_Annotation_triggered()
       FlyEm::ZSynapseAnnotationArray synapseArray;
 
       double radius = 10.0;
-      doc->blockSignals(true);
+      doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+//      doc->blockSignals(true);
       foreach (QString filePath, fileList) {
         std::vector<ZPunctum*> puncta;
         if (synapseArray.loadJson(filePath.toStdString())) {
@@ -3484,11 +3485,15 @@ void MainWindow::on_actionSynapse_Annotation_triggered()
 
         for (std::vector<ZPunctum*>::iterator iter = puncta.begin();
              iter != puncta.end(); ++iter) {
-          doc->addPunctum(*iter);
+          doc->addObject(*iter);
+//          doc->addPunctum(*iter);
         }
       }
-      doc->blockSignals(false);
-      doc->notifyPunctumModified();
+//      doc->blockSignals(false);
+//      doc->notifyPunctumModified();
+
+      doc->endObjectModifiedMode();
+      doc->notifyObjectModified();
 
       m_3dWindowFactory.open3DWindow(doc);
       /*
@@ -4821,7 +4826,7 @@ void MainWindow::on_actionMask_SWC_triggered()
         }
 
         if (stackFrame != swcFrame) {
-          swcFrame->document()->addSwcTree(wholeTree);
+          swcFrame->document()->addObject(wholeTree);
         } else {
           QUndoCommand *command = new QUndoCommand;
           new ZStackDocCommand::SwcEdit::AddSwc(

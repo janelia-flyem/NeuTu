@@ -205,7 +205,10 @@ QVector<const ZFlyEmNeuron*> ZFlyEmNeuronListModel::getNeuronArray(
 void ZFlyEmNeuronListModel::retrieveModel(
     const QModelIndexList &indexList, ZStackDoc *doc) const
 {
-  doc->blockSignals(true);
+//  doc->blockSignals(true);
+
+  doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+
   QVector<const ZFlyEmNeuron*> neuronArray;
   QMap<std::string, QColor> colorMap;
   ZSwcColorScheme colorScheme;
@@ -235,20 +238,22 @@ void ZFlyEmNeuronListModel::retrieveModel(
         //qDebug() << colorMap[neuron->getClass()];
         //qDebug() << colorMap["L1"];
         tree->setColor(colorMap[neuron->getType()]);
-        doc->addSwcTree(tree, true);
+        doc->addObject(tree, true);
       }
 
       std::vector<ZPunctum*> puncta = neuron->getSynapse();
       for (std::vector<ZPunctum*>::iterator iter = puncta.begin();
            iter != puncta.end(); ++iter) {
-        doc->addPunctum(*iter);
+        doc->addObject(*iter);
       }
-
     }
   }
-  doc->blockSignals(false);
-  doc->swcObjsModel()->updateModelData();
-  doc->punctaObjsModel()->updateModelData();
+
+  doc->endObjectModifiedMode();
+  doc->notifyObjectModified();
+//  doc->blockSignals(false);
+//  doc->swcObjsModel()->updateModelData();
+//  doc->punctaObjsModel()->updateModelData();
 }
 
 ZScalableStack* ZFlyEmNeuronListModel::retrieveBody(

@@ -217,7 +217,7 @@ public: //Message system implementation
 
 public slots:
   void updateView();
-  void redraw();
+  void redraw(bool updatingScreen = true);
   void redrawObject();
   //void updateData(int nslice, int threshold = -1);
   //void updateData();
@@ -264,6 +264,10 @@ public slots:
   void setView(const ZStackViewParam &param);
 
   void updateZSpinBoxValue();
+
+  void paintObject(ZStackObject::ETarget target);
+  void paintObject(const QSet<ZStackObject::ETarget> &targetSet);
+
 
 signals:
   void currentSliceChanged(int);
@@ -330,6 +334,9 @@ private:
   void notifyViewChanged();
 
   void init();
+
+  ZPainter* getPainter(ZStackObject::ETarget target);
+  void setCanvasVisible(ZStackObject::ETarget target, bool visible);
 
 private:
   //ZStackFrame *m_parent;

@@ -47,25 +47,27 @@ void ZFlyEmProofDoc::updateTileData()
   ZDvidReader reader;
   if (reader.open(m_dvidTarget)) {
     ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
-    ZStack *stack = ZStackFactory::makeVirtualStack(
-          ZIntCuboid(dvidInfo.getStartCoordinates(),
-                     dvidInfo.getEndCoordinates()));
-    loadStack(stack);
+    if (dvidInfo.isValid()) {
+      ZStack *stack = ZStackFactory::makeVirtualStack(
+            ZIntCuboid(dvidInfo.getStartCoordinates(),
+                       dvidInfo.getEndCoordinates()));
+      loadStack(stack);
 
-    ZDvidTileEnsemble *ensemble = new ZDvidTileEnsemble;
-    ensemble->setDvidTarget(getDvidTarget());
-//    ensemble->attachView(stackWidget->getView());
-    ensemble->setSource(ZStackObjectSourceFactory::MakeDvidTileSource());
-    addObject(ensemble, true);
+      ZDvidTileEnsemble *ensemble = new ZDvidTileEnsemble;
+      ensemble->setDvidTarget(getDvidTarget());
+      //    ensemble->attachView(stackWidget->getView());
+      ensemble->setSource(ZStackObjectSourceFactory::MakeDvidTileSource());
+      addObject(ensemble, true);
 
-  //  target.setBodyLabelName("labels");
+      //  target.setBodyLabelName("labels");
 
-    ZDvidLabelSlice *labelSlice = new ZDvidLabelSlice;
-    labelSlice->setRole(ZStackObjectRole::ROLE_ACTIVE_VIEW);
-    labelSlice->setDvidTarget(getDvidTarget());
-    labelSlice->setSource(ZStackObjectSourceFactory::MakeDvidLabelSliceSource());
-    labelSlice->setBodyMerger(&m_bodyMerger);
-    addObject(labelSlice, true);
+      ZDvidLabelSlice *labelSlice = new ZDvidLabelSlice;
+      labelSlice->setRole(ZStackObjectRole::ROLE_ACTIVE_VIEW);
+      labelSlice->setDvidTarget(getDvidTarget());
+      labelSlice->setSource(ZStackObjectSourceFactory::MakeDvidLabelSliceSource());
+      labelSlice->setBodyMerger(&m_bodyMerger);
+      addObject(labelSlice, true);
+    }
   }
 }
 

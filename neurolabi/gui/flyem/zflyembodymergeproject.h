@@ -22,6 +22,7 @@ class ZArray;
 class Z3DWindow;
 class ZStackDoc;
 class ZFlyEmBodyMerger;
+class ZWidgetMessage;
 //class ZStackViewParam;
 
 class ZFlyEmBodyMergeProject : public QObject
@@ -82,6 +83,9 @@ public:
 
   uint64_t getMappedBodyId(uint64_t label) const;
 
+  void emitMessage(const QString msg, bool appending = true);
+  void emitError(const QString msg, bool appending = true);
+
 signals:
   void progressAdvanced(double dp);
   void progressStarted();
@@ -94,8 +98,12 @@ signals:
   void bodyMerged(QList<uint64_t> objLabelList);
   void splitSent(ZDvidTarget target, int bodyId);
   void locating2DViewTriggered(ZStackViewParam);
+  void messageGenerated(const ZWidgetMessage&);
+
+  /*
   void messageGenerated(QString, bool appending = true);
   void errorGenerated(QString, bool appending = true);
+  */
 
 public slots:
   void viewGrayscale(const ZIntPoint &offset, int width, int height);

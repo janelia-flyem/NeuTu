@@ -19,7 +19,7 @@ ZDvidLabelSlice::ZDvidLabelSlice(int maxWidth, int maxHeight)
 
 void ZDvidLabelSlice::init(int maxWidth, int maxHeight)
 {
-  setTarget(ZStackObject::OBJECT_CANVAS);
+  setTarget(ZStackObject::TARGET_OBJECT_CANVAS);
   m_type = ZStackObject::TYPE_DVID_LABEL_SLICE;
   m_objColorSheme.setColorScheme(ZColorScheme::CONV_RANDOM_COLOR);
   m_hitLabel = -1;

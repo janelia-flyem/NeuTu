@@ -722,6 +722,8 @@ public: //static functions
 
   static bool getHostState(const Swc_Tree_Node *tn, ENodeState state);
 
+  static ETarget GetDefaultTarget();
+
 
 private:
   static void computeLineSegment(const Swc_Tree_Node *lowerTn,

@@ -801,7 +801,7 @@ void ZFlyEmRoiDialog::previewFullRoi()
 
   if (tree != NULL) {
     ZStackDoc *doc = new ZStackDoc(NULL, NULL);
-    doc->addSwcTree(tree);
+    doc->addObject(tree);
     Z3DWindow::Open(doc, this);
 
     //ZStackFrame *frame = new ZStackFrame();

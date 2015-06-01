@@ -1770,7 +1770,7 @@ bool ZStackPresenter::enterSwcExtendMode()
       //m_stroke.set(SwcTreeNode::x(tn), SwcTreeNode::y(tn));
       m_stroke.setWidth(SwcTreeNode::radius(tn) * 2.0);
       turnOnStroke();
-      m_stroke.setTarget(ZStackObject::WIDGET);
+      m_stroke.setTarget(ZStackObject::TARGET_WIDGET);
       interactiveContext().setSwcEditMode(ZInteractiveContext::SWC_EDIT_EXTEND);
       updateCursor();
       succ = true;
@@ -1816,7 +1816,7 @@ void ZStackPresenter::enterSwcAddNodeMode(double x, double y)
   m_stroke.set(x, y);
   m_stroke.setEraser(false);
   m_stroke.setFilled(false);
-  m_stroke.setTarget(ZStackObject::WIDGET);
+  m_stroke.setTarget(ZStackObject::TARGET_WIDGET);
   turnOnStroke();
   //buddyView()->paintActiveDecoration();
   updateCursor();
@@ -1889,7 +1889,7 @@ void ZStackPresenter::enterDrawStrokeMode(double x, double y)
   m_stroke.set(x, y);
   m_stroke.setEraser(false);
   m_stroke.setFilled(true);
-  m_stroke.setTarget(ZStackObject::OBJECT_CANVAS);
+  m_stroke.setTarget(ZStackObject::TARGET_OBJECT_CANVAS);
   turnOnStroke();
   //buddyView()->paintActiveDecoration();
   interactiveContext().setStrokeEditMode(ZInteractiveContext::STROKE_DRAW);
@@ -1909,7 +1909,7 @@ void ZStackPresenter::enterEraseStrokeMode(double x, double y)
   m_stroke.set(x, y);
   m_stroke.setFilled(true);
   m_stroke.setEraser(true);
-  m_stroke.setTarget(ZStackObject::OBJECT_CANVAS);
+  m_stroke.setTarget(ZStackObject::TARGET_OBJECT_CANVAS);
   turnOnStroke();
   //buddyView()->paintActiveDecoration();
   interactiveContext().setStrokeEditMode(ZInteractiveContext::STROKE_DRAW);

@@ -2818,11 +2818,14 @@ void Z3DWindow::convertPunctaToSwc()
       tree->addRegularRoot(tn);
     }
 
-    m_doc->addSwcTree(tree, false);
+    m_doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+    m_doc->addObject(tree, false);
     m_doc->removeSelectedPuncta();
+    m_doc->endObjectModifiedMode();
+    m_doc->notifyObjectModified();
 
-    m_doc->notifyPunctumModified();
-    m_doc->notifySwcModified();
+//    m_doc->notifyPunctumModified();
+//    m_doc->notifySwcModified();
   }
 }
 
@@ -3157,21 +3160,26 @@ void Z3DWindow::convertSelectedChainToSwc()
 {
   std::set<ZLocsegChain*> chainSet =
       m_doc->getSelectedObjectSet<ZLocsegChain>(ZStackObject::TYPE_LOCSEG_CHAIN);
+
+  m_doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
   for (std::set<ZLocsegChain*>::iterator iter = chainSet.begin();
        iter != chainSet.end(); ++iter) {
     Swc_Tree_Node *tn = TubeModel::createSwc((*iter)->data());
     if (tn != NULL) {
       ZSwcTree *tree = new ZSwcTree;
       tree->setDataFromNode(tn);
-      m_doc->addSwcTree(tree, false);
+      m_doc->addObject(tree, false);
     }
   }
   //chainSet->clear();
 
   m_doc->executeRemoveTubeCommand();
+  m_doc->endObjectModifiedMode();
 
-  m_doc->notifySwcModified();
-  m_doc->notifyChainModified();
+  m_doc->notifyObjectModified();
+
+//  m_doc->notifySwcModified();
+//  m_doc->notifyChainModified();
 }
 
 bool Z3DWindow::hasSwc() const

@@ -43,6 +43,8 @@ public:
   void save();
   void restore();
 
+  bool isActive() const;
+
 
   void setStackOffset(int x, int y, int z);
   void setStackOffset(const ZIntPoint &offset);
