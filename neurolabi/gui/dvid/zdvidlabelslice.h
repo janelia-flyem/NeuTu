@@ -43,6 +43,9 @@ public:
   template <typename InputIterator>
   void xorSelection(const InputIterator &begin, const InputIterator &end);
 
+  template <typename InputIterator>
+  void xorSelectionGroup(const InputIterator &begin, const InputIterator &end);
+
 
   inline const std::set<uint64_t>& getSelected() const {
     return m_selectedSet;
@@ -96,5 +99,31 @@ void ZDvidLabelSlice::xorSelection(
   }
 }
 
+template <typename InputIterator>
+void ZDvidLabelSlice::xorSelectionGroup(
+    const InputIterator &begin, const InputIterator &end)
+{
+  std::set<uint64_t> labelSet;
+
+  bool selecting = false;
+  for (InputIterator iter = begin; iter != end; ++iter) {
+    labelSet.insert(*iter);
+    if (m_selectedSet.count(*iter) == 0) { //any body has not been selected
+      selecting = true;
+    }
+  }
+
+  if (selecting) {
+    for (std::set<uint64_t>::const_iterator iter  = labelSet.begin();
+         iter != labelSet.end(); ++iter) {
+      m_selectedSet.insert(*iter);
+    }
+  } else {
+    for (std::set<uint64_t>::const_iterator iter  = labelSet.begin();
+         iter != labelSet.end(); ++iter) {
+      m_selectedSet.erase(*iter);
+    }
+  }
+}
 
 #endif // ZDVIDLABELSLICE_H
