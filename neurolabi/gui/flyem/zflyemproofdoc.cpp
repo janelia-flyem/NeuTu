@@ -117,8 +117,9 @@ void ZFlyEmProofDoc::updateBodyObject()
   QList<ZDvidSparsevolSlice*> sparsevolSliceList = getDvidSparsevolSliceList();
   foreach (ZDvidSparsevolSlice *slice, sparsevolSliceList) {
 //    slice->setLabel(m_bodyMerger.getFinalLabel(slice->getLabel()));
-    uint64_t finalLabel = m_bodyMerger.getFinalLabel(slice->getLabel());
-    slice->setColor(getDvidLabelSlice()->getColor(finalLabel));
+//    uint64_t finalLabel = m_bodyMerger.getFinalLabel(slice->getLabel());
+    slice->setColor(getDvidLabelSlice()->getColor(
+                      slice->getLabel(), NeuTube::BODY_LABEL_ORIGINAL));
   }
 }
 

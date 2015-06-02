@@ -66,10 +66,10 @@ CONFIG(debug, debug|release) {
     }
 }
 
+contains(TEMPLATE, app) {
 !exists($$DVIDCPP_PATH) {
     DVIDCPP_PATH = $${EXTLIB_DIR}/dvid-cpp
 }
-
 
 exists($$DVIDCPP_PATH) {
     DEFINES += _ENABLE_LIBDVIDCPP_
@@ -88,6 +88,7 @@ contains(DEFINES, _ENABLE_LIBDVIDCPP_) {
     }
 } else:exists($${EXTLIB_DIR}/png/lib) {
     LIBS += -L$${EXTLIB_DIR}/png/lib -lpng
+}
 }
 
 

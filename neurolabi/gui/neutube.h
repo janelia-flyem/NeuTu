@@ -51,6 +51,11 @@ enum EMessageType {
   MSG_INFORMATION, MSG_WARING, MSG_ERROR
 };
 
+enum EBodyLabelType {
+  BODY_LABEL_ORIGINAL, BODY_LABEL_MAPPED
+};
+
+
 ZMessageReporter *getMessageReporter();
 ZLogMessageReporter* getLogMessageReporter();
 

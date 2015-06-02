@@ -226,3 +226,11 @@ QList<uint64_t> ZFlyEmBodyMerger::getOriginalLabelList(uint64_t finalLabel) cons
 
   return list;
 }
+
+QSet<uint64_t> ZFlyEmBodyMerger::getOriginalLabelSet(uint64_t finalLabel) const
+{
+  QSet<uint64_t> labelSet;
+  labelSet.fromList(getOriginalLabelList(finalLabel));
+
+  return labelSet;
+}

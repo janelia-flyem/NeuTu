@@ -8,11 +8,12 @@
 #include "zstackgraph.h"
 #include "tz_locseg_chain.h"
 #include "zprogressable.h"
+#include "zintpoint.h"
 
 class ZStack;
 class ZSwcTree;
 class ZSwcConnector;
-class ZIntPoint;
+//class ZIntPoint;
 
 class ZNeuronTraceSeeder {
 public:
@@ -145,6 +146,9 @@ private:
   Geo3d_Scalar_Field* extractSeedOriginal(const Stack *mask);
   Geo3d_Scalar_Field* extractSeedSkel(const Stack *mask);
 
+  Geo3d_Scalar_Field* extractLineSeed(
+      const Stack *mask, const Stack *dist, int minObjSize = 0);
+
   ZSwcTree *reconstructSwc(const Stack *stack,
                            std::vector<Locseg_Chain*> &chainArray);
   std::vector<Locseg_Chain*> trace(const Stack *stack,
@@ -170,6 +174,7 @@ private:
 
   //Intermedite buffer
   std::vector<Locseg_Chain*> m_chainArray;
+  ZIntPoint m_seedDsIntv;
 };
 
 #endif // ZNEURONTRACER_H

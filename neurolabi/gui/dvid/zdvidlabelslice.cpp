@@ -114,14 +114,17 @@ void ZDvidLabelSlice::update(const ZStackViewParam &viewParam)
   }
 }
 
-QColor ZDvidLabelSlice::getColor(uint64_t label) const
+QColor ZDvidLabelSlice::getColor(
+    uint64_t label, NeuTube::EBodyLabelType labelType) const
 {
-  return getColor((int64_t) label);
+  return getColor((int64_t) label, labelType);
 }
 
-QColor ZDvidLabelSlice::getColor(int64_t label) const
+QColor ZDvidLabelSlice::getColor(
+    int64_t label, NeuTube::EBodyLabelType labelType) const
 {
-  QColor color = m_objColorSheme.getColor(abs((int) label));
+  QColor color = m_objColorSheme.getColor(
+        abs((int) getMappedLabel((uint64_t) label, labelType)));
   color.setAlpha(64);
 
   return color;
@@ -133,7 +136,7 @@ void ZDvidLabelSlice::assignColorMap()
        iter != m_objArray.end(); ++iter) {
     ZObject3dScan &obj = *iter;
     //obj.setColor(getColor(obj.getLabel()));
-    obj.setColor(getColor(getMappedLabel(obj)));
+    obj.setColor(getColor(obj.getLabel(), NeuTube::BODY_LABEL_ORIGINAL));
   }
 }
 
@@ -158,22 +161,40 @@ void ZDvidLabelSlice::selectHit(bool appending)
     if (!appending) {
       clearSelection();
     }
+
+//    addSelection(m_hitLabel);
     m_selectedSet.insert(m_hitLabel);
   }
 }
 
-void ZDvidLabelSlice::setSelection(std::set<uint64_t> &selected)
+void ZDvidLabelSlice::setSelection(std::set<uint64_t> &selected,
+                                   NeuTube::EBodyLabelType labelType)
 {
-  m_selectedSet = selected;
+  switch (labelType) {
+  case NeuTube::BODY_LABEL_MAPPED:
+    m_selectedSet = selected;
+    break;
+  case NeuTube::BODY_LABEL_ORIGINAL:
+    if (m_bodyMerger != NULL) {
+      m_selectedSet = m_bodyMerger->getFinalLabel(selected);
+    } else {
+      m_selectedSet = selected;
+    }
+    break;
+  }
 }
 
-void ZDvidLabelSlice::addSelection(uint64_t bodyId)
+void ZDvidLabelSlice::addSelection(
+    uint64_t bodyId, NeuTube::EBodyLabelType labelType)
 {
-  m_selectedSet.insert(bodyId);
+  m_selectedSet.insert(getMappedLabel(bodyId, labelType));
 }
 
-void ZDvidLabelSlice::xorSelection(uint64_t bodyId)
+void ZDvidLabelSlice::xorSelection(
+    uint64_t bodyId, NeuTube::EBodyLabelType labelType)
 {
+  bodyId = getMappedLabel(bodyId, labelType);
+
   if (m_selectedSet.count(bodyId) > 0) {
     m_selectedSet.erase(bodyId);
   } else {
@@ -247,5 +268,18 @@ void ZDvidLabelSlice::setMaxSize(int maxWidth, int maxHeight)
 
 uint64_t ZDvidLabelSlice::getMappedLabel(const ZObject3dScan &obj) const
 {
-  return m_bodyMerger->getFinalLabel(obj.getLabel());
+  return getMappedLabel(obj.getLabel(), NeuTube::BODY_LABEL_ORIGINAL);
 }
+
+uint64_t ZDvidLabelSlice::getMappedLabel(
+    uint64_t label, NeuTube::EBodyLabelType labelType) const
+{
+  if (labelType == NeuTube::BODY_LABEL_ORIGINAL) {
+    if (m_bodyMerger != NULL) {
+      return m_bodyMerger->getFinalLabel(label);
+    }
+  }
+
+  return label;
+}
+

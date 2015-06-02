@@ -220,7 +220,7 @@ void ZFlyEmProofMvc::updateBodySelection()
   if (getCompleteDocument() != NULL) {
     ZDvidLabelSlice *slice = getCompleteDocument()->getDvidLabelSlice();
     const std::set<uint64_t> &selected = slice->getSelected();
-    m_mergeProject.setSelection(selected);
+    m_mergeProject.setSelection(selected, NeuTube::BODY_LABEL_MAPPED);
     m_mergeProject.update3DBodyView();
     if (getCompletePresenter()->isHighlight()) {
       m_mergeProject.highlightSelectedObject(true);
@@ -274,7 +274,8 @@ void ZFlyEmProofMvc::launchSplitFunc(uint64_t bodyId)
         body = reader.readDvidSparseStack(bodyId);
         body->setZOrder(0);
         body->setSource(ZStackObjectSourceFactory::MakeSplitObjectSource());
-        body->setMaskColor(labelSlice->getColor(bodyId));
+        body->setMaskColor(labelSlice->getColor(
+                             bodyId, NeuTube::BODY_LABEL_ORIGINAL));
         body->setSelectable(false);
         getDocument()->addObject(body, true);
       }
@@ -480,7 +481,7 @@ void ZFlyEmProofMvc::addSelectionAt(int x, int y, int z)
     if (bodyId > 0) {
       ZDvidLabelSlice *slice = getCompleteDocument()->getDvidLabelSlice();
       if (slice != NULL) {
-        slice->addSelection(bodyId);
+        slice->addSelection(bodyId, NeuTube::BODY_LABEL_ORIGINAL);
       }
       updateBodySelection();
     }
@@ -495,7 +496,9 @@ void ZFlyEmProofMvc::xorSelectionAt(int x, int y, int z)
     if (bodyId > 0) {
       ZDvidLabelSlice *slice = getCompleteDocument()->getDvidLabelSlice();
       if (slice != NULL) {
-        uint64_t finalBodyId = getMappedBodyId(bodyId);
+//        uint64_t finalBodyId = getMappedBodyId(bodyId);
+        slice->xorSelection(bodyId, NeuTube::BODY_LABEL_ORIGINAL);
+#if 0
         QList<uint64_t> labelList =
             getCompleteDocument()->getBodyMerger()->getOriginalLabelList(
               finalBodyId);
@@ -505,6 +508,7 @@ void ZFlyEmProofMvc::xorSelectionAt(int x, int y, int z)
           slice->xorSelection(label);
         }
         */
+#endif
       }
       updateBodySelection();
     }
@@ -542,12 +546,12 @@ void ZFlyEmProofMvc::locateBody(uint64_t bodyId)
     pt *= dvidInfo.getBlockSize();
     pt += dvidInfo.getStartCoordinates();
 
-    std::set<uint64_t> bodySet;
-    bodySet.insert(bodyId);
+//    std::set<uint64_t> bodySet;
+//    bodySet.insert(bodyId);
 
     ZDvidLabelSlice *slice = getCompleteDocument()->getDvidLabelSlice();
     if (slice != NULL) {
-      slice->setSelection(bodySet);
+      slice->addSelection(bodyId, NeuTube::BODY_LABEL_ORIGINAL);
     }
     updateBodySelection();
 

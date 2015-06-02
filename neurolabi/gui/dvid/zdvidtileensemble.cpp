@@ -92,7 +92,7 @@ void ZDvidTileEnsemble::display(
       tile->display(painter, slice, option);
     }
   }
-  std::cout << "Draw image time: " << toc() << std::endl;
+//  std::cout << "Draw image time: " << toc() << std::endl;
 }
 
 void ZDvidTileEnsemble::setDvidTarget(const ZDvidTarget &dvidTarget)

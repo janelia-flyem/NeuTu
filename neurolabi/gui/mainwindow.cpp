@@ -176,7 +176,7 @@ MainWindow::MainWindow(QWidget *parent) :
     m_newProject(NULL)
 {
   //std::cout << "Creating mainwindow ..." << std::endl;
-  RECORD_INFORMATION("Creating mainwindow ...");
+  RECORD_INFORMATION("Creating main window ...");
 
   //createWorkDir();
 #ifdef _DEBUG_2
@@ -830,11 +830,18 @@ void MainWindow::customizeActions()
   bool hasApplication = false;
 
   if (!config.getApplication().empty()) {
-    if (config.getApplication() != "FlyEM") {
-      m_ui->menuFLy_EM->menuAction()->setVisible(false);
-    } else {
+    if (config.getApplication() == "FlyEM") {
       m_ui->menuFLy_EM->menuAction()->setVisible(true);
       hasApplication = true;
+    } else {
+      m_ui->menuFLy_EM->menuAction()->setVisible(false);
+    }
+
+    if (config.getApplication() == "Biocytin") {
+      m_ui->menuBiocytin->menuAction()->setVisible(true);
+      hasApplication = true;
+    } else {
+      m_ui->menuBiocytin->menuAction()->setVisible(false);
     }
   }
 
@@ -3350,6 +3357,7 @@ void MainWindow::evokeStackFrame(QMdiSubWindow *frame)
     targetFrame->displayActiveDecoration(true);
   }
 }
+
 
 void MainWindow::on_actionImport_Network_triggered()
 {

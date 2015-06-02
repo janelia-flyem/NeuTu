@@ -7,6 +7,7 @@
 #include "zobject3dscanarray.h"
 #include "zstackviewparam.h"
 #include "zobjectcolorscheme.h"
+#include "neutube.h"
 
 class ZFlyEmBodyMerger;
 class QColor;
@@ -37,14 +38,25 @@ public:
   void deselectAll();
   void toggleHitSelection(bool appending = false);
   void clearSelection();
-  void setSelection(std::set<uint64_t> &selected);
-  void addSelection(uint64_t bodyId);
-  void xorSelection(uint64_t bodyId);
-  template <typename InputIterator>
-  void xorSelection(const InputIterator &begin, const InputIterator &end);
+
+
+  void setSelection(
+      std::set<uint64_t> &selected, NeuTube::EBodyLabelType labelType);
+  void addSelection(uint64_t bodyId, NeuTube::EBodyLabelType labelType);
+  void xorSelection(uint64_t bodyId, NeuTube::EBodyLabelType labelType);
 
   template <typename InputIterator>
-  void xorSelectionGroup(const InputIterator &begin, const InputIterator &end);
+  void addSelection(const InputIterator &begin, const InputIterator &end,
+                    NeuTube::EBodyLabelType labelType);
+
+
+  template <typename InputIterator>
+  void xorSelection(const InputIterator &begin, const InputIterator &end,
+                    NeuTube::EBodyLabelType labelType);
+
+  template <typename InputIterator>
+  void xorSelectionGroup(const InputIterator &begin, const InputIterator &end,
+                         NeuTube::EBodyLabelType labelType);
 
 
   inline const std::set<uint64_t>& getSelected() const {
@@ -58,10 +70,15 @@ public:
     return m_objColorSheme;
   }
 
-  QColor getColor(uint64_t label) const;
-  QColor getColor(int64_t label) const;
+  QColor getColor(uint64_t label, NeuTube::EBodyLabelType labelType) const;
+  QColor getColor(int64_t label, NeuTube::EBodyLabelType labelType) const;
 
   uint64_t getMappedLabel(const ZObject3dScan &obj) const;
+  uint64_t getMappedLabel(uint64_t label) const;
+  uint64_t getMappedLabel(
+      uint64_t label, NeuTube::EBodyLabelType labelType) const;
+
+  uint64_t getHitLabel() const;
 
 private:
   inline const ZDvidTarget& getDvidTarget() const { return m_dvidTarget; }
@@ -75,8 +92,8 @@ private:
   ZObject3dScanArray m_objArray;
   ZStackViewParam m_currentViewParam;
   ZObjectColorScheme m_objColorSheme;
-  uint64_t m_hitLabel;
-  std::set<uint64_t> m_selectedSet;
+  uint64_t m_hitLabel; //Mapped label
+  std::set<uint64_t> m_selectedSet; //Mapped label set
   ZFlyEmBodyMerger *m_bodyMerger;
 
   int m_maxWidth;
@@ -85,30 +102,50 @@ private:
 
 template <typename InputIterator>
 void ZDvidLabelSlice::xorSelection(
-    const InputIterator &begin, const InputIterator &end)
+    const InputIterator &begin, const InputIterator &end,
+    NeuTube::EBodyLabelType labelType)
 {
   std::set<uint64_t> labelSet;
 
   for (InputIterator iter = begin; iter != end; ++iter) {
-    labelSet.insert(*iter);
+    labelSet.insert(getMappedLabel(*iter, labelType));
   }
 
   for (std::set<uint64_t>::const_iterator iter  = labelSet.begin();
        iter != labelSet.end(); ++iter) {
-    xorSelection(*iter);
+    xorSelection(*iter, NeuTube::BODY_LABEL_MAPPED);
+  }
+}
+
+template <typename InputIterator>
+void ZDvidLabelSlice::addSelection(
+    const InputIterator &begin, const InputIterator &end,
+    NeuTube::EBodyLabelType labelType)
+{
+  std::set<uint64_t> labelSet;
+
+  for (InputIterator iter = begin; iter != end; ++iter) {
+    labelSet.insert(getMappedLabel(*iter, labelType));
+  }
+
+  for (std::set<uint64_t>::const_iterator iter  = labelSet.begin();
+       iter != labelSet.end(); ++iter) {
+    addSelection(*iter, NeuTube::BODY_LABEL_MAPPED);
   }
 }
 
 template <typename InputIterator>
 void ZDvidLabelSlice::xorSelectionGroup(
-    const InputIterator &begin, const InputIterator &end)
+    const InputIterator &begin, const InputIterator &end,
+    NeuTube::EBodyLabelType labelType)
 {
   std::set<uint64_t> labelSet;
 
   bool selecting = false;
   for (InputIterator iter = begin; iter != end; ++iter) {
-    labelSet.insert(*iter);
-    if (m_selectedSet.count(*iter) == 0) { //any body has not been selected
+    uint64_t label = getMappedLabel(*iter, labelType);
+    labelSet.insert(label);
+    if (m_selectedSet.count(label) == 0) { //any body has not been selected
       selecting = true;
     }
   }
