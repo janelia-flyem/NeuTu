@@ -371,7 +371,7 @@ ZMouseEventRightButtonReleaseMapper::getOperation(const ZMouseEvent &event) cons
             op.setOperation(ZStackOperator::OP_SHOW_STROKE_CONTEXT_MENU);
         } else if (m_doc->getTag() == NeuTube::Document::FLYEM_PROOFREAD) {
           if (!m_doc->getDvidLabelSliceList().empty()) {
-            if (m_doc->getDvidLabelSliceList().front()->getSelected().size() == 1) {
+            if (m_doc->getDvidLabelSliceList().front()->getSelectedOriginal().size() == 1) {
               op.setOperation(ZStackOperator::OP_SHOW_BODY_CONTEXT_MENU);
             }
           }
