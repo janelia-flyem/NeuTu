@@ -857,6 +857,12 @@ void ZStackProcessor::RemoveBranchPoint(Stack *stack, int nnbr)
 
       if (count > 2) {
         stack->array[index] = 0;
+        for (j = 0; j < nnbr; ++j) {
+          if (n_in_bound == nnbr || is_in_bound[j]) {
+            size_t neighbor_index = index + neighbor[j];
+            stack->array[neighbor_index] = 0;
+          }
+        }
       }
     }
   }

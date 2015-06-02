@@ -8,6 +8,7 @@
 #include "zstackobjectselector.h"
 #include "zsharedpointer.h"
 #include "zstackviewparam.h"
+#include "neutube.h"
 
 class ZStackFrame;
 class ZFlyEmBodyMergeFrame;
@@ -75,8 +76,10 @@ public:
 
   void syncWithDvid();
 
-  void setSelection(const std::set<uint64_t> &selected);
-  void setSelectionFromOriginal(const std::set<uint64_t> &selected);
+  void setSelection(
+      const std::set<uint64_t> &selected, NeuTube::EBodyLabelType labelType);
+
+  //void setSelectionFromOriginal(const std::set<uint64_t> &selected);
 
   Z3DWindow* getBodyWindow() { return m_bodyWindow; }
   void closeBodyWindow();

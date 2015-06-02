@@ -579,7 +579,8 @@ void ZFlyEmBodyMergeProject::update3DBodyView()
             ZDvidLabelSlice *labelSlice =
                 getDocument<ZFlyEmProofDoc>()->getDvidLabelSlice();
             if (labelSlice != NULL) {
-              body.setColor(labelSlice->getColorScheme().getColor(label));
+              body.setColor(labelSlice->getColor(
+                              label, NeuTube::BODY_LABEL_MAPPED));
             }
           }
           body.setAlpha(255);
@@ -796,22 +797,35 @@ ZFlyEmBodyMerger* ZFlyEmBodyMergeProject::getBodyMerger() const
   return NULL;
 }
 
+/*
 void ZFlyEmBodyMergeProject::setSelectionFromOriginal(const std::set<uint64_t> &selected)
 {
   setSelection(getBodyMerger()->getFinalLabel(selected));
 }
+*/
 
-void ZFlyEmBodyMergeProject::setSelection(const std::set<uint64_t> &selected)
+void ZFlyEmBodyMergeProject::setSelection(
+    const std::set<uint64_t> &selected, NeuTube::EBodyLabelType labelType)
 {
   m_currentSelected.clear();
-  for (std::set<uint64_t>::const_iterator iter = selected.begin();
-       iter != selected.end(); ++iter) {
-    m_currentSelected.insert(*iter);
+  switch (labelType) {
+  case NeuTube::BODY_LABEL_MAPPED:
+    for (std::set<uint64_t>::const_iterator iter = selected.begin();
+         iter != selected.end(); ++iter) {
+      m_currentSelected.insert(*iter);
+    }
+    break;
+  case NeuTube::BODY_LABEL_ORIGINAL:
+    for (std::set<uint64_t>::const_iterator iter = selected.begin();
+         iter != selected.end(); ++iter) {
+      m_currentSelected.insert(getBodyMerger()->getFinalLabel(*iter));
+    }
+    break;
   }
 
   QString msg;
-  for (std::set<uint64_t>::const_iterator iter = selected.begin();
-       iter != selected.end(); ++iter) {
+  for (QSet<uint64_t>::const_iterator iter = m_currentSelected.begin();
+       iter != m_currentSelected.end(); ++iter) {
     msg += QString("%1 ").arg(*iter);
   }
 
@@ -912,13 +926,18 @@ void ZFlyEmBodyMergeProject::highlightSelectedObject(bool hl)
         obj->setDvidTarget(getDvidTarget());
 //        obj->setLabel(doc->getBodyMerger()->getFinalLabel(bodyId));
         obj->setLabel(bodyId);
-        uint64_t finalLabel = doc->getBodyMerger()->getFinalLabel(bodyId);
+//        uint64_t finalLabel = doc->getBodyMerger()->getFinalLabel(bodyId);
         obj->setRole(ZStackObjectRole::ROLE_ACTIVE_VIEW);
-        obj->setColor(doc->getDvidLabelSlice()->getColor(finalLabel));
+        obj->setColor(doc->getDvidLabelSlice()->getColor(
+                        bodyId, NeuTube::BODY_LABEL_ORIGINAL));
         doc->addObject(obj);
-
-        labelSlice->addSelection(*iter);
       }
+      labelSlice->addSelection(
+            m_currentSelected.begin(), m_currentSelected.end(),
+            NeuTube::BODY_LABEL_MAPPED);
+
+//        labelSlice->addSelection(bodyId);
+//      }
 //      doc->blockSignals(false);
 
 //      doc->notifyActiveViewModified();

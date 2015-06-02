@@ -54,6 +54,10 @@ public:
   void decodeJsonString(const std::string &str);
 
   QList<uint64_t> getOriginalLabelList(uint64_t finalLabel) const;
+  QSet<uint64_t> getOriginalLabelSet(uint64_t finalLabel) const;
+  template <typename InputIterator>
+  QSet<uint64_t> getOriginalLabelSet(InputIterator begin,
+                                     InputIterator end);
 
 private:
   static uint64_t mapLabel(const TLabelMap &labelMap, uint64_t label);
@@ -62,7 +66,19 @@ private:
 private:
   TLabelMapList m_mapList;
   TLabelMapStack m_undoneMapStack;
-
 };
+
+template <typename InputIterator>
+QSet<uint64_t> ZFlyEmBodyMerger::getOriginalLabelSet(
+    InputIterator begin, InputIterator end)
+{
+  QSet<uint64_t> labelSet;
+  for (InputIterator iter = begin; iter != end; ++iter) {
+    uint64_t label = *iter;
+    labelSet.unite(getOriginalLabelSet(label));
+  }
+
+  return labelSet;
+}
 
 #endif // ZFLYEMBODYMERGER_H

@@ -3,6 +3,10 @@
 # #####################################################################
 TEMPLATE = app
 
+DEFINES += _QT_APPLICATION_
+
+CONFIG += staticlib
+
 QMAKE_PATH = $(QMAKE)
 
 !exists($$QMAKE_PATH) {
@@ -53,7 +57,7 @@ CONFIG += rtti exceptions
 CONFIG += static_glew
 CONFIG += static_gtest
 
-DEFINES += _QT_APPLICATION_ _QT_GUI_USED_ _NEUTUBE_ HAVE_CONFIG_H _ENABLE_DDP_ _ENABLE_WAVG_
+DEFINES += _QT_GUI_USED_ _NEUTUBE_ HAVE_CONFIG_H _ENABLE_DDP_ _ENABLE_WAVG_
 
 #Machine information
 HOSTNAME = $$system(echo $HOSTNAME)
