@@ -39,7 +39,7 @@ void ZDvidLabelSlice::display(
          iter != m_objArray.end(); ++iter) {
       ZObject3dScan &obj = const_cast<ZObject3dScan&>(*iter);
       //if (m_selectedSet.count(obj.getLabel()) > 0) {
-      if (m_selectedSet.count(getMappedLabel(obj)) > 0) {
+      if (m_selectedOriginal.count(obj.getLabel()) > 0) {
         obj.setSelected(true);
       } else {
         obj.setSelected(false);
@@ -162,8 +162,9 @@ void ZDvidLabelSlice::selectHit(bool appending)
       clearSelection();
     }
 
+    addSelection(m_hitLabel, NeuTube::BODY_LABEL_MAPPED);
 //    addSelection(m_hitLabel);
-    m_selectedSet.insert(m_hitLabel);
+//    m_selectedOriginal.insert(m_hitLabel);
   }
 }
 
@@ -171,14 +172,17 @@ void ZDvidLabelSlice::setSelection(std::set<uint64_t> &selected,
                                    NeuTube::EBodyLabelType labelType)
 {
   switch (labelType) {
-  case NeuTube::BODY_LABEL_MAPPED:
-    m_selectedSet = selected;
-    break;
   case NeuTube::BODY_LABEL_ORIGINAL:
+    m_selectedOriginal = selected;
+    break;
+  case NeuTube::BODY_LABEL_MAPPED:
     if (m_bodyMerger != NULL) {
-      m_selectedSet = m_bodyMerger->getFinalLabel(selected);
+      QSet<uint64_t> selectedOriginal =
+          m_bodyMerger->getOriginalLabelSet(selected.begin(), selected.end());
+      m_selectedOriginal.insert(
+            selectedOriginal.begin(), selectedOriginal.end());
     } else {
-      m_selectedSet = selected;
+      m_selectedOriginal = selected;
     }
     break;
   }
@@ -187,28 +191,94 @@ void ZDvidLabelSlice::setSelection(std::set<uint64_t> &selected,
 void ZDvidLabelSlice::addSelection(
     uint64_t bodyId, NeuTube::EBodyLabelType labelType)
 {
-  m_selectedSet.insert(getMappedLabel(bodyId, labelType));
+  switch (labelType) {
+  case NeuTube::BODY_LABEL_ORIGINAL:
+    m_selectedOriginal.insert(bodyId);
+    break;
+  case NeuTube::BODY_LABEL_MAPPED:
+    if (m_bodyMerger != NULL) {
+      QSet<uint64_t> selectedOriginal =
+          m_bodyMerger->getOriginalLabelSet(bodyId);
+      m_selectedOriginal.insert(
+            selectedOriginal.begin(), selectedOriginal.end());
+    } else {
+      m_selectedOriginal.insert(bodyId);
+    }
+    break;
+  }
+
+//  m_selectedSet.insert(getMappedLabel(bodyId, labelType));
 }
 
 void ZDvidLabelSlice::xorSelection(
     uint64_t bodyId, NeuTube::EBodyLabelType labelType)
 {
-  bodyId = getMappedLabel(bodyId, labelType);
-
-  if (m_selectedSet.count(bodyId) > 0) {
-    m_selectedSet.erase(bodyId);
-  } else {
-    m_selectedSet.insert(bodyId);
+  switch (labelType) {
+  case NeuTube::BODY_LABEL_ORIGINAL:
+    if (m_selectedOriginal.count(bodyId) > 0) {
+      m_selectedOriginal.erase(bodyId);
+    } else {
+      m_selectedOriginal.insert(bodyId);
+    }
+    break;
+  case NeuTube::BODY_LABEL_MAPPED:
+    if (m_bodyMerger != NULL) {
+      QSet<uint64_t> selectedOriginal =
+          m_bodyMerger->getOriginalLabelSet(bodyId);
+      xorSelectionGroup(selectedOriginal.begin(), selectedOriginal.end(),
+                        NeuTube::BODY_LABEL_ORIGINAL);
+    } else {
+      xorSelection(bodyId, NeuTube::BODY_LABEL_ORIGINAL);
+    }
   }
 }
 
 void ZDvidLabelSlice::deselectAll()
 {
-  m_selectedSet.clear();
+  m_selectedOriginal.clear();
+}
+
+bool ZDvidLabelSlice::isBodySelected(
+    uint64_t bodyId, NeuTube::EBodyLabelType labelType) const
+{
+  switch (labelType) {
+  case NeuTube::BODY_LABEL_ORIGINAL:
+    return m_selectedOriginal.count(bodyId) > 0;
+  case NeuTube::BODY_LABEL_MAPPED:
+    if (m_bodyMerger != NULL) {
+      QSet<uint64_t> selectedOriginal =
+          m_bodyMerger->getOriginalLabelSet(bodyId);
+      for (QSet<uint64_t>::const_iterator iter = selectedOriginal.begin();
+           iter != selectedOriginal.end(); ++iter) {
+        if (m_selectedOriginal.count(*iter) > 0) {
+          return true;
+        }
+      }
+    } else {
+      return m_selectedOriginal.count(bodyId) > 0;
+    }
+    break;
+  }
+
+  return false;
 }
 
 void ZDvidLabelSlice::toggleHitSelection(bool appending)
 {
+  bool hasSelected = isBodySelected(m_hitLabel, NeuTube::BODY_LABEL_MAPPED);
+  xorSelection(m_hitLabel, NeuTube::BODY_LABEL_MAPPED);
+
+  if (!appending) {
+    clearSelection();
+
+    if (!hasSelected) {
+      addSelection(m_hitLabel, NeuTube::BODY_LABEL_MAPPED);
+    }
+  }
+
+  //xorSelection(m_hitLabel, NeuTube::BODY_LABEL_MAPPED);
+
+  /*
   bool hasSelected = false;
   if (m_selectedSet.count(m_hitLabel) > 0) {
     hasSelected = true;
@@ -222,11 +292,12 @@ void ZDvidLabelSlice::toggleHitSelection(bool appending)
   if (!hasSelected) {
     selectHit(true);
   }
+  */
 }
 
 void ZDvidLabelSlice::clearSelection()
 {
-  m_selectedSet.clear();
+  m_selectedOriginal.clear();
 }
 
 /*
@@ -264,6 +335,20 @@ void ZDvidLabelSlice::setMaxSize(int maxWidth, int maxHeight)
     m_objArray.clear();
     update();
   }
+}
+
+std::set<uint64_t> ZDvidLabelSlice::getOriginalLabelSet(
+    uint64_t mappedLabel) const
+{
+  std::set<uint64_t> labelSet;
+  if (m_bodyMerger == NULL) {
+    labelSet.insert(mappedLabel);
+  } else {
+    const QSet<uint64_t> &sourceSet = m_bodyMerger->getOriginalLabelSet(mappedLabel);
+    labelSet.insert(sourceSet.begin(), sourceSet.end());
+  }
+
+  return labelSet;
 }
 
 uint64_t ZDvidLabelSlice::getMappedLabel(const ZObject3dScan &obj) const

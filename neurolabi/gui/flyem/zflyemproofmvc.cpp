@@ -219,8 +219,8 @@ void ZFlyEmProofMvc::updateBodySelection()
 {
   if (getCompleteDocument() != NULL) {
     ZDvidLabelSlice *slice = getCompleteDocument()->getDvidLabelSlice();
-    const std::set<uint64_t> &selected = slice->getSelected();
-    m_mergeProject.setSelection(selected, NeuTube::BODY_LABEL_MAPPED);
+    const std::set<uint64_t> &selected = slice->getSelectedOriginal();
+    m_mergeProject.setSelection(selected, NeuTube::BODY_LABEL_ORIGINAL);
     m_mergeProject.update3DBodyView();
     if (getCompletePresenter()->isHighlight()) {
       m_mergeProject.highlightSelectedObject(true);
@@ -235,9 +235,9 @@ void ZFlyEmProofMvc::notifySplitTriggered()
   ZDvidLabelSlice *labelSlice = getCompleteDocument()->getDvidLabelSlice();
 
   if (labelSlice->isVisible()) {
-    const std::set<uint64_t> &selected = labelSlice->getSelected();
+    const std::set<uint64_t> &selected = labelSlice->getSelectedOriginal();
 
-    if (!selected.empty()) {
+    if (selected.size() == 1) {
       uint64_t bodyId = *(selected.begin());
 
       emit launchingSplit(bodyId);
@@ -481,7 +481,9 @@ void ZFlyEmProofMvc::addSelectionAt(int x, int y, int z)
     if (bodyId > 0) {
       ZDvidLabelSlice *slice = getCompleteDocument()->getDvidLabelSlice();
       if (slice != NULL) {
-        slice->addSelection(bodyId, NeuTube::BODY_LABEL_ORIGINAL);
+        slice->addSelection(
+              slice->getMappedLabel(bodyId, NeuTube::BODY_LABEL_ORIGINAL),
+              NeuTube::BODY_LABEL_ORIGINAL);
       }
       updateBodySelection();
     }
@@ -497,7 +499,9 @@ void ZFlyEmProofMvc::xorSelectionAt(int x, int y, int z)
       ZDvidLabelSlice *slice = getCompleteDocument()->getDvidLabelSlice();
       if (slice != NULL) {
 //        uint64_t finalBodyId = getMappedBodyId(bodyId);
-        slice->xorSelection(bodyId, NeuTube::BODY_LABEL_ORIGINAL);
+        slice->xorSelection(
+              slice->getMappedLabel(bodyId, NeuTube::BODY_LABEL_ORIGINAL),
+              NeuTube::BODY_LABEL_MAPPED);
 #if 0
         QList<uint64_t> labelList =
             getCompleteDocument()->getBodyMerger()->getOriginalLabelList(
@@ -551,7 +555,10 @@ void ZFlyEmProofMvc::locateBody(uint64_t bodyId)
 
     ZDvidLabelSlice *slice = getCompleteDocument()->getDvidLabelSlice();
     if (slice != NULL) {
-      slice->addSelection(bodyId, NeuTube::BODY_LABEL_ORIGINAL);
+      slice->clearSelection();
+      slice->addSelection(
+            slice->getMappedLabel(bodyId, NeuTube::BODY_LABEL_ORIGINAL),
+            NeuTube::BODY_LABEL_MAPPED);
     }
     updateBodySelection();
 

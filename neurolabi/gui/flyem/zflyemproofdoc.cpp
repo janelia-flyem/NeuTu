@@ -28,7 +28,7 @@ void ZFlyEmProofDoc::mergeSelected()
   for (QList<ZDvidLabelSlice*>::const_iterator iter = sliceList.begin();
        iter != sliceList.end(); ++iter) {
     const ZDvidLabelSlice *labelSlice = *iter;
-    const std::set<uint64_t> &selected = labelSlice->getSelected();
+    const std::set<uint64_t> &selected = labelSlice->getSelectedOriginal();
     for (std::set<uint64_t>::const_iterator iter = selected.begin();
          iter != selected.end(); ++iter) {
       labelSet.insert(*iter);
@@ -120,6 +120,7 @@ void ZFlyEmProofDoc::updateBodyObject()
 //    uint64_t finalLabel = m_bodyMerger.getFinalLabel(slice->getLabel());
     slice->setColor(getDvidLabelSlice()->getColor(
                       slice->getLabel(), NeuTube::BODY_LABEL_ORIGINAL));
+    //slice->updateSelection();
   }
 }
 

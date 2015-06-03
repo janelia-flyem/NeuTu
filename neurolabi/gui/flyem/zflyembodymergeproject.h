@@ -125,6 +125,7 @@ public slots:
 
 private:
   ZFlyEmBodyMerger* getBodyMerger() const;
+  //void updateSelection();
 
 private:
   ZFlyEmBodyMergeFrame *m_dataFrame;
@@ -137,7 +138,8 @@ private:
 //  std::vector<ZStackObject*> m_bookmarkDecoration;
 //  bool m_isBookmarkVisible;
   bool m_showingBodyMask;
-  QSet<uint64_t> m_currentSelected; //the set of mapped ids of selected bodies
+  QSet<uint64_t> m_selectedOriginal; //the set of original ids of selected bodies
+//  QSet<uint64_t> m_currentSelected;
 };
 
 template <typename T>
