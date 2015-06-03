@@ -15,11 +15,13 @@ ZSegmentationProjectModel::~ZSegmentationProjectModel()
 
 void ZSegmentationProjectModel::clear()
 {
-  reset();
+  beginResetModel();
+//  reset();
   //removeAllRows();
   if (m_data != NULL) {
     m_data->clear();
   }
+  endResetModel();
 }
 
 int ZSegmentationProjectModel::columnCount(const QModelIndex &/*parent*/) const

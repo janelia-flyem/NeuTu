@@ -53,12 +53,12 @@
     },
     {
       "address": "emrecon100.janelia.priv",
-      "uuid": "2a3",
+      "uuid": "c329",
       "name": "FIB25-Tile",
       "comment": "FIB-25 tile test",
       "multires_tile": "graytiles",
       "label_block": "bodies",
-      "user_name": "zhaot"
+      "user_name": ["takemuras", "zhaot"]
     },
     {
       "address": "emdata1.int.janelia.org",
@@ -262,7 +262,7 @@
     {
       "address": "emdata2.int.janelia.org",
       "port": 7000,
-      "uuid": "fe37",
+      "uuid": "34ed",
       "name": "FIB19_shinomiyak",
       "comment": "FIB19",
       "multires_tile": "graytiles",
