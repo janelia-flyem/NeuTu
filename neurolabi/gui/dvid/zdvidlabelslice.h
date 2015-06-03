@@ -66,6 +66,8 @@ public:
     return m_selectedOriginal;
   }
 
+  bool isBodySelected(uint64_t bodyId, NeuTube::EBodyLabelType labelType) const;
+
   void setBodyMerger(ZFlyEmBodyMerger *bodyMerger);
   void updateLabelColor();
 

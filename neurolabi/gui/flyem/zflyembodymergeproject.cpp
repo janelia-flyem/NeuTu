@@ -431,11 +431,11 @@ void ZFlyEmBodyMergeProject::update3DBodyViewDeep()
 
   if (m_bodyWindow != NULL) {
     std::set<std::string> currentBodySourceSet;
-    QSet<uint64_t> selectedMapped =
-        getBodyMerger()->getOriginalLabelSet(m_selectedOriginal.begin(),
-                                             m_selectedOriginal.end());
+    std::set<uint64_t> selectedMapped =
+        getBodyMerger()->getFinalLabel(m_selectedOriginal.begin(),
+                                       m_selectedOriginal.end());
 
-    for (QSet<uint64_t>::const_iterator iter = selectedMapped.begin();
+    for (std::set<uint64_t>::const_iterator iter = selectedMapped.begin();
          iter != selectedMapped.end(); ++iter) {
       currentBodySourceSet.insert(
             ZStackObjectSourceFactory::MakeFlyEmBodySource(*iter));
@@ -480,7 +480,7 @@ void ZFlyEmBodyMergeProject::update3DBodyViewDeep()
       }
     }
 
-    for (QSet<uint64_t>::const_iterator iter = selectedMapped.begin();
+    for (std::set<uint64_t>::const_iterator iter = selectedMapped.begin();
          iter != selectedMapped.end(); ++iter) {
       uint64_t label = *iter;
       std::string source = ZStackObjectSourceFactory::MakeFlyEmBodySource(label);
@@ -532,9 +532,9 @@ void ZFlyEmBodyMergeProject::update3DBodyView()
 {
   if (m_bodyWindow != NULL) {
     std::set<std::string> currentBodySourceSet;
-    QSet<uint64_t> selectedMapped = getBodyMerger()->getOriginalLabelSet(
+    std::set<uint64_t> selectedMapped = getBodyMerger()->getFinalLabel(
           m_selectedOriginal.begin(), m_selectedOriginal.end());
-    for (QSet<uint64_t>::const_iterator iter = selectedMapped.begin();
+    for (std::set<uint64_t>::const_iterator iter = selectedMapped.begin();
          iter != selectedMapped.end(); ++iter) {
       currentBodySourceSet.insert(
             ZStackObjectSourceFactory::MakeFlyEmBodySource(*iter));
@@ -573,7 +573,7 @@ void ZFlyEmBodyMergeProject::update3DBodyView()
 //    m_bodyWindow->getDocument()->blockSignals(true);
     m_bodyWindow->getDocument()->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
 
-    for (QSet<uint64_t>::const_iterator iter = selectedMapped.begin();
+    for (std::set<uint64_t>::const_iterator iter = selectedMapped.begin();
          iter != selectedMapped.end(); ++iter) {
       uint64_t label = *iter;
       std::string source = ZStackObjectSourceFactory::MakeFlyEmBodySource(label);

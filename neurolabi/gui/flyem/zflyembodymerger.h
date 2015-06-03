@@ -31,6 +31,8 @@ public:
 
   uint64_t getFinalLabel(uint64_t label) const;
   std::set<uint64_t> getFinalLabel(const std::set<uint64_t> labelSet) const;
+  template <typename InputIterator>
+  std::set<uint64_t> getFinalLabel(InputIterator begin, InputIterator end) const;
 
   TLabelMap getFinalMap() const;
 
@@ -57,7 +59,7 @@ public:
   QSet<uint64_t> getOriginalLabelSet(uint64_t finalLabel) const;
   template <typename InputIterator>
   QSet<uint64_t> getOriginalLabelSet(InputIterator begin,
-                                     InputIterator end);
+                                     InputIterator end) const;
 
 private:
   static uint64_t mapLabel(const TLabelMap &labelMap, uint64_t label);
@@ -70,7 +72,7 @@ private:
 
 template <typename InputIterator>
 QSet<uint64_t> ZFlyEmBodyMerger::getOriginalLabelSet(
-    InputIterator begin, InputIterator end)
+    InputIterator begin, InputIterator end) const
 {
   QSet<uint64_t> labelSet;
   for (InputIterator iter = begin; iter != end; ++iter) {
@@ -80,5 +82,18 @@ QSet<uint64_t> ZFlyEmBodyMerger::getOriginalLabelSet(
 
   return labelSet;
 }
+
+template <typename InputIterator>
+std::set<uint64_t> ZFlyEmBodyMerger::getFinalLabel(
+    InputIterator begin, InputIterator end) const
+{
+  std::set<uint64_t> labelSet;
+  for (InputIterator iter = begin; iter != end; ++iter) {
+    labelSet.insert(getFinalLabel(*iter));
+  }
+
+  return labelSet;
+}
+
 
 #endif // ZFLYEMBODYMERGER_H

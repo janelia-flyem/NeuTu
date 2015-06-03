@@ -499,7 +499,9 @@ void ZFlyEmProofMvc::xorSelectionAt(int x, int y, int z)
       ZDvidLabelSlice *slice = getCompleteDocument()->getDvidLabelSlice();
       if (slice != NULL) {
 //        uint64_t finalBodyId = getMappedBodyId(bodyId);
-        slice->xorSelection(bodyId, NeuTube::BODY_LABEL_ORIGINAL);
+        slice->xorSelection(
+              slice->getMappedLabel(bodyId, NeuTube::BODY_LABEL_ORIGINAL),
+              NeuTube::BODY_LABEL_MAPPED);
 #if 0
         QList<uint64_t> labelList =
             getCompleteDocument()->getBodyMerger()->getOriginalLabelList(

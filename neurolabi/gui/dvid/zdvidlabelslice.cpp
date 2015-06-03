@@ -238,9 +238,45 @@ void ZDvidLabelSlice::deselectAll()
   m_selectedOriginal.clear();
 }
 
+bool ZDvidLabelSlice::isBodySelected(
+    uint64_t bodyId, NeuTube::EBodyLabelType labelType) const
+{
+  switch (labelType) {
+  case NeuTube::BODY_LABEL_ORIGINAL:
+    return m_selectedOriginal.count(bodyId) > 0;
+  case NeuTube::BODY_LABEL_MAPPED:
+    if (m_bodyMerger != NULL) {
+      QSet<uint64_t> selectedOriginal =
+          m_bodyMerger->getOriginalLabelSet(bodyId);
+      for (QSet<uint64_t>::const_iterator iter = selectedOriginal.begin();
+           iter != selectedOriginal.end(); ++iter) {
+        if (m_selectedOriginal.count(*iter) > 0) {
+          return true;
+        }
+      }
+    } else {
+      return m_selectedOriginal.count(bodyId) > 0;
+    }
+    break;
+  }
+
+  return false;
+}
+
 void ZDvidLabelSlice::toggleHitSelection(bool appending)
 {
+  bool hasSelected = isBodySelected(m_hitLabel, NeuTube::BODY_LABEL_MAPPED);
   xorSelection(m_hitLabel, NeuTube::BODY_LABEL_MAPPED);
+
+  if (!appending) {
+    clearSelection();
+
+    if (!hasSelected) {
+      addSelection(m_hitLabel, NeuTube::BODY_LABEL_MAPPED);
+    }
+  }
+
+  //xorSelection(m_hitLabel, NeuTube::BODY_LABEL_MAPPED);
 
   /*
   bool hasSelected = false;
