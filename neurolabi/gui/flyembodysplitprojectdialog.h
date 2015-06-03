@@ -67,6 +67,7 @@ public:
   bool isBodyLoaded() const;
 
   void downloadSeed();
+  void selectSeed(int label);
 
   class MessageProcessor : public ZMessageProcessor {
   public:
@@ -80,7 +81,7 @@ signals:
   void progressDone();
   void progressAdvanced(double dp);
 
-  void messageDumped(const QString &message, bool appending = true);
+  void messageDumped(const QString &message, bool appending = false);
   void sideViewReady();
   void sideViewCanceled();
 
@@ -97,10 +98,12 @@ public slots:
   bool loadBody();
   void loadBookmark();
   void locateBookmark(const QModelIndex &index);
+  //void showBookmarkContextMenu(const QModelIndex &index);
   void quickView();
   void viewPreviousSlice();
   void viewNextSlice();
   void viewFullGrayscale();
+  void viewFullGrayscale(bool viewing);
   void saveSeed();
 
   void resetSideView();
@@ -109,8 +112,10 @@ public slots:
    * \brief Dump information
    */
   void dump(const QString &info, bool appending = false);
+  void dumpError(const QString &info, bool appending = false);
 
   void startSplit(const ZDvidTarget &dvidTarget, int bodyId);
+  void startSplit(const QString &message);
 
 
 private slots:
@@ -132,6 +137,14 @@ private slots:
    */
   void processAllSeed();
 
+  void recoverSeed();
+  void selectSeed();
+  void checkCurrentBookmark();
+  void processKeyEvent(QKeyEvent *event);
+
+protected:
+  virtual void keyPressEvent(QKeyEvent *event);
+
 private:
   void updateSideView();
   void updateSideViewFunc();
@@ -139,6 +152,8 @@ private:
   void startProgress(const QString &label);
   void connectSignalSlot();
   void createMenu();
+  //bool checkServerStatus();
+  bool isReadyForSplit(const ZDvidTarget &target);
 
 private:
   Ui::FlyEmBodySplitProjectDialog *ui;
@@ -148,7 +163,10 @@ private:
   QGraphicsScene *m_sideViewScene;
   ZDvidDialog *m_dvidDlg;
   QMenu *m_mainMenu;
+  QMenu *m_bookmarkContextMenu;
   QAction *m_showBodyMaskAction;
+
+  QModelIndex m_pressedIndex;
 
   ZMessageManager *m_messageManager;
 };

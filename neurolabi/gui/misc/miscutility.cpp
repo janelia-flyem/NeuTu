@@ -10,6 +10,7 @@
 #include "zfiletype.h"
 #include "zgraph.h"
 #include "tz_stack_neighborhood.h"
+#include "tz_utilities.h"
 
 using namespace std;
 
@@ -500,13 +501,41 @@ ZTree<int>* misc::buildSegmentationTree(const Stack *stack)
 
 ZIntPoint misc::getDsIntvFor3DVolume(const ZIntCuboid &box)
 {
-  static const size_t maxVolume = 1024 * 1024 * 200;
+  static const size_t maxVolume = 512 * 512 * 256;
   ZIntPoint dsIntv;
   int s = 0;
   if (box.getVolume() > maxVolume) {
-    s =  iround(Cube_Root(((double)  box.getVolume()) / maxVolume)) - 1;
+    s =  iround(Cube_Root(((double)  box.getVolume()) / maxVolume - 1));
   }
   dsIntv.set(s, s, s);
+
+  return dsIntv;
+}
+
+ZIntPoint misc::getDsIntvFor3DVolume(double dsRatio)
+{
+  ZIntPoint dsIntv;
+
+  if (dsRatio > 128) {
+    int s = iround(Cube_Root(dsRatio));
+    int k, m;
+    pow2decomp(s, &k, &m);
+    s = iround(std::pow((double) s, k + 1));
+    dsIntv.set(s, s, s);
+  } else if (dsRatio > 64) {
+    dsIntv.set(7, 7, 1);
+  } else if (dsRatio > 32) {
+//    int s =  iround(Cube_Root(dsRatio)) - 1;
+    dsIntv.set(3, 3, 3);
+  } else if (dsRatio > 16) {
+    dsIntv.set(3, 3, 1);
+  } else if (dsRatio > 8 ) {
+    dsIntv.set(3, 3, 0);
+  } else if (dsRatio > 4) {
+    dsIntv.set(1, 1, 1);
+  } else if (dsRatio > 1) {
+    dsIntv.set(1, 1, 0);
+  }
 
   return dsIntv;
 }

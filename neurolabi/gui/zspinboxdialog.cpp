@@ -16,21 +16,21 @@ ZSpinBoxDialog::ZSpinBoxDialog(QWidget *parent) :
 
   m_spinBox = new QSpinBox(this);
   m_spinBox->setMinimum(0);
-  m_spinBox->setMaximum(99999);
+  m_spinBox->setMaximum(99999999);
   m_spinBox->setValue(0);
   spinBoxLayout->addWidget(m_spinBox);
 
   QHBoxLayout *buttonLayout = new QHBoxLayout(this);
   buttonLayout->addSpacerItem(ZWidgetFactory::makeHSpacerItem());
 
-  ZButtonBox *buttonBox = ZWidgetFactory::makeButtonBox(
+  m_buttonBox = ZWidgetFactory::makeButtonBox(
         ZButtonBox::ROLE_YES | ZButtonBox::ROLE_NO | ZButtonBox::ROLE_SKIP,
         this);
 
-  connect(buttonBox->getButton(ZButtonBox::ROLE_SKIP), SIGNAL(clicked()),
+  connect(m_buttonBox->getButton(ZButtonBox::ROLE_SKIP), SIGNAL(clicked()),
           this, SLOT(skip()));
 
-  buttonLayout->addWidget(buttonBox);
+  buttonLayout->addWidget(m_buttonBox);
 
   layout->addLayout(spinBoxLayout);
   layout->addLayout(buttonLayout);
@@ -45,6 +45,11 @@ int ZSpinBoxDialog::getValue() const
   return m_spinBox->value();
 }
 
+void ZSpinBoxDialog::setValue(int v)
+{
+  m_spinBox->setValue(v);
+}
+
 void ZSpinBoxDialog::setValueLabel(const QString &label)
 {
   m_label->setText(label);
@@ -54,4 +59,9 @@ void ZSpinBoxDialog::skip()
 {
   m_isSkipped = true;
   accept();
+}
+
+QPushButton* ZSpinBoxDialog::getButton(ZButtonBox::TRole role)
+{
+  return m_buttonBox->getButton(role);
 }

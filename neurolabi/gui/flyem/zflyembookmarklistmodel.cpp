@@ -28,6 +28,11 @@ const ZFlyEmBookmark& ZFlyEmBookmarkListModel::getBookmark(int row) const
   return m_bookmarkArray[row];
 }
 
+ZFlyEmBookmark& ZFlyEmBookmarkListModel::getBookmark(int row)
+{
+  return m_bookmarkArray[row];
+}
+
 const ZFlyEmBookmarkArray& ZFlyEmBookmarkListModel::getBookmarkArray() const
 {
   return m_bookmarkArray;
@@ -104,3 +109,16 @@ bool ZFlyEmBookmarkListModel::removeColumns(
 
   return true;
 }
+
+void ZFlyEmBookmarkListModel::update(int row)
+{
+  emit dataChanged(index(row, 0), index(row, columnCount() - 1));
+}
+
+/*
+void ZFlyEmBookmarkListModel::append(const ZFlyEmBookmark &bookmark)
+{
+  m_bookmarkArray.push_back(bookmark);
+  insertRows(rowCount() - 1, 1);
+}
+*/

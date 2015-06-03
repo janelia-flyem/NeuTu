@@ -65,13 +65,14 @@ ZObject3dArray* ZObject3dFactory::MakeRegionBoundary(
     }
   }
 
+  uint8_t *originalArray = originalStack->array;
   //y scan
   for (int z = 0; z < depth; ++z) {
     for (int x = 0; x < width; ++x) {
       offset = area * z + x + width;
       for (int y = 1; y < height - 1; ++y) {
-        if (originalStack->array[offset] != originalStack->array[offset - width] ||
-            originalStack->array[offset] != originalStack->array[offset + width]) {
+        if (originalArray[offset] != originalArray[offset - width] ||
+            originalArray[offset] != originalArray[offset + width]) {
           maskStack->array[offset] = 1;
         }
         offset += width;
@@ -84,8 +85,8 @@ ZObject3dArray* ZObject3dFactory::MakeRegionBoundary(
     for (int x = 0; x < width; ++x) {
       offset = width * y + x + area;
       for (int z = 1; z < depth - 1; ++z) {
-        if (originalStack->array[offset] != originalStack->array[offset - area] ||
-            originalStack->array[offset] != originalStack->array[offset + area]) {
+        if (originalArray[offset] != originalArray[offset - area] ||
+            originalArray[offset] != originalArray[offset + area]) {
           maskStack->array[offset] = 1;
         }
         offset += area;
@@ -99,7 +100,7 @@ ZObject3dArray* ZObject3dFactory::MakeRegionBoundary(
     for (int y = 0; y < height; ++y) {
       for (int x = 0; x < width; ++x) {
         if (maskStack->array[offset] == 1) {
-          int v = originalStack->array[offset];
+          int v = originalArray[offset];
           if (v > 0) {
             ZObject3d *obj = tmpArray[v];
             obj->append(x + stack.getOffset().getX(),

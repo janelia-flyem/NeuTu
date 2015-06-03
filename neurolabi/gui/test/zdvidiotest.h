@@ -52,10 +52,12 @@ TEST(ZDvidReader, basic)
   ASSERT_FALSE(reader.open(""));
 
   ASSERT_TRUE(reader.open(target));
-  qDebug() << reader.readInfo("skeletons");
+  //qDebug() << reader.readInfo("skeletons");
 
+#if 0
   QString info = reader.readInfo("superpixels");
   qDebug() << info;
+#endif
 }
 
 TEST(ZDvidWriter, basic)
@@ -64,7 +66,7 @@ TEST(ZDvidWriter, basic)
   ZDvidWriter writer;
   ASSERT_TRUE(writer.open(dvidTarget));
 
-  writer.createData("keyvalue", "skeletons");
+  //writer.createData("keyvalue", "skeletons");
 }
 
 #endif

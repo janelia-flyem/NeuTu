@@ -27,6 +27,14 @@ void ZStackArray::paste(ZStack *stack, int valueIgnored) const
   }
 }
 
+ZIntCuboid ZStackArray::getBoundBox() const
+{
+  Cuboid_I box;
+  getBoundBox(&box);
+
+  return ZIntCuboid(box);
+}
+
 void ZStackArray::getBoundBox(Cuboid_I *box) const
 {
   if (box != NULL) {

@@ -83,7 +83,7 @@ const json_t* ZJsonObject::operator[] (const char *key) const
   return NULL;
 }
 
-ZJsonValue ZJsonObject::at(const char *key) const
+ZJsonValue ZJsonObject::value(const char *key) const
 {
   return ZJsonValue(const_cast<json_t*>((*this)[key]),
                     ZJsonValue::SET_INCREASE_REF_COUNT);

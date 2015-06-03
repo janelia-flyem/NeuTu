@@ -72,6 +72,7 @@
 #include "zmarkswcsomadialog.h"
 #include "zinteractivecontext.h"
 #include "zwindowfactory.h"
+#include "zstackviewparam.h"
 
 class Sleeper : public QThread
 {
@@ -121,6 +122,8 @@ Z3DWindow::Z3DWindow(ZSharedPointer<ZStackDoc> doc, Z3DWindow::EInitMode initMod
   if (m_doc->getStack() != NULL) {
     setWindowTitle(m_doc->stackSourcePath().c_str());
   }
+
+  m_doc->registerUser(this);
   //createToolBar();
 }
 
@@ -395,6 +398,12 @@ void Z3DWindow::init(EInitMode mode)
           this, SLOT(addPolyplaneFrom3dPaint(ZStroke2d*)));
 
   m_canvas->set3DInteractionHandler(m_compositor->getInteractionHandler());
+
+#if defined(REMOTE_WORKSTATION)
+  getCompositor()->setShowBackground(false);
+#endif
+
+
   //  // if have image, try black background
   //  if (channelNumber() > 0) {
   //    m_background->setFirstColor(glm::vec3(0.f));
@@ -749,6 +758,7 @@ void Z3DWindow::createContextMenu()
   m_changeBackgroundAction = new QAction("Change Background", this);
   connect(m_changeBackgroundAction, SIGNAL(triggered()), this,
           SLOT(changeBackground()));
+
   m_contextMenuGroup["empty"] = contextMenu;
 }
 
@@ -980,7 +990,7 @@ int Z3DWindow::channelNumber()
     return 0;
   }
 
-  if (!m_doc) {
+  if (m_doc.get() == NULL) {
     return 0;
   }
 
@@ -1761,7 +1771,8 @@ void Z3DWindow::locatePunctumIn2DView()
   if (punctumList.size() == 1) {
     if (m_doc->getParentFrame() != NULL) {
       ZPunctum* punc = *(punctumList.begin());
-      m_doc->getParentFrame()->viewRoi(punc->x(), punc->y(), iround(punc->z()), punc->radius() * 4);
+      m_doc->getParentFrame()->viewRoi(
+            punc->x(), punc->y(), iround(punc->z()), punc->radius() * 4);
     }
   }
 }
@@ -2173,7 +2184,11 @@ void Z3DWindow::keyPressEvent(QKeyEvent *event)
     break;
   case Qt::Key_Z:
     if (event->modifiers() == Qt::NoModifier) {
-      locateSwcNodeIn2DView();
+      if (getDocument()->hasSelectedSwcNode()) {
+        locateSwcNodeIn2DView();
+      } else if (getDocument()->hasSelectedPuncta()) {
+        locatePunctumIn2DView();
+      }
     }
     break;
   case Qt::Key_V:
@@ -2271,6 +2286,7 @@ void Z3DWindow::updateContextMenu(const QString &group)
     if (m_doc->hasSwc() || m_doc->hasPuncta())
       m_contextMenuGroup["empty"]->addAction(m_toggleMoveSelectedObjectsAction);
     m_contextMenuGroup["empty"]->addAction(m_changeBackgroundAction);
+
   }
   if (group == "volume") {
     m_contextMenuGroup["volume"]->clear();
@@ -2294,6 +2310,9 @@ void Z3DWindow::updateContextMenu(const QString &group)
       m_contextMenuGroup["volume"]->addAction(m_toggleMoveSelectedObjectsAction);
     m_contextMenuGroup["volume"]->addAction(m_changeBackgroundAction);
     m_contextMenuGroup["volume"]->addAction(m_refreshTraceMaskAction);
+    if (m_doc->getTag() == NeuTube::Document::FLYEM_SPLIT) {
+      m_contextMenuGroup["volume"]->addAction(m_markPunctumAction);
+    }
   }
   if (group == "swcnode") {
     getDocument()->updateSwcNodeAction();
@@ -2494,6 +2513,28 @@ void Z3DWindow::locateSwcNodeIn2DView()
       int radius = iround(std::max(cuboid.width(), cuboid.height()) / 2.0);
       m_doc->getParentFrame()->viewRoi(cx, cy, cz, radius);
       */
+    } else {
+      const std::set<Swc_Tree_Node*> &nodeSet = m_doc->getSelectedSwcNodeSet();
+
+      ZCuboid cuboid = SwcTreeNode::boundBox(nodeSet);
+      ZPoint center = cuboid.center();
+      int cx, cy, cz;
+
+      //-= document()->getStackOffset();
+      cx = iround(center.x());
+      cy = iround(center.y());
+      cz = iround(center.z());
+      int radius = iround(std::max(cuboid.width(), cuboid.height()) / 2.0);
+      const int minRadius = 400;
+      if (radius < minRadius) {
+        radius = minRadius;
+      }
+
+      ZStackViewParam param(NeuTube::COORD_STACK);
+      param.setViewPort(iround(cx - radius), iround(cy - radius),
+                        iround(cx + radius), iround(cy + radius));
+      param.setZ(iround(cz));
+      emit locating2DViewTriggered(param);
     }
   }
 }
@@ -2777,11 +2818,14 @@ void Z3DWindow::convertPunctaToSwc()
       tree->addRegularRoot(tn);
     }
 
-    m_doc->addSwcTree(tree, false);
+    m_doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+    m_doc->addObject(tree, false);
     m_doc->removeSelectedPuncta();
+    m_doc->endObjectModifiedMode();
+    m_doc->notifyObjectModified();
 
-    m_doc->notifyPunctumModified();
-    m_doc->notifySwcModified();
+//    m_doc->notifyPunctumModified();
+//    m_doc->notifySwcModified();
   }
 }
 
@@ -3116,21 +3160,26 @@ void Z3DWindow::convertSelectedChainToSwc()
 {
   std::set<ZLocsegChain*> chainSet =
       m_doc->getSelectedObjectSet<ZLocsegChain>(ZStackObject::TYPE_LOCSEG_CHAIN);
+
+  m_doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
   for (std::set<ZLocsegChain*>::iterator iter = chainSet.begin();
        iter != chainSet.end(); ++iter) {
     Swc_Tree_Node *tn = TubeModel::createSwc((*iter)->data());
     if (tn != NULL) {
       ZSwcTree *tree = new ZSwcTree;
       tree->setDataFromNode(tn);
-      m_doc->addSwcTree(tree, false);
+      m_doc->addObject(tree, false);
     }
   }
   //chainSet->clear();
 
   m_doc->executeRemoveTubeCommand();
+  m_doc->endObjectModifiedMode();
 
-  m_doc->notifySwcModified();
-  m_doc->notifyChainModified();
+  m_doc->notifyObjectModified();
+
+//  m_doc->notifySwcModified();
+//  m_doc->notifyChainModified();
 }
 
 bool Z3DWindow::hasSwc() const
@@ -3295,42 +3344,47 @@ void Z3DWindow::addPolyplaneFrom3dPaint(ZStroke2d *stroke)
 
     ZObject3d *obj = ZVoxelGraphics::createPolyPlaneObject(polyline1, polyline2);
 
-    ZObject3d *processedObj = NULL;
+    if (obj != NULL) {
+      ZObject3d *processedObj = NULL;
 
-    const ZStack *stack = NULL;
-    int xIntv = 0;
-    int yIntv = 0;
-    int zIntv = 0;
+      const ZStack *stack = NULL;
+      int xIntv = 0;
+      int yIntv = 0;
+      int zIntv = 0;
 
-    if (getDocument()->hasSparseStack()) {
-      stack = getDocument()->getSparseStack()->getStack();
-      ZIntPoint dsIntv = getDocument()->getSparseStack()->getDownsampleInterval();
-      xIntv = dsIntv.getX();
-      yIntv = dsIntv.getY();
-      zIntv = dsIntv.getZ();
-    } else {
-      stack = getDocument()->getStack();
-    }
+      if (getDocument()->hasSparseStack()) {
+        stack = getDocument()->getSparseStack()->getStack();
+        ZIntPoint dsIntv = getDocument()->getSparseStack()->getDownsampleInterval();
+        xIntv = dsIntv.getX();
+        yIntv = dsIntv.getY();
+        zIntv = dsIntv.getZ();
+      } else {
+        stack = getDocument()->getStack();
+      }
 
-    processedObj = new ZObject3d;
-    for (size_t i = 0; i < obj->size(); ++i) {
-      int x = obj->getX(i) / (xIntv + 1);
-      int y = obj->getY(i) / (yIntv + 1);
-      int z = obj->getZ(i) / (zIntv + 1);
-      int v = 0;
-      for (int dz = -1; dz <= 1; ++dz) {
-        for (int dy = -1; dy <= 1; ++dy) {
-          for (int dx = -1; dx <= 1; ++dx) {
-            v += stack->getIntValue(x + dx, y + dy, z + dz);
+      processedObj = new ZObject3d;
+      for (size_t i = 0; i < obj->size(); ++i) {
+        int x = obj->getX(i) / (xIntv + 1) - stack->getOffset().getX();
+        int y = obj->getY(i) / (yIntv + 1) - stack->getOffset().getY();
+        int z = obj->getZ(i) / (zIntv + 1) - stack->getOffset().getZ();
+        int v = 0;
+        for (int dz = -1; dz <= 1; ++dz) {
+          for (int dy = -1; dy <= 1; ++dy) {
+            for (int dx = -1; dx <= 1; ++dx) {
+              v = stack->getIntValueLocal(x + dx, y + dy, z + dz);
+              if (v > 0) {
+                break;
+              }
+            }
           }
         }
+        if (v > 0) {
+          processedObj->append(obj->getX(i), obj->getY(i), obj->getZ(i));
+        }
       }
-      if (v > 0) {
-        processedObj->append(obj->getX(i), obj->getY(i), obj->getZ(i));
-      }
+      delete obj;
+      obj = processedObj;
     }
-    delete obj;
-    obj = processedObj;
 
     if (obj != NULL) {
 #ifdef _DEBUG_2

@@ -12,6 +12,7 @@
 #include "tz_math.h"
 #include "tz_voxel_graphics.h"
 #include "zlocsegchain.h"
+#include "zpainter.h"
 
 ZLocsegChainConn::ZLocsegChainConn()
 {

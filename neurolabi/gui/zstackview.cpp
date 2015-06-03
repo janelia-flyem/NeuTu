@@ -1,4 +1,5 @@
 #include <iostream>
+#include <QElapsedTimer>
 
 #include "zstackview.h"
 #include "zimagewidget.h"
@@ -31,6 +32,7 @@
 #include "zbodysplitbutton.h"
 #include "zstackmvc.h"
 #include "zpixmap.h"
+#include "zlabeledspinboxwidget.h"
 
 #include <QtGui>
 #ifdef _QT5_
@@ -77,6 +79,9 @@ void ZStackView::init()
   m_depthControl = new ZSlider(true, this);
   m_depthControl->setFocusPolicy(Qt::NoFocus);
 
+  m_zSpinBox = new ZLabeledSpinBoxWidget(this);
+  m_zSpinBox->setLabel("Z:");
+
   m_imageWidget = new ZImageWidget(this);
   m_imageWidget->setSizePolicy(QSizePolicy::Expanding,
                                QSizePolicy::Expanding);
@@ -111,6 +116,7 @@ void ZStackView::init()
 
   m_secondTopLayout->addLayout(m_channelControlLayout);
   m_secondTopLayout->addWidget(m_progress);
+//  m_secondTopLayout->addWidget(m_zSpinBox);
   m_secondTopLayout->addSpacerItem(new QSpacerItem(1, m_progress->height(),
                                                QSizePolicy::Expanding,
                                                QSizePolicy::Fixed));
@@ -122,7 +128,13 @@ void ZStackView::init()
   m_layout->addLayout(m_secondTopLayout);
   m_layout->addSpacing(6);
   m_layout->addWidget(m_imageWidget);
-  m_layout->addWidget(m_depthControl);
+
+  m_zControlLayout = new QHBoxLayout;
+  m_zControlLayout->addWidget(m_depthControl);
+  m_zControlLayout->addWidget(m_zSpinBox);
+  m_layout->addLayout(m_zControlLayout);
+
+//  m_layout->addWidget(m_depthControl);
 
 #ifdef _ADVANCED_
   m_thresholdSlider = new ZSlider(false, this);
@@ -132,7 +144,7 @@ void ZStackView::init()
   m_autoThreButton->setFocusPolicy(Qt::NoFocus);
 
   m_ctrlLayout = new QHBoxLayout;
-  m_ctrlLayout->addWidget(m_autoThreButton);
+  m_ctrlLayout->addWidget(m_autoThreButton);  
   m_ctrlLayout->addWidget(m_thresholdSlider);
   m_layout->addLayout(m_ctrlLayout);
 
@@ -201,6 +213,8 @@ void ZStackView::setInfo(QString info)
   }
 }
 
+
+
 void ZStackView::connectSignalSlot()
 {
   /*
@@ -235,6 +249,16 @@ void ZStackView::connectSignalSlot()
   }
 
   connect(this, SIGNAL(viewPortChanged()), this, SLOT(paintActiveTile()));
+
+  connect(m_zSpinBox, SIGNAL(valueConfirmed(int)),
+          this, SLOT(setZ(int)));
+  connect(m_depthControl, SIGNAL(valueChanged(int)),
+          this, SLOT(updateZSpinBoxValue()));
+}
+
+void ZStackView::updateZSpinBoxValue()
+{
+  m_zSpinBox->setValue(getCurrentZ());
 }
 
 void ZStackView::setInfo()
@@ -261,6 +285,7 @@ void ZStackView::reset(bool updatingScreen)
   if (stack != NULL) {
     m_depthControl->setRange(0, stack->depth() - 1);
     m_depthControl->setValue(stack->depth() / 2);
+//    m_imageWidget->reset();
 
     if (updatingScreen) {
       redraw();
@@ -308,6 +333,10 @@ void ZStackView::updateSlider()
     if (value >= stackData()->depth()) {
       m_depthControl->setValueQuietly(stackData()->depth() - 1);
     }
+
+    m_zSpinBox->setRange(
+          stackData()->getOffset().getZ(),
+          stackData()->getOffset().getZ() + stackData()->depth() - 1);
   }
 }
 
@@ -322,8 +351,13 @@ void ZStackView::updateChannelControl()
     delete child;
   }
   m_chVisibleState.clear();
+  m_zSpinBox->setVisible(false);
   ZStack *stack = stackData();
   if (stack != NULL) {
+    if (stack->depth() > 1) {
+      m_zSpinBox->setVisible(true);
+    }
+
     if (!stack->isVirtual()) {
       std::vector<ZVec3Parameter*>& channelColors = stack->channelColors();
       for (int i=0; i<stack->channelNumber(); ++i) {
@@ -361,344 +395,6 @@ void ZStackView::autoThreshold()
 }
 
 #define MULTI_THREAD_VIEW_SIZE_THRESHOLD 65536
-
-#if 0
-void ZStackView::updateData(int nslice, int threshold)
-{
-  /* get stack data */
-  ZStack *stack = stackData();
-
-  if (stack == NULL) {
-    return;
-  }
-
-  if (threshold >= stack->max()) {
-    threshold = -1;
-  }
-
-  if (stack != NULL) {
-    size_t area = stack->width() * stack->height();
-    if (m_image != NULL) {
-      if ((m_image->width() != stack->width()) ||
-          (m_image->height() != stack->height())) {
-        delete(m_image);
-        m_image = NULL;
-      }
-    }
-
-    if (m_image == NULL) {
-      m_image = new ZImage(stack->width(), stack->height());
-    }
-
-    //Set mask
-    if (buddyDocument()->hasStackMask() &&
-        buddyPresenter()->isObjectVisible()) {
-      ZStack *stackMask = buddyDocument()->stackMask();
-      TZ_ASSERT(stackMask->width() == stack->width() &&
-                stackMask->height() == stack->height() &&
-                stackMask->depth() == stack->depth(),
-                "Inconsistent stack size");
-      if (m_imageMask != NULL) {
-        if (m_imageMask->width() != m_image->width() ||
-            m_imageMask->height() != m_image->height()) {
-          delete m_imageMask;
-          m_imageMask = NULL;
-        }
-      }
-      if (m_imageMask == NULL) {
-        m_imageMask = m_image->createMask();
-      }
-      if (stackMask->kind() == GREY) {
-        //m_imageMask->setData(stack->arrayc() + area * nslice, 100);
-        if (stackMask->channelNumber() >= 3) {
-          m_imageMask->set3ChannelData(
-                stackMask->array8(0) + area * nslice, 1, 0,
-                stackMask->array8(1) + area * nslice, 1, 0,
-                stackMask->array8(2) + area * nslice, 1, 0, 100);
-        } else if (stackMask->channelNumber() == 2) {
-          m_imageMask->set2ChannelData(
-                stackMask->array8(0) + area * nslice, 1, 0,
-                stackMask->array8(1) + area * nslice, 1, 0, 100);
-        } else {
-          m_imageMask->setCData(stackMask->array8(0) + area * nslice, 100);
-        }
-      } else if (stackMask->kind() == GREY16) {
-        m_imageMask->setCData(stackMask->array16(0) + area * nslice, 100);
-      }
-      if (buddyPresenter()->objectStyle() == ZStackObject::BOUNDARY) {
-        m_imageMask->enhanceEdge();
-      }
-    }
-
-    bool showImage = false;
-    for (size_t i=0; i<m_chVisibleState.size(); ++i) {
-      if (m_chVisibleState[i]->get()) {
-        showImage = true;
-        break;
-      }
-    }
-
-    if (buddyPresenter()->interactiveContext().isNormalView()) {
-      if (!stack->isVirtual() && showImage) {
-        if (stack->channelNumber() == 1) {   //grey
-          switch (stack->kind()) {
-          case GREY:
-            if (stack->isBinary()) {
-              m_image->setBinaryData(stack->array8() + area * nslice,
-                                     (uint8) (stack->min()), threshold);
-            } else {
-//              m_image->setData(stack->array8() + area * nslice,
-//                                 buddyPresenter()->greyScale(),
-//                                 buddyPresenter()->greyOffset(), threshold);
-              ZImage::DataSource<uint8_t> stackData(stack->array8(0) + area * nslice,
-                                                    buddyPresenter()->greyScale(0),
-                                                    buddyPresenter()->greyOffset(0),
-                                                    stack->getChannelColor(0));
-              m_image->setData(stackData, threshold);
-
-            }
-            break;
-          case GREY16:
-            if (stack->isBinary()) {
-              m_image->setBinaryData(stack->array16() + area * nslice,
-                                     (uint16) (stack->min()), threshold);
-            } else {
-//              m_image->setData(stack->array16() + area * nslice,
-//                               buddyPresenter()->greyScale(),
-//                               buddyPresenter()->greyOffset(), threshold);
-              ZImage::DataSource<uint16_t> stackData(stack->array16(0) + area * nslice,
-                                                     buddyPresenter()->greyScale(0),
-                                                     buddyPresenter()->greyOffset(0),
-                                                     stack->getChannelColor(0));
-              m_image->setData(stackData, threshold);
-            }
-            break;
-          }
-        } else { // multi channel image
-          switch (stack->kind()) {
-          case GREY: {
-            std::vector<ZImage::DataSource<uint8_t> > stackData8;
-            for (size_t i=0; i<m_chVisibleState.size(); ++i) {
-              if (m_chVisibleState[i]->get()) {
-                stackData8.push_back(ZImage::DataSource<uint8_t>(stack->array8(i) + area * nslice,
-                                                                 buddyPresenter()->greyScale(i),
-                                                                 buddyPresenter()->greyOffset(i),
-                                                                 stack->getChannelColor(i)));
-              }
-            }
-            m_image->setData(stackData8);
-          }
-//            if (stack->channelNumber() == 2) {
-//              m_image->set2ChannelData(stack->array8(0) + area * nslice, buddyPresenter()->greyScale(0), buddyPresenter()->greyOffset(0),
-//                                       stack->array8(1) + area * nslice, buddyPresenter()->greyScale(1), buddyPresenter()->greyOffset(1));
-//            } else {
-//              m_image->set3ChannelData(stack->array8(0) + area * nslice, buddyPresenter()->greyScale(0), buddyPresenter()->greyOffset(0),
-//                                       stack->array8(1) + area * nslice, buddyPresenter()->greyScale(1), buddyPresenter()->greyOffset(1),
-//                                       stack->array8(2) + area * nslice, buddyPresenter()->greyScale(2), buddyPresenter()->greyOffset(2));
-//            }
-            break;
-          case GREY16: {
-            std::vector<ZImage::DataSource<uint16_t> > stackData16;
-            for (size_t i=0; i<m_chVisibleState.size(); ++i) {
-              if (m_chVisibleState[i]->get()) {
-                stackData16.push_back(ZImage::DataSource<uint16_t>(stack->array16(i) + area * nslice,
-                                                                   buddyPresenter()->greyScale(i),
-                                                                   buddyPresenter()->greyOffset(i),
-                                                                   stack->getChannelColor(i)));
-              }
-            }
-            m_image->setData(stackData16);
-          }
-//            if (stack->channelNumber() == 2) {
-//              m_image->set2ChannelData(stack->array16(0) + area * nslice, buddyPresenter()->greyScale(0), buddyPresenter()->greyOffset(0),
-//                                       stack->array16(1) + area * nslice, buddyPresenter()->greyScale(1), buddyPresenter()->greyOffset(1));
-//            } else {
-//              m_image->set3ChannelData(stack->array16(0) + area * nslice, buddyPresenter()->greyScale(0), buddyPresenter()->greyOffset(0),
-//                                       stack->array16(1) + area * nslice, buddyPresenter()->greyScale(1), buddyPresenter()->greyOffset(1),
-//                                       stack->array16(2) + area * nslice, buddyPresenter()->greyScale(2), buddyPresenter()->greyOffset(2));
-//            }
-            break;
-          }
-        }
-      } else {
-        m_image->setBackground();
-      }
-      m_scrollEnabled = true;
-    } else if (buddyPresenter()->interactiveContext().isProjectView()) {
-      m_scrollEnabled = false;
-      if (!stack->isVirtual() && showImage) {
-        if (stack->channelNumber() == 1) {
-          Image_Array ima;
-          ima.array = (uint8*) stack->projection(ZSingleChannelStack::MAX_PROJ, ZSingleChannelStack::Z_AXIS);
-
-          switch (stack->kind()) {
-          case GREY:
-            if (stack->isBinary()) {
-              m_image->setBinaryData(ima.array8, (uint8) (stack->min()), threshold);
-            } else {
-//              m_image->setData(ima.array8,
-//                                 buddyPresenter()->greyScale(),
-//                                 buddyPresenter()->greyOffset(), threshold);
-              ZImage::DataSource<uint8_t> stackData(ima.array8,
-                                                    buddyPresenter()->greyScale(0),
-                                                    buddyPresenter()->greyOffset(0),
-                                                    stack->getChannelColor(0));
-              m_image->setData(stackData, threshold);
-            }
-            break;
-          case GREY16:
-            if (stack->isBinary()) {
-              m_image->setBinaryData(ima.array16, (uint16) (stack->min()),
-                                     threshold);
-            } else {
-//              m_image->setData(ima.array16,
-//                               buddyPresenter()->greyScale(),
-//                               buddyPresenter()->greyOffset(), threshold);
-              ZImage::DataSource<uint16_t> stackData(ima.array16,
-                                                     buddyPresenter()->greyScale(0),
-                                                     buddyPresenter()->greyOffset(0),
-                                                     stack->getChannelColor(0));
-              m_image->setData(stackData, threshold);
-            }
-            break;
-          }
-        } else {    // for color image
-          switch (stack->kind()) {
-          case GREY: {
-            std::vector<ZImage::DataSource<uint8_t> > stackData8;
-            for (size_t i=0; i<m_chVisibleState.size(); ++i) {
-              if (m_chVisibleState[i]->get()) {
-                Image_Array ima;
-                ima.array8 = (uint8*) stack->projection(ZSingleChannelStack::MAX_PROJ, ZSingleChannelStack::Z_AXIS, i);
-                stackData8.push_back(ZImage::DataSource<uint8_t>(ima.array8,
-                                                                 buddyPresenter()->greyScale(i),
-                                                                 buddyPresenter()->greyOffset(i),
-                                                                 stack->getChannelColor(i)));
-              }
-            }
-            m_image->setData(stackData8);
-          }
-            break;
-          case GREY16: {
-            std::vector<ZImage::DataSource<uint16_t> > stackData16;
-            for (size_t i=0; i<m_chVisibleState.size(); ++i) {
-              if (m_chVisibleState[i]->get()) {
-                Image_Array ima;
-                ima.array16 = (uint16*) stack->projection(ZSingleChannelStack::MAX_PROJ, ZSingleChannelStack::Z_AXIS, i);
-                stackData16.push_back(ZImage::DataSource<uint16_t>(ima.array16,
-                                                                   buddyPresenter()->greyScale(i),
-                                                                   buddyPresenter()->greyOffset(i),
-                                                                   stack->getChannelColor(i)));
-              }
-            }
-            m_image->setData(stackData16);
-          }
-            break;
-          }
-
-//          Image_Array ima0, ima1, ima2;
-//          ima0.array = (uint8*) stack->projection(ZSingleChannelStack::MAX_PROJ, ZSingleChannelStack::Z_AXIS, 0);
-//          ima1.array = (uint8*) stack->projection(ZSingleChannelStack::MAX_PROJ, ZSingleChannelStack::Z_AXIS, 1);
-//          switch (stack->kind()) {
-//          case GREY:
-//            if (stack->channelNumber() == 2) {
-//              m_image->set2ChannelData(ima0.array8, buddyPresenter()->greyScale(0), buddyPresenter()->greyOffset(0),
-//                                       ima1.array8, buddyPresenter()->greyScale(1), buddyPresenter()->greyOffset(1));
-//            } else {
-//              ima2.array = (uint8*) stack->projection(ZSingleChannelStack::MAX_PROJ, ZSingleChannelStack::Z_AXIS, 2);
-//              m_image->set3ChannelData(ima0.array8, buddyPresenter()->greyScale(0), buddyPresenter()->greyOffset(0),
-//                                       ima1.array8, buddyPresenter()->greyScale(1), buddyPresenter()->greyOffset(1),
-//                                       ima2.array8, buddyPresenter()->greyScale(2), buddyPresenter()->greyOffset(2));
-//            }
-//            break;
-//          case GREY16:
-//            if (stack->channelNumber() == 2) {
-//              m_image->set2ChannelData(ima0.array16, buddyPresenter()->greyScale(0), buddyPresenter()->greyOffset(0),
-//                                       ima1.array16, buddyPresenter()->greyScale(1), buddyPresenter()->greyOffset(1));
-//            } else {
-//              ima2.array = (uint8*) stack->projection(ZSingleChannelStack::MAX_PROJ, ZSingleChannelStack::Z_AXIS, 2);
-//              m_image->set3ChannelData(ima0.array16, buddyPresenter()->greyScale(0), buddyPresenter()->greyOffset(0),
-//                                       ima1.array16, buddyPresenter()->greyScale(1), buddyPresenter()->greyOffset(1),
-//                                       ima2.array16, buddyPresenter()->greyScale(2), buddyPresenter()->greyOffset(2));
-//            }
-//            break;
-//          }
-        }
-      } else {
-        m_image->setBackground();
-      }
-    }
-
-    updateScrollControl();
-
-    if (buddyPresenter()->isObjectVisible()) {
-      if (buddyPresenter()->interactiveContext().isProjectView()) {
-        nslice = -1;
-      }
-
-      if (buddyPresenter()->interactiveContext().isReconPreview()) {
-        if (buddyDocument()->previewSwc() != NULL) {
-          buddyDocument()->previewSwc()->display(m_image, nslice,
-                                               buddyPresenter()->objectStyle());
-        }
-      } else {
-        if (buddyDocument()->hasDrawable()) {
-          QList<ZStackObject*> *objs = buddyDocument()->drawableList();
-          for (QList<ZStackObject*>::const_iterator obj = objs->end() - 1;
-          obj != objs->begin() - 1; --obj) {
-            (*obj)->display(m_image, nslice, buddyPresenter()->objectStyle());
-          }
-        }
-
-        if (buddyPresenter()->hasObjectToShow()) {
-          if (buddyPresenter()->interactiveContext().isProjectView()) {
-            nslice = -1;
-          }
-          QList<ZStackObject*> *objs = buddyPresenter()->decorations();
-          for (QList<ZStackObject*>::const_iterator obj = objs->end() - 1;
-          obj != objs->begin() - 1; --obj) {
-            (*obj)->display(m_image, nslice, buddyPresenter()->objectStyle());
-          }
-        }
-
-        //For special handling
-        if (!buddyDocument()->selectedSwcTreeNodes()->empty()) {
-          for (std::set<Swc_Tree_Node*>::const_iterator iter =
-               buddyDocument()->selectedSwcTreeNodes()->begin();
-               iter != buddyDocument()->selectedSwcTreeNodes()->end(); ++iter) {
-            ZCircle circle;
-            circle.setColor(255, 255, 0);
-            circle.set(SwcTreeNode::x(*iter), SwcTreeNode::y(*iter),
-                       SwcTreeNode::z(*iter), SwcTreeNode::radius(*iter));
-            circle.display(m_image, nslice);
-          }
-        }
-      }
-    }
-
-    m_imageWidget->setImage(m_image);
-    if (buddyPresenter()->isObjectVisible()) {
-      m_imageWidget->setMask(m_imageMask, 0);
-      m_imageWidget->setMask(m_objectCanvas, 1);
-      m_imageWidget->setMask(m_activeStrokeCanvas, 2);
-    } else {
-      m_imageWidget->setMask(NULL, 0);
-      m_imageWidget->setMask(NULL, 1);
-    }
-
-    updateImageScreen();
-  }
-}
-
-void ZStackView::updateSlice(int nslice)
-{
-#ifdef _ADVANCED_
-  updateData(nslice, getIntensityThreshold());
-#else
-  updateData(nslice);
-#endif
-}
-#endif
 
 /*
 void ZStackView::viewThreshold(int threshold)
@@ -741,10 +437,15 @@ int ZStackView::getCurrentZ() const
   return sliceIndex() + buddyDocument()->getStackOffset().getZ();
 }
 
+void ZStackView::setZ(int z)
+{
+  setSliceIndex(z - buddyDocument()->getStackOffset().getZ());
+}
+
 void ZStackView::setSliceIndex(int slice)
 {
   if (!isDepthFronzen()) {
-    setDepthFrozen(true);
+//    setDepthFrozen(true);
     m_depthControl->setValue(slice);
   }
 
@@ -787,7 +488,7 @@ void ZStackView::updatePaintBundle()
 
   int slice = m_depthControl->value();
   if (buddyPresenter()->interactiveContext().isProjectView()) {
-    slice = -1;
+    slice = -slice - 1;
   }
   m_paintBundle.setSliceIndex(slice);
   m_paintBundle.setDisplayStyle(buddyPresenter()->objectStyle());
@@ -820,7 +521,7 @@ void ZStackView::updateImageScreen()
   m_imageWidget->blockPaint(m_isRedrawBlocked ||
                             !buddyDocument()->isReadyForPaint());
 
-  qDebug() << m_imageWidget->screenSize();
+//  qDebug() << m_imageWidget->screenSize();
   m_imageWidget->update(QRect(QPoint(0, 0), m_imageWidget->screenSize()));
 }
 
@@ -914,11 +615,17 @@ void ZStackView::mouseRolledInImageWidget(QWheelEvent *event)
     numSteps /= 120;
   }
 
-  if (event->modifiers() == Qt::NoModifier) {
+  if (event->modifiers() == Qt::NoModifier ||
+      event->modifiers() == Qt::ShiftModifier) {
     if (isDepthChangable()) {
       //for strange mighty mouse response in Qt 4.6.2
       if (numSteps != 0) {
-        int newPos = m_depthControl->value() + numSteps;
+        int ratio = 1;
+        if (event->modifiers() == Qt::ShiftModifier) {
+          ratio = 10;
+        }
+
+        int newPos = m_depthControl->value() + numSteps * ratio;
         if ((newPos >= m_depthControl->minimum()) &&
             (newPos <= m_depthControl->maximum())) {
           setSliceIndex(newPos);
@@ -933,11 +640,11 @@ void ZStackView::mouseRolledInImageWidget(QWheelEvent *event)
         }
       }
     }
-  } else if (event->modifiers() == Qt::ShiftModifier) {
-    if (numSteps > 0) {
-      increaseZoomRatio();
-    } else if (numSteps < 0) {
-      decreaseZoomRatio();
+  } else if (event->modifiers() == Qt::ControlModifier) {
+    if (numSteps < 0) {
+      increaseZoomRatio(event->pos().x(), event->pos().y());
+    } else if (numSteps > 0) {
+      decreaseZoomRatio(event->pos().x(), event->pos().y());
     }
   }
 }
@@ -955,8 +662,11 @@ void ZStackView::redrawObject()
   updateImageScreen();
 }
 
-void ZStackView::redraw()
+void ZStackView::redraw(bool updatingScreen)
 {
+//  tic();
+  QElapsedTimer timer;
+  timer.start();
   m_imageWidget->setCanvasRegion(
         buddyDocument()->getStackOffset().getX(),
         buddyDocument()->getStackOffset().getY(),
@@ -964,11 +674,19 @@ void ZStackView::redraw()
         buddyDocument()->getStackSize().getY());
 
   paintStackBuffer();
+//  std::cout << "paint stack per frame: " << timer.restart() << std::endl;
   paintMaskBuffer();
-  paintObjectBuffer();
   paintTileCanvasBuffer();
+//  std::cout << "paint tile per frame: " << timer.restart() << std::endl;
   paintActiveDecorationBuffer();
-  updateImageScreen();
+  paintObjectBuffer();
+//  std::cout << "paint object per frame: " << timer.restart() << std::endl;
+
+  if (updatingScreen) {
+    updateImageScreen();
+  }
+//  std::cout << "paint time per frame: " << toc() << std::endl;
+  std::cout << "paint time per frame: " << timer.restart() << std::endl;
 }
 
 /*
@@ -1238,10 +956,33 @@ void ZStackView::clearCanvas()
   m_imagePainter.end();
   delete m_image;
   m_image = NULL;
+
+  m_imageWidget->setImage(NULL);
 }
 
-void ZStackView::updateCanvas()
+template<typename T>
+void ZStackView::resetCanvasWithStack(T &canvas, ZPainter *painter)
 {
+  if (canvas != NULL) {
+    if (canvas->width() != buddyDocument()->getStackWidth() ||
+        canvas->height() != buddyDocument()->getStackHeight() ||
+        iround(canvas->getTransform().getTx()) !=
+        -buddyDocument()->getStackOffset().getX() ||
+        iround(canvas->getTransform().getTy()) !=
+        -buddyDocument()->getStackOffset().getY()) {
+      if (painter != NULL) {
+        painter->end();
+      }
+      m_imageWidget->removeCanvas(canvas);
+      delete canvas;
+      canvas = NULL;
+    }
+  }
+}
+
+void ZStackView::updateImageCanvas()
+{
+  resetCanvasWithStack(m_image, &m_imagePainter);
   if (buddyDocument()->hasStackPaint()) {
     if (m_image != NULL) {
       if ((m_image->width() != buddyDocument()->getStackWidth()) ||
@@ -1254,8 +995,11 @@ void ZStackView::updateCanvas()
 //      double scale = 0.5;
       m_image = new ZImage(buddyDocument()->getStackWidth(),
                            buddyDocument()->getStackHeight());
+      m_image->setOffset(-buddyDocument()->getStackOffset().getX(),
+                         -buddyDocument()->getStackOffset().getY());
 //      m_image->setScale(scale, scale);
       m_imagePainter.begin(m_image);
+      m_imagePainter.setZOffset(buddyDocument()->getStackOffset().getZ());
       m_imageWidget->setImage(m_image);
     }
   }
@@ -1287,6 +1031,8 @@ void ZStackView::clearObjectCanvas()
   m_objectCanvasPainter.end();
   delete m_objectCanvas;
   m_objectCanvas = NULL;
+
+  m_imageWidget->setObjectCanvas(NULL);
 }
 
 void ZStackView::clearTileCanvas()
@@ -1294,6 +1040,8 @@ void ZStackView::clearTileCanvas()
   m_tileCanvasPainter.end();
   delete m_tileCanvas;
   m_tileCanvas = NULL;
+
+  m_imageWidget->setTileCanvas(NULL);
 }
 
 QSize ZStackView::getCanvasSize() const
@@ -1309,10 +1057,12 @@ QSize ZStackView::getCanvasSize() const
 
 void ZStackView::updateObjectCanvas()
 {
+  resetCanvasWithStack(m_objectCanvas, &m_objectCanvasPainter);
+
   QSize canvasSize = getCanvasSize();
 
   if (!canvasSize.isEmpty() &&
-      buddyDocument()->hasDrawable(ZStackObject::OBJECT_CANVAS)) {
+      buddyDocument()->hasDrawable(ZStackObject::TARGET_OBJECT_CANVAS)) {
     if (m_objectCanvas != NULL) {
       if (m_objectCanvas->width() != canvasSize.width() ||
           m_objectCanvas->height() != canvasSize.height()) {
@@ -1320,24 +1070,42 @@ void ZStackView::updateObjectCanvas()
       }
     }
     if (m_objectCanvas == NULL) {
-      m_objectCanvas = ZImage::createMask(canvasSize);
+//      m_objectCanvas = ZImage::createMask(canvasSize);
+      m_objectCanvas = new ZPixmap(canvasSize);
       m_objectCanvas->setOffset(-buddyDocument()->getStackOffset().getX(),
                                 -buddyDocument()->getStackOffset().getY());
+      m_objectCanvas->cleanUp();
       m_objectCanvasPainter.begin(m_objectCanvas);
-      m_imageWidget->setMask(m_objectCanvas, 1);
+      m_objectCanvasPainter.setCompositionMode(
+            QPainter::CompositionMode_SourceOver);
+      m_imageWidget->setObjectCanvas(m_objectCanvas);
+//      m_imageWidget->setMask(m_objectCanvas, 1);
     } else {
-      m_objectCanvas->fill(0);
+      m_objectCanvasPainter.end();
+      m_objectCanvas->cleanUp();
+      m_objectCanvasPainter.begin(m_objectCanvas);
+//      m_objectCanvas->setAlphaChannel(
+#ifdef _DEBUG_2
+      m_objectCanvas->save((GET_TEST_DATA_DIR + "/test.tif").c_str());
+#endif
+//      m_objectCanvas->fill(0);
     }
     m_objectCanvasPainter.setZOffset(buddyDocument()->getStackOffset().getZ());
+  } else {
+    if (m_objectCanvas != NULL) {
+      m_objectCanvas->setVisible(false);
+    }
   }
 }
 
 void ZStackView::updateTileCanvas()
 {
+  resetCanvasWithStack(m_tileCanvas, &m_tileCanvasPainter);
+
   QSize canvasSize = getCanvasSize();
 
   if (!canvasSize.isEmpty() &&
-      buddyDocument()->hasDrawable(ZStackObject::TILE_CANVAS)) {
+      buddyDocument()->hasDrawable(ZStackObject::TARGET_TILE_CANVAS)) {
     if (m_tileCanvas != NULL) {
       if (m_tileCanvas->width() != canvasSize.width() ||
           m_tileCanvas->height() != canvasSize.height()) {
@@ -1359,22 +1127,30 @@ void ZStackView::updateTileCanvas()
 
 void ZStackView::updateActiveDecorationCanvas()
 {
-  if (m_activeDecorationCanvas != NULL) {
-    if (m_activeDecorationCanvas->width() != m_image->width() ||
-        m_activeDecorationCanvas->height() != m_image->height()) {
-      delete m_activeDecorationCanvas;
-      m_activeDecorationCanvas = NULL;
-    }
-  }
+//  if (m_activeDecorationCanvas != NULL) {
+//    if (m_activeDecorationCanvas->width() != m_image->width() ||
+//        m_activeDecorationCanvas->height() != m_image->height()) {
+//      delete m_activeDecorationCanvas;
+//      m_activeDecorationCanvas = NULL;
+//    }
+//  }
+
+  resetCanvasWithStack(m_activeDecorationCanvas, NULL);
+
   if (m_activeDecorationCanvas == NULL) {
-    if (m_image != NULL) {
-      m_activeDecorationCanvas = m_image->createMask();
-      m_imageWidget->setMask(m_activeDecorationCanvas, 2);
+    QSize canvasSize = getCanvasSize();
+    if (!canvasSize.isEmpty()) {
+      m_activeDecorationCanvas = new ZPixmap(canvasSize);//m_image->createMask();
+      m_activeDecorationCanvas->setOffset(
+            -buddyDocument()->getStackOffset().getX(),
+            -buddyDocument()->getStackOffset().getY());
+      m_imageWidget->setActiveDecorationCanvas(m_activeDecorationCanvas);
+//      m_imageWidget->setMask(m_activeDecorationCanvas, 2);
     }
   }
 
   if (m_activeDecorationCanvas != NULL) {
-    m_activeDecorationCanvas->fill(0);
+    m_activeDecorationCanvas->cleanUp();
   }
 }
 
@@ -1414,8 +1190,6 @@ void ZStackView::paintStackBuffer()
     return;
   }
 
-  updateCanvas();
-
   bool showImage = false;
   for (size_t i=0; i<m_chVisibleState.size(); ++i) {
     if (m_chVisibleState[i]->get()) {
@@ -1425,10 +1199,12 @@ void ZStackView::paintStackBuffer()
   }
 
   if (!showImage) {
-    if (!buddyDocument()->hasSparseStack()) {
+    if (!buddyDocument()->hasVisibleSparseStack()) {
       return;
     }
   }
+
+  updateImageCanvas();
 
   if (buddyPresenter() != NULL) {
     if (buddyPresenter()->interactiveContext().isNormalView()) {
@@ -1440,9 +1216,9 @@ void ZStackView::paintStackBuffer()
         }
       } else {
         m_image->setBackground();
-        paintObjectBuffer(m_imagePainter, ZStackObject::STACK_CANVAS);
+        paintObjectBuffer(m_imagePainter, ZStackObject::TARGET_STACK_CANVAS);
 
-        if (buddyDocument()->hasSparseStack()) {
+        if (buddyDocument()->hasVisibleSparseStack()) {
           ZStack *slice =
               buddyDocument()->getSparseStack()->getSlice(getCurrentZ());
           //paintSingleChannelStackSlice(slice, 0);
@@ -1450,6 +1226,10 @@ void ZStackView::paintStackBuffer()
           slice->getOffset().setZ(0);
 
           m_image->setData(slice, 0, true);
+          /*
+          buddyDocument()->getSparseStack()->getObjectMask()->display(
+                m_imagePainter, sliceIndex(), ZStackObject::BOUNDARY);
+                */
           delete slice;
         }
       }
@@ -1464,9 +1244,9 @@ void ZStackView::paintStackBuffer()
         }
       } else {
         m_image->setBackground();
-        if (buddyDocument()->hasSparseStack()) {
+        if (buddyDocument()->hasVisibleSparseStack()) {
           ZStack *slice =
-              buddyDocument()->getSparseStack()->getMip();
+              buddyDocument()->getConstSparseStack()->getMip();
           if (slice != NULL) {
             slice->translate(-buddyDocument()->getStackOffset());
             slice->getOffset().setZ(0);
@@ -1528,17 +1308,25 @@ void ZStackView::paintMask()
   updateImageScreen();
 }
 
-void ZStackView::paintObjectBuffer(ZPainter &painter, ZStackObject::ETarget target)
+void ZStackView::paintObjectBuffer(
+    ZPainter &painter, ZStackObject::ETarget target)
 {
-#ifdef _DEBUG_
-    qDebug() << painter.transform();
+#ifdef _DEBUG_2
+    qDebug() << painter.getTransform();
 #endif
 
-  if (buddyPresenter()->isObjectVisible()) {
+  painter.setPainted(false);
+
+  bool visible = true;
+  if (target == ZStackObject::TARGET_OBJECT_CANVAS) {
+    visible = buddyPresenter()->isObjectVisible();
+  }
+
+  if (visible) {
     int slice = m_depthControl->value();
     int z = slice + buddyDocument()->getStackOffset().getZ();
     if (buddyPresenter()->interactiveContext().isProjectView()) {
-      slice = -1;
+      slice = -slice - 1;
     }
 
 //    painter.setStackOffset(buddyDocument()->getStackOffset());
@@ -1549,13 +1337,13 @@ void ZStackView::paintObjectBuffer(ZPainter &painter, ZStackObject::ETarget targ
       QList<ZStackObject*>::const_iterator iter = objs->end() - 1;
       for (;iter != objs->begin() - 1; --iter) {
         const ZStackObject *obj = *iter;
-        if ((obj->isSliceVisible(z) || slice == -1) &&
+        if ((obj->isSliceVisible(z) || slice < 0) &&
             obj->getTarget() == target) {
           visibleObject.append(obj);
         }
       }
       std::sort(visibleObject.begin(), visibleObject.end(),
-                ZStackObject::ZOrderCompare());
+                ZStackObject::ZOrderLessThan());
 
 #ifdef _DEBUG_2
       std::cout << "---" << std::endl;
@@ -1566,87 +1354,32 @@ void ZStackView::paintObjectBuffer(ZPainter &painter, ZStackObject::ETarget targ
            iter = visibleObject.begin(); iter != visibleObject.end(); ++iter) {
         //(*obj)->display(m_objectCanvas, slice, buddyPresenter()->objectStyle());
         const ZStackObject *obj = *iter;
-        if (slice == m_depthControl->value()) {
+        if (slice == m_depthControl->value() || slice < 0) {
           obj->display(painter, slice, buddyPresenter()->objectStyle());
+//          painted = true;
         }
       }
     }
 
     if (buddyPresenter()->hasObjectToShow()) {
-      if (buddyPresenter()->interactiveContext().isProjectView()) {
-        slice = -1;
-      }
+//      if (buddyPresenter()->interactiveContext().isProjectView()) {
+//        slice = -m_depthControl->value() - 1;
+//      }
       QList<ZStackObject*> *objs = buddyPresenter()->decorations();
       for (QList<ZStackObject*>::const_iterator obj = objs->end() - 1;
            obj != objs->begin() - 1; --obj) {
         //(*obj)->display(m_objectCanvas, slice, buddyPresenter()->objectStyle());
         if ((*obj)->getTarget() == target) {
           (*obj)->display(painter, slice, buddyPresenter()->objectStyle());
+//          painted = true;
         }
       }
     }
   }
+
+//  return painted;
 }
-#if 0
-void ZStackView::paintObjectBuffer(ZImage *canvas, ZStackObject::ETarget target)
-{
-  if (buddyPresenter()->isObjectVisible()) {
-    int slice = m_depthControl->value();
-    int z = slice + buddyDocument()->getStackOffset().getZ();
-    if (buddyPresenter()->interactiveContext().isProjectView()) {
-      slice = -1;
-    }
 
-    ZPainter painter;
-    painter.begin(canvas);
-    painter.setStackOffset(buddyDocument()->getStackOffset());
-
-    if (buddyDocument()->hasDrawable()) {
-      QList<ZStackObject*> *objs = buddyDocument()->drawableList();
-      QList<const ZStackObject*> visibleObject;
-      QList<ZStackObject*>::const_iterator iter = objs->end() - 1;
-      for (;iter != objs->begin() - 1; --iter) {
-        const ZStackObject *obj = *iter;
-        if ((obj->isSliceVisible(z) || slice == -1) &&
-            obj->getTarget() == target) {
-          visibleObject.append(obj);
-        }
-      }
-      std::sort(visibleObject.begin(), visibleObject.end(),
-                ZStackObject::ZOrderCompare());
-
-#ifdef _DEBUG_2
-      std::cout << "---" << std::endl;
-      std::cout << slice << " " << m_depthControl->value() <<  std::endl;
-#endif
-
-      for (QList<const ZStackObject*>::const_iterator
-           iter = visibleObject.begin(); iter != visibleObject.end(); ++iter) {
-        //(*obj)->display(m_objectCanvas, slice, buddyPresenter()->objectStyle());
-        const ZStackObject *obj = *iter;
-        if (slice == m_depthControl->value()) {
-          obj->display(painter, slice, buddyPresenter()->objectStyle());
-        }
-      }
-    }
-
-    if (buddyPresenter()->hasObjectToShow()) {
-      if (buddyPresenter()->interactiveContext().isProjectView()) {
-        slice = -1;
-      }
-      QList<ZStackObject*> *objs = buddyPresenter()->decorations();
-      for (QList<ZStackObject*>::const_iterator obj = objs->end() - 1;
-           obj != objs->begin() - 1; --obj) {
-        //(*obj)->display(m_objectCanvas, slice, buddyPresenter()->objectStyle());
-        if ((*obj)->getTarget() == target) {
-          (*obj)->display(painter, slice, buddyPresenter()->objectStyle());
-        }
-      }
-    }
-    painter.end();
-  }
-}
-#endif
 void ZStackView::paintObjectBuffer()
 {
 #ifdef _DEBUG_
@@ -1658,7 +1391,11 @@ void ZStackView::paintObjectBuffer()
     return;
   }
 
-  paintObjectBuffer(m_objectCanvasPainter, ZStackObject::OBJECT_CANVAS);
+  paintObjectBuffer(m_objectCanvasPainter, ZStackObject::TARGET_OBJECT_CANVAS);
+
+  if (m_objectCanvasPainter.isPainted()) {
+    m_objectCanvas->setVisible(true);
+  }
 }
 
 bool ZStackView::paintTileCanvasBuffer()
@@ -1668,15 +1405,19 @@ bool ZStackView::paintTileCanvasBuffer()
 #endif
   bool painted = false;
 
+//  QElapsedTimer timer;
+//  timer.start();
   if (buddyDocument()->hasObject(ZStackObject::TYPE_DVID_TILE_ENSEMBLE)) {
-    updateTileCanvas();;
+    updateTileCanvas();
+    //std::cout << "update time canvas time: " << timer.elapsed() << std::endl;
     if (m_tileCanvas != NULL) {
-      paintObjectBuffer(m_tileCanvasPainter, ZStackObject::TILE_CANVAS);
+      paintObjectBuffer(m_tileCanvasPainter, ZStackObject::TARGET_TILE_CANVAS);
       painted = true;
     }
+    //std::cout << "paint tile time: " << timer.elapsed() << std::endl;
   }
 
-  setDepthFrozen(false);
+//  setDepthFrozen(false);
   setViewPortFrozen(false);
 
   return painted;
@@ -1702,17 +1443,17 @@ void ZStackView::paintObject(
   bool updatingObjectCanvas = false;
   bool updatingImageCanvas = false;
   foreach (ZStackObject *obj, selected) {
-    if (obj->getTarget() == ZStackObject::OBJECT_CANVAS) {
+    if (obj->getTarget() == ZStackObject::TARGET_OBJECT_CANVAS) {
       updatingObjectCanvas = true;
-    } else if (obj->getTarget() == ZStackObject::STACK_CANVAS) {
+    } else if (obj->getTarget() == ZStackObject::TARGET_STACK_CANVAS) {
       updatingImageCanvas = true;
     }
   }
 
   foreach (ZStackObject *obj, deselected) {
-    if (obj->getTarget() == ZStackObject::OBJECT_CANVAS) {
+    if (obj->getTarget() == ZStackObject::TARGET_OBJECT_CANVAS) {
       updatingObjectCanvas = true;
-    } else if (obj->getTarget() == ZStackObject::STACK_CANVAS) {
+    } else if (obj->getTarget() == ZStackObject::TARGET_STACK_CANVAS) {
       updatingImageCanvas = true;
     }
   }
@@ -1731,6 +1472,8 @@ void ZStackView::paintObject(
 void ZStackView::paintActiveDecorationBuffer()
 {
 #if 1
+//  bool painted = false;
+
   updateActiveDecorationCanvas();
   const QList<ZStackObject*>& drawableList =
       buddyPresenter()->getActiveDecorationList();
@@ -1741,12 +1484,18 @@ void ZStackView::paintActiveDecorationBuffer()
       painter.setStackOffset(buddyDocument()->getStackOffset());
 
       foreach (ZStackObject *obj, drawableList) {
-        if (obj->getTarget() == ZStackObject::OBJECT_CANVAS) {
+        if (obj->getTarget() == ZStackObject::TARGET_OBJECT_CANVAS) {
           obj->display(painter, sliceIndex(), ZStackObject::NORMAL);
+//          painted = true;
         }
+      }
+      if (painter.isPainted()) {
+        m_activeDecorationCanvas->setVisible(true);
       }
     }
   }
+
+//  return painted;
 #endif
 }
 
@@ -1785,14 +1534,15 @@ ZStack* ZStackView::getStrokeMask(uint8_t maskValue)
 
       int slice = m_depthControl->value();
       if (buddyPresenter()->interactiveContext().isProjectView()) {
-        slice = -1;
+        slice = -slice - 1;
       }
 
       foreach (ZStroke2d *obj, buddyDocument()->getStrokeList()) {
-        ZPainter painter(m_objectCanvas);
-        painter.setZOffset(buddyDocument()->getStackOffset().getZ());
+//        ZPainter painter(m_objectCanvas);
+//        painter.setZOffset(buddyDocument()->getStackOffset().getZ());
 //        painter.setStackOffset(buddyDocument()->getStackOffset());
-        obj->display(painter, slice, buddyPresenter()->objectStyle());
+        obj->display(m_objectCanvasPainter,
+                     slice, buddyPresenter()->objectStyle());
       }
     }
 
@@ -1809,13 +1559,16 @@ ZStack* ZStackView::getObjectMask(uint8_t maskValue)
   ZStack *stack = NULL;
 
   if (m_objectCanvas != NULL) {
+    QImage image;
+    image = m_objectCanvas->toImage();
+
     stack = new ZStack(GREY, m_objectCanvas->width(),
                        m_objectCanvas->height(), 1, 1);
     size_t offset = 0;
     uint8_t *array = stack->array8();
     for (int y = 0; y < m_objectCanvas->height(); ++y) {
       for (int x = 0; x < m_objectCanvas->width(); ++x) {
-        QRgb rgb = m_objectCanvas->pixel(x, y);
+        QRgb rgb = image.pixel(x, y);
         if (qRed(rgb) > 0) {
           array[offset] = maskValue;
         } else {
@@ -1838,9 +1591,10 @@ ZStack* ZStackView::getObjectMask(NeuTube::EColor color, uint8_t maskValue)
                        m_objectCanvas->height(), 1, 1);
     size_t offset = 0;
     uint8_t *array = stack->array8();
+    QImage image = m_objectCanvas->toImage();
     for (int y = 0; y < m_objectCanvas->height(); ++y) {
       for (int x = 0; x < m_objectCanvas->width(); ++x) {
-        QRgb rgb = m_objectCanvas->pixel(x, y);
+        QRgb rgb = image.pixel(x, y);
         bool isForeground = false;
         switch (color) {
         case NeuTube::RED:
@@ -1902,20 +1656,31 @@ void ZStackView::exportObjectMask(
 
 void ZStackView::increaseZoomRatio()
 {
+  increaseZoomRatio(0, 0, false);
+}
+
+void ZStackView::decreaseZoomRatio()
+{
+  decreaseZoomRatio(0, 0, false);
+}
+
+
+void ZStackView::increaseZoomRatio(int x, int y, bool usingRef)
+{
   if (!isViewPortFronzen()) {
     setViewPortFrozen(true);
-    imageWidget()->increaseZoomRatio();
+    imageWidget()->increaseZoomRatio(x, y, usingRef);
 
     notifyViewChanged();
     notifyViewPortChanged();
   }
 }
 
-void ZStackView::decreaseZoomRatio()
+void ZStackView::decreaseZoomRatio(int x, int y, bool usingRef)
 {
   if (!isViewPortFronzen()) {
     setViewPortFrozen(true);
-    imageWidget()->decreaseZoomRatio();
+    imageWidget()->decreaseZoomRatio(x, y, usingRef);
 
     notifyViewChanged();
     notifyViewPortChanged();
@@ -1935,9 +1700,9 @@ int ZStackView::getZ(NeuTube::ECoordinateSystem coordSys) const
 QRect ZStackView::getViewPort(NeuTube::ECoordinateSystem coordSys) const
 {
   QRect rect = m_imageWidget->viewPort();
-  if (coordSys == NeuTube::COORD_STACK) {
-    rect.translate(QPoint(buddyDocument()->getStackOffset().getX(),
-                          buddyDocument()->getStackOffset().getY()));
+  if (coordSys == NeuTube::COORD_RAW_STACK) {
+    rect.translate(QPoint(-buddyDocument()->getStackOffset().getX(),
+                          -buddyDocument()->getStackOffset().getY()));
   }
 
   return rect;
@@ -1964,14 +1729,17 @@ void ZStackView::setView(const ZStackViewParam &param)
 {
   switch (param.getCoordinateSystem()) {
   case NeuTube::COORD_RAW_STACK:
+  {
+    QRect viewPort = param.getViewPort();
+    viewPort.translate(QPoint(buddyDocument()->getStackOffset().getX(),
+                              buddyDocument()->getStackOffset().getY()));
     m_imageWidget->setViewPort(param.getViewPort());
     setSliceIndex(param.getZ());
+  }
     break;
   case NeuTube::COORD_STACK:
   {
     QRect viewPort = param.getViewPort();
-    viewPort.translate(QPoint(-buddyDocument()->getStackOffset().getX(),
-                              -buddyDocument()->getStackOffset().getY()));
     m_imageWidget->setViewPort(viewPort);
     setSliceIndex(param.getZ() - buddyDocument()->getStackOffset().getZ());
   }
@@ -2011,12 +1779,13 @@ void ZStackView::notifyViewPortChanged()
 
 bool ZStackView::isImageMovable() const
 {
-  return (imageWidget()->viewPort().top() != 0 ||
-      imageWidget()->viewPort().left() != 0 ||
-      imageWidget()->viewPort().bottom() !=
-      imageWidget()->canvasSize().height() - 1 ||
-      imageWidget()->viewPort().right() !=
-      imageWidget()->canvasSize().width() - 1);
+  return (imageWidget()->viewPort() != imageWidget()->canvasRegion());
+//  return (imageWidget()->viewPort().top() != 0 ||
+//      imageWidget()->viewPort().left() != 0 ||
+//      imageWidget()->viewPort().bottom() !=
+//      imageWidget()->canvasSize().height() - 1 ||
+//      imageWidget()->viewPort().right() !=
+//      imageWidget()->canvasSize().width() - 1);
 }
 
 void ZStackView::customizeWidget()
@@ -2162,4 +1931,92 @@ bool ZStackView::isDepthFronzen() const
 void ZStackView::setDepthFrozen(bool state)
 {
   m_depthFrozen = state;
+}
+
+void ZStackView::setCanvasVisible(ZStackObject::ETarget target, bool visible)
+{
+  switch (target) {
+  case ZStackObject::TARGET_OBJECT_CANVAS:
+    if (m_objectCanvas != NULL) {
+      m_objectCanvas->setVisible(visible);
+    }
+    break;
+  case ZStackObject::TARGET_TILE_CANVAS:
+    if (m_tileCanvas != NULL) {
+      m_tileCanvas->setVisible(visible);
+    }
+    break;
+  default:
+    break;
+  }
+}
+
+ZPainter* ZStackView::getPainter(ZStackObject::ETarget target)
+{
+  switch (target) {
+  case ZStackObject::TARGET_OBJECT_CANVAS:
+    updateObjectCanvas();
+    if (m_objectCanvas == NULL) {
+      return NULL;
+    }
+
+    if (!m_objectCanvasPainter.isActive()) {
+      return NULL;
+    }
+
+    return &m_objectCanvasPainter;
+  case ZStackObject::TARGET_TILE_CANVAS:
+    updateTileCanvas();
+    if (m_tileCanvas == NULL) {
+      return NULL;
+    }
+    if (!m_tileCanvasPainter.isActive()) {
+      return NULL;
+    }
+
+    return &m_tileCanvasPainter;
+  default:
+    break;
+  }
+
+  return NULL;
+}
+
+void ZStackView::paintObject(ZStackObject::ETarget target)
+{
+  ZPainter *painter = getPainter(target);
+  if (painter != NULL) {
+    paintObjectBuffer(*painter, target);
+//    if (painter->isPainted()) {
+      updateImageScreen();
+//    }
+  } else {
+    if (target == ZStackObject::TARGET_WIDGET) {
+      updateImageScreen();
+    }
+  }
+}
+
+void ZStackView::paintObject(const QSet<ZStackObject::ETarget> &targetSet)
+{
+  bool isPainted = false;
+  for (QSet<ZStackObject::ETarget>::const_iterator iter = targetSet.begin();
+       iter != targetSet.end(); ++iter) {
+    ZStackObject::ETarget target = *iter;
+    ZPainter *painter = getPainter(target);
+    if (painter != NULL) {
+      paintObjectBuffer(*painter, target);
+//      isPainted = isPainted || painter->isPainted();
+      if (painter->isPainted()) {
+        setCanvasVisible(target, true);
+      }
+      isPainted = true;
+    } else if (target == ZStackObject::TARGET_WIDGET) {
+      isPainted = true;
+    }
+  }
+
+  if (isPainted) {
+    updateImageScreen();
+  }
 }

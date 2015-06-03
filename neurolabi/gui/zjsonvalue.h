@@ -69,7 +69,7 @@ public:
    */
   double toReal() const;
 
-  std::string toString() const;
+  //std::string toString() const;
 
   void set(json_t *data, bool asNew);
   void set(json_t *data, ESetDataOption option);

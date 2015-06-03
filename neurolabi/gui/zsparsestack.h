@@ -67,9 +67,15 @@ public:
    */
   ZIntCuboid getBoundBox() const;
 
+  /*!
+   * \brief Set the base value of the sparse stack
+   */
+  void setBaseValue(int baseValue);
+
 private:
   static void assignStackValue(ZStack *stack, const ZObject3dScan &obj,
-                               const ZStackBlockGrid &stackGrid);
+                               const ZStackBlockGrid &stackGrid,
+                               const int baseValue);
 
 private:
   ZObject3dScan *m_objectMask;
@@ -77,6 +83,8 @@ private:
 
   mutable ZStack *m_stack;
   mutable ZIntPoint m_dsIntv;
+
+  int m_baseValue;
 };
 
 #endif // ZSPARSESTACK_H

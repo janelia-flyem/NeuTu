@@ -29,12 +29,20 @@ public:
   ZStroke2d(const ZStroke2d &stroke);
   virtual ~ZStroke2d();
 
+  enum EOperation {
+    OPERATION_NULL,
+    OPERATION_DELETE, OPERATION_CHANGE_BRUSH_LABEL,
+    OPERATION_BRUSH_ON, OPERATION_BRUSH_OFF,
+    OPERATION_INCREASE_BRUSH_WIDTH,
+    OPERATION_DECREASE_BRUSH_WIDTH,
+  };
+
 public:
   virtual void save(const char *filePath);
   virtual bool load(const char *filePath);
 
   void display(ZPainter &painter, int slice, EDisplayStyle option) const;
-  void display(QPainter *rawPainter, int z, EDisplayStyle option,
+  bool display(QPainter *rawPainter, int z, EDisplayStyle option,
                EDisplaySliceMode sliceMode) const;
 
   void labelBinary(Stack *stack) const;
@@ -132,6 +140,8 @@ public:
 
   bool hit(double x, double y);
   bool hit(double x, double y, double z);
+
+  void getBoundBox(ZIntCuboid *box) const;
 
 private:
   static QVector<QColor> constructColorTable();

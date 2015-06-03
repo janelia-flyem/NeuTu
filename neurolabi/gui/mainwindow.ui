@@ -16,7 +16,7 @@
    </font>
   </property>
   <property name="windowTitle">
-   <string>1.0y</string>
+   <string>1.0z</string>
   </property>
   <property name="iconSize">
    <size>
@@ -369,6 +369,7 @@
       </property>
       <addaction name="actionFlyEmROI"/>
       <addaction name="actionMerge_Body_Project"/>
+      <addaction name="actionProof"/>
      </widget>
      <widget class="QMenu" name="menuHackathon">
       <property name="title">
@@ -397,7 +398,15 @@
      <addaction name="separator"/>
      <addaction name="actionFlyEmSettings"/>
     </widget>
+    <widget class="QMenu" name="menuBiocytin">
+     <property name="title">
+      <string>Biocytin</string>
+     </property>
+     <addaction name="actionGenerate_Mask"/>
+     <addaction name="actionBigNeuron_Trace"/>
+    </widget>
     <addaction name="menuFLy_EM"/>
+    <addaction name="menuBiocytin"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
@@ -1391,6 +1400,21 @@
   <action name="actionHackathonEvaluate">
    <property name="text">
     <string>Evaluate</string>
+   </property>
+  </action>
+  <action name="actionProof">
+   <property name="text">
+    <string>Proofread</string>
+   </property>
+  </action>
+  <action name="actionGenerate_Mask">
+   <property name="text">
+    <string>Generate Mask</string>
+   </property>
+  </action>
+  <action name="actionBigNeuron_Trace">
+   <property name="text">
+    <string>BigNeuron Trace</string>
    </property>
   </action>
  </widget>

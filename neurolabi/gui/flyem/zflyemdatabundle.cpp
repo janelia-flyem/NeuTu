@@ -141,11 +141,15 @@ bool ZFlyEmDataBundle::loadDvid(const ZDvidFilter &dvidFilter)
 
   std::set<int> bodySet;
 
-  if (dvidFilter.hasUpperBodySize()) {
-    bodySet = reader.readBodyId(dvidFilter.getMinBodySize(),
-                                dvidFilter.getMaxBodySize());
+  if (!dvidFilter.getBodyListFile().empty()) {
+    bodySet = dvidFilter.loadBodySet();
   } else {
-    bodySet = reader.readBodyId(dvidFilter.getMinBodySize());
+    if (dvidFilter.hasUpperBodySize()) {
+      bodySet = reader.readBodyId(dvidFilter.getMinBodySize(),
+                                  dvidFilter.getMaxBodySize());
+    } else {
+      bodySet = reader.readBodyId(dvidFilter.getMinBodySize());
+    }
   }
 
   m_neuronArray.resize(bodySet.size());
@@ -157,7 +161,7 @@ bool ZFlyEmDataBundle::loadDvid(const ZDvidFilter &dvidFilter)
   m_synapseAnnotationFile = dvidTarget.getSourceString();
 
   QStringList annotationList = fdReader.readKeys(
-        ZDvidData::getName(ZDvidData::ROLE_BODY_ANNOTATION), "0");
+        ZDvidData::GetName(ZDvidData::ROLE_BODY_ANNOTATION), "0");
   std::set<int> annotationSet;
   foreach (const QString &idStr, annotationList) {
     annotationSet.insert(ZString(idStr.toStdString()).firstInteger());

@@ -20,6 +20,8 @@
 #include "zmouseeventmapper.h"
 #include "zmouseeventprocessor.h"
 #include "qthreadfuturemap.h"
+#include "zsharedpointer.h"
+#include "zkeyoperationmap.h"
 
 class ZStackView;
 class ZStackDoc;
@@ -41,6 +43,7 @@ public:
   ~ZStackPresenter();
   ZStackDoc* buddyDocument() const;
   ZStackView* buddyView() const;
+  ZSharedPointer<ZStackDoc> getSharedBuddyDocument() const;
 
   void updateView() const;
 
@@ -62,7 +65,7 @@ public:
     ACTION_PAINT_STROKE, ACTION_ERASE_STROKE,
     ACTION_LOCATE_SELECTED_SWC_NODES_IN_3D,
     ACTION_SPLIT_DATA, ACTION_SHOW_BODY_IN_3D,
-    ACTION_BODY_SPLIT_START
+    ACTION_BODY_SPLIT_START, ACTION_ADD_SPLIT_SEED
   };
 
   inline double greyScale(int c = 0) const {return m_greyScale[c];}
@@ -82,6 +85,7 @@ public:
 
   bool hasObjectToShow() const;
   void setObjectVisible(bool v);
+  void toggleObjectVisible();
   bool isObjectVisible();
   void setObjectStyle(ZStackObject::EDisplayStyle style);
 
@@ -93,10 +97,13 @@ public:
   void setZoomOffset(int x, int y);
 */
   void processMouseReleaseEvent(QMouseEvent *event);
-  void processKeyPressEvent(QKeyEvent *event);
+  bool processKeyPressEvent(QKeyEvent *event);
   void processMouseMoveEvent(QMouseEvent *event);
   void processMousePressEvent(QMouseEvent *event);
   void processMouseDoubleClickEvent(QMouseEvent *eventint);
+
+  virtual bool customKeyProcess(QKeyEvent *event);
+  virtual void processCustomOperator(const ZStackOperator &op);
 
   void createActions();
   void createTraceActions();
@@ -170,17 +177,34 @@ public:
 
   //void updateInteractiveContext();
 
-  void moveImage(int mouseX, int mouseY);
+  //void moveImage(int mouseX, int mouseY);
   void moveViewPort(int dx, int dy);
+
+  /*!
+   * \brief Move the viewport to a certain position.
+   *
+   * Move the viewport to (\a x, \a y) if possible.
+   */
   void moveViewPortTo(int x, int y);
+
   /*!
    * \brief Move a data point to the specified mouse position.
-   * (\a srcX, \a srcY) are the raw stack coordinates.
+   *
+   * Move the point at the canvas coordinates (\a srcX, \a srcY) under
+   * the mouse point at (\a mouseX, \a mouseY), which are widget coordinates.
    */
   void moveImageToMouse(double srcX, double srcY, int mouseX, int mouseY);
 
   void increaseZoomRatio();
   void decreaseZoomRatio();
+
+  /*!
+   * \brief Zoom at a certain point.
+   *
+   * (\a x, \a y) is the reference point.
+   */
+  void increaseZoomRatio(int x, int y);
+  void decreaseZoomRatio(int x, int y);
 
   /*!
    * \brief Get the current slice index.
@@ -189,6 +213,11 @@ public:
    * such as in the senario of the projection mode, the index is set to -1.
    */
   int getSliceIndex() const;
+
+//  ZStackOperator makeOperator(ZStackOperator::EOperation op);
+
+  bool isOperatable(ZStackOperator::EOperation op);
+//  bool isOperatable(const ZStackOperator &op) const;
 
 public slots:
   void addDecoration(ZStackObject *obj, bool tail = true);
@@ -272,6 +301,8 @@ public slots:
 signals:
   void mousePositionCaptured(double x, double y, double z);
   void bodySplitTriggered();
+  void labelSliceSelectionChanged();
+  void objectVisibleTurnedOn();
 
 private:
   void init();
@@ -289,6 +320,7 @@ private:
 
   bool processKeyPressEventForSwc(QKeyEvent *event);
   bool processKeyPressEventForStroke(QKeyEvent *event);
+  bool processKeyPressEventForStack(QKeyEvent *event);
 
   bool isPointInStack(double x, double y);
   QPointF mapFromWidgetToStack(const QPoint &pos);
@@ -301,7 +333,7 @@ private:
 
   void acceptActiveStroke();
 
-private:
+protected:
   //ZStackFrame *m_parent;
   QList<ZStackObject*> m_decorationList;
   QList<ZStackObject*> m_activeDecorationList;
@@ -369,7 +401,7 @@ private:
   int m_mouseLeftPressPosition[3];
   int m_mouseRightPressPosition[3];
   int m_mouseLeftDoubleClickPosition[3];
-  QPointF m_grabPosition;
+//  QPointF m_grabPosition;
   ZPoint m_lastMouseDataCoord;
 
   ZStroke2d m_stroke;
@@ -378,6 +410,9 @@ private:
 
   ZSingleSwcNodeActionActivator m_singleSwcNodeActionActivator;
   bool m_skipMouseReleaseEvent;
+
+  ZKeyOperationMap m_swcKeyOperationMap;
+  ZKeyOperationMap m_stackKeyOperationMap;
 
   ZKeyEventSwcMapper m_swcKeyMapper;
   //ZMouseEventLeftButtonReleaseMapper m_leftButtonReleaseMapper;

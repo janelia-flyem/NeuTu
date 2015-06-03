@@ -28,7 +28,9 @@ public:
 
   std::string getSkeletonUrl(const std::string &bodyLabelName) const;
   std::string getSkeletonUrl(
-      int bodyId, const std::string &bodyLabelName) const;
+      uint64_t bodyId, const std::string &bodyLabelName) const;
+  std::string getSkeletonUrl() const;
+  std::string getSkeletonUrl(uint64_t bodyId) const;
 
 //  std::string getThumbnailUrl(const std::string &bodyLableName) const;
 //  std::string getThumbnailUrl(int bodyId) const;
@@ -36,6 +38,7 @@ public:
   std::string getThumbnailUrl(const std::string &bodyLabelName) const;
   std::string
   getThumbnailUrl(int bodyId, const std::string &bodyLabelName) const;
+  std::string getThumbnailUrl(uint64_t bodyId) const;
 
   std::string getSp2bodyUrl() const;
   std::string getSp2bodyUrl(const std::string &suffix) const;
@@ -45,54 +48,66 @@ public:
 
   std::string getSparsevolUrl(const std::string &dataName) const;
   std::string getSparsevolUrl(int bodyId, const std::string &dataName) const;
+  std::string getSparsevolUrl(int bodyId) const;
+  std::string getSparsevolUrl(int bodyId, int z) const;
 
 //  std::string getCoarseSparsevolUrl() const;
 //  std::string getCoarseSparsevolUrl(int bodyId) const;
 
   std::string getCoarseSparsevolUrl(const std::string &dataName) const;
-  std::string getCoarseSparsevolUrl(int bodyId, const std::string &dataName) const;
+  std::string getCoarseSparsevolUrl(uint64_t bodyId, const std::string &dataName) const;
+  std::string getCoarseSparsevolUrl(uint64_t bodyId) const;
 
 
   std::string getGrayscaleUrl() const;
-  std::string getGrayscaleUrl(int sx, int sy, int x0, int y0, int z0) const;
+  std::string getGrayscaleUrl(int sx, int sy, int x0, int y0, int z0,
+                              const std::string &format = "") const;
   std::string getGrayscaleUrl(int sx, int sy, int sz, int x0, int y0, int z0)
    const;
   std::string getGrayScaleBlockUrl(
       int ix, int iy, int iz, int blockNumber = 1) const;
 
+  std::string getLabels64Url() const;
   std::string getLabels64Url(
       const std::string &name,
+      int sx, int sy, int sz, int x0, int y0, int z0) const;
+  std::string getLabels64Url(
       int sx, int sy, int sz, int x0, int y0, int z0) const;
 
   std::string getKeyUrl(const std::string &name, const std::string &key) const;
   std::string getKeyRangeUrl(
       const std::string &name,
       const std::string &key1, const std::string &key2) const;
+  std::string getAllKeyUrl(const std::string &name) const;
 
   std::string getAnnotationUrl(const std::string &bodyLabelName) const;
   std::string getAnnotationUrl(
-      int bodyId, const std::string &bodyLabelName) const;
-
-//  std::string getBodyInfoUrl() const;
-//  std::string getBodyInfoUrl(int bodyId) const;
+      uint64_t bodyId, const std::string &bodyLabelName) const;
+  std::string getAnnotationUrl(uint64_t bodyId) const;
 
   std::string getBodyInfoUrl(const std::string &dataName) const;
-  std::string getBodyInfoUrl(int bodyId, const std::string &dataName) const;
+  std::string getBodyInfoUrl(uint64_t bodyId, const std::string &dataName) const;
+  std::string getBodyInfoUrl(uint64_t bodyId) const;
 
   std::string getBoundBoxUrl() const;
   std::string getBoundBoxUrl(int z) const;
 
+
+  std::string getLocalBodyIdUrl(int x, int y, int z) const;
+
   std::string getBodyLabelUrl() const;
   std::string getBodyLabelUrl(const std::string &dataName) const;
+    /*
   std::string getBodyLabelUrl(const std::string &dataName,
       int x0, int y0, int z0, int width, int height, int depth) const;
   std::string getBodyLabelUrl(
       int x0, int y0, int z0, int width, int height, int depth) const;
+      */
 
   std::string getBodyListUrl(int minSize) const;
   std::string getBodyListUrl(int minSize, int maxSize) const;
 
-  std::string getMaxBodyIdUrl() const;
+  //std::string getMaxBodyIdUrl() const;
 
   std::string getSynapseListUrl() const;
   std::string getSynapseAnnotationUrl(const std::string &name) const;
@@ -100,6 +115,9 @@ public:
   std::string getMergeUrl(const std::string &dataName) const;
   std::string getSplitUrl(
       const std::string &dataName, uint64_t originalLabel) const;
+
+  //std::string getMergeOperationUrl(const std::string &dataName) const;
+  std::string getMergeOperationUrl() const;
 
   std::string getTileUrl(const std::string &dataName) const;
   std::string getTileUrl(const std::string &dataName, int resLevel) const;
@@ -111,10 +129,25 @@ public:
   std::string getLockUrl() const;
   std::string getBranchUrl() const;
 
+  std::string getRoiUrl(const std::string &dataName) const;
+
   static std::string GetEndPoint(const std::string &url);
+  /*!
+   * \brief Get entry point of getting key value entries
+   */
+  static std::string GetKeyCommandUrl(const std::string &dataUrl);
 
 private:
   ZDvidTarget m_dvidTarget;
+
+  static const std::string m_keyCommand;
+  static const std::string m_keyRangeCommand;
+  static const std::string m_infoCommand;
+  static const std::string m_sparsevolCommand;
+  static const std::string m_coarseSparsevolCommand;
+  static const std::string m_splitCommand;
+  static const std::string m_labelCommand;
+  static const std::string m_roiCommand;
 };
 
 #endif // ZDVIDURL_H

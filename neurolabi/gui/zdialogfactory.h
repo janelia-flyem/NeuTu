@@ -30,7 +30,7 @@ public:
   static QDialog* makeParameterDialog(
       const ZParameterArray &parameterArray,
       QWidget *parent);
-  static bool ask(const QString &title, const QString &msg, QWidget *parent);
+  static bool Ask(const QString &title, const QString &msg, QWidget *parent);
 
   static QString GetDirectory(
       const QString &caption, const QString &filePath, QWidget *parent);

@@ -2,8 +2,12 @@
 #define ZSTACKOBJECT_H
 
 #include "zqtheader.h"
-#include "zpainter.h"
+//#include "zpainter.h"
 #include "zstackobjectrole.h"
+#include "zintpoint.h"
+
+class ZPainter;
+class ZIntCuboid;
 
 /*!
  * \brief The abstract class of representing an 3D object
@@ -57,8 +61,13 @@ public:
     TYPE_STACK_PATCH,
     TYPE_RECT2D,
     TYPE_DVID_TILE,
+    TYPE_DVID_GRAY_SLICE,
     TYPE_DVID_TILE_ENSEMBLE,
-    TYPE_DVID_LABEL_SLICE
+    TYPE_DVID_LABEL_SLICE,
+    TYPE_DVID_SPARSE_STACK,
+    TYPE_DVID_SPARSEVOL_SLICE,
+    TYPE_STACK,
+    TYPE_SWC_NODE
   };
 
   enum Palette_Color {
@@ -70,7 +79,7 @@ public:
   };
 
   enum ETarget {
-    STACK_CANVAS, OBJECT_CANVAS, WIDGET, TILE_CANVAS
+    TARGET_STACK_CANVAS, TARGET_OBJECT_CANVAS, TARGET_WIDGET, TARGET_TILE_CANVAS
   };
 
   enum EDisplaySliceMode {
@@ -101,13 +110,25 @@ public:
   /*!
    * \brief Display an object to widget
    *
-   * \a painter is expected to be restored after painting
+   * \a painter stores the painting status changed by the function. The
+   * painting parameters, including pen and brush, of \a painter is expected to
+   * be restored after painting.
+   *
+   * \param slice Index of the slice to display. The index is the offset from
+   *    the current Z position to the start Z position in the painter. If it is
+   *    negative, it means that the projection mode has been turned on at the
+   *    current slice -(\a slice + 1).
    */
   virtual void display(
       ZPainter &painter, int slice, EDisplayStyle option) const = 0;
 
-  /* For special painting when ZPainter cannot be created */
-  virtual void display(
+  /*!
+   * For special painting when ZPainter cannot be created
+   *
+   * \return false if nothing is painted. But returning true does not mean
+   *         if there is something painted.
+   */
+  virtual bool display(
       QPainter *painter, int z, EDisplayStyle option,
       EDisplaySliceMode sliceMode) const;
 
@@ -123,6 +144,15 @@ public:
 
   virtual bool hit(double x, double y, double z);
   virtual bool hit(double x, double y);
+  virtual inline const ZIntPoint& getHitPoint() const { return m_hitPoint; }
+
+  /*!
+   * \brief Get bound box of the object.
+   *
+   * For compability purpose, it is set to take an output parameter instead of
+   * returning the result.
+   */
+  virtual void getBoundBox(ZIntCuboid *box) const;
 
   const QColor& getColor() const;
   void setColor(int red, int green, int blue);
@@ -178,13 +208,23 @@ public:
   inline int getZOrder() const { return m_zOrder; }
   void setZOrder(int order) { m_zOrder = order; }
 
-  struct ZOrderCompare {
+  struct ZOrderLessThan {
     bool operator() (const ZStackObject &obj1, const ZStackObject &obj2) {
       return (obj1.getZOrder() < obj2.getZOrder());
     }
 
     bool operator() (const ZStackObject *obj1, const ZStackObject *obj2) {
       return (obj1->getZOrder() < obj2->getZOrder());
+    }
+  };
+
+  struct ZOrderBiggerThan {
+    bool operator() (const ZStackObject &obj1, const ZStackObject &obj2) {
+      return (obj1.getZOrder() > obj2.getZOrder());
+    }
+
+    bool operator() (const ZStackObject *obj1, const ZStackObject *obj2) {
+      return (obj1->getZOrder() > obj2->getZOrder());
     }
   };
 
@@ -213,16 +253,34 @@ public:
     m_role.addRole(role);
   }
 
+  /*
   static inline const char* getNodeAdapterId() {
     return m_nodeAdapterId;
   }
+  */
+
+  inline bool isSelectable() const {
+    return m_isSelectable;
+  }
+
+  inline void setSelectable(bool state) {
+    m_isSelectable = state;
+  }
 
   inline bool isHittable() const {
-    return m_isHittable;
+    return m_isHittable && isVisible();
   }
 
   inline void setHittable(bool state) {
     m_isHittable = state;
+  }
+
+  inline bool isProjectionVisible() const {
+    return m_projectionVisible;
+  }
+
+  inline void setProjectionVisible(bool visible) {
+    m_projectionVisible = visible;
   }
 
 public:
@@ -234,8 +292,10 @@ public:
 
 protected:
   bool m_selected;
+  bool m_isSelectable;
   bool m_isVisible;
   bool m_isHittable;
+  bool m_projectionVisible;
   EDisplayStyle m_style;
   QColor m_color;
   ETarget m_target;
@@ -246,8 +306,9 @@ protected:
   int m_zOrder;
   EType m_type;
   ZStackObjectRole m_role;
+  ZIntPoint m_hitPoint;
 
-  static const char *m_nodeAdapterId;
+//  static const char *m_nodeAdapterId;
 };
 
 template <typename T>

@@ -4,6 +4,7 @@
 #include "zobject3dscan.h"
 #include "zarray.h"
 #include "zarrayfactory.h"
+#include "dvid/zdvidwriter.h"
 
 ZFlyEmBodyMergeDoc::ZFlyEmBodyMergeDoc(ZStack *stack, QObject *parent) :
   ZStackDoc(stack, parent), m_originalLabel(NULL)
@@ -105,31 +106,33 @@ void ZFlyEmBodyMergeDoc::updateBodyObject()
 
 void ZFlyEmBodyMergeDoc::mergeSelected()
 {
-  TStackObjectSet m_objSet =
+  TStackObjectSet objSet =
       getObjectGroup().getSelectedSet(ZStackObject::TYPE_OBJECT3D_SCAN);
-  ZFlyEmBodyMerger::TLabelSet labelSet;
-  for (TStackObjectSet::const_iterator iter = m_objSet.begin();
-       iter != m_objSet.end(); ++iter) {
-    const ZObject3dScan *obj = dynamic_cast<const ZObject3dScan*>(*iter);
-    if (obj->getLabel() > 0) {
-      labelSet.insert(obj->getLabel());
+  if (objSet.size() > 1) {
+    ZFlyEmBodyMerger::TLabelSet labelSet;
+    for (TStackObjectSet::const_iterator iter = objSet.begin();
+         iter != objSet.end(); ++iter) {
+      const ZObject3dScan *obj = dynamic_cast<const ZObject3dScan*>(*iter);
+      if (obj->getLabel() > 0) {
+        labelSet.insert(obj->getLabel());
+      }
     }
-  }
-  m_bodyMerger.pushMap(labelSet);
-  m_bodyMerger.undo();
+    m_bodyMerger.pushMap(labelSet);
+    m_bodyMerger.undo();
 
-  ZFlyEmBodyMergerDocCommand::MergeBody *command =
-      new ZFlyEmBodyMergerDocCommand::MergeBody(this);
-  pushUndoCommand(command);
+    ZFlyEmBodyMergerDocCommand::MergeBody *command =
+        new ZFlyEmBodyMergerDocCommand::MergeBody(this);
+    pushUndoCommand(command);
+  }
 
   //return true;
 
   //updateBodyObject();
 }
 
-int64_t ZFlyEmBodyMergeDoc::getSelectedBodyId() const
+uint64_t ZFlyEmBodyMergeDoc::getSelectedBodyId() const
 {
-  int64_t bodyId = -1;
+  uint64_t bodyId = 0;
   const TStackObjectSet &objSet =
       getSelected(ZStackObject::TYPE_OBJECT3D_SCAN);
   if (objSet.size() == 1) {
@@ -170,7 +173,15 @@ void ZFlyEmBodyMergeDoc::updateOriginalLabel(
   notifyObject3dScanModified();
 }
 
+void ZFlyEmBodyMergeDoc::saveMergeOperation() const
+{
+  ZDvidWriter writer;
+  if (writer.open(getDvidTarget())) {
+    writer.writeMergeOperation(getBodyMerger()->getFinalMap());
+  }
+}
 
+/////////////////////////////////////////////////////
 ZFlyEmBodyMergerDocCommand::MergeBody::MergeBody(
     ZStackDoc *doc, QUndoCommand *parent)
   : ZUndoCommand(parent), m_doc(doc)

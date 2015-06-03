@@ -10,7 +10,6 @@
 #include "c_stack.h"
 #include "zuncopyable.h"
 #include "z3dgraph.h"
-#include "dvid/zdvidlabelslice.h"
 
 class ZStack;
 class ZStroke2d;
@@ -20,7 +19,12 @@ class ZSwcTree;
 class ZJsonObject;
 class ZObject3dScan;
 class ZStackViewParam;
+class ZDvidSparsevolSlice;
+class ZDvidLabelSlice;
 
+/*!
+ * \brief The basic class of manage roles to a stack object
+ */
 class ZDocPlayer
 {
 public:
@@ -257,6 +261,18 @@ public:
   QString getTypeName() const { return "DvidLabelSlice"; }
   void updateData(const ZStackViewParam &viewParam) const;
   ZDvidLabelSlice *getCompleteData() const;
+};
+
+/**************************************************/
+class ZDvidSparsevolSlicePlayer : public ZDocPlayer
+{
+public:
+  ZDvidSparsevolSlicePlayer(ZStackObject* data = NULL);
+
+public:
+  QString getTypeName() const { return "DvidSparsevolSlice"; }
+  void updateData(const ZStackViewParam &viewParam) const;
+  ZDvidSparsevolSlice *getCompleteData() const;
 };
 
 #endif // ZDOCPLAYER_H

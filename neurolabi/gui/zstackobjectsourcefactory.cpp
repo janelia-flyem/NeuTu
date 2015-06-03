@@ -27,7 +27,7 @@ std::string ZStackObjectSourceFactory::MakeRectRoiSource(
   return source;
 }
 
-std::string ZStackObjectSourceFactory::MakeFlyEmBodyMaskSource(int bodyId)
+std::string ZStackObjectSourceFactory::MakeFlyEmBodyMaskSource(uint64_t bodyId)
 {
   ZString source = "#.FlyEmBodyMaskSource#";
   source.appendNumber(bodyId);
@@ -35,7 +35,7 @@ std::string ZStackObjectSourceFactory::MakeFlyEmBodyMaskSource(int bodyId)
   return source;
 }
 
-std::string ZStackObjectSourceFactory::MakeFlyEmBodySource(int bodyId)
+std::string ZStackObjectSourceFactory::MakeFlyEmBodySource(uint64_t bodyId)
 {
   ZString source = "#.FlyEmBody#";
   source.appendNumber(bodyId);
@@ -59,4 +59,19 @@ std::string ZStackObjectSourceFactory::MakeDvidTileSource()
 std::string ZStackObjectSourceFactory::MakeDvidLabelSliceSource()
 {
   return "#.DVIDLabelSlice";
+}
+
+std::string ZStackObjectSourceFactory::MakeDvidGraySliceSource()
+{
+  return "#.DVIDGraySlice";
+}
+
+std::string ZStackObjectSourceFactory::MakeSplitObjectSource()
+{
+  return "#.FlyEMSplitObject";
+}
+
+std::string ZStackObjectSourceFactory::MakeNodeAdaptorSource()
+{
+  return "#.NodeAdapter";
 }

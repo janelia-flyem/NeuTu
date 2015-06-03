@@ -5,6 +5,7 @@
 #include "tz_cuboid_i.h"
 
 class ZStack;
+class ZIntCuboid;
 
 class ZStackArray : public std::vector<ZStack*>
 {
@@ -25,6 +26,7 @@ public:
    * The result is stored in \a box.
    */
   void getBoundBox(Cuboid_I *box) const;
+  ZIntCuboid getBoundBox() const;
 
   void downsampleMax(int xIntv, int yIntv, int zIntv);
 };

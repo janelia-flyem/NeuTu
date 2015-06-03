@@ -9,7 +9,7 @@
 #include "tz_voxel_graphics.h"
 #include "tz_stack_neighborhood.h"
 #include "tz_stack_attribute.h"
-
+#include "zpainter.h"
 
 ZLocalNeuroseg::ZLocalNeuroseg(Local_Neuroseg *locseg, bool isOwner)
 {

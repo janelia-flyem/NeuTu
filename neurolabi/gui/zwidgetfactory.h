@@ -7,6 +7,7 @@
 #include "zbuttonbox.h"
 
 class QDialog;
+class QFrame;
 
 class ZWidgetFactory
 {
@@ -21,6 +22,7 @@ public:
       const QString &label, ESpacerOption spacerOption, QWidget *parentWidget);
   static ZButtonBox* makeButtonBox(ZButtonBox::TRole role, QWidget *parent);
   static ZButtonBox* makeButtonBox(ZButtonBox::TRole role, QDialog *parent);
+  static QFrame* MakeHorizontalLine(QWidget *parentWidget);
 
   static QSpacerItem *makeHSpacerItem();
 

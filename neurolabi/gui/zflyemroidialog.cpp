@@ -801,7 +801,7 @@ void ZFlyEmRoiDialog::previewFullRoi()
 
   if (tree != NULL) {
     ZStackDoc *doc = new ZStackDoc(NULL, NULL);
-    doc->addSwcTree(tree);
+    doc->addObject(tree);
     Z3DWindow::Open(doc, this);
 
     //ZStackFrame *frame = new ZStackFrame();
@@ -1282,7 +1282,7 @@ void ZFlyEmRoiDialog::exportResult()
 
     blockObj.save(fileName + ".sobj");
 
-    ZJsonArray array = ZJsonFactory::makeJsonArray(
+    ZJsonArray array = ZJsonFactory::MakeJsonArray(
           blockObj, ZJsonFactory::OBJECT_SPARSE);
     //ZJsonObject jsonObj;
     //jsonObj.setEntry("data", array);

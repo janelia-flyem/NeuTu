@@ -1480,6 +1480,34 @@ Stack *Stack_Bwdist_L(const Stack *in, Stack *out, long int *label)
   return out;
 }
 
+Stack *Stack_Bwdist_L_P(const Stack *in, Stack *out, long int *label)
+{
+  if (out == NULL) {
+    out = Make_Stack(FLOAT32, in->width, in->height, in->depth);
+  }
+
+  int nvoxel = Stack_Voxel_Number(in);
+  int i;
+  float *out_array = (float *) out->array;
+  for (i = 0; i < nvoxel; i++) {
+    out_array[i] = in->array[i];
+  }
+
+  long int sz[3];
+  sz[0] = in->width;
+  sz[1] = in->height;
+  sz[2] = in->depth;
+  dt2d_binary(out_array, label, sz, 1);
+  
+  /*
+  for (i = 0; i < nvoxel; i++) {
+    out_array[i] = in->array[i];
+  }
+
+  */
+  return out;
+}
+
 #include "private/tz_stack_bwdist_mu16.c"
 /* 
  * Stack_Bwdist_L_U16() calculates the distance transformation of <in>. The

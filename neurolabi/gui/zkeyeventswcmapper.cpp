@@ -18,6 +18,7 @@ void ZKeyEventSwcMapper::initKeyMap()
   m_plainKeyMap[Qt::Key_S] = ZSwcTree::OPERATION_MOVE_NODE_DOWN;
   m_plainKeyMap[Qt::Key_D] = ZSwcTree::OPERATION_MOVE_NODE_RIGHT;
   m_plainKeyMap[Qt::Key_G] = ZSwcTree::OPERATION_ADD_NODE;
+
   m_plainKeyMap[Qt::Key_Comma] = ZSwcTree::OPERATION_DECREASE_NODE_SIZE;
   m_plainKeyMap[Qt::Key_Q] = ZSwcTree::OPERATION_DECREASE_NODE_SIZE;
   m_plainKeyMap[Qt::Key_Period] = ZSwcTree::OPERATION_INCREASE_NODE_SIZE;
@@ -39,6 +40,8 @@ void ZKeyEventSwcMapper::initKeyMap()
   m_shiftKeyMap[Qt::Key_C] = ZSwcTree::OPERATION_CONNECT_NODE_SMART;
 
   m_controlKeyMap[Qt::Key_A] = ZSwcTree::OPERATION_SELECT_ALL_NODE;
+
+  updateKeyMap();
 }
 
 ZSwcTree::EOperation ZKeyEventSwcMapper::getOperation(QKeyEvent *event)
@@ -64,4 +67,20 @@ ZSwcTree::EOperation ZKeyEventSwcMapper::getOperation(QKeyEvent *event)
   }
 
   return operation;
+}
+
+void ZKeyEventSwcMapper::setTag(NeuTube::Document::ETag tag)
+{
+  m_docTag = tag;
+  updateKeyMap();
+}
+
+void ZKeyEventSwcMapper::updateKeyMap()
+{
+  if (m_docTag == NeuTube::Document::FLYEM_SPLIT ||
+      m_docTag == NeuTube::Document::FLYEM_PROOFREAD) {
+    m_plainKeyMap[Qt::Key_G] = ZSwcTree::OPERATION_NULL;
+    m_plainKeyMap[Qt::Key_R] = ZSwcTree::OPERATION_NULL;
+    m_controlKeyMap[Qt::Key_G] = ZSwcTree::OPERATION_ADD_NODE;
+  }
 }

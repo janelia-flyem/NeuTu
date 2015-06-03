@@ -58,6 +58,7 @@ public:
 
 public:
   static ZStackFrame* Make(QMdiArea *parent);
+  static ZStackFrame* Make(QMdiArea *parent, NeuTube::Document::ETag docTag);
   static ZStackFrame* Make(QMdiArea *parent, ZSharedPointer<ZStackDoc> doc);
 
   // A frame has three parts: view, document and presenter
@@ -261,13 +262,14 @@ public slots:
   void setLocsegChainInfo(ZLocsegChain *chain, QString prefix = "",
                           QString suffix = "");
   void changeWindowTitle(bool clean);
-  void detach3DWindow();
-  void close3DWindow();
+  //void detach3DWindow();
+//  void close3DWindow();
   void setupDisplay();
   void zoomToSelectedSwcNodes();
   void notifyUser(const QString &message);
   void locateSwcNodeIn3DView();
   void notifyViewChanged(const ZStackViewParam &param);
+  void setView(const ZStackViewParam &param);
 
 private slots:
   void updateSwcExtensionHint();
@@ -279,6 +281,8 @@ signals:
   void stackLoaded();
   void ready(ZStackFrame*);
   void viewChanged(ZStackViewParam param);
+  void splitStarted();
+  void keyEventEmitted(QKeyEvent *event);
 
 protected: // Events
   virtual void keyPressEvent(QKeyEvent *event);
@@ -319,7 +323,7 @@ protected:
   QString m_statusInfo;
   bool m_isClosing;
 
-  Z3DWindow *m_3dWindow;
+  //Z3DWindow *m_3dWindow;
 
   bool m_isWidgetReady;
 

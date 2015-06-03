@@ -67,6 +67,7 @@ class ZFlyEmHackathonConfigDlg;
 class ZProgressManager;
 class ZMessageManager;
 class ZTestDialog;
+class QTimer;
 
 namespace Ui {
   class MainWindow;
@@ -134,6 +135,8 @@ public:
   void reportFileOpenProblem(const QString &filePath,
                              const QString &reason = "");
 
+  void runBodySplit();
+
 signals:
   void dvidRequestCanceled();
   void progressDone();
@@ -155,6 +158,7 @@ public slots:
   void updateAction();
   void updateMenu();
   void updateStatusBar();
+  void runRoutineCheck();
 
   void on_actionTile_Manager_2_triggered();
   void cancelDvidRequest();
@@ -179,6 +183,8 @@ public slots:
       const QStringList &fileList, bool opening3DWindow = false);
   void createDvidFrame();
   void createStackFrameFromDocReader(ZStackDocReader *reader);
+
+  void launchSplit(const QString &str);
 
 private:
   Ui::MainWindow *m_ui;
@@ -435,6 +441,8 @@ private slots:
 
   void on_actionHackathonEvaluate_triggered();
 
+  void on_actionProof_triggered();
+
 private:
   void createActions();
   void createFileActions();
@@ -664,6 +672,8 @@ private:
   ZMessageManager *m_messageManager;
   ZTestDialog *m_testDlg;
   ZWindowFactory m_3dWindowFactory;
+
+  QTimer *m_autoCheckTimer;
   //ZStackDocReader *m_docReader;
 };
 

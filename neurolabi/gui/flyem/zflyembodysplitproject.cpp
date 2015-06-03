@@ -31,10 +31,16 @@
 #include "zstackpatch.h"
 #include "zstackobjectsource.h"
 #include "neutubeconfig.h"
+#include "zarray.h"
+#include "dvid/zdvidgrayslice.h"
+#include "zstackobjectsourcefactory.h"
+#include "zflyemproofdoc.h"
+#include "dvid/zdvidsparsestack.h"
+#include "zwidgetmessage.h"
 
 ZFlyEmBodySplitProject::ZFlyEmBodySplitProject(QObject *parent) :
-  QObject(parent), m_bodyId(-1), m_dataFrame(NULL), m_resultWindow(NULL),
-  m_quickResultWindow(NULL),
+  QObject(parent), m_bodyId(0), m_dataFrame(NULL),
+  m_resultWindow(NULL), m_quickResultWindow(NULL),
   m_quickViewWindow(NULL), m_isBookmarkVisible(true), m_showingBodyMask(false)
 {
 }
@@ -64,6 +70,7 @@ void ZFlyEmBodySplitProject::clear()
   clear(m_quickResultWindow);
 
   if (m_dataFrame != NULL) {
+//    m_dataFrame->close3DWindow();
     m_dataFrame->hide();
     delete m_dataFrame;
     m_dataFrame = NULL;
@@ -104,7 +111,7 @@ void ZFlyEmBodySplitProject::shallowClear()
   m_quickViewWindow = NULL;
   m_dataFrame = NULL;
 
-  m_bodyId = -1;
+  m_bodyId = 0;
 
   m_bookmarkDecoration.clear();
 }
@@ -124,6 +131,12 @@ void ZFlyEmBodySplitProject::shallowClearQuickViewWindow()
   m_quickViewWindow = NULL;
 }
 
+/*
+void ZFlyEmBodySplitProject::shallowClearBodyWindow()
+{
+  m_bodyWindow = NULL;
+}
+*/
 void ZFlyEmBodySplitProject::setDvidTarget(const ZDvidTarget &target)
 {
   m_dvidTarget = target;
@@ -140,11 +153,58 @@ void ZFlyEmBodySplitProject::showDataFrame() const
 
 void ZFlyEmBodySplitProject::showDataFrame3d()
 {
+  if (getDocument() != NULL) {
+    Z3DWindow *window = getDocument()->getParent3DWindow();
+
+    if (window == NULL) {
+      /*
+      if (getMainWindow() != NULL) {
+        getMainWindow()->startProgress("Opening 3D View ...", 0);
+      }
+      */
+
+      ZWindowFactory factory;
+      //factory.setParentWidget(parent);
+      window = factory.make3DWindow(getSharedDocument(), Z3DWindow::NORMAL_INIT);
+      window->setWindowTitle(getDocument()->getTitle());
+
+      //getDocument()->registerUser(window);
+
+      if (getDocument()->getParentFrame() != NULL) {
+        connect(getDocument()->getParentFrame(), SIGNAL(closed(ZStackFrame*)),
+                window, SLOT(close()));
+      }
+
+      /*
+      if (getMainWindow() != NULL) {
+        getMainWindow()->endProgress();
+      }
+      */
+    }
+
+    if (window != NULL) {
+      window->show();
+      window->raise();
+    } else {
+      emitError("3D functions are disabled");
+//      emit messageGenerated("3D functions are disabled");
+    }
+
+  }
+
+#if 0
   if (m_dataFrame != NULL) {
+    if (m_bodyWindow == NULL) {
     //emit messageGenerated("Showing data in 3D ...");
-    m_dataFrame->open3DWindow();
+      m_bodyWindow = m_dataFrame->open3DWindow();
+
+    } else {
+      m_bodyWindow->show();
+      m_bodyWindow->raise();
+    }
     //emit messageGenerated("Done.");
   }
+#endif
 }
 
 ZObject3dScan* ZFlyEmBodySplitProject::readBody(ZObject3dScan *out) const
@@ -167,65 +227,71 @@ ZObject3dScan* ZFlyEmBodySplitProject::readBody(ZObject3dScan *out) const
 void ZFlyEmBodySplitProject::quickView()
 {
   if (m_quickViewWindow == NULL) {
-    emit messageGenerated("Generating quick view ...");
+    emitMessage("Generating quick view ...");
 
-    const ZDvidTarget &target = getDvidTarget();
-
-    ZDvidReader reader;
-    if (reader.open(target)) {
-      int bodyId = getBodyId();
-      ZObject3dScan obj = reader.readBody(bodyId);
-      if (!obj.isEmpty()) {
-        obj.canonize();
-
-#if 0
-        size_t voxelNumber =obj.getVoxelNumber();
-        int intv = iround(Cube_Root((double) voxelNumber / 1000000));
-        obj.downsampleMax(intv, intv, intv);
-
-        ZSwcTree *tree = ZSwcGenerator::createSwc(obj);
-#endif
-        ZSwcTree *tree = ZSwcGenerator::createSurfaceSwc(obj);
-        /*
-        if (tree == NULL) {
-          ZStackSkeletonizer skeletonizer;
-          ZJsonObject config;
-          config.load(NeutubeConfig::getInstance().getApplicatinDir() +
-                      "/json/skeletonize.json");
-          skeletonizer.configure(config);
-          tree = skeletonizer.makeSkeleton(obj);
+    ZObject3dScan obj;
+    if (getDocument() != NULL) {
+      const ZObject3dScan *objMask = NULL;
+      const ZStackDoc *doc = getDocument();
+      if (doc->hasSparseStack()) {
+        objMask = doc->getConstSparseStack()->getObjectMask();
+      } else {
+        if (getDocument<ZFlyEmProofDoc>() != NULL) {
+          objMask = getDocument<ZFlyEmProofDoc>()->getDvidSparseStack()->getObjectMask();
         }
-        */
-
-        ZStackDoc *doc = new ZStackDoc(NULL, NULL);
-        doc->addSwcTree(tree);
-
-        ZWindowFactory factory;
-        factory.setWindowTitle("Quick View");
-
-        m_quickViewWindow = factory.make3DWindow(doc);
-        m_quickViewWindow->getSwcFilter()->setRenderingPrimitive("Sphere");
-        connect(m_quickViewWindow, SIGNAL(destroyed()),
-                this, SLOT(shallowClearQuickViewWindow()));
-
-        ZIntCuboid box = obj.getBoundBox();
-        m_quickViewWindow->notifyUser(
-              QString("Size: %1; Bounding box: %2 x %3 x %4").
-              arg(obj.getVoxelNumber()).arg(box.getWidth()).arg(box.getHeight()).
-              arg(box.getDepth()));
+      }
+      if (objMask != NULL) {
+        obj = *objMask;
       }
     }
+
+    if (obj.isEmpty()) {
+      const ZDvidTarget &target = getDvidTarget();
+
+      ZDvidReader reader;
+      if (reader.open(target)) {
+        int bodyId = getBodyId();
+        obj = reader.readBody(bodyId);
+        if (!obj.isEmpty()) {
+          obj.canonize();
+        }
+      }
+    }
+
+    ZSwcTree *tree = ZSwcGenerator::createSurfaceSwc(obj, 2);
+
+    ZStackDoc *doc = new ZStackDoc(NULL, NULL);
+    doc->setTag(NeuTube::Document::FLYEM_BODY_DISPLAY);
+    doc->addObject(tree);
+
+    ZWindowFactory factory;
+    factory.setWindowTitle("Quick View");
+
+    m_quickViewWindow = factory.make3DWindow(doc);
+    m_quickViewWindow->getSwcFilter()->setRenderingPrimitive("Sphere");
+    connect(m_quickViewWindow, SIGNAL(destroyed()),
+            this, SLOT(shallowClearQuickViewWindow()));
+    if (m_dataFrame != NULL) {
+      connect(m_quickViewWindow, SIGNAL(locating2DViewTriggered(ZStackViewParam)),
+              m_dataFrame, SLOT(setView(ZStackViewParam)));
+    }
+    connect(m_quickViewWindow, SIGNAL(locating2DViewTriggered(ZStackViewParam)),
+            this, SIGNAL(locating2DViewTriggered(ZStackViewParam)));
+
+    ZIntCuboid box = obj.getBoundBox();
+    m_quickViewWindow->notifyUser(
+          QString("Size: %1; Bounding box: %2 x %3 x %4").
+          arg(obj.getVoxelNumber()).arg(box.getWidth()).arg(box.getHeight()).
+          arg(box.getDepth()));
   }
 
   if (m_quickViewWindow != NULL) {
     m_quickViewWindow->show();
     m_quickViewWindow->raise();
-    emit messageGenerated("Done.");
+    emitMessage("Done.");
   } else {
-    emit messageGenerated("Failed to lauch quick view.");
+    emitError("Failed to launch quick view.");
   }
-
-
 }
 
 void ZFlyEmBodySplitProject::showSkeleton(ZSwcTree *tree)
@@ -235,13 +301,17 @@ void ZFlyEmBodySplitProject::showSkeleton(ZSwcTree *tree)
       ZWindowFactory factory;
       factory.setWindowTitle("Quick View");
       ZStackDoc *doc = new ZStackDoc(NULL, NULL);
-      doc->addSwcTree(tree);
+      doc->addObject(tree);
       m_quickViewWindow = factory.make3DWindow(doc);
       connect(m_quickViewWindow, SIGNAL(destroyed()),
               this, SLOT(shallowClearQuickViewWindow()));
     } else {
+      m_quickViewWindow->getDocument()->beginObjectModifiedMode(
+            ZStackDoc::OBJECT_MODIFIED_CACHE);
       m_quickViewWindow->getDocument()->removeAllSwcTree();
-      m_quickViewWindow->getDocument()->addSwcTree(tree);
+      m_quickViewWindow->getDocument()->addObject(tree);
+      m_quickViewWindow->getDocument()->endObjectModifiedMode();
+      m_quickViewWindow->getDocument()->notifyObjectModified();
     }
 
     m_quickViewWindow->show();
@@ -251,26 +321,38 @@ void ZFlyEmBodySplitProject::showSkeleton(ZSwcTree *tree)
 
 void ZFlyEmBodySplitProject::loadResult3dQuick(ZStackDoc *doc)
 {
-  if (doc != NULL) {
+  if (doc != NULL && getDocument() != NULL) {
+    doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
     doc->removeAllSwcTree();
     TStackObjectList objList =
-        m_dataFrame->document()->getObjectList(ZStackObject::TYPE_OBJ3D);
-    int maxSwcNodeNumber = 10000;
+        getDocument()->getObjectList(ZStackObject::TYPE_OBJ3D);
+    const int maxSwcNodeNumber = 100000;
+    const int maxScale = 50;
+    const int minScale = 1;
     for (TStackObjectList::const_iterator iter = objList.begin();
          iter != objList.end(); ++iter) {
       ZObject3d *obj = dynamic_cast<ZObject3d*>(*iter);
       if (obj != NULL) {
         if (!obj->getRole().hasRole(ZStackObjectRole::ROLE_SEED)) {
           int ds = obj->size() / maxSwcNodeNumber + 1;
+          if (ds < minScale) {
+            ds = minScale;
+          }
+          if (ds > maxScale) {
+            ds = maxScale;
+          }
+
           ZSwcTree *tree = ZSwcGenerator::createSwc(
-                *obj, dmin2(3.0, ds / 2.0), ds);
+                *obj, dmin2(5.0, ds / 2.0), ds);
           tree->setAlpha(255);
           if (tree != NULL) {
-            doc->addSwcTree(tree);
+            doc->addObject(tree);
           }
         }
       }
     }
+    doc->endObjectModifiedMode();
+    doc->notifyObjectModified();
   }
 }
 
@@ -292,11 +374,14 @@ void ZFlyEmBodySplitProject::updateResult3dQuick()
 
 void ZFlyEmBodySplitProject::showResult3dQuick()
 {
-  if (m_dataFrame != NULL) {
+  ZStackDoc *mainDoc = getDocument();
+
+  if (mainDoc != NULL) {
     if (m_quickResultWindow == NULL) {
       ZWindowFactory windowFactory;
       windowFactory.setWindowTitle("Splitting Result");
       ZStackDoc *doc = new ZStackDoc(NULL, NULL);
+      doc->setTag(NeuTube::Document::FLYEM_BODY_DISPLAY);
       loadResult3dQuick(doc);
       m_quickResultWindow = windowFactory.make3DWindow(doc);
       m_quickResultWindow->getSwcFilter()->setColorMode("Intrinsic");
@@ -304,8 +389,14 @@ void ZFlyEmBodySplitProject::showResult3dQuick()
 
       connect(m_quickResultWindow, SIGNAL(destroyed()),
               this, SLOT(shallowClearQuickResultWindow()));
-      connect(m_dataFrame->document().get(), SIGNAL(labelFieldModified()),
+      connect(mainDoc, SIGNAL(labelFieldModified()),
               this, SLOT(updateResult3dQuick()));
+      if (m_dataFrame != NULL) {
+        connect(m_quickResultWindow, SIGNAL(locating2DViewTriggered(ZStackViewParam)),
+                m_dataFrame, SLOT(setView(ZStackViewParam)));
+      }
+      connect(m_quickResultWindow, SIGNAL(locating2DViewTriggered(ZStackViewParam)),
+              this, SIGNAL(locating2DViewTriggered(ZStackViewParam)));
     }
 
     m_quickResultWindow->show();
@@ -315,12 +406,12 @@ void ZFlyEmBodySplitProject::showResult3dQuick()
 
 void ZFlyEmBodySplitProject::showResult3d()
 {
-  if (m_dataFrame != NULL) {
+  if (getDocument() != NULL) {
     if (m_resultWindow == NULL) {
       //emit messageGenerated("Showing results in 3D ...");
       //ZStackDocReader docReader;
       ZStackDocLabelStackFactory *factory = new ZStackDocLabelStackFactory;
-      factory->setDocument(m_dataFrame->document().get());
+      factory->setDocument(getDocument());
       ZStack *labeled = factory->makeStack();
       if (labeled != NULL) {
         //docReader.setStack(labeled);
@@ -335,13 +426,18 @@ void ZFlyEmBodySplitProject::showResult3d()
         //newFrame->addDocData(docReader);
         //newFrame->document()->setTag(NeuTube::Document::FLYEM_SPLIT);
         //newFrame->document()->setStackFactory(factory);
+
+        connect(getDocument(), SIGNAL(labelFieldModified()),
+                doc, SLOT(reloadStack()));
+        /*
         m_dataFrame->connect(
               m_dataFrame->document().get(), SIGNAL(labelFieldModified()),
               doc, SLOT(reloadStack()));
+              */
         //m_resultWindow = newFrame->open3DWindow(NULL);
-        if (m_dataFrame->document()->hasSparseStack()) {
+        if (getDocument()->hasVisibleSparseStack()) {
           ZIntPoint dsIntv =
-              m_dataFrame->document()->getSparseStack()->getDownsampleInterval();
+              getDocument()->getConstSparseStack()->getDownsampleInterval();
           if (dsIntv.getX() != dsIntv.getZ()) {
             m_resultWindow->getVolumeSource()->setZScale(
                   ((float) (dsIntv.getZ() + 1)) / (dsIntv.getX() + 1));
@@ -372,6 +468,8 @@ void ZFlyEmBodySplitProject::setDataFrame(ZStackFrame *frame)
   }
 
   m_dataFrame = frame;
+  connect(m_dataFrame, SIGNAL(splitStarted()), this, SLOT(backupSeed()));
+
   updateBookDecoration();
 }
 
@@ -388,7 +486,7 @@ void ZFlyEmBodySplitProject::loadBookmark(const QString &filePath)
   if (reader.open(m_dvidTarget)) {
     ZDvidInfo info = reader.readGrayScaleInfo();
     converter.configure(info);
-    m_bookmarkArray.importJsonFile(filePath.toStdString(), &converter);
+    m_bookmarkArray.importJsonFile(filePath.toStdString(), NULL/*&converter*/);
   }
 }
 
@@ -403,11 +501,11 @@ void ZFlyEmBodySplitProject::locateBookmark(const ZFlyEmBookmark &bookmark)
 
 void ZFlyEmBodySplitProject::clearBookmarkDecoration()
 {
-  if (m_dataFrame != NULL) {
+  if (getDocument() != NULL) {
     for (std::vector<ZStackObject*>::iterator iter = m_bookmarkDecoration.begin();
          iter != m_bookmarkDecoration.end(); ++iter) {
       ZStackObject *obj = *iter;
-      m_dataFrame->document()->removeObject(obj, false);
+      getDocument()->removeObject(obj, false);
       delete obj;
     }
   } else {
@@ -422,16 +520,19 @@ void ZFlyEmBodySplitProject::clearBookmarkDecoration()
 void ZFlyEmBodySplitProject::addBookmarkDecoration(
     const ZFlyEmBookmarkArray &bookmarkArray)
 {
-  if (m_dataFrame != NULL) {
+  if (getDocument() != NULL) {
     for (ZFlyEmBookmarkArray::const_iterator iter = bookmarkArray.begin();
          iter != bookmarkArray.end(); ++iter) {
       const ZFlyEmBookmark &bookmark = *iter;
-      ZStackBall *circle = new ZStackBall;
+      ZPunctum *circle = new ZPunctum;
       circle->set(bookmark.getLocation(), 5);
+
+//      ZStackBall *circle = new ZStackBall;
+//      circle->set(bookmark.getLocation(), 5);
       circle->setColor(255, 0, 0);
       circle->setVisible(m_isBookmarkVisible);
-      circle->setRole(ZStackObjectRole::ROLE_3DGRAPH_DECORATOR);
-      m_dataFrame->document()->addObject(circle);
+//      circle->setRole(ZStackObjectRole::ROLE_3DGRAPH_DECORATOR);
+      getDocument()->addObject(circle);
       m_bookmarkDecoration.push_back(circle);
     }
   }
@@ -441,7 +542,7 @@ void ZFlyEmBodySplitProject::updateBookDecoration()
 {
   clearBookmarkDecoration();
 
-  if (m_dataFrame != NULL) {
+  if (getDocument() != NULL) {
     ZFlyEmBookmarkArray bookmarkArray;
     foreach (ZFlyEmBookmark bookmark, m_bookmarkArray) {
       if (bookmark.getBodyId() == getBodyId()) {
@@ -484,9 +585,17 @@ void ZFlyEmBodySplitProject::exportSplits()
 void ZFlyEmBodySplitProject::commitResult()
 {
   ZFlyEmBodySplitProject::commitResultFunc(
-        getDataFrame()->document()->getSparseStack()->getObjectMask(),
-        getDataFrame()->document()->getLabelField(),
-        getDataFrame()->document()->getSparseStack()->getDownsampleInterval());
+        getDocument()->getConstSparseStack()->getObjectMask(),
+        getDocument()->getLabelField(),
+        getDocument()->getConstSparseStack()->getDownsampleInterval());
+
+  deleteSavedSeed();
+  getDocument()->undoStack()->clear();
+  removeAllSeed();
+//  getDocument()->removeObject(ZStackObject::TYPE_OBJ3D);
+//  removeAllSideSeed();
+  downloadBodyMask();
+
   /*
   QtConcurrent::run(this, &ZFlyEmBodySplitProject::commitResultFunc,
                     getDataFrame()->document()->getSparseStack()->getObjectMask(),
@@ -500,14 +609,14 @@ void ZFlyEmBodySplitProject::commitResultFunc(
 {
   emit progressStarted("Uploading splitted bodies", 100);
 
-  emit messageGenerated("Uploading results ...");
+  emitMessage("Uploading results ...");
 
 //  const ZObject3dScan *wholeBody =
 //      getDataFrame()->document()->getSparseStack()->getObjectMask();
 
   ZObject3dScan body = *wholeBody;
 
-  emit messageGenerated(QString("Backup ... %1").arg(getBodyId()));
+  emitMessage(QString("Backup ... %1").arg(getBodyId()));
 
   std::string backupDir = GET_TEST_DATA_DIR + "/backup";
   body.save(backupDir + "/" + getSeedKey(getBodyId()) + ".sobj");
@@ -537,13 +646,18 @@ void ZFlyEmBodySplitProject::commitResultFunc(
 
       ZObject3dScan currentBody = body.subtract(*obj);
 
-      if (!currentBody.isEmpty()) {
-        ZString output = QDir::tempPath() + "/body_";
-        output.appendNumber(getBodyId());
-        output += "_";
-        output.appendNumber(maxNum++);
-        currentBody.save(output + ".sobj");
-        filePathList << (output + ".sobj").c_str();
+      if (!currentBody.isEmpty() && obj->getLabel() > 1) {
+        std::vector<ZObject3dScan> objArray =
+            currentBody.getConnectedComponent();
+        for (std::vector<ZObject3dScan>::iterator iter = objArray.begin();
+             iter != objArray.end(); ++iter) {
+          ZString output = QDir::tempPath() + "/body_";
+          output.appendNumber(getBodyId());
+          output += "_";
+          output.appendNumber(maxNum++);
+          iter->save(output + ".sobj");
+          filePathList << (output + ".sobj").c_str();
+        }
       }
       delete obj;
 
@@ -554,7 +668,7 @@ void ZFlyEmBodySplitProject::commitResultFunc(
   if (!body.isEmpty()) {
     std::vector<ZObject3dScan> objArray = body.getConnectedComponent();
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
     body.save(GET_TEST_DATA_DIR + "/test.sobj");
 #endif
 
@@ -583,16 +697,11 @@ void ZFlyEmBodySplitProject::commitResultFunc(
     //}
   }
 
-#ifdef _DEBUG_
-  QString buildemPath = "/groups/flyem/home/zhaot/Downloads/buildem";
-#else
-  QString buildemPath = "/opt/Download/buildem";
-#endif
-
-
   ZDvidReader reader;
   reader.open(m_dvidTarget);
-  int bodyId = reader.readMaxBodyId();
+//  int bodyId = reader.readMaxBodyId();
+
+  int bodyId = 1;
 
   double dp = 0.3;
 
@@ -626,30 +735,104 @@ void ZFlyEmBodySplitProject::commitResultFunc(
     emit progressAdvanced(dp);
   }
 
-  writer.writeMaxBodyId(bodyId);
+  //writer.writeMaxBodyId(bodyId);
 
   emit progressDone();
-  emit messageGenerated("Done.");
+  emitMessage("Done.");
   emit resultCommitted();
+}
+
+void ZFlyEmBodySplitProject::selectSeed(int label)
+{
+  if (getDocument() != NULL) {
+    QList<const ZDocPlayer*> playerList =
+        getDocument()->getPlayerList(ZStackObjectRole::ROLE_SEED);
+    getDocument()->deselectAllObject();
+    foreach (const ZDocPlayer *player, playerList) {
+      if (player->getLabel() == label) {
+       getDocument()->setSelected(player->getData(), true);
+      }
+    }
+    if (m_dataFrame != NULL) {
+      m_dataFrame->view()->paintObject();
+    }
+  }
+}
+
+void ZFlyEmBodySplitProject::backupSeed()
+{
+  if (getBodyId() == 0) {
+    return;
+  }
+
+  ZDvidReader reader;
+  if (reader.open(getDvidTarget())) {
+    QList<const ZDocPlayer*> playerList;
+    if (getDocument() != NULL) {
+      playerList = getDocument()->getPlayerList(ZStackObjectRole::ROLE_SEED);
+    }
+    ZJsonArray jsonArray;
+    foreach (const ZDocPlayer *player, playerList) {
+      ZJsonObject jsonObj = player->toJsonObject();
+      if (!jsonObj.isEmpty()) {
+        jsonArray.append(jsonObj);
+      }
+    }
+
+    ZDvidWriter writer;
+    if (writer.open(getDvidTarget())) {
+      if (!jsonArray.isEmpty()) {
+        ZJsonObject rootObj;
+        rootObj.setEntry("seeds", jsonArray);
+        writer.writeJson(getSplitLabelName(), getBackupSeedKey(getBodyId()),
+                         rootObj);
+      }
+    }
+  }
+}
+
+void ZFlyEmBodySplitProject::deleteSavedSeed()
+{
+  ZDvidReader reader;
+  if (reader.open(getDvidTarget())) {
+    if (!reader.hasData(getSplitLabelName())) {
+      emitError(
+            ("Failed to delete seed: " + getSplitLabelName() +
+            " has not been created on the server.").c_str());
+
+      return;
+    }
+  }
+
+  ZDvidWriter writer;
+  if (writer.open(getDvidTarget())) {
+    writer.deleteKey(getSplitLabelName(), getSeedKey(getBodyId()));
+    emit messageGenerated(QString("All seeds of %1 have been deleted").
+                          arg(getBodyId()));
+  }
 }
 
 void ZFlyEmBodySplitProject::saveSeed()
 {
+  ZDvidReader reader;
+  if (reader.open(getDvidTarget())) {
+    if (!reader.hasData(getSplitLabelName())) {
+      emitError(
+            ("Failed to save seed: " + getSplitLabelName() +
+            " has not been created on the server.").c_str());
+
+      return;
+    }
+  }
+
   QList<const ZDocPlayer*> playerList =
-      m_dataFrame->document()->getPlayerList(ZStackObjectRole::ROLE_SEED);
+      getDocument()->getPlayerList(ZStackObjectRole::ROLE_SEED);
   ZJsonArray jsonArray;
   foreach (const ZDocPlayer *player, playerList) {
     ZJsonObject jsonObj = player->toJsonObject();
     if (!jsonObj.isEmpty()) {
       jsonArray.append(jsonObj);
     }
-    /*
-    ZStroke2d *stroke = dynamic_cast<ZStroke2d*>(player->getData());
-    if (stroke != NULL) {
-      ZJsonObject jsonObj = stroke->toJsonObject();
-      jsonArray.append(jsonObj);
-    }
-    */
   }
 
 
@@ -657,23 +840,63 @@ void ZFlyEmBodySplitProject::saveSeed()
   if (writer.open(getDvidTarget())) {
     if (jsonArray.isEmpty()) {
       writer.deleteKey(getSplitLabelName(), getSeedKey(getBodyId()));
-      emit messageGenerated("All seeds deleted");
+      emitMessage("All seeds deleted");
     } else {
       ZJsonObject rootObj;
       rootObj.setEntry("seeds", jsonArray);
       writer.writeJson(getSplitLabelName(), getSeedKey(getBodyId()), rootObj);
-      emit messageGenerated("All seeds saved");
+      emitMessage("All seeds saved");
     }
   }
 }
 
+void ZFlyEmBodySplitProject::recoverSeed()
+{
+  downloadSeed(getBackupSeedKey(getBodyId()));
+}
+
 void ZFlyEmBodySplitProject::downloadSeed()
+{
+  downloadSeed(getSeedKey(getBodyId()));
+}
+
+void ZFlyEmBodySplitProject::removeAllSeed()
+{
+  getDocument()->removeObject(ZStackObjectRole::ROLE_SEED, true);
+}
+
+void ZFlyEmBodySplitProject::removeAllSideSeed()
+{
+  std::set<ZStackObject*> removeSet;
+  ZDocPlayerList &playerList = getDocument()->getPlayerList();
+  for (ZDocPlayerList::iterator iter = playerList.begin();
+       iter != playerList.end(); /*++iter*/) {
+    ZDocPlayer *player = *iter;
+    if (player->hasRole(ZStackObjectRole::ROLE_SEED) && player->getLabel() > 1) {
+      removeSet.insert(player->getData());
+      iter = playerList.erase(iter);
+      delete player;
+    } else {
+      ++iter;
+    }
+  }
+
+  getDocument()->getObjectGroup().removeObject(
+        removeSet.begin(), removeSet.end(), true);
+
+  if (!removeSet.empty()) {
+    getDocument()->notifyObjectModified();
+    getDocument()->notifyPlayerChanged(ZStackObjectRole::ROLE_SEED);
+  }
+}
+
+void ZFlyEmBodySplitProject::downloadSeed(const std::string &seedKey)
 {
   ZDvidReader reader;
   if (reader.open(getDvidTarget())) {
+    removeAllSeed();
     QByteArray seedData = reader.readKeyValue(
-          getSplitLabelName().c_str(),
-          getSeedKey(getBodyId()).c_str());
+          getSplitLabelName().c_str(), seedKey.c_str());
     if (!seedData.isEmpty()) {
       ZJsonObject obj;
       obj.decode(seedData.constData());
@@ -681,7 +904,7 @@ void ZFlyEmBodySplitProject::downloadSeed()
       if (obj.hasKey("seeds")) {
         ZLabelColorTable colorTable;
 #ifdef _DEBUG_
-        std::cout << m_dataFrame->document()->getPlayerList(
+        std::cout << getDocument()->getPlayerList(
                        ZStackObjectRole::ROLE_SEED).size() << " seeds" <<  std::endl;
 #endif
         ZJsonArray jsonArray(obj["seeds"], ZJsonValue::SET_INCREASE_REF_COUNT);
@@ -692,9 +915,10 @@ void ZFlyEmBodySplitProject::downloadSeed()
             ZStroke2d *stroke = new ZStroke2d;
             stroke->loadJsonObject(seedJson);
             if (!stroke->isEmpty()) {
-              stroke->setRole(ZStackObjectRole::ROLE_SEED);
+              stroke->setRole(ZStackObjectRole::ROLE_SEED |
+                              ZStackObjectRole::ROLE_3DGRAPH_DECORATOR);
               stroke->setPenetrating(false);
-              m_dataFrame->document()->addObject(stroke);
+              getDocument()->addObject(stroke);
             } else {
               delete stroke;
             }
@@ -706,14 +930,14 @@ void ZFlyEmBodySplitProject::downloadSeed()
             if (!obj3d->isEmpty()) {
               obj3d->setRole(ZStackObjectRole::ROLE_SEED |
                              ZStackObjectRole::ROLE_3DGRAPH_DECORATOR);
-              m_dataFrame->document()->addObject(obj3d);
+              getDocument()->addObject(obj3d);
             } else {
               delete obj3d;
             }
           }
         }
 #ifdef _DEBUG_
-        std::cout << m_dataFrame->document()->getPlayerList(
+        std::cout << getDocument()->getPlayerList(
                        ZStackObjectRole::ROLE_SEED).size() << " seeds" <<  std::endl;
 #endif
       }
@@ -752,6 +976,25 @@ void ZFlyEmBodySplitProject::viewNextSlice()
   }
 }
 
+void ZFlyEmBodySplitProject::viewFullGrayscale(bool viewing)
+{
+  ZStackFrame *frame = getDataFrame();
+  if (frame != NULL) {
+    if (viewing) {
+      viewFullGrayscale();
+    } else {
+      ZStackObject *obj =
+          frame->document()->getObjectGroup().findFirstSameSource(
+            ZStackObject::TYPE_DVID_GRAY_SLICE,
+            ZStackObjectSourceFactory::MakeDvidGraySliceSource());
+      if (obj != NULL) {
+        obj->setVisible(false);
+        frame->updateView();
+      }
+    }
+  }
+}
+
 void ZFlyEmBodySplitProject::viewFullGrayscale()
 {
   ZDvidReader reader;
@@ -760,15 +1003,39 @@ void ZFlyEmBodySplitProject::viewFullGrayscale()
     if (frame != NULL) {
       int currentSlice = frame->view()->sliceIndex();
 
-      ZRect2d rectRoi = frame->document()->getRect2dRoi();
+      QRect rect = frame->view()->getViewPort(NeuTube::COORD_STACK);
+      ZRect2d rectRoi;
+      rectRoi.set(rect.x(), rect.y(), rect.width(), rect.height());
+//      ZRect2d rectRoi = frame->document()->getRect2dRoi();
       ZIntPoint offset = frame->document()->getStackOffset();
-      if (!rectRoi.isValid()) {
-        int width = frame->document()->getStackWidth();
-        int height = frame->document()->getStackHeight();
-        rectRoi.set(offset.getX(), offset.getY(), width, height);
-      }
+//      if (!rectRoi.isValid()) {
+//        int width = frame->document()->getStackWidth();
+//        int height = frame->document()->getStackHeight();
+//        rectRoi.set(offset.getX(), offset.getY(), width, height);
+//      }
 
       int z = currentSlice + offset.getZ();
+      ZDvidGraySlice *graySlice = dynamic_cast<ZDvidGraySlice*>(
+            frame->document()->getObjectGroup().findFirstSameSource(
+              ZStackObject::TYPE_DVID_GRAY_SLICE,
+              ZStackObjectSourceFactory::MakeDvidGraySliceSource()));
+
+      if (graySlice == NULL) {
+        graySlice = new ZDvidGraySlice();
+        graySlice->setDvidTarget(getDvidTarget());
+        graySlice->setSource(ZStackObjectSourceFactory::MakeDvidGraySliceSource());
+        frame->document()->addObject(graySlice, false);
+      }
+
+      graySlice->setVisible(true);
+
+      graySlice->setBoundBox(rectRoi);
+      graySlice->update(z);
+
+      frame->updateView();
+
+
+#if 0
       ZStack *stack = reader.readGrayScale(
             rectRoi.getX0(), rectRoi.getY0(), z,
             rectRoi.getWidth(), rectRoi.getHeight(), 1);
@@ -778,7 +1045,16 @@ void ZFlyEmBodySplitProject::viewFullGrayscale()
                          ZStackObjectSource::ID_BODY_GRAYSCALE_PATCH));
       patch->setTarget(ZStackObject::STACK_CANVAS);
       frame->document()->addStackPatch(patch);
+#endif
     }
+  }
+}
+
+void ZFlyEmBodySplitProject::downloadBodyMask()
+{
+  ZFlyEmProofDoc *doc = getDocument<ZFlyEmProofDoc>();
+  if (doc != NULL) {
+    getDocument<ZFlyEmProofDoc>()->downloadBodyMask();
   }
 }
 
@@ -801,14 +1077,27 @@ void ZFlyEmBodySplitProject::updateBodyMask()
         }
 
         int z = currentSlice + offset.getZ();
+        ZArray *array = reader.readLabels64(
+              rectRoi.getX0(), rectRoi.getY0(), z,
+              rectRoi.getWidth(), rectRoi.getHeight(), 1);
+        /*
         ZStack *stack = reader.readBodyLabel(
               rectRoi.getX0(), rectRoi.getY0(), z,
               rectRoi.getWidth(), rectRoi.getHeight(), 1);
-        if (stack != NULL) {
+              */
+        if (array != NULL) {
+          /*
           std::map<int, ZObject3dScan*> *bodySet =
               ZObject3dScan::extractAllObject(
                 (uint64_t*) stack->array8(), stack->width(), stack->height(), 1,
                 stack->getOffset().getZ(), 1, NULL);
+                */
+
+          std::map<int, ZObject3dScan*> *bodySet =
+              ZObject3dScan::extractAllObject(
+                array->getDataPointer<uint64_t>(), array->getDim(0),
+                array->getDim(1), 1,
+                array->getStartCoordinate(2), 1, NULL);
 
           frame->document()->blockSignals(true);
           for (std::map<int, ZObject3dScan*>::const_iterator iter = bodySet->begin();
@@ -817,7 +1106,8 @@ void ZFlyEmBodySplitProject::updateBodyMask()
             ZObject3dScan *obj = iter->second;
             if (label > 0) {
               obj->translate(
-                    stack->getOffset().getX(), stack->getOffset().getY(), 0);
+                    array->getStartCoordinate(0),
+                    array->getStartCoordinate(1), 0);
               obj->setRole(ZStackObjectRole::ROLE_MASK);
               frame->document()->addObject(obj, false);
             } else {
@@ -829,7 +1119,7 @@ void ZFlyEmBodySplitProject::updateBodyMask()
           frame->document()->notifyPlayerChanged(ZStackObjectRole::ROLE_MASK);
         }
 
-        delete stack;
+        delete array;
       }
     }
   }
@@ -837,33 +1127,41 @@ void ZFlyEmBodySplitProject::updateBodyMask()
 
 std::string ZFlyEmBodySplitProject::getSplitStatusName() const
 {
-  return ZDvidData::getName(
+  return ZDvidData::GetName(
         ZDvidData::ROLE_SPLIT_STATUS, ZDvidData::ROLE_BODY_LABEL,
         getDvidTarget().getBodyLabelName());
 }
 
 std::string ZFlyEmBodySplitProject::getSplitLabelName() const
 {
-  return ZDvidData::getName(ZDvidData::ROLE_SPLIT_LABEL,
+  return ZDvidData::GetName(ZDvidData::ROLE_SPLIT_LABEL,
                             ZDvidData::ROLE_BODY_LABEL,
                             getDvidTarget().getBodyLabelName());
 }
 
-std::string ZFlyEmBodySplitProject::getSeedKey(int bodyId) const
+std::string ZFlyEmBodySplitProject::getSeedKey(uint64_t bodyId) const
 {
   return getDvidTarget().getBodyLabelName() + "_seed_" +
       ZString::num2str(bodyId);
 }
 
+std::string ZFlyEmBodySplitProject::getBackupSeedKey(uint64_t bodyId) const
+{
+  return getDvidTarget().getBodyLabelName() + "_backup_seed_" +
+      ZString::num2str(bodyId);
+}
+
 void ZFlyEmBodySplitProject::runSplit()
 {
+//  backupSeed();
+
   ZStackFrame *frame = getDataFrame();
   if (frame != NULL) {
     frame->document()->runSeededWatershed();
   }
 }
 
-void ZFlyEmBodySplitProject::setSeedProcessed(int bodyId)
+void ZFlyEmBodySplitProject::setSeedProcessed(uint64_t bodyId)
 {
   ZDvidWriter writer;
   if (writer.open(getDvidTarget())) {
@@ -874,7 +1172,7 @@ void ZFlyEmBodySplitProject::setSeedProcessed(int bodyId)
   }
 }
 
-bool ZFlyEmBodySplitProject::isSeedProcessed(int bodyId) const
+bool ZFlyEmBodySplitProject::isSeedProcessed(uint64_t bodyId) const
 {
   bool isProcessed = false;
 
@@ -895,3 +1193,83 @@ bool ZFlyEmBodySplitProject::isSeedProcessed(int bodyId) const
 
   return isProcessed;
 }
+
+ZStackDoc* ZFlyEmBodySplitProject::getDocument() const
+{
+  if (getDataFrame() != NULL) {
+    return getDataFrame()->document().get();
+  }
+
+  return m_doc.get();
+}
+
+ZSharedPointer<ZStackDoc> ZFlyEmBodySplitProject::getSharedDocument() const
+{
+  if (getDataFrame() != NULL) {
+    return getDataFrame()->document();
+  }
+
+  return m_doc;
+}
+
+void ZFlyEmBodySplitProject::setDocument(ZSharedPointer<ZStackDoc> doc)
+{
+  m_doc = doc;
+}
+
+bool ZFlyEmBodySplitProject::isReadyForSplit(const ZDvidTarget &target)
+{
+  bool succ = true;
+
+  QStringList infoList;
+
+  ZDvidReader reader;
+  if (reader.open(target)) {
+    if (!reader.hasSparseVolume()) {
+      infoList.append(("Incomplete split database: data \"" +
+                       target.getBodyLabelName() +
+                       "\" missing").c_str());
+      succ = false;
+    }
+
+    std::string splitLabelName = ZDvidData::GetName(
+          ZDvidData::ROLE_SPLIT_LABEL, ZDvidData::ROLE_BODY_LABEL,
+          target.getBodyLabelName());
+
+    if (!reader.hasData(splitLabelName)) {
+      infoList.append(("Incomplete split database: data \"" + splitLabelName +
+                       "\" missing").c_str());
+      succ = false;
+    }
+
+    std::string splitStatusName =  ZDvidData::GetName(
+          ZDvidData::ROLE_SPLIT_STATUS, ZDvidData::ROLE_BODY_LABEL,
+          target.getBodyLabelName());
+    if (!reader.hasData(splitStatusName)) {
+      infoList.append(("Incomplete split database: data \"" + splitStatusName +
+                       "\" missing").c_str());
+      succ = false;
+    }
+  } else {
+    infoList.append("Cannot connect to database.");
+    succ = false;
+  }
+
+  emit messageGenerated(ZWidgetMessage::ToHtmlString(
+                          infoList, NeuTube::MSG_ERROR));
+
+  return succ;
+}
+
+void ZFlyEmBodySplitProject::emitMessage(const QString &msg, bool appending)
+{
+  emit messageGenerated(
+        ZWidgetMessage(msg, NeuTube::MSG_INFORMATION, appending));
+}
+
+void ZFlyEmBodySplitProject::emitError(const QString &msg, bool appending)
+{
+  emit messageGenerated(
+        ZWidgetMessage(msg, NeuTube::MSG_ERROR, appending));
+}
+

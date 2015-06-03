@@ -56,12 +56,23 @@ public:
   bool hasExclusion() const;
   bool namedBodyOnly() const;
 
+  std::string getBodyListFile() const {
+    return m_bodyListFile;
+  }
+
+  void setBodyListFile(const std::string &path) {
+    m_bodyListFile = path;
+  }
+
+  std::set<int> loadBodySet() const;
+
 private:
   ZDvidTarget m_dvidTarget;
   size_t m_minBodySize;
   size_t m_maxBodySize;
   bool m_hasUpperBodySize;
   bool m_namedBodyOnly;
+  std::string m_bodyListFile;
 
   std::set<int> m_excludedBodySet;
 };

@@ -73,12 +73,12 @@ QDialog* ZDialogFactory::makeStackDialog(QWidget *parent)
 
   ZDvidTarget target;
 
-  target.set("http://emrecon100.janelia.priv", "2a3", -1);
-  target.setLabelBlockName("bodies");
-  target.setMultiscale2dName("graytiles");
+//  target.set("http://emrecon100.janelia.priv", "2a3", -1);
+//  target.setLabelBlockName("bodies");
+//  target.setMultiscale2dName("graytiles");
 
 //  target.set("http://emdata2.int.janelia.org", "628", -1);
-//  target.set("http://emdata1.int.janelia.org", "9db", 8500);
+  target.set("http://emdata1.int.janelia.org", "9db", 8500);
 #if 0
   ZDvidReader reader;
   reader.open(target);
@@ -144,6 +144,7 @@ QDialog* ZDialogFactory::makeStackDialog(QWidget *parent)
   return dlg;
 }
 
+
 QDialog* ZDialogFactory::makeTestDialog(QWidget *parent)
 {
   QDialog *dlg = new QDialog(parent);
@@ -184,7 +185,7 @@ QDialog* ZDialogFactory::makeParameterDialog(
   return dlg;
 }
 
-bool ZDialogFactory::ask(
+bool ZDialogFactory::Ask(
     const QString &title, const QString &msg, QWidget *parent)
 {
   return QMessageBox::question(

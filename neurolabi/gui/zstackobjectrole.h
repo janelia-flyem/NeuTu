@@ -62,6 +62,8 @@ public:
     return m_role == ROLE_NONE;
   }
 
+  void clear();
+
 
 public:
   TRole m_role;

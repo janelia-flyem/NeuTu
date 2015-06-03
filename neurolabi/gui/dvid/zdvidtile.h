@@ -5,13 +5,14 @@
 #include "zstackobject.h"
 #include "dvid/zdvidresolution.h"
 #include "zdvidtarget.h"
-#include "zintpoint.h"
+//#include "zintpoint.h"
 #include "dvid/zdvidtileinfo.h"
 
 class ZPainter;
 class ZStack;
 class ZStackView;
 class ZRect2d;
+class ZIntPoint;
 
 class ZDvidTile : public ZStackObject
 {
@@ -29,7 +30,7 @@ public:
   void setTileIndex(int ix, int iy);
   void setResolutionLevel(int level);
 
-  void loadDvidPng(const QByteArray &buffer, int z);
+  void loadDvidSlice(const QByteArray &buffer, int z);
 
 //  void setTileOffset(int x, int y, int z);
 
@@ -53,6 +54,7 @@ public:
   void attachView(ZStackView *view);
 
   ZRect2d getBoundBox() const;
+  using ZStackObject::getBoundBox; // fix warning -Woverloaded-virtual
 
 private:
   ZImage m_image;

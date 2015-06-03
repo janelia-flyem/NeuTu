@@ -22,6 +22,11 @@
 #include <QApplication>
 #include "zsharedpointer.h"
 
+uint qHash(const glm::col4 &col)
+{
+  return (uint) (reinterpret_cast<const uint32_t&>(col));
+}
+
 Z3DPickingManager::Z3DPickingManager()
   : m_renderTarget(NULL)
   , m_currentColor(0,0,0,128)
@@ -31,7 +36,7 @@ Z3DPickingManager::Z3DPickingManager()
 glm::col4 Z3DPickingManager::registerObject(const void* obj)
 {
   increaseColor();
-  m_colorToObject[m_currentColor] = obj;
+  m_colorToObject[Col4ToUint(m_currentColor)] = obj;
   m_objectToColor[obj] = m_currentColor;
   return m_currentColor;
 }
@@ -39,15 +44,17 @@ glm::col4 Z3DPickingManager::registerObject(const void* obj)
 void Z3DPickingManager::deregisterObject(const void* obj)
 {
   glm::col4 col = getColorFromObject(obj);
-  m_colorToObject.erase(col);
-  m_objectToColor.erase(obj);
+  m_colorToObject.remove(Col4ToUint(col));
+  //m_objectToColor.erase(obj);
+  m_objectToColor.remove(obj);
 }
 
 void Z3DPickingManager::deregisterObject(const glm::col4& col)
 {
   const void* obj = getObjectFromColor(col);
-  m_colorToObject.erase(col);
-  m_objectToColor.erase(obj);
+  m_colorToObject.remove(Col4ToUint(col));
+  m_objectToColor.remove(obj);
+  //m_objectToColor.erase(obj);
 }
 
 void Z3DPickingManager::clearRegisteredObjects()
@@ -68,13 +75,13 @@ glm::col4 Z3DPickingManager::getColorFromObject(const void* obj)
     return glm::col4(0,0,0,0);
 }
 
-const void* Z3DPickingManager::getObjectFromColor(glm::col4 col)
+const void* Z3DPickingManager::getObjectFromColor(const glm::col4 &col)
 {
   if (col.a == 0)
     return NULL;
 
   if (isRegistered(col))
-    return m_colorToObject[col];
+    return m_colorToObject[Col4ToUint(col)];
   else
     return NULL;
 }

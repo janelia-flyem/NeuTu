@@ -16,8 +16,10 @@ ZPoint ZMouseEvent::getPosition(NeuTube::ECoordinateSystem cs) const
     return m_stackPosition;
   case NeuTube::COORD_RAW_STACK:
     return m_rawStackPosition;
-  case NeuTube::COORD_GLOBAL:
+  case NeuTube::COORD_SCREEN:
     return m_globalPosition.toPoint();
+  default:
+    break;
   }
 
   return ZPoint(0, 0, 0);

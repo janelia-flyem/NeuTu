@@ -6,6 +6,7 @@
 #include "zintpoint.h"
 #include "zmouseevent.h"
 #include "zmouseeventrecorder.h"
+#include "zsharedpointer.h"
 
 class ZInteractiveContext;
 class QMouseEvent;
@@ -30,7 +31,7 @@ public:
     m_context = context;
   }
 
-  inline void setDocument(ZStackDoc *doc) {
+  inline void setDocument(ZSharedPointer<ZStackDoc> doc) {
     m_doc = doc;
   }
 
@@ -38,7 +39,7 @@ public:
     m_eventRecorder = recorder;
   }
 
-  inline void set(ZInteractiveContext *context, ZStackDoc *doc,
+  inline void set(ZInteractiveContext *context, ZSharedPointer<ZStackDoc> doc,
                   ZMouseEventRecorder *recorder)
   {
     setContext(context);
@@ -57,12 +58,12 @@ public:
   void process(QMouseEvent *event, int z);
 
   inline const ZStackDoc* getDocument() const {
-    return m_doc;
+    return m_doc.get();
   }
 
 protected:
   ZInteractiveContext *m_context;
-  mutable ZStackDoc *m_doc;
+  mutable ZSharedPointer<ZStackDoc> m_doc;
   ZMouseEventRecorder *m_eventRecorder;
   //TMousePosition m_position;
 };

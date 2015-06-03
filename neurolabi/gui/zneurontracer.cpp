@@ -15,6 +15,9 @@
 #include "swc/zswcresampler.h"
 #include "zintpoint.h"
 #include "neutubeconfig.h"
+#include "zstackprocessor.h"
+#include "zobject3darray.h"
+#include "tz_objdetect.h"
 
 ZNeuronTraceSeeder::ZNeuronTraceSeeder()
 {
@@ -31,6 +34,7 @@ void ZNeuronTraceSeeder::sortSeed(
   fws->sws->fs.n = 2;
   fws->sws->fs.options[0] = STACK_FIT_DOT;
   fws->sws->fs.options[1] = STACK_FIT_CORRCOEF;
+  fws->pos_adjust = 1;
 
   m_seedArray.resize(seedPointArray->size);
   m_seedScoreArray.resize(seedPointArray->size);
@@ -514,6 +518,88 @@ Stack* ZNeuronTracer::enhanceLine(const Stack *stack)
 
 Geo3d_Scalar_Field* ZNeuronTracer::extractSeed(const Stack *mask)
 {
+  return extractSeedOriginal(mask);
+}
+
+Geo3d_Scalar_Field* ZNeuronTracer::extractLineSeed(
+    const Stack *mask, const Stack *dist, int minObjSize)
+{
+  Object_3d_List *objList = Stack_Find_Object_N(
+        const_cast<Stack*>(mask), NULL, 1, minObjSize, 26);
+  ZObject3dArray objArray;
+  objArray.append(objList);
+
+  Geo3d_Scalar_Field *field = Make_Geo3d_Scalar_Field(objArray.size());
+  for (size_t i = 0; i < objArray.size(); ++i) {
+    ZObject3d *obj = objArray[i];
+    ZIntPoint pt = obj->getCentralVoxel();
+    field->points[i][0] = pt.getX();
+    field->points[i][1] = pt.getY();
+    field->points[i][2] = pt.getZ();
+    field->values[i] = sqrt(
+          C_Stack::value(dist, pt.getX(), pt.getY(), pt.getZ()));
+  }
+
+  return field;
+}
+
+Geo3d_Scalar_Field* ZNeuronTracer::extractSeedSkel(const Stack *mask)
+{
+  Stack *skel = Stack_Bwthin(mask, NULL);
+
+  /* alloc <dist> */
+  Stack *dist = Stack_Bwdist_L_U16(mask, NULL, 0);
+
+
+  ZStackProcessor::RemoveBranchPoint(skel, 26);
+
+  Stack *skel_proc = C_Stack::clone(skel);
+ Geo3d_Scalar_Field *field1 = extractLineSeed(skel_proc, dist);
+ C_Stack::kill(skel_proc);
+
+ for (int i = 0; i <field1->size; ++i) {
+   int x = field1->points[i][0];
+   int y = field1->points[i][1];
+   int z = field1->points[i][2];
+   Set_Stack_Pixel(skel, x, y, z, 0, 0);
+ }
+
+#ifdef _DEBUG_2
+  C_Stack::write(GET_TEST_DATA_DIR + "/test.tif", skel);
+#endif
+
+
+ Geo3d_Scalar_Field *field2 = extractLineSeed(skel, dist, 0);
+
+ Geo3d_Scalar_Field *field = Geo3d_Scalar_Field_Merge(field1, field2, NULL);
+
+ Kill_Geo3d_Scalar_Field(field1);
+ Kill_Geo3d_Scalar_Field(field2);
+
+#ifdef _DEBUG_2
+  ZSwcTree tree;
+  tree.forceVirtualRoot();
+  for (int i = 0; i <field->size; ++i) {
+    int x = field->points[i][0];
+    int y = field->points[i][1];
+    int z = field->points[i][2];
+    double radius = field->values[i];
+    SwcTreeNode::setFirstChild(
+          tree.root(), SwcTreeNode::makePointer(x, y, z, radius));
+  }
+  tree.save(GET_TEST_DATA_DIR + "/test.swc");
+#endif
+
+  /* free <dist> */
+  C_Stack::kill(dist);
+
+  C_Stack::kill(skel);
+
+  return field;
+}
+
+Geo3d_Scalar_Field* ZNeuronTracer::extractSeedOriginal(const Stack *mask)
+{
   /* alloc <dist> */
   Stack *dist = Stack_Bwdist_L_U16(mask, NULL, 0);
 
@@ -707,9 +793,6 @@ ZSwcTree* ZNeuronTracer::trace(Stack *stack, bool doResampleAfterTracing)
 
   advanceProgress(0.05);
 
-  /* <mask2> freed */
-  C_Stack::kill(mask);
-
   std::cout << "Sorting seeds ..." << std::endl;
   ZNeuronTraceSeeder seeder;
   setTraceScoreThreshold(TRACING_SEED);
@@ -730,6 +813,10 @@ ZSwcTree* ZNeuronTracer::trace(Stack *stack, bool doResampleAfterTracing)
   std::vector<Locseg_Chain*> chainArray = trace(stack, locsegArray, scoreArray);
   chainArray = screenChain(stack, chainArray);
   advanceProgress(0.3);
+
+
+  /* <mask2> freed */
+  C_Stack::kill(mask);
 
   std::cout << "Reconstructing ..." << std::endl;
   ZNeuronConstructor constructor;

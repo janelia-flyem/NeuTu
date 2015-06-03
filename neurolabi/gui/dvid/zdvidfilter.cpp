@@ -1,5 +1,6 @@
 #include "zdvidfilter.h"
 #include <iostream>
+#include "zstring.h"
 
 ZDvidFilter::ZDvidFilter() :
   m_minBodySize(0), m_maxBodySize(0), m_hasUpperBodySize(true)
@@ -37,4 +38,20 @@ bool ZDvidFilter::hasExclusion() const
 bool ZDvidFilter::namedBodyOnly() const
 {
   return m_namedBodyOnly;
+}
+
+std::set<int> ZDvidFilter::loadBodySet() const
+{
+//  ZString
+
+  std::set<int> bodySet;
+
+  FILE *fp = fopen(m_bodyListFile.c_str(), "r");
+  ZString str;
+  while (str.readLine(fp)) {
+    std::vector<int> bodyArray = str.toIntegerArray();
+    bodySet.insert(bodyArray.begin(), bodyArray.end());
+  }
+
+  return bodySet;
 }

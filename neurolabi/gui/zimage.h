@@ -31,9 +31,16 @@ public:
   ZImage(int width, int height,
          QImage::Format format = QImage::Format_ARGB32_Premultiplied);
 
+  /*!
+   * \brief Set data function
+   *
+   * The data is supposed to be aligned with the image. All set-data functions
+   * do not use transform for legacy code compatibility.
+   */
   void setData(const uint8 *data, int threshold = -1);
 
-  void setData(const ZStack *stack, int z, bool ignoringZero = false);
+  void setData(const ZStack *stack, int z, bool ignoringZero = false,
+               bool offsetAdjust = true);
 
   void setData(const color_t *data, int alpha = 255);
   void setCData(const color_t *data, double scale, double offset);
@@ -106,14 +113,21 @@ public:
   static bool writeImage(const QImage &image, const QString &filePath);
 
   const ZStTransform& getTransform() const;
+
+  /*!
+   * \brief Set the transform
+   *
+   * \a transform transforms the world coordinates to image coordintes
+   */
   void setTransform(const ZStTransform &transform);
+
   void setScale(double sx, double sy);
   void setOffset(double dx, double dy);
 
 private:
   static bool hasSameColor(uchar *pt1, uchar *pt2);
 
-  ZStTransform m_transform;
+  ZStTransform m_transform; //Transformation from world coordinates to image coordinates
   //ZIntPoint m_offset;
 };
 

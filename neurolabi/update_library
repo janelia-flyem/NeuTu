@@ -42,6 +42,8 @@ fi
 lib_config=lib
 force_update=0
 
+all_config_option="--disable-png"
+
 for var in "$@"
 do
   is_config_option=1

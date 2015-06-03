@@ -6,7 +6,7 @@
 
 ZDvidTileEnsemble::ZDvidTileEnsemble()
 {
-  setTarget(ZStackObject::TILE_CANVAS);
+  setTarget(ZStackObject::TARGET_TILE_CANVAS);
   m_type = ZStackObject::TYPE_DVID_TILE_ENSEMBLE;
 }
 
@@ -54,17 +54,36 @@ void ZDvidTileEnsemble::display(
     return;
   }
 
+  if (m_view->imageWidget() == NULL) {
+    return;
+  }
+
   QRect fov = m_view->imageWidget()->viewPort();
   QSize screenSize = m_view->imageWidget()->size();
 
+  if (screenSize.width() == 0 || screenSize.height() == 0) {
+    return;;
+  }
+
+
+  int zoomRatio = std::min(fov.width() / screenSize.width(),
+                           fov.height() / screenSize.height());
+  int level = 0;
+  if (zoomRatio > 0) {
+    ++level;
+  }
+  while ((zoomRatio /= 2) > 0) {
+    ++level;
+  }
+
+
   m_view->getViewParameter(NeuTube::COORD_STACK).getViewPort();
-  int resLevel = std::min(m_tilingInfo.getMaxLevel() - 1,
-                          std::min(fov.width() / screenSize.width(),
-                                   fov.height() / screenSize.height()));
+  int resLevel = std::min(m_tilingInfo.getMaxLevel(), level);
 
   std::vector<ZDvidTileInfo::TIndex> tileIndices =
       m_tilingInfo.getCoverIndex(resLevel, fov);
 
+  tic();
   for (std::vector<ZDvidTileInfo::TIndex>::const_iterator iter = tileIndices.begin();
        iter != tileIndices.end(); ++iter) {
     const ZDvidTileInfo::TIndex &index = *iter;
@@ -73,6 +92,7 @@ void ZDvidTileEnsemble::display(
       tile->display(painter, slice, option);
     }
   }
+//  std::cout << "Draw image time: " << toc() << std::endl;
 }
 
 void ZDvidTileEnsemble::setDvidTarget(const ZDvidTarget &dvidTarget)

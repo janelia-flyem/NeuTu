@@ -5,6 +5,7 @@
 
 #include <map>
 #include <set>
+#include <QHash>
 #include "zobjsmodel.h"
 #include "swctreenode.h"
 
@@ -34,9 +35,9 @@ protected:
 protected:
   ZStackDoc *m_doc;
 
-  std::map<SwcTreeNode::ETopologicalType, int> m_typeToRow;
-  std::map<Swc_Tree_Node*, int> m_swcTreeNodeToRow;
-  std::map<Swc_Tree_Node*, SwcTreeNode::ETopologicalType> m_swcTreeNodeToType;
+  QHash<SwcTreeNode::ETopologicalType, int> m_typeToRow;
+  QHash<Swc_Tree_Node*, int> m_swcTreeNodeToRow;
+  QHash<Swc_Tree_Node*, SwcTreeNode::ETopologicalType> m_swcTreeNodeToType;
 };
 
 #endif // ZSWCNODEOBJSMODEL_H

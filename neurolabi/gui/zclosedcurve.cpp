@@ -48,6 +48,22 @@ int ZClosedCurve::findMatchShift(const ZClosedCurve &target) const
   ZPoint center1 = computeCenter();
   ZPoint center2 = target.computeCenter();
 
+  int shift = 0;
+  double maxCosAngle = 0.0;
+
+  for (size_t i = 0; i < this->getLandmarkNumber(); ++i) {
+    for (size_t j = 0; j < target.getLandmarkNumber(); ++j) {
+      ZPoint pt1 = getLandmark(i) - center1;
+      ZPoint pt2 = target.getLandmark(j) - center2;
+      double cosAngle = pt1.cosAngle(pt2);
+      if (cosAngle > maxCosAngle) {
+        shift = i - j;
+        maxCosAngle = cosAngle;
+      }
+    }
+  }
+
+#if 0
   int index1 = (int) getMinXIndex();
   int index2 = (int) target.getMinXIndex();
 
@@ -75,6 +91,7 @@ int ZClosedCurve::findMatchShift(const ZClosedCurve &target) const
   if (diff > pt1.distanceTo(pt2)) {
     shift = index1 - index2;
   }
+#endif
 
   return shift;
 }

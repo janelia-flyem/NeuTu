@@ -158,9 +158,11 @@ Stack* Stack_Remove_Small_Object(Stack *in, Stack *out,
  * Stack_Bwdist_L() does distance transformation for foreground voxels of \a in
  * and stores the result in \a out. \a label is used to store the nearest voxel
  * indices. Set it to NULL if you do not need such information. <out> must be
- * FLOAT32 kind.
+ * FLOAT32 kind or NULL.
  */
 Stack* Stack_Bwdist_L(const Stack *in, Stack *out, long int *label);
+
+Stack *Stack_Bwdist_L_P(const Stack *in, Stack *out, long int *label);
 
 /**@brief economic distance transformation
  *
@@ -189,6 +191,7 @@ Stack* Stack_Bwdist_L_U16(const Stack *in, Stack *out, int pad);
  * 3D distance transform.
  */
 Stack *Stack_Bwdist_L_U16P(const Stack *in, Stack *out, int pad);
+
 
 /**@}*/
 

@@ -53,6 +53,8 @@ public:
    */
   Location getLocation(int x, int y, int z) const;
 
+  ZIntPoint getBlockIndex(int x, int y, int z) const;
+
   void setMinPoint(int x, int y, int z);
   void setMinPoint(const ZIntPoint &pt);
   void setBlockSize(int x, int y, int z);

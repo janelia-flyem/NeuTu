@@ -5,6 +5,7 @@
 #include <QMenu>
 #include <QAction>
 #include <QScrollBar>
+#include <QKeyEvent>
 
 #include "ui_flyembodysplitprojectdialog.h"
 #include "mainwindow.h"
@@ -50,12 +51,18 @@ FlyEmBodySplitProjectDialog::FlyEmBodySplitProjectDialog(QWidget *parent) :
   connect(ui->bookmarkVisibleCheckBox, SIGNAL(toggled(bool)),
           &m_project, SLOT(showBookmark(bool)));
   connect(ui->quickViewPushButton, SIGNAL(clicked()), this, SLOT(quickView()));
+  connect(ui->fullGrayscaleCheckBox, SIGNAL(toggled(bool)),
+          this, SLOT(viewFullGrayscale(bool)));
+  connect(ui->updatePushButton, SIGNAL(clicked()),
+          this, SLOT(viewFullGrayscale()));
+  /*
   connect(ui->prevPushButton, SIGNAL(clicked()),
           this, SLOT(viewPreviousSlice()));
   connect(ui->nextPushButton, SIGNAL(clicked()),
           this, SLOT(viewNextSlice()));
   connect(ui->fullGrayscalePushButton, SIGNAL(clicked()),
           this, SLOT(viewFullGrayscale()));
+          */
   connect(ui->saveSeedPushButton, SIGNAL(clicked()),
           this, SLOT(saveSeed()));
 
@@ -68,6 +75,9 @@ FlyEmBodySplitProjectDialog::FlyEmBodySplitProjectDialog(QWidget *parent) :
   m_sideViewScene = new QGraphicsScene(this);
   //m_sideViewScene->setSceneRect(0, 0, ui->sideView->width(), ui->sideView->height());
   ui->sideView->setScene(m_sideViewScene);
+//  ui->sideView->setFocus();
+
+  setFocusPolicy(Qt::StrongFocus);
   //ui->outputWidget->setText("Load a body to start.");
 
 #ifndef _DEBUG_
@@ -93,7 +103,10 @@ void FlyEmBodySplitProjectDialog::connectSignalSlot()
 {
   connect(ui->bookmarkView, SIGNAL(doubleClicked(QModelIndex)),
           this, SLOT(locateBookmark(QModelIndex)));
-
+  /*
+  connect(ui->bookmarkView, SIGNAL(pressed(QModelIndex)),
+          this, SLOT(showBookmarkContextMenu(QModelIndex)));
+*/
   //Progress signal-slot
   connect(this, SIGNAL(progressDone()),
           getMainWindow(), SIGNAL(progressDone()));
@@ -110,6 +123,10 @@ void FlyEmBodySplitProjectDialog::connectSignalSlot()
   connect(&m_project, SIGNAL(progressAdvanced(double)),
           this, SIGNAL(progressAdvanced(double)));
   connect(&m_project, SIGNAL(progressDone()), this, SIGNAL(progressDone()));
+  connect(&m_project, SIGNAL(messageGenerated(QString)),
+          this, SLOT(dump(QString)));
+  connect(&m_project, SIGNAL(errorGenerated(QString)),
+          this, SLOT(dumpError(QString)));
 
   connect(this, SIGNAL(progressStarted(QString, int)),
           getMainWindow(), SLOT(startProgress(QString, int)));
@@ -138,6 +155,15 @@ void FlyEmBodySplitProjectDialog::createMenu()
   m_mainMenu->addAction(exportSplitAction);
   connect(exportSplitAction, SIGNAL(triggered()), this, SLOT(exportSplits()));
 
+  QMenu *seedMenu = m_mainMenu->addMenu("Seed");
+  QAction *recoverSeedAction = new QAction("Recover", this);
+  seedMenu->addAction(recoverSeedAction);
+  connect(recoverSeedAction, SIGNAL(triggered()), this, SLOT(recoverSeed()));
+
+  QAction *selectSeedAction = new QAction("Select", this);
+  seedMenu->addAction(selectSeedAction);
+  connect(selectSeedAction, SIGNAL(triggered()), this, SLOT(selectSeed()));
+
   QMenu *batchMenu = m_mainMenu->addMenu("Batch");
   QAction *allSeedSummaryAction = new QAction("Check Work Progress", this);
   batchMenu->addAction(allSeedSummaryAction);
@@ -148,6 +174,13 @@ void FlyEmBodySplitProjectDialog::createMenu()
   batchMenu->addAction(allSeedProcessAction);
   connect(allSeedProcessAction, SIGNAL(triggered()),
           this, SLOT(processAllSeed()));
+
+  m_bookmarkContextMenu = new QMenu(this);
+  QAction *checkAction = new QAction("Set Checked", this);
+  m_bookmarkContextMenu->addAction(checkAction);
+  connect(checkAction, SIGNAL(triggered()), this, SLOT(checkCurrentBookmark()));
+
+  ui->bookmarkView->setContextMenu(m_bookmarkContextMenu);
 }
 
 void FlyEmBodySplitProjectDialog::closeEvent(QCloseEvent */*event*/)
@@ -155,11 +188,97 @@ void FlyEmBodySplitProjectDialog::closeEvent(QCloseEvent */*event*/)
   clear();
 }
 
+void FlyEmBodySplitProjectDialog::checkCurrentBookmark()
+{
+  QItemSelectionModel *sel = ui->bookmarkView->selectionModel();
+  QModelIndexList selected = sel->selectedIndexes();
+
+  foreach (const QModelIndex &index, selected) {
+    ZFlyEmBookmark &bookmark = m_bookmarkList.getBookmark(index.row());
+    bookmark.setChecked(true);
+    m_bookmarkList.update(index.row());
+  }
+}
+
 void FlyEmBodySplitProjectDialog::setDvidTarget(const ZDvidTarget &target)
 {
   m_project.setDvidTarget(target);
+  //checkServerStatus();
 }
 
+bool FlyEmBodySplitProjectDialog::isReadyForSplit(const ZDvidTarget &target)
+{
+  return m_project.isReadyForSplit(target);
+
+#if 0
+  bool succ = true;
+
+  QStringList infoList;
+
+  ZDvidReader reader;
+  if (reader.open(target)) {
+    if (!reader.hasSparseVolume()) {
+      infoList.append(("Incomplete split database: data \"" +
+                       target.getBodyLabelName() +
+                      "\" missing").c_str());
+      succ = false;
+    }
+
+    std::string splitLabelName = ZDvidData::getName(
+          ZDvidData::ROLE_SPLIT_LABEL, ZDvidData::ROLE_BODY_LABEL,
+          target.getBodyLabelName());
+
+    if (!reader.hasData(splitLabelName)) {
+      infoList.append(("Incomplete split database: data \"" + splitLabelName +
+                       "\" missing").c_str());
+      succ = false;
+    }
+
+    std::string splitStatusName =  ZDvidData::getName(
+          ZDvidData::ROLE_SPLIT_STATUS, ZDvidData::ROLE_BODY_LABEL,
+          target.getBodyLabelName());
+    if (!reader.hasData(splitStatusName)) {
+      infoList.append(("Incomplete split database: data \"" + splitStatusName +
+                       "\" missing").c_str());
+      succ = false;
+    }
+  } else {
+    infoList.append("Cannot connect to database.");
+    succ = false;
+  }
+
+  //dumpError();
+
+  return succ;
+#endif
+
+}
+/*
+bool FlyEmBodySplitProjectDialog::checkServerStatus()
+{
+  bool succ = true;
+
+  ZDvidReader reader;
+  if (reader.open(getDvidTarget())) {
+    if (!reader.hasData(m_project.getSplitLabelName())) {
+      dumpError(("Incomplete split database: " + m_project.getSplitLabelName() +
+                " missing").c_str());
+      succ = false;
+    }
+
+    if (!reader.hasData(m_project.getSplitStatusName())) {
+      dumpError(("Incomplete split database: " + m_project.getSplitStatusName() +
+                " missing").c_str());
+      succ = false;
+    }
+  } else {
+    dumpError("Invalid database.", true);
+    succ = false;
+  }
+
+  return succ;
+}
+*/
 void FlyEmBodySplitProjectDialog::setBodyId(int id)
 {
   m_project.setBodyId(id);
@@ -260,6 +379,8 @@ const ZDvidTarget& FlyEmBodySplitProjectDialog::getDvidTarget() const
 void FlyEmBodySplitProjectDialog::setDataFrame(ZStackFrame *frame)
 {
   connect(frame, SIGNAL(destroyed()), this, SLOT(shallowClearDataFrame()));
+  connect(frame, SIGNAL(keyEventEmitted(QKeyEvent*)),
+          this, SLOT(processKeyEvent(QKeyEvent*)));
 
   m_project.setDataFrame(frame);
 }
@@ -275,7 +396,7 @@ bool FlyEmBodySplitProjectDialog::loadBody()
   int bodyId = ui->bodyIdSpinBox->value();
   ZDvidReader reader;
   if (reader.open(getDvidTarget())) {
-    if (reader.hasSparseVolume(bodyId)) {
+    if (reader.hasCoarseSparseVolume(bodyId)) {
  // if (m_loadBodyDlg->exec()) {
       //setDvidTarget(m_loadBodyDlg->getDvidTarget());
       setBodyId(bodyId);
@@ -287,6 +408,8 @@ bool FlyEmBodySplitProjectDialog::loadBody()
       dump("Body loaded.");
 
       return showData2d();
+    } else {
+      dumpError(QString("The body %1 seems not exist.").arg(bodyId));
     }
   }
 
@@ -315,7 +438,7 @@ void FlyEmBodySplitProjectDialog::updateButton()
   ui->quickViewPushButton->setEnabled(isBodyLoaded());
   ui->view3dBodyPushButton->setEnabled(m_project.hasDataFrame());
   ui->viewSplitPushButton->setEnabled(m_project.hasDataFrame());
-  ui->commitPushButton->setEnabled(m_project.hasDataFrame());
+  ui->commitPushButton->setEnabled(false);
   ui->saveSeedPushButton->setEnabled(m_project.hasDataFrame());
   ui->donePushButton->setEnabled(isBodyLoaded());
 }
@@ -340,7 +463,6 @@ void FlyEmBodySplitProjectDialog::updateWidget()
 
   if (!isBodyLoaded()) {
     text += "<p>No body loaded.</p>";
-    dump("Load a body to start.");
   } else {
     text += QString("<p>Body ID: %2</p>").
           arg(m_project.getBodyId());
@@ -357,8 +479,17 @@ void FlyEmBodySplitProjectDialog::dump(const QString &info, bool appending)
     ui->outputWidget->verticalScrollBar()->setValue(
           ui->outputWidget->verticalScrollBar()->maximum());
   } else {
+    ui->oldOutputWidget->append(ui->outputWidget->toHtml());
+    ui->outputWidget->clear();
     ui->outputWidget->setText(info);
   }
+}
+
+void FlyEmBodySplitProjectDialog::dumpError(const QString &info, bool appending)
+{
+  QString text = "<p><font color=\"#FF0000\">" + info + "</font></p>";
+
+  dump(text, appending);
 }
 
 void FlyEmBodySplitProjectDialog::loadBookmark()
@@ -391,6 +522,16 @@ void FlyEmBodySplitProjectDialog::updateBookmarkTable()
   }
 }
 
+/*
+void FlyEmBodySplitProjectDialog::showBookmarkContextMenu(const QModelIndex &index)
+{
+  m_pressedIndex = index;
+
+//  const ZFlyEmBookmark &bookmark = m_bookmarkList.getBookmark(index.row());
+
+
+}
+*/
 void FlyEmBodySplitProjectDialog::locateBookmark(const QModelIndex &index)
 {
   const ZFlyEmBookmark &bookmark = m_bookmarkList.getBookmark(index.row());
@@ -643,21 +784,25 @@ void FlyEmBodySplitProjectDialog::on_dvidPushButton_clicked()
 {
 
   if (m_dvidDlg->exec()) {
+    clear();
+    setDvidTarget(ZDvidTarget());
     const ZDvidTarget &target = m_dvidDlg->getDvidTarget();
-    ZDvidReader reader;
-    if (reader.open(target)) {
-      if (reader.hasSparseVolume()) {
-        m_project.setDvidTarget(m_dvidDlg->getDvidTarget());
-        dump(QString("Database: %1 (%2)").
-             arg(m_project.getDvidTarget().getName().c_str()).
-             arg(m_project.getDvidTarget().getSourceString().c_str()));
-        updateWidget();
+    dump(QString("Connecting to Database: %1 (%2) ...").
+         arg(target.getName().c_str()).
+         arg(target.getSourceString().c_str()));
+    if (isReadyForSplit(target)) {
+      setDvidTarget(target);
+      if (getDvidTarget().isValid()) {
+        dump("Connected successfully.", true);
+        dump("Load a body to start.", true);
       } else {
-        dump("Cannot load the database because no body is available.");
+        dumpError("Invalid database.", true);
       }
     } else {
-      dump("Cannot connect to the database.");
+//      setDvidTarget(ZDvidTarget());
+      dumpError("Connection failed.", true);
     }
+    updateWidget();
   }
 }
 
@@ -665,7 +810,7 @@ void FlyEmBodySplitProjectDialog::on_commitPushButton_clicked()
 {
   //m_project.saveSeed();
 
-  if (ZDialogFactory::ask("Commit Confirmation",
+  if (ZDialogFactory::Ask("Commit Confirmation",
                           "Do you want to upload the splitting results now? "
                           "It may take several minutes to several hours, "
                           "depending on how large the body is.",
@@ -691,8 +836,16 @@ void FlyEmBodySplitProjectDialog::viewNextSlice()
 
 void FlyEmBodySplitProjectDialog::viewFullGrayscale()
 {
-  m_project.viewFullGrayscale();
-  m_project.updateBodyMask();
+  m_project.viewFullGrayscale(ui->fullGrayscaleCheckBox->isChecked());
+//  m_project.updateBodyMask();
+}
+
+void FlyEmBodySplitProjectDialog::viewFullGrayscale(bool viewing)
+{
+  m_project.viewFullGrayscale(viewing);
+  if (viewing) {
+    m_project.updateBodyMask();
+  }
 }
 
 void FlyEmBodySplitProjectDialog::saveSeed()
@@ -744,7 +897,7 @@ void FlyEmBodySplitProjectDialog::checkAllSeed()
     emit messageDumped(
           QString("..#Seeded bodies: <font color=\"blue\">%1</font> "
                   "(<font color=\"green\">%2</font> processed).").
-          arg(keyList.size()).arg(processedCount));
+          arg(keyList.size()).arg(processedCount), true);
   }
 }
 
@@ -781,7 +934,7 @@ void FlyEmBodySplitProjectDialog::processAllSeed()
       std::vector<int> processedSeed;
       for (int i = 0; i < keyList.size(); ++i) {
         if ((int) processedSeed.size() >= maxBodyCount && maxBodyCount >= 0) {
-          emit messageDumped(QString("Max count reached."));
+          emit messageDumped(QString("Max count reached."), true);
           break;
         }
         const QString &key = keyList[i];
@@ -790,40 +943,59 @@ void FlyEmBodySplitProjectDialog::processAllSeed()
 
         if (bodyId > 0) {
           if (m_project.isSeedProcessed(bodyId)) {
-            emit messageDumped("Already processed.");
+            emit messageDumped("Already processed.", true);
           } else {
             emit messageDumped(
                   QString("Processing %1/%2: %3").
-                  arg(i + 1).arg(keyList.size()).arg(bodyId));
+                  arg(i + 1).arg(keyList.size()).arg(bodyId), true);
             ui->bodyIdSpinBox->setValue(bodyId);
             if (loadBody()) {
               processedSeed.push_back(bodyId);
-              emit messageDumped("Running split ...");
+              emit messageDumped("Running split ...", true);
               m_project.runSplit();
               m_project.commitResult();
               m_project.setSeedProcessed(bodyId);
               m_project.clear();
             } else {
               emit messageDumped(QString("Failed to load the body %1.").
-                                 arg(bodyId));
+                                 arg(bodyId), true);
             }
           }
         } else {
-          emit messageDumped("Invalid seed");
+          emit messageDumped("Invalid seed", true);
         }
       }
       if (processedSeed.empty()) {
-        emit messageDumped("No seed is processed");
+        emit messageDumped("No seed is processed", true);
       } else {
         QString message = QString("%1 bodies are processed: ").
             arg(processedSeed.size());
         for (size_t i = 0; i < processedSeed.size(); ++i) {
           message += QString("%1 ").arg(processedSeed[i]);
         }
-        emit messageDumped(message);
+        emit messageDumped(message, true);
       }
 
-      emit messageDumped("Done.");
+      emit messageDumped("Done.", true);
+    }
+  }
+}
+
+void FlyEmBodySplitProjectDialog::startSplit(const QString &message)
+{
+  ZJsonObject obj;
+  obj.decodeString(message.toStdString().c_str());
+
+  if (obj.hasKey("body_id")) {
+    int64_t bodyId = ZJsonParser::integerValue(obj["body_id"]);
+    if (bodyId > 0) {
+      if (obj.hasKey("dvid_target")) {
+        ZDvidTarget target;
+        target.loadJsonObject(ZJsonObject(obj.value("dvid_target")));
+        show();
+        raise();
+        startSplit(target, (uint64_t) bodyId);
+      }
     }
   }
 }
@@ -837,6 +1009,32 @@ void FlyEmBodySplitProjectDialog::startSplit(
   loadBody();
 }
 
+void FlyEmBodySplitProjectDialog::recoverSeed()
+{
+  if (ZDialogFactory::Ask("Recover Seed", "All current seeds might be lost. "
+                          "Do you want to continue?", this)) {
+    m_project.recoverSeed();
+  }
+}
+
+void FlyEmBodySplitProjectDialog::selectSeed()
+{
+  ZSpinBoxDialog *dlg = ZDialogFactory::makeSpinBoxDialog(this);
+  dlg->setValueLabel("Label");
+  dlg->getButton(ZButtonBox::ROLE_SKIP)->hide();
+  dlg->setValue(1);
+  if (dlg->exec()) {
+    int label = dlg->getValue();
+    selectSeed(label);
+  }
+  delete dlg;
+}
+
+void FlyEmBodySplitProjectDialog::selectSeed(int label)
+{
+  m_project.selectSeed(label);
+}
+
 void FlyEmBodySplitProjectDialog::enableMessageManager()
 {
   if (m_messageManager == NULL) {
@@ -844,6 +1042,32 @@ void FlyEmBodySplitProjectDialog::enableMessageManager()
   }
 }
 
+void FlyEmBodySplitProjectDialog::processKeyEvent(QKeyEvent *event)
+{
+  switch(event->key())
+  {
+  case Qt::Key_Space:
+    if (event->modifiers() == Qt::ShiftModifier) {
+      getMainWindow()->runBodySplit();
+    }
+    break;
+  case Qt::Key_U:
+    ui->updatePushButton->click();
+    break;
+  case Qt::Key_G:
+    ui->fullGrayscaleCheckBox->toggle();
+    break;
+  default:
+    break;
+  }
+}
+
+void FlyEmBodySplitProjectDialog::keyPressEvent(QKeyEvent *event)
+{
+  processKeyEvent(event);
+}
+
+////////////////////////////////
 void FlyEmBodySplitProjectDialog::MessageProcessor::processMessage(
     ZMessage *message, QWidget *host) const
 {
@@ -856,13 +1080,13 @@ void FlyEmBodySplitProjectDialog::MessageProcessor::processMessage(
       const ZJsonObject &obj = message->getMessageBody();
       if (obj.hasKey("body_id")) {
         int64_t bodyId = ZJsonParser::integerValue(obj["body_id"]);
-        if (bodyId >= 0) {
+        if (bodyId > 0) {
           if (obj.hasKey("dvid_target")) {
             ZDvidTarget target;
-            target.loadJsonObject(ZJsonObject(obj.at("dvid_target")));
+            target.loadJsonObject(ZJsonObject(obj.value("dvid_target")));
             dlg->show();
             dlg->raise();
-            dlg->startSplit(target, bodyId);
+            dlg->startSplit(target, (uint64_t) bodyId);
           }
         }
       }
@@ -879,5 +1103,3 @@ void FlyEmBodySplitProjectDialog::MessageProcessor::processMessage(
     break;
   }
 }
-
-

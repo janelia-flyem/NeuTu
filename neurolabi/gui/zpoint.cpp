@@ -182,6 +182,12 @@ ZPoint operator * (const ZPoint &pt1, double scale)
   return ZPoint(pt1) *= scale;
 }
 
+ZPoint operator / (const ZPoint &pt1, double scale)
+{
+  return ZPoint(pt1) /= scale;
+}
+
+
 void ZPoint::toArray(double *pt) const
 {
   pt[0] = m_x;
@@ -311,6 +317,24 @@ ZIntPoint& ZIntPoint::operator +=(const ZIntPoint &pt)
   m_x += pt.getX();
   m_y += pt.getY();
   m_z += pt.getZ();
+
+  return *this;
+}
+
+ZIntPoint& ZIntPoint::operator -=(const ZIntPoint &pt)
+{
+  m_x -= pt.getX();
+  m_y -= pt.getY();
+  m_z -= pt.getZ();
+
+  return *this;
+}
+
+ZIntPoint& ZIntPoint::operator *=(const ZIntPoint &pt)
+{
+  m_x *= pt.getX();
+  m_y *= pt.getY();
+  m_z *= pt.getZ();
 
   return *this;
 }

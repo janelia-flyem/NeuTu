@@ -359,7 +359,8 @@ public:
    *
    * \return The bound box.
    */
-  const ZCuboid& getBoundBox() const;
+   const ZCuboid& getBoundBox() const;
+   using ZStackObject::getBoundBox; // warning: 'ZSwcTree::getBoundBox' hides overloaded virtual function [-Woverloaded-virtual]
 
   static ZSwcTree* createCuboidSwc(const ZCuboid &box, double radius = 1.0);
   ZSwcTree* createBoundBoxSwc(double margin = 0.0);
@@ -720,6 +721,8 @@ public: //static functions
                                          double branchAngleSigma);
 
   static bool getHostState(const Swc_Tree_Node *tn, ENodeState state);
+
+  static ETarget GetDefaultTarget();
 
 
 private:

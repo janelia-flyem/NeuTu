@@ -6,6 +6,7 @@
 #include "dvid/zdvidtarget.h"
 #include "flyem/zflyembookmarklistmodel.h"
 #include "qthreadfuturemap.h"
+#include "zsharedpointer.h"
 
 class ZStackFrame;
 class Z3DWindow;
@@ -15,6 +16,8 @@ class ZObject3dScan;
 class ZFlyEmNeuron;
 class ZStack;
 class ZStackDoc;
+class ZStackViewParam;
+class ZWidgetMessage;
 
 class ZFlyEmBodySplitProject : public QObject
 {
@@ -28,11 +31,11 @@ public:
   void clear();
 
   void setDvidTarget(const ZDvidTarget &target);
-  inline void setBodyId(int bodyId) {
+  inline void setBodyId(uint64_t bodyId) {
     m_bodyId = bodyId;
   }
 
-  inline int getBodyId() const { return m_bodyId; }
+  inline uint64_t getBodyId() const { return m_bodyId; }
   inline const ZDvidTarget& getDvidTarget() const { return m_dvidTarget; }
 
   ZFlyEmNeuron getFlyEmNeuron() const;
@@ -42,6 +45,13 @@ public:
   inline ZStackFrame* getDataFrame() const {
     return m_dataFrame;
   }
+
+  void setDocument(ZSharedPointer<ZStackDoc> doc);
+  ZStackDoc* getDocument() const;
+  ZSharedPointer<ZStackDoc> getSharedDocument() const;
+
+  template<typename T>
+  T* getDocument() const;
 
   void loadBookmark(const QString &filePath);
   std::set<int> getBookmarkBodySet() const;
@@ -64,7 +74,10 @@ public:
   ZObject3dScan* readBody(ZObject3dScan *out) const;
 
   void saveSeed();
+  void deleteSavedSeed();
   void downloadSeed();
+  void recoverSeed();
+  void selectSeed(int label);
 
   void exportSplits();
   void commitResult();
@@ -74,7 +87,9 @@ public:
   void viewPreviousSlice();
   void viewNextSlice();
   void viewFullGrayscale();
+  void viewFullGrayscale(bool viewing);
   void updateBodyMask();
+  void downloadBodyMask();
 
   void setShowingBodyMask(bool state){
     m_showingBodyMask = state;
@@ -83,9 +98,10 @@ public:
   std::string getSplitStatusName() const;
   std::string getSplitLabelName() const;
 
-  std::string getSeedKey(int bodyId) const;
-  bool isSeedProcessed(int bodyId) const;
-  void setSeedProcessed(int bodyId);
+  std::string getSeedKey(uint64_t bodyId) const;
+  std::string getBackupSeedKey(uint64_t bodyId) const;
+  bool isSeedProcessed(uint64_t bodyId) const;
+  void setSeedProcessed(uint64_t bodyId);
 
   class ThreadManager {
   public:
@@ -100,13 +116,27 @@ public:
     QThreadFutureMap m_futureMap;
   };
 
+  void closeBodyWindow();
+
+  bool isReadyForSplit(const ZDvidTarget &target);
+
+  void emitMessage(const QString &msg, bool appending = true);
+  void emitError(const QString &msg, bool appending = true);
+
 signals:
-  void messageGenerated(QString);
+  /*
+  void messageGenerated(QString, bool appending = true);
+  void errorGenerated(QString, bool appending = true);
+  */
+
+  void messageGenerated(const ZWidgetMessage&);
+//  void errorGenerated(QStringList);
   void resultCommitted();
 
   void progressStarted(const QString &title, int nticks);
   void progressDone();
   void progressAdvanced(double dp);
+  void locating2DViewTriggered(const ZStackViewParam&);
 
 public slots:
   void showDataFrame() const;
@@ -116,6 +146,7 @@ public slots:
   void showBookmark(bool visible);
   void runSplit();
   void updateResult3dQuick();
+  void backupSeed();
 
   /*!
    * \brief Clear the project without deleting the associated widgets
@@ -127,16 +158,22 @@ public slots:
   void shallowClearResultWindow();
   void shallowClearQuickResultWindow();
   void shallowClearQuickViewWindow();
+  //void shallowClearBodyWindow();
 
 private:
   bool showingBodyMask() const { return m_showingBodyMask; }
   void clear(QWidget *widget);
   void loadResult3dQuick(ZStackDoc *doc);
+  void downloadSeed(const std::string &seedKey);
+  void removeAllSeed();
+  void removeAllSideSeed();
 
 private:
   ZDvidTarget m_dvidTarget;
-  int m_bodyId;
+  uint64_t m_bodyId;
   ZStackFrame *m_dataFrame;
+  ZSharedPointer<ZStackDoc> m_doc;
+//  Z3DWindow *m_bodyWindow;
   Z3DWindow *m_resultWindow;
   Z3DWindow *m_quickResultWindow;
   Z3DWindow *m_quickViewWindow;
@@ -145,5 +182,11 @@ private:
   bool m_isBookmarkVisible;
   bool m_showingBodyMask;
 };
+
+template <typename T>
+T* ZFlyEmBodySplitProject::getDocument() const
+{
+  return dynamic_cast<T*>(getDocument());
+}
 
 #endif // ZFLYEMBODYSPLITPROJECT_H

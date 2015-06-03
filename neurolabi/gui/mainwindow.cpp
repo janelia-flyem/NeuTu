@@ -7,6 +7,7 @@
 //#include <QtSvg>
 #include <QDir>
 #include <QtConcurrentRun>
+#include <QTimer>
 
 #include <iostream>
 #include <ostream>
@@ -163,6 +164,8 @@
 #include "ztestdialog.h"
 #include "dvid/zdvidtile.h"
 #include "flyem/zflyemstackdoc.h"
+#include "flyem/zproofreadwindow.h"
+#include "dvid/zdvidsparsestack.h"
 
 #include "z3dcanvas.h"
 #include "z3dapplication.h"
@@ -173,7 +176,7 @@ MainWindow::MainWindow(QWidget *parent) :
     m_newProject(NULL)
 {
   //std::cout << "Creating mainwindow ..." << std::endl;
-  RECORD_INFORMATION("Creating mainwindow ...");
+  RECORD_INFORMATION("Creating main window ...");
 
   //createWorkDir();
 #ifdef _DEBUG_2
@@ -301,6 +304,11 @@ MainWindow::MainWindow(QWidget *parent) :
   m_progressManager->setProgressReporter(&m_specialProgressReporter);
 
   m_3dWindowFactory.setParentWidget(this);
+
+  m_autoCheckTimer = new QTimer(this);
+  m_autoCheckTimer->setInterval(600000);
+  connect(m_autoCheckTimer, SIGNAL(timeout()), this, SLOT(runRoutineCheck()));
+
 }
 
 MainWindow::~MainWindow()
@@ -822,11 +830,18 @@ void MainWindow::customizeActions()
   bool hasApplication = false;
 
   if (!config.getApplication().empty()) {
-    if (config.getApplication() != "FlyEM") {
-      m_ui->menuFLy_EM->menuAction()->setVisible(false);
-    } else {
+    if (config.getApplication() == "FlyEM") {
       m_ui->menuFLy_EM->menuAction()->setVisible(true);
       hasApplication = true;
+    } else {
+      m_ui->menuFLy_EM->menuAction()->setVisible(false);
+    }
+
+    if (config.getApplication() == "Biocytin") {
+      m_ui->menuBiocytin->menuAction()->setVisible(true);
+      hasApplication = true;
+    } else {
+      m_ui->menuBiocytin->menuAction()->setVisible(false);
     }
   }
 
@@ -989,6 +1004,7 @@ void MainWindow::createToolBars()
     m_ui->toolBar->addAction(m_ui->actionSplit_Body);
     m_ui->toolBar->addAction(m_ui->actionMerge_Body_Project);
     m_ui->toolBar->addAction(m_ui->actionFlyEmROI);
+    m_ui->toolBar->addAction(m_ui->actionProof);
 #ifdef _DEBUG_2
     m_ui->toolBar->addAction(m_ui->actionShape_Matching);
 #endif
@@ -3218,12 +3234,37 @@ void MainWindow::test()
   m_testDlg->show();
 #endif
 
-#if 1
+#if 0
   QDialog *dlg = ZDialogFactory::makeStackDialog(this);
   dlg->exec();
 
 
   delete dlg;
+#endif
+
+#if 0
+  ZProofreadWindow *window = ZProofreadWindow::Make();
+  window->show();
+#endif
+
+#if 0
+  ZStackFrame *frame = ZStackFrame::Make(NULL);
+
+  ZDvidTarget target("emdata1.int.janelia.org", "f94a", 8500);
+  target.setLabelBlockName("segmentation121714");
+  target.setBodyLabelName("bodies121714");
+  ZDvidReader reader;
+  reader.open(target);
+
+  ZDvidSparseStack *sparseStack = reader.readDvidSparseStack(50000097);
+
+  ZStack *stack = ZStackFactory::makeVirtualStack(sparseStack->getBoundBox());
+  frame->loadStack(stack);
+
+  frame->document()->addObject(sparseStack);
+
+  addStackFrame(frame);
+  presentStackFrame(frame);
 #endif
 
 #if 0
@@ -3265,7 +3306,7 @@ void MainWindow::test()
   presentStackFrame(frame);
 #endif
 
-#if 0
+#if 1
   m_progress->setRange(0, 2);
   m_progress->setLabelText(QString("Testing ..."));
   int currentProgress = 0;
@@ -3316,6 +3357,7 @@ void MainWindow::evokeStackFrame(QMdiSubWindow *frame)
     targetFrame->displayActiveDecoration(true);
   }
 }
+
 
 void MainWindow::on_actionImport_Network_triggered()
 {
@@ -3431,7 +3473,8 @@ void MainWindow::on_actionSynapse_Annotation_triggered()
       FlyEm::ZSynapseAnnotationArray synapseArray;
 
       double radius = 10.0;
-      doc->blockSignals(true);
+      doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+//      doc->blockSignals(true);
       foreach (QString filePath, fileList) {
         std::vector<ZPunctum*> puncta;
         if (synapseArray.loadJson(filePath.toStdString())) {
@@ -3450,11 +3493,15 @@ void MainWindow::on_actionSynapse_Annotation_triggered()
 
         for (std::vector<ZPunctum*>::iterator iter = puncta.begin();
              iter != puncta.end(); ++iter) {
-          doc->addPunctum(*iter);
+          doc->addObject(*iter);
+//          doc->addPunctum(*iter);
         }
       }
-      doc->blockSignals(false);
-      doc->notifyPunctumModified();
+//      doc->blockSignals(false);
+//      doc->notifyPunctumModified();
+
+      doc->endObjectModifiedMode();
+      doc->notifyObjectModified();
 
       m_3dWindowFactory.open3DWindow(doc);
       /*
@@ -4515,9 +4562,9 @@ ZStackFrame* MainWindow::createStackFrame(
     const ZStackDocReader &reader, NeuTube::Document::ETag tag)
 {
   //ZStackFrame *newFrame = new ZStackFrame;
-  ZStackFrame *newFrame = ZStackFrame::Make(NULL);
+  ZStackFrame *newFrame = ZStackFrame::Make(NULL, tag);
   newFrame->addDocData(reader);
-  newFrame->document()->setTag(tag);
+//  newFrame->document()->setTag(tag);
   return newFrame;
 }
 
@@ -4787,7 +4834,7 @@ void MainWindow::on_actionMask_SWC_triggered()
         }
 
         if (stackFrame != swcFrame) {
-          swcFrame->document()->addSwcTree(wholeTree);
+          swcFrame->document()->addObject(wholeTree);
         } else {
           QUndoCommand *command = new QUndoCommand;
           new ZStackDocCommand::SwcEdit::AddSwc(
@@ -6099,7 +6146,7 @@ void MainWindow::runSplitFunc(ZStackFrame *frame)
   emit progressDone();
 }
 
-void MainWindow::on_actionSplit_Region_triggered()
+void MainWindow::runBodySplit()
 {
   if (GET_APPLICATION_NAME == "FlyEM") {
     ZStackFrame *frame = currentStackFrame();
@@ -6124,6 +6171,12 @@ void MainWindow::on_actionSplit_Region_triggered()
       //m_progress->reset();
     }
   }
+
+}
+
+void MainWindow::on_actionSplit_Region_triggered()
+{
+  runBodySplit();
 }
 
 QAction* MainWindow::getBodySplitAction() const
@@ -6424,11 +6477,14 @@ bool MainWindow::initBodySplitProject()
         ZStackDocReader docReader;
         //docReader.setStack(out);
         docReader.setSparseStack(spStack);
-        ZStackFrame *frame = createStackFrame(&docReader);
-        frame->document()->setTag(NeuTube::Document::FLYEM_SPLIT);
+        ZStackFrame *frame = createStackFrame(
+              docReader, NeuTube::Document::FLYEM_SPLIT);
+//        frame->setTag(NeuTube::Document::FLYEM_SPLIT);
+//        frame->document()->setTag(NeuTube::Document::FLYEM_SPLIT);
 
         m_bodySplitProjectDialog->setDataFrame(frame);
         m_bodySplitProjectDialog->downloadSeed();
+        m_bodySplitProjectDialog->viewFullGrayscale();
 
         addStackFrame(frame);
         presentStackFrame(frame);
@@ -6942,6 +6998,28 @@ void MainWindow::on_actionHackathonEvaluate_triggered()
   report("Evaluation", information.toStdString(), ZMessageReporter::Information);
 }
 
+void MainWindow::launchSplit(const QString &str)
+{
+//  ZJsonObject obj;
+//  obj.decodeString(str.toStdString().c_str());
+
+//  m_bodySplitProjectDialog->show();
+  m_bodySplitProjectDialog->startSplit(str);
+}
+
+
+void MainWindow::on_actionProof_triggered()
+{
+  ZProofreadWindow *window = ZProofreadWindow::Make();
+  window->showMaximized();
+}
+
+void MainWindow::runRoutineCheck()
+{
+
+}
+
+/////////////////////
 void MainWindow::MessageProcessor::processMessage(
     ZMessage *message, QWidget *host) const
 {
@@ -6967,3 +7045,5 @@ void MainWindow::MessageProcessor::processMessage(
     }
   }
 }
+
+

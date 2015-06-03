@@ -22,10 +22,10 @@ public:
   Z3DGraphNode(double x, double y, double z, double r = 3.0);
   Z3DGraphNode(const Z3DGraphNode &node);
 
-  inline ZPoint center() { return m_center; }
-  inline double radius() { return m_radius; }
-  inline QColor color() { return m_color; }
-  inline EGraphShape shape() { return m_shape; }
+  inline const ZPoint& center() const { return m_center; }
+  inline double radius() const { return m_radius; }
+  inline const QColor& color() const { return m_color; }
+  inline EGraphShape shape() const { return m_shape; }
   inline double x() { return m_center.x(); }
   inline double y() { return m_center.y(); }
   inline double z() { return m_center.z(); }
@@ -51,12 +51,12 @@ public:
   Z3DGraphEdge(int vs, int vt);
   Z3DGraphEdge(const Z3DGraphEdge &edge);
 
-  inline int vs() { return m_vs; }
-  inline int vt() { return m_vt; }
-  inline int radius() { return m_radius; }
-  inline QColor startColor() { return m_startColor; }
-  inline QColor endColor() { return m_endColor; }
-  inline EGraphShape shape() { return m_shape; }
+  inline int vs() const { return m_vs; }
+  inline int vt() const { return m_vt; }
+  inline int radius() const { return m_radius; }
+  inline const QColor& startColor() const { return m_startColor; }
+  inline const QColor& endColor() const { return m_endColor; }
+  inline EGraphShape shape() const { return m_shape; }
   inline bool isValid() { return vs() >= 0 && vt() >= 0; }
   void set(int vs, int vt, double radius = 1.0);
   void set(int vs, int vt, double radius, bool usingNodeColor,
@@ -94,18 +94,18 @@ public:
   inline size_t getNodeNumber() const { return m_nodeArray.size(); }
   inline size_t getEdgeNumber() const { return m_edgeArray.size(); }
 
-  inline Z3DGraphNode getNode(size_t index) {
+  inline const Z3DGraphNode& getNode(size_t index) const {
     return m_nodeArray[index];
   }
 
-  inline Z3DGraphEdge getEdge(size_t index) {
+  inline const Z3DGraphEdge& getEdge(size_t index) const {
     return m_edgeArray[index];
   }
 
-  inline Z3DGraphNode getStartNode(size_t index) {
+  inline const Z3DGraphNode& getStartNode(size_t index) const {
     return m_nodeArray[m_edgeArray[index].vs()];
   }
-  inline Z3DGraphNode getEndNode(size_t index) {
+  inline const Z3DGraphNode& getEndNode(size_t index) const {
     return m_nodeArray[m_edgeArray[index].vt()];
   }
 

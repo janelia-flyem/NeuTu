@@ -15,115 +15,12 @@
 #include "zhistogram.h"
 #include "zvoxel.h"
 #include "zstackdocument.h"
+#include "zobject3dstripe.h"
 
 class ZObject3d;
 class ZGraph;
 class ZStack;
 class ZJsonArray;
-
-/*!
- * \brief The class of RLE object stripe
- */
-class ZObject3dStripe {
-public:
-  ZObject3dStripe() : m_y(0), m_z(0), m_isCanonized(true) {
-  }
-  inline int getY() const { return m_y; }
-  inline int getZ() const { return m_z; }
-  int getMinX() const;
-  int getMaxX() const;
-  inline size_t getSize() const { return m_segmentArray.size() / 2; }
-  inline int getSegmentNumber() const { return getSize(); }
-  size_t getVoxelNumber() const;
-
-  inline void setY(int y) { m_y = y; }
-  inline void setZ(int z) { m_z = z; }
-
-  void addSegment(int x1, int x2, bool canonizing = true);
-
-  const int* getSegment(size_t index) const;
-  int getSegmentStart(size_t index) const;
-  int getSegmentEnd(size_t index) const;
-
-  void write(FILE *fp) const;
-  void read(FILE *fp);
-
-  void drawStack(Stack *stack, int v, const int *offset = NULL) const;
-  void drawStack(Stack *stack, uint8_t red, uint8_t green, uint8_t blue,
-                 const int *offset = NULL) const;
-  /*!
-   * \brief Count the overlap area between an object and a stack
-   *
-   * \param stack Input stack. It's foreground is defined as any pixel with
-   *        intensity > 0.
-   * \param offset Offset of the object.
-   * \return The number of voxels overlapped.
-   */
-  size_t countForegroundOverlap(Stack *stack, const int *offset = NULL) const;
-
-  inline bool isEmpty() const { return m_segmentArray.empty(); }
-  inline bool isCanonized() const { return isEmpty() || m_isCanonized; }
-
-  void sort();
-  void canonize();
-  bool unify(const ZObject3dStripe &stripe, bool canonizing = true);
-
-  void print(int indent = 0) const;
-
-  void downsample(int xintv);
-  void downsampleMax(int xintv);
-  void upSample(int xIntv);
-
-  void clearSegment();
-
-  void translate(int dx, int dy, int dz);
-
-  /*!
-   * \brief Add z value
-   *
-   * Basically it is the same as translate(0, 0, \a dz);
-   */
-  void addZ(int dz);
-
-  bool isCanonizedActually();
-
-  /*!
-   * \brief Test if two stripe are the same with respect to internal representation
-   */
-  bool equalsLiterally(const ZObject3dStripe &stripe) const;
-
-  void dilate();
-
-  inline void setCanonized(bool canonized) { m_isCanonized = canonized; }
-
-  void switchYZ();
-
-  /*!
-   * \brief Test if an X is within the range of the segments
-   *
-   * \return true iff \a x is on one of the segments.
-   */
-  bool containsX(int x) const;
-
-  /*!
-   * \brief Test the stripe contains a point
-   *
-   * \return true iff (\a x, \a y, \a z) is on the stripe.
-   */
-  bool contains(int x, int y, int z) const;
-
-  /*!
-   * \brief Fill an integer array with the stripe data
-   * \param array Target array, which must be preallocated with sufficient size.
-   */
-  void fillIntArray(int *array) const;
-
-private:
-  std::vector<int> m_segmentArray;
-  int m_y;
-  int m_z;
-  bool m_isCanonized;
-};
 
 /*!
  * \brief The class of RLE object
@@ -139,10 +36,14 @@ public:
   ZObject3dScan();
   virtual ~ZObject3dScan();
 
+  ZObject3dScan(const ZObject3dScan &obj);
+
   enum EComponent {
     COMPONENT_STRIPE_INDEX_MAP, COMPONENT_INDEX_SEGMENT_MAP,
     COMPONENT_ACCUMULATED_STRIPE_NUMBER,
-    COMPONENT_SLICEWISE_VOXEL_NUMBER, COMPONENT_ALL
+    COMPONENT_SLICEWISE_VOXEL_NUMBER,
+    COMPONENT_Z_PROJECTION,
+    COMPONENT_ALL
   };
 
   bool isDeprecated(EComponent comp) const;
@@ -173,17 +74,6 @@ public:
   const ZObject3dStripe& getStripe(size_t index) const;
   ZObject3dStripe& getStripe(size_t index);
 
-  /*
-  const int* getFirstStripe() const;
-  static int getY(const int *stripe);
-  static int getZ(const int *stripe);
-  //return number of scan lines
-  static int getStripeSize(const int *stripe);
-  static int* getSegment(const int *stripe);
-  static void setStripeSize(int *stripe, int size);
-  const int* getLastStripe() const;
-  int* getLastStripe();
-*/
   void addStripe(int z, int y, bool canonizing = true);
   void addSegment(int x1, int x2, bool canonizing = true);
   void addSegment(int z, int y, int x1, int x2, bool canonizing = true);
@@ -202,6 +92,11 @@ public:
   bool load(const std::string &filePath);
 
   bool hit(double x, double y, double z);
+  bool hit(double x, double y);
+  //ZIntPoint getHitPoint() const;
+
+  ZObject3dScan& operator=(const ZObject3dScan& obj);// { return *this; }
+
 
   /*!
    * \brief Import a dvid object
@@ -249,7 +144,13 @@ public:
   void drawStack(Stack *stack, int v, const int *offset = NULL) const;
   void drawStack(Stack *stack, uint8_t red, uint8_t green, uint8_t blue,
                  const int *offset = NULL) const;
+  void drawStack(Stack *stack, uint8_t red, uint8_t green, uint8_t blue,
+                 double alpha,
+                 const int *offset) const;
   void labelStack(Stack *stack, int startLabel, const int *offset = NULL);
+
+  void drawStack(ZStack *stack, int v) const;
+  void drawStack(ZStack *stack, uint8_t red, uint8_t green, uint8_t blue) const;
 
   /*!
    * \brief Mask a stack with the foreground defined by the object.
@@ -269,9 +170,14 @@ public:
   size_t countForegroundOverlap(Stack *stack, const int *offset = NULL);
 
   //Sort the stripes in the ascending order
-  // s1 < s2 if
-  //   z(s1) < z(s2) or
-  //   z(s1) == z(s2) and y(s1) < y(s2)
+
+  /*!
+   * \brief Sort the stripes in the ascending order
+   *
+   * s1 < s2 if
+   *   z(s1) < z(s2) or
+   *   z(s1) == z(s2) and y(s1) < y(s2)
+   */
   void sort();
   void canonize();
   void unify(const ZObject3dScan &obj);
@@ -291,6 +197,7 @@ public:
 
   ZIntCuboid getBoundBox() const;
   void getBoundBox(Cuboid_I *box) const;
+  void getBoundBox(ZIntCuboid *box) const;
 
   template<class T>
   static std::map<int, ZObject3dScan*>* extractAllObject(
@@ -347,7 +254,8 @@ public:
 
   ZObject3dScan getSlice(int z) const;
   ZObject3dScan getSlice(int minZ, int maxZ) const;
-
+  ZObject3dScan interpolateSlice(int z) const;
+  ZObject3dScan getFirstSlice() const;
 
   virtual void display(
       ZPainter &painter, int slice, EDisplayStyle option) const;
@@ -371,6 +279,8 @@ public:
   ZObject3dScan makeZProjection(int minZ, int maxZ);
 
   ZObject3dScan makeYProjection() const;
+
+  const ZObject3dScan* getZProjection() const;
 
   /*!
    * \brief Test if the object contains a voxel
@@ -470,7 +380,6 @@ public:
   typedef int TEvent; //What's event?
   void processEvent(TEvent event);
   void blockEvent(bool blocking);
-
 
   /*!
    * \brief Get the integer array representation of the object
@@ -581,23 +490,20 @@ public:
 private:
   void addForeground(ZStack *stack);
   void displaySolid(ZPainter &painter, int z, bool isProj, int stride = 1) const;
+  void makeZProjection(ZObject3dScan *obj) const;
 
 protected:
   std::vector<ZObject3dStripe> m_stripeArray;
-  /*
-  int m_stripeNumber;
-  std::vector<int> m_sripeSize;
-  */
+  bool m_isCanonized;
+  uint64_t m_label;
+  bool m_blockingEvent;
 
+  //ZIntPoint m_hitPoint;
   mutable std::vector<size_t> m_accNumberArray;
   mutable std::map<int, size_t> m_slicewiseVoxelNumber;
   mutable std::map<std::pair<int, int>, size_t> m_stripeMap;
   mutable std::map<size_t, std::pair<size_t, size_t> > m_indexSegmentMap;
-  bool m_isCanonized;
-  uint64_t m_label;
-  //mutable int *m_lastStripe;
-
-  bool m_blockingEvent;
+  mutable ZObject3dScan *m_zProjection;
 
   //SWIG has some problem recognizing const static type
 #ifndef SWIG

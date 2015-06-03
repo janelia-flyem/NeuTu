@@ -462,6 +462,23 @@ int ZCommandLine::runImageSeparation()
   return 0;
 }
 
+std::set<int> ZCommandLine::loadBodySet(const std::string &input)
+{
+//  ZString
+
+  std::set<int> bodySet;
+
+  FILE *fp = fopen(input.c_str(), "r");
+  ZString str;
+  while (str.readLine(fp)) {
+    std::vector<int> bodyArray = str.toIntegerArray();
+    bodySet.insert(bodyArray.begin(), bodyArray.end());
+  }
+  fclose(fp);
+
+  return bodySet;
+}
+
 int ZCommandLine::runSkeletonize()
 {
   if (m_input.empty()) {
@@ -479,7 +496,14 @@ int ZCommandLine::runSkeletonize()
   ZDvidWriter writer;
   writer.open(target);
 
-  std::set<int> bodyIdSet = reader.readBodyId(100000);
+  std::set<int> bodyIdSet;
+
+  if (m_input.size() == 1) {
+    bodyIdSet = reader.readBodyId(100000);
+  } else {
+    bodyIdSet = loadBodySet(m_input[1]);
+  }
+
   std::vector<int> bodyIdArray;
   bodyIdArray.insert(bodyIdArray.begin(), bodyIdSet.begin(), bodyIdSet.end());
 
@@ -491,8 +515,13 @@ int ZCommandLine::runSkeletonize()
 
   ZStackSkeletonizer skeletonizer;
   ZJsonObject config;
-  config.load(NeutubeConfig::getInstance().getApplicatinDir() +
-              "/json/skeletonize.json");
+
+  if (m_input.size() <= 2) {
+    config.load(NeutubeConfig::getInstance().getApplicatinDir() +
+                "/json/skeletonize.json");
+  } else {
+    config.load(m_input[2]);
+  }
   skeletonizer.configure(config);
 
   for (size_t i = 0; i < bodyIdArray.size(); ++i) {
@@ -606,7 +635,12 @@ int ZCommandLine::run(int argc, char *argv[])
     m_output = ZArgumentProcessor::getStringArg("-o");
   } else if (ZArgumentProcessor::isArgMatched("--skeletonize")) {
     command = SKELETONIZE;
-    m_input.push_back(ZArgumentProcessor::getStringArg("input", 0));
+    int inputNumber = ZArgumentProcessor::getRepeatCount("input");
+    m_input.resize(inputNumber);
+    for (int i = 0; i < inputNumber; ++i) {
+      m_input[i] = ZArgumentProcessor::getStringArg("input", i);
+    }
+//    m_input.push_back(ZArgumentProcessor::getStringArg("input", 0));
   } else if (ZArgumentProcessor::isArgMatched("--separate")) {
     command = SEPARATE_IMAGE;
     m_input.push_back(ZArgumentProcessor::getStringArg("input", 0));

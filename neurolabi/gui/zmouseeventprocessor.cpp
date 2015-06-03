@@ -6,7 +6,7 @@
 #include "zstack.hxx"
 
 ZMouseEventProcessor::ZMouseEventProcessor() :
-  m_context(NULL), m_imageWidget(NULL), m_doc(NULL)
+  m_context(NULL), m_imageWidget(NULL)
 {
   registerMapper();
 }
@@ -52,7 +52,7 @@ const ZMouseEvent& ZMouseEventProcessor::process(
   }
 
   ZPoint stackPosition = zevent.getRawStackPosition();
-  if (m_doc != NULL) {
+  if (m_doc.get() != NULL) {
     stackPosition += m_doc->getStackOffset();
   }
   zevent.setStackPosition(stackPosition);
@@ -73,7 +73,7 @@ void ZMouseEventProcessor::setImageWidget(ZImageWidget *widget)
   m_imageWidget = widget;
 }
 
-void ZMouseEventProcessor::setDocument(ZStackDoc *doc)
+void ZMouseEventProcessor::setDocument(ZSharedPointer<ZStackDoc> doc)
 {
   m_doc = doc;
   m_leftButtonReleaseMapper.setDocument(doc);
@@ -84,7 +84,7 @@ void ZMouseEventProcessor::setDocument(ZStackDoc *doc)
 
 const ZStackDoc* ZMouseEventProcessor::getDocument() const
 {
-  return m_doc;
+  return m_doc.get();
 }
 
 const ZMouseEventMapper& ZMouseEventProcessor::getMouseEventMapper(
@@ -174,7 +174,7 @@ ZPoint ZMouseEventProcessor::getLatestStackPosition() const
 {
   ZPoint pt = getLatestMouseEvent().getRawStackPosition();
 
-  if (m_doc != NULL) {
+  if (m_doc.get() != NULL) {
     pt += m_doc->getStackOffset();
   }
 

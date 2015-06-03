@@ -70,7 +70,7 @@ public:
   void setDepth(int depth);
 
   //union
-  void join(const ZIntCuboid &cuboid);
+  ZIntCuboid& join(const ZIntCuboid &cuboid);
   void joinX(int x);
   void joinY(int y);
   void joinZ(int z);
@@ -89,6 +89,7 @@ public:
    * \brief Check if a point is in the cuboid.
    */
   bool contains(int x, int y, int z) const;
+  bool contains(const ZIntPoint &pt) const;
 
   /*!
    * \brief Check if a cuboid is empty.
@@ -98,6 +99,8 @@ public:
   bool isEmpty() const;
 
   bool equals(const ZIntCuboid &cuboid) const;
+
+  //double distanceTo(const ZIntPoint &pt);
 
 private:
   ZIntPoint m_firstCorner;

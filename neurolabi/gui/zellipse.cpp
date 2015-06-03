@@ -10,6 +10,7 @@
 #endif
 #include "tz_cdefs.h"
 #include "zellipse.h"
+#include "zpainter.h"
 
 ZEllipse::ZEllipse(const QPointF &center, double rx, double ry) : m_angle(0)
 {
@@ -27,8 +28,7 @@ void ZEllipse::display(ZPainter &painter, int z, EDisplayStyle option) const
   //painter.setPen(QPen(QColor(255, 0, 0, 32), .7));
   painter.setPen(getColor());
 
-  QTransform oldTransform = painter.transform();
-
+  QTransform oldTransform = painter.getTransform();
 
   QTransform transform;
   //transform.rotate(m_angle);
@@ -39,11 +39,11 @@ void ZEllipse::display(ZPainter &painter, int z, EDisplayStyle option) const
   painter.setTransform(transform, true);
   //painter.setTransform(oldTransform, true);
 
-
-
   painter.drawEllipse(QPointF(0, 0), m_rx, m_ry);
 
   painter.setTransform(oldTransform);
+
+//  return true;
 #endif
 }
 

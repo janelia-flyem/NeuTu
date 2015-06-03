@@ -17,7 +17,8 @@ enum EDocumentableType {
 namespace Document {
 enum ETag {
   NORMAL, BIOCYTIN_PROJECTION, BIOCYTIN_STACK, FLYEM_BODY, FLYEM_STACK,
-  FLYEM_SPLIT, FLYEM_ROI, FLYEM_MERGE, SEGMENTATION_TARGET, FLYEM_DVID
+  FLYEM_SPLIT, FLYEM_ROI, FLYEM_MERGE, SEGMENTATION_TARGET, FLYEM_DVID,
+  FLYEM_BODY_DISPLAY, FLYEM_PROOFREAD
 };
 }
 
@@ -34,7 +35,8 @@ enum EAxis {
 };
 
 enum ECoordinateSystem {
-  COORD_WIDGET, COORD_GLOBAL, COORD_RAW_STACK, COORD_STACK
+  COORD_WIDGET, COORD_SCREEN, COORD_RAW_STACK, COORD_STACK,
+  COORD_WORLD, COORD_CANVAS
 };
 
 enum EColor {
@@ -45,12 +47,24 @@ enum EWindowConfig {
   WINDOW_2D, WINDOW_3D
 };
 
+enum EMessageType {
+  MSG_INFORMATION, MSG_WARING, MSG_ERROR
+};
+
+enum EBodyLabelType {
+  BODY_LABEL_ORIGINAL, BODY_LABEL_MAPPED
+};
+
+
 ZMessageReporter *getMessageReporter();
 ZLogMessageReporter* getLogMessageReporter();
 
 std::string getErrorFile();
 std::string getWarnFile();
 std::string getInfoFile();
+
+
+std::string GetUserName();
 }
 
 

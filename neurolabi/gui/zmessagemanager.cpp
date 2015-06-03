@@ -46,7 +46,7 @@ void ZMessageManager::processMessage(ZMessage *message, bool reporting)
   }
 
   if (message->isActive()) {
-    if (m_processor != NULL) {
+    if (m_processor.get() != NULL) {
       m_processor->processMessage(message, m_widget);
     }
     if (message->isActive()) {
@@ -152,7 +152,7 @@ void ZMessageManager::setProcessor(ZMessageProcessor *processor)
 
 bool ZMessageManager::hasProcessor() const
 {
-  return m_processor != NULL;
+  return m_processor.get() != NULL;
 }
 
 std::string ZMessageManager::toLine() const

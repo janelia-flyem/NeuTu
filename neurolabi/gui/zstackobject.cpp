@@ -1,21 +1,23 @@
 #include "zstackobject.h"
 #include "tz_cdefs.h"
 #include "zswctree.h"
+#include "zintcuboid.h"
 
-const char* ZStackObject::m_nodeAdapterId = "!NodeAdapter";
+//const char* ZStackObject::m_nodeAdapterId = "!NodeAdapter";
 
-ZStackObject::ZStackObject() : m_selected(false), m_isVisible(true),
-  m_isHittable(true),
-  m_style(SOLID), m_target(WIDGET), m_usingCosmeticPen(false), m_zScale(1.0),
+ZStackObject::ZStackObject() : m_selected(false), m_isSelectable(true),
+  m_isVisible(true), m_isHittable(true), m_projectionVisible(true),
+  m_style(SOLID), m_target(TARGET_WIDGET), m_usingCosmeticPen(false), m_zScale(1.0),
   m_zOrder(1), m_type(TYPE_UNIDENTIFIED), m_role(ZStackObjectRole::ROLE_NONE)
 {
 }
 
 double ZStackObject::m_defaultPenWidth = 0.5;
 
-void ZStackObject::display(QPainter */*painter*/, int /*z*/,
+bool ZStackObject::display(QPainter */*painter*/, int /*z*/,
                            EDisplayStyle /*option*/, EDisplaySliceMode /*sliceMode*/) const
 {
+  return false;
 }
 
 void ZStackObject::setColor(int red, int green, int blue) {
@@ -188,4 +190,11 @@ bool ZStackObject::isSelected(const ZStackObject *obj)
   }
 
   return false;
+}
+
+void ZStackObject::getBoundBox(ZIntCuboid *box) const
+{
+  if (box != NULL) {
+    *box = ZIntCuboid();
+  }
 }

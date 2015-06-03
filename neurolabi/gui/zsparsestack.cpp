@@ -1,13 +1,15 @@
 #include "zsparsestack.h"
 #include "zstack.hxx"
 #include "neutubeconfig.h"
+#include "misc/miscutility.h"
 
-#define MAX_STACK_VOLUME 1847483647
+//#define MAX_STACK_VOLUME 1847483647
+#define MAX_STACK_VOLUME 923741823
 
 //#define MAX_STACK_VOLUME 1000
 
 ZSparseStack::ZSparseStack() :
-  m_objectMask(NULL), m_stackGrid(NULL), m_stack(NULL)
+  m_objectMask(NULL), m_stackGrid(NULL), m_stack(NULL), m_baseValue(1)
 {
 }
 
@@ -64,8 +66,17 @@ bool ZSparseStack::isDeprecated(EComponent component) const
   return false;
 }
 
+void ZSparseStack::setBaseValue(int baseValue)
+{
+  if (m_baseValue != baseValue) {
+    deprecate(STACK);
+    m_baseValue = baseValue;
+  }
+}
+
 void ZSparseStack::assignStackValue(
-    ZStack *stack, const ZObject3dScan &obj, const ZStackBlockGrid &stackGrid)
+    ZStack *stack, const ZObject3dScan &obj, const ZStackBlockGrid &stackGrid,
+    const int baseValue)
 {
   if (stackGrid.isEmpty() || stackGrid.getStackArray().empty()) {
     for (size_t i = 0; i < obj.getStripeNumber(); ++i) {
@@ -91,7 +102,7 @@ void ZSparseStack::assignStackValue(
         int x1 = stripe.getSegmentEnd(j);
 
         for (int x = x0; x <= x1; ++x) {
-          int v = stackGrid.getValue(x, y, z);
+          int v = stackGrid.getValue(x, y, z) + baseValue;
           stack->setIntValue(x, y, z, 0, v);
         }
       }
@@ -109,30 +120,50 @@ ZStack* ZSparseStack::getStack()
     ZIntCuboid cuboid = m_objectMask->getBoundBox();
     if (!m_objectMask->isEmpty()) {
       size_t volume = cuboid.getVolume();
-      if (volume > MAX_STACK_VOLUME) {
+      double dsRatio = (double) volume / MAX_STACK_VOLUME;
+      if (dsRatio > 1.0) {
         ZObject3dScan obj = *m_objectMask;
+        m_dsIntv = misc::getDsIntvFor3DVolume(dsRatio);
 
-        if (volume / 8 > MAX_STACK_VOLUME) {
+        /*
+        if (dsRatio >= 32) {
           m_dsIntv.set(3, 3, 1);
-        } else {
+        } else if (dsRatio >= 27) {
+          m_dsIntv.set(2, 2, 2);
+        } else if (dsRatio >= 18 ) {
+          m_dsIntv.set(2, 1, 1);
+        } else if (dsRatio > 8) {
           m_dsIntv.set(1, 1, 1);
         }
+        */
+
+//        if (volume / 8 > MAX_STACK_VOLUME) {
+//          m_dsIntv.set(3, 3, 1);
+//        } else {
+//          m_dsIntv.set(1, 1, 1);
+//        }
         obj.downsampleMax(m_dsIntv.getX(), m_dsIntv.getY(), m_dsIntv.getZ());
 
         ZStackBlockGrid *dsGrid = m_stackGrid->makeDownsample(
               m_dsIntv.getX(), m_dsIntv.getY(), m_dsIntv.getZ());
-
+#ifdef _DEBUG_2
+  return NULL;
+#endif
         m_stack =  new ZStack(GREY, obj.getBoundBox(), 1);
         m_stack->setZero();
-        assignStackValue(m_stack, obj, *dsGrid);
+        assignStackValue(m_stack, obj, *dsGrid, m_baseValue);
         delete dsGrid;
       } else {
         m_stack = new ZStack(GREY, cuboid, 1);
         m_stack->setZero();
-        assignStackValue(m_stack, *m_objectMask, *m_stackGrid);
+        assignStackValue(m_stack, *m_objectMask, *m_stackGrid, m_baseValue);
       }
     }
   }
+
+#ifdef _DEBUG_2
+  m_stack->save(GET_TEST_DATA_DIR + "/test.tif");
+#endif
 
   return m_stack;
 }
@@ -202,7 +233,7 @@ ZStack* ZSparseStack::getSlice(int z) const
   ZIntCuboid box = slice.getBoundBox();
   ZStack *stack = new ZStack(GREY, box, 1);
   stack->setZero();
-  assignStackValue(stack, slice, *m_stackGrid);
+  assignStackValue(stack, slice, *m_stackGrid, 1);
 
   return stack;
 }
@@ -243,6 +274,11 @@ void ZSparseStack::setObjectMask(ZObject3dScan *obj)
   if (m_objectMask != obj) {
     deprecate(OBJECT_MASK);
     m_objectMask = obj;
+    /*
+    if (obj != NULL) {
+      obj->setColor(255, 255, 255, 255);
+    }
+    */
   }
 }
 

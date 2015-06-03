@@ -4,6 +4,8 @@
 #include <QObject>
 #include <QEventLoop>
 #include <QTimer>
+#include <QMap>
+
 #include <string>
 #include <vector>
 #include "zobject3dscan.h"
@@ -50,7 +52,7 @@ public:
 
   void writeBodyInfo(int bodyId, const ZJsonObject &obj);
   void writeBodyInfo(int bodyId);
-  void writeMaxBodyId(int bodyId);
+  //void writeMaxBodyId(int bodyId);
 
   void mergeBody(const std::string &dataName, int targetId,
                  const std::vector<int> &bodyId);
@@ -76,6 +78,12 @@ public:
 
   void writeSplit(const std::string &dataName, const ZObject3dScan &obj,
                   uint64_t oldLabel, uint64_t label);
+
+  void writeMergeOperation(const QMap<uint64_t, uint64_t> &bodyMap);
+  /*
+  void writeMergeOperation(const std::string &dataName, const std::string &key,
+                           const QMap<uint64_t, uint64_t> &bodyMap);
+                           */
 
 private:
   std::string getJsonStringForCurl(const ZJsonValue &obj) const;

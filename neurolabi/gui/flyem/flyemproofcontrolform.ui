@@ -6,20 +6,44 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>386</width>
+    <width>447</width>
     <height>539</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout_5">
+  <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="QPushButton" name="dvidPushButton">
-     <property name="text">
-      <string>Select Database</string>
-     </property>
-    </widget>
+    <layout class="QHBoxLayout" name="horizontalLayout_2">
+     <item>
+      <widget class="QPushButton" name="dvidPushButton">
+       <property name="text">
+        <string>Select Database</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="menuPushButton">
+       <property name="text">
+        <string>Menu</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer_2">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+    </layout>
    </item>
    <item>
     <widget class="QTextEdit" name="dataInfoWidget">
@@ -44,14 +68,32 @@
     </widget>
    </item>
    <item>
-    <widget class="QCheckBox" name="segmentCheckBox">
-     <property name="text">
-      <string>Show Segmentation</string>
-     </property>
-     <property name="checked">
-      <bool>true</bool>
-     </property>
-    </widget>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QCheckBox" name="segmentCheckBox">
+       <property name="text">
+        <string>Show Segmentation</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="coarseBodyPushButton">
+       <property name="text">
+        <string>Coarse Body View</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="splitPushButton">
+       <property name="text">
+        <string>Launch Split</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </item>
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_6">
@@ -63,9 +105,16 @@
       </widget>
      </item>
      <item>
-      <widget class="QLabel" name="segmentSizeLabel">
+      <widget class="QPushButton" name="segmentSizeDecPushButton">
        <property name="text">
-        <string>TextLabel</string>
+        <string>-</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="segmentSizeIncPushButton">
+       <property name="text">
+        <string>+</string>
        </property>
       </widget>
      </item>
@@ -75,6 +124,19 @@
         <string>Change</string>
        </property>
       </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
      </item>
     </layout>
    </item>
@@ -88,6 +150,13 @@
       </widget>
      </item>
      <item>
+      <widget class="QPushButton" name="saveMergePushButton">
+       <property name="text">
+        <string>Save</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QPushButton" name="uploadPushButton">
        <property name="text">
         <string>Upload Result</string>
@@ -97,7 +166,7 @@
     </layout>
    </item>
    <item>
-    <widget class="QTextEdit" name="outputWidget">
+    <widget class="QTextBrowser" name="helpWidget">
      <property name="autoFillBackground">
       <bool>false</bool>
      </property>

@@ -35,18 +35,47 @@ public:
   inline void setPaintBundle(ZPaintBundle *bd) { m_paintBundle = bd; }
 
   void setImage(ZImage *image);
+  void setObjectCanvas(ZPixmap *canvas);
   void setMask(ZImage *mask, int channel);
   void setTileCanvas(ZPixmap *canvas);
+  void setActiveDecorationCanvas(ZPixmap *canvas);
+  void removeCanvas(ZPixmap *canvas);
+  void removeCanvas(ZImage *canvas);
+
+  /*!
+   * \brief Reset the image widget by removing all canvases and view information.
+   */
+  void reset();
+
   void setViewPort(const QRect &rect);
   void setProjRegion(const QRect &rect);
   void setView(int zoomRatio, const QPoint &zoomOffset);
   void setView(const QRect &viewPort, const QRect &projRegion);
+
+  /*!
+   * \brief Set view port offset
+   *
+   * Set the first corner of viewport to (\a x, \a y) in the world coordinate
+   * system. The position will be adjusted if (\a x, \a y) is outside the canvas.
+   */
   void setViewPortOffset(int x, int y);
+
+  /*!
+   * \brief Move viewport.
+   *
+   * Move the current viewport so that the offset between its first corner and
+   * the first corner of the canvas is (\a x, \a y).
+   */
   void moveViewPort(int x, int y);
+
   void setZoomRatio(int zoomRatio);
   //inline int zoomRatio() const { return m_zoomRatio; }
   void increaseZoomRatio();
   void decreaseZoomRatio();
+
+  void increaseZoomRatio(int x, int y, bool usingRef = true);
+  void decreaseZoomRatio(int x, int y, bool usingRef = true);
+
   void zoom(int zoomRatio);
 
   /*!
@@ -165,11 +194,14 @@ private:
 private:
   ZImage *m_image;
   QVector<ZImage*> m_mask;
+  ZPixmap *m_objectCanvas;
   ZPixmap *m_tileCanvas;
+  ZPixmap *m_activeDecorationCanvas;
+
   QRect m_viewPort; /* viewport */
   QRect m_projRegion; /* projection region */
   //int m_zoomRatio;
-  bool m_isowner;
+//  bool m_isowner;
   QMenu *m_leftButtonMenu;
   QMenu *m_rightButtonMenu;
   ZPaintBundle *m_paintBundle;

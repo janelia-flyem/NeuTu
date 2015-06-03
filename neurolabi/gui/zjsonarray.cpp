@@ -31,6 +31,13 @@ ZJsonArray::ZJsonArray(json_t *data, ESetDataOption option) : ZJsonValue()
   }
 }
 
+ZJsonArray::ZJsonArray(const ZJsonValue &v) : ZJsonValue()
+{
+  if (v.isArray()) {
+    set(v.getData(), ZJsonValue::SET_INCREASE_REF_COUNT);
+  }
+}
+
 ZJsonArray::~ZJsonArray()
 {
 
@@ -52,6 +59,16 @@ const json_t* ZJsonArray::at(size_t index) const
 }
 
 void ZJsonArray::append(int v)
+{
+  append(json_integer(v));
+}
+
+void ZJsonArray::append(int64_t v)
+{
+  append(json_integer(v));
+}
+
+void ZJsonArray::append(uint64_t v)
 {
   append(json_integer(v));
 }

@@ -24,11 +24,15 @@ public:
 
   void setOriginalLabel(const ZStack *stack);
 
-  ZFlyEmBodyMerger* getBodyMerger() {
+  const ZFlyEmBodyMerger* getBodyMerger() const {
     return &m_bodyMerger;
   }
 
-  int64_t getSelectedBodyId() const;
+  ZFlyEmBodyMerger* getBodyMerger() {
+      return &m_bodyMerger;
+    }
+
+  uint64_t getSelectedBodyId() const;
 
   inline void setDvidTarget(const ZDvidTarget &target) {
     m_dvidTarget = target;
@@ -37,6 +41,8 @@ public:
   const ZDvidTarget& getDvidTarget() const {
     return m_dvidTarget;
   }
+
+  void saveMergeOperation() const;
 
 private:
   QList<ZObject3dScan*> extractAllObject();

@@ -28,6 +28,7 @@ class ZSwcTree;
 class ZObject3dScan;
 class ZSparseStack;
 class ZDvidVersionDag;
+class ZDvidSparseStack;
 
 class ZDvidReader : public QObject
 {
@@ -44,10 +45,12 @@ public:
   ZSwcTree *readSwc(int bodyId);
   ZObject3dScan readBody(int bodyId);
   ZObject3dScan* readBody(int bodyId, ZObject3dScan *result);
+  ZObject3dScan* readBody(int bodyId, int z, ZObject3dScan *result);
 
   ZStack* readThumbnail(int bodyId);
 
   ZSparseStack* readSparseStack(int bodyId);
+  ZDvidSparseStack* readDvidSparseStack(int bodyId);
   ZStack* readGrayScale(
       int x0, int y0, int z0, int width, int height, int depth);
   ZStack* readGrayScale(const ZIntCuboid &cuboid);
@@ -57,9 +60,16 @@ public:
       const ZIntPoint &blockIndex, const ZDvidInfo &dvidInfo,
       int blockNumber);
 
+
+  /*!
+   * \brief Read a stack of labels (Obsolete)
+   *
+   *  Obsolete function. Use readLabels64() instead.
+   */
   ZStack* readBodyLabel(
       int x0, int y0, int z0, int width, int height, int depth);
-  QString readInfo(const QString &dataType);
+
+  QString readInfo(const QString &dataName);
 
   std::set<int> readBodyId(
       int x0, int y0, int z0, int width, int height, int depth);
@@ -83,10 +93,14 @@ public:
 
   ZArray* readLabels64(const std::string &dataName, int x0, int y0, int z0,
                        int width, int height, int depth) const;
+  ZArray* readLabels64(int x0, int y0, int z0,
+                       int width, int height, int depth) const;
 
   bool hasSparseVolume() const;
   bool hasSparseVolume(int bodyId) const;
   bool hasBodyInfo(int bodyId) const;
+
+  bool hasCoarseSparseVolume(int bodyId) const;
 
   ZFlyEmNeuronBodyInfo readBodyInfo(int bodyId);
 
@@ -96,6 +110,8 @@ public:
 
   int readMaxBodyId();
 
+  uint64_t readBodyIdAt(int x, int y, int z);
+
   ZDvidTileInfo readTileInfo(const std::string &dataName) const;
 
   //ZDvidTile *readTile(const std::string &dataName, int resLevel,
@@ -104,6 +120,10 @@ public:
 
   ZDvidVersionDag readVersionDag(const std::string &uuid) const;
   ZDvidVersionDag readVersionDag() const;
+
+  ZObject3dScan readCoarseBody(uint64_t bodyId);
+
+  ZObject3dScan readRoi(const std::string dataName);
 
 signals:
   void readingDone();

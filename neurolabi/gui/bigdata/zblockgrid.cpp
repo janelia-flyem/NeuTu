@@ -101,6 +101,11 @@ int ZBlockGrid::getSpatialHeight() const
   return m_blockSize.getY() * m_size.getY();
 }
 
+ZIntPoint ZBlockGrid::getBlockIndex(int x, int y, int z) const
+{
+  return getLocation(x, y, z).getBlockIndex();
+}
+
 /**********************ZDvidBlockGrid::Location**********************/
 ZBlockGrid::Location ZBlockGrid::getLocation(int x, int y, int z) const
 {

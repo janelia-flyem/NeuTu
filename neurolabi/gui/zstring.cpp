@@ -326,6 +326,28 @@ void ZString::appendNumber(int num, int pad)
   }
 }
 
+void ZString::appendNumber(uint64_t num, int pad)
+{
+  static const int kMaxPadSize = 100;
+
+  TZ_ASSERT(pad >= 0 && pad <= kMaxPadSize, "Invalid padding");
+
+  if (pad >= 0 && pad <= kMaxPadSize) {
+    char numStr[50];
+
+    sprintf(numStr, "%llu", num);
+
+    int zeroNumber = pad - strlen(numStr);
+    for (int i = 0; i < zeroNumber; i++) {
+      (*this) += '0';
+    }
+
+    (*this) += numStr;
+  } else {
+    cerr << "Appending failed" << endl;
+  }
+}
+
 void ZString::trim()
 {
   char *str = strdup(c_str());

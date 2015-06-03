@@ -10,6 +10,8 @@
 #include "z3dvolume.h"
 #include "z3dvolumesource.h"
 #include "z3dwindow.h"
+#include "z3dswcfilter.h"
+#include "z3dpunctafilter.h"
 
 ZWindowFactory::ZWindowFactory() : m_parentWidget(NULL),
   m_showVolumeBoundBox(false), m_showControlPanel(true), m_showObjectView(true)
@@ -55,6 +57,10 @@ Z3DWindow* ZWindowFactory::make3DWindow(ZSharedPointer<ZStackDoc> doc,
     if (!NeutubeConfig::getInstance().getZ3DWindowConfig().isBackgroundOn()) {
       window->getCompositor()->setShowBackground(false);
     }
+    if (doc->getTag() == NeuTube::Document::FLYEM_SPLIT) {
+      window->getSwcFilter()->setRenderingPrimitive("Sphere");
+      window->getPunctaFilter()->setColorMode("Original Point Color");
+    }
     if (doc->getTag() == NeuTube::Document::FLYEM_BODY ||
         doc->getTag() == NeuTube::Document::FLYEM_SPLIT ||
         doc->getTag() != NeuTube::Document::SEGMENTATION_TARGET) {
@@ -62,14 +68,15 @@ Z3DWindow* ZWindowFactory::make3DWindow(ZSharedPointer<ZStackDoc> doc,
             "Direct Volume Rendering");
     }
     if (doc->getTag() != NeuTube::Document::FLYEM_SPLIT &&
-        doc->getTag() != NeuTube::Document::SEGMENTATION_TARGET) {
+        doc->getTag() != NeuTube::Document::SEGMENTATION_TARGET &&
+        doc->getTag() != NeuTube::Document::FLYEM_PROOFREAD) {
       window->getCanvas()->disableKeyEvent();
     }
     if (!m_showVolumeBoundBox) {
       window->getVolumeRaycaster()->hideBoundBox();
     }
 
-    if (m_windowGeometry.isEmpty() && m_parentWidget == NULL) {
+    if (m_windowGeometry.isEmpty()/* || m_parentWidget == NULL*/) {
       QRect screenRect = QApplication::desktop()->screenGeometry();
       window->setGeometry(screenRect.width() / 10, screenRect.height() / 10,
                           screenRect.width() - screenRect.width() / 5,
@@ -85,6 +92,8 @@ Z3DWindow* ZWindowFactory::make3DWindow(ZSharedPointer<ZStackDoc> doc,
     if (!isObjectViewVisible()) {
       window->hideObjectView();
     }
+
+//    doc->registerUser(window);
   }
 
   return window;

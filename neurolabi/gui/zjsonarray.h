@@ -1,7 +1,7 @@
 #ifndef ZJSONARRAY_H
 #define ZJSONARRAY_H
 
-#include <stddef.h>
+#include "tz_stdint.h"
 #include "zjsonvalue.h"
 #include "zuncopyable.h"
 
@@ -12,6 +12,7 @@ public:
   explicit ZJsonArray(json_t *data, bool asNew);
   explicit ZJsonArray(const json_t *data, bool asNew);
   explicit ZJsonArray(json_t *data, ESetDataOption option);
+  explicit ZJsonArray(const ZJsonValue &v);
   virtual ~ZJsonArray();
 
 public:
@@ -25,6 +26,8 @@ public:
   void append(const ZJsonValue &obj);
 
   void append(int v);
+  void append(int64_t v);
+  void append(uint64_t v);
   void append(double v);
   void append(const char *str);
   void append(const std::string &str);

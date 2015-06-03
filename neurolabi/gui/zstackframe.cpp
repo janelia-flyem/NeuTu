@@ -49,7 +49,7 @@ using namespace std;
 ZStackFrame::ZStackFrame(QWidget *parent, Qt::WindowFlags flags) :
   QMdiSubWindow(parent, flags), m_parentFrame(NULL),
   m_tile(NULL), m_traceProject(NULL), m_isClosing(false),
-  m_3dWindow(NULL), m_isWidgetReady(false), m_messageManager(NULL)
+  m_isWidgetReady(false), m_messageManager(NULL)
 {
   setAttribute(Qt::WA_DeleteOnClose, true);
   setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
@@ -102,7 +102,7 @@ ZStackFrame::~ZStackFrame()
 }
 
 void ZStackFrame::BaseConstruct(
-    ZStackFrame *frame, ztr1::shared_ptr<ZStackDoc> doc)
+    ZStackFrame *frame, ZSharedPointer<ZStackDoc> doc)
 {
   if (frame != NULL) {
     frame->constructFrame(doc);
@@ -112,6 +112,16 @@ void ZStackFrame::BaseConstruct(
     frame->showNormal();
   #endif
   }
+}
+
+ZStackFrame*
+ZStackFrame::Make(QMdiArea *parent, NeuTube::Document::ETag docTag)
+{
+  ZSharedPointer<ZStackDoc> doc =
+      ZSharedPointer<ZStackDoc>(new ZStackDoc(NULL, NULL));
+  doc->setTag(docTag);
+
+  return Make(parent, doc);
 }
 
 ZStackFrame*
@@ -170,13 +180,13 @@ void ZStackFrame::constructFrame(ZSharedPointer<ZStackDoc> doc)
   //m_view->prepareDocument();
   m_presenter->prepareView();
 
-  if (doc != NULL) {
+  if (doc.get() != NULL) {
     customizeWidget();
   }
 }
 
 
-
+/*
 void ZStackFrame::detach3DWindow()
 {
   m_3dWindow = NULL;
@@ -186,11 +196,12 @@ void ZStackFrame::close3DWindow()
 {
   if (m_3dWindow != NULL) {
     m_3dWindow->close();
-    delete m_3dWindow;
+//    delete m_3dWindow;
   }
 
   m_3dWindow = NULL;
 }
+*/
 
 void ZStackFrame::createDocument()
 {
@@ -222,7 +233,7 @@ void ZStackFrame::createView()
 
 void ZStackFrame::addDocData(const ZStackDocReader &reader)
 {
-  if (!m_doc) {
+  if (m_doc.get() == NULL) {
     createDocument();
   }
   m_doc->addData(reader);
@@ -264,6 +275,11 @@ void ZStackFrame::consumeDocument(ZStackDoc *doc)
   connect(m_doc.get(), SIGNAL(stackModified()),\
           m_view, SLOT(updateView()));\
   connect(m_doc.get(), SIGNAL(objectModified()), m_view, SLOT(paintObject()));\
+  connect(m_doc.get(), SIGNAL(objectModified(ZStackObject::ETarget)), \
+          m_view, SLOT(paintObject(ZStackObject::ETarget)));\
+  connect(m_doc.get(), SIGNAL(objectModified()), m_view, SLOT(paintObject()));\
+  connect(m_doc.get(), SIGNAL(objectModified(QSet<ZStackObject::ETarget>)), \
+          m_view, SLOT(paintObject(QSet<ZStackObject::ETarget>)));\
   connect(m_doc.get(), SIGNAL(cleanChanged(bool)),\
           this, SLOT(changeWindowTitle(bool)));\
   connect(m_doc.get(), SIGNAL(holdSegChanged()), m_view, SLOT(paintObject()));\
@@ -316,7 +332,8 @@ void ZStackFrame::dropDocument(ZSharedPointer<ZStackDoc> doc)
       UPDATE_DOC_SIGNAL_SLOT(disconnect);
     }
     m_doc = doc;
-    m_doc->setParentFrame(this);
+    m_doc->registerUser(this);
+//    m_doc->setParentFrame(this);
   }
 }
 
@@ -381,7 +398,7 @@ void ZStackFrame::clear()
   detachParentFrame();
   removeAllChildFrame();
 
-  document()->setParentFrame(NULL);
+//  document()->setParentFrame(NULL);
   document()->setProgressReporter(NULL);
 
   // will be deleted by parent (this), so don't need, otherwise will crash
@@ -409,14 +426,14 @@ void ZStackFrame::clear()
 
 void ZStackFrame::loadStack(Stack *stack, bool isOwner)
 {
-  Q_ASSERT(m_doc != NULL);
+  Q_ASSERT(m_doc.get() != NULL);
   m_doc->loadStack(stack, isOwner);
   prepareDisplay();
 }
 
 void ZStackFrame::loadStack(ZStack *stack)
 {
-  Q_ASSERT(m_doc != NULL);
+  Q_ASSERT(m_doc.get() != NULL);
   m_doc->loadStack(stack);
   prepareDisplay();
 }
@@ -450,7 +467,7 @@ void ZStackFrame::setSizeHintOption(NeuTube::ESizeHintOption option)
 
 int ZStackFrame::readStack(const char *filePath)
 {
-  Q_ASSERT(m_doc != NULL);
+  Q_ASSERT(m_doc.get() != NULL);
 
   switch (ZFileType::fileType(filePath)) {
   case ZFileType::SWC_FILE:
@@ -504,7 +521,7 @@ int ZStackFrame::readStack(const char *filePath)
 
 int ZStackFrame::importImageSequence(const char *filePath)
 {
-  Q_ASSERT(m_doc != NULL);
+  Q_ASSERT(m_doc.get() != NULL);
 
   if (m_doc->importImageSequence(filePath)) {
     if (!m_doc->hasStackData()) {
@@ -581,7 +598,7 @@ void ZStackFrame::closeEvent(QCloseEvent *event)
     }
   }
 
-  close3DWindow();
+//  close3DWindow();
 }
 
 void ZStackFrame::resizeEvent(QResizeEvent *event)
@@ -862,7 +879,9 @@ void ZStackFrame::changeWindowTitle(bool clean)
 void ZStackFrame::keyPressEvent(QKeyEvent *event)
 {
   if (m_presenter != NULL) {
-    m_presenter->processKeyPressEvent(event);
+    if (!m_presenter->processKeyPressEvent(event)) {
+      emit keyEventEmitted(event);
+    }
   }
 }
 
@@ -1177,14 +1196,14 @@ void ZStackFrame::setViewPortCenter(int x, int y, int z)
 
 void ZStackFrame::viewRoi(int x, int y, int z, int radius)
 {
-  x -= document()->getStackOffset().getX();
-  y -= document()->getStackOffset().getY();
+//  x -= document()->getStackOffset().getX();
+//  y -= document()->getStackOffset().getY();
   z -= document()->getStackOffset().getZ();
 
   ZStackViewLocator locator;
   locator.setCanvasSize(view()->imageWidget()->canvasSize().width(),
                         view()->imageWidget()->canvasSize().height());
-  QRect viewPort = locator.getViewPort(x, y, radius);
+  QRect viewPort = locator.getLandmarkViewPort(x, y, radius);
   presenter()->setZoomRatio(
         locator.getZoomRatio(viewPort.width(), viewPort.height()));
   presenter()->setViewPortCenter(x, y, z);
@@ -1202,30 +1221,36 @@ void ZStackFrame::showObject()
 
 Z3DWindow* ZStackFrame::open3DWindow(Z3DWindow::EInitMode mode)
 {
-  if (m_3dWindow == NULL) {
+  Z3DWindow *window = document()->getParent3DWindow();
+
+  if (window == NULL) {
     if (getMainWindow() != NULL) {
       getMainWindow()->startProgress("Opening 3D View ...", 0);
     }
 
     ZWindowFactory factory;
     //factory.setParentWidget(parent);
-    m_3dWindow = factory.make3DWindow(document(), mode);
-    m_3dWindow->setWindowTitle(windowTitle());
-    connect(m_3dWindow, SIGNAL(destroyed()), this, SLOT(detach3DWindow()));
+    window = factory.make3DWindow(document(), mode);
+    window->setWindowTitle(windowTitle());
+
+    document()->registerUser(window);
+
+    connect(this, SIGNAL(closed(ZStackFrame*)), window, SLOT(close()));
+//    connect(window, SIGNAL(destroyed()), this, SLOT(detach3DWindow()));
     if (getMainWindow() != NULL) {
       getMainWindow()->endProgress();
     }
   }
 
-  if (m_3dWindow != NULL) {
-    m_3dWindow->show();
-    m_3dWindow->raise();
+  if (window != NULL) {
+    window->show();
+    window->raise();
   } else {
     QMessageBox::critical(this, tr("3D functions are disabled"),
                           Z3DApplication::app()->getErrorMessage());
   }
 
-  return m_3dWindow;
+  return window;
 }
 
 void ZStackFrame::load(const QList<QUrl> &urls)
@@ -1451,10 +1476,13 @@ void ZStackFrame::importPointList(const QString &filePath)
 {
   QList<ZPunctum*> puncta = ZPunctumIO::load(filePath);
   if (!puncta.isEmpty()) {
+    document()->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
     foreach (ZPunctum* punctum, puncta) {
-      document()->addPunctum(punctum);
+      document()->addObject(punctum);
     }
-    document()->notifyPunctumModified();
+    document()->endObjectModifiedMode();
+    document()->notifyObjectModified();
+//    document()->notifyPunctumModified();
   }
 }
 
@@ -1539,7 +1567,7 @@ void ZStackFrame::loadRoi(const QString &filePath, bool isExclusive)
 
     obj->setColor(16, 16, 16, 64);
 
-    obj->setTarget(ZStackObject::OBJECT_CANVAS);
+    obj->setTarget(ZStackObject::TARGET_OBJECT_CANVAS);
     if (isExclusive) {
       clearDecoration();
     }
@@ -1559,7 +1587,8 @@ void ZStackFrame::zoomToSelectedSwcNodes()
     ZCuboid cuboid = SwcTreeNode::boundBox(nodeSet);
     ZPoint center = cuboid.center();
 
-    //check which stack the selected points belong to. If needed, load the corresponding stack.
+    //check which stack the selected points belong to.
+    //If needed, load the corresponding stack.
     if (getTileManager() != NULL) {
       ZTileInfo tile = getTileManager()->getSelectedTileItem()->getTileInfo();
       QRect bound= QRect(tile.getOffset().x(),tile.getOffset().y(),tile.getWidth(),tile.getHeight());
@@ -1606,19 +1635,22 @@ void ZStackFrame::notifyUser(const QString &message)
 void ZStackFrame::locateSwcNodeIn3DView()
 {
   if (document()->hasSelectedSwcNode()) {
-    if (!m_3dWindow) {
-      m_3dWindow = open3DWindow();
+    Z3DWindow *window = document()->getParent3DWindow();
+    if (!window) {
+      window = open3DWindow();
     }
-    QApplication::processEvents();
-    m_3dWindow->zoomToSelectedSwcNodes();
-    m_3dWindow->raise();
+    //QApplication::processEvents();
+    window->zoomToSelectedSwcNodes();
+    window->raise();
   }
 }
 
 void ZStackFrame::runSeededWatershed()
 {
+  emit splitStarted();
   document()->runSeededWatershed();
 }
+
 void ZStackFrame::makeSwcProjection(ZStackDoc *doc)
 {
     if (doc == NULL) return;
@@ -1655,6 +1687,12 @@ void ZStackFrame::notifyViewChanged(const ZStackViewParam &param)
 #endif
 
   emit viewChanged(param);
+}
+
+void ZStackFrame::setView(const ZStackViewParam &param)
+{
+  view()->setView(param);
+//  raise();
 }
 
 void ZStackFrame::customizeWidget()

@@ -16,6 +16,8 @@ QVariant ZAbstractModelPresenter::headerData(
   if (role == Qt::DisplayRole) {
     if (orientation == Qt::Horizontal) {
       return m_fieldList[section];
+    } else if (orientation == Qt::Vertical) {
+      return section + 1;
     }
   }
 

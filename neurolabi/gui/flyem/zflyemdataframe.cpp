@@ -1134,9 +1134,15 @@ void ZFlyEmDataFrame::process()
 #endif
 
       ZStackDoc *doc = new ZStackDoc(NULL, NULL);
-      doc->addSwcTree(originalTree1);
-      doc->addSwcTree(originalTree2);
-      doc->addSwcTree(matchingSwc);
+
+      doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+      doc->addObject(originalTree1);
+      doc->addObject(originalTree2);
+      doc->addObject(matchingSwc);
+      doc->endObjectModifiedMode();
+      doc->notifyObjectModified();
+
+
       ZWindowFactory factory;
       factory.setParentWidget(this->parentWidget());
       Z3DWindow *window = factory.open3DWindow(doc);
@@ -1263,23 +1269,27 @@ void ZFlyEmDataFrame::showModel() const
       dump("Invalid id");
     } else {
       ZSwcTree *model = neuron->getModel();
-      doc->blockSignals(true);
+
+      doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+//      doc->blockSignals(true);
       if (model != NULL) {
         const QColor *color = getColor(m_sourceIdArray[i]);
         if (color != NULL) {
           model->setColor(*color);
         }
 
-        doc->addSwcTree(model->clone());
+        doc->addObject(model->clone());
       }
       vector<ZPunctum*> puncta = neuron->getSynapse();
       for (vector<ZPunctum*>::iterator iter = puncta.begin();
            iter != puncta.end(); ++iter) {
-        doc->addPunctum(*iter);
+        doc->addObject(*iter);
       }
-      doc->blockSignals(false);
-      doc->swcObjsModel()->updateModelData();
-      doc->punctaObjsModel()->updateModelData();
+      doc->endObjectModifiedMode();
+      doc->notifyObjectModified();
+//      doc->blockSignals(false);
+//      doc->swcObjsModel()->updateModelData();
+//      doc->punctaObjsModel()->updateModelData();
     }
 #if 0
     string modelPath = m_data.getModelPath(m_sourceIdArray[i]);
@@ -1348,6 +1358,8 @@ void ZFlyEmDataFrame::showConnection() const
   //swcFrame->createDocument();
 
   ZStackDoc *doc = new ZStackDoc(NULL, NULL);
+
+  doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
   for (size_t i = 0; i < m_sourceIdArray.size(); ++i) {
     const ZFlyEmNeuron *neuron = getNeuron(m_sourceIdArray[i]);
     if (neuron == NULL) {
@@ -1361,7 +1373,7 @@ void ZFlyEmDataFrame::showConnection() const
           model->setColor(*color);
         }
 
-        doc->addSwcTree(model->clone());
+        doc->addObject(model->clone());
       }
 
       for (size_t j = 0; j < m_sourceIdArray.size(); ++j) {
@@ -1370,15 +1382,18 @@ void ZFlyEmDataFrame::showConnection() const
             vector<ZPunctum*> puncta = neuron->getSynapse(m_sourceIdArray[j].first);
             for (vector<ZPunctum*>::iterator iter = puncta.begin();
                  iter != puncta.end(); ++iter) {
-              doc->addPunctum(*iter);
+              doc->addObject(*iter);
             }
           }
         }
       }
 
-      doc->blockSignals(false);
-      doc->swcObjsModel()->updateModelData();
-      doc->punctaObjsModel()->updateModelData();
+      doc->endObjectModifiedMode();
+      doc->notifyObjectModified();
+
+//      doc->blockSignals(false);
+//      doc->swcObjsModel()->updateModelData();
+//      doc->punctaObjsModel()->updateModelData();
     }
 #if 0
     string modelPath = m_data.getModelPath(m_sourceIdArray[i]);
@@ -2071,8 +2086,10 @@ void ZFlyEmDataFrame::showNearbyNeuron(const ZFlyEmNeuron *neuron)
         //swcFrame->createDocument();
         ZSharedPointer<ZStackDoc> doc =
             ZSharedPointer<ZStackDoc>(new ZStackDoc(NULL, NULL));
-        doc->blockSignals(true);
-        doc->addSwcTree(tree1->clone());
+//        doc->blockSignals(true);
+
+        doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+        doc->addObject(tree1->clone());
 
         int index = 0;
         foreach (ZFlyEmDataBundle *bundle, m_dataArray) {
@@ -2091,7 +2108,7 @@ void ZFlyEmDataFrame::showNearbyNeuron(const ZFlyEmNeuron *neuron)
                 ZSwcTree *tree2 = iter->getModel();
                 if (tree2 != NULL && tree1 != tree2) {
                   if (filter->isPassed(*iter)) {
-                    doc->addSwcTree(tree2->clone());
+                    doc->addObject(tree2->clone());
                   }
                 }
                 advanceProgress(1.0 / neuronArray.size());
@@ -2100,10 +2117,13 @@ void ZFlyEmDataFrame::showNearbyNeuron(const ZFlyEmNeuron *neuron)
             }
           }
         }
-        doc->blockSignals(false);
+
+        doc->endObjectModifiedMode();
+        doc->notifyObjectModified();
+//        doc->blockSignals(false);
 
         if (doc->getSwcList().size() > 1) {
-          doc->swcObjsModel()->updateModelData();
+//          doc->swcObjsModel()->updateModelData();
           Z3DWindow *window = Z3DWindow::Make(doc, this);
           //Z3DWindow *window = swcFrame->open3DWindow(NULL);
           //delete swcFrame;
@@ -2285,8 +2305,8 @@ void ZFlyEmDataFrame::exportThumbnail(
   if (savingToDvid) {
     ZDvidReader reader;
     reader.open(saveDir);
-    if (reader.hasData(ZDvidData::getName(ZDvidData::ROLE_THUMBNAIL))) {
-      writer.createKeyvalue(ZDvidData::getName(ZDvidData::ROLE_THUMBNAIL));
+    if (reader.hasData(ZDvidData::GetName(ZDvidData::ROLE_THUMBNAIL))) {
+      writer.createKeyvalue(ZDvidData::GetName(ZDvidData::ROLE_THUMBNAIL));
     }
   }
 

@@ -33,6 +33,7 @@
 #include "zerror.h"
 #include "zclosedcurve.h"
 #include "zintpoint.h"
+#include "zpainter.h"
 
 using namespace std;
 
@@ -54,6 +55,8 @@ ZSwcTree::ZSwcTree() : m_smode(STRUCT_NORMAL), m_hitSwcNode(NULL)
   m_iteratorReady = false;
   setColorScheme(COLOR_NORMAL);
   m_type = ZStackObject::TYPE_SWC;
+
+  setTarget(GetDefaultTarget());
 }
 
 ZSwcTree::~ZSwcTree()
@@ -540,7 +543,7 @@ void ZSwcTree::display(ZPainter &painter, int slice,
     if (fabs(SwcTreeNode::z(tn) - dataFocus) <= 0.5) {
       focused = true;
     }
-    if (focused || (slice == -1)) {
+    if (focused || (slice < 0)) {
       visible = true;
       focused = true;
     } else if (fabs(SwcTreeNode::z(tn) - dataFocus) < r) {
@@ -3664,3 +3667,7 @@ Swc_Tree_Node* ZSwcTree::LeafIterator::next()
   return NULL;
 }
 
+ZStackObject::ETarget ZSwcTree::GetDefaultTarget()
+{
+  return ZStackObject::TARGET_WIDGET;
+}

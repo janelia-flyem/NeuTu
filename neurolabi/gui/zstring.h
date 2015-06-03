@@ -7,6 +7,7 @@
 #endif
 #include <vector>
 
+#include "tz_stdint.h"
 #include "tz_string.h"
 
 class ZString : public std::string
@@ -73,6 +74,7 @@ public:
   std::string toUpper() const;
 
   void appendNumber(int num, int pad = 0);
+  void appendNumber(uint64_t num, int pad = 0);
 
   static ZString dirPath(const std::string &path);
   ZString dirPath();

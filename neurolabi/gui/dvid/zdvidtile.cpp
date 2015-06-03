@@ -2,6 +2,8 @@
 
 #include <QTransform>
 #include <QtConcurrentRun>
+#include <QElapsedTimer>
+
 #include "zimagewidget.h"
 #include "neutubeconfig.h"
 #include "zstack.hxx"
@@ -18,7 +20,7 @@
 
 ZDvidTile::ZDvidTile() : m_ix(0), m_iy(0), m_z(0), m_view(NULL)
 {
-  setTarget(ZStackObject::OBJECT_CANVAS);
+  setTarget(ZStackObject::TARGET_OBJECT_CANVAS);
   m_type = ZStackObject::TYPE_DVID_TILE;
 }
 
@@ -34,7 +36,7 @@ void ZDvidTile::clear()
   m_dvidTarget.clear();
 }
 
-void ZDvidTile::loadDvidPng(const QByteArray &buffer, int z)
+void ZDvidTile::loadDvidSlice(const QByteArray &buffer, int z)
 {
   bool loading = true;
   if (m_view != NULL) {
@@ -43,10 +45,13 @@ void ZDvidTile::loadDvidPng(const QByteArray &buffer, int z)
     }
   }
   if (loading) {
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
       std::cout << z << " Loaded." << std::endl;
 #endif
+
+
     m_image.loadFromData(buffer);
+
 //    m_image.setOffset();
     m_z = z;
   }
@@ -57,30 +62,45 @@ void ZDvidTile::loadDvidPng(const QByteArray &buffer, int z)
 void ZDvidTile::display(
     ZPainter &painter, int slice, EDisplayStyle /*option*/) const
 {
+  bool isProj = false;
+  int z = painter.getZOffset() + slice;
+  if (slice < 0) {
+    isProj = true;
+    z = painter.getZOffset() - slice - 1;
+  }
   //if (!m_image.isNull()) {
-    int z = painter.getZOffset() + slice;
-    m_latestZ = z;
+//  bool isProj = (slice < 0);
 
-    const_cast<ZDvidTile&>(*this).update(z);
+//  int z = painter.getZOffset() + slice;
+  m_latestZ = z;
 
-    if (z == m_z && !m_image.isNull()) {
-#ifdef _DEBUG_
-      std::cout << "Display " << z << std::endl;
+//  tic();
+  const_cast<ZDvidTile&>(*this).update(z);
+//  std::cout << "tile update time: " << toc() << std::endl;
+
+  if ((z == m_z)  && !m_image.isNull()) {
+#ifdef _DEBUG_2
+    std::cout << "Display " << z << std::endl;
 #endif
-//      ZImage image = getImage();
-      //int dx = getX() - painter.getOffset().x();
-      //int dy = getY() - painter.getOffset().y();
+    //      ZImage image = getImage();
+    //int dx = getX() - painter.getOffset().x();
+    //int dy = getY() - painter.getOffset().y();
 
-//      QRect sourceRect = QRect(0, 0, m_image.width(), m_image.height());
-//      QRect targetRect = QRect(getX(), getY(), m_image.width() * m_res.getScale(),
-//                         m_image.height() * m_res.getScale());
+    //      QRect sourceRect = QRect(0, 0, m_image.width(), m_image.height());
+    //      QRect targetRect = QRect(getX(), getY(), m_image.width() * m_res.getScale(),
+    //                         m_image.height() * m_res.getScale());
 #if 0
-      if (m_res.getScale() == 1) {
-        m_image.save((GET_DATA_DIR + "/test.tif").c_str());
-      }
+    if (m_res.getScale() == 1) {
+      m_image.save((GET_DATA_DIR + "/test.tif").c_str());
+    }
 #endif
 
-      painter.drawImage(getX(), getY(), m_image);
+//    QElapsedTimer timer;
+//    timer.start();
+//    tic();
+    painter.drawImage(getX(), getY(), m_image);
+//    std::cout << "Draw image time: " << toc() << std::endl;
+//    std::cout << "Draw image time: " << timer.elapsed() << std::endl;
 
 //      ZIntPoint pt = m_offset - painter.getOffset().toIntPoint();
 
@@ -143,15 +163,17 @@ void ZDvidTile::update(int z)
     result.waitForFinished();
     */
 
+    tic();
     bufferReader.read(
           dvidUrl.getTileUrl(getDvidTarget().getMultiscale2dName(),
                              m_res.getLevel(), m_ix, m_iy, z).c_str());
     QByteArray buffer = bufferReader.getBuffer();
+    std::cout << "Tile reading time: " << toc() << std::endl;
 
 //    ZDvidTileInfo tileInfo = readTileInfo("graytiles");
 
     if (!buffer.isEmpty()) {
-      loadDvidPng(buffer, z);
+      loadDvidSlice(buffer, z);
       m_image.setScale(1.0 / m_res.getScale(), 1.0 / m_res.getScale());
       m_image.setOffset(-getX(), -getY());
       //      setResolutionLevel(m_res.getLevel());

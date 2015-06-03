@@ -427,7 +427,7 @@ bool ZFlyEmStackDoc::importAxonExport(const string &filePath)
 
   if (tree->hasRegularNode()) {
     tree->setSource(filePath);
-    addSwcTree(tree);
+    addObject(tree);
   } else {
     delete tree;
     return false;

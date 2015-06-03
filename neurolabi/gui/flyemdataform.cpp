@@ -391,19 +391,23 @@ void FlyEmDataForm::viewModel(const QModelIndex &index)
       //doc->addSwcTree(neuron->getModel()->clone(), true);
       ZSwcTree *model = neuron->getModel();
       //ZStackDoc *doc = frame->document().get();
-      doc->blockSignals(true);
+//      doc->blockSignals(true);
+
+      doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
       if (model != NULL) {
-        doc->addSwcTree(model->clone(), true);
+        doc->addObject(model->clone(), true);
       }
 
       std::vector<ZPunctum*> puncta = neuron->getSynapse();
       for (std::vector<ZPunctum*>::iterator iter = puncta.begin();
            iter != puncta.end(); ++iter) {
-        doc->addPunctum(*iter);
+        doc->addObject(*iter);
       }
-      doc->blockSignals(false);
-      doc->updateModelData(ZStackDoc::SWC_DATA);
-      doc->updateModelData(ZStackDoc::PUNCTA_DATA);
+      doc->endObjectModifiedMode();
+      doc->notifyObjectModified();
+//      doc->blockSignals(false);
+//      doc->updateModelData(ZStackDoc::SWC_DATA);
+//      doc->updateModelData(ZStackDoc::PUNCTA_DATA);
     }
 
     ZWindowFactory factory;
@@ -535,7 +539,7 @@ void FlyEmDataForm::showSelectedModelWithBoundBox()
   if (frame != NULL) {
     ZFlyEmDataBundle *dataBundle = frame->getDataBundle();
     if (dataBundle->hasBoundBox()) {
-      hostDoc->addSwcTree(dataBundle->getBoundBox()->clone());
+      hostDoc->addObject(dataBundle->getBoundBox()->clone());
     }
   }
 }

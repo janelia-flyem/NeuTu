@@ -1,4 +1,5 @@
 #include "zjsonfactory.h"
+
 #include "zjsonarray.h"
 #include "zjsonobject.h"
 #include "zobject3dscan.h"
@@ -7,7 +8,7 @@ ZJsonFactory::ZJsonFactory()
 {
 }
 
-ZJsonArray ZJsonFactory::makeJsonArray(
+ZJsonArray ZJsonFactory::MakeJsonArray(
     const ZObject3dScan &obj, ZJsonFactory::EObjectForm form)
 {
   ZJsonArray array;
@@ -44,3 +45,20 @@ ZJsonArray ZJsonFactory::makeJsonArray(
 
   return array;
 }
+
+#if defined(_QT_GUI_USED_)
+ZJsonArray ZJsonFactory::MakeJsonArray(const QMap<uint64_t, uint64_t> &map)
+{
+  ZJsonArray array;
+
+  for (QMap<uint64_t, uint64_t>::const_iterator iter = map.begin();
+       iter != map.end(); ++iter) {
+    ZJsonArray pair;
+    pair.append(iter.key());
+    pair.append(iter.value());
+    array.append(pair.getData());
+  }
+
+  return array;
+}
+#endif

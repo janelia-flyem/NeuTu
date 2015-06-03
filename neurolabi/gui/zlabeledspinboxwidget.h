@@ -6,6 +6,8 @@
 #include <QHBoxLayout>
 #include <QSpinBox>
 
+class ZSpinBox;
+
 class ZLabeledSpinBoxWidget : public QWidget
 {
   Q_OBJECT
@@ -19,7 +21,7 @@ public:
   void setSkipValue(int v);
 
 
-  inline QSpinBox* getEditWidget() {
+  inline ZSpinBox* getEditWidget() {
     return m_mainWidget;
   }
 
@@ -27,12 +29,13 @@ public:
   int getSkipValue() const;
 
 signals:
+  void valueConfirmed(int);
 
 public slots:
 
 private:
   QLabel *m_label;
-  QSpinBox *m_mainWidget;
+  ZSpinBox *m_mainWidget;
   QHBoxLayout *m_layout;
   int m_skipValue;
 };

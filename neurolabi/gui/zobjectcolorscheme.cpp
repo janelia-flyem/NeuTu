@@ -11,6 +11,9 @@ void ZObjectColorScheme::setColorScheme(EColorScheme scheme)
   case RANDOM_COLOR:
     buildRandomColorTable(32);
     break;
+  case CONV_RANDOM_COLOR:
+    buildRandomColorTable(20000);
+    break;
   default:
     break;
   }

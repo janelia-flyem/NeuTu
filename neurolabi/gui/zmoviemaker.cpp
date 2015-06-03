@@ -90,7 +90,7 @@ void ZMovieMaker::recruitCast()
       ZSwcTree *tree = new ZSwcTree;
       tree->load(iter->second.c_str());
       tree->setVisible(false);
-      academy->addSwcTree(tree);
+      academy->addObject(tree);
       ZSwcMovieActor *actor = new ZSwcMovieActor;
       actor->setActor(tree);
       actor->setId(iter->first);
@@ -122,8 +122,9 @@ void ZMovieMaker::recruitCast()
           ZPunctumIO::load(iter->second.c_str());
       for (int i=0; i<punctaList.size(); i++) {
         punctaList[i]->setVisible(false);
-        academy->addPunctum(punctaList[i]);
+//        academy->addObject(punctaList[i]);
       }
+      academy->addPunctum(punctaList);
 
       ZPunctaMovieActor *actor = new ZPunctaMovieActor;
       actor->setVisible(false);

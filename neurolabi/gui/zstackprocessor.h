@@ -9,6 +9,7 @@
 #include "itkimagedefs.h"
 #include <string>
 
+#include "c_stack.h"
 class ZStack;
 
 class ZStackProcessor
@@ -42,6 +43,8 @@ public:
   void patchBasedDenoising(ZStack *stack, const int numIterations = 2, const int numThreads = 2,
                            const int numToSample = 1000, const float sigmaMultiplicationFactor = 1.f,
                            const std::string noiseModel = "POISSON", const float fidelityWeight = 0.1f);
+
+  static void RemoveBranchPoint(Stack *stack, int nnbr);
 
 //private:
   static void convertStack(ZStack *stack, Uint8Image3DType *image);

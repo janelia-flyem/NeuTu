@@ -219,7 +219,9 @@ HEADERS +=$${PWD}/zstackprocessor.h \
    $${PWD}/zscalablestack.h \
    $${PWD}/flyem/zflyemneurondensity.h \
    $${PWD}/flyem/zflyemneurondensitymatcher.h \
-   $${PWD}/zdag.h
+   $${PWD}/zdag.h \
+   $${PWD}/zselector.h \
+   $${PWD}/zobject3dstripe.h
 
 SOURCES +=$${PWD}/zstackprocessor.cpp \
    $${PWD}/zstack.cxx \
@@ -423,5 +425,6 @@ SOURCES +=$${PWD}/zstackprocessor.cpp \
    $${PWD}/zscalablestack.cpp \
    $${PWD}/flyem/zflyemneurondensity.cpp \
    $${PWD}/flyem/zflyemneurondensitymatcher.cpp \
-   $${PWD}/zdag.cpp
+   $${PWD}/zdag.cpp \
+   $${PWD}/zobject3dstripe.cpp
 

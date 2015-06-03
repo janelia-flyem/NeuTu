@@ -27,7 +27,7 @@ ZTextLineCompositer FlyEm::ZHotSpotArray::toLineCompositer() const
 {
   ZTextLineCompositer text;
   ZString line;
-  line.appendNumber(size());
+  line.appendNumber((uint64_t) size());
   line += " hot spots:";
   text.appendLine(line);
 

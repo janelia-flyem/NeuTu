@@ -1,4 +1,5 @@
 #include "zlabeledspinboxwidget.h"
+#include "zspinbox.h"
 
 ZLabeledSpinBoxWidget::ZLabeledSpinBoxWidget(QWidget *parent) :
   QWidget(parent)
@@ -8,8 +9,11 @@ ZLabeledSpinBoxWidget::ZLabeledSpinBoxWidget(QWidget *parent) :
   m_label = new QLabel(this);
   m_layout->addWidget(m_label);
 
-  m_mainWidget = new QSpinBox(this);
+  m_mainWidget = new ZSpinBox(this);
   m_layout->addWidget(m_mainWidget);
+
+  connect(m_mainWidget, SIGNAL(valueConfirmed(int)),
+          this, SIGNAL(valueConfirmed(int)));
 }
 
 void ZLabeledSpinBoxWidget::setRange(int vmin, int vmax)

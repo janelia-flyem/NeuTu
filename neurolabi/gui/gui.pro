@@ -3,6 +3,10 @@
 # #####################################################################
 TEMPLATE = app
 
+DEFINES += _QT_APPLICATION_
+
+CONFIG += staticlib
+
 QMAKE_PATH = $(QMAKE)
 
 !exists($$QMAKE_PATH) {
@@ -53,7 +57,7 @@ CONFIG += rtti exceptions
 CONFIG += static_glew
 CONFIG += static_gtest
 
-DEFINES += _QT_APPLICATION_ _QT_GUI_USED_ _NEUTUBE_ HAVE_CONFIG_H _ENABLE_DDP_ _ENABLE_WAVG_
+DEFINES += _QT_GUI_USED_ _NEUTUBE_ HAVE_CONFIG_H _ENABLE_DDP_ _ENABLE_WAVG_
 
 #Machine information
 HOSTNAME = $$system(echo $HOSTNAME)
@@ -516,7 +520,24 @@ HEADERS += mainwindow.h \
     zpixmap.h \
     flyem/flyemproofcontrolform.h \
     flyem/zflyemproofmvc.h \
-    flyem/zflyemproofdoc.h
+    flyem/zflyemproofdoc.h \
+    flyem/zflyembookmarkview.h \
+    dvid/zdvidgrayslice.h \
+    flyem/zproofreadwindow.h \
+    dvid/zdvidsparsestack.h \
+    flyem/flyemsplitcontrolform.h \
+    flyem/zflyemmessagewidget.h \
+    zwidgetmessage.h \
+    zprogresssignal.h \
+    zkeyeventstrokemapper.h \
+    zkeyoperation.h \
+    zkeyoperationmap.h \
+    zkeyoperationconfig.h \
+    dvid/zdvidsparsevolslice.h \
+    flyem/zflyemproofpresenter.h \
+    flyem/zkeyeventbodymapper.h \
+    ztextmessage.h \
+    ztextmessagefactory.h
 
 FORMS += settingdialog.ui \
     frameinfodialog.ui \
@@ -580,7 +601,8 @@ FORMS += settingdialog.ui \
     flyem/zflyemhackathonconfigdlg.ui \
     ztestdialog.ui \
     zflyemcontrolform.ui \
-    flyem/flyemproofcontrolform.ui
+    flyem/flyemproofcontrolform.ui \
+    flyem/flyemsplitcontrolform.ui
 SOURCES += main.cpp \
     mainwindow.cpp \
     zstackview.cpp \
@@ -896,7 +918,24 @@ SOURCES += main.cpp \
     zpixmap.cpp \
     flyem/flyemproofcontrolform.cpp \
     flyem/zflyemproofmvc.cpp \
-    flyem/zflyemproofdoc.cpp
+    flyem/zflyemproofdoc.cpp \
+    flyem/zflyembookmarkview.cpp \
+    dvid/zdvidgrayslice.cpp \
+    flyem/zproofreadwindow.cpp \
+    dvid/zdvidsparsestack.cpp \
+    flyem/flyemsplitcontrolform.cpp \
+    flyem/zflyemmessagewidget.cpp \
+    zwidgetmessage.cpp \
+    zprogresssignal.cpp \
+    zkeyeventstrokemapper.cpp \
+    zkeyoperation.cpp \
+    zkeyoperationmap.cpp \
+    zkeyoperationconfig.cpp \
+    dvid/zdvidsparsevolslice.cpp \
+    flyem/zflyemproofpresenter.cpp \
+    flyem/zkeyeventbodymapper.cpp \
+    ztextmessage.cpp \
+    ztextmessagefactory.cpp
 
 OTHER_FILES += \
     extlib.pri \

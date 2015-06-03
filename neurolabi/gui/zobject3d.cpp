@@ -14,6 +14,8 @@
 #include "c_stack.h"
 #include "zobject3darray.h"
 #include "zstack.hxx"
+#include "zpainter.h"
+#include "zcuboid.h"
 
 using namespace std;
 
@@ -27,7 +29,7 @@ ZObject3d::ZObject3d(Object_3d *obj) : m_conn(0), m_label(-1),
     }
   }
 
-  setTarget(OBJECT_CANVAS);
+  setTarget(TARGET_OBJECT_CANVAS);
   m_type = ZStackObject::TYPE_OBJ3D;
 }
 
@@ -43,7 +45,7 @@ ZObject3d::ZObject3d(const vector<size_t> &indexArray, int width, int height,
     set(i, *iter, width, height, dx, dy, dz);
   }
 
-  setTarget(OBJECT_CANVAS);
+  setTarget(TARGET_OBJECT_CANVAS);
   m_type = ZStackObject::TYPE_OBJ3D;
 }
 
@@ -159,6 +161,11 @@ bool ZObject3d::load(const char *filePath)
 void ZObject3d::display(ZPainter &painter, int slice, EDisplayStyle option) const
 {  
   UNUSED_PARAMETER(option);
+
+  if (slice < 0 && !isProjectionVisible()) {
+    return;
+  }
+
 #if _QT_GUI_USED_
   painter.save();
 //  z -= iround(painter.getOffset().z());
@@ -169,7 +176,7 @@ void ZObject3d::display(ZPainter &painter, int slice, EDisplayStyle option) cons
   Object_3d *obj= c_obj();
   std::vector<QPoint> pointArray;
   for (size_t i = 0; i < obj->size; i++) {
-    if ((obj->voxels[i][2] == z) || (slice == -1)) {
+    if ((obj->voxels[i][2] == z) || (slice < 0)) {
       pointArray.push_back(QPoint(obj->voxels[i][0], obj->voxels[i][1]));
     }
   }
@@ -909,6 +916,30 @@ ZIntPoint ZObject3d::getHitVoxel() const
   }
 
   return pt;
+}
+
+void ZObject3d::getBoundBox(ZIntCuboid *box) const
+{
+  if (box != NULL) {
+    if (!isEmpty()) {
+      box->setFirstCorner(getX(0), getY(0), getZ(0));
+      box->setLastCorner(getX(0), getY(0), getZ(0));
+      box->set(getX(0), getY(0), getZ(0), getX(0), getY(0), getZ(0));
+    }
+    for (size_t i = 1; i < size(); i++) {
+      box->joinX(getX(i));
+      box->joinY(getY(i));
+      box->joinZ(getZ(i));
+    }
+  }
+}
+
+ZIntPoint ZObject3d::getCentralVoxel() const
+{
+  Voxel_t center;
+  Object_3d_Central_Voxel(c_obj(), center);
+
+  return ZIntPoint(center[0], center[1], center[2]);
 }
 
 ZSTACKOBJECT_DEFINE_CLASS_NAME(ZObject3d)

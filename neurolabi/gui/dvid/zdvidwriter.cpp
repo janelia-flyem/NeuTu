@@ -14,6 +14,7 @@
 #include "dvid/zdvidreader.h"
 #include "flyem/zflyemneuronbodyinfo.h"
 #include "zerror.h"
+#include "zjsonfactory.h"
 
 #if _ENABLE_LIBDVID_
 #include "DVIDNode.h"
@@ -159,7 +160,7 @@ void ZDvidWriter::writeAnnotation(const ZFlyEmNeuron &neuron)
 void ZDvidWriter::writeBodyInfo(int bodyId, const ZJsonObject &obj)
 {
   if (bodyId > 0 && !obj.isEmpty()) {
-    writeJsonString(ZDvidData::getName(ZDvidData::ROLE_BODY_INFO,
+    writeJsonString(ZDvidData::GetName(ZDvidData::ROLE_BODY_INFO,
                                        ZDvidData::ROLE_BODY_LABEL,
                                        m_dvidTarget.getBodyLabelName()),
                     ZString::num2str(bodyId).c_str(),
@@ -184,7 +185,7 @@ void ZDvidWriter::writeRoiCurve(
         arg(key.c_str());
         */
 
-    writeJson(ZDvidData::getName(ZDvidData::ROLE_ROI_CURVE), key, obj);
+    writeJson(ZDvidData::GetName(ZDvidData::ROLE_ROI_CURVE), key, obj);
 
     /*
     QString command =
@@ -203,7 +204,7 @@ void ZDvidWriter::writeRoiCurve(
 void ZDvidWriter::deleteRoiCurve(const std::string &key)
 {
   if (!key.empty()) {
-    deleteKey(ZDvidData::getName(ZDvidData::ROLE_ROI_CURVE), key);
+    deleteKey(ZDvidData::GetName(ZDvidData::ROLE_ROI_CURVE), key);
   }
 }
 
@@ -390,6 +391,7 @@ void ZDvidWriter::writeBodyInfo(int bodyId)
   }
 }
 
+#if 0
 void ZDvidWriter::writeMaxBodyId(int bodyId)
 {
   ZJsonObject idJson;
@@ -397,6 +399,7 @@ void ZDvidWriter::writeMaxBodyId(int bodyId)
   ZDvidUrl dvidUrl(m_dvidTarget);
   writeJson(dvidUrl.getMaxBodyIdUrl(), idJson);
 }
+#endif
 
 bool ZDvidWriter::lockNode(const std::string &message)
 {
@@ -472,3 +475,23 @@ void ZDvidWriter::writeSplit(
   QProcess::execute(command);
 
 }
+
+void ZDvidWriter::writeMergeOperation(const QMap<uint64_t, uint64_t> &bodyMap)
+{
+  std::string url = ZDvidUrl(m_dvidTarget).getMergeOperationUrl();
+  ZJsonArray array = ZJsonFactory::MakeJsonArray(bodyMap);
+  writeJsonString(url, array.dumpString());
+}
+
+/*
+void ZDvidWriter::writeMergeOperation(
+    const std::string &dataName, const std::string &key,
+    const QMap<uint64_t, uint64_t> &bodyMap)
+{
+  std::string url = ZDvidUrl(m_dvidTarget).getMergeOperationUrl(dataName);
+  ZJsonArray array = ZJsonFactory::MakeJsonArray(bodyMap);
+  if (!array.isEmpty()) {
+    writeJsonString(url, key, array.toString());
+  }
+}
+*/

@@ -61,7 +61,7 @@ bool ZDvidClient::postRequest(
   switch (request) {
   case ZDvidRequest::DVID_GET_SUPERPIXEL_INFO:
     urlString = dvidUrl.getInfoUrl(
-          ZDvidData::getName(ZDvidData::ROLE_SUPERPIXEL)).c_str();
+          ZDvidData::GetName(ZDvidData::ROLE_SUPERPIXEL)).c_str();
     /*
     urlString = QString("%1/%2/superpixels/info").
         arg(m_serverAddress).arg(m_dataPath);
@@ -69,7 +69,7 @@ bool ZDvidClient::postRequest(
     break;
   case ZDvidRequest::DVID_GET_GRAYSCALE_INFO:
     urlString = dvidUrl.getInfoUrl(
-          ZDvidData::getName(ZDvidData::ROLE_GRAY_SCALE)).c_str();
+          ZDvidData::GetName(ZDvidData::ROLE_GRAY_SCALE)).c_str();
     /*
     urlString = QString("%1/%2/grayscale/info").
         arg(m_serverAddress).arg(m_dataPath);
@@ -156,11 +156,11 @@ bool ZDvidClient::postRequest(
 //          arg(parameterList[0].toInt()).arg(parameterList[1].toInt()).
 //          arg(parameterList[2].toInt());
     } else if (parameterList.size() == 6) {
-      urlString = dvidUrl.getBodyLabelUrl(
-            m_dvidTarget.getBodyLabelName(),
+      urlString = dvidUrl.getLabels64Url(
+            m_dvidTarget.getBodyLabelName(),parameterList[3].toInt(),
+          parameterList[4].toInt(), parameterList[5].toInt(),
             parameterList[0].toInt(), parameterList[1].toInt(),
-          parameterList[2].toInt(), parameterList[3].toInt(),
-          parameterList[4].toInt(), parameterList[5].toInt()).c_str();
+          parameterList[2].toInt()).c_str();
 //      urlString = QString("%1/%2/bodies/raw/0_1_2/%3_%4_%5/%6_%7_%8").
 //          arg(m_serverAddress).
 //          arg(m_dataPath).
@@ -169,11 +169,11 @@ bool ZDvidClient::postRequest(
 //          arg(parameterList[0].toInt()).arg(parameterList[1].toInt()).
 //          arg(parameterList[2].toInt());
     } else if (parameterList.size() == 7) {
-      urlString = dvidUrl.getBodyLabelUrl(
-            parameterList[6].toString().toStdString(),
-            parameterList[0].toInt(), parameterList[1].toInt(),
-          parameterList[2].toInt(), parameterList[3].toInt(),
-          parameterList[4].toInt(), parameterList[5].toInt()).c_str();
+      urlString = dvidUrl.getLabels64Url(
+            parameterList[6].toString().toStdString(), parameterList[3].toInt(),
+          parameterList[4].toInt(), parameterList[5].toInt(),
+          parameterList[0].toInt(), parameterList[1].toInt(),
+          parameterList[2].toInt()).c_str();
     }
 #endif
   }

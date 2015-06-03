@@ -255,12 +255,18 @@ QMenu* ZStackDocMenuFactory::makeStackContextMenu(
     menu = new QMenu(NULL);
   }
 
-  if (presenter->buddyDocument()->getTag() == NeuTube::Document::FLYEM_SPLIT ||
-      presenter->buddyDocument()->getTag() ==
-      NeuTube::Document::SEGMENTATION_TARGET) {
+  switch (presenter->buddyDocument()->getTag()) {
+  case NeuTube::Document::FLYEM_SPLIT:
+  case NeuTube::Document::SEGMENTATION_TARGET:
     menu->addAction(presenter->getAction(ZStackPresenter::ACTION_SPLIT_DATA));
-  } else {
+    menu->addAction(presenter->getAction(
+                      ZStackPresenter::ACTION_ADD_SPLIT_SEED));
+    break;
+  case NeuTube::Document::NORMAL:
     menu->addAction(presenter->getAction(ZStackPresenter::ACTION_ADD_SWC_NODE));
+    break;
+  default:
+    break;
   }
 
   return menu;
@@ -274,7 +280,7 @@ QMenu* ZStackDocMenuFactory::makeBodyContextMenu(
   }
 
   if (presenter->buddyDocument()->getTag() == NeuTube::Document::FLYEM_MERGE ||
-      presenter->buddyDocument()->getTag() == NeuTube::Document::FLYEM_DVID) {
+      presenter->buddyDocument()->getTag() == NeuTube::Document::FLYEM_PROOFREAD) {
     QAction *action = presenter->getAction(
           ZStackPresenter::ACTION_BODY_SPLIT_START);
     menu->addAction(action);

@@ -42,7 +42,7 @@ public:
    *
    * Downsample the grid by downsampling each box.
    */
-  void downsampleBlock(int xintv, int yintv, int zintv);
+  //void downsampleBlock(int xintv, int yintv, int zintv);
 
   ZStackBlockGrid* makeDownsample(int xintv, int yintv, int zintv);
 

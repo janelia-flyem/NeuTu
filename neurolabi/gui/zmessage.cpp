@@ -18,7 +18,7 @@ void ZMessage::setBodyEntry(const std::string &key, std::string value)
   m_body.setEntry(key.c_str(), value);
 }
 
-void ZMessage::setBodyEntry(const std::string &key, int64_t value)
+void ZMessage::setBodyEntry(const std::string &key, uint64_t value)
 {
   m_body.setEntry(key.c_str(), value);
 }

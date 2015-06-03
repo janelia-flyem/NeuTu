@@ -45,6 +45,8 @@ public:
   ZIntPoint operator - () const;
 
   ZIntPoint& operator += (const ZIntPoint &pt);
+  ZIntPoint& operator -= (const ZIntPoint &pt);
+  ZIntPoint& operator *= (const ZIntPoint &pt);
 
   friend ZIntPoint operator + (const ZIntPoint &pt1, const ZIntPoint &pt2);
   friend ZIntPoint operator + (const ZIntPoint &pt1, int v);

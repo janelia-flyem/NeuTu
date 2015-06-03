@@ -61,8 +61,8 @@ void ZFlyEmBodyMergeFrame::MessageProcessor::processMessage(
   {
     ZFlyEmBodyMergeFrame *frame = dynamic_cast<ZFlyEmBodyMergeFrame*>(host);
     if (frame != NULL) {
-      int64_t id = frame->getCompleteDocument()->getSelectedBodyId();
-      if (id >= 0) {
+      uint64_t id = frame->getCompleteDocument()->getSelectedBodyId();
+      if (id > 0) {
         message->setBodyEntry("body_id", id);
         if (frame->getCompleteDocument()->getDvidTarget().isValid()) {
           message->setBodyEntry(
