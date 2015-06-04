@@ -14,6 +14,9 @@ Software package for neuron reconstruction and visualization
 ### Linux and Mac
 
 1. Make sure you have installed Qt 4.8.1+ (Qt 4.8.4 recommended)
+
+    Various versions of Qt can be dowloaded from https://download.qt.io/archive/qt/
+    
 2. Go to the NeuTu directory and run
 
 ####
