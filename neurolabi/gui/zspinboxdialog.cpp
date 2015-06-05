@@ -2,6 +2,7 @@
 #include <QHBoxLayout>
 #include "zwidgetfactory.h"
 #include "zbuttonbox.h"
+#include "tz_constant.h"
 
 ZSpinBoxDialog::ZSpinBoxDialog(QWidget *parent) :
   QDialog(parent), m_isSkipped(false), m_skippedValue(-1)
@@ -16,7 +17,7 @@ ZSpinBoxDialog::ZSpinBoxDialog(QWidget *parent) :
 
   m_spinBox = new QSpinBox(this);
   m_spinBox->setMinimum(0);
-  m_spinBox->setMaximum(99999999);
+  m_spinBox->setMaximum(MAX_INT32);
   m_spinBox->setValue(0);
   spinBoxLayout->addWidget(m_spinBox);
 
@@ -58,7 +59,13 @@ void ZSpinBoxDialog::setValueLabel(const QString &label)
 void ZSpinBoxDialog::skip()
 {
   m_isSkipped = true;
-  accept();
+  QDialog::accept();
+}
+
+void ZSpinBoxDialog::accept()
+{
+  m_isSkipped = false;
+  QDialog::accept();
 }
 
 QPushButton* ZSpinBoxDialog::getButton(ZButtonBox::TRole role)

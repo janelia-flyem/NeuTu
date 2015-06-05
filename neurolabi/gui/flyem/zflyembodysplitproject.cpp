@@ -812,7 +812,7 @@ void ZFlyEmBodySplitProject::deleteSavedSeed()
   }
 }
 
-void ZFlyEmBodySplitProject::saveSeed()
+void ZFlyEmBodySplitProject::saveSeed(bool emphasizingMessage)
 {
   ZDvidReader reader;
   if (reader.open(getDvidTarget())) {
@@ -840,12 +840,20 @@ void ZFlyEmBodySplitProject::saveSeed()
   if (writer.open(getDvidTarget())) {
     if (jsonArray.isEmpty()) {
       writer.deleteKey(getSplitLabelName(), getSeedKey(getBodyId()));
-      emitMessage("All seeds deleted");
+      if (emphasizingMessage) {
+        emitPopoupMessage("All seeds deleted");
+      } else {
+        emitMessage("All seeds deleted");
+      }
     } else {
       ZJsonObject rootObj;
       rootObj.setEntry("seeds", jsonArray);
       writer.writeJson(getSplitLabelName(), getSeedKey(getBodyId()), rootObj);
-      emitMessage("All seeds saved");
+      if (emphasizingMessage) {
+        emitPopoupMessage("All seeds saved");
+      } else {
+        emitMessage("All seeds saved");
+      }
     }
   }
 }
@@ -1266,6 +1274,14 @@ void ZFlyEmBodySplitProject::emitMessage(const QString &msg, bool appending)
   emit messageGenerated(
         ZWidgetMessage(msg, NeuTube::MSG_INFORMATION, appending));
 }
+
+void ZFlyEmBodySplitProject::emitPopoupMessage(const QString &msg)
+{
+  ZWidgetMessage message(msg, NeuTube::MSG_INFORMATION);
+  message.setTarget(ZWidgetMessage::TARGET_DIALOG);
+  emit messageGenerated(message);
+}
+
 
 void ZFlyEmBodySplitProject::emitError(const QString &msg, bool appending)
 {

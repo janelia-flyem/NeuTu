@@ -137,6 +137,11 @@ int main(int argc, char *argv[])
       runCommandLine = true;
     }
 
+    if (runCommandLine) {
+      ZCommandLine cmd;
+      return cmd.run(argc, argv);
+    }
+
 #ifndef QT_NO_DEBUG
     if (strcmp(argv[1], "u") == 0 || QString(argv[1]).startsWith("--gtest")) {
       unitTest = true;

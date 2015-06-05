@@ -23,6 +23,7 @@
 #include "tz_math.h"
 #include "tz_stack_bwmorph.h"
 #include "tz_stack_math.h"
+#include "tz_int_histogram.h"
 
 using namespace std;
 
@@ -184,6 +185,18 @@ uint16_t* C_Stack::guardedArray16(const Stack *stack)
   if (stack != NULL) {
     if (kind(stack) == GREY16) {
       array = (uint16_t*) stack->array;
+    }
+  }
+
+  return array;
+}
+
+float* C_Stack::guardedArrayFloat32(const Stack *stack)
+{
+  float *array = NULL;
+  if (stack != NULL) {
+    if (kind(stack) == FLOAT32) {
+      array = (float*) stack->array;
     }
   }
 
@@ -432,6 +445,21 @@ void C_Stack::copyValue(const Stack *src, Stack *dst)
 double C_Stack::sum(const Stack *stack)
 {
   return Stack_Sum(stack);
+}
+
+double C_Stack::mean(const Stack *stack)
+{
+  return Stack_Mean(stack);
+}
+
+double C_Stack::mode(const Stack *stack)
+{
+  int *hist = Stack_Hist(stack);
+  int comm = Int_Histogram_Mode(hist, Int_Histogram_Min(hist),
+                                Int_Histogram_Max(hist));
+  free(hist);
+
+  return comm;
 }
 
 Stack* C_Stack::translate(Stack *stack, int kind, int in_place)

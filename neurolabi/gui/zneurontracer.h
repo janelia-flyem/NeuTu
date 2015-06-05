@@ -20,7 +20,7 @@ public:
   ZNeuronTraceSeeder();
   ~ZNeuronTraceSeeder();
 
-  void sortSeed(Geo3d_Scalar_Field *seedPointArray, Stack *signal,
+  Stack *sortSeed(Geo3d_Scalar_Field *seedPointArray, const Stack *signal,
                 Trace_Workspace *ws);
 
   inline std::vector<Local_Neuroseg>& getSeedArray() { return m_seedArray; }
@@ -101,6 +101,8 @@ public:
   ZSwcTree* trace(ZStack *stack, bool doResampleAfterTracing = true);
 
   //Autotrace configuration
+  //Trace level setup: 1 - 10 (fast -> accurate)
+  void setTraceLevel(int level);
 
 
   //Helper functions
@@ -117,6 +119,7 @@ public:
     return m_connWorkspace;
   }
 
+  void initTraceWorkspace(Stack *stack);
   void initTraceWorkspace(ZStack *stack);
   void initConnectionTestWorkspace();
 
@@ -152,9 +155,14 @@ private:
   ZSwcTree *reconstructSwc(const Stack *stack,
                            std::vector<Locseg_Chain*> &chainArray);
   std::vector<Locseg_Chain*> trace(const Stack *stack,
-                                   std::vector<Local_Neuroseg> &locsegArray, std::vector<double> &values);
+                                   std::vector<Local_Neuroseg> &locsegArray,
+                                   std::vector<double> &values);
+  std::vector<Locseg_Chain*> recover(const Stack *stack);
+
   std::vector<Locseg_Chain*> screenChain(const Stack *stack,
                                          std::vector<Locseg_Chain*> &chainArray);
+
+  void clearBuffer();
 
 private:
   Stack *m_stack;
@@ -171,9 +179,15 @@ private:
   double m_traceMinScore;
   double m_2dTraceMinScore;
   bool m_usingEdgePath;
+  bool m_enhancingMask;
+
+  int m_recover;
+  int m_seedingMethod;
 
   //Intermedite buffer
   std::vector<Locseg_Chain*> m_chainArray;
+  Stack *m_mask;
+  Stack *m_baseMask;
   ZIntPoint m_seedDsIntv;
 };
 

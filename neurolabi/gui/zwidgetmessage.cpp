@@ -3,7 +3,7 @@
 #include <QStringList>
 
 ZWidgetMessage::ZWidgetMessage() :
-  m_type(NeuTube::MSG_INFORMATION), m_appending(false)
+  m_type(NeuTube::MSG_INFORMATION), m_appending(false), m_target(TARGET_TEXT)
 {
 }
 

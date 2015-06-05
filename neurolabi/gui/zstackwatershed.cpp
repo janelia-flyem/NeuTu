@@ -98,6 +98,7 @@ ZStack *ZStackWatershed::run(
       }
     }
 
+    qDebug() << "Estimating bounding box ...";
     Cuboid_I_Intersect(&stackBox, &box, &box);
 
     if (Cuboid_I_Is_Valid(&box)) {
@@ -114,6 +115,7 @@ ZStack *ZStackWatershed::run(
       C_Stack::write(GET_DATA_DIR + "/test_seed.tif", ws->mask);
 #endif
 
+      qDebug() << "Computing watershed ...";
       Stack *out = Stack_Watershed(source, ws);
       result = new ZStack;
       result->consume(out);

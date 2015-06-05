@@ -850,7 +850,7 @@ void FlyEmBodySplitProjectDialog::viewFullGrayscale(bool viewing)
 
 void FlyEmBodySplitProjectDialog::saveSeed()
 {
-  m_project.saveSeed();
+  m_project.saveSeed(true);
 }
 
 void FlyEmBodySplitProjectDialog::showBodyMask(bool on)

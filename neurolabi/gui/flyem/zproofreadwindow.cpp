@@ -4,6 +4,7 @@
 #include <QStackedWidget>
 #include <QLabel>
 #include <QProgressDialog>
+#include <QMessageBox>
 
 #include "flyemsplitcontrolform.h"
 #include "dvid/zdvidtarget.h"
@@ -98,6 +99,7 @@ void ZProofreadWindow::init()
           this, SLOT(presentSplitInterface(uint64_t)));
   connect(m_mainMvc, SIGNAL(dvidTargetChanged(ZDvidTarget)),
           this, SLOT(updateDvidTargetWidget(ZDvidTarget)));
+
 //  connect(m_mainMvc, SIGNAL(messageGenerated(QString, bool)),
 //          this, SLOT(dump(QString,bool)));
 //  connect(m_mainMvc, SIGNAL(errorGenerated(QString, bool)),
@@ -161,9 +163,13 @@ void ZProofreadWindow::launchSplit()
 {
   ZSpinBoxDialog *dlg = ZDialogFactory::makeSpinBoxDialog(this);
   dlg->setValueLabel("Body ID");
-  if (dlg->exec()) {   
-    if (dlg->getValue() > 0) {
-      launchSplit(dlg->getValue());
+  if (dlg->exec()) {
+    if (dlg->isSkipped()) {
+      m_mainMvc->notifySplitTriggered();
+    } else {
+      if (dlg->getValue() > 0) {
+        launchSplit(dlg->getValue());
+      }
     }
   }
 }
@@ -187,7 +193,14 @@ void ZProofreadWindow::dumpError(const QString &message, bool appending)
 
 void ZProofreadWindow::dump(const ZWidgetMessage &msg)
 {
-  dump(msg.toHtmlString(), msg.isAppending());
+  switch (msg.getTarget()) {
+  case ZWidgetMessage::TARGET_TEXT:
+    dump(msg.toHtmlString(), msg.isAppending());
+    break;
+  case ZWidgetMessage::TARGET_DIALOG:
+    QMessageBox::information(this, "Notice", msg.toHtmlString());
+    break;
+  }
 }
 
 

@@ -37,6 +37,8 @@ public:
   static QString GetFileName(
       const QString &caption, const QString &filePath, QWidget *parent);
 
+  static void Notify3DDisabled(QWidget *parent);
+
 private:
   QWidget *m_parentWidget;
 

@@ -239,6 +239,7 @@ using namespace std;
 #include "flyem/zflyemneurondensitymatcher.h"
 #include "flyem/zflyemneurondensity.h"
 #include "dvid/zdvidversiondag.h"
+#include "jneurontracer.h"
 
 using namespace std;
 
@@ -16848,7 +16849,7 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
-#if 1
+#if 0
   ZDvidReader reader;
   ZDvidTarget target("emdata1.int.janelia.org", "9db", 8500);
   reader.open(target);
@@ -16968,5 +16969,35 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
+#if 1
+  ZStack stack;
+//  stack.load(GET_TEST_DATA_DIR + "/00001.tif");
+
+  stack.load(GET_TEST_DATA_DIR + "/biocytin/DH070613C2X100-40.tif");
+
+  Stack *stackData = NULL;
+
+  if (stack.kind() == COLOR) {
+    stackData = C_Stack::channelExtraction(stack.c_stack(0), 1);
+  } else {
+    if (stack.channelNumber() > 1) {
+      stackData = stack.c_stack(1);
+    } else {
+      stackData = stack.c_stack(0);
+    }
+  }
+
+  if (C_Stack::mode(stackData) > C_Stack::min(stackData)) {
+    std::cout << "Bright field detected." << std::endl;
+    Stack_Invert_Value(stackData);
+  }
+
+  JNeuronTracer tracer;
+//  Stack *mask = tracer.makeMask(stack.c_stack());
+
+
+  ZSwcTree *tree = tracer.trace(stackData);
+  tree->save(GET_TEST_DATA_DIR + "/test.swc");
+#endif
 
 }

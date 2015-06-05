@@ -73,7 +73,7 @@ public:
 
   ZObject3dScan* readBody(ZObject3dScan *out) const;
 
-  void saveSeed();
+  void saveSeed(bool emphasizingMessage);
   void deleteSavedSeed();
   void downloadSeed();
   void recoverSeed();
@@ -121,6 +121,7 @@ public:
   bool isReadyForSplit(const ZDvidTarget &target);
 
   void emitMessage(const QString &msg, bool appending = true);
+  void emitPopoupMessage(const QString &msg);
   void emitError(const QString &msg, bool appending = true);
 
 signals:

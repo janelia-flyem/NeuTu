@@ -7,7 +7,8 @@
 #include <fstream>
 #include <set>
 
-#include "zargumentprocessor.h"
+#include "tz_utilities.h"
+//#include "zargumentprocessor.h"
 #include "ztest.h"
 #include "zobject3dscan.h"
 #include "zjsonparser.h"
@@ -23,6 +24,7 @@
 #include "dvid/zdvidwriter.h"
 #include "neutubeconfig.h"
 #include "zrandomgenerator.h"
+#include "zneurontracer.h"
 
 using namespace std;
 
@@ -405,6 +407,35 @@ int ZCommandLine::runComputeFlyEmNeuronFeature()
   return 0;
 }
 
+int ZCommandLine::runTraceNeuron()
+{
+  if (m_input.empty()) {
+    std::cout << "No input specified. Abort." << std::endl;
+    return 1;
+  }
+
+  if (m_output.empty()) {
+    std::cout << "No output specified. Abort." << std::endl;
+    return 1;
+  }
+
+  ZNeuronTracer tracer;
+  int level = 1;
+  if (Is_Arg_Matched(const_cast<char*>("--level"))) {
+    level = Get_Int_Arg(const_cast<char*>("--level"));
+  }
+  tracer.setTraceLevel(level);
+
+  ZStack signal;
+  signal.load(m_input[0]);
+
+  ZSwcTree *tree = tracer.trace(&signal);
+
+  tree->save(m_output);
+
+  return 0;
+}
+
 int ZCommandLine::runImageSeparation()
 {
   if (m_input.size() < 2) {
@@ -545,107 +576,124 @@ int ZCommandLine::runSkeletonize()
 int ZCommandLine::run(int argc, char *argv[])
 {
   static const char *Spec[] = {
-    "--command",  "[--unit_test]", "[<input:string> ...] [-o <string>]",
-    "[--sobj_marker]", "[--boundary_orphan <string>]", "[--config <string>]",
-    "[--no_block_adjust]",
-    "[--sobj_overlap]", "[--intv <int> <int> <int>]", "[--fulloverlap_screen]",
-    "[--synapse_object]", "[--flyem_neuron_feature]", "[--classlist]",
-    "[--skeletonize]", "[--separate <string>]", 0
+    "--command",
+    "[--unit_test]",
+    "[<input:string> ...]",
+    "[-o <string>]",
+    "[--config <string>]", "[--intv <int> <int> <int>]",
+    "[--skeletonize]", "[--trace] [--level <int>]","[--separate <string>]",
+    0
   };
 
-  ZArgumentProcessor::processArguments(
-        argc, argv, Spec);
+  Process_Arguments(argc, argv, const_cast<char**>(Spec), 1);
 
-  if (ZArgumentProcessor::isArgMatched("--unit_test")) {
+//  ZArgumentProcessor::processArguments(argc, argv, Spec);
+
+  m_input.clear();
+  int inputNumber = Get_Repeat_Count(const_cast<char*>("input"));
+//  if (ZArgumentProcessor::isArgMatched("input")) {
+//    int inputNumber = ZArgumentProcessor::getRepeatCount("input");
+    m_input.resize(inputNumber);
+    for (int i = 0; i < inputNumber; ++i) {
+      m_input[i] = Get_String_Arg(const_cast<char*>("input"), i);;
+//      m_input[i] = ZArgumentProcessor::getStringArg("input", i);
+    }
+//  }
+
+  if (Is_Arg_Matched(const_cast<char*>("--unit_test"))) {
     return ZTest::runUnitTest(argc, argv);
   }
 
   ECommand command = UNKNOWN_COMMAND;
-  m_input.clear();
+
   for (int i = 0; i < 3; ++i) {
     m_intv[i] = 0;
   }
 
+  if (Is_Arg_Matched(const_cast<char*>("--config"))) {
+    ZJsonObject m_configJson;
+    m_configJson.load(Get_String_Arg(const_cast<char*>("--config")));
 
-  if (ZArgumentProcessor::isArgMatched("--config")) {
-    ZJsonObject obj;
-    obj.load(ZArgumentProcessor::getStringArg("--config"));
-
-    command = getCommand(ZJsonParser::stringValue(obj["command"]));
-    m_input.push_back(ZJsonParser::stringValue(obj["input"]));
-    m_output = ZJsonParser::stringValue(obj["output"]);
-    if (obj.hasKey("synapse")) {
-      m_synapseFile = ZJsonParser::stringValue(obj["synapse"]);
+    command = getCommand(ZJsonParser::stringValue(m_configJson["command"]));
+    m_input.push_back(ZJsonParser::stringValue(m_configJson["input"]));
+    m_output = ZJsonParser::stringValue(m_configJson["output"]);
+    if (m_configJson.hasKey("synapse")) {
+      m_synapseFile = ZJsonParser::stringValue(m_configJson["synapse"]);
     }
 
-    if (obj.hasKey("raveler_height")) {
-      m_ravelerHeight = ZJsonParser::integerValue(obj["raveler_height"]);
+    if (m_configJson.hasKey("raveler_height")) {
+      m_ravelerHeight = ZJsonParser::integerValue(m_configJson["raveler_height"]);
     }
 
-    if (obj.hasKey("z_start")) {
-      m_zStart = ZJsonParser::integerValue(obj["z_start"]);
+    if (m_configJson.hasKey("z_start")) {
+      m_zStart = ZJsonParser::integerValue(m_configJson["z_start"]);
     }
 
-    if (obj.hasKey("block_offset")) {
+    if (m_configJson.hasKey("block_offset")) {
       for (int i = 0; i < 3; ++i) {
-        m_blockOffset[i] = ZJsonParser::numberValue(obj["block_offset"], i);
+        m_blockOffset[i] = ZJsonParser::numberValue(m_configJson["block_offset"], i);
       }
     }
 
-    m_blockFile = ZJsonParser::stringValue(obj["block_file"]);
-    m_referenceBlockFile = ZJsonParser::stringValue(obj["block_reference"]);
-  } else if (ZArgumentProcessor::isArgMatched("--sobj_marker")) {
-    command = OBJECT_MARKER;
-    m_input.push_back(ZArgumentProcessor::getStringArg("input", 0));
-    m_output = ZArgumentProcessor::getStringArg("-o");
-  } else if (ZArgumentProcessor::isArgMatched("--boundary_orphan")) {
-    command = BOUNDARY_ORPHAN;
-    m_input.push_back(ZArgumentProcessor::getStringArg("input", 0));
-    m_output = ZArgumentProcessor::getStringArg("-o");
-    m_blockFile = ZArgumentProcessor::getStringArg("--boundary_orphan");
-  } else if (ZArgumentProcessor::isArgMatched("--sobj_overlap")) {
-    command = OBJECT_OVERLAP;
-    m_fullOverlapScreen = false;
-    int inputNumber = ZArgumentProcessor::getRepeatCount("input");
-    m_input.resize(inputNumber);
-    for (int i = 0; i < inputNumber; ++i) {
-      m_input[i] = ZArgumentProcessor::getStringArg("input", i);
-    }
-    m_output = ZArgumentProcessor::getStringArg("-o");
+    m_blockFile = ZJsonParser::stringValue(m_configJson["block_file"]);
+    m_referenceBlockFile = ZJsonParser::stringValue(m_configJson["block_reference"]);
+  }
 
-    if (ZArgumentProcessor::isArgMatched("--intv")) {
-      for (int i = 1; i < 3; ++i) {
-        m_intv[i] = ZArgumentProcessor::getIntArg("--intv", i);
+
+  if (command == UNKNOWN_COMMAND) {/*
+    if (ZArgumentProcessor::isArgMatched("--sobj_marker")) {
+      command = OBJECT_MARKER;
+      m_input.push_back(ZArgumentProcessor::getStringArg("input", 0));
+      m_output = ZArgumentProcessor::getStringArg("-o");
+    } else if (ZArgumentProcessor::isArgMatched("--boundary_orphan")) {
+      command = BOUNDARY_ORPHAN;
+      m_input.push_back(ZArgumentProcessor::getStringArg("input", 0));
+      m_output = ZArgumentProcessor::getStringArg("-o");
+      m_blockFile = ZArgumentProcessor::getStringArg("--boundary_orphan");
+    } else if (ZArgumentProcessor::isArgMatched("--sobj_overlap")) {
+      command = OBJECT_OVERLAP;
+      m_fullOverlapScreen = false;
+      int inputNumber = ZArgumentProcessor::getRepeatCount("input");
+      m_input.resize(inputNumber);
+      for (int i = 0; i < inputNumber; ++i) {
+        m_input[i] = ZArgumentProcessor::getStringArg("input", i);
       }
-    }
+      m_output = ZArgumentProcessor::getStringArg("-o");
 
-    m_fullOverlapScreen =
-        ZArgumentProcessor::isArgMatched("--fulloverlap_screen");
-  } else if (ZArgumentProcessor::isArgMatched("--synapse_object")) {
-    command = SYNAPSE_OBJECT;
-    m_input.push_back(ZArgumentProcessor::getStringArg("input", 0));
-    m_output = ZArgumentProcessor::getStringArg("-o");
-  } else if (ZArgumentProcessor::isArgMatched("--classlist")) {
-    command = CLASS_LIST;
-    m_input.push_back(ZArgumentProcessor::getStringArg("input", 0));
-    m_output = ZArgumentProcessor::getStringArg("-o");
-  } else if (ZArgumentProcessor::isArgMatched("--flyem_neuron_feature")) {
-    command = FLYEM_NEURON_FEATURE;
-    m_input.push_back(ZArgumentProcessor::getStringArg("input", 0));
-    m_output = ZArgumentProcessor::getStringArg("-o");
-  } else if (ZArgumentProcessor::isArgMatched("--skeletonize")) {
-    command = SKELETONIZE;
-    int inputNumber = ZArgumentProcessor::getRepeatCount("input");
-    m_input.resize(inputNumber);
-    for (int i = 0; i < inputNumber; ++i) {
-      m_input[i] = ZArgumentProcessor::getStringArg("input", i);
+      if (ZArgumentProcessor::isArgMatched("--intv")) {
+        for (int i = 1; i < 3; ++i) {
+          m_intv[i] = ZArgumentProcessor::getIntArg("--intv", i);
+        }
+      }
+
+      m_fullOverlapScreen =
+          ZArgumentProcessor::isArgMatched("--fulloverlap_screen");
+    } else if (ZArgumentProcessor::isArgMatched("--synapse_object")) {
+      command = SYNAPSE_OBJECT;
+      m_input.push_back(ZArgumentProcessor::getStringArg("input", 0));
+      m_output = ZArgumentProcessor::getStringArg("-o");
+    } else if (ZArgumentProcessor::isArgMatched("--classlist")) {
+      command = CLASS_LIST;
+      m_input.push_back(ZArgumentProcessor::getStringArg("input", 0));
+      m_output = ZArgumentProcessor::getStringArg("-o");
+    } else if (ZArgumentProcessor::isArgMatched("--flyem_neuron_feature")) {
+      command = FLYEM_NEURON_FEATURE;
+      m_input.push_back(ZArgumentProcessor::getStringArg("input", 0));
+      m_output = ZArgumentProcessor::getStringArg("-o");
+    } else*/ if (Is_Arg_Matched(const_cast<char*>("--skeletonize"))) {
+      command = SKELETONIZE;
+
+      //    m_input.push_back(ZArgumentProcessor::getStringArg("input", 0));
+    } else if (Is_Arg_Matched(const_cast<char*>("--separate"))) {
+      command = SEPARATE_IMAGE;
+//      m_input.push_back(ZArgumentProcessor::getStringArg("input", 0));
+      m_input.push_back(Get_String_Arg(const_cast<char*>("--separate")));
+      m_output = Get_String_Arg(const_cast<char*>("-o"));
+    } else if (Is_Arg_Matched(const_cast<char*>("--trace"))) {
+//      m_input.push_back(ZArgumentProcessor::getStringArg("input", 0));
+      m_output = Get_String_Arg(const_cast<char*>("-o"));
+      command = TRACE_NEURON;
     }
-//    m_input.push_back(ZArgumentProcessor::getStringArg("input", 0));
-  } else if (ZArgumentProcessor::isArgMatched("--separate")) {
-    command = SEPARATE_IMAGE;
-    m_input.push_back(ZArgumentProcessor::getStringArg("input", 0));
-    m_input.push_back(ZArgumentProcessor::getStringArg("--separate"));
-    m_output = ZArgumentProcessor::getStringArg("-o");
   }
 
   switch (command) {
@@ -665,6 +713,8 @@ int ZCommandLine::run(int argc, char *argv[])
     return runSkeletonize();
   case SEPARATE_IMAGE:
     return runImageSeparation();
+  case TRACE_NEURON:
+    return runTraceNeuron();
   default:
     std::cout << "Unknown command" << std::endl;
     return 1;

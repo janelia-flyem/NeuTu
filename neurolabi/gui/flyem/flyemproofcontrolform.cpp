@@ -29,6 +29,7 @@ FlyEmProofControlForm::FlyEmProofControlForm(QWidget *parent) :
   connect(ui->splitPushButton, SIGNAL(clicked()),
           this, SIGNAL(splitTriggered()));
 
+
   ui->segmentSizePushButton->hide();
   ui->segmentSizeDecPushButton->setEnabled(false);
 

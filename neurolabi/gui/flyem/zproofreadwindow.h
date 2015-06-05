@@ -29,6 +29,7 @@ public:
 
 signals:
   void splitTriggered(uint64_t bodyId);
+//  void splitTriggered();
   /*
   void progressStarted(const QString &title, int nticks);
   void progressStarted(const QString &title);

@@ -5,6 +5,8 @@
 #include <vector>
 #include <set>
 
+#include "zjsonobject.h"
+
 class ZCommandLine
 {
 public:
@@ -13,7 +15,7 @@ public:
   enum ECommand {
     OBJECT_MARKER, BOUNDARY_ORPHAN, OBJECT_OVERLAP,
     SYNAPSE_OBJECT, CLASS_LIST, FLYEM_NEURON_FEATURE,
-    SKELETONIZE, SEPARATE_IMAGE,
+    SKELETONIZE, SEPARATE_IMAGE, TRACE_NEURON,
     UNKNOWN_COMMAND
   };
 
@@ -30,6 +32,7 @@ private:
   int runComputeFlyEmNeuronFeature();
   int runSkeletonize();
   int runImageSeparation();
+  int runTraceNeuron();
 
   std::set<int> loadBodySet(const std::string &input);
 
@@ -39,6 +42,7 @@ private:
   std::string m_blockFile;
   std::string m_referenceBlockFile;
   std::string m_synapseFile;
+  ZJsonObject m_configJson;
   int m_ravelerHeight;
   int m_zStart;
   int m_intv[3];

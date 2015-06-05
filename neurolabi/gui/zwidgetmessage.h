@@ -13,6 +13,10 @@ public:
                  NeuTube::EMessageType type = NeuTube::MSG_INFORMATION,
                  bool appending = true);
 
+  enum ETarget {
+    TARGET_TEXT, TARGET_DIALOG
+  };
+
   QString toHtmlString() const;
   static QString ToHtmlString(const QString &msg, NeuTube::EMessageType type);
   static QString ToHtmlString(const QStringList &msgList,
@@ -22,6 +26,14 @@ public:
     return m_appending;
   }
 
+  inline ETarget getTarget() const {
+    return m_target;
+  }
+
+  inline void setTarget(ETarget target) {
+    m_target = target;
+  }
+
   template <typename T1, typename T2>
   static void ConnectMessagePipe(T1 *source, T2 *target, bool dumping);
 
@@ -29,6 +41,7 @@ private:
   QStringList m_message;
   NeuTube::EMessageType m_type;
   bool m_appending;
+  ETarget m_target;
 };
 
 template <typename T1, typename T2>

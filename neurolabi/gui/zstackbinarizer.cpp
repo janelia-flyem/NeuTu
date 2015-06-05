@@ -48,6 +48,7 @@ bool ZStackBinarizer::binarize(Stack *stack)
     break;
   case BM_LOCMAX:
     hist = computeLocmaxHist(refStack);
+    break;
   default:
     break;
   }
@@ -79,14 +80,18 @@ bool ZStackBinarizer::binarize(Stack *stack)
     threshold = Int_Histogram_Triangle_Threshold(hist, low, high);
     break;
   case BM_LOCMAX:
-    threshold = Int_Histogram_Triangle_Threshold(hist, low, high - 1);
+    if ((double) Int_Histogram_Sum(hist) / C_Stack::voxelNumber(stack) <= 1e-5) {
+      threshold = Stack_Common_Intensity(stack, 0, high);
+    } else {
+      threshold = Int_Histogram_Triangle_Threshold(hist, low, high - 1);
+      threshold = refineLocmaxThreshold(refStack, threshold, hist, high);
+    }
     /*
     if (threshold <= Int_Histogram_Quantile(hist, 0.5)) {
       BINARIZE_CLEAN
       return false;
     }
     */
-    threshold = refineLocmaxThreshold(refStack, threshold, hist, high);
     break;
   case BM_MEAN:
     threshold = iround(Stack_Mean(stack));

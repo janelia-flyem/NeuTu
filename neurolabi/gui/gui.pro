@@ -3,9 +3,11 @@
 # #####################################################################
 TEMPLATE = app
 
-DEFINES += _QT_APPLICATION_
-
-CONFIG += staticlib
+contains(TEMPLATE, app) {
+    DEFINES += _QT_APPLICATION_
+} else {
+    CONFIG += staticlib
+}
 
 QMAKE_PATH = $(QMAKE)
 

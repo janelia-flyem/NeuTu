@@ -2,6 +2,7 @@
 
 #include <QFuture>
 #include <QtConcurrentRun>
+#include <QMessageBox>
 
 #include "flyem/zflyemproofdoc.h"
 #include "zstackview.h"
@@ -241,6 +242,8 @@ void ZFlyEmProofMvc::notifySplitTriggered()
       uint64_t bodyId = *(selected.begin());
 
       emit launchingSplit(bodyId);
+    } else {
+      emit messageGenerated("Only one body has to be selected.");
     }
   }
 }
@@ -369,10 +372,21 @@ void ZFlyEmProofMvc::switchSplitBody(uint64_t bodyId)
   if (bodyId != m_splitProject.getBodyId()) {
     if (m_splitOn) {
 //      exitSplit();
-      m_splitProject.clear();
-      getDocument()->removeObject(ZStackObjectRole::ROLE_SEED);
-      getDocument()->removeObject(ZStackObjectRole::ROLE_TMP_RESULT);
-      launchSplit(bodyId);
+      QMessageBox msgBox;
+       msgBox.setText("Changing to another body to split.");
+       msgBox.setInformativeText("Do you want to save your seeds?");
+       msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
+       msgBox.setDefaultButton(QMessageBox::Save);
+       int ret = msgBox.exec();
+       if (ret != QMessageBox::Cancel) {
+         if (ret == QMessageBox::Save) {
+           m_splitProject.saveSeed(false);
+         }
+         m_splitProject.clear();
+         getDocument()->removeObject(ZStackObjectRole::ROLE_SEED);
+         getDocument()->removeObject(ZStackObjectRole::ROLE_TMP_RESULT);
+         launchSplit(bodyId);
+       }
     }
   }
 }
@@ -428,7 +442,7 @@ void ZFlyEmProofMvc::setDvidLabelSliceSize(int width, int height)
 
 void ZFlyEmProofMvc::saveSeed()
 {
-  m_splitProject.saveSeed();
+  m_splitProject.saveSeed(true);
 }
 
 void ZFlyEmProofMvc::saveMergeOperation()

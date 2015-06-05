@@ -198,6 +198,7 @@ bool ZDvidSparseStack::fillValue()
 //  bool changed = false;
   int blockCount = 0;
   if (!m_sparseStack.getObjectMask()->isEmpty()) {
+//    std::cout << "Downloading grayscale ..." << std::end;
     qDebug() << "Downloading grayscale ...";
     ZDvidInfo dvidInfo;
     dvidInfo.setFromJsonString(
