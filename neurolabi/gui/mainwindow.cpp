@@ -1989,7 +1989,7 @@ void MainWindow::about()
   if (!NeutubeConfig::getInstance().getApplication().empty()) {
     title += QString("<p>") +
         NeutubeConfig::getInstance().getApplication().c_str() + " Edition" +
-        "</p>";
+        " (d05a40978b684412da464af61af658c64be6dda2)</p>";
   }
   QString thirdPartyLib = QString("<p><a href=\"file:///%1/doc/ThirdPartyLibraries.txt\">Third Party Libraries</a></p>")
       .arg(QApplication::applicationDirPath());
@@ -2014,14 +2014,17 @@ void MainWindow::about()
                      "for a particular purpose, or non-infringement.</p>"
                      "<p>For any regarded question or feedback, please mail to "
                      "<a href=mailto:tingzhao@gmail.com>tingzhao@gmail.com</a></p>"
+                     "<p>Website: <a href=\"www.neutracing.com\">www.neutracing.com</a></p>"
                      "<p>Source code: "
                      "<a href=\"https://github.com/janelia-flyem/NeuTu\">"
-                     "https://github.com/janelia-flyem/NeuTu</a></p>" + thirdPartyLib
-                     /*
-                     "<p>Reference: <a href=\"http://www.nature.com/nmeth/journal/v9/n1/full/nmeth.1784.html\">"
-                     "mGRASP enables mapping mammalian synaptic connectivity with light microscopy</a>, "
-                     "<i>Nature Methods</i> 9 (1), 96-102</p>"
-                                        */
+                     "https://github.com/janelia-flyem/NeuTu</a></p>" +
+                     thirdPartyLib +
+                     "<p>Reference: "
+                     "<a href=\"http://eneuro.org/content/early/2015/01/02/ENEURO.0049-14.2014\">"
+                     "L. Feng, T. Zhao, and J. Kim, "
+                     "neuTube 1.0: A New Design for Efficient Neuron Reconstruction "
+                     "Software Based on The SWC Format, <i>eNeuro</i>, "
+                     "DOI: 10.1523/ENEURO.0049-14.2014</p>"
                      );
 }
 
