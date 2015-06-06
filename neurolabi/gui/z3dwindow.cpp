@@ -284,6 +284,8 @@ void Z3DWindow::init(EInitMode mode)
           m_doc.get(), SLOT(selectSwcNodeFloodFilling(Swc_Tree_Node*)));
   connect(m_swcFilter, SIGNAL(addNewSwcTreeNode(double, double, double, double)),
           this, SLOT(addNewSwcTreeNode(double, double, double, double)));
+  connect(m_swcFilter, SIGNAL(extendSwcTreeNode(double, double, double, double)),
+          this, SLOT(extendSwcTreeNode(double, double, double, double)));
   connect(m_swcFilter, SIGNAL(connectingSwcTreeNode(Swc_Tree_Node*)), this,
           SLOT(connectSwcTreeNode(Swc_Tree_Node*)));
 
@@ -1361,6 +1363,11 @@ void Z3DWindow::addNewSwcTreeNode(double x, double y, double z, double r)
       new ZStackDocAddSwcNodeCommand(m_doc.get(), p);
   m_doc->undoStack()->push(insertNewSwcTreeNodeCommand);
       */
+}
+
+void Z3DWindow::extendSwcTreeNode(double x, double y, double z, double r)
+{
+  m_doc->executeSwcNodeExtendCommand(ZPoint(x, y, z), r);
 }
 
 void Z3DWindow::removeSwcTurn()

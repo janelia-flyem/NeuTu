@@ -5863,7 +5863,7 @@ bool ZStackDoc::executeConnectSwcNodeCommand()
     pushUndoCommand(command);
     deprecateTraceMask();
 
-    message = "Nodes are connected.";
+    message = "Nodes are connected, except those too far away.";
     succ = true;
   }
 

@@ -624,3 +624,8 @@ ZIntCuboid ZCuboid::toIntCuboid() const
 
   return cuboid;
 }
+
+double ZCuboid::getDiagonalLength() const
+{
+  return sqrt(width() * width() + height() * height() + depth() * depth());
+}

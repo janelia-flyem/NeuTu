@@ -105,6 +105,8 @@ public:
 
   ZIntCuboid toIntCuboid() const;
 
+  double getDiagonalLength() const;
+
 private:
   static double computeDistance(double minX1, double maxX1,
                                 double minX2, double maxX2);
