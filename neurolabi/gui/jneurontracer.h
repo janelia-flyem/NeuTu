@@ -32,6 +32,7 @@ private:
                                float *imgIn, float *img, float sigma);
 
   static void createMask2D(int nx, int ny, float *I, float *bw);
+  static void levelsetSmoothing(int nx, int ny, float *bw, float *edge,int iter);
 
 private:
 //  NeuTube::EImageBackground m_background;

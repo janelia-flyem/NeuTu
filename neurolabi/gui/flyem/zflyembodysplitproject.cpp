@@ -742,8 +742,28 @@ void ZFlyEmBodySplitProject::commitResultFunc(
   emit resultCommitted();
 }
 
-void ZFlyEmBodySplitProject::selectSeed(int label)
+int ZFlyEmBodySplitProject::selectAllSeed()
 {
+  int nSelected = 0;
+  if (getDocument() != NULL) {
+    QList<const ZDocPlayer*> playerList =
+        getDocument()->getPlayerList(ZStackObjectRole::ROLE_SEED);
+//    getDocument()->deselectAllObject();
+    foreach (const ZDocPlayer *player, playerList) {
+      getDocument()->setSelected(player->getData(), true);
+      ++nSelected;
+    }
+    if (m_dataFrame != NULL) {
+      m_dataFrame->view()->paintObject();
+    }
+  }
+
+  return nSelected;
+}
+
+int ZFlyEmBodySplitProject::selectSeed(int label)
+{
+  int nSelected = 0;
   if (getDocument() != NULL) {
     QList<const ZDocPlayer*> playerList =
         getDocument()->getPlayerList(ZStackObjectRole::ROLE_SEED);
@@ -751,12 +771,15 @@ void ZFlyEmBodySplitProject::selectSeed(int label)
     foreach (const ZDocPlayer *player, playerList) {
       if (player->getLabel() == label) {
        getDocument()->setSelected(player->getData(), true);
+       ++nSelected;
       }
     }
     if (m_dataFrame != NULL) {
       m_dataFrame->view()->paintObject();
     }
   }
+
+  return nSelected;
 }
 
 void ZFlyEmBodySplitProject::backupSeed()

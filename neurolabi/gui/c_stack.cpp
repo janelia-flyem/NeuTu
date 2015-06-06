@@ -472,6 +472,17 @@ Stack* C_Stack::make(int kind, int width, int height, int depth)
   return Make_Stack(kind, width,height, depth);
 }
 
+Stack* C_Stack::make(float *data, int kind, int width, int height, int depth)
+{
+  return Scale_Float_Stack(data, width, height, depth, kind);
+}
+
+Stack* C_Stack::make(double *data, int kind, int width, int height, int depth)
+{
+  return Scale_Double_Stack(data, width, height, depth, kind);
+}
+
+
 Mc_Stack* C_Stack::make(int kind, int width, int height, int depth, int channelNumber)
 {
   return Make_Mc_Stack(kind, width,height, depth, channelNumber);

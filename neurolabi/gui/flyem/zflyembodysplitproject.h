@@ -77,7 +77,8 @@ public:
   void deleteSavedSeed();
   void downloadSeed();
   void recoverSeed();
-  void selectSeed(int label);
+  int selectSeed(int label);
+  int selectAllSeed();
 
   void exportSplits();
   void commitResult();

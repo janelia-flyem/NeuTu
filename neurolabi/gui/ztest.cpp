@@ -240,6 +240,7 @@ using namespace std;
 #include "flyem/zflyemneurondensity.h"
 #include "dvid/zdvidversiondag.h"
 #include "jneurontracer.h"
+#include "biocytin/swcprocessor.h"
 
 using namespace std;
 
@@ -16990,6 +16991,8 @@ void ZTest::test(MainWindow *host)
   if (C_Stack::mode(stackData) > C_Stack::min(stackData)) {
     std::cout << "Bright field detected." << std::endl;
     Stack_Invert_Value(stackData);
+  } else {
+    std::cout << "Dark field detected." << std::endl;
   }
 
   JNeuronTracer tracer;
@@ -17000,4 +17003,13 @@ void ZTest::test(MainWindow *host)
   tree->save(GET_TEST_DATA_DIR + "/test.swc");
 #endif
 
+#if 0
+  ZSwcTree tree;
+  tree.load(GET_TEST_DATA_DIR + "/system/zjump_test.swc");
+
+  Biocytin::SwcProcessor::breakZJump(&tree, 2.0);
+
+  tree.save(GET_TEST_DATA_DIR + "/test.swc");
+
+#endif
 }

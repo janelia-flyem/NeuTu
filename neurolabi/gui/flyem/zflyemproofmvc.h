@@ -88,6 +88,8 @@ public slots:
   void addSelectionAt(int x, int y, int z);
   void xorSelectionAt(int x, int y, int z);
   void deselectAllBody();
+  void selectSeed();
+  void selectAllSeed();
 //  void toggleEdgeMode(bool edgeOn);
 
 protected:
@@ -153,6 +155,8 @@ void ZFlyEmProofMvc::connectSplitControlPanel(T *panel)
           panel, SLOT(updateBookmarkTable(ZFlyEmBodySplitProject*)));
   connect(panel, SIGNAL(zoomingTo(int, int, int)),
           this, SLOT(zoomTo(int, int, int)));
+  connect(panel, SIGNAL(selectingSeed()), this, SLOT(selectSeed()));
+  connect(panel, SIGNAL(selectingAllSeed()), this, SLOT(selectAllSeed()));
   connect(this, SIGNAL(splitBodyLoaded(uint64_t)),
           panel, SLOT(updateBodyWidget(uint64_t)));
 }

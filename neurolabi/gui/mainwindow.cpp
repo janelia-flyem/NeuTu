@@ -184,6 +184,7 @@ MainWindow::MainWindow(QWidget *parent) :
                << std::endl;
 #endif
 
+
   m_reporter = new ZQtMessageReporter();
 
   m_lastOpenedFilePath = ".";

@@ -18,6 +18,8 @@
 #include "dvid/zdvidlabelslice.h"
 #include "flyem/zflyemproofpresenter.h"
 #include "zwidgetmessage.h"
+#include "zspinboxdialog.h"
+#include "zdialogfactory.h"
 
 ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
   ZStackMvc(parent), m_splitOn(false)
@@ -543,6 +545,28 @@ void ZFlyEmProofMvc::deselectAllBody()
       updateBodySelection();
     }
   }
+}
+
+void ZFlyEmProofMvc::selectSeed()
+{
+  ZSpinBoxDialog *dlg = ZDialogFactory::makeSpinBoxDialog(this);
+  dlg->setValueLabel("Label");
+  dlg->getButton(ZButtonBox::ROLE_SKIP)->hide();
+  dlg->setValue(1);
+  if (dlg->exec()) {
+    int label = dlg->getValue();
+   int nSelected = m_splitProject.selectSeed(label);
+   getView()->paintObject();
+   emit messageGenerated(QString("%1 seed(s) are selected.").arg(nSelected));
+  }
+  delete dlg;
+}
+
+void ZFlyEmProofMvc::selectAllSeed()
+{
+  int nSelected = m_splitProject.selectAllSeed();
+  getView()->paintObject();
+  emit messageGenerated(QString("%1 seed(s) are selected.").arg(nSelected));
 }
 
 uint64_t ZFlyEmProofMvc::getMappedBodyId(uint64_t bodyId)

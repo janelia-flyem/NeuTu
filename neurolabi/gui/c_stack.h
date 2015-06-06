@@ -44,6 +44,10 @@ typedef void Stack_Deallocator(Stack*);
  */
 Stack *make(int kind, int width, int height, int depth);
 
+Stack *make(float *data, int kind, int width, int height, int depth);
+Stack *make(double *data, int kind, int width, int height, int depth);
+
+
 //Kill from memory pool
 /*!
  * \brief Kill a stack (free up all associated memory).
