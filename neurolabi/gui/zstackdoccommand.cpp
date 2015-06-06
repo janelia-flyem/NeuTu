@@ -1048,7 +1048,7 @@ ZStackDocCommand::SwcEdit::ConnectSwcNode::ConnectSwcNode(
 
   ZSwcConnector connector;
   std::set<Swc_Tree_Node*> nodeSet = doc->getSelectedSwcNodeSet();
-  const size_t nodeNumberThreshold = 100;
+  const size_t nodeNumberThreshold = 500;
 
   ZCuboid boundBox = SwcTreeNode::boundBox(nodeSet);
   double minDist =
