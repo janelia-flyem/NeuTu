@@ -214,8 +214,14 @@ void ZFlyEmProofMvc::customInit()
           this, SLOT(xorSelectionAt(int, int, int)));
   connect(getCompletePresenter(), SIGNAL(deselectingAllBody()),
           this, SLOT(deselectAllBody()));
+  connect(getCompletePresenter(), SIGNAL(runningSplit()), this, SLOT(runSplit()));
 
   disableSplit();
+}
+
+void ZFlyEmProofMvc::runSplit()
+{
+  m_splitProject.runSplit();
 }
 
 void ZFlyEmProofMvc::updateBodySelection()
@@ -567,6 +573,14 @@ void ZFlyEmProofMvc::selectAllSeed()
   int nSelected = m_splitProject.selectAllSeed();
   getView()->paintObject();
   emit messageGenerated(QString("%1 seed(s) are selected.").arg(nSelected));
+}
+
+void ZFlyEmProofMvc::recoverSeed()
+{
+  if (ZDialogFactory::Ask("Recover Seed", "All current seeds might be lost. "
+                          "Do you want to continue?", this)) {
+    m_splitProject.recoverSeed();
+  }
 }
 
 uint64_t ZFlyEmProofMvc::getMappedBodyId(uint64_t bodyId)

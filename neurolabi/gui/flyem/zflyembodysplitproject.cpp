@@ -4,6 +4,7 @@
 #include <QByteArray>
 #include <QtConcurrentRun>
 #include <QWidget>
+#include <QUndoStack>
 
 #include "zstackframe.h"
 #include "z3dwindow.h"
@@ -925,6 +926,7 @@ void ZFlyEmBodySplitProject::downloadSeed(const std::string &seedKey)
 {
   ZDvidReader reader;
   if (reader.open(getDvidTarget())) {
+    getDocument()->undoStack()->clear();
     removeAllSeed();
     QByteArray seedData = reader.readKeyValue(
           getSplitLabelName().c_str(), seedKey.c_str());
@@ -1184,12 +1186,17 @@ std::string ZFlyEmBodySplitProject::getBackupSeedKey(uint64_t bodyId) const
 
 void ZFlyEmBodySplitProject::runSplit()
 {
-//  backupSeed();
+  if (getDocument() != NULL) {
+    backupSeed();
+    getDocument()->runSeededWatershed();
+  }
 
+  /*
   ZStackFrame *frame = getDataFrame();
   if (frame != NULL) {
     frame->document()->runSeededWatershed();
   }
+  */
 }
 
 void ZFlyEmBodySplitProject::setSeedProcessed(uint64_t bodyId)

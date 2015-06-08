@@ -132,7 +132,7 @@
     {
       "address": "emdata1.int.janelia.org",
       "port": 8500,
-      "uuid": "c348",
+      "uuid": "7d44",
       "name": "MB_seg",
       "comment": "MB seg (after runniing splits in node 6f15)",
       "body_label": "bodies",
@@ -152,9 +152,9 @@
     {
       "address": "emdata1.int.janelia.org",
       "port": 8500,
-      "uuid": "f17b",
+      "uuid": "47b1",
       "name": "MB_for_Satoko",
-      "comment": "MB seg (branched from ccf)",
+      "comment": "MB seg (branched from c348)",
       "body_label": "bodies",
       "label_block": "labels",
       "user_name": "takemurasa"
@@ -162,9 +162,9 @@
     {
       "address": "emdata1.int.janelia.org",
       "port": 8500,
-      "uuid": "afc7",
+      "uuid": "47b1",
       "name": "MB_for_Pat",
-      "comment": "MB seg (branched from ccf)",
+      "comment": "MB seg (branched from c348)",
       "body_label": "bodies",
       "label_block": "labels",
       "user_name": "rivlinp"
@@ -172,9 +172,9 @@
     {
       "address": "emdata1.int.janelia.org",
       "port": 8500,
-      "uuid": "3664",
+      "uuid": "47b1",
       "name": "MB_changl",
-      "comment": "MB seg (branched from ccf)",
+      "comment": "MB seg (branched from c348)",
       "body_label": "bodies",
       "label_block": "labels",
       "user_name": ["changl", "zhaot"]
@@ -182,9 +182,9 @@
     {
       "address": "emdata1.int.janelia.org",
       "port": 8500,
-      "uuid": "4a55",
+      "uuid": "47b1",
       "name": "MB_lauchies",
-      "comment": "MB seg (branched from ccf)",
+      "comment": "MB seg (branched from c348)",
       "body_label": "bodies",
       "label_block": "labels",
       "user_name": ["lauchies", "zhaot"]
@@ -192,9 +192,9 @@
     {
       "address": "emdata1.int.janelia.org",
       "port": 8500,
-      "uuid": "c0a5",
+      "uuid": "47b1",
       "name": "MB_ogundeyio",
-      "comment": "MB seg (branched from ccf)",
+      "comment": "MB seg (branched from c348)",
       "body_label": "bodies",
       "label_block": "labels",
       "user_name": ["ogundeyio", "zhaot"]
@@ -202,9 +202,9 @@
     {
       "address": "emdata1.int.janelia.org",
       "port": 8500,
-      "uuid": "3cbe",
+      "uuid": "47b1",
       "name": "MB_ordishc",
-      "comment": "MB seg (branched from ccf)",
+      "comment": "MB seg (branched from c348)",
       "body_label": "bodies",
       "label_block": "labels",
       "user_name": ["ordishc", "zhaot"]
@@ -212,9 +212,9 @@
     {
       "address": "emdata1.int.janelia.org",
       "port": 8500,
-      "uuid": "cb29",
+      "uuid": "47b1",
       "name": "MB_sigmundc",
-      "comment": "MB seg (branched from ccf)",
+      "comment": "MB seg (branched from c348)",
       "body_label": "bodies",
       "label_block": "labels",
       "user_name": ["sigmundc", "zhaot"]
@@ -222,9 +222,9 @@
     {
       "address": "emdata1.int.janelia.org",
       "port": 8500,
-      "uuid": "8366",
+      "uuid": "47b1",
       "name": "MB_shinomiyaa",
-      "comment": "MB seg (branched from ccf)",
+      "comment": "MB seg (branched from c348)",
       "body_label": "bodies",
       "label_block": "labels",
       "user_name": ["shinomiyaa", "zhaot"]
@@ -232,9 +232,9 @@
     {
       "address": "emdata1.int.janelia.org",
       "port": 8500,
-      "uuid": "91d9",
+      "uuid": "47b1",
       "name": "MB_tranj",
-      "comment": "MB seg (branched from ccf)",
+      "comment": "MB seg (branched from c348)",
       "body_label": "bodies",
       "label_block": "labels",
       "user_name": ["tranj", "zhaot"]
@@ -242,9 +242,9 @@
     {
       "address": "emdata1.int.janelia.org",
       "port": 8500,
-      "uuid": "8ed1",
+      "uuid": "47b1",
       "name": "MB_anicetor",
-      "comment": "MB seg (branched from ccf)",
+      "comment": "MB seg (branched from c348)",
       "body_label": "bodies",
       "label_block": "labels",
       "user_name": ["anicetor", "zhaot"]
@@ -252,9 +252,9 @@
     {
       "address": "emdata1.int.janelia.org",
       "port": 8500,
-      "uuid": "ee10",
+      "uuid": "47b1",
       "name": "MB_shinomiyak",
-      "comment": "MB seg (branched from ccf)",
+      "comment": "MB seg (branched from c348)",
       "body_label": "bodies",
       "label_block": "labels",
       "user_name": ["shinomiyak", "zhaot"]
