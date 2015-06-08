@@ -418,6 +418,20 @@ ZStackDocCommand::SwcEdit::MergeSwcNode::MergeSwcNode(
       new SwcEdit::SetParent(m_doc, coreNode, *parentSet.begin(), false, this);
     }
 
+
+    std::set<Swc_Tree_Node*> deleteSet;
+    for (set<Swc_Tree_Node*>::iterator
+         iter = nodeSet.begin();
+         iter != nodeSet.end(); ++iter) {
+      //new SwcEdit::SetParent(m_doc, *iter, NULL, this);
+      if (SwcTreeNode::parent(*iter) != NULL) { //orphan node aready handled by SetParent
+        deleteSet.insert(*iter);
+//        new SwcEdit::DeleteSwcNode(m_doc, *iter, SwcTreeNode::root(*iter), this);
+      }
+    }
+    new SwcEdit::DeleteSwcNodeSet(m_doc, deleteSet);
+
+    /*
     for (set<Swc_Tree_Node*>::iterator
          iter = nodeSet.begin();
          iter != nodeSet.end(); ++iter) {
@@ -426,6 +440,7 @@ ZStackDocCommand::SwcEdit::MergeSwcNode::MergeSwcNode(
         new SwcEdit::DeleteSwcNode(m_doc, *iter, SwcTreeNode::root(*iter), this);
       }
     }
+    */
 
     m_doc->blockSignals(true);
     m_doc->deselectAllSwcTreeNodes();

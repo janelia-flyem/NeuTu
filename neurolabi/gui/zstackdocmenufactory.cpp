@@ -38,10 +38,12 @@ QMenu* ZStackDocMenuFactory::makeSwcNodeContextMenu(
   //doc->getSingleSwcNodeActionActivator()->registerAction(action, false);
 
   //menu->addAction(doc->getAction(ZStackDoc::ACTION_CONNECT_SWC_NODE));
+  /*
   action = ZActionFactory::makeAction(
         ZActionFactory::ACTION_MERGE_SWC_NODE, doc, parentWidget,
         m_singleSwcNodeActionActivator, false);
   menu->addAction(action);
+  */
   //doc->getSingleSwcNodeActionActivator()->registerAction(action, false);
 
   //menu->addAction(doc->getAction(ZStackDoc::ACTION_MERGE_SWC_NODE));
