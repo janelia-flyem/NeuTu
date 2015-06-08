@@ -516,57 +516,59 @@ int ZCommandLine::runSkeletonize()
     return 0;
   }
 
-  ZDvidTarget target;
-  //target.setBodyLabelName("sp2body");
-  target.setFromSourceString(m_input[0]);
-  //target.set("emdata2.int.janelia.org", "43f", 9000);
+  if (ZDvidTarget::isDvidTarget(m_input[0])) {
+    ZDvidTarget target;
+    //target.setBodyLabelName("sp2body");
+    target.setFromSourceString(m_input[0]);
+    //target.set("emdata2.int.janelia.org", "43f", 9000);
 
-  ZDvidReader reader;
-  reader.open(target);
+    ZDvidReader reader;
+    reader.open(target);
 
-  ZDvidWriter writer;
-  writer.open(target);
+    ZDvidWriter writer;
+    writer.open(target);
 
-  std::set<int> bodyIdSet;
+    std::set<int> bodyIdSet;
 
-  if (m_input.size() == 1) {
-    bodyIdSet = reader.readBodyId(100000);
-  } else {
-    bodyIdSet = loadBodySet(m_input[1]);
-  }
+    if (m_input.size() == 1) {
+      bodyIdSet = reader.readBodyId(100000);
+    } else {
+      bodyIdSet = loadBodySet(m_input[1]);
+    }
 
-  std::vector<int> bodyIdArray;
-  bodyIdArray.insert(bodyIdArray.begin(), bodyIdSet.begin(), bodyIdSet.end());
+    std::vector<int> bodyIdArray;
+    bodyIdArray.insert(bodyIdArray.begin(), bodyIdSet.begin(), bodyIdSet.end());
 
-  ZRandomGenerator rnd;
-  std::vector<int> rank = rnd.randperm(bodyIdArray.size());
-  std::set<int> excluded;
-  //excluded.insert(16493);
-  //excluded.insert(8772496);
+    ZRandomGenerator rnd;
+    std::vector<int> rank = rnd.randperm(bodyIdArray.size());
+    std::set<int> excluded;
+    //excluded.insert(16493);
+    //excluded.insert(8772496);
 
-  ZStackSkeletonizer skeletonizer;
-  ZJsonObject config;
+    ZStackSkeletonizer skeletonizer;
+    ZJsonObject config;
 
-  if (m_input.size() <= 2) {
-    config.load(NeutubeConfig::getInstance().getApplicatinDir() +
-                "/json/skeletonize.json");
-  } else {
-    config.load(m_input[2]);
-  }
-  skeletonizer.configure(config);
+    if (m_input.size() <= 2) {
+      config.load(NeutubeConfig::getInstance().getApplicatinDir() +
+                  "/json/skeletonize.json");
+    } else {
+      config.load(m_input[2]);
+    }
+    skeletonizer.configure(config);
 
-  for (size_t i = 0; i < bodyIdArray.size(); ++i) {
-    int bodyId = bodyIdArray[rank[i] - 1];
-    if (excluded.count(bodyId) == 0) {
-      ZSwcTree *tree = reader.readSwc(bodyId);
-      if (tree == NULL) {
-        ZObject3dScan obj = reader.readBody(bodyId);
-        tree = skeletonizer.makeSkeleton(obj);
-        writer.writeSwc(bodyId, tree);
+    for (size_t i = 0; i < bodyIdArray.size(); ++i) {
+      int bodyId = bodyIdArray[rank[i] - 1];
+      if (excluded.count(bodyId) == 0) {
+        ZSwcTree *tree = reader.readSwc(bodyId);
+        if (tree == NULL) {
+          ZObject3dScan obj = reader.readBody(bodyId);
+          tree = skeletonizer.makeSkeleton(obj);
+          writer.writeSwc(bodyId, tree);
+        }
+        delete tree;
+        std::cout << ">>>>>>>>>>>>>>>>>>" << i + 1 << " / "
+                  << bodyIdArray.size() << std::endl;
       }
-      delete tree;
-      std::cout << ">>>>>>>>>>>>>>>>>>" << i + 1 << " / "
-                << bodyIdArray.size() << std::endl;
     }
   }
 
@@ -721,4 +723,62 @@ int ZCommandLine::run(int argc, char *argv[])
   }
 
   return 0;
+}
+
+void ZCommandLine::loadConfig(const std::string &filePath)
+{
+  ZJsonObject m_configJson;
+  m_configJson.load(filePath);
+
+  expandConfig(filePath, "skeletonize");
+  expandConfig(filePath, "trace");
+}
+
+std::string ZCommandLine::extractIncludePath(
+    const string &configFilePath, const string &key)
+{
+  QDir configDir = QDir(ZString::dirPath(configFilePath).c_str());
+
+  QString filePath;
+
+  ZJsonObject subJson(m_configJson.value(key.c_str()));
+
+  if (subJson.hasKey("include")) {
+    QFileInfo fileInfo(ZJsonParser::stringValue(subJson["include"]));
+    if (fileInfo.isRelative()) {
+      filePath = configDir.absoluteFilePath(fileInfo.filePath());
+    } else {
+      filePath = fileInfo.absoluteFilePath();
+    }
+  }
+
+  return filePath.toStdString();
+}
+
+void ZCommandLine::expandConfig(
+    const std::string &configFilePath, const std::string &key)
+{
+  if (m_configJson.hasKey(key.c_str())) {
+    std::string includeFilePath = extractIncludePath(configFilePath, key);
+
+    if (!includeFilePath.empty()) {
+      if (fexist(includeFilePath.c_str())) {
+        ZJsonObject subJson(m_configJson.value(key.c_str()));
+        ZJsonObject includeJson;
+        includeJson.load(includeFilePath.c_str());
+
+        const char *key;
+        json_t *value;
+        ZJsonObject_foreach(includeJson, key, value) {
+          if (!subJson.hasKey(key)) {
+            ZJsonValue obj =
+                ZJsonValue(value, ZJsonValue::SET_INCREASE_REF_COUNT);
+            subJson.setEntry(key, obj);
+          }
+        }
+      } else {
+        std::cout << "Missing include file: " << includeFilePath << std::endl;
+      }
+    }
+  }
 }

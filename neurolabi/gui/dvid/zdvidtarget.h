@@ -155,6 +155,8 @@ public:
   const std::set<std::string>& getUserNameSet() const;
   //void setUserName(const std::string &name);
 
+  static bool isDvidTarget(const std::string &source);
+
 
 private:
   std::string m_address;

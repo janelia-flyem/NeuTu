@@ -36,6 +36,11 @@ private:
 
   std::set<int> loadBodySet(const std::string &input);
 
+  void loadConfig(const std::string &filePath);
+  void expandConfig(const std::string &configFilePath, const std::string &key);
+  std::string extractIncludePath(
+      const std::string &configFilePath, const std::string &key);
+
 private:
   std::vector<std::string> m_input;
   std::string m_output;

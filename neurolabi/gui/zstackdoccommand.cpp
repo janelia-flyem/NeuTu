@@ -1033,8 +1033,11 @@ ZStackDocCommand::SwcEdit::ConnectSwcNode::ConnectSwcNode(
 
   ZSwcConnector connector;
   std::set<Swc_Tree_Node*> nodeSet = doc->getSelectedSwcNodeSet();
-  connector.setMinDist(SwcTreeNode::averageRadius(nodeSet.begin(),
-                                                  nodeSet.end()) * 20.0);
+  ZCuboid boundBox = SwcTreeNode::boundBox(nodeSet);
+  const int nodeNumberThreshold = 500;
+  double minDist =
+      boundBox.getDiagonalLength() * nodeNumberThreshold / nodeSet.size();
+  connector.setMinDist(minDist);
 
   ZGraph *graph = connector.buildConnection(nodeSet);
 
