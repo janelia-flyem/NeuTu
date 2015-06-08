@@ -875,9 +875,8 @@ void ZFlyEmBodySplitProject::saveSeed(bool emphasizingMessage)
       writer.writeJson(getSplitLabelName(), getSeedKey(getBodyId()), rootObj);
       if (emphasizingMessage) {
         emitPopoupMessage("All seeds saved");
-      } else {
-        emitMessage("All seeds saved");
       }
+      emitMessage("All seeds saved");
     }
   }
 }

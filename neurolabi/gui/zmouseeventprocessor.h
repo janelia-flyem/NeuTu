@@ -65,6 +65,7 @@ private:
   ZMouseEventLeftButtonReleaseMapper m_leftButtonReleaseMapper;
   ZMouseEventLeftButtonPressMapper m_leftButtonPressMapper;
   ZMouseEventRightButtonPressMapper m_rightButtonPressMapper;
+  ZMouseEventLeftRightButtonPressMapper m_bothButtonPressMapper;
   ZMouseEventRightButtonReleaseMapper m_rightButtonReleaseMapper;
   ZMouseEventMoveMapper m_moveMapper;
   ZMouseEventLeftButtonDoubleClickMapper m_leftButtonDoubleClickMapper;

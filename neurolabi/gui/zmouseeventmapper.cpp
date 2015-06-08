@@ -352,6 +352,32 @@ ZStackOperator ZMouseEventLeftButtonPressMapper::getOperation(
   return op;
 }
 
+///////////////ZMouseEventLeftRightButtonPressMapper/////////////////
+////////             --             ////////////////////////////
+ZStackOperator ZMouseEventLeftRightButtonPressMapper::getOperation(
+    const ZMouseEvent &event) const
+{
+  ZStackOperator op = initOperation();
+
+  if (event.isInStack()) {
+    switch (m_context->getUniqueMode()) {
+    /*
+    case ZInteractiveContext::INTERACT_STROKE_DRAW:
+      op.setOperation(ZStackOperator::OP_STROKE_START_PAINT);
+      break;
+    case ZInteractiveContext::INTERACT_RECT_DRAW:
+      op.setOperation(ZStackOperator::OP_RECT_ROI_INIT);
+      break;
+      */
+    default:
+      break;
+    }
+  }
+
+  return op;
+}
+
+
 ///////////////ZMouseEventRightButtonReleaseMapper/////////////////////
 ////////             OU             ////////////////////////////
 ZStackOperator
@@ -430,7 +456,11 @@ ZStackOperator ZMouseEventMoveMapper::getOperation(
           canMoveImage = true;
         }
       }
+    } else if (event.getButtons() == (Qt::LeftButton | Qt::RightButton)) {
+      canMoveImage = true;
+    }
 
+    if (event.getButtons() == Qt::LeftButton) {
       if (op.isNull()) {
         if (m_context->getUniqueMode() ==
             ZInteractiveContext::INTERACT_STROKE_DRAW) {
@@ -438,17 +468,6 @@ ZStackOperator ZMouseEventMoveMapper::getOperation(
         } else if (m_context->getUniqueMode() ==
                    ZInteractiveContext::INTERACT_RECT_DRAW) {
           op.setOperation(ZStackOperator::OP_RECT_ROI_UPDATE);
-        }
-      }
-
-      if (op.isNull()) {
-        if (canMoveImage) {
-          if (m_context->exploreMode() ==
-              ZInteractiveContext::EXPLORE_MOVE_IMAGE) {
-            op.setOperation(ZStackOperator::OP_MOVE_IMAGE);
-          } else {
-            op.setOperation(ZStackOperator::OP_START_MOVE_IMAGE);
-          }
         }
       }
     } else if (event.getButtons() == Qt::RightButton) {
@@ -461,6 +480,17 @@ ZStackOperator ZMouseEventMoveMapper::getOperation(
           op.setOperation(ZStackOperator::OP_ZOOM_IN_GRAB_POS);
         } else if (dy > 5) {
           op.setOperation(ZStackOperator::OP_ZOOM_OUT_GRAB_POS);
+        }
+      }
+    }
+
+    if (op.isNull()) {
+      if (canMoveImage) {
+        if (m_context->exploreMode() ==
+            ZInteractiveContext::EXPLORE_MOVE_IMAGE) {
+          op.setOperation(ZStackOperator::OP_MOVE_IMAGE);
+        } else {
+          op.setOperation(ZStackOperator::OP_START_MOVE_IMAGE);
         }
       }
     }

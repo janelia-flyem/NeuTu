@@ -6420,6 +6420,10 @@ void ZStackDoc::addObject(ZStackObject *obj, bool uniqueSource)
     return;
   }
 
+  if (m_objectGroup.contains(obj)) {
+    return;
+  }
+
   TStackObjectList objList;
 //  ZStackObjectRole role;
 
@@ -6427,10 +6431,10 @@ void ZStackDoc::addObject(ZStackObject *obj, bool uniqueSource)
     objList = m_objectGroup.takeSameSource(obj->getType(), obj->getSource());
     for (TStackObjectList::iterator iter = objList.begin();
          iter != objList.end(); ++iter) {
-      ZStackObject *obj = *iter;
-      bufferObjectModified(obj);
+      ZStackObject *oldObj = *iter;
+      bufferObjectModified(oldObj);
 //      role.addRole(m_playerList.removePlayer(obj));
-      delete obj;
+      delete oldObj;
     }
   }
 

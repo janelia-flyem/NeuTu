@@ -258,6 +258,11 @@ void ZFlyEmProofMvc::notifySplitTriggered()
 
 void ZFlyEmProofMvc::launchSplitFunc(uint64_t bodyId)
 {
+  if (bodyId == 0) {
+    emit errorGenerated(QString("Invalid body id: %1").arg(bodyId));
+    return;
+  }
+
   if (!getCompleteDocument()->isSplittable(bodyId)) {
     emit errorGenerated(QString("%1 is not ready for split.").arg(bodyId));
   } else {
@@ -283,23 +288,30 @@ void ZFlyEmProofMvc::launchSplitFunc(uint64_t bodyId)
 
       if (body == NULL) {
         body = reader.readDvidSparseStack(bodyId);
+      }
+
+      if (body->isEmpty()) {
+        delete body;
+        body = NULL;
+
+        emit errorGenerated(QString("Invalid body id: %1").arg(bodyId));
+      } else {
         body->setZOrder(0);
         body->setSource(ZStackObjectSourceFactory::MakeSplitObjectSource());
         body->setMaskColor(labelSlice->getColor(
                              bodyId, NeuTube::BODY_LABEL_ORIGINAL));
         body->setSelectable(false);
         getDocument()->addObject(body, true);
+        m_splitProject.setBodyId(bodyId);
+
+        labelSlice->setVisible(false);
+        labelSlice->setHittable(false);
+        body->setVisible(true);
+
+        getProgressSignal()->advanceProgress(0.1);
+
+        emit splitBodyLoaded(bodyId);
       }
-
-      m_splitProject.setBodyId(bodyId);
-
-      labelSlice->setVisible(false);
-      labelSlice->setHittable(false);
-      body->setVisible(true);
-
-      getProgressSignal()->advanceProgress(0.1);
-
-      emit splitBodyLoaded(bodyId);
 
       getProgressSignal()->endProgress();
     }
@@ -357,8 +369,10 @@ void ZFlyEmProofMvc::exitSplit()
 
     labelSlice->setHittable(true);
 
+    m_splitProject.clearBookmarkDecoration();
     getDocument()->removeObject(ZStackObjectRole::ROLE_SEED);
     getDocument()->removeObject(ZStackObjectRole::ROLE_TMP_RESULT);
+    getDocument()->removeObject(ZStackObjectRole::ROLE_TMP_BOOKMARK);
 
     ZDvidSparseStack *body = dynamic_cast<ZDvidSparseStack*>(
           getDocument()->getObjectGroup().findFirstSameSource(

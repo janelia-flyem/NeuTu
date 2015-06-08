@@ -512,7 +512,7 @@ void ZStackView::updatePaintBundle()
 
 void ZStackView::updateImageScreen()
 {
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
   std::cout << "ZStackView::updateImageScreen" << std::endl;
 #endif
 

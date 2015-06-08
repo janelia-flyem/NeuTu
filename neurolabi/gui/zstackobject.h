@@ -44,7 +44,7 @@ class ZStackObject
 {
 public:
   ZStackObject();
-  virtual ~ZStackObject() {}
+  virtual ~ZStackObject();
 
   enum EType {
     TYPE_UNIDENTIFIED = 0, //Unidentified type

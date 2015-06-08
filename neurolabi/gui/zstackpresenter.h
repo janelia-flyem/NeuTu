@@ -409,7 +409,7 @@ protected:
   bool m_isStrokeOn;
 
   ZSingleSwcNodeActionActivator m_singleSwcNodeActionActivator;
-  bool m_skipMouseReleaseEvent;
+  int m_skipMouseReleaseEvent;
 
   ZKeyOperationMap m_swcKeyOperationMap;
   ZKeyOperationMap m_stackKeyOperationMap;

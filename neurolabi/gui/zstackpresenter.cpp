@@ -57,7 +57,7 @@ void ZStackPresenter::init()
 {
   m_showObject = true;
   m_isStrokeOn = false;
-  m_skipMouseReleaseEvent = false;
+  m_skipMouseReleaseEvent = 0;
   m_zOrder = 2;
 
   initInteractiveContext();
@@ -633,6 +633,24 @@ int ZStackPresenter::getSliceIndex() const {
 
 void ZStackPresenter::processMouseReleaseEvent(QMouseEvent *event)
 {
+#ifdef _DEBUG_
+  std::cout << event->button() << " released: " << event->buttons() << std::endl;
+#endif
+
+  if (m_skipMouseReleaseEvent) {
+    if (event->buttons() == 0) {
+      m_skipMouseReleaseEvent = 0;
+      this->interactiveContext().restoreExploreMode();
+      buddyView()->notifyViewPortChanged();
+    }
+
+//    --m_skipMouseReleaseEvent;
+//    if (m_skipMouseReleaseEvent == 0) {
+
+//    }
+    return;
+  }
+
   const ZMouseEvent& mouseEvent =
       m_mouseEventProcessor.process(
         event, ZMouseEvent::ACTION_RELEASE, getSliceIndex());
@@ -795,6 +813,16 @@ bool ZStackPresenter::isContextMenuOn()
 
 void ZStackPresenter::processMousePressEvent(QMouseEvent *event)
 {
+  if (event->buttons() == (Qt::LeftButton | Qt::RightButton)) {
+    m_skipMouseReleaseEvent = 2;
+  } else {
+    m_skipMouseReleaseEvent = 0;
+  }
+
+#ifdef _DEBUG_
+  std::cout << "Pressed mouse buttons: " << event->buttons() << std::endl;
+#endif
+
   const ZMouseEvent &mouseEvent = m_mouseEventProcessor.process(
         event, ZMouseEvent::ACTION_PRESS, buddyView()->sliceIndex());
   if (mouseEvent.isNull()) {
@@ -2586,6 +2614,7 @@ void ZStackPresenter::process(const ZStackOperator &op)
     ZRect2d *rect = dynamic_cast<ZRect2d*>(obj);
     if (rect != NULL) {
       rect->setLastCorner(currentStackPos.x(), currentStackPos.y());
+      buddyDocument()->processObjectModified(rect);
       buddyDocument()->notifyObjectModified();
     }
   }

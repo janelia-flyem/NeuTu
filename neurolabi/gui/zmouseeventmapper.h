@@ -101,6 +101,13 @@ public:
 };
 
 ////////////////////////////////////
+class ZMouseEventLeftRightButtonPressMapper : public ZMouseEventMapper
+{
+public:
+  ZStackOperator getOperation(const ZMouseEvent &event) const;
+};
+
+////////////////////////////////////
 class ZMouseEventLeftButtonDoubleClickMapper : public ZMouseEventMapper
 {
 public:

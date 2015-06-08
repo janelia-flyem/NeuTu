@@ -147,8 +147,11 @@
        </item>
        <item>
         <widget class="QPushButton" name="commitPushButton">
+         <property name="toolTip">
+          <string>Save splitting results into DVID</string>
+         </property>
          <property name="text">
-          <string>Commit</string>
+          <string>Save Splits</string>
          </property>
         </widget>
        </item>

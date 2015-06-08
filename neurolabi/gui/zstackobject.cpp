@@ -12,6 +12,13 @@ ZStackObject::ZStackObject() : m_selected(false), m_isSelectable(true),
 {
 }
 
+ZStackObject::~ZStackObject()
+{
+#ifdef _DEBUG_2
+  std::cout << "Deleting " << getType() << ": " << getSource() << std::endl;
+#endif
+}
+
 double ZStackObject::m_defaultPenWidth = 0.5;
 
 bool ZStackObject::display(QPainter */*painter*/, int /*z*/,
