@@ -874,7 +874,7 @@ void ZFlyEmBodySplitProject::saveSeed(bool emphasizingMessage)
       rootObj.setEntry("seeds", jsonArray);
       writer.writeJson(getSplitLabelName(), getSeedKey(getBodyId()), rootObj);
       if (emphasizingMessage) {
-        emitPopoupMessage("All seeds saved");
+        emitPopoupMessage("All seeds have been saved");
       }
       emitMessage(ZWidgetMessage::appendTime("All seeds saved"));
     }
@@ -1300,8 +1300,15 @@ bool ZFlyEmBodySplitProject::isReadyForSplit(const ZDvidTarget &target)
 
 void ZFlyEmBodySplitProject::emitMessage(const QString &msg, bool appending)
 {
+  qDebug() << "Outputting message: " << msg;
+
+  ZWidgetMessage::ETarget target = ZWidgetMessage::TARGET_TEXT;
+  if (appending) {
+    target = ZWidgetMessage::TARGET_TEXT_APPENDING;
+  }
+
   emit messageGenerated(
-        ZWidgetMessage(msg, NeuTube::MSG_INFORMATION, appending));
+        ZWidgetMessage(msg, NeuTube::MSG_INFORMATION, target));
 }
 
 void ZFlyEmBodySplitProject::emitPopoupMessage(const QString &msg)
@@ -1314,7 +1321,12 @@ void ZFlyEmBodySplitProject::emitPopoupMessage(const QString &msg)
 
 void ZFlyEmBodySplitProject::emitError(const QString &msg, bool appending)
 {
+  ZWidgetMessage::ETarget target = ZWidgetMessage::TARGET_TEXT;
+  if (appending) {
+    target = ZWidgetMessage::TARGET_TEXT_APPENDING;
+  }
+
   emit messageGenerated(
-        ZWidgetMessage(msg, NeuTube::MSG_ERROR, appending));
+        ZWidgetMessage(msg, NeuTube::MSG_ERROR, target));
 }
 

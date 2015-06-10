@@ -238,6 +238,7 @@ void ZDvidWriter::writeJsonString(
   } else {
     QString urlStr(url.c_str());
     urlStr.replace("/", "_");
+    urlStr.replace(":", "_");
     QString tmpPath = QString("%1/%2.json").
         arg(NeutubeConfig::getInstance().getPath(NeutubeConfig::TMP_DATA).c_str()).
         arg(urlStr);

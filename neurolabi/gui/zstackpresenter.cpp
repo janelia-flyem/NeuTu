@@ -638,7 +638,7 @@ void ZStackPresenter::processMouseReleaseEvent(QMouseEvent *event)
 #endif
 
   if (m_skipMouseReleaseEvent) {
-    if (event->buttons() == 0) {
+    if (event->buttons() == Qt::NoButton) {
       m_skipMouseReleaseEvent = 0;
       this->interactiveContext().restoreExploreMode();
       buddyView()->notifyViewPortChanged();
@@ -648,6 +648,11 @@ void ZStackPresenter::processMouseReleaseEvent(QMouseEvent *event)
 //    if (m_skipMouseReleaseEvent == 0) {
 
 //    }
+    return;
+  }
+
+  if (event->buttons() != Qt::NoButton) {
+    m_skipMouseReleaseEvent = 1;
     return;
   }
 
@@ -2556,9 +2561,12 @@ void ZStackPresenter::process(const ZStackOperator &op)
     break;
   case ZStackOperator::OP_MOVE_IMAGE:
   {
+    Qt::MouseButtons grabButton = op.getPressedButtons();
+    if (grabButton == Qt::NoButton || (grabButton & Qt::LeftButton)) {
+      grabButton = Qt::LeftButton;
+    }
     ZPoint grabPosition = op.getMouseEventRecorder()->getPosition(
-          Qt::LeftButton, ZMouseEvent::ACTION_PRESS,
-          NeuTube::COORD_STACK);
+          grabButton, ZMouseEvent::ACTION_PRESS, NeuTube::COORD_STACK);
     moveImageToMouse(
           grabPosition.x(), grabPosition.y(),
           currentWidgetPos.x(), currentWidgetPos.y());

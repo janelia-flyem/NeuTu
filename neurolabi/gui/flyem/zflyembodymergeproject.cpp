@@ -858,14 +858,24 @@ void ZFlyEmBodyMergeProject::setSelection(
 
 void ZFlyEmBodyMergeProject::emitMessage(const QString msg, bool appending)
 {
+  ZWidgetMessage::ETarget target = ZWidgetMessage::TARGET_TEXT;
+  if (appending) {
+    target = ZWidgetMessage::TARGET_TEXT_APPENDING;
+  }
+
   emit messageGenerated(
-        ZWidgetMessage(msg, NeuTube::MSG_INFORMATION, appending));
+        ZWidgetMessage(msg, NeuTube::MSG_INFORMATION, target));
 }
 
 void ZFlyEmBodyMergeProject::emitError(const QString msg, bool appending)
 {
+  ZWidgetMessage::ETarget target = ZWidgetMessage::TARGET_TEXT;
+  if (appending) {
+    target = ZWidgetMessage::TARGET_TEXT_APPENDING;
+  }
+
   emit messageGenerated(
-        ZWidgetMessage(msg, NeuTube::MSG_ERROR, appending));
+        ZWidgetMessage(msg, NeuTube::MSG_ERROR, target));
 }
 
 

@@ -8,23 +8,22 @@
 class ZWidgetMessage
 {
 public:
+  enum ETarget {
+    TARGET_TEXT, TARGET_TEXT_APPENDING, TARGET_DIALOG
+  };
+
+
   ZWidgetMessage();
   ZWidgetMessage(const QString &msg,
                  NeuTube::EMessageType type = NeuTube::MSG_INFORMATION,
-                 bool appending = true);
-
-  enum ETarget {
-    TARGET_TEXT, TARGET_DIALOG
-  };
+                 ETarget target = TARGET_TEXT_APPENDING);
 
   QString toHtmlString() const;
   static QString ToHtmlString(const QString &msg, NeuTube::EMessageType type);
   static QString ToHtmlString(const QStringList &msgList,
                               NeuTube::EMessageType type);
 
-  inline bool isAppending() const {
-    return m_appending;
-  }
+  inline bool isAppending() const { return m_target == TARGET_TEXT_APPENDING; }
 
   inline ETarget getTarget() const {
     return m_target;
@@ -42,7 +41,7 @@ public:
 private:
   QStringList m_message;
   NeuTube::EMessageType m_type;
-  bool m_appending;
+//  bool m_appending;
   ETarget m_target;
 };
 

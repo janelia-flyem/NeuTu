@@ -120,14 +120,19 @@ ZStack *ZStackWatershed::run(
 
       std::cout << "Computing watershed ..." << std::endl;
       Stack *out = Stack_Watershed(source, ws);
+
+      std::cout << "Creating result ..." << std::endl;
       result = new ZStack;
       result->consume(out);
       result->setOffset(sourceOffset);
 
+      std::cout << "Cleaning space ..." << std::endl;
       if (source != stack->c_stack()) {
         C_Stack::kill(const_cast<Stack*>(source));
       }
       Kill_Stack_Watershed_Workspace(ws);
+
+      std::cout << "Splitting done." << std::endl;
     }
   }
 

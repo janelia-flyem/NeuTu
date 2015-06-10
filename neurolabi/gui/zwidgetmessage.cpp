@@ -4,13 +4,13 @@
 #include <QDateTime>
 
 ZWidgetMessage::ZWidgetMessage() :
-  m_type(NeuTube::MSG_INFORMATION), m_appending(false), m_target(TARGET_TEXT)
+  m_type(NeuTube::MSG_INFORMATION), m_target(TARGET_TEXT)
 {
 }
 
 ZWidgetMessage::ZWidgetMessage(const QString &msg, NeuTube::EMessageType type,
-                               bool appending) :
-  m_type(type), m_appending(appending)
+                               ETarget target) :
+  m_type(type), m_target(target)
 {
   m_message.append(msg);
 }

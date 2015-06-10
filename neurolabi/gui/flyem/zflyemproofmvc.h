@@ -48,6 +48,7 @@ signals:
   void launchingSplit(uint64_t bodyId);
   void messageGenerated(const QString &message, bool appending = true);
   void errorGenerated(const QString &message, bool appending = true);
+  void messageGenerated(const ZWidgetMessage &message);
   void splitBodyLoaded(uint64_t bodyId);
   void bookmarkUpdated(ZFlyEmBodySplitProject *m_project);
   void dvidTargetChanged(ZDvidTarget);

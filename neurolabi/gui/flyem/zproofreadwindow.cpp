@@ -195,6 +195,7 @@ void ZProofreadWindow::dump(const ZWidgetMessage &msg)
 {
   switch (msg.getTarget()) {
   case ZWidgetMessage::TARGET_TEXT:
+  case ZWidgetMessage::TARGET_TEXT_APPENDING:
     dump(msg.toHtmlString(), msg.isAppending());
     break;
   case ZWidgetMessage::TARGET_DIALOG:

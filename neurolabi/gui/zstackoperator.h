@@ -1,6 +1,7 @@
 #ifndef ZSTACKOPERATOR_H
 #define ZSTACKOPERATOR_H
 
+#include <Qt>
 #include "swctreenode.h"
 #include "zmouseevent.h"
 
@@ -148,6 +149,12 @@ public:
     return m_togglingStrokeLabel;
   }
 
+  inline Qt::MouseButtons getPressedButtons() const {
+    return m_buttonPressed;
+  }
+
+  void setPressedButtons(const Qt::MouseButtons &buttons);
+
 private:
   EOperation m_op;
   //Swc_Tree_Node *m_hitNode;
@@ -156,6 +163,7 @@ private:
 //  ZObject3d *m_hitObj3d;
   int m_punctaIndex;
   bool m_togglingStrokeLabel;
+  Qt::MouseButtons m_buttonPressed;
   const ZMouseEventRecorder *m_mouseEventRecorder;
 };
 

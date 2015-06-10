@@ -25,6 +25,8 @@ ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
   ZStackMvc(parent), m_splitOn(false)
 {
   qRegisterMetaType<uint64_t>("uint64_t");
+  qRegisterMetaType<ZWidgetMessage>("ZWidgetMessage");
+
 
   m_dvidDlg = new ZDvidDialog(this);
 }
@@ -264,7 +266,10 @@ void ZFlyEmProofMvc::launchSplitFunc(uint64_t bodyId)
   }
 
   if (!getCompleteDocument()->isSplittable(bodyId)) {
-    emit errorGenerated(QString("%1 is not ready for split.").arg(bodyId));
+    QString msg = QString("%1 is not ready for split.").arg(bodyId);
+    emit messageGenerated(
+          ZWidgetMessage(msg, NeuTube::MSG_ERROR, ZWidgetMessage::TARGET_DIALOG));
+    emit errorGenerated(msg);
   } else {
     ZDvidSparseStack *body = dynamic_cast<ZDvidSparseStack*>(
           getDocument()->getObjectGroup().findFirstSameSource(
@@ -294,7 +299,10 @@ void ZFlyEmProofMvc::launchSplitFunc(uint64_t bodyId)
         delete body;
         body = NULL;
 
-        emit errorGenerated(QString("Invalid body id: %1").arg(bodyId));
+        QString msg = QString("Invalid body id: %1").arg(bodyId);
+        emit messageGenerated(
+              ZWidgetMessage(msg, NeuTube::MSG_ERROR, ZWidgetMessage::TARGET_DIALOG));
+        emit errorGenerated(msg);
       } else {
         body->setZOrder(0);
         body->setSource(ZStackObjectSourceFactory::MakeSplitObjectSource());
