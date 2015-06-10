@@ -7,6 +7,7 @@
 #include <QUndoCommand>
 #include <QUndoStack>
 #include <QImage>
+#include <QDateTime>
 #include <QPainter>
 #include <QProcess>
 #include <iostream>
@@ -16970,7 +16971,7 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
-#if 1
+#if 0
   ZStack stack;
 //  stack.load(GET_TEST_DATA_DIR + "/00001.tif");
 
@@ -17011,5 +17012,11 @@ void ZTest::test(MainWindow *host)
 
   tree.save(GET_TEST_DATA_DIR + "/test.swc");
 
+#endif
+
+#if 1
+  QDateTime time = QDateTime::currentDateTime().toLocalTime();
+
+  qDebug() << time.toString("yyyy-MM-dd hh:mm:ss");
 #endif
 }

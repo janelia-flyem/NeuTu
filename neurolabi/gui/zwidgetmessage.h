@@ -37,6 +37,8 @@ public:
   template <typename T1, typename T2>
   static void ConnectMessagePipe(T1 *source, T2 *target, bool dumping);
 
+  static QString appendTime(const QString &message);
+
 private:
   QStringList m_message;
   NeuTube::EMessageType m_type;

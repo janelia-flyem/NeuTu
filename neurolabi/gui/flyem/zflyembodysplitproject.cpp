@@ -876,7 +876,7 @@ void ZFlyEmBodySplitProject::saveSeed(bool emphasizingMessage)
       if (emphasizingMessage) {
         emitPopoupMessage("All seeds saved");
       }
-      emitMessage("All seeds saved");
+      emitMessage(ZWidgetMessage::appendTime("All seeds saved"));
     }
   }
 }

@@ -24,6 +24,9 @@ Stack_Watershed_Workspace* ZStackWatershed::createWorkspace(const Stack *stack)
   } else {
     ws->start_level = 65535;
   }
+  std::cout << "workspace mask size: " << C_Stack::width(stack) << "x"
+            << C_Stack::height(stack) << "x" << C_Stack::depth(stack)
+            << std::endl;
   Stack *mask = C_Stack::make(GREY, C_Stack::width(stack),
                               C_Stack::height(stack), C_Stack::depth(stack));
   ws->mask = mask;
