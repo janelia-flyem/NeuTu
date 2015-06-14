@@ -242,6 +242,8 @@ using namespace std;
 #include "dvid/zdvidversiondag.h"
 #include "jneurontracer.h"
 #include "biocytin/swcprocessor.h"
+#include "zcommandline.h"
+#include "z3dgraphfactory.h"
 
 using namespace std;
 
@@ -12026,8 +12028,10 @@ void ZTest::test(MainWindow *host)
   std::cout << "Volume: " << volume << std::endl;
 #endif
 
-#if 0
-  ZStackFrame *frame = new ZStackFrame;
+#if 1
+  ZStackFrame *frame = ZStackFrame::Make(NULL);
+
+  /*
   ZObject3d *obj2 = new ZObject3d;
   obj2->append(1, 2, 3);
   obj2->append(4, 5, 6);
@@ -12037,10 +12041,29 @@ void ZTest::test(MainWindow *host)
   obj2->append(4, 15, 6);
 
   obj2->setColor(255, 255, 0, 255);
-  frame->document()->addObject(obj2, ZDocPlayer::ROLE_3DGRAPH_DECORATOR);
-  frame->document()->loadSwc(
-        (GET_TEST_DATA_DIR + "/benchmark/swc/fork.swc").c_str());
-  frame->open3DWindow(NULL);
+  obj2->setRole(ZStackObjectRole::ROLE_3DGRAPH_DECORATOR);
+
+  Z3DGraph *graphObj = new Z3DGraph;
+  graphObj->addNode(Z3DGraphNode(0, 0, 0, 1.0));
+  graphObj->addNode(Z3DGraphNode(5, 0, 0, 1.0));
+  Z3DGraphEdge edge(0, 1);
+  edge.setShape(GRAPH_LINE);
+  edge.setWidth(5.0);
+
+  graphObj->addEdge(edge);
+  */
+
+  ZCuboid box;
+  box.setFirstCorner(0, 0, 0);
+  box.setLastCorner(1000, 2000, 3000);
+
+  Z3DGraph *graphObj = Z3DGraphFactory::MakeBox(box, 10.0);
+
+  frame->document()->addObject(graphObj);
+//  frame->document()->addObject(obj2);
+//  frame->document()->loadSwc(
+//        (GET_TEST_DATA_DIR + "/benchmark/swc/fork.swc").c_str());
+  frame->open3DWindow();
   delete frame;
 #endif
 
@@ -17014,7 +17037,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   QDateTime time = QDateTime::currentDateTime().toLocalTime();
 
   qDebug() << time.toString("yyyy-MM-dd hh:mm:ss");

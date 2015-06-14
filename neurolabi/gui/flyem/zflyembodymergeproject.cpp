@@ -29,6 +29,7 @@
 #include "dvid/zdvidsparsevolslice.h"
 #include "dvid/zdvidlabelslice.h"
 #include "zwidgetmessage.h"
+#include "z3dgraphfactory.h"
 
 ZFlyEmBodyMergeProject::ZFlyEmBodyMergeProject(QObject *parent) :
   QObject(parent), m_dataFrame(NULL), m_bodyWindow(NULL),
@@ -61,9 +62,16 @@ void ZFlyEmBodyMergeProject::clear()
 int ZFlyEmBodyMergeProject::getCurrentZ() const
 {
   int z = 0;
+
+  if (getDocument() != NULL) {
+    getDocument()->getStackOffset().getZ();
+  }
+  /*
+
   if (m_dataFrame != NULL) {
     z = m_dataFrame->document()->getStackOffset().getZ();
   }
+  */
 
   return z;
 }
@@ -572,6 +580,24 @@ void ZFlyEmBodyMergeProject::update3DBodyView()
     ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
 //    m_bodyWindow->getDocument()->blockSignals(true);
     m_bodyWindow->getDocument()->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+
+    ZCuboid box;
+    box.setFirstCorner(dvidInfo.getStartCoordinates().toPoint());
+    box.setLastCorner(dvidInfo.getEndCoordinates().toPoint());
+    Z3DGraph *graph = Z3DGraphFactory::MakeBox(
+          box, dmax2(1.0, dmax3(box.width(), box.height(), box.depth()) / 500.0));
+    graph->setSource(ZStackObjectSourceFactory::MakeFlyEmBoundBoxSource());
+
+    m_bodyWindow->getDocument()->addObject(graph, true);
+
+    ZRect2d rect;
+    rect.setZ(getCurrentZ());
+    rect.setFirstCorner(dvidInfo.getStartCoordinates().getX(),
+                        dvidInfo.getStartCoordinates().getY());
+    rect.setLastCorner(dvidInfo.getEndCoordinates().getX(),
+                        dvidInfo.getEndCoordinates().getY());
+    graph = Z3DGraphFactory::MakeGrid(rect, 100, box.depth() / 500.0);
+    m_bodyWindow->getDocument()->addObject(graph, true);
 
     for (std::set<uint64_t>::const_iterator iter = selectedMapped.begin();
          iter != selectedMapped.end(); ++iter) {

@@ -61,3 +61,8 @@ QString ZWidgetMessage::appendTime(const QString &message)
   return "[" + QDateTime::currentDateTime().toLocalTime().
       toString("yyyy-MM-dd hh:mm:ss") + "] " + message;
 }
+
+void ZWidgetMessage::appendMessage(const QString &message)
+{
+  m_message.append(message);
+}

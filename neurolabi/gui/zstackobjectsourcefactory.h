@@ -20,6 +20,8 @@ public:
   static std::string MakeDvidGraySliceSource();
   static std::string MakeSplitObjectSource();
   static std::string MakeNodeAdaptorSource();
+  static std::string MakeFlyEmBoundBoxSource();
+  static std::string MakeFlyEmPlaneObjectSource();
 };
 
 #endif // ZSTACKOBJECTSOURCEFACTORY_H

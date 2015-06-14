@@ -18,6 +18,7 @@
 #include "zstackprocessor.h"
 #include "zobject3darray.h"
 #include "tz_objdetect.h"
+#include "zjsonobject.h"
 
 ZNeuronTraceSeeder::ZNeuronTraceSeeder()
 {
@@ -1142,4 +1143,9 @@ void ZNeuronTracer::setTraceLevel(int level)
   if (level >= 6) {
     m_traceWorkspace->refit = TRUE;
   }
+}
+
+void ZNeuronTracer::loadJsonObject(const ZJsonObject &obj)
+{
+
 }

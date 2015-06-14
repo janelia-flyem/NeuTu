@@ -39,6 +39,14 @@ public:
   void setLastCorner(int x, int y);
   void setFirstCorner(int x, int y);
 
+  int getFirstX() const;
+  int getFirstY() const;
+  int getLastX() const;
+  int getLastY() const;
+
+  inline void setZ(int z) { m_z = z; }
+  inline int getZ() const { return m_z; }
+
   //QRect/QRectF utilities
   static bool IsEqual(const QRect &rect1, const QRect &rect2);
   static bool IsEqual(const QRectF &rect1, const QRectF &rect2);

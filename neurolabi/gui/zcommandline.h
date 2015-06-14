@@ -6,6 +6,7 @@
 #include <set>
 
 #include "zjsonobject.h"
+#include "zmessagereporter.h"
 
 class ZCommandLine
 {
@@ -15,7 +16,7 @@ public:
   enum ECommand {
     OBJECT_MARKER, BOUNDARY_ORPHAN, OBJECT_OVERLAP,
     SYNAPSE_OBJECT, CLASS_LIST, FLYEM_NEURON_FEATURE,
-    SKELETONIZE, SEPARATE_IMAGE, TRACE_NEURON,
+    SKELETONIZE, SEPARATE_IMAGE, TRACE_NEURON, TEST_SELF,
     UNKNOWN_COMMAND
   };
 
@@ -33,6 +34,7 @@ private:
   int runSkeletonize();
   int runImageSeparation();
   int runTraceNeuron();
+  int runTest();
 
   std::set<int> loadBodySet(const std::string &input);
 
@@ -53,6 +55,8 @@ private:
   int m_intv[3];
   int m_blockOffset[3];
   bool m_fullOverlapScreen;
+  bool m_isVerbose;
+  ZMessageReporter m_reporter;
 };
 
 #endif // ZCOMMANDLINE_H

@@ -239,16 +239,23 @@ void Z3DWindow::init(EInitMode mode)
     m_graphFilter->setData(graph);
   }
 
-  m_decorationFilter = new Z3DGraphFilter();
-  m_decorationFilter->setStayOnTop(true);
-  m_decorationFilter->setData(m_doc->get3DGraphDecoration());
+//  m_decorationFilter = new Z3DGraphFilter();
+//  m_decorationFilter->setStayOnTop(true);
+
+
+  m_graphFilter->setData(m_doc->get3DGraphDecoration());
+  TStackObjectList objList = m_doc->getObjectList(ZStackObject::TYPE_3D_GRAPH);
+  for (TStackObjectList::const_iterator iter = objList.begin();
+       iter != objList.end(); ++iter) {
+    m_graphFilter->addData(*dynamic_cast<Z3DGraph*>(*iter));
+  }
 
   connect(getDocument(), SIGNAL(punctaModified()), this, SLOT(punctaChanged()));
   connect(getDocument(), SIGNAL(swcModified()), this, SLOT(swcChanged()));
   connect(getDocument(), SIGNAL(swcNetworkModified()),
           this, SLOT(updateNetworkDisplay()));
   connect(getDocument(), SIGNAL(graph3dModified()),
-          this, SLOT(updateDecorationDisplay()));
+          this, SLOT(update3DGraphDisplay()));
   connect(getDocument(),
           SIGNAL(punctaSelectionChanged(QList<ZPunctum*>,QList<ZPunctum*>)),
           this, SLOT(punctaSelectionChanged()));
@@ -338,7 +345,7 @@ void Z3DWindow::init(EInitMode mode)
   m_canvas->addEventListenerToBack(m_volumeRaycaster);      // for trace
   m_canvas->addEventListenerToBack(m_compositor);  // for interaction
   m_canvas->addEventListenerToBack(m_graphFilter);
-  m_canvas->addEventListenerToBack(m_decorationFilter);
+//  m_canvas->addEventListenerToBack(m_decorationFilter);
 
   // build network
   for (int i=0; i<5; i++) {  // max supported channel is 5
@@ -351,7 +358,7 @@ void Z3DWindow::init(EInitMode mode)
   m_punctaFilter->getOutputPort("GeometryFilter")->connect(m_compositor->getInputPort("GeometryFilters"));
   m_swcFilter->getOutputPort("GeometryFilter")->connect(m_compositor->getInputPort("GeometryFilters"));
   m_graphFilter->getOutputPort("GeometryFilter")->connect(m_compositor->getInputPort("GeometryFilters"));
-  m_decorationFilter->getOutputPort("GeometryFilter")->connect(m_compositor->getInputPort("GeometryFilters"));
+//  m_decorationFilter->getOutputPort("GeometryFilter")->connect(m_compositor->getInputPort("GeometryFilters"));
 
   m_axis->getOutputPort("GeometryFilter")->connect(m_compositor->getInputPort("GeometryFilters"));
   m_compositor->getOutputPort("Image")->connect(m_canvasRenderer->getInputPort("Image"));
@@ -373,7 +380,7 @@ void Z3DWindow::init(EInitMode mode)
   updateSwcBoundBox();
   updatePunctaBoundBox();
   updateGraphBoundBox();
-  updateDecorationBoundBox();
+//  updateDecorationBoundBox();
   updateOverallBoundBox();
 
   // adjust camera
@@ -1126,10 +1133,12 @@ void Z3DWindow::updateGraphBoundBox()
   m_graphBoundBox = m_graphFilter->boundBox();
 }
 
+/*
 void Z3DWindow::updateDecorationBoundBox()
 {
   m_decorationBoundBox = m_decorationFilter->boundBox();
 }
+*/
 
 void Z3DWindow::updatePunctaBoundBox()
 {
@@ -1178,8 +1187,8 @@ void Z3DWindow::cleanup()
     m_swcFilter = NULL;
     delete m_graphFilter;
     m_graphFilter = NULL;
-    delete m_decorationFilter;
-    m_decorationFilter = NULL;
+//    delete m_decorationFilter;
+//    m_decorationFilter = NULL;
     delete m_compositor;
     m_compositor = NULL;
     delete m_axis;
@@ -1222,10 +1231,16 @@ void Z3DWindow::updateNetworkDisplay()
   }
 }
 
-void Z3DWindow::updateDecorationDisplay()
+void Z3DWindow::update3DGraphDisplay()
 {
-  m_decorationFilter->setData(m_doc->get3DGraphDecoration());
-  updateDecorationBoundBox();
+  m_graphFilter->setData(m_doc->get3DGraphDecoration());
+  TStackObjectList objList = m_doc->getObjectList(ZStackObject::TYPE_3D_GRAPH);
+  for (TStackObjectList::const_iterator iter = objList.begin();
+       iter != objList.end(); ++iter) {
+    m_graphFilter->addData(*dynamic_cast<Z3DGraph*>(*iter));
+  }
+  updateGraphBoundBox();
+//  updateDecorationBoundBox();
   updateOverallBoundBox();
   resetCameraClippingRange();
 }
@@ -1237,7 +1252,8 @@ void Z3DWindow::updateDisplay()
   swcChanged();
   punctaChanged();
   updateNetworkDisplay();
-  updateDecorationDisplay();
+  update3DGraphDisplay();
+//  updateDecorationDisplay();
 }
 
 void Z3DWindow::punctaChanged()

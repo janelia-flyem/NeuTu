@@ -1258,14 +1258,16 @@ bool ZFlyEmBodySplitProject::isReadyForSplit(const ZDvidTarget &target)
 {
   bool succ = true;
 
-  QStringList infoList;
+  ZWidgetMessage message;
+//  QStringList infoList;
 
   ZDvidReader reader;
   if (reader.open(target)) {
     if (!reader.hasSparseVolume()) {
-      infoList.append(("Incomplete split database: data \"" +
-                       target.getBodyLabelName() +
-                       "\" missing").c_str());
+      message.appendMessage(("Incomplete split database: data \"" +
+                             target.getBodyLabelName() +
+                             "\" missing").c_str());
+//      infoList.append();
       succ = false;
     }
 
@@ -1274,8 +1276,9 @@ bool ZFlyEmBodySplitProject::isReadyForSplit(const ZDvidTarget &target)
           target.getBodyLabelName());
 
     if (!reader.hasData(splitLabelName)) {
-      infoList.append(("Incomplete split database: data \"" + splitLabelName +
-                       "\" missing").c_str());
+      message.appendMessage(("Incomplete split database: data \"" + splitLabelName +
+                             "\" missing").c_str());
+//      infoList.append();
       succ = false;
     }
 
@@ -1283,17 +1286,21 @@ bool ZFlyEmBodySplitProject::isReadyForSplit(const ZDvidTarget &target)
           ZDvidData::ROLE_SPLIT_STATUS, ZDvidData::ROLE_BODY_LABEL,
           target.getBodyLabelName());
     if (!reader.hasData(splitStatusName)) {
-      infoList.append(("Incomplete split database: data \"" + splitStatusName +
-                       "\" missing").c_str());
+      message.appendMessage(("Incomplete split database: data \"" + splitStatusName +
+                             "\" missing").c_str());
+//      infoList.append();
       succ = false;
     }
   } else {
-    infoList.append("Cannot connect to database.");
+    message.appendMessage("Cannot connect to database.");
+//    infoList.append();
     succ = false;
   }
 
-  emit messageGenerated(ZWidgetMessage::ToHtmlString(
-                          infoList, NeuTube::MSG_ERROR));
+  message.setType(NeuTube::MSG_ERROR);
+
+  emit messageGenerated(message.toHtmlString(), true);
+//  emit messageGenerated(message);
 
   return succ;
 }

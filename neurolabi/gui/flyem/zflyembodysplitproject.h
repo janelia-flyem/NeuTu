@@ -126,10 +126,8 @@ public:
   void emitError(const QString &msg, bool appending = true);
 
 signals:
-  /*
   void messageGenerated(QString, bool appending = true);
   void errorGenerated(QString, bool appending = true);
-  */
 
   void messageGenerated(const ZWidgetMessage&);
 //  void errorGenerated(QStringList);

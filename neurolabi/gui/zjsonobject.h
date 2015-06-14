@@ -137,6 +137,8 @@ public:
 
   std::vector<std::string> getAllKey() const;
 
+  void removeKey(const char *key);
+
 private:
   void setEntryWithoutKeyCheck(const char *key, json_t *obj, bool asNew = false);
 

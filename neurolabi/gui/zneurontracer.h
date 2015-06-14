@@ -13,6 +13,7 @@
 class ZStack;
 class ZSwcTree;
 class ZSwcConnector;
+class ZJsonObject;
 //class ZIntPoint;
 
 class ZNeuronTraceSeeder {
@@ -130,6 +131,10 @@ public:
       char unit, double distThre, bool spTest, bool crossoverTest);
 
   void loadTraceMask(bool traceMasked);
+
+
+  void loadJsonObject(const ZJsonObject &obj);
+
 
   enum ETracingMode {
     TRACING_AUTO, TRACING_INTERACTIVE, TRACING_SEED

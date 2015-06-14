@@ -4862,6 +4862,9 @@ void ZStackDoc::notifyObjectModified(ZStackObject::EType type)
   case ZStackObject::TYPE_OBJECT3D_SCAN:
     notifyObject3dScanModified();
     break;
+  case ZStackObject::TYPE_3D_GRAPH:
+    notify3DGraphModified();
+    break;
   default:
 //    notifyObjectModified();
     break;

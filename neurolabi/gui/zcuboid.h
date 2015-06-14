@@ -37,6 +37,11 @@ public:
   void set(const double *corner);
 
   void setFirstCorner(const ZPoint &pt);
+  void setFirstCorner(double x, double y, double z);
+
+  void setLastCorner(const ZPoint &pt);
+  void setLastCorner(double x, double y, double z);
+
   void setSize(double width, double height, double depth);
 
   /*!
