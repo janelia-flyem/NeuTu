@@ -29,6 +29,7 @@ signals:
   void labelSizeChanged(int width, int height);
   void coarseBodyViewTriggered();
   void savingMerge();
+  void committingMerge();
   void zoomingTo(int x, int y, int z);
   void locatingBody(uint64_t);
 

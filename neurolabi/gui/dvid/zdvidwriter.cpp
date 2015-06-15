@@ -480,8 +480,13 @@ void ZDvidWriter::writeSplit(
 void ZDvidWriter::writeMergeOperation(const QMap<uint64_t, uint64_t> &bodyMap)
 {
   std::string url = ZDvidUrl(m_dvidTarget).getMergeOperationUrl();
-  ZJsonArray array = ZJsonFactory::MakeJsonArray(bodyMap);
-  writeJsonString(url, array.dumpString());
+
+  if (!bodyMap.isEmpty()) {
+    ZJsonArray array = ZJsonFactory::MakeJsonArray(bodyMap);
+    writeJsonString(url, array.dumpString());
+  } else {
+    writeJsonString(url, "[]");
+  }
 }
 
 /*

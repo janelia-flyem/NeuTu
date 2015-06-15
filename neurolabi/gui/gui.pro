@@ -540,7 +540,8 @@ HEADERS += mainwindow.h \
     flyem/zkeyeventbodymapper.h \
     ztextmessage.h \
     ztextmessagefactory.h \
-    z3dgraphfactory.h
+    z3dgraphfactory.h \
+    zstackdochelper.h
 
 FORMS += settingdialog.ui \
     frameinfodialog.ui \
@@ -939,7 +940,8 @@ SOURCES += main.cpp \
     flyem/zkeyeventbodymapper.cpp \
     ztextmessage.cpp \
     ztextmessagefactory.cpp \
-    z3dgraphfactory.cpp
+    z3dgraphfactory.cpp \
+    zstackdochelper.cpp
 
 OTHER_FILES += \
     extlib.pri \

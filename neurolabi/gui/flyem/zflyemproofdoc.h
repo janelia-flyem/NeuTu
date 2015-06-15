@@ -52,6 +52,7 @@ public:
 
   void saveMergeOperation();
   void downloadBodyMask();
+  void clearBodyMerger();
 
   QList<uint64_t> getMergedSource(uint64_t bodyId) const;
   QSet<uint64_t> getMergedSource(const QSet<uint64_t> &bodySet) const;
@@ -65,6 +66,7 @@ signals:
   void bodyUnmerged();
 
 public slots:
+  void updateDvidLabelObject();
 
 private:
   ZFlyEmBodyMerger m_bodyMerger;

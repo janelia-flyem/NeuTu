@@ -56,6 +56,13 @@ void ZDvidLabelSlice::update()
   }
 }
 
+/*
+void ZDvidLabelSlice::forceUpdate()
+{
+  forceUpdate(m_currentViewParam);
+}
+*/
+
 void ZDvidLabelSlice::forceUpdate(const ZStackViewParam &viewParam)
 {
   m_objArray.clear();
@@ -368,3 +375,7 @@ uint64_t ZDvidLabelSlice::getMappedLabel(
   return label;
 }
 
+const ZStackViewParam& ZDvidLabelSlice::getViewParam() const
+{
+  return m_currentViewParam;
+}

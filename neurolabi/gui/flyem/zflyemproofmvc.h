@@ -72,6 +72,7 @@ public slots:
   void updateBodySelection();
   void saveSeed();
   void saveMergeOperation();
+  void commitMerge();
   void commitCurrentSplit();
   void locateBody(uint64_t bodyId);
 
@@ -132,6 +133,7 @@ void ZFlyEmProofMvc::connectControlPanel(T *panel)
   connect(panel, SIGNAL(coarseBodyViewTriggered()),
           this, SLOT(showCoarseBody3d()));
   connect(panel, SIGNAL(savingMerge()), this, SLOT(saveMergeOperation()));
+  connect(panel, SIGNAL(committingMerge()), this, SLOT(commitMerge()));
   connect(panel, SIGNAL(zoomingTo(int, int, int)),
           this, SLOT(zoomTo(int, int, int)));
   connect(panel, SIGNAL(locatingBody(uint64_t)),

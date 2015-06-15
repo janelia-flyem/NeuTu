@@ -197,6 +197,8 @@ void ZFlyEmProofMvc::customInit()
           &m_mergeProject, SLOT(highlightSelectedObject(bool)));
   connect(&m_mergeProject, SIGNAL(locating2DViewTriggered(ZStackViewParam)),
           this->getView(), SLOT(setView(ZStackViewParam)));
+  connect(&m_mergeProject, SIGNAL(dvidLabelChanged()),
+          this->getCompleteDocument(), SLOT(updateDvidLabelObject()));
   /*
   connect(&m_mergeProject, SIGNAL(messageGenerated(QString, bool)),
           this, SIGNAL(messageGenerated(QString,bool)));
@@ -478,6 +480,11 @@ void ZFlyEmProofMvc::saveSeed()
 void ZFlyEmProofMvc::saveMergeOperation()
 {
   getCompleteDocument()->saveMergeOperation();
+}
+
+void ZFlyEmProofMvc::commitMerge()
+{
+  m_mergeProject.uploadResult();
 }
 
 void ZFlyEmProofMvc::commitCurrentSplit()
