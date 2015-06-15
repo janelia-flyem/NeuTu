@@ -73,11 +73,12 @@ public:
 
   ZObject3dScan* readBody(ZObject3dScan *out) const;
 
-  void saveSeed();
+  void saveSeed(bool emphasizingMessage);
   void deleteSavedSeed();
   void downloadSeed();
   void recoverSeed();
-  void selectSeed(int label);
+  int selectSeed(int label);
+  int selectAllSeed();
 
   void exportSplits();
   void commitResult();
@@ -121,13 +122,12 @@ public:
   bool isReadyForSplit(const ZDvidTarget &target);
 
   void emitMessage(const QString &msg, bool appending = true);
+  void emitPopoupMessage(const QString &msg);
   void emitError(const QString &msg, bool appending = true);
 
 signals:
-  /*
   void messageGenerated(QString, bool appending = true);
   void errorGenerated(QString, bool appending = true);
-  */
 
   void messageGenerated(const ZWidgetMessage&);
 //  void errorGenerated(QStringList);

@@ -1,8 +1,8 @@
 #!/bin/bash
 
-ssh emrecon2 '/opt/bin/ntupd'
+#ssh emrecon2 '/opt/bin/ntupd'
 ssh emrecon10 '/opt/bin/ntupd'
-ssh emrecon11 '/opt/bin/ntupd'
+#ssh emrecon11 '/opt/bin/ntupd'
 ssh emrecon13 '/opt/bin/ntupd'
 ssh emrecon14 '/opt/bin/ntupd'
 ssh emrecon15 '/opt/bin/ntupd'

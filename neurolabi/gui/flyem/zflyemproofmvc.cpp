@@ -2,6 +2,7 @@
 
 #include <QFuture>
 #include <QtConcurrentRun>
+#include <QMessageBox>
 
 #include "flyem/zflyemproofdoc.h"
 #include "zstackview.h"
@@ -17,11 +18,15 @@
 #include "dvid/zdvidlabelslice.h"
 #include "flyem/zflyemproofpresenter.h"
 #include "zwidgetmessage.h"
+#include "zspinboxdialog.h"
+#include "zdialogfactory.h"
 
 ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
   ZStackMvc(parent), m_splitOn(false)
 {
   qRegisterMetaType<uint64_t>("uint64_t");
+  qRegisterMetaType<ZWidgetMessage>("ZWidgetMessage");
+
 
   m_dvidDlg = new ZDvidDialog(this);
 }
@@ -192,6 +197,8 @@ void ZFlyEmProofMvc::customInit()
           &m_mergeProject, SLOT(highlightSelectedObject(bool)));
   connect(&m_mergeProject, SIGNAL(locating2DViewTriggered(ZStackViewParam)),
           this->getView(), SLOT(setView(ZStackViewParam)));
+  connect(&m_mergeProject, SIGNAL(dvidLabelChanged()),
+          this->getCompleteDocument(), SLOT(updateDvidLabelObject()));
   /*
   connect(&m_mergeProject, SIGNAL(messageGenerated(QString, bool)),
           this, SIGNAL(messageGenerated(QString,bool)));
@@ -211,8 +218,14 @@ void ZFlyEmProofMvc::customInit()
           this, SLOT(xorSelectionAt(int, int, int)));
   connect(getCompletePresenter(), SIGNAL(deselectingAllBody()),
           this, SLOT(deselectAllBody()));
+  connect(getCompletePresenter(), SIGNAL(runningSplit()), this, SLOT(runSplit()));
 
   disableSplit();
+}
+
+void ZFlyEmProofMvc::runSplit()
+{
+  m_splitProject.runSplit();
 }
 
 void ZFlyEmProofMvc::updateBodySelection()
@@ -241,14 +254,24 @@ void ZFlyEmProofMvc::notifySplitTriggered()
       uint64_t bodyId = *(selected.begin());
 
       emit launchingSplit(bodyId);
+    } else {
+      emit messageGenerated("Only one body has to be selected.");
     }
   }
 }
 
 void ZFlyEmProofMvc::launchSplitFunc(uint64_t bodyId)
 {
+  if (bodyId == 0) {
+    emit errorGenerated(QString("Invalid body id: %1").arg(bodyId));
+    return;
+  }
+
   if (!getCompleteDocument()->isSplittable(bodyId)) {
-    emit errorGenerated(QString("%1 is not ready for split.").arg(bodyId));
+    QString msg = QString("%1 is not ready for split.").arg(bodyId);
+    emit messageGenerated(
+          ZWidgetMessage(msg, NeuTube::MSG_ERROR, ZWidgetMessage::TARGET_DIALOG));
+    emit errorGenerated(msg);
   } else {
     ZDvidSparseStack *body = dynamic_cast<ZDvidSparseStack*>(
           getDocument()->getObjectGroup().findFirstSameSource(
@@ -272,23 +295,33 @@ void ZFlyEmProofMvc::launchSplitFunc(uint64_t bodyId)
 
       if (body == NULL) {
         body = reader.readDvidSparseStack(bodyId);
+      }
+
+      if (body->isEmpty()) {
+        delete body;
+        body = NULL;
+
+        QString msg = QString("Invalid body id: %1").arg(bodyId);
+        emit messageGenerated(
+              ZWidgetMessage(msg, NeuTube::MSG_ERROR, ZWidgetMessage::TARGET_DIALOG));
+        emit errorGenerated(msg);
+      } else {
         body->setZOrder(0);
         body->setSource(ZStackObjectSourceFactory::MakeSplitObjectSource());
         body->setMaskColor(labelSlice->getColor(
                              bodyId, NeuTube::BODY_LABEL_ORIGINAL));
         body->setSelectable(false);
         getDocument()->addObject(body, true);
+        m_splitProject.setBodyId(bodyId);
+
+        labelSlice->setVisible(false);
+        labelSlice->setHittable(false);
+        body->setVisible(true);
+
+        getProgressSignal()->advanceProgress(0.1);
+
+        emit splitBodyLoaded(bodyId);
       }
-
-      m_splitProject.setBodyId(bodyId);
-
-      labelSlice->setVisible(false);
-      labelSlice->setHittable(false);
-      body->setVisible(true);
-
-      getProgressSignal()->advanceProgress(0.1);
-
-      emit splitBodyLoaded(bodyId);
 
       getProgressSignal()->endProgress();
     }
@@ -346,8 +379,10 @@ void ZFlyEmProofMvc::exitSplit()
 
     labelSlice->setHittable(true);
 
+    m_splitProject.clearBookmarkDecoration();
     getDocument()->removeObject(ZStackObjectRole::ROLE_SEED);
     getDocument()->removeObject(ZStackObjectRole::ROLE_TMP_RESULT);
+    getDocument()->removeObject(ZStackObjectRole::ROLE_TMP_BOOKMARK);
 
     ZDvidSparseStack *body = dynamic_cast<ZDvidSparseStack*>(
           getDocument()->getObjectGroup().findFirstSameSource(
@@ -369,10 +404,21 @@ void ZFlyEmProofMvc::switchSplitBody(uint64_t bodyId)
   if (bodyId != m_splitProject.getBodyId()) {
     if (m_splitOn) {
 //      exitSplit();
-      m_splitProject.clear();
-      getDocument()->removeObject(ZStackObjectRole::ROLE_SEED);
-      getDocument()->removeObject(ZStackObjectRole::ROLE_TMP_RESULT);
-      launchSplit(bodyId);
+      QMessageBox msgBox;
+       msgBox.setText("Changing to another body to split.");
+       msgBox.setInformativeText("Do you want to save your seeds?");
+       msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
+       msgBox.setDefaultButton(QMessageBox::Save);
+       int ret = msgBox.exec();
+       if (ret != QMessageBox::Cancel) {
+         if (ret == QMessageBox::Save) {
+           m_splitProject.saveSeed(false);
+         }
+         m_splitProject.clear();
+         getDocument()->removeObject(ZStackObjectRole::ROLE_SEED);
+         getDocument()->removeObject(ZStackObjectRole::ROLE_TMP_RESULT);
+         launchSplit(bodyId);
+       }
     }
   }
 }
@@ -428,12 +474,17 @@ void ZFlyEmProofMvc::setDvidLabelSliceSize(int width, int height)
 
 void ZFlyEmProofMvc::saveSeed()
 {
-  m_splitProject.saveSeed();
+  m_splitProject.saveSeed(true);
 }
 
 void ZFlyEmProofMvc::saveMergeOperation()
 {
   getCompleteDocument()->saveMergeOperation();
+}
+
+void ZFlyEmProofMvc::commitMerge()
+{
+  m_mergeProject.uploadResult();
 }
 
 void ZFlyEmProofMvc::commitCurrentSplit()
@@ -528,6 +579,36 @@ void ZFlyEmProofMvc::deselectAllBody()
       slice->deselectAll();
       updateBodySelection();
     }
+  }
+}
+
+void ZFlyEmProofMvc::selectSeed()
+{
+  ZSpinBoxDialog *dlg = ZDialogFactory::makeSpinBoxDialog(this);
+  dlg->setValueLabel("Label");
+  dlg->getButton(ZButtonBox::ROLE_SKIP)->hide();
+  dlg->setValue(1);
+  if (dlg->exec()) {
+    int label = dlg->getValue();
+   int nSelected = m_splitProject.selectSeed(label);
+   getView()->paintObject();
+   emit messageGenerated(QString("%1 seed(s) are selected.").arg(nSelected));
+  }
+  delete dlg;
+}
+
+void ZFlyEmProofMvc::selectAllSeed()
+{
+  int nSelected = m_splitProject.selectAllSeed();
+  getView()->paintObject();
+  emit messageGenerated(QString("%1 seed(s) are selected.").arg(nSelected));
+}
+
+void ZFlyEmProofMvc::recoverSeed()
+{
+  if (ZDialogFactory::Ask("Recover Seed", "All current seeds might be lost. "
+                          "Do you want to continue?", this)) {
+    m_splitProject.recoverSeed();
   }
 }
 

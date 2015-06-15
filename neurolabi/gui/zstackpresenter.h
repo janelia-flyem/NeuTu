@@ -97,7 +97,7 @@ public:
   void setZoomOffset(int x, int y);
 */
   void processMouseReleaseEvent(QMouseEvent *event);
-  bool processKeyPressEvent(QKeyEvent *event);
+  virtual bool processKeyPressEvent(QKeyEvent *event);
   void processMouseMoveEvent(QMouseEvent *event);
   void processMousePressEvent(QMouseEvent *event);
   void processMouseDoubleClickEvent(QMouseEvent *eventint);
@@ -409,7 +409,7 @@ protected:
   bool m_isStrokeOn;
 
   ZSingleSwcNodeActionActivator m_singleSwcNodeActionActivator;
-  bool m_skipMouseReleaseEvent;
+  int m_skipMouseReleaseEvent;
 
   ZKeyOperationMap m_swcKeyOperationMap;
   ZKeyOperationMap m_stackKeyOperationMap;

@@ -39,6 +39,28 @@ bool ZFlyEmProofPresenter::customKeyProcess(QKeyEvent *event)
   return processed;
 }
 
+bool ZFlyEmProofPresenter::processKeyPressEvent(QKeyEvent *event)
+{
+  bool processed = false;
+  switch (event->key()) {
+  case Qt::Key_Space:
+    if (event->modifiers() == Qt::ShiftModifier) {
+      emit runningSplit();
+      processed = true;
+    }
+    break;
+  default:
+    break;
+  }
+
+
+  if (processed == false) {
+    processed = ZStackPresenter::processKeyPressEvent(event);
+  }
+
+  return processed;
+}
+
 bool ZFlyEmProofPresenter::isHighlight() const
 {
   return m_isHightlightMode && !isSplitOn();

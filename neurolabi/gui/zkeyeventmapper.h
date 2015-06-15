@@ -1,6 +1,7 @@
 #ifndef ZKEYEVENTMAPPER_H
 #define ZKEYEVENTMAPPER_H
 
+#include <QMap>
 #include "tz_utilities.h"
 #include "zsharedpointer.h"
 #include "zstackoperator.h"
@@ -14,6 +15,15 @@ class ZKeyEventMapper
 {
 public:
   ZKeyEventMapper();
+
+  enum EValueConflictResolve { //Same key to different value
+    VALUE_KEEP_MASTER, VALUE_KEEP_GUEST,
+  };
+
+  enum EKeyConflictResolve { //Different key to same value
+    KEY_KEEP_BOTH, KEY_KEEP_MASTER, KEY_KEEP_GUEST
+  };
+
   /*
   ZKeyEventMapper(ZInteractiveContext *context = NULL,
                   ZStackDoc *doc = NULL);
@@ -22,6 +32,9 @@ public:
   virtual ZStackOperator getOperation(const QKeyEvent &event) const;
 
   ZStackOperator initOperation() const;
+
+  void merge(const ZKeyEventMapper &mapper, EKeyConflictResolve keyResolve,
+             EValueConflictResolve valueResolve);
 /*
   inline void setContext(ZInteractiveContext *context) {
     m_context = context;
@@ -32,6 +45,7 @@ public:
   }
 */
 protected:
+  QMap<int, ZStackOperator::EOperation> m_operationMap;
   //ZInteractiveContext *m_context;
   //mutable ZSharedPointer<ZStackDoc> m_doc;
 };

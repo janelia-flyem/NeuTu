@@ -221,7 +221,9 @@ HEADERS +=$${PWD}/zstackprocessor.h \
    $${PWD}/flyem/zflyemneurondensitymatcher.h \
    $${PWD}/zdag.h \
    $${PWD}/zselector.h \
-   $${PWD}/zobject3dstripe.h
+   $${PWD}/zobject3dstripe.h \
+   $${PWD}/jneurontracer.h \
+   $${PWD}/neutube_def.h
 
 SOURCES +=$${PWD}/zstackprocessor.cpp \
    $${PWD}/zstack.cxx \
@@ -426,5 +428,6 @@ SOURCES +=$${PWD}/zstackprocessor.cpp \
    $${PWD}/flyem/zflyemneurondensity.cpp \
    $${PWD}/flyem/zflyemneurondensitymatcher.cpp \
    $${PWD}/zdag.cpp \
-   $${PWD}/zobject3dstripe.cpp
+   $${PWD}/zobject3dstripe.cpp \
+   $${PWD}/jneurontracer.cpp
 

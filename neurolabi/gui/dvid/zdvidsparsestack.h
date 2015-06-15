@@ -12,6 +12,7 @@ class ZDvidSparseStack : public ZStackObject
 {
 public:
   ZDvidSparseStack();
+  ~ZDvidSparseStack();
 
   void display(ZPainter &painter, int slice, EDisplayStyle option) const;
 
@@ -51,7 +52,7 @@ public:
   bool hit(double x, double y, double z);
   bool hit(double x, double y);
 
-
+  bool isEmpty() const;
 
 
 private:

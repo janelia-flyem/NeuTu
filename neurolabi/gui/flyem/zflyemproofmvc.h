@@ -48,6 +48,7 @@ signals:
   void launchingSplit(uint64_t bodyId);
   void messageGenerated(const QString &message, bool appending = true);
   void errorGenerated(const QString &message, bool appending = true);
+  void messageGenerated(const ZWidgetMessage &message);
   void splitBodyLoaded(uint64_t bodyId);
   void bookmarkUpdated(ZFlyEmBodySplitProject *m_project);
   void dvidTargetChanged(ZDvidTarget);
@@ -71,6 +72,7 @@ public slots:
   void updateBodySelection();
   void saveSeed();
   void saveMergeOperation();
+  void commitMerge();
   void commitCurrentSplit();
   void locateBody(uint64_t bodyId);
 
@@ -88,6 +90,10 @@ public slots:
   void addSelectionAt(int x, int y, int z);
   void xorSelectionAt(int x, int y, int z);
   void deselectAllBody();
+  void selectSeed();
+  void selectAllSeed();
+  void recoverSeed();
+  void runSplit();
 //  void toggleEdgeMode(bool edgeOn);
 
 protected:
@@ -127,6 +133,7 @@ void ZFlyEmProofMvc::connectControlPanel(T *panel)
   connect(panel, SIGNAL(coarseBodyViewTriggered()),
           this, SLOT(showCoarseBody3d()));
   connect(panel, SIGNAL(savingMerge()), this, SLOT(saveMergeOperation()));
+  connect(panel, SIGNAL(committingMerge()), this, SLOT(commitMerge()));
   connect(panel, SIGNAL(zoomingTo(int, int, int)),
           this, SLOT(zoomTo(int, int, int)));
   connect(panel, SIGNAL(locatingBody(uint64_t)),
@@ -153,6 +160,9 @@ void ZFlyEmProofMvc::connectSplitControlPanel(T *panel)
           panel, SLOT(updateBookmarkTable(ZFlyEmBodySplitProject*)));
   connect(panel, SIGNAL(zoomingTo(int, int, int)),
           this, SLOT(zoomTo(int, int, int)));
+  connect(panel, SIGNAL(selectingSeed()), this, SLOT(selectSeed()));
+  connect(panel, SIGNAL(selectingAllSeed()), this, SLOT(selectAllSeed()));
+  connect(panel, SIGNAL(recoveringSeed()), this, SLOT(recoverSeed()));
   connect(this, SIGNAL(splitBodyLoaded(uint64_t)),
           panel, SLOT(updateBodyWidget(uint64_t)));
 }

@@ -115,16 +115,16 @@ void FlyEmBodySplitProjectDialog::connectSignalSlot()
           this, SLOT(dump(QString,bool)));
   connect(this, SIGNAL(sideViewCanceled()), this, SLOT(resetSideView()));
 
-  connect(&m_project, SIGNAL(messageGenerated(QString)),
-          this, SIGNAL(messageDumped(QString)));
+  connect(&m_project, SIGNAL(messageGenerated(QString, bool)),
+          this, SIGNAL(messageDumped(QString, bool)));
 
   connect(&m_project, SIGNAL(progressStarted(QString,int)),
           this, SIGNAL(progressStarted(QString,int)));
   connect(&m_project, SIGNAL(progressAdvanced(double)),
           this, SIGNAL(progressAdvanced(double)));
   connect(&m_project, SIGNAL(progressDone()), this, SIGNAL(progressDone()));
-  connect(&m_project, SIGNAL(messageGenerated(QString)),
-          this, SLOT(dump(QString)));
+//  connect(&m_project, SIGNAL(messageGenerated(QString)),
+//          this, SLOT(dump(QString)));
   connect(&m_project, SIGNAL(errorGenerated(QString)),
           this, SLOT(dumpError(QString)));
 
@@ -474,14 +474,15 @@ void FlyEmBodySplitProjectDialog::updateWidget()
 
 void FlyEmBodySplitProjectDialog::dump(const QString &info, bool appending)
 {    
+  QString text = "<p>" + info + "</p>";
   if (appending) {
-    ui->outputWidget->append(info);
+    ui->outputWidget->append(text);
     ui->outputWidget->verticalScrollBar()->setValue(
           ui->outputWidget->verticalScrollBar()->maximum());
   } else {
     ui->oldOutputWidget->append(ui->outputWidget->toHtml());
     ui->outputWidget->clear();
-    ui->outputWidget->setText(info);
+    ui->outputWidget->setText(text);
   }
 }
 
@@ -850,7 +851,7 @@ void FlyEmBodySplitProjectDialog::viewFullGrayscale(bool viewing)
 
 void FlyEmBodySplitProjectDialog::saveSeed()
 {
-  m_project.saveSeed();
+  m_project.saveSeed(true);
 }
 
 void FlyEmBodySplitProjectDialog::showBodyMask(bool on)

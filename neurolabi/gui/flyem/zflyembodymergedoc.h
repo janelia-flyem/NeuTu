@@ -43,6 +43,7 @@ public:
   }
 
   void saveMergeOperation() const;
+  void clearBodyMerger();
 
 private:
   QList<ZObject3dScan*> extractAllObject();

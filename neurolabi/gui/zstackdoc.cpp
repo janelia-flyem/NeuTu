@@ -213,6 +213,7 @@ void ZStackDoc::initNeuronTracer()
 {
   m_neuronTracer.initTraceWorkspace(getStack());
   m_neuronTracer.initConnectionTestWorkspace();
+//  m_neuronTracer.getConnectionTestWorkspace()->sp_test = 1;
   if (getStack() != NULL) {
     m_neuronTracer.setIntensityField(getStack()->c_stack());
   }
@@ -2082,17 +2083,29 @@ void ZStackDoc::autoThreshold()
 
     int low, high;
     Int_Histogram_Range(hist, &low, &high);
+
+#ifdef _DEBUG_2
+    std::cout << Int_Histogram_Sum(hist) << std::endl;
+    std::cout << (double) Int_Histogram_Sum(hist) / C_Stack::voxelNumber(stack) << std::endl;
+#endif
+
 //    m_progressReporter->advance(0.1);
     notifyProgressAdvanced(0.1);
 
-    if (high > low) {
-      thre = Int_Histogram_Triangle_Threshold(hist, low, high - 1);
+    if ((double) Int_Histogram_Sum(hist) / C_Stack::voxelNumber(stack) <= 1e-5) {
+      thre = Stack_Common_Intensity(stack, 0, high);
     } else {
-      free(hist);
-      hist = Stack_Hist(stack);
-      Int_Histogram_Range(hist, &low, &high);
-      thre = Int_Histogram_Rc_Threshold(hist, low, high);
+      if (high > low) {
+        thre = Int_Histogram_Triangle_Threshold(hist, low, high - 1);
+      } else {
+        free(hist);
+        hist = Stack_Hist(stack);
+        Int_Histogram_Range(hist, &low, &high);
+        thre = Int_Histogram_Rc_Threshold(hist, low, high);
+      }
     }
+
+
 //    m_progressReporter->advance(0.1);
     notifyProgressAdvanced(0.1);
     free(hist);
@@ -4849,6 +4862,9 @@ void ZStackDoc::notifyObjectModified(ZStackObject::EType type)
   case ZStackObject::TYPE_OBJECT3D_SCAN:
     notifyObject3dScanModified();
     break;
+  case ZStackObject::TYPE_3D_GRAPH:
+    notify3DGraphModified();
+    break;
   default:
 //    notifyObjectModified();
     break;
@@ -6407,6 +6423,10 @@ void ZStackDoc::addObject(ZStackObject *obj, bool uniqueSource)
     return;
   }
 
+  if (m_objectGroup.contains(obj)) {
+    return;
+  }
+
   TStackObjectList objList;
 //  ZStackObjectRole role;
 
@@ -6414,10 +6434,10 @@ void ZStackDoc::addObject(ZStackObject *obj, bool uniqueSource)
     objList = m_objectGroup.takeSameSource(obj->getType(), obj->getSource());
     for (TStackObjectList::iterator iter = objList.begin();
          iter != objList.end(); ++iter) {
-      ZStackObject *obj = *iter;
-      bufferObjectModified(obj);
+      ZStackObject *oldObj = *iter;
+      bufferObjectModified(oldObj);
 //      role.addRole(m_playerList.removePlayer(obj));
-      delete obj;
+      delete oldObj;
     }
   }
 
@@ -6829,6 +6849,7 @@ bool ZStackDoc::executeAutoTraceCommand(bool doResample)
   m_neuronTracer.setProgressReporter(getProgressReporter());
 
   startProgress(0.9);
+  m_neuronTracer.setTraceLevel(5);
   ZSwcTree *tree = m_neuronTracer.trace(getStack()->c_stack(), doResample);
   endProgress(0.9);
 
@@ -7893,11 +7914,15 @@ void ZStackDoc::localSeededWatershed()
 void ZStackDoc::seededWatershed()
 {
   getProgressSignal()->startProgress("Splitting ...");
+
+  qDebug() << "Removing old result ...";
   removeObject(ZStackObjectRole::ROLE_TMP_RESULT, true);
 
   getProgressSignal()->advanceProgress(0.1);
   //removeAllObj3d();
   ZStackWatershed engine;
+
+  qDebug() << "Creating seed mask ...";
   ZStackArray seedMask = createWatershedMask(false);
 
   getProgressSignal()->advanceProgress(0.1);
@@ -7924,6 +7949,7 @@ void ZStackDoc::seededWatershed()
 
 
     if (signalStack != NULL) {
+      qDebug() << "Downsampling ..." << dsIntv.toString();
       seedMask.downsampleMax(dsIntv.getX(), dsIntv.getY(), dsIntv.getZ());
 
 #ifdef _DEBUG_2

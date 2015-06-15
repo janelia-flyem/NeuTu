@@ -101,6 +101,7 @@ signals:
   void bodyMerged(QList<uint64_t> objLabelList);
   void splitSent(ZDvidTarget target, int bodyId);
   void locating2DViewTriggered(ZStackViewParam);
+  void dvidLabelChanged();
   void messageGenerated(const ZWidgetMessage&);
 
   /*
@@ -115,6 +116,7 @@ public slots:
   void mergeBody();
   void setLoadingLabel(bool state);
   void uploadResult();
+  void saveMergeOperation();
   void update3DBodyView(const ZStackObjectSelector &selector);
   void update3DBodyView();
   void update3DBodyViewDeep();
@@ -125,6 +127,7 @@ public slots:
 
 private:
   ZFlyEmBodyMerger* getBodyMerger() const;
+  void clearBodyMerger();
   //void updateSelection();
 
 private:

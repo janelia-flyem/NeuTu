@@ -42,7 +42,7 @@
 #include "zsparseobject.h"
 #include "zmessage.h"
 #include "zmessagemanager.h"
-
+#include "zdialogfactory.h"
 
 using namespace std;
 
@@ -1221,6 +1221,13 @@ void ZStackFrame::showObject()
 
 Z3DWindow* ZStackFrame::open3DWindow(Z3DWindow::EInitMode mode)
 {
+  if (Z3DApplication::app() == NULL) {
+    ZDialogFactory::Notify3DDisabled(this);
+
+    return NULL;
+  }
+
+
   Z3DWindow *window = document()->getParent3DWindow();
 
   if (window == NULL) {
@@ -1246,8 +1253,10 @@ Z3DWindow* ZStackFrame::open3DWindow(Z3DWindow::EInitMode mode)
     window->show();
     window->raise();
   } else {
-    QMessageBox::critical(this, tr("3D functions are disabled"),
-                          Z3DApplication::app()->getErrorMessage());
+    if (Z3DApplication::app() != NULL) {
+      QMessageBox::critical(this, tr("3D functions are disabled"),
+                            Z3DApplication::app()->getErrorMessage());
+    }
   }
 
   return window;

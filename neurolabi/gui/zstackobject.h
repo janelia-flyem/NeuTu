@@ -44,7 +44,7 @@ class ZStackObject
 {
 public:
   ZStackObject();
-  virtual ~ZStackObject() {}
+  virtual ~ZStackObject();
 
   enum EType {
     TYPE_UNIDENTIFIED = 0, //Unidentified type
@@ -67,7 +67,8 @@ public:
     TYPE_DVID_SPARSE_STACK,
     TYPE_DVID_SPARSEVOL_SLICE,
     TYPE_STACK,
-    TYPE_SWC_NODE
+    TYPE_SWC_NODE,
+    TYPE_3D_GRAPH
   };
 
   enum Palette_Color {
@@ -79,7 +80,8 @@ public:
   };
 
   enum ETarget {
-    TARGET_STACK_CANVAS, TARGET_OBJECT_CANVAS, TARGET_WIDGET, TARGET_TILE_CANVAS
+    TARGET_STACK_CANVAS, TARGET_OBJECT_CANVAS, TARGET_WIDGET, TARGET_TILE_CANVAS,
+    TARGET_3D_ONLY
   };
 
   enum EDisplaySliceMode {

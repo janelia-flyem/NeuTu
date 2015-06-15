@@ -347,3 +347,10 @@ std::vector<std::string> ZJsonObject::getAllKey() const
 
   return keyList;
 }
+
+void ZJsonObject::removeKey(const char *key)
+{
+  if (!isEmpty() && key != NULL) {
+    json_object_del(m_data, key);
+  }
+}

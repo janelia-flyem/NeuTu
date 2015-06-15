@@ -87,9 +87,12 @@ public:
 
   uint64_t getHitLabel() const;
 
+  const ZStackViewParam& getViewParam() const;
+
 private:
   inline const ZDvidTarget& getDvidTarget() const { return m_dvidTarget; }
   void assignColorMap();
+//  void forceUpdate();
   void forceUpdate(const ZStackViewParam &viewParam);
   //void updateLabel(const ZFlyEmBodyMerger &merger);
   void init(int maxWidth, int maxHeight);

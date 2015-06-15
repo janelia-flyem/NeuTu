@@ -184,6 +184,7 @@ MainWindow::MainWindow(QWidget *parent) :
                << std::endl;
 #endif
 
+
   m_reporter = new ZQtMessageReporter();
 
   m_lastOpenedFilePath = ".";
@@ -224,8 +225,11 @@ MainWindow::MainWindow(QWidget *parent) :
   createContextMenu();
 
   //std::cout << "Creating toolbars ..." << std::endl;
+#if defined(_QT_APPLICATION_)
   RECORD_INFORMATION("Creating toolbars ...");
   createToolBars();
+#endif
+
   createStatusBar();
 
   readSettings();
@@ -1244,6 +1248,11 @@ bool MainWindow::ask(const std::string &title, const std::string &msg)
 
 void MainWindow::initOpenglContext()
 {
+  if (Z3DApplication::app() == NULL) {
+    ZDialogFactory::Notify3DDisabled(this);
+    return;
+  }
+
   // initGL requires a valid OpenGL context
   if (m_sharedContext != NULL) {
     // initialize OpenGL
@@ -2050,7 +2059,7 @@ void MainWindow::about()
   if (!NeutubeConfig::getInstance().getApplication().empty()) {
     title += QString("<p>") +
         NeutubeConfig::getInstance().getApplication().c_str() + " Edition" +
-        "</p>";
+        " (6035f75def4c41a947a3c45dfd69d449a82c5751)</p>";
   }
   QString thirdPartyLib = QString("<p><a href=\"file:///%1/doc/ThirdPartyLibraries.txt\">Third Party Libraries</a></p>")
       .arg(QApplication::applicationDirPath());
@@ -2513,6 +2522,8 @@ void MainWindow::on_actionAutomatic_triggered()
     m_progress->setValue(1);
     m_progress->setLabelText("Tracing");
     m_progress->show();
+//    frame->document()->setTraceLevel(dlg.getTraceLevel());
+
     QtConcurrent::run(this, &MainWindow::autoTrace, frame, dlg.getDoResample());
   }
 }
@@ -4619,6 +4630,7 @@ ZStackFrame *MainWindow::createStackFrame(
   return NULL;
 }
 #endif
+
 void MainWindow::on_actionMake_Projection_triggered()
 {
   ZStackFrame *frame = currentStackFrame();
@@ -7006,7 +7018,6 @@ void MainWindow::launchSplit(const QString &str)
 //  m_bodySplitProjectDialog->show();
   m_bodySplitProjectDialog->startSplit(str);
 }
-
 
 void MainWindow::on_actionProof_triggered()
 {

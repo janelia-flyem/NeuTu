@@ -388,3 +388,8 @@ std::string ZDvidTarget::getName(ZDvidData::ERole role) const
 
   return name;
 }
+
+bool ZDvidTarget::isDvidTarget(const std::string &source)
+{
+  return ZString(source).startsWith("http:");
+}

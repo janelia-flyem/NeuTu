@@ -49,6 +49,8 @@ public slots:
 private:
   Z3DGraph m_graph;
 
+  ZBoolParameter m_showGraph;
+
   Z3DLineRenderer *m_lineRenderer;
   Z3DConeRenderer *m_coneRenderer;
   Z3DConeRenderer *m_arrowRenderer;

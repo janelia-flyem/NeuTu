@@ -16,6 +16,7 @@ public:
   void display(ZPainter &painter, int slice, EDisplayStyle option) const;
 
   void update(int z);
+  void update();
 
 private:
   ZDvidSparsevolSlice& operator=(const ZDvidSparsevolSlice& obj);

@@ -28,6 +28,11 @@ void ZDvidSparsevolSlice::update(int z)
   }
 }
 
+void ZDvidSparsevolSlice::update()
+{
+  m_reader.readBody(getLabel(), m_currentZ, this);
+}
+
 void ZDvidSparsevolSlice::display(
     ZPainter &painter, int slice, EDisplayStyle option) const
 {

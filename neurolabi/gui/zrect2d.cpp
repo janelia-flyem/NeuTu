@@ -73,6 +73,26 @@ void ZRect2d::setFirstCorner(int x, int y)
   m_y0 = y;
 }
 
+int ZRect2d::getFirstX() const
+{
+  return m_x0;
+}
+
+int ZRect2d::getFirstY() const
+{
+  return m_y0;
+}
+
+int ZRect2d::getLastX() const
+{
+  return m_width + m_x0 - 1;
+}
+
+int ZRect2d::getLastY() const
+{
+  return m_height + m_y0 - 1;
+}
+
 bool ZRect2d::hit(double x, double y)
 {
   return ((x >= m_x0 - 5 && y >= m_y0 - 5 &&

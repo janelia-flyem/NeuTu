@@ -24,6 +24,9 @@ Stack_Watershed_Workspace* ZStackWatershed::createWorkspace(const Stack *stack)
   } else {
     ws->start_level = 65535;
   }
+  std::cout << "workspace mask size: " << C_Stack::width(stack) << "x"
+            << C_Stack::height(stack) << "x" << C_Stack::depth(stack)
+            << std::endl;
   Stack *mask = C_Stack::make(GREY, C_Stack::width(stack),
                               C_Stack::height(stack), C_Stack::depth(stack));
   ws->mask = mask;
@@ -98,6 +101,7 @@ ZStack *ZStackWatershed::run(
       }
     }
 
+    std::cout << "Estimating bounding box ..." << std::endl;
     Cuboid_I_Intersect(&stackBox, &box, &box);
 
     if (Cuboid_I_Is_Valid(&box)) {
@@ -114,15 +118,21 @@ ZStack *ZStackWatershed::run(
       C_Stack::write(GET_DATA_DIR + "/test_seed.tif", ws->mask);
 #endif
 
+      std::cout << "Computing watershed ..." << std::endl;
       Stack *out = Stack_Watershed(source, ws);
+
+      std::cout << "Creating result ..." << std::endl;
       result = new ZStack;
       result->consume(out);
       result->setOffset(sourceOffset);
 
+      std::cout << "Cleaning space ..." << std::endl;
       if (source != stack->c_stack()) {
         C_Stack::kill(const_cast<Stack*>(source));
       }
       Kill_Stack_Watershed_Workspace(ws);
+
+      std::cout << "Splitting done." << std::endl;
     }
   }
 

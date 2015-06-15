@@ -12,6 +12,13 @@ ZDvidSparseStack::ZDvidSparseStack()
   m_type = ZStackObject::TYPE_DVID_SPARSE_STACK;
 }
 
+ZDvidSparseStack::~ZDvidSparseStack()
+{
+#ifdef _DEBUG_
+  std::cout << "Deleting dvid sparsestack: " << ": " << getSource() << std::endl;
+#endif
+}
+
 ZStack* ZDvidSparseStack::getSlice(int z) const
 {
   ZStack *stack = NULL;
@@ -198,6 +205,7 @@ bool ZDvidSparseStack::fillValue()
 //  bool changed = false;
   int blockCount = 0;
   if (!m_sparseStack.getObjectMask()->isEmpty()) {
+//    std::cout << "Downloading grayscale ..." << std::end;
     qDebug() << "Downloading grayscale ...";
     ZDvidInfo dvidInfo;
     dvidInfo.setFromJsonString(
@@ -323,6 +331,11 @@ bool ZDvidSparseStack::hit(double x, double y)
   }
 
   return false;
+}
+
+bool ZDvidSparseStack::isEmpty() const
+{
+  return m_sparseStack.isEmpty();
 }
 
 ZSTACKOBJECT_DEFINE_CLASS_NAME(ZDvidSparseStack)

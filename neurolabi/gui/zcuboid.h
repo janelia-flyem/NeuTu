@@ -37,6 +37,11 @@ public:
   void set(const double *corner);
 
   void setFirstCorner(const ZPoint &pt);
+  void setFirstCorner(double x, double y, double z);
+
+  void setLastCorner(const ZPoint &pt);
+  void setLastCorner(double x, double y, double z);
+
   void setSize(double width, double height, double depth);
 
   /*!
@@ -104,6 +109,7 @@ public:
       const ZPoint &p0, const ZPoint &slope, ZLineSegment *seg) const;
 
   ZIntCuboid toIntCuboid() const;
+  double getDiagonalLength() const;
 
 private:
   static double computeDistance(double minX1, double maxX1,

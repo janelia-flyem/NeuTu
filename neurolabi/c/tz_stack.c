@@ -73,7 +73,30 @@ Stack *Stack_Locmax_Region(const Stack *stack, int conn)
 
   switch (stack->kind) {
   case GREY:
-    STACK_LOCMAX_REGION_INIT_ALL(ia.array);
+  {
+    uint8_t *stack_array = stack->array;
+    for (z = 0; z < stack->depth; z++) {
+      for (y = 0; y < stack->height; y++) {
+        for (x = 0; x < stack->width; x++) {
+      if (stack_array[offset] > 0) {
+        nbound = Stack_Neighbor_Bound_Test(conn, cwidth, cheight, cdepth,
+                           x, y, z, is_in_bound);
+        if (nbound == conn) {
+          STACK_LOCMAX_REGION_INIT_QUEUE(stack_array, 1);
+        } else {
+          STACK_LOCMAX_REGION_INIT_QUEUE(stack_array, is_in_bound[i]);
+        }
+      } else {
+        result->array[offset] = 0;
+      }
+      offset++;
+        }
+      }
+    }
+  }
+
+
+//    STACK_LOCMAX_REGION_INIT_ALL(ia.array);
     break;
   case GREY16:
     STACK_LOCMAX_REGION_INIT_ALL(ia.array16);

@@ -60,6 +60,22 @@ void ZCuboid::setFirstCorner(const ZPoint &pt)
   m_firstCorner = pt;
 }
 
+void ZCuboid::setFirstCorner(double x, double y, double z)
+{
+  m_firstCorner.set(x, y, z);
+}
+
+void ZCuboid::setLastCorner(const ZPoint &pt)
+{
+  m_lastCorner = pt;
+}
+
+void ZCuboid::setLastCorner(double x, double y, double z)
+{
+  m_lastCorner.set(x, y, z);
+}
+
+
 void ZCuboid::setSize(double width, double height, double depth)
 {
   m_lastCorner = m_firstCorner + ZPoint(width, height, depth);
@@ -623,4 +639,9 @@ ZIntCuboid ZCuboid::toIntCuboid() const
   cuboid.setLastCorner(m_lastCorner.toIntPoint());
 
   return cuboid;
+}
+
+double ZCuboid::getDiagonalLength() const
+{
+  return sqrt(width() * width() + height() * height() + depth() * depth());
 }

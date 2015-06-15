@@ -1,9 +1,11 @@
 #include "flyemsplitcontrolform.h"
 
 #include <QMenu>
+#include <QInputDialog>
 #include <iostream>
 #include "ui_flyemsplitcontrolform.h"
 #include "zdialogfactory.h"
+#include "zstring.h"
 
 FlyEmSplitControlForm::FlyEmSplitControlForm(QWidget *parent) :
   QWidget(parent),
@@ -46,11 +48,35 @@ void FlyEmSplitControlForm::setupWidgetBehavior()
           this, SLOT(locateBookmark(QModelIndex)));
 
 //  ui->commitPushButton->setEnabled(false);
+  createMenu();
 }
 
 void FlyEmSplitControlForm::slotTest()
 {
   std::cout << "slot triggered." << std::endl;
+}
+
+void FlyEmSplitControlForm::createMenu()
+{
+  m_mainMenu = new QMenu(this);
+  ui->menuPushButton->setMenu(m_mainMenu);
+
+  QAction *queryPixelAction = new QAction("Go to Position", this);
+  m_mainMenu->addAction(queryPixelAction);
+  connect(queryPixelAction, SIGNAL(triggered()), this, SLOT(goToPosition()));
+
+  QMenu *seedMenu = m_mainMenu->addMenu("Seed");
+  QAction *recoverSeedAction = new QAction("Recover", this);
+  seedMenu->addAction(recoverSeedAction);
+  connect(recoverSeedAction, SIGNAL(triggered()), this, SLOT(recoverSeed()));
+
+  QAction *selectSeedAction = new QAction("Select by Label", this);
+  seedMenu->addAction(selectSeedAction);
+  connect(selectSeedAction, SIGNAL(triggered()), this, SLOT(selectSeed()));
+
+  QAction *selectAllSeedAction = new QAction("Select All", this);
+  seedMenu->addAction(selectAllSeedAction);
+  connect(selectAllSeedAction, SIGNAL(triggered()), this, SLOT(selectAllSeed()));
 }
 
 void FlyEmSplitControlForm::changeSplit()
@@ -61,6 +87,39 @@ void FlyEmSplitControlForm::changeSplit()
 void FlyEmSplitControlForm::setSplit(uint64_t bodyId)
 {
   ui->bodyIdSpinBox->setValue(bodyId);
+}
+
+void FlyEmSplitControlForm::goToPosition()
+{
+  bool ok;
+
+  QString text = QInputDialog::getText(this, tr("Go To"),
+                                       tr("Coordinates:"), QLineEdit::Normal,
+                                       "", &ok);
+  if (ok) {
+    if (!text.isEmpty()) {
+      ZString str = text.toStdString();
+      std::vector<int> coords = str.toIntegerArray();
+      if (coords.size() == 3) {
+        emit zoomingTo(coords[0], coords[1], coords[2]);
+      }
+    }
+  }
+}
+
+void FlyEmSplitControlForm::recoverSeed()
+{
+  emit recoveringSeed();
+}
+
+void FlyEmSplitControlForm::selectSeed()
+{
+  emit selectingSeed();
+}
+
+void FlyEmSplitControlForm::selectAllSeed()
+{
+  emit selectingAllSeed();
 }
 
 void FlyEmSplitControlForm::commitResult()

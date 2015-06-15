@@ -28,6 +28,8 @@ FlyEmProofControlForm::FlyEmProofControlForm(QWidget *parent) :
           this, SIGNAL(savingMerge()));
   connect(ui->splitPushButton, SIGNAL(clicked()),
           this, SIGNAL(splitTriggered()));
+  connect(ui->uploadPushButton, SIGNAL(clicked()),
+          this, SIGNAL(committingMerge()));
 
   ui->segmentSizePushButton->hide();
   ui->segmentSizeDecPushButton->setEnabled(false);

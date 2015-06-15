@@ -1,6 +1,7 @@
 #include "zwindowfactory.h"
 #include <QApplication>
 #include <QDesktopWidget>
+#include <QMessageBox>
 #include "z3dapplication.h"
 #include "neutubeconfig.h"
 #include "z3dcompositor.h"
@@ -40,6 +41,15 @@ Z3DWindow* ZWindowFactory::open3DWindow(
 Z3DWindow* ZWindowFactory::make3DWindow(ZSharedPointer<ZStackDoc> doc,
                                         Z3DWindow::EInitMode mode)
 {
+  if (Z3DApplication::app() == NULL) {
+    QMessageBox::information(
+          NULL, "3D Unavailable", "The 3D visualization is unavailable in this"
+          "plug-in because of some technical problems. To obtain a "
+          "fully-functioing version of neuTube, because visit "
+          "<a href=www.neutracing.com>www.neutracing.com</a>");
+    return NULL;
+  }
+
   Z3DWindow *window = NULL;
 
   if (Z3DApplication::app()->is3DSupported() && doc) {
@@ -92,7 +102,6 @@ Z3DWindow* ZWindowFactory::make3DWindow(ZSharedPointer<ZStackDoc> doc,
     if (!isObjectViewVisible()) {
       window->hideObjectView();
     }
-
 //    doc->registerUser(window);
   }
 

@@ -44,6 +44,10 @@ typedef void Stack_Deallocator(Stack*);
  */
 Stack *make(int kind, int width, int height, int depth);
 
+Stack *make(float *data, int kind, int width, int height, int depth);
+Stack *make(double *data, int kind, int width, int height, int depth);
+
+
 //Kill from memory pool
 /*!
  * \brief Kill a stack (free up all associated memory).
@@ -135,6 +139,7 @@ inline size_t allByteNumber(const Stack *stack) {
 inline uint8_t* array8(const Stack *stack) { return (uint8_t*) stack->array; }
 
 uint16_t* guardedArray16(const Stack *stack);
+float* guardedArrayFloat32(const Stack *stack);
 
 /*!
  * \brief Voxel value at a certain index
@@ -245,6 +250,8 @@ double min(const Stack *stack);
 double max(const Stack *stack);
 double sum(const Stack *stack);
 int* hist(const Stack *stack);
+double mean(const Stack *stack);
+double mode(const Stack *stack);
 
 //Miscellanea
 size_t closestForegroundPixel(const Stack *stack, double x, double y, double z);

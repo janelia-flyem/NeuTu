@@ -17,10 +17,13 @@ public:
   void setValueLabel(const QString &label);
   QPushButton* getButton(ZButtonBox::TRole role);
 
+  bool isSkipped() const { return m_isSkipped; }
+
 signals:
 
 public slots:
   void skip();
+  void accept();
 
 private:
   bool m_isSkipped;

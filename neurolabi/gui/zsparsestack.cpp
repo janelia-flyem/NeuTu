@@ -291,3 +291,12 @@ ZIntCuboid ZSparseStack::getBoundBox() const
 
   return box;
 }
+
+bool ZSparseStack::isEmpty() const
+{
+  if (m_objectMask != NULL) {
+    return m_objectMask->isEmpty();
+  }
+
+  return true;
+}

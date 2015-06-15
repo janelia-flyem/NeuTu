@@ -29,9 +29,16 @@ signals:
   void committingResult();
   void zoomingTo(int x, int y, int z);
   void loadingBookmark(QString);
+  void recoveringSeed();
+  void selectingSeed();
+  void selectingAllSeed();
 
 public slots:
   void updateBodyWidget(uint64_t bodyId);
+  void goToPosition();
+  void recoverSeed();
+  void selectSeed();
+  void selectAllSeed();
 
 private slots:
   void slotTest();
@@ -44,6 +51,7 @@ private slots:
 
 private:
   void setupWidgetBehavior();
+  void createMenu();
 
 private:
   Ui::FlyEmSplitControlForm *ui;

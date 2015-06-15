@@ -238,6 +238,7 @@ void ZDvidWriter::writeJsonString(
   } else {
     QString urlStr(url.c_str());
     urlStr.replace("/", "_");
+    urlStr.replace(":", "_");
     QString tmpPath = QString("%1/%2.json").
         arg(NeutubeConfig::getInstance().getPath(NeutubeConfig::TMP_DATA).c_str()).
         arg(urlStr);
@@ -479,8 +480,13 @@ void ZDvidWriter::writeSplit(
 void ZDvidWriter::writeMergeOperation(const QMap<uint64_t, uint64_t> &bodyMap)
 {
   std::string url = ZDvidUrl(m_dvidTarget).getMergeOperationUrl();
-  ZJsonArray array = ZJsonFactory::MakeJsonArray(bodyMap);
-  writeJsonString(url, array.dumpString());
+
+  if (!bodyMap.isEmpty()) {
+    ZJsonArray array = ZJsonFactory::MakeJsonArray(bodyMap);
+    writeJsonString(url, array.dumpString());
+  } else {
+    writeJsonString(url, "[]");
+  }
 }
 
 /*

@@ -4,6 +4,7 @@
 #include <QByteArray>
 #include <QtConcurrentRun>
 #include <QWidget>
+#include <QUndoStack>
 
 #include "zstackframe.h"
 #include "z3dwindow.h"
@@ -742,8 +743,28 @@ void ZFlyEmBodySplitProject::commitResultFunc(
   emit resultCommitted();
 }
 
-void ZFlyEmBodySplitProject::selectSeed(int label)
+int ZFlyEmBodySplitProject::selectAllSeed()
 {
+  int nSelected = 0;
+  if (getDocument() != NULL) {
+    QList<const ZDocPlayer*> playerList =
+        getDocument()->getPlayerList(ZStackObjectRole::ROLE_SEED);
+//    getDocument()->deselectAllObject();
+    foreach (const ZDocPlayer *player, playerList) {
+      getDocument()->setSelected(player->getData(), true);
+      ++nSelected;
+    }
+    if (m_dataFrame != NULL) {
+      m_dataFrame->view()->paintObject();
+    }
+  }
+
+  return nSelected;
+}
+
+int ZFlyEmBodySplitProject::selectSeed(int label)
+{
+  int nSelected = 0;
   if (getDocument() != NULL) {
     QList<const ZDocPlayer*> playerList =
         getDocument()->getPlayerList(ZStackObjectRole::ROLE_SEED);
@@ -751,12 +772,15 @@ void ZFlyEmBodySplitProject::selectSeed(int label)
     foreach (const ZDocPlayer *player, playerList) {
       if (player->getLabel() == label) {
        getDocument()->setSelected(player->getData(), true);
+       ++nSelected;
       }
     }
     if (m_dataFrame != NULL) {
       m_dataFrame->view()->paintObject();
     }
   }
+
+  return nSelected;
 }
 
 void ZFlyEmBodySplitProject::backupSeed()
@@ -812,7 +836,7 @@ void ZFlyEmBodySplitProject::deleteSavedSeed()
   }
 }
 
-void ZFlyEmBodySplitProject::saveSeed()
+void ZFlyEmBodySplitProject::saveSeed(bool emphasizingMessage)
 {
   ZDvidReader reader;
   if (reader.open(getDvidTarget())) {
@@ -840,12 +864,19 @@ void ZFlyEmBodySplitProject::saveSeed()
   if (writer.open(getDvidTarget())) {
     if (jsonArray.isEmpty()) {
       writer.deleteKey(getSplitLabelName(), getSeedKey(getBodyId()));
-      emitMessage("All seeds deleted");
+      if (emphasizingMessage) {
+        emitPopoupMessage("All seeds deleted");
+      } else {
+        emitMessage("All seeds deleted");
+      }
     } else {
       ZJsonObject rootObj;
       rootObj.setEntry("seeds", jsonArray);
       writer.writeJson(getSplitLabelName(), getSeedKey(getBodyId()), rootObj);
-      emitMessage("All seeds saved");
+      if (emphasizingMessage) {
+        emitPopoupMessage("All seeds have been saved");
+      }
+      emitMessage(ZWidgetMessage::appendTime("All seeds saved"));
     }
   }
 }
@@ -894,6 +925,7 @@ void ZFlyEmBodySplitProject::downloadSeed(const std::string &seedKey)
 {
   ZDvidReader reader;
   if (reader.open(getDvidTarget())) {
+    getDocument()->undoStack()->clear();
     removeAllSeed();
     QByteArray seedData = reader.readKeyValue(
           getSplitLabelName().c_str(), seedKey.c_str());
@@ -1153,12 +1185,17 @@ std::string ZFlyEmBodySplitProject::getBackupSeedKey(uint64_t bodyId) const
 
 void ZFlyEmBodySplitProject::runSplit()
 {
-//  backupSeed();
+  if (getDocument() != NULL) {
+    backupSeed();
+    getDocument()->runSeededWatershed();
+  }
 
+  /*
   ZStackFrame *frame = getDataFrame();
   if (frame != NULL) {
     frame->document()->runSeededWatershed();
   }
+  */
 }
 
 void ZFlyEmBodySplitProject::setSeedProcessed(uint64_t bodyId)
@@ -1221,14 +1258,16 @@ bool ZFlyEmBodySplitProject::isReadyForSplit(const ZDvidTarget &target)
 {
   bool succ = true;
 
-  QStringList infoList;
+  ZWidgetMessage message;
+//  QStringList infoList;
 
   ZDvidReader reader;
   if (reader.open(target)) {
     if (!reader.hasSparseVolume()) {
-      infoList.append(("Incomplete split database: data \"" +
-                       target.getBodyLabelName() +
-                       "\" missing").c_str());
+      message.appendMessage(("Incomplete split database: data \"" +
+                             target.getBodyLabelName() +
+                             "\" missing").c_str());
+//      infoList.append();
       succ = false;
     }
 
@@ -1237,8 +1276,9 @@ bool ZFlyEmBodySplitProject::isReadyForSplit(const ZDvidTarget &target)
           target.getBodyLabelName());
 
     if (!reader.hasData(splitLabelName)) {
-      infoList.append(("Incomplete split database: data \"" + splitLabelName +
-                       "\" missing").c_str());
+      message.appendMessage(("Incomplete split database: data \"" + splitLabelName +
+                             "\" missing").c_str());
+//      infoList.append();
       succ = false;
     }
 
@@ -1246,30 +1286,54 @@ bool ZFlyEmBodySplitProject::isReadyForSplit(const ZDvidTarget &target)
           ZDvidData::ROLE_SPLIT_STATUS, ZDvidData::ROLE_BODY_LABEL,
           target.getBodyLabelName());
     if (!reader.hasData(splitStatusName)) {
-      infoList.append(("Incomplete split database: data \"" + splitStatusName +
-                       "\" missing").c_str());
+      message.appendMessage(("Incomplete split database: data \"" + splitStatusName +
+                             "\" missing").c_str());
+//      infoList.append();
       succ = false;
     }
   } else {
-    infoList.append("Cannot connect to database.");
+    message.appendMessage("Cannot connect to database.");
+//    infoList.append();
     succ = false;
   }
 
-  emit messageGenerated(ZWidgetMessage::ToHtmlString(
-                          infoList, NeuTube::MSG_ERROR));
+  message.setType(NeuTube::MSG_ERROR);
+
+  emit messageGenerated(message.toHtmlString(), true);
+//  emit messageGenerated(message);
 
   return succ;
 }
 
 void ZFlyEmBodySplitProject::emitMessage(const QString &msg, bool appending)
 {
+  qDebug() << "Outputting message: " << msg;
+
+  ZWidgetMessage::ETarget target = ZWidgetMessage::TARGET_TEXT;
+  if (appending) {
+    target = ZWidgetMessage::TARGET_TEXT_APPENDING;
+  }
+
   emit messageGenerated(
-        ZWidgetMessage(msg, NeuTube::MSG_INFORMATION, appending));
+        ZWidgetMessage(msg, NeuTube::MSG_INFORMATION, target));
 }
+
+void ZFlyEmBodySplitProject::emitPopoupMessage(const QString &msg)
+{
+  ZWidgetMessage message(msg, NeuTube::MSG_INFORMATION);
+  message.setTarget(ZWidgetMessage::TARGET_DIALOG);
+  emit messageGenerated(message);
+}
+
 
 void ZFlyEmBodySplitProject::emitError(const QString &msg, bool appending)
 {
+  ZWidgetMessage::ETarget target = ZWidgetMessage::TARGET_TEXT;
+  if (appending) {
+    target = ZWidgetMessage::TARGET_TEXT_APPENDING;
+  }
+
   emit messageGenerated(
-        ZWidgetMessage(msg, NeuTube::MSG_ERROR, appending));
+        ZWidgetMessage(msg, NeuTube::MSG_ERROR, target));
 }
 

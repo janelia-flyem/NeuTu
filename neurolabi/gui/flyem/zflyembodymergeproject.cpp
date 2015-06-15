@@ -29,6 +29,9 @@
 #include "dvid/zdvidsparsevolslice.h"
 #include "dvid/zdvidlabelslice.h"
 #include "zwidgetmessage.h"
+#include "z3dgraphfactory.h"
+#include "zstackdochelper.h"
+#include "z3dgraphfilter.h"
 
 ZFlyEmBodyMergeProject::ZFlyEmBodyMergeProject(QObject *parent) :
   QObject(parent), m_dataFrame(NULL), m_bodyWindow(NULL),
@@ -61,9 +64,16 @@ void ZFlyEmBodyMergeProject::clear()
 int ZFlyEmBodyMergeProject::getCurrentZ() const
 {
   int z = 0;
+
+  if (getDocument() != NULL) {
+    getDocument()->getStackOffset().getZ();
+  }
+  /*
+
   if (m_dataFrame != NULL) {
     z = m_dataFrame->document()->getStackOffset().getZ();
   }
+  */
 
   return z;
 }
@@ -340,33 +350,69 @@ void ZFlyEmBodyMergeProject::setLoadingLabel(bool state)
   m_showingBodyMask = state;
 }
 
+void ZFlyEmBodyMergeProject::saveMergeOperation()
+{
+  ZFlyEmBodyMergeDoc *doc = getDocument<ZFlyEmBodyMergeDoc>();
+  if (doc != NULL) {
+    doc->saveMergeOperation();
+  } else {
+    ZFlyEmProofDoc *doc2 = getDocument<ZFlyEmProofDoc>();
+    if (doc2 != NULL) {
+      doc2->saveMergeOperation();
+    }
+  }
+}
+
+void ZFlyEmBodyMergeProject::clearBodyMerger()
+{
+  ZFlyEmBodyMergeDoc *doc = getDocument<ZFlyEmBodyMergeDoc>();
+  if (doc != NULL) {
+    doc->clearBodyMerger();
+  } else {
+    ZFlyEmProofDoc *doc2 = getDocument<ZFlyEmProofDoc>();
+    if (doc2 != NULL) {
+      doc2->clearBodyMerger();
+    }
+  }
+}
+
 void ZFlyEmBodyMergeProject::uploadResult()
 {
-  ZDvidWriter dvidWriter;
-  if (dvidWriter.open(m_dvidTarget)) {
-    ZFlyEmBodyMerger *bodyMerger =
-        m_dataFrame->getCompleteDocument()->getBodyMerger();
-    ZFlyEmBodyMerger::TLabelMap labelMap = bodyMerger->getFinalMap();
+  ZFlyEmBodyMerger *bodyMerger = getBodyMerger();
+  if (bodyMerger != NULL) {
+    ZDvidWriter dvidWriter;
+    if (dvidWriter.open(m_dvidTarget)) {
+      ZFlyEmBodyMerger::TLabelMap labelMap = bodyMerger->getFinalMap();
 
-    //reorganize the map
-    QMap<int, std::vector<int> > mergeMap;
-    foreach (int sourceId, labelMap.keys()) {
-      int targetId = labelMap.value(sourceId);
-      if (mergeMap.contains(targetId)) {
-        std::vector<int> &idArray = mergeMap[targetId];
-        idArray.push_back(sourceId);
-      } else {
-        mergeMap[targetId] = std::vector<int>();
-        mergeMap[targetId].push_back(sourceId);
+      if (!labelMap.isEmpty()) {
+        //reorganize the map
+        QMap<int, std::vector<int> > mergeMap;
+        foreach (int sourceId, labelMap.keys()) {
+          int targetId = labelMap.value(sourceId);
+          if (mergeMap.contains(targetId)) {
+            std::vector<int> &idArray = mergeMap[targetId];
+            idArray.push_back(sourceId);
+          } else {
+            mergeMap[targetId] = std::vector<int>();
+            mergeMap[targetId].push_back(sourceId);
+          }
+        }
+
+        foreach (int targetId, mergeMap.keys()) {
+          dvidWriter.mergeBody(
+                m_dvidTarget.getBodyLabelName(),
+                targetId, mergeMap.value(targetId));
+        }
+
+        clearBodyMerger();
+        emit dvidLabelChanged();
+//        bodyMerger->clear();
+        saveMergeOperation();
+
+        ZWidgetMessage message("Body merge finalized.");
+        emit messageGenerated(message);
       }
     }
-
-    foreach (int targetId, mergeMap.keys()) {
-      dvidWriter.mergeBody(
-            m_dvidTarget.getBodyLabelName(),
-            targetId, mergeMap.value(targetId));
-    }
-    bodyMerger->clear();
   }
 }
 
@@ -398,6 +444,7 @@ void ZFlyEmBodyMergeProject::showBody3d()
     }
 
     m_bodyWindow = factory.make3DWindow(doc);
+    m_bodyWindow->getGraphFilter()->setStayOnTop(false);
     //m_bodyWindow->setParent(m_dataFrame);
 
     connect(m_bodyWindow, SIGNAL(closed()), this, SLOT(detachBodyWindow()));
@@ -572,6 +619,30 @@ void ZFlyEmBodyMergeProject::update3DBodyView()
     ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
 //    m_bodyWindow->getDocument()->blockSignals(true);
     m_bodyWindow->getDocument()->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+
+    ZCuboid box;
+    box.setFirstCorner(dvidInfo.getStartCoordinates().toPoint());
+    box.setLastCorner(dvidInfo.getEndCoordinates().toPoint());
+    Z3DGraph *graph = Z3DGraphFactory::MakeBox(
+          box, dmax2(1.0, dmax3(box.width(), box.height(), box.depth()) / 500.0));
+    graph->setSource(ZStackObjectSourceFactory::MakeFlyEmBoundBoxSource());
+
+    m_bodyWindow->getDocument()->addObject(graph, true);
+
+    ZRect2d rect;
+    ZStackDocHelper docHelper;
+    docHelper.extractCurrentZ(getDocument());
+    if (docHelper.hasCurrentZ()) {
+      rect.setZ(docHelper.getCurrentZ());
+      //    rect.setZ(getCurrentZ());
+      rect.setFirstCorner(dvidInfo.getStartCoordinates().getX(),
+                          dvidInfo.getStartCoordinates().getY());
+      rect.setLastCorner(dvidInfo.getEndCoordinates().getX(),
+                         dvidInfo.getEndCoordinates().getY());
+      graph = Z3DGraphFactory::MakeGrid(rect, 100, box.depth() / 500.0);
+      graph->setSource(ZStackObjectSourceFactory::MakeFlyEmPlaneObjectSource());
+      m_bodyWindow->getDocument()->addObject(graph, true);
+    }
 
     for (std::set<uint64_t>::const_iterator iter = selectedMapped.begin();
          iter != selectedMapped.end(); ++iter) {
@@ -858,14 +929,24 @@ void ZFlyEmBodyMergeProject::setSelection(
 
 void ZFlyEmBodyMergeProject::emitMessage(const QString msg, bool appending)
 {
+  ZWidgetMessage::ETarget target = ZWidgetMessage::TARGET_TEXT;
+  if (appending) {
+    target = ZWidgetMessage::TARGET_TEXT_APPENDING;
+  }
+
   emit messageGenerated(
-        ZWidgetMessage(msg, NeuTube::MSG_INFORMATION, appending));
+        ZWidgetMessage(msg, NeuTube::MSG_INFORMATION, target));
 }
 
 void ZFlyEmBodyMergeProject::emitError(const QString msg, bool appending)
 {
+  ZWidgetMessage::ETarget target = ZWidgetMessage::TARGET_TEXT;
+  if (appending) {
+    target = ZWidgetMessage::TARGET_TEXT_APPENDING;
+  }
+
   emit messageGenerated(
-        ZWidgetMessage(msg, NeuTube::MSG_ERROR, appending));
+        ZWidgetMessage(msg, NeuTube::MSG_ERROR, target));
 }
 
 

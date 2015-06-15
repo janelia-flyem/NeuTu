@@ -222,6 +222,35 @@ void ZFlyEmProofDoc::notifyBodyUnmerged()
   emit bodyUnmerged();
 }
 
+void ZFlyEmProofDoc::clearBodyMerger()
+{
+  getBodyMerger()->clear();
+  undoStack()->clear();
+}
+
+void ZFlyEmProofDoc::updateDvidLabelObject()
+{
+  beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+  TStackObjectList &objList = getObjectList(ZStackObject::TYPE_DVID_LABEL_SLICE);
+  for (TStackObjectList::iterator iter = objList.begin(); iter != objList.end();
+       ++iter) {
+    ZDvidLabelSlice *obj = dynamic_cast<ZDvidLabelSlice*>(*iter);
+    obj->update();
+    processObjectModified(obj);
+  }
+
+  TStackObjectList &objList2 = getObjectList(ZStackObject::TYPE_DVID_SPARSEVOL_SLICE);
+  for (TStackObjectList::iterator iter = objList2.begin(); iter != objList2.end();
+       ++iter) {
+    ZDvidSparsevolSlice *obj = dynamic_cast<ZDvidSparsevolSlice*>(*iter);
+    obj->update();
+    processObjectModified(obj);
+  }
+  endObjectModifiedMode();
+
+  notifyObjectModified();
+}
+
 //////////////////////////////////////////
 ZFlyEmProofDocCommand::MergeBody::MergeBody(
     ZStackDoc *doc, QUndoCommand *parent)

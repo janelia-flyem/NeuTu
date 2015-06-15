@@ -78,11 +78,11 @@ ZGraph* ZSwcConnector::buildConnection(
             SwcTreeNode::regularRoot(nodeArray[j])) {
           double w = SwcTreeNode::distance(nodeArray[i], nodeArray[j]);
           if (w <= m_minDist) {
-            graph->addEdge(i, j, w + 0.1);
+            graph->addEdgeFast(i, j, w + 0.1);
           }
         } else {
           if (isOrphan[j]) {
-            graph->addEdge(i, j, 0);
+            graph->addEdgeFast(i, j, 0);
             isOrphan[j] = false;
           }
         }

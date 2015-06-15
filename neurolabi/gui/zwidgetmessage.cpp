@@ -1,15 +1,16 @@
 #include "zwidgetmessage.h"
 
 #include <QStringList>
+#include <QDateTime>
 
 ZWidgetMessage::ZWidgetMessage() :
-  m_type(NeuTube::MSG_INFORMATION), m_appending(false)
+  m_type(NeuTube::MSG_INFORMATION), m_target(TARGET_TEXT)
 {
 }
 
 ZWidgetMessage::ZWidgetMessage(const QString &msg, NeuTube::EMessageType type,
-                               bool appending) :
-  m_type(type), m_appending(appending)
+                               ETarget target) :
+  m_type(type), m_target(target)
 {
   m_message.append(msg);
 }
@@ -53,4 +54,15 @@ QString ZWidgetMessage::ToHtmlString(
   }
 
   return output;
+}
+
+QString ZWidgetMessage::appendTime(const QString &message)
+{
+  return "[" + QDateTime::currentDateTime().toLocalTime().
+      toString("yyyy-MM-dd hh:mm:ss") + "] " + message;
+}
+
+void ZWidgetMessage::appendMessage(const QString &message)
+{
+  m_message.append(message);
 }

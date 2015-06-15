@@ -335,6 +335,7 @@ ZStackOperator ZMouseEventLeftButtonPressMapper::getOperation(
     const ZMouseEvent &event) const
 {
   ZStackOperator op = initOperation();
+  op.setPressedButtons(event.getButtons());
 
   if (event.isInStack()) {
     switch (m_context->getUniqueMode()) {
@@ -351,6 +352,59 @@ ZStackOperator ZMouseEventLeftButtonPressMapper::getOperation(
 
   return op;
 }
+
+///////////////ZMouseEventLeftRightButtonPressMapper/////////////////
+////////             --             ////////////////////////////
+ZStackOperator ZMouseEventLeftRightButtonPressMapper::getOperation(
+    const ZMouseEvent &event) const
+{
+  ZStackOperator op = initOperation();
+  op.setPressedButtons(event.getButtons());
+
+  if (event.isInStack()) {
+    switch (m_context->getUniqueMode()) {
+    /*
+    case ZInteractiveContext::INTERACT_STROKE_DRAW:
+      op.setOperation(ZStackOperator::OP_STROKE_START_PAINT);
+      break;
+    case ZInteractiveContext::INTERACT_RECT_DRAW:
+      op.setOperation(ZStackOperator::OP_RECT_ROI_INIT);
+      break;
+      */
+    default:
+      break;
+    }
+  }
+
+  return op;
+}
+
+///////////////ZMouseEventMiddleButtonPressMapper/////////////////
+////////             O-O             ////////////////////////////
+ZStackOperator ZMouseEventMiddleButtonPressMapper::getOperation(
+    const ZMouseEvent &event) const
+{
+  ZStackOperator op = initOperation();
+  op.setPressedButtons(event.getButtons());
+
+  if (event.isInStack()) {
+    switch (m_context->getUniqueMode()) {
+    /*
+    case ZInteractiveContext::INTERACT_STROKE_DRAW:
+      op.setOperation(ZStackOperator::OP_STROKE_START_PAINT);
+      break;
+    case ZInteractiveContext::INTERACT_RECT_DRAW:
+      op.setOperation(ZStackOperator::OP_RECT_ROI_INIT);
+      break;
+      */
+    default:
+      break;
+    }
+  }
+
+  return op;
+}
+
 
 ///////////////ZMouseEventRightButtonReleaseMapper/////////////////////
 ////////             OU             ////////////////////////////
@@ -404,6 +458,8 @@ ZStackOperator ZMouseEventMoveMapper::getOperation(
     const ZMouseEvent &event) const
 {
   ZStackOperator op = initOperation();
+  op.setPressedButtons(event.getButtons());
+
   if (m_context != NULL) {
     bool canMoveImage = false;
 
@@ -430,7 +486,12 @@ ZStackOperator ZMouseEventMoveMapper::getOperation(
           canMoveImage = true;
         }
       }
+    } else if (event.getButtons() == (Qt::LeftButton | Qt::RightButton) ||
+               event.getButtons() == Qt::MidButton) {
+      canMoveImage = true;
+    }
 
+    if (event.getButtons() == Qt::LeftButton) {
       if (op.isNull()) {
         if (m_context->getUniqueMode() ==
             ZInteractiveContext::INTERACT_STROKE_DRAW) {
@@ -440,27 +501,29 @@ ZStackOperator ZMouseEventMoveMapper::getOperation(
           op.setOperation(ZStackOperator::OP_RECT_ROI_UPDATE);
         }
       }
-
-      if (op.isNull()) {
-        if (canMoveImage) {
-          if (m_context->exploreMode() ==
-              ZInteractiveContext::EXPLORE_MOVE_IMAGE) {
-            op.setOperation(ZStackOperator::OP_MOVE_IMAGE);
-          } else {
-            op.setOperation(ZStackOperator::OP_START_MOVE_IMAGE);
+    } else if (event.getButtons() == Qt::RightButton) {
+      if (m_context->getUniqueMode() != ZInteractiveContext::INTERACT_IMAGE_MOVE) {
+        ZIntPoint pressPos =
+            getPosition(Qt::RightButton, ZMouseEvent::ACTION_PRESS);
+        int dx = event.getX() - pressPos.getX();
+        int dy = event.getY() - pressPos.getY();
+        if (dx * dx + dy * dy > MOUSE_MOVE_IMAGE_THRESHOLD) {
+          if (dy < -5) {
+            op.setOperation(ZStackOperator::OP_ZOOM_IN_GRAB_POS);
+          } else if (dy > 5) {
+            op.setOperation(ZStackOperator::OP_ZOOM_OUT_GRAB_POS);
           }
         }
       }
-    } else if (event.getButtons() == Qt::RightButton) {
-      ZIntPoint pressPos =
-          getPosition(Qt::RightButton, ZMouseEvent::ACTION_PRESS);
-      int dx = event.getX() - pressPos.getX();
-      int dy = event.getY() - pressPos.getY();
-      if (dx * dx + dy * dy > MOUSE_MOVE_IMAGE_THRESHOLD) {
-        if (dy < -5) {
-          op.setOperation(ZStackOperator::OP_ZOOM_IN_GRAB_POS);
-        } else if (dy > 5) {
-          op.setOperation(ZStackOperator::OP_ZOOM_OUT_GRAB_POS);
+    }
+
+    if (op.isNull()) {
+      if (canMoveImage) {
+        if (m_context->exploreMode() ==
+            ZInteractiveContext::EXPLORE_MOVE_IMAGE) {
+          op.setOperation(ZStackOperator::OP_MOVE_IMAGE);
+        } else {
+          op.setOperation(ZStackOperator::OP_START_MOVE_IMAGE);
         }
       }
     }

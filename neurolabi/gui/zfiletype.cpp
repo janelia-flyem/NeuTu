@@ -34,7 +34,8 @@ ZFileType::EFileType ZFileType::fileType(const std::string &filePath)
     return V3D_APO_FILE;
   } else if (str.endsWith(".marker", ZString::CASE_INSENSITIVE)) {
     return V3D_MARKER_FILE;
-  } else if (str.endsWith(".raw", ZString::CASE_INSENSITIVE)) {
+  } else if (str.endsWith(".raw", ZString::CASE_INSENSITIVE) ||
+             str.endsWith(".v3draw", ZString::CASE_INSENSITIVE)) {
     return V3D_RAW_FILE;
   } else if (str.endsWith(".v3dpbd", ZString::CASE_INSENSITIVE) ||
              str.endsWith(".pbd", ZString::CASE_INSENSITIVE)) {

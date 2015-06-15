@@ -57,7 +57,7 @@ void ZStackPresenter::init()
 {
   m_showObject = true;
   m_isStrokeOn = false;
-  m_skipMouseReleaseEvent = false;
+  m_skipMouseReleaseEvent = 0;
   m_zOrder = 2;
 
   initInteractiveContext();
@@ -633,6 +633,29 @@ int ZStackPresenter::getSliceIndex() const {
 
 void ZStackPresenter::processMouseReleaseEvent(QMouseEvent *event)
 {
+#ifdef _DEBUG_
+  std::cout << event->button() << " released: " << event->buttons() << std::endl;
+#endif
+
+  if (m_skipMouseReleaseEvent) {
+    if (event->buttons() == Qt::NoButton) {
+      m_skipMouseReleaseEvent = 0;
+      this->interactiveContext().restoreExploreMode();
+      buddyView()->notifyViewPortChanged();
+    }
+
+//    --m_skipMouseReleaseEvent;
+//    if (m_skipMouseReleaseEvent == 0) {
+
+//    }
+    return;
+  }
+
+  if (event->buttons() != Qt::NoButton) {
+    m_skipMouseReleaseEvent = 1;
+    return;
+  }
+
   const ZMouseEvent& mouseEvent =
       m_mouseEventProcessor.process(
         event, ZMouseEvent::ACTION_RELEASE, getSliceIndex());
@@ -795,6 +818,16 @@ bool ZStackPresenter::isContextMenuOn()
 
 void ZStackPresenter::processMousePressEvent(QMouseEvent *event)
 {
+  if (event->buttons() == (Qt::LeftButton | Qt::RightButton)) {
+    m_skipMouseReleaseEvent = 2;
+  } else {
+    m_skipMouseReleaseEvent = 0;
+  }
+
+#ifdef _DEBUG_
+  std::cout << "Pressed mouse buttons: " << event->buttons() << std::endl;
+#endif
+
   const ZMouseEvent &mouseEvent = m_mouseEventProcessor.process(
         event, ZMouseEvent::ACTION_PRESS, buddyView()->sliceIndex());
   if (mouseEvent.isNull()) {
@@ -1295,6 +1328,7 @@ bool ZStackPresenter::processKeyPressEvent(QKeyEvent *event)
           buddyDocument()->getTag() == NeuTube::Document::FLYEM_PROOFREAD ||
           buddyDocument()->getTag() == NeuTube::Document::SEGMENTATION_TARGET) {
         if (event->modifiers() == Qt::ShiftModifier) {
+          qDebug() << "Starting watershed ...";
           buddyDocument()->runSeededWatershed();
         } else {
           buddyDocument()->runLocalSeededWatershed();
@@ -2527,9 +2561,12 @@ void ZStackPresenter::process(const ZStackOperator &op)
     break;
   case ZStackOperator::OP_MOVE_IMAGE:
   {
+    Qt::MouseButtons grabButton = op.getPressedButtons();
+    if (grabButton == Qt::NoButton || (grabButton & Qt::LeftButton)) {
+      grabButton = Qt::LeftButton;
+    }
     ZPoint grabPosition = op.getMouseEventRecorder()->getPosition(
-          Qt::LeftButton, ZMouseEvent::ACTION_PRESS,
-          NeuTube::COORD_STACK);
+          grabButton, ZMouseEvent::ACTION_PRESS, NeuTube::COORD_STACK);
     moveImageToMouse(
           grabPosition.x(), grabPosition.y(),
           currentWidgetPos.x(), currentWidgetPos.y());
@@ -2585,6 +2622,7 @@ void ZStackPresenter::process(const ZStackOperator &op)
     ZRect2d *rect = dynamic_cast<ZRect2d*>(obj);
     if (rect != NULL) {
       rect->setLastCorner(currentStackPos.x(), currentStackPos.y());
+      buddyDocument()->processObjectModified(rect);
       buddyDocument()->notifyObjectModified();
     }
   }
