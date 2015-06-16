@@ -2,6 +2,7 @@
 #define ZFLYEMBODYANNOTATION_H
 
 #include <string>
+#include "tz_stdint.h"
 
 class ZJsonObject;
 
