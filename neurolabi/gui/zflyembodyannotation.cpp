@@ -11,13 +11,13 @@ const char *ZFlyEmBodyAnnotation::m_typeKey = "class";
 const char *ZFlyEmBodyAnnotation::m_commentKey = "comment";
 const char *ZFlyEmBodyAnnotation::m_statusKey = "status";
 
-ZFlyEmBodyAnnotation::ZFlyEmBodyAnnotation() : m_bodyId(-1)
+ZFlyEmBodyAnnotation::ZFlyEmBodyAnnotation() : m_bodyId(0)
 {
 }
 
 void ZFlyEmBodyAnnotation::clear()
 {
-  m_bodyId = -1;
+  m_bodyId = 0;
   m_status.clear();
   m_comment.clear();
   m_name.clear();
@@ -32,6 +32,32 @@ void ZFlyEmBodyAnnotation::loadJsonString(const std::string &str)
   obj.decodeString(str.c_str());
 
   loadJsonObject(obj);
+}
+
+ZJsonObject ZFlyEmBodyAnnotation::toJsonObject() const
+{
+  ZJsonObject obj;
+  if (m_bodyId > 0) {
+    obj.setEntry(m_bodyIdKey, m_bodyId);
+
+    if (!m_name.empty()) {
+      obj.setEntry(m_nameKey, m_name);
+    }
+
+    if (!m_type.empty()) {
+      obj.setEntry(m_typeKey, m_type);
+    }
+
+    if (!m_status.empty()) {
+      obj.setEntry(m_statusKey, m_status);
+    }
+
+    if (!m_comment.empty()) {
+      obj.setEntry(m_commentKey, m_comment);
+    }
+  }
+
+  return obj;
 }
 
 void ZFlyEmBodyAnnotation::loadJsonObject(const ZJsonObject &obj)

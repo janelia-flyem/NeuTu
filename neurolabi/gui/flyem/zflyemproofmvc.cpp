@@ -163,6 +163,8 @@ void ZFlyEmProofMvc::customInit()
 {
   connect(getPresenter(), SIGNAL(bodySplitTriggered()),
           this, SLOT(notifySplitTriggered()));
+  connect(getPresenter(), SIGNAL(bodyAnnotationTriggered()),
+          this, SLOT(annotateBody()));
   connect(getPresenter(), SIGNAL(objectVisibleTurnedOn()),
           this, SLOT(processViewChange()));
 
@@ -243,6 +245,11 @@ void ZFlyEmProofMvc::updateBodySelection()
   }
 }
 
+void ZFlyEmProofMvc::annotateBody()
+{
+  emit messageGenerated("The function of annotating body is not ready yet.");
+}
+
 void ZFlyEmProofMvc::notifySplitTriggered()
 {
   ZDvidLabelSlice *labelSlice = getCompleteDocument()->getDvidLabelSlice();
@@ -255,7 +262,8 @@ void ZFlyEmProofMvc::notifySplitTriggered()
 
       emit launchingSplit(bodyId);
     } else {
-      emit messageGenerated("Only one body has to be selected.");
+      emit messageGenerated("The split cannot be launched because "
+                            "one and only one body has to be selected.");
     }
   }
 }

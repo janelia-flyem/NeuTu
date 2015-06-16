@@ -7,9 +7,9 @@ ZProgressSignal::ZProgressSignal(QObject *parent) :
 {
 }
 
-void ZProgressSignal::connectProgress(const ZProgressSignal *signal)
+void ZProgressSignal::connectProgress(const ZProgressSignal *targetSignal)
 {
-  ConnectProgress(this, signal);
+  ConnectProgress(this, targetSignal);
 }
 
 void ZProgressSignal::ConnectProgress(

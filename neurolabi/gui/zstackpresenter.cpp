@@ -288,9 +288,18 @@ void ZStackPresenter::createStrokeActions()
 
 void ZStackPresenter::createBodyActions()
 {
-  QAction *action = new QAction(tr("Launch split"), this);
-  connect(action, SIGNAL(triggered()), this, SLOT(notifyBodySplitTriggered()));
-  m_actionMap[ACTION_BODY_SPLIT_START] = action;
+  {
+    QAction *action = new QAction(tr("Launch split"), this);
+    connect(action, SIGNAL(triggered()), this, SLOT(notifyBodySplitTriggered()));
+    m_actionMap[ACTION_BODY_SPLIT_START] = action;
+  }
+
+  {
+    QAction *action = new QAction(tr("Annotate"), this);
+    connect(action, SIGNAL(triggered()),
+            this, SLOT(notifyBodyAnnotationTriggered()));
+    m_actionMap[ACTION_BODY_ANNOTATION] = action;
+  }
 
 //  action = new QAction(tr("Add split seed"), this);
 //  connect(action, SIGNAL(triggered()), this, SLOT());
@@ -2094,6 +2103,11 @@ void ZStackPresenter::slotTest()
 void ZStackPresenter::notifyBodySplitTriggered()
 {
   emit bodySplitTriggered();
+}
+
+void ZStackPresenter::notifyBodyAnnotationTriggered()
+{
+  emit bodyAnnotationTriggered();
 }
 
 void ZStackPresenter::selectDownstreamNode()

@@ -308,7 +308,7 @@
       "comment": "MB seg (branched from ccf)",
       "body_label": "bodies",
       "label_block": "labels",
-      "user_name": "takemurasa"
+      "user_name": ["takemurasa", "zhaot"]
     },
     {
       "address": "emdata1.int.janelia.org",

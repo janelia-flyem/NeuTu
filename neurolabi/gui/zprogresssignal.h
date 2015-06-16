@@ -9,7 +9,7 @@ class ZProgressSignal : public QObject
 public:
   explicit ZProgressSignal(QObject *parent = 0);
 
-  void connectProgress(const ZProgressSignal *signal);
+  void connectProgress(const ZProgressSignal *targetSignal);
   template <typename T>
   void connectSlot(T *obj);
 

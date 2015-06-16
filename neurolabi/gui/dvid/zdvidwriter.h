@@ -16,6 +16,7 @@
 #include "zsparsestack.h"
 #include "dvid/zdvidtarget.h"
 #include "dvid/zdvidwriter.h"
+#include "zflyembodyannotation.h"
 
 class ZFlyEmNeuron;
 class ZClosedCurve;
@@ -36,8 +37,11 @@ public:
   void writeSwc(int bodyId, ZSwcTree *tree);
   void writeThumbnail(int bodyId, ZStack *stack);
   void writeThumbnail(int bodyId, Stack *stack);
-  void writeAnnotation(int bodyId, const ZJsonObject &obj);
+  void writeAnnotation(uint64_t bodyId, const ZJsonObject &obj);
   void writeAnnotation(const ZFlyEmNeuron &neuron);
+
+  void writeBodyAnntation(const ZFlyEmBodyAnnotation &annotation);
+
   void writeRoiCurve(const ZClosedCurve &curve, const std::string &key);
   void deleteRoiCurve(const std::string &key);
   void writeJsonString(const std::string &dataName, const std::string &key,

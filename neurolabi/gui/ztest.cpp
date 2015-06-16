@@ -12028,7 +12028,7 @@ void ZTest::test(MainWindow *host)
   std::cout << "Volume: " << volume << std::endl;
 #endif
 
-#if 1
+#if 0
   ZStackFrame *frame = ZStackFrame::Make(NULL);
 
   /*
@@ -13683,18 +13683,22 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 0
-  ZStackWatershed engine;
-  engine.setFloodingZero(false);
-  ZStack signal;
-  signal.load(GET_DATA_DIR + "/flyem/FIB/FIB25/density_map_ds10.tif");
-  signal.binarize();
+#if 1
+  for (int i = 0; i < 100; ++i) {
+    ZStackWatershed engine;
+    engine.setFloodingZero(false);
+    ZStack signal;
+    signal.load(GET_DATA_DIR + "/flyem/FIB/FIB25/density_map_ds10.tif");
+    signal.binarize();
 
-  ZStack seed;
-  seed.load(GET_DATA_DIR + "/flyem/FIB/FIB25/seed_ds10.tif");
-  ZStack *result = engine.run(&signal, &seed);
-//  engine.setFloodingZero(false);
-  result->save(GET_DATA_DIR + "/test.tif");
+    ZStack seed;
+    seed.load(GET_DATA_DIR + "/flyem/FIB/FIB25/seed_ds10.tif");
+    ZStack *result = engine.run(&signal, &seed);
+    //  engine.setFloodingZero(false);
+    result->save(GET_DATA_DIR + "/test.tif");
+
+    delete result;
+  }
 #endif
 
 #if 0
@@ -17041,5 +17045,24 @@ void ZTest::test(MainWindow *host)
   QDateTime time = QDateTime::currentDateTime().toLocalTime();
 
   qDebug() << time.toString("yyyy-MM-dd hh:mm:ss");
+#endif
+
+#if 0
+  QProcess::execute(
+        "curl",
+        QStringList() << "-g" << "-X GET" << "http://emdata1.int.janelia.org:8500/api/help");
+
+  QProcess process;
+//  process.setWorkingDirectory("/Users/zhaot/anaconda/bin");
+  process.start("curl", QStringList() << "-g" << "-X" << "GET" << "http://emdata1.int.janelia.org:8500/api/help");
+
+  if (process.waitForStarted(-1)) {
+    qDebug() << "Process started.";
+  }
+
+  if (process.waitForFinished(-1)) {
+    qDebug() << process.readAllStandardOutput();
+  }
+
 #endif
 }

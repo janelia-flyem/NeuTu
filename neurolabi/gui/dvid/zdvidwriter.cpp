@@ -125,7 +125,7 @@ void ZDvidWriter::writeThumbnail(int bodyId, Stack *stack)
   }
 }
 
-void ZDvidWriter::writeAnnotation(int bodyId, const ZJsonObject &obj)
+void ZDvidWriter::writeAnnotation(uint64_t bodyId, const ZJsonObject &obj)
 {
   if (bodyId > 0 && !obj.isEmpty()) {
     //ZString annotationString = obj.dumpString(0);
@@ -143,7 +143,7 @@ void ZDvidWriter::writeAnnotation(int bodyId, const ZJsonObject &obj)
     QString command = QString(
           "curl -g -X POST -H \"Content-Type: application/json\" "
           "-d \"%1\" %2").arg(getJsonStringForCurl(obj).c_str()).
-        arg(ZDvidUrl(m_dvidTarget).getAnnotationUrl(
+        arg(ZDvidUrl(m_dvidTarget).getBodyAnnotationUrl(
               bodyId, m_dvidTarget.getBodyLabelName()).c_str());
 
     qDebug() << command;
@@ -155,6 +155,11 @@ void ZDvidWriter::writeAnnotation(int bodyId, const ZJsonObject &obj)
 void ZDvidWriter::writeAnnotation(const ZFlyEmNeuron &neuron)
 {
   writeAnnotation(neuron.getId(), neuron.getAnnotationJson());
+}
+
+void ZDvidWriter::writeBodyAnntation(const ZFlyEmBodyAnnotation &annotation)
+{
+  writeAnnotation(annotation.getBodyId(), annotation.toJsonObject());
 }
 
 void ZDvidWriter::writeBodyInfo(int bodyId, const ZJsonObject &obj)

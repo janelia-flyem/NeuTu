@@ -284,6 +284,8 @@ QMenu* ZStackDocMenuFactory::makeBodyContextMenu(
     QAction *action = presenter->getAction(
           ZStackPresenter::ACTION_BODY_SPLIT_START);
     menu->addAction(action);
+    menu->addAction(presenter->getAction(
+                      ZStackPresenter::ACTION_BODY_ANNOTATION));
   }
 
   return menu;

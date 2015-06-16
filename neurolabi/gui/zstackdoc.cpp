@@ -7876,7 +7876,7 @@ void ZStackDoc::localSeededWatershed()
       seedMask.downsampleMax(dsIntv.getX(), dsIntv.getY(), dsIntv.getZ());
 
       advanceProgress(0.1);
-      QApplication::processEvents();
+//      QApplication::processEvents();
 
       Cuboid_I box;
       seedMask.getBoundBox(&box);
@@ -7891,7 +7891,7 @@ void ZStackDoc::localSeededWatershed()
       ZStack *out = engine.run(signalStack, seedMask);
 
       advanceProgress(0.1);
-      QApplication::processEvents();
+//      QApplication::processEvents();
 
       //objArray = ZObject3dFactory::MakeRegionBoundary(*out);
       //objData = Stack_Region_Border(out->c_stack(), 6, TRUE);
@@ -7899,7 +7899,7 @@ void ZStackDoc::localSeededWatershed()
       updateWatershedBoundaryObject(out, dsIntv);
 
       advanceProgress(0.1);
-      QApplication::processEvents();
+//      QApplication::processEvents();
 
       // C_Stack::kill(out);
       //delete out;
@@ -7974,7 +7974,7 @@ void ZStackDoc::seededWatershed()
 void ZStackDoc::runLocalSeededWatershed()
 {
   startProgress();
-  QApplication::processEvents();
+//  QApplication::processEvents();
 
   localSeededWatershed();
 

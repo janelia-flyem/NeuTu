@@ -64,6 +64,7 @@ public slots:
   void launchSplit(uint64_t bodyId);
   void processMessageSlot(const QString &message);
   void notifySplitTriggered();
+  void annotateBody();
   void exitSplit();
   void switchSplitBody(uint64_t bodyId);
   void showBodyQuickView();

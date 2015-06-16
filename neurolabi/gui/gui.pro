@@ -541,7 +541,8 @@ HEADERS += mainwindow.h \
     ztextmessage.h \
     ztextmessagefactory.h \
     z3dgraphfactory.h \
-    zstackdochelper.h
+    zstackdochelper.h \
+    flyem/zflyembodyannotationdialog.h
 
 FORMS += settingdialog.ui \
     frameinfodialog.ui \
@@ -606,7 +607,8 @@ FORMS += settingdialog.ui \
     ztestdialog.ui \
     zflyemcontrolform.ui \
     flyem/flyemproofcontrolform.ui \
-    flyem/flyemsplitcontrolform.ui
+    flyem/flyemsplitcontrolform.ui \
+    flyem/zflyembodyannotationdialog.ui
 SOURCES += main.cpp \
     mainwindow.cpp \
     zstackview.cpp \
@@ -941,7 +943,8 @@ SOURCES += main.cpp \
     ztextmessage.cpp \
     ztextmessagefactory.cpp \
     z3dgraphfactory.cpp \
-    zstackdochelper.cpp
+    zstackdochelper.cpp \
+    flyem/zflyembodyannotationdialog.cpp
 
 OTHER_FILES += \
     extlib.pri \
