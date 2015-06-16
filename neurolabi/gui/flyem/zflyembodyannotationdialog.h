@@ -2,6 +2,7 @@
 #define ZFLYEMBODYANNOTATIONDIALOG_H
 
 #include <QDialog>
+#include "tz_stdint.h"
 
 class ZFlyEmBodyAnnotation;
 
