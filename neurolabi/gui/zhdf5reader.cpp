@@ -36,8 +36,8 @@ void ZHdf5Reader::close()
 {
 #if defined(_ENABLE_HDF5_)
   if (m_file != NULL_FILE) {
-    H5Fclose(m_file);
-    m_file = NULL_FILE;
+      H5Fclose(m_file);
+      m_file = NULL_FILE;
   }
 #endif
 }
