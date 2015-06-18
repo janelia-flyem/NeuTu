@@ -1118,6 +1118,7 @@ void ZStackView::updateTileCanvas()
 //      m_tileCanvas->setScale(scale, scale);
       m_tileCanvas = new ZPixmap(canvasSize);
       m_tileCanvasPainter.begin(m_tileCanvas);
+      m_tileCanvasPainter.setZOffset(buddyDocument()->getStackOffset().getZ());
       m_imageWidget->setTileCanvas(m_tileCanvas);
     }
 
