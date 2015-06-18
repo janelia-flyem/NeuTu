@@ -626,7 +626,8 @@ void ZFlyEmBodySplitProject::commitResultFunc(
 
   emitMessage(QString("Backup ... %1").arg(getBodyId()));
 
-  std::string backupDir = GET_TEST_DATA_DIR + "/backup";
+  std::string backupDir =
+      NeutubeConfig::getInstance().getPath(NeutubeConfig::AUTO_SAVE);
   body.save(backupDir + "/" + getSeedKey(getBodyId()) + ".sobj");
 
 //  const ZStack *stack = getDataFrame()->document()->getLabelField();
@@ -749,9 +750,11 @@ void ZFlyEmBodySplitProject::commitResultFunc(
     uint64_t oldBodyId = oldBodyIdList[bodyIndex - 1];
     QString msg;
     if (oldBodyId > 0) {
-      msg = QString("Label %1 uploaded as %2.").arg(oldBodyId).arg(newBodyId);
+      msg = QString("Label %1 uploaded as %2 (%3 voxels).").
+          arg(oldBodyId).arg(newBodyId).arg(obj.getVoxelNumber());
     } else {
-      msg = QString("Isolated object uploaded as %2.").arg(newBodyId);
+      msg = QString("Isolated object uploaded as %1 (%2 voxels) .").
+          arg(newBodyId).arg(obj.getVoxelNumber());
     }
     newBodyIdList.append(newBodyId);
 
@@ -760,11 +763,15 @@ void ZFlyEmBodySplitProject::commitResultFunc(
     emit progressAdvanced(dp);
   }
 
-  QString bodyMessage = QString("Body %1 splitted: ").arg(wholeBody->getLabel());
-  foreach (uint64_t bodyId, newBodyIdList) {
-    bodyMessage.append(QString("%1 ").arg(bodyId));
+  if (!newBodyIdList.isEmpty()) {
+    QString bodyMessage = QString("Body %1 splitted: ").arg(wholeBody->getLabel());
+    bodyMessage += "<font color=#007700>";
+    foreach (uint64_t bodyId, newBodyIdList) {
+      bodyMessage.append(QString("%1 ").arg(bodyId));
+    }
+    bodyMessage += "</font>";
+    emitMessage(bodyMessage);
   }
-  emitMessage(bodyMessage);
 
   //writer.writeMaxBodyId(bodyId);
 

@@ -47,6 +47,8 @@ void FlyEmSplitControlForm::setupWidgetBehavior()
   connect(ui->bookmarkView, SIGNAL(doubleClicked(QModelIndex)),
           this, SLOT(locateBookmark(QModelIndex)));
 
+  ui->viewSplitPushButton->setEnabled(false);
+
 //  ui->commitPushButton->setEnabled(false);
   createMenu();
 }
