@@ -7831,16 +7831,20 @@ void ZStackDoc::updateWatershedBoundaryObject(ZStack *out, ZIntPoint dsIntv)
       foreach (const ZDocPlayer *player, playerList) {
         ZObject3d *obj = objArray->take(player->getLabel());
         if (obj != NULL) {
-          obj->setColor(player->getData()->getColor());
-          //ZString objectSource = "localSeededWatershed:Temporary_Border:";
-         // objectSource.appendNumber(stroke->getLabel());
-          obj->setSource(
-                ZStackObjectSourceFactory::MakeWatershedBoundarySource(
-                  player->getLabel()));
-          obj->setHittable(false);
-          obj->setProjectionVisible(false);
-          obj->setRole(ZStackObjectRole::ROLE_TMP_RESULT);
-          addObject(obj, true);
+          if (!obj->isEmpty()) {
+            obj->setColor(player->getData()->getColor());
+            //ZString objectSource = "localSeededWatershed:Temporary_Border:";
+            // objectSource.appendNumber(stroke->getLabel());
+            obj->setSource(
+                  ZStackObjectSourceFactory::MakeWatershedBoundarySource(
+                    player->getLabel()));
+            obj->setHittable(false);
+            obj->setProjectionVisible(false);
+            obj->setRole(ZStackObjectRole::ROLE_TMP_RESULT);
+            addObject(obj, true);
+          } else {
+            delete obj;
+          }
         }
       }
 

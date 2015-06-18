@@ -352,8 +352,8 @@ void ZFlyEmBodySplitProject::loadResult3dQuick(ZStackDoc *doc)
 
           ZSwcTree *tree = ZSwcGenerator::createSwc(
                 *obj, dmin2(5.0, ds / 2.0), ds);
-          tree->setAlpha(255);
           if (tree != NULL) {
+            tree->setAlpha(255);
             doc->addObject(tree);
           }
         }
