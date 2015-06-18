@@ -8,6 +8,7 @@
 //#include "zflyembodysplitproject.h"
 
 class ZDvidSparseStack;
+class ZFlyEmSupervisor;
 
 class ZFlyEmProofDoc : public ZStackDoc
 {
@@ -17,7 +18,7 @@ public:
 
   static ZFlyEmProofDoc* Make();
 
-  void mergeSelected();
+  void mergeSelected(ZFlyEmSupervisor *supervisor);
 
   void setDvidTarget(const ZDvidTarget &target) {
     m_dvidTarget = target;

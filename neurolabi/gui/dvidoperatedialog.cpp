@@ -1,5 +1,6 @@
 #include "dvidoperatedialog.h"
 #include <QInputDialog>
+#include <QMessageBox>
 
 #include "ui_dvidoperatedialog.h"
 #include "dvid/zdvidwriter.h"
@@ -39,6 +40,12 @@ void DvidOperateDialog::on_creatDataPushButton_clicked()
     if (writer.open(m_dvidDlg->getDvidTarget())) {
 //      writer.createKeyvalue(text.toStdString());
       writer.createData(dataType, text.toStdString());
+      if (writer.getStatusCode() != 200) {
+        QMessageBox::warning(this, "Operation Failed", "Failed to create data.");
+      }
+    } else {
+      QMessageBox::warning(
+            this, "Operation Failed", "Please specify a valid DVID target.");
     }
   }
 }

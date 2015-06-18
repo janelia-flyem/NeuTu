@@ -13,6 +13,8 @@
 #include "dvid/zdvidwriter.h"
 #include "dvid/zdvidsparsevolslice.h"
 #include "zwidgetmessage.h"
+#include "flyem/zflyemsupervisor.h"
+//#include "zflyemproofmvc.h"
 
 ZFlyEmProofDoc::ZFlyEmProofDoc(ZStack *stack, QObject *parent) :
   ZStackDoc(stack, parent)
@@ -20,7 +22,7 @@ ZFlyEmProofDoc::ZFlyEmProofDoc(ZStack *stack, QObject *parent) :
   setTag(NeuTube::Document::FLYEM_PROOFREAD);
 }
 
-void ZFlyEmProofDoc::mergeSelected()
+void ZFlyEmProofDoc::mergeSelected(ZFlyEmSupervisor *supervisor)
 {
   QList<ZDvidLabelSlice*> sliceList = getDvidLabelSliceList();
 
@@ -31,16 +33,31 @@ void ZFlyEmProofDoc::mergeSelected()
     const std::set<uint64_t> &selected = labelSlice->getSelectedOriginal();
     for (std::set<uint64_t>::const_iterator iter = selected.begin();
          iter != selected.end(); ++iter) {
-      labelSet.insert(*iter);
+      if (supervisor != NULL) {
+        if (supervisor->checkOut(*iter)) {
+          labelSet.insert(*iter);
+        } else {
+          labelSet.clear();
+          emit messageGenerated(
+                ZWidgetMessage(
+                  QString("Failed to merge. %1 has been locked by someone else").
+                  arg(*iter), NeuTube::MSG_ERROR));
+          break;
+        }
+      } else {
+        labelSet.insert(*iter);
+      }
     }
   }
 
-  m_bodyMerger.pushMap(labelSet);
-  m_bodyMerger.undo();
+  if (!labelSet.empty()) {
+    m_bodyMerger.pushMap(labelSet);
+    m_bodyMerger.undo();
 
-  ZFlyEmProofDocCommand::MergeBody *command =
-      new ZFlyEmProofDocCommand::MergeBody(this);
-  pushUndoCommand(command);
+    ZFlyEmProofDocCommand::MergeBody *command =
+        new ZFlyEmProofDocCommand::MergeBody(this);
+    pushUndoCommand(command);
+  }
 }
 
 void ZFlyEmProofDoc::updateTileData()

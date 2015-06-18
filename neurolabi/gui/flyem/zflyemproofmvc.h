@@ -14,6 +14,7 @@ class ZDvidTileEnsemble;
 class ZDvidTarget;
 class ZDvidDialog;
 class ZFlyEmProofPresenter;
+class ZFlyEmSupervisor;
 
 class ZFlyEmProofMvc : public ZStackMvc
 {
@@ -44,6 +45,10 @@ public:
   void disableSplit();
 
   void processViewChangeCustom(const ZStackViewParam &viewParam);
+
+  inline ZFlyEmSupervisor* getSupervisor() const {
+    return m_supervisor;
+  }
 
 signals:
   void launchingSplit(const QString &message);
@@ -118,6 +123,7 @@ private:
   QThreadFutureMap m_futureMap;
 
   ZDvidDialog *m_dvidDlg;
+  ZFlyEmSupervisor *m_supervisor;
 };
 
 template <typename T>

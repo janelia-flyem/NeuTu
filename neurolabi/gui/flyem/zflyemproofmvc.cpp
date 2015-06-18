@@ -22,11 +22,13 @@
 #include "zdialogfactory.h"
 #include "flyem/zflyembodyannotationdialog.h"
 #include "zflyembodyannotation.h"
+#include "flyem/zflyemsupervisor.h"
 
 ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
   ZStackMvc(parent), m_splitOn(false)
 {
   m_dvidDlg = new ZDvidDialog(this);
+  m_supervisor = new ZFlyEmSupervisor(this);
 }
 
 ZFlyEmProofMvc* ZFlyEmProofMvc::Make(
@@ -64,7 +66,7 @@ ZFlyEmProofPresenter* ZFlyEmProofMvc::getCompletePresenter() const
 void ZFlyEmProofMvc::mergeSelected()
 {
   if (getCompleteDocument() != NULL) {
-    getCompleteDocument()->mergeSelected();
+    getCompleteDocument()->mergeSelected(getSupervisor());
   }
 }
 
@@ -127,6 +129,8 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
     m_splitProject.setDvidTarget(target);
     m_mergeProject.setDvidTarget(target);
     m_mergeProject.syncWithDvid();
+
+    getSupervisor()->setDvidTarget(target);
 
     emit dvidTargetChanged(target);
   }
@@ -407,16 +411,24 @@ void ZFlyEmProofMvc::disableSplit()
 void ZFlyEmProofMvc::launchSplit(uint64_t bodyId)
 {
   if (bodyId > 0) {
+    if (getSupervisor()->checkOut(bodyId)) {
 #ifdef _DEBUG_2
-    bodyId = 14742253;
+      bodyId = 14742253;
 #endif
-    const QString threadId = "launchSplitFunc";
-    if (!m_futureMap.isAlive(threadId)) {
-      m_futureMap.removeDeadThread();
-      QFuture<void> future =
-          QtConcurrent::run(
-            this, &ZFlyEmProofMvc::launchSplitFunc, bodyId);
-      m_futureMap[threadId] = future;
+      const QString threadId = "launchSplitFunc";
+      if (!m_futureMap.isAlive(threadId)) {
+        m_futureMap.removeDeadThread();
+        QFuture<void> future =
+            QtConcurrent::run(
+              this, &ZFlyEmProofMvc::launchSplitFunc, bodyId);
+        m_futureMap[threadId] = future;
+      }
+    } else {
+      ZWidgetMessage message(
+            QString("Failed to launch split because the body "
+                    "%1 has been locked by someone else.").arg(bodyId),
+            NeuTube::MSG_ERROR);
+      emit messageGenerated(message);
     }
   }
 }

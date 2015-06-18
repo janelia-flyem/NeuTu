@@ -5,6 +5,7 @@
 #include <QEventLoop>
 #include <QTimer>
 #include <QMap>
+#include <QString>
 
 #include <string>
 #include <vector>
@@ -17,11 +18,13 @@
 #include "dvid/zdvidtarget.h"
 #include "dvid/zdvidwriter.h"
 #include "zflyembodyannotation.h"
+#include "zjsonobject.h"
 
 class ZFlyEmNeuron;
 class ZClosedCurve;
 class ZIntCuboid;
 class ZSwcTree;
+class QProcess;
 
 class ZDvidWriter : public QObject
 {
@@ -89,6 +92,10 @@ public:
                            const QMap<uint64_t, uint64_t> &bodyMap);
                            */
 
+  inline int getStatusCode() const {
+    return m_statusCode;
+  }
+
 private:
   std::string getJsonStringForCurl(const ZJsonValue &obj) const;
   void writeJson(const std::string url, const ZJsonValue &value);
@@ -96,11 +103,25 @@ private:
 
   ZJsonValue getLocMessage(const std::string &message);
 
+  bool runCommand(const QString &command, const QStringList &argList);
+  bool runCommand(const QString &command);
+  bool runCommand(QProcess &process);
+
+  inline const QString& getStandardOutput() const {
+    return m_standardOutout;
+  }
+
+  void parseStandardOutput();
+
 private:
   QEventLoop *m_eventLoop;
   ZDvidClient *m_dvidClient;
   QTimer *m_timer;
   ZDvidTarget m_dvidTarget;
+  QString m_errorOutput;
+  QString m_standardOutout;
+  ZJsonObject m_jsonOutput;
+  int m_statusCode;
 };
 
 #endif // ZDVIDWRITER_H

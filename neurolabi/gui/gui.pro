@@ -542,7 +542,8 @@ HEADERS += mainwindow.h \
     ztextmessagefactory.h \
     z3dgraphfactory.h \
     zstackdochelper.h \
-    flyem/zflyembodyannotationdialog.h
+    flyem/zflyembodyannotationdialog.h \
+    flyem/zflyemsupervisor.h
 
 FORMS += settingdialog.ui \
     frameinfodialog.ui \
@@ -944,7 +945,8 @@ SOURCES += main.cpp \
     ztextmessagefactory.cpp \
     z3dgraphfactory.cpp \
     zstackdochelper.cpp \
-    flyem/zflyembodyannotationdialog.cpp
+    flyem/zflyembodyannotationdialog.cpp \
+    flyem/zflyemsupervisor.cpp
 
 OTHER_FILES += \
     extlib.pri \
