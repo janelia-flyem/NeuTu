@@ -455,7 +455,7 @@ std::string ZDvidWriter::createBranch()
   return uuid;
 }
 
-void ZDvidWriter::writeSplit(
+uint64_t ZDvidWriter::writeSplit(
     const std::string &dataName, const ZObject3dScan &obj,
     uint64_t oldLabel, uint64_t label)
 {
@@ -478,8 +478,35 @@ void ZDvidWriter::writeSplit(
 
   qDebug() << command;
 
-  QProcess::execute(command);
+  //QProcess::execute(command);
 
+  QString url = ZDvidUrl(m_dvidTarget).getSplitUrl(dataName, oldLabel).c_str();
+
+  QProcess process;
+//  process.setWorkingDirectory("/Users/zhaot/anaconda/bin");
+  process.start("curl", QStringList() << "-X" << "POST" << url << "--data-binary"
+                << "@" + tmpPath);
+
+  if (process.waitForStarted(-1)) {
+    qDebug() << "Process started.";
+  }
+
+  uint64_t newBodyId = 0;
+
+  QString output;
+  if (process.waitForFinished(-1)) {
+    output = process.readAllStandardOutput();
+//    qDebug() << process.readAllStandardOutput();
+    qDebug() << "Split output: " << output;
+
+    ZJsonObject obj;
+    obj.decodeString(output.toStdString().c_str());
+    if (obj.hasKey("label")) {
+      newBodyId = ZJsonParser::integerValue(obj["label"]);
+    }
+  }
+
+  return newBodyId;
 }
 
 void ZDvidWriter::writeMergeOperation(const QMap<uint64_t, uint64_t> &bodyMap)

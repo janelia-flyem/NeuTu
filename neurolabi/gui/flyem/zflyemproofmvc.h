@@ -43,6 +43,8 @@ public:
   void enableSplit();
   void disableSplit();
 
+  void processViewChangeCustom(const ZStackViewParam &viewParam);
+
 signals:
   void launchingSplit(const QString &message);
   void launchingSplit(uint64_t bodyId);
@@ -104,6 +106,8 @@ protected:
 private:
   void launchSplitFunc(uint64_t bodyId);
   uint64_t getMappedBodyId(uint64_t bodyId);
+  std::set<uint64_t> getCurrentSelectedBodyId(NeuTube::EBodyLabelType type) const;
+  void runSplitFunc();
 
 private:
   bool m_showSegmentation;

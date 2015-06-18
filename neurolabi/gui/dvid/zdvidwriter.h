@@ -80,7 +80,7 @@ public:
   bool lockNode(const std::string &message);
   std::string createBranch();
 
-  void writeSplit(const std::string &dataName, const ZObject3dScan &obj,
+  uint64_t writeSplit(const std::string &dataName, const ZObject3dScan &obj,
                   uint64_t oldLabel, uint64_t label);
 
   void writeMergeOperation(const QMap<uint64_t, uint64_t> &bodyMap);

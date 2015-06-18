@@ -24,6 +24,7 @@
 #include "zdvidversiondag.h"
 #include "dvid/zdvidsparsestack.h"
 #include "dvid/libdvidheader.h"
+#include "zflyembodyannotation.h"
 
 ZDvidReader::ZDvidReader(QObject *parent) :
   QObject(parent)
@@ -561,7 +562,7 @@ bool ZDvidReader::isReadingDone()
   return m_isReadingDone;
 }
 
-QString ZDvidReader::readInfo(const QString &dataName)
+QString ZDvidReader::readInfo(const QString &dataName) const
 {
   ZDvidBufferReader reader;
   reader.read(ZDvidUrl(getDvidTarget()).getInfoUrl(dataName.toStdString()).c_str());
@@ -946,7 +947,7 @@ ZIntCuboid ZDvidReader::readBoundBox(int z)
   return cuboid;
 }
 
-ZDvidInfo ZDvidReader::readGrayScaleInfo()
+ZDvidInfo ZDvidReader::readGrayScaleInfo() const
 {
   QString infoString = readInfo(getDvidTarget().getGrayScaleName().c_str());
   ZDvidInfo dvidInfo;
@@ -1205,8 +1206,13 @@ ZDvidVersionDag ZDvidReader::readVersionDag(const std::string &uuid) const
   ZDvidBufferReader bufferReader;
   bufferReader.read(dvidUrl.getRepoInfoUrl().c_str());
 
+  QString str(bufferReader.getBuffer().data());
+  str.replace(QRegExp("\"MaxLabel\":\\s*\\{[^{}]*\\}"), "\"MaxLabel\":{}");
+
+//  qDebug() << str;
+
   ZJsonObject infoJson;
-  infoJson.decodeString(bufferReader.getBuffer().data());
+  infoJson.decodeString(str.toStdString().c_str());
 
   dag.load(infoJson, uuid);
 
@@ -1264,4 +1270,17 @@ ZObject3dScan ZDvidReader::readRoi(const std::string dataName)
   obj.importDvidRoi(array);
 
   return obj;
+}
+
+ZFlyEmBodyAnnotation ZDvidReader::readBodyAnnotation(uint64_t bodyId) const
+{
+  ZDvidUrl url(getDvidTarget());
+  ZDvidBufferReader bufferReader;
+  bufferReader.read(url.getBodyAnnotationUrl(bodyId).c_str());
+
+  ZFlyEmBodyAnnotation annotation;
+  annotation.loadJsonString(bufferReader.getBuffer().constData());
+  annotation.setBodyId(bodyId);
+
+  return annotation;
 }

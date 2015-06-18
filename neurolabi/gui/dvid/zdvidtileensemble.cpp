@@ -109,4 +109,19 @@ void ZDvidTileEnsemble::attachView(ZStackView *view)
   m_view = view;
 }
 
+int ZDvidTileEnsemble::getCurrentZ() const
+{
+  int z = 0;
+  if (m_view != NULL) {
+    return m_view->getCurrentZ();
+  }
+
+  return z;
+}
+
+ZStackView* ZDvidTileEnsemble::getView() const
+{
+  return m_view;
+}
+
 ZSTACKOBJECT_DEFINE_CLASS_NAME(ZDvidTileEnsemble)

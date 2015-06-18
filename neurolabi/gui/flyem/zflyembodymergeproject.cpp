@@ -32,11 +32,14 @@
 #include "z3dgraphfactory.h"
 #include "zstackdochelper.h"
 #include "z3dgraphfilter.h"
+#include "zflyemmisc.h"
+#include "zprogresssignal.h"
 
 ZFlyEmBodyMergeProject::ZFlyEmBodyMergeProject(QObject *parent) :
   QObject(parent), m_dataFrame(NULL), m_bodyWindow(NULL),
   m_showingBodyMask(true)
 {
+  m_progressSignal = new ZProgressSignal(this);
 }
 
 ZFlyEmBodyMergeProject::~ZFlyEmBodyMergeProject()
@@ -59,6 +62,11 @@ void ZFlyEmBodyMergeProject::clear()
   }
 
   m_selectedOriginal.clear();
+}
+
+ZProgressSignal* ZFlyEmBodyMergeProject::getProgressSignal() const
+{
+  return m_progressSignal;
 }
 
 int ZFlyEmBodyMergeProject::getCurrentZ() const
@@ -376,10 +384,12 @@ void ZFlyEmBodyMergeProject::clearBodyMerger()
   }
 }
 
-void ZFlyEmBodyMergeProject::uploadResult()
+void ZFlyEmBodyMergeProject::uploadResultFunc()
 {
   ZFlyEmBodyMerger *bodyMerger = getBodyMerger();
   if (bodyMerger != NULL) {
+    getProgressSignal()->startProgress("Uploading merge result ...");
+
     ZDvidWriter dvidWriter;
     if (dvidWriter.open(m_dvidTarget)) {
       ZFlyEmBodyMerger::TLabelMap labelMap = bodyMerger->getFinalMap();
@@ -413,7 +423,13 @@ void ZFlyEmBodyMergeProject::uploadResult()
         emit messageGenerated(message);
       }
     }
+    getProgressSignal()->endProgress();
   }
+}
+
+void ZFlyEmBodyMergeProject::uploadResult()
+{
+  uploadResultFunc();
 }
 
 void ZFlyEmBodyMergeProject::detachBodyWindow()
@@ -575,6 +591,44 @@ void ZFlyEmBodyMergeProject::update3DBodyViewDeep()
   }
 }
 
+void ZFlyEmBodyMergeProject::update3DBodyViewPlane(const ZDvidInfo &dvidInfo)
+{
+  if (m_bodyWindow != NULL) {
+    ZRect2d rect;
+    ZStackDocHelper docHelper;
+    docHelper.extractCurrentZ(getDocument());
+    if (docHelper.hasCurrentZ()) {
+      rect.setZ(docHelper.getCurrentZ());
+      //    rect.setZ(getCurrentZ());
+      rect.setFirstCorner(dvidInfo.getStartCoordinates().getX(),
+                          dvidInfo.getStartCoordinates().getY());
+      rect.setLastCorner(dvidInfo.getEndCoordinates().getX(),
+                         dvidInfo.getEndCoordinates().getY());
+      ZCuboid box;
+      box.setFirstCorner(dvidInfo.getStartCoordinates().toPoint());
+      box.setLastCorner(dvidInfo.getEndCoordinates().toPoint());
+      double lineWidth = box.depth() / 500.0;
+      Z3DGraph *graph = Z3DGraphFactory::MakeGrid(rect, 50, lineWidth);
+      graph->setSource(ZStackObjectSourceFactory::MakeFlyEmPlaneObjectSource());
+      m_bodyWindow->getDocument()->addObject(graph, true);
+    }
+  }
+}
+
+void ZFlyEmBodyMergeProject::update3DBodyViewBox(const ZDvidInfo &dvidInfo)
+{
+  if (m_bodyWindow != NULL) {
+    ZCuboid box;
+    box.setFirstCorner(dvidInfo.getStartCoordinates().toPoint());
+    box.setLastCorner(dvidInfo.getEndCoordinates().toPoint());
+    Z3DGraph *graph = Z3DGraphFactory::MakeBox(
+          box, dmax2(1.0, dmax3(box.width(), box.height(), box.depth()) / 500.0));
+    graph->setSource(ZStackObjectSourceFactory::MakeFlyEmBoundBoxSource());
+
+    m_bodyWindow->getDocument()->addObject(graph, true);
+  }
+}
+
 void ZFlyEmBodyMergeProject::update3DBodyView()
 {
   if (m_bodyWindow != NULL) {
@@ -600,9 +654,6 @@ void ZFlyEmBodyMergeProject::update3DBodyView()
       }
     }
 
-    ZFlyEmDvidReader reader;
-    reader.open(getDvidTarget());
-
     if (getDataFrame() != NULL) {
       ZStack *oldStack = m_bodyWindow->getDocument()->getStack();
       ZStack *newStack = getDataFrame()->document()->getStack();
@@ -616,33 +667,18 @@ void ZFlyEmBodyMergeProject::update3DBodyView()
       }
     }
 
-    ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
+
 //    m_bodyWindow->getDocument()->blockSignals(true);
     m_bodyWindow->getDocument()->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
 
-    ZCuboid box;
-    box.setFirstCorner(dvidInfo.getStartCoordinates().toPoint());
-    box.setLastCorner(dvidInfo.getEndCoordinates().toPoint());
-    Z3DGraph *graph = Z3DGraphFactory::MakeBox(
-          box, dmax2(1.0, dmax3(box.width(), box.height(), box.depth()) / 500.0));
-    graph->setSource(ZStackObjectSourceFactory::MakeFlyEmBoundBoxSource());
 
-    m_bodyWindow->getDocument()->addObject(graph, true);
+    ZFlyEmDvidReader reader;
+    reader.open(getDvidTarget());
 
-    ZRect2d rect;
-    ZStackDocHelper docHelper;
-    docHelper.extractCurrentZ(getDocument());
-    if (docHelper.hasCurrentZ()) {
-      rect.setZ(docHelper.getCurrentZ());
-      //    rect.setZ(getCurrentZ());
-      rect.setFirstCorner(dvidInfo.getStartCoordinates().getX(),
-                          dvidInfo.getStartCoordinates().getY());
-      rect.setLastCorner(dvidInfo.getEndCoordinates().getX(),
-                         dvidInfo.getEndCoordinates().getY());
-      graph = Z3DGraphFactory::MakeGrid(rect, 100, box.depth() / 500.0);
-      graph->setSource(ZStackObjectSourceFactory::MakeFlyEmPlaneObjectSource());
-      m_bodyWindow->getDocument()->addObject(graph, true);
-    }
+    ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
+
+    update3DBodyViewBox(dvidInfo);
+    update3DBodyViewPlane(dvidInfo);
 
     for (std::set<uint64_t>::const_iterator iter = selectedMapped.begin();
          iter != selectedMapped.end(); ++iter) {
@@ -689,6 +725,21 @@ void ZFlyEmBodyMergeProject::update3DBodyView()
     m_bodyWindow->show();
     m_bodyWindow->raise();
     m_bodyWindow->resetCameraCenter();
+  }
+}
+
+void ZFlyEmBodyMergeProject::update3DBodyViewPlane()
+{
+  if (m_bodyWindow != NULL) {
+    ZFlyEmDvidReader reader;
+    reader.open(getDvidTarget());
+
+    ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
+    ZCuboid box;
+    box.setFirstCorner(dvidInfo.getStartCoordinates().toPoint());
+    box.setLastCorner(dvidInfo.getEndCoordinates().toPoint());
+
+    update3DBodyViewPlane(dvidInfo);
   }
 }
 

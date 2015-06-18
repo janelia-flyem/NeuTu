@@ -12,6 +12,9 @@ ZStackMvc::ZStackMvc(QWidget *parent) :
   m_presenter = NULL;
   m_layout = new QHBoxLayout(this);
   m_progressSignal = new ZProgressSignal(this);
+
+  qRegisterMetaType<uint64_t>("uint64_t");
+  qRegisterMetaType<ZWidgetMessage>("ZWidgetMessage");
 }
 
 ZStackMvc* ZStackMvc::Make(QWidget *parent, ZSharedPointer<ZStackDoc> doc)
@@ -212,6 +215,8 @@ void ZStackMvc::processViewChange(const ZStackViewParam &viewParam)
       }
     }
   }
+
+  processViewChangeCustom(viewParam);
 }
 
 QRect ZStackMvc::getViewGeometry() const
@@ -222,6 +227,7 @@ QRect ZStackMvc::getViewGeometry() const
   return rect;
 }
 
+/*
 void ZStackMvc::emitMessage(const QString &msg, bool appending)
 {
   ZWidgetMessage::ETarget target = ZWidgetMessage::TARGET_TEXT;
@@ -229,8 +235,8 @@ void ZStackMvc::emitMessage(const QString &msg, bool appending)
     target = ZWidgetMessage::TARGET_TEXT_APPENDING;
   }
 
-  emit messageGenerated(
-        ZWidgetMessage(msg, NeuTube::MSG_INFORMATION, target));
+  ZWidgetMessage message(msg, NeuTube::MSG_INFORMATION, target);
+  emit messageGenerated(message);
 }
 
 void ZStackMvc::emitError(const QString &msg, bool appending)
@@ -243,3 +249,4 @@ void ZStackMvc::emitError(const QString &msg, bool appending)
   emit messageGenerated(
         ZWidgetMessage(msg, NeuTube::MSG_ERROR, target));
 }
+*/

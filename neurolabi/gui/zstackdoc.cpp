@@ -111,7 +111,7 @@ using namespace std;
 
 ZStackDoc::ZStackDoc(ZStack *stack, QObject *parent) : QObject(parent),
   /*m_lastAddedSwcNode(NULL),*/ m_resDlg(NULL), m_selectionSilent(false),
-  m_isReadyForPaint(true)
+  m_isReadyForPaint(true), m_isSegmentationReady(false)
 {
   m_stack = stack;
   m_sparseStack = NULL;
@@ -207,6 +207,8 @@ void ZStackDoc::clearData()
   if (m_undoStack != NULL) {
     m_undoStack->clear();
   }
+
+  m_isSegmentationReady = false;
 }
 
 void ZStackDoc::initNeuronTracer()
@@ -6517,7 +6519,12 @@ void ZStackDoc::notifyPlayerChanged(ZStackObjectRole::TRole role)
 {
   ZStackObjectRole roleObj(role);
   if (roleObj.hasRole(ZStackObjectRole::ROLE_SEED)) {
+    m_isSegmentationReady = false;
     emit seedModified();
+  }
+
+  if (roleObj.hasRole(ZStackObjectRole::ROLE_TMP_RESULT)) {
+
   }
 
   if (roleObj.hasRole(ZStackObjectRole::ROLE_3DPAINT)) {
@@ -7845,6 +7852,8 @@ void ZStackDoc::updateWatershedBoundaryObject(ZStack *out, ZIntPoint dsIntv)
 void ZStackDoc::localSeededWatershed()
 {
   removeObject(ZStackObjectRole::ROLE_TMP_RESULT, true);
+  m_isSegmentationReady = false;
+
   ZStackArray seedMask = createWatershedMask(true);
   if (!seedMask.empty()) {
     ZStackWatershed engine;
@@ -7917,6 +7926,7 @@ void ZStackDoc::seededWatershed()
 
   qDebug() << "Removing old result ...";
   removeObject(ZStackObjectRole::ROLE_TMP_RESULT, true);
+  m_isSegmentationReady = false;
 
   getProgressSignal()->advanceProgress(0.1);
   //removeAllObj3d();
@@ -7947,7 +7957,6 @@ void ZStackDoc::seededWatershed()
       }
     }
 
-
     if (signalStack != NULL) {
       qDebug() << "Downsampling ..." << dsIntv.toString();
       seedMask.downsampleMax(dsIntv.getX(), dsIntv.getY(), dsIntv.getZ());
@@ -7964,6 +7973,10 @@ void ZStackDoc::seededWatershed()
       notifyObj3dModified();
 
       setLabelField(out);
+      m_isSegmentationReady = true;
+
+      emit messageGenerated(ZWidgetMessage(
+            ZWidgetMessage::appendTime("Split done. Ready to upload.")));
     } else {
       std::cout << "No signal for watershed." << std::endl;
     }
@@ -7985,6 +7998,22 @@ void ZStackDoc::runLocalSeededWatershed()
 
 void ZStackDoc::runSeededWatershed()
 {
+  QList<const ZDocPlayer*> playerList =
+      getPlayerList(ZStackObjectRole::ROLE_SEED);
+  QSet<int> labelSet;
+  foreach (const ZDocPlayer *player, playerList) {
+    labelSet.insert(player->getLabel());
+  }
+
+  if (labelSet.size() < 2) {
+    ZWidgetMessage message(
+          QString("The seed has no more than one label. No split is done"));
+    message.setType(NeuTube::MSG_WARING);
+
+    emit messageGenerated(message);
+    return;
+  }
+
   seededWatershed();
   emit labelFieldModified();
 }

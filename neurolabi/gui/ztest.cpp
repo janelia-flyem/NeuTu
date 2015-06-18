@@ -13683,7 +13683,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   for (int i = 0; i < 100; ++i) {
     ZStackWatershed engine;
     engine.setFloodingZero(false);
@@ -17047,7 +17047,7 @@ void ZTest::test(MainWindow *host)
   qDebug() << time.toString("yyyy-MM-dd hh:mm:ss");
 #endif
 
-#if 0
+#if 1
   QProcess::execute(
         "curl",
         QStringList() << "-g" << "-X GET" << "http://emdata1.int.janelia.org:8500/api/help");
@@ -17064,5 +17064,11 @@ void ZTest::test(MainWindow *host)
     qDebug() << process.readAllStandardOutput();
   }
 
+#endif
+
+#if 0
+  QString str("\"MaxLabel\": {\"test\": 12433534}; other {}");
+  str.remove(QRegExp("\"MaxLabel\":\\s*\\{[^{}]*\\}"));
+  qDebug() << str;
 #endif
 }

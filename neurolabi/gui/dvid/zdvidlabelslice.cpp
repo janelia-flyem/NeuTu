@@ -379,3 +379,21 @@ const ZStackViewParam& ZDvidLabelSlice::getViewParam() const
 {
   return m_currentViewParam;
 }
+
+std::set<uint64_t> ZDvidLabelSlice::getSelected(
+    NeuTube::EBodyLabelType labelType) const
+{
+  switch (labelType) {
+  case NeuTube::BODY_LABEL_ORIGINAL:
+    return getSelectedOriginal();
+  case NeuTube::BODY_LABEL_MAPPED:
+    if (m_bodyMerger != NULL) {
+      return m_bodyMerger->getFinalLabel(getSelectedOriginal());
+    } else {
+      return getSelectedOriginal();
+    }
+    break;
+  }
+
+  return std::set<uint64_t>();
+}

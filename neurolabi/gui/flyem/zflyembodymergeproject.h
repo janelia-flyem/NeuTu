@@ -24,6 +24,8 @@ class Z3DWindow;
 class ZStackDoc;
 class ZFlyEmBodyMerger;
 class ZWidgetMessage;
+class ZDvidInfo;
+class ZProgressSignal;
 //class ZStackViewParam;
 
 class ZFlyEmBodyMergeProject : public QObject
@@ -89,6 +91,8 @@ public:
   void emitMessage(const QString msg, bool appending = true);
   void emitError(const QString msg, bool appending = true);
 
+  ZProgressSignal* getProgressSignal() const;
+
 signals:
   void progressAdvanced(double dp);
   void progressStarted();
@@ -124,10 +128,14 @@ public slots:
   void detachBodyWindow();
   void notifySplit();
   void highlightSelectedObject(bool hl);
+  void update3DBodyViewPlane();
 
 private:
   ZFlyEmBodyMerger* getBodyMerger() const;
   void clearBodyMerger();
+  void update3DBodyViewPlane(const ZDvidInfo &dvidInfo);
+  void update3DBodyViewBox(const ZDvidInfo &dvidInfo);
+  void uploadResultFunc();
   //void updateSelection();
 
 private:
@@ -143,6 +151,8 @@ private:
   bool m_showingBodyMask;
   QSet<uint64_t> m_selectedOriginal; //the set of original ids of selected bodies
 //  QSet<uint64_t> m_currentSelected;
+
+  ZProgressSignal *m_progressSignal;
 };
 
 template <typename T>

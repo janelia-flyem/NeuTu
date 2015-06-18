@@ -58,9 +58,10 @@ public:
     return m_progressSignal;
   }
 
-  void emitMessage(const QString &msg, bool appending = true);
-  void emitError(const QString &msg, bool appending = true);
+  //void emitMessage(const QString &msg, bool appending = true);
+  //void emitError(const QString &msg, bool appending = true);
 
+  virtual void processViewChangeCustom(const ZStackViewParam &/*viewParam*/) {}
 
 protected: // Events
   virtual void keyPressEvent(QKeyEvent *event);

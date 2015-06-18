@@ -29,6 +29,7 @@ class ZObject3dScan;
 class ZSparseStack;
 class ZDvidVersionDag;
 class ZDvidSparseStack;
+class ZFlyEmBodyAnnotation;
 
 class ZDvidReader : public QObject
 {
@@ -69,7 +70,7 @@ public:
   ZStack* readBodyLabel(
       int x0, int y0, int z0, int width, int height, int depth);
 
-  QString readInfo(const QString &dataName);
+  QString readInfo(const QString &dataName) const;
 
   std::set<int> readBodyId(
       int x0, int y0, int z0, int width, int height, int depth);
@@ -87,7 +88,7 @@ public:
   ZClosedCurve* readRoiCurve(const std::string &key, ZClosedCurve *result);
   ZIntCuboid readBoundBox(int z);
 
-  ZDvidInfo readGrayScaleInfo();
+  ZDvidInfo readGrayScaleInfo() const;
 
   bool hasData(const std::string &key) const;
 
@@ -124,6 +125,8 @@ public:
   ZObject3dScan readCoarseBody(uint64_t bodyId);
 
   ZObject3dScan readRoi(const std::string dataName);
+
+  ZFlyEmBodyAnnotation readBodyAnnotation(uint64_t bodyId) const;
 
 signals:
   void readingDone();

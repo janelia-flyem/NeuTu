@@ -27,6 +27,10 @@ public:
 
   virtual const std::string& className() const;
 
+  int getCurrentZ() const;
+
+  ZStackView* getView() const;
+
 private:
   std::vector<std::map<ZDvidTileInfo::TIndex, ZDvidTile*> > m_tileGroup;
   ZDvidTileInfo m_tilingInfo;

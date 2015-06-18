@@ -15,6 +15,7 @@ ZFlyEmBodyAnnotation::ZFlyEmBodyAnnotation() : m_bodyId(0)
 {
 }
 
+/*member dependent*/
 void ZFlyEmBodyAnnotation::clear()
 {
   m_bodyId = 0;
@@ -34,6 +35,7 @@ void ZFlyEmBodyAnnotation::loadJsonString(const std::string &str)
   loadJsonObject(obj);
 }
 
+/*member dependent*/
 ZJsonObject ZFlyEmBodyAnnotation::toJsonObject() const
 {
   ZJsonObject obj;
@@ -60,6 +62,7 @@ ZJsonObject ZFlyEmBodyAnnotation::toJsonObject() const
   return obj;
 }
 
+/*member dependent*/
 void ZFlyEmBodyAnnotation::loadJsonObject(const ZJsonObject &obj)
 {
   if (obj.hasKey(m_bodyIdKey) || obj.hasKey(m_statusKey) ||
@@ -100,6 +103,7 @@ void ZFlyEmBodyAnnotation::loadJsonObject(const ZJsonObject &obj)
   }
 }
 
+/*member dependent*/
 void ZFlyEmBodyAnnotation::print() const
 {
   std::cout << "Body annotation:" << std::endl;
@@ -108,4 +112,11 @@ void ZFlyEmBodyAnnotation::print() const
   std::cout << "  Name: " << m_name << std::endl;
   std::cout << "  Status: " << m_status << std::endl;
   std::cout << "  Comment: " << m_comment << std::endl;
+}
+
+/*member dependent*/
+bool ZFlyEmBodyAnnotation::isEmpty() const
+{
+  return m_status.empty() && m_comment.empty() && m_name.empty() &&
+      m_type.empty();
 }

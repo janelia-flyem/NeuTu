@@ -50,6 +50,8 @@ public:
   void clear();
   void print() const;
 
+  bool isEmpty() const;
+
 private:
   uint64_t m_bodyId;
   std::string m_status;

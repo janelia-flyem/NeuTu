@@ -10,6 +10,15 @@
 #include "zjsonarray.h"
 #include "zjsonparser.h"
 #include "zstring.h"
+#include "zcuboid.h"
+#include "dvid/zdvidinfo.h"
+#include "zstackdoc.h"
+#include "z3dgraphfactory.h"
+#include "zstackobjectsourcefactory.h"
+#include "zstackdochelper.h"
+#include "z3dwindow.h"
+#include "dvid/zdvidtarget.h"
+#include "dvid/zdvidreader.h"
 
 void ZFlyEmMisc::NormalizeSimmat(ZMatrix &simmat)
 {
@@ -150,3 +159,61 @@ void ZFlyEmMisc::HackathonEvaluator::evalulate()
 
 //  report("Evaluation", information.toStdString(), ZMessageReporter::Information);
 }
+
+Z3DGraph* ZFlyEmMisc::MakeBoundBoxGraph(const ZDvidInfo &dvidInfo)
+{
+  ZCuboid box;
+  box.setFirstCorner(dvidInfo.getStartCoordinates().toPoint());
+  box.setLastCorner(dvidInfo.getEndCoordinates().toPoint());
+  Z3DGraph *graph = Z3DGraphFactory::MakeBox(
+        box, dmax2(1.0, dmax3(box.width(), box.height(), box.depth()) / 500.0));
+  graph->setSource(ZStackObjectSourceFactory::MakeFlyEmBoundBoxSource());
+
+  return graph;
+}
+
+Z3DGraph* ZFlyEmMisc::MakePlaneGraph(ZStackDoc *doc, const ZDvidInfo &dvidInfo)
+{
+  Z3DGraph *graph = NULL;
+  if (doc != NULL) {
+    ZRect2d rect;
+    ZStackDocHelper docHelper;
+    docHelper.extractCurrentZ(doc);
+    if (docHelper.hasCurrentZ()) {
+      rect.setZ(docHelper.getCurrentZ());
+      //    rect.setZ(getCurrentZ());
+      rect.setFirstCorner(dvidInfo.getStartCoordinates().getX(),
+                          dvidInfo.getStartCoordinates().getY());
+      rect.setLastCorner(dvidInfo.getEndCoordinates().getX(),
+                         dvidInfo.getEndCoordinates().getY());
+      ZCuboid box;
+      box.setFirstCorner(dvidInfo.getStartCoordinates().toPoint());
+      box.setLastCorner(dvidInfo.getEndCoordinates().toPoint());
+      double lineWidth = box.depth() / 500.0;
+      graph = Z3DGraphFactory::MakeGrid(rect, 50, lineWidth);
+      graph->setSource(ZStackObjectSourceFactory::MakeFlyEmPlaneObjectSource());
+    }
+  }
+
+  return graph;
+}
+
+/*
+void ZFlyEmMisc::Decorate3DWindow(Z3DWindow *window, const ZDvidInfo &dvidInfo)
+{
+  if (window != NULL) {
+    ZStackDoc *doc = window->getDocument();
+    if (doc != NULL) {
+      doc->addObject(MakeBoundBoxGraph(dvidInfo), true);
+      doc->addObject(MakePlaneGraph(doc, dvidInfo), true);
+    }
+  }
+}
+
+void ZFlyEmMisc::Decorate3DWindow(Z3DWindow *window, const ZDvidReader &reader)
+{
+  if (window != NULL) {
+    Decorate3DWindow(window, reader.readGrayScaleInfo());
+  }
+}
+*/
