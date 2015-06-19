@@ -79,7 +79,50 @@ void FlyEmSplitControlForm::createMenu()
   QAction *selectAllSeedAction = new QAction("Select All", this);
   seedMenu->addAction(selectAllSeedAction);
   connect(selectAllSeedAction, SIGNAL(triggered()), this, SLOT(selectAllSeed()));
+
+  m_bookmarkContextMenu = new QMenu(this);
+  QAction *checkAction = new QAction("Set Checked", this);
+  m_bookmarkContextMenu->addAction(checkAction);
+  connect(checkAction, SIGNAL(triggered()), this, SLOT(checkCurrentBookmark()));
+
+  QAction *unCheckAction = new QAction("Uncheck", this);
+  m_bookmarkContextMenu->addAction(unCheckAction);
+  connect(unCheckAction, SIGNAL(triggered()),
+          this, SLOT(uncheckCurrentBookmark()));
+
+
+  ui->bookmarkView->setContextMenu(m_bookmarkContextMenu);
 }
+
+void FlyEmSplitControlForm::checkCurrentBookmark(bool checking)
+{
+  QItemSelectionModel *sel = ui->bookmarkView->selectionModel();
+  QModelIndexList selected = sel->selectedIndexes();
+
+  foreach (const QModelIndex &index, selected) {
+    ZFlyEmBookmark &bookmark = m_bookmarkList.getBookmark(index.row());
+    bookmark.setChecked(checking);
+    m_bookmarkList.update(index.row());
+  }
+}
+
+void FlyEmSplitControlForm::checkCurrentBookmark()
+{
+  QItemSelectionModel *sel = ui->bookmarkView->selectionModel();
+  QModelIndexList selected = sel->selectedIndexes();
+
+  foreach (const QModelIndex &index, selected) {
+    ZFlyEmBookmark &bookmark = m_bookmarkList.getBookmark(index.row());
+    bookmark.setChecked(true);
+    m_bookmarkList.update(index.row());
+  }
+}
+
+void FlyEmSplitControlForm::uncheckCurrentBookmark()
+{
+  checkCurrentBookmark(false);
+}
+
 
 void FlyEmSplitControlForm::changeSplit()
 {
@@ -176,3 +219,4 @@ void FlyEmSplitControlForm::updateBodyWidget(uint64_t bodyId)
   }
   ui->infoWidget->setText(text);
 }
+

@@ -20,12 +20,12 @@ bool ZFlyEmSupervisor::checkIn(uint64_t bodyId)
 {
   static ZRandomGenerator generator;
 
-  return generator.rndint(2) > 1;
+  return generator.rndint(2) > 0;
 }
 
 bool ZFlyEmSupervisor::checkOut(uint64_t bodyId)
 {
   static ZRandomGenerator generator;
 
-  return generator.rndint(2) > 1;
+  return generator.rndint(2) > 0;
 }

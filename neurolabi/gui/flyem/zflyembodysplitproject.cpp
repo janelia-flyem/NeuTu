@@ -529,6 +529,7 @@ void ZFlyEmBodySplitProject::addBookmarkDecoration(
     const ZFlyEmBookmarkArray &bookmarkArray)
 {
   if (getDocument() != NULL) {
+    getDocument()->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
     for (ZFlyEmBookmarkArray::const_iterator iter = bookmarkArray.begin();
          iter != bookmarkArray.end(); ++iter) {
       const ZFlyEmBookmark &bookmark = *iter;
@@ -539,10 +540,13 @@ void ZFlyEmBodySplitProject::addBookmarkDecoration(
 //      circle->set(bookmark.getLocation(), 5);
       circle->setColor(255, 0, 0);
       circle->setVisible(m_isBookmarkVisible);
+      circle->setHittable(false);
 //      circle->setRole(ZStackObjectRole::ROLE_3DGRAPH_DECORATOR);
       getDocument()->addObject(circle);
       m_bookmarkDecoration.push_back(circle);
     }
+    getDocument()->endObjectModifiedMode();
+    getDocument()->notifyObjectModified();
   }
 }
 

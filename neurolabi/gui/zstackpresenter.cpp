@@ -2442,10 +2442,14 @@ void ZStackPresenter::process(const ZStackOperator &op)
   case ZStackOperator::OP_PUNCTA_SELECT_SINGLE:
     buddyDocument()->deselectAllPuncta();
     buddyDocument()->setSelected(op.getHitObject<ZPunctum>(), true);
+    interactionEvent.setEvent(
+          ZInteractionEvent::EVENT_OBJECT_SELECTED);
     //buddyDocument()->selectPuncta(op.getPunctaIndex());
     break;
   case ZStackOperator::OP_PUNCTA_SELECT_MULTIPLE:
     buddyDocument()->setSelected(op.getHitObject<ZPunctum>(), true);
+    interactionEvent.setEvent(
+          ZInteractionEvent::EVENT_OBJECT_SELECTED);
     //buddyDocument()->selectPuncta(op.getPunctaIndex());
     break;
   case ZStackOperator::OP_SHOW_PUNCTA_MENU:
