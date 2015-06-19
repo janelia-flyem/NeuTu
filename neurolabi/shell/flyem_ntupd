@@ -10,5 +10,10 @@ fi
 #cd $install_dir/Download/neutube
 #/usr/bin/git pull
 sh build.sh $install_dir/Trolltech/Qt4.8.5/bin/qmake $install_dir/Trolltech/Qt4.8.5/mkspecs/linux-g++ -e flyem -q BUILDEM_DIR=$install_dir/Download/buildem
+if [ -d $install_dir/Download/neutube/neurolabi/build_debug ]
+then
+  sh build.sh $install_dir/Trolltech/Qt4.8.5/bin/qmake $install_dir/Trolltech/Qt4.8.5/mkspecs/linux-g++ -e flyem -q BUILDEM_DIR=$install_dir/Download/buildem -c debug
+fi
+
 $install_dir/Download/neutube/neurolabi/shell/flyem_post_install $install_dir/Download/neutube $install_dir/Download/neutube/neurolabi/build
  

@@ -48,6 +48,9 @@ private slots:
   void updateBookmarkTable(ZFlyEmBodySplitProject *project);
   void locateBookmark(const QModelIndex &index);
   void loadBookmark();
+  void checkCurrentBookmark();
+  void uncheckCurrentBookmark();
+  void checkCurrentBookmark(bool checking);
 
 private:
   void setupWidgetBehavior();
@@ -58,6 +61,7 @@ private:
   ZFlyEmBookmarkListModel m_bookmarkList;
   //ZFlyEmBodySplitProject m_project;
   QMenu *m_mainMenu;
+  QMenu *m_bookmarkContextMenu;
 };
 
 #endif // FLYEMSPLITCONTROLFORM_H

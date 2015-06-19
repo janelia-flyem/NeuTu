@@ -160,6 +160,8 @@ public slots:
   void shallowClearQuickViewWindow();
   //void shallowClearBodyWindow();
 
+  void updateQuickViewPlane();
+
 private:
   bool showingBodyMask() const { return m_showingBodyMask; }
   void clear(QWidget *widget);

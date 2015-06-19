@@ -18,7 +18,8 @@ shift
 
 edition=general
 debug_config=release
-while getopts d:e:c:q: option
+make_args='-j3'
+while getopts d:e:c:q:m: option
 do
   echo $option
   echo $OPTARG
@@ -31,6 +32,8 @@ do
       debug_config=$OPTARG;;
     q)
       ext_qmake_args=$OPTARG;;
+    m)
+      make_args=$OPTARG;;
   esac
 done
 

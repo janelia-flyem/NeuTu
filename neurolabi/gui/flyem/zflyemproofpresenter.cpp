@@ -111,3 +111,4 @@ void ZFlyEmProofPresenter::processCustomOperator(const ZStackOperator &op)
     break;
   }
 }
+

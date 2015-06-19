@@ -743,6 +743,10 @@ public:
 
   void registerUser(QObject *user);
 
+  inline bool isSegmentationReady() const {
+    return m_isSegmentationReady;
+  }
+
   /*
   template <typename T>
   void registerUser(T *user);
@@ -996,6 +1000,7 @@ public:
   }
 */
 signals:
+  void messageGenerated(const QString &message, bool appending = true);
   void messageGenerated(const ZWidgetMessage&);
   void locsegChainSelected(ZLocsegChain*);
   void stackDelivered(Stack *getStack, bool beOwner);
@@ -1055,8 +1060,6 @@ signals:
   void progressEnded();
   void progressAdvanced(double dp);
   void newDocReady(const ZStackDocReader &reader);
-
-  void messageGenerated(const QString &message, bool appending = true);
 
 private:
   void connectSignalSlot();
@@ -1135,6 +1138,7 @@ private:
 
   bool m_selectionSilent;
   bool m_isReadyForPaint;
+  bool m_isSegmentationReady;
 
   //QMutex m_mutex;
 

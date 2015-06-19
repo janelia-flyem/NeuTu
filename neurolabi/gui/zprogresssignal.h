@@ -2,6 +2,7 @@
 #define ZPROGRESSSIGNAL_H
 
 #include <QObject>
+#include <QStack>
 
 class ZProgressSignal : public QObject
 {
@@ -9,15 +10,18 @@ class ZProgressSignal : public QObject
 public:
   explicit ZProgressSignal(QObject *parent = 0);
 
-  void connectProgress(const ZProgressSignal *signal);
+  void connectProgress(const ZProgressSignal *targetSignal);
   template <typename T>
   void connectSlot(T *obj);
 
   static void ConnectProgress(const ZProgressSignal *source,
                               const ZProgressSignal *target);
+  /*
   static int getCurrentLevel() {
     return m_currentLevel;
   }
+*/
+  double getSubFactor() const;
 
 signals:
   void progressStarted(const QString &title, int nticks);
@@ -30,11 +34,13 @@ public slots:
   void startProgress(const QString &title, int nticks);
   void startProgress(const QString &title);
   void startProgress();
+  void startProgress(double alpha);
   void advanceProgress(double dp);
   void endProgress();
 
 private:
-  static int m_currentLevel;
+  //static int m_currentLevel;
+  QStack<double> m_subStack;
 };
 
 template<typename T>

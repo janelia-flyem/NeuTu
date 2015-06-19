@@ -80,10 +80,10 @@ public:
       const std::string &key1, const std::string &key2) const;
   std::string getAllKeyUrl(const std::string &name) const;
 
-  std::string getAnnotationUrl(const std::string &bodyLabelName) const;
-  std::string getAnnotationUrl(
+  std::string getBodyAnnotationUrl(const std::string &bodyLabelName) const;
+  std::string getBodyAnnotationUrl(
       uint64_t bodyId, const std::string &bodyLabelName) const;
-  std::string getAnnotationUrl(uint64_t bodyId) const;
+  std::string getBodyAnnotationUrl(uint64_t bodyId) const;
 
   std::string getBodyInfoUrl(const std::string &dataName) const;
   std::string getBodyInfoUrl(uint64_t bodyId, const std::string &dataName) const;
@@ -91,7 +91,6 @@ public:
 
   std::string getBoundBoxUrl() const;
   std::string getBoundBoxUrl(int z) const;
-
 
   std::string getLocalBodyIdUrl(int x, int y, int z) const;
 

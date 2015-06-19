@@ -2,6 +2,7 @@
 #define ZFLYEMBODYANNOTATION_H
 
 #include <string>
+#include "tz_stdint.h"
 
 class ZJsonObject;
 
@@ -13,13 +14,13 @@ class ZFlyEmBodyAnnotation
 public:
   ZFlyEmBodyAnnotation();
 
-  inline int getBodyId() const { return m_bodyId; }
+  inline uint64_t getBodyId() const { return m_bodyId; }
   inline const std::string& getStatus() const { return m_status; }
   inline const std::string& getComment() const { return m_comment; }
   inline const std::string& getName() const { return m_name; }
   inline const std::string& getType() const { return m_type; }
 
-  inline void setBodyId(int bodyId) { m_bodyId = bodyId; }
+  inline void setBodyId(uint64_t bodyId) { m_bodyId = bodyId; }
   inline void setStatus(const std::string &status) {
     m_status = status;
   }
@@ -44,11 +45,15 @@ public:
 
   void loadJsonObject(const ZJsonObject &obj);
 
+  ZJsonObject toJsonObject() const;
+
   void clear();
   void print() const;
 
+  bool isEmpty() const;
+
 private:
-  int m_bodyId;
+  uint64_t m_bodyId;
   std::string m_status;
   std::string m_comment;
   std::string m_name;

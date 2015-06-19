@@ -41,6 +41,25 @@ Z3DGraph* Z3DGraphFactory::MakeGrid(
   edge.setConnection(2, 3);
   graph->addEdge(edge);
 
+  double interval = std::max(rect.getWidth(), rect.getHeight()) / (ntick + 1);
+
+  //Create x ticks
+  Z3DGraphNode node1;
+  Z3DGraphNode node2;
+  node1.setColor(QColor(64, 64, 64, 128));
+  node1.setRadius(lineWidth / 6.0);
+  node2.setRadius(lineWidth / 6.0);
+  node1.setCenter(rect.getFirstX(), rect.getFirstY(), rect.getZ());
+  node2.setCenter(rect.getLastX(), rect.getFirstY(), rect.getZ());
+
+  for (int i = 0; i < ntick; ++i) {
+    node1.addY(interval);
+    node2.addY(interval);
+    graph->addEdge(node1, node2);
+  }
+
+  //Create y ticks
+
   return graph;
 }
 

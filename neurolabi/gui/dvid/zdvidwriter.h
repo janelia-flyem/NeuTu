@@ -5,6 +5,7 @@
 #include <QEventLoop>
 #include <QTimer>
 #include <QMap>
+#include <QString>
 
 #include <string>
 #include <vector>
@@ -16,11 +17,14 @@
 #include "zsparsestack.h"
 #include "dvid/zdvidtarget.h"
 #include "dvid/zdvidwriter.h"
+#include "zflyembodyannotation.h"
+#include "zjsonobject.h"
 
 class ZFlyEmNeuron;
 class ZClosedCurve;
 class ZIntCuboid;
 class ZSwcTree;
+class QProcess;
 
 class ZDvidWriter : public QObject
 {
@@ -36,8 +40,11 @@ public:
   void writeSwc(int bodyId, ZSwcTree *tree);
   void writeThumbnail(int bodyId, ZStack *stack);
   void writeThumbnail(int bodyId, Stack *stack);
-  void writeAnnotation(int bodyId, const ZJsonObject &obj);
+  void writeAnnotation(uint64_t bodyId, const ZJsonObject &obj);
   void writeAnnotation(const ZFlyEmNeuron &neuron);
+
+  void writeBodyAnntation(const ZFlyEmBodyAnnotation &annotation);
+
   void writeRoiCurve(const ZClosedCurve &curve, const std::string &key);
   void deleteRoiCurve(const std::string &key);
   void writeJsonString(const std::string &dataName, const std::string &key,
@@ -76,7 +83,7 @@ public:
   bool lockNode(const std::string &message);
   std::string createBranch();
 
-  void writeSplit(const std::string &dataName, const ZObject3dScan &obj,
+  uint64_t writeSplit(const std::string &dataName, const ZObject3dScan &obj,
                   uint64_t oldLabel, uint64_t label);
 
   void writeMergeOperation(const QMap<uint64_t, uint64_t> &bodyMap);
@@ -85,6 +92,10 @@ public:
                            const QMap<uint64_t, uint64_t> &bodyMap);
                            */
 
+  inline int getStatusCode() const {
+    return m_statusCode;
+  }
+
 private:
   std::string getJsonStringForCurl(const ZJsonValue &obj) const;
   void writeJson(const std::string url, const ZJsonValue &value);
@@ -92,11 +103,25 @@ private:
 
   ZJsonValue getLocMessage(const std::string &message);
 
+  bool runCommand(const QString &command, const QStringList &argList);
+  bool runCommand(const QString &command);
+  bool runCommand(QProcess &process);
+
+  inline const QString& getStandardOutput() const {
+    return m_standardOutout;
+  }
+
+  void parseStandardOutput();
+
 private:
   QEventLoop *m_eventLoop;
   ZDvidClient *m_dvidClient;
   QTimer *m_timer;
   ZDvidTarget m_dvidTarget;
+  QString m_errorOutput;
+  QString m_standardOutout;
+  ZJsonObject m_jsonOutput;
+  int m_statusCode;
 };
 
 #endif // ZDVIDWRITER_H

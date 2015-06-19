@@ -66,6 +66,8 @@ public:
     return m_selectedOriginal;
   }
 
+  std::set<uint64_t> getSelected(NeuTube::EBodyLabelType labelType) const;
+
   bool isBodySelected(uint64_t bodyId, NeuTube::EBodyLabelType labelType) const;
 
   void setBodyMerger(ZFlyEmBodyMerger *bodyMerger);

@@ -39,6 +39,26 @@ void Z3DGraphNode::set(double x, double y, double z, double r)
   m_radius = r;
 }
 
+void Z3DGraphNode::setCenter(double x, double y, double z)
+{
+  m_center.set(x, y, z);
+}
+
+void Z3DGraphNode::addX(double dx)
+{
+  m_center.setX(m_center.x() + dx);
+}
+
+void Z3DGraphNode::addY(double dy)
+{
+  m_center.setY(m_center.y() + dy);
+}
+
+void Z3DGraphNode::setRadius(double r)
+{
+  m_radius = r;
+}
+
 void Z3DGraphNode::loadJsonObject(json_t *obj)
 {
   const char *key;
@@ -345,6 +365,17 @@ void Z3DGraph::addEdge(const Z3DGraphEdge &edge)
 void Z3DGraph::addNode(const Z3DGraphNode &node)
 {
   m_nodeArray.push_back(node);
+}
+
+void Z3DGraph::addEdge(const Z3DGraphNode &node1, const Z3DGraphNode &node2)
+{
+  addNode(node1);
+  addNode(node2);
+
+  Z3DGraphEdge edge;
+  edge.useNodeColor(true);
+  edge.set(m_nodeArray.size() - 2, m_nodeArray.size() - 1, node1.radius() * 2.0);
+  addEdge(edge);
 }
 
 ZSTACKOBJECT_DEFINE_CLASS_NAME(Z3DGraph)

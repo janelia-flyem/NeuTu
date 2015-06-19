@@ -861,12 +861,15 @@ Stack* Stack_Watershed(const Stack *stack, Stack_Watershed_Workspace *ws)
     return NULL;
   }
 
-  if (stack->width == 1 && stack->height == 1 && stack->depth == 1) {
+  int width = stack->width;
+  int height = stack->height;
+  int depth = stack->depth;
+
+  if (width == 1 && height == 1 && depth == 1) {
     return NULL;
   }
 
-  Stack *out = Make_Stack(GREY, stack->width, stack->height,
-              stack->depth);
+  Stack *out = Make_Stack(GREY, width, height, depth);
   Zero_Stack(out);
   
   size_t nvoxel = Stack_Voxel_Number(stack);

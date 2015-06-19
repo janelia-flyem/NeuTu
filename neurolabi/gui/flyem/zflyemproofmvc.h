@@ -14,6 +14,7 @@ class ZDvidTileEnsemble;
 class ZDvidTarget;
 class ZDvidDialog;
 class ZFlyEmProofPresenter;
+class ZFlyEmSupervisor;
 
 class ZFlyEmProofMvc : public ZStackMvc
 {
@@ -43,6 +44,12 @@ public:
   void enableSplit();
   void disableSplit();
 
+  void processViewChangeCustom(const ZStackViewParam &viewParam);
+
+  inline ZFlyEmSupervisor* getSupervisor() const {
+    return m_supervisor;
+  }
+
 signals:
   void launchingSplit(const QString &message);
   void launchingSplit(uint64_t bodyId);
@@ -64,6 +71,7 @@ public slots:
   void launchSplit(uint64_t bodyId);
   void processMessageSlot(const QString &message);
   void notifySplitTriggered();
+  void annotateBody();
   void exitSplit();
   void switchSplitBody(uint64_t bodyId);
   void showBodyQuickView();
@@ -103,6 +111,8 @@ protected:
 private:
   void launchSplitFunc(uint64_t bodyId);
   uint64_t getMappedBodyId(uint64_t bodyId);
+  std::set<uint64_t> getCurrentSelectedBodyId(NeuTube::EBodyLabelType type) const;
+  void runSplitFunc();
 
 private:
   bool m_showSegmentation;
@@ -113,6 +123,7 @@ private:
   QThreadFutureMap m_futureMap;
 
   ZDvidDialog *m_dvidDlg;
+  ZFlyEmSupervisor *m_supervisor;
 };
 
 template <typename T>

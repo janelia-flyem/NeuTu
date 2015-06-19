@@ -184,7 +184,7 @@
       "port": 8500,
       "uuid": "febc",
       "name": "MB_for_Pat",
-      "comment": "MB seg (branched from c348)",
+      "comment": "MB seg (branched from df22)",
       "body_label": "bodies",
       "label_block": "labels",
       "user_name": "rivlinp"
@@ -194,7 +194,7 @@
       "port": 8500,
       "uuid": "febc",
       "name": "MB_changl",
-      "comment": "MB seg (branched from c348)",
+      "comment": "MB seg (branched from df22)",
       "body_label": "bodies",
       "label_block": "labels",
       "user_name": ["changl", "zhaot"]
@@ -204,7 +204,7 @@
       "port": 8500,
       "uuid": "febc",
       "name": "MB_lauchies",
-      "comment": "MB seg (branched from c348)",
+      "comment": "MB seg (branched from df22)",
       "body_label": "bodies",
       "label_block": "labels",
       "user_name": ["lauchies", "zhaot"]
@@ -214,7 +214,7 @@
       "port": 8500,
       "uuid": "febc",
       "name": "MB_ogundeyio",
-      "comment": "MB seg (branched from c348)",
+      "comment": "MB seg (branched from df22)",
       "body_label": "bodies",
       "label_block": "labels",
       "user_name": ["ogundeyio", "zhaot"]
@@ -224,7 +224,7 @@
       "port": 8500,
       "uuid": "febc",
       "name": "MB_ordishc",
-      "comment": "MB seg (branched from c348)",
+      "comment": "MB seg (branched from df22)",
       "body_label": "bodies",
       "label_block": "labels",
       "user_name": ["ordishc", "zhaot"]
@@ -234,7 +234,7 @@
       "port": 8500,
       "uuid": "febc",
       "name": "MB_sigmundc",
-      "comment": "MB seg (branched from c348)",
+      "comment": "MB seg (branched from df22)",
       "body_label": "bodies",
       "label_block": "labels",
       "user_name": ["sigmundc", "zhaot"]
@@ -244,7 +244,7 @@
       "port": 8500,
       "uuid": "febc",
       "name": "MB_shinomiyaa",
-      "comment": "MB seg (branched from c348)",
+      "comment": "MB seg (branched from df22)",
       "body_label": "bodies",
       "label_block": "labels",
       "user_name": ["shinomiyaa", "zhaot"]
@@ -254,7 +254,7 @@
       "port": 8500,
       "uuid": "febc",
       "name": "MB_tranj",
-      "comment": "MB seg (branched from c348)",
+      "comment": "MB seg (branched from df22)",
       "body_label": "bodies",
       "label_block": "labels",
       "user_name": ["tranj", "zhaot"]
@@ -264,7 +264,7 @@
       "port": 8500,
       "uuid": "febc",
       "name": "MB_anicetor",
-      "comment": "MB seg (branched from c348)",
+      "comment": "MB seg (branched from df22)",
       "body_label": "bodies",
       "label_block": "labels",
       "user_name": ["anicetor", "zhaot"]
@@ -274,7 +274,7 @@
       "port": 8500,
       "uuid": "febc",
       "name": "MB_shinomiyak",
-      "comment": "MB seg (branched from c348)",
+      "comment": "MB seg (branched from df22)",
       "body_label": "bodies",
       "label_block": "labels",
       "user_name": ["shinomiyak", "zhaot"]
@@ -308,7 +308,7 @@
       "comment": "MB seg (branched from ccf)",
       "body_label": "bodies",
       "label_block": "labels",
-      "user_name": "takemurasa"
+      "user_name": ["takemurasa", "zhaot"]
     },
     {
       "address": "emdata1.int.janelia.org",

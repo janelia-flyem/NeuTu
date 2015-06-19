@@ -27,11 +27,11 @@ cd ..
 echo 'Building libneurolabi ...'
 ./update_library 
 
-if [ ! -d build ]
+if [ ! -d build_debug ]
 then
-  mkdir build
+  mkdir build_debug
 fi
 
-cd build
+cd build_debug
 $QMAKE -spec $QMAKE_SPEC CONFIG+=debug CONFIG+=x86_64 -o Makefile ../gui/gui.pro
-make
+make -j3

@@ -304,22 +304,22 @@ std::string ZDvidUrl::getKeyRangeUrl(
   */
 }
 
-std::string ZDvidUrl::getAnnotationUrl(const std::string &bodyLabelName) const
+std::string ZDvidUrl::getBodyAnnotationUrl(const std::string &bodyLabelName) const
 {
   return getDataUrl(ZDvidData::GetName(ZDvidData::ROLE_BODY_ANNOTATION,
                                        ZDvidData::ROLE_BODY_LABEL,
                                        bodyLabelName));
 }
 
-std::string ZDvidUrl::getAnnotationUrl(uint64_t bodyId, const std::string &bodyLabelName) const
+std::string ZDvidUrl::getBodyAnnotationUrl(uint64_t bodyId, const std::string &bodyLabelName) const
 {
-  return GetKeyCommandUrl(getAnnotationUrl(bodyLabelName)) + "/" +
+  return GetKeyCommandUrl(getBodyAnnotationUrl(bodyLabelName)) + "/" +
       ZString::num2str(bodyId);
 }
 
-std::string ZDvidUrl::getAnnotationUrl(uint64_t bodyId) const
+std::string ZDvidUrl::getBodyAnnotationUrl(uint64_t bodyId) const
 {
-  return getAnnotationUrl(bodyId, m_dvidTarget.getBodyLabelName());
+  return getBodyAnnotationUrl(bodyId, m_dvidTarget.getBodyLabelName());
 }
 
 std::string ZDvidUrl::getBodyInfoUrl(const std::string &bodyLabelName) const
@@ -405,7 +405,7 @@ std::string ZDvidUrl::getSynapseListUrl() const
 
 std::string ZDvidUrl::getSynapseAnnotationUrl(const std::string &name) const
 {
-  return  GetKeyCommandUrl(getAnnotationUrl(m_dvidTarget.getBodyLabelName())) +
+  return  GetKeyCommandUrl(getBodyAnnotationUrl(m_dvidTarget.getBodyLabelName())) +
       "/" + name;
 }
 

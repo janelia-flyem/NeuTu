@@ -288,9 +288,18 @@ void ZStackPresenter::createStrokeActions()
 
 void ZStackPresenter::createBodyActions()
 {
-  QAction *action = new QAction(tr("Launch split"), this);
-  connect(action, SIGNAL(triggered()), this, SLOT(notifyBodySplitTriggered()));
-  m_actionMap[ACTION_BODY_SPLIT_START] = action;
+  {
+    QAction *action = new QAction(tr("Launch split"), this);
+    connect(action, SIGNAL(triggered()), this, SLOT(notifyBodySplitTriggered()));
+    m_actionMap[ACTION_BODY_SPLIT_START] = action;
+  }
+
+  {
+    QAction *action = new QAction(tr("Annotate"), this);
+    connect(action, SIGNAL(triggered()),
+            this, SLOT(notifyBodyAnnotationTriggered()));
+    m_actionMap[ACTION_BODY_ANNOTATION] = action;
+  }
 
 //  action = new QAction(tr("Add split seed"), this);
 //  connect(action, SIGNAL(triggered()), this, SLOT());
@@ -2096,6 +2105,11 @@ void ZStackPresenter::notifyBodySplitTriggered()
   emit bodySplitTriggered();
 }
 
+void ZStackPresenter::notifyBodyAnnotationTriggered()
+{
+  emit bodyAnnotationTriggered();
+}
+
 void ZStackPresenter::selectDownstreamNode()
 {
   buddyDocument()->selectDownstreamNode();
@@ -2428,10 +2442,14 @@ void ZStackPresenter::process(const ZStackOperator &op)
   case ZStackOperator::OP_PUNCTA_SELECT_SINGLE:
     buddyDocument()->deselectAllPuncta();
     buddyDocument()->setSelected(op.getHitObject<ZPunctum>(), true);
+    interactionEvent.setEvent(
+          ZInteractionEvent::EVENT_OBJECT_SELECTED);
     //buddyDocument()->selectPuncta(op.getPunctaIndex());
     break;
   case ZStackOperator::OP_PUNCTA_SELECT_MULTIPLE:
     buddyDocument()->setSelected(op.getHitObject<ZPunctum>(), true);
+    interactionEvent.setEvent(
+          ZInteractionEvent::EVENT_OBJECT_SELECTED);
     //buddyDocument()->selectPuncta(op.getPunctaIndex());
     break;
   case ZStackOperator::OP_SHOW_PUNCTA_MENU:

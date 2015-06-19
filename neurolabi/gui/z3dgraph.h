@@ -35,6 +35,11 @@ public:
   inline void setColor(const QColor &color) { m_color = color; }
 
   void set(double x, double y, double z, double r);
+  void setCenter(double x, double y, double z);
+  void setRadius(double r);
+
+  void addX(double dx);
+  void addY(double dy);
 
   void loadJsonObject(json_t *obj);
 
@@ -122,6 +127,7 @@ public:
 
   void addNode(const Z3DGraphNode &node);
   void addEdge(const Z3DGraphEdge &edge);
+  void addEdge(const Z3DGraphNode &node1, const Z3DGraphNode &node2);
 
 public:
   void importPointNetwork(const ZPointNetwork &pointNetwork,
