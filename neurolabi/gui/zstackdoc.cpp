@@ -7831,48 +7831,74 @@ std::vector<ZStack*> ZStackDoc::createWatershedMask(bool selectedOnly)
   return maskArray;
 }
 
+void ZStackDoc::toggleVisibility(ZStackObjectRole::TRole role)
+{
+  beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
+  QList<ZDocPlayer*> playerList = getPlayerList(role);
+  for (QList<ZDocPlayer*>::iterator iter = playerList.begin();
+       iter != playerList.end(); ++iter) {
+    ZDocPlayer *player = *iter;
+    player->getData()->toggleVisible();
+    processObjectModified(player->getData()->getTarget());
+  }
+  endObjectModifiedMode();
+
+  notifyObjectModified();
+}
+
 void ZStackDoc::updateWatershedBoundaryObject(ZStack *out, ZIntPoint dsIntv)
 {
   if (out != NULL) {
+    std::vector<ZObject3dScan*> objArray =
+        ZObject3dFactory::MakeObject3dScanPointerArray(*out);
+    /*
     ZObject3dArray *objArray = ZObject3dFactory::MakeRegionBoundary(
           *out, ZObject3dFactory::OUTPUT_SPARSE);
-    if (objArray != NULL) {
-      if (dsIntv.getX() > 0 || dsIntv.getY() > 0 || dsIntv.getZ() > 0) {
-        for (ZObject3dArray::iterator iter = objArray->begin();
-             iter != objArray->end(); ++iter) {
-          ZObject3d *obj = *iter;
-          if (obj != NULL) {
-            if (!obj->isEmpty()) {
-              obj->upSample(dsIntv.getX(), dsIntv.getY(), dsIntv.getZ());
+          */
+    if (dsIntv.getX() > 0 || dsIntv.getY() > 0 || dsIntv.getZ() > 0) {
+      for (std::vector<ZObject3dScan*>::iterator iter = objArray.begin();
+           iter != objArray.end(); ++iter) {
+        ZObject3dScan *obj = *iter;
+        if (obj != NULL) {
+          if (!obj->isEmpty()) {
+            obj->upSample(dsIntv.getX(), dsIntv.getY(), dsIntv.getZ());
+          }
+        }
+      }
+    }
+
+    QList<ZDocPlayer*> playerList =
+        getPlayerList(ZStackObjectRole::ROLE_SEED);
+    //foreach (ZStroke2d *stroke, m_strokeList) {
+    foreach (const ZDocPlayer *player, playerList) {
+      for (std::vector<ZObject3dScan*>::iterator iter = objArray.begin();
+           iter != objArray.end(); ++iter) {
+        ZObject3dScan *obj = *iter;
+        if (obj != NULL) {
+          if (!obj->isEmpty()) {
+            if ((int) obj->getLabel() == player->getLabel()) {
+              obj->setColor(player->getData()->getColor());
+              //ZString objectSource = "localSeededWatershed:Temporary_Border:";
+              // objectSource.appendNumber(stroke->getLabel());
+              obj->setSource(
+                    ZStackObjectSourceFactory::MakeWatershedBoundarySource(
+                      player->getLabel()));
+              obj->setHittable(false);
+              obj->setProjectionVisible(false);
+              obj->setRole(ZStackObjectRole::ROLE_TMP_RESULT);
+              addObject(obj, true);
             }
           }
         }
       }
+    }
 
-      QList<const ZDocPlayer*> playerList =
-          getPlayerList(ZStackObjectRole::ROLE_SEED);
-      //foreach (ZStroke2d *stroke, m_strokeList) {
-      foreach (const ZDocPlayer *player, playerList) {
-        ZObject3d *obj = objArray->take(player->getLabel());
-        if (obj != NULL) {
-          if (!obj->isEmpty()) {
-            obj->setColor(player->getData()->getColor());
-            //ZString objectSource = "localSeededWatershed:Temporary_Border:";
-            // objectSource.appendNumber(stroke->getLabel());
-            obj->setSource(
-                  ZStackObjectSourceFactory::MakeWatershedBoundarySource(
-                    player->getLabel()));
-            obj->setHittable(false);
-            obj->setProjectionVisible(false);
-            obj->setRole(ZStackObjectRole::ROLE_TMP_RESULT);
-            addObject(obj, true);
-          } else {
-            delete obj;
-          }
-        }
+    for (std::vector<ZObject3dScan*>::iterator iter = objArray.begin();
+         iter != objArray.end(); ++iter) {
+      ZObject3dScan *obj = *iter;
+      if (!obj->getRole().hasRole(ZStackObjectRole::ROLE_TMP_RESULT)) {
+        delete obj;
       }
-
-      delete objArray;
     }
   }
 }
@@ -7998,7 +8024,7 @@ void ZStackDoc::seededWatershed()
 
       updateWatershedBoundaryObject(out, dsIntv);
 
-      notifyObj3dModified();
+//      notifyObj3dModified();
 
       setLabelField(out);
       m_isSegmentationReady = true;
@@ -8026,7 +8052,7 @@ void ZStackDoc::runLocalSeededWatershed()
 
 void ZStackDoc::runSeededWatershed()
 {
-  QList<const ZDocPlayer*> playerList =
+  QList<ZDocPlayer*> playerList =
       getPlayerList(ZStackObjectRole::ROLE_SEED);
   QSet<int> labelSet;
   foreach (const ZDocPlayer *player, playerList) {
@@ -8124,24 +8150,18 @@ void ZStackDoc::setStackFactory(ZStackFactory *factory)
   m_stackFactory = factory;
 }
 
-QList<const ZDocPlayer*> ZStackDoc::getPlayerList(
+QList<const ZDocPlayer *> ZStackDoc::getPlayerList(
     ZStackObjectRole::TRole role) const
 {
-
   return m_playerList.getPlayerList(role);
-  /*
-  QList<const ZDocPlayer*> playerList;
-  for (ZDocPlayerList::const_iterator iter = m_playerList.begin();
-       iter != m_playerList.end(); ++iter) {
-    const ZDocPlayer *player = *iter;
-    if (player->hasRole(role)) {
-      playerList.append(player);
-    }
-  }
-
-  return playerList;
-  */
 }
+
+QList<ZDocPlayer *> ZStackDoc::getPlayerList(
+    ZStackObjectRole::TRole role)
+{
+  return m_playerList.getPlayerList(role);
+}
+
 
 bool ZStackDoc::hasPlayer(ZStackObjectRole::TRole role) const
 {

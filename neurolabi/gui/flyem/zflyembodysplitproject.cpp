@@ -811,7 +811,7 @@ int ZFlyEmBodySplitProject::selectAllSeed()
 {
   int nSelected = 0;
   if (getDocument() != NULL) {
-    QList<const ZDocPlayer*> playerList =
+    QList<ZDocPlayer*> playerList =
         getDocument()->getPlayerList(ZStackObjectRole::ROLE_SEED);
 //    getDocument()->deselectAllObject();
     foreach (const ZDocPlayer *player, playerList) {
@@ -830,7 +830,7 @@ int ZFlyEmBodySplitProject::selectSeed(int label)
 {
   int nSelected = 0;
   if (getDocument() != NULL) {
-    QList<const ZDocPlayer*> playerList =
+    QList<ZDocPlayer*> playerList =
         getDocument()->getPlayerList(ZStackObjectRole::ROLE_SEED);
     getDocument()->deselectAllObject();
     foreach (const ZDocPlayer *player, playerList) {
@@ -855,7 +855,7 @@ void ZFlyEmBodySplitProject::backupSeed()
 
   ZDvidReader reader;
   if (reader.open(getDvidTarget())) {
-    QList<const ZDocPlayer*> playerList;
+    QList<ZDocPlayer*> playerList;
     if (getDocument() != NULL) {
       playerList = getDocument()->getPlayerList(ZStackObjectRole::ROLE_SEED);
     }
@@ -913,7 +913,7 @@ void ZFlyEmBodySplitProject::saveSeed(bool emphasizingMessage)
     }
   }
 
-  QList<const ZDocPlayer*> playerList =
+  QList<ZDocPlayer*> playerList =
       getDocument()->getPlayerList(ZStackObjectRole::ROLE_SEED);
   ZJsonArray jsonArray;
   foreach (const ZDocPlayer *player, playerList) {

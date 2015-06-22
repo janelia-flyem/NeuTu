@@ -773,28 +773,33 @@ void ZFlyEmProofMvc::locateBody(uint64_t bodyId)
   ZDvidReader reader;
   if (reader.open(getDvidTarget())) {
     ZObject3dScan body = reader.readCoarseBody(bodyId);
+    if (body.isEmpty()) {
+      emit messageGenerated(
+            ZWidgetMessage(QString("Cannot go to body: %1. Invalid body ID.").
+            arg(bodyId), NeuTube::MSG_ERROR));
+    } else {
+      ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
 
-    ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
+      ZVoxel voxel = body.getSlice((body.getMinZ() + body.getMaxZ()) / 2).getMarker();
+      ZIntPoint pt(voxel.x(), voxel.y(), voxel.z());
+      pt -= dvidInfo.getStartBlockIndex();
+      pt *= dvidInfo.getBlockSize();
+      pt += dvidInfo.getStartCoordinates();
 
-    ZVoxel voxel = body.getSlice((body.getMinZ() + body.getMaxZ()) / 2).getMarker();
-    ZIntPoint pt(voxel.x(), voxel.y(), voxel.z());
-    pt -= dvidInfo.getStartBlockIndex();
-    pt *= dvidInfo.getBlockSize();
-    pt += dvidInfo.getStartCoordinates();
+      //    std::set<uint64_t> bodySet;
+      //    bodySet.insert(bodyId);
 
-//    std::set<uint64_t> bodySet;
-//    bodySet.insert(bodyId);
+      ZDvidLabelSlice *slice = getCompleteDocument()->getDvidLabelSlice();
+      if (slice != NULL) {
+        slice->clearSelection();
+        slice->addSelection(
+              slice->getMappedLabel(bodyId, NeuTube::BODY_LABEL_ORIGINAL),
+              NeuTube::BODY_LABEL_MAPPED);
+      }
+      updateBodySelection();
 
-    ZDvidLabelSlice *slice = getCompleteDocument()->getDvidLabelSlice();
-    if (slice != NULL) {
-      slice->clearSelection();
-      slice->addSelection(
-            slice->getMappedLabel(bodyId, NeuTube::BODY_LABEL_ORIGINAL),
-            NeuTube::BODY_LABEL_MAPPED);
+      zoomTo(pt);
     }
-    updateBodySelection();
-
-    zoomTo(pt);
   }
 }
 

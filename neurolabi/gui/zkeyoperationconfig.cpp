@@ -35,6 +35,9 @@ void ZKeyOperationConfig::ConfigureStackMap(ZKeyOperationMap &map)
   plainKeyMap[Qt::Key_Q] = ZStackOperator::OP_STACK_DEC_SLICE;
   plainKeyMap[Qt::Key_E] = ZStackOperator::OP_STACK_INC_SLICE;
 
+  plainKeyMap[Qt::Key_T] = ZStackOperator::OP_OBJECT_TOGGLE_TMP_RESULT_VISIBILITY;
+
+
   QMap<int, ZStackOperator::EOperation> &shiftKeyMap = *(map.getShiftMap());
 
   shiftKeyMap[Qt::Key_W] = ZStackOperator::OP_IMAGE_MOVE_UP_FAST;

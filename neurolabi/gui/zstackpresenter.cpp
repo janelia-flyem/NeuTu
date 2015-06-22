@@ -2664,6 +2664,9 @@ void ZStackPresenter::process(const ZStackOperator &op)
       //m_grabPosition = buddyView()->screen()->canvasCoordinate(event->pos());
     }
     break;
+  case ZStackOperator::OP_OBJECT_TOGGLE_TMP_RESULT_VISIBILITY:
+    buddyDocument()->toggleVisibility(ZStackObjectRole::ROLE_TMP_RESULT);
+    break;
   case ZStackOperator::OP_TRACK_MOUSE_MOVE:
     buddyView()->setInfo(
           buddyDocument()->dataInfo(

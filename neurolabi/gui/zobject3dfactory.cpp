@@ -18,6 +18,66 @@ ZObject3dFactory::ZObject3dFactory()
 {
 }
 
+ZStack* ZObject3dFactory::MakeBoundaryStack(const ZStack &stack)
+{
+  const Stack *originalStack = stack.c_stack();
+  ZStack *mask = ZStackFactory::makeZeroStack(
+        stack.width(), stack.height(), stack.depth());
+  Stack *maskStack = mask->c_stack();
+
+  int width = C_Stack::width(originalStack);
+  int height = C_Stack::height(originalStack);
+  int depth = C_Stack::depth(originalStack);
+
+  size_t area = C_Stack::area(originalStack);
+  size_t offset = 0;
+  //x scan
+  for (int z = 0; z < depth; ++z) {
+    for (int y = 0; y < height; ++y) {
+      offset++;
+      for (int x = 1; x < width - 1; ++x) {
+        if (originalStack->array[offset] != originalStack->array[offset - 1] ||
+            originalStack->array[offset] != originalStack->array[offset + 1]) {
+          maskStack->array[offset] = originalStack->array[offset];
+        }
+        offset++;
+      }
+      offset++;
+    }
+  }
+
+  uint8_t *originalArray = originalStack->array;
+  //y scan
+  for (int z = 0; z < depth; ++z) {
+    for (int x = 0; x < width; ++x) {
+      offset = area * z + x + width;
+      for (int y = 1; y < height - 1; ++y) {
+        if (originalArray[offset] != originalArray[offset - width] ||
+            originalArray[offset] != originalArray[offset + width]) {
+          maskStack->array[offset] = originalStack->array[offset];
+        }
+        offset += width;
+      }
+    }
+  }
+
+  //z scan
+  for (int y = 0; y < height; ++y) {
+    for (int x = 0; x < width; ++x) {
+      offset = width * y + x + area;
+      for (int z = 1; z < depth - 1; ++z) {
+        if (originalArray[offset] != originalArray[offset - area] ||
+            originalArray[offset] != originalArray[offset + area]) {
+          maskStack->array[offset] = originalStack->array[offset];
+        }
+        offset += area;
+      }
+    }
+  }
+
+  return mask;
+}
+
 ZObject3dArray* ZObject3dFactory::MakeRegionBoundary(
     const ZStack &stack, EOutputForm option)
 {
@@ -196,6 +256,36 @@ ZObject3dScanArray* ZObject3dFactory::MakeObject3dScanArray(
       }
       delete obj;
     }
+  }
+
+  return objArray;
+}
+
+std::vector<ZObject3dScan*> ZObject3dFactory::MakeObject3dScanPointerArray(
+      const ZStack &stack, int yStep)
+{
+  std::vector<ZObject3dScan*> objArray;
+
+  if (stack.hasData()) {
+    ZStack *mask = MakeBoundaryStack(stack);
+
+    std::map<int, ZObject3dScan*> *bodySet =
+        ZObject3dScan::extractAllObject(
+          mask->array8(), mask->width(), mask->height(), mask->depth(),
+          0, yStep, NULL);
+    for (std::map<int, ZObject3dScan*>::const_iterator iter = bodySet->begin();
+         iter != bodySet->end(); ++iter) {
+      ZObject3dScan *obj = iter->second;
+      if (iter->first > 0) {
+        obj->translate(stack.getOffset());
+        obj->setLabel(iter->first);
+        objArray.push_back(obj);
+      } else {
+        delete obj;
+      }
+    }
+
+    delete mask;
   }
 
   return objArray;

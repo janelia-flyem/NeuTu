@@ -200,7 +200,7 @@ void ZStackMvc::processViewChange()
 void ZStackMvc::processViewChange(const ZStackViewParam &viewParam)
 {
   if (getPresenter()->isObjectVisible()) {
-    QList<const ZDocPlayer*> playerList =
+    QList<ZDocPlayer*> playerList =
         m_doc->getPlayerList(ZStackObjectRole::ROLE_ACTIVE_VIEW);
     if (!playerList.isEmpty()) {
       bool updated = false;

@@ -28,7 +28,7 @@ void ZDocPlayerObjsModel::updateModelData()
 void ZDocPlayerObjsModel::setupModelData(ZObjsItem *parent)
 {
   m_objToRow.clear();
-  QList<const ZDocPlayer *> playerList = m_doc->getPlayerList(m_role);
+  QList<ZDocPlayer *> playerList = m_doc->getPlayerList(m_role);
 
   for (int i = 0; i < playerList.size(); i++) {
     QList<QVariant> data;

@@ -491,6 +491,7 @@ public: /* puncta related methods */
     return m_objectGroup.hasSelected(ZStackObject::TYPE_PUNCTUM);
   }
 
+public:
   void addLocsegChainP(ZLocsegChain *chain);
   void addLocsegChain(const QList<ZLocsegChain*> &chainList);
 
@@ -539,6 +540,8 @@ public: /* puncta related methods */
 //  void addPlayer(ZStackObject *obj, NeuTube::EDocumentableType type,
 //                 ZDocPlayer::TRole role);
   void addPlayer(ZStackObject *obj);
+
+  void toggleVisibility(ZStackObjectRole::TRole role);
 
   void updateLocsegChain(ZLocsegChain *chain);
   void importLocsegChain(const QStringList &files,
@@ -681,11 +684,12 @@ public: /* puncta related methods */
     return m_playerList;
   }
 
+  QList<const ZDocPlayer*> getPlayerList(ZStackObjectRole::TRole role) const;
+  QList<ZDocPlayer*> getPlayerList(ZStackObjectRole::TRole role);
+
   virtual const ZSparseStack* getSparseStack() const;
   virtual const ZSparseStack* getConstSparseStack() const;
   virtual ZSparseStack* getSparseStack();
-
-  QList<const ZDocPlayer*> getPlayerList(ZStackObjectRole::TRole role) const;
 
   bool hasPlayer(ZStackObjectRole::TRole role) const;
 
