@@ -6520,6 +6520,9 @@ void ZStackDoc::notifyPlayerChanged(ZStackObjectRole::TRole role)
   ZStackObjectRole roleObj(role);
   if (roleObj.hasRole(ZStackObjectRole::ROLE_SEED)) {
     m_isSegmentationReady = false;
+
+    emit messageGenerated(
+          ZWidgetMessage(ZWidgetMessage::appendTime("Seed modified.")));
     emit seedModified();
   }
 

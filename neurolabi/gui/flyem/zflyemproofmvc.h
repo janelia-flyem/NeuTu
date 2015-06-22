@@ -116,7 +116,6 @@ private:
 
 private:
   bool m_showSegmentation;
-  bool m_splitOn;
   ZFlyEmBodySplitProject m_splitProject;
   ZFlyEmBodyMergeProject m_mergeProject;
 

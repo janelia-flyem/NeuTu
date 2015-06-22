@@ -9,6 +9,7 @@
 #include "zsharedpointer.h"
 #include "zstackviewparam.h"
 #include "neutube.h"
+#include "dvid/zdvidinfo.h"
 
 class ZStackFrame;
 class ZFlyEmBodyMergeFrame;
@@ -24,7 +25,7 @@ class Z3DWindow;
 class ZStackDoc;
 class ZFlyEmBodyMerger;
 class ZWidgetMessage;
-class ZDvidInfo;
+//class ZDvidInfo;
 class ZProgressSignal;
 //class ZStackViewParam;
 
@@ -53,9 +54,7 @@ public:
     return m_dvidTarget;
   }
 
-  inline void setDvidTarget(const ZDvidTarget &target) {
-    m_dvidTarget = target;
-  }
+  void setDvidTarget(const ZDvidTarget &target);
 
   inline ZFlyEmBodyMergeFrame* getDataFrame() {
     return m_dataFrame;
@@ -80,6 +79,7 @@ public:
 
   void setSelection(
       const std::set<uint64_t> &selected, NeuTube::EBodyLabelType labelType);
+  std::set<uint64_t> getSelection(NeuTube::EBodyLabelType labelType) const;
 
   //void setSelectionFromOriginal(const std::set<uint64_t> &selected);
 
@@ -107,6 +107,7 @@ signals:
   void locating2DViewTriggered(ZStackViewParam);
   void dvidLabelChanged();
   void messageGenerated(const ZWidgetMessage&);
+  void coarseBodyWindowCreatedInThread();
 
   /*
   void messageGenerated(QString, bool appending = true);
@@ -122,7 +123,7 @@ public slots:
   void uploadResult();
   void saveMergeOperation();
   void update3DBodyView(const ZStackObjectSelector &selector);
-  void update3DBodyView();
+  void update3DBodyView(bool showingWindow = true);
   void update3DBodyViewDeep();
   void showBody3d();
   void detachBodyWindow();
@@ -130,12 +131,17 @@ public slots:
   void highlightSelectedObject(bool hl);
   void update3DBodyViewPlane();
 
+private slots:
+  void present3DBodyView();
+
 private:
   ZFlyEmBodyMerger* getBodyMerger() const;
   void clearBodyMerger();
   void update3DBodyViewPlane(const ZDvidInfo &dvidInfo);
   void update3DBodyViewBox(const ZDvidInfo &dvidInfo);
   void uploadResultFunc();
+  void make3DBodyWindow(ZStackDoc *doc);
+  void connectSignalSlot();
   //void updateSelection();
 
 private:
@@ -143,6 +149,7 @@ private:
   ZSharedPointer<ZStackDoc> m_doc;
   Z3DWindow *m_bodyWindow;
   ZDvidTarget m_dvidTarget;
+  ZDvidInfo m_dvidInfo;
 //  Z3DWindow *m_resultWindow;
 //  Z3DWindow *m_quickViewWindow;
 //  ZFlyEmBookmarkArray m_bookmarkArray;

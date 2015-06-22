@@ -96,20 +96,26 @@ public:
     return m_statusCode;
   }
 
+  inline const QString& getStandardOutput() const {
+    return m_standardOutout;
+  }
+
+  inline const QString& getErrorOutput() const {
+    return m_errorOutput;
+  }
+
+  void writeUrl(const std::string &url, const std::string &method = "POST");
+
 private:
   std::string getJsonStringForCurl(const ZJsonValue &obj) const;
   void writeJson(const std::string url, const ZJsonValue &value);
-  void writeJsonString(const std::string url, const std::string jsonString);
+  void writeJsonString(const std::string url, const std::string &jsonString);
 
   ZJsonValue getLocMessage(const std::string &message);
 
   bool runCommand(const QString &command, const QStringList &argList);
   bool runCommand(const QString &command);
   bool runCommand(QProcess &process);
-
-  inline const QString& getStandardOutput() const {
-    return m_standardOutout;
-  }
 
   void parseStandardOutput();
 

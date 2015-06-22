@@ -244,6 +244,7 @@ using namespace std;
 #include "biocytin/swcprocessor.h"
 #include "zcommandline.h"
 #include "z3dgraphfactory.h"
+#include "flyem/zflyemsupervisor.h"
 
 using namespace std;
 
@@ -17047,7 +17048,7 @@ void ZTest::test(MainWindow *host)
   qDebug() << time.toString("yyyy-MM-dd hh:mm:ss");
 #endif
 
-#if 1
+#if 0
   QProcess::execute(
         "curl",
         QStringList() << "-g" << "-X GET" << "http://emdata1.int.janelia.org:8500/api/help");
@@ -17070,5 +17071,29 @@ void ZTest::test(MainWindow *host)
   QString str("\"MaxLabel\": {\"test\": 12433534}; other {}");
   str.remove(QRegExp("\"MaxLabel\":\\s*\\{[^{}]*\\}"));
   qDebug() << str;
+#endif
+
+#if 1
+  ZFlyEmSupervisor supervisor;
+
+  std::cout << supervisor.getMainUrl() << std::endl;
+
+  std::cout << supervisor.getCheckinUrl("1234") << std::endl;
+  std::cout << supervisor.getCheckoutUrl("1234") << std::endl;
+
+  std::cout << supervisor.getCheckinUrl("1234", 100) << std::endl;
+  std::cout << supervisor.getCheckoutUrl("1234", 100) << std::endl;
+
+  ZDvidTarget target("emdata1.int.janelia.org", "abcd", 8500);
+  supervisor.setDvidTarget(target);
+
+  std::cout << supervisor.getCheckinUrl(100) << std::endl;
+  std::cout << supervisor.getCheckoutUrl(100) << std::endl;
+
+//  std::cout << supervisor.checkIn(100) << std::endl;
+  std::cout << supervisor.checkOut(100) << std::endl;
+
+
+
 #endif
 }

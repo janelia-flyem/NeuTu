@@ -23,9 +23,16 @@ public:
   void disableSplit();
   void setSplitEnabled(bool s);
 
-
   bool processKeyPressEvent(QKeyEvent *event);
   void processCustomOperator(const ZStackOperator &op);
+
+  inline bool isSplitWindow() const {
+    return m_splitWindowMode;
+  }
+
+  void setSplitWindow(bool state) {
+    m_splitWindowMode = state;
+  }
 
 signals:
   void highlightingSelected(bool);
@@ -37,6 +44,7 @@ public slots:
 
 private:
   bool m_isHightlightMode;
+  bool m_splitWindowMode;
 };
 
 #endif // ZFLYEMPROOFPRESENTER_H

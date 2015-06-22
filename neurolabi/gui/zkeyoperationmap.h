@@ -2,6 +2,7 @@
 #define ZKEYOPERATIONMAP_H
 
 #include <QMap>
+#include <QList>
 #include <QKeyEvent>
 #include "zstackoperator.h"
 
@@ -44,7 +45,31 @@ public:
 
   const QMap<int, ZStackOperator::EOperation>* getMap(
       Qt::KeyboardModifiers modifiers) const;
-  ZStackOperator::EOperation getOperation(int key, Qt::KeyboardModifiers modifiers) const;
+  ZStackOperator::EOperation getOperation(
+      int key, Qt::KeyboardModifiers modifiers) const;
+  /*!
+   * \brief Is the key mapped or not.
+   *
+   * \return true iff \a key is mapped, even if the mapped operation is null.
+   */
+  bool hasKey(int key, Qt::KeyboardModifiers modifiers) const;
+
+
+  enum EValueConflictResolve { //Same key to different value
+    VALUE_KEEP_MASTER, VALUE_KEEP_GUEST,
+  };
+
+  enum EKeyConflictResolve { //Different key to same value
+    KEY_KEEP_BOTH, KEY_KEEP_MASTER, KEY_KEEP_GUEST
+  };
+
+  static void merge(QMap<int, ZStackOperator::EOperation> &master,
+                    const QMap<int, ZStackOperator::EOperation> &guest,
+                    EKeyConflictResolve keyResolve,
+                    EValueConflictResolve valueResolve);
+
+  void merge(const ZKeyOperationMap &mapper, EKeyConflictResolve keyResolve,
+             EValueConflictResolve valueResolve);
 
 private:
   QMap<int, ZStackOperator::EOperation> m_plainMap;

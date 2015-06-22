@@ -17,6 +17,11 @@ ZStackOperator ZKeyEventMapper::getOperation(const QKeyEvent &event) const
   return op;
 }
 
+void ZKeyEventMapper::setOperation(int key, ZStackOperator::EOperation op)
+{
+  m_operationMap[key] = op;
+}
+
 void ZKeyEventMapper::merge(
     const ZKeyEventMapper &mapper, EKeyConflictResolve keyResolve,
     EValueConflictResolve valueResolve)
@@ -26,7 +31,8 @@ void ZKeyEventMapper::merge(
   for (QMap<int, ZStackOperator::EOperation>::iterator
        iter = m_operationMap.begin(); iter != m_operationMap.end(); ++iter) {
     ZStackOperator::EOperation op = mapper.m_operationMap[iter.key()];
-    if (mapper.m_operationMap.contains(iter.key()) && (op != iter.value())) { //Value conflict
+    //Value conflict: same key, but different value
+    if (mapper.m_operationMap.contains(iter.key()) && (op != iter.value())) {
       switch (valueResolve) {
       case VALUE_KEEP_MASTER:
         newMap.remove(iter.key());
@@ -45,18 +51,29 @@ void ZKeyEventMapper::merge(
          iter = guestValueSet.begin(); iter != guestValueSet.end(); ++iter) {
       ZStackOperator::EOperation op = *iter;
       QList<int> masterKeys = m_operationMap.keys(op);
-      if (!masterKeys.empty()) {
+      QList<int> guestKeys = mapper.m_operationMap.keys(op);
+      //Keys of same values
+      if (!masterKeys.empty() && !guestKeys.empty()) {
         switch (keyResolve) {
         case KEY_KEEP_GUEST:
         {
+          //Remove master keys
           foreach (int key, masterKeys) {
             m_operationMap.remove(key);
           }
-          QList<int> guestKeys = mapper.m_operationMap.keys(op);
+          //Record guest keys
+          /*
           foreach (int key, guestKeys) {
             newMap[key] = op;
           }
+          */
         }
+          break;
+        case KEY_KEEP_MASTER:
+          //Remove guest keys there are master keys of the same value
+          foreach (int key, guestKeys) {
+            newMap.remove(key);
+          }
           break;
         default:
           break;

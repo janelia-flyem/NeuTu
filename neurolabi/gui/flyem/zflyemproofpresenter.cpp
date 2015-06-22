@@ -4,7 +4,7 @@
 #include <QAction>
 
 ZFlyEmProofPresenter::ZFlyEmProofPresenter(ZStackFrame *parent) :
-  ZStackPresenter(parent), m_isHightlightMode(false)
+  ZStackPresenter(parent), m_isHightlightMode(false), m_splitWindowMode(false)
 {
   interactiveContext().setSwcEditMode(ZInteractiveContext::SWC_EDIT_OFF);
 }
@@ -83,11 +83,13 @@ bool ZFlyEmProofPresenter::isSplitOn() const
 
 void ZFlyEmProofPresenter::enableSplit()
 {
+  setSplitWindow(true);
   setSplitEnabled(true);
 }
 
 void ZFlyEmProofPresenter::disableSplit()
 {
+  setSplitWindow(false);
   setSplitEnabled(false);
 }
 
@@ -107,8 +109,13 @@ void ZFlyEmProofPresenter::processCustomOperator(const ZStackOperator &op)
       emit selectingBodyAt(pos.getX(), pos.getY(), pos.getZ());
     }
     break;
+  case ZStackOperator::OP_SHOW_BODY_CONTEXT_MENU:
+    break;
   default:
     break;
   }
+
+  getAction(ZStackPresenter::ACTION_BODY_SPLIT_START)->setVisible(
+        !isSplitWindow());
 }
 

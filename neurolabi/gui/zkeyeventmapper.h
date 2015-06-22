@@ -30,6 +30,7 @@ public:
                   */
 
   virtual ZStackOperator getOperation(const QKeyEvent &event) const;
+  void setOperation(int key, ZStackOperator::EOperation op);
 
   ZStackOperator initOperation() const;
 

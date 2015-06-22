@@ -52,13 +52,22 @@ Z3DGraph* Z3DGraphFactory::MakeGrid(
   node1.setCenter(rect.getFirstX(), rect.getFirstY(), rect.getZ());
   node2.setCenter(rect.getLastX(), rect.getFirstY(), rect.getZ());
 
-  for (int i = 0; i < ntick; ++i) {
-    node1.addY(interval);
-    node2.addY(interval);
+  for (double y = rect.getFirstY() + interval; y < rect.getLastY();
+       y += interval) {
+    node1.setY(y);
+    node2.setY(y);
     graph->addEdge(node1, node2);
   }
 
-  //Create y ticks
+  node1.setCenter(rect.getFirstX(), rect.getFirstY(), rect.getZ());
+  node2.setCenter(rect.getFirstX(), rect.getLastY(), rect.getZ());
+
+  for (double x = rect.getFirstX() + interval; x < rect.getLastX();
+       x += interval) {
+    node1.setX(x);
+    node2.setX(x);
+    graph->addEdge(node1, node2);
+  }
 
   return graph;
 }

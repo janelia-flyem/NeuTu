@@ -5,6 +5,7 @@
 #include <QtConcurrentRun>
 #include <QWidget>
 #include <QUndoStack>
+#include <QMutexLocker>
 
 #include "zstackframe.h"
 #include "z3dwindow.h"
@@ -143,6 +144,10 @@ void ZFlyEmBodySplitProject::shallowClearBodyWindow()
 void ZFlyEmBodySplitProject::setDvidTarget(const ZDvidTarget &target)
 {
   m_dvidTarget = target;
+  ZDvidReader reader;
+  if (reader.open(target)) {
+    m_dvidInfo = reader.readGrayScaleInfo();
+  }
 }
 
 void ZFlyEmBodySplitProject::showDataFrame() const
@@ -266,9 +271,9 @@ void ZFlyEmBodySplitProject::quickView()
         }
       }
 
-      ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
-      doc->addObject(ZFlyEmMisc::MakeBoundBoxGraph(dvidInfo), true);
-      doc->addObject(ZFlyEmMisc::MakePlaneGraph(getDocument(), dvidInfo), true);
+//      ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
+      doc->addObject(ZFlyEmMisc::MakeBoundBoxGraph(m_dvidInfo), true);
+      doc->addObject(ZFlyEmMisc::MakePlaneGraph(getDocument(), m_dvidInfo), true);
       //ZFlyEmMisc::Decorate3DWindow(m_quickViewWindow, reader);
     }
 
@@ -364,8 +369,10 @@ void ZFlyEmBodySplitProject::loadResult3dQuick(ZStackDoc *doc)
   }
 }
 
-void ZFlyEmBodySplitProject::updateResult3dQuick()
+void ZFlyEmBodySplitProject::updateResult3dQuickFunc()
 {
+  QMutexLocker locker(&m_splitWindowMutex);
+
   if (m_quickResultWindow != NULL) {
     ZStackDoc *doc = m_quickResultWindow->getDocument();
     bool resetCamera = true;
@@ -377,7 +384,15 @@ void ZFlyEmBodySplitProject::updateResult3dQuick()
     if (resetCamera) {
       m_quickResultWindow->resetCamera();
     }
+
+    emit messageGenerated(ZWidgetMessage("3D split view updated."));
   }
+}
+
+void ZFlyEmBodySplitProject::updateResult3dQuick()
+{
+  emit messageGenerated(ZWidgetMessage("Updating 3D split view ..."));
+  QtConcurrent::run(this, &ZFlyEmBodySplitProject::updateResult3dQuickFunc);
 }
 
 void ZFlyEmBodySplitProject::showResult3dQuick()
@@ -394,6 +409,14 @@ void ZFlyEmBodySplitProject::showResult3dQuick()
       m_quickResultWindow = windowFactory.make3DWindow(doc);
       m_quickResultWindow->getSwcFilter()->setColorMode("Intrinsic");
       m_quickResultWindow->getSwcFilter()->setRenderingPrimitive("Sphere");
+      m_quickResultWindow->setYZView();
+
+      ZDvidReader reader;
+      if (reader.open(getDvidTarget())) {
+//        ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
+        doc->addObject(ZFlyEmMisc::MakeBoundBoxGraph(m_dvidInfo), true);
+        doc->addObject(ZFlyEmMisc::MakePlaneGraph(getDocument(), m_dvidInfo), true);
+      }
 
       connect(m_quickResultWindow, SIGNAL(destroyed()),
               this, SLOT(shallowClearQuickResultWindow()));
@@ -492,8 +515,8 @@ void ZFlyEmBodySplitProject::loadBookmark(const QString &filePath)
   ZDvidReader reader;
   ZFlyEmCoordinateConverter converter;
   if (reader.open(m_dvidTarget)) {
-    ZDvidInfo info = reader.readGrayScaleInfo();
-    converter.configure(info);
+//    ZDvidInfo info = reader.readGrayScaleInfo();
+    converter.configure(m_dvidInfo);
     m_bookmarkArray.importJsonFile(filePath.toStdString(), NULL/*&converter*/);
   }
 }
@@ -1378,15 +1401,28 @@ void ZFlyEmBodySplitProject::emitError(const QString &msg, bool appending)
         ZWidgetMessage(msg, NeuTube::MSG_ERROR, target));
 }
 
-void ZFlyEmBodySplitProject::updateQuickViewPlane()
+void ZFlyEmBodySplitProject::update3DViewPlane()
 {
-  if (m_quickViewWindow != NULL) {
-    ZDvidReader reader;
+  if (m_quickViewWindow || m_quickResultWindow) {
 
-    if (reader.open(getDvidTarget())) {
-      ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
-      Z3DGraph *graph = ZFlyEmMisc::MakePlaneGraph(getDocument(), dvidInfo);
-      m_quickViewWindow->getDocument()->addObject(graph, true);
+//    ZDvidReader reader;
+
+//    tic();
+    if (m_dvidInfo.isValid()) {
+//      ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
+
+
+      if (m_quickViewWindow != NULL) {
+        Z3DGraph *graph = ZFlyEmMisc::MakePlaneGraph(getDocument(), m_dvidInfo);
+        m_quickViewWindow->getDocument()->addObject(graph, true);
+      }
+
+      if (m_quickResultWindow != NULL) {
+        Z3DGraph *graph = ZFlyEmMisc::MakePlaneGraph(getDocument(), m_dvidInfo);
+        m_quickResultWindow->getDocument()->addObject(graph, true);
+      }
+//      std::cout << "3d plane rendering time: " << toc() << std::endl;
     }
+
   }
 }

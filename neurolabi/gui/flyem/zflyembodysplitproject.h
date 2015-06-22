@@ -2,11 +2,14 @@
 #define ZFLYEMBODYSPLITPROJECT_H
 
 #include <QObject>
+#include <QMutex>
+
 #include <set>
 #include "dvid/zdvidtarget.h"
 #include "flyem/zflyembookmarklistmodel.h"
 #include "qthreadfuturemap.h"
 #include "zsharedpointer.h"
+#include "dvid/zdvidinfo.h"
 
 class ZStackFrame;
 class Z3DWindow;
@@ -160,7 +163,7 @@ public slots:
   void shallowClearQuickViewWindow();
   //void shallowClearBodyWindow();
 
-  void updateQuickViewPlane();
+  void update3DViewPlane();
 
 private:
   bool showingBodyMask() const { return m_showingBodyMask; }
@@ -169,9 +172,11 @@ private:
   void downloadSeed(const std::string &seedKey);
   void removeAllSeed();
   void removeAllSideSeed();
+  void updateResult3dQuickFunc();
 
 private:
   ZDvidTarget m_dvidTarget;
+  ZDvidInfo m_dvidInfo;
   uint64_t m_bodyId;
   ZStackFrame *m_dataFrame;
   ZSharedPointer<ZStackDoc> m_doc;
@@ -183,6 +188,8 @@ private:
   std::vector<ZStackObject*> m_bookmarkDecoration;
   bool m_isBookmarkVisible;
   bool m_showingBodyMask;
+
+  QMutex m_splitWindowMutex;
 };
 
 template <typename T>

@@ -61,6 +61,8 @@ public:
   QSet<uint64_t> getOriginalLabelSet(InputIterator begin,
                                      InputIterator end) const;
 
+  bool isEmpty() const;
+
 private:
   static uint64_t mapLabel(const TLabelMap &labelMap, uint64_t label);
   static uint64_t mapLabel(const TLabelMapList &labelMap, uint64_t label);

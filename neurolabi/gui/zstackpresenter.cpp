@@ -886,8 +886,6 @@ bool ZStackPresenter::isOperatable(ZStackOperator::EOperation op)
   case ZStackOperator::OP_SWC_MOVE_NODE_UP_FAST:
   case ZStackOperator::OP_SWC_MOVE_NODE_DOWN:
   case ZStackOperator::OP_SWC_MOVE_NODE_DOWN_FAST:
-  case ZStackOperator::OP_SWC_INCREASE_NODE_SIZE:
-  case ZStackOperator::OP_SWC_DECREASE_NODE_SIZE:
   case ZStackOperator::OP_SWC_CONNECT_NODE:
   case ZStackOperator::OP_SWC_CONNECT_NODE_SMART:
   case ZStackOperator::OP_SWC_CONNECT_ISOLATE:
@@ -920,6 +918,12 @@ bool ZStackPresenter::isOperatable(ZStackOperator::EOperation op)
     if (buddyDocument()->getTag() != NeuTube::Document::NORMAL &&
         buddyDocument()->getTag() != NeuTube::Document::BIOCYTIN_STACK &&
         buddyDocument()->getTag() != NeuTube::Document::FLYEM_ROI) {
+      opable = false;
+    }
+    break;
+  case ZStackOperator::OP_SWC_DECREASE_NODE_SIZE:
+  case ZStackOperator::OP_SWC_INCREASE_NODE_SIZE:
+    if (buddyDocument()->getSelectedSwcNodeList().isEmpty() || isStrokeOn()) {
       opable = false;
     }
     break;
@@ -2372,6 +2376,12 @@ void ZStackPresenter::process(const ZStackOperator &op)
     break;
   case ZStackOperator::OP_SWC_MOVE_NODE_RIGHT_FAST:
     buddyDocument()->executeMoveSwcNodeCommand(10.0, 0, 0);
+    break;
+  case ZStackOperator::OP_SWC_MOVE_NODE:
+    enterSwcMoveMode();
+    break;
+  case ZStackOperator::OP_SWC_INSERT_NODE:
+    buddyDocument()->executeInsertSwcNode();
     break;
   case ZStackOperator::OP_SWC_INCREASE_NODE_SIZE:
     if (isStrokeOff()) {

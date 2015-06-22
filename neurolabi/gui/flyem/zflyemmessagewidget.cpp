@@ -3,6 +3,7 @@
 #include <QTextEdit>
 #include <QScrollBar>
 #include <QPushButton>
+#include <QDebug>
 
 #include "zwidgetmessage.h"
 
@@ -36,6 +37,8 @@ void ZFlyEmMessageWidget::dump(const QString &info, bool appending)
     m_currentMessageWidget->clear();
     m_currentMessageWidget->setText(info);
   }
+
+//  qDebug() << m_currentMessageWidget->toHtml();
 }
 
 void ZFlyEmMessageWidget::dump(const QStringList &info)

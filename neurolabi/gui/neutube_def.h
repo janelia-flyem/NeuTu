@@ -48,6 +48,10 @@ enum EMessageType {
 enum EBodyLabelType {
   BODY_LABEL_ORIGINAL, BODY_LABEL_MAPPED
 };
+
+enum ETraverseDirection {
+  TRAVERSE_FORWARD, TRAVERSE_BACKWARD
+};
 }
 
 

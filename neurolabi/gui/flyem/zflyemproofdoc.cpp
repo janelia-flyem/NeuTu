@@ -191,7 +191,17 @@ void ZFlyEmProofDoc::saveMergeOperation()
   if (writer.open(getDvidTarget())) {
     writer.writeMergeOperation(m_bodyMerger.getFinalMap());
 
-    emit messageGenerated(ZWidgetMessage("Merge operation saved."));
+    if (writer.getStatusCode() == 200) {
+      if (m_bodyMerger.isEmpty()) {
+        emit messageGenerated(ZWidgetMessage("Merge operation cleared."));
+      } else {
+        emit messageGenerated(ZWidgetMessage("Merge operation saved."));
+      }
+    } else {
+      emit messageGenerated(
+            ZWidgetMessage("Cannot save the merge operation",
+                           NeuTube::MSG_ERROR));
+    }
   }
 }
 

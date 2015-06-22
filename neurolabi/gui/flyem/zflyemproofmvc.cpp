@@ -23,9 +23,10 @@
 #include "flyem/zflyembodyannotationdialog.h"
 #include "zflyembodyannotation.h"
 #include "flyem/zflyemsupervisor.h"
+#include "dvid/zdvidwriter.h"
 
 ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
-  ZStackMvc(parent), m_splitOn(false)
+  ZStackMvc(parent)
 {
   m_dvidDlg = new ZDvidDialog(this);
   m_supervisor = new ZFlyEmSupervisor(this);
@@ -277,14 +278,28 @@ void ZFlyEmProofMvc::annotateBody()
   if (bodyIdArray.size() == 1) {
     uint64_t bodyId = *(bodyIdArray.begin());
     if (bodyId > 0) {
+      ZFlyEmBodyAnnotationDialog *dlg = new ZFlyEmBodyAnnotationDialog(this);
+      dlg->setBodyId(bodyId);
       ZDvidReader reader;
       if (reader.open(getDvidTarget())) {
         ZFlyEmBodyAnnotation annotation = reader.readBodyAnnotation(bodyId);
-        if (!annotation.isEmpty()) {
 
+        if (!annotation.isEmpty()) {
+          dlg->loadBodyAnnotation(annotation);
         }
-      } else {
-        emit errorGenerated("Invalid dvid target.");
+      }
+
+      if (dlg->exec() && dlg->getBodyId() == bodyId) {
+        ZDvidWriter writer;
+        if (writer.open(getDvidTarget())) {
+          writer.writeAnnotation(bodyId, dlg->getBodyAnnotation().toJsonObject());
+        }
+        if (writer.getStatusCode() == 200) {
+          emit messageGenerated(QString("Body %1 is annotated.").arg(bodyId));
+        } else {
+          qDebug() << writer.getStandardOutput();
+          emit errorGenerated("Cannot save annotation.");
+        }
       }
     } else {
       qDebug() << "Unexpected 0 body ID";
@@ -295,11 +310,26 @@ void ZFlyEmProofMvc::annotateBody()
   }
 
 
-  emit messageGenerated("The function of annotating body is not ready yet.");
+//  emit messageGenerated(
+//        ZWidgetMessage("The function of annotating body is still under testing.",
+//                       NeuTube::MSG_WARING));
 }
 
 void ZFlyEmProofMvc::notifySplitTriggered()
 {
+  const std::set<uint64_t> &selected =
+      getCurrentSelectedBodyId(NeuTube::BODY_LABEL_ORIGINAL);
+
+  if (selected.size() == 1) {
+    uint64_t bodyId = *(selected.begin());
+
+    emit launchingSplit(bodyId);
+  } else {
+    emit messageGenerated("The split cannot be launched because "
+                          "one and only one body has to be selected.");
+  }
+
+  /*
   ZDvidLabelSlice *labelSlice = getCompleteDocument()->getDvidLabelSlice();
 
   if (labelSlice->isVisible()) {
@@ -314,6 +344,7 @@ void ZFlyEmProofMvc::notifySplitTriggered()
                             "one and only one body has to be selected.");
     }
   }
+  */
 }
 
 void ZFlyEmProofMvc::launchSplitFunc(uint64_t bodyId)
@@ -336,6 +367,9 @@ void ZFlyEmProofMvc::launchSplitFunc(uint64_t bodyId)
     ZDvidReader reader;
     if (reader.open(getDvidTarget())) {
       getProgressSignal()->startProgress("Launching split ...");
+
+      getCompletePresenter()->setHighlightMode(false);
+      m_mergeProject.highlightSelectedObject(false);
 
       if (body != NULL) {
         if (body->getLabel() != bodyId) {
@@ -398,13 +432,13 @@ void ZFlyEmProofMvc::presentBodySplit(uint64_t bodyId)
 
 void ZFlyEmProofMvc::enableSplit()
 {
-  m_splitOn = true;
+//  m_splitOn = true;
   getCompletePresenter()->enableSplit();
 }
 
 void ZFlyEmProofMvc::disableSplit()
 {
-  m_splitOn = false;
+//  m_splitOn = false;
   getCompletePresenter()->disableSplit();
 }
 
@@ -435,7 +469,7 @@ void ZFlyEmProofMvc::launchSplit(uint64_t bodyId)
 
 void ZFlyEmProofMvc::exitSplit()
 {
-  if (m_splitOn) {
+  if (getCompletePresenter()->isSplitWindow()) {
     emit messageGenerated("Exiting split ...");
 //    emitMessage("Exiting split ...");
     ZDvidLabelSlice *labelSlice = getCompleteDocument()->getDvidLabelSlice();
@@ -467,7 +501,7 @@ void ZFlyEmProofMvc::exitSplit()
 void ZFlyEmProofMvc::switchSplitBody(uint64_t bodyId)
 {
   if (bodyId != m_splitProject.getBodyId()) {
-    if (m_splitOn) {
+    if (getCompletePresenter()->isSplitWindow()) {
 //      exitSplit();
       QMessageBox msgBox;
        msgBox.setText("Changing to another body to split.");
@@ -549,7 +583,12 @@ void ZFlyEmProofMvc::saveMergeOperation()
 
 void ZFlyEmProofMvc::commitMerge()
 {
-  m_mergeProject.uploadResult();
+  if (ZDialogFactory::Ask("Upload Confirmation",
+                          "Do you want to upload the merging result now? "
+                          "It cannot be undone. ",
+                          this)) {
+    m_mergeProject.uploadResult();
+  }
 }
 
 void ZFlyEmProofMvc::commitCurrentSplit()
@@ -563,7 +602,7 @@ void ZFlyEmProofMvc::commitCurrentSplit()
     return;
   }
 
-  if (ZDialogFactory::Ask("Commit Confirmation",
+  if (ZDialogFactory::Ask("Upload Confirmation",
                           "Do you want to upload the splitting results now? "
                           "It cannot be undone. "
                           "***IMPORTANT**** Please make sure you have run"
@@ -701,16 +740,24 @@ uint64_t ZFlyEmProofMvc::getMappedBodyId(uint64_t bodyId)
 std::set<uint64_t> ZFlyEmProofMvc::getCurrentSelectedBodyId(
     NeuTube::EBodyLabelType type) const
 {
-  ZDvidLabelSlice *labelSlice = getCompleteDocument()->getDvidLabelSlice();
-
+  return m_mergeProject.getSelection(type);
+#if 0
   std::set<uint64_t> idSet;
-  if (labelSlice != NULL) {
-    if (labelSlice->isVisible()) {
-      idSet = labelSlice->getSelected(type);
+
+  if (getCompletePresenter()->isHighlight()) {
+
+//    idSet = m_mergeProject.getSelectedBodyId();
+  } else {
+    ZDvidLabelSlice *labelSlice = getCompleteDocument()->getDvidLabelSlice();
+    if (labelSlice != NULL) {
+      if (labelSlice->isVisible()) {
+        idSet = labelSlice->getSelected(type);
+      }
     }
   }
 
   return idSet;
+#endif
 }
 
 void ZFlyEmProofMvc::locateBody(uint64_t bodyId)
@@ -746,7 +793,7 @@ void ZFlyEmProofMvc::locateBody(uint64_t bodyId)
 void ZFlyEmProofMvc::processViewChangeCustom(const ZStackViewParam &/*viewParam*/)
 {
   m_mergeProject.update3DBodyViewPlane();
-  m_splitProject.updateQuickViewPlane();
+  m_splitProject.update3DViewPlane();
 }
 
 //void ZFlyEmProofMvc::toggleEdgeMode(bool edgeOn)

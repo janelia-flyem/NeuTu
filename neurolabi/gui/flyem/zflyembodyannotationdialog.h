@@ -20,6 +20,8 @@ public:
 
   ZFlyEmBodyAnnotation getBodyAnnotation() const;
 
+  void loadBodyAnnotation(const ZFlyEmBodyAnnotation &annotation);
+
   void setBodyId(uint64_t bodyId);
 
   uint64_t getBodyId() const;
@@ -27,6 +29,14 @@ public:
   QString getName() const;
   QString getType() const;
   QString getStatus() const;
+
+  void setComment(const std::string &comment);
+  void setStatus(const std::string &status);
+  void setName(const std::string &name);
+  void setType(const std::string &type);
+
+public slots:
+  void setNameEdit(const QString &name);
 
 private:
   Ui::ZFlyEmBodyAnnotationDialog *ui;
