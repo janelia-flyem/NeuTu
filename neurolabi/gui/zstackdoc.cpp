@@ -2246,6 +2246,16 @@ void ZStackDoc::addPunctum(const QList<ZPunctum *> &punctaList)
 //  notifyPunctumModified();
 }
 
+void ZStackDoc::addPunctumFast(const QList<ZPunctum *> &punctaList)
+{
+  beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
+  foreach (ZPunctum *punctum, punctaList) {
+    addObjectFast(punctum);
+  }
+  endObjectModifiedMode();
+  notifyObjectModified();
+}
+
 void ZStackDoc::addPunctumP(ZPunctum *obj)
 {
   if (obj == NULL) {
@@ -6417,30 +6427,10 @@ bool ZStackDoc::executeAddSwcNodeCommand(const ZPoint &center, double radius)
   return false;
 }
 
-void ZStackDoc::addObject(ZStackObject *obj, bool uniqueSource)
+void ZStackDoc::addObjectFast(ZStackObject *obj)
 {
-  //QMutexLocker locker(&m_mutex);
-
   if (obj == NULL) {
     return;
-  }
-
-  if (m_objectGroup.contains(obj)) {
-    return;
-  }
-
-  TStackObjectList objList;
-//  ZStackObjectRole role;
-
-  if (uniqueSource) {
-    objList = m_objectGroup.takeSameSource(obj->getType(), obj->getSource());
-    for (TStackObjectList::iterator iter = objList.begin();
-         iter != objList.end(); ++iter) {
-      ZStackObject *oldObj = *iter;
-      bufferObjectModified(oldObj);
-//      role.addRole(m_playerList.removePlayer(obj));
-      delete oldObj;
-    }
   }
 
   if (obj->isSelected()) {
@@ -6508,6 +6498,37 @@ void ZStackDoc::addObject(ZStackObject *obj, bool uniqueSource)
   endObjectModifiedMode();
 
   notifyObjectModified();
+}
+
+void ZStackDoc::addObject(ZStackObject *obj, bool uniqueSource)
+{
+  //QMutexLocker locker(&m_mutex);
+
+  if (obj == NULL) {
+    return;
+  }
+
+  if (m_objectGroup.contains(obj)) {
+    return;
+  }
+
+  TStackObjectList objList;
+//  ZStackObjectRole role;
+
+  if (uniqueSource) {
+    if (!obj->getSource().empty()) {
+      objList = m_objectGroup.takeSameSource(obj->getType(), obj->getSource());
+      for (TStackObjectList::iterator iter = objList.begin();
+           iter != objList.end(); ++iter) {
+        ZStackObject *oldObj = *iter;
+        bufferObjectModified(oldObj);
+        //      role.addRole(m_playerList.removePlayer(obj));
+        delete oldObj;
+      }
+    }
+  }
+
+  addObjectFast(obj);
 }
 
 void ZStackDoc::notifyPlayerChanged(const ZStackObjectRole &role)

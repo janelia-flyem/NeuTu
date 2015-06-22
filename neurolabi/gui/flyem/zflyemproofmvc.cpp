@@ -278,28 +278,36 @@ void ZFlyEmProofMvc::annotateBody()
   if (bodyIdArray.size() == 1) {
     uint64_t bodyId = *(bodyIdArray.begin());
     if (bodyId > 0) {
-      ZFlyEmBodyAnnotationDialog *dlg = new ZFlyEmBodyAnnotationDialog(this);
-      dlg->setBodyId(bodyId);
-      ZDvidReader reader;
-      if (reader.open(getDvidTarget())) {
-        ZFlyEmBodyAnnotation annotation = reader.readBodyAnnotation(bodyId);
+      if (getSupervisor()->checkOut(bodyId)) {
+        ZFlyEmBodyAnnotationDialog *dlg = new ZFlyEmBodyAnnotationDialog(this);
+        dlg->setBodyId(bodyId);
+        ZDvidReader reader;
+        if (reader.open(getDvidTarget())) {
+          ZFlyEmBodyAnnotation annotation = reader.readBodyAnnotation(bodyId);
 
-        if (!annotation.isEmpty()) {
-          dlg->loadBodyAnnotation(annotation);
+          if (!annotation.isEmpty()) {
+            dlg->loadBodyAnnotation(annotation);
+          }
         }
-      }
 
-      if (dlg->exec() && dlg->getBodyId() == bodyId) {
-        ZDvidWriter writer;
-        if (writer.open(getDvidTarget())) {
-          writer.writeAnnotation(bodyId, dlg->getBodyAnnotation().toJsonObject());
+        if (dlg->exec() && dlg->getBodyId() == bodyId) {
+          ZDvidWriter writer;
+          if (writer.open(getDvidTarget())) {
+            writer.writeAnnotation(bodyId, dlg->getBodyAnnotation().toJsonObject());
+          }
+          if (writer.getStatusCode() == 200) {
+            emit messageGenerated(QString("Body %1 is annotated.").arg(bodyId));
+          } else {
+            qDebug() << writer.getStandardOutput();
+            emit errorGenerated("Cannot save annotation.");
+          }
         }
-        if (writer.getStatusCode() == 200) {
-          emit messageGenerated(QString("Body %1 is annotated.").arg(bodyId));
-        } else {
-          qDebug() << writer.getStandardOutput();
-          emit errorGenerated("Cannot save annotation.");
-        }
+      } else {
+        ZWidgetMessage message(
+                    QString("Failed to start annotatation because "
+                            "%1 has been locked by someone else.").arg(bodyId),
+                    NeuTube::MSG_ERROR);
+              emit messageGenerated(message);
       }
     } else {
       qDebug() << "Unexpected 0 body ID";

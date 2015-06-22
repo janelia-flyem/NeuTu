@@ -503,6 +503,8 @@ public: /* puncta related methods */
   void addPunctumP(ZPunctum *obj);
   void addPunctum(const QList<ZPunctum*> &punctaList);
 
+  void addPunctumFast(const QList<ZPunctum*> &punctaList);
+
 
   void addObj3dP(ZObject3d *obj);
   void addObject3dScanP(ZObject3dScan *obj);
@@ -519,6 +521,15 @@ public: /* puncta related methods */
    *        existing in the doc, only the first one is replaced.
    */
   void addObject(ZStackObject *obj, bool uniqueSource = true);
+
+  /*!
+   * \brief Add an object in a quick way
+   *
+   * The function assumes that \a obj has no source and it does not exist in
+   * the document. This function is useful for adding a large number of newly
+   * created obejcts.
+   */
+  void addObjectFast(ZStackObject *obj);
 
   /*!
    * \brief Add a palyer

@@ -167,7 +167,10 @@ TStackObjectList ZStackObjectGroup::findSameSource(
 {
   TStackObjectList objList;
   for (InputIterator iter = begin; iter != end; ++iter) {
-    objList.append(findSameSource(*iter));
+    const ZStackObject *obj = *iter;
+    if (!obj->getSource().empty()) {
+      objList.append(findSameSource(*iter));
+    }
   }
 
   return objList;
