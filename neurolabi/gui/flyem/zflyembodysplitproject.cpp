@@ -338,28 +338,32 @@ void ZFlyEmBodySplitProject::loadResult3dQuick(ZStackDoc *doc)
     doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
     doc->removeAllSwcTree();
     TStackObjectList objList =
-        getDocument()->getObjectList(ZStackObject::TYPE_OBJ3D);
+        getDocument()->getObjectList(ZStackObject::TYPE_OBJECT3D_SCAN);
     const int maxSwcNodeNumber = 100000;
     const int maxScale = 50;
     const int minScale = 1;
     for (TStackObjectList::const_iterator iter = objList.begin();
          iter != objList.end(); ++iter) {
-      ZObject3d *obj = dynamic_cast<ZObject3d*>(*iter);
-      if (obj != NULL) {
-        if (!obj->getRole().hasRole(ZStackObjectRole::ROLE_SEED)) {
-          int ds = obj->size() / maxSwcNodeNumber + 1;
-          if (ds < minScale) {
-            ds = minScale;
-          }
-          if (ds > maxScale) {
-            ds = maxScale;
-          }
+      ZObject3dScan *splitObj = dynamic_cast<ZObject3dScan*>(*iter);
+      if (splitObj != NULL) {
+        if (splitObj->hasRole(ZStackObjectRole::ROLE_TMP_RESULT)) {
+          ZObject3d *obj = splitObj->toObject3d();
+          if (obj != NULL) {
+            int ds = obj->size() / maxSwcNodeNumber + 1;
+            if (ds < minScale) {
+              ds = minScale;
+            }
+            if (ds > maxScale) {
+              ds = maxScale;
+            }
 
-          ZSwcTree *tree = ZSwcGenerator::createSwc(
-                *obj, dmin2(5.0, ds / 2.0), ds);
-          if (tree != NULL) {
-            tree->setAlpha(255);
-            doc->addObject(tree);
+            ZSwcTree *tree = ZSwcGenerator::createSwc(
+                  *obj, dmin2(5.0, ds / 2.0), ds);
+            if (tree != NULL) {
+              tree->setAlpha(255);
+              doc->addObject(tree);
+            }
+            delete obj;
           }
         }
       }

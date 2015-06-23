@@ -395,6 +395,9 @@ ZObject3d* ZObject3dScan::toObject3d() const
     }
   }
 
+  obj->setColor(this->getColor());
+  obj->setLabel(this->getLabel());
+
 /*
   size_t numStripe = getStripeNumber();
 
