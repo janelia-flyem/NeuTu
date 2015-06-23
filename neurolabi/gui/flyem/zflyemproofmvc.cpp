@@ -239,9 +239,9 @@ void ZFlyEmProofMvc::runSplitFunc()
 
 void ZFlyEmProofMvc::runSplit()
 {
-  getProgressSignal()->startProgress("Running split ...");
+//  getProgressSignal()->startProgress("Running split ...");
   runSplitFunc();
-  getProgressSignal()->endProgress();
+//  getProgressSignal()->endProgress();
 
 #if 0 //has strange crash caused by Make_Stack
   const QString threadId = "runSplit";

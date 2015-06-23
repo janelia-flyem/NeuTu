@@ -780,16 +780,22 @@ void ZFlyEmBodySplitProject::commitResultFunc(
 
     uint64_t oldBodyId = oldBodyIdList[bodyIndex - 1];
     QString msg;
-    if (oldBodyId > 0) {
-      msg = QString("Label %1 uploaded as %2 (%3 voxels).").
-          arg(oldBodyId).arg(newBodyId).arg(obj.getVoxelNumber());
-    } else {
-      msg = QString("Isolated object uploaded as %1 (%2 voxels) .").
-          arg(newBodyId).arg(obj.getVoxelNumber());
-    }
-    newBodyIdList.append(newBodyId);
+    if (newBodyId > 0) {
+      if (oldBodyId > 0) {
+        msg = QString("Label %1 uploaded as %2 (%3 voxels).").
+            arg(oldBodyId).arg(newBodyId).arg(obj.getVoxelNumber());
+      } else {
+        msg = QString("Isolated object uploaded as %1 (%2 voxels) .").
+            arg(newBodyId).arg(obj.getVoxelNumber());
+      }
+      newBodyIdList.append(newBodyId);
 
-    emitMessage(msg);
+      emitMessage(msg);
+    } else {
+      emitError("Warning: Something wrong happened during uploading! "
+                "Please contact the developer as soon as possible.");
+    }
+
 
     emit progressAdvanced(dp);
   }

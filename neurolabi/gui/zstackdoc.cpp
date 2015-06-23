@@ -8017,6 +8017,7 @@ void ZStackDoc::seededWatershed()
         }
       }
     }
+    getProgressSignal()->advanceProgress(0.1);
 
     if (signalStack != NULL) {
       qDebug() << "Downsampling ..." << dsIntv.toString();
@@ -8028,8 +8029,10 @@ void ZStackDoc::seededWatershed()
 #endif
 
       ZStack *out = engine.run(signalStack, seedMask);
+      getProgressSignal()->advanceProgress(0.3);
 
       updateWatershedBoundaryObject(out, dsIntv);
+      getProgressSignal()->advanceProgress(0.1);
 
 //      notifyObj3dModified();
 
@@ -8087,7 +8090,15 @@ void ZStackDoc::runSeededWatershed()
     return;
   }
 
-  seededWatershed();
+  const QString threadId = "seededWatershed";
+  if (!m_futureMap.isAlive(threadId)) {
+    m_futureMap.removeDeadThread();
+    QFuture<void> future =
+        QtConcurrent::run(this, &ZStackDoc::seededWatershed);
+    m_futureMap[threadId] = future;
+  }
+
+//  seededWatershed();
   emit labelFieldModified();
 }
 
