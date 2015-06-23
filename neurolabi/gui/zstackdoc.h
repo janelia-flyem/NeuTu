@@ -49,6 +49,7 @@
 #include "misc/miscutility.h"
 #include "zrect2d.h"
 #include "zobjectcolorscheme.h"
+#include "qthreadfuturemap.h"
 
 class ZStackFrame;
 class ZLocalNeuroseg;
@@ -1165,6 +1166,8 @@ private:
   QSet<ZStackObject::EType> m_objectModifiedTypeBuffer;
   ZStackObjectRole m_objectModifiedRoleBuffer;
   QStack<EObjectModifiedMode> m_objectModifiedMode;
+
+  QThreadFutureMap m_futureMap;
 
 protected:
   ZObjectColorScheme m_objColorSheme;

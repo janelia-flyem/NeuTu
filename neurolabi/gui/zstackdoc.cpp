@@ -7905,10 +7905,13 @@ void ZStackDoc::updateWatershedBoundaryObject(ZStack *out, ZIntPoint dsIntv)
 
 void ZStackDoc::localSeededWatershed()
 {
+  getProgressSignal()->startProgress("Running local split ...");
   removeObject(ZStackObjectRole::ROLE_TMP_RESULT, true);
   m_isSegmentationReady = false;
 
   ZStackArray seedMask = createWatershedMask(true);
+  getProgressSignal()->advanceProgress(0.1);
+
   if (!seedMask.empty()) {
     ZStackWatershed engine;
 
@@ -7931,12 +7934,15 @@ void ZStackDoc::localSeededWatershed()
       }
     }
 
+    getProgressSignal()->advanceProgress(0.1);
+
 #ifdef _DEBUG_2
     signalStack->save(GET_TEST_DATA_DIR + "/test.tif");
 #endif
     if (signalStack != NULL) {
 
       seedMask.downsampleMax(dsIntv.getX(), dsIntv.getY(), dsIntv.getZ());
+      getProgressSignal()->advanceProgress(0.1);
 
 //      advanceProgress(0.1);
 //      QApplication::processEvents();
@@ -7952,6 +7958,7 @@ void ZStackDoc::localSeededWatershed()
 
       engine.setRange(box);
       ZStack *out = engine.run(signalStack, seedMask);
+      getProgressSignal()->advanceProgress(0.3);
 
 //      advanceProgress(0.1);
 //      QApplication::processEvents();
@@ -7960,6 +7967,7 @@ void ZStackDoc::localSeededWatershed()
       //objData = Stack_Region_Border(out->c_stack(), 6, TRUE);
 
       updateWatershedBoundaryObject(out, dsIntv);
+      getProgressSignal()->advanceProgress(0.1);
 
 //      advanceProgress(0.1);
 //      QApplication::processEvents();
@@ -7970,6 +7978,7 @@ void ZStackDoc::localSeededWatershed()
       std::cout << "No signal for local watershed." << std::endl;
     }
   }
+  getProgressSignal()->endProgress();
 }
 
 void ZStackDoc::seededWatershed()
@@ -8038,17 +8047,26 @@ void ZStackDoc::seededWatershed()
 
 void ZStackDoc::runLocalSeededWatershed()
 {
-  startProgress();
+//  startProgress();
 //  QApplication::processEvents();
 
 //  localSeededWatershed();
 
-  QFuture<void> result =
-      QtConcurrent::run(this, &ZStackDoc::localSeededWatershed); //crashed for unknown reason
-  result.waitForFinished();
+//  getProgressSignal()->startProgress();
 
+  const QString threadId = "localSeededWatershed";
+  if (!m_futureMap.isAlive(threadId)) {
+    m_futureMap.removeDeadThread();
+    QFuture<void> future =
+        QtConcurrent::run(this, &ZStackDoc::localSeededWatershed);
+    m_futureMap[threadId] = future;
+  }
 
-  endProgress();
+//  QFuture<void> result =
+//      QtConcurrent::run(this, &ZStackDoc::localSeededWatershed); //crashed for unknown reason
+//  result.waitForFinished();
+
+//  endProgress();
 }
 
 void ZStackDoc::runSeededWatershed()
