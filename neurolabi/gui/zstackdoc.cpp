@@ -7938,7 +7938,7 @@ void ZStackDoc::localSeededWatershed()
 
       seedMask.downsampleMax(dsIntv.getX(), dsIntv.getY(), dsIntv.getZ());
 
-      advanceProgress(0.1);
+//      advanceProgress(0.1);
 //      QApplication::processEvents();
 
       Cuboid_I box;
@@ -7953,7 +7953,7 @@ void ZStackDoc::localSeededWatershed()
       engine.setRange(box);
       ZStack *out = engine.run(signalStack, seedMask);
 
-      advanceProgress(0.1);
+//      advanceProgress(0.1);
 //      QApplication::processEvents();
 
       //objArray = ZObject3dFactory::MakeRegionBoundary(*out);
@@ -7961,7 +7961,7 @@ void ZStackDoc::localSeededWatershed()
 
       updateWatershedBoundaryObject(out, dsIntv);
 
-      advanceProgress(0.1);
+//      advanceProgress(0.1);
 //      QApplication::processEvents();
 
       // C_Stack::kill(out);
@@ -7970,8 +7970,6 @@ void ZStackDoc::localSeededWatershed()
       std::cout << "No signal for local watershed." << std::endl;
     }
   }
-
-  notifyObj3dModified();
 }
 
 void ZStackDoc::seededWatershed()
@@ -8043,9 +8041,12 @@ void ZStackDoc::runLocalSeededWatershed()
   startProgress();
 //  QApplication::processEvents();
 
-  localSeededWatershed();
+//  localSeededWatershed();
 
-  //QtConcurrent::run(this, &ZStackDoc::localSeededWatershed); //crashed for unknown reason
+  QFuture<void> result =
+      QtConcurrent::run(this, &ZStackDoc::localSeededWatershed); //crashed for unknown reason
+  result.waitForFinished();
+
 
   endProgress();
 }

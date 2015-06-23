@@ -894,6 +894,8 @@ void MainWindow::customizeActions()
 
 
   m_ui->menuTube->menuAction()->setVisible(false);
+
+  m_ui->actionSplit_Region->setVisible(false);
 #if !defined(_DEBUG_)
   m_ui->menuTrace_Project->menuAction()->setVisible(false);
   m_ui->actionAutomatic_Axon->setVisible(false);

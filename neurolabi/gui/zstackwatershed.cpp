@@ -119,8 +119,15 @@ ZStack *ZStackWatershed::run(
 #endif
 
       std::cout << "Computing watershed ..." << std::endl;
-      Stack *out = Stack_Watershed(source, ws);
 
+#ifdef _DEBUG_2
+      Stack *out2 = C_Stack::make(GREY, stack->width(), stack->height(), stack->depth());
+
+      Zero_Stack(out2);
+      Stack *out = C_Stack::watershed(source, ws, out2);
+#else
+      Stack *out = Stack_Watershed(source, ws);
+#endif
       std::cout << "Creating result ..." << std::endl;
       result = new ZStack;
       result->consume(out);

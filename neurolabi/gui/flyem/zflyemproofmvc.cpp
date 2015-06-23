@@ -775,7 +775,7 @@ void ZFlyEmProofMvc::locateBody(uint64_t bodyId)
     ZObject3dScan body = reader.readCoarseBody(bodyId);
     if (body.isEmpty()) {
       emit messageGenerated(
-            ZWidgetMessage(QString("Cannot go to body: %1. Invalid body ID.").
+            ZWidgetMessage(QString("Cannot go to body: %1. No such body.").
             arg(bodyId), NeuTube::MSG_ERROR));
     } else {
       ZDvidInfo dvidInfo = reader.readGrayScaleInfo();

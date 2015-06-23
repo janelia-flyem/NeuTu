@@ -882,8 +882,11 @@ Stack* Stack_Watershed(const Stack *stack, Stack_Watershed_Workspace *ws)
   int i;
   
   int max_level = 65535;
-  int queue_head[65536];
-  int queue_tail[65536];
+  //int queue_head[65536];
+  //int queue_tail[65536];
+
+  int *queue_head = iarray_malloc(max_level + 1);
+  int *queue_tail = iarray_malloc(max_level + 1);
 
   for (i = 0; i <= max_level; i++) {
     queue_head[i] = -1;
@@ -973,6 +976,9 @@ Stack* Stack_Watershed(const Stack *stack, Stack_Watershed_Workspace *ws)
 
     water_level--;
   }
+
+  free(queue_head);
+  free(queue_tail);
 
   return out;
 }
