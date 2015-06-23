@@ -67,6 +67,7 @@ private:
 private:
   ZSparseStack m_sparseStack;
   ZDvidTarget m_dvidTarget;
+  bool m_isValueFilled;
   mutable ZDvidReader m_dvidReader;
 };
 
