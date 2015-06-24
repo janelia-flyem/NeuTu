@@ -545,7 +545,8 @@ HEADERS += mainwindow.h \
     flyem/zflyembodyannotationdialog.h \
     flyem/zflyemsupervisor.h \
     zkeyeventmapperfactory.h \
-    zkeyoperationmapsequence.h
+    zkeyoperationmapsequence.h \
+    zpuncta.h
 
 FORMS += settingdialog.ui \
     frameinfodialog.ui \
@@ -950,7 +951,8 @@ SOURCES += main.cpp \
     flyem/zflyembodyannotationdialog.cpp \
     flyem/zflyemsupervisor.cpp \
     zkeyeventmapperfactory.cpp \
-    zkeyoperationmapsequence.cpp
+    zkeyoperationmapsequence.cpp \
+    zpuncta.cpp
 
 OTHER_FILES += \
     extlib.pri \

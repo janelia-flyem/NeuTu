@@ -763,6 +763,10 @@ public:
     return m_isSegmentationReady;
   }
 
+  inline void setSegmentationReady(bool state) {
+    m_isSegmentationReady = state;
+  }
+
   /*
   template <typename T>
   void registerUser(T *user);

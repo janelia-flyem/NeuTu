@@ -13906,6 +13906,40 @@ void ZTest::test(MainWindow *host)
   stream.close();
 #endif
 
+#if 1
+  FlyEm::ZSynapseAnnotationArray synapseArray;
+  synapseArray.loadJson(GET_DATA_DIR +
+                        "/flyem/AL/al7d_whole_wfix_tbar-predict_0.81.json");
+
+  ZWeightedPointArray ptArray = synapseArray.toTBarConfidencePointArray();
+  std::cout << ptArray.size() << " TBars" << std::endl;
+
+  ZStack stack;
+  stack.load(GET_DATA_DIR + "/flyem/AL/glomeruli/new_label_field.tif");
+
+  ofstream stream(
+        (GET_DATA_DIR + "/flyem/AL/glomeruli/labeled_synapse_confidence_merged.txt").c_str());
+  int dsScale = 20;
+  for (ZWeightedPointArray::iterator iter = ptArray.begin();
+       iter != ptArray.end(); ++iter) {
+    ZWeightedPoint pt = *iter;
+    pt *= 1.0 / dsScale;
+    ZIntPoint ipt = pt.toIntPoint();
+    if (ipt.getZ() >= 50) {
+      int label = stack.getIntValue(ipt.getX(), ipt.getY(), ipt.getZ());
+      if (label == 49) {
+        label = 7;
+      }
+
+      if (label > 0) {
+        stream << iter->x() << " " << iter->y() << " " << iter->z() << " "
+               << label << " " << pt.weight() << std::endl;
+      }
+    }
+  }
+  stream.close();
+#endif
+
 #if 0
   FlyEm::ZSynapseAnnotationArray synapseArray;
   synapseArray.loadJson(GET_DATA_DIR +
@@ -17073,7 +17107,7 @@ void ZTest::test(MainWindow *host)
   qDebug() << str;
 #endif
 
-#if 1
+#if 0
   ZFlyEmSupervisor supervisor;
 
   std::cout << supervisor.getMainUrl() << std::endl;

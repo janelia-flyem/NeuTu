@@ -14,6 +14,7 @@
 #include "dvid/zdvidsparsevolslice.h"
 #include "zwidgetmessage.h"
 #include "flyem/zflyemsupervisor.h"
+#include "zpuncta.h"
 //#include "zflyemproofmvc.h"
 
 ZFlyEmProofDoc::ZFlyEmProofDoc(ZStack *stack, QObject *parent) :
@@ -276,6 +277,17 @@ void ZFlyEmProofDoc::updateDvidLabelObject()
   endObjectModifiedMode();
 
   notifyObjectModified();
+}
+
+void ZFlyEmProofDoc::loadSynapse(const std::string &filePath)
+{
+  if (!filePath.empty()) {
+    ZPuncta *puncta = new ZPuncta;
+    puncta->setSource(ZStackObjectSourceFactory::MakeFlyEmSynapseSource());
+    puncta->load(filePath, 5.0);
+    puncta->pushCosmeticPen(true);
+    addObject(puncta);
+  }
 }
 
 //////////////////////////////////////////

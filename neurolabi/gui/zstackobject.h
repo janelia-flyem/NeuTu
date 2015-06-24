@@ -68,7 +68,8 @@ public:
     TYPE_DVID_SPARSEVOL_SLICE,
     TYPE_STACK,
     TYPE_SWC_NODE,
-    TYPE_3D_GRAPH
+    TYPE_3D_GRAPH,
+    TYPE_PUNCTA
   };
 
   enum Palette_Color {

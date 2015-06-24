@@ -47,6 +47,9 @@ ZFlyEmBodySplitProject::ZFlyEmBodySplitProject(QObject *parent) :
   m_resultWindow(NULL), m_quickResultWindow(NULL),
   m_quickViewWindow(NULL), m_isBookmarkVisible(true), m_showingBodyMask(false)
 {
+  m_progressSignal = new ZProgressSignal(this);
+
+  connect(this, SIGNAL(quickViewReady()), this, SLOT(startQuickView()));
 }
 
 ZFlyEmBodySplitProject::~ZFlyEmBodySplitProject()
@@ -159,6 +162,11 @@ void ZFlyEmBodySplitProject::showDataFrame() const
   }
 }
 
+ZProgressSignal* ZFlyEmBodySplitProject::getProgressSignal() const
+{
+  return m_progressSignal;
+}
+
 void ZFlyEmBodySplitProject::showDataFrame3d()
 {
   if (getDocument() != NULL) {
@@ -232,10 +240,13 @@ ZObject3dScan* ZFlyEmBodySplitProject::readBody(ZObject3dScan *out) const
   return out;
 }
 
-void ZFlyEmBodySplitProject::quickView()
+void ZFlyEmBodySplitProject::quickViewFunc()
 {
-  if (m_quickViewWindow == NULL) {
+  if (m_quickViewWindow != NULL) {
+    getProgressSignal()->startProgress("Showing quick view ...");
     emitMessage("Generating quick view ...");
+
+    ZStackDoc *doc = m_quickViewWindow->getDocument();
 
     ZObject3dScan obj;
     if (getDocument() != NULL) {
@@ -253,35 +264,27 @@ void ZFlyEmBodySplitProject::quickView()
       }
     }
 
-    ZWindowFactory factory;
-    factory.setWindowTitle("Quick View");
-
-    ZStackDoc *doc = new ZStackDoc(NULL, NULL);
-    doc->setTag(NeuTube::Document::FLYEM_BODY_DISPLAY);
-    m_quickViewWindow = factory.make3DWindow(doc);
+    getProgressSignal()->advanceProgress(0.1);
 
     ZDvidReader reader;
     if (reader.open(getDvidTarget())) {
       if (obj.isEmpty()) {
-
         int bodyId = getBodyId();
         obj = reader.readBody(bodyId);
         if (!obj.isEmpty()) {
           obj.canonize();
         }
       }
-
-//      ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
-      doc->addObject(ZFlyEmMisc::MakeBoundBoxGraph(m_dvidInfo), true);
-      doc->addObject(ZFlyEmMisc::MakePlaneGraph(getDocument(), m_dvidInfo), true);
-      //ZFlyEmMisc::Decorate3DWindow(m_quickViewWindow, reader);
     }
+
+    getProgressSignal()->advanceProgress(0.1);
 
     ZSwcTree *tree = ZSwcGenerator::createSurfaceSwc(obj, 2);
     doc->addObject(tree);
+    getProgressSignal()->advanceProgress(0.3);
 
     m_quickViewWindow->getSwcFilter()->setRenderingPrimitive("Sphere");
-    m_quickViewWindow->setYZView();
+
     connect(m_quickViewWindow, SIGNAL(destroyed()),
             this, SLOT(shallowClearQuickViewWindow()));
     if (m_dataFrame != NULL) {
@@ -291,19 +294,63 @@ void ZFlyEmBodySplitProject::quickView()
     connect(m_quickViewWindow, SIGNAL(locating2DViewTriggered(ZStackViewParam)),
             this, SIGNAL(locating2DViewTriggered(ZStackViewParam)));
 
+    if (m_dvidInfo.isValid()) {
+      //      ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
+      doc->addObject(ZFlyEmMisc::MakeBoundBoxGraph(m_dvidInfo), true);
+      doc->addObject(ZFlyEmMisc::MakePlaneGraph(getDocument(), m_dvidInfo), true);
+      //ZFlyEmMisc::Decorate3DWindow(m_quickViewWindow, reader);
+    }
+
+    m_quickViewWindow->setYZView();
+    getProgressSignal()->advanceProgress(0.1);
+
     ZIntCuboid box = obj.getBoundBox();
     m_quickViewWindow->notifyUser(
           QString("Size: %1; Bounding box: %2 x %3 x %4").
           arg(obj.getVoxelNumber()).arg(box.getWidth()).arg(box.getHeight()).
           arg(box.getDepth()));
-  }
 
+    emitMessage("Done.");
+    emit quickViewReady();
+    getProgressSignal()->endProgress();
+  }
+}
+
+void ZFlyEmBodySplitProject::showQuickView()
+{
   if (m_quickViewWindow != NULL) {
     m_quickViewWindow->show();
     m_quickViewWindow->raise();
-    emitMessage("Done.");
+  }
+}
+
+void ZFlyEmBodySplitProject::startQuickView()
+{
+  if (m_quickViewWindow != NULL) {
+    m_quickViewWindow->setYZView();
+    showQuickView();
+  }
+}
+
+void ZFlyEmBodySplitProject::quickView()
+{
+  if (m_quickViewWindow == NULL) {
+    ZWindowFactory factory;
+    factory.setWindowTitle("Quick View");
+
+    ZStackDoc *doc = new ZStackDoc(NULL, NULL);
+    doc->setTag(NeuTube::Document::FLYEM_BODY_DISPLAY);
+    m_quickViewWindow = factory.make3DWindow(doc);
+
+    const QString threadId = "quickViewFunc";
+    if (!m_futureMap.isAlive(threadId)) {
+      m_futureMap.removeDeadThread();
+      QFuture<void> future =
+          QtConcurrent::run(this, &ZFlyEmBodySplitProject::quickViewFunc);
+      m_futureMap[threadId] = future;
+    }
   } else {
-    emitError("Failed to launch quick view.");
+    startQuickView();
   }
 }
 
@@ -623,10 +670,14 @@ void ZFlyEmBodySplitProject::exportSplits()
 
 void ZFlyEmBodySplitProject::commitResult()
 {
+  getProgressSignal()->startProgress("Saving splits");
+
+  getProgressSignal()->startProgress(0.8);
   ZFlyEmBodySplitProject::commitResultFunc(
         getDocument()->getConstSparseStack()->getObjectMask(),
         getDocument()->getLabelField(),
         getDocument()->getConstSparseStack()->getDownsampleInterval());
+  getProgressSignal()->endProgress();
 
   deleteSavedSeed();
   getDocument()->undoStack()->clear();
@@ -634,6 +685,10 @@ void ZFlyEmBodySplitProject::commitResult()
 //  getDocument()->removeObject(ZStackObject::TYPE_OBJ3D);
 //  removeAllSideSeed();
   downloadBodyMask();
+
+  getDocument()->setSegmentationReady(false);
+
+  getProgressSignal()->endProgress();
 
   /*
   QtConcurrent::run(this, &ZFlyEmBodySplitProject::commitResultFunc,
@@ -646,7 +701,7 @@ void ZFlyEmBodySplitProject::commitResult()
 void ZFlyEmBodySplitProject::commitResultFunc(
     const ZObject3dScan *wholeBody, const ZStack *stack, const ZIntPoint &dsIntv)
 {
-  emit progressStarted("Uploading splitted bodies", 100);
+  getProgressSignal()->startProgress("Uploading splitted bodies");
 
   emitMessage("Uploading results ...");
 
@@ -672,7 +727,8 @@ void ZFlyEmBodySplitProject::commitResultFunc(
     std::vector<ZObject3dScan*> objArray =
         ZObject3dScan::extractAllObject(*stack);
 
-    emit progressAdvanced(0.1);
+//    emit progressAdvanced(0.1);
+    getProgressSignal()->advanceProgress(0.1);
 
     double dp = 0.3;
 
@@ -705,7 +761,8 @@ void ZFlyEmBodySplitProject::commitResultFunc(
       }
       delete obj;
 
-      emit progressAdvanced(dp);
+      getProgressSignal()->advanceProgress(dp);
+//      emit progressAdvanced(dp);
     }
   }
 
@@ -739,7 +796,8 @@ void ZFlyEmBodySplitProject::commitResultFunc(
         oldBodyIdList << 0;
       }
 
-      emit progressAdvanced(dp);
+      getProgressSignal()->advanceProgress(dp);
+//      emit progressAdvanced(dp);
     }
     //}
   }
@@ -797,7 +855,8 @@ void ZFlyEmBodySplitProject::commitResultFunc(
     }
 
 
-    emit progressAdvanced(dp);
+    getProgressSignal()->advanceProgress(dp);
+//    emit progressAdvanced(dp);
   }
 
   if (!newBodyIdList.isEmpty()) {
@@ -810,9 +869,10 @@ void ZFlyEmBodySplitProject::commitResultFunc(
     emitMessage(bodyMessage);
   }
 
+  getProgressSignal()->endProgress();
   //writer.writeMaxBodyId(bodyId);
 
-  emit progressDone();
+//  emit progressDone();
   emitMessage("Done.");
   emit resultCommitted();
 }

@@ -68,6 +68,7 @@ signals:
 
 public slots:
   void updateDvidLabelObject();
+  void loadSynapse(const std::string &filePath);
 
 private:
   ZFlyEmBodyMerger m_bodyMerger;

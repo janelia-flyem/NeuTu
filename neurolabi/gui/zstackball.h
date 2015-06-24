@@ -53,6 +53,8 @@ public:
   const static TVisualEffect VE_NO_FILL;
   const static TVisualEffect VE_GRADIENT_FILL;
   const static TVisualEffect VE_OUT_FOCUS_DIM;
+  const static TVisualEffect VE_DOT_CENTER;
+  const static TVisualEffect VE_RECTANGLE_SHAPE;
 
 public:
   virtual void display(ZPainter &painter, int slice,
@@ -74,6 +76,10 @@ public:
 
   inline void setVisualEffect(TVisualEffect effect) {
     m_visualEffect = effect;
+  }
+
+  inline void addVisualEffect(TVisualEffect effect) {
+    m_visualEffect |= effect;
   }
 
   inline bool hasVisualEffect(TVisualEffect effect) const {

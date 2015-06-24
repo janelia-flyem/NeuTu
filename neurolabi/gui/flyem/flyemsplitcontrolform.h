@@ -32,6 +32,7 @@ signals:
   void recoveringSeed();
   void selectingSeed();
   void selectingAllSeed();
+  void loadingSynapse();
 
 public slots:
   void updateBodyWidget(uint64_t bodyId);

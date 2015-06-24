@@ -208,7 +208,8 @@ void ZStackDoc::clearData()
     m_undoStack->clear();
   }
 
-  m_isSegmentationReady = false;
+  setSegmentationReady(false);
+//  m_isSegmentationReady = false;
 }
 
 void ZStackDoc::initNeuronTracer()
@@ -6540,7 +6541,8 @@ void ZStackDoc::notifyPlayerChanged(ZStackObjectRole::TRole role)
 {
   ZStackObjectRole roleObj(role);
   if (roleObj.hasRole(ZStackObjectRole::ROLE_SEED)) {
-    m_isSegmentationReady = false;
+//    m_isSegmentationReady = false;
+    setSegmentationReady(false);
 
     emit messageGenerated(
           ZWidgetMessage(ZWidgetMessage::appendTime("Seed modified.")));
@@ -7907,7 +7909,8 @@ void ZStackDoc::localSeededWatershed()
 {
   getProgressSignal()->startProgress("Running local split ...");
   removeObject(ZStackObjectRole::ROLE_TMP_RESULT, true);
-  m_isSegmentationReady = false;
+//  m_isSegmentationReady = false;
+  setSegmentationReady(false);
 
   ZStackArray seedMask = createWatershedMask(true);
   getProgressSignal()->advanceProgress(0.1);
@@ -7987,7 +7990,8 @@ void ZStackDoc::seededWatershed()
 
   qDebug() << "Removing old result ...";
   removeObject(ZStackObjectRole::ROLE_TMP_RESULT, true);
-  m_isSegmentationReady = false;
+//  m_isSegmentationReady = false;
+  setSegmentationReady(false);
 
   getProgressSignal()->advanceProgress(0.1);
   //removeAllObj3d();
@@ -8037,7 +8041,8 @@ void ZStackDoc::seededWatershed()
 //      notifyObj3dModified();
 
       setLabelField(out);
-      m_isSegmentationReady = true;
+//      m_isSegmentationReady = true;
+      setSegmentationReady(true);
 
       emit messageGenerated(ZWidgetMessage(
             ZWidgetMessage::appendTime("Split done. Ready to upload.")));

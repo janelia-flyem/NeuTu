@@ -5,11 +5,13 @@
 #include <QMutex>
 
 #include <set>
+#include "qthreadfuturemap.h"
 #include "dvid/zdvidtarget.h"
 #include "flyem/zflyembookmarklistmodel.h"
 #include "qthreadfuturemap.h"
 #include "zsharedpointer.h"
 #include "dvid/zdvidinfo.h"
+#include "zprogresssignal.h"
 
 class ZStackFrame;
 class Z3DWindow;
@@ -128,6 +130,8 @@ public:
   void emitPopoupMessage(const QString &msg);
   void emitError(const QString &msg, bool appending = true);
 
+  ZProgressSignal* getProgressSignal() const;
+
 signals:
   void messageGenerated(QString, bool appending = true);
   void errorGenerated(QString, bool appending = true);
@@ -140,6 +144,7 @@ signals:
   void progressDone();
   void progressAdvanced(double dp);
   void locating2DViewTriggered(const ZStackViewParam&);
+  void quickViewReady();
 
 public slots:
   void showDataFrame() const;
@@ -150,6 +155,7 @@ public slots:
   void runSplit();
   void updateResult3dQuick();
   void backupSeed();
+  void startQuickView();
 
   /*!
    * \brief Clear the project without deleting the associated widgets
@@ -173,6 +179,8 @@ private:
   void removeAllSeed();
   void removeAllSideSeed();
   void updateResult3dQuickFunc();
+  void quickViewFunc();
+  void showQuickView();
 
 private:
   ZDvidTarget m_dvidTarget;
@@ -189,7 +197,11 @@ private:
   bool m_isBookmarkVisible;
   bool m_showingBodyMask;
 
+  QThreadFutureMap m_futureMap;
+
   QMutex m_splitWindowMutex;
+
+  ZProgressSignal *m_progressSignal;
 };
 
 template <typename T>

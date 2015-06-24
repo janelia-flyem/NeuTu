@@ -46,6 +46,8 @@ void FlyEmSplitControlForm::setupWidgetBehavior()
           this, SLOT(loadBookmark()));
   connect(ui->bookmarkView, SIGNAL(doubleClicked(QModelIndex)),
           this, SLOT(locateBookmark(QModelIndex)));
+  connect(ui->synapsePushButton, SIGNAL(clicked()),
+          this, SIGNAL(loadingSynapse()));
 
   ui->viewSplitPushButton->setEnabled(false);
 

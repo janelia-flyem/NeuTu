@@ -183,6 +183,7 @@ void ZFlyEmProofMvc::customInit()
           &m_mergeProject, SLOT(update3DBodyViewDeep()));
 
   m_mergeProject.getProgressSignal()->connectProgress(getProgressSignal());
+  m_splitProject.getProgressSignal()->connectProgress(getProgressSignal());
 
 
   connect(getCompleteDocument(), SIGNAL(bodyUnmerged()),
@@ -616,7 +617,15 @@ void ZFlyEmProofMvc::commitCurrentSplit()
                           "***IMPORTANT**** Please make sure you have run"
                           " the full split.***",
                           this)) {
-    m_splitProject.commitResult();
+    const QString threadId = "ZFlyEmBodySplitProject::commitResult";
+    if (!m_futureMap.isAlive(threadId)) {
+      m_futureMap.removeDeadThread();
+      QFuture<void> future =
+          QtConcurrent::run(
+            &m_splitProject, &ZFlyEmBodySplitProject::commitResult);
+      m_futureMap[threadId] = future;
+    }
+//    m_splitProject.commitResult();
   }
 }
 
@@ -650,6 +659,14 @@ void ZFlyEmProofMvc::loadBookmark(const QString &filePath)
   m_splitProject.loadBookmark(filePath);
 
   emit bookmarkUpdated(&m_splitProject);
+}
+
+void ZFlyEmProofMvc::loadSynapse()
+{
+  QString fileName = ZDialogFactory::GetFileName("Load Synapses", "", this);
+  if (!fileName.isEmpty()) {
+    getCompleteDocument()->loadSynapse(fileName.toStdString());
+  }
 }
 
 void ZFlyEmProofMvc::addSelectionAt(int x, int y, int z)

@@ -1712,6 +1712,7 @@ void C_Stack::shrinkBorder(const Stack *stack, int r, int nnbr)
   }
 }
 
+#if 0
 #define STACK_WATERSHED_IS_SEED(mask, i)			\
   (((mask)->array[i] >= 1) && ((mask)->array[i] <= STACK_WATERSHED_MAX_SEED))
 
@@ -1877,3 +1878,4 @@ Stack* C_Stack::watershed(
   return out;
 #endif
 }
+#endif

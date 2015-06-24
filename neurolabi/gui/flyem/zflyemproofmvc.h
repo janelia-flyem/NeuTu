@@ -102,6 +102,8 @@ public slots:
   void selectAllSeed();
   void recoverSeed();
   void runSplit();
+
+  void loadSynapse();
 //  void toggleEdgeMode(bool edgeOn);
 
 protected:
@@ -175,6 +177,7 @@ void ZFlyEmProofMvc::connectSplitControlPanel(T *panel)
   connect(panel, SIGNAL(recoveringSeed()), this, SLOT(recoverSeed()));
   connect(this, SIGNAL(splitBodyLoaded(uint64_t)),
           panel, SLOT(updateBodyWidget(uint64_t)));
+  connect(panel, SIGNAL(loadingSynapse()), this, SLOT(loadSynapse()));
 }
 
 
