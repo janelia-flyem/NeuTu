@@ -493,6 +493,7 @@ ZSwcTree* ZSwcGenerator::createSurfaceSwc(
   }
 
   ZStack *stack = NULL;
+  std::cout << "Creating object mask ..." << "ds: " << intv <<  std::endl;
   if (intv > 0) {
     ZObject3dScan obj2 = obj;
     obj2.downsampleMax(intv, intv, intv);
@@ -506,6 +507,7 @@ ZSwcTree* ZSwcGenerator::createSurfaceSwc(
     tree = createSurfaceSwc(*stack, sparseLevel);
     tree->setColor(obj.getColor());
     tree->rescale(intv + 1, intv + 1, intv + 1);
+    delete stack;
   }
 
   return tree;

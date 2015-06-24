@@ -328,6 +328,23 @@ void ZFlyEmBodySplitProject::startQuickView()
 {
   if (m_quickViewWindow != NULL) {
     m_quickViewWindow->setYZView();
+    const TStackObjectList &objList =
+        m_quickViewWindow->getDocument()->getObjectList(ZStackObject::TYPE_SWC);
+
+    ZCuboid boundBox;
+    for (TStackObjectList::const_iterator iter = objList.begin();
+         iter != objList.end(); ++iter) {
+      ZSwcTree *tree = dynamic_cast<ZSwcTree*>(*iter);
+      if (tree != NULL) {
+        if (boundBox.isValid()) {
+          boundBox.bind(tree->getBoundBox());
+        } else {
+          boundBox = tree->getBoundBox();
+        }
+      }
+    }
+    m_quickViewWindow->gotoPosition(boundBox.toCornerVector(), 0);
+//    m_quickViewWindow->setYZView();
     showQuickView();
   }
 }

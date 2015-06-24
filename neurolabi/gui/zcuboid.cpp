@@ -645,3 +645,18 @@ double ZCuboid::getDiagonalLength() const
 {
   return sqrt(width() * width() + height() * height() + depth() * depth());
 }
+
+std::vector<double> ZCuboid::toCornerVector() const
+{
+  std::vector<double> corner(6);
+  corner[0] = firstCorner().x();
+  corner[1] = lastCorner().x();
+
+  corner[2] = firstCorner().y();
+  corner[3] = lastCorner().y();
+
+  corner[4] = firstCorner().z();
+  corner[5] = lastCorner().z();
+
+  return corner;
+}

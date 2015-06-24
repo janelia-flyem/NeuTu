@@ -960,6 +960,9 @@ Stack* ZObject3dScan::toStack(int *offset, int v) const
     offset[2] = boundBox.getFirstCorner().getZ();
   }
 
+  std::cout << "Stack size: " << boundBox.getWidth() << "x"
+            << boundBox.getHeight() << "x" << boundBox.getDepth() << std::endl;
+
   Stack *stack = C_Stack::make(GREY, boundBox.getWidth(),
                                boundBox.getHeight(),
                                boundBox.getDepth());
