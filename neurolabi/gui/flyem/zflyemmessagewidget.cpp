@@ -29,6 +29,7 @@ ZFlyEmMessageWidget::ZFlyEmMessageWidget(QWidget *parent) :
 void ZFlyEmMessageWidget::dump(const QString &info, bool appending)
 {
   if (appending) {
+//    m_currentMessageWidget->insertHtml(info);
     m_currentMessageWidget->append(info);
     m_currentMessageWidget->verticalScrollBar()->setValue(
           m_currentMessageWidget->verticalScrollBar()->maximum());

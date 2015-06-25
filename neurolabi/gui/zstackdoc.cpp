@@ -7982,6 +7982,7 @@ void ZStackDoc::localSeededWatershed()
     }
   }
   getProgressSignal()->endProgress();
+  emit labelFieldModified();
 }
 
 void ZStackDoc::seededWatershed()
@@ -8051,6 +8052,7 @@ void ZStackDoc::seededWatershed()
     }
   }
   getProgressSignal()->endProgress();
+  emit labelFieldModified();
 }
 
 void ZStackDoc::runLocalSeededWatershed()
@@ -8104,7 +8106,6 @@ void ZStackDoc::runSeededWatershed()
   }
 
 //  seededWatershed();
-  emit labelFieldModified();
 }
 
 ZStack* ZStackDoc::makeLabelStack(ZStack *stack) const

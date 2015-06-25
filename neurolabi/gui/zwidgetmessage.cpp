@@ -23,7 +23,7 @@ QString ZWidgetMessage::ToHtmlString(
   if (!output.startsWith("<p>")) {
     switch (type) {
     case NeuTube::MSG_INFORMATION:
-//      output = "<p style=\" margin-top:0px;\">" + output + "</p>";
+      output = "<p style=\" margin-top:0px;\">" + output + "</p>";
       break;
     case NeuTube::MSG_ERROR:
       output = "<p><font color=\"#FF0000\">" + output + "</font></p>";

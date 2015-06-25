@@ -122,6 +122,7 @@ void ZProofreadWindow::init()
   m_progressDlg->setWindowModality(Qt::WindowModal);
   m_progressDlg->setAutoClose(true);
   m_progressDlg->setCancelButton(0);
+  m_progressDlg->setAutoClose(false);
 
   m_progressSignal = new ZProgressSignal(this);
   ZProgressSignal::ConnectProgress(m_mainMvc->getProgressSignal(),
@@ -208,9 +209,11 @@ void ZProofreadWindow::dump(const ZWidgetMessage &msg)
 
 void ZProofreadWindow::advanceProgress(double dp)
 {
-  if (getProgressDialog()->value() < getProgressDialog()->maximum()) {
-    int range = getProgressDialog()->maximum() - getProgressDialog()->minimum();
-    getProgressDialog()->setValue(getProgressDialog()->value() + iround(dp * range));
+  if (getProgressDialog()->isVisible()) {
+    if (getProgressDialog()->value() < getProgressDialog()->maximum()) {
+      int range = getProgressDialog()->maximum() - getProgressDialog()->minimum();
+      getProgressDialog()->setValue(getProgressDialog()->value() + iround(dp * range));
+    }
   }
 }
 
@@ -234,6 +237,7 @@ void ZProofreadWindow::startProgress(const QString &title)
 void ZProofreadWindow::endProgress()
 {
   getProgressDialog()->reset();
+  getProgressDialog()->close();
 }
 
 void ZProofreadWindow::initProgress(int nticks)

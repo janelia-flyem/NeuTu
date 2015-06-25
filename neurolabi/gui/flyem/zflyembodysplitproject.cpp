@@ -514,7 +514,8 @@ void ZFlyEmBodySplitProject::updateResult3dQuickFunc()
 void ZFlyEmBodySplitProject::updateResult3dQuick()
 {
   emit messageGenerated(ZWidgetMessage("Updating 3D split view ..."));
-  QtConcurrent::run(this, &ZFlyEmBodySplitProject::updateResult3dQuickFunc);
+  updateResult3dQuickFunc();
+//  QtConcurrent::run(this, &ZFlyEmBodySplitProject::updateResult3dQuickFunc);
 }
 
 void ZFlyEmBodySplitProject::result3dQuickFunc()
