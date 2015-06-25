@@ -74,7 +74,7 @@ public:
   void removeAllBookmark();
 
   void showSkeleton(ZSwcTree *tree);
-  void quickView();
+  void showBodyQuickView();
 
   ZObject3dScan* readBody(ZObject3dScan *out) const;
 
@@ -144,18 +144,21 @@ signals:
   void progressDone();
   void progressAdvanced(double dp);
   void locating2DViewTriggered(const ZStackViewParam&);
-  void quickViewReady();
+  void bodyQuickViewReady();
+  void result3dQuickViewReady();
 
 public slots:
   void showDataFrame() const;
   void showDataFrame3d();
   void showResult3d();
-  void showResult3dQuick();
+  void showResultQuickView();
   void showBookmark(bool visible);
   void runSplit();
   void updateResult3dQuick();
   void backupSeed();
-  void startQuickView();
+  void startBodyQuickView();
+  void startResultQuickView();
+  void startQuickView(Z3DWindow *window);
 
   /*!
    * \brief Clear the project without deleting the associated widgets
@@ -180,7 +183,10 @@ private:
   void removeAllSideSeed();
   void updateResult3dQuickFunc();
   void quickViewFunc();
-  void showQuickView();
+//  void showBodyQuickView();
+//  void showResultQuickView();
+  void showQuickView(Z3DWindow *window);
+  void result3dQuickFunc();
 
 private:
   ZDvidTarget m_dvidTarget;

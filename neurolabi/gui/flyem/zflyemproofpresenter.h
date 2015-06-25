@@ -39,6 +39,7 @@ signals:
   void selectingBodyAt(int x, int y, int z);
   void deselectingAllBody();
   void runningSplit();
+  void goingToBody();
 
 public slots:
 

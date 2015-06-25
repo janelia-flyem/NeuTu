@@ -32,6 +32,7 @@ signals:
   void committingMerge();
   void zoomingTo(int x, int y, int z);
   void locatingBody(uint64_t);
+  void goingToBody();
 
 public slots:
   void setInfo(const QString &info);

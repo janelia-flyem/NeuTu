@@ -93,6 +93,7 @@ public slots:
   void zoomTo(const ZIntPoint &pt);
   void zoomTo(int x, int y, int z);
   void zoomTo(int x, int y, int z, int width);
+  void goToBody();
 
   void loadBookmark(const QString &filePath);
   void addSelectionAt(int x, int y, int z);
@@ -150,6 +151,7 @@ void ZFlyEmProofMvc::connectControlPanel(T *panel)
           this, SLOT(zoomTo(int, int, int)));
   connect(panel, SIGNAL(locatingBody(uint64_t)),
           this, SLOT(locateBody(uint64_t)));
+  connect(panel, SIGNAL(goingToBody()), this, SLOT(goToBody()));
 }
 
 template <typename T>

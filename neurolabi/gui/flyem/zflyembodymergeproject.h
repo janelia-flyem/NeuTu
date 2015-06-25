@@ -79,6 +79,9 @@ public:
 
   void setSelection(
       const std::set<uint64_t> &selected, NeuTube::EBodyLabelType labelType);
+
+  void addSelection(uint64_t bodyId, NeuTube::EBodyLabelType labelType);
+
   std::set<uint64_t> getSelection(NeuTube::EBodyLabelType labelType) const;
 
   //void setSelectionFromOriginal(const std::set<uint64_t> &selected);
@@ -92,6 +95,8 @@ public:
   void emitError(const QString msg, bool appending = true);
 
   ZProgressSignal* getProgressSignal() const;
+
+  void notifySelected() const;
 
 signals:
   void progressAdvanced(double dp);

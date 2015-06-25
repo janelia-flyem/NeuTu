@@ -3,6 +3,7 @@
 #include <QFuture>
 #include <QtConcurrentRun>
 #include <QMessageBox>
+#include <QInputDialog>
 
 #include "flyem/zflyemproofdoc.h"
 #include "zstackview.h"
@@ -24,6 +25,7 @@
 #include "zflyembodyannotation.h"
 #include "flyem/zflyemsupervisor.h"
 #include "dvid/zdvidwriter.h"
+#include "zstring.h"
 
 ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
   ZStackMvc(parent)
@@ -170,6 +172,8 @@ void ZFlyEmProofMvc::customInit()
           this, SLOT(annotateBody()));
   connect(getPresenter(), SIGNAL(objectVisibleTurnedOn()),
           this, SLOT(processViewChange()));
+  connect(getCompletePresenter(), SIGNAL(goingToBody()),
+          this, SLOT(goToBody()));
 
   connect(getDocument().get(), SIGNAL(activeViewModified()),
           this, SLOT(processViewChange()));
@@ -227,8 +231,28 @@ void ZFlyEmProofMvc::customInit()
   connect(getCompletePresenter(), SIGNAL(deselectingAllBody()),
           this, SLOT(deselectAllBody()));
   connect(getCompletePresenter(), SIGNAL(runningSplit()), this, SLOT(runSplit()));
+  connect(getCompletePresenter(), SIGNAL(goingToBody()), this, SLOT());
 
   disableSplit();
+}
+
+void ZFlyEmProofMvc::goToBody()
+{
+  bool ok;
+
+  QString text = QInputDialog::getText(this, tr("Go To"),
+                                       tr("Body:"), QLineEdit::Normal,
+                                       "", &ok);
+  if (ok) {
+    if (!text.isEmpty()) {
+      ZString str = text.toStdString();
+      std::vector<int> bodyArray = str.toIntegerArray();
+      if (bodyArray.size() == 1) {
+        locateBody((uint64_t) bodyArray[0]);
+//        emit locatingBody();
+      }
+    }
+  }
 }
 
 void ZFlyEmProofMvc::runSplitFunc()
@@ -546,12 +570,12 @@ void ZFlyEmProofMvc::processMessageSlot(const QString &message)
 
 void ZFlyEmProofMvc::showBodyQuickView()
 {
-  m_splitProject.quickView();
+  m_splitProject.showBodyQuickView();
 }
 
 void ZFlyEmProofMvc::showSplitQuickView()
 {
-  m_splitProject.showResult3dQuick();
+  m_splitProject.showResultQuickView();
 }
 
 void ZFlyEmProofMvc::showBody3d()

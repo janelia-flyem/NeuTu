@@ -997,6 +997,36 @@ std::set<uint64_t> ZFlyEmBodyMergeProject::getSelection(
   return idSet;
 }
 
+void ZFlyEmBodyMergeProject::notifySelected() const
+{
+  QString msg;
+  for (QSet<uint64_t>::const_iterator iter = m_selectedOriginal.begin();
+       iter != m_selectedOriginal.end(); ++iter) {
+    msg += QString("%1 ").arg(*iter);
+  }
+
+  if (msg.isEmpty()) {
+    msg = "No body selected.";
+  } else {
+    msg += " selected.";
+  }
+}
+
+void ZFlyEmBodyMergeProject::addSelection(
+    uint64_t bodyId, NeuTube::EBodyLabelType labelType)
+{
+  switch (labelType) {
+  case NeuTube::BODY_LABEL_ORIGINAL:
+    m_selectedOriginal.insert(bodyId);
+    break;
+  case NeuTube::BODY_LABEL_MAPPED:
+    m_selectedOriginal.unite(getBodyMerger()->getOriginalLabelSet(bodyId));
+    break;
+  }
+
+  notifySelected();
+}
+
 void ZFlyEmBodyMergeProject::setSelection(
     const std::set<uint64_t> &selected, NeuTube::EBodyLabelType labelType)
 {

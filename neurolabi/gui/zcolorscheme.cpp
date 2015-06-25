@@ -84,7 +84,10 @@ void ZColorScheme::buildConvRandomColorTable(int n)
         g += diff;
       }
     }
-    m_colorTable.append(QColor(r, g, b));
+    QColor color(r, g, b);
+    color.setHsv(color.hue(), std::min(255, color.saturation() * 2),
+                 color.value());
+    m_colorTable.append(color);
   }
 }
 

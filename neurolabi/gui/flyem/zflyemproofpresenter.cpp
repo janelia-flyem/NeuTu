@@ -49,6 +49,10 @@ bool ZFlyEmProofPresenter::processKeyPressEvent(QKeyEvent *event)
       processed = true;
     }
     break;
+  case Qt::Key_F1:
+    emit goingToBody();
+    processed = true;
+    break;
   default:
     break;
   }
