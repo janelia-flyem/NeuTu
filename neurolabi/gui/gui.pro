@@ -546,7 +546,8 @@ HEADERS += mainwindow.h \
     flyem/zflyemsupervisor.h \
     zkeyeventmapperfactory.h \
     zkeyoperationmapsequence.h \
-    zpuncta.h
+    zpuncta.h \
+    flyem/zdvidtileupdatetaskmanager.h
 
 FORMS += settingdialog.ui \
     frameinfodialog.ui \
@@ -952,7 +953,8 @@ SOURCES += main.cpp \
     flyem/zflyemsupervisor.cpp \
     zkeyeventmapperfactory.cpp \
     zkeyoperationmapsequence.cpp \
-    zpuncta.cpp
+    zpuncta.cpp \
+    flyem/zdvidtileupdatetaskmanager.cpp
 
 OTHER_FILES += \
     extlib.pri \

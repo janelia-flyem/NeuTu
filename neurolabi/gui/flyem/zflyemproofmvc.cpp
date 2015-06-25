@@ -446,6 +446,14 @@ void ZFlyEmProofMvc::launchSplitFunc(uint64_t bodyId)
         emit splitBodyLoaded(bodyId);
       }
 
+      TStackObjectList &punctaList =
+          getDocument()->getObjectList(ZStackObject::TYPE_PUNCTA);
+      for (TStackObjectList::iterator iter = punctaList.begin();
+           iter != punctaList.end(); ++iter) {
+        ZStackObject *obj = *iter;
+        obj->setVisible(true);
+      }
+
       getProgressSignal()->endProgress();
     }
   }
