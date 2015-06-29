@@ -41,6 +41,7 @@ class ZBodySplitButton;
 class ZStackMvc;
 class ZPixmap;
 class ZLabeledSpinBoxWidget;
+class QSpacerItem;
 
 /*!
  * \brief The ZStackView class shows 3D data slice by slice
@@ -295,6 +296,9 @@ public:
 
   void paintMultiresImageTest(int resLevel);
   void customizeWidget();
+
+  void addHorizontalWidget(QWidget *widget);
+  void addHorizontalWidget(QSpacerItem *spacer);
 
   void notifyViewPortChanged();
 

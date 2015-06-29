@@ -85,6 +85,8 @@ public:
 
   uint64_t writeSplit(const std::string &dataName, const ZObject3dScan &obj,
                   uint64_t oldLabel, uint64_t label);
+  uint64_t writeSplit(const ZObject3dScan &obj,
+                      uint64_t oldLabel, uint64_t label);
 
   void writeMergeOperation(const QMap<uint64_t, uint64_t> &bodyMap);
   /*

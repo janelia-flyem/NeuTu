@@ -2444,6 +2444,38 @@ ZObject3dScan ZObject3dScan::subtract(const ZObject3dScan &obj)
   return subtracted;
 }
 
+ZObject3dScan ZObject3dScan::intersect(const ZObject3dScan &obj)
+{
+  int minZ = getMinZ();
+  int maxZ = getMaxZ();
+
+  ZObject3dScan result;
+
+  for (int z = minZ; z <= maxZ; ++z) {
+    ZObject3dScan slice = getSlice(z);
+    ZObject3dScan slice2 = obj.getSlice(z);
+    if (!slice.isEmpty() && !slice2.isEmpty()) {
+      ZStack *plane = slice.toStackObject();
+      slice2.addForeground(plane); //1: remained; 2: subtracted
+
+      std::vector<ZObject3dScan*> objArray = extractAllObject(*plane);
+      for (std::vector<ZObject3dScan*>::const_iterator iter = objArray.begin();
+           iter != objArray.end(); ++iter) {
+        ZObject3dScan *obj = *iter;
+        if (obj->getLabel() == 2) {
+          result.concat(*obj);
+        }
+        delete obj;
+      }
+      delete plane;
+    }
+  }
+
+  result.canonize();
+
+  return result;
+}
+
 void ZObject3dScan::switchYZ()
 {
   for (size_t i = 0; i < m_stripeArray.size(); ++i) {

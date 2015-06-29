@@ -1,7 +1,6 @@
 <RCC>
     <qresource prefix="/">
         <file>images/open.png</file>
-        <file>images/new.png</file>
         <file>images/save.png</file>
         <file>images/copy.png</file>
         <file>images/paste.png</file>
@@ -104,5 +103,6 @@
         <file>images/squeeze.png</file>
         <file>images/stretch.png</file>
         <file>images/bodymerge.png</file>
+        <file>images/synapse.png</file>
     </qresource>
 </RCC>

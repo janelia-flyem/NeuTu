@@ -34,14 +34,18 @@ public:
 
   static QString GetDirectory(
       const QString &caption, const QString &filePath, QWidget *parent);
-  static QString GetFileName(
+  static QString GetOpenFileName(
+      const QString &caption, const QString &filePath, QWidget *parent);
+  static QString GetSaveFileName(
       const QString &caption, const QString &filePath, QWidget *parent);
 
   static void Notify3DDisabled(QWidget *parent);
 
 private:
   QWidget *m_parentWidget;
-
+  static QString m_currentOpenFileName;
+  static QString m_currentSaveFileName;
+  static QString m_currentDirectory;
 };
 
 #endif // ZDIALOGFACTORY_H

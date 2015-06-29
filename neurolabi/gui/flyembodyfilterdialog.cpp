@@ -29,7 +29,7 @@ void FlyEmBodyFilterDialog::setBodyListFile(const QString path)
 
 void FlyEmBodyFilterDialog::setBodyListFile()
 {
-  QString fileName = ZDialogFactory::GetFileName("Load Body List", "", this);
+  QString fileName = ZDialogFactory::GetOpenFileName("Load Body List", "", this);
   if (!fileName.isEmpty()) {
     setBodyListFile(fileName);
   }

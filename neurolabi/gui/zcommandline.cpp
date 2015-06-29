@@ -532,7 +532,12 @@ int ZCommandLine::runTest()
 int ZCommandLine::runSkeletonize()
 {
   if (m_input.empty()) {
+    std::cout << "Please specify input." << std::endl;
     return 0;
+  }
+
+  if (m_isVerbose) {
+    tic();
   }
 
   if (ZDvidTarget::isDvidTarget(m_input[0])) {
@@ -629,6 +634,9 @@ int ZCommandLine::runSkeletonize()
     } else if (ZFileType::fileType(m_input[0]) == ZFileType::OBJECT_SCAN_FILE) {
       ZObject3dScan obj;
       obj.load(m_input[0]);
+      if (m_isVerbose) {
+        std::cout << obj.getVoxelNumber() << " foreground voxels." << std::endl;
+      }
       tree = skeletonizer.makeSkeleton(obj);
     } else {
       m_reporter.report(
@@ -651,6 +659,10 @@ int ZCommandLine::runSkeletonize()
     } else {
       std::cout << "No SWC generated." << std::endl;
     }
+  }
+
+  if (m_isVerbose) {
+    ptoc();
   }
 
   return 0;

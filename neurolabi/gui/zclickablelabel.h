@@ -35,6 +35,19 @@ public:
   explicit ZClickableColorLabel(ZVec3Parameter *color, QWidget *parent = 0, Qt::WindowFlags f = 0);
   explicit ZClickableColorLabel(ZDVec4Parameter *color, QWidget *parent = 0, Qt::WindowFlags f = 0);
   explicit ZClickableColorLabel(ZDVec3Parameter *color, QWidget *parent = 0, Qt::WindowFlags f = 0);
+
+  inline void setWidth(int width) {
+    m_width = width;
+  }
+
+  inline void setHeight(int height) {
+    m_height = height;
+  }
+
+  inline void setClickable(bool state) {
+    m_isClickable = state;
+  }
+
 protected:
   virtual void paintEvent(QPaintEvent * e);
   virtual QSize minimumSizeHint() const;
@@ -47,6 +60,11 @@ protected:
 private:
   QColor toQColor();
   void fromQColor(const QColor &col);
+
+private:
+  int m_width;
+  int m_height;
+  bool m_isClickable;
 };
 
 class ZClickableColorMapLabel : public ZClickableLabel

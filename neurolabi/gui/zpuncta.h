@@ -22,6 +22,7 @@ public:
   void display(ZPainter &painter, int slice, EDisplayStyle option) const;
 
   bool load(const std::string &filePath, double radius = 3.0);
+  bool load(const ZJsonObject &obj, double radius = 3.0);
 
   void sort() const;
 

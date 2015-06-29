@@ -8398,3 +8398,16 @@ void ZStackDoc::endObjectModifiedMode()
 {
   m_objectModifiedMode.pop();
 }
+
+void ZStackDoc::setVisible(ZStackObject::EType type, bool visible)
+{
+  TStackObjectList &punctaList = getObjectList(type);
+  for (TStackObjectList::iterator iter = punctaList.begin();
+       iter != punctaList.end(); ++iter) {
+    ZStackObject *obj = *iter;
+    obj->setVisible(visible);
+    bufferObjectModified(obj->getTarget());
+  }
+
+  notifyObjectModified();
+}

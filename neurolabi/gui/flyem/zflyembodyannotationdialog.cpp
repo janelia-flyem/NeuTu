@@ -27,11 +27,15 @@ void ZFlyEmBodyAnnotationDialog::setBodyId(uint64_t bodyId)
 
 QString ZFlyEmBodyAnnotationDialog::getComment() const
 {
+  /*
   if (ui->orphanCheckBox->isChecked()) {
     return "Orphan";
   }
 
   return "";
+  */
+
+  return ui->commentLineEdit->text();
 }
 
 void ZFlyEmBodyAnnotationDialog::setNameEdit(const QString &name)
@@ -45,11 +49,14 @@ void ZFlyEmBodyAnnotationDialog::setNameEdit(const QString &name)
 
 QString ZFlyEmBodyAnnotationDialog::getStatus() const
 {
+  return ui->statusComboBox->currentText();
+  /*
   if (ui->skipCheckBox->isChecked()) {
     return "Skip";
   }
 
   return "";
+  */
 }
 
 QString ZFlyEmBodyAnnotationDialog::getName() const
@@ -81,12 +88,19 @@ ZFlyEmBodyAnnotation ZFlyEmBodyAnnotationDialog::getBodyAnnotation() const
 
 void ZFlyEmBodyAnnotationDialog::setComment(const std::string &comment)
 {
-  ui->orphanCheckBox->setChecked(comment == "Orphan");
+  ui->commentLineEdit->setText(comment.c_str());
+//  ui->orphanCheckBox->setChecked(comment == "Orphan");
 }
 
 void ZFlyEmBodyAnnotationDialog::setStatus(const std::string &status)
 {
-  ui->skipCheckBox->setChecked(status == "Skip");
+  int index = ui->statusComboBox->findText(status.c_str(), Qt::MatchExactly);
+  if (index >= 0) {
+    ui->statusComboBox->setCurrentIndex(index);
+  } else {
+    ui->statusComboBox->setCurrentIndex(0);
+  }
+//  ui->skipCheckBox->setChecked(status == "Skip");
 }
 
 void ZFlyEmBodyAnnotationDialog::setName(const std::string &name)

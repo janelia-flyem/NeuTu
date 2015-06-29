@@ -24,7 +24,9 @@ void ZDvidSparsevolSlice::update(int z)
 {
   if (m_currentZ != z) {
     m_currentZ = z;
-    m_reader.readBody(getLabel(), m_currentZ, this);
+    if (z < getMinZ() || z > getMaxZ()) {
+      m_reader.readBody(getLabel(), m_currentZ, this);
+    }
   }
 }
 

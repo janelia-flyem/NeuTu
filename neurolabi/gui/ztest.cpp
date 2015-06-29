@@ -13906,7 +13906,7 @@ void ZTest::test(MainWindow *host)
   stream.close();
 #endif
 
-#if 1
+#if 0
   FlyEm::ZSynapseAnnotationArray synapseArray;
   synapseArray.loadJson(GET_DATA_DIR +
                         "/flyem/AL/al7d_whole_wfix_tbar-predict_0.81.json");
@@ -17129,5 +17129,71 @@ void ZTest::test(MainWindow *host)
 
 
 
+#endif
+
+#if 1
+  std::string dataDir = GET_TEST_DATA_DIR + "/flyem/MB/proofread/fix1";
+  ZDvidTarget target2("emdata1.int.janelia.org", "0f33", 8500);
+  ZDvidReader reader;
+  reader.open(target2);
+  ZObject3dScan wholeObj =reader.readBody(13707636);
+  wholeObj.canonize();
+  wholeObj.save(dataDir + "/13707636_s.sobj");
+#endif
+
+#if 0
+  ZDvidTarget target("emdata1.int.janelia.org", "c0a5", 8500);
+
+  std::string dataDir = GET_TEST_DATA_DIR + "/flyem/MB/proofread/fix1";
+
+  ZDvidReader reader;
+
+
+  ZDvidTarget target2("emdata1.int.janelia.org", "0f33", 8500);
+  reader.open(target2);
+  ZObject3dScan wholeObj =reader.readBody(13707636);
+//  wholeObj.save(dataDir + "/13707636_s.sobj");
+
+#if 1
+  ZDvidWriter writer;
+  writer.open(target2);
+
+  if (reader.open(target)) {
+    FILE *fp = fopen((dataDir  + "/body_splits.csv").c_str(), "r");
+    ZString str;
+
+    int label = 1;
+    std::set<uint64_t> bodySet;
+
+    while (str.readLine(fp)) {
+      std::vector<int> coords = str.toIntegerArray();
+      if (coords.size() == 3) {
+        uint64_t bodyId = reader.readBodyIdAt(coords[0], coords[1], coords[2]);
+        std::cout << "ID: " << bodyId << std::endl;
+        bodySet.insert(bodyId);
+      }
+    }
+    fclose(fp);
+
+    for (std::set<uint64_t>::const_iterator iter = bodySet.begin();
+         iter != bodySet.end(); ++iter) {
+      uint64_t bodyId = *iter;
+      ZObject3dScan obj = reader.readBody(bodyId);
+      obj.canonize();
+      QString outputPath = QString("%1/body_%2.dvid").arg(dataDir.c_str()).
+          arg(bodyId);
+      obj.exportDvidObject(outputPath.toStdString());
+
+      ZObject3dScan intersected = obj.intersect(wholeObj);
+      intersected.exportDvidObject(
+            QString("%1/body_%2_intersected.dvid").arg(dataDir.c_str()).
+            arg(bodyId).toStdString());
+
+      writer.writeSplit(intersected, 13707636, label++);
+    }
+  } else {
+    std::cout << "Failed to open " << target.getSourceString() << std::endl;
+  }
+#endif
 #endif
 }

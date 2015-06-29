@@ -301,6 +301,20 @@ void ZStackPresenter::createBodyActions()
     m_actionMap[ACTION_BODY_ANNOTATION] = action;
   }
 
+  {
+    QAction *action = new QAction(tr("Check in"), this);
+    connect(action, SIGNAL(triggered()),
+            this, SLOT(notifyBodyCheckinTriggered()));
+    m_actionMap[ACTION_BODY_CHECKIN] = action;
+  }
+
+  {
+    QAction *action = new QAction(tr("Check out"), this);
+    connect(action, SIGNAL(triggered()),
+            this, SLOT(notifyBodyCheckoutTriggered()));
+    m_actionMap[ACTION_BODY_CHECKOUT] = action;
+  }
+
 //  action = new QAction(tr("Add split seed"), this);
 //  connect(action, SIGNAL(triggered()), this, SLOT());
 //  m_actionMap[ACTION_ADD_SPLIT_SEED] = action;
@@ -2112,6 +2126,16 @@ void ZStackPresenter::notifyBodySplitTriggered()
 void ZStackPresenter::notifyBodyAnnotationTriggered()
 {
   emit bodyAnnotationTriggered();
+}
+
+void ZStackPresenter::notifyBodyCheckinTriggered()
+{
+  emit bodyCheckinTriggered();
+}
+
+void ZStackPresenter::notifyBodyCheckoutTriggered()
+{
+  emit bodyCheckoutTriggered();
 }
 
 void ZStackPresenter::selectDownstreamNode()

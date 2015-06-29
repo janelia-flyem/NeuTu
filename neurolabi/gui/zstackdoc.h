@@ -715,6 +715,8 @@ public:
   const TStackObjectSet& getSelected(ZStackObject::EType type) const;
   TStackObjectSet &getSelected(ZStackObject::EType type);
 
+  void setVisible(ZStackObject::EType type, bool visible);
+
   template <typename T>
   QList<T*> getSelectedObjectList() const;
 

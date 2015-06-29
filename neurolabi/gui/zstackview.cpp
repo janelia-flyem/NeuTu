@@ -1823,6 +1823,20 @@ void ZStackView::customizeWidget()
   }
 }
 
+void ZStackView::addHorizontalWidget(QWidget *widget)
+{
+  if (widget != NULL) {
+    m_secondTopLayout->addWidget(widget);
+  }
+}
+
+void ZStackView::addHorizontalWidget(QSpacerItem *spacer)
+{
+  if (spacer != NULL) {
+    m_secondTopLayout->addSpacerItem(spacer);
+  }
+}
+
 void ZStackView::request3DVis()
 {
   if (m_messageManager != NULL) {

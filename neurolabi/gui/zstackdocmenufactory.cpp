@@ -290,6 +290,10 @@ QMenu* ZStackDocMenuFactory::makeBodyContextMenu(
       menu->addAction(presenter->getAction(
                         ZStackPresenter::ACTION_BODY_ANNOTATION));
     }
+
+    menu->addAction(presenter->getAction(ZStackPresenter::ACTION_BODY_CHECKOUT));
+    menu->addAction(presenter->getAction(ZStackPresenter::ACTION_BODY_CHECKIN));
+
   }
 
   return menu;

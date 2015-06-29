@@ -1,5 +1,5 @@
 {
-  "downsampleInterval": [3, 3, 3],
+  "downsampleInterval": [0, 0, 0],
   "minimalLength": 40,
   "keepingSingleObject": true,
   "rebase": true,

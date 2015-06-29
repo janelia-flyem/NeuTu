@@ -82,6 +82,14 @@ void FlyEmSplitControlForm::createMenu()
   seedMenu->addAction(selectAllSeedAction);
   connect(selectAllSeedAction, SIGNAL(triggered()), this, SLOT(selectAllSeed()));
 
+  QAction *exportSeedAction = new QAction("Export", this);
+  seedMenu->addAction(exportSeedAction);
+  connect(exportSeedAction, SIGNAL(triggered()), this, SLOT(exportSeed()));
+
+  QAction *importSeedAction = new QAction("Import", this);
+  seedMenu->addAction(importSeedAction);
+  connect(importSeedAction, SIGNAL(triggered()), this, SLOT(importSeed()));
+
   m_bookmarkContextMenu = new QMenu(this);
   QAction *checkAction = new QAction("Set Checked", this);
   m_bookmarkContextMenu->addAction(checkAction);
@@ -159,6 +167,16 @@ void FlyEmSplitControlForm::recoverSeed()
   emit recoveringSeed();
 }
 
+void FlyEmSplitControlForm::exportSeed()
+{
+  emit exportingSeed();
+}
+
+void FlyEmSplitControlForm::importSeed()
+{
+  emit importingSeed();
+}
+
 void FlyEmSplitControlForm::selectSeed()
 {
   emit selectingSeed();
@@ -204,7 +222,7 @@ void FlyEmSplitControlForm::locateBookmark(const QModelIndex &index)
 
 void FlyEmSplitControlForm::loadBookmark()
 {
-  QString fileName = ZDialogFactory::GetFileName("Load Bookmarks", "", this);
+  QString fileName = ZDialogFactory::GetOpenFileName("Load Bookmarks", "", this);
   if (!fileName.isEmpty()) {
     emit loadingBookmark(fileName);
   }

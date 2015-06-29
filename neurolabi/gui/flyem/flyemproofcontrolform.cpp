@@ -66,10 +66,19 @@ void FlyEmProofControlForm::createMenu()
   connect(queryPixelAction, SIGNAL(triggered()), this, SLOT(goToPosition()));
 
   QAction *queryBodyAction = new QAction("Go to Body", this);
+  queryBodyAction->setShortcut(Qt::Key_F1);
   m_mainMenu->addAction(queryBodyAction);
   connect(queryBodyAction, SIGNAL(triggered()), this, SLOT(goToBody()));
+
+  QAction *selectBodyAction = new QAction("Select Body", this);
+  m_mainMenu->addAction(selectBodyAction);
+  connect(selectBodyAction, SIGNAL(triggered()), this, SLOT(selectBody()));
 }
 
+void FlyEmProofControlForm::selectBody()
+{
+  emit selectingBody();
+}
 
 void FlyEmProofControlForm::setSegmentSize()
 {

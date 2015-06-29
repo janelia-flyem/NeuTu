@@ -52,6 +52,8 @@ ZFlyEmBodySplitProject::ZFlyEmBodySplitProject(QObject *parent) :
   connect(this, SIGNAL(bodyQuickViewReady()), this, SLOT(startBodyQuickView()));
   connect(this, SIGNAL(result3dQuickViewReady()),
           this, SLOT(startResultQuickView()));
+  connect(this, SIGNAL(rasingBodyQuickView()), this, SLOT(raiseBodyQuickView()));
+  connect(this, SIGNAL(rasingResultQuickView()), this, SLOT(raiseResultQuickView()));
 }
 
 ZFlyEmBodySplitProject::~ZFlyEmBodySplitProject()
@@ -313,8 +315,24 @@ void ZFlyEmBodySplitProject::quickViewFunc()
           arg(box.getDepth()));
 
     emitMessage("Done.");
+
     emit bodyQuickViewReady();
     getProgressSignal()->endProgress();
+    emit rasingBodyQuickView();
+  }
+}
+
+void ZFlyEmBodySplitProject::raiseBodyQuickView()
+{
+  if (m_quickViewWindow != NULL) {
+    m_quickViewWindow->raise();
+  }
+}
+
+void ZFlyEmBodySplitProject::raiseResultQuickView()
+{
+  if (m_quickResultWindow != NULL) {
+    m_quickResultWindow->raise();
   }
 }
 
@@ -340,7 +358,9 @@ void ZFlyEmBodySplitProject::showResultQuickView()
 void ZFlyEmBodySplitProject::startQuickView(Z3DWindow *window)
 {
   if (window != NULL) {
+    std::cout << "Starting quick view ..." << std::endl;
     window->setYZView();
+    std::cout << "Estimating body bound box ..." << std::endl;
     const TStackObjectList &objList =
         window->getDocument()->getObjectList(ZStackObject::TYPE_SWC);
 
@@ -356,8 +376,12 @@ void ZFlyEmBodySplitProject::startQuickView(Z3DWindow *window)
         }
       }
     }
+
+    std::cout << "Zooming in" << std::endl;
     window->gotoPosition(boundBox.toCornerVector(), 0);
 //    m_quickViewWindow->setYZView();
+
+    std::cout << "Showing quick view ..." << std::endl;
     showQuickView(window);
   }
 }
@@ -558,6 +582,8 @@ void ZFlyEmBodySplitProject::result3dQuickFunc()
 
       emit result3dQuickViewReady();
       getProgressSignal()->endProgress();
+
+      emit rasingResultQuickView();
     }
   }
 }
@@ -1152,6 +1178,91 @@ void ZFlyEmBodySplitProject::recoverSeed()
   downloadSeed(getBackupSeedKey(getBodyId()));
 }
 
+void ZFlyEmBodySplitProject::loadSeed(const ZJsonObject &obj)
+{
+  if (obj.hasKey("seeds")) {
+    ZLabelColorTable colorTable;
+
+    ZJsonArray jsonArray(obj["seeds"], ZJsonValue::SET_INCREASE_REF_COUNT);
+    for (size_t i = 0; i < jsonArray.size(); ++i) {
+      ZJsonObject seedJson(
+            jsonArray.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
+      if (seedJson.hasKey("stroke")) {
+        ZStroke2d *stroke = new ZStroke2d;
+        stroke->loadJsonObject(seedJson);
+        if (!stroke->isEmpty()) {
+          stroke->setRole(ZStackObjectRole::ROLE_SEED |
+                          ZStackObjectRole::ROLE_3DGRAPH_DECORATOR);
+          stroke->setPenetrating(false);
+          getDocument()->addObject(stroke);
+        } else {
+          delete stroke;
+        }
+      } else if (seedJson.hasKey("obj3d")) {
+        ZObject3d *obj3d = new ZObject3d;
+        obj3d->loadJsonObject(seedJson);
+        obj3d->setColor(colorTable.getColor(obj3d->getLabel()));
+
+        if (!obj3d->isEmpty()) {
+          obj3d->setRole(ZStackObjectRole::ROLE_SEED |
+                         ZStackObjectRole::ROLE_3DGRAPH_DECORATOR);
+          getDocument()->addObject(obj3d);
+        } else {
+          delete obj3d;
+        }
+      }
+    }
+  }
+}
+
+void ZFlyEmBodySplitProject::importSeed(const QString &fileName)
+{
+  if (!fileName.isEmpty()) {
+    ZJsonObject obj;
+    obj.load(fileName.toStdString());
+    if (obj.hasKey("seeds")) {
+#ifdef _DEBUG_
+      std::cout << getDocument()->getPlayerList(
+                     ZStackObjectRole::ROLE_SEED).size() << " seeds" <<  std::endl;
+#endif
+
+      getDocument()->undoStack()->clear();
+      removeAllSeed();
+      loadSeed(obj);
+    } else {
+      emit messageGenerated(
+            ZWidgetMessage(
+              QString("Invalid seed file: %1. Seeds remain unchanged").
+              arg(fileName),
+              NeuTube::MSG_ERROR));
+    }
+  }
+}
+
+void ZFlyEmBodySplitProject::exportSeed(const QString &fileName)
+{
+  if (!fileName.isEmpty()) {
+    QList<ZDocPlayer*> playerList =
+        getDocument()->getPlayerList(ZStackObjectRole::ROLE_SEED);
+    ZJsonArray jsonArray;
+    foreach (const ZDocPlayer *player, playerList) {
+      ZJsonObject jsonObj = player->toJsonObject();
+      if (!jsonObj.isEmpty()) {
+        jsonArray.append(jsonObj);
+      }
+    }
+
+    ZDvidWriter writer;
+    if (writer.open(getDvidTarget())) {
+      if (!jsonArray.isEmpty()) {
+        ZJsonObject rootObj;
+        rootObj.setEntry("seeds", jsonArray);
+        rootObj.dump(fileName.toStdString());
+      }
+    }
+  }
+}
+
 void ZFlyEmBodySplitProject::downloadSeed()
 {
   downloadSeed(getSeedKey(getBodyId()));
@@ -1199,46 +1310,7 @@ void ZFlyEmBodySplitProject::downloadSeed(const std::string &seedKey)
       ZJsonObject obj;
       obj.decode(seedData.constData());
 
-      if (obj.hasKey("seeds")) {
-        ZLabelColorTable colorTable;
-#ifdef _DEBUG_
-        std::cout << getDocument()->getPlayerList(
-                       ZStackObjectRole::ROLE_SEED).size() << " seeds" <<  std::endl;
-#endif
-        ZJsonArray jsonArray(obj["seeds"], ZJsonValue::SET_INCREASE_REF_COUNT);
-        for (size_t i = 0; i < jsonArray.size(); ++i) {
-          ZJsonObject seedJson(
-                jsonArray.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
-          if (seedJson.hasKey("stroke")) {
-            ZStroke2d *stroke = new ZStroke2d;
-            stroke->loadJsonObject(seedJson);
-            if (!stroke->isEmpty()) {
-              stroke->setRole(ZStackObjectRole::ROLE_SEED |
-                              ZStackObjectRole::ROLE_3DGRAPH_DECORATOR);
-              stroke->setPenetrating(false);
-              getDocument()->addObject(stroke);
-            } else {
-              delete stroke;
-            }
-          } else if (seedJson.hasKey("obj3d")) {
-            ZObject3d *obj3d = new ZObject3d;
-            obj3d->loadJsonObject(seedJson);
-            obj3d->setColor(colorTable.getColor(obj3d->getLabel()));
-
-            if (!obj3d->isEmpty()) {
-              obj3d->setRole(ZStackObjectRole::ROLE_SEED |
-                             ZStackObjectRole::ROLE_3DGRAPH_DECORATOR);
-              getDocument()->addObject(obj3d);
-            } else {
-              delete obj3d;
-            }
-          }
-        }
-#ifdef _DEBUG_
-        std::cout << getDocument()->getPlayerList(
-                       ZStackObjectRole::ROLE_SEED).size() << " seeds" <<  std::endl;
-#endif
-      }
+      loadSeed(obj);
     }
   }
 }

@@ -524,6 +524,13 @@ bool ZDvidWriter::runCommand(QProcess &process)
 }
 
 uint64_t ZDvidWriter::writeSplit(
+    const ZObject3dScan &obj, uint64_t oldLabel, uint64_t label)
+{
+  return writeSplit(
+        m_dvidTarget.getBodyLabelName(), obj, oldLabel, label);
+}
+
+uint64_t ZDvidWriter::writeSplit(
     const std::string &dataName, const ZObject3dScan &obj,
     uint64_t oldLabel, uint64_t label)
 {

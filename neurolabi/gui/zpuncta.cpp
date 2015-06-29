@@ -79,6 +79,17 @@ void ZPuncta::setSorted(bool state) const
   m_isSorted = state;
 }
 
+bool ZPuncta::load(const ZJsonObject &obj, double radius)
+{
+  clear();
+  FlyEm::ZSynapseAnnotationArray synapseArray;
+  synapseArray.loadJson(obj);
+  std::vector<ZPunctum*> puncta = synapseArray.toTBarPuncta(radius);
+  addPunctum(puncta.begin(), puncta.end());
+
+  return true;
+}
+
 bool ZPuncta::load(const std::string &filePath, double radius)
 {
   clear();
@@ -88,12 +99,10 @@ bool ZPuncta::load(const std::string &filePath, double radius)
   switch (ZFileType::fileType(filePath)) {
   case ZFileType::JSON_FILE:
   {
-    FlyEm::ZSynapseAnnotationArray synapseArray;
-    synapseArray.loadJson(filePath);
-    std::vector<ZPunctum*> puncta = synapseArray.toTBarPuncta(radius);
-    addPunctum(puncta.begin(), puncta.end());
+    ZJsonObject obj;
+    obj.load(filePath);
+    succ = load(obj, radius);
   }
-    succ = true;
     break;
   case ZFileType::TXT_FILE:
   {

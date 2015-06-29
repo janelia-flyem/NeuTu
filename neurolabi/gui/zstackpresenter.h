@@ -66,7 +66,7 @@ public:
     ACTION_LOCATE_SELECTED_SWC_NODES_IN_3D,
     ACTION_SPLIT_DATA, ACTION_SHOW_BODY_IN_3D,
     ACTION_BODY_SPLIT_START, ACTION_ADD_SPLIT_SEED,
-    ACTION_BODY_ANNOTATION
+    ACTION_BODY_ANNOTATION, ACTION_BODY_CHECKIN, ACTION_BODY_CHECKOUT
   };
 
   inline double greyScale(int c = 0) const {return m_greyScale[c];}
@@ -278,6 +278,8 @@ public slots:
 
   void notifyBodySplitTriggered();
   void notifyBodyAnnotationTriggered();
+  void notifyBodyCheckinTriggered();
+  void notifyBodyCheckoutTriggered();
   void slotTest();
 
   void notifyUser(const QString &msg);
@@ -304,6 +306,8 @@ signals:
   void mousePositionCaptured(double x, double y, double z);
   void bodySplitTriggered();
   void bodyAnnotationTriggered();
+  void bodyCheckinTriggered();
+  void bodyCheckoutTriggered();
   void labelSliceSelectionChanged();
   void objectVisibleTurnedOn();
 

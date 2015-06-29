@@ -82,8 +82,11 @@ public:
   void deleteSavedSeed();
   void downloadSeed();
   void recoverSeed();
+  void exportSeed(const QString &fileName);
+  void importSeed(const QString &fileName);
   int selectSeed(int label);
   int selectAllSeed();
+  void loadSeed(const ZJsonObject &obj);
 
   void exportSplits();
   void commitResult();
@@ -146,6 +149,8 @@ signals:
   void locating2DViewTriggered(const ZStackViewParam&);
   void bodyQuickViewReady();
   void result3dQuickViewReady();
+  void rasingResultQuickView();
+  void rasingBodyQuickView();
 
 public slots:
   void showDataFrame() const;
@@ -159,6 +164,8 @@ public slots:
   void startBodyQuickView();
   void startResultQuickView();
   void startQuickView(Z3DWindow *window);
+  void raiseBodyQuickView();
+  void raiseResultQuickView();
 
   /*!
    * \brief Clear the project without deleting the associated widgets
