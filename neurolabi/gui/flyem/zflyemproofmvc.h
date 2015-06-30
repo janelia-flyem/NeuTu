@@ -7,6 +7,7 @@
 #include "flyem/zflyembodysplitproject.h"
 #include "flyem/zflyembodymergeproject.h"
 #include "qthreadfuturemap.h"
+#include "flyem/zflyembookmark.h"
 
 class QWidget;
 class ZFlyEmProofDoc;
@@ -113,6 +114,9 @@ public slots:
 
   void loadSynapse();
   void showSynapseAnnotation(bool visible);
+
+  void loadBookmark();
+
 //  void toggleEdgeMode(bool edgeOn);
 
 protected:
@@ -124,11 +128,13 @@ private:
   uint64_t getMappedBodyId(uint64_t bodyId);
   std::set<uint64_t> getCurrentSelectedBodyId(NeuTube::EBodyLabelType type) const;
   void runSplitFunc();
+  void notifyBookmarkUpdated();
 
 private:
   bool m_showSegmentation;
   ZFlyEmBodySplitProject m_splitProject;
   ZFlyEmBodyMergeProject m_mergeProject;
+  ZFlyEmBookmarkArray m_bookmarkArray;
 
   QThreadFutureMap m_futureMap;
 

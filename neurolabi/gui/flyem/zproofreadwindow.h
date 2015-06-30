@@ -73,6 +73,8 @@ private:
   QAction *m_viewSynapseAction;
   QToolBar *m_toolBar;
 
+  QAction *m_importBookmarkAction;
+
   QProgressDialog *m_progressDlg;
   ZProgressSignal *m_progressSignal;
 };

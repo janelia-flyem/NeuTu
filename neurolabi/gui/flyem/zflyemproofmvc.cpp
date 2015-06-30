@@ -5,6 +5,7 @@
 #include <QMessageBox>
 #include <QInputDialog>
 #include <QPushButton>
+#include <QMainWindow>
 
 #include "flyem/zflyemproofdoc.h"
 #include "zstackview.h"
@@ -29,7 +30,7 @@
 #include "zstring.h"
 #include "flyem/zpaintlabelwidget.h"
 #include "zwidgetfactory.h"
-
+#include "flyem/zflyemcoordinateconverter.h"
 
 ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
   ZStackMvc(parent)
@@ -129,6 +130,15 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
 {
   getProgressSignal()->startProgress("Loading data ...");
   if (getCompleteDocument() != NULL) {
+#if 1
+//    QByteArray geometry;
+    bool isMaximized = false;
+    if (getMainWindow() != NULL) {
+      isMaximized = getMainWindow()->isMaximized();
+//      geometry = parentWidget()->saveGeometry();
+    }
+#endif
+
     clear();
     getProgressSignal()->advanceProgress(0.1);
 //    getCompleteDocument()->clearData();
@@ -145,6 +155,18 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
     getView()->reset(false);
     getProgressSignal()->advanceProgress(0.1);
 
+#if 1
+    if (getMainWindow() != NULL) {
+//      parentWidget()->hide();
+//      parentWidget()->restoreGeometry(geometry);
+//      parentWidget()->show();
+      if (isMaximized) {
+        getMainWindow()->showNormal();
+        getMainWindow()->showMaximized();
+      }
+    }
+#endif
+
     m_splitProject.setDvidTarget(target);
     m_mergeProject.setDvidTarget(target);
     m_mergeProject.syncWithDvid();
@@ -154,6 +176,7 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
 
     getCompleteDocument()->downloadSynapse();
     getProgressSignal()->advanceProgress(0.5);
+
 
     emit dvidTargetChanged(target);
   }
@@ -272,16 +295,18 @@ void ZFlyEmProofMvc::customInit()
   disableSplit();
 
 
+  /*
   QPushButton *button = new QPushButton(this);
   button->setCheckable(true);
   button->setChecked(true);
   button->setIcon(QIcon(":/images/synapse.png"));
   connect(button, SIGNAL(toggled(bool)),
           this, SLOT(showSynapseAnnotation(bool)));
+          */
 
-  getView()->addHorizontalWidget(button);
+//  getView()->addHorizontalWidget(button);
 
-  getView()->addHorizontalWidget(ZWidgetFactory::makeHSpacerItem());
+//  getView()->addHorizontalWidget(ZWidgetFactory::makeHSpacerItem());
 
   getView()->addHorizontalWidget(new ZPaintLabelWidget());
 }
@@ -787,11 +812,27 @@ void ZFlyEmProofMvc::zoomTo(int x, int y, int z)
   zoomTo(x, y, z, 400);
 }
 
+void ZFlyEmProofMvc::notifyBookmarkUpdated()
+{
+  m_splitProject.updateBookmarkDecoration(m_bookmarkArray);
+}
+
 void ZFlyEmProofMvc::loadBookmark(const QString &filePath)
 {
-  m_splitProject.loadBookmark(filePath);
+//  m_splitProject.loadBookmark(filePath);
 
-  emit bookmarkUpdated(&m_splitProject);
+  ZDvidReader reader;
+  ZFlyEmCoordinateConverter converter;
+  if (reader.open(getDvidTarget())) {
+    ZDvidInfo info = reader.readGrayScaleInfo();
+    converter.configure(info);
+    m_bookmarkArray.importJsonFile(filePath.toStdString(), NULL/*&converter*/);
+  }
+
+  notifyBookmarkUpdated();
+//  m_bookmarkArray.importJsonFile(filePath);
+
+//  emit bookmarkUpdated(&m_splitProject);
 }
 
 void ZFlyEmProofMvc::loadSynapse()
@@ -801,6 +842,15 @@ void ZFlyEmProofMvc::loadSynapse()
     getCompleteDocument()->loadSynapse(fileName.toStdString());
   }
 }
+
+void ZFlyEmProofMvc::loadBookmark()
+{
+  QString fileName = ZDialogFactory::GetOpenFileName("Load Bookmarks", "", this);
+  if (!fileName.isEmpty()) {
+    loadBookmark(fileName);
+  }
+}
+
 
 void ZFlyEmProofMvc::showSynapseAnnotation(bool visible)
 {

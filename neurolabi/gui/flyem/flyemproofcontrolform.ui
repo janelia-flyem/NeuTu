@@ -166,6 +166,9 @@
     </layout>
    </item>
    <item>
+    <widget class="ZFlyEmBookmarkView" name="bookmarkView"/>
+   </item>
+   <item>
     <widget class="QTextBrowser" name="helpWidget">
      <property name="autoFillBackground">
       <bool>false</bool>
@@ -183,6 +186,13 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>ZFlyEmBookmarkView</class>
+   <extends>QTableView</extends>
+   <header>flyem/zflyembookmarkview.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

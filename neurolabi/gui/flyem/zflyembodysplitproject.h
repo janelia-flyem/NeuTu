@@ -70,6 +70,7 @@ public:
   void clearBookmarkDecoration();
   void addBookmarkDecoration(const ZFlyEmBookmarkArray &bookmarkArray);
   void updateBookDecoration();
+  void updateBookmarkDecoration(const ZFlyEmBookmarkArray &bookmarkArray);
 
   void removeAllBookmark();
 

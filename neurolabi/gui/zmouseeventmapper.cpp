@@ -433,7 +433,13 @@ ZMouseEventRightButtonReleaseMapper::getOperation(const ZMouseEvent &event) cons
           op.setOperation(ZStackOperator::OP_SHOW_STACK_CONTEXT_MENU);
         }
       } else {
-        op.setOperation(ZStackOperator::OP_EXIT_EDIT_MODE);
+//        if (m_context->exploreMode())
+        if (m_context->exploreMode() == ZInteractiveContext::EXPLORE_ZOOM_IN_IMAGE ||
+            m_context->exploreMode() == ZInteractiveContext::EXPLORE_ZOOM_OUT_IMAGE) {
+          op.setOperation(ZStackOperator::OP_EXIT_ZOOM_MODE);
+        } else {
+          op.setOperation(ZStackOperator::OP_EXIT_EDIT_MODE);
+        }
       }
     }
   }

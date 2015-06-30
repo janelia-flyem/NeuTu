@@ -782,6 +782,23 @@ void ZFlyEmBodySplitProject::addBookmarkDecoration(
   }
 }
 
+void ZFlyEmBodySplitProject::updateBookmarkDecoration(
+    const ZFlyEmBookmarkArray &bookmarkArray)
+{
+  clearBookmarkDecoration();
+
+  if (getDocument() != NULL) {
+    ZFlyEmBookmarkArray filteredBookmarkArray;
+    foreach (ZFlyEmBookmark bookmark, bookmarkArray) {
+      if (bookmark.getBodyId() == getBodyId() &&
+          bookmark.getType() == ZFlyEmBookmark::TYPE_FALSE_MERGE) {
+        filteredBookmarkArray.append(bookmark);
+      }
+    }
+    addBookmarkDecoration(filteredBookmarkArray);
+  }
+}
+
 void ZFlyEmBodySplitProject::updateBookDecoration()
 {
   clearBookmarkDecoration();

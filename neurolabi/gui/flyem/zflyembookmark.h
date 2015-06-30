@@ -19,6 +19,7 @@ public:
   inline const QString& getUserName() const { return m_userName; }
   inline const QString& getStatus() const { return m_status; }
   inline const ZIntPoint& getLocation() const { return m_location; }
+  inline EType getType() const { return m_type; }
 
   inline void setBodyId(uint64_t bodyId) { m_bodyId = bodyId; }
   inline void setLocation(int x, int y, int z) {

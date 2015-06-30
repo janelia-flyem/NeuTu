@@ -182,6 +182,7 @@ void ZStackView::init()
 
   setDepthFrozen(false);
   setViewPortFrozen(false);
+  blockViewChangeEvent(false);
   //customizeWidget();
 }
 
@@ -278,13 +279,21 @@ double ZStackView::getZoomRatio() const
       m_imageWidget->viewPort().width();
 }
 
+void ZStackView::resetDepthControl()
+{
+  ZStack *stack = stackData();
+  if (stack != NULL) {
+    m_depthControl->setRange(0, stack->depth() - 1);
+    m_depthControl->setValue(stack->depth() / 2);
+  }
+}
+
 void ZStackView::reset(bool updatingScreen)
 { 
   ZStack *stack = stackData();
   updateChannelControl();
   if (stack != NULL) {
-    m_depthControl->setRange(0, stack->depth() - 1);
-    m_depthControl->setValue(stack->depth() / 2);
+    resetDepthControl();
 //    m_imageWidget->reset();
 
     if (updatingScreen) {
@@ -1771,8 +1780,9 @@ void ZStackView::notifyViewChanged(const ZStackViewParam &param)
 #ifdef _DEBUG_2
   std::cout << "Signal: ZStackView::viewChanged" << std::endl;
 #endif
-
-  emit viewChanged(param);
+  if (!isViewChangeEventBlocked()) {
+    emit viewChanged(param);
+  }
 }
 
 void ZStackView::notifyViewPortChanged()
@@ -1945,9 +1955,19 @@ bool ZStackView::isDepthFronzen() const
   return m_depthFrozen;
 }
 
+bool ZStackView::isViewChangeEventBlocked() const
+{
+  return m_viewChangeEventBlocked;
+}
+
 void ZStackView::setDepthFrozen(bool state)
 {
   m_depthFrozen = state;
+}
+
+void ZStackView::blockViewChangeEvent(bool state)
+{
+  m_viewChangeEventBlocked = state;
 }
 
 void ZStackView::setCanvasVisible(ZStackObject::ETarget target, bool visible)

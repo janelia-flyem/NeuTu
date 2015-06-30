@@ -69,6 +69,7 @@ void ZFlyEmProofDoc::updateTileData()
   if (reader.open(m_dvidTarget)) {
     ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
     if (dvidInfo.isValid()) {
+
       ZStack *stack = ZStackFactory::makeVirtualStack(
             ZIntCuboid(dvidInfo.getStartCoordinates(),
                        dvidInfo.getEndCoordinates()));

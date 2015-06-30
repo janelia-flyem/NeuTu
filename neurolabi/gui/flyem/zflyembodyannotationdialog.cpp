@@ -1,6 +1,7 @@
 #include "zflyembodyannotationdialog.h"
 #include "ui_zflyembodyannotationdialog.h"
 #include "zflyembodyannotation.h"
+#include "neutube.h"
 
 ZFlyEmBodyAnnotationDialog::ZFlyEmBodyAnnotationDialog(QWidget *parent) :
   QDialog(parent),
@@ -8,15 +9,23 @@ ZFlyEmBodyAnnotationDialog::ZFlyEmBodyAnnotationDialog(QWidget *parent) :
 {
   ui->setupUi(this);
 
+  if (NeuTube::GetUserName() == "takemuras" ||
+      NeuTube::GetUserName() == "zhaot") {
+    ui->statusComboBox->addItem("Finalize");
+  }
   setNameEdit(ui->nameComboBox->currentText());
-
-  connect(ui->nameComboBox, SIGNAL(currentIndexChanged(QString)),
-          this, SLOT(setNameEdit(QString)));
+  connectSignalSlot();
 }
 
 ZFlyEmBodyAnnotationDialog::~ZFlyEmBodyAnnotationDialog()
 {
   delete ui;
+}
+
+void ZFlyEmBodyAnnotationDialog::connectSignalSlot()
+{
+  connect(ui->nameComboBox, SIGNAL(currentIndexChanged(QString)),
+          this, SLOT(setNameEdit(QString)));
 }
 
 void ZFlyEmBodyAnnotationDialog::setBodyId(uint64_t bodyId)
