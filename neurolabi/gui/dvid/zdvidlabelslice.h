@@ -35,6 +35,8 @@ public:
   bool hit(double x, double y, double z);
 
   void selectHit(bool appending = false);
+//  void selectLabel(uint64_t bodyId, bool appending = false);
+
   void deselectAll();
   void toggleHitSelection(bool appending = false);
   void clearSelection();

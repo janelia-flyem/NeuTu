@@ -14,6 +14,9 @@
 #include "dvid/zdvidsparsevolslice.h"
 #include "zwidgetmessage.h"
 #include "flyem/zflyemsupervisor.h"
+#include "zpuncta.h"
+#include "dvid/zdvidurl.h"
+#include "dvid/zdvidbufferreader.h"
 //#include "zflyemproofmvc.h"
 
 ZFlyEmProofDoc::ZFlyEmProofDoc(ZStack *stack, QObject *parent) :
@@ -191,7 +194,17 @@ void ZFlyEmProofDoc::saveMergeOperation()
   if (writer.open(getDvidTarget())) {
     writer.writeMergeOperation(m_bodyMerger.getFinalMap());
 
-    emit messageGenerated(ZWidgetMessage("Merge operation saved."));
+    if (writer.getStatusCode() == 200) {
+      if (m_bodyMerger.isEmpty()) {
+        emit messageGenerated(ZWidgetMessage("Merge operation cleared."));
+      } else {
+        emit messageGenerated(ZWidgetMessage("Merge operation saved."));
+      }
+    } else {
+      emit messageGenerated(
+            ZWidgetMessage("Cannot save the merge operation",
+                           NeuTube::MSG_ERROR));
+    }
   }
 }
 
@@ -266,6 +279,35 @@ void ZFlyEmProofDoc::updateDvidLabelObject()
   endObjectModifiedMode();
 
   notifyObjectModified();
+}
+
+void ZFlyEmProofDoc::downloadSynapse()
+{
+  if (getDvidTarget().isValid()) {
+    ZDvidUrl url(getDvidTarget());
+    ZDvidBufferReader reader;
+    reader.read(url.getSynapseAnnotationUrl().c_str());
+    ZJsonObject jsonObj;
+    jsonObj.decodeString(reader.getBuffer());
+    if (!jsonObj.isEmpty()) {
+      ZPuncta *puncta = new ZPuncta;
+      puncta->setSource(ZStackObjectSourceFactory::MakeFlyEmSynapseSource());
+      puncta->load(jsonObj, 5.0);
+      puncta->pushCosmeticPen(true);
+      addObject(puncta);
+    }
+  }
+}
+
+void ZFlyEmProofDoc::loadSynapse(const std::string &filePath)
+{
+  if (!filePath.empty()) {
+    ZPuncta *puncta = new ZPuncta;
+    puncta->setSource(ZStackObjectSourceFactory::MakeFlyEmSynapseSource());
+    puncta->load(filePath, 5.0);
+    puncta->pushCosmeticPen(true);
+    addObject(puncta);
+  }
 }
 
 //////////////////////////////////////////

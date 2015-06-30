@@ -24,6 +24,7 @@
 #include "tz_stack_bwmorph.h"
 #include "tz_stack_math.h"
 #include "tz_int_histogram.h"
+#include "tz_iarray.h"
 
 using namespace std;
 
@@ -1710,3 +1711,171 @@ void C_Stack::shrinkBorder(const Stack *stack, int r, int nnbr)
     }
   }
 }
+
+#if 0
+#define STACK_WATERSHED_IS_SEED(mask, i)			\
+  (((mask)->array[i] >= 1) && ((mask)->array[i] <= STACK_WATERSHED_MAX_SEED))
+
+#define STACK_WATERSHED_UNLABELED(i) (out->array[i] == 0)
+
+#define STACK_WATERSHED_ENQUEUE(level, i)	\
+  if (queue_head[level] == -1) {		\
+    queue_head[level] = i;			\
+    queue_tail[level] = i;			\
+  } else {					\
+    level_queue[queue_tail[level]] = i;		\
+    queue_tail[level] = i;			\
+  }
+
+#define STACK_WATERSHED_DEQUEUE(level, v)	\
+  v = queue_head[level];			\
+  if (v >= 0) {					\
+    queue_head[level] = level_queue[v];		\
+    if (queue_head[level] == -1) {		\
+      queue_tail[level] = -1;			\
+    }						\
+  }
+
+Stack* C_Stack::watershed(
+    const Stack *stack, Stack_Watershed_Workspace *ws, Stack *out)
+{
+#ifdef _DEBUG_2
+  Zero_Stack(out);
+  return out;
+#endif
+
+  if (ws->mask == NULL) {
+    return NULL;
+  }
+
+  int width = stack->width;
+  int height = stack->height;
+  int depth = stack->depth;
+
+  if (width == 1 && height == 1 && depth == 1) {
+    return NULL;
+  }
+
+  if (out == NULL) {
+    out = C_Stack::make(GREY, width, height, depth);
+  }
+  Zero_Stack(out);
+
+  size_t nvoxel = voxelNumber(stack);
+
+  int is_in_bound[26];
+  int neighbors[26];
+
+  Stack_Neighbor_Offset(ws->conn, Stack_Width(stack), Stack_Height(stack),
+            neighbors);
+
+  int i;
+
+  int max_level = 65535;
+
+  #if 1
+  int *queue_head = iarray_malloc(max_level + 1);
+  int *queue_tail = iarray_malloc(max_level + 1);
+  //int queue_head[65536];
+  //int queue_tail[65536];
+
+  for (i = 0; i <= max_level; i++) {
+    queue_head[i] = -1;
+    queue_tail[i] = -1;
+  }
+
+  int j;
+
+  for (i = 0; i < nvoxel; i++) {
+    ws->array[i] = -1;
+  }
+
+  int water_level = ws->start_level;
+  int nseed = 0;
+  int *level_queue = ws->array;
+
+  for (i = 0; i < nvoxel; i++) {
+    /* If the voxel is an aviable seed */
+    if (STACK_WATERSHED_IS_SEED(ws->mask, i)) {
+      int basin = ws->mask->array[i];
+      if (nseed < basin) {
+    nseed = basin;
+      }
+      out->array[i] = basin;
+      int level = (int) Stack_Array_Value(stack, i);
+      if (level >= water_level) {
+    STACK_WATERSHED_ENQUEUE(water_level, i);
+      } else {
+    STACK_WATERSHED_ENQUEUE(level, i);
+      }
+    }
+  }
+
+
+  /* Now start watershed. */
+  while (water_level >= ws->min_level) {
+#ifdef _DEBUG_2
+    printf("water level: %d\n", water_level);
+#endif
+    int cur_index;
+    STACK_WATERSHED_DEQUEUE(water_level, cur_index);
+
+    while (cur_index >= 0) {
+      int basin = out->array[cur_index];
+      int nbound = Stack_Neighbor_Bound_Test_I(ws->conn,
+                           Stack_Width(stack),
+                           Stack_Height(stack),
+                           Stack_Depth(stack),
+                           cur_index,
+                           is_in_bound);
+
+#define STACK_WATERSHED_CHECK_NEIGHBOR(cur_index, j)			\
+      int nbr = cur_index + neighbors[j];				\
+      if (STACK_WATERSHED_UNLABELED(nbr) && (ws->mask->array[nbr] == 0)) { \
+    int level;							\
+    if (ws->weights == NULL) {					\
+      level = (int) Stack_Array_Value(stack, nbr);			\
+    } else {							\
+      level = iround(Stack_Array_Value(stack, nbr) * ws->weights[j]); \
+    }								\
+    if (level >= ws->min_level) {					\
+      if (level >= water_level) {					\
+        STACK_WATERSHED_ENQUEUE(water_level, nbr);			\
+        out->array[nbr] = basin;					\
+      } else {							\
+        STACK_WATERSHED_ENQUEUE(level, nbr);			\
+        out->array[nbr] = basin;					\
+      }								\
+    }								\
+      }
+
+      /* Enqueue the neighbors. */
+      if (nbound == ws->conn) {
+    for (j = 0; j < ws->conn; j++) {
+      STACK_WATERSHED_CHECK_NEIGHBOR(cur_index, j);
+    }
+      } else {
+    for (j = 0; j < ws->conn; j++) {
+      if (is_in_bound[j]) {
+        STACK_WATERSHED_CHECK_NEIGHBOR(cur_index, j);
+      }
+    }
+      }
+
+      STACK_WATERSHED_DEQUEUE(water_level, cur_index);
+    }
+
+    water_level--;
+  }
+
+  free(queue_head);
+  free(queue_tail);
+
+#ifdef _DEBUG_2
+  C_Stack::write(GET_TEST_DATA_DIR + "/test.tif", out);
+#endif
+
+  return out;
+#endif
+}
+#endif

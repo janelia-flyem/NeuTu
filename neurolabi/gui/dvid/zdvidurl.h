@@ -110,6 +110,7 @@ public:
 
   std::string getSynapseListUrl() const;
   std::string getSynapseAnnotationUrl(const std::string &name) const;
+  std::string getSynapseAnnotationUrl() const;
 
   std::string getMergeUrl(const std::string &dataName) const;
   std::string getSplitUrl(

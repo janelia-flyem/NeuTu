@@ -49,6 +49,7 @@
 #include "misc/miscutility.h"
 #include "zrect2d.h"
 #include "zobjectcolorscheme.h"
+#include "qthreadfuturemap.h"
 
 class ZStackFrame;
 class ZLocalNeuroseg;
@@ -491,6 +492,7 @@ public: /* puncta related methods */
     return m_objectGroup.hasSelected(ZStackObject::TYPE_PUNCTUM);
   }
 
+public:
   void addLocsegChainP(ZLocsegChain *chain);
   void addLocsegChain(const QList<ZLocsegChain*> &chainList);
 
@@ -502,6 +504,8 @@ public: /* puncta related methods */
   void addSparseObject(const QList<ZSparseObject*> &objList);
   void addPunctumP(ZPunctum *obj);
   void addPunctum(const QList<ZPunctum*> &punctaList);
+
+  void addPunctumFast(const QList<ZPunctum*> &punctaList);
 
 
   void addObj3dP(ZObject3d *obj);
@@ -521,6 +525,15 @@ public: /* puncta related methods */
   void addObject(ZStackObject *obj, bool uniqueSource = true);
 
   /*!
+   * \brief Add an object in a quick way
+   *
+   * The function assumes that \a obj has no source and it does not exist in
+   * the document. This function is useful for adding a large number of newly
+   * created obejcts.
+   */
+  void addObjectFast(ZStackObject *obj);
+
+  /*!
    * \brief Add a palyer
    *
    * Nothing will be done if \a role is ZDocPlayer::ROLE_NONE.
@@ -528,6 +541,8 @@ public: /* puncta related methods */
 //  void addPlayer(ZStackObject *obj, NeuTube::EDocumentableType type,
 //                 ZDocPlayer::TRole role);
   void addPlayer(ZStackObject *obj);
+
+  void toggleVisibility(ZStackObjectRole::TRole role);
 
   void updateLocsegChain(ZLocsegChain *chain);
   void importLocsegChain(const QStringList &files,
@@ -670,11 +685,12 @@ public: /* puncta related methods */
     return m_playerList;
   }
 
+  QList<const ZDocPlayer*> getPlayerList(ZStackObjectRole::TRole role) const;
+  QList<ZDocPlayer*> getPlayerList(ZStackObjectRole::TRole role);
+
   virtual const ZSparseStack* getSparseStack() const;
   virtual const ZSparseStack* getConstSparseStack() const;
   virtual ZSparseStack* getSparseStack();
-
-  QList<const ZDocPlayer*> getPlayerList(ZStackObjectRole::TRole role) const;
 
   bool hasPlayer(ZStackObjectRole::TRole role) const;
 
@@ -698,6 +714,8 @@ public: /* puncta related methods */
   void toggleSelected(ZStackObject *obj);
   const TStackObjectSet& getSelected(ZStackObject::EType type) const;
   TStackObjectSet &getSelected(ZStackObject::EType type);
+
+  void setVisible(ZStackObject::EType type, bool visible);
 
   template <typename T>
   QList<T*> getSelectedObjectList() const;
@@ -745,6 +763,10 @@ public:
 
   inline bool isSegmentationReady() const {
     return m_isSegmentationReady;
+  }
+
+  inline void setSegmentationReady(bool state) {
+    m_isSegmentationReady = state;
   }
 
   /*
@@ -1150,6 +1172,8 @@ private:
   QSet<ZStackObject::EType> m_objectModifiedTypeBuffer;
   ZStackObjectRole m_objectModifiedRoleBuffer;
   QStack<EObjectModifiedMode> m_objectModifiedMode;
+
+  QThreadFutureMap m_futureMap;
 
 protected:
   ZObjectColorScheme m_objColorSheme;

@@ -894,6 +894,8 @@ void MainWindow::customizeActions()
 
 
   m_ui->menuTube->menuAction()->setVisible(false);
+
+  m_ui->actionSplit_Region->setVisible(false);
 #if !defined(_DEBUG_)
   m_ui->menuTrace_Project->menuAction()->setVisible(false);
   m_ui->actionAutomatic_Axon->setVisible(false);
@@ -2059,7 +2061,7 @@ void MainWindow::about()
   if (!NeutubeConfig::getInstance().getApplication().empty()) {
     title += QString("<p>") +
         NeutubeConfig::getInstance().getApplication().c_str() + " Edition" +
-        " (558b414b04aafbffb5e42fa744054f8bb3def64e)</p>";
+        " (8b054a2a63abeb8f8d3911672dd31fff3e27e47c)</p>";
   }
   QString thirdPartyLib = QString("<p><a href=\"file:///%1/doc/ThirdPartyLibraries.txt\">Third Party Libraries</a></p>")
       .arg(QApplication::applicationDirPath());

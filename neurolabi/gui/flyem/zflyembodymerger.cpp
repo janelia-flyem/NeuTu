@@ -252,3 +252,8 @@ QSet<uint64_t> ZFlyEmBodyMerger::getOriginalLabelSet(uint64_t finalLabel) const
 
   return labelSet;
 }
+
+bool ZFlyEmBodyMerger::isEmpty() const
+{
+  return m_mapList.isEmpty();
+}

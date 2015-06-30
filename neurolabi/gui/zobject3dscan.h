@@ -185,6 +185,8 @@ public:
 
   ZObject3dScan subtract(const ZObject3dScan &obj);
 
+  ZObject3dScan intersect(const ZObject3dScan &obj);
+
   void downsample(int xintv, int yintv, int zintv);
   void downsampleMax(int xintv, int yintv, int zintv);
 

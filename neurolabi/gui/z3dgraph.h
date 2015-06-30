@@ -41,6 +41,9 @@ public:
   void addX(double dx);
   void addY(double dy);
 
+  void setX(double x);
+  void setY(double y);
+
   void loadJsonObject(json_t *obj);
 
   void print();

@@ -395,6 +395,9 @@ ZObject3d* ZObject3dScan::toObject3d() const
     }
   }
 
+  obj->setColor(this->getColor());
+  obj->setLabel(this->getLabel());
+
 /*
   size_t numStripe = getStripeNumber();
 
@@ -956,6 +959,9 @@ Stack* ZObject3dScan::toStack(int *offset, int v) const
     offset[1] = boundBox.getFirstCorner().getY();
     offset[2] = boundBox.getFirstCorner().getZ();
   }
+
+  std::cout << "Stack size: " << boundBox.getWidth() << "x"
+            << boundBox.getHeight() << "x" << boundBox.getDepth() << std::endl;
 
   Stack *stack = C_Stack::make(GREY, boundBox.getWidth(),
                                boundBox.getHeight(),
@@ -2436,6 +2442,38 @@ ZObject3dScan ZObject3dScan::subtract(const ZObject3dScan &obj)
   *this = remained;
 
   return subtracted;
+}
+
+ZObject3dScan ZObject3dScan::intersect(const ZObject3dScan &obj)
+{
+  int minZ = getMinZ();
+  int maxZ = getMaxZ();
+
+  ZObject3dScan result;
+
+  for (int z = minZ; z <= maxZ; ++z) {
+    ZObject3dScan slice = getSlice(z);
+    ZObject3dScan slice2 = obj.getSlice(z);
+    if (!slice.isEmpty() && !slice2.isEmpty()) {
+      ZStack *plane = slice.toStackObject();
+      slice2.addForeground(plane); //1: remained; 2: subtracted
+
+      std::vector<ZObject3dScan*> objArray = extractAllObject(*plane);
+      for (std::vector<ZObject3dScan*>::const_iterator iter = objArray.begin();
+           iter != objArray.end(); ++iter) {
+        ZObject3dScan *obj = *iter;
+        if (obj->getLabel() == 2) {
+          result.concat(*obj);
+        }
+        delete obj;
+      }
+      delete plane;
+    }
+  }
+
+  result.canonize();
+
+  return result;
 }
 
 void ZObject3dScan::switchYZ()

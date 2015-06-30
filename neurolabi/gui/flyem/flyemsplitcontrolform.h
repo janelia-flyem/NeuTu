@@ -30,13 +30,18 @@ signals:
   void zoomingTo(int x, int y, int z);
   void loadingBookmark(QString);
   void recoveringSeed();
+  void exportingSeed();
+  void importingSeed();
   void selectingSeed();
   void selectingAllSeed();
+  void loadingSynapse();
 
 public slots:
   void updateBodyWidget(uint64_t bodyId);
   void goToPosition();
   void recoverSeed();
+  void exportSeed();
+  void importSeed();
   void selectSeed();
   void selectAllSeed();
 

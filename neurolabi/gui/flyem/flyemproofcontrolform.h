@@ -32,6 +32,8 @@ signals:
   void committingMerge();
   void zoomingTo(int x, int y, int z);
   void locatingBody(uint64_t);
+  void goingToBody();
+  void selectingBody();
 
 public slots:
   void setInfo(const QString &info);
@@ -43,6 +45,7 @@ private slots:
   void decSegmentSize();
   void goToPosition();
   void goToBody();
+  void selectBody();
 
 private:
   void createMenu();

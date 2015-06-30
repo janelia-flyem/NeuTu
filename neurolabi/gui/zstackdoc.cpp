@@ -208,7 +208,8 @@ void ZStackDoc::clearData()
     m_undoStack->clear();
   }
 
-  m_isSegmentationReady = false;
+  setSegmentationReady(false);
+//  m_isSegmentationReady = false;
 }
 
 void ZStackDoc::initNeuronTracer()
@@ -2244,6 +2245,16 @@ void ZStackDoc::addPunctum(const QList<ZPunctum *> &punctaList)
 //  blockSignals(false);
 
 //  notifyPunctumModified();
+}
+
+void ZStackDoc::addPunctumFast(const QList<ZPunctum *> &punctaList)
+{
+  beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
+  foreach (ZPunctum *punctum, punctaList) {
+    addObjectFast(punctum);
+  }
+  endObjectModifiedMode();
+  notifyObjectModified();
 }
 
 void ZStackDoc::addPunctumP(ZPunctum *obj)
@@ -6417,30 +6428,10 @@ bool ZStackDoc::executeAddSwcNodeCommand(const ZPoint &center, double radius)
   return false;
 }
 
-void ZStackDoc::addObject(ZStackObject *obj, bool uniqueSource)
+void ZStackDoc::addObjectFast(ZStackObject *obj)
 {
-  //QMutexLocker locker(&m_mutex);
-
   if (obj == NULL) {
     return;
-  }
-
-  if (m_objectGroup.contains(obj)) {
-    return;
-  }
-
-  TStackObjectList objList;
-//  ZStackObjectRole role;
-
-  if (uniqueSource) {
-    objList = m_objectGroup.takeSameSource(obj->getType(), obj->getSource());
-    for (TStackObjectList::iterator iter = objList.begin();
-         iter != objList.end(); ++iter) {
-      ZStackObject *oldObj = *iter;
-      bufferObjectModified(oldObj);
-//      role.addRole(m_playerList.removePlayer(obj));
-      delete oldObj;
-    }
   }
 
   if (obj->isSelected()) {
@@ -6510,6 +6501,37 @@ void ZStackDoc::addObject(ZStackObject *obj, bool uniqueSource)
   notifyObjectModified();
 }
 
+void ZStackDoc::addObject(ZStackObject *obj, bool uniqueSource)
+{
+  //QMutexLocker locker(&m_mutex);
+
+  if (obj == NULL) {
+    return;
+  }
+
+  if (m_objectGroup.contains(obj)) {
+    return;
+  }
+
+  TStackObjectList objList;
+//  ZStackObjectRole role;
+
+  if (uniqueSource) {
+    if (!obj->getSource().empty()) {
+      objList = m_objectGroup.takeSameSource(obj->getType(), obj->getSource());
+      for (TStackObjectList::iterator iter = objList.begin();
+           iter != objList.end(); ++iter) {
+        ZStackObject *oldObj = *iter;
+        bufferObjectModified(oldObj);
+        //      role.addRole(m_playerList.removePlayer(obj));
+        delete oldObj;
+      }
+    }
+  }
+
+  addObjectFast(obj);
+}
+
 void ZStackDoc::notifyPlayerChanged(const ZStackObjectRole &role)
 {
   notifyPlayerChanged(role.getRole());
@@ -6519,7 +6541,11 @@ void ZStackDoc::notifyPlayerChanged(ZStackObjectRole::TRole role)
 {
   ZStackObjectRole roleObj(role);
   if (roleObj.hasRole(ZStackObjectRole::ROLE_SEED)) {
-    m_isSegmentationReady = false;
+//    m_isSegmentationReady = false;
+    setSegmentationReady(false);
+
+    emit messageGenerated(
+          ZWidgetMessage(ZWidgetMessage::appendTime("Seed modified.")));
     emit seedModified();
   }
 
@@ -7807,58 +7833,88 @@ std::vector<ZStack*> ZStackDoc::createWatershedMask(bool selectedOnly)
   return maskArray;
 }
 
+void ZStackDoc::toggleVisibility(ZStackObjectRole::TRole role)
+{
+  beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
+  QList<ZDocPlayer*> playerList = getPlayerList(role);
+  for (QList<ZDocPlayer*>::iterator iter = playerList.begin();
+       iter != playerList.end(); ++iter) {
+    ZDocPlayer *player = *iter;
+    player->getData()->toggleVisible();
+    processObjectModified(player->getData()->getTarget());
+  }
+  endObjectModifiedMode();
+
+  notifyObjectModified();
+}
+
 void ZStackDoc::updateWatershedBoundaryObject(ZStack *out, ZIntPoint dsIntv)
 {
   if (out != NULL) {
+    std::vector<ZObject3dScan*> objArray =
+        ZObject3dFactory::MakeObject3dScanPointerArray(*out);
+    /*
     ZObject3dArray *objArray = ZObject3dFactory::MakeRegionBoundary(
           *out, ZObject3dFactory::OUTPUT_SPARSE);
-    if (objArray != NULL) {
-      if (dsIntv.getX() > 0 || dsIntv.getY() > 0 || dsIntv.getZ() > 0) {
-        for (ZObject3dArray::iterator iter = objArray->begin();
-             iter != objArray->end(); ++iter) {
-          ZObject3d *obj = *iter;
-          if (obj != NULL) {
-            if (!obj->isEmpty()) {
-              obj->upSample(dsIntv.getX(), dsIntv.getY(), dsIntv.getZ());
+          */
+    if (dsIntv.getX() > 0 || dsIntv.getY() > 0 || dsIntv.getZ() > 0) {
+      for (std::vector<ZObject3dScan*>::iterator iter = objArray.begin();
+           iter != objArray.end(); ++iter) {
+        ZObject3dScan *obj = *iter;
+        if (obj != NULL) {
+          if (!obj->isEmpty()) {
+            obj->upSample(dsIntv.getX(), dsIntv.getY(), dsIntv.getZ());
+          }
+        }
+      }
+    }
+
+    QList<ZDocPlayer*> playerList =
+        getPlayerList(ZStackObjectRole::ROLE_SEED);
+    //foreach (ZStroke2d *stroke, m_strokeList) {
+    foreach (const ZDocPlayer *player, playerList) {
+      for (std::vector<ZObject3dScan*>::iterator iter = objArray.begin();
+           iter != objArray.end(); ++iter) {
+        ZObject3dScan *obj = *iter;
+        if (obj != NULL) {
+          if (!obj->isEmpty()) {
+            if ((int) obj->getLabel() == player->getLabel()) {
+              obj->setColor(player->getData()->getColor());
+              //ZString objectSource = "localSeededWatershed:Temporary_Border:";
+              // objectSource.appendNumber(stroke->getLabel());
+              obj->setSource(
+                    ZStackObjectSourceFactory::MakeWatershedBoundarySource(
+                      player->getLabel()));
+              obj->setHittable(false);
+              obj->setProjectionVisible(false);
+              obj->setRole(ZStackObjectRole::ROLE_TMP_RESULT);
+              addObject(obj, true);
             }
           }
         }
       }
+    }
 
-      QList<const ZDocPlayer*> playerList =
-          getPlayerList(ZStackObjectRole::ROLE_SEED);
-      //foreach (ZStroke2d *stroke, m_strokeList) {
-      foreach (const ZDocPlayer *player, playerList) {
-        ZObject3d *obj = objArray->take(player->getLabel());
-        if (obj != NULL) {
-          if (!obj->isEmpty()) {
-            obj->setColor(player->getData()->getColor());
-            //ZString objectSource = "localSeededWatershed:Temporary_Border:";
-            // objectSource.appendNumber(stroke->getLabel());
-            obj->setSource(
-                  ZStackObjectSourceFactory::MakeWatershedBoundarySource(
-                    player->getLabel()));
-            obj->setHittable(false);
-            obj->setProjectionVisible(false);
-            obj->setRole(ZStackObjectRole::ROLE_TMP_RESULT);
-            addObject(obj, true);
-          } else {
-            delete obj;
-          }
-        }
+    for (std::vector<ZObject3dScan*>::iterator iter = objArray.begin();
+         iter != objArray.end(); ++iter) {
+      ZObject3dScan *obj = *iter;
+      if (!obj->getRole().hasRole(ZStackObjectRole::ROLE_TMP_RESULT)) {
+        delete obj;
       }
-
-      delete objArray;
     }
   }
 }
 
 void ZStackDoc::localSeededWatershed()
 {
+  getProgressSignal()->startProgress("Running local split ...");
   removeObject(ZStackObjectRole::ROLE_TMP_RESULT, true);
-  m_isSegmentationReady = false;
+//  m_isSegmentationReady = false;
+  setSegmentationReady(false);
 
   ZStackArray seedMask = createWatershedMask(true);
+  getProgressSignal()->advanceProgress(0.1);
+
   if (!seedMask.empty()) {
     ZStackWatershed engine;
 
@@ -7881,14 +7937,17 @@ void ZStackDoc::localSeededWatershed()
       }
     }
 
+    getProgressSignal()->advanceProgress(0.1);
+
 #ifdef _DEBUG_2
     signalStack->save(GET_TEST_DATA_DIR + "/test.tif");
 #endif
     if (signalStack != NULL) {
 
       seedMask.downsampleMax(dsIntv.getX(), dsIntv.getY(), dsIntv.getZ());
+      getProgressSignal()->advanceProgress(0.1);
 
-      advanceProgress(0.1);
+//      advanceProgress(0.1);
 //      QApplication::processEvents();
 
       Cuboid_I box;
@@ -7902,16 +7961,18 @@ void ZStackDoc::localSeededWatershed()
 
       engine.setRange(box);
       ZStack *out = engine.run(signalStack, seedMask);
+      getProgressSignal()->advanceProgress(0.3);
 
-      advanceProgress(0.1);
+//      advanceProgress(0.1);
 //      QApplication::processEvents();
 
       //objArray = ZObject3dFactory::MakeRegionBoundary(*out);
       //objData = Stack_Region_Border(out->c_stack(), 6, TRUE);
 
       updateWatershedBoundaryObject(out, dsIntv);
+      getProgressSignal()->advanceProgress(0.1);
 
-      advanceProgress(0.1);
+//      advanceProgress(0.1);
 //      QApplication::processEvents();
 
       // C_Stack::kill(out);
@@ -7920,8 +7981,8 @@ void ZStackDoc::localSeededWatershed()
       std::cout << "No signal for local watershed." << std::endl;
     }
   }
-
-  notifyObj3dModified();
+  getProgressSignal()->endProgress();
+  emit labelFieldModified();
 }
 
 void ZStackDoc::seededWatershed()
@@ -7930,7 +7991,8 @@ void ZStackDoc::seededWatershed()
 
   qDebug() << "Removing old result ...";
   removeObject(ZStackObjectRole::ROLE_TMP_RESULT, true);
-  m_isSegmentationReady = false;
+//  m_isSegmentationReady = false;
+  setSegmentationReady(false);
 
   getProgressSignal()->advanceProgress(0.1);
   //removeAllObj3d();
@@ -7960,6 +8022,7 @@ void ZStackDoc::seededWatershed()
         }
       }
     }
+    getProgressSignal()->advanceProgress(0.1);
 
     if (signalStack != NULL) {
       qDebug() << "Downsampling ..." << dsIntv.toString();
@@ -7971,13 +8034,16 @@ void ZStackDoc::seededWatershed()
 #endif
 
       ZStack *out = engine.run(signalStack, seedMask);
+      getProgressSignal()->advanceProgress(0.3);
 
       updateWatershedBoundaryObject(out, dsIntv);
+      getProgressSignal()->advanceProgress(0.1);
 
-      notifyObj3dModified();
+//      notifyObj3dModified();
 
       setLabelField(out);
-      m_isSegmentationReady = true;
+//      m_isSegmentationReady = true;
+      setSegmentationReady(true);
 
       emit messageGenerated(ZWidgetMessage(
             ZWidgetMessage::appendTime("Split done. Ready to upload.")));
@@ -7986,23 +8052,36 @@ void ZStackDoc::seededWatershed()
     }
   }
   getProgressSignal()->endProgress();
+  emit labelFieldModified();
 }
 
 void ZStackDoc::runLocalSeededWatershed()
 {
-  startProgress();
+//  startProgress();
 //  QApplication::processEvents();
 
-  localSeededWatershed();
+//  localSeededWatershed();
 
-  //QtConcurrent::run(this, &ZStackDoc::localSeededWatershed); //crashed for unknown reason
+//  getProgressSignal()->startProgress();
 
-  endProgress();
+  const QString threadId = "localSeededWatershed";
+  if (!m_futureMap.isAlive(threadId)) {
+    m_futureMap.removeDeadThread();
+    QFuture<void> future =
+        QtConcurrent::run(this, &ZStackDoc::localSeededWatershed);
+    m_futureMap[threadId] = future;
+  }
+
+//  QFuture<void> result =
+//      QtConcurrent::run(this, &ZStackDoc::localSeededWatershed); //crashed for unknown reason
+//  result.waitForFinished();
+
+//  endProgress();
 }
 
 void ZStackDoc::runSeededWatershed()
 {
-  QList<const ZDocPlayer*> playerList =
+  QList<ZDocPlayer*> playerList =
       getPlayerList(ZStackObjectRole::ROLE_SEED);
   QSet<int> labelSet;
   foreach (const ZDocPlayer *player, playerList) {
@@ -8018,8 +8097,15 @@ void ZStackDoc::runSeededWatershed()
     return;
   }
 
-  seededWatershed();
-  emit labelFieldModified();
+  const QString threadId = "seededWatershed";
+  if (!m_futureMap.isAlive(threadId)) {
+    m_futureMap.removeDeadThread();
+    QFuture<void> future =
+        QtConcurrent::run(this, &ZStackDoc::seededWatershed);
+    m_futureMap[threadId] = future;
+  }
+
+//  seededWatershed();
 }
 
 ZStack* ZStackDoc::makeLabelStack(ZStack *stack) const
@@ -8100,24 +8186,18 @@ void ZStackDoc::setStackFactory(ZStackFactory *factory)
   m_stackFactory = factory;
 }
 
-QList<const ZDocPlayer*> ZStackDoc::getPlayerList(
+QList<const ZDocPlayer *> ZStackDoc::getPlayerList(
     ZStackObjectRole::TRole role) const
 {
-
   return m_playerList.getPlayerList(role);
-  /*
-  QList<const ZDocPlayer*> playerList;
-  for (ZDocPlayerList::const_iterator iter = m_playerList.begin();
-       iter != m_playerList.end(); ++iter) {
-    const ZDocPlayer *player = *iter;
-    if (player->hasRole(role)) {
-      playerList.append(player);
-    }
-  }
-
-  return playerList;
-  */
 }
+
+QList<ZDocPlayer *> ZStackDoc::getPlayerList(
+    ZStackObjectRole::TRole role)
+{
+  return m_playerList.getPlayerList(role);
+}
+
 
 bool ZStackDoc::hasPlayer(ZStackObjectRole::TRole role) const
 {
@@ -8317,4 +8397,17 @@ void ZStackDoc::beginObjectModifiedMode(ZStackDoc::EObjectModifiedMode mode)
 void ZStackDoc::endObjectModifiedMode()
 {
   m_objectModifiedMode.pop();
+}
+
+void ZStackDoc::setVisible(ZStackObject::EType type, bool visible)
+{
+  TStackObjectList &punctaList = getObjectList(type);
+  for (TStackObjectList::iterator iter = punctaList.begin();
+       iter != punctaList.end(); ++iter) {
+    ZStackObject *obj = *iter;
+    obj->setVisible(visible);
+    bufferObjectModified(obj->getTarget());
+  }
+
+  notifyObjectModified();
 }

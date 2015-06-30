@@ -54,6 +54,16 @@ void Z3DGraphNode::addY(double dy)
   m_center.setY(m_center.y() + dy);
 }
 
+void Z3DGraphNode::setX(double x)
+{
+  m_center.setX(x);
+}
+
+void Z3DGraphNode::setY(double y)
+{
+  m_center.setY(y);
+}
+
 void Z3DGraphNode::setRadius(double r)
 {
   m_radius = r;

@@ -236,8 +236,16 @@ void ZDvidWriter::writeJson(
   writeJsonString(dataName, key, obj.dumpString(0));
 }
 
+void ZDvidWriter::writeUrl(const std::string &url, const std::string &method)
+{
+  QString command = QString("curl -i -X %1 %2").arg(method.c_str()).
+      arg(url.c_str());
+
+  runCommand(command);
+}
+
 void ZDvidWriter::writeJsonString(
-    const std::string url, const std::string jsonString)
+    const std::string url, const std::string &jsonString)
 {
   QString annotationString = jsonString.c_str();
 
@@ -272,7 +280,7 @@ void ZDvidWriter::writeJsonString(
 //  QProcess::execute(command);
   runCommand(command);
 
-  qDebug() << getStandardOutput();
+//  qDebug() << getStandardOutput();
 }
 
 
@@ -516,6 +524,13 @@ bool ZDvidWriter::runCommand(QProcess &process)
 }
 
 uint64_t ZDvidWriter::writeSplit(
+    const ZObject3dScan &obj, uint64_t oldLabel, uint64_t label)
+{
+  return writeSplit(
+        m_dvidTarget.getBodyLabelName(), obj, oldLabel, label);
+}
+
+uint64_t ZDvidWriter::writeSplit(
     const std::string &dataName, const ZObject3dScan &obj,
     uint64_t oldLabel, uint64_t label)
 {
@@ -625,7 +640,9 @@ void ZDvidWriter::parseStandardOutput()
       m_jsonOutput.decodeString(output.back().toStdString().c_str());
     }
 
+#ifdef _DEBUG_
     qDebug() << "Status code: " << m_statusCode;
     qDebug() << "Json output: " << m_jsonOutput.dumpString(2);
+#endif
   }
 }

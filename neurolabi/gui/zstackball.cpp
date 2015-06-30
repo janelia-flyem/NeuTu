@@ -2,6 +2,7 @@
 
 #include "zqtheader.h"
 
+#include <QRectF>
 #include <math.h>
 #include "tz_math.h"
 #include "zintpoint.h"
@@ -14,6 +15,8 @@ const ZStackBall::TVisualEffect ZStackBall::VE_NO_CIRCLE = 4;
 const ZStackBall::TVisualEffect ZStackBall::VE_NO_FILL = 8;
 const ZStackBall::TVisualEffect ZStackBall::VE_GRADIENT_FILL = 16;
 const ZStackBall::TVisualEffect ZStackBall::VE_OUT_FOCUS_DIM = 32;
+const ZStackBall::TVisualEffect ZStackBall::VE_DOT_CENTER = 64;
+const ZStackBall::TVisualEffect ZStackBall::VE_RECTANGLE_SHAPE = 128;
 
 ZStackBall::ZStackBall() : m_visualEffect(ZStackBall::VE_NONE)
 {
@@ -213,14 +216,23 @@ void ZStackBall::displayHelper(
   }
 
   if (visible) {
-    if (!hasVisualEffect(VE_NO_CIRCLE)) {
+    QColor color = painter->getPenColor();
+    color.setAlphaF(alpha);
+    pen.setColor(color);
+    painter->setPen(pen);
+
+    if (!hasVisualEffect(VE_NO_CIRCLE) && !hasVisualEffect(VE_RECTANGLE_SHAPE)) {
       //qDebug() << painter->brush().color();
-      QColor color = painter->getPenColor();
-      color.setAlphaF(alpha);
-      pen.setColor(color);
-      painter->setPen(pen);
       painter->drawEllipse(QPointF(m_center.x(), m_center.y()),
                            adjustedRadius, adjustedRadius);
+    } else if (hasVisualEffect(VE_RECTANGLE_SHAPE)) {
+      painter->drawRect(
+            QRectF(QPointF(m_center.x(), m_center.y()),
+                   QSizeF(adjustedRadius * 2.0, adjustedRadius * 2.0)));
+    }
+
+    if (hasVisualEffect(VE_DOT_CENTER)) {
+      painter->drawPoint(QPointF(m_center.x(), m_center.y()));
     }
   }
 
@@ -243,6 +255,7 @@ void ZStackBall::displayHelper(
     pen.setStyle(Qt::SolidLine);
     pen.setCosmetic(m_usingCosmeticPen);
   }
+
 
   if (drawingBoundBox) {
     QRectF rect;

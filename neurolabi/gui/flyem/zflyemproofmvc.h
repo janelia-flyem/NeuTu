@@ -38,6 +38,7 @@ public:
   ZDvidTileEnsemble* getDvidTileEnsemble();
 
   void setDvidTarget(const ZDvidTarget &target);
+  void setDvidTargetFromDialog();
 
   void clear();
 
@@ -72,6 +73,8 @@ public slots:
   void processMessageSlot(const QString &message);
   void notifySplitTriggered();
   void annotateBody();
+  void checkInBody();
+  void checkOutBody();
   void exitSplit();
   void switchSplitBody(uint64_t bodyId);
   void showBodyQuickView();
@@ -83,6 +86,7 @@ public slots:
   void commitMerge();
   void commitCurrentSplit();
   void locateBody(uint64_t bodyId);
+  void selectBody(uint64_t bodyId);
 
   void showBody3d();
   void showSplit3d();
@@ -93,6 +97,8 @@ public slots:
   void zoomTo(const ZIntPoint &pt);
   void zoomTo(int x, int y, int z);
   void zoomTo(int x, int y, int z, int width);
+  void goToBody();
+  void selectBody();
 
   void loadBookmark(const QString &filePath);
   void addSelectionAt(int x, int y, int z);
@@ -101,7 +107,12 @@ public slots:
   void selectSeed();
   void selectAllSeed();
   void recoverSeed();
+  void exportSeed();
+  void importSeed();
   void runSplit();
+
+  void loadSynapse();
+  void showSynapseAnnotation(bool visible);
 //  void toggleEdgeMode(bool edgeOn);
 
 protected:
@@ -116,7 +127,6 @@ private:
 
 private:
   bool m_showSegmentation;
-  bool m_splitOn;
   ZFlyEmBodySplitProject m_splitProject;
   ZFlyEmBodyMergeProject m_mergeProject;
 
@@ -149,6 +159,8 @@ void ZFlyEmProofMvc::connectControlPanel(T *panel)
           this, SLOT(zoomTo(int, int, int)));
   connect(panel, SIGNAL(locatingBody(uint64_t)),
           this, SLOT(locateBody(uint64_t)));
+  connect(panel, SIGNAL(goingToBody()), this, SLOT(goToBody()));
+  connect(panel, SIGNAL(selectingBody()), this, SLOT(selectBody()));
 }
 
 template <typename T>
@@ -174,8 +186,11 @@ void ZFlyEmProofMvc::connectSplitControlPanel(T *panel)
   connect(panel, SIGNAL(selectingSeed()), this, SLOT(selectSeed()));
   connect(panel, SIGNAL(selectingAllSeed()), this, SLOT(selectAllSeed()));
   connect(panel, SIGNAL(recoveringSeed()), this, SLOT(recoverSeed()));
+  connect(panel, SIGNAL(exportingSeed()), this, SLOT(exportSeed()));
+  connect(panel, SIGNAL(importingSeed()), this, SLOT(importSeed()));
   connect(this, SIGNAL(splitBodyLoaded(uint64_t)),
           panel, SLOT(updateBodyWidget(uint64_t)));
+  connect(panel, SIGNAL(loadingSynapse()), this, SLOT(loadSynapse()));
 }
 
 

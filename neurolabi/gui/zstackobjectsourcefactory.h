@@ -22,6 +22,7 @@ public:
   static std::string MakeNodeAdaptorSource();
   static std::string MakeFlyEmBoundBoxSource();
   static std::string MakeFlyEmPlaneObjectSource();
+  static std::string MakeFlyEmSynapseSource();
 };
 
 #endif // ZSTACKOBJECTSOURCEFACTORY_H

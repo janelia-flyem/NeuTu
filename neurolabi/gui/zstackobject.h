@@ -68,7 +68,8 @@ public:
     TYPE_DVID_SPARSEVOL_SLICE,
     TYPE_STACK,
     TYPE_SWC_NODE,
-    TYPE_3D_GRAPH
+    TYPE_3D_GRAPH,
+    TYPE_PUNCTA
   };
 
   enum Palette_Color {
@@ -136,6 +137,8 @@ public:
 
   inline bool isVisible() const { return m_isVisible; }
   inline void setVisible(bool visible) { m_isVisible = visible; }
+  inline void toggleVisible() { m_isVisible = !m_isVisible; }
+
   inline void setDisplayStyle(EDisplayStyle style) { m_style = style; }
   inline EDisplayStyle displayStyle() const { return m_style; }
 

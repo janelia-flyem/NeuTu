@@ -3,6 +3,7 @@
 #include <QTextEdit>
 #include <QScrollBar>
 #include <QPushButton>
+#include <QDebug>
 
 #include "zwidgetmessage.h"
 
@@ -28,6 +29,8 @@ ZFlyEmMessageWidget::ZFlyEmMessageWidget(QWidget *parent) :
 void ZFlyEmMessageWidget::dump(const QString &info, bool appending)
 {
   if (appending) {
+//    m_currentMessageWidget->insertHtml(info);
+    m_currentMessageWidget->setTextColor(QColor("black"));
     m_currentMessageWidget->append(info);
     m_currentMessageWidget->verticalScrollBar()->setValue(
           m_currentMessageWidget->verticalScrollBar()->maximum());
@@ -36,6 +39,8 @@ void ZFlyEmMessageWidget::dump(const QString &info, bool appending)
     m_currentMessageWidget->clear();
     m_currentMessageWidget->setText(info);
   }
+
+//  qDebug() << m_currentMessageWidget->toHtml();
 }
 
 void ZFlyEmMessageWidget::dump(const QStringList &info)

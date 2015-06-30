@@ -62,10 +62,16 @@ private:
   template <typename T>
   void connectMessagePipe(T *source);
 
+  void createMenu();
+  void createToolbar();
+
 private:
   ZFlyEmProofMvc *m_mainMvc;
   QStackedWidget *m_controlGroup;
   ZFlyEmMessageWidget *m_messageWidget;
+
+  QAction *m_viewSynapseAction;
+  QToolBar *m_toolBar;
 
   QProgressDialog *m_progressDlg;
   ZProgressSignal *m_progressSignal;

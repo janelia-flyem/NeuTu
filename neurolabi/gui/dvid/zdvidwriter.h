@@ -85,6 +85,8 @@ public:
 
   uint64_t writeSplit(const std::string &dataName, const ZObject3dScan &obj,
                   uint64_t oldLabel, uint64_t label);
+  uint64_t writeSplit(const ZObject3dScan &obj,
+                      uint64_t oldLabel, uint64_t label);
 
   void writeMergeOperation(const QMap<uint64_t, uint64_t> &bodyMap);
   /*
@@ -96,20 +98,26 @@ public:
     return m_statusCode;
   }
 
+  inline const QString& getStandardOutput() const {
+    return m_standardOutout;
+  }
+
+  inline const QString& getErrorOutput() const {
+    return m_errorOutput;
+  }
+
+  void writeUrl(const std::string &url, const std::string &method = "POST");
+
 private:
   std::string getJsonStringForCurl(const ZJsonValue &obj) const;
   void writeJson(const std::string url, const ZJsonValue &value);
-  void writeJsonString(const std::string url, const std::string jsonString);
+  void writeJsonString(const std::string url, const std::string &jsonString);
 
   ZJsonValue getLocMessage(const std::string &message);
 
   bool runCommand(const QString &command, const QStringList &argList);
   bool runCommand(const QString &command);
   bool runCommand(QProcess &process);
-
-  inline const QString& getStandardOutput() const {
-    return m_standardOutout;
-  }
 
   void parseStandardOutput();
 

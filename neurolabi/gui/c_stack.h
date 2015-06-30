@@ -7,6 +7,7 @@
 #include "tz_image_lib_defs.h"
 #include "tz_mc_stack.h"
 #include "tz_cuboid_i.h"
+#include "tz_stack_watershed.h"
 
 //! Functions for C-compatible stack
 /*!
@@ -404,6 +405,7 @@ void drawInteger(Stack *canvas, int n, int dx, int dy, int dz, int interval = 10
 //Experimenting APIs
 Stack* computeGradient(const Stack *stack);
 void shrinkBorder(const Stack *stack, int r, int nnbr = 6);
+Stack* watershed(const Stack *stack, Stack_Watershed_Workspace *ws, Stack *out);
 
 }
 

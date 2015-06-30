@@ -3,6 +3,7 @@
 #include "zstackview.h"
 #include "dvid/zdvidreader.h"
 #include "zimagewidget.h"
+#include "flyem/zdvidtileupdatetaskmanager.h"
 
 ZDvidTileEnsemble::ZDvidTileEnsemble()
 {
@@ -83,7 +84,23 @@ void ZDvidTileEnsemble::display(
   std::vector<ZDvidTileInfo::TIndex> tileIndices =
       m_tilingInfo.getCoverIndex(resLevel, fov);
 
-  tic();
+//  tic();
+  ZMultiTaskManager taskManager;
+  for (std::vector<ZDvidTileInfo::TIndex>::const_iterator iter = tileIndices.begin();
+       iter != tileIndices.end(); ++iter) {
+    const ZDvidTileInfo::TIndex &index = *iter;
+    ZDvidTile *tile = const_cast<ZDvidTileEnsemble*>(this)->getTile(resLevel, index);
+    if (tile != NULL) {
+      ZDvidTileUpdateTask *task = new ZDvidTileUpdateTask(NULL, tile);
+      task->setZ(painter.getZ(slice));
+      taskManager.addTask(task);
+//      tile->display(painter, slice, option);
+    }
+  }
+  taskManager.start();
+  taskManager.waitForDone();
+  taskManager.clear();
+
   for (std::vector<ZDvidTileInfo::TIndex>::const_iterator iter = tileIndices.begin();
        iter != tileIndices.end(); ++iter) {
     const ZDvidTileInfo::TIndex &index = *iter;

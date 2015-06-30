@@ -49,8 +49,8 @@ public:
 
 protected:
   QThreadPool* getThreadPool() const;
-  virtual void postProcess() = 0;
-  virtual void prepare() = 0;
+  virtual void postProcess() {}
+  virtual void prepare() {}
 
 signals:
   void finished();

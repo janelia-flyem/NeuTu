@@ -53,6 +53,10 @@ public:
 
   inline int getZOffset() { return m_z; }
 
+  inline int getZ(int slice) {
+    return getZOffset() + slice;
+  }
+
   void setPainted(bool painted) {
     m_isPainted = painted;
   }

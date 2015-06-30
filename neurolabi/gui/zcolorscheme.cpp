@@ -21,9 +21,22 @@ QColor ZColorScheme::getColor(int index) const
   return color;
 }
 
-void ZColorScheme::setColorScheme(EColorScheme /*scheme*/)
+void ZColorScheme::setColorScheme(EColorScheme scheme)
 {
+  switch (scheme) {
+  case RANDOM_COLOR:
+    buildRandomColorTable(64);
+    break;
+  case CONV_RANDOM_COLOR:
+    buildConvRandomColorTable(64);
+    break;
+  case PUNCTUM_TYPE_COLOR:
+    buildPunctumColorTable();
+    break;
 
+  default:
+    break;
+  }
 }
 
 void ZColorScheme::buildRandomColorTable(int n)
@@ -71,6 +84,31 @@ void ZColorScheme::buildConvRandomColorTable(int n)
         g += diff;
       }
     }
-    m_colorTable.append(QColor(r, g, b));
+    QColor color(r, g, b);
+    color.setHsv(color.hue(), std::min(255, color.saturation() * 2),
+                 color.value());
+    m_colorTable.append(color);
   }
+}
+
+void ZColorScheme::buildPunctumColorTable()
+{
+  m_colorTable.clear();
+
+  m_colorTable.push_back(QColor(255, 255, 255, 255));
+  m_colorTable.push_back(QColor(0, 255, 255, 255));
+  m_colorTable.push_back(QColor(255, 128, 0, 255));
+  m_colorTable.push_back(QColor(0, 0, 255, 255));
+  m_colorTable.push_back(QColor(255, 0, 255, 255));
+  m_colorTable.push_back(QColor(127, 0, 255, 255));
+  m_colorTable.push_back(QColor(0, 255, 0, 255));
+  m_colorTable.push_back(QColor(255, 255, 0, 255));
+
+  m_colorTable.push_back(QColor(128, 255, 255, 255));
+  m_colorTable.push_back(QColor(255, 128, 128, 255));
+  m_colorTable.push_back(QColor(128, 128, 255, 255));
+  m_colorTable.push_back(QColor(255, 128, 255, 255));
+  m_colorTable.push_back(QColor(127, 128, 255, 255));
+  m_colorTable.push_back(QColor(128, 255, 128, 255));
+  m_colorTable.push_back(QColor(255, 255, 128, 255));
 }

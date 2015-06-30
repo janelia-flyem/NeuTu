@@ -179,7 +179,7 @@ void Z3DWindow::gotoPosition(std::vector<double> bound, double minRadius,
     bound[4] -= expand/2;
   }
 
-  setupCamera(bound, Z3DCamera::ResetAll);
+  setupCamera(bound, Z3DCamera::PreserveViewVector);
 }
 
 void Z3DWindow::zoomToSelectedSwcNodes()

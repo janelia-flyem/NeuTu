@@ -113,6 +113,13 @@
          </property>
         </widget>
        </item>
+       <item>
+        <widget class="QPushButton" name="synapsePushButton">
+         <property name="text">
+          <string>Load Synapses</string>
+         </property>
+        </widget>
+       </item>
       </layout>
      </item>
      <item>

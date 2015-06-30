@@ -543,7 +543,12 @@ HEADERS += mainwindow.h \
     z3dgraphfactory.h \
     zstackdochelper.h \
     flyem/zflyembodyannotationdialog.h \
-    flyem/zflyemsupervisor.h
+    flyem/zflyemsupervisor.h \
+    zkeyeventmapperfactory.h \
+    zkeyoperationmapsequence.h \
+    zpuncta.h \
+    flyem/zdvidtileupdatetaskmanager.h \
+    flyem/zpaintlabelwidget.h
 
 FORMS += settingdialog.ui \
     frameinfodialog.ui \
@@ -946,7 +951,12 @@ SOURCES += main.cpp \
     z3dgraphfactory.cpp \
     zstackdochelper.cpp \
     flyem/zflyembodyannotationdialog.cpp \
-    flyem/zflyemsupervisor.cpp
+    flyem/zflyemsupervisor.cpp \
+    zkeyeventmapperfactory.cpp \
+    zkeyoperationmapsequence.cpp \
+    zpuncta.cpp \
+    flyem/zdvidtileupdatetaskmanager.cpp \
+    flyem/zpaintlabelwidget.cpp
 
 OTHER_FILES += \
     extlib.pri \
