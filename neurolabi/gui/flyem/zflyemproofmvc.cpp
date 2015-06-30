@@ -580,7 +580,7 @@ void ZFlyEmProofMvc::disableSplit()
 void ZFlyEmProofMvc::launchSplit(uint64_t bodyId)
 {
   if (bodyId > 0) {
-    if (getSupervisor()->checkOut(bodyId)) {
+    if (!getDvidTarget().isSupervised() || getSupervisor()->checkOut(bodyId)) {
 #ifdef _DEBUG_2
       bodyId = 14742253;
 #endif

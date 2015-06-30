@@ -17,13 +17,15 @@ const char* ZDvidTarget::m_labelBlockNameKey = "label_block";
 const char* ZDvidTarget::m_grayScaleNameKey = "gray_scale";
 const char* ZDvidTarget::m_multiscale2dNameKey = "multires_tile";
 const char* ZDvidTarget::m_userNameKey = "user_name";
+const char* ZDvidTarget::m_supervisorKey = "supervised";
 
-ZDvidTarget::ZDvidTarget() : m_port(-1), m_bgValue(255)
+ZDvidTarget::ZDvidTarget() : m_port(-1), m_isSupervised(true), m_bgValue(255)
 {
 }
 
 ZDvidTarget::ZDvidTarget(
-    const std::string &address, const std::string &uuid, int port)
+    const std::string &address, const std::string &uuid, int port) :
+  m_isSupervised(true), m_bgValue(255)
 {
   set(address, uuid, port);
 }
@@ -241,6 +243,12 @@ void ZDvidTarget::loadJsonObject(const ZJsonObject &obj)
         for (size_t i = 0; i < nameArray.size(); ++i) {
           m_userList.insert(ZJsonParser::stringValue(nameArray.at(i)));
         }
+      }
+    }
+    if (obj.hasKey(m_supervisorKey)) {
+      ZJsonValue value = obj.value(m_supervisorKey);
+      if (value.isBoolean()) {
+        m_isSupervised= ZJsonParser::booleanValue(value.getData());
       }
     }
   }
