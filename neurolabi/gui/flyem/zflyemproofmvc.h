@@ -59,6 +59,7 @@ signals:
   void errorGenerated(const QString &message, bool appending = true);
   void messageGenerated(const ZWidgetMessage &message);
   void splitBodyLoaded(uint64_t bodyId);
+  void bookmarkUpdated(ZFlyEmBodyMergeProject *m_project);
   void bookmarkUpdated(ZFlyEmBodySplitProject *m_project);
   void dvidTargetChanged(ZDvidTarget);
 
@@ -167,6 +168,8 @@ void ZFlyEmProofMvc::connectControlPanel(T *panel)
           this, SLOT(locateBody(uint64_t)));
   connect(panel, SIGNAL(goingToBody()), this, SLOT(goToBody()));
   connect(panel, SIGNAL(selectingBody()), this, SLOT(selectBody()));
+  connect(this, SIGNAL(bookmarkUpdated(ZFlyEmBodyMergeProject*)),
+          panel, SLOT(updateBookmarkTable(ZFlyEmBodyMergeProject*)));
 }
 
 template <typename T>

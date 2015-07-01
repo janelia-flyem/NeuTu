@@ -36,9 +36,11 @@
 #include "zflyemmisc.h"
 #include "zprogresssignal.h"
 #include "zdialogfactory.h"
+#include "flyem/zflyembookmark.h"
 
 ZFlyEmBodyMergeProject::ZFlyEmBodyMergeProject(QObject *parent) :
   QObject(parent), m_dataFrame(NULL), m_bodyWindow(NULL),
+  m_bookmarkArray(NULL),
   m_showingBodyMask(true)
 {
   m_progressSignal = new ZProgressSignal(this);
@@ -1202,4 +1204,67 @@ void ZFlyEmBodyMergeProject::highlightSelectedObject(bool hl)
   }
 }
 
+void ZFlyEmBodyMergeProject::clearBookmarkDecoration()
+{
+  if (getDocument() != NULL) {
+    for (std::vector<ZStackObject*>::iterator iter = m_bookmarkDecoration.begin();
+         iter != m_bookmarkDecoration.end(); ++iter) {
+      ZStackObject *obj = *iter;
+      getDocument()->removeObject(obj, false);
+      delete obj;
+    }
+  } else {
+    for (std::vector<ZStackObject*>::iterator iter = m_bookmarkDecoration.begin();
+         iter != m_bookmarkDecoration.end(); ++iter) {
+      delete *iter;
+    }
+  }
+  m_bookmarkDecoration.clear();
+}
+
+void ZFlyEmBodyMergeProject::addBookmarkDecoration(
+    const ZFlyEmBookmarkArray &bookmarkArray)
+{
+  if (getDocument() != NULL) {
+    getDocument()->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+    for (ZFlyEmBookmarkArray::const_iterator iter = bookmarkArray.begin();
+         iter != bookmarkArray.end(); ++iter) {
+      const ZFlyEmBookmark &bookmark = *iter;
+      ZPunctum *circle = new ZPunctum;
+      circle->set(bookmark.getLocation(), 5);
+
+//      ZStackBall *circle = new ZStackBall;
+//      circle->set(bookmark.getLocation(), 5);
+      circle->setColor(255, 0, 0);
+      circle->setVisible(m_isBookmarkVisible);
+      circle->setHittable(false);
+//      circle->setRole(ZStackObjectRole::ROLE_3DGRAPH_DECORATOR);
+      getDocument()->addObject(circle);
+      m_bookmarkDecoration.push_back(circle);
+    }
+    getDocument()->endObjectModifiedMode();
+    getDocument()->notifyObjectModified();
+  }
+}
+
+void ZFlyEmBodyMergeProject::updateBookmarkDecoration(
+    const ZFlyEmBookmarkArray &bookmarkArray)
+{
+  clearBookmarkDecoration();
+
+  if (getDocument() != NULL) {
+    ZFlyEmBookmarkArray filteredBookmarkArray;
+    foreach (ZFlyEmBookmark bookmark, bookmarkArray) {
+      if (bookmark.getType() == ZFlyEmBookmark::TYPE_FALSE_SPLIT) {
+        filteredBookmarkArray.append(bookmark);
+      }
+    }
+    addBookmarkDecoration(filteredBookmarkArray);
+  }
+}
+
+void ZFlyEmBodyMergeProject::attachBookmarkArray(ZFlyEmBookmarkArray *bookmarkArray)
+{
+  m_bookmarkArray = bookmarkArray;
+}
 

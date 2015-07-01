@@ -168,22 +168,6 @@
    <item>
     <widget class="ZFlyEmBookmarkView" name="bookmarkView"/>
    </item>
-   <item>
-    <widget class="QTextBrowser" name="helpWidget">
-     <property name="autoFillBackground">
-      <bool>false</bool>
-     </property>
-     <property name="frameShape">
-      <enum>QFrame::Box</enum>
-     </property>
-     <property name="frameShadow">
-      <enum>QFrame::Plain</enum>
-     </property>
-     <property name="readOnly">
-      <bool>true</bool>
-     </property>
-    </widget>
-   </item>
   </layout>
  </widget>
  <customwidgets>
