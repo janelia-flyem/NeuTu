@@ -30,8 +30,7 @@ void ZFlyEmBookmarkArray::importJsonFile(
     ZJsonObject bookmarkObj(bookmarkArrayObj.at(i), false);
     ZString text = ZJsonParser::stringValue(bookmarkObj["text"]);
     text.toLower();
-    if ((text.startsWith("split") || text.startsWith("small split"))
-        && bookmarkObj["location"] != NULL) {
+    if (bookmarkObj["location"] != NULL) {
       int bodyId = ZJsonParser::integerValue(bookmarkObj["body ID"]);
       if (bodyId > 0) {
         std::vector<int> coordinates =
@@ -49,6 +48,13 @@ void ZFlyEmBookmarkArray::importJsonFile(
           }
           bookmark.setLocation(iround(x), iround(y), iround(z));
           bookmark.setBodyId(bodyId);
+          if (text.startsWith("split") || text.startsWith("small split")) {
+            bookmark.setType(ZFlyEmBookmark::TYPE_FALSE_MERGE);
+          } else if (text.startsWith("merge")) {
+            bookmark.setType(ZFlyEmBookmark::TYPE_FALSE_SPLIT);
+          } else {
+            bookmark.setType(ZFlyEmBookmark::TYPE_LOCATION);
+          }
           append(bookmark);
         }
       }

@@ -1,4 +1,7 @@
 #include "zstackmvc.h"
+
+#include <QMainWindow>
+
 #include "zstackdoc.h"
 #include "zstackview.h"
 #include "zstackpresenter.h"
@@ -226,6 +229,23 @@ QRect ZStackMvc::getViewGeometry() const
 
   return rect;
 }
+
+QMainWindow* ZStackMvc::getMainWindow() const
+{
+  QMainWindow *mainwin = NULL;
+  QObject *parentObject = parent();
+  while (parentObject != NULL) {
+    parentObject = parentObject->parent();
+    mainwin = dynamic_cast<QMainWindow*>(parentObject);
+    if (mainwin != NULL) {
+      break;
+    }
+    parentObject = parentObject->parent();
+  }
+
+  return mainwin;
+}
+
 
 /*
 void ZStackMvc::emitMessage(const QString &msg, bool appending)

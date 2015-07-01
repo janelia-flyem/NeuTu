@@ -45,7 +45,8 @@
 ZFlyEmBodySplitProject::ZFlyEmBodySplitProject(QObject *parent) :
   QObject(parent), m_bodyId(0), m_dataFrame(NULL),
   m_resultWindow(NULL), m_quickResultWindow(NULL),
-  m_quickViewWindow(NULL), m_isBookmarkVisible(true), m_showingBodyMask(false)
+  m_quickViewWindow(NULL), m_bookmarkArray(NULL),
+  m_isBookmarkVisible(true), m_showingBodyMask(false)
 {
   m_progressSignal = new ZProgressSignal(this);
 
@@ -710,24 +711,37 @@ void ZFlyEmBodySplitProject::setDataFrame(ZStackFrame *frame)
   m_dataFrame = frame;
   connect(m_dataFrame, SIGNAL(splitStarted()), this, SLOT(backupSeed()));
 
-  updateBookDecoration();
+//  updateBookDecoration();
 }
 
 void ZFlyEmBodySplitProject::removeAllBookmark()
 {
-  m_bookmarkArray.clear();
+  if (m_bookmarkArray != NULL) {
+    m_bookmarkArray->clear();
+  }
   clearBookmarkDecoration();
 }
 
 void ZFlyEmBodySplitProject::loadBookmark(const QString &filePath)
 {
-  ZDvidReader reader;
-  ZFlyEmCoordinateConverter converter;
-  if (reader.open(m_dvidTarget)) {
-//    ZDvidInfo info = reader.readGrayScaleInfo();
-    converter.configure(m_dvidInfo);
-    m_bookmarkArray.importJsonFile(filePath.toStdString(), NULL/*&converter*/);
+  if (m_bookmarkArray != NULL) {
+    ZDvidReader reader;
+    ZFlyEmCoordinateConverter converter;
+    if (reader.open(m_dvidTarget)) {
+      //    ZDvidInfo info = reader.readGrayScaleInfo();
+      converter.configure(m_dvidInfo);
+      m_bookmarkArray->importJsonFile(filePath.toStdString(), NULL/*&converter*/);
+    }
   }
+}
+
+bool ZFlyEmBodySplitProject::hasBookmark() const
+{
+  if (m_bookmarkArray != NULL) {
+    return !m_bookmarkArray->isEmpty();
+  }
+
+  return false;
 }
 
 void ZFlyEmBodySplitProject::locateBookmark(const ZFlyEmBookmark &bookmark)
@@ -782,15 +796,41 @@ void ZFlyEmBodySplitProject::addBookmarkDecoration(
   }
 }
 
-void ZFlyEmBodySplitProject::updateBookDecoration()
+/*
+void ZFlyEmBodySplitProject::updateBookmarkDecoration(
+    const ZFlyEmBookmarkArray &bookmarkArray)
+{
+  clearBookmarkDecoration();
+
+  if (getDocument() != NULL) {
+    ZFlyEmBookmarkArray filteredBookmarkArray;
+    foreach (ZFlyEmBookmark bookmark, bookmarkArray) {
+      if (bookmark.getBodyId() == getBodyId() &&
+          bookmark.getType() == ZFlyEmBookmark::TYPE_FALSE_MERGE) {
+        filteredBookmarkArray.append(bookmark);
+      }
+    }
+    addBookmarkDecoration(filteredBookmarkArray);
+  }
+}
+*/
+
+
+void ZFlyEmBodySplitProject::updateBookmarkDecoration()
 {
   clearBookmarkDecoration();
 
   if (getDocument() != NULL) {
     ZFlyEmBookmarkArray bookmarkArray;
-    foreach (ZFlyEmBookmark bookmark, m_bookmarkArray) {
-      if (bookmark.getBodyId() == getBodyId()) {
-        bookmarkArray.append(bookmark);
+
+    //    foreach (ZFlyEmBookmark bookmark, m_bookmarkArray) {
+    if (m_bookmarkArray != NULL) {
+      for (ZFlyEmBookmarkArray::const_iterator iter = m_bookmarkArray->begin();
+           iter != m_bookmarkArray->end(); ++iter) {
+        const ZFlyEmBookmark &bookmark = *iter;
+        if (bookmark.getBodyId() == getBodyId()) {
+          bookmarkArray.append(bookmark);
+        }
       }
     }
     addBookmarkDecoration(bookmarkArray);
@@ -813,8 +853,12 @@ void ZFlyEmBodySplitProject::showBookmark(bool visible)
 std::set<int> ZFlyEmBodySplitProject::getBookmarkBodySet() const
 {
   std::set<int> bodySet;
-  foreach (ZFlyEmBookmark bookmark, m_bookmarkArray) {
-    bodySet.insert(bookmark.getBodyId());
+  if (m_bookmarkArray != NULL) {
+    for (ZFlyEmBookmarkArray::const_iterator iter = m_bookmarkArray->begin();
+         iter != m_bookmarkArray->end(); ++iter) {
+      const ZFlyEmBookmark &bookmark = *iter;
+      bodySet.insert(bookmark.getBodyId());
+    }
   }
 
   return bodySet;
@@ -1699,4 +1743,9 @@ void ZFlyEmBodySplitProject::update3DViewPlane()
     }
 
   }
+}
+
+void ZFlyEmBodySplitProject::attachBookmarkArray(ZFlyEmBookmarkArray *bookmarkArray)
+{
+  m_bookmarkArray = bookmarkArray;
 }

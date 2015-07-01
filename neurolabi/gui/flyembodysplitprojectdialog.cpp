@@ -447,9 +447,9 @@ void FlyEmBodySplitProjectDialog::updateWidget()
 {
   updateButton();
   QString text;
-  if (!m_project.getBookmarkArray().isEmpty()) {
+  if (m_project.hasBookmark()) {
     text += QString("<p>%1 bookmarks</p>").
-        arg(m_project.getBookmarkArray().size());
+        arg(m_project.getBookmarkArray()->size());
   }
 
   if (m_project.getDvidTarget().isValid()) {
@@ -508,18 +508,23 @@ void FlyEmBodySplitProjectDialog::loadBookmark()
 
 void FlyEmBodySplitProjectDialog::updateBookmarkTable()
 {
-  const ZFlyEmBookmarkArray &bookmarkArray = m_project.getBookmarkArray();
-  m_bookmarkList.clear();
-  if (isBodyLoaded()) {
-    m_project.clearBookmarkDecoration();
+  const ZFlyEmBookmarkArray *bookmarkArray = m_project.getBookmarkArray();
+  if (bookmarkArray != NULL) {
+    m_bookmarkList.clear();
+    if (isBodyLoaded()) {
+      m_project.clearBookmarkDecoration();
 
-    foreach (ZFlyEmBookmark bookmark, bookmarkArray) {
-      if (bookmark.getBodyId() == m_project.getBodyId()) {
-        m_bookmarkList.append(bookmark);
+//      foreach (ZFlyEmBookmark bookmark, bookmarkArray) {
+      for (ZFlyEmBookmarkArray::const_iterator iter = bookmarkArray->begin();
+           iter != bookmarkArray->end(); ++iter) {
+        const ZFlyEmBookmark &bookmark = *iter;
+        if (bookmark.getBodyId() == m_project.getBodyId()) {
+          m_bookmarkList.append(bookmark);
+        }
       }
-    }
 
-    m_project.addBookmarkDecoration(m_bookmarkList.getBookmarkArray());
+      m_project.addBookmarkDecoration(m_bookmarkList.getBookmarkArray());
+    }
   }
 }
 

@@ -10,6 +10,7 @@
 #include "zstackviewparam.h"
 #include "neutube.h"
 #include "dvid/zdvidinfo.h"
+#include "zflyembookmarkarray.h"
 
 class ZStackFrame;
 class ZFlyEmBodyMergeFrame;
@@ -98,6 +99,13 @@ public:
 
   void notifySelected() const;
 
+  void updateBookmarkDecoration(const ZFlyEmBookmarkArray &bookmarkArray);
+  void clearBookmarkDecoration();
+  void addBookmarkDecoration(const ZFlyEmBookmarkArray &bookmarkArray);
+
+  void attachBookmarkArray(ZFlyEmBookmarkArray *bookmarkArray);
+  ZFlyEmBookmarkArray* getBookmarkArray() const { return m_bookmarkArray; }
+
 signals:
   void progressAdvanced(double dp);
   void progressStarted();
@@ -155,6 +163,12 @@ private:
   Z3DWindow *m_bodyWindow;
   ZDvidTarget m_dvidTarget;
   ZDvidInfo m_dvidInfo;
+
+  std::vector<ZStackObject*> m_bookmarkDecoration;
+  bool m_isBookmarkVisible;
+
+  ZFlyEmBookmarkArray *m_bookmarkArray; //aggregation
+
 //  Z3DWindow *m_resultWindow;
 //  Z3DWindow *m_quickViewWindow;
 //  ZFlyEmBookmarkArray m_bookmarkArray;

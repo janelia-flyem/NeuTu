@@ -118,7 +118,7 @@ void ZProofreadWindow::init()
   m_progressSignal->connectSlot(this);
 
   createMenu();
-//  createToolbar();
+  createToolbar();
 }
 
 ZProofreadWindow* ZProofreadWindow::Make(QWidget *parent)
@@ -128,6 +128,15 @@ ZProofreadWindow* ZProofreadWindow::Make(QWidget *parent)
 
 void ZProofreadWindow::createMenu()
 {
+  QMenu *fileMenu = new QMenu("File", this);
+
+  menuBar()->addMenu(fileMenu);
+
+  m_importBookmarkAction = new QAction("Import Bookmarks", fileMenu);
+  fileMenu->addAction(m_importBookmarkAction);
+  connect(m_importBookmarkAction, SIGNAL(triggered()),
+          m_mainMvc, SLOT(loadBookmark()));
+
   QMenu *viewMenu = new QMenu("View", this);
 
   m_viewSynapseAction = new QAction("Synapses", viewMenu);
