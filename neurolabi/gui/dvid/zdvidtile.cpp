@@ -51,6 +51,7 @@ void ZDvidTile::loadDvidSlice(const QByteArray &buffer, int z)
 
 
     m_image.loadFromData(buffer);
+//    m_image.enhanceContrast();
 
 //    m_image.setOffset();
     m_z = z;

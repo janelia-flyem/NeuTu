@@ -40,6 +40,7 @@
 
 ZFlyEmBodyMergeProject::ZFlyEmBodyMergeProject(QObject *parent) :
   QObject(parent), m_dataFrame(NULL), m_bodyWindow(NULL),
+  m_isBookmarkVisible(true),
   m_bookmarkArray(NULL),
   m_showingBodyMask(true)
 {
@@ -1268,3 +1269,21 @@ void ZFlyEmBodyMergeProject::attachBookmarkArray(ZFlyEmBookmarkArray *bookmarkAr
   m_bookmarkArray = bookmarkArray;
 }
 
+void ZFlyEmBodyMergeProject::updateBookmarkDecoration()
+{
+  clearBookmarkDecoration();
+
+  if (getDocument() != NULL) {
+    ZFlyEmBookmarkArray bookmarkArray;
+
+    for (ZFlyEmBookmarkArray::const_iterator iter = m_bookmarkArray->begin();
+         iter != m_bookmarkArray->end(); ++iter) {
+      const ZFlyEmBookmark &bookmark = *iter;
+      if (bookmark.getType() == ZFlyEmBookmark::TYPE_FALSE_SPLIT) {
+        bookmarkArray.append(bookmark);
+      }
+    }
+
+    addBookmarkDecoration(bookmarkArray);
+  }
+}

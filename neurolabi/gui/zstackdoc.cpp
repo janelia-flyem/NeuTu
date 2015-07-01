@@ -8401,9 +8401,9 @@ void ZStackDoc::endObjectModifiedMode()
 
 void ZStackDoc::setVisible(ZStackObject::EType type, bool visible)
 {
-  TStackObjectList &punctaList = getObjectList(type);
-  for (TStackObjectList::iterator iter = punctaList.begin();
-       iter != punctaList.end(); ++iter) {
+  TStackObjectList &objList = getObjectList(type);
+  for (TStackObjectList::iterator iter = objList.begin();
+       iter != objList.end(); ++iter) {
     ZStackObject *obj = *iter;
     obj->setVisible(visible);
     bufferObjectModified(obj->getTarget());
@@ -8411,3 +8411,20 @@ void ZStackDoc::setVisible(ZStackObject::EType type, bool visible)
 
   notifyObjectModified();
 }
+
+void ZStackDoc::setVisible(ZStackObjectRole::TRole role, bool visible)
+{
+  QList<ZDocPlayer*> playerList = getPlayerList(role);
+//  TStackObjectList &objList = getObjectList(role);
+  for (QList<ZDocPlayer*>::iterator iter = playerList.begin();
+       iter != playerList.end(); ++iter) {
+    ZStackObject *obj = (*iter)->getData();
+    obj->setVisible(visible);
+    bufferObjectModified(obj->getTarget());
+  }
+
+  notifyObjectModified();
+}
+
+
+

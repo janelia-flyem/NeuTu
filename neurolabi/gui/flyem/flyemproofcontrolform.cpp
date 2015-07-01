@@ -43,6 +43,9 @@ FlyEmProofControlForm::FlyEmProofControlForm(QWidget *parent) :
 
   connect(ui->coarseBodyPushButton, SIGNAL(clicked()),
           this, SIGNAL(coarseBodyViewTriggered()));
+
+  connect(ui->bookmarkView, SIGNAL(doubleClicked(QModelIndex)),
+          this, SLOT(locateBookmark(QModelIndex)));
 /*
   ui->helpWidget->setOpenExternalLinks(true);
   ui->helpWidget->setSource(
@@ -156,4 +159,13 @@ void FlyEmProofControlForm::updateBookmarkTable(ZFlyEmBodyMergeProject *project)
 
     project->addBookmarkDecoration(m_bookmarkList.getBookmarkArray());
   }
+}
+
+void FlyEmProofControlForm::locateBookmark(const QModelIndex &index)
+{
+  const ZFlyEmBookmark &bookmark = m_bookmarkList.getBookmark(index.row());
+
+  emit zoomingTo(bookmark.getLocation().getX(),
+                 bookmark.getLocation().getY(),
+                 bookmark.getLocation().getZ());
 }

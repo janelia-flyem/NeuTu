@@ -106,6 +106,8 @@ public:
   void attachBookmarkArray(ZFlyEmBookmarkArray *bookmarkArray);
   ZFlyEmBookmarkArray* getBookmarkArray() const { return m_bookmarkArray; }
 
+  void updateBookmarkDecoration();
+
 signals:
   void progressAdvanced(double dp);
   void progressStarted();

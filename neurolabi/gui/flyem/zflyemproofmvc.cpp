@@ -816,10 +816,11 @@ void ZFlyEmProofMvc::zoomTo(int x, int y, int z)
 
 void ZFlyEmProofMvc::notifyBookmarkUpdated()
 {
+  m_splitProject.updateBookmarkDecoration();
+  m_mergeProject.updateBookmarkDecoration();
+
   emit bookmarkUpdated(&m_mergeProject);
   emit bookmarkUpdated(&m_splitProject);
-//  m_splitProject.updateBookmarkDecoration(m_bookmarkArray);
-//  m_mergeProject.updateBookmarkDecoration(m_bookmarkArray);
 }
 
 void ZFlyEmProofMvc::loadBookmark(const QString &filePath)

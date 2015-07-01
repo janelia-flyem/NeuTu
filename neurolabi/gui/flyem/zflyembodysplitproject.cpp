@@ -828,7 +828,8 @@ void ZFlyEmBodySplitProject::updateBookmarkDecoration()
       for (ZFlyEmBookmarkArray::const_iterator iter = m_bookmarkArray->begin();
            iter != m_bookmarkArray->end(); ++iter) {
         const ZFlyEmBookmark &bookmark = *iter;
-        if (bookmark.getBodyId() == getBodyId()) {
+        if (bookmark.getBodyId() == getBodyId() &&
+            bookmark.getType() == ZFlyEmBookmark::TYPE_FALSE_MERGE) {
           bookmarkArray.append(bookmark);
         }
       }

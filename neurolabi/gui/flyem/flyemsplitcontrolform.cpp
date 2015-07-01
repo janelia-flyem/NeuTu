@@ -51,6 +51,8 @@ void FlyEmSplitControlForm::setupWidgetBehavior()
           this, SIGNAL(loadingSynapse()));
 
   ui->viewSplitPushButton->setEnabled(false);
+  ui->loadBookmarkButton->hide();
+  ui->synapsePushButton->hide();
 
 //  ui->commitPushButton->setEnabled(false);
   createMenu();

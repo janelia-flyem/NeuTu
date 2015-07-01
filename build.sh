@@ -103,20 +103,26 @@ echo $qmake_args > source.qmake
 $QMAKE $qmake_args 
 make -j3
 
+bin_dir=.
+if [ -d $bin_dir/neuTube.app ]
+then
+  bin_dir=$bin_dir/neuTube.app/Contents/MacOS
+fi
+
 if [ $edition = "flyem" ]
 then
-  cp ../gui/config_flyem.xml config.xml
-  cp -r ../json .
+  cp ../gui/config_flyem.xml $bin_dir/config.xml
+  cp -r ../json $bin_dir
 fi
 
 if [ $edition = "biocytin" ]
 then
-  cp ../gui/biocytin_config.xml config.xml
+  cp ../gui/biocytin_config.xml $bin_dir/config.xml
 fi
 
 if [ $edition = "general" ]
 then
-  cp ../gui/config.xml config.xml
+  cp ../gui/config.xml $bin_dir/config.xml
 fi
 #echo "Deploying ..."
 

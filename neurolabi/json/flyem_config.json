@@ -182,6 +182,15 @@
     {
       "address": "emdata1.int.janelia.org",
       "port": 8500,
+      "uuid": "b6bc",
+      "name": "MB_Test",
+      "comment": "MB seg (branched from febc)",
+      "body_label": "bodies",
+      "label_block": "labels"
+    },
+    {
+      "address": "emdata1.int.janelia.org",
+      "port": 8500,
       "uuid": "0f33",
       "name": "MB_for_Satoko",
       "comment": "MB seg (branched from c348)",

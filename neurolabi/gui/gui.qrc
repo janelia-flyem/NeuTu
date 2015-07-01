@@ -104,5 +104,6 @@
         <file>images/stretch.png</file>
         <file>images/bodymerge.png</file>
         <file>images/synapse.png</file>
+        <file>images/import_bookmark.png</file>
     </qresource>
 </RCC>
