@@ -118,7 +118,7 @@ void ZProofreadWindow::init()
   m_progressSignal->connectSlot(this);
 
   createMenu();
-//  createToolbar();
+  createToolbar();
 }
 
 ZProofreadWindow* ZProofreadWindow::Make(QWidget *parent)
@@ -128,6 +128,16 @@ ZProofreadWindow* ZProofreadWindow::Make(QWidget *parent)
 
 void ZProofreadWindow::createMenu()
 {
+  QMenu *fileMenu = new QMenu("File", this);
+
+  menuBar()->addMenu(fileMenu);
+
+  m_importBookmarkAction = new QAction("Import Bookmarks", fileMenu);
+  m_importBookmarkAction->setIcon(QIcon(":/images/import_bookmark.png"));
+  fileMenu->addAction(m_importBookmarkAction);
+  connect(m_importBookmarkAction, SIGNAL(triggered()),
+          m_mainMvc, SLOT(loadBookmark()));
+
   QMenu *viewMenu = new QMenu("View", this);
 
   m_viewSynapseAction = new QAction("Synapses", viewMenu);
@@ -143,6 +153,9 @@ void ZProofreadWindow::createMenu()
 //  menu->addAction(new QAction("test", menu));
 
   menuBar()->addMenu(viewMenu);
+
+  m_viewSynapseAction->setEnabled(false);
+  m_importBookmarkAction->setEnabled(false);
 }
 
 void ZProofreadWindow::createToolbar()
@@ -152,6 +165,9 @@ void ZProofreadWindow::createToolbar()
   m_toolBar->setIconSize(QSize(24, 24));
   addToolBar(Qt::TopToolBarArea, m_toolBar);
 
+  m_toolBar->addAction(m_importBookmarkAction);
+
+  m_toolBar->addSeparator();
   m_toolBar->addAction(m_viewSynapseAction);
 }
 
@@ -267,4 +283,6 @@ void ZProofreadWindow::initProgress(int nticks)
 void ZProofreadWindow::updateDvidTargetWidget(const ZDvidTarget &target)
 {
   setWindowTitle(target.getSourceString(false).c_str());
+  m_importBookmarkAction->setEnabled(target.isValid());
+  m_viewSynapseAction->setEnabled(target.isValid());
 }

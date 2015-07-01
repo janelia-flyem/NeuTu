@@ -2625,11 +2625,9 @@ void ZStackPresenter::process(const ZStackOperator &op)
   }
     break;
   case ZStackOperator::OP_ZOOM_IN:
-
     increaseZoomRatio();
     break;
   case ZStackOperator::OP_ZOOM_OUT:
-
     decreaseZoomRatio();
     break;
   case ZStackOperator::OP_ZOOM_IN_GRAB_POS:
@@ -2638,7 +2636,10 @@ void ZStackPresenter::process(const ZStackOperator &op)
     ZPoint grabPosition = op.getMouseEventRecorder()->getPosition(
           Qt::RightButton, ZMouseEvent::ACTION_PRESS,
           NeuTube::COORD_WIDGET);
+    m_interactiveContext.setExploreMode(ZInteractiveContext::EXPLORE_ZOOM_IN_IMAGE);
+    buddyView()->blockViewChangeEvent(true);
     increaseZoomRatio(grabPosition.x(), grabPosition.y());
+    buddyView()->blockViewChangeEvent(false);
   }
     break;
   case ZStackOperator::OP_ZOOM_OUT_GRAB_POS:
@@ -2647,8 +2648,15 @@ void ZStackPresenter::process(const ZStackOperator &op)
     ZPoint grabPosition = op.getMouseEventRecorder()->getPosition(
           Qt::RightButton, ZMouseEvent::ACTION_PRESS,
           NeuTube::COORD_WIDGET);
+    m_interactiveContext.setExploreMode(ZInteractiveContext::EXPLORE_ZOOM_OUT_IMAGE);
+    buddyView()->blockViewChangeEvent(true);
     decreaseZoomRatio(grabPosition.x(), grabPosition.y());
+    buddyView()->blockViewChangeEvent(false);
   }
+    break;
+  case ZStackOperator::OP_EXIT_ZOOM_MODE:
+    m_interactiveContext.setExploreMode(ZInteractiveContext::EXPLORE_OFF);
+    buddyView()->notifyViewChanged();
     break;
   case ZStackOperator::OP_PAINT_STROKE:
   {

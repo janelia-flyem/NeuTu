@@ -15,6 +15,7 @@ class ZStackPresenter;
 class ZStackViewParam;
 class ZProgressSignal;
 class ZWidgetMessage;
+class QMainWindow;
 
 /*!
  * \brief The MVC class for stack operation
@@ -57,6 +58,8 @@ public:
   ZProgressSignal* getProgressSignal() const {
     return m_progressSignal;
   }
+
+  QMainWindow* getMainWindow() const;
 
   //void emitMessage(const QString &msg, bool appending = true);
   //void emitError(const QString &msg, bool appending = true);

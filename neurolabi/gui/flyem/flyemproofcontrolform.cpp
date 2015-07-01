@@ -7,6 +7,7 @@
 #include "zdviddialog.h"
 #include "zstring.h"
 #include "neutubeconfig.h"
+#include "flyem/zflyembodymergeproject.h"
 
 FlyEmProofControlForm::FlyEmProofControlForm(QWidget *parent) :
   QWidget(parent),
@@ -43,10 +44,15 @@ FlyEmProofControlForm::FlyEmProofControlForm(QWidget *parent) :
   connect(ui->coarseBodyPushButton, SIGNAL(clicked()),
           this, SIGNAL(coarseBodyViewTriggered()));
 
+  connect(ui->bookmarkView, SIGNAL(doubleClicked(QModelIndex)),
+          this, SLOT(locateBookmark(QModelIndex)));
+/*
   ui->helpWidget->setOpenExternalLinks(true);
   ui->helpWidget->setSource(
         QUrl((GET_DOC_DIR + "/flyem_proofread_help.html").c_str()));
+*/
 
+  ui->bookmarkView->setModel(&m_bookmarkList);
 
   createMenu();
 }
@@ -130,4 +136,36 @@ void FlyEmProofControlForm::setInfo(const QString &info)
 void FlyEmProofControlForm::setDvidInfo(const ZDvidTarget &target)
 {
   setInfo(target.toJsonObject().dumpString(2).c_str());
+}
+
+void FlyEmProofControlForm::updateBookmarkTable(ZFlyEmBodyMergeProject *project)
+{
+  if (project != NULL) {
+//    const ZFlyEmBookmarkArray &bookmarkArray = project->getBookmarkArray();
+    m_bookmarkList.clear();
+    project->clearBookmarkDecoration();
+
+    const ZFlyEmBookmarkArray *bookmarkArray = project->getBookmarkArray();
+    if (bookmarkArray != NULL) {
+      //        foreach (ZFlyEmBookmark bookmark, *bookmarkArray) {
+      for (ZFlyEmBookmarkArray::const_iterator iter = bookmarkArray->begin();
+           iter != bookmarkArray->end(); ++iter) {
+        const ZFlyEmBookmark &bookmark = *iter;
+        if (bookmark.getType() == ZFlyEmBookmark::TYPE_FALSE_SPLIT) {
+          m_bookmarkList.append(bookmark);
+        }
+      }
+    }
+
+    project->addBookmarkDecoration(m_bookmarkList.getBookmarkArray());
+  }
+}
+
+void FlyEmProofControlForm::locateBookmark(const QModelIndex &index)
+{
+  const ZFlyEmBookmark &bookmark = m_bookmarkList.getBookmark(index.row());
+
+  emit zoomingTo(bookmark.getLocation().getX(),
+                 bookmark.getLocation().getY(),
+                 bookmark.getLocation().getZ());
 }

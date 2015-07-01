@@ -6,6 +6,7 @@
 #include "ui_flyemsplitcontrolform.h"
 #include "zdialogfactory.h"
 #include "zstring.h"
+#include "zflyembodysplitproject.h"
 
 FlyEmSplitControlForm::FlyEmSplitControlForm(QWidget *parent) :
   QWidget(parent),
@@ -50,6 +51,8 @@ void FlyEmSplitControlForm::setupWidgetBehavior()
           this, SIGNAL(loadingSynapse()));
 
   ui->viewSplitPushButton->setEnabled(false);
+  ui->loadBookmarkButton->hide();
+  ui->synapsePushButton->hide();
 
 //  ui->commitPushButton->setEnabled(false);
   createMenu();
@@ -195,14 +198,21 @@ void FlyEmSplitControlForm::commitResult()
 void FlyEmSplitControlForm::updateBookmarkTable(ZFlyEmBodySplitProject *project)
 {
   if (project != NULL) {
-    const ZFlyEmBookmarkArray &bookmarkArray = project->getBookmarkArray();
+//    const ZFlyEmBookmarkArray &bookmarkArray = project->getBookmarkArray();
     m_bookmarkList.clear();
     if (project->getBodyId() > 0) {
       project->clearBookmarkDecoration();
 
-      foreach (ZFlyEmBookmark bookmark, bookmarkArray) {
-        if (bookmark.getBodyId() == project->getBodyId()) {
-          m_bookmarkList.append(bookmark);
+      const ZFlyEmBookmarkArray *bookmarkArray = project->getBookmarkArray();
+      if (bookmarkArray != NULL) {
+//        foreach (ZFlyEmBookmark bookmark, *bookmarkArray) {
+        for (ZFlyEmBookmarkArray::const_iterator iter = bookmarkArray->begin();
+             iter != bookmarkArray->end(); ++iter) {
+          const ZFlyEmBookmark &bookmark = *iter;
+          if (bookmark.getBodyId() == project->getBodyId() &&
+              bookmark.getType() == ZFlyEmBookmark::TYPE_FALSE_MERGE) {
+            m_bookmarkList.append(bookmark);
+          }
         }
       }
 

@@ -84,6 +84,13 @@ void ZDvidTileEnsemble::display(
   std::vector<ZDvidTileInfo::TIndex> tileIndices =
       m_tilingInfo.getCoverIndex(resLevel, fov);
 
+  if (tileIndices.size() > 8) {
+    if (resLevel < m_tilingInfo.getMaxLevel()) {
+      ++resLevel;
+      tileIndices = m_tilingInfo.getCoverIndex(resLevel, fov);
+    }
+  }
+
 //  tic();
   ZMultiTaskManager taskManager;
   for (std::vector<ZDvidTileInfo::TIndex>::const_iterator iter = tileIndices.begin();

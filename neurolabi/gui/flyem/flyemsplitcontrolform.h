@@ -2,9 +2,12 @@
 #define FLYEMSPLITCONTROLFORM_H
 
 #include <QWidget>
-#include "zflyembodysplitproject.h"
+//#include "zflyembodysplitproject.h"
+
+#include "flyem/zflyembookmarklistmodel.h"
 
 class QMenu;
+class ZFlyEmBodySplitProject;
 
 namespace Ui {
 class FlyEmSplitControlForm;

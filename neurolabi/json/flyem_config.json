@@ -177,7 +177,16 @@
       "comment": "MB seg (branched from febc)",
       "body_label": "bodies",
       "label_block": "labels",
-      "user_name": "zhaot"
+      "user_name": ["zhaot", "takemuras"]
+    },
+    {
+      "address": "emdata1.int.janelia.org",
+      "port": 8500,
+      "uuid": "b6bc",
+      "name": "MB_Test",
+      "comment": "MB seg (branched from febc)",
+      "body_label": "bodies",
+      "label_block": "labels"
     },
     {
       "address": "emdata1.int.janelia.org",
@@ -298,7 +307,7 @@
       "multires_tile": "graytiles",
       "body_label": "segmentation-labelvol",
       "label_block": "segmentation",
-      "user_name": ["shinomiyak", "zhaot"]
+      "user_name": ["shinomiyak", "takemuras", "zhaot"]
     },
     {
       "address": "emdata1.int.janelia.org",

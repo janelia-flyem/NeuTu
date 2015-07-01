@@ -39,6 +39,9 @@ public slots:
   void setNameEdit(const QString &name);
 
 private:
+  void connectSignalSlot();
+
+private:
   Ui::ZFlyEmBodyAnnotationDialog *ui;
   uint64_t m_bodyId;
 };

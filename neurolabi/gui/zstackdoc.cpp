@@ -1238,7 +1238,7 @@ void ZStackDoc::loadStack(Stack *stack, bool isOwner)
   if (mainStack != NULL) {
     mainStack->load(stack, isOwner);
     initNeuronTracer();
-    emit stackModified();
+    notifyStackModified();
   }
 }
 
@@ -1254,7 +1254,7 @@ void ZStackDoc::loadStack(ZStack *zstack)
     deprecate(STACK);
     mainStack = zstack;
     initNeuronTracer();
-    emit stackModified();
+    notifyStackModified();
   }
 }
 
@@ -1325,7 +1325,7 @@ void ZStackDoc::readStack(const char *filePath, bool newThread)
     //mainStack = m_stackSource.readStack();
     loadStack(m_stackSource.readStack());
 
-    emit stackModified();
+    notifyStackModified();
   }
 }
 
@@ -4031,7 +4031,7 @@ bool ZStackDoc::binarize(int threshold)
     }
 
     if (mainStack->binarize(threshold)) {
-      emit stackModified();
+      notifyStackModified();
       return true;
     }
   }
@@ -4044,7 +4044,7 @@ bool ZStackDoc::bwsolid()
   ZStack *mainStack = getStack();
   if (mainStack != NULL) {
     if (mainStack->bwsolid()) {
-      emit stackModified();
+      notifyStackModified();
       return true;
     }
   }
@@ -4057,7 +4057,7 @@ bool ZStackDoc::bwperim()
   ZStack *mainStack = getStack();
   if (mainStack != NULL) {
     if (mainStack->bwperim()) {
-      emit stackModified();
+      notifyStackModified();
       return true;
     }
   }
@@ -4070,7 +4070,7 @@ bool ZStackDoc::invert()
   ZStack *mainStack = getStack();
   if (mainStack != NULL) {
     ZStackProcessor::invert(mainStack);
-    emit stackModified();
+    notifyStackModified();
     return true;
   }
 
@@ -4082,7 +4082,7 @@ bool ZStackDoc::enhanceLine()
   ZStack *mainStack = getStack();
   if (mainStack != NULL) {
     if (mainStack->enhanceLine()) {
-      emit stackModified();
+      notifyStackModified();
       return true;
     }
   }
@@ -4592,10 +4592,10 @@ void ZStackDoc::updateStackFromSource()
   if (mainStack != NULL) {
     if (mainStack->isSwc()) {
       readSwc(mainStack->sourcePath().c_str());
-      emit stackModified();
+      notifyStackModified();
     } else {
       if (mainStack->updateFromSource()) {
-        emit stackModified();
+        notifyStackModified();
       }
     }
   }
@@ -4940,7 +4940,7 @@ bool ZStackDoc::watershed()
   m_progressReporter->advance(0.5);
   if (mainStack != NULL) {
     if (mainStack->watershed()) {
-      emit stackModified();
+      notifyStackModified();
       return true;
     }
   }
@@ -5046,7 +5046,7 @@ void ZStackDoc::bwthin()
       C_Stack::kill(out);
       m_progressReporter->advance(0.3);
       getStack()->deprecateSingleChannelView(0);
-      emit stackModified();
+      notifyStackModified();
     }
 
     m_progressReporter->end();
@@ -8401,9 +8401,9 @@ void ZStackDoc::endObjectModifiedMode()
 
 void ZStackDoc::setVisible(ZStackObject::EType type, bool visible)
 {
-  TStackObjectList &punctaList = getObjectList(type);
-  for (TStackObjectList::iterator iter = punctaList.begin();
-       iter != punctaList.end(); ++iter) {
+  TStackObjectList &objList = getObjectList(type);
+  for (TStackObjectList::iterator iter = objList.begin();
+       iter != objList.end(); ++iter) {
     ZStackObject *obj = *iter;
     obj->setVisible(visible);
     bufferObjectModified(obj->getTarget());
@@ -8411,3 +8411,20 @@ void ZStackDoc::setVisible(ZStackObject::EType type, bool visible)
 
   notifyObjectModified();
 }
+
+void ZStackDoc::setVisible(ZStackObjectRole::TRole role, bool visible)
+{
+  QList<ZDocPlayer*> playerList = getPlayerList(role);
+//  TStackObjectList &objList = getObjectList(role);
+  for (QList<ZDocPlayer*>::iterator iter = playerList.begin();
+       iter != playerList.end(); ++iter) {
+    ZStackObject *obj = (*iter)->getData();
+    obj->setVisible(visible);
+    bufferObjectModified(obj->getTarget());
+  }
+
+  notifyObjectModified();
+}
+
+
+

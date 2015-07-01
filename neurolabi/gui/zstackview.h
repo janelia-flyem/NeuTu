@@ -204,9 +204,11 @@ public:
 public:
   bool isViewPortFronzen() const;
   bool isDepthFronzen() const;
+  bool isViewChangeEventBlocked() const;
 
   void setViewPortFrozen(bool state);
   void setDepthFrozen(bool state);
+  void blockViewChangeEvent(bool state);
 
 public: //Message system implementation
   class MessageProcessor : public ZMessageProcessor {
@@ -308,6 +310,7 @@ public: //Change view parameters
   void decreaseZoomRatio();
   void increaseZoomRatio(int x, int y, bool usingRef = true);
   void decreaseZoomRatio(int x, int y, bool usingRef = true);
+  void notifyViewChanged();
 
 private:
   void clearCanvas();
@@ -335,12 +338,12 @@ private:
   void paintMultipleChannelStackMip(ZStack *stack);
 
   void notifyViewChanged(const ZStackViewParam &param);
-  void notifyViewChanged();
 
   void init();
 
   ZPainter* getPainter(ZStackObject::ETarget target);
   void setCanvasVisible(ZStackObject::ETarget target, bool visible);
+  void resetDepthControl();
 
 private:
   //ZStackFrame *m_parent;
@@ -385,6 +388,7 @@ private:
 
   bool m_depthFrozen;
   bool m_viewPortFrozen;
+  bool m_viewChangeEventBlocked;
 };
 
 #endif
