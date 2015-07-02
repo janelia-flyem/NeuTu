@@ -16,8 +16,10 @@
 #include "flyem/zflyemneuroninfo.h"
 #include "neutubeconfig.h"
 #include "tz_geo3d_utils.h"
+#include "zstackskeletonizer.h"
 
 #if defined(_QT_GUI_USED_)
+#include "dvid/zdvidwriter.h"
 #include "dvid/zdvidreader.h"
 #include "flyem/zskeletonizeservice.h"
 #endif
@@ -211,6 +213,30 @@ ZSwcTree* ZFlyEmNeuron::getModel(const string &bundleSource) const
         ZDvidReader reader;
         if (reader.open(m_modelPath.c_str())) {
           m_model = reader.readSwc(getId());
+          if (m_model != NULL) {
+            if (m_model->isEmpty()) {
+              delete m_model;
+              m_model = NULL;
+            }
+          }
+        }
+
+        if (m_model == NULL) {
+          ZStackSkeletonizer skeletonizer;
+          ZJsonObject config;
+          config.load(NeutubeConfig::getInstance().getApplicatinDir() +
+                      "/json/skeletonize.json");
+          skeletonizer.configure(config);
+          ZObject3dScan obj = reader.readBody(getId());
+          if (!obj.isEmpty()) {
+            m_model = skeletonizer.makeSkeleton(obj);
+            if (m_model != NULL) {
+              ZDvidWriter writer;
+              if (writer.open(m_modelPath.c_str())) {
+                writer.writeSwc(getId(), m_model);
+              }
+            }
+          }
         }
 
 #if 0 //Stop service

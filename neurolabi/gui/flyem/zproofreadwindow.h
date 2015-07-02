@@ -9,6 +9,8 @@ class QStackedWidget;
 class ZFlyEmMessageWidget;
 class QProgressDialog;
 class ZProgressSignal;
+class ZDvidTarget;
+class ZWidgetMessage;
 
 /*!
  * \brief The mainwindow class of proofreading
@@ -27,6 +29,7 @@ public:
 
 signals:
   void splitTriggered(uint64_t bodyId);
+//  void splitTriggered();
   /*
   void progressStarted(const QString &title, int nticks);
   void progressStarted(const QString &title);
@@ -39,9 +42,11 @@ public slots:
   void launchSplit();
   void exitSplit();
   void presentSplitInterface(uint64_t bodyId);
+  void updateDvidTargetWidget(const ZDvidTarget &target);
 
-  void dump(const QString &message, bool appending);
-  void dumpError(const QString &message, bool appending);
+  void dump(const QString &message, bool appending = true);
+  void dumpError(const QString &message, bool appending = true);
+  void dump(const ZWidgetMessage &msg);
 
   void startProgress();
   void startProgress(const QString &title, int nticks);
@@ -54,14 +59,24 @@ private:
   void init();
   void initProgress(int nticks);
 
+  template <typename T>
+  void connectMessagePipe(T *source);
+
+  void createMenu();
+  void createToolbar();
+
 private:
   ZFlyEmProofMvc *m_mainMvc;
   QStackedWidget *m_controlGroup;
   ZFlyEmMessageWidget *m_messageWidget;
 
+  QAction *m_viewSynapseAction;
+  QToolBar *m_toolBar;
+
   QProgressDialog *m_progressDlg;
   ZProgressSignal *m_progressSignal;
-
 };
+
+
 
 #endif // ZPROOFREADWINDOW_H

@@ -13,6 +13,8 @@ class ZFlyEmProofDoc;
 class ZDvidTileEnsemble;
 class ZDvidTarget;
 class ZDvidDialog;
+class ZFlyEmProofPresenter;
+class ZFlyEmSupervisor;
 
 class ZFlyEmProofMvc : public ZStackMvc
 {
@@ -25,6 +27,7 @@ public:
   static ZFlyEmProofMvc* Make(const ZDvidTarget &target);
 
   ZFlyEmProofDoc* getCompleteDocument() const;
+  ZFlyEmProofPresenter* getCompletePresenter() const;
 
   template <typename T>
   void connectControlPanel(T *panel);
@@ -35,18 +38,28 @@ public:
   ZDvidTileEnsemble* getDvidTileEnsemble();
 
   void setDvidTarget(const ZDvidTarget &target);
-
+  void setDvidTargetFromDialog();
 
   void clear();
+
+  void enableSplit();
+  void disableSplit();
+
+  void processViewChangeCustom(const ZStackViewParam &viewParam);
+
+  inline ZFlyEmSupervisor* getSupervisor() const {
+    return m_supervisor;
+  }
 
 signals:
   void launchingSplit(const QString &message);
   void launchingSplit(uint64_t bodyId);
-  void messageGenerated(const QString &message);
-  void errorGenerated(const QString &message);
+  void messageGenerated(const QString &message, bool appending = true);
+  void errorGenerated(const QString &message, bool appending = true);
+  void messageGenerated(const ZWidgetMessage &message);
   void splitBodyLoaded(uint64_t bodyId);
-
-
+  void bookmarkUpdated(ZFlyEmBodySplitProject *m_project);
+  void dvidTargetChanged(ZDvidTarget);
 
 public slots:
   void mergeSelected();
@@ -59,38 +72,68 @@ public slots:
   void launchSplit(uint64_t bodyId);
   void processMessageSlot(const QString &message);
   void notifySplitTriggered();
+  void annotateBody();
+  void checkInBody();
+  void checkOutBody();
   void exitSplit();
   void switchSplitBody(uint64_t bodyId);
   void showBodyQuickView();
   void showSplitQuickView();
   void presentBodySplit(uint64_t bodyId);
-  void updateSelection();
+  void updateBodySelection();
   void saveSeed();
   void saveMergeOperation();
+  void commitMerge();
   void commitCurrentSplit();
+  void locateBody(uint64_t bodyId);
+  void selectBody(uint64_t bodyId);
 
   void showBody3d();
   void showSplit3d();
   void showCoarseBody3d();
 
   void setDvidLabelSliceSize(int width, int height);
+
+  void zoomTo(const ZIntPoint &pt);
+  void zoomTo(int x, int y, int z);
+  void zoomTo(int x, int y, int z, int width);
+  void goToBody();
+  void selectBody();
+
+  void loadBookmark(const QString &filePath);
+  void addSelectionAt(int x, int y, int z);
+  void xorSelectionAt(int x, int y, int z);
+  void deselectAllBody();
+  void selectSeed();
+  void selectAllSeed();
+  void recoverSeed();
+  void exportSeed();
+  void importSeed();
+  void runSplit();
+
+  void loadSynapse();
+  void showSynapseAnnotation(bool visible);
 //  void toggleEdgeMode(bool edgeOn);
 
 protected:
   void customInit();
+  void createPresenter();
 
 private:
   void launchSplitFunc(uint64_t bodyId);
+  uint64_t getMappedBodyId(uint64_t bodyId);
+  std::set<uint64_t> getCurrentSelectedBodyId(NeuTube::EBodyLabelType type) const;
+  void runSplitFunc();
 
 private:
   bool m_showSegmentation;
-  bool m_splitOn;
   ZFlyEmBodySplitProject m_splitProject;
   ZFlyEmBodyMergeProject m_mergeProject;
 
   QThreadFutureMap m_futureMap;
 
   ZDvidDialog *m_dvidDlg;
+  ZFlyEmSupervisor *m_supervisor;
 };
 
 template <typename T>
@@ -102,6 +145,8 @@ void ZFlyEmProofMvc::connectControlPanel(T *panel)
   connect(panel, SIGNAL(edgeModeToggled(bool)),
           this, SLOT(toggleEdgeMode(bool)));
   connect(panel, SIGNAL(dvidSetTriggered()), this, SLOT(setDvidTarget()));
+  connect(this, SIGNAL(dvidTargetChanged(ZDvidTarget)),
+          panel, SLOT(setDvidInfo(ZDvidTarget)));
   connect(this, SIGNAL(launchingSplit(uint64_t)),
           panel, SIGNAL(splitTriggered(uint64_t)));
   connect(panel, SIGNAL(labelSizeChanged(int, int)),
@@ -109,6 +154,13 @@ void ZFlyEmProofMvc::connectControlPanel(T *panel)
   connect(panel, SIGNAL(coarseBodyViewTriggered()),
           this, SLOT(showCoarseBody3d()));
   connect(panel, SIGNAL(savingMerge()), this, SLOT(saveMergeOperation()));
+  connect(panel, SIGNAL(committingMerge()), this, SLOT(commitMerge()));
+  connect(panel, SIGNAL(zoomingTo(int, int, int)),
+          this, SLOT(zoomTo(int, int, int)));
+  connect(panel, SIGNAL(locatingBody(uint64_t)),
+          this, SLOT(locateBody(uint64_t)));
+  connect(panel, SIGNAL(goingToBody()), this, SLOT(goToBody()));
+  connect(panel, SIGNAL(selectingBody()), this, SLOT(selectBody()));
 }
 
 template <typename T>
@@ -125,6 +177,20 @@ void ZFlyEmProofMvc::connectSplitControlPanel(T *panel)
           SLOT(switchSplitBody(uint64_t)));
   connect(panel, SIGNAL(savingSeed()), this, SLOT(saveSeed()));
   connect(panel, SIGNAL(committingResult()), this, SLOT(commitCurrentSplit()));
+  connect(panel, SIGNAL(loadingBookmark(QString)),
+          this, SLOT(loadBookmark(QString)));
+  connect(this, SIGNAL(bookmarkUpdated(ZFlyEmBodySplitProject*)),
+          panel, SLOT(updateBookmarkTable(ZFlyEmBodySplitProject*)));
+  connect(panel, SIGNAL(zoomingTo(int, int, int)),
+          this, SLOT(zoomTo(int, int, int)));
+  connect(panel, SIGNAL(selectingSeed()), this, SLOT(selectSeed()));
+  connect(panel, SIGNAL(selectingAllSeed()), this, SLOT(selectAllSeed()));
+  connect(panel, SIGNAL(recoveringSeed()), this, SLOT(recoverSeed()));
+  connect(panel, SIGNAL(exportingSeed()), this, SLOT(exportSeed()));
+  connect(panel, SIGNAL(importingSeed()), this, SLOT(importSeed()));
+  connect(this, SIGNAL(splitBodyLoaded(uint64_t)),
+          panel, SLOT(updateBodyWidget(uint64_t)));
+  connect(panel, SIGNAL(loadingSynapse()), this, SLOT(loadSynapse()));
 }
 
 

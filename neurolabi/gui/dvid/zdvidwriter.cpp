@@ -77,7 +77,7 @@ void ZDvidWriter::writeSwc(int bodyId, ZSwcTree *tree)
     tree->save(tmpPath.toStdString());
 
     ZDvidUrl dvidUrl(m_dvidTarget);
-    QString command = QString("curl -X POST %1 --data-binary @%2").
+    QString command = QString("curl -i -X POST %1 --data-binary @%2").
         arg(dvidUrl.getSkeletonUrl(
               bodyId, m_dvidTarget.getBodyLabelName()).c_str()).arg(tmpPath);
     /*
@@ -88,9 +88,11 @@ void ZDvidWriter::writeSwc(int bodyId, ZSwcTree *tree)
         arg(bodyId).arg(tmpPath);
         */
 
-    qDebug() << command;
 
-    QProcess::execute(command);
+
+    runCommand(command);
+
+//    QProcess::execute(command);
   }
 }
 
@@ -103,14 +105,18 @@ void ZDvidWriter::writeThumbnail(int bodyId, ZStack *stack)
     stack->save(tmpPath.toStdString());
     ZDvidUrl dvidUrl(m_dvidTarget);
 
-    QString command = QString("curl -X POST %1 --data-binary @%2").
+    QString command = QString("curl -i -X POST %1 --data-binary @%2").
         arg(dvidUrl.getThumbnailUrl(
               bodyId, m_dvidTarget.getBodyLabelName()).c_str()).
         arg(tmpPath);
 
+    runCommand(command);
+
+    /*
     qDebug() << command;
 
     QProcess::execute(command);
+    */
   }
 }
 
@@ -125,7 +131,7 @@ void ZDvidWriter::writeThumbnail(int bodyId, Stack *stack)
   }
 }
 
-void ZDvidWriter::writeAnnotation(int bodyId, const ZJsonObject &obj)
+void ZDvidWriter::writeAnnotation(uint64_t bodyId, const ZJsonObject &obj)
 {
   if (bodyId > 0 && !obj.isEmpty()) {
     //ZString annotationString = obj.dumpString(0);
@@ -141,20 +147,29 @@ void ZDvidWriter::writeAnnotation(int bodyId, const ZJsonObject &obj)
         */
 
     QString command = QString(
-          "curl -g -X POST -H \"Content-Type: application/json\" "
+          "curl -i -X POST -H \"Content-Type: application/json\" "
           "-d \"%1\" %2").arg(getJsonStringForCurl(obj).c_str()).
-        arg(ZDvidUrl(m_dvidTarget).getAnnotationUrl(
+        arg(ZDvidUrl(m_dvidTarget).getBodyAnnotationUrl(
               bodyId, m_dvidTarget.getBodyLabelName()).c_str());
 
+    runCommand(command);
+
+    /*
     qDebug() << command;
 
     QProcess::execute(command);
+    */
   }
 }
 
 void ZDvidWriter::writeAnnotation(const ZFlyEmNeuron &neuron)
 {
   writeAnnotation(neuron.getId(), neuron.getAnnotationJson());
+}
+
+void ZDvidWriter::writeBodyAnntation(const ZFlyEmBodyAnnotation &annotation)
+{
+  writeAnnotation(annotation.getBodyId(), annotation.toJsonObject());
 }
 
 void ZDvidWriter::writeBodyInfo(int bodyId, const ZJsonObject &obj)
@@ -221,8 +236,16 @@ void ZDvidWriter::writeJson(
   writeJsonString(dataName, key, obj.dumpString(0));
 }
 
+void ZDvidWriter::writeUrl(const std::string &url, const std::string &method)
+{
+  QString command = QString("curl -i -X %1 %2").arg(method.c_str()).
+      arg(url.c_str());
+
+  runCommand(command);
+}
+
 void ZDvidWriter::writeJsonString(
-    const std::string url, const std::string jsonString)
+    const std::string url, const std::string &jsonString)
 {
   QString annotationString = jsonString.c_str();
 
@@ -232,12 +255,13 @@ void ZDvidWriter::writeJsonString(
     annotationString.replace("\"", "\"\"\"");
 
     command = QString(
-          "curl -g -X POST -H \"Content-Type: application/json\" "
+          "curl -i -X POST -H \"Content-Type: application/json\" "
           "-d \"%1\" %2").arg(annotationString).
         arg(url.c_str());
   } else {
     QString urlStr(url.c_str());
     urlStr.replace("/", "_");
+    urlStr.replace(":", "_");
     QString tmpPath = QString("%1/%2.json").
         arg(NeutubeConfig::getInstance().getPath(NeutubeConfig::TMP_DATA).c_str()).
         arg(urlStr);
@@ -247,13 +271,16 @@ void ZDvidWriter::writeJsonString(
     out << annotationString;
     file.close();
 
-    command = QString("curl -g -X POST -H \"Content-Type: application/json\" "
+    command = QString("curl -i -X POST -H \"Content-Type: application/json\" "
                       "-d \"@%1\" %2").arg(tmpPath).arg(url.c_str());
   }
 
-  qDebug() << command;
+//  qDebug() << command;
 
-  QProcess::execute(command);
+//  QProcess::execute(command);
+  runCommand(command);
+
+//  qDebug() << getStandardOutput();
 }
 
 
@@ -295,13 +322,17 @@ void ZDvidWriter::writeBoundBox(const ZIntCuboid &cuboid, int z)
   //annotationString.replace("\"", "\"\"\"");
 
   QString command = QString(
-        "curl -g -X POST -H \"Content-Type: application/json\" "
+        "curl -i -X POST -H \"Content-Type: application/json\" "
         "-d \"%1\" %2").arg(getJsonStringForCurl(obj).c_str()).
       arg(ZDvidUrl(m_dvidTarget).getBoundBoxUrl(z).c_str());
 
+  runCommand(command);
+
+  /*
   qDebug() << command;
 
   QProcess::execute(command);
+  */
 }
 /*
 void ZDvidWriter::writeSplitLabel(const ZObject3dScan &obj, int label)
@@ -331,23 +362,32 @@ void ZDvidWriter::createData(const std::string &type, const std::string &name)
   obj.setEntry("dataname", name);
 
   QString command = QString(
-        "curl -X POST -H \"Content-Type: application/json\" -d \"%1\" %2").
+        "curl -i -X POST -H \"Content-Type: application/json\" -d \"%1\" %2").
       arg(getJsonStringForCurl(obj).c_str()).
       arg(dvidUrl.getInstanceUrl().c_str());
 
+  /*
   qDebug() << command;
 
   QProcess::execute(command);
+  */
+
+  runCommand(command);
 }
 
 void ZDvidWriter::deleteKey(const std::string &dataName, const std::string &key)
 {
   ZDvidUrl dvidUrl(m_dvidTarget);
   std::string url = dvidUrl.getKeyUrl(dataName, key);
-  QString command = QString("curl -X DELETE %1").arg(url.c_str());
+  QString command = QString("curl -i -X DELETE %1").arg(url.c_str());
+
+  /*
   qDebug() << command;
 
   QProcess::execute(command);
+  */
+
+  runCommand(command);
 }
 
 void ZDvidWriter::deleteKey(const QString &dataName, const QString &key)
@@ -409,15 +449,19 @@ bool ZDvidWriter::lockNode(const std::string &message)
   messageJson.setEntry("log", messageArrayJson);
 
   QString command = QString(
-        "curl -g -X POST -H \"Content-Type: application/json\" "
+        "curl -i -X POST -H \"Content-Type: application/json\" "
         "-d \"%1\" %2").arg(getJsonStringForCurl(messageJson).c_str()).
       arg(ZDvidUrl(m_dvidTarget).getLockUrl().c_str());
 
+  /*
   qDebug() << command;
 
   QProcess::execute(command);
+  */
 
-  return true;
+  return runCommand(command);
+
+//  return true;
 }
 
 std::string ZDvidWriter::createBranch()
@@ -426,7 +470,7 @@ std::string ZDvidWriter::createBranch()
 
   QProcess process;
 
-  QString command = QString("curl -X POST %21").
+  QString command = QString("curl -i -X POST %21").
       arg(ZDvidUrl(m_dvidTarget).getBranchUrl().c_str());
   process.start(command);
   if (!process.waitForFinished(-1)) {
@@ -449,7 +493,44 @@ std::string ZDvidWriter::createBranch()
   return uuid;
 }
 
-void ZDvidWriter::writeSplit(
+bool ZDvidWriter::runCommand(const QString &command, const QStringList &argList)
+{
+  QProcess process;
+  process.start(command, argList);
+
+  return runCommand(process);
+}
+
+bool ZDvidWriter::runCommand(const QString &command)
+{
+  qDebug() << command;
+
+  QProcess process;
+  process.start(command);
+
+  return runCommand(process);
+}
+
+bool ZDvidWriter::runCommand(QProcess &process)
+{
+  bool succ = process.waitForFinished(-1);
+
+  m_errorOutput = process.readAllStandardError();
+  m_standardOutout = process.readAllStandardOutput();
+
+  parseStandardOutput();
+
+  return succ;
+}
+
+uint64_t ZDvidWriter::writeSplit(
+    const ZObject3dScan &obj, uint64_t oldLabel, uint64_t label)
+{
+  return writeSplit(
+        m_dvidTarget.getBodyLabelName(), obj, oldLabel, label);
+}
+
+uint64_t ZDvidWriter::writeSplit(
     const std::string &dataName, const ZObject3dScan &obj,
     uint64_t oldLabel, uint64_t label)
 {
@@ -466,21 +547,63 @@ void ZDvidWriter::writeSplit(
 #endif
 
   QString command = QString(
-        "curl -X POST %1 --data-binary \"@%2\"").
+        "curl -i -X POST %1 --data-binary \"@%2\"").
       arg(ZDvidUrl(m_dvidTarget).getSplitUrl(dataName, oldLabel).c_str()).
       arg(tmpPath);
 
-  qDebug() << command;
+//  qDebug() << command;
 
-  QProcess::execute(command);
+  uint64_t newBodyId = 0;
+  if (runCommand(command)) {
+//    ZJsonObject obj;
+//    obj.decodeString(getStandardOutput().toStdString().c_str());
+    if (m_jsonOutput.hasKey("label")) {
+      newBodyId = ZJsonParser::integerValue(m_jsonOutput["label"]);
+    }
+  }
 
+  //QProcess::execute(command);
+#if 0
+  QString url = ZDvidUrl(m_dvidTarget).getSplitUrl(dataName, oldLabel).c_str();
+
+  QProcess process;
+//  process.setWorkingDirectory("/Users/zhaot/anaconda/bin");
+  process.start("curl", QStringList() << "-X" << "POST" << url << "--data-binary"
+                << "@" + tmpPath);
+
+  if (process.waitForStarted(-1)) {
+    qDebug() << "Process started.";
+  }
+
+  uint64_t newBodyId = 0;
+
+  QString output;
+  if (process.waitForFinished(-1)) {
+    output = process.readAllStandardOutput();
+//    qDebug() << process.readAllStandardOutput();
+    qDebug() << "Split output: " << output;
+
+    ZJsonObject obj;
+    obj.decodeString(output.toStdString().c_str());
+    if (obj.hasKey("label")) {
+      newBodyId = ZJsonParser::integerValue(obj["label"]);
+    }
+  }
+#endif
+
+  return newBodyId;
 }
 
 void ZDvidWriter::writeMergeOperation(const QMap<uint64_t, uint64_t> &bodyMap)
 {
   std::string url = ZDvidUrl(m_dvidTarget).getMergeOperationUrl();
-  ZJsonArray array = ZJsonFactory::MakeJsonArray(bodyMap);
-  writeJsonString(url, array.dumpString());
+
+  if (!bodyMap.isEmpty()) {
+    ZJsonArray array = ZJsonFactory::MakeJsonArray(bodyMap);
+    writeJsonString(url, array.dumpString());
+  } else {
+    writeJsonString(url, "[]");
+  }
 }
 
 /*
@@ -495,3 +618,31 @@ void ZDvidWriter::writeMergeOperation(
   }
 }
 */
+
+void ZDvidWriter::parseStandardOutput()
+{
+  m_statusCode = 0;
+  m_jsonOutput.clear();
+
+  if (!m_standardOutout.isEmpty()) {
+    QStringList output =
+        m_standardOutout.split(QRegExp("[\n\r]"), QString::SkipEmptyParts);
+    qDebug() << output.back();
+
+    foreach (QString str, output) {
+      if (str.startsWith("HTTP/1.1 ")) {
+        str.remove("HTTP/1.1 ");
+        m_statusCode = ZString::firstInteger(str.toStdString());
+      }
+    }
+
+    if (output.back().startsWith("{")) {
+      m_jsonOutput.decodeString(output.back().toStdString().c_str());
+    }
+
+#ifdef _DEBUG_
+    qDebug() << "Status code: " << m_statusCode;
+    qDebug() << "Json output: " << m_jsonOutput.dumpString(2);
+#endif
+  }
+}

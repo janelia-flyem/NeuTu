@@ -65,6 +65,13 @@
      <item>
       <layout class="QVBoxLayout" name="verticalLayout_2">
        <item>
+        <widget class="QPushButton" name="menuPushButton">
+         <property name="text">
+          <string>Menu</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <layout class="QHBoxLayout" name="horizontalLayout_5">
          <item>
           <widget class="QLabel" name="label_4">
@@ -74,12 +81,12 @@
           </widget>
          </item>
          <item>
-          <widget class="QSpinBox" name="bodyIdSpinBox">
+          <widget class="ZSpinBox" name="bodyIdSpinBox">
            <property name="minimum">
             <number>1</number>
            </property>
            <property name="maximum">
-            <number>999999999</number>
+            <number>2147483647</number>
            </property>
           </widget>
          </item>
@@ -103,6 +110,13 @@
         <widget class="QPushButton" name="loadBookmarkButton">
          <property name="text">
           <string>Load Bookmarks</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="synapsePushButton">
+         <property name="text">
+          <string>Load Synapses</string>
          </property>
         </widget>
        </item>
@@ -140,8 +154,11 @@
        </item>
        <item>
         <widget class="QPushButton" name="commitPushButton">
+         <property name="toolTip">
+          <string>Save splitting results into DVID</string>
+         </property>
          <property name="text">
-          <string>Commit</string>
+          <string>Save Splits</string>
          </property>
         </widget>
        </item>
@@ -315,6 +332,11 @@
    <class>ZFlyEmBookmarkView</class>
    <extends>QTableView</extends>
    <header>flyem/zflyembookmarkview.h</header>
+  </customwidget>
+  <customwidget>
+   <class>ZSpinBox</class>
+   <extends>QSpinBox</extends>
+   <header>zspinbox.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

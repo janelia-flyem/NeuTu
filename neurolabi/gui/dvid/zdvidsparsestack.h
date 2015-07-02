@@ -12,6 +12,7 @@ class ZDvidSparseStack : public ZStackObject
 {
 public:
   ZDvidSparseStack();
+  ~ZDvidSparseStack();
 
   void display(ZPainter &painter, int slice, EDisplayStyle option) const;
 
@@ -33,6 +34,7 @@ public:
   void setDvidTarget(const ZDvidTarget &target);
 
   ZIntCuboid getBoundBox() const;
+  using ZStackObject::getBoundBox; // fix warning -Woverloaded-virtual
 
   void loadBody(int bodyId);
   void setMaskColor(const QColor &color);
@@ -40,14 +42,23 @@ public:
   uint64_t getLabel() const;
 
   const ZObject3dScan *getObjectMask() const;
+  ZObject3dScan *getObjectMask();
 
   const ZSparseStack* getSparseStack() const;
   ZSparseStack *getSparseStack();
 
+  void downloadBodyMask();
+
+  bool hit(double x, double y, double z);
+  bool hit(double x, double y);
+
+  bool isEmpty() const;
+
+
 private:
   void initBlockGrid();
-  void fillValue();
-  void fillValue(const ZIntCuboid &box);
+  bool fillValue();
+  bool fillValue(const ZIntCuboid &box);
   /*
   void assignStackValue(ZStack *stack, const ZObject3dScan &obj,
                                const ZStackBlockGrid &stackGrid);
@@ -56,6 +67,7 @@ private:
 private:
   ZSparseStack m_sparseStack;
   ZDvidTarget m_dvidTarget;
+  bool m_isValueFilled;
   mutable ZDvidReader m_dvidReader;
 };
 

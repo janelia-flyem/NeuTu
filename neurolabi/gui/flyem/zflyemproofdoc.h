@@ -8,6 +8,7 @@
 //#include "zflyembodysplitproject.h"
 
 class ZDvidSparseStack;
+class ZFlyEmSupervisor;
 
 class ZFlyEmProofDoc : public ZStackDoc
 {
@@ -17,7 +18,7 @@ public:
 
   static ZFlyEmProofDoc* Make();
 
-  void mergeSelected();
+  void mergeSelected(ZFlyEmSupervisor *supervisor);
 
   void setDvidTarget(const ZDvidTarget &target) {
     m_dvidTarget = target;
@@ -51,10 +52,24 @@ public:
   bool isSplittable(uint64_t bodyId) const;
 
   void saveMergeOperation();
+  void downloadBodyMask();
+  void clearBodyMerger();
+
+  QList<uint64_t> getMergedSource(uint64_t bodyId) const;
+  QSet<uint64_t> getMergedSource(const QSet<uint64_t> &bodySet) const;
+
+public:
+  void notifyBodyMerged();
+  void notifyBodyUnmerged();
 
 signals:
+  void bodyMerged();
+  void bodyUnmerged();
 
 public slots:
+  void updateDvidLabelObject();
+  void loadSynapse(const std::string &filePath);
+  void downloadSynapse();
 
 private:
   ZFlyEmBodyMerger m_bodyMerger;

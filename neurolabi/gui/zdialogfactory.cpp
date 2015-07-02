@@ -25,6 +25,12 @@
 #include "flyem/flyemproofcontrolform.h"
 #include "flyem/zflyemproofmvc.h"
 #include "flyem/zflyemproofdoc.h"
+#include "z3dapplication.h"
+
+
+QString ZDialogFactory::m_currentDirectory = "";
+QString ZDialogFactory::m_currentOpenFileName = "";
+QString ZDialogFactory::m_currentSaveFileName = "";
 
 ZDialogFactory::ZDialogFactory(QWidget *parentWidget)
 {
@@ -207,18 +213,55 @@ QString ZDialogFactory::GetDirectory(
     const QString &caption, const QString &filePath, QWidget *parent)
 {
   QString fileName;
+
+  QString currentDirectory = filePath;
+  if (currentDirectory.isEmpty()) {
+    currentDirectory = m_currentDirectory;
+  }
+
   fileName = QFileDialog::getExistingDirectory(
-        parent, caption, filePath,
+        parent, caption, currentDirectory,
         QFileDialog::ShowDirsOnly);
+  m_currentDirectory = fileName;
 
   return fileName;
 }
 
-QString ZDialogFactory::GetFileName(
+QString ZDialogFactory::GetOpenFileName(
     const QString &caption, const QString &filePath, QWidget *parent)
 {
   QString fileName;
-  fileName = QFileDialog::getOpenFileName(parent, caption, filePath);
+
+  QString currentPath = filePath;
+  if (currentPath.isEmpty()) {
+    currentPath = m_currentOpenFileName;
+  }
+  fileName = QFileDialog::getOpenFileName(parent, caption, currentPath);
+  m_currentOpenFileName = fileName;
 
   return fileName;
+}
+
+QString ZDialogFactory::GetSaveFileName(
+    const QString &caption, const QString &filePath, QWidget *parent)
+{
+  QString fileName;
+
+  QString currentPath = filePath;
+  if (currentPath.isEmpty()) {
+    currentPath = m_currentSaveFileName;
+  }
+  fileName = QFileDialog::getSaveFileName(parent, caption, currentPath);
+  m_currentSaveFileName = fileName;
+
+  return fileName;
+}
+
+void ZDialogFactory::Notify3DDisabled(QWidget *parent)
+{
+  QMessageBox::information(
+        parent, "3D Unavailable", "The 3D visualization is unavailable in this"
+        "plug-in because of some technical problems. To obtain a "
+        "fully-functioing version of neuTube, because visit "
+        "<a href=www.neutracing.com>www.neutracing.com</a>");
 }

@@ -258,7 +258,7 @@ void ZDvidVersionDag::load(const ZJsonObject &obj, const std::string &uuid)
     }
   }
 
-  ZJsonObject dagJson = ZJsonObject(ZJsonObject(obj.at(fullUuid.c_str())).at("DAG"));
+  ZJsonObject dagJson = ZJsonObject(ZJsonObject(obj.value(fullUuid.c_str())).value("DAG"));
   if (!dagJson.isEmpty()) {
     std::queue<std::string> uuidQueue;
 
@@ -269,7 +269,7 @@ void ZDvidVersionDag::load(const ZJsonObject &obj, const std::string &uuid)
     uuidQueue.push(rootUuid);
     setRoot(rootUuid.substr(0, 4));
 
-    ZJsonObject allNodeJson(dagJson.at("Nodes"));
+    ZJsonObject allNodeJson(dagJson.value("Nodes"));
 
     std::vector<ZDvidVersionNode> nodeList; //sorted uuid list
 
@@ -293,7 +293,7 @@ void ZDvidVersionDag::load(const ZJsonObject &obj, const std::string &uuid)
       std::string nextUuid = uuidQueue.front();
       uuidQueue.pop();
 
-      ZJsonObject uuidJson(allNodeJson.at(nextUuid.c_str()));
+      ZJsonObject uuidJson(allNodeJson.value(nextUuid.c_str()));
       std::vector<int> versionIdArray =
           ZJsonParser::integerArray(uuidJson["Children"]);
       for (size_t i = 0; i < versionIdArray.size(); ++i) {

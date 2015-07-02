@@ -245,7 +245,7 @@ void Z3DVolumeSource::readSparseStack()
     return;
   }
 
-  const ZSparseStack *spStack = m_doc->getSparseStack();
+  ZSparseStack *spStack = m_doc->getSparseStack();
   if (spStack->getBoundBox().isEmpty()) {
     return;
   }
@@ -365,7 +365,7 @@ void Z3DVolumeSource::readSparseStack()
     offset[1] = -stackData->getOffset().getY() * (dsIntv.getY() + 1);
     offset[2] = -stackData->getOffset().getZ() * (dsIntv.getZ() + 1);
 
-    QList<const ZDocPlayer*> playerList =
+    QList<ZDocPlayer*> playerList =
         m_doc->getPlayerList(ZStackObjectRole::ROLE_3DPAINT);
     foreach (const ZDocPlayer *player, playerList) {
       //player->paintStack(colorStack);
@@ -462,7 +462,7 @@ void Z3DVolumeSource::readVolumesWithObject()
   //C_Stack::copyValue(m_doc->getStack()->c_stack(0),
   //                   colorStack->c_stack(2));
 
-  QList<const ZDocPlayer*> playerList =
+  QList<ZDocPlayer*> playerList =
       m_doc->getPlayerList(ZStackObjectRole::ROLE_3DPAINT);
   foreach (const ZDocPlayer *player, playerList) {
     //player->paintStack(colorStack);

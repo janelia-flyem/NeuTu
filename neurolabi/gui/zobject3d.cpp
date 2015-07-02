@@ -29,7 +29,7 @@ ZObject3d::ZObject3d(Object_3d *obj) : m_conn(0), m_label(-1),
     }
   }
 
-  setTarget(OBJECT_CANVAS);
+  setTarget(TARGET_OBJECT_CANVAS);
   m_type = ZStackObject::TYPE_OBJ3D;
 }
 
@@ -45,7 +45,7 @@ ZObject3d::ZObject3d(const vector<size_t> &indexArray, int width, int height,
     set(i, *iter, width, height, dx, dy, dz);
   }
 
-  setTarget(OBJECT_CANVAS);
+  setTarget(TARGET_OBJECT_CANVAS);
   m_type = ZStackObject::TYPE_OBJ3D;
 }
 
@@ -175,9 +175,16 @@ void ZObject3d::display(ZPainter &painter, int slice, EDisplayStyle option) cons
   painter.setPen(pen);
   Object_3d *obj= c_obj();
   std::vector<QPoint> pointArray;
-  for (size_t i = 0; i < obj->size; i++) {
-    if ((obj->voxels[i][2] == z) || (slice < 0)) {
+
+  if (slice < 0) {
+    for (size_t i = 0; i < obj->size; i++) {
       pointArray.push_back(QPoint(obj->voxels[i][0], obj->voxels[i][1]));
+    }
+  } else {
+    for (size_t i = 0; i < obj->size; i++) {
+      if (obj->voxels[i][2] == z) {
+        pointArray.push_back(QPoint(obj->voxels[i][0], obj->voxels[i][1]));
+      }
     }
   }
   painter.drawPoints(&(pointArray[0]), pointArray.size());
@@ -932,6 +939,14 @@ void ZObject3d::getBoundBox(ZIntCuboid *box) const
       box->joinZ(getZ(i));
     }
   }
+}
+
+ZIntPoint ZObject3d::getCentralVoxel() const
+{
+  Voxel_t center;
+  Object_3d_Central_Voxel(c_obj(), center);
+
+  return ZIntPoint(center[0], center[1], center[2]);
 }
 
 ZSTACKOBJECT_DEFINE_CLASS_NAME(ZObject3d)

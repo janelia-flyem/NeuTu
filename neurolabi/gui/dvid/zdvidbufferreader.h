@@ -25,7 +25,7 @@ public:
     READ_BAD_RESPONSE
   };
 
-  void read(const QString &url);
+  void read(const QString &url, bool outputUrl = true);
   void readHead(const QString &url);
   bool isReadable(const QString &url);
   bool hasHead(const QString &url);
@@ -35,6 +35,8 @@ public:
   inline const QByteArray& getBuffer() const {
     return m_buffer;
   }
+
+  void readQt(const QString &url, bool outputUrl = true);
 
 signals:
   void readingDone();

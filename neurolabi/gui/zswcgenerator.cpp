@@ -17,6 +17,7 @@
 #include "neutubeconfig.h"
 #include "tz_math.h"
 #include "zclosedcurve.h"
+#include "tz_stack_neighborhood.h"
 
 ZSwcGenerator::ZSwcGenerator()
 {
@@ -492,6 +493,7 @@ ZSwcTree* ZSwcGenerator::createSurfaceSwc(
   }
 
   ZStack *stack = NULL;
+  std::cout << "Creating object mask ..." << "ds: " << intv <<  std::endl;
   if (intv > 0) {
     ZObject3dScan obj2 = obj;
     obj2.downsampleMax(intv, intv, intv);
@@ -505,6 +507,7 @@ ZSwcTree* ZSwcGenerator::createSurfaceSwc(
     tree = createSurfaceSwc(*stack, sparseLevel);
     tree->setColor(obj.getColor());
     tree->rescale(intv + 1, intv + 1, intv + 1);
+    delete stack;
   }
 
   return tree;
@@ -516,13 +519,74 @@ ZSwcTree* ZSwcGenerator::createSurfaceSwc(const ZStack &stack, int sparseLevel)
     return NULL;
   }
 
+  ZSwcTree *tree = NULL;
+
+  if (stack.hasData()) {
+    int width = stack.width();
+    int height = stack.height();
+    int depth = stack.depth();
+
+    int cwidth = width - 1;
+    int cheight = height - 1;
+    int cdepth = depth - 1;
+
+    const uint8_t* in_array = stack.array8();
+
+    int conn = 6;
+    size_t offset = 0;
+    int neighbor[26];
+    int is_in_bound[26];
+    int n_in_bound;
+    int count = 0;
+
+    tree = new ZSwcTree();
+    tree->forceVirtualRoot();
+    Swc_Tree_Node *root = tree->root();
+    Stack_Neighbor_Offset(conn, width, height, neighbor);
+
+    for (int k = 0; k <= cdepth; k++) {
+      for (int j = 0; j <= cheight; j++) {
+        for (int i = 0; i <= cwidth; i++) {
+//          out_array[offset] = 0;
+          if (in_array[offset] > 0) {
+            n_in_bound = Stack_Neighbor_Bound_Test_S(
+                  conn, cwidth, cheight, cdepth, i, j, k, is_in_bound);
+            bool isSurface = false;
+            if (n_in_bound == conn) {
+              for (int n = 0; n < n_in_bound; n++) {
+                if (in_array[offset + neighbor[n]] != in_array[offset]) {
+                  isSurface = true;
+                  break;
+                }
+              }
+            } else {
+              isSurface = true;
+            }
+
+            if (isSurface) {
+              if (count++ % sparseLevel == 0) {
+                SwcTreeNode::makePointer(i + stack.getOffset().getX(),
+                                         j + stack.getOffset().getY(),
+                                         k + stack.getOffset().getZ(),
+                                         sparseLevel * 0.7, root);
+              }
+            }
+          }
+          offset++;
+        }
+      }
+    }
+
+  }
+
+#if 0
   Stack *surface = Stack_Perimeter(stack.c_stack(), NULL, 6);
 
 #ifdef _DEBUG_2
   C_Stack::write(GET_DATA_DIR + "/test.tif", surface);
 #endif
 
-  ZSwcTree *tree = NULL;
+
   if (surface != NULL) {
     tree = new ZSwcTree();
     tree->forceVirtualRoot();
@@ -551,6 +615,7 @@ ZSwcTree* ZSwcGenerator::createSurfaceSwc(const ZStack &stack, int sparseLevel)
 
     C_Stack::kill(surface);
   }
+#endif
 
   return tree;
 }

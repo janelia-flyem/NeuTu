@@ -3,10 +3,11 @@
 #include "zstackview.h"
 #include "dvid/zdvidreader.h"
 #include "zimagewidget.h"
+#include "flyem/zdvidtileupdatetaskmanager.h"
 
 ZDvidTileEnsemble::ZDvidTileEnsemble()
 {
-  setTarget(ZStackObject::TILE_CANVAS);
+  setTarget(ZStackObject::TARGET_TILE_CANVAS);
   m_type = ZStackObject::TYPE_DVID_TILE_ENSEMBLE;
 }
 
@@ -54,8 +55,16 @@ void ZDvidTileEnsemble::display(
     return;
   }
 
+  if (m_view->imageWidget() == NULL) {
+    return;
+  }
+
   QRect fov = m_view->imageWidget()->viewPort();
   QSize screenSize = m_view->imageWidget()->size();
+
+  if (screenSize.width() == 0 || screenSize.height() == 0) {
+    return;;
+  }
 
 
   int zoomRatio = std::min(fov.width() / screenSize.width(),
@@ -75,7 +84,23 @@ void ZDvidTileEnsemble::display(
   std::vector<ZDvidTileInfo::TIndex> tileIndices =
       m_tilingInfo.getCoverIndex(resLevel, fov);
 
-  //tic();
+//  tic();
+  ZMultiTaskManager taskManager;
+  for (std::vector<ZDvidTileInfo::TIndex>::const_iterator iter = tileIndices.begin();
+       iter != tileIndices.end(); ++iter) {
+    const ZDvidTileInfo::TIndex &index = *iter;
+    ZDvidTile *tile = const_cast<ZDvidTileEnsemble*>(this)->getTile(resLevel, index);
+    if (tile != NULL) {
+      ZDvidTileUpdateTask *task = new ZDvidTileUpdateTask(NULL, tile);
+      task->setZ(painter.getZ(slice));
+      taskManager.addTask(task);
+//      tile->display(painter, slice, option);
+    }
+  }
+  taskManager.start();
+  taskManager.waitForDone();
+  taskManager.clear();
+
   for (std::vector<ZDvidTileInfo::TIndex>::const_iterator iter = tileIndices.begin();
        iter != tileIndices.end(); ++iter) {
     const ZDvidTileInfo::TIndex &index = *iter;
@@ -84,7 +109,7 @@ void ZDvidTileEnsemble::display(
       tile->display(painter, slice, option);
     }
   }
- // std::cout << "Draw image time: " << toc() << std::endl;
+//  std::cout << "Draw image time: " << toc() << std::endl;
 }
 
 void ZDvidTileEnsemble::setDvidTarget(const ZDvidTarget &dvidTarget)
@@ -99,6 +124,21 @@ void ZDvidTileEnsemble::setDvidTarget(const ZDvidTarget &dvidTarget)
 void ZDvidTileEnsemble::attachView(ZStackView *view)
 {
   m_view = view;
+}
+
+int ZDvidTileEnsemble::getCurrentZ() const
+{
+  int z = 0;
+  if (m_view != NULL) {
+    return m_view->getCurrentZ();
+  }
+
+  return z;
+}
+
+ZStackView* ZDvidTileEnsemble::getView() const
+{
+  return m_view;
 }
 
 ZSTACKOBJECT_DEFINE_CLASS_NAME(ZDvidTileEnsemble)

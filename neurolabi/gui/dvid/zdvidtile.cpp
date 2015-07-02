@@ -20,7 +20,7 @@
 
 ZDvidTile::ZDvidTile() : m_ix(0), m_iy(0), m_z(0), m_view(NULL)
 {
-  setTarget(ZStackObject::OBJECT_CANVAS);
+  setTarget(ZStackObject::TARGET_OBJECT_CANVAS);
   m_type = ZStackObject::TYPE_DVID_TILE;
 }
 
@@ -74,9 +74,9 @@ void ZDvidTile::display(
 //  int z = painter.getZOffset() + slice;
   m_latestZ = z;
 
-  //tic();
+//  tic();
   const_cast<ZDvidTile&>(*this).update(z);
-  //std::cout << "tile update time: " << toc() << std::endl;
+//  std::cout << "tile update time: " << toc() << std::endl;
 
   if ((z == m_z)  && !m_image.isNull()) {
 #ifdef _DEBUG_2
@@ -163,10 +163,12 @@ void ZDvidTile::update(int z)
     result.waitForFinished();
     */
 
+    tic();
     bufferReader.read(
           dvidUrl.getTileUrl(getDvidTarget().getMultiscale2dName(),
                              m_res.getLevel(), m_ix, m_iy, z).c_str());
     QByteArray buffer = bufferReader.getBuffer();
+    std::cout << "Tile reading time: " << toc() << std::endl;
 
 //    ZDvidTileInfo tileInfo = readTileInfo("graytiles");
 

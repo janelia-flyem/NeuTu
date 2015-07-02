@@ -27,11 +27,14 @@ class ZPainter
 {
 public:
   ZPainter();
+#ifdef _QT_GUI_USED_
   explicit ZPainter(QPaintDevice * device);
   explicit ZPainter(ZImage *image);
   explicit ZPainter(ZPixmap *pixmap);
+#endif
   ~ZPainter();
 
+#ifdef _QT_GUI_USED_
   bool begin(ZImage *image);
   bool begin(ZPixmap *pixmap);
   bool begin(QPaintDevice *device);
@@ -40,6 +43,8 @@ public:
   void save();
   void restore();
 
+  bool isActive() const;
+
 
   void setStackOffset(int x, int y, int z);
   void setStackOffset(const ZIntPoint &offset);
@@ -47,6 +52,10 @@ public:
   void setZOffset(int z);
 
   inline int getZOffset() { return m_z; }
+
+  inline int getZ(int slice) {
+    return getZOffset() + slice;
+  }
 
   void setPainted(bool painted) {
     m_isPainted = painted;
@@ -135,6 +144,7 @@ public:
 
   void fillRect(const QRect &r, Qt::GlobalColor color);
   void setOpacity(double alpha);
+#endif
 
   /*
   const QRect& getFieldOfView() const {
@@ -143,7 +153,9 @@ public:
   */
 
 private:
+#ifdef _QT_GUI_USED_
   QPainter m_painter;
+#endif
   int m_z;
   bool m_isPainted;
 

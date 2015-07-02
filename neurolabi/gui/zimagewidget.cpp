@@ -326,13 +326,15 @@ void ZImageWidget::increaseZoomRatio(int x, int y, bool usingRef)
 
 void ZImageWidget::decreaseZoomRatio(int x, int y, bool usingRef)
 {
-  int oldWidth = m_viewPort.width();
-  int oldHeight = m_viewPort.height();
+//  int oldWidth = m_viewPort.width();
+//  int oldHeight = m_viewPort.height();
 
   int zoomRatio = imax2(
         iround(static_cast<double>(canvasSize().width()) /m_viewPort.width()),
         iround(static_cast<double>(canvasSize().height()) / m_viewPort.height())
         );
+
+  int oldZoomRatio = zoomRatio;
 
   if (zoomRatio > 1) {
     if (usingRef) {
@@ -340,12 +342,22 @@ void ZImageWidget::decreaseZoomRatio(int x, int y, bool usingRef)
     } else {
       zoom(--zoomRatio);
     }
-    while (m_viewPort.width() == oldWidth && m_viewPort.height() == oldHeight) {
+//    m_viewPort.width() == oldWidth && m_viewPort.height() == oldHeight;
+    int currentZoomRatio = imax2(
+            iround(static_cast<double>(canvasSize().width()) /m_viewPort.width()),
+            iround(static_cast<double>(canvasSize().height()) / m_viewPort.height())
+            );
+
+    while (oldZoomRatio == currentZoomRatio) {
       if (usingRef) {
         zoom(--zoomRatio, QPoint(x, y));
       } else {
         zoom(--zoomRatio);
       }
+      currentZoomRatio = imax2(
+              iround(static_cast<double>(canvasSize().width()) /m_viewPort.width()),
+              iround(static_cast<double>(canvasSize().height()) / m_viewPort.height())
+              );
     }
 
     update();
@@ -491,9 +503,9 @@ void ZImageWidget::paintObject()
 
     for (;iter != m_paintBundle->end(); ++iter) {
       const ZStackObject *obj = *iter;
-      if (obj->getTarget() == ZStackObject::WIDGET &&
+      if (obj->getTarget() == ZStackObject::TARGET_WIDGET &&
           obj->isSliceVisible(m_paintBundle->getZ())) {
-        if (obj->getSource() != ZStackObject::getNodeAdapterId()) {
+        if (obj->getSource() != ZStackObjectSourceFactory::MakeNodeAdaptorSource()) {
           visibleObject.push_back(obj);
         }
       }
@@ -504,7 +516,7 @@ void ZImageWidget::paintObject()
     std::cout << m_paintBundle->sliceIndex() << std::endl;
 #endif
     std::sort(visibleObject.begin(), visibleObject.end(),
-              ZStackObject::ZOrderCompare());
+              ZStackObject::ZOrderLessThan());
     for (std::vector<const ZStackObject*>::const_iterator
          iter = visibleObject.begin(); iter != visibleObject.end(); ++iter) {
       const ZStackObject *obj = *iter;
@@ -517,9 +529,9 @@ void ZImageWidget::paintObject()
 
     for (iter = m_paintBundle->begin();iter != m_paintBundle->end(); ++iter) {
       const ZStackObject *obj = *iter;
-      if (obj->getTarget() == ZStackObject::WIDGET &&
+      if (obj->getTarget() == ZStackObject::TARGET_WIDGET &&
           obj->isSliceVisible(m_paintBundle->getZ())) {
-        if (obj->getSource() == ZStackObject::getNodeAdapterId()) {
+        if (obj->getSource() == ZStackObjectSourceFactory::MakeNodeAdaptorSource()) {
           obj->display(painter, m_paintBundle->sliceIndex(),
                        m_paintBundle->displayStyle());
         }
@@ -560,8 +572,8 @@ void ZImageWidget::paintZoomHint()
 void ZImageWidget::paintEvent(QPaintEvent * /*event*/)
 {
   if (!canvasSize().isEmpty() && !isPaintBlocked()) {
-//    QElapsedTimer timer;
-//    timer.start();
+    //QElapsedTimer timer;
+    //timer.start();
 
     ZPainter painter;
 
@@ -572,12 +584,12 @@ void ZImageWidget::paintEvent(QPaintEvent * /*event*/)
     painter.setRenderHint(QPainter::Antialiasing, true);
 
     //Compute real viewport and projregion
-#ifdef _DEBUG_
+//#ifdef _DEBUG_
     //setView(m_zoomRatio, m_viewPort.topLeft());
     if (m_projRegion.isEmpty() || m_viewPort.isEmpty()) {
       setView(1, QPoint(0, 0));
     }
-#endif
+//#endif
 
     /* draw gray regions */
     painter.fillRect(QRect(0, 0, screenSize().width(), screenSize().height()),
@@ -629,7 +641,7 @@ void ZImageWidget::paintEvent(QPaintEvent * /*event*/)
     paintObject();
     paintZoomHint();
 
-//    std::cout << "Screen update time per frame: " << timer.elapsed() << std::endl;
+    //std::cout << "Screen update time per frame: " << timer.elapsed() << std::endl;
   }
 }
 

@@ -184,13 +184,13 @@ TEST(ZDvidTest, ZDvidUrl)
             dvidUrl.getKeyRangeUrl("test", "1", "3"));
 
   ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/annotations",
-            dvidUrl.getAnnotationUrl("bodies"));
+            dvidUrl.getBodyAnnotationUrl("bodies"));
   ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/bodies2_annotations",
-            dvidUrl.getAnnotationUrl("bodies2"));
+            dvidUrl.getBodyAnnotationUrl("bodies2"));
   ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/annotations/key/1",
-            dvidUrl.getAnnotationUrl(1));
+            dvidUrl.getBodyAnnotationUrl(1));
   ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/bodies2_annotations/key/1",
-            dvidUrl2.getAnnotationUrl(1));
+            dvidUrl2.getBodyAnnotationUrl(1));
 
   ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/bodyinfo",
             dvidUrl.getBodyInfoUrl("bodies"));
@@ -225,7 +225,7 @@ TEST(ZDvidTest, ZDvidUrl)
 
   ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/test/merge",
             dvidUrl.getMergeUrl("test"));
-  ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/test/1",
+  ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/test/split/1",
             dvidUrl.getSplitUrl("test", 1));
 
   /*

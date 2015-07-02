@@ -143,8 +143,12 @@ TStackObjectList ZStackObjectGroup::take(
 TStackObjectList ZStackObjectGroup::takeSameSource(
     ZStackObject::EType type, const std::string &source)
 {
-  TStackObjectList objList = findSameSource(type, source);
-  removeObject(objList.begin(), objList.end(), false);
+  TStackObjectList objList;
+
+  if (!source.empty()) {
+    objList = findSameSource(type, source);
+    removeObject(objList.begin(), objList.end(), false);
+  }
 
   return objList;
 }

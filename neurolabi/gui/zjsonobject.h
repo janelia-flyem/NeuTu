@@ -25,7 +25,7 @@ public:
   json_t* operator[] (const char *key);
   const json_t* operator[] (const char *key) const;
 
-  ZJsonValue at(const char *key) const;
+  ZJsonValue value(const char *key) const;
 
   /*!
    * \brief Test if an object is empty
@@ -136,6 +136,8 @@ public:
   void setValue(const ZJsonValue &value);
 
   std::vector<std::string> getAllKey() const;
+
+  void removeKey(const char *key);
 
 private:
   void setEntryWithoutKeyCheck(const char *key, json_t *obj, bool asNew = false);

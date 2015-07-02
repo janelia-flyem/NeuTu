@@ -23,6 +23,7 @@ public:
 protected:
   void buildRandomColorTable(int n);
   void buildConvRandomColorTable(int n);
+  void buildPunctumColorTable();
 
 protected:
   EColorScheme m_colorScheme;

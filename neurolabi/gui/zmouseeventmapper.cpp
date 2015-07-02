@@ -182,7 +182,8 @@ ZStackOperator ZMouseEventLeftButtonReleaseMapper::getOperation(
         if (m_doc->getStack()->containsRaw(rawStackPosition)) {
           bool hitTestOn =
               (m_context->swcEditMode() == ZInteractiveContext::SWC_EDIT_SELECT ||
-               m_context->swcEditMode() == ZInteractiveContext::SWC_EDIT_CONNECT) &&
+               m_context->swcEditMode() == ZInteractiveContext::SWC_EDIT_CONNECT ||
+               m_context->swcEditMode() == ZInteractiveContext::SWC_EDIT_OFF) &&
               m_context->strokeEditMode() == ZInteractiveContext::STROKE_EDIT_OFF;
           if (hitTestOn) {
             ZStackDocHitTest hitManager;
@@ -195,11 +196,17 @@ ZStackOperator ZMouseEventLeftButtonReleaseMapper::getOperation(
             op.setHitObject(hitManager.getHitObject<ZStackObject>());
 
             bool selectionOn =
-                (m_context->swcEditMode() == ZInteractiveContext::SWC_EDIT_SELECT &&
+                ((m_context->swcEditMode() == ZInteractiveContext::SWC_EDIT_SELECT ||
+                 m_context->swcEditMode() == ZInteractiveContext::SWC_EDIT_OFF)
+                 &&
                  m_context->strokeEditMode() == ZInteractiveContext::STROKE_EDIT_OFF);
 
             if (selectionOn) {
-              processSelectionOperation(op, event);
+              if (op.getHitObject() != NULL) {
+                if (op.getHitObject()->isSelectable()) {
+                  processSelectionOperation(op, event);
+                }
+              }
             }
           }
         }
@@ -211,7 +218,9 @@ ZStackOperator ZMouseEventLeftButtonReleaseMapper::getOperation(
       case ZInteractiveContext::SWC_EDIT_SELECT:
         if (event.getModifiers() == Qt::NoModifier) {
           if (!getDocument()->hasObjectSelected()) {
-            op.setOperation(ZStackOperator::OP_SHOW_TRACE_CONTEXT_MENU);
+            if (getDocument()->getTag() == NeuTube::Document::NORMAL) {
+              op.setOperation(ZStackOperator::OP_SHOW_TRACE_CONTEXT_MENU);
+            }
           } else {
             op.setOperation(ZStackOperator::OP_DESELECT_ALL);
           }
@@ -244,6 +253,10 @@ ZStackOperator ZMouseEventLeftButtonReleaseMapper::getOperation(
         }
       }
     }
+  }
+
+  if (op.isNull()) {
+    op.setOperation(ZStackOperator::OP_CUSTOM_MOUSE_RELEASE);
   }
 
   return op;
@@ -289,6 +302,10 @@ ZStackOperator ZMouseEventLeftButtonDoubleClickMapper::getOperation(
       if (m_context->isProjectView()) {
         op.setOperation(ZStackOperator::OP_OBJECT3D_SCAN_LOCATE_FOCUS);
       }
+    } else if (op.getHitObject()->getType() == ZStackObject::TYPE_DVID_SPARSE_STACK) {
+      if (m_context->isProjectView()) {
+        op.setOperation(ZStackOperator::OP_DVID_SPARSE_STACK_LOCATE_FOCUS);
+      }
     }
   }
 
@@ -301,7 +318,7 @@ ZStackOperator ZMouseEventLeftButtonDoubleClickMapper::getOperation(
           op.setOperation(ZStackOperator::OP_STACK_VIEW_SLICE);
         }
       } else {
-        if (getDocument()->getTag() != NeuTube::Document::FLYEM_DVID &&
+        if (getDocument()->getTag() != NeuTube::Document::FLYEM_PROOFREAD &&
             getDocument()->getStack()->depth() > 1) {
           op.setOperation(ZStackOperator::OP_STACK_VIEW_PROJECTION);
         }
@@ -318,6 +335,7 @@ ZStackOperator ZMouseEventLeftButtonPressMapper::getOperation(
     const ZMouseEvent &event) const
 {
   ZStackOperator op = initOperation();
+  op.setPressedButtons(event.getButtons());
 
   if (event.isInStack()) {
     switch (m_context->getUniqueMode()) {
@@ -335,13 +353,66 @@ ZStackOperator ZMouseEventLeftButtonPressMapper::getOperation(
   return op;
 }
 
+///////////////ZMouseEventLeftRightButtonPressMapper/////////////////
+////////             --             ////////////////////////////
+ZStackOperator ZMouseEventLeftRightButtonPressMapper::getOperation(
+    const ZMouseEvent &event) const
+{
+  ZStackOperator op = initOperation();
+  op.setPressedButtons(event.getButtons());
+
+  if (event.isInStack()) {
+    switch (m_context->getUniqueMode()) {
+    /*
+    case ZInteractiveContext::INTERACT_STROKE_DRAW:
+      op.setOperation(ZStackOperator::OP_STROKE_START_PAINT);
+      break;
+    case ZInteractiveContext::INTERACT_RECT_DRAW:
+      op.setOperation(ZStackOperator::OP_RECT_ROI_INIT);
+      break;
+      */
+    default:
+      break;
+    }
+  }
+
+  return op;
+}
+
+///////////////ZMouseEventMiddleButtonPressMapper/////////////////
+////////             O-O             ////////////////////////////
+ZStackOperator ZMouseEventMiddleButtonPressMapper::getOperation(
+    const ZMouseEvent &event) const
+{
+  ZStackOperator op = initOperation();
+  op.setPressedButtons(event.getButtons());
+
+  if (event.isInStack()) {
+    switch (m_context->getUniqueMode()) {
+    /*
+    case ZInteractiveContext::INTERACT_STROKE_DRAW:
+      op.setOperation(ZStackOperator::OP_STROKE_START_PAINT);
+      break;
+    case ZInteractiveContext::INTERACT_RECT_DRAW:
+      op.setOperation(ZStackOperator::OP_RECT_ROI_INIT);
+      break;
+      */
+    default:
+      break;
+    }
+  }
+
+  return op;
+}
+
+
 ///////////////ZMouseEventRightButtonReleaseMapper/////////////////////
 ////////             OU             ////////////////////////////
 ZStackOperator
 ZMouseEventRightButtonReleaseMapper::getOperation(const ZMouseEvent &event) const
 {
   ZStackOperator op = initOperation();
-  if (m_context != NULL && m_doc != NULL) {
+  if (m_context != NULL && m_doc.get() != NULL) {
     if (event.getButtons() == Qt::RightButton) {
       if (m_context->isContextMenuActivated()) {
         if (m_doc->hasSelectedSwcNode()) {
@@ -352,9 +423,9 @@ ZMouseEventRightButtonReleaseMapper::getOperation(const ZMouseEvent &event) cons
           }
         } else if (m_doc->getTag() == NeuTube::Document::BIOCYTIN_PROJECTION) {
             op.setOperation(ZStackOperator::OP_SHOW_STROKE_CONTEXT_MENU);
-        } else if (m_doc->getTag() == NeuTube::Document::FLYEM_DVID) {
+        } else if (m_doc->getTag() == NeuTube::Document::FLYEM_PROOFREAD) {
           if (!m_doc->getDvidLabelSliceList().empty()) {
-            if (m_doc->getDvidLabelSliceList().front()->getSelected().size() == 1) {
+            if (m_doc->getDvidLabelSliceList().front()->getSelectedOriginal().size() == 1) {
               op.setOperation(ZStackOperator::OP_SHOW_BODY_CONTEXT_MENU);
             }
           }
@@ -387,6 +458,8 @@ ZStackOperator ZMouseEventMoveMapper::getOperation(
     const ZMouseEvent &event) const
 {
   ZStackOperator op = initOperation();
+  op.setPressedButtons(event.getButtons());
+
   if (m_context != NULL) {
     bool canMoveImage = false;
 
@@ -413,7 +486,12 @@ ZStackOperator ZMouseEventMoveMapper::getOperation(
           canMoveImage = true;
         }
       }
+    } else if (event.getButtons() == (Qt::LeftButton | Qt::RightButton) ||
+               event.getButtons() == Qt::MidButton) {
+      canMoveImage = true;
+    }
 
+    if (event.getButtons() == Qt::LeftButton) {
       if (op.isNull()) {
         if (m_context->getUniqueMode() ==
             ZInteractiveContext::INTERACT_STROKE_DRAW) {
@@ -423,27 +501,29 @@ ZStackOperator ZMouseEventMoveMapper::getOperation(
           op.setOperation(ZStackOperator::OP_RECT_ROI_UPDATE);
         }
       }
-
-      if (op.isNull()) {
-        if (canMoveImage) {
-          if (m_context->exploreMode() ==
-              ZInteractiveContext::EXPLORE_MOVE_IMAGE) {
-            op.setOperation(ZStackOperator::OP_MOVE_IMAGE);
-          } else {
-            op.setOperation(ZStackOperator::OP_START_MOVE_IMAGE);
+    } else if (event.getButtons() == Qt::RightButton) {
+      if (m_context->getUniqueMode() != ZInteractiveContext::INTERACT_IMAGE_MOVE) {
+        ZIntPoint pressPos =
+            getPosition(Qt::RightButton, ZMouseEvent::ACTION_PRESS);
+        int dx = event.getX() - pressPos.getX();
+        int dy = event.getY() - pressPos.getY();
+        if (dx * dx + dy * dy > MOUSE_MOVE_IMAGE_THRESHOLD) {
+          if (dy < -5) {
+            op.setOperation(ZStackOperator::OP_ZOOM_IN_GRAB_POS);
+          } else if (dy > 5) {
+            op.setOperation(ZStackOperator::OP_ZOOM_OUT_GRAB_POS);
           }
         }
       }
-    } else if (event.getButtons() == Qt::RightButton) {
-      ZIntPoint pressPos =
-          getPosition(Qt::RightButton, ZMouseEvent::ACTION_PRESS);
-      int dx = event.getX() - pressPos.getX();
-      int dy = event.getY() - pressPos.getY();
-      if (dx * dx + dy * dy > MOUSE_MOVE_IMAGE_THRESHOLD) {
-        if (dy < -5) {
-          op.setOperation(ZStackOperator::OP_ZOOM_IN_GRAB_POS);
-        } else if (dy > 5) {
-          op.setOperation(ZStackOperator::OP_ZOOM_OUT_GRAB_POS);
+    }
+
+    if (op.isNull()) {
+      if (canMoveImage) {
+        if (m_context->exploreMode() ==
+            ZInteractiveContext::EXPLORE_MOVE_IMAGE) {
+          op.setOperation(ZStackOperator::OP_MOVE_IMAGE);
+        } else {
+          op.setOperation(ZStackOperator::OP_START_MOVE_IMAGE);
         }
       }
     }

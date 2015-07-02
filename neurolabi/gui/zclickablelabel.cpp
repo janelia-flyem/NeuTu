@@ -46,6 +46,9 @@ ZClickableColorLabel::ZClickableColorLabel(ZVec4Parameter* color, QWidget *paren
   , m_vec3Color(0)
   , m_dvec4Color(0)
   , m_dvec3Color(0)
+  , m_width(50)
+  , m_height(33)
+  , m_isClickable(true)
 {
   connect(m_vec4Color, SIGNAL(valueChanged()), this, SLOT(update()));
 }
@@ -56,6 +59,9 @@ ZClickableColorLabel::ZClickableColorLabel(ZVec3Parameter *color, QWidget *paren
   , m_vec3Color(color)
   , m_dvec4Color(0)
   , m_dvec3Color(0)
+  , m_width(50)
+  , m_height(33)
+  , m_isClickable(true)
 {
   connect(m_vec3Color, SIGNAL(valueChanged()), this, SLOT(update()));
 }
@@ -66,6 +72,9 @@ ZClickableColorLabel::ZClickableColorLabel(ZDVec4Parameter *color, QWidget *pare
   , m_vec3Color(0)
   , m_dvec4Color(color)
   , m_dvec3Color(0)
+  , m_width(50)
+  , m_height(33)
+  , m_isClickable(true)
 {
   connect(m_dvec4Color, SIGNAL(valueChanged()), this, SLOT(update()));
 }
@@ -76,6 +85,9 @@ ZClickableColorLabel::ZClickableColorLabel(ZDVec3Parameter *color, QWidget *pare
   , m_vec3Color(0)
   , m_dvec4Color(0)
   , m_dvec3Color(color)
+  , m_width(50)
+  , m_height(33)
+  , m_isClickable(true)
 {
   connect(m_dvec3Color, SIGNAL(valueChanged()), this, SLOT(update()));
 }
@@ -87,14 +99,26 @@ void ZClickableColorLabel::paintEvent(QPaintEvent *e)
     return;
   }
 
+  QColor labelColor = toQColor();
+
   QPainter painter(this);
-  painter.setBrush(toQColor());
+  painter.setBrush(labelColor);
   painter.drawRect(1, 1, rect().width() - 2, rect().height() - 2);
+  if (m_vec4Color != NULL) {
+    double gray = .299*labelColor.redF() + .587*labelColor.greenF() +
+        .114*labelColor.blueF();
+    if (gray > 0.5) {
+      painter.setPen(QColor(0, 0, 0));
+    } else {
+      painter.setPen(QColor(255, 255, 255));
+    }
+    painter.drawText(rect(), Qt::AlignCenter, m_vec4Color->getName());
+  }
 }
 
 QSize ZClickableColorLabel::minimumSizeHint() const
 {
-  return QSize(50, 33);
+  return QSize(m_width, m_height);
 }
 
 bool ZClickableColorLabel::getTip(const QPoint &p, QRect *r, QString *s)
@@ -114,10 +138,12 @@ bool ZClickableColorLabel::getTip(const QPoint &p, QRect *r, QString *s)
 
 void ZClickableColorLabel::labelClicked()
 {
-  QColor newColor = QColorDialog::getColor(toQColor());
-  if(newColor.isValid())
-  {
-    fromQColor(newColor);
+  if (m_isClickable) {
+    QColor newColor = QColorDialog::getColor(toQColor());
+    if(newColor.isValid())
+    {
+      fromQColor(newColor);
+    }
   }
 }
 

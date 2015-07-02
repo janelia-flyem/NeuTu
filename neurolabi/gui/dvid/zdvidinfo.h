@@ -99,6 +99,10 @@ public:
   int getMinY() const;
   int getMaxY() const;
 
+  void clear();
+
+  bool isValid() const;
+
 private:
   std::vector<int> m_stackSize;
   //std::vector<double> m_voxelResolution;

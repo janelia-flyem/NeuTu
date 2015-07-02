@@ -30,9 +30,11 @@ ZDvidBufferReader::ZDvidBufferReader(QObject *parent) :
   connect(this, SIGNAL(checkingStatus()), this, SLOT(waitForReading()));
 }
 
-void ZDvidBufferReader::read(const QString &url)
+void ZDvidBufferReader::read(const QString &url, bool outputUrl)
 {
-  qDebug() << url;
+  if (outputUrl) {
+    qDebug() << url;
+  }
 
   m_buffer.clear();
 
@@ -79,6 +81,25 @@ void ZDvidBufferReader::read(const QString &url)
 
   waitForReading();
 #endif
+}
+
+void ZDvidBufferReader::readQt(const QString &url, bool outputUrl)
+{
+  if (outputUrl) {
+    qDebug() << url;
+  }
+
+  m_buffer.clear();
+
+  startReading();
+
+  m_networkReply = m_networkManager->get(QNetworkRequest(url));
+  connect(m_networkReply, SIGNAL(finished()), this, SLOT(finishReading()));
+  connect(m_networkReply, SIGNAL(readyRead()), this, SLOT(readBuffer()));
+  connect(m_networkReply, SIGNAL(error(QNetworkReply::NetworkError)),
+          this, SLOT(handleError(QNetworkReply::NetworkError)));
+
+  waitForReading();
 }
 
 bool ZDvidBufferReader::isReadable(const QString &url)

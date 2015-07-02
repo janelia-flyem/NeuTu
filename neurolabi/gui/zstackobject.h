@@ -4,6 +4,7 @@
 #include "zqtheader.h"
 //#include "zpainter.h"
 #include "zstackobjectrole.h"
+#include "zintpoint.h"
 
 class ZPainter;
 class ZIntCuboid;
@@ -43,7 +44,7 @@ class ZStackObject
 {
 public:
   ZStackObject();
-  virtual ~ZStackObject() {}
+  virtual ~ZStackObject();
 
   enum EType {
     TYPE_UNIDENTIFIED = 0, //Unidentified type
@@ -63,7 +64,12 @@ public:
     TYPE_DVID_GRAY_SLICE,
     TYPE_DVID_TILE_ENSEMBLE,
     TYPE_DVID_LABEL_SLICE,
-    TYPE_DVID_SPARSE_STACK
+    TYPE_DVID_SPARSE_STACK,
+    TYPE_DVID_SPARSEVOL_SLICE,
+    TYPE_STACK,
+    TYPE_SWC_NODE,
+    TYPE_3D_GRAPH,
+    TYPE_PUNCTA
   };
 
   enum Palette_Color {
@@ -75,7 +81,8 @@ public:
   };
 
   enum ETarget {
-    STACK_CANVAS, OBJECT_CANVAS, WIDGET, TILE_CANVAS
+    TARGET_STACK_CANVAS, TARGET_OBJECT_CANVAS, TARGET_WIDGET, TARGET_TILE_CANVAS,
+    TARGET_3D_ONLY
   };
 
   enum EDisplaySliceMode {
@@ -130,6 +137,8 @@ public:
 
   inline bool isVisible() const { return m_isVisible; }
   inline void setVisible(bool visible) { m_isVisible = visible; }
+  inline void toggleVisible() { m_isVisible = !m_isVisible; }
+
   inline void setDisplayStyle(EDisplayStyle style) { m_style = style; }
   inline EDisplayStyle displayStyle() const { return m_style; }
 
@@ -140,6 +149,7 @@ public:
 
   virtual bool hit(double x, double y, double z);
   virtual bool hit(double x, double y);
+  virtual inline const ZIntPoint& getHitPoint() const { return m_hitPoint; }
 
   /*!
    * \brief Get bound box of the object.
@@ -203,13 +213,23 @@ public:
   inline int getZOrder() const { return m_zOrder; }
   void setZOrder(int order) { m_zOrder = order; }
 
-  struct ZOrderCompare {
+  struct ZOrderLessThan {
     bool operator() (const ZStackObject &obj1, const ZStackObject &obj2) {
       return (obj1.getZOrder() < obj2.getZOrder());
     }
 
     bool operator() (const ZStackObject *obj1, const ZStackObject *obj2) {
       return (obj1->getZOrder() < obj2->getZOrder());
+    }
+  };
+
+  struct ZOrderBiggerThan {
+    bool operator() (const ZStackObject &obj1, const ZStackObject &obj2) {
+      return (obj1.getZOrder() > obj2.getZOrder());
+    }
+
+    bool operator() (const ZStackObject *obj1, const ZStackObject *obj2) {
+      return (obj1->getZOrder() > obj2->getZOrder());
     }
   };
 
@@ -238,9 +258,11 @@ public:
     m_role.addRole(role);
   }
 
+  /*
   static inline const char* getNodeAdapterId() {
     return m_nodeAdapterId;
   }
+  */
 
   inline bool isSelectable() const {
     return m_isSelectable;
@@ -289,8 +311,9 @@ protected:
   int m_zOrder;
   EType m_type;
   ZStackObjectRole m_role;
+  ZIntPoint m_hitPoint;
 
-  static const char *m_nodeAdapterId;
+//  static const char *m_nodeAdapterId;
 };
 
 template <typename T>

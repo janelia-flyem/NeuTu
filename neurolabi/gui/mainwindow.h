@@ -68,6 +68,7 @@ class ZProgressManager;
 class ZMessageManager;
 class ZTestDialog;
 class ZTestDialog2;
+class QTimer;
 
 namespace Ui {
   class MainWindow;
@@ -158,6 +159,7 @@ public slots:
   void updateAction();
   void updateMenu();
   void updateStatusBar();
+  void runRoutineCheck();
 
   void on_actionTile_Manager_2_triggered();
   void cancelDvidRequest();
@@ -674,6 +676,8 @@ private:
   ZTestDialog *m_testDlg;
   ZTestDialog2 *m_testDlg2;
   ZWindowFactory m_3dWindowFactory;
+
+  QTimer *m_autoCheckTimer;
   //ZStackDocReader *m_docReader;
 };
 

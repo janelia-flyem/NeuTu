@@ -1,18 +1,21 @@
 #include "zwidgetmessage.h"
 
 #include <QStringList>
+#include <QDateTime>
 
-ZWidgetMessage::ZWidgetMessage() : m_type(NeuTube::MSG_INFORMATION)
+ZWidgetMessage::ZWidgetMessage() :
+  m_type(NeuTube::MSG_INFORMATION), m_target(TARGET_TEXT)
 {
 }
 
-ZWidgetMessage::ZWidgetMessage(const QString &msg, NeuTube::EMessageType type) :
-  m_message(msg), m_type(type)
+ZWidgetMessage::ZWidgetMessage(const QString &msg, NeuTube::EMessageType type,
+                               ETarget target) :
+  m_type(type), m_target(target)
 {
-
+  m_message.append(msg);
 }
 
-QString ZWidgetMessage::toHtmlString(
+QString ZWidgetMessage::ToHtmlString(
     const QString &msg, NeuTube::EMessageType type)
 {
   QString output = msg;
@@ -20,7 +23,8 @@ QString ZWidgetMessage::toHtmlString(
   if (!output.startsWith("<p>")) {
     switch (type) {
     case NeuTube::MSG_INFORMATION:
-      output = "<p>" + output + "</p>";
+//      output += "<font color = \"#007700\">test</font>";
+//      output = "<p style=\" margin-top:0px;\">" + output + "</p>";
       break;
     case NeuTube::MSG_ERROR:
       output = "<p><font color=\"#FF0000\">" + output + "</font></p>";
@@ -38,17 +42,28 @@ QString ZWidgetMessage::toHtmlString(
 
 QString ZWidgetMessage::toHtmlString() const
 {
-  return toHtmlString(m_message, m_type);
+  return ToHtmlString(m_message, m_type);
 }
 
-QString ZWidgetMessage::toHtmlString(
+QString ZWidgetMessage::ToHtmlString(
     const QStringList &msgList, NeuTube::EMessageType type)
 {
   QString output;
 
   foreach (const QString msg, msgList) {
-    output += toHtmlString(msg, type);
+    output += ToHtmlString(msg, type);
   }
 
   return output;
+}
+
+QString ZWidgetMessage::appendTime(const QString &message)
+{
+  return "[" + QDateTime::currentDateTime().toLocalTime().
+      toString("yyyy-MM-dd hh:mm:ss") + "] " + message;
+}
+
+void ZWidgetMessage::appendMessage(const QString &message)
+{
+  m_message.append(message);
 }

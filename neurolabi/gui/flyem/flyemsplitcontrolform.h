@@ -4,6 +4,8 @@
 #include <QWidget>
 #include "zflyembodysplitproject.h"
 
+class QMenu;
+
 namespace Ui {
 class FlyEmSplitControlForm;
 }
@@ -25,18 +27,46 @@ signals:
   void changingSplit(uint64_t);
   void savingSeed();
   void committingResult();
+  void zoomingTo(int x, int y, int z);
+  void loadingBookmark(QString);
+  void recoveringSeed();
+  void exportingSeed();
+  void importingSeed();
+  void selectingSeed();
+  void selectingAllSeed();
+  void loadingSynapse();
+
+public slots:
+  void updateBodyWidget(uint64_t bodyId);
+  void goToPosition();
+  void recoverSeed();
+  void exportSeed();
+  void importSeed();
+  void selectSeed();
+  void selectAllSeed();
 
 private slots:
   void slotTest();
   void setSplit(uint64_t bodyId);
   void changeSplit();
+  void commitResult();
+  void updateBookmarkTable(ZFlyEmBodySplitProject *project);
+  void locateBookmark(const QModelIndex &index);
+  void loadBookmark();
+  void checkCurrentBookmark();
+  void uncheckCurrentBookmark();
+  void checkCurrentBookmark(bool checking);
 
 private:
   void setupWidgetBehavior();
+  void createMenu();
 
 private:
   Ui::FlyEmSplitControlForm *ui;
-  ZFlyEmBodySplitProject m_project;
+  ZFlyEmBookmarkListModel m_bookmarkList;
+  //ZFlyEmBodySplitProject m_project;
+  QMenu *m_mainMenu;
+  QMenu *m_bookmarkContextMenu;
 };
 
 #endif // FLYEMSPLITCONTROLFORM_H

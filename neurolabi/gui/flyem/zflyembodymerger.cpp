@@ -1,5 +1,7 @@
 #include "zflyembodymerger.h"
 #include <iostream>
+#include <QList>
+#include <QDebug>
 
 #include "zjsonobject.h"
 #include "zjsonarray.h"
@@ -13,6 +15,18 @@ ZFlyEmBodyMerger::ZFlyEmBodyMerger()
 uint64_t ZFlyEmBodyMerger::getFinalLabel(uint64_t label) const
 {
   return mapLabel(m_mapList, label);
+}
+
+std::set<uint64_t> ZFlyEmBodyMerger::getFinalLabel(
+    const std::set<uint64_t> labelSet) const
+{
+  std::set<uint64_t> mapped;
+  for (std::set<uint64_t>::const_iterator iter = labelSet.begin();
+       iter != labelSet.end(); ++iter) {
+    mapped.insert(getFinalLabel(*iter));
+  }
+
+  return mapped;
 }
 
 ZFlyEmBodyMerger::TLabelMap ZFlyEmBodyMerger::getFinalMap() const
@@ -204,4 +218,42 @@ void ZFlyEmBodyMerger::decodeJsonString(const std::string &str)
   obj.decodeString(str.c_str());
 
   loadJson(obj);
+}
+
+
+QList<uint64_t> ZFlyEmBodyMerger::getOriginalLabelList(uint64_t finalLabel) const
+{
+  QList<uint64_t> list = getFinalMap().keys(finalLabel);
+  list.append(finalLabel);
+
+#ifdef _DEBUG_
+  qDebug() << list;
+#endif
+
+  return list;
+}
+
+QSet<uint64_t> ZFlyEmBodyMerger::getOriginalLabelSet(uint64_t finalLabel) const
+{
+  QSet<uint64_t> labelSet;
+
+  QList<uint64_t> labelList = getOriginalLabelList(finalLabel);
+
+  for (QList<uint64_t>::const_iterator iter = labelList.begin();
+       iter != labelList.end(); ++iter) {
+    uint64_t label = *iter;
+    labelSet.insert(label);
+  }
+//  labelSet.fromList(getOriginalLabelList(finalLabel));
+
+#ifdef _DEBUG_
+  qDebug() << labelSet;
+#endif
+
+  return labelSet;
+}
+
+bool ZFlyEmBodyMerger::isEmpty() const
+{
+  return m_mapList.isEmpty();
 }

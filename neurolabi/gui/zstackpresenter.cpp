@@ -31,6 +31,8 @@
 #include "zstackobjectsourcefactory.h"
 #include "zstackmvc.h"
 #include "dvid/zdvidlabelslice.h"
+#include "dvid/zdvidsparsestack.h"
+#include "zkeyoperationconfig.h"
 
 ZStackPresenter::ZStackPresenter(ZStackFrame *parent) : QObject(parent)
 {
@@ -55,7 +57,7 @@ void ZStackPresenter::init()
 {
   m_showObject = true;
   m_isStrokeOn = false;
-  m_skipMouseReleaseEvent = false;
+  m_skipMouseReleaseEvent = 0;
   m_zOrder = 2;
 
   initInteractiveContext();
@@ -95,6 +97,10 @@ void ZStackPresenter::init()
   //m_moveMapper.setContext(&m_interactiveContext);
   m_mouseEventProcessor.setInteractiveContext(&m_interactiveContext);
 
+  ZKeyOperationConfig::Configure(
+        m_swcKeyOperationMap, ZKeyOperation::OG_SWC_TREE_NODE);
+  ZKeyOperationConfig::Configure(
+        m_stackKeyOperationMap, ZKeyOperation::OG_STACK);
 }
 
 void ZStackPresenter::clearData()
@@ -282,9 +288,32 @@ void ZStackPresenter::createStrokeActions()
 
 void ZStackPresenter::createBodyActions()
 {
-  QAction *action = new QAction(tr("Launch split"), this);
-  connect(action, SIGNAL(triggered()), this, SLOT(notifyBodySplitTriggered()));
-  m_actionMap[ACTION_BODY_SPLIT_START] = action;
+  {
+    QAction *action = new QAction(tr("Launch split"), this);
+    connect(action, SIGNAL(triggered()), this, SLOT(notifyBodySplitTriggered()));
+    m_actionMap[ACTION_BODY_SPLIT_START] = action;
+  }
+
+  {
+    QAction *action = new QAction(tr("Annotate"), this);
+    connect(action, SIGNAL(triggered()),
+            this, SLOT(notifyBodyAnnotationTriggered()));
+    m_actionMap[ACTION_BODY_ANNOTATION] = action;
+  }
+
+  {
+    QAction *action = new QAction(tr("Check in"), this);
+    connect(action, SIGNAL(triggered()),
+            this, SLOT(notifyBodyCheckinTriggered()));
+    m_actionMap[ACTION_BODY_CHECKIN] = action;
+  }
+
+  {
+    QAction *action = new QAction(tr("Check out"), this);
+    connect(action, SIGNAL(triggered()),
+            this, SLOT(notifyBodyCheckoutTriggered()));
+    m_actionMap[ACTION_BODY_CHECKOUT] = action;
+  }
 
 //  action = new QAction(tr("Add split seed"), this);
 //  connect(action, SIGNAL(triggered()), this, SLOT());
@@ -627,6 +656,29 @@ int ZStackPresenter::getSliceIndex() const {
 
 void ZStackPresenter::processMouseReleaseEvent(QMouseEvent *event)
 {
+#ifdef _DEBUG_
+  std::cout << event->button() << " released: " << event->buttons() << std::endl;
+#endif
+
+  if (m_skipMouseReleaseEvent) {
+    if (event->buttons() == Qt::NoButton) {
+      m_skipMouseReleaseEvent = 0;
+      this->interactiveContext().restoreExploreMode();
+      buddyView()->notifyViewPortChanged();
+    }
+
+//    --m_skipMouseReleaseEvent;
+//    if (m_skipMouseReleaseEvent == 0) {
+
+//    }
+    return;
+  }
+
+  if (event->buttons() != Qt::NoButton) {
+    m_skipMouseReleaseEvent = 1;
+    return;
+  }
+
   const ZMouseEvent& mouseEvent =
       m_mouseEventProcessor.process(
         event, ZMouseEvent::ACTION_RELEASE, getSliceIndex());
@@ -789,6 +841,16 @@ bool ZStackPresenter::isContextMenuOn()
 
 void ZStackPresenter::processMousePressEvent(QMouseEvent *event)
 {
+  if (event->buttons() == (Qt::LeftButton | Qt::RightButton)) {
+    m_skipMouseReleaseEvent = 2;
+  } else {
+    m_skipMouseReleaseEvent = 0;
+  }
+
+#ifdef _DEBUG_
+  std::cout << "Pressed mouse buttons: " << event->buttons() << std::endl;
+#endif
+
   const ZMouseEvent &mouseEvent = m_mouseEventProcessor.process(
         event, ZMouseEvent::ACTION_PRESS, buddyView()->sliceIndex());
   if (mouseEvent.isNull()) {
@@ -822,10 +884,104 @@ QMutableListIterator<objtype*> iter(list);	\
       }	\
 }
 
+bool ZStackPresenter::isOperatable(ZStackOperator::EOperation op)
+{
+  bool opable = true;
+  switch (op) {
+  case ZStackOperator::OP_NULL:
+    opable = false;
+    break;
+  case ZStackOperator::OP_SWC_DELETE_NODE:
+  case ZStackOperator::OP_SWC_MOVE_NODE_LEFT:
+  case ZStackOperator::OP_SWC_MOVE_NODE_LEFT_FAST:
+  case ZStackOperator::OP_SWC_MOVE_NODE_RIGHT:
+  case ZStackOperator::OP_SWC_MOVE_NODE_RIGHT_FAST:
+  case ZStackOperator::OP_SWC_MOVE_NODE_UP:
+  case ZStackOperator::OP_SWC_MOVE_NODE_UP_FAST:
+  case ZStackOperator::OP_SWC_MOVE_NODE_DOWN:
+  case ZStackOperator::OP_SWC_MOVE_NODE_DOWN_FAST:
+  case ZStackOperator::OP_SWC_CONNECT_NODE:
+  case ZStackOperator::OP_SWC_CONNECT_NODE_SMART:
+  case ZStackOperator::OP_SWC_CONNECT_ISOLATE:
+  case ZStackOperator::OP_SWC_ZOOM_TO_SELECTED_NODE:
+  case ZStackOperator::OP_SWC_MOVE_NODE:
+  case ZStackOperator::OP_SWC_CHANGE_NODE_FOCUS:
+  case ZStackOperator::OP_SWC_SELECT_CONNECTION:
+  case ZStackOperator::OP_SWC_SELECT_FLOOD:
+    if (buddyDocument()->getSelectedSwcNodeList().isEmpty()) {
+      opable = false;
+    }
+    break;
+  case ZStackOperator::OP_SWC_EXTEND:
+  case ZStackOperator::OP_SWC_SMART_EXTEND:
+  case ZStackOperator::OP_SWC_RESET_BRANCH_POINT:
+  case ZStackOperator::OP_SWC_CONNECT_TO:
+  case ZStackOperator::OP_SWC_LOCATE_FOCUS:
+  case ZStackOperator::OP_SWC_ENTER_EXTEND_NODE:
+    if (buddyDocument()->getSelectedSwcNodeList().size() != 1) {
+      opable = false;
+    }
+    break;
+  case ZStackOperator::OP_SWC_BREAK_NODE:
+  case ZStackOperator::OP_SWC_INSERT_NODE:
+    if (buddyDocument()->getSelectedSwcNodeList().size() <= 1) {
+      opable = false;
+    }
+    break;
+  case ZStackOperator::OP_SWC_ENTER_ADD_NODE:
+    if (buddyDocument()->getTag() != NeuTube::Document::NORMAL &&
+        buddyDocument()->getTag() != NeuTube::Document::BIOCYTIN_STACK &&
+        buddyDocument()->getTag() != NeuTube::Document::FLYEM_ROI) {
+      opable = false;
+    }
+    break;
+  case ZStackOperator::OP_SWC_DECREASE_NODE_SIZE:
+  case ZStackOperator::OP_SWC_INCREASE_NODE_SIZE:
+    if (buddyDocument()->getSelectedSwcNodeList().isEmpty() || isStrokeOn()) {
+      opable = false;
+    }
+    break;
+  default:
+    break;
+  }
+
+  return opable;
+}
+
+bool ZStackPresenter::processKeyPressEventForStack(QKeyEvent *event)
+{
+  bool taken = false;
+
+  ZStackOperator::EOperation opId =
+      m_stackKeyOperationMap.getOperation(event->key(), event->modifiers());
+  if (isOperatable(opId)) {
+    ZStackOperator op;
+    op.setOperation(opId);
+    if (!op.isNull()) {
+      taken = true;
+      process(op);
+    }
+  }
+
+  return taken;
+}
+
 bool ZStackPresenter::processKeyPressEventForSwc(QKeyEvent *event)
 {
   bool taken = false;
 
+  ZStackOperator::EOperation opId =
+      m_swcKeyOperationMap.getOperation(event->key(), event->modifiers());
+  if (isOperatable(opId)) {
+    ZStackOperator op;
+    op.setOperation(opId);
+    if (!op.isNull()) {
+      taken = true;
+      process(op);
+    }
+  }
+
+#if 0
   switch (m_swcKeyMapper.getOperation(event)) {
   case ZSwcTree::OPERATION_DELETE_NODE:
     taken = buddyDocument()->executeDeleteSwcNodeCommand();
@@ -929,7 +1085,7 @@ bool ZStackPresenter::processKeyPressEventForSwc(QKeyEvent *event)
   default:
     break;
   }
-
+#endif
   return taken;
 }
 
@@ -937,38 +1093,18 @@ bool ZStackPresenter::processKeyPressEventForStroke(QKeyEvent *event)
 {
   bool taken = false;
   switch (event->key()) {
-#if 0
-  case Qt::Key_Comma:
-    if (m_interactiveContext.strokeEditMode() ==
-        ZInteractiveContext::STROKE_DRAW) {
-      m_stroke.addWidth(-1.0);
-      buddyView()->paintActiveDecoration();
-      taken = true;
-    }
-    break;
-  case Qt::Key_Period:
-    if (m_interactiveContext.strokeEditMode() ==
-        ZInteractiveContext::STROKE_DRAW) {
-      m_stroke.addWidth(1.0);
-      buddyView()->paintActiveDecoration();
-      taken = true;
-    }
-    break;
-#endif
-#if 1
   case Qt::Key_R:
-    if (event->modifiers() == Qt::ControlModifier) {
-      if (m_paintStrokeAction->isEnabled()) {
-        m_paintStrokeAction->trigger();
-      }
-    } else if (event->modifiers() == Qt::ShiftModifier) {
+    if (event->modifiers() == Qt::ShiftModifier) {
       tryDrawRectMode();
-    }
-    break;
-  case Qt::Key_E:
-    if (event->modifiers() == Qt::ControlModifier) {
-      if (m_eraseStrokeAction->isEnabled()) {
-        m_eraseStrokeAction->trigger();
+      taken = true;
+    } else {
+      if (m_paintStrokeAction->isEnabled()) {
+        if (isStrokeOn()) {
+          exitStrokeEdit();
+        } else {
+          m_paintStrokeAction->trigger();
+        }
+        taken = true;
       }
     }
     break;
@@ -984,6 +1120,7 @@ bool ZStackPresenter::processKeyPressEventForStroke(QKeyEvent *event)
         ZInteractiveContext::STROKE_DRAW) {
       m_stroke.setLabel(event->key() - Qt::Key_0);
       buddyView()->paintActiveDecoration();
+      taken = true;
     }
     break;
   case Qt::Key_QuoteLeft:
@@ -991,13 +1128,37 @@ bool ZStackPresenter::processKeyPressEventForStroke(QKeyEvent *event)
         ZInteractiveContext::STROKE_DRAW) {
       m_stroke.setLabel(255);
       buddyView()->paintActiveDecoration();
+      taken = true;
     }
     break;
-//  case Qt::Key_Delete:
-//  case Qt::Key_Backspace:
-//    buddyDocument()->executeRemoveSelectedObjectCommand();
-//    break;
-#endif
+  case Qt::Key_Q:
+    if (isStrokeOn()) {
+      m_stroke.addWidth(-1.0);
+      buddyView()->paintActiveDecoration();
+      taken = true;
+    }
+    break;
+  case Qt::Key_E:
+    if (event->modifiers() == Qt::ControlModifier) {
+      if (m_eraseStrokeAction->isEnabled()) {
+        m_eraseStrokeAction->trigger();
+        taken = true;
+      }
+    } else {
+      if (isStrokeOn()) {
+        if (event->modifiers() == Qt::NoModifier) {
+          m_stroke.addWidth(1.0);
+          buddyView()->paintActiveDecoration();
+          taken = true;
+        } else if (event->modifiers() == Qt::ShiftModifier) {
+          if (estimateActiveStrokeWidth()) {
+            buddyView()->paintActiveDecoration();
+            taken = true;
+          }
+        }
+      }
+    }
+    break;
   default:
     break;
   }
@@ -1047,6 +1208,10 @@ bool ZStackPresenter::processKeyPressEvent(QKeyEvent *event)
   }
 
   if (processKeyPressEventForStroke(event)) {
+    return processed;
+  }
+
+  if (processKeyPressEventForStack(event)) {
     return processed;
   }
 
@@ -1166,16 +1331,13 @@ bool ZStackPresenter::processKeyPressEvent(QKeyEvent *event)
     exitStrokeEdit();
     updateCursor();
     break;
-
   case Qt::Key_Comma:
-  case Qt::Key_Q:
     if (isStrokeOn()) {
       m_stroke.addWidth(-1.0);
       buddyView()->paintActiveDecoration();
     }
     break;
   case Qt::Key_Period:
-  case Qt::Key_E:
     if (isStrokeOn()) {
       if (event->modifiers() == Qt::NoModifier) {
         m_stroke.addWidth(1.0);
@@ -1189,11 +1351,16 @@ bool ZStackPresenter::processKeyPressEvent(QKeyEvent *event)
     break;
   case Qt::Key_Space:
     if (GET_APPLICATION_NAME == "FlyEM") {
-      if (event->modifiers() == Qt::ShiftModifier) {
-        buddyDocument()->runSeededWatershed();
-      } else {
-        buddyDocument()->runLocalSeededWatershed();
-      }
+      //if (buddyDocument()->getTag() == NeuTube::Document::FLYEM_SPLIT ||
+       //   buddyDocument()->getTag() == NeuTube::Document::FLYEM_PROOFREAD ||
+         // buddyDocument()->getTag() == NeuTube::Document::SEGMENTATION_TARGET) {
+        if (event->modifiers() == Qt::ShiftModifier) {
+          qDebug() << "Starting watershed ...";
+          buddyDocument()->runSeededWatershed();
+        } else {
+          buddyDocument()->runLocalSeededWatershed();
+        }
+      //}
     }
     break;
   case Qt::Key_Z:
@@ -1215,7 +1382,16 @@ bool ZStackPresenter::processKeyPressEvent(QKeyEvent *event)
     break;
   }
 
+  if (!processed) {
+    processed = customKeyProcess(event);
+  }
+
   return processed;
+}
+
+bool ZStackPresenter::customKeyProcess(QKeyEvent */*event*/)
+{
+  return false;
 }
 
 void ZStackPresenter::processMouseDoubleClickEvent(QMouseEvent *event)
@@ -1297,9 +1473,10 @@ void ZStackPresenter::processMouseDoubleClickEvent(QMouseEvent *event)
     }
     break;
   case ZStackOperator::OP_OBJECT3D_SCAN_LOCATE_FOCUS:
-    if (op.getHitObject<ZObject3dScan>() != NULL) {
-      op.getHitObject<ZObject3dScan>()->setSelected(false);
-      int sliceIndex = op.getHitObject<ZObject3dScan>()->getHitPoint().getZ();
+  case ZStackOperator::OP_DVID_SPARSE_STACK_LOCATE_FOCUS:
+    if (op.getHitObject() != NULL) {
+      op.getHitObject()->setSelected(false);
+      int sliceIndex = op.getHitObject()->getHitPoint().getZ();
       sliceIndex -= buddyDocument()->getStackOffset().getZ();
       if (sliceIndex >= 0 &&
           sliceIndex < buddyDocument()->getStackSize().getZ()) {
@@ -1321,6 +1498,9 @@ void ZStackPresenter::setObjectVisible(bool v)
   if (m_showObject != v) {
     m_showObject = v;
     buddyView()->paintObject();
+    if (m_showObject) {
+      emit objectVisibleTurnedOn();
+    }
   }
 }
 
@@ -1651,7 +1831,7 @@ bool ZStackPresenter::enterSwcExtendMode()
       //m_stroke.set(SwcTreeNode::x(tn), SwcTreeNode::y(tn));
       m_stroke.setWidth(SwcTreeNode::radius(tn) * 2.0);
       turnOnStroke();
-      m_stroke.setTarget(ZStackObject::WIDGET);
+      m_stroke.setTarget(ZStackObject::TARGET_WIDGET);
       interactiveContext().setSwcEditMode(ZInteractiveContext::SWC_EDIT_EXTEND);
       updateCursor();
       succ = true;
@@ -1697,7 +1877,7 @@ void ZStackPresenter::enterSwcAddNodeMode(double x, double y)
   m_stroke.set(x, y);
   m_stroke.setEraser(false);
   m_stroke.setFilled(false);
-  m_stroke.setTarget(ZStackObject::WIDGET);
+  m_stroke.setTarget(ZStackObject::TARGET_WIDGET);
   turnOnStroke();
   //buddyView()->paintActiveDecoration();
   updateCursor();
@@ -1770,7 +1950,7 @@ void ZStackPresenter::enterDrawStrokeMode(double x, double y)
   m_stroke.set(x, y);
   m_stroke.setEraser(false);
   m_stroke.setFilled(true);
-  m_stroke.setTarget(ZStackObject::OBJECT_CANVAS);
+  m_stroke.setTarget(ZStackObject::TARGET_OBJECT_CANVAS);
   turnOnStroke();
   //buddyView()->paintActiveDecoration();
   interactiveContext().setStrokeEditMode(ZInteractiveContext::STROKE_DRAW);
@@ -1790,7 +1970,7 @@ void ZStackPresenter::enterEraseStrokeMode(double x, double y)
   m_stroke.set(x, y);
   m_stroke.setFilled(true);
   m_stroke.setEraser(true);
-  m_stroke.setTarget(ZStackObject::OBJECT_CANVAS);
+  m_stroke.setTarget(ZStackObject::TARGET_OBJECT_CANVAS);
   turnOnStroke();
   //buddyView()->paintActiveDecoration();
   interactiveContext().setStrokeEditMode(ZInteractiveContext::STROKE_DRAW);
@@ -1943,6 +2123,21 @@ void ZStackPresenter::notifyBodySplitTriggered()
   emit bodySplitTriggered();
 }
 
+void ZStackPresenter::notifyBodyAnnotationTriggered()
+{
+  emit bodyAnnotationTriggered();
+}
+
+void ZStackPresenter::notifyBodyCheckinTriggered()
+{
+  emit bodyCheckinTriggered();
+}
+
+void ZStackPresenter::notifyBodyCheckoutTriggered()
+{
+  emit bodyCheckoutTriggered();
+}
+
 void ZStackPresenter::selectDownstreamNode()
 {
   buddyDocument()->selectDownstreamNode();
@@ -2016,6 +2211,11 @@ void ZStackPresenter::setViewMode(ZInteractiveContext::ViewMode mode)
   emit viewModeChanged();
 }
 
+void ZStackPresenter::processCustomOperator(const ZStackOperator &/*op*/)
+{
+
+}
+
 void ZStackPresenter::process(const ZStackOperator &op)
 {
   ZInteractionEvent interactionEvent;
@@ -2028,6 +2228,58 @@ void ZStackPresenter::process(const ZStackOperator &op)
   buddyDocument()->getObjectGroup().resetSelection();
 
   switch (op.getOperation()) {
+  case ZStackOperator::OP_IMAGE_MOVE_DOWN:
+    moveViewPort(0, -1);
+    break;
+  case ZStackOperator::OP_IMAGE_MOVE_DOWN_FAST:
+    moveViewPort(0, -10);
+    break;
+  case ZStackOperator::OP_IMAGE_MOVE_UP:
+    moveViewPort(0, 1);
+    break;
+  case ZStackOperator::OP_IMAGE_MOVE_UP_FAST:
+    moveViewPort(0, 10);
+    break;
+  case ZStackOperator::OP_IMAGE_MOVE_LEFT:
+    moveViewPort(1, 0);
+    break;
+  case ZStackOperator::OP_IMAGE_MOVE_LEFT_FAST:
+    moveViewPort(10, 0);
+    break;
+  case ZStackOperator::OP_IMAGE_MOVE_RIGHT:
+    moveViewPort(-1, 0);
+    break;
+  case ZStackOperator::OP_IMAGE_MOVE_RIGHT_FAST:
+    moveViewPort(-10, 0);
+    break;
+  case ZStackOperator::OP_STACK_DEC_SLICE:
+    buddyView()->setSliceIndex(buddyView()->sliceIndex() - 1);
+    break;
+  case ZStackOperator::OP_STACK_INC_SLICE:
+    buddyView()->setSliceIndex(buddyView()->sliceIndex() + 1);
+    break;
+  case ZStackOperator::OP_STACK_DEC_SLICE_FAST:
+    buddyView()->setSliceIndex(buddyView()->sliceIndex() - 10);
+    break;
+  case ZStackOperator::OP_STACK_INC_SLICE_FAST:
+    buddyView()->setSliceIndex(buddyView()->sliceIndex() + 10);
+    break;
+  case ZStackOperator::OP_SWC_ENTER_ADD_NODE:
+  {
+//    QPointF pos = mapFromGlobalToStack(QCursor::pos());
+    trySwcAddNodeMode(currentStackPos.x(), currentStackPos.y());
+  }
+    break;
+  case ZStackOperator::OP_SWC_ENTER_EXTEND_NODE:
+    enterSwcExtendMode();
+    break;
+  case ZStackOperator::OP_SWC_DELETE_NODE:
+    buddyDocument()->executeDeleteSwcNodeCommand();
+    if (m_interactiveContext.swcEditMode() ==
+        ZInteractiveContext::SWC_EDIT_EXTEND) {
+      exitSwcExtendMode();
+    }
+    break;
   case ZStackOperator::OP_SWC_SELECT_SINGLE_NODE:
     buddyDocument()->deselectAllSwcTreeNodes();
     buddyDocument()->selectHitSwcTreeNode(op.getHitObject<ZSwcTree>());
@@ -2120,6 +2372,61 @@ void ZStackPresenter::process(const ZStackOperator &op)
       interactionEvent.setEvent(ZInteractionEvent::EVENT_SWC_NODE_ADDED);
     }
     break;
+  case ZStackOperator::OP_SWC_ZOOM_TO_SELECTED_NODE:
+    if (getParentFrame() != NULL) {
+      getParentFrame()->zoomToSelectedSwcNodes();
+    }
+    break;
+  case ZStackOperator::OP_SWC_MOVE_NODE_UP:
+    buddyDocument()->executeMoveSwcNodeCommand(0, -1.0, 0);
+    break;
+  case ZStackOperator::OP_SWC_MOVE_NODE_UP_FAST:
+    buddyDocument()->executeMoveSwcNodeCommand(0, -10.0, 0);
+    break;
+  case ZStackOperator::OP_SWC_MOVE_NODE_LEFT:
+    buddyDocument()->executeMoveSwcNodeCommand(-1.0, 0, 0);
+    break;
+  case ZStackOperator::OP_SWC_MOVE_NODE_LEFT_FAST:
+    buddyDocument()->executeMoveSwcNodeCommand(-10.0, 0, 0);
+    break;
+  case ZStackOperator::OP_SWC_MOVE_NODE_DOWN:
+    buddyDocument()->executeMoveSwcNodeCommand(0, 1.0, 0);
+    break;
+  case ZStackOperator::OP_SWC_MOVE_NODE_DOWN_FAST:
+    buddyDocument()->executeMoveSwcNodeCommand(0, 10.0, 0);
+    break;
+  case ZStackOperator::OP_SWC_MOVE_NODE_RIGHT:
+    buddyDocument()->executeMoveSwcNodeCommand(1.0, 0, 0);
+    break;
+  case ZStackOperator::OP_SWC_MOVE_NODE_RIGHT_FAST:
+    buddyDocument()->executeMoveSwcNodeCommand(10.0, 0, 0);
+    break;
+  case ZStackOperator::OP_SWC_MOVE_NODE:
+    enterSwcMoveMode();
+    break;
+  case ZStackOperator::OP_SWC_INSERT_NODE:
+    buddyDocument()->executeInsertSwcNode();
+    break;
+  case ZStackOperator::OP_SWC_INCREASE_NODE_SIZE:
+    if (isStrokeOff()) {
+      buddyDocument()->executeSwcNodeChangeSizeCommand(0.5);
+    }
+    break;
+  case ZStackOperator::OP_SWC_DECREASE_NODE_SIZE:
+    if (isStrokeOff()) {
+      buddyDocument()->executeSwcNodeChangeSizeCommand(-0.5);
+    }
+    break;
+  case ZStackOperator::OP_SWC_CONNECT_NODE:
+    if (buddyDocument()->hasSelectedSwcNode()) {
+      if (buddyDocument()->getSelectedSwcNodeNumber() == 1) {
+        enterSwcConnectMode();
+        //taken = true;
+      } else {
+        buddyDocument()->executeConnectSwcNodeCommand();
+      }
+    }
+    break;
   case ZStackOperator::OP_RESTORE_EXPLORE_MODE:
     this->interactiveContext().restoreExploreMode();
     buddyView()->notifyViewPortChanged();
@@ -2169,10 +2476,14 @@ void ZStackPresenter::process(const ZStackOperator &op)
   case ZStackOperator::OP_PUNCTA_SELECT_SINGLE:
     buddyDocument()->deselectAllPuncta();
     buddyDocument()->setSelected(op.getHitObject<ZPunctum>(), true);
+    interactionEvent.setEvent(
+          ZInteractionEvent::EVENT_OBJECT_SELECTED);
     //buddyDocument()->selectPuncta(op.getPunctaIndex());
     break;
   case ZStackOperator::OP_PUNCTA_SELECT_MULTIPLE:
     buddyDocument()->setSelected(op.getHitObject<ZPunctum>(), true);
+    interactionEvent.setEvent(
+          ZInteractionEvent::EVENT_OBJECT_SELECTED);
     //buddyDocument()->selectPuncta(op.getPunctaIndex());
     break;
   case ZStackOperator::OP_SHOW_PUNCTA_MENU:
@@ -2302,9 +2613,12 @@ void ZStackPresenter::process(const ZStackOperator &op)
     break;
   case ZStackOperator::OP_MOVE_IMAGE:
   {
+    Qt::MouseButtons grabButton = op.getPressedButtons();
+    if (grabButton == Qt::NoButton || (grabButton & Qt::LeftButton)) {
+      grabButton = Qt::LeftButton;
+    }
     ZPoint grabPosition = op.getMouseEventRecorder()->getPosition(
-          Qt::LeftButton, ZMouseEvent::ACTION_PRESS,
-          NeuTube::COORD_STACK);
+          grabButton, ZMouseEvent::ACTION_PRESS, NeuTube::COORD_STACK);
     moveImageToMouse(
           grabPosition.x(), grabPosition.y(),
           currentWidgetPos.x(), currentWidgetPos.y());
@@ -2360,6 +2674,7 @@ void ZStackPresenter::process(const ZStackOperator &op)
     ZRect2d *rect = dynamic_cast<ZRect2d*>(obj);
     if (rect != NULL) {
       rect->setLastCorner(currentStackPos.x(), currentStackPos.y());
+      buddyDocument()->processObjectModified(rect);
       buddyDocument()->notifyObjectModified();
     }
   }
@@ -2372,6 +2687,9 @@ void ZStackPresenter::process(const ZStackOperator &op)
           setExploreMode(ZInteractiveContext::EXPLORE_MOVE_IMAGE);
       //m_grabPosition = buddyView()->screen()->canvasCoordinate(event->pos());
     }
+    break;
+  case ZStackOperator::OP_OBJECT_TOGGLE_TMP_RESULT_VISIBILITY:
+    buddyDocument()->toggleVisibility(ZStackObjectRole::ROLE_TMP_RESULT);
     break;
   case ZStackOperator::OP_TRACK_MOUSE_MOVE:
     buddyView()->setInfo(
@@ -2422,6 +2740,7 @@ void ZStackPresenter::process(const ZStackOperator &op)
     break;
 #endif
   default:
+    processCustomOperator(op);
     break;
   }
 
@@ -2434,7 +2753,9 @@ void ZStackPresenter::acceptActiveStroke()
   if (!newStroke->isEraser()) {
     if (newStroke->getPointNumber() == 1 &&
         m_mouseEventProcessor.getLatestMouseEvent().getModifiers() ==
-        Qt::ShiftModifier) {
+        Qt::ShiftModifier &&
+        buddyDocument()->getTag() != NeuTube::Document::FLYEM_SPLIT &&
+        buddyDocument()->getTag() != NeuTube::Document::FLYEM_PROOFREAD) {
       if (!buddyDocument()->getStrokeList().empty()) {
         ZPoint start;
         ZPoint end;

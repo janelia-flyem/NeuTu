@@ -3,6 +3,7 @@
 #include "zstackview.h"
 #include "zstackpresenter.h"
 #include "zprogresssignal.h"
+#include "zwidgetmessage.h"
 
 ZStackMvc::ZStackMvc(QWidget *parent) :
   QWidget(parent)
@@ -11,6 +12,9 @@ ZStackMvc::ZStackMvc(QWidget *parent) :
   m_presenter = NULL;
   m_layout = new QHBoxLayout(this);
   m_progressSignal = new ZProgressSignal(this);
+
+  qRegisterMetaType<uint64_t>("uint64_t");
+  qRegisterMetaType<ZWidgetMessage>("ZWidgetMessage");
 }
 
 ZStackMvc* ZStackMvc::Make(QWidget *parent, ZSharedPointer<ZStackDoc> doc)
@@ -73,6 +77,8 @@ void ZStackMvc::attachDocument(ZSharedPointer<ZStackDoc> doc)
 
 #define UPDATE_DOC_SIGNAL_SLOT(connect) \
   connect(m_doc.get(), SIGNAL(stackLoaded()), this, SIGNAL(stackLoaded()));\
+  connect(m_doc.get(), SIGNAL(messageGenerated(ZWidgetMessage)), \
+          this, SIGNAL(messageGenerated(ZWidgetMessage)));\
   connect(m_doc.get(), SIGNAL(stackModified()),\
           m_view, SLOT(updateChannelControl()));\
   connect(m_doc.get(), SIGNAL(stackModified()),\
@@ -84,6 +90,11 @@ void ZStackMvc::attachDocument(ZSharedPointer<ZStackDoc> doc)
   connect(m_doc.get(), SIGNAL(stackModified()),\
           m_view, SLOT(updateView()));\
   connect(m_doc.get(), SIGNAL(objectModified()), m_view, SLOT(paintObject()));\
+  connect(m_doc.get(), SIGNAL(objectModified(ZStackObject::ETarget)), \
+          m_view, SLOT(paintObject(ZStackObject::ETarget)));\
+  connect(m_doc.get(), SIGNAL(objectModified()), m_view, SLOT(paintObject()));\
+  connect(m_doc.get(), SIGNAL(objectModified(QSet<ZStackObject::ETarget>)), \
+          m_view, SLOT(paintObject(QSet<ZStackObject::ETarget>)));\
   connect(m_doc.get(), SIGNAL(cleanChanged(bool)),\
           this, SLOT(changeWindowTitle(bool)));\
   connect(m_doc.get(), SIGNAL(holdSegChanged()), m_view, SLOT(paintObject()));\
@@ -181,22 +192,31 @@ void ZStackMvc::keyPressEvent(QKeyEvent *event)
   }
 }
 
+void ZStackMvc::processViewChange()
+{
+  processViewChange(getView()->getViewParameter(NeuTube::COORD_STACK));
+}
+
 void ZStackMvc::processViewChange(const ZStackViewParam &viewParam)
 {
-  QList<const ZDocPlayer*> playerList =
-      m_doc->getPlayerList(ZStackObjectRole::ROLE_ACTIVE_VIEW);
-  if (!playerList.isEmpty()) {
-    bool updated = false;
-    foreach (const ZDocPlayer *player, playerList) {
-      if (player->getData()->isVisible()) {
-        updated = true;
-        player->updateData(viewParam);
+  if (getPresenter()->isObjectVisible()) {
+    QList<ZDocPlayer*> playerList =
+        m_doc->getPlayerList(ZStackObjectRole::ROLE_ACTIVE_VIEW);
+    if (!playerList.isEmpty()) {
+      bool updated = false;
+      foreach (const ZDocPlayer *player, playerList) {
+        if (player->getData()->isVisible()) {
+          updated = true;
+          player->updateData(viewParam);
+        }
+      }
+      if (updated) {
+        m_view->paintObject();
       }
     }
-    if (updated) {
-      m_view->paintObject();
-    }
   }
+
+  processViewChangeCustom(viewParam);
 }
 
 QRect ZStackMvc::getViewGeometry() const
@@ -206,3 +226,27 @@ QRect ZStackMvc::getViewGeometry() const
 
   return rect;
 }
+
+/*
+void ZStackMvc::emitMessage(const QString &msg, bool appending)
+{
+  ZWidgetMessage::ETarget target = ZWidgetMessage::TARGET_TEXT;
+  if (appending) {
+    target = ZWidgetMessage::TARGET_TEXT_APPENDING;
+  }
+
+  ZWidgetMessage message(msg, NeuTube::MSG_INFORMATION, target);
+  emit messageGenerated(message);
+}
+
+void ZStackMvc::emitError(const QString &msg, bool appending)
+{
+  ZWidgetMessage::ETarget target = ZWidgetMessage::TARGET_TEXT;
+  if (appending) {
+    target = ZWidgetMessage::TARGET_TEXT_APPENDING;
+  }
+
+  emit messageGenerated(
+        ZWidgetMessage(msg, NeuTube::MSG_ERROR, target));
+}
+*/

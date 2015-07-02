@@ -47,6 +47,10 @@ ZInteractiveContext::EUniqueMode ZInteractiveContext::getUniqueMode() const
 {
   EUniqueMode mode = INTERACT_FREE;
 
+  if (exploreMode() == EXPLORE_MOVE_IMAGE) {
+    return INTERACT_IMAGE_MOVE;
+  }
+
 //  if (isExploreModeOff()) {
     switch (swcEditMode()) {
     case SWC_EDIT_ADD_NODE:

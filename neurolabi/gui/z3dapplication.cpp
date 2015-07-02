@@ -357,11 +357,15 @@ void Z3DApplication::detectOS()
     m_osString = "unsupported mac os";
     return;
   }
+
+#if defined(_QT_APPLICATION_)
   SInt32 majorVersion,minorVersion,bugFixVersion;
   Gestalt(gestaltSystemVersionMajor, &majorVersion);
   Gestalt(gestaltSystemVersionMinor, &minorVersion);
   Gestalt(gestaltSystemVersionBugFix, &bugFixVersion);
   m_osString += QString(" %1.%2.%3").arg(majorVersion).arg(minorVersion).arg(bugFixVersion);
+#endif
+
 #else
   utsname name;
   if (uname(&name) != 0)

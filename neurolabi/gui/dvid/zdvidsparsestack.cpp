@@ -8,8 +8,16 @@
 
 ZDvidSparseStack::ZDvidSparseStack()
 {
-  setTarget(ZStackObject::OBJECT_CANVAS);
+  setTarget(ZStackObject::TARGET_OBJECT_CANVAS);
   m_type = ZStackObject::TYPE_DVID_SPARSE_STACK;
+  m_isValueFilled = false;
+}
+
+ZDvidSparseStack::~ZDvidSparseStack()
+{
+#ifdef _DEBUG_
+  std::cout << "Deleting dvid sparsestack: " << ": " << getSource() << std::endl;
+#endif
 }
 
 ZStack* ZDvidSparseStack::getSlice(int z) const
@@ -127,6 +135,8 @@ void ZDvidSparseStack::loadBody(int bodyId)
   ZObject3dScan *obj = new ZObject3dScan;
   m_dvidReader.readBody(bodyId, obj);
   m_sparseStack.setObjectMask(obj);
+
+  m_isValueFilled = false;
 }
 
 void ZDvidSparseStack::setMaskColor(const QColor &color)
@@ -141,9 +151,17 @@ const ZIntPoint& ZDvidSparseStack::getDownsampleInterval() const
   return m_sparseStack.getDownsampleInterval();
 }
 
-void ZDvidSparseStack::fillValue(const ZIntCuboid &box)
+bool ZDvidSparseStack::fillValue(const ZIntCuboid &box)
 {
+  if (m_isValueFilled) {
+    return true;
+  }
+
+//  bool changed = false;
+  int blockCount = 0;
   if (!m_sparseStack.getObjectMask()->isEmpty()) {
+    qDebug() << "Downloading grayscale ...";
+//    tic();
     ZDvidInfo dvidInfo;
     dvidInfo.setFromJsonString(
           m_dvidReader.readInfo(getDvidTarget().getGrayScaleName().c_str()).
@@ -153,6 +171,11 @@ void ZDvidSparseStack::fillValue(const ZIntCuboid &box)
     ZStackBlockGrid *grid = m_sparseStack.getStackGrid();
 
     size_t stripeNumber = blockObj.getStripeNumber();
+    ZIntCuboid blockBox;
+    blockBox.setFirstCorner(dvidInfo.getBlockIndex(box.getFirstCorner()));
+    blockBox.setLastCorner(dvidInfo.getBlockIndex(box.getLastCorner()));
+
+
     for (size_t s = 0; s < stripeNumber; ++s) {
       const ZObject3dStripe &stripe = blockObj.getStripe(s);
       int segmentNumber = stripe.getSegmentNumber();
@@ -163,7 +186,7 @@ void ZDvidSparseStack::fillValue(const ZIntCuboid &box)
         int x1 = stripe.getSegmentEnd(i);
 
         for (int x = x0; x <= x1; ++x) {
-          if (box.contains(x, y, z)) {
+          if (blockBox.contains(x, y, z)) {
             const ZIntPoint blockIndex =
                 ZIntPoint(x, y, z) - dvidInfo.getStartBlockIndex();
 
@@ -171,17 +194,28 @@ void ZDvidSparseStack::fillValue(const ZIntCuboid &box)
               ZIntCuboid box = grid->getBlockBox(blockIndex);
               ZStack *stack = m_dvidReader.readGrayScale(box);
               grid->consumeStack(blockIndex, stack);
+              ++blockCount;
+//              changed = true;
             }
           }
         }
       }
     }
+//    ptoc();
+
+    qDebug() << blockCount << " blocks downloaded.";
   }
+
+  return (blockCount > 0);
 }
 
-void ZDvidSparseStack::fillValue()
+bool ZDvidSparseStack::fillValue()
 {
+//  bool changed = false;
+  int blockCount = 0;
   if (!m_sparseStack.getObjectMask()->isEmpty()) {
+//    std::cout << "Downloading grayscale ..." << std::end;
+    qDebug() << "Downloading grayscale ...";
     ZDvidInfo dvidInfo;
     dvidInfo.setFromJsonString(
           m_dvidReader.readInfo(getDvidTarget().getGrayScaleName().c_str()).
@@ -208,23 +242,35 @@ void ZDvidSparseStack::fillValue()
             ZIntCuboid box = grid->getBlockBox(blockIndex);
             ZStack *stack = m_dvidReader.readGrayScale(box);
             grid->consumeStack(blockIndex, stack);
+            ++blockCount;
           }
         }
       }
     }
+
+    m_isValueFilled = true;
+
+    qDebug() << blockCount << " blocks downloaded.";
   }
+
+  return blockCount > 0;
+//  return changed;
 }
 
 ZStack* ZDvidSparseStack::getStack()
 {
-  fillValue();
+  if (fillValue()) {
+    m_sparseStack.deprecate(ZSparseStack::STACK);
+  }
 
   return m_sparseStack.getStack();
 }
 
 ZStack* ZDvidSparseStack::getStack(const ZIntCuboid &updateBox)
 {
-  fillValue(updateBox);
+  if (fillValue(updateBox)) {
+    m_sparseStack.deprecate(ZSparseStack::STACK);
+  }
 
   return m_sparseStack.getStack();
 }
@@ -243,6 +289,12 @@ const ZObject3dScan* ZDvidSparseStack::getObjectMask() const
   return m_sparseStack.getObjectMask();
 }
 
+ZObject3dScan* ZDvidSparseStack::getObjectMask()
+{
+  return const_cast<ZObject3dScan*>(
+        static_cast<const ZDvidSparseStack&>(*this).getObjectMask());
+}
+
 const ZSparseStack* ZDvidSparseStack::getSparseStack() const
 {
   return &m_sparseStack;
@@ -253,6 +305,48 @@ ZSparseStack* ZDvidSparseStack::getSparseStack()
   fillValue();
 
   return &m_sparseStack;
+}
+
+void ZDvidSparseStack::downloadBodyMask()
+{
+
+  ZDvidReader reader;
+  if (reader.open(getDvidTarget())) {
+    ZObject3dScan *obj = new ZObject3dScan;
+    reader.readBody(getObjectMask()->getLabel(), obj);
+    obj->setColor(getObjectMask()->getColor());
+    m_sparseStack.setObjectMask(obj);
+//    obj->set
+  }
+}
+
+bool ZDvidSparseStack::hit(double x, double y, double z)
+{
+  if (getObjectMask() != NULL) {
+    if (getObjectMask()->hit(x, y, z)) {
+      m_hitPoint = getObjectMask()->getHitPoint();
+      return true;
+    }
+  }
+
+  return false;
+}
+
+bool ZDvidSparseStack::hit(double x, double y)
+{
+  if (getObjectMask() != NULL) {
+    if (getObjectMask()->hit(x, y)) {
+      m_hitPoint = getObjectMask()->getHitPoint();
+      return true;
+    }
+  }
+
+  return false;
+}
+
+bool ZDvidSparseStack::isEmpty() const
+{
+  return m_sparseStack.isEmpty();
 }
 
 ZSTACKOBJECT_DEFINE_CLASS_NAME(ZDvidSparseStack)

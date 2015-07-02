@@ -83,6 +83,7 @@ void ZPixmap::cleanUp()
   painter.end();
 #endif
 
+#if QT_VERSION >= QT_VERSION_CHECK(4, 8, 0)
   if (width() * height() <= 4096 * 4096) {
     fill(Qt::transparent);
   } else {
@@ -101,6 +102,9 @@ void ZPixmap::cleanUp()
     QFuture<void> future = QtConcurrent::run(this, &ZPixmap::cleanFunc, &m_cleanBuffer);
     m_cleanWatcher->setFuture(future);
   }
+#else
+  fill(Qt::transparent);
+#endif
 //  m_cleanFuture = future;
 
   //clean(QRect(0, 0, width(), height()));

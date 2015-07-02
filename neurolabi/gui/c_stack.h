@@ -7,6 +7,7 @@
 #include "tz_image_lib_defs.h"
 #include "tz_mc_stack.h"
 #include "tz_cuboid_i.h"
+#include "tz_stack_watershed.h"
 
 //! Functions for C-compatible stack
 /*!
@@ -43,6 +44,10 @@ typedef void Stack_Deallocator(Stack*);
  * \sa kill()
  */
 Stack *make(int kind, int width, int height, int depth);
+
+Stack *make(float *data, int kind, int width, int height, int depth);
+Stack *make(double *data, int kind, int width, int height, int depth);
+
 
 //Kill from memory pool
 /*!
@@ -135,6 +140,7 @@ inline size_t allByteNumber(const Stack *stack) {
 inline uint8_t* array8(const Stack *stack) { return (uint8_t*) stack->array; }
 
 uint16_t* guardedArray16(const Stack *stack);
+float* guardedArrayFloat32(const Stack *stack);
 
 /*!
  * \brief Voxel value at a certain index
@@ -245,6 +251,8 @@ double min(const Stack *stack);
 double max(const Stack *stack);
 double sum(const Stack *stack);
 int* hist(const Stack *stack);
+double mean(const Stack *stack);
+double mode(const Stack *stack);
 
 //Miscellanea
 size_t closestForegroundPixel(const Stack *stack, double x, double y, double z);
@@ -397,6 +405,7 @@ void drawInteger(Stack *canvas, int n, int dx, int dy, int dz, int interval = 10
 //Experimenting APIs
 Stack* computeGradient(const Stack *stack);
 void shrinkBorder(const Stack *stack, int r, int nnbr = 6);
+Stack* watershed(const Stack *stack, Stack_Watershed_Workspace *ws, Stack *out);
 
 }
 

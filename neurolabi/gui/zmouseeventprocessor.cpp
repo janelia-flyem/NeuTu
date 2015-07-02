@@ -19,6 +19,7 @@ void ZMouseEventProcessor::registerMapper()
   m_mapperList.append(&m_leftButtonDoubleClickMapper);
   m_mapperList.append(&m_leftButtonPressMapper);
   m_mapperList.append(&m_rightButtonPressMapper);
+  m_mapperList.append(&m_bothButtonPressMapper);
   foreach (ZMouseEventMapper *mapper, m_mapperList) {
     mapper->setRecorder(&m_recorder);
   }
@@ -52,7 +53,7 @@ const ZMouseEvent& ZMouseEventProcessor::process(
   }
 
   ZPoint stackPosition = zevent.getRawStackPosition();
-  if (m_doc != NULL) {
+  if (m_doc.get() != NULL) {
     stackPosition += m_doc->getStackOffset();
   }
   zevent.setStackPosition(stackPosition);
@@ -105,6 +106,8 @@ const ZMouseEventMapper& ZMouseEventProcessor::getMouseEventMapper(
       return m_leftButtonPressMapper;
     } else if (event.getButtons() == Qt::RightButton) {
       return m_rightButtonPressMapper;
+    } else if (event.getButtons() == Qt::LeftButton | Qt::RightButton) {
+      return m_bothButtonPressMapper;
     }
     break;
   case ZMouseEvent::ACTION_DOUBLE_CLICK:
@@ -174,7 +177,7 @@ ZPoint ZMouseEventProcessor::getLatestStackPosition() const
 {
   ZPoint pt = getLatestMouseEvent().getRawStackPosition();
 
-  if (m_doc != NULL) {
+  if (m_doc.get() != NULL) {
     pt += m_doc->getStackOffset();
   }
 

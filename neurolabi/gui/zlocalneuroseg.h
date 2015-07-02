@@ -33,6 +33,7 @@ public:
                        EDisplayStyle style = NORMAL, int label = 0) const;
   virtual void display(ZPainter &painter, int z, EDisplayStyle option,
                        const QColor &color) const;
+  using ZStackObject::display; // fix warning -Woverloaded-virtual
 
   virtual void save(const char *filePath);
   virtual bool load(const char *filePath);

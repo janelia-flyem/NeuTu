@@ -17,6 +17,7 @@ downloadDir=$install_dir/Download
 if [ ! -d $downloadDir ]
 then
   mkdir $downloadDir
+  chmod a+w $downloadDir
 fi
 
 if [ ! -f $install_dir/Trolltech/Qt4.8.5/bin/qmake ]
@@ -33,7 +34,7 @@ then
   fi
 
   cd $downloadDir/$qtsrc
-  ./configure --prefix=$install_dir/Trolltech/Qt4.8.5 -no-webkit -qt-libpng
+  { echo o; yes; } | ./configure --prefix=$install_dir/Trolltech/Qt4.8.5 -no-webkit -qt-libpng
   make -j3
   make install
 fi
@@ -70,6 +71,7 @@ then
 fi
 
 cd $downloadDir/libdvid-cpp
+$GIT_CMD pull
 if [ ! -d build ]
 then
   mkdir build
@@ -80,23 +82,27 @@ else
   cd build
 fi
 
-$CMAKE_CMD .. -DBUILDEM_DIR=$downloadDir/buildem
+$CMAKE_CMD .. -DBUILDEM_DIR=$downloadDir/buildem -DWITH_ATLAS=0
+make
 make
 
 updateFile=$install_dir/bin/ntupd
-if [ ! -f $updateFile ]
+touch $updateFile
+echo '#!/bin/bash' > $updateFile
+echo "cd $downloadDir/neutube" >> $updateFile
+echo "$GIT_CMD pull" >> $updateFile
+#if [ -d $downloadDir/buildem ]
+#then
+#  ext_qmake_args="-q BUILDEM_DIR=$downloadDir/buildem"
+#fi
+#echo "sh build.sh $install_dir/Trolltech/Qt4.8.5/bin/qmake $install_dir/Trolltech/Qt4.8.5/mkspecs/linux-g++ -e flyem $ext_qmake_args" >> $updateFile
+echo "$downloadDir/neutube/neurolabi/shell/flyem_ntupd $install_dir" >> $updateFile
+if [ -f $install_dir/bin/ntupd_post ]
 then
-  touch $updateFile
-  echo '#!/bin/bash' > $updateFile
-  echo "cd $downloadDir/neutube" >> $updateFile
-  echo "$GIT_CMD pull" >> $updateFile
-  if [ -d $downloadDir/buildem ]
-  then
-    ext_qmake_args="-q BUILDEM_DIR=$downloadDir/buildem"
-  fi
-  echo "sh build.sh $install_dir/Trolltech/Qt4.8.5/bin/qmake $install_dir/Trolltech/Qt4.8.5/mkspecs/linux-g++ -e flyem $ext_qmake_args" >> $updateFile
-  chmod a+x $updateFile
+  echo "$install_dir/bin/ntupd_post $install_dir" >> $updateFile
 fi
+
+chmod a+x $updateFile
 
 $install_dir/bin/ntupd
 

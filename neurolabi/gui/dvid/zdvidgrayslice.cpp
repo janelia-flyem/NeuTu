@@ -7,7 +7,7 @@
 ZDvidGraySlice::ZDvidGraySlice() : m_x(0), m_y(0), m_z(0), m_width(0),
   m_height(0)
 {
-  setTarget(ZStackObject::STACK_CANVAS);
+  setTarget(ZStackObject::TARGET_STACK_CANVAS);
   m_type = ZStackObject::TYPE_DVID_GRAY_SLICE;
 }
 

@@ -21,7 +21,7 @@ ZPunctum::ZPunctum()
   setSDevOfIntensity(0);
   updateVolSize();
   updateMass();
-  setVisualEffect(ZStackBall::VE_OUT_FOCUS_DIM);
+  setVisualEffect(ZStackBall::VE_OUT_FOCUS_DIM | ZStackBall::VE_DOT_CENTER);
   m_type = ZStackObject::TYPE_PUNCTUM;
 }
 

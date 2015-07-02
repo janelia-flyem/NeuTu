@@ -1,6 +1,7 @@
 #include "zflyembodymergeproject.h"
 
 #include <QtConcurrentRun>
+#include <QApplication>
 #include <QItemSelectionModel>
 
 #include "zintpoint.h"
@@ -26,11 +27,23 @@
 #include "dvid/zdvidurl.h"
 #include "zflyemproofdoc.h"
 #include "zstackmvc.h"
+#include "dvid/zdvidsparsevolslice.h"
+#include "dvid/zdvidlabelslice.h"
+#include "zwidgetmessage.h"
+#include "z3dgraphfactory.h"
+#include "zstackdochelper.h"
+#include "z3dgraphfilter.h"
+#include "zflyemmisc.h"
+#include "zprogresssignal.h"
+#include "zdialogfactory.h"
 
 ZFlyEmBodyMergeProject::ZFlyEmBodyMergeProject(QObject *parent) :
   QObject(parent), m_dataFrame(NULL), m_bodyWindow(NULL),
   m_showingBodyMask(true)
 {
+  m_progressSignal = new ZProgressSignal(this);
+
+  connectSignalSlot();
 }
 
 ZFlyEmBodyMergeProject::~ZFlyEmBodyMergeProject()
@@ -46,15 +59,39 @@ void ZFlyEmBodyMergeProject::clear()
     m_dataFrame = NULL;
   }
 
-  m_currentSelected.clear();
+  if (m_bodyWindow != NULL) {
+    m_bodyWindow->hide();
+    delete m_bodyWindow;
+    m_bodyWindow = NULL;
+  }
+
+  m_selectedOriginal.clear();
+}
+
+void ZFlyEmBodyMergeProject::connectSignalSlot()
+{
+  connect(this, SIGNAL(coarseBodyWindowCreatedInThread()),
+          this, SLOT(present3DBodyView()));
+}
+
+ZProgressSignal* ZFlyEmBodyMergeProject::getProgressSignal() const
+{
+  return m_progressSignal;
 }
 
 int ZFlyEmBodyMergeProject::getCurrentZ() const
 {
   int z = 0;
+
+  if (getDocument() != NULL) {
+    getDocument()->getStackOffset().getZ();
+  }
+  /*
+
   if (m_dataFrame != NULL) {
     z = m_dataFrame->document()->getStackOffset().getZ();
   }
+  */
 
   return z;
 }
@@ -70,7 +107,7 @@ void ZFlyEmBodyMergeProject::test()
     ZStack stack;
     stack.load(GET_TEST_DATA_DIR + "/benchmark/em_stack_slice_seg.tif");
     ZArray *array = ZArrayFactory::MakeArray(&stack);
-    emit originalLabelUpdated(array, &m_currentSelected);
+    emit originalLabelUpdated(array, &m_selectedOriginal);
   } else {
     emit newDocReady(reader, true);
   }
@@ -79,7 +116,7 @@ void ZFlyEmBodyMergeProject::test()
 void ZFlyEmBodyMergeProject::changeDvidNode(const std::string &newUuid)
 {
   m_dvidTarget.setUuid(newUuid);
-  m_currentSelected.clear();
+  m_selectedOriginal.clear();
 }
 
 void ZFlyEmBodyMergeProject::loadSlice(
@@ -118,7 +155,7 @@ void ZFlyEmBodyMergeProject::loadSliceFunc(
             //ZDvidData::getName(ZDvidData::ROLE_BODY_LABEL),
             x0, y0, z, width, height, 1);
 #endif
-      emit originalLabelUpdated(array, &m_currentSelected);
+      emit originalLabelUpdated(array, &m_selectedOriginal);
     } else {
       emit newDocReady(docReader, true);
     }
@@ -331,34 +368,78 @@ void ZFlyEmBodyMergeProject::setLoadingLabel(bool state)
   m_showingBodyMask = state;
 }
 
-void ZFlyEmBodyMergeProject::uploadResult()
+void ZFlyEmBodyMergeProject::saveMergeOperation()
 {
-  ZDvidWriter dvidWriter;
-  if (dvidWriter.open(m_dvidTarget)) {
-    ZFlyEmBodyMerger *bodyMerger =
-        m_dataFrame->getCompleteDocument()->getBodyMerger();
-    ZFlyEmBodyMerger::TLabelMap labelMap = bodyMerger->getFinalMap();
+  ZFlyEmBodyMergeDoc *doc = getDocument<ZFlyEmBodyMergeDoc>();
+  if (doc != NULL) {
+    doc->saveMergeOperation();
+  } else {
+    ZFlyEmProofDoc *doc2 = getDocument<ZFlyEmProofDoc>();
+    if (doc2 != NULL) {
+      doc2->saveMergeOperation();
+    }
+  }
+}
 
-    //reorganize the map
-    QMap<int, std::vector<int> > mergeMap;
-    foreach (int sourceId, labelMap.keys()) {
-      int targetId = labelMap.value(sourceId);
-      if (mergeMap.contains(targetId)) {
-        std::vector<int> &idArray = mergeMap[targetId];
-        idArray.push_back(sourceId);
-      } else {
-        mergeMap[targetId] = std::vector<int>();
-        mergeMap[targetId].push_back(sourceId);
+void ZFlyEmBodyMergeProject::clearBodyMerger()
+{
+  ZFlyEmBodyMergeDoc *doc = getDocument<ZFlyEmBodyMergeDoc>();
+  if (doc != NULL) {
+    doc->clearBodyMerger();
+  } else {
+    ZFlyEmProofDoc *doc2 = getDocument<ZFlyEmProofDoc>();
+    if (doc2 != NULL) {
+      doc2->clearBodyMerger();
+    }
+  }
+}
+
+void ZFlyEmBodyMergeProject::uploadResultFunc()
+{
+  ZFlyEmBodyMerger *bodyMerger = getBodyMerger();
+  if (bodyMerger != NULL) {
+    getProgressSignal()->startProgress("Uploading merge result ...");
+
+    ZDvidWriter dvidWriter;
+    if (dvidWriter.open(m_dvidTarget)) {
+      ZFlyEmBodyMerger::TLabelMap labelMap = bodyMerger->getFinalMap();
+
+      if (!labelMap.isEmpty()) {
+        //reorganize the map
+        QMap<int, std::vector<int> > mergeMap;
+        foreach (int sourceId, labelMap.keys()) {
+          int targetId = labelMap.value(sourceId);
+          if (mergeMap.contains(targetId)) {
+            std::vector<int> &idArray = mergeMap[targetId];
+            idArray.push_back(sourceId);
+          } else {
+            mergeMap[targetId] = std::vector<int>();
+            mergeMap[targetId].push_back(sourceId);
+          }
+        }
+
+        foreach (int targetId, mergeMap.keys()) {
+          dvidWriter.mergeBody(
+                m_dvidTarget.getBodyLabelName(),
+                targetId, mergeMap.value(targetId));
+        }
+
+        clearBodyMerger();
+        emit dvidLabelChanged();
+//        bodyMerger->clear();
+        saveMergeOperation();
+
+        ZWidgetMessage message("Body merge finalized.");
+        emit messageGenerated(message);
       }
     }
-
-    foreach (int targetId, mergeMap.keys()) {
-      dvidWriter.mergeBody(
-            m_dvidTarget.getBodyLabelName(),
-            targetId, mergeMap.value(targetId));
-    }
-    bodyMerger->clear();
+    getProgressSignal()->endProgress();
   }
+}
+
+void ZFlyEmBodyMergeProject::uploadResult()
+{
+  uploadResultFunc();
 }
 
 void ZFlyEmBodyMergeProject::detachBodyWindow()
@@ -366,65 +447,99 @@ void ZFlyEmBodyMergeProject::detachBodyWindow()
   m_bodyWindow = NULL;
 }
 
-void ZFlyEmBodyMergeProject::showBody3d()
+void ZFlyEmBodyMergeProject::make3DBodyWindow(ZStackDoc *doc)
 {
-  if (m_bodyWindow == NULL) {
-    ZStackDoc *doc = new ZStackDoc(NULL, NULL);
-    ZWindowFactory factory;
-    factory.setControlPanelVisible(false);
-    factory.setObjectViewVisible(false);
+  getProgressSignal()->startProgress("Showing 3D coarse body ...");
 
-    QRect rect;
-    if (m_dataFrame != NULL) {
-      rect = m_dataFrame->getViewGeometry();
-    } else {
-      if (getDocument()->getParentMvc() != NULL) {
-        rect = getDocument()->getParentMvc()->getViewGeometry();
-      }
+  ZWindowFactory factory;
+  factory.setControlPanelVisible(false);
+  factory.setObjectViewVisible(false);
+
+  QRect rect;
+  if (m_dataFrame != NULL) {
+    rect = m_dataFrame->getViewGeometry();
+  } else {
+    if (getDocument()->getParentMvc() != NULL) {
+      rect = getDocument()->getParentMvc()->getViewGeometry();
     }
-    if (rect.isValid()) {
-      rect.moveTo(rect.right(), rect.top());
-      rect.setSize(rect.size() / 2);
-      factory.setWindowGeometry(rect);
-    }
-
-    m_bodyWindow = factory.make3DWindow(doc);
-    //m_bodyWindow->setParent(m_dataFrame);
-
-    connect(m_bodyWindow, SIGNAL(closed()), this, SLOT(detachBodyWindow()));
-    m_bodyWindow->getSwcFilter()->setColorMode("Intrinsic");
-    m_bodyWindow->getSwcFilter()->setRenderingPrimitive("Sphere");
-    m_bodyWindow->getSwcFilter()->setStayOnTop(false);
-    m_bodyWindow->setYZView();
+  }
+  if (rect.isValid()) {
+    rect.moveTo(rect.right(), rect.top());
+    rect.setSize(rect.size() / 2);
+    factory.setWindowGeometry(rect);
   }
 
-  update3DBodyView();
+  getProgressSignal()->advanceProgress(0.1);
 
+  m_bodyWindow = factory.make3DWindow(doc);
+  m_bodyWindow->getGraphFilter()->setStayOnTop(false);
+  //m_bodyWindow->setParent(m_dataFrame);
+
+  m_bodyWindow->getSwcFilter()->setColorMode("Intrinsic");
+  m_bodyWindow->getSwcFilter()->setRenderingPrimitive("Sphere");
+  m_bodyWindow->getSwcFilter()->setStayOnTop(false);
+  m_bodyWindow->setYZView();
+
+  connect(m_bodyWindow, SIGNAL(closed()), this, SLOT(detachBodyWindow()));
+  connect(m_bodyWindow, SIGNAL(locating2DViewTriggered(ZStackViewParam)),
+          this, SIGNAL(locating2DViewTriggered(ZStackViewParam)));
+
+  getProgressSignal()->advanceProgress(0.4);
+
+  update3DBodyView(false);
+
+  emit coarseBodyWindowCreatedInThread();
+
+  getProgressSignal()->endProgress();
+}
+
+void ZFlyEmBodyMergeProject::present3DBodyView()
+{
+//  m_bodyWindow->moveToThread(QApplication::instance()->thread());
   m_bodyWindow->show();
   m_bodyWindow->raise();
 }
 
-void ZFlyEmBodyMergeProject::update3DBodyView()
+void ZFlyEmBodyMergeProject::showBody3d()
 {
+  if (m_bodyWindow == NULL) {
+    ZStackDoc *doc = new ZStackDoc(NULL, NULL);
+
+    make3DBodyWindow(doc);
+//    QFuture<void> result =
+//        QtConcurrent::run(this, &ZFlyEmBodyMergeProject::make3DBodyWindow, doc);
+//    result.waitForFinished();
+
+//    make3DBodyWindow(doc);
+  } else {
+    m_bodyWindow->show();
+    m_bodyWindow->raise();
+  }
+}
+
+/*
+void ZFlyEmBodyMergeProject::updateSelection()
+{
+  m_currentSelected = getBodyMerger()->getFinalLabel(m_currentSelected);
+}
+*/
+
+void ZFlyEmBodyMergeProject::update3DBodyViewDeep()
+{
+  bool isDeep = true;
+
+  //updateSelection();
+
   if (m_bodyWindow != NULL) {
     std::set<std::string> currentBodySourceSet;
-    for (QSet<uint64_t>::const_iterator iter = m_currentSelected.begin();
-         iter != m_currentSelected.end(); ++iter) {
+    std::set<uint64_t> selectedMapped =
+        getBodyMerger()->getFinalLabel(m_selectedOriginal.begin(),
+                                       m_selectedOriginal.end());
+
+    for (std::set<uint64_t>::const_iterator iter = selectedMapped.begin();
+         iter != selectedMapped.end(); ++iter) {
       currentBodySourceSet.insert(
             ZStackObjectSourceFactory::MakeFlyEmBodySource(*iter));
-    }
-
-    std::set<std::string> oldBodySourceSet;
-    QList<ZSwcTree*> bodyList = m_bodyWindow->getDocument()->getSwcList();
-    for (QList<ZSwcTree*>::iterator iter = bodyList.begin();
-         iter != bodyList.end(); ++iter) {
-      ZSwcTree *tree = *iter;
-      if (currentBodySourceSet.count(tree->getSource()) == 0) {
-        m_bodyWindow->getDocument()->removeObject(
-              dynamic_cast<ZStackObject*>(tree), true);
-      } else {
-        oldBodySourceSet.insert(tree->getSource());
-      }
     }
 
     ZFlyEmDvidReader reader;
@@ -443,42 +558,228 @@ void ZFlyEmBodyMergeProject::update3DBodyView()
       }
     }
 
-    ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
-    m_bodyWindow->getDocument()->blockSignals(true);
+//    ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
 
-    for (QSet<uint64_t>::const_iterator iter = m_currentSelected.begin();
-         iter != m_currentSelected.end(); ++iter) {
+    m_bodyWindow->getDocument()->beginObjectModifiedMode(
+          ZStackDoc::OBJECT_MODIFIED_CACHE);
+//    m_bodyWindow->getDocument()->blockSignals(true);
+
+    if (isDeep) {
+      m_bodyWindow->getDocument()->removeAllSwcTree(true);
+    }
+
+    std::set<std::string> oldBodySourceSet;
+    QList<ZSwcTree*> bodyList = m_bodyWindow->getDocument()->getSwcList();
+    for (QList<ZSwcTree*>::iterator iter = bodyList.begin();
+         iter != bodyList.end(); ++iter) {
+      ZSwcTree *tree = *iter;
+      if (currentBodySourceSet.count(tree->getSource()) == 0) {
+        m_bodyWindow->getDocument()->removeObject(
+              dynamic_cast<ZStackObject*>(tree), true);
+      } else {
+        oldBodySourceSet.insert(tree->getSource());
+      }
+    }
+
+    for (std::set<uint64_t>::const_iterator iter = selectedMapped.begin();
+         iter != selectedMapped.end(); ++iter) {
       uint64_t label = *iter;
       std::string source = ZStackObjectSourceFactory::MakeFlyEmBodySource(label);
       if (oldBodySourceSet.count(source) == 0) {
-        ZObject3dScan body = reader.readCoarseBody(label);
+        ZObject3dScan body;
+
+        QList<uint64_t> bodyList =
+            getDocument<ZFlyEmProofDoc>()->getMergedSource(label);
+//        bodyList.append(label);
+
+        for (int i = 0; i < bodyList.size(); ++i) {
+          body.concat(reader.readCoarseBody(bodyList[i]));
+        }
+
         if (!body.isEmpty()) {
 //          body.setColor(sparseObject->getColor());
           if (getDocument<ZFlyEmProofDoc>() != NULL) {
             ZDvidLabelSlice *labelSlice =
                 getDocument<ZFlyEmProofDoc>()->getDvidLabelSlice();
             if (labelSlice != NULL) {
-              body.setColor(labelSlice->getColorScheme().getColor(label));
+              body.setColor(labelSlice->getColor(label, NeuTube::BODY_LABEL_MAPPED));
             }
           }
           body.setAlpha(255);
           ZSwcTree *tree = ZSwcGenerator::createSurfaceSwc(body);
-          tree->translate(-dvidInfo.getStartBlockIndex());
-          tree->rescale(dvidInfo.getBlockSize().getX(),
-                        dvidInfo.getBlockSize().getY(),
-                        dvidInfo.getBlockSize().getZ());
-          tree->translate(dvidInfo.getStartCoordinates());
+          tree->translate(-m_dvidInfo.getStartBlockIndex());
+          tree->rescale(m_dvidInfo.getBlockSize().getX(),
+                        m_dvidInfo.getBlockSize().getY(),
+                        m_dvidInfo.getBlockSize().getZ());
+          tree->translate(m_dvidInfo.getStartCoordinates());
           tree->setSource(source);
-          m_bodyWindow->getDocument()->addSwcTree(tree, true);
+          m_bodyWindow->getDocument()->addObject(tree, true);
         }
       }
     }
-    m_bodyWindow->getDocument()->blockSignals(false);
-    m_bodyWindow->getDocument()->notifySwcModified();
+//    m_bodyWindow->getDocument()->blockSignals(false);
+//    m_bodyWindow->getDocument()->notifySwcModified();
+
+    m_bodyWindow->getDocument()->endObjectModifiedMode();
+    m_bodyWindow->getDocument()->notifyObjectModified();
 
     m_bodyWindow->show();
     m_bodyWindow->raise();
     m_bodyWindow->resetCameraCenter();
+  }
+}
+
+void ZFlyEmBodyMergeProject::update3DBodyViewPlane(const ZDvidInfo &dvidInfo)
+{
+  if (m_bodyWindow != NULL) {
+    ZRect2d rect;
+    ZStackDocHelper docHelper;
+    docHelper.extractCurrentZ(getDocument());
+    if (docHelper.hasCurrentZ()) {
+      rect.setZ(docHelper.getCurrentZ());
+      //    rect.setZ(getCurrentZ());
+      rect.setFirstCorner(dvidInfo.getStartCoordinates().getX(),
+                          dvidInfo.getStartCoordinates().getY());
+      rect.setLastCorner(dvidInfo.getEndCoordinates().getX(),
+                         dvidInfo.getEndCoordinates().getY());
+      ZCuboid box;
+      box.setFirstCorner(dvidInfo.getStartCoordinates().toPoint());
+      box.setLastCorner(dvidInfo.getEndCoordinates().toPoint());
+      double lineWidth = box.depth() / 500.0;
+      Z3DGraph *graph = Z3DGraphFactory::MakeGrid(rect, 25, lineWidth);
+      graph->setSource(ZStackObjectSourceFactory::MakeFlyEmPlaneObjectSource());
+      m_bodyWindow->getDocument()->addObject(graph, true);
+    }
+  }
+}
+
+void ZFlyEmBodyMergeProject::update3DBodyViewBox(const ZDvidInfo &dvidInfo)
+{
+  if (m_bodyWindow != NULL) {
+    ZCuboid box;
+    box.setFirstCorner(dvidInfo.getStartCoordinates().toPoint());
+    box.setLastCorner(dvidInfo.getEndCoordinates().toPoint());
+    Z3DGraph *graph = Z3DGraphFactory::MakeBox(
+          box, dmax2(1.0, dmax3(box.width(), box.height(), box.depth()) / 500.0));
+    graph->setSource(ZStackObjectSourceFactory::MakeFlyEmBoundBoxSource());
+
+    m_bodyWindow->getDocument()->addObject(graph, true);
+  }
+}
+
+void ZFlyEmBodyMergeProject::update3DBodyView(bool showingWindow)
+{
+  if (m_bodyWindow != NULL) {
+    std::set<std::string> currentBodySourceSet;
+    std::set<uint64_t> selectedMapped = getBodyMerger()->getFinalLabel(
+          m_selectedOriginal.begin(), m_selectedOriginal.end());
+    for (std::set<uint64_t>::const_iterator iter = selectedMapped.begin();
+         iter != selectedMapped.end(); ++iter) {
+      currentBodySourceSet.insert(
+            ZStackObjectSourceFactory::MakeFlyEmBodySource(*iter));
+    }
+
+    std::set<std::string> oldBodySourceSet;
+    QList<ZSwcTree*> bodyList = m_bodyWindow->getDocument()->getSwcList();
+    for (QList<ZSwcTree*>::iterator iter = bodyList.begin();
+         iter != bodyList.end(); ++iter) {
+      ZSwcTree *tree = *iter;
+      if (currentBodySourceSet.count(tree->getSource()) == 0) {
+        m_bodyWindow->getDocument()->removeObject(
+              dynamic_cast<ZStackObject*>(tree), true);
+      } else {
+        oldBodySourceSet.insert(tree->getSource());
+      }
+    }
+
+    if (getDataFrame() != NULL) {
+      ZStack *oldStack = m_bodyWindow->getDocument()->getStack();
+      ZStack *newStack = getDataFrame()->document()->getStack();
+      if (oldStack != NULL) {
+        if (oldStack->getBoundBox().equals(newStack->getBoundBox())) {
+          newStack = NULL;
+        }
+      }
+      if (newStack != NULL) {
+        m_bodyWindow->getDocument()->loadStack(newStack->clone());
+      }
+    }
+
+
+//    m_bodyWindow->getDocument()->blockSignals(true);
+    m_bodyWindow->getDocument()->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+
+
+    ZFlyEmDvidReader reader;
+    reader.open(getDvidTarget());
+
+//    ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
+
+    update3DBodyViewBox(m_dvidInfo);
+    update3DBodyViewPlane(m_dvidInfo);
+
+    for (std::set<uint64_t>::const_iterator iter = selectedMapped.begin();
+         iter != selectedMapped.end(); ++iter) {
+      uint64_t label = *iter;
+      std::string source = ZStackObjectSourceFactory::MakeFlyEmBodySource(label);
+      if (oldBodySourceSet.count(source) == 0) {
+        ZObject3dScan body;
+
+        QList<uint64_t> bodyList =
+            getDocument<ZFlyEmProofDoc>()->getMergedSource(label);
+//        bodyList.append(label);
+
+        for (int i = 0; i < bodyList.size(); ++i) {
+          body.concat(reader.readCoarseBody(bodyList[i]));
+        }
+
+        if (!body.isEmpty()) {
+//          body.setColor(sparseObject->getColor());
+          if (getDocument<ZFlyEmProofDoc>() != NULL) {
+            ZDvidLabelSlice *labelSlice =
+                getDocument<ZFlyEmProofDoc>()->getDvidLabelSlice();
+            if (labelSlice != NULL) {
+              body.setColor(labelSlice->getColor(
+                              label, NeuTube::BODY_LABEL_MAPPED));
+            }
+          }
+          body.setAlpha(255);
+          ZSwcTree *tree = ZSwcGenerator::createSurfaceSwc(body);
+          tree->translate(-m_dvidInfo.getStartBlockIndex());
+          tree->rescale(m_dvidInfo.getBlockSize().getX(),
+                        m_dvidInfo.getBlockSize().getY(),
+                        m_dvidInfo.getBlockSize().getZ());
+          tree->translate(m_dvidInfo.getStartCoordinates());
+          tree->setSource(source);
+          m_bodyWindow->getDocument()->addObject(tree, true);
+        }
+      }
+    }
+//    m_bodyWindow->getDocument()->blockSignals(false);
+//    m_bodyWindow->getDocument()->notifySwcModified();
+    m_bodyWindow->getDocument()->endObjectModifiedMode();
+    m_bodyWindow->getDocument()->notifyObjectModified();
+
+    if (showingWindow) {
+      m_bodyWindow->show();
+      m_bodyWindow->raise();
+    }
+    m_bodyWindow->resetCameraCenter();
+  }
+}
+
+void ZFlyEmBodyMergeProject::update3DBodyViewPlane()
+{
+  if (m_bodyWindow != NULL) {
+    ZFlyEmDvidReader reader;
+    reader.open(getDvidTarget());
+
+//    ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
+    ZCuboid box;
+    box.setFirstCorner(m_dvidInfo.getStartCoordinates().toPoint());
+    box.setLastCorner(m_dvidInfo.getEndCoordinates().toPoint());
+
+    update3DBodyViewPlane(m_dvidInfo);
   }
 }
 
@@ -493,7 +794,7 @@ void ZFlyEmBodyMergeProject::update3DBodyView(
     reader.open(getDvidTarget());
 
     ZStack *oldStack = m_bodyWindow->getDocument()->getStack();
-    ZStack *newStack = getDataFrame()->document()->getStack();
+    ZStack *newStack = getDocument()->getStack();
     if (oldStack != NULL) {
       if (oldStack->getBoundBox().equals(newStack->getBoundBox())) {
         newStack = NULL;
@@ -503,8 +804,11 @@ void ZFlyEmBodyMergeProject::update3DBodyView(
       m_bodyWindow->getDocument()->loadStack(newStack->clone());
     }
 
-    ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
-    m_bodyWindow->getDocument()->blockSignals(true);
+//    ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
+
+    m_bodyWindow->getDocument()->beginObjectModifiedMode(
+          ZStackDoc::OBJECT_MODIFIED_CACHE);
+//    m_bodyWindow->getDocument()->blockSignals(true);
     for (std::vector<ZStackObject*>::const_iterator iter = objList.begin();
          iter != objList.end(); ++iter) {
       ZStackObject *obj = *iter;
@@ -521,17 +825,17 @@ void ZFlyEmBodyMergeProject::update3DBodyView(
             ZDvidLabelSlice *labelSlice =
                 getDocument<ZFlyEmProofDoc>()->getDvidLabelSlice();
             if (labelSlice != NULL) {
-              body.setColor(labelSlice->getColorScheme().getColor(label));
+              body.setColor(labelSlice->getColor(label, NeuTube::BODY_LABEL_ORIGINAL));
             }
           }
           body.setAlpha(255);
           //        tic();
           ZSwcTree *tree = ZSwcGenerator::createSurfaceSwc(body);
-          tree->translate(-dvidInfo.getStartBlockIndex());
-          tree->rescale(dvidInfo.getBlockSize().getX(),
-                        dvidInfo.getBlockSize().getY(),
-                        dvidInfo.getBlockSize().getZ());
-          tree->translate(dvidInfo.getStartCoordinates());
+          tree->translate(-m_dvidInfo.getStartBlockIndex());
+          tree->rescale(m_dvidInfo.getBlockSize().getX(),
+                        m_dvidInfo.getBlockSize().getY(),
+                        m_dvidInfo.getBlockSize().getZ());
+          tree->translate(m_dvidInfo.getStartCoordinates());
           tree->setSource(ZStackObjectSourceFactory::MakeFlyEmBodySource(label));
 
           //Add bound box
@@ -545,7 +849,7 @@ void ZFlyEmBodyMergeProject::update3DBodyView(
 
           //        ptoc();
 
-          m_bodyWindow->getDocument()->addSwcTree(tree, true);
+          m_bodyWindow->getDocument()->addObject(tree, true);
         }
       }
     }
@@ -569,8 +873,11 @@ void ZFlyEmBodyMergeProject::update3DBodyView(
         }
       }
     }
-    m_bodyWindow->getDocument()->blockSignals(false);
-    m_bodyWindow->getDocument()->notifySwcModified();
+//    m_bodyWindow->getDocument()->blockSignals(false);
+//    m_bodyWindow->getDocument()->notifySwcModified();
+
+    m_bodyWindow->getDocument()->endObjectModifiedMode();
+    m_bodyWindow->getDocument()->notifyObject3dScanModified();
 
     m_bodyWindow->show();
     m_bodyWindow->raise();
@@ -608,12 +915,12 @@ void ZFlyEmBodyMergeProject::notifySplit()
 
 void ZFlyEmBodyMergeProject::addSelected(uint64_t label)
 {
-  m_currentSelected.insert(label);
+  m_selectedOriginal.insert(label);
 }
 
 void ZFlyEmBodyMergeProject::removeSelected(uint64_t label)
 {
-  m_currentSelected.remove(label);
+  m_selectedOriginal.remove(label);
 }
 
 bool ZFlyEmBodyMergeProject::lockNode(const QString &message)
@@ -654,7 +961,7 @@ ZStackDoc* ZFlyEmBodyMergeProject::getDocument() const
   return m_doc.get();
 }
 
-ZFlyEmBodyMerger* ZFlyEmBodyMergeProject::getBodyMerger()
+ZFlyEmBodyMerger* ZFlyEmBodyMergeProject::getBodyMerger() const
 {
   if (getDocument<ZFlyEmBodyMergeDoc>() != NULL) {
     return getDocument<ZFlyEmBodyMergeDoc>()->getBodyMerger();
@@ -667,12 +974,135 @@ ZFlyEmBodyMerger* ZFlyEmBodyMergeProject::getBodyMerger()
   return NULL;
 }
 
-void ZFlyEmBodyMergeProject::setSelection(const std::set<uint64_t> &selected)
+/*
+void ZFlyEmBodyMergeProject::setSelectionFromOriginal(const std::set<uint64_t> &selected)
 {
-  m_currentSelected.clear();
-  for (std::set<uint64_t>::const_iterator iter = selected.begin();
-       iter != selected.end(); ++iter) {
-    m_currentSelected.insert(*iter);
+  setSelection(getBodyMerger()->getFinalLabel(selected));
+}
+*/
+
+std::set<uint64_t> ZFlyEmBodyMergeProject::getSelection(
+    NeuTube::EBodyLabelType labelType) const
+{
+  std::set<uint64_t> idSet;
+  switch (labelType) {
+  case NeuTube::BODY_LABEL_ORIGINAL:
+    idSet.insert(m_selectedOriginal.begin(), m_selectedOriginal.end());
+    break;
+  case NeuTube::BODY_LABEL_MAPPED:
+    idSet.insert(m_selectedOriginal.begin(), m_selectedOriginal.end());
+    return getBodyMerger()->getFinalLabel(idSet);
+  }
+
+  return idSet;
+}
+
+void ZFlyEmBodyMergeProject::notifySelected() const
+{
+  QString msg;
+  for (QSet<uint64_t>::const_iterator iter = m_selectedOriginal.begin();
+       iter != m_selectedOriginal.end(); ++iter) {
+    msg += QString("%1 ").arg(*iter);
+  }
+
+  if (msg.isEmpty()) {
+    msg = "No body selected.";
+  } else {
+    msg += " selected.";
+  }
+}
+
+void ZFlyEmBodyMergeProject::addSelection(
+    uint64_t bodyId, NeuTube::EBodyLabelType labelType)
+{
+  switch (labelType) {
+  case NeuTube::BODY_LABEL_ORIGINAL:
+    m_selectedOriginal.insert(bodyId);
+    break;
+  case NeuTube::BODY_LABEL_MAPPED:
+    m_selectedOriginal.unite(getBodyMerger()->getOriginalLabelSet(bodyId));
+    break;
+  }
+
+  notifySelected();
+}
+
+void ZFlyEmBodyMergeProject::setSelection(
+    const std::set<uint64_t> &selected, NeuTube::EBodyLabelType labelType)
+{
+  m_selectedOriginal.clear();
+  switch (labelType) {
+  case NeuTube::BODY_LABEL_ORIGINAL:
+    for (std::set<uint64_t>::const_iterator iter = selected.begin();
+         iter != selected.end(); ++iter) {
+      m_selectedOriginal.insert(*iter);
+    }
+    break;
+  case NeuTube::BODY_LABEL_MAPPED:
+    for (std::set<uint64_t>::const_iterator iter = selected.begin();
+         iter != selected.end(); ++iter) {
+      QSet<uint64_t> labelSet = getBodyMerger()->getOriginalLabelSet(*iter);
+      m_selectedOriginal.unite(labelSet);
+    }
+    break;
+  }
+
+  QString msg;
+  for (QSet<uint64_t>::const_iterator iter = m_selectedOriginal.begin();
+       iter != m_selectedOriginal.end(); ++iter) {
+    msg += QString("%1 ").arg(*iter);
+  }
+
+  if (msg.isEmpty()) {
+    msg = "No body selected.";
+  } else {
+    msg += " selected.";
+  }
+
+  emit messageGenerated(ZWidgetMessage(msg));
+//  emitMessage(msg);
+
+//  emit messageGenerated(msg);
+}
+
+void ZFlyEmBodyMergeProject::emitMessage(const QString msg, bool appending)
+{
+  ZWidgetMessage::ETarget target = ZWidgetMessage::TARGET_TEXT;
+  if (appending) {
+    target = ZWidgetMessage::TARGET_TEXT_APPENDING;
+  }
+
+  emit messageGenerated(
+        ZWidgetMessage(msg, NeuTube::MSG_INFORMATION, target));
+}
+
+void ZFlyEmBodyMergeProject::emitError(const QString msg, bool appending)
+{
+  ZWidgetMessage::ETarget target = ZWidgetMessage::TARGET_TEXT;
+  if (appending) {
+    target = ZWidgetMessage::TARGET_TEXT_APPENDING;
+  }
+
+  emit messageGenerated(
+        ZWidgetMessage(msg, NeuTube::MSG_ERROR, target));
+}
+
+
+uint64_t ZFlyEmBodyMergeProject::getMappedBodyId(uint64_t label) const
+{
+  if (getBodyMerger() != NULL) {
+    return getBodyMerger()->getFinalLabel(label);
+  }
+
+  return label;
+}
+
+void ZFlyEmBodyMergeProject::setDvidTarget(const ZDvidTarget &target)
+{
+  m_dvidTarget = target;
+  ZDvidReader reader;
+  if (reader.open(target)) {
+    m_dvidInfo = reader.readGrayScaleInfo();
   }
 }
 
@@ -709,3 +1139,67 @@ void ZFlyEmBodyMergeProject::syncWithDvid()
   }
   */
 }
+
+void ZFlyEmBodyMergeProject::closeBodyWindow()
+{
+  if (getBodyWindow() != NULL) {
+    getBodyWindow()->close();
+  }
+}
+
+void ZFlyEmBodyMergeProject::highlightSelectedObject(bool hl)
+{
+  ZFlyEmProofDoc *doc = getDocument<ZFlyEmProofDoc>();
+  if (doc != NULL /*&& !m_currentSelected.empty()*/) {
+    ZDvidLabelSlice *labelSlice = doc->getDvidLabelSlice();
+    labelSlice->setVisible(!hl);
+//    doc->blockSignals(true);
+    doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+    doc->removeObject(ZStackObject::TYPE_DVID_SPARSEVOL_SLICE, true);
+    /*
+    doc->getObjectGroup().removeObject(
+          ZStackObject::TYPE_DVID_SPARSEVOL_SLICE, true);
+          */
+    if (hl) {
+      QSet<uint64_t> selected = m_selectedOriginal;
+
+      for (QSet<uint64_t>::const_iterator iter = selected.begin();
+           iter != selected.end(); ++iter) {
+        uint64_t bodyId = *iter;
+        ZDvidSparsevolSlice *obj = new ZDvidSparsevolSlice;
+        obj->setDvidTarget(getDvidTarget());
+//        obj->setLabel(doc->getBodyMerger()->getFinalLabel(bodyId));
+        obj->setLabel(bodyId);
+//        uint64_t finalLabel = doc->getBodyMerger()->getFinalLabel(bodyId);
+        obj->setRole(ZStackObjectRole::ROLE_ACTIVE_VIEW);
+        obj->setColor(doc->getDvidLabelSlice()->getColor(
+                        bodyId, NeuTube::BODY_LABEL_ORIGINAL));
+        doc->addObject(obj);
+      }
+
+      labelSlice->setSelection(m_selectedOriginal.begin(),
+                               m_selectedOriginal.end(),
+                               NeuTube::BODY_LABEL_ORIGINAL);
+      /*
+      labelSlice->addSelection(
+            m_currentSelected.begin(), m_currentSelected.end(),
+            NeuTube::BODY_LABEL_MAPPED);
+            */
+
+//        labelSlice->addSelection(bodyId);
+//      }
+//      doc->blockSignals(false);
+
+//      doc->notifyActiveViewModified();
+    } else {
+//      doc->blockSignals(false);
+      doc->notifyActiveViewModified();
+    }
+    doc->endObjectModifiedMode();
+    doc->notifyObjectModified();
+//    doc->blockSignals(false);
+//    doc->notifyObjectModified();
+  }
+}
+
+

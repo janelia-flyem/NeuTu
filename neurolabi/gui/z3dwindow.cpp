@@ -122,6 +122,8 @@ Z3DWindow::Z3DWindow(ZSharedPointer<ZStackDoc> doc, Z3DWindow::EInitMode initMod
   if (m_doc->getStack() != NULL) {
     setWindowTitle(m_doc->stackSourcePath().c_str());
   }
+
+  m_doc->registerUser(this);
   //createToolBar();
 }
 
@@ -177,7 +179,7 @@ void Z3DWindow::gotoPosition(std::vector<double> bound, double minRadius,
     bound[4] -= expand/2;
   }
 
-  setupCamera(bound, Z3DCamera::ResetAll);
+  setupCamera(bound, Z3DCamera::PreserveViewVector);
 }
 
 void Z3DWindow::zoomToSelectedSwcNodes()
@@ -237,16 +239,23 @@ void Z3DWindow::init(EInitMode mode)
     m_graphFilter->setData(graph);
   }
 
-  m_decorationFilter = new Z3DGraphFilter();
-  m_decorationFilter->setStayOnTop(true);
-  m_decorationFilter->setData(m_doc->get3DGraphDecoration());
+//  m_decorationFilter = new Z3DGraphFilter();
+//  m_decorationFilter->setStayOnTop(true);
+
+
+  m_graphFilter->setData(m_doc->get3DGraphDecoration());
+  TStackObjectList objList = m_doc->getObjectList(ZStackObject::TYPE_3D_GRAPH);
+  for (TStackObjectList::const_iterator iter = objList.begin();
+       iter != objList.end(); ++iter) {
+    m_graphFilter->addData(*dynamic_cast<Z3DGraph*>(*iter));
+  }
 
   connect(getDocument(), SIGNAL(punctaModified()), this, SLOT(punctaChanged()));
   connect(getDocument(), SIGNAL(swcModified()), this, SLOT(swcChanged()));
   connect(getDocument(), SIGNAL(swcNetworkModified()),
           this, SLOT(updateNetworkDisplay()));
   connect(getDocument(), SIGNAL(graph3dModified()),
-          this, SLOT(updateDecorationDisplay()));
+          this, SLOT(update3DGraphDisplay()));
   connect(getDocument(),
           SIGNAL(punctaSelectionChanged(QList<ZPunctum*>,QList<ZPunctum*>)),
           this, SLOT(punctaSelectionChanged()));
@@ -336,7 +345,7 @@ void Z3DWindow::init(EInitMode mode)
   m_canvas->addEventListenerToBack(m_volumeRaycaster);      // for trace
   m_canvas->addEventListenerToBack(m_compositor);  // for interaction
   m_canvas->addEventListenerToBack(m_graphFilter);
-  m_canvas->addEventListenerToBack(m_decorationFilter);
+//  m_canvas->addEventListenerToBack(m_decorationFilter);
 
   // build network
   for (int i=0; i<5; i++) {  // max supported channel is 5
@@ -349,7 +358,7 @@ void Z3DWindow::init(EInitMode mode)
   m_punctaFilter->getOutputPort("GeometryFilter")->connect(m_compositor->getInputPort("GeometryFilters"));
   m_swcFilter->getOutputPort("GeometryFilter")->connect(m_compositor->getInputPort("GeometryFilters"));
   m_graphFilter->getOutputPort("GeometryFilter")->connect(m_compositor->getInputPort("GeometryFilters"));
-  m_decorationFilter->getOutputPort("GeometryFilter")->connect(m_compositor->getInputPort("GeometryFilters"));
+//  m_decorationFilter->getOutputPort("GeometryFilter")->connect(m_compositor->getInputPort("GeometryFilters"));
 
   m_axis->getOutputPort("GeometryFilter")->connect(m_compositor->getInputPort("GeometryFilters"));
   m_compositor->getOutputPort("Image")->connect(m_canvasRenderer->getInputPort("Image"));
@@ -371,7 +380,7 @@ void Z3DWindow::init(EInitMode mode)
   updateSwcBoundBox();
   updatePunctaBoundBox();
   updateGraphBoundBox();
-  updateDecorationBoundBox();
+//  updateDecorationBoundBox();
   updateOverallBoundBox();
 
   // adjust camera
@@ -1124,10 +1133,12 @@ void Z3DWindow::updateGraphBoundBox()
   m_graphBoundBox = m_graphFilter->boundBox();
 }
 
+/*
 void Z3DWindow::updateDecorationBoundBox()
 {
   m_decorationBoundBox = m_decorationFilter->boundBox();
 }
+*/
 
 void Z3DWindow::updatePunctaBoundBox()
 {
@@ -1176,8 +1187,8 @@ void Z3DWindow::cleanup()
     m_swcFilter = NULL;
     delete m_graphFilter;
     m_graphFilter = NULL;
-    delete m_decorationFilter;
-    m_decorationFilter = NULL;
+//    delete m_decorationFilter;
+//    m_decorationFilter = NULL;
     delete m_compositor;
     m_compositor = NULL;
     delete m_axis;
@@ -1220,10 +1231,16 @@ void Z3DWindow::updateNetworkDisplay()
   }
 }
 
-void Z3DWindow::updateDecorationDisplay()
+void Z3DWindow::update3DGraphDisplay()
 {
-  m_decorationFilter->setData(m_doc->get3DGraphDecoration());
-  updateDecorationBoundBox();
+  m_graphFilter->setData(m_doc->get3DGraphDecoration());
+  TStackObjectList objList = m_doc->getObjectList(ZStackObject::TYPE_3D_GRAPH);
+  for (TStackObjectList::const_iterator iter = objList.begin();
+       iter != objList.end(); ++iter) {
+    m_graphFilter->addData(*dynamic_cast<Z3DGraph*>(*iter));
+  }
+  updateGraphBoundBox();
+//  updateDecorationBoundBox();
   updateOverallBoundBox();
   resetCameraClippingRange();
 }
@@ -1235,7 +1252,8 @@ void Z3DWindow::updateDisplay()
   swcChanged();
   punctaChanged();
   updateNetworkDisplay();
-  updateDecorationDisplay();
+  update3DGraphDisplay();
+//  updateDecorationDisplay();
 }
 
 void Z3DWindow::punctaChanged()
@@ -2523,7 +2541,7 @@ void Z3DWindow::locateSwcNodeIn2DView()
       cy = iround(center.y());
       cz = iround(center.z());
       int radius = iround(std::max(cuboid.width(), cuboid.height()) / 2.0);
-      const int minRadius = 100;
+      const int minRadius = 400;
       if (radius < minRadius) {
         radius = minRadius;
       }
@@ -2816,11 +2834,14 @@ void Z3DWindow::convertPunctaToSwc()
       tree->addRegularRoot(tn);
     }
 
-    m_doc->addSwcTree(tree, false);
+    m_doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+    m_doc->addObject(tree, false);
     m_doc->removeSelectedPuncta();
+    m_doc->endObjectModifiedMode();
+    m_doc->notifyObjectModified();
 
-    m_doc->notifyPunctumModified();
-    m_doc->notifySwcModified();
+//    m_doc->notifyPunctumModified();
+//    m_doc->notifySwcModified();
   }
 }
 
@@ -3155,21 +3176,26 @@ void Z3DWindow::convertSelectedChainToSwc()
 {
   std::set<ZLocsegChain*> chainSet =
       m_doc->getSelectedObjectSet<ZLocsegChain>(ZStackObject::TYPE_LOCSEG_CHAIN);
+
+  m_doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
   for (std::set<ZLocsegChain*>::iterator iter = chainSet.begin();
        iter != chainSet.end(); ++iter) {
     Swc_Tree_Node *tn = TubeModel::createSwc((*iter)->data());
     if (tn != NULL) {
       ZSwcTree *tree = new ZSwcTree;
       tree->setDataFromNode(tn);
-      m_doc->addSwcTree(tree, false);
+      m_doc->addObject(tree, false);
     }
   }
   //chainSet->clear();
 
   m_doc->executeRemoveTubeCommand();
+  m_doc->endObjectModifiedMode();
 
-  m_doc->notifySwcModified();
-  m_doc->notifyChainModified();
+  m_doc->notifyObjectModified();
+
+//  m_doc->notifySwcModified();
+//  m_doc->notifyChainModified();
 }
 
 bool Z3DWindow::hasSwc() const
@@ -3334,42 +3360,47 @@ void Z3DWindow::addPolyplaneFrom3dPaint(ZStroke2d *stroke)
 
     ZObject3d *obj = ZVoxelGraphics::createPolyPlaneObject(polyline1, polyline2);
 
-    ZObject3d *processedObj = NULL;
+    if (obj != NULL) {
+      ZObject3d *processedObj = NULL;
 
-    const ZStack *stack = NULL;
-    int xIntv = 0;
-    int yIntv = 0;
-    int zIntv = 0;
+      const ZStack *stack = NULL;
+      int xIntv = 0;
+      int yIntv = 0;
+      int zIntv = 0;
 
-    if (getDocument()->hasSparseStack()) {
-      stack = getDocument()->getSparseStack()->getStack();
-      ZIntPoint dsIntv = getDocument()->getSparseStack()->getDownsampleInterval();
-      xIntv = dsIntv.getX();
-      yIntv = dsIntv.getY();
-      zIntv = dsIntv.getZ();
-    } else {
-      stack = getDocument()->getStack();
-    }
+      if (getDocument()->hasSparseStack()) {
+        stack = getDocument()->getSparseStack()->getStack();
+        ZIntPoint dsIntv = getDocument()->getSparseStack()->getDownsampleInterval();
+        xIntv = dsIntv.getX();
+        yIntv = dsIntv.getY();
+        zIntv = dsIntv.getZ();
+      } else {
+        stack = getDocument()->getStack();
+      }
 
-    processedObj = new ZObject3d;
-    for (size_t i = 0; i < obj->size(); ++i) {
-      int x = obj->getX(i) / (xIntv + 1);
-      int y = obj->getY(i) / (yIntv + 1);
-      int z = obj->getZ(i) / (zIntv + 1);
-      int v = 0;
-      for (int dz = -1; dz <= 1; ++dz) {
-        for (int dy = -1; dy <= 1; ++dy) {
-          for (int dx = -1; dx <= 1; ++dx) {
-            v += stack->getIntValue(x + dx, y + dy, z + dz);
+      processedObj = new ZObject3d;
+      for (size_t i = 0; i < obj->size(); ++i) {
+        int x = obj->getX(i) / (xIntv + 1) - stack->getOffset().getX();
+        int y = obj->getY(i) / (yIntv + 1) - stack->getOffset().getY();
+        int z = obj->getZ(i) / (zIntv + 1) - stack->getOffset().getZ();
+        int v = 0;
+        for (int dz = -1; dz <= 1; ++dz) {
+          for (int dy = -1; dy <= 1; ++dy) {
+            for (int dx = -1; dx <= 1; ++dx) {
+              v = stack->getIntValueLocal(x + dx, y + dy, z + dz);
+              if (v > 0) {
+                break;
+              }
+            }
           }
         }
+        if (v > 0) {
+          processedObj->append(obj->getX(i), obj->getY(i), obj->getZ(i));
+        }
       }
-      if (v > 0) {
-        processedObj->append(obj->getX(i), obj->getY(i), obj->getZ(i));
-      }
+      delete obj;
+      obj = processedObj;
     }
-    delete obj;
-    obj = processedObj;
 
     if (obj != NULL) {
 #ifdef _DEBUG_2

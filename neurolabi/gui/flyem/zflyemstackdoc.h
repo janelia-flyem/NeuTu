@@ -29,6 +29,7 @@ public:
   void appendBodyNeighbor(std::vector<std::vector<double> > *selected);
 
   virtual QString dataInfo(int x, int y, int z) const;
+  using ZStackDoc::dataInfo; // fix warning -Woverloaded-virtual
 
   //void setSegmentation(ZStack *seg);
   ZStack* getSegmentation() const;

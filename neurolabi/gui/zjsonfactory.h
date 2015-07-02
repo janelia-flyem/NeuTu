@@ -1,7 +1,10 @@
 #ifndef ZJSONFACTORY_H
 #define ZJSONFACTORY_H
 
+#if defined(_QT_GUI_USED_)
 #include <QMap>
+#endif
+
 #include "tz_stdint.h"
 
 class ZJsonArray;
@@ -20,7 +23,9 @@ public:
   static ZJsonArray MakeJsonArray(const ZObject3dScan &obj,
                                   EObjectForm form = OBJECT_SPARSE);
 
+#if defined(_QT_GUI_USED_)
   static ZJsonArray MakeJsonArray(const QMap<uint64_t, uint64_t> &map);
+#endif
 };
 
 #endif // ZJSONFACTORY_H

@@ -49,13 +49,14 @@ public:
   std::string getSparsevolUrl(const std::string &dataName) const;
   std::string getSparsevolUrl(int bodyId, const std::string &dataName) const;
   std::string getSparsevolUrl(int bodyId) const;
+  std::string getSparsevolUrl(int bodyId, int z) const;
 
 //  std::string getCoarseSparsevolUrl() const;
 //  std::string getCoarseSparsevolUrl(int bodyId) const;
 
   std::string getCoarseSparsevolUrl(const std::string &dataName) const;
-  std::string getCoarseSparsevolUrl(int bodyId, const std::string &dataName) const;
-  std::string getCoarseSparsevolUrl(int bodyId) const;
+  std::string getCoarseSparsevolUrl(uint64_t bodyId, const std::string &dataName) const;
+  std::string getCoarseSparsevolUrl(uint64_t bodyId) const;
 
 
   std::string getGrayscaleUrl() const;
@@ -79,10 +80,10 @@ public:
       const std::string &key1, const std::string &key2) const;
   std::string getAllKeyUrl(const std::string &name) const;
 
-  std::string getAnnotationUrl(const std::string &bodyLabelName) const;
-  std::string getAnnotationUrl(
+  std::string getBodyAnnotationUrl(const std::string &bodyLabelName) const;
+  std::string getBodyAnnotationUrl(
       uint64_t bodyId, const std::string &bodyLabelName) const;
-  std::string getAnnotationUrl(uint64_t bodyId) const;
+  std::string getBodyAnnotationUrl(uint64_t bodyId) const;
 
   std::string getBodyInfoUrl(const std::string &dataName) const;
   std::string getBodyInfoUrl(uint64_t bodyId, const std::string &dataName) const;
@@ -91,6 +92,7 @@ public:
   std::string getBoundBoxUrl() const;
   std::string getBoundBoxUrl(int z) const;
 
+  std::string getLocalBodyIdUrl(int x, int y, int z) const;
 
   std::string getBodyLabelUrl() const;
   std::string getBodyLabelUrl(const std::string &dataName) const;
@@ -108,6 +110,7 @@ public:
 
   std::string getSynapseListUrl() const;
   std::string getSynapseAnnotationUrl(const std::string &name) const;
+  std::string getSynapseAnnotationUrl() const;
 
   std::string getMergeUrl(const std::string &dataName) const;
   std::string getSplitUrl(
@@ -126,6 +129,8 @@ public:
   std::string getLockUrl() const;
   std::string getBranchUrl() const;
 
+  std::string getRoiUrl(const std::string &dataName) const;
+
   static std::string GetEndPoint(const std::string &url);
   /*!
    * \brief Get entry point of getting key value entries
@@ -141,6 +146,8 @@ private:
   static const std::string m_sparsevolCommand;
   static const std::string m_coarseSparsevolCommand;
   static const std::string m_splitCommand;
+  static const std::string m_labelCommand;
+  static const std::string m_roiCommand;
 };
 
 #endif // ZDVIDURL_H

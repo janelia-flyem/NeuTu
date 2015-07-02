@@ -6,15 +6,19 @@
 using namespace std;
 
 
-Z3DGraphFilter::Z3DGraphFilter() : m_lineRenderer(NULL),
+Z3DGraphFilter::Z3DGraphFilter() :
+  m_showGraph("Visible", true),
+  m_lineRenderer(NULL),
   m_coneRenderer(NULL), m_arrowRenderer(NULL), m_sphereRenderer(NULL),
-  m_dataIsInvalid(true)
+  m_dataIsInvalid(false)
   , m_xCut("X Cut", glm::ivec2(0,0), 0, 0)
   , m_yCut("Y Cut", glm::ivec2(0,0), 0, 0)
   , m_zCut("Z Cut", glm::ivec2(0,0), 0, 0)
   , m_widgetsGroup(NULL)
   , m_showingArrow(false)
 {
+  addParameter(m_showGraph);
+//  adjustWidgets();
 }
 
 Z3DGraphFilter::~Z3DGraphFilter()
@@ -53,6 +57,13 @@ void Z3DGraphFilter::deinitialize()
 
 void Z3DGraphFilter::render(Z3DEye eye)
 {
+  if (m_graph.isEmpty()) {
+    return;
+  }
+
+  if (!m_showGraph.get())
+    return;
+
   m_rendererBase->activateRenderer(m_sphereRenderer);
   if (showingArrow()) {
     m_rendererBase->activateRenderer(m_arrowRenderer, Z3DRendererBase::None);
@@ -106,9 +117,9 @@ void Z3DGraphFilter::prepareData()
 
     glm::vec4 baseAndbRadius, axisAndtRadius;
     baseAndbRadius = glm::vec4(startPos.x(), startPos.y(), startPos.z(),
-                               m_graph.getEdge(i).radius());
+                               m_graph.getEdge(i).getWidth());
     axisAndtRadius = glm::vec4(vec.x(), vec.y(), vec.z(),
-                               m_graph.getEdge(i).radius());
+                               m_graph.getEdge(i).getWidth());
 
     if (m_graph.getEdge(i).shape() == GRAPH_CYLINDER) {
       m_baseAndBaseRadius.push_back(baseAndbRadius);
@@ -117,16 +128,16 @@ void Z3DGraphFilter::prepareData()
       m_lines.push_back(baseAndbRadius.xyz());
       m_lines.push_back(glm::vec3(baseAndbRadius.xyz()) +
                         glm::vec3(axisAndtRadius.xyz()));
-      edgeWidth.push_back(m_graph.getEdge(i).radius());
+      edgeWidth.push_back(m_graph.getEdge(i).getWidth());
     }
 
     glm::vec4 arrowBaseAndbRadius, arrowAxisAndtRadius;
 
     ZPoint arrowPos = startPos * 0.6 + endPos * 0.4;
     arrowBaseAndbRadius = glm::vec4(arrowPos.x(), arrowPos.y(), arrowPos.z(),
-                                    m_graph.getEdge(i).radius() * 2 + 5);
+                                    m_graph.getEdge(i).getWidth() + 5);
 
-    normalizedVec *= 25 + m_graph.getEdge(i).radius() * 3;
+    normalizedVec *= 25 + m_graph.getEdge(i).getWidth() * 1.5;
     arrowAxisAndtRadius = glm::vec4(
           normalizedVec.x(), normalizedVec.y(), normalizedVec.z(), 0);
 
@@ -309,6 +320,7 @@ ZWidgetsGroup *Z3DGraphFilter::getWidgetsGroup()
 {
   if (!m_widgetsGroup) {
     m_widgetsGroup = new ZWidgetsGroup("Graph", NULL, 1);
+    new ZWidgetsGroup(&m_showGraph, m_widgetsGroup, 1);
 
     new ZWidgetsGroup(&m_stayOnTop, m_widgetsGroup, 1);
     std::vector<ZParameter*> paras = m_rendererBase->getParameters();
@@ -335,5 +347,6 @@ ZWidgetsGroup *Z3DGraphFilter::getWidgetsGroup()
 
 bool Z3DGraphFilter::isReady(Z3DEye eye) const
 {
-  return Z3DGeometryFilter::isReady(eye) && !m_graph.isEmpty();
+  return Z3DGeometryFilter::isReady(eye) && m_showGraph.get() &&
+      !m_graph.isEmpty();
 }

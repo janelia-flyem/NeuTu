@@ -2,11 +2,16 @@
 #define ZFLYEMBODYSPLITPROJECT_H
 
 #include <QObject>
+#include <QMutex>
+
 #include <set>
+#include "qthreadfuturemap.h"
 #include "dvid/zdvidtarget.h"
 #include "flyem/zflyembookmarklistmodel.h"
 #include "qthreadfuturemap.h"
 #include "zsharedpointer.h"
+#include "dvid/zdvidinfo.h"
+#include "zprogresssignal.h"
 
 class ZStackFrame;
 class Z3DWindow;
@@ -17,6 +22,7 @@ class ZFlyEmNeuron;
 class ZStack;
 class ZStackDoc;
 class ZStackViewParam;
+class ZWidgetMessage;
 
 class ZFlyEmBodySplitProject : public QObject
 {
@@ -68,15 +74,19 @@ public:
   void removeAllBookmark();
 
   void showSkeleton(ZSwcTree *tree);
-  void quickView();
+  void showBodyQuickView();
 
   ZObject3dScan* readBody(ZObject3dScan *out) const;
 
-  void saveSeed();
+  void saveSeed(bool emphasizingMessage);
   void deleteSavedSeed();
   void downloadSeed();
   void recoverSeed();
-  void selectSeed(int label);
+  void exportSeed(const QString &fileName);
+  void importSeed(const QString &fileName);
+  int selectSeed(int label);
+  int selectAllSeed();
+  void loadSeed(const ZJsonObject &obj);
 
   void exportSplits();
   void commitResult();
@@ -88,6 +98,7 @@ public:
   void viewFullGrayscale();
   void viewFullGrayscale(bool viewing);
   void updateBodyMask();
+  void downloadBodyMask();
 
   void setShowingBodyMask(bool state){
     m_showingBodyMask = state;
@@ -118,10 +129,17 @@ public:
 
   bool isReadyForSplit(const ZDvidTarget &target);
 
+  void emitMessage(const QString &msg, bool appending = true);
+  void emitPopoupMessage(const QString &msg);
+  void emitError(const QString &msg, bool appending = true);
+
+  ZProgressSignal* getProgressSignal() const;
+
 signals:
-  void messageGenerated(QString);
-//  void messageGenerated(QStringList);
-  void errorGenerated(QString);
+  void messageGenerated(QString, bool appending = true);
+  void errorGenerated(QString, bool appending = true);
+
+  void messageGenerated(const ZWidgetMessage&);
 //  void errorGenerated(QStringList);
   void resultCommitted();
 
@@ -129,16 +147,25 @@ signals:
   void progressDone();
   void progressAdvanced(double dp);
   void locating2DViewTriggered(const ZStackViewParam&);
+  void bodyQuickViewReady();
+  void result3dQuickViewReady();
+  void rasingResultQuickView();
+  void rasingBodyQuickView();
 
 public slots:
   void showDataFrame() const;
   void showDataFrame3d();
   void showResult3d();
-  void showResult3dQuick();
+  void showResultQuickView();
   void showBookmark(bool visible);
   void runSplit();
   void updateResult3dQuick();
   void backupSeed();
+  void startBodyQuickView();
+  void startResultQuickView();
+  void startQuickView(Z3DWindow *window);
+  void raiseBodyQuickView();
+  void raiseResultQuickView();
 
   /*!
    * \brief Clear the project without deleting the associated widgets
@@ -152,6 +179,8 @@ public slots:
   void shallowClearQuickViewWindow();
   //void shallowClearBodyWindow();
 
+  void update3DViewPlane();
+
 private:
   bool showingBodyMask() const { return m_showingBodyMask; }
   void clear(QWidget *widget);
@@ -159,9 +188,16 @@ private:
   void downloadSeed(const std::string &seedKey);
   void removeAllSeed();
   void removeAllSideSeed();
+  void updateResult3dQuickFunc();
+  void quickViewFunc();
+//  void showBodyQuickView();
+//  void showResultQuickView();
+  void showQuickView(Z3DWindow *window);
+  void result3dQuickFunc();
 
 private:
   ZDvidTarget m_dvidTarget;
+  ZDvidInfo m_dvidInfo;
   uint64_t m_bodyId;
   ZStackFrame *m_dataFrame;
   ZSharedPointer<ZStackDoc> m_doc;
@@ -173,6 +209,12 @@ private:
   std::vector<ZStackObject*> m_bookmarkDecoration;
   bool m_isBookmarkVisible;
   bool m_showingBodyMask;
+
+  QThreadFutureMap m_futureMap;
+
+  QMutex m_splitWindowMutex;
+
+  ZProgressSignal *m_progressSignal;
 };
 
 template <typename T>

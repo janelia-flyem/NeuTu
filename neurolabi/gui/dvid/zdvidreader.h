@@ -29,6 +29,7 @@ class ZObject3dScan;
 class ZSparseStack;
 class ZDvidVersionDag;
 class ZDvidSparseStack;
+class ZFlyEmBodyAnnotation;
 
 class ZDvidReader : public QObject
 {
@@ -45,6 +46,7 @@ public:
   ZSwcTree *readSwc(int bodyId);
   ZObject3dScan readBody(int bodyId);
   ZObject3dScan* readBody(int bodyId, ZObject3dScan *result);
+  ZObject3dScan* readBody(int bodyId, int z, ZObject3dScan *result);
 
   ZStack* readThumbnail(int bodyId);
 
@@ -68,7 +70,7 @@ public:
   ZStack* readBodyLabel(
       int x0, int y0, int z0, int width, int height, int depth);
 
-  QString readInfo(const QString &dataName);
+  QString readInfo(const QString &dataName) const;
 
   std::set<int> readBodyId(
       int x0, int y0, int z0, int width, int height, int depth);
@@ -86,7 +88,7 @@ public:
   ZClosedCurve* readRoiCurve(const std::string &key, ZClosedCurve *result);
   ZIntCuboid readBoundBox(int z);
 
-  ZDvidInfo readGrayScaleInfo();
+  ZDvidInfo readGrayScaleInfo() const;
 
   bool hasData(const std::string &key) const;
 
@@ -99,6 +101,8 @@ public:
   bool hasSparseVolume(int bodyId) const;
   bool hasBodyInfo(int bodyId) const;
 
+  bool hasCoarseSparseVolume(int bodyId) const;
+
   ZFlyEmNeuronBodyInfo readBodyInfo(int bodyId);
 
   inline const ZDvidTarget& getDvidTarget() const {
@@ -106,6 +110,8 @@ public:
   }
 
   int readMaxBodyId();
+
+  uint64_t readBodyIdAt(int x, int y, int z);
 
   ZDvidTileInfo readTileInfo(const std::string &dataName) const;
 
@@ -115,6 +121,12 @@ public:
 
   ZDvidVersionDag readVersionDag(const std::string &uuid) const;
   ZDvidVersionDag readVersionDag() const;
+
+  ZObject3dScan readCoarseBody(uint64_t bodyId);
+
+  ZObject3dScan readRoi(const std::string dataName);
+
+  ZFlyEmBodyAnnotation readBodyAnnotation(uint64_t bodyId) const;
 
 signals:
   void readingDone();

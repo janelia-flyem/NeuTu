@@ -40,6 +40,8 @@ class ZMessageManager;
 class ZBodySplitButton;
 class ZStackMvc;
 class ZPixmap;
+class ZLabeledSpinBoxWidget;
+class QSpacerItem;
 
 /*!
  * \brief The ZStackView class shows 3D data slice by slice
@@ -216,7 +218,7 @@ public: //Message system implementation
 
 public slots:
   void updateView();
-  void redraw();
+  void redraw(bool updatingScreen = true);
   void redrawObject();
   //void updateData(int nslice, int threshold = -1);
   //void updateData();
@@ -252,6 +254,7 @@ public slots:
   void setInfo(QString info);
   void autoThreshold();
   void setThreshold(int thre);
+  void setZ(int z);
 
   void displayActiveDecoration(bool display = true);
   void request3DVis();
@@ -260,6 +263,12 @@ public slots:
   void requestMerge();
 
   void setView(const ZStackViewParam &param);
+
+  void updateZSpinBoxValue();
+
+  void paintObject(ZStackObject::ETarget target);
+  void paintObject(const QSet<ZStackObject::ETarget> &targetSet);
+
 
 signals:
   void currentSliceChanged(int);
@@ -287,6 +296,9 @@ public:
 
   void paintMultiresImageTest(int resLevel);
   void customizeWidget();
+
+  void addHorizontalWidget(QWidget *widget);
+  void addHorizontalWidget(QSpacerItem *spacer);
 
   void notifyViewPortChanged();
 
@@ -327,6 +339,9 @@ private:
 
   void init();
 
+  ZPainter* getPainter(ZStackObject::ETarget target);
+  void setCanvasVisible(ZStackObject::ETarget target, bool visible);
+
 private:
   //ZStackFrame *m_parent;
   ZSlider *m_depthControl;
@@ -342,11 +357,14 @@ private:
   ZPixmap *m_activeDecorationCanvas;
   ZPixmap *m_tileCanvas;
   ZImageWidget *m_imageWidget;
+  ZLabeledSpinBoxWidget *m_zSpinBox;
+
   QVBoxLayout *m_layout;
   QHBoxLayout *m_topLayout;
   QHBoxLayout *m_secondTopLayout;
   QHBoxLayout *m_channelControlLayout;
   QHBoxLayout *m_ctrlLayout;
+  QHBoxLayout *m_zControlLayout;
   bool m_scrollEnabled;
 
   QProgressBar *m_progress;

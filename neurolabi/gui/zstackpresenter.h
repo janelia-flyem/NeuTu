@@ -21,6 +21,7 @@
 #include "zmouseeventprocessor.h"
 #include "qthreadfuturemap.h"
 #include "zsharedpointer.h"
+#include "zkeyoperationmap.h"
 
 class ZStackView;
 class ZStackDoc;
@@ -64,7 +65,8 @@ public:
     ACTION_PAINT_STROKE, ACTION_ERASE_STROKE,
     ACTION_LOCATE_SELECTED_SWC_NODES_IN_3D,
     ACTION_SPLIT_DATA, ACTION_SHOW_BODY_IN_3D,
-    ACTION_BODY_SPLIT_START, ACTION_ADD_SPLIT_SEED
+    ACTION_BODY_SPLIT_START, ACTION_ADD_SPLIT_SEED,
+    ACTION_BODY_ANNOTATION, ACTION_BODY_CHECKIN, ACTION_BODY_CHECKOUT
   };
 
   inline double greyScale(int c = 0) const {return m_greyScale[c];}
@@ -96,10 +98,13 @@ public:
   void setZoomOffset(int x, int y);
 */
   void processMouseReleaseEvent(QMouseEvent *event);
-  bool processKeyPressEvent(QKeyEvent *event);
+  virtual bool processKeyPressEvent(QKeyEvent *event);
   void processMouseMoveEvent(QMouseEvent *event);
   void processMousePressEvent(QMouseEvent *event);
   void processMouseDoubleClickEvent(QMouseEvent *eventint);
+
+  virtual bool customKeyProcess(QKeyEvent *event);
+  virtual void processCustomOperator(const ZStackOperator &op);
 
   void createActions();
   void createTraceActions();
@@ -210,6 +215,11 @@ public:
    */
   int getSliceIndex() const;
 
+//  ZStackOperator makeOperator(ZStackOperator::EOperation op);
+
+  bool isOperatable(ZStackOperator::EOperation op);
+//  bool isOperatable(const ZStackOperator &op) const;
+
 public slots:
   void addDecoration(ZStackObject *obj, bool tail = true);
   void removeLastDecoration(ZStackObject *obj);
@@ -267,6 +277,9 @@ public slots:
   void selectConnectedNode();
 
   void notifyBodySplitTriggered();
+  void notifyBodyAnnotationTriggered();
+  void notifyBodyCheckinTriggered();
+  void notifyBodyCheckoutTriggered();
   void slotTest();
 
   void notifyUser(const QString &msg);
@@ -292,7 +305,11 @@ public slots:
 signals:
   void mousePositionCaptured(double x, double y, double z);
   void bodySplitTriggered();
+  void bodyAnnotationTriggered();
+  void bodyCheckinTriggered();
+  void bodyCheckoutTriggered();
   void labelSliceSelectionChanged();
+  void objectVisibleTurnedOn();
 
 private:
   void init();
@@ -310,6 +327,7 @@ private:
 
   bool processKeyPressEventForSwc(QKeyEvent *event);
   bool processKeyPressEventForStroke(QKeyEvent *event);
+  bool processKeyPressEventForStack(QKeyEvent *event);
 
   bool isPointInStack(double x, double y);
   QPointF mapFromWidgetToStack(const QPoint &pos);
@@ -322,7 +340,7 @@ private:
 
   void acceptActiveStroke();
 
-private:
+protected:
   //ZStackFrame *m_parent;
   QList<ZStackObject*> m_decorationList;
   QList<ZStackObject*> m_activeDecorationList;
@@ -398,7 +416,10 @@ private:
   bool m_isStrokeOn;
 
   ZSingleSwcNodeActionActivator m_singleSwcNodeActionActivator;
-  bool m_skipMouseReleaseEvent;
+  int m_skipMouseReleaseEvent;
+
+  ZKeyOperationMap m_swcKeyOperationMap;
+  ZKeyOperationMap m_stackKeyOperationMap;
 
   ZKeyEventSwcMapper m_swcKeyMapper;
   //ZMouseEventLeftButtonReleaseMapper m_leftButtonReleaseMapper;

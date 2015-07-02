@@ -42,7 +42,7 @@
 #include "zsparseobject.h"
 #include "zmessage.h"
 #include "zmessagemanager.h"
-
+#include "zdialogfactory.h"
 
 using namespace std;
 
@@ -275,6 +275,11 @@ void ZStackFrame::consumeDocument(ZStackDoc *doc)
   connect(m_doc.get(), SIGNAL(stackModified()),\
           m_view, SLOT(updateView()));\
   connect(m_doc.get(), SIGNAL(objectModified()), m_view, SLOT(paintObject()));\
+  connect(m_doc.get(), SIGNAL(objectModified(ZStackObject::ETarget)), \
+          m_view, SLOT(paintObject(ZStackObject::ETarget)));\
+  connect(m_doc.get(), SIGNAL(objectModified()), m_view, SLOT(paintObject()));\
+  connect(m_doc.get(), SIGNAL(objectModified(QSet<ZStackObject::ETarget>)), \
+          m_view, SLOT(paintObject(QSet<ZStackObject::ETarget>)));\
   connect(m_doc.get(), SIGNAL(cleanChanged(bool)),\
           this, SLOT(changeWindowTitle(bool)));\
   connect(m_doc.get(), SIGNAL(holdSegChanged()), m_view, SLOT(paintObject()));\
@@ -1198,7 +1203,7 @@ void ZStackFrame::viewRoi(int x, int y, int z, int radius)
   ZStackViewLocator locator;
   locator.setCanvasSize(view()->imageWidget()->canvasSize().width(),
                         view()->imageWidget()->canvasSize().height());
-  QRect viewPort = locator.getViewPort(x, y, radius);
+  QRect viewPort = locator.getLandmarkViewPort(x, y, radius);
   presenter()->setZoomRatio(
         locator.getZoomRatio(viewPort.width(), viewPort.height()));
   presenter()->setViewPortCenter(x, y, z);
@@ -1216,6 +1221,13 @@ void ZStackFrame::showObject()
 
 Z3DWindow* ZStackFrame::open3DWindow(Z3DWindow::EInitMode mode)
 {
+  if (Z3DApplication::app() == NULL) {
+    ZDialogFactory::Notify3DDisabled(this);
+
+    return NULL;
+  }
+
+
   Z3DWindow *window = document()->getParent3DWindow();
 
   if (window == NULL) {
@@ -1241,8 +1253,10 @@ Z3DWindow* ZStackFrame::open3DWindow(Z3DWindow::EInitMode mode)
     window->show();
     window->raise();
   } else {
-    QMessageBox::critical(this, tr("3D functions are disabled"),
-                          Z3DApplication::app()->getErrorMessage());
+    if (Z3DApplication::app() != NULL) {
+      QMessageBox::critical(this, tr("3D functions are disabled"),
+                            Z3DApplication::app()->getErrorMessage());
+    }
   }
 
   return window;
@@ -1471,10 +1485,13 @@ void ZStackFrame::importPointList(const QString &filePath)
 {
   QList<ZPunctum*> puncta = ZPunctumIO::load(filePath);
   if (!puncta.isEmpty()) {
+    document()->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
     foreach (ZPunctum* punctum, puncta) {
-      document()->addPunctum(punctum);
+      document()->addObject(punctum);
     }
-    document()->notifyPunctumModified();
+    document()->endObjectModifiedMode();
+    document()->notifyObjectModified();
+//    document()->notifyPunctumModified();
   }
 }
 
@@ -1559,7 +1576,7 @@ void ZStackFrame::loadRoi(const QString &filePath, bool isExclusive)
 
     obj->setColor(16, 16, 16, 64);
 
-    obj->setTarget(ZStackObject::OBJECT_CANVAS);
+    obj->setTarget(ZStackObject::TARGET_OBJECT_CANVAS);
     if (isExclusive) {
       clearDecoration();
     }

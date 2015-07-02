@@ -181,6 +181,12 @@ void ZFlyEmBodyMergeDoc::saveMergeOperation() const
   }
 }
 
+void ZFlyEmBodyMergeDoc::clearBodyMerger()
+{
+  getBodyMerger()->clear();
+  undoStack()->clear();
+}
+
 /////////////////////////////////////////////////////
 ZFlyEmBodyMergerDocCommand::MergeBody::MergeBody(
     ZStackDoc *doc, QUndoCommand *parent)

@@ -9,6 +9,8 @@ const std::string ZDvidUrl::m_sparsevolCommand = "sparsevol";
 const std::string ZDvidUrl::m_coarseSparsevolCommand = "sparsevol-coarse";
 const std::string ZDvidUrl::m_infoCommand = "info";
 const std::string ZDvidUrl::m_splitCommand = "split";
+const std::string ZDvidUrl::m_labelCommand = "label";
+const std::string ZDvidUrl::m_roiCommand = "roi";
 
 ZDvidUrl::ZDvidUrl()
 {
@@ -92,7 +94,7 @@ ZDvidUrl::getSkeletonUrl(uint64_t bodyId, const std::string &bodyLabelName) cons
   ZString str;
   str.appendNumber(bodyId);
 
-  return GetKeyCommandUrl(getSkeletonUrl(bodyLabelName)) + "/" + str + ".swc";
+  return GetKeyCommandUrl(getSkeletonUrl(bodyLabelName)) + "/" + str + "_swc";
 
 #if 0
   ZString str;
@@ -123,6 +125,16 @@ std::string ZDvidUrl::getSparsevolUrl(int bodyId) const
   return getSparsevolUrl(bodyId, m_dvidTarget.getBodyLabelName());
 }
 
+std::string ZDvidUrl::getSparsevolUrl(int bodyId, int z) const
+{
+  ZString url = getSparsevolUrl(bodyId) + "?minz=";
+  url.appendNumber(z);
+  url += "&maxz=";
+  url.appendNumber(z);
+
+  return url;
+}
+
 std::string ZDvidUrl::getSparsevolUrl(
     int bodyId, const std::string &dataName) const
 {
@@ -143,9 +155,9 @@ std::string ZDvidUrl::getCoarseSparsevolUrl(const std::string &dataName) const
 }
 
 std::string ZDvidUrl::getCoarseSparsevolUrl(
-    int bodyId, const std::string &dataName) const
+    uint64_t bodyId, const std::string &dataName) const
 {
-  if (bodyId < 0) {
+  if (bodyId == 0) {
     return "";
   }
 
@@ -155,7 +167,7 @@ std::string ZDvidUrl::getCoarseSparsevolUrl(
   return getCoarseSparsevolUrl(dataName) + "/" + str;
 }
 
-std::string ZDvidUrl::getCoarseSparsevolUrl(int bodyId) const
+std::string ZDvidUrl::getCoarseSparsevolUrl(uint64_t bodyId) const
 {
   return getCoarseSparsevolUrl(bodyId, m_dvidTarget.getBodyLabelName());
 }
@@ -292,22 +304,22 @@ std::string ZDvidUrl::getKeyRangeUrl(
   */
 }
 
-std::string ZDvidUrl::getAnnotationUrl(const std::string &bodyLabelName) const
+std::string ZDvidUrl::getBodyAnnotationUrl(const std::string &bodyLabelName) const
 {
   return getDataUrl(ZDvidData::GetName(ZDvidData::ROLE_BODY_ANNOTATION,
                                        ZDvidData::ROLE_BODY_LABEL,
                                        bodyLabelName));
 }
 
-std::string ZDvidUrl::getAnnotationUrl(uint64_t bodyId, const std::string &bodyLabelName) const
+std::string ZDvidUrl::getBodyAnnotationUrl(uint64_t bodyId, const std::string &bodyLabelName) const
 {
-  return GetKeyCommandUrl(getAnnotationUrl(bodyLabelName)) + "/" +
+  return GetKeyCommandUrl(getBodyAnnotationUrl(bodyLabelName)) + "/" +
       ZString::num2str(bodyId);
 }
 
-std::string ZDvidUrl::getAnnotationUrl(uint64_t bodyId) const
+std::string ZDvidUrl::getBodyAnnotationUrl(uint64_t bodyId) const
 {
-  return getAnnotationUrl(bodyId, m_dvidTarget.getBodyLabelName());
+  return getBodyAnnotationUrl(bodyId, m_dvidTarget.getBodyLabelName());
 }
 
 std::string ZDvidUrl::getBodyInfoUrl(const std::string &bodyLabelName) const
@@ -393,8 +405,13 @@ std::string ZDvidUrl::getSynapseListUrl() const
 
 std::string ZDvidUrl::getSynapseAnnotationUrl(const std::string &name) const
 {
-  return  GetKeyCommandUrl(getAnnotationUrl(m_dvidTarget.getBodyLabelName())) +
+  return  GetKeyCommandUrl(getBodyAnnotationUrl(m_dvidTarget.getBodyLabelName())) +
       "/" + name;
+}
+
+std::string ZDvidUrl::getSynapseAnnotationUrl() const
+{
+  return getSynapseAnnotationUrl("annotations-synapse");
 }
 
 std::string ZDvidUrl::getMergeUrl(const std::string &dataName) const
@@ -488,4 +505,21 @@ std::string ZDvidUrl::GetEndPoint(const std::string &url)
   std::string::size_type uuidPos = url.find('/', markerPos);
 
   return url.substr(uuidPos);
+}
+
+std::string ZDvidUrl::getLocalBodyIdUrl(int x, int y, int z) const
+{
+  ZString url = getLabels64Url() + "/" + m_labelCommand + "/";
+  url.appendNumber(x);
+  url += "_";
+  url.appendNumber(y);
+  url += "_";
+  url.appendNumber(z);
+
+  return url;
+}
+
+std::string ZDvidUrl::getRoiUrl(const std::string &dataName) const
+{
+  return getDataUrl(dataName) + "/" + m_roiCommand;
 }

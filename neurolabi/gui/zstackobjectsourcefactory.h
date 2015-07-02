@@ -2,6 +2,7 @@
 #define ZSTACKOBJECTSOURCEFACTORY_H
 
 #include <string>
+#include "tz_stdint.h"
 
 class ZStackObjectSourceFactory
 {
@@ -18,6 +19,10 @@ public:
   static std::string MakeDvidLabelSliceSource();
   static std::string MakeDvidGraySliceSource();
   static std::string MakeSplitObjectSource();
+  static std::string MakeNodeAdaptorSource();
+  static std::string MakeFlyEmBoundBoxSource();
+  static std::string MakeFlyEmPlaneObjectSource();
+  static std::string MakeFlyEmSynapseSource();
 };
 
 #endif // ZSTACKOBJECTSOURCEFACTORY_H

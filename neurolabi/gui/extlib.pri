@@ -37,12 +37,10 @@ win32 {
 #Self-contained libraries
 unix {
     LIBS += -L$${EXTLIB_DIR}/xml/lib -L$${EXTLIB_DIR}/fftw3/lib \
-#        -L$${EXTLIB_DIR}/png/lib \
         -L$${EXTLIB_DIR}/jansson/lib \
         -lfftw3 \
         -lfftw3f \
         -lxml2 \
-#        -lpng \
         -ljansson
 }
 
@@ -68,10 +66,10 @@ CONFIG(debug, debug|release) {
     }
 }
 
+contains(TEMPLATE, app) {
 !exists($$DVIDCPP_PATH) {
     DVIDCPP_PATH = $${EXTLIB_DIR}/dvid-cpp
 }
-
 
 exists($$DVIDCPP_PATH) {
     DEFINES += _ENABLE_LIBDVIDCPP_
@@ -88,7 +86,11 @@ contains(DEFINES, _ENABLE_LIBDVIDCPP_) {
     exists($$BUILDEM_DIR) {
         LIBS *= -lssl -lcrypto
     }
+} else:exists($${EXTLIB_DIR}/png/lib) {
+    LIBS += -L$${EXTLIB_DIR}/png/lib -lpng
 }
+}
+
 
 message($$DEFINES)
 message($$LIBS)

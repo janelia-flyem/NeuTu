@@ -20,6 +20,11 @@ Z3DGraphNode::Z3DGraphNode(double x, double y, double z, double r)
   m_shape = GRAPH_BALL;
 }
 
+Z3DGraphNode::Z3DGraphNode(const ZPoint &center, double radius)
+{
+  set(center.x(), center.y(), center.z(), radius);
+}
+
 Z3DGraphNode::Z3DGraphNode(const Z3DGraphNode &node)
 {
   m_center = node.m_center;
@@ -31,6 +36,36 @@ Z3DGraphNode::Z3DGraphNode(const Z3DGraphNode &node)
 void Z3DGraphNode::set(double x, double y, double z, double r)
 {
   m_center.set(x, y, z);
+  m_radius = r;
+}
+
+void Z3DGraphNode::setCenter(double x, double y, double z)
+{
+  m_center.set(x, y, z);
+}
+
+void Z3DGraphNode::addX(double dx)
+{
+  m_center.setX(m_center.x() + dx);
+}
+
+void Z3DGraphNode::addY(double dy)
+{
+  m_center.setY(m_center.y() + dy);
+}
+
+void Z3DGraphNode::setX(double x)
+{
+  m_center.setX(x);
+}
+
+void Z3DGraphNode::setY(double y)
+{
+  m_center.setY(y);
+}
+
+void Z3DGraphNode::setRadius(double r)
+{
   m_radius = r;
 }
 
@@ -86,24 +121,30 @@ Z3DGraphEdge::Z3DGraphEdge(int vs, int vt) : m_shape(GRAPH_CYLINDER)
 
 Z3DGraphEdge::Z3DGraphEdge(const Z3DGraphEdge &edge)
 {
-  set(edge.m_vs, edge.m_vt, edge.m_radius, edge.m_usingNodeColor,
+  set(edge.m_vs, edge.m_vt, edge.m_width, edge.m_usingNodeColor,
       edge.m_startColor, edge.m_endColor, edge.m_shape);
 }
 
-void Z3DGraphEdge::set(int vs, int vt, double radius)
+void Z3DGraphEdge::set(int vs, int vt, double width)
 {
   m_vs = vs;
   m_vt = vt;
-  m_radius = radius;
+  m_width = width;
 }
 
-void Z3DGraphEdge::set(int vs, int vt, double radius, bool usingNodeColor,
+void Z3DGraphEdge::setConnection(int vs, int vt)
+{
+  m_vs = vs;
+  m_vt = vt;
+}
+
+void Z3DGraphEdge::set(int vs, int vt, double width, bool usingNodeColor,
                        const QColor &startColor, const QColor &endColor,
                        EGraphShape shape)
 {
-  set(vs, vt, radius);
+  set(vs, vt, width);
   m_usingNodeColor = usingNodeColor;
-  m_radius = radius;
+  m_width = width;
   m_startColor = startColor;
   m_endColor = endColor;
   m_shape = shape;
@@ -121,7 +162,7 @@ void Z3DGraphEdge::loadJsonObject(json_t *obj)
       set(ZJsonParser::integerValue(node.at(0)),
           ZJsonParser::integerValue(node.at(1)));
     } else if (eqstr(key, "radius")) {
-      m_radius = ZJsonParser::numberValue(value);
+      m_width = ZJsonParser::numberValue(value);
     } else if (eqstr(key, "color1")) {
       ZJsonArray color;
       color.set(value, false);
@@ -160,7 +201,7 @@ void Z3DGraphEdge::setShape(const string &shape)
 
 void Z3DGraphEdge::print()
 {
-  cout << m_vs << "--" << m_vt << ": " << m_radius << ", " << "rgb("
+  cout << m_vs << "--" << m_vt << ": " << m_width << ", " << "rgb("
        << m_startColor.red() << ", " << m_startColor.green() << ", "
        << m_startColor.blue() << ", " << m_startColor.alpha()
        << ")" << " " << "rgb("
@@ -171,6 +212,8 @@ void Z3DGraphEdge::print()
 
 Z3DGraph::Z3DGraph()
 {
+  m_type = ZStackObject::TYPE_3D_GRAPH;
+  m_target = ZStackObject::TARGET_3D_ONLY;
 }
 
 bool Z3DGraph::isEmpty() const
@@ -186,7 +229,7 @@ void Z3DGraph::append(const Z3DGraph &graph)
 
   for (size_t i = 0; i < graph.m_edgeArray.size(); i++) {
     Z3DGraphEdge edge = graph.m_edgeArray[i];
-    edge.set(edge.vs() + newStartIndex, edge.vt() + newStartIndex);
+    edge.setConnection(edge.vs() + newStartIndex, edge.vt() + newStartIndex);
     m_edgeArray.push_back(edge);
   }
 }
@@ -318,3 +361,31 @@ void Z3DGraph::clear()
   m_nodeArray.clear();
   m_edgeArray.clear();
 }
+
+void Z3DGraph::display(
+    ZPainter &/*painter*/, int /*slice*/, EDisplayStyle /*option*/) const
+{
+}
+
+void Z3DGraph::addEdge(const Z3DGraphEdge &edge)
+{
+  m_edgeArray.push_back(edge);
+}
+
+void Z3DGraph::addNode(const Z3DGraphNode &node)
+{
+  m_nodeArray.push_back(node);
+}
+
+void Z3DGraph::addEdge(const Z3DGraphNode &node1, const Z3DGraphNode &node2)
+{
+  addNode(node1);
+  addNode(node2);
+
+  Z3DGraphEdge edge;
+  edge.useNodeColor(true);
+  edge.set(m_nodeArray.size() - 2, m_nodeArray.size() - 1, node1.radius() * 2.0);
+  addEdge(edge);
+}
+
+ZSTACKOBJECT_DEFINE_CLASS_NAME(Z3DGraph)

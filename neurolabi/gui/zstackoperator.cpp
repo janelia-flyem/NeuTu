@@ -6,7 +6,9 @@
 ZStackOperator::ZStackOperator() :
   m_op(OP_NULL),
   m_hitObject(NULL),
-  m_punctaIndex(-1), m_togglingStrokeLabel(false), m_mouseEventRecorder(NULL)
+  m_punctaIndex(-1), m_togglingStrokeLabel(false),
+  m_buttonPressed(Qt::NoButton),
+  m_mouseEventRecorder(NULL)
 {
 }
 
@@ -24,6 +26,11 @@ ZPoint ZStackOperator::getMouseOffset(NeuTube::ECoordinateSystem cs) const
   }
 
   return offset;
+}
+
+void ZStackOperator::setPressedButtons(const Qt::MouseButtons &buttons)
+{
+  m_buttonPressed = buttons;
 }
 
 template<>

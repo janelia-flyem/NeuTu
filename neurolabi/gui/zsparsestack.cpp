@@ -9,7 +9,7 @@
 //#define MAX_STACK_VOLUME 1000
 
 ZSparseStack::ZSparseStack() :
-  m_objectMask(NULL), m_stackGrid(NULL), m_stack(NULL)
+  m_objectMask(NULL), m_stackGrid(NULL), m_stack(NULL), m_baseValue(1)
 {
 }
 
@@ -64,6 +64,14 @@ bool ZSparseStack::isDeprecated(EComponent component) const
   }
 
   return false;
+}
+
+void ZSparseStack::setBaseValue(int baseValue)
+{
+  if (m_baseValue != baseValue) {
+    deprecate(STACK);
+    m_baseValue = baseValue;
+  }
 }
 
 void ZSparseStack::assignStackValue(
@@ -143,15 +151,19 @@ ZStack* ZSparseStack::getStack()
 #endif
         m_stack =  new ZStack(GREY, obj.getBoundBox(), 1);
         m_stack->setZero();
-        assignStackValue(m_stack, obj, *dsGrid, 1);
+        assignStackValue(m_stack, obj, *dsGrid, m_baseValue);
         delete dsGrid;
       } else {
         m_stack = new ZStack(GREY, cuboid, 1);
         m_stack->setZero();
-        assignStackValue(m_stack, *m_objectMask, *m_stackGrid, 1);
+        assignStackValue(m_stack, *m_objectMask, *m_stackGrid, m_baseValue);
       }
     }
   }
+
+#ifdef _DEBUG_2
+  m_stack->save(GET_TEST_DATA_DIR + "/test.tif");
+#endif
 
   return m_stack;
 }
@@ -278,4 +290,13 @@ ZIntCuboid ZSparseStack::getBoundBox() const
   }
 
   return box;
+}
+
+bool ZSparseStack::isEmpty() const
+{
+  if (m_objectMask != NULL) {
+    return m_objectMask->isEmpty();
+  }
+
+  return true;
 }

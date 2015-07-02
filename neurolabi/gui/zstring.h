@@ -7,6 +7,7 @@
 #endif
 #include <vector>
 
+#include "tz_stdint.h"
 #include "tz_string.h"
 
 class ZString : public std::string
@@ -75,8 +76,14 @@ public:
   void appendNumber(int num, int pad = 0);
   void appendNumber(uint64_t num, int pad = 0);
 
+  /*!
+   * \brief The directory path of a file
+   *
+   * The function assumes that \a path is a file path.
+   */
   static ZString dirPath(const std::string &path);
   ZString dirPath();
+
   bool isAbsolutePath() const;
   static bool isAbsolutePath(const std::string &path);
   static std::string absolutePath(const std::string &dir,

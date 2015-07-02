@@ -322,6 +322,7 @@ private:
 #define GET_APPLICATION_NAME (NeutubeConfig::getInstance().getApplication())
 #define GET_APPLICATION_DIR (NeutubeConfig::getInstance().getApplicatinDir())
 #define GET_SOFTWARE_NAME (NeutubeConfig::getInstance().getSoftwareName())
+#define GET_DOC_DIR (NeutubeConfig::getInstance().getApplicatinDir() + "/doc")
 
 #if defined(_FLYEM_)
 #  define GET_FLYEM_CONFIG (NeutubeConfig::getInstance().getFlyEmConfig())

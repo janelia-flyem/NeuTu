@@ -3,6 +3,12 @@
 # #####################################################################
 TEMPLATE = app
 
+contains(TEMPLATE, app) {
+    DEFINES += _QT_APPLICATION_
+} else {
+    CONFIG += staticlib
+}
+
 QMAKE_PATH = $(QMAKE)
 
 !exists($$QMAKE_PATH) {
@@ -53,7 +59,7 @@ CONFIG += rtti exceptions
 CONFIG += static_glew
 CONFIG += static_gtest
 
-DEFINES += _QT_APPLICATION_ _QT_GUI_USED_ _NEUTUBE_ HAVE_CONFIG_H _ENABLE_DDP_ _ENABLE_WAVG_
+DEFINES += _QT_GUI_USED_ _NEUTUBE_ HAVE_CONFIG_H _ENABLE_DDP_ _ENABLE_WAVG_
 
 #Machine information
 HOSTNAME = $$system(echo $HOSTNAME)
@@ -501,6 +507,7 @@ HEADERS += mainwindow.h \
     zmessage.h \
     zmainwindowmessageprocessor.h \
     ztestdialog.h \
+    ztestdialog2.h \
     zstackdocloader.h \
     zstackwidget.h \
     dvid/zdvidversiondag.h \
@@ -525,7 +532,24 @@ HEADERS += mainwindow.h \
     flyem/zflyemmessagewidget.h \
     zwidgetmessage.h \
     zprogresssignal.h \
-    ztestdialog2.h
+    zkeyeventstrokemapper.h \
+    zkeyoperation.h \
+    zkeyoperationmap.h \
+    zkeyoperationconfig.h \
+    dvid/zdvidsparsevolslice.h \
+    flyem/zflyemproofpresenter.h \
+    flyem/zkeyeventbodymapper.h \
+    ztextmessage.h \
+    ztextmessagefactory.h \
+    z3dgraphfactory.h \
+    zstackdochelper.h \
+    flyem/zflyembodyannotationdialog.h \
+    flyem/zflyemsupervisor.h \
+    zkeyeventmapperfactory.h \
+    zkeyoperationmapsequence.h \
+    zpuncta.h \
+    flyem/zdvidtileupdatetaskmanager.h \
+    flyem/zpaintlabelwidget.h
 
 FORMS += settingdialog.ui \
     frameinfodialog.ui \
@@ -588,10 +612,11 @@ FORMS += settingdialog.ui \
     swcexportdialog.ui \
     flyem/zflyemhackathonconfigdlg.ui \
     ztestdialog.ui \
+    ztestdialog2.ui \
     zflyemcontrolform.ui \
     flyem/flyemproofcontrolform.ui \
     flyem/flyemsplitcontrolform.ui \
-    ztestdialog2.ui
+    flyem/zflyembodyannotationdialog.ui
 SOURCES += main.cpp \
     mainwindow.cpp \
     zstackview.cpp \
@@ -892,6 +917,7 @@ SOURCES += main.cpp \
     zmessage.cpp \
     zmainwindowmessageprocessor.cpp \
     ztestdialog.cpp \
+    ztestdialog2.cpp \
     zstackdocloader.cpp \
     zstackwidget.cpp \
     dvid/zdvidversiondag.cpp \
@@ -916,7 +942,24 @@ SOURCES += main.cpp \
     flyem/zflyemmessagewidget.cpp \
     zwidgetmessage.cpp \
     zprogresssignal.cpp \
-    ztestdialog2.cpp
+    zkeyeventstrokemapper.cpp \
+    zkeyoperation.cpp \
+    zkeyoperationmap.cpp \
+    zkeyoperationconfig.cpp \
+    dvid/zdvidsparsevolslice.cpp \
+    flyem/zflyemproofpresenter.cpp \
+    flyem/zkeyeventbodymapper.cpp \
+    ztextmessage.cpp \
+    ztextmessagefactory.cpp \
+    z3dgraphfactory.cpp \
+    zstackdochelper.cpp \
+    flyem/zflyembodyannotationdialog.cpp \
+    flyem/zflyemsupervisor.cpp \
+    zkeyeventmapperfactory.cpp \
+    zkeyoperationmapsequence.cpp \
+    zpuncta.cpp \
+    flyem/zdvidtileupdatetaskmanager.cpp \
+    flyem/zpaintlabelwidget.cpp
 
 OTHER_FILES += \
     extlib.pri \

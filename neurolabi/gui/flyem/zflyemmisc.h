@@ -5,9 +5,20 @@
 #include <vector>
 
 class ZMatrix;
+class Z3DGraph;
+class ZDvidInfo;
+class ZStackDoc;
+class Z3DWindow;
+class ZDvidTarget;
+class ZDvidReader;
 
 namespace ZFlyEmMisc {
 void NormalizeSimmat(ZMatrix &simmat);
+
+Z3DGraph* MakeBoundBoxGraph(const ZDvidInfo &dvidInfo);
+Z3DGraph* MakePlaneGraph(ZStackDoc *doc, const ZDvidInfo &dvidInfo);
+//void Decorate3DWindow(Z3DWindow *window, const ZDvidInfo &dvidInfo);
+//void Decorate3DWindow(Z3DWindow *window, const ZDvidReader &reader);
 
 class HackathonEvaluator {
 public:

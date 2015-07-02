@@ -7,6 +7,7 @@
 //#include <QtSvg>
 #include <QDir>
 #include <QtConcurrentRun>
+#include <QTimer>
 
 #include <iostream>
 #include <ostream>
@@ -176,13 +177,14 @@ MainWindow::MainWindow(QWidget *parent) :
     m_newProject(NULL)
 {
   //std::cout << "Creating mainwindow ..." << std::endl;
-  RECORD_INFORMATION("Creating mainwindow ...");
+  RECORD_INFORMATION("Creating main window ...");
 
   //createWorkDir();
 #ifdef _DEBUG_2
   std::cout << NeutubeConfig::getInstance().getPath(NeutubeConfig::SETTINGS)
                << std::endl;
 #endif
+
 
   m_reporter = new ZQtMessageReporter();
 
@@ -224,8 +226,11 @@ MainWindow::MainWindow(QWidget *parent) :
   createContextMenu();
 
   //std::cout << "Creating toolbars ..." << std::endl;
+#if defined(_QT_APPLICATION_)
   RECORD_INFORMATION("Creating toolbars ...");
   createToolBars();
+#endif
+
   createStatusBar();
 
   readSettings();
@@ -304,6 +309,11 @@ MainWindow::MainWindow(QWidget *parent) :
   m_progressManager->setProgressReporter(&m_specialProgressReporter);
 
   m_3dWindowFactory.setParentWidget(this);
+
+  m_autoCheckTimer = new QTimer(this);
+  m_autoCheckTimer->setInterval(600000);
+  connect(m_autoCheckTimer, SIGNAL(timeout()), this, SLOT(runRoutineCheck()));
+
 }
 
 MainWindow::~MainWindow()
@@ -832,11 +842,18 @@ void MainWindow::customizeActions()
   bool hasApplication = false;
 
   if (!config.getApplication().empty()) {
-    if (config.getApplication() != "FlyEM") {
-      m_ui->menuFLy_EM->menuAction()->setVisible(false);
-    } else {
+    if (config.getApplication() == "FlyEM") {
       m_ui->menuFLy_EM->menuAction()->setVisible(true);
       hasApplication = true;
+    } else {
+      m_ui->menuFLy_EM->menuAction()->setVisible(false);
+    }
+
+    if (config.getApplication() == "Biocytin") {
+      m_ui->menuBiocytin->menuAction()->setVisible(true);
+      hasApplication = true;
+    } else {
+      m_ui->menuBiocytin->menuAction()->setVisible(false);
     }
   }
 
@@ -885,6 +902,8 @@ void MainWindow::customizeActions()
 
 
   m_ui->menuTube->menuAction()->setVisible(false);
+
+  m_ui->actionSplit_Region->setVisible(false);
 #if !defined(_DEBUG_)
   m_ui->menuTrace_Project->menuAction()->setVisible(false);
   m_ui->actionAutomatic_Axon->setVisible(false);
@@ -1240,6 +1259,11 @@ bool MainWindow::ask(const std::string &title, const std::string &msg)
 
 void MainWindow::initOpenglContext()
 {
+  if (Z3DApplication::app() == NULL) {
+    ZDialogFactory::Notify3DDisabled(this);
+    return;
+  }
+
   // initGL requires a valid OpenGL context
   if (m_sharedContext != NULL) {
     // initialize OpenGL
@@ -2046,7 +2070,7 @@ void MainWindow::about()
   if (!NeutubeConfig::getInstance().getApplication().empty()) {
     title += QString("<p>") +
         NeutubeConfig::getInstance().getApplication().c_str() + " Edition" +
-        "</p>";
+        " (8b054a2a63abeb8f8d3911672dd31fff3e27e47c)</p>";
   }
   QString thirdPartyLib = QString("<p><a href=\"file:///%1/doc/ThirdPartyLibraries.txt\">Third Party Libraries</a></p>")
       .arg(QApplication::applicationDirPath());
@@ -2509,6 +2533,8 @@ void MainWindow::on_actionAutomatic_triggered()
     m_progress->setValue(1);
     m_progress->setLabelText("Tracing");
     m_progress->show();
+//    frame->document()->setTraceLevel(dlg.getTraceLevel());
+
     QtConcurrent::run(this, &MainWindow::autoTrace, frame, dlg.getDoResample());
   }
 }
@@ -3360,6 +3386,7 @@ void MainWindow::evokeStackFrame(QMdiSubWindow *frame)
   }
 }
 
+
 void MainWindow::on_actionImport_Network_triggered()
 {
   QString fileName = getOpenFileName(
@@ -3474,7 +3501,8 @@ void MainWindow::on_actionSynapse_Annotation_triggered()
       FlyEm::ZSynapseAnnotationArray synapseArray;
 
       double radius = 10.0;
-      doc->blockSignals(true);
+      doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+//      doc->blockSignals(true);
       foreach (QString filePath, fileList) {
         std::vector<ZPunctum*> puncta;
         if (synapseArray.loadJson(filePath.toStdString())) {
@@ -3493,11 +3521,15 @@ void MainWindow::on_actionSynapse_Annotation_triggered()
 
         for (std::vector<ZPunctum*>::iterator iter = puncta.begin();
              iter != puncta.end(); ++iter) {
-          doc->addPunctum(*iter);
+          doc->addObject(*iter);
+//          doc->addPunctum(*iter);
         }
       }
-      doc->blockSignals(false);
-      doc->notifyPunctumModified();
+//      doc->blockSignals(false);
+//      doc->notifyPunctumModified();
+
+      doc->endObjectModifiedMode();
+      doc->notifyObjectModified();
 
       m_3dWindowFactory.open3DWindow(doc);
       /*
@@ -4615,6 +4647,7 @@ ZStackFrame *MainWindow::createStackFrame(
   return NULL;
 }
 #endif
+
 void MainWindow::on_actionMake_Projection_triggered()
 {
   ZStackFrame *frame = currentStackFrame();
@@ -4830,7 +4863,7 @@ void MainWindow::on_actionMask_SWC_triggered()
         }
 
         if (stackFrame != swcFrame) {
-          swcFrame->document()->addSwcTree(wholeTree);
+          swcFrame->document()->addObject(wholeTree);
         } else {
           QUndoCommand *command = new QUndoCommand;
           new ZStackDocCommand::SwcEdit::AddSwc(
@@ -7003,11 +7036,15 @@ void MainWindow::launchSplit(const QString &str)
   m_bodySplitProjectDialog->startSplit(str);
 }
 
-
 void MainWindow::on_actionProof_triggered()
 {
   ZProofreadWindow *window = ZProofreadWindow::Make();
   window->showMaximized();
+}
+
+void MainWindow::runRoutineCheck()
+{
+
 }
 
 /////////////////////
@@ -7036,3 +7073,5 @@ void MainWindow::MessageProcessor::processMessage(
     }
   }
 }
+
+

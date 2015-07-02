@@ -1,5 +1,6 @@
 #include "zdviddialog.h"
 #include "neutubeconfig.h"
+#include "neutube.h"
 #include "ui_zdviddialog.h"
 #include "dvid/zdvidtarget.h"
 #include "zjsonarray.h"
@@ -12,15 +13,35 @@ ZDvidDialog::ZDvidDialog(QWidget *parent) :
   ui(new Ui::ZDvidDialog)
 {
   ui->setupUi(this);
-  ZDvidTarget target("emdata1.int.janelia.org", "", -1);
-  target.setName("Custom");
-  m_dvidRepo.push_back(target);
+  ZDvidTarget customTarget("emdata1.int.janelia.org", "", -1);
+  customTarget.setName("Custom");
+  m_dvidRepo.push_back(customTarget);
 
 #if defined(_FLYEM_)
   const std::vector<ZDvidTarget> dvidRepo =
       NeutubeConfig::getInstance().getFlyEmConfig().getDvidRepo();
-  m_dvidRepo.insert(m_dvidRepo.end(), dvidRepo.begin(), dvidRepo.end());
+
+  std::string userName = NeuTube::GetUserName();
+
+  for (std::vector<ZDvidTarget>::const_iterator iter = dvidRepo.begin();
+           iter != dvidRepo.end(); ++iter) {
+    const ZDvidTarget &target = *iter;
+    bool access = true;
+    if (!target.getUserNameSet().empty()) {
+      if (target.getUserNameSet().count(userName) == 0) {
+        access = false;
+      }
+    }
+    if (access) {
+      m_dvidRepo.push_back(target);
+    }
+  }
+
+//  m_dvidRepo.insert(m_dvidRepo.end(), dvidRepo.begin(), dvidRepo.end());
 #endif
+
+
+
   for (std::vector<ZDvidTarget>::const_iterator iter = m_dvidRepo.begin();
        iter != m_dvidRepo.end(); ++iter) {
     const ZDvidTarget &target = *iter;

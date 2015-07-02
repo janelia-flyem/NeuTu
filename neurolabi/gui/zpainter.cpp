@@ -14,7 +14,7 @@ ZPainter::ZPainter() : m_z(0), m_isPainted(false)
 {
 
 }
-
+#ifdef _QT_GUI_USED_
 ZPainter::ZPainter(QPaintDevice *device) :
   m_painter(device), m_z(0), m_isPainted(false)
 {
@@ -31,15 +31,24 @@ ZPainter::ZPainter(ZImage *image) : m_z(0)
   setTransform(transform);
   */
 }
+#endif
 
 ZPainter::~ZPainter()
 {
+#ifdef _QT_GUI_USED_
   end();
+#endif
 }
 
+#ifdef _QT_GUI_USED_
 ZPainter::ZPainter(ZPixmap *pixmap) : m_z(0)
 {
   begin(pixmap);
+}
+
+bool ZPainter::isActive() const
+{
+  return m_painter.isActive();
 }
 
 bool ZPainter::begin(ZImage *image)
@@ -218,7 +227,8 @@ void ZPainter::drawActivePixmap(
   QRectF newTargetRect = targetRect;
 
   if (!image.isFullyActive()) {
-    newSourceRect.intersect(image.getActiveArea(NeuTube::COORD_WORLD));
+    newSourceRect =
+        newSourceRect.intersected(image.getActiveArea(NeuTube::COORD_WORLD));
     if (!newSourceRect.isEmpty()) {
       newTargetRect = ZRect2d::CropRect(sourceRect, newSourceRect, targetRect);
     }
@@ -256,7 +266,8 @@ void ZPainter::drawActivePixmap(int x, int y, const ZPixmap &image)
 
     if (!image.isFullyActive()) {
       QRectF oldSourceRect = sourceRect;
-      sourceRect.intersect(image.getActiveArea(NeuTube::COORD_WORLD));
+      sourceRect =
+          sourceRect.intersected(image.getActiveArea(NeuTube::COORD_WORLD));
       if (!sourceRect.isEmpty()) {
         targetRect = ZRect2d::CropRect(oldSourceRect, sourceRect, targetRect);
       }
@@ -510,3 +521,4 @@ void ZPainter::setOpacity(double alpha)
 {
   m_painter.setOpacity(alpha);
 }
+#endif

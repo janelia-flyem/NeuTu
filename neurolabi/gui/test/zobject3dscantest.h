@@ -1278,6 +1278,33 @@ TEST(ZObject3dScan, Stack)
   Print_Stack_Value(stack->c_stack());
 }
 
+TEST(ZObject3dScan, Intersect)
+{
+  ZObject3dScan obj;
+  obj.addStripe(1, 1);
+  obj.addSegment(1, 1);
+
+  ZObject3dScan obj2;
+  obj2.addStripe(1, 1);
+  obj2.addSegment(1, 1);
+
+  ZObject3dScan obj3 = obj.intersect(obj2);
+
+  ASSERT_TRUE(obj3.equalsLiterally(obj));
+
+  obj2.addSegment(1, 2, 0, 5);
+  obj2.addSegment(1, 1, 0, 1);
+  obj3 = obj.intersect(obj2);
+
+  ASSERT_TRUE(obj3.equalsLiterally(obj));
+
+  obj.addSegment(2, 1, 0, 5);
+  obj3 = obj.intersect(obj2);
+
+  ASSERT_EQ(1, (int) obj3.getVoxelNumber());
+  ASSERT_TRUE(obj3.contains(1, 1, 1));
+}
+
 #endif
 
 #endif // ZOBJECT3DSCANTEST_H

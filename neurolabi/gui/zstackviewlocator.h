@@ -13,7 +13,9 @@ public:
 
   void setCanvasSize(int w, int h);
 
-  QRect getViewPort(double cx, double cy, double radius) const;
+  QRect getLandmarkViewPort(double cx, double cy, double radius) const;
+  QRect getRectViewPort(double cx, double cy, double viewWidth) const;
+
   int getZoomRatio(int viewPortWidth, int viewPortHeight) const;
   inline double getSceneRatio() const { return m_sceneRatio; }
 

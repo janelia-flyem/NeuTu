@@ -22,7 +22,22 @@ ZMouseEvent& ZMouseEventRecorder::record(const ZMouseEvent &event)
     m_eventList.removeLast();
   }
 
-  m_eventMap[event.getButtons()][event.getAction()] = event;
+  bool isRecorded = false;
+
+  if (event.getButtons() & Qt::LeftButton) {
+    m_eventMap[Qt::LeftButton][event.getAction()] = event;
+    isRecorded = true;
+  }
+
+  if (event.getButtons() & Qt::RightButton) {
+    m_eventMap[Qt::RightButton][event.getAction()] = event;
+    isRecorded = true;
+  }
+
+  if (!isRecorded) {
+    m_eventMap[event.getButtons()][event.getAction()] = event;
+  }
+
 
   return m_eventList.first();
 }
