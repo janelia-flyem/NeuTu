@@ -8,6 +8,25 @@
 ZFlyEmBookmarkView::ZFlyEmBookmarkView(QWidget *parent) :
   QTableView(parent), m_contextMenu(NULL)
 {
+  init();
+}
+
+void ZFlyEmBookmarkView::init()
+{
+  createMenu();
+}
+
+void ZFlyEmBookmarkView::createMenu()
+{
+  m_contextMenu = new QMenu(this);
+  QAction *checkAction = new QAction("Set Checked", this);
+  m_contextMenu->addAction(checkAction);
+  connect(checkAction, SIGNAL(triggered()), this, SLOT(checkCurrentBookmark()));
+
+  QAction *unCheckAction = new QAction("Uncheck", this);
+  m_contextMenu->addAction(unCheckAction);
+  connect(unCheckAction, SIGNAL(triggered()),
+          this, SLOT(uncheckCurrentBookmark()));
 }
 
 void ZFlyEmBookmarkView::contextMenuEvent(QContextMenuEvent *event)
@@ -38,3 +57,24 @@ ZFlyEmBookmarkListModel* ZFlyEmBookmarkView::getModel() const
   return dynamic_cast<ZFlyEmBookmarkListModel*>(model());
 }
 
+void ZFlyEmBookmarkView::checkCurrentBookmark(bool checking)
+{
+  QItemSelectionModel *sel = selectionModel();
+  QModelIndexList selected = sel->selectedIndexes();
+
+  foreach (const QModelIndex &index, selected) {
+    ZFlyEmBookmark &bookmark = getModel()->getBookmark(index.row());
+    bookmark.setChecked(checking);
+    getModel()->update(index.row());
+  }
+}
+
+void ZFlyEmBookmarkView::checkCurrentBookmark()
+{
+  checkCurrentBookmark(true);
+}
+
+void ZFlyEmBookmarkView::uncheckCurrentBookmark()
+{
+  checkCurrentBookmark(false);
+}

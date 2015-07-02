@@ -151,7 +151,7 @@ void FlyEmProofControlForm::updateBookmarkTable(ZFlyEmBodyMergeProject *project)
       for (ZFlyEmBookmarkArray::const_iterator iter = bookmarkArray->begin();
            iter != bookmarkArray->end(); ++iter) {
         const ZFlyEmBookmark &bookmark = *iter;
-        if (bookmark.getType() == ZFlyEmBookmark::TYPE_FALSE_SPLIT) {
+        if (bookmark.getType() != ZFlyEmBookmark::TYPE_FALSE_MERGE) {
           m_bookmarkList.append(bookmark);
         }
       }

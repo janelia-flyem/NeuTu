@@ -533,6 +533,9 @@ public:
    */
   void addObjectFast(ZStackObject *obj);
 
+  template <typename InputIterator>
+  void addObjectFast(InputIterator first, InputIterator last);
+
   /*!
    * \brief Add a palyer
    *
@@ -1379,6 +1382,18 @@ QList<T*> ZStackDoc::getUserList() const
   }
 
   return userList;
+}
+
+template <typename InputIterator>
+void ZStackDoc::addObjectFast(InputIterator first, InputIterator last)
+{
+  beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+  for (InputIterator iter = first; iter != last; ++iter) {
+    ZStackObject *obj = *iter;
+    addObjectFast(obj);
+  }
+  endObjectModifiedMode();
+  notifyObjectModified();
 }
 
 template <class InputIterator>

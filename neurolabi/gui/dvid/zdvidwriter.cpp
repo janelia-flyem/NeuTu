@@ -251,7 +251,8 @@ void ZDvidWriter::writeJsonString(
 
   QString command;
   if (annotationString.size() < 5000) {
-    annotationString.replace(" ", "");
+//    annotationString.replace("\n", "");
+//    annotationString.replace("\r", "");
     annotationString.replace("\"", "\"\"\"");
 
     command = QString(
@@ -348,7 +349,7 @@ void ZDvidWriter::createKeyvalue(const std::string &name)
 std::string ZDvidWriter::getJsonStringForCurl(const ZJsonValue &obj) const
 {
   ZString jsonString = obj.dumpString(0);
-  jsonString.replace(" ", "");
+//  jsonString.replace(" ", "");
   jsonString.replace("\"", "\"\"\"");
 
   return jsonString;

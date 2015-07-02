@@ -125,7 +125,7 @@ void ZFlyEmBodySplitProject::shallowClear()
 
   m_bodyId = 0;
 
-  m_bookmarkDecoration.clear();
+//  m_bookmarkDecoration.clear();
 }
 
 void ZFlyEmBodySplitProject::shallowClearResultWindow()
@@ -756,6 +756,9 @@ void ZFlyEmBodySplitProject::locateBookmark(const ZFlyEmBookmark &bookmark)
 void ZFlyEmBodySplitProject::clearBookmarkDecoration()
 {
   if (getDocument() != NULL) {
+    getDocument()->removeObject(ZStackObjectRole::ROLE_TMP_BOOKMARK, true);
+  }
+#if 0
     for (std::vector<ZStackObject*>::iterator iter = m_bookmarkDecoration.begin();
          iter != m_bookmarkDecoration.end(); ++iter) {
       ZStackObject *obj = *iter;
@@ -769,17 +772,24 @@ void ZFlyEmBodySplitProject::clearBookmarkDecoration()
     }
   }
   m_bookmarkDecoration.clear();
+#endif
 }
 
 void ZFlyEmBodySplitProject::addBookmarkDecoration(
     const ZFlyEmBookmarkArray &bookmarkArray)
 {
   if (getDocument() != NULL) {
+    QVector<ZPunctum*> punctumArray = bookmarkArray.toPunctumArray(
+          m_isBookmarkVisible);
+    getDocument()->addObjectFast(punctumArray.begin(), punctumArray.end());
+  }
+#if 0
     getDocument()->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
     for (ZFlyEmBookmarkArray::const_iterator iter = bookmarkArray.begin();
          iter != bookmarkArray.end(); ++iter) {
       const ZFlyEmBookmark &bookmark = *iter;
       ZPunctum *circle = new ZPunctum;
+      circle->setRole(ZStackObjectRole::ROLE_TMP_BOOKMARK);
       circle->set(bookmark.getLocation(), 5);
 
 //      ZStackBall *circle = new ZStackBall;
@@ -794,6 +804,7 @@ void ZFlyEmBodySplitProject::addBookmarkDecoration(
     getDocument()->endObjectModifiedMode();
     getDocument()->notifyObjectModified();
   }
+#endif
 }
 
 /*
@@ -837,7 +848,7 @@ void ZFlyEmBodySplitProject::updateBookmarkDecoration()
     addBookmarkDecoration(bookmarkArray);
   }
 }
-
+#if 0
 void ZFlyEmBodySplitProject::showBookmark(bool visible)
 {
   m_isBookmarkVisible = visible;
@@ -849,6 +860,13 @@ void ZFlyEmBodySplitProject::showBookmark(bool visible)
   if (m_dataFrame != NULL && !m_bookmarkDecoration.empty()) {
     m_dataFrame->updateView();
   }
+}
+#endif
+
+
+void ZFlyEmBodySplitProject::setBookmarkVisible(bool visible)
+{
+  m_isBookmarkVisible = visible;
 }
 
 std::set<int> ZFlyEmBodySplitProject::getBookmarkBodySet() const

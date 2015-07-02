@@ -69,7 +69,8 @@ public:
     TYPE_STACK,
     TYPE_SWC_NODE,
     TYPE_3D_GRAPH,
-    TYPE_PUNCTA
+    TYPE_PUNCTA,
+    TYPE_FLYEM_BOOKMARK
   };
 
   enum Palette_Color {

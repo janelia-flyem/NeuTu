@@ -863,6 +863,14 @@ void ZFlyEmProofMvc::showSynapseAnnotation(bool visible)
   getCompleteDocument()->setVisible(ZStackObject::TYPE_PUNCTA, visible);
 }
 
+void ZFlyEmProofMvc::showBookmark(bool visible)
+{
+  getCompleteDocument()->setVisible(
+        ZStackObjectRole::ROLE_TMP_BOOKMARK, visible);
+  m_splitProject.setBookmarkVisible(visible);
+  m_mergeProject.setBookmarkVisible(visible);
+}
+
 void ZFlyEmProofMvc::addSelectionAt(int x, int y, int z)
 {
   ZDvidReader reader;

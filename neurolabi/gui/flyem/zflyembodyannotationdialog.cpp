@@ -14,6 +14,9 @@ ZFlyEmBodyAnnotationDialog::ZFlyEmBodyAnnotationDialog(QWidget *parent) :
     ui->statusComboBox->addItem("Finalize");
   }
   setNameEdit(ui->nameComboBox->currentText());
+
+//  ui->commentLineEdit->setEnabled(false);
+
   connectSignalSlot();
 }
 

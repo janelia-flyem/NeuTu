@@ -115,6 +115,7 @@ public slots:
 
   void loadSynapse();
   void showSynapseAnnotation(bool visible);
+  void showBookmark(bool visible);
 
   void loadBookmark();
 

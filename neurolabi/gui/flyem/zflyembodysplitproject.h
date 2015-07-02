@@ -72,6 +72,8 @@ public:
   void clearBookmarkDecoration();
   void addBookmarkDecoration(const ZFlyEmBookmarkArray &bookmarkArray);
   void updateBookmarkDecoration();
+
+  void setBookmarkVisible(bool visible);
 //  void updateBookmarkDecoration(const ZFlyEmBookmarkArray &bookmarkArray);
 
   void removeAllBookmark();
@@ -162,7 +164,7 @@ public slots:
   void showDataFrame3d();
   void showResult3d();
   void showResultQuickView();
-  void showBookmark(bool visible);
+//  void showBookmark(bool visible);
   void runSplit();
   void updateResult3dQuick();
   void backupSeed();
@@ -213,7 +215,7 @@ private:
 
   ZFlyEmBookmarkArray *m_bookmarkArray; //aggregation
 
-  std::vector<ZStackObject*> m_bookmarkDecoration;
+//  std::vector<ZStackObject*> m_bookmarkDecoration;
   bool m_isBookmarkVisible;
   bool m_showingBodyMask;
 
