@@ -2,7 +2,6 @@
     <qresource prefix="/">
         <file>images/open.png</file>
         <file>images/save.png</file>
-        <file>images/copy.png</file>
         <file>images/paste.png</file>
         <file>images/cut.png</file>
         <file>images/undo.png</file>
@@ -104,5 +103,7 @@
         <file>images/stretch.png</file>
         <file>images/bodymerge.png</file>
         <file>images/synapse.png</file>
+        <file>images/import_bookmark.png</file>
+        <file>images/view_bookmark.png</file>
     </qresource>
 </RCC>

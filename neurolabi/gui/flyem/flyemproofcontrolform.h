@@ -48,6 +48,7 @@ private slots:
   void goToPosition();
   void goToBody();
   void selectBody();
+  void locateBookmark(const QModelIndex &index);
 
 private:
   void createMenu();

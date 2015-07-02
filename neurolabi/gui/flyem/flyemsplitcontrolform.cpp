@@ -51,6 +51,8 @@ void FlyEmSplitControlForm::setupWidgetBehavior()
           this, SIGNAL(loadingSynapse()));
 
   ui->viewSplitPushButton->setEnabled(false);
+  ui->loadBookmarkButton->hide();
+  ui->synapsePushButton->hide();
 
 //  ui->commitPushButton->setEnabled(false);
   createMenu();
@@ -102,7 +104,7 @@ void FlyEmSplitControlForm::createMenu()
           this, SLOT(uncheckCurrentBookmark()));
 
 
-  ui->bookmarkView->setContextMenu(m_bookmarkContextMenu);
+//  ui->bookmarkView->setContextMenu(m_bookmarkContextMenu);
 }
 
 void FlyEmSplitControlForm::checkCurrentBookmark(bool checking)
@@ -119,14 +121,7 @@ void FlyEmSplitControlForm::checkCurrentBookmark(bool checking)
 
 void FlyEmSplitControlForm::checkCurrentBookmark()
 {
-  QItemSelectionModel *sel = ui->bookmarkView->selectionModel();
-  QModelIndexList selected = sel->selectedIndexes();
-
-  foreach (const QModelIndex &index, selected) {
-    ZFlyEmBookmark &bookmark = m_bookmarkList.getBookmark(index.row());
-    bookmark.setChecked(true);
-    m_bookmarkList.update(index.row());
-  }
+  checkCurrentBookmark(true);
 }
 
 void FlyEmSplitControlForm::uncheckCurrentBookmark()

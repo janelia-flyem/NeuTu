@@ -285,11 +285,8 @@ QMenu* ZStackDocMenuFactory::makeBodyContextMenu(
           ZStackPresenter::ACTION_BODY_SPLIT_START);
     menu->addAction(action);
 
-    if (NeuTube::GetUserName() == "takemuras" ||
-        NeuTube::GetUserName() == "zhaot") {
-      menu->addAction(presenter->getAction(
-                        ZStackPresenter::ACTION_BODY_ANNOTATION));
-    }
+    menu->addAction(presenter->getAction(
+                      ZStackPresenter::ACTION_BODY_ANNOTATION));
 
     menu->addAction(presenter->getAction(ZStackPresenter::ACTION_BODY_CHECKOUT));
     menu->addAction(presenter->getAction(ZStackPresenter::ACTION_BODY_CHECKIN));

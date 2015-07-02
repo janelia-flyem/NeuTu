@@ -70,7 +70,7 @@ FlyEmBodySplitProjectDialog::FlyEmBodySplitProjectDialog(QWidget *parent) :
 
   updateWidget();
 
-  m_project.showBookmark(ui->bookmarkVisibleCheckBox->isChecked());
+  m_project.setBookmarkVisible(ui->bookmarkVisibleCheckBox->isChecked());
 
   m_sideViewScene = new QGraphicsScene(this);
   //m_sideViewScene->setSceneRect(0, 0, ui->sideView->width(), ui->sideView->height());
@@ -175,12 +175,14 @@ void FlyEmBodySplitProjectDialog::createMenu()
   connect(allSeedProcessAction, SIGNAL(triggered()),
           this, SLOT(processAllSeed()));
 
+  /*
   m_bookmarkContextMenu = new QMenu(this);
   QAction *checkAction = new QAction("Set Checked", this);
   m_bookmarkContextMenu->addAction(checkAction);
   connect(checkAction, SIGNAL(triggered()), this, SLOT(checkCurrentBookmark()));
+  */
 
-  ui->bookmarkView->setContextMenu(m_bookmarkContextMenu);
+//  ui->bookmarkView->setContextMenu(m_bookmarkContextMenu);
 }
 
 void FlyEmBodySplitProjectDialog::closeEvent(QCloseEvent */*event*/)

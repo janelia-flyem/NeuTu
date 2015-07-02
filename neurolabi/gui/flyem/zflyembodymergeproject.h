@@ -106,6 +106,10 @@ public:
   void attachBookmarkArray(ZFlyEmBookmarkArray *bookmarkArray);
   ZFlyEmBookmarkArray* getBookmarkArray() const { return m_bookmarkArray; }
 
+  void updateBookmarkDecoration();
+
+  void setBookmarkVisible(bool visible);
+
 signals:
   void progressAdvanced(double dp);
   void progressStarted();
@@ -164,7 +168,7 @@ private:
   ZDvidTarget m_dvidTarget;
   ZDvidInfo m_dvidInfo;
 
-  std::vector<ZStackObject*> m_bookmarkDecoration;
+//  std::vector<ZStackObject*> m_bookmarkDecoration;
   bool m_isBookmarkVisible;
 
   ZFlyEmBookmarkArray *m_bookmarkArray; //aggregation

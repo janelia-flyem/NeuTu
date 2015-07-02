@@ -302,14 +302,14 @@ void ZStackPresenter::createBodyActions()
   }
 
   {
-    QAction *action = new QAction(tr("Check in"), this);
+    QAction *action = new QAction(tr("Unlock"), this);
     connect(action, SIGNAL(triggered()),
             this, SLOT(notifyBodyCheckinTriggered()));
     m_actionMap[ACTION_BODY_CHECKIN] = action;
   }
 
   {
-    QAction *action = new QAction(tr("Check out"), this);
+    QAction *action = new QAction(tr("Lock"), this);
     connect(action, SIGNAL(triggered()),
             this, SLOT(notifyBodyCheckoutTriggered()));
     m_actionMap[ACTION_BODY_CHECKOUT] = action;

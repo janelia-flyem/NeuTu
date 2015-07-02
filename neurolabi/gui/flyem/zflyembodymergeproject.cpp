@@ -40,6 +40,7 @@
 
 ZFlyEmBodyMergeProject::ZFlyEmBodyMergeProject(QObject *parent) :
   QObject(parent), m_dataFrame(NULL), m_bodyWindow(NULL),
+  m_isBookmarkVisible(true),
   m_bookmarkArray(NULL),
   m_showingBodyMask(true)
 {
@@ -1207,6 +1208,11 @@ void ZFlyEmBodyMergeProject::highlightSelectedObject(bool hl)
 void ZFlyEmBodyMergeProject::clearBookmarkDecoration()
 {
   if (getDocument() != NULL) {
+    getDocument()->removeObject(ZStackObjectRole::ROLE_TMP_BOOKMARK, true);
+  }
+
+#if 0
+  if (getDocument() != NULL) {
     for (std::vector<ZStackObject*>::iterator iter = m_bookmarkDecoration.begin();
          iter != m_bookmarkDecoration.end(); ++iter) {
       ZStackObject *obj = *iter;
@@ -1220,17 +1226,27 @@ void ZFlyEmBodyMergeProject::clearBookmarkDecoration()
     }
   }
   m_bookmarkDecoration.clear();
+#endif
 }
 
 void ZFlyEmBodyMergeProject::addBookmarkDecoration(
     const ZFlyEmBookmarkArray &bookmarkArray)
 {
   if (getDocument() != NULL) {
+    QVector<ZPunctum*> punctumArray = bookmarkArray.toPunctumArray(
+          m_isBookmarkVisible);
+    getDocument()->addObjectFast(punctumArray.begin(), punctumArray.end());
+  }
+
+#if 0
+  if (getDocument() != NULL) {
+
     getDocument()->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
     for (ZFlyEmBookmarkArray::const_iterator iter = bookmarkArray.begin();
          iter != bookmarkArray.end(); ++iter) {
       const ZFlyEmBookmark &bookmark = *iter;
       ZPunctum *circle = new ZPunctum;
+      circle->setRole(ZStackObjectRole::ROLE_TMP_BOOKMARK);
       circle->set(bookmark.getLocation(), 5);
 
 //      ZStackBall *circle = new ZStackBall;
@@ -1240,11 +1256,12 @@ void ZFlyEmBodyMergeProject::addBookmarkDecoration(
       circle->setHittable(false);
 //      circle->setRole(ZStackObjectRole::ROLE_3DGRAPH_DECORATOR);
       getDocument()->addObject(circle);
-      m_bookmarkDecoration.push_back(circle);
+//      m_bookmarkDecoration.push_back(circle);
     }
     getDocument()->endObjectModifiedMode();
     getDocument()->notifyObjectModified();
   }
+#endif
 }
 
 void ZFlyEmBodyMergeProject::updateBookmarkDecoration(
@@ -1255,7 +1272,7 @@ void ZFlyEmBodyMergeProject::updateBookmarkDecoration(
   if (getDocument() != NULL) {
     ZFlyEmBookmarkArray filteredBookmarkArray;
     foreach (ZFlyEmBookmark bookmark, bookmarkArray) {
-      if (bookmark.getType() == ZFlyEmBookmark::TYPE_FALSE_SPLIT) {
+      if (bookmark.getType() != ZFlyEmBookmark::TYPE_FALSE_MERGE) {
         filteredBookmarkArray.append(bookmark);
       }
     }
@@ -1268,3 +1285,26 @@ void ZFlyEmBodyMergeProject::attachBookmarkArray(ZFlyEmBookmarkArray *bookmarkAr
   m_bookmarkArray = bookmarkArray;
 }
 
+void ZFlyEmBodyMergeProject::updateBookmarkDecoration()
+{
+  clearBookmarkDecoration();
+
+  if (getDocument() != NULL) {
+    ZFlyEmBookmarkArray bookmarkArray;
+
+    for (ZFlyEmBookmarkArray::const_iterator iter = m_bookmarkArray->begin();
+         iter != m_bookmarkArray->end(); ++iter) {
+      const ZFlyEmBookmark &bookmark = *iter;
+      if (bookmark.getType() == ZFlyEmBookmark::TYPE_FALSE_SPLIT) {
+        bookmarkArray.append(bookmark);
+      }
+    }
+
+    addBookmarkDecoration(bookmarkArray);
+  }
+}
+
+void ZFlyEmBodyMergeProject::setBookmarkVisible(bool visible)
+{
+  m_isBookmarkVisible = visible;
+}

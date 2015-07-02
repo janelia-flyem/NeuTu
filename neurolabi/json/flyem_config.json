@@ -182,6 +182,15 @@
     {
       "address": "emdata1.int.janelia.org",
       "port": 8500,
+      "uuid": "b6bc",
+      "name": "MB_Test",
+      "comment": "MB seg (branched from febc)",
+      "body_label": "bodies",
+      "label_block": "labels"
+    },
+    {
+      "address": "emdata1.int.janelia.org",
+      "port": 8500,
       "uuid": "0f33",
       "name": "MB_for_Satoko",
       "comment": "MB seg (branched from c348)",
@@ -323,6 +332,16 @@
     {
       "address": "emdata1.int.janelia.org",
       "port": 8500,
+      "uuid": "4f22",
+      "name": "MB_takemurasa_Practice",
+      "comment": "MB seg (branched from ccf)",
+      "body_label": "bodies",
+      "label_block": "labels",
+      "user_name": ["takemurasa", "zhaot"]
+    },
+    {
+      "address": "emdata1.int.janelia.org",
+      "port": 8500,
       "uuid": "afc7",
       "name": "MB_rivlinp_Training",
       "comment": "MB seg (branched from ccf)",
@@ -335,6 +354,16 @@
       "port": 8500,
       "uuid": "3664",
       "name": "MB_changl_Training",
+      "comment": "MB seg (branched from ccf)",
+      "body_label": "bodies",
+      "label_block": "labels",
+      "user_name": ["changl", "zhaot"]
+    },
+    {
+      "address": "emdata1.int.janelia.org",
+      "port": 8500,
+      "uuid": "4f22",
+      "name": "MB_changl_Practice",
       "comment": "MB seg (branched from ccf)",
       "body_label": "bodies",
       "label_block": "labels",

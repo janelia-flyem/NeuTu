@@ -163,7 +163,7 @@ private:
   QGraphicsScene *m_sideViewScene;
   ZDvidDialog *m_dvidDlg;
   QMenu *m_mainMenu;
-  QMenu *m_bookmarkContextMenu;
+//  QMenu *m_bookmarkContextMenu;
   QAction *m_showBodyMaskAction;
 
   QModelIndex m_pressedIndex;
