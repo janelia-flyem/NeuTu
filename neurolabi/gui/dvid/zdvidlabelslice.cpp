@@ -397,3 +397,8 @@ std::set<uint64_t> ZDvidLabelSlice::getSelected(
 
   return std::set<uint64_t>();
 }
+
+void ZDvidLabelSlice::mapSelection()
+{
+  m_selectedOriginal = getSelected(NeuTube::BODY_LABEL_MAPPED);
+}

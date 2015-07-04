@@ -987,7 +987,7 @@ int main()
   Write_Stack("../data/test.tif", stack);
 #endif
 
-#if 0
+#if 1
   Stack *stack = Read_Stack("../data/benchmark/rice_bw.tif");
   Translate_Stack(stack, GREY16, 1);
   Objlabel_Workspace *ow = New_Objlabel_Workspace();
@@ -1005,11 +1005,11 @@ int main()
   
 #endif
 
-#if 1
+#if 0
   //Stack *stack = Read_Stack("../data/benchmark/binary/2d/ring_n10.tif");
   Stack *stack = Read_Stack("../data/bintest.tif");
   Print_Stack_Info(stack);
-  Object_3d *obj = Stack_Region_Border(stack, 6);
+  Object_3d *obj = Stack_Region_Border(stack, 6, TRUE);
 
   Zero_Stack(stack);
   size_t i;

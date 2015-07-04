@@ -425,6 +425,16 @@ void ZFlyEmBodyMergeProject::uploadResultFunc()
           dvidWriter.mergeBody(
                 m_dvidTarget.getBodyLabelName(),
                 targetId, mergeMap.value(targetId));
+          if (dvidWriter.getStatusCode() != 200) {
+            emit messageGenerated(
+                  ZWidgetMessage(
+                    "Failed to upload merging results", NeuTube::MSG_ERROR));
+          }
+          QList<ZDvidLabelSlice*> labelList =
+              getDocument()->getDvidLabelSliceList();
+          foreach (ZDvidLabelSlice *slice, labelList) {
+            slice->mapSelection();
+          }
         }
 
         clearBodyMerger();

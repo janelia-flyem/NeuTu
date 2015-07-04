@@ -16738,6 +16738,36 @@ void ZTest::test(MainWindow *host)
   std::cout << std::endl;
 #endif
 
+#if 1
+  libdvid::DVIDNodeService service("http://emdata1.int.janelia.org:8500", "86e1");
+//  std::string endPoint = ZDvidUrl::GetEndPoint(url.toStdString());
+
+  libdvid::Dims_t dims(3);
+//  2968_3066_4045
+  dims[0] = 512;
+  dims[1] = 512;
+  dims[2] = 1;
+
+  std::vector<int> offset(3);
+  offset[0] = 1;
+  offset[1] = 1;
+  offset[2] = 7313;
+  std::vector<unsigned int> channels(3);
+  channels[0] = 0;
+  channels[1] = 1;
+  channels[2] = 2;
+
+  tic();
+  try {
+    libdvid::BinaryDataPtr data =
+        service.get_tile_slice_binary("tiles", libdvid::XY, 3, offset);
+  } catch (std::exception &e) {
+    std::cout << e.what() << std::endl;
+  }
+  ptoc();
+  std::cout << std::endl;
+#endif
+
 #if 0
   ZPainter painter;
   ZPixmap pixmap(10000, 10000);
@@ -17131,7 +17161,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   std::string dataDir = GET_TEST_DATA_DIR + "/flyem/MB/proofread/fix1";
   ZDvidTarget target2("emdata1.int.janelia.org", "0f33", 8500);
   ZDvidReader reader;

@@ -46,6 +46,8 @@ FlyEmProofControlForm::FlyEmProofControlForm(QWidget *parent) :
 
   connect(ui->bookmarkView, SIGNAL(doubleClicked(QModelIndex)),
           this, SLOT(locateBookmark(QModelIndex)));
+  connect(ui->bookmarkView, SIGNAL(bookmarkChecked(QString,bool)),
+          this, SIGNAL(bookmarkChecked(QString, bool)));
 /*
   ui->helpWidget->setOpenExternalLinks(true);
   ui->helpWidget->setSource(

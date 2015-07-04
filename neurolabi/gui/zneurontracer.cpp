@@ -857,15 +857,9 @@ ZSwcTree* ZNeuronTracer::trace(Stack *stack, bool doResampleAfterTracing)
 
   //Thin line mask
   std::cout << "Enhancing thin branches ..." << std::endl;
-  /* <line> allocated */
-  Stack *line = enhanceLine(stack);
-  advanceProgress(0.05);
-
   /* <mask2> allocated */
-  Stack *mask2 = C_Stack::clone(line);
-
-  /* <line> freed */
-  C_Stack::kill(line);
+  Stack *mask2 = enhanceLine(stack);
+  advanceProgress(0.05);
 
   std::cout << "Making mask for thin branches ..." << std::endl;
   ZStackBinarizer binarizer;
@@ -936,8 +930,19 @@ ZSwcTree* ZNeuronTracer::trace(Stack *stack, bool doResampleAfterTracing)
   constructor.setSignal(stack);
 
   //Create neuron structure
+
+  BOOL oldSpTest = m_connWorkspace->sp_test;
+  if (chainArray.size() > 1000) {
+    std::cout << "Too many chains: " << chainArray.size() << std::endl;
+    std::cout << "Turn off shortest path test" << std::endl;
+    m_connWorkspace->sp_test = FALSE;
+  }
+
   /* free <chainArray> */
   tree = constructor.reconstruct(chainArray);
+
+  m_connWorkspace->sp_test = oldSpTest;
+
   advanceProgress(0.1);
 
   //Post process

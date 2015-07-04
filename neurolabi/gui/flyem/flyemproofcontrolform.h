@@ -35,6 +35,7 @@ signals:
   void locatingBody(uint64_t);
   void goingToBody();
   void selectingBody();
+  void bookmarkChecked(QString, bool);
 
 public slots:
   void setInfo(const QString &info);

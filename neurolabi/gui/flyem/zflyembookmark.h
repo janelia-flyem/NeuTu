@@ -39,6 +39,7 @@ public:
 
   QString getDvidKey() const;
 
+  ZJsonObject toJsonObject() const;
 
 
   void print() const;

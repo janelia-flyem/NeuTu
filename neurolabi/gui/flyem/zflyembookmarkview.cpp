@@ -66,6 +66,8 @@ void ZFlyEmBookmarkView::checkCurrentBookmark(bool checking)
     ZFlyEmBookmark &bookmark = getModel()->getBookmark(index.row());
     bookmark.setChecked(checking);
     getModel()->update(index.row());
+
+    emit bookmarkChecked(bookmark.getDvidKey(), checking);
   }
 }
 
