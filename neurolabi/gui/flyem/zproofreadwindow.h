@@ -73,6 +73,7 @@ private:
   QAction *m_viewSynapseAction;
   QAction *m_viewBookmarkAction;
   QAction *m_importBookmarkAction;
+  QAction *m_contrastAction;
 
   QToolBar *m_toolBar;
 

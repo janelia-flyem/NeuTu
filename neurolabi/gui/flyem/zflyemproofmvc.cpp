@@ -740,6 +740,17 @@ void ZFlyEmProofMvc::setDvidLabelSliceSize(int width, int height)
   }
 }
 
+void ZFlyEmProofMvc::showFullSegmentation()
+{
+  if (getCompleteDocument() != NULL) {
+    ZDvidLabelSlice *slice = getCompleteDocument()->getDvidLabelSlice();
+    if (slice != NULL) {
+      slice->updateFullView(getView()->getViewParameter());
+      getView()->paintObject();
+    }
+  }
+}
+
 void ZFlyEmProofMvc::saveSeed()
 {
   m_splitProject.saveSeed(true);
@@ -1093,6 +1104,19 @@ void ZFlyEmProofMvc::recordCheckedBookmark(const QString &key, bool checking)
                                              NeuTube::MSG_WARING));
       }
     }
+  }
+}
+
+void ZFlyEmProofMvc::enhanceTileContrast(bool state)
+{
+  ZDvidTileEnsemble *tile = getCompleteDocument()->getDvidTileEnsemble();
+  if (tile != NULL) {
+    if (state) {
+      tile->addVisualEffect(NeuTube::Display::Image::VE_HIGH_CONTRAST);
+    } else {
+      tile->removeVisualEffect(NeuTube::Display::Image::VE_HIGH_CONTRAST);
+    }
+    getCompleteDocument()->processObjectModified(tile->getTarget());
   }
 }
 

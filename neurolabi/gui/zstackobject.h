@@ -1,6 +1,7 @@
 #ifndef ZSTACKOBJECT_H
 #define ZSTACKOBJECT_H
 
+#include "neutube_def.h"
 #include "zqtheader.h"
 //#include "zpainter.h"
 #include "zstackobjectrole.h"
@@ -289,6 +290,11 @@ public:
     m_projectionVisible = visible;
   }
 
+  virtual void addVisualEffect(NeuTube::Display::TVisualEffect ve);
+  virtual void removeVisualEffect(NeuTube::Display::TVisualEffect ve);
+  virtual void setVisualEffect(NeuTube::Display::TVisualEffect ve);
+  bool hasVisualEffect(NeuTube::Display::TVisualEffect ve) const;
+
 public:
   static bool isEmptyTree(const ZStackObject *obj);
   static bool isSameSource(const std::string &s1, const std::string &s2);
@@ -313,6 +319,8 @@ protected:
   EType m_type;
   ZStackObjectRole m_role;
   ZIntPoint m_hitPoint;
+
+  NeuTube::Display::TVisualEffect m_visualEffect;
 
 //  static const char *m_nodeAdapterId;
 };

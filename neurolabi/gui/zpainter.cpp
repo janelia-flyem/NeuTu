@@ -16,7 +16,8 @@ ZPainter::ZPainter() : m_z(0), m_isPainted(false)
 }
 #ifdef _QT_GUI_USED_
 ZPainter::ZPainter(QPaintDevice *device) :
-  m_painter(device), m_z(0), m_isPainted(false)
+  m_painter(device),
+  m_z(0), m_isPainted(false)
 {
 }
 

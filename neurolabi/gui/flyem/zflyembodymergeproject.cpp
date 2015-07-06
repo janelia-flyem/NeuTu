@@ -1282,7 +1282,7 @@ void ZFlyEmBodyMergeProject::updateBookmarkDecoration(
   if (getDocument() != NULL) {
     ZFlyEmBookmarkArray filteredBookmarkArray;
     foreach (ZFlyEmBookmark bookmark, bookmarkArray) {
-      if (bookmark.getType() != ZFlyEmBookmark::TYPE_FALSE_MERGE) {
+      if (bookmark.getBookmarkType() != ZFlyEmBookmark::TYPE_FALSE_MERGE) {
         filteredBookmarkArray.append(bookmark);
       }
     }
@@ -1305,7 +1305,7 @@ void ZFlyEmBodyMergeProject::updateBookmarkDecoration()
     for (ZFlyEmBookmarkArray::const_iterator iter = m_bookmarkArray->begin();
          iter != m_bookmarkArray->end(); ++iter) {
       const ZFlyEmBookmark &bookmark = *iter;
-      if (bookmark.getType() == ZFlyEmBookmark::TYPE_FALSE_SPLIT) {
+      if (bookmark.getBookmarkType() == ZFlyEmBookmark::TYPE_FALSE_SPLIT) {
         bookmarkArray.append(bookmark);
       }
     }

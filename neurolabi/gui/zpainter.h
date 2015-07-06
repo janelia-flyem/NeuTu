@@ -3,6 +3,7 @@
 
 #include <vector>
 
+//#include "neutube_def.h"
 #include "zqtheader.h"
 
 #ifdef _QT_GUI_USED_
@@ -156,6 +157,7 @@ private:
 #ifdef _QT_GUI_USED_
   QPainter m_painter;
 #endif
+
   int m_z;
   bool m_isPainted;
 

@@ -648,10 +648,10 @@ void ZSwcTree::display(ZPainter &painter, int slice,
                SwcTreeNode::radius(tn));
 
     circle.setColor(255, 255, 0);
-    circle.setVisualEffect(ZStackBall::VE_BOUND_BOX |
-                           ZStackBall::VE_NO_FILL |
-                           ZStackBall::VE_OUT_FOCUS_DIM |
-                           ZStackBall::VE_DASH_PATTERN);
+    circle.setVisualEffect(NeuTube::Display::Sphere::VE_BOUND_BOX |
+                           NeuTube::Display::Sphere::VE_NO_FILL |
+                           NeuTube::Display::Sphere::VE_OUT_FOCUS_DIM |
+                           NeuTube::Display::Sphere::VE_DASH_PATTERN);
     circle.useCosmeticPen(m_usingCosmeticPen);
     circle.display(painter, slice, BOUNDARY);
   }

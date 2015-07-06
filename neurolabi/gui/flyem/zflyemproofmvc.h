@@ -95,6 +95,9 @@ public slots:
   void showCoarseBody3d();
 
   void setDvidLabelSliceSize(int width, int height);
+  void showFullSegmentation();
+
+  void enhanceTileContrast(bool state);
 
   void zoomTo(const ZIntPoint &pt);
   void zoomTo(int x, int y, int z);
@@ -162,6 +165,8 @@ void ZFlyEmProofMvc::connectControlPanel(T *panel)
           panel, SIGNAL(splitTriggered(uint64_t)));
   connect(panel, SIGNAL(labelSizeChanged(int, int)),
           this, SLOT(setDvidLabelSliceSize(int, int)));
+  connect(panel, SIGNAL(showingFullSegmentation()),
+          this, SLOT(showFullSegmentation()));
   connect(panel, SIGNAL(coarseBodyViewTriggered()),
           this, SLOT(showCoarseBody3d()));
   connect(panel, SIGNAL(savingMerge()), this, SLOT(saveMergeOperation()));

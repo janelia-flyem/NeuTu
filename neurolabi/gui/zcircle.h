@@ -60,7 +60,7 @@ public:
   }
 
   inline bool hasVisualEffect(TVisualEffect effect) const {
-    return (effect & m_visualEffect) > 0;
+    return effect & m_visualEffect;
   }
 
 private:

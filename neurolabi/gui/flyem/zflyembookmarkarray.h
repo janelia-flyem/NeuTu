@@ -18,7 +18,7 @@ public:
 
   void print() const;
 
-  ZFlyEmBookmarkArray getBookmarkArray(ZFlyEmBookmark::EType type);
+  ZFlyEmBookmarkArray getBookmarkArray(ZFlyEmBookmark::EBookmarkType type);
   ZFlyEmBookmarkArray getBookmarkArray(uint64_t bodyId);
 
   QVector<ZPunctum*> toPunctumArray(bool isVisible) const;

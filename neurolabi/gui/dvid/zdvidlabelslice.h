@@ -24,6 +24,8 @@ public:
   void update(int z);
   void update();
 
+  void updateFullView(const ZStackViewParam &viewParam);
+
   void display(ZPainter &painter, int slice, EDisplayStyle option) const;
 
   const std::string& className() const;

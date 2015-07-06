@@ -104,6 +104,13 @@ void ZDvidLabelSlice::update(int z)
   update(viewParam);
 }
 
+void ZDvidLabelSlice::updateFullView(const ZStackViewParam &viewParam)
+{
+  forceUpdate(viewParam);
+
+  m_currentViewParam = viewParam;
+}
+
 void ZDvidLabelSlice::update(const ZStackViewParam &viewParam)
 {
   ZStackViewParam newViewParam = viewParam;

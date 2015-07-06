@@ -40,6 +40,8 @@ FlyEmProofControlForm::FlyEmProofControlForm(QWidget *parent) :
           this, SLOT(incSegmentSize()));
   connect(ui->segmentSizeDecPushButton, SIGNAL(clicked()),
           this, SLOT(decSegmentSize()));
+  connect(ui->fullViewPushButton, SIGNAL(clicked()),
+          this, SLOT(showFullSegmentation()));
 
   connect(ui->coarseBodyPushButton, SIGNAL(clicked()),
           this, SIGNAL(coarseBodyViewTriggered()));
@@ -107,6 +109,11 @@ void FlyEmProofControlForm::decSegmentSize()
   emit labelSizeChanged(512, 512);
 }
 
+void FlyEmProofControlForm::showFullSegmentation()
+{
+  emit showingFullSegmentation();
+}
+
 void FlyEmProofControlForm::goToBody()
 {
   emit goingToBody();
@@ -153,7 +160,7 @@ void FlyEmProofControlForm::updateBookmarkTable(ZFlyEmBodyMergeProject *project)
       for (ZFlyEmBookmarkArray::const_iterator iter = bookmarkArray->begin();
            iter != bookmarkArray->end(); ++iter) {
         const ZFlyEmBookmark &bookmark = *iter;
-        if (bookmark.getType() != ZFlyEmBookmark::TYPE_FALSE_MERGE) {
+        if (bookmark.getBookmarkType() != ZFlyEmBookmark::TYPE_FALSE_MERGE) {
           m_bookmarkList.append(bookmark);
         }
       }

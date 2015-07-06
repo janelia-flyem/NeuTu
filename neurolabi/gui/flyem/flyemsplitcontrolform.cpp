@@ -208,7 +208,7 @@ void FlyEmSplitControlForm::updateBookmarkTable(ZFlyEmBodySplitProject *project)
              iter != bookmarkArray->end(); ++iter) {
           const ZFlyEmBookmark &bookmark = *iter;
           if (bookmark.getBodyId() == project->getBodyId() &&
-              bookmark.getType() == ZFlyEmBookmark::TYPE_FALSE_MERGE) {
+              bookmark.getBookmarkType() == ZFlyEmBookmark::TYPE_FALSE_MERGE) {
             m_bookmarkList.append(bookmark);
           }
         }

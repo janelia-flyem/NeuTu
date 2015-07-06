@@ -15,7 +15,7 @@ QVariant ZFlyEmBookmarkPresenter::data(
   case Qt::DisplayRole:
     switch (index) {
     case 0:
-      switch (bookmark.getType()) {
+      switch (bookmark.getBookmarkType()) {
       case ZFlyEmBookmark::TYPE_FALSE_MERGE:
         return "False Merge";
       case ZFlyEmBookmark::TYPE_FALSE_SPLIT:

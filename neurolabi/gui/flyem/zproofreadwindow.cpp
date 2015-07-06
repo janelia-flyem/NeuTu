@@ -154,6 +154,12 @@ void ZProofreadWindow::createMenu()
   connect(m_viewBookmarkAction, SIGNAL(toggled(bool)),
           m_mainMvc, SLOT(showBookmark(bool)));
 
+  m_contrastAction = new QAction("Enhance Contrast", this);
+  m_contrastAction->setCheckable(true);
+  m_contrastAction->setChecked(false);
+  connect(m_contrastAction, SIGNAL(toggled(bool)),
+          m_mainMvc, SLOT(enhanceTileContrast(bool)));
+
   viewMenu->addAction(m_viewSynapseAction);
   viewMenu->addAction(m_viewBookmarkAction);
 

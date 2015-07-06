@@ -4,8 +4,9 @@
 #include "zjsonobject.h"
 
 ZFlyEmBookmark::ZFlyEmBookmark() :
-  m_bodyId(-1), m_type(TYPE_LOCATION), m_isChecked(false)
+  m_bodyId(-1), m_bookmarkType(TYPE_LOCATION), m_isChecked(false)
 {
+  m_type = ZStackObject::TYPE_FLYEM_BOOKMARK;
 }
 
 void ZFlyEmBookmark::print() const
@@ -35,7 +36,7 @@ ZJsonObject ZFlyEmBookmark::toJsonObject() const
 
   obj.setEntry("checked", m_isChecked);
 
-  switch (m_type) {
+  switch (m_bookmarkType) {
   case TYPE_FALSE_MERGE:
     obj.setEntry("type", "false merge");
     break;
