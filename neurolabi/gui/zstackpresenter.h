@@ -59,6 +59,7 @@ public:
   enum EActionItem {
     ACTION_EXTEND_SWC_NODE, ACTION_SMART_EXTEND_SWC_NODE,
     ACTION_CONNECT_TO_SWC_NODE, ACTION_ADD_SWC_NODE,
+    ACTION_TOGGLE_SWC_SKELETON,
     ACTION_LOCK_SWC_NODE_FOCUS, ACTION_CHANGE_SWC_NODE_FOCUS,
     ACTION_MOVE_SWC_NODE,
     ACTION_ESTIMATE_SWC_NODE_RADIUS,
@@ -143,7 +144,7 @@ public:
   void binarizeStack();
   void solidifyStack();
 
-  void autoTrace();
+ // void autoTrace();
 
   void prepareView();
 
@@ -220,6 +221,8 @@ public:
   bool isOperatable(ZStackOperator::EOperation op);
 //  bool isOperatable(const ZStackOperator &op) const;
 
+  bool isSwcFullSkeletonVisible() const;
+
 public slots:
   void addDecoration(ZStackObject *obj, bool tail = true);
   void removeLastDecoration(ZStackObject *obj);
@@ -257,6 +260,7 @@ public slots:
   void connectSelectedSwcNode();
   void breakSelectedSwcNode();
   void selectAllSwcTreeNode();
+  void toggleSwcSkeleton(bool state);
 
   void trySwcAddNodeMode(double x, double y);
   void trySwcAddNodeMode();

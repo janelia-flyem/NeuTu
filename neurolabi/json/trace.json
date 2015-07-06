@@ -1,6 +1,7 @@
 {
   "level": 1,
-  "minimalScore": 0.3
+  "minimalScore": 0.3,
+  "refit": false
 }
 
 

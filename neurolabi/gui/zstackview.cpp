@@ -682,6 +682,11 @@ void ZStackView::redraw(bool updatingScreen)
         buddyDocument()->getStackSize().getX(),
         buddyDocument()->getStackSize().getY());
 
+  buddyDocument()->blockSignals(true);
+  buddyDocument()->showSwcFullSkeleton(
+        buddyPresenter()->isSwcFullSkeletonVisible());
+  buddyDocument()->blockSignals(false);
+
   paintStackBuffer();
 //  std::cout << "paint stack per frame: " << timer.restart() << std::endl;
   paintMaskBuffer();

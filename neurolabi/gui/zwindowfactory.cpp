@@ -72,10 +72,12 @@ Z3DWindow* ZWindowFactory::make3DWindow(ZSharedPointer<ZStackDoc> doc,
       window->getPunctaFilter()->setColorMode("Original Point Color");
     }
     if (doc->getTag() == NeuTube::Document::FLYEM_BODY ||
-        doc->getTag() == NeuTube::Document::FLYEM_SPLIT ||
-        doc->getTag() != NeuTube::Document::SEGMENTATION_TARGET) {
+        doc->getTag() == NeuTube::Document::FLYEM_SPLIT) {
       window->getVolumeRaycasterRenderer()->setCompositeMode(
             "Direct Volume Rendering");
+    } else {
+//      doc->getTag() == NeuTube::Document::SEGMENTATION_TARGET
+      window->getVolumeRaycasterRenderer()->setCompositeMode("MIP Opaque");
     }
     if (doc->getTag() != NeuTube::Document::FLYEM_SPLIT &&
         doc->getTag() != NeuTube::Document::SEGMENTATION_TARGET &&

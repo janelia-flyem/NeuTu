@@ -67,6 +67,7 @@ class ZFlyEmHackathonConfigDlg;
 class ZProgressManager;
 class ZMessageManager;
 class ZTestDialog;
+class ZAutoTraceDialog;
 class QTimer;
 
 namespace Ui {
@@ -500,7 +501,7 @@ private:
                                        int x, int y, int z,
                                        int width, int height, int depth);
 
-  void autoTrace(ZStackFrame *frame, bool doResample);
+  void autoTrace(ZStackFrame *frame);
 
 private:
   QMdiArea *mdiArea;
@@ -653,6 +654,7 @@ private:
   SynapseImportDialog *m_synapseDlg;
   FlyEmBodyMergeProjectDialog *m_mergeBodyDlg;
   ZSegmentationProjectDialog *m_segmentationDlg;
+  ZAutoTraceDialog *m_autoTraceDlg;
 
   ZStackViewManager *m_stackViewManager;
   ZFlyEmProjectManager *m_flyemProjectManager;

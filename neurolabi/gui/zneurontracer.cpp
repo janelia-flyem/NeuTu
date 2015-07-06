@@ -1120,7 +1120,7 @@ void ZNeuronTracer::setTraceLevel(int level)
     initConnectionTestWorkspace();
   }
 
-  m_traceWorkspace->tune_end = FALSE;
+//  m_traceWorkspace->tune_end = FALSE;
   m_traceWorkspace->refit = FALSE;
   m_connWorkspace->sp_test = FALSE;
   m_connWorkspace->crossover_test = FALSE;
@@ -1150,7 +1150,31 @@ void ZNeuronTracer::setTraceLevel(int level)
   }
 }
 
+const char *ZNeuronTracer::m_levelKey = "level";
+const char *ZNeuronTracer::m_minimalScoreKey = "minimalScore";
+const char *ZNeuronTracer::m_minimalSeedScoreKey = "minimalSeedScore";
+const char *ZNeuronTracer::m_spTestKey = "spTest";
+const char *ZNeuronTracer::m_enhanceLineKey = "enhanceLine";
+
 void ZNeuronTracer::loadJsonObject(const ZJsonObject &obj)
 {
+  if (obj.hasKey(m_levelKey)) {
+    setTraceLevel(ZJsonParser::integerValue(obj[m_levelKey]));
+  }
 
+  if (obj.hasKey(m_minimalScoreKey)) {
+    m_traceMinScore = ZJsonParser::numberValue(obj[m_minimalScoreKey]);
+  }
+
+  if (obj.hasKey(m_minimalSeedScoreKey)) {
+    m_seedMinScore = ZJsonParser::numberValue(obj[m_minimalSeedScoreKey]);
+  }
+
+  if (obj.hasKey(m_spTestKey)) {
+    m_connWorkspace->sp_test = ZJsonParser::booleanValue(obj[m_spTestKey]);
+  }
+
+  if (obj.hasKey(m_enhanceLineKey)) {
+    m_enhancingMask = ZJsonParser::booleanValue(obj[m_enhanceLineKey]);
+  }
 }
