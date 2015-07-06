@@ -15,6 +15,7 @@
 #include "flyem/zflyemneuronbodyinfo.h"
 #include "zerror.h"
 #include "zjsonfactory.h"
+#include "flyem/zflyembookmark.h"
 
 #if _ENABLE_LIBDVID_
 #include "DVIDNode.h"
@@ -646,4 +647,11 @@ void ZDvidWriter::parseStandardOutput()
     qDebug() << "Json output: " << m_jsonOutput.dumpString(2);
 #endif
   }
+}
+
+void ZDvidWriter::writeBookmark(const ZFlyEmBookmark &bookmark)
+{
+  writeJsonString(ZDvidData::GetName(ZDvidData::ROLE_BOOKMARK),
+                  bookmark.getDvidKey().toStdString(),
+                  bookmark.toJsonObject().dumpString(0));
 }

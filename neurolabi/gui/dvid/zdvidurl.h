@@ -131,6 +131,8 @@ public:
 
   std::string getRoiUrl(const std::string &dataName) const;
 
+  std::string getBookmarkUrl() const;
+
   static std::string GetEndPoint(const std::string &url);
   /*!
    * \brief Get entry point of getting key value entries

@@ -4,7 +4,7 @@
 #include "zswcpath.h"
 #include "tz_trace_defs.h"
 #include "tz_trace_utils.h"
-#include "neutube.h"
+#include "neutube_def.h"
 #include "zstackgraph.h"
 #include "tz_locseg_chain.h"
 #include "zprogressable.h"
@@ -194,6 +194,12 @@ private:
   Stack *m_mask;
   Stack *m_baseMask;
   ZIntPoint m_seedDsIntv;
+
+  static const char *m_levelKey;
+  static const char *m_minimalScoreKey;
+  static const char *m_minimalSeedScoreKey;
+  static const char *m_spTestKey;
+  static const char *m_enhanceLineKey;
 };
 
 #endif // ZNEURONTRACER_H

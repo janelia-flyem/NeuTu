@@ -332,16 +332,6 @@
     {
       "address": "emdata1.int.janelia.org",
       "port": 8500,
-      "uuid": "4f22",
-      "name": "MB_takemurasa_Practice",
-      "comment": "MB seg (branched from ccf)",
-      "body_label": "bodies",
-      "label_block": "labels",
-      "user_name": ["takemurasa", "zhaot"]
-    },
-    {
-      "address": "emdata1.int.janelia.org",
-      "port": 8500,
       "uuid": "afc7",
       "name": "MB_rivlinp_Training",
       "comment": "MB seg (branched from ccf)",
@@ -363,11 +353,11 @@
       "address": "emdata1.int.janelia.org",
       "port": 8500,
       "uuid": "4f22",
-      "name": "MB_changl_Practice",
+      "name": "MB_Practice",
       "comment": "MB seg (branched from ccf)",
       "body_label": "bodies",
       "label_block": "labels",
-      "user_name": ["changl", "zhaot"]
+      "user_name": ["anicetor", "changl", "lauchies", "ogundeyio", "ordishc", "sigmundc", "shinomiyaa", "tranj", "rivlinp", "takemurasa", "zhaot"]
     },
     {
       "address": "emdata1.int.janelia.org",

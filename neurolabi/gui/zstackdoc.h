@@ -565,6 +565,8 @@ public:
   bool pushLocsegChain(ZStackObject *obj);
   void pushSelectedLocsegChain();
 
+  void showSwcFullSkeleton(bool state);
+
 //  enum ESynapseSelection {
 //    SYNAPSE_ALL, SYNAPSE_TBAR, SYNAPSE_PSD
 //  };
@@ -920,7 +922,7 @@ public slots: //undoable commands
 
   bool executeTraceTubeCommand(double x, double y, double z, int c = 0);
   bool executeRemoveTubeCommand();
-  bool executeAutoTraceCommand(bool doResample);
+  bool executeAutoTraceCommand(int traceLevel, bool doResample);
   bool executeAutoTraceAxonCommand();
 
   bool executeAddSwcCommand(ZSwcTree *tree);

@@ -17,6 +17,7 @@
 #include "zdvidreader.h"
 #include "zstackview.h"
 #include "zrect2d.h"
+#include "libdvidheader.h"
 
 ZDvidTile::ZDvidTile() : m_ix(0), m_iy(0), m_z(0), m_view(NULL)
 {
@@ -36,8 +37,24 @@ void ZDvidTile::clear()
   m_dvidTarget.clear();
 }
 
+void ZDvidTile::loadDvidSlice(const uchar *buf, int length, int z)
+{
+  bool loading = true;
+  if (m_view != NULL) {
+    if (m_view->getZ(NeuTube::COORD_STACK) != z) {
+      loading = false;
+    }
+  }
+  if (loading) {
+    m_image.loadFromData(buf, length);
+    m_z = z;
+  }
+}
+
 void ZDvidTile::loadDvidSlice(const QByteArray &buffer, int z)
 {
+  loadDvidSlice((const uchar *) buffer.data(), buffer.length(), z);
+#if 0
   bool loading = true;
   if (m_view != NULL) {
     if (m_view->getZ(NeuTube::COORD_STACK) != z) {
@@ -56,6 +73,7 @@ void ZDvidTile::loadDvidSlice(const QByteArray &buffer, int z)
 //    m_image.setOffset();
     m_z = z;
   }
+#endif
 
 //  m_image.save((GET_TEST_DATA_DIR + "/test.tif").c_str());
 }
@@ -154,6 +172,30 @@ void ZDvidTile::setTileIndex(int ix, int iy)
 void ZDvidTile::update(int z)
 {
   if (m_z != z || m_image.isNull()) {
+#if defined(_ENABLE_LIBDVIDCPP_2)
+    std::vector<int> offset(3);
+    offset[0] = m_ix;
+    offset[1] = m_iy;
+    offset[2] = z;
+
+    tic();
+    try {
+      libdvid::DVIDNodeService service(getDvidTarget().getAddressWithPort(),
+                                       getDvidTarget().getUuid());
+      libdvid::BinaryDataPtr data =
+          service.get_tile_slice_binary(
+            "tiles", libdvid::XY, m_res.getLevel(), offset);
+      if (data->length() > 0) {
+        loadDvidSlice(data->get_raw(), data->length(), z);
+        m_image.setScale(1.0 / m_res.getScale(), 1.0 / m_res.getScale());
+        m_image.setOffset(-getX(), -getY());
+      }
+    } catch (std::exception &e) {
+      std::cout << e.what() << std::endl;===
+    }
+    std::cout << "Tile level: " << m_res.getLevel() << std::endl;
+    std::cout << "Tile reading time: " << toc() << std::endl;
+#else
     ZDvidUrl dvidUrl(getDvidTarget());
     ZDvidBufferReader bufferReader;
 
@@ -179,6 +221,7 @@ void ZDvidTile::update(int z)
       m_image.setOffset(-getX(), -getY());
       //      setResolutionLevel(m_res.getLevel());
     }
+#endif
   }
   //m_z = z;
 }

@@ -25,6 +25,7 @@ class ZClosedCurve;
 class ZIntCuboid;
 class ZSwcTree;
 class QProcess;
+class ZFlyEmBookmark;
 
 class ZDvidWriter : public QObject
 {
@@ -93,6 +94,8 @@ public:
   void writeMergeOperation(const std::string &dataName, const std::string &key,
                            const QMap<uint64_t, uint64_t> &bodyMap);
                            */
+
+  void writeBookmark(const ZFlyEmBookmark &bookmark);
 
   inline int getStatusCode() const {
     return m_statusCode;

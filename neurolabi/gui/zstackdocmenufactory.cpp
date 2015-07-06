@@ -264,6 +264,8 @@ QMenu* ZStackDocMenuFactory::makeStackContextMenu(
     break;
   case NeuTube::Document::NORMAL:
     menu->addAction(presenter->getAction(ZStackPresenter::ACTION_ADD_SWC_NODE));
+    menu->addAction(presenter->getAction(
+                      ZStackPresenter::ACTION_TOGGLE_SWC_SKELETON));
     break;
   default:
     break;

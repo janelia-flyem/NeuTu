@@ -2,6 +2,7 @@
 #define ZFLYEMBOOKMARKVIEW_H
 
 #include <QTableView>
+#include <QString>
 
 class ZFlyEmBookmarkListModel;
 
@@ -17,6 +18,7 @@ public:
   void checkCurrentBookmark(bool checking);
 
 signals:
+  void bookmarkChecked(QString key, bool checking);
 
 public slots:
   void checkCurrentBookmark();

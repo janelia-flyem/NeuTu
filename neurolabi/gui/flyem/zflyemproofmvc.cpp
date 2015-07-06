@@ -814,8 +814,31 @@ void ZFlyEmProofMvc::zoomTo(int x, int y, int z)
   zoomTo(x, y, z, 400);
 }
 
+void ZFlyEmProofMvc::syncDvidBookmark()
+{
+  ZDvidReader reader;
+  if (reader.open(getDvidTarget())) {
+    for (ZFlyEmBookmarkArray::iterator iter = m_bookmarkArray.begin();
+         iter != m_bookmarkArray.end(); ++iter) {
+      ZFlyEmBookmark &bookmark = *iter;
+      const QByteArray &bookmarkData =
+          reader.readKeyValue(ZDvidData::GetName(
+                                ZDvidData::ROLE_BOOKMARK), bookmark.getDvidKey());
+      if (!bookmarkData.isEmpty()) {
+        ZJsonObject obj;
+        obj.decodeString(bookmarkData.data());
+        if (obj.hasKey("checked")) {
+          bookmark.setChecked(ZJsonParser::booleanValue(obj["checked"]));
+        }
+      }
+    }
+  }
+}
+
 void ZFlyEmProofMvc::notifyBookmarkUpdated()
 {
+  syncDvidBookmark();
+
   m_splitProject.updateBookmarkDecoration();
   m_mergeProject.updateBookmarkDecoration();
 
@@ -1055,6 +1078,22 @@ void ZFlyEmProofMvc::processViewChangeCustom(const ZStackViewParam &/*viewParam*
 {
   m_mergeProject.update3DBodyViewPlane();
   m_splitProject.update3DViewPlane();
+}
+
+void ZFlyEmProofMvc::recordCheckedBookmark(const QString &key, bool checking)
+{
+  ZFlyEmBookmark *bookmark = m_bookmarkArray.findFirstBookmark(key);
+  if (bookmark != NULL) {
+    bookmark->setChecked(checking);
+    ZDvidWriter writer;
+    if (writer.open(getDvidTarget())) {
+      writer.writeBookmark(*bookmark);
+      if (writer.getStatusCode() != 200) {
+        emit messageGenerated(ZWidgetMessage("Failed to record bookmark.",
+                                             NeuTube::MSG_WARING));
+      }
+    }
+  }
 }
 
 //void ZFlyEmProofMvc::toggleEdgeMode(bool edgeOn)

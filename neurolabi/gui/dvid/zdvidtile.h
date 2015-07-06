@@ -31,6 +31,7 @@ public:
   void setResolutionLevel(int level);
 
   void loadDvidSlice(const QByteArray &buffer, int z);
+  void loadDvidSlice(const uchar *buf, int length, int z);
 
 //  void setTileOffset(int x, int y, int z);
 

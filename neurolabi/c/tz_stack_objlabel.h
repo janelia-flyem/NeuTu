@@ -142,7 +142,7 @@ int Stack_Label_Objects_Ns(Stack *stack, IMatrix *chord,
  *
  * Stack_Label_Large_Objects_N() labels objects that have voxel number no 
  * smaller than <minsize> by the value <label> + 1. All other objects are 
- * labeled as <lablel>. It returns the number of large objects labeled.
+ * labeled as <label>. It returns the number of large objects labeled.
  * <chord> is an integer matrix to store intermediate results. It can be NULL.
  */
 int Stack_Label_Large_Objects_N(Stack *stack, IMatrix *chord, 

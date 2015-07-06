@@ -6859,7 +6859,7 @@ bool ZStackDoc::executeRemoveTubeCommand()
   return false;
 }
 
-bool ZStackDoc::executeAutoTraceCommand(bool doResample)
+bool ZStackDoc::executeAutoTraceCommand(int traceLevel, bool doResample)
 {
 #if 0
   if (hasStackData()) {
@@ -6882,7 +6882,7 @@ bool ZStackDoc::executeAutoTraceCommand(bool doResample)
   m_neuronTracer.setProgressReporter(getProgressReporter());
 
   startProgress(0.9);
-  m_neuronTracer.setTraceLevel(5);
+  m_neuronTracer.setTraceLevel(traceLevel);
   ZSwcTree *tree = m_neuronTracer.trace(getStack()->c_stack(), doResample);
   endProgress(0.9);
 
@@ -8421,6 +8421,23 @@ void ZStackDoc::setVisible(ZStackObjectRole::TRole role, bool visible)
     ZStackObject *obj = (*iter)->getData();
     obj->setVisible(visible);
     bufferObjectModified(obj->getTarget());
+  }
+
+  notifyObjectModified();
+}
+
+void ZStackDoc::showSwcFullSkeleton(bool state)
+{
+  TStackObjectList &objList = getObjectList(ZStackObject::TYPE_SWC);
+  for (TStackObjectList::iterator iter = objList.begin();
+       iter != objList.end(); ++iter) {
+    ZSwcTree *tree = dynamic_cast<ZSwcTree*>(*iter);
+    if (state) {
+      tree->addVisualEffect(ZSwcTree::VE_FULL_SKELETON);
+    } else {
+      tree->removeVisualEffect(ZSwcTree::VE_FULL_SKELETON);
+    }
+    bufferObjectModified(tree->getTarget());
   }
 
   notifyObjectModified();

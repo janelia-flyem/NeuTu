@@ -93,6 +93,8 @@ public:
 
   const ZStackViewParam& getViewParam() const;
 
+  void mapSelection();
+
 private:
   inline const ZDvidTarget& getDvidTarget() const { return m_dvidTarget; }
   void assignColorMap();

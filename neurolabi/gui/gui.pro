@@ -43,7 +43,7 @@ CONFIG(debug, debug|release) {
 include(extratarget.pri)
 
 CONFIG(release, debug|release):!isEmpty(DEPLOYMENT_COMMAND) {
-    QMAKE_POST_LINK += $$DEPLOYMENT_COMMAND
+#    QMAKE_POST_LINK += $$DEPLOYMENT_COMMAND
 }
 
 message($$DEPLOYMENT_COMMAND)
