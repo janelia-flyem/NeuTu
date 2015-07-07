@@ -16,7 +16,7 @@ set (USE_LIBFFTW ON CACHE BOOL "Use fftw3")
 set (USE_LIBFFTWF ON CACHE BOOL "Use float version of fftw")
 set (USE_LIBZ ON CACHE BOOL "Use libz")
 set (USE_LIBXML2 ON CACHE BOOL "Use libxml2")
-set (USE_LIBPNG ON CACHE BOOL "Use libpng")
+set (USE_LIBPNG OFF CACHE BOOL "Use libpng")
 set (USE_LIBJANSSON ON CACHE BOOL "Use libjansson")
 
 set (CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules)

@@ -14,6 +14,11 @@
 class QSpacerItem;
 class ZParameterArray;
 
+#ifdef _WIN32
+#undef GetOpenFileName
+#undef GetSaveFileName
+#endif
+
 class ZDialogFactory
 {
 public:

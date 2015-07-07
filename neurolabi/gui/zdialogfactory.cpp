@@ -27,6 +27,10 @@
 #include "flyem/zflyemproofdoc.h"
 #include "z3dapplication.h"
 
+#ifdef _WIN32
+#undef GetOpenFileName
+#undef GetSaveFileName
+#endif
 
 QString ZDialogFactory::m_currentDirectory = "";
 QString ZDialogFactory::m_currentOpenFileName = "";
