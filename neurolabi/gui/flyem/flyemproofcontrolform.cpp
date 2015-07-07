@@ -46,6 +46,8 @@ FlyEmProofControlForm::FlyEmProofControlForm(QWidget *parent) :
 
   connect(ui->bookmarkView, SIGNAL(doubleClicked(QModelIndex)),
           this, SLOT(locateBookmark(QModelIndex)));
+  connect(ui->bookmarkView, SIGNAL(bookmarkChecked(QString,bool)),
+          this, SIGNAL(bookmarkChecked(QString, bool)));
 /*
   ui->helpWidget->setOpenExternalLinks(true);
   ui->helpWidget->setSource(
@@ -151,7 +153,7 @@ void FlyEmProofControlForm::updateBookmarkTable(ZFlyEmBodyMergeProject *project)
       for (ZFlyEmBookmarkArray::const_iterator iter = bookmarkArray->begin();
            iter != bookmarkArray->end(); ++iter) {
         const ZFlyEmBookmark &bookmark = *iter;
-        if (bookmark.getType() == ZFlyEmBookmark::TYPE_FALSE_SPLIT) {
+        if (bookmark.getType() != ZFlyEmBookmark::TYPE_FALSE_MERGE) {
           m_bookmarkList.append(bookmark);
         }
       }

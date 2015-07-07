@@ -5,6 +5,8 @@
 #include "zintpoint.h"
 #include "tz_stdint.h"
 
+class ZJsonObject;
+
 class ZFlyEmBookmark
 {
 public:
@@ -34,6 +36,11 @@ public:
   void setChecked(bool checked) {
     m_isChecked = checked;
   }
+
+  QString getDvidKey() const;
+
+  ZJsonObject toJsonObject() const;
+
 
   void print() const;
 

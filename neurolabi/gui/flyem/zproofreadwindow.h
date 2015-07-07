@@ -71,9 +71,10 @@ private:
   ZFlyEmMessageWidget *m_messageWidget;
 
   QAction *m_viewSynapseAction;
-  QToolBar *m_toolBar;
-
+  QAction *m_viewBookmarkAction;
   QAction *m_importBookmarkAction;
+
+  QToolBar *m_toolBar;
 
   QProgressDialog *m_progressDlg;
   ZProgressSignal *m_progressSignal;

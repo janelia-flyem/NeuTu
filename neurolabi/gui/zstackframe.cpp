@@ -997,9 +997,9 @@ void ZStackFrame::executeSwcRescaleCommand(const ZRescaleSwcSetting &setting)
   document()->executeSwcRescaleCommand(setting);
 }
 
-void ZStackFrame::executeAutoTraceCommand(bool doResample)
+void ZStackFrame::executeAutoTraceCommand(int traceLevel, bool doResample)
 {
-  document()->executeAutoTraceCommand(doResample);
+  document()->executeAutoTraceCommand(traceLevel, doResample);
 }
 
 void ZStackFrame::executeAutoTraceAxonCommand()

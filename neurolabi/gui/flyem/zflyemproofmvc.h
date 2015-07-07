@@ -115,8 +115,11 @@ public slots:
 
   void loadSynapse();
   void showSynapseAnnotation(bool visible);
+  void showBookmark(bool visible);
 
   void loadBookmark();
+
+  void recordCheckedBookmark(const QString &key, bool checking);
 
 //  void toggleEdgeMode(bool edgeOn);
 
@@ -130,6 +133,7 @@ private:
   std::set<uint64_t> getCurrentSelectedBodyId(NeuTube::EBodyLabelType type) const;
   void runSplitFunc();
   void notifyBookmarkUpdated();
+  void syncDvidBookmark();
 
 private:
   bool m_showSegmentation;
@@ -170,6 +174,8 @@ void ZFlyEmProofMvc::connectControlPanel(T *panel)
   connect(panel, SIGNAL(selectingBody()), this, SLOT(selectBody()));
   connect(this, SIGNAL(bookmarkUpdated(ZFlyEmBodyMergeProject*)),
           panel, SLOT(updateBookmarkTable(ZFlyEmBodyMergeProject*)));
+  connect(panel, SIGNAL(bookmarkChecked(QString, bool)),
+          this, SLOT(recordCheckedBookmark(QString, bool)));
 }
 
 template <typename T>
@@ -200,6 +206,8 @@ void ZFlyEmProofMvc::connectSplitControlPanel(T *panel)
   connect(this, SIGNAL(splitBodyLoaded(uint64_t)),
           panel, SLOT(updateBodyWidget(uint64_t)));
   connect(panel, SIGNAL(loadingSynapse()), this, SLOT(loadSynapse()));
+  connect(panel, SIGNAL(bookmarkChecked(QString, bool)),
+          this, SLOT(recordCheckedBookmark(QString, bool)));
 }
 
 

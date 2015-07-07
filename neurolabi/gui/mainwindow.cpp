@@ -407,6 +407,8 @@ void MainWindow::initDialog()
   m_segmentationDlg->restoreGeometry(
         getSettings().value("SegmentationProjectGeometry").toByteArray());
 
+  m_autoTraceDlg = new ZAutoTraceDialog(this);
+
 #if defined(_FLYEM_)
   m_newBsProjectDialog = new ZFlyEmNewBodySplitProjectDialog(this);
   m_newBsProjectDialog->setDvidDialog(m_dvidDlg);
@@ -2496,7 +2498,7 @@ void MainWindow::on_actionDisable_triggered()
 
 }
 
-void MainWindow::autoTrace(ZStackFrame *frame, bool doResample)
+void MainWindow::autoTrace(ZStackFrame *frame)
 {
   ZQtBarProgressReporter reporter;
   reporter.setProgressBar(getProgressBar());
@@ -2505,7 +2507,8 @@ void MainWindow::autoTrace(ZStackFrame *frame, bool doResample)
       frame->document()->getProgressReporter();
   frame->document()->setProgressReporter(&reporter);
 
-  frame->executeAutoTraceCommand(doResample);
+  frame->executeAutoTraceCommand(m_autoTraceDlg->getTraceLevel(),
+                                 m_autoTraceDlg->getDoResample());
 
   frame->document()->setProgressReporter(oldReporter);
 
@@ -2514,19 +2517,17 @@ void MainWindow::autoTrace(ZStackFrame *frame, bool doResample)
 
 void MainWindow::on_actionAutomatic_triggered()
 {
-  ZAutoTraceDialog dlg(this);
-  if (!dlg.exec())
-    return;
-
   ZStackFrame *frame = currentStackFrame();
   if (frame != NULL) {
-    m_progress->setRange(0, 100);
-    m_progress->setValue(1);
-    m_progress->setLabelText("Tracing");
-    m_progress->show();
-//    frame->document()->setTraceLevel(dlg.getTraceLevel());
+    if (m_autoTraceDlg->exec()) {
+      m_progress->setRange(0, 100);
+      m_progress->setValue(1);
+      m_progress->setLabelText("Tracing");
+      m_progress->show();
+      //    frame->document()->setTraceLevel(dlg.getTraceLevel());
 
-    QtConcurrent::run(this, &MainWindow::autoTrace, frame, dlg.getDoResample());
+      QtConcurrent::run(this, &MainWindow::autoTrace, frame);
+    }
   }
 }
 

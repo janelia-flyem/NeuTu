@@ -132,7 +132,7 @@ void ZProofreadWindow::createMenu()
 
   menuBar()->addMenu(fileMenu);
 
-  m_importBookmarkAction = new QAction("Import Bookmarks", fileMenu);
+  m_importBookmarkAction = new QAction("Import Bookmarks", this);
   m_importBookmarkAction->setIcon(QIcon(":/images/import_bookmark.png"));
   fileMenu->addAction(m_importBookmarkAction);
   connect(m_importBookmarkAction, SIGNAL(triggered()),
@@ -140,15 +140,23 @@ void ZProofreadWindow::createMenu()
 
   QMenu *viewMenu = new QMenu("View", this);
 
-  m_viewSynapseAction = new QAction("Synapses", viewMenu);
+  m_viewSynapseAction = new QAction("Synapses", this);
   m_viewSynapseAction->setIcon(QIcon(":/images/synapse.png"));
   m_viewSynapseAction->setCheckable(true);
   m_viewSynapseAction->setChecked(true);
-
-  viewMenu->addAction(m_viewSynapseAction);
-
   connect(m_viewSynapseAction, SIGNAL(toggled(bool)),
           m_mainMvc, SLOT(showSynapseAnnotation(bool)));
+
+  m_viewBookmarkAction = new QAction("Bookmarks", this);
+  m_viewBookmarkAction->setIcon(QIcon(":/images/view_bookmark.png"));
+  m_viewBookmarkAction->setCheckable(true);
+  m_viewBookmarkAction->setChecked(true);
+  connect(m_viewBookmarkAction, SIGNAL(toggled(bool)),
+          m_mainMvc, SLOT(showBookmark(bool)));
+
+  viewMenu->addAction(m_viewSynapseAction);
+  viewMenu->addAction(m_viewBookmarkAction);
+
 
 //  menu->addAction(new QAction("test", menu));
 
@@ -156,6 +164,7 @@ void ZProofreadWindow::createMenu()
 
   m_viewSynapseAction->setEnabled(false);
   m_importBookmarkAction->setEnabled(false);
+  m_viewBookmarkAction->setEnabled(false);
 }
 
 void ZProofreadWindow::createToolbar()
@@ -169,6 +178,7 @@ void ZProofreadWindow::createToolbar()
 
   m_toolBar->addSeparator();
   m_toolBar->addAction(m_viewSynapseAction);
+  m_toolBar->addAction(m_viewBookmarkAction);
 }
 
 void ZProofreadWindow::presentSplitInterface(uint64_t bodyId)
@@ -285,4 +295,5 @@ void ZProofreadWindow::updateDvidTargetWidget(const ZDvidTarget &target)
   setWindowTitle(target.getSourceString(false).c_str());
   m_importBookmarkAction->setEnabled(target.isValid());
   m_viewSynapseAction->setEnabled(target.isValid());
+  m_viewBookmarkAction->setEnabled(target.isValid());
 }

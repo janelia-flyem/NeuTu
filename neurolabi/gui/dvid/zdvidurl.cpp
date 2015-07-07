@@ -459,6 +459,11 @@ std::string ZDvidUrl::getTileUrl(const std::string &dataName) const
   return getDataUrl(dataName);
 }
 
+std::string ZDvidUrl::getBookmarkUrl() const
+{
+  return getDataUrl("bookmarks");
+}
+
 std::string ZDvidUrl::getTileUrl(
     const std::string &dataName, int resLevel) const
 {

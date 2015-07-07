@@ -15,6 +15,7 @@
 #include "flyem/zflyemneuronbodyinfo.h"
 #include "zerror.h"
 #include "zjsonfactory.h"
+#include "flyem/zflyembookmark.h"
 
 #if _ENABLE_LIBDVID_
 #include "DVIDNode.h"
@@ -251,7 +252,8 @@ void ZDvidWriter::writeJsonString(
 
   QString command;
   if (annotationString.size() < 5000) {
-    annotationString.replace(" ", "");
+//    annotationString.replace("\n", "");
+//    annotationString.replace("\r", "");
     annotationString.replace("\"", "\"\"\"");
 
     command = QString(
@@ -348,7 +350,7 @@ void ZDvidWriter::createKeyvalue(const std::string &name)
 std::string ZDvidWriter::getJsonStringForCurl(const ZJsonValue &obj) const
 {
   ZString jsonString = obj.dumpString(0);
-  jsonString.replace(" ", "");
+//  jsonString.replace(" ", "");
   jsonString.replace("\"", "\"\"\"");
 
   return jsonString;
@@ -645,4 +647,11 @@ void ZDvidWriter::parseStandardOutput()
     qDebug() << "Json output: " << m_jsonOutput.dumpString(2);
 #endif
   }
+}
+
+void ZDvidWriter::writeBookmark(const ZFlyEmBookmark &bookmark)
+{
+  writeJsonString(ZDvidData::GetName(ZDvidData::ROLE_BOOKMARK),
+                  bookmark.getDvidKey().toStdString(),
+                  bookmark.toJsonObject().dumpString(0));
 }

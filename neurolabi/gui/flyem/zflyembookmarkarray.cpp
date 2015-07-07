@@ -7,6 +7,7 @@
 #include "flyem/zflyemcoordinateconverter.h"
 #include "flyem/zflyemdatainfo.h"
 #include "tz_math.h"
+#include "zpunctum.h"
 
 ZFlyEmBookmarkArray::ZFlyEmBookmarkArray()
 {
@@ -31,7 +32,14 @@ void ZFlyEmBookmarkArray::importJsonFile(
     ZString text = ZJsonParser::stringValue(bookmarkObj["text"]);
     text.toLower();
     if (bookmarkObj["location"] != NULL) {
-      int bodyId = ZJsonParser::integerValue(bookmarkObj["body ID"]);
+      ZJsonValue idJson = bookmarkObj.value("body ID");
+      int64_t bodyId = 0;
+      if (idJson.isInteger()) {
+        bodyId = ZJsonParser::integerValue(idJson.getData());
+      } else if (idJson.isString()) {
+        bodyId = ZString::firstInteger(ZJsonParser::stringValue(idJson.getData()));
+      }
+
       if (bodyId > 0) {
         std::vector<int> coordinates =
             ZJsonParser::integerArray(bookmarkObj["location"]);
@@ -68,4 +76,69 @@ void ZFlyEmBookmarkArray::print() const
   foreach (ZFlyEmBookmark bookmark, *this) {
     bookmark.print();
   }
+}
+
+ZFlyEmBookmarkArray ZFlyEmBookmarkArray::getBookmarkArray(uint64_t bodyId)
+{
+  ZFlyEmBookmarkArray bookmarkArray;
+  for (ZFlyEmBookmarkArray::const_iterator iter = begin(); iter != end();
+       ++iter) {
+    const ZFlyEmBookmark &bookmark = *iter;
+    if (bookmark.getBodyId() == bodyId) {
+      bookmarkArray.append(bookmark);
+    }
+  }
+
+
+  return bookmarkArray;
+}
+
+ZFlyEmBookmarkArray ZFlyEmBookmarkArray::getBookmarkArray(ZFlyEmBookmark::EType type)
+{
+  ZFlyEmBookmarkArray bookmarkArray;
+  for (ZFlyEmBookmarkArray::const_iterator iter = begin(); iter != end();
+       ++iter) {
+    const ZFlyEmBookmark &bookmark = *iter;
+    if (bookmark.getType() == type) {
+      bookmarkArray.append(bookmark);
+    }
+  }
+
+  return bookmarkArray;
+}
+
+QVector<ZPunctum*> ZFlyEmBookmarkArray::toPunctumArray(bool isVisible) const
+{
+  QVector<ZPunctum*> punctumArray;
+  for (ZFlyEmBookmarkArray::const_iterator iter = begin();
+       iter != end(); ++iter) {
+    const ZFlyEmBookmark &bookmark = *iter;
+    ZPunctum *circle = new ZPunctum;
+    circle->setRole(ZStackObjectRole::ROLE_TMP_BOOKMARK);
+    circle->set(bookmark.getLocation(), 5);
+
+//      ZStackBall *circle = new ZStackBall;
+//      circle->set(bookmark.getLocation(), 5);
+    circle->setColor(255, 0, 0);
+    circle->setVisible(isVisible);
+    circle->setHittable(false);
+    punctumArray.push_back(circle);
+  }
+
+  return punctumArray;
+}
+
+ZFlyEmBookmark* ZFlyEmBookmarkArray::findFirstBookmark(const QString &key) const
+{
+  ZFlyEmBookmark* out = NULL;
+  for (ZFlyEmBookmarkArray::const_iterator iter = begin();
+       iter != end(); ++iter) {
+    const ZFlyEmBookmark &bookmark = *iter;
+    if (bookmark.getDvidKey() == key) {
+      out = const_cast<ZFlyEmBookmark*>(&bookmark);
+      break;
+    }
+  }
+
+  return out;
 }

@@ -9,20 +9,21 @@ contains(TEMPLATE, app) {
     CONFIG += staticlib
 }
 
-QMAKE_PATH = $(QMAKE)
+win32 {
+  DEPLOYMENT_COMMAND = $$PWD/deploy_win.bat $(QMAKE) $$OUT_PWD
 
+CONFIG(release, debug|release):!isEmpty(DEPLOYMENT_COMMAND) {
+  QMAKE_POST_LINK += $$DEPLOYMENT_COMMAND
+}
+}
+
+unix {
+QMAKE_PATH = $(QMAKE)
 !exists($$QMAKE_PATH) {
     QMAKE_PATH = $$[QT_INSTALL_BINS]/qmake
 }
-
-
 message("qmake path: $$QMAKE_PATH")
-
 exists($$QMAKE_PATH) {
-    win32 {
-      DEPLOYMENT_COMMAND = $$PWD/deploy_win.bat $$QMAKE_PATH $$OUT_PWD
-    }
-
     macx {
       DEPLOYMENT_COMMAND = $$PWD/deploy_mac $$QMAKE_PATH $$OUT_PWD
     }
@@ -31,7 +32,12 @@ exists($$QMAKE_PATH) {
       DEPLOYMENT_COMMAND = $$PWD/deploy_linux $$QMAKE_PATH $$OUT_PWD
     }
 }
-
+CONFIG(release, debug|release):!isEmpty(DEPLOYMENT_COMMAND) {
+#    QMAKE_POST_LINK += $$DEPLOYMENT_COMMAND
+}
+message($$DEPLOYMENT_COMMAND)
+message("Post link: $$QMAKE_POST_LINK")
+}
 
 CONFIG(debug, debug|release) {
     TARGET = neuTube_d
@@ -41,13 +47,6 @@ CONFIG(debug, debug|release) {
 }
 
 include(extratarget.pri)
-
-CONFIG(release, debug|release):!isEmpty(DEPLOYMENT_COMMAND) {
-    QMAKE_POST_LINK += $$DEPLOYMENT_COMMAND
-}
-
-message($$DEPLOYMENT_COMMAND)
-message("Post link: $$QMAKE_POST_LINK")
 
 include(extlib.pri)
 

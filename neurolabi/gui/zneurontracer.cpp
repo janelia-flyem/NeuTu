@@ -857,15 +857,9 @@ ZSwcTree* ZNeuronTracer::trace(Stack *stack, bool doResampleAfterTracing)
 
   //Thin line mask
   std::cout << "Enhancing thin branches ..." << std::endl;
-  /* <line> allocated */
-  Stack *line = enhanceLine(stack);
-  advanceProgress(0.05);
-
   /* <mask2> allocated */
-  Stack *mask2 = C_Stack::clone(line);
-
-  /* <line> freed */
-  C_Stack::kill(line);
+  Stack *mask2 = enhanceLine(stack);
+  advanceProgress(0.05);
 
   std::cout << "Making mask for thin branches ..." << std::endl;
   ZStackBinarizer binarizer;
@@ -936,8 +930,19 @@ ZSwcTree* ZNeuronTracer::trace(Stack *stack, bool doResampleAfterTracing)
   constructor.setSignal(stack);
 
   //Create neuron structure
+
+  BOOL oldSpTest = m_connWorkspace->sp_test;
+  if (chainArray.size() > 1000) {
+    std::cout << "Too many chains: " << chainArray.size() << std::endl;
+    std::cout << "Turn off shortest path test" << std::endl;
+    m_connWorkspace->sp_test = FALSE;
+  }
+
   /* free <chainArray> */
   tree = constructor.reconstruct(chainArray);
+
+  m_connWorkspace->sp_test = oldSpTest;
+
   advanceProgress(0.1);
 
   //Post process
@@ -1115,7 +1120,7 @@ void ZNeuronTracer::setTraceLevel(int level)
     initConnectionTestWorkspace();
   }
 
-  m_traceWorkspace->tune_end = FALSE;
+//  m_traceWorkspace->tune_end = FALSE;
   m_traceWorkspace->refit = FALSE;
   m_connWorkspace->sp_test = FALSE;
   m_connWorkspace->crossover_test = FALSE;
@@ -1145,7 +1150,31 @@ void ZNeuronTracer::setTraceLevel(int level)
   }
 }
 
+const char *ZNeuronTracer::m_levelKey = "level";
+const char *ZNeuronTracer::m_minimalScoreKey = "minimalScore";
+const char *ZNeuronTracer::m_minimalSeedScoreKey = "minimalSeedScore";
+const char *ZNeuronTracer::m_spTestKey = "spTest";
+const char *ZNeuronTracer::m_enhanceLineKey = "enhanceLine";
+
 void ZNeuronTracer::loadJsonObject(const ZJsonObject &obj)
 {
+  if (obj.hasKey(m_levelKey)) {
+    setTraceLevel(ZJsonParser::integerValue(obj[m_levelKey]));
+  }
 
+  if (obj.hasKey(m_minimalScoreKey)) {
+    m_traceMinScore = ZJsonParser::numberValue(obj[m_minimalScoreKey]);
+  }
+
+  if (obj.hasKey(m_minimalSeedScoreKey)) {
+    m_seedMinScore = ZJsonParser::numberValue(obj[m_minimalSeedScoreKey]);
+  }
+
+  if (obj.hasKey(m_spTestKey)) {
+    m_connWorkspace->sp_test = ZJsonParser::booleanValue(obj[m_spTestKey]);
+  }
+
+  if (obj.hasKey(m_enhanceLineKey)) {
+    m_enhancingMask = ZJsonParser::booleanValue(obj[m_enhanceLineKey]);
+  }
 }

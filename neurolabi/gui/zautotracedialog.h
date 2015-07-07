@@ -4,6 +4,7 @@
 #include <QDialog>
 
 class QCheckBox;
+class ZLabeledSpinBoxWidget;
 
 class ZAutoTraceDialog : public QDialog
 {
@@ -14,12 +15,15 @@ public:
 
   bool getDoResample() const;
 
+  int getTraceLevel() const;
+
 signals:
 
 public slots:
 
 private:
   QCheckBox *m_resampleCheckbox;
+  ZLabeledSpinBoxWidget *m_levelSpinBox;
 };
 
 #endif // ZAUTOTRACEDIALOG_H

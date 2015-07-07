@@ -190,18 +190,29 @@ void ZStackPresenter::createDocDependentActions()
 
 void ZStackPresenter::createSwcActions()
 { 
-  QAction *action = new QAction(tr("Add Neuron Node"), parent());
-  connect(action, SIGNAL(triggered()),
-          this, SLOT(trySwcAddNodeMode()));
-  action->setStatusTip("Add an isolated neuron node.");
-//  if (buddyDocument()->getTag() != NeuTube::Document::FLYEM_SPLIT) {
+  {
+    QAction *action = new QAction(tr("Add Neuron Node"), parent());
+    connect(action, SIGNAL(triggered()),
+            this, SLOT(trySwcAddNodeMode()));
+    action->setStatusTip("Add an isolated neuron node.");
+    //  if (buddyDocument()->getTag() != NeuTube::Document::FLYEM_SPLIT) {
     action->setShortcut(Qt::Key_G);
-//  }
-  action->setIcon(QIcon(":/images/add.png"));
-  m_actionMap[ACTION_ADD_SWC_NODE] = action;
+    //  }
+    action->setIcon(QIcon(":/images/add.png"));
+    m_actionMap[ACTION_ADD_SWC_NODE] = action;
+  }
+
+  {
+    QAction *action = new QAction(tr("Show Full Skeleton"), parent());
+    action->setCheckable(true);
+    action->setChecked(true);
+    connect(action, SIGNAL(triggered(bool)), this, SLOT(toggleSwcSkeleton(bool)));
+    m_actionMap[ACTION_TOGGLE_SWC_SKELETON] = action;
+  }
+
 
   if (getParentFrame() != NULL) {
-    action = new QAction(tr("Locate node(s) in 3D"), parent());
+    QAction *action = new QAction(tr("Locate node(s) in 3D"), parent());
     connect(action, SIGNAL(triggered()),
             getParentFrame(), SLOT(locateSwcNodeIn3DView()));
     action->setStatusTip("Located selected swc nodes in 3D view.");
@@ -302,14 +313,14 @@ void ZStackPresenter::createBodyActions()
   }
 
   {
-    QAction *action = new QAction(tr("Check in"), this);
+    QAction *action = new QAction(tr("Unlock"), this);
     connect(action, SIGNAL(triggered()),
             this, SLOT(notifyBodyCheckinTriggered()));
     m_actionMap[ACTION_BODY_CHECKIN] = action;
   }
 
   {
-    QAction *action = new QAction(tr("Check out"), this);
+    QAction *action = new QAction(tr("Lock"), this);
     connect(action, SIGNAL(triggered()),
             this, SLOT(notifyBodyCheckoutTriggered()));
     m_actionMap[ACTION_BODY_CHECKOUT] = action;
@@ -1620,10 +1631,12 @@ void ZStackPresenter::solidifyStack()
   buddyDocument()->bwsolid();
 }
 
+/*
 void ZStackPresenter::autoTrace()
 {
   buddyDocument()->executeAutoTraceCommand(false);
 }
+*/
 
 void ZStackPresenter::traceTube()
 {
@@ -1881,6 +1894,11 @@ void ZStackPresenter::enterSwcAddNodeMode(double x, double y)
   turnOnStroke();
   //buddyView()->paintActiveDecoration();
   updateCursor();
+}
+
+void ZStackPresenter::toggleSwcSkeleton(bool state)
+{
+  buddyDocument()->showSwcFullSkeleton(state);
 }
 
 void ZStackPresenter::trySwcAddNodeMode()
@@ -2874,3 +2892,7 @@ QWidget* ZStackPresenter::getParentWidget() const
   return dynamic_cast<QWidget*>(parent());
 }
 
+bool ZStackPresenter::isSwcFullSkeletonVisible() const
+{
+  return m_actionMap[ACTION_TOGGLE_SWC_SKELETON]->isChecked();
+}

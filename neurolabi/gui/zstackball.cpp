@@ -191,11 +191,17 @@ void ZStackBall::displayHelper(
   }
   double alpha = oldPen.color().alphaF();
 
+  bool isFocused = false;
+
   if (slice < 0) {
     visible = true;
   } else {
     if (isCuttingPlane(m_center.z(), m_r, dataFocus, m_zScale)) {
-      double h = fabs(m_center.z() - dataFocus) / m_zScale;
+      double dz = fabs(m_center.z() - dataFocus);
+      if (dz < 0.5) {
+        isFocused = true;
+      }
+      double h = dz / m_zScale;
       double r = 0.0;
       if (m_r > h) {
         r = sqrt(m_r * m_r - h * h);
@@ -231,7 +237,7 @@ void ZStackBall::displayHelper(
                    QSizeF(adjustedRadius * 2.0, adjustedRadius * 2.0)));
     }
 
-    if (hasVisualEffect(VE_DOT_CENTER)) {
+    if (isFocused && hasVisualEffect(VE_DOT_CENTER)) {
       painter->drawPoint(QPointF(m_center.x(), m_center.y()));
     }
   }

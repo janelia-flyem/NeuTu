@@ -533,6 +533,9 @@ public:
    */
   void addObjectFast(ZStackObject *obj);
 
+  template <typename InputIterator>
+  void addObjectFast(InputIterator first, InputIterator last);
+
   /*!
    * \brief Add a palyer
    *
@@ -561,6 +564,8 @@ public:
   bool selectSwcTreeBranch(int x, int y, int z);
   bool pushLocsegChain(ZStackObject *obj);
   void pushSelectedLocsegChain();
+
+  void showSwcFullSkeleton(bool state);
 
 //  enum ESynapseSelection {
 //    SYNAPSE_ALL, SYNAPSE_TBAR, SYNAPSE_PSD
@@ -917,7 +922,7 @@ public slots: //undoable commands
 
   bool executeTraceTubeCommand(double x, double y, double z, int c = 0);
   bool executeRemoveTubeCommand();
-  bool executeAutoTraceCommand(bool doResample);
+  bool executeAutoTraceCommand(int traceLevel, bool doResample);
   bool executeAutoTraceAxonCommand();
 
   bool executeAddSwcCommand(ZSwcTree *tree);
@@ -1379,6 +1384,18 @@ QList<T*> ZStackDoc::getUserList() const
   }
 
   return userList;
+}
+
+template <typename InputIterator>
+void ZStackDoc::addObjectFast(InputIterator first, InputIterator last)
+{
+  beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+  for (InputIterator iter = first; iter != last; ++iter) {
+    ZStackObject *obj = *iter;
+    addObjectFast(obj);
+  }
+  endObjectModifiedMode();
+  notifyObjectModified();
 }
 
 template <class InputIterator>
