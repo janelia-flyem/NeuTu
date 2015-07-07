@@ -3,6 +3,7 @@
 #include <QtGui>
 
 #include "ztestdialog2.h"
+#include "flyembodyinfodialog.h"
 #include "ui_ztestdialog2.h"
 
 ZTestDialog2::ZTestDialog2(QWidget *parent) :
@@ -11,7 +12,13 @@ ZTestDialog2::ZTestDialog2(QWidget *parent) :
 {
     ui->setupUi(this);
 
+    m_flyEmBodyInfoDialog = new FlyEmBodyInfoDialog(this);
+
+
+
     connect(ui->browseButton, SIGNAL(clicked()), this, SLOT(onBrowseButton()));
+
+    connect(ui->bodyInfoButton, SIGNAL(clicked()), this, SLOT(onBodyInfoButton()));
 
 }
 
@@ -26,5 +33,13 @@ void ZTestDialog2::onBrowseButton() {
     if (!filename.isEmpty()) {
         std::cout << "path chosen: " + filename.toStdString() << std::endl;
     }
+
+}
+
+void ZTestDialog2::onBodyInfoButton() {
+
+    std::cout << "launching body info dialog";
+
+    m_flyEmBodyInfoDialog->show();
 
 }

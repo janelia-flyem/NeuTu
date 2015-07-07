@@ -3,6 +3,8 @@
 
 #include <QDialog>
 
+#include "flyembodyinfodialog.h"
+
 namespace Ui {
 class ZTestDialog2;
 }
@@ -17,9 +19,12 @@ public:
 
 private slots:
     void onBrowseButton();
+    void onBodyInfoButton();
 
 private:
     Ui::ZTestDialog2 *ui;
+
+    FlyEmBodyInfoDialog *m_flyEmBodyInfoDialog;
 
 };
 
