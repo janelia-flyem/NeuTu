@@ -48,9 +48,10 @@ public:
 
   void processViewChangeCustom(const ZStackViewParam &viewParam);
 
-  inline ZFlyEmSupervisor* getSupervisor() const {
-    return m_supervisor;
-  }
+  ZFlyEmSupervisor* getSupervisor() const;
+
+  bool checkInBody(uint64_t bodyId);
+  bool checkOutBody(uint64_t bodyId);
 
 signals:
   void launchingSplit(const QString &message);
@@ -119,6 +120,7 @@ public slots:
   void loadSynapse();
   void showSynapseAnnotation(bool visible);
   void showBookmark(bool visible);
+  void showSegmentation(bool visible);
 
   void loadBookmark();
 
@@ -142,7 +144,7 @@ private:
   bool m_showSegmentation;
   ZFlyEmBodySplitProject m_splitProject;
   ZFlyEmBodyMergeProject m_mergeProject;
-  ZFlyEmBookmarkArray m_bookmarkArray;
+//  ZFlyEmBookmarkArray m_bookmarkArray;
 
   QThreadFutureMap m_futureMap;
 

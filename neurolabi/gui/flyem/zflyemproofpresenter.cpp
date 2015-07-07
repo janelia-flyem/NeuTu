@@ -36,12 +36,21 @@ bool ZFlyEmProofPresenter::customKeyProcess(QKeyEvent *event)
     break;
   }
 
+  ZStackOperator op;
+  op.setOperation(m_bookmarkKeyOperationMap.getOperation(
+                    event->key(), event->modifiers()));
+  if (!op.isNull()) {
+    process(op);
+    processed = true;
+  }
+
   return processed;
 }
 
 bool ZFlyEmProofPresenter::processKeyPressEvent(QKeyEvent *event)
 {
   bool processed = false;
+
   switch (event->key()) {
   case Qt::Key_Space:
     if (event->modifiers() == Qt::ShiftModifier) {
@@ -102,6 +111,17 @@ void ZFlyEmProofPresenter::setSplitEnabled(bool s)
   m_paintStrokeAction->setEnabled(s);
 }
 
+void ZFlyEmProofPresenter::tryEnterAddBookmarkMode()
+{
+  QPointF pos = mapFromGlobalToStack(QCursor::pos());
+  tryEnterAddBookmarkMode(pos.x(), pos.y());
+}
+
+void ZFlyEmProofPresenter::tryEnterAddBookmarkMode(int x, int y)
+{
+
+}
+
 void ZFlyEmProofPresenter::processCustomOperator(const ZStackOperator &op)
 {
   switch (op.getOperation()) {
@@ -114,6 +134,9 @@ void ZFlyEmProofPresenter::processCustomOperator(const ZStackOperator &op)
     }
     break;
   case ZStackOperator::OP_SHOW_BODY_CONTEXT_MENU:
+    break;
+  case ZStackOperator::OP_BOOKMARK_ENTER_ADD_MODE:
+
     break;
   default:
     break;

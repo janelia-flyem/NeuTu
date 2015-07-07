@@ -37,8 +37,8 @@ ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
 {
   m_dvidDlg = new ZDvidDialog(this);
   m_supervisor = new ZFlyEmSupervisor(this);
-  m_splitProject.attachBookmarkArray(&m_bookmarkArray);
-  m_mergeProject.attachBookmarkArray(&m_bookmarkArray);
+//  m_splitProject.attachBookmarkArray(&m_bookmarkArray);
+//  m_mergeProject.attachBookmarkArray(&m_bookmarkArray);
 
   qRegisterMetaType<ZDvidTarget>("ZDvidTarget");
 }
@@ -174,7 +174,9 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
     m_mergeProject.syncWithDvid();
     getProgressSignal()->advanceProgress(0.2);
 
-    getSupervisor()->setDvidTarget(target);
+    if (getSupervisor() != NULL) {
+      getSupervisor()->setDvidTarget(target);
+    }
 
     getCompleteDocument()->downloadSynapse();
     getProgressSignal()->advanceProgress(0.5);
@@ -391,6 +393,24 @@ void ZFlyEmProofMvc::updateBodySelection()
   }
 }
 
+bool ZFlyEmProofMvc::checkInBody(uint64_t bodyId)
+{
+  if (getSupervisor() != NULL) {
+    return getSupervisor()->checkIn(bodyId);
+  }
+
+  return true;
+}
+
+bool ZFlyEmProofMvc::checkOutBody(uint64_t bodyId)
+{
+  if (getSupervisor() != NULL) {
+    return getSupervisor()->checkOut(bodyId);
+  }
+
+  return true;
+}
+
 void ZFlyEmProofMvc::checkInBody()
 {
   std::set<uint64_t> bodyIdArray =
@@ -398,10 +418,12 @@ void ZFlyEmProofMvc::checkInBody()
   if (bodyIdArray.size() == 1) {
     uint64_t bodyId = *(bodyIdArray.begin());
     if (bodyId > 0) {
-      if (getSupervisor()->checkIn(bodyId)) {
-        emit messageGenerated(QString("Body %1 is checked in.").arg(bodyId));
-      } else {
-        emit errorGenerated(QString("Failed to check in body %1.").arg(bodyId));
+      if (getSupervisor() != NULL) {
+        if (getSupervisor()->checkIn(bodyId)) {
+          emit messageGenerated(QString("Body %1 is checked in.").arg(bodyId));
+        } else {
+          emit errorGenerated(QString("Failed to check in body %1.").arg(bodyId));
+        }
       }
     }
   }
@@ -414,10 +436,12 @@ void ZFlyEmProofMvc::checkOutBody()
   if (bodyIdArray.size() == 1) {
     uint64_t bodyId = *(bodyIdArray.begin());
     if (bodyId > 0) {
-      if (getSupervisor()->checkOut(bodyId)) {
-        emit messageGenerated(QString("Body %1 is checked out.").arg(bodyId));
-      } else {
-        emit errorGenerated(QString("Failed to check out body %1.").arg(bodyId));
+      if (getSupervisor() != NULL) {
+        if (getSupervisor()->checkOut(bodyId)) {
+          emit messageGenerated(QString("Body %1 is checked out.").arg(bodyId));
+        } else {
+          emit errorGenerated(QString("Failed to check out body %1.").arg(bodyId));
+        }
       }
     }
   }
@@ -430,7 +454,7 @@ void ZFlyEmProofMvc::annotateBody()
   if (bodyIdArray.size() == 1) {
     uint64_t bodyId = *(bodyIdArray.begin());
     if (bodyId > 0) {
-      if (getSupervisor()->checkOut(bodyId)) {
+      if (checkOutBody(bodyId)) {
         ZFlyEmBodyAnnotationDialog *dlg = new ZFlyEmBodyAnnotationDialog(this);
         dlg->setBodyId(bodyId);
         ZDvidReader reader;
@@ -607,7 +631,7 @@ void ZFlyEmProofMvc::disableSplit()
 void ZFlyEmProofMvc::launchSplit(uint64_t bodyId)
 {
   if (bodyId > 0) {
-    if (!getDvidTarget().isSupervised() || getSupervisor()->checkOut(bodyId)) {
+    if (checkOutBody(bodyId)) {
 #ifdef _DEBUG_2
       bodyId = 14742253;
 #endif
@@ -829,17 +853,19 @@ void ZFlyEmProofMvc::syncDvidBookmark()
 {
   ZDvidReader reader;
   if (reader.open(getDvidTarget())) {
-    for (ZFlyEmBookmarkArray::iterator iter = m_bookmarkArray.begin();
-         iter != m_bookmarkArray.end(); ++iter) {
-      ZFlyEmBookmark &bookmark = *iter;
+    TStackObjectList &objList =
+        getDocument()->getObjectList(ZStackObject::TYPE_FLYEM_BOOKMARK);
+    for (TStackObjectList::iterator iter = objList.begin();
+         iter != objList.end(); ++iter) {
+      ZFlyEmBookmark *bookmark = dynamic_cast<ZFlyEmBookmark*>(*iter);
       const QByteArray &bookmarkData =
           reader.readKeyValue(ZDvidData::GetName(
-                                ZDvidData::ROLE_BOOKMARK), bookmark.getDvidKey());
+                                ZDvidData::ROLE_BOOKMARK), bookmark->getDvidKey());
       if (!bookmarkData.isEmpty()) {
         ZJsonObject obj;
         obj.decodeString(bookmarkData.data());
         if (obj.hasKey("checked")) {
-          bookmark.setChecked(ZJsonParser::booleanValue(obj["checked"]));
+          bookmark->setChecked(ZJsonParser::booleanValue(obj["checked"]));
         }
       }
     }
@@ -850,8 +876,8 @@ void ZFlyEmProofMvc::notifyBookmarkUpdated()
 {
   syncDvidBookmark();
 
-  m_splitProject.updateBookmarkDecoration();
-  m_mergeProject.updateBookmarkDecoration();
+//  m_splitProject.updateBookmarkDecoration();
+//  m_mergeProject.updateBookmarkDecoration();
 
   emit bookmarkUpdated(&m_mergeProject);
   emit bookmarkUpdated(&m_splitProject);
@@ -862,11 +888,12 @@ void ZFlyEmProofMvc::loadBookmark(const QString &filePath)
 //  m_splitProject.loadBookmark(filePath);
 
   ZDvidReader reader;
-  ZFlyEmCoordinateConverter converter;
+//  ZFlyEmCoordinateConverter converter;
   if (reader.open(getDvidTarget())) {
-    ZDvidInfo info = reader.readGrayScaleInfo();
-    converter.configure(info);
-    m_bookmarkArray.importJsonFile(filePath.toStdString(), NULL/*&converter*/);
+//    ZDvidInfo info = reader.readGrayScaleInfo();
+//    converter.configure(info);
+    getCompleteDocument()->importFlyEmBookmark(filePath.toStdString());
+//    m_bookmarkArray.importJsonFile(filePath.toStdString(), NULL/*&converter*/);
   }
 
   notifyBookmarkUpdated();
@@ -899,10 +926,14 @@ void ZFlyEmProofMvc::showSynapseAnnotation(bool visible)
 
 void ZFlyEmProofMvc::showBookmark(bool visible)
 {
-  getCompleteDocument()->setVisible(
-        ZStackObjectRole::ROLE_TMP_BOOKMARK, visible);
-  m_splitProject.setBookmarkVisible(visible);
-  m_mergeProject.setBookmarkVisible(visible);
+  getCompleteDocument()->setVisible(ZStackObject::TYPE_FLYEM_BOOKMARK, visible);
+//  m_splitProject.setBookmarkVisible(visible);
+//  m_mergeProject.setBookmarkVisible(visible);
+}
+
+void ZFlyEmProofMvc::showSegmentation(bool visible)
+{
+  getCompleteDocument()->setVisible(ZStackObject::TYPE_DVID_LABEL_SLICE, visible);
 }
 
 void ZFlyEmProofMvc::addSelectionAt(int x, int y, int z)
@@ -1093,7 +1124,8 @@ void ZFlyEmProofMvc::processViewChangeCustom(const ZStackViewParam &/*viewParam*
 
 void ZFlyEmProofMvc::recordCheckedBookmark(const QString &key, bool checking)
 {
-  ZFlyEmBookmark *bookmark = m_bookmarkArray.findFirstBookmark(key);
+//  ZFlyEmBookmark *bookmark = m_bookmarkArray.findFirstBookmark(key);
+  ZFlyEmBookmark *bookmark = getCompleteDocument()->findFirstBookmark(key);
   if (bookmark != NULL) {
     bookmark->setChecked(checking);
     ZDvidWriter writer;
@@ -1118,6 +1150,15 @@ void ZFlyEmProofMvc::enhanceTileContrast(bool state)
     }
     getCompleteDocument()->processObjectModified(tile->getTarget());
   }
+}
+
+ZFlyEmSupervisor* ZFlyEmProofMvc::getSupervisor() const
+{
+  if (getDvidTarget().isSupervised()) {
+    return m_supervisor;
+  }
+
+  return NULL;
 }
 
 //void ZFlyEmProofMvc::toggleEdgeMode(bool edgeOn)

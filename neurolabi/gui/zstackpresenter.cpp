@@ -527,7 +527,7 @@ void ZStackPresenter::prepareView()
   m_mouseEventProcessor.setImageWidget(buddyView()->imageWidget());
   m_mouseEventProcessor.setDocument(getSharedBuddyDocument());
 
-  m_swcKeyMapper.setTag(buddyDocument()->getTag());
+//  m_swcKeyMapper.setTag(buddyDocument()->getTag());
 }
 
 void ZStackPresenter::updateLeftMenu(QAction *action, bool clear)

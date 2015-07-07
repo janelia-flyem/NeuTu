@@ -127,7 +127,7 @@ private slots:
   void showBodyMask(bool on);
   void checkAllSeed();
 
-  void removeAllBookmark();
+//  void removeAllBookmark();
   void exportSplits();
 
   /*!

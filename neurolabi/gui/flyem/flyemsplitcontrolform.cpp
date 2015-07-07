@@ -7,6 +7,7 @@
 #include "zdialogfactory.h"
 #include "zstring.h"
 #include "zflyembodysplitproject.h"
+#include "zstackdoc.h"
 
 FlyEmSplitControlForm::FlyEmSplitControlForm(QWidget *parent) :
   QWidget(parent),
@@ -196,6 +197,22 @@ void FlyEmSplitControlForm::commitResult()
 void FlyEmSplitControlForm::updateBookmarkTable(ZFlyEmBodySplitProject *project)
 {
   if (project != NULL) {
+    if (project->getDocument() != NULL) {
+      m_bookmarkList.clear();
+      const TStackObjectList &objList = project->getDocument()->
+          getObjectList(ZStackObject::TYPE_FLYEM_BOOKMARK);
+      for (TStackObjectList::const_iterator iter = objList.begin();
+           iter != objList.end(); ++iter) {
+        const ZFlyEmBookmark *bookmark = dynamic_cast<ZFlyEmBookmark*>(*iter);
+        if (bookmark->getBodyId() == project->getBodyId() &&
+            bookmark->getBookmarkType() == ZFlyEmBookmark::TYPE_FALSE_MERGE) {
+          m_bookmarkList.append(*bookmark);
+        }
+      }
+    }
+  }
+#if 0
+  if (project != NULL) {
 //    const ZFlyEmBookmarkArray &bookmarkArray = project->getBookmarkArray();
     m_bookmarkList.clear();
     if (project->getBodyId() > 0) {
@@ -217,6 +234,7 @@ void FlyEmSplitControlForm::updateBookmarkTable(ZFlyEmBodySplitProject *project)
       project->addBookmarkDecoration(m_bookmarkList.getBookmarkArray());
     }
   }
+#endif
 }
 
 void FlyEmSplitControlForm::locateBookmark(const QModelIndex &index)

@@ -130,6 +130,8 @@ QVector<ZPunctum*> ZFlyEmBookmarkArray::toPunctumArray(bool isVisible) const
 
 ZFlyEmBookmark* ZFlyEmBookmarkArray::findFirstBookmark(const QString &key) const
 {
+  return findFirstBookmark(begin(), end(), key);
+#if 0
   ZFlyEmBookmark* out = NULL;
   for (ZFlyEmBookmarkArray::const_iterator iter = begin();
        iter != end(); ++iter) {
@@ -141,4 +143,5 @@ ZFlyEmBookmark* ZFlyEmBookmarkArray::findFirstBookmark(const QString &key) const
   }
 
   return out;
+#endif
 }

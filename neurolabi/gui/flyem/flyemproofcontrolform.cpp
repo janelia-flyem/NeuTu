@@ -8,6 +8,7 @@
 #include "zstring.h"
 #include "neutubeconfig.h"
 #include "flyem/zflyembodymergeproject.h"
+#include "zstackdoc.h"
 
 FlyEmProofControlForm::FlyEmProofControlForm(QWidget *parent) :
   QWidget(parent),
@@ -152,21 +153,22 @@ void FlyEmProofControlForm::updateBookmarkTable(ZFlyEmBodyMergeProject *project)
   if (project != NULL) {
 //    const ZFlyEmBookmarkArray &bookmarkArray = project->getBookmarkArray();
     m_bookmarkList.clear();
-    project->clearBookmarkDecoration();
+//    project->clearBookmarkDecoration();
 
-    const ZFlyEmBookmarkArray *bookmarkArray = project->getBookmarkArray();
-    if (bookmarkArray != NULL) {
+    if (project->getDocument() != NULL) {
+      const TStackObjectList &objList =
+          project->getDocument()->getObjectList(ZStackObject::TYPE_FLYEM_BOOKMARK);
       //        foreach (ZFlyEmBookmark bookmark, *bookmarkArray) {
-      for (ZFlyEmBookmarkArray::const_iterator iter = bookmarkArray->begin();
-           iter != bookmarkArray->end(); ++iter) {
-        const ZFlyEmBookmark &bookmark = *iter;
-        if (bookmark.getBookmarkType() != ZFlyEmBookmark::TYPE_FALSE_MERGE) {
-          m_bookmarkList.append(bookmark);
+      for (TStackObjectList::const_iterator iter = objList.begin();
+           iter != objList.end(); ++iter) {
+        const ZFlyEmBookmark *bookmark = dynamic_cast<ZFlyEmBookmark*>(*iter);
+        if (bookmark->getBookmarkType() != ZFlyEmBookmark::TYPE_FALSE_MERGE) {
+          m_bookmarkList.append(*bookmark);
         }
       }
     }
 
-    project->addBookmarkDecoration(m_bookmarkList.getBookmarkArray());
+//    project->addBookmarkDecoration(m_bookmarkList.getBookmarkArray());
   }
 }
 

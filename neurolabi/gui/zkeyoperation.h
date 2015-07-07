@@ -13,6 +13,7 @@ public:
     OG_SWC_TREE,
     OG_SWC_TREE_NODE,
     OG_STROKE,
+    OG_FLYEM_BOOKMARK,
     OG_OTHER
   };
 };

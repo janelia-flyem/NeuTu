@@ -61,22 +61,25 @@ public:
   void loadBookmark(const QString &filePath);
   std::set<int> getBookmarkBodySet() const;
 
+  /*
   const ZFlyEmBookmarkArray* getBookmarkArray() const {
     return m_bookmarkArray;
   }
+  */
 
   bool hasBookmark() const;
+  int getBookmarkCount() const;
 
   void locateBookmark(const ZFlyEmBookmark &bookmark);
 
   void clearBookmarkDecoration();
   void addBookmarkDecoration(const ZFlyEmBookmarkArray &bookmarkArray);
-  void updateBookmarkDecoration();
+//  void updateBookmarkDecoration();
 
   void setBookmarkVisible(bool visible);
 //  void updateBookmarkDecoration(const ZFlyEmBookmarkArray &bookmarkArray);
 
-  void removeAllBookmark();
+//  void removeAllBookmark();
 
   void showSkeleton(ZSwcTree *tree);
   void showBodyQuickView();
@@ -213,7 +216,7 @@ private:
   Z3DWindow *m_quickResultWindow;
   Z3DWindow *m_quickViewWindow;
 
-  ZFlyEmBookmarkArray *m_bookmarkArray; //aggregation
+//  ZFlyEmBookmarkArray *m_bookmarkArray; //aggregation
 
 //  std::vector<ZStackObject*> m_bookmarkDecoration;
   bool m_isBookmarkVisible;

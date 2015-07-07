@@ -18,6 +18,8 @@
 #include "dvid/zdvidurl.h"
 #include "dvid/zdvidbufferreader.h"
 //#include "zflyemproofmvc.h"
+#include "flyem/zflyembookmark.h"
+#include "zstring.h"
 
 ZFlyEmProofDoc::ZFlyEmProofDoc(ZStack *stack, QObject *parent) :
   ZStackDoc(stack, parent)
@@ -309,6 +311,75 @@ void ZFlyEmProofDoc::loadSynapse(const std::string &filePath)
     puncta->pushCosmeticPen(true);
     addObject(puncta);
   }
+}
+
+ZFlyEmBookmark* ZFlyEmProofDoc::findFirstBookmark(const QString &key) const
+{
+  const TStackObjectList &objList =
+      getObjectList(ZStackObject::TYPE_FLYEM_BOOKMARK);
+  for (TStackObjectList::const_iterator iter = objList.begin();
+       iter != objList.end(); ++iter) {
+    const ZFlyEmBookmark *bookmark = dynamic_cast<const ZFlyEmBookmark*>(*iter);
+    if (bookmark->getDvidKey() == key) {
+      return const_cast<ZFlyEmBookmark*>(bookmark);
+    }
+  }
+
+  return NULL;
+}
+
+void ZFlyEmProofDoc::importFlyEmBookmark(const std::string &filePath)
+{
+  beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
+  if (!filePath.empty()) {
+    removeObject(ZStackObject::TYPE_FLYEM_BOOKMARK, true);
+    ZJsonObject obj;
+    obj.load(filePath);
+
+    ZJsonArray bookmarkArrayObj(obj["data"], false);
+    for (size_t i = 0; i < bookmarkArrayObj.size(); ++i) {
+      ZJsonObject bookmarkObj(bookmarkArrayObj.at(i), false);
+      ZString text = ZJsonParser::stringValue(bookmarkObj["text"]);
+      text.toLower();
+      if (bookmarkObj["location"] != NULL) {
+        ZJsonValue idJson = bookmarkObj.value("body ID");
+        int64_t bodyId = 0;
+        if (idJson.isInteger()) {
+          bodyId = ZJsonParser::integerValue(idJson.getData());
+        } else if (idJson.isString()) {
+          bodyId = ZString::firstInteger(ZJsonParser::stringValue(idJson.getData()));
+        }
+
+        if (bodyId > 0) {
+          std::vector<int> coordinates =
+              ZJsonParser::integerArray(bookmarkObj["location"]);
+
+          if (coordinates.size() == 3) {
+            ZFlyEmBookmark *bookmark = new ZFlyEmBookmark;
+            double x = coordinates[0];
+            double y = coordinates[1];
+            double z = coordinates[2];
+            bookmark->setLocation(iround(x), iround(y), iround(z));
+            bookmark->setBodyId(bodyId);
+            bookmark->setRadius(5.0);
+            bookmark->setColor(255, 0, 0);
+            bookmark->setHittable(false);
+            if (text.startsWith("split") || text.startsWith("small split")) {
+              bookmark->setBookmarkType(ZFlyEmBookmark::TYPE_FALSE_MERGE);
+            } else if (text.startsWith("merge")) {
+              bookmark->setBookmarkType(ZFlyEmBookmark::TYPE_FALSE_SPLIT);
+            } else {
+              bookmark->setBookmarkType(ZFlyEmBookmark::TYPE_LOCATION);
+            }
+            addObject(bookmark);
+          }
+        }
+      }
+    }
+  }
+  endObjectModifiedMode();
+
+  notifyObjectModified();
 }
 
 //////////////////////////////////////////

@@ -21,13 +21,14 @@ public:
   inline const QString& getTime() const { return m_time; }
   inline const QString& getUserName() const { return m_userName; }
   inline const QString& getStatus() const { return m_status; }
-  inline const ZIntPoint& getLocation() const { return m_location; }
+  inline ZIntPoint getLocation() const { return getCenter().toIntPoint(); }
   inline EBookmarkType getBookmarkType() const { return m_bookmarkType; }
   inline void setBookmarkType(EBookmarkType type) { m_bookmarkType = type; }
 
   inline void setBodyId(uint64_t bodyId) { m_bodyId = bodyId; }
   inline void setLocation(int x, int y, int z) {
-    m_location.set(x, y, z);
+//    m_location.set(x, y, z);
+    setCenter(x, y, z);
   }
 
   bool isChecked() const {
@@ -50,7 +51,7 @@ private:
   QString m_userName;
   QString m_time;
   QString m_status;
-  ZIntPoint m_location;
+//  ZIntPoint m_location;
   EBookmarkType m_bookmarkType;
   bool m_isChecked;
 };

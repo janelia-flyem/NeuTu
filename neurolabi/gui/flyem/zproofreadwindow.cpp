@@ -138,7 +138,7 @@ void ZProofreadWindow::createMenu()
   connect(m_importBookmarkAction, SIGNAL(triggered()),
           m_mainMvc, SLOT(loadBookmark()));
 
-  QMenu *viewMenu = new QMenu("View", this);
+  m_viewMenu = new QMenu("View", this);
 
   m_viewSynapseAction = new QAction("Synapses", this);
   m_viewSynapseAction->setIcon(QIcon(":/images/synapse.png"));
@@ -154,23 +154,34 @@ void ZProofreadWindow::createMenu()
   connect(m_viewBookmarkAction, SIGNAL(toggled(bool)),
           m_mainMvc, SLOT(showBookmark(bool)));
 
+  m_viewSegmentationAction = new QAction("Segmentation", this);
+  m_viewSegmentationAction->setIcon(QIcon(":/images/view_segmentation.png"));
+  m_viewSegmentationAction->setCheckable(true);
+  m_viewSegmentationAction->setChecked(true);
+  connect(m_viewSegmentationAction, SIGNAL(toggled(bool)),
+          m_mainMvc, SLOT(showSegmentation(bool)));
+
   m_contrastAction = new QAction("Enhance Contrast", this);
   m_contrastAction->setCheckable(true);
   m_contrastAction->setChecked(false);
   connect(m_contrastAction, SIGNAL(toggled(bool)),
           m_mainMvc, SLOT(enhanceTileContrast(bool)));
 
-  viewMenu->addAction(m_viewSynapseAction);
-  viewMenu->addAction(m_viewBookmarkAction);
+  m_viewMenu->addAction(m_viewSynapseAction);
+  m_viewMenu->addAction(m_viewBookmarkAction);
+  m_viewMenu->addAction(m_viewSegmentationAction);
 
 
 //  menu->addAction(new QAction("test", menu));
 
-  menuBar()->addMenu(viewMenu);
+  menuBar()->addMenu(m_viewMenu);
+
+//  m_viewMenu->setEnabled(false);
 
   m_viewSynapseAction->setEnabled(false);
   m_importBookmarkAction->setEnabled(false);
   m_viewBookmarkAction->setEnabled(false);
+  m_viewSegmentationAction->setEnabled(false);
 }
 
 void ZProofreadWindow::createToolbar()
@@ -185,6 +196,7 @@ void ZProofreadWindow::createToolbar()
   m_toolBar->addSeparator();
   m_toolBar->addAction(m_viewSynapseAction);
   m_toolBar->addAction(m_viewBookmarkAction);
+  m_toolBar->addAction(m_viewSegmentationAction);
 }
 
 void ZProofreadWindow::presentSplitInterface(uint64_t bodyId)
@@ -299,7 +311,11 @@ void ZProofreadWindow::initProgress(int nticks)
 void ZProofreadWindow::updateDvidTargetWidget(const ZDvidTarget &target)
 {
   setWindowTitle(target.getSourceString(false).c_str());
-  m_importBookmarkAction->setEnabled(target.isValid());
+
   m_viewSynapseAction->setEnabled(target.isValid());
+  m_importBookmarkAction->setEnabled(target.isValid());
   m_viewBookmarkAction->setEnabled(target.isValid());
+  m_viewSegmentationAction->setEnabled(target.isValid());
+
+  m_viewMenu->setEnabled(true);
 }

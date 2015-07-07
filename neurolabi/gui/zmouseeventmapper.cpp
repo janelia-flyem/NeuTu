@@ -479,8 +479,9 @@ ZStackOperator ZMouseEventMoveMapper::getOperation(
         }
         canMoveImage = true;
       } else {
-        if (m_context->getUniqueMode() ==
-            ZInteractiveContext::INTERACT_SWC_EXTEND) {
+//        if (m_context->getUniqueMode() ==
+//            ZInteractiveContext::INTERACT_SWC_EXTEND) {
+        if (1) {
           ZIntPoint pressPos =
               getPosition(Qt::LeftButton, ZMouseEvent::ACTION_PRESS);
           int dx = pressPos.getX() - event.getX();

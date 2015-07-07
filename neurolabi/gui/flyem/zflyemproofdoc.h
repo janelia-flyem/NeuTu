@@ -9,6 +9,7 @@
 
 class ZDvidSparseStack;
 class ZFlyEmSupervisor;
+class ZFlyEmBookmark;
 
 class ZFlyEmProofDoc : public ZStackDoc
 {
@@ -57,6 +58,9 @@ public:
 
   QList<uint64_t> getMergedSource(uint64_t bodyId) const;
   QSet<uint64_t> getMergedSource(const QSet<uint64_t> &bodySet) const;
+
+  void importFlyEmBookmark(const std::string &filePath);
+  ZFlyEmBookmark* findFirstBookmark(const QString &key) const;
 
 public:
   void notifyBodyMerged();

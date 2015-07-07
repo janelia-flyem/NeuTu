@@ -34,6 +34,10 @@ public:
     m_splitWindowMode = state;
   }
 
+private:
+  void tryEnterAddBookmarkMode();
+  void tryEnterAddBookmarkMode(int x, int y);
+
 signals:
   void highlightingSelected(bool);
   void selectingBodyAt(int x, int y, int z);
@@ -46,6 +50,8 @@ public slots:
 private:
   bool m_isHightlightMode;
   bool m_splitWindowMode;
+
+  ZKeyOperationMap m_bookmarkKeyOperationMap;
 };
 
 #endif // ZFLYEMPROOFPRESENTER_H

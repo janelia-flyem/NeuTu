@@ -41,7 +41,7 @@
 ZFlyEmBodyMergeProject::ZFlyEmBodyMergeProject(QObject *parent) :
   QObject(parent), m_dataFrame(NULL), m_bodyWindow(NULL),
   m_isBookmarkVisible(true),
-  m_bookmarkArray(NULL),
+//  m_bookmarkArray(NULL),
   m_showingBodyMask(true)
 {
   m_progressSignal = new ZProgressSignal(this);
@@ -1289,7 +1289,7 @@ void ZFlyEmBodyMergeProject::updateBookmarkDecoration(
     addBookmarkDecoration(filteredBookmarkArray);
   }
 }
-
+#if 0
 void ZFlyEmBodyMergeProject::attachBookmarkArray(ZFlyEmBookmarkArray *bookmarkArray)
 {
   m_bookmarkArray = bookmarkArray;
@@ -1313,7 +1313,7 @@ void ZFlyEmBodyMergeProject::updateBookmarkDecoration()
     addBookmarkDecoration(bookmarkArray);
   }
 }
-
+#endif
 void ZFlyEmBodyMergeProject::setBookmarkVisible(bool visible)
 {
   m_isBookmarkVisible = visible;
