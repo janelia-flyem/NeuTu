@@ -988,6 +988,10 @@ ZArray* ZDvidReader::readLabels64(
   const ZDvidTarget &target = getDvidTarget();
   if (!target.getUuid().empty()) {
     try {
+      ZDvidUrl dvidUrl(m_dvidTarget);
+      std::cout << dvidUrl.getLabels64Url(
+                     dataName, width, height, depth, x0, y0, z0).c_str() << std::endl;
+
       libdvid::DVIDNodeService service(
             target.getAddressWithPort(), target.getUuid());
 

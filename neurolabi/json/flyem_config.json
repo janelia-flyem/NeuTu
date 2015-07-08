@@ -167,6 +167,7 @@
       "comment": "MB seg (after runniing splits in node 6f15)",
       "body_label": "bodies",
       "label_block": "labels",
+      "supervised": false,
       "user_name": ["zhaot"]
     },
     {
@@ -438,6 +439,16 @@
       "body_label": "bodies",
       "label_block": "labels",
       "user_name": ["shinomiyak", "zhaot"]
+    },
+    {
+      "address": "emdata1.int.janelia.org",
+      "port": 8500,
+      "uuid": "8e0f",
+      "name": "MB_Merged",
+      "comment": "merge of nodes 9e47 and 0f33",
+      "body_label": "bodies",
+      "label_block": "labels",
+      "user_name": ["shinomiyak", "takemuras", "zhaot"]
     }
   ]
 }

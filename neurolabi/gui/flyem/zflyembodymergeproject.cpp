@@ -41,7 +41,7 @@
 ZFlyEmBodyMergeProject::ZFlyEmBodyMergeProject(QObject *parent) :
   QObject(parent), m_dataFrame(NULL), m_bodyWindow(NULL),
   m_isBookmarkVisible(true),
-  m_bookmarkArray(NULL),
+//  m_bookmarkArray(NULL),
   m_showingBodyMask(true)
 {
   m_progressSignal = new ZProgressSignal(this);
@@ -1282,14 +1282,14 @@ void ZFlyEmBodyMergeProject::updateBookmarkDecoration(
   if (getDocument() != NULL) {
     ZFlyEmBookmarkArray filteredBookmarkArray;
     foreach (ZFlyEmBookmark bookmark, bookmarkArray) {
-      if (bookmark.getType() != ZFlyEmBookmark::TYPE_FALSE_MERGE) {
+      if (bookmark.getBookmarkType() != ZFlyEmBookmark::TYPE_FALSE_MERGE) {
         filteredBookmarkArray.append(bookmark);
       }
     }
     addBookmarkDecoration(filteredBookmarkArray);
   }
 }
-
+#if 0
 void ZFlyEmBodyMergeProject::attachBookmarkArray(ZFlyEmBookmarkArray *bookmarkArray)
 {
   m_bookmarkArray = bookmarkArray;
@@ -1305,7 +1305,7 @@ void ZFlyEmBodyMergeProject::updateBookmarkDecoration()
     for (ZFlyEmBookmarkArray::const_iterator iter = m_bookmarkArray->begin();
          iter != m_bookmarkArray->end(); ++iter) {
       const ZFlyEmBookmark &bookmark = *iter;
-      if (bookmark.getType() == ZFlyEmBookmark::TYPE_FALSE_SPLIT) {
+      if (bookmark.getBookmarkType() == ZFlyEmBookmark::TYPE_FALSE_SPLIT) {
         bookmarkArray.append(bookmark);
       }
     }
@@ -1313,7 +1313,7 @@ void ZFlyEmBodyMergeProject::updateBookmarkDecoration()
     addBookmarkDecoration(bookmarkArray);
   }
 }
-
+#endif
 void ZFlyEmBodyMergeProject::setBookmarkVisible(bool visible)
 {
   m_isBookmarkVisible = visible;

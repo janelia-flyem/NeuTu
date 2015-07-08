@@ -26,6 +26,11 @@ public:
     MARK_PUNCTA
   };
 
+  enum BookmarkEditMode {
+    BOOKMARK_EDIT_OFF = 0,
+    BOOKMARK_ADD
+  };
+
   enum TubeEditMode {
     TUBE_EDIT_OFF = 0,
     TUBE_EDIT_HOOK,
@@ -78,7 +83,8 @@ public:
     INTERACT_SWC_SMART_EXTEND, INTERACT_SWC_LOCK_FOCUS, INTERACT_SWC_ADD_NODE,
     INTERACT_SWC_MOVE_NODE, INTERACT_OBJECT_MOVE, INTERACT_STROKE_DRAW,
     INTERACT_RECT_DRAW, INTERACT_PUNCTA_MARK, INTERACT_IMAGE_MOVE,
-    INTERACT_IMAGE_CAPTURE, INTERACT_IMAGE_ZOOM_IN, INTERACT_IMAGE_ZOOM_OUT
+    INTERACT_IMAGE_CAPTURE, INTERACT_IMAGE_ZOOM_IN, INTERACT_IMAGE_ZOOM_OUT,
+    INTERACT_ADD_BOOKMARK
   };
 
 public:
@@ -91,6 +97,8 @@ public:
   inline void setSwcEditMode(SwcEditMode mode) { m_swcEditMode = mode; }
   inline void setStrokeEditMode(StrokeEditMode mode) { m_strokeEditMode = mode; }
   inline void setRectEditMode(RectEditMode mode) { m_rectEditMode = mode; }
+  inline void setBookmarkEditMode(BookmarkEditMode mode)
+  { m_bookmarkEditMode = mode; }
 
   inline TraceMode traceMode() const { return m_traceMode; }
   inline TubeEditMode tubeEditMode() const { return m_tubeEditMode; }
@@ -100,6 +108,7 @@ public:
   inline MarkPunctaMode editPunctaMode() const {return m_markPunctaMode;}
   inline StrokeEditMode strokeEditMode() const { return m_strokeEditMode; }
   inline RectEditMode rectEditMode() const { return m_rectEditMode; }
+  inline BookmarkEditMode bookmarkEditMode() const { return m_bookmarkEditMode; }
 
   bool isTraceModeOff()  const;
   inline bool isReconPreview() const {
@@ -119,6 +128,9 @@ public:
     return m_strokeEditMode == STROKE_EDIT_OFF; }
   inline bool isRectEditModeOff() const {
     return m_rectEditMode == RECT_EDIT_OFF;
+  }
+  inline bool isBookmarkEditModeOff() const {
+    return m_bookmarkEditMode == BOOKMARK_EDIT_OFF;
   }
 
   bool isContextMenuActivated() const;
@@ -140,6 +152,7 @@ private:
   SwcEditMode m_swcEditMode;
   StrokeEditMode m_strokeEditMode;
   RectEditMode m_rectEditMode;
+  BookmarkEditMode m_bookmarkEditMode;
   bool m_exitingEdit;
   bool m_blockingContextMenu;
   //ZImageWidget *m_imageWidget;

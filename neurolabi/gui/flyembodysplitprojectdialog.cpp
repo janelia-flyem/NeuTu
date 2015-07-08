@@ -451,7 +451,7 @@ void FlyEmBodySplitProjectDialog::updateWidget()
   QString text;
   if (m_project.hasBookmark()) {
     text += QString("<p>%1 bookmarks</p>").
-        arg(m_project.getBookmarkArray()->size());
+        arg(m_project.getBookmarkCount());
   }
 
   if (m_project.getDvidTarget().isValid()) {
@@ -497,6 +497,7 @@ void FlyEmBodySplitProjectDialog::dumpError(const QString &info, bool appending)
 
 void FlyEmBodySplitProjectDialog::loadBookmark()
 {
+#if 0
   QString fileName = getMainWindow()->getOpenFileName("Load Bookmarks", "*.json");
   if (!fileName.isEmpty()) {
     m_project.loadBookmark(fileName);
@@ -506,26 +507,27 @@ void FlyEmBodySplitProjectDialog::loadBookmark()
 
     dump("Bookmarks loaded.");
   }
+#endif
 }
 
 void FlyEmBodySplitProjectDialog::updateBookmarkTable()
 {
-  const ZFlyEmBookmarkArray *bookmarkArray = m_project.getBookmarkArray();
-  if (bookmarkArray != NULL) {
+//  const ZFlyEmBookmarkArray *bookmarkArray = m_project.getBookmarkArray();
+  if (m_project.getDocument() != NULL) {
     m_bookmarkList.clear();
     if (isBodyLoaded()) {
-      m_project.clearBookmarkDecoration();
-
-//      foreach (ZFlyEmBookmark bookmark, bookmarkArray) {
-      for (ZFlyEmBookmarkArray::const_iterator iter = bookmarkArray->begin();
-           iter != bookmarkArray->end(); ++iter) {
-        const ZFlyEmBookmark &bookmark = *iter;
-        if (bookmark.getBodyId() == m_project.getBodyId()) {
-          m_bookmarkList.append(bookmark);
+      //        m_project.clearBookmarkDecoration();
+      //      foreach (ZFlyEmBookmark bookmark, bookmarkArray) {
+      const TStackObjectList &objList = m_project.getDocument()->
+          getObjectList(ZStackObject::TYPE_FLYEM_BOOKMARK);
+      for (TStackObjectList::const_iterator iter = objList.begin();
+           iter != objList.end(); ++iter) {
+        const ZFlyEmBookmark *bookmark = dynamic_cast<ZFlyEmBookmark*>(*iter);
+        if (bookmark->getBodyId() == m_project.getBodyId()) {
+          m_bookmarkList.append(*bookmark);
         }
       }
-
-      m_project.addBookmarkDecoration(m_bookmarkList.getBookmarkArray());
+      //      m_project.addBookmarkDecoration(m_bookmarkList.getBookmarkArray());
     }
   }
 }
@@ -867,11 +869,13 @@ void FlyEmBodySplitProjectDialog::showBodyMask(bool on)
   m_project.updateBodyMask();
 }
 
+#if 0
 void FlyEmBodySplitProjectDialog::removeAllBookmark()
 {
   m_project.removeAllBookmark();
   updateWidget();
 }
+#endif
 
 void FlyEmBodySplitProjectDialog::exportSplits()
 {

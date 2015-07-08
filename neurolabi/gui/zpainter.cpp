@@ -16,7 +16,8 @@ ZPainter::ZPainter() : m_z(0), m_isPainted(false)
 }
 #ifdef _QT_GUI_USED_
 ZPainter::ZPainter(QPaintDevice *device) :
-  m_painter(device), m_z(0), m_isPainted(false)
+  m_painter(device),
+  m_z(0), m_isPainted(false)
 {
 }
 
@@ -300,6 +301,14 @@ void ZPainter::drawPoint(const QPointF &pt)
 
 //  QPainter::drawPoint(m_transform.transform(pt));
 //  QPainter::drawPoint(pt - QPointF(m_offset.x(), m_offset.y()));
+}
+
+
+void ZPainter::drawText(
+    int x, int y, int width, int height, int flags, const QString &text)
+{
+  m_painter.drawText(x, y, width, height, flags, text);
+  setPainted(true);
 }
 
 void ZPainter::drawPoint(const QPoint &pt)

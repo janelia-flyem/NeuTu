@@ -19,7 +19,8 @@
 #include "zrect2d.h"
 #include "libdvidheader.h"
 
-ZDvidTile::ZDvidTile() : m_ix(0), m_iy(0), m_z(0), m_view(NULL)
+ZDvidTile::ZDvidTile() : m_ix(0), m_iy(0), m_z(0),
+  m_view(NULL)
 {
   setTarget(ZStackObject::TARGET_OBJECT_CANVAS);
   m_type = ZStackObject::TYPE_DVID_TILE;
@@ -47,6 +48,9 @@ void ZDvidTile::loadDvidSlice(const uchar *buf, int length, int z)
   }
   if (loading) {
     m_image.loadFromData(buf, length);
+    if (hasVisualEffect(NeuTube::Display::Image::VE_HIGH_CONTRAST)) {
+      m_image.enhanceContrast();
+    }
     m_z = z;
   }
 }
@@ -295,3 +299,5 @@ ZRect2d ZDvidTile::getBoundBox() const
 
   return rect;
 }
+
+

@@ -28,6 +28,7 @@ signals:
   void splitTriggered(uint64_t bodyId);
   void splitTriggered();
   void labelSizeChanged(int width, int height);
+  void showingFullSegmentation();
   void coarseBodyViewTriggered();
   void savingMerge();
   void committingMerge();
@@ -46,6 +47,7 @@ private slots:
   void setSegmentSize();
   void incSegmentSize();
   void decSegmentSize();
+  void showFullSegmentation();
   void goToPosition();
   void goToBody();
   void selectBody();

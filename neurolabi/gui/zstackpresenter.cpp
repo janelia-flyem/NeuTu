@@ -53,6 +53,11 @@ ZStackPresenter::~ZStackPresenter()
   delete m_stackContextMenu;
 }
 
+ZStackPresenter* ZStackPresenter::Make(QWidget *parent)
+{
+  return new ZStackPresenter(parent);
+}
+
 void ZStackPresenter::init()
 {
   m_showObject = true;
@@ -527,7 +532,7 @@ void ZStackPresenter::prepareView()
   m_mouseEventProcessor.setImageWidget(buddyView()->imageWidget());
   m_mouseEventProcessor.setDocument(getSharedBuddyDocument());
 
-  m_swcKeyMapper.setTag(buddyDocument()->getTag());
+//  m_swcKeyMapper.setTag(buddyDocument()->getTag());
 }
 
 void ZStackPresenter::updateLeftMenu(QAction *action, bool clear)
@@ -2012,6 +2017,13 @@ void ZStackPresenter::exitRectEdit()
   m_interactiveContext.setExitingEdit(true);
 }
 
+void ZStackPresenter::exitBookmarkEdit()
+{
+  interactiveContext().setBookmarkEditMode(ZInteractiveContext::BOOKMARK_EDIT_OFF);
+  updateCursor();
+  m_interactiveContext.setExitingEdit(true);
+}
+
 void ZStackPresenter::deleteSwcNode()
 {
   buddyDocument()->executeDeleteSwcNodeCommand();
@@ -2120,6 +2132,9 @@ void ZStackPresenter::updateCursor()
           ZCursorStore::getInstance().getSmallCrossCursor());
           */
     //buddyView()->setScreenCursor(Qt::PointingHandCursor);
+  } else if (interactiveContext().bookmarkEditMode() ==
+             ZInteractiveContext::BOOKMARK_ADD){
+    buddyView()->setScreenCursor(Qt::PointingHandCursor);
   } else {
     buddyView()->setScreenCursor(Qt::CrossCursor);
   }
@@ -2489,6 +2504,7 @@ void ZStackPresenter::process(const ZStackOperator &op)
     }
     exitStrokeEdit();
     exitRectEdit();
+    exitBookmarkEdit();
     enterSwcSelectMode();
     break;
   case ZStackOperator::OP_PUNCTA_SELECT_SINGLE:
@@ -2527,7 +2543,8 @@ void ZStackPresenter::process(const ZStackOperator &op)
     break;
   case ZStackOperator::OP_OBJECT_SELECT_MULTIPLE:
     if (op.getHitObject<ZStackObject>() != NULL) {
-      buddyDocument()->setSelected(op.getHitObject<ZStackObject>(), true);
+      buddyDocument()->toggleSelected(op.getHitObject<ZStackObject>());
+//      buddyDocument()->setSelected(op.getHitObject<ZStackObject>(), true);
       interactionEvent.setEvent(
             ZInteractionEvent::EVENT_OBJECT_SELECTED);
     }

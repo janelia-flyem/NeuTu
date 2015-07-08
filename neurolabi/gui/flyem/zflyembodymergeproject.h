@@ -103,8 +103,8 @@ public:
   void clearBookmarkDecoration();
   void addBookmarkDecoration(const ZFlyEmBookmarkArray &bookmarkArray);
 
-  void attachBookmarkArray(ZFlyEmBookmarkArray *bookmarkArray);
-  ZFlyEmBookmarkArray* getBookmarkArray() const { return m_bookmarkArray; }
+//  void attachBookmarkArray(ZFlyEmBookmarkArray *bookmarkArray);
+//  ZFlyEmBookmarkArray* getBookmarkArray() const { return m_bookmarkArray; }
 
   void updateBookmarkDecoration();
 
@@ -171,7 +171,7 @@ private:
 //  std::vector<ZStackObject*> m_bookmarkDecoration;
   bool m_isBookmarkVisible;
 
-  ZFlyEmBookmarkArray *m_bookmarkArray; //aggregation
+//  ZFlyEmBookmarkArray *m_bookmarkArray; //aggregation
 
 //  Z3DWindow *m_resultWindow;
 //  Z3DWindow *m_quickViewWindow;

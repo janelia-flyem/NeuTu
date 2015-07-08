@@ -170,6 +170,9 @@ ZStackOperator ZMouseEventLeftButtonReleaseMapper::getOperation(
       case ZInteractiveContext::INTERACT_RECT_DRAW:
         op.setOperation(ZStackOperator::OP_EXIT_EDIT_MODE);
         break;
+      case ZInteractiveContext::INTERACT_ADD_BOOKMARK:
+        op.setOperation(ZStackOperator::OP_BOOKMARK_ADD_NEW);
+        break;
       default:
         break;
       }
@@ -479,8 +482,9 @@ ZStackOperator ZMouseEventMoveMapper::getOperation(
         }
         canMoveImage = true;
       } else {
-        if (m_context->getUniqueMode() ==
-            ZInteractiveContext::INTERACT_SWC_EXTEND) {
+//        if (m_context->getUniqueMode() ==
+//            ZInteractiveContext::INTERACT_SWC_EXTEND) {
+        if (1) {
           ZIntPoint pressPos =
               getPosition(Qt::LeftButton, ZMouseEvent::ACTION_PRESS);
           int dx = pressPos.getX() - event.getX();

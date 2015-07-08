@@ -12,6 +12,8 @@ public:
   explicit ZFlyEmProofPresenter(ZStackFrame *parent = 0);
   explicit ZFlyEmProofPresenter(QWidget *parent = 0);
 
+  static ZFlyEmProofPresenter* Make(QWidget *parent);
+
   bool customKeyProcess(QKeyEvent *event);
 
   void toggleHighlightMode();
@@ -34,6 +36,11 @@ public:
     m_splitWindowMode = state;
   }
 
+private:
+  void tryAddBookmarkMode();
+  void tryAddBookmarkMode(double x, double y);
+  void addActiveStrokeAsBookmark();
+
 signals:
   void highlightingSelected(bool);
   void selectingBodyAt(int x, int y, int z);
@@ -46,6 +53,8 @@ public slots:
 private:
   bool m_isHightlightMode;
   bool m_splitWindowMode;
+
+  ZKeyOperationMap m_bookmarkKeyOperationMap;
 };
 
 #endif // ZFLYEMPROOFPRESENTER_H

@@ -48,9 +48,10 @@ public:
 
   void processViewChangeCustom(const ZStackViewParam &viewParam);
 
-  inline ZFlyEmSupervisor* getSupervisor() const {
-    return m_supervisor;
-  }
+  ZFlyEmSupervisor* getSupervisor() const;
+
+  bool checkInBody(uint64_t bodyId);
+  bool checkOutBody(uint64_t bodyId);
 
 signals:
   void launchingSplit(const QString &message);
@@ -95,6 +96,9 @@ public slots:
   void showCoarseBody3d();
 
   void setDvidLabelSliceSize(int width, int height);
+  void showFullSegmentation();
+
+  void enhanceTileContrast(bool state);
 
   void zoomTo(const ZIntPoint &pt);
   void zoomTo(int x, int y, int z);
@@ -116,10 +120,12 @@ public slots:
   void loadSynapse();
   void showSynapseAnnotation(bool visible);
   void showBookmark(bool visible);
+  void showSegmentation(bool visible);
 
   void loadBookmark();
 
   void recordCheckedBookmark(const QString &key, bool checking);
+  void processSelectionChange(const ZStackObjectSelector &selector);
 
 //  void toggleEdgeMode(bool edgeOn);
 
@@ -139,7 +145,7 @@ private:
   bool m_showSegmentation;
   ZFlyEmBodySplitProject m_splitProject;
   ZFlyEmBodyMergeProject m_mergeProject;
-  ZFlyEmBookmarkArray m_bookmarkArray;
+//  ZFlyEmBookmarkArray m_bookmarkArray;
 
   QThreadFutureMap m_futureMap;
 
@@ -162,6 +168,8 @@ void ZFlyEmProofMvc::connectControlPanel(T *panel)
           panel, SIGNAL(splitTriggered(uint64_t)));
   connect(panel, SIGNAL(labelSizeChanged(int, int)),
           this, SLOT(setDvidLabelSliceSize(int, int)));
+  connect(panel, SIGNAL(showingFullSegmentation()),
+          this, SLOT(showFullSegmentation()));
   connect(panel, SIGNAL(coarseBodyViewTriggered()),
           this, SLOT(showCoarseBody3d()));
   connect(panel, SIGNAL(savingMerge()), this, SLOT(saveMergeOperation()));
