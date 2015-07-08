@@ -303,6 +303,14 @@ void ZPainter::drawPoint(const QPointF &pt)
 //  QPainter::drawPoint(pt - QPointF(m_offset.x(), m_offset.y()));
 }
 
+
+void ZPainter::drawText(
+    int x, int y, int width, int height, int flags, const QString &text)
+{
+  m_painter.drawText(x, y, width, height, flags, text);
+  setPainted(true);
+}
+
 void ZPainter::drawPoint(const QPoint &pt)
 {
   m_painter.drawPoint(pt);

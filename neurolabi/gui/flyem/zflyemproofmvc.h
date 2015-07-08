@@ -125,6 +125,7 @@ public slots:
   void loadBookmark();
 
   void recordCheckedBookmark(const QString &key, bool checking);
+  void processSelectionChange(const ZStackObjectSelector &selector);
 
 //  void toggleEdgeMode(bool edgeOn);
 

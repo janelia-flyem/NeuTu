@@ -41,6 +41,9 @@ public:
   explicit ZStackPresenter(ZStackFrame *parent = 0);
   explicit ZStackPresenter(QWidget *parent = 0);
   ~ZStackPresenter();
+
+  static ZStackPresenter* Make(QWidget *parent);
+
   ZStackDoc* buddyDocument() const;
   ZStackView* buddyView() const;
   ZSharedPointer<ZStackDoc> getSharedBuddyDocument() const;
@@ -272,6 +275,7 @@ public slots:
   void enterDrawRectMode(double x, double y);
   void tryDrawRectMode();
   void exitRectEdit();
+  void exitBookmarkEdit();
 
   void selectDownstreamNode();
   void selectSwcNodeConnection(Swc_Tree_Node *lastSelected = NULL);

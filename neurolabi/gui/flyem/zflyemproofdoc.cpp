@@ -382,6 +382,22 @@ void ZFlyEmProofDoc::importFlyEmBookmark(const std::string &filePath)
   notifyObjectModified();
 }
 
+uint64_t ZFlyEmProofDoc::getBodyId(int x, int y, int z)
+{
+  uint64_t bodyId = 0;
+  ZDvidReader reader;
+  if (reader.open(getDvidTarget())) {
+    bodyId = m_bodyMerger.getFinalLabel(reader.readBodyIdAt(x, y, z));
+  }
+
+  return bodyId;
+}
+
+uint64_t ZFlyEmProofDoc::getBodyId(const ZIntPoint &pt)
+{
+  return getBodyId(pt.getX(), pt.getY(), pt.getZ());
+}
+
 //////////////////////////////////////////
 ZFlyEmProofDocCommand::MergeBody::MergeBody(
     ZStackDoc *doc, QUndoCommand *parent)

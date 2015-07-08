@@ -12,6 +12,8 @@ public:
   explicit ZFlyEmProofPresenter(ZStackFrame *parent = 0);
   explicit ZFlyEmProofPresenter(QWidget *parent = 0);
 
+  static ZFlyEmProofPresenter* Make(QWidget *parent);
+
   bool customKeyProcess(QKeyEvent *event);
 
   void toggleHighlightMode();
@@ -35,8 +37,9 @@ public:
   }
 
 private:
-  void tryEnterAddBookmarkMode();
-  void tryEnterAddBookmarkMode(int x, int y);
+  void tryAddBookmarkMode();
+  void tryAddBookmarkMode(double x, double y);
+  void addActiveStrokeAsBookmark();
 
 signals:
   void highlightingSelected(bool);

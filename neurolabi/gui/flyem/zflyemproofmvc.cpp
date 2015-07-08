@@ -219,7 +219,7 @@ ZDvidTarget ZFlyEmProofMvc::getDvidTarget() const
 void ZFlyEmProofMvc::createPresenter()
 {
   if (getDocument().get() != NULL) {
-    m_presenter = new ZFlyEmProofPresenter(this);
+    m_presenter = ZFlyEmProofPresenter::Make(this);
   }
 }
 
@@ -255,6 +255,9 @@ void ZFlyEmProofMvc::customInit()
 
   connect(getCompleteDocument(), SIGNAL(bodyUnmerged()),
           getView(), SLOT(paintObject()));
+  connect(getDocument().get(),
+          SIGNAL(objectSelectorChanged(ZStackObjectSelector)),
+          this, SLOT(processSelectionChange(ZStackObjectSelector)));
 
 
   m_splitProject.setDocument(getDocument());
@@ -349,6 +352,27 @@ void ZFlyEmProofMvc::selectBody()
         selectBody((uint64_t) bodyArray[0]);
       }
     }
+  }
+}
+
+void ZFlyEmProofMvc::processSelectionChange(const ZStackObjectSelector &selector)
+{
+  const std::vector<ZStackObject*>& objList =
+      selector.getSelectedList(ZStackObject::TYPE_FLYEM_BOOKMARK);
+  if (!objList.empty()) {
+    const ZStackObject *obj = objList.back();
+    const ZFlyEmBookmark *bookmark = dynamic_cast<const ZFlyEmBookmark*>(obj);
+    if (bookmark != NULL) {
+      emit messageGenerated(
+            ZWidgetMessage(bookmark->toJsonObject().dumpString(0).c_str(),
+                           NeuTube::MSG_INFORMATION,
+                           ZWidgetMessage::TARGET_STATUS_BAR));
+    }
+  } else {
+    emit messageGenerated(
+          ZWidgetMessage("---",
+                         NeuTube::MSG_INFORMATION,
+                         ZWidgetMessage::TARGET_STATUS_BAR));
   }
 }
 

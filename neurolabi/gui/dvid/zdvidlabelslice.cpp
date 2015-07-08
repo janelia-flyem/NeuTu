@@ -24,6 +24,7 @@ void ZDvidLabelSlice::init(int maxWidth, int maxHeight)
   m_objColorSheme.setColorScheme(ZColorScheme::CONV_RANDOM_COLOR);
   m_hitLabel = -1;
   m_bodyMerger = NULL;
+  setZOrder(0);
 
   m_maxWidth = maxWidth;
   m_maxHeight = maxHeight;

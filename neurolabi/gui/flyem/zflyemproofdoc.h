@@ -62,6 +62,14 @@ public:
   void importFlyEmBookmark(const std::string &filePath);
   ZFlyEmBookmark* findFirstBookmark(const QString &key) const;
 
+  /*!
+   * \brief Get body ID at a certain location
+   *
+   * \return The body ID mapped by merge operations.
+   */
+  uint64_t getBodyId(int x, int y, int z);
+  uint64_t getBodyId(const ZIntPoint &pt);
+
 public:
   void notifyBodyMerged();
   void notifyBodyUnmerged();

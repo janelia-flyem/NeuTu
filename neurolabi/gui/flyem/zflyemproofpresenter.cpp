@@ -3,6 +3,13 @@
 #include <QKeyEvent>
 #include <QAction>
 
+#include "zkeyoperationconfig.h"
+#include "zinteractivecontext.h"
+#include "zstackdoc.h"
+#include "zflyembookmark.h"
+#include "zstackview.h"
+#include "zflyemproofdoc.h"
+
 ZFlyEmProofPresenter::ZFlyEmProofPresenter(ZStackFrame *parent) :
   ZStackPresenter(parent), m_isHightlightMode(false), m_splitWindowMode(false)
 {
@@ -13,6 +20,15 @@ ZFlyEmProofPresenter::ZFlyEmProofPresenter(QWidget *parent) :
   ZStackPresenter(parent), m_isHightlightMode(false)
 {
   interactiveContext().setSwcEditMode(ZInteractiveContext::SWC_EDIT_OFF);
+}
+
+ZFlyEmProofPresenter* ZFlyEmProofPresenter::Make(QWidget *parent)
+{
+  ZFlyEmProofPresenter *presenter = new ZFlyEmProofPresenter(parent);
+  ZKeyOperationConfig::Configure(
+        presenter->m_bookmarkKeyOperationMap, ZKeyOperation::OG_FLYEM_BOOKMARK);
+
+  return presenter;
 }
 
 bool ZFlyEmProofPresenter::customKeyProcess(QKeyEvent *event)
@@ -111,15 +127,43 @@ void ZFlyEmProofPresenter::setSplitEnabled(bool s)
   m_paintStrokeAction->setEnabled(s);
 }
 
-void ZFlyEmProofPresenter::tryEnterAddBookmarkMode()
+void ZFlyEmProofPresenter::tryAddBookmarkMode()
 {
   QPointF pos = mapFromGlobalToStack(QCursor::pos());
-  tryEnterAddBookmarkMode(pos.x(), pos.y());
+  tryAddBookmarkMode(pos.x(), pos.y());
 }
 
-void ZFlyEmProofPresenter::tryEnterAddBookmarkMode(int x, int y)
+void ZFlyEmProofPresenter::tryAddBookmarkMode(double x, double y)
 {
+  interactiveContext().setBookmarkEditMode(ZInteractiveContext::BOOKMARK_ADD);
+  m_stroke.setWidth(10.0);
 
+  buddyDocument()->mapToDataCoord(&x, &y, NULL);
+  m_stroke.set(x, y);
+  m_stroke.setEraser(false);
+  m_stroke.setFilled(false);
+  m_stroke.setTarget(ZStackObject::TARGET_WIDGET);
+  turnOnStroke();
+  //buddyView()->paintActiveDecoration();
+  updateCursor();
+}
+
+void ZFlyEmProofPresenter::addActiveStrokeAsBookmark()
+{
+  int x = 0;
+  int y = 0;
+  m_stroke.getLastPoint(&x, &y);
+  double radius = m_stroke.getWidth() / 2.0;
+
+  ZFlyEmBookmark *bookmark = new ZFlyEmBookmark;
+  bookmark->setLocation(x, y, buddyView()->getZ(NeuTube::COORD_STACK));
+  bookmark->setRadius(radius);
+  bookmark->setCustom(true);
+  ZFlyEmProofDoc *doc = dynamic_cast<ZFlyEmProofDoc*>(buddyDocument());
+  if (doc != NULL) {
+    bookmark->setBodyId(doc->getBodyId(bookmark->getLocation()));
+  }
+  buddyDocument()->executeAddObjectCommand(bookmark);
 }
 
 void ZFlyEmProofPresenter::processCustomOperator(const ZStackOperator &op)
@@ -136,7 +180,10 @@ void ZFlyEmProofPresenter::processCustomOperator(const ZStackOperator &op)
   case ZStackOperator::OP_SHOW_BODY_CONTEXT_MENU:
     break;
   case ZStackOperator::OP_BOOKMARK_ENTER_ADD_MODE:
-
+    tryAddBookmarkMode();
+    break;
+  case ZStackOperator::OP_BOOKMARK_ADD_NEW:
+    addActiveStrokeAsBookmark();
     break;
   default:
     break;

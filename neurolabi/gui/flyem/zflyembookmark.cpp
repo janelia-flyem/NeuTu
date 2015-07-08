@@ -3,12 +3,16 @@
 
 #include "zjsonobject.h"
 #include "tz_math.h"
+#include "zpainter.h"
 
 ZFlyEmBookmark::ZFlyEmBookmark() :
-  m_bodyId(-1), m_bookmarkType(TYPE_LOCATION), m_isChecked(false)
+  m_bodyId(0), m_bookmarkType(TYPE_LOCATION), m_isChecked(false),
+  m_isCustom(false)
 {
   m_type = ZStackObject::TYPE_FLYEM_BOOKMARK;
   m_visualEffect = NeuTube::Display::Sphere::VE_DOT_CENTER;
+  setColor(255, 0, 0);
+  useCosmeticPen(true);
 }
 
 void ZFlyEmBookmark::print() const
@@ -58,3 +62,35 @@ ZJsonObject ZFlyEmBookmark::toJsonObject() const
 
   return obj;
 }
+
+void ZFlyEmBookmark::setCustom(bool state)
+{
+  m_isCustom = state;
+}
+
+void ZFlyEmBookmark::display(
+    ZPainter &painter, int slice, EDisplayStyle option) const
+{
+  ZStackBall::display(painter, slice, option);
+
+  if (isVisible()) {
+    if (isSliceVisible(painter.getZ(slice))) {
+      QString decorationText;
+      if (m_isCustom) {
+        decorationText = "u";
+      }
+      if (!decorationText.isEmpty()) {
+//        painter.save();
+        ZIntPoint center = getLocation();
+        int width = decorationText.size() * 50;
+        int height = 50;
+        painter.drawText(center.getX(), center.getY(), width, height,
+                         Qt::AlignLeft, decorationText);
+//        painter.restore();
+      }
+    }
+//    }
+  }
+}
+
+ZSTACKOBJECT_DEFINE_CLASS_NAME(ZFlyEmBookmark)

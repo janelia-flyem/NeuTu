@@ -17,6 +17,8 @@ public:
     TYPE_FALSE_MERGE, TYPE_FALSE_SPLIT, TYPE_LOCATION
   };
 
+  void display(ZPainter &painter, int slice, EDisplayStyle option) const;
+
   inline uint64_t getBodyId() const { return m_bodyId; }
   inline const QString& getTime() const { return m_time; }
   inline const QString& getUserName() const { return m_userName; }
@@ -43,8 +45,11 @@ public:
 
   ZJsonObject toJsonObject() const;
 
-
   void print() const;
+
+  void setCustom(bool state);
+
+  virtual const std::string& className() const;
 
 private:
   uint64_t m_bodyId;
@@ -54,6 +59,8 @@ private:
 //  ZIntPoint m_location;
   EBookmarkType m_bookmarkType;
   bool m_isChecked;
+  bool m_isCustom;
+//  QString m_decorationText;
 };
 
 #endif // ZFLYEMBOOKMARK_H

@@ -170,6 +170,9 @@ ZStackOperator ZMouseEventLeftButtonReleaseMapper::getOperation(
       case ZInteractiveContext::INTERACT_RECT_DRAW:
         op.setOperation(ZStackOperator::OP_EXIT_EDIT_MODE);
         break;
+      case ZInteractiveContext::INTERACT_ADD_BOOKMARK:
+        op.setOperation(ZStackOperator::OP_BOOKMARK_ADD_NEW);
+        break;
       default:
         break;
       }

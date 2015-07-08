@@ -8,6 +8,7 @@
 #include <QMenu>
 #include <QMenuBar>
 #include <QToolBar>
+#include <QStatusBar>
 
 #include "flyemsplitcontrolform.h"
 #include "dvid/zdvidtarget.h"
@@ -119,6 +120,7 @@ void ZProofreadWindow::init()
 
   createMenu();
   createToolbar();
+  statusBar()->showMessage("Load a database to start proofreading");
 }
 
 ZProofreadWindow* ZProofreadWindow::Make(QWidget *parent)
@@ -265,6 +267,9 @@ void ZProofreadWindow::dump(const ZWidgetMessage &msg)
     break;
   case ZWidgetMessage::TARGET_DIALOG:
     QMessageBox::information(this, "Notice", msg.toHtmlString());
+    break;
+case ZWidgetMessage::TARGET_STATUS_BAR:
+    statusBar()->showMessage(msg.toHtmlString());
     break;
   }
 }

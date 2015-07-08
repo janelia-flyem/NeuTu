@@ -18,6 +18,9 @@ void ZKeyOperationConfig::Configure(
   case ZKeyOperation::OG_STACK:
     ConfigureStackMap(map);
     break;
+  case ZKeyOperation::OG_FLYEM_BOOKMARK:
+    ConfigureFlyEmBookmarkMap(map);
+    break;
   default:
     break;
   }

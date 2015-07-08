@@ -126,18 +126,21 @@ public:
   void drawLines(const QLine *lines, int lineCount);
   void drawLines(const std::vector<QLine> &lineArray);
 
-  void	drawEllipse(const QRectF & rectangle);
-  void	drawEllipse(const QRect & rectangle);
-  void	drawEllipse(int x, int y, int width, int height);
-  void	drawEllipse(const QPointF & center, double rx, double ry);
-  void	drawEllipse(const QPoint & center, int rx, int ry);
+  void drawEllipse(const QRectF & rectangle);
+  void drawEllipse(const QRect & rectangle);
+  void drawEllipse(int x, int y, int width, int height);
+  void drawEllipse(const QPointF & center, double rx, double ry);
+  void drawEllipse(const QPoint & center, int rx, int ry);
 
-  void	drawRect(const QRectF & rectangle);
-  void	drawRect(const QRect & rectangle);
-  void	drawRect(int x, int y, int width, int height);
+  void drawRect(const QRectF & rectangle);
+  void drawRect(const QRect & rectangle);
+  void drawRect(int x, int y, int width, int height);
 
-  void	drawPolyline(const QPointF * points, int pointCount);
-  void	drawPolyline(const QPoint * points, int pointCount);
+  void drawPolyline(const QPointF * points, int pointCount);
+  void drawPolyline(const QPoint * points, int pointCount);
+
+  void drawText(
+      int x, int y, int width, int height, int flags, const QString & text);
 
   void setCompositionMode(QPainter::CompositionMode mode);
   void setRenderHints(QPainter::RenderHints hints, bool on = true);
