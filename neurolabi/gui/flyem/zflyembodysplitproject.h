@@ -72,7 +72,7 @@ public:
 
   void locateBookmark(const ZFlyEmBookmark &bookmark);
 
-  void clearBookmarkDecoration();
+//  void clearBookmarkDecoration();
   void addBookmarkDecoration(const ZFlyEmBookmarkArray &bookmarkArray);
 //  void updateBookmarkDecoration();
 

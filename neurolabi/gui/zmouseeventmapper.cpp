@@ -309,6 +309,8 @@ ZStackOperator ZMouseEventLeftButtonDoubleClickMapper::getOperation(
       if (m_context->isProjectView()) {
         op.setOperation(ZStackOperator::OP_DVID_SPARSE_STACK_LOCATE_FOCUS);
       }
+    } else if (op.getHitObject()->getType() == ZStackObject::TYPE_FLYEM_BOOKMARK) {
+      op.setOperation(ZStackOperator::OP_BOOKMARK_ANNOTATE);
     }
   }
 
@@ -428,7 +430,8 @@ ZMouseEventRightButtonReleaseMapper::getOperation(const ZMouseEvent &event) cons
             op.setOperation(ZStackOperator::OP_SHOW_STROKE_CONTEXT_MENU);
         } else if (m_doc->getTag() == NeuTube::Document::FLYEM_PROOFREAD) {
           if (!m_doc->getDvidLabelSliceList().empty()) {
-            if (m_doc->getDvidLabelSliceList().front()->getSelectedOriginal().size() == 1) {
+            if (m_doc->getDvidLabelSliceList().front()->getSelected(
+                  NeuTube::BODY_LABEL_MAPPED).size() == 1) {
               op.setOperation(ZStackOperator::OP_SHOW_BODY_CONTEXT_MENU);
             }
           }

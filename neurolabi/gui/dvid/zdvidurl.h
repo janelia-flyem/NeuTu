@@ -132,6 +132,7 @@ public:
   std::string getRoiUrl(const std::string &dataName) const;
 
   std::string getBookmarkUrl() const;
+  std::string getCustomBookmarkUrl(const std::string &userName) const;
 
   static std::string GetEndPoint(const std::string &url);
   /*!

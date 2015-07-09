@@ -114,7 +114,7 @@ public slots:
   void dump(const QString &info, bool appending = false);
   void dumpError(const QString &info, bool appending = false);
 
-  void startSplit(const ZDvidTarget &dvidTarget, int bodyId);
+  void startSplit(const ZDvidTarget &dvidTarget, uint64_t bodyId);
   void startSplit(const QString &message);
 
 

@@ -205,6 +205,7 @@ void FlyEmSplitControlForm::updateBookmarkTable(ZFlyEmBodySplitProject *project)
            iter != objList.end(); ++iter) {
         const ZFlyEmBookmark *bookmark = dynamic_cast<ZFlyEmBookmark*>(*iter);
         if (bookmark->getBodyId() == project->getBodyId() &&
+            !bookmark->isCustom() &&
             bookmark->getBookmarkType() == ZFlyEmBookmark::TYPE_FALSE_MERGE) {
           m_bookmarkList.append(*bookmark);
         }

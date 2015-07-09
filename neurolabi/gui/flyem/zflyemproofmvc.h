@@ -22,6 +22,7 @@ class ZFlyEmProofMvc : public ZStackMvc
   Q_OBJECT
 public:
   explicit ZFlyEmProofMvc(QWidget *parent = 0);
+  ~ZFlyEmProofMvc();
 
   static ZFlyEmProofMvc* Make(
       QWidget *parent, ZSharedPointer<ZFlyEmProofDoc> doc);
@@ -43,6 +44,8 @@ public:
 
   void clear();
 
+  void exitCurrentDoc();
+
   void enableSplit();
   void disableSplit();
 
@@ -50,7 +53,7 @@ public:
 
   ZFlyEmSupervisor* getSupervisor() const;
 
-  bool checkInBody(uint64_t bodyId);
+//  bool checkInBody(uint64_t bodyId);
   bool checkOutBody(uint64_t bodyId);
 
 signals:
@@ -76,8 +79,9 @@ public slots:
   void processMessageSlot(const QString &message);
   void notifySplitTriggered();
   void annotateBody();
-  void checkInBody();
+  void checkInSelectedBody();
   void checkOutBody();
+  bool checkInBody(uint64_t bodyId);
   void exitSplit();
   void switchSplitBody(uint64_t bodyId);
   void showBodyQuickView();
@@ -126,6 +130,8 @@ public slots:
 
   void recordCheckedBookmark(const QString &key, bool checking);
   void processSelectionChange(const ZStackObjectSelector &selector);
+
+  void annotateBookmark(ZFlyEmBookmark *bookmark);
 
 //  void toggleEdgeMode(bool edgeOn);
 

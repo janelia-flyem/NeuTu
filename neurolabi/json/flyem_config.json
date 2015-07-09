@@ -167,7 +167,6 @@
       "comment": "MB seg (after runniing splits in node 6f15)",
       "body_label": "bodies",
       "label_block": "labels",
-      "supervised": false,
       "user_name": ["zhaot"]
     },
     {

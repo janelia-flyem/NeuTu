@@ -43,10 +43,14 @@ void ZFlyEmProofDoc::mergeSelected(ZFlyEmSupervisor *supervisor)
           labelSet.insert(*iter);
         } else {
           labelSet.clear();
+          std::string owner = supervisor->getOwner(*iter);
+          if (owner.empty()) {
+            owner = "unknown user";
+          }
           emit messageGenerated(
                 ZWidgetMessage(
-                  QString("Failed to merge. %1 has been locked by someone else").
-                  arg(*iter), NeuTube::MSG_ERROR));
+                  QString("Failed to merge. %1 has been locked by %2").
+                  arg(*iter).arg(owner.c_str()), NeuTube::MSG_ERROR));
           break;
         }
       } else {
@@ -268,9 +272,10 @@ void ZFlyEmProofDoc::updateDvidLabelObject()
   for (TStackObjectList::iterator iter = objList.begin(); iter != objList.end();
        ++iter) {
     ZDvidLabelSlice *obj = dynamic_cast<ZDvidLabelSlice*>(*iter);
-    obj->update();
+    obj->forceUpdate();
     processObjectModified(obj);
   }
+
 
   TStackObjectList &objList2 = getObjectList(ZStackObject::TYPE_DVID_SPARSEVOL_SLICE);
   for (TStackObjectList::iterator iter = objList2.begin(); iter != objList2.end();
@@ -282,6 +287,29 @@ void ZFlyEmProofDoc::updateDvidLabelObject()
   endObjectModifiedMode();
 
   notifyObjectModified();
+}
+
+void ZFlyEmProofDoc::downloadBookmark()
+{
+  if (getDvidTarget().isValid()) {
+    ZDvidUrl url(getDvidTarget());
+    ZDvidBufferReader reader;
+    reader.read(url.getCustomBookmarkUrl(NeuTube::GetUserName()).c_str());
+    ZJsonArray jsonObj;
+    jsonObj.decodeString(reader.getBuffer());
+    if (!jsonObj.isEmpty()) {
+      beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
+      for (size_t i = 0; i < jsonObj.size(); ++i) {
+        ZJsonObject bookmarkObj =
+            ZJsonObject(jsonObj.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
+        ZFlyEmBookmark *bookmark = new ZFlyEmBookmark;
+        bookmark->loadJsonObject(bookmarkObj);
+        addObject(bookmark, true);
+      }
+      endObjectModifiedMode();
+      notifyObjectModified();
+    }
+  }
 }
 
 void ZFlyEmProofDoc::downloadSynapse()
@@ -332,8 +360,20 @@ void ZFlyEmProofDoc::importFlyEmBookmark(const std::string &filePath)
 {
   beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
   if (!filePath.empty()) {
-    removeObject(ZStackObject::TYPE_FLYEM_BOOKMARK, true);
+//    removeObject(ZStackObject::TYPE_FLYEM_BOOKMARK, true);
+    TStackObjectList &objList = getObjectList(ZStackObject::TYPE_FLYEM_BOOKMARK);
+    for (TStackObjectList::iterator iter = objList.begin();
+         iter != objList.end(); ++iter) {
+      ZFlyEmBookmark *bookmark = dynamic_cast<ZFlyEmBookmark*>(*iter);
+      if (bookmark != NULL) {
+        if (!bookmark->isCustom()) {
+          removeObject(*iter, true);
+        }
+      }
+    }
+
     ZJsonObject obj;
+
     obj.load(filePath);
 
     ZJsonArray bookmarkArrayObj(obj["data"], false);
@@ -396,6 +436,36 @@ uint64_t ZFlyEmProofDoc::getBodyId(int x, int y, int z)
 uint64_t ZFlyEmProofDoc::getBodyId(const ZIntPoint &pt)
 {
   return getBodyId(pt.getX(), pt.getY(), pt.getZ());
+}
+
+void ZFlyEmProofDoc::autoSave()
+{
+  saveCustomBookmark();
+}
+
+void ZFlyEmProofDoc::saveCustomBookmark()
+{
+  ZDvidWriter writer;
+  if (writer.open(getDvidTarget())) {
+    const TStackObjectList &objList =
+        getObjectList(ZStackObject::TYPE_FLYEM_BOOKMARK);
+    ZJsonArray jsonArray;
+    for (TStackObjectList::const_iterator iter = objList.begin();
+         iter != objList.end(); ++iter) {
+      const ZFlyEmBookmark *bookmark = dynamic_cast<ZFlyEmBookmark*>(*iter);
+      if (bookmark != NULL) {
+        if (bookmark->isCustom()) {
+          ZJsonObject obj = bookmark->toJsonObject();
+          jsonArray.append(obj);
+        }
+      }
+    }
+    writer.writeCustomBookmark(jsonArray);
+    if (writer.getStatusCode() != 200) {
+      emit messageGenerated(
+            ZWidgetMessage("Failed to save bookmarks.", NeuTube::MSG_ERROR));
+    }
+  }
 }
 
 //////////////////////////////////////////

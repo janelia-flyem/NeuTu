@@ -17,9 +17,9 @@ QVariant ZFlyEmBookmarkPresenter::data(
     case 0:
       switch (bookmark.getBookmarkType()) {
       case ZFlyEmBookmark::TYPE_FALSE_MERGE:
-        return "Merge";
-      case ZFlyEmBookmark::TYPE_FALSE_SPLIT:
         return "Split";
+      case ZFlyEmBookmark::TYPE_FALSE_SPLIT:
+        return "Merge";
       case ZFlyEmBookmark::TYPE_LOCATION:
         return "Other";
       }

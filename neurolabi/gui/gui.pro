@@ -547,7 +547,8 @@ HEADERS += mainwindow.h \
     zkeyoperationmapsequence.h \
     zpuncta.h \
     flyem/zdvidtileupdatetaskmanager.h \
-    flyem/zpaintlabelwidget.h
+    flyem/zpaintlabelwidget.h \
+    flyem/zflyembookmarkannotationdialog.h
 
 FORMS += settingdialog.ui \
     frameinfodialog.ui \
@@ -613,7 +614,8 @@ FORMS += settingdialog.ui \
     zflyemcontrolform.ui \
     flyem/flyemproofcontrolform.ui \
     flyem/flyemsplitcontrolform.ui \
-    flyem/zflyembodyannotationdialog.ui
+    flyem/zflyembodyannotationdialog.ui \
+    flyem/zflyembookmarkannotationdialog.ui
 SOURCES += main.cpp \
     mainwindow.cpp \
     zstackview.cpp \
@@ -955,7 +957,8 @@ SOURCES += main.cpp \
     zkeyoperationmapsequence.cpp \
     zpuncta.cpp \
     flyem/zdvidtileupdatetaskmanager.cpp \
-    flyem/zpaintlabelwidget.cpp
+    flyem/zpaintlabelwidget.cpp \
+    flyem/zflyembookmarkannotationdialog.cpp
 
 OTHER_FILES += \
     extlib.pri \

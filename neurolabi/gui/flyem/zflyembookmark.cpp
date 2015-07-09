@@ -4,6 +4,9 @@
 #include "zjsonobject.h"
 #include "tz_math.h"
 #include "zpainter.h"
+#include "zstring.h"
+#include "zjsonparser.h"
+#include "zjsonarray.h"
 
 ZFlyEmBookmark::ZFlyEmBookmark() :
   m_bodyId(0), m_bookmarkType(TYPE_LOCATION), m_isChecked(false),
@@ -12,7 +15,21 @@ ZFlyEmBookmark::ZFlyEmBookmark() :
   m_type = ZStackObject::TYPE_FLYEM_BOOKMARK;
   m_visualEffect = NeuTube::Display::Sphere::VE_DOT_CENTER;
   setColor(255, 0, 0);
+  setRadius(5.0);
+  setHittable(false);
   useCosmeticPen(true);
+}
+
+void ZFlyEmBookmark::clear()
+{
+  m_bodyId = 0;
+  m_bookmarkType = TYPE_LOCATION;
+  m_isChecked = false;
+  m_isCustom = false;
+  m_userName.clear();
+  m_comment.clear();
+  m_status.clear();
+  m_time.clear();
 }
 
 void ZFlyEmBookmark::print() const
@@ -28,7 +45,7 @@ QString ZFlyEmBookmark::getDvidKey() const
       arg(iround(getCenter().x()));
 }
 
-ZJsonObject ZFlyEmBookmark::toJsonObject() const
+ZJsonObject ZFlyEmBookmark::toJsonObject(bool ignoringComment) const
 {
   ZJsonObject obj;
   obj.setEntry("body ID", m_bodyId);
@@ -46,18 +63,40 @@ ZJsonObject ZFlyEmBookmark::toJsonObject() const
   location[2] = m_location.getZ();
   */
   obj.setEntry("location", location, 3);
-
   obj.setEntry("checked", m_isChecked);
+  if (isCustom()) {
+    obj.setEntry("custom", isCustom());
+  }
 
+  std::string text;
   switch (m_bookmarkType) {
   case TYPE_FALSE_MERGE:
-    obj.setEntry("type", "false merge");
+    obj.setEntry("type", std::string("Split"));
+    text = "split";
+//    obj.setEntry("text", "split <username=" + m_userName.toStdString() + ">");
     break;
   case TYPE_FALSE_SPLIT:
-    obj.setEntry("type", "false split");
+    obj.setEntry("type", std::string("Merge"));
+    text = "merge";
+//    obj.setEntry("text", "merge <username=" + m_userName.toStdString() + ">");
     break;
   default:
+//    obj.setEntry("text", "other <username=" + m_userName.toStdString() + ">");
     break;
+  }
+
+  if (!m_userName.isEmpty()) {
+    text += " <username=" + m_userName.toStdString() + ">";
+  }
+
+  if (!text.empty()) {
+    obj.setEntry("text", text);
+  }
+
+  if (!ignoringComment) {
+    if (!m_comment.isEmpty()) {
+      obj.setEntry("comment", m_comment.toStdString());
+    }
   }
 
   return obj;
@@ -66,6 +105,7 @@ ZJsonObject ZFlyEmBookmark::toJsonObject() const
 void ZFlyEmBookmark::setCustom(bool state)
 {
   m_isCustom = state;
+  setHittable(state);
 }
 
 void ZFlyEmBookmark::display(
@@ -90,6 +130,60 @@ void ZFlyEmBookmark::display(
       }
     }
 //    }
+  }
+}
+
+void ZFlyEmBookmark::loadJsonObject(const ZJsonObject &jsonObj)
+{
+  clear();
+
+  if (jsonObj["location"] != NULL) {
+    std::vector<int> coordinates =
+        ZJsonParser::integerArray(jsonObj["location"]);
+
+    if (coordinates.size() == 3) {
+      setLocation(coordinates[0], coordinates[1], coordinates[2]);
+      uint64_t bodyId = ZJsonParser::integerValue(jsonObj["body ID"]);
+      setBodyId(bodyId);
+
+      ZString text = ZJsonParser::stringValue(jsonObj["text"]);
+      text.toLower();
+      text.trim();
+
+      ZString type = ZJsonParser::stringValue(jsonObj["type"]);
+      if (!type.empty()) {
+        if (type == "Merge") {
+          setBookmarkType(ZFlyEmBookmark::TYPE_FALSE_SPLIT);
+        } else if (type == "Split") {
+          setBookmarkType(ZFlyEmBookmark::TYPE_FALSE_MERGE);
+        }
+      } else {
+        if (text.startsWith("split") || text.startsWith("small split")) {
+          setBookmarkType(ZFlyEmBookmark::TYPE_FALSE_MERGE);
+        } else if (text.startsWith("merge")) {
+          setBookmarkType(ZFlyEmBookmark::TYPE_FALSE_SPLIT);
+        } else {
+          setBookmarkType(ZFlyEmBookmark::TYPE_LOCATION);
+        }
+      }
+
+      if (text.contains("<username=")) {
+        std::string::size_type pos = text.find_first_of("<username=");
+        std::string::size_type lastPos = text.find_first_of(">", pos);
+        setUser(text.substr(pos, lastPos - pos).c_str());
+      }
+
+      setComment(ZJsonParser::stringValue(jsonObj["comment"]));
+      setStatus(ZJsonParser::stringValue(jsonObj["status"]));
+
+      if (jsonObj.hasKey("checked")) {
+        setChecked(ZJsonParser::booleanValue(jsonObj["checked"]));
+      }
+
+      if (jsonObj.hasKey("custom")) {
+        setCustom(ZJsonParser::booleanValue(jsonObj["custom"]));
+      }
+    }
   }
 }
 

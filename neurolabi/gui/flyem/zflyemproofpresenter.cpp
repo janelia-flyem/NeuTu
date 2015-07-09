@@ -159,11 +159,14 @@ void ZFlyEmProofPresenter::addActiveStrokeAsBookmark()
   bookmark->setLocation(x, y, buddyView()->getZ(NeuTube::COORD_STACK));
   bookmark->setRadius(radius);
   bookmark->setCustom(true);
+  bookmark->setUser(NeuTube::GetUserName().c_str());
   ZFlyEmProofDoc *doc = dynamic_cast<ZFlyEmProofDoc*>(buddyDocument());
   if (doc != NULL) {
     bookmark->setBodyId(doc->getBodyId(bookmark->getLocation()));
   }
   buddyDocument()->executeAddObjectCommand(bookmark);
+
+  emit bookmarkAdded(bookmark);
 }
 
 void ZFlyEmProofPresenter::processCustomOperator(const ZStackOperator &op)
@@ -184,6 +187,9 @@ void ZFlyEmProofPresenter::processCustomOperator(const ZStackOperator &op)
     break;
   case ZStackOperator::OP_BOOKMARK_ADD_NEW:
     addActiveStrokeAsBookmark();
+    break;
+  case ZStackOperator::OP_BOOKMARK_ANNOTATE:
+    emit annotatingBookmark(op.getHitObject<ZFlyEmBookmark>());
     break;
   default:
     break;

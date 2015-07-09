@@ -31,6 +31,7 @@
 #include "flyem/zpaintlabelwidget.h"
 #include "zwidgetfactory.h"
 #include "flyem/zflyemcoordinateconverter.h"
+#include "flyem/zflyembookmarkannotationdialog.h"
 
 ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
   ZStackMvc(parent)
@@ -41,6 +42,11 @@ ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
 //  m_mergeProject.attachBookmarkArray(&m_bookmarkArray);
 
   qRegisterMetaType<ZDvidTarget>("ZDvidTarget");
+}
+
+ZFlyEmProofMvc::~ZFlyEmProofMvc()
+{
+  exitCurrentDoc();
 }
 
 ZFlyEmProofMvc* ZFlyEmProofMvc::Make(
@@ -121,6 +127,13 @@ void ZFlyEmProofMvc::clear()
   }
 }
 
+void ZFlyEmProofMvc::exitCurrentDoc()
+{
+  if (getCompleteDocument() != NULL) {
+    getCompleteDocument()->saveCustomBookmark();
+  }
+}
+
 void ZFlyEmProofMvc::setDvidTargetFromDialog()
 {
   getProgressSignal()->startProgress("Loading data ...");
@@ -130,7 +143,10 @@ void ZFlyEmProofMvc::setDvidTargetFromDialog()
 
 void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
 {
+  exitCurrentDoc();
+
   getProgressSignal()->startProgress("Loading data ...");
+
   if (getCompleteDocument() != NULL) {
 #if 1
 //    QByteArray geometry;
@@ -179,12 +195,17 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
     }
 
     getCompleteDocument()->downloadSynapse();
+    getCompleteDocument()->downloadBookmark();
     getProgressSignal()->advanceProgress(0.5);
 
 
     emit dvidTargetChanged(target);
   }
   getProgressSignal()->endProgress();
+
+  emit messageGenerated(ZWidgetMessage("Database loaded.",
+                                       NeuTube::MSG_INFORMATION,
+                                       ZWidgetMessage::TARGET_STATUS_BAR));
 }
 
 void ZFlyEmProofMvc::setDvidTarget()
@@ -230,7 +251,7 @@ void ZFlyEmProofMvc::customInit()
   connect(getPresenter(), SIGNAL(bodyAnnotationTriggered()),
           this, SLOT(annotateBody()));
   connect(getPresenter(), SIGNAL(bodyCheckinTriggered()),
-          this, SLOT(checkInBody()));
+          this, SLOT(checkInSelectedBody()));
   connect(getPresenter(), SIGNAL(bodyCheckoutTriggered()),
           this, SLOT(checkOutBody()));
   connect(getPresenter(), SIGNAL(objectVisibleTurnedOn()),
@@ -277,6 +298,8 @@ void ZFlyEmProofMvc::customInit()
           this->getView(), SLOT(setView(ZStackViewParam)));
   connect(&m_mergeProject, SIGNAL(dvidLabelChanged()),
           this->getCompleteDocument(), SLOT(updateDvidLabelObject()));
+  connect(&m_mergeProject, SIGNAL(checkingInBody(uint64_t)),
+          this, SLOT(checkInBody(uint64_t)));
   /*
   connect(&m_mergeProject, SIGNAL(messageGenerated(QString, bool)),
           this, SIGNAL(messageGenerated(QString,bool)));
@@ -297,6 +320,10 @@ void ZFlyEmProofMvc::customInit()
   connect(getCompletePresenter(), SIGNAL(deselectingAllBody()),
           this, SLOT(deselectAllBody()));
   connect(getCompletePresenter(), SIGNAL(runningSplit()), this, SLOT(runSplit()));
+  connect(getCompletePresenter(), SIGNAL(bookmarkAdded(ZFlyEmBookmark*)),
+          this, SLOT(annotateBookmark(ZFlyEmBookmark*)));
+  connect(getCompletePresenter(), SIGNAL(annotatingBookmark(ZFlyEmBookmark*)),
+          this, SLOT(annotateBookmark(ZFlyEmBookmark*)));
 //  connect(getCompletePresenter(), SIGNAL(goingToBody()), this, SLOT());
 
   disableSplit();
@@ -364,7 +391,7 @@ void ZFlyEmProofMvc::processSelectionChange(const ZStackObjectSelector &selector
     const ZFlyEmBookmark *bookmark = dynamic_cast<const ZFlyEmBookmark*>(obj);
     if (bookmark != NULL) {
       emit messageGenerated(
-            ZWidgetMessage(bookmark->toJsonObject().dumpString(0).c_str(),
+            ZWidgetMessage(bookmark->toJsonObject(true).dumpString(0).c_str(),
                            NeuTube::MSG_INFORMATION,
                            ZWidgetMessage::TARGET_STATUS_BAR));
     }
@@ -435,8 +462,27 @@ bool ZFlyEmProofMvc::checkOutBody(uint64_t bodyId)
   return true;
 }
 
-void ZFlyEmProofMvc::checkInBody()
+void ZFlyEmProofMvc::checkInSelectedBody()
 {
+  if (getSupervisor() != NULL) {
+    std::set<uint64_t> bodyIdArray =
+        getCurrentSelectedBodyId(NeuTube::BODY_LABEL_ORIGINAL);
+    for (std::set<uint64_t>::const_iterator iter = bodyIdArray.begin();
+         iter != bodyIdArray.end(); ++iter) {
+      uint64_t bodyId = *iter;
+      if (bodyId > 0) {
+        if (getSupervisor()->checkIn(bodyId)) {
+          emit messageGenerated(QString("Body %1 is unlocked.").arg(bodyId));
+        } else {
+          emit errorGenerated(QString("Failed to unlock body %1.").arg(bodyId));
+        }
+      }
+    }
+  } else {
+    emit messageGenerated(QString("Body lock service is not available."));
+  }
+
+#if 0
   std::set<uint64_t> bodyIdArray =
       getCurrentSelectedBodyId(NeuTube::BODY_LABEL_MAPPED);
   if (bodyIdArray.size() == 1) {
@@ -444,17 +490,36 @@ void ZFlyEmProofMvc::checkInBody()
     if (bodyId > 0) {
       if (getSupervisor() != NULL) {
         if (getSupervisor()->checkIn(bodyId)) {
-          emit messageGenerated(QString("Body %1 is checked in.").arg(bodyId));
+          emit messageGenerated(QString("Body %1 is unlocked.").arg(bodyId));
         } else {
           emit errorGenerated(QString("Failed to check in body %1.").arg(bodyId));
         }
       }
     }
   }
+#endif
 }
 
 void ZFlyEmProofMvc::checkOutBody()
 {
+  if (getSupervisor() != NULL) {
+    std::set<uint64_t> bodyIdArray =
+        getCurrentSelectedBodyId(NeuTube::BODY_LABEL_ORIGINAL);
+    for (std::set<uint64_t>::const_iterator iter = bodyIdArray.begin();
+         iter != bodyIdArray.end(); ++iter) {
+      uint64_t bodyId = *iter;
+      if (bodyId > 0) {
+        if (getSupervisor()->checkOut(bodyId)) {
+          emit messageGenerated(QString("Body %1 is locked.").arg(bodyId));
+        } else {
+          emit errorGenerated(QString("Failed to lock body %1.").arg(bodyId));
+        }
+      }
+    }
+  } else {
+    emit messageGenerated(QString("Body lock service is not available."));
+  }
+#if 0
   std::set<uint64_t> bodyIdArray =
       getCurrentSelectedBodyId(NeuTube::BODY_LABEL_MAPPED);
   if (bodyIdArray.size() == 1) {
@@ -462,19 +527,20 @@ void ZFlyEmProofMvc::checkOutBody()
     if (bodyId > 0) {
       if (getSupervisor() != NULL) {
         if (getSupervisor()->checkOut(bodyId)) {
-          emit messageGenerated(QString("Body %1 is checked out.").arg(bodyId));
+          emit messageGenerated(QString("Body %1 is locked.").arg(bodyId));
         } else {
           emit errorGenerated(QString("Failed to check out body %1.").arg(bodyId));
         }
       }
     }
   }
+#endif
 }
 
 void ZFlyEmProofMvc::annotateBody()
 {
   std::set<uint64_t> bodyIdArray =
-      getCurrentSelectedBodyId(NeuTube::BODY_LABEL_MAPPED);
+      getCurrentSelectedBodyId(NeuTube::BODY_LABEL_ORIGINAL);
   if (bodyIdArray.size() == 1) {
     uint64_t bodyId = *(bodyIdArray.begin());
     if (bodyId > 0) {
@@ -503,18 +569,30 @@ void ZFlyEmProofMvc::annotateBody()
           }
         }
       } else {
-        ZWidgetMessage message(
-                    QString("Failed to start annotatation because "
-                            "%1 has been locked by someone else.").arg(bodyId),
-                    NeuTube::MSG_ERROR);
-              emit messageGenerated(message);
+        std::string owner = getSupervisor()->getOwner(bodyId);
+        if (owner.empty()) {
+          owner = "unknown user";
+        }
+        emit messageGenerated(
+              ZWidgetMessage(
+                QString("Failed to start annotation. %1 has been locked by %2").
+                arg(bodyId).arg(owner.c_str()), NeuTube::MSG_ERROR));
       }
     } else {
-      qDebug() << "Unexpected 0 body ID";
+      qDebug() << "Unexpected body ID: 0";
     }
   } else {
-    emit messageGenerated("The annotation cannot be done because "
-                          "one and only one body has to be selected.");
+    QString msg;
+    if (getCurrentSelectedBodyId(NeuTube::BODY_LABEL_MAPPED).size() == 1) {
+      msg = "The annotation cannot be done because "
+          "the merged body has not be uploaded.";
+    } else {
+      msg = "The annotation cannot be done because "
+          "one and only one body has to be selected.";
+    }
+    if (!msg.isEmpty()) {
+      emit messageGenerated(ZWidgetMessage(msg, NeuTube::MSG_WARING));
+    }
   }
 
 
@@ -533,8 +611,15 @@ void ZFlyEmProofMvc::notifySplitTriggered()
 
     emit launchingSplit(bodyId);
   } else {
-    emit messageGenerated("The split cannot be launched because "
-                          "one and only one body has to be selected.");
+    QString msg;
+    if (getCurrentSelectedBodyId(NeuTube::BODY_LABEL_MAPPED).size() == 1) {
+      msg = "The split cannot be launched because "
+          "the merged body has not been uploaded.";
+    } else {
+      msg = "The split cannot be launched because "
+          "one and only one body has to be selected.";
+    }
+    emit messageGenerated(ZWidgetMessage(msg, NeuTube::MSG_WARING));
   }
 
   /*
@@ -668,11 +753,14 @@ void ZFlyEmProofMvc::launchSplit(uint64_t bodyId)
         m_futureMap[threadId] = future;
       }
     } else {
-      ZWidgetMessage message(
-            QString("Failed to launch split because the body "
-                    "%1 has been locked by someone else.").arg(bodyId),
-            NeuTube::MSG_ERROR);
-      emit messageGenerated(message);
+      std::string owner = getSupervisor()->getOwner(bodyId);
+      if (owner.empty()) {
+        owner = "unknown user";
+      }
+      emit messageGenerated(
+            ZWidgetMessage(
+              QString("Failed to launch split. %1 has been locked by %2").
+              arg(bodyId).arg(owner.c_str()), NeuTube::MSG_ERROR));
     }
   }
 }
@@ -688,12 +776,14 @@ void ZFlyEmProofMvc::exitSplit()
 
     labelSlice->setHittable(true);
 
-    m_splitProject.clearBookmarkDecoration();
+    //m_splitProject.clearBookmarkDecoration();
     getDocument()->removeObject(ZStackObjectRole::ROLE_SEED);
     getDocument()->removeObject(ZStackObjectRole::ROLE_TMP_RESULT);
-    getDocument()->removeObject(ZStackObjectRole::ROLE_TMP_BOOKMARK);
+//    getDocument()->removeObject(ZStackObjectRole::ROLE_TMP_BOOKMARK);
 
     getDocument()->setVisible(ZStackObject::TYPE_DVID_SPARSE_STACK, false);
+
+    checkInBody(m_splitProject.getBodyId());
 //    getDocument()->setVisible(ZStackObject::TYPE_PUNCTA, false);
 
 
@@ -881,15 +971,17 @@ void ZFlyEmProofMvc::syncDvidBookmark()
         getDocument()->getObjectList(ZStackObject::TYPE_FLYEM_BOOKMARK);
     for (TStackObjectList::iterator iter = objList.begin();
          iter != objList.end(); ++iter) {
-      ZFlyEmBookmark *bookmark = dynamic_cast<ZFlyEmBookmark*>(*iter);
-      const QByteArray &bookmarkData =
-          reader.readKeyValue(ZDvidData::GetName(
-                                ZDvidData::ROLE_BOOKMARK), bookmark->getDvidKey());
-      if (!bookmarkData.isEmpty()) {
-        ZJsonObject obj;
-        obj.decodeString(bookmarkData.data());
-        if (obj.hasKey("checked")) {
-          bookmark->setChecked(ZJsonParser::booleanValue(obj["checked"]));
+      ZStackObject *obj = *iter;
+      ZFlyEmBookmark *bookmark = dynamic_cast<ZFlyEmBookmark*>(obj);
+      if (bookmark != NULL) {
+        const QByteArray &bookmarkData = reader.readKeyValue(
+              ZDvidData::GetName(ZDvidData::ROLE_BOOKMARK), bookmark->getDvidKey());
+        if (!bookmarkData.isEmpty()) {
+          ZJsonObject obj;
+          obj.decodeString(bookmarkData.data());
+          if (obj.hasKey("checked")) {
+            bookmark->setChecked(ZJsonParser::booleanValue(obj["checked"]));
+          }
         }
       }
     }
@@ -1183,6 +1275,17 @@ ZFlyEmSupervisor* ZFlyEmProofMvc::getSupervisor() const
   }
 
   return NULL;
+}
+
+void ZFlyEmProofMvc::annotateBookmark(ZFlyEmBookmark *bookmark)
+{
+  if (bookmark != NULL) {
+    ZFlyEmBookmarkAnnotationDialog dlg(this);
+    dlg.setFrom(bookmark);
+    if (dlg.exec()) {
+      dlg.annotate(bookmark);
+    }
+  }
 }
 
 //void ZFlyEmProofMvc::toggleEdgeMode(bool edgeOn)

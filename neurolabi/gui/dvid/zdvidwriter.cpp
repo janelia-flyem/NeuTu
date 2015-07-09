@@ -16,6 +16,7 @@
 #include "zerror.h"
 #include "zjsonfactory.h"
 #include "flyem/zflyembookmark.h"
+#include "neutube.h"
 
 #if _ENABLE_LIBDVID_
 #include "DVIDNode.h"
@@ -654,4 +655,10 @@ void ZDvidWriter::writeBookmark(const ZFlyEmBookmark &bookmark)
   writeJsonString(ZDvidData::GetName(ZDvidData::ROLE_BOOKMARK),
                   bookmark.getDvidKey().toStdString(),
                   bookmark.toJsonObject().dumpString(0));
+}
+
+void ZDvidWriter::writeCustomBookmark(const ZJsonValue &bookmarkJson)
+{
+  writeJson(ZDvidData::GetName(ZDvidData::ROLE_BOOKMARK),
+            NeuTube::GetUserName(), bookmarkJson);
 }
