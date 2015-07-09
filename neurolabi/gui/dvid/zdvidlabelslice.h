@@ -24,6 +24,8 @@ public:
   void update(int z);
   void update();
 
+  void updateFullView(const ZStackViewParam &viewParam);
+
   void display(ZPainter &painter, int slice, EDisplayStyle option) const;
 
   const std::string& className() const;
@@ -95,10 +97,11 @@ public:
 
   void mapSelection();
 
+  void forceUpdate();
+
 private:
   inline const ZDvidTarget& getDvidTarget() const { return m_dvidTarget; }
   void assignColorMap();
-//  void forceUpdate();
   void forceUpdate(const ZStackViewParam &viewParam);
   //void updateLabel(const ZFlyEmBodyMerger &merger);
   void init(int maxWidth, int maxHeight);

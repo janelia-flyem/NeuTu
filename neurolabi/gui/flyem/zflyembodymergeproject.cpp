@@ -37,11 +37,12 @@
 #include "zprogresssignal.h"
 #include "zdialogfactory.h"
 #include "flyem/zflyembookmark.h"
+#include "zsleeper.h"
 
 ZFlyEmBodyMergeProject::ZFlyEmBodyMergeProject(QObject *parent) :
   QObject(parent), m_dataFrame(NULL), m_bodyWindow(NULL),
   m_isBookmarkVisible(true),
-  m_bookmarkArray(NULL),
+//  m_bookmarkArray(NULL),
   m_showingBodyMask(true)
 {
   m_progressSignal = new ZProgressSignal(this);
@@ -397,6 +398,29 @@ void ZFlyEmBodyMergeProject::clearBodyMerger()
   }
 }
 
+void ZFlyEmBodyMergeProject::mergeBodyAnnotation(
+    int targetId, const std::vector<int> &bodyId)
+{
+  ZDvidReader reader;
+  if (reader.open(getDvidTarget())) {
+    ZFlyEmBodyAnnotation annotation = reader.readBodyAnnotation(targetId);
+    for (std::vector<int>::const_iterator iter = bodyId.begin();
+         iter != bodyId.end(); ++iter) {
+      if (*iter != targetId) {
+        ZFlyEmBodyAnnotation subann = reader.readBodyAnnotation(*iter);
+        annotation.mergeAnnotation(subann);
+      }
+    }
+
+    if (!annotation.isEmpty()) {
+      ZDvidWriter writer;
+      if (writer.open(getDvidTarget())) {
+        writer.writeBodyAnntation(annotation);
+      }
+    }
+  }
+}
+
 void ZFlyEmBodyMergeProject::uploadResultFunc()
 {
   ZFlyEmBodyMerger *bodyMerger = getBodyMerger();
@@ -421,10 +445,15 @@ void ZFlyEmBodyMergeProject::uploadResultFunc()
           }
         }
 
+        const std::set<uint64_t> &bodySet =
+            getSelection(NeuTube::BODY_LABEL_ORIGINAL);
+
         foreach (int targetId, mergeMap.keys()) {
           dvidWriter.mergeBody(
                 m_dvidTarget.getBodyLabelName(),
                 targetId, mergeMap.value(targetId));
+          mergeBodyAnnotation(targetId, mergeMap.value(targetId));
+
           if (dvidWriter.getStatusCode() != 200) {
             emit messageGenerated(
                   ZWidgetMessage(
@@ -437,7 +466,17 @@ void ZFlyEmBodyMergeProject::uploadResultFunc()
           }
         }
 
+        for (std::set<uint64_t>::const_iterator iter = bodySet.begin();
+             iter != bodySet.end(); ++iter) {
+          emit checkingInBody(*iter);
+        }
+
+        getProgressSignal()->advanceProgress(0.1);
+
         clearBodyMerger();
+
+//        ZSleeper::msleep(10000);
+
         emit dvidLabelChanged();
 //        bodyMerger->clear();
         saveMergeOperation();
@@ -1010,8 +1049,10 @@ std::set<uint64_t> ZFlyEmBodyMergeProject::getSelection(
   return idSet;
 }
 
-void ZFlyEmBodyMergeProject::notifySelected() const
+void ZFlyEmBodyMergeProject::notifySelected()
 {
+  emit messageGenerated(ZWidgetMessage(getSelectionMessage()));
+  /*
   QString msg;
   for (QSet<uint64_t>::const_iterator iter = m_selectedOriginal.begin();
        iter != m_selectedOriginal.end(); ++iter) {
@@ -1023,6 +1064,7 @@ void ZFlyEmBodyMergeProject::notifySelected() const
   } else {
     msg += " selected.";
   }
+  */
 }
 
 void ZFlyEmBodyMergeProject::addSelection(
@@ -1060,10 +1102,46 @@ void ZFlyEmBodyMergeProject::setSelection(
     break;
   }
 
+//  QString msg;
+//  for (QSet<uint64_t>::const_iterator iter = m_selectedOriginal.begin();
+//       iter != m_selectedOriginal.end(); ++iter) {
+//    msg += QString("%1 ").arg(*iter);
+//  }
+
+//  if (msg.isEmpty()) {
+//    msg = "No body selected.";
+//  } else {
+//    msg += " selected.";
+//  }
+
+  emit messageGenerated(ZWidgetMessage(getSelectionMessage()));
+//  emitMessage(msg);
+
+//  emit messageGenerated(msg);
+}
+
+QString ZFlyEmBodyMergeProject::getSelectionMessage() const
+{
   QString msg;
-  for (QSet<uint64_t>::const_iterator iter = m_selectedOriginal.begin();
-       iter != m_selectedOriginal.end(); ++iter) {
-    msg += QString("%1 ").arg(*iter);
+
+  const std::set<uint64_t> &selected = getSelection(NeuTube::BODY_LABEL_MAPPED);
+
+  for (std::set<uint64_t>::const_iterator iter = selected.begin();
+       iter != selected.end(); ++iter) {
+    uint64_t bodyId = *iter;
+    msg += QString("%1 ").arg(bodyId);
+    const QSet<uint64_t> &originalBodySet =
+        getBodyMerger()->getOriginalLabelSet(bodyId);
+    if (originalBodySet.size() > 1) {
+      msg += "<font color=#888888>(";
+      for (QSet<uint64_t>::const_iterator iter = originalBodySet.begin();
+           iter != originalBodySet.end(); ++iter) {
+        if (selected.count(*iter) == 0) {
+          msg += QString("_%1").arg(*iter);
+        }
+      }
+      msg += ")</font> ";
+    }
   }
 
   if (msg.isEmpty()) {
@@ -1072,10 +1150,7 @@ void ZFlyEmBodyMergeProject::setSelection(
     msg += " selected.";
   }
 
-  emit messageGenerated(ZWidgetMessage(msg));
-//  emitMessage(msg);
-
-//  emit messageGenerated(msg);
+  return msg;
 }
 
 void ZFlyEmBodyMergeProject::emitMessage(const QString msg, bool appending)
@@ -1282,14 +1357,14 @@ void ZFlyEmBodyMergeProject::updateBookmarkDecoration(
   if (getDocument() != NULL) {
     ZFlyEmBookmarkArray filteredBookmarkArray;
     foreach (ZFlyEmBookmark bookmark, bookmarkArray) {
-      if (bookmark.getType() != ZFlyEmBookmark::TYPE_FALSE_MERGE) {
+      if (bookmark.getBookmarkType() != ZFlyEmBookmark::TYPE_FALSE_MERGE) {
         filteredBookmarkArray.append(bookmark);
       }
     }
     addBookmarkDecoration(filteredBookmarkArray);
   }
 }
-
+#if 0
 void ZFlyEmBodyMergeProject::attachBookmarkArray(ZFlyEmBookmarkArray *bookmarkArray)
 {
   m_bookmarkArray = bookmarkArray;
@@ -1305,7 +1380,7 @@ void ZFlyEmBodyMergeProject::updateBookmarkDecoration()
     for (ZFlyEmBookmarkArray::const_iterator iter = m_bookmarkArray->begin();
          iter != m_bookmarkArray->end(); ++iter) {
       const ZFlyEmBookmark &bookmark = *iter;
-      if (bookmark.getType() == ZFlyEmBookmark::TYPE_FALSE_SPLIT) {
+      if (bookmark.getBookmarkType() == ZFlyEmBookmark::TYPE_FALSE_SPLIT) {
         bookmarkArray.append(bookmark);
       }
     }
@@ -1313,7 +1388,7 @@ void ZFlyEmBodyMergeProject::updateBookmarkDecoration()
     addBookmarkDecoration(bookmarkArray);
   }
 }
-
+#endif
 void ZFlyEmBodyMergeProject::setBookmarkVisible(bool visible)
 {
   m_isBookmarkVisible = visible;

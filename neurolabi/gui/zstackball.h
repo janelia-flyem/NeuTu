@@ -6,6 +6,7 @@
 #include "include/tz_stdint.h"
 #include "zpoint.h"
 #include "zstackobject.h"
+#include "neutube_def.h"
 
 class ZIntPoint;
 
@@ -44,6 +45,7 @@ public:
 
   virtual const std::string& className() const;
 
+#if 0
   typedef uint32_t TVisualEffect;
 
   const static TVisualEffect VE_NONE;
@@ -55,6 +57,8 @@ public:
   const static TVisualEffect VE_OUT_FOCUS_DIM;
   const static TVisualEffect VE_DOT_CENTER;
   const static TVisualEffect VE_RECTANGLE_SHAPE;
+#endif
+
 
 public:
   virtual void display(ZPainter &painter, int slice,
@@ -74,7 +78,8 @@ public:
   static bool isCuttingPlane(double z, double r, double n, double zScale = 1.0);
   bool isCuttingPlane(double n, double zScale = 1.0) const;
 
-  inline void setVisualEffect(TVisualEffect effect) {
+#if 0
+  inline void setVisualEffect(NeuTube::Display::TVisualEffect effect) {
     m_visualEffect = effect;
   }
 
@@ -83,8 +88,9 @@ public:
   }
 
   inline bool hasVisualEffect(TVisualEffect effect) const {
-    return (effect & m_visualEffect) > 0;
+    return effect & m_visualEffect;
   }
+#endif
 
   void translate(double dx, double dy, double dz);
   void translate(const ZPoint &offset);
@@ -101,6 +107,6 @@ private:
 private:
   ZPoint m_center;
   double m_r;
-  TVisualEffect m_visualEffect;
+//  TVisualEffect m_visualEffect;
 };
 #endif // ZSTACKBALL_H

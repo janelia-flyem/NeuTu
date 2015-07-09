@@ -97,14 +97,14 @@ public:
 
   ZProgressSignal* getProgressSignal() const;
 
-  void notifySelected() const;
+  void notifySelected();
 
   void updateBookmarkDecoration(const ZFlyEmBookmarkArray &bookmarkArray);
   void clearBookmarkDecoration();
   void addBookmarkDecoration(const ZFlyEmBookmarkArray &bookmarkArray);
 
-  void attachBookmarkArray(ZFlyEmBookmarkArray *bookmarkArray);
-  ZFlyEmBookmarkArray* getBookmarkArray() const { return m_bookmarkArray; }
+//  void attachBookmarkArray(ZFlyEmBookmarkArray *bookmarkArray);
+//  ZFlyEmBookmarkArray* getBookmarkArray() const { return m_bookmarkArray; }
 
   void updateBookmarkDecoration();
 
@@ -120,11 +120,12 @@ signals:
   void selectionChanged(ZStackObjectSelector selector);
   void selectionChanged();
   void bodyMerged(QList<uint64_t> objLabelList);
-  void splitSent(ZDvidTarget target, int bodyId);
+  void splitSent(ZDvidTarget target, uint64_t bodyId);
   void locating2DViewTriggered(ZStackViewParam);
   void dvidLabelChanged();
   void messageGenerated(const ZWidgetMessage&);
   void coarseBodyWindowCreatedInThread();
+  void checkingInBody(uint64_t bodyId);
 
   /*
   void messageGenerated(QString, bool appending = true);
@@ -159,6 +160,11 @@ private:
   void uploadResultFunc();
   void make3DBodyWindow(ZStackDoc *doc);
   void connectSignalSlot();
+
+  QString getSelectionMessage() const;
+
+  void mergeBodyAnnotation(int targetId, const std::vector<int> &bodyId);
+
   //void updateSelection();
 
 private:
@@ -171,7 +177,7 @@ private:
 //  std::vector<ZStackObject*> m_bookmarkDecoration;
   bool m_isBookmarkVisible;
 
-  ZFlyEmBookmarkArray *m_bookmarkArray; //aggregation
+//  ZFlyEmBookmarkArray *m_bookmarkArray; //aggregation
 
 //  Z3DWindow *m_resultWindow;
 //  Z3DWindow *m_quickViewWindow;

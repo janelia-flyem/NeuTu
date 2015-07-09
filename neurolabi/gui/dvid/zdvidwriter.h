@@ -96,6 +96,7 @@ public:
                            */
 
   void writeBookmark(const ZFlyEmBookmark &bookmark);
+  void writeCustomBookmark(const ZJsonValue &bookmarkJson);
 
   inline int getStatusCode() const {
     return m_statusCode;

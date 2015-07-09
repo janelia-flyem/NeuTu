@@ -41,6 +41,9 @@ public:
   explicit ZStackPresenter(ZStackFrame *parent = 0);
   explicit ZStackPresenter(QWidget *parent = 0);
   ~ZStackPresenter();
+
+  static ZStackPresenter* Make(QWidget *parent);
+
   ZStackDoc* buddyDocument() const;
   ZStackView* buddyView() const;
   ZSharedPointer<ZStackDoc> getSharedBuddyDocument() const;
@@ -272,6 +275,7 @@ public slots:
   void enterDrawRectMode(double x, double y);
   void tryDrawRectMode();
   void exitRectEdit();
+  void exitBookmarkEdit();
 
   void selectDownstreamNode();
   void selectSwcNodeConnection(Swc_Tree_Node *lastSelected = NULL);
@@ -315,7 +319,7 @@ signals:
   void labelSliceSelectionChanged();
   void objectVisibleTurnedOn();
 
-private:
+protected:
   void init();
 
   EMouseEventProcessStatus processMouseReleaseForPuncta(
@@ -425,7 +429,7 @@ protected:
   ZKeyOperationMap m_swcKeyOperationMap;
   ZKeyOperationMap m_stackKeyOperationMap;
 
-  ZKeyEventSwcMapper m_swcKeyMapper;
+//  ZKeyEventSwcMapper m_swcKeyMapper;
   //ZMouseEventLeftButtonReleaseMapper m_leftButtonReleaseMapper;
   //ZMouseEventMoveMapper m_moveMapper;
 

@@ -9,6 +9,7 @@
 
 class ZDvidSparseStack;
 class ZFlyEmSupervisor;
+class ZFlyEmBookmark;
 
 class ZFlyEmProofDoc : public ZStackDoc
 {
@@ -58,6 +59,20 @@ public:
   QList<uint64_t> getMergedSource(uint64_t bodyId) const;
   QSet<uint64_t> getMergedSource(const QSet<uint64_t> &bodySet) const;
 
+  void importFlyEmBookmark(const std::string &filePath);
+  ZFlyEmBookmark* findFirstBookmark(const QString &key) const;
+
+  /*!
+   * \brief Get body ID at a certain location
+   *
+   * \return The body ID mapped by merge operations.
+   */
+  uint64_t getBodyId(int x, int y, int z);
+  uint64_t getBodyId(const ZIntPoint &pt);
+
+  void saveCustomBookmark();
+  void downloadBookmark();
+
 public:
   void notifyBodyMerged();
   void notifyBodyUnmerged();
@@ -70,6 +85,9 @@ public slots:
   void updateDvidLabelObject();
   void loadSynapse(const std::string &filePath);
   void downloadSynapse();
+
+protected:
+  void autoSave();
 
 private:
   ZFlyEmBodyMerger m_bodyMerger;

@@ -1,6 +1,8 @@
 #ifndef NEUTUBE_DEF_H
 #define NEUTUBE_DEF_H
 
+#include "tz_stdint.h"
+
 namespace NeuTube {
 enum EDocumentableType {
   Documentable_SWC, Documentable_PUNCTUM, Documentable_OBJ3D,
@@ -52,6 +54,32 @@ enum EBodyLabelType {
 enum ETraverseDirection {
   TRAVERSE_FORWARD, TRAVERSE_BACKWARD
 };
+
+namespace Display {
+typedef uint32_t TVisualEffect;
+static const TVisualEffect VE_NONE = 0;
+
+namespace Image {
+static const TVisualEffect VE_HIGH_CONTRAST = 1;
+}
+
+namespace Sphere {
+static const TVisualEffect VE_DASH_PATTERN = 1;
+static const TVisualEffect VE_BOUND_BOX = 2;
+static const TVisualEffect VE_NO_CIRCLE = 4;
+static const TVisualEffect VE_NO_FILL = 8;
+static const TVisualEffect VE_GRADIENT_FILL = 16;
+static const TVisualEffect VE_OUT_FOCUS_DIM = 32;
+static const TVisualEffect VE_DOT_CENTER = 64;
+static const TVisualEffect VE_RECTANGLE_SHAPE = 128;
+}
+
+namespace SwcTree {
+static const TVisualEffect VE_FULL_SKELETON = 1;
+}
+
+}
+
 }
 
 

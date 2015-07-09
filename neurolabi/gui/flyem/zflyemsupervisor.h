@@ -14,6 +14,8 @@ public:
   bool checkIn(uint64_t bodyId);
   bool checkOut(uint64_t bodyId);
 
+  std::string getOwner(uint64_t bodyId) const;
+
   void setDvidTarget(const ZDvidTarget &target);
   const ZDvidTarget& getDvidTarget() const;
 

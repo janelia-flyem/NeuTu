@@ -57,11 +57,11 @@ void ZFlyEmBookmarkArray::importJsonFile(
           bookmark.setLocation(iround(x), iround(y), iround(z));
           bookmark.setBodyId(bodyId);
           if (text.startsWith("split") || text.startsWith("small split")) {
-            bookmark.setType(ZFlyEmBookmark::TYPE_FALSE_MERGE);
+            bookmark.setBookmarkType(ZFlyEmBookmark::TYPE_FALSE_MERGE);
           } else if (text.startsWith("merge")) {
-            bookmark.setType(ZFlyEmBookmark::TYPE_FALSE_SPLIT);
+            bookmark.setBookmarkType(ZFlyEmBookmark::TYPE_FALSE_SPLIT);
           } else {
-            bookmark.setType(ZFlyEmBookmark::TYPE_LOCATION);
+            bookmark.setBookmarkType(ZFlyEmBookmark::TYPE_LOCATION);
           }
           append(bookmark);
         }
@@ -93,13 +93,13 @@ ZFlyEmBookmarkArray ZFlyEmBookmarkArray::getBookmarkArray(uint64_t bodyId)
   return bookmarkArray;
 }
 
-ZFlyEmBookmarkArray ZFlyEmBookmarkArray::getBookmarkArray(ZFlyEmBookmark::EType type)
+ZFlyEmBookmarkArray ZFlyEmBookmarkArray::getBookmarkArray(ZFlyEmBookmark::EBookmarkType type)
 {
   ZFlyEmBookmarkArray bookmarkArray;
   for (ZFlyEmBookmarkArray::const_iterator iter = begin(); iter != end();
        ++iter) {
     const ZFlyEmBookmark &bookmark = *iter;
-    if (bookmark.getType() == type) {
+    if (bookmark.getBookmarkType() == type) {
       bookmarkArray.append(bookmark);
     }
   }
@@ -130,6 +130,8 @@ QVector<ZPunctum*> ZFlyEmBookmarkArray::toPunctumArray(bool isVisible) const
 
 ZFlyEmBookmark* ZFlyEmBookmarkArray::findFirstBookmark(const QString &key) const
 {
+  return findFirstBookmark(begin(), end(), key);
+#if 0
   ZFlyEmBookmark* out = NULL;
   for (ZFlyEmBookmarkArray::const_iterator iter = begin();
        iter != end(); ++iter) {
@@ -141,4 +143,5 @@ ZFlyEmBookmark* ZFlyEmBookmarkArray::findFirstBookmark(const QString &key) const
   }
 
   return out;
+#endif
 }

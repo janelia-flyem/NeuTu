@@ -17,6 +17,6 @@ ZFlyEmProjectManager::ZFlyEmProjectManager(QObject *parent) :
 
 void ZFlyEmProjectManager::connectSignalSlot()
 {
-  connect(m_mergeDlg->getProject(), SIGNAL(splitSent(ZDvidTarget,int)),
-          m_splitDlg, SLOT(startSplit(ZDvidTarget,int)));
+  connect(m_mergeDlg->getProject(), SIGNAL(splitSent(ZDvidTarget,uint64_t)),
+          m_splitDlg, SLOT(startSplit(ZDvidTarget,uint64_t)));
 }

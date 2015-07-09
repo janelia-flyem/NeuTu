@@ -24,6 +24,7 @@ void ZDvidLabelSlice::init(int maxWidth, int maxHeight)
   m_objColorSheme.setColorScheme(ZColorScheme::CONV_RANDOM_COLOR);
   m_hitLabel = -1;
   m_bodyMerger = NULL;
+  setZOrder(0);
 
   m_maxWidth = maxWidth;
   m_maxHeight = maxHeight;
@@ -56,12 +57,12 @@ void ZDvidLabelSlice::update()
   }
 }
 
-/*
+
 void ZDvidLabelSlice::forceUpdate()
 {
   forceUpdate(m_currentViewParam);
 }
-*/
+
 
 void ZDvidLabelSlice::forceUpdate(const ZStackViewParam &viewParam)
 {
@@ -102,6 +103,13 @@ void ZDvidLabelSlice::update(int z)
   viewParam.setZ(z);
 
   update(viewParam);
+}
+
+void ZDvidLabelSlice::updateFullView(const ZStackViewParam &viewParam)
+{
+  forceUpdate(viewParam);
+
+  m_currentViewParam = viewParam;
 }
 
 void ZDvidLabelSlice::update(const ZStackViewParam &viewParam)
