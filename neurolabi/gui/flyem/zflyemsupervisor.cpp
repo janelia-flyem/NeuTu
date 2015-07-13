@@ -25,6 +25,11 @@ const ZDvidTarget& ZFlyEmSupervisor::getDvidTarget() const
   return m_dvidTarget;
 }
 
+void ZFlyEmSupervisor::setUserName(const std::string userName)
+{
+  m_userName = userName;
+}
+
 bool ZFlyEmSupervisor::checkIn(uint64_t bodyId)
 {
   ZDvidWriter writer;
