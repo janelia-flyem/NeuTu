@@ -17,9 +17,11 @@ FlyEmProofControlForm::FlyEmProofControlForm(QWidget *parent) :
   ui->setupUi(this);
   setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Expanding);
 
+  /*
   connect(ui->segmentCheckBox, SIGNAL(clicked(bool)),
           this, SIGNAL(segmentVisibleChanged(bool)));
   ui->segmentCheckBox->hide();
+  */
   connect(ui->mergeSegmentPushButton, SIGNAL(clicked()),
           this, SIGNAL(mergingSelected()));
   connect(ui->dvidPushButton, SIGNAL(clicked()),
@@ -35,6 +37,8 @@ FlyEmProofControlForm::FlyEmProofControlForm(QWidget *parent) :
 
   ui->segmentSizePushButton->hide();
   ui->segmentSizeDecPushButton->setEnabled(false);
+
+  ui->bodyViewPushButton->hide();
 
 
   connect(ui->segmentSizeIncPushButton, SIGNAL(clicked()),
