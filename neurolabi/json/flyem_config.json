@@ -448,6 +448,16 @@
       "body_label": "bodies",
       "label_block": "labels",
       "user_name": ["shinomiyak", "takemuras", "zhaot"]
+    },
+    {
+      "address": "emdata1.int.janelia.org",
+      "port": 8500,
+      "uuid": "ee7dc",
+      "name": "MB_Orphan_Link",
+      "comment": "production orphan link before extended segmentation",
+      "body_label": "bodies",
+      "label_block": "labels",
+      "user_name": ["anicetor", "changl", "lauchies", "ogundeyio", "ordishc", "sigmundc", "shinomiyaa", "tranj", "rivlinp", "takemurasa", "zhaot"]
     }
   ]
 }

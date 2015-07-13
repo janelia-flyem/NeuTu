@@ -16607,6 +16607,30 @@ void ZTest::test(MainWindow *host)
   ptoc();
 #endif
 
+
+#if 1
+  ZImage image(10000, 10000);
+  int height = image.height();
+  int width = image.width();
+
+  uint8_t *data = new uint8_t[10000*10000];
+  int index = 0;
+  tic();
+  for (int y = 0; y < height; ++y) {
+    for (int x = 0; x < width; ++x) {
+      data[index++] = 0;
+    }
+  }
+  ptoc();
+
+  image.setData(data);
+
+  ZPixmap pixmap(10000, 10000);
+  tic();
+  pixmap.fromImage(image);
+  ptoc();
+#endif
+
 #if 0
 //  tic();
   ZPixmap pixmap(QSize(10000, 10000));
