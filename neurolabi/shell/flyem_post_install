@@ -10,5 +10,9 @@ neutube_dir=$1
 build_dir=$2
 
 cp -r $neutube_dir/neurolabi/gui/doc $build_dir/
+if [ $HOSTNAME = emrecon13 ]
+then
+  cp $neutube_dir/neurolabi/gui/config_flyem_3dfix.xml $neutube_dir/neurolabi/build/config.xml
+fi
 
  
