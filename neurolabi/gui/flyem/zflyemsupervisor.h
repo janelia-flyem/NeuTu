@@ -23,6 +23,8 @@ public:
     return m_userName;
   }
 
+  void setUserName(const std::string userName);
+
   enum EBodyStatus {
     BODY_CHECKED_OUT, BODY_FREE, BODY_UNKNOWN
   };

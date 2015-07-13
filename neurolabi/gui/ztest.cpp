@@ -16608,7 +16608,7 @@ void ZTest::test(MainWindow *host)
 #endif
 
 
-#if 1
+#if 0
   ZImage image(10000, 10000);
   int height = image.height();
   int width = image.width();
@@ -17208,7 +17208,7 @@ void ZTest::test(MainWindow *host)
   ZObject3dScan wholeObj =reader.readBody(13707636);
 //  wholeObj.save(dataDir + "/13707636_s.sobj");
 
-#if 1
+#  if 1
   ZDvidWriter writer;
   writer.open(target2);
 
@@ -17248,6 +17248,30 @@ void ZTest::test(MainWindow *host)
   } else {
     std::cout << "Failed to open " << target.getSourceString() << std::endl;
   }
+#  endif
 #endif
+
+#if 1
+  ZDvidBufferReader reader;
+  reader.read("http://emdata2.int.janelia.org:9100/state/ee7dc");
+  const QByteArray &buffer = reader.getBuffer();
+
+  ZJsonArray array;
+  array.decodeString(buffer.data());
+
+  array.print();
+
+  ZFlyEmSupervisor supervisor;
+  supervisor.setDvidTarget(ZDvidTarget("emdata1.int.janelia.org", "ee7dc", 8500));
+  supervisor.setUserName("changl");
+
+
+  for (size_t i = 0; i < array.size(); ++i) {
+    ZJsonObject obj(array.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
+    if (eqstr(ZJsonParser::stringValue(obj["Client"]), "changl")) {
+      std::cout << ZJsonParser::integerValue(obj["Label"]) << std::endl;
+      supervisor.checkIn(ZJsonParser::integerValue(obj["Label"]));
+    }
+  }
 #endif
 }

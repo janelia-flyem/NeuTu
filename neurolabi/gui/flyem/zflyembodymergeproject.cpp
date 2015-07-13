@@ -466,6 +466,14 @@ void ZFlyEmBodyMergeProject::uploadResultFunc()
           }
         }
 
+        std::set<uint64_t> selectionSet =
+            getSelection(NeuTube::BODY_LABEL_MAPPED);
+        m_selectedOriginal.clear();
+        for (std::set<uint64_t>::const_iterator iter = selectionSet.begin();
+             iter != selectionSet.end(); ++iter) {
+          m_selectedOriginal.insert(*iter);
+        }
+
         for (std::set<uint64_t>::const_iterator iter = bodySet.begin();
              iter != bodySet.end(); ++iter) {
           emit checkingInBody(*iter);

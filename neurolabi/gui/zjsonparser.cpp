@@ -205,6 +205,8 @@ void ZJsonParser::print(const char *key, json_t *object, int indent)
     cout << stringValue(object) << endl;
     break;
   case JSON_INTEGER:
+    cout << integerValue(object) << endl;
+    break;
   case JSON_REAL:
     cout << numberValue(object) << endl;
     break;
