@@ -461,7 +461,7 @@ void ZFlyEmProofDoc::saveCustomBookmark()
       }
     }
     writer.writeCustomBookmark(jsonArray);
-    if (writer.getStatusCode() != 200) {
+    if (writer.getStatusCode() != 200 && !jsonArray.isEmpty()) {
       emit messageGenerated(
             ZWidgetMessage("Failed to save bookmarks.", NeuTube::MSG_ERROR));
     }
