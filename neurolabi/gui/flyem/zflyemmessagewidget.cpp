@@ -11,10 +11,12 @@ ZFlyEmMessageWidget::ZFlyEmMessageWidget(QWidget *parent) :
   QTabWidget(parent)
 {
 //  setSizePolicy(QSizePolicy::Preferred, QSizePolicy::MinimumExpanding);
-
 //  getTab() = new QTabWidget(this);
   m_oldMessageWidget = new QTextEdit(this);
   m_currentMessageWidget = new QTextEdit(this);
+
+  m_currentMessageWidget->setStyleSheet("background-color:white;");
+  m_oldMessageWidget->setStyleSheet("background-color:white;");
 
   m_oldMessageWidget->setReadOnly(true);
   m_currentMessageWidget->setReadOnly(true);

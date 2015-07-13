@@ -1013,7 +1013,7 @@ void FlyEmBodySplitProjectDialog::startSplit(const QString &message)
 }
 
 void FlyEmBodySplitProjectDialog::startSplit(
-    const ZDvidTarget &dvidTarget, int bodyId)
+    const ZDvidTarget &dvidTarget, uint64_t bodyId)
 {
   clear();
   setDvidTarget(dvidTarget);

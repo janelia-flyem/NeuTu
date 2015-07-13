@@ -138,7 +138,7 @@ ZStackDoc::ZStackDoc(ZStack *stack, QObject *parent) : QObject(parent),
   if (NeutubeConfig::getInstance().isAutoSaveEnabled()) {
     QTimer *timer = new QTimer(this);
     timer->start(NeutubeConfig::getInstance().getAutoSaveInterval());
-    connect(timer, SIGNAL(timeout()), this, SLOT(autoSave()));
+    connect(timer, SIGNAL(timeout()), this, SLOT(autoSaveSlot()));
   }
 
   createActions();
@@ -501,7 +501,7 @@ void ZStackDoc::updateSwcNodeAction()
 
 void ZStackDoc::autoSave()
 {
-  if (isSwcSavingRequired()) {    
+  if (isSwcSavingRequired()) {
     if (getTag() == NeuTube::Document::FLYEM_BODY_DISPLAY) {
       return;
     }
@@ -546,6 +546,11 @@ void ZStackDoc::autoSave()
       }
     }
   }
+}
+
+void ZStackDoc::autoSaveSlot()
+{
+  autoSave();
 }
 
 string ZStackDoc::getSwcSource() const

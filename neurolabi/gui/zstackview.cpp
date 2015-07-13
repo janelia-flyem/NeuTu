@@ -33,6 +33,7 @@
 #include "zstackmvc.h"
 #include "zpixmap.h"
 #include "zlabeledspinboxwidget.h"
+#include "zbenchtimer.h"
 
 #include <QtGui>
 #ifdef _QT5_
@@ -675,6 +676,7 @@ void ZStackView::redraw(bool updatingScreen)
 {
 //  tic();
   QElapsedTimer timer;
+//  ZBenchTimer timer;
   timer.start();
   m_imageWidget->setCanvasRegion(
         buddyDocument()->getStackOffset().getX(),
@@ -699,6 +701,9 @@ void ZStackView::redraw(bool updatingScreen)
   if (updatingScreen) {
     updateImageScreen();
   }
+
+//  timer.stop();
+//  std::cout << "Paint time per frame: " << timer.time() * 1000 << " ms" << std::endl;
 //  std::cout << "paint time per frame: " << toc() << std::endl;
   std::cout << "paint time per frame: " << timer.restart() << std::endl;
 }

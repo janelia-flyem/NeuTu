@@ -70,6 +70,9 @@ public:
   uint64_t getBodyId(int x, int y, int z);
   uint64_t getBodyId(const ZIntPoint &pt);
 
+  void saveCustomBookmark();
+  void downloadBookmark();
+
 public:
   void notifyBodyMerged();
   void notifyBodyUnmerged();
@@ -82,6 +85,9 @@ public slots:
   void updateDvidLabelObject();
   void loadSynapse(const std::string &filePath);
   void downloadSynapse();
+
+protected:
+  void autoSave();
 
 private:
   ZFlyEmBodyMerger m_bodyMerger;

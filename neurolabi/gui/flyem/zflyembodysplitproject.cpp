@@ -767,6 +767,7 @@ void ZFlyEmBodySplitProject::locateBookmark(const ZFlyEmBookmark &bookmark)
   }
 }
 
+#if 0
 void ZFlyEmBodySplitProject::clearBookmarkDecoration()
 {
   if (getDocument() != NULL) {
@@ -788,6 +789,7 @@ void ZFlyEmBodySplitProject::clearBookmarkDecoration()
   m_bookmarkDecoration.clear();
 #endif
 }
+#endif
 
 void ZFlyEmBodySplitProject::addBookmarkDecoration(
     const ZFlyEmBookmarkArray &bookmarkArray)

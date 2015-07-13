@@ -986,7 +986,7 @@ public slots: //undoable commands
 
 public slots:
   void selectAllSwcTreeNode();
-  void autoSave();
+  void autoSaveSlot();
   bool saveSwc(const std::string &filePath);
   void loadReaderResult();
   void selectDownstreamNode();
@@ -1088,6 +1088,9 @@ signals:
   void progressEnded();
   void progressAdvanced(double dp);
   void newDocReady(const ZStackDocReader &reader);
+
+protected:
+  virtual void autoSave();
 
 private:
   void connectSignalSlot();

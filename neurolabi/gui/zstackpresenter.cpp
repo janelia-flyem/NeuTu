@@ -1424,89 +1424,17 @@ void ZStackPresenter::processMouseDoubleClickEvent(QMouseEvent *event)
     return;
   }
 
+  process(op);
+
 //  ZPoint currentStackPos = op.getMouseEventRecorder()->getLatestMouseEvent().
 //      getPosition(ZMouseEvent::COORD_STACK);
+  /*
   ZPoint currentRawStackPos = op.getMouseEventRecorder()->getLatestMouseEvent().
       getPosition(NeuTube::COORD_RAW_STACK);
 
   ZInteractionEvent interactionEvent;
+*/
 
-  switch (op.getOperation()) {
-  case ZStackOperator::OP_STACK_LOCATE_SLICE:
-    if (buddyDocument()->hasStackData()) {
-      interactiveContext().setViewMode(ZInteractiveContext::VIEW_NORMAL);
-      int sliceIndex =
-          buddyDocument()->maxIntesityDepth(currentRawStackPos.x(),
-                                            currentRawStackPos.y());
-      buddyView()->setSliceIndex(sliceIndex);
-      interactionEvent.setEvent(ZInteractionEvent::EVENT_VIEW_SLICE);
-    }
-    break;
-  case ZStackOperator::OP_STACK_VIEW_SLICE:
-    interactiveContext().setViewMode(ZInteractiveContext::VIEW_NORMAL);
-    buddyView()->setSliceIndex(getSliceIndex());
-    interactionEvent.setEvent(ZInteractionEvent::EVENT_VIEW_SLICE);
-    break;
-  case ZStackOperator::OP_STACK_VIEW_PROJECTION:
-    interactiveContext().setViewMode(ZInteractiveContext::VIEW_PROJECT);
-    interactionEvent.setEvent(ZInteractionEvent::EVENT_VIEW_PROJECTION);
-    break;
-  case ZStackOperator::OP_SWC_LOCATE_FOCUS:
-    if (op.getHitObject<Swc_Tree_Node>() != NULL) {
-      int sliceIndex = iround(SwcTreeNode::z(op.getHitObject<Swc_Tree_Node>()));
-      sliceIndex -= buddyDocument()->getStackOffset().getZ();
-      if (sliceIndex >= 0 &&
-          sliceIndex < buddyDocument()->getStackSize().getZ()) {
-        buddyView()->setSliceIndex(sliceIndex);
-        interactiveContext().setViewMode(ZInteractiveContext::VIEW_NORMAL);
-        interactionEvent.setEvent(ZInteractionEvent::EVENT_VIEW_SLICE);
-      }
-    }
-    break;
-  case ZStackOperator::OP_STROKE_LOCATE_FOCUS:
-    if (op.getHitObject<ZStroke2d>() != NULL) {
-      int sliceIndex = op.getHitObject<ZStroke2d>()->getZ();
-      sliceIndex -= buddyDocument()->getStackOffset().getZ();
-      if (sliceIndex >= 0 &&
-          sliceIndex < buddyDocument()->getStackSize().getZ()) {
-        buddyView()->setSliceIndex(sliceIndex);
-        interactiveContext().setViewMode(ZInteractiveContext::VIEW_NORMAL);
-        interactionEvent.setEvent(ZInteractionEvent::EVENT_VIEW_SLICE);
-      }
-    }
-    break;
-  case ZStackOperator::OP_OBJECT3D_LOCATE_FOCUS:
-    if (op.getHitObject<ZObject3d>() != NULL) {
-      ZIntPoint pt = op.getHitObject<ZObject3d>()->getHitVoxel();
-      int sliceIndex = pt.getZ();
-      sliceIndex -= buddyDocument()->getStackOffset().getZ();
-      if (sliceIndex >= 0 &&
-          sliceIndex < buddyDocument()->getStackSize().getZ()) {
-        buddyView()->setSliceIndex(sliceIndex);
-        interactiveContext().setViewMode(ZInteractiveContext::VIEW_NORMAL);
-        interactionEvent.setEvent(ZInteractionEvent::EVENT_VIEW_SLICE);
-      }
-    }
-    break;
-  case ZStackOperator::OP_OBJECT3D_SCAN_LOCATE_FOCUS:
-  case ZStackOperator::OP_DVID_SPARSE_STACK_LOCATE_FOCUS:
-    if (op.getHitObject() != NULL) {
-      op.getHitObject()->setSelected(false);
-      int sliceIndex = op.getHitObject()->getHitPoint().getZ();
-      sliceIndex -= buddyDocument()->getStackOffset().getZ();
-      if (sliceIndex >= 0 &&
-          sliceIndex < buddyDocument()->getStackSize().getZ()) {
-        buddyView()->setSliceIndex(sliceIndex);
-        interactiveContext().setViewMode(ZInteractiveContext::VIEW_NORMAL);
-        interactionEvent.setEvent(ZInteractionEvent::EVENT_VIEW_SLICE);
-      }
-    }
-    break;
-  default:
-    break;
-  }
-
-  processEvent(interactionEvent);
 }
 
 void ZStackPresenter::setObjectVisible(bool v)
@@ -2761,6 +2689,77 @@ void ZStackPresenter::process(const ZStackOperator &op)
       interactionEvent.setEvent(
             ZInteractionEvent::EVENT_ACTIVE_DECORATION_UPDATED);
       //turnOnStroke();
+    }
+    break;
+
+  case ZStackOperator::OP_STACK_LOCATE_SLICE:
+    if (buddyDocument()->hasStackData()) {
+      interactiveContext().setViewMode(ZInteractiveContext::VIEW_NORMAL);
+      int sliceIndex =
+          buddyDocument()->maxIntesityDepth(currentRawStackPos.x(),
+                                            currentRawStackPos.y());
+      buddyView()->setSliceIndex(sliceIndex);
+      interactionEvent.setEvent(ZInteractionEvent::EVENT_VIEW_SLICE);
+    }
+    break;
+  case ZStackOperator::OP_STACK_VIEW_SLICE:
+    interactiveContext().setViewMode(ZInteractiveContext::VIEW_NORMAL);
+    buddyView()->setSliceIndex(getSliceIndex());
+    interactionEvent.setEvent(ZInteractionEvent::EVENT_VIEW_SLICE);
+    break;
+  case ZStackOperator::OP_STACK_VIEW_PROJECTION:
+    interactiveContext().setViewMode(ZInteractiveContext::VIEW_PROJECT);
+    interactionEvent.setEvent(ZInteractionEvent::EVENT_VIEW_PROJECTION);
+    break;
+  case ZStackOperator::OP_SWC_LOCATE_FOCUS:
+    if (op.getHitObject<Swc_Tree_Node>() != NULL) {
+      int sliceIndex = iround(SwcTreeNode::z(op.getHitObject<Swc_Tree_Node>()));
+      sliceIndex -= buddyDocument()->getStackOffset().getZ();
+      if (sliceIndex >= 0 &&
+          sliceIndex < buddyDocument()->getStackSize().getZ()) {
+        buddyView()->setSliceIndex(sliceIndex);
+        interactiveContext().setViewMode(ZInteractiveContext::VIEW_NORMAL);
+        interactionEvent.setEvent(ZInteractionEvent::EVENT_VIEW_SLICE);
+      }
+    }
+    break;
+  case ZStackOperator::OP_STROKE_LOCATE_FOCUS:
+    if (op.getHitObject<ZStroke2d>() != NULL) {
+      int sliceIndex = op.getHitObject<ZStroke2d>()->getZ();
+      sliceIndex -= buddyDocument()->getStackOffset().getZ();
+      if (sliceIndex >= 0 &&
+          sliceIndex < buddyDocument()->getStackSize().getZ()) {
+        buddyView()->setSliceIndex(sliceIndex);
+        interactiveContext().setViewMode(ZInteractiveContext::VIEW_NORMAL);
+        interactionEvent.setEvent(ZInteractionEvent::EVENT_VIEW_SLICE);
+      }
+    }
+    break;
+  case ZStackOperator::OP_OBJECT3D_LOCATE_FOCUS:
+    if (op.getHitObject<ZObject3d>() != NULL) {
+      ZIntPoint pt = op.getHitObject<ZObject3d>()->getHitVoxel();
+      int sliceIndex = pt.getZ();
+      sliceIndex -= buddyDocument()->getStackOffset().getZ();
+      if (sliceIndex >= 0 &&
+          sliceIndex < buddyDocument()->getStackSize().getZ()) {
+        buddyView()->setSliceIndex(sliceIndex);
+        interactiveContext().setViewMode(ZInteractiveContext::VIEW_NORMAL);
+        interactionEvent.setEvent(ZInteractionEvent::EVENT_VIEW_SLICE);
+      }
+    }
+    break;
+  case ZStackOperator::OP_OBJECT3D_SCAN_LOCATE_FOCUS:
+  case ZStackOperator::OP_DVID_SPARSE_STACK_LOCATE_FOCUS:
+    if (op.getHitObject() != NULL) {
+      op.getHitObject()->setSelected(false);
+      int sliceIndex = op.getHitObject()->getHitPoint().getZ();
+      sliceIndex -= buddyDocument()->getStackOffset().getZ();
+      if (sliceIndex >= 0 &&
+          sliceIndex < buddyDocument()->getStackSize().getZ()) {
+        buddyView()->setSliceIndex(sliceIndex);
+        interactiveContext().setViewMode(ZInteractiveContext::VIEW_NORMAL);
+        interactionEvent.setEvent(ZInteractionEvent::EVENT_VIEW_SLICE);
+      }
     }
     break;
 #if 0

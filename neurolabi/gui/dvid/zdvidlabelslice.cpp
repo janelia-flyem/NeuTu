@@ -57,12 +57,12 @@ void ZDvidLabelSlice::update()
   }
 }
 
-/*
+
 void ZDvidLabelSlice::forceUpdate()
 {
   forceUpdate(m_currentViewParam);
 }
-*/
+
 
 void ZDvidLabelSlice::forceUpdate(const ZStackViewParam &viewParam)
 {

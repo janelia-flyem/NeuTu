@@ -74,12 +74,17 @@ void ZImage::setData(const ZStack *stack, int z, bool ignoringZero,
 
 void ZImage::setData(const uint8 *data, int threshold)
 {
+  int i, j;
+  int w = width();
+  int h = height();
+
   if (threshold < 0) {
-    int i, j;
-    int w = width();
-    for (j = 0; j < height(); j++) {
+    for (j = 0; j < h; j++) {
       uchar *line = scanLine(j);
       for (i = 0; i < w; i++) {
+//        *line++ = *data;
+//        *line++ = *data;
+//        *line++ = *data++;
         memset(line, *data++, 3);
         line += 3;
         *line++ = '\xff';
@@ -87,9 +92,10 @@ void ZImage::setData(const uint8 *data, int threshold)
     }
   } else {
     int i, j;
-    for (j = 0; j < height(); j++) {
+
+    for (j = 0; j < h; j++) {
       uchar *line = scanLine(j);
-      for (i = 0; i < width(); i++) {
+      for (i = 0; i < w; i++) {
         if (*data > threshold) {
           *line++ = '\0';
           *line++ = '\0';

@@ -120,3 +120,26 @@ bool ZFlyEmBodyAnnotation::isEmpty() const
   return m_status.empty() && m_comment.empty() && m_name.empty() &&
       m_type.empty();
 }
+
+void ZFlyEmBodyAnnotation::mergeAnnotation(
+    const ZFlyEmBodyAnnotation &annotation)
+{
+  if (m_bodyId == 0) {
+    m_bodyId = annotation.getBodyId();
+  }
+  if (m_status.empty()) {
+    m_status = annotation.m_status;
+  }
+
+  if (m_comment.empty()) {
+    m_comment = annotation.m_comment;
+  }
+
+  if (m_name.empty()) {
+    m_name = annotation.m_name;
+  }
+
+  if (m_type.empty()) {
+    m_type = annotation.m_type;
+  }
+}

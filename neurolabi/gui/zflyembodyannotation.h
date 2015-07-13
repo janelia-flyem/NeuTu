@@ -52,6 +52,8 @@ public:
 
   bool isEmpty() const;
 
+  void mergeAnnotation(const ZFlyEmBodyAnnotation &annotation);
+
 private:
   uint64_t m_bodyId;
   std::string m_status;

@@ -4,6 +4,7 @@
 #include "zstackpresenter.h"
 
 class QKeyEvent;
+class ZFlyEmBookmark;
 
 class ZFlyEmProofPresenter : public ZStackPresenter
 {
@@ -47,6 +48,8 @@ signals:
   void deselectingAllBody();
   void runningSplit();
   void goingToBody();
+  void bookmarkAdded(ZFlyEmBookmark*);
+  void annotatingBookmark(ZFlyEmBookmark*);
 
 public slots:
 
