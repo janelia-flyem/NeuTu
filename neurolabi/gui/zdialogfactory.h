@@ -7,7 +7,7 @@
 #include <QPointer>
 #include "zdviddialog.h"
 #include "dvidimagedialog.h"
-#include "zspinboxdialog.h"
+#include "dialogs/zspinboxdialog.h"
 #include "zparameter.h"
 #include "dialogs/zspinboxgroupdialog.h"
 

@@ -21,7 +21,7 @@
 #include "dvid/zdvidlabelslice.h"
 #include "flyem/zflyemproofpresenter.h"
 #include "zwidgetmessage.h"
-#include "zspinboxdialog.h"
+#include "dialogs/zspinboxdialog.h"
 #include "zdialogfactory.h"
 #include "flyem/zflyembodyannotationdialog.h"
 #include "zflyembodyannotation.h"

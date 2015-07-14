@@ -35,7 +35,7 @@
 #include "zcloudnetwork.h"
 #include "znormcolormap.h"
 #include "swctreenode.h"
-#include "swctypedialog.h"
+#include "dialogs/swctypedialog.h"
 #include "swcsizedialog.h"
 #include "swcskeletontransformdialog.h"
 #include "zswcbranch.h"
