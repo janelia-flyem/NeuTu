@@ -19,7 +19,7 @@
 #include "ui_flyemdataform.h"
 #include "flyem/zflyemdataframe.h"
 #include "flyem/zflyemstackframe.h"
-#include "zimagewidget.h"
+#include "widgets/zimagewidget.h"
 #include "zfiletype.h"
 #include "zimage.h"
 #include "dvid/zdvidreader.h"

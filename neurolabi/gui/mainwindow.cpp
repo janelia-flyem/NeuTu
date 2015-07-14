@@ -20,9 +20,9 @@
 #include "tz_darray.h"
 #include "zstackframe.h"
 #include "zstackdoc.h"
-#include "settingdialog.h"
+#include "dialogs/settingdialog.h"
 #include "zstackview.h"
-#include "zimagewidget.h"
+#include "widgets/zimagewidget.h"
 #include "zinteractivecontext.h"
 #include "traceoutputdialog.h"
 #include "bcadjustdialog.h"
@@ -33,7 +33,7 @@
 #include "tz_error.h"
 #include "zeditswcdialog.h"
 #include "cannyedgedialog.h"
-#include "medianfilterdialog.h"
+#include "dialogs/medianfilterdialog.h"
 #include "diffusiondialog.h"
 #include "connectedthresholddialog.h"
 #include "zstackpresenter.h"
@@ -84,7 +84,7 @@
 #include "flyem/zflyemstackframe.h"
 #include "flyem/zsegmentationanalyzer.h"
 #include "zfiletype.h"
-#include "mexicanhatdialog.h"
+#include "dialogs/mexicanhatdialog.h"
 #include "neutubeconfig.h"
 #include "zfilelist.h"
 #include "z3dwindow.h"
@@ -151,7 +151,7 @@
 #include "synapseimportdialog.h"
 #include "flyembodymergeprojectdialog.h"
 #include "zsegmentationprojectdialog.h"
-#include "zsubtractswcsdialog.h"
+#include "dialogs/zsubtractswcsdialog.h"
 #include "zautotracedialog.h"
 #include "zstackviewmanager.h"
 #include "zflyemprojectmanager.h"
@@ -161,7 +161,7 @@
 #include "zprogressmanager.h"
 #include "zmessage.h"
 #include "zmessagemanager.h"
-#include "ztestdialog.h"
+#include "dialogs/ztestdialog.h"
 #include "dvid/zdvidtile.h"
 #include "flyem/zflyemstackdoc.h"
 #include "flyem/zproofreadwindow.h"
@@ -183,7 +183,6 @@ MainWindow::MainWindow(QWidget *parent) :
   std::cout << NeutubeConfig::getInstance().getPath(NeutubeConfig::SETTINGS)
                << std::endl;
 #endif
-
 
   m_reporter = new ZQtMessageReporter();
 

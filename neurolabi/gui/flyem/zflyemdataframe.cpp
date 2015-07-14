@@ -13,7 +13,7 @@
 #include <QTextStream>
 
 #include "flyemdataform.h"
-#include "informationdialog.h"
+#include "dialogs/informationdialog.h"
 #include "parameterdialog.h"
 #include "zstring.h"
 #include "zstackframe.h"

@@ -45,7 +45,7 @@
 #include "zswcsizetrunkanalyzer.h"
 #include "zswcweighttrunkanalyzer.h"
 #include "tubemodel.h"
-#include "informationdialog.h"
+#include "dialogs/informationdialog.h"
 #include "zmoviescene.h"
 #include "zmovieactor.h"
 #include "zswcmovieactor.h"

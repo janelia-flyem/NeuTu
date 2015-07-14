@@ -17,7 +17,7 @@
 
 #include "QsLog.h"
 
-#include "informationdialog.h"
+#include "dialogs/informationdialog.h"
 #include "tz_image_io.h"
 #include "tz_math.h"
 #include "zstackdoc.h"

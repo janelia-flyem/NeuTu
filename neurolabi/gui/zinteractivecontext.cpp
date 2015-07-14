@@ -1,6 +1,6 @@
 #include "zinteractivecontext.h"
 #include "zpoint.h"
-#include "zimagewidget.h"
+#include "widgets/zimagewidget.h"
 
 ZInteractiveContext::ZInteractiveContext()
 {

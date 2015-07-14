@@ -17,7 +17,7 @@
 #include "dvid/zdvidsparsestack.h"
 #include "zprogresssignal.h"
 #include "zstackviewlocator.h"
-#include "zimagewidget.h"
+#include "widgets/zimagewidget.h"
 #include "dvid/zdvidlabelslice.h"
 #include "flyem/zflyemproofpresenter.h"
 #include "zwidgetmessage.h"
