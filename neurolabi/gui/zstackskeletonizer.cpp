@@ -476,8 +476,19 @@ ZSwcTree* ZStackSkeletonizer::makeSkeletonWithoutDs(Stack *stackData)
   cout << "Label objects ...\n" << endl;
   int minObjSize = m_minObjSize;
   minObjSize /= dsVol;
+
+  Objlabel_Workspace ow;
+  Default_Objlabel_Workspace(&ow);
+  ow.conn = 26;
+  ow.chord = NULL;
+  ow.init_chord = TRUE;
+  ow.inc_label = TRUE;
+
+  int nobj = Stack_Label_Large_Objects_W(stackData, 1, 2, minObjSize, &ow);
+  /*
   int nobj = Stack_Label_Large_Objects_N(
         stackData, NULL, 1, 2, minObjSize, 26);
+        */
   //int nobj = Stack_Label_Objects_N(stackData, NULL, 1, 2, 26);
   if (nobj == 0) {
     cout << "No object found in the image. No skeleton generated." << endl;

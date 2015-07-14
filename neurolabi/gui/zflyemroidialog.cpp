@@ -800,7 +800,7 @@ void ZFlyEmRoiDialog::previewFullRoi()
   ZSwcTree *tree = m_project->getAllRoiSwc();
 
   if (tree != NULL) {
-    ZStackDoc *doc = new ZStackDoc(NULL, NULL);
+    ZStackDoc *doc = new ZStackDoc;
     doc->addObject(tree);
     Z3DWindow::Open(doc, this);
 

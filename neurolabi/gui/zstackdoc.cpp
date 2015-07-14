@@ -109,11 +109,11 @@
 
 using namespace std;
 
-ZStackDoc::ZStackDoc(ZStack *stack, QObject *parent) : QObject(parent),
+ZStackDoc::ZStackDoc(QObject *parent) : QObject(parent),
   /*m_lastAddedSwcNode(NULL),*/ m_resDlg(NULL), m_selectionSilent(false),
   m_isReadyForPaint(true), m_isSegmentationReady(false)
 {
-  m_stack = stack;
+  m_stack = NULL;
   m_sparseStack = NULL;
   m_labelField = NULL;
   m_parentFrame = NULL;
@@ -3160,6 +3160,11 @@ void ZStackDoc::removeObject(ZStackObjectRole::TRole role, bool deleteObject)
     notifyPlayerChanged(role);
   }
   */
+}
+
+void ZStackDoc::removeObject(const string &source, bool deleteObject)
+{
+//  m_objectGroup.
 }
 
 std::set<ZSwcTree *> ZStackDoc::removeEmptySwcTree(bool deleteObject)

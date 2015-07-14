@@ -143,7 +143,7 @@ ZSwcTree* ZIntCuboidArray::toSwc() const
       ZCuboid cuboid;
       cuboid.set(iter->cb[0], iter->cb[1], iter->cb[2], iter->ce[0], iter->ce[1],
           iter->ce[2]);
-      ZSwcTree *subtree = ZSwcTree::createCuboidSwc(cuboid);
+      ZSwcTree *subtree = ZSwcTree::CreateCuboidSwc(cuboid);
       subtree->setType(index);
       tree->merge(subtree, true);
     }
@@ -164,7 +164,7 @@ void ZIntCuboidArray::exportSwc(const string &filePath) const
       ZCuboid cuboid;
       cuboid.set(iter->cb[0], iter->cb[1], iter->cb[2], iter->ce[0], iter->ce[1],
           iter->ce[2]);
-      ZSwcTree *subtree = ZSwcTree::createCuboidSwc(cuboid);
+      ZSwcTree *subtree = ZSwcTree::CreateCuboidSwc(cuboid);
       subtree->setType(index);
       tree->merge(subtree, true);
     }
@@ -540,7 +540,7 @@ void FlyEm::ZSubstackRoi::exportSwc(const string &filePath)
       ZCuboid cuboid;
       cuboid.set(iter->cb[0], iter->cb[1], iter->cb[2], iter->ce[0], iter->ce[1],
           iter->ce[2]);
-      ZSwcTree *subtree = ZSwcTree::createCuboidSwc(cuboid);
+      ZSwcTree *subtree = ZSwcTree::CreateCuboidSwc(cuboid);
       if (!m_idArray.empty()) {
         subtree->setType(m_idArray[index]);
       } else {

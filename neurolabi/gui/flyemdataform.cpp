@@ -385,7 +385,7 @@ void FlyEmDataForm::viewModel(const QModelIndex &index)
 
   if (!neuronArray.isEmpty()) {
     //ZStackFrame *frame = new ZStackFrame;
-    ZStackDoc *doc = new ZStackDoc(NULL, NULL);
+    ZStackDoc *doc = new ZStackDoc;
 
     foreach (const ZFlyEmNeuron* neuron, neuronArray) {
       //doc->addSwcTree(neuron->getModel()->clone(), true);
@@ -442,7 +442,7 @@ ZStackDoc *FlyEmDataForm::showViewSelectedModel(ZFlyEmQueryView *view)
 
   //ZStackFrame *frame = new ZStackFrame;
 
-  ZStackDoc *doc = new ZStackDoc(NULL, NULL);
+  ZStackDoc *doc = new ZStackDoc;
   view->getModel()->retrieveModel(
         sel->selectedIndexes(), doc);
   ui->progressBar->setValue(75);
@@ -1306,7 +1306,7 @@ void FlyEmDataForm::saveVolumeRenderingFigure(
     neuron->deprecate(ZFlyEmNeuron::BODY);
 
     ZSharedPointer<ZStackDoc> academy =
-        ZSharedPointer<ZStackDoc>(new ZStackDoc(NULL, NULL));
+        ZSharedPointer<ZStackDoc>(new ZStackDoc);
     academy->loadStack(stack);
 
     int maxX = 0;

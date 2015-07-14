@@ -63,7 +63,7 @@ void AutosaveSwcListDialog::viewSwc(const QModelIndex &index)
         NeutubeConfig::getInstance().getPath(NeutubeConfig::AUTO_SAVE).c_str() +
         fileName;
 
-    ZStackDoc *doc = new ZStackDoc(NULL, NULL);
+    ZStackDoc *doc = new ZStackDoc;
     ZSwcTree *tree = new ZSwcTree;
     tree->load(fileName.toStdString());
     if (!tree->isEmpty()) {

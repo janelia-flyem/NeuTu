@@ -563,7 +563,7 @@ void ZFlyEmBodyMergeProject::present3DBodyView()
 void ZFlyEmBodyMergeProject::showBody3d()
 {
   if (m_coarseBodyWindow == NULL) {
-    ZStackDoc *doc = new ZStackDoc(NULL, NULL);
+    ZStackDoc *doc = new ZStackDoc;
 
     makeCoarseBodyWindow(doc);
 //    QFuture<void> result =

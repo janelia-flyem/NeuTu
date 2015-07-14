@@ -61,7 +61,7 @@ ZFlyEmProofMvc* ZFlyEmProofMvc::Make(
 
 ZFlyEmProofMvc* ZFlyEmProofMvc::Make(const ZDvidTarget &target)
 {
-  ZFlyEmProofDoc *doc = new ZFlyEmProofDoc(NULL, NULL);
+  ZFlyEmProofDoc *doc = new ZFlyEmProofDoc;
 //  doc->setTag(NeuTube::Document::FLYEM_DVID);
   ZFlyEmProofMvc *mvc =
       ZFlyEmProofMvc::Make(NULL, ZSharedPointer<ZFlyEmProofDoc>(doc));

@@ -21,8 +21,8 @@
 #include "flyem/zflyembookmark.h"
 #include "zstring.h"
 
-ZFlyEmProofDoc::ZFlyEmProofDoc(ZStack *stack, QObject *parent) :
-  ZStackDoc(stack, parent)
+ZFlyEmProofDoc::ZFlyEmProofDoc(QObject *parent) :
+  ZStackDoc(parent)
 {
   setTag(NeuTube::Document::FLYEM_PROOFREAD);
 }

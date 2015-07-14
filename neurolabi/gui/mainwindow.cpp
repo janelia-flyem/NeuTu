@@ -3454,7 +3454,7 @@ void MainWindow::on_actionAddFlyEmNeuron_Network_triggered()
     //ZStackFrame *frame = new ZStackFrame;
     //frame->load(fileName);
 
-    ZStackDoc *doc = new ZStackDoc(NULL, NULL);
+    ZStackDoc *doc = new ZStackDoc(NULL);
     doc->loadSwcNetwork(fileName);
 
     m_progress->setValue(++currentProgress);
@@ -3481,7 +3481,7 @@ void MainWindow::on_actionSynapse_Annotation_triggered()
   if (!fileList.isEmpty()) {
     if (m_synapseDlg->exec()) {
       //ZStackFrame *frame = new ZStackFrame;
-      ZStackDoc *doc = new ZStackDoc(NULL, NULL);
+      ZStackDoc *doc = new ZStackDoc(NULL);
 
       FlyEm::ZSynapseAnnotationArray synapseArray;
 
@@ -3772,7 +3772,7 @@ void MainWindow::on_actionAxon_Export_triggered()
 #endif
 
   if (!fileName.isEmpty()) {
-    ZFlyEmStackDoc *doc = new ZFlyEmStackDoc(NULL, NULL);
+    ZFlyEmStackDoc *doc = new ZFlyEmStackDoc;
     if (doc->importAxonExport(fileName.toStdString())) {
       ZWindowFactory factory;
       factory.open3DWindow(doc);
@@ -3958,7 +3958,7 @@ void MainWindow::on_actionTem_Paper_Volume_Rendering_triggered()
       fclose(fp);
 
       ZSharedPointer<ZStackDoc> academy =
-          ZSharedPointer<ZStackDoc>(new ZStackDoc(NULL, NULL));
+          ZSharedPointer<ZStackDoc>(new ZStackDoc);
 
       academy->loadFile((*inputIter).c_str());
 
@@ -5994,7 +5994,7 @@ ZStackDoc* MainWindow::importHdf5Body(int bodyId, const QString &hdf5Path)
   if (!obj.isEmpty()) {
     ZStack *stack = obj.toStackObject();
     if (stack != NULL) {
-      doc = new ZStackDoc(stack, NULL);
+      doc = new ZStackDoc;
     }
   }
 
@@ -6029,7 +6029,7 @@ ZStackDoc* MainWindow::importHdf5BodyM(const std::vector<int> &bodyIdArray,
 
   ZStackDoc *doc = NULL;
   if (stack != NULL) {
-    doc = new ZStackDoc(stack, NULL);
+    doc = new ZStackDoc;
   }
 
   return doc;
@@ -6555,7 +6555,7 @@ void MainWindow::on_actionUpdate_Skeletons_triggered()
       ZStackSkeletonizer skeletonizer;
       ZJsonObject config;
       config.load(NeutubeConfig::getInstance().getApplicatinDir() +
-                  "/json/skeletonize.json");
+                  "/json/skeletonize_fib25_len40.json");
       skeletonizer.configure(config);
 
       int count = 1;
@@ -6782,7 +6782,7 @@ void MainWindow::on_actionOne_Column_triggered()
   ZStackSkeletonizer skeletonizer;
   ZJsonObject config;
   config.load(NeutubeConfig::getInstance().getApplicatinDir() +
-              "/json/skeletonize.json");
+              "/json/skeletonize_fib25_len40.json");
   skeletonizer.configure(config);
 
   ZDvidWriter writer;

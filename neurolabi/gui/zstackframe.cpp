@@ -118,7 +118,7 @@ ZStackFrame*
 ZStackFrame::Make(QMdiArea *parent, NeuTube::Document::ETag docTag)
 {
   ZSharedPointer<ZStackDoc> doc =
-      ZSharedPointer<ZStackDoc>(new ZStackDoc(NULL, NULL));
+      ZSharedPointer<ZStackDoc>(new ZStackDoc(NULL));
   doc->setTag(docTag);
 
   return Make(parent, doc);
@@ -127,7 +127,7 @@ ZStackFrame::Make(QMdiArea *parent, NeuTube::Document::ETag docTag)
 ZStackFrame*
 ZStackFrame::Make(QMdiArea *parent)
 {
-  return Make(parent, ZSharedPointer<ZStackDoc>(new ZStackDoc(NULL, NULL)));
+  return Make(parent, ZSharedPointer<ZStackDoc>(new ZStackDoc(NULL)));
 }
 
 
@@ -205,7 +205,7 @@ void ZStackFrame::close3DWindow()
 
 void ZStackFrame::createDocument()
 {
-  setDocument(ZSharedPointer<ZStackDoc>(new ZStackDoc(NULL, NULL)));
+  setDocument(ZSharedPointer<ZStackDoc>(new ZStackDoc(NULL)));
 }
 
 void ZStackFrame::enableMessageManager()

@@ -6,8 +6,8 @@
 #include "zarrayfactory.h"
 #include "dvid/zdvidwriter.h"
 
-ZFlyEmBodyMergeDoc::ZFlyEmBodyMergeDoc(ZStack *stack, QObject *parent) :
-  ZStackDoc(stack, parent), m_originalLabel(NULL)
+ZFlyEmBodyMergeDoc::ZFlyEmBodyMergeDoc(QObject *parent) :
+  ZStackDoc(parent), m_originalLabel(NULL)
 {
   setTag(NeuTube::Document::FLYEM_MERGE);
 }
