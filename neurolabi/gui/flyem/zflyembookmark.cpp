@@ -81,6 +81,7 @@ ZJsonObject ZFlyEmBookmark::toJsonObject(bool ignoringComment) const
 //    obj.setEntry("text", "merge <username=" + m_userName.toStdString() + ">");
     break;
   default:
+    text = "other";
 //    obj.setEntry("text", "other <username=" + m_userName.toStdString() + ">");
     break;
   }

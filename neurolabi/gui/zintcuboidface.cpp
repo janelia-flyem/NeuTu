@@ -386,7 +386,7 @@ void ZIntCuboidFaceArray::exportSwc(const std::string &filePath) const
       const ZIntCuboidFace &face = *iter;
       ZCuboid cuboid;
       cuboid.set(face.getCornerCoordinates(0), face.getCornerCoordinates(3));
-      ZSwcTree *subtree = ZSwcTree::createCuboidSwc(cuboid);
+      ZSwcTree *subtree = ZSwcTree::CreateCuboidSwc(cuboid);
       subtree->setType(index);
       tree->merge(subtree, true);
     }

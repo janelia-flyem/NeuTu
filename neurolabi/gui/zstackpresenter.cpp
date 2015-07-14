@@ -13,7 +13,7 @@
 #include "tz_rastergeom.h"
 #include "zlocalneuroseg.h"
 #include "zlocsegchain.h"
-#include "zimagewidget.h"
+#include "widgets/zimagewidget.h"
 #include "zstack.hxx"
 #include "zstackdoc.h"
 #include "swctreenode.h"

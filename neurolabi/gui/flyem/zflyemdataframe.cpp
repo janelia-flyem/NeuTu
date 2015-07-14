@@ -13,7 +13,7 @@
 #include <QTextStream>
 
 #include "flyemdataform.h"
-#include "informationdialog.h"
+#include "dialogs/informationdialog.h"
 #include "parameterdialog.h"
 #include "zstring.h"
 #include "zstackframe.h"
@@ -1133,7 +1133,7 @@ void ZFlyEmDataFrame::process()
       Z3DWindow *window = swcFrame->open3DWindow(NULL);
 #endif
 
-      ZStackDoc *doc = new ZStackDoc(NULL, NULL);
+      ZStackDoc *doc = new ZStackDoc;
 
       doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
       doc->addObject(originalTree1);
@@ -1259,7 +1259,7 @@ const QColor* ZFlyEmDataFrame::getColor(const std::pair<int, int> &bodyId) const
 
 void ZFlyEmDataFrame::showModel() const
 {
-  ZStackDoc *doc = new ZStackDoc(NULL, NULL);
+  ZStackDoc *doc = new ZStackDoc;
 
   //ZStackFrame *swcFrame = new ZStackFrame;
   //swcFrame->createDocument();
@@ -1357,7 +1357,7 @@ void ZFlyEmDataFrame::showConnection() const
   //ZStackFrame *swcFrame = new ZStackFrame;
   //swcFrame->createDocument();
 
-  ZStackDoc *doc = new ZStackDoc(NULL, NULL);
+  ZStackDoc *doc = new ZStackDoc;
 
   doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
   for (size_t i = 0; i < m_sourceIdArray.size(); ++i) {
@@ -2085,7 +2085,7 @@ void ZFlyEmDataFrame::showNearbyNeuron(const ZFlyEmNeuron *neuron)
         //ZStackFrame *swcFrame = new ZStackFrame;
         //swcFrame->createDocument();
         ZSharedPointer<ZStackDoc> doc =
-            ZSharedPointer<ZStackDoc>(new ZStackDoc(NULL, NULL));
+            ZSharedPointer<ZStackDoc>(new ZStackDoc);
 //        doc->blockSignals(true);
 
         doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);

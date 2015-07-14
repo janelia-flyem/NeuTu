@@ -17,8 +17,7 @@ ZTiledStackFrame::ZTiledStackFrame(QWidget *parent) :
 ZTiledStackFrame*
 ZTiledStackFrame::Make(QMdiArea *parent)
 {
-  return Make(parent, ZSharedPointer<ZStackDoc>(
-                new ZStackDoc(NULL, NULL)));
+  return Make(parent, ZSharedPointer<ZStackDoc>(new ZStackDoc));
 }
 
 ZTiledStackFrame *ZTiledStackFrame::Make(

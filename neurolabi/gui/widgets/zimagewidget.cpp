@@ -5,7 +5,7 @@
 #include <cmath>
 
 #include "tz_rastergeom.h"
-#include "zimagewidget.h"
+#include "widgets/zimagewidget.h"
 #include "zpainter.h"
 #include "zpaintbundle.h"
 #include "neutubeconfig.h"

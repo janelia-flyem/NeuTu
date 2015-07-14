@@ -15,7 +15,7 @@ class ZFlyEmBodyMergeDoc : public ZStackDoc
 {
   Q_OBJECT
 public:
-  explicit ZFlyEmBodyMergeDoc(ZStack *stack, QObject *parent = 0);
+  explicit ZFlyEmBodyMergeDoc(QObject *parent = 0);
   ~ZFlyEmBodyMergeDoc();
 
 public:

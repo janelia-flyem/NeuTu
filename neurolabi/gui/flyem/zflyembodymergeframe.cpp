@@ -13,7 +13,7 @@ ZFlyEmBodyMergeFrame::ZFlyEmBodyMergeFrame(QWidget *parent) : ZStackFrame(parent
 
 void ZFlyEmBodyMergeFrame::createDocument()
 {
-  setDocument(ZSharedPointer<ZStackDoc>(new ZFlyEmBodyMergeDoc(NULL, NULL)));
+  setDocument(ZSharedPointer<ZStackDoc>(new ZFlyEmBodyMergeDoc));
 }
 
 
@@ -31,7 +31,7 @@ ZStackFrame*
 ZFlyEmBodyMergeFrame::Make(QMdiArea *parent)
 {
   return Make(parent, ZSharedPointer<ZFlyEmBodyMergeDoc>(
-                new ZFlyEmBodyMergeDoc(NULL, NULL)));
+                new ZFlyEmBodyMergeDoc));
 }
 
 ZStackFrame* ZFlyEmBodyMergeFrame::Make(

@@ -9,7 +9,7 @@
 #ifdef _USE_GTEST_
 TEST(ZStackDoc, Basic)
 {
-  ZStackDoc doc(NULL, NULL);
+  ZStackDoc doc;
   EXPECT_TRUE(doc.isEmpty());
   EXPECT_FALSE(doc.hasStackData());
   EXPECT_FALSE(doc.hasStackMask());
@@ -20,7 +20,7 @@ TEST(ZStackDoc, Basic)
 
 TEST(ZStackDoc, Swc)
 {
-  ZStackDoc doc(NULL, NULL);
+  ZStackDoc doc;
   doc.readSwc((GET_TEST_DATA_DIR + "/benchmark/bundle1/swc/1.swc").c_str());
   doc.saveSwc(GET_TEST_DATA_DIR + "/test1.swc");
   ASSERT_EQ(1, doc.getSwcList().size());
@@ -38,7 +38,7 @@ TEST(ZStackDoc, Swc)
 
 TEST(ZStackDoc, Player)
 {
-  ZStackDoc doc(NULL, NULL);
+  ZStackDoc doc;
   ZObject3d *obj = new ZObject3d;
   obj->append(0, 0, 0);
   obj->setRole(ZStackObjectRole::ROLE_SEED);

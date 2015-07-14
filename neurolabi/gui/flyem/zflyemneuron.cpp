@@ -225,7 +225,7 @@ ZSwcTree* ZFlyEmNeuron::getModel(const string &bundleSource) const
           ZStackSkeletonizer skeletonizer;
           ZJsonObject config;
           config.load(NeutubeConfig::getInstance().getApplicatinDir() +
-                      "/json/skeletonize.json");
+                      "/json/skeletonize_fib25_len40.json");
           skeletonizer.configure(config);
           ZObject3dScan obj = reader.readBody(getId());
           if (!obj.isEmpty()) {

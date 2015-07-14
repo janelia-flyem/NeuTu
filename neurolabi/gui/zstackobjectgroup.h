@@ -51,6 +51,7 @@ public:
   ZStackObject* findFirstSameSource(const ZStackObject *obj) const;
   ZStackObject* findFirstSameSource(
       ZStackObject::EType type, const std::string &source) const;
+  TStackObjectList findSameSource(const std::string &str) const;
   TStackObjectList findSameSource(const ZStackObject *obj) const;
   TStackObjectList findSameSource(
       ZStackObject::EType type, const std::string &source) const;

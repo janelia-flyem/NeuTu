@@ -93,7 +93,7 @@ class ZStackDoc : public QObject, public ZReportable, public ZProgressable
   Q_OBJECT
 
 public:
-  ZStackDoc(ZStack *stack, QObject *parent);
+  ZStackDoc(QObject *parent = NULL);
   virtual ~ZStackDoc();
 
   //Designed for multi-thread reading
@@ -412,6 +412,8 @@ public:
 
   /* Remove object with specific roles */
   void removeObject(ZStackObjectRole::TRole role, bool deleteObject = false);
+
+  void removeObject(const std::string &source, bool deleteObject = false);
 
   void removeSelectedPuncta(bool deleteObject = false);
   void removeSmallLocsegChain(double thre);   //remove small locseg chain (geolen < thre)

@@ -1,5 +1,5 @@
 #include "zmouseeventprocessor.h"
-#include "zimagewidget.h"
+#include "widgets/zimagewidget.h"
 #include "zstackdoc.h"
 #include "zinteractivecontext.h"
 #include "zstackoperator.h"

@@ -359,6 +359,24 @@ TStackObjectList ZStackObjectGroup::findSameSource(
 }
 
 TStackObjectList ZStackObjectGroup::findSameSource(
+    const std::string &source) const
+{
+  QList<ZStackObject*> objList;
+  if (!source.empty()) {
+//    const TStackObjectList &fullObjList = getObjectList(obj->getType());
+    for (ZStackObjectGroup::const_iterator iter = this->begin();
+         iter != this->end(); ++iter) {
+      const ZStackObject *checkObj = *iter;
+      if (checkObj->getSource() == source) {
+        objList.append(const_cast<ZStackObject*>(checkObj));
+      }
+    }
+  }
+
+  return objList;
+}
+
+TStackObjectList ZStackObjectGroup::findSameSource(
     ZStackObject::EType type, const std::string &source) const
 {
   QList<ZStackObject*> objList;

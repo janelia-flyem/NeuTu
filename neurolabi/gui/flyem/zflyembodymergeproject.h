@@ -87,7 +87,7 @@ public:
 
   //void setSelectionFromOriginal(const std::set<uint64_t> &selected);
 
-  Z3DWindow* getBodyWindow() { return m_bodyWindow; }
+  Z3DWindow* getBodyWindow() { return m_coarseBodyWindow; }
   void closeBodyWindow();
 
   uint64_t getMappedBodyId(uint64_t label) const;
@@ -158,7 +158,7 @@ private:
   void update3DBodyViewPlane(const ZDvidInfo &dvidInfo);
   void update3DBodyViewBox(const ZDvidInfo &dvidInfo);
   void uploadResultFunc();
-  void make3DBodyWindow(ZStackDoc *doc);
+  void makeCoarseBodyWindow(ZStackDoc *doc);
   void connectSignalSlot();
 
   QString getSelectionMessage() const;
@@ -170,7 +170,7 @@ private:
 private:
   ZFlyEmBodyMergeFrame *m_dataFrame;
   ZSharedPointer<ZStackDoc> m_doc;
-  Z3DWindow *m_bodyWindow;
+  Z3DWindow *m_coarseBodyWindow;
   ZDvidTarget m_dvidTarget;
   ZDvidInfo m_dvidInfo;
 

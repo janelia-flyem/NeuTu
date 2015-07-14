@@ -245,6 +245,7 @@ using namespace std;
 #include "zcommandline.h"
 #include "z3dgraphfactory.h"
 #include "flyem/zflyemsupervisor.h"
+#include "flyem/zflyembody3ddoc.h"
 
 using namespace std;
 
@@ -17251,7 +17252,7 @@ void ZTest::test(MainWindow *host)
 #  endif
 #endif
 
-#if 1
+#if 0
   ZDvidBufferReader reader;
   reader.read("http://emdata2.int.janelia.org:9100/state/ee7dc");
   const QByteArray &buffer = reader.getBuffer();
@@ -17274,4 +17275,42 @@ void ZTest::test(MainWindow *host)
     }
   }
 #endif
+
+#if 0
+  ZString text = "split <username=split <username=split <username=split <username=split <username=split <username=split <username=split <username=split <username=split <username=split <username=split <username=split <username=split <username=split <username=split <username=split <username=split <username=split <username=split <username=split <username=split <username=split <username=<username=zhaot>";
+  if (text.contains("<username=")) {
+    std::string::size_type pos = text.rfind("<username=") +
+        std::string("<username=").size();
+    std::string::size_type lastPos = text.find_first_of(">", pos);
+    ZString userName = text.substr(pos, lastPos - pos);
+    userName.trim();
+    std::cout << userName << std::endl;
+  }
+
+#endif
+
+#if 1
+  ZWindowFactory factory;
+  factory.setWindowTitle("Test");
+
+  ZFlyEmBody3dDoc *doc = new ZFlyEmBody3dDoc;
+
+  doc->updateFrame();
+
+  ZDvidTarget dvidTarget("emdata1.int.janelia.org", "86e1", 8500);
+  doc->setDvidTarget(dvidTarget);
+  doc->updateFrame();
+
+//  doc->loadFile((GET_TEST_DATA_DIR + "/benchmark/em_stack.tif").c_str());
+
+  Z3DWindow *window = factory.make3DWindow(doc);
+  window->setYZView();
+
+  window->show();
+  window->raise();
+
+  doc->addBody(12596838);
+  doc->addBody(13890100);
+#endif
+
 }

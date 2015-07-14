@@ -15,7 +15,7 @@ class ZFlyEmProofDoc : public ZStackDoc
 {
   Q_OBJECT
 public:
-  explicit ZFlyEmProofDoc(ZStack *stack, QObject *parent = 0);
+  explicit ZFlyEmProofDoc(QObject *parent = 0);
 
   static ZFlyEmProofDoc* Make();
 

@@ -2,7 +2,7 @@
 #include <QRect>
 #include "zstackview.h"
 #include "dvid/zdvidreader.h"
-#include "zimagewidget.h"
+#include "widgets/zimagewidget.h"
 #include "flyem/zdvidtileupdatetaskmanager.h"
 
 ZDvidTileEnsemble::ZDvidTileEnsemble()

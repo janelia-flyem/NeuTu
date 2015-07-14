@@ -10,8 +10,8 @@
 
 using namespace std;
 
-ZFlyEmStackDoc::ZFlyEmStackDoc(ZStack *stack, QObject *parent) :
-  ZStackDoc(stack, parent)
+ZFlyEmStackDoc::ZFlyEmStackDoc(QObject *parent) :
+  ZStackDoc(parent)
 {
 
 }
