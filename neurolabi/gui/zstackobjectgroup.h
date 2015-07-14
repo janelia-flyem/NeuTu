@@ -88,6 +88,9 @@ public:
   TStackObjectList takeSameSource(
       ZStackObject::EType type, const std::string &source);
 
+  template <typename InputIterator>
+  void take(const InputIterator &first, const InputIterator &last);
+
 
   /*!
    * \brief Remove an object
@@ -176,4 +179,12 @@ TStackObjectList ZStackObjectGroup::findSameSource(
 
   return objList;
 }
+
+template <typename InputIterator>
+void ZStackObjectGroup::take(
+    const InputIterator &first, const InputIterator &last)
+{
+  removeObject(first, last, false);
+}
+
 #endif // ZSTACKOBJECTGROUP_H

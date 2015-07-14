@@ -38,9 +38,11 @@
 #include "zdialogfactory.h"
 #include "flyem/zflyembookmark.h"
 #include "zsleeper.h"
+#include "flyem/zflyembody3ddoc.h"
 
 ZFlyEmBodyMergeProject::ZFlyEmBodyMergeProject(QObject *parent) :
   QObject(parent), m_dataFrame(NULL), m_coarseBodyWindow(NULL),
+  m_bodyWindow(NULL),
   m_isBookmarkVisible(true),
 //  m_bookmarkArray(NULL),
   m_showingBodyMask(true)
@@ -69,13 +71,19 @@ void ZFlyEmBodyMergeProject::clear()
     m_coarseBodyWindow = NULL;
   }
 
+  if (m_bodyWindow != NULL) {
+    m_bodyWindow->hide();
+    delete m_bodyWindow;
+    m_bodyWindow = NULL;
+  }
+
   m_selectedOriginal.clear();
 }
 
 void ZFlyEmBodyMergeProject::connectSignalSlot()
 {
   connect(this, SIGNAL(coarseBodyWindowCreatedInThread()),
-          this, SLOT(present3DBodyView()));
+          this, SLOT(presentCoarseBodyView()));
 }
 
 ZProgressSignal* ZFlyEmBodyMergeProject::getProgressSignal() const
@@ -504,7 +512,36 @@ void ZFlyEmBodyMergeProject::uploadResult()
 
 void ZFlyEmBodyMergeProject::detachBodyWindow()
 {
+  m_bodyWindow = NULL;
+}
+
+void ZFlyEmBodyMergeProject::detachCoarseBodyWindow()
+{
   m_coarseBodyWindow = NULL;
+}
+
+void ZFlyEmBodyMergeProject::makeBodyWindow()
+{
+  ZWindowFactory factory;
+  factory.setControlPanelVisible(false);
+  factory.setObjectViewVisible(false);
+
+  ZFlyEmBody3dDoc *doc = new ZFlyEmBody3dDoc;
+  doc->setDvidTarget(getDvidTarget());
+  doc->updateFrame();
+
+  m_bodyWindow = factory.make3DWindow(doc);
+  m_bodyWindow->getGraphFilter()->setStayOnTop(false);
+  //m_bodyWindow->setParent(m_dataFrame);
+
+  m_bodyWindow->getSwcFilter()->setColorMode("Intrinsic");
+  m_bodyWindow->getSwcFilter()->setRenderingPrimitive("Sphere");
+  m_bodyWindow->getSwcFilter()->setStayOnTop(false);
+  m_bodyWindow->setYZView();
+
+  connect(m_bodyWindow, SIGNAL(closed()), this, SLOT(detachBodyWindow()));
+  connect(m_bodyWindow, SIGNAL(locating2DViewTriggered(ZStackViewParam)),
+          this, SIGNAL(locating2DViewTriggered(ZStackViewParam)));
 }
 
 void ZFlyEmBodyMergeProject::makeCoarseBodyWindow(ZStackDoc *doc)
@@ -540,7 +577,7 @@ void ZFlyEmBodyMergeProject::makeCoarseBodyWindow(ZStackDoc *doc)
   m_coarseBodyWindow->getSwcFilter()->setStayOnTop(false);
   m_coarseBodyWindow->setYZView();
 
-  connect(m_coarseBodyWindow, SIGNAL(closed()), this, SLOT(detachBodyWindow()));
+  connect(m_coarseBodyWindow, SIGNAL(closed()), this, SLOT(detachCoarseBodyWindow()));
   connect(m_coarseBodyWindow, SIGNAL(locating2DViewTriggered(ZStackViewParam)),
           this, SIGNAL(locating2DViewTriggered(ZStackViewParam)));
 
@@ -553,14 +590,16 @@ void ZFlyEmBodyMergeProject::makeCoarseBodyWindow(ZStackDoc *doc)
   getProgressSignal()->endProgress();
 }
 
-void ZFlyEmBodyMergeProject::present3DBodyView()
+void ZFlyEmBodyMergeProject::presentCoarseBodyView()
 {
 //  m_bodyWindow->moveToThread(QApplication::instance()->thread());
-  m_coarseBodyWindow->show();
-  m_coarseBodyWindow->raise();
+  if (m_coarseBodyWindow != NULL) {
+    m_coarseBodyWindow->show();
+    m_coarseBodyWindow->raise();
+  }
 }
 
-void ZFlyEmBodyMergeProject::showBody3d()
+void ZFlyEmBodyMergeProject::showCoarseBody3d()
 {
   if (m_coarseBodyWindow == NULL) {
     ZStackDoc *doc = new ZStackDoc;
@@ -575,6 +614,16 @@ void ZFlyEmBodyMergeProject::showBody3d()
     m_coarseBodyWindow->show();
     m_coarseBodyWindow->raise();
   }
+}
+
+void ZFlyEmBodyMergeProject::showBody3d()
+{
+  if (m_bodyWindow == NULL) {
+    makeBodyWindow();
+  }
+
+  m_bodyWindow->show();
+  m_bodyWindow->raise();
 }
 
 /*
@@ -729,6 +778,15 @@ void ZFlyEmBodyMergeProject::update3DBodyViewBox(const ZDvidInfo &dvidInfo)
 
 void ZFlyEmBodyMergeProject::update3DBodyView(bool showingWindow)
 {
+  if (m_bodyWindow != NULL) {
+    std::set<uint64_t> bodySet = getSelection(NeuTube::BODY_LABEL_ORIGINAL);
+    ZFlyEmBody3dDoc *doc =
+        dynamic_cast<ZFlyEmBody3dDoc*>(m_bodyWindow->getDocument());
+    if (doc != NULL){
+      doc->addBodyChangeEvent(bodySet.begin(), bodySet.end());
+    }
+  }
+
   if (m_coarseBodyWindow != NULL) {
     std::set<std::string> currentBodySourceSet;
     std::set<uint64_t> selectedMapped = getBodyMerger()->getFinalLabel(

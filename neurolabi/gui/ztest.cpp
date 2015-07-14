@@ -17309,8 +17309,12 @@ void ZTest::test(MainWindow *host)
   window->show();
   window->raise();
 
-  doc->addBody(12596838);
-  doc->addBody(13890100);
+  doc->addEvent(ZFlyEmBody3dDoc::BodyEvent::ACTION_ADD, 12596838);
+  doc->addEvent(ZFlyEmBody3dDoc::BodyEvent::ACTION_ADD, 13890100);
+//  doc->addEvent(ZFlyEmBody3dDoc::BodyEvent::ACTION_REMOVE, 12596838);
+
+//  doc->addBody(12596838);
+//  doc->addBody(13890100);
 #endif
 
 }

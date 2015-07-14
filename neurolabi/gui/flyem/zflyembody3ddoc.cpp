@@ -1,6 +1,7 @@
 #include "zflyembody3ddoc.h"
 
 #include <QtConcurrentRun>
+#include <QMutexLocker>
 
 #include "dvid/zdvidreader.h"
 #include "dvid/zdvidinfo.h"
@@ -30,6 +31,8 @@ void ZFlyEmBody3dDoc::updateBodyFunc()
 
 void ZFlyEmBody3dDoc::processEvent()
 {
+  QMutexLocker locker(&m_eventQueueMutex);
+
   QSet<uint64_t> addingSet;
   QSet<uint64_t> removingSet;
   QSet<uint64_t> updatingSet;
@@ -50,6 +53,8 @@ void ZFlyEmBody3dDoc::processEvent()
     case BodyEvent::ACTION_UPDATE:
       updatingSet.insert(bodyId);
       break;
+    default:
+      break;
     }
   }
 
@@ -64,6 +69,8 @@ void ZFlyEmBody3dDoc::processEvent()
     uint64_t bodyId = *iter;
     addBody(bodyId);
   }
+
+  m_eventQueue.clear();
 }
 
 bool ZFlyEmBody3dDoc::hasBody(uint64_t bodyId)
@@ -80,6 +87,13 @@ void ZFlyEmBody3dDoc::addBody(uint64_t bodyId)
         QtConcurrent::run(this, &ZFlyEmBody3dDoc::addBodyFunc, bodyId);
     m_futureMap[threadId] = future;
   }
+}
+
+void ZFlyEmBody3dDoc::addEvent(BodyEvent::EAction action, uint64_t bodyId)
+{
+  QMutexLocker locker(&m_eventQueueMutex);
+
+  m_eventQueue.enqueue(BodyEvent(action, bodyId));
 }
 
 void ZFlyEmBody3dDoc::addBodyFunc(uint64_t bodyId)

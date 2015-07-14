@@ -143,14 +143,16 @@ public slots:
   void update3DBodyView(const ZStackObjectSelector &selector);
   void update3DBodyView(bool showingWindow = true);
   void update3DBodyViewDeep();
+  void showCoarseBody3d();
   void showBody3d();
+  void detachCoarseBodyWindow();
   void detachBodyWindow();
   void notifySplit();
   void highlightSelectedObject(bool hl);
   void update3DBodyViewPlane();
 
 private slots:
-  void present3DBodyView();
+  void presentCoarseBodyView();
 
 private:
   ZFlyEmBodyMerger* getBodyMerger() const;
@@ -159,6 +161,7 @@ private:
   void update3DBodyViewBox(const ZDvidInfo &dvidInfo);
   void uploadResultFunc();
   void makeCoarseBodyWindow(ZStackDoc *doc);
+  void makeBodyWindow();
   void connectSignalSlot();
 
   QString getSelectionMessage() const;
@@ -171,6 +174,7 @@ private:
   ZFlyEmBodyMergeFrame *m_dataFrame;
   ZSharedPointer<ZStackDoc> m_doc;
   Z3DWindow *m_coarseBodyWindow;
+  Z3DWindow *m_bodyWindow;
   ZDvidTarget m_dvidTarget;
   ZDvidInfo m_dvidInfo;
 

@@ -30,6 +30,7 @@ signals:
   void labelSizeChanged(int width, int height);
   void showingFullSegmentation();
   void coarseBodyViewTriggered();
+  void bodyViewTriggered();
   void savingMerge();
   void committingMerge();
   void zoomingTo(int x, int y, int z);

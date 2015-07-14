@@ -1407,25 +1407,47 @@ template <class InputIterator>
 void ZStackDoc::removeObjectP(
     InputIterator first, InputIterator last, bool deleting)
 {
-  QSet<ZStackObject::EType> typeSet;
-  QSet<ZStackObject::ETarget> targetSet;
+//  TStackObjectList objList = m_objectGroup.take(type);
+  m_objectGroup.take(first, last);
+  for (TStackObjectList::iterator iter = first; iter != last; ++iter) {
+//    role.addRole(m_playerList.removePlayer(*iter));
+    bufferObjectModified(*iter);
+    m_playerList.removePlayer(*iter);
 
-  ZStackObjectRole role;
+    if (deleting) {
+      delete *iter;
+    }
+  }
+
+  notifyObjectModified();
+#if 0
+//  QSet<ZStackObject::EType> typeSet;
+//  QSet<ZStackObject::ETarget> targetSet;
+
+//  ZStackObjectRole role;
+
+  beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
   for (InputIterator iter = first; iter != last; ++iter) {
     ZStackObject *obj = *iter;
-    role.addRole(m_playerList.removePlayer(obj));
-    typeSet.insert(obj->getType());
-    targetSet.insert(obj->getTarget());
+//    role.addRole(m_playerList.removePlayer(obj));
+//    typeSet.insert(obj->getType());
+//    targetSet.insert(obj->getTarget());
+    processObjectModified(obj);
     if (deleting) {
       delete obj;
     }
   }
+  endObjectModifiedMode();
 
+  notifyObjectModified();
+#endif
+  /*
   if (first != last) {
     processObjectModified(typeSet);
     processObjectModified(targetSet);
     notifyPlayerChanged(role);
   }
+  */
 }
 
 #if 0

@@ -3164,7 +3164,9 @@ void ZStackDoc::removeObject(ZStackObjectRole::TRole role, bool deleteObject)
 
 void ZStackDoc::removeObject(const string &source, bool deleteObject)
 {
-//  m_objectGroup.
+  TStackObjectList objList = m_objectGroup.findSameSource(source);
+
+  removeObjectP(objList.begin(), objList.end(), deleteObject);
 }
 
 std::set<ZSwcTree *> ZStackDoc::removeEmptySwcTree(bool deleteObject)
