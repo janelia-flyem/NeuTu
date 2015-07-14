@@ -38,7 +38,7 @@ FlyEmProofControlForm::FlyEmProofControlForm(QWidget *parent) :
   ui->segmentSizePushButton->hide();
   ui->segmentSizeDecPushButton->setEnabled(false);
 
-  ui->bodyViewPushButton->hide();
+//  ui->bodyViewPushButton->hide();
 
 
   connect(ui->segmentSizeIncPushButton, SIGNAL(clicked()),
@@ -50,6 +50,8 @@ FlyEmProofControlForm::FlyEmProofControlForm(QWidget *parent) :
 
   connect(ui->coarseBodyPushButton, SIGNAL(clicked()),
           this, SIGNAL(coarseBodyViewTriggered()));
+  connect(ui->bodyViewPushButton, SIGNAL(clicked()),
+          this, SIGNAL(bodyViewTriggered()));
 
   connect(ui->bookmarkView, SIGNAL(doubleClicked(QModelIndex)),
           this, SLOT(locateBookmark(QModelIndex)));

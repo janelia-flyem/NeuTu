@@ -2,13 +2,15 @@
 #define ZFLYEMBODY3DDOC_H
 
 #include "zstackdoc.h"
-#include "dvid/zdvidtarget.h"
-#include "dvid/zdvidinfo.h"
-#include "qthreadfuturemap.h"
 
 #include <QSet>
 #include <QTimer>
 #include <QQueue>
+#include <QMutex>
+
+#include "dvid/zdvidtarget.h"
+#include "dvid/zdvidinfo.h"
+#include "qthreadfuturemap.h"
 
 class ZFlyEmBody3dDoc : public ZStackDoc
 {
@@ -19,11 +21,14 @@ public:
 public:
   class BodyEvent {
   public:
-    BodyEvent();
-
     enum EAction {
-      ACTION_REMOVE, ACTION_ADD, ACTION_UPDATE, ACTION_CHANGE_COLOR
+      ACTION_NULL, ACTION_REMOVE, ACTION_ADD, ACTION_UPDATE, ACTION_CHANGE_COLOR
     };
+
+  public:
+    BodyEvent() : m_action(ACTION_NULL), m_bodyId(0) {}
+    BodyEvent(BodyEvent::EAction action, uint64_t bodyId) :
+      m_action(action), m_bodyId(bodyId) {}
 
     EAction getAction() const { return m_action; }
     uint64_t getBodyId() const { return m_bodyId; }
@@ -35,6 +40,11 @@ public:
 
   void addBody(uint64_t bodyId);
   void removeBody(uint64_t bodyId);
+
+  void addEvent(BodyEvent::EAction action, uint64_t bodyId);
+
+  template <typename InputIterator>
+  void addBodyChangeEvent(const InputIterator &first, const InputIterator &last);
 
   bool hasBody(uint64_t bodyId);
 
@@ -77,6 +87,31 @@ private:
   QTimer *m_timer;
 
   QQueue<BodyEvent> m_eventQueue;
+  QMutex m_eventQueueMutex;
 };
+
+template <typename InputIterator>
+void ZFlyEmBody3dDoc::addBodyChangeEvent(
+    const InputIterator &first, const InputIterator &last)
+{
+  QSet<uint64_t> newSet;
+  for (InputIterator iter = first; iter != last; ++iter) {
+    newSet.insert(*iter);
+  }
+
+  for (QSet<uint64_t>::const_iterator iter = newSet.begin();
+       iter != newSet.end(); ++iter) {
+    if (!m_bodySet.contains(*iter)) {
+      addEvent(BodyEvent::ACTION_ADD, *iter);
+    }
+  }
+
+  for (QSet<uint64_t>::const_iterator iter = m_bodySet.begin();
+       iter != m_bodySet.end(); ++iter) {
+    if (!newSet.contains(*iter)) {
+      addEvent(BodyEvent::ACTION_REMOVE, *iter);
+    }
+  }
+}
 
 #endif // ZFLYEMBODY3DDOC_H

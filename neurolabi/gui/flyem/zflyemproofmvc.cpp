@@ -864,6 +864,11 @@ void ZFlyEmProofMvc::showSplit3d()
 
 void ZFlyEmProofMvc::showCoarseBody3d()
 {
+  m_mergeProject.showCoarseBody3d();
+}
+
+void ZFlyEmProofMvc::showFineBody3d()
+{
   m_mergeProject.showBody3d();
 }
 
