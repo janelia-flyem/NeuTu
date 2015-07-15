@@ -29,35 +29,100 @@ void ZFlyEmBody3dDoc::updateBodyFunc()
 
 }
 
-void ZFlyEmBody3dDoc::processEvent()
+void ZFlyEmBody3dDoc::BodyEvent::mergeEvent(
+    const BodyEvent &event, NeuTube::EBiDirection direction)
 {
-  QMutexLocker locker(&m_eventQueueMutex);
+  if (getBodyId() != event.getBodyId())  {
+    return;
+  }
 
-  QSet<uint64_t> addingSet;
-  QSet<uint64_t> removingSet;
-  QSet<uint64_t> updatingSet;
-
-  for (QQueue<BodyEvent>::const_iterator iter = m_eventQueue.begin();
-       iter != m_eventQueue.end(); ++iter) {
-    const BodyEvent &event = *iter;
-    uint64_t bodyId = event.getBodyId();
-    switch (event.getAction()) {
-    case BodyEvent::ACTION_ADD:
-      addingSet.insert(bodyId);
-      removingSet.remove(bodyId);
+  switch (direction) {
+  case NeuTube::DIRECTION_FORWARD: //event comes first
+    switch (getAction()) {
+    case ACTION_UPDATE:
+      switch (event.getAction()) {
+      case ACTION_ADD:
+        m_action = ACTION_ADD;
+        m_bodyColor = event.m_bodyColor;
+        m_refreshing |= event.m_refreshing;
+        break;
+      case ACTION_UPDATE:
+        m_refreshing |= event.m_refreshing;
+        break;
+      case ACTION_REMOVE:
+        m_action = ACTION_REMOVE;
+        break;
+      default:
+        break;
+      }
       break;
-    case BodyEvent::ACTION_REMOVE:
-      addingSet.remove(bodyId);
-      removingSet.insert(bodyId);
+    case ACTION_ADD:
+      if (event.getAction() == ACTION_ADD || event.getAction() == ACTION_UPDATE) {
+        m_refreshing |= event.m_refreshing;
+      }
       break;
-    case BodyEvent::ACTION_UPDATE:
-      updatingSet.insert(bodyId);
+    case ACTION_NULL:
+      *this = event;
       break;
     default:
       break;
     }
+    break;
+  case NeuTube::DIRECTION_BACKWARD:
+  {
+    BodyEvent tmpEvent = event;
+    tmpEvent.mergeEvent(*this, NeuTube::DIRECTION_FORWARD);
+    *this = tmpEvent;
+  }
+    break;
+  }
+}
+
+void ZFlyEmBody3dDoc::processEvent(const BodyEvent &event)
+{
+  switch (event.getAction()) {
+  case BodyEvent::ACTION_REMOVE:
+    removeBody(event.getBodyId());
+    break;
+  case BodyEvent::ACTION_ADD:
+    addBody(event.getBodyId(), event.getBodyColor());
+    break;
+  case BodyEvent::ACTION_UPDATE:
+    updateBody(event.getBodyId(), event.getBodyColor());
+    break;
+  default:
+    break;
+  }
+}
+
+void ZFlyEmBody3dDoc::processEvent()
+{
+  if (m_futureMap.hasThreadAlive()) {
+    return;
   }
 
+  QMutexLocker locker(&m_eventQueueMutex);
+
+//  QSet<uint64_t> bodySet = m_bodySet;
+  QMap<uint64_t, BodyEvent> m_actionMap;
+  for (QQueue<BodyEvent>::const_iterator iter = m_eventQueue.begin();
+       iter != m_eventQueue.end(); ++iter) {
+    const BodyEvent &event = *iter;
+    uint64_t bodyId = event.getBodyId();
+    if (m_actionMap.contains(bodyId)) {
+      m_actionMap[bodyId].mergeEvent(event, NeuTube::DIRECTION_BACKWARD);
+    } else {
+      m_actionMap[bodyId] = event;
+    }
+  }
+
+  for (QMap<uint64_t, BodyEvent>::const_iterator iter = m_actionMap.begin();
+       iter != m_actionMap.end(); ++iter) {
+    const BodyEvent &event = iter.value();
+    processEvent(event);
+  }
+
+  /*
   for (QSet<uint64_t>::const_iterator iter = removingSet.begin();
        iter != removingSet.end(); ++iter) {
     uint64_t bodyId = *iter;
@@ -69,6 +134,7 @@ void ZFlyEmBody3dDoc::processEvent()
     uint64_t bodyId = *iter;
     addBody(bodyId);
   }
+  */
 
   m_eventQueue.clear();
 }
@@ -78,15 +144,20 @@ bool ZFlyEmBody3dDoc::hasBody(uint64_t bodyId)
   return m_bodySet.contains(bodyId);
 }
 
-void ZFlyEmBody3dDoc::addBody(uint64_t bodyId)
+void ZFlyEmBody3dDoc::addBody(uint64_t bodyId, const QColor &color)
 {
   QString threadId = QString("addBody(%1)").arg(bodyId);
   if (!m_futureMap.isAlive(threadId)) {
     m_futureMap.removeDeadThread();
     QFuture<void> future =
-        QtConcurrent::run(this, &ZFlyEmBody3dDoc::addBodyFunc, bodyId);
+        QtConcurrent::run(this, &ZFlyEmBody3dDoc::addBodyFunc, bodyId, color);
     m_futureMap[threadId] = future;
   }
+}
+
+void ZFlyEmBody3dDoc::updateBody(uint64_t bodyId, const QColor &color)
+{
+
 }
 
 void ZFlyEmBody3dDoc::addEvent(BodyEvent::EAction action, uint64_t bodyId)
@@ -96,13 +167,14 @@ void ZFlyEmBody3dDoc::addEvent(BodyEvent::EAction action, uint64_t bodyId)
   m_eventQueue.enqueue(BodyEvent(action, bodyId));
 }
 
-void ZFlyEmBody3dDoc::addBodyFunc(uint64_t bodyId)
+void ZFlyEmBody3dDoc::addBodyFunc(uint64_t bodyId, const QColor &color)
 {
   if (!hasBody(bodyId)) {
     m_bodySet.insert(bodyId);
     ZSwcTree *tree = makeBodyModel(bodyId);
     if (tree != NULL) {
       addObject(tree, true);
+      tree->setColor(color);
     }
   }
 }
