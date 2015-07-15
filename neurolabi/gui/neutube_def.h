@@ -51,8 +51,8 @@ enum EBodyLabelType {
   BODY_LABEL_ORIGINAL, BODY_LABEL_MAPPED
 };
 
-enum ETraverseDirection {
-  TRAVERSE_FORWARD, TRAVERSE_BACKWARD
+enum EBiDirection {
+  DIRECTION_FORWARD, DIRECTION_BACKWARD
 };
 
 namespace Display {

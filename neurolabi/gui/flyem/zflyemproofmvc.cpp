@@ -568,15 +568,19 @@ void ZFlyEmProofMvc::annotateBody()
             emit errorGenerated("Cannot save annotation.");
           }
         }
+
+        checkInBody(bodyId);
       } else {
-        std::string owner = getSupervisor()->getOwner(bodyId);
-        if (owner.empty()) {
-          owner = "unknown user";
+        if (getSupervisor() != NULL) {
+          std::string owner = getSupervisor()->getOwner(bodyId);
+          if (owner.empty()) {
+            owner = "unknown user";
+          }
+          emit messageGenerated(
+                ZWidgetMessage(
+                  QString("Failed to start annotation. %1 has been locked by %2").
+                  arg(bodyId).arg(owner.c_str()), NeuTube::MSG_ERROR));
         }
-        emit messageGenerated(
-              ZWidgetMessage(
-                QString("Failed to start annotation. %1 has been locked by %2").
-                arg(bodyId).arg(owner.c_str()), NeuTube::MSG_ERROR));
       }
     } else {
       qDebug() << "Unexpected body ID: 0";

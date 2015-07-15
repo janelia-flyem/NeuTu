@@ -54,3 +54,14 @@ int QThreadFutureMap::getLivingThreadNumber() const
 
   return count;
 }
+
+bool QThreadFutureMap::hasThreadAlive() const
+{
+  for (const_iterator iter = begin(); iter != end(); ++iter) {
+    if (!(iter.value().isFinished())) {
+      return true;
+    }
+  }
+
+  return false;
+}

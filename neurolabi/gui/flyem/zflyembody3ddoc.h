@@ -7,7 +7,9 @@
 #include <QTimer>
 #include <QQueue>
 #include <QMutex>
+#include <QColor>
 
+#include "neutube_def.h"
 #include "dvid/zdvidtarget.h"
 #include "dvid/zdvidinfo.h"
 #include "qthreadfuturemap.h"
@@ -22,24 +24,31 @@ public:
   class BodyEvent {
   public:
     enum EAction {
-      ACTION_NULL, ACTION_REMOVE, ACTION_ADD, ACTION_UPDATE, ACTION_CHANGE_COLOR
+      ACTION_NULL, ACTION_REMOVE, ACTION_ADD, ACTION_UPDATE
     };
 
   public:
-    BodyEvent() : m_action(ACTION_NULL), m_bodyId(0) {}
+    BodyEvent() : m_action(ACTION_NULL), m_bodyId(0), m_refreshing(false) {}
     BodyEvent(BodyEvent::EAction action, uint64_t bodyId) :
       m_action(action), m_bodyId(bodyId) {}
 
     EAction getAction() const { return m_action; }
     uint64_t getBodyId() const { return m_bodyId; }
+    const QColor& getBodyColor() const { return m_bodyColor; }
+    const bool isRefreshing() const { return m_refreshing; }
+
+    void mergeEvent(const BodyEvent &event, NeuTube::EBiDirection direction);
 
   private:
     EAction m_action;
     uint64_t m_bodyId;
+    QColor m_bodyColor;
+    bool m_refreshing;
   };
 
-  void addBody(uint64_t bodyId);
+  void addBody(uint64_t bodyId, const QColor &color);
   void removeBody(uint64_t bodyId);
+  void updateBody(uint64_t bodyId, const QColor &color);
 
   void addEvent(BodyEvent::EAction action, uint64_t bodyId);
 
@@ -64,7 +73,7 @@ private:
   ZSwcTree* makeBodyModel(uint64_t bodyId);
   void updateDvidInfo();
 
-  void addBodyFunc(uint64_t bodyId);
+  void addBodyFunc(uint64_t bodyId, const QColor &color);
   void removeBodyFunc(uint64_t bodyId);
 
   void connectSignalSlot();
@@ -77,6 +86,7 @@ public slots:
 private slots:
 //  void updateBody();
   void processEvent();
+  void processEvent(const BodyEvent &event);
 
 private:
   QSet<uint64_t> m_bodySet;

@@ -17,6 +17,8 @@ public:
   QFuture<void>* getFuture(const QString &id);
   bool isAlive(const QString &id);
 
+  bool hasThreadAlive() const;
+
 };
 
 #endif // QTHREADFUTUREMAP_H

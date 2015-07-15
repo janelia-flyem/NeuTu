@@ -41,8 +41,8 @@ void ZFlyEmBookmark::print() const
 QString ZFlyEmBookmark::getDvidKey() const
 {
   return QString("%1_%2_%3").arg(iround(getCenter().x())).
-      arg(iround(getCenter().x())).
-      arg(iround(getCenter().x()));
+      arg(iround(getCenter().y())).
+      arg(iround(getCenter().z()));
 }
 
 ZJsonObject ZFlyEmBookmark::toJsonObject(bool ignoringComment) const

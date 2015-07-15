@@ -17252,7 +17252,7 @@ void ZTest::test(MainWindow *host)
 #  endif
 #endif
 
-#if 0
+#if 1
   ZDvidBufferReader reader;
   reader.read("http://emdata2.int.janelia.org:9100/state/ee7dc");
   const QByteArray &buffer = reader.getBuffer();
@@ -17266,10 +17266,11 @@ void ZTest::test(MainWindow *host)
   supervisor.setDvidTarget(ZDvidTarget("emdata1.int.janelia.org", "ee7dc", 8500));
   supervisor.setUserName("changl");
 
-
   for (size_t i = 0; i < array.size(); ++i) {
     ZJsonObject obj(array.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
-    if (eqstr(ZJsonParser::stringValue(obj["Client"]), "changl")) {
+    std::string userName = ZJsonParser::stringValue(obj["Client"]);
+    if (userName == "takemurasa") {
+      supervisor.setUserName(userName);
       std::cout << ZJsonParser::integerValue(obj["Label"]) << std::endl;
       supervisor.checkIn(ZJsonParser::integerValue(obj["Label"]));
     }
@@ -17289,7 +17290,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   ZWindowFactory factory;
   factory.setWindowTitle("Test");
 
