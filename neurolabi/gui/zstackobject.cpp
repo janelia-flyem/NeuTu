@@ -16,7 +16,8 @@ ZStackObject::ZStackObject() : m_selected(false), m_isSelectable(true),
 ZStackObject::~ZStackObject()
 {
 #ifdef _DEBUG_2
-  std::cout << "Deleting " << getType() << ": " << getSource() << std::endl;
+  std::cout << "Deconstructing " << this << ": " << getType() << ", "
+            << getSource() << std::endl;
 #endif
 }
 

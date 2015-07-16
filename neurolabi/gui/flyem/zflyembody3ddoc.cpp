@@ -8,6 +8,8 @@
 #include "zswcfactory.h"
 #include "zstackobjectsourcefactory.h"
 #include "z3dgraphfactory.h"
+#include "zflyemproofdoc.h"
+#include "dvid/zdvidlabelslice.h"
 
 ZFlyEmBody3dDoc::ZFlyEmBody3dDoc(QObject *parent) :
   ZStackDoc(parent)
@@ -16,17 +18,79 @@ ZFlyEmBody3dDoc::ZFlyEmBody3dDoc(QObject *parent) :
   m_timer->setInterval(200);
   m_timer->start();
 
+  m_garbageTimer = new QTimer(this);
+  m_garbageTimer->setInterval(60000);
+  m_garbageTimer->start();
+
   connectSignalSlot();
 }
 
 void ZFlyEmBody3dDoc::connectSignalSlot()
 {
   connect(m_timer, SIGNAL(timeout()), this, SLOT(processEvent()));
+  connect(m_garbageTimer, SIGNAL(timeout()), this, SLOT(clearGarbage()));
 }
 
 void ZFlyEmBody3dDoc::updateBodyFunc()
 {
+}
 
+void ZFlyEmBody3dDoc::clearGarbage()
+{
+  QMutexLocker locker(&m_garbageMutex);
+
+#ifdef _DEBUG_
+  std::cout << "Clear garbage objects ..." << std::endl;
+#endif
+
+  for (QList<ZStackObject*>::iterator iter = m_garbageList.begin();
+       iter != m_garbageList.end(); ++iter) {
+    ZStackObject *obj = *iter;
+    std::cout << "Deleting " << obj << std::endl;
+    delete obj;
+  }
+
+  m_garbageList.clear();
+}
+
+void ZFlyEmBody3dDoc::processBodySetBuffer()
+{
+  /*
+  for (QSet<uint64_t>::const_iterator iter = m_bodySetBuffer.begin();
+       iter != m_bodySetBuffer.end(); ++iter) {
+    if (!m_bodySetBuffer.contains(*iter)) {
+      addEvent(BodyEvent::ACTION_ADD, *iter);
+    }
+  }
+
+  for (QSet<uint64_t>::const_iterator iter = m_bodySet.begin();
+       iter != m_bodySet.end(); ++iter) {
+    if (!m_bodySetBuffer.contains(*iter)) {
+      addEvent(BodyEvent::ACTION_REMOVE, *iter);
+    }
+  }
+*/
+//  m_bodySetBuffer.clear();
+}
+
+void ZFlyEmBody3dDoc::BodyEvent::print() const
+{
+  switch (m_action) {
+  case ACTION_UPDATE:
+    std::cout << "Update: ";
+    break;
+  case ACTION_ADD:
+    std::cout << "Add: ";
+    break;
+  case ACTION_REMOVE:
+    std::cout << "Remove: ";
+    break;
+  case ACTION_NULL:
+    std::cout << "No action: ";
+    break;
+  }
+
+  std::cout << getBodyId() << std::endl;
 }
 
 void ZFlyEmBody3dDoc::BodyEvent::mergeEvent(
@@ -78,6 +142,33 @@ void ZFlyEmBody3dDoc::BodyEvent::mergeEvent(
   }
 }
 
+void ZFlyEmBody3dDoc::setDataDoc(ztr1::shared_ptr<ZStackDoc> doc)
+{
+  m_dataDoc = doc;
+}
+
+ZFlyEmProofDoc* ZFlyEmBody3dDoc::getDataDocument() const
+{
+  return dynamic_cast<ZFlyEmProofDoc*>(m_dataDoc.get());
+}
+
+void ZFlyEmBody3dDoc::processEventFunc(const BodyEvent &event)
+{
+  switch (event.getAction()) {
+  case BodyEvent::ACTION_REMOVE:
+    removeBodyFunc(event.getBodyId());
+    break;
+  case BodyEvent::ACTION_ADD:
+    addBodyFunc(event.getBodyId(), event.getBodyColor());
+    break;
+  case BodyEvent::ACTION_UPDATE:
+    updateBody(event.getBodyId(), event.getBodyColor());
+    break;
+  default:
+    break;
+  }
+}
+
 void ZFlyEmBody3dDoc::processEvent(const BodyEvent &event)
 {
   switch (event.getAction()) {
@@ -95,12 +186,8 @@ void ZFlyEmBody3dDoc::processEvent(const BodyEvent &event)
   }
 }
 
-void ZFlyEmBody3dDoc::processEvent()
+void ZFlyEmBody3dDoc::processEventFunc()
 {
-  if (m_futureMap.hasThreadAlive()) {
-    return;
-  }
-
   QMutexLocker locker(&m_eventQueueMutex);
 
 //  QSet<uint64_t> bodySet = m_bodySet;
@@ -116,11 +203,65 @@ void ZFlyEmBody3dDoc::processEvent()
     }
   }
 
+  for (QMap<uint64_t, BodyEvent>::iterator iter = m_actionMap.begin();
+       iter != m_actionMap.end(); ++iter) {
+    BodyEvent &event = iter.value();
+    if (event.getAction() == BodyEvent::ACTION_ADD) {
+      if (m_bodySet.contains(event.getBodyId())) {
+        event.setAction(BodyEvent::ACTION_NULL);
+      } else {
+        m_bodySet.insert(event.getBodyId());
+      }
+    } else if (event.getAction() == BodyEvent::ACTION_REMOVE) {
+      if (m_bodySet.contains(event.getBodyId())) {
+        m_bodySet.remove(event.getBodyId());
+      } else {
+        event.setAction(BodyEvent::ACTION_NULL);
+      }
+    }
+//    event.print();
+  }
+
+  m_eventQueue.clear();
+  m_eventQueueMutex.unlock();
+
+#ifdef _DEBUG_
+  if (!m_actionMap.isEmpty()) {
+    std::cout << "====Processing Event====" << std::endl;
+    for (QMap<uint64_t, BodyEvent>::const_iterator iter = m_actionMap.begin();
+         iter != m_actionMap.end(); ++iter) {
+      const BodyEvent &event = iter.value();
+      event.print();
+    }
+  }
+#endif
+
   for (QMap<uint64_t, BodyEvent>::const_iterator iter = m_actionMap.begin();
        iter != m_actionMap.end(); ++iter) {
     const BodyEvent &event = iter.value();
-    processEvent(event);
+    processEventFunc(event);
   }
+
+#ifdef _DEBUG_
+  std::cout << "====Processing done====" << std::endl;
+#endif
+}
+
+void ZFlyEmBody3dDoc::processEvent()
+{
+  if (m_eventQueue.empty()) {
+    return;
+  }
+
+  QString threadId = QString("processEvent()");
+
+  if (!m_futureMap.isAlive(threadId)) {
+    m_futureMap.removeDeadThread();
+    QFuture<void> future =
+        QtConcurrent::run(this, &ZFlyEmBody3dDoc::processEventFunc);
+    m_futureMap[threadId] = future;
+  }
+
 
   /*
   for (QSet<uint64_t>::const_iterator iter = removingSet.begin();
@@ -136,7 +277,8 @@ void ZFlyEmBody3dDoc::processEvent()
   }
   */
 
-  m_eventQueue.clear();
+//  locker.unlock();
+//  processBodySetBuffer();
 }
 
 bool ZFlyEmBody3dDoc::hasBody(uint64_t bodyId)
@@ -146,12 +288,18 @@ bool ZFlyEmBody3dDoc::hasBody(uint64_t bodyId)
 
 void ZFlyEmBody3dDoc::addBody(uint64_t bodyId, const QColor &color)
 {
-  QString threadId = QString("addBody(%1)").arg(bodyId);
-  if (!m_futureMap.isAlive(threadId)) {
-    m_futureMap.removeDeadThread();
-    QFuture<void> future =
-        QtConcurrent::run(this, &ZFlyEmBody3dDoc::addBodyFunc, bodyId, color);
-    m_futureMap[threadId] = future;
+  if (!hasBody(bodyId)) {
+    m_bodySet.insert(bodyId);
+    addBodyFunc(bodyId, color);
+    /*
+    QString threadId = QString("addBody(%1)").arg(bodyId);
+    if (!m_futureMap.isAlive(threadId)) {
+      m_futureMap.removeDeadThread();
+      QFuture<void> future =
+          QtConcurrent::run(this, &ZFlyEmBody3dDoc::addBodyFunc, bodyId, color);
+      m_futureMap[threadId] = future;
+    }
+    */
   }
 }
 
@@ -160,27 +308,45 @@ void ZFlyEmBody3dDoc::updateBody(uint64_t bodyId, const QColor &color)
 
 }
 
-void ZFlyEmBody3dDoc::addEvent(BodyEvent::EAction action, uint64_t bodyId)
+void ZFlyEmBody3dDoc::addEvent(
+    BodyEvent::EAction action, uint64_t bodyId, QMutex *mutex)
 {
-  QMutexLocker locker(&m_eventQueueMutex);
+  QMutexLocker locker(mutex);
 
-  m_eventQueue.enqueue(BodyEvent(action, bodyId));
+  BodyEvent event(action, bodyId);
+  if (getDataDocument() != NULL) {
+    ZDvidLabelSlice *labelSlice = getDataDocument()->getDvidLabelSlice();
+
+    if (labelSlice != NULL) {
+      QColor color = labelSlice->getColor(bodyId, NeuTube::BODY_LABEL_MAPPED);
+      color.setAlpha(255);
+      event.setBodyColor(color);
+    }
+  }
+
+  m_eventQueue.enqueue(event);
 }
 
 void ZFlyEmBody3dDoc::addBodyFunc(uint64_t bodyId, const QColor &color)
 {
-  if (!hasBody(bodyId)) {
-    m_bodySet.insert(bodyId);
-    ZSwcTree *tree = makeBodyModel(bodyId);
-    if (tree != NULL) {
-      addObject(tree, true);
-      tree->setColor(color);
-    }
+  ZSwcTree *tree = makeBodyModel(bodyId);
+  if (tree != NULL) {
+#ifdef _DEBUG_
+    std::cout << "Adding object: " << dynamic_cast<ZStackObject*>(tree) << std::endl;
+#endif
+    tree->setColor(color);
+
+//    delete tree;
+    addObject(tree, true);
+
+//    removeObject(tree->getSource(), true);
+//    removeObject(tree, true);
   }
 }
 
 void ZFlyEmBody3dDoc::removeBody(uint64_t bodyId)
 {
+  m_bodySet.remove(bodyId);
   removeBodyFunc(bodyId);
 }
 
@@ -188,8 +354,16 @@ void ZFlyEmBody3dDoc::removeBodyFunc(uint64_t bodyId)
 {
   QString threadId = QString("addBody(%1)").arg(bodyId);
   if (!m_futureMap.isAlive(threadId)) {
-    m_bodySet.remove(bodyId);
-    removeObject(ZStackObjectSourceFactory::MakeFlyEmBodySource(bodyId), true);
+    TStackObjectList objList = getObjectGroup().findSameSource(
+          ZStackObjectSourceFactory::MakeFlyEmBodySource(bodyId));
+    beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
+    for (TStackObjectList::iterator iter = objList.begin(); iter != objList.end();
+         ++iter) {
+      removeObject(*iter, false);
+      dumpGarbage(*iter);
+    }
+    endObjectModifiedMode();
+    notifyObjectModified();
   }
 }
 
@@ -257,4 +431,20 @@ void ZFlyEmBody3dDoc::updateFrame()
   graph->setSource(ZStackObjectSourceFactory::MakeFlyEmBoundBoxSource());
 
   addObject(graph, true);
+}
+
+void ZFlyEmBody3dDoc::printEventQueue() const
+{
+  for (QQueue<BodyEvent>::const_iterator iter = m_eventQueue.begin();
+       iter != m_eventQueue.end(); ++iter) {
+    const BodyEvent &event  = *iter;
+    event.print();
+  }
+}
+
+void ZFlyEmBody3dDoc::dumpGarbage(ZStackObject *obj)
+{
+  QMutexLocker locker(&m_garbageMutex);
+
+  m_garbageList.append(obj);
 }

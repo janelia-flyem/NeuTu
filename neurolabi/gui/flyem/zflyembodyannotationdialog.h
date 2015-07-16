@@ -23,6 +23,7 @@ public:
   void loadBodyAnnotation(const ZFlyEmBodyAnnotation &annotation);
 
   void setBodyId(uint64_t bodyId);
+  void setPrevUser(const std::string &name);
 
   uint64_t getBodyId() const;
   QString getComment() const;

@@ -124,6 +124,13 @@ FlyEmDataForm::~FlyEmDataForm()
   //delete m_thumbnailImage;
   delete ui;
   delete m_thumbnailScene;
+
+  for (QMap<QString, QFuture<void> >::iterator iter = m_threadFutureMap.begin();
+       iter != m_threadFutureMap.end(); ++iter) {
+    if (!iter->isFinished()) {
+      iter->waitForFinished();
+    }
+  }
 }
 
 QSize FlyEmDataForm::sizeHint() const
@@ -768,6 +775,7 @@ void FlyEmDataForm::updateThumbnailSecondary(const QModelIndex &index)
 
 void FlyEmDataForm::computeThumbnailFunc(ZFlyEmNeuron *neuron)
 {
+  ZFlyEmNeuronImageFactory imageFactory = *(getParentFrame()->getImageFactory());
   if (neuron != NULL) {
     if (!neuron->getThumbnailPath().empty()) {
       ZString str(neuron->getThumbnailPath());
@@ -789,8 +797,7 @@ void FlyEmDataForm::computeThumbnailFunc(ZFlyEmNeuron *neuron)
           ZObject3dScan body;
           reader.readBody(neuron->getId(), &body);
 
-          Stack *stack =
-              getParentFrame()->getImageFactory()->createSurfaceImage(body);
+          Stack *stack = imageFactory.createSurfaceImage(body);
           writer.writeThumbnail(neuron->getId(), stack);
 
           ZFlyEmNeuronBodyInfo bodyInfo;

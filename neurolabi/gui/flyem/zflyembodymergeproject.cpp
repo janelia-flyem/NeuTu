@@ -529,6 +529,7 @@ void ZFlyEmBodyMergeProject::makeBodyWindow()
   ZFlyEmBody3dDoc *doc = new ZFlyEmBody3dDoc;
   doc->setDvidTarget(getDvidTarget());
   doc->updateFrame();
+  doc->setDataDoc(m_doc);
 
   m_bodyWindow = factory.make3DWindow(doc);
   m_bodyWindow->getGraphFilter()->setStayOnTop(false);
