@@ -25,6 +25,18 @@ ZFlyEmBody3dDoc::ZFlyEmBody3dDoc(QObject *parent) :
   connectSignalSlot();
 }
 
+ZFlyEmBody3dDoc::~ZFlyEmBody3dDoc()
+{
+  QMutexLocker locker(&m_eventQueueMutex);
+  m_eventQueue.clear();
+  m_eventQueueMutex.unlock();
+
+  m_futureMap.waitForFinished();
+
+  clearGarbage();
+
+}
+
 void ZFlyEmBody3dDoc::connectSignalSlot()
 {
   connect(m_timer, SIGNAL(timeout()), this, SLOT(processEvent()));

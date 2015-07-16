@@ -19,14 +19,6 @@
       "user_name": "zhaot"
     },
     {
-      "address": "emdata2.int.janelia.org",
-      "port": 7000,
-      "uuid": "79b",
-      "name": "FIB19 (emdata2)",
-      "comment": "FIB19",
-      "user_name": "zhaot"
-    },
-    {
       "address": "emdata1.int.janelia.org",
       "uuid": "2a3",
       "name": "FIB25-Hackathon (internal)",
@@ -58,8 +50,8 @@
       "name": "FIB19 (emdata2)",
       "body_label": "segmentation-labelvol",
       "label_block": "segmentation",
-      "user_name": "zhaot",
-      "multires_tile": "graytiles"
+      "multires_tile": "graytiles",
+      "user_name": ["shinomiyaa", "zhaot"]
     },
     {
       "address": "emrecon100.janelia.priv",

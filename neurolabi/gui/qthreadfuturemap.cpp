@@ -4,6 +4,20 @@ QThreadFutureMap::QThreadFutureMap()
 {
 }
 
+QThreadFutureMap::~QThreadFutureMap()
+{
+  waitForFinished();
+}
+
+void QThreadFutureMap::waitForFinished()
+{
+  for (iterator iter = begin(); iter != end(); ++iter) {
+    if (!(iter.value().isFinished())) {
+      iter.value().waitForFinished();
+    }
+  }
+}
+
 bool QThreadFutureMap::hasFuture(const QString &id) const
 {
   return contains(id);

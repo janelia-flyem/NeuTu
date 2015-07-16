@@ -10,6 +10,7 @@ class QThreadFutureMap : public QHash<QString, QFuture<void> >
 {
 public:
   QThreadFutureMap();
+  ~QThreadFutureMap();
 
   bool hasFuture(const QString &id) const;
   void removeDeadThread();
@@ -18,6 +19,8 @@ public:
   bool isAlive(const QString &id);
 
   bool hasThreadAlive() const;
+
+  void waitForFinished();
 
 };
 

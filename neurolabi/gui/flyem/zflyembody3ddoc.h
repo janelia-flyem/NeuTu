@@ -23,6 +23,7 @@ class ZFlyEmBody3dDoc : public ZStackDoc
   Q_OBJECT
 public:
   explicit ZFlyEmBody3dDoc(QObject *parent = 0);
+  ~ZFlyEmBody3dDoc();
 
 
   void setDataDoc(ZSharedPointer<ZStackDoc> doc);
