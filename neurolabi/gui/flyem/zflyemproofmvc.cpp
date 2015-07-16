@@ -1008,23 +1008,35 @@ void ZFlyEmProofMvc::notifyBookmarkUpdated()
   emit bookmarkUpdated(&m_splitProject);
 }
 
+void ZFlyEmProofMvc::loadBookmarkFunc(const QString &filePath)
+{
+  getProgressSignal()->startProgress("Importing bookmarks ...");
+  //  m_splitProject.loadBookmark(filePath);
+
+    ZDvidReader reader;
+  //  ZFlyEmCoordinateConverter converter;
+    if (reader.open(getDvidTarget())) {
+  //    ZDvidInfo info = reader.readGrayScaleInfo();
+  //    converter.configure(info);
+      getProgressSignal()->advanceProgress(0.1);
+      getCompleteDocument()->importFlyEmBookmark(filePath.toStdString());
+      getProgressSignal()->advanceProgress(0.5);
+  //    m_bookmarkArray.importJsonFile(filePath.toStdString(), NULL/*&converter*/);
+    }
+
+    notifyBookmarkUpdated();
+
+    getProgressSignal()->advanceProgress(0.3);
+
+    getProgressSignal()->endProgress();
+  //  m_bookmarkArray.importJsonFile(filePath);
+
+  //  emit bookmarkUpdated(&m_splitProject);
+}
+
 void ZFlyEmProofMvc::loadBookmark(const QString &filePath)
 {
-//  m_splitProject.loadBookmark(filePath);
-
-  ZDvidReader reader;
-//  ZFlyEmCoordinateConverter converter;
-  if (reader.open(getDvidTarget())) {
-//    ZDvidInfo info = reader.readGrayScaleInfo();
-//    converter.configure(info);
-    getCompleteDocument()->importFlyEmBookmark(filePath.toStdString());
-//    m_bookmarkArray.importJsonFile(filePath.toStdString(), NULL/*&converter*/);
-  }
-
-  notifyBookmarkUpdated();
-//  m_bookmarkArray.importJsonFile(filePath);
-
-//  emit bookmarkUpdated(&m_splitProject);
+  QtConcurrent::run(this, &ZFlyEmProofMvc::loadBookmarkFunc, filePath);
 }
 
 void ZFlyEmProofMvc::loadSynapse()

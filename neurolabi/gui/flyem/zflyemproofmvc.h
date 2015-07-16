@@ -147,6 +147,7 @@ private:
   void runSplitFunc();
   void notifyBookmarkUpdated();
   void syncDvidBookmark();
+  void loadBookmarkFunc(const QString &filePath);
 
 private:
   bool m_showSegmentation;
