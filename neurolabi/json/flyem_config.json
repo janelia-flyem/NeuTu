@@ -52,6 +52,16 @@
       "user_name": "zhaot"
     },
     {
+      "address": "emdata2.int.janelia.org",
+      "port": 7000,
+      "uuid": "897b",
+      "name": "FIB19 (emdata2)",
+      "body_label": "segmentation-labelvol",
+      "label_block": "segmentation",
+      "user_name": "zhaot",
+      "multires_tile": "graytiles"
+    },
+    {
       "address": "emrecon100.janelia.priv",
       "uuid": "c329",
       "name": "FIB25-Tile",

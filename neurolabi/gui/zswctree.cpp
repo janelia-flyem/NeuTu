@@ -74,6 +74,9 @@ ZSwcTree::~ZSwcTree()
   }
 #endif
 
+  std::cout << "Deconstructing " << this << ": SWC " << ", "
+            << getSource() << std::endl;
+
   if (m_tree != NULL) {
     Kill_Swc_Tree(m_tree);
   }

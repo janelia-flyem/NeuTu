@@ -1411,11 +1411,17 @@ void ZStackDoc::removeObjectP(
   m_objectGroup.take(first, last);
   for (TStackObjectList::iterator iter = first; iter != last; ++iter) {
 //    role.addRole(m_playerList.removePlayer(*iter));
-    bufferObjectModified(*iter);
-    m_playerList.removePlayer(*iter);
+    ZStackObject *obj = *iter;
+
+#ifdef _DEBUG_
+    std::cout << "Removing object: " << obj << std::endl;
+#endif
+
+    bufferObjectModified(obj);
+    m_playerList.removePlayer(obj);
 
     if (deleting) {
-      delete *iter;
+      delete obj;
     }
   }
 
