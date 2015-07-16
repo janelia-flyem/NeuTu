@@ -38,8 +38,6 @@ void ZTestDialog2::onBrowseButton() {
 
 void ZTestDialog2::onBodyInfoButton() {
 
-    std::cout << "launching body info dialog";
-
     m_flyEmBodyInfoDialog->show();
 
 }
