@@ -17318,7 +17318,7 @@ void ZTest::test(MainWindow *host)
 //  doc->addBody(13890100);
 #endif
 
-#if 1
+#if 0
   ZFlyEmBody3dDoc::BodyEvent event1(
         ZFlyEmBody3dDoc::BodyEvent::ACTION_ADD, 1200);
 
@@ -17332,7 +17332,7 @@ void ZTest::test(MainWindow *host)
   event2.print();
 #endif
 
-#if 1
+#if 0
   ZFlyEmBody3dDoc doc;
   std::vector<uint64_t> bodyIdArray;
   bodyIdArray.push_back(1);
@@ -17340,5 +17340,13 @@ void ZTest::test(MainWindow *host)
 
   doc.addBodyChangeEvent(bodyIdArray.begin(), bodyIdArray.end());
   doc.printEventQueue();
+#endif
+
+#if 1
+  ZString str = "232435232-53634643637-423422222222893";
+  std::vector<uint64_t> array = str.toUint64Array();
+  for (size_t i = 0; i < array.size(); ++i) {
+    std::cout << array[i] << std::endl;
+  }
 #endif
 }

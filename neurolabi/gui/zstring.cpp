@@ -93,6 +93,27 @@ vector<int> ZString::toIntegerArray()
     valueArray[i] = array[i];
   }
 
+  if (array != NULL) {
+    free(array);
+  }
+
+  return valueArray;
+}
+
+vector<uint64_t> ZString::toUint64Array()
+{
+  int n;
+  uint64_t *array = String_To_Uint64_Array(c_str(), NULL, &n);
+
+  vector<uint64_t> valueArray(n);
+  for (int i = 0; i < n; i++) {
+    valueArray[i] = array[i];
+  }
+
+  if (array != NULL) {
+    free(array);
+  }
+
   return valueArray;
 }
 
@@ -104,6 +125,10 @@ vector<double> ZString::toDoubleArray()
   vector<double> valueArray(n);
   for (int i = 0; i < n; i++) {
     valueArray[i] = array[i];
+  }
+
+  if (array != NULL) {
+    free(array);
   }
 
   return valueArray;

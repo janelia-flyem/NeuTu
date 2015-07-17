@@ -36,7 +36,7 @@ private:
   int runTraceNeuron();
   int runTest();
 
-  std::set<int> loadBodySet(const std::string &input);
+  std::set<uint64_t> loadBodySet(const std::string &input);
 
   void loadConfig(const std::string &filePath);
   void expandConfig(const std::string &configFilePath, const std::string &key);

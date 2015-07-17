@@ -501,11 +501,11 @@ int ZCommandLine::runImageSeparation()
   return 0;
 }
 
-std::set<int> ZCommandLine::loadBodySet(const std::string &input)
+std::set<uint64_t> ZCommandLine::loadBodySet(const std::string &input)
 {
 //  ZString
 
-  std::set<int> bodySet;
+  std::set<uint64_t> bodySet;
 
   FILE *fp = fopen(input.c_str(), "r");
   ZString str;
@@ -552,7 +552,7 @@ int ZCommandLine::runSkeletonize()
     ZDvidWriter writer;
     writer.open(target);
 
-    std::set<int> bodyIdSet;
+    std::set<uint64_t> bodyIdSet;
 
     if (m_input.size() == 1) {
       bodyIdSet = reader.readBodyId(100000);

@@ -6540,7 +6540,7 @@ void MainWindow::on_actionUpdate_Skeletons_triggered()
     if (reader.open(m_dvidSkeletonizeDialog->getDvidTarget())) {
       ZDvidWriter writer;
       writer.open(m_dvidSkeletonizeDialog->getDvidTarget());
-      std::set<int> bodyIdArray;
+      std::set<uint64_t> bodyIdArray;
 
       if (m_dvidSkeletonizeDialog->hasUpperBodySize()) {
         bodyIdArray =
@@ -6559,7 +6559,7 @@ void MainWindow::on_actionUpdate_Skeletons_triggered()
       skeletonizer.configure(config);
 
       int count = 1;
-      for (std::set<int>::const_iterator iter = bodyIdArray.begin();
+      for (std::set<uint64_t>::const_iterator iter = bodyIdArray.begin();
            iter != bodyIdArray.end(); ++iter, ++count) {
         int bodyId = *iter;
         if (excluded.count(bodyId) == 0) {

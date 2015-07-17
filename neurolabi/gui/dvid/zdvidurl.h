@@ -144,6 +144,7 @@ private:
   ZDvidTarget m_dvidTarget;
 
   static const std::string m_keyCommand;
+  static const std::string m_keysCommand;
   static const std::string m_keyRangeCommand;
   static const std::string m_infoCommand;
   static const std::string m_sparsevolCommand;

@@ -54,6 +54,7 @@ public:
   std::string firstQuotedWord();
 
   std::vector<int> toIntegerArray();
+  std::vector<uint64_t> toUint64Array();
   std::vector<double> toDoubleArray();
   std::vector<std::string> toWordArray(const std::string &delim = ", \n");
   std::vector<std::string> tokenize(char c);
