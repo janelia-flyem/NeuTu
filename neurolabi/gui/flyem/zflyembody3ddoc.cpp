@@ -12,7 +12,7 @@
 #include "dvid/zdvidlabelslice.h"
 
 ZFlyEmBody3dDoc::ZFlyEmBody3dDoc(QObject *parent) :
-  ZStackDoc(parent)
+  ZStackDoc(parent), m_garbageJustDumped(false)
 {
   m_timer = new QTimer(this);
   m_timer->setInterval(200);
@@ -33,8 +33,8 @@ ZFlyEmBody3dDoc::~ZFlyEmBody3dDoc()
 
   m_futureMap.waitForFinished();
 
+  m_garbageJustDumped = false;
   clearGarbage();
-
 }
 
 void ZFlyEmBody3dDoc::connectSignalSlot()
@@ -51,18 +51,22 @@ void ZFlyEmBody3dDoc::clearGarbage()
 {
   QMutexLocker locker(&m_garbageMutex);
 
+  if (!m_garbageJustDumped) {
 #ifdef _DEBUG_
-  std::cout << "Clear garbage objects ..." << std::endl;
+    std::cout << "Clear garbage objects ..." << std::endl;
 #endif
 
-  for (QList<ZStackObject*>::iterator iter = m_garbageList.begin();
-       iter != m_garbageList.end(); ++iter) {
-    ZStackObject *obj = *iter;
-    std::cout << "Deleting " << obj << std::endl;
-    delete obj;
+    for (QList<ZStackObject*>::iterator iter = m_garbageList.begin();
+         iter != m_garbageList.end(); ++iter) {
+      ZStackObject *obj = *iter;
+      std::cout << "Deleting " << obj << std::endl;
+      delete obj;
+    }
+
+    m_garbageList.clear();
   }
 
-  m_garbageList.clear();
+  m_garbageJustDumped = false;
 }
 
 void ZFlyEmBody3dDoc::processBodySetBuffer()
@@ -459,4 +463,5 @@ void ZFlyEmBody3dDoc::dumpGarbage(ZStackObject *obj)
   QMutexLocker locker(&m_garbageMutex);
 
   m_garbageList.append(obj);
+  m_garbageJustDumped = true;
 }

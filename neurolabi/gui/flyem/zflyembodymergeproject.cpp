@@ -98,12 +98,6 @@ int ZFlyEmBodyMergeProject::getCurrentZ() const
   if (getDocument() != NULL) {
     getDocument()->getStackOffset().getZ();
   }
-  /*
-
-  if (m_dataFrame != NULL) {
-    z = m_dataFrame->document()->getStackOffset().getZ();
-  }
-  */
 
   return z;
 }

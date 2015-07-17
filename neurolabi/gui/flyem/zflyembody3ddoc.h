@@ -133,6 +133,7 @@ private:
   ZSharedPointer<ZStackDoc> m_dataDoc;
 
   QList<ZStackObject*> m_garbageList;
+  bool m_garbageJustDumped;
 
   QQueue<BodyEvent> m_eventQueue;
 
