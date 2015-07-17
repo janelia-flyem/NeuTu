@@ -1,4 +1,5 @@
-#include "zswcgenerator.h"
+#include "zswcfactory.h"
+
 #include "zswctree.h"
 #include "swctreenode.h"
 #include "swc/zswcresampler.h"
@@ -19,11 +20,12 @@
 #include "zclosedcurve.h"
 #include "tz_stack_neighborhood.h"
 
-ZSwcGenerator::ZSwcGenerator()
+
+ZSwcFactory::ZSwcFactory()
 {
 }
 
-ZSwcTree* ZSwcGenerator::createVirtualRootSwc()
+ZSwcTree* ZSwcFactory::CreateVirtualRootSwc()
 {
   ZSwcTree *tree = new ZSwcTree;
   tree->forceVirtualRoot();
@@ -31,13 +33,13 @@ ZSwcTree* ZSwcGenerator::createVirtualRootSwc()
   return tree;
 }
 
-ZSwcTree* ZSwcGenerator::createCircleSwc(double cx, double cy, double cz, double r)
+ZSwcTree* ZSwcFactory::CreateCircleSwc(double cx, double cy, double cz, double r)
 {
   if (r < 0.0) {
     return NULL;
   }
 
-  ZSwcTree *tree = createVirtualRootSwc();
+  ZSwcTree *tree = CreateVirtualRootSwc();
 
   Swc_Tree_Node *parent = tree->root();
 
@@ -64,21 +66,21 @@ ZSwcTree* ZSwcGenerator::createCircleSwc(double cx, double cy, double cz, double
   return tree;
 }
 
-ZSwcTree* ZSwcGenerator::createBoxSwc(const ZCuboid &box, double radius)
+ZSwcTree* ZSwcFactory::CreateBoxSwc(const ZCuboid &box, double radius)
 {
   return ZSwcTree::CreateCuboidSwc(box, radius);
 }
 
-ZSwcTree* ZSwcGenerator::createBoxSwc(const ZIntCuboid &box, double radius)
+ZSwcTree* ZSwcFactory::CreateBoxSwc(const ZIntCuboid &box, double radius)
 {
   ZCuboid cuboid;
   cuboid.setFirstCorner(ZPoint(box.getFirstCorner().toPoint()));
   cuboid.setSize(box.getWidth(), box.getHeight(), box.getDepth());
 
-  return createBoxSwc(cuboid, radius);
+  return CreateBoxSwc(cuboid, radius);
 }
 
-ZSwcTree* ZSwcGenerator::createSwc(const ZFlyEmNeuronRange &range)
+ZSwcTree* ZSwcFactory::CreateSwc(const ZFlyEmNeuronRange &range)
 {
   if (range.isEmpty()) {
     return NULL;
@@ -93,11 +95,11 @@ ZSwcTree* ZSwcGenerator::createSwc(const ZFlyEmNeuronRange &range)
     dz = 1.0;
   }
 
-  ZSwcTree *tree = createVirtualRootSwc();
+  ZSwcTree *tree = CreateVirtualRootSwc();
 
   for (double z = minZ; z <= maxZ; z += dz) {
     double r = range.getRadius(z);
-    ZSwcTree *subtree = createCircleSwc(0, 0, z, r);
+    ZSwcTree *subtree = CreateCircleSwc(0, 0, z, r);
     tree->merge(subtree, true);
   }
 
@@ -106,7 +108,7 @@ ZSwcTree* ZSwcGenerator::createSwc(const ZFlyEmNeuronRange &range)
   return tree;
 }
 
-ZSwcTree* ZSwcGenerator::createSwc(
+ZSwcTree* ZSwcFactory::CreateSwc(
     const ZFlyEmNeuronRange &range, const ZFlyEmNeuronAxis &axis)
 {
   double minZ = range.getMinZ();
@@ -114,12 +116,12 @@ ZSwcTree* ZSwcGenerator::createSwc(
 
   double dz = (maxZ - minZ) / 50.0;
 
-  ZSwcTree *tree = createVirtualRootSwc();
+  ZSwcTree *tree = CreateVirtualRootSwc();
 
   for (double z = minZ; z <= maxZ; z += dz) {
     double r = range.getRadius(z);
     ZPoint pt = axis.getCenter(z);
-    ZSwcTree *subtree = createCircleSwc(pt.x(), pt.y(), z, r);
+    ZSwcTree *subtree = CreateCircleSwc(pt.x(), pt.y(), z, r);
     tree->merge(subtree, true);
   }
 
@@ -128,7 +130,7 @@ ZSwcTree* ZSwcGenerator::createSwc(
   return tree;
 }
 
-ZSwcTree* ZSwcGenerator::createRangeCompareSwc(
+ZSwcTree* ZSwcFactory::CreateRangeCompareSwc(
     const ZFlyEmNeuronRange &range, const ZFlyEmNeuronRange &reference)
 {
   if (range.isEmpty()) {
@@ -144,26 +146,26 @@ ZSwcTree* ZSwcGenerator::createRangeCompareSwc(
     dz = 1.0;
   }
 
-  ZSwcTree *tree = createVirtualRootSwc();
+  ZSwcTree *tree = CreateVirtualRootSwc();
 
   double minReferenceZ = reference.getMinZ();
   double maxReferenceZ = reference.getMaxZ();
 
   for (double z = minReferenceZ; z < minZ; z += dz) {
-    ZSwcTree *subtree = createCircleSwc(0, 0, z, reference.getRadius(z));
+    ZSwcTree *subtree = CreateCircleSwc(0, 0, z, reference.getRadius(z));
     subtree->setType(5);
     tree->merge(subtree, true);
   }
 
   for (double z = maxZ + dz; z <= maxReferenceZ; z += dz) {
-    ZSwcTree *subtree = createCircleSwc(0, 0, z, reference.getRadius(z));
+    ZSwcTree *subtree = CreateCircleSwc(0, 0, z, reference.getRadius(z));
     subtree->setType(5);
     tree->merge(subtree, true);
   }
 
   for (double z = minZ; z <= maxZ; z += dz) {
     double r = range.getRadius(z);
-    ZSwcTree *subtree = createCircleSwc(0, 0, z, r);
+    ZSwcTree *subtree = CreateCircleSwc(0, 0, z, r);
     ZFlyEmNeuronRangeCompare comp;
     ZFlyEmNeuronRangeCompare::EMatchStatus status =
         comp.compare(range, reference, z);
@@ -189,7 +191,7 @@ ZSwcTree* ZSwcGenerator::createRangeCompareSwc(
   return tree;
 }
 
-ZSwcTree* ZSwcGenerator::createSwcByRegionSampling(
+ZSwcTree* ZSwcFactory::CreateSwcByRegionSampling(
     const ZVoxelArray &voxelArray, double radiusAdjustment)
 {
 #ifdef _DEBUG_2
@@ -244,11 +246,11 @@ ZSwcTree* ZSwcGenerator::createSwcByRegionSampling(
   return tree;
 }
 
-ZSwcTree* ZSwcGenerator::createSwc(
-    const ZVoxelArray &voxelArray, ZSwcGenerator::EPostProcess option)
+ZSwcTree* ZSwcFactory::CreateSwc(
+    const ZVoxelArray &voxelArray, ZSwcFactory::EPostProcess option)
 {
   if (option == REGION_SAMPLING) {
-    return createSwcByRegionSampling(voxelArray);
+    return CreateSwcByRegionSampling(voxelArray);
   }
 
   size_t startIndex = 0;
@@ -312,7 +314,7 @@ ZSwcTree* ZSwcGenerator::createSwc(
   return treeWrapper;
 }
 
-ZSwcTree* ZSwcGenerator::createSwc(
+ZSwcTree* ZSwcFactory::CreateSwc(
     const ZPointArray &pointArray, double radius, bool isConnected)
 {
   ZSwcTree *tree = new ZSwcTree;
@@ -339,7 +341,7 @@ ZSwcTree* ZSwcGenerator::createSwc(
   return tree;
 }
 
-ZSwcTree* ZSwcGenerator::createSwc(
+ZSwcTree* ZSwcFactory::CreateSwc(
     const ZLineSegmentArray &lineArray, double radius)
 {
   ZSwcTree *tree = new ZSwcTree;
@@ -366,7 +368,7 @@ ZSwcTree* ZSwcGenerator::createSwc(
   return tree;
 }
 
-ZSwcTree* ZSwcGenerator::createSwc(const ZIntCuboidFace &face, double radius)
+ZSwcTree* ZSwcFactory::CreateSwc(const ZIntCuboidFace &face, double radius)
 {
   if (!face.isValid()) {
     return NULL;
@@ -379,10 +381,10 @@ ZSwcTree* ZSwcGenerator::createSwc(const ZIntCuboidFace &face, double radius)
   }
   ptArray.append(ptArray[0]);
 
-  return createSwc(ptArray, radius, true);
+  return CreateSwc(ptArray, radius, true);
 }
 
-ZSwcTree* ZSwcGenerator::createSwc(
+ZSwcTree* ZSwcFactory::CreateSwc(
     const ZIntCuboidFaceArray &faceArray, double radius)
 {
   if (faceArray.empty()) {
@@ -393,14 +395,14 @@ ZSwcTree* ZSwcGenerator::createSwc(
 
   for (ZIntCuboidFaceArray::const_iterator iter = faceArray.begin();
        iter != faceArray.end(); ++iter) {
-    ZSwcTree *subtree = createSwc(*iter, radius);
+    ZSwcTree *subtree = CreateSwc(*iter, radius);
     tree->merge(subtree, true);
   }
 
   return tree;
 }
 
-ZSwcTree* ZSwcGenerator::createSwc(const ZStroke2d &stroke)
+ZSwcTree* ZSwcFactory::CreateSwc(const ZStroke2d &stroke)
 {
 #if _QT_GUI_USED_
   if (stroke.isEmpty()) {
@@ -427,7 +429,7 @@ ZSwcTree* ZSwcGenerator::createSwc(const ZStroke2d &stroke)
 #endif
 }
 
-ZSwcTree* ZSwcGenerator::createSwc(
+ZSwcTree* ZSwcFactory::CreateSwc(
     const ZObject3d &obj, double radius, int sampleStep)
 {
   if (obj.isEmpty()) {
@@ -451,7 +453,7 @@ ZSwcTree* ZSwcGenerator::createSwc(
   return tree;
 }
 
-ZSwcTree* ZSwcGenerator::createSwc(const ZObject3dScan &obj)
+ZSwcTree* ZSwcFactory::CreateSwc(const ZObject3dScan &obj)
 {
   if (obj.isEmpty()) {
     return NULL;
@@ -482,7 +484,7 @@ ZSwcTree* ZSwcGenerator::createSwc(const ZObject3dScan &obj)
   return tree;
 }
 
-ZSwcTree* ZSwcGenerator::createSurfaceSwc(
+ZSwcTree* ZSwcFactory::CreateSurfaceSwc(
     const ZObject3dScan &obj, int sparseLevel)
 {
   size_t volume = obj.getBoundBox().getVolume();
@@ -504,7 +506,7 @@ ZSwcTree* ZSwcGenerator::createSurfaceSwc(
 
   ZSwcTree *tree = NULL;
   if (stack != NULL) {
-    tree = createSurfaceSwc(*stack, sparseLevel);
+    tree = CreateSurfaceSwc(*stack, sparseLevel);
     tree->setColor(obj.getColor());
     tree->rescale(intv + 1, intv + 1, intv + 1);
     delete stack;
@@ -513,7 +515,7 @@ ZSwcTree* ZSwcGenerator::createSurfaceSwc(
   return tree;
 }
 
-ZSwcTree* ZSwcGenerator::createSurfaceSwc(const ZStack &stack, int sparseLevel)
+ZSwcTree* ZSwcFactory::CreateSurfaceSwc(const ZStack &stack, int sparseLevel)
 {
   if (stack.kind() != GREY) {
     return NULL;
@@ -620,7 +622,7 @@ ZSwcTree* ZSwcGenerator::createSurfaceSwc(const ZStack &stack, int sparseLevel)
   return tree;
 }
 
-ZSwcTree* ZSwcGenerator::createSwc(const ZClosedCurve &curve, double radius)
+ZSwcTree* ZSwcFactory::CreateSwc(const ZClosedCurve &curve, double radius)
 {
   ZSwcTree *tree = NULL;
   if (!curve.isEmpty()) {
@@ -640,7 +642,7 @@ ZSwcTree* ZSwcGenerator::createSwc(const ZClosedCurve &curve, double radius)
   return tree;
 }
 
-ZSwcTree* ZSwcGenerator::createSwc(
+ZSwcTree* ZSwcFactory::CreateSwc(
     const ZObject3dScan &blockObj, int z, const ZDvidInfo &dvidInfo)
 {
 #ifdef _FLYEM_
@@ -658,7 +660,7 @@ ZSwcTree* ZSwcGenerator::createSwc(
       int x1 = stripe.getSegmentEnd(i);
       for (int x = x0; x <= x1; ++x) {
         ZIntCuboid cuboid = dvidInfo.getBlockBox(x, y, z);
-        tree->merge(createBoxSwc(cuboid));
+        tree->merge(CreateBoxSwc(cuboid));
       }
     }
   }

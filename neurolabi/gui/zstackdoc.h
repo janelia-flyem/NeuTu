@@ -93,7 +93,7 @@ class ZStackDoc : public QObject, public ZReportable, public ZProgressable
   Q_OBJECT
 
 public:
-  ZStackDoc(ZStack *stack, QObject *parent);
+  ZStackDoc(QObject *parent = NULL);
   virtual ~ZStackDoc();
 
   //Designed for multi-thread reading
@@ -412,6 +412,8 @@ public:
 
   /* Remove object with specific roles */
   void removeObject(ZStackObjectRole::TRole role, bool deleteObject = false);
+
+  void removeObject(const std::string &source, bool deleteObject = false);
 
   void removeSelectedPuncta(bool deleteObject = false);
   void removeSmallLocsegChain(double thre);   //remove small locseg chain (geolen < thre)
@@ -1405,25 +1407,53 @@ template <class InputIterator>
 void ZStackDoc::removeObjectP(
     InputIterator first, InputIterator last, bool deleting)
 {
-  QSet<ZStackObject::EType> typeSet;
-  QSet<ZStackObject::ETarget> targetSet;
-
-  ZStackObjectRole role;
-  for (InputIterator iter = first; iter != last; ++iter) {
+//  TStackObjectList objList = m_objectGroup.take(type);
+  m_objectGroup.take(first, last);
+  for (TStackObjectList::iterator iter = first; iter != last; ++iter) {
+//    role.addRole(m_playerList.removePlayer(*iter));
     ZStackObject *obj = *iter;
-    role.addRole(m_playerList.removePlayer(obj));
-    typeSet.insert(obj->getType());
-    targetSet.insert(obj->getTarget());
+
+#ifdef _DEBUG_
+    std::cout << "Removing object: " << obj << std::endl;
+#endif
+
+    bufferObjectModified(obj);
+    m_playerList.removePlayer(obj);
+
     if (deleting) {
       delete obj;
     }
   }
 
+  notifyObjectModified();
+#if 0
+//  QSet<ZStackObject::EType> typeSet;
+//  QSet<ZStackObject::ETarget> targetSet;
+
+//  ZStackObjectRole role;
+
+  beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
+  for (InputIterator iter = first; iter != last; ++iter) {
+    ZStackObject *obj = *iter;
+//    role.addRole(m_playerList.removePlayer(obj));
+//    typeSet.insert(obj->getType());
+//    targetSet.insert(obj->getTarget());
+    processObjectModified(obj);
+    if (deleting) {
+      delete obj;
+    }
+  }
+  endObjectModifiedMode();
+
+  notifyObjectModified();
+#endif
+  /*
   if (first != last) {
     processObjectModified(typeSet);
     processObjectModified(targetSet);
     notifyPlayerChanged(role);
   }
+  */
 }
 
 #if 0

@@ -119,7 +119,8 @@ Z3DWindow* ZWindowFactory::make3DWindow(ZScalableStack *stack)
   Z3DWindow *window = NULL;
 
   if (Z3DApplication::app()->is3DSupported()) {
-    ZStackDoc *doc = new ZStackDoc(stack->getStack(), NULL);
+    ZStackDoc *doc = new ZStackDoc;
+    doc->loadStack(stack->getStack());
     window = make3DWindow(doc);
     window->getVolumeSource()->getVolume(0)->setScaleSpacing(
           glm::vec3(stack->getXScale(), stack->getYScale(), stack->getZScale()));

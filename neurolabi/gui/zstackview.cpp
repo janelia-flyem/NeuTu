@@ -2,7 +2,7 @@
 #include <QElapsedTimer>
 
 #include "zstackview.h"
-#include "zimagewidget.h"
+#include "widgets/zimagewidget.h"
 #include "z3dwindow.h"
 #include "zimage.h"
 #include "zstackdoc.h"

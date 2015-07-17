@@ -5,6 +5,7 @@
 #include <QSet>
 #include <QMap>
 #include <set>
+#include <QMutex>
 
 #include "zstackobject.h"
 #include "zstackobjectselector.h"
@@ -51,6 +52,7 @@ public:
   ZStackObject* findFirstSameSource(const ZStackObject *obj) const;
   ZStackObject* findFirstSameSource(
       ZStackObject::EType type, const std::string &source) const;
+  TStackObjectList findSameSource(const std::string &str) const;
   TStackObjectList findSameSource(const ZStackObject *obj) const;
   TStackObjectList findSameSource(
       ZStackObject::EType type, const std::string &source) const;
@@ -67,9 +69,9 @@ public:
 
   template <typename InputIterator>
   void add(const InputIterator begin, const InputIterator end,
-           bool uniqueSource);
+           bool uniqueSource, QMutex *mutex = NULL);
 
-  void addInFront(ZStackObject *obj, bool uniqueSource);
+  void addInFront(ZStackObject *obj, bool uniqueSource, QMutex *mutex = NULL);
 
   /*!
    * \brief Take an object
@@ -78,14 +80,17 @@ public:
    *
    * \return \a obj if it is in the group. Otherwise it returns NULL.
    */
-  ZStackObject* take(ZStackObject *obj);
-  TStackObjectList take(TObjectTest testFunc);
+  ZStackObject* take(ZStackObject *obj, QMutex *mutex = NULL);
+  TStackObjectList take(TObjectTest testFunc, QMutex *mutex = NULL);
   TStackObjectList take(ZStackObject::EType type, TObjectTest testFunc);
   TStackObjectList take(ZStackObject::EType type);
   TStackObjectList takeSelected();
   TStackObjectList takeSelected(ZStackObject::EType type);
   TStackObjectList takeSameSource(
       ZStackObject::EType type, const std::string &source);
+
+  template <typename InputIterator>
+  void take(const InputIterator &first, const InputIterator &last);
 
 
   /*!
@@ -141,8 +146,11 @@ private:
 
 template <typename InputIterator>
 void ZStackObjectGroup::add(
-    const InputIterator begin, const InputIterator end, bool uniqueSource)
+    const InputIterator begin, const InputIterator end, bool uniqueSource,
+    QMutex *mutex)
 {
+  QMutexLocker locker(mutex);
+
   for (InputIterator iter = begin; iter != end; ++iter) {
     add(*iter, uniqueSource);
   }
@@ -175,4 +183,12 @@ TStackObjectList ZStackObjectGroup::findSameSource(
 
   return objList;
 }
+
+template <typename InputIterator>
+void ZStackObjectGroup::take(
+    const InputIterator &first, const InputIterator &last)
+{
+  removeObject(first, last, false);
+}
+
 #endif // ZSTACKOBJECTGROUP_H

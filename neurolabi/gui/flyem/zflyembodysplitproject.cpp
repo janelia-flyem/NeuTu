@@ -426,7 +426,7 @@ void ZFlyEmBodySplitProject::showBodyQuickView()
     ZWindowFactory factory;
     factory.setWindowTitle("Quick View");
 
-    ZStackDoc *doc = new ZStackDoc(NULL, NULL);
+    ZStackDoc *doc = new ZStackDoc;
     doc->setTag(NeuTube::Document::FLYEM_BODY_DISPLAY);
     m_quickViewWindow = factory.make3DWindow(doc);
 
@@ -449,7 +449,7 @@ void ZFlyEmBodySplitProject::showSkeleton(ZSwcTree *tree)
     if (m_quickViewWindow == NULL) {
       ZWindowFactory factory;
       factory.setWindowTitle("Quick View");
-      ZStackDoc *doc = new ZStackDoc(NULL, NULL);
+      ZStackDoc *doc = new ZStackDoc;
       doc->addObject(tree);
       m_quickViewWindow = factory.make3DWindow(doc);
       connect(m_quickViewWindow, SIGNAL(destroyed()),
@@ -597,7 +597,7 @@ void ZFlyEmBodySplitProject::showResultQuickView()
     if (m_quickResultWindow == NULL) {
       ZWindowFactory windowFactory;
       windowFactory.setWindowTitle("Splitting Result");
-      ZStackDoc *doc = new ZStackDoc(NULL, NULL);
+      ZStackDoc *doc = new ZStackDoc;
       doc->setTag(NeuTube::Document::FLYEM_BODY_DISPLAY);
       m_quickResultWindow = windowFactory.make3DWindow(doc);
 
@@ -656,7 +656,8 @@ void ZFlyEmBodySplitProject::showResult3d()
       ZStack *labeled = factory->makeStack();
       if (labeled != NULL) {
         //docReader.setStack(labeled);
-        ZStackDoc *doc = new ZStackDoc(labeled, NULL);
+        ZStackDoc *doc = new ZStackDoc;
+        doc->loadStack(labeled);
         doc->setTag(NeuTube::Document::FLYEM_SPLIT);
         doc->setStackFactory(factory);
         ZWindowFactory windowFactory;

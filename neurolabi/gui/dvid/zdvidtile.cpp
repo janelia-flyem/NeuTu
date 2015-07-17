@@ -4,7 +4,7 @@
 #include <QtConcurrentRun>
 #include <QElapsedTimer>
 
-#include "zimagewidget.h"
+#include "widgets/zimagewidget.h"
 #include "neutubeconfig.h"
 #include "zstack.hxx"
 #include "zstackfactory.h"

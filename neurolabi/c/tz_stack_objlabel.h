@@ -23,6 +23,7 @@ typedef struct _Objlabel_Workspace {
   int seed;             /**< an integer for passing or storing seed */
   BOOL init_chord;      /**< initialize \a chord (TRUE) or not (FALSE). */
   BOOL recover_chord;   /**< recover \a chord (TRUE) or not (FALSE). */
+  BOOL inc_label;       /**< Increment labels for new objects */
   IMatrix *chord;       /**< space for intermediate result */
   void *u;              /**< undefined space */
 } Objlabel_Workspace;

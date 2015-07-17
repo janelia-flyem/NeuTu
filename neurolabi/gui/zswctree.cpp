@@ -74,6 +74,9 @@ ZSwcTree::~ZSwcTree()
   }
 #endif
 
+  std::cout << "Deconstructing " << this << ": SWC " << ", "
+            << getSource() << std::endl;
+
   if (m_tree != NULL) {
     Kill_Swc_Tree(m_tree);
   }
@@ -1157,7 +1160,7 @@ const ZCuboid& ZSwcTree::getBoundBox() const
   return m_boundBox;
 }
 
-ZSwcTree* ZSwcTree::createCuboidSwc(const ZCuboid &box, double radius)
+ZSwcTree* ZSwcTree::CreateCuboidSwc(const ZCuboid &box, double radius)
 {
   ZSwcTree *tree = new ZSwcTree;
   tree->forceVirtualRoot();
@@ -1193,7 +1196,7 @@ ZSwcTree* ZSwcTree::createBoundBoxSwc(double margin)
 
   boundingBox.expand(margin);
 
-  ZSwcTree *tree = createCuboidSwc(boundingBox);
+  ZSwcTree *tree = CreateCuboidSwc(boundingBox);
 
   return tree;
 }

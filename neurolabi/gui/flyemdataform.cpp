@@ -19,7 +19,7 @@
 #include "ui_flyemdataform.h"
 #include "flyem/zflyemdataframe.h"
 #include "flyem/zflyemstackframe.h"
-#include "zimagewidget.h"
+#include "widgets/zimagewidget.h"
 #include "zfiletype.h"
 #include "zimage.h"
 #include "dvid/zdvidreader.h"
@@ -124,6 +124,13 @@ FlyEmDataForm::~FlyEmDataForm()
   //delete m_thumbnailImage;
   delete ui;
   delete m_thumbnailScene;
+
+  for (QMap<QString, QFuture<void> >::iterator iter = m_threadFutureMap.begin();
+       iter != m_threadFutureMap.end(); ++iter) {
+    if (!iter->isFinished()) {
+      iter->waitForFinished();
+    }
+  }
 }
 
 QSize FlyEmDataForm::sizeHint() const
@@ -385,7 +392,7 @@ void FlyEmDataForm::viewModel(const QModelIndex &index)
 
   if (!neuronArray.isEmpty()) {
     //ZStackFrame *frame = new ZStackFrame;
-    ZStackDoc *doc = new ZStackDoc(NULL, NULL);
+    ZStackDoc *doc = new ZStackDoc;
 
     foreach (const ZFlyEmNeuron* neuron, neuronArray) {
       //doc->addSwcTree(neuron->getModel()->clone(), true);
@@ -442,7 +449,7 @@ ZStackDoc *FlyEmDataForm::showViewSelectedModel(ZFlyEmQueryView *view)
 
   //ZStackFrame *frame = new ZStackFrame;
 
-  ZStackDoc *doc = new ZStackDoc(NULL, NULL);
+  ZStackDoc *doc = new ZStackDoc;
   view->getModel()->retrieveModel(
         sel->selectedIndexes(), doc);
   ui->progressBar->setValue(75);
@@ -768,6 +775,7 @@ void FlyEmDataForm::updateThumbnailSecondary(const QModelIndex &index)
 
 void FlyEmDataForm::computeThumbnailFunc(ZFlyEmNeuron *neuron)
 {
+  ZFlyEmNeuronImageFactory imageFactory = *(getParentFrame()->getImageFactory());
   if (neuron != NULL) {
     if (!neuron->getThumbnailPath().empty()) {
       ZString str(neuron->getThumbnailPath());
@@ -789,8 +797,7 @@ void FlyEmDataForm::computeThumbnailFunc(ZFlyEmNeuron *neuron)
           ZObject3dScan body;
           reader.readBody(neuron->getId(), &body);
 
-          Stack *stack =
-              getParentFrame()->getImageFactory()->createSurfaceImage(body);
+          Stack *stack = imageFactory.createSurfaceImage(body);
           writer.writeThumbnail(neuron->getId(), stack);
 
           ZFlyEmNeuronBodyInfo bodyInfo;
@@ -1306,7 +1313,7 @@ void FlyEmDataForm::saveVolumeRenderingFigure(
     neuron->deprecate(ZFlyEmNeuron::BODY);
 
     ZSharedPointer<ZStackDoc> academy =
-        ZSharedPointer<ZStackDoc>(new ZStackDoc(NULL, NULL));
+        ZSharedPointer<ZStackDoc>(new ZStackDoc);
     academy->loadStack(stack);
 
     int maxX = 0;

@@ -41,8 +41,8 @@ void ZFlyEmBookmark::print() const
 QString ZFlyEmBookmark::getDvidKey() const
 {
   return QString("%1_%2_%3").arg(iround(getCenter().x())).
-      arg(iround(getCenter().x())).
-      arg(iround(getCenter().x()));
+      arg(iround(getCenter().y())).
+      arg(iround(getCenter().z()));
 }
 
 ZJsonObject ZFlyEmBookmark::toJsonObject(bool ignoringComment) const
@@ -81,6 +81,7 @@ ZJsonObject ZFlyEmBookmark::toJsonObject(bool ignoringComment) const
 //    obj.setEntry("text", "merge <username=" + m_userName.toStdString() + ">");
     break;
   default:
+    text = "other";
 //    obj.setEntry("text", "other <username=" + m_userName.toStdString() + ">");
     break;
   }
@@ -168,9 +169,15 @@ void ZFlyEmBookmark::loadJsonObject(const ZJsonObject &jsonObj)
       }
 
       if (text.contains("<username=")) {
-        std::string::size_type pos = text.find_first_of("<username=");
+        std::string::size_type pos = text.rfind("<username=") +
+          std::string("<username=").size();
         std::string::size_type lastPos = text.find_first_of(">", pos);
-        setUser(text.substr(pos, lastPos - pos).c_str());
+        ZString userName = text.substr(pos, lastPos - pos);
+        userName.trim();
+#ifdef _DEBUG_2
+        std::cout << userName << std::endl;
+#endif
+        setUser(userName.c_str());
       }
 
       setComment(ZJsonParser::stringValue(jsonObj["comment"]));

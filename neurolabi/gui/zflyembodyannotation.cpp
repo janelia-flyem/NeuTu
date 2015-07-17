@@ -10,6 +10,7 @@ const char *ZFlyEmBodyAnnotation::m_nameKey = "name";
 const char *ZFlyEmBodyAnnotation::m_typeKey = "class";
 const char *ZFlyEmBodyAnnotation::m_commentKey = "comment";
 const char *ZFlyEmBodyAnnotation::m_statusKey = "status";
+const char *ZFlyEmBodyAnnotation::m_userKey = "user";
 
 ZFlyEmBodyAnnotation::ZFlyEmBodyAnnotation() : m_bodyId(0)
 {
@@ -23,6 +24,7 @@ void ZFlyEmBodyAnnotation::clear()
   m_comment.clear();
   m_name.clear();
   m_type.clear();
+  m_userName.clear();
 }
 
 void ZFlyEmBodyAnnotation::loadJsonString(const std::string &str)
@@ -57,6 +59,10 @@ ZJsonObject ZFlyEmBodyAnnotation::toJsonObject() const
     if (!m_comment.empty()) {
       obj.setEntry(m_commentKey, m_comment);
     }
+
+    if (!m_userName.empty()) {
+      obj.setEntry(m_userKey, m_userName);
+    }
   }
 
   return obj;
@@ -87,6 +93,10 @@ void ZFlyEmBodyAnnotation::loadJsonObject(const ZJsonObject &obj)
     if (obj.hasKey(m_typeKey)) {
       setType(ZJsonParser::stringValue(obj[m_typeKey]));
     }
+
+    if (obj.hasKey(m_userKey)) {
+      setUser(ZJsonParser::stringValue(obj[m_userKey]));
+    }
   } else {
     std::vector<std::string> keyList = obj.getAllKey();
     if (keyList.size() == 1) {
@@ -112,6 +122,7 @@ void ZFlyEmBodyAnnotation::print() const
   std::cout << "  Name: " << m_name << std::endl;
   std::cout << "  Status: " << m_status << std::endl;
   std::cout << "  Comment: " << m_comment << std::endl;
+  std::cout << "  User: " << m_userKey << std::endl;
 }
 
 /*member dependent*/
@@ -141,5 +152,9 @@ void ZFlyEmBodyAnnotation::mergeAnnotation(
 
   if (m_type.empty()) {
     m_type = annotation.m_type;
+  }
+
+  if (m_userName.empty()) {
+    m_userName = annotation.m_userName;
   }
 }

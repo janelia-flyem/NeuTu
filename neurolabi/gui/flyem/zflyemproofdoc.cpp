@@ -21,8 +21,8 @@
 #include "flyem/zflyembookmark.h"
 #include "zstring.h"
 
-ZFlyEmProofDoc::ZFlyEmProofDoc(ZStack *stack, QObject *parent) :
-  ZStackDoc(stack, parent)
+ZFlyEmProofDoc::ZFlyEmProofDoc(QObject *parent) :
+  ZStackDoc(parent)
 {
   setTag(NeuTube::Document::FLYEM_PROOFREAD);
 }
@@ -361,12 +361,19 @@ void ZFlyEmProofDoc::importFlyEmBookmark(const std::string &filePath)
   beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
   if (!filePath.empty()) {
 //    removeObject(ZStackObject::TYPE_FLYEM_BOOKMARK, true);
-    TStackObjectList &objList = getObjectList(ZStackObject::TYPE_FLYEM_BOOKMARK);
+    TStackObjectList objList = getObjectList(ZStackObject::TYPE_FLYEM_BOOKMARK);
+#ifdef _DEBUG_
+    std::cout << objList.size() << " bookmarks" << std::endl;
+#endif
     for (TStackObjectList::iterator iter = objList.begin();
          iter != objList.end(); ++iter) {
-      ZFlyEmBookmark *bookmark = dynamic_cast<ZFlyEmBookmark*>(*iter);
+      ZStackObject *obj = *iter;
+      ZFlyEmBookmark *bookmark = dynamic_cast<ZFlyEmBookmark*>(obj);
       if (bookmark != NULL) {
         if (!bookmark->isCustom()) {
+#ifdef _DEBUG_
+          std::cout << "Removing bookmark: " << bookmark << std::endl;
+#endif
           removeObject(*iter, true);
         }
       }

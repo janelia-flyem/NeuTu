@@ -17,7 +17,7 @@
 
 #include "QsLog.h"
 
-#include "informationdialog.h"
+#include "dialogs/informationdialog.h"
 #include "tz_image_io.h"
 #include "tz_math.h"
 #include "zstackdoc.h"
@@ -109,11 +109,11 @@
 
 using namespace std;
 
-ZStackDoc::ZStackDoc(ZStack *stack, QObject *parent) : QObject(parent),
+ZStackDoc::ZStackDoc(QObject *parent) : QObject(parent),
   /*m_lastAddedSwcNode(NULL),*/ m_resDlg(NULL), m_selectionSilent(false),
   m_isReadyForPaint(true), m_isSegmentationReady(false)
 {
-  m_stack = stack;
+  m_stack = NULL;
   m_sparseStack = NULL;
   m_labelField = NULL;
   m_parentFrame = NULL;
@@ -3160,6 +3160,13 @@ void ZStackDoc::removeObject(ZStackObjectRole::TRole role, bool deleteObject)
     notifyPlayerChanged(role);
   }
   */
+}
+
+void ZStackDoc::removeObject(const string &source, bool deleteObject)
+{
+  TStackObjectList objList = m_objectGroup.findSameSource(source);
+
+  removeObjectP(objList.begin(), objList.end(), deleteObject);
 }
 
 std::set<ZSwcTree *> ZStackDoc::removeEmptySwcTree(bool deleteObject)
@@ -6528,6 +6535,9 @@ void ZStackDoc::addObject(ZStackObject *obj, bool uniqueSource)
            iter != objList.end(); ++iter) {
         ZStackObject *oldObj = *iter;
         bufferObjectModified(oldObj);
+#ifdef _DEBUG_
+        std::cout << "Deleting object in ZStackDoc::addObject: " <<  oldObj << std::endl;
+#endif
         //      role.addRole(m_playerList.removePlayer(obj));
         delete oldObj;
       }

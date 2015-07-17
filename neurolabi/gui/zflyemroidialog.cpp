@@ -163,7 +163,7 @@ void ZFlyEmRoiDialog::createMenu()
 
   m_importRoiAction = new QAction("Import ROI", this);
   m_mainMenu->addAction(m_importRoiAction);
-  m_importRoiAction->setCheckable(true);
+//  m_importRoiAction->setCheckable(true);
   connect(m_importRoiAction, SIGNAL(triggered()), this, SLOT(importRoi()));
 
   m_autoStepAction = new QAction("Auto Step", this);
@@ -800,7 +800,7 @@ void ZFlyEmRoiDialog::previewFullRoi()
   ZSwcTree *tree = m_project->getAllRoiSwc();
 
   if (tree != NULL) {
-    ZStackDoc *doc = new ZStackDoc(NULL, NULL);
+    ZStackDoc *doc = new ZStackDoc;
     doc->addObject(tree);
     Z3DWindow::Open(doc, this);
 

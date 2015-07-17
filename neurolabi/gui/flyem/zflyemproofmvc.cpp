@@ -17,11 +17,11 @@
 #include "dvid/zdvidsparsestack.h"
 #include "zprogresssignal.h"
 #include "zstackviewlocator.h"
-#include "zimagewidget.h"
+#include "widgets/zimagewidget.h"
 #include "dvid/zdvidlabelslice.h"
 #include "flyem/zflyemproofpresenter.h"
 #include "zwidgetmessage.h"
-#include "zspinboxdialog.h"
+#include "dialogs/zspinboxdialog.h"
 #include "zdialogfactory.h"
 #include "flyem/zflyembodyannotationdialog.h"
 #include "zflyembodyannotation.h"
@@ -61,7 +61,7 @@ ZFlyEmProofMvc* ZFlyEmProofMvc::Make(
 
 ZFlyEmProofMvc* ZFlyEmProofMvc::Make(const ZDvidTarget &target)
 {
-  ZFlyEmProofDoc *doc = new ZFlyEmProofDoc(NULL, NULL);
+  ZFlyEmProofDoc *doc = new ZFlyEmProofDoc;
 //  doc->setTag(NeuTube::Document::FLYEM_DVID);
   ZFlyEmProofMvc *mvc =
       ZFlyEmProofMvc::Make(NULL, ZSharedPointer<ZFlyEmProofDoc>(doc));
@@ -568,15 +568,19 @@ void ZFlyEmProofMvc::annotateBody()
             emit errorGenerated("Cannot save annotation.");
           }
         }
+
+        checkInBody(bodyId);
       } else {
-        std::string owner = getSupervisor()->getOwner(bodyId);
-        if (owner.empty()) {
-          owner = "unknown user";
+        if (getSupervisor() != NULL) {
+          std::string owner = getSupervisor()->getOwner(bodyId);
+          if (owner.empty()) {
+            owner = "unknown user";
+          }
+          emit messageGenerated(
+                ZWidgetMessage(
+                  QString("Failed to start annotation. %1 has been locked by %2").
+                  arg(bodyId).arg(owner.c_str()), NeuTube::MSG_ERROR));
         }
-        emit messageGenerated(
-              ZWidgetMessage(
-                QString("Failed to start annotation. %1 has been locked by %2").
-                arg(bodyId).arg(owner.c_str()), NeuTube::MSG_ERROR));
       }
     } else {
       qDebug() << "Unexpected body ID: 0";
@@ -864,6 +868,11 @@ void ZFlyEmProofMvc::showSplit3d()
 
 void ZFlyEmProofMvc::showCoarseBody3d()
 {
+  m_mergeProject.showCoarseBody3d();
+}
+
+void ZFlyEmProofMvc::showFineBody3d()
+{
   m_mergeProject.showBody3d();
 }
 
@@ -999,23 +1008,35 @@ void ZFlyEmProofMvc::notifyBookmarkUpdated()
   emit bookmarkUpdated(&m_splitProject);
 }
 
+void ZFlyEmProofMvc::loadBookmarkFunc(const QString &filePath)
+{
+  getProgressSignal()->startProgress("Importing bookmarks ...");
+  //  m_splitProject.loadBookmark(filePath);
+
+    ZDvidReader reader;
+  //  ZFlyEmCoordinateConverter converter;
+    if (reader.open(getDvidTarget())) {
+  //    ZDvidInfo info = reader.readGrayScaleInfo();
+  //    converter.configure(info);
+      getProgressSignal()->advanceProgress(0.1);
+      getCompleteDocument()->importFlyEmBookmark(filePath.toStdString());
+      getProgressSignal()->advanceProgress(0.5);
+  //    m_bookmarkArray.importJsonFile(filePath.toStdString(), NULL/*&converter*/);
+    }
+
+    notifyBookmarkUpdated();
+
+    getProgressSignal()->advanceProgress(0.3);
+
+    getProgressSignal()->endProgress();
+  //  m_bookmarkArray.importJsonFile(filePath);
+
+  //  emit bookmarkUpdated(&m_splitProject);
+}
+
 void ZFlyEmProofMvc::loadBookmark(const QString &filePath)
 {
-//  m_splitProject.loadBookmark(filePath);
-
-  ZDvidReader reader;
-//  ZFlyEmCoordinateConverter converter;
-  if (reader.open(getDvidTarget())) {
-//    ZDvidInfo info = reader.readGrayScaleInfo();
-//    converter.configure(info);
-    getCompleteDocument()->importFlyEmBookmark(filePath.toStdString());
-//    m_bookmarkArray.importJsonFile(filePath.toStdString(), NULL/*&converter*/);
-  }
-
-  notifyBookmarkUpdated();
-//  m_bookmarkArray.importJsonFile(filePath);
-
-//  emit bookmarkUpdated(&m_splitProject);
+  QtConcurrent::run(this, &ZFlyEmProofMvc::loadBookmarkFunc, filePath);
 }
 
 void ZFlyEmProofMvc::loadSynapse()

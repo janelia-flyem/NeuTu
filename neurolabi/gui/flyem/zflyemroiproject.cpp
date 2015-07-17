@@ -1130,7 +1130,7 @@ ZStackDoc* ZFlyEmRoiProject::makeAllSynapseDoc() const
 {
   ZStackDoc *doc = NULL;
   if (!m_puncta.empty()) {
-    doc = new ZStackDoc(NULL, NULL);
+    doc = new ZStackDoc;
     doc->addPunctumFast(makePunctumList(false));
 
     if (hasDataFrame()) {

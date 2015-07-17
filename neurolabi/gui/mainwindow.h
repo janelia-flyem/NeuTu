@@ -11,7 +11,7 @@
 #include <QSettings>
 
 #include "tz_image_lib_defs.h"
-#include "frameinfodialog.h"
+#include "dialogs/frameinfodialog.h"
 #include "zstackpresenter.h"
 #include "zmessagereporter.h"
 #include "moviedialog.h"

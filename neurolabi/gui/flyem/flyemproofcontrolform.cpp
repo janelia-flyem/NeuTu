@@ -17,9 +17,11 @@ FlyEmProofControlForm::FlyEmProofControlForm(QWidget *parent) :
   ui->setupUi(this);
   setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Expanding);
 
+  /*
   connect(ui->segmentCheckBox, SIGNAL(clicked(bool)),
           this, SIGNAL(segmentVisibleChanged(bool)));
   ui->segmentCheckBox->hide();
+  */
   connect(ui->mergeSegmentPushButton, SIGNAL(clicked()),
           this, SIGNAL(mergingSelected()));
   connect(ui->dvidPushButton, SIGNAL(clicked()),
@@ -36,6 +38,8 @@ FlyEmProofControlForm::FlyEmProofControlForm(QWidget *parent) :
   ui->segmentSizePushButton->hide();
   ui->segmentSizeDecPushButton->setEnabled(false);
 
+//  ui->bodyViewPushButton->hide();
+
 
   connect(ui->segmentSizeIncPushButton, SIGNAL(clicked()),
           this, SLOT(incSegmentSize()));
@@ -46,6 +50,8 @@ FlyEmProofControlForm::FlyEmProofControlForm(QWidget *parent) :
 
   connect(ui->coarseBodyPushButton, SIGNAL(clicked()),
           this, SIGNAL(coarseBodyViewTriggered()));
+  connect(ui->bodyViewPushButton, SIGNAL(clicked()),
+          this, SIGNAL(bodyViewTriggered()));
 
   connect(ui->bookmarkView, SIGNAL(doubleClicked(QModelIndex)),
           this, SLOT(locateBookmark(QModelIndex)));

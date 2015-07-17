@@ -245,6 +245,7 @@ using namespace std;
 #include "zcommandline.h"
 #include "z3dgraphfactory.h"
 #include "flyem/zflyemsupervisor.h"
+#include "flyem/zflyembody3ddoc.h"
 
 using namespace std;
 
@@ -17251,7 +17252,7 @@ void ZTest::test(MainWindow *host)
 #  endif
 #endif
 
-#if 1
+#if 0
   ZDvidBufferReader reader;
   reader.read("http://emdata2.int.janelia.org:9100/state/ee7dc");
   const QByteArray &buffer = reader.getBuffer();
@@ -17265,13 +17266,79 @@ void ZTest::test(MainWindow *host)
   supervisor.setDvidTarget(ZDvidTarget("emdata1.int.janelia.org", "ee7dc", 8500));
   supervisor.setUserName("changl");
 
-
   for (size_t i = 0; i < array.size(); ++i) {
     ZJsonObject obj(array.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
-    if (eqstr(ZJsonParser::stringValue(obj["Client"]), "changl")) {
+    std::string userName = ZJsonParser::stringValue(obj["Client"]);
+    if (userName == "takemurasa") {
+      supervisor.setUserName(userName);
       std::cout << ZJsonParser::integerValue(obj["Label"]) << std::endl;
       supervisor.checkIn(ZJsonParser::integerValue(obj["Label"]));
     }
   }
+#endif
+
+#if 0
+  ZString text = "split <username=split <username=split <username=split <username=split <username=split <username=split <username=split <username=split <username=split <username=split <username=split <username=split <username=split <username=split <username=split <username=split <username=split <username=split <username=split <username=split <username=split <username=split <username=<username=zhaot>";
+  if (text.contains("<username=")) {
+    std::string::size_type pos = text.rfind("<username=") +
+        std::string("<username=").size();
+    std::string::size_type lastPos = text.find_first_of(">", pos);
+    ZString userName = text.substr(pos, lastPos - pos);
+    userName.trim();
+    std::cout << userName << std::endl;
+  }
+
+#endif
+
+#if 0
+  ZWindowFactory factory;
+  factory.setWindowTitle("Test");
+
+  ZFlyEmBody3dDoc *doc = new ZFlyEmBody3dDoc;
+
+  doc->updateFrame();
+
+  ZDvidTarget dvidTarget("emdata1.int.janelia.org", "86e1", 8500);
+  doc->setDvidTarget(dvidTarget);
+  doc->updateFrame();
+
+//  doc->loadFile((GET_TEST_DATA_DIR + "/benchmark/em_stack.tif").c_str());
+
+  Z3DWindow *window = factory.make3DWindow(doc);
+  window->setYZView();
+
+  window->show();
+  window->raise();
+
+  doc->addEvent(ZFlyEmBody3dDoc::BodyEvent::ACTION_ADD, 12596838);
+  doc->addEvent(ZFlyEmBody3dDoc::BodyEvent::ACTION_ADD, 13890100);
+//  doc->addEvent(ZFlyEmBody3dDoc::BodyEvent::ACTION_REMOVE, 12596838);
+
+//  doc->addBody(12596838);
+//  doc->addBody(13890100);
+#endif
+
+#if 1
+  ZFlyEmBody3dDoc::BodyEvent event1(
+        ZFlyEmBody3dDoc::BodyEvent::ACTION_ADD, 1200);
+
+  ZFlyEmBody3dDoc::BodyEvent event2(
+        ZFlyEmBody3dDoc::BodyEvent::ACTION_REMOVE, 1200);
+
+  event1.mergeEvent(event2, NeuTube::DIRECTION_FORWARD);
+  event1.print();
+
+  event2.mergeEvent(event1, NeuTube::DIRECTION_FORWARD);
+  event2.print();
+#endif
+
+#if 1
+  ZFlyEmBody3dDoc doc;
+  std::vector<uint64_t> bodyIdArray;
+  bodyIdArray.push_back(1);
+  bodyIdArray.push_back(2);
+
+  doc.addBodyChangeEvent(bodyIdArray.begin(), bodyIdArray.end());
+  doc.printEventQueue();
 #endif
 }

@@ -18,6 +18,11 @@ class ZStack;
 class ZClosedCurve;
 class ZDvidInfo;
 
+/*!
+ * \brief The ZSwcGenerator class
+ *
+ * Obsolete. Use ZSwcFactory instead.
+ */
 class ZSwcGenerator
 {
 public:
