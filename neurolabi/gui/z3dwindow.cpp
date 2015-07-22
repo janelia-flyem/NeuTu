@@ -210,7 +210,7 @@ void Z3DWindow::init(EInitMode mode)
     if (mode == NORMAL_INIT) {
       m_volumeSource = new Z3DVolumeSource(m_doc.get());
     } else if (mode == FULL_RES_VOLUME) {
-      m_volumeSource = new Z3DVolumeSource(m_doc.get(), MAX_INT32);
+      m_volumeSource = new Z3DVolumeSource(m_doc.get(), MAX_INT32 / 2);
     }
     connect(m_volumeSource, SIGNAL(xScaleChanged()), this, SLOT(volumeScaleChanged()));
     connect(m_volumeSource, SIGNAL(yScaleChanged()), this, SLOT(volumeScaleChanged()));

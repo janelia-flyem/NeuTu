@@ -136,6 +136,10 @@ void Z3DVolumeSource::readVolumes()
         else
           maxTextureSize = Z3DGpuInfoInstance.getMaxTextureSize();
 
+        if (maxTextureSize > 1024) {
+          maxTextureSize = 1024;
+        }
+
         if (height > maxTextureSize) {
           heightScale = (double)maxTextureSize / height;
           height = std::floor(height * heightScale);
@@ -198,10 +202,11 @@ void Z3DVolumeSource::readVolumes()
           depth = std::floor(depth * depthScale);
         }
         Stack *stack2;
-        if (widthScale != 1.0 || heightScale != 1.0)
+        if (widthScale != 1.0 || heightScale != 1.0 || depthScale != 1.0) {
           stack2 = C_Stack::resize(stack, width, height, depth);
-        else
+        } else {
           stack2 = Copy_Stack(stack);
+        }
 
         if (stack->kind == GREY && m_doc->getStack()->isBinary()) {
           size_t volume = m_doc->getStack()->getVoxelNumber();

@@ -1397,7 +1397,7 @@ void FlyEmDataForm::saveVolumeRenderingFigure(
     stage->getCompositor()->setBackgroundFirstColor(0, 0, 0, 1);
     stage->getCompositor()->setBackgroundSecondColor(0, 0, 0, 1);
 
-    //stage->show();
+//    stage->show();
     //stage->showMaximized();
 
     stage->takeScreenShot(output, 4000, 4000, MonoView);

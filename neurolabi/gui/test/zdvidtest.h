@@ -48,7 +48,7 @@ TEST(ZDvidTest, ZDvidUrl)
   ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/skeletons",
             dvidUrl.getSkeletonUrl(""));
 
-  ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/skeletons/key/1.swc",
+  ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/skeletons/key/1_swc",
             dvidUrl.getSkeletonUrl(1));
 
 //  std::cout << dvidUrl.getMergeOperationUrl(
@@ -96,7 +96,7 @@ TEST(ZDvidTest, ZDvidUrl)
   ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/bodies2_skeletons",
             dvidUrl.getSkeletonUrl("bodies2"));
 
-  ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/bodies2_skeletons/key/1.swc",
+  ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/bodies2_skeletons/key/1_swc",
             dvidUrl.getSkeletonUrl(1, "bodies2"));
 
   ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/thumbnails/key/1_mraw",
@@ -108,7 +108,7 @@ TEST(ZDvidTest, ZDvidUrl)
   ZDvidUrl dvidUrl2(target);
   ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/bodies2_skeletons",
             dvidUrl2.getSkeletonUrl());
-  ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/bodies2_skeletons/key/1.swc",
+  ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/bodies2_skeletons/key/1_swc",
             dvidUrl2.getSkeletonUrl(1));
 
   ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/bodies/sparsevol",
