@@ -749,8 +749,8 @@ void ZFlyEmBodyMergeProject::update3DBodyViewPlane(const ZDvidInfo &dvidInfo)
       ZCuboid box;
       box.setFirstCorner(dvidInfo.getStartCoordinates().toPoint());
       box.setLastCorner(dvidInfo.getEndCoordinates().toPoint());
-      double lineWidth = box.depth() / 500.0;
-      Z3DGraph *graph = Z3DGraphFactory::MakeGrid(rect, 25, lineWidth);
+      double lineWidth = box.depth() / 2000.0;
+      Z3DGraph *graph = Z3DGraphFactory::MakeGrid(rect, 100, lineWidth);
       graph->setSource(ZStackObjectSourceFactory::MakeFlyEmPlaneObjectSource());
       m_coarseBodyWindow->getDocument()->addObject(graph, true);
     }

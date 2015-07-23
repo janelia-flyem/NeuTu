@@ -106,5 +106,6 @@
         <file>images/import_bookmark.png</file>
         <file>images/view_bookmark.png</file>
         <file>images/view_segmentation.png</file>
+        <file>images/bc_enhance.png</file>
     </qresource>
 </RCC>

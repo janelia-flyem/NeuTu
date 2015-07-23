@@ -166,6 +166,7 @@ void ZProofreadWindow::createMenu()
   m_contrastAction = new QAction("Enhance Contrast", this);
   m_contrastAction->setCheckable(true);
   m_contrastAction->setChecked(false);
+  m_contrastAction->setIcon(QIcon(":images/bc_enhance.png"));
   connect(m_contrastAction, SIGNAL(toggled(bool)),
           m_mainMvc, SLOT(enhanceTileContrast(bool)));
 
@@ -201,6 +202,8 @@ void ZProofreadWindow::createToolbar()
   m_toolBar->addAction(m_viewSynapseAction);
   m_toolBar->addAction(m_viewBookmarkAction);
   m_toolBar->addAction(m_viewSegmentationAction);
+  m_toolBar->addSeparator();
+  m_toolBar->addAction(m_contrastAction);
 }
 
 void ZProofreadWindow::presentSplitInterface(uint64_t bodyId)

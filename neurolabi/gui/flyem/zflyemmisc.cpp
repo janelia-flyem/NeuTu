@@ -189,8 +189,8 @@ Z3DGraph* ZFlyEmMisc::MakePlaneGraph(ZStackDoc *doc, const ZDvidInfo &dvidInfo)
       ZCuboid box;
       box.setFirstCorner(dvidInfo.getStartCoordinates().toPoint());
       box.setLastCorner(dvidInfo.getEndCoordinates().toPoint());
-      double lineWidth = box.depth() / 500.0;
-      graph = Z3DGraphFactory::MakeGrid(rect, 50, lineWidth);
+      double lineWidth = box.depth() / 2000.0;
+      graph = Z3DGraphFactory::MakeGrid(rect, 100, lineWidth);
       graph->setSource(ZStackObjectSourceFactory::MakeFlyEmPlaneObjectSource());
     }
   }
