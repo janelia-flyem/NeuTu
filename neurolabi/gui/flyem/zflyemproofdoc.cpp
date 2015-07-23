@@ -475,6 +475,16 @@ void ZFlyEmProofDoc::saveCustomBookmark()
   }
 }
 
+void ZFlyEmProofDoc::enhanceTileContrast(bool highContrast)
+{
+  ZDvidTileEnsemble *tile = getDvidTileEnsemble();
+  if (tile != NULL) {
+    tile->enhanceContrast(highContrast);
+    bufferObjectModified(tile->getTarget());
+    notifyObjectModified();
+  }
+}
+
 //////////////////////////////////////////
 ZFlyEmProofDocCommand::MergeBody::MergeBody(
     ZStackDoc *doc, QUndoCommand *parent)

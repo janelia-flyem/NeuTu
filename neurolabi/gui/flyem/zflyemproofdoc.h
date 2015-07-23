@@ -73,6 +73,8 @@ public:
   void saveCustomBookmark();
   void downloadBookmark();
 
+  void enhanceTileContrast(bool highContrast);
+
 public:
   void notifyBodyMerged();
   void notifyBodyUnmerged();

@@ -172,6 +172,8 @@ void ZProofreadWindow::createMenu()
   m_viewMenu->addAction(m_viewSynapseAction);
   m_viewMenu->addAction(m_viewBookmarkAction);
   m_viewMenu->addAction(m_viewSegmentationAction);
+  m_viewMenu->addSeparator();
+  m_viewMenu->addAction(m_contrastAction);
 
 
 //  menu->addAction(new QAction("test", menu));

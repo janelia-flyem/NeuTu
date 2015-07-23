@@ -1278,6 +1278,8 @@ void ZFlyEmProofMvc::recordCheckedBookmark(const QString &key, bool checking)
 
 void ZFlyEmProofMvc::enhanceTileContrast(bool state)
 {
+  getCompleteDocument()->enhanceTileContrast(state);
+  /*
   ZDvidTileEnsemble *tile = getCompleteDocument()->getDvidTileEnsemble();
   if (tile != NULL) {
     if (state) {
@@ -1287,6 +1289,7 @@ void ZFlyEmProofMvc::enhanceTileContrast(bool state)
     }
     getCompleteDocument()->processObjectModified(tile->getTarget());
   }
+  */
 }
 
 ZFlyEmSupervisor* ZFlyEmProofMvc::getSupervisor() const

@@ -473,43 +473,61 @@ void ZImage::enhanceEdge()
   delete []edge;
 }
 
-void ZImage::enhanceContrast()
+void ZImage::enhanceContrast(bool highContrast)
 {
-  int i, j;
-  if (this->depth() == 32) {
-    for (j = 0; j < height(); j++) {
-      uchar *line = scanLine(j);
-      for (i = 0; i < width(); i++) {
-        if (line[0] <= 213) {
-          line[0] += line[0] / 5;
-        } else {
-          line[0] = 255;
-        }
-        if (line[1] <= 213) {
-          line[1] += line[1] / 5;
-        } else {
-          line[1] = 255;
-        }
-        if (line[2] <= 213) {
-          line[2] += line[2] / 5;
-        } else {
-          line[2] = 255;
-        }
+  if (format() != ZImage::Format_Indexed8) {
+    int i, j;
+    if (this->depth() == 32) {
+      for (j = 0; j < height(); j++) {
+        uchar *line = scanLine(j);
+        for (i = 0; i < width(); i++) {
+          if (line[0] <= 213) {
+            line[0] += line[0] / 5;
+          } else {
+            line[0] = 255;
+          }
+          if (line[1] <= 213) {
+            line[1] += line[1] / 5;
+          } else {
+            line[1] = 255;
+          }
+          if (line[2] <= 213) {
+            line[2] += line[2] / 5;
+          } else {
+            line[2] = 255;
+          }
 
-        line += 4;
+          line += 4;
+        }
+      }
+    } else if (this->depth() == 8) {
+      for (j = 0; j < height(); j++) {
+        uchar *line = scanLine(j);
+        for (i = 0; i < width(); i++) {
+          if (line[0] <= 213) {
+            line[0] += line[0] / 5;
+          } else {
+            line[0] = 255;
+          }
+
+          line++;
+        }
       }
     }
-  } else if (this->depth() == 8) {
-    for (j = 0; j < height(); j++) {
-      uchar *line = scanLine(j);
-      for (i = 0; i < width(); i++) {
-        if (line[0] <= 213) {
-          line[0] += line[0] / 5;
-        } else {
-          line[0] = 255;
-        }
-
-        line++;
+  } else {
+    if (highContrast) {
+      for (int i = 0; i < 255; ++i) {
+        QColor color;
+        double v = i / 255.0;
+        v *= v * 1.5;
+        color.setRedF(v);
+        color.setGreenF(v);
+        color.setBlueF(v);
+        setColor(i, color.rgb());
+      }
+    } else {
+      for (int i = 0; i < 255; ++i) {
+        setColor(i, qRgb(i, i, i));
       }
     }
   }

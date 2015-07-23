@@ -24,6 +24,7 @@ ZDvidTile::ZDvidTile() : m_ix(0), m_iy(0), m_z(0),
 {
   setTarget(ZStackObject::TARGET_OBJECT_CANVAS);
   m_type = ZStackObject::TYPE_DVID_TILE;
+  m_image = NULL;
 }
 
 ZDvidTile::~ZDvidTile()
@@ -36,6 +37,8 @@ ZSTACKOBJECT_DEFINE_CLASS_NAME(ZDvidTile)
 void ZDvidTile::clear()
 {
   m_dvidTarget.clear();
+  delete m_image;
+  m_image = NULL;
 }
 
 void ZDvidTile::loadDvidSlice(const uchar *buf, int length, int z)
@@ -47,12 +50,48 @@ void ZDvidTile::loadDvidSlice(const uchar *buf, int length, int z)
     }
   }
   if (loading) {
-    m_image.loadFromData(buf, length);
-    if (hasVisualEffect(NeuTube::Display::Image::VE_HIGH_CONTRAST)) {
-      m_image.enhanceContrast();
+    if (m_image == NULL) {
+      m_image = new ZImage;
     }
+
+    m_image->loadFromData(buf, length);
+#ifdef _DEBUG_2
+    std::cout << "Format: " << m_image->format() << std::endl;
+    setVisualEffect(NeuTube::Display::Image::VE_HIGH_CONTRAST);
+#endif
     m_z = z;
   }
+}
+
+void ZDvidTile::enhanceContrast(bool high)
+{
+  if (high) {
+    addVisualEffect(NeuTube::Display::Image::VE_HIGH_CONTRAST);
+  } else {
+    removeVisualEffect(NeuTube::Display::Image::VE_HIGH_CONTRAST);
+  }
+}
+
+void ZDvidTile::setImageData(const uint8_t *data, int width, int height)
+{
+  if (width <= 0 || height <= 0) {
+    return;
+  }
+
+  if (m_image != NULL) {
+    if (m_image->width() != width || m_image->height() != height) {
+      delete m_image;
+      m_image = NULL;
+    }
+  }
+
+  if (m_image == NULL) {
+    m_image = new ZImage(width, height);
+  }
+
+  m_image->setData(data);
+  m_image->setScale(1.0 / m_res.getScale(), 1.0 / m_res.getScale());
+  m_image->setOffset(-getX(), -getY());
 }
 
 void ZDvidTile::loadDvidSlice(const QByteArray &buffer, int z)
@@ -101,7 +140,7 @@ void ZDvidTile::display(
   const_cast<ZDvidTile&>(*this).update(z);
 //  std::cout << "tile update time: " << toc() << std::endl;
 
-  if ((z == m_z)  && !m_image.isNull()) {
+  if ((z == m_z)  && (m_image != NULL)) {
 #ifdef _DEBUG_2
     std::cout << "Display " << z << std::endl;
 #endif
@@ -118,10 +157,12 @@ void ZDvidTile::display(
     }
 #endif
 
+    m_image->enhanceContrast(
+          hasVisualEffect(NeuTube::Display::Image::VE_HIGH_CONTRAST));
 //    QElapsedTimer timer;
 //    timer.start();
 //    tic();
-    painter.drawImage(getX(), getY(), m_image);
+    painter.drawImage(getX(), getY(), *m_image);
 //    std::cout << "Draw image time: " << toc() << std::endl;
 //    std::cout << "Draw image time: " << timer.elapsed() << std::endl;
 
@@ -175,7 +216,7 @@ void ZDvidTile::setTileIndex(int ix, int iy)
 
 void ZDvidTile::update(int z)
 {
-  if (m_z != z || m_image.isNull()) {
+  if (m_z != z || m_image == NULL) {
 #if defined(_ENABLE_LIBDVIDCPP_2)
     std::vector<int> offset(3);
     offset[0] = m_ix;
@@ -221,8 +262,8 @@ void ZDvidTile::update(int z)
 
     if (!buffer.isEmpty()) {
       loadDvidSlice(buffer, z);
-      m_image.setScale(1.0 / m_res.getScale(), 1.0 / m_res.getScale());
-      m_image.setOffset(-getX(), -getY());
+      m_image->setScale(1.0 / m_res.getScale(), 1.0 / m_res.getScale());
+      m_image->setOffset(-getX(), -getY());
       //      setResolutionLevel(m_res.getLevel());
     }
 #endif
@@ -241,8 +282,10 @@ void ZDvidTile::printInfo() const
   std::cout << "Dvid tile: " << std::endl;
   m_res.print();
   std::cout << "Offset: " << getX() << ", " << getY() << ", " << getZ() << std::endl;
-  std::cout << "Size: " << m_image.width() << " x " << m_image.height()
-            << std::endl;
+  if (m_image != NULL) {
+    std::cout << "Size: " << m_image->width() << " x " << m_image->height()
+              << std::endl;
+  }
 
 }
 
