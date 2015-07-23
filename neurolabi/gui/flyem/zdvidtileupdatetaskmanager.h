@@ -2,6 +2,7 @@
 #define ZDVIDTILEUPDATETASKMANAGER_H
 
 #include "zmultitaskmanager.h"
+#include "tz_stdint.h"
 
 class ZDvidTile;
 
