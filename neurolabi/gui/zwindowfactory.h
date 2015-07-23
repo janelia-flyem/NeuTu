@@ -6,6 +6,7 @@
 #include "zsharedpointer.h"
 #include "zstackdoc.h"
 #include "z3dwindow.h"
+#include "z3ddef.h"
 
 class ZStackFrame;
 class QDialog;
@@ -51,6 +52,10 @@ public:
     return m_showObjectView;
   }
 
+  inline void setVolumeRenderMode(NeuTube3D::EVolumeRenderingMode mode) {
+    m_volumeMode = mode;
+  }
+
 private:
   QWidget *m_parentWidget;
   QString m_windowTitle;
@@ -59,6 +64,7 @@ private:
   bool m_showVolumeBoundBox;
   bool m_showControlPanel;
   bool m_showObjectView;
+  NeuTube3D::EVolumeRenderingMode m_volumeMode;
 };
 
 #endif // ZWINDOWFACTORY_H

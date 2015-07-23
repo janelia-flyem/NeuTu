@@ -134,7 +134,9 @@ ZPoint SynapseLocation::mapPosition(const SynapseAnnotationConfig &config,
 
   switch (spaceOption) {
   case IMAGE_SPACE:
-    point.setY(config.height - 1 - point.y());
+    if (config.height > 0) {
+      point.setY(config.height - 1 - point.y());
+    }
     point.setZ(point.z() - config.startNumber);
     break;
   case ORIGINAL_SWC_SPACE:

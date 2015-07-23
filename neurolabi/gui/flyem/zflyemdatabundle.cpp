@@ -158,7 +158,7 @@ bool ZFlyEmDataBundle::loadDvid(const ZDvidFilter &dvidFilter)
   ZFlyEmDvidReader fdReader;
   fdReader.open(dvidFilter.getDvidTarget());
 
-  m_synapseAnnotationFile = dvidTarget.getSourceString();
+//  m_synapseAnnotationFile = dvidTarget.getSourceString();
 
   QStringList annotationList = fdReader.readKeys(
         ZDvidData::GetName(ZDvidData::ROLE_BODY_ANNOTATION));
@@ -576,6 +576,13 @@ ZSwcTree* ZFlyEmDataBundle::getModel(int bodyId) const
   return neuron->getModel();
 }
 
+void ZFlyEmDataBundle::importSynpaseAnnotation(const string &filePath)
+{
+  deprecate(SYNAPSE_ANNOTATION);
+  m_synapseAnnotationFile = filePath;
+  updateSynapseAnnotation();
+}
+
 FlyEm::ZSynapseAnnotationArray* ZFlyEmDataBundle::getSynapseAnnotation() const
 {
   if (isDeprecated(SYNAPSE_ANNOTATION)) {
@@ -943,5 +950,14 @@ void ZFlyEmDataBundle::uploadAnnotation(const ZDvidTarget &dvidTarget) const
         writer.writeAnnotation(neuron);
       }
     }
+  }
+}
+
+void ZFlyEmDataBundle::updateSynapseAnnotation()
+{
+  for (ZFlyEmNeuronArray::iterator iter = m_neuronArray.begin();
+       iter != m_neuronArray.end(); ++iter) {
+    ZFlyEmNeuron &neuron = *iter;
+    neuron.setSynapseAnnotation(getSynapseAnnotation());
   }
 }

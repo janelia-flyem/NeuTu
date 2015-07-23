@@ -263,6 +263,13 @@ FlyEm::ZSynapseAnnotationArray *ZFlyEmDataFrame::getSynapseAnnotation()
   return annotation;
 }
 
+void ZFlyEmDataFrame::importSynapseAnnotation(const QString &filePath)
+{
+  foreach (ZFlyEmDataBundle *data, m_dataArray) {
+    data->importSynpaseAnnotation(filePath.toStdString());
+  }
+}
+
 std::string ZFlyEmDataFrame::getName(int bodyId) const
 {
   std::string name;

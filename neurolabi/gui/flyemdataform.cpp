@@ -35,6 +35,7 @@
 #include "z3dvolumesource.h"
 #include "z3dvolume.h"
 #include "zwindowfactory.h"
+#include "z3ddef.h"
 
 FlyEmDataForm::FlyEmDataForm(QWidget *parent) :
   QWidget(parent),
@@ -117,6 +118,7 @@ FlyEmDataForm::FlyEmDataForm(QWidget *parent) :
 
   m_swcExportDlg = new SwcExportDialog(this);
   m_3dWindowFactory.setParentWidget(this->parentWidget());
+  m_3dWindowFactory.setVolumeRenderMode(NeuTube3D::VR_ALPHA_BLENDING);
 }
 
 FlyEmDataForm::~FlyEmDataForm()
@@ -143,11 +145,8 @@ QSize FlyEmDataForm::sizeHint() const
   return geometry().size();
 }
 
-void FlyEmDataForm::createMenu()
+void FlyEmDataForm::createExportMenu()
 {
-  m_mainMenu = new QMenu(this);
-  ui->menuButton->setMenu(m_mainMenu);
-
   m_exportMenu = new QMenu(this);
   ui->exportButton->setMenu(m_exportMenu);
 
@@ -175,34 +174,25 @@ void FlyEmDataForm::createMenu()
   m_exportMenu->addAction(exportTypeLabelAction);
   connect(exportTypeLabelAction, SIGNAL(triggered()),
           this, SLOT(exportTypeLabelFile()));
+}
 
-/*
-  QAction *exportAction = new QAction("Export", this);
-  m_mainMenu->addAction(exportAction);
-  connect(exportAction, SIGNAL(triggered()), this, SLOT(exportResult()));
+void FlyEmDataForm::createImportMenu()
+{
+  m_importMenu = new QMenu(this);
+  ui->importButton->setMenu(m_importMenu);
 
-  m_importRoiAction = new QAction("Import ROI", this);
-  m_mainMenu->addAction(m_importRoiAction);
-  m_importRoiAction->setCheckable(true);
-  connect(m_importRoiAction, SIGNAL(triggered()), this, SLOT(importRoi()));
+  QAction *importSynapseAction = new QAction("Synapses", this);
+  m_importMenu->addAction(importSynapseAction);
+  connect(importSynapseAction, SIGNAL(triggered()), this, SLOT(importSynapse()));
+}
 
-  m_autoStepAction = new QAction("Auto Step", this);
-  m_mainMenu->addAction(m_autoStepAction);
-  m_autoStepAction->setCheckable(true);
-  connect(m_autoStepAction, SIGNAL(toggled(bool)),
-          this, SLOT(runAutoStep(bool)));
+void FlyEmDataForm::createMenu()
+{
+  m_mainMenu = new QMenu(this);
+  ui->menuButton->setMenu(m_mainMenu);
 
-  m_applyTranslateAction = new QAction("Apply Translation", this);
-  m_mainMenu->addAction(m_applyTranslateAction);
-  //m_applyTranslateAction->setCheckable(true);
-  connect(m_applyTranslateAction, SIGNAL(triggered()),
-          this, SLOT(applyTranslate()));
-
-  m_deleteProjectAction = new QAction("Delete Project", this);
-  m_mainMenu->addAction(m_deleteProjectAction);
-  connect(m_deleteProjectAction, SIGNAL(triggered()),
-          this, SLOT(deleteProject()));
-          */
+  createExportMenu();
+  createImportMenu();
 }
 
 void FlyEmDataForm::on_pushButton_clicked()
@@ -1439,5 +1429,21 @@ void FlyEmDataForm::exportTypeLabelFile()
       QFileDialog::getOpenFileName(this, "Export Type Labels", "", "*.json");
   if (!fileName.isEmpty()) {
     //
+  }
+}
+
+void FlyEmDataForm::importSynapse()
+{
+  if (getParentFrame() != NULL) {
+    QString fileName =
+        ZDialogFactory::GetOpenFileName("Import Synapses", "", this);
+    if (!fileName.isEmpty()) {
+      /*
+      bool coordAdjust  = ZDialogFactory::Ask(
+            "Coordinate Setting", "Are the syanpses in Raveler coordinates?",
+            this);
+            */
+      getParentFrame()->importSynapseAnnotation(fileName);
+    }
   }
 }

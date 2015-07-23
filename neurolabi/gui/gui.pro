@@ -549,7 +549,8 @@ HEADERS += mainwindow.h \
     flyem/zdvidtileupdatetaskmanager.h \
     flyem/zpaintlabelwidget.h \
     flyem/zflyembookmarkannotationdialog.h \
-    flyem/zflyembody3ddoc.h
+    flyem/zflyembody3ddoc.h \
+    z3ddef.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -960,7 +961,8 @@ SOURCES += main.cpp \
     flyem/zdvidtileupdatetaskmanager.cpp \
     flyem/zpaintlabelwidget.cpp \
     flyem/zflyembookmarkannotationdialog.cpp \
-    flyem/zflyembody3ddoc.cpp
+    flyem/zflyembody3ddoc.cpp \
+    z3ddef.cpp
 
 OTHER_FILES += \
     extlib.pri \
