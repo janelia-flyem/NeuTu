@@ -521,6 +521,9 @@ void ZImage::enhanceContrast(bool highContrast)
         double v = i / 255.0;
         v *= sqrt(v);
         v = v * 1.5;
+        if (v > 1.0) {
+          v = 1.0;
+        }
         color.setRedF(v);
         color.setGreenF(v);
         color.setBlueF(v);
