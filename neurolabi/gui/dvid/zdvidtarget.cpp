@@ -3,6 +3,7 @@
 #include "zerror.h"
 #include "zjsonparser.h"
 #include "zdviddata.h"
+#include "dvid/zdvidbufferreader.h"
 
 const char* ZDvidTarget::m_addressKey = "address";
 const char* ZDvidTarget::m_portKey = "port";
@@ -82,7 +83,14 @@ void ZDvidTarget::setServer(const std::string &address)
 
 void ZDvidTarget::setUuid(const std::string &uuid)
 {
-  m_uuid = uuid;
+  if (ZString(uuid).startsWith("ref:")) {
+    std::string uuidLink = uuid.substr(4);
+    ZDvidBufferReader reader;
+    reader.read(uuidLink.c_str());
+    m_uuid = reader.getBuffer().constData();
+  } else {
+    m_uuid = uuid;
+  }
 }
 
 void ZDvidTarget::setPort(int port)

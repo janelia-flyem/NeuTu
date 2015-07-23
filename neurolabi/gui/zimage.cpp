@@ -519,7 +519,8 @@ void ZImage::enhanceContrast(bool highContrast)
       for (int i = 0; i < 255; ++i) {
         QColor color;
         double v = i / 255.0;
-        v *= v * 1.5;
+        v *= sqrt(v);
+        v = v * 1.5;
         color.setRedF(v);
         color.setGreenF(v);
         color.setBlueF(v);
