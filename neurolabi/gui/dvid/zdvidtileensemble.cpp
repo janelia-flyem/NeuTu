@@ -82,7 +82,7 @@ ZDvidTile* ZDvidTileEnsemble::getTile(
 void ZDvidTileEnsemble::update(
     const std::vector<ZDvidTileInfo::TIndex>& tileIndices, int resLevel, int z)
 {
-#if defined(_ENABLE_LIBDVIDCPP_2)
+#if defined(_ENABLE_LIBDVIDCPP_)
   std::vector<std::vector<int> > tile_locs_array;
   for (std::vector<ZDvidTileInfo::TIndex>::const_iterator iter = tileIndices.begin();
        iter != tileIndices.end(); ++iter) {
@@ -90,14 +90,15 @@ void ZDvidTileEnsemble::update(
     ZDvidTile *tile = const_cast<ZDvidTileEnsemble*>(this)->getTile(resLevel, index);
     if (tile != NULL) {
       std::vector<int> loc(3);
-      loc[0] = tile->getX();
-      loc[1] = tile->getY();
+      loc[0] = tile->getIx();
+      loc[1] = tile->getIy();
       loc[2] = z;
       tile_locs_array.push_back(loc);
     }
   }
 
   try  {
+    ZMultiTaskManager taskManager;
     if (!tile_locs_array.empty()) {
       libdvid::DVIDNodeService service(getDvidTarget().getAddressWithPort(),
                                        getDvidTarget().getUuid());
@@ -111,12 +112,25 @@ void ZDvidTileEnsemble::update(
         ZDvidTile *tile = const_cast<ZDvidTileEnsemble*>(this)->getTile(
               resLevel, index);
         if (tile != NULL) {
+          libdvid::BinaryDataPtr dataPtr= data[dataIndex++];
+
+          ZDvidTileDecodeTask *task = new ZDvidTileDecodeTask(NULL, tile);
+          task->setZ(z);
+          task->setData(dataPtr->get_raw(), dataPtr->length());
+          taskManager.addTask(task);
+            //      tile->display(painter, slice, option);
+
+//          tile->loadDvidSlice(dataPtr->get_raw(), dataPtr->length(), z);
+          /*
           tile->setImageData(
                 data[dataIndex++]->get_raw(), m_tilingInfo.getWidth(),
               m_tilingInfo.getHeight());
           tile->setZ(z);
+          */
         }
       }
+      taskManager.start();
+      taskManager.waitForDone();
     }
   } catch (std::exception &e) {
     std::cout << e.what() << std::endl;
@@ -178,7 +192,7 @@ void ZDvidTileEnsemble::display(
   std::vector<ZDvidTileInfo::TIndex> tileIndices =
       m_tilingInfo.getCoverIndex(resLevel, fov);
 
-  if (tileIndices.size() > 8) {
+  if (tileIndices.size() > 16) {
     if (resLevel < m_tilingInfo.getMaxLevel()) {
       ++resLevel;
       tileIndices = m_tilingInfo.getCoverIndex(resLevel, fov);

@@ -49,6 +49,9 @@ public:
   int getY() const;
   int getZ() const;
 
+  inline int getIx() { return m_ix; }
+  inline int getIy() { return m_iy; }
+
   void setZ(int z) { m_z = z; }
 
   int getWidth() const;

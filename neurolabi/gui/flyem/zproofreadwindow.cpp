@@ -121,6 +121,10 @@ void ZProofreadWindow::init()
   createMenu();
   createToolbar();
   statusBar()->showMessage("Load a database to start proofreading");
+
+  if (m_contrastAction->isChecked()) {
+    m_mainMvc->enhanceTileContrast(true);
+  }
 }
 
 ZProofreadWindow* ZProofreadWindow::Make(QWidget *parent)
@@ -167,6 +171,7 @@ void ZProofreadWindow::createMenu()
   m_contrastAction->setCheckable(true);
   m_contrastAction->setChecked(false);
   m_contrastAction->setIcon(QIcon(":images/bc_enhance.png"));
+  m_contrastAction->setChecked(true);
   connect(m_contrastAction, SIGNAL(toggled(bool)),
           m_mainMvc, SLOT(enhanceTileContrast(bool)));
 

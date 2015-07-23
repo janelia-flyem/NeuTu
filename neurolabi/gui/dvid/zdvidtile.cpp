@@ -55,6 +55,10 @@ void ZDvidTile::loadDvidSlice(const uchar *buf, int length, int z)
     }
 
     m_image->loadFromData(buf, length);
+
+    m_image->setScale(1.0 / m_res.getScale(), 1.0 / m_res.getScale());
+    m_image->setOffset(-getX(), -getY());
+
 #ifdef _DEBUG_2
     std::cout << "Format: " << m_image->format() << std::endl;
     setVisualEffect(NeuTube::Display::Image::VE_HIGH_CONTRAST);
@@ -262,8 +266,8 @@ void ZDvidTile::update(int z)
 
     if (!buffer.isEmpty()) {
       loadDvidSlice(buffer, z);
-      m_image->setScale(1.0 / m_res.getScale(), 1.0 / m_res.getScale());
-      m_image->setOffset(-getX(), -getY());
+//      m_image->setScale(1.0 / m_res.getScale(), 1.0 / m_res.getScale());
+//      m_image->setOffset(-getX(), -getY());
       //      setResolutionLevel(m_res.getLevel());
     }
 #endif
