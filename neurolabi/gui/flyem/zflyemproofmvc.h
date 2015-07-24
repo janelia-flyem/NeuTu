@@ -17,6 +17,9 @@ class ZDvidDialog;
 class ZFlyEmProofPresenter;
 class ZFlyEmSupervisor;
 
+/*!
+ * \brief The MVC class for flyem proofreading
+ */
 class ZFlyEmProofMvc : public ZStackMvc
 {
   Q_OBJECT
