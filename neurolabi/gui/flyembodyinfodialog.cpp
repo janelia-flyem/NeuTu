@@ -24,7 +24,7 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(QWidget *parent) :
 }
 
 QStandardItemModel* FlyEmBodyInfoDialog::createModel(QObject* parent) {
-    QStandardItemModel* model = new QStandardItemModel(10, 2, parent);
+    QStandardItemModel* model = new QStandardItemModel(0, 3, parent);
     setHeaders(model);
     return model;
 }
@@ -32,6 +32,7 @@ QStandardItemModel* FlyEmBodyInfoDialog::createModel(QObject* parent) {
 void FlyEmBodyInfoDialog::setHeaders(QStandardItemModel * model) {
     model->setHorizontalHeaderItem(0, new QStandardItem(QString("Body ID")));
     model->setHorizontalHeaderItem(1, new QStandardItem(QString("# synapses")));
+    model->setHorizontalHeaderItem(2, new QStandardItem(QString("status")));
 }
 
 void FlyEmBodyInfoDialog::importBookmarksFile(QString filename) {
@@ -96,8 +97,6 @@ bool FlyEmBodyInfoDialog::isValidBookmarkFile(ZJsonObject jsonObject) {
         return false;
     }
 
-    std::cout << "json file valid" << std::endl;
-
     return true;
 }
 
@@ -108,26 +107,21 @@ void FlyEmBodyInfoDialog::onCloseButton() {
 void FlyEmBodyInfoDialog::onOpenButton() {
     QString filename = QFileDialog::getOpenFileName(this, "Open bookmarks file");
     if (!filename.isEmpty()) {
-        // std::cout << "path chosen: " + filename.toStdString() << std::endl;
         importBookmarksFile(filename);
     }
 }
 
 void FlyEmBodyInfoDialog::updateModel(ZJsonValue data) {
-    // clear model, then load new data
-    m_model->clear();
-
-    // this doesn't help:
-    m_model->setRowCount(10);
-    m_model->setColumnCount(2);
-
-    setHeaders(m_model);
-
     if (!data.isArray()) {
-        // problem, error?
+        // move to validation step?  we don't check that
+        //  elements are actually bookmarks, either
         std::cout << "data is not an array?" << std::endl;
         return;
     }
+
+    // clear model, then load new data
+    m_model->clear();
+    setHeaders(m_model);
 
 
     // NOTE: don't currently really need to convert to ints if we're
@@ -135,6 +129,7 @@ void FlyEmBodyInfoDialog::updateModel(ZJsonValue data) {
     //  on the numeric value
 
     ZJsonArray bookmarks(data);
+    m_model->setRowCount(bookmarks.size());
     for (size_t i = 0; i < bookmarks.size(); ++i) {
         ZJsonObject bkmk(bookmarks.at(i), false);
 
@@ -144,6 +139,8 @@ void FlyEmBodyInfoDialog::updateModel(ZJsonValue data) {
         int nSynapses = ZJsonParser::integerValue(bkmk["body synapses"]);
         m_model->setItem(i, 1, new QStandardItem(QString::number(nSynapses)));
 
+        const char* status = ZJsonParser::stringValue(bkmk["body status"]);
+        m_model->setItem(i, 2, new QStandardItem(QString(status)));
     }
 
 }
