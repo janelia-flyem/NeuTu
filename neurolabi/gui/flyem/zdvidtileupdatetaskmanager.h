@@ -30,12 +30,16 @@ public:
     m_data = data;
     m_length = length;
   }
+  void setHighContrast(bool state) {
+    m_highContrast = state;
+  }
 
 private:
   ZDvidTile *m_tile;
   const uint8_t *m_data;
   int m_length;
   int m_z;
+  bool m_highContrast;
 };
 
 

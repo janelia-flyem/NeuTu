@@ -117,6 +117,7 @@ void ZDvidTileEnsemble::update(
           ZDvidTileDecodeTask *task = new ZDvidTileDecodeTask(NULL, tile);
           task->setZ(z);
           task->setData(dataPtr->get_raw(), dataPtr->length());
+          task->setHighContrast(m_highContrast);
           taskManager.addTask(task);
             //      tile->display(painter, slice, option);
 

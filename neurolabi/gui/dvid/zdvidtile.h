@@ -68,6 +68,9 @@ public:
   void enhanceContrast(bool high);
 
 private:
+  void updatePixmap();
+
+private:
   ZImage *m_image;
   ZPixmap m_pixmap;
   int m_ix;

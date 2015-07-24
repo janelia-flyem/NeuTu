@@ -19,12 +19,16 @@ ZDvidTileDecodeTask::ZDvidTileDecodeTask(QObject *parent, ZDvidTile *tile) :
 {
   m_data = NULL;
   m_length = 0;
+  m_highContrast = false;
 }
 
 void ZDvidTileDecodeTask::execute()
 {
   if (m_tile != NULL && m_data != NULL) {
     m_tile->loadDvidSlice(m_data, m_length, m_z);
+    if (m_highContrast != m_tile->hasVisualEffect(NeuTube::Display::Image::VE_HIGH_CONTRAST)) {
+      m_tile->enhanceContrast(m_highContrast);
+    }
   }
 }
 

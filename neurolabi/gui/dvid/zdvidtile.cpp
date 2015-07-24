@@ -49,22 +49,21 @@ void ZDvidTile::loadDvidSlice(const uchar *buf, int length, int z)
       loading = false;
     }
   }
+
+  bool modified = false;
   if (loading) {
     if (m_image == NULL) {
       m_image = new ZImage;
     }
 
     m_image->loadFromData(buf, length);
-    m_image->enhanceContrast(
-          hasVisualEffect(NeuTube::Display::Image::VE_HIGH_CONTRAST));
-
     m_image->setScale(1.0 / m_res.getScale(), 1.0 / m_res.getScale());
     m_image->setOffset(-getX(), -getY());
 
-    m_pixmap.cleanUp();
-    m_pixmap.convertFromImage(*m_image);
-    m_pixmap.setScale(1.0 / m_res.getScale(), 1.0 / m_res.getScale());
-    m_pixmap.setOffset(-getX(), -getY());
+    modified = true;
+
+    m_image->enhanceContrast(
+          hasVisualEffect(NeuTube::Display::Image::VE_HIGH_CONTRAST));
 
 #ifdef _DEBUG_2
     std::cout << "Format: " << m_image->format() << std::endl;
@@ -72,14 +71,31 @@ void ZDvidTile::loadDvidSlice(const uchar *buf, int length, int z)
 #endif
     m_z = z;
   }
+
+  if (modified) {
+    updatePixmap();
+  }
+}
+
+void ZDvidTile::updatePixmap()
+{
+  m_pixmap.cleanUp();
+  m_pixmap.convertFromImage(*m_image);
+  m_pixmap.setScale(1.0 / m_res.getScale(), 1.0 / m_res.getScale());
+  m_pixmap.setOffset(-getX(), -getY());
 }
 
 void ZDvidTile::enhanceContrast(bool high)
 {
-  if (high) {
-    addVisualEffect(NeuTube::Display::Image::VE_HIGH_CONTRAST);
-  } else {
-    removeVisualEffect(NeuTube::Display::Image::VE_HIGH_CONTRAST);
+  if (high != hasVisualEffect(NeuTube::Display::Image::VE_HIGH_CONTRAST)) {
+    if (high) {
+      addVisualEffect(NeuTube::Display::Image::VE_HIGH_CONTRAST);
+    } else {
+      removeVisualEffect(NeuTube::Display::Image::VE_HIGH_CONTRAST);
+    }
+    m_image->enhanceContrast(
+          hasVisualEffect(NeuTube::Display::Image::VE_HIGH_CONTRAST));
+    updatePixmap();
   }
 }
 /*
