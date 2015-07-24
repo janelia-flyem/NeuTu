@@ -25,7 +25,8 @@ private:
     Ui::FlyEmBodyInfoDialog *ui;
     QStandardItemModel* m_model;
     QStandardItemModel* createModel(QObject*);
-    void updateModel();
+    void setHeaders(QStandardItemModel*);
+    void updateModel(ZJsonValue object);
     void importBookmarksFile(QString filename);
     bool isValidBookmarkFile(ZJsonObject object);
 };

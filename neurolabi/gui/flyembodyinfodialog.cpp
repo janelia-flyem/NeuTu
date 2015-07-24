@@ -21,17 +21,17 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(QWidget *parent) :
     m_model = createModel(ui->tableView);
     ui->tableView->setModel(m_model);
 
-    updateModel();
-
 }
 
 QStandardItemModel* FlyEmBodyInfoDialog::createModel(QObject* parent) {
-    QStandardItemModel* model = new QStandardItemModel(3, 2, parent);
+    QStandardItemModel* model = new QStandardItemModel(10, 2, parent);
+    setHeaders(model);
+    return model;
+}
 
+void FlyEmBodyInfoDialog::setHeaders(QStandardItemModel * model) {
     model->setHorizontalHeaderItem(0, new QStandardItem(QString("Body ID")));
     model->setHorizontalHeaderItem(1, new QStandardItem(QString("# synapses")));
-
-    return model;
 }
 
 void FlyEmBodyInfoDialog::importBookmarksFile(QString filename) {
@@ -51,10 +51,9 @@ void FlyEmBodyInfoDialog::importBookmarksFile(QString filename) {
         return;
     }
 
-
     // update model from the object, or the data piece of it
-
-
+    ZJsonValue dataObject = jsonObject.value("data");
+    updateModel(dataObject);
 
 }
 
@@ -114,23 +113,71 @@ void FlyEmBodyInfoDialog::onOpenButton() {
     }
 }
 
-void FlyEmBodyInfoDialog::updateModel() {
+void FlyEmBodyInfoDialog::updateModel(ZJsonValue data) {
     // clear model, then load new data
-
     m_model->clear();
 
-    // testing, static data
-    for (int row = 0; row < 4; ++row)
-        {
-            for (int column = 0; column < 2; ++column)
-            {
-                QString text = QString('A' + row) + QString::number(column + 1);
-                QStandardItem* item = new QStandardItem(text);
-                m_model->setItem(row, column, item);
-            }
-         }
+    // this doesn't help:
+    m_model->setRowCount(10);
+    m_model->setColumnCount(2);
+
+    setHeaders(m_model);
+
+    if (!data.isArray()) {
+        // problem, error?
+        std::cout << "data is not an array?" << std::endl;
+        return;
+    }
+
+    int row = 0;
+    for (ZJsonValue bkmk: data.toArray()) {
+        std::cout << "starting row " << row << std::endl;
+
+        // parse out the stuff we want & put in model
+        std::cout << "parsing body ID" << std::endl;
+        int bodyID = ZJsonParser::integerValue(((ZJsonObject) bkmk)["body ID"]);
+        std::cout << "setting body ID" << std::endl;
+        m_model->setItem(row, 0, new QStandardItem(QString::number(bodyID)));
+
+        std::cout << "parsing #synapses" << std::endl;
+        int nSynapses = ZJsonParser::integerValue(((ZJsonObject) bkmk)["body synapses"]);
+        std::cout << "setting #synapses" << std::endl;
+        m_model->setItem(row, 1, new QStandardItem(QString::number(nSynapses)));
+
+        std::cout << "appended body ID " << bodyID << std::endl;
+        row ++;
+    }
 
 
+
+    /*
+    // this has same errors as my version
+    ZJsonArray bookmarks(data);
+    std::cout << "size = " << bookmarks.size() << std::endl;
+
+    for (size_t i = 0; i < bookmarks.size(); ++i) {
+        std::cout << "starting row " << i << std::endl;
+
+        ZJsonObject bkmk(bookmarks.at(i), false);
+        ZString text = ZJsonParser::stringValue(bkmk["text"]);
+        std::cout << i << ": text = " << text << std::endl;
+
+
+        // parse out the stuff we want & put in model
+        std::cout << "parsing body ID" << std::endl;
+        int bodyID = ZJsonParser::integerValue(((ZJsonObject) bkmk)["body ID"]);
+
+        std::cout << "setting body ID" << std::endl;
+        m_model->setItem(i, 0, new QStandardItem(bodyID));
+
+
+        std::cout << "parsing #synapses" << std::endl;
+        int nSynapses = ZJsonParser::integerValue(((ZJsonObject) bkmk)["body synapses"]);
+
+        std::cout << "appended body ID " << bodyID << std::endl;
+
+    }
+    */
 
 }
 
