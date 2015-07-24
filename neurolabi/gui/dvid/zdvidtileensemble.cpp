@@ -244,4 +244,9 @@ ZStackView* ZDvidTileEnsemble::getView() const
   return m_view;
 }
 
+bool ZDvidTileEnsemble::isEmpty() const
+{
+  return m_tileGroup.empty();
+}
+
 ZSTACKOBJECT_DEFINE_CLASS_NAME(ZDvidTileEnsemble)

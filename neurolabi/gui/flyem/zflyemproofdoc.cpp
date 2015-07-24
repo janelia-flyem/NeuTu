@@ -480,8 +480,10 @@ void ZFlyEmProofDoc::enhanceTileContrast(bool highContrast)
   ZDvidTileEnsemble *tile = getDvidTileEnsemble();
   if (tile != NULL) {
     tile->enhanceContrast(highContrast);
-    bufferObjectModified(tile->getTarget());
-    notifyObjectModified();
+    if (!tile->isEmpty()) {
+      bufferObjectModified(tile->getTarget());
+      notifyObjectModified();
+    }
   }
 }
 

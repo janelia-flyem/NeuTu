@@ -166,7 +166,7 @@ Z3DGraph* ZFlyEmMisc::MakeBoundBoxGraph(const ZDvidInfo &dvidInfo)
   box.setFirstCorner(dvidInfo.getStartCoordinates().toPoint());
   box.setLastCorner(dvidInfo.getEndCoordinates().toPoint());
   Z3DGraph *graph = Z3DGraphFactory::MakeBox(
-        box, dmax2(1.0, dmax3(box.width(), box.height(), box.depth()) / 500.0));
+        box, dmax2(1.0, dmax3(box.width(), box.height(), box.depth()) / 1000.0));
   graph->setSource(ZStackObjectSourceFactory::MakeFlyEmBoundBoxSource());
 
   return graph;

@@ -925,7 +925,7 @@ bool ZObject3dScan::hasOverlap(ZObject3dScan &obj)
     ZObject3dScan slice1 = getSlice(z);
     ZObject3dScan slice2 = obj.getSlice(z);
     ZStack *stack1 = slice1.toStackObject();
-    int stripeNumber = obj.getStripeNumber();
+    int stripeNumber = slice2.getStripeNumber();
     for (int i = 0; i < stripeNumber; ++i) {
       const ZObject3dStripe &stripe = slice2.getStripe(i);
       int segmentNumber = stripe.getSegmentNumber();

@@ -17342,11 +17342,78 @@ void ZTest::test(MainWindow *host)
   doc.printEventQueue();
 #endif
 
-#if 1
+#if 0
   ZString str = "232435232-53634643637-423422222222893";
   std::vector<uint64_t> array = str.toUint64Array();
   for (size_t i = 0; i < array.size(); ++i) {
     std::cout << array[i] << std::endl;
   }
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("http://emdata1.int.janelia.org", "1f62", 8500);
+
+  ZDvidReader reader;
+  if (reader.open(target)) {
+    ZObject3dScan obj = reader.readRoi("mbroi");
+    obj.canonize();
+    obj.save(GET_TEST_DATA_DIR + "/flyem/MB/roi_fix/mbroi.sobj");
+
+    ZObject3dScan obj2;
+    obj2.load(GET_TEST_DATA_DIR + "/flyem/MB/large_outside_block_fixed.sobj");
+//    obj2.save(GET_TEST_DATA_DIR + "/flyem/MB/roi_fix/merged.sobj");
+
+    obj2.subtract(obj);
+    obj2.save(GET_TEST_DATA_DIR + "/flyem/MB/roi_fix/mb_subtracted.sobj");
+
+    if (obj.hasOverlap(obj2)) {
+      std::cout << "WARNING: mbroi and mb_subtracted has overlap." << std::endl;
+    } else {
+      std::cout << "mbroi and mb_subtracted has no overlap." << std::endl;
+    }
+
+    obj.unify(obj2);
+    obj.save(GET_TEST_DATA_DIR + "/flyem/MB/roi_fix/merged.sobj");
+  }
+
+#endif
+
+#if 0
+  ZObject3dScan obj1;
+  obj1.load(GET_TEST_DATA_DIR + "/flyem/MB/roi_fix/mb_subtracted.sobj");
+  std::cout << obj1.getVoxelNumber() << std::endl;
+
+
+  ZJsonArray array = ZJsonFactory::MakeJsonArray(
+        obj1, ZJsonFactory::OBJECT_SPARSE);
+  array.dump(GET_TEST_DATA_DIR + "/flyem/MB/roi_fix/mb_subtracted.json");
+#endif
+
+#if 1
+  ZDvidTarget target;
+  target.set("http://emdata1.int.janelia.org", "1f62", 8500);
+
+  ZDvidReader reader;
+  if (reader.open(target)) {
+    ZObject3dScan obj = reader.readRoi("mbroi");
+    obj.canonize();
+
+    ZDvidReader reader2;
+    target.set("http://emdata1.int.janelia.org", "d6959", 8500);
+    reader2.open(target);
+
+    ZObject3dScan obj2 = reader2.readRoi("mb_subtracted_v3");
+
+    if (obj.hasOverlap(obj2)) {
+      std::cout << "WARNING: mbroi and mb_subtracted has overlap." << std::endl;
+    } else {
+      std::cout << "mbroi and mb_subtracted has no overlap." << std::endl;
+    }
+
+    obj.unify(obj2);
+    obj.save(GET_TEST_DATA_DIR + "/flyem/MB/roi_fix/merged.sobj");
+  }
+
 #endif
 }

@@ -21,7 +21,9 @@ public:
   bool isHighlight() const;
   void setHighlightMode(bool hl);
   bool isSplitOn() const;
-//  bool
+  bool highTileContrast() const;
+
+  void setHighTileContrast(bool high);
 
   void enableSplit();
   void disableSplit();

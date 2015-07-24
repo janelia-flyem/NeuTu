@@ -17,6 +17,7 @@ public:
   ~ZDvidTileEnsemble();
 
   void clear();
+  bool isEmpty() const;
 
   void display(ZPainter &painter, int slice, EDisplayStyle option) const;
 

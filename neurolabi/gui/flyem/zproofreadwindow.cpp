@@ -122,9 +122,7 @@ void ZProofreadWindow::init()
   createToolbar();
   statusBar()->showMessage("Load a database to start proofreading");
 
-  if (m_contrastAction->isChecked()) {
-    m_mainMvc->enhanceTileContrast(true);
-  }
+  m_mainMvc->enhanceTileContrast(m_contrastAction->isChecked());
 }
 
 ZProofreadWindow* ZProofreadWindow::Make(QWidget *parent)

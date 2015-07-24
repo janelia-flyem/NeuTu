@@ -55,9 +55,16 @@ void ZDvidTile::loadDvidSlice(const uchar *buf, int length, int z)
     }
 
     m_image->loadFromData(buf, length);
+    m_image->enhanceContrast(
+          hasVisualEffect(NeuTube::Display::Image::VE_HIGH_CONTRAST));
 
     m_image->setScale(1.0 / m_res.getScale(), 1.0 / m_res.getScale());
     m_image->setOffset(-getX(), -getY());
+
+    m_pixmap.cleanUp();
+    m_pixmap.convertFromImage(*m_image);
+    m_pixmap.setScale(1.0 / m_res.getScale(), 1.0 / m_res.getScale());
+    m_pixmap.setOffset(-getX(), -getY());
 
 #ifdef _DEBUG_2
     std::cout << "Format: " << m_image->format() << std::endl;
@@ -75,7 +82,7 @@ void ZDvidTile::enhanceContrast(bool high)
     removeVisualEffect(NeuTube::Display::Image::VE_HIGH_CONTRAST);
   }
 }
-
+/*
 void ZDvidTile::setImageData(const uint8_t *data, int width, int height)
 {
   if (width <= 0 || height <= 0) {
@@ -97,7 +104,7 @@ void ZDvidTile::setImageData(const uint8_t *data, int width, int height)
   m_image->setScale(1.0 / m_res.getScale(), 1.0 / m_res.getScale());
   m_image->setOffset(-getX(), -getY());
 }
-
+*/
 void ZDvidTile::loadDvidSlice(const QByteArray &buffer, int z)
 {
   loadDvidSlice((const uchar *) buffer.data(), buffer.length(), z);
@@ -161,12 +168,13 @@ void ZDvidTile::display(
     }
 #endif
 
-    m_image->enhanceContrast(
-          hasVisualEffect(NeuTube::Display::Image::VE_HIGH_CONTRAST));
+//    m_image->enhanceContrast(
+//          hasVisualEffect(NeuTube::Display::Image::VE_HIGH_CONTRAST));
 //    QElapsedTimer timer;
 //    timer.start();
 //    tic();
-    painter.drawImage(getX(), getY(), *m_image);
+    painter.drawPixmap(getX(), getY(), m_pixmap);
+//    painter.drawImage(getX(), getY(), *m_image);
 //    std::cout << "Draw image time: " << toc() << std::endl;
 //    std::cout << "Draw image time: " << timer.elapsed() << std::endl;
 

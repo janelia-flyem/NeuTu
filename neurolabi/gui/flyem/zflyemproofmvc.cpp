@@ -168,6 +168,7 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
     QList<ZDvidTileEnsemble*> teList =
         getCompleteDocument()->getDvidTileEnsembleList();
     foreach (ZDvidTileEnsemble *te, teList) {
+      te->enhanceContrast(getCompletePresenter()->highTileContrast());
       te->attachView(getView());
     }
     getView()->reset(false);
@@ -1278,6 +1279,7 @@ void ZFlyEmProofMvc::recordCheckedBookmark(const QString &key, bool checking)
 
 void ZFlyEmProofMvc::enhanceTileContrast(bool state)
 {
+  getCompletePresenter()->setHighTileContrast(state);
   getCompleteDocument()->enhanceTileContrast(state);
   /*
   ZDvidTileEnsemble *tile = getCompleteDocument()->getDvidTileEnsemble();

@@ -200,3 +200,13 @@ void ZFlyEmProofPresenter::processCustomOperator(const ZStackOperator &op)
         !isSplitWindow());
 }
 
+bool ZFlyEmProofPresenter::highTileContrast() const
+{
+  return m_highTileContrast;
+}
+
+void ZFlyEmProofPresenter::setHighTileContrast(bool high)
+{
+  m_highTileContrast = high;
+}
+
