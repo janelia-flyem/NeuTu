@@ -129,55 +129,22 @@ void FlyEmBodyInfoDialog::updateModel(ZJsonValue data) {
         return;
     }
 
-    int row = 0;
-    for (ZJsonValue bkmk: data.toArray()) {
-        std::cout << "starting row " << row << std::endl;
 
-        // parse out the stuff we want & put in model
-        std::cout << "parsing body ID" << std::endl;
-        int bodyID = ZJsonParser::integerValue(((ZJsonObject) bkmk)["body ID"]);
-        std::cout << "setting body ID" << std::endl;
-        m_model->setItem(row, 0, new QStandardItem(QString::number(bodyID)));
+    // NOTE: don't currently really need to convert to ints if we're
+    //  just stuffing into table, but we do eventually want to sort
+    //  on the numeric value
 
-        std::cout << "parsing #synapses" << std::endl;
-        int nSynapses = ZJsonParser::integerValue(((ZJsonObject) bkmk)["body synapses"]);
-        std::cout << "setting #synapses" << std::endl;
-        m_model->setItem(row, 1, new QStandardItem(QString::number(nSynapses)));
-
-        std::cout << "appended body ID " << bodyID << std::endl;
-        row ++;
-    }
-
-
-
-    /*
-    // this has same errors as my version
     ZJsonArray bookmarks(data);
-    std::cout << "size = " << bookmarks.size() << std::endl;
-
     for (size_t i = 0; i < bookmarks.size(); ++i) {
-        std::cout << "starting row " << i << std::endl;
-
         ZJsonObject bkmk(bookmarks.at(i), false);
-        ZString text = ZJsonParser::stringValue(bkmk["text"]);
-        std::cout << i << ": text = " << text << std::endl;
 
+        int bodyID = ZJsonParser::integerValue(bkmk["body ID"]);
+        m_model->setItem(i, 0, new QStandardItem(QString::number(bodyID)));
 
-        // parse out the stuff we want & put in model
-        std::cout << "parsing body ID" << std::endl;
-        int bodyID = ZJsonParser::integerValue(((ZJsonObject) bkmk)["body ID"]);
-
-        std::cout << "setting body ID" << std::endl;
-        m_model->setItem(i, 0, new QStandardItem(bodyID));
-
-
-        std::cout << "parsing #synapses" << std::endl;
-        int nSynapses = ZJsonParser::integerValue(((ZJsonObject) bkmk)["body synapses"]);
-
-        std::cout << "appended body ID " << bodyID << std::endl;
+        int nSynapses = ZJsonParser::integerValue(bkmk["body synapses"]);
+        m_model->setItem(i, 1, new QStandardItem(QString::number(nSynapses)));
 
     }
-    */
 
 }
 
