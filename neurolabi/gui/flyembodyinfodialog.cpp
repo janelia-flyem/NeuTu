@@ -133,11 +133,17 @@ void FlyEmBodyInfoDialog::updateModel(ZJsonValue data) {
     for (size_t i = 0; i < bookmarks.size(); ++i) {
         ZJsonObject bkmk(bookmarks.at(i), false);
 
+        // carefully set data for items so they will sort numerically;
+        //  compare the "body status" entry, which we want as a string
         int bodyID = ZJsonParser::integerValue(bkmk["body ID"]);
-        m_model->setItem(i, 0, new QStandardItem(QString::number(bodyID)));
+        QStandardItem * bodyIDItem = new QStandardItem();
+        bodyIDItem->setData(QVariant(bodyID), Qt::DisplayRole);
+        m_model->setItem(i, 0, bodyIDItem);
 
         int nSynapses = ZJsonParser::integerValue(bkmk["body synapses"]);
-        m_model->setItem(i, 1, new QStandardItem(QString::number(nSynapses)));
+        QStandardItem * synapsesItem = new QStandardItem();
+        synapsesItem->setData(QVariant(nSynapses), Qt::DisplayRole);
+        m_model->setItem(i, 1, synapsesItem);
 
         const char* status = ZJsonParser::stringValue(bkmk["body status"]);
         m_model->setItem(i, 2, new QStandardItem(QString(status)));
