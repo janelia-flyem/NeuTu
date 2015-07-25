@@ -6,7 +6,7 @@
 #include "dvid/zdvidinfo.h"
 #include "dvid/zdvidbuffer.h"
 #include "dvid/zdvidtarget.h"
-#include "zdviddialog.h"
+#include "dialogs/zdviddialog.h"
 #include "zstring.h"
 #include "dvid/zdvidreader.h"
 #include "dvid/zdvidurl.h"

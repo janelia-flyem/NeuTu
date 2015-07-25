@@ -8,6 +8,7 @@
 #include "zstackviewparam.h"
 #include "zobjectcolorscheme.h"
 #include "neutube.h"
+#include "zimage.h"
 
 class ZFlyEmBodyMerger;
 class QColor;
@@ -17,6 +18,7 @@ class ZDvidLabelSlice : public ZStackObject
 public:
   ZDvidLabelSlice();
   ZDvidLabelSlice(int maxWidth, int maxHeight);
+  ~ZDvidLabelSlice();
 
   void setMaxSize(int maxWidth, int maxHeight);
 
@@ -115,6 +117,7 @@ private:
   std::set<uint64_t> m_selectedOriginal;
 //  std::set<uint64_t> m_selectedSet; //Mapped label set
   ZFlyEmBodyMerger *m_bodyMerger;
+  ZImage *m_paintBuffer;
 
   int m_maxWidth;
   int m_maxHeight;

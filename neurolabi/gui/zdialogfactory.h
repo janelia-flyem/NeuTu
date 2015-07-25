@@ -5,8 +5,8 @@
 #include <QDialog>
 #include <QVector>
 #include <QPointer>
-#include "zdviddialog.h"
-#include "dvidimagedialog.h"
+#include "dialogs/zdviddialog.h"
+#include "dialogs/dvidimagedialog.h"
 #include "dialogs/zspinboxdialog.h"
 #include "zparameter.h"
 #include "dialogs/zspinboxgroupdialog.h"

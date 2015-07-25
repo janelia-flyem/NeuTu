@@ -6,14 +6,14 @@
 #include <QFileInfo>
 
 #include "zwidgetfactory.h"
-#include "zdviddialog.h"
+#include "dialogs/zdviddialog.h"
 #include "neutubeconfig.h"
 #include "zstring.h"
 #include "zparameterarray.h"
 #include "zstackmvc.h"
 #include "zstackdoc.h"
 #include "zflyemcontrolform.h"
-#include "flyembodymergeprojectdialog.h"
+#include "dialogs/flyembodymergeprojectdialog.h"
 #include "dvid/zdvidreader.h"
 #include "zstackfactory.h"
 #include "dvid/zdvidtile.h"

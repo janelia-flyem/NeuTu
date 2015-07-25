@@ -29,7 +29,7 @@
 #include "z3dcompositor.h"
 #include "z3dvolumeraycaster.h"
 #include "z3daxis.h"
-#include "swcexportdialog.h"
+#include "dialogs/swcexportdialog.h"
 #include "zdialogfactory.h"
 #include "zprogressmanager.h"
 #include "z3dvolumesource.h"

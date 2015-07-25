@@ -1,7 +1,7 @@
 #include "zflyemprojectmanager.h"
 
-#include "flyembodymergeprojectdialog.h"
-#include "flyembodysplitprojectdialog.h"
+#include "dialogs/flyembodymergeprojectdialog.h"
+#include "dialogs/flyembodysplitprojectdialog.h"
 
 ZFlyEmProjectManager::ZFlyEmProjectManager(QObject *parent) :
   QObject(parent)

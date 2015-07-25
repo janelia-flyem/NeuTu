@@ -4,7 +4,7 @@
 #include <QInputDialog>
 
 #include "ui_flyemproofcontrolform.h"
-#include "zdviddialog.h"
+#include "dialogs/zdviddialog.h"
 #include "zstring.h"
 #include "neutubeconfig.h"
 #include "flyem/zflyembodymergeproject.h"

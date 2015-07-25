@@ -17,7 +17,7 @@
 #include "zstack.hxx"
 #include "zstackdoc.h"
 #include "swctreenode.h"
-#include "channeldialog.h"
+#include "dialogs/channeldialog.h"
 #include "neutubeconfig.h"
 #include "zcursorstore.h"
 #include "zstroke2d.h"
