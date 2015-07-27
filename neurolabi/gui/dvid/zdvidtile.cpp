@@ -93,9 +93,12 @@ void ZDvidTile::enhanceContrast(bool high)
     } else {
       removeVisualEffect(NeuTube::Display::Image::VE_HIGH_CONTRAST);
     }
-    m_image->enhanceContrast(
-          hasVisualEffect(NeuTube::Display::Image::VE_HIGH_CONTRAST));
-    updatePixmap();
+
+    if (m_image != NULL) {
+      m_image->enhanceContrast(
+            hasVisualEffect(NeuTube::Display::Image::VE_HIGH_CONTRAST));
+      updatePixmap();
+    }
   }
 }
 /*
