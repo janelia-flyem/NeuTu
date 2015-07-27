@@ -55,7 +55,8 @@ void ZDvidLabelSlice::display(
       } else {
         obj.setSelected(false);
       }
-//      obj.display(painter, slice, option);
+      obj.display(painter, slice, option);
+#if 0
       QRect viewPort = m_currentViewParam.getViewPort();
       ZObject3dScan objSlice;
       if (slice < 0) {
@@ -84,7 +85,7 @@ void ZDvidLabelSlice::display(
         }
       }
       painter.drawImage(viewPort.left(), viewPort.top(), *m_paintBuffer);
-
+#endif
 //      m_paintBuffer->setPixel()
     }
   }

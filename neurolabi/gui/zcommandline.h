@@ -50,6 +50,7 @@ private:
   std::string m_referenceBlockFile;
   std::string m_synapseFile;
   ZJsonObject m_configJson;
+  std::string m_configDir;
   int m_ravelerHeight;
   int m_zStart;
   int m_intv[3];

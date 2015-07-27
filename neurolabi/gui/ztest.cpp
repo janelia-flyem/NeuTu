@@ -17390,7 +17390,7 @@ void ZTest::test(MainWindow *host)
   array.dump(GET_TEST_DATA_DIR + "/flyem/MB/roi_fix/mb_subtracted.json");
 #endif
 
-#if 1
+#if 0
   ZDvidTarget target;
   target.set("http://emdata1.int.janelia.org", "1f62", 8500);
 
@@ -17414,6 +17414,39 @@ void ZTest::test(MainWindow *host)
     obj.unify(obj2);
     obj.save(GET_TEST_DATA_DIR + "/flyem/MB/roi_fix/merged.sobj");
   }
+
+#endif
+
+#if 0
+  ZNeuronTracerConfig::getInstance().print();
+#endif
+
+#if 1 //Move body annotations
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "66ba", 8500);
+
+  ZDvidReader reader;
+  reader.open(target);
+  QStringList keyList = reader.readKeys("annotations");
+
+  ZDvidTarget target2;
+  target2.set("emdata1.int.janelia.org", "66ba", 8500);
+  target2.setBodyLabelName("labels3");
+  target2.setLabelBlockName("bodies3");
+
+  ZDvidWriter writer;
+  writer.open(target2);
+  ZDvidUrl dvidUrl(target2);
+
+  foreach (const QString key, keyList) {
+    std::cout << key.toStdString() << std::endl;
+    QByteArray data = reader.readKeyValue("annotations", key);
+    ZJsonValue obj;
+    obj.decodeString(data.constData());
+
+    writer.writeJson("bodies3_annotations", key.toStdString(), obj);
+  }
+
 
 #endif
 }
