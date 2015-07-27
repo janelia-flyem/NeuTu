@@ -102,10 +102,17 @@ void ZDvidTileEnsemble::update(
     if (!tile_locs_array.empty()) {
       libdvid::DVIDNodeService service(getDvidTarget().getAddressWithPort(),
                                        getDvidTarget().getUuid());
+#ifdef _DEBUG_2
+      std::cout << "Reading tiles ..." << std::endl;
+#endif
       const std::vector<libdvid::BinaryDataPtr> &data = get_tile_array_binary(
             service, m_dvidTarget.getMultiscale2dName(), libdvid::XY, resLevel,
             tile_locs_array);
       size_t dataIndex = 0;
+
+//      QThreadFutureMap futureMap;
+      QList<QFuture<void> > futureList;
+
       for (std::vector<ZDvidTileInfo::TIndex>::const_iterator iter = tileIndices.begin();
            iter != tileIndices.end(); ++iter) {
         const ZDvidTileInfo::TIndex &index = *iter;
@@ -119,6 +126,9 @@ void ZDvidTileEnsemble::update(
           task->setData(dataPtr->get_raw(), dataPtr->length());
           task->setHighContrast(m_highContrast);
           taskManager.addTask(task);
+
+          QFuture<void> future = QtConcurrent::run(task, &ZDvidTileDecodeTask::execute);
+          futureList.append(future);
             //      tile->display(painter, slice, option);
 
 //          tile->loadDvidSlice(dataPtr->get_raw(), dataPtr->length(), z);
@@ -130,9 +140,19 @@ void ZDvidTileEnsemble::update(
           */
         }
       }
-      taskManager.start();
-      taskManager.waitForDone();
+
+      for (QList<QFuture<void> >::iterator iter = futureList.begin();
+           iter != futureList.end(); ++iter) {
+        iter->waitForFinished();
+      }
+
+
+//      taskManager.start();
+//      taskManager.waitForDone();
     }
+#ifdef _DEBUG_2
+      std::cout << "Tiles ready." << std::endl;
+#endif
   } catch (std::exception &e) {
     std::cout << e.what() << std::endl;
   }

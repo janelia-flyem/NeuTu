@@ -1371,12 +1371,17 @@ void ZStackView::paintObjectBuffer(
       std::cout << "---" << std::endl;
       std::cout << slice << " " << m_depthControl->value() <<  std::endl;
 #endif
-
+#ifdef _DEBUG_
+      std::cout << "Displaying objects ..." << std::endl;
+#endif
       for (QList<const ZStackObject*>::const_iterator
            iter = visibleObject.begin(); iter != visibleObject.end(); ++iter) {
         //(*obj)->display(m_objectCanvas, slice, buddyPresenter()->objectStyle());
         const ZStackObject *obj = *iter;
         if (slice == m_depthControl->value() || slice < 0) {
+#ifdef _DEBUG_
+          std::cout << obj->className() << std::endl;
+#endif
           obj->display(painter, slice, buddyPresenter()->objectStyle());
 //          painted = true;
         }
@@ -1430,9 +1435,16 @@ bool ZStackView::paintTileCanvasBuffer()
 //  QElapsedTimer timer;
 //  timer.start();
   if (buddyDocument()->hasObject(ZStackObject::TYPE_DVID_TILE_ENSEMBLE)) {
+#ifdef _DEBUG_
+    std::cout << "updating tile canvas ..." << std::endl;
+#endif
     updateTileCanvas();
+
     //std::cout << "update time canvas time: " << timer.elapsed() << std::endl;
     if (m_tileCanvas != NULL) {
+#ifdef _DEBUG_
+      std::cout << "Painting tile buffer ..." << std::endl;
+#endif
       paintObjectBuffer(m_tileCanvasPainter, ZStackObject::TARGET_TILE_CANVAS);
       painted = true;
     }

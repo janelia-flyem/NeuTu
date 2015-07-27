@@ -56,6 +56,9 @@ void ZDvidTile::loadDvidSlice(const uchar *buf, int length, int z)
       m_image = new ZImage;
     }
 
+#ifdef _DEBUG_2
+    std::cout << "Decoding tile ..." << std::endl;
+#endif
     m_image->loadFromData(buf, length);
     m_image->setScale(1.0 / m_res.getScale(), 1.0 / m_res.getScale());
     m_image->setOffset(-getX(), -getY());
@@ -172,7 +175,7 @@ void ZDvidTile::display(
 
   if ((z == m_z)  && (m_image != NULL)) {
 #ifdef _DEBUG_2
-    std::cout << "Display " << z << std::endl;
+    std::cout << "Display tile: " << z << std::endl;
 #endif
     //      ZImage image = getImage();
     //int dx = getX() - painter.getOffset().x();
@@ -263,11 +266,11 @@ void ZDvidTile::update(int z)
             "tiles", libdvid::XY, m_res.getLevel(), offset);
       if (data->length() > 0) {
         loadDvidSlice(data->get_raw(), data->length(), z);
-        m_image.setScale(1.0 / m_res.getScale(), 1.0 / m_res.getScale());
-        m_image.setOffset(-getX(), -getY());
+        m_image->setScale(1.0 / m_res.getScale(), 1.0 / m_res.getScale());
+        m_image->setOffset(-getX(), -getY());
       }
     } catch (std::exception &e) {
-      std::cout << e.what() << std::endl;===
+      std::cout << e.what() << std::endl;
     }
     std::cout << "Tile level: " << m_res.getLevel() << std::endl;
     std::cout << "Tile reading time: " << toc() << std::endl;

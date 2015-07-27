@@ -12,6 +12,7 @@
 
 class ZFlyEmBodyMerger;
 class QColor;
+class ZArray;
 
 class ZDvidLabelSlice : public ZStackObject
 {
@@ -118,6 +119,7 @@ private:
 //  std::set<uint64_t> m_selectedSet; //Mapped label set
   ZFlyEmBodyMerger *m_bodyMerger;
   ZImage *m_paintBuffer;
+  ZArray *m_labelArray;
 
   int m_maxWidth;
   int m_maxHeight;
