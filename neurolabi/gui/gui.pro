@@ -620,11 +620,8 @@ FORMS += dialogs/settingdialog.ui \
     flyem/flyemproofcontrolform.ui \
     flyem/flyemsplitcontrolform.ui \
     flyem/zflyembodyannotationdialog.ui \
-    flyembodyinfodialog.ui
-
-=======
+    flyembodyinfodialog.ui \
     flyem/zflyembookmarkannotationdialog.ui
->>>>>>> pripublic
 SOURCES += main.cpp \
     mainwindow.cpp \
     zstackview.cpp \
