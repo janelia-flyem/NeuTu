@@ -162,7 +162,7 @@
 #include "zmessage.h"
 #include "zmessagemanager.h"
 #include "dialogs/ztestdialog.h"
-#include "ztestdialog2.h"
+#include "dialogs/ztestdialog2.h"
 #include "dvid/zdvidtile.h"
 #include "flyem/zflyemstackdoc.h"
 #include "flyem/zproofreadwindow.h"

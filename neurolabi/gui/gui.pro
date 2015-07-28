@@ -506,7 +506,7 @@ HEADERS += mainwindow.h \
     zmessage.h \
     zmainwindowmessageprocessor.h \
     dialogs/ztestdialog.h \
-    ztestdialog2.h \
+    dialogs/ztestdialog2.h \
     zstackdocloader.h \
     zstackwidget.h \
     dvid/zdvidversiondag.h \
@@ -549,7 +549,7 @@ HEADERS += mainwindow.h \
     zpuncta.h \
     flyem/zdvidtileupdatetaskmanager.h \
     flyem/zpaintlabelwidget.h \
-    flyembodyinfodialog.h \
+    dialogs/flyembodyinfodialog.h \
     flyem/zflyembookmarkannotationdialog.h \
     flyem/zflyembody3ddoc.h \
     z3ddef.h
@@ -615,12 +615,12 @@ FORMS += dialogs/settingdialog.ui \
     dialogs/swcexportdialog.ui \
     flyem/zflyemhackathonconfigdlg.ui \
     dialogs/ztestdialog.ui \
-    ztestdialog2.ui \
+    dialogs/ztestdialog2.ui \
     zflyemcontrolform.ui \
     flyem/flyemproofcontrolform.ui \
     flyem/flyemsplitcontrolform.ui \
     flyem/zflyembodyannotationdialog.ui \
-    flyembodyinfodialog.ui \
+    dialogs/flyembodyinfodialog.ui \
     flyem/zflyembookmarkannotationdialog.ui
 SOURCES += main.cpp \
     mainwindow.cpp \
@@ -922,7 +922,7 @@ SOURCES += main.cpp \
     zmessage.cpp \
     zmainwindowmessageprocessor.cpp \
     dialogs/ztestdialog.cpp \
-    ztestdialog2.cpp \
+    dialogs/ztestdialog2.cpp \
     zstackdocloader.cpp \
     zstackwidget.cpp \
     dvid/zdvidversiondag.cpp \
@@ -965,7 +965,7 @@ SOURCES += main.cpp \
     zpuncta.cpp \
     flyem/zdvidtileupdatetaskmanager.cpp \
     flyem/zpaintlabelwidget.cpp \
-    flyembodyinfodialog.cpp \
+    dialogs/flyembodyinfodialog.cpp \
     flyem/zflyembookmarkannotationdialog.cpp \
     flyem/zflyembody3ddoc.cpp \
     z3ddef.cpp
