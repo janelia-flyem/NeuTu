@@ -142,7 +142,7 @@ unix {
     } else {
         DEFINES += _NEUTUBE_LINUX_
         DEFINES += _LINUX_
-        LIBS += -lXt -lSM -lICE \
+        LIBS += \#-lXt -lSM -lICE \
           -lX11 -lm \
           -lpthread \
           -lGL -lrt -lGLU

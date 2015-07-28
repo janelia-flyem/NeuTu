@@ -174,7 +174,7 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
     getView()->reset(false);
     getProgressSignal()->advanceProgress(0.1);
 
-#if 1
+#if 0
     if (getMainWindow() != NULL) {
 //      parentWidget()->hide();
 //      parentWidget()->restoreGeometry(geometry);
