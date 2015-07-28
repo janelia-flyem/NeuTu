@@ -153,6 +153,9 @@ void FlyEmBodyInfoDialog::updateModel(ZJsonValue data) {
     }
     ui->tableView->resizeColumnsToContents();
 
+    // initial sort order is by synapses, descending
+    ui->tableView->sortByColumn(1, Qt::DescendingOrder);
+
 }
 
 FlyEmBodyInfoDialog::~FlyEmBodyInfoDialog()
