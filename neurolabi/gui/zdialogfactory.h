@@ -5,14 +5,19 @@
 #include <QDialog>
 #include <QVector>
 #include <QPointer>
-#include "zdviddialog.h"
-#include "dvidimagedialog.h"
-#include "zspinboxdialog.h"
+#include "dialogs/zdviddialog.h"
+#include "dialogs/dvidimagedialog.h"
+#include "dialogs/zspinboxdialog.h"
 #include "zparameter.h"
-#include"zspinboxgroupdialog.h"
+#include "dialogs/zspinboxgroupdialog.h"
 
 class QSpacerItem;
 class ZParameterArray;
+
+#ifdef _WIN32
+#undef GetOpenFileName
+#undef GetSaveFileName
+#endif
 
 class ZDialogFactory
 {

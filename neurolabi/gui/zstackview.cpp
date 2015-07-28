@@ -2,7 +2,7 @@
 #include <QElapsedTimer>
 
 #include "zstackview.h"
-#include "zimagewidget.h"
+#include "widgets/zimagewidget.h"
 #include "z3dwindow.h"
 #include "zimage.h"
 #include "zstackdoc.h"
@@ -33,6 +33,7 @@
 #include "zstackmvc.h"
 #include "zpixmap.h"
 #include "zlabeledspinboxwidget.h"
+#include "zbenchtimer.h"
 
 #include <QtGui>
 #ifdef _QT5_
@@ -182,6 +183,7 @@ void ZStackView::init()
 
   setDepthFrozen(false);
   setViewPortFrozen(false);
+  blockViewChangeEvent(false);
   //customizeWidget();
 }
 
@@ -278,13 +280,21 @@ double ZStackView::getZoomRatio() const
       m_imageWidget->viewPort().width();
 }
 
+void ZStackView::resetDepthControl()
+{
+  ZStack *stack = stackData();
+  if (stack != NULL) {
+    m_depthControl->setRange(0, stack->depth() - 1);
+    m_depthControl->setValue(stack->depth() / 2);
+  }
+}
+
 void ZStackView::reset(bool updatingScreen)
 { 
   ZStack *stack = stackData();
   updateChannelControl();
   if (stack != NULL) {
-    m_depthControl->setRange(0, stack->depth() - 1);
-    m_depthControl->setValue(stack->depth() / 2);
+    resetDepthControl();
 //    m_imageWidget->reset();
 
     if (updatingScreen) {
@@ -666,12 +676,18 @@ void ZStackView::redraw(bool updatingScreen)
 {
 //  tic();
   QElapsedTimer timer;
+//  ZBenchTimer timer;
   timer.start();
   m_imageWidget->setCanvasRegion(
         buddyDocument()->getStackOffset().getX(),
         buddyDocument()->getStackOffset().getY(),
         buddyDocument()->getStackSize().getX(),
         buddyDocument()->getStackSize().getY());
+
+  buddyDocument()->blockSignals(true);
+  buddyDocument()->showSwcFullSkeleton(
+        buddyPresenter()->isSwcFullSkeletonVisible());
+  buddyDocument()->blockSignals(false);
 
   paintStackBuffer();
 //  std::cout << "paint stack per frame: " << timer.restart() << std::endl;
@@ -685,6 +701,9 @@ void ZStackView::redraw(bool updatingScreen)
   if (updatingScreen) {
     updateImageScreen();
   }
+
+//  timer.stop();
+//  std::cout << "Paint time per frame: " << timer.time() * 1000 << " ms" << std::endl;
 //  std::cout << "paint time per frame: " << toc() << std::endl;
   std::cout << "paint time per frame: " << timer.restart() << std::endl;
 }
@@ -1352,12 +1371,17 @@ void ZStackView::paintObjectBuffer(
       std::cout << "---" << std::endl;
       std::cout << slice << " " << m_depthControl->value() <<  std::endl;
 #endif
-
+#ifdef _DEBUG_
+      std::cout << "Displaying objects ..." << std::endl;
+#endif
       for (QList<const ZStackObject*>::const_iterator
            iter = visibleObject.begin(); iter != visibleObject.end(); ++iter) {
         //(*obj)->display(m_objectCanvas, slice, buddyPresenter()->objectStyle());
         const ZStackObject *obj = *iter;
         if (slice == m_depthControl->value() || slice < 0) {
+#ifdef _DEBUG_
+          std::cout << obj->className() << std::endl;
+#endif
           obj->display(painter, slice, buddyPresenter()->objectStyle());
 //          painted = true;
         }
@@ -1411,9 +1435,16 @@ bool ZStackView::paintTileCanvasBuffer()
 //  QElapsedTimer timer;
 //  timer.start();
   if (buddyDocument()->hasObject(ZStackObject::TYPE_DVID_TILE_ENSEMBLE)) {
+#ifdef _DEBUG_
+    std::cout << "updating tile canvas ..." << std::endl;
+#endif
     updateTileCanvas();
+
     //std::cout << "update time canvas time: " << timer.elapsed() << std::endl;
     if (m_tileCanvas != NULL) {
+#ifdef _DEBUG_
+      std::cout << "Painting tile buffer ..." << std::endl;
+#endif
       paintObjectBuffer(m_tileCanvasPainter, ZStackObject::TARGET_TILE_CANVAS);
       painted = true;
     }
@@ -1771,8 +1802,9 @@ void ZStackView::notifyViewChanged(const ZStackViewParam &param)
 #ifdef _DEBUG_2
   std::cout << "Signal: ZStackView::viewChanged" << std::endl;
 #endif
-
-  emit viewChanged(param);
+  if (!isViewChangeEventBlocked()) {
+    emit viewChanged(param);
+  }
 }
 
 void ZStackView::notifyViewPortChanged()
@@ -1945,9 +1977,19 @@ bool ZStackView::isDepthFronzen() const
   return m_depthFrozen;
 }
 
+bool ZStackView::isViewChangeEventBlocked() const
+{
+  return m_viewChangeEventBlocked;
+}
+
 void ZStackView::setDepthFrozen(bool state)
 {
   m_depthFrozen = state;
+}
+
+void ZStackView::blockViewChangeEvent(bool state)
+{
+  m_viewChangeEventBlocked = state;
 }
 
 void ZStackView::setCanvasVisible(ZStackObject::ETarget target, bool visible)

@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include "tz_cdefs.h"
 #include "tz_string_defs.h"
+#include "tz_stdint.h"
 
 __BEGIN_DECLS
 
@@ -119,6 +120,14 @@ int Count_Integer_D(char *str, int (*is_dlm) (char));
  * is not NULL. <n> stores the number of integers extracts and can not be NULL.
  */
 int* String_To_Integer_Array(const char *str, int *array, int *n);
+
+/**@brief Turn string into an uint64 array.
+ *
+ * String_To_Uint64_Array() extracts integers in <str> and returns them as an
+ * uint64 array. <array> provides the storage space for the integer array if it
+ * is not NULL. <n> stores the number of integers extracts and can not be NULL.
+ */
+uint64_t* String_To_Uint64_Array(const char *str, uint64_t *array, int *n);
 
 /**@brief Turn string into an double array.
  *

@@ -23,6 +23,7 @@ public:
   void loadBodyAnnotation(const ZFlyEmBodyAnnotation &annotation);
 
   void setBodyId(uint64_t bodyId);
+  void setPrevUser(const std::string &name);
 
   uint64_t getBodyId() const;
   QString getComment() const;
@@ -37,6 +38,9 @@ public:
 
 public slots:
   void setNameEdit(const QString &name);
+
+private:
+  void connectSignalSlot();
 
 private:
   Ui::ZFlyEmBodyAnnotationDialog *ui;

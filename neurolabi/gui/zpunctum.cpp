@@ -21,7 +21,8 @@ ZPunctum::ZPunctum()
   setSDevOfIntensity(0);
   updateVolSize();
   updateMass();
-  setVisualEffect(ZStackBall::VE_OUT_FOCUS_DIM | ZStackBall::VE_DOT_CENTER);
+  setVisualEffect(NeuTube::Display::Sphere::VE_OUT_FOCUS_DIM |
+                  NeuTube::Display::Sphere::VE_DOT_CENTER);
   m_type = ZStackObject::TYPE_PUNCTUM;
 }
 
@@ -36,7 +37,7 @@ ZPunctum::ZPunctum(double x, double y, double z, double r)
   setSDevOfIntensity(0);
   updateVolSize();
   updateMass();
-  setVisualEffect(ZStackBall::VE_OUT_FOCUS_DIM);
+  setVisualEffect(NeuTube::Display::Sphere::VE_OUT_FOCUS_DIM);
   m_type = ZStackObject::TYPE_PUNCTUM;
 }
 

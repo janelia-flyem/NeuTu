@@ -34,13 +34,13 @@
 #include "tz_trace_defs.h"
 #include "zpunctum.h"
 #include "zprogressreporter.h"
-#include "zrescaleswcdialog.h"
+#include "dialogs/zrescaleswcdialog.h"
 #include "zreportable.h"
 #include "biocytin/zstackprojector.h"
 #include "zstackreadthread.h"
 #include "zstackfile.h"
 #include "zactionactivator.h"
-#include "resolutiondialog.h"
+#include "dialogs/resolutiondialog.h"
 #include "zneurontracer.h"
 #include "zdocplayer.h"
 #include "z3dgraph.h"
@@ -93,7 +93,7 @@ class ZStackDoc : public QObject, public ZReportable, public ZProgressable
   Q_OBJECT
 
 public:
-  ZStackDoc(ZStack *stack, QObject *parent);
+  ZStackDoc(QObject *parent = NULL);
   virtual ~ZStackDoc();
 
   //Designed for multi-thread reading
@@ -413,6 +413,8 @@ public:
   /* Remove object with specific roles */
   void removeObject(ZStackObjectRole::TRole role, bool deleteObject = false);
 
+  void removeObject(const std::string &source, bool deleteObject = false);
+
   void removeSelectedPuncta(bool deleteObject = false);
   void removeSmallLocsegChain(double thre);   //remove small locseg chain (geolen < thre)
   //void removeAllLocsegChain();
@@ -533,6 +535,9 @@ public:
    */
   void addObjectFast(ZStackObject *obj);
 
+  template <typename InputIterator>
+  void addObjectFast(InputIterator first, InputIterator last);
+
   /*!
    * \brief Add a palyer
    *
@@ -561,6 +566,8 @@ public:
   bool selectSwcTreeBranch(int x, int y, int z);
   bool pushLocsegChain(ZStackObject *obj);
   void pushSelectedLocsegChain();
+
+  void showSwcFullSkeleton(bool state);
 
 //  enum ESynapseSelection {
 //    SYNAPSE_ALL, SYNAPSE_TBAR, SYNAPSE_PSD
@@ -716,6 +723,7 @@ public:
   TStackObjectSet &getSelected(ZStackObject::EType type);
 
   void setVisible(ZStackObject::EType type, bool visible);
+  void setVisible(ZStackObjectRole::TRole role, bool visible);
 
   template <typename T>
   QList<T*> getSelectedObjectList() const;
@@ -916,7 +924,7 @@ public slots: //undoable commands
 
   bool executeTraceTubeCommand(double x, double y, double z, int c = 0);
   bool executeRemoveTubeCommand();
-  bool executeAutoTraceCommand(bool doResample);
+  bool executeAutoTraceCommand(int traceLevel, bool doResample);
   bool executeAutoTraceAxonCommand();
 
   bool executeAddSwcCommand(ZSwcTree *tree);
@@ -980,7 +988,7 @@ public slots: //undoable commands
 
 public slots:
   void selectAllSwcTreeNode();
-  void autoSave();
+  void autoSaveSlot();
   bool saveSwc(const std::string &filePath);
   void loadReaderResult();
   void selectDownstreamNode();
@@ -1082,6 +1090,9 @@ signals:
   void progressEnded();
   void progressAdvanced(double dp);
   void newDocReady(const ZStackDocReader &reader);
+
+protected:
+  virtual void autoSave();
 
 private:
   void connectSignalSlot();
@@ -1380,29 +1391,69 @@ QList<T*> ZStackDoc::getUserList() const
   return userList;
 }
 
+template <typename InputIterator>
+void ZStackDoc::addObjectFast(InputIterator first, InputIterator last)
+{
+  beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+  for (InputIterator iter = first; iter != last; ++iter) {
+    ZStackObject *obj = *iter;
+    addObjectFast(obj);
+  }
+  endObjectModifiedMode();
+  notifyObjectModified();
+}
+
 template <class InputIterator>
 void ZStackDoc::removeObjectP(
     InputIterator first, InputIterator last, bool deleting)
 {
-  QSet<ZStackObject::EType> typeSet;
-  QSet<ZStackObject::ETarget> targetSet;
-
-  ZStackObjectRole role;
-  for (InputIterator iter = first; iter != last; ++iter) {
+//  TStackObjectList objList = m_objectGroup.take(type);
+  m_objectGroup.take(first, last);
+  for (TStackObjectList::iterator iter = first; iter != last; ++iter) {
+//    role.addRole(m_playerList.removePlayer(*iter));
     ZStackObject *obj = *iter;
-    role.addRole(m_playerList.removePlayer(obj));
-    typeSet.insert(obj->getType());
-    targetSet.insert(obj->getTarget());
+
+#ifdef _DEBUG_
+    std::cout << "Removing object: " << obj << std::endl;
+#endif
+
+    bufferObjectModified(obj);
+    m_playerList.removePlayer(obj);
+
     if (deleting) {
       delete obj;
     }
   }
 
+  notifyObjectModified();
+#if 0
+//  QSet<ZStackObject::EType> typeSet;
+//  QSet<ZStackObject::ETarget> targetSet;
+
+//  ZStackObjectRole role;
+
+  beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
+  for (InputIterator iter = first; iter != last; ++iter) {
+    ZStackObject *obj = *iter;
+//    role.addRole(m_playerList.removePlayer(obj));
+//    typeSet.insert(obj->getType());
+//    targetSet.insert(obj->getTarget());
+    processObjectModified(obj);
+    if (deleting) {
+      delete obj;
+    }
+  }
+  endObjectModifiedMode();
+
+  notifyObjectModified();
+#endif
+  /*
   if (first != last) {
     processObjectModified(typeSet);
     processObjectModified(targetSet);
     notifyPlayerChanged(role);
   }
+  */
 }
 
 #if 0

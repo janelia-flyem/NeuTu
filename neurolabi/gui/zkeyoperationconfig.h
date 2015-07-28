@@ -16,6 +16,7 @@ public:
 private:
   static void ConfigureSwcNodeMap(ZKeyOperationMap &map);
   static void ConfigureStackMap(ZKeyOperationMap &map);
+  static void ConfigureFlyEmBookmarkMap(ZKeyOperationMap &map);
 };
 
 #endif // ZKEYOPERATIONCONFIG_H

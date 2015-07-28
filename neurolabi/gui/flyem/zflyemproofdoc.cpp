@@ -18,9 +18,11 @@
 #include "dvid/zdvidurl.h"
 #include "dvid/zdvidbufferreader.h"
 //#include "zflyemproofmvc.h"
+#include "flyem/zflyembookmark.h"
+#include "zstring.h"
 
-ZFlyEmProofDoc::ZFlyEmProofDoc(ZStack *stack, QObject *parent) :
-  ZStackDoc(stack, parent)
+ZFlyEmProofDoc::ZFlyEmProofDoc(QObject *parent) :
+  ZStackDoc(parent)
 {
   setTag(NeuTube::Document::FLYEM_PROOFREAD);
 }
@@ -41,10 +43,14 @@ void ZFlyEmProofDoc::mergeSelected(ZFlyEmSupervisor *supervisor)
           labelSet.insert(*iter);
         } else {
           labelSet.clear();
+          std::string owner = supervisor->getOwner(*iter);
+          if (owner.empty()) {
+            owner = "unknown user";
+          }
           emit messageGenerated(
                 ZWidgetMessage(
-                  QString("Failed to merge. %1 has been locked by someone else").
-                  arg(*iter), NeuTube::MSG_ERROR));
+                  QString("Failed to merge. %1 has been locked by %2").
+                  arg(*iter).arg(owner.c_str()), NeuTube::MSG_ERROR));
           break;
         }
       } else {
@@ -69,6 +75,7 @@ void ZFlyEmProofDoc::updateTileData()
   if (reader.open(m_dvidTarget)) {
     ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
     if (dvidInfo.isValid()) {
+
       ZStack *stack = ZStackFactory::makeVirtualStack(
             ZIntCuboid(dvidInfo.getStartCoordinates(),
                        dvidInfo.getEndCoordinates()));
@@ -265,9 +272,10 @@ void ZFlyEmProofDoc::updateDvidLabelObject()
   for (TStackObjectList::iterator iter = objList.begin(); iter != objList.end();
        ++iter) {
     ZDvidLabelSlice *obj = dynamic_cast<ZDvidLabelSlice*>(*iter);
-    obj->update();
+    obj->forceUpdate();
     processObjectModified(obj);
   }
+
 
   TStackObjectList &objList2 = getObjectList(ZStackObject::TYPE_DVID_SPARSEVOL_SLICE);
   for (TStackObjectList::iterator iter = objList2.begin(); iter != objList2.end();
@@ -279,6 +287,29 @@ void ZFlyEmProofDoc::updateDvidLabelObject()
   endObjectModifiedMode();
 
   notifyObjectModified();
+}
+
+void ZFlyEmProofDoc::downloadBookmark()
+{
+  if (getDvidTarget().isValid()) {
+    ZDvidUrl url(getDvidTarget());
+    ZDvidBufferReader reader;
+    reader.read(url.getCustomBookmarkUrl(NeuTube::GetUserName()).c_str());
+    ZJsonArray jsonObj;
+    jsonObj.decodeString(reader.getBuffer());
+    if (!jsonObj.isEmpty()) {
+      beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
+      for (size_t i = 0; i < jsonObj.size(); ++i) {
+        ZJsonObject bookmarkObj =
+            ZJsonObject(jsonObj.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
+        ZFlyEmBookmark *bookmark = new ZFlyEmBookmark;
+        bookmark->loadJsonObject(bookmarkObj);
+        addObject(bookmark, true);
+      }
+      endObjectModifiedMode();
+      notifyObjectModified();
+    }
+  }
 }
 
 void ZFlyEmProofDoc::downloadSynapse()
@@ -307,6 +338,152 @@ void ZFlyEmProofDoc::loadSynapse(const std::string &filePath)
     puncta->load(filePath, 5.0);
     puncta->pushCosmeticPen(true);
     addObject(puncta);
+  }
+}
+
+ZFlyEmBookmark* ZFlyEmProofDoc::findFirstBookmark(const QString &key) const
+{
+  const TStackObjectList &objList =
+      getObjectList(ZStackObject::TYPE_FLYEM_BOOKMARK);
+  for (TStackObjectList::const_iterator iter = objList.begin();
+       iter != objList.end(); ++iter) {
+    const ZFlyEmBookmark *bookmark = dynamic_cast<const ZFlyEmBookmark*>(*iter);
+    if (bookmark->getDvidKey() == key) {
+      return const_cast<ZFlyEmBookmark*>(bookmark);
+    }
+  }
+
+  return NULL;
+}
+
+void ZFlyEmProofDoc::importFlyEmBookmark(const std::string &filePath)
+{
+  beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
+  if (!filePath.empty()) {
+//    removeObject(ZStackObject::TYPE_FLYEM_BOOKMARK, true);
+    TStackObjectList objList = getObjectList(ZStackObject::TYPE_FLYEM_BOOKMARK);
+#ifdef _DEBUG_
+    std::cout << objList.size() << " bookmarks" << std::endl;
+#endif
+    for (TStackObjectList::iterator iter = objList.begin();
+         iter != objList.end(); ++iter) {
+      ZStackObject *obj = *iter;
+      ZFlyEmBookmark *bookmark = dynamic_cast<ZFlyEmBookmark*>(obj);
+      if (bookmark != NULL) {
+        if (!bookmark->isCustom()) {
+#ifdef _DEBUG_
+          std::cout << "Removing bookmark: " << bookmark << std::endl;
+#endif
+          removeObject(*iter, true);
+        }
+      }
+    }
+
+    ZJsonObject obj;
+
+    obj.load(filePath);
+
+    ZJsonArray bookmarkArrayObj(obj["data"], false);
+    for (size_t i = 0; i < bookmarkArrayObj.size(); ++i) {
+      ZJsonObject bookmarkObj(bookmarkArrayObj.at(i), false);
+      ZString text = ZJsonParser::stringValue(bookmarkObj["text"]);
+      text.toLower();
+      if (bookmarkObj["location"] != NULL) {
+        ZJsonValue idJson = bookmarkObj.value("body ID");
+        int64_t bodyId = 0;
+        if (idJson.isInteger()) {
+          bodyId = ZJsonParser::integerValue(idJson.getData());
+        } else if (idJson.isString()) {
+          bodyId = ZString::firstInteger(ZJsonParser::stringValue(idJson.getData()));
+        }
+
+        if (bodyId > 0) {
+          std::vector<int> coordinates =
+              ZJsonParser::integerArray(bookmarkObj["location"]);
+
+          if (coordinates.size() == 3) {
+            ZFlyEmBookmark *bookmark = new ZFlyEmBookmark;
+            double x = coordinates[0];
+            double y = coordinates[1];
+            double z = coordinates[2];
+            bookmark->setLocation(iround(x), iround(y), iround(z));
+            bookmark->setBodyId(bodyId);
+            bookmark->setRadius(5.0);
+            bookmark->setColor(255, 0, 0);
+            bookmark->setHittable(false);
+            if (text.startsWith("split") || text.startsWith("small split")) {
+              bookmark->setBookmarkType(ZFlyEmBookmark::TYPE_FALSE_MERGE);
+            } else if (text.startsWith("merge")) {
+              bookmark->setBookmarkType(ZFlyEmBookmark::TYPE_FALSE_SPLIT);
+            } else {
+              bookmark->setBookmarkType(ZFlyEmBookmark::TYPE_LOCATION);
+            }
+            addObject(bookmark);
+          }
+        }
+      }
+    }
+  }
+  endObjectModifiedMode();
+
+  notifyObjectModified();
+}
+
+uint64_t ZFlyEmProofDoc::getBodyId(int x, int y, int z)
+{
+  uint64_t bodyId = 0;
+  ZDvidReader reader;
+  if (reader.open(getDvidTarget())) {
+    bodyId = m_bodyMerger.getFinalLabel(reader.readBodyIdAt(x, y, z));
+  }
+
+  return bodyId;
+}
+
+uint64_t ZFlyEmProofDoc::getBodyId(const ZIntPoint &pt)
+{
+  return getBodyId(pt.getX(), pt.getY(), pt.getZ());
+}
+
+void ZFlyEmProofDoc::autoSave()
+{
+  saveCustomBookmark();
+}
+
+void ZFlyEmProofDoc::saveCustomBookmark()
+{
+  ZDvidWriter writer;
+  if (writer.open(getDvidTarget())) {
+    const TStackObjectList &objList =
+        getObjectList(ZStackObject::TYPE_FLYEM_BOOKMARK);
+    ZJsonArray jsonArray;
+    for (TStackObjectList::const_iterator iter = objList.begin();
+         iter != objList.end(); ++iter) {
+      const ZFlyEmBookmark *bookmark = dynamic_cast<ZFlyEmBookmark*>(*iter);
+      if (bookmark != NULL) {
+        if (bookmark->isCustom()) {
+          ZJsonObject obj = bookmark->toJsonObject();
+          jsonArray.append(obj);
+        }
+      }
+    }
+    writer.writeCustomBookmark(jsonArray);
+    if (writer.getStatusCode() != 200 && !jsonArray.isEmpty()) {
+      emit messageGenerated(
+            ZWidgetMessage("Failed to save bookmarks.", NeuTube::MSG_ERROR));
+    }
+  }
+}
+
+void ZFlyEmProofDoc::enhanceTileContrast(bool highContrast)
+{
+  ZDvidTileEnsemble *tile = getDvidTileEnsemble();
+  if (tile != NULL) {
+    tile->enhanceContrast(highContrast);
+    if (!tile->isEmpty()) {
+      bufferObjectModified(tile->getTarget());
+      notifyObjectModified();
+    }
   }
 }
 

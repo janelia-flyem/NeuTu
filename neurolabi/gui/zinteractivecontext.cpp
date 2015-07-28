@@ -1,6 +1,6 @@
 #include "zinteractivecontext.h"
 #include "zpoint.h"
-#include "zimagewidget.h"
+#include "widgets/zimagewidget.h"
 
 ZInteractiveContext::ZInteractiveContext()
 {
@@ -13,6 +13,7 @@ ZInteractiveContext::ZInteractiveContext()
   m_swcEditMode = SWC_EDIT_SELECT;
   m_strokeEditMode = STROKE_EDIT_OFF;
   m_rectEditMode = RECT_EDIT_OFF;
+  m_bookmarkEditMode = BOOKMARK_EDIT_OFF;
   m_exitingEdit = false;
   m_blockingContextMenu = false;
 }
@@ -34,6 +35,7 @@ bool ZInteractiveContext::isContextMenuActivated() const
           m_tubeEditMode == TUBE_EDIT_OFF &&
           m_strokeEditMode == STROKE_EDIT_OFF &&
           m_rectEditMode == RECT_EDIT_OFF &&
+          m_bookmarkEditMode == BOOKMARK_EDIT_OFF &&
           !m_exitingEdit &&
           !m_blockingContextMenu);
 }
@@ -97,6 +99,16 @@ ZInteractiveContext::EUniqueMode ZInteractiveContext::getUniqueMode() const
       switch (MarkPunctaMode()) {
       case MARK_PUNCTA:
         mode = INTERACT_PUNCTA_MARK;
+        break;
+      default:
+        break;
+      }
+    }
+
+    if (mode == INTERACT_FREE) {
+      switch (bookmarkEditMode()) {
+      case BOOKMARK_ADD:
+        mode = INTERACT_ADD_BOOKMARK;
         break;
       default:
         break;

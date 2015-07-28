@@ -4,6 +4,7 @@
 #include "zstackpresenter.h"
 
 class QKeyEvent;
+class ZFlyEmBookmark;
 
 class ZFlyEmProofPresenter : public ZStackPresenter
 {
@@ -12,12 +13,17 @@ public:
   explicit ZFlyEmProofPresenter(ZStackFrame *parent = 0);
   explicit ZFlyEmProofPresenter(QWidget *parent = 0);
 
+  static ZFlyEmProofPresenter* Make(QWidget *parent);
+
   bool customKeyProcess(QKeyEvent *event);
 
   void toggleHighlightMode();
   bool isHighlight() const;
   void setHighlightMode(bool hl);
   bool isSplitOn() const;
+  bool highTileContrast() const;
+
+  void setHighTileContrast(bool high);
 
   void enableSplit();
   void disableSplit();
@@ -34,18 +40,28 @@ public:
     m_splitWindowMode = state;
   }
 
+private:
+  void tryAddBookmarkMode();
+  void tryAddBookmarkMode(double x, double y);
+  void addActiveStrokeAsBookmark();
+
 signals:
   void highlightingSelected(bool);
   void selectingBodyAt(int x, int y, int z);
   void deselectingAllBody();
   void runningSplit();
   void goingToBody();
+  void bookmarkAdded(ZFlyEmBookmark*);
+  void annotatingBookmark(ZFlyEmBookmark*);
 
 public slots:
 
 private:
   bool m_isHightlightMode;
   bool m_splitWindowMode;
+  bool m_highTileContrast;
+
+  ZKeyOperationMap m_bookmarkKeyOperationMap;
 };
 
 #endif // ZFLYEMPROOFPRESENTER_H

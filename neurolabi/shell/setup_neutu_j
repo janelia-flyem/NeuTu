@@ -82,7 +82,7 @@ else
   cd build
 fi
 
-$CMAKE_CMD .. -DBUILDEM_DIR=$downloadDir/buildem -DWITH_ATLAS=0
+$CMAKE_CMD .. -DBUILDEM_DIR=$downloadDir/buildem
 make
 make
 

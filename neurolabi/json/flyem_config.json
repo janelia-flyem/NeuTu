@@ -19,14 +19,6 @@
       "user_name": "zhaot"
     },
     {
-      "address": "emdata2.int.janelia.org",
-      "port": 7000,
-      "uuid": "79b",
-      "name": "FIB19 (emdata2)",
-      "comment": "FIB19",
-      "user_name": "zhaot"
-    },
-    {
       "address": "emdata1.int.janelia.org",
       "uuid": "2a3",
       "name": "FIB25-Hackathon (internal)",
@@ -50,6 +42,16 @@
       "comment": "FIB-19 data at MLOLP-Z1112-19R/align2/iso_rav (emdata1)",
       "local": "/groups/flyem/data/zhaot/local/FIB19-emdata1",
       "user_name": "zhaot"
+    },
+    {
+      "address": "emdata2.int.janelia.org",
+      "port": 7000,
+      "uuid": "897b",
+      "name": "FIB19 (emdata2)",
+      "body_label": "segmentation-labelvol",
+      "label_block": "segmentation",
+      "multires_tile": "graytiles",
+      "user_name": ["shinomiyaa", "zhaot"]
     },
     {
       "address": "emrecon100.janelia.priv",
@@ -177,7 +179,16 @@
       "comment": "MB seg (branched from febc)",
       "body_label": "bodies",
       "label_block": "labels",
-      "user_name": "zhaot"
+      "user_name": ["zhaot", "takemuras"]
+    },
+    {
+      "address": "emdata1.int.janelia.org",
+      "port": 8500,
+      "uuid": "b6bc",
+      "name": "MB_Test",
+      "comment": "MB seg (branched from febc)",
+      "body_label": "bodies",
+      "label_block": "labels"
     },
     {
       "address": "emdata1.int.janelia.org",
@@ -298,7 +309,7 @@
       "multires_tile": "graytiles",
       "body_label": "segmentation-labelvol",
       "label_block": "segmentation",
-      "user_name": ["shinomiyak", "zhaot"]
+      "user_name": ["shinomiyak", "takemuras", "zhaot"]
     },
     {
       "address": "emdata1.int.janelia.org",
@@ -339,6 +350,16 @@
       "body_label": "bodies",
       "label_block": "labels",
       "user_name": ["changl", "zhaot"]
+    },
+    {
+      "address": "emdata1.int.janelia.org",
+      "port": 8500,
+      "uuid": "4f22",
+      "name": "MB_Practice",
+      "comment": "MB seg (branched from ccf)",
+      "body_label": "bodies",
+      "label_block": "labels",
+      "user_name": ["anicetor", "changl", "lauchies", "ogundeyio", "ordishc", "sigmundc", "shinomiyaa", "tranj", "rivlinp", "takemurasa", "zhaot"]
     },
     {
       "address": "emdata1.int.janelia.org",
@@ -419,6 +440,36 @@
       "body_label": "bodies",
       "label_block": "labels",
       "user_name": ["shinomiyak", "zhaot"]
+    },
+    {
+      "address": "emdata1.int.janelia.org",
+      "port": 8500,
+      "uuid": "8e0f",
+      "name": "MB_Merged",
+      "comment": "merge of nodes 9e47 and 0f33",
+      "body_label": "bodies",
+      "label_block": "labels",
+      "user_name": ["shinomiyak", "takemuras", "zhaot"]
+    },
+    {
+      "address": "emdata1.int.janelia.org",
+      "port": 8500,
+      "uuid": "d695",
+      "name": "MB_Orphan_Link",
+      "comment": "production orphan link before extended segmentation",
+      "body_label": "bodies",
+      "label_block": "labels",
+      "user_name": ["xxx"]
+    },
+    {
+      "address": "emdata1.int.janelia.org",
+      "port": 8500,
+      "uuid": "66ba",
+      "name": "MB_Orphan_Link",
+      "comment": "production orphan link with extended segmentation",
+      "body_label": "bodies3",
+      "label_block": "labels3",
+      "user_name": ["anicetor", "changl", "lauchies", "ogundeyio", "ordishc", "sigmundc", "shinomiyaa", "tranj", "rivlinp", "takemurasa", "zhaot", "takemuras"]
     }
   ]
 }

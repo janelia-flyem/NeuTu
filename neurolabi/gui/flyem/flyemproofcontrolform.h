@@ -3,10 +3,11 @@
 
 #include <QWidget>
 #include "tz_stdint.h"
-//class ZDvidDialog;
+#include "zflyembookmarklistmodel.h"
 
 class QMenu;
 class ZDvidTarget;
+class ZFlyEmBodyMergeProject;
 
 namespace Ui {
 class FlyEmProofControlForm;
@@ -27,25 +28,31 @@ signals:
   void splitTriggered(uint64_t bodyId);
   void splitTriggered();
   void labelSizeChanged(int width, int height);
+  void showingFullSegmentation();
   void coarseBodyViewTriggered();
+  void bodyViewTriggered();
   void savingMerge();
   void committingMerge();
   void zoomingTo(int x, int y, int z);
   void locatingBody(uint64_t);
   void goingToBody();
   void selectingBody();
+  void bookmarkChecked(QString, bool);
 
 public slots:
   void setInfo(const QString &info);
   void setDvidInfo(const ZDvidTarget &target);
+  void updateBookmarkTable(ZFlyEmBodyMergeProject *project);
 
 private slots:
   void setSegmentSize();
   void incSegmentSize();
   void decSegmentSize();
+  void showFullSegmentation();
   void goToPosition();
   void goToBody();
   void selectBody();
+  void locateBookmark(const QModelIndex &index);
 
 private:
   void createMenu();
@@ -53,6 +60,7 @@ private:
 private:
   Ui::FlyEmProofControlForm *ui;
   QMenu *m_mainMenu;
+  ZFlyEmBookmarkListModel m_bookmarkList;
 
 //  ZDvidDialog *m_dvidDlg;
 };

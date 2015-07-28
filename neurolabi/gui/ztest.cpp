@@ -48,12 +48,12 @@ using namespace std;
 #include "tz_graph_utils.h"
 #include "tz_workspace.h"
 #include "tz_graph.h"
-#include "flyemskeletonizationdialog.h"
+#include "dialogs/flyemskeletonizationdialog.h"
 //#include "zstackaccessor.h"
 #include "zmatrix.h"
 #include "zswcbranch.h"
 #include "zswctreematcher.h"
-#include "parameterdialog.h"
+#include "dialogs/parameterdialog.h"
 #include "zstring.h"
 #include "zdialogfactory.h"
 #include "zrandomgenerator.h"
@@ -245,6 +245,7 @@ using namespace std;
 #include "zcommandline.h"
 #include "z3dgraphfactory.h"
 #include "flyem/zflyemsupervisor.h"
+#include "flyem/zflyembody3ddoc.h"
 
 using namespace std;
 
@@ -16607,6 +16608,30 @@ void ZTest::test(MainWindow *host)
   ptoc();
 #endif
 
+
+#if 0
+  ZImage image(10000, 10000);
+  int height = image.height();
+  int width = image.width();
+
+  uint8_t *data = new uint8_t[10000*10000];
+  int index = 0;
+  tic();
+  for (int y = 0; y < height; ++y) {
+    for (int x = 0; x < width; ++x) {
+      data[index++] = 0;
+    }
+  }
+  ptoc();
+
+  image.setData(data);
+
+  ZPixmap pixmap(10000, 10000);
+  tic();
+  pixmap.fromImage(image);
+  ptoc();
+#endif
+
 #if 0
 //  tic();
   ZPixmap pixmap(QSize(10000, 10000));
@@ -16731,6 +16756,36 @@ void ZTest::test(MainWindow *host)
   try {
     libdvid::Labels3D data = service.get_labels3D(
           "labels", dims, offset, channels);
+  } catch (std::exception &e) {
+    std::cout << e.what() << std::endl;
+  }
+  ptoc();
+  std::cout << std::endl;
+#endif
+
+#if 0
+  libdvid::DVIDNodeService service("http://emdata1.int.janelia.org:8500", "86e1");
+//  std::string endPoint = ZDvidUrl::GetEndPoint(url.toStdString());
+
+  libdvid::Dims_t dims(3);
+//  2968_3066_4045
+  dims[0] = 512;
+  dims[1] = 512;
+  dims[2] = 1;
+
+  std::vector<int> offset(3);
+  offset[0] = 1;
+  offset[1] = 1;
+  offset[2] = 7313;
+  std::vector<unsigned int> channels(3);
+  channels[0] = 0;
+  channels[1] = 1;
+  channels[2] = 2;
+
+  tic();
+  try {
+    libdvid::BinaryDataPtr data =
+        service.get_tile_slice_binary("tiles", libdvid::XY, 3, offset);
   } catch (std::exception &e) {
     std::cout << e.what() << std::endl;
   }
@@ -17131,7 +17186,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   std::string dataDir = GET_TEST_DATA_DIR + "/flyem/MB/proofread/fix1";
   ZDvidTarget target2("emdata1.int.janelia.org", "0f33", 8500);
   ZDvidReader reader;
@@ -17154,7 +17209,7 @@ void ZTest::test(MainWindow *host)
   ZObject3dScan wholeObj =reader.readBody(13707636);
 //  wholeObj.save(dataDir + "/13707636_s.sobj");
 
-#if 1
+#  if 1
   ZDvidWriter writer;
   writer.open(target2);
 
@@ -17194,6 +17249,204 @@ void ZTest::test(MainWindow *host)
   } else {
     std::cout << "Failed to open " << target.getSourceString() << std::endl;
   }
+#  endif
 #endif
+
+#if 0
+  ZDvidBufferReader reader;
+  reader.read("http://emdata2.int.janelia.org:9100/state/ee7dc");
+  const QByteArray &buffer = reader.getBuffer();
+
+  ZJsonArray array;
+  array.decodeString(buffer.data());
+
+  array.print();
+
+  ZFlyEmSupervisor supervisor;
+  supervisor.setDvidTarget(ZDvidTarget("emdata1.int.janelia.org", "ee7dc", 8500));
+  supervisor.setUserName("changl");
+
+  for (size_t i = 0; i < array.size(); ++i) {
+    ZJsonObject obj(array.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
+    std::string userName = ZJsonParser::stringValue(obj["Client"]);
+    if (userName == "takemurasa") {
+      supervisor.setUserName(userName);
+      std::cout << ZJsonParser::integerValue(obj["Label"]) << std::endl;
+      supervisor.checkIn(ZJsonParser::integerValue(obj["Label"]));
+    }
+  }
+#endif
+
+#if 0
+  ZString text = "split <username=split <username=split <username=split <username=split <username=split <username=split <username=split <username=split <username=split <username=split <username=split <username=split <username=split <username=split <username=split <username=split <username=split <username=split <username=split <username=split <username=split <username=split <username=<username=zhaot>";
+  if (text.contains("<username=")) {
+    std::string::size_type pos = text.rfind("<username=") +
+        std::string("<username=").size();
+    std::string::size_type lastPos = text.find_first_of(">", pos);
+    ZString userName = text.substr(pos, lastPos - pos);
+    userName.trim();
+    std::cout << userName << std::endl;
+  }
+
+#endif
+
+#if 0
+  ZWindowFactory factory;
+  factory.setWindowTitle("Test");
+
+  ZFlyEmBody3dDoc *doc = new ZFlyEmBody3dDoc;
+
+  doc->updateFrame();
+
+  ZDvidTarget dvidTarget("emdata1.int.janelia.org", "86e1", 8500);
+  doc->setDvidTarget(dvidTarget);
+  doc->updateFrame();
+
+//  doc->loadFile((GET_TEST_DATA_DIR + "/benchmark/em_stack.tif").c_str());
+
+  Z3DWindow *window = factory.make3DWindow(doc);
+  window->setYZView();
+
+  window->show();
+  window->raise();
+
+  doc->addEvent(ZFlyEmBody3dDoc::BodyEvent::ACTION_ADD, 12596838);
+  doc->addEvent(ZFlyEmBody3dDoc::BodyEvent::ACTION_ADD, 13890100);
+//  doc->addEvent(ZFlyEmBody3dDoc::BodyEvent::ACTION_REMOVE, 12596838);
+
+//  doc->addBody(12596838);
+//  doc->addBody(13890100);
+#endif
+
+#if 0
+  ZFlyEmBody3dDoc::BodyEvent event1(
+        ZFlyEmBody3dDoc::BodyEvent::ACTION_ADD, 1200);
+
+  ZFlyEmBody3dDoc::BodyEvent event2(
+        ZFlyEmBody3dDoc::BodyEvent::ACTION_REMOVE, 1200);
+
+  event1.mergeEvent(event2, NeuTube::DIRECTION_FORWARD);
+  event1.print();
+
+  event2.mergeEvent(event1, NeuTube::DIRECTION_FORWARD);
+  event2.print();
+#endif
+
+#if 0
+  ZFlyEmBody3dDoc doc;
+  std::vector<uint64_t> bodyIdArray;
+  bodyIdArray.push_back(1);
+  bodyIdArray.push_back(2);
+
+  doc.addBodyChangeEvent(bodyIdArray.begin(), bodyIdArray.end());
+  doc.printEventQueue();
+#endif
+
+#if 0
+  ZString str = "232435232-53634643637-423422222222893";
+  std::vector<uint64_t> array = str.toUint64Array();
+  for (size_t i = 0; i < array.size(); ++i) {
+    std::cout << array[i] << std::endl;
+  }
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("http://emdata1.int.janelia.org", "1f62", 8500);
+
+  ZDvidReader reader;
+  if (reader.open(target)) {
+    ZObject3dScan obj = reader.readRoi("mbroi");
+    obj.canonize();
+    obj.save(GET_TEST_DATA_DIR + "/flyem/MB/roi_fix/mbroi.sobj");
+
+    ZObject3dScan obj2;
+    obj2.load(GET_TEST_DATA_DIR + "/flyem/MB/large_outside_block_fixed.sobj");
+//    obj2.save(GET_TEST_DATA_DIR + "/flyem/MB/roi_fix/merged.sobj");
+
+    obj2.subtract(obj);
+    obj2.save(GET_TEST_DATA_DIR + "/flyem/MB/roi_fix/mb_subtracted.sobj");
+
+    if (obj.hasOverlap(obj2)) {
+      std::cout << "WARNING: mbroi and mb_subtracted has overlap." << std::endl;
+    } else {
+      std::cout << "mbroi and mb_subtracted has no overlap." << std::endl;
+    }
+
+    obj.unify(obj2);
+    obj.save(GET_TEST_DATA_DIR + "/flyem/MB/roi_fix/merged.sobj");
+  }
+
+#endif
+
+#if 0
+  ZObject3dScan obj1;
+  obj1.load(GET_TEST_DATA_DIR + "/flyem/MB/roi_fix/mb_subtracted.sobj");
+  std::cout << obj1.getVoxelNumber() << std::endl;
+
+
+  ZJsonArray array = ZJsonFactory::MakeJsonArray(
+        obj1, ZJsonFactory::OBJECT_SPARSE);
+  array.dump(GET_TEST_DATA_DIR + "/flyem/MB/roi_fix/mb_subtracted.json");
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("http://emdata1.int.janelia.org", "1f62", 8500);
+
+  ZDvidReader reader;
+  if (reader.open(target)) {
+    ZObject3dScan obj = reader.readRoi("mbroi");
+    obj.canonize();
+
+    ZDvidReader reader2;
+    target.set("http://emdata1.int.janelia.org", "d6959", 8500);
+    reader2.open(target);
+
+    ZObject3dScan obj2 = reader2.readRoi("mb_subtracted_v3");
+
+    if (obj.hasOverlap(obj2)) {
+      std::cout << "WARNING: mbroi and mb_subtracted has overlap." << std::endl;
+    } else {
+      std::cout << "mbroi and mb_subtracted has no overlap." << std::endl;
+    }
+
+    obj.unify(obj2);
+    obj.save(GET_TEST_DATA_DIR + "/flyem/MB/roi_fix/merged.sobj");
+  }
+
+#endif
+
+#if 0
+  ZNeuronTracerConfig::getInstance().print();
+#endif
+
+#if 1 //Move body annotations
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "66ba", 8500);
+
+  ZDvidReader reader;
+  reader.open(target);
+  QStringList keyList = reader.readKeys("annotations");
+
+  ZDvidTarget target2;
+  target2.set("emdata1.int.janelia.org", "66ba", 8500);
+  target2.setBodyLabelName("labels3");
+  target2.setLabelBlockName("bodies3");
+
+  ZDvidWriter writer;
+  writer.open(target2);
+  ZDvidUrl dvidUrl(target2);
+
+  foreach (const QString key, keyList) {
+    std::cout << key.toStdString() << std::endl;
+    QByteArray data = reader.readKeyValue("annotations", key);
+    ZJsonValue obj;
+    obj.decodeString(data.constData());
+
+    writer.writeJson("bodies3_annotations", key.toStdString(), obj);
+  }
+
+
 #endif
 }

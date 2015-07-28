@@ -17,6 +17,7 @@ public:
   ~ZDvidTileEnsemble();
 
   void clear();
+  bool isEmpty() const;
 
   void display(ZPainter &painter, int slice, EDisplayStyle option) const;
 
@@ -31,11 +32,23 @@ public:
 
   ZStackView* getView() const;
 
+  const ZDvidTarget& getDvidTarget() const {
+    return m_dvidTarget;
+  }
+
+  void enhanceContrast(bool high);
+
+private:
+  void update(
+      const std::vector<ZDvidTileInfo::TIndex>& tileIndices, int resLevel, int z);
+  void updateContrast();
+
 private:
   std::vector<std::map<ZDvidTileInfo::TIndex, ZDvidTile*> > m_tileGroup;
   ZDvidTileInfo m_tilingInfo;
   ZDvidTarget m_dvidTarget;
   ZStackView *m_view;
+  bool m_highContrast;
 };
 
 #endif // ZDVIDTILEENSEMBLE_H

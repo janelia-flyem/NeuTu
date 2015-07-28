@@ -8,6 +8,7 @@
 #include "zintpoint.h"
 #include "zpainter.h"
 
+#if 0
 const ZStackBall::TVisualEffect ZStackBall::VE_NONE = 0;
 const ZStackBall::TVisualEffect ZStackBall::VE_DASH_PATTERN = 1;
 const ZStackBall::TVisualEffect ZStackBall::VE_BOUND_BOX = 2;
@@ -17,14 +18,14 @@ const ZStackBall::TVisualEffect ZStackBall::VE_GRADIENT_FILL = 16;
 const ZStackBall::TVisualEffect ZStackBall::VE_OUT_FOCUS_DIM = 32;
 const ZStackBall::TVisualEffect ZStackBall::VE_DOT_CENTER = 64;
 const ZStackBall::TVisualEffect ZStackBall::VE_RECTANGLE_SHAPE = 128;
+#endif
 
-ZStackBall::ZStackBall() : m_visualEffect(ZStackBall::VE_NONE)
+ZStackBall::ZStackBall()
 {
   _init(0, 0, 0, 1);
 }
 
-ZStackBall::ZStackBall(double x, double y, double z, double r) :
-  m_visualEffect(ZStackBall::VE_NONE)
+ZStackBall::ZStackBall(double x, double y, double z, double r)
 {
   _init(x, y, z, r);
 }
@@ -93,7 +94,7 @@ void ZStackBall::display(ZPainter &painter, int slice,
   QPen pen(m_color, getPenWidth());
   pen.setCosmetic(m_usingCosmeticPen);
 
-  if (hasVisualEffect(VE_DASH_PATTERN)) {
+  if (hasVisualEffect(NeuTube::Display::Sphere::VE_DASH_PATTERN)) {
     pen.setStyle(Qt::DotLine);
   }
 
@@ -105,7 +106,7 @@ void ZStackBall::display(ZPainter &painter, int slice,
   }
 #endif
 
-  if (hasVisualEffect(VE_GRADIENT_FILL)) {
+  if (hasVisualEffect(NeuTube::Display::Sphere::VE_GRADIENT_FILL)) {
     QRadialGradient gradient(50, 50, 50, 50, 50);
     gradient.setColorAt(0, QColor::fromRgbF(0, 1, 0, 1));
     gradient.setColorAt(1, QColor::fromRgbF(0, 0, 0, 0));
@@ -119,7 +120,7 @@ void ZStackBall::display(ZPainter &painter, int slice,
     //painter.setBrush(m_color);
     //painter.setBrush(QBrush(m_color, Qt::RadialGradientPattern));
   } else {
-    if (hasVisualEffect(VE_NO_FILL)) {
+    if (hasVisualEffect(NeuTube::Display::Sphere::VE_NO_FILL)) {
       painter.setBrush(Qt::NoBrush);
     }
   }
@@ -186,16 +187,22 @@ void ZStackBall::displayHelper(
   QPen pen;
   pen.setWidthF(getPenWidth());
   pen.setCosmetic(m_usingCosmeticPen);
-  if (hasVisualEffect(VE_DASH_PATTERN)) {
+  if (hasVisualEffect(NeuTube::Display::Sphere::VE_DASH_PATTERN)) {
     pen.setStyle(Qt::DotLine);
   }
   double alpha = oldPen.color().alphaF();
+
+  bool isFocused = false;
 
   if (slice < 0) {
     visible = true;
   } else {
     if (isCuttingPlane(m_center.z(), m_r, dataFocus, m_zScale)) {
-      double h = fabs(m_center.z() - dataFocus) / m_zScale;
+      double dz = fabs(m_center.z() - dataFocus);
+      if (dz < 0.5) {
+        isFocused = true;
+      }
+      double h = dz / m_zScale;
       double r = 0.0;
       if (m_r > h) {
         r = sqrt(m_r * m_r - h * h);
@@ -208,7 +215,7 @@ void ZStackBall::displayHelper(
         adjustedRadius = getAdjustedRadius(r);
         visible = true;
       }
-      if (hasVisualEffect(VE_OUT_FOCUS_DIM)) {
+      if (hasVisualEffect(NeuTube::Display::Sphere::VE_OUT_FOCUS_DIM)) {
         alpha *= r * r / m_r / m_r;
         //alpha *= alpha;
       }
@@ -221,17 +228,18 @@ void ZStackBall::displayHelper(
     pen.setColor(color);
     painter->setPen(pen);
 
-    if (!hasVisualEffect(VE_NO_CIRCLE) && !hasVisualEffect(VE_RECTANGLE_SHAPE)) {
+    if (!hasVisualEffect(NeuTube::Display::Sphere::VE_NO_CIRCLE) &&
+        !hasVisualEffect(NeuTube::Display::Sphere::VE_RECTANGLE_SHAPE)) {
       //qDebug() << painter->brush().color();
       painter->drawEllipse(QPointF(m_center.x(), m_center.y()),
                            adjustedRadius, adjustedRadius);
-    } else if (hasVisualEffect(VE_RECTANGLE_SHAPE)) {
+    } else if (hasVisualEffect(NeuTube::Display::Sphere::VE_RECTANGLE_SHAPE)) {
       painter->drawRect(
             QRectF(QPointF(m_center.x(), m_center.y()),
                    QSizeF(adjustedRadius * 2.0, adjustedRadius * 2.0)));
     }
 
-    if (hasVisualEffect(VE_DOT_CENTER)) {
+    if (isFocused && hasVisualEffect(NeuTube::Display::Sphere::VE_DOT_CENTER)) {
       painter->drawPoint(QPointF(m_center.x(), m_center.y()));
     }
   }
@@ -246,7 +254,7 @@ void ZStackBall::displayHelper(
     color.setAlphaF(alpha);
     pen.setColor(color);
     pen.setCosmetic(true);
-  } else if (hasVisualEffect(VE_BOUND_BOX)) {
+  } else if (hasVisualEffect(NeuTube::Display::Sphere::VE_BOUND_BOX)) {
     drawingBoundBox = true;
     pen = oldPen;
     QColor color = oldPen.color();

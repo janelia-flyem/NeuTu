@@ -14,12 +14,16 @@ public:
   bool checkIn(uint64_t bodyId);
   bool checkOut(uint64_t bodyId);
 
+  std::string getOwner(uint64_t bodyId) const;
+
   void setDvidTarget(const ZDvidTarget &target);
   const ZDvidTarget& getDvidTarget() const;
 
   inline const std::string &getUserName() const {
     return m_userName;
   }
+
+  void setUserName(const std::string userName);
 
   enum EBodyStatus {
     BODY_CHECKED_OUT, BODY_FREE, BODY_UNKNOWN

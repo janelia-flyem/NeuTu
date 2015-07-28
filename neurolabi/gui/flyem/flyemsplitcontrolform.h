@@ -2,9 +2,12 @@
 #define FLYEMSPLITCONTROLFORM_H
 
 #include <QWidget>
-#include "zflyembodysplitproject.h"
+//#include "zflyembodysplitproject.h"
+
+#include "flyem/zflyembookmarklistmodel.h"
 
 class QMenu;
+class ZFlyEmBodySplitProject;
 
 namespace Ui {
 class FlyEmSplitControlForm;
@@ -35,6 +38,7 @@ signals:
   void selectingSeed();
   void selectingAllSeed();
   void loadingSynapse();
+  void bookmarkChecked(QString key, bool);
 
 public slots:
   void updateBodyWidget(uint64_t bodyId);
@@ -66,7 +70,7 @@ private:
   ZFlyEmBookmarkListModel m_bookmarkList;
   //ZFlyEmBodySplitProject m_project;
   QMenu *m_mainMenu;
-  QMenu *m_bookmarkContextMenu;
+//  QMenu *m_bookmarkContextMenu;
 };
 
 #endif // FLYEMSPLITCONTROLFORM_H

@@ -4,9 +4,11 @@
 #include <QInputDialog>
 
 #include "ui_flyemproofcontrolform.h"
-#include "zdviddialog.h"
+#include "dialogs/zdviddialog.h"
 #include "zstring.h"
 #include "neutubeconfig.h"
+#include "flyem/zflyembodymergeproject.h"
+#include "zstackdoc.h"
 
 FlyEmProofControlForm::FlyEmProofControlForm(QWidget *parent) :
   QWidget(parent),
@@ -15,9 +17,11 @@ FlyEmProofControlForm::FlyEmProofControlForm(QWidget *parent) :
   ui->setupUi(this);
   setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Expanding);
 
+  /*
   connect(ui->segmentCheckBox, SIGNAL(clicked(bool)),
           this, SIGNAL(segmentVisibleChanged(bool)));
   ui->segmentCheckBox->hide();
+  */
   connect(ui->mergeSegmentPushButton, SIGNAL(clicked()),
           this, SIGNAL(mergingSelected()));
   connect(ui->dvidPushButton, SIGNAL(clicked()),
@@ -34,19 +38,32 @@ FlyEmProofControlForm::FlyEmProofControlForm(QWidget *parent) :
   ui->segmentSizePushButton->hide();
   ui->segmentSizeDecPushButton->setEnabled(false);
 
+//  ui->bodyViewPushButton->hide();
+
 
   connect(ui->segmentSizeIncPushButton, SIGNAL(clicked()),
           this, SLOT(incSegmentSize()));
   connect(ui->segmentSizeDecPushButton, SIGNAL(clicked()),
           this, SLOT(decSegmentSize()));
+  connect(ui->fullViewPushButton, SIGNAL(clicked()),
+          this, SLOT(showFullSegmentation()));
 
   connect(ui->coarseBodyPushButton, SIGNAL(clicked()),
           this, SIGNAL(coarseBodyViewTriggered()));
+  connect(ui->bodyViewPushButton, SIGNAL(clicked()),
+          this, SIGNAL(bodyViewTriggered()));
 
+  connect(ui->bookmarkView, SIGNAL(doubleClicked(QModelIndex)),
+          this, SLOT(locateBookmark(QModelIndex)));
+  connect(ui->bookmarkView, SIGNAL(bookmarkChecked(QString,bool)),
+          this, SIGNAL(bookmarkChecked(QString, bool)));
+/*
   ui->helpWidget->setOpenExternalLinks(true);
   ui->helpWidget->setSource(
         QUrl((GET_DOC_DIR + "/flyem_proofread_help.html").c_str()));
+*/
 
+  ui->bookmarkView->setModel(&m_bookmarkList);
 
   createMenu();
 }
@@ -99,6 +116,11 @@ void FlyEmProofControlForm::decSegmentSize()
   emit labelSizeChanged(512, 512);
 }
 
+void FlyEmProofControlForm::showFullSegmentation()
+{
+  emit showingFullSegmentation();
+}
+
 void FlyEmProofControlForm::goToBody()
 {
   emit goingToBody();
@@ -130,4 +152,38 @@ void FlyEmProofControlForm::setInfo(const QString &info)
 void FlyEmProofControlForm::setDvidInfo(const ZDvidTarget &target)
 {
   setInfo(target.toJsonObject().dumpString(2).c_str());
+}
+
+void FlyEmProofControlForm::updateBookmarkTable(ZFlyEmBodyMergeProject *project)
+{
+  if (project != NULL) {
+//    const ZFlyEmBookmarkArray &bookmarkArray = project->getBookmarkArray();
+    m_bookmarkList.clear();
+//    project->clearBookmarkDecoration();
+
+    if (project->getDocument() != NULL) {
+      const TStackObjectList &objList =
+          project->getDocument()->getObjectList(ZStackObject::TYPE_FLYEM_BOOKMARK);
+      //        foreach (ZFlyEmBookmark bookmark, *bookmarkArray) {
+      for (TStackObjectList::const_iterator iter = objList.begin();
+           iter != objList.end(); ++iter) {
+        const ZFlyEmBookmark *bookmark = dynamic_cast<ZFlyEmBookmark*>(*iter);
+        if (bookmark->getBookmarkType() != ZFlyEmBookmark::TYPE_FALSE_MERGE &&
+            !bookmark->isCustom()) {
+          m_bookmarkList.append(*bookmark);
+        }
+      }
+    }
+
+//    project->addBookmarkDecoration(m_bookmarkList.getBookmarkArray());
+  }
+}
+
+void FlyEmProofControlForm::locateBookmark(const QModelIndex &index)
+{
+  const ZFlyEmBookmark &bookmark = m_bookmarkList.getBookmark(index.row());
+
+  emit zoomingTo(bookmark.getLocation().getX(),
+                 bookmark.getLocation().getY(),
+                 bookmark.getLocation().getZ());
 }

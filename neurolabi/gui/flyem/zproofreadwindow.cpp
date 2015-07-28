@@ -8,6 +8,7 @@
 #include <QMenu>
 #include <QMenuBar>
 #include <QToolBar>
+#include <QStatusBar>
 
 #include "flyemsplitcontrolform.h"
 #include "dvid/zdvidtarget.h"
@@ -118,7 +119,10 @@ void ZProofreadWindow::init()
   m_progressSignal->connectSlot(this);
 
   createMenu();
-//  createToolbar();
+  createToolbar();
+  statusBar()->showMessage("Load a database to start proofreading");
+
+  m_mainMvc->enhanceTileContrast(m_contrastAction->isChecked());
 }
 
 ZProofreadWindow* ZProofreadWindow::Make(QWidget *parent)
@@ -128,21 +132,64 @@ ZProofreadWindow* ZProofreadWindow::Make(QWidget *parent)
 
 void ZProofreadWindow::createMenu()
 {
-  QMenu *viewMenu = new QMenu("View", this);
+  QMenu *fileMenu = new QMenu("File", this);
 
-  m_viewSynapseAction = new QAction("Synapses", viewMenu);
+  menuBar()->addMenu(fileMenu);
+
+  m_importBookmarkAction = new QAction("Import Bookmarks", this);
+  m_importBookmarkAction->setIcon(QIcon(":/images/import_bookmark.png"));
+  fileMenu->addAction(m_importBookmarkAction);
+  connect(m_importBookmarkAction, SIGNAL(triggered()),
+          m_mainMvc, SLOT(loadBookmark()));
+
+  m_viewMenu = new QMenu("View", this);
+
+  m_viewSynapseAction = new QAction("Synapses", this);
   m_viewSynapseAction->setIcon(QIcon(":/images/synapse.png"));
   m_viewSynapseAction->setCheckable(true);
   m_viewSynapseAction->setChecked(true);
-
-  viewMenu->addAction(m_viewSynapseAction);
-
   connect(m_viewSynapseAction, SIGNAL(toggled(bool)),
           m_mainMvc, SLOT(showSynapseAnnotation(bool)));
 
+  m_viewBookmarkAction = new QAction("Bookmarks", this);
+  m_viewBookmarkAction->setIcon(QIcon(":/images/view_bookmark.png"));
+  m_viewBookmarkAction->setCheckable(true);
+  m_viewBookmarkAction->setChecked(true);
+  connect(m_viewBookmarkAction, SIGNAL(toggled(bool)),
+          m_mainMvc, SLOT(showBookmark(bool)));
+
+  m_viewSegmentationAction = new QAction("Segmentation", this);
+  m_viewSegmentationAction->setIcon(QIcon(":/images/view_segmentation.png"));
+  m_viewSegmentationAction->setCheckable(true);
+  m_viewSegmentationAction->setChecked(true);
+  connect(m_viewSegmentationAction, SIGNAL(toggled(bool)),
+          m_mainMvc, SLOT(showSegmentation(bool)));
+
+  m_contrastAction = new QAction("Enhance Contrast", this);
+  m_contrastAction->setCheckable(true);
+  m_contrastAction->setChecked(false);
+  m_contrastAction->setIcon(QIcon(":images/bc_enhance.png"));
+  m_contrastAction->setChecked(true);
+  connect(m_contrastAction, SIGNAL(toggled(bool)),
+          m_mainMvc, SLOT(enhanceTileContrast(bool)));
+
+  m_viewMenu->addAction(m_viewSynapseAction);
+  m_viewMenu->addAction(m_viewBookmarkAction);
+  m_viewMenu->addAction(m_viewSegmentationAction);
+  m_viewMenu->addSeparator();
+  m_viewMenu->addAction(m_contrastAction);
+
+
 //  menu->addAction(new QAction("test", menu));
 
-  menuBar()->addMenu(viewMenu);
+  menuBar()->addMenu(m_viewMenu);
+
+//  m_viewMenu->setEnabled(false);
+
+  m_viewSynapseAction->setEnabled(false);
+  m_importBookmarkAction->setEnabled(false);
+  m_viewBookmarkAction->setEnabled(false);
+  m_viewSegmentationAction->setEnabled(false);
 }
 
 void ZProofreadWindow::createToolbar()
@@ -152,7 +199,14 @@ void ZProofreadWindow::createToolbar()
   m_toolBar->setIconSize(QSize(24, 24));
   addToolBar(Qt::TopToolBarArea, m_toolBar);
 
+  m_toolBar->addAction(m_importBookmarkAction);
+
+  m_toolBar->addSeparator();
   m_toolBar->addAction(m_viewSynapseAction);
+  m_toolBar->addAction(m_viewBookmarkAction);
+  m_toolBar->addAction(m_viewSegmentationAction);
+  m_toolBar->addSeparator();
+  m_toolBar->addAction(m_contrastAction);
 }
 
 void ZProofreadWindow::presentSplitInterface(uint64_t bodyId)
@@ -222,6 +276,9 @@ void ZProofreadWindow::dump(const ZWidgetMessage &msg)
   case ZWidgetMessage::TARGET_DIALOG:
     QMessageBox::information(this, "Notice", msg.toHtmlString());
     break;
+case ZWidgetMessage::TARGET_STATUS_BAR:
+    statusBar()->showMessage(msg.toHtmlString());
+    break;
   }
 }
 
@@ -267,4 +324,11 @@ void ZProofreadWindow::initProgress(int nticks)
 void ZProofreadWindow::updateDvidTargetWidget(const ZDvidTarget &target)
 {
   setWindowTitle(target.getSourceString(false).c_str());
+
+  m_viewSynapseAction->setEnabled(target.isValid());
+  m_importBookmarkAction->setEnabled(target.isValid());
+  m_viewBookmarkAction->setEnabled(target.isValid());
+  m_viewSegmentationAction->setEnabled(target.isValid());
+
+  m_viewMenu->setEnabled(true);
 }

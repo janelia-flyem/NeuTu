@@ -6,6 +6,8 @@
 #include "ui_flyemsplitcontrolform.h"
 #include "zdialogfactory.h"
 #include "zstring.h"
+#include "zflyembodysplitproject.h"
+#include "zstackdoc.h"
 
 FlyEmSplitControlForm::FlyEmSplitControlForm(QWidget *parent) :
   QWidget(parent),
@@ -46,10 +48,16 @@ void FlyEmSplitControlForm::setupWidgetBehavior()
           this, SLOT(loadBookmark()));
   connect(ui->bookmarkView, SIGNAL(doubleClicked(QModelIndex)),
           this, SLOT(locateBookmark(QModelIndex)));
+  connect(ui->bookmarkView, SIGNAL(bookmarkChecked(QString,bool)),
+          this, SIGNAL(bookmarkChecked(QString, bool)));
+
+
   connect(ui->synapsePushButton, SIGNAL(clicked()),
           this, SIGNAL(loadingSynapse()));
 
   ui->viewSplitPushButton->setEnabled(false);
+  ui->loadBookmarkButton->hide();
+  ui->synapsePushButton->hide();
 
 //  ui->commitPushButton->setEnabled(false);
   createMenu();
@@ -90,6 +98,7 @@ void FlyEmSplitControlForm::createMenu()
   seedMenu->addAction(importSeedAction);
   connect(importSeedAction, SIGNAL(triggered()), this, SLOT(importSeed()));
 
+  /*
   m_bookmarkContextMenu = new QMenu(this);
   QAction *checkAction = new QAction("Set Checked", this);
   m_bookmarkContextMenu->addAction(checkAction);
@@ -100,8 +109,8 @@ void FlyEmSplitControlForm::createMenu()
   connect(unCheckAction, SIGNAL(triggered()),
           this, SLOT(uncheckCurrentBookmark()));
 
-
-  ui->bookmarkView->setContextMenu(m_bookmarkContextMenu);
+*/
+//  ui->bookmarkView->setContextMenu(m_bookmarkContextMenu);
 }
 
 void FlyEmSplitControlForm::checkCurrentBookmark(bool checking)
@@ -118,14 +127,7 @@ void FlyEmSplitControlForm::checkCurrentBookmark(bool checking)
 
 void FlyEmSplitControlForm::checkCurrentBookmark()
 {
-  QItemSelectionModel *sel = ui->bookmarkView->selectionModel();
-  QModelIndexList selected = sel->selectedIndexes();
-
-  foreach (const QModelIndex &index, selected) {
-    ZFlyEmBookmark &bookmark = m_bookmarkList.getBookmark(index.row());
-    bookmark.setChecked(true);
-    m_bookmarkList.update(index.row());
-  }
+  checkCurrentBookmark(true);
 }
 
 void FlyEmSplitControlForm::uncheckCurrentBookmark()
@@ -195,20 +197,45 @@ void FlyEmSplitControlForm::commitResult()
 void FlyEmSplitControlForm::updateBookmarkTable(ZFlyEmBodySplitProject *project)
 {
   if (project != NULL) {
-    const ZFlyEmBookmarkArray &bookmarkArray = project->getBookmarkArray();
+    if (project->getDocument() != NULL) {
+      m_bookmarkList.clear();
+      const TStackObjectList &objList = project->getDocument()->
+          getObjectList(ZStackObject::TYPE_FLYEM_BOOKMARK);
+      for (TStackObjectList::const_iterator iter = objList.begin();
+           iter != objList.end(); ++iter) {
+        const ZFlyEmBookmark *bookmark = dynamic_cast<ZFlyEmBookmark*>(*iter);
+        if (bookmark->getBodyId() == project->getBodyId() &&
+            !bookmark->isCustom() &&
+            bookmark->getBookmarkType() == ZFlyEmBookmark::TYPE_FALSE_MERGE) {
+          m_bookmarkList.append(*bookmark);
+        }
+      }
+    }
+  }
+#if 0
+  if (project != NULL) {
+//    const ZFlyEmBookmarkArray &bookmarkArray = project->getBookmarkArray();
     m_bookmarkList.clear();
     if (project->getBodyId() > 0) {
       project->clearBookmarkDecoration();
 
-      foreach (ZFlyEmBookmark bookmark, bookmarkArray) {
-        if (bookmark.getBodyId() == project->getBodyId()) {
-          m_bookmarkList.append(bookmark);
+      const ZFlyEmBookmarkArray *bookmarkArray = project->getBookmarkArray();
+      if (bookmarkArray != NULL) {
+//        foreach (ZFlyEmBookmark bookmark, *bookmarkArray) {
+        for (ZFlyEmBookmarkArray::const_iterator iter = bookmarkArray->begin();
+             iter != bookmarkArray->end(); ++iter) {
+          const ZFlyEmBookmark &bookmark = *iter;
+          if (bookmark.getBodyId() == project->getBodyId() &&
+              bookmark.getBookmarkType() == ZFlyEmBookmark::TYPE_FALSE_MERGE) {
+            m_bookmarkList.append(bookmark);
+          }
         }
       }
 
       project->addBookmarkDecoration(m_bookmarkList.getBookmarkArray());
     }
   }
+#endif
 }
 
 void FlyEmSplitControlForm::locateBookmark(const QModelIndex &index)

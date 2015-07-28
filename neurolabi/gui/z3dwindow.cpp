@@ -35,9 +35,9 @@
 #include "zcloudnetwork.h"
 #include "znormcolormap.h"
 #include "swctreenode.h"
-#include "swctypedialog.h"
-#include "swcsizedialog.h"
-#include "swcskeletontransformdialog.h"
+#include "dialogs/swctypedialog.h"
+#include "dialogs/swcsizedialog.h"
+#include "dialogs/swcskeletontransformdialog.h"
 #include "zswcbranch.h"
 #include "zswcdisttrunkanalyzer.h"
 #include "zswcbranchingtrunkanalyzer.h"
@@ -45,7 +45,7 @@
 #include "zswcsizetrunkanalyzer.h"
 #include "zswcweighttrunkanalyzer.h"
 #include "tubemodel.h"
-#include "informationdialog.h"
+#include "dialogs/informationdialog.h"
 #include "zmoviescene.h"
 #include "zmovieactor.h"
 #include "zswcmovieactor.h"
@@ -55,7 +55,7 @@
 #include "zswcobjsmodel.h"
 #include "zpunctaobjsmodel.h"
 #include "qcolordialog.h"
-#include "zalphadialog.h"
+#include "dialogs/zalphadialog.h"
 #include "zstring.h"
 #include "zpunctumio.h"
 #include "zswcglobalfeatureanalyzer.h"
@@ -69,7 +69,7 @@
 #include "zswcgenerator.h"
 #include "zstroke2d.h"
 #include "zsparsestack.h"
-#include "zmarkswcsomadialog.h"
+#include "dialogs/zmarkswcsomadialog.h"
 #include "zinteractivecontext.h"
 #include "zwindowfactory.h"
 #include "zstackviewparam.h"
@@ -210,7 +210,7 @@ void Z3DWindow::init(EInitMode mode)
     if (mode == NORMAL_INIT) {
       m_volumeSource = new Z3DVolumeSource(m_doc.get());
     } else if (mode == FULL_RES_VOLUME) {
-      m_volumeSource = new Z3DVolumeSource(m_doc.get(), MAX_INT32);
+      m_volumeSource = new Z3DVolumeSource(m_doc.get(), MAX_INT32 / 2);
     }
     connect(m_volumeSource, SIGNAL(xScaleChanged()), this, SLOT(volumeScaleChanged()));
     connect(m_volumeSource, SIGNAL(yScaleChanged()), this, SLOT(volumeScaleChanged()));

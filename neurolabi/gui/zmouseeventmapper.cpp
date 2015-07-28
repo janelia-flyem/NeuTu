@@ -170,6 +170,9 @@ ZStackOperator ZMouseEventLeftButtonReleaseMapper::getOperation(
       case ZInteractiveContext::INTERACT_RECT_DRAW:
         op.setOperation(ZStackOperator::OP_EXIT_EDIT_MODE);
         break;
+      case ZInteractiveContext::INTERACT_ADD_BOOKMARK:
+        op.setOperation(ZStackOperator::OP_BOOKMARK_ADD_NEW);
+        break;
       default:
         break;
       }
@@ -306,6 +309,8 @@ ZStackOperator ZMouseEventLeftButtonDoubleClickMapper::getOperation(
       if (m_context->isProjectView()) {
         op.setOperation(ZStackOperator::OP_DVID_SPARSE_STACK_LOCATE_FOCUS);
       }
+    } else if (op.getHitObject()->getType() == ZStackObject::TYPE_FLYEM_BOOKMARK) {
+      op.setOperation(ZStackOperator::OP_BOOKMARK_ANNOTATE);
     }
   }
 
@@ -425,7 +430,8 @@ ZMouseEventRightButtonReleaseMapper::getOperation(const ZMouseEvent &event) cons
             op.setOperation(ZStackOperator::OP_SHOW_STROKE_CONTEXT_MENU);
         } else if (m_doc->getTag() == NeuTube::Document::FLYEM_PROOFREAD) {
           if (!m_doc->getDvidLabelSliceList().empty()) {
-            if (m_doc->getDvidLabelSliceList().front()->getSelectedOriginal().size() == 1) {
+            if (m_doc->getDvidLabelSliceList().front()->getSelected(
+                  NeuTube::BODY_LABEL_MAPPED).size() == 1) {
               op.setOperation(ZStackOperator::OP_SHOW_BODY_CONTEXT_MENU);
             }
           }
@@ -433,7 +439,13 @@ ZMouseEventRightButtonReleaseMapper::getOperation(const ZMouseEvent &event) cons
           op.setOperation(ZStackOperator::OP_SHOW_STACK_CONTEXT_MENU);
         }
       } else {
-        op.setOperation(ZStackOperator::OP_EXIT_EDIT_MODE);
+//        if (m_context->exploreMode())
+        if (m_context->exploreMode() == ZInteractiveContext::EXPLORE_ZOOM_IN_IMAGE ||
+            m_context->exploreMode() == ZInteractiveContext::EXPLORE_ZOOM_OUT_IMAGE) {
+          op.setOperation(ZStackOperator::OP_EXIT_ZOOM_MODE);
+        } else {
+          op.setOperation(ZStackOperator::OP_EXIT_EDIT_MODE);
+        }
       }
     }
   }
@@ -473,8 +485,9 @@ ZStackOperator ZMouseEventMoveMapper::getOperation(
         }
         canMoveImage = true;
       } else {
-        if (m_context->getUniqueMode() ==
-            ZInteractiveContext::INTERACT_SWC_EXTEND) {
+//        if (m_context->getUniqueMode() ==
+//            ZInteractiveContext::INTERACT_SWC_EXTEND) {
+        if (1) {
           ZIntPoint pressPos =
               getPosition(Qt::LeftButton, ZMouseEvent::ACTION_PRESS);
           int dx = pressPos.getX() - event.getX();

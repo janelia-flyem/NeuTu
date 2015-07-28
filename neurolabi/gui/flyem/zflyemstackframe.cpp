@@ -34,7 +34,7 @@ ZFlyEmStackFrame::~ZFlyEmStackFrame()
 
 void ZFlyEmStackFrame::createDocument()
 {
-  setDocument(ZSharedPointer<ZStackDoc>(new ZFlyEmStackDoc(NULL, NULL)));
+  setDocument(ZSharedPointer<ZStackDoc>(new ZFlyEmStackDoc));
 }
 
 bool ZFlyEmStackFrame::importSegmentationBundle(const std::string &filePath)
@@ -569,7 +569,7 @@ ZFlyEmStackFrame*
 ZFlyEmStackFrame::Make(QMdiArea *parent)
 {
   return Make(parent, ZSharedPointer<ZFlyEmStackDoc>(
-                new ZFlyEmStackDoc(NULL, NULL)));
+                new ZFlyEmStackDoc));
 }
 
 ZFlyEmStackFrame *ZFlyEmStackFrame::Make(

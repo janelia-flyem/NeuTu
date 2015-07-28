@@ -36,9 +36,15 @@
 #include "zflyemmisc.h"
 #include "zprogresssignal.h"
 #include "zdialogfactory.h"
+#include "flyem/zflyembookmark.h"
+#include "zsleeper.h"
+#include "flyem/zflyembody3ddoc.h"
 
 ZFlyEmBodyMergeProject::ZFlyEmBodyMergeProject(QObject *parent) :
-  QObject(parent), m_dataFrame(NULL), m_bodyWindow(NULL),
+  QObject(parent), m_dataFrame(NULL), m_coarseBodyWindow(NULL),
+  m_bodyWindow(NULL),
+  m_isBookmarkVisible(true),
+//  m_bookmarkArray(NULL),
   m_showingBodyMask(true)
 {
   m_progressSignal = new ZProgressSignal(this);
@@ -59,6 +65,12 @@ void ZFlyEmBodyMergeProject::clear()
     m_dataFrame = NULL;
   }
 
+  if (m_coarseBodyWindow != NULL) {
+    m_coarseBodyWindow->hide();
+    delete m_coarseBodyWindow;
+    m_coarseBodyWindow = NULL;
+  }
+
   if (m_bodyWindow != NULL) {
     m_bodyWindow->hide();
     delete m_bodyWindow;
@@ -71,7 +83,7 @@ void ZFlyEmBodyMergeProject::clear()
 void ZFlyEmBodyMergeProject::connectSignalSlot()
 {
   connect(this, SIGNAL(coarseBodyWindowCreatedInThread()),
-          this, SLOT(present3DBodyView()));
+          this, SLOT(presentCoarseBodyView()));
 }
 
 ZProgressSignal* ZFlyEmBodyMergeProject::getProgressSignal() const
@@ -86,12 +98,6 @@ int ZFlyEmBodyMergeProject::getCurrentZ() const
   if (getDocument() != NULL) {
     getDocument()->getStackOffset().getZ();
   }
-  /*
-
-  if (m_dataFrame != NULL) {
-    z = m_dataFrame->document()->getStackOffset().getZ();
-  }
-  */
 
   return z;
 }
@@ -394,6 +400,29 @@ void ZFlyEmBodyMergeProject::clearBodyMerger()
   }
 }
 
+void ZFlyEmBodyMergeProject::mergeBodyAnnotation(
+    int targetId, const std::vector<int> &bodyId)
+{
+  ZDvidReader reader;
+  if (reader.open(getDvidTarget())) {
+    ZFlyEmBodyAnnotation annotation = reader.readBodyAnnotation(targetId);
+    for (std::vector<int>::const_iterator iter = bodyId.begin();
+         iter != bodyId.end(); ++iter) {
+      if (*iter != targetId) {
+        ZFlyEmBodyAnnotation subann = reader.readBodyAnnotation(*iter);
+        annotation.mergeAnnotation(subann);
+      }
+    }
+
+    if (!annotation.isEmpty()) {
+      ZDvidWriter writer;
+      if (writer.open(getDvidTarget())) {
+        writer.writeBodyAnntation(annotation);
+      }
+    }
+  }
+}
+
 void ZFlyEmBodyMergeProject::uploadResultFunc()
 {
   ZFlyEmBodyMerger *bodyMerger = getBodyMerger();
@@ -418,13 +447,46 @@ void ZFlyEmBodyMergeProject::uploadResultFunc()
           }
         }
 
+        const std::set<uint64_t> &bodySet =
+            getSelection(NeuTube::BODY_LABEL_ORIGINAL);
+
         foreach (int targetId, mergeMap.keys()) {
           dvidWriter.mergeBody(
                 m_dvidTarget.getBodyLabelName(),
                 targetId, mergeMap.value(targetId));
+          mergeBodyAnnotation(targetId, mergeMap.value(targetId));
+
+          if (dvidWriter.getStatusCode() != 200) {
+            emit messageGenerated(
+                  ZWidgetMessage(
+                    "Failed to upload merging results", NeuTube::MSG_ERROR));
+          }
+          QList<ZDvidLabelSlice*> labelList =
+              getDocument()->getDvidLabelSliceList();
+          foreach (ZDvidLabelSlice *slice, labelList) {
+            slice->mapSelection();
+          }
         }
 
+        std::set<uint64_t> selectionSet =
+            getSelection(NeuTube::BODY_LABEL_MAPPED);
+        m_selectedOriginal.clear();
+        for (std::set<uint64_t>::const_iterator iter = selectionSet.begin();
+             iter != selectionSet.end(); ++iter) {
+          m_selectedOriginal.insert(*iter);
+        }
+
+        for (std::set<uint64_t>::const_iterator iter = bodySet.begin();
+             iter != bodySet.end(); ++iter) {
+          emit checkingInBody(*iter);
+        }
+
+        getProgressSignal()->advanceProgress(0.1);
+
         clearBodyMerger();
+
+//        ZSleeper::msleep(10000);
+
         emit dvidLabelChanged();
 //        bodyMerger->clear();
         saveMergeOperation();
@@ -447,7 +509,37 @@ void ZFlyEmBodyMergeProject::detachBodyWindow()
   m_bodyWindow = NULL;
 }
 
-void ZFlyEmBodyMergeProject::make3DBodyWindow(ZStackDoc *doc)
+void ZFlyEmBodyMergeProject::detachCoarseBodyWindow()
+{
+  m_coarseBodyWindow = NULL;
+}
+
+void ZFlyEmBodyMergeProject::makeBodyWindow()
+{
+  ZWindowFactory factory;
+  factory.setControlPanelVisible(false);
+  factory.setObjectViewVisible(false);
+
+  ZFlyEmBody3dDoc *doc = new ZFlyEmBody3dDoc;
+  doc->setDvidTarget(getDvidTarget());
+  doc->updateFrame();
+  doc->setDataDoc(m_doc);
+
+  m_bodyWindow = factory.make3DWindow(doc);
+  m_bodyWindow->getGraphFilter()->setStayOnTop(false);
+  //m_bodyWindow->setParent(m_dataFrame);
+
+  m_bodyWindow->getSwcFilter()->setColorMode("Intrinsic");
+  m_bodyWindow->getSwcFilter()->setRenderingPrimitive("Sphere");
+  m_bodyWindow->getSwcFilter()->setStayOnTop(false);
+  m_bodyWindow->setYZView();
+
+  connect(m_bodyWindow, SIGNAL(closed()), this, SLOT(detachBodyWindow()));
+  connect(m_bodyWindow, SIGNAL(locating2DViewTriggered(ZStackViewParam)),
+          this, SIGNAL(locating2DViewTriggered(ZStackViewParam)));
+}
+
+void ZFlyEmBodyMergeProject::makeCoarseBodyWindow(ZStackDoc *doc)
 {
   getProgressSignal()->startProgress("Showing 3D coarse body ...");
 
@@ -471,17 +563,17 @@ void ZFlyEmBodyMergeProject::make3DBodyWindow(ZStackDoc *doc)
 
   getProgressSignal()->advanceProgress(0.1);
 
-  m_bodyWindow = factory.make3DWindow(doc);
-  m_bodyWindow->getGraphFilter()->setStayOnTop(false);
+  m_coarseBodyWindow = factory.make3DWindow(doc);
+  m_coarseBodyWindow->getGraphFilter()->setStayOnTop(false);
   //m_bodyWindow->setParent(m_dataFrame);
 
-  m_bodyWindow->getSwcFilter()->setColorMode("Intrinsic");
-  m_bodyWindow->getSwcFilter()->setRenderingPrimitive("Sphere");
-  m_bodyWindow->getSwcFilter()->setStayOnTop(false);
-  m_bodyWindow->setYZView();
+  m_coarseBodyWindow->getSwcFilter()->setColorMode("Intrinsic");
+  m_coarseBodyWindow->getSwcFilter()->setRenderingPrimitive("Sphere");
+  m_coarseBodyWindow->getSwcFilter()->setStayOnTop(false);
+  m_coarseBodyWindow->setYZView();
 
-  connect(m_bodyWindow, SIGNAL(closed()), this, SLOT(detachBodyWindow()));
-  connect(m_bodyWindow, SIGNAL(locating2DViewTriggered(ZStackViewParam)),
+  connect(m_coarseBodyWindow, SIGNAL(closed()), this, SLOT(detachCoarseBodyWindow()));
+  connect(m_coarseBodyWindow, SIGNAL(locating2DViewTriggered(ZStackViewParam)),
           this, SIGNAL(locating2DViewTriggered(ZStackViewParam)));
 
   getProgressSignal()->advanceProgress(0.4);
@@ -493,28 +585,40 @@ void ZFlyEmBodyMergeProject::make3DBodyWindow(ZStackDoc *doc)
   getProgressSignal()->endProgress();
 }
 
-void ZFlyEmBodyMergeProject::present3DBodyView()
+void ZFlyEmBodyMergeProject::presentCoarseBodyView()
 {
 //  m_bodyWindow->moveToThread(QApplication::instance()->thread());
-  m_bodyWindow->show();
-  m_bodyWindow->raise();
+  if (m_coarseBodyWindow != NULL) {
+    m_coarseBodyWindow->show();
+    m_coarseBodyWindow->raise();
+  }
 }
 
-void ZFlyEmBodyMergeProject::showBody3d()
+void ZFlyEmBodyMergeProject::showCoarseBody3d()
 {
-  if (m_bodyWindow == NULL) {
-    ZStackDoc *doc = new ZStackDoc(NULL, NULL);
+  if (m_coarseBodyWindow == NULL) {
+    ZStackDoc *doc = new ZStackDoc;
 
-    make3DBodyWindow(doc);
+    makeCoarseBodyWindow(doc);
 //    QFuture<void> result =
 //        QtConcurrent::run(this, &ZFlyEmBodyMergeProject::make3DBodyWindow, doc);
 //    result.waitForFinished();
 
 //    make3DBodyWindow(doc);
   } else {
-    m_bodyWindow->show();
-    m_bodyWindow->raise();
+    m_coarseBodyWindow->show();
+    m_coarseBodyWindow->raise();
   }
+}
+
+void ZFlyEmBodyMergeProject::showBody3d()
+{
+  if (m_bodyWindow == NULL) {
+    makeBodyWindow();
+  }
+
+  m_bodyWindow->show();
+  m_bodyWindow->raise();
 }
 
 /*
@@ -530,7 +634,7 @@ void ZFlyEmBodyMergeProject::update3DBodyViewDeep()
 
   //updateSelection();
 
-  if (m_bodyWindow != NULL) {
+  if (m_coarseBodyWindow != NULL) {
     std::set<std::string> currentBodySourceSet;
     std::set<uint64_t> selectedMapped =
         getBodyMerger()->getFinalLabel(m_selectedOriginal.begin(),
@@ -546,7 +650,7 @@ void ZFlyEmBodyMergeProject::update3DBodyViewDeep()
     reader.open(getDvidTarget());
 
     if (getDataFrame() != NULL) {
-      ZStack *oldStack = m_bodyWindow->getDocument()->getStack();
+      ZStack *oldStack = m_coarseBodyWindow->getDocument()->getStack();
       ZStack *newStack = getDataFrame()->document()->getStack();
       if (oldStack != NULL) {
         if (oldStack->getBoundBox().equals(newStack->getBoundBox())) {
@@ -554,27 +658,27 @@ void ZFlyEmBodyMergeProject::update3DBodyViewDeep()
         }
       }
       if (newStack != NULL) {
-        m_bodyWindow->getDocument()->loadStack(newStack->clone());
+        m_coarseBodyWindow->getDocument()->loadStack(newStack->clone());
       }
     }
 
 //    ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
 
-    m_bodyWindow->getDocument()->beginObjectModifiedMode(
+    m_coarseBodyWindow->getDocument()->beginObjectModifiedMode(
           ZStackDoc::OBJECT_MODIFIED_CACHE);
 //    m_bodyWindow->getDocument()->blockSignals(true);
 
     if (isDeep) {
-      m_bodyWindow->getDocument()->removeAllSwcTree(true);
+      m_coarseBodyWindow->getDocument()->removeAllSwcTree(true);
     }
 
     std::set<std::string> oldBodySourceSet;
-    QList<ZSwcTree*> bodyList = m_bodyWindow->getDocument()->getSwcList();
+    QList<ZSwcTree*> bodyList = m_coarseBodyWindow->getDocument()->getSwcList();
     for (QList<ZSwcTree*>::iterator iter = bodyList.begin();
          iter != bodyList.end(); ++iter) {
       ZSwcTree *tree = *iter;
       if (currentBodySourceSet.count(tree->getSource()) == 0) {
-        m_bodyWindow->getDocument()->removeObject(
+        m_coarseBodyWindow->getDocument()->removeObject(
               dynamic_cast<ZStackObject*>(tree), true);
       } else {
         oldBodySourceSet.insert(tree->getSource());
@@ -613,25 +717,25 @@ void ZFlyEmBodyMergeProject::update3DBodyViewDeep()
                         m_dvidInfo.getBlockSize().getZ());
           tree->translate(m_dvidInfo.getStartCoordinates());
           tree->setSource(source);
-          m_bodyWindow->getDocument()->addObject(tree, true);
+          m_coarseBodyWindow->getDocument()->addObject(tree, true);
         }
       }
     }
 //    m_bodyWindow->getDocument()->blockSignals(false);
 //    m_bodyWindow->getDocument()->notifySwcModified();
 
-    m_bodyWindow->getDocument()->endObjectModifiedMode();
-    m_bodyWindow->getDocument()->notifyObjectModified();
+    m_coarseBodyWindow->getDocument()->endObjectModifiedMode();
+    m_coarseBodyWindow->getDocument()->notifyObjectModified();
 
-    m_bodyWindow->show();
-    m_bodyWindow->raise();
-    m_bodyWindow->resetCameraCenter();
+    m_coarseBodyWindow->show();
+    m_coarseBodyWindow->raise();
+//    m_coarseBodyWindow->resetCameraCenter();
   }
 }
 
 void ZFlyEmBodyMergeProject::update3DBodyViewPlane(const ZDvidInfo &dvidInfo)
 {
-  if (m_bodyWindow != NULL) {
+  if (m_coarseBodyWindow != NULL) {
     ZRect2d rect;
     ZStackDocHelper docHelper;
     docHelper.extractCurrentZ(getDocument());
@@ -645,31 +749,40 @@ void ZFlyEmBodyMergeProject::update3DBodyViewPlane(const ZDvidInfo &dvidInfo)
       ZCuboid box;
       box.setFirstCorner(dvidInfo.getStartCoordinates().toPoint());
       box.setLastCorner(dvidInfo.getEndCoordinates().toPoint());
-      double lineWidth = box.depth() / 500.0;
-      Z3DGraph *graph = Z3DGraphFactory::MakeGrid(rect, 25, lineWidth);
+      double lineWidth = box.depth() / 2000.0;
+      Z3DGraph *graph = Z3DGraphFactory::MakeGrid(rect, 100, lineWidth);
       graph->setSource(ZStackObjectSourceFactory::MakeFlyEmPlaneObjectSource());
-      m_bodyWindow->getDocument()->addObject(graph, true);
+      m_coarseBodyWindow->getDocument()->addObject(graph, true);
     }
   }
 }
 
 void ZFlyEmBodyMergeProject::update3DBodyViewBox(const ZDvidInfo &dvidInfo)
 {
-  if (m_bodyWindow != NULL) {
+  if (m_coarseBodyWindow != NULL) {
     ZCuboid box;
     box.setFirstCorner(dvidInfo.getStartCoordinates().toPoint());
     box.setLastCorner(dvidInfo.getEndCoordinates().toPoint());
     Z3DGraph *graph = Z3DGraphFactory::MakeBox(
-          box, dmax2(1.0, dmax3(box.width(), box.height(), box.depth()) / 500.0));
+          box, dmax2(1.0, dmax3(box.width(), box.height(), box.depth()) / 1000.0));
     graph->setSource(ZStackObjectSourceFactory::MakeFlyEmBoundBoxSource());
 
-    m_bodyWindow->getDocument()->addObject(graph, true);
+    m_coarseBodyWindow->getDocument()->addObject(graph, true);
   }
 }
 
 void ZFlyEmBodyMergeProject::update3DBodyView(bool showingWindow)
 {
   if (m_bodyWindow != NULL) {
+    std::set<uint64_t> bodySet = getSelection(NeuTube::BODY_LABEL_ORIGINAL);
+    ZFlyEmBody3dDoc *doc =
+        dynamic_cast<ZFlyEmBody3dDoc*>(m_bodyWindow->getDocument());
+    if (doc != NULL){
+      doc->addBodyChangeEvent(bodySet.begin(), bodySet.end());
+    }
+  }
+
+  if (m_coarseBodyWindow != NULL) {
     std::set<std::string> currentBodySourceSet;
     std::set<uint64_t> selectedMapped = getBodyMerger()->getFinalLabel(
           m_selectedOriginal.begin(), m_selectedOriginal.end());
@@ -680,12 +793,12 @@ void ZFlyEmBodyMergeProject::update3DBodyView(bool showingWindow)
     }
 
     std::set<std::string> oldBodySourceSet;
-    QList<ZSwcTree*> bodyList = m_bodyWindow->getDocument()->getSwcList();
+    QList<ZSwcTree*> bodyList = m_coarseBodyWindow->getDocument()->getSwcList();
     for (QList<ZSwcTree*>::iterator iter = bodyList.begin();
          iter != bodyList.end(); ++iter) {
       ZSwcTree *tree = *iter;
       if (currentBodySourceSet.count(tree->getSource()) == 0) {
-        m_bodyWindow->getDocument()->removeObject(
+        m_coarseBodyWindow->getDocument()->removeObject(
               dynamic_cast<ZStackObject*>(tree), true);
       } else {
         oldBodySourceSet.insert(tree->getSource());
@@ -693,7 +806,7 @@ void ZFlyEmBodyMergeProject::update3DBodyView(bool showingWindow)
     }
 
     if (getDataFrame() != NULL) {
-      ZStack *oldStack = m_bodyWindow->getDocument()->getStack();
+      ZStack *oldStack = m_coarseBodyWindow->getDocument()->getStack();
       ZStack *newStack = getDataFrame()->document()->getStack();
       if (oldStack != NULL) {
         if (oldStack->getBoundBox().equals(newStack->getBoundBox())) {
@@ -701,13 +814,13 @@ void ZFlyEmBodyMergeProject::update3DBodyView(bool showingWindow)
         }
       }
       if (newStack != NULL) {
-        m_bodyWindow->getDocument()->loadStack(newStack->clone());
+        m_coarseBodyWindow->getDocument()->loadStack(newStack->clone());
       }
     }
 
 
 //    m_bodyWindow->getDocument()->blockSignals(true);
-    m_bodyWindow->getDocument()->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+    m_coarseBodyWindow->getDocument()->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
 
 
     ZFlyEmDvidReader reader;
@@ -751,26 +864,26 @@ void ZFlyEmBodyMergeProject::update3DBodyView(bool showingWindow)
                         m_dvidInfo.getBlockSize().getZ());
           tree->translate(m_dvidInfo.getStartCoordinates());
           tree->setSource(source);
-          m_bodyWindow->getDocument()->addObject(tree, true);
+          m_coarseBodyWindow->getDocument()->addObject(tree, true);
         }
       }
     }
 //    m_bodyWindow->getDocument()->blockSignals(false);
 //    m_bodyWindow->getDocument()->notifySwcModified();
-    m_bodyWindow->getDocument()->endObjectModifiedMode();
-    m_bodyWindow->getDocument()->notifyObjectModified();
+    m_coarseBodyWindow->getDocument()->endObjectModifiedMode();
+    m_coarseBodyWindow->getDocument()->notifyObjectModified();
 
     if (showingWindow) {
-      m_bodyWindow->show();
-      m_bodyWindow->raise();
+      m_coarseBodyWindow->show();
+      m_coarseBodyWindow->raise();
     }
-    m_bodyWindow->resetCameraCenter();
+    m_coarseBodyWindow->resetCameraCenter();
   }
 }
 
 void ZFlyEmBodyMergeProject::update3DBodyViewPlane()
 {
-  if (m_bodyWindow != NULL) {
+  if (m_coarseBodyWindow != NULL) {
     ZFlyEmDvidReader reader;
     reader.open(getDvidTarget());
 
@@ -786,14 +899,14 @@ void ZFlyEmBodyMergeProject::update3DBodyViewPlane()
 void ZFlyEmBodyMergeProject::update3DBodyView(
     const ZStackObjectSelector &selector)
 {
-  if (m_bodyWindow != NULL) {
+  if (m_coarseBodyWindow != NULL) {
 //    m_bodyWindow->getDocument()->removeAllObject();
     std::vector<ZStackObject*> objList =
         selector.getSelectedList(ZStackObject::TYPE_OBJECT3D_SCAN);
     ZFlyEmDvidReader reader;
     reader.open(getDvidTarget());
 
-    ZStack *oldStack = m_bodyWindow->getDocument()->getStack();
+    ZStack *oldStack = m_coarseBodyWindow->getDocument()->getStack();
     ZStack *newStack = getDocument()->getStack();
     if (oldStack != NULL) {
       if (oldStack->getBoundBox().equals(newStack->getBoundBox())) {
@@ -801,12 +914,12 @@ void ZFlyEmBodyMergeProject::update3DBodyView(
       }
     }
     if (newStack != NULL) {
-      m_bodyWindow->getDocument()->loadStack(newStack->clone());
+      m_coarseBodyWindow->getDocument()->loadStack(newStack->clone());
     }
 
 //    ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
 
-    m_bodyWindow->getDocument()->beginObjectModifiedMode(
+    m_coarseBodyWindow->getDocument()->beginObjectModifiedMode(
           ZStackDoc::OBJECT_MODIFIED_CACHE);
 //    m_bodyWindow->getDocument()->blockSignals(true);
     for (std::vector<ZStackObject*>::const_iterator iter = objList.begin();
@@ -849,7 +962,7 @@ void ZFlyEmBodyMergeProject::update3DBodyView(
 
           //        ptoc();
 
-          m_bodyWindow->getDocument()->addObject(tree, true);
+          m_coarseBodyWindow->getDocument()->addObject(tree, true);
         }
       }
     }
@@ -864,24 +977,24 @@ void ZFlyEmBodyMergeProject::update3DBodyView(
       ZObject3dScan *sparseObject = dynamic_cast<ZObject3dScan*>(obj);
       if (sparseObject != NULL) {
         uint64_t label = sparseObject->getLabel();
-        ZStackObject *obj = m_bodyWindow->getDocument()->getObjectGroup().
+        ZStackObject *obj = m_coarseBodyWindow->getDocument()->getObjectGroup().
             findFirstSameSource(
               ZStackObject::TYPE_SWC,
               ZStackObjectSourceFactory::MakeFlyEmBodySource(label));
         if (obj != NULL) {
-          m_bodyWindow->getDocument()->removeObject(obj, true);
+          m_coarseBodyWindow->getDocument()->removeObject(obj, true);
         }
       }
     }
 //    m_bodyWindow->getDocument()->blockSignals(false);
 //    m_bodyWindow->getDocument()->notifySwcModified();
 
-    m_bodyWindow->getDocument()->endObjectModifiedMode();
-    m_bodyWindow->getDocument()->notifyObject3dScanModified();
+    m_coarseBodyWindow->getDocument()->endObjectModifiedMode();
+    m_coarseBodyWindow->getDocument()->notifyObject3dScanModified();
 
-    m_bodyWindow->show();
-    m_bodyWindow->raise();
-    m_bodyWindow->resetCameraCenter();
+    m_coarseBodyWindow->show();
+    m_coarseBodyWindow->raise();
+    m_coarseBodyWindow->resetCameraCenter();
   }
 }
 
@@ -997,8 +1110,10 @@ std::set<uint64_t> ZFlyEmBodyMergeProject::getSelection(
   return idSet;
 }
 
-void ZFlyEmBodyMergeProject::notifySelected() const
+void ZFlyEmBodyMergeProject::notifySelected()
 {
+  emit messageGenerated(ZWidgetMessage(getSelectionMessage()));
+  /*
   QString msg;
   for (QSet<uint64_t>::const_iterator iter = m_selectedOriginal.begin();
        iter != m_selectedOriginal.end(); ++iter) {
@@ -1010,6 +1125,7 @@ void ZFlyEmBodyMergeProject::notifySelected() const
   } else {
     msg += " selected.";
   }
+  */
 }
 
 void ZFlyEmBodyMergeProject::addSelection(
@@ -1047,10 +1163,46 @@ void ZFlyEmBodyMergeProject::setSelection(
     break;
   }
 
+//  QString msg;
+//  for (QSet<uint64_t>::const_iterator iter = m_selectedOriginal.begin();
+//       iter != m_selectedOriginal.end(); ++iter) {
+//    msg += QString("%1 ").arg(*iter);
+//  }
+
+//  if (msg.isEmpty()) {
+//    msg = "No body selected.";
+//  } else {
+//    msg += " selected.";
+//  }
+
+  emit messageGenerated(ZWidgetMessage(getSelectionMessage()));
+//  emitMessage(msg);
+
+//  emit messageGenerated(msg);
+}
+
+QString ZFlyEmBodyMergeProject::getSelectionMessage() const
+{
   QString msg;
-  for (QSet<uint64_t>::const_iterator iter = m_selectedOriginal.begin();
-       iter != m_selectedOriginal.end(); ++iter) {
-    msg += QString("%1 ").arg(*iter);
+
+  const std::set<uint64_t> &selected = getSelection(NeuTube::BODY_LABEL_MAPPED);
+
+  for (std::set<uint64_t>::const_iterator iter = selected.begin();
+       iter != selected.end(); ++iter) {
+    uint64_t bodyId = *iter;
+    msg += QString("%1 ").arg(bodyId);
+    const QSet<uint64_t> &originalBodySet =
+        getBodyMerger()->getOriginalLabelSet(bodyId);
+    if (originalBodySet.size() > 1) {
+      msg += "<font color=#888888>(";
+      for (QSet<uint64_t>::const_iterator iter = originalBodySet.begin();
+           iter != originalBodySet.end(); ++iter) {
+        if (selected.count(*iter) == 0) {
+          msg += QString("_%1").arg(*iter);
+        }
+      }
+      msg += ")</font> ";
+    }
   }
 
   if (msg.isEmpty()) {
@@ -1059,10 +1211,7 @@ void ZFlyEmBodyMergeProject::setSelection(
     msg += " selected.";
   }
 
-  emit messageGenerated(ZWidgetMessage(msg));
-//  emitMessage(msg);
-
-//  emit messageGenerated(msg);
+  return msg;
 }
 
 void ZFlyEmBodyMergeProject::emitMessage(const QString msg, bool appending)
@@ -1202,4 +1351,106 @@ void ZFlyEmBodyMergeProject::highlightSelectedObject(bool hl)
   }
 }
 
+void ZFlyEmBodyMergeProject::clearBookmarkDecoration()
+{
+  if (getDocument() != NULL) {
+    getDocument()->removeObject(ZStackObjectRole::ROLE_TMP_BOOKMARK, true);
+  }
 
+#if 0
+  if (getDocument() != NULL) {
+    for (std::vector<ZStackObject*>::iterator iter = m_bookmarkDecoration.begin();
+         iter != m_bookmarkDecoration.end(); ++iter) {
+      ZStackObject *obj = *iter;
+      getDocument()->removeObject(obj, false);
+      delete obj;
+    }
+  } else {
+    for (std::vector<ZStackObject*>::iterator iter = m_bookmarkDecoration.begin();
+         iter != m_bookmarkDecoration.end(); ++iter) {
+      delete *iter;
+    }
+  }
+  m_bookmarkDecoration.clear();
+#endif
+}
+
+void ZFlyEmBodyMergeProject::addBookmarkDecoration(
+    const ZFlyEmBookmarkArray &bookmarkArray)
+{
+  if (getDocument() != NULL) {
+    QVector<ZPunctum*> punctumArray = bookmarkArray.toPunctumArray(
+          m_isBookmarkVisible);
+    getDocument()->addObjectFast(punctumArray.begin(), punctumArray.end());
+  }
+
+#if 0
+  if (getDocument() != NULL) {
+
+    getDocument()->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+    for (ZFlyEmBookmarkArray::const_iterator iter = bookmarkArray.begin();
+         iter != bookmarkArray.end(); ++iter) {
+      const ZFlyEmBookmark &bookmark = *iter;
+      ZPunctum *circle = new ZPunctum;
+      circle->setRole(ZStackObjectRole::ROLE_TMP_BOOKMARK);
+      circle->set(bookmark.getLocation(), 5);
+
+//      ZStackBall *circle = new ZStackBall;
+//      circle->set(bookmark.getLocation(), 5);
+      circle->setColor(255, 0, 0);
+      circle->setVisible(m_isBookmarkVisible);
+      circle->setHittable(false);
+//      circle->setRole(ZStackObjectRole::ROLE_3DGRAPH_DECORATOR);
+      getDocument()->addObject(circle);
+//      m_bookmarkDecoration.push_back(circle);
+    }
+    getDocument()->endObjectModifiedMode();
+    getDocument()->notifyObjectModified();
+  }
+#endif
+}
+
+void ZFlyEmBodyMergeProject::updateBookmarkDecoration(
+    const ZFlyEmBookmarkArray &bookmarkArray)
+{
+  clearBookmarkDecoration();
+
+  if (getDocument() != NULL) {
+    ZFlyEmBookmarkArray filteredBookmarkArray;
+    foreach (ZFlyEmBookmark bookmark, bookmarkArray) {
+      if (bookmark.getBookmarkType() != ZFlyEmBookmark::TYPE_FALSE_MERGE) {
+        filteredBookmarkArray.append(bookmark);
+      }
+    }
+    addBookmarkDecoration(filteredBookmarkArray);
+  }
+}
+#if 0
+void ZFlyEmBodyMergeProject::attachBookmarkArray(ZFlyEmBookmarkArray *bookmarkArray)
+{
+  m_bookmarkArray = bookmarkArray;
+}
+
+void ZFlyEmBodyMergeProject::updateBookmarkDecoration()
+{
+  clearBookmarkDecoration();
+
+  if (getDocument() != NULL) {
+    ZFlyEmBookmarkArray bookmarkArray;
+
+    for (ZFlyEmBookmarkArray::const_iterator iter = m_bookmarkArray->begin();
+         iter != m_bookmarkArray->end(); ++iter) {
+      const ZFlyEmBookmark &bookmark = *iter;
+      if (bookmark.getBookmarkType() == ZFlyEmBookmark::TYPE_FALSE_SPLIT) {
+        bookmarkArray.append(bookmark);
+      }
+    }
+
+    addBookmarkDecoration(bookmarkArray);
+  }
+}
+#endif
+void ZFlyEmBodyMergeProject::setBookmarkVisible(bool visible)
+{
+  m_isBookmarkVisible = visible;
+}

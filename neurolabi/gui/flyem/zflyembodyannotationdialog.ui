@@ -6,21 +6,14 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>315</width>
-    <height>264</height>
+    <width>320</width>
+    <height>217</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Body Annotation</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
-   <item>
-    <widget class="QLabel" name="label_2">
-     <property name="text">
-      <string>*This function is still under testing</string>
-     </property>
-    </widget>
-   </item>
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_3">
      <item>
@@ -51,6 +44,13 @@
       </spacer>
      </item>
     </layout>
+   </item>
+   <item>
+    <widget class="QLabel" name="userLabel">
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
    </item>
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
@@ -136,6 +136,11 @@
        <item>
         <property name="text">
          <string>Traced</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Partially Traced</string>
         </property>
        </item>
        <item>

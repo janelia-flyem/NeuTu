@@ -13,5 +13,6 @@ ssh emrecon42 '/opt/bin/ntupd'
 ssh emrecon99 '/opt/bin/ntupd'
 ssh ordishc-ws1 '/opt/bin/ntupd'
 ssh 10.123.13.46 '/opt/bin/ntupd'
+ssh plazas-ws1 '/opt/bin/ntupd'
 
  

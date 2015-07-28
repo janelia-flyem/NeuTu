@@ -114,7 +114,7 @@ public slots:
   void dump(const QString &info, bool appending = false);
   void dumpError(const QString &info, bool appending = false);
 
-  void startSplit(const ZDvidTarget &dvidTarget, int bodyId);
+  void startSplit(const ZDvidTarget &dvidTarget, uint64_t bodyId);
   void startSplit(const QString &message);
 
 
@@ -127,7 +127,7 @@ private slots:
   void showBodyMask(bool on);
   void checkAllSeed();
 
-  void removeAllBookmark();
+//  void removeAllBookmark();
   void exportSplits();
 
   /*!
@@ -163,7 +163,7 @@ private:
   QGraphicsScene *m_sideViewScene;
   ZDvidDialog *m_dvidDlg;
   QMenu *m_mainMenu;
-  QMenu *m_bookmarkContextMenu;
+//  QMenu *m_bookmarkContextMenu;
   QAction *m_showBodyMaskAction;
 
   QModelIndex m_pressedIndex;

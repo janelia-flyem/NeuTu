@@ -7,6 +7,7 @@
 #include "flyem/zflyembodysplitproject.h"
 #include "flyem/zflyembodymergeproject.h"
 #include "qthreadfuturemap.h"
+#include "flyem/zflyembookmark.h"
 
 class QWidget;
 class ZFlyEmProofDoc;
@@ -16,11 +17,15 @@ class ZDvidDialog;
 class ZFlyEmProofPresenter;
 class ZFlyEmSupervisor;
 
+/*!
+ * \brief The MVC class for flyem proofreading
+ */
 class ZFlyEmProofMvc : public ZStackMvc
 {
   Q_OBJECT
 public:
   explicit ZFlyEmProofMvc(QWidget *parent = 0);
+  ~ZFlyEmProofMvc();
 
   static ZFlyEmProofMvc* Make(
       QWidget *parent, ZSharedPointer<ZFlyEmProofDoc> doc);
@@ -42,14 +47,17 @@ public:
 
   void clear();
 
+  void exitCurrentDoc();
+
   void enableSplit();
   void disableSplit();
 
   void processViewChangeCustom(const ZStackViewParam &viewParam);
 
-  inline ZFlyEmSupervisor* getSupervisor() const {
-    return m_supervisor;
-  }
+  ZFlyEmSupervisor* getSupervisor() const;
+
+//  bool checkInBody(uint64_t bodyId);
+  bool checkOutBody(uint64_t bodyId);
 
 signals:
   void launchingSplit(const QString &message);
@@ -58,6 +66,7 @@ signals:
   void errorGenerated(const QString &message, bool appending = true);
   void messageGenerated(const ZWidgetMessage &message);
   void splitBodyLoaded(uint64_t bodyId);
+  void bookmarkUpdated(ZFlyEmBodyMergeProject *m_project);
   void bookmarkUpdated(ZFlyEmBodySplitProject *m_project);
   void dvidTargetChanged(ZDvidTarget);
 
@@ -73,8 +82,9 @@ public slots:
   void processMessageSlot(const QString &message);
   void notifySplitTriggered();
   void annotateBody();
-  void checkInBody();
+  void checkInSelectedBody();
   void checkOutBody();
+  bool checkInBody(uint64_t bodyId);
   void exitSplit();
   void switchSplitBody(uint64_t bodyId);
   void showBodyQuickView();
@@ -91,8 +101,12 @@ public slots:
   void showBody3d();
   void showSplit3d();
   void showCoarseBody3d();
+  void showFineBody3d();
 
   void setDvidLabelSliceSize(int width, int height);
+  void showFullSegmentation();
+
+  void enhanceTileContrast(bool state);
 
   void zoomTo(const ZIntPoint &pt);
   void zoomTo(int x, int y, int z);
@@ -113,6 +127,16 @@ public slots:
 
   void loadSynapse();
   void showSynapseAnnotation(bool visible);
+  void showBookmark(bool visible);
+  void showSegmentation(bool visible);
+
+  void loadBookmark();
+
+  void recordCheckedBookmark(const QString &key, bool checking);
+  void processSelectionChange(const ZStackObjectSelector &selector);
+
+  void annotateBookmark(ZFlyEmBookmark *bookmark);
+
 //  void toggleEdgeMode(bool edgeOn);
 
 protected:
@@ -124,11 +148,15 @@ private:
   uint64_t getMappedBodyId(uint64_t bodyId);
   std::set<uint64_t> getCurrentSelectedBodyId(NeuTube::EBodyLabelType type) const;
   void runSplitFunc();
+  void notifyBookmarkUpdated();
+  void syncDvidBookmark();
+  void loadBookmarkFunc(const QString &filePath);
 
 private:
   bool m_showSegmentation;
   ZFlyEmBodySplitProject m_splitProject;
   ZFlyEmBodyMergeProject m_mergeProject;
+//  ZFlyEmBookmarkArray m_bookmarkArray;
 
   QThreadFutureMap m_futureMap;
 
@@ -151,8 +179,12 @@ void ZFlyEmProofMvc::connectControlPanel(T *panel)
           panel, SIGNAL(splitTriggered(uint64_t)));
   connect(panel, SIGNAL(labelSizeChanged(int, int)),
           this, SLOT(setDvidLabelSliceSize(int, int)));
+  connect(panel, SIGNAL(showingFullSegmentation()),
+          this, SLOT(showFullSegmentation()));
   connect(panel, SIGNAL(coarseBodyViewTriggered()),
           this, SLOT(showCoarseBody3d()));
+  connect(panel, SIGNAL(bodyViewTriggered()),
+          this, SLOT(showFineBody3d()));
   connect(panel, SIGNAL(savingMerge()), this, SLOT(saveMergeOperation()));
   connect(panel, SIGNAL(committingMerge()), this, SLOT(commitMerge()));
   connect(panel, SIGNAL(zoomingTo(int, int, int)),
@@ -161,6 +193,10 @@ void ZFlyEmProofMvc::connectControlPanel(T *panel)
           this, SLOT(locateBody(uint64_t)));
   connect(panel, SIGNAL(goingToBody()), this, SLOT(goToBody()));
   connect(panel, SIGNAL(selectingBody()), this, SLOT(selectBody()));
+  connect(this, SIGNAL(bookmarkUpdated(ZFlyEmBodyMergeProject*)),
+          panel, SLOT(updateBookmarkTable(ZFlyEmBodyMergeProject*)));
+  connect(panel, SIGNAL(bookmarkChecked(QString, bool)),
+          this, SLOT(recordCheckedBookmark(QString, bool)));
 }
 
 template <typename T>
@@ -191,6 +227,8 @@ void ZFlyEmProofMvc::connectSplitControlPanel(T *panel)
   connect(this, SIGNAL(splitBodyLoaded(uint64_t)),
           panel, SLOT(updateBodyWidget(uint64_t)));
   connect(panel, SIGNAL(loadingSynapse()), this, SLOT(loadSynapse()));
+  connect(panel, SIGNAL(bookmarkChecked(QString, bool)),
+          this, SLOT(recordCheckedBookmark(QString, bool)));
 }
 
 

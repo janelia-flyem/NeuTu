@@ -1,6 +1,7 @@
 #include "zflyembodyannotationdialog.h"
 #include "ui_zflyembodyannotationdialog.h"
 #include "zflyembodyannotation.h"
+#include "neutube.h"
 
 ZFlyEmBodyAnnotationDialog::ZFlyEmBodyAnnotationDialog(QWidget *parent) :
   QDialog(parent),
@@ -8,15 +9,35 @@ ZFlyEmBodyAnnotationDialog::ZFlyEmBodyAnnotationDialog(QWidget *parent) :
 {
   ui->setupUi(this);
 
+  if (NeuTube::GetUserName() == "takemuras" ||
+      NeuTube::GetUserName() == "zhaot") {
+    ui->statusComboBox->addItem("Finalized");
+  }
   setNameEdit(ui->nameComboBox->currentText());
 
-  connect(ui->nameComboBox, SIGNAL(currentIndexChanged(QString)),
-          this, SLOT(setNameEdit(QString)));
+//  ui->commentLineEdit->setEnabled(false);
+
+  connectSignalSlot();
 }
 
 ZFlyEmBodyAnnotationDialog::~ZFlyEmBodyAnnotationDialog()
 {
   delete ui;
+}
+
+void ZFlyEmBodyAnnotationDialog::connectSignalSlot()
+{
+  connect(ui->nameComboBox, SIGNAL(currentIndexChanged(QString)),
+          this, SLOT(setNameEdit(QString)));
+}
+
+void ZFlyEmBodyAnnotationDialog::setPrevUser(const std::string &name)
+{
+  if (!name.empty()) {
+    ui->userLabel->setText(QString("Previously annotated by %1").arg(name.c_str()));
+  } else {
+    ui->userLabel->setText("");
+  }
 }
 
 void ZFlyEmBodyAnnotationDialog::setBodyId(uint64_t bodyId)
@@ -27,14 +48,6 @@ void ZFlyEmBodyAnnotationDialog::setBodyId(uint64_t bodyId)
 
 QString ZFlyEmBodyAnnotationDialog::getComment() const
 {
-  /*
-  if (ui->orphanCheckBox->isChecked()) {
-    return "Orphan";
-  }
-
-  return "";
-  */
-
   return ui->commentLineEdit->text();
 }
 
@@ -82,6 +95,7 @@ ZFlyEmBodyAnnotation ZFlyEmBodyAnnotationDialog::getBodyAnnotation() const
   annotation.setStatus(getStatus().toStdString());
   annotation.setName(getName().toStdString());
   annotation.setType(getType().toStdString());
+  annotation.setUser(NeuTube::GetUserName());
 
   return annotation;
 }
@@ -116,6 +130,7 @@ void ZFlyEmBodyAnnotationDialog::loadBodyAnnotation(
     const ZFlyEmBodyAnnotation &annotation)
 {
   setBodyId(annotation.getBodyId());
+  setPrevUser(annotation.getUser());
 
   setComment(annotation.getComment());
   setStatus(annotation.getStatus());

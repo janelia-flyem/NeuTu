@@ -25,6 +25,11 @@ const ZDvidTarget& ZFlyEmSupervisor::getDvidTarget() const
   return m_dvidTarget;
 }
 
+void ZFlyEmSupervisor::setUserName(const std::string userName)
+{
+  m_userName = userName;
+}
+
 bool ZFlyEmSupervisor::checkIn(uint64_t bodyId)
 {
   ZDvidWriter writer;
@@ -125,4 +130,21 @@ std::string ZFlyEmSupervisor::getCheckoutUrl(uint64_t bodyId) const
 std::string ZFlyEmSupervisor::getUuid() const
 {
   return getDvidTarget().getUuid();
+}
+
+std::string ZFlyEmSupervisor::getOwner(uint64_t bodyId) const
+{
+  std::string owner;
+
+  ZDvidBufferReader bufferReader;
+  bufferReader.read(
+        QString("%1/%2").arg(getCheckoutUrl(getDvidTarget().getUuid()).c_str()).
+        arg(bodyId));
+  ZJsonObject obj;
+  obj.decodeString(bufferReader.getBuffer());
+  if (obj.hasKey("Client")) {
+    owner = ZJsonParser::stringValue(obj["Client"]);
+  }
+
+  return owner;
 }

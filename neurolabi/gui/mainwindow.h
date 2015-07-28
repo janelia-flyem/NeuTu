@@ -11,13 +11,13 @@
 #include <QSettings>
 
 #include "tz_image_lib_defs.h"
-#include "frameinfodialog.h"
+#include "dialogs/frameinfodialog.h"
 #include "zstackpresenter.h"
 #include "zmessagereporter.h"
-#include "moviedialog.h"
-#include "autosaveswclistdialog.h"
+#include "dialogs/moviedialog.h"
+#include "dialogs/autosaveswclistdialog.h"
 #include "zactionactivator.h"
-#include "flyemneuronthumbnaildialog.h"
+#include "dialogs/flyemneuronthumbnaildialog.h"
 #include "zstackdoc.h"
 #include "newprojectmainwindow.h"
 #include "zqtbarprogressreporter.h"
@@ -68,6 +68,7 @@ class ZProgressManager;
 class ZMessageManager;
 class ZTestDialog;
 class ZTestDialog2;
+class ZAutoTraceDialog;
 class QTimer;
 
 namespace Ui {
@@ -502,7 +503,7 @@ private:
                                        int x, int y, int z,
                                        int width, int height, int depth);
 
-  void autoTrace(ZStackFrame *frame, bool doResample);
+  void autoTrace(ZStackFrame *frame);
 
 private:
   QMdiArea *mdiArea;
@@ -656,6 +657,7 @@ private:
   SynapseImportDialog *m_synapseDlg;
   FlyEmBodyMergeProjectDialog *m_mergeBodyDlg;
   ZSegmentationProjectDialog *m_segmentationDlg;
+  ZAutoTraceDialog *m_autoTraceDlg;
 
   ZStackViewManager *m_stackViewManager;
   ZFlyEmProjectManager *m_flyemProjectManager;

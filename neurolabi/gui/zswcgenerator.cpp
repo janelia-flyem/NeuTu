@@ -66,7 +66,7 @@ ZSwcTree* ZSwcGenerator::createCircleSwc(double cx, double cy, double cz, double
 
 ZSwcTree* ZSwcGenerator::createBoxSwc(const ZCuboid &box, double radius)
 {
-  return ZSwcTree::createCuboidSwc(box, radius);
+  return ZSwcTree::CreateCuboidSwc(box, radius);
 }
 
 ZSwcTree* ZSwcGenerator::createBoxSwc(const ZIntCuboid &box, double radius)

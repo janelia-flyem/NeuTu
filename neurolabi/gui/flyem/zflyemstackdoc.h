@@ -16,7 +16,7 @@ class ZFlyEmStackDoc : public ZStackDoc
 {
   Q_OBJECT
 public:
-  ZFlyEmStackDoc(ZStack *stack, QObject *parent);
+  ZFlyEmStackDoc(QObject *parent = NULL);
   virtual ~ZFlyEmStackDoc();
 
   virtual bool isDeprecated(EComponent component);

@@ -17,7 +17,7 @@
 
 #include "QsLog.h"
 
-#include "informationdialog.h"
+#include "dialogs/informationdialog.h"
 #include "tz_image_io.h"
 #include "tz_math.h"
 #include "zstackdoc.h"
@@ -85,8 +85,8 @@
 #include "biocytin/biocytin.h"
 #include "zpunctumio.h"
 #include "biocytin/zbiocytinfilenameparser.h"
-#include "swcskeletontransformdialog.h"
-#include "swcsizedialog.h"
+#include "dialogs/swcskeletontransformdialog.h"
+#include "dialogs/swcsizedialog.h"
 #include "tz_stack_watershed.h"
 #include "zstackwatershed.h"
 #include "zstackarray.h"
@@ -109,11 +109,11 @@
 
 using namespace std;
 
-ZStackDoc::ZStackDoc(ZStack *stack, QObject *parent) : QObject(parent),
+ZStackDoc::ZStackDoc(QObject *parent) : QObject(parent),
   /*m_lastAddedSwcNode(NULL),*/ m_resDlg(NULL), m_selectionSilent(false),
   m_isReadyForPaint(true), m_isSegmentationReady(false)
 {
-  m_stack = stack;
+  m_stack = NULL;
   m_sparseStack = NULL;
   m_labelField = NULL;
   m_parentFrame = NULL;
@@ -138,7 +138,7 @@ ZStackDoc::ZStackDoc(ZStack *stack, QObject *parent) : QObject(parent),
   if (NeutubeConfig::getInstance().isAutoSaveEnabled()) {
     QTimer *timer = new QTimer(this);
     timer->start(NeutubeConfig::getInstance().getAutoSaveInterval());
-    connect(timer, SIGNAL(timeout()), this, SLOT(autoSave()));
+    connect(timer, SIGNAL(timeout()), this, SLOT(autoSaveSlot()));
   }
 
   createActions();
@@ -501,7 +501,7 @@ void ZStackDoc::updateSwcNodeAction()
 
 void ZStackDoc::autoSave()
 {
-  if (isSwcSavingRequired()) {    
+  if (isSwcSavingRequired()) {
     if (getTag() == NeuTube::Document::FLYEM_BODY_DISPLAY) {
       return;
     }
@@ -546,6 +546,11 @@ void ZStackDoc::autoSave()
       }
     }
   }
+}
+
+void ZStackDoc::autoSaveSlot()
+{
+  autoSave();
 }
 
 string ZStackDoc::getSwcSource() const
@@ -1238,7 +1243,7 @@ void ZStackDoc::loadStack(Stack *stack, bool isOwner)
   if (mainStack != NULL) {
     mainStack->load(stack, isOwner);
     initNeuronTracer();
-    emit stackModified();
+    notifyStackModified();
   }
 }
 
@@ -1254,7 +1259,7 @@ void ZStackDoc::loadStack(ZStack *zstack)
     deprecate(STACK);
     mainStack = zstack;
     initNeuronTracer();
-    emit stackModified();
+    notifyStackModified();
   }
 }
 
@@ -1325,7 +1330,7 @@ void ZStackDoc::readStack(const char *filePath, bool newThread)
     //mainStack = m_stackSource.readStack();
     loadStack(m_stackSource.readStack());
 
-    emit stackModified();
+    notifyStackModified();
   }
 }
 
@@ -3157,6 +3162,13 @@ void ZStackDoc::removeObject(ZStackObjectRole::TRole role, bool deleteObject)
   */
 }
 
+void ZStackDoc::removeObject(const string &source, bool deleteObject)
+{
+  TStackObjectList objList = m_objectGroup.findSameSource(source);
+
+  removeObjectP(objList.begin(), objList.end(), deleteObject);
+}
+
 std::set<ZSwcTree *> ZStackDoc::removeEmptySwcTree(bool deleteObject)
 { 
   //QMutexLocker locker(&m_mutex);
@@ -4031,7 +4043,7 @@ bool ZStackDoc::binarize(int threshold)
     }
 
     if (mainStack->binarize(threshold)) {
-      emit stackModified();
+      notifyStackModified();
       return true;
     }
   }
@@ -4044,7 +4056,7 @@ bool ZStackDoc::bwsolid()
   ZStack *mainStack = getStack();
   if (mainStack != NULL) {
     if (mainStack->bwsolid()) {
-      emit stackModified();
+      notifyStackModified();
       return true;
     }
   }
@@ -4057,7 +4069,7 @@ bool ZStackDoc::bwperim()
   ZStack *mainStack = getStack();
   if (mainStack != NULL) {
     if (mainStack->bwperim()) {
-      emit stackModified();
+      notifyStackModified();
       return true;
     }
   }
@@ -4070,7 +4082,7 @@ bool ZStackDoc::invert()
   ZStack *mainStack = getStack();
   if (mainStack != NULL) {
     ZStackProcessor::invert(mainStack);
-    emit stackModified();
+    notifyStackModified();
     return true;
   }
 
@@ -4082,7 +4094,7 @@ bool ZStackDoc::enhanceLine()
   ZStack *mainStack = getStack();
   if (mainStack != NULL) {
     if (mainStack->enhanceLine()) {
-      emit stackModified();
+      notifyStackModified();
       return true;
     }
   }
@@ -4592,10 +4604,10 @@ void ZStackDoc::updateStackFromSource()
   if (mainStack != NULL) {
     if (mainStack->isSwc()) {
       readSwc(mainStack->sourcePath().c_str());
-      emit stackModified();
+      notifyStackModified();
     } else {
       if (mainStack->updateFromSource()) {
-        emit stackModified();
+        notifyStackModified();
       }
     }
   }
@@ -4940,7 +4952,7 @@ bool ZStackDoc::watershed()
   m_progressReporter->advance(0.5);
   if (mainStack != NULL) {
     if (mainStack->watershed()) {
-      emit stackModified();
+      notifyStackModified();
       return true;
     }
   }
@@ -5046,7 +5058,7 @@ void ZStackDoc::bwthin()
       C_Stack::kill(out);
       m_progressReporter->advance(0.3);
       getStack()->deprecateSingleChannelView(0);
-      emit stackModified();
+      notifyStackModified();
     }
 
     m_progressReporter->end();
@@ -6523,6 +6535,9 @@ void ZStackDoc::addObject(ZStackObject *obj, bool uniqueSource)
            iter != objList.end(); ++iter) {
         ZStackObject *oldObj = *iter;
         bufferObjectModified(oldObj);
+#ifdef _DEBUG_
+        std::cout << "Deleting object in ZStackDoc::addObject: " <<  oldObj << std::endl;
+#endif
         //      role.addRole(m_playerList.removePlayer(obj));
         delete oldObj;
       }
@@ -6859,7 +6874,7 @@ bool ZStackDoc::executeRemoveTubeCommand()
   return false;
 }
 
-bool ZStackDoc::executeAutoTraceCommand(bool doResample)
+bool ZStackDoc::executeAutoTraceCommand(int traceLevel, bool doResample)
 {
 #if 0
   if (hasStackData()) {
@@ -6882,7 +6897,7 @@ bool ZStackDoc::executeAutoTraceCommand(bool doResample)
   m_neuronTracer.setProgressReporter(getProgressReporter());
 
   startProgress(0.9);
-  m_neuronTracer.setTraceLevel(5);
+  m_neuronTracer.setTraceLevel(traceLevel);
   ZSwcTree *tree = m_neuronTracer.trace(getStack()->c_stack(), doResample);
   endProgress(0.9);
 
@@ -8401,9 +8416,9 @@ void ZStackDoc::endObjectModifiedMode()
 
 void ZStackDoc::setVisible(ZStackObject::EType type, bool visible)
 {
-  TStackObjectList &punctaList = getObjectList(type);
-  for (TStackObjectList::iterator iter = punctaList.begin();
-       iter != punctaList.end(); ++iter) {
+  TStackObjectList &objList = getObjectList(type);
+  for (TStackObjectList::iterator iter = objList.begin();
+       iter != objList.end(); ++iter) {
     ZStackObject *obj = *iter;
     obj->setVisible(visible);
     bufferObjectModified(obj->getTarget());
@@ -8411,3 +8426,37 @@ void ZStackDoc::setVisible(ZStackObject::EType type, bool visible)
 
   notifyObjectModified();
 }
+
+void ZStackDoc::setVisible(ZStackObjectRole::TRole role, bool visible)
+{
+  QList<ZDocPlayer*> playerList = getPlayerList(role);
+//  TStackObjectList &objList = getObjectList(role);
+  for (QList<ZDocPlayer*>::iterator iter = playerList.begin();
+       iter != playerList.end(); ++iter) {
+    ZStackObject *obj = (*iter)->getData();
+    obj->setVisible(visible);
+    bufferObjectModified(obj->getTarget());
+  }
+
+  notifyObjectModified();
+}
+
+void ZStackDoc::showSwcFullSkeleton(bool state)
+{
+  TStackObjectList &objList = getObjectList(ZStackObject::TYPE_SWC);
+  for (TStackObjectList::iterator iter = objList.begin();
+       iter != objList.end(); ++iter) {
+    ZSwcTree *tree = dynamic_cast<ZSwcTree*>(*iter);
+    if (state) {
+      tree->addVisualEffect(ZSwcTree::VE_FULL_SKELETON);
+    } else {
+      tree->removeVisualEffect(ZSwcTree::VE_FULL_SKELETON);
+    }
+    bufferObjectModified(tree->getTarget());
+  }
+
+  notifyObjectModified();
+}
+
+
+

@@ -10,6 +10,7 @@
 #include "zstackviewparam.h"
 #include "neutube.h"
 #include "dvid/zdvidinfo.h"
+#include "zflyembookmarkarray.h"
 
 class ZStackFrame;
 class ZFlyEmBodyMergeFrame;
@@ -86,7 +87,7 @@ public:
 
   //void setSelectionFromOriginal(const std::set<uint64_t> &selected);
 
-  Z3DWindow* getBodyWindow() { return m_bodyWindow; }
+  Z3DWindow* getBodyWindow() { return m_coarseBodyWindow; }
   void closeBodyWindow();
 
   uint64_t getMappedBodyId(uint64_t label) const;
@@ -96,7 +97,18 @@ public:
 
   ZProgressSignal* getProgressSignal() const;
 
-  void notifySelected() const;
+  void notifySelected();
+
+  void updateBookmarkDecoration(const ZFlyEmBookmarkArray &bookmarkArray);
+  void clearBookmarkDecoration();
+  void addBookmarkDecoration(const ZFlyEmBookmarkArray &bookmarkArray);
+
+//  void attachBookmarkArray(ZFlyEmBookmarkArray *bookmarkArray);
+//  ZFlyEmBookmarkArray* getBookmarkArray() const { return m_bookmarkArray; }
+
+  void updateBookmarkDecoration();
+
+  void setBookmarkVisible(bool visible);
 
 signals:
   void progressAdvanced(double dp);
@@ -108,11 +120,12 @@ signals:
   void selectionChanged(ZStackObjectSelector selector);
   void selectionChanged();
   void bodyMerged(QList<uint64_t> objLabelList);
-  void splitSent(ZDvidTarget target, int bodyId);
+  void splitSent(ZDvidTarget target, uint64_t bodyId);
   void locating2DViewTriggered(ZStackViewParam);
   void dvidLabelChanged();
   void messageGenerated(const ZWidgetMessage&);
   void coarseBodyWindowCreatedInThread();
+  void checkingInBody(uint64_t bodyId);
 
   /*
   void messageGenerated(QString, bool appending = true);
@@ -130,14 +143,16 @@ public slots:
   void update3DBodyView(const ZStackObjectSelector &selector);
   void update3DBodyView(bool showingWindow = true);
   void update3DBodyViewDeep();
+  void showCoarseBody3d();
   void showBody3d();
+  void detachCoarseBodyWindow();
   void detachBodyWindow();
   void notifySplit();
   void highlightSelectedObject(bool hl);
   void update3DBodyViewPlane();
 
 private slots:
-  void present3DBodyView();
+  void presentCoarseBodyView();
 
 private:
   ZFlyEmBodyMerger* getBodyMerger() const;
@@ -145,16 +160,29 @@ private:
   void update3DBodyViewPlane(const ZDvidInfo &dvidInfo);
   void update3DBodyViewBox(const ZDvidInfo &dvidInfo);
   void uploadResultFunc();
-  void make3DBodyWindow(ZStackDoc *doc);
+  void makeCoarseBodyWindow(ZStackDoc *doc);
+  void makeBodyWindow();
   void connectSignalSlot();
+
+  QString getSelectionMessage() const;
+
+  void mergeBodyAnnotation(int targetId, const std::vector<int> &bodyId);
+
   //void updateSelection();
 
 private:
   ZFlyEmBodyMergeFrame *m_dataFrame;
   ZSharedPointer<ZStackDoc> m_doc;
+  Z3DWindow *m_coarseBodyWindow;
   Z3DWindow *m_bodyWindow;
   ZDvidTarget m_dvidTarget;
   ZDvidInfo m_dvidInfo;
+
+//  std::vector<ZStackObject*> m_bookmarkDecoration;
+  bool m_isBookmarkVisible;
+
+//  ZFlyEmBookmarkArray *m_bookmarkArray; //aggregation
+
 //  Z3DWindow *m_resultWindow;
 //  Z3DWindow *m_quickViewWindow;
 //  ZFlyEmBookmarkArray m_bookmarkArray;

@@ -76,11 +76,12 @@ public:
       int x0, int y0, int z0, int width, int height, int depth);
   std::set<int> readBodyId(const ZIntPoint &firstCorner,
                               const ZIntPoint &lastCorner);
-  std::set<int> readBodyId(size_t minSize);
-  std::set<int> readBodyId(size_t minSize, size_t maxSize);
-  std::set<int> readBodyId(const ZDvidFilter &filter);
+  std::set<uint64_t> readBodyId(size_t minSize);
+  std::set<uint64_t> readBodyId(size_t minSize, size_t maxSize);
+  std::set<uint64_t> readBodyId(const ZDvidFilter &filter);
 
   QByteArray readKeyValue(const QString &dataName, const QString &key);
+  QStringList readKeys(const QString &dataName);
   QStringList readKeys(const QString &dataName, const QString &minKey);
   QStringList readKeys(const QString &dataName,
                        const QString &minKey, const QString &maxKey);
@@ -136,7 +137,7 @@ public slots:
   void startReading();
   void endReading();
 
-  std::set<int> readBodyId(const QString sizeRange);
+  std::set<uint64_t> readBodyId(const QString sizeRange);
 
 private:
   static std::vector<std::pair<int, int> > partitionStack(

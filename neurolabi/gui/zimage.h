@@ -108,6 +108,7 @@ public:
   static ZImage* createMask(const QRect &rect);
 
   void enhanceEdge();
+  void enhanceContrast(bool highContrast);
   //void drawObject(Object_3d *obj, int z);
 
   static bool writeImage(const QImage &image, const QString &filePath);

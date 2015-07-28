@@ -16,7 +16,7 @@
 #include "zinteractivecontext.h"
 #include "zstackdrawable.h"
 #include "zqtbarprogressreporter.h"
-#include "zrescaleswcdialog.h"
+#include "dialogs/zrescaleswcdialog.h"
 #include "zdocumentable.h"
 #include "neutube.h"
 #include "zreportable.h"
@@ -222,7 +222,7 @@ public:
   void pushEnhanceLineCommand();
 
   void executeSwcRescaleCommand(const ZRescaleSwcSetting &setting);
-  void executeAutoTraceCommand(bool doResample);
+  void executeAutoTraceCommand(int traceLevel, bool doResample);
   void executeAutoTraceAxonCommand();
   void executeWatershedCommand();
 

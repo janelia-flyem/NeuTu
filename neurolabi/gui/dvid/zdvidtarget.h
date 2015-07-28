@@ -157,6 +157,8 @@ public:
 
   static bool isDvidTarget(const std::string &source);
 
+  inline bool isSupervised() const { return m_isSupervised; }
+
 
 private:
   std::string m_address;
@@ -170,6 +172,7 @@ private:
   std::string m_multiscale2dName;
   std::string m_grayScaleName;
   std::set<std::string> m_userList;
+  bool m_isSupervised;
 //  std::string m_userName;
 //  std::string m_tileName;
 
@@ -188,6 +191,7 @@ private:
   const static char* m_labelBlockNameKey;
   const static char* m_multiscale2dNameKey;
   const static char* m_userNameKey;
+  const static char* m_supervisorKey;
 };
 
 #endif // ZDVIDTARGET_H

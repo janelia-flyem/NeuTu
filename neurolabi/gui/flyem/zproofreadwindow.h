@@ -70,7 +70,15 @@ private:
   QStackedWidget *m_controlGroup;
   ZFlyEmMessageWidget *m_messageWidget;
 
+  QMenu *m_viewMenu;
+
   QAction *m_viewSynapseAction;
+  QAction *m_viewBookmarkAction;
+  QAction *m_viewSegmentationAction;
+
+  QAction *m_importBookmarkAction;
+  QAction *m_contrastAction;
+
   QToolBar *m_toolBar;
 
   QProgressDialog *m_progressDlg;

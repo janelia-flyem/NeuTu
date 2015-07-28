@@ -62,6 +62,9 @@
       </item>
       <item>
        <widget class="QPushButton" name="updatePushButton">
+        <property name="toolTip">
+         <string>Update segmentation structure</string>
+        </property>
         <property name="text">
          <string>Update</string>
         </property>

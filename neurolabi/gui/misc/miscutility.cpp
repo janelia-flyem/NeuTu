@@ -520,7 +520,7 @@ ZIntPoint misc::getDsIntvFor3DVolume(double dsRatio)
     int s = iround(Cube_Root(dsRatio));
     int k, m;
     pow2decomp(s, &k, &m);
-    s = iround(std::pow((double) s, k + 1));
+    s = iround(std::pow((double) 2, k + 1)) - 1;
     dsIntv.set(s, s, s);
   } else if (dsRatio > 64) {
     dsIntv.set(7, 7, 1);

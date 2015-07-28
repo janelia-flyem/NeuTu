@@ -45,7 +45,8 @@
 ZFlyEmBodySplitProject::ZFlyEmBodySplitProject(QObject *parent) :
   QObject(parent), m_bodyId(0), m_dataFrame(NULL),
   m_resultWindow(NULL), m_quickResultWindow(NULL),
-  m_quickViewWindow(NULL), m_isBookmarkVisible(true), m_showingBodyMask(false)
+  m_quickViewWindow(NULL), /*m_bookmarkArray(NULL),*/
+  m_isBookmarkVisible(true), m_showingBodyMask(false)
 {
   m_progressSignal = new ZProgressSignal(this);
 
@@ -124,7 +125,7 @@ void ZFlyEmBodySplitProject::shallowClear()
 
   m_bodyId = 0;
 
-  m_bookmarkDecoration.clear();
+//  m_bookmarkDecoration.clear();
 }
 
 void ZFlyEmBodySplitProject::shallowClearResultWindow()
@@ -425,7 +426,7 @@ void ZFlyEmBodySplitProject::showBodyQuickView()
     ZWindowFactory factory;
     factory.setWindowTitle("Quick View");
 
-    ZStackDoc *doc = new ZStackDoc(NULL, NULL);
+    ZStackDoc *doc = new ZStackDoc;
     doc->setTag(NeuTube::Document::FLYEM_BODY_DISPLAY);
     m_quickViewWindow = factory.make3DWindow(doc);
 
@@ -448,7 +449,7 @@ void ZFlyEmBodySplitProject::showSkeleton(ZSwcTree *tree)
     if (m_quickViewWindow == NULL) {
       ZWindowFactory factory;
       factory.setWindowTitle("Quick View");
-      ZStackDoc *doc = new ZStackDoc(NULL, NULL);
+      ZStackDoc *doc = new ZStackDoc;
       doc->addObject(tree);
       m_quickViewWindow = factory.make3DWindow(doc);
       connect(m_quickViewWindow, SIGNAL(destroyed()),
@@ -596,7 +597,7 @@ void ZFlyEmBodySplitProject::showResultQuickView()
     if (m_quickResultWindow == NULL) {
       ZWindowFactory windowFactory;
       windowFactory.setWindowTitle("Splitting Result");
-      ZStackDoc *doc = new ZStackDoc(NULL, NULL);
+      ZStackDoc *doc = new ZStackDoc;
       doc->setTag(NeuTube::Document::FLYEM_BODY_DISPLAY);
       m_quickResultWindow = windowFactory.make3DWindow(doc);
 
@@ -655,7 +656,8 @@ void ZFlyEmBodySplitProject::showResult3d()
       ZStack *labeled = factory->makeStack();
       if (labeled != NULL) {
         //docReader.setStack(labeled);
-        ZStackDoc *doc = new ZStackDoc(labeled, NULL);
+        ZStackDoc *doc = new ZStackDoc;
+        doc->loadStack(labeled);
         doc->setTag(NeuTube::Document::FLYEM_SPLIT);
         doc->setStackFactory(factory);
         ZWindowFactory windowFactory;
@@ -710,25 +712,52 @@ void ZFlyEmBodySplitProject::setDataFrame(ZStackFrame *frame)
   m_dataFrame = frame;
   connect(m_dataFrame, SIGNAL(splitStarted()), this, SLOT(backupSeed()));
 
-  updateBookDecoration();
+//  updateBookDecoration();
 }
 
+#if 0
 void ZFlyEmBodySplitProject::removeAllBookmark()
 {
-  m_bookmarkArray.clear();
+  if (m_bookmarkArray != NULL) {
+    m_bookmarkArray->clear();
+  }
   clearBookmarkDecoration();
 }
 
 void ZFlyEmBodySplitProject::loadBookmark(const QString &filePath)
 {
-  ZDvidReader reader;
-  ZFlyEmCoordinateConverter converter;
-  if (reader.open(m_dvidTarget)) {
-//    ZDvidInfo info = reader.readGrayScaleInfo();
-    converter.configure(m_dvidInfo);
-    m_bookmarkArray.importJsonFile(filePath.toStdString(), NULL/*&converter*/);
+  if (m_bookmarkArray != NULL) {
+    ZDvidReader reader;
+    ZFlyEmCoordinateConverter converter;
+    if (reader.open(m_dvidTarget)) {
+      //    ZDvidInfo info = reader.readGrayScaleInfo();
+      converter.configure(m_dvidInfo);
+      m_bookmarkArray->importJsonFile(filePath.toStdString(), NULL/*&converter*/);
+    }
   }
 }
+#endif
+
+bool ZFlyEmBodySplitProject::hasBookmark() const
+{
+  if (getDocument() != NULL) {
+    return !getDocument()->getObjectList(
+          ZStackObject::TYPE_FLYEM_BOOKMARK).isEmpty();
+  }
+
+  return false;
+}
+
+int ZFlyEmBodySplitProject::getBookmarkCount() const
+{
+  if (getDocument() != NULL) {
+    return getDocument()->getObjectList(
+          ZStackObject::TYPE_FLYEM_BOOKMARK).size();
+  }
+
+  return 0;
+}
+
 
 void ZFlyEmBodySplitProject::locateBookmark(const ZFlyEmBookmark &bookmark)
 {
@@ -739,9 +768,13 @@ void ZFlyEmBodySplitProject::locateBookmark(const ZFlyEmBookmark &bookmark)
   }
 }
 
+#if 0
 void ZFlyEmBodySplitProject::clearBookmarkDecoration()
 {
   if (getDocument() != NULL) {
+    getDocument()->removeObject(ZStackObjectRole::ROLE_TMP_BOOKMARK, true);
+  }
+#if 0
     for (std::vector<ZStackObject*>::iterator iter = m_bookmarkDecoration.begin();
          iter != m_bookmarkDecoration.end(); ++iter) {
       ZStackObject *obj = *iter;
@@ -755,17 +788,25 @@ void ZFlyEmBodySplitProject::clearBookmarkDecoration()
     }
   }
   m_bookmarkDecoration.clear();
+#endif
 }
+#endif
 
 void ZFlyEmBodySplitProject::addBookmarkDecoration(
     const ZFlyEmBookmarkArray &bookmarkArray)
 {
   if (getDocument() != NULL) {
+    QVector<ZPunctum*> punctumArray = bookmarkArray.toPunctumArray(
+          m_isBookmarkVisible);
+    getDocument()->addObjectFast(punctumArray.begin(), punctumArray.end());
+  }
+#if 0
     getDocument()->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
     for (ZFlyEmBookmarkArray::const_iterator iter = bookmarkArray.begin();
          iter != bookmarkArray.end(); ++iter) {
       const ZFlyEmBookmark &bookmark = *iter;
       ZPunctum *circle = new ZPunctum;
+      circle->setRole(ZStackObjectRole::ROLE_TMP_BOOKMARK);
       circle->set(bookmark.getLocation(), 5);
 
 //      ZStackBall *circle = new ZStackBall;
@@ -780,23 +821,53 @@ void ZFlyEmBodySplitProject::addBookmarkDecoration(
     getDocument()->endObjectModifiedMode();
     getDocument()->notifyObjectModified();
   }
+#endif
 }
 
-void ZFlyEmBodySplitProject::updateBookDecoration()
+/*
+void ZFlyEmBodySplitProject::updateBookmarkDecoration(
+    const ZFlyEmBookmarkArray &bookmarkArray)
+{
+  clearBookmarkDecoration();
+
+  if (getDocument() != NULL) {
+    ZFlyEmBookmarkArray filteredBookmarkArray;
+    foreach (ZFlyEmBookmark bookmark, bookmarkArray) {
+      if (bookmark.getBodyId() == getBodyId() &&
+          bookmark.getType() == ZFlyEmBookmark::TYPE_FALSE_MERGE) {
+        filteredBookmarkArray.append(bookmark);
+      }
+    }
+    addBookmarkDecoration(filteredBookmarkArray);
+  }
+}
+*/
+
+#if 0
+void ZFlyEmBodySplitProject::updateBookmarkDecoration()
 {
   clearBookmarkDecoration();
 
   if (getDocument() != NULL) {
     ZFlyEmBookmarkArray bookmarkArray;
-    foreach (ZFlyEmBookmark bookmark, m_bookmarkArray) {
-      if (bookmark.getBodyId() == getBodyId()) {
-        bookmarkArray.append(bookmark);
+
+    //    foreach (ZFlyEmBookmark bookmark, m_bookmarkArray) {
+    if (m_bookmarkArray != NULL) {
+      for (ZFlyEmBookmarkArray::const_iterator iter = m_bookmarkArray->begin();
+           iter != m_bookmarkArray->end(); ++iter) {
+        const ZFlyEmBookmark &bookmark = *iter;
+        if (bookmark.getBodyId() == getBodyId() &&
+            bookmark.getBookmarkType() == ZFlyEmBookmark::TYPE_FALSE_MERGE) {
+          bookmarkArray.append(bookmark);
+        }
       }
     }
     addBookmarkDecoration(bookmarkArray);
   }
 }
+#endif
 
+#if 0
 void ZFlyEmBodySplitProject::showBookmark(bool visible)
 {
   m_isBookmarkVisible = visible;
@@ -809,12 +880,26 @@ void ZFlyEmBodySplitProject::showBookmark(bool visible)
     m_dataFrame->updateView();
   }
 }
+#endif
+
+
+void ZFlyEmBodySplitProject::setBookmarkVisible(bool visible)
+{
+  m_isBookmarkVisible = visible;
+}
 
 std::set<int> ZFlyEmBodySplitProject::getBookmarkBodySet() const
 {
   std::set<int> bodySet;
-  foreach (ZFlyEmBookmark bookmark, m_bookmarkArray) {
-    bodySet.insert(bookmark.getBodyId());
+  ZStackDoc *doc = getDocument();
+  if (doc != NULL) {
+    const TStackObjectList &objList =
+        doc->getObjectList(ZStackObject::TYPE_FLYEM_BOOKMARK);
+    for (TStackObjectList::const_iterator iter = objList.begin();
+         iter != objList.end(); ++iter) {
+      const ZFlyEmBookmark *bookmark = dynamic_cast<ZFlyEmBookmark*>(*iter);
+      bodySet.insert(bookmark->getBodyId());
+    }
   }
 
   return bodySet;
@@ -1700,3 +1785,10 @@ void ZFlyEmBodySplitProject::update3DViewPlane()
 
   }
 }
+
+/*
+void ZFlyEmBodySplitProject::attachBookmarkArray(ZFlyEmBookmarkArray *bookmarkArray)
+{
+  m_bookmarkArray = bookmarkArray;
+}
+*/

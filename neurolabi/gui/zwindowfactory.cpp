@@ -13,9 +13,11 @@
 #include "z3dwindow.h"
 #include "z3dswcfilter.h"
 #include "z3dpunctafilter.h"
+#include "z3dutils.h"
 
 ZWindowFactory::ZWindowFactory() : m_parentWidget(NULL),
-  m_showVolumeBoundBox(false), m_showControlPanel(true), m_showObjectView(true)
+  m_showVolumeBoundBox(false), m_showControlPanel(true), m_showObjectView(true),
+  m_volumeMode(NeuTube3D::VR_AUTO)
 {
 }
 
@@ -71,11 +73,18 @@ Z3DWindow* ZWindowFactory::make3DWindow(ZSharedPointer<ZStackDoc> doc,
       window->getSwcFilter()->setRenderingPrimitive("Sphere");
       window->getPunctaFilter()->setColorMode("Original Point Color");
     }
-    if (doc->getTag() == NeuTube::Document::FLYEM_BODY ||
-        doc->getTag() == NeuTube::Document::FLYEM_SPLIT ||
-        doc->getTag() != NeuTube::Document::SEGMENTATION_TARGET) {
+    if (m_volumeMode == NeuTube3D::VR_AUTO) {
+      if (doc->getTag() == NeuTube::Document::FLYEM_BODY ||
+          doc->getTag() == NeuTube::Document::FLYEM_SPLIT) {
+        window->getVolumeRaycasterRenderer()->setCompositeMode(
+              "Direct Volume Rendering");
+      } else {
+        //      doc->getTag() == NeuTube::Document::SEGMENTATION_TARGET
+        window->getVolumeRaycasterRenderer()->setCompositeMode("MIP Opaque");
+      }
+    } else {
       window->getVolumeRaycasterRenderer()->setCompositeMode(
-            "Direct Volume Rendering");
+            Z3DUtils::GetVolumeRenderingName(m_volumeMode).c_str());
     }
     if (doc->getTag() != NeuTube::Document::FLYEM_SPLIT &&
         doc->getTag() != NeuTube::Document::SEGMENTATION_TARGET &&
@@ -117,7 +126,8 @@ Z3DWindow* ZWindowFactory::make3DWindow(ZScalableStack *stack)
   Z3DWindow *window = NULL;
 
   if (Z3DApplication::app()->is3DSupported()) {
-    ZStackDoc *doc = new ZStackDoc(stack->getStack(), NULL);
+    ZStackDoc *doc = new ZStackDoc;
+    doc->loadStack(stack->getStack());
     window = make3DWindow(doc);
     window->getVolumeSource()->getVolume(0)->setScaleSpacing(
           glm::vec3(stack->getXScale(), stack->getYScale(), stack->getZScale()));

@@ -23,6 +23,7 @@ typedef struct _Objlabel_Workspace {
   int seed;             /**< an integer for passing or storing seed */
   BOOL init_chord;      /**< initialize \a chord (TRUE) or not (FALSE). */
   BOOL recover_chord;   /**< recover \a chord (TRUE) or not (FALSE). */
+  BOOL inc_label;       /**< Increment labels for new objects */
   IMatrix *chord;       /**< space for intermediate result */
   void *u;              /**< undefined space */
 } Objlabel_Workspace;
@@ -142,7 +143,7 @@ int Stack_Label_Objects_Ns(Stack *stack, IMatrix *chord,
  *
  * Stack_Label_Large_Objects_N() labels objects that have voxel number no 
  * smaller than <minsize> by the value <label> + 1. All other objects are 
- * labeled as <lablel>. It returns the number of large objects labeled.
+ * labeled as <label>. It returns the number of large objects labeled.
  * <chord> is an integer matrix to store intermediate results. It can be NULL.
  */
 int Stack_Label_Large_Objects_N(Stack *stack, IMatrix *chord, 

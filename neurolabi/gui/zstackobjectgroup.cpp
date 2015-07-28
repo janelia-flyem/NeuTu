@@ -1,5 +1,7 @@
 #include "zstackobjectgroup.h"
 
+#include <QMutexLocker>
+
 ZStackObjectGroup::ZStackObjectGroup()
 {
 }
@@ -92,8 +94,10 @@ void ZStackObjectGroup::setSelected(ZStackObject::EType type, bool selected)
   }
 }
 
-ZStackObject* ZStackObjectGroup::take(ZStackObject *obj)
+ZStackObject* ZStackObjectGroup::take(ZStackObject *obj, QMutex *mutex)
 {
+  QMutexLocker locker(mutex);
+
   ZStackObject *found = NULL;
   if (removeOne(obj)) {
     found = obj;
@@ -106,8 +110,10 @@ ZStackObject* ZStackObjectGroup::take(ZStackObject *obj)
   return found;
 }
 
-TStackObjectList ZStackObjectGroup::take(TObjectTest testFunc)
+TStackObjectList ZStackObjectGroup::take(TObjectTest testFunc, QMutex *mutex)
 {
+  QMutexLocker locker(mutex);
+
   TStackObjectList objSet;
   for (ZStackObjectGroup::iterator iter = begin(); iter != end();
        ++iter) {
@@ -359,6 +365,24 @@ TStackObjectList ZStackObjectGroup::findSameSource(
 }
 
 TStackObjectList ZStackObjectGroup::findSameSource(
+    const std::string &source) const
+{
+  QList<ZStackObject*> objList;
+  if (!source.empty()) {
+//    const TStackObjectList &fullObjList = getObjectList(obj->getType());
+    for (ZStackObjectGroup::const_iterator iter = this->begin();
+         iter != this->end(); ++iter) {
+      const ZStackObject *checkObj = *iter;
+      if (checkObj->getSource() == source) {
+        objList.append(const_cast<ZStackObject*>(checkObj));
+      }
+    }
+  }
+
+  return objList;
+}
+
+TStackObjectList ZStackObjectGroup::findSameSource(
     ZStackObject::EType type, const std::string &source) const
 {
   QList<ZStackObject*> objList;
@@ -399,8 +423,10 @@ QList<ZStackObject*> ZStackObjectGroup::addU(const ZStackObject *obj)
   return objList;
 }
 
-void ZStackObjectGroup::addInFront(ZStackObject *obj, bool uniqueSource)
+void ZStackObjectGroup::addInFront(ZStackObject *obj, bool uniqueSource, QMutex *mutex)
 {
+  QMutexLocker locker(mutex);
+
   if (obj != NULL) {
     int maxOrder = getMaxZOrder();
     obj->setZOrder(maxOrder + 1);

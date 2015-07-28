@@ -40,16 +40,16 @@ bool ZDvidFilter::namedBodyOnly() const
   return m_namedBodyOnly;
 }
 
-std::set<int> ZDvidFilter::loadBodySet() const
+std::set<uint64_t> ZDvidFilter::loadBodySet() const
 {
 //  ZString
 
-  std::set<int> bodySet;
+  std::set<uint64_t> bodySet;
 
   FILE *fp = fopen(m_bodyListFile.c_str(), "r");
   ZString str;
   while (str.readLine(fp)) {
-    std::vector<int> bodyArray = str.toIntegerArray();
+    std::vector<uint64_t> bodyArray = str.toUint64Array();
     bodySet.insert(bodyArray.begin(), bodyArray.end());
   }
 

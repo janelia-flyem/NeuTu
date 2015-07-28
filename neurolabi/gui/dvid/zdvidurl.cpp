@@ -4,6 +4,7 @@
 #include "zstring.h"
 
 const std::string ZDvidUrl::m_keyCommand = "key";
+const std::string ZDvidUrl::m_keysCommand = "keys";
 const std::string ZDvidUrl::m_keyRangeCommand = "keyrange";
 const std::string ZDvidUrl::m_sparsevolCommand = "sparsevol";
 const std::string ZDvidUrl::m_coarseSparsevolCommand = "sparsevol-coarse";
@@ -285,7 +286,7 @@ std::string ZDvidUrl::getKeyUrl(const std::string &name, const std::string &key)
 
 std::string ZDvidUrl::getAllKeyUrl(const std::string &name) const
 {
-  return getDataUrl(name) + "/keys";
+  return getDataUrl(name) + "/" + m_keysCommand;
 }
 
 std::string ZDvidUrl::getKeyRangeUrl(
@@ -457,6 +458,16 @@ std::string ZDvidUrl::getMaxBodyIdUrl() const
 std::string ZDvidUrl::getTileUrl(const std::string &dataName) const
 {
   return getDataUrl(dataName);
+}
+
+std::string ZDvidUrl::getBookmarkUrl() const
+{
+  return getDataUrl(ZDvidData::GetName(ZDvidData::ROLE_BOOKMARK));
+}
+
+std::string ZDvidUrl::getCustomBookmarkUrl(const std::string &userName) const
+{
+  return getKeyUrl(ZDvidData::GetName(ZDvidData::ROLE_BOOKMARK), userName);
 }
 
 std::string ZDvidUrl::getTileUrl(

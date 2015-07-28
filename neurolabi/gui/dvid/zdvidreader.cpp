@@ -626,9 +626,9 @@ std::set<int> ZDvidReader::readBodyId(
   return bodySet;
 }
 
-std::set<int> ZDvidReader::readBodyId(const QString sizeRange)
+std::set<uint64_t> ZDvidReader::readBodyId(const QString sizeRange)
 {
-  std::set<int> bodySet;
+  std::set<uint64_t> bodySet;
 
   if (!sizeRange.isEmpty()) {
     std::vector<int> idArray;
@@ -661,9 +661,9 @@ std::set<int> ZDvidReader::readBodyId(const QString sizeRange)
   return bodySet;
 }
 
-std::set<int> ZDvidReader::readBodyId(const ZDvidFilter &filter)
+std::set<uint64_t> ZDvidReader::readBodyId(const ZDvidFilter &filter)
 {
-  std::set<int> bodyIdSet;
+  std::set<uint64_t> bodyIdSet;
 
   if (filter.hasUpperBodySize()) {
     bodyIdSet = readBodyId(filter.getMinBodySize(), filter.getMaxBodySize());
@@ -672,8 +672,8 @@ std::set<int> ZDvidReader::readBodyId(const ZDvidFilter &filter)
   }
 
   if (filter.hasExclusion()) {
-    std::set<int> newBodySet;
-    for (std::set<int>::const_iterator iter = bodyIdSet.begin();
+    std::set<uint64_t> newBodySet;
+    for (std::set<uint64_t>::const_iterator iter = bodyIdSet.begin();
          iter != bodyIdSet.end(); ++iter) {
       int bodyId = *iter;
       if (!filter.isExcluded(bodyId)) {
@@ -686,13 +686,13 @@ std::set<int> ZDvidReader::readBodyId(const ZDvidFilter &filter)
   return bodyIdSet;
 }
 
-std::set<int> ZDvidReader::readBodyId(size_t minSize)
+std::set<uint64_t> ZDvidReader::readBodyId(size_t minSize)
 {
   ZDvidBufferReader bufferReader;
   ZDvidUrl dvidUrl(m_dvidTarget);
   bufferReader.read(dvidUrl.getBodyListUrl(minSize).c_str());
 
-  std::set<int> bodySet;
+  std::set<uint64_t> bodySet;
 
   QString idStr = bufferReader.getBuffer().data();
 
@@ -708,13 +708,13 @@ std::set<int> ZDvidReader::readBodyId(size_t minSize)
   return bodySet;
 }
 
-std::set<int> ZDvidReader::readBodyId(size_t minSize, size_t maxSize)
+std::set<uint64_t> ZDvidReader::readBodyId(size_t minSize, size_t maxSize)
 {
   ZDvidBufferReader bufferReader;
   ZDvidUrl dvidUrl(m_dvidTarget);
   bufferReader.read(dvidUrl.getBodyListUrl(minSize, maxSize).c_str());
 
-  std::set<int> bodySet;
+  std::set<uint64_t> bodySet;
 
   QString idStr = bufferReader.getBuffer().data();
 
@@ -754,6 +754,27 @@ QByteArray ZDvidReader::readKeyValue(const QString &dataName, const QString &key
   dvidBuffer->clearKeyValueArray();
 
   return keyValue;
+}
+
+QStringList ZDvidReader::readKeys(const QString &dataName)
+{
+  ZDvidBufferReader reader;
+  ZDvidUrl dvidUrl(m_dvidTarget);
+
+  reader.read(dvidUrl.getAllKeyUrl(dataName.toStdString()).c_str());
+  QByteArray keyBuffer = reader.getBuffer();
+
+  QStringList keys;
+
+  if (!keyBuffer.isEmpty()) {
+    ZJsonArray obj;
+    obj.decode(keyBuffer.data());
+    for (size_t i = 0; i < obj.size(); ++i) {
+      keys << ZJsonParser::stringValue(obj.at(i));
+    }
+  }
+
+  return keys;
 }
 
 QStringList ZDvidReader::readKeys(
@@ -988,6 +1009,10 @@ ZArray* ZDvidReader::readLabels64(
   const ZDvidTarget &target = getDvidTarget();
   if (!target.getUuid().empty()) {
     try {
+      ZDvidUrl dvidUrl(m_dvidTarget);
+      std::cout << dvidUrl.getLabels64Url(
+                     dataName, width, height, depth, x0, y0, z0).c_str() << std::endl;
+
       libdvid::DVIDNodeService service(
             target.getAddressWithPort(), target.getUuid());
 

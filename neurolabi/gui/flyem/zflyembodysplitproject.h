@@ -61,17 +61,25 @@ public:
   void loadBookmark(const QString &filePath);
   std::set<int> getBookmarkBodySet() const;
 
-  const ZFlyEmBookmarkArray& getBookmarkArray() const {
+  /*
+  const ZFlyEmBookmarkArray* getBookmarkArray() const {
     return m_bookmarkArray;
   }
+  */
+
+  bool hasBookmark() const;
+  int getBookmarkCount() const;
 
   void locateBookmark(const ZFlyEmBookmark &bookmark);
 
-  void clearBookmarkDecoration();
+//  void clearBookmarkDecoration();
   void addBookmarkDecoration(const ZFlyEmBookmarkArray &bookmarkArray);
-  void updateBookDecoration();
+//  void updateBookmarkDecoration();
 
-  void removeAllBookmark();
+  void setBookmarkVisible(bool visible);
+//  void updateBookmarkDecoration(const ZFlyEmBookmarkArray &bookmarkArray);
+
+//  void removeAllBookmark();
 
   void showSkeleton(ZSwcTree *tree);
   void showBodyQuickView();
@@ -135,6 +143,8 @@ public:
 
   ZProgressSignal* getProgressSignal() const;
 
+  void attachBookmarkArray(ZFlyEmBookmarkArray *bookmarkArray);
+
 signals:
   void messageGenerated(QString, bool appending = true);
   void errorGenerated(QString, bool appending = true);
@@ -157,7 +167,7 @@ public slots:
   void showDataFrame3d();
   void showResult3d();
   void showResultQuickView();
-  void showBookmark(bool visible);
+//  void showBookmark(bool visible);
   void runSplit();
   void updateResult3dQuick();
   void backupSeed();
@@ -205,8 +215,10 @@ private:
   Z3DWindow *m_resultWindow;
   Z3DWindow *m_quickResultWindow;
   Z3DWindow *m_quickViewWindow;
-  ZFlyEmBookmarkArray m_bookmarkArray;
-  std::vector<ZStackObject*> m_bookmarkDecoration;
+
+//  ZFlyEmBookmarkArray *m_bookmarkArray; //aggregation
+
+//  std::vector<ZStackObject*> m_bookmarkDecoration;
   bool m_isBookmarkVisible;
   bool m_showingBodyMask;
 

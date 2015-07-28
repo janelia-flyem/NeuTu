@@ -48,6 +48,9 @@ ZSwcTree::ZSwcTree(const ZSwcTree &src) : ZStackObject()
 
 const int ZSwcTree::m_nodeStateCosmetic = 1;
 
+const ZSwcTree::TVisualEffect ZSwcTree::VE_NONE = 0;
+const ZSwcTree::TVisualEffect ZSwcTree::VE_FULL_SKELETON = 1;
+
 ZSwcTree::ZSwcTree() : m_smode(STRUCT_NORMAL), m_hitSwcNode(NULL)
 {
   m_tree = NULL;
@@ -55,6 +58,7 @@ ZSwcTree::ZSwcTree() : m_smode(STRUCT_NORMAL), m_hitSwcNode(NULL)
   m_iteratorReady = false;
   setColorScheme(COLOR_NORMAL);
   m_type = ZStackObject::TYPE_SWC;
+  m_visualEffect = VE_FULL_SKELETON;
 
   setTarget(GetDefaultTarget());
 }
@@ -69,6 +73,9 @@ ZSwcTree::~ZSwcTree()
     Print_Swc_Tree_Node(tn);
   }
 #endif
+
+  std::cout << "Deconstructing " << this << ": SWC " << ", "
+            << getSource() << std::endl;
 
   if (m_tree != NULL) {
     Kill_Swc_Tree(m_tree);
@@ -437,6 +444,20 @@ void ZSwcTree::computeLineSegment(const Swc_Tree_Node *lowerTn,
 #endif
 }
 
+bool ZSwcTree::hasVisualEffect(TVisualEffect ve) const
+{
+  return (m_visualEffect & ve) > 0;
+}
+void ZSwcTree::addVisualEffect(TVisualEffect ve)
+{
+  m_visualEffect |= ve;
+}
+
+void ZSwcTree::removeVisualEffect(TVisualEffect ve)
+{
+  m_visualEffect &= ~ve;
+}
+
 void ZSwcTree::display(ZPainter &painter, int slice,
                        ZStackObject::EDisplayStyle style) const
 {
@@ -472,9 +493,11 @@ void ZSwcTree::display(ZPainter &painter, int slice,
     if (!SwcTreeNode::isRoot(tn)) {
       pen.setColor(m_planeSkeletonColor);
       painter.setPen(pen);
-      painter.drawLine(QPointF(SwcTreeNode::x(tn), SwcTreeNode::y(tn)),
-                       QPointF(SwcTreeNode::x(SwcTreeNode::parent(tn)),
-                               SwcTreeNode::y(SwcTreeNode::parent(tn))));
+      if (hasVisualEffect(VE_FULL_SKELETON)) {
+        painter.drawLine(QPointF(SwcTreeNode::x(tn), SwcTreeNode::y(tn)),
+                         QPointF(SwcTreeNode::x(SwcTreeNode::parent(tn)),
+                                 SwcTreeNode::y(SwcTreeNode::parent(tn))));
+      }
 
       bool visible = false;
       const Swc_Tree_Node *lowerTn = tn;
@@ -628,10 +651,10 @@ void ZSwcTree::display(ZPainter &painter, int slice,
                SwcTreeNode::radius(tn));
 
     circle.setColor(255, 255, 0);
-    circle.setVisualEffect(ZStackBall::VE_BOUND_BOX |
-                           ZStackBall::VE_NO_FILL |
-                           ZStackBall::VE_OUT_FOCUS_DIM |
-                           ZStackBall::VE_DASH_PATTERN);
+    circle.setVisualEffect(NeuTube::Display::Sphere::VE_BOUND_BOX |
+                           NeuTube::Display::Sphere::VE_NO_FILL |
+                           NeuTube::Display::Sphere::VE_OUT_FOCUS_DIM |
+                           NeuTube::Display::Sphere::VE_DASH_PATTERN);
     circle.useCosmeticPen(m_usingCosmeticPen);
     circle.display(painter, slice, BOUNDARY);
   }
@@ -1137,7 +1160,7 @@ const ZCuboid& ZSwcTree::getBoundBox() const
   return m_boundBox;
 }
 
-ZSwcTree* ZSwcTree::createCuboidSwc(const ZCuboid &box, double radius)
+ZSwcTree* ZSwcTree::CreateCuboidSwc(const ZCuboid &box, double radius)
 {
   ZSwcTree *tree = new ZSwcTree;
   tree->forceVirtualRoot();
@@ -1173,7 +1196,7 @@ ZSwcTree* ZSwcTree::createBoundBoxSwc(double margin)
 
   boundingBox.expand(margin);
 
-  ZSwcTree *tree = createCuboidSwc(boundingBox);
+  ZSwcTree *tree = CreateCuboidSwc(boundingBox);
 
   return tree;
 }

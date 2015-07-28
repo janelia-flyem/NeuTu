@@ -8,14 +8,16 @@
 ZStackObject::ZStackObject() : m_selected(false), m_isSelectable(true),
   m_isVisible(true), m_isHittable(true), m_projectionVisible(true),
   m_style(SOLID), m_target(TARGET_WIDGET), m_usingCosmeticPen(false), m_zScale(1.0),
-  m_zOrder(1), m_type(TYPE_UNIDENTIFIED), m_role(ZStackObjectRole::ROLE_NONE)
+  m_zOrder(1), m_type(TYPE_UNIDENTIFIED), m_role(ZStackObjectRole::ROLE_NONE),
+  m_visualEffect(NeuTube::Display::VE_NONE)
 {
 }
 
 ZStackObject::~ZStackObject()
 {
 #ifdef _DEBUG_2
-  std::cout << "Deleting " << getType() << ": " << getSource() << std::endl;
+  std::cout << "Deconstructing " << this << ": " << getType() << ", "
+            << getSource() << std::endl;
 #endif
 }
 
@@ -204,4 +206,24 @@ void ZStackObject::getBoundBox(ZIntCuboid *box) const
   if (box != NULL) {
     *box = ZIntCuboid();
   }
+}
+
+void ZStackObject::addVisualEffect(NeuTube::Display::TVisualEffect ve)
+{
+  m_visualEffect |= ve;
+}
+
+void ZStackObject::removeVisualEffect(NeuTube::Display::TVisualEffect ve)
+{
+  m_visualEffect &= ~ve;
+}
+
+void ZStackObject::setVisualEffect(NeuTube::Display::TVisualEffect ve)
+{
+  m_visualEffect = ve;
+}
+
+bool ZStackObject::hasVisualEffect(NeuTube::Display::TVisualEffect ve) const
+{
+  return m_visualEffect & ve;
 }

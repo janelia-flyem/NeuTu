@@ -1,7 +1,7 @@
 #include "zflyemprojectmanager.h"
 
-#include "flyembodymergeprojectdialog.h"
-#include "flyembodysplitprojectdialog.h"
+#include "dialogs/flyembodymergeprojectdialog.h"
+#include "dialogs/flyembodysplitprojectdialog.h"
 
 ZFlyEmProjectManager::ZFlyEmProjectManager(QObject *parent) :
   QObject(parent)
@@ -17,6 +17,6 @@ ZFlyEmProjectManager::ZFlyEmProjectManager(QObject *parent) :
 
 void ZFlyEmProjectManager::connectSignalSlot()
 {
-  connect(m_mergeDlg->getProject(), SIGNAL(splitSent(ZDvidTarget,int)),
-          m_splitDlg, SLOT(startSplit(ZDvidTarget,int)));
+  connect(m_mergeDlg->getProject(), SIGNAL(splitSent(ZDvidTarget,uint64_t)),
+          m_splitDlg, SLOT(startSplit(ZDvidTarget,uint64_t)));
 }

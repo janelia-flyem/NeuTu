@@ -131,6 +131,9 @@ public:
 
   std::string getRoiUrl(const std::string &dataName) const;
 
+  std::string getBookmarkUrl() const;
+  std::string getCustomBookmarkUrl(const std::string &userName) const;
+
   static std::string GetEndPoint(const std::string &url);
   /*!
    * \brief Get entry point of getting key value entries
@@ -141,6 +144,7 @@ private:
   ZDvidTarget m_dvidTarget;
 
   static const std::string m_keyCommand;
+  static const std::string m_keysCommand;
   static const std::string m_keyRangeCommand;
   static const std::string m_infoCommand;
   static const std::string m_sparsevolCommand;

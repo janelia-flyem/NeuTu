@@ -4,7 +4,7 @@
 ZFlyEmBookmarkPresenter::ZFlyEmBookmarkPresenter(QObject *parent) :
   ZAbstractModelPresenter(parent)
 {
-  m_fieldList << "X" << "Y" << "Z" << "Body ID" << "User" << "Status"
+  m_fieldList << "Type" << "X" << "Y" << "Z" << "Body ID" << "User" << "Status"
               << "Time";
 }
 
@@ -14,19 +14,29 @@ QVariant ZFlyEmBookmarkPresenter::data(
   switch(role) {
   case Qt::DisplayRole:
     switch (index) {
-    case 3:
-      return (int) bookmark.getBodyId();
     case 0:
-      return bookmark.getLocation().getX();
-    case 1:
-      return bookmark.getLocation().getY();
-    case 2:
-      return bookmark.getLocation().getZ();
+      switch (bookmark.getBookmarkType()) {
+      case ZFlyEmBookmark::TYPE_FALSE_MERGE:
+        return "Split";
+      case ZFlyEmBookmark::TYPE_FALSE_SPLIT:
+        return "Merge";
+      case ZFlyEmBookmark::TYPE_LOCATION:
+        return "Other";
+      }
+      break;
     case 4:
-      return bookmark.getUserName();
+      return (int) bookmark.getBodyId();
+    case 1:
+      return bookmark.getLocation().getX();
+    case 2:
+      return bookmark.getLocation().getY();
+    case 3:
+      return bookmark.getLocation().getZ();
     case 5:
-      return bookmark.getStatus();
+      return bookmark.getUserName();
     case 6:
+      return bookmark.getStatus();
+    case 7:
       return bookmark.getTime();
     }
     break;

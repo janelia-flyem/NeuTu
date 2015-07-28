@@ -86,6 +86,7 @@ void Default_Objlabel_Workspace(Objlabel_Workspace *ow)
   ow->seed = -1;
   ow->init_chord = TRUE;
   ow->recover_chord = FALSE;
+  ow->inc_label = FALSE;
   ow->chord = NULL;
   ow->u = NULL;
 }
@@ -703,6 +704,7 @@ int Stack_Label_Large_Objects_W(Stack *stack, int flag, int label, int minsize,
 
   int small_label = label;
   int large_label = small_label + 1;
+//  int tmp_large_label = large_label + 2;
 
   int nvoxel = Stack_Voxel_Number(stack);
   int i;
@@ -739,10 +741,12 @@ int Stack_Label_Large_Objects_W(Stack *stack, int flag, int label, int minsize,
       }
       obj_size = Stack_Label_Object_W(stack, i, flag, large_label, ow);
       if (obj_size < minsize) {
-	stack_label_object_by_chord(stack, ow->chord, small_label, i);
+        stack_label_object_by_chord(stack, ow->chord, small_label, i);
       } else {
-	large_object_number++;
-        ++large_label;
+        large_object_number++;
+        if (ow->inc_label == TRUE) {
+          ++large_label;
+        }
         if (large_label > 65535) {
           TZ_WARN(ERROR_DATA_VALUE);
           large_label = small_label + 1;
