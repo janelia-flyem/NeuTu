@@ -104,6 +104,19 @@ bool FlyEmBodyInfoDialog::isValidBookmarkFile(ZJsonObject jsonObject) {
         return false;
     }
 
+    ZJsonValue data = jsonObject.value("data");
+    if (!data.isArray()) {
+        errorBox.setText("Problem with json file");
+        errorBox.setInformativeText("The data section in this json file is not an array!");
+        errorBox.setStandardButtons(QMessageBox::Ok);
+        errorBox.setIcon(QMessageBox::Warning);
+        errorBox.exec();
+        return false;
+    }
+
+    // we could/should test all the elements of the array to see if they
+    //  are bookmarks, but enough is enough...
+
     return true;
 }
 
@@ -118,18 +131,13 @@ void FlyEmBodyInfoDialog::onOpenButton() {
     }
 }
 
+/*
+ * update the data model from json; input should be the
+ * "data" part of our standard bookmarks json file
+ */
 void FlyEmBodyInfoDialog::updateModel(ZJsonValue data) {
-    if (!data.isArray()) {
-        // move to validation step?  we don't check that
-        //  elements are actually bookmarks, either
-        std::cout << "data is not an array?" << std::endl;
-        return;
-    }
-
-    // clear model, then load new data
     m_model->clear();
     setHeaders(m_model);
-
 
     ZJsonArray bookmarks(data);
     m_model->setRowCount(bookmarks.size());
@@ -137,7 +145,7 @@ void FlyEmBodyInfoDialog::updateModel(ZJsonValue data) {
         ZJsonObject bkmk(bookmarks.at(i), false);
 
         // carefully set data for items so they will sort numerically;
-        //  compare the "body status" entry, which we want as a string
+        //  contrast the "body status" entry, which we keep as a string
         int bodyID = ZJsonParser::integerValue(bkmk["body ID"]);
         QStandardItem * bodyIDItem = new QStandardItem();
         bodyIDItem->setData(QVariant(bodyID), Qt::DisplayRole);
