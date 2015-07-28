@@ -67,3 +67,11 @@ void ZWidgetMessage::appendMessage(const QString &message)
 {
   m_message.append(message);
 }
+
+void ZWidgetMessage::setMessage(const QString &msg)
+{
+  m_message.clear();
+  if (!msg.isEmpty()) {
+    m_message.append(msg);
+  }
+}

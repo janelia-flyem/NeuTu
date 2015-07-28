@@ -276,8 +276,11 @@ void ZProofreadWindow::dump(const ZWidgetMessage &msg)
   case ZWidgetMessage::TARGET_DIALOG:
     QMessageBox::information(this, "Notice", msg.toHtmlString());
     break;
-case ZWidgetMessage::TARGET_STATUS_BAR:
+  case ZWidgetMessage::TARGET_STATUS_BAR:
     statusBar()->showMessage(msg.toHtmlString());
+    break;
+  case ZWidgetMessage::TARGET_CUSTOM_AREA:
+    m_mainMvc->dump(msg.toHtmlString());
     break;
   }
 }

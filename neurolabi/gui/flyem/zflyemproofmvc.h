@@ -16,6 +16,7 @@ class ZDvidTarget;
 class ZDvidDialog;
 class ZFlyEmProofPresenter;
 class ZFlyEmSupervisor;
+class ZPaintLabelWidget;
 
 /*!
  * \brief The MVC class for flyem proofreading
@@ -113,6 +114,7 @@ public slots:
   void zoomTo(int x, int y, int z, int width);
   void goToBody();
   void selectBody();
+  void processLabelSliceSelectionChange();
 
   void loadBookmark(const QString &filePath);
   void addSelectionAt(int x, int y, int z);
@@ -159,6 +161,8 @@ private:
 //  ZFlyEmBookmarkArray m_bookmarkArray;
 
   QThreadFutureMap m_futureMap;
+
+  ZPaintLabelWidget *m_paintLabelWidget;
 
   ZDvidDialog *m_dvidDlg;
   ZFlyEmSupervisor *m_supervisor;

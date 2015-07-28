@@ -271,6 +271,8 @@ public slots:
   void paintObject(ZStackObject::ETarget target);
   void paintObject(const QSet<ZStackObject::ETarget> &targetSet);
 
+  void dump(const QString &msg);
+
 
 signals:
   void currentSliceChanged(int);
@@ -350,6 +352,7 @@ private:
   ZSlider *m_depthControl;
   //QSpinBox *m_spinBox;
   QLabel *m_infoLabel;
+  QLabel *m_msgLabel;
   QLabel *m_activeLabel;
   ZImage *m_image;
   ZPainter m_imagePainter;

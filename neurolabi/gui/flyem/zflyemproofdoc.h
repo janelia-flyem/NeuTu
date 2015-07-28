@@ -33,8 +33,8 @@ public:
 
   ZDvidTileEnsemble* getDvidTileEnsemble() const;
   ZDvidLabelSlice* getDvidLabelSlice() const;
-  const ZDvidSparseStack* getDvidSparseStack() const;
-  ZDvidSparseStack* getDvidSparseStack();
+  const ZDvidSparseStack* getBodyForSplit() const;
+  ZDvidSparseStack* getBodyForSplit();
 
   const ZSparseStack* getSparseStack() const;
   ZSparseStack* getSparseStack();

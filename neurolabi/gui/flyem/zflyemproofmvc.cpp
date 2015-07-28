@@ -259,6 +259,8 @@ void ZFlyEmProofMvc::customInit()
           this, SLOT(processViewChange()));
   connect(getCompletePresenter(), SIGNAL(goingToBody()),
           this, SLOT(goToBody()));
+  connect(getCompletePresenter(), SIGNAL(labelSliceSelectionChanged()),
+          this, SLOT(processLabelSliceSelectionChange()));
 
   connect(getDocument().get(), SIGNAL(activeViewModified()),
           this, SLOT(processViewChange()));
@@ -343,7 +345,10 @@ void ZFlyEmProofMvc::customInit()
 
 //  getView()->addHorizontalWidget(ZWidgetFactory::makeHSpacerItem());
 
-  getView()->addHorizontalWidget(new ZPaintLabelWidget());
+  m_paintLabelWidget = new ZPaintLabelWidget();
+
+  getView()->addHorizontalWidget(m_paintLabelWidget);
+  m_paintLabelWidget->hide();
 }
 
 void ZFlyEmProofMvc::goToBody()
@@ -382,6 +387,32 @@ void ZFlyEmProofMvc::selectBody()
     }
   }
 }
+
+void ZFlyEmProofMvc::processLabelSliceSelectionChange()
+{
+  ZDvidLabelSlice *labelSlice = getCompleteDocument()->getDvidLabelSlice();
+  if (labelSlice != NULL){
+    std::vector<uint64_t> selected =
+        labelSlice->getSelector().getSelectedList();
+    if (selected.size() == 1) {
+      ZDvidReader reader;
+      if (reader.open(getDvidTarget())) {
+        uint64_t bodyId = selected.front();
+        ZFlyEmBodyAnnotation annotation = reader.readBodyAnnotation(bodyId);
+        ZWidgetMessage msg("", NeuTube::MSG_INFORMATION,
+                           ZWidgetMessage::TARGET_CUSTOM_AREA);
+        if (annotation.isEmpty()) {
+          msg.setMessage(QString("%1 is not annotated.").arg(selected.front()));
+        } else {
+          msg.setMessage(annotation.toJsonObject().dumpString(0).c_str());
+        }
+        emit messageGenerated(msg);
+      }
+
+    }
+  }
+}
+
 
 void ZFlyEmProofMvc::processSelectionChange(const ZStackObjectSelector &selector)
 {
@@ -442,6 +473,7 @@ void ZFlyEmProofMvc::updateBodySelection()
     } else {
       getCompleteDocument()->processObjectModified(slice);
     }
+    processLabelSliceSelectionChange();
   }
 }
 
@@ -722,6 +754,7 @@ void ZFlyEmProofMvc::presentBodySplit(uint64_t bodyId)
 {
   enableSplit();
 
+  m_paintLabelWidget->show();
   m_mergeProject.closeBodyWindow();
 
   m_splitProject.setBodyId(bodyId);
@@ -803,6 +836,8 @@ void ZFlyEmProofMvc::exitSplit()
 
     getView()->redrawObject();
     */
+
+    m_paintLabelWidget->hide();
 
     m_splitProject.clear();
 
@@ -916,6 +951,10 @@ void ZFlyEmProofMvc::commitMerge()
                           "It cannot be undone. ",
                           this)) {
     m_mergeProject.uploadResult();
+    ZDvidSparseStack *body = getCompleteDocument()->getBodyForSplit();
+    if (body != NULL) {
+      getDocument()->getObjectGroup().removeObject(body, true);
+    }
   }
 }
 
@@ -1082,9 +1121,11 @@ void ZFlyEmProofMvc::addSelectionAt(int x, int y, int z)
     if (bodyId > 0) {
       ZDvidLabelSlice *slice = getCompleteDocument()->getDvidLabelSlice();
       if (slice != NULL) {
+        slice->recordSelection();
         slice->addSelection(
               slice->getMappedLabel(bodyId, NeuTube::BODY_LABEL_ORIGINAL),
               NeuTube::BODY_LABEL_ORIGINAL);
+        slice->processSelection();
       }
       updateBodySelection();
     }
@@ -1100,9 +1141,11 @@ void ZFlyEmProofMvc::xorSelectionAt(int x, int y, int z)
       ZDvidLabelSlice *slice = getCompleteDocument()->getDvidLabelSlice();
       if (slice != NULL) {
 //        uint64_t finalBodyId = getMappedBodyId(bodyId);
+        slice->recordSelection();
         slice->xorSelection(
               slice->getMappedLabel(bodyId, NeuTube::BODY_LABEL_ORIGINAL),
               NeuTube::BODY_LABEL_MAPPED);
+        slice->processSelection();
 #if 0
         QList<uint64_t> labelList =
             getCompleteDocument()->getBodyMerger()->getOriginalLabelList(

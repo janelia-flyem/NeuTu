@@ -33,6 +33,36 @@ void ZSelector<T>::deselectObject(T obj)
   }
 }
 
+template <typename T>
+std::vector<T> ZSelector<T>::getSelectedList() const
+{
+  std::vector<T> selected;
+  selected.insert(selected.begin(), m_selectedSet.begin(), m_selectedSet.end());
+
+  return selected;
+}
+
+template <typename T>
+std::vector<T> ZSelector<T>::getDeselectedList() const
+{
+  std::vector<T> selected;
+  selected.insert(selected.begin(), m_deselectedSet.begin(),
+                  m_deselectedSet.end());
+
+  return selected;
+}
+
+template <typename T>
+std::set<T> ZSelector<T>::getSelectedSet() const
+{
+  return m_selectedSet;
+}
+
+template <typename T>
+std::set<T> ZSelector<T>::getDeselectedSet() const
+{
+  return m_deselectedSet;
+}
 
 #if 0
 void ZStackObjectSelector::deselectObject(ZStackObject *obj)

@@ -59,9 +59,8 @@ public:
   std::vector<T> getSelectedList() const;
   std::vector<T> getDeselectedList() const;
 
-  std::set<T> getSelectedSet();
-  std::set<T> getDeselectedSet();
-
+  std::set<T> getSelectedSet() const;
+  std::set<T> getDeselectedSet() const;
 
 private:
   std::set<T> m_selectedSet;

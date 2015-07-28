@@ -9,7 +9,8 @@ class ZWidgetMessage
 {
 public:
   enum ETarget {
-    TARGET_TEXT, TARGET_TEXT_APPENDING, TARGET_DIALOG, TARGET_STATUS_BAR
+    TARGET_TEXT, TARGET_TEXT_APPENDING, TARGET_DIALOG, TARGET_STATUS_BAR,
+    TARGET_CUSTOM_AREA
   };
 
 
@@ -43,6 +44,7 @@ public:
   static QString appendTime(const QString &message);
 
   void appendMessage(const QString &message);
+  void setMessage(const QString &msg);
 
 private:
   QStringList m_message;

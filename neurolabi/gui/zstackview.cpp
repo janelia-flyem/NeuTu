@@ -94,20 +94,27 @@ void ZStackView::init()
   m_infoLabel->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
   m_infoLabel->setFocusPolicy(Qt::NoFocus);
 
+  m_msgLabel = new QLabel(this);
+  m_msgLabel->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
+  m_msgLabel->setFocusPolicy(Qt::NoFocus);
+
   m_activeLabel = new QLabel(this);
   m_activeLabel->setWindowFlags(Qt::FramelessWindowHint);
+  m_activeLabel->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
   m_activeLabel->setText("<font color='green'>*Active*</font>");
   m_activeLabel->hide();
   m_activeLabel->setFocusPolicy(Qt::NoFocus);
 
   m_progress = new QProgressBar(this);
   m_progress->setVisible(false);
-  m_progress->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
+  m_progress->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
   m_progress->setFocusPolicy(Qt::NoFocus);
 
   m_topLayout = new QHBoxLayout;
   m_topLayout->addWidget(m_infoLabel);
+//  m_topLayout->addWidget(m_msgLabel);
   m_topLayout->addWidget(m_activeLabel);
+
   //m_topLayout->addWidget(m_progress);
 
 
@@ -116,11 +123,15 @@ void ZStackView::init()
   m_channelControlLayout = new QHBoxLayout;
 
   m_secondTopLayout->addLayout(m_channelControlLayout);
+  m_secondTopLayout->addWidget(m_msgLabel);
+//  m_msgLabel->setText("test");
   m_secondTopLayout->addWidget(m_progress);
 //  m_secondTopLayout->addWidget(m_zSpinBox);
+
   m_secondTopLayout->addSpacerItem(new QSpacerItem(1, m_progress->height(),
-                                               QSizePolicy::Expanding,
+                                               QSizePolicy::Preferred,
                                                QSizePolicy::Fixed));
+
 
   m_layout = new QVBoxLayout;
   m_layout->setSpacing(0);
@@ -2080,4 +2091,9 @@ void ZStackView::paintObject(const QSet<ZStackObject::ETarget> &targetSet)
   if (isPainted) {
     updateImageScreen();
   }
+}
+
+void ZStackView::dump(const QString &msg)
+{
+  m_msgLabel->setText(msg);
 }

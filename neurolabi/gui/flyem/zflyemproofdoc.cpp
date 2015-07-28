@@ -119,7 +119,7 @@ ZDvidLabelSlice* ZFlyEmProofDoc::getDvidLabelSlice() const
   return NULL;
 }
 
-const ZDvidSparseStack *ZFlyEmProofDoc::getDvidSparseStack() const
+const ZDvidSparseStack *ZFlyEmProofDoc::getBodyForSplit() const
 {
   return dynamic_cast<ZDvidSparseStack*>(
         getObjectGroup().findFirstSameSource(
@@ -127,10 +127,10 @@ const ZDvidSparseStack *ZFlyEmProofDoc::getDvidSparseStack() const
           ZStackObjectSourceFactory::MakeSplitObjectSource()));
 }
 
-ZDvidSparseStack* ZFlyEmProofDoc::getDvidSparseStack()
+ZDvidSparseStack* ZFlyEmProofDoc::getBodyForSplit()
 {
   return const_cast<ZDvidSparseStack*>(
-        static_cast<const ZFlyEmProofDoc&>(*this).getDvidSparseStack());
+        static_cast<const ZFlyEmProofDoc&>(*this).getBodyForSplit());
 }
 
 void ZFlyEmProofDoc::updateBodyObject()
@@ -166,8 +166,8 @@ bool ZFlyEmProofDoc::isSplittable(uint64_t bodyId) const
 
 const ZSparseStack* ZFlyEmProofDoc::getSparseStack() const
 {
-  if (getDvidSparseStack() != NULL) {
-    return getDvidSparseStack()->getSparseStack();
+  if (getBodyForSplit() != NULL) {
+    return getBodyForSplit()->getSparseStack();
   }
 
   return NULL;
@@ -176,8 +176,8 @@ const ZSparseStack* ZFlyEmProofDoc::getSparseStack() const
 
 ZSparseStack* ZFlyEmProofDoc::getSparseStack()
 {
-  if (getDvidSparseStack() != NULL) {
-    return getDvidSparseStack()->getSparseStack();
+  if (getBodyForSplit() != NULL) {
+    return getBodyForSplit()->getSparseStack();
   }
 
   return NULL;
@@ -217,8 +217,8 @@ void ZFlyEmProofDoc::saveMergeOperation()
 
 void ZFlyEmProofDoc::downloadBodyMask()
 {
-  if (getDvidSparseStack() != NULL) {
-    getDvidSparseStack()->downloadBodyMask();
+  if (getBodyForSplit() != NULL) {
+    getBodyForSplit()->downloadBodyMask();
     notifyObjectModified();
   }
 }

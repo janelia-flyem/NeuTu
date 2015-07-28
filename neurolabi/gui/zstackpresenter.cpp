@@ -2491,7 +2491,10 @@ void ZStackPresenter::process(const ZStackOperator &op)
       buddyDocument()->setSelected(op.getHitObject<ZObject3dScan>());
       interactionEvent.setEvent(ZInteractionEvent::EVENT_OBJECT3D_SCAN_SELECTED);
     } else if (op.getHitObject<ZDvidLabelSlice>() != NULL) {
-      op.getHitObject<ZDvidLabelSlice>()->selectHit();
+      ZDvidLabelSlice *labelSlice =  op.getHitObject<ZDvidLabelSlice>();
+      labelSlice->recordSelection();
+      labelSlice->selectHit();
+      labelSlice->processSelection();
       interactionEvent.setEvent(
             ZInteractionEvent::EVENT_OBJECT3D_SCAN_SELECTED_IN_LABEL_SLICE);
     }
@@ -2501,7 +2504,10 @@ void ZStackPresenter::process(const ZStackOperator &op)
       buddyDocument()->setSelected(op.getHitObject<ZObject3dScan>());
       interactionEvent.setEvent(ZInteractionEvent::EVENT_OBJECT3D_SCAN_SELECTED);
     } else if (op.getHitObject<ZDvidLabelSlice>() != NULL) {
-      op.getHitObject<ZDvidLabelSlice>()->selectHit(true);
+      ZDvidLabelSlice *labelSlice =  op.getHitObject<ZDvidLabelSlice>();
+      labelSlice->recordSelection();
+      labelSlice->selectHit(true);
+      labelSlice->processSelection();
       interactionEvent.setEvent(
             ZInteractionEvent::EVENT_OBJECT3D_SCAN_SELECTED_IN_LABEL_SLICE);
     }
@@ -2511,9 +2517,14 @@ void ZStackPresenter::process(const ZStackOperator &op)
       buddyDocument()->toggleSelected(op.getHitObject<ZObject3dScan>());
       interactionEvent.setEvent(ZInteractionEvent::EVENT_OBJ3D_SELECTED);
     } else {
-      op.getHitObject<ZDvidLabelSlice>()->toggleHitSelection(true);
-      interactionEvent.setEvent(
-            ZInteractionEvent::EVENT_OBJECT3D_SCAN_SELECTED_IN_LABEL_SLICE);
+      ZDvidLabelSlice *labelSlice =  op.getHitObject<ZDvidLabelSlice>();
+      if (labelSlice != NULL) {
+        labelSlice->recordSelection();
+        labelSlice->toggleHitSelection(true);
+        labelSlice->processSelection();
+        interactionEvent.setEvent(
+              ZInteractionEvent::EVENT_OBJECT3D_SCAN_SELECTED_IN_LABEL_SLICE);
+      }
     }
     break;
   case ZStackOperator::OP_OBJECT3D_SCAN_TOGGLE_SELECT_SINGLE:
@@ -2530,7 +2541,10 @@ void ZStackPresenter::process(const ZStackOperator &op)
         interactionEvent.setEvent(ZInteractionEvent::EVENT_OBJECT3D_SCAN_SELECTED);
       } else if (op.getHitObject<ZDvidLabelSlice>() != NULL) {
 //        op.getHitObject<ZDvidLabelSlice>()->clearSelection();
+        ZDvidLabelSlice *labelSlice =  op.getHitObject<ZDvidLabelSlice>();
+        labelSlice->recordSelection();
         op.getHitObject<ZDvidLabelSlice>()->toggleHitSelection(false);
+        labelSlice->processSelection();
         interactionEvent.setEvent(
               ZInteractionEvent::EVENT_OBJECT3D_SCAN_SELECTED_IN_LABEL_SLICE);
       }

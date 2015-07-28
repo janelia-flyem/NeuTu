@@ -261,7 +261,7 @@ void ZFlyEmBodySplitProject::quickViewFunc()
         objMask = doc->getConstSparseStack()->getObjectMask();
       } else {
         if (getDocument<ZFlyEmProofDoc>() != NULL) {
-          objMask = getDocument<ZFlyEmProofDoc>()->getDvidSparseStack()->getObjectMask();
+          objMask = getDocument<ZFlyEmProofDoc>()->getBodyForSplit()->getObjectMask();
         }
       }
       if (objMask != NULL) {

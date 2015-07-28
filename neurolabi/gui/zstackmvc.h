@@ -79,6 +79,8 @@ public slots:
   void processViewChange(const ZStackViewParam &viewParam);
   void processViewChange();
 
+  void dump(const QString &msg);
+
 protected:
   static void BaseConstruct(ZStackMvc *frame, ZSharedPointer<ZStackDoc> doc);
   virtual void customInit();
