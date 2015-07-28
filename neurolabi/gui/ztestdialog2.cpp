@@ -6,6 +6,12 @@
 #include "flyembodyinfodialog.h"
 #include "ui_ztestdialog2.h"
 
+/*
+ * dialog for testing by Don; copy of Ting's test dialog
+ *
+ * djo, 7/15
+ *
+ */
 ZTestDialog2::ZTestDialog2(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::ZTestDialog2)

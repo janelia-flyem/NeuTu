@@ -10,6 +10,13 @@
 #include "flyembodyinfodialog.h"
 #include "ui_flyembodyinfodialog.h"
 
+/*
+ * this dialog displays a list of bodies and their properties; data is
+ * loaded from a static json bookmarks file
+ *
+ * djo, 7/15
+ *
+ */
 FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::FlyEmBodyInfoDialog)
@@ -124,10 +131,6 @@ void FlyEmBodyInfoDialog::updateModel(ZJsonValue data) {
     setHeaders(m_model);
 
 
-    // NOTE: don't currently really need to convert to ints if we're
-    //  just stuffing into table, but we do eventually want to sort
-    //  on the numeric value
-
     ZJsonArray bookmarks(data);
     m_model->setRowCount(bookmarks.size());
     for (size_t i = 0; i < bookmarks.size(); ++i) {
@@ -148,6 +151,7 @@ void FlyEmBodyInfoDialog::updateModel(ZJsonValue data) {
         const char* status = ZJsonParser::stringValue(bkmk["body status"]);
         m_model->setItem(i, 2, new QStandardItem(QString(status)));
     }
+    ui->tableView->resizeColumnsToContents();
 
 }
 
