@@ -162,6 +162,7 @@
 #include "zmessage.h"
 #include "zmessagemanager.h"
 #include "dialogs/ztestdialog.h"
+#include "dialogs/ztestdialog2.h"
 #include "dvid/zdvidtile.h"
 #include "flyem/zflyemstackdoc.h"
 #include "flyem/zproofreadwindow.h"
@@ -435,6 +436,7 @@ void MainWindow::initDialog()
   m_synapseDlg = new SynapseImportDialog(this);
   m_hackathonConfigDlg = new ZFlyEmHackathonConfigDlg(this);
   m_testDlg = new ZTestDialog(this);
+  m_testDlg2 = new ZTestDialog2(this);
 #else
   m_bodySplitProjectDialog = NULL;
   m_newBsProjectDialog = NULL;
@@ -721,6 +723,12 @@ void MainWindow::createActions()
   testAction->setStatusTip(tr("Test"));
   testAction->setIcon(QIcon(":/images/test.png"));
   connect(testAction, SIGNAL(triggered()), this, SLOT(test()));
+
+  testAction2 = new QAction(tr("Test2"), this);
+  testAction2->setStatusTip(tr("Test2"));
+  testAction2->setIcon(QIcon(":/images/test.png"));
+  connect(testAction2, SIGNAL(triggered()), this, SLOT(test2()));
+
 //#endif
 
   //customizeActions();
@@ -1055,6 +1063,7 @@ void MainWindow::createToolBars()
   m_ui->toolBar->addAction(screenshotAction);
 //#ifdef _DEBUG_
   m_ui->toolBar->addAction(testAction);
+  m_ui->toolBar->addAction(testAction2);
 //#endif
   m_ui->toolBar->addAction(m_ui->actionShortcut);
 }
@@ -3333,6 +3342,12 @@ void MainWindow::test()
 
   statusBar()->showMessage(tr("Test done."));
 #endif
+}
+
+void MainWindow::test2() {
+    // std::cout << "in test2" << std::endl;
+    // m_testDlg->show();
+    m_testDlg2->show();
 }
 
 void MainWindow::evokeStackFrame(QMdiSubWindow *frame)
