@@ -23,6 +23,18 @@ void ZSelector<T>::selectObject(T obj)
   }
 }
 
+template <typename T>
+void ZSelector<T>::deselectObject(T obj)
+{
+  if (m_selectedSet.count(obj) > 0) {
+    m_selectedSet.erase(obj);
+  } else {
+    m_deselectedSet.insert(obj);
+  }
+}
+
+
+#if 0
 void ZStackObjectSelector::deselectObject(ZStackObject *obj)
 {
   if (obj->isSelected()) {
@@ -137,3 +149,4 @@ std::set<ZStackObject*> ZStackObjectSelector::getDeselectedSet(
 
   return objList;
 }
+#endif

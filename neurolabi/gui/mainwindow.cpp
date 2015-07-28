@@ -999,7 +999,7 @@ void MainWindow::createToolBars()
   //m_ui->toolBar->setIconSize(QSize(32, 32));
 
   if (GET_APPLICATION_NAME == "Biocytin") {
-    m_ui->toolBar->addAction(m_ui->actionNewProject);
+//    m_ui->toolBar->addAction(m_ui->actionNewProject);
     m_ui->toolBar->addAction(m_ui->actionTiles);
   }
   //m_ui->toolBar->addAction(openAction);

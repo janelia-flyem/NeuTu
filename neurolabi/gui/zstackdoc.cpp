@@ -522,9 +522,11 @@ void ZStackDoc::autoSave()
         std::string autoSavePath =
             autoSaveDir + ZString::FileSeparator;
         if (NeutubeConfig::getInstance().getApplication() == "Biocytin") {
-          autoSavePath +=
-              ZBiocytinFileNameParser::getCoreName(getStack()->sourcePath()) +
-              ".autosave.swc";
+          if (getStack() != NULL) {
+            autoSavePath +=
+                ZBiocytinFileNameParser::getCoreName(getStack()->sourcePath()) +
+                ".autosave.swc";
+          }
         } else {
           autoSavePath += "~" + stream.str() + ".swc";
         }

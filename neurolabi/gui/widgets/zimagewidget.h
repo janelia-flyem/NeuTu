@@ -198,7 +198,7 @@ private:
   ZPixmap *m_tileCanvas;
   ZPixmap *m_activeDecorationCanvas;
 
-  QRect m_viewPort; /* viewport */
+  QRect m_viewPort; /* viewport, in world coordinates */
   QRect m_projRegion; /* projection region */
   //int m_zoomRatio;
 //  bool m_isowner;

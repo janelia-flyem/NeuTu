@@ -224,6 +224,10 @@ void ZImageWidget::setValidViewPort(const QRect &viewPort)
     newViewPort.setBottom(canvasRegion().bottom());
   }
 
+  if (!newViewPort.isValid()) {
+    newViewPort = canvasRegion();
+  }
+
 
   QSize vpSize = newViewPort.size();
   double wRatio = (double) screenSize().width() / vpSize.width();

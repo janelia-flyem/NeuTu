@@ -1004,6 +1004,8 @@ void ZStackView::updateImageCanvas()
   resetCanvasWithStack(m_image, &m_imagePainter);
   if (buddyDocument()->hasStackPaint()) {
     if (m_image != NULL) {
+      m_image->setOffset(-buddyDocument()->getStackOffset().getX(),
+                         -buddyDocument()->getStackOffset().getY());
       if ((m_image->width() != buddyDocument()->getStackWidth()) ||
           (m_image->height() != buddyDocument()->getStackHeight())) {
         clearCanvas();
