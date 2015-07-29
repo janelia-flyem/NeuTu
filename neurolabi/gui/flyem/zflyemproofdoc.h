@@ -87,13 +87,22 @@ public slots:
   void updateDvidLabelObject();
   void loadSynapse(const std::string &filePath);
   void downloadSynapse();
+  void processBookmarkAnnotationEvent(ZFlyEmBookmark *bookmark);
+  void saveCustomBookmarkSlot();
 
 protected:
   void autoSave();
+  void customNotifyObjectModified(ZStackObject::EType type);
+
+private:
+  void connectSignalSlot();
 
 private:
   ZFlyEmBodyMerger m_bodyMerger;
   ZDvidTarget m_dvidTarget;
+
+  bool m_isCustomBookmarkSaved;
+  QTimer *m_bookmarkTimer;
   //ZFlyEmBodySplitProject m_splitProject;
 };
 

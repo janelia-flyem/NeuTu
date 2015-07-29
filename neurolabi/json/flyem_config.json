@@ -354,16 +354,6 @@
     {
       "address": "emdata1.int.janelia.org",
       "port": 8500,
-      "uuid": "4f22",
-      "name": "MB_Practice",
-      "comment": "MB seg (branched from ccf)",
-      "body_label": "bodies",
-      "label_block": "labels",
-      "user_name": ["anicetor", "changl", "lauchies", "ogundeyio", "ordishc", "sigmundc", "shinomiyaa", "tranj", "rivlinp", "takemurasa", "zhaot"]
-    },
-    {
-      "address": "emdata1.int.janelia.org",
-      "port": 8500,
       "uuid": "4a55",
       "name": "MB_lauchies_Training",
       "comment": "MB seg (branched from ccf)",
@@ -454,22 +444,22 @@
     {
       "address": "emdata1.int.janelia.org",
       "port": 8500,
-      "uuid": "d695",
-      "name": "MB_Orphan_Link",
-      "comment": "production orphan link before extended segmentation",
-      "body_label": "bodies",
-      "label_block": "labels",
-      "user_name": ["xxx"]
-    },
-    {
-      "address": "emdata1.int.janelia.org",
-      "port": 8500,
-      "uuid": "66ba",
+      "uuid": "d1ea",
       "name": "MB_Orphan_Link",
       "comment": "production orphan link with extended segmentation",
       "body_label": "bodies3",
       "label_block": "labels3",
       "user_name": ["anicetor", "changl", "lauchies", "ogundeyio", "ordishc", "sigmundc", "shinomiyaa", "tranj", "rivlinp", "takemurasa", "zhaot", "takemuras"]
+    },
+    {
+      "address": "emdata1.int.janelia.org",
+      "port": 8500,
+      "uuid": "eafc",
+      "name": "MB_Practice",
+      "comment": "MB seg for practice(branched from 66ba)",
+      "body_label": "bodies3",
+      "label_block": "labels3",
+      "user_name": ["anicetor", "changl", "lauchies", "ogundeyio", "ordishc", "sigmundc", "shinomiyaa", "tranj", "rivlinp", "takemurasa", "zhaot"]
     }
   ]
 }

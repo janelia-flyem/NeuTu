@@ -555,6 +555,11 @@ void ZStackDoc::autoSaveSlot()
   autoSave();
 }
 
+void ZStackDoc::customNotifyObjectModified(ZStackObject::EType /*type*/)
+{
+
+}
+
 string ZStackDoc::getSwcSource() const
 {
   string swcSource;
@@ -4896,6 +4901,8 @@ void ZStackDoc::notifyObjectModified(ZStackObject::EType type)
 //    notifyObjectModified();
     break;
   }
+
+  customNotifyObjectModified(type);
 }
 
 
@@ -4905,47 +4912,8 @@ void ZStackDoc::processObjectModified(const QSet<ZStackObject::EType> &typeSet)
        iter != typeSet.end(); ++iter) {
     ZStackObject::EType type = *iter;
     processObjectModified(type);
-    /*
-    switch (type) {
-    case ZStackObject::TYPE_LOCSEG_CHAIN:
-      notifyChainModified();
-      break;
-    case ZStackObject::TYPE_OBJ3D:
-      notifyObj3dModified();
-      break;
-    case ZStackObject::TYPE_SWC:
-      notifySwcModified();;
-      break;
-    case ZStackObject::TYPE_PUNCTUM:
-      notifyPunctumModified();
-      break;
-    case ZStackObject::TYPE_STROKE:
-      notifyStrokeModified();
-      break;
-    case ZStackObject::TYPE_SPARSE_OBJECT:
-      notifySparseObjectModified();
-      break;
-    case ZStackObject::TYPE_OBJECT3D_SCAN:
-      notifyObject3dScanModified();
-      break;
-    default:
-//      notifyObjectModified();;
-      break;
-    }
-    */
   }
 }
-
-/*
-void ZStackDoc::notifyAllObjectModified()
-{
-  notifySwcModified();
-  notifyPunctumModified();
-  notifyChainModified();
-  notifyObj3dModified();
-  notifyStrokeModified();
-}
-*/
 
 bool ZStackDoc::watershed()
 {

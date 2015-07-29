@@ -1353,6 +1353,7 @@ void ZFlyEmProofMvc::annotateBookmark(ZFlyEmBookmark *bookmark)
     dlg.setFrom(bookmark);
     if (dlg.exec()) {
       dlg.annotate(bookmark);
+      getCompleteDocument()->processBookmarkAnnotationEvent(bookmark);
     }
   }
 }

@@ -73,6 +73,8 @@ public:
    */
   bool decode(const std::string &str);
 
+  std::string dumpString(int indent = 2) const;
+
 };
 
 #endif // ZJSONARRAY_H

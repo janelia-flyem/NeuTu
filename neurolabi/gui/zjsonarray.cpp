@@ -185,3 +185,12 @@ bool ZJsonArray::decode(const string &str)
 
   return true;
 }
+
+string ZJsonArray::dumpString(int indent) const
+{
+  if (isEmpty()) {
+    return "[]";
+  }
+
+  return ZJsonValue::dumpString(indent);
+}

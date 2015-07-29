@@ -2,6 +2,7 @@
 
 #include <QSet>
 #include <QList>
+#include <QTimer>
 
 #include "dvid/zdvidlabelslice.h"
 #include "dvid/zdvidreader.h"
@@ -22,9 +23,20 @@
 #include "zstring.h"
 
 ZFlyEmProofDoc::ZFlyEmProofDoc(QObject *parent) :
-  ZStackDoc(parent)
+  ZStackDoc(parent), m_isCustomBookmarkSaved(true)
 {
   setTag(NeuTube::Document::FLYEM_PROOFREAD);
+  m_bookmarkTimer = new QTimer(this);
+  m_bookmarkTimer->setInterval(60000);
+  m_bookmarkTimer->start();
+
+  connectSignalSlot();
+}
+
+void ZFlyEmProofDoc::connectSignalSlot()
+{
+  connect(m_bookmarkTimer, SIGNAL(timeout()),
+          this, SLOT(saveCustomBookmarkSlot()));
 }
 
 void ZFlyEmProofDoc::mergeSelected(ZFlyEmSupervisor *supervisor)
@@ -330,6 +342,11 @@ void ZFlyEmProofDoc::downloadSynapse()
   }
 }
 
+void ZFlyEmProofDoc::processBookmarkAnnotationEvent(ZFlyEmBookmark */*bookmark*/)
+{
+  m_isCustomBookmarkSaved = false;
+}
+
 void ZFlyEmProofDoc::loadSynapse(const std::string &filePath)
 {
   if (!filePath.empty()) {
@@ -447,7 +464,14 @@ uint64_t ZFlyEmProofDoc::getBodyId(const ZIntPoint &pt)
 
 void ZFlyEmProofDoc::autoSave()
 {
-  saveCustomBookmark();
+}
+
+void ZFlyEmProofDoc::saveCustomBookmarkSlot()
+{
+  if (!m_isCustomBookmarkSaved) {
+    std::cout << "Saving user bookmarks ..." << std::endl;
+    saveCustomBookmark();
+  }
 }
 
 void ZFlyEmProofDoc::saveCustomBookmark()
@@ -467,11 +491,25 @@ void ZFlyEmProofDoc::saveCustomBookmark()
         }
       }
     }
+
     writer.writeCustomBookmark(jsonArray);
-    if (writer.getStatusCode() != 200 && !jsonArray.isEmpty()) {
+    if (writer.getStatusCode() != 200) {
       emit messageGenerated(
             ZWidgetMessage("Failed to save bookmarks.", NeuTube::MSG_ERROR));
+    } else {
+      m_isCustomBookmarkSaved = true;
     }
+  }
+}
+
+void ZFlyEmProofDoc::customNotifyObjectModified(ZStackObject::EType type)
+{
+  switch (type) {
+  case ZStackObject::TYPE_FLYEM_BOOKMARK:
+    m_isCustomBookmarkSaved = false;
+    break;
+  default:
+    break;
   }
 }
 

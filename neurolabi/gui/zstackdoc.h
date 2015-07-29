@@ -1093,6 +1093,7 @@ signals:
 
 protected:
   virtual void autoSave();
+  virtual void customNotifyObjectModified(ZStackObject::EType type);
 
 private:
   void connectSignalSlot();

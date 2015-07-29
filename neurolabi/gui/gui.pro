@@ -12,9 +12,9 @@ contains(TEMPLATE, app) {
 win32 {
   DEPLOYMENT_COMMAND = $$PWD/deploy_win.bat $(QMAKE) $$OUT_PWD
 
-CONFIG(release, debug|release):!isEmpty(DEPLOYMENT_COMMAND) {
-  QMAKE_POST_LINK += $$DEPLOYMENT_COMMAND
-}
+  CONFIG(release, debug|release):!isEmpty(DEPLOYMENT_COMMAND) {
+    QMAKE_POST_LINK += $$DEPLOYMENT_COMMAND
+  }
 }
 
 unix {
