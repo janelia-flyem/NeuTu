@@ -334,9 +334,8 @@ void ZFlyEmProofDoc::downloadSynapse()
     jsonObj.decodeString(reader.getBuffer());
     if (!jsonObj.isEmpty()) {
       ZPuncta *puncta = new ZPuncta;
-      puncta->setSource(ZStackObjectSourceFactory::MakeFlyEmSynapseSource());
       puncta->load(jsonObj, 5.0);
-      puncta->pushCosmeticPen(true);
+      decorateSynapse(puncta);
       addObject(puncta);
     }
   }
@@ -347,13 +346,20 @@ void ZFlyEmProofDoc::processBookmarkAnnotationEvent(ZFlyEmBookmark */*bookmark*/
   m_isCustomBookmarkSaved = false;
 }
 
+void ZFlyEmProofDoc::decorateSynapse(ZPuncta *puncta)
+{
+  puncta->setSource(ZStackObjectSourceFactory::MakeFlyEmSynapseSource());
+  puncta->pushCosmeticPen(true);
+  puncta->pushColor(QColor(0, 255, 0));
+  puncta->pushVisualEffect(NeuTube::Display::Sphere::VE_CROSS_CENTER);
+}
+
 void ZFlyEmProofDoc::loadSynapse(const std::string &filePath)
 {
   if (!filePath.empty()) {
     ZPuncta *puncta = new ZPuncta;
-    puncta->setSource(ZStackObjectSourceFactory::MakeFlyEmSynapseSource());
     puncta->load(filePath, 5.0);
-    puncta->pushCosmeticPen(true);
+    decorateSynapse(puncta);
     addObject(puncta);
   }
 }

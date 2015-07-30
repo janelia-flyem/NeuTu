@@ -242,6 +242,14 @@ void ZStackBall::displayHelper(
     if (isFocused && hasVisualEffect(NeuTube::Display::Sphere::VE_DOT_CENTER)) {
       painter->drawPoint(QPointF(m_center.x(), m_center.y()));
     }
+
+    if (isFocused && hasVisualEffect(NeuTube::Display::Sphere::VE_CROSS_CENTER))
+    {
+      painter->drawLine(QPointF(m_center.x() - 1, m_center.y()),
+                        QPointF(m_center.x() + 1, m_center.y()));
+      painter->drawLine(QPointF(m_center.x(), m_center.y() - 1),
+                        QPointF(m_center.x(), m_center.y() + 1));
+    }
   }
 
   bool drawingBoundBox = false;

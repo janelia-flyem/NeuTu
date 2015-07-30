@@ -10,6 +10,7 @@
 class ZDvidSparseStack;
 class ZFlyEmSupervisor;
 class ZFlyEmBookmark;
+class ZPuncta;
 
 class ZFlyEmProofDoc : public ZStackDoc
 {
@@ -96,6 +97,8 @@ protected:
 
 private:
   void connectSignalSlot();
+
+  void decorateSynapse(ZPuncta *puncta);
 
 private:
   ZFlyEmBodyMerger m_bodyMerger;

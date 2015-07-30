@@ -148,4 +148,22 @@ void ZPuncta::pushCosmeticPen(bool state)
   }
 }
 
+void ZPuncta::pushColor(const QColor &color)
+{
+  for (QList<ZPunctum*>::iterator iter = m_puncta.begin();
+       iter != m_puncta.end(); ++iter) {
+    ZPunctum *p = *iter;
+    p->setColor(color);
+  }
+}
+
+void ZPuncta::pushVisualEffect(NeuTube::Display::TVisualEffect effect)
+{
+  for (QList<ZPunctum*>::iterator iter = m_puncta.begin();
+       iter != m_puncta.end(); ++iter) {
+    ZPunctum *p = *iter;
+    p->setVisualEffect(effect);
+  }
+}
+
 ZSTACKOBJECT_DEFINE_CLASS_NAME(ZPuncta)

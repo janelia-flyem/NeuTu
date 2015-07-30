@@ -72,6 +72,7 @@ static const TVisualEffect VE_GRADIENT_FILL = 16;
 static const TVisualEffect VE_OUT_FOCUS_DIM = 32;
 static const TVisualEffect VE_DOT_CENTER = 64;
 static const TVisualEffect VE_RECTANGLE_SHAPE = 128;
+static const TVisualEffect VE_CROSS_CENTER = 256;
 }
 
 namespace SwcTree {
