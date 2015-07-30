@@ -3200,7 +3200,7 @@ void ZSwcTree::setColorScheme(EColorScheme scheme)
     m_rootColor = QColor(164, 164, 255, 164);
     m_branchPointColor = QColor(164, 255, 164, 164);
     m_nodeColor = QColor(255, 164, 164, 164);
-    m_planeSkeletonColor = QColor(255, 128, 128, 128);
+    m_planeSkeletonColor = QColor(255, 128, 128, 100);
 
     m_rootFocusColor = QColor(0, 0, 255);
     m_branchPointFocusColor= QColor(0, 255, 0);

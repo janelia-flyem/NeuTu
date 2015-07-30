@@ -1,6 +1,7 @@
 #include "zflyembodyannotation.h"
 
 #include <iostream>
+#include <sstream>
 #include "zjsonparser.h"
 #include "zjsonobject.h"
 #include "zstring.h"
@@ -157,4 +158,23 @@ void ZFlyEmBodyAnnotation::mergeAnnotation(
   if (m_userName.empty()) {
     m_userName = annotation.m_userName;
   }
+}
+
+std::string ZFlyEmBodyAnnotation::toString() const
+{
+  std::ostringstream stream;
+
+  if (isEmpty()) {
+    stream << "[]";
+  } else {
+    stream << "[ ";
+    if (!getName().empty()) {
+      stream << getName() << " (" << getBodyId() << ")";
+    } else {
+      stream << getBodyId();
+    }
+    stream << ", " << getStatus() << " ]";
+  }
+
+  return stream.str();
 }

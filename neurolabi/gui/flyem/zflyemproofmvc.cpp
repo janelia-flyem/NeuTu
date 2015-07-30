@@ -409,7 +409,7 @@ void ZFlyEmProofMvc::processLabelSliceSelectionChange()
         if (annotation.isEmpty()) {
           msg.setMessage(QString("%1 is not annotated.").arg(selected.front()));
         } else {
-          msg.setMessage(annotation.toJsonObject().dumpString(0).c_str());
+          msg.setMessage(annotation.toString().c_str());
         }
         emit messageGenerated(msg);
       }
