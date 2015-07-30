@@ -2071,7 +2071,7 @@ void MainWindow::about()
   if (!NeutubeConfig::getInstance().getApplication().empty()) {
     title += QString("<p>") +
         NeutubeConfig::getInstance().getApplication().c_str() + " Edition" +
-        " (6e07b945ff8ea62e59284a0f366cd5db21039bbf)</p>";
+        " (2052b3c5ef2905f5d8eef11a2f64a83cb74d1931)</p>";
   }
   QString thirdPartyLib = QString("<p><a href=\"file:///%1/doc/ThirdPartyLibraries.txt\">Third Party Libraries</a></p>")
       .arg(QApplication::applicationDirPath());
