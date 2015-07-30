@@ -9,6 +9,7 @@
 
 #include "flyembodyinfodialog.h"
 #include "ui_flyembodyinfodialog.h"
+#include "zdialogfactory.h"
 
 /*
  * this dialog displays a list of bodies and their properties; data is
@@ -21,13 +22,29 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::FlyEmBodyInfoDialog)
 {
-    ui->setupUi(this);
-    connect(ui->openButton, SIGNAL(clicked()), this, SLOT(onOpenButton()));
-    connect(ui->closeButton, SIGNAL(clicked()), this, SLOT(onCloseButton()));
+  ui->setupUi(this);
+  connect(ui->openButton, SIGNAL(clicked()), this, SLOT(onOpenButton()));
+  connect(ui->closeButton, SIGNAL(clicked()), this, SLOT(onCloseButton()));
 
-    m_model = createModel(ui->tableView);
-    ui->tableView->setModel(m_model);
+  m_model = createModel(ui->tableView);
+  ui->tableView->setModel(m_model);
 
+  connect(ui->tableView, SIGNAL(doubleClicked(QModelIndex)),
+          this, SLOT(activateBody(QModelIndex)));
+}
+
+void FlyEmBodyInfoDialog::activateBody(QModelIndex modelIndex)
+{
+  if (modelIndex.column() == 0) {
+    QStandardItem *item = m_model->itemFromIndex(modelIndex);
+    uint64_t bodyId = item->data(Qt::DisplayRole).toULongLong();
+
+#ifdef _DEBUG_
+    std::cout << bodyId << " activated." << std::endl;
+#endif
+
+    emit bodyActivated(bodyId);
+  }
 }
 
 QStandardItemModel* FlyEmBodyInfoDialog::createModel(QObject* parent) {
@@ -42,7 +59,7 @@ void FlyEmBodyInfoDialog::setHeaders(QStandardItemModel * model) {
     model->setHorizontalHeaderItem(2, new QStandardItem(QString("status")));
 }
 
-void FlyEmBodyInfoDialog::importBookmarksFile(QString filename) {
+void FlyEmBodyInfoDialog::importBookmarksFile(const QString &filename) {
     ZJsonObject jsonObject;
 
     if (!jsonObject.load(filename.toStdString())) {
@@ -125,10 +142,12 @@ void FlyEmBodyInfoDialog::onCloseButton() {
 }
 
 void FlyEmBodyInfoDialog::onOpenButton() {
-    QString filename = QFileDialog::getOpenFileName(this, "Open bookmarks file");
-    if (!filename.isEmpty()) {
-        importBookmarksFile(filename);
-    }
+  QString filename =
+      ZDialogFactory::GetOpenFileName("Open bookmarks file", "", this);
+//  QString filename = QFileDialog::getOpenFileName(this, "Open bookmarks file");
+  if (!filename.isEmpty()) {
+    importBookmarksFile(filename);
+  }
 }
 
 /*
@@ -146,7 +165,7 @@ void FlyEmBodyInfoDialog::updateModel(ZJsonValue data) {
 
         // carefully set data for items so they will sort numerically;
         //  contrast the "body status" entry, which we keep as a string
-        int bodyID = ZJsonParser::integerValue(bkmk["body ID"]);
+        qulonglong bodyID = ZJsonParser::integerValue(bkmk["body ID"]);
         QStandardItem * bodyIDItem = new QStandardItem();
         bodyIDItem->setData(QVariant(bodyID), Qt::DisplayRole);
         m_model->setItem(i, 0, bodyIDItem);

@@ -17,6 +17,7 @@ class ZDvidDialog;
 class ZFlyEmProofPresenter;
 class ZFlyEmSupervisor;
 class ZPaintLabelWidget;
+class FlyEmBodyInfoDialog;
 
 /*!
  * \brief The MVC class for flyem proofreading
@@ -133,6 +134,7 @@ public slots:
   void showSegmentation(bool visible);
 
   void loadBookmark();
+  void openSequencer();
 
   void recordCheckedBookmark(const QString &key, bool checking);
   void processSelectionChange(const ZStackObjectSelector &selector);
@@ -165,6 +167,7 @@ private:
   ZPaintLabelWidget *m_paintLabelWidget;
 
   ZDvidDialog *m_dvidDlg;
+  FlyEmBodyInfoDialog *m_bodyInfoDlg;
   ZFlyEmSupervisor *m_supervisor;
 };
 

@@ -32,11 +32,13 @@
 #include "zwidgetfactory.h"
 #include "flyem/zflyemcoordinateconverter.h"
 #include "flyem/zflyembookmarkannotationdialog.h"
+#include "dialogs/flyembodyinfodialog.h"
 
 ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
   ZStackMvc(parent)
 {
   m_dvidDlg = new ZDvidDialog(this);
+  m_bodyInfoDlg = new FlyEmBodyInfoDialog(this);
   m_supervisor = new ZFlyEmSupervisor(this);
 //  m_splitProject.attachBookmarkArray(&m_bookmarkArray);
 //  m_mergeProject.attachBookmarkArray(&m_bookmarkArray);
@@ -332,6 +334,9 @@ void ZFlyEmProofMvc::customInit()
   disableSplit();
 
 
+  connect(m_bodyInfoDlg, SIGNAL(bodyActivated(uint64_t)),
+          this, SLOT(locateBody(uint64_t)));
+
   /*
   QPushButton *button = new QPushButton(this);
   button->setCheckable(true);
@@ -361,9 +366,9 @@ void ZFlyEmProofMvc::goToBody()
   if (ok) {
     if (!text.isEmpty()) {
       ZString str = text.toStdString();
-      std::vector<int> bodyArray = str.toIntegerArray();
+      std::vector<uint64_t> bodyArray = str.toUint64Array();
       if (bodyArray.size() == 1) {
-        locateBody((uint64_t) bodyArray[0]);
+        locateBody(bodyArray[0]);
 //        emit locatingBody();
       }
     }
@@ -1095,6 +1100,11 @@ void ZFlyEmProofMvc::loadBookmark()
   }
 }
 
+void ZFlyEmProofMvc::openSequencer()
+{
+  m_bodyInfoDlg->show();
+}
+
 
 void ZFlyEmProofMvc::showSynapseAnnotation(bool visible)
 {
@@ -1255,35 +1265,40 @@ std::set<uint64_t> ZFlyEmProofMvc::getCurrentSelectedBodyId(
 
 void ZFlyEmProofMvc::locateBody(uint64_t bodyId)
 {
-  ZDvidReader reader;
-  if (reader.open(getDvidTarget())) {
-    ZObject3dScan body = reader.readCoarseBody(bodyId);
-    if (body.isEmpty()) {
-      emit messageGenerated(
-            ZWidgetMessage(QString("Cannot go to body: %1. No such body.").
-            arg(bodyId), NeuTube::MSG_ERROR));
-    } else {
-      ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
+  if (!getCompletePresenter()->isSplitWindow()) {
+    ZDvidReader reader;
+    if (reader.open(getDvidTarget())) {
+      ZObject3dScan body = reader.readCoarseBody(bodyId);
+      if (body.isEmpty()) {
+        emit messageGenerated(
+              ZWidgetMessage(QString("Cannot go to body: %1. No such body.").
+                             arg(bodyId), NeuTube::MSG_ERROR));
+      } else {
+        ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
 
-      ZVoxel voxel = body.getSlice((body.getMinZ() + body.getMaxZ()) / 2).getMarker();
-      ZIntPoint pt(voxel.x(), voxel.y(), voxel.z());
-      pt -= dvidInfo.getStartBlockIndex();
-      pt *= dvidInfo.getBlockSize();
-      pt += dvidInfo.getStartCoordinates();
+        ZVoxel voxel = body.getSlice((body.getMinZ() + body.getMaxZ()) / 2).getMarker();
+        ZIntPoint pt(voxel.x(), voxel.y(), voxel.z());
+        pt -= dvidInfo.getStartBlockIndex();
+        pt *= dvidInfo.getBlockSize();
+        pt += dvidInfo.getStartCoordinates();
 
-      //    std::set<uint64_t> bodySet;
-      //    bodySet.insert(bodyId);
+        //    std::set<uint64_t> bodySet;
+        //    bodySet.insert(bodyId);
 
-      ZDvidLabelSlice *slice = getCompleteDocument()->getDvidLabelSlice();
-      if (slice != NULL) {
-        slice->clearSelection();
-        slice->addSelection(
-              slice->getMappedLabel(bodyId, NeuTube::BODY_LABEL_ORIGINAL),
-              NeuTube::BODY_LABEL_MAPPED);
+        ZDvidLabelSlice *slice = getCompleteDocument()->getDvidLabelSlice();
+        if (slice != NULL) {
+          slice->clearSelection();
+          slice->recordSelection();
+          slice->addSelection(
+                slice->getMappedLabel(bodyId, NeuTube::BODY_LABEL_ORIGINAL),
+                NeuTube::BODY_LABEL_MAPPED);
+          slice->processSelection();
+          processLabelSliceSelectionChange();
+        }
+        updateBodySelection();
+
+        zoomTo(pt);
       }
-      updateBodySelection();
-
-      zoomTo(pt);
     }
   }
 }

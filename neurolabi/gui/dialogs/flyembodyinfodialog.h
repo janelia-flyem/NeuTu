@@ -18,16 +18,23 @@ public:
     explicit FlyEmBodyInfoDialog(QWidget *parent = 0);
     ~FlyEmBodyInfoDialog();
 
+public:
+  void importBookmarksFile(const QString &filename);
+
+signals:
+  void bodyActivated(uint64_t bodyId);
+
 private slots:
     void onOpenButton();
     void onCloseButton();
+    void activateBody(QModelIndex modelIndex);
+
 private:
     Ui::FlyEmBodyInfoDialog *ui;
     QStandardItemModel* m_model;
     QStandardItemModel* createModel(QObject*);
     void setHeaders(QStandardItemModel*);
     void updateModel(ZJsonValue object);
-    void importBookmarksFile(QString filename);
     bool isValidBookmarkFile(ZJsonObject object);
 };
 

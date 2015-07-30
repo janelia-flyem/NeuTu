@@ -71,12 +71,14 @@ private:
   ZFlyEmMessageWidget *m_messageWidget;
 
   QMenu *m_viewMenu;
+  QMenu *m_toolMenu;
 
   QAction *m_viewSynapseAction;
   QAction *m_viewBookmarkAction;
   QAction *m_viewSegmentationAction;
 
   QAction *m_importBookmarkAction;
+  QAction *m_openSequencerAction;
   QAction *m_contrastAction;
 
   QToolBar *m_toolBar;
