@@ -211,6 +211,7 @@ public slots:
   void transformSelectedPuncta();
   void transformAllPuncta();
   void convertPunctaToSwc();
+  void changeSelectedPunctaColor();
 
   //
   void show3DViewContextMenu(QPoint pt);

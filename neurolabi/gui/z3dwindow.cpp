@@ -690,6 +690,7 @@ void Z3DWindow::createContextMenu()
   contextMenu->addAction(m_locatePunctumIn2DAction);
   contextMenu->addAction("Transform selected puncta",
                          this, SLOT(transformSelectedPuncta()));
+  contextMenu->addAction("Change color", this, SLOT(changeSelectedPunctaColor()));
   contextMenu->addAction("Transform all puncta",
                          this, SLOT(transformAllPuncta()));
   contextMenu->addAction("Convert to swc",
@@ -2780,6 +2781,25 @@ void Z3DWindow::transformSelectedPuncta()
       }
     }
     m_doc->notifyPunctumModified();
+  }
+}
+
+void Z3DWindow::changeSelectedPunctaColor()
+{
+  std::set<ZPunctum*> punctaSet =
+      m_doc->getSelectedObjectSet<ZPunctum>(ZStackObject::TYPE_PUNCTUM);
+  if (!punctaSet.empty()) {
+    QColorDialog dlg;
+
+    if (dlg.exec()) {
+      for (std::set<ZPunctum*>::iterator iter = punctaSet.begin();
+           iter != punctaSet.end(); ++iter) {
+        ZPunctum *punctum = *iter;
+        punctum->setColor(dlg.currentColor());
+      }
+
+      m_doc->notifyPunctumModified();
+    }
   }
 }
 

@@ -3521,7 +3521,7 @@ void MainWindow::on_actionSynapse_Annotation_triggered()
 
         for (std::vector<ZPunctum*>::iterator iter = puncta.begin();
              iter != puncta.end(); ++iter) {
-          doc->addObject(*iter);
+          doc->addObject(*iter, false);
 //          doc->addPunctum(*iter);
         }
       }

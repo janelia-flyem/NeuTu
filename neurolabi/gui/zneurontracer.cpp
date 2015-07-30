@@ -1372,12 +1372,13 @@ void ZNeuronTracer::setTraceLevel(int level)
 #endif
 }
 
+/*
 const char *ZNeuronTracer::m_levelKey = "level";
 const char *ZNeuronTracer::m_minimalScoreKey = "minimalScore";
 const char *ZNeuronTracer::m_minimalSeedScoreKey = "minimalSeedScore";
 const char *ZNeuronTracer::m_spTestKey = "spTest";
 const char *ZNeuronTracer::m_enhanceLineKey = "enhanceLine";
-
+*/
 void ZNeuronTracer::loadJsonObject(const ZJsonObject &obj)
 {
   const char *key = ZNeuronTracerConfig::getLevelKey();

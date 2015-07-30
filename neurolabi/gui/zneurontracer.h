@@ -278,11 +278,13 @@ private:
   Stack *m_baseMask;
   ZIntPoint m_seedDsIntv;
 
+  /*
   static const char *m_levelKey;
   static const char *m_minimalScoreKey;
   static const char *m_minimalSeedScoreKey;
   static const char *m_spTestKey;
   static const char *m_enhanceLineKey;
+  */
 };
 
 #endif // ZNEURONTRACER_H
