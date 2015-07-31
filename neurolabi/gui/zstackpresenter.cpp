@@ -2388,6 +2388,12 @@ void ZStackPresenter::process(const ZStackOperator &op)
       }
     }
     break;
+  case ZStackOperator::OP_SWC_CONNECT_ISOLATE:
+    buddyDocument()->executeConnectIsolatedSwc();
+    break;
+  case ZStackOperator::OP_SWC_SELECT_ALL_NODE:
+    m_selectAllSwcNodeAction->trigger();
+    break;
   case ZStackOperator::OP_RESTORE_EXPLORE_MODE:
     this->interactiveContext().restoreExploreMode();
     buddyView()->notifyViewPortChanged();
@@ -2401,6 +2407,9 @@ void ZStackPresenter::process(const ZStackOperator &op)
       buddyView()->showContextMenu(getSwcNodeContextMenu(), currentWidgetPos);
     }
     //status = CONTEXT_MENU_POPPED;
+    break;
+  case ZStackOperator::OP_SWC_CHANGE_NODE_FOCUS:
+    changeSelectedSwcNodeFocus();
     break;
   case ZStackOperator::OP_SHOW_STROKE_CONTEXT_MENU:
     buddyView()->showContextMenu(getStrokeContextMenu(), currentWidgetPos);

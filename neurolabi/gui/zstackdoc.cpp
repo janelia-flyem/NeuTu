@@ -6958,22 +6958,31 @@ std::vector<ZSwcTree*> ZStackDoc::getSwcArray() const
   return swcArray;
 }
 
-ZStack* ZStackDoc::projectBiocytinStack(
+std::vector<ZStack*> ZStackDoc::projectBiocytinStack(
     Biocytin::ZStackProjector &projector)
 {
   projector.setProgressReporter(m_progressReporter);
 
-  ZStack *proj = projector.project(getStack(), true);
+  std::vector<ZStack*> projArray;
 
-  if (proj != NULL) {
-    if (proj->channelNumber() == 2) {
-      proj->initChannelColors();
-      proj->setChannelColor(0, 1, 1, 1);
-      proj->setChannelColor(1, 0, 0, 0);
+  for (int slabIndex = 0; slabIndex < projector.getSlabNumber(); ++slabIndex) {
+    ZStack *proj = projector.project(getStack(), true, slabIndex);
+
+    if (proj != NULL) {
+      if (proj->channelNumber() == 2) {
+        proj->initChannelColors();
+        proj->setChannelColor(0, 1, 1, 1);
+        proj->setChannelColor(1, 0, 0, 0);
+      }
+      projArray.push_back(proj);
+      // ZString filePath(stack()->sourcePath());
+      /*
+      proj->setSource(
+            projector.getDefaultResultFilePath(getStack()->sourcePath(),
+                                               ));
+                                               */
     }
 
-   // ZString filePath(stack()->sourcePath());
-    proj->setSource(projector.getDefaultResultFilePath(getStack()->sourcePath()));
 #ifdef _DEBUG2
     const vector<int>& depthArray = projector.getDepthArray();
     ZStack depthImage(GREY16, proj->width(), proj->height(), 1, 1);
@@ -6990,7 +6999,7 @@ ZStack* ZStackDoc::projectBiocytinStack(
 #endif
   }
 
-  return proj;
+  return projArray;
 }
 
 void ZStackDoc::selectAllSwcTreeNode()

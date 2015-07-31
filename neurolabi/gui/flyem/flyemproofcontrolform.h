@@ -8,6 +8,7 @@
 class QMenu;
 class ZDvidTarget;
 class ZFlyEmBodyMergeProject;
+class ZStackDoc;
 
 namespace Ui {
 class FlyEmProofControlForm;
@@ -43,6 +44,7 @@ public slots:
   void setInfo(const QString &info);
   void setDvidInfo(const ZDvidTarget &target);
   void updateBookmarkTable(ZFlyEmBodyMergeProject *project);
+  void updateUserBookmarkTable(ZStackDoc *doc);
 
 private slots:
   void setSegmentSize();
@@ -52,7 +54,8 @@ private slots:
   void goToPosition();
   void goToBody();
   void selectBody();
-  void locateBookmark(const QModelIndex &index);
+  void locateAssignedBookmark(const QModelIndex &index);
+  void locateUserBookmark(const QModelIndex &index);
 
 private:
   void createMenu();
@@ -61,6 +64,7 @@ private:
   Ui::FlyEmProofControlForm *ui;
   QMenu *m_mainMenu;
   ZFlyEmBookmarkListModel m_bookmarkList;
+  ZFlyEmBookmarkListModel m_userBookmarkList;
 
 //  ZDvidDialog *m_dvidDlg;
 };

@@ -513,6 +513,7 @@ void ZFlyEmProofDoc::customNotifyObjectModified(ZStackObject::EType type)
   switch (type) {
   case ZStackObject::TYPE_FLYEM_BOOKMARK:
     m_isCustomBookmarkSaved = false;
+    emit userBookmarkModified();
     break;
   default:
     break;

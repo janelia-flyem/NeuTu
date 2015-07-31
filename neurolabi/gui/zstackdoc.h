@@ -441,7 +441,8 @@ public:
   void breakSelectedLocsegChain();
 
   int maxIntesityDepth(int x, int y);
-  ZStack* projectBiocytinStack(Biocytin::ZStackProjector &projector);
+  std::vector<ZStack*> projectBiocytinStack(
+      Biocytin::ZStackProjector &projector);
 
   void updateStackFromSource();
   void setStackFactory(ZStackFactory *factory);

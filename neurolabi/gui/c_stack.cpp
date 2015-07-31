@@ -1879,3 +1879,87 @@ Stack* C_Stack::watershed(
 #endif
 }
 #endif
+
+#define PROJ_STACK_ZMIN(stack_array, image_array)           \
+  for(z = startZ;z < endZ;z++) {                                         \
+    image_offset = 0;                                                   \
+    for(y=0;y<stack->height;y++)                                        \
+      for(x=0;x<stack->width;x++) {                                     \
+        if(image_array[image_offset] > stack_array[stack_offset])       \
+          image_array[image_offset] = stack_array[stack_offset];        \
+        image_offset++;                                                 \
+        stack_offset++;                                                 \
+    }                                                                   \
+  }
+
+Image* C_Stack::makeMinProjZ(const Stack* stack, int minZ, int maxZ)
+{
+  Image *image = NULL;
+
+  if(stack && minZ <= maxZ) {
+    if (minZ < 0) {
+      minZ = 0;
+    }
+    if (maxZ >= depth(stack)) {
+      maxZ = depth(stack) - 1;
+    }
+
+    int x,y,z;
+
+    size_t image_offset=0;
+    size_t stack_offset = 0;
+
+    Image_Array sta;
+    sta.array = stack->array;
+
+    Image_Array ima;
+    image = Make_Image(stack->kind,stack->width,stack->height);
+    ima.array = image->array;
+
+    size_t area = stack->width * stack->height;
+    stack_offset = area * minZ;
+    memcpy(image->array, stack->array + stack_offset * stack->kind,
+           area * stack->kind);
+    stack_offset += area;
+
+    int startZ = minZ + 1;
+    int endZ = maxZ;
+
+    switch(stack->kind) {
+    case GREY:
+      PROJ_STACK_ZMIN(sta.array, ima.array);
+      break;
+    case GREY16:
+      PROJ_STACK_ZMIN(sta.array16, ima.array16);
+      break;
+    case FLOAT32:
+      PROJ_STACK_ZMIN(sta.array32, ima.array32);
+      break;
+    case FLOAT64:
+      PROJ_STACK_ZMIN(sta.array64, ima.array64);
+      break;
+    case COLOR:
+      for(z=startZ;z<=endZ;z++) {
+        image_offset = 0;
+        for(y=0;y<stack->height;y++)
+          for(x=0;x<stack->width;x++) {
+            int c;
+            for (c = 0; c < 3; c++) {
+              if(ima.arrayc[image_offset][c]<sta.arrayc[stack_offset][c]) {
+                ima.arrayc[image_offset][c] = sta.arrayc[stack_offset][c];
+              }
+            }
+            image_offset++;
+            stack_offset++;
+          }
+      }
+      break;
+    default:
+      fprintf(stderr,"Unsupported image kind in Proj_Stack_Zmin()\n");
+      break;
+    }
+  }
+
+  return image;
+}
+

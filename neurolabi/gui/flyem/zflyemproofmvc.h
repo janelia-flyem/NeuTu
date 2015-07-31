@@ -71,6 +71,7 @@ signals:
   void bookmarkUpdated(ZFlyEmBodyMergeProject *m_project);
   void bookmarkUpdated(ZFlyEmBodySplitProject *m_project);
   void dvidTargetChanged(ZDvidTarget);
+  void userBookmarkUpdated(ZStackDoc *doc);
 
 public slots:
   void mergeSelected();
@@ -141,6 +142,8 @@ public slots:
 
   void annotateBookmark(ZFlyEmBookmark *bookmark);
 
+  void updateUserBookmarkTable();
+
 //  void toggleEdgeMode(bool edgeOn);
 
 protected:
@@ -204,6 +207,8 @@ void ZFlyEmProofMvc::connectControlPanel(T *panel)
           panel, SLOT(updateBookmarkTable(ZFlyEmBodyMergeProject*)));
   connect(panel, SIGNAL(bookmarkChecked(QString, bool)),
           this, SLOT(recordCheckedBookmark(QString, bool)));
+  connect(this, SIGNAL(userBookmarkUpdated(ZStackDoc*)),
+          panel, SLOT(updateUserBookmarkTable(ZStackDoc*)));
 }
 
 template <typename T>

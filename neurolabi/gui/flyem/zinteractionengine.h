@@ -76,9 +76,12 @@ public:
     m_isKeyEventEnabled = enabled;
   }
 
+  void showContextMenu();
+
 signals:
   void decorationUpdated();
   void strokePainted(ZStroke2d*);
+  void showingContextMenu();
 
 private:
   void enterPaintStroke();

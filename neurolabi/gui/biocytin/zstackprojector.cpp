@@ -16,7 +16,7 @@
 Biocytin::ZStackProjector::ZStackProjector() :
   m_adjustingConstrast(true), m_smoothingDepth(true), m_usingExisted(false)
 {
-
+  m_slabCount = 1;
 }
 
 double Biocytin::ZStackProjector::colorToValueH(
@@ -78,198 +78,206 @@ double Biocytin::ZStackProjector::colorToValueH(
 }
 
 ZStack* Biocytin::ZStackProjector::project(
-    const ZStack *stack, bool includingDepth)
+    const ZStack *stack, bool includingDepth, int slabIndex)
 {
 #ifdef _DEBUG_
   tic();
 #endif
+
+  //Esimate range
+  std::pair<int, int> range = getSlabRange(stack->depth(), slabIndex);
+
   ZStack *proj = NULL;
 
   if (m_usingExisted) {
-    std::string resultPath = getDefaultResultFilePath(stack->sourcePath());
+    std::string resultPath = getDefaultResultFilePath(
+          stack->sourcePath(), range.first, range.second);
     if (fexist(resultPath.c_str())) {
       ZStackFile stackFile;
       stackFile.import(resultPath);
       proj = stackFile.readStack();
     }
   } else {
-  //int width = stack->width();
-  //int height = stack->height();
-  int depth = stack->depth();
+    //int width = stack->width();
+    //int height = stack->height();
+    int depth = stack->depth();
 
-  startProgress();
+    startProgress();
 
-  if (stack != NULL) {
+    if (stack != NULL) {
       if (m_speedLevel == 3) {
-          proj = new ZStack(stack->kind(), stack->width(), stack->height(), 1,
-                            stack->channelNumber());
-          for (int channel = 0; channel  < stack->channelNumber(); ++channel) {
-              Image *projBuffer = Proj_Stack_Zmin(stack->c_stack(channel));
-              proj->loadValue(projBuffer->array,
-                              proj->getByteNumber(ZStack::SINGLE_PLANE), channel);
-              Kill_Image(projBuffer);
-          }
+        proj = new ZStack(stack->kind(), stack->width(), stack->height(), 1,
+                          stack->channelNumber());
+        for (int channel = 0; channel  < stack->channelNumber(); ++channel) {
+          Image *projBuffer = C_Stack::makeMinProjZ(
+                stack->c_stack(channel), range.first, range.second);
+          proj->loadValue(projBuffer->array,
+                          proj->getByteNumber(ZStack::SINGLE_PLANE), channel);
+          Kill_Image(projBuffer);
+        }
       } else {
-          if (stack->channelNumber() >= 2) {
-              advanceProgress(0.05);
+        if (stack->channelNumber() >= 2) {
+          advanceProgress(0.05);
 
-              //filter->ndim = 2;
+          //filter->ndim = 2;
 
-              FMatrix *smoothedRed = NULL;
-              FMatrix *smoothedGreen = NULL;
-              FMatrix *smoothedBlue = NULL;
+          FMatrix *smoothedRed = NULL;
+          FMatrix *smoothedGreen = NULL;
+          FMatrix *smoothedBlue = NULL;
 
-              FMatrix *smoothed[3] = { NULL, NULL, NULL };
+          FMatrix *smoothed[3] = { NULL, NULL, NULL };
 
-              for (int ch = 0; ch  < stack->channelNumber(); ++ch) {
-                  Stack *tmpStack = C_Stack::clone(stack->c_stack(ch));
-                  switch (m_speedLevel) {
-                  case 0:
-                      smoothed[ch] = smoothStackGaussian(tmpStack);
-                      break;
-                  case 1:
-                      smoothed[ch] = smoothStack(tmpStack);
-                      break;
-                  default:
-                      smoothed[ch] = smoothStackNull(tmpStack);
-                  }
+          for (int ch = 0; ch  < stack->channelNumber(); ++ch) {
+            Stack *tmpStack = C_Stack::clone(stack->c_stack(ch));
+            switch (m_speedLevel) {
+            case 0:
+              smoothed[ch] = smoothStackGaussian(tmpStack);
+              break;
+            case 1:
+              smoothed[ch] = smoothStack(tmpStack);
+              break;
+            default:
+              smoothed[ch] = smoothStackNull(tmpStack);
+            }
 
-                  C_Stack::kill(tmpStack);
+            C_Stack::kill(tmpStack);
+          }
+
+          smoothedRed = smoothed[0];
+          smoothedGreen = smoothed[1];
+          smoothedBlue = smoothed[2];
+
+          dim_type dim[2];
+          dim[0] = smoothedRed->dim[0];
+          dim[1] = smoothedRed->dim[1];
+          FMatrix *projMat = Make_FMatrix(dim, 2);
+
+          int pwidth = dim[0];
+          int pheight = dim[1];
+
+          const double regularizer = 0.1;
+
+          m_depthArray.resize(pwidth * pheight);
+
+          //Construct first slice
+          size_t index = 0;
+          for (int y = 0; y < pheight; ++y) {
+            for (int x = 0; x < pwidth; ++x) {
+              double red = smoothedRed->array[index];
+              double green = smoothedGreen->array[index];
+              double blue = 0.0;
+              if (smoothedBlue != NULL) {
+                blue = smoothedBlue->array[index];
               }
+              projMat->array[index] = colorToValueH(
+                    red, green, blue, regularizer);
+              m_depthArray[index] = 0;
+              ++index;
+            }
+          }
 
-              smoothedRed = smoothed[0];
-              smoothedGreen = smoothed[1];
-              smoothedBlue = smoothed[2];
+          advanceProgress(0.1);
 
-              dim_type dim[2];
-              dim[0] = smoothedRed->dim[0];
-              dim[1] = smoothedRed->dim[1];
-              FMatrix *projMat = Make_FMatrix(dim, 2);
+          for (int z = 1; z < depth; ++z) {
+            size_t projIndex = 0;
+            for (int y = 0; y < pheight; ++y) {
+              for (int x = 0; x < pwidth; ++x) {
+                double red = smoothedRed->array[index];
+                double green = smoothedGreen->array[index];
+                double blue = 0.0;
+                if (smoothedBlue != NULL) {
+                  blue = smoothedBlue->array[index];
+                }
 
-              int pwidth = dim[0];
-              int pheight = dim[1];
-
-              const double regularizer = 0.1;
-
-              m_depthArray.resize(pwidth * pheight);
-
-              //Construct first slice
-              size_t index = 0;
-              for (int y = 0; y < pheight; ++y) {
-                  for (int x = 0; x < pwidth; ++x) {
-                      double red = smoothedRed->array[index];
-                      double green = smoothedGreen->array[index];
-                      double blue = 0.0;
-                      if (smoothedBlue != NULL) {
-                          blue = smoothedBlue->array[index];
-                      }
-                      projMat->array[index] = colorToValueH(
-                                  red, green, blue, regularizer);
-                      m_depthArray[index] = 0;
-                      ++index;
-                  }
+                double v = colorToValueH(
+                      red, green, blue, regularizer);
+                if (projMat->array[projIndex] > v) {
+                  projMat->array[projIndex] = v;
+                  m_depthArray[projIndex] = z;
+                }
+                ++index;
+                ++projIndex;
               }
+            }
+          }
 
-              advanceProgress(0.1);
-
-              for (int z = 1; z < depth; ++z) {
-                  size_t projIndex = 0;
-                  for (int y = 0; y < pheight; ++y) {
-                      for (int x = 0; x < pwidth; ++x) {
-                          double red = smoothedRed->array[index];
-                          double green = smoothedGreen->array[index];
-                          double blue = 0.0;
-                          if (smoothedBlue != NULL) {
-                              blue = smoothedBlue->array[index];
-                          }
-
-                          double v = colorToValueH(
-                                      red, green, blue, regularizer);
-                          if (projMat->array[projIndex] > v) {
-                              projMat->array[projIndex] = v;
-                              m_depthArray[projIndex] = z;
-                          }
-                          ++index;
-                          ++projIndex;
-                      }
-                  }
-              }
-
-              advanceProgress(0.1);
+          advanceProgress(0.1);
 
 #ifdef _DEBUG_2
-              Stack *tmp = Scale_Float_Stack(smoothedGreen->array, width, height, depth,
-                                             GREY);
-              C_Stack::write(NeutubeConfig::getInstance().getPath(NeutubeConfig::DATA)
-                             + "/test.tif", tmp);
+          Stack *tmp = Scale_Float_Stack(smoothedGreen->array, width, height, depth,
+                                         GREY);
+          C_Stack::write(NeutubeConfig::getInstance().getPath(NeutubeConfig::DATA)
+                         + "/test.tif", tmp);
 #endif
 
-              //Turn projMat into 8-bit proj
-              Stack *projData = Scale_Float_Stack(
-                          projMat->array, projMat->dim[0], projMat->dim[1], 1, GREY16);
-              advanceProgress(0.1);
+          //Turn projMat into 8-bit proj
+          Stack *projData = Scale_Float_Stack(
+                projMat->array, projMat->dim[0], projMat->dim[1], 1, GREY16);
+          advanceProgress(0.1);
 
-              if (m_speedLevel > 1) {
-                  Kill_FMatrix(projMat);
-                  projMat = smoothStack(projData);
-                  C_Stack::kill(projData);
-                  projData = Scale_Float_Stack(
-                              projMat->array, projMat->dim[0], projMat->dim[1], 1, GREY16);
-              }
-
-              Stack *depthImage = NULL;
-              if (includingDepth) {
-                  depthImage = C_Stack::make(GREY16, projMat->dim[0], projMat->dim[1], 1);
-                  uint16_t *array = (uint16_t*) depthImage->array;
-                  size_t index = 0;
-                  for (int y = 0; y < pwidth; ++y) {
-                      for (int x = 0; x < pheight; ++x) {
-                          array[index] = m_depthArray[index];
-                          ++index;
-                      }
-                  }
-              }
-
-              if (projMat->dim[0] > stack->width() ||
-                      projMat->dim[1] > stack->height()) {
-                  Stack *proj2 = Crop_Stack(
-                              projData, (projMat->dim[0] - stack->width()) / 2,
-                          (projMat->dim[1] - stack->height()) / 2, 0,
-                          stack->width(), stack->height(), 1, NULL);
-                  C_Stack::kill(projData);
-                  projData = proj2;
-                  Stack *depth2 = Crop_Stack(
-                              depthImage, (projMat->dim[0] - stack->width()) / 2,
-                          (projMat->dim[1] - stack->height()) / 2, 0,
-                          stack->width(), stack->height(), 1, NULL);
-                  C_Stack::kill(depthImage);
-                  depthImage = depth2;
-              }
-
-              if (m_smoothingDepth) {
-                  Stack *tmpImage = C_Stack::make(depthImage->kind, depthImage->width,
-                                                  depthImage->height, depthImage->depth);
-                  Stack_Running_Median(depthImage, 0, tmpImage);
-                  Stack_Running_Median(tmpImage, 1, depthImage);
-                  C_Stack::kill(tmpImage);
-              }
-
-              proj = new ZStack();
-              proj->load(projData, depthImage, NULL);
-
-              C_Stack::kill(projData);
-              C_Stack::kill(depthImage);
-
-              for (int ch = 0; ch  < stack->channelNumber(); ++ch) {
-                  Kill_FMatrix(smoothed[ch]);
-              }
+          if (m_speedLevel > 1) {
+            Kill_FMatrix(projMat);
+            projMat = smoothStack(projData);
+            C_Stack::kill(projData);
+            projData = Scale_Float_Stack(
+                  projMat->array, projMat->dim[0], projMat->dim[1], 1, GREY16);
           }
+
+          Stack *depthImage = NULL;
+          if (includingDepth) {
+            depthImage = C_Stack::make(GREY16, projMat->dim[0], projMat->dim[1], 1);
+            uint16_t *array = (uint16_t*) depthImage->array;
+            size_t index = 0;
+            for (int y = 0; y < pwidth; ++y) {
+              for (int x = 0; x < pheight; ++x) {
+                array[index] = m_depthArray[index];
+                ++index;
+              }
+            }
+          }
+
+          if (projMat->dim[0] > stack->width() ||
+              projMat->dim[1] > stack->height()) {
+            Stack *proj2 = Crop_Stack(
+                  projData, (projMat->dim[0] - stack->width()) / 2,
+                (projMat->dim[1] - stack->height()) / 2, 0,
+                stack->width(), stack->height(), 1, NULL);
+            C_Stack::kill(projData);
+            projData = proj2;
+            Stack *depth2 = Crop_Stack(
+                  depthImage, (projMat->dim[0] - stack->width()) / 2,
+                (projMat->dim[1] - stack->height()) / 2, 0,
+                stack->width(), stack->height(), 1, NULL);
+            C_Stack::kill(depthImage);
+            depthImage = depth2;
+          }
+
+          if (m_smoothingDepth) {
+            Stack *tmpImage = C_Stack::make(depthImage->kind, depthImage->width,
+                                            depthImage->height, depthImage->depth);
+            Stack_Running_Median(depthImage, 0, tmpImage);
+            Stack_Running_Median(tmpImage, 1, depthImage);
+            C_Stack::kill(tmpImage);
+          }
+
+          proj = new ZStack();
+          proj->load(projData, depthImage, NULL);
+
+          C_Stack::kill(projData);
+          C_Stack::kill(depthImage);
+
+          for (int ch = 0; ch  < stack->channelNumber(); ++ch) {
+            Kill_FMatrix(smoothed[ch]);
+          }
+        }
       }
-  }
+    }
   }
 
   if (proj != NULL) {
       proj->setOffset(stack->getOffset().getX(), stack->getOffset().getY(), 0);
+      proj->setSource(getDefaultResultFilePath(stack->sourcePath(),
+                                               range.first, range.second));
   }
   endProgress();
 
@@ -329,9 +337,47 @@ FMatrix* Biocytin::ZStackProjector::smoothStackGaussian(Stack *stack)
 }
 
 std::string Biocytin::ZStackProjector::getDefaultResultFilePath(
-    const std::string &basePath)
+    const std::string &basePath, int minZ, int maxZ)
 {
-  return ZString::removeFileExt(basePath) +
-      ZBiocytinFileNameParser::getSuffix(ZBiocytinFileNameParser::PROJECTION) +
-      ".tif";
+  ZString str = ZString::removeFileExt(basePath) +
+      ZBiocytinFileNameParser::getSuffix(ZBiocytinFileNameParser::PROJECTION);
+
+  str += "_";
+  str.appendNumber(minZ);
+  str += "_";
+  str.appendNumber(maxZ);
+  str += ".tif";
+
+  return str;
+}
+
+std::pair<int, int> Biocytin::ZStackProjector::getSlabRange(
+    int depth, int slabIndex)
+{
+  std::pair<int, int> range(-1, -1);
+
+  if (m_slabCount == 1) {
+    range.first = 0;
+    range.second = depth - 1;
+  } else {
+    const double overlapRatio = 0.1;
+    int subDepth = depth / m_slabCount;
+    int overlapDepth = iround(subDepth * overlapRatio);
+    int marginDepth = overlapDepth / 2;
+    range.first = slabIndex * subDepth;
+    range.second = range.first + subDepth;
+
+    range.first -= marginDepth;
+    range.second += marginDepth;
+
+    if (range.first < 0) {
+      range.first = 0;
+    }
+
+    if (range.second >= depth) {
+      range.second = depth - 1;
+    }
+  }
+
+  return range;
 }

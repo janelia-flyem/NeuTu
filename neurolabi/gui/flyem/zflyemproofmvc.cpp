@@ -274,6 +274,8 @@ void ZFlyEmProofMvc::customInit()
           &m_mergeProject, SLOT(update3DBodyViewDeep()));
   connect(getCompleteDocument(), SIGNAL(bodyUnmerged()),
           &m_mergeProject, SLOT(update3DBodyViewDeep()));
+  connect(getCompleteDocument(), SIGNAL(userBookmarkModified()),
+          this, SLOT(updateUserBookmarkTable()));
 
   m_mergeProject.getProgressSignal()->connectProgress(getProgressSignal());
   m_splitProject.getProgressSignal()->connectProgress(getProgressSignal());
@@ -1371,6 +1373,11 @@ void ZFlyEmProofMvc::annotateBookmark(ZFlyEmBookmark *bookmark)
       getCompleteDocument()->processBookmarkAnnotationEvent(bookmark);
     }
   }
+}
+
+void ZFlyEmProofMvc::updateUserBookmarkTable()
+{
+  emit userBookmarkUpdated(getDocument().get());
 }
 
 //void ZFlyEmProofMvc::toggleEdgeMode(bool edgeOn)

@@ -83,6 +83,7 @@ public:
 signals:
   void bodyMerged();
   void bodyUnmerged();
+  void userBookmarkModified();
 
 public slots:
   void updateDvidLabelObject();

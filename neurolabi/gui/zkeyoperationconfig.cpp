@@ -73,7 +73,7 @@ void ZKeyOperationConfig::ConfigureSwcNodeMap(ZKeyOperationMap &map)
   plainKeyMap[Qt::Key_N] = ZStackOperator::OP_SWC_CONNECT_ISOLATE;
   plainKeyMap[Qt::Key_Z] = ZStackOperator::OP_SWC_ZOOM_TO_SELECTED_NODE;
   plainKeyMap[Qt::Key_I] = ZStackOperator::OP_SWC_INSERT_NODE;
-  plainKeyMap[Qt::Key_F] = ZStackOperator::OP_SWC_LOCATE_FOCUS;
+  plainKeyMap[Qt::Key_F] = ZStackOperator::OP_SWC_CHANGE_NODE_FOCUS;
   plainKeyMap[Qt::Key_V] = ZStackOperator::OP_SWC_MOVE_NODE;
   plainKeyMap[Qt::Key_R] = ZStackOperator::OP_SWC_RESET_BRANCH_POINT;
   plainKeyMap[Qt::Key_Space] = ZStackOperator::OP_SWC_ENTER_EXTEND_NODE;

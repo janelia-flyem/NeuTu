@@ -65,6 +65,11 @@ void ZInteractionEngine::processMouseReleaseEvent(
   }
 }
 
+void ZInteractionEngine::showContextMenu()
+{
+  emit showingContextMenu();
+}
+
 void ZInteractionEngine::commitData()
 {
   saveStroke();

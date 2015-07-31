@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "zstackobject.h"
+//#include "zselector.h"
 
 /*!
  * \brief The class of managing object selection

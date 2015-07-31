@@ -4669,9 +4669,13 @@ void MainWindow::on_actionMake_Projection_triggered()
       projector.setSpeedLevel(paramDlg.speedLevel());
       projector.setSmoothingDepth(paramDlg.smoothingDepth());
       projector.setUsingExisted(paramDlg.usingExisted());
+      projector.setSlabNumber(paramDlg.getSlabCount());
 
-      ZStack *stack = frame->document()->projectBiocytinStack(projector);
-      if (stack != NULL) {
+      std::vector<ZStack*> projArray =
+          frame->document()->projectBiocytinStack(projector);
+      for (std::vector<ZStack*>::iterator iter = projArray.begin();
+           iter != projArray.end(); ++iter) {
+        ZStack *stack = *iter;
         ZStackFrame *newFrame =
             createStackFrame(stack, NeuTube::Document::BIOCYTIN_PROJECTION, frame);
         newFrame->makeSwcProjection(frame->document().get());
