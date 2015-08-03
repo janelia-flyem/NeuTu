@@ -302,17 +302,6 @@
       "user_name": ["shinomiyak", "zhaot"]
     },
     {
-      "address": "emdata2.int.janelia.org",
-      "port": 7000,
-      "uuid": "34ed",
-      "name": "FIB19_shinomiyak",
-      "comment": "FIB19",
-      "multires_tile": "graytiles",
-      "body_label": "segmentation-labelvol",
-      "label_block": "segmentation",
-      "user_name": ["shinomiyak", "takemuras", "zhaot"]
-    },
-    {
       "address": "emdata1.int.janelia.org",
       "port": 8500,
       "uuid": "3771",
