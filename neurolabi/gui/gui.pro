@@ -552,7 +552,8 @@ HEADERS += mainwindow.h \
     dialogs/flyembodyinfodialog.h \
     flyem/zflyembookmarkannotationdialog.h \
     flyem/zflyembody3ddoc.h \
-    z3ddef.h
+    z3ddef.h \
+    flyem/zflyembookmarkptrarray.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -968,7 +969,8 @@ SOURCES += main.cpp \
     dialogs/flyembodyinfodialog.cpp \
     flyem/zflyembookmarkannotationdialog.cpp \
     flyem/zflyembody3ddoc.cpp \
-    z3ddef.cpp
+    z3ddef.cpp \
+    flyem/zflyembookmarkptrarray.cpp
 
 OTHER_FILES += \
     extlib.pri \

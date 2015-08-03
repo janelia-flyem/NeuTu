@@ -21,6 +21,7 @@
 //#include "zflyemproofmvc.h"
 #include "flyem/zflyembookmark.h"
 #include "zstring.h"
+#include "flyem/zsynapseannotationarray.h"
 
 ZFlyEmProofDoc::ZFlyEmProofDoc(QObject *parent) :
   ZStackDoc(parent), m_isCustomBookmarkSaved(true)
@@ -333,10 +334,23 @@ void ZFlyEmProofDoc::downloadSynapse()
     ZJsonObject jsonObj;
     jsonObj.decodeString(reader.getBuffer());
     if (!jsonObj.isEmpty()) {
-      ZPuncta *puncta = new ZPuncta;
-      puncta->load(jsonObj, 5.0);
-      decorateSynapse(puncta);
-      addObject(puncta);
+      FlyEm::ZSynapseAnnotationArray synapseArray;
+      synapseArray.loadJson(jsonObj);
+      const double radius = 5.0;
+      std::vector<ZPunctum*> puncta = synapseArray.toTBarPuncta(radius);
+
+      ZPuncta *tbar = new ZPuncta;
+      tbar->addPunctum(puncta.begin(), puncta.end());
+      decorateTBar(tbar);
+
+      addObject(tbar);
+
+      ZPuncta *psd = new ZPuncta;
+      puncta = synapseArray.toPsdPuncta(radius / 2.0);
+      psd->addPunctum(puncta.begin(), puncta.end());
+      decoratePsd(psd);
+
+      addObject(psd);
     }
   }
 }
@@ -346,20 +360,29 @@ void ZFlyEmProofDoc::processBookmarkAnnotationEvent(ZFlyEmBookmark */*bookmark*/
   m_isCustomBookmarkSaved = false;
 }
 
-void ZFlyEmProofDoc::decorateSynapse(ZPuncta *puncta)
+void ZFlyEmProofDoc::decorateTBar(ZPuncta *puncta)
 {
-  puncta->setSource(ZStackObjectSourceFactory::MakeFlyEmSynapseSource());
+  puncta->setSource(ZStackObjectSourceFactory::MakeFlyEmTBarSource());
   puncta->pushCosmeticPen(true);
   puncta->pushColor(QColor(0, 255, 0));
   puncta->pushVisualEffect(NeuTube::Display::Sphere::VE_CROSS_CENTER);
 }
+
+void ZFlyEmProofDoc::decoratePsd(ZPuncta *puncta)
+{
+  puncta->setSource(ZStackObjectSourceFactory::MakeFlyEmPsdSource());
+  puncta->pushCosmeticPen(true);
+  puncta->pushColor(QColor(0, 0, 255));
+  puncta->pushVisualEffect(NeuTube::Display::Sphere::VE_CROSS_CENTER);
+}
+
 
 void ZFlyEmProofDoc::loadSynapse(const std::string &filePath)
 {
   if (!filePath.empty()) {
     ZPuncta *puncta = new ZPuncta;
     puncta->load(filePath, 5.0);
-    decorateSynapse(puncta);
+    decorateTBar(puncta);
     addObject(puncta);
   }
 }

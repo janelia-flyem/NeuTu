@@ -6,7 +6,8 @@
 #include <QString>
 #include "flyem/zflyembookmark.h"
 #include "flyem/zflyembookmarkpresenter.h"
-#include "flyem/zflyembookmarkarray.h"
+//#include "flyem/zflyembookmarkarray.h"
+#include "flyem/zflyembookmarkptrarray.h"
 
 class ZFlyEmBookmarkListModel : public QAbstractTableModel
 {
@@ -25,12 +26,12 @@ public:
   bool removeColumns(int col, int count, const QModelIndex &parent = QModelIndex());
 
   void clear();
-  void append(const ZFlyEmBookmark &bookmark);
+  void append(const ZFlyEmBookmark *bookmark);
   void update(int row);
 
-  const ZFlyEmBookmark& getBookmark(int row) const;
-  ZFlyEmBookmark& getBookmark(int row);
-  const ZFlyEmBookmarkArray& getBookmarkArray() const;
+  const ZFlyEmBookmark* getBookmark(int row) const;
+  ZFlyEmBookmark* getBookmark(int row);
+  const ZFlyEmBookmarkPtrArray& getBookmarkArray() const;
 
 //  void appendBookmark(const ZFlyEmBookmark &bookmark);
 
@@ -41,7 +42,8 @@ signals:
 public slots:
 
 private:
-  ZFlyEmBookmarkArray m_bookmarkArray;
+  ZFlyEmBookmarkPtrArray m_bookmarkArray;
+//  ZFlyEmBookmarkArray m_bookmarkArray;
   ZFlyEmBookmarkPresenter *m_presenter;
   ZFlyEmBookmarkPresenter *m_defaultPresenter;
 };

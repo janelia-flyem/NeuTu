@@ -1372,7 +1372,7 @@ FlyEm::ZSynapseAnnotationArray::toTBarPuncta(
        synapse != NULL; synapse = nextSynapseLocation()) {
     if (synapse->isTBar() && synapse->confidence() >= minConfidence) {
       ZPunctum *punctum = new ZPunctum;
-      punctum->setColor(0, 0, 255);
+      punctum->setColor(255, 0, 0);
       punctum->setCenter(synapse->pos());
       punctum->setRadius(radius);
       punctum->setSource(synapse->getPunctumSource());

@@ -5,6 +5,7 @@
 #include <QString>
 
 class ZFlyEmBookmarkListModel;
+class ZFlyEmBookmark;
 
 class ZFlyEmBookmarkView : public QTableView
 {
@@ -19,6 +20,7 @@ public:
 
 signals:
   void bookmarkChecked(QString key, bool checking);
+  void bookmarkChecked(ZFlyEmBookmark*);
 
 public slots:
   void checkCurrentBookmark();

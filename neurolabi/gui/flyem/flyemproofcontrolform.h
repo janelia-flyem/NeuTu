@@ -39,6 +39,8 @@ signals:
   void goingToBody();
   void selectingBody();
   void bookmarkChecked(QString, bool);
+  void bookmarkChecked(ZFlyEmBookmark*);
+  void userBookmarkChecked(ZFlyEmBookmark*);
 
 public slots:
   void setInfo(const QString &info);

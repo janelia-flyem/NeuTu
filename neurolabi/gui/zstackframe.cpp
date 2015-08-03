@@ -1580,6 +1580,7 @@ void ZStackFrame::loadRoi(const QString &filePath, bool isExclusive)
     if (isExclusive) {
       clearDecoration();
     }
+    obj->addVisualEffect(NeuTube::Display::SparseObject::VE_FORCE_SOLID);
     addDecoration(obj);
     updateView();
 

@@ -246,6 +246,7 @@ using namespace std;
 #include "z3dgraphfactory.h"
 #include "flyem/zflyemsupervisor.h"
 #include "flyem/zflyembody3ddoc.h"
+#include "zstackview.h"
 
 using namespace std;
 
@@ -17421,7 +17422,7 @@ void ZTest::test(MainWindow *host)
   ZNeuronTracerConfig::getInstance().print();
 #endif
 
-#if 1 //Move body annotations
+#if 0 //Move body annotations
   ZDvidTarget target;
   target.set("emdata1.int.janelia.org", "66ba", 8500);
 
@@ -17448,5 +17449,35 @@ void ZTest::test(MainWindow *host)
   }
 
 
+#endif
+
+#if 0
+  ZStackFrame *frame = ZStackFrame::Make(NULL);
+  frame->load(GET_TEST_DATA_DIR + "/benchmark/em_stack.tif");
+  host->addStackFrame(frame);
+  host->presentStackFrame(frame);
+
+  frame->view()->highlightPosition(129, 120, 0);
+#endif
+
+#if 1
+  ZPixmap image(1000, 1000);
+//  ZStTransform transform;
+//  transform.setOffset(-1, -2);
+//  image.setTransform(transform);
+  ZPainter painter(&image);
+//  painter.drawPoint(1, 2);
+  ZObject3dScan obj;
+  for (int y = 0; y < 1000; ++y) {
+    obj.addSegment(0, y, 0, 999, false);
+  }
+//  obj.addSegment(0, 2, 1, 2);
+  obj.setColor(0, 0, 0);
+
+  tic();
+  obj.display(painter, 0, ZStackObject::SOLID);
+  std::cout << toc() << "ms passed" << std::endl;
+
+//  image.save((GET_TEST_DATA_DIR + "/test.tif").c_str());
 #endif
 }

@@ -92,6 +92,12 @@ void ZStackPresenter::init()
   m_activeDecorationList.append(&m_stroke);
   m_activeDecorationList.append(&m_swcStroke);
 
+  m_highlightDecoration.setRadius(5.0);
+  m_highlightDecoration.setColor(QColor(255, 255, 255, 160));
+  m_highlightDecoration.setVisualEffect(NeuTube::Display::Sphere::VE_FORCE_FILL);
+  m_highlightDecorationList.append(&m_highlightDecoration);
+  m_highlight = false;
+
   m_swcNodeContextMenu = NULL;
   m_strokePaintContextMenu = NULL;
   m_stackContextMenu = NULL;
@@ -334,6 +340,11 @@ void ZStackPresenter::createBodyActions()
 //  action = new QAction(tr("Add split seed"), this);
 //  connect(action, SIGNAL(triggered()), this, SLOT());
 //  m_actionMap[ACTION_ADD_SPLIT_SEED] = action;
+}
+
+void ZStackPresenter::highlight(int x, int y, int z)
+{
+  m_highlightDecoration.setCenter(x, y, z);
 }
 
 void ZStackPresenter::createMainWindowActions()
@@ -2175,6 +2186,19 @@ void ZStackPresenter::setViewMode(ZInteractiveContext::ViewMode mode)
 void ZStackPresenter::processCustomOperator(const ZStackOperator &/*op*/)
 {
 
+}
+
+bool ZStackPresenter::hasDrawable(ZStackObject::ETarget target) const
+{
+  for (QList<ZStackObject*>::const_iterator iter = m_decorationList.begin();
+       iter != m_decorationList.end(); ++iter) {
+    const ZStackObject *obj = *iter;
+    if (obj->getTarget() == target) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 void ZStackPresenter::process(const ZStackOperator &op)

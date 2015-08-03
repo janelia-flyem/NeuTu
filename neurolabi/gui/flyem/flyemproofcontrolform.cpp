@@ -57,9 +57,13 @@ FlyEmProofControlForm::FlyEmProofControlForm(QWidget *parent) :
           this, SLOT(locateAssignedBookmark(QModelIndex)));
   connect(ui->bookmarkView, SIGNAL(bookmarkChecked(QString,bool)),
           this, SIGNAL(bookmarkChecked(QString, bool)));
+  connect(ui->bookmarkView, SIGNAL(bookmarkChecked(ZFlyEmBookmark*)),
+          this, SIGNAL(bookmarkChecked(ZFlyEmBookmark*)));
 
   connect(ui->userBookmarkView, SIGNAL(doubleClicked(QModelIndex)),
           this, SLOT(locateUserBookmark(QModelIndex)));
+  connect(ui->userBookmarkView, SIGNAL(bookmarkChecked(ZFlyEmBookmark*)),
+          this, SIGNAL(userBookmarkChecked(ZFlyEmBookmark*)));
   /*
   connect(ui->userBookmarkView, SIGNAL(bookmarkChecked(QString,bool)),
           this, SIGNAL(bookmarkChecked(QString, bool)));
@@ -175,7 +179,7 @@ void FlyEmProofControlForm::updateUserBookmarkTable(ZStackDoc *doc)
       const ZFlyEmBookmark *bookmark = dynamic_cast<ZFlyEmBookmark*>(*iter);
       if (bookmark != NULL) {
         if (bookmark->isCustom()) {
-          m_userBookmarkList.append(*bookmark);
+          m_userBookmarkList.append(bookmark);
         }
       }
     }
@@ -199,7 +203,7 @@ void FlyEmProofControlForm::updateBookmarkTable(ZFlyEmBodyMergeProject *project)
         const ZFlyEmBookmark *bookmark = dynamic_cast<ZFlyEmBookmark*>(*iter);
         if (bookmark->getBookmarkType() != ZFlyEmBookmark::TYPE_FALSE_MERGE &&
             !bookmark->isCustom()) {
-          m_bookmarkList.append(*bookmark);
+          m_bookmarkList.append(bookmark);
         }
       }
     }
@@ -210,18 +214,18 @@ void FlyEmProofControlForm::updateBookmarkTable(ZFlyEmBodyMergeProject *project)
 
 void FlyEmProofControlForm::locateAssignedBookmark(const QModelIndex &index)
 {
-  const ZFlyEmBookmark &bookmark = m_bookmarkList.getBookmark(index.row());
+  const ZFlyEmBookmark *bookmark = m_bookmarkList.getBookmark(index.row());
 
-  emit zoomingTo(bookmark.getLocation().getX(),
-                 bookmark.getLocation().getY(),
-                 bookmark.getLocation().getZ());
+  emit zoomingTo(bookmark->getLocation().getX(),
+                 bookmark->getLocation().getY(),
+                 bookmark->getLocation().getZ());
 }
 
 void FlyEmProofControlForm::locateUserBookmark(const QModelIndex &index)
 {
-  const ZFlyEmBookmark &bookmark = m_userBookmarkList.getBookmark(index.row());
+  const ZFlyEmBookmark *bookmark = m_userBookmarkList.getBookmark(index.row());
 
-  emit zoomingTo(bookmark.getLocation().getX(),
-                 bookmark.getLocation().getY(),
-                 bookmark.getLocation().getZ());
+  emit zoomingTo(bookmark->getLocation().getX(),
+                 bookmark->getLocation().getY(),
+                 bookmark->getLocation().getZ());
 }

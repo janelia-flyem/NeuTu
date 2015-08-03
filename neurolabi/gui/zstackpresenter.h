@@ -22,6 +22,7 @@
 #include "qthreadfuturemap.h"
 #include "zsharedpointer.h"
 #include "zkeyoperationmap.h"
+#include "zstackball.h"
 
 class ZStackView;
 class ZStackDoc;
@@ -81,6 +82,9 @@ public:
   inline const QList<ZStackObject*>& getActiveDecorationList() const {
     return m_activeDecorationList;
   }
+  inline const QList<ZStackObject*>& getHighlightDecorationList() const {
+    return m_highlightDecorationList;
+  }
   inline ZStackObject::EDisplayStyle objectStyle() { return m_objStyle; }
   inline ZInteractiveContext& interactiveContext() {
     return m_interactiveContext;
@@ -94,7 +98,13 @@ public:
   bool isObjectVisible();
   void setObjectStyle(ZStackObject::EDisplayStyle style);
 
+  bool hasDrawable(ZStackObject::ETarget target) const;
+
   void initInteractiveContext();
+
+  bool hightlightOn() const { return m_highlight; }
+  void setHighlight(bool state) { m_highlight = state; }
+  void highlight(int x, int y, int z);
 
   /*
   void updateZoomOffset(int cx, int cy, int r0);
@@ -352,6 +362,7 @@ protected:
   //ZStackFrame *m_parent;
   QList<ZStackObject*> m_decorationList;
   QList<ZStackObject*> m_activeDecorationList;
+  QList<ZStackObject*> m_highlightDecorationList;
 
   bool m_showObject;
   std::vector<double> m_greyScale;
@@ -422,6 +433,9 @@ protected:
   ZStroke2d m_stroke;
   ZStroke2d m_swcStroke;
   bool m_isStrokeOn;
+
+  ZStackBall m_highlightDecoration;
+  bool m_highlight;
 
   ZSingleSwcNodeActionActivator m_singleSwcNodeActionActivator;
   int m_skipMouseReleaseEvent;

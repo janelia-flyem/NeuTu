@@ -39,6 +39,7 @@ signals:
   void selectingAllSeed();
   void loadingSynapse();
   void bookmarkChecked(QString key, bool);
+  void bookmarkChecked(ZFlyEmBookmark*);
 
 public slots:
   void updateBodyWidget(uint64_t bodyId);

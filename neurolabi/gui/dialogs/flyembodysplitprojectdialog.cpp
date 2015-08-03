@@ -196,8 +196,8 @@ void FlyEmBodySplitProjectDialog::checkCurrentBookmark()
   QModelIndexList selected = sel->selectedIndexes();
 
   foreach (const QModelIndex &index, selected) {
-    ZFlyEmBookmark &bookmark = m_bookmarkList.getBookmark(index.row());
-    bookmark.setChecked(true);
+    ZFlyEmBookmark *bookmark = m_bookmarkList.getBookmark(index.row());
+    bookmark->setChecked(true);
     m_bookmarkList.update(index.row());
   }
 }
@@ -524,7 +524,7 @@ void FlyEmBodySplitProjectDialog::updateBookmarkTable()
            iter != objList.end(); ++iter) {
         const ZFlyEmBookmark *bookmark = dynamic_cast<ZFlyEmBookmark*>(*iter);
         if (bookmark->getBodyId() == m_project.getBodyId()) {
-          m_bookmarkList.append(*bookmark);
+          m_bookmarkList.append(bookmark);
         }
       }
       //      m_project.addBookmarkDecoration(m_bookmarkList.getBookmarkArray());
@@ -544,8 +544,8 @@ void FlyEmBodySplitProjectDialog::showBookmarkContextMenu(const QModelIndex &ind
 */
 void FlyEmBodySplitProjectDialog::locateBookmark(const QModelIndex &index)
 {
-  const ZFlyEmBookmark &bookmark = m_bookmarkList.getBookmark(index.row());
-  m_project.locateBookmark(bookmark);
+  const ZFlyEmBookmark *bookmark = m_bookmarkList.getBookmark(index.row());
+  m_project.locateBookmark(*bookmark);
 }
 
 void FlyEmBodySplitProjectDialog::updateSideView()

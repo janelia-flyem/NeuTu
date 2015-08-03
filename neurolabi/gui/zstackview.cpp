@@ -524,6 +524,11 @@ void ZStackView::updatePaintBundle()
     if (buddyPresenter()->hasObjectToShow()) {
       m_paintBundle.addDrawableList(buddyPresenter()->decorations());
     }
+
+    if (buddyPresenter()->hightlightOn()) {
+      m_paintBundle.addDrawableList(&(buddyPresenter()->getHighlightDecorationList()));
+      buddyPresenter()->setHighlight(false);
+    }
   }
 
   // active deco
@@ -1094,7 +1099,8 @@ void ZStackView::updateObjectCanvas()
   QSize canvasSize = getCanvasSize();
 
   if (!canvasSize.isEmpty() &&
-      buddyDocument()->hasDrawable(ZStackObject::TARGET_OBJECT_CANVAS)) {
+      (buddyDocument()->hasDrawable(ZStackObject::TARGET_OBJECT_CANVAS) ||
+      buddyPresenter()->hasDrawable(ZStackObject::TARGET_OBJECT_CANVAS))) {
     if (m_objectCanvas != NULL) {
       if (m_objectCanvas->width() != canvasSize.width() ||
           m_objectCanvas->height() != canvasSize.height()) {
@@ -2096,4 +2102,22 @@ void ZStackView::paintObject(const QSet<ZStackObject::ETarget> &targetSet)
 void ZStackView::dump(const QString &msg)
 {
   m_msgLabel->setText(msg);
+}
+
+void ZStackView::highlightPosition(int x, int y, int z)
+{
+  ZStackBall *ball = new ZStackBall(x, y, z, 5.0);
+  ball->setColor(255, 0, 0);
+  ball->addVisualEffect(NeuTube::Display::Sphere::VE_GRADIENT_FILL);
+//  ball->display(m_objectCanvasPainter, sliceIndex(), ZStackObject::SOLID);
+
+  buddyPresenter()->setHighlight(true);
+  buddyPresenter()->highlight(x, y, z);
+//  buddyPresenter()->addDecoration(ball);
+
+  updateImageScreen();
+
+//  buddyPresenter()->setHighlight(false);
+
+//  buddyPresenter()->removeDecoration(ball, false);
 }

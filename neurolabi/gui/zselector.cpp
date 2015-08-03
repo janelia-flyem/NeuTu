@@ -64,6 +64,24 @@ std::set<T> ZSelector<T>::getDeselectedSet() const
   return m_deselectedSet;
 }
 
+template <typename T>
+bool ZSelector<T>::isEmpty() const
+{
+  return m_selectedSet.empty() && m_deselectedSet.empty();
+}
+
+template <typename T>
+bool ZSelector<T>::isInSelectedSet(const T& obj) const
+{
+  return m_selectedSet.count(obj) > 0;
+}
+
+template <typename T>
+bool ZSelector<T>::isInDeselectedSet(const T& obj) const
+{
+  return m_deselectedSet.count(obj) > 0;
+}
+
 #if 0
 void ZStackObjectSelector::deselectObject(ZStackObject *obj)
 {

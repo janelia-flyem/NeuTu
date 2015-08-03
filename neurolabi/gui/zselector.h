@@ -4,6 +4,27 @@
 #include <set>
 #include <vector>
 
+template<typename T>
+struct add_const_to_pointee
+{
+    typedef T type;
+};
+
+template <typename T>
+struct add_const_to_pointee<T*>
+{
+    typedef const T* type;
+};
+
+template<class T> T& unconst(T const& t){return const_cast<T&>(t);}
+
+/*!
+ * \brief The template class of managing object selection
+ *
+ * The class select an object and meanwhile record the selection action. It
+ * stores information which objects have been selected and which objects have
+ * been deselected. The template parameter T has to be basic type or a pointer.
+ */
 template <typename T>
 class ZSelector
 {
@@ -49,8 +70,8 @@ public:
    */
   void setSelection(T obj, bool selecting);
 
-  bool isInSelectedSet(const T &obj) const;
-  bool isInDeselectedSet(const T &obj) const;
+  bool isInSelectedSet(const T& obj) const;
+  bool isInDeselectedSet(const T& obj) const;
 
   bool isEmpty() const;
 
@@ -62,7 +83,7 @@ public:
   std::set<T> getSelectedSet() const;
   std::set<T> getDeselectedSet() const;
 
-private:
+protected:
   std::set<T> m_selectedSet;
   std::set<T> m_deselectedSet;
 };

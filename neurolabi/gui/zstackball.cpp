@@ -84,7 +84,7 @@ void ZStackBall::display(ZPainter &painter, int slice,
     return;
   }
 
-  UNUSED_PARAMETER(style);
+//  UNUSED_PARAMETER(style);
 #if _QT_GUI_USED_
   painter.save();
 
@@ -117,8 +117,8 @@ void ZStackBall::display(ZPainter &painter, int slice,
     brush.setStyle(Qt::RadialGradientPattern);
     painter.setBrush(brush);
     */
-    //painter.setBrush(m_color);
-    //painter.setBrush(QBrush(m_color, Qt::RadialGradientPattern));
+    painter.setBrush(m_color);
+    painter.setBrush(QBrush(m_color, Qt::RadialGradientPattern));
   } else {
     if (hasVisualEffect(NeuTube::Display::Sphere::VE_NO_FILL)) {
       painter.setBrush(Qt::NoBrush);
@@ -227,6 +227,12 @@ void ZStackBall::displayHelper(
     color.setAlphaF(alpha);
     pen.setColor(color);
     painter->setPen(pen);
+
+    if ((!hasVisualEffect(NeuTube::Display::Sphere::VE_NO_FILL)) &&
+        hasVisualEffect(NeuTube::Display::Sphere::VE_FORCE_FILL)) {
+      QBrush brush(color);
+      painter->setBrush(brush);
+    }
 
     if (!hasVisualEffect(NeuTube::Display::Sphere::VE_NO_CIRCLE) &&
         !hasVisualEffect(NeuTube::Display::Sphere::VE_RECTANGLE_SHAPE)) {

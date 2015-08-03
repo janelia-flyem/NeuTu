@@ -1006,6 +1006,8 @@ void ZFlyEmProofMvc::zoomTo(int x, int y, int z, int width)
   getPresenter()->setZoomRatio(
         locator.getZoomRatio(viewPort.width(), viewPort.height()));
   getPresenter()->setViewPortCenter(x, y, z);
+
+  getView()->highlightPosition(x, y, z);
 }
 
 
@@ -1326,15 +1328,25 @@ void ZFlyEmProofMvc::recordCheckedBookmark(const QString &key, bool checking)
   ZFlyEmBookmark *bookmark = getCompleteDocument()->findFirstBookmark(key);
   if (bookmark != NULL) {
     bookmark->setChecked(checking);
-    ZDvidWriter writer;
-    if (writer.open(getDvidTarget())) {
-      writer.writeBookmark(*bookmark);
-      if (writer.getStatusCode() != 200) {
-        emit messageGenerated(ZWidgetMessage("Failed to record bookmark.",
-                                             NeuTube::MSG_WARING));
-      }
+    recordBookmark(bookmark);
+  }
+}
+
+void ZFlyEmProofMvc::recordBookmark(ZFlyEmBookmark *bookmark)
+{
+  ZDvidWriter writer;
+  if (writer.open(getDvidTarget())) {
+    writer.writeBookmark(*bookmark);
+    if (writer.getStatusCode() != 200) {
+      emit messageGenerated(ZWidgetMessage("Failed to record bookmark.",
+                                           NeuTube::MSG_WARING));
     }
   }
+}
+
+void ZFlyEmProofMvc::processCheckedUserBookmark(ZFlyEmBookmark */*bookmark*/)
+{
+  getCompleteDocument()->setCustomBookmarkSaveState(false);
 }
 
 void ZFlyEmProofMvc::enhanceTileContrast(bool state)

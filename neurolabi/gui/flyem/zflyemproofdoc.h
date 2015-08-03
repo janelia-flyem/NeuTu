@@ -76,6 +76,10 @@ public:
 
   void enhanceTileContrast(bool highContrast);
 
+  inline void setCustomBookmarkSaveState(bool state) {
+    m_isCustomBookmarkSaved = state;
+  }
+
 public:
   void notifyBodyMerged();
   void notifyBodyUnmerged();
@@ -99,7 +103,8 @@ protected:
 private:
   void connectSignalSlot();
 
-  void decorateSynapse(ZPuncta *puncta);
+  void decorateTBar(ZPuncta *puncta);
+  void decoratePsd(ZPuncta *puncta);
 
 private:
   ZFlyEmBodyMerger m_bodyMerger;

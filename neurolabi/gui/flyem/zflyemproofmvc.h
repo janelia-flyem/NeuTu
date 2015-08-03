@@ -138,11 +138,14 @@ public slots:
   void openSequencer();
 
   void recordCheckedBookmark(const QString &key, bool checking);
+  void recordBookmark(ZFlyEmBookmark *bookmark);
   void processSelectionChange(const ZStackObjectSelector &selector);
 
   void annotateBookmark(ZFlyEmBookmark *bookmark);
 
   void updateUserBookmarkTable();
+
+  void processCheckedUserBookmark(ZFlyEmBookmark *bookmark);
 
 //  void toggleEdgeMode(bool edgeOn);
 
@@ -207,8 +210,12 @@ void ZFlyEmProofMvc::connectControlPanel(T *panel)
           panel, SLOT(updateBookmarkTable(ZFlyEmBodyMergeProject*)));
   connect(panel, SIGNAL(bookmarkChecked(QString, bool)),
           this, SLOT(recordCheckedBookmark(QString, bool)));
+  connect(panel, SIGNAL(bookmarkChecked(ZFlyEmBookmark*)),
+          this, SLOT(recordBookmark(ZFlyEmBookmark*)));
   connect(this, SIGNAL(userBookmarkUpdated(ZStackDoc*)),
           panel, SLOT(updateUserBookmarkTable(ZStackDoc*)));
+  connect(panel, SIGNAL(userBookmarkChecked(ZFlyEmBookmark*)),
+          this, SLOT(processCheckedUserBookmark(ZFlyEmBookmark*)));
 }
 
 template <typename T>
@@ -241,6 +248,8 @@ void ZFlyEmProofMvc::connectSplitControlPanel(T *panel)
   connect(panel, SIGNAL(loadingSynapse()), this, SLOT(loadSynapse()));
   connect(panel, SIGNAL(bookmarkChecked(QString, bool)),
           this, SLOT(recordCheckedBookmark(QString, bool)));
+  connect(panel, SIGNAL(bookmarkChecked(ZFlyEmBookmark*)),
+          this, SLOT(recordBookmark(ZFlyEmBookmark*)));
 }
 
 

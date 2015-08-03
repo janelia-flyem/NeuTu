@@ -46,8 +46,9 @@
     {
       "address": "emdata2.int.janelia.org",
       "port": 7000,
-      "uuid": "897b",
+      "uuid": "f5ff",
       "name": "FIB19 (emdata2)",
+      "comment": "branched from 897b",
       "body_label": "segmentation-labelvol",
       "label_block": "segmentation",
       "multires_tile": "graytiles",
@@ -459,6 +460,17 @@
       "comment": "MB seg for practice(branched from 66ba)",
       "body_label": "bodies3",
       "label_block": "labels3",
+      "user_name": ["anicetor", "changl", "lauchies", "ogundeyio", "ordishc", "sigmundc", "shinomiyaa", "tranj", "rivlinp", "takemurasa", "zhaot"]
+    },
+    {
+      "address": "emdata2.int.janelia.org",
+      "port": 7000,
+      "uuid": "47a8",
+      "name": "FIB19_practice",
+      "comment": "branched from 897b",
+      "body_label": "segmentation-labelvol",
+      "label_block": "segmentation",
+      "multires_tile": "graytiles",
       "user_name": ["anicetor", "changl", "lauchies", "ogundeyio", "ordishc", "sigmundc", "shinomiyaa", "tranj", "rivlinp", "takemurasa", "zhaot"]
     }
   ]

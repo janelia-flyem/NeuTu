@@ -313,6 +313,7 @@ public: //Change view parameters
   void increaseZoomRatio(int x, int y, bool usingRef = true);
   void decreaseZoomRatio(int x, int y, bool usingRef = true);
   void notifyViewChanged();
+  void highlightPosition(int x, int y, int z);
 
 private:
   void clearCanvas();

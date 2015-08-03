@@ -1406,19 +1406,25 @@ void ZObject3dScan::display(
 
   QPen pen(m_color);
 
+  if (hasVisualEffect(NeuTube::Display::SparseObject::VE_FORCE_SOLID)) {
+    style = ZStackObject::SOLID;
+  }
   //QImage *targetImage = dynamic_cast<QImage*>(painter.device());
 
   switch (style) {
   case ZStackObject::SOLID:
   {
     if (isSelected()) {
-      QColor color = pen.color();
-      color.setAlpha(50);
+//      QColor color = pen.color();
+      QColor color(Qt::white);
+      color.setAlpha(164);
       pen.setColor(color);
+//      pen.setCosmetic(true);
+//      pen.setStyle(Qt::DotLine);
     }
     painter.setPen(pen);
     if (isSelected()) {
-      displaySolid(painter, z, isProj, 5);
+      displaySolid(painter, z, isProj, 1);
     } else {
       displaySolid(painter, z, isProj, 1);
     }

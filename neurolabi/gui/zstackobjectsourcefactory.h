@@ -23,6 +23,8 @@ public:
   static std::string MakeFlyEmBoundBoxSource();
   static std::string MakeFlyEmPlaneObjectSource();
   static std::string MakeFlyEmSynapseSource();
+  static std::string MakeFlyEmTBarSource();
+  static std::string MakeFlyEmPsdSource();
 };
 
 #endif // ZSTACKOBJECTSOURCEFACTORY_H
