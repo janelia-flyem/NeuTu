@@ -15,6 +15,13 @@
  * this dialog displays a list of bodies and their properties; data is
  * loaded from a static json bookmarks file
  *
+ * to add/remove columns in table:
+ * -- in createModel(), change ncol
+ * -- in setHeaders(), adjust headers
+ * -- in updateModel(), adjust data load and initial sort order
+ *
+ * I really should be creating model and headers from a constant headers list
+ *
  * djo, 7/15
  *
  */
@@ -48,15 +55,16 @@ void FlyEmBodyInfoDialog::activateBody(QModelIndex modelIndex)
 }
 
 QStandardItemModel* FlyEmBodyInfoDialog::createModel(QObject* parent) {
-    QStandardItemModel* model = new QStandardItemModel(0, 3, parent);
+    QStandardItemModel* model = new QStandardItemModel(0, 4, parent);
     setHeaders(model);
     return model;
 }
 
 void FlyEmBodyInfoDialog::setHeaders(QStandardItemModel * model) {
     model->setHorizontalHeaderItem(0, new QStandardItem(QString("Body ID")));
-    model->setHorizontalHeaderItem(1, new QStandardItem(QString("# synapses")));
-    model->setHorizontalHeaderItem(2, new QStandardItem(QString("status")));
+    model->setHorizontalHeaderItem(1, new QStandardItem(QString("# pre")));
+    model->setHorizontalHeaderItem(2, new QStandardItem(QString("# post")));
+    model->setHorizontalHeaderItem(3, new QStandardItem(QString("status")));
 }
 
 void FlyEmBodyInfoDialog::importBookmarksFile(const QString &filename) {
@@ -170,17 +178,22 @@ void FlyEmBodyInfoDialog::updateModel(ZJsonValue data) {
         bodyIDItem->setData(QVariant(bodyID), Qt::DisplayRole);
         m_model->setItem(i, 0, bodyIDItem);
 
-        int nSynapses = ZJsonParser::integerValue(bkmk["body synapses"]);
-        QStandardItem * synapsesItem = new QStandardItem();
-        synapsesItem->setData(QVariant(nSynapses), Qt::DisplayRole);
-        m_model->setItem(i, 1, synapsesItem);
+        int nPre = ZJsonParser::integerValue(bkmk["body T-bars"]);
+        QStandardItem * preSynapseItem = new QStandardItem();
+        preSynapseItem->setData(QVariant(nPre), Qt::DisplayRole);
+        m_model->setItem(i, 1, preSynapseItem);
+
+        int nPost = ZJsonParser::integerValue(bkmk["body PSDs"]);
+        QStandardItem * postSynapseItem = new QStandardItem();
+        postSynapseItem->setData(QVariant(nPost), Qt::DisplayRole);
+        m_model->setItem(i, 2, postSynapseItem);
 
         const char* status = ZJsonParser::stringValue(bkmk["body status"]);
-        m_model->setItem(i, 2, new QStandardItem(QString(status)));
+        m_model->setItem(i, 3, new QStandardItem(QString(status)));
     }
     ui->tableView->resizeColumnsToContents();
 
-    // initial sort order is by synapses, descending
+    // initial sort order is by #pre, descending
     ui->tableView->sortByColumn(1, Qt::DescendingOrder);
 
 }
