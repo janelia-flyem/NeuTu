@@ -35,7 +35,8 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(QWidget *parent) :
 
   m_model = createModel(ui->tableView);
   ui->tableView->setModel(m_model);
-
+  ui->tableView->resizeColumnsToContents();
+  
   connect(ui->tableView, SIGNAL(doubleClicked(QModelIndex)),
           this, SLOT(activateBody(QModelIndex)));
 }
