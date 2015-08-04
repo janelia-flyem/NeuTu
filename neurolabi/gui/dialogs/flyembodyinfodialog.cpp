@@ -104,7 +104,7 @@ bool FlyEmBodyInfoDialog::isValidBookmarkFile(ZJsonObject jsonObject) {
     ZJsonObject metadata = (ZJsonObject) jsonObject.value("metadata");
     if (!metadata.hasKey("description")) {
         errorBox.setText("Problem with json file");
-        errorBox.setInformativeText("This file is 'metadata/description'. Are you sure this is a Fly EM JSON file?");
+        errorBox.setInformativeText("This file is missing 'metadata/description'. Are you sure this is a Fly EM JSON file?");
         errorBox.setStandardButtons(QMessageBox::Ok);
         errorBox.setIcon(QMessageBox::Warning);
         errorBox.exec();
