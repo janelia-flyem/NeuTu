@@ -157,3 +157,10 @@ neurolabi/lib/Mingw/64/
 /neuTube.app/
 /neuTube_win64/
 /neuTube/
+
+# more auto-generated files
+/neurolabi/gui/neuTube_d.app/
+/neurolabi/gui/moc_*
+/neurolabi/gui/Makefile
+/neurolabi/gui/ui_*
+/neurolabi/gui/qrc_gui.cpp
