@@ -1280,10 +1280,14 @@ void ZFlyEmProofMvc::locateBody(uint64_t bodyId)
       } else {
         ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
 
-        ZVoxel voxel = body.getSlice((body.getMinZ() + body.getMaxZ()) / 2).getMarker();
+        ZObject3dScan objSlice = body.getMedianSlice();
+        ZVoxel voxel = objSlice.getMarker();
+//        ZVoxel voxel = body.getSlice((body.getMinZ() + body.getMaxZ()) / 2).getMarker();
         ZIntPoint pt(voxel.x(), voxel.y(), voxel.z());
         pt -= dvidInfo.getStartBlockIndex();
         pt *= dvidInfo.getBlockSize();
+        pt += ZIntPoint(dvidInfo.getBlockSize().getX() / 2,
+                        dvidInfo.getBlockSize().getY() / 2, 0);
         pt += dvidInfo.getStartCoordinates();
 
         //    std::set<uint64_t> bodySet;
@@ -1301,7 +1305,12 @@ void ZFlyEmProofMvc::locateBody(uint64_t bodyId)
         }
         updateBodySelection();
 
-        zoomTo(pt);
+        if (!objSlice.isEmpty()) {
+          zoomTo(pt);
+        } else {
+          emit messageGenerated(ZWidgetMessage("Failed to zoom into the body",
+                                               NeuTube::MSG_ERROR));
+        }
       }
     }
   }

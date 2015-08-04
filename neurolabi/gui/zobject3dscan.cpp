@@ -1672,6 +1672,28 @@ ZObject3dScan ZObject3dScan::getFirstSlice() const
   return getSlice(getMinZ());
 }
 
+ZObject3dScan ZObject3dScan::getMedianSlice() const
+{
+  std::set<int> zSet;
+  for (size_t i = 0; i < getStripeNumber(); ++i) {
+    const ZObject3dStripe &stripe = m_stripeArray[i];
+    zSet.insert(stripe.getZ());
+  }
+
+  size_t count = zSet.size();
+  size_t index = 0;
+  int z = getMinZ();
+  for (std::set<int>::const_iterator iter = zSet.begin(); iter != zSet.end();
+       ++iter, ++index) {
+    if (index >= count / 2) {
+      z = *iter;
+      break;
+    }
+  }
+
+  return getSlice(z);
+}
+
 ZObject3dScan ZObject3dScan::getSlice(int z) const
 {
   ZObject3dScan slice;

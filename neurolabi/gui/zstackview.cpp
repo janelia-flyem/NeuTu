@@ -524,11 +524,11 @@ void ZStackView::updatePaintBundle()
     if (buddyPresenter()->hasObjectToShow()) {
       m_paintBundle.addDrawableList(buddyPresenter()->decorations());
     }
+  }
 
-    if (buddyPresenter()->hightlightOn()) {
-      m_paintBundle.addDrawableList(&(buddyPresenter()->getHighlightDecorationList()));
-      buddyPresenter()->setHighlight(false);
-    }
+  if (buddyPresenter()->hightlightOn()) {
+    m_paintBundle.addDrawableList(&(buddyPresenter()->getHighlightDecorationList()));
+    buddyPresenter()->setHighlight(false);
   }
 
   // active deco

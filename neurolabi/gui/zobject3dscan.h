@@ -255,6 +255,8 @@ public:
   void duplicateAcrossZ(int depth);
 
   ZObject3dScan getSlice(int z) const;
+  ZObject3dScan getMedianSlice() const;
+
   ZObject3dScan getSlice(int minZ, int maxZ) const;
   ZObject3dScan interpolateSlice(int z) const;
   ZObject3dScan getFirstSlice() const;
