@@ -36,7 +36,8 @@ public:
       const ZStack &stack, int yStep = 1);
 
   static ZObject3dScanArray* MakeObject3dScanArray(
-      const ZArray &array, int yStep, ZObject3dScanArray *out);
+      const ZArray &array, int yStep, ZObject3dScanArray *out,
+      bool foreground);
 
   static ZObject3dScan* MakeFilledMask(const ZClosedCurve &curve, int z,
                                        ZObject3dScan *result = NULL);

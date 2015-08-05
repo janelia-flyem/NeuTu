@@ -6,6 +6,7 @@
 #include "zstack.hxx"
 #include "zfiletype.h"
 #include "zobject3dscan.h"
+#include "zobject3dstripe.h"
 
 ZImage::ZImage() : QImage()
 {
@@ -138,36 +139,39 @@ void ZImage::setData(const color_t *data, int alpha)
 
 void ZImage::setData(const ZObject3dScan &obj)
 {
-  ZObject3dScan::ConstSegmentIterator iter(&obj);
+  setData(obj, obj.getColor());
+}
 
-  uint32_t color = obj.getColor().alpha();
-  color <<= 8;
-  color += obj.getColor().red();
-  color <<= 8;
-  color += obj.getColor().blue();
-  color <<= 8;
-  color += obj.getColor().green();
+void ZImage::setData(const ZObject3dScan &obj, const QColor &color)
+{
+  uint32_t colorValue = color.alpha();
+  colorValue <<= 8;
+  colorValue += color.red();
+  colorValue <<= 8;
+  colorValue += color.blue();
+  colorValue <<= 8;
+  colorValue += color.green();
 
-  while (iter.hasNext()) {
-    const ZObject3dScan::Segment& seg= iter.next();
-    int y = m_transform.transformY(seg.getY());
-    int x0 = m_transform.transformX(seg.getStart());
-    int x1 = m_transform.transformX(seg.getEnd());
-    if (x0 < 0) {
-      x0 = 0;
-    }
-    if (x1 >= width()) {
-      x1 = width() - 1;
-    }
-    if (y < height() && y >= 0) {
-//      uchar *line = scanLine(y) + x0 * 4;
-      uint32_t *line = ((uint32_t*) scanLine(y)) + x0;
-      for (int x = x0; x <= x1; ++x) {
-        *line++ = color;
-//        *line++ = obj.getColor().green();
-//        *line++ = obj.getColor().blue();
-//        *line++ = obj.getColor().red();
-//        *line++ = 255;
+  int stripeNumber = obj.getStripeNumber();
+  for (int i = 0; i < stripeNumber; ++i) {
+    const ZObject3dStripe &stripe = obj.getStripe(i);
+//    const ZObject3dScan::Segment& seg= iter.next();
+    int y = m_transform.transformY(stripe.getY());
+    int nseg = stripe.getSegmentNumber();
+    for (int j = 0; j < nseg; ++j) {
+      int x0 = m_transform.transformX(stripe.getSegmentStart(j));
+      int x1 = m_transform.transformX(stripe.getSegmentEnd(j));
+      if (x0 < 0) {
+        x0 = 0;
+      }
+      if (x1 >= width()) {
+        x1 = width() - 1;
+      }
+      if (y < height() && y >= 0) {
+        uint32_t *line = ((uint32_t*) scanLine(y)) + x0;
+        for (int x = x0; x <= x1; ++x) {
+          *line++ = colorValue;
+        }
       }
     }
   }

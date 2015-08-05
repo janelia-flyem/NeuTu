@@ -50,6 +50,8 @@ void ZDvidLabelSlice::display(
 {
   if (isVisible()) {
     m_paintBuffer->clear();
+    m_paintBuffer->setOffset(-m_currentViewParam.getViewPort().x(),
+                             -m_currentViewParam.getViewPort().y());
 
     for (ZObject3dScanArray::const_iterator iter = m_objArray.begin();
          iter != m_objArray.end(); ++iter) {
@@ -64,9 +66,9 @@ void ZDvidLabelSlice::display(
 //      obj.display(painter, slice, option);
 
       if (!obj.isSelected()) {
-        m_paintBuffer->setOffset(-m_currentViewParam.getViewPort().x(),
-                                 -m_currentViewParam.getViewPort().y());
         m_paintBuffer->setData(obj);
+      } else {
+        m_paintBuffer->setData(obj, QColor(255, 255, 255, 164));
       }
     }
 
@@ -116,7 +118,7 @@ void ZDvidLabelSlice::forceUpdate(const ZStackViewParam &viewParam)
             viewPort.width(), viewPort.height(), 1);
 
       if (m_labelArray != NULL) {
-        ZObject3dFactory::MakeObject3dScanArray(*m_labelArray, yStep, &m_objArray);
+        ZObject3dFactory::MakeObject3dScanArray(*m_labelArray, yStep, &m_objArray, true);
 
         m_objArray.translate(viewPort.left(), viewPort.top(),
                              viewParam.getZ());

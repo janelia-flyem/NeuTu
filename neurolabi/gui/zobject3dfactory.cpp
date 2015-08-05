@@ -292,7 +292,7 @@ std::vector<ZObject3dScan*> ZObject3dFactory::MakeObject3dScanPointerArray(
 }
 
 ZObject3dScanArray* ZObject3dFactory::MakeObject3dScanArray(
-    const ZArray &array, int yStep, ZObject3dScanArray *out)
+    const ZArray &array, int yStep, ZObject3dScanArray *out, bool foreground)
 {
   if (out == NULL) {
     out = new ZObject3dScanArray;
@@ -301,9 +301,15 @@ ZObject3dScanArray* ZObject3dFactory::MakeObject3dScanArray(
   std::map<int, ZObject3dScan*> *bodySet = NULL;
 
   if (array.valueType() == mylib::UINT64_TYPE) {
+    if (foreground) {
       bodySet = ZObject3dScan::extractAllForegroundObject(
         array.getDataPointer<uint64_t>(), array.dim(0), array.dim(1),
             array.dim(2), 0, 0, 0, yStep, NULL);
+    } else {
+      bodySet = ZObject3dScan::extractAllObject(
+        array.getDataPointer<uint64_t>(), array.dim(0), array.dim(1),
+            array.dim(2), 0, 0, 0, yStep, NULL);
+    }
   }
 
   out->resize(bodySet->size());

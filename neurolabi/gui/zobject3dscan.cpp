@@ -260,6 +260,15 @@ void ZObject3dScan::addStripe(int z, int y, bool canonizing)
   }
 }
 
+void ZObject3dScan::addStripeFast(int z, int y)
+{
+//  m_stripeArray.reserve(m_stripeArray.size() + 1);
+  ZObject3dStripe stripe;
+  stripe.setY(y);
+  stripe.setZ(z);
+  m_stripeArray.push_back(stripe);
+}
+
 void ZObject3dScan::addStripe(const ZObject3dStripe &stripe, bool canonizing)
 {
   bool lastStripeMergable = false;
@@ -336,6 +345,16 @@ void ZObject3dScan::addSegment(int x1, int x2, bool canonizing)
     if (canonizing) {
       canonize();
     }
+  }
+}
+
+void ZObject3dScan::addSegmentFast(int x1, int x2)
+{
+  if (!isEmpty()) {
+    ZObject3dStripe &stripe = m_stripeArray.back();
+    stripe.getSegmentArray().push_back(x1);
+    stripe.getSegmentArray().push_back(x2);
+//    m_stripeArray.back().addSegment(x1, x2, false);
   }
 }
 

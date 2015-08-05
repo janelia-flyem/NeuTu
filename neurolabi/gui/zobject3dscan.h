@@ -75,7 +75,9 @@ public:
   ZObject3dStripe& getStripe(size_t index);
 
   void addStripe(int z, int y, bool canonizing = true);
+  void addStripeFast(int z, int y);
   void addSegment(int x1, int x2, bool canonizing = true);
+  void addSegmentFast(int x1, int x2);
   void addSegment(int z, int y, int x1, int x2, bool canonizing = true);
   void addStripe(const ZObject3dStripe &stripe, bool canonizing = true);
 
@@ -540,10 +542,14 @@ int ZObject3dScan::scanArray(
   T v = array[x];
 
   if (isEmpty()) {
-    addStripe(z, y, false);
+//    addStripe(z, y, false);
+    addStripeFast(z, y);
+    getStripeArray().back().getSegmentArray().reserve(8);
   } else {
     if (m_stripeArray.back().getY() != y || m_stripeArray.back().getZ() != z) {
-      addStripe(z, y, false);
+//      addStripe(z, y, false);
+      addStripeFast(z, y);
+      getStripeArray().back().getSegmentArray().reserve(8);
     }
   }
 
@@ -555,7 +561,9 @@ int ZObject3dScan::scanArray(
   }
 
   x += x0;
-  addSegment(x, x + length - 1, false);
+//  addSegment(x, x + length - 1, false);
+
+  addSegmentFast(x, x + length - 1);
 
   return length;
 }
@@ -663,6 +671,7 @@ std::map<int, ZObject3dScan*>* ZObject3dScan::extractAllForegroundObject(
           if (iter == currentSet.end()) {
             obj = new ZObject3dScan;
             obj->setLabel(v);
+            obj->getStripeArray().reserve(height);
             //(*bodySet)[v] = obj;
             bodySet->insert(std::map<int, ZObject3dScan*>::value_type(v, obj));
             currentSet.insert(std::map<int, ZObject3dScan*>::value_type(v, obj));

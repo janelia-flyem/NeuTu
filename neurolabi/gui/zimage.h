@@ -70,6 +70,7 @@ public:
                int threshold = -1, bool useMultithread = true);
 
   void setData(const ZObject3dScan &obj);
+  void setData(const ZObject3dScan &obj, const QColor &color);
 
   template<typename T>
   void setData(const DataSource<T> &source, int threshold = -1,
