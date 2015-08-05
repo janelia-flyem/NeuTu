@@ -301,19 +301,26 @@ ZObject3dScanArray* ZObject3dFactory::MakeObject3dScanArray(
   std::map<int, ZObject3dScan*> *bodySet = NULL;
 
   if (array.valueType() == mylib::UINT64_TYPE) {
-      bodySet = ZObject3dScan::extractAllObject(
+      bodySet = ZObject3dScan::extractAllForegroundObject(
         array.getDataPointer<uint64_t>(), array.dim(0), array.dim(1),
-            array.dim(2), 0, yStep, NULL);
+            array.dim(2), 0, 0, 0, yStep, NULL);
   }
 
+  out->resize(bodySet->size());
+
   if (bodySet != NULL) {
+    size_t index = 0;
     for (std::map<int, ZObject3dScan*>::const_iterator iter = bodySet->begin();
-         iter != bodySet->end(); ++iter) {
+         iter != bodySet->end(); ++iter, ++index) {
       ZObject3dScan *obj = iter->second;
-      if (iter->first > 0) {
-        obj->setLabel(iter->first);
-        out->push_back(*obj);
-      }
+      obj->setLabel(iter->first);
+
+
+      std::swap((*out)[index].getStripeArray(), obj->getStripeArray());
+      (*out)[index].setLabel(obj->getLabel());
+
+//      out->push_back(*obj);
+
       delete obj;
     }
   } else {

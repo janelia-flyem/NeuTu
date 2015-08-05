@@ -55,6 +55,18 @@ public:
     return z * m_sz + m_dz;
   }
 
+  inline int transformX(int x) const {
+    return x * m_sx + m_dx;
+  }
+
+  inline int transformY(int y) const {
+    return y * m_sy + m_dy;
+  }
+
+  inline int transformZ(int z) const {
+    return z * m_sz + m_dz;
+  }
+
   double getScale(NeuTube::EAxis axis) const;
   double getOffset(NeuTube::EAxis axis) const;
   ZPoint getOffset() const;

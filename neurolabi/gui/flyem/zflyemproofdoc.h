@@ -1,6 +1,8 @@
 #ifndef ZFLYEMPROOFDOC_H
 #define ZFLYEMPROOFDOC_H
 
+#include <QString>
+
 #include "zstackdoc.h"
 #include "zflyembodymerger.h"
 #include "dvid/zdvidtarget.h"
@@ -53,6 +55,7 @@ public:
 
   bool isSplittable(uint64_t bodyId) const;
 
+  void backupMergeOperation();
   void saveMergeOperation();
   void downloadBodyMask();
   void clearBodyMerger();
@@ -106,12 +109,19 @@ private:
   void decorateTBar(ZPuncta *puncta);
   void decoratePsd(ZPuncta *puncta);
 
+  void init();
+  void initTimer();
+  void initAutoSave();
+
 private:
   ZFlyEmBodyMerger m_bodyMerger;
   ZDvidTarget m_dvidTarget;
 
   bool m_isCustomBookmarkSaved;
   QTimer *m_bookmarkTimer;
+
+  QString m_mergeAutoSavePath;
+
   //ZFlyEmBodySplitProject m_splitProject;
 };
 

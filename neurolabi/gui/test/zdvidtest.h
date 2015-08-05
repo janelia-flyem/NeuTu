@@ -235,7 +235,7 @@ TEST(ZDvidTest, ZDvidUrl)
 //  std::cout << dvidUrl.getMergeOperationUrl("test") << std::endl;
 
   ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/neutu_merge_opr/key/labels",
-            dvidUrl.getMergeOperationUrl());
+            dvidUrl.getMergeOperationUrl(""));
 //  std::cout << dvidUrl.getMergeOperationUrl() << std::endl;
 
 //  std::string getMergeOperationUrl(const std::string &dataName) const;

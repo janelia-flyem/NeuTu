@@ -133,6 +133,7 @@ void ZFlyEmProofMvc::exitCurrentDoc()
 {
   if (getCompleteDocument() != NULL) {
     getCompleteDocument()->saveCustomBookmark();
+    getCompleteDocument()->saveMergeOperation();
   }
 }
 

@@ -427,11 +427,16 @@ std::string ZDvidUrl::getMergeOperationUrl(const std::string &dataName) const
 }
 */
 
-std::string ZDvidUrl::getMergeOperationUrl() const
+std::string ZDvidUrl::getMergeOperationUrl(const std::string &userName) const
 {
+  std::string key = m_dvidTarget.getLabelBlockName();
+  if (!userName.empty()) {
+    key += "_" + userName;
+  }
+
   return GetKeyCommandUrl(
         getDataUrl(ZDvidData::GetName(ZDvidData::ROLE_MERGE_OPERATION))) + "/" +
-      m_dvidTarget.getLabelBlockName();
+      key;
 }
 
 std::string ZDvidUrl::getSplitUrl(

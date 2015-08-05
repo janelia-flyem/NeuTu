@@ -589,11 +589,12 @@ uint64_t ZDvidWriter::writeSplit(
 
 void ZDvidWriter::writeMergeOperation(const QMap<uint64_t, uint64_t> &bodyMap)
 {
-  std::string url = ZDvidUrl(m_dvidTarget).getMergeOperationUrl();
+  std::string url = ZDvidUrl(m_dvidTarget).getMergeOperationUrl(
+        NeuTube::GetUserName());
 
   if (!bodyMap.isEmpty()) {
     ZJsonArray array = ZJsonFactory::MakeJsonArray(bodyMap);
-    writeJsonString(url, array.dumpString());
+    writeJsonString(url, array.dumpString(0));
   } else {
     writeJsonString(url, "[]");
   }

@@ -3,7 +3,9 @@
 #include <QSet>
 #include <QList>
 #include <QTimer>
+#include <QDir>
 
+#include "neutubeconfig.h"
 #include "dvid/zdvidlabelslice.h"
 #include "dvid/zdvidreader.h"
 #include "zstackobjectsourcefactory.h"
@@ -24,14 +26,49 @@
 #include "flyem/zsynapseannotationarray.h"
 
 ZFlyEmProofDoc::ZFlyEmProofDoc(QObject *parent) :
-  ZStackDoc(parent), m_isCustomBookmarkSaved(true)
+  ZStackDoc(parent)
+{
+  init();
+}
+
+void ZFlyEmProofDoc::init()
 {
   setTag(NeuTube::Document::FLYEM_PROOFREAD);
+
+  initTimer();
+  initAutoSave();
+
+  connectSignalSlot();
+}
+
+void ZFlyEmProofDoc::initTimer()
+{
   m_bookmarkTimer = new QTimer(this);
   m_bookmarkTimer->setInterval(60000);
   m_bookmarkTimer->start();
+}
 
-  connectSignalSlot();
+void ZFlyEmProofDoc::initAutoSave()
+{
+  m_isCustomBookmarkSaved = true;
+
+  QDir autoSaveDir(NeutubeConfig::getInstance().getPath(
+        NeutubeConfig::AUTO_SAVE).c_str());
+  QString mergeFolder = "neutu_proofread_backup";
+
+  if (!autoSaveDir.exists(mergeFolder)) {
+    if (!autoSaveDir.mkdir(mergeFolder)) {
+      emit messageGenerated(
+            ZWidgetMessage("Failed to create autosave folder for merging. "
+                           "Backup disabled for merge operations.",
+                           NeuTube::MSG_ERROR));
+    }
+  }
+
+  if (autoSaveDir.exists(mergeFolder)) {
+    QDir mergeDir(autoSaveDir.absoluteFilePath(mergeFolder));
+    m_mergeAutoSavePath = mergeDir.absoluteFilePath("neutu_merge_opr.json");
+  }
 }
 
 void ZFlyEmProofDoc::connectSignalSlot()
@@ -224,6 +261,15 @@ void ZFlyEmProofDoc::saveMergeOperation()
       emit messageGenerated(
             ZWidgetMessage("Cannot save the merge operation",
                            NeuTube::MSG_ERROR));
+    }
+  }
+}
+
+void ZFlyEmProofDoc::backupMergeOperation()
+{
+  if (!m_mergeAutoSavePath.isEmpty()) {
+    if (!m_bodyMerger.isEmpty()) {
+      m_bodyMerger.toJsonArray().dump(m_mergeAutoSavePath.toStdString());
     }
   }
 }
@@ -493,6 +539,7 @@ uint64_t ZFlyEmProofDoc::getBodyId(const ZIntPoint &pt)
 
 void ZFlyEmProofDoc::autoSave()
 {
+  backupMergeOperation();
 }
 
 void ZFlyEmProofDoc::saveCustomBookmarkSlot()

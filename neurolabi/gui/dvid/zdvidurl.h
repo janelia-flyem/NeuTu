@@ -117,7 +117,7 @@ public:
       const std::string &dataName, uint64_t originalLabel) const;
 
   //std::string getMergeOperationUrl(const std::string &dataName) const;
-  std::string getMergeOperationUrl() const;
+  std::string getMergeOperationUrl(const std::string &userName) const;
 
   std::string getTileUrl(const std::string &dataName) const;
   std::string getTileUrl(const std::string &dataName, int resLevel) const;

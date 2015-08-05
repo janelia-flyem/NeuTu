@@ -17460,24 +17460,46 @@ void ZTest::test(MainWindow *host)
   frame->view()->highlightPosition(129, 120, 0);
 #endif
 
+#if 0
+  QDir autoSaveDir(NeutubeConfig::getInstance().getPath(
+        NeutubeConfig::AUTO_SAVE).c_str());
+  QString mergeFolder = "neutu_proofread_backup";
+
+  QDir mergeDir(autoSaveDir.absoluteFilePath(mergeFolder));
+  qDebug() << mergeDir.absoluteFilePath("neutu_merge_opr.json");
+#endif
+
 #if 1
-  ZPixmap image(1000, 1000);
+  ZPixmap image(2056, 2056);
 //  ZStTransform transform;
 //  transform.setOffset(-1, -2);
 //  image.setTransform(transform);
   ZPainter painter(&image);
 //  painter.drawPoint(1, 2);
   ZObject3dScan obj;
-  for (int y = 0; y < 1000; ++y) {
-    obj.addSegment(0, y, 0, 999, false);
+  for (int y = 0; y < 2056; ++y) {
+    obj.addSegment(0, y, 0, 2055, false);
   }
 //  obj.addSegment(0, 2, 1, 2);
-  obj.setColor(0, 0, 0);
+  obj.setColor(255, 255, 255, 255);
 
   tic();
   obj.display(painter, 0, ZStackObject::SOLID);
   std::cout << toc() << "ms passed" << std::endl;
 
 //  image.save((GET_TEST_DATA_DIR + "/test.tif").c_str());
+#endif
+
+#if 0
+  ZImage image(2056, 2056);
+  ZObject3dScan obj;
+  for (int y = 0; y < 2056; ++y) {
+    obj.addSegment(0, y, 0, 2055, false);
+  }
+  tic();
+  image.setData(obj);
+  QPixmap pixmap;
+  pixmap.fromImage(image);
+  std::cout << toc() << "ms passed" << std::endl;
 #endif
 }

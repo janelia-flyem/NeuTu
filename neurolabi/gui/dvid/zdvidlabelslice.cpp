@@ -9,6 +9,7 @@
 #include "flyem/zflyembodymerger.h"
 #include "zimage.h"
 #include "zpainter.h"
+#include "neutubeconfig.h"
 
 ZDvidLabelSlice::ZDvidLabelSlice()
 {
@@ -23,6 +24,7 @@ ZDvidLabelSlice::ZDvidLabelSlice(int maxWidth, int maxHeight)
 ZDvidLabelSlice::~ZDvidLabelSlice()
 {
   delete m_paintBuffer;
+  delete m_labelArray;
 }
 
 void ZDvidLabelSlice::init(int maxWidth, int maxHeight)
@@ -37,7 +39,8 @@ void ZDvidLabelSlice::init(int maxWidth, int maxHeight)
   m_maxWidth = maxWidth;
   m_maxHeight = maxHeight;
 
-  m_paintBuffer = new ZImage(m_maxWidth, m_maxHeight);
+  m_paintBuffer = new ZImage(m_maxWidth, m_maxHeight, QImage::Format_ARGB32);
+  m_labelArray = NULL;
 }
 
 ZSTACKOBJECT_DEFINE_CLASS_NAME(ZDvidLabelSlice)
@@ -46,6 +49,8 @@ void ZDvidLabelSlice::display(
     ZPainter &painter, int slice, EDisplayStyle option) const
 {
   if (isVisible()) {
+    m_paintBuffer->clear();
+
     for (ZObject3dScanArray::const_iterator iter = m_objArray.begin();
          iter != m_objArray.end(); ++iter) {
       ZObject3dScan &obj = const_cast<ZObject3dScan&>(*iter);
@@ -55,39 +60,28 @@ void ZDvidLabelSlice::display(
       } else {
         obj.setSelected(false);
       }
-      obj.display(painter, slice, option);
-#if 0
-      QRect viewPort = m_currentViewParam.getViewPort();
-      ZObject3dScan objSlice;
-      if (slice < 0) {
-        objSlice = *obj.getZProjection();
-      } else {
-        objSlice = obj.getSlice(painter.getZ(slice));
-      }
 
-      int z = painter.getZ(slice);
-      uint color = obj.getColor().rgba();
-      size_t stripeNumber = objSlice.getStripeNumber();
-      int stride = 1;
-      for (size_t i = 0; i < stripeNumber; i += stride) {
-        const ZObject3dStripe &stripe = objSlice.getStripe(i);
-        if (stripe.getZ() == z || (slice < 0)) {
-          int nseg = stripe.getSegmentNumber();
-          int y = stripe.getY() - viewPort.top();
-          for (int j = 0; j < nseg; ++j) {
-            int x0 = stripe.getSegmentStart(j) - viewPort.left();
-            int x1 = stripe.getSegmentEnd(j) - viewPort.left();
-            for (int x = x0; x <= x1; ++x) {
-              m_paintBuffer->setPixel(x, y, color);
-            }
-//            lineArray.push_back(QLine(x0, y, x1, y));
-          }
-        }
+//      obj.display(painter, slice, option);
+
+      if (!obj.isSelected()) {
+        m_paintBuffer->setOffset(-m_currentViewParam.getViewPort().x(),
+                                 -m_currentViewParam.getViewPort().y());
+        m_paintBuffer->setData(obj);
       }
-      painter.drawImage(viewPort.left(), viewPort.top(), *m_paintBuffer);
-#endif
-//      m_paintBuffer->setPixel()
     }
+
+//    painter.save();
+//    painter.setOpacity(0.5);
+
+    painter.drawImage(m_currentViewParam.getViewPort().x(),
+                      m_currentViewParam.getViewPort().y(),
+                      *m_paintBuffer);
+
+//    painter.restore();
+
+#ifdef _DEBUG_2
+//      m_paintBuffer->save((GET_TEST_DATA_DIR + "/test.tif").c_str());
+#endif
   }
 }
 
@@ -115,13 +109,14 @@ void ZDvidLabelSlice::forceUpdate(const ZStackViewParam &viewParam)
     if (reader.open(getDvidTarget())) {
       QRect viewPort = viewParam.getViewPort();
 
-      ZArray *labelArray = reader.readLabels64(
+      delete m_labelArray;
+      m_labelArray = reader.readLabels64(
             getDvidTarget().getLabelBlockName(),
             viewPort.left(), viewPort.top(), viewParam.getZ(),
             viewPort.width(), viewPort.height(), 1);
 
-      if (labelArray != NULL) {
-        ZObject3dFactory::MakeObject3dScanArray(*labelArray, yStep, &m_objArray);
+      if (m_labelArray != NULL) {
+        ZObject3dFactory::MakeObject3dScanArray(*m_labelArray, yStep, &m_objArray);
 
         m_objArray.translate(viewPort.left(), viewPort.top(),
                              viewParam.getZ());
@@ -132,7 +127,7 @@ void ZDvidLabelSlice::forceUpdate(const ZStackViewParam &viewParam)
         */
         assignColorMap();
 
-        delete labelArray;
+//        delete labelArray;
       }
     }
   }
@@ -390,7 +385,7 @@ void ZDvidLabelSlice::setMaxSize(int maxWidth, int maxHeight)
     m_currentViewParam.resize(m_maxWidth, m_maxHeight);
     m_objArray.clear();
     delete m_paintBuffer;
-    m_paintBuffer = new ZImage(m_maxWidth, m_maxHeight);
+    m_paintBuffer = new ZImage(m_maxWidth, m_maxHeight, QImage::Format_ARGB32);
 
     update();
   }

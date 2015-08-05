@@ -491,6 +491,10 @@ public:
     Segment m_seg;
   };
 
+  std::vector<ZObject3dStripe>& getStripeArray() {
+    return m_stripeArray;
+  }
+
 private:
   void addForeground(ZStack *stack);
   void displaySolid(ZPainter &painter, int z, bool isProj, int stride = 1) const;
@@ -647,7 +651,7 @@ std::map<int, ZObject3dScan*>* ZObject3dScan::extractAllForegroundObject(
   ZObject3dScan *obj = NULL;
   for (int z = 0; z < depth; ++z) {
     for (int y = 0; y < height; y += yStep) {
-      int x = 0;
+      int x = x0;
       while (x < width) {
         int v = array[x];
         if (v > 0) {

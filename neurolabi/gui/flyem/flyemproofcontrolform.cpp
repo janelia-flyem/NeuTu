@@ -38,6 +38,8 @@ FlyEmProofControlForm::FlyEmProofControlForm(QWidget *parent) :
   ui->segmentSizePushButton->hide();
   ui->segmentSizeDecPushButton->setEnabled(false);
 
+  ui->saveMergePushButton->hide();
+
 //  ui->bodyViewPushButton->hide();
 
 

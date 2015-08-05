@@ -5,6 +5,7 @@
 #include "tz_stack_neighborhood.h"
 #include "zstack.hxx"
 #include "zfiletype.h"
+#include "zobject3dscan.h"
 
 ZImage::ZImage() : QImage()
 {
@@ -72,6 +73,13 @@ void ZImage::setData(const ZStack *stack, int z, bool ignoringZero,
   }
 }
 
+void ZImage::clear()
+{
+  uchar *line = scanLine(0);
+  bzero(line, this->byteCount());
+//  for (int i = 0; i < this->byteCount()
+}
+
 void ZImage::setData(const uint8 *data, int threshold)
 {
   int i, j;
@@ -124,6 +132,43 @@ void ZImage::setData(const color_t *data, int alpha)
       data++;
       //*line++ = '\xff';
       *line++ = alpha;
+    }
+  }
+}
+
+void ZImage::setData(const ZObject3dScan &obj)
+{
+  ZObject3dScan::ConstSegmentIterator iter(&obj);
+
+  uint32_t color = obj.getColor().alpha();
+  color <<= 8;
+  color += obj.getColor().red();
+  color <<= 8;
+  color += obj.getColor().blue();
+  color <<= 8;
+  color += obj.getColor().green();
+
+  while (iter.hasNext()) {
+    const ZObject3dScan::Segment& seg= iter.next();
+    int y = m_transform.transformY(seg.getY());
+    int x0 = m_transform.transformX(seg.getStart());
+    int x1 = m_transform.transformX(seg.getEnd());
+    if (x0 < 0) {
+      x0 = 0;
+    }
+    if (x1 >= width()) {
+      x1 = width() - 1;
+    }
+    if (y < height() && y >= 0) {
+//      uchar *line = scanLine(y) + x0 * 4;
+      uint32_t *line = ((uint32_t*) scanLine(y)) + x0;
+      for (int x = x0; x <= x1; ++x) {
+        *line++ = color;
+//        *line++ = obj.getColor().green();
+//        *line++ = obj.getColor().blue();
+//        *line++ = obj.getColor().red();
+//        *line++ = 255;
+      }
     }
   }
 }

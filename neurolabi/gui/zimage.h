@@ -10,6 +10,7 @@
 #include "zsttransform.h"
 
 class ZStack;
+class ZObject3dScan;
 
 /** A class to load image / stack data structure from neurolabi and to display
  *  the data. The default format is Format_ARGB32_Premultiplied.
@@ -30,6 +31,8 @@ public:
   ZImage();
   ZImage(int width, int height,
          QImage::Format format = QImage::Format_ARGB32_Premultiplied);
+
+  void clear();
 
   /*!
    * \brief Set data function
@@ -65,6 +68,8 @@ public:
 
   void setData8(const DataSource<uint8_t> &source,
                int threshold = -1, bool useMultithread = true);
+
+  void setData(const ZObject3dScan &obj);
 
   template<typename T>
   void setData(const DataSource<T> &source, int threshold = -1,
