@@ -328,6 +328,7 @@ signals:
   void bodyCheckoutTriggered();
   void labelSliceSelectionChanged();
   void objectVisibleTurnedOn();
+  void exitingRectEdit();
 
 protected:
   void init();

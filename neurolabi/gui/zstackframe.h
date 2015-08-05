@@ -300,6 +300,17 @@ protected:
   void dropDocument(ZSharedPointer<ZStackDoc> doc);
   void updateDocument();
 
+  typedef bool FConnectAction(
+      const QObject*, const char *,
+      const QObject *, const char *);
+
+  static bool connectFunc(const QObject* obj1, const char *signal,
+                          const QObject *obj2, const char *slot);
+
+  void updateDocSignalSlot(FConnectAction connectAction);
+  void updateSignalSlot(FConnectAction connectAction);
+
+
 private:
   void setView(ZStackView *view);
   //ZMessageManager *getMessageManager();

@@ -1024,6 +1024,8 @@ public slots:
   void removeUser(QObject *user);
   void removeAllUser();
 
+  void processRectRoiUpdate();
+
 /*
 public:
   inline void notifyStackModified() {
@@ -1095,6 +1097,9 @@ signals:
 protected:
   virtual void autoSave();
   virtual void customNotifyObjectModified(ZStackObject::EType type);
+
+  void selectSwcNode(const ZRect2d &roi);
+  void removeRect2dRoi();
 
 private:
   void connectSignalSlot();

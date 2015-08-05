@@ -1950,10 +1950,14 @@ void ZStackPresenter::exitStrokeEdit()
 
 void ZStackPresenter::exitRectEdit()
 {
-  interactiveContext().setRectEditMode(ZInteractiveContext::RECT_EDIT_OFF);
-  updateCursor();
+  if (interactiveContext().rectEditMode() != ZInteractiveContext::RECT_EDIT_OFF) {
+    interactiveContext().setRectEditMode(ZInteractiveContext::RECT_EDIT_OFF);
+    updateCursor();
 
-  m_interactiveContext.setExitingEdit(true);
+    m_interactiveContext.setExitingEdit(true);
+
+    emit exitingRectEdit();
+  }
 }
 
 void ZStackPresenter::exitBookmarkEdit()

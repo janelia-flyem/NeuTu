@@ -8437,5 +8437,34 @@ void ZStackDoc::showSwcFullSkeleton(bool state)
   notifyObjectModified();
 }
 
+void ZStackDoc::selectSwcNode(const ZRect2d &roi)
+{
+  TStackObjectList &objList = getObjectList(ZStackObject::TYPE_SWC);
+  QList<Swc_Tree_Node*> selected;
+  QList<Swc_Tree_Node*> deselected;
+  for (TStackObjectList::iterator iter = objList.begin();
+       iter != objList.end(); ++iter) {
+    ZSwcTree *tree = dynamic_cast<ZSwcTree*>(*iter);
+    expandSwcNodeList(&deselected, tree->getSelectedNode());
+    tree->selectNode(roi, false);
+    expandSwcNodeList(&selected, tree->getSelectedNode());
+  }
+  notifySelectionChanged(selected, deselected);
+}
 
+void ZStackDoc::processRectRoiUpdate()
+{
+  ZRect2d roi = getRect2dRoi();
+  if (roi.isValid()) {
+    if (getTag() == NeuTube::Document::BIOCYTIN_PROJECTION) {
+      selectSwcNode(roi);
+      removeRect2dRoi();
+    }
+  }
+}
+
+void ZStackDoc::removeRect2dRoi()
+{
+  removeObject(ZStackObjectSourceFactory::MakeRectRoiSource(), true);
+}
 

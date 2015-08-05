@@ -648,6 +648,8 @@ std::map<int, ZObject3dScan*>* ZObject3dScan::extractAllForegroundObject(
     bodySet = new std::map<int, ZObject3dScan*>;
   }
 
+  std::vector<std::map<int, ZObject3dScan*> > m_bodySetArray(20);
+
   ZObject3dScan *obj = NULL;
   for (int z = 0; z < depth; ++z) {
     for (int y = 0; y < height; y += yStep) {
@@ -655,12 +657,15 @@ std::map<int, ZObject3dScan*>* ZObject3dScan::extractAllForegroundObject(
       while (x < width) {
         int v = array[x];
         if (v > 0) {
-          std::map<int, ZObject3dScan*>::iterator iter = bodySet->find(v);
-          if (iter == bodySet->end()) {
+          std::map<int, ZObject3dScan*> &currentSet = m_bodySetArray[v % 20];
+
+          std::map<int, ZObject3dScan*>::iterator iter = currentSet.find(v);
+          if (iter == currentSet.end()) {
             obj = new ZObject3dScan;
             obj->setLabel(v);
             //(*bodySet)[v] = obj;
             bodySet->insert(std::map<int, ZObject3dScan*>::value_type(v, obj));
+            currentSet.insert(std::map<int, ZObject3dScan*>::value_type(v, obj));
           } else {
             obj = iter->second;
           }

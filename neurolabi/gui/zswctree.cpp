@@ -34,6 +34,7 @@
 #include "zclosedcurve.h"
 #include "zintpoint.h"
 #include "zpainter.h"
+#include "zrect2d.h"
 
 using namespace std;
 
@@ -3274,6 +3275,22 @@ ZClosedCurve ZSwcTree::toClosedCurve() const
   }
 
   return curve;
+}
+
+void ZSwcTree::selectNode(const ZRect2d &roi, bool appending)
+{
+  std::vector<Swc_Tree_Node*> nodeList;
+  DepthFirstIterator iter(this);
+  while (iter.hasNext()) {
+    Swc_Tree_Node *tn = iter.next();
+    if (SwcTreeNode::isRegular(tn)) {
+      if (roi.contains(SwcTreeNode::x(tn), SwcTreeNode::y(tn))) {
+        nodeList.push_back(tn);
+      }
+    }
+  }
+
+  selectNode(nodeList.begin(), nodeList.end(), appending);
 }
 
 Swc_Tree_Node* ZSwcTree::selectHitNode(bool appending)

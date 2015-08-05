@@ -24,6 +24,7 @@ class ZSwcBranch;
 class ZSwcTrunkAnalyzer;
 class QPointF;
 class ZClosedCurve;
+class ZRect2d;
 
 //! SWC tree class
 /*!
@@ -417,6 +418,8 @@ public:
   void deselectNode(Swc_Tree_Node *tn);
   void selectAllNode();
   void deselectAllNode();
+
+  void selectNode(const ZRect2d &roi, bool appending);
 
   Swc_Tree_Node* selectHitNode(bool appending);
   Swc_Tree_Node* deselectHitNode();
