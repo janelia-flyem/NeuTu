@@ -263,10 +263,23 @@ FlyEm::ZSynapseAnnotationArray *ZFlyEmDataFrame::getSynapseAnnotation()
   return annotation;
 }
 
-void ZFlyEmDataFrame::importSynapseAnnotation(const QString &filePath)
+void ZFlyEmDataFrame::importSynapseAnnotation(
+    const QString &filePath, bool coordAdjust)
 {
   foreach (ZFlyEmDataBundle *data, m_dataArray) {
     data->importSynpaseAnnotation(filePath.toStdString());
+    if (coordAdjust) {
+      ZDvidReader reader;
+      if (reader.open(getDvidTarget())) {
+        ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
+        int height = dvidInfo.getStackSize()[2];
+        if (height > 0) {
+          data->getSynapseAnnotation()->convertRavelerToImageSpace(
+                dvidInfo.getStartCoordinates().getZ(),
+                dvidInfo.getStackSize()[1]);
+        }
+      }
+    }
   }
 }
 

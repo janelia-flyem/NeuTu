@@ -102,6 +102,8 @@ public:
   bool isMulti() const { return m_multi; }
   bool isConvergent() const { return m_convergent; }
 
+  void ravelerFlip(int height) { m_y = height - m_y - 1; }
+
   void print() const;
 
   /*!

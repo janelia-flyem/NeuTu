@@ -23,8 +23,8 @@
 #include "zsparsestack.h"
 #include "zdvidversiondag.h"
 #include "dvid/zdvidsparsestack.h"
-#include "dvid/libdvidheader.h"
 #include "zflyembodyannotation.h"
+#include "dvid/libdvidheader.h"
 
 ZDvidReader::ZDvidReader(QObject *parent) :
   QObject(parent)
@@ -32,6 +32,7 @@ ZDvidReader::ZDvidReader(QObject *parent) :
   m_eventLoop = new QEventLoop(this);
   m_dvidClient = new ZDvidClient(this);
   m_timer = new QTimer(this);
+  m_service = NULL;
   //m_timer->setInterval(1000);
 
   m_isReadingDone = false;
@@ -43,6 +44,11 @@ ZDvidReader::ZDvidReader(QObject *parent) :
   connect(m_dvidClient, SIGNAL(requestCanceled()), this, SLOT(endReading()));
 
   connect(m_timer, SIGNAL(timeout()), m_dvidClient, SLOT(cancelRequest()));
+}
+
+ZDvidReader::~ZDvidReader()
+{
+  delete m_service;
 }
 
 void ZDvidReader::slotTest()
@@ -63,6 +69,24 @@ void ZDvidReader::endReading()
   m_isReadingDone = true;
 
   emit readingDone();
+}
+
+bool ZDvidReader::startService()
+{
+#if _ENABLE_LIBDVIDCPP_
+  try {
+    delete m_service;
+
+    m_service = new libdvid::DVIDNodeService(
+          m_dvidTarget.getAddressWithPort(), m_dvidTarget.getUuid());
+  } catch (std::exception &e) {
+    m_service = NULL;
+    std::cout << e.what() << std::endl;
+    return false;
+  }
+#endif
+
+  return true;
 }
 
 bool ZDvidReader::open(
@@ -92,7 +116,7 @@ bool ZDvidReader::open(
 
   m_dvidTarget.set(serverAddress.toStdString(), uuid.toStdString(), port);
 
-  return true;
+  return startService();
 }
 
 bool ZDvidReader::open(const ZDvidTarget &target)
@@ -115,7 +139,7 @@ bool ZDvidReader::open(const ZDvidTarget &target)
 
   m_dvidTarget = target;
 
-  return true;
+  return startService();
 }
 
 bool ZDvidReader::open(const QString &sourceString)
@@ -1000,9 +1024,6 @@ ZArray* ZDvidReader::readLabels64(
 
   ZArray *array = NULL;
 
-  QElapsedTimer timer;
-  timer.start();
-
 #if defined(_ENABLE_LIBDVIDCPP_)
   qDebug() << "Using libdvidcpp";
 
@@ -1013,9 +1034,10 @@ ZArray* ZDvidReader::readLabels64(
       std::cout << dvidUrl.getLabels64Url(
                      dataName, width, height, depth, x0, y0, z0).c_str() << std::endl;
 
+      /*
       libdvid::DVIDNodeService service(
             target.getAddressWithPort(), target.getUuid());
-
+*/
       libdvid::Dims_t dims(3);
       dims[0] = width;
       dims[1] = height;
@@ -1031,9 +1053,12 @@ ZArray* ZDvidReader::readLabels64(
       channels[1] = 1;
       channels[2] = 2;
 
-
-      libdvid::Labels3D labels = service.get_labels3D(
+      QElapsedTimer timer;
+      timer.start();
+      libdvid::Labels3D labels = m_service->get_labels3D(
             dataName, dims, offset, channels, false, true);
+      std::cout << "label reading time: " << timer.elapsed() << std::endl;
+//      return array;
 
       mylib::Dimn_Type arrayDims[3];
       arrayDims[0] = width;
@@ -1079,7 +1104,7 @@ ZArray* ZDvidReader::readLabels64(
   }
 #endif
 
-  std::cout << "label reading time: " << timer.elapsed() << std::endl;
+
 
   return array;
 }

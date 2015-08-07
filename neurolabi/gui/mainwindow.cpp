@@ -2938,16 +2938,18 @@ void MainWindow::on_actionMedian_Filter_triggered()
 
 void MainWindow::on_actionDistance_Map_triggered()
 {
-  if (currentStackFrame() != NULL) {
+  ZStackFrame *frame = currentStackFrame();
+  if (frame != NULL) {
     ZStackProcessor proc;
 
     DistanceMapDialog dlg;
     if (dlg.exec() == QDialog::Accepted) {
-      if (currentStackFrame()->document()->getStack()->isBinary()) {
-        proc.distanceTransform(currentStackFrame()->document()->getStack(),
+      if (frame->document()->hasStackData()) {
+        ZStack *stack = frame->document()->getStack();
+        proc.distanceTransform(stack,
                                dlg.isSquared(), dlg.isSliceWise());
         currentStackFrame()->document()->notifyStackModified();
-        currentStackFrame()->updateView();
+//          currentStackFrame()->updateView();
       }
     }
   }

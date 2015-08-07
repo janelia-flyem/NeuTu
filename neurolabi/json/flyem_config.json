@@ -46,6 +46,17 @@
     {
       "address": "emdata2.int.janelia.org",
       "port": 7000,
+      "uuid": "6cac",
+      "name": "FIB25 (0802 export)",
+      "body_label": "bodies0802",
+      "label_block": "labels0802",
+      "multires_tile": "graytiles",
+      "comment": "FIB-25 export 08-02-2015",
+      "user_name": "zhaot"
+    },
+    {
+      "address": "emdata2.int.janelia.org",
+      "port": 7000,
       "uuid": "f5ff",
       "name": "FIB19 (emdata2)",
       "comment": "branched from 897b",

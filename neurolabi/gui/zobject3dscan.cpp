@@ -1421,6 +1421,12 @@ void ZObject3dScan::display(
 
   bool isProj = (slice < 0);
 
+  if (isProj) {
+    if (!isProjectionVisible()) {
+      return;
+    }
+  }
+
   int z = slice + iround(painter.getZOffset());
 
   QPen pen(m_color);

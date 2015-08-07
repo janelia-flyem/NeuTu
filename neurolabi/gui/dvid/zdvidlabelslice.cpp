@@ -49,35 +49,51 @@ void ZDvidLabelSlice::display(
     ZPainter &painter, int slice, EDisplayStyle option) const
 {
   if (isVisible()) {
-    m_paintBuffer->clear();
-    m_paintBuffer->setOffset(-m_currentViewParam.getViewPort().x(),
-                             -m_currentViewParam.getViewPort().y());
+    if (m_currentViewParam.getViewPort().width() > m_paintBuffer->width() ||
+        m_currentViewParam.getViewPort().height() > m_paintBuffer->height()) {
+      for (ZObject3dScanArray::const_iterator iter = m_objArray.begin();
+           iter != m_objArray.end(); ++iter) {
+        ZObject3dScan &obj = const_cast<ZObject3dScan&>(*iter);
 
-    for (ZObject3dScanArray::const_iterator iter = m_objArray.begin();
-         iter != m_objArray.end(); ++iter) {
-      ZObject3dScan &obj = const_cast<ZObject3dScan&>(*iter);
-      //if (m_selectedSet.count(obj.getLabel()) > 0) {
-      if (m_selectedOriginal.count(obj.getLabel()) > 0) {
-        obj.setSelected(true);
-      } else {
-        obj.setSelected(false);
+        if (m_selectedOriginal.count(obj.getLabel()) > 0) {
+          obj.setSelected(true);
+        } else {
+          obj.setSelected(false);
+        }
+
+        obj.display(painter, slice, option);
+      }
+    } else {
+      m_paintBuffer->clear();
+      m_paintBuffer->setOffset(-m_currentViewParam.getViewPort().x(),
+                               -m_currentViewParam.getViewPort().y());
+
+      for (ZObject3dScanArray::const_iterator iter = m_objArray.begin();
+           iter != m_objArray.end(); ++iter) {
+        ZObject3dScan &obj = const_cast<ZObject3dScan&>(*iter);
+        //if (m_selectedSet.count(obj.getLabel()) > 0) {
+        if (m_selectedOriginal.count(obj.getLabel()) > 0) {
+          obj.setSelected(true);
+        } else {
+          obj.setSelected(false);
+        }
+
+        //      obj.display(painter, slice, option);
+
+        if (!obj.isSelected()) {
+          m_paintBuffer->setData(obj);
+        } else {
+          m_paintBuffer->setData(obj, QColor(255, 255, 255, 164));
+        }
       }
 
-//      obj.display(painter, slice, option);
+      //    painter.save();
+      //    painter.setOpacity(0.5);
 
-      if (!obj.isSelected()) {
-        m_paintBuffer->setData(obj);
-      } else {
-        m_paintBuffer->setData(obj, QColor(255, 255, 255, 164));
-      }
+      painter.drawImage(m_currentViewParam.getViewPort().x(),
+                        m_currentViewParam.getViewPort().y(),
+                        *m_paintBuffer);
     }
-
-//    painter.save();
-//    painter.setOpacity(0.5);
-
-    painter.drawImage(m_currentViewParam.getViewPort().x(),
-                      m_currentViewParam.getViewPort().y(),
-                      *m_paintBuffer);
 
 //    painter.restore();
 
@@ -100,6 +116,11 @@ void ZDvidLabelSlice::forceUpdate()
   forceUpdate(m_currentViewParam);
 }
 
+void ZDvidLabelSlice::setDvidTarget(const ZDvidTarget &target)
+{
+  m_dvidTarget = target;
+  m_reader.open(target);
+}
 
 void ZDvidLabelSlice::forceUpdate(const ZStackViewParam &viewParam)
 {
@@ -107,12 +128,12 @@ void ZDvidLabelSlice::forceUpdate(const ZStackViewParam &viewParam)
   if (isVisible()) {
     int yStep = 1;
 
-    ZDvidReader reader;
-    if (reader.open(getDvidTarget())) {
+//    ZDvidReader reader;
+//    if (reader.open(getDvidTarget())) {
       QRect viewPort = viewParam.getViewPort();
 
       delete m_labelArray;
-      m_labelArray = reader.readLabels64(
+      m_labelArray = m_reader.readLabels64(
             getDvidTarget().getLabelBlockName(),
             viewPort.left(), viewPort.top(), viewParam.getZ(),
             viewPort.width(), viewPort.height(), 1);
@@ -132,7 +153,7 @@ void ZDvidLabelSlice::forceUpdate(const ZStackViewParam &viewParam)
 //        delete labelArray;
       }
     }
-  }
+//  }
 }
 
 void ZDvidLabelSlice::update(int z)

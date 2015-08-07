@@ -411,7 +411,8 @@ void ZFlyEmProofDoc::decorateTBar(ZPuncta *puncta)
   puncta->setSource(ZStackObjectSourceFactory::MakeFlyEmTBarSource());
   puncta->pushCosmeticPen(true);
   puncta->pushColor(QColor(0, 255, 0));
-  puncta->pushVisualEffect(NeuTube::Display::Sphere::VE_CROSS_CENTER);
+  puncta->pushVisualEffect(NeuTube::Display::Sphere::VE_CROSS_CENTER |
+                           NeuTube::Display::Sphere::VE_OUT_FOCUS_DIM);
 }
 
 void ZFlyEmProofDoc::decoratePsd(ZPuncta *puncta)
@@ -419,7 +420,8 @@ void ZFlyEmProofDoc::decoratePsd(ZPuncta *puncta)
   puncta->setSource(ZStackObjectSourceFactory::MakeFlyEmPsdSource());
   puncta->pushCosmeticPen(true);
   puncta->pushColor(QColor(0, 0, 255));
-  puncta->pushVisualEffect(NeuTube::Display::Sphere::VE_CROSS_CENTER);
+  puncta->pushVisualEffect(NeuTube::Display::Sphere::VE_CROSS_CENTER |
+                           NeuTube::Display::Sphere::VE_OUT_FOCUS_DIM);
 }
 
 

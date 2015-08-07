@@ -155,13 +155,14 @@ bool ZFlyEmDataBundle::loadDvid(const ZDvidFilter &dvidFilter)
   m_neuronArray.resize(bodySet.size());
   size_t realSize = 0;
 
-  ZFlyEmDvidReader fdReader;
+  ZDvidReader fdReader;
   fdReader.open(dvidFilter.getDvidTarget());
 
 //  m_synapseAnnotationFile = dvidTarget.getSourceString();
-
   QStringList annotationList = fdReader.readKeys(
-        ZDvidData::GetName(ZDvidData::ROLE_BODY_ANNOTATION));
+        ZDvidData::GetName(ZDvidData::ROLE_BODY_ANNOTATION,
+                           ZDvidData::ROLE_BODY_LABEL,
+                           dvidTarget.getBodyLabelName()).c_str());
   std::set<uint64_t> annotationSet;
   foreach (const QString &idStr, annotationList) {
     annotationSet.insert(ZString(idStr.toStdString()).firstInteger());
@@ -176,7 +177,7 @@ bool ZFlyEmDataBundle::loadDvid(const ZDvidFilter &dvidFilter)
         std::string name;
         std::string type;
         if (annotationSet.count(bodyId) > 0) {
-          ZFlyEmBodyAnnotation annotation = fdReader.readAnnotation(bodyId);
+          ZFlyEmBodyAnnotation annotation = fdReader.readBodyAnnotation(bodyId);
           name = annotation.getName();
 
           if (!annotation.getType().empty()) {
@@ -201,7 +202,7 @@ bool ZFlyEmDataBundle::loadDvid(const ZDvidFilter &dvidFilter)
           neuron.setThumbnailPath(m_source);
           neuron.setResolution(m_swcResolution);
           neuron.setSynapseAnnotation(getSynapseAnnotation());
-          neuron.setSynapseScale(100);
+          neuron.setSynapseScale(10 * m_swcResolution[0] + 1);
         }
       }
     }
@@ -210,7 +211,7 @@ bool ZFlyEmDataBundle::loadDvid(const ZDvidFilter &dvidFilter)
     for (std::set<uint64_t>::const_iterator iter = annotationSet.begin();
          iter != annotationSet.end(); ++iter) {
       uint64_t bodyId = *iter;
-      ZFlyEmBodyAnnotation annotation = fdReader.readAnnotation(bodyId);
+      ZFlyEmBodyAnnotation annotation = fdReader.readBodyAnnotation(bodyId);
       std::string name = annotation.getName();
 
       bool goodNeuron = true;
@@ -235,7 +236,7 @@ bool ZFlyEmDataBundle::loadDvid(const ZDvidFilter &dvidFilter)
         neuron.setThumbnailPath(m_source);
         neuron.setResolution(m_swcResolution);
         neuron.setSynapseAnnotation(getSynapseAnnotation());
-        neuron.setSynapseScale(100);
+        neuron.setSynapseScale(10 * m_swcResolution[0] + 1);
       }
 
     }

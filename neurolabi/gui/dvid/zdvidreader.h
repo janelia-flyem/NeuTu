@@ -30,12 +30,16 @@ class ZSparseStack;
 class ZDvidVersionDag;
 class ZDvidSparseStack;
 class ZFlyEmBodyAnnotation;
+namespace libdvid{
+class DVIDNodeService;
+}
 
 class ZDvidReader : public QObject
 {
   Q_OBJECT
 public:
   explicit ZDvidReader(QObject *parent = 0);
+  ~ZDvidReader();
 
   bool open(const QString &serverAddress, const QString &uuid,
             int port = -1);
@@ -144,6 +148,7 @@ private:
       int x0, int y0, int z0, int width, int height, int depth);
   bool isReadingDone();
   void waitForReading();
+  bool startService();
 
 protected:
   QEventLoop *m_eventLoop;
@@ -151,6 +156,10 @@ protected:
   QTimer *m_timer;
   bool m_isReadingDone;
   ZDvidTarget m_dvidTarget;
+#if _ENABLE_LIBDVIDCPP_
+  libdvid::DVIDNodeService *m_service;
+#endif
+
 };
 
 #endif // ZDVIDREADER_H

@@ -17469,7 +17469,28 @@ void ZTest::test(MainWindow *host)
   qDebug() << mergeDir.absoluteFilePath("neutu_merge_opr.json");
 #endif
 
-#if 1
+
+#if 0
+  ZDvidReader reader;
+  ZDvidTarget target("emdata1.int.janelia.org", "eafc", 8500);
+  target.setLabelBlockName("labels3");
+  reader.open(target);
+  for (int i = 0; i < 200; ++i) {
+    reader.readLabels64(4327, 5443, 6341 + i, 512, 512, 1);
+  }
+#endif
+
+#if 0
+  ZDvidBufferReader reader;
+
+  for (int i = 0; i < 10; ++i) {
+    tic();
+    reader.read("http://emdata1.int.janelia.org:8500/api/node/86e1/labels/raw/0_1_2/512_512_1/4327_5443_7341");
+    std::cout << toc() << " ms" << std::endl;
+  }
+#endif
+
+#if 0
   ZPixmap image(2056, 2056);
 //  ZStTransform transform;
 //  transform.setOffset(-1, -2);
@@ -17501,5 +17522,36 @@ void ZTest::test(MainWindow *host)
   QPixmap pixmap;
   pixmap.fromImage(image);
   std::cout << toc() << "ms passed" << std::endl;
+#endif
+
+#if 1
+  ZDvidWriter writer;
+
+//  ZDvidReader reader;
+  ZDvidTarget target("emdata2.int.janelia.org", "6cac", 7000);
+  target.setLabelBlockName("labels0802");
+  target.setBodyLabelName("bodies0802");
+
+  writer.open(target);
+
+  ZJsonObject obj;
+  obj.load(GET_TEST_DATA_DIR + "/flyem/FIB/FIB25/20150802/annotations-body.json");
+
+  ZJsonArray annoArray(obj["data"], ZJsonValue::SET_INCREASE_REF_COUNT);
+
+  for (size_t i = 0; i < annoArray.size(); ++i) {
+    ZJsonObject obj(annoArray.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
+    uint64_t bodyId = ZJsonParser::integerValue(obj["body ID"]);
+    if (bodyId > 0) {
+      writer.writeAnnotation(bodyId, obj);
+    }
+  }
+
+  /*
+  reader.open(target);
+  for (int i = 0; i < 200; ++i) {
+    reader.readLabels64(4327, 5443, 6341 + i, 512, 512, 1);
+  }
+  */
 #endif
 }
