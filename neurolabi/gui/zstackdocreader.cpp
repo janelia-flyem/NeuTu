@@ -39,6 +39,7 @@ bool ZStackDocReader::readFile(const QString &filePath)
     break;
   case ZFileType::OBJECT_SCAN_FILE:
   case ZFileType::TIFF_FILE:
+  case ZFileType::V3D_PBD_FILE:
   case ZFileType::LSM_FILE:
   case ZFileType::V3D_RAW_FILE:
   case ZFileType::MC_STACK_RAW_FILE:

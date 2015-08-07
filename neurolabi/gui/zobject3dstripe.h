@@ -105,6 +105,8 @@ public:
    */
   void fillIntArray(int *array) const;
 
+  std::vector<int>& getSegmentArray() { return m_segmentArray; }
+
 private:
   std::vector<int> m_segmentArray;
   int m_y;

@@ -246,6 +246,10 @@ QMainWindow* ZStackMvc::getMainWindow() const
   return mainwin;
 }
 
+void ZStackMvc::dump(const QString &msg)
+{
+  getView()->dump(msg);
+}
 
 /*
 void ZStackMvc::emitMessage(const QString &msg, bool appending)

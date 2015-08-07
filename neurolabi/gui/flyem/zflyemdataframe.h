@@ -10,8 +10,8 @@
 #include "zflyemdatabundle.h"
 #include "zswctreematcher.h"
 #include "flyemdataframeoptiondialog.h"
-#include "flyemdataquerydialog.h"
-#include "flyemdataprocessdialog.h"
+#include "dialogs/flyemdataquerydialog.h"
+#include "dialogs/flyemdataprocessdialog.h"
 #include "zprogressable.h"
 #include "zqtbarprogressreporter.h"
 #include "zswctreebatchmatcher.h"
@@ -143,6 +143,7 @@ public:
       const QString &synapsePath);
 
   void importBoundBox(const QString &substackPath);
+  void importSynapseAnnotation(const QString &filePath);
 
   /*!
    * \brief Upload annotations to DVID server.

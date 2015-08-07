@@ -9,6 +9,7 @@
 
 #include "zstackobject.h"
 #include "zstackobjectselector.h"
+#include "zsharedpointer.h"
 
 /*!
  * \brief The aggregate class of ZStackObject
@@ -190,5 +191,7 @@ void ZStackObjectGroup::take(
 {
   removeObject(first, last, false);
 }
+
+typedef ZSharedPointer<ZStackObjectGroup> ZStackObjectGroupPtr;
 
 #endif // ZSTACKOBJECTGROUP_H

@@ -14,10 +14,10 @@
 #include "dialogs/frameinfodialog.h"
 #include "zstackpresenter.h"
 #include "zmessagereporter.h"
-#include "moviedialog.h"
-#include "autosaveswclistdialog.h"
+#include "dialogs/moviedialog.h"
+#include "dialogs/autosaveswclistdialog.h"
 #include "zactionactivator.h"
-#include "flyemneuronthumbnaildialog.h"
+#include "dialogs/flyemneuronthumbnaildialog.h"
 #include "zstackdoc.h"
 #include "newprojectmainwindow.h"
 #include "zqtbarprogressreporter.h"
@@ -67,6 +67,7 @@ class ZFlyEmHackathonConfigDlg;
 class ZProgressManager;
 class ZMessageManager;
 class ZTestDialog;
+class ZTestDialog2;
 class ZAutoTraceDialog;
 class QTimer;
 
@@ -297,6 +298,7 @@ private slots:
   // slots for 'Help'
   void about();
   void test();
+  void test2();
 
   // slots for frame
   void updateFrameInfoDlg();
@@ -602,6 +604,7 @@ private:
   //QAction *aboutAction;
   //QAction *aboutQtAction;
   QAction *testAction;
+  QAction *testAction2;
 
   QAction *openTraceAction;
 
@@ -673,6 +676,7 @@ private:
 
   ZMessageManager *m_messageManager;
   ZTestDialog *m_testDlg;
+  ZTestDialog2 *m_testDlg2;
   ZWindowFactory m_3dWindowFactory;
 
   QTimer *m_autoCheckTimer;

@@ -117,7 +117,7 @@ public:
       const std::string &dataName, uint64_t originalLabel) const;
 
   //std::string getMergeOperationUrl(const std::string &dataName) const;
-  std::string getMergeOperationUrl() const;
+  std::string getMergeOperationUrl(const std::string &userName) const;
 
   std::string getTileUrl(const std::string &dataName) const;
   std::string getTileUrl(const std::string &dataName, int resLevel) const;
@@ -144,6 +144,7 @@ private:
   ZDvidTarget m_dvidTarget;
 
   static const std::string m_keyCommand;
+  static const std::string m_keysCommand;
   static const std::string m_keyRangeCommand;
   static const std::string m_infoCommand;
   static const std::string m_sparsevolCommand;

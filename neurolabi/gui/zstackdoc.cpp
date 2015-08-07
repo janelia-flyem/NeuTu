@@ -85,8 +85,8 @@
 #include "biocytin/biocytin.h"
 #include "zpunctumio.h"
 #include "biocytin/zbiocytinfilenameparser.h"
-#include "swcskeletontransformdialog.h"
-#include "swcsizedialog.h"
+#include "dialogs/swcskeletontransformdialog.h"
+#include "dialogs/swcsizedialog.h"
 #include "tz_stack_watershed.h"
 #include "zstackwatershed.h"
 #include "zstackarray.h"
@@ -522,9 +522,11 @@ void ZStackDoc::autoSave()
         std::string autoSavePath =
             autoSaveDir + ZString::FileSeparator;
         if (NeutubeConfig::getInstance().getApplication() == "Biocytin") {
-          autoSavePath +=
-              ZBiocytinFileNameParser::getCoreName(getStack()->sourcePath()) +
-              ".autosave.swc";
+          if (getStack() != NULL) {
+            autoSavePath +=
+                ZBiocytinFileNameParser::getCoreName(getStack()->sourcePath()) +
+                ".autosave.swc";
+          }
         } else {
           autoSavePath += "~" + stream.str() + ".swc";
         }
@@ -551,6 +553,11 @@ void ZStackDoc::autoSave()
 void ZStackDoc::autoSaveSlot()
 {
   autoSave();
+}
+
+void ZStackDoc::customNotifyObjectModified(ZStackObject::EType /*type*/)
+{
+
 }
 
 string ZStackDoc::getSwcSource() const
@@ -4894,6 +4901,8 @@ void ZStackDoc::notifyObjectModified(ZStackObject::EType type)
 //    notifyObjectModified();
     break;
   }
+
+  customNotifyObjectModified(type);
 }
 
 
@@ -4903,47 +4912,8 @@ void ZStackDoc::processObjectModified(const QSet<ZStackObject::EType> &typeSet)
        iter != typeSet.end(); ++iter) {
     ZStackObject::EType type = *iter;
     processObjectModified(type);
-    /*
-    switch (type) {
-    case ZStackObject::TYPE_LOCSEG_CHAIN:
-      notifyChainModified();
-      break;
-    case ZStackObject::TYPE_OBJ3D:
-      notifyObj3dModified();
-      break;
-    case ZStackObject::TYPE_SWC:
-      notifySwcModified();;
-      break;
-    case ZStackObject::TYPE_PUNCTUM:
-      notifyPunctumModified();
-      break;
-    case ZStackObject::TYPE_STROKE:
-      notifyStrokeModified();
-      break;
-    case ZStackObject::TYPE_SPARSE_OBJECT:
-      notifySparseObjectModified();
-      break;
-    case ZStackObject::TYPE_OBJECT3D_SCAN:
-      notifyObject3dScanModified();
-      break;
-    default:
-//      notifyObjectModified();;
-      break;
-    }
-    */
   }
 }
-
-/*
-void ZStackDoc::notifyAllObjectModified()
-{
-  notifySwcModified();
-  notifyPunctumModified();
-  notifyChainModified();
-  notifyObj3dModified();
-  notifyStrokeModified();
-}
-*/
 
 bool ZStackDoc::watershed()
 {
@@ -6988,22 +6958,31 @@ std::vector<ZSwcTree*> ZStackDoc::getSwcArray() const
   return swcArray;
 }
 
-ZStack* ZStackDoc::projectBiocytinStack(
+std::vector<ZStack*> ZStackDoc::projectBiocytinStack(
     Biocytin::ZStackProjector &projector)
 {
   projector.setProgressReporter(m_progressReporter);
 
-  ZStack *proj = projector.project(getStack(), true);
+  std::vector<ZStack*> projArray;
 
-  if (proj != NULL) {
-    if (proj->channelNumber() == 2) {
-      proj->initChannelColors();
-      proj->setChannelColor(0, 1, 1, 1);
-      proj->setChannelColor(1, 0, 0, 0);
+  for (int slabIndex = 0; slabIndex < projector.getSlabNumber(); ++slabIndex) {
+    ZStack *proj = projector.project(getStack(), true, slabIndex);
+
+    if (proj != NULL) {
+      if (proj->channelNumber() == 2) {
+        proj->initChannelColors();
+        proj->setChannelColor(0, 1, 1, 1);
+        proj->setChannelColor(1, 0, 0, 0);
+      }
+      projArray.push_back(proj);
+      // ZString filePath(stack()->sourcePath());
+      /*
+      proj->setSource(
+            projector.getDefaultResultFilePath(getStack()->sourcePath(),
+                                               ));
+                                               */
     }
 
-   // ZString filePath(stack()->sourcePath());
-    proj->setSource(projector.getDefaultResultFilePath(getStack()->sourcePath()));
 #ifdef _DEBUG2
     const vector<int>& depthArray = projector.getDepthArray();
     ZStack depthImage(GREY16, proj->width(), proj->height(), 1, 1);
@@ -7020,7 +6999,7 @@ ZStack* ZStackDoc::projectBiocytinStack(
 #endif
   }
 
-  return proj;
+  return projArray;
 }
 
 void ZStackDoc::selectAllSwcTreeNode()
@@ -8458,5 +8437,34 @@ void ZStackDoc::showSwcFullSkeleton(bool state)
   notifyObjectModified();
 }
 
+void ZStackDoc::selectSwcNode(const ZRect2d &roi)
+{
+  TStackObjectList &objList = getObjectList(ZStackObject::TYPE_SWC);
+  QList<Swc_Tree_Node*> selected;
+  QList<Swc_Tree_Node*> deselected;
+  for (TStackObjectList::iterator iter = objList.begin();
+       iter != objList.end(); ++iter) {
+    ZSwcTree *tree = dynamic_cast<ZSwcTree*>(*iter);
+    expandSwcNodeList(&deselected, tree->getSelectedNode());
+    tree->selectNode(roi, false);
+    expandSwcNodeList(&selected, tree->getSelectedNode());
+  }
+  notifySelectionChanged(selected, deselected);
+}
 
+void ZStackDoc::processRectRoiUpdate()
+{
+  ZRect2d roi = getRect2dRoi();
+  if (roi.isValid()) {
+    if (getTag() == NeuTube::Document::BIOCYTIN_PROJECTION) {
+      selectSwcNode(roi);
+      removeRect2dRoi();
+    }
+  }
+}
+
+void ZStackDoc::removeRect2dRoi()
+{
+  removeObject(ZStackObjectSourceFactory::MakeRectRoiSource(), true);
+}
 

@@ -4,6 +4,7 @@
 #include "zstring.h"
 
 const std::string ZDvidUrl::m_keyCommand = "key";
+const std::string ZDvidUrl::m_keysCommand = "keys";
 const std::string ZDvidUrl::m_keyRangeCommand = "keyrange";
 const std::string ZDvidUrl::m_sparsevolCommand = "sparsevol";
 const std::string ZDvidUrl::m_coarseSparsevolCommand = "sparsevol-coarse";
@@ -285,7 +286,7 @@ std::string ZDvidUrl::getKeyUrl(const std::string &name, const std::string &key)
 
 std::string ZDvidUrl::getAllKeyUrl(const std::string &name) const
 {
-  return getDataUrl(name) + "/keys";
+  return getDataUrl(name) + "/" + m_keysCommand;
 }
 
 std::string ZDvidUrl::getKeyRangeUrl(
@@ -426,11 +427,16 @@ std::string ZDvidUrl::getMergeOperationUrl(const std::string &dataName) const
 }
 */
 
-std::string ZDvidUrl::getMergeOperationUrl() const
+std::string ZDvidUrl::getMergeOperationUrl(const std::string &userName) const
 {
+  std::string key = m_dvidTarget.getLabelBlockName();
+  if (!userName.empty()) {
+    key += "_" + userName;
+  }
+
   return GetKeyCommandUrl(
         getDataUrl(ZDvidData::GetName(ZDvidData::ROLE_MERGE_OPERATION))) + "/" +
-      m_dvidTarget.getLabelBlockName();
+      key;
 }
 
 std::string ZDvidUrl::getSplitUrl(

@@ -393,6 +393,9 @@ void setBlockValue(Stack *stack, const Stack *block, int x0, int y0, int z0,
  */
 bool isBinary(const Stack *stack);
 
+
+Image* makeMinProjZ(const Stack* stack, int minZ, int maxZ);
+
 //Paint routines
 void drawPatch(Stack *canvas, const Stack *patch,
                int dx, int dy, int dz, int transparentValue);

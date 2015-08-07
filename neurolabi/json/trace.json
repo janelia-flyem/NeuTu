@@ -1,7 +1,8 @@
 {
   "level": 1,
   "minimalScore": 0.3,
-  "refit": false
+  "refit": false,
+  "default": "trace_config.json"
 }
 
 

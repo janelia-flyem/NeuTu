@@ -849,6 +849,13 @@ void Z3DSwcFilter::prepareData()
         zMin = static_cast<int>(std::floor(tn->node.z));
 
       int type = SwcTreeNode::type(tn);
+
+      if (type < 0) {
+        std::cout << "Invalid SWC node type: " << type << ". Set to 0."
+                  << std::endl;
+        type = 0;
+      }
+
       m_colorScheme.setColorScheme(ZSwcColorScheme::BIOCYTIN_TYPE_COLOR);
       QString guiname;
       if (type >= m_guiNameList.size()) {

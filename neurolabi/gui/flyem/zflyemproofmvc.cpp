@@ -11,7 +11,7 @@
 #include "zstackview.h"
 #include "dvid/zdvidtileensemble.h"
 #include "zstackpresenter.h"
-#include "zdviddialog.h"
+#include "dialogs/zdviddialog.h"
 #include "dvid/zdvidreader.h"
 #include "zstackobjectsourcefactory.h"
 #include "dvid/zdvidsparsestack.h"
@@ -32,11 +32,13 @@
 #include "zwidgetfactory.h"
 #include "flyem/zflyemcoordinateconverter.h"
 #include "flyem/zflyembookmarkannotationdialog.h"
+#include "dialogs/flyembodyinfodialog.h"
 
 ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
   ZStackMvc(parent)
 {
   m_dvidDlg = new ZDvidDialog(this);
+  m_bodyInfoDlg = new FlyEmBodyInfoDialog(this);
   m_supervisor = new ZFlyEmSupervisor(this);
 //  m_splitProject.attachBookmarkArray(&m_bookmarkArray);
 //  m_mergeProject.attachBookmarkArray(&m_bookmarkArray);
@@ -131,6 +133,7 @@ void ZFlyEmProofMvc::exitCurrentDoc()
 {
   if (getCompleteDocument() != NULL) {
     getCompleteDocument()->saveCustomBookmark();
+    getCompleteDocument()->saveMergeOperation();
   }
 }
 
@@ -168,12 +171,13 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
     QList<ZDvidTileEnsemble*> teList =
         getCompleteDocument()->getDvidTileEnsembleList();
     foreach (ZDvidTileEnsemble *te, teList) {
+      te->enhanceContrast(getCompletePresenter()->highTileContrast());
       te->attachView(getView());
     }
     getView()->reset(false);
     getProgressSignal()->advanceProgress(0.1);
 
-#if 1
+#if 0
     if (getMainWindow() != NULL) {
 //      parentWidget()->hide();
 //      parentWidget()->restoreGeometry(geometry);
@@ -258,6 +262,8 @@ void ZFlyEmProofMvc::customInit()
           this, SLOT(processViewChange()));
   connect(getCompletePresenter(), SIGNAL(goingToBody()),
           this, SLOT(goToBody()));
+  connect(getCompletePresenter(), SIGNAL(labelSliceSelectionChanged()),
+          this, SLOT(processLabelSliceSelectionChange()));
 
   connect(getDocument().get(), SIGNAL(activeViewModified()),
           this, SLOT(processViewChange()));
@@ -269,6 +275,8 @@ void ZFlyEmProofMvc::customInit()
           &m_mergeProject, SLOT(update3DBodyViewDeep()));
   connect(getCompleteDocument(), SIGNAL(bodyUnmerged()),
           &m_mergeProject, SLOT(update3DBodyViewDeep()));
+  connect(getCompleteDocument(), SIGNAL(userBookmarkModified()),
+          this, SLOT(updateUserBookmarkTable()));
 
   m_mergeProject.getProgressSignal()->connectProgress(getProgressSignal());
   m_splitProject.getProgressSignal()->connectProgress(getProgressSignal());
@@ -329,6 +337,9 @@ void ZFlyEmProofMvc::customInit()
   disableSplit();
 
 
+  connect(m_bodyInfoDlg, SIGNAL(bodyActivated(uint64_t)),
+          this, SLOT(locateBody(uint64_t)));
+
   /*
   QPushButton *button = new QPushButton(this);
   button->setCheckable(true);
@@ -342,7 +353,10 @@ void ZFlyEmProofMvc::customInit()
 
 //  getView()->addHorizontalWidget(ZWidgetFactory::makeHSpacerItem());
 
-  getView()->addHorizontalWidget(new ZPaintLabelWidget());
+  m_paintLabelWidget = new ZPaintLabelWidget();
+
+  getView()->addHorizontalWidget(m_paintLabelWidget);
+  m_paintLabelWidget->hide();
 }
 
 void ZFlyEmProofMvc::goToBody()
@@ -355,9 +369,9 @@ void ZFlyEmProofMvc::goToBody()
   if (ok) {
     if (!text.isEmpty()) {
       ZString str = text.toStdString();
-      std::vector<int> bodyArray = str.toIntegerArray();
+      std::vector<uint64_t> bodyArray = str.toUint64Array();
       if (bodyArray.size() == 1) {
-        locateBody((uint64_t) bodyArray[0]);
+        locateBody(bodyArray[0]);
 //        emit locatingBody();
       }
     }
@@ -381,6 +395,32 @@ void ZFlyEmProofMvc::selectBody()
     }
   }
 }
+
+void ZFlyEmProofMvc::processLabelSliceSelectionChange()
+{
+  ZDvidLabelSlice *labelSlice = getCompleteDocument()->getDvidLabelSlice();
+  if (labelSlice != NULL){
+    std::vector<uint64_t> selected =
+        labelSlice->getSelector().getSelectedList();
+    if (selected.size() == 1) {
+      ZDvidReader reader;
+      if (reader.open(getDvidTarget())) {
+        uint64_t bodyId = selected.front();
+        ZFlyEmBodyAnnotation annotation = reader.readBodyAnnotation(bodyId);
+        ZWidgetMessage msg("", NeuTube::MSG_INFORMATION,
+                           ZWidgetMessage::TARGET_CUSTOM_AREA);
+        if (annotation.isEmpty()) {
+          msg.setMessage(QString("%1 is not annotated.").arg(selected.front()));
+        } else {
+          msg.setMessage(annotation.toString().c_str());
+        }
+        emit messageGenerated(msg);
+      }
+
+    }
+  }
+}
+
 
 void ZFlyEmProofMvc::processSelectionChange(const ZStackObjectSelector &selector)
 {
@@ -441,6 +481,7 @@ void ZFlyEmProofMvc::updateBodySelection()
     } else {
       getCompleteDocument()->processObjectModified(slice);
     }
+    processLabelSliceSelectionChange();
   }
 }
 
@@ -721,6 +762,7 @@ void ZFlyEmProofMvc::presentBodySplit(uint64_t bodyId)
 {
   enableSplit();
 
+  m_paintLabelWidget->show();
   m_mergeProject.closeBodyWindow();
 
   m_splitProject.setBodyId(bodyId);
@@ -802,6 +844,8 @@ void ZFlyEmProofMvc::exitSplit()
 
     getView()->redrawObject();
     */
+
+    m_paintLabelWidget->hide();
 
     m_splitProject.clear();
 
@@ -915,6 +959,10 @@ void ZFlyEmProofMvc::commitMerge()
                           "It cannot be undone. ",
                           this)) {
     m_mergeProject.uploadResult();
+    ZDvidSparseStack *body = getCompleteDocument()->getBodyForSplit();
+    if (body != NULL) {
+      getDocument()->getObjectGroup().removeObject(body, true);
+    }
   }
 }
 
@@ -959,6 +1007,8 @@ void ZFlyEmProofMvc::zoomTo(int x, int y, int z, int width)
   getPresenter()->setZoomRatio(
         locator.getZoomRatio(viewPort.width(), viewPort.height()));
   getPresenter()->setViewPortCenter(x, y, z);
+
+  getView()->highlightPosition(x, y, z);
 }
 
 
@@ -1055,6 +1105,11 @@ void ZFlyEmProofMvc::loadBookmark()
   }
 }
 
+void ZFlyEmProofMvc::openSequencer()
+{
+  m_bodyInfoDlg->show();
+}
+
 
 void ZFlyEmProofMvc::showSynapseAnnotation(bool visible)
 {
@@ -1081,9 +1136,11 @@ void ZFlyEmProofMvc::addSelectionAt(int x, int y, int z)
     if (bodyId > 0) {
       ZDvidLabelSlice *slice = getCompleteDocument()->getDvidLabelSlice();
       if (slice != NULL) {
+        slice->recordSelection();
         slice->addSelection(
               slice->getMappedLabel(bodyId, NeuTube::BODY_LABEL_ORIGINAL),
               NeuTube::BODY_LABEL_ORIGINAL);
+        slice->processSelection();
       }
       updateBodySelection();
     }
@@ -1099,9 +1156,11 @@ void ZFlyEmProofMvc::xorSelectionAt(int x, int y, int z)
       ZDvidLabelSlice *slice = getCompleteDocument()->getDvidLabelSlice();
       if (slice != NULL) {
 //        uint64_t finalBodyId = getMappedBodyId(bodyId);
+        slice->recordSelection();
         slice->xorSelection(
               slice->getMappedLabel(bodyId, NeuTube::BODY_LABEL_ORIGINAL),
               NeuTube::BODY_LABEL_MAPPED);
+        slice->processSelection();
 #if 0
         QList<uint64_t> labelList =
             getCompleteDocument()->getBodyMerger()->getOriginalLabelList(
@@ -1211,35 +1270,49 @@ std::set<uint64_t> ZFlyEmProofMvc::getCurrentSelectedBodyId(
 
 void ZFlyEmProofMvc::locateBody(uint64_t bodyId)
 {
-  ZDvidReader reader;
-  if (reader.open(getDvidTarget())) {
-    ZObject3dScan body = reader.readCoarseBody(bodyId);
-    if (body.isEmpty()) {
-      emit messageGenerated(
-            ZWidgetMessage(QString("Cannot go to body: %1. No such body.").
-            arg(bodyId), NeuTube::MSG_ERROR));
-    } else {
-      ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
+  if (!getCompletePresenter()->isSplitWindow()) {
+    ZDvidReader reader;
+    if (reader.open(getDvidTarget())) {
+      ZObject3dScan body = reader.readCoarseBody(bodyId);
+      if (body.isEmpty()) {
+        emit messageGenerated(
+              ZWidgetMessage(QString("Cannot go to body: %1. No such body.").
+                             arg(bodyId), NeuTube::MSG_ERROR));
+      } else {
+        ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
 
-      ZVoxel voxel = body.getSlice((body.getMinZ() + body.getMaxZ()) / 2).getMarker();
-      ZIntPoint pt(voxel.x(), voxel.y(), voxel.z());
-      pt -= dvidInfo.getStartBlockIndex();
-      pt *= dvidInfo.getBlockSize();
-      pt += dvidInfo.getStartCoordinates();
+        ZObject3dScan objSlice = body.getMedianSlice();
+        ZVoxel voxel = objSlice.getMarker();
+//        ZVoxel voxel = body.getSlice((body.getMinZ() + body.getMaxZ()) / 2).getMarker();
+        ZIntPoint pt(voxel.x(), voxel.y(), voxel.z());
+        pt -= dvidInfo.getStartBlockIndex();
+        pt *= dvidInfo.getBlockSize();
+        pt += ZIntPoint(dvidInfo.getBlockSize().getX() / 2,
+                        dvidInfo.getBlockSize().getY() / 2, 0);
+        pt += dvidInfo.getStartCoordinates();
 
-      //    std::set<uint64_t> bodySet;
-      //    bodySet.insert(bodyId);
+        //    std::set<uint64_t> bodySet;
+        //    bodySet.insert(bodyId);
 
-      ZDvidLabelSlice *slice = getCompleteDocument()->getDvidLabelSlice();
-      if (slice != NULL) {
-        slice->clearSelection();
-        slice->addSelection(
-              slice->getMappedLabel(bodyId, NeuTube::BODY_LABEL_ORIGINAL),
-              NeuTube::BODY_LABEL_MAPPED);
+        ZDvidLabelSlice *slice = getCompleteDocument()->getDvidLabelSlice();
+        if (slice != NULL) {
+          slice->clearSelection();
+          slice->recordSelection();
+          slice->addSelection(
+                slice->getMappedLabel(bodyId, NeuTube::BODY_LABEL_ORIGINAL),
+                NeuTube::BODY_LABEL_MAPPED);
+          slice->processSelection();
+          processLabelSliceSelectionChange();
+        }
+        updateBodySelection();
+
+        if (!objSlice.isEmpty()) {
+          zoomTo(pt);
+        } else {
+          emit messageGenerated(ZWidgetMessage("Failed to zoom into the body",
+                                               NeuTube::MSG_ERROR));
+        }
       }
-      updateBodySelection();
-
-      zoomTo(pt);
     }
   }
 }
@@ -1265,19 +1338,32 @@ void ZFlyEmProofMvc::recordCheckedBookmark(const QString &key, bool checking)
   ZFlyEmBookmark *bookmark = getCompleteDocument()->findFirstBookmark(key);
   if (bookmark != NULL) {
     bookmark->setChecked(checking);
-    ZDvidWriter writer;
-    if (writer.open(getDvidTarget())) {
-      writer.writeBookmark(*bookmark);
-      if (writer.getStatusCode() != 200) {
-        emit messageGenerated(ZWidgetMessage("Failed to record bookmark.",
-                                             NeuTube::MSG_WARING));
-      }
+    recordBookmark(bookmark);
+  }
+}
+
+void ZFlyEmProofMvc::recordBookmark(ZFlyEmBookmark *bookmark)
+{
+  ZDvidWriter writer;
+  if (writer.open(getDvidTarget())) {
+    writer.writeBookmark(*bookmark);
+    if (writer.getStatusCode() != 200) {
+      emit messageGenerated(ZWidgetMessage("Failed to record bookmark.",
+                                           NeuTube::MSG_WARING));
     }
   }
 }
 
+void ZFlyEmProofMvc::processCheckedUserBookmark(ZFlyEmBookmark */*bookmark*/)
+{
+  getCompleteDocument()->setCustomBookmarkSaveState(false);
+}
+
 void ZFlyEmProofMvc::enhanceTileContrast(bool state)
 {
+  getCompletePresenter()->setHighTileContrast(state);
+  getCompleteDocument()->enhanceTileContrast(state);
+  /*
   ZDvidTileEnsemble *tile = getCompleteDocument()->getDvidTileEnsemble();
   if (tile != NULL) {
     if (state) {
@@ -1287,6 +1373,7 @@ void ZFlyEmProofMvc::enhanceTileContrast(bool state)
     }
     getCompleteDocument()->processObjectModified(tile->getTarget());
   }
+  */
 }
 
 ZFlyEmSupervisor* ZFlyEmProofMvc::getSupervisor() const
@@ -1305,8 +1392,14 @@ void ZFlyEmProofMvc::annotateBookmark(ZFlyEmBookmark *bookmark)
     dlg.setFrom(bookmark);
     if (dlg.exec()) {
       dlg.annotate(bookmark);
+      getCompleteDocument()->processBookmarkAnnotationEvent(bookmark);
     }
   }
+}
+
+void ZFlyEmProofMvc::updateUserBookmarkTable()
+{
+  emit userBookmarkUpdated(getDocument().get());
 }
 
 //void ZFlyEmProofMvc::toggleEdgeMode(bool edgeOn)

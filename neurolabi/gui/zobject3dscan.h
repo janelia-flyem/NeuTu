@@ -75,7 +75,9 @@ public:
   ZObject3dStripe& getStripe(size_t index);
 
   void addStripe(int z, int y, bool canonizing = true);
+  void addStripeFast(int z, int y);
   void addSegment(int x1, int x2, bool canonizing = true);
+  void addSegmentFast(int x1, int x2);
   void addSegment(int z, int y, int x1, int x2, bool canonizing = true);
   void addStripe(const ZObject3dStripe &stripe, bool canonizing = true);
 
@@ -255,6 +257,8 @@ public:
   void duplicateAcrossZ(int depth);
 
   ZObject3dScan getSlice(int z) const;
+  ZObject3dScan getMedianSlice() const;
+
   ZObject3dScan getSlice(int minZ, int maxZ) const;
   ZObject3dScan interpolateSlice(int z) const;
   ZObject3dScan getFirstSlice() const;
@@ -489,6 +493,10 @@ public:
     Segment m_seg;
   };
 
+  std::vector<ZObject3dStripe>& getStripeArray() {
+    return m_stripeArray;
+  }
+
 private:
   void addForeground(ZStack *stack);
   void displaySolid(ZPainter &painter, int z, bool isProj, int stride = 1) const;
@@ -534,10 +542,14 @@ int ZObject3dScan::scanArray(
   T v = array[x];
 
   if (isEmpty()) {
-    addStripe(z, y, false);
+//    addStripe(z, y, false);
+    addStripeFast(z, y);
+    getStripeArray().back().getSegmentArray().reserve(8);
   } else {
     if (m_stripeArray.back().getY() != y || m_stripeArray.back().getZ() != z) {
-      addStripe(z, y, false);
+//      addStripe(z, y, false);
+      addStripeFast(z, y);
+      getStripeArray().back().getSegmentArray().reserve(8);
     }
   }
 
@@ -549,7 +561,9 @@ int ZObject3dScan::scanArray(
   }
 
   x += x0;
-  addSegment(x, x + length - 1, false);
+//  addSegment(x, x + length - 1, false);
+
+  addSegmentFast(x, x + length - 1);
 
   return length;
 }
@@ -642,19 +656,25 @@ std::map<int, ZObject3dScan*>* ZObject3dScan::extractAllForegroundObject(
     bodySet = new std::map<int, ZObject3dScan*>;
   }
 
+  std::vector<std::map<int, ZObject3dScan*> > m_bodySetArray(20);
+
   ZObject3dScan *obj = NULL;
   for (int z = 0; z < depth; ++z) {
     for (int y = 0; y < height; y += yStep) {
-      int x = 0;
+      int x = x0;
       while (x < width) {
         int v = array[x];
         if (v > 0) {
-          std::map<int, ZObject3dScan*>::iterator iter = bodySet->find(v);
-          if (iter == bodySet->end()) {
+          std::map<int, ZObject3dScan*> &currentSet = m_bodySetArray[v % 20];
+
+          std::map<int, ZObject3dScan*>::iterator iter = currentSet.find(v);
+          if (iter == currentSet.end()) {
             obj = new ZObject3dScan;
             obj->setLabel(v);
+            obj->getStripeArray().reserve(height);
             //(*bodySet)[v] = obj;
             bodySet->insert(std::map<int, ZObject3dScan*>::value_type(v, obj));
+            currentSet.insert(std::map<int, ZObject3dScan*>::value_type(v, obj));
           } else {
             obj = iter->second;
           }

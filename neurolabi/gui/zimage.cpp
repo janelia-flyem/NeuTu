@@ -5,6 +5,8 @@
 #include "tz_stack_neighborhood.h"
 #include "zstack.hxx"
 #include "zfiletype.h"
+#include "zobject3dscan.h"
+#include "zobject3dstripe.h"
 
 ZImage::ZImage() : QImage()
 {
@@ -72,6 +74,13 @@ void ZImage::setData(const ZStack *stack, int z, bool ignoringZero,
   }
 }
 
+void ZImage::clear()
+{
+  uchar *line = scanLine(0);
+  bzero(line, this->byteCount());
+//  for (int i = 0; i < this->byteCount()
+}
+
 void ZImage::setData(const uint8 *data, int threshold)
 {
   int i, j;
@@ -124,6 +133,46 @@ void ZImage::setData(const color_t *data, int alpha)
       data++;
       //*line++ = '\xff';
       *line++ = alpha;
+    }
+  }
+}
+
+void ZImage::setData(const ZObject3dScan &obj)
+{
+  setData(obj, obj.getColor());
+}
+
+void ZImage::setData(const ZObject3dScan &obj, const QColor &color)
+{
+  uint32_t colorValue = color.alpha();
+  colorValue <<= 8;
+  colorValue += color.red();
+  colorValue <<= 8;
+  colorValue += color.blue();
+  colorValue <<= 8;
+  colorValue += color.green();
+
+  int stripeNumber = obj.getStripeNumber();
+  for (int i = 0; i < stripeNumber; ++i) {
+    const ZObject3dStripe &stripe = obj.getStripe(i);
+//    const ZObject3dScan::Segment& seg= iter.next();
+    int y = m_transform.transformY(stripe.getY());
+    int nseg = stripe.getSegmentNumber();
+    for (int j = 0; j < nseg; ++j) {
+      int x0 = m_transform.transformX(stripe.getSegmentStart(j));
+      int x1 = m_transform.transformX(stripe.getSegmentEnd(j));
+      if (x0 < 0) {
+        x0 = 0;
+      }
+      if (x1 >= width()) {
+        x1 = width() - 1;
+      }
+      if (y < height() && y >= 0) {
+        uint32_t *line = ((uint32_t*) scanLine(y)) + x0;
+        for (int x = x0; x <= x1; ++x) {
+          *line++ = colorValue;
+        }
+      }
     }
   }
 }
@@ -473,43 +522,65 @@ void ZImage::enhanceEdge()
   delete []edge;
 }
 
-void ZImage::enhanceContrast()
+void ZImage::enhanceContrast(bool highContrast)
 {
-  int i, j;
-  if (this->depth() == 32) {
-    for (j = 0; j < height(); j++) {
-      uchar *line = scanLine(j);
-      for (i = 0; i < width(); i++) {
-        if (line[0] <= 213) {
-          line[0] += line[0] / 5;
-        } else {
-          line[0] = 255;
-        }
-        if (line[1] <= 213) {
-          line[1] += line[1] / 5;
-        } else {
-          line[1] = 255;
-        }
-        if (line[2] <= 213) {
-          line[2] += line[2] / 5;
-        } else {
-          line[2] = 255;
-        }
+  if (format() != ZImage::Format_Indexed8) {
+    int i, j;
+    if (this->depth() == 32) {
+      for (j = 0; j < height(); j++) {
+        uchar *line = scanLine(j);
+        for (i = 0; i < width(); i++) {
+          if (line[0] <= 213) {
+            line[0] += line[0] / 5;
+          } else {
+            line[0] = 255;
+          }
+          if (line[1] <= 213) {
+            line[1] += line[1] / 5;
+          } else {
+            line[1] = 255;
+          }
+          if (line[2] <= 213) {
+            line[2] += line[2] / 5;
+          } else {
+            line[2] = 255;
+          }
 
-        line += 4;
+          line += 4;
+        }
+      }
+    } else if (this->depth() == 8) {
+      for (j = 0; j < height(); j++) {
+        uchar *line = scanLine(j);
+        for (i = 0; i < width(); i++) {
+          if (line[0] <= 213) {
+            line[0] += line[0] / 5;
+          } else {
+            line[0] = 255;
+          }
+
+          line++;
+        }
       }
     }
-  } else if (this->depth() == 8) {
-    for (j = 0; j < height(); j++) {
-      uchar *line = scanLine(j);
-      for (i = 0; i < width(); i++) {
-        if (line[0] <= 213) {
-          line[0] += line[0] / 5;
-        } else {
-          line[0] = 255;
+  } else {
+    if (highContrast) {
+      for (int i = 0; i < 255; ++i) {
+        QColor color;
+        double v = i / 255.0;
+        v *= sqrt(v);
+        v = v * 1.5;
+        if (v > 1.0) {
+          v = 1.0;
         }
-
-        line++;
+        color.setRedF(v);
+        color.setGreenF(v);
+        color.setBlueF(v);
+        setColor(i, color.rgb());
+      }
+    } else {
+      for (int i = 0; i < 255; ++i) {
+        setColor(i, qRgb(i, i, i));
       }
     }
   }

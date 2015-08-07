@@ -34,6 +34,7 @@
 #include "zclosedcurve.h"
 #include "zintpoint.h"
 #include "zpainter.h"
+#include "zrect2d.h"
 
 using namespace std;
 
@@ -3200,7 +3201,7 @@ void ZSwcTree::setColorScheme(EColorScheme scheme)
     m_rootColor = QColor(164, 164, 255, 164);
     m_branchPointColor = QColor(164, 255, 164, 164);
     m_nodeColor = QColor(255, 164, 164, 164);
-    m_planeSkeletonColor = QColor(255, 128, 128, 128);
+    m_planeSkeletonColor = QColor(255, 128, 128, 100);
 
     m_rootFocusColor = QColor(0, 0, 255);
     m_branchPointFocusColor= QColor(0, 255, 0);
@@ -3274,6 +3275,22 @@ ZClosedCurve ZSwcTree::toClosedCurve() const
   }
 
   return curve;
+}
+
+void ZSwcTree::selectNode(const ZRect2d &roi, bool appending)
+{
+  std::vector<Swc_Tree_Node*> nodeList;
+  DepthFirstIterator iter(this);
+  while (iter.hasNext()) {
+    Swc_Tree_Node *tn = iter.next();
+    if (SwcTreeNode::isRegular(tn)) {
+      if (roi.contains(SwcTreeNode::x(tn), SwcTreeNode::y(tn))) {
+        nodeList.push_back(tn);
+      }
+    }
+  }
+
+  selectNode(nodeList.begin(), nodeList.end(), appending);
 }
 
 Swc_Tree_Node* ZSwcTree::selectHitNode(bool appending)

@@ -81,6 +81,8 @@ protected:
 
   void initThumbnailScene();
   void createMenu();
+  void createExportMenu();
+  void createImportMenu();
 
 signals:
   void showSummaryTriggered();
@@ -156,6 +158,8 @@ private slots:
 
   void exportTypeLabelFile();
 
+  void importSynapse();
+
 private:
   ZStackDoc* showViewSelectedModel(ZFlyEmQueryView *view);
   ZStackDoc* showViewSelectedBody(ZFlyEmQueryView *view);
@@ -194,6 +198,7 @@ private:
   QMap<QString, QFuture<void> > m_threadFutureMap;
   QMenu *m_mainMenu;
   QMenu *m_exportMenu;
+  QMenu *m_importMenu;
 
   SwcExportDialog *m_swcExportDlg;
 

@@ -21,6 +21,9 @@ public:
   bool isHighlight() const;
   void setHighlightMode(bool hl);
   bool isSplitOn() const;
+  bool highTileContrast() const;
+
+  void setHighTileContrast(bool high);
 
   void enableSplit();
   void disableSplit();
@@ -56,6 +59,7 @@ public slots:
 private:
   bool m_isHightlightMode;
   bool m_splitWindowMode;
+  bool m_highTileContrast;
 
   ZKeyOperationMap m_bookmarkKeyOperationMap;
 };

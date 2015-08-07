@@ -7,6 +7,7 @@
 #include "zdvidtarget.h"
 //#include "zintpoint.h"
 #include "dvid/zdvidtileinfo.h"
+#include "zpixmap.h"
 
 class ZPainter;
 class ZStack;
@@ -49,6 +50,11 @@ public:
   int getY() const;
   int getZ() const;
 
+  inline int getIx() { return m_ix; }
+  inline int getIy() { return m_iy; }
+
+  void setZ(int z) { m_z = z; }
+
   int getWidth() const;
   int getHeight() const;
 
@@ -57,8 +63,16 @@ public:
   ZRect2d getBoundBox() const;
   using ZStackObject::getBoundBox; // fix warning -Woverloaded-virtual
 
+//  void setImageData(const uint8_t *data, int width, int height);
+
+  void enhanceContrast(bool high);
+
 private:
-  ZImage m_image;
+  void updatePixmap();
+
+private:
+  ZImage *m_image;
+  ZPixmap m_pixmap;
   int m_ix;
   int m_iy;
   int m_z;

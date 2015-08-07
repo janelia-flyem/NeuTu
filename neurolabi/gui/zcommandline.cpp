@@ -421,6 +421,8 @@ int ZCommandLine::runTraceNeuron()
     return 1;
   }
 
+  ZNeuronTracerConfig::getInstance().load(m_configDir + "/json/trace_config.json");
+
   ZNeuronTracer tracer;
   if (m_configJson.hasKey("trace")) {
     tracer.loadJsonObject(
@@ -501,11 +503,11 @@ int ZCommandLine::runImageSeparation()
   return 0;
 }
 
-std::set<int> ZCommandLine::loadBodySet(const std::string &input)
+std::set<uint64_t> ZCommandLine::loadBodySet(const std::string &input)
 {
 //  ZString
 
-  std::set<int> bodySet;
+  std::set<uint64_t> bodySet;
 
   FILE *fp = fopen(input.c_str(), "r");
   ZString str;
@@ -552,7 +554,7 @@ int ZCommandLine::runSkeletonize()
     ZDvidWriter writer;
     writer.open(target);
 
-    std::set<int> bodyIdSet;
+    std::set<uint64_t> bodyIdSet;
 
     if (m_input.size() == 1) {
       bodyIdSet = reader.readBodyId(100000);
@@ -685,8 +687,8 @@ int ZCommandLine::run(int argc, char *argv[])
 
   std::string applicationDir = ZString::dirPath(argv[0]);
   std::cout << applicationDir << std::endl;
-  std::string configDir = applicationDir + "/json";
-  std::string configPath = configDir + "/command_config.json";
+  m_configDir = applicationDir + "/json";
+  std::string configPath = m_configDir + "/command_config.json";
 
   if (Is_Arg_Matched(const_cast<char*>("--config"))) {
     configPath = Get_String_Arg(const_cast<char*>("--config"));

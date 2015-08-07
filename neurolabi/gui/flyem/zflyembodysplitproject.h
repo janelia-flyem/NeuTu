@@ -8,6 +8,7 @@
 #include "qthreadfuturemap.h"
 #include "dvid/zdvidtarget.h"
 #include "flyem/zflyembookmarklistmodel.h"
+#include "flyem/zflyembookmarkarray.h"
 #include "qthreadfuturemap.h"
 #include "zsharedpointer.h"
 #include "dvid/zdvidinfo.h"

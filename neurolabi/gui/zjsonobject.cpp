@@ -354,3 +354,12 @@ void ZJsonObject::removeKey(const char *key)
     json_object_del(m_data, key);
   }
 }
+
+std::string ZJsonObject::dumpString(int indent) const
+{
+  if (isEmpty()) {
+    return "{}";
+  }
+
+  return ZJsonValue::dumpString(indent);
+}

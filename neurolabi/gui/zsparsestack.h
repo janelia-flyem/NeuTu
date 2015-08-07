@@ -22,15 +22,20 @@ public:
   void deprecate(EComponent component);
   bool isDeprecated(EComponent component) const;
 
+  /*!
+   * \brief Get the dense stack representation of the sparse stack.
+   *
+   * \return Stack data pointer, which is owned by the sparse stack object.
+   */
   ZStack* getStack();
   const ZStack* getStack() const;
 
+  /*!
+   * \brief Get the downsample interval for producing the dense stack.
+   */
   inline const ZIntPoint& getDownsampleInterval() const {
     return m_dsIntv;
   }
-
-
-  //ZStack* toDownsampledStack(int xIntv, int yIntv, int zIntv);
 
   /*!
    * \brief Get a slice of the sparse stack
@@ -39,9 +44,21 @@ public:
    */
   ZStack* getSlice(int z) const;
 
+  /*!
+   * \brief Get the maximum intensity projection of the sparse stack
+   *
+   * The caller is responsible for deleting the returned pointer.
+   */
   ZStack* getMip() const;
 
+  /*!
+   * \brief Set the mask of the sparse stack
+   */
   void setObjectMask(ZObject3dScan *obj);
+
+  /*!
+   * \brief Set greyscale data of the sparse stack
+   */
   void setGreyScale(ZStackBlockGrid *stackGrid);
 
   inline const ZObject3dScan* getObjectMask() const {
@@ -60,6 +77,9 @@ public:
     return m_stackGrid;
   }
 
+  /*!
+   * \brief Count foreground voxels.
+   */
   size_t getObjectVolume() const;
 
   /*!

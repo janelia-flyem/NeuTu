@@ -50,6 +50,8 @@ void FlyEmSplitControlForm::setupWidgetBehavior()
           this, SLOT(locateBookmark(QModelIndex)));
   connect(ui->bookmarkView, SIGNAL(bookmarkChecked(QString,bool)),
           this, SIGNAL(bookmarkChecked(QString, bool)));
+  connect(ui->bookmarkView, SIGNAL(bookmarkChecked(ZFlyEmBookmark*)),
+          this, SIGNAL(bookmarkChecked(ZFlyEmBookmark*)));
 
 
   connect(ui->synapsePushButton, SIGNAL(clicked()),
@@ -119,8 +121,8 @@ void FlyEmSplitControlForm::checkCurrentBookmark(bool checking)
   QModelIndexList selected = sel->selectedIndexes();
 
   foreach (const QModelIndex &index, selected) {
-    ZFlyEmBookmark &bookmark = m_bookmarkList.getBookmark(index.row());
-    bookmark.setChecked(checking);
+    ZFlyEmBookmark *bookmark = m_bookmarkList.getBookmark(index.row());
+    bookmark->setChecked(checking);
     m_bookmarkList.update(index.row());
   }
 }
@@ -207,7 +209,7 @@ void FlyEmSplitControlForm::updateBookmarkTable(ZFlyEmBodySplitProject *project)
         if (bookmark->getBodyId() == project->getBodyId() &&
             !bookmark->isCustom() &&
             bookmark->getBookmarkType() == ZFlyEmBookmark::TYPE_FALSE_MERGE) {
-          m_bookmarkList.append(*bookmark);
+          m_bookmarkList.append(bookmark);
         }
       }
     }
@@ -240,11 +242,11 @@ void FlyEmSplitControlForm::updateBookmarkTable(ZFlyEmBodySplitProject *project)
 
 void FlyEmSplitControlForm::locateBookmark(const QModelIndex &index)
 {
-  const ZFlyEmBookmark &bookmark = m_bookmarkList.getBookmark(index.row());
+  const ZFlyEmBookmark *bookmark = m_bookmarkList.getBookmark(index.row());
 
-  emit zoomingTo(bookmark.getLocation().getX(),
-                 bookmark.getLocation().getY(),
-                 bookmark.getLocation().getZ());
+  emit zoomingTo(bookmark->getLocation().getX(),
+                 bookmark->getLocation().getY(),
+                 bookmark->getLocation().getZ());
 }
 
 void FlyEmSplitControlForm::loadBookmark()

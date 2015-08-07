@@ -107,6 +107,16 @@ ZIntPoint operator / (const ZIntPoint &pt1, const ZIntPoint &pt2)
                    pt1.getZ() / pt2.getZ());
 }
 
+ZIntPoint operator / (const ZIntPoint &pt1, int scale)
+{
+  if (scale == 0) {
+    return ZIntPoint(0, 0, 0);
+  }
+
+  return ZIntPoint(pt1.getX() / scale, pt1.getY() / scale,
+                   pt1.getZ() / scale);
+}
+
 std::string ZIntPoint::toString() const
 {
   std::ostringstream stream;

@@ -136,18 +136,6 @@ void ZDvidWriter::writeThumbnail(int bodyId, Stack *stack)
 void ZDvidWriter::writeAnnotation(uint64_t bodyId, const ZJsonObject &obj)
 {
   if (bodyId > 0 && !obj.isEmpty()) {
-    //ZString annotationString = obj.dumpString(0);
-    //annotationString.replace(" ", "");
-    //annotationString.replace("\"", "\"\"\"");
-
-    /*
-    QString command = QString(
-          "curl -g -X POST -H \"Content-Type: application/json\" "
-          "-d \"%1\" %2/api/node/%3/annotations/%4").arg(annotationString.c_str()).
-        arg(m_dvidClient->getServer()).arg(m_dvidClient->getUuid()).
-        arg(bodyId);
-        */
-
     QString command = QString(
           "curl -i -X POST -H \"Content-Type: application/json\" "
           "-d \"%1\" %2").arg(getJsonStringForCurl(obj).c_str()).
@@ -155,12 +143,6 @@ void ZDvidWriter::writeAnnotation(uint64_t bodyId, const ZJsonObject &obj)
               bodyId, m_dvidTarget.getBodyLabelName()).c_str());
 
     runCommand(command);
-
-    /*
-    qDebug() << command;
-
-    QProcess::execute(command);
-    */
   }
 }
 
@@ -287,10 +269,18 @@ void ZDvidWriter::writeJsonString(
 }
 
 
-void ZDvidWriter::writeJson(const std::string url, const ZJsonValue &value)
+void ZDvidWriter::writeJson(const std::string url, const ZJsonValue &value,
+                            const std::string &emptyValueString)
 {
-  writeJsonString(url, value.dumpString(0));
+  if (value.isEmpty()) {
+    if (!emptyValueString.empty()) {
+      writeJsonString(url, emptyValueString);
+    }
+  } else {
+    writeJsonString(url, value.dumpString(0));
+  }
 }
+
 
 void ZDvidWriter::mergeBody(const std::string &dataName,
                             int targetId, const std::vector<int> &bodyId)
@@ -307,7 +297,7 @@ void ZDvidWriter::mergeBody(const std::string &dataName,
   mergeArray.append(jsonArray);
 */
   ZDvidUrl dvidUrl(m_dvidTarget);
-  writeJson(dvidUrl.getMergeUrl(dataName), jsonArray);
+  writeJson(dvidUrl.getMergeUrl(dataName), jsonArray, "[]");
 }
 
 void ZDvidWriter::writeBoundBox(const ZIntCuboid &cuboid, int z)
@@ -429,7 +419,7 @@ void ZDvidWriter::writeBodyInfo(int bodyId)
       ZJsonObject obj = bodyInfo.toJsonObject();
       ZDvidUrl dvidUrl(m_dvidTarget);
       writeJson(dvidUrl.getBodyInfoUrl(
-                  bodyId, m_dvidTarget.getBodyLabelName()), obj);
+                  bodyId, m_dvidTarget.getBodyLabelName()), obj, "{}");
     }
   }
 }
@@ -599,11 +589,12 @@ uint64_t ZDvidWriter::writeSplit(
 
 void ZDvidWriter::writeMergeOperation(const QMap<uint64_t, uint64_t> &bodyMap)
 {
-  std::string url = ZDvidUrl(m_dvidTarget).getMergeOperationUrl();
+  std::string url = ZDvidUrl(m_dvidTarget).getMergeOperationUrl(
+        NeuTube::GetUserName());
 
   if (!bodyMap.isEmpty()) {
     ZJsonArray array = ZJsonFactory::MakeJsonArray(bodyMap);
-    writeJsonString(url, array.dumpString());
+    writeJsonString(url, array.dumpString(0));
   } else {
     writeJsonString(url, "[]");
   }
@@ -661,4 +652,9 @@ void ZDvidWriter::writeCustomBookmark(const ZJsonValue &bookmarkJson)
 {
   writeJson(ZDvidData::GetName(ZDvidData::ROLE_BOOKMARK),
             NeuTube::GetUserName(), bookmarkJson);
+}
+
+void ZDvidWriter::deleteAllCustomBookmark()
+{
+  writeCustomBookmark(ZJsonArray());
 }

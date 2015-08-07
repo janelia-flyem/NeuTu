@@ -26,7 +26,7 @@
 #include "zinteractivecontext.h"
 #include "dialogs/traceoutputdialog.h"
 #include "dialogs/bcadjustdialog.h"
-#include "channeldialog.h"
+#include "dialogs/channeldialog.h"
 #include "tz_math.h"
 //itkimagedefs.h has to be included before tz_error.h for unknown reason.
 #include "zstackprocessor.h"
@@ -34,11 +34,11 @@
 #include "dialogs/zeditswcdialog.h"
 #include "dialogs/cannyedgedialog.h"
 #include "dialogs/medianfilterdialog.h"
-#include "diffusiondialog.h"
-#include "connectedthresholddialog.h"
+#include "dialogs/diffusiondialog.h"
+#include "dialogs/connectedthresholddialog.h"
 #include "zstackpresenter.h"
 #include "zstack.hxx"
-#include "zrescaleswcdialog.h"
+#include "dialogs/zrescaleswcdialog.h"
 #include "tz_image_io.h"
 #include "dialogs/distancemapdialog.h"
 #include "dialogs/regionexpanddialog.h"
@@ -63,12 +63,12 @@
 #include "tz_graph_utils.h"
 #include "tz_workspace.h"
 #include "tz_graph.h"
-#include "flyemskeletonizationdialog.h"
+#include "dialogs/flyemskeletonizationdialog.h"
 //#include "zstackaccessor.h"
 #include "zmatrix.h"
 #include "zswcbranch.h"
 #include "zswctreematcher.h"
-#include "parameterdialog.h"
+#include "dialogs/parameterdialog.h"
 #include "zstring.h"
 #include "zrandomgenerator.h"
 #include "zjsonobject.h"
@@ -99,26 +99,26 @@
 #include "z3dvolumeraycaster.h"
 #include "zstackdoccommand.h"
 #include "zqtmessagereporter.h"
-#include "helpdialog.h"
+#include "dialogs/helpdialog.h"
 #include "zdialogfactory.h"
 #include "zstackstatistics.h"
 #include "zqtbarprogressreporter.h"
-#include "projectiondialog.h"
+#include "dialogs/projectiondialog.h"
 #include "biocytin/swcprocessor.h"
-#include "startsettingdialog.h"
+#include "dialogs/startsettingdialog.h"
 #include "zstackreadthread.h"
 #include "zswcpositionadjuster.h"
-#include "diagnosisdialog.h"
+#include "dialogs/diagnosisdialog.h"
 #include "swc/zswcresampler.h"
 #include "biocytin/zbiocytinfilenameparser.h"
-#include "penwidthdialog.h"
+#include "dialogs/penwidthdialog.h"
 #include "dvid/zdvidclient.h"
 #include "dvid/zdvidbuffer.h"
-#include "dvidobjectdialog.h"
-#include "resolutiondialog.h"
+#include "dialogs/dvidobjectdialog.h"
+#include "dialogs/resolutiondialog.h"
 #include "zswcglobalfeatureanalyzer.h"
 #include "zstackfactory.h"
-#include "dvidimagedialog.h"
+#include "dialogs/dvidimagedialog.h"
 #include "tilemanager.h"
 #include "ztiledstackframe.h"
 #include "dvid/zdvidreader.h"
@@ -126,33 +126,33 @@
 #include "flyem/zflyemdatainfo.h"
 #include "flyem/zflyemqualityanalyzer.h"
 #include "zswcgenerator.h"
-#include "flyembodyiddialog.h"
-#include "flyemhotspotdialog.h"
+#include "dialogs/flyembodyiddialog.h"
+#include "dialogs/flyemhotspotdialog.h"
 #include "dvid/zdvidinfo.h"
 #include "zswctreenodearray.h"
-#include "zdviddialog.h"
+#include "dialogs/zdviddialog.h"
 #include "dvid/zdvidtarget.h"
 #include "dvid/zdvidfilter.h"
-#include "flyembodyfilterdialog.h"
+#include "dialogs/flyembodyfilterdialog.h"
 #include "tz_stack_math.h"
 #include "tz_stack_relation.h"
 #include "zstackdoclabelstackfactory.h"
 #include "zsharedpointer.h"
 #include "zsparseobject.h"
-#include "zflyemnewbodysplitprojectdialog.h"
-#include "flyembodysplitprojectdialog.h"
+#include "dialogs/zflyemnewbodysplitprojectdialog.h"
+#include "dialogs/flyembodysplitprojectdialog.h"
 #include "zsparsestack.h"
 #include "ztest.h"
-#include "dvidskeletonizedialog.h"
-#include "zflyemroidialog.h"
-#include "shapepaperdialog.h"
+#include "dialogs/dvidskeletonizedialog.h"
+#include "dialogs/zflyemroidialog.h"
+#include "dialogs/shapepaperdialog.h"
 #include "zsleeper.h"
-#include "dvidoperatedialog.h"
-#include "synapseimportdialog.h"
-#include "flyembodymergeprojectdialog.h"
-#include "zsegmentationprojectdialog.h"
+#include "dialogs/dvidoperatedialog.h"
+#include "dialogs/synapseimportdialog.h"
+#include "dialogs/flyembodymergeprojectdialog.h"
+#include "dialogs/zsegmentationprojectdialog.h"
 #include "dialogs/zsubtractswcsdialog.h"
-#include "zautotracedialog.h"
+#include "dialogs/zautotracedialog.h"
 #include "zstackviewmanager.h"
 #include "zflyemprojectmanager.h"
 #include "zflyemdataloader.h"
@@ -162,6 +162,7 @@
 #include "zmessage.h"
 #include "zmessagemanager.h"
 #include "dialogs/ztestdialog.h"
+#include "dialogs/ztestdialog2.h"
 #include "dvid/zdvidtile.h"
 #include "flyem/zflyemstackdoc.h"
 #include "flyem/zproofreadwindow.h"
@@ -435,6 +436,7 @@ void MainWindow::initDialog()
   m_synapseDlg = new SynapseImportDialog(this);
   m_hackathonConfigDlg = new ZFlyEmHackathonConfigDlg(this);
   m_testDlg = new ZTestDialog(this);
+  m_testDlg2 = new ZTestDialog2(this);
 #else
   m_bodySplitProjectDialog = NULL;
   m_newBsProjectDialog = NULL;
@@ -721,6 +723,12 @@ void MainWindow::createActions()
   testAction->setStatusTip(tr("Test"));
   testAction->setIcon(QIcon(":/images/test.png"));
   connect(testAction, SIGNAL(triggered()), this, SLOT(test()));
+
+  testAction2 = new QAction(tr("Test2"), this);
+  testAction2->setStatusTip(tr("Test2"));
+  testAction2->setIcon(QIcon(":/images/test.png"));
+  connect(testAction2, SIGNAL(triggered()), this, SLOT(test2()));
+
 //#endif
 
   //customizeActions();
@@ -999,7 +1007,7 @@ void MainWindow::createToolBars()
   //m_ui->toolBar->setIconSize(QSize(32, 32));
 
   if (GET_APPLICATION_NAME == "Biocytin") {
-    m_ui->toolBar->addAction(m_ui->actionNewProject);
+//    m_ui->toolBar->addAction(m_ui->actionNewProject);
     m_ui->toolBar->addAction(m_ui->actionTiles);
   }
   //m_ui->toolBar->addAction(openAction);
@@ -1055,6 +1063,7 @@ void MainWindow::createToolBars()
   m_ui->toolBar->addAction(screenshotAction);
 //#ifdef _DEBUG_
   m_ui->toolBar->addAction(testAction);
+  m_ui->toolBar->addAction(testAction2);
 //#endif
   m_ui->toolBar->addAction(m_ui->actionShortcut);
 }
@@ -2062,7 +2071,7 @@ void MainWindow::about()
   if (!NeutubeConfig::getInstance().getApplication().empty()) {
     title += QString("<p>") +
         NeutubeConfig::getInstance().getApplication().c_str() + " Edition" +
-        " (1012233ede2c0795f082b1cb290b340ef88cba32)</p>";
+        " (191de9f9189e5dc973b0af6e9f6eb0a9823e090a)</p>";
   }
   QString thirdPartyLib = QString("<p><a href=\"file:///%1/doc/ThirdPartyLibraries.txt\">Third Party Libraries</a></p>")
       .arg(QApplication::applicationDirPath());
@@ -3335,6 +3344,12 @@ void MainWindow::test()
 #endif
 }
 
+void MainWindow::test2() {
+    // std::cout << "in test2" << std::endl;
+    // m_testDlg->show();
+    m_testDlg2->show();
+}
+
 void MainWindow::evokeStackFrame(QMdiSubWindow *frame)
 {
 #ifdef _DEBUG_
@@ -3506,7 +3521,7 @@ void MainWindow::on_actionSynapse_Annotation_triggered()
 
         for (std::vector<ZPunctum*>::iterator iter = puncta.begin();
              iter != puncta.end(); ++iter) {
-          doc->addObject(*iter);
+          doc->addObject(*iter, false);
 //          doc->addPunctum(*iter);
         }
       }
@@ -4654,9 +4669,13 @@ void MainWindow::on_actionMake_Projection_triggered()
       projector.setSpeedLevel(paramDlg.speedLevel());
       projector.setSmoothingDepth(paramDlg.smoothingDepth());
       projector.setUsingExisted(paramDlg.usingExisted());
+      projector.setSlabNumber(paramDlg.getSlabCount());
 
-      ZStack *stack = frame->document()->projectBiocytinStack(projector);
-      if (stack != NULL) {
+      std::vector<ZStack*> projArray =
+          frame->document()->projectBiocytinStack(projector);
+      for (std::vector<ZStack*>::iterator iter = projArray.begin();
+           iter != projArray.end(); ++iter) {
+        ZStack *stack = *iter;
         ZStackFrame *newFrame =
             createStackFrame(stack, NeuTube::Document::BIOCYTIN_PROJECTION, frame);
         newFrame->makeSwcProjection(frame->document().get());
@@ -6540,7 +6559,7 @@ void MainWindow::on_actionUpdate_Skeletons_triggered()
     if (reader.open(m_dvidSkeletonizeDialog->getDvidTarget())) {
       ZDvidWriter writer;
       writer.open(m_dvidSkeletonizeDialog->getDvidTarget());
-      std::set<int> bodyIdArray;
+      std::set<uint64_t> bodyIdArray;
 
       if (m_dvidSkeletonizeDialog->hasUpperBodySize()) {
         bodyIdArray =
@@ -6559,7 +6578,7 @@ void MainWindow::on_actionUpdate_Skeletons_triggered()
       skeletonizer.configure(config);
 
       int count = 1;
-      for (std::set<int>::const_iterator iter = bodyIdArray.begin();
+      for (std::set<uint64_t>::const_iterator iter = bodyIdArray.begin();
            iter != bodyIdArray.end(); ++iter, ++count) {
         int bodyId = *iter;
         if (excluded.count(bodyId) == 0) {

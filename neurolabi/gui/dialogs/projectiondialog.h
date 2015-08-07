@@ -19,6 +19,7 @@ public:
   bool adjustingContrast() const;
   bool smoothingDepth() const;
   bool usingExisted() const;
+  int getSlabCount() const;
 
 private:
   Ui::ProjectionDialog *ui;

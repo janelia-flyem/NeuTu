@@ -94,20 +94,27 @@ void ZStackView::init()
   m_infoLabel->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
   m_infoLabel->setFocusPolicy(Qt::NoFocus);
 
+  m_msgLabel = new QLabel(this);
+  m_msgLabel->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
+  m_msgLabel->setFocusPolicy(Qt::NoFocus);
+
   m_activeLabel = new QLabel(this);
   m_activeLabel->setWindowFlags(Qt::FramelessWindowHint);
+  m_activeLabel->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
   m_activeLabel->setText("<font color='green'>*Active*</font>");
   m_activeLabel->hide();
   m_activeLabel->setFocusPolicy(Qt::NoFocus);
 
   m_progress = new QProgressBar(this);
   m_progress->setVisible(false);
-  m_progress->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
+  m_progress->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
   m_progress->setFocusPolicy(Qt::NoFocus);
 
   m_topLayout = new QHBoxLayout;
   m_topLayout->addWidget(m_infoLabel);
+//  m_topLayout->addWidget(m_msgLabel);
   m_topLayout->addWidget(m_activeLabel);
+
   //m_topLayout->addWidget(m_progress);
 
 
@@ -116,11 +123,15 @@ void ZStackView::init()
   m_channelControlLayout = new QHBoxLayout;
 
   m_secondTopLayout->addLayout(m_channelControlLayout);
+  m_secondTopLayout->addWidget(m_msgLabel);
+//  m_msgLabel->setText("test");
   m_secondTopLayout->addWidget(m_progress);
 //  m_secondTopLayout->addWidget(m_zSpinBox);
+
   m_secondTopLayout->addSpacerItem(new QSpacerItem(1, m_progress->height(),
-                                               QSizePolicy::Expanding,
+                                               QSizePolicy::Preferred,
                                                QSizePolicy::Fixed));
+
 
   m_layout = new QVBoxLayout;
   m_layout->setSpacing(0);
@@ -513,6 +524,11 @@ void ZStackView::updatePaintBundle()
     if (buddyPresenter()->hasObjectToShow()) {
       m_paintBundle.addDrawableList(buddyPresenter()->decorations());
     }
+  }
+
+  if (buddyPresenter()->hightlightOn()) {
+    m_paintBundle.addDrawableList(&(buddyPresenter()->getHighlightDecorationList()));
+    buddyPresenter()->setHighlight(false);
   }
 
   // active deco
@@ -1004,6 +1020,8 @@ void ZStackView::updateImageCanvas()
   resetCanvasWithStack(m_image, &m_imagePainter);
   if (buddyDocument()->hasStackPaint()) {
     if (m_image != NULL) {
+      m_image->setOffset(-buddyDocument()->getStackOffset().getX(),
+                         -buddyDocument()->getStackOffset().getY());
       if ((m_image->width() != buddyDocument()->getStackWidth()) ||
           (m_image->height() != buddyDocument()->getStackHeight())) {
         clearCanvas();
@@ -1081,7 +1099,8 @@ void ZStackView::updateObjectCanvas()
   QSize canvasSize = getCanvasSize();
 
   if (!canvasSize.isEmpty() &&
-      buddyDocument()->hasDrawable(ZStackObject::TARGET_OBJECT_CANVAS)) {
+      (buddyDocument()->hasDrawable(ZStackObject::TARGET_OBJECT_CANVAS) ||
+      buddyPresenter()->hasDrawable(ZStackObject::TARGET_OBJECT_CANVAS))) {
     if (m_objectCanvas != NULL) {
       if (m_objectCanvas->width() != canvasSize.width() ||
           m_objectCanvas->height() != canvasSize.height()) {
@@ -1371,12 +1390,17 @@ void ZStackView::paintObjectBuffer(
       std::cout << "---" << std::endl;
       std::cout << slice << " " << m_depthControl->value() <<  std::endl;
 #endif
-
+#ifdef _DEBUG_
+      std::cout << "Displaying objects ..." << std::endl;
+#endif
       for (QList<const ZStackObject*>::const_iterator
            iter = visibleObject.begin(); iter != visibleObject.end(); ++iter) {
         //(*obj)->display(m_objectCanvas, slice, buddyPresenter()->objectStyle());
         const ZStackObject *obj = *iter;
         if (slice == m_depthControl->value() || slice < 0) {
+#ifdef _DEBUG_
+          std::cout << obj->className() << std::endl;
+#endif
           obj->display(painter, slice, buddyPresenter()->objectStyle());
 //          painted = true;
         }
@@ -1430,9 +1454,16 @@ bool ZStackView::paintTileCanvasBuffer()
 //  QElapsedTimer timer;
 //  timer.start();
   if (buddyDocument()->hasObject(ZStackObject::TYPE_DVID_TILE_ENSEMBLE)) {
+#ifdef _DEBUG_
+    std::cout << "updating tile canvas ..." << std::endl;
+#endif
     updateTileCanvas();
+
     //std::cout << "update time canvas time: " << timer.elapsed() << std::endl;
     if (m_tileCanvas != NULL) {
+#ifdef _DEBUG_
+      std::cout << "Painting tile buffer ..." << std::endl;
+#endif
       paintObjectBuffer(m_tileCanvasPainter, ZStackObject::TARGET_TILE_CANVAS);
       painted = true;
     }
@@ -2066,4 +2097,27 @@ void ZStackView::paintObject(const QSet<ZStackObject::ETarget> &targetSet)
   if (isPainted) {
     updateImageScreen();
   }
+}
+
+void ZStackView::dump(const QString &msg)
+{
+  m_msgLabel->setText(msg);
+}
+
+void ZStackView::highlightPosition(int x, int y, int z)
+{
+  ZStackBall *ball = new ZStackBall(x, y, z, 5.0);
+  ball->setColor(255, 0, 0);
+  ball->addVisualEffect(NeuTube::Display::Sphere::VE_GRADIENT_FILL);
+//  ball->display(m_objectCanvasPainter, sliceIndex(), ZStackObject::SOLID);
+
+  buddyPresenter()->setHighlight(true);
+  buddyPresenter()->highlight(x, y, z);
+//  buddyPresenter()->addDecoration(ball);
+
+  updateImageScreen();
+
+//  buddyPresenter()->setHighlight(false);
+
+//  buddyPresenter()->removeDecoration(ball, false);
 }

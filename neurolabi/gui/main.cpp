@@ -8,6 +8,7 @@
 #include "zcommandline.h"
 #include "zerror.h"
 #include "z3dapplication.h"
+#include "zneurontracer.h"
 
 #include "ztest.h"
 
@@ -171,6 +172,10 @@ int main(int argc, char *argv[])
     std::cout << "Unable to load configuration: "
               << config.getConfigPath() << std::endl;
   }
+
+  ZNeuronTracerConfig &tracingConfig = ZNeuronTracerConfig::getInstance();
+  tracingConfig.load(config.getApplicatinDir() + "/json/trace_config.json");
+
 
 #ifdef _DEBUG_
   config.print();

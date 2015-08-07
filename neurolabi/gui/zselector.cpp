@@ -23,6 +23,66 @@ void ZSelector<T>::selectObject(T obj)
   }
 }
 
+template <typename T>
+void ZSelector<T>::deselectObject(T obj)
+{
+  if (m_selectedSet.count(obj) > 0) {
+    m_selectedSet.erase(obj);
+  } else {
+    m_deselectedSet.insert(obj);
+  }
+}
+
+template <typename T>
+std::vector<T> ZSelector<T>::getSelectedList() const
+{
+  std::vector<T> selected;
+  selected.insert(selected.begin(), m_selectedSet.begin(), m_selectedSet.end());
+
+  return selected;
+}
+
+template <typename T>
+std::vector<T> ZSelector<T>::getDeselectedList() const
+{
+  std::vector<T> selected;
+  selected.insert(selected.begin(), m_deselectedSet.begin(),
+                  m_deselectedSet.end());
+
+  return selected;
+}
+
+template <typename T>
+std::set<T> ZSelector<T>::getSelectedSet() const
+{
+  return m_selectedSet;
+}
+
+template <typename T>
+std::set<T> ZSelector<T>::getDeselectedSet() const
+{
+  return m_deselectedSet;
+}
+
+template <typename T>
+bool ZSelector<T>::isEmpty() const
+{
+  return m_selectedSet.empty() && m_deselectedSet.empty();
+}
+
+template <typename T>
+bool ZSelector<T>::isInSelectedSet(const T& obj) const
+{
+  return m_selectedSet.count(obj) > 0;
+}
+
+template <typename T>
+bool ZSelector<T>::isInDeselectedSet(const T& obj) const
+{
+  return m_deselectedSet.count(obj) > 0;
+}
+
+#if 0
 void ZStackObjectSelector::deselectObject(ZStackObject *obj)
 {
   if (obj->isSelected()) {
@@ -137,3 +197,4 @@ std::set<ZStackObject*> ZStackObjectSelector::getDeselectedSet(
 
   return objList;
 }
+#endif

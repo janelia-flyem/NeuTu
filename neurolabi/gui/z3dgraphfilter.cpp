@@ -18,6 +18,7 @@ Z3DGraphFilter::Z3DGraphFilter() :
   , m_showingArrow(false)
 {
   addParameter(m_showGraph);
+//  m_rendererBase->setRenderMethod("Old openGL");
 //  adjustWidgets();
 }
 

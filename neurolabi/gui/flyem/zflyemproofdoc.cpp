@@ -2,7 +2,10 @@
 
 #include <QSet>
 #include <QList>
+#include <QTimer>
+#include <QDir>
 
+#include "neutubeconfig.h"
 #include "dvid/zdvidlabelslice.h"
 #include "dvid/zdvidreader.h"
 #include "zstackobjectsourcefactory.h"
@@ -20,11 +23,58 @@
 //#include "zflyemproofmvc.h"
 #include "flyem/zflyembookmark.h"
 #include "zstring.h"
+#include "flyem/zsynapseannotationarray.h"
 
 ZFlyEmProofDoc::ZFlyEmProofDoc(QObject *parent) :
   ZStackDoc(parent)
 {
+  init();
+}
+
+void ZFlyEmProofDoc::init()
+{
   setTag(NeuTube::Document::FLYEM_PROOFREAD);
+
+  initTimer();
+  initAutoSave();
+
+  connectSignalSlot();
+}
+
+void ZFlyEmProofDoc::initTimer()
+{
+  m_bookmarkTimer = new QTimer(this);
+  m_bookmarkTimer->setInterval(60000);
+  m_bookmarkTimer->start();
+}
+
+void ZFlyEmProofDoc::initAutoSave()
+{
+  m_isCustomBookmarkSaved = true;
+
+  QDir autoSaveDir(NeutubeConfig::getInstance().getPath(
+        NeutubeConfig::AUTO_SAVE).c_str());
+  QString mergeFolder = "neutu_proofread_backup";
+
+  if (!autoSaveDir.exists(mergeFolder)) {
+    if (!autoSaveDir.mkdir(mergeFolder)) {
+      emit messageGenerated(
+            ZWidgetMessage("Failed to create autosave folder for merging. "
+                           "Backup disabled for merge operations.",
+                           NeuTube::MSG_ERROR));
+    }
+  }
+
+  if (autoSaveDir.exists(mergeFolder)) {
+    QDir mergeDir(autoSaveDir.absoluteFilePath(mergeFolder));
+    m_mergeAutoSavePath = mergeDir.absoluteFilePath("neutu_merge_opr.json");
+  }
+}
+
+void ZFlyEmProofDoc::connectSignalSlot()
+{
+  connect(m_bookmarkTimer, SIGNAL(timeout()),
+          this, SLOT(saveCustomBookmarkSlot()));
 }
 
 void ZFlyEmProofDoc::mergeSelected(ZFlyEmSupervisor *supervisor)
@@ -119,7 +169,7 @@ ZDvidLabelSlice* ZFlyEmProofDoc::getDvidLabelSlice() const
   return NULL;
 }
 
-const ZDvidSparseStack *ZFlyEmProofDoc::getDvidSparseStack() const
+const ZDvidSparseStack *ZFlyEmProofDoc::getBodyForSplit() const
 {
   return dynamic_cast<ZDvidSparseStack*>(
         getObjectGroup().findFirstSameSource(
@@ -127,10 +177,10 @@ const ZDvidSparseStack *ZFlyEmProofDoc::getDvidSparseStack() const
           ZStackObjectSourceFactory::MakeSplitObjectSource()));
 }
 
-ZDvidSparseStack* ZFlyEmProofDoc::getDvidSparseStack()
+ZDvidSparseStack* ZFlyEmProofDoc::getBodyForSplit()
 {
   return const_cast<ZDvidSparseStack*>(
-        static_cast<const ZFlyEmProofDoc&>(*this).getDvidSparseStack());
+        static_cast<const ZFlyEmProofDoc&>(*this).getBodyForSplit());
 }
 
 void ZFlyEmProofDoc::updateBodyObject()
@@ -166,8 +216,8 @@ bool ZFlyEmProofDoc::isSplittable(uint64_t bodyId) const
 
 const ZSparseStack* ZFlyEmProofDoc::getSparseStack() const
 {
-  if (getDvidSparseStack() != NULL) {
-    return getDvidSparseStack()->getSparseStack();
+  if (getBodyForSplit() != NULL) {
+    return getBodyForSplit()->getSparseStack();
   }
 
   return NULL;
@@ -176,8 +226,8 @@ const ZSparseStack* ZFlyEmProofDoc::getSparseStack() const
 
 ZSparseStack* ZFlyEmProofDoc::getSparseStack()
 {
-  if (getDvidSparseStack() != NULL) {
-    return getDvidSparseStack()->getSparseStack();
+  if (getBodyForSplit() != NULL) {
+    return getBodyForSplit()->getSparseStack();
   }
 
   return NULL;
@@ -215,10 +265,19 @@ void ZFlyEmProofDoc::saveMergeOperation()
   }
 }
 
+void ZFlyEmProofDoc::backupMergeOperation()
+{
+  if (!m_mergeAutoSavePath.isEmpty()) {
+    if (!m_bodyMerger.isEmpty()) {
+      m_bodyMerger.toJsonArray().dump(m_mergeAutoSavePath.toStdString());
+    }
+  }
+}
+
 void ZFlyEmProofDoc::downloadBodyMask()
 {
-  if (getDvidSparseStack() != NULL) {
-    getDvidSparseStack()->downloadBodyMask();
+  if (getBodyForSplit() != NULL) {
+    getBodyForSplit()->downloadBodyMask();
     notifyObjectModified();
   }
 }
@@ -321,22 +380,55 @@ void ZFlyEmProofDoc::downloadSynapse()
     ZJsonObject jsonObj;
     jsonObj.decodeString(reader.getBuffer());
     if (!jsonObj.isEmpty()) {
-      ZPuncta *puncta = new ZPuncta;
-      puncta->setSource(ZStackObjectSourceFactory::MakeFlyEmSynapseSource());
-      puncta->load(jsonObj, 5.0);
-      puncta->pushCosmeticPen(true);
-      addObject(puncta);
+      FlyEm::ZSynapseAnnotationArray synapseArray;
+      synapseArray.loadJson(jsonObj);
+      const double radius = 5.0;
+      std::vector<ZPunctum*> puncta = synapseArray.toTBarPuncta(radius);
+
+      ZPuncta *tbar = new ZPuncta;
+      tbar->addPunctum(puncta.begin(), puncta.end());
+      decorateTBar(tbar);
+
+      addObject(tbar);
+
+      ZPuncta *psd = new ZPuncta;
+      puncta = synapseArray.toPsdPuncta(radius / 2.0);
+      psd->addPunctum(puncta.begin(), puncta.end());
+      decoratePsd(psd);
+
+      addObject(psd);
     }
   }
 }
+
+void ZFlyEmProofDoc::processBookmarkAnnotationEvent(ZFlyEmBookmark */*bookmark*/)
+{
+  m_isCustomBookmarkSaved = false;
+}
+
+void ZFlyEmProofDoc::decorateTBar(ZPuncta *puncta)
+{
+  puncta->setSource(ZStackObjectSourceFactory::MakeFlyEmTBarSource());
+  puncta->pushCosmeticPen(true);
+  puncta->pushColor(QColor(0, 255, 0));
+  puncta->pushVisualEffect(NeuTube::Display::Sphere::VE_CROSS_CENTER);
+}
+
+void ZFlyEmProofDoc::decoratePsd(ZPuncta *puncta)
+{
+  puncta->setSource(ZStackObjectSourceFactory::MakeFlyEmPsdSource());
+  puncta->pushCosmeticPen(true);
+  puncta->pushColor(QColor(0, 0, 255));
+  puncta->pushVisualEffect(NeuTube::Display::Sphere::VE_CROSS_CENTER);
+}
+
 
 void ZFlyEmProofDoc::loadSynapse(const std::string &filePath)
 {
   if (!filePath.empty()) {
     ZPuncta *puncta = new ZPuncta;
-    puncta->setSource(ZStackObjectSourceFactory::MakeFlyEmSynapseSource());
     puncta->load(filePath, 5.0);
-    puncta->pushCosmeticPen(true);
+    decorateTBar(puncta);
     addObject(puncta);
   }
 }
@@ -447,7 +539,15 @@ uint64_t ZFlyEmProofDoc::getBodyId(const ZIntPoint &pt)
 
 void ZFlyEmProofDoc::autoSave()
 {
-  saveCustomBookmark();
+  backupMergeOperation();
+}
+
+void ZFlyEmProofDoc::saveCustomBookmarkSlot()
+{
+  if (!m_isCustomBookmarkSaved) {
+    std::cout << "Saving user bookmarks ..." << std::endl;
+    saveCustomBookmark();
+  }
 }
 
 void ZFlyEmProofDoc::saveCustomBookmark()
@@ -467,10 +567,37 @@ void ZFlyEmProofDoc::saveCustomBookmark()
         }
       }
     }
+
     writer.writeCustomBookmark(jsonArray);
-    if (writer.getStatusCode() != 200 && !jsonArray.isEmpty()) {
+    if (writer.getStatusCode() != 200) {
       emit messageGenerated(
             ZWidgetMessage("Failed to save bookmarks.", NeuTube::MSG_ERROR));
+    } else {
+      m_isCustomBookmarkSaved = true;
+    }
+  }
+}
+
+void ZFlyEmProofDoc::customNotifyObjectModified(ZStackObject::EType type)
+{
+  switch (type) {
+  case ZStackObject::TYPE_FLYEM_BOOKMARK:
+    m_isCustomBookmarkSaved = false;
+    emit userBookmarkModified();
+    break;
+  default:
+    break;
+  }
+}
+
+void ZFlyEmProofDoc::enhanceTileContrast(bool highContrast)
+{
+  ZDvidTileEnsemble *tile = getDvidTileEnsemble();
+  if (tile != NULL) {
+    tile->enhanceContrast(highContrast);
+    if (!tile->isEmpty()) {
+      bufferObjectModified(tile->getTarget());
+      notifyObjectModified();
     }
   }
 }

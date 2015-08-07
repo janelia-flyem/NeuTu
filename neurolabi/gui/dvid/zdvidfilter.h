@@ -64,7 +64,7 @@ public:
     m_bodyListFile = path;
   }
 
-  std::set<int> loadBodySet() const;
+  std::set<uint64_t> loadBodySet() const;
 
 private:
   ZDvidTarget m_dvidTarget;

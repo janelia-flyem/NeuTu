@@ -166,7 +166,7 @@ Z3DGraph* ZFlyEmMisc::MakeBoundBoxGraph(const ZDvidInfo &dvidInfo)
   box.setFirstCorner(dvidInfo.getStartCoordinates().toPoint());
   box.setLastCorner(dvidInfo.getEndCoordinates().toPoint());
   Z3DGraph *graph = Z3DGraphFactory::MakeBox(
-        box, dmax2(1.0, dmax3(box.width(), box.height(), box.depth()) / 500.0));
+        box, dmax2(1.0, dmax3(box.width(), box.height(), box.depth()) / 1000.0));
   graph->setSource(ZStackObjectSourceFactory::MakeFlyEmBoundBoxSource());
 
   return graph;
@@ -189,8 +189,8 @@ Z3DGraph* ZFlyEmMisc::MakePlaneGraph(ZStackDoc *doc, const ZDvidInfo &dvidInfo)
       ZCuboid box;
       box.setFirstCorner(dvidInfo.getStartCoordinates().toPoint());
       box.setLastCorner(dvidInfo.getEndCoordinates().toPoint());
-      double lineWidth = box.depth() / 500.0;
-      graph = Z3DGraphFactory::MakeGrid(rect, 50, lineWidth);
+      double lineWidth = box.depth() / 2000.0;
+      graph = Z3DGraphFactory::MakeGrid(rect, 100, lineWidth);
       graph->setSource(ZStackObjectSourceFactory::MakeFlyEmPlaneObjectSource());
     }
   }

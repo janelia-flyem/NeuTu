@@ -244,7 +244,7 @@ void ZFlyEmNeuronListModel::retrieveModel(
       std::vector<ZPunctum*> puncta = neuron->getSynapse();
       for (std::vector<ZPunctum*>::iterator iter = puncta.begin();
            iter != puncta.end(); ++iter) {
-        doc->addObject(*iter);
+        doc->addObject(*iter, false);
       }
     }
   }

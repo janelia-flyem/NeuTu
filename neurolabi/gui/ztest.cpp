@@ -48,12 +48,12 @@ using namespace std;
 #include "tz_graph_utils.h"
 #include "tz_workspace.h"
 #include "tz_graph.h"
-#include "flyemskeletonizationdialog.h"
+#include "dialogs/flyemskeletonizationdialog.h"
 //#include "zstackaccessor.h"
 #include "zmatrix.h"
 #include "zswcbranch.h"
 #include "zswctreematcher.h"
-#include "parameterdialog.h"
+#include "dialogs/parameterdialog.h"
 #include "zstring.h"
 #include "zdialogfactory.h"
 #include "zrandomgenerator.h"
@@ -246,6 +246,7 @@ using namespace std;
 #include "z3dgraphfactory.h"
 #include "flyem/zflyemsupervisor.h"
 #include "flyem/zflyembody3ddoc.h"
+#include "zstackview.h"
 
 using namespace std;
 
@@ -17318,7 +17319,7 @@ void ZTest::test(MainWindow *host)
 //  doc->addBody(13890100);
 #endif
 
-#if 1
+#if 0
   ZFlyEmBody3dDoc::BodyEvent event1(
         ZFlyEmBody3dDoc::BodyEvent::ACTION_ADD, 1200);
 
@@ -17332,7 +17333,7 @@ void ZTest::test(MainWindow *host)
   event2.print();
 #endif
 
-#if 1
+#if 0
   ZFlyEmBody3dDoc doc;
   std::vector<uint64_t> bodyIdArray;
   bodyIdArray.push_back(1);
@@ -17340,5 +17341,165 @@ void ZTest::test(MainWindow *host)
 
   doc.addBodyChangeEvent(bodyIdArray.begin(), bodyIdArray.end());
   doc.printEventQueue();
+#endif
+
+#if 0
+  ZString str = "232435232-53634643637-423422222222893";
+  std::vector<uint64_t> array = str.toUint64Array();
+  for (size_t i = 0; i < array.size(); ++i) {
+    std::cout << array[i] << std::endl;
+  }
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("http://emdata1.int.janelia.org", "1f62", 8500);
+
+  ZDvidReader reader;
+  if (reader.open(target)) {
+    ZObject3dScan obj = reader.readRoi("mbroi");
+    obj.canonize();
+    obj.save(GET_TEST_DATA_DIR + "/flyem/MB/roi_fix/mbroi.sobj");
+
+    ZObject3dScan obj2;
+    obj2.load(GET_TEST_DATA_DIR + "/flyem/MB/large_outside_block_fixed.sobj");
+//    obj2.save(GET_TEST_DATA_DIR + "/flyem/MB/roi_fix/merged.sobj");
+
+    obj2.subtract(obj);
+    obj2.save(GET_TEST_DATA_DIR + "/flyem/MB/roi_fix/mb_subtracted.sobj");
+
+    if (obj.hasOverlap(obj2)) {
+      std::cout << "WARNING: mbroi and mb_subtracted has overlap." << std::endl;
+    } else {
+      std::cout << "mbroi and mb_subtracted has no overlap." << std::endl;
+    }
+
+    obj.unify(obj2);
+    obj.save(GET_TEST_DATA_DIR + "/flyem/MB/roi_fix/merged.sobj");
+  }
+
+#endif
+
+#if 0
+  ZObject3dScan obj1;
+  obj1.load(GET_TEST_DATA_DIR + "/flyem/MB/roi_fix/mb_subtracted.sobj");
+  std::cout << obj1.getVoxelNumber() << std::endl;
+
+
+  ZJsonArray array = ZJsonFactory::MakeJsonArray(
+        obj1, ZJsonFactory::OBJECT_SPARSE);
+  array.dump(GET_TEST_DATA_DIR + "/flyem/MB/roi_fix/mb_subtracted.json");
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("http://emdata1.int.janelia.org", "1f62", 8500);
+
+  ZDvidReader reader;
+  if (reader.open(target)) {
+    ZObject3dScan obj = reader.readRoi("mbroi");
+    obj.canonize();
+
+    ZDvidReader reader2;
+    target.set("http://emdata1.int.janelia.org", "d6959", 8500);
+    reader2.open(target);
+
+    ZObject3dScan obj2 = reader2.readRoi("mb_subtracted_v3");
+
+    if (obj.hasOverlap(obj2)) {
+      std::cout << "WARNING: mbroi and mb_subtracted has overlap." << std::endl;
+    } else {
+      std::cout << "mbroi and mb_subtracted has no overlap." << std::endl;
+    }
+
+    obj.unify(obj2);
+    obj.save(GET_TEST_DATA_DIR + "/flyem/MB/roi_fix/merged.sobj");
+  }
+
+#endif
+
+#if 0
+  ZNeuronTracerConfig::getInstance().print();
+#endif
+
+#if 0 //Move body annotations
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "66ba", 8500);
+
+  ZDvidReader reader;
+  reader.open(target);
+  QStringList keyList = reader.readKeys("annotations");
+
+  ZDvidTarget target2;
+  target2.set("emdata1.int.janelia.org", "66ba", 8500);
+  target2.setBodyLabelName("labels3");
+  target2.setLabelBlockName("bodies3");
+
+  ZDvidWriter writer;
+  writer.open(target2);
+  ZDvidUrl dvidUrl(target2);
+
+  foreach (const QString key, keyList) {
+    std::cout << key.toStdString() << std::endl;
+    QByteArray data = reader.readKeyValue("annotations", key);
+    ZJsonValue obj;
+    obj.decodeString(data.constData());
+
+    writer.writeJson("bodies3_annotations", key.toStdString(), obj);
+  }
+
+
+#endif
+
+#if 0
+  ZStackFrame *frame = ZStackFrame::Make(NULL);
+  frame->load(GET_TEST_DATA_DIR + "/benchmark/em_stack.tif");
+  host->addStackFrame(frame);
+  host->presentStackFrame(frame);
+
+  frame->view()->highlightPosition(129, 120, 0);
+#endif
+
+#if 0
+  QDir autoSaveDir(NeutubeConfig::getInstance().getPath(
+        NeutubeConfig::AUTO_SAVE).c_str());
+  QString mergeFolder = "neutu_proofread_backup";
+
+  QDir mergeDir(autoSaveDir.absoluteFilePath(mergeFolder));
+  qDebug() << mergeDir.absoluteFilePath("neutu_merge_opr.json");
+#endif
+
+#if 1
+  ZPixmap image(2056, 2056);
+//  ZStTransform transform;
+//  transform.setOffset(-1, -2);
+//  image.setTransform(transform);
+  ZPainter painter(&image);
+//  painter.drawPoint(1, 2);
+  ZObject3dScan obj;
+  for (int y = 0; y < 2056; ++y) {
+    obj.addSegment(0, y, 0, 2055, false);
+  }
+//  obj.addSegment(0, 2, 1, 2);
+  obj.setColor(255, 255, 255, 255);
+
+  tic();
+  obj.display(painter, 0, ZStackObject::SOLID);
+  std::cout << toc() << "ms passed" << std::endl;
+
+//  image.save((GET_TEST_DATA_DIR + "/test.tif").c_str());
+#endif
+
+#if 0
+  ZImage image(2056, 2056);
+  ZObject3dScan obj;
+  for (int y = 0; y < 2056; ++y) {
+    obj.addSegment(0, y, 0, 2055, false);
+  }
+  tic();
+  image.setData(obj);
+  QPixmap pixmap;
+  pixmap.fromImage(image);
+  std::cout << toc() << "ms passed" << std::endl;
 #endif
 }

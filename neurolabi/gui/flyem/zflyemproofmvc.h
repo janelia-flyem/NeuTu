@@ -16,7 +16,12 @@ class ZDvidTarget;
 class ZDvidDialog;
 class ZFlyEmProofPresenter;
 class ZFlyEmSupervisor;
+class ZPaintLabelWidget;
+class FlyEmBodyInfoDialog;
 
+/*!
+ * \brief The MVC class for flyem proofreading
+ */
 class ZFlyEmProofMvc : public ZStackMvc
 {
   Q_OBJECT
@@ -66,6 +71,7 @@ signals:
   void bookmarkUpdated(ZFlyEmBodyMergeProject *m_project);
   void bookmarkUpdated(ZFlyEmBodySplitProject *m_project);
   void dvidTargetChanged(ZDvidTarget);
+  void userBookmarkUpdated(ZStackDoc *doc);
 
 public slots:
   void mergeSelected();
@@ -110,6 +116,7 @@ public slots:
   void zoomTo(int x, int y, int z, int width);
   void goToBody();
   void selectBody();
+  void processLabelSliceSelectionChange();
 
   void loadBookmark(const QString &filePath);
   void addSelectionAt(int x, int y, int z);
@@ -128,11 +135,17 @@ public slots:
   void showSegmentation(bool visible);
 
   void loadBookmark();
+  void openSequencer();
 
   void recordCheckedBookmark(const QString &key, bool checking);
+  void recordBookmark(ZFlyEmBookmark *bookmark);
   void processSelectionChange(const ZStackObjectSelector &selector);
 
   void annotateBookmark(ZFlyEmBookmark *bookmark);
+
+  void updateUserBookmarkTable();
+
+  void processCheckedUserBookmark(ZFlyEmBookmark *bookmark);
 
 //  void toggleEdgeMode(bool edgeOn);
 
@@ -157,7 +170,10 @@ private:
 
   QThreadFutureMap m_futureMap;
 
+  ZPaintLabelWidget *m_paintLabelWidget;
+
   ZDvidDialog *m_dvidDlg;
+  FlyEmBodyInfoDialog *m_bodyInfoDlg;
   ZFlyEmSupervisor *m_supervisor;
 };
 
@@ -194,6 +210,12 @@ void ZFlyEmProofMvc::connectControlPanel(T *panel)
           panel, SLOT(updateBookmarkTable(ZFlyEmBodyMergeProject*)));
   connect(panel, SIGNAL(bookmarkChecked(QString, bool)),
           this, SLOT(recordCheckedBookmark(QString, bool)));
+  connect(panel, SIGNAL(bookmarkChecked(ZFlyEmBookmark*)),
+          this, SLOT(recordBookmark(ZFlyEmBookmark*)));
+  connect(this, SIGNAL(userBookmarkUpdated(ZStackDoc*)),
+          panel, SLOT(updateUserBookmarkTable(ZStackDoc*)));
+  connect(panel, SIGNAL(userBookmarkChecked(ZFlyEmBookmark*)),
+          this, SLOT(processCheckedUserBookmark(ZFlyEmBookmark*)));
 }
 
 template <typename T>
@@ -226,6 +248,8 @@ void ZFlyEmProofMvc::connectSplitControlPanel(T *panel)
   connect(panel, SIGNAL(loadingSynapse()), this, SLOT(loadSynapse()));
   connect(panel, SIGNAL(bookmarkChecked(QString, bool)),
           this, SLOT(recordCheckedBookmark(QString, bool)));
+  connect(panel, SIGNAL(bookmarkChecked(ZFlyEmBookmark*)),
+          this, SLOT(recordBookmark(ZFlyEmBookmark*)));
 }
 
 

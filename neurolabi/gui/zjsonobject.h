@@ -139,6 +139,8 @@ public:
 
   void removeKey(const char *key);
 
+  std::string dumpString(int indent = 2) const;
+
 private:
   void setEntryWithoutKeyCheck(const char *key, json_t *obj, bool asNew = false);
 

@@ -30,6 +30,8 @@ public:
   void addPunctum(InputIterator first, InputIterator last);
 
   void pushCosmeticPen(bool state);
+  void pushColor(const QColor &color);
+  void pushVisualEffect(NeuTube::Display::TVisualEffect effect);
 
 private:
   void setSorted(bool state) const;

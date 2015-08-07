@@ -84,7 +84,7 @@ void ZStackBall::display(ZPainter &painter, int slice,
     return;
   }
 
-  UNUSED_PARAMETER(style);
+//  UNUSED_PARAMETER(style);
 #if _QT_GUI_USED_
   painter.save();
 
@@ -117,8 +117,8 @@ void ZStackBall::display(ZPainter &painter, int slice,
     brush.setStyle(Qt::RadialGradientPattern);
     painter.setBrush(brush);
     */
-    //painter.setBrush(m_color);
-    //painter.setBrush(QBrush(m_color, Qt::RadialGradientPattern));
+    painter.setBrush(m_color);
+    painter.setBrush(QBrush(m_color, Qt::RadialGradientPattern));
   } else {
     if (hasVisualEffect(NeuTube::Display::Sphere::VE_NO_FILL)) {
       painter.setBrush(Qt::NoBrush);
@@ -228,6 +228,12 @@ void ZStackBall::displayHelper(
     pen.setColor(color);
     painter->setPen(pen);
 
+    if ((!hasVisualEffect(NeuTube::Display::Sphere::VE_NO_FILL)) &&
+        hasVisualEffect(NeuTube::Display::Sphere::VE_FORCE_FILL)) {
+      QBrush brush(color);
+      painter->setBrush(brush);
+    }
+
     if (!hasVisualEffect(NeuTube::Display::Sphere::VE_NO_CIRCLE) &&
         !hasVisualEffect(NeuTube::Display::Sphere::VE_RECTANGLE_SHAPE)) {
       //qDebug() << painter->brush().color();
@@ -241,6 +247,14 @@ void ZStackBall::displayHelper(
 
     if (isFocused && hasVisualEffect(NeuTube::Display::Sphere::VE_DOT_CENTER)) {
       painter->drawPoint(QPointF(m_center.x(), m_center.y()));
+    }
+
+    if (isFocused && hasVisualEffect(NeuTube::Display::Sphere::VE_CROSS_CENTER))
+    {
+      painter->drawLine(QPointF(m_center.x() - 1, m_center.y()),
+                        QPointF(m_center.x() + 1, m_center.y()));
+      painter->drawLine(QPointF(m_center.x(), m_center.y() - 1),
+                        QPointF(m_center.x(), m_center.y() + 1));
     }
   }
 

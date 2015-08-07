@@ -443,7 +443,7 @@ void ZFlyEmBody3dDoc::updateFrame()
   box.setFirstCorner(getDvidInfo().getStartCoordinates().toPoint());
   box.setLastCorner(getDvidInfo().getEndCoordinates().toPoint());
   Z3DGraph *graph = Z3DGraphFactory::MakeBox(
-        box, dmax2(1.0, dmax3(box.width(), box.height(), box.depth()) / 500.0));
+        box, dmax2(1.0, dmax3(box.width(), box.height(), box.depth()) / 1000.0));
   graph->setSource(ZStackObjectSourceFactory::MakeFlyEmBoundBoxSource());
 
   addObject(graph, true);

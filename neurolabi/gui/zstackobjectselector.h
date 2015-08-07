@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "zstackobject.h"
+#include "zselector.h"
 
 /*!
  * \brief The class of managing object selection
@@ -13,7 +14,7 @@
  * stores information which objects have been selected and which objects have
  * been deselected.
  */
-class ZStackObjectSelector
+class ZStackObjectSelector : public ZSelector<const ZStackObject*>
 {
 public:
   ZStackObjectSelector();
@@ -24,7 +25,7 @@ public:
    * This funciton only clears selection history without changing the selection
    * state of any object.
    */
-  void reset();
+//  void reset();
 
   /*!
    * \brief Select an object
@@ -57,10 +58,10 @@ public:
    */
   void setSelection(ZStackObject *obj, bool selecting);
 
-  bool isInSelectedSet(const ZStackObject *obj) const;
-  bool isInDeselectedSet(const ZStackObject *obj) const;
+//  bool isInSelectedSet(const ZStackObject *obj) const;
+//  bool isInDeselectedSet(const ZStackObject *obj) const;
 
-  bool isEmpty() const;
+//  bool isEmpty() const;
 
   void print() const;
 
@@ -69,11 +70,6 @@ public:
 
   std::set<ZStackObject*> getSelectedSet(ZStackObject::EType type);
   std::set<ZStackObject*> getDeselectedSet(ZStackObject::EType type);
-
-
-private:
-  std::set<ZStackObject*> m_selectedSet;
-  std::set<ZStackObject*> m_deselectedSet;
 };
 
 #endif // ZSTACKOBJECTSELECTOR_H

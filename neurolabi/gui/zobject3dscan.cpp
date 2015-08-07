@@ -260,6 +260,15 @@ void ZObject3dScan::addStripe(int z, int y, bool canonizing)
   }
 }
 
+void ZObject3dScan::addStripeFast(int z, int y)
+{
+//  m_stripeArray.reserve(m_stripeArray.size() + 1);
+  ZObject3dStripe stripe;
+  stripe.setY(y);
+  stripe.setZ(z);
+  m_stripeArray.push_back(stripe);
+}
+
 void ZObject3dScan::addStripe(const ZObject3dStripe &stripe, bool canonizing)
 {
   bool lastStripeMergable = false;
@@ -336,6 +345,16 @@ void ZObject3dScan::addSegment(int x1, int x2, bool canonizing)
     if (canonizing) {
       canonize();
     }
+  }
+}
+
+void ZObject3dScan::addSegmentFast(int x1, int x2)
+{
+  if (!isEmpty()) {
+    ZObject3dStripe &stripe = m_stripeArray.back();
+    stripe.getSegmentArray().push_back(x1);
+    stripe.getSegmentArray().push_back(x2);
+//    m_stripeArray.back().addSegment(x1, x2, false);
   }
 }
 
@@ -925,7 +944,7 @@ bool ZObject3dScan::hasOverlap(ZObject3dScan &obj)
     ZObject3dScan slice1 = getSlice(z);
     ZObject3dScan slice2 = obj.getSlice(z);
     ZStack *stack1 = slice1.toStackObject();
-    int stripeNumber = obj.getStripeNumber();
+    int stripeNumber = slice2.getStripeNumber();
     for (int i = 0; i < stripeNumber; ++i) {
       const ZObject3dStripe &stripe = slice2.getStripe(i);
       int segmentNumber = stripe.getSegmentNumber();
@@ -1406,19 +1425,25 @@ void ZObject3dScan::display(
 
   QPen pen(m_color);
 
+  if (hasVisualEffect(NeuTube::Display::SparseObject::VE_FORCE_SOLID)) {
+    style = ZStackObject::SOLID;
+  }
   //QImage *targetImage = dynamic_cast<QImage*>(painter.device());
 
   switch (style) {
   case ZStackObject::SOLID:
   {
     if (isSelected()) {
-      QColor color = pen.color();
-      color.setAlpha(50);
+//      QColor color = pen.color();
+      QColor color(Qt::white);
+      color.setAlpha(164);
       pen.setColor(color);
+//      pen.setCosmetic(true);
+//      pen.setStyle(Qt::DotLine);
     }
     painter.setPen(pen);
     if (isSelected()) {
-      displaySolid(painter, z, isProj, 5);
+      displaySolid(painter, z, isProj, 1);
     } else {
       displaySolid(painter, z, isProj, 1);
     }
@@ -1664,6 +1689,28 @@ ZObject3dScan ZObject3dScan::interpolateSlice(int z) const
 ZObject3dScan ZObject3dScan::getFirstSlice() const
 {
   return getSlice(getMinZ());
+}
+
+ZObject3dScan ZObject3dScan::getMedianSlice() const
+{
+  std::set<int> zSet;
+  for (size_t i = 0; i < getStripeNumber(); ++i) {
+    const ZObject3dStripe &stripe = m_stripeArray[i];
+    zSet.insert(stripe.getZ());
+  }
+
+  size_t count = zSet.size();
+  size_t index = 0;
+  int z = getMinZ();
+  for (std::set<int>::const_iterator iter = zSet.begin(); iter != zSet.end();
+       ++iter, ++index) {
+    if (index >= count / 2) {
+      z = *iter;
+      break;
+    }
+  }
+
+  return getSlice(z);
 }
 
 ZObject3dScan ZObject3dScan::getSlice(int z) const

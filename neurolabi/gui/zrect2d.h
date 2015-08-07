@@ -23,6 +23,8 @@ public:
   bool hit(double x, double y);
   bool hit(double x, double y, double z);
 
+  bool contains(double x, double y) const;
+
 public:
   virtual void display(ZPainter &painter, int slice, EDisplayStyle option) const;
   virtual const std::string& className() const;

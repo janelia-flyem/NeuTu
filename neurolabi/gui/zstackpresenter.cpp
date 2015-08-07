@@ -17,7 +17,7 @@
 #include "zstack.hxx"
 #include "zstackdoc.h"
 #include "swctreenode.h"
-#include "channeldialog.h"
+#include "dialogs/channeldialog.h"
 #include "neutubeconfig.h"
 #include "zcursorstore.h"
 #include "zstroke2d.h"
@@ -91,6 +91,12 @@ void ZStackPresenter::init()
   m_swcStroke.setPenetrating(true);
   m_activeDecorationList.append(&m_stroke);
   m_activeDecorationList.append(&m_swcStroke);
+
+  m_highlightDecoration.setRadius(5.0);
+  m_highlightDecoration.setColor(QColor(255, 255, 255, 160));
+  m_highlightDecoration.setVisualEffect(NeuTube::Display::Sphere::VE_FORCE_FILL);
+  m_highlightDecorationList.append(&m_highlightDecoration);
+  m_highlight = false;
 
   m_swcNodeContextMenu = NULL;
   m_strokePaintContextMenu = NULL;
@@ -334,6 +340,11 @@ void ZStackPresenter::createBodyActions()
 //  action = new QAction(tr("Add split seed"), this);
 //  connect(action, SIGNAL(triggered()), this, SLOT());
 //  m_actionMap[ACTION_ADD_SPLIT_SEED] = action;
+}
+
+void ZStackPresenter::highlight(int x, int y, int z)
+{
+  m_highlightDecoration.setCenter(x, y, z);
 }
 
 void ZStackPresenter::createMainWindowActions()
@@ -1939,10 +1950,14 @@ void ZStackPresenter::exitStrokeEdit()
 
 void ZStackPresenter::exitRectEdit()
 {
-  interactiveContext().setRectEditMode(ZInteractiveContext::RECT_EDIT_OFF);
-  updateCursor();
+  if (interactiveContext().rectEditMode() != ZInteractiveContext::RECT_EDIT_OFF) {
+    interactiveContext().setRectEditMode(ZInteractiveContext::RECT_EDIT_OFF);
+    updateCursor();
 
-  m_interactiveContext.setExitingEdit(true);
+    m_interactiveContext.setExitingEdit(true);
+
+    emit exitingRectEdit();
+  }
 }
 
 void ZStackPresenter::exitBookmarkEdit()
@@ -2177,6 +2192,19 @@ void ZStackPresenter::processCustomOperator(const ZStackOperator &/*op*/)
 
 }
 
+bool ZStackPresenter::hasDrawable(ZStackObject::ETarget target) const
+{
+  for (QList<ZStackObject*>::const_iterator iter = m_decorationList.begin();
+       iter != m_decorationList.end(); ++iter) {
+    const ZStackObject *obj = *iter;
+    if (obj->getTarget() == target) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 void ZStackPresenter::process(const ZStackOperator &op)
 {
   ZInteractionEvent interactionEvent;
@@ -2388,6 +2416,12 @@ void ZStackPresenter::process(const ZStackOperator &op)
       }
     }
     break;
+  case ZStackOperator::OP_SWC_CONNECT_ISOLATE:
+    buddyDocument()->executeConnectIsolatedSwc();
+    break;
+  case ZStackOperator::OP_SWC_SELECT_ALL_NODE:
+    m_selectAllSwcNodeAction->trigger();
+    break;
   case ZStackOperator::OP_RESTORE_EXPLORE_MODE:
     this->interactiveContext().restoreExploreMode();
     buddyView()->notifyViewPortChanged();
@@ -2401,6 +2435,9 @@ void ZStackPresenter::process(const ZStackOperator &op)
       buddyView()->showContextMenu(getSwcNodeContextMenu(), currentWidgetPos);
     }
     //status = CONTEXT_MENU_POPPED;
+    break;
+  case ZStackOperator::OP_SWC_CHANGE_NODE_FOCUS:
+    changeSelectedSwcNodeFocus();
     break;
   case ZStackOperator::OP_SHOW_STROKE_CONTEXT_MENU:
     buddyView()->showContextMenu(getStrokeContextMenu(), currentWidgetPos);
@@ -2491,7 +2528,10 @@ void ZStackPresenter::process(const ZStackOperator &op)
       buddyDocument()->setSelected(op.getHitObject<ZObject3dScan>());
       interactionEvent.setEvent(ZInteractionEvent::EVENT_OBJECT3D_SCAN_SELECTED);
     } else if (op.getHitObject<ZDvidLabelSlice>() != NULL) {
-      op.getHitObject<ZDvidLabelSlice>()->selectHit();
+      ZDvidLabelSlice *labelSlice =  op.getHitObject<ZDvidLabelSlice>();
+      labelSlice->recordSelection();
+      labelSlice->selectHit();
+      labelSlice->processSelection();
       interactionEvent.setEvent(
             ZInteractionEvent::EVENT_OBJECT3D_SCAN_SELECTED_IN_LABEL_SLICE);
     }
@@ -2501,7 +2541,10 @@ void ZStackPresenter::process(const ZStackOperator &op)
       buddyDocument()->setSelected(op.getHitObject<ZObject3dScan>());
       interactionEvent.setEvent(ZInteractionEvent::EVENT_OBJECT3D_SCAN_SELECTED);
     } else if (op.getHitObject<ZDvidLabelSlice>() != NULL) {
-      op.getHitObject<ZDvidLabelSlice>()->selectHit(true);
+      ZDvidLabelSlice *labelSlice =  op.getHitObject<ZDvidLabelSlice>();
+      labelSlice->recordSelection();
+      labelSlice->selectHit(true);
+      labelSlice->processSelection();
       interactionEvent.setEvent(
             ZInteractionEvent::EVENT_OBJECT3D_SCAN_SELECTED_IN_LABEL_SLICE);
     }
@@ -2511,9 +2554,14 @@ void ZStackPresenter::process(const ZStackOperator &op)
       buddyDocument()->toggleSelected(op.getHitObject<ZObject3dScan>());
       interactionEvent.setEvent(ZInteractionEvent::EVENT_OBJ3D_SELECTED);
     } else {
-      op.getHitObject<ZDvidLabelSlice>()->toggleHitSelection(true);
-      interactionEvent.setEvent(
-            ZInteractionEvent::EVENT_OBJECT3D_SCAN_SELECTED_IN_LABEL_SLICE);
+      ZDvidLabelSlice *labelSlice =  op.getHitObject<ZDvidLabelSlice>();
+      if (labelSlice != NULL) {
+        labelSlice->recordSelection();
+        labelSlice->toggleHitSelection(true);
+        labelSlice->processSelection();
+        interactionEvent.setEvent(
+              ZInteractionEvent::EVENT_OBJECT3D_SCAN_SELECTED_IN_LABEL_SLICE);
+      }
     }
     break;
   case ZStackOperator::OP_OBJECT3D_SCAN_TOGGLE_SELECT_SINGLE:
@@ -2530,7 +2578,10 @@ void ZStackPresenter::process(const ZStackOperator &op)
         interactionEvent.setEvent(ZInteractionEvent::EVENT_OBJECT3D_SCAN_SELECTED);
       } else if (op.getHitObject<ZDvidLabelSlice>() != NULL) {
 //        op.getHitObject<ZDvidLabelSlice>()->clearSelection();
+        ZDvidLabelSlice *labelSlice =  op.getHitObject<ZDvidLabelSlice>();
+        labelSlice->recordSelection();
         op.getHitObject<ZDvidLabelSlice>()->toggleHitSelection(false);
+        labelSlice->processSelection();
         interactionEvent.setEvent(
               ZInteractionEvent::EVENT_OBJECT3D_SCAN_SELECTED_IN_LABEL_SLICE);
       }

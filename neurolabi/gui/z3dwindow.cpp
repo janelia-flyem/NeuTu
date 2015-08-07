@@ -36,8 +36,8 @@
 #include "znormcolormap.h"
 #include "swctreenode.h"
 #include "dialogs/swctypedialog.h"
-#include "swcsizedialog.h"
-#include "swcskeletontransformdialog.h"
+#include "dialogs/swcsizedialog.h"
+#include "dialogs/swcskeletontransformdialog.h"
 #include "zswcbranch.h"
 #include "zswcdisttrunkanalyzer.h"
 #include "zswcbranchingtrunkanalyzer.h"
@@ -55,7 +55,7 @@
 #include "zswcobjsmodel.h"
 #include "zpunctaobjsmodel.h"
 #include "qcolordialog.h"
-#include "zalphadialog.h"
+#include "dialogs/zalphadialog.h"
 #include "zstring.h"
 #include "zpunctumio.h"
 #include "zswcglobalfeatureanalyzer.h"
@@ -69,7 +69,7 @@
 #include "zswcgenerator.h"
 #include "zstroke2d.h"
 #include "zsparsestack.h"
-#include "zmarkswcsomadialog.h"
+#include "dialogs/zmarkswcsomadialog.h"
 #include "zinteractivecontext.h"
 #include "zwindowfactory.h"
 #include "zstackviewparam.h"
@@ -210,7 +210,7 @@ void Z3DWindow::init(EInitMode mode)
     if (mode == NORMAL_INIT) {
       m_volumeSource = new Z3DVolumeSource(m_doc.get());
     } else if (mode == FULL_RES_VOLUME) {
-      m_volumeSource = new Z3DVolumeSource(m_doc.get(), MAX_INT32);
+      m_volumeSource = new Z3DVolumeSource(m_doc.get(), MAX_INT32 / 2);
     }
     connect(m_volumeSource, SIGNAL(xScaleChanged()), this, SLOT(volumeScaleChanged()));
     connect(m_volumeSource, SIGNAL(yScaleChanged()), this, SLOT(volumeScaleChanged()));
@@ -690,6 +690,7 @@ void Z3DWindow::createContextMenu()
   contextMenu->addAction(m_locatePunctumIn2DAction);
   contextMenu->addAction("Transform selected puncta",
                          this, SLOT(transformSelectedPuncta()));
+  contextMenu->addAction("Change color", this, SLOT(changeSelectedPunctaColor()));
   contextMenu->addAction("Transform all puncta",
                          this, SLOT(transformAllPuncta()));
   contextMenu->addAction("Convert to swc",
@@ -2783,6 +2784,25 @@ void Z3DWindow::transformSelectedPuncta()
   }
 }
 
+void Z3DWindow::changeSelectedPunctaColor()
+{
+  std::set<ZPunctum*> punctaSet =
+      m_doc->getSelectedObjectSet<ZPunctum>(ZStackObject::TYPE_PUNCTUM);
+  if (!punctaSet.empty()) {
+    QColorDialog dlg;
+
+    if (dlg.exec()) {
+      for (std::set<ZPunctum*>::iterator iter = punctaSet.begin();
+           iter != punctaSet.end(); ++iter) {
+        ZPunctum *punctum = *iter;
+        punctum->setColor(dlg.currentColor());
+      }
+
+      m_doc->notifyPunctumModified();
+    }
+  }
+}
+
 void Z3DWindow::transformAllPuncta()
 {
   QList<ZPunctum*> punctaSet = m_doc->getPunctumList();
@@ -3139,7 +3159,10 @@ void Z3DWindow::saveSelectedSwc()
   }
 
   if (GET_APPLICATION_NAME == "Biocytin") {
+    ZStackFrame *frame = m_doc->getParentFrame();
+    if (frame != NULL) {
       fileName = m_doc->getParentFrame()->swcFilename;
+    }
       //fileName =ZBiocytinFileNameParser::getSwcEditPath(fileName.toStdString()).c_str();
   }
 

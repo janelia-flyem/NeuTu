@@ -139,7 +139,7 @@ bool ZFlyEmDataBundle::loadDvid(const ZDvidFilter &dvidFilter)
     m_sourceDimension[i] = stackSize[i];
   }
 
-  std::set<int> bodySet;
+  std::set<uint64_t> bodySet;
 
   if (!dvidFilter.getBodyListFile().empty()) {
     bodySet = dvidFilter.loadBodySet();
@@ -158,32 +158,60 @@ bool ZFlyEmDataBundle::loadDvid(const ZDvidFilter &dvidFilter)
   ZFlyEmDvidReader fdReader;
   fdReader.open(dvidFilter.getDvidTarget());
 
-  m_synapseAnnotationFile = dvidTarget.getSourceString();
+//  m_synapseAnnotationFile = dvidTarget.getSourceString();
 
   QStringList annotationList = fdReader.readKeys(
-        ZDvidData::GetName(ZDvidData::ROLE_BODY_ANNOTATION), "0");
-  std::set<int> annotationSet;
+        ZDvidData::GetName(ZDvidData::ROLE_BODY_ANNOTATION));
+  std::set<uint64_t> annotationSet;
   foreach (const QString &idStr, annotationList) {
     annotationSet.insert(ZString(idStr.toStdString()).firstInteger());
   }
 
   size_t i = 0;
-  for (std::set<int>::const_iterator iter = bodySet.begin();
-       iter != bodySet.end(); ++iter, ++i) {
-    int bodyId = *iter;
-    if (bodyId > 0 && !dvidFilter.isExcluded(bodyId)) {
-      std::string name;
-      std::string type;
-      if (annotationSet.count(bodyId) > 0) {
-        ZFlyEmBodyAnnotation annotation = fdReader.readAnnotation(bodyId);
-        name = annotation.getName();
+  if (!bodySet.empty()) {
+    for (std::set<uint64_t>::const_iterator iter = bodySet.begin();
+         iter != bodySet.end(); ++iter, ++i) {
+      uint64_t bodyId = *iter;
+      if (bodyId > 0 && !dvidFilter.isExcluded(bodyId)) {
+        std::string name;
+        std::string type;
+        if (annotationSet.count(bodyId) > 0) {
+          ZFlyEmBodyAnnotation annotation = fdReader.readAnnotation(bodyId);
+          name = annotation.getName();
 
-        if (!annotation.getType().empty()) {
-          type = annotation.getType();
-        } else if (!name.empty()) {
-          type = ZFlyEmNeuronInfo::GuessTypeFromName(name);
+          if (!annotation.getType().empty()) {
+            type = annotation.getType();
+          } else if (!name.empty()) {
+            type = ZFlyEmNeuronInfo::GuessTypeFromName(name);
+          }
+        }
+
+        bool goodNeuron = true;
+        if (dvidFilter.namedBodyOnly() && name.empty()) {
+          goodNeuron = false;
+        }
+
+        if (goodNeuron) {
+          ZFlyEmNeuron &neuron = m_neuronArray[realSize++];
+          neuron.setId(bodyId);
+          neuron.setName(name);
+          neuron.setType(type);
+          neuron.setModelPath(m_source);
+          neuron.setVolumePath(m_source);
+          neuron.setThumbnailPath(m_source);
+          neuron.setResolution(m_swcResolution);
+          neuron.setSynapseAnnotation(getSynapseAnnotation());
+          neuron.setSynapseScale(100);
         }
       }
+    }
+  } else {
+    m_neuronArray.resize(annotationSet.size());
+    for (std::set<uint64_t>::const_iterator iter = annotationSet.begin();
+         iter != annotationSet.end(); ++iter) {
+      uint64_t bodyId = *iter;
+      ZFlyEmBodyAnnotation annotation = fdReader.readAnnotation(bodyId);
+      std::string name = annotation.getName();
 
       bool goodNeuron = true;
       if (dvidFilter.namedBodyOnly() && name.empty()) {
@@ -191,6 +219,13 @@ bool ZFlyEmDataBundle::loadDvid(const ZDvidFilter &dvidFilter)
       }
 
       if (goodNeuron) {
+        std::string type;
+        if (!annotation.getType().empty()) {
+          type = annotation.getType();
+        } else if (!name.empty()) {
+          type = ZFlyEmNeuronInfo::GuessTypeFromName(name);
+        }
+
         ZFlyEmNeuron &neuron = m_neuronArray[realSize++];
         neuron.setId(bodyId);
         neuron.setName(name);
@@ -203,12 +238,6 @@ bool ZFlyEmDataBundle::loadDvid(const ZDvidFilter &dvidFilter)
         neuron.setSynapseScale(100);
       }
 
-
-#ifdef _DEBUG_2
-      if (neuron.getId() == 16493) {
-        std::cout << "Potential bug" << std::endl;
-      }
-#endif
     }
   }
   m_neuronArray.resize(realSize);
@@ -545,6 +574,13 @@ ZSwcTree* ZFlyEmDataBundle::getModel(int bodyId) const
   }
 
   return neuron->getModel();
+}
+
+void ZFlyEmDataBundle::importSynpaseAnnotation(const string &filePath)
+{
+  deprecate(SYNAPSE_ANNOTATION);
+  m_synapseAnnotationFile = filePath;
+  updateSynapseAnnotation();
 }
 
 FlyEm::ZSynapseAnnotationArray* ZFlyEmDataBundle::getSynapseAnnotation() const
@@ -914,5 +950,14 @@ void ZFlyEmDataBundle::uploadAnnotation(const ZDvidTarget &dvidTarget) const
         writer.writeAnnotation(neuron);
       }
     }
+  }
+}
+
+void ZFlyEmDataBundle::updateSynapseAnnotation()
+{
+  for (ZFlyEmNeuronArray::iterator iter = m_neuronArray.begin();
+       iter != m_neuronArray.end(); ++iter) {
+    ZFlyEmNeuron &neuron = *iter;
+    neuron.setSynapseAnnotation(getSynapseAnnotation());
   }
 }

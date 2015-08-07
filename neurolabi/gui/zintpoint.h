@@ -57,6 +57,7 @@ public:
    * It returns (0, 0, 0) if \a pt2 has a 0 coordinate value.
    */
   friend ZIntPoint operator / (const ZIntPoint &pt1, const ZIntPoint &pt2);
+  friend ZIntPoint operator / (const ZPoint &pt1, int scale);
 
   std::string toString() const;
 

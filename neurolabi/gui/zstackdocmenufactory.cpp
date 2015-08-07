@@ -263,6 +263,7 @@ QMenu* ZStackDocMenuFactory::makeStackContextMenu(
                       ZStackPresenter::ACTION_ADD_SPLIT_SEED));
     break;
   case NeuTube::Document::NORMAL:
+  case NeuTube::Document::BIOCYTIN_STACK:
     menu->addAction(presenter->getAction(ZStackPresenter::ACTION_ADD_SWC_NODE));
     menu->addAction(presenter->getAction(
                       ZStackPresenter::ACTION_TOGGLE_SWC_SKELETON));

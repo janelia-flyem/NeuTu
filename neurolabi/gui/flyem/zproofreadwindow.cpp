@@ -121,6 +121,8 @@ void ZProofreadWindow::init()
   createMenu();
   createToolbar();
   statusBar()->showMessage("Load a database to start proofreading");
+
+  m_mainMvc->enhanceTileContrast(m_contrastAction->isChecked());
 }
 
 ZProofreadWindow* ZProofreadWindow::Make(QWidget *parent)
@@ -166,17 +168,31 @@ void ZProofreadWindow::createMenu()
   m_contrastAction = new QAction("Enhance Contrast", this);
   m_contrastAction->setCheckable(true);
   m_contrastAction->setChecked(false);
+  m_contrastAction->setIcon(QIcon(":images/bc_enhance.png"));
+  m_contrastAction->setChecked(true);
   connect(m_contrastAction, SIGNAL(toggled(bool)),
           m_mainMvc, SLOT(enhanceTileContrast(bool)));
 
   m_viewMenu->addAction(m_viewSynapseAction);
   m_viewMenu->addAction(m_viewBookmarkAction);
   m_viewMenu->addAction(m_viewSegmentationAction);
+  m_viewMenu->addSeparator();
+  m_viewMenu->addAction(m_contrastAction);
 
 
 //  menu->addAction(new QAction("test", menu));
 
   menuBar()->addMenu(m_viewMenu);
+
+  m_toolMenu = new QMenu("Tools", this);
+
+  m_openSequencerAction = new QAction("Open Sequencer", this);
+  m_openSequencerAction->setIcon(QIcon(":/images/document.png"));
+  connect(m_openSequencerAction, SIGNAL(triggered()),
+          m_mainMvc, SLOT(openSequencer()));
+  m_toolMenu->addAction(m_openSequencerAction);
+
+  menuBar()->addMenu(m_toolMenu);
 
 //  m_viewMenu->setEnabled(false);
 
@@ -199,6 +215,10 @@ void ZProofreadWindow::createToolbar()
   m_toolBar->addAction(m_viewSynapseAction);
   m_toolBar->addAction(m_viewBookmarkAction);
   m_toolBar->addAction(m_viewSegmentationAction);
+  m_toolBar->addSeparator();
+  m_toolBar->addAction(m_contrastAction);
+  m_toolBar->addSeparator();
+  m_toolBar->addAction(m_openSequencerAction);
 }
 
 void ZProofreadWindow::presentSplitInterface(uint64_t bodyId)
@@ -268,8 +288,11 @@ void ZProofreadWindow::dump(const ZWidgetMessage &msg)
   case ZWidgetMessage::TARGET_DIALOG:
     QMessageBox::information(this, "Notice", msg.toHtmlString());
     break;
-case ZWidgetMessage::TARGET_STATUS_BAR:
+  case ZWidgetMessage::TARGET_STATUS_BAR:
     statusBar()->showMessage(msg.toHtmlString());
+    break;
+  case ZWidgetMessage::TARGET_CUSTOM_AREA:
+    m_mainMvc->dump(msg.toHtmlString());
     break;
   }
 }

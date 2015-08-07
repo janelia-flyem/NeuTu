@@ -1,6 +1,8 @@
 #ifndef ZFLYEMPROOFDOC_H
 #define ZFLYEMPROOFDOC_H
 
+#include <QString>
+
 #include "zstackdoc.h"
 #include "zflyembodymerger.h"
 #include "dvid/zdvidtarget.h"
@@ -10,6 +12,7 @@
 class ZDvidSparseStack;
 class ZFlyEmSupervisor;
 class ZFlyEmBookmark;
+class ZPuncta;
 
 class ZFlyEmProofDoc : public ZStackDoc
 {
@@ -33,8 +36,8 @@ public:
 
   ZDvidTileEnsemble* getDvidTileEnsemble() const;
   ZDvidLabelSlice* getDvidLabelSlice() const;
-  const ZDvidSparseStack* getDvidSparseStack() const;
-  ZDvidSparseStack* getDvidSparseStack();
+  const ZDvidSparseStack* getBodyForSplit() const;
+  ZDvidSparseStack* getBodyForSplit();
 
   const ZSparseStack* getSparseStack() const;
   ZSparseStack* getSparseStack();
@@ -52,6 +55,7 @@ public:
 
   bool isSplittable(uint64_t bodyId) const;
 
+  void backupMergeOperation();
   void saveMergeOperation();
   void downloadBodyMask();
   void clearBodyMerger();
@@ -73,6 +77,12 @@ public:
   void saveCustomBookmark();
   void downloadBookmark();
 
+  void enhanceTileContrast(bool highContrast);
+
+  inline void setCustomBookmarkSaveState(bool state) {
+    m_isCustomBookmarkSaved = state;
+  }
+
 public:
   void notifyBodyMerged();
   void notifyBodyUnmerged();
@@ -80,18 +90,38 @@ public:
 signals:
   void bodyMerged();
   void bodyUnmerged();
+  void userBookmarkModified();
 
 public slots:
   void updateDvidLabelObject();
   void loadSynapse(const std::string &filePath);
   void downloadSynapse();
+  void processBookmarkAnnotationEvent(ZFlyEmBookmark *bookmark);
+  void saveCustomBookmarkSlot();
 
 protected:
   void autoSave();
+  void customNotifyObjectModified(ZStackObject::EType type);
+
+private:
+  void connectSignalSlot();
+
+  void decorateTBar(ZPuncta *puncta);
+  void decoratePsd(ZPuncta *puncta);
+
+  void init();
+  void initTimer();
+  void initAutoSave();
 
 private:
   ZFlyEmBodyMerger m_bodyMerger;
   ZDvidTarget m_dvidTarget;
+
+  bool m_isCustomBookmarkSaved;
+  QTimer *m_bookmarkTimer;
+
+  QString m_mergeAutoSavePath;
+
   //ZFlyEmBodySplitProject m_splitProject;
 };
 

@@ -97,6 +97,7 @@ public:
 
   void writeBookmark(const ZFlyEmBookmark &bookmark);
   void writeCustomBookmark(const ZJsonValue &bookmarkJson);
+  void deleteAllCustomBookmark();
 
   inline int getStatusCode() const {
     return m_statusCode;
@@ -114,7 +115,9 @@ public:
 
 private:
   std::string getJsonStringForCurl(const ZJsonValue &obj) const;
-  void writeJson(const std::string url, const ZJsonValue &value);
+//  void writeJson(const std::string url, const ZJsonValue &value);
+  void writeJson(const std::string url, const ZJsonValue &value,
+                 const std::string &emptyValueString);
   void writeJsonString(const std::string url, const std::string &jsonString);
 
   ZJsonValue getLocMessage(const std::string &message);

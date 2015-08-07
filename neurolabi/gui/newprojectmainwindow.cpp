@@ -87,7 +87,8 @@ void NewProjectMainWindow::processStacks()
         QString projFilename = filepath .remove(".tif")+".Proj.tif";
         ui->messages->append(tr("Creating a 2D projection and saving to ")+projFilename);
         QCoreApplication::processEvents();
-        ZStack *proj = projector.project(&stack);
+        ZStack* proj = projector.project(&stack, false, 0);
+
         proj->save(projFilename.toStdString());
         delete proj;
         /*

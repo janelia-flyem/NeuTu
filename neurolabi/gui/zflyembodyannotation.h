@@ -57,6 +57,8 @@ public:
 
   void mergeAnnotation(const ZFlyEmBodyAnnotation &annotation);
 
+  std::string toString() const;
+
 private:
   uint64_t m_bodyId;
   std::string m_status;

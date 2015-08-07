@@ -61,6 +61,7 @@ public:
 
 
   FlyEm::ZSynapseAnnotationArray *getSynapseAnnotation() const;
+  void importSynpaseAnnotation(const std::string &filePath);
   std::map<int, QColor> *getColorMap() const;
   inline const std::map<std::string, double>& getMatchThresholdMap() const {
     return m_matchThreshold;
@@ -177,6 +178,9 @@ public:
    * Empty annotations will be ignored.
    */
   void uploadAnnotation(const ZDvidTarget &dvidTarget) const;
+
+private:
+  void updateSynapseAnnotation();
 
 private:
   ZFlyEmNeuronArray m_neuronArray;

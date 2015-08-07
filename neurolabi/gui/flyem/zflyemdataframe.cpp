@@ -14,7 +14,7 @@
 
 #include "flyemdataform.h"
 #include "dialogs/informationdialog.h"
-#include "parameterdialog.h"
+#include "dialogs/parameterdialog.h"
 #include "zstring.h"
 #include "zstackframe.h"
 #include "zstackdoc.h"
@@ -38,15 +38,15 @@
 #include "mainwindow.h"
 #include <fstream>
 #include "swc/zswcterminalsurfacemetric.h"
-#include "flyemgeosearchdialog.h"
-#include "flyemgeofilterdialog.h"
+#include "dialogs/flyemgeosearchdialog.h"
+#include "dialogs/flyemgeofilterdialog.h"
 #include "flyem/zflyemneuronfilter.h"
 #include "zobject3dscan.h"
 #include "flyem/zflyemneuronimagefactory.h"
-#include "flyemneuronthumbnaildialog.h"
+#include "dialogs/flyemneuronthumbnaildialog.h"
 #include "flyem/zflyemneuronfeatureanalyzer.h"
 #include "flyem/zflyemqualityanalyzer.h"
-#include "flyemhotspotdialog.h"
+#include "dialogs/flyemhotspotdialog.h"
 #include "dvid/zdvidwriter.h"
 #include "dvid/zdvidreader.h"
 #include "zdoublevector.h"
@@ -261,6 +261,13 @@ FlyEm::ZSynapseAnnotationArray *ZFlyEmDataFrame::getSynapseAnnotation()
   }
 
   return annotation;
+}
+
+void ZFlyEmDataFrame::importSynapseAnnotation(const QString &filePath)
+{
+  foreach (ZFlyEmDataBundle *data, m_dataArray) {
+    data->importSynpaseAnnotation(filePath.toStdString());
+  }
 }
 
 std::string ZFlyEmDataFrame::getName(int bodyId) const

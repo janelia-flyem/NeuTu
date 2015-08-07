@@ -11,13 +11,14 @@
 #include "zflyemproofdoc.h"
 
 ZFlyEmProofPresenter::ZFlyEmProofPresenter(ZStackFrame *parent) :
-  ZStackPresenter(parent), m_isHightlightMode(false), m_splitWindowMode(false)
+  ZStackPresenter(parent), m_isHightlightMode(false), m_splitWindowMode(false),
+  m_highTileContrast(false)
 {
   interactiveContext().setSwcEditMode(ZInteractiveContext::SWC_EDIT_OFF);
 }
 
 ZFlyEmProofPresenter::ZFlyEmProofPresenter(QWidget *parent) :
-  ZStackPresenter(parent), m_isHightlightMode(false)
+  ZStackPresenter(parent), m_isHightlightMode(false), m_highTileContrast(false)
 {
   interactiveContext().setSwcEditMode(ZInteractiveContext::SWC_EDIT_OFF);
 }
@@ -197,5 +198,15 @@ void ZFlyEmProofPresenter::processCustomOperator(const ZStackOperator &op)
 
   getAction(ZStackPresenter::ACTION_BODY_SPLIT_START)->setVisible(
         !isSplitWindow());
+}
+
+bool ZFlyEmProofPresenter::highTileContrast() const
+{
+  return m_highTileContrast;
+}
+
+void ZFlyEmProofPresenter::setHighTileContrast(bool high)
+{
+  m_highTileContrast = high;
 }
 

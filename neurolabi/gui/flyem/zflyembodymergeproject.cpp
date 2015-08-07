@@ -729,7 +729,7 @@ void ZFlyEmBodyMergeProject::update3DBodyViewDeep()
 
     m_coarseBodyWindow->show();
     m_coarseBodyWindow->raise();
-    m_coarseBodyWindow->resetCameraCenter();
+//    m_coarseBodyWindow->resetCameraCenter();
   }
 }
 
@@ -749,8 +749,8 @@ void ZFlyEmBodyMergeProject::update3DBodyViewPlane(const ZDvidInfo &dvidInfo)
       ZCuboid box;
       box.setFirstCorner(dvidInfo.getStartCoordinates().toPoint());
       box.setLastCorner(dvidInfo.getEndCoordinates().toPoint());
-      double lineWidth = box.depth() / 500.0;
-      Z3DGraph *graph = Z3DGraphFactory::MakeGrid(rect, 25, lineWidth);
+      double lineWidth = box.depth() / 2000.0;
+      Z3DGraph *graph = Z3DGraphFactory::MakeGrid(rect, 100, lineWidth);
       graph->setSource(ZStackObjectSourceFactory::MakeFlyEmPlaneObjectSource());
       m_coarseBodyWindow->getDocument()->addObject(graph, true);
     }
@@ -764,7 +764,7 @@ void ZFlyEmBodyMergeProject::update3DBodyViewBox(const ZDvidInfo &dvidInfo)
     box.setFirstCorner(dvidInfo.getStartCoordinates().toPoint());
     box.setLastCorner(dvidInfo.getEndCoordinates().toPoint());
     Z3DGraph *graph = Z3DGraphFactory::MakeBox(
-          box, dmax2(1.0, dmax3(box.width(), box.height(), box.depth()) / 500.0));
+          box, dmax2(1.0, dmax3(box.width(), box.height(), box.depth()) / 1000.0));
     graph->setSource(ZStackObjectSourceFactory::MakeFlyEmBoundBoxSource());
 
     m_coarseBodyWindow->getDocument()->addObject(graph, true);
@@ -1261,7 +1261,9 @@ void ZFlyEmBodyMergeProject::syncWithDvid()
     ZFlyEmBodyMerger *bodyMerger = getBodyMerger();
     if (bodyMerger != NULL) {
       ZDvidBufferReader reader;
-      reader.read(ZDvidUrl(getDvidTarget()).getMergeOperationUrl().c_str());
+      reader.read(
+            ZDvidUrl(getDvidTarget()).getMergeOperationUrl(
+              NeuTube::GetUserName()).c_str());
       const QByteArray& buffer = reader.getBuffer();
       bodyMerger->decodeJsonString(buffer.data());
 

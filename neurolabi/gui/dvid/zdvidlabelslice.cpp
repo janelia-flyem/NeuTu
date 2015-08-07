@@ -1,11 +1,15 @@
 #include "zdvidlabelslice.h"
 
 #include <QColor>
+#include <QRect>
 
 #include "zarray.h"
 #include "dvid/zdvidreader.h"
 #include "zobject3dfactory.h"
 #include "flyem/zflyembodymerger.h"
+#include "zimage.h"
+#include "zpainter.h"
+#include "neutubeconfig.h"
 
 ZDvidLabelSlice::ZDvidLabelSlice()
 {
@@ -15,6 +19,12 @@ ZDvidLabelSlice::ZDvidLabelSlice()
 ZDvidLabelSlice::ZDvidLabelSlice(int maxWidth, int maxHeight)
 {
   init(maxWidth, maxHeight);
+}
+
+ZDvidLabelSlice::~ZDvidLabelSlice()
+{
+  delete m_paintBuffer;
+  delete m_labelArray;
 }
 
 void ZDvidLabelSlice::init(int maxWidth, int maxHeight)
@@ -28,6 +38,9 @@ void ZDvidLabelSlice::init(int maxWidth, int maxHeight)
 
   m_maxWidth = maxWidth;
   m_maxHeight = maxHeight;
+
+  m_paintBuffer = new ZImage(m_maxWidth, m_maxHeight, QImage::Format_ARGB32);
+  m_labelArray = NULL;
 }
 
 ZSTACKOBJECT_DEFINE_CLASS_NAME(ZDvidLabelSlice)
@@ -36,6 +49,10 @@ void ZDvidLabelSlice::display(
     ZPainter &painter, int slice, EDisplayStyle option) const
 {
   if (isVisible()) {
+    m_paintBuffer->clear();
+    m_paintBuffer->setOffset(-m_currentViewParam.getViewPort().x(),
+                             -m_currentViewParam.getViewPort().y());
+
     for (ZObject3dScanArray::const_iterator iter = m_objArray.begin();
          iter != m_objArray.end(); ++iter) {
       ZObject3dScan &obj = const_cast<ZObject3dScan&>(*iter);
@@ -45,8 +62,28 @@ void ZDvidLabelSlice::display(
       } else {
         obj.setSelected(false);
       }
-      obj.display(painter, slice, option);
+
+//      obj.display(painter, slice, option);
+
+      if (!obj.isSelected()) {
+        m_paintBuffer->setData(obj);
+      } else {
+        m_paintBuffer->setData(obj, QColor(255, 255, 255, 164));
+      }
     }
+
+//    painter.save();
+//    painter.setOpacity(0.5);
+
+    painter.drawImage(m_currentViewParam.getViewPort().x(),
+                      m_currentViewParam.getViewPort().y(),
+                      *m_paintBuffer);
+
+//    painter.restore();
+
+#ifdef _DEBUG_2
+//      m_paintBuffer->save((GET_TEST_DATA_DIR + "/test.tif").c_str());
+#endif
   }
 }
 
@@ -74,13 +111,14 @@ void ZDvidLabelSlice::forceUpdate(const ZStackViewParam &viewParam)
     if (reader.open(getDvidTarget())) {
       QRect viewPort = viewParam.getViewPort();
 
-      ZArray *labelArray = reader.readLabels64(
+      delete m_labelArray;
+      m_labelArray = reader.readLabels64(
             getDvidTarget().getLabelBlockName(),
             viewPort.left(), viewPort.top(), viewParam.getZ(),
             viewPort.width(), viewPort.height(), 1);
 
-      if (labelArray != NULL) {
-        ZObject3dFactory::MakeObject3dScanArray(*labelArray, yStep, &m_objArray);
+      if (m_labelArray != NULL) {
+        ZObject3dFactory::MakeObject3dScanArray(*m_labelArray, yStep, &m_objArray, true);
 
         m_objArray.translate(viewPort.left(), viewPort.top(),
                              viewParam.getZ());
@@ -91,7 +129,7 @@ void ZDvidLabelSlice::forceUpdate(const ZStackViewParam &viewParam)
         */
         assignColorMap();
 
-        delete labelArray;
+//        delete labelArray;
       }
     }
   }
@@ -348,6 +386,9 @@ void ZDvidLabelSlice::setMaxSize(int maxWidth, int maxHeight)
     m_maxHeight = maxHeight;
     m_currentViewParam.resize(m_maxWidth, m_maxHeight);
     m_objArray.clear();
+    delete m_paintBuffer;
+    m_paintBuffer = new ZImage(m_maxWidth, m_maxHeight, QImage::Format_ARGB32);
+
     update();
   }
 }
@@ -409,4 +450,28 @@ std::set<uint64_t> ZDvidLabelSlice::getSelected(
 void ZDvidLabelSlice::mapSelection()
 {
   m_selectedOriginal = getSelected(NeuTube::BODY_LABEL_MAPPED);
+}
+
+void ZDvidLabelSlice::recordSelection()
+{
+  m_prevSelectedOriginal = m_selectedOriginal;
+}
+
+void ZDvidLabelSlice::processSelection()
+{
+  m_selector.reset();
+
+  for (std::set<uint64_t>::const_iterator iter = m_selectedOriginal.begin();
+       iter != m_selectedOriginal.end(); ++iter) {
+    if (m_prevSelectedOriginal.count(*iter) == 0) {
+      m_selector.selectObject(*iter);
+    }
+  }
+
+  for (std::set<uint64_t>::const_iterator iter = m_prevSelectedOriginal.begin();
+       iter != m_prevSelectedOriginal.end(); ++iter) {
+    if (m_selectedOriginal.count(*iter) == 0) {
+      m_selector.deselectObject(*iter);
+    }
+  }
 }

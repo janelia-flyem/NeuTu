@@ -651,6 +651,46 @@ int *String_To_Integer_Array(const char *str, int *array, int *n)
   return array;
 }
 
+uint64_t *String_To_Uint64_Array(const char *str, uint64_t *array, int *n)
+{
+  *n = count_integer(str);
+  if (*n == 0) {
+    return NULL;
+  }
+
+  if (array == NULL) {
+    array = malloc(*n * sizeof(uint64_t));
+  }
+
+  int i = 0;
+  int state = 0;
+
+  while (*str) {
+    switch (state) {
+    case 0:
+      if (isdigit(*str)) {
+	array[i] = *str - '0';
+	state = 1;
+      }
+      break;
+    case 1:
+      if (isdigit(*str)) {
+	array[i] = array[i] * 10 + *str - '0';
+      } else { /* end of the number */
+	state = 0;
+	i++;
+      }
+      break;
+    default:
+      TZ_ERROR(ERROR_DATA_VALUE);
+      break;
+    }
+    str++;
+  }
+
+  return array;
+}
+
 /*
 static int count_double(const char *str) 
 {

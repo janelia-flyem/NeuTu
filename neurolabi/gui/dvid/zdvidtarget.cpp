@@ -3,6 +3,9 @@
 #include "zerror.h"
 #include "zjsonparser.h"
 #include "zdviddata.h"
+#if _QT_APPLICATION_
+#include "dvid/zdvidbufferreader.h"
+#endif
 
 const char* ZDvidTarget::m_addressKey = "address";
 const char* ZDvidTarget::m_portKey = "port";
@@ -82,7 +85,20 @@ void ZDvidTarget::setServer(const std::string &address)
 
 void ZDvidTarget::setUuid(const std::string &uuid)
 {
-  m_uuid = uuid;
+  if (ZString(uuid).startsWith("ref:")) {
+#if _QT_APPLICATION_
+    std::string uuidLink = uuid.substr(4);
+    ZDvidBufferReader reader;
+    reader.read(uuidLink.c_str());
+    m_uuid = reader.getBuffer().constData();
+#else
+    m_uuid = "";
+    std::cout << "Unsupported uuid ref in non-GUI application. No uuid is set."
+              << std::endl;
+#endif
+  } else {
+    m_uuid = uuid;
+  }
 }
 
 void ZDvidTarget::setPort(int port)

@@ -8,15 +8,19 @@
 #include "zstackviewparam.h"
 #include "zobjectcolorscheme.h"
 #include "neutube.h"
+#include "zimage.h"
+#include "zselector.h"
 
 class ZFlyEmBodyMerger;
 class QColor;
+class ZArray;
 
 class ZDvidLabelSlice : public ZStackObject
 {
 public:
   ZDvidLabelSlice();
   ZDvidLabelSlice(int maxWidth, int maxHeight);
+  ~ZDvidLabelSlice();
 
   void setMaxSize(int maxWidth, int maxHeight);
 
@@ -99,6 +103,18 @@ public:
 
   void forceUpdate();
 
+  //Selection events
+  void recordSelection();
+  void processSelection();
+
+  const ZSelector<uint64_t>& getSelector() const {
+    return m_selector;
+  }
+
+  ZSelector<uint64_t>& getSelector() {
+    return m_selector;
+  }
+
 private:
   inline const ZDvidTarget& getDvidTarget() const { return m_dvidTarget; }
   void assignColorMap();
@@ -115,6 +131,11 @@ private:
   std::set<uint64_t> m_selectedOriginal;
 //  std::set<uint64_t> m_selectedSet; //Mapped label set
   ZFlyEmBodyMerger *m_bodyMerger;
+  ZImage *m_paintBuffer;
+  ZArray *m_labelArray;
+
+  std::set<uint64_t> m_prevSelectedOriginal;
+  ZSelector<uint64_t> m_selector; //original labels
 
   int m_maxWidth;
   int m_maxHeight;

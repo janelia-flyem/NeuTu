@@ -46,12 +46,13 @@
     {
       "address": "emdata2.int.janelia.org",
       "port": 7000,
-      "uuid": "897b",
+      "uuid": "f5ff",
       "name": "FIB19 (emdata2)",
+      "comment": "branched from 897b",
       "body_label": "segmentation-labelvol",
       "label_block": "segmentation",
       "multires_tile": "graytiles",
-      "user_name": ["shinomiyaa", "zhaot"]
+      "user_name": ["shinomiyak", "zhaot"]
     },
     {
       "address": "emrecon100.janelia.priv",
@@ -301,17 +302,6 @@
       "user_name": ["shinomiyak", "zhaot"]
     },
     {
-      "address": "emdata2.int.janelia.org",
-      "port": 7000,
-      "uuid": "34ed",
-      "name": "FIB19_shinomiyak",
-      "comment": "FIB19",
-      "multires_tile": "graytiles",
-      "body_label": "segmentation-labelvol",
-      "label_block": "segmentation",
-      "user_name": ["shinomiyak", "takemuras", "zhaot"]
-    },
-    {
       "address": "emdata1.int.janelia.org",
       "port": 8500,
       "uuid": "3771",
@@ -350,16 +340,6 @@
       "body_label": "bodies",
       "label_block": "labels",
       "user_name": ["changl", "zhaot"]
-    },
-    {
-      "address": "emdata1.int.janelia.org",
-      "port": 8500,
-      "uuid": "4f22",
-      "name": "MB_Practice",
-      "comment": "MB seg (branched from ccf)",
-      "body_label": "bodies",
-      "label_block": "labels",
-      "user_name": ["anicetor", "changl", "lauchies", "ogundeyio", "ordishc", "sigmundc", "shinomiyaa", "tranj", "rivlinp", "takemurasa", "zhaot"]
     },
     {
       "address": "emdata1.int.janelia.org",
@@ -454,12 +434,33 @@
     {
       "address": "emdata1.int.janelia.org",
       "port": 8500,
-      "uuid": "ee7dc",
+      "uuid": "d1ea",
       "name": "MB_Orphan_Link",
-      "comment": "production orphan link before extended segmentation",
-      "body_label": "bodies",
-      "label_block": "labels",
+      "comment": "production orphan link with extended segmentation",
+      "body_label": "bodies3",
+      "label_block": "labels3",
+      "user_name": ["anicetor", "changl", "lauchies", "ogundeyio", "ordishc", "sigmundc", "shinomiyaa", "tranj", "rivlinp", "takemurasa", "zhaot", "takemuras"]
+    },
+    {
+      "address": "emdata1.int.janelia.org",
+      "port": 8500,
+      "uuid": "eafc",
+      "name": "MB_Practice",
+      "comment": "MB seg for practice(branched from 66ba)",
+      "body_label": "bodies3",
+      "label_block": "labels3",
       "user_name": ["anicetor", "changl", "lauchies", "ogundeyio", "ordishc", "sigmundc", "shinomiyaa", "tranj", "rivlinp", "takemurasa", "zhaot"]
+    },
+    {
+      "address": "emdata2.int.janelia.org",
+      "port": 7000,
+      "uuid": "47a8",
+      "name": "FIB19_practice",
+      "comment": "branched from 897b",
+      "body_label": "segmentation-labelvol",
+      "label_block": "segmentation",
+      "multires_tile": "graytiles",
+      "user_name": ["anicetor", "changl", "lauchies", "ogundeyio", "ordishc", "sigmundc", "shinomiyaa", "tranj", "rivlinp", "takemurasa", "zhaot", "shinomiyak"]
     }
   ]
 }

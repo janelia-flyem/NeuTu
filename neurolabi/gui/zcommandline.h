@@ -36,7 +36,7 @@ private:
   int runTraceNeuron();
   int runTest();
 
-  std::set<int> loadBodySet(const std::string &input);
+  std::set<uint64_t> loadBodySet(const std::string &input);
 
   void loadConfig(const std::string &filePath);
   void expandConfig(const std::string &configFilePath, const std::string &key);
@@ -50,6 +50,7 @@ private:
   std::string m_referenceBlockFile;
   std::string m_synapseFile;
   ZJsonObject m_configJson;
+  std::string m_configDir;
   int m_ravelerHeight;
   int m_zStart;
   int m_intv[3];

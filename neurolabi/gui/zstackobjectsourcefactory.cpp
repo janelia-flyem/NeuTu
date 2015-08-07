@@ -90,3 +90,14 @@ std::string ZStackObjectSourceFactory::MakeFlyEmSynapseSource()
 {
   return "#.FlyEMSynapse";
 }
+
+std::string ZStackObjectSourceFactory::MakeFlyEmTBarSource()
+{
+  return "#.FlyEMSynapse.TBar";
+}
+
+std::string ZStackObjectSourceFactory::MakeFlyEmPsdSource()
+{
+  return "#.FlyEMSynapse.Psd";
+}
+

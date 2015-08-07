@@ -32,3 +32,8 @@ bool ProjectionDialog::usingExisted() const
 {
   return ui->usingExistedCheckBox->isChecked();
 }
+
+int ProjectionDialog::getSlabCount() const
+{
+  return ui->slabSpinBox->value();
+}

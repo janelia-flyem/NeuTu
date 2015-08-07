@@ -23,17 +23,17 @@ int ZFlyEmBookmarkListModel::columnCount(const QModelIndex &/*parent*/) const
   return m_presenter->columnCount();
 }
 
-const ZFlyEmBookmark& ZFlyEmBookmarkListModel::getBookmark(int row) const
+const ZFlyEmBookmark* ZFlyEmBookmarkListModel::getBookmark(int row) const
 {
   return m_bookmarkArray[row];
 }
 
-ZFlyEmBookmark& ZFlyEmBookmarkListModel::getBookmark(int row)
+ZFlyEmBookmark *ZFlyEmBookmarkListModel::getBookmark(int row)
 {
   return m_bookmarkArray[row];
 }
 
-const ZFlyEmBookmarkArray& ZFlyEmBookmarkListModel::getBookmarkArray() const
+const ZFlyEmBookmarkPtrArray& ZFlyEmBookmarkListModel::getBookmarkArray() const
 {
   return m_bookmarkArray;
 }
@@ -48,8 +48,8 @@ QVariant ZFlyEmBookmarkListModel::data(const QModelIndex &index, int role) const
     return QVariant();
   }
 
-  const ZFlyEmBookmark &bookmark = getBookmark(index.row());
-  return m_presenter->data(bookmark, index.column(), role);
+  const ZFlyEmBookmark *bookmark = getBookmark(index.row());
+  return m_presenter->data(*bookmark, index.column(), role);
 }
 
 /*
@@ -64,9 +64,9 @@ void ZFlyEmBookmarkListModel::clear()
   m_bookmarkArray.clear();
 }
 
-void ZFlyEmBookmarkListModel::append(const ZFlyEmBookmark &bookmark)
+void ZFlyEmBookmarkListModel::append(const ZFlyEmBookmark *bookmark)
 {
-  m_bookmarkArray.append(bookmark);
+  m_bookmarkArray.append(const_cast<ZFlyEmBookmark*>(bookmark));
   insertRow(rowCount() - 1);
   //QModelIndex topLeft = createIndex(rowCount() - 1, 0);
   //QModelIndex bottomRight = createIndex(rowCount() - 1, columnCount() - 1);

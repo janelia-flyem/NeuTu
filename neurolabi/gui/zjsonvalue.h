@@ -97,7 +97,7 @@ public:
   /*!
    * \brief Dump the object to a string.
    */
-  std::string dumpString(int indent = 2) const;
+  virtual std::string dumpString(int indent = 2) const;
 
   /*!
    * \brief Save the json value into a file

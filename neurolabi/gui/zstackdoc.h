@@ -34,13 +34,13 @@
 #include "tz_trace_defs.h"
 #include "zpunctum.h"
 #include "zprogressreporter.h"
-#include "zrescaleswcdialog.h"
+#include "dialogs/zrescaleswcdialog.h"
 #include "zreportable.h"
 #include "biocytin/zstackprojector.h"
 #include "zstackreadthread.h"
 #include "zstackfile.h"
 #include "zactionactivator.h"
-#include "resolutiondialog.h"
+#include "dialogs/resolutiondialog.h"
 #include "zneurontracer.h"
 #include "zdocplayer.h"
 #include "z3dgraph.h"
@@ -441,7 +441,8 @@ public:
   void breakSelectedLocsegChain();
 
   int maxIntesityDepth(int x, int y);
-  ZStack* projectBiocytinStack(Biocytin::ZStackProjector &projector);
+  std::vector<ZStack*> projectBiocytinStack(
+      Biocytin::ZStackProjector &projector);
 
   void updateStackFromSource();
   void setStackFactory(ZStackFactory *factory);
@@ -1023,6 +1024,8 @@ public slots:
   void removeUser(QObject *user);
   void removeAllUser();
 
+  void processRectRoiUpdate();
+
 /*
 public:
   inline void notifyStackModified() {
@@ -1093,6 +1096,10 @@ signals:
 
 protected:
   virtual void autoSave();
+  virtual void customNotifyObjectModified(ZStackObject::EType type);
+
+  void selectSwcNode(const ZRect2d &roi);
+  void removeRect2dRoi();
 
 private:
   void connectSignalSlot();
