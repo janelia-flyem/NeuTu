@@ -16,7 +16,7 @@
       "comment": "MB seg debug (branched from ccf)",
       "body_label": "bodies",
       "label_block": "labels",
-      "user_name": "zhaot"
+      "user_name": ["zhaot"]
     },
     {
       "address": "emdata1.int.janelia.org",
@@ -52,7 +52,7 @@
       "label_block": "labels0802",
       "multires_tile": "graytiles",
       "comment": "FIB-25 export 08-02-2015",
-      "user_name": "zhaot"
+      "user_name": ["zhaot", "takemuras"] 
     },
     {
       "address": "emdata2.int.janelia.org",
