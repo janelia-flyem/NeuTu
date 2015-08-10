@@ -148,9 +148,9 @@ void ZImage::setData(const ZObject3dScan &obj, const QColor &color)
   colorValue <<= 8;
   colorValue += color.red();
   colorValue <<= 8;
-  colorValue += color.blue();
-  colorValue <<= 8;
   colorValue += color.green();
+  colorValue <<= 8;
+  colorValue += color.blue();
 
   int stripeNumber = obj.getStripeNumber();
   for (int i = 0; i < stripeNumber; ++i) {
