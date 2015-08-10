@@ -111,6 +111,8 @@ public:
     return m_thumbnailPath;
   }
 
+  void updateDvidModel(bool forceUpdate) const;
+
   ZSwcTree *getModel(const std::string &bundleSource = "") const;
   ZSwcTree *getUnscaledModel(const std::string &bundleSource = "") const;
 

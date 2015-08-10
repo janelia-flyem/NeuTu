@@ -490,26 +490,6 @@ ZStackDoc *FlyEmDataForm::showViewSelectedBody(ZFlyEmQueryView *view)
     window->raise();
   }
 
-
-#if 0
-  ZStackFrame *frame = new ZStackFrame;
-
-  ZIntPoint dsIntv = view->getModel()->retrieveBody(
-        sel->selectedIndexes(), frame->document().get());
-  ui->progressBar->setValue(75);
-  //QApplication::processEvents();
-
-  Z3DWindow *window = frame->open3DWindow(this->parentWidget());
-  window->getVolumeSource()->getVolume(0)->setScaleSpacing(
-        glm::vec3(dsIntv.getX() + 1, dsIntv.getY() + 1, dsIntv.getZ() + 1));
-  window->getVolumeSource()->getVolume(0)->scaleOffset(
-        dsIntv.getX() + 1, dsIntv.getY() + 1, dsIntv.getZ() + 1);
-
-  ZStackDoc *hostDoc = frame->document().get();
-
-  delete frame;
-#endif
-
   ui->progressBar->hide();
 
   return hostDoc;

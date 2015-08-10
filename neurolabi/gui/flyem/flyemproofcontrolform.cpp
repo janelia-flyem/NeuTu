@@ -186,7 +186,7 @@ void FlyEmProofControlForm::updateUserBookmarkTable(ZStackDoc *doc)
       }
     }
   }
-  ui->userBookmarkView->resizeColumnsToContents();
+//  ui->userBookmarkView->resizeColumnsToContents();
 }
 
 void FlyEmProofControlForm::updateBookmarkTable(ZFlyEmBodyMergeProject *project)
@@ -209,7 +209,7 @@ void FlyEmProofControlForm::updateBookmarkTable(ZFlyEmBodyMergeProject *project)
         }
       }
     }
-    ui->bookmarkView->resizeColumnsToContents();
+//    ui->bookmarkView->resizeColumnsToContents();
 //    project->addBookmarkDecoration(m_bookmarkList.getBookmarkArray());
   }
 }
