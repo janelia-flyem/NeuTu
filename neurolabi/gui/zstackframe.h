@@ -270,6 +270,7 @@ public slots:
   void locateSwcNodeIn3DView();
   void notifyViewChanged(const ZStackViewParam &param);
   void setView(const ZStackViewParam &param);
+  void closeAllChildFrame();
 
 private slots:
   void updateSwcExtensionHint();

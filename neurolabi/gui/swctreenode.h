@@ -636,6 +636,9 @@ void average(const Swc_Tree_Node *tn1, const Swc_Tree_Node *tn2,
 void interpolate(const Swc_Tree_Node *tn1, const Swc_Tree_Node *tn2,
                  double lambda, Swc_Tree_Node *out);
 
+
+void correctTurn(Swc_Tree_Node *tn);
+
 /*!
  * \brief Match all neighbors of a node to find any plausible crossover
  * \param center The center node

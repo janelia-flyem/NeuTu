@@ -882,23 +882,13 @@ void Z3DWindow::createDockWindows()
 #endif
 
   const NeutubeConfig &config = NeutubeConfig::getInstance();
-
-
-  if (config.getZ3DWindowConfig().isUtilsOn()) {
+  if (!config.getZ3DWindowConfig().isUtilsOn()) {
     ZWidgetsGroup *utils = new ZWidgetsGroup("General", m_widgetsGroup, 1);
     new ZWidgetsGroup(cameraMenuButton, utils, 1);
-#if 0
-    new ZWidgetsGroup(flipViewButton, utils, 1);
-
-#  ifdef _DEBUG_
-    new ZWidgetsGroup(recordViewButton, utils, 1);
-    new ZWidgetsGroup(saveViewButton, utils, 1);
-    //new ZWidgetsGroup(diffViewButton, utils, 1);
-#  endif
-#endif
     new ZWidgetsGroup(getCamera(), utils, 1);
     new ZWidgetsGroup(m_compositor->getParameter("Multisample Anti-Aliasing"), utils, 1);
     new ZWidgetsGroup(m_compositor->getParameter("Transparency"), utils, 1);
+//    utils->setVisible(false);
   }
 
   // capture function
@@ -948,19 +938,22 @@ void Z3DWindow::createDockWindows()
   //puncta
   if (config.getZ3DWindowConfig().isPunctaOn()) {
     wg = m_punctaFilter->getWidgetsGroup();
-    connect(wg, SIGNAL(requestAdvancedWidget(QString)), this, SLOT(openAdvancedSetting(QString)));
+    connect(wg, SIGNAL(requestAdvancedWidget(QString)),
+            this, SLOT(openAdvancedSetting(QString)));
     m_widgetsGroup->addChildGroup(wg);
   }
 #endif
 
   //background
   wg = m_compositor->getBackgroundWidgetsGroup();
-  connect(wg, SIGNAL(requestAdvancedWidget(QString)), this, SLOT(openAdvancedSetting(QString)));
+  connect(wg, SIGNAL(requestAdvancedWidget(QString)),
+          this, SLOT(openAdvancedSetting(QString)));
   m_widgetsGroup->addChildGroup(wg);
 
   //axis
   wg = m_axis->getWidgetsGroup();
-  connect(wg, SIGNAL(requestAdvancedWidget(QString)), this, SLOT(openAdvancedSetting(QString)));
+  connect(wg, SIGNAL(requestAdvancedWidget(QString)),
+          this, SLOT(openAdvancedSetting(QString)));
   m_widgetsGroup->addChildGroup(wg);
 
   //QWidget *widget = m_widgetsGroup->createWidget(this, true);

@@ -106,7 +106,7 @@ void ZTraceProject::save()
 
   out << "</image>" << endl;
 
-  ZResolution resolution = m_parent->document()->getStack()->resolution();
+  ZResolution resolution = m_parent->document()->getResolution();
   out << "<resolution>" << "<x>" << resolution.voxelSizeX() << "</x>"
       << "<y>" << resolution.voxelSizeY() << "</y>"
       << "<z>" << resolution.voxelSizeZ() << "</z>"

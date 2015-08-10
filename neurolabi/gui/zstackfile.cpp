@@ -531,7 +531,7 @@ ZStack* ZStackFile::readStack(ZStack *data, bool initColor) const
           if (initColor) {
             data->initChannelColors();
           }
-          data->getLSMInfo(m_urlList[0].c_str());
+          data->loadLSMInfo(m_urlList[0].c_str());
 #endif
         }
       }

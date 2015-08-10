@@ -125,7 +125,7 @@ QWidget *ZWidgetsGroup::createWidget(QMainWindow *mainWin, bool createBasic)
   sa->setWidgetResizable(true);
   sa->setWidget(widget);
 
-  //sa->setVisible(isVisible());
+//  sa->setVisible(isVisible());
 
   return sa;
 }

@@ -70,6 +70,9 @@ class ZTestDialog;
 class ZTestDialog2;
 class ZAutoTraceDialog;
 class QTimer;
+class ProjectionDialog;
+class ZStackSkeletonizer;
+class FlyEmSkeletonizationDialog;
 
 namespace Ui {
   class MainWindow;
@@ -505,6 +508,10 @@ private:
 
   void autoTrace(ZStackFrame *frame);
 
+  void setSkeletonizer(
+      ZStackSkeletonizer &skeletonizer,
+      const FlyEmSkeletonizationDialog &dlg);
+
 private:
   QMdiArea *mdiArea;
 
@@ -658,6 +665,8 @@ private:
   FlyEmBodyMergeProjectDialog *m_mergeBodyDlg;
   ZSegmentationProjectDialog *m_segmentationDlg;
   ZAutoTraceDialog *m_autoTraceDlg;
+  ProjectionDialog *m_projDlg;
+  FlyEmSkeletonizationDialog *m_skeletonDlg;
 
   ZStackViewManager *m_stackViewManager;
   ZFlyEmProjectManager *m_flyemProjectManager;

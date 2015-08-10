@@ -104,6 +104,13 @@ std::string ZFlyEmSupervisor::getCheckoutUrl(const std::string &uuid) const
 }
 
 std::string ZFlyEmSupervisor::getCheckinUrl(
+    const std::string &uuid, uint64_t bodyId, const std::string &userName) const
+{
+  return QString("%1/%2/%3").arg(getCheckinUrl(uuid).c_str()).arg(bodyId).
+      arg(userName.c_str()).toStdString();
+}
+
+std::string ZFlyEmSupervisor::getCheckinUrl(
     const std::string &uuid, uint64_t bodyId) const
 {
   return QString("%1/%2/%3").arg(getCheckinUrl(uuid).c_str()).arg(bodyId).

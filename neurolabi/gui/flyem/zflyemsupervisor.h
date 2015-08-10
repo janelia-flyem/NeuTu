@@ -54,6 +54,9 @@ public:
   std::string getCheckinUrl(const std::string &uuid, uint64_t bodyId) const;
   std::string getCheckoutUrl(const std::string &uuid, uint64_t bodyId) const;
 
+  std::string getCheckinUrl(const std::string &uuid, uint64_t bodyId,
+                            const std::string &userName) const;
+
   std::string getCheckinUrl(uint64_t bodyId) const;
   std::string getCheckoutUrl(uint64_t bodyId) const;
 

@@ -69,6 +69,8 @@ public:
   static ZSwcTree* createSwc(const ZObject3dScan &blockObj, int z,
                              const ZDvidInfo &dvidInfo);
 
+  static ZSwcTree* createSwcProjection(const ZSwcTree *tree);
+
 private:
   static ZSwcTree* createSwcByRegionSampling(const ZVoxelArray &voxelArray,
                                              double radiusAdjustment = 0.0);

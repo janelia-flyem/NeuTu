@@ -331,6 +331,13 @@ void ZStackPresenter::createBodyActions()
   }
 
   {
+    QAction *action = new QAction(tr("Unlock (Administrator)"), this);
+    connect(action, SIGNAL(triggered()),
+            this, SLOT(notifyBodyCheckinTriggered()));
+    m_actionMap[ACTION_BODY_FORCE_CHECKIN] = action;
+  }
+
+  {
     QAction *action = new QAction(tr("Lock"), this);
     connect(action, SIGNAL(triggered()),
             this, SLOT(notifyBodyCheckoutTriggered()));
@@ -1897,6 +1904,13 @@ void ZStackPresenter::tryDrawStrokeMode(double x, double y, bool isEraser)
 void ZStackPresenter::tryDrawRectMode(double x, double y)
 {
   if (GET_APPLICATION_NAME == "FlyEM") {
+    if ((interactiveContext().swcEditMode() == ZInteractiveContext::SWC_EDIT_OFF ||
+         interactiveContext().swcEditMode() == ZInteractiveContext::SWC_EDIT_SELECT) &&
+        interactiveContext().tubeEditMode() == ZInteractiveContext::TUBE_EDIT_OFF &&
+        interactiveContext().isStrokeEditModeOff()) {
+      enterDrawRectMode(x, y);
+    }
+  } else if (buddyDocument()->getTag() == NeuTube::Document::BIOCYTIN_PROJECTION) {
     if ((interactiveContext().swcEditMode() == ZInteractiveContext::SWC_EDIT_OFF ||
          interactiveContext().swcEditMode() == ZInteractiveContext::SWC_EDIT_SELECT) &&
         interactiveContext().tubeEditMode() == ZInteractiveContext::TUBE_EDIT_OFF &&

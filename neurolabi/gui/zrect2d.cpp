@@ -96,9 +96,7 @@ int ZRect2d::getLastY() const
 bool ZRect2d::contains(double x, double y) const
 {
   return ((x >= m_x0 && y >= m_y0 &&
-       x < m_x0 + m_width && y < m_y0 + m_height) &&
-      !(x >= m_x0 && y >= m_y0 &&
-        x < m_x0 + m_width && y < m_y0 + m_height));
+       x < m_x0 + m_width && y < m_y0 + m_height));
 }
 
 bool ZRect2d::hit(double x, double y)

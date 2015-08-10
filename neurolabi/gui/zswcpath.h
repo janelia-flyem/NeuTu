@@ -56,6 +56,7 @@ public:
 
   void smoothZ();
   void smoothRadius(bool excludingBranchPoint = false);
+  void smooth(bool fixingTerminal = false);
 
   void labelStack(Stack *stack, int value);
   void labelStackAcrossZ(Stack *stack, int value);

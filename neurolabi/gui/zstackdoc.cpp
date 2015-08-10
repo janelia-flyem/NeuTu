@@ -106,6 +106,8 @@
 #include "dvid/zdvidlabelslice.h"
 #include "dvid/zdvidsparsevolslice.h"
 #include "zwidgetmessage.h"
+#include "swc/zswcresampler.h"
+#include "zswcforest.h"
 
 using namespace std;
 
@@ -691,13 +693,15 @@ bool ZStackDoc::hasPuncta() const
   return !getObjectList(ZStackObject::TYPE_PUNCTUM).isEmpty();
 }
 
+/*
 ZResolution ZStackDoc::stackResolution() const
 {
   if (hasStackData())
-    return m_stack->resolution();
+    return m_stack->getResolution();
   else
     return ZResolution();
 }
+*/
 
 std::string ZStackDoc::stackSourcePath() const
 {
@@ -833,38 +837,6 @@ void ZStackDoc::swcTreeReduceNodeNumber(double lengthThre)
   endObjectModifiedMode();
 
   notifyObjectModified();
-}
-
-void ZStackDoc::deleteSelectedSwcNode()
-{
-#if 0
-  std::set<Swc_Tree_Node*> nodeSet = getSelectedSwcTreeNodeSet();
-
-  if (!nodeSet.empty()) {
-    for (std::set<Swc_Tree_Node*>::iterator iter = nodeSet.begin();
-         iter != nodeSet.end(); ++iter) {
-      SwcTreeNode::detachParent(*iter);
-      Swc_Tree_Node *child = (*iter)->first_child;
-      while (child != NULL) {
-        Swc_Tree_Node *nextChild = child->next_sibling;
-        Swc_Tree_Node_Detach_Parent(child);
-        ZSwcTree *tree = new ZSwcTree();
-        tree->setDataFromNode(child);
-        addSwcTree(tree, false);
-        child = nextChild;
-      }
-#ifdef _DEBUG_
-      std::cout << "Node deleted: " << SwcTreeNode::toString(*iter) << std::endl;
-#endif
-      Kill_Swc_Tree_Node(*iter);
-    }
-    //nodeSet->clear();
-
-    removeEmptySwcTree();
-
-    notifySwcModified();
-  }
-#endif
 }
 
 void ZStackDoc::addSizeForSelectedSwcNode(double dr)
@@ -1549,8 +1521,8 @@ ZLocsegChain* ZStackDoc::fitseg(int x, int y, int z, double r)
     pos[1] = ball.center[1];
     pos[2] = ball.center[2];
 
-    if (mainStack->preferredZScale() != 1.0) {
-      pos[2] /= mainStack->preferredZScale();
+    if (getPreferredZScale() != 1.0) {
+      pos[2] /= getPreferredZScale();
     }
 
     Local_Neuroseg *locseg = New_Local_Neuroseg();
@@ -1561,7 +1533,7 @@ ZLocsegChain* ZStackDoc::fitseg(int x, int y, int z, double r)
     Set_Neuroseg_Position(locseg, pos, NEUROSEG_CENTER);
 
     Local_Neuroseg_Optimize_W(locseg, mainStack->c_stack(),
-                              mainStack->preferredZScale(), 1, ws);
+                              getPreferredZScale(), 1, ws);
 
     Locseg_Chain *locseg_chain = New_Locseg_Chain();
     Trace_Record *tr = New_Trace_Record();
@@ -1569,7 +1541,7 @@ ZLocsegChain* ZStackDoc::fitseg(int x, int y, int z, double r)
     Locseg_Chain_Add(locseg_chain, locseg, tr, DL_TAIL);
 
     ZLocsegChain *obj = new ZLocsegChain(locseg_chain);
-    obj->setZScale(mainStack->preferredZScale());
+    obj->setZScale(getPreferredZScale());
 
     addObject(obj);
 //    emit chainModified();
@@ -1597,8 +1569,8 @@ ZLocsegChain* ZStackDoc::fitRpiseg(int x, int y, int z, double r)
     pos[1] = ball.center[1];
     pos[2] = ball.center[2];
 
-    if (mainStack->preferredZScale() != 1.0) {
-      pos[2] /= mainStack->preferredZScale();
+    if (getPreferredZScale() != 1.0) {
+      pos[2] /= getPreferredZScale();
     }
 
     Local_Neuroseg *locseg = New_Local_Neuroseg();
@@ -1612,7 +1584,7 @@ ZLocsegChain* ZStackDoc::fitRpiseg(int x, int y, int z, double r)
     Default_Locseg_Fit_Workspace(ws);
 
     Fit_Local_Neuroseg_W(locseg, mainStack->c_stack(),
-                         mainStack->preferredZScale(), ws);
+                         getPreferredZScale(), ws);
 
     Kill_Receptor_Fit_Workspace(ws);
 
@@ -1623,7 +1595,7 @@ ZLocsegChain* ZStackDoc::fitRpiseg(int x, int y, int z, double r)
     Default_Rpi_Locseg_Fit_Workspace(ws);
 
     Fit_Local_Rpi_Neuroseg_W(&rpiseg, mainStack->c_stack(),
-                             mainStack->preferredZScale(), ws);
+                             getPreferredZScale(), ws);
 //    Local_Rpi_Neuroseg_Optimize_W(&rpiseg, mainStack->data(),
 //                              mainStack->preferredZScale(), 1, ws);
 
@@ -1641,7 +1613,7 @@ ZLocsegChain* ZStackDoc::fitRpiseg(int x, int y, int z, double r)
     Locseg_Chain_Add(locseg_chain, locseg, tr, DL_TAIL);
 
     ZLocsegChain *obj = new ZLocsegChain(locseg_chain);
-    obj->setZScale(mainStack->preferredZScale());
+    obj->setZScale(getPreferredZScale());
 
     addObject(obj);
 //    emit chainModified();
@@ -1692,7 +1664,7 @@ ZLocsegChain* ZStackDoc::fitRect(int x, int y, int z, double r)
     Kill_Receptor_Fit_Workspace(ws);
 
     ZLocsegChain *obj = new ZLocsegChain(locseg_chain);
-    obj->setZScale(mainStack->preferredZScale());
+    obj->setZScale(getPreferredZScale());
 
     addObject(obj);
 //    emit chainModified();
@@ -1735,7 +1707,7 @@ ZLocsegChain* ZStackDoc::fitEllipse(int x, int y, int z, double r)
     Locseg_Chain_Add(locsegChain, locseg, tr, DL_TAIL);
 
     ZLocsegChain *obj = new ZLocsegChain(locsegChain);
-    obj->setZScale(mainStack->preferredZScale());
+    obj->setZScale(getPreferredZScale());
 
     addObject(obj);
 //    emit chainModified();
@@ -1756,8 +1728,8 @@ ZLocsegChain* ZStackDoc::dropseg(int x, int y, int z, double r)
     pos[1] = y;
     pos[2] = z;
 
-    if (mainStack->preferredZScale() != 1.0) {
-      pos[2] /= mainStack->preferredZScale();
+    if (getPreferredZScale() != 1.0) {
+      pos[2] /= getPreferredZScale();
     }
 
     Local_Neuroseg *locseg = New_Local_Neuroseg();
@@ -1771,7 +1743,7 @@ ZLocsegChain* ZStackDoc::dropseg(int x, int y, int z, double r)
     Locseg_Chain_Add(locseg_chain, locseg, tr, DL_TAIL);
 
     ZLocsegChain *obj = new ZLocsegChain(locseg_chain);
-    obj->setZScale(mainStack->preferredZScale());
+    obj->setZScale(getPreferredZScale());
     obj->setIgnorable(true);
 
     addObject(obj);
@@ -1824,8 +1796,8 @@ ZLocsegChain* ZStackDoc::traceTube(int x, int y, int z, double r, int c)
     pos[1] = y;
     pos[2] = z;
 
-    if (mainStack->preferredZScale() != 1.0) {
-      pos[2] /= mainStack->preferredZScale();
+    if (getPreferredZScale() != 1.0) {
+      pos[2] /= getPreferredZScale();
     }
 
     Local_Neuroseg *locseg = New_Local_Neuroseg();
@@ -1836,7 +1808,7 @@ ZLocsegChain* ZStackDoc::traceTube(int x, int y, int z, double r, int c)
     Locseg_Fit_Workspace *ws =
         (Locseg_Fit_Workspace*) getTraceWorkspace()->fit_workspace;
     Local_Neuroseg_Optimize_W(locseg, mainStack->c_stack(c),
-                              mainStack->preferredZScale(), 1, ws);
+                              getPreferredZScale(), 1, ws);
 
     Trace_Record *tr = New_Trace_Record();
     tr->mask = ZERO_BIT_MASK;
@@ -1847,14 +1819,14 @@ ZLocsegChain* ZStackDoc::traceTube(int x, int y, int z, double r, int c)
 
     Trace_Workspace_Set_Trace_Status(getTraceWorkspace(), TRACE_NORMAL,
     		TRACE_NORMAL);
-    Trace_Locseg(mainStack->c_stack(c), mainStack->preferredZScale(), locseg_chain,
+    Trace_Locseg(mainStack->c_stack(c), getPreferredZScale(), locseg_chain,
             getTraceWorkspace());
     Locseg_Chain_Remove_Overlap_Ends(locseg_chain);
     Locseg_Chain_Remove_Turn_Ends(locseg_chain, 1.0);
 
     ZLocsegChain *obj = new ZLocsegChain(locseg_chain);
     if (!obj->isEmpty()) {
-      obj->setZScale(mainStack->preferredZScale());
+      obj->setZScale(getPreferredZScale());
       addObject(obj);
 //      emit chainModified();
       /*
@@ -1887,8 +1859,8 @@ ZLocsegChain* ZStackDoc::traceRect(int x, int y, int z, double r, int c)
     pos[1] = y;
     pos[2] = z;
 
-    if (mainStack->preferredZScale() != 1.0) {
-      pos[2] /= mainStack->preferredZScale();
+    if (getPreferredZScale() != 1.0) {
+      pos[2] /= getPreferredZScale();
     }
 
     Trace_Record *tr = New_Trace_Record();
@@ -1911,7 +1883,7 @@ ZLocsegChain* ZStackDoc::traceRect(int x, int y, int z, double r, int c)
 
     ZLocsegChain *obj = chain.toLocsegChain();
     if (!obj->isEmpty()) {
-      obj->setZScale(mainStack->preferredZScale());
+      obj->setZScale(getPreferredZScale());
       addObject(obj);
 //      emit chainModified();
       /*
@@ -5210,6 +5182,7 @@ bool ZStackDoc::executeSwcNodeSmartExtendCommand(
             //tracer.updateMask(branch);
             Swc_Tree_Node *root = Swc_Tree_Regular_Root(branch);
             Swc_Tree_Node *begin = SwcTreeNode::firstChild(root);
+
             SwcTreeNode::detachParent(begin);
             Kill_Swc_Tree(branch);
 
@@ -5224,7 +5197,31 @@ bool ZStackDoc::executeSwcNodeSmartExtendCommand(
               tn->tree_state = prevNode->tree_state;
             }
 
-            message = QString("%1 nodes are added").arg(path.size());
+            if (getTag() == NeuTube::Document::BIOCYTIN_STACK) {
+              path.smooth(true);
+            }
+
+            ZSwcResampler resampler;
+            resampler.setDistanceScale(1.5);
+
+            ZSwcTree tree;
+            tree.setDataFromNode(begin);
+
+//            Swc_Tree_Remove_Zigzag(tree.data());
+            resampler.optimalDownsample(&tree);
+            begin = tree.firstRegularRoot();
+
+            leaf = begin;
+            while (SwcTreeNode::firstChild(leaf) != NULL) {
+              leaf = SwcTreeNode::firstChild(leaf);
+              SwcTreeNode::correctTurn(leaf);
+            }
+
+            message = QString("%1 nodes are added").arg(tree.size(begin));
+
+            tree.setData(NULL, ZSwcTree::LEAVE_ALONE);
+
+//            free(branch);
 
             command = new ZStackDocCommand::SwcEdit::CompositeCommand(this);
             new ZStackDocCommand::SwcEdit::AddSwcNode(this, begin, command);
@@ -6353,12 +6350,72 @@ bool ZStackDoc::executeGroupSwcCommand()
   return false;
 }
 
+bool ZStackDoc::executeAddSwcBranchCommand(ZSwcTree *tree, double minConnDist)
+{
+  bool succ = false;
+
+  if (tree != NULL) {
+    if (hasSwc()) {
+      QUndoCommand *command = new ZStackDocCommand::SwcEdit::CompositeCommand(this);
+
+      ZSwcConnector connector;
+      connector.setMinDist(Infinity);
+      connector.setResolution(getResolution());
+      ZSwcForest *forest = tree->toSwcTreeArray();
+
+      const std::vector<ZSwcTree*> &treeArray = getSwcArray();
+
+      beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
+
+      for (ZSwcForest::const_iterator iter = forest->begin();
+           iter != forest->end(); ++iter) {
+        ZSwcTree *subtree = *iter;
+        subtree->forceVirtualRoot();
+
+        std::pair<Swc_Tree_Node*, Swc_Tree_Node*> connPair =
+            connector.identifyConnection(*subtree, treeArray);
+        if (connPair.first != NULL && connPair.second != NULL) {
+          ZSwcTree *hostTree = nodeToSwcTree(connPair.second);
+          SwcTreeNode::setAsRoot(connPair.first);
+          SwcTreeNode::detachParent(connPair.first);
+          if (connector.getConnDist() <= minConnDist) {
+            new ZStackDocCommand::SwcEdit::SetParent(
+                  this, connPair.first, connPair.second, true, command);
+          } else {
+            new ZStackDocCommand::SwcEdit::SetParent(
+                  this, connPair.first, hostTree->root(), true, command);
+          }
+          processObjectModified(hostTree);
+        }
+      }
+
+      if (command->childCount() > 0) {
+        pushUndoCommand(command);
+        forest->print();
+        delete tree;
+        delete forest;
+        succ = true;
+      } else {
+        delete command;
+      }
+
+      endObjectModifiedMode();
+      notifyObjectModified();
+    } else {
+      succ = executeAddSwcCommand(tree);
+    }
+  }
+
+  return succ;
+}
+
 bool ZStackDoc::executeAddSwcCommand(ZSwcTree *tree)
 {
   if (tree != NULL) {
     QUndoCommand *command = new ZStackDocCommand::SwcEdit::AddSwc(this, tree);
     pushUndoCommand(command);
     deprecateTraceMask();
+    return true;
   }
 
   return false;
@@ -8435,6 +8492,26 @@ void ZStackDoc::showSwcFullSkeleton(bool state)
   }
 
   notifyObjectModified();
+}
+
+void ZStackDoc::setResolution(double x, double y, double z, char unit)
+{
+  m_resolution.setVoxelSize(x, y, z);
+  m_resolution.setUnit(unit);
+}
+
+void ZStackDoc::setResolution(const Cz_Lsminfo &lsmInfo)
+{
+  setResolution(lsmInfo.f64VoxelSizeX * 1e6,
+                lsmInfo.f64VoxelSizeY * 1e6,
+                lsmInfo.f64VoxelSizeZ * 1e6,
+                'u');
+}
+
+double ZStackDoc::getPreferredZScale() const
+{
+  return m_resolution.voxelSizeZ() * 2.0 /
+      (m_resolution.voxelSizeX() + m_resolution.voxelSizeY());
 }
 
 void ZStackDoc::selectSwcNode(const ZRect2d &roi)

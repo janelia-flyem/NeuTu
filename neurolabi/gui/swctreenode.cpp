@@ -1710,3 +1710,40 @@ double SwcTreeNode::computeCurvature(
 
   return curvature;
 }
+
+void SwcTreeNode::correctTurn(Swc_Tree_Node *tn)
+{
+  Swc_Tree_Node *tn1 = NULL;
+  Swc_Tree_Node *tn2 = NULL;
+  if (SwcTreeNode::isContinuation(tn)) {
+    tn1 = SwcTreeNode::firstChild(tn);
+    tn2 = SwcTreeNode::parent(tn);
+  } else {
+    std::vector<Swc_Tree_Node*> neighborArray =
+        SwcTreeNode::neighborArray(tn);
+    double minDot = 0.0;
+    for (size_t i = 0; i < neighborArray.size(); ++i) {
+      for (size_t j = 0; j < neighborArray.size(); ++j) {
+        if (i != j) {
+          double dot = Swc_Tree_Node_Dot(
+                neighborArray[i], tn, neighborArray[j]);
+          if (dot < minDot) {
+            minDot = dot;
+            tn1 = neighborArray[i];
+            tn2 = neighborArray[j];
+          }
+        }
+      }
+    }
+  }
+
+  if (SwcTreeNode::isTurn(tn1, tn, tn2)) {
+    double lambda = SwcTreeNode::pathLengthRatio(tn2, tn1, tn);
+    double x, y, z, r;
+    SwcTreeNode::interpolate(tn1, tn2, lambda, &x, &y, &z, &r);
+    SwcTreeNode::setX(tn, x);
+    SwcTreeNode::setY(tn, y);
+    SwcTreeNode::setZ(tn, z);
+    SwcTreeNode::setRadius(tn, r);
+  }
+}

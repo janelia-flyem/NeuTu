@@ -211,6 +211,16 @@ public: //attributes
 
   ZIntPoint getStackSize() const;
 
+  inline const ZResolution& getResolution() const {
+    return m_resolution;
+  }
+
+  void setResolution(double x, double y, double z, char unit);
+
+  double getPreferredZScale() const;
+
+  void setResolution(const Cz_Lsminfo &lsmInfo);
+
   /*!
    * \brief Get the data space coordinates of stack coordinates
    */
@@ -321,7 +331,7 @@ public: //swc tree edit
   void swcTreeReduceNodeNumber(double lengthThre);
   void updateVirtualStackSize();
 
-  void deleteSelectedSwcNode();
+//  void deleteSelectedSwcNode();
   void addSizeForSelectedSwcNode(double dr);
 
   void estimateSwcRadius(ZSwcTree *tree, int maxIter = 1);
@@ -743,6 +753,8 @@ public:
 
   ZRect2d getRect2dRoi() const;
 
+  virtual void selectSwcNode(const ZRect2d &roi);
+
 
 public:
   inline NeuTube::Document::ETag getTag() const { return m_tag; }
@@ -928,6 +940,7 @@ public slots: //undoable commands
   bool executeAutoTraceCommand(int traceLevel, bool doResample);
   bool executeAutoTraceAxonCommand();
 
+  bool executeAddSwcBranchCommand(ZSwcTree *tree, double minConnDist);
   bool executeAddSwcCommand(ZSwcTree *tree);
   bool executeReplaceSwcCommand(ZSwcTree *tree);
   void executeSwcRescaleCommand(const ZRescaleSwcSetting &setting);
@@ -942,7 +955,7 @@ public slots: //undoable commands
       double sx, double sy, double sz, const ZPoint &center);
   bool executeRotateSwcNodeCommand(double theta, double psi, bool aroundCenter);
   bool executeTranslateSelectedSwcNode();
-  bool executeDeleteSwcNodeCommand();
+  virtual bool executeDeleteSwcNodeCommand();
   bool executeConnectSwcNodeCommand();
   bool executeChangeSelectedSwcNodeSize();
   bool executeConnectSwcNodeCommand(Swc_Tree_Node *tn);
@@ -1097,8 +1110,6 @@ signals:
 protected:
   virtual void autoSave();
   virtual void customNotifyObjectModified(ZStackObject::EType type);
-
-  void selectSwcNode(const ZRect2d &roi);
   void removeRect2dRoi();
 
 private:
@@ -1126,6 +1137,8 @@ private:
   //Main stack
   ZStack *m_stack;
   ZSparseStack *m_sparseStack; //Serve as main data when m_stack is virtual.
+
+  ZResolution m_resolution;
 
   ZDocPlayerList m_playerList;
 

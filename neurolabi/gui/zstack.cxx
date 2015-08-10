@@ -31,7 +31,7 @@
 
 using namespace std;
 
-ZStack::ZStack() : m_stack(NULL), m_delloc(NULL), m_preferredZScale(1.0),
+ZStack::ZStack() : m_stack(NULL), m_delloc(NULL),
   m_isLSMFile(false)
 {
   m_buffer[0] = '\0';
@@ -39,7 +39,7 @@ ZStack::ZStack() : m_stack(NULL), m_delloc(NULL), m_preferredZScale(1.0),
 
 ZStack::ZStack(int kind, int width, int height, int depth,
                int nchannel, bool isVirtual)
-  : m_preferredZScale(1.0), m_isLSMFile(false)
+  : m_isLSMFile(false)
 {  
   m_buffer[0] = '\0';
  // m_proj = NULL;
@@ -62,7 +62,7 @@ ZStack::ZStack(int kind, int width, int height, int depth,
 }
 
 ZStack::ZStack(int kind, const ZIntCuboid &box, int nchannel, bool isVirtual)
-  : m_preferredZScale(1.0), m_isLSMFile(false)
+  : m_isLSMFile(false)
 {
   m_buffer[0] = '\0';
  // m_proj = NULL;
@@ -89,7 +89,7 @@ ZStack::ZStack(int kind, const ZIntCuboid &box, int nchannel, bool isVirtual)
 }
 
 ZStack::ZStack(Mc_Stack *stack, C_Stack::Mc_Stack_Deallocator *dealloc) :
-  m_stack(NULL), m_delloc(NULL), m_preferredZScale(1.0), m_isLSMFile(false)
+  m_stack(NULL), m_delloc(NULL), m_isLSMFile(false)
 {
   setData(stack, dealloc);
 }
@@ -173,9 +173,9 @@ void ZStack::consume(ZStack *stack)
   this->setData(stack->m_stack, stack->m_delloc);
   stack->m_delloc = NULL;
   setSource(stack->source());
-  m_resolution = stack->resolution();
+//  m_resolution = stack->getResolution();
   setOffset(stack->getOffset());
-  m_preferredZScale = stack->m_preferredZScale;
+//  m_preferredZScale = stack->m_preferredZScale;
 
   delete stack;
 }
@@ -184,8 +184,8 @@ ZStack::ZStack(const ZStack &src)
 {
   m_stack = src.m_stack;
   m_delloc = NULL;
-  m_preferredZScale = src.m_preferredZScale;
-  m_resolution = src.m_resolution;
+//  m_preferredZScale = src.m_preferredZScale;
+//  m_resolution = src.m_resolution;
   m_offset = src.m_offset;
   m_buffer[0] = '\0';
   m_isLSMFile = src.m_isLSMFile;
@@ -387,7 +387,7 @@ Stack *ZStack::averageOfAllChannels()
 void ZStack::init()
 {
   //m_singleChannelStackVector.resize(nchannel);
-  m_preferredZScale = 1.0;
+//  m_preferredZScale = 1.0;
   //m_source = NULL;
 }
 
@@ -649,13 +649,14 @@ void ZStack::setSource(Stack_Document *stackDoc)
 {
   m_source.loadStackDocument(stackDoc);
 }
-
+/*
 void ZStack::setResolution(double x, double y, double z, char unit)
 {
   m_resolution.setVoxelSize(x, y, z);
   m_resolution.setUnit(unit);
   m_preferredZScale = z / (.5 * (x + y));
 }
+*/
 
 int ZStack::getChannelNumber(const string &filepath)
 {
@@ -1510,8 +1511,8 @@ ZStack* ZStack::clone() const
           kind(), width(), height(), depth(), channelNumber());
     memcpy(stack->rawChannelData(), rawChannelData(), getByteNumber());
 
-    stack->m_resolution = m_resolution;
-    stack->m_preferredZScale = m_preferredZScale;
+//    stack->m_resolution = m_resolution;
+//    stack->m_preferredZScale = m_preferredZScale;
     stack->m_source = m_source;
     stack->m_offset = m_offset;
   }
@@ -1554,7 +1555,7 @@ void ZStack::setChannelColor(int ch, double r, double g, double b)
   m_channelColors[ch]->set(glm::vec3(r, g, b));
 }
 
-bool ZStack::getLSMInfo(const QString &filepath)
+bool ZStack::loadLSMInfo(const QString &filepath)
 {
   if (!filepath.endsWith(".lsm", Qt::CaseInsensitive))
     return false;
@@ -1670,10 +1671,6 @@ bool ZStack::getLSMInfo(const QString &filepath)
   fclose(fp);
 
   // fill zresolution
-  setResolution(m_lsmInfo.f64VoxelSizeX * 1e6,
-                m_lsmInfo.f64VoxelSizeY * 1e6,
-                m_lsmInfo.f64VoxelSizeZ * 1e6,
-                'u');
 
   m_isLSMFile = true;
   return true;
@@ -2082,8 +2079,8 @@ void ZStack::swapData(ZStack *stack)
   std::swap(m_stack, stack->m_stack);
   std::swap(m_delloc, stack->m_delloc);
   std::swap(m_source, stack->m_source);
-  std::swap(m_preferredZScale, stack->m_preferredZScale);
-  std::swap(m_resolution, stack->m_resolution);
+//  std::swap(m_preferredZScale, stack->m_preferredZScale);
+//  std::swap(m_resolution, stack->m_resolution);
   std::swap(m_offset, stack->m_offset);
 
   deprecateDependent(MC_STACK);

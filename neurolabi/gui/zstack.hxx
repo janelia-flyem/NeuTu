@@ -303,7 +303,7 @@ public: /* attributes */
 
   //Preferred z scale is the preferred scale ratio between z-axis and xy-plane
   //for anisotropic operations
-  inline double preferredZScale() const { return m_preferredZScale; }
+//  inline double preferredZScale() const { return m_preferredZScale; }
 
   //Minimal value of the stack.
   double min();
@@ -435,7 +435,7 @@ public: /* data operation */
   void setSource(const std::string &filepath, int channel = -1);
   void setSource(const ZStackFile &file);
   void setSource(Stack_Document *stackDoc);
-  void setResolution(double x, double y, double z, char unit);
+//  void setResolution(double x, double y, double z, char unit);
 
   // get number of channel for lsm,tiff,raw
   static int getChannelNumber(const std::string &filepath);
@@ -528,7 +528,7 @@ public: /* processing routines */
   void extractChannel(int c);
   Stack* copyChannel(int c);
   bool watershed(int c = 0);
-  inline const ZResolution& resolution() const { return m_resolution; }
+//  inline const ZResolution& getResolution() const { return m_resolution; }
 
   /*!
    * \brief Downsample the stack with maximum assignment.
@@ -556,9 +556,10 @@ public:
 #ifdef _NEUTUBE_
   std::vector<ZVec3Parameter*>& channelColors() { initChannelColors(); return m_channelColors; }
   glm::vec3 getChannelColor(size_t ch) { initChannelColors(); return m_channelColors[ch]->get(); }
-  bool getLSMInfo(const QString &filepath);
+  bool loadLSMInfo(const QString &filepath);
   void logLSMInfo();
   void setChannelColor(int ch, double r, double g, double b);
+  const Cz_Lsminfo& getLSMInfo() const { return m_lsmInfo; }
 #endif
 
 private:
@@ -584,8 +585,8 @@ private:
   //ZStack_Projection *m_proj;
   //ZStack_Stat *m_stat;
   ZStackFile m_source;
-  double m_preferredZScale;
-  ZResolution m_resolution;
+//  double m_preferredZScale;
+//  ZResolution m_resolution;
   ZIntPoint m_offset;
   mutable std::vector<Stack> m_stackView;
   mutable std::vector<ZSingleChannelStack*> m_singleChannelStack;
