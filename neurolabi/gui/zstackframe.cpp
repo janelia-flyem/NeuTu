@@ -317,6 +317,7 @@ void ZStackFrame::updateSignalSlot(FConnectAction connectAction)
 {
   updateDocSignalSlot(connectAction);
   connectAction(this, SIGNAL(stackLoaded()), this, SLOT(setupDisplay()));
+//  connectAction(this, SIGNAL(closed(ZStackFrame*)), this, SLOT(closeAllChildFrame()));
   connectAction(m_view, SIGNAL(currentSliceChanged(int)),
           m_presenter, SLOT(processSliceChangeEvent(int)));
 }
@@ -891,17 +892,17 @@ void ZStackFrame::setBc(double greyScale, double greyOffset, int channel)
 
 void ZStackFrame::synchronizeSetting()
 {
-  m_settingDlg->setResolution(document()->getStack()->resolution());
-  m_settingDlg->setUnit(document()->getStack()->resolution().unit());
+  m_settingDlg->setResolution(document()->getResolution());
+  m_settingDlg->setUnit(document()->getResolution().unit());
   m_settingDlg->setBackground(document()->getStackBackground());
 }
 
 void ZStackFrame::synchronizeDocument()
 {
-  document()->getStack()->setResolution(m_settingDlg->xResolution(),
-                                     m_settingDlg->yResolution(),
-                                     m_settingDlg->zResolution(),
-                                     m_settingDlg->unit());
+  document()->setResolution(m_settingDlg->xResolution(),
+                            m_settingDlg->yResolution(),
+                            m_settingDlg->zResolution(),
+                            m_settingDlg->unit());
   document()->setTraceMinScore(m_settingDlg->traceMinScore());
   document()->setReceptor(m_settingDlg->receptor(), m_settingDlg->useCone());
   if (hasProject()) {
@@ -1460,6 +1461,14 @@ void ZStackFrame::removeAllChildFrame()
   m_childFrameList.clear();
 }
 
+void ZStackFrame::closeAllChildFrame()
+{
+  foreach (ZStackFrame *childFrame, m_childFrameList) {
+    childFrame->close();
+  }
+  m_childFrameList.clear();
+}
+
 void ZStackFrame::setParentFrame(ZStackFrame *frame)
 {
   detachParentFrame();
@@ -1798,7 +1807,11 @@ void ZStackFrame::MessageProcessor::processMessage(
   {
     ZStackFrame *frame = dynamic_cast<ZStackFrame*>(host);
     if (frame != NULL) {
-      frame->open3DWindow();
+      if (frame->document()->getTag() == NeuTube::Document::BIOCYTIN_STACK) {
+        frame->open3DWindow(Z3DWindow::EXCLUDE_VOLUME);
+      } else {
+        frame->open3DWindow();
+      }
     }
     message->deactivate();
   }

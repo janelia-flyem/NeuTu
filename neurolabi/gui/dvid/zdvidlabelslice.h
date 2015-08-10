@@ -10,6 +10,7 @@
 #include "neutube.h"
 #include "zimage.h"
 #include "zselector.h"
+#include "dvid/zdvidreader.h"
 
 class ZFlyEmBodyMerger;
 class QColor;
@@ -34,9 +35,7 @@ public:
 
   const std::string& className() const;
 
-  inline void setDvidTarget(const ZDvidTarget &target) {
-    m_dvidTarget = target;
-  }
+  void setDvidTarget(const ZDvidTarget &target);
 
   bool hit(double x, double y, double z);
 
@@ -124,6 +123,7 @@ private:
 
 private:
   ZDvidTarget m_dvidTarget;
+  ZDvidReader m_reader;
   ZObject3dScanArray m_objArray;
   ZStackViewParam m_currentViewParam;
   ZObjectColorScheme m_objColorSheme;

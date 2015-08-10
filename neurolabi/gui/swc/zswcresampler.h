@@ -34,7 +34,17 @@ public:
    */
   static void upsampleAsFixedNodeNumber(ZSwcTree *tree, int n);
 
+  void setRadiusScale(double scale) {
+     m_radiusScale = scale;
+  }
+
+  void setDistanceScale(double scale) {
+    m_distanceScale = scale;
+  }
+
 private:
+  void init();
+
   /*!
    * \brief Optimize continuous parents of critical nodes
    */
@@ -50,6 +60,10 @@ private:
    *   3) is close to its interpolation replacement.
    */
    bool isInterRedundant(const Swc_Tree_Node *tn, const Swc_Tree_Node *master) const;
+
+private:
+   double m_radiusScale;
+   double m_distanceScale;
 };
 
 #endif // ZSWCRESAMPLER_H

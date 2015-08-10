@@ -72,7 +72,8 @@ bool ZSynapseAnnotationArray::loadJson(const ZJsonObject &jsonObject,
 
   //Extracts elements from the data array
   for (size_t i = 0; i < dataArray.size(); i++) {
-    if ((*this)[i + startIndex].loadJsonObject(dataArray.at(i))) {
+    ZSynapseAnnotation &annotation = (*this)[i + startIndex];
+    if (annotation.loadJsonObject(dataArray.at(i))) {
       tbarNumber++;
     }
   }
@@ -1586,4 +1587,9 @@ bool FlyEm::ZSynapseAnnotationArray::exportCsvFile(const string &filePath)
   stream.close();
 
   return true;
+}
+
+void FlyEm::ZSynapseAnnotationArray::ravelerFlip(int height)
+{
+  convertRavelerToImageSpace(0, height);
 }

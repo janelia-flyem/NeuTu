@@ -167,6 +167,7 @@
 #include "flyem/zflyemstackdoc.h"
 #include "flyem/zproofreadwindow.h"
 #include "dvid/zdvidsparsestack.h"
+#include "biocytin/zbiocytinprojectiondoc.h"
 
 #include "z3dcanvas.h"
 #include "z3dapplication.h"
@@ -408,6 +409,9 @@ void MainWindow::initDialog()
         getSettings().value("SegmentationProjectGeometry").toByteArray());
 
   m_autoTraceDlg = new ZAutoTraceDialog(this);
+
+  m_projDlg = new ProjectionDialog(this);
+  m_skeletonDlg = new FlyEmSkeletonizationDialog(this);
 
 #if defined(_FLYEM_)
   m_newBsProjectDialog = new ZFlyEmNewBodySplitProjectDialog(this);
@@ -2938,16 +2942,18 @@ void MainWindow::on_actionMedian_Filter_triggered()
 
 void MainWindow::on_actionDistance_Map_triggered()
 {
-  if (currentStackFrame() != NULL) {
+  ZStackFrame *frame = currentStackFrame();
+  if (frame != NULL) {
     ZStackProcessor proc;
 
     DistanceMapDialog dlg;
     if (dlg.exec() == QDialog::Accepted) {
-      if (currentStackFrame()->document()->getStack()->isBinary()) {
-        proc.distanceTransform(currentStackFrame()->document()->getStack(),
+      if (frame->document()->hasStackData()) {
+        ZStack *stack = frame->document()->getStack();
+        proc.distanceTransform(stack,
                                dlg.isSquared(), dlg.isSliceWise());
         currentStackFrame()->document()->notifyStackModified();
-        currentStackFrame()->updateView();
+//          currentStackFrame()->updateView();
       }
     }
   }
@@ -4540,7 +4546,24 @@ ZStackFrame *MainWindow::createStackFrame(
     ZStack *stack, NeuTube::Document::ETag tag, ZStackFrame *parentFrame)
 {
   if (stack != NULL) {
-    ZStackFrame *newFrame = createEmptyStackFrame(parentFrame);
+
+    ZSharedPointer<ZStackDoc> doc;
+    if (tag == NeuTube::Document::BIOCYTIN_PROJECTION) {
+      doc = ZSharedPointer<ZStackDoc>(new ZBiocytinProjectionDoc);
+      if (parentFrame != NULL) {
+        ZBiocytinProjectionDoc *cdoc =
+            dynamic_cast<ZBiocytinProjectionDoc*>(doc.get());
+        cdoc->setParentDoc(parentFrame->document());
+      }
+    } else {
+      doc = ZSharedPointer<ZStackDoc>(new ZStackDoc);
+    }
+
+    ZStackFrame *newFrame = ZStackFrame::Make(NULL, doc);
+
+    newFrame->setParentFrame(parentFrame);
+
+//    ZStackFrame *newFrame = createEmptyStackFrame(parentFrame);
     //ZStackFrame *newFrame = new ZStackFrame;
     //newFrame->setParentFrame(parentFrame);
     //debug
@@ -4652,8 +4675,8 @@ void MainWindow::on_actionMake_Projection_triggered()
 {
   ZStackFrame *frame = currentStackFrame();
   if (frame != NULL) {
-    ProjectionDialog paramDlg;
-    if (paramDlg.exec()) {
+//    ProjectionDialog paramDlg;
+    if (m_projDlg->exec()) {
       getProgressDialog()->setLabelText("Making projection ...");
       getProgressDialog()->setRange(0, 100);
 
@@ -4665,11 +4688,11 @@ void MainWindow::on_actionMake_Projection_triggered()
       getProgressDialog()->open();
 
       Biocytin::ZStackProjector projector;
-      projector.setAdjustingContrast(paramDlg.adjustingContrast());
-      projector.setSpeedLevel(paramDlg.speedLevel());
-      projector.setSmoothingDepth(paramDlg.smoothingDepth());
-      projector.setUsingExisted(paramDlg.usingExisted());
-      projector.setSlabNumber(paramDlg.getSlabCount());
+      projector.setAdjustingContrast(m_projDlg->adjustingContrast());
+      projector.setSpeedLevel(m_projDlg->speedLevel());
+      projector.setSmoothingDepth(m_projDlg->smoothingDepth());
+      projector.setUsingExisted(m_projDlg->usingExisted());
+      projector.setSlabNumber(m_projDlg->getSlabCount());
 
       std::vector<ZStack*> projArray =
           frame->document()->projectBiocytinStack(projector);
@@ -4700,7 +4723,7 @@ QProgressBar* MainWindow::getProgressBar()
   return getProgressDialog()->findChild<QProgressBar*>();
 }
 
-static void setSkeletonizer(
+void MainWindow::setSkeletonizer(
     ZStackSkeletonizer &skeletonizer,
     const FlyEmSkeletonizationDialog &dlg)
 {
@@ -4739,8 +4762,8 @@ static void setSkeletonizer(
 
 void MainWindow::on_actionMask_SWC_triggered()
 {
-  FlyEmSkeletonizationDialog dlg;
-  if (dlg.exec() == QDialog::Accepted) {
+//  FlyEmSkeletonizationDialog dlg;
+  if (m_skeletonDlg->exec() == QDialog::Accepted) {
     ZStackFrame *frame = currentStackFrame();
     if (frame != NULL) {
       ZStack *mask = NULL;
@@ -4768,7 +4791,7 @@ void MainWindow::on_actionMask_SWC_triggered()
 
       ZStackSkeletonizer skeletonizer;
       skeletonizer.setProgressReporter(&reporter);
-      ::setSkeletonizer(skeletonizer, dlg);
+      setSkeletonizer(skeletonizer, *m_skeletonDlg);
 
       progressDlg->open();
 
@@ -4843,7 +4866,7 @@ void MainWindow::on_actionMask_SWC_triggered()
         }
 
 
-        swcFrame->document()->blockSignals(true);
+//        swcFrame->document()->blockSignals(true);
 /*
         if (stackFrame != NULL) {
           stackFrame->document()->estimateSwcRadius();
@@ -4866,24 +4889,44 @@ void MainWindow::on_actionMask_SWC_triggered()
           wholeTree->translate(stackFrame->document()->getStackOffset());
         }
 
+        const double distThre = 30;
+
         if (stackFrame != swcFrame) {
-          swcFrame->document()->addObject(wholeTree);
+          swcFrame->document()->executeAddSwcBranchCommand(
+                wholeTree, distThre);
+//          swcFrame->document()->addObject(wholeTree);
         } else {
           QUndoCommand *command = new QUndoCommand;
+          /*
           new ZStackDocCommand::SwcEdit::AddSwc(
                 stackFrame->document().get(), wholeTree, command);
-          if (frame == stackFrame) { //Remove strokes if the mask in the stack frame
-            for (int i = 0; i < stackFrame->document()->getStrokeList().size(); ++i) {
+                */
+          if (frame == stackFrame) {
+            for (int i = 0; i < frame->document()->getStrokeList().size(); ++i) {
               new ZStackDocCommand::StrokeEdit::RemoveTopStroke(
-                    stackFrame->document().get(), command);
+                    frame->document().get(), command);
             }
+          } else {
+            QUndoCommand *maskCommand = new QUndoCommand;
+            for (int i = 0; i < frame->document()->getStrokeList().size(); ++i) {
+              new ZStackDocCommand::StrokeEdit::RemoveTopStroke(
+                    frame->document().get(), maskCommand);
+            }
+            ZSwcTree *proj = ZSwcGenerator::createSwcProjection(wholeTree);
+//            proj->setHittable(false);
+            new ZStackDocCommand::SwcEdit::AddSwc(
+                  frame->document().get(), proj, maskCommand);
+            frame->document()->pushUndoCommand(maskCommand);
           }
           stackFrame->document()->pushUndoCommand(command);
+
+          stackFrame->document()->executeAddSwcBranchCommand(
+                wholeTree, distThre);
         }
 
-        swcFrame->document()->blockSignals(false);
-        swcFrame->document()->notifyStrokeModified();
-        swcFrame->document()->notifySwcModified();
+//        swcFrame->document()->blockSignals(false);
+//        swcFrame->document()->notifyStrokeModified();
+//        swcFrame->document()->notifySwcModified();
 
         if (frame != stackFrame) {
           swcFrame->open3DWindow(Z3DWindow::EXCLUDE_VOLUME);
@@ -6299,23 +6342,6 @@ void MainWindow::on_actionLoad_Body_with_Grayscale_triggered()
 
 void MainWindow::createStackFrameFromDocReader(ZStackDocReader *reader)
 {
-#if 0
-  ZStackDoc *doc = NULL;
-  QString fileName;
-  if (reader != NULL) {
-    doc = new ZStackDoc(NULL, NULL);
-    doc->addData(*reader);
-    fileName = reader->getFileName();
-
-    delete reader;
-    reader = NULL;
-  } else {
-    report("Error Reading", "Something wrong with reading a file",
-           ZMessageReporter::Warning);
-    return;
-  }
-#endif
-
   QString fileName;
   if (reader != NULL) {
     ZStackFrame *frame = createStackFrame(reader);
@@ -6328,6 +6354,7 @@ void MainWindow::createStackFrameFromDocReader(ZStackDocReader *reader)
       if (GET_APPLICATION_NAME == "Biocytin") {
         frame->document()->setStackBackground(NeuTube::IMAGE_BACKGROUND_BRIGHT);
         frame->document()->setTag(NeuTube::Document::BIOCYTIN_STACK);
+        frame->document()->setResolution(1, 1, 10, 'p');
       }
       addStackFrame(frame);
       presentStackFrame(frame);

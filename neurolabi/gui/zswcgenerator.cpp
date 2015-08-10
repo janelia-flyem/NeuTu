@@ -671,3 +671,20 @@ ZSwcTree* ZSwcGenerator::createSwc(
   return NULL;
 #endif
 }
+
+ZSwcTree* ZSwcGenerator::createSwcProjection(const ZSwcTree *tree)
+{
+  ZSwcTree *proj = NULL;
+  if (tree != NULL) {
+    proj = tree->clone();
+    ZSwcTree::DepthFirstIterator iter(proj);
+    while (iter.hasNext()) {
+      Swc_Tree_Node *tn = iter.next();
+      if (SwcTreeNode::isRegular(tn)) {
+        SwcTreeNode::setZ(tn, 0);
+      }
+    }
+  }
+
+  return proj;
+}

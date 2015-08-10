@@ -3597,7 +3597,6 @@ void ZSwcTree::ExtIterator::init(const ZSwcTree *tree)
 ZSwcTree::RegularRootIterator::RegularRootIterator(const ZSwcTree *tree) :
   ZSwcTree::ExtIterator(tree)
 {
-
 }
 
 
@@ -3707,6 +3706,43 @@ Swc_Tree_Node* ZSwcTree::LeafIterator::next()
   return NULL;
 }
 
+////////////////////////////////////////////////
+
+ZSwcTree::TerminalIterator::TerminalIterator(const ZSwcTree *tree) :
+  ExtIterator(tree), m_currentIndex(0)
+{
+  if (m_tree != NULL) {
+    m_nodeArray = m_tree->getSwcTreeNodeArray(ZSwcTree::TERMINAL_ITERATOR);
+  }
+}
+
+Swc_Tree_Node* ZSwcTree::TerminalIterator::begin()
+{
+  m_currentNode = NULL;
+  m_currentIndex = 0;
+
+  if (!m_nodeArray.empty()) {
+    m_currentNode = m_nodeArray[m_currentIndex];
+  }
+
+  return m_currentNode;
+}
+
+bool ZSwcTree::TerminalIterator::hasNext() const
+{
+  return (m_currentIndex < m_nodeArray.size());
+}
+
+Swc_Tree_Node* ZSwcTree::TerminalIterator::next()
+{
+  if (hasNext()) {
+    return m_nodeArray[m_currentIndex++];
+  }
+
+  return NULL;
+}
+
+////////////////////////////////////////////////
 ZStackObject::ETarget ZSwcTree::GetDefaultTarget()
 {
   return ZStackObject::TARGET_WIDGET;

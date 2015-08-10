@@ -25,10 +25,22 @@ void ZStackProcessor::distanceTransform(ZStack *stack, bool isSquared,
 {
   Stack *distanceMap = NULL;
 
-  if (sliceWise) {
-    distanceMap = Stack_Bwdist_L_U16P(stack->c_stack(), NULL, 0);
+  Stack *stackData = stack->c_stack();
+
+  if (stack->kind() == GREY16) {
+    Stack *newStackData = Translate_Stack(stackData, GREY, 0);
+    if (sliceWise) {
+      distanceMap = Stack_Bwdist_L_U16P(newStackData, NULL, 0);
+    } else {
+      distanceMap = Stack_Bwdist_L_U16(newStackData, NULL, 0);
+    }
+    Kill_Stack(newStackData);
   } else {
-    distanceMap = Stack_Bwdist_L_U16(stack->c_stack(), NULL, 0);
+    if (sliceWise) {
+      distanceMap = Stack_Bwdist_L_U16P(stack->c_stack(), NULL, 0);
+    } else {
+      distanceMap = Stack_Bwdist_L_U16(stack->c_stack(), NULL, 0);
+    }
   }
 
   if (!isSquared) {

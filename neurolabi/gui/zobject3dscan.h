@@ -135,7 +135,8 @@ public:
   bool importDvidRoi(const ZJsonArray &obj);
 
   template<class T>
-  int scanArray(const T *array, int x, int y, int z, int width, int x0 = 0);
+  int scanArray(const T *array, int x, int y, int z, int width,
+                int x0 = 0);
 
   /*!
    * \brief Draw a stack
@@ -661,7 +662,7 @@ std::map<int, ZObject3dScan*>* ZObject3dScan::extractAllForegroundObject(
   ZObject3dScan *obj = NULL;
   for (int z = 0; z < depth; ++z) {
     for (int y = 0; y < height; y += yStep) {
-      int x = x0;
+      int x = 0;
       while (x < width) {
         int v = array[x];
         if (v > 0) {

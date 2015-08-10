@@ -103,6 +103,10 @@ public:
   void hideControlPanel();
   void hideObjectView();
 
+public:
+  //Control panel setup
+
+
 protected:
 
 private:

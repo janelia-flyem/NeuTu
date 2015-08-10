@@ -123,6 +123,50 @@ bool ZSwcPath::isContinuous() const
   return true;
 }
 
+void ZSwcPath::smooth(bool fixingTerminal)
+{
+  vector<double> xArray(size());
+  vector<double> yArray(size());
+  vector<double> zArray(size());
+  vector<double> rArray(size());
+
+  for (size_t index = 0; index < size(); ++index) {
+    const Swc_Tree_Node *tn = (*this)[index];
+    xArray[index] = SwcTreeNode::x(tn);
+    yArray[index] = SwcTreeNode::y(tn);
+    zArray[index] = SwcTreeNode::z(tn);
+    rArray[index] = SwcTreeNode::radius(tn);
+  }
+
+  vector<double> xSmoothed(size());
+  vector<double> ySmoothed(size());
+  vector<double> zSmoothed(size());
+  vector<double> rSmoothed(size());
+
+  darray_medfilter(&(xArray[0]), size(), 1, &(xSmoothed[0]));
+  darray_avgsmooth(&(xSmoothed[0]), size(), 3, &(xArray[0]));
+
+  darray_medfilter(&(yArray[0]), size(), 1, &(ySmoothed[0]));
+  darray_avgsmooth(&(ySmoothed[0]), size(), 3, &(yArray[0]));
+
+  darray_medfilter(&(zArray[0]), size(), 1, &(zSmoothed[0]));
+  darray_avgsmooth(&(zSmoothed[0]), size(), 3, &(zArray[0]));
+
+  darray_medfilter(&(rArray[0]), size(), 1, &(rSmoothed[0]));
+  darray_avgsmooth(&(rSmoothed[0]), size(), 3, &(rArray[0]));
+
+
+  for (size_t index = 0; index < size(); ++index) {
+    Swc_Tree_Node *tn = (*this)[index];
+    if (!fixingTerminal || SwcTreeNode::isContinuation(tn)) {
+      SwcTreeNode::setX(tn, xArray[index]);
+      SwcTreeNode::setY(tn, yArray[index]);
+      SwcTreeNode::setZ(tn, zArray[index]);
+    }
+    SwcTreeNode::setRadius(tn, rArray[index]);
+  }
+}
+
 void ZSwcPath::smoothZ()
 {
   vector<double> zArray(size());

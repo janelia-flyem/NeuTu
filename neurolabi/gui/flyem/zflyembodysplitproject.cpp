@@ -969,6 +969,9 @@ void ZFlyEmBodySplitProject::commitResultFunc(
 //        getDataFrame()->document()->getSparseStack()->getDownsampleInterval();
     std::vector<ZObject3dScan*> objArray =
         ZObject3dScan::extractAllObject(*stack);
+#ifdef _DEBUG_
+    stack->save(GET_TEST_DATA_DIR + "/test.tif");
+#endif
 
 //    emit progressAdvanced(0.1);
     getProgressSignal()->advanceProgress(0.1);

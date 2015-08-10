@@ -15,9 +15,12 @@ public:
     GROUP, WIDGET, PARAMETER
   };
 
-  explicit ZWidgetsGroup(QWidget* widget, ZWidgetsGroup* parentGroup, int visibleLevel, QObject *parent = 0);
-  explicit ZWidgetsGroup(const QString &groupName, ZWidgetsGroup* parentGroup, int visibleLevel, QObject *parent = 0);
-  explicit ZWidgetsGroup(ZParameter *parameter, ZWidgetsGroup* parentGroup, int visibleLevel, QObject *parent = 0);
+  explicit ZWidgetsGroup(QWidget* widget, ZWidgetsGroup* parentGroup,
+                         int visibleLevel, QObject *parent = 0);
+  explicit ZWidgetsGroup(const QString &groupName, ZWidgetsGroup* parentGroup,
+                         int visibleLevel, QObject *parent = 0);
+  explicit ZWidgetsGroup(ZParameter *parameter, ZWidgetsGroup* parentGroup,
+                         int visibleLevel, QObject *parent = 0);
   virtual ~ZWidgetsGroup();
 
   inline bool isGroup() const {return m_type == GROUP;}

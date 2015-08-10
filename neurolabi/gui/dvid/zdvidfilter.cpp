@@ -1,6 +1,7 @@
 #include "zdvidfilter.h"
 #include <iostream>
 #include "zstring.h"
+#include "zfiletype.h"
 
 ZDvidFilter::ZDvidFilter() :
   m_minBodySize(0), m_maxBodySize(0), m_hasUpperBodySize(true)
@@ -46,11 +47,17 @@ std::set<uint64_t> ZDvidFilter::loadBodySet() const
 
   std::set<uint64_t> bodySet;
 
-  FILE *fp = fopen(m_bodyListFile.c_str(), "r");
-  ZString str;
-  while (str.readLine(fp)) {
-    std::vector<uint64_t> bodyArray = str.toUint64Array();
-    bodySet.insert(bodyArray.begin(), bodyArray.end());
+
+  if (!ZFileType::fileType(m_bodyListFile) == ZFileType::JSON_FILE) {
+    FILE *fp = fopen(m_bodyListFile.c_str(), "r");
+    if (fp != NULL) {
+      ZString str;
+      while (str.readLine(fp)) {
+        std::vector<uint64_t> bodyArray = str.toUint64Array();
+        bodySet.insert(bodyArray.begin(), bodyArray.end());
+      }
+      fclose(fp);
+    }
   }
 
   return bodySet;

@@ -146,6 +146,15 @@ void ZFlyEmProofMvc::setDvidTargetFromDialog()
 
 void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
 {
+  if (getCompleteDocument()->getDvidTarget().isValid()) {
+    emit messageGenerated(
+          ZWidgetMessage("You cannot change the database in this window. "
+                         "Please open a new proofread window to load a different database",
+                         NeuTube::MSG_WARING,
+                         ZWidgetMessage::TARGET_DIALOG));
+    return;
+  }
+
   exitCurrentDoc();
 
   getProgressSignal()->startProgress("Loading data ...");
@@ -745,6 +754,7 @@ void ZFlyEmProofMvc::launchSplitFunc(uint64_t bodyId)
         labelSlice->setVisible(false);
         labelSlice->setHittable(false);
         body->setVisible(true);
+        body->setProjectionVisible(false);
 
         getProgressSignal()->advanceProgress(0.1);
 
@@ -1393,6 +1403,8 @@ void ZFlyEmProofMvc::annotateBookmark(ZFlyEmBookmark *bookmark)
     if (dlg.exec()) {
       dlg.annotate(bookmark);
       getCompleteDocument()->processBookmarkAnnotationEvent(bookmark);
+
+      updateUserBookmarkTable();
     }
   }
 }

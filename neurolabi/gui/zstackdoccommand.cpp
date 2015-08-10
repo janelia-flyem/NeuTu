@@ -1038,6 +1038,7 @@ ZStackDocCommand::SwcEdit::ConnectSwcNode::ConnectSwcNode(
   double minDist =
       boundBox.getDiagonalLength() * nodeNumberThreshold / nodeSet.size();
   connector.setMinDist(minDist);
+  connector.setResolution(doc->getResolution());
 
   ZGraph *graph = connector.buildConnection(nodeSet);
 

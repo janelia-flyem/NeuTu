@@ -298,6 +298,8 @@ public:
 
   ZGraph* getConnectionGraph(bool excludingSelfConnection = true);
 
+  void ravelerFlip(int height);
+
 private:
   bool isPartnerOnBody(int bodyId) const;
   static void assembleTBarSequence(ZIntTree *tbarSequence,

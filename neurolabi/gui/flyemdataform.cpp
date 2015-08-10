@@ -63,8 +63,11 @@ FlyEmDataForm::FlyEmDataForm(QWidget *parent) :
   connect(ui->queryView, SIGNAL(doubleClicked(QModelIndex)),
           this, SLOT(assignClass(QModelIndex)));
 #endif
+
+#if 0
   connect(ui->queryView, SIGNAL(doubleClicked(QModelIndex)),
           this, SLOT(viewModel(QModelIndex)));
+#endif
 
   connect(ui->queryView, SIGNAL(clicked(QModelIndex)),
           this, SLOT(updateStatusBar(QModelIndex)));
@@ -398,7 +401,7 @@ void FlyEmDataForm::viewModel(const QModelIndex &index)
       std::vector<ZPunctum*> puncta = neuron->getSynapse();
       for (std::vector<ZPunctum*>::iterator iter = puncta.begin();
            iter != puncta.end(); ++iter) {
-        doc->addObject(*iter);
+        doc->addObject(*iter, false);
       }
       doc->endObjectModifiedMode();
       doc->notifyObjectModified();
@@ -1438,12 +1441,11 @@ void FlyEmDataForm::importSynapse()
     QString fileName =
         ZDialogFactory::GetOpenFileName("Import Synapses", "", this);
     if (!fileName.isEmpty()) {
-      /*
       bool coordAdjust  = ZDialogFactory::Ask(
             "Coordinate Setting", "Are the syanpses in Raveler coordinates?",
             this);
-            */
-      getParentFrame()->importSynapseAnnotation(fileName);
+
+      getParentFrame()->importSynapseAnnotation(fileName, coordAdjust);
     }
   }
 }

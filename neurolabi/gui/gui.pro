@@ -553,7 +553,8 @@ HEADERS += mainwindow.h \
     flyem/zflyembookmarkannotationdialog.h \
     flyem/zflyembody3ddoc.h \
     z3ddef.h \
-    flyem/zflyembookmarkptrarray.h
+    flyem/zflyembookmarkptrarray.h \
+    biocytin/zbiocytinprojectiondoc.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -970,7 +971,8 @@ SOURCES += main.cpp \
     flyem/zflyembookmarkannotationdialog.cpp \
     flyem/zflyembody3ddoc.cpp \
     z3ddef.cpp \
-    flyem/zflyembookmarkptrarray.cpp
+    flyem/zflyembookmarkptrarray.cpp \
+    biocytin/zbiocytinprojectiondoc.cpp
 
 OTHER_FILES += \
     extlib.pri \

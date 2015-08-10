@@ -20,14 +20,18 @@ pair<Swc_Tree_Node*, Swc_Tree_Node*> ZSwcConnector::identifyConnection(
     m_dist = Infinity;
     for (const Swc_Tree_Node *tn = loop.begin(); tn != NULL; tn = loop.next()) {
       if (SwcTreeNode::isRegular(tn)) {
-        double d = SwcTreeNode::distance(head, tn, SwcTreeNode::EUCLIDEAN_SURFACE);
+        double d = SwcTreeNode::scaledDistance(
+              head, tn, m_resolution.voxelSizeX(), m_resolution.voxelSizeY(),
+              m_resolution.voxelSizeZ());
         if (d < m_dist) {
           m_dist = d;
           conn.first = head;
           conn.second = const_cast<Swc_Tree_Node*>(tn);
         }
         if (tail != NULL) {
-          d = SwcTreeNode::distance(tail, tn, SwcTreeNode::EUCLIDEAN_SURFACE);
+          d = SwcTreeNode::scaledDistance(
+                tail, tn, m_resolution.voxelSizeX(), m_resolution.voxelSizeY(),
+                m_resolution.voxelSizeZ());
           if (d < m_dist) {
             m_dist = d;
             conn.first = tail;
@@ -61,6 +65,59 @@ pair<Swc_Tree_Node*, Swc_Tree_Node*> ZSwcConnector::identifyConnection(
   return bestConn;
 }
 
+pair<Swc_Tree_Node*, Swc_Tree_Node*> ZSwcConnector::identifyConnection(
+      const ZSwcTree &hook, const ZSwcTree &loop)
+{
+  pair<Swc_Tree_Node*, Swc_Tree_Node*> conn;
+
+  loop.updateIterator(SWC_TREE_ITERATOR_DEPTH_FIRST);
+  m_dist = Infinity;
+
+  ZSwcTree::TerminalIterator hookIter(&hook);
+
+  ZSwcTree::DepthFirstIterator loopIter(&loop);
+  while (loopIter.hasNext()) {
+    Swc_Tree_Node *tn = loopIter.next();
+    if (SwcTreeNode::isRegular(tn)) {
+      hookIter.begin();
+      while (hookIter.hasNext()) {
+        Swc_Tree_Node *head = hookIter.next();
+        double d = SwcTreeNode::scaledDistance(
+              head, tn, m_resolution.voxelSizeX(), m_resolution.voxelSizeY(),
+              m_resolution.voxelSizeZ());
+        if (d < m_dist) {
+          m_dist = d;
+          conn.first = head;
+          conn.second = const_cast<Swc_Tree_Node*>(tn);
+        }
+      }
+    }
+  }
+
+  return conn;
+}
+
+std::pair<Swc_Tree_Node*, Swc_Tree_Node*> ZSwcConnector::identifyConnection(
+      const ZSwcTree &hook, const vector<ZSwcTree*> &loop)
+{
+  double minDist = Infinity;
+  pair<Swc_Tree_Node*, Swc_Tree_Node*> bestConn;
+
+  for (vector<ZSwcTree*>::const_iterator iter = loop.begin();
+       iter != loop.end(); ++iter) {
+    pair<Swc_Tree_Node*, Swc_Tree_Node*> conn =
+        identifyConnection(hook, *(*iter));
+    if (getConnDist() < m_minDist &&  getConnDist() < minDist) {
+      minDist = getConnDist();
+      bestConn = conn;
+    }
+  }
+
+  setConnDist(minDist);
+
+  return bestConn;
+}
+
 #define NUMBER_OF_NEIGHBORS(v, neighbors) neighbors[v][0]
 #define NEIGHBOR_OF(v, n, neighbors) neighbors[v][n]
 
@@ -69,14 +126,22 @@ ZGraph* ZSwcConnector::buildConnection(
 {
   std::vector<bool> isOrphan(nodeArray.size(), true);
 
+  std::vector<Swc_Tree_Node*> regularRootArray(nodeArray.size());
+  for (size_t i = 0; i < nodeArray.size(); ++i) {
+    regularRootArray[i] = SwcTreeNode::regularRoot(nodeArray[i]);
+  }
+
   ZGraph *graph = new ZGraph(ZGraph::UNDIRECTED_WITH_WEIGHT);
   for (size_t i = 0; i < nodeArray.size(); ++i) {
     for (size_t j = i + 1; j < nodeArray.size(); ++j) {
-      if (SwcTreeNode::isRegular(nodeArray[i]) &&
-          SwcTreeNode::isRegular(nodeArray[j])) {
-        if (SwcTreeNode::regularRoot(nodeArray[i]) !=
-            SwcTreeNode::regularRoot(nodeArray[j])) {
-          double w = SwcTreeNode::distance(nodeArray[i], nodeArray[j]);
+      Swc_Tree_Node *tn1 = nodeArray[i];
+      Swc_Tree_Node *tn2 = nodeArray[j];
+      if (SwcTreeNode::isRegular(tn1) && SwcTreeNode::isRegular(tn2)) {
+        if (regularRootArray[i] != regularRootArray[j]) {
+//          double w = SwcTreeNode::distance(nodeArray[i], nodeArray[j]);
+          double w = SwcTreeNode::scaledDistance(
+                tn1, tn2, m_resolution.voxelSizeX(), m_resolution.voxelSizeY(),
+                m_resolution.voxelSizeZ());
           if (w <= m_minDist) {
             graph->addEdgeFast(i, j, w + 0.1);
           }
@@ -178,4 +243,9 @@ ZGraph* ZSwcConnector::buildConnection(const set<Swc_Tree_Node *> &nodeSet)
   }
 
   return buildConnection(nodeArray);
+}
+
+void ZSwcConnector::setResolution(const ZResolution &resolution)
+{
+  m_resolution = resolution;
 }

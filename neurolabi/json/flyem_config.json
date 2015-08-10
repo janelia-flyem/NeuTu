@@ -16,7 +16,7 @@
       "comment": "MB seg debug (branched from ccf)",
       "body_label": "bodies",
       "label_block": "labels",
-      "user_name": "zhaot"
+      "user_name": ["zhaot"]
     },
     {
       "address": "emdata1.int.janelia.org",
@@ -42,6 +42,17 @@
       "comment": "FIB-19 data at MLOLP-Z1112-19R/align2/iso_rav (emdata1)",
       "local": "/groups/flyem/data/zhaot/local/FIB19-emdata1",
       "user_name": "zhaot"
+    },
+    {
+      "address": "emdata2.int.janelia.org",
+      "port": 7000,
+      "uuid": "6cac",
+      "name": "FIB25 (0802 export)",
+      "body_label": "bodies0802",
+      "label_block": "labels0802",
+      "multires_tile": "graytiles",
+      "comment": "FIB-25 export 08-02-2015",
+      "user_name": ["zhaot", "takemuras"] 
     },
     {
       "address": "emdata2.int.janelia.org",

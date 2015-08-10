@@ -718,6 +718,17 @@ public:
     size_t m_currentIndex;
   };
 
+  class TerminalIterator : public ExtIterator {
+  public:
+    TerminalIterator(const ZSwcTree *tree);
+    Swc_Tree_Node *begin();
+    bool hasNext() const;
+    Swc_Tree_Node* next();
+  private:
+    std::vector<Swc_Tree_Node*> m_nodeArray;
+    size_t m_currentIndex;
+  };
+
 public: //static functions
   static std::vector<ZSwcTree*> loadTreeArray(std::string dirPath);
   static Swc_Tree_Node* makeArrow(const ZPoint &startPos, double startSize,

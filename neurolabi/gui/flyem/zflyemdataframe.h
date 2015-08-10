@@ -143,7 +143,7 @@ public:
       const QString &synapsePath);
 
   void importBoundBox(const QString &substackPath);
-  void importSynapseAnnotation(const QString &filePath);
+  void importSynapseAnnotation(const QString &filePath, bool coordAdjust = false);
 
   /*!
    * \brief Upload annotations to DVID server.
