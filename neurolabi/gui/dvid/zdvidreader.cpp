@@ -30,7 +30,7 @@ ZDvidReader::ZDvidReader(QObject *parent) :
   QObject(parent)
 {
   m_eventLoop = new QEventLoop(this);
-  m_dvidClient = new ZDvidClient(this);
+//  m_dvidClient = new ZDvidClient(this);
   m_timer = new QTimer(this);
   m_service = NULL;
   //m_timer->setInterval(1000);
@@ -38,12 +38,12 @@ ZDvidReader::ZDvidReader(QObject *parent) :
   m_isReadingDone = false;
 
   //connect(m_dvidClient, SIGNAL(noRequestLeft()), m_eventLoop, SLOT(quit()));
-  connect(m_dvidClient, SIGNAL(noRequestLeft()), this, SLOT(endReading()));
+//  connect(m_dvidClient, SIGNAL(noRequestLeft()), this, SLOT(endReading()));
   connect(this, SIGNAL(readingDone()), m_eventLoop, SLOT(quit()));
   //connect(m_dvidClient, SIGNAL(requestFailed()), m_eventLoop, SLOT(quit()));
-  connect(m_dvidClient, SIGNAL(requestCanceled()), this, SLOT(endReading()));
+//  connect(m_dvidClient, SIGNAL(requestCanceled()), this, SLOT(endReading()));
 
-  connect(m_timer, SIGNAL(timeout()), m_dvidClient, SLOT(cancelRequest()));
+//  connect(m_timer, SIGNAL(timeout()), m_dvidClient, SLOT(cancelRequest()));
 }
 
 ZDvidReader::~ZDvidReader()
@@ -92,7 +92,7 @@ bool ZDvidReader::startService()
 bool ZDvidReader::open(
     const QString &serverAddress, const QString &uuid, int port)
 {
-  m_dvidClient->reset();
+//  m_dvidClient->reset();
 
   if (serverAddress.isEmpty()) {
     return false;
@@ -102,8 +102,8 @@ bool ZDvidReader::open(
     return false;
   }
 
-  m_dvidClient->setServer(serverAddress, port);
-  m_dvidClient->setUuid(uuid);
+//  m_dvidClient->setServer(serverAddress, port);
+//  m_dvidClient->setUuid(uuid);
 
   /*
   ZDvidBufferReader bufferReader;
@@ -121,7 +121,7 @@ bool ZDvidReader::open(
 
 bool ZDvidReader::open(const ZDvidTarget &target)
 {
-  m_dvidClient->reset();
+//  m_dvidClient->reset();
 
   if (!target.isValid()) {
     return false;
@@ -135,7 +135,7 @@ bool ZDvidReader::open(const ZDvidTarget &target)
   }
   */
 
-  m_dvidClient->setDvidTarget(target);
+//  m_dvidClient->setDvidTarget(target);
 
   m_dvidTarget = target;
 
@@ -250,6 +250,26 @@ ZObject3dScan ZDvidReader::readBody(int bodyId)
 
 ZSwcTree* ZDvidReader::readSwc(int bodyId)
 {
+  ZDvidBufferReader reader;
+
+  ZDvidUrl url(getDvidTarget());
+  qDebug() << url.getSkeletonUrl(bodyId);
+
+  reader.read(url.getSkeletonUrl(bodyId).c_str());
+
+  const QByteArray &buffer = reader.getBuffer();
+
+  ZSwcTree *tree = NULL;
+
+  if (!buffer.isEmpty()) {
+    tree = new ZSwcTree;
+    tree->loadFromBuffer(buffer.constData());
+    if (tree->isEmpty()) {
+      delete tree;
+      tree = NULL;
+    }
+  }
+  /*
   startReading();
 
   ZDvidBuffer *dvidBuffer = m_dvidClient->getDvidBuffer();
@@ -267,8 +287,9 @@ ZSwcTree* ZDvidReader::readSwc(int bodyId)
   if (!treeArray.empty()) {
     return treeArray[0]->clone();
   }
+  */
 
-  return NULL;
+  return tree;
 }
 
 ZStack* ZDvidReader::readThumbnail(int bodyId)
@@ -621,7 +642,7 @@ QString ZDvidReader::readInfo(const QString &dataName) const
   */
 }
 
-std::set<int> ZDvidReader::readBodyId(
+std::set<uint64_t> ZDvidReader::readBodyId(
     const ZIntPoint &firstCorner, const ZIntPoint &lastCorner)
 {
   return readBodyId(firstCorner.getX(), firstCorner.getY(), firstCorner.getZ(),
@@ -630,9 +651,17 @@ std::set<int> ZDvidReader::readBodyId(
                     lastCorner.getZ() - firstCorner.getZ() + 1);
 }
 
-std::set<int> ZDvidReader::readBodyId(
+std::set<uint64_t> ZDvidReader::readBodyId(
     int x0, int y0, int z0, int width, int height, int depth)
 {
+  ZArray *array = readLabels64(x0, y0, z0, width, height, depth);
+
+  uint64_t *dataArray = array->getDataPointer<uint64_t>();
+  std::set<uint64_t> bodySet;
+  for (size_t i = 0; i < array->getElementNumber(); ++i) {
+    bodySet.insert(dataArray[i]);
+  }
+#if 0
   ZStack *stack = readBodyLabel(x0, y0, z0, width, height, depth);
 
   std::set<int> bodySet;
@@ -646,6 +675,7 @@ std::set<int> ZDvidReader::readBodyId(
   }
 
   delete stack;
+#endif
 
   return bodySet;
 }
@@ -653,7 +683,7 @@ std::set<int> ZDvidReader::readBodyId(
 std::set<uint64_t> ZDvidReader::readBodyId(const QString sizeRange)
 {
   std::set<uint64_t> bodySet;
-
+#if 0
   if (!sizeRange.isEmpty()) {
     std::vector<int> idArray;
     startReading();
@@ -681,7 +711,7 @@ std::set<uint64_t> ZDvidReader::readBodyId(const QString sizeRange)
 
     dvidBuffer->clearInfoArray();
   }
-
+#endif
   return bodySet;
 }
 
@@ -756,6 +786,13 @@ std::set<uint64_t> ZDvidReader::readBodyId(size_t minSize, size_t maxSize)
 
 QByteArray ZDvidReader::readKeyValue(const QString &dataName, const QString &key)
 {
+  ZDvidUrl url(getDvidTarget());
+
+  ZDvidBufferReader bufferReader;
+  bufferReader.read(url.getKeyUrl(dataName.toStdString(), key.toStdString()).c_str());
+
+  return bufferReader.getBuffer();
+#if 0
   startReading();
 
   ZDvidBuffer *dvidBuffer = m_dvidClient->getDvidBuffer();
@@ -778,6 +815,7 @@ QByteArray ZDvidReader::readKeyValue(const QString &dataName, const QString &key
   dvidBuffer->clearKeyValueArray();
 
   return keyValue;
+#endif
 }
 
 QStringList ZDvidReader::readKeys(const QString &dataName)
@@ -828,6 +866,16 @@ QStringList ZDvidReader::readKeys(
 QStringList ZDvidReader::readKeys(
     const QString &dataName, const QString &minKey, const QString &maxKey)
 {
+  ZDvidUrl url(getDvidTarget());
+
+  ZDvidBufferReader reader;
+  reader.read(url.getKeyRangeUrl(dataName.toStdString(), minKey.toStdString(),
+                                 maxKey.toStdString()).c_str());
+  const QByteArray &keyBuffer = reader.getBuffer();
+
+  QStringList keys;
+
+#if 0
   startReading();
 
   ZDvidBuffer *dvidBuffer = m_dvidClient->getDvidBuffer();
@@ -841,14 +889,13 @@ QStringList ZDvidReader::readKeys(
   waitForReading();
 
   const QVector<QByteArray> &array = dvidBuffer->getKeysArray();
-
-  QStringList keys;
   QByteArray keyBuffer;
   if (!array.isEmpty()) {
     keyBuffer = array[0];
   }
 
   dvidBuffer->clearKeysArray();
+#endif
 
   if (!keyBuffer.isEmpty()) {
     ZJsonArray obj;
@@ -861,7 +908,7 @@ QStringList ZDvidReader::readKeys(
   return keys;
 }
 
-#if 1
+#if 0
 ZStack* ZDvidReader::readBodyLabel(
     int x0, int y0, int z0, int width, int height, int depth)
 {

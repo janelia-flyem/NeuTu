@@ -8,29 +8,17 @@
 #include "zintpoint.h"
 #include "zpainter.h"
 
-#if 0
-const ZStackBall::TVisualEffect ZStackBall::VE_NONE = 0;
-const ZStackBall::TVisualEffect ZStackBall::VE_DASH_PATTERN = 1;
-const ZStackBall::TVisualEffect ZStackBall::VE_BOUND_BOX = 2;
-const ZStackBall::TVisualEffect ZStackBall::VE_NO_CIRCLE = 4;
-const ZStackBall::TVisualEffect ZStackBall::VE_NO_FILL = 8;
-const ZStackBall::TVisualEffect ZStackBall::VE_GRADIENT_FILL = 16;
-const ZStackBall::TVisualEffect ZStackBall::VE_OUT_FOCUS_DIM = 32;
-const ZStackBall::TVisualEffect ZStackBall::VE_DOT_CENTER = 64;
-const ZStackBall::TVisualEffect ZStackBall::VE_RECTANGLE_SHAPE = 128;
-#endif
-
 ZStackBall::ZStackBall()
 {
-  _init(0, 0, 0, 1);
+  init(0, 0, 0, 1);
 }
 
 ZStackBall::ZStackBall(double x, double y, double z, double r)
 {
-  _init(x, y, z, r);
+  init(x, y, z, r);
 }
 
-void ZStackBall::_init(double x, double y, double z, double r)
+void ZStackBall::init(double x, double y, double z, double r)
 {
   set(x, y, z, r);
   m_type = ZStackObject::TYPE_STACK_BALL;
@@ -216,7 +204,9 @@ void ZStackBall::displayHelper(
         visible = true;
       }
       if (hasVisualEffect(NeuTube::Display::Sphere::VE_OUT_FOCUS_DIM)) {
-        alpha *= r * r / m_r / m_r;
+        if (!isFocused) {
+          alpha *= r * r / m_r / m_r * 0.5 + 0.1;
+        }
         //alpha *= alpha;
       }
     }
@@ -240,9 +230,10 @@ void ZStackBall::displayHelper(
       painter->drawEllipse(QPointF(m_center.x(), m_center.y()),
                            adjustedRadius, adjustedRadius);
     } else if (hasVisualEffect(NeuTube::Display::Sphere::VE_RECTANGLE_SHAPE)) {
+      double rectWidth = adjustedRadius * 2.0;
       painter->drawRect(
             QRectF(QPointF(m_center.x(), m_center.y()),
-                   QSizeF(adjustedRadius * 2.0, adjustedRadius * 2.0)));
+                   QSizeF(rectWidth, rectWidth)));
     }
 
     if (isFocused && hasVisualEffect(NeuTube::Display::Sphere::VE_DOT_CENTER)) {

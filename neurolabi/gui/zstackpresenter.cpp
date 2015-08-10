@@ -1150,6 +1150,8 @@ bool ZStackPresenter::processKeyPressEventForStroke(QKeyEvent *event)
   case Qt::Key_5:
   case Qt::Key_6:
   case Qt::Key_7:
+  case Qt::Key_8:
+  case Qt::Key_9:
     if (m_interactiveContext.strokeEditMode() ==
         ZInteractiveContext::STROKE_DRAW) {
       m_stroke.setLabel(event->key() - Qt::Key_0);

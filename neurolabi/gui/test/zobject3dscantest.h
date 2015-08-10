@@ -795,6 +795,26 @@ TEST(ZObject3dScan, TestScanArray) {
   obj.load(GET_TEST_DATA_DIR + "/test.sobj");
   EXPECT_TRUE(obj.isCanonizedActually());
 
+
+  ZStack stack2;
+  stack2.load(GET_TEST_DATA_DIR + "/benchmark/block.tif");
+  std::vector<ZObject3dScan*> objArray =
+      ZObject3dScan::extractAllObject(stack2);
+  ASSERT_EQ(24, (int) objArray.size());
+  for (size_t i = 0; i < objArray.size(); ++i) {
+    ZObject3dScan *obj = objArray[i];
+    ASSERT_EQ(1, (int) obj->getVoxelNumber());
+  }
+
+  stack2.setOffset(ZIntPoint(30, 40, 50));
+  objArray = ZObject3dScan::extractAllObject(stack2);
+  ASSERT_EQ(24, (int) objArray.size());
+  for (size_t i = 0; i < objArray.size(); ++i) {
+    ZObject3dScan *obj = objArray[i];
+//    obj->print();
+    ASSERT_EQ(1, (int) obj->getVoxelNumber());
+  }
+
   //obj.scanArray(array, )
 }
 

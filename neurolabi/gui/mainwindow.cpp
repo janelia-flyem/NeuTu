@@ -5779,7 +5779,7 @@ ZStackDocReader* MainWindow::readDvidGrayScale(
 }
 
 ZStackDocReader *MainWindow::hotSpotDemoFs(
-    int bodyId, const QString &dvidAddress, const QString &dvidUuid)
+    uint64_t bodyId, const QString &dvidAddress, const QString &dvidUuid)
 {
   ZDvidReader reader;
   reader.open(dvidAddress, dvidUuid);
@@ -5794,7 +5794,7 @@ ZStackDocReader *MainWindow::hotSpotDemoFs(
   QString info = reader.readInfo("superpixels");
   dvidInfo.setFromJsonString(info.toStdString());
 
-  int sourceBodyId = bodyId;
+  uint64_t sourceBodyId = bodyId;
   ZSwcTree *tree = reader.readSwc(sourceBodyId);
 
   qDebug() << "Model loaded.";
@@ -5811,11 +5811,11 @@ ZStackDocReader *MainWindow::hotSpotDemoFs(
 
   double margin = 50;
 
-  std::set<int> bodySet;
+  std::set<uint64_t> bodySet;
   for (ZSwcTreeNodeArray::const_iterator iter = nodeArray.begin();
        iter != nodeArray.end(); ++iter) {
     ZPoint center = SwcTreeNode::center(*iter);
-    std::set<int> bodyId = reader.readBodyId(
+    std::set<uint64_t> bodyId = reader.readBodyId(
           center.x(), center.y(), center.z(),
           margin, margin, margin);
     std::cout << bodyId.size() << " neighbor bodies" << std::endl;
@@ -5828,9 +5828,9 @@ ZStackDocReader *MainWindow::hotSpotDemoFs(
   std::vector<ZFlyEmNeuron> neuronArray(bodySet.size());
   size_t index = 0;
   int neuronRetrievalCount = 0;
-  for (std::set<int>::const_iterator iter = bodySet.begin();
+  for (std::set<uint64_t>::const_iterator iter = bodySet.begin();
        iter != bodySet.end(); ++iter, ++index) {
-    int bodyId = *iter;
+    uint64_t bodyId = *iter;
     ZSwcTree *tree = reader.readSwc(bodyId);
     ZFlyEmNeuron &neuron = neuronArray[index];
     if (tree != NULL) {
@@ -5843,7 +5843,7 @@ ZStackDocReader *MainWindow::hotSpotDemoFs(
       neuron.setModel(tree2);
       ++neuronRetrievalCount;
     } else {
-      neuron.setId(-1);
+      neuron.setId(0);
     }
   }
 

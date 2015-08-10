@@ -35,7 +35,7 @@ public:
 
   void setDvidTarget(const ZDvidTarget &target);
   void loadFace(const ZIntCuboidArray &cuboidArray);
-  void markBody();
+//  void markBody();
   void loadFaceOrphanBody(const std::vector<int> &bodyIdArray);
   ZGraph* computeOverlap();
 

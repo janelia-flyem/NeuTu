@@ -5,7 +5,7 @@
 
 #include <QHBoxLayout>
 
-const int ZPaintLabelWidget::m_maxLabel = 7;
+const int ZPaintLabelWidget::m_maxLabel = 9;
 
 ZPaintLabelWidget::ZPaintLabelWidget(QWidget *parent) :
   QWidget(parent)

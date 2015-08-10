@@ -65,7 +65,7 @@ public:
       const ZIntPoint &blockIndex, const ZDvidInfo &dvidInfo,
       int blockNumber);
 
-
+#if 0
   /*!
    * \brief Read a stack of labels (Obsolete)
    *
@@ -73,12 +73,13 @@ public:
    */
   ZStack* readBodyLabel(
       int x0, int y0, int z0, int width, int height, int depth);
+#endif
 
   QString readInfo(const QString &dataName) const;
 
-  std::set<int> readBodyId(
+  std::set<uint64_t> readBodyId(
       int x0, int y0, int z0, int width, int height, int depth);
-  std::set<int> readBodyId(const ZIntPoint &firstCorner,
+  std::set<uint64_t> readBodyId(const ZIntPoint &firstCorner,
                               const ZIntPoint &lastCorner);
   std::set<uint64_t> readBodyId(size_t minSize);
   std::set<uint64_t> readBodyId(size_t minSize, size_t maxSize);
@@ -152,7 +153,7 @@ private:
 
 protected:
   QEventLoop *m_eventLoop;
-  ZDvidClient *m_dvidClient;
+//  ZDvidClient *m_dvidClient;
   QTimer *m_timer;
   bool m_isReadingDone;
   ZDvidTarget m_dvidTarget;

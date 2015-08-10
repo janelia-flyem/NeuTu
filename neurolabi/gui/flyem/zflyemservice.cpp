@@ -110,6 +110,7 @@ void FlyEm::Service::FaceOrphanOverlap::loadFace(
 #endif
 }
 
+#if 0
 void FlyEm::Service::FaceOrphanOverlap::markBody()
 {
   clearFaceStackArray();
@@ -134,6 +135,7 @@ void FlyEm::Service::FaceOrphanOverlap::markBody()
     }
   }
 }
+#endif
 
 void FlyEm::Service::FaceOrphanOverlap::markBodyMock()
 {
