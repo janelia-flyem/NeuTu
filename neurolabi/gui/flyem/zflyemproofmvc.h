@@ -70,6 +70,8 @@ signals:
   void splitBodyLoaded(uint64_t bodyId);
   void bookmarkUpdated(ZFlyEmBodyMergeProject *m_project);
   void bookmarkUpdated(ZFlyEmBodySplitProject *m_project);
+  void bookmarkDeleted(ZFlyEmBodyMergeProject *m_project);
+  void bookmarkDeleted(ZFlyEmBodySplitProject *m_project);
   void dvidTargetChanged(ZDvidTarget);
   void userBookmarkUpdated(ZStackDoc *doc);
 
@@ -159,6 +161,8 @@ private:
   std::set<uint64_t> getCurrentSelectedBodyId(NeuTube::EBodyLabelType type) const;
   void runSplitFunc();
   void notifyBookmarkUpdated();
+  void notifyBookmarkDeleted();
+
   void syncDvidBookmark();
   void loadBookmarkFunc(const QString &filePath);
 
@@ -208,6 +212,8 @@ void ZFlyEmProofMvc::connectControlPanel(T *panel)
   connect(panel, SIGNAL(selectingBody()), this, SLOT(selectBody()));
   connect(this, SIGNAL(bookmarkUpdated(ZFlyEmBodyMergeProject*)),
           panel, SLOT(updateBookmarkTable(ZFlyEmBodyMergeProject*)));
+  connect(this, SIGNAL(bookmarkDeleted(ZFlyEmBodyMergeProject*)),
+          panel, SLOT(clearBookmarkTable(ZFlyEmBodyMergeProject*)));
   connect(panel, SIGNAL(bookmarkChecked(QString, bool)),
           this, SLOT(recordCheckedBookmark(QString, bool)));
   connect(panel, SIGNAL(bookmarkChecked(ZFlyEmBookmark*)),
@@ -236,6 +242,8 @@ void ZFlyEmProofMvc::connectSplitControlPanel(T *panel)
           this, SLOT(loadBookmark(QString)));
   connect(this, SIGNAL(bookmarkUpdated(ZFlyEmBodySplitProject*)),
           panel, SLOT(updateBookmarkTable(ZFlyEmBodySplitProject*)));
+  connect(this, SIGNAL(bookmarkDeleted(ZFlyEmBodySplitProject*)),
+          panel, SLOT(clearBookmarkTable(ZFlyEmBodySplitProject*)));
   connect(panel, SIGNAL(zoomingTo(int, int, int)),
           this, SLOT(zoomTo(int, int, int)));
   connect(panel, SIGNAL(selectingSeed()), this, SLOT(selectSeed()));

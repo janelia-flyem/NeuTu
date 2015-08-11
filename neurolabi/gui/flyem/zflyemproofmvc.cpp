@@ -1075,6 +1075,12 @@ void ZFlyEmProofMvc::notifyBookmarkUpdated()
   emit bookmarkUpdated(&m_splitProject);
 }
 
+void ZFlyEmProofMvc::notifyBookmarkDeleted()
+{
+  emit bookmarkDeleted(&m_mergeProject);
+  emit bookmarkDeleted(&m_splitProject);
+}
+
 void ZFlyEmProofMvc::loadBookmarkFunc(const QString &filePath)
 {
   getProgressSignal()->startProgress("Importing bookmarks ...");
@@ -1086,6 +1092,7 @@ void ZFlyEmProofMvc::loadBookmarkFunc(const QString &filePath)
   //    ZDvidInfo info = reader.readGrayScaleInfo();
   //    converter.configure(info);
       getProgressSignal()->advanceProgress(0.1);
+      notifyBookmarkDeleted();
       getCompleteDocument()->importFlyEmBookmark(filePath.toStdString());
       getProgressSignal()->advanceProgress(0.5);
   //    m_bookmarkArray.importJsonFile(filePath.toStdString(), NULL/*&converter*/);
