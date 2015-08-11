@@ -2532,7 +2532,7 @@ void ZFlyEmDataFrame::exportSideBoundaryAnalysis(
   for (ZIntCuboidFaceArray::const_iterator iter = faceArray.begin();
        iter != faceArray.end(); ++iter) {
     const ZIntCuboidFace &face = *iter;
-    std::set<int> bodySet =
+    std::set<uint64_t> bodySet =
         reader.readBodyId(face.getCornerCoordinates(0),
                           face.getCornerCoordinates(3));
 #ifdef _DEBUG_2

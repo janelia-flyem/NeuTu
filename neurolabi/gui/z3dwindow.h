@@ -45,7 +45,7 @@ class Z3DWindow : public QMainWindow
   Q_OBJECT
 public:
   enum EInitMode {
-    NORMAL_INIT, EXCLUDE_VOLUME, FULL_RES_VOLUME
+    INIT_NORMAL, INIT_EXCLUDE_VOLUME, INIT_FULL_RES_VOLUME
   };
 
   explicit Z3DWindow(ZSharedPointer<ZStackDoc> doc, EInitMode initMode,
@@ -53,13 +53,13 @@ public:
   virtual ~Z3DWindow();
 
   static Z3DWindow* Make(ZStackDoc* doc, QWidget *parent,
-                         Z3DWindow::EInitMode mode = Z3DWindow::NORMAL_INIT);
+                         Z3DWindow::EInitMode mode = Z3DWindow::INIT_NORMAL);
   static Z3DWindow* Open(ZStackDoc* doc, QWidget *parent,
-                         Z3DWindow::EInitMode mode = Z3DWindow::NORMAL_INIT);
+                         Z3DWindow::EInitMode mode = Z3DWindow::INIT_NORMAL);
   static Z3DWindow* Make(ZSharedPointer<ZStackDoc> doc, QWidget *parent,
-                         Z3DWindow::EInitMode mode = Z3DWindow::NORMAL_INIT);
+                         Z3DWindow::EInitMode mode = Z3DWindow::INIT_NORMAL);
   static Z3DWindow* Open(ZSharedPointer<ZStackDoc> doc, QWidget *parent,
-                         Z3DWindow::EInitMode mode = Z3DWindow::NORMAL_INIT);
+                         Z3DWindow::EInitMode mode = Z3DWindow::INIT_NORMAL);
 
   void gotoPosition(double x, double y, double z, double radius = 64);
   void gotoPosition(std::vector<double> bound, double minRadius = 64,
@@ -121,7 +121,7 @@ private:
   void setWindowSize();
 
   // init 3D view
-  void init(EInitMode mode = NORMAL_INIT);
+  void init(EInitMode mode = INIT_NORMAL);
 
   void cleanup();
 

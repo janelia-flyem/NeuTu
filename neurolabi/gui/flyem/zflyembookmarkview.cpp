@@ -6,7 +6,7 @@
 #include "zflyembookmarklistmodel.h"
 
 ZFlyEmBookmarkView::ZFlyEmBookmarkView(QWidget *parent) :
-  QTableView(parent), m_contextMenu(NULL)
+  QTableView(parent)
 {
   init();
 }

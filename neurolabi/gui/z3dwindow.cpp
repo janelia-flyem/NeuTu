@@ -204,12 +204,12 @@ void Z3DWindow::init(EInitMode mode)
   m_axis = new Z3DAxis();
 
   // more processors: init volumes
-  if (mode == EXCLUDE_VOLUME) {
+  if (mode == INIT_EXCLUDE_VOLUME) {
     m_volumeSource = new Z3DVolumeSource(NULL);
   } else {
-    if (mode == NORMAL_INIT) {
+    if (mode == INIT_NORMAL) {
       m_volumeSource = new Z3DVolumeSource(m_doc.get());
-    } else if (mode == FULL_RES_VOLUME) {
+    } else if (mode == INIT_FULL_RES_VOLUME) {
       m_volumeSource = new Z3DVolumeSource(m_doc.get(), MAX_INT32 / 2);
     }
     connect(m_volumeSource, SIGNAL(xScaleChanged()), this, SLOT(volumeScaleChanged()));
@@ -882,7 +882,7 @@ void Z3DWindow::createDockWindows()
 #endif
 
   const NeutubeConfig &config = NeutubeConfig::getInstance();
-  if (!config.getZ3DWindowConfig().isUtilsOn()) {
+  if (config.getZ3DWindowConfig().isUtilsOn()) {
     ZWidgetsGroup *utils = new ZWidgetsGroup("General", m_widgetsGroup, 1);
     new ZWidgetsGroup(cameraMenuButton, utils, 1);
     new ZWidgetsGroup(getCamera(), utils, 1);

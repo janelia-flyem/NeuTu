@@ -186,7 +186,7 @@ void ZFlyEmBodySplitProject::showDataFrame3d()
 
       ZWindowFactory factory;
       //factory.setParentWidget(parent);
-      window = factory.make3DWindow(getSharedDocument(), Z3DWindow::NORMAL_INIT);
+      window = factory.make3DWindow(getSharedDocument(), Z3DWindow::INIT_NORMAL);
       window->setWindowTitle(getDocument()->getTitle());
 
       //getDocument()->registerUser(window);
@@ -969,7 +969,7 @@ void ZFlyEmBodySplitProject::commitResultFunc(
 //        getDataFrame()->document()->getSparseStack()->getDownsampleInterval();
     std::vector<ZObject3dScan*> objArray =
         ZObject3dScan::extractAllObject(*stack);
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
     stack->save(GET_TEST_DATA_DIR + "/test.tif");
 #endif
 
@@ -1069,18 +1069,6 @@ void ZFlyEmBodySplitProject::commitResultFunc(
     obj.load(objFile.toStdString());
     uint64_t newBodyId = writer.writeSplit(
           getDvidTarget().getBodyLabelName(), obj, getBodyId(), ++bodyIndex);
-
-#if 0
-    QString command = buildemPath +
-        QString("/bin/dvid_load_sparse http://emdata2:8000 %1 %2 %3 %4").
-        arg(m_dvidTarget.getUuid().c_str()).
-        arg(m_dvidTarget.getBodyLabelName().c_str()).
-        arg(objFile).arg(++bodyId);
-
-    qDebug() << command;
-
-    QProcess::execute(command);
-#endif
 
     uint64_t oldBodyId = oldBodyIdList[bodyIndex - 1];
     QString msg;

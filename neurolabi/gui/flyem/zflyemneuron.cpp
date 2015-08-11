@@ -202,16 +202,21 @@ ZSwcTree* ZFlyEmNeuron::getUnscaledModel(const string &bundleSource) const
   return m_unscaledModel;
 }
 
-ZSwcTree* ZFlyEmNeuron::getModel(const string &bundleSource) const
+
+void ZFlyEmNeuron::updateDvidModel(bool forceUpdate) const
 {
+  if (forceUpdate) {
+    deprecate(MODEL);
+  }
+
   if (isDeprecated(MODEL)) {
     if (!m_modelPath.empty()) {
       //m_model = new ZSwcTree;
       ZString path(m_modelPath);
-      if (path.startsWith("http:")) {
+      ZDvidReader reader;
+      if (path.startsWith("http:") && reader.open(m_modelPath.c_str())) {
 #if defined(_QT_GUI_USED_)
-        ZDvidReader reader;
-        if (reader.open(m_modelPath.c_str())) {
+        if (!forceUpdate) {
           m_model = reader.readSwc(getId());
           if (m_model != NULL) {
             if (m_model->isEmpty()) {
@@ -239,24 +244,27 @@ ZSwcTree* ZFlyEmNeuron::getModel(const string &bundleSource) const
           }
         }
 
-#if 0 //Stop service
-        if (m_model == NULL) {
-          ZSkeletonizeService service;
-          ZDvidTarget dvidTarget;
-          dvidTarget.setFromSourceString(m_modelPath);
-          service.callService(dvidTarget, getId());
-
-          if (reader.open(m_modelPath.c_str())) {
-            m_model = reader.readSwc(getId());
-          }
-        }
-#endif
-
         if (m_model != NULL) {
           m_model->setSource(m_modelPath + ":" + ZString::num2str(getId()));
         }
-
 #endif
+      }
+    }
+  }
+
+//  return m_model;
+}
+
+
+
+ZSwcTree* ZFlyEmNeuron::getModel(const string &bundleSource) const
+{
+  if (isDeprecated(MODEL)) {
+    if (!m_modelPath.empty()) {
+      //m_model = new ZSwcTree;
+      ZString path(m_modelPath);
+      if (path.startsWith("http:")) {
+        updateDvidModel(false);
       } else {
         if (!path.isAbsolutePath()) {
           path = path.absolutePath(ZString::dirPath(bundleSource));

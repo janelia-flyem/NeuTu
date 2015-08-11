@@ -562,7 +562,14 @@ void ZFlyEmProofMvc::checkOutBody()
         if (getSupervisor()->checkOut(bodyId)) {
           emit messageGenerated(QString("Body %1 is locked.").arg(bodyId));
         } else {
-          emit errorGenerated(QString("Failed to lock body %1.").arg(bodyId));
+          std::string owner = getSupervisor()->getOwner(bodyId);
+          if (owner.empty()) {
+            owner = "unknown user";
+          }
+          emit messageGenerated(
+                ZWidgetMessage(
+                  QString("Failed to lock body %1 because it has been locked by %2").
+                  arg(bodyId).arg(owner.c_str()), NeuTube::MSG_ERROR));
         }
       }
     }

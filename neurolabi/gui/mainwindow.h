@@ -493,7 +493,7 @@ private:
   /*!
    * \brief Hotspot demo for false split
    */
-  ZStackDocReader *hotSpotDemoFs(int bodyId, const QString &dvidAddress,
+  ZStackDocReader *hotSpotDemoFs(uint64_t bodyId, const QString &dvidAddress,
                            const QString &dvidUuid);
 
   ZStackDoc* importHdf5Body(int bodyId, const QString &hdf5Path);

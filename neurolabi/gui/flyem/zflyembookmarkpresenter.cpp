@@ -4,8 +4,10 @@
 ZFlyEmBookmarkPresenter::ZFlyEmBookmarkPresenter(QObject *parent) :
   ZAbstractModelPresenter(parent)
 {
-  m_fieldList << "Type" << "X" << "Y" << "Z" << "Body ID" << "User" << "Status"
-              << "Time";
+  m_fieldList << "   Type   " << "      X      " << "      Y      "
+              << "      Z      " << "    Body ID    "
+              << "     User     " << "  Status  "
+              << "  Time  ";
 }
 
 QVariant ZFlyEmBookmarkPresenter::data(

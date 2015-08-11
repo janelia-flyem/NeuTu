@@ -155,7 +155,7 @@ public:
   void hideObject();
   void showObject();
 
-  Z3DWindow* open3DWindow(Z3DWindow::EInitMode mode = Z3DWindow::NORMAL_INIT);
+  Z3DWindow* open3DWindow(Z3DWindow::EInitMode mode = Z3DWindow::INIT_NORMAL);
   /*!
    * \brief Get the main window ancestor of the frame.
    */

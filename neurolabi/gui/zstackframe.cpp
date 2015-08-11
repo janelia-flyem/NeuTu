@@ -724,7 +724,7 @@ void ZStackFrame::dropEvent(QDropEvent *event)
   if (!nonImageUrls.isEmpty()) {
     load(nonImageUrls);
     if (NeutubeConfig::getInstance().getApplication() == "Biocytin") {
-      open3DWindow(Z3DWindow::EXCLUDE_VOLUME);
+      open3DWindow(Z3DWindow::INIT_EXCLUDE_VOLUME);
     }
   }
 }
@@ -1808,7 +1808,7 @@ void ZStackFrame::MessageProcessor::processMessage(
     ZStackFrame *frame = dynamic_cast<ZStackFrame*>(host);
     if (frame != NULL) {
       if (frame->document()->getTag() == NeuTube::Document::BIOCYTIN_STACK) {
-        frame->open3DWindow(Z3DWindow::EXCLUDE_VOLUME);
+        frame->open3DWindow(Z3DWindow::INIT_EXCLUDE_VOLUME);
       } else {
         frame->open3DWindow();
       }

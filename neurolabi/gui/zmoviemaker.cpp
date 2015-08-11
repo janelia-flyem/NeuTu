@@ -45,7 +45,7 @@ void ZMovieMaker::dismissCast()
 
 void ZMovieMaker::prepareStage()
 {
-  Z3DWindow *window = new Z3DWindow(m_academy, Z3DWindow::NORMAL_INIT,
+  Z3DWindow *window = new Z3DWindow(m_academy, Z3DWindow::INIT_NORMAL,
                                     false, NULL);
   m_stage = new ZMovieStage(window);
 

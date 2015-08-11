@@ -81,6 +81,9 @@ FlyEmProofControlForm::FlyEmProofControlForm(QWidget *parent) :
   ui->bookmarkView->setModel(&m_bookmarkList);
   ui->userBookmarkView->setModel(&m_userBookmarkList);
 
+  ui->bookmarkView->resizeColumnsToContents();
+  ui->userBookmarkView->resizeColumnsToContents();
+
   createMenu();
 }
 
@@ -186,7 +189,7 @@ void FlyEmProofControlForm::updateUserBookmarkTable(ZStackDoc *doc)
       }
     }
   }
-  ui->userBookmarkView->resizeColumnsToContents();
+//  ui->userBookmarkView->resizeColumnsToContents();
 }
 
 void FlyEmProofControlForm::updateBookmarkTable(ZFlyEmBodyMergeProject *project)
@@ -209,7 +212,7 @@ void FlyEmProofControlForm::updateBookmarkTable(ZFlyEmBodyMergeProject *project)
         }
       }
     }
-    ui->bookmarkView->resizeColumnsToContents();
+//    ui->bookmarkView->resizeColumnsToContents();
 //    project->addBookmarkDecoration(m_bookmarkList.getBookmarkArray());
   }
 }
