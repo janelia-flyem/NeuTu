@@ -286,6 +286,12 @@ void ZFlyEmProofMvc::customInit()
           &m_mergeProject, SLOT(update3DBodyViewDeep()));
   connect(getCompleteDocument(), SIGNAL(bodyUnmerged()),
           &m_mergeProject, SLOT(update3DBodyViewDeep()));
+
+  connect(getCompleteDocument(), SIGNAL(bodyMerged()),
+          &m_mergeProject, SLOT(saveMergeOperation()));
+  connect(getCompleteDocument(), SIGNAL(bodyUnmerged()),
+          &m_mergeProject, SLOT(saveMergeOperation()));
+
   connect(getCompleteDocument(), SIGNAL(userBookmarkModified()),
           this, SLOT(updateUserBookmarkTable()));
   connect(getCompleteDocument(), SIGNAL(bodyIsolated(uint64_t)),
