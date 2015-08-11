@@ -979,8 +979,10 @@ Stack* ZObject3dScan::toStack(int *offset, int v) const
     offset[2] = boundBox.getFirstCorner().getZ();
   }
 
+#if 0
   std::cout << "Stack size: " << boundBox.getWidth() << "x"
             << boundBox.getHeight() << "x" << boundBox.getDepth() << std::endl;
+#endif
 
   Stack *stack = C_Stack::make(GREY, boundBox.getWidth(),
                                boundBox.getHeight(),
@@ -2082,7 +2084,9 @@ ZVoxel ZObject3dScan::getMarker() const
     sliceArray[currentZ].addStripe(stripe, false);
   }
 
-  for (size_t i = 0; i < sliceArray.size(); ++i) {
+  size_t step = sliceArray.size() / 100 + 1;
+
+  for (size_t i = 0; i < sliceArray.size(); i += step) {
     ZObject3dScan &slice = sliceArray[i];
 
     if (!slice.isEmpty()) {

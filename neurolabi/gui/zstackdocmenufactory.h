@@ -23,6 +23,9 @@ public:
     m_singleSwcNodeActionActivator = activator;
   }
 
+  void setAdminState(bool state) { m_isAdmin = state; }
+  bool isAdmin() const { return m_isAdmin; }
+
 public:
   QMenu* makeSwcNodeContextMenu(
       ZStackDoc *doc, QWidget *parentWidget, QMenu *menu);
@@ -36,7 +39,11 @@ public:
       ZStackPresenter *presenter, QWidget *parentWidget, QMenu *menu);
 
 private:
+  void init();
+
+private:
   ZSingleSwcNodeActionActivator *m_singleSwcNodeActionActivator;
+  bool m_isAdmin;
 };
 
 #endif // ZSTACKDOCMENUFACTORY_H

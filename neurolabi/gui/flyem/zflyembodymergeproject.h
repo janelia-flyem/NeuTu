@@ -141,7 +141,8 @@ public slots:
   void uploadResult();
   void saveMergeOperation();
   void update3DBodyView(const ZStackObjectSelector &selector);
-  void update3DBodyView(bool showingWindow = true);
+  void update3DBodyView(
+      bool showingWindow = true, bool resettingCamera = false);
   void update3DBodyViewDeep();
   void showCoarseBody3d();
   void showBody3d();
@@ -149,7 +150,7 @@ public slots:
   void detachBodyWindow();
   void notifySplit();
   void highlightSelectedObject(bool hl);
-  void update3DBodyViewPlane();
+  void update3DBodyViewPlane(const ZStackViewParam &viewParam);
 
 private slots:
   void presentCoarseBodyView();
@@ -157,7 +158,8 @@ private slots:
 private:
   ZFlyEmBodyMerger* getBodyMerger() const;
   void clearBodyMerger();
-  void update3DBodyViewPlane(const ZDvidInfo &dvidInfo);
+  void update3DBodyViewPlane(
+      const ZDvidInfo &dvidInfo, const ZStackViewParam &viewParam);
   void update3DBodyViewBox(const ZDvidInfo &dvidInfo);
   void uploadResultFunc();
   void makeCoarseBodyWindow(ZStackDoc *doc);

@@ -333,7 +333,7 @@ void ZStackPresenter::createBodyActions()
   {
     QAction *action = new QAction(tr("Unlock (Administrator)"), this);
     connect(action, SIGNAL(triggered()),
-            this, SLOT(notifyBodyCheckinTriggered()));
+            this, SLOT(notifyBodyForceCheckinTriggered()));
     m_actionMap[ACTION_BODY_FORCE_CHECKIN] = action;
   }
 
@@ -439,6 +439,7 @@ void ZStackPresenter::createBodyContextMenu()
 {
   if (m_bodyContextMenu == NULL) {
     ZStackDocMenuFactory menuFactory;
+    menuFactory.setAdminState(NeuTube::IsAdminUser());
     m_bodyContextMenu =
         menuFactory.makeBodyContextMenu(this, getParentWidget(), NULL);
   }
@@ -2123,6 +2124,11 @@ void ZStackPresenter::notifyBodyAnnotationTriggered()
 void ZStackPresenter::notifyBodyCheckinTriggered()
 {
   emit bodyCheckinTriggered();
+}
+
+void ZStackPresenter::notifyBodyForceCheckinTriggered()
+{
+  emit bodyForceCheckinTriggered();
 }
 
 void ZStackPresenter::notifyBodyCheckoutTriggered()

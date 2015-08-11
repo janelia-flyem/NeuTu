@@ -53,7 +53,9 @@ ZFlyEmNeuron::ZFlyEmNeuron(int id, ZSwcTree *model, ZObject3dScan *body) :
 {
   m_id = id;
   m_model = model;
-  m_unscaledModel = model->clone();
+  if (model != NULL) {
+    m_unscaledModel = model->clone();
+  }
   m_body = body;
 }
 
@@ -133,6 +135,9 @@ void ZFlyEmNeuron::deprecateDependent(EComponent comp) const
   case MODEL:
     deprecate(BUDDY_MODEL);
     break;
+  case UNSCALED_MODEL:
+    deprecate(MODEL);
+    break;
   default:
     break;
   }
@@ -174,24 +179,16 @@ ZSwcTree* ZFlyEmNeuron::getUnscaledModel(const string &bundleSource) const
 {
   if (isDeprecated(UNSCALED_MODEL)) {
     if (!m_modelPath.empty()) {
-      m_unscaledModel = new ZSwcTree;
       ZString path(m_modelPath);
       if (path.startsWith("http:")) {
-#if defined(_QT_GUI_USED_)
-        ZDvidReader reader;
-        if (reader.open(m_modelPath.c_str())) {
-          m_unscaledModel = reader.readSwc(getId());
-        }
-        if (m_unscaledModel != NULL) {
-          m_unscaledModel->setSource(m_modelPath + ":" + ZString::num2str(getId()));
-        }
-#endif
+        updateDvidModel(false);
       } else {
         if (!path.isAbsolutePath()) {
           path = path.absolutePath(ZString::dirPath(bundleSource));
         }
+        m_unscaledModel = new ZSwcTree;
         m_unscaledModel->load(path.c_str());
-        if (m_unscaledModel->data() == NULL) {
+        if (m_unscaledModel->isEmpty()) {
           delete m_unscaledModel;
           m_unscaledModel = NULL;
         }
@@ -206,10 +203,10 @@ ZSwcTree* ZFlyEmNeuron::getUnscaledModel(const string &bundleSource) const
 void ZFlyEmNeuron::updateDvidModel(bool forceUpdate) const
 {
   if (forceUpdate) {
-    deprecate(MODEL);
+    deprecate(UNSCALED_MODEL);
   }
 
-  if (isDeprecated(MODEL)) {
+  if (isDeprecated(UNSCALED_MODEL)) {
     if (!m_modelPath.empty()) {
       //m_model = new ZSwcTree;
       ZString path(m_modelPath);
@@ -217,16 +214,16 @@ void ZFlyEmNeuron::updateDvidModel(bool forceUpdate) const
       if (path.startsWith("http:") && reader.open(m_modelPath.c_str())) {
 #if defined(_QT_GUI_USED_)
         if (!forceUpdate) {
-          m_model = reader.readSwc(getId());
-          if (m_model != NULL) {
-            if (m_model->isEmpty()) {
-              delete m_model;
-              m_model = NULL;
+          m_unscaledModel = reader.readSwc(getId());
+          if (m_unscaledModel != NULL) {
+            if (m_unscaledModel->isEmpty()) {
+              delete m_unscaledModel;
+              m_unscaledModel = NULL;
             }
           }
         }
 
-        if (m_model == NULL) {
+        if (m_unscaledModel == NULL) {
           ZStackSkeletonizer skeletonizer;
           ZJsonObject config;
           config.load(NeutubeConfig::getInstance().getApplicatinDir() +
@@ -234,18 +231,14 @@ void ZFlyEmNeuron::updateDvidModel(bool forceUpdate) const
           skeletonizer.configure(config);
           ZObject3dScan obj = reader.readBody(getId());
           if (!obj.isEmpty()) {
-            m_model = skeletonizer.makeSkeleton(obj);
-            if (m_model != NULL) {
+            m_unscaledModel = skeletonizer.makeSkeleton(obj);
+            if (m_unscaledModel != NULL) {
               ZDvidWriter writer;
               if (writer.open(m_modelPath.c_str())) {
-                writer.writeSwc(getId(), m_model);
+                writer.writeSwc(getId(), m_unscaledModel);
               }
             }
           }
-        }
-
-        if (m_model != NULL) {
-          m_model->setSource(m_modelPath + ":" + ZString::num2str(getId()));
         }
 #endif
       }
@@ -259,6 +252,14 @@ void ZFlyEmNeuron::updateDvidModel(bool forceUpdate) const
 
 ZSwcTree* ZFlyEmNeuron::getModel(const string &bundleSource) const
 {
+  if (isDeprecated(MODEL)) {
+    ZSwcTree *unscaledModel = getUnscaledModel(bundleSource);
+    if (unscaledModel != NULL) {
+      m_model = unscaledModel->clone();
+      m_model->rescale(m_resolution[0], m_resolution[1], m_resolution[2]);
+    }
+  }
+#if 0
   if (isDeprecated(MODEL)) {
     if (!m_modelPath.empty()) {
       //m_model = new ZSwcTree;
@@ -293,6 +294,7 @@ ZSwcTree* ZFlyEmNeuron::getModel(const string &bundleSource) const
     }
 #endif
   }
+#endif
 
   return m_model;
 }
@@ -308,7 +310,7 @@ ZObject3dScan* ZFlyEmNeuron::getBody() const
         m_body = new ZObject3dScan;
         *m_body = reader.readBody(getId());
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
         m_body->save(GET_TEST_DATA_DIR + "/test.sobj");
 #endif
       }

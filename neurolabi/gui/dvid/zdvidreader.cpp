@@ -223,29 +223,6 @@ ZObject3dScan ZDvidReader::readBody(int bodyId)
   ZObject3dScan obj;
   readBody(bodyId, &obj);
   return obj;
-#if 0
-  startReading();
-
-  ZDvidBuffer *dvidBuffer = m_dvidClient->getDvidBuffer();
-  dvidBuffer->clearBodyArray();
-
-  ZDvidRequest request;
-  request.setGetObjectRequest(bodyId);
-  m_dvidClient->appendRequest(request);
-  m_dvidClient->postNextRequest();
-
-  waitForReading();
-
-  const QVector<ZObject3dScan>& bodyArray = dvidBuffer->getBodyArray();
-
-  ZObject3dScan obj;
-
-  if (!bodyArray.empty()) {
-    obj = bodyArray[0];
-  }
-
-  return obj;
-#endif
 }
 
 ZSwcTree* ZDvidReader::readSwc(int bodyId)

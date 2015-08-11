@@ -36,11 +36,14 @@ bool ZFlyEmSupervisor::checkIn(uint64_t bodyId)
   writer.writeUrl(getCheckinUrl(bodyId), "PUT");
 
   return writer.getStatusCode() == 200;
-  /*
-  static ZRandomGenerator generator;
+}
 
-  return generator.rndint(2) > 0;
-  */
+bool ZFlyEmSupervisor::checkInAdmin(uint64_t bodyId)
+{
+  ZDvidWriter writer;
+  writer.writeUrl(getCheckinUrl(getUuid(), bodyId, getOwner(bodyId)), "PUT");
+
+  return writer.getStatusCode() == 200;
 }
 
 bool ZFlyEmSupervisor::checkOut(uint64_t bodyId)
@@ -154,4 +157,9 @@ std::string ZFlyEmSupervisor::getOwner(uint64_t bodyId) const
   }
 
   return owner;
+}
+
+bool ZFlyEmSupervisor::isLocked(uint64_t bodyId) const
+{
+  return !getOwner(bodyId).empty();
 }

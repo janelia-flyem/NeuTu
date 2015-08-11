@@ -5,6 +5,7 @@
 #include "zarray.h"
 #include "zarrayfactory.h"
 #include "dvid/zdvidwriter.h"
+#include "zwidgetmessage.h"
 
 ZFlyEmBodyMergeDoc::ZFlyEmBodyMergeDoc(QObject *parent) :
   ZStackDoc(parent), m_originalLabel(NULL)
@@ -123,6 +124,8 @@ void ZFlyEmBodyMergeDoc::mergeSelected()
     ZFlyEmBodyMergerDocCommand::MergeBody *command =
         new ZFlyEmBodyMergerDocCommand::MergeBody(this);
     pushUndoCommand(command);
+
+    emit messageGenerated(ZWidgetMessage("Body merged."));
   }
 
   //return true;

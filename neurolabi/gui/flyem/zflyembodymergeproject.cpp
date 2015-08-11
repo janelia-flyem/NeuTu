@@ -39,6 +39,7 @@
 #include "flyem/zflyembookmark.h"
 #include "zsleeper.h"
 #include "flyem/zflyembody3ddoc.h"
+#include "zstackview.h"
 
 ZFlyEmBodyMergeProject::ZFlyEmBodyMergeProject(QObject *parent) :
   QObject(parent), m_dataFrame(NULL), m_coarseBodyWindow(NULL),
@@ -365,6 +366,7 @@ void ZFlyEmBodyMergeProject::mergeBody()
       objLabelList.append(obj->getLabel());
     }
     m_dataFrame->getCompleteDocument()->mergeSelected();
+
     emit bodyMerged(objLabelList);
   }
 }
@@ -578,7 +580,7 @@ void ZFlyEmBodyMergeProject::makeCoarseBodyWindow(ZStackDoc *doc)
 
   getProgressSignal()->advanceProgress(0.4);
 
-  update3DBodyView(false);
+  update3DBodyView(false, true);
 
   emit coarseBodyWindowCreatedInThread();
 
@@ -733,7 +735,8 @@ void ZFlyEmBodyMergeProject::update3DBodyViewDeep()
   }
 }
 
-void ZFlyEmBodyMergeProject::update3DBodyViewPlane(const ZDvidInfo &dvidInfo)
+void ZFlyEmBodyMergeProject::update3DBodyViewPlane(
+    const ZDvidInfo &dvidInfo, const ZStackViewParam &viewParam)
 {
   if (m_coarseBodyWindow != NULL) {
     ZRect2d rect;
@@ -751,6 +754,32 @@ void ZFlyEmBodyMergeProject::update3DBodyViewPlane(const ZDvidInfo &dvidInfo)
       box.setLastCorner(dvidInfo.getEndCoordinates().toPoint());
       double lineWidth = box.depth() / 2000.0;
       Z3DGraph *graph = Z3DGraphFactory::MakeGrid(rect, 100, lineWidth);
+
+      if (viewParam.getViewPort().isValid()) {
+        Z3DGraphNode node1;
+        Z3DGraphNode node2;
+
+        node1.setColor(QColor(255, 0, 0));
+        node2.setColor(QColor(255, 0, 0));
+
+        double x = viewParam.getViewPort().center().x();
+        double y = viewParam.getViewPort().center().y();
+
+        node1.set(x, rect.getFirstY(), rect.getZ(), lineWidth * 0.6);
+        node2.set(x, rect.getLastY(), rect.getZ(), lineWidth * 0.6);
+
+        graph->addNode(node1);
+        graph->addNode(node2);
+        graph->addEdge(node1, node2);
+
+        node1.set(rect.getFirstX(), y, rect.getZ(), lineWidth);
+        node2.set(rect.getLastX(), y, rect.getZ(), lineWidth);
+
+        graph->addNode(node1);
+        graph->addNode(node2);
+        graph->addEdge(node1, node2);
+      }
+
       graph->setSource(ZStackObjectSourceFactory::MakeFlyEmPlaneObjectSource());
       m_coarseBodyWindow->getDocument()->addObject(graph, true);
     }
@@ -771,7 +800,8 @@ void ZFlyEmBodyMergeProject::update3DBodyViewBox(const ZDvidInfo &dvidInfo)
   }
 }
 
-void ZFlyEmBodyMergeProject::update3DBodyView(bool showingWindow)
+void ZFlyEmBodyMergeProject::update3DBodyView(
+    bool showingWindow, bool resettingCamera)
 {
   if (m_bodyWindow != NULL) {
     std::set<uint64_t> bodySet = getSelection(NeuTube::BODY_LABEL_ORIGINAL);
@@ -829,7 +859,11 @@ void ZFlyEmBodyMergeProject::update3DBodyView(bool showingWindow)
 //    ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
 
     update3DBodyViewBox(m_dvidInfo);
-    update3DBodyViewPlane(m_dvidInfo);
+    if (m_doc->getParentMvc() != NULL) {
+      update3DBodyViewPlane(
+            m_dvidInfo,
+            m_doc->getParentMvc()->getView()->getViewParameter());
+    }
 
     for (std::set<uint64_t>::const_iterator iter = selectedMapped.begin();
          iter != selectedMapped.end(); ++iter) {
@@ -877,11 +911,14 @@ void ZFlyEmBodyMergeProject::update3DBodyView(bool showingWindow)
       m_coarseBodyWindow->show();
       m_coarseBodyWindow->raise();
     }
-    m_coarseBodyWindow->resetCameraCenter();
+    if (resettingCamera) {
+      m_coarseBodyWindow->resetCameraCenter();
+    }
   }
 }
 
-void ZFlyEmBodyMergeProject::update3DBodyViewPlane()
+void ZFlyEmBodyMergeProject::update3DBodyViewPlane(
+    const ZStackViewParam &viewParam)
 {
   if (m_coarseBodyWindow != NULL) {
     ZFlyEmDvidReader reader;
@@ -892,7 +929,7 @@ void ZFlyEmBodyMergeProject::update3DBodyViewPlane()
     box.setFirstCorner(m_dvidInfo.getStartCoordinates().toPoint());
     box.setLastCorner(m_dvidInfo.getEndCoordinates().toPoint());
 
-    update3DBodyViewPlane(m_dvidInfo);
+    update3DBodyViewPlane(m_dvidInfo, viewParam);
   }
 }
 
@@ -950,17 +987,6 @@ void ZFlyEmBodyMergeProject::update3DBodyView(
                         m_dvidInfo.getBlockSize().getZ());
           tree->translate(m_dvidInfo.getStartCoordinates());
           tree->setSource(ZStackObjectSourceFactory::MakeFlyEmBodySource(label));
-
-          //Add bound box
-          /*
-          ZObject3dScan slice =
-              body.getSlice(dvidInfo.getBlockIndexZ(getCurrentZ()));
-          ZIntCuboid box = slice.getBoundBox();
-          ZSwcTree *boxTree = ZSwcGenerator::createBoxSwc(box, 0.1);
-          tree->merge(boxTree, true);
-          */
-
-          //        ptoc();
 
           m_coarseBodyWindow->getDocument()->addObject(tree, true);
         }

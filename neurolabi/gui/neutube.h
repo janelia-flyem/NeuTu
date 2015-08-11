@@ -18,6 +18,7 @@ std::string getInfoFile();
 
 
 std::string GetUserName();
+bool IsAdminUser();
 }
 
 

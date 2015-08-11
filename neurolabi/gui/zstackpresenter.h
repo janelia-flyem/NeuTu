@@ -298,6 +298,7 @@ public slots:
   void notifyBodySplitTriggered();
   void notifyBodyAnnotationTriggered();
   void notifyBodyCheckinTriggered();
+  void notifyBodyForceCheckinTriggered();
   void notifyBodyCheckoutTriggered();
   void slotTest();
 
@@ -326,6 +327,7 @@ signals:
   void bodySplitTriggered();
   void bodyAnnotationTriggered();
   void bodyCheckinTriggered();
+  void bodyForceCheckinTriggered();
   void bodyCheckoutTriggered();
   void labelSliceSelectionChanged();
   void objectVisibleTurnedOn();

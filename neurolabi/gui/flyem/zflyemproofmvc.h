@@ -88,8 +88,10 @@ public slots:
   void notifySplitTriggered();
   void annotateBody();
   void checkInSelectedBody();
+  void checkInSelectedBodyAdmin();
   void checkOutBody();
   bool checkInBody(uint64_t bodyId);
+  bool checkInBodyWithMessage(uint64_t bodyId);
   void exitSplit();
   void switchSplitBody(uint64_t bodyId);
   void showBodyQuickView();
