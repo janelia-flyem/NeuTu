@@ -186,7 +186,7 @@ void ZFlyEmBodySplitProject::showDataFrame3d()
 
       ZWindowFactory factory;
       //factory.setParentWidget(parent);
-      window = factory.make3DWindow(getSharedDocument(), Z3DWindow::NORMAL_INIT);
+      window = factory.make3DWindow(getSharedDocument(), Z3DWindow::INIT_NORMAL);
       window->setWindowTitle(getDocument()->getTitle());
 
       //getDocument()->registerUser(window);

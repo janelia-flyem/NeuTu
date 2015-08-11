@@ -97,7 +97,6 @@ public:
   virtual ~ZStackDoc();
 
   //Designed for multi-thread reading
-
   enum TubeImportOption {
     ALL_TUBE,
     GOOD_TUBE,
@@ -1327,8 +1326,13 @@ void ZStackDoc::notifyDeselected(const QList<T*> &deselected)
 
 template <class InputIterator>
 void ZStackDoc::setSwcTreeNodeSelected(
-    InputIterator /*first*/, InputIterator /*last*/, bool /*select*/)
+    InputIterator first, InputIterator last, bool select)
 {
+  for (InputIterator it = first; it != last; ++it) {
+    Swc_Tree_Node *tn = *it;
+    setSwcTreeNodeSelected(tn, select);
+  }
+
 #if 0
   QList<Swc_Tree_Node*> selected;
   QList<Swc_Tree_Node*> deselected;

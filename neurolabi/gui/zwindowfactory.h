@@ -22,12 +22,12 @@ public:
   ZWindowFactory();
 
   Z3DWindow* make3DWindow(ZStackDoc *doc,
-                          Z3DWindow::EInitMode mode = Z3DWindow::NORMAL_INIT);
+                          Z3DWindow::EInitMode mode = Z3DWindow::INIT_NORMAL);
   Z3DWindow* open3DWindow(ZStackDoc *doc,
-                          Z3DWindow::EInitMode mode = Z3DWindow::NORMAL_INIT);
+                          Z3DWindow::EInitMode mode = Z3DWindow::INIT_NORMAL);
 
   Z3DWindow* make3DWindow(ZSharedPointer<ZStackDoc> doc,
-                          Z3DWindow::EInitMode mode = Z3DWindow::NORMAL_INIT);
+                          Z3DWindow::EInitMode mode = Z3DWindow::INIT_NORMAL);
 
 
   Z3DWindow* make3DWindow(ZScalableStack *stack);

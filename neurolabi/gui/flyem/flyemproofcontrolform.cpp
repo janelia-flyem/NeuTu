@@ -81,6 +81,9 @@ FlyEmProofControlForm::FlyEmProofControlForm(QWidget *parent) :
   ui->bookmarkView->setModel(&m_bookmarkList);
   ui->userBookmarkView->setModel(&m_userBookmarkList);
 
+  ui->bookmarkView->resizeColumnsToContents();
+  ui->userBookmarkView->resizeColumnsToContents();
+
   createMenu();
 }
 
