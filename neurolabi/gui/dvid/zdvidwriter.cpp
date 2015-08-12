@@ -548,41 +548,10 @@ uint64_t ZDvidWriter::writeSplit(
 
   uint64_t newBodyId = 0;
   if (runCommand(command)) {
-//    ZJsonObject obj;
-//    obj.decodeString(getStandardOutput().toStdString().c_str());
     if (m_jsonOutput.hasKey("label")) {
       newBodyId = ZJsonParser::integerValue(m_jsonOutput["label"]);
     }
   }
-
-  //QProcess::execute(command);
-#if 0
-  QString url = ZDvidUrl(m_dvidTarget).getSplitUrl(dataName, oldLabel).c_str();
-
-  QProcess process;
-//  process.setWorkingDirectory("/Users/zhaot/anaconda/bin");
-  process.start("curl", QStringList() << "-X" << "POST" << url << "--data-binary"
-                << "@" + tmpPath);
-
-  if (process.waitForStarted(-1)) {
-    qDebug() << "Process started.";
-  }
-
-  uint64_t newBodyId = 0;
-
-  QString output;
-  if (process.waitForFinished(-1)) {
-    output = process.readAllStandardOutput();
-//    qDebug() << process.readAllStandardOutput();
-    qDebug() << "Split output: " << output;
-
-    ZJsonObject obj;
-    obj.decodeString(output.toStdString().c_str());
-    if (obj.hasKey("label")) {
-      newBodyId = ZJsonParser::integerValue(obj["label"]);
-    }
-  }
-#endif
 
   return newBodyId;
 }

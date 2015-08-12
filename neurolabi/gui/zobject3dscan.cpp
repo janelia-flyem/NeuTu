@@ -87,10 +87,10 @@ ZObject3dScan::ZObject3dScan() : m_isCanonized(true), m_label(0),
   m_type = ZStackObject::TYPE_OBJECT3D_SCAN;
 }
 
-ZObject3dScan::ZObject3dScan(const ZObject3dScan &obj) : ZStackObject(obj)
+ZObject3dScan::ZObject3dScan(const ZObject3dScan &obj) : ZStackObject(obj),
+  m_zProjection(NULL)
 {
   *this = obj;
-  this->m_zProjection = NULL;
 }
 
 ZObject3dScan::~ZObject3dScan()
@@ -101,6 +101,8 @@ ZObject3dScan::~ZObject3dScan()
 
 ZObject3dScan& ZObject3dScan::operator=(const ZObject3dScan& obj)
 {
+  deprecate(COMPONENT_ALL);
+
   dynamic_cast<ZStackObject&>(*this) = dynamic_cast<const ZStackObject&>(obj);
 
   m_stripeArray = obj.m_stripeArray;
@@ -2078,16 +2080,22 @@ ZVoxel ZObject3dScan::getMarker() const
   ZVoxel voxel;
   size_t stripeNumber = getStripeNumber();
   std::vector<ZObject3dScan> sliceArray(getMaxZ() + 1);
+  std::set<size_t> sliceIndexSet;
   for (size_t i = 0; i < stripeNumber; ++i) {
     const ZObject3dStripe &stripe = getStripe(i);
     int currentZ = stripe.getZ();
     sliceArray[currentZ].addStripe(stripe, false);
+    sliceIndexSet.insert(currentZ);
   }
 
-  size_t step = sliceArray.size() / 100 + 1;
+  std::vector<size_t> sliceIndexArray;
+  sliceIndexArray.insert(sliceIndexArray.end(), sliceIndexSet.begin(),
+                         sliceIndexSet.end());
 
-  for (size_t i = 0; i < sliceArray.size(); i += step) {
-    ZObject3dScan &slice = sliceArray[i];
+  size_t step = sliceIndexArray.size() / 100 + 1;
+
+  for (size_t i = 0; i < sliceIndexArray.size(); i += step) {
+    ZObject3dScan &slice = sliceArray[sliceIndexArray[i]];
 
     if (!slice.isEmpty()) {
       int currentZ = slice.getStripe(0).getZ();
