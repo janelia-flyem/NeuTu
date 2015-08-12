@@ -45,7 +45,8 @@
 ZFlyEmBodySplitProject::ZFlyEmBodySplitProject(QObject *parent) :
   QObject(parent), m_bodyId(0), m_dataFrame(NULL),
   m_resultWindow(NULL), m_quickResultWindow(NULL),
-  m_quickViewWindow(NULL), /*m_bookmarkArray(NULL),*/
+  m_quickViewWindow(NULL),
+  m_minObjSize(0), /*m_bookmarkArray(NULL),*/
   m_isBookmarkVisible(true), m_showingBodyMask(false)
 {
   m_progressSignal = new ZProgressSignal(this);
@@ -792,7 +793,8 @@ void ZFlyEmBodySplitProject::commitResult()
   ZFlyEmBodySplitProject::commitResultFunc(
         getDocument()->getConstSparseStack()->getObjectMask(),
         getDocument()->getLabelField(),
-        getDocument()->getConstSparseStack()->getDownsampleInterval());
+        getDocument()->getConstSparseStack()->getDownsampleInterval(),
+        m_minObjSize);
   getProgressSignal()->endProgress();
 
   deleteSavedSeed();
@@ -832,7 +834,8 @@ static void prepareBodyUpload(
 }
 
 void ZFlyEmBodySplitProject::commitResultFunc(
-    const ZObject3dScan *wholeBody, const ZStack *stack, const ZIntPoint &dsIntv)
+    const ZObject3dScan *wholeBody, const ZStack *stack, const ZIntPoint &dsIntv,
+    size_t minObjSize)
 {
   getProgressSignal()->startProgress("Uploading splitted bodies");
 
@@ -848,10 +851,13 @@ void ZFlyEmBodySplitProject::commitResultFunc(
   std::string backupDir =
       NeutubeConfig::getInstance().getPath(NeutubeConfig::AUTO_SAVE);
   body.save(backupDir + "/" + getSeedKey(getBodyId()) + ".sobj");
+  getProgressSignal()->advanceProgress(0.05);
 
-  size_t minObjSize = 20;
+//  size_t minObjSize = 20;
 
   std::vector<ZObject3dScan> objArray = body.getConnectedComponent();
+
+  getProgressSignal()->advanceProgress(0.1);
 
   ZObject3dScan smallBodyGroup;
 
@@ -867,6 +873,8 @@ void ZFlyEmBodySplitProject::commitResultFunc(
       }
     }
   }
+
+  getProgressSignal()->advanceProgress(0.1);
 
 #ifdef _DEBUG_2
     body.save(GET_TEST_DATA_DIR + "/test.sobj");
@@ -886,15 +894,15 @@ void ZFlyEmBodySplitProject::commitResultFunc(
 //    emit progressAdvanced(0.1);
     getProgressSignal()->advanceProgress(0.1);
 
-    double dp = 0.3;
+    double dp = 0.2;
 
     if (!objArray.empty()) {
-      dp = 0.3 / objArray.size();
+      dp = 0.2 / objArray.size();
     }
 
 //    std::vector<ZObject3dScan> mainObjectArray;
 //    std::vector<ZObject3dScan> minorObjectArray;
-    size_t minIsolationSize = 10;
+    size_t minIsolationSize = 50;
 
     for (std::vector<ZObject3dScan*>::iterator iter = objArray.begin();
          iter != objArray.end(); ++iter) {
@@ -940,10 +948,10 @@ void ZFlyEmBodySplitProject::commitResultFunc(
     body.save(GET_TEST_DATA_DIR + "/test2.sobj");
 #endif
 
-    double dp = 0.3;
+    double dp = 0.2;
 
     if (!objArray.empty()) {
-      dp = 0.3 / objArray.size();
+      dp = 0.2 / objArray.size();
     }
 
     for (std::vector<ZObject3dScan>::const_iterator iter = objArray.begin();
@@ -968,10 +976,10 @@ void ZFlyEmBodySplitProject::commitResultFunc(
 
   int bodyIndex = 0;
 
-  double dp = 0.3;
+  double dp = 0.2;
 
   if (!filePathList.empty()) {
-    dp = 0.3 / filePathList.size();
+    dp = 0.2 / filePathList.size();
   }
 
   QList<uint64_t> newBodyIdList;

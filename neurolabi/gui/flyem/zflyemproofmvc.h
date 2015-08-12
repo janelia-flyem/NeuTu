@@ -9,6 +9,7 @@
 #include "qthreadfuturemap.h"
 #include "flyem/zflyembookmark.h"
 
+
 class QWidget;
 class ZFlyEmProofDoc;
 class ZDvidTileEnsemble;
@@ -18,6 +19,7 @@ class ZFlyEmProofPresenter;
 class ZFlyEmSupervisor;
 class ZPaintLabelWidget;
 class FlyEmBodyInfoDialog;
+class ZFlyEmSplitCommitDialog;
 
 /*!
  * \brief The MVC class for flyem proofreading
@@ -181,6 +183,7 @@ private:
   ZDvidDialog *m_dvidDlg;
   FlyEmBodyInfoDialog *m_bodyInfoDlg;
   ZFlyEmSupervisor *m_supervisor;
+  ZFlyEmSplitCommitDialog *m_splitCommitDlg;
 };
 
 template <typename T>

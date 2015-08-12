@@ -927,10 +927,17 @@ void ZObject3dScan::upSample(int xIntv, int yIntv, int zIntv)
 
 bool ZObject3dScan::isAdjacentTo(ZObject3dScan &obj)
 {
-  ZObject3dScan tmpObj = obj;
-  tmpObj.dilate();
+  if (getVoxelNumber() < obj.getVoxelNumber()) {
+    ZObject3dScan tmpObj = *this;
+    tmpObj.dilate();
+    return obj.hasOverlap(tmpObj);
+  } else {
+    ZObject3dScan tmpObj = obj;
+    tmpObj.dilate();
+    return hasOverlap(tmpObj);
+  }
 
-  return hasOverlap(tmpObj);
+  return false;
 }
 
 bool ZObject3dScan::hasOverlap(ZObject3dScan &obj)

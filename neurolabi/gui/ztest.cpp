@@ -17555,7 +17555,7 @@ void ZTest::test(MainWindow *host)
   */
 #endif
 
-#if 1
+#if 0
   ZDvidTarget target("emdata1.int.janelia.org", "d1ea", 8500);
   target.setLabelBlockName("labels3");
   target.setBodyLabelName("bodies3");
@@ -17588,4 +17588,21 @@ void ZTest::test(MainWindow *host)
     std::cout << bodyArray[i] << ": " << posArray[i].toString() << std::endl;
   }
 #endif
+
+#if 1
+  ZDvidTarget target("emdata1.int.janelia.org", "86e1", 8500);
+  ZDvidReader reader;
+  reader.open(target);
+
+  ZObject3dScan obj1 = reader.readBody(15165220);
+  ZObject3dScan obj2 = reader.readBody(200010814);
+
+  if (obj1.isAdjacentTo(obj2)) {
+    std::cout << "The two objects are adjacent." << std::endl;
+  } else {
+    std::cout << "The two objects are NOT adjacent." << std::endl;
+  }
+
+#endif
+
 }
