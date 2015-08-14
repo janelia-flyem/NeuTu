@@ -1,7 +1,7 @@
 #include <iostream>
 
 #include <QtGui>
-#include<QMessageBox>
+#include <QMessageBox>
 
 #include "zjsonobject.h"
 #include "zjsonparser.h"
@@ -29,16 +29,22 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::FlyEmBodyInfoDialog)
 {
-  ui->setupUi(this);
-  connect(ui->openButton, SIGNAL(clicked()), this, SLOT(onOpenButton()));
-  connect(ui->closeButton, SIGNAL(clicked()), this, SLOT(onCloseButton()));
+    ui->setupUi(this);
+    connect(ui->openButton, SIGNAL(clicked()), this, SLOT(onOpenButton()));
+    connect(ui->closeButton, SIGNAL(clicked()), this, SLOT(onCloseButton()));
 
-  m_model = createModel(ui->tableView);
-  ui->tableView->setModel(m_model);
-  ui->tableView->resizeColumnsToContents();
-  
-  connect(ui->tableView, SIGNAL(doubleClicked(QModelIndex)),
-          this, SLOT(activateBody(QModelIndex)));
+    m_model = createModel(ui->tableView);
+    ui->tableView->setModel(m_model);
+    ui->tableView->resizeColumnsToContents();
+
+    // UI connects
+    connect(ui->tableView, SIGNAL(doubleClicked(QModelIndex)),
+        this, SLOT(activateBody(QModelIndex)));
+    connect(this, SIGNAL(jsonLoadError(QString)), this, SLOT(onJsonLoadError(QString)));
+
+    // data update connects
+    connect(this, SIGNAL(dataChanged(ZJsonValue)), this, SLOT(updateModel(ZJsonValue)));
+
 }
 
 void FlyEmBodyInfoDialog::activateBody(QModelIndex modelIndex)
@@ -72,22 +78,18 @@ void FlyEmBodyInfoDialog::importBookmarksFile(const QString &filename) {
     ZJsonObject jsonObject;
 
     if (!jsonObject.load(filename.toStdString())) {
-        QMessageBox errorBox;
-        errorBox.setText("Problem parsing json file");
-        errorBox.setInformativeText("Are you sure this is a Fly EM JSON file?");
-        errorBox.setStandardButtons(QMessageBox::Ok);
-        errorBox.setIcon(QMessageBox::Warning);
-        errorBox.exec();
+        emit jsonLoadError("Are you sure this is a Fly EM JSON file?");
         return;
     }
 
     if (!isValidBookmarkFile(jsonObject)) {
+        emit jsonLoadError("JSON file invalid!  Are you sure this is a Fly EM JSON bookmarks file?");
         return;
     }
 
     // update model from the object, or the data piece of it
     ZJsonValue dataObject = jsonObject.value("data");
-    updateModel(dataObject);
+    emit dataChanged(dataObject);
 
 }
 
@@ -99,44 +101,26 @@ bool FlyEmBodyInfoDialog::isValidBookmarkFile(ZJsonObject jsonObject) {
     // likewise, I'm copy/pasting the error dialog code rather than
     //  neatly factoring it out
 
-    QMessageBox errorBox;
     if (!jsonObject.hasKey("data") || !jsonObject.hasKey("metadata")) {
-        errorBox.setText("Problem with json file");
-        errorBox.setInformativeText("This file is missing 'data' or 'metadata'. Are you sure this is a Fly EM JSON file?");
-        errorBox.setStandardButtons(QMessageBox::Ok);
-        errorBox.setIcon(QMessageBox::Warning);
-        errorBox.exec();
+        emit jsonLoadError("This file is missing 'data' or 'metadata'. Are you sure this is a Fly EM JSON file?");
         return false;
     }
 
-
     ZJsonObject metadata = (ZJsonObject) jsonObject.value("metadata");
     if (!metadata.hasKey("description")) {
-        errorBox.setText("Problem with json file");
-        errorBox.setInformativeText("This file is missing 'metadata/description'. Are you sure this is a Fly EM JSON file?");
-        errorBox.setStandardButtons(QMessageBox::Ok);
-        errorBox.setIcon(QMessageBox::Warning);
-        errorBox.exec();
+        emit jsonLoadError("This file is missing 'metadata/description'. Are you sure this is a Fly EM JSON file?");
         return false;
     }
 
     ZString description = ZJsonParser::stringValue(metadata["description"]);
     if (description != "bookmarks") {
-        errorBox.setText("Problem with json file");
-        errorBox.setInformativeText("This json file does not have description 'bookmarks'!");
-        errorBox.setStandardButtons(QMessageBox::Ok);
-        errorBox.setIcon(QMessageBox::Warning);
-        errorBox.exec();
+        emit jsonLoadError("This json file does not have description 'bookmarks'!");
         return false;
     }
 
     ZJsonValue data = jsonObject.value("data");
     if (!data.isArray()) {
-        errorBox.setText("Problem with json file");
-        errorBox.setInformativeText("The data section in this json file is not an array!");
-        errorBox.setStandardButtons(QMessageBox::Ok);
-        errorBox.setIcon(QMessageBox::Warning);
-        errorBox.exec();
+        emit jsonLoadError("The data section in this json file is not an array!");
         return false;
     }
 
@@ -197,6 +181,15 @@ void FlyEmBodyInfoDialog::updateModel(ZJsonValue data) {
     // initial sort order is by #pre, descending
     ui->tableView->sortByColumn(1, Qt::DescendingOrder);
 
+}
+
+void FlyEmBodyInfoDialog::onJsonLoadError(QString message) {
+    QMessageBox errorBox;
+    errorBox.setText("Error loading body information");
+    errorBox.setInformativeText(message);
+    errorBox.setStandardButtons(QMessageBox::Ok);
+    errorBox.setIcon(QMessageBox::Warning);
+    errorBox.exec();
 }
 
 FlyEmBodyInfoDialog::~FlyEmBodyInfoDialog()

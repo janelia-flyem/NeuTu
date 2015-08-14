@@ -23,18 +23,21 @@ public:
 
 signals:
   void bodyActivated(uint64_t bodyId);
+  void dataChanged(ZJsonValue object);
+  void jsonLoadError(QString message);
 
 private slots:
     void onOpenButton();
     void onCloseButton();
     void activateBody(QModelIndex modelIndex);
+    void updateModel(ZJsonValue object);
+    void onJsonLoadError(QString message);
 
 private:
     Ui::FlyEmBodyInfoDialog *ui;
     QStandardItemModel* m_model;
     QStandardItemModel* createModel(QObject*);
     void setHeaders(QStandardItemModel*);
-    void updateModel(ZJsonValue object);
     bool isValidBookmarkFile(ZJsonObject object);
 };
 
