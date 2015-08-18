@@ -430,7 +430,9 @@ void ZStackFrame::updateDocument()
     if (m_presenter != NULL) {
       m_presenter->optimizeStackBc();
     }
+  }
 
+  if (m_doc->hasStack()) {
     if (m_view != NULL) {
       m_view->reset();
     }
@@ -1538,11 +1540,11 @@ void ZStackFrame::importMask(const QString &filePath)
       } else {
         delete obj;
         report("Loading mask failed", "Cannot convert the image into mask",
-               ZMessageReporter::Error);
+               NeuTube::MSG_ERROR);
       }
     } else {
       report("Loading mask failed", "Must be single 8-bit image",
-             ZMessageReporter::Error);
+             NeuTube::MSG_ERROR);
     }
     delete stack;
   }

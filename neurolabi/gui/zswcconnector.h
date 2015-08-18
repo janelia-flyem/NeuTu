@@ -4,11 +4,11 @@
 #include <utility>
 #include <vector>
 #include "swctreenode.h"
-#include "zswctree.h"
-#include "zswcpath.h"
 #include "zresolution.h"
 
 class ZGraph;
+class ZSwcTree;
+class ZSwcPath;
 
 class ZSwcConnector
 {

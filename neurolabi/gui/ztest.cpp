@@ -107,6 +107,7 @@ using namespace std;
 #include "tz_geometry.h"
 #include "z3dgraph.h"
 #include "zpunctum.h"
+#include "zswctreenodeselector.h"
 #include "zswcsizetrunkanalyzer.h"
 #include "zswcweighttrunkanalyzer.h"
 #include "zstackbinarizer.h"
@@ -7942,11 +7943,11 @@ void ZTest::test(MainWindow *host)
 
 #if 0
   NeuTube::getMessageReporter()->report(
-        "test", "error 1", ZMessageReporter::ERROR);
+        "test", "error 1", NeuTube::MSG_ERROR);
   NeuTube::getMessageReporter()->report(
-        "test", "warning 1", ZMessageReporter::WARNING);
+        "test", "warning 1", NeuTube::MSG_WARNING);
   NeuTube::getMessageReporter()->report(
-        "test", "output 1", ZMessageReporter::INFORMATION);
+        "test", "output 1", NeuTube::MSG_INFORMATION);
 #endif
 
 #if 0
@@ -17589,7 +17590,7 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
-#if 1
+#if 0
   ZDvidTarget target("emdata1.int.janelia.org", "86e1", 8500);
   ZDvidReader reader;
   reader.open(target);
@@ -17602,6 +17603,48 @@ void ZTest::test(MainWindow *host)
   } else {
     std::cout << "The two objects are NOT adjacent." << std::endl;
   }
+
+#endif
+
+#if 0
+  Swc_Tree_Node *tn = SwcTreeNode::makePointer(1, 0, 0, 0, 0, 1, -1);
+
+  ZSwcTreeNodeSelector selector;
+  selector.setSelection(tn, true);
+  selector.setSelection(tn, false);
+  selector.setSelection(tn, true);
+
+  selector.print();
+
+  selector.reset();
+
+  selector.print();
+
+  Swc_Tree_Node *tn2 = SwcTreeNode::makePointer(2, 0, 0, 0, 0, 1, 1);
+  Swc_Tree_Node *tn3 = SwcTreeNode::makePointer(3, 0, 0, 0, 0, 1, 2);
+
+  std::set<Swc_Tree_Node*> selected;
+  selected.insert(tn);
+  selected.insert(tn2);
+
+  std::set<Swc_Tree_Node*> prevSelected;
+  prevSelected.insert(tn3);
+  prevSelected.insert(tn2);
+
+  selector.reset(selected, prevSelected);
+  selector.print();
+#endif
+
+#if 1
+  ZSharedPointer<ZStackObject> obj = ZSharedPointer<ZStackObject>(new ZSwcTree);
+  std::cout << obj.use_count() << std::endl;
+
+//  ZSharedPointer<ZSwcTree> obj2 =
+//      ZSharedPointer<ZSwcTree>(dynamic_cast<ZSwcTree*>(obj.get()));
+//  std::cout << obj.use_count() << std::endl;
+
+  ZSharedPointer<ZSwcTree> obj2 = Shared_Dynamic_Cast<ZSwcTree>(obj);
+  std::cout << obj.use_count() << std::endl;
 
 #endif
 

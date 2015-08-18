@@ -555,7 +555,9 @@ HEADERS += mainwindow.h \
     z3ddef.h \
     flyem/zflyembookmarkptrarray.h \
     biocytin/zbiocytinprojectiondoc.h \
-    dialogs/zflyemsplitcommitdialog.h
+    dialogs/zflyemsplitcommitdialog.h \
+    zswctreenodeselector.h \
+    zstackdocfactory.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -975,7 +977,9 @@ SOURCES += main.cpp \
     z3ddef.cpp \
     flyem/zflyembookmarkptrarray.cpp \
     biocytin/zbiocytinprojectiondoc.cpp \
-    dialogs/zflyemsplitcommitdialog.cpp
+    dialogs/zflyemsplitcommitdialog.cpp \
+    zswctreenodeselector.cpp \
+    zstackdocfactory.cpp
 
 OTHER_FILES += \
     extlib.pri \

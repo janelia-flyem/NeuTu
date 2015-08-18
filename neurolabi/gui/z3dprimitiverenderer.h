@@ -30,6 +30,9 @@ public:
   void setRespectRendererBaseCoordScales(bool v) {m_respectRendererBaseCoordScale = v;}
   
   inline void setZScale(float s) { m_rendererBase->setZScale(s); }
+
+  Z3DRendererBase* getRendererBase() { return m_rendererBase; }
+
   inline glm::vec3 getCoordScales() const
   {
     if (m_respectRendererBaseCoordScale)
@@ -59,6 +62,8 @@ protected:
   virtual inline bool getNeedLighting() {return m_needLighting;}
   virtual inline bool getUseDisplayList() {return m_useDisplayList;}
   virtual inline void setRendererBase(Z3DRendererBase* base) { m_rendererBase = base;}
+
+//  inline Z3DRendererBase* getRendererBase() const { return m_rendererBase; }
 
   virtual void initialize();
   virtual void deinitialize();

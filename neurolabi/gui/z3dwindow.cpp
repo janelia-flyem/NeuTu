@@ -73,6 +73,7 @@
 #include "zinteractivecontext.h"
 #include "zwindowfactory.h"
 #include "zstackviewparam.h"
+#include "z3drendererbase.h"
 
 class Sleeper : public QThread
 {
@@ -3497,3 +3498,47 @@ Z3DWindow* Z3DWindow::Open(
   return window;
 }
 
+Z3DRendererBase* Z3DWindow::getRendererBase(ERendererLayer layer)
+{
+  switch (layer) {
+  case LAYER_SWC:
+    return getSwcFilter()->getRendererBase();
+  case LAYER_GRAPH:
+    return getGraphFilter()->getRendererBase();
+  case LAYER_PUNCTA:
+    return getPunctaFilter()->getRendererBase();
+  case LAYER_VOLUME:
+    return getVolumeRaycasterRenderer()->getRendererBase();
+  }
+
+  return NULL;
+}
+
+void Z3DWindow::setZScale(ERendererLayer layer, double scale)
+{
+  getRendererBase(layer)->setZScale(scale);
+}
+
+void Z3DWindow::setScale(ERendererLayer layer, double sx, double sy, double sz)
+{
+  Z3DRendererBase *base = getRendererBase(layer);
+  base->setXScale(sx);
+  base->setYScale(sy);
+  base->setZScale(sz);
+}
+
+void Z3DWindow::setZScale(double scale)
+{
+  setZScale(LAYER_GRAPH, scale);
+  setZScale(LAYER_SWC, scale);
+  setZScale(LAYER_PUNCTA, scale);
+  setZScale(LAYER_VOLUME, scale);
+}
+
+void Z3DWindow::setScale(double sx, double sy, double sz)
+{
+  setScale(LAYER_GRAPH, sx, sy, sz);
+  setScale(LAYER_SWC, sx, sy, sz);
+  setScale(LAYER_PUNCTA, sx, sy, sz);
+  setScale(LAYER_VOLUME, sx, sy, sz);
+}

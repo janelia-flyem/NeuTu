@@ -9,23 +9,24 @@ ZLogMessageReporter::ZLogMessageReporter()
 }
 
 void ZLogMessageReporter::report(
-    const std::string &title, const std::string &message, EMessageType msgType)
+    const std::string &title, const std::string &message,
+    NeuTube::EMessageType msgType)
 {
-  if (msgType == Debug) {
+  if (msgType == NeuTube::MSG_DEBUG) {
     ZMessageReporter::report(std::cout, title, message, msgType);
   } else {
     switch (msgType) {
-    case Information:
+    case NeuTube::MSG_INFORMATION:
       if (m_infoStream.is_open()) {
         ZMessageReporter::report(m_infoStream, title, message, msgType);
       }
       break;
-    case Warning:
+    case NeuTube::MSG_WARNING:
       if (m_warnStream.is_open()) {
         ZMessageReporter::report(m_warnStream, title, message, msgType);
       }
       break;
-    case Error:
+    case NeuTube::MSG_ERROR:
       if (m_errorStream.is_open()) {
         ZMessageReporter::report(m_errorStream, title, message, msgType);
       }

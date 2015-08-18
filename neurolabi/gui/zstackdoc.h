@@ -50,6 +50,7 @@
 #include "zrect2d.h"
 #include "zobjectcolorscheme.h"
 #include "qthreadfuturemap.h"
+#include "zsharedpointer.h"
 
 class ZStackFrame;
 class ZLocalNeuroseg;
@@ -1209,6 +1210,8 @@ protected:
   ZObjectColorScheme m_objColorSheme;
 };
 
+typedef ZSharedPointer<ZStackDoc> ZStackDocPtr;
+
 //   template  //
 template <class InputIterator>
 void ZStackDoc::setPunctumSelected(InputIterator first, InputIterator last, bool select)
@@ -1332,29 +1335,6 @@ void ZStackDoc::setSwcTreeNodeSelected(
     Swc_Tree_Node *tn = *it;
     setSwcTreeNodeSelected(tn, select);
   }
-
-#if 0
-  QList<Swc_Tree_Node*> selected;
-  QList<Swc_Tree_Node*> deselected;
-
-  for (InputIterator it = first; it != last; ++it) {
-    Swc_Tree_Node *tn = *it;
-    if (select) {
-      if ((m_selectedSwcTreeNodes.insert(tn)).second) {
-        selected.push_back(tn);
-        // deselect its tree
-        setSwcSelected(nodeToSwcTree(tn), false);
-      }
-    } else {
-      if (m_selectedSwcTreeNodes.erase(tn) > 0) {
-        deselected.push_back(tn);
-      }
-    }
-  }
-  if (!selected.empty() || !deselected.empty()) {
-    emit swcTreeNodeSelectionChanged(selected, deselected);
-  }
-#endif
 }
 
 template <typename T>

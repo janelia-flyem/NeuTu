@@ -97,6 +97,8 @@ void ZSwcTree::setStructrualMode(EStructrualMode mode)
 void swap(ZSwcTree &first, ZSwcTree &second)
 {
   std::swap(first.m_tree, second.m_tree);
+  first.deprecate(ZSwcTree::ALL_COMPONENT);
+  second.deprecate(ZSwcTree::ALL_COMPONENT);
 }
 
 void ZSwcTree::setData(Swc_Tree *tree, ESetDataOption option)
@@ -3571,6 +3573,16 @@ void ZSwcTree::selectNode(Swc_Tree_Node *tn, bool appending)
   if (tn != NULL) {
     m_selectedNode.insert(tn);
   }
+}
+
+void ZSwcTree::recordSelection()
+{
+  m_prevSelectedNode = m_selectedNode;
+}
+
+void ZSwcTree::processSelection()
+{
+  m_selector.reset(m_selectedNode, m_prevSelectedNode);
 }
 
 /////////////////////////////////////

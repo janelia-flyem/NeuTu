@@ -30,6 +30,10 @@ public:
     return m_target;
   }
 
+  inline NeuTube::EMessageType getType() const {
+    return m_type;
+  }
+
   inline void setTarget(ETarget target) {
     m_target = target;
   }
@@ -37,6 +41,12 @@ public:
   inline void setType(NeuTube::EMessageType type) {
     m_type = type;
   }
+
+  inline void setTitle(const QString &title) {
+    m_title = title;
+  }
+
+  inline const QString &getTitle() const { return m_title; }
 
   template <typename T1, typename T2>
   static void ConnectMessagePipe(T1 *source, T2 *target, bool dumping);
@@ -47,6 +57,7 @@ public:
   void setMessage(const QString &msg);
 
 private:
+  QString m_title;
   QStringList m_message;
   NeuTube::EMessageType m_type;
 //  bool m_appending;

@@ -19,6 +19,7 @@
 #include "zobject3darray.h"
 #include "tz_objdetect.h"
 #include "zjsonobject.h"
+#include "zswctree.h"
 
 ZNeuronTraceSeeder::ZNeuronTraceSeeder()
 {

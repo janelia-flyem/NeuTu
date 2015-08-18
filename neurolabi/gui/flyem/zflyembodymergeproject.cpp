@@ -765,19 +765,20 @@ void ZFlyEmBodyMergeProject::update3DBodyViewPlane(
         double x = viewParam.getViewPort().center().x();
         double y = viewParam.getViewPort().center().y();
 
-        node1.set(x, rect.getFirstY(), rect.getZ(), lineWidth * 0.6);
-        node2.set(x, rect.getLastY(), rect.getZ(), lineWidth * 0.6);
+        double width = lineWidth * 0.3;
+        node1.set(x, rect.getFirstY(), rect.getZ(), width);
+        node2.set(x, rect.getLastY(), rect.getZ(), width);
 
         graph->addNode(node1);
         graph->addNode(node2);
-        graph->addEdge(node1, node2);
+        graph->addEdge(node1, node2, GRAPH_LINE);
 
-        node1.set(rect.getFirstX(), y, rect.getZ(), lineWidth);
-        node2.set(rect.getLastX(), y, rect.getZ(), lineWidth);
+        node1.set(rect.getFirstX(), y, rect.getZ(), width);
+        node2.set(rect.getLastX(), y, rect.getZ(), width);
 
         graph->addNode(node1);
         graph->addNode(node2);
-        graph->addEdge(node1, node2);
+        graph->addEdge(node1, node2, GRAPH_LINE);
       }
 
       graph->setSource(ZStackObjectSourceFactory::MakeFlyEmPlaneObjectSource());

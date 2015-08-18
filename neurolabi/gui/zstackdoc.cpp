@@ -693,20 +693,11 @@ bool ZStackDoc::hasPuncta() const
   return !getObjectList(ZStackObject::TYPE_PUNCTUM).isEmpty();
 }
 
-/*
-ZResolution ZStackDoc::stackResolution() const
-{
-  if (hasStackData())
-    return m_stack->getResolution();
-  else
-    return ZResolution();
-}
-*/
 
 std::string ZStackDoc::stackSourcePath() const
 {
-  if (hasStackData()) {
-    return m_stack->sourcePath();
+  if (hasStack()) {
+    return getStack()->sourcePath();
   }
 
   return "";
@@ -4275,6 +4266,7 @@ bool ZStackDoc::loadFile(const QString &filePath)
     ZIntCuboid cuboid = sobj->getBoundBox();
     ZStack *stack = ZStackFactory::makeVirtualStack(
           cuboid.getWidth(), cuboid.getHeight(), cuboid.getDepth());
+    stack->setSource(filePath.toStdString());
     stack->setOffset(cuboid.getFirstCorner());
     loadStack(stack);
   }
@@ -6966,7 +6958,7 @@ void ZStackDoc::saveSwc(QWidget *parentWidget)
     if (swcList.size() > 1) {
       /*
       report("Save failed", "More than one SWC tree exist.",
-             ZMessageReporter::Error);
+             NeuTube::MSG_ERROR);
              */
       emit statusMessageUpdated("Save failed. More than one SWC tree exist.");
     } else {
@@ -8142,7 +8134,7 @@ void ZStackDoc::runSeededWatershed()
   if (labelSet.size() < 2) {
     ZWidgetMessage message(
           QString("The seed has no more than one label. No split is done"));
-    message.setType(NeuTube::MSG_WARING);
+    message.setType(NeuTube::MSG_WARNING);
 
     emit messageGenerated(message);
     return;

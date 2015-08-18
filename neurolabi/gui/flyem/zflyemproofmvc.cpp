@@ -152,7 +152,7 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
     emit messageGenerated(
           ZWidgetMessage("You cannot change the database in this window. "
                          "Please open a new proofread window to load a different database",
-                         NeuTube::MSG_WARING,
+                         NeuTube::MSG_WARNING,
                          ZWidgetMessage::TARGET_DIALOG));
     return;
   }
@@ -688,7 +688,7 @@ void ZFlyEmProofMvc::annotateBody()
           "one and only one body has to be selected.";
     }
     if (!msg.isEmpty()) {
-      emit messageGenerated(ZWidgetMessage(msg, NeuTube::MSG_WARING));
+      emit messageGenerated(ZWidgetMessage(msg, NeuTube::MSG_WARNING));
     }
   }
 
@@ -716,7 +716,7 @@ void ZFlyEmProofMvc::notifySplitTriggered()
       msg = "The split cannot be launched because "
           "one and only one body has to be selected.";
     }
-    emit messageGenerated(ZWidgetMessage(msg, NeuTube::MSG_WARING));
+    emit messageGenerated(ZWidgetMessage(msg, NeuTube::MSG_WARNING));
   }
 
   /*
@@ -1406,7 +1406,7 @@ void ZFlyEmProofMvc::recordBookmark(ZFlyEmBookmark *bookmark)
     writer.writeBookmark(*bookmark);
     if (writer.getStatusCode() != 200) {
       emit messageGenerated(ZWidgetMessage("Failed to record bookmark.",
-                                           NeuTube::MSG_WARING));
+                                           NeuTube::MSG_WARNING));
     }
   }
 }

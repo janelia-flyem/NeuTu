@@ -40,6 +40,13 @@ public:
   void reset();
 
   /*!
+   * \brief Reset selections
+   * \param selected Current selected set.
+   * \param prevSelected Previous selected set.
+   */
+  void reset(const std::set<T> &selected, const std::set<T> &prevSelected);
+
+  /*!
    * \brief Select an object
    *
    * Select an object and record the selection action:
@@ -75,13 +82,13 @@ public:
 
   bool isEmpty() const;
 
-  void print() const;
+  virtual void print() const;
 
   std::vector<T> getSelectedList() const;
   std::vector<T> getDeselectedList() const;
 
-  std::set<T> getSelectedSet() const;
-  std::set<T> getDeselectedSet() const;
+  const std::set<T>& getSelectedSet() const;
+  const std::set<T>& getDeselectedSet() const;
 
 protected:
   std::set<T> m_selectedSet;
