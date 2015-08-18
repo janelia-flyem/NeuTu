@@ -8,9 +8,15 @@
 #include "zstackpresenter.h"
 #include "zactionfactory.h"
 
-ZStackDocMenuFactory::ZStackDocMenuFactory() :
-  m_singleSwcNodeActionActivator(NULL)
+ZStackDocMenuFactory::ZStackDocMenuFactory()
 {
+  init();
+}
+
+void ZStackDocMenuFactory::init()
+{
+  m_singleSwcNodeActionActivator = NULL;
+  m_isAdmin = false;
 }
 
 QMenu* ZStackDocMenuFactory::makeSwcNodeContextMenu(
@@ -294,6 +300,10 @@ QMenu* ZStackDocMenuFactory::makeBodyContextMenu(
     menu->addAction(presenter->getAction(ZStackPresenter::ACTION_BODY_CHECKOUT));
     menu->addAction(presenter->getAction(ZStackPresenter::ACTION_BODY_CHECKIN));
 
+    if (isAdmin()) {
+      menu->addAction(presenter->getAction(
+                        ZStackPresenter::ACTION_BODY_FORCE_CHECKIN));
+    }
   }
 
   return menu;

@@ -51,7 +51,7 @@ fi
 if [ ! -d $downloadDir/neutube ]
 then
   $GIT_CMD clone /groups/flyem/home/zhaot/Work/neutube_ws/.git neutube
-  $GIT_CMD checkout pripublic
+  $GIT_CMD checkout flyem_release
 fi
 
 if [ ! -d $downloadDir/buildem ]

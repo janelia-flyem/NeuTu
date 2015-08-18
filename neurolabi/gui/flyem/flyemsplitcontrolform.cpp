@@ -16,6 +16,7 @@ FlyEmSplitControlForm::FlyEmSplitControlForm(QWidget *parent) :
   ui->setupUi(this);
 
   ui->bookmarkView->setModel(&m_bookmarkList);
+  ui->bookmarkView->resizeColumnsToContents();
   setupWidgetBehavior();
 }
 
@@ -60,6 +61,8 @@ void FlyEmSplitControlForm::setupWidgetBehavior()
   ui->viewSplitPushButton->setEnabled(false);
   ui->loadBookmarkButton->hide();
   ui->synapsePushButton->hide();
+
+
 
 //  ui->commitPushButton->setEnabled(false);
   createMenu();
@@ -194,6 +197,11 @@ void FlyEmSplitControlForm::selectAllSeed()
 void FlyEmSplitControlForm::commitResult()
 {
   emit committingResult();
+}
+
+void FlyEmSplitControlForm::clearBookmarkTable(ZFlyEmBodySplitProject */*project*/)
+{
+  m_bookmarkList.clear();
 }
 
 void FlyEmSplitControlForm::updateBookmarkTable(ZFlyEmBodySplitProject *project)

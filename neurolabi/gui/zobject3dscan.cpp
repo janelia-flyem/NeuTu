@@ -979,8 +979,10 @@ Stack* ZObject3dScan::toStack(int *offset, int v) const
     offset[2] = boundBox.getFirstCorner().getZ();
   }
 
+#if 0
   std::cout << "Stack size: " << boundBox.getWidth() << "x"
             << boundBox.getHeight() << "x" << boundBox.getDepth() << std::endl;
+#endif
 
   Stack *stack = C_Stack::make(GREY, boundBox.getWidth(),
                                boundBox.getHeight(),
@@ -2076,14 +2078,22 @@ ZVoxel ZObject3dScan::getMarker() const
   ZVoxel voxel;
   size_t stripeNumber = getStripeNumber();
   std::vector<ZObject3dScan> sliceArray(getMaxZ() + 1);
+  std::set<size_t> sliceIndexSet;
   for (size_t i = 0; i < stripeNumber; ++i) {
     const ZObject3dStripe &stripe = getStripe(i);
     int currentZ = stripe.getZ();
     sliceArray[currentZ].addStripe(stripe, false);
+    sliceIndexSet.insert(currentZ);
   }
 
-  for (size_t i = 0; i < sliceArray.size(); ++i) {
-    ZObject3dScan &slice = sliceArray[i];
+  std::vector<size_t> sliceIndexArray;
+  sliceIndexArray.insert(sliceIndexArray.end(), sliceIndexSet.begin(),
+                         sliceIndexSet.end());
+
+  size_t step = sliceIndexArray.size() / 100 + 1;
+
+  for (size_t i = 0; i < sliceIndexArray.size(); i += step) {
+    ZObject3dScan &slice = sliceArray[sliceIndexArray[i]];
 
     if (!slice.isEmpty()) {
       int currentZ = slice.getStripe(0).getZ();

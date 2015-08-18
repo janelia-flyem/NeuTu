@@ -17524,7 +17524,7 @@ void ZTest::test(MainWindow *host)
   std::cout << toc() << "ms passed" << std::endl;
 #endif
 
-#if 1
+#if 0
   ZDvidWriter writer;
 
 //  ZDvidReader reader;
@@ -17553,5 +17553,39 @@ void ZTest::test(MainWindow *host)
     reader.readLabels64(4327, 5443, 6341 + i, 512, 512, 1);
   }
   */
+#endif
+
+#if 1
+  ZDvidTarget target("emdata1.int.janelia.org", "d1ea", 8500);
+  target.setLabelBlockName("labels3");
+  target.setBodyLabelName("bodies3");
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  std::vector<uint64_t> bodyArray;
+  bodyArray.push_back(15640816);
+  bodyArray.push_back(2223045);
+  bodyArray.push_back(2502173);
+  bodyArray.push_back(27296924);
+  bodyArray.push_back(5349564);
+  bodyArray.push_back(93200998);
+  bodyArray.push_back(93215727);
+
+  std::vector<ZIntPoint> posArray;
+
+  for (std::vector<uint64_t>::const_iterator iter = bodyArray.begin();
+       iter != bodyArray.end(); ++iter) {
+    uint64_t bodyId = *iter;
+    ZObject3dScan body = reader.readBody(bodyId);
+    ZVoxel voxel = body.getMarker();
+    std::cout << bodyId << ": (" << voxel.x() << ", " << voxel.y() << ", "
+              << voxel.z() << ")" << std::endl;
+    posArray.push_back(ZIntPoint(voxel.x(), voxel.y(), voxel.z()));
+  }
+
+  for (size_t i = 0; i < bodyArray.size(); ++i) {
+    std::cout << bodyArray[i] << ": " << posArray[i].toString() << std::endl;
+  }
 #endif
 }

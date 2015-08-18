@@ -46,6 +46,7 @@ public slots:
   void setInfo(const QString &info);
   void setDvidInfo(const ZDvidTarget &target);
   void updateBookmarkTable(ZFlyEmBodyMergeProject *project);
+  void clearBookmarkTable(ZFlyEmBodyMergeProject *project);
   void updateUserBookmarkTable(ZStackDoc *doc);
 
 private slots:

@@ -39,13 +39,13 @@ public:
   void pushMap(uint64_t label1, uint64_t label2);
   void pushMap(const TLabelMap &map);
   void pushMap(const TLabelSet &labelSet);
-  void undo();
+  TLabelMap undo();
   void redo();
 
   void print() const;
   void clear();
 
-  bool isMapped(uint64_t label) const;
+  bool isMerged(uint64_t label) const;
 
 //  ZJsonObject toJsonObject() const;
   ZJsonArray toJsonArray() const;

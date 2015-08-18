@@ -265,6 +265,8 @@ void ZFlyEmProofMvc::customInit()
           this, SLOT(annotateBody()));
   connect(getPresenter(), SIGNAL(bodyCheckinTriggered()),
           this, SLOT(checkInSelectedBody()));
+  connect(getPresenter(), SIGNAL(bodyForceCheckinTriggered()),
+          this, SLOT(checkInSelectedBodyAdmin()));
   connect(getPresenter(), SIGNAL(bodyCheckoutTriggered()),
           this, SLOT(checkOutBody()));
   connect(getPresenter(), SIGNAL(objectVisibleTurnedOn()),
@@ -284,8 +286,16 @@ void ZFlyEmProofMvc::customInit()
           &m_mergeProject, SLOT(update3DBodyViewDeep()));
   connect(getCompleteDocument(), SIGNAL(bodyUnmerged()),
           &m_mergeProject, SLOT(update3DBodyViewDeep()));
+
+  connect(getCompleteDocument(), SIGNAL(bodyMerged()),
+          &m_mergeProject, SLOT(saveMergeOperation()));
+  connect(getCompleteDocument(), SIGNAL(bodyUnmerged()),
+          &m_mergeProject, SLOT(saveMergeOperation()));
+
   connect(getCompleteDocument(), SIGNAL(userBookmarkModified()),
           this, SLOT(updateUserBookmarkTable()));
+  connect(getCompleteDocument(), SIGNAL(bodyIsolated(uint64_t)),
+          this, SLOT(checkInBodyWithMessage(uint64_t)));
 
   m_mergeProject.getProgressSignal()->connectProgress(getProgressSignal());
   m_splitProject.getProgressSignal()->connectProgress(getProgressSignal());
@@ -503,6 +513,22 @@ bool ZFlyEmProofMvc::checkInBody(uint64_t bodyId)
   return true;
 }
 
+bool ZFlyEmProofMvc::checkInBodyWithMessage(uint64_t bodyId)
+{
+  if (getSupervisor() != NULL) {
+    if (bodyId > 0) {
+      if (getSupervisor()->checkIn(bodyId)) {
+        emit messageGenerated(QString("Body %1 is unlocked.").arg(bodyId));
+        return true;
+      } else {
+        emit errorGenerated(QString("Failed to unlock body %1.").arg(bodyId));
+      }
+    }
+  }
+
+  return true;
+}
+
 bool ZFlyEmProofMvc::checkOutBody(uint64_t bodyId)
 {
   if (getSupervisor() != NULL) {
@@ -531,23 +557,31 @@ void ZFlyEmProofMvc::checkInSelectedBody()
   } else {
     emit messageGenerated(QString("Body lock service is not available."));
   }
+}
 
-#if 0
-  std::set<uint64_t> bodyIdArray =
-      getCurrentSelectedBodyId(NeuTube::BODY_LABEL_MAPPED);
-  if (bodyIdArray.size() == 1) {
-    uint64_t bodyId = *(bodyIdArray.begin());
-    if (bodyId > 0) {
-      if (getSupervisor() != NULL) {
-        if (getSupervisor()->checkIn(bodyId)) {
-          emit messageGenerated(QString("Body %1 is unlocked.").arg(bodyId));
+void ZFlyEmProofMvc::checkInSelectedBodyAdmin()
+{
+  if (getSupervisor() != NULL) {
+    std::set<uint64_t> bodyIdArray =
+        getCurrentSelectedBodyId(NeuTube::BODY_LABEL_ORIGINAL);
+    for (std::set<uint64_t>::const_iterator iter = bodyIdArray.begin();
+         iter != bodyIdArray.end(); ++iter) {
+      uint64_t bodyId = *iter;
+      if (bodyId > 0) {
+        if (getSupervisor()->isLocked(bodyId)) {
+          if (getSupervisor()->checkInAdmin(bodyId)) {
+            emit messageGenerated(QString("Body %1 is unlocked.").arg(bodyId));
+          } else {
+            emit errorGenerated(QString("Failed to unlock body %1.").arg(bodyId));
+          }
         } else {
-          emit errorGenerated(QString("Failed to check in body %1.").arg(bodyId));
+          emit messageGenerated(QString("Body %1 is unlocked.").arg(bodyId));
         }
       }
     }
+  } else {
+    emit messageGenerated(QString("Body lock service is not available."));
   }
-#endif
 }
 
 void ZFlyEmProofMvc::checkOutBody()
@@ -1075,6 +1109,12 @@ void ZFlyEmProofMvc::notifyBookmarkUpdated()
   emit bookmarkUpdated(&m_splitProject);
 }
 
+void ZFlyEmProofMvc::notifyBookmarkDeleted()
+{
+  emit bookmarkDeleted(&m_mergeProject);
+  emit bookmarkDeleted(&m_splitProject);
+}
+
 void ZFlyEmProofMvc::loadBookmarkFunc(const QString &filePath)
 {
   getProgressSignal()->startProgress("Importing bookmarks ...");
@@ -1086,6 +1126,7 @@ void ZFlyEmProofMvc::loadBookmarkFunc(const QString &filePath)
   //    ZDvidInfo info = reader.readGrayScaleInfo();
   //    converter.configure(info);
       getProgressSignal()->advanceProgress(0.1);
+      notifyBookmarkDeleted();
       getCompleteDocument()->importFlyEmBookmark(filePath.toStdString());
       getProgressSignal()->advanceProgress(0.5);
   //    m_bookmarkArray.importJsonFile(filePath.toStdString(), NULL/*&converter*/);
@@ -1343,9 +1384,9 @@ void ZFlyEmProofMvc::selectBody(uint64_t bodyId)
   updateBodySelection();
 }
 
-void ZFlyEmProofMvc::processViewChangeCustom(const ZStackViewParam &/*viewParam*/)
+void ZFlyEmProofMvc::processViewChangeCustom(const ZStackViewParam &viewParam)
 {
-  m_mergeProject.update3DBodyViewPlane();
+  m_mergeProject.update3DBodyViewPlane(viewParam);
   m_splitProject.update3DViewPlane();
 }
 

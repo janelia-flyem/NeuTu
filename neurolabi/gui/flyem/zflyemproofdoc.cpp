@@ -210,7 +210,7 @@ void ZFlyEmProofDoc::clearData()
 
 bool ZFlyEmProofDoc::isSplittable(uint64_t bodyId) const
 {
-  return !m_bodyMerger.isMapped(bodyId);
+  return !m_bodyMerger.isMerged(bodyId);
 }
 
 
@@ -604,6 +604,11 @@ void ZFlyEmProofDoc::enhanceTileContrast(bool highContrast)
   }
 }
 
+void ZFlyEmProofDoc::notifyBodyIsolated(uint64_t bodyId)
+{
+  emit bodyIsolated(bodyId);
+}
+
 //////////////////////////////////////////
 ZFlyEmProofDocCommand::MergeBody::MergeBody(
     ZStackDoc *doc, QUndoCommand *parent)
@@ -628,7 +633,24 @@ void ZFlyEmProofDocCommand::MergeBody::redo()
 
 void ZFlyEmProofDocCommand::MergeBody::undo()
 {
-  getCompleteDocument()->getBodyMerger()->undo();
+  ZFlyEmBodyMerger::TLabelMap mapped =
+      getCompleteDocument()->getBodyMerger()->undo();
+
+  std::set<uint64_t> bodySet;
+  for (ZFlyEmBodyMerger::TLabelMap::const_iterator iter = mapped.begin();
+       iter != mapped.end(); ++iter) {
+    bodySet.insert(iter.key());
+    bodySet.insert(iter.value());
+  }
+
+  for (std::set<uint64_t>::const_iterator iter = bodySet.begin();
+       iter != bodySet.end(); ++iter) {
+    uint64_t bodyId = *iter;
+    if (!getCompleteDocument()->getBodyMerger()->isMerged(bodyId)) {
+      getCompleteDocument()->notifyBodyIsolated(bodyId);
+    }
+  }
+
   getCompleteDocument()->updateBodyObject();
 
   getCompleteDocument()->notifyBodyUnmerged();

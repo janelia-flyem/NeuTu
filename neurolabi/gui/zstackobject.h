@@ -6,9 +6,11 @@
 //#include "zpainter.h"
 #include "zstackobjectrole.h"
 #include "zintpoint.h"
+#include "zsharedpointer.h"
 
 class ZPainter;
 class ZIntCuboid;
+
 
 /*!
  * \brief The abstract class of representing an 3D object
@@ -324,6 +326,8 @@ protected:
 
 //  static const char *m_nodeAdapterId;
 };
+
+typedef ZSharedPointer<ZStackObject> ZStackObjectPtr;
 
 template <typename T>
 T* ZStackObject::CastVoidPointer(void *p)

@@ -56,6 +56,7 @@ private slots:
   void changeSplit();
   void commitResult();
   void updateBookmarkTable(ZFlyEmBodySplitProject *project);
+  void clearBookmarkTable(ZFlyEmBodySplitProject *project);
   void locateBookmark(const QModelIndex &index);
   void loadBookmark();
   void checkCurrentBookmark();

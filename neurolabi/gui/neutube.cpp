@@ -54,3 +54,14 @@ std::string NeuTube::GetUserName()
   return qgetenv("USER").data();
 }
 
+bool NeuTube::IsAdminUser()
+{
+#if defined(_FLYEM_)
+  if (NeuTube::GetUserName() == "takemuras") {
+    return true;
+  }
+#endif
+
+  return NeuTube::GetUserName() == "zhaot";
+}
+

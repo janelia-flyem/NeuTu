@@ -120,12 +120,15 @@ void ZFlyEmBodyMerger::pushMap(const TLabelSet &labelSet)
   }
 }
 
-void ZFlyEmBodyMerger::undo()
+ZFlyEmBodyMerger::TLabelMap ZFlyEmBodyMerger::undo()
 {
+  TLabelMap labelMap;
   if (!m_mapList.isEmpty()) {
-    TLabelMap labelMap = m_mapList.takeLast();
+    labelMap = m_mapList.takeLast();
     m_undoneMapStack.push(labelMap);
   }
+
+  return labelMap;
 }
 
 void ZFlyEmBodyMerger::redo()
@@ -157,7 +160,7 @@ void ZFlyEmBodyMerger::clear()
   m_undoneMapStack.clear();
 }
 
-bool ZFlyEmBodyMerger::isMapped(uint64_t label) const
+bool ZFlyEmBodyMerger::isMerged(uint64_t label) const
 {
   QSet<uint64_t> labelSet;
   for (TLabelMapList::const_iterator iter = m_mapList.begin();

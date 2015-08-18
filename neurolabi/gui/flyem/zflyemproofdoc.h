@@ -86,11 +86,13 @@ public:
 public:
   void notifyBodyMerged();
   void notifyBodyUnmerged();
+  void notifyBodyIsolated(uint64_t bodyId);
 
 signals:
   void bodyMerged();
   void bodyUnmerged();
   void userBookmarkModified();
+  void bodyIsolated(uint64_t bodyId);
 
 public slots:
   void updateDvidLabelObject();

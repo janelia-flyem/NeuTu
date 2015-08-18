@@ -217,6 +217,11 @@ void FlyEmProofControlForm::updateBookmarkTable(ZFlyEmBodyMergeProject *project)
   }
 }
 
+void FlyEmProofControlForm::clearBookmarkTable(ZFlyEmBodyMergeProject */*project*/)
+{
+  m_bookmarkList.clear();
+}
+
 void FlyEmProofControlForm::locateAssignedBookmark(const QModelIndex &index)
 {
   const ZFlyEmBookmark *bookmark = m_bookmarkList.getBookmark(index.row());

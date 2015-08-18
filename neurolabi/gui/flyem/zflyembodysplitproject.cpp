@@ -715,28 +715,6 @@ void ZFlyEmBodySplitProject::setDataFrame(ZStackFrame *frame)
 //  updateBookDecoration();
 }
 
-#if 0
-void ZFlyEmBodySplitProject::removeAllBookmark()
-{
-  if (m_bookmarkArray != NULL) {
-    m_bookmarkArray->clear();
-  }
-  clearBookmarkDecoration();
-}
-
-void ZFlyEmBodySplitProject::loadBookmark(const QString &filePath)
-{
-  if (m_bookmarkArray != NULL) {
-    ZDvidReader reader;
-    ZFlyEmCoordinateConverter converter;
-    if (reader.open(m_dvidTarget)) {
-      //    ZDvidInfo info = reader.readGrayScaleInfo();
-      converter.configure(m_dvidInfo);
-      m_bookmarkArray->importJsonFile(filePath.toStdString(), NULL/*&converter*/);
-    }
-  }
-}
-#endif
 
 bool ZFlyEmBodySplitProject::hasBookmark() const
 {
@@ -768,30 +746,6 @@ void ZFlyEmBodySplitProject::locateBookmark(const ZFlyEmBookmark &bookmark)
   }
 }
 
-#if 0
-void ZFlyEmBodySplitProject::clearBookmarkDecoration()
-{
-  if (getDocument() != NULL) {
-    getDocument()->removeObject(ZStackObjectRole::ROLE_TMP_BOOKMARK, true);
-  }
-#if 0
-    for (std::vector<ZStackObject*>::iterator iter = m_bookmarkDecoration.begin();
-         iter != m_bookmarkDecoration.end(); ++iter) {
-      ZStackObject *obj = *iter;
-      getDocument()->removeObject(obj, false);
-      delete obj;
-    }
-  } else {
-    for (std::vector<ZStackObject*>::iterator iter = m_bookmarkDecoration.begin();
-         iter != m_bookmarkDecoration.end(); ++iter) {
-      delete *iter;
-    }
-  }
-  m_bookmarkDecoration.clear();
-#endif
-}
-#endif
-
 void ZFlyEmBodySplitProject::addBookmarkDecoration(
     const ZFlyEmBookmarkArray &bookmarkArray)
 {
@@ -800,88 +754,7 @@ void ZFlyEmBodySplitProject::addBookmarkDecoration(
           m_isBookmarkVisible);
     getDocument()->addObjectFast(punctumArray.begin(), punctumArray.end());
   }
-#if 0
-    getDocument()->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
-    for (ZFlyEmBookmarkArray::const_iterator iter = bookmarkArray.begin();
-         iter != bookmarkArray.end(); ++iter) {
-      const ZFlyEmBookmark &bookmark = *iter;
-      ZPunctum *circle = new ZPunctum;
-      circle->setRole(ZStackObjectRole::ROLE_TMP_BOOKMARK);
-      circle->set(bookmark.getLocation(), 5);
-
-//      ZStackBall *circle = new ZStackBall;
-//      circle->set(bookmark.getLocation(), 5);
-      circle->setColor(255, 0, 0);
-      circle->setVisible(m_isBookmarkVisible);
-      circle->setHittable(false);
-//      circle->setRole(ZStackObjectRole::ROLE_3DGRAPH_DECORATOR);
-      getDocument()->addObject(circle);
-      m_bookmarkDecoration.push_back(circle);
-    }
-    getDocument()->endObjectModifiedMode();
-    getDocument()->notifyObjectModified();
-  }
-#endif
 }
-
-/*
-void ZFlyEmBodySplitProject::updateBookmarkDecoration(
-    const ZFlyEmBookmarkArray &bookmarkArray)
-{
-  clearBookmarkDecoration();
-
-  if (getDocument() != NULL) {
-    ZFlyEmBookmarkArray filteredBookmarkArray;
-    foreach (ZFlyEmBookmark bookmark, bookmarkArray) {
-      if (bookmark.getBodyId() == getBodyId() &&
-          bookmark.getType() == ZFlyEmBookmark::TYPE_FALSE_MERGE) {
-        filteredBookmarkArray.append(bookmark);
-      }
-    }
-    addBookmarkDecoration(filteredBookmarkArray);
-  }
-}
-*/
-
-#if 0
-void ZFlyEmBodySplitProject::updateBookmarkDecoration()
-{
-  clearBookmarkDecoration();
-
-  if (getDocument() != NULL) {
-    ZFlyEmBookmarkArray bookmarkArray;
-
-    //    foreach (ZFlyEmBookmark bookmark, m_bookmarkArray) {
-    if (m_bookmarkArray != NULL) {
-      for (ZFlyEmBookmarkArray::const_iterator iter = m_bookmarkArray->begin();
-           iter != m_bookmarkArray->end(); ++iter) {
-        const ZFlyEmBookmark &bookmark = *iter;
-        if (bookmark.getBodyId() == getBodyId() &&
-            bookmark.getBookmarkType() == ZFlyEmBookmark::TYPE_FALSE_MERGE) {
-          bookmarkArray.append(bookmark);
-        }
-      }
-    }
-    addBookmarkDecoration(bookmarkArray);
-  }
-}
-#endif
-
-#if 0
-void ZFlyEmBodySplitProject::showBookmark(bool visible)
-{
-  m_isBookmarkVisible = visible;
-  for (std::vector<ZStackObject*>::iterator iter = m_bookmarkDecoration.begin();
-       iter != m_bookmarkDecoration.end(); ++iter) {
-    ZStackObject *obj = *iter;
-    obj->setVisible(visible);
-  }
-  if (m_dataFrame != NULL && !m_bookmarkDecoration.empty()) {
-    m_dataFrame->updateView();
-  }
-}
-#endif
-
 
 void ZFlyEmBodySplitProject::setBookmarkVisible(bool visible)
 {
