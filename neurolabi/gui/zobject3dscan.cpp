@@ -87,10 +87,10 @@ ZObject3dScan::ZObject3dScan() : m_isCanonized(true), m_label(0),
   m_type = ZStackObject::TYPE_OBJECT3D_SCAN;
 }
 
-ZObject3dScan::ZObject3dScan(const ZObject3dScan &obj) : ZStackObject(obj)
+ZObject3dScan::ZObject3dScan(const ZObject3dScan &obj) : ZStackObject(obj),
+  m_zProjection(NULL)
 {
   *this = obj;
-  this->m_zProjection = NULL;
 }
 
 ZObject3dScan::~ZObject3dScan()
@@ -101,6 +101,8 @@ ZObject3dScan::~ZObject3dScan()
 
 ZObject3dScan& ZObject3dScan::operator=(const ZObject3dScan& obj)
 {
+  deprecate(COMPONENT_ALL);
+
   dynamic_cast<ZStackObject&>(*this) = dynamic_cast<const ZStackObject&>(obj);
 
   m_stripeArray = obj.m_stripeArray;
@@ -925,10 +927,17 @@ void ZObject3dScan::upSample(int xIntv, int yIntv, int zIntv)
 
 bool ZObject3dScan::isAdjacentTo(ZObject3dScan &obj)
 {
-  ZObject3dScan tmpObj = obj;
-  tmpObj.dilate();
+  if (getVoxelNumber() < obj.getVoxelNumber()) {
+    ZObject3dScan tmpObj = *this;
+    tmpObj.dilate();
+    return obj.hasOverlap(tmpObj);
+  } else {
+    ZObject3dScan tmpObj = obj;
+    tmpObj.dilate();
+    return hasOverlap(tmpObj);
+  }
 
-  return hasOverlap(tmpObj);
+  return false;
 }
 
 bool ZObject3dScan::hasOverlap(ZObject3dScan &obj)

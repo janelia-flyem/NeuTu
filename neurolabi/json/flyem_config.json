@@ -445,6 +445,16 @@
     {
       "address": "emdata1.int.janelia.org",
       "port": 8500,
+      "uuid": "1c42",
+      "name": "MB_Synapse_Shift",
+      "comment": "production synapse work",
+      "body_label": "bodies3",
+      "label_block": "labels3",
+      "user_name": ["anicetor", "changl", "lauchies", "ogundeyio", "ordishc", "sigmundc", "shinomiyaa", "tranj", "rivlinp", "takemurasa", "zhaot", "takemuras"]
+    },
+    {
+      "address": "emdata1.int.janelia.org",
+      "port": 8500,
       "uuid": "d1ea",
       "name": "MB_Orphan_Link",
       "comment": "production orphan link with extended segmentation",

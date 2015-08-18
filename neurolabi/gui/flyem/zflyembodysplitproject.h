@@ -100,7 +100,8 @@ public:
   void exportSplits();
   void commitResult();
   void commitResultFunc(
-      const ZObject3dScan *wholeBody, const ZStack *stack, const ZIntPoint &dsIntv);
+      const ZObject3dScan *wholeBody, const ZStack *stack,
+      const ZIntPoint &dsIntv, size_t minObjSize);
 
   void viewPreviousSlice();
   void viewNextSlice();
@@ -112,6 +113,8 @@ public:
   void setShowingBodyMask(bool state){
     m_showingBodyMask = state;
   }
+
+  void setMinObjSize(size_t s) { m_minObjSize = s; }
 
   std::string getSplitStatusName() const;
   std::string getSplitLabelName() const;
@@ -216,6 +219,7 @@ private:
   Z3DWindow *m_resultWindow;
   Z3DWindow *m_quickResultWindow;
   Z3DWindow *m_quickViewWindow;
+  size_t m_minObjSize;
 
 //  ZFlyEmBookmarkArray *m_bookmarkArray; //aggregation
 

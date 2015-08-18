@@ -33,6 +33,7 @@
 #include "flyem/zflyemcoordinateconverter.h"
 #include "flyem/zflyembookmarkannotationdialog.h"
 #include "dialogs/flyembodyinfodialog.h"
+#include "dialogs/zflyemsplitcommitdialog.h"
 
 ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
   ZStackMvc(parent)
@@ -40,6 +41,7 @@ ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
   m_dvidDlg = new ZDvidDialog(this);
   m_bodyInfoDlg = new FlyEmBodyInfoDialog(this);
   m_supervisor = new ZFlyEmSupervisor(this);
+  m_splitCommitDlg = new ZFlyEmSplitCommitDialog(this);
 //  m_splitProject.attachBookmarkArray(&m_bookmarkArray);
 //  m_mergeProject.attachBookmarkArray(&m_bookmarkArray);
 
@@ -1028,12 +1030,9 @@ void ZFlyEmProofMvc::commitCurrentSplit()
     return;
   }
 
-  if (ZDialogFactory::Ask("Upload Confirmation",
-                          "Do you want to upload the splitting results now? "
-                          "It cannot be undone. "
-                          "***IMPORTANT**** Please make sure you have run"
-                          " the full split.***",
-                          this)) {
+
+  if (m_splitCommitDlg->exec()) {
+    m_splitProject.setMinObjSize(m_splitCommitDlg->getGroupSize());
     const QString threadId = "ZFlyEmBodySplitProject::commitResult";
     if (!m_futureMap.isAlive(threadId)) {
       m_futureMap.removeDeadThread();

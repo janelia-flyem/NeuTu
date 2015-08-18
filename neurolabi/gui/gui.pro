@@ -554,7 +554,8 @@ HEADERS += mainwindow.h \
     flyem/zflyembody3ddoc.h \
     z3ddef.h \
     flyem/zflyembookmarkptrarray.h \
-    biocytin/zbiocytinprojectiondoc.h
+    biocytin/zbiocytinprojectiondoc.h \
+    dialogs/zflyemsplitcommitdialog.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -623,7 +624,8 @@ FORMS += dialogs/settingdialog.ui \
     flyem/flyemsplitcontrolform.ui \
     flyem/zflyembodyannotationdialog.ui \
     dialogs/flyembodyinfodialog.ui \
-    flyem/zflyembookmarkannotationdialog.ui
+    flyem/zflyembookmarkannotationdialog.ui \
+    dialogs/zflyemsplitcommitdialog.ui
 SOURCES += main.cpp \
     mainwindow.cpp \
     zstackview.cpp \
@@ -972,7 +974,8 @@ SOURCES += main.cpp \
     flyem/zflyembody3ddoc.cpp \
     z3ddef.cpp \
     flyem/zflyembookmarkptrarray.cpp \
-    biocytin/zbiocytinprojectiondoc.cpp
+    biocytin/zbiocytinprojectiondoc.cpp \
+    dialogs/zflyemsplitcommitdialog.cpp
 
 OTHER_FILES += \
     extlib.pri \

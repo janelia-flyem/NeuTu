@@ -45,7 +45,8 @@
 ZFlyEmBodySplitProject::ZFlyEmBodySplitProject(QObject *parent) :
   QObject(parent), m_bodyId(0), m_dataFrame(NULL),
   m_resultWindow(NULL), m_quickResultWindow(NULL),
-  m_quickViewWindow(NULL), /*m_bookmarkArray(NULL),*/
+  m_quickViewWindow(NULL),
+  m_minObjSize(0), /*m_bookmarkArray(NULL),*/
   m_isBookmarkVisible(true), m_showingBodyMask(false)
 {
   m_progressSignal = new ZProgressSignal(this);
@@ -792,7 +793,8 @@ void ZFlyEmBodySplitProject::commitResult()
   ZFlyEmBodySplitProject::commitResultFunc(
         getDocument()->getConstSparseStack()->getObjectMask(),
         getDocument()->getLabelField(),
-        getDocument()->getConstSparseStack()->getDownsampleInterval());
+        getDocument()->getConstSparseStack()->getDownsampleInterval(),
+        m_minObjSize);
   getProgressSignal()->endProgress();
 
   deleteSavedSeed();
@@ -814,8 +816,26 @@ void ZFlyEmBodySplitProject::commitResult()
                     */
 }
 
+
+static void prepareBodyUpload(
+    const ZObject3dScan &obj, QStringList &filePathList,
+    QList<uint64_t> &oldBodyIdList, int &maxNum,
+    uint64_t bodyId, uint64_t label)
+{
+  ZString output = QDir::tempPath() + "/body_";
+  output.appendNumber(bodyId);
+  output += "_";
+  output.appendNumber(label);
+  output += "_";
+  output.appendNumber(maxNum++);
+  obj.save(output + ".sobj");
+  filePathList << (output + ".sobj").c_str();
+  oldBodyIdList << label;
+}
+
 void ZFlyEmBodySplitProject::commitResultFunc(
-    const ZObject3dScan *wholeBody, const ZStack *stack, const ZIntPoint &dsIntv)
+    const ZObject3dScan *wholeBody, const ZStack *stack, const ZIntPoint &dsIntv,
+    size_t minObjSize)
 {
   getProgressSignal()->startProgress("Uploading splitted bodies");
 
@@ -831,15 +851,40 @@ void ZFlyEmBodySplitProject::commitResultFunc(
   std::string backupDir =
       NeutubeConfig::getInstance().getPath(NeutubeConfig::AUTO_SAVE);
   body.save(backupDir + "/" + getSeedKey(getBodyId()) + ".sobj");
+  getProgressSignal()->advanceProgress(0.05);
 
-//  const ZStack *stack = getDataFrame()->document()->getLabelField();
+//  size_t minObjSize = 20;
+
+  std::vector<ZObject3dScan> objArray = body.getConnectedComponent();
+
+  getProgressSignal()->advanceProgress(0.1);
+
+  ZObject3dScan smallBodyGroup;
+
+  if (objArray.size() > 1 && minObjSize > 0) {
+    body.clear();
+    for (std::vector<ZObject3dScan>::const_iterator iter = objArray.begin();
+         iter != objArray.end(); ++iter) {
+      const ZObject3dScan &obj = *iter;
+      if (obj.getVoxelNumber() < minObjSize) {
+        smallBodyGroup.concat(obj);
+      } else {
+        body.concat(obj);
+      }
+    }
+  }
+
+  getProgressSignal()->advanceProgress(0.1);
+
+#ifdef _DEBUG_2
+    body.save(GET_TEST_DATA_DIR + "/test.sobj");
+#endif
+
+  int maxNum = 1;
   QStringList filePathList;
   QList<uint64_t> oldBodyIdList;
-  int maxNum = 1;
 
   if (stack != NULL) { //Process splits
-//    const ZIntPoint &dsIntv =
-//        getDataFrame()->document()->getSparseStack()->getDownsampleInterval();
     std::vector<ZObject3dScan*> objArray =
         ZObject3dScan::extractAllObject(*stack);
 #ifdef _DEBUG_2
@@ -849,33 +894,44 @@ void ZFlyEmBodySplitProject::commitResultFunc(
 //    emit progressAdvanced(0.1);
     getProgressSignal()->advanceProgress(0.1);
 
-    double dp = 0.3;
+    double dp = 0.2;
 
     if (!objArray.empty()) {
-      dp = 0.3 / objArray.size();
+      dp = 0.2 / objArray.size();
     }
+
+//    std::vector<ZObject3dScan> mainObjectArray;
+//    std::vector<ZObject3dScan> minorObjectArray;
+    size_t minIsolationSize = 50;
 
     for (std::vector<ZObject3dScan*>::iterator iter = objArray.begin();
          iter != objArray.end(); ++iter) {
       ZObject3dScan *obj = *iter;
-      obj->upSample(dsIntv.getX(), dsIntv.getY(), dsIntv.getZ());
+      if (obj->getLabel() > 1) {
+        obj->upSample(dsIntv.getX(), dsIntv.getY(), dsIntv.getZ());
 
-      ZObject3dScan currentBody = body.subtract(*obj);
+        ZObject3dScan currentBody = body.subtract(*obj);
 
-      if (!currentBody.isEmpty() && obj->getLabel() > 1) {
-        std::vector<ZObject3dScan> objArray =
-            currentBody.getConnectedComponent();
-        for (std::vector<ZObject3dScan>::iterator iter = objArray.begin();
-             iter != objArray.end(); ++iter) {
-          ZString output = QDir::tempPath() + "/body_";
-          output.appendNumber(getBodyId());
-          output += "_";
-          output.appendNumber(obj->getLabel());
-          output += "_";
-          output.appendNumber(maxNum++);
-          iter->save(output + ".sobj");
-          filePathList << (output + ".sobj").c_str();
-          oldBodyIdList << obj->getLabel();
+        if (!currentBody.isEmpty()) {
+          std::vector<ZObject3dScan> objArray =
+              currentBody.getConnectedComponent();
+          for (std::vector<ZObject3dScan>::iterator iter = objArray.begin();
+               iter != objArray.end(); ++iter) {
+            ZObject3dScan &subobj = *iter;
+            bool isAdopted = false;
+            if (subobj.getVoxelNumber() < minIsolationSize &&
+                currentBody.getVoxelNumber() / subobj.getVoxelNumber() > 10) {
+              if (body.isAdjacentTo(subobj)) {
+                body.concat(subobj);
+                isAdopted = true;
+              }
+            }
+
+            if (!isAdopted) {
+              prepareBodyUpload(subobj, filePathList, oldBodyIdList, maxNum,
+                                getBodyId(), obj->getLabel());
+            }
+          }
         }
       }
       delete obj;
@@ -889,36 +945,29 @@ void ZFlyEmBodySplitProject::commitResultFunc(
     std::vector<ZObject3dScan> objArray = body.getConnectedComponent();
 
 #ifdef _DEBUG_2
-    body.save(GET_TEST_DATA_DIR + "/test.sobj");
+    body.save(GET_TEST_DATA_DIR + "/test2.sobj");
 #endif
 
-    double dp = 0.3;
+    double dp = 0.2;
 
     if (!objArray.empty()) {
-      dp = 0.3 / objArray.size();
+      dp = 0.2 / objArray.size();
     }
 
-    const size_t sizeThreshold = 0;
-    //if (objArray.size() > 1 || !filePathList.isEmpty()) {
     for (std::vector<ZObject3dScan>::const_iterator iter = objArray.begin();
          iter != objArray.end(); ++iter) {
       const ZObject3dScan &obj = *iter;
-      if (obj.getVoxelNumber() > sizeThreshold) {
-        ZString output = QDir::tempPath() + "/body_";
-        output.appendNumber(getBodyId());
-        output += "_";
-        output.appendNumber(body.getLabel());
-        output += "_";
-        output.appendNumber(maxNum++);
-        obj.save(output + ".sobj");
-        filePathList << (output + ".sobj").c_str();
-        oldBodyIdList << 0;
+      if (obj.getVoxelNumber() < minObjSize) {
+        smallBodyGroup.concat(obj);
       }
 
       getProgressSignal()->advanceProgress(dp);
-//      emit progressAdvanced(dp);
     }
-    //}
+  }
+
+  if (!smallBodyGroup.isEmpty()) {
+    prepareBodyUpload(smallBodyGroup, filePathList, oldBodyIdList, maxNum,
+                      getBodyId(), 0);
   }
 
   ZDvidReader reader;
@@ -927,10 +976,10 @@ void ZFlyEmBodySplitProject::commitResultFunc(
 
   int bodyIndex = 0;
 
-  double dp = 0.3;
+  double dp = 0.2;
 
   if (!filePathList.empty()) {
-    dp = 0.3 / filePathList.size();
+    dp = 0.2 / filePathList.size();
   }
 
   QList<uint64_t> newBodyIdList;
