@@ -622,8 +622,16 @@ ZDvidSparseStack* ZFlyEmProofDoc::getDvidSparseStack() const
 
     ZDvidSparseStack *originalStack = ZStackDoc::getDvidSparseStack();
     if (originalStack != NULL) {
-      m_splitSource =
-          ZSharedPointer<ZDvidSparseStack>(originalStack->getCrop(boundBox));
+      if (!m_splitRoi.equals(boundBox)) {
+        m_splitSource.reset();
+      }
+
+      if (m_splitSource.get() == NULL) {
+        m_splitSource =
+            ZSharedPointer<ZDvidSparseStack>(originalStack->getCrop(boundBox));
+        m_splitRoi = boundBox;
+      }
+
       stack = m_splitSource.get();
     }
   } else {
@@ -631,6 +639,11 @@ ZDvidSparseStack* ZFlyEmProofDoc::getDvidSparseStack() const
   }
 
   return stack;
+}
+
+void ZFlyEmProofDoc::deprecateSplitSource()
+{
+  m_splitSource.reset();
 }
 
 //////////////////////////////////////////

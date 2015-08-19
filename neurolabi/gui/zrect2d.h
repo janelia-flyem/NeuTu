@@ -36,6 +36,16 @@ public:
   bool isValid() const;
 
   /*!
+   * \brief Try the make rectangle a valid one.
+   *
+   * It tries to convert a negaive dimension into a positive one by rearranging
+   * the corners.
+   *
+   * \return true iff if the rectangle is valid after the function call.
+   */
+  bool makeValid();
+
+  /*!
    * \brief Set the last corner of the rectable
    */
   void setLastCorner(int x, int y);

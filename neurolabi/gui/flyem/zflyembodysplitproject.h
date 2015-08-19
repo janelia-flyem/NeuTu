@@ -195,6 +195,8 @@ public slots:
 
   void update3DViewPlane();
 
+  void updateSplitDocument();
+
 private:
   bool showingBodyMask() const { return m_showingBodyMask; }
   void clear(QWidget *widget);

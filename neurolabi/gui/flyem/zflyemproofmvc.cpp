@@ -298,6 +298,8 @@ void ZFlyEmProofMvc::customInit()
           this, SLOT(updateUserBookmarkTable()));
   connect(getCompleteDocument(), SIGNAL(bodyIsolated(uint64_t)),
           this, SLOT(checkInBodyWithMessage(uint64_t)));
+  connect(this, SIGNAL(splitBodyLoaded(uint64_t)),
+          getCompleteDocument(), SLOT(deprecateSplitSource()));
 
   m_mergeProject.getProgressSignal()->connectProgress(getProgressSignal());
   m_splitProject.getProgressSignal()->connectProgress(getProgressSignal());
@@ -328,7 +330,7 @@ void ZFlyEmProofMvc::customInit()
   connect(&m_mergeProject, SIGNAL(dvidLabelChanged()),
           this->getCompleteDocument(), SLOT(updateDvidLabelObject()));
   connect(&m_mergeProject, SIGNAL(checkingInBody(uint64_t)),
-          this, SLOT(checkInBody(uint64_t)));
+          this, SLOT(checkInBodyWithMessage(uint64_t)));
   /*
   connect(&m_mergeProject, SIGNAL(messageGenerated(QString, bool)),
           this, SIGNAL(messageGenerated(QString,bool)));
@@ -662,7 +664,7 @@ void ZFlyEmProofMvc::annotateBody()
           }
         }
 
-        checkInBody(bodyId);
+        checkInBodyWithMessage(bodyId);
       } else {
         if (getSupervisor() != NULL) {
           std::string owner = getSupervisor()->getOwner(bodyId);
@@ -882,7 +884,7 @@ void ZFlyEmProofMvc::exitSplit()
 
     getDocument()->setVisible(ZStackObject::TYPE_DVID_SPARSE_STACK, false);
 
-    checkInBody(m_splitProject.getBodyId());
+    checkInBodyWithMessage(m_splitProject.getBodyId());
 //    getDocument()->setVisible(ZStackObject::TYPE_PUNCTA, false);
 
 

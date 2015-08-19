@@ -104,6 +104,7 @@ public slots:
   void downloadSynapse();
   void processBookmarkAnnotationEvent(ZFlyEmBookmark *bookmark);
   void saveCustomBookmarkSlot();
+  void deprecateSplitSource();
 
 protected:
   void autoSave();
@@ -129,6 +130,7 @@ private:
   QString m_mergeAutoSavePath;
 
   mutable ZSharedPointer<ZDvidSparseStack> m_splitSource;
+  mutable ZIntCuboid m_splitRoi;
 
 
   //ZFlyEmBodySplitProject m_splitProject;

@@ -355,6 +355,16 @@
     {
       "address": "emdata1.int.janelia.org",
       "port": 8500,
+      "uuid": "d5f8",
+      "name": "MB_New_PR_Training",
+      "comment": "MB seg (branched from d1ea)",
+      "body_label": "bodies3",
+      "label_block": "labels3",
+      "user_name": ["changl", "zhaot"]
+    },
+    {
+      "address": "emdata1.int.janelia.org",
+      "port": 8500,
       "uuid": "4a55",
       "name": "MB_lauchies_Training",
       "comment": "MB seg (branched from ccf)",

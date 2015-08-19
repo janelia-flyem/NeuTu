@@ -833,6 +833,13 @@ static void prepareBodyUpload(
   oldBodyIdList << label;
 }
 
+void ZFlyEmBodySplitProject::updateSplitDocument()
+{
+  if (getDocument<ZFlyEmProofDoc>() != NULL) {
+    getDocument<ZFlyEmProofDoc>()->deprecateSplitSource();
+  }
+}
+
 void ZFlyEmBodySplitProject::commitResultFunc(
     const ZObject3dScan *wholeBody, const ZStack *stack, const ZIntPoint &dsIntv,
     size_t minObjSize)
@@ -855,6 +862,7 @@ void ZFlyEmBodySplitProject::commitResultFunc(
 
 //  size_t minObjSize = 20;
 
+  emitMessage(QString("Identifying isolated objects ..."));
   std::vector<ZObject3dScan> objArray = body.getConnectedComponent();
 
   getProgressSignal()->advanceProgress(0.1);
@@ -884,6 +892,7 @@ void ZFlyEmBodySplitProject::commitResultFunc(
   QStringList filePathList;
   QList<uint64_t> oldBodyIdList;
 
+  emitMessage(QString("Processing splits ..."));
   if (stack != NULL) { //Process splits
     std::vector<ZObject3dScan*> objArray =
         ZObject3dScan::extractAllObject(*stack);
@@ -1027,6 +1036,8 @@ void ZFlyEmBodySplitProject::commitResultFunc(
 
   getProgressSignal()->endProgress();
   //writer.writeMaxBodyId(bodyId);
+
+  updateSplitDocument();
 
 //  emit progressDone();
   emitMessage("Done.");

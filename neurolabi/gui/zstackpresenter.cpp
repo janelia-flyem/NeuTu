@@ -2607,11 +2607,11 @@ void ZStackPresenter::process(const ZStackOperator &op)
   case ZStackOperator::OP_RECT_ROI_INIT:
   {
     ZRect2d *rect = new ZRect2d(currentStackPos.x(), currentStackPos.y(),
-                                1, 1);
+                                0, 0);
     rect->setSource(ZStackObjectSourceFactory::MakeRectRoiSource());
     rect->setPenetrating(true);
     rect->setZ(buddyView()->getCurrentZ());
-    rect->setColor(0, 255, 0);
+    rect->setColor(255, 255, 255);
     buddyDocument()->executeAddObjectCommand(rect);
   }
     break;
@@ -2622,7 +2622,17 @@ void ZStackPresenter::process(const ZStackOperator &op)
           ZStackObjectSourceFactory::MakeRectRoiSource());
     ZRect2d *rect = dynamic_cast<ZRect2d*>(obj);
     if (rect != NULL) {
-      rect->setLastCorner(currentStackPos.x(), currentStackPos.y());
+      ZPoint grabPosition = op.getMouseEventRecorder()->getPosition(
+            Qt::LeftButton, ZMouseEvent::ACTION_PRESS, NeuTube::COORD_STACK);
+
+      int x0 = std::min(grabPosition.x(), currentStackPos.x());
+      int y0 = std::min(grabPosition.y(), currentStackPos.y());
+
+      int x1 = std::max(grabPosition.x(), currentStackPos.x());
+      int y1 = std::max(grabPosition.y(), currentStackPos.y());
+
+      rect->setFirstCorner(x0, y0);
+      rect->setLastCorner(x1, y1);
       buddyDocument()->processObjectModified(rect);
       buddyDocument()->notifyObjectModified();
     }

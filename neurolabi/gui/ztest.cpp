@@ -17590,6 +17590,39 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
+#if 1
+  ZDvidTarget target("emdata1.int.janelia.org", "1c420", 8500);
+  target.setLabelBlockName("labels3");
+  target.setBodyLabelName("bodies3");
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  std::vector<uint64_t> bodyArray;
+  bodyArray.push_back(14228569);
+  bodyArray.push_back(4933329);
+  bodyArray.push_back(5171945);
+  bodyArray.push_back(5500923);
+  bodyArray.push_back(200013718);
+
+
+  std::vector<ZIntPoint> posArray;
+
+  for (std::vector<uint64_t>::const_iterator iter = bodyArray.begin();
+       iter != bodyArray.end(); ++iter) {
+    uint64_t bodyId = *iter;
+    ZObject3dScan body = reader.readBody(bodyId);
+    ZVoxel voxel = body.getMarker();
+    std::cout << bodyId << ": (" << voxel.x() << ", " << voxel.y() << ", "
+              << voxel.z() << ")" << std::endl;
+    posArray.push_back(ZIntPoint(voxel.x(), voxel.y(), voxel.z()));
+  }
+
+  for (size_t i = 0; i < bodyArray.size(); ++i) {
+    std::cout << bodyArray[i] << ": " << posArray[i].toString() << std::endl;
+  }
+#endif
+
 #if 0
   ZDvidTarget target("emdata1.int.janelia.org", "86e1", 8500);
   ZDvidReader reader;

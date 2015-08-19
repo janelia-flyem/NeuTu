@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>400</width>
-    <height>226</height>
+    <height>239</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -54,6 +54,13 @@
       </spacer>
      </item>
     </layout>
+   </item>
+   <item>
+    <widget class="QCheckBox" name="keepingSeedCheckBox">
+     <property name="text">
+      <string>Keep main seeds (label=1)</string>
+     </property>
+    </widget>
    </item>
    <item>
     <widget class="QTextEdit" name="textEdit">
