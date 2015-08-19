@@ -15,12 +15,19 @@
 #include "z3dpunctafilter.h"
 #include "z3dutils.h"
 
-ZWindowFactory::ZWindowFactory() : m_parentWidget(NULL),
-  m_showVolumeBoundBox(false), m_showControlPanel(true), m_showObjectView(true),
-  m_volumeMode(NeuTube3D::VR_AUTO)
+ZWindowFactory::ZWindowFactory()
 {
+  init();
 }
 
+void ZWindowFactory::init()
+{
+  m_parentWidget = NULL;
+  m_showVolumeBoundBox = false;
+  m_showControlPanel = true;
+  m_showObjectView = true;
+  m_volumeMode = NeuTube3D::VR_AUTO;
+}
 
 Z3DWindow* ZWindowFactory::make3DWindow(
     ZStackDoc *doc, Z3DWindow::EInitMode mode)

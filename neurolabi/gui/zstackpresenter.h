@@ -347,6 +347,7 @@ protected:
   EMouseEventProcessStatus processMouseReleaseForStroke(
       QMouseEvent *event, const ZPoint &positionInStack);
 
+  bool processKeyPressEventForActiveStroke(QKeyEvent *event);
   bool processKeyPressEventForSwc(QKeyEvent *event);
   bool processKeyPressEventForStroke(QKeyEvent *event);
   bool processKeyPressEventForStack(QKeyEvent *event);
@@ -444,6 +445,7 @@ protected:
   ZSingleSwcNodeActionActivator m_singleSwcNodeActionActivator;
   int m_skipMouseReleaseEvent;
 
+  ZKeyOperationMap m_activeStrokeOperationMap;
   ZKeyOperationMap m_swcKeyOperationMap;
   ZKeyOperationMap m_stackKeyOperationMap;
 

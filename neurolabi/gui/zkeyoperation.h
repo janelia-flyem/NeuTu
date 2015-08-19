@@ -8,7 +8,9 @@ public:
   ZKeyOperation();
 
   enum EGroup {
-    OG_STACK, OG_STACK_3D,
+    OG_ACTIVE_STROKE,
+    OG_STACK,
+    OG_STACK_3D,
     OG_STACK_OBJECT,
     OG_SWC_TREE,
     OG_SWC_TREE_NODE,

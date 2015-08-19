@@ -3527,6 +3527,11 @@ void Z3DWindow::setScale(ERendererLayer layer, double sx, double sy, double sz)
   base->setZScale(sz);
 }
 
+void Z3DWindow::setOpacity(ERendererLayer layer, double opacity)
+{
+  getRendererBase(layer)->setOpacity(opacity);
+}
+
 void Z3DWindow::setZScale(double scale)
 {
   setZScale(LAYER_GRAPH, scale);

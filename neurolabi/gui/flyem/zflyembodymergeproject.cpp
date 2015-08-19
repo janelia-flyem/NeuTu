@@ -573,6 +573,7 @@ void ZFlyEmBodyMergeProject::makeCoarseBodyWindow(ZStackDoc *doc)
   m_coarseBodyWindow->getSwcFilter()->setRenderingPrimitive("Sphere");
   m_coarseBodyWindow->getSwcFilter()->setStayOnTop(false);
   m_coarseBodyWindow->setYZView();
+  m_coarseBodyWindow->setOpacity(Z3DWindow::LAYER_GRAPH, 0.4);
 
   connect(m_coarseBodyWindow, SIGNAL(closed()), this, SLOT(detachCoarseBodyWindow()));
   connect(m_coarseBodyWindow, SIGNAL(locating2DViewTriggered(ZStackViewParam)),
@@ -582,9 +583,9 @@ void ZFlyEmBodyMergeProject::makeCoarseBodyWindow(ZStackDoc *doc)
 
   update3DBodyView(false, true);
 
-  emit coarseBodyWindowCreatedInThread();
-
   getProgressSignal()->endProgress();
+
+  emit coarseBodyWindowCreatedInThread();
 }
 
 void ZFlyEmBodyMergeProject::presentCoarseBodyView()

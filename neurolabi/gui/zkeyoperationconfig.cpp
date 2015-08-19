@@ -21,6 +21,9 @@ void ZKeyOperationConfig::Configure(
   case ZKeyOperation::OG_FLYEM_BOOKMARK:
     ConfigureFlyEmBookmarkMap(map);
     break;
+  case ZKeyOperation::OG_ACTIVE_STROKE:
+    ConfigureActiveStrokeMap(map);
+    break;
   default:
     break;
   }
@@ -50,6 +53,16 @@ void ZKeyOperationConfig::ConfigureStackMap(ZKeyOperationMap &map)
 
   shiftKeyMap[Qt::Key_Q] = ZStackOperator::OP_STACK_DEC_SLICE_FAST;
   shiftKeyMap[Qt::Key_E] = ZStackOperator::OP_STACK_INC_SLICE_FAST;
+}
+
+void ZKeyOperationConfig::ConfigureActiveStrokeMap(ZKeyOperationMap &map)
+{
+  QMap<int, ZStackOperator::EOperation> &plainKeyMap = *(map.getPlainMap());
+  plainKeyMap[Qt::Key_Q] = ZStackOperator::OP_ACTIVE_STROKE_DECREASE_SIZE;
+  plainKeyMap[Qt::Key_E] = ZStackOperator::OP_ACTIVE_STROKE_INCREASE_SIZE;
+
+  QMap<int, ZStackOperator::EOperation> &shiftKeyMap = *(map.getShiftMap());
+  shiftKeyMap[Qt::Key_E] = ZStackOperator::OP_ACTIVE_STROKE_ESTIMATE_SIZE;
 }
 
 void ZKeyOperationConfig::ConfigureSwcNodeMap(ZKeyOperationMap &map)

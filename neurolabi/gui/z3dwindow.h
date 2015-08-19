@@ -72,6 +72,7 @@ public: //properties
   void setScale(ERendererLayer layer, double sx, double sy, double sz);
   void setZScale(double scale);
   void setScale(double sx, double sy, double sz);
+  void setOpacity(ERendererLayer layer, double opacity);
 
 
 public: //Camera adjustment

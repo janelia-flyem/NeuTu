@@ -14,6 +14,7 @@ public:
       ZKeyOperationMap &map, ZKeyOperation::EGroup group);
 
 private:
+  static void ConfigureActiveStrokeMap(ZKeyOperationMap &map);
   static void ConfigureSwcNodeMap(ZKeyOperationMap &map);
   static void ConfigureStackMap(ZKeyOperationMap &map);
   static void ConfigureFlyEmBookmarkMap(ZKeyOperationMap &map);
