@@ -7948,6 +7948,16 @@ void ZStackDoc::updateWatershedBoundaryObject(ZStack *out, ZIntPoint dsIntv)
   }
 }
 
+ZDvidSparseStack* ZStackDoc::getDvidSparseStack() const
+{
+  ZStackObject *obj = getObjectGroup().findFirstSameSource(
+        ZStackObject::TYPE_DVID_SPARSE_STACK,
+        ZStackObjectSourceFactory::MakeSplitObjectSource());
+  ZDvidSparseStack *sparseStack = dynamic_cast<ZDvidSparseStack*>(obj);
+
+  return sparseStack;
+}
+
 void ZStackDoc::localSeededWatershed()
 {
   getProgressSignal()->startProgress("Running local split ...");
@@ -7969,10 +7979,7 @@ void ZStackDoc::localSeededWatershed()
         signalStack = m_sparseStack->getStack();
         dsIntv = m_sparseStack->getDownsampleInterval();
       } else {
-        ZStackObject *obj = getObjectGroup().findFirstSameSource(
-              ZStackObject::TYPE_DVID_SPARSE_STACK,
-              ZStackObjectSourceFactory::MakeSplitObjectSource());
-        ZDvidSparseStack *sparseStack = dynamic_cast<ZDvidSparseStack*>(obj);
+        ZDvidSparseStack *sparseStack = getDvidSparseStack();
         if (sparseStack != NULL) {
           signalStack = sparseStack->getStack(seedMask.getBoundBox());
           dsIntv = sparseStack->getDownsampleInterval();

@@ -7,12 +7,14 @@
 #include "zflyembodymerger.h"
 #include "dvid/zdvidtarget.h"
 #include "zstackdoccommand.h"
+#include "zsharedpointer.h"
 //#include "zflyembodysplitproject.h"
 
 class ZDvidSparseStack;
 class ZFlyEmSupervisor;
 class ZFlyEmBookmark;
 class ZPuncta;
+class ZDvidSparseStack;
 
 class ZFlyEmProofDoc : public ZStackDoc
 {
@@ -83,6 +85,8 @@ public:
     m_isCustomBookmarkSaved = state;
   }
 
+  ZDvidSparseStack* getDvidSparseStack() const;
+
 public:
   void notifyBodyMerged();
   void notifyBodyUnmerged();
@@ -123,6 +127,9 @@ private:
   QTimer *m_bookmarkTimer;
 
   QString m_mergeAutoSavePath;
+
+  mutable ZSharedPointer<ZDvidSparseStack> m_splitSource;
+
 
   //ZFlyEmBodySplitProject m_splitProject;
 };

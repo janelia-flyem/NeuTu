@@ -82,6 +82,7 @@ class Z3DWindow;
 class ZStackMvc;
 class ZProgressSignal;
 class ZWidgetMessage;
+class ZDvidSparseStack;
 
 /*!
  * \brief The class of stack document
@@ -259,6 +260,7 @@ public: //attributes
   QList<ZDvidLabelSlice*> getDvidLabelSliceList() const;
   QList<ZDvidTileEnsemble*> getDvidTileEnsembleList() const;
   QList<ZDvidSparsevolSlice*> getDvidSparsevolSliceList() const;
+  virtual ZDvidSparseStack* getDvidSparseStack() const;
 
   bool hasSwcList();       //to test swctree
   //inline QList<ZLocsegChain*>* chainList() {return &m_chainList;}
@@ -1121,7 +1123,7 @@ private:
   int xmlConnNode(QXmlStreamReader *xml, QString *filePath, int *spot);
   int xmlConnMode(QXmlStreamReader *xml);
   ZSwcTree* nodeToSwcTree(Swc_Tree_Node* node) const;
-  std::vector<ZStack*> createWatershedMask(bool selectedOnly);
+  virtual std::vector<ZStack*> createWatershedMask(bool selectedOnly);
   ResolutionDialog* getResolutionDialog();
   void updateWatershedBoundaryObject(ZStack *out, ZIntPoint dsIntv);
 

@@ -1499,6 +1499,8 @@ void MainWindow::openFileFunc2(const QString &fileName)
     emit progressAdvanced(0.3);
 
     emit docReady(doc);
+
+    setCurrentFile(fileName);
   } else {
     emit progressDone();
     reportFileOpenProblem(fileName, "Unrecognized file type.");

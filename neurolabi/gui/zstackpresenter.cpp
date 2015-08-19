@@ -2706,6 +2706,7 @@ void ZStackPresenter::process(const ZStackOperator &op)
                                 1, 1);
     rect->setSource(ZStackObjectSourceFactory::MakeRectRoiSource());
     rect->setPenetrating(true);
+    rect->setZ(buddyView()->getCurrentZ());
     rect->setColor(0, 255, 0);
     buddyDocument()->executeAddObjectCommand(rect);
   }

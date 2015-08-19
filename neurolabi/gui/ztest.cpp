@@ -17635,7 +17635,7 @@ void ZTest::test(MainWindow *host)
   selector.print();
 #endif
 
-#if 1
+#if 0
   ZSharedPointer<ZStackObject> obj = ZSharedPointer<ZStackObject>(new ZSwcTree);
   std::cout << obj.use_count() << std::endl;
 
@@ -17645,6 +17645,30 @@ void ZTest::test(MainWindow *host)
 
   ZSharedPointer<ZSwcTree> obj2 = Shared_Dynamic_Cast<ZSwcTree>(obj);
   std::cout << obj.use_count() << std::endl;
+  std::cout << obj2.use_count() << std::endl;
+
+#endif
+
+#if 0
+  ZObject3dScan obj;
+  obj.load(GET_TEST_DATA_DIR + "/benchmark/pile.sobj");
+
+  ZObject3dScan subobj = obj.subobject(ZIntCuboid(16, 16, 1, 16, 16, 1));
+  subobj.print();
+
+  subobj = obj.subobject(ZIntCuboid(5, 5, 1, 15, 15, 3));
+  subobj.print();
+
+  subobj = obj.subobject(ZIntCuboid(15, 15, 1, 17, 17, 3));
+  subobj.print();
+
+#endif
+
+#if 0
+  ZObject3dScan obj;
+  obj.load(GET_TEST_DATA_DIR + "/benchmark/29.sobj");
+  ZObject3dScan subobj = obj.subobject(ZIntCuboid(261, 603, 224, 441, 754, 272));
+  subobj.save(GET_TEST_DATA_DIR + "/test.sobj");
 
 #endif
 

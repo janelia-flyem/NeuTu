@@ -609,6 +609,30 @@ void ZFlyEmProofDoc::notifyBodyIsolated(uint64_t bodyId)
   emit bodyIsolated(bodyId);
 }
 
+ZDvidSparseStack* ZFlyEmProofDoc::getDvidSparseStack() const
+{
+  ZDvidSparseStack *stack = NULL;
+
+  if (getRect2dRoi().isValid()) {
+    ZRect2d rect = getRect2dRoi();
+    int length = iround(sqrt(rect.getWidth() * rect.getWidth() +
+                             rect.getHeight() * rect.getHeight()));
+    ZIntCuboid boundBox(rect.getFirstX(), rect.getFirstY(), rect.getZ() - length,
+                        rect.getLastX(), rect.getLastY(), rect.getZ() + length);
+
+    ZDvidSparseStack *originalStack = ZStackDoc::getDvidSparseStack();
+    if (originalStack != NULL) {
+      m_splitSource =
+          ZSharedPointer<ZDvidSparseStack>(originalStack->getCrop(boundBox));
+      stack = m_splitSource.get();
+    }
+  } else {
+    stack = ZStackDoc::getDvidSparseStack();
+  }
+
+  return stack;
+}
+
 //////////////////////////////////////////
 ZFlyEmProofDocCommand::MergeBody::MergeBody(
     ZStackDoc *doc, QUndoCommand *parent)
