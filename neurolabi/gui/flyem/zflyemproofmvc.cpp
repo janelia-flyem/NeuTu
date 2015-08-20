@@ -1035,6 +1035,7 @@ void ZFlyEmProofMvc::commitCurrentSplit()
 
   if (m_splitCommitDlg->exec()) {
     m_splitProject.setMinObjSize(m_splitCommitDlg->getGroupSize());
+    m_splitProject.keepMainSeed(m_splitCommitDlg->keepingMainSeed());
     const QString threadId = "ZFlyEmBodySplitProject::commitResult";
     if (!m_futureMap.isAlive(threadId)) {
       m_futureMap.removeDeadThread();

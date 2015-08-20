@@ -99,9 +99,8 @@ public:
 
   void exportSplits();
   void commitResult();
-  void commitResultFunc(
-      const ZObject3dScan *wholeBody, const ZStack *stack,
-      const ZIntPoint &dsIntv, size_t minObjSize, bool seedKeeping);
+  void commitResultFunc(const ZObject3dScan *wholeBody, const ZStack *stack,
+      const ZIntPoint &dsIntv, size_t minObjSize);
 
   void viewPreviousSlice();
   void viewNextSlice();
@@ -115,6 +114,7 @@ public:
   }
 
   void setMinObjSize(size_t s) { m_minObjSize = s; }
+  void keepMainSeed(bool keeping) { m_keepingMainSeed = keeping; }
 
   std::string getSplitStatusName() const;
   std::string getSplitLabelName() const;

@@ -25,7 +25,7 @@ public:
 
     void setTileManager(ZTileManager *manager);
     void setDocument(ZSharedPointer<ZStackDoc> p_doc);
-    inline ZStackDoc* getDocument() const { return m_doc.get(); }
+    inline ZSharedPointer<ZStackDoc> getDocument() const { return m_doc; }
     inline float getScaleFactor() {return scaleFactor;}
 
 private slots:

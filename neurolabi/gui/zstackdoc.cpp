@@ -5155,9 +5155,14 @@ bool ZStackDoc::executeSwcNodeSmartExtendCommand(
               C_Stack::make(GREY, getStack()->width(), getStack()->height(),
                             getStack()->depth());
         }
+        /*
         if (GET_APPLICATION_NAME == "Biocytin") {
           m_neuronTracer.setResolution(1, 1, 10);
         }
+        */
+        m_neuronTracer.setResolution(getResolution().voxelSizeX(),
+                                     getResolution().voxelSizeY(),
+                                     getResolution().voxelSizeZ());
 
         m_neuronTracer.setStackOffset(getStackOffset());
 
@@ -5764,7 +5769,12 @@ bool ZStackDoc::executeSwcNodeEstimateRadiusCommand()
       ZIntPoint offset = getStackOffset();
       SwcTreeNode::translate(&newNode, -offset.getX(), -offset.getY(),
                              -offset.getZ());
-      if (SwcTreeNode::fitSignal(&newNode, getStack()->c_stack(),
+      Stack *stack = getStack()->c_stack();
+      if (getStack()->channelNumber() == 3 &&
+          getTag() == NeuTube::Document::BIOCYTIN_STACK) {
+        stack = getStack()->c_stack(1);
+      }
+      if (SwcTreeNode::fitSignal(&newNode, stack,
                                  getStackBackground())) {
         SwcTreeNode::translate(&newNode, offset.getX(), offset.getY(),
                                offset.getZ());
@@ -7012,7 +7022,13 @@ std::vector<ZStack*> ZStackDoc::projectBiocytinStack(
 {
   projector.setProgressReporter(m_progressReporter);
 
+  ZStack *out = new ZStack(
+        getStack()->kind(), getStack()->width(), getStack()->height(),
+        projector.getSlabNumber(),
+        getStack()->channelNumber());
+
   std::vector<ZStack*> projArray;
+  projArray.push_back(out);
 
   for (int slabIndex = 0; slabIndex < projector.getSlabNumber(); ++slabIndex) {
     ZStack *proj = projector.project(getStack(), true, slabIndex);
@@ -7023,7 +7039,14 @@ std::vector<ZStack*> ZStackDoc::projectBiocytinStack(
         proj->setChannelColor(0, 1, 1, 1);
         proj->setChannelColor(1, 0, 0, 0);
       }
-      projArray.push_back(proj);
+
+      for (int c = 0; c < proj->channelNumber(); ++c) {
+        C_Stack::copyPlaneValue(
+              out->data(), proj->c_stack(c)->array, c, slabIndex);
+      }
+
+      delete proj;
+//      projArray.push_back(proj);
       // ZString filePath(stack()->sourcePath());
       /*
       proj->setSource(
@@ -7048,6 +7071,7 @@ std::vector<ZStack*> ZStackDoc::projectBiocytinStack(
 #endif
   }
 
+//  return out;
   return projArray;
 }
 

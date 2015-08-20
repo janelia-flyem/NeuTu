@@ -851,7 +851,9 @@ void ZStackPresenter::processMouseMoveEvent(QMouseEvent *event)
 
 QPointF ZStackPresenter::mapFromWidgetToStack(const QPoint &pos)
 {
-  return buddyView()->imageWidget()->canvasCoordinate(pos);
+  return buddyView()->imageWidget()->canvasCoordinate(pos) +
+      QPoint(buddyDocument()->getStackOffset().getX(),
+             buddyDocument()->getStackOffset().getY());
 }
 
 QPointF ZStackPresenter::mapFromGlobalToStack(const QPoint &pos)
@@ -2893,6 +2895,9 @@ void ZStackPresenter::acceptActiveStroke()
 
   newStroke->setZOrder(m_zOrder++);
   newStroke->setRole(role);
+  if (buddyDocument()->getTag() == NeuTube::Document::BIOCYTIN_PROJECTION) {
+    newStroke->setPenetrating(true);
+  }
   buddyDocument()->executeAddObjectCommand(newStroke);
   //buddyDocument()->executeAddStrokeCommand(newStroke);
 

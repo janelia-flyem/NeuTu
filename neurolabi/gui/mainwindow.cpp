@@ -216,7 +216,7 @@ MainWindow::MainWindow(QWidget *parent) :
           this, SLOT(evokeStackFrame(QMdiSubWindow*)));
 
   m_undoGroup = new QUndoGroup(this);
-  createUndoView();
+//  createUndoView();
 
   //create the rest of the window
   //std::cout << "Creating actions ..." << std::endl;
@@ -480,10 +480,12 @@ void MainWindow::changeEvent(QEvent *e)
 
 void MainWindow::createUndoView()
 {
-//  m_undoView = new QUndoView(m_undoGroup, this);
-//  m_undoView->setWindowTitle(tr("Command History"));
-//  m_undoView->show();
-//  m_undoView->setAttribute(Qt::WA_QuitOnClose, false);
+#if 1
+  m_undoView = new QUndoView(m_undoGroup, NULL);
+  m_undoView->setWindowTitle(tr("Command History"));
+  m_undoView->show();
+  m_undoView->setAttribute(Qt::WA_QuitOnClose, false);
+#endif
 }
 
 void MainWindow::createFileActions()
@@ -1113,6 +1115,8 @@ void MainWindow::updateAction()
     if (frame->presenter() != NULL) {
       undoAction = frame->document()->getUndoAction();
       redoAction = frame->document()->getRedoAction();
+//      qDebug() << undoAction->text();
+//      qDebug() << undoAction->isEnabled();
     }
   }
 
@@ -1555,7 +1559,7 @@ void MainWindow::openFile(const QStringList &fileNameList)
     m_progress->setValue(++currentProgress);
     m_progress->show();
 //    QFuture<ZStackDocReader*> res =
-        QtConcurrent::run(this, &MainWindow::openFileFunc2, fileName);
+        QtConcurrent::run(this, &MainWindow::openFileFunc, fileName);
    // res.waitForFinished();
   }
 }
@@ -1577,7 +1581,7 @@ void MainWindow::openFile(const QString &fileName)
   m_progress->show();
 
   //QFuture<ZStackDocReader*> res =
-  QtConcurrent::run(this, &MainWindow::openFileFunc2, fileName);
+  QtConcurrent::run(this, &MainWindow::openFileFunc, fileName);
 
 }
 
@@ -5627,7 +5631,9 @@ void MainWindow::on_actionTiles_triggered()
     progressDlg->setRange(0, 0);
     progressDlg->open();
 
-    ZTiledStackFrame *frame = ZTiledStackFrame::Make(NULL);
+    ZSharedPointer<ZStackDoc> doc =
+        ZStackDocFactory::Make(NeuTube::Document::BIOCYTIN_STACK);
+    ZTiledStackFrame *frame = ZTiledStackFrame::Make(NULL, doc);
     if (frame->importTiles(fileName)) {
       addStackFrame(frame);
       presentStackFrame(frame);
