@@ -3,6 +3,7 @@
 #include <QtConcurrentRun>
 #include <QApplication>
 #include <QItemSelectionModel>
+#include <QDesktopWidget>
 
 #include "zintpoint.h"
 #include "zstackdvidgrayscalefactory.h"
@@ -603,7 +604,7 @@ void ZFlyEmBodyMergeProject::showCoarseBody3d()
 {
     if(m_bodyViewWindow == NULL){
         m_bodyViewWindow = new Z3DMainWindow(0);
-        m_bodyViewWindow->setWindowTitle(QString::fromUtf8("3D Body Viewer"));
+        m_bodyViewWindow->setWindowTitle(QString::fromUtf8("3D Body View"));
 
         QWidget *centralWidget = new QWidget(m_bodyViewWindow);
 
@@ -612,6 +613,7 @@ void ZFlyEmBodyMergeProject::showCoarseBody3d()
         }
 
         m_bodyViewWindow->setCentralWidget(centralWidget);
+        m_bodyViewWindow->resize(QDesktopWidget().availableGeometry(0).size()*0.7);
     }
 
   if (m_coarseBodyWindow == NULL) {
@@ -628,7 +630,7 @@ void ZFlyEmBodyMergeProject::showCoarseBody3d()
     //m_coarseBodyWindow->raise();
   }
 
-  m_bodyViewers->addTab(m_coarseBodyWindow, "CoarseBodyView");
+  m_bodyViewers->addTab(m_coarseBodyWindow, "Coarse Body View");
   m_bodyViewers->setTabsClosable(true);
 
   m_bodyViewWindow->show();
@@ -637,12 +639,32 @@ void ZFlyEmBodyMergeProject::showCoarseBody3d()
 
 void ZFlyEmBodyMergeProject::showBody3d()
 {
+    if(m_bodyViewWindow == NULL){
+        m_bodyViewWindow = new Z3DMainWindow(0);
+        m_bodyViewWindow->setWindowTitle(QString::fromUtf8("3D Body View"));
+
+        QWidget *centralWidget = new QWidget(m_bodyViewWindow);
+
+        if(m_bodyViewers == NULL){
+            m_bodyViewers = new Z3DTabWidget(centralWidget);
+        }
+
+        m_bodyViewWindow->setCentralWidget(centralWidget);
+        m_bodyViewWindow->resize(QDesktopWidget().availableGeometry(0).size()*0.7);
+    }
+
   if (m_bodyWindow == NULL) {
     makeBodyWindow();
   }
 
-  m_bodyWindow->show();
-  m_bodyWindow->raise();
+  //m_bodyWindow->show();
+  //m_bodyWindow->raise();
+
+  m_bodyViewers->addTab(m_bodyWindow, "Body View");
+  m_bodyViewers->setTabsClosable(true);
+
+  m_bodyViewWindow->show();
+  m_bodyViewWindow->raise();
 }
 
 /*
