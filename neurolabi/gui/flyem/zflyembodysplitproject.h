@@ -101,7 +101,7 @@ public:
   void commitResult();
   void commitResultFunc(
       const ZObject3dScan *wholeBody, const ZStack *stack,
-      const ZIntPoint &dsIntv, size_t minObjSize);
+      const ZIntPoint &dsIntv, size_t minObjSize, bool seedKeeping);
 
   void viewPreviousSlice();
   void viewNextSlice();
@@ -211,6 +211,9 @@ private:
   void showQuickView(Z3DWindow *window);
   void result3dQuickFunc();
 
+  int getMinObjSize() const { return m_minObjSize; }
+  bool keepingMainSeed() const { return m_keepingMainSeed; }
+
 private:
   ZDvidTarget m_dvidTarget;
   ZDvidInfo m_dvidInfo;
@@ -221,7 +224,9 @@ private:
   Z3DWindow *m_resultWindow;
   Z3DWindow *m_quickResultWindow;
   Z3DWindow *m_quickViewWindow;
+
   size_t m_minObjSize;
+  bool m_keepingMainSeed;
 
 //  ZFlyEmBookmarkArray *m_bookmarkArray; //aggregation
 

@@ -157,7 +157,7 @@ protected:
   QTimer *m_timer;
   bool m_isReadingDone;
   ZDvidTarget m_dvidTarget;
-#if _ENABLE_LIBDVIDCPP_
+#if defined(_ENABLE_LIBDVIDCPP_)
   libdvid::DVIDNodeService *m_service;
 #endif
 

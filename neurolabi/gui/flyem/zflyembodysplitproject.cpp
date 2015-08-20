@@ -46,7 +46,7 @@ ZFlyEmBodySplitProject::ZFlyEmBodySplitProject(QObject *parent) :
   QObject(parent), m_bodyId(0), m_dataFrame(NULL),
   m_resultWindow(NULL), m_quickResultWindow(NULL),
   m_quickViewWindow(NULL),
-  m_minObjSize(0), /*m_bookmarkArray(NULL),*/
+  m_minObjSize(0), m_keepingMainSeed(false), /*m_bookmarkArray(NULL),*/
   m_isBookmarkVisible(true), m_showingBodyMask(false)
 {
   m_progressSignal = new ZProgressSignal(this);
@@ -779,6 +779,7 @@ std::set<int> ZFlyEmBodySplitProject::getBookmarkBodySet() const
   return bodySet;
 }
 
+
 void ZFlyEmBodySplitProject::exportSplits()
 {
   //ZObject3dScan body = *(getDataFrame()->document()->getSparseStack()->getObjectMask());
@@ -794,7 +795,7 @@ void ZFlyEmBodySplitProject::commitResult()
         getDocument()->getConstSparseStack()->getObjectMask(),
         getDocument()->getLabelField(),
         getDocument()->getConstSparseStack()->getDownsampleInterval(),
-        m_minObjSize);
+        getMinObjSize(), keepingMainSeed());
   getProgressSignal()->endProgress();
 
   deleteSavedSeed();
@@ -842,7 +843,7 @@ void ZFlyEmBodySplitProject::updateSplitDocument()
 
 void ZFlyEmBodySplitProject::commitResultFunc(
     const ZObject3dScan *wholeBody, const ZStack *stack, const ZIntPoint &dsIntv,
-    size_t minObjSize)
+    size_t minObjSize, bool seedKeeping)
 {
   getProgressSignal()->startProgress("Uploading splitted bodies");
 
