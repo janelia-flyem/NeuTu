@@ -43,6 +43,8 @@
 
 ZFlyEmBodyMergeProject::ZFlyEmBodyMergeProject(QObject *parent) :
   QObject(parent), m_dataFrame(NULL), m_coarseBodyWindow(NULL),
+  m_bodyViewWindow(NULL),
+  m_bodyViewers(NULL),
   m_bodyWindow(NULL),
   m_isBookmarkVisible(true),
 //  m_bookmarkArray(NULL),
@@ -599,6 +601,19 @@ void ZFlyEmBodyMergeProject::presentCoarseBodyView()
 
 void ZFlyEmBodyMergeProject::showCoarseBody3d()
 {
+    if(m_bodyViewWindow == NULL){
+        m_bodyViewWindow = new Z3DMainWindow(0);
+        m_bodyViewWindow->setWindowTitle(QString::fromUtf8("3D Body Viewer"));
+
+        QWidget *centralWidget = new QWidget(m_bodyViewWindow);
+
+        if(m_bodyViewers == NULL){
+            m_bodyViewers = new Z3DTabWidget(centralWidget);
+        }
+
+        m_bodyViewWindow->setCentralWidget(centralWidget);
+    }
+
   if (m_coarseBodyWindow == NULL) {
     ZStackDoc *doc = new ZStackDoc;
 
@@ -609,9 +624,15 @@ void ZFlyEmBodyMergeProject::showCoarseBody3d()
 
 //    make3DBodyWindow(doc);
   } else {
-    m_coarseBodyWindow->show();
-    m_coarseBodyWindow->raise();
+    //m_coarseBodyWindow->show();
+    //m_coarseBodyWindow->raise();
   }
+
+  m_bodyViewers->addTab(m_coarseBodyWindow, "CoarseBodyView");
+  m_bodyViewers->setTabsClosable(true);
+
+  m_bodyViewWindow->show();
+  m_bodyViewWindow->raise();
 }
 
 void ZFlyEmBodyMergeProject::showBody3d()

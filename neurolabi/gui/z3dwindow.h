@@ -2,6 +2,8 @@
 #define Z3DWINDOW_H
 
 #include <QMainWindow>
+#include <QTabWidget>
+#include <QTabBar>
 #include <vector>
 #include <set>
 #include <map>
@@ -40,6 +42,26 @@ class QToolBar;
 class ZStroke2d;
 class ZStackViewParam;
 //class Z3DRendererBase;
+
+class Z3DMainWindow : public QMainWindow
+{
+    Q_OBJECT
+public:
+    Z3DMainWindow(QWidget* parent = 0);
+    ~Z3DMainWindow();
+};
+
+class Z3DTabWidget : public QTabWidget
+{
+    Q_OBJECT
+public:
+    Z3DTabWidget(QWidget* parent);
+    ~Z3DTabWidget();
+    QTabBar* tabBar();
+
+public slots:
+    void tabSlotFunc(int index);
+};
 
 class Z3DWindow : public QMainWindow
 {

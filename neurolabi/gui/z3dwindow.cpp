@@ -83,6 +83,37 @@ public:
     static void sleep(unsigned long secs){QThread::sleep(secs);}
 };
 
+Z3DMainWindow::Z3DMainWindow(QWidget *parent) : QMainWindow(parent)
+{
+    setParent(parent);
+}
+
+Z3DMainWindow::~Z3DMainWindow()
+{
+
+}
+
+Z3DTabWidget::Z3DTabWidget(QWidget *parent) : QTabWidget(parent)
+{
+    setParent(parent);
+    QObject::connect(this,SIGNAL(currentChanged(int)),this,SLOT(tabSlotFunc(int)));
+}
+
+QTabBar* Z3DTabWidget::tabBar()
+{
+    return QTabWidget::tabBar();
+}
+
+void Z3DTabWidget::tabSlotFunc(int index)
+{
+    // to do
+    // this->tabBar()
+}
+
+Z3DTabWidget::~Z3DTabWidget()
+{
+
+}
 
 Z3DWindow::Z3DWindow(ZSharedPointer<ZStackDoc> doc, Z3DWindow::EInitMode initMode,
                      bool stereoView, QWidget *parent)
