@@ -72,8 +72,18 @@ void ZStackBall::display(ZPainter &painter, int slice,
     return;
   }
 
+
+
 //  UNUSED_PARAMETER(style);
 #if _QT_GUI_USED_
+  if (!painter.isVisible(QRectF(getCenter().x() - getRadius(),
+                               getCenter().y() - getRadius(),
+                               getRadius() * 2,
+                               getRadius() * 2))) {
+    return;
+  }
+
+
   painter.save();
 
 //  const QPen &oldPen = painter.pen();

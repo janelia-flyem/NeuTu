@@ -237,13 +237,13 @@ ZStackOperator ZMouseEventLeftButtonReleaseMapper::getOperation(
         if (event.getModifiers() == Qt::ControlModifier) {
           op.setOperation(ZStackOperator::OP_SWC_EXTEND);
         } else {
-          if (event.getModifiers() == Qt::ShiftModifier) {
-            if (op.getHitObject() != NULL) {
-              if (op.getHitObject()->isSelectable()) {
-                processSelectionOperation(op, event);
-              }
+          if (op.getHitObject() != NULL) {
+            if (op.getHitObject()->isSelectable()) {
+              processSelectionOperation(op, event);
             }
-          } else {
+          }
+
+          if (op.isNull()) {
             op.setOperation(ZStackOperator::OP_SWC_SMART_EXTEND);
           }
         }
