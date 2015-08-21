@@ -3,6 +3,7 @@
 #include <QRect>
 #include <QRectF>
 #include <QPointF>
+#include <QPaintDevice>
 
 #include "zintpoint.h"
 #include "zimage.h"
@@ -354,15 +355,43 @@ void ZPainter::drawPoints(const std::vector<QPointF> &pointArray)
 
 void ZPainter::drawLine(int x1, int y1, int x2, int y2)
 {
-  m_painter.drawLine(x1, y1, x2, y2);
-  setPainted(true);
+  bool painting = true;
+  if (m_canvasRange.isValid()) {
+    QRect rect(QPoint(x1, y1), QPoint(x2, y2));
+
+    if (!(rect.contains(m_canvasRange.topLeft()) ||
+        rect.contains(m_canvasRange.bottomRight()) ||
+        m_canvasRange.contains(rect.topLeft()) ||
+        m_canvasRange.contains(rect.bottomRight()))) {
+      painting = false;
+    }
+  }
+
+  if (painting) {
+    m_painter.drawLine(x1, y1, x2, y2);
+    setPainted(true);
+  }
 //  drawLine(QPointF(x1, y1), QPointF(x2, y2));
 }
 
 void ZPainter::drawLine(const QPointF &pt1, const QPointF &pt2)
 {
-  m_painter.drawLine(pt1, pt2);
-  setPainted(true);
+  bool painting = true;
+  if (m_canvasRange.isValid()) {
+    QRectF rect(pt1, pt2);
+
+    if (!(rect.contains(m_canvasRange.topLeft()) ||
+        rect.contains(m_canvasRange.bottomRight()) ||
+        m_canvasRange.contains(rect.topLeft().toPoint()) ||
+        m_canvasRange.contains(rect.bottomRight().toPoint()))) {
+      painting = false;
+    }
+  }
+
+  if (painting) {
+    m_painter.drawLine(pt1, pt2);
+    setPainted(true);
+  }
 
 //#if _QT_GUI_USED_
 //  QPainter::drawLine(pt1 - QPointF(m_offset.x(), m_offset.y()),

@@ -2706,8 +2706,10 @@ void ZStackPresenter::process(const ZStackOperator &op)
     interactionEvent.setEvent(ZInteractionEvent::EVENT_VIEW_SLICE);
     break;
   case ZStackOperator::OP_STACK_VIEW_PROJECTION:
-    interactiveContext().setViewMode(ZInteractiveContext::VIEW_PROJECT);
-    interactionEvent.setEvent(ZInteractionEvent::EVENT_VIEW_PROJECTION);
+    if (buddyDocument()->getTag() != NeuTube::Document::BIOCYTIN_PROJECTION) {
+      interactiveContext().setViewMode(ZInteractiveContext::VIEW_PROJECT);
+      interactionEvent.setEvent(ZInteractionEvent::EVENT_VIEW_PROJECTION);
+    }
     break;
   case ZStackOperator::OP_SWC_LOCATE_FOCUS:
     if (op.getHitObject<Swc_Tree_Node>() != NULL) {
@@ -2838,10 +2840,11 @@ void ZStackPresenter::acceptActiveStroke()
         Stack_Graph_Workspace *sgw = New_Stack_Graph_Workspace();
         if (buddyDocument()->getStackBackground() ==
             NeuTube::IMAGE_BACKGROUND_BRIGHT) {
-          sgw->wf = Stack_Voxel_Weight;
+          sgw->wf = Stack_Voxel_Weight_Sr;
         } else {
           sgw->wf = Stack_Voxel_Weight_S;
         }
+
         double pointDistance = Geo3d_Dist(start.x(), start.y(), 0,
             end.x(), end.y(), 0) / 2;
         double cx = (start.x() + end.x()) / 2;

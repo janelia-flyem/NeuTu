@@ -4776,6 +4776,7 @@ void MainWindow::on_actionMake_Projection_triggered()
         ZStackFrame *newFrame =
             createStackFrame(stack, NeuTube::Document::BIOCYTIN_PROJECTION, frame);
         newFrame->makeSwcProjection(frame->document().get());
+        newFrame->document()->setStackOffset(frame->document()->getStackOffset());
         addStackFrame(newFrame);
         presentStackFrame(newFrame);
       }

@@ -302,6 +302,30 @@ double Stack_Voxel_Weight_Srb(void *argv)
   return weight;
 }
 
+double Stack_Voxel_Weight_Srw(void *argv)
+{
+  double v1 = ((double*) argv)[1];
+  double v2 = ((double*) argv)[2];
+  double d = ((double*) argv)[0];
+
+  double thre = ((double*) argv)[3];
+  if (tz_isnan(thre)) {
+    thre = 60.0;
+  }
+
+  double scale = ((double*) argv)[4];
+  if (tz_isnan(scale)) {
+    scale = 5.0;
+  }
+
+  double weight = sqrt(d) *
+    (1.0 / (1.0 + exp((thre - v1)/scale))
+     + 1.0 / (1.0 + exp((thre - v2)/scale))
+     + 0.0001);
+
+  return weight;
+}
+
 double Stack_Voxel_Weight_C(void *argv)
 {
   double v1 = ((double*) argv)[1];
