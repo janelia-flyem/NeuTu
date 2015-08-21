@@ -867,22 +867,23 @@ void ZFlyEmBodySplitProject::commitResultFunc(
 
 //  size_t minObjSize = 20;
 
-  emitMessage(QString("Identifying isolated objects ..."));
-  std::vector<ZObject3dScan> objArray = body.getConnectedComponent();
-
   getProgressSignal()->advanceProgress(0.1);
 
   ZObject3dScan smallBodyGroup;
 
-  if (objArray.size() > 1 && minObjSize > 0) {
-    body.clear();
-    for (std::vector<ZObject3dScan>::const_iterator iter = objArray.begin();
-         iter != objArray.end(); ++iter) {
-      const ZObject3dScan &obj = *iter;
-      if (obj.getVoxelNumber() < minObjSize) {
-        smallBodyGroup.concat(obj);
-      } else {
-        body.concat(obj);
+  if (minObjSize > 0) {
+    emitMessage(QString("Identifying isolated objects ..."));
+    std::vector<ZObject3dScan> objArray = body.getConnectedComponent();
+    if (objArray.size() > 1) {
+      body.clear();
+      for (std::vector<ZObject3dScan>::const_iterator iter = objArray.begin();
+           iter != objArray.end(); ++iter) {
+        const ZObject3dScan &obj = *iter;
+        if (obj.getVoxelNumber() < minObjSize) {
+          smallBodyGroup.concat(obj);
+        } else {
+          body.concat(obj);
+        }
       }
     }
   }
@@ -955,7 +956,7 @@ void ZFlyEmBodySplitProject::commitResultFunc(
     }
   }
 
-  if (!body.isEmpty()) {
+  if (!body.isEmpty() && minObjSize > 0) {
     std::vector<ZObject3dScan> objArray = body.getConnectedComponent();
 
 #ifdef _DEBUG_2
