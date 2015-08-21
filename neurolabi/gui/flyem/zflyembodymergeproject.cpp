@@ -606,13 +606,18 @@ void ZFlyEmBodyMergeProject::showCoarseBody3d()
         m_bodyViewWindow = new Z3DMainWindow(0);
         m_bodyViewWindow->setWindowTitle(QString::fromUtf8("3D Body View"));
 
-        QWidget *centralWidget = new QWidget(m_bodyViewWindow);
+        QSizePolicy sizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
+
+        QVBoxLayout* bvLayout = new QVBoxLayout;
 
         if(m_bodyViewers == NULL){
-            m_bodyViewers = new Z3DTabWidget(centralWidget);
+            m_bodyViewers = new Z3DTabWidget(m_bodyViewWindow);
+            m_bodyViewers->setSizePolicy(sizePolicy);
+            bvLayout->addWidget(m_bodyViewers);
         }
 
-        m_bodyViewWindow->setCentralWidget(centralWidget);
+        m_bodyViewWindow->setLayout(bvLayout);
+        m_bodyViewWindow->setCentralWidget(m_bodyViewers);
         m_bodyViewWindow->resize(QDesktopWidget().availableGeometry(0).size()*0.7);
     }
 
@@ -643,22 +648,18 @@ void ZFlyEmBodyMergeProject::showBody3d()
         m_bodyViewWindow = new Z3DMainWindow(0);
         m_bodyViewWindow->setWindowTitle(QString::fromUtf8("3D Body View"));
 
-        QWidget *bvWidget = new QWidget(m_bodyViewWindow);
         QSizePolicy sizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
 
         QVBoxLayout* bvLayout = new QVBoxLayout;
-        bvWidget->setLayout(bvLayout);
-
-        bvWidget->setSizePolicy(sizePolicy);
-        bvLayout->addWidget(bvWidget);
 
         if(m_bodyViewers == NULL){
-            m_bodyViewers = new Z3DTabWidget(bvWidget);
+            m_bodyViewers = new Z3DTabWidget(m_bodyViewWindow);
             m_bodyViewers->setSizePolicy(sizePolicy);
+            bvLayout->addWidget(m_bodyViewers);
         }
 
         m_bodyViewWindow->setLayout(bvLayout);
-        m_bodyViewWindow->setCentralWidget(bvWidget);
+        m_bodyViewWindow->setCentralWidget(m_bodyViewers);
         m_bodyViewWindow->resize(QDesktopWidget().availableGeometry(0).size()*0.7);
     }
 
