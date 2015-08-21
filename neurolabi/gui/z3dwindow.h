@@ -4,6 +4,9 @@
 #include <QMainWindow>
 #include <QTabWidget>
 #include <QTabBar>
+#include <QToolBar>
+#include <QIcon>
+#include <QAction>
 #include <vector>
 #include <set>
 #include <map>
@@ -49,6 +52,9 @@ class Z3DMainWindow : public QMainWindow
 public:
     Z3DMainWindow(QWidget* parent = 0);
     ~Z3DMainWindow();
+
+public:
+    QToolBar *toolBar;
 };
 
 class Z3DTabWidget : public QTabWidget
@@ -61,6 +67,7 @@ public:
 
 public slots:
     void tabSlotFunc(int index);
+
 };
 
 class Z3DWindow : public QMainWindow
