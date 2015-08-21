@@ -5180,22 +5180,31 @@ bool ZStackDoc::executeSwcNodeSmartExtendCommand(
             Swc_Tree_Node *root = Swc_Tree_Regular_Root(branch);
             Swc_Tree_Node *begin = SwcTreeNode::firstChild(root);
 
-            SwcTreeNode::detachParent(begin);
-            Kill_Swc_Tree(branch);
-
             Swc_Tree_Node *leaf = begin;
             while (SwcTreeNode::firstChild(leaf) != NULL) {
               leaf = SwcTreeNode::firstChild(leaf);
             }
+            ZSwcPath originalPath(root, leaf);
+            if (getTag() == NeuTube::Document::BIOCYTIN_STACK) {
+              originalPath.smooth(true);
+              originalPath.smoothZ();
+            }
+
+            if (SwcTreeNode::hasChild(begin)) {
+              if (SwcTreeNode::hasOverlap(begin, prevNode)) {
+                begin = SwcTreeNode::firstChild(begin);
+              }
+            }
+
+            SwcTreeNode::detachParent(begin);
+            Kill_Swc_Tree(branch);
+
+
             ZSwcPath path(begin, leaf);
             for (ZSwcPath::iterator iter = path.begin(); iter != path.end();
                  ++iter) {
               Swc_Tree_Node *tn = *iter;
               tn->tree_state = prevNode->tree_state;
-            }
-
-            if (getTag() == NeuTube::Document::BIOCYTIN_STACK) {
-              path.smooth(true);
             }
 
             ZSwcResampler resampler;
@@ -5737,6 +5746,7 @@ void ZStackDoc::estimateSwcRadius(ZSwcTree *tree, int maxIter)
       for (Swc_Tree_Node *tn = tree->begin(); tn != NULL; tn = tree->next()) {
         if (SwcTreeNode::isRegular(tn)) {
           SwcTreeNode::fitSignal(tn, getStack()->c_stack(), getStackBackground());
+          SwcTreeNode::fitSignal(tn, getStack()->c_stack(), getStackBackground());
         }
         advanceProgress(step);
       }
@@ -6217,17 +6227,6 @@ bool ZStackDoc::executeSmartConnectSwcNodeCommand(
         SwcTreeNode::x(tn2), SwcTreeNode::y(tn2),
         SwcTreeNode::z(tn2), SwcTreeNode::radius(tn2));
 
-  /*
-  Swc_Tree *branch = tracer.trace(
-        SwcTreeNode::x(tn1) - offset.x(), SwcTreeNode::y(tn1) - offset.y(),
-        SwcTreeNode::z(tn1) - offset.z(), SwcTreeNode::radius(tn1),
-        SwcTreeNode::x(tn2) - offset.x(), SwcTreeNode::y(tn2) - offset.y(),
-        SwcTreeNode::z(tn2) - offset.z(), SwcTreeNode::radius(tn2));
-
-  Swc_Tree_Translate(branch, offset.x(), offset.y(), offset.z());
-  */
-
-
   if (branch != NULL) {
     if (Swc_Tree_Has_Branch(branch)) {
       //tracer.updateMask(branch);
@@ -6244,6 +6243,10 @@ bool ZStackDoc::executeSmartConnectSwcNodeCommand(
         branch = NULL;
       }
 
+      ZSwcPath path(root, leaf);
+      path.smooth(true);
+      path.smoothZ();
+
       QUndoCommand *command =
           new ZStackDocCommand::SwcEdit::CompositeCommand(this);
       command = new ZStackDocCommand::SwcEdit::CompositeCommand(this);
@@ -6256,7 +6259,25 @@ bool ZStackDoc::executeSmartConnectSwcNodeCommand(
         Swc_Tree_Node *terminal = SwcTreeNode::parent(leaf);
         SwcTreeNode::detachParent(leaf);
         SwcTreeNode::kill(leaf);
-        //ZSwcPath path(begin, terminal);
+
+        ZSwcResampler resampler;
+        resampler.setDistanceScale(1.5);
+
+        ZSwcTree tree;
+        tree.setDataFromNode(begin);
+
+//            Swc_Tree_Remove_Zigzag(tree.data());
+        resampler.optimalDownsample(&tree);
+        begin = tree.firstRegularRoot();
+
+        leaf = begin;
+        while (SwcTreeNode::firstChild(leaf) != NULL) {
+          leaf = SwcTreeNode::firstChild(leaf);
+          SwcTreeNode::correctTurn(leaf);
+        }
+
+        tree.setData(NULL, ZSwcTree::LEAVE_ALONE);
+
         new ZStackDocCommand::SwcEdit::SetParent(
               this, tn2, terminal, false, command);
         new ZStackDocCommand::SwcEdit::SetParent(
@@ -8088,7 +8109,7 @@ void ZStackDoc::seededWatershed()
       } else {
         ZDvidSparseStack *sparseStack = getDvidSparseStack();
         if (sparseStack != NULL) {
-          signalStack = sparseStack->getStack(seedMask.getBoundBox());
+          signalStack = sparseStack->getStack();
           dsIntv = sparseStack->getDownsampleInterval();
         }
         /*

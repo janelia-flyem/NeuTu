@@ -401,7 +401,7 @@ void ZSwcTree::computeLineSegment(const Swc_Tree_Node *lowerTn,
   double upperZ = dataFocus + 0.5;
   double lowerZ = dataFocus - 0.5;
 
-  if ((dataFocus == -1) ||
+  if ((dataFocus < 0) ||
       (IS_IN_OPEN_RANGE(SwcTreeNode::z(lowerTn), lowerZ, upperZ) &&
        IS_IN_OPEN_RANGE(SwcTreeNode::z(upperTn), lowerZ, upperZ))) {
     visible = true;
@@ -532,7 +532,7 @@ void ZSwcTree::display(ZPainter &painter, int slice,
         extractCurveTerminal();
     if (nodePair.first != NULL && nodePair.second != NULL) {
       QPointF lineStart, lineEnd;
-      bool visible;
+      bool visible = false;
       computeLineSegment(
             nodePair.first, nodePair.second, lineStart, lineEnd, visible,
             dataFocus);

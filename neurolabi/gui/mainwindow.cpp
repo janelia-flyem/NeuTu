@@ -1399,6 +1399,8 @@ void MainWindow::updateViewMenu(ZInteractiveContext::ViewMode viewMode)
   case ZInteractiveContext::VIEW_PROJECT:
     m_ui->actionProject->setChecked(true);
     break;
+  default:
+    break;
   }
 }
 
@@ -4984,10 +4986,12 @@ void MainWindow::on_actionMask_SWC_triggered()
               new ZStackDocCommand::StrokeEdit::RemoveTopStroke(
                     frame->document().get(), maskCommand);
             }
+#if 0
             ZSwcTree *proj = ZSwcGenerator::createSwcProjection(wholeTree);
 //            proj->setHittable(false);
             new ZStackDocCommand::SwcEdit::AddSwc(
                   frame->document().get(), proj, maskCommand);
+#endif
             frame->document()->pushUndoCommand(maskCommand);
           }
           stackFrame->document()->pushUndoCommand(command);

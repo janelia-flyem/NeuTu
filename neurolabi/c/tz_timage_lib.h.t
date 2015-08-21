@@ -110,7 +110,7 @@ __BEGIN_DECLS
 <2T>* Smooth_Stack_Fast_<4T>(const Stack *stack, int wx, int wy, int wz, 
     <2T> *out);
 
-void Correct_Filter_Stack_<4T>(<2T> *filter, <2T> *stack);
+void Correct_Filter_Stack_<4T>(const <2T> *filter, <2T> *stack);
 
 <2T>* El_Stack_<4T>(const Stack *stack, const double *scale, <2T> *out);
 <2T>* El_Stack_L_<4T>(const Stack *stack, const double *scale, <2T> *out);

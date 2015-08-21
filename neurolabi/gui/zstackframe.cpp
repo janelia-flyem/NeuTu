@@ -176,6 +176,9 @@ void ZStackFrame::constructFrame(ZSharedPointer<ZStackDoc> doc)
   createPresenter();
   updateDocument();
 
+  if (document()->getTag() == NeuTube::Document::BIOCYTIN_PROJECTION) {
+    m_presenter->setViewMode(ZInteractiveContext::VIEW_OBJECT_PROJECT);
+  }
   setView(m_view);
   //m_view->prepareDocument();
   m_presenter->prepareView();

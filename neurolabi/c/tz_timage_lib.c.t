@@ -2518,7 +2518,7 @@ static inline double gauss_d2_factor(const int *dim, const double *sigma,
   return out;
 }
 
-void Correct_Filter_Stack_<4T>(<2T> *filter, <2T> *stack)
+void Correct_Filter_Stack_<4T>(const <2T> *filter, <2T> *stack)
 {
   size_t length = Matrix_Size(filter->dim, filter->ndim);
 

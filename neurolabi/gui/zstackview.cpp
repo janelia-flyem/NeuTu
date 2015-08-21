@@ -508,7 +508,7 @@ void ZStackView::updatePaintBundle()
   }
 
   int slice = m_depthControl->value();
-  if (buddyPresenter()->interactiveContext().isProjectView()) {
+  if (buddyPresenter()->interactiveContext().isObjectProjectView()) {
     slice = -slice - 1;
   }
   m_paintBundle.setSliceIndex(slice);
@@ -1248,7 +1248,7 @@ void ZStackView::paintStackBuffer()
   updateImageCanvas();
 
   if (buddyPresenter() != NULL) {
-    if (buddyPresenter()->interactiveContext().isNormalView()) {
+    if (!buddyPresenter()->interactiveContext().isProjectView()) {
       if (!stack->isVirtual() && showImage) {
         if (stack->channelNumber() == 1) {   //grey
           paintSingleChannelStackSlice(stack, m_depthControl->value());
@@ -1366,7 +1366,7 @@ void ZStackView::paintObjectBuffer(
   if (visible) {
     int slice = m_depthControl->value();
     int z = slice + buddyDocument()->getStackOffset().getZ();
-    if (buddyPresenter()->interactiveContext().isProjectView()) {
+    if (buddyPresenter()->interactiveContext().isObjectProjectView()) {
       slice = -slice - 1;
     }
 
@@ -1408,9 +1408,6 @@ void ZStackView::paintObjectBuffer(
     }
 
     if (buddyPresenter()->hasObjectToShow()) {
-//      if (buddyPresenter()->interactiveContext().isProjectView()) {
-//        slice = -m_depthControl->value() - 1;
-//      }
       QList<ZStackObject*> *objs = buddyPresenter()->decorations();
       for (QList<ZStackObject*>::const_iterator obj = objs->end() - 1;
            obj != objs->begin() - 1; --obj) {
@@ -1586,7 +1583,7 @@ ZStack* ZStackView::getStrokeMask(uint8_t maskValue)
       updateObjectCanvas();
 
       int slice = m_depthControl->value();
-      if (buddyPresenter()->interactiveContext().isProjectView()) {
+      if (buddyPresenter()->interactiveContext().isObjectProjectView()) {
         slice = -slice - 1;
       }
 

@@ -684,7 +684,7 @@ bool ZStackPresenter::isPointInStack(double x, double y)
 
 int ZStackPresenter::getSliceIndex() const {
   int sliceIndex = -1;
-  if (m_interactiveContext.isNormalView()) {
+  if (!m_interactiveContext.isProjectView()) {
     sliceIndex = buddyView()->sliceIndex();
   }
 
@@ -1234,7 +1234,7 @@ bool ZStackPresenter::processKeyPressEvent(QKeyEvent *event)
     break;
 
   case Qt::Key_Left:
-    if (interactiveContext().isNormalView()) {
+    if (!interactiveContext().isProjectView()) {
       int step = -1;
 
       if (event->modifiers() & Qt::ShiftModifier) {
@@ -1245,7 +1245,7 @@ bool ZStackPresenter::processKeyPressEvent(QKeyEvent *event)
     break;
 
   case Qt::Key_Right:
-    if (interactiveContext().isNormalView()) {
+    if (interactiveContext().isStackSliceView()) {
       int step = 1;
 
       if (event->modifiers() & Qt::ShiftModifier) {
@@ -1257,7 +1257,7 @@ bool ZStackPresenter::processKeyPressEvent(QKeyEvent *event)
 
 
   case Qt::Key_M:
-    if (m_interactiveContext.isNormalView()) {
+    if (m_interactiveContext.isStackSliceView()) {
       if (interactiveContext().markPuncta() && buddyDocument()->hasStackData() &&
           (!buddyDocument()->getStack()->isVirtual())) {
         QPointF dataPos = stackPositionFromMouse(MOVE);
@@ -1755,6 +1755,7 @@ void ZStackPresenter::enterSwcAddNodeMode(double x, double y)
   //buddyView()->paintActiveDecoration();
   updateCursor();
 }
+
 
 void ZStackPresenter::toggleSwcSkeleton(bool state)
 {
@@ -2273,6 +2274,13 @@ void ZStackPresenter::process(const ZStackOperator &op)
             m_mouseEventProcessor.getLatestStackPosition(),
             m_stroke.getWidth() / 2.0)) {
         interactionEvent.setEvent(ZInteractionEvent::EVENT_SWC_NODE_EXTENDED);
+      }
+    }
+    break;
+  case ZStackOperator::OP_SWC_CONNECT_NODE_SMART:
+    if (buddyDocument()->hasStackData()) {
+      if (buddyDocument()->executeSmartConnectSwcNodeCommand()) {
+        interactionEvent.setEvent(ZInteractionEvent::EVENT_SWC_NODE_ADDED);
       }
     }
     break;

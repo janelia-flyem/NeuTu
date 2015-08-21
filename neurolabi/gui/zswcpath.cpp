@@ -152,8 +152,8 @@ void ZSwcPath::smooth(bool fixingTerminal)
   darray_medfilter(&(zArray[0]), size(), 1, &(zSmoothed[0]));
   darray_avgsmooth(&(zSmoothed[0]), size(), 3, &(zArray[0]));
 
-  darray_medfilter(&(rArray[0]), size(), 1, &(rSmoothed[0]));
-  darray_avgsmooth(&(rSmoothed[0]), size(), 3, &(rArray[0]));
+//  darray_medfilter(&(rArray[0]), size(), 1, &(rSmoothed[0]));
+//  darray_avgsmooth(&(rSmoothed[0]), size(), 3, &(rArray[0]));
 
 
   for (size_t index = 0; index < size(); ++index) {
@@ -161,8 +161,8 @@ void ZSwcPath::smooth(bool fixingTerminal)
     if (!fixingTerminal || SwcTreeNode::isContinuation(tn)) {
       SwcTreeNode::setX(tn, xArray[index]);
       SwcTreeNode::setY(tn, yArray[index]);
-      SwcTreeNode::setZ(tn, zArray[index]);
     }
+    SwcTreeNode::setZ(tn, zArray[index]);
     SwcTreeNode::setRadius(tn, rArray[index]);
   }
 }

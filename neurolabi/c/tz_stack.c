@@ -193,6 +193,11 @@ Filter_3d* Mexihat_Filter_3d(double sigma)
 Stack* Filter_Stack(const Stack *stack, const Filter_3d *filter)
 {
   FMatrix *result = Filter_Stack_Fast_F(stack, filter, NULL, 0);
+  if (filter->dim[0] <= result->dim[0] &&
+          filter->dim[1] <= result->dim[1] &&
+          filter->dim[2] <= result->dim[2]) {
+      Correct_Filter_Stack_F(filter, result);
+  }
   Stack *out = Scale_Float_Stack(result->array, stack->width, stack->height,
 				 stack->depth, stack->kind);
   Kill_FMatrix(result);

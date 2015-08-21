@@ -42,9 +42,10 @@
 #include "zstackview.h"
 
 ZFlyEmBodyMergeProject::ZFlyEmBodyMergeProject(QObject *parent) :
-  QObject(parent), m_dataFrame(NULL), m_coarseBodyWindow(NULL),
+  QObject(parent), m_dataFrame(NULL),
   m_bodyViewWindow(NULL),
   m_bodyViewers(NULL),
+  m_coarseBodyWindow(NULL),
   m_bodyWindow(NULL),
   m_isBookmarkVisible(true),
 //  m_bookmarkArray(NULL),

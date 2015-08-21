@@ -1333,8 +1333,8 @@ bool SwcTreeNode::fitSignal(Swc_Tree_Node *tn, const Stack *stack,
 
   bool succ = false;
 
-  double expandScale = 9.0;
-  double expandRadius = radius(tn) * expandScale;
+  double expandScale = 5.0;
+  double expandRadius = radius(tn) * expandScale + 3.0;
   //Extract image slice
   int x1 = iround(x(tn) - expandRadius);
   int y1 = iround(y(tn) - expandRadius);
@@ -1367,6 +1367,7 @@ bool SwcTreeNode::fitSignal(Swc_Tree_Node *tn, const Stack *stack,
     return false;
   }
 
+  /*
   Filter_3d *filter = Gaussian_Filter_3d(1.0, 1.0, 1.0);
 
   Stack *stack2 = Filter_Stack(slice, filter);
@@ -1376,9 +1377,10 @@ bool SwcTreeNode::fitSignal(Swc_Tree_Node *tn, const Stack *stack,
   Kill_FMatrix(filter);
   C_Stack::kill(stack2);
 
+
   x1 += 3;
   y1 += 3;
-
+  */
 
 #ifdef _DEBUG_2
   C_Stack::write(GET_TEST_DATA_DIR + "/test.tif", slice);
@@ -1403,6 +1405,16 @@ bool SwcTreeNode::fitSignal(Swc_Tree_Node *tn, const Stack *stack,
 
   //2D distance map
   Stack *dist = Stack_Bwdist_L_U16P(slice, NULL, 0);
+
+  Stack *locmax = Stack_Locmax_Region(dist, 4);
+  uint16_t *locmaxArray = (uint16_t*) C_Stack::array8(locmax);
+  size_t voxelNumber = C_Stack::voxelNumber(locmax);
+  for (size_t i = 0; i < voxelNumber; ++i) {
+    if (locmaxArray[i] == 0) {
+      skel->array[i] = 0;
+    }
+  }
+  C_Stack::kill(locmax);
 
   size_t index = C_Stack::closestForegroundPixel(skel, x(tn) - x1, y(tn) - y1, 0);
 
