@@ -643,13 +643,22 @@ void ZFlyEmBodyMergeProject::showBody3d()
         m_bodyViewWindow = new Z3DMainWindow(0);
         m_bodyViewWindow->setWindowTitle(QString::fromUtf8("3D Body View"));
 
-        QWidget *centralWidget = new QWidget(m_bodyViewWindow);
+        QWidget *bvWidget = new QWidget(m_bodyViewWindow);
+        QSizePolicy sizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
+
+        QVBoxLayout* bvLayout = new QVBoxLayout;
+        bvWidget->setLayout(bvLayout);
+
+        bvWidget->setSizePolicy(sizePolicy);
+        bvLayout->addWidget(bvWidget);
 
         if(m_bodyViewers == NULL){
-            m_bodyViewers = new Z3DTabWidget(centralWidget);
+            m_bodyViewers = new Z3DTabWidget(bvWidget);
+            m_bodyViewers->setSizePolicy(sizePolicy);
         }
 
-        m_bodyViewWindow->setCentralWidget(centralWidget);
+        m_bodyViewWindow->setLayout(bvLayout);
+        m_bodyViewWindow->setCentralWidget(bvWidget);
         m_bodyViewWindow->resize(QDesktopWidget().availableGeometry(0).size()*0.7);
     }
 
