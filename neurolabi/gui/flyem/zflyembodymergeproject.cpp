@@ -611,6 +611,9 @@ void ZFlyEmBodyMergeProject::showCoarseBody3d()
 
         QVBoxLayout* bvLayout = new QVBoxLayout;
 
+        QWidget *toolWidget = new QWidget(m_bodyViewWindow->toolBar);
+        bvLayout->addWidget(toolWidget);
+
         if(m_bodyViewers == NULL){
             m_bodyViewers = new Z3DTabWidget(m_bodyViewWindow);
             m_bodyViewers->setSizePolicy(sizePolicy);
@@ -652,6 +655,9 @@ void ZFlyEmBodyMergeProject::showBody3d()
         QSizePolicy sizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
 
         QVBoxLayout* bvLayout = new QVBoxLayout;
+
+        QWidget *toolWidget = new QWidget(m_bodyViewWindow->toolBar);
+        bvLayout->addWidget(toolWidget);
 
         if(m_bodyViewers == NULL){
             m_bodyViewers = new Z3DTabWidget(m_bodyViewWindow);

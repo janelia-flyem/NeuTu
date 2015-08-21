@@ -86,6 +86,12 @@ public:
 Z3DMainWindow::Z3DMainWindow(QWidget *parent) : QMainWindow(parent)
 {
     setParent(parent);
+
+    toolBar = addToolBar("3DBodyViewTools");
+
+    QPixmap quitpix("quit.png");
+    QAction *quit = toolBar->addAction(QIcon(quitpix), "Quit 3D Body View");
+    connect(quit, SIGNAL(triggered()), qApp, SLOT(quit()));
 }
 
 Z3DMainWindow::~Z3DMainWindow()
