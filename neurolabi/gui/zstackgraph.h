@@ -122,11 +122,14 @@ public:
 
   void setResolution(const double *res);
 
+  void setZMargin(int m) { m_zMargin = m; }
+
 private:
   void initRange(const Stack *stack, int *range);
 
 private:
   Stack_Graph_Workspace m_workspace;
+  int m_zMargin;
 };
 
 #endif // ZSTACKGRAPH_H

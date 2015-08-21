@@ -29,6 +29,7 @@ public:
 
 #define ZSharedPointer ztr1::shared_ptr
 #define Make_Shared ztr1::make_shared
+#define Shared_Dynamic_Cast ztr1::dynamic_pointer_cast
 
 template<typename T>
 struct array_deleter

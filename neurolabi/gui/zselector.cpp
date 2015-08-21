@@ -14,13 +14,34 @@ void ZSelector<T>::reset()
 }
 
 template <typename T>
+void ZSelector<T>::reset(const std::set<T> &selected,
+                         const std::set<T> &prevSelected)
+{
+    reset();
+
+    for (typename std::set<T>::const_iterator iter = selected.begin();
+         iter != selected.end(); ++iter) {
+        if (prevSelected.count(*iter) == 0) {
+            m_selectedSet.insert(*iter);
+        }
+    }
+
+    for (typename std::set<T>::const_iterator iter = prevSelected.begin();
+         iter != prevSelected.end(); ++iter) {
+        if (selected.count(*iter) == 0) {
+            m_deselectedSet.insert(*iter);
+        }
+    }
+}
+
+template <typename T>
 void ZSelector<T>::selectObject(T obj)
 {
   if (m_deselectedSet.count(obj) > 0) {
     m_deselectedSet.erase(obj);
-  } else {
-    m_selectedSet.insert(obj);
   }
+
+  m_selectedSet.insert(obj);
 }
 
 template <typename T>
@@ -28,9 +49,18 @@ void ZSelector<T>::deselectObject(T obj)
 {
   if (m_selectedSet.count(obj) > 0) {
     m_selectedSet.erase(obj);
-  } else {
     m_deselectedSet.insert(obj);
   }
+}
+
+template<typename T>
+void ZSelector<T>::setSelection(T obj, bool selecting)
+{
+    if (selecting) {
+        selectObject(obj);
+    } else {
+        deselectObject(obj);
+    }
 }
 
 template <typename T>
@@ -53,13 +83,13 @@ std::vector<T> ZSelector<T>::getDeselectedList() const
 }
 
 template <typename T>
-std::set<T> ZSelector<T>::getSelectedSet() const
+const std::set<T> &ZSelector<T>::getSelectedSet() const
 {
   return m_selectedSet;
 }
 
 template <typename T>
-std::set<T> ZSelector<T>::getDeselectedSet() const
+const std::set<T> &ZSelector<T>::getDeselectedSet() const
 {
   return m_deselectedSet;
 }
@@ -82,6 +112,12 @@ bool ZSelector<T>::isInDeselectedSet(const T& obj) const
   return m_deselectedSet.count(obj) > 0;
 }
 
+template <typename T>
+void ZSelector<T>::print() const
+{
+  std::cout << m_selectedSet.size() << " selected." << std::endl;
+  std::cout << m_deselectedSet.size() << " deselected." << std::endl;
+}
 #if 0
 void ZStackObjectSelector::deselectObject(ZStackObject *obj)
 {

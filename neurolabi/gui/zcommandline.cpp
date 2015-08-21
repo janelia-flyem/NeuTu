@@ -600,7 +600,7 @@ int ZCommandLine::runSkeletonize()
     if (!fexist(m_input[0].c_str())) {
       m_reporter.report("Skeletonization Failed",
                         "The input file " + m_input[0] + " seems not exist.",
-          ZMessageReporter::Error);
+          NeuTube::MSG_ERROR);
       return 1;
     }
 
@@ -622,7 +622,7 @@ int ZCommandLine::runSkeletonize()
       if (m_output.empty()) {
         m_reporter.report("Skeletonization Failed",
                           "The input is not a binary image.",
-                          ZMessageReporter::Error);
+                          NeuTube::MSG_ERROR);
         return 1;
       }
       ZStack stack;
@@ -644,7 +644,7 @@ int ZCommandLine::runSkeletonize()
       m_reporter.report(
             "Skeletonization Failed",
             "Unrecognized output: " + m_input[0],
-          ZMessageReporter::Error);
+          NeuTube::MSG_ERROR);
 //      std::cout << "Unrecognized output: " << m_input[0] << std::endl;
     }
 

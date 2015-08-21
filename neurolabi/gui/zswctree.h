@@ -18,6 +18,8 @@
 #include "zswcpath.h"
 #include "zcuboid.h"
 #include "zuncopyable.h"
+#include "zswctreenodeselector.h"
+
 
 class ZSwcForest;
 class ZSwcBranch;
@@ -419,6 +421,9 @@ public:
   void selectAllNode();
   void deselectAllNode();
 
+  void recordSelection();
+  void processSelection();
+
   void selectNode(const ZRect2d &roi, bool appending);
 
   Swc_Tree_Node* selectHitNode(bool appending);
@@ -652,6 +657,7 @@ public:
    */
   bool isLinear() const;
 
+
   enum EColorScheme {
     COLOR_NORMAL, COLOR_ROI_CURVE
   };
@@ -773,6 +779,8 @@ private:
   mutable std::vector<Swc_Tree_Node*> m_branchPointArray;
   mutable std::vector<Swc_Tree_Node*> m_zSortedArray;
   mutable std::set<Swc_Tree_Node*> m_selectedNode;
+  mutable std::set<Swc_Tree_Node*> m_prevSelectedNode;
+  mutable ZSwcTreeNodeSelector m_selector;
 
   mutable ZCuboid m_boundBox;
 

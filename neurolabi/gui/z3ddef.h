@@ -8,6 +8,10 @@ enum EVolumeRenderingMode {
   VR_LOCAL_MIP_OPAQUE, VR_ISO_SURFACE, VR_XRAY
 };
 
+enum ESwcGeometryPrimitive {
+  SWC_NORMAL, SWC_SPHERE, SWC_LINE, SWC_CYLINDER
+};
+
 const char* GetVolumeName();
 const char* GetVolumeRenderingModeName(EVolumeRenderingMode mode);
 

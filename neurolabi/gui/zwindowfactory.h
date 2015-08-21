@@ -57,6 +57,9 @@ public:
   }
 
 private:
+  void init();
+
+private:
   QWidget *m_parentWidget;
   QString m_windowTitle;
   QRect m_windowGeometry;

@@ -2548,6 +2548,28 @@ ZObject3dScan ZObject3dScan::intersect(const ZObject3dScan &obj)
   return result;
 }
 
+ZObject3dScan* ZObject3dScan::subobject(const ZIntCuboid &box,
+                                        ZObject3dScan *result) const
+{
+  if (result == NULL) {
+    result = new ZObject3dScan;
+  }
+  ConstSegmentIterator iter(this);
+  while (iter.hasNext()) {
+    const ZObject3dScan::Segment &seg = iter.next();
+    if (box.containYZ(seg.getY(), seg.getZ())) {
+      int x0 = imax2(seg.getStart(), box.getFirstCorner().getX());
+      int x1 = imin2(seg.getEnd(), box.getLastCorner().getX());
+      if (x0 <= x1) {
+        result->addSegment(seg.getZ(), seg.getY(), x0, x1, false);
+      }
+    }
+  }
+  result->canonize();
+
+  return result;
+}
+
 void ZObject3dScan::switchYZ()
 {
   for (size_t i = 0; i < m_stripeArray.size(); ++i) {

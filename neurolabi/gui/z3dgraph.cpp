@@ -377,7 +377,8 @@ void Z3DGraph::addNode(const Z3DGraphNode &node)
   m_nodeArray.push_back(node);
 }
 
-void Z3DGraph::addEdge(const Z3DGraphNode &node1, const Z3DGraphNode &node2)
+void Z3DGraph::addEdge(
+    const Z3DGraphNode &node1, const Z3DGraphNode &node2, EGraphShape shape)
 {
   addNode(node1);
   addNode(node2);
@@ -385,6 +386,7 @@ void Z3DGraph::addEdge(const Z3DGraphNode &node1, const Z3DGraphNode &node2)
   Z3DGraphEdge edge;
   edge.useNodeColor(true);
   edge.set(m_nodeArray.size() - 2, m_nodeArray.size() - 1, node1.radius() * 2.0);
+  edge.setShape(shape);
   addEdge(edge);
 }
 

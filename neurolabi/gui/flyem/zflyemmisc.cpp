@@ -157,7 +157,7 @@ void ZFlyEmMisc::HackathonEvaluator::evalulate()
 //  QString information =
 //      QString("Accuracy: %1 / %2").arg(count).arg(idArray.size());
 
-//  report("Evaluation", information.toStdString(), ZMessageReporter::Information);
+//  report("Evaluation", information.toStdString(), NeuTube::MSG_INFORMATION);
 }
 
 Z3DGraph* ZFlyEmMisc::MakeBoundBoxGraph(const ZDvidInfo &dvidInfo)

@@ -92,6 +92,8 @@ public:
    */
   void setBaseValue(int baseValue);
 
+  inline int getBaseValue() const { return m_baseValue; }
+
   bool isEmpty() const;
 
 private:

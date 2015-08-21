@@ -44,7 +44,7 @@ enum EWindowConfig {
 };
 
 enum EMessageType {
-  MSG_INFORMATION, MSG_WARING, MSG_ERROR
+  MSG_INFORMATION, MSG_WARNING, MSG_ERROR, MSG_DEBUG
 };
 
 enum EBodyLabelType {

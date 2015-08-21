@@ -3,6 +3,7 @@
 #include <QtConcurrentRun>
 #include <QApplication>
 #include <QItemSelectionModel>
+#include <QDesktopWidget>
 
 #include "zintpoint.h"
 #include "zstackdvidgrayscalefactory.h"
@@ -42,7 +43,10 @@
 #include "zstackview.h"
 
 ZFlyEmBodyMergeProject::ZFlyEmBodyMergeProject(QObject *parent) :
-  QObject(parent), m_dataFrame(NULL), m_coarseBodyWindow(NULL),
+  QObject(parent), m_dataFrame(NULL),
+  m_bodyViewWindow(NULL),
+  m_bodyViewers(NULL),
+  m_coarseBodyWindow(NULL),
   m_bodyWindow(NULL),
   m_isBookmarkVisible(true),
 //  m_bookmarkArray(NULL),
@@ -573,6 +577,7 @@ void ZFlyEmBodyMergeProject::makeCoarseBodyWindow(ZStackDoc *doc)
   m_coarseBodyWindow->getSwcFilter()->setRenderingPrimitive("Sphere");
   m_coarseBodyWindow->getSwcFilter()->setStayOnTop(false);
   m_coarseBodyWindow->setYZView();
+  m_coarseBodyWindow->setOpacity(Z3DWindow::LAYER_GRAPH, 0.4);
 
   connect(m_coarseBodyWindow, SIGNAL(closed()), this, SLOT(detachCoarseBodyWindow()));
   connect(m_coarseBodyWindow, SIGNAL(locating2DViewTriggered(ZStackViewParam)),
@@ -582,9 +587,9 @@ void ZFlyEmBodyMergeProject::makeCoarseBodyWindow(ZStackDoc *doc)
 
   update3DBodyView(false, true);
 
-  emit coarseBodyWindowCreatedInThread();
-
   getProgressSignal()->endProgress();
+
+  emit coarseBodyWindowCreatedInThread();
 }
 
 void ZFlyEmBodyMergeProject::presentCoarseBodyView()
@@ -598,6 +603,28 @@ void ZFlyEmBodyMergeProject::presentCoarseBodyView()
 
 void ZFlyEmBodyMergeProject::showCoarseBody3d()
 {
+    if(m_bodyViewWindow == NULL){
+        m_bodyViewWindow = new Z3DMainWindow(0);
+        m_bodyViewWindow->setWindowTitle(QString::fromUtf8("3D Body View"));
+
+        QSizePolicy sizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
+
+        QVBoxLayout* bvLayout = new QVBoxLayout;
+
+        QWidget *toolWidget = new QWidget(m_bodyViewWindow->toolBar);
+        bvLayout->addWidget(toolWidget);
+
+        if(m_bodyViewers == NULL){
+            m_bodyViewers = new Z3DTabWidget(m_bodyViewWindow);
+            m_bodyViewers->setSizePolicy(sizePolicy);
+            bvLayout->addWidget(m_bodyViewers);
+        }
+
+        m_bodyViewWindow->setLayout(bvLayout);
+        m_bodyViewWindow->setCentralWidget(m_bodyViewers);
+        m_bodyViewWindow->resize(QDesktopWidget().availableGeometry(0).size()*0.7);
+    }
+
   if (m_coarseBodyWindow == NULL) {
     ZStackDoc *doc = new ZStackDoc;
 
@@ -608,19 +635,53 @@ void ZFlyEmBodyMergeProject::showCoarseBody3d()
 
 //    make3DBodyWindow(doc);
   } else {
-    m_coarseBodyWindow->show();
-    m_coarseBodyWindow->raise();
+    //m_coarseBodyWindow->show();
+    //m_coarseBodyWindow->raise();
   }
+
+  m_bodyViewers->addTab(m_coarseBodyWindow, "Coarse Body View");
+  m_bodyViewers->setTabsClosable(true);
+
+  m_bodyViewWindow->show();
+  m_bodyViewWindow->raise();
 }
 
 void ZFlyEmBodyMergeProject::showBody3d()
 {
+    if(m_bodyViewWindow == NULL){
+        m_bodyViewWindow = new Z3DMainWindow(0);
+        m_bodyViewWindow->setWindowTitle(QString::fromUtf8("3D Body View"));
+
+        QSizePolicy sizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
+
+        QVBoxLayout* bvLayout = new QVBoxLayout;
+
+        QWidget *toolWidget = new QWidget(m_bodyViewWindow->toolBar);
+        bvLayout->addWidget(toolWidget);
+
+        if(m_bodyViewers == NULL){
+            m_bodyViewers = new Z3DTabWidget(m_bodyViewWindow);
+            m_bodyViewers->setSizePolicy(sizePolicy);
+            bvLayout->addWidget(m_bodyViewers);
+        }
+
+        m_bodyViewWindow->setLayout(bvLayout);
+        m_bodyViewWindow->setCentralWidget(m_bodyViewers);
+        m_bodyViewWindow->resize(QDesktopWidget().availableGeometry(0).size()*0.7);
+    }
+
   if (m_bodyWindow == NULL) {
     makeBodyWindow();
   }
 
-  m_bodyWindow->show();
-  m_bodyWindow->raise();
+  //m_bodyWindow->show();
+  //m_bodyWindow->raise();
+
+  m_bodyViewers->addTab(m_bodyWindow, "Body View");
+  m_bodyViewers->setTabsClosable(true);
+
+  m_bodyViewWindow->show();
+  m_bodyViewWindow->raise();
 }
 
 /*
@@ -765,19 +826,20 @@ void ZFlyEmBodyMergeProject::update3DBodyViewPlane(
         double x = viewParam.getViewPort().center().x();
         double y = viewParam.getViewPort().center().y();
 
-        node1.set(x, rect.getFirstY(), rect.getZ(), lineWidth * 0.6);
-        node2.set(x, rect.getLastY(), rect.getZ(), lineWidth * 0.6);
+        double width = lineWidth * 0.3;
+        node1.set(x, rect.getFirstY(), rect.getZ(), width);
+        node2.set(x, rect.getLastY(), rect.getZ(), width);
 
         graph->addNode(node1);
         graph->addNode(node2);
-        graph->addEdge(node1, node2);
+        graph->addEdge(node1, node2, GRAPH_LINE);
 
-        node1.set(rect.getFirstX(), y, rect.getZ(), lineWidth);
-        node2.set(rect.getLastX(), y, rect.getZ(), lineWidth);
+        node1.set(rect.getFirstX(), y, rect.getZ(), width);
+        node2.set(rect.getLastX(), y, rect.getZ(), width);
 
         graph->addNode(node1);
         graph->addNode(node2);
-        graph->addEdge(node1, node2);
+        graph->addEdge(node1, node2, GRAPH_LINE);
       }
 
       graph->setSource(ZStackObjectSourceFactory::MakeFlyEmPlaneObjectSource());

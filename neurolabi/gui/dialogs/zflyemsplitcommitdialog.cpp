@@ -21,3 +21,8 @@ int ZFlyEmSplitCommitDialog::getGroupSize() const
 
   return ui->minObjSizeSpinBox->value();
 }
+
+bool ZFlyEmSplitCommitDialog::keepingMainSeed() const
+{
+  return ui->keepingSeedCheckBox->isChecked();
+}

@@ -2,6 +2,11 @@
 #define Z3DWINDOW_H
 
 #include <QMainWindow>
+#include <QTabWidget>
+#include <QTabBar>
+#include <QToolBar>
+#include <QIcon>
+#include <QAction>
 #include <vector>
 #include <set>
 #include <map>
@@ -39,6 +44,31 @@ class Z3DTriangleList;
 class QToolBar;
 class ZStroke2d;
 class ZStackViewParam;
+//class Z3DRendererBase;
+
+class Z3DMainWindow : public QMainWindow
+{
+    Q_OBJECT
+public:
+    Z3DMainWindow(QWidget* parent = 0);
+    ~Z3DMainWindow();
+
+public:
+    QToolBar *toolBar;
+};
+
+class Z3DTabWidget : public QTabWidget
+{
+    Q_OBJECT
+public:
+    Z3DTabWidget(QWidget* parent);
+    ~Z3DTabWidget();
+    QTabBar* tabBar();
+
+public slots:
+    void tabSlotFunc(int index);
+
+};
 
 class Z3DWindow : public QMainWindow
 {
@@ -48,10 +78,15 @@ public:
     INIT_NORMAL, INIT_EXCLUDE_VOLUME, INIT_FULL_RES_VOLUME
   };
 
+  enum ERendererLayer {
+    LAYER_SWC, LAYER_PUNCTA, LAYER_GRAPH, LAYER_VOLUME
+  };
+
   explicit Z3DWindow(ZSharedPointer<ZStackDoc> doc, EInitMode initMode,
                      bool stereoView = false, QWidget *parent = 0);
   virtual ~Z3DWindow();
 
+public: //Creators
   static Z3DWindow* Make(ZStackDoc* doc, QWidget *parent,
                          Z3DWindow::EInitMode mode = Z3DWindow::INIT_NORMAL);
   static Z3DWindow* Open(ZStackDoc* doc, QWidget *parent,
@@ -61,20 +96,31 @@ public:
   static Z3DWindow* Open(ZSharedPointer<ZStackDoc> doc, QWidget *parent,
                          Z3DWindow::EInitMode mode = Z3DWindow::INIT_NORMAL);
 
+public: //properties
+  void setZScale(ERendererLayer layer, double scale);
+  void setScale(ERendererLayer layer, double sx, double sy, double sz);
+  void setZScale(double scale);
+  void setScale(double sx, double sy, double sz);
+  void setOpacity(ERendererLayer layer, double opacity);
+
+
+public: //Camera adjustment
   void gotoPosition(double x, double y, double z, double radius = 64);
   void gotoPosition(std::vector<double> bound, double minRadius = 64,
                     double range = 128);
   void zoomToSelectedSwcNodes();
 
-  // useful stuff
-  Z3DCameraParameter* getCamera();
-  Z3DTrackballInteractionHandler* getInteractionHandler();
 
+public: //Components
+  Z3DTrackballInteractionHandler* getInteractionHandler();
+  Z3DCameraParameter* getCamera();
   inline Z3DCanvasRenderer* getCanvasRenderer() { return m_canvasRenderer; }
   inline Z3DPunctaFilter* getPunctaFilter() { return m_punctaFilter; }
   inline Z3DSwcFilter* getSwcFilter() { return m_swcFilter; }
   inline Z3DVolumeRaycaster* getVolumeRaycaster() { return m_volumeRaycaster; }
   inline Z3DCanvas* getCanvas() { return m_canvas; }
+
+  Z3DRendererBase* getRendererBase(ERendererLayer layer);
 
   Z3DVolumeRaycasterRenderer* getVolumeRaycasterRenderer();
   inline Z3DGraphFilter* getGraphFilter() { return m_graphFilter; }
@@ -83,6 +129,7 @@ public:
   inline Z3DAxis *getAxis() { return m_axis; }
   const std::vector<double>& getBoundBox() const { return m_boundBox; }
 
+public: //Bounding box
   void updateVolumeBoundBox();
   void updateSwcBoundBox();
   void updateGraphBoundBox();

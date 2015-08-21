@@ -99,8 +99,7 @@ public:
 
   void exportSplits();
   void commitResult();
-  void commitResultFunc(
-      const ZObject3dScan *wholeBody, const ZStack *stack,
+  void commitResultFunc(const ZObject3dScan *wholeBody, const ZStack *stack,
       const ZIntPoint &dsIntv, size_t minObjSize);
 
   void viewPreviousSlice();
@@ -115,6 +114,7 @@ public:
   }
 
   void setMinObjSize(size_t s) { m_minObjSize = s; }
+  void keepMainSeed(bool keeping) { m_keepingMainSeed = keeping; }
 
   std::string getSplitStatusName() const;
   std::string getSplitLabelName() const;
@@ -195,6 +195,8 @@ public slots:
 
   void update3DViewPlane();
 
+  void updateSplitDocument();
+
 private:
   bool showingBodyMask() const { return m_showingBodyMask; }
   void clear(QWidget *widget);
@@ -209,6 +211,9 @@ private:
   void showQuickView(Z3DWindow *window);
   void result3dQuickFunc();
 
+  int getMinObjSize() const { return m_minObjSize; }
+  bool keepingMainSeed() const { return m_keepingMainSeed; }
+
 private:
   ZDvidTarget m_dvidTarget;
   ZDvidInfo m_dvidInfo;
@@ -219,7 +224,9 @@ private:
   Z3DWindow *m_resultWindow;
   Z3DWindow *m_quickResultWindow;
   Z3DWindow *m_quickViewWindow;
+
   size_t m_minObjSize;
+  bool m_keepingMainSeed;
 
 //  ZFlyEmBookmarkArray *m_bookmarkArray; //aggregation
 

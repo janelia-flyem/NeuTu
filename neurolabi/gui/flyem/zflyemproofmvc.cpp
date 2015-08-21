@@ -152,7 +152,7 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
     emit messageGenerated(
           ZWidgetMessage("You cannot change the database in this window. "
                          "Please open a new proofread window to load a different database",
-                         NeuTube::MSG_WARING,
+                         NeuTube::MSG_WARNING,
                          ZWidgetMessage::TARGET_DIALOG));
     return;
   }
@@ -298,6 +298,8 @@ void ZFlyEmProofMvc::customInit()
           this, SLOT(updateUserBookmarkTable()));
   connect(getCompleteDocument(), SIGNAL(bodyIsolated(uint64_t)),
           this, SLOT(checkInBodyWithMessage(uint64_t)));
+  connect(this, SIGNAL(splitBodyLoaded(uint64_t)),
+          getCompleteDocument(), SLOT(deprecateSplitSource()));
 
   m_mergeProject.getProgressSignal()->connectProgress(getProgressSignal());
   m_splitProject.getProgressSignal()->connectProgress(getProgressSignal());
@@ -328,7 +330,7 @@ void ZFlyEmProofMvc::customInit()
   connect(&m_mergeProject, SIGNAL(dvidLabelChanged()),
           this->getCompleteDocument(), SLOT(updateDvidLabelObject()));
   connect(&m_mergeProject, SIGNAL(checkingInBody(uint64_t)),
-          this, SLOT(checkInBody(uint64_t)));
+          this, SLOT(checkInBodyWithMessage(uint64_t)));
   /*
   connect(&m_mergeProject, SIGNAL(messageGenerated(QString, bool)),
           this, SIGNAL(messageGenerated(QString,bool)));
@@ -662,7 +664,7 @@ void ZFlyEmProofMvc::annotateBody()
           }
         }
 
-        checkInBody(bodyId);
+        checkInBodyWithMessage(bodyId);
       } else {
         if (getSupervisor() != NULL) {
           std::string owner = getSupervisor()->getOwner(bodyId);
@@ -688,7 +690,7 @@ void ZFlyEmProofMvc::annotateBody()
           "one and only one body has to be selected.";
     }
     if (!msg.isEmpty()) {
-      emit messageGenerated(ZWidgetMessage(msg, NeuTube::MSG_WARING));
+      emit messageGenerated(ZWidgetMessage(msg, NeuTube::MSG_WARNING));
     }
   }
 
@@ -716,7 +718,7 @@ void ZFlyEmProofMvc::notifySplitTriggered()
       msg = "The split cannot be launched because "
           "one and only one body has to be selected.";
     }
-    emit messageGenerated(ZWidgetMessage(msg, NeuTube::MSG_WARING));
+    emit messageGenerated(ZWidgetMessage(msg, NeuTube::MSG_WARNING));
   }
 
   /*
@@ -882,7 +884,7 @@ void ZFlyEmProofMvc::exitSplit()
 
     getDocument()->setVisible(ZStackObject::TYPE_DVID_SPARSE_STACK, false);
 
-    checkInBody(m_splitProject.getBodyId());
+    checkInBodyWithMessage(m_splitProject.getBodyId());
 //    getDocument()->setVisible(ZStackObject::TYPE_PUNCTA, false);
 
 
@@ -1033,6 +1035,7 @@ void ZFlyEmProofMvc::commitCurrentSplit()
 
   if (m_splitCommitDlg->exec()) {
     m_splitProject.setMinObjSize(m_splitCommitDlg->getGroupSize());
+    m_splitProject.keepMainSeed(m_splitCommitDlg->keepingMainSeed());
     const QString threadId = "ZFlyEmBodySplitProject::commitResult";
     if (!m_futureMap.isAlive(threadId)) {
       m_futureMap.removeDeadThread();
@@ -1406,7 +1409,7 @@ void ZFlyEmProofMvc::recordBookmark(ZFlyEmBookmark *bookmark)
     writer.writeBookmark(*bookmark);
     if (writer.getStatusCode() != 200) {
       emit messageGenerated(ZWidgetMessage("Failed to record bookmark.",
-                                           NeuTube::MSG_WARING));
+                                           NeuTube::MSG_WARNING));
     }
   }
 }

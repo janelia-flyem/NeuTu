@@ -506,7 +506,7 @@ void ZStack_Projection::update(Stack *stack)
   }
 
   if (stack->array != NULL) {
-    m_proj = Proj_Stack_Zmax(stack);
+    m_proj = Proj_Stack_Zmin(stack);
   }
 }
 /*

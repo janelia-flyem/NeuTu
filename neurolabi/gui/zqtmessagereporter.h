@@ -9,12 +9,14 @@ class ZQtMessageReporter : public ZMessageReporter
 {
 public:
   ZQtMessageReporter();
+  ZQtMessageReporter(QWidget *parent);
   virtual ~ZQtMessageReporter();
   virtual void report(const std::string &title, const std::string &message,
-                      EMessageType msgType);
+                      NeuTube::EMessageType msgType);
 
 private:
-  QMessageBox m_box;
+  QWidget *m_parent;
+//  QMessageBox m_box;
 };
 
 #endif // ZQTMESSAGEREPORTER_H

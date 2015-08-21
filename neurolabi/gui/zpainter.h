@@ -148,6 +148,7 @@ public:
 
   void fillRect(const QRect &r, Qt::GlobalColor color);
   void setOpacity(double alpha);
+  void setRange(const QRect &r) { m_canvasRange = r; }
 #endif
 
   /*
@@ -162,6 +163,7 @@ private:
 #endif
 
   int m_z;
+  QRect m_canvasRange;
   bool m_isPainted;
 
   //ZStTransform m_transform; //world coordinates to canvas coordinates

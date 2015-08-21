@@ -1333,8 +1333,8 @@ bool SwcTreeNode::fitSignal(Swc_Tree_Node *tn, const Stack *stack,
 
   bool succ = false;
 
-  double expandScale = 3.0;
-  double expandRadius = radius(tn) * expandScale;
+  double expandScale = 5.0;
+  double expandRadius = radius(tn) * expandScale + 3.0;
   //Extract image slice
   int x1 = iround(x(tn) - expandRadius);
   int y1 = iround(y(tn) - expandRadius);
@@ -1362,9 +1362,29 @@ bool SwcTreeNode::fitSignal(Swc_Tree_Node *tn, const Stack *stack,
 
   Stack *slice = Crop_Stack(stack, x1, y1, cz, x2 - x1 + 1, y2 - y1 + 1, 1, NULL);
 
+
   if (slice == NULL) {
     return false;
   }
+
+  /*
+  Filter_3d *filter = Gaussian_Filter_3d(1.0, 1.0, 1.0);
+
+  Stack *stack2 = Filter_Stack(slice, filter);
+  C_Stack::kill(slice);
+  slice = Crop_Stack(stack2, 3, 3, 0, C_Stack::width(stack2) - 6,
+                     C_Stack::height(stack2) - 6, 1, NULL);
+  Kill_FMatrix(filter);
+  C_Stack::kill(stack2);
+
+
+  x1 += 3;
+  y1 += 3;
+  */
+
+#ifdef _DEBUG_2
+  C_Stack::write(GET_TEST_DATA_DIR + "/test.tif", slice);
+#endif
 
   //RC threshold
   int thre = Stack_Threshold_RC(slice, 0, 65535);
@@ -1380,12 +1400,21 @@ bool SwcTreeNode::fitSignal(Swc_Tree_Node *tn, const Stack *stack,
   Stack *skel = Stack_Bwthin(slice, NULL);
 
 #ifdef _DEBUG_2
-  C_Stack::write(NeutubeConfig::getInstance().getPath(NeutubeConfig::DATA) + "/test.tif",
-                 skel);
+  C_Stack::write(GET_TEST_DATA_DIR + "/test2.tif", skel);
 #endif
 
   //2D distance map
   Stack *dist = Stack_Bwdist_L_U16P(slice, NULL, 0);
+
+  Stack *locmax = Stack_Locmax_Region(dist, 4);
+  uint16_t *locmaxArray = (uint16_t*) C_Stack::array8(locmax);
+  size_t voxelNumber = C_Stack::voxelNumber(locmax);
+  for (size_t i = 0; i < voxelNumber; ++i) {
+    if (locmaxArray[i] == 0) {
+      skel->array[i] = 0;
+    }
+  }
+  C_Stack::kill(locmax);
 
   size_t index = C_Stack::closestForegroundPixel(skel, x(tn) - x1, y(tn) - y1, 0);
 
@@ -1396,7 +1425,7 @@ bool SwcTreeNode::fitSignal(Swc_Tree_Node *tn, const Stack *stack,
   double r2 = C_Stack::value(dist, index);
 
   if (r2 > 0) {
-    if (Geo3d_Dist_Sqr(nx, ny, 0, x(tn) - x1, y(tn) - y1, 0) <= r2 * 2) {
+    if (Geo3d_Dist_Sqr(nx, ny, 0, x(tn) - x1, y(tn) - y1, 0) <= (r2 + 1) * (r2 + 1)) {
       SwcTreeNode::setRadius(tn, sqrt(r2));
       SwcTreeNode::setX(tn, nx + x1);
       SwcTreeNode::setY(tn, ny + y1);

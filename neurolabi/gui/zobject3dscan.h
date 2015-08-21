@@ -190,6 +190,12 @@ public:
 
   ZObject3dScan intersect(const ZObject3dScan &obj);
 
+  /*!
+   * \brief Extract voxels within a cuboid
+   */
+  ZObject3dScan *subobject(const ZIntCuboid &box,
+                          ZObject3dScan *result = NULL) const;
+
   void downsample(int xintv, int yintv, int zintv);
   void downsampleMax(int xintv, int yintv, int zintv);
 

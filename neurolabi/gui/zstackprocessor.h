@@ -45,6 +45,7 @@ public:
                            const std::string noiseModel = "POISSON", const float fidelityWeight = 0.1f);
 
   static void RemoveBranchPoint(Stack *stack, int nnbr);
+  static Stack* GaussianSmooth(Stack *stack, double sx, double sy, double sz);
 
 //private:
   static void convertStack(ZStack *stack, Uint8Image3DType *image);

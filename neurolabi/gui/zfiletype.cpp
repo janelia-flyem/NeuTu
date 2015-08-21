@@ -72,7 +72,7 @@ ZFileType::EFileType ZFileType::fileType(const std::string &filePath)
     return DVID_OBJECT_FILE;
   } else if (str.endsWith(".hf5", ZString::CASE_INSENSITIVE)) {
     return HDF5_FILE;
-  } else if (str.endsWith("mraw"), ZString::CASE_INSENSITIVE) {
+  } else if (str.endsWith(".mraw", ZString::CASE_INSENSITIVE)) {
     return MC_STACK_RAW_FILE;
   }
 
@@ -124,10 +124,14 @@ std::string ZFileType::typeName(EFileType type)
 
 bool ZFileType::isImageFile(EFileType type)
 {
-  return (type == TIFF_FILE) || (type == LSM_FILE) || (type == PNG_FILE) ||
-      (type == V3D_RAW_FILE) || (type == V3D_PBD_FILE) ||
+  return (type == TIFF_FILE) ||
+      (type == LSM_FILE) ||
+      (type == PNG_FILE) ||
+      (type == V3D_RAW_FILE) ||
+      (type == V3D_PBD_FILE) ||
       (type == MYERS_NSP_FILE) || /*(type == OBJECT_SCAN_FILE) ||*/
-      (type == JPG_FILE) || (type == DVID_OBJECT_FILE) ||
+      (type == JPG_FILE) ||
+      (type == DVID_OBJECT_FILE) ||
       (type == MC_STACK_RAW_FILE);
 }
 
@@ -138,11 +142,16 @@ bool ZFileType::isImageFile(const std::string &filePath)
 
 bool ZFileType::isObjectFile(EFileType type)
 {
-  return (type == SWC_FILE) || (type == SWC_NETWORK_FILE) ||
-      (type == LOCSEG_CHAIN_FILE) || (type == SYNAPSE_ANNOTATON_FILE) ||
-      (type == FLYEM_NETWORK_FILE) || (type == JSON_FILE) ||
-      (type == V3D_APO_FILE) || (type == V3D_MARKER_FILE) ||
-      (type == RAVELER_BOOKMARK) || (type = OBJECT_SCAN_FILE);
+  return (type == SWC_FILE) ||
+      (type == SWC_NETWORK_FILE) ||
+      (type == LOCSEG_CHAIN_FILE) ||
+      (type == SYNAPSE_ANNOTATON_FILE) ||
+      (type == FLYEM_NETWORK_FILE) ||
+      (type == JSON_FILE) ||
+      (type == V3D_APO_FILE) ||
+      (type == V3D_MARKER_FILE) ||
+      (type == RAVELER_BOOKMARK) ||
+      (type == OBJECT_SCAN_FILE);
 }
 
 bool ZFileType::isObjectFile(const std::string &filePath)
@@ -157,5 +166,9 @@ bool ZFileType::isNeutubeOpenable(const std::string &filePath)
 
 bool ZFileType::isNeutubeOpenable(EFileType type)
 {
-  return isImageFile(type) || isObjectFile(type);
+  bool openable = isImageFile(type);
+  if (!openable) {
+    openable = isObjectFile(type);
+  }
+  return openable;
 }

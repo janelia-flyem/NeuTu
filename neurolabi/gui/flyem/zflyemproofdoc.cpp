@@ -609,6 +609,43 @@ void ZFlyEmProofDoc::notifyBodyIsolated(uint64_t bodyId)
   emit bodyIsolated(bodyId);
 }
 
+ZDvidSparseStack* ZFlyEmProofDoc::getDvidSparseStack() const
+{
+  ZDvidSparseStack *stack = NULL;
+
+  if (getRect2dRoi().isValid()) {
+    ZRect2d rect = getRect2dRoi();
+    int length = iround(sqrt(rect.getWidth() * rect.getWidth() +
+                             rect.getHeight() * rect.getHeight()));
+    ZIntCuboid boundBox(rect.getFirstX(), rect.getFirstY(), rect.getZ() - length,
+                        rect.getLastX(), rect.getLastY(), rect.getZ() + length);
+
+    ZDvidSparseStack *originalStack = ZStackDoc::getDvidSparseStack();
+    if (originalStack != NULL) {
+      if (!m_splitRoi.equals(boundBox)) {
+        m_splitSource.reset();
+      }
+
+      if (m_splitSource.get() == NULL) {
+        m_splitSource =
+            ZSharedPointer<ZDvidSparseStack>(originalStack->getCrop(boundBox));
+        m_splitRoi = boundBox;
+      }
+
+      stack = m_splitSource.get();
+    }
+  } else {
+    stack = ZStackDoc::getDvidSparseStack();
+  }
+
+  return stack;
+}
+
+void ZFlyEmProofDoc::deprecateSplitSource()
+{
+  m_splitSource.reset();
+}
+
 //////////////////////////////////////////
 ZFlyEmProofDocCommand::MergeBody::MergeBody(
     ZStackDoc *doc, QUndoCommand *parent)

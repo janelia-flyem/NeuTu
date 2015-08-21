@@ -693,20 +693,11 @@ bool ZStackDoc::hasPuncta() const
   return !getObjectList(ZStackObject::TYPE_PUNCTUM).isEmpty();
 }
 
-/*
-ZResolution ZStackDoc::stackResolution() const
-{
-  if (hasStackData())
-    return m_stack->getResolution();
-  else
-    return ZResolution();
-}
-*/
 
 std::string ZStackDoc::stackSourcePath() const
 {
-  if (hasStackData()) {
-    return m_stack->sourcePath();
+  if (hasStack()) {
+    return getStack()->sourcePath();
   }
 
   return "";
@@ -4275,6 +4266,7 @@ bool ZStackDoc::loadFile(const QString &filePath)
     ZIntCuboid cuboid = sobj->getBoundBox();
     ZStack *stack = ZStackFactory::makeVirtualStack(
           cuboid.getWidth(), cuboid.getHeight(), cuboid.getDepth());
+    stack->setSource(filePath.toStdString());
     stack->setOffset(cuboid.getFirstCorner());
     loadStack(stack);
   }
@@ -5163,9 +5155,14 @@ bool ZStackDoc::executeSwcNodeSmartExtendCommand(
               C_Stack::make(GREY, getStack()->width(), getStack()->height(),
                             getStack()->depth());
         }
+        /*
         if (GET_APPLICATION_NAME == "Biocytin") {
           m_neuronTracer.setResolution(1, 1, 10);
         }
+        */
+        m_neuronTracer.setResolution(getResolution().voxelSizeX(),
+                                     getResolution().voxelSizeY(),
+                                     getResolution().voxelSizeZ());
 
         m_neuronTracer.setStackOffset(getStackOffset());
 
@@ -5183,22 +5180,31 @@ bool ZStackDoc::executeSwcNodeSmartExtendCommand(
             Swc_Tree_Node *root = Swc_Tree_Regular_Root(branch);
             Swc_Tree_Node *begin = SwcTreeNode::firstChild(root);
 
-            SwcTreeNode::detachParent(begin);
-            Kill_Swc_Tree(branch);
-
             Swc_Tree_Node *leaf = begin;
             while (SwcTreeNode::firstChild(leaf) != NULL) {
               leaf = SwcTreeNode::firstChild(leaf);
             }
+            ZSwcPath originalPath(root, leaf);
+            if (getTag() == NeuTube::Document::BIOCYTIN_STACK) {
+              originalPath.smooth(true);
+              originalPath.smoothZ();
+            }
+
+            if (SwcTreeNode::hasChild(begin)) {
+              if (SwcTreeNode::hasOverlap(begin, prevNode)) {
+                begin = SwcTreeNode::firstChild(begin);
+              }
+            }
+
+            SwcTreeNode::detachParent(begin);
+            Kill_Swc_Tree(branch);
+
+
             ZSwcPath path(begin, leaf);
             for (ZSwcPath::iterator iter = path.begin(); iter != path.end();
                  ++iter) {
               Swc_Tree_Node *tn = *iter;
               tn->tree_state = prevNode->tree_state;
-            }
-
-            if (getTag() == NeuTube::Document::BIOCYTIN_STACK) {
-              path.smooth(true);
             }
 
             ZSwcResampler resampler;
@@ -5740,6 +5746,7 @@ void ZStackDoc::estimateSwcRadius(ZSwcTree *tree, int maxIter)
       for (Swc_Tree_Node *tn = tree->begin(); tn != NULL; tn = tree->next()) {
         if (SwcTreeNode::isRegular(tn)) {
           SwcTreeNode::fitSignal(tn, getStack()->c_stack(), getStackBackground());
+          SwcTreeNode::fitSignal(tn, getStack()->c_stack(), getStackBackground());
         }
         advanceProgress(step);
       }
@@ -5772,7 +5779,12 @@ bool ZStackDoc::executeSwcNodeEstimateRadiusCommand()
       ZIntPoint offset = getStackOffset();
       SwcTreeNode::translate(&newNode, -offset.getX(), -offset.getY(),
                              -offset.getZ());
-      if (SwcTreeNode::fitSignal(&newNode, getStack()->c_stack(),
+      Stack *stack = getStack()->c_stack();
+      if (getStack()->channelNumber() == 3 &&
+          getTag() == NeuTube::Document::BIOCYTIN_STACK) {
+        stack = getStack()->c_stack(1);
+      }
+      if (SwcTreeNode::fitSignal(&newNode, stack,
                                  getStackBackground())) {
         SwcTreeNode::translate(&newNode, offset.getX(), offset.getY(),
                                offset.getZ());
@@ -6215,17 +6227,6 @@ bool ZStackDoc::executeSmartConnectSwcNodeCommand(
         SwcTreeNode::x(tn2), SwcTreeNode::y(tn2),
         SwcTreeNode::z(tn2), SwcTreeNode::radius(tn2));
 
-  /*
-  Swc_Tree *branch = tracer.trace(
-        SwcTreeNode::x(tn1) - offset.x(), SwcTreeNode::y(tn1) - offset.y(),
-        SwcTreeNode::z(tn1) - offset.z(), SwcTreeNode::radius(tn1),
-        SwcTreeNode::x(tn2) - offset.x(), SwcTreeNode::y(tn2) - offset.y(),
-        SwcTreeNode::z(tn2) - offset.z(), SwcTreeNode::radius(tn2));
-
-  Swc_Tree_Translate(branch, offset.x(), offset.y(), offset.z());
-  */
-
-
   if (branch != NULL) {
     if (Swc_Tree_Has_Branch(branch)) {
       //tracer.updateMask(branch);
@@ -6242,6 +6243,10 @@ bool ZStackDoc::executeSmartConnectSwcNodeCommand(
         branch = NULL;
       }
 
+      ZSwcPath path(root, leaf);
+      path.smooth(true);
+      path.smoothZ();
+
       QUndoCommand *command =
           new ZStackDocCommand::SwcEdit::CompositeCommand(this);
       command = new ZStackDocCommand::SwcEdit::CompositeCommand(this);
@@ -6254,7 +6259,25 @@ bool ZStackDoc::executeSmartConnectSwcNodeCommand(
         Swc_Tree_Node *terminal = SwcTreeNode::parent(leaf);
         SwcTreeNode::detachParent(leaf);
         SwcTreeNode::kill(leaf);
-        //ZSwcPath path(begin, terminal);
+
+        ZSwcResampler resampler;
+        resampler.setDistanceScale(1.5);
+
+        ZSwcTree tree;
+        tree.setDataFromNode(begin);
+
+//            Swc_Tree_Remove_Zigzag(tree.data());
+        resampler.optimalDownsample(&tree);
+        begin = tree.firstRegularRoot();
+
+        leaf = begin;
+        while (SwcTreeNode::firstChild(leaf) != NULL) {
+          leaf = SwcTreeNode::firstChild(leaf);
+          SwcTreeNode::correctTurn(leaf);
+        }
+
+        tree.setData(NULL, ZSwcTree::LEAVE_ALONE);
+
         new ZStackDocCommand::SwcEdit::SetParent(
               this, tn2, terminal, false, command);
         new ZStackDocCommand::SwcEdit::SetParent(
@@ -6966,7 +6989,7 @@ void ZStackDoc::saveSwc(QWidget *parentWidget)
     if (swcList.size() > 1) {
       /*
       report("Save failed", "More than one SWC tree exist.",
-             ZMessageReporter::Error);
+             NeuTube::MSG_ERROR);
              */
       emit statusMessageUpdated("Save failed. More than one SWC tree exist.");
     } else {
@@ -7020,7 +7043,13 @@ std::vector<ZStack*> ZStackDoc::projectBiocytinStack(
 {
   projector.setProgressReporter(m_progressReporter);
 
+  ZStack *out = new ZStack(
+        getStack()->kind(), getStack()->width(), getStack()->height(),
+        projector.getSlabNumber(),
+        getStack()->channelNumber());
+
   std::vector<ZStack*> projArray;
+  projArray.push_back(out);
 
   for (int slabIndex = 0; slabIndex < projector.getSlabNumber(); ++slabIndex) {
     ZStack *proj = projector.project(getStack(), true, slabIndex);
@@ -7031,7 +7060,14 @@ std::vector<ZStack*> ZStackDoc::projectBiocytinStack(
         proj->setChannelColor(0, 1, 1, 1);
         proj->setChannelColor(1, 0, 0, 0);
       }
-      projArray.push_back(proj);
+
+      for (int c = 0; c < proj->channelNumber(); ++c) {
+        C_Stack::copyPlaneValue(
+              out->data(), proj->c_stack(c)->array, c, slabIndex);
+      }
+
+      delete proj;
+//      projArray.push_back(proj);
       // ZString filePath(stack()->sourcePath());
       /*
       proj->setSource(
@@ -7056,6 +7092,7 @@ std::vector<ZStack*> ZStackDoc::projectBiocytinStack(
 #endif
   }
 
+//  return out;
   return projArray;
 }
 
@@ -7956,6 +7993,16 @@ void ZStackDoc::updateWatershedBoundaryObject(ZStack *out, ZIntPoint dsIntv)
   }
 }
 
+ZDvidSparseStack* ZStackDoc::getDvidSparseStack() const
+{
+  ZStackObject *obj = getObjectGroup().findFirstSameSource(
+        ZStackObject::TYPE_DVID_SPARSE_STACK,
+        ZStackObjectSourceFactory::MakeSplitObjectSource());
+  ZDvidSparseStack *sparseStack = dynamic_cast<ZDvidSparseStack*>(obj);
+
+  return sparseStack;
+}
+
 void ZStackDoc::localSeededWatershed()
 {
   getProgressSignal()->startProgress("Running local split ...");
@@ -7977,10 +8024,7 @@ void ZStackDoc::localSeededWatershed()
         signalStack = m_sparseStack->getStack();
         dsIntv = m_sparseStack->getDownsampleInterval();
       } else {
-        ZStackObject *obj = getObjectGroup().findFirstSameSource(
-              ZStackObject::TYPE_DVID_SPARSE_STACK,
-              ZStackObjectSourceFactory::MakeSplitObjectSource());
-        ZDvidSparseStack *sparseStack = dynamic_cast<ZDvidSparseStack*>(obj);
+        ZDvidSparseStack *sparseStack = getDvidSparseStack();
         if (sparseStack != NULL) {
           signalStack = sparseStack->getStack(seedMask.getBoundBox());
           dsIntv = sparseStack->getDownsampleInterval();
@@ -8063,6 +8107,12 @@ void ZStackDoc::seededWatershed()
         signalStack = m_sparseStack->getStack();
         dsIntv = m_sparseStack->getDownsampleInterval();
       } else {
+        ZDvidSparseStack *sparseStack = getDvidSparseStack();
+        if (sparseStack != NULL) {
+          signalStack = sparseStack->getStack();
+          dsIntv = sparseStack->getDownsampleInterval();
+        }
+        /*
         ZStackObject *obj = getObjectGroup().findFirstSameSource(
               ZStackObject::TYPE_DVID_SPARSE_STACK,
               ZStackObjectSourceFactory::MakeSplitObjectSource());
@@ -8071,6 +8121,7 @@ void ZStackDoc::seededWatershed()
           signalStack = sparseStack->getStack();
           dsIntv = sparseStack->getDownsampleInterval();
         }
+        */
       }
     }
     getProgressSignal()->advanceProgress(0.1);
@@ -8142,7 +8193,7 @@ void ZStackDoc::runSeededWatershed()
   if (labelSet.size() < 2) {
     ZWidgetMessage message(
           QString("The seed has no more than one label. No split is done"));
-    message.setType(NeuTube::MSG_WARING);
+    message.setType(NeuTube::MSG_WARNING);
 
     emit messageGenerated(message);
     return;

@@ -836,6 +836,16 @@ void ZStackProcessor::invert(ZStack *stack)
   }
 }
 
+Stack* ZStackProcessor::GaussianSmooth(
+    Stack *stack, double sx, double sy, double sz)
+{
+  Filter_3d *filter = Gaussian_Filter_3d(sx, sy, sz);
+  Stack *out = Filter_Stack(stack, filter);
+  Kill_FMatrix(filter);
+
+  return out;
+}
+
 void ZStackProcessor::RemoveBranchPoint(Stack *stack, int nnbr)
 {
   if (C_Stack::kind(stack) != GREY) {

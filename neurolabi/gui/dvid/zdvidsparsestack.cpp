@@ -349,4 +349,16 @@ bool ZDvidSparseStack::isEmpty() const
   return m_sparseStack.isEmpty();
 }
 
+ZDvidSparseStack* ZDvidSparseStack::getCrop(const ZIntCuboid &box) const
+{
+  ZDvidSparseStack *stack = new ZDvidSparseStack;
+  stack->setDvidTarget(getDvidTarget());
+  stack->m_sparseStack.setBaseValue(m_sparseStack.getBaseValue());
+  ZObject3dScan *submask = new ZObject3dScan;
+  m_sparseStack.getObjectMask()->subobject(box, submask);
+  stack->m_sparseStack.setObjectMask(submask);
+
+  return stack;
+}
+
 ZSTACKOBJECT_DEFINE_CLASS_NAME(ZDvidSparseStack)

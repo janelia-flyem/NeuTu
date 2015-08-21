@@ -82,6 +82,8 @@ double Stack_Voxel_Weight_S(void *argv);
 
 /* Reflected version of Stack_Voxel_Weight_S for bright background */
 double Stack_Voxel_Weight_Sr(void *argv);
+double Stack_Voxel_Weight_Srb(void *argv);
+double Stack_Voxel_Weight_Srw(void *argv);
 
 /* color weight */
 double Stack_Voxel_Weight_C(void *argv);
@@ -89,7 +91,7 @@ double Stack_Voxel_Weight_C(void *argv);
 Graph* Stack_Graph(const Stack *stack, int conn, const int *range, 
 		   Weight_Func_t *wf);
 
-Graph* Stack_Graph_W(const Stack *stack, Stack_Graph_Workspace *sgw);
+Graph* Stack_Graph_W(const Stack *signal, Stack_Graph_Workspace *sgw);
 
 /**@brief Find shortest paths in a stack.
  *

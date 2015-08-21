@@ -1,6 +1,8 @@
 #include "zswcconnector.h"
 #include "zgraph.h"
 #include "tz_u8array.h"
+#include "zswctree.h"
+#include "zswcpath.h"
 
 using namespace std;
 

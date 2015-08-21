@@ -130,7 +130,8 @@ public:
 
   void addNode(const Z3DGraphNode &node);
   void addEdge(const Z3DGraphEdge &edge);
-  void addEdge(const Z3DGraphNode &node1, const Z3DGraphNode &node2);
+  void addEdge(const Z3DGraphNode &node1, const Z3DGraphNode &node2,
+               EGraphShape shape = GRAPH_CYLINDER);
 
 public:
   void importPointNetwork(const ZPointNetwork &pointNetwork,

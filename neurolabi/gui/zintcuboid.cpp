@@ -144,6 +144,12 @@ bool ZIntCuboid::contains(const ZIntPoint &pt) const
   return contains(pt.getX(), pt.getY(), pt.getZ());
 }
 
+bool ZIntCuboid::containYZ(int y, int z) const
+{
+  return IS_IN_CLOSE_RANGE(y, m_firstCorner.getY(), m_lastCorner.getY()) &&
+      IS_IN_CLOSE_RANGE(z, m_firstCorner.getZ(), m_lastCorner.getZ());
+}
+
 bool ZIntCuboid::isEmpty() const
 {
   return getWidth() <= 0 || getHeight() <= 0 || getDepth() <= 0;

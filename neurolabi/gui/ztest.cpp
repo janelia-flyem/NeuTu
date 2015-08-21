@@ -107,6 +107,7 @@ using namespace std;
 #include "tz_geometry.h"
 #include "z3dgraph.h"
 #include "zpunctum.h"
+#include "zswctreenodeselector.h"
 #include "zswcsizetrunkanalyzer.h"
 #include "zswcweighttrunkanalyzer.h"
 #include "zstackbinarizer.h"
@@ -7942,11 +7943,11 @@ void ZTest::test(MainWindow *host)
 
 #if 0
   NeuTube::getMessageReporter()->report(
-        "test", "error 1", ZMessageReporter::ERROR);
+        "test", "error 1", NeuTube::MSG_ERROR);
   NeuTube::getMessageReporter()->report(
-        "test", "warning 1", ZMessageReporter::WARNING);
+        "test", "warning 1", NeuTube::MSG_WARNING);
   NeuTube::getMessageReporter()->report(
-        "test", "output 1", ZMessageReporter::INFORMATION);
+        "test", "output 1", NeuTube::MSG_INFORMATION);
 #endif
 
 #if 0
@@ -17590,6 +17591,39 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 1
+  ZDvidTarget target("emdata1.int.janelia.org", "1c420", 8500);
+  target.setLabelBlockName("labels3");
+  target.setBodyLabelName("bodies3");
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  std::vector<uint64_t> bodyArray;
+  bodyArray.push_back(14228569);
+  bodyArray.push_back(4933329);
+  bodyArray.push_back(5171945);
+  bodyArray.push_back(5500923);
+  bodyArray.push_back(200013718);
+
+
+  std::vector<ZIntPoint> posArray;
+
+  for (std::vector<uint64_t>::const_iterator iter = bodyArray.begin();
+       iter != bodyArray.end(); ++iter) {
+    uint64_t bodyId = *iter;
+    ZObject3dScan body = reader.readBody(bodyId);
+    ZVoxel voxel = body.getMarker();
+    std::cout << bodyId << ": (" << voxel.x() << ", " << voxel.y() << ", "
+              << voxel.z() << ")" << std::endl;
+    posArray.push_back(ZIntPoint(voxel.x(), voxel.y(), voxel.z()));
+  }
+
+  for (size_t i = 0; i < bodyArray.size(); ++i) {
+    std::cout << bodyArray[i] << ": " << posArray[i].toString() << std::endl;
+  }
+#endif
+
+#if 0
   ZDvidTarget target("emdata1.int.janelia.org", "86e1", 8500);
   ZDvidReader reader;
   reader.open(target);
@@ -17602,6 +17636,72 @@ void ZTest::test(MainWindow *host)
   } else {
     std::cout << "The two objects are NOT adjacent." << std::endl;
   }
+
+#endif
+
+#if 0
+  Swc_Tree_Node *tn = SwcTreeNode::makePointer(1, 0, 0, 0, 0, 1, -1);
+
+  ZSwcTreeNodeSelector selector;
+  selector.setSelection(tn, true);
+  selector.setSelection(tn, false);
+  selector.setSelection(tn, true);
+
+  selector.print();
+
+  selector.reset();
+
+  selector.print();
+
+  Swc_Tree_Node *tn2 = SwcTreeNode::makePointer(2, 0, 0, 0, 0, 1, 1);
+  Swc_Tree_Node *tn3 = SwcTreeNode::makePointer(3, 0, 0, 0, 0, 1, 2);
+
+  std::set<Swc_Tree_Node*> selected;
+  selected.insert(tn);
+  selected.insert(tn2);
+
+  std::set<Swc_Tree_Node*> prevSelected;
+  prevSelected.insert(tn3);
+  prevSelected.insert(tn2);
+
+  selector.reset(selected, prevSelected);
+  selector.print();
+#endif
+
+#if 0
+  ZSharedPointer<ZStackObject> obj = ZSharedPointer<ZStackObject>(new ZSwcTree);
+  std::cout << obj.use_count() << std::endl;
+
+//  ZSharedPointer<ZSwcTree> obj2 =
+//      ZSharedPointer<ZSwcTree>(dynamic_cast<ZSwcTree*>(obj.get()));
+//  std::cout << obj.use_count() << std::endl;
+
+  ZSharedPointer<ZSwcTree> obj2 = Shared_Dynamic_Cast<ZSwcTree>(obj);
+  std::cout << obj.use_count() << std::endl;
+  std::cout << obj2.use_count() << std::endl;
+
+#endif
+
+#if 0
+  ZObject3dScan obj;
+  obj.load(GET_TEST_DATA_DIR + "/benchmark/pile.sobj");
+
+  ZObject3dScan subobj = obj.subobject(ZIntCuboid(16, 16, 1, 16, 16, 1));
+  subobj.print();
+
+  subobj = obj.subobject(ZIntCuboid(5, 5, 1, 15, 15, 3));
+  subobj.print();
+
+  subobj = obj.subobject(ZIntCuboid(15, 15, 1, 17, 17, 3));
+  subobj.print();
+
+#endif
+
+#if 0
+  ZObject3dScan obj;
+  obj.load(GET_TEST_DATA_DIR + "/benchmark/29.sobj");
+  ZObject3dScan subobj = obj.subobject(ZIntCuboid(261, 603, 224, 441, 754, 272));
+  subobj.save(GET_TEST_DATA_DIR + "/test.sobj");
 
 #endif
 
