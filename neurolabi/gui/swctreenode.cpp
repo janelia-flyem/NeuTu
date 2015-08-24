@@ -18,6 +18,7 @@
 #include "neutubeconfig.h"
 #include "zerror.h"
 #include "zweightedpointarray.h"
+#include "tz_stack_objlabel.h"
 
 using namespace std;
 
@@ -1333,7 +1334,7 @@ bool SwcTreeNode::fitSignal(Swc_Tree_Node *tn, const Stack *stack,
 
   bool succ = false;
 
-  double expandScale = 5.0;
+  double expandScale = 2.0;
   double expandRadius = radius(tn) * expandScale + 3.0;
   //Extract image slice
   int x1 = iround(x(tn) - expandRadius);
@@ -1399,22 +1400,34 @@ bool SwcTreeNode::fitSignal(Swc_Tree_Node *tn, const Stack *stack,
 
   Stack *skel = Stack_Bwthin(slice, NULL);
 
-#ifdef _DEBUG_2
-  C_Stack::write(GET_TEST_DATA_DIR + "/test2.tif", skel);
-#endif
-
   //2D distance map
   Stack *dist = Stack_Bwdist_L_U16P(slice, NULL, 0);
-
-  Stack *locmax = Stack_Locmax_Region(dist, 4);
-  uint16_t *locmaxArray = (uint16_t*) C_Stack::array8(locmax);
-  size_t voxelNumber = C_Stack::voxelNumber(locmax);
+  uint16_t *distArray = (uint16_t*) C_Stack::array8(dist);
+  size_t voxelNumber = C_Stack::voxelNumber(dist);
   for (size_t i = 0; i < voxelNumber; ++i) {
-    if (locmaxArray[i] == 0) {
+    if (skel->array[i] == 0) {
+      distArray[i] = 0;
+    }
+  }
+
+#ifdef _DEBUG_2
+  C_Stack::write(GET_TEST_DATA_DIR + "/test2.tif", dist);
+#endif
+
+//  Stack *locmax = Stack_Locmax(dist, NULL);
+  Stack *locmax = Stack_Local_Max(dist, NULL, STACK_LOCMAX_CENTER);
+  for (size_t i = 0; i < voxelNumber; ++i) {
+    if (locmax->array[i] == 0) {
       skel->array[i] = 0;
     }
   }
+
+#ifdef _DEBUG_2
+  C_Stack::write(GET_TEST_DATA_DIR + "/test3.tif", skel);
+#endif
+
   C_Stack::kill(locmax);
+
 
   size_t index = C_Stack::closestForegroundPixel(skel, x(tn) - x1, y(tn) - y1, 0);
 
@@ -1426,6 +1439,8 @@ bool SwcTreeNode::fitSignal(Swc_Tree_Node *tn, const Stack *stack,
 
   if (r2 > 0) {
     if (Geo3d_Dist_Sqr(nx, ny, 0, x(tn) - x1, y(tn) - y1, 0) <= (r2 + 1) * (r2 + 1)) {
+      Stack_Label_Object_Dist_N(skel, NULL, index, 1, 2, 3, 8);
+
       SwcTreeNode::setRadius(tn, sqrt(r2));
       SwcTreeNode::setX(tn, nx + x1);
       SwcTreeNode::setY(tn, ny + y1);

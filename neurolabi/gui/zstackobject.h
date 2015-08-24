@@ -73,7 +73,8 @@ public:
     TYPE_SWC_NODE,
     TYPE_3D_GRAPH,
     TYPE_PUNCTA,
-    TYPE_FLYEM_BOOKMARK
+    TYPE_FLYEM_BOOKMARK,
+    TYPE_INT_CUBOID
   };
 
   enum Palette_Color {
@@ -317,6 +318,7 @@ protected:
   bool m_usingCosmeticPen;
   double m_zScale;
   std::string m_source;
+  std::string m_objectId;
   int m_zOrder;
   EType m_type;
   ZStackObjectRole m_role;

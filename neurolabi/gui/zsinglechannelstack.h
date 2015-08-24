@@ -18,6 +18,17 @@ public:
   virtual ~ZSingleChannelStack();
 
 public:
+  enum Proj_Mode {
+    MAX_PROJ,
+    MIN_PROJ
+  };
+
+  enum Stack_Axis {
+    X_AXIS,
+    Y_AXIS,
+    Z_AXIS
+  };
+
   inline int width() const { return m_stack->width; }
   inline int height() const { return m_stack->height; }
   inline int depth() const { return m_stack->depth; }
@@ -27,7 +38,7 @@ public:
   inline Stack* data() const { return m_stack; }
 
   enum EComponent {
-    STACK, STACK_PROJ, STACK_STAT
+    STACK, STACK_MAX_PROJ, STACK_MIN_PROJ, STACK_STAT
   };
 
   void deprecateDependent(EComponent component);
@@ -58,7 +69,9 @@ public:
   }
 
   ZStack_Stat* getStat() const;
-  ZStack_Projection* getProj();
+  ZStack_Projection* getMaxProj();
+  ZStack_Projection* getMinProj();
+  ZStack_Projection* getProj(Proj_Mode mode);
 
   void setValue(int x, int y, int z, double v);
   void setValue(size_t index, double value);
@@ -87,16 +100,6 @@ public: /* data operation */
                C_Stack::Stack_Deallocator *delloc = C_Stack::kill);
 
 public: /* operations */
-  enum Proj_Mode {
-    MAX_PROJ
-  };
-
-  enum Stack_Axis {
-    X_AXIS,
-    Y_AXIS,
-    Z_AXIS
-  };
-
   void *projection(Proj_Mode mode, Stack_Axis axis = Z_AXIS);
 
   void bcAdjustHint(double *scale, double *offset);
@@ -121,17 +124,19 @@ private:
   C_Stack::Stack_Deallocator *m_delloc;
   //bool m_isOwner;
   //int m_stamp;
-  ZStack_Projection* m_proj;
+  ZStack_Projection* m_maxProj;
+  ZStack_Projection *m_minProj;
   mutable ZStack_Stat *m_stat;
   Image_Array m_data;
 };
 
 class ZStack_Projection {
 public:
-  ZStack_Projection(Stack *parent = NULL) { m_parent = parent; m_proj = NULL;}
+  ZStack_Projection(Stack *parent = NULL) : m_parent(parent),
+  m_proj(NULL) { }
   ~ZStack_Projection() {if (m_proj != NULL) { Kill_Image(m_proj); }}
 
-  void update(Stack *stack);
+  void update(Stack *stack, ZSingleChannelStack::Proj_Mode mode);
   //void update(Stack *stack, int stamp);
   inline void* data() { return (void*)m_proj->array; }
 

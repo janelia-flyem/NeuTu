@@ -78,7 +78,8 @@ double Biocytin::ZStackProjector::colorToValueH(
 }
 
 ZStack* Biocytin::ZStackProjector::project(
-    const ZStack *stack, bool includingDepth, int slabIndex)
+    const ZStack *stack, NeuTube::EImageBackground bg,
+    bool includingDepth, int slabIndex)
 {
 #ifdef _DEBUG_
   tic();
@@ -109,8 +110,15 @@ ZStack* Biocytin::ZStackProjector::project(
         proj = new ZStack(stack->kind(), stack->width(), stack->height(), 1,
                           stack->channelNumber());
         for (int channel = 0; channel  < stack->channelNumber(); ++channel) {
-          Image *projBuffer = C_Stack::makeMinProjZ(
-                stack->c_stack(channel), range.first, range.second);
+          Image *projBuffer = NULL;
+          if (bg == NeuTube::IMAGE_BACKGROUND_BRIGHT) {
+            projBuffer = C_Stack::makeMinProjZ(
+                  stack->c_stack(channel), range.first, range.second);
+          } else {
+            projBuffer = C_Stack::makeMaxProjZ(
+                  stack->c_stack(channel), range.first, range.second);
+          }
+
           proj->loadValue(projBuffer->array,
                           proj->getByteNumber(ZStack::SINGLE_PLANE), channel);
           Kill_Image(projBuffer);
@@ -191,9 +199,16 @@ ZStack* Biocytin::ZStackProjector::project(
 
                 double v = colorToValueH(
                       red, green, blue, regularizer);
-                if (projMat->array[projIndex] > v) {
-                  projMat->array[projIndex] = v;
-                  m_depthArray[projIndex] = z;
+                if (bg == NeuTube::IMAGE_BACKGROUND_BRIGHT) {
+                  if (projMat->array[projIndex] > v) {
+                    projMat->array[projIndex] = v;
+                    m_depthArray[projIndex] = z;
+                  }
+                } else {
+                  if (projMat->array[projIndex] < v) {
+                    projMat->array[projIndex] = v;
+                    m_depthArray[projIndex] = z;
+                  }
                 }
                 ++index;
                 ++projIndex;

@@ -7,6 +7,7 @@
 #include "zprogressable.h"
 #include "tz_fmatrix.h"
 #include "tz_image_lib_defs.h"
+#include "neutube_def.h"
 
 class ZStack;
 
@@ -15,7 +16,8 @@ class ZStackProjector : public ZProgressable {
 public:
   ZStackProjector();
 
-  ZStack* project(const ZStack *stack, bool includingDepth, int slabIndex);
+  ZStack* project(const ZStack *stack, NeuTube::EImageBackground bg,
+                  bool includingDepth, int slabIndex);
 
   inline void setAdjustingContrast(bool adj) {
     m_adjustingConstrast = adj;

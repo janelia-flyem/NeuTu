@@ -7052,7 +7052,7 @@ std::vector<ZStack*> ZStackDoc::projectBiocytinStack(
   projArray.push_back(out);
 
   for (int slabIndex = 0; slabIndex < projector.getSlabNumber(); ++slabIndex) {
-    ZStack *proj = projector.project(getStack(), true, slabIndex);
+    ZStack *proj = projector.project(getStack(), getStackBackground(), true, slabIndex);
 
     if (proj != NULL) {
       if (proj->channelNumber() == 2) {
@@ -8580,15 +8580,18 @@ void ZStackDoc::selectSwcNode(const ZRect2d &roi)
   notifySelectionChanged(selected, deselected);
 }
 
+/*
+void ZStackDoc::processRectRoiUpdateSlot()
+{
+  processRectRoiUpdate();
+}
+*/
+
 void ZStackDoc::processRectRoiUpdate()
 {
-  ZRect2d roi = getRect2dRoi();
-  if (roi.isValid()) {
-    if (getTag() == NeuTube::Document::BIOCYTIN_PROJECTION) {
-      selectSwcNode(roi);
-      removeRect2dRoi();
-    }
-  }
+  processObjectModified(getObjectGroup().findFirstSameSource(
+                          ZStackObject::TYPE_RECT2D,
+                          ZStackObjectSourceFactory::MakeRectRoiSource()));
 }
 
 void ZStackDoc::removeRect2dRoi()

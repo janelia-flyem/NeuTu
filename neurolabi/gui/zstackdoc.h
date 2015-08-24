@@ -918,6 +918,8 @@ public:
   ZProgressSignal* getProgressSignal() const {
     return m_progressSignal;
   }
+
+  virtual void processRectRoiUpdate();
   /*
   inline void setLastAddedSwcNode(Swc_Tree_Node *tn) {
     m_lastAddedSwcNode = tn;
@@ -1039,14 +1041,8 @@ public slots:
   void removeUser(QObject *user);
   void removeAllUser();
 
-  void processRectRoiUpdate();
+//  void processRectRoiUpdateSlot();
 
-/*
-public:
-  inline void notifyStackModified() {
-    emit stackModified();
-  }
-*/
 signals:
   void messageGenerated(const QString &message, bool appending = true);
   void messageGenerated(const ZWidgetMessage&);

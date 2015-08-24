@@ -332,6 +332,8 @@ signals:
   void labelSliceSelectionChanged();
   void objectVisibleTurnedOn();
   void exitingRectEdit();
+  void acceptingRectRoi();
+  void rectRoiUpdated();
 
 protected:
   void init();
@@ -362,6 +364,8 @@ protected:
   void process(const ZStackOperator &op);
 
   void acceptActiveStroke();
+  void acceptRectRoi();
+  virtual void processRectRoiUpdate();
 
 protected:
   //ZStackFrame *m_parent;

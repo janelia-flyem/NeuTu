@@ -24,6 +24,7 @@
 #include "flyem/zflyembookmark.h"
 #include "zstring.h"
 #include "flyem/zsynapseannotationarray.h"
+#include "zintcuboidobj.h"
 
 ZFlyEmProofDoc::ZFlyEmProofDoc(QObject *parent) :
   ZStackDoc(parent)
@@ -609,33 +610,66 @@ void ZFlyEmProofDoc::notifyBodyIsolated(uint64_t bodyId)
   emit bodyIsolated(bodyId);
 }
 
+ZIntCuboidObj* ZFlyEmProofDoc::getSplitRoi() const
+{
+  return dynamic_cast<ZIntCuboidObj*>(
+      getObjectGroup().findFirstSameSource(
+        ZStackObject::TYPE_INT_CUBOID,
+        ZStackObjectSourceFactory::MakeFlyEmSplitRoiSource()));
+}
+
+void ZFlyEmProofDoc::updateSplitRoi()
+{
+  ZRect2d rect = getRect2dRoi();
+
+  beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+  ZIntCuboidObj* roi = ZFlyEmProofDoc::getSplitRoi();
+  if (roi == NULL) {
+    roi = new ZIntCuboidObj;
+    roi->setColor(QColor(255, 255, 255));
+    roi->setSource(ZStackObjectSourceFactory::MakeFlyEmSplitRoiSource());
+    addObject(roi);
+  }
+
+  if (rect.isValid()) {
+    int sz = iround(sqrt(rect.getWidth() * rect.getWidth() +
+                             rect.getHeight() * rect.getHeight()) / 2.0);
+    roi->setFirstCorner(rect.getFirstX(), rect.getFirstY(), rect.getZ() - sz);
+    roi->setLastCorner(rect.getLastX(), rect.getLastY(), rect.getZ() + sz);
+  } else {
+    roi->clear();
+  }
+
+  m_splitSource.reset();
+  removeRect2dRoi();
+
+  processObjectModified(roi);
+
+  endObjectModifiedMode();
+  notifyObjectModified();
+}
+
 ZDvidSparseStack* ZFlyEmProofDoc::getDvidSparseStack() const
 {
   ZDvidSparseStack *stack = NULL;
 
-  if (getRect2dRoi().isValid()) {
-    ZRect2d rect = getRect2dRoi();
-    int length = iround(sqrt(rect.getWidth() * rect.getWidth() +
-                             rect.getHeight() * rect.getHeight()));
-    ZIntCuboid boundBox(rect.getFirstX(), rect.getFirstY(), rect.getZ() - length,
-                        rect.getLastX(), rect.getLastY(), rect.getZ() + length);
+  ZDvidSparseStack *originalStack = ZStackDoc::getDvidSparseStack();
+  if (originalStack != NULL) {
+    ZIntCuboidObj *roi = getSplitRoi();
+    if (roi != NULL) {
+      if (roi->isValid()) {
+        if (m_splitSource.get() == NULL) {
+          m_splitSource = ZSharedPointer<ZDvidSparseStack>(
+                originalStack->getCrop(roi->getCuboid()));
+        }
 
-    ZDvidSparseStack *originalStack = ZStackDoc::getDvidSparseStack();
-    if (originalStack != NULL) {
-      if (!m_splitRoi.equals(boundBox)) {
-        m_splitSource.reset();
+        stack = m_splitSource.get();
       }
-
-      if (m_splitSource.get() == NULL) {
-        m_splitSource =
-            ZSharedPointer<ZDvidSparseStack>(originalStack->getCrop(boundBox));
-        m_splitRoi = boundBox;
-      }
-
-      stack = m_splitSource.get();
     }
-  } else {
-    stack = ZStackDoc::getDvidSparseStack();
+  }
+
+  if (stack == NULL) {
+    stack = originalStack;
   }
 
   return stack;

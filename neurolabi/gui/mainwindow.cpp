@@ -875,11 +875,11 @@ void MainWindow::customizeActions()
   }
 
   m_ui->menuApplications->menuAction()->setVisible(hasApplication);
-  m_ui->actionMake_Projection->setVisible(false);
+//  m_ui->actionMake_Projection->setVisible(false);
   m_ui->actionTree_Preview->setVisible(false);
 
   if (NeutubeConfig::getInstance().getApplication() == "Biocytin") {
-    m_ui->actionMake_Projection->setVisible(true);
+//    m_ui->actionMake_Projection->setVisible(true);
     m_ui->actionUpdate->setVisible(false);
     m_ui->menuFilter->menuAction()->setVisible(false);
     m_ui->menuBinary_Morphology->menuAction()->setVisible(false);
@@ -4775,7 +4775,7 @@ void MainWindow::on_actionMake_Projection_triggered()
         ZStack *stack = *iter;
         ZStackFrame *newFrame =
             createStackFrame(stack, NeuTube::Document::BIOCYTIN_PROJECTION, frame);
-        newFrame->makeSwcProjection(frame->document().get());
+//        newFrame->makeSwcProjection(frame->document().get());
         newFrame->document()->setStackOffset(frame->document()->getStackOffset());
         addStackFrame(newFrame);
         presentStackFrame(newFrame);
@@ -4909,7 +4909,6 @@ void MainWindow::on_actionMask_SWC_triggered()
 
         Biocytin::SwcProcessor::breakZJump(wholeTree, 2.0);
         Biocytin::SwcProcessor::removeOrphan(wholeTree);
-        Biocytin::SwcProcessor::smoothZ(wholeTree);
         reporter.advance(0.1);
 
         skeletonizer.setConnectingBranch(true);
@@ -4951,6 +4950,7 @@ void MainWindow::on_actionMask_SWC_triggered()
           swcFrame->document()->estimateSwcRadius(wholeTree);
 
           Biocytin::SwcProcessor::smoothRadius(wholeTree);
+          Biocytin::SwcProcessor::smoothZ(wholeTree);
 
 #ifdef _DEBUG_2
         wholeTree->save(GET_DATA_DIR + "/test.swc");

@@ -2073,6 +2073,24 @@ void ZStackPresenter::selectConnectedNode()
   buddyDocument()->selectConnectedNode();
 }
 
+void ZStackPresenter::processRectRoiUpdate()
+{
+  buddyDocument()->processRectRoiUpdate();
+}
+
+void ZStackPresenter::acceptRectRoi()
+{
+  ZStackObject *obj = buddyDocument()->getObjectGroup().findFirstSameSource(
+        ZStackObject::TYPE_RECT2D,
+        ZStackObjectSourceFactory::MakeRectRoiSource());
+  ZRect2d *rect = dynamic_cast<ZRect2d*>(obj);
+  if (rect != NULL) {
+    rect->setColor(QColor(255, 255, 255));
+  }
+  processRectRoiUpdate();
+//  exitRectEdit();
+}
+
 void ZStackPresenter::processEvent(ZInteractionEvent &event)
 {
   switch (event.getEvent()) {
@@ -2621,7 +2639,7 @@ void ZStackPresenter::process(const ZStackOperator &op)
     rect->setSource(ZStackObjectSourceFactory::MakeRectRoiSource());
     rect->setPenetrating(true);
     rect->setZ(buddyView()->getCurrentZ());
-    rect->setColor(255, 255, 255);
+    rect->setColor(255, 128, 128);
     buddyDocument()->executeAddObjectCommand(rect);
   }
     break;
@@ -2647,6 +2665,10 @@ void ZStackPresenter::process(const ZStackOperator &op)
       buddyDocument()->notifyObjectModified();
     }
   }
+    break;
+  case ZStackOperator::OP_RECT_ROI_ACCEPT:
+    acceptRectRoi();
+    exitRectEdit();
     break;
   case ZStackOperator::OP_START_MOVE_IMAGE:
     //if (buddyView()->imageWidget()->zoomRatio() > 1) {

@@ -19,6 +19,7 @@
 #include "z3dwindow.h"
 #include "dvid/zdvidtarget.h"
 #include "dvid/zdvidreader.h"
+#include "zstackviewparam.h"
 
 void ZFlyEmMisc::NormalizeSimmat(ZMatrix &simmat)
 {
@@ -217,3 +218,71 @@ void ZFlyEmMisc::Decorate3DWindow(Z3DWindow *window, const ZDvidReader &reader)
   }
 }
 */
+
+void ZFlyEmMisc::Decorate3dBodyWindowPlane(
+    Z3DWindow *window, const ZDvidInfo &dvidInfo,
+    const ZStackViewParam &viewParam)
+{
+  if (window != NULL) {
+    ZRect2d rect;
+    rect.setZ(viewParam.getZ());
+    //    rect.setZ(getCurrentZ());
+    rect.setFirstCorner(dvidInfo.getStartCoordinates().getX(),
+                        dvidInfo.getStartCoordinates().getY());
+    rect.setLastCorner(dvidInfo.getEndCoordinates().getX(),
+                       dvidInfo.getEndCoordinates().getY());
+    ZCuboid box;
+    box.setFirstCorner(dvidInfo.getStartCoordinates().toPoint());
+    box.setLastCorner(dvidInfo.getEndCoordinates().toPoint());
+    double lineWidth = box.depth() / 2000.0;
+    Z3DGraph *graph = Z3DGraphFactory::MakeGrid(rect, 100, lineWidth);
+
+    if (viewParam.getViewPort().isValid()) {
+      Z3DGraphNode node1;
+      Z3DGraphNode node2;
+
+      node1.setColor(QColor(255, 0, 0));
+      node2.setColor(QColor(255, 0, 0));
+
+      double x = viewParam.getViewPort().center().x();
+      double y = viewParam.getViewPort().center().y();
+
+      double width = lineWidth * 0.3;
+      node1.set(x, rect.getFirstY(), rect.getZ(), width);
+      node2.set(x, rect.getLastY(), rect.getZ(), width);
+
+      graph->addNode(node1);
+      graph->addNode(node2);
+      graph->addEdge(node1, node2, GRAPH_LINE);
+
+      node1.set(rect.getFirstX(), y, rect.getZ(), width);
+      node2.set(rect.getLastX(), y, rect.getZ(), width);
+
+      graph->addNode(node1);
+      graph->addNode(node2);
+      graph->addEdge(node1, node2, GRAPH_LINE);
+    }
+
+    graph->setSource(ZStackObjectSourceFactory::MakeFlyEmPlaneObjectSource());
+    window->getDocument()->addObject(graph, true);
+  }
+}
+
+
+void ZFlyEmMisc::Decorate3dBodyWindow(
+    Z3DWindow *window, const ZDvidInfo &dvidInfo,
+    const ZStackViewParam &viewParam)
+{
+  if (window != NULL) {
+    Decorate3dBodyWindowPlane(window, dvidInfo, viewParam);
+    ZCuboid box;
+    box.setFirstCorner(dvidInfo.getStartCoordinates().toPoint());
+    box.setLastCorner(dvidInfo.getEndCoordinates().toPoint());
+    Z3DGraph *graph = Z3DGraphFactory::MakeBox(
+          box, dmax2(1.0, dmax3(box.width(), box.height(), box.depth()) / 1000.0));
+    graph->setSource(ZStackObjectSourceFactory::MakeFlyEmBoundBoxSource());
+
+    window->getDocument()->addObject(graph, true);
+    window->setOpacity(Z3DWindow::LAYER_GRAPH, 0.4);
+  }
+}

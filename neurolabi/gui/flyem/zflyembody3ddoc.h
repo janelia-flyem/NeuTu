@@ -81,7 +81,7 @@ public:
 
   const ZDvidInfo& getDvidInfo() const;
 
-  void updateFrame();
+//  void updateFrame();
 
   ZFlyEmProofDoc* getDataDocument() const;
 

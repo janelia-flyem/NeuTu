@@ -15,6 +15,7 @@ class ZFlyEmSupervisor;
 class ZFlyEmBookmark;
 class ZPuncta;
 class ZDvidSparseStack;
+class ZIntCuboidObj;
 
 class ZFlyEmProofDoc : public ZStackDoc
 {
@@ -92,6 +93,10 @@ public:
   void notifyBodyUnmerged();
   void notifyBodyIsolated(uint64_t bodyId);
 
+public: //ROI functions
+  ZIntCuboidObj* getSplitRoi() const;
+  void updateSplitRoi();
+
 signals:
   void bodyMerged();
   void bodyUnmerged();
@@ -130,7 +135,7 @@ private:
   QString m_mergeAutoSavePath;
 
   mutable ZSharedPointer<ZDvidSparseStack> m_splitSource;
-  mutable ZIntCuboid m_splitRoi;
+//  mutable ZIntCuboid m_splitRoi;
 
 
   //ZFlyEmBodySplitProject m_splitProject;

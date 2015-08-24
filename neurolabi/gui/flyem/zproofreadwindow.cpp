@@ -20,6 +20,7 @@
 #include "tz_math.h"
 #include "zprogresssignal.h"
 #include "zwidgetmessage.h"
+#include "QsLog.h"
 
 ZProofreadWindow::ZProofreadWindow(QWidget *parent) :
   QMainWindow(parent)
@@ -293,6 +294,24 @@ void ZProofreadWindow::dump(const ZWidgetMessage &msg)
     break;
   case ZWidgetMessage::TARGET_CUSTOM_AREA:
     m_mainMvc->dump(msg.toHtmlString());
+    break;
+  default:
+    break;
+  }
+
+  //Record message in files
+  switch (msg.getType()) {
+  case NeuTube::MSG_INFORMATION:
+    LINFO() << msg.toPlainString();
+    break;
+  case NeuTube::MSG_WARNING:
+    LWARN() << msg.toPlainString();
+    break;
+  case NeuTube::MSG_ERROR:
+    LERROR() << msg.toPlainString();
+    break;
+  case NeuTube::MSG_DEBUG:
+    LDEBUG() << msg.toPlainString();
     break;
   }
 }

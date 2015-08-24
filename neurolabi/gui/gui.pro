@@ -557,7 +557,8 @@ HEADERS += mainwindow.h \
     biocytin/zbiocytinprojectiondoc.h \
     dialogs/zflyemsplitcommitdialog.h \
     zswctreenodeselector.h \
-    zstackdocfactory.h
+    zstackdocfactory.h \
+    zintcuboidobj.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -979,7 +980,8 @@ SOURCES += main.cpp \
     biocytin/zbiocytinprojectiondoc.cpp \
     dialogs/zflyemsplitcommitdialog.cpp \
     zswctreenodeselector.cpp \
-    zstackdocfactory.cpp
+    zstackdocfactory.cpp \
+    zintcuboidobj.cpp
 
 OTHER_FILES += \
     extlib.pri \

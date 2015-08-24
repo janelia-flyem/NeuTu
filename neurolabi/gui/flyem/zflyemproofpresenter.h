@@ -40,6 +40,8 @@ public:
     m_splitWindowMode = state;
   }
 
+  void processRectRoiUpdate();
+
 private:
   void tryAddBookmarkMode();
   void tryAddBookmarkMode(double x, double y);

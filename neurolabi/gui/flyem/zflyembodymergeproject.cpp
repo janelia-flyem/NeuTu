@@ -528,12 +528,19 @@ void ZFlyEmBodyMergeProject::makeBodyWindow()
 
   ZFlyEmBody3dDoc *doc = new ZFlyEmBody3dDoc;
   doc->setDvidTarget(getDvidTarget());
-  doc->updateFrame();
+//  doc->updateFrame();
   doc->setDataDoc(m_doc);
 
   m_bodyWindow = factory.make3DWindow(doc);
   m_bodyWindow->getGraphFilter()->setStayOnTop(false);
   //m_bodyWindow->setParent(m_dataFrame);
+
+
+  if (m_doc->getParentMvc() != NULL) {
+    ZFlyEmMisc::Decorate3dBodyWindow(
+          m_bodyWindow, m_dvidInfo,
+          m_doc->getParentMvc()->getView()->getViewParameter());
+  }
 
   m_bodyWindow->getSwcFilter()->setColorMode("Intrinsic");
   m_bodyWindow->getSwcFilter()->setRenderingPrimitive("Sphere");
@@ -577,7 +584,6 @@ void ZFlyEmBodyMergeProject::makeCoarseBodyWindow(ZStackDoc *doc)
   m_coarseBodyWindow->getSwcFilter()->setRenderingPrimitive("Sphere");
   m_coarseBodyWindow->getSwcFilter()->setStayOnTop(false);
   m_coarseBodyWindow->setYZView();
-  m_coarseBodyWindow->setOpacity(Z3DWindow::LAYER_GRAPH, 0.4);
 
   connect(m_coarseBodyWindow, SIGNAL(closed()), this, SLOT(detachCoarseBodyWindow()));
   connect(m_coarseBodyWindow, SIGNAL(locating2DViewTriggered(ZStackViewParam)),
@@ -648,27 +654,27 @@ void ZFlyEmBodyMergeProject::showCoarseBody3d()
 
 void ZFlyEmBodyMergeProject::showBody3d()
 {
-    if(m_bodyViewWindow == NULL){
-        m_bodyViewWindow = new Z3DMainWindow(0);
-        m_bodyViewWindow->setWindowTitle(QString::fromUtf8("3D Body View"));
+  if(m_bodyViewWindow == NULL){
+    m_bodyViewWindow = new Z3DMainWindow(0);
+    m_bodyViewWindow->setWindowTitle(QString::fromUtf8("3D Body View"));
 
-        QSizePolicy sizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
+    QSizePolicy sizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
 
-        QVBoxLayout* bvLayout = new QVBoxLayout;
+    QVBoxLayout* bvLayout = new QVBoxLayout;
 
-        QWidget *toolWidget = new QWidget(m_bodyViewWindow->toolBar);
-        bvLayout->addWidget(toolWidget);
+    QWidget *toolWidget = new QWidget(m_bodyViewWindow->toolBar);
+    bvLayout->addWidget(toolWidget);
 
-        if(m_bodyViewers == NULL){
-            m_bodyViewers = new Z3DTabWidget(m_bodyViewWindow);
-            m_bodyViewers->setSizePolicy(sizePolicy);
-            bvLayout->addWidget(m_bodyViewers);
-        }
-
-        m_bodyViewWindow->setLayout(bvLayout);
-        m_bodyViewWindow->setCentralWidget(m_bodyViewers);
-        m_bodyViewWindow->resize(QDesktopWidget().availableGeometry(0).size()*0.7);
+    if(m_bodyViewers == NULL){
+      m_bodyViewers = new Z3DTabWidget(m_bodyViewWindow);
+      m_bodyViewers->setSizePolicy(sizePolicy);
+      bvLayout->addWidget(m_bodyViewers);
     }
+
+    m_bodyViewWindow->setLayout(bvLayout);
+    m_bodyViewWindow->setCentralWidget(m_bodyViewers);
+    m_bodyViewWindow->resize(QDesktopWidget().availableGeometry(0).size()*0.7);
+  }
 
   if (m_bodyWindow == NULL) {
     makeBodyWindow();
@@ -800,6 +806,15 @@ void ZFlyEmBodyMergeProject::update3DBodyViewPlane(
     const ZDvidInfo &dvidInfo, const ZStackViewParam &viewParam)
 {
   if (m_coarseBodyWindow != NULL) {
+    ZFlyEmMisc::Decorate3dBodyWindowPlane(
+          m_coarseBodyWindow, dvidInfo, viewParam);
+  }
+
+  if (m_bodyWindow != NULL) {
+    ZFlyEmMisc::Decorate3dBodyWindowPlane(m_bodyWindow, dvidInfo, viewParam);
+  }
+
+#if 0
     ZRect2d rect;
     ZStackDocHelper docHelper;
     docHelper.extractCurrentZ(getDocument());
@@ -845,7 +860,9 @@ void ZFlyEmBodyMergeProject::update3DBodyViewPlane(
       graph->setSource(ZStackObjectSourceFactory::MakeFlyEmPlaneObjectSource());
       m_coarseBodyWindow->getDocument()->addObject(graph, true);
     }
+
   }
+#endif
 }
 
 void ZFlyEmBodyMergeProject::update3DBodyViewBox(const ZDvidInfo &dvidInfo)
@@ -912,7 +929,8 @@ void ZFlyEmBodyMergeProject::update3DBodyView(
 
 
 //    m_bodyWindow->getDocument()->blockSignals(true);
-    m_coarseBodyWindow->getDocument()->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+    m_coarseBodyWindow->getDocument()->beginObjectModifiedMode(
+          ZStackDoc::OBJECT_MODIFIED_CACHE);
 
 
     ZFlyEmDvidReader reader;
@@ -920,12 +938,19 @@ void ZFlyEmBodyMergeProject::update3DBodyView(
 
 //    ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
 
+    if (m_doc->getParentMvc() != NULL) {
+      ZFlyEmMisc::Decorate3dBodyWindow(
+            m_coarseBodyWindow, m_dvidInfo,
+            m_doc->getParentMvc()->getView()->getViewParameter());
+    }
+    /*
     update3DBodyViewBox(m_dvidInfo);
     if (m_doc->getParentMvc() != NULL) {
       update3DBodyViewPlane(
             m_dvidInfo,
             m_doc->getParentMvc()->getView()->getViewParameter());
     }
+    */
 
     for (std::set<uint64_t>::const_iterator iter = selectedMapped.begin();
          iter != selectedMapped.end(); ++iter) {
@@ -982,7 +1007,7 @@ void ZFlyEmBodyMergeProject::update3DBodyView(
 void ZFlyEmBodyMergeProject::update3DBodyViewPlane(
     const ZStackViewParam &viewParam)
 {
-  if (m_coarseBodyWindow != NULL) {
+  if (m_coarseBodyWindow != NULL || m_bodyWindow != NULL) {
     ZFlyEmDvidReader reader;
     reader.open(getDvidTarget());
 

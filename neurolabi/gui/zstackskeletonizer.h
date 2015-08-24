@@ -119,6 +119,7 @@ private:
   double m_resolution[3];
   int m_downsampleInterval[3];
   bool m_usingOriginalSignal;
+  bool m_resampleSwc;
 };
 
 #endif // ZSTACKSKELETONIZER_H

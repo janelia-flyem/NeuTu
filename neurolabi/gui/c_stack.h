@@ -395,6 +395,7 @@ bool isBinary(const Stack *stack);
 
 
 Image* makeMinProjZ(const Stack* stack, int minZ, int maxZ);
+Image* makeMaxProjZ(const Stack* stack, int minZ, int maxZ);
 
 //Paint routines
 void drawPatch(Stack *canvas, const Stack *patch,
