@@ -15,7 +15,7 @@
  * this dialog displays a list of bodies and their properties; data is
  * loaded from a static json bookmarks file
  *
- * to add/remove columns in table:
+ * to add/remove/alter columns in table:
  * -- in createModel(), change ncol
  * -- in setHeaders(), adjust headers
  * -- in updateModel(), adjust data load and initial sort order
@@ -43,6 +43,8 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(QWidget *parent) :
     connect(this, SIGNAL(jsonLoadError(QString)), this, SLOT(onJsonLoadError(QString)));
 
     // data update connects
+    // register our type so we can signal/slot it across threads:
+    qRegisterMetaType<ZJsonValue>("ZJsonValue");
     connect(this, SIGNAL(dataChanged(ZJsonValue)), this, SLOT(updateModel(ZJsonValue)));
 
 }
@@ -78,7 +80,7 @@ void FlyEmBodyInfoDialog::importBookmarksFile(const QString &filename) {
     ZJsonObject jsonObject;
 
     if (!jsonObject.load(filename.toStdString())) {
-        emit jsonLoadError("Are you sure this is a Fly EM JSON file?");
+        emit jsonLoadError("Error parsing JSON file!  Are you sure this is a Fly EM JSON file?");
         return;
     }
 
@@ -137,9 +139,8 @@ void FlyEmBodyInfoDialog::onCloseButton() {
 void FlyEmBodyInfoDialog::onOpenButton() {
   QString filename =
       ZDialogFactory::GetOpenFileName("Open bookmarks file", "", this);
-//  QString filename = QFileDialog::getOpenFileName(this, "Open bookmarks file");
   if (!filename.isEmpty()) {
-    importBookmarksFile(filename);
+    QtConcurrent::run(this, &FlyEmBodyInfoDialog::importBookmarksFile, filename);
   }
 }
 
@@ -147,6 +148,7 @@ void FlyEmBodyInfoDialog::onOpenButton() {
  * update the data model from json; input should be the
  * "data" part of our standard bookmarks json file
  */
+// void FlyEmBodyInfoDialog::updateModel(ZJsonValue * data) {
 void FlyEmBodyInfoDialog::updateModel(ZJsonValue data) {
     m_model->clear();
     setHeaders(m_model);
@@ -177,10 +179,7 @@ void FlyEmBodyInfoDialog::updateModel(ZJsonValue data) {
         m_model->setItem(i, 3, new QStandardItem(QString(status)));
     }
     ui->tableView->resizeColumnsToContents();
-
-    // initial sort order is by #pre, descending
     ui->tableView->sortByColumn(1, Qt::DescendingOrder);
-
 }
 
 void FlyEmBodyInfoDialog::onJsonLoadError(QString message) {
