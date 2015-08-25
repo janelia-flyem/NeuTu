@@ -979,6 +979,30 @@ Mc_Stack* C_Stack::clone(const Mc_Stack *stack)
   return Copy_Mc_Stack(stack);
 }
 
+size_t C_Stack::countForegoundNeighbor(const Stack *stack, size_t index, int conn)
+{
+  int inBound[26];
+  int neighborOffset[26];
+  Stack_Neighbor_Offset(conn, width(stack), height(stack), neighborOffset);
+
+  int nnbr = Stack_Neighbor_Bound_Test_I(
+        conn, width(stack), height(stack), depth(stack),
+        index, inBound);
+
+  int count = 0;
+
+  for (int i = 0; i < conn; ++i) {
+    if (nnbr == conn || inBound[i]) {
+      int neighborIndex = index + neighborOffset[i];
+      if (stack->array[neighborIndex] > 0) {
+        ++count;
+      }
+    }
+  }
+
+  return count;
+}
+
 vector<size_t> C_Stack::getNeighborIndices(const Stack *stack,
                                            const vector<size_t> &indexArray,
                                            int conn, double value)

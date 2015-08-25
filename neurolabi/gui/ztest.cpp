@@ -17590,7 +17590,7 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
-#if 1
+#if 0
   ZDvidTarget target("emdata1.int.janelia.org", "1c420", 8500);
   target.setLabelBlockName("labels3");
   target.setBodyLabelName("bodies3");
@@ -17703,6 +17703,14 @@ void ZTest::test(MainWindow *host)
   ZObject3dScan subobj = obj.subobject(ZIntCuboid(261, 603, 224, 441, 754, 272));
   subobj.save(GET_TEST_DATA_DIR + "/test.sobj");
 
+#endif
+
+#if 1
+  Stack *stack = C_Stack::readSc(
+        GET_TEST_DATA_DIR + "/benchmark//binary/2d/btrig2_skel.tif");
+  ZStackProcessor::ShrinkSkeleton(stack, 10);
+
+  C_Stack::write(GET_TEST_DATA_DIR + "/test.tif", stack);
 #endif
 
 }

@@ -19,6 +19,7 @@
 #include "zerror.h"
 #include "zweightedpointarray.h"
 #include "tz_stack_objlabel.h"
+#include "zstackprocessor.h"
 
 using namespace std;
 
@@ -1410,11 +1411,12 @@ bool SwcTreeNode::fitSignal(Swc_Tree_Node *tn, const Stack *stack,
     }
   }
 
-#ifdef _DEBUG_2
+#ifdef _DEBUG_
   C_Stack::write(GET_TEST_DATA_DIR + "/test2.tif", dist);
 #endif
 
 //  Stack *locmax = Stack_Locmax(dist, NULL);
+#if 0
   Stack *locmax = Stack_Local_Max(dist, NULL, STACK_LOCMAX_CENTER);
   for (size_t i = 0; i < voxelNumber; ++i) {
     if (locmax->array[i] == 0) {
@@ -1422,12 +1424,14 @@ bool SwcTreeNode::fitSignal(Swc_Tree_Node *tn, const Stack *stack,
     }
   }
 
-#ifdef _DEBUG_2
-  C_Stack::write(GET_TEST_DATA_DIR + "/test3.tif", skel);
+  C_Stack::kill(locmax);
 #endif
 
-  C_Stack::kill(locmax);
+  ZStackProcessor::ShrinkSkeleton(skel, 3);
 
+#ifdef _DEBUG_
+  C_Stack::write(GET_TEST_DATA_DIR + "/test3.tif", skel);
+#endif
 
   size_t index = C_Stack::closestForegroundPixel(skel, x(tn) - x1, y(tn) - y1, 0);
 
@@ -1438,7 +1442,7 @@ bool SwcTreeNode::fitSignal(Swc_Tree_Node *tn, const Stack *stack,
   double r2 = C_Stack::value(dist, index);
 
   if (r2 > 0) {
-    if (Geo3d_Dist_Sqr(nx, ny, 0, x(tn) - x1, y(tn) - y1, 0) <= (r2 + 1) * (r2 + 1)) {
+    if (Geo3d_Dist_Sqr(nx, ny, 0, x(tn) - x1, y(tn) - y1, 0) <= (r2 + 3) * (r2 + 3)) {
       Stack_Label_Object_Dist_N(skel, NULL, index, 1, 2, 3, 8);
 
       SwcTreeNode::setRadius(tn, sqrt(r2));
