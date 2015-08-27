@@ -754,6 +754,7 @@ void ZFlyEmProofMvc::updateBodySelection()
     const std::set<uint64_t> &selected = slice->getSelectedOriginal();
     m_mergeProject.setSelection(selected, NeuTube::BODY_LABEL_ORIGINAL);
     updateCoarseBodyWindow(false, false);
+    updateBodyWindow();
 //    m_mergeProject.update3DBodyView();
     if (getCompletePresenter()->isHighlight()) {
       m_mergeProject.highlightSelectedObject(true);
@@ -1690,6 +1691,7 @@ void ZFlyEmProofMvc::processViewChangeCustom(const ZStackViewParam &viewParam)
   m_splitProject.update3DViewPlane();
 
   updateBodyWindowPlane(m_coarseBodyWindow, viewParam);
+  updateBodyWindowPlane(m_bodyWindow, viewParam);
 }
 
 void ZFlyEmProofMvc::recordCheckedBookmark(const QString &key, bool checking)
