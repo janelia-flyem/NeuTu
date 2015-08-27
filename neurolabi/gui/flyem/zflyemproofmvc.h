@@ -265,6 +265,8 @@ template <typename T>
 void ZFlyEmProofMvc::connectSplitControlPanel(T *panel)
 {
   connect(panel, SIGNAL(quickViewTriggered()), this, SLOT(showBodyQuickView()));
+  connect(panel, SIGNAL(coarseBodyViewTriggered()),
+          this, SLOT(showCoarseBody3d()));
   connect(panel, SIGNAL(splitQuickViewTriggered()),
           this, SLOT(showSplitQuickView()));
   connect(panel, SIGNAL(bodyViewTriggered()), this, SLOT(showBody3d()));

@@ -92,6 +92,8 @@ Z3DMainWindow::Z3DMainWindow(QWidget *parent) : QMainWindow(parent)
     QPixmap quitpix("quit.png");
     QAction *quit = toolBar->addAction(QIcon(quitpix), "Quit 3D Body View");
     connect(quit, SIGNAL(triggered()), qApp, SLOT(quit()));
+
+    toolBar->hide();
 }
 
 Z3DMainWindow::~Z3DMainWindow()

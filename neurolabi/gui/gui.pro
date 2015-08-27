@@ -559,7 +559,8 @@ HEADERS += mainwindow.h \
     zswctreenodeselector.h \
     zstackdocfactory.h \
     zintcuboidobj.h \
-    flyem/zflyembodywindowfactory.h
+    flyem/zflyembodywindowfactory.h \
+    flyem/zflyembodycolorscheme.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -983,7 +984,8 @@ SOURCES += main.cpp \
     zswctreenodeselector.cpp \
     zstackdocfactory.cpp \
     zintcuboidobj.cpp \
-    flyem/zflyembodywindowfactory.cpp
+    flyem/zflyembodywindowfactory.cpp \
+    flyem/zflyembodycolorscheme.cpp
 
 OTHER_FILES += \
     extlib.pri \
