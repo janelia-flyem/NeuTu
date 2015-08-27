@@ -22,6 +22,7 @@
 #include "zresolution.h"
 #include "zpoint.h"
 #include "zintcuboid.h"
+#include "neutube_def.h"
 
 
 //! Stack class
@@ -454,6 +455,12 @@ public: /* operations */
   void* projection(ZSingleChannelStack::Proj_Mode mode,
                    ZSingleChannelStack::Stack_Axis axis = ZSingleChannelStack::Z_AXIS,
                    int c = 0);
+
+
+  void* projection(NeuTube::EImageBackground bg,
+                   ZSingleChannelStack::Stack_Axis axis = ZSingleChannelStack::Z_AXIS,
+                   int c = 0);
+
 
   void bcAdjustHint(double *scale, double *offset, int c = 0);
   bool isBinary();

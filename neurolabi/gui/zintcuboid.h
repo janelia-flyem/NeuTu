@@ -91,6 +91,8 @@ public:
   bool contains(int x, int y, int z) const;
   bool contains(const ZIntPoint &pt) const;
 
+  bool containYZ(int y, int z) const;
+
   /*!
    * \brief Check if a cuboid is empty.
    *

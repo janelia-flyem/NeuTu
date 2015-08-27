@@ -97,6 +97,8 @@ void ZSwcTree::setStructrualMode(EStructrualMode mode)
 void swap(ZSwcTree &first, ZSwcTree &second)
 {
   std::swap(first.m_tree, second.m_tree);
+  first.deprecate(ZSwcTree::ALL_COMPONENT);
+  second.deprecate(ZSwcTree::ALL_COMPONENT);
 }
 
 void ZSwcTree::setData(Swc_Tree *tree, ESetDataOption option)
@@ -399,7 +401,7 @@ void ZSwcTree::computeLineSegment(const Swc_Tree_Node *lowerTn,
   double upperZ = dataFocus + 0.5;
   double lowerZ = dataFocus - 0.5;
 
-  if ((dataFocus == -1) ||
+  if ((dataFocus < 0) ||
       (IS_IN_OPEN_RANGE(SwcTreeNode::z(lowerTn), lowerZ, upperZ) &&
        IS_IN_OPEN_RANGE(SwcTreeNode::z(upperTn), lowerZ, upperZ))) {
     visible = true;
@@ -530,7 +532,7 @@ void ZSwcTree::display(ZPainter &painter, int slice,
         extractCurveTerminal();
     if (nodePair.first != NULL && nodePair.second != NULL) {
       QPointF lineStart, lineEnd;
-      bool visible;
+      bool visible = false;
       computeLineSegment(
             nodePair.first, nodePair.second, lineStart, lineEnd, visible,
             dataFocus);
@@ -3571,6 +3573,16 @@ void ZSwcTree::selectNode(Swc_Tree_Node *tn, bool appending)
   if (tn != NULL) {
     m_selectedNode.insert(tn);
   }
+}
+
+void ZSwcTree::recordSelection()
+{
+  m_prevSelectedNode = m_selectedNode;
+}
+
+void ZSwcTree::processSelection()
+{
+  m_selector.reset(m_selectedNode, m_prevSelectedNode);
 }
 
 /////////////////////////////////////

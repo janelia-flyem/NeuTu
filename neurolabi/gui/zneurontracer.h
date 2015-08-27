@@ -225,6 +225,10 @@ public:
     m_usingEdgePath = state;
   }
 
+  void setBcAdjust(bool on) { m_bcAdjust = on; }
+  void setGreyFactor(double v) { m_greyFactor = v; }
+  void setGrayOffset(double v) { m_greyOffset = v; }
+
 private:
   //Helper functions
   Stack* binarize(const Stack *stack);
@@ -277,6 +281,10 @@ private:
   Stack *m_mask;
   Stack *m_baseMask;
   ZIntPoint m_seedDsIntv;
+
+  bool m_bcAdjust;
+  double m_greyFactor;
+  double m_greyOffset;
 
   /*
   static const char *m_levelKey;

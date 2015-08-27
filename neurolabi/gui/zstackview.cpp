@@ -508,7 +508,7 @@ void ZStackView::updatePaintBundle()
   }
 
   int slice = m_depthControl->value();
-  if (buddyPresenter()->interactiveContext().isProjectView()) {
+  if (buddyPresenter()->interactiveContext().isObjectProjectView()) {
     slice = -slice - 1;
   }
   m_paintBundle.setSliceIndex(slice);
@@ -913,7 +913,7 @@ void ZStackView::paintSingleChannelStackMip(ZStack *stack)
 {
   Image_Array ima;
   ima.array = (uint8*) stack->projection(
-        ZSingleChannelStack::MAX_PROJ, ZSingleChannelStack::Z_AXIS);
+        buddyDocument()->getStackBackground(), ZSingleChannelStack::Z_AXIS);
 
   switch (stack->kind()) {
   case GREY:
@@ -957,11 +957,12 @@ void ZStackView::paintMultipleChannelStackMip(ZStack *stack)
       if (m_chVisibleState[i]->get()) {
         Image_Array ima;
         ima.array8 = (uint8*) stack->projection(
-              ZSingleChannelStack::MAX_PROJ, ZSingleChannelStack::Z_AXIS, i);
-        stackData8.push_back(ZImage::DataSource<uint8_t>(ima.array8,
-                                                         buddyPresenter()->greyScale(i),
-                                                         buddyPresenter()->greyOffset(i),
-                                                         stack->getChannelColor(i)));
+              buddyDocument()->getStackBackground(), ZSingleChannelStack::Z_AXIS, i);
+        stackData8.push_back(
+              ZImage::DataSource<uint8_t>(ima.array8,
+                                          buddyPresenter()->greyScale(i),
+                                          buddyPresenter()->greyOffset(i),
+                                          stack->getChannelColor(i)));
       }
     }
     m_image->setData(stackData8, 255, usingMt);
@@ -973,7 +974,7 @@ void ZStackView::paintMultipleChannelStackMip(ZStack *stack)
       if (m_chVisibleState[i]->get()) {
         Image_Array ima;
         ima.array16 = (uint16*) stack->projection(
-              ZSingleChannelStack::MAX_PROJ, ZSingleChannelStack::Z_AXIS, i);
+              buddyDocument()->getStackBackground(), ZSingleChannelStack::Z_AXIS, i);
         stackData16.push_back(ZImage::DataSource<uint16_t>(ima.array16,
                                                            buddyPresenter()->greyScale(i),
                                                            buddyPresenter()->greyOffset(i),
@@ -1248,7 +1249,7 @@ void ZStackView::paintStackBuffer()
   updateImageCanvas();
 
   if (buddyPresenter() != NULL) {
-    if (buddyPresenter()->interactiveContext().isNormalView()) {
+    if (!buddyPresenter()->interactiveContext().isProjectView()) {
       if (!stack->isVirtual() && showImage) {
         if (stack->channelNumber() == 1) {   //grey
           paintSingleChannelStackSlice(stack, m_depthControl->value());
@@ -1366,7 +1367,7 @@ void ZStackView::paintObjectBuffer(
   if (visible) {
     int slice = m_depthControl->value();
     int z = slice + buddyDocument()->getStackOffset().getZ();
-    if (buddyPresenter()->interactiveContext().isProjectView()) {
+    if (buddyPresenter()->interactiveContext().isObjectProjectView()) {
       slice = -slice - 1;
     }
 
@@ -1408,9 +1409,6 @@ void ZStackView::paintObjectBuffer(
     }
 
     if (buddyPresenter()->hasObjectToShow()) {
-//      if (buddyPresenter()->interactiveContext().isProjectView()) {
-//        slice = -m_depthControl->value() - 1;
-//      }
       QList<ZStackObject*> *objs = buddyPresenter()->decorations();
       for (QList<ZStackObject*>::const_iterator obj = objs->end() - 1;
            obj != objs->begin() - 1; --obj) {
@@ -1586,7 +1584,7 @@ ZStack* ZStackView::getStrokeMask(uint8_t maskValue)
       updateObjectCanvas();
 
       int slice = m_depthControl->value();
-      if (buddyPresenter()->interactiveContext().isProjectView()) {
+      if (buddyPresenter()->interactiveContext().isObjectProjectView()) {
         slice = -slice - 1;
       }
 
@@ -1869,6 +1867,7 @@ void ZStackView::customizeWidget()
   } else {
     QPushButton *vis3dButton = new QPushButton(this);
     vis3dButton->setText("3D");
+    vis3dButton->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
     m_secondTopLayout->addWidget(vis3dButton);
     connect(vis3dButton, SIGNAL(clicked()), this, SLOT(request3DVis()));
   }

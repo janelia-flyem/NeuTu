@@ -10,7 +10,7 @@ class ZWidgetMessage
 public:
   enum ETarget {
     TARGET_TEXT, TARGET_TEXT_APPENDING, TARGET_DIALOG, TARGET_STATUS_BAR,
-    TARGET_CUSTOM_AREA
+    TARGET_CUSTOM_AREA, TARGET_LOG_FILE
   };
 
 
@@ -23,11 +23,16 @@ public:
   static QString ToHtmlString(const QString &msg, NeuTube::EMessageType type);
   static QString ToHtmlString(const QStringList &msgList,
                               NeuTube::EMessageType type);
+  QString toPlainString() const;
 
   inline bool isAppending() const { return m_target == TARGET_TEXT_APPENDING; }
 
   inline ETarget getTarget() const {
     return m_target;
+  }
+
+  inline NeuTube::EMessageType getType() const {
+    return m_type;
   }
 
   inline void setTarget(ETarget target) {
@@ -38,6 +43,12 @@ public:
     m_type = type;
   }
 
+  inline void setTitle(const QString &title) {
+    m_title = title;
+  }
+
+  inline const QString &getTitle() const { return m_title; }
+
   template <typename T1, typename T2>
   static void ConnectMessagePipe(T1 *source, T2 *target, bool dumping);
 
@@ -47,6 +58,7 @@ public:
   void setMessage(const QString &msg);
 
 private:
+  QString m_title;
   QStringList m_message;
   NeuTube::EMessageType m_type;
 //  bool m_appending;

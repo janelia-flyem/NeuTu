@@ -4,22 +4,26 @@
 #include <string>
 #include <ostream>
 
+#include "neutube_def.h"
+
 class ZMessageReporter
 {
 public:
   ZMessageReporter();
   virtual ~ZMessageReporter() {}
 
+  /*
   enum EMessageType {
     Information, Warning, Error, Debug
   };
+  */
 
   virtual void report(const std::string &title, const std::string &message,
-                      EMessageType msgType);
+                      NeuTube::EMessageType msgType);
 
   static void report(std::ostream &stream,
                      const std::string &title, const std::string &message,
-                     EMessageType msgType);
+                     NeuTube::EMessageType msgType);
 
 private:
   static int m_count;

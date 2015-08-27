@@ -73,6 +73,7 @@ class QTimer;
 class ProjectionDialog;
 class ZStackSkeletonizer;
 class FlyEmSkeletonizationDialog;
+class ZWidgetMessage;
 
 namespace Ui {
   class MainWindow;
@@ -126,7 +127,7 @@ public: /* File and message dialogs */
   QString getDirectory(const QString &caption);
 
   void report(const std::string &title, const std::string &msg,
-              ZMessageReporter::EMessageType msgType);
+              NeuTube::EMessageType msgType);
   bool ask(const std::string &title, const std::string &msg);
 
 public:
@@ -147,12 +148,15 @@ signals:
   void progressDone();
   void progressAdvanced(double dp);
   void docReaderReady(ZStackDocReader*);
+  void docReady(ZStackDocPtr);
 
 public slots:
   void addStackFrame(ZStackFrame *frame, bool isReady = true);
   void presentStackFrame(ZStackFrame *frame);
   void openFile(const QString &fileName);
   void openFile(const QStringList &fileNameList);
+
+  void dump(const ZWidgetMessage &msg);
 
   void initProgress(int maxValue);
   void advanceProgress(double dp);
@@ -184,6 +188,8 @@ public slots:
       const ZStackDocReader &reader,
       NeuTube::Document::ETag tag = NeuTube::Document::NORMAL);
 
+  ZStackFrame* createStackFrame(ZStackDocPtr doc);
+
   void showStackFrame(
       const QStringList &fileList, bool opening3DWindow = false);
   void createDvidFrame();
@@ -211,6 +217,7 @@ protected:
   void createActionMap();
 
   ZStackDocReader* openFileFunc(const QString &filePath);
+  void openFileFunc2(const QString &filePath);
   void runSplitFunc(ZStackFrame *frame);
 
 private slots:

@@ -1630,13 +1630,18 @@ void Z3DSwcFilter::initialize()
     addParameter(paras[i]);
   }
 
+  /*
   const NeutubeConfig::Z3DWindowConfig::SwcTabConfig &config =
       NeutubeConfig::getInstance().getZ3DWindowConfig().getSwcTabConfig();
+//  getRendererBase()->setZScale(config.getZScale());
+
+
   ZFloatParameter *zscaleParam =
       dynamic_cast<ZFloatParameter*>(getParameter("Z Scale"));
   if (zscaleParam != NULL) {
     zscaleParam->set(config.getZScale());
   }
+  */
 }
 
 void Z3DSwcFilter::deinitialize()

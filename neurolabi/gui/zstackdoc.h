@@ -50,6 +50,7 @@
 #include "zrect2d.h"
 #include "zobjectcolorscheme.h"
 #include "qthreadfuturemap.h"
+#include "zsharedpointer.h"
 
 class ZStackFrame;
 class ZLocalNeuroseg;
@@ -81,6 +82,7 @@ class Z3DWindow;
 class ZStackMvc;
 class ZProgressSignal;
 class ZWidgetMessage;
+class ZDvidSparseStack;
 
 /*!
  * \brief The class of stack document
@@ -258,6 +260,7 @@ public: //attributes
   QList<ZDvidLabelSlice*> getDvidLabelSliceList() const;
   QList<ZDvidTileEnsemble*> getDvidTileEnsembleList() const;
   QList<ZDvidSparsevolSlice*> getDvidSparsevolSliceList() const;
+  virtual ZDvidSparseStack* getDvidSparseStack() const;
 
   bool hasSwcList();       //to test swctree
   //inline QList<ZLocsegChain*>* chainList() {return &m_chainList;}
@@ -754,6 +757,7 @@ public:
 
   virtual void selectSwcNode(const ZRect2d &roi);
 
+  void setStackBc(double factor, double offset, int channel);
 
 public:
   inline NeuTube::Document::ETag getTag() const { return m_tag; }
@@ -915,6 +919,8 @@ public:
   ZProgressSignal* getProgressSignal() const {
     return m_progressSignal;
   }
+
+  virtual void processRectRoiUpdate();
   /*
   inline void setLastAddedSwcNode(Swc_Tree_Node *tn) {
     m_lastAddedSwcNode = tn;
@@ -1036,14 +1042,8 @@ public slots:
   void removeUser(QObject *user);
   void removeAllUser();
 
-  void processRectRoiUpdate();
+//  void processRectRoiUpdateSlot();
 
-/*
-public:
-  inline void notifyStackModified() {
-    emit stackModified();
-  }
-*/
 signals:
   void messageGenerated(const QString &message, bool appending = true);
   void messageGenerated(const ZWidgetMessage&);
@@ -1120,7 +1120,7 @@ private:
   int xmlConnNode(QXmlStreamReader *xml, QString *filePath, int *spot);
   int xmlConnMode(QXmlStreamReader *xml);
   ZSwcTree* nodeToSwcTree(Swc_Tree_Node* node) const;
-  std::vector<ZStack*> createWatershedMask(bool selectedOnly);
+  virtual std::vector<ZStack*> createWatershedMask(bool selectedOnly);
   ResolutionDialog* getResolutionDialog();
   void updateWatershedBoundaryObject(ZStack *out, ZIntPoint dsIntv);
 
@@ -1208,6 +1208,8 @@ private:
 protected:
   ZObjectColorScheme m_objColorSheme;
 };
+
+typedef ZSharedPointer<ZStackDoc> ZStackDocPtr;
 
 //   template  //
 template <class InputIterator>
@@ -1332,29 +1334,6 @@ void ZStackDoc::setSwcTreeNodeSelected(
     Swc_Tree_Node *tn = *it;
     setSwcTreeNodeSelected(tn, select);
   }
-
-#if 0
-  QList<Swc_Tree_Node*> selected;
-  QList<Swc_Tree_Node*> deselected;
-
-  for (InputIterator it = first; it != last; ++it) {
-    Swc_Tree_Node *tn = *it;
-    if (select) {
-      if ((m_selectedSwcTreeNodes.insert(tn)).second) {
-        selected.push_back(tn);
-        // deselect its tree
-        setSwcSelected(nodeToSwcTree(tn), false);
-      }
-    } else {
-      if (m_selectedSwcTreeNodes.erase(tn) > 0) {
-        deselected.push_back(tn);
-      }
-    }
-  }
-  if (!selected.empty() || !deselected.empty()) {
-    emit swcTreeNodeSelectionChanged(selected, deselected);
-  }
-#endif
 }
 
 template <typename T>

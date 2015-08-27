@@ -477,6 +477,7 @@ void ZImageWidget::paintObject()
   if (m_paintBundle) {
     double zoomRatio = projectSize().width() * 1.0 / m_viewPort.width();
     ZPainter painter;
+    painter.setRange(viewPort());
 
     if (!painter.begin(this)) {
       std::cout << "......failed to begin painter" << std::endl;

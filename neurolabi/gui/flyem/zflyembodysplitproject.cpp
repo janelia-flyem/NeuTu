@@ -46,7 +46,7 @@ ZFlyEmBodySplitProject::ZFlyEmBodySplitProject(QObject *parent) :
   QObject(parent), m_bodyId(0), m_dataFrame(NULL),
   m_resultWindow(NULL), m_quickResultWindow(NULL),
   m_quickViewWindow(NULL),
-  m_minObjSize(0), /*m_bookmarkArray(NULL),*/
+  m_minObjSize(0), m_keepingMainSeed(false), /*m_bookmarkArray(NULL),*/
   m_isBookmarkVisible(true), m_showingBodyMask(false)
 {
   m_progressSignal = new ZProgressSignal(this);
@@ -779,6 +779,7 @@ std::set<int> ZFlyEmBodySplitProject::getBookmarkBodySet() const
   return bodySet;
 }
 
+
 void ZFlyEmBodySplitProject::exportSplits()
 {
   //ZObject3dScan body = *(getDataFrame()->document()->getSparseStack()->getObjectMask());
@@ -794,12 +795,16 @@ void ZFlyEmBodySplitProject::commitResult()
         getDocument()->getConstSparseStack()->getObjectMask(),
         getDocument()->getLabelField(),
         getDocument()->getConstSparseStack()->getDownsampleInterval(),
-        m_minObjSize);
+        getMinObjSize());
   getProgressSignal()->endProgress();
 
   deleteSavedSeed();
   getDocument()->undoStack()->clear();
-  removeAllSeed();
+  if (keepingMainSeed()) {
+    removeAllSideSeed();
+  } else {
+    removeAllSeed();
+  }
 //  getDocument()->removeObject(ZStackObject::TYPE_OBJ3D);
 //  removeAllSideSeed();
   downloadBodyMask();
@@ -833,6 +838,13 @@ static void prepareBodyUpload(
   oldBodyIdList << label;
 }
 
+void ZFlyEmBodySplitProject::updateSplitDocument()
+{
+  if (getDocument<ZFlyEmProofDoc>() != NULL) {
+    getDocument<ZFlyEmProofDoc>()->deprecateSplitSource();
+  }
+}
+
 void ZFlyEmBodySplitProject::commitResultFunc(
     const ZObject3dScan *wholeBody, const ZStack *stack, const ZIntPoint &dsIntv,
     size_t minObjSize)
@@ -855,21 +867,23 @@ void ZFlyEmBodySplitProject::commitResultFunc(
 
 //  size_t minObjSize = 20;
 
-  std::vector<ZObject3dScan> objArray = body.getConnectedComponent();
-
   getProgressSignal()->advanceProgress(0.1);
 
   ZObject3dScan smallBodyGroup;
 
-  if (objArray.size() > 1 && minObjSize > 0) {
-    body.clear();
-    for (std::vector<ZObject3dScan>::const_iterator iter = objArray.begin();
-         iter != objArray.end(); ++iter) {
-      const ZObject3dScan &obj = *iter;
-      if (obj.getVoxelNumber() < minObjSize) {
-        smallBodyGroup.concat(obj);
-      } else {
-        body.concat(obj);
+  if (minObjSize > 0) {
+    emitMessage(QString("Identifying isolated objects ..."));
+    std::vector<ZObject3dScan> objArray = body.getConnectedComponent();
+    if (objArray.size() > 1) {
+      body.clear();
+      for (std::vector<ZObject3dScan>::const_iterator iter = objArray.begin();
+           iter != objArray.end(); ++iter) {
+        const ZObject3dScan &obj = *iter;
+        if (obj.getVoxelNumber() < minObjSize) {
+          smallBodyGroup.concat(obj);
+        } else {
+          body.concat(obj);
+        }
       }
     }
   }
@@ -884,6 +898,7 @@ void ZFlyEmBodySplitProject::commitResultFunc(
   QStringList filePathList;
   QList<uint64_t> oldBodyIdList;
 
+  emitMessage(QString("Processing splits ..."));
   if (stack != NULL) { //Process splits
     std::vector<ZObject3dScan*> objArray =
         ZObject3dScan::extractAllObject(*stack);
@@ -941,7 +956,7 @@ void ZFlyEmBodySplitProject::commitResultFunc(
     }
   }
 
-  if (!body.isEmpty()) {
+  if (!body.isEmpty() && minObjSize > 0) {
     std::vector<ZObject3dScan> objArray = body.getConnectedComponent();
 
 #ifdef _DEBUG_2
@@ -1027,6 +1042,8 @@ void ZFlyEmBodySplitProject::commitResultFunc(
 
   getProgressSignal()->endProgress();
   //writer.writeMaxBodyId(bodyId);
+
+  updateSplitDocument();
 
 //  emit progressDone();
   emitMessage("Done.");
@@ -1287,6 +1304,15 @@ void ZFlyEmBodySplitProject::removeAllSideSeed()
     }
   }
 
+  getDocument()->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+  for (std::set<ZStackObject*>::iterator iter = removeSet.begin();
+       iter != removeSet.end(); ++iter) {
+    getDocument()->removeObject(*iter);
+  }
+  getDocument()->endObjectModifiedMode();
+  getDocument()->notifyObjectModified();
+
+  /*
   getDocument()->getObjectGroup().removeObject(
         removeSet.begin(), removeSet.end(), true);
 
@@ -1294,6 +1320,7 @@ void ZFlyEmBodySplitProject::removeAllSideSeed()
     getDocument()->notifyObjectModified();
     getDocument()->notifyPlayerChanged(ZStackObjectRole::ROLE_SEED);
   }
+  */
 }
 
 void ZFlyEmBodySplitProject::downloadSeed(const std::string &seedKey)

@@ -63,8 +63,10 @@ bool ZSingleChannelStack::isDeprecated(EComponent component) const
   switch (component) {
   case STACK:
     return m_stack == NULL;
-  case STACK_PROJ:
-    return m_proj == NULL;
+  case STACK_MAX_PROJ:
+    return m_maxProj == NULL;
+  case STACK_MIN_PROJ:
+    return m_minProj == NULL;
   case STACK_STAT:
     return m_stat == NULL;
   }
@@ -76,10 +78,13 @@ void ZSingleChannelStack::deprecateDependent(EComponent component)
 {
   switch (component) {
   case STACK:
-    deprecate(STACK_PROJ);
+    deprecate(STACK_MAX_PROJ);
+    deprecate(STACK_MIN_PROJ);
     deprecate(STACK_STAT);
     break;
-  case STACK_PROJ:
+  case STACK_MAX_PROJ:
+    break;
+  case STACK_MIN_PROJ:
     break;
   case STACK_STAT:
     break;
@@ -98,9 +103,13 @@ void ZSingleChannelStack::deprecate(EComponent component)
     m_stack = NULL;
     m_delloc = NULL;
     break;
-  case STACK_PROJ:
-    delete m_proj;
-    m_proj = NULL;
+  case STACK_MAX_PROJ:
+    delete m_maxProj;
+    m_maxProj = NULL;
+    break;
+  case STACK_MIN_PROJ:
+    delete m_minProj;
+    m_minProj = NULL;
     break;
   case STACK_STAT:
     delete m_stat;
@@ -157,7 +166,7 @@ ZStack_Stat* ZSingleChannelStack::getStat() const
   return m_stat;
 }
 
-ZStack_Projection* ZSingleChannelStack::getProj()
+ZStack_Projection* ZSingleChannelStack::getMaxProj()
 {
   if (m_stack == NULL) {
     return NULL;
@@ -167,12 +176,30 @@ ZStack_Projection* ZSingleChannelStack::getProj()
     return NULL;
   }
 
-  if (isDeprecated(STACK_PROJ)) {
-    m_proj = new ZStack_Projection;
-    m_proj->update(m_stack);
+  if (isDeprecated(STACK_MAX_PROJ)) {
+    m_maxProj = new ZStack_Projection;
+    m_maxProj->update(m_stack, ZSingleChannelStack::MAX_PROJ);
   }
 
-  return m_proj;
+  return m_maxProj;
+}
+
+ZStack_Projection* ZSingleChannelStack::getMinProj()
+{
+  if (m_stack == NULL) {
+    return NULL;
+  }
+
+  if (isVirtual()) {
+    return NULL;
+  }
+
+  if (isDeprecated(STACK_MIN_PROJ)) {
+    m_minProj = new ZStack_Projection;
+    m_minProj->update(m_stack, ZSingleChannelStack::MIN_PROJ);
+  }
+
+  return m_minProj;
 }
 
 double ZSingleChannelStack::min() const
@@ -340,6 +367,18 @@ void ZSingleChannelStack::setData(Stack *stack,
   m_delloc = delloc;
 }
 
+ZStack_Projection* ZSingleChannelStack::getProj(Proj_Mode mode)
+{
+  switch (mode) {
+  case MAX_PROJ:
+    return getMaxProj();
+  case MIN_PROJ:
+    return getMinProj();
+  }
+
+  return NULL;
+}
+
 void *ZSingleChannelStack::projection(
     ZSingleChannelStack::Proj_Mode mode, ZSingleChannelStack::Stack_Axis axis)
 {
@@ -350,7 +389,7 @@ void *ZSingleChannelStack::projection(
     return NULL;
   }
 
-  return getProj()->data();
+  return getProj(mode)->data();
 }
 
 void ZSingleChannelStack::bcAdjustHint(double *scale, double *offset)
@@ -488,7 +527,8 @@ void ZSingleChannelStack::init()
   m_stack = NULL;
   m_delloc = NULL;
   m_data.array = NULL;
-  m_proj = NULL;
+  m_maxProj = NULL;
+  m_minProj = NULL;
   m_stat = NULL;
   //m_isOwner = true;
 }
@@ -498,7 +538,7 @@ void ZSingleChannelStack::copyData(const Stack *stack)
   Copy_Stack_Array(m_stack, stack);
 }
 
-void ZStack_Projection::update(Stack *stack)
+void ZStack_Projection::update(Stack *stack, ZSingleChannelStack::Proj_Mode mode)
 {
   if (m_proj != NULL) {
     Kill_Image(m_proj);
@@ -506,7 +546,14 @@ void ZStack_Projection::update(Stack *stack)
   }
 
   if (stack->array != NULL) {
-    m_proj = Proj_Stack_Zmax(stack);
+    switch (mode) {
+    case ZSingleChannelStack::MAX_PROJ:
+      m_proj = Proj_Stack_Zmax(stack);
+      break;
+    case ZSingleChannelStack::MIN_PROJ:
+      m_proj = Proj_Stack_Zmin(stack);
+      break;
+    }
   }
 }
 /*

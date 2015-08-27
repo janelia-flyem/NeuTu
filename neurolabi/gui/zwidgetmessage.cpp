@@ -29,7 +29,7 @@ QString ZWidgetMessage::ToHtmlString(
     case NeuTube::MSG_ERROR:
       output = "<p><font color=\"#FF0000\">" + output + "</font></p>";
       break;
-    case NeuTube::MSG_WARING:
+    case NeuTube::MSG_WARNING:
       output = "<p><font color=\"#777700\">" + output + "</font></p>";
       break;
     default:
@@ -43,6 +43,16 @@ QString ZWidgetMessage::ToHtmlString(
 QString ZWidgetMessage::toHtmlString() const
 {
   return ToHtmlString(m_message, m_type);
+}
+
+QString ZWidgetMessage::toPlainString() const
+{
+  QString result;
+  foreach (const QString &str, m_message) {
+    result += str + " ";
+  }
+
+  return result;
 }
 
 QString ZWidgetMessage::ToHtmlString(

@@ -17,6 +17,8 @@ public:
 
   int getGroupSize() const;
 
+  bool keepingMainSeed() const;
+
 private:
   Ui::ZFlyEmSplitCommitDialog *ui;
 };

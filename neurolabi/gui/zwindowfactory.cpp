@@ -15,12 +15,24 @@
 #include "z3dpunctafilter.h"
 #include "z3dutils.h"
 
-ZWindowFactory::ZWindowFactory() : m_parentWidget(NULL),
-  m_showVolumeBoundBox(false), m_showControlPanel(true), m_showObjectView(true),
-  m_volumeMode(NeuTube3D::VR_AUTO)
+ZWindowFactory::ZWindowFactory()
 {
+  init();
 }
 
+ZWindowFactory::~ZWindowFactory()
+{
+
+}
+
+void ZWindowFactory::init()
+{
+  m_parentWidget = NULL;
+  m_showVolumeBoundBox = false;
+  m_showControlPanel = true;
+  m_showObjectView = true;
+  m_volumeMode = NeuTube3D::VR_AUTO;
+}
 
 Z3DWindow* ZWindowFactory::make3DWindow(
     ZStackDoc *doc, Z3DWindow::EInitMode mode)
@@ -62,17 +74,22 @@ Z3DWindow* ZWindowFactory::make3DWindow(ZSharedPointer<ZStackDoc> doc,
       window->setWindowTitle(m_windowTitle);
     }
     //connect(window, SIGNAL(destroyed()), m_hostFrame, SLOT(detach3DWindow()));
+    /*
     if (GET_APPLICATION_NAME == "Biocytin") {
       window->getCompositor()->setBackgroundFirstColor(glm::vec3(1, 1, 1));
       window->getCompositor()->setBackgroundSecondColor(glm::vec3(1, 1, 1));
     }
+    */
+
     if (!NeutubeConfig::getInstance().getZ3DWindowConfig().isBackgroundOn()) {
       window->getCompositor()->setShowBackground(false);
     }
+
     if (doc->getTag() == NeuTube::Document::FLYEM_SPLIT) {
       window->getSwcFilter()->setRenderingPrimitive("Sphere");
       window->getPunctaFilter()->setColorMode("Original Point Color");
     }
+
     if (m_volumeMode == NeuTube3D::VR_AUTO) {
       if (doc->getTag() == NeuTube::Document::FLYEM_BODY ||
           doc->getTag() == NeuTube::Document::FLYEM_SPLIT) {
@@ -91,6 +108,9 @@ Z3DWindow* ZWindowFactory::make3DWindow(ZSharedPointer<ZStackDoc> doc,
         doc->getTag() != NeuTube::Document::FLYEM_PROOFREAD) {
       window->getCanvas()->disableKeyEvent();
     }
+
+    window->setZScale(doc->getPreferredZScale());
+
     if (!m_showVolumeBoundBox) {
       window->getVolumeRaycaster()->hideBoundBox();
     }
@@ -111,6 +131,8 @@ Z3DWindow* ZWindowFactory::make3DWindow(ZSharedPointer<ZStackDoc> doc,
     if (!isObjectViewVisible()) {
       window->hideObjectView();
     }
+
+    configure(window);
 //    doc->registerUser(window);
   }
 
@@ -142,6 +164,8 @@ Z3DWindow* ZWindowFactory::make3DWindow(ZScalableStack *stack)
     delete stack;
   }
 
+  configure(window);
+
   return window;
 }
 
@@ -158,4 +182,9 @@ void ZWindowFactory::setParentWidget(QWidget *parentWidget)
 void ZWindowFactory::setWindowGeometry(const QRect &rect)
 {
   m_windowGeometry = rect;
+}
+
+void ZWindowFactory::configure(Z3DWindow */*window*/)
+{
+
 }

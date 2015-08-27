@@ -18,6 +18,8 @@
 #include "neutubeconfig.h"
 #include "zerror.h"
 #include "zweightedpointarray.h"
+#include "tz_stack_objlabel.h"
+#include "zstackprocessor.h"
 
 using namespace std;
 
@@ -1325,7 +1327,7 @@ double SwcTreeNode::estimateRadius(const Swc_Tree_Node *tn, const Stack *stack,
 }
 
 bool SwcTreeNode::fitSignal(Swc_Tree_Node *tn, const Stack *stack,
-                            NeuTube::EImageBackground bg)
+                            NeuTube::EImageBackground bg, int option)
 {
   if (tn == NULL || stack == NULL) {
     return false;
@@ -1333,8 +1335,8 @@ bool SwcTreeNode::fitSignal(Swc_Tree_Node *tn, const Stack *stack,
 
   bool succ = false;
 
-  double expandScale = 3.0;
-  double expandRadius = radius(tn) * expandScale;
+  double expandScale = 2.0;
+  double expandRadius = radius(tn) * expandScale + 3.0;
   //Extract image slice
   int x1 = iround(x(tn) - expandRadius);
   int y1 = iround(y(tn) - expandRadius);
@@ -1362,30 +1364,88 @@ bool SwcTreeNode::fitSignal(Swc_Tree_Node *tn, const Stack *stack,
 
   Stack *slice = Crop_Stack(stack, x1, y1, cz, x2 - x1 + 1, y2 - y1 + 1, 1, NULL);
 
+
   if (slice == NULL) {
     return false;
   }
 
-  //RC threshold
-  int thre = Stack_Threshold_RC(slice, 0, 65535);
+  /*
+  Filter_3d *filter = Gaussian_Filter_3d(1.0, 1.0, 1.0);
 
-  //Binarize
-  Stack_Threshold_Binarize(slice, thre);
-  C_Stack::translate(slice, GREY, 1);
+  Stack *stack2 = Filter_Stack(slice, filter);
+  C_Stack::kill(slice);
+  slice = Crop_Stack(stack2, 3, 3, 0, C_Stack::width(stack2) - 6,
+                     C_Stack::height(stack2) - 6, 1, NULL);
+  Kill_FMatrix(filter);
+  C_Stack::kill(stack2);
+
+
+  x1 += 3;
+  y1 += 3;
+  */
 
   if (bg == NeuTube::IMAGE_BACKGROUND_BRIGHT) {
     Stack_Invert_Value(slice);
   }
 
-  Stack *skel = Stack_Bwthin(slice, NULL);
+  Stack *denoised = Stack_Median_Filter_N(slice, 8, NULL);
+  C_Stack::kill(slice);
+  slice = denoised;
 
 #ifdef _DEBUG_2
-  C_Stack::write(NeutubeConfig::getInstance().getPath(NeutubeConfig::DATA) + "/test.tif",
-                 skel);
+  C_Stack::write(GET_TEST_DATA_DIR + "/test.tif", slice);
 #endif
+
+  //RC threshold
+
+  int thre = 0;
+  if (option == 1) {
+    thre = Stack_Threshold_RC(slice, 0, 65535);
+  } else {
+    thre = Stack_Threshold_Triangle(slice, 0, 65535);
+  }
+//  int thre = Stack_Threshold_RC(slice, 0, thre2);
+
+
+//  int thre = (thre1 + thre2) / 2;
+
+  //Binarize
+  Stack_Threshold_Binarize(slice, thre);
+  C_Stack::translate(slice, GREY, 1);
+
+  Stack *skel = Stack_Bwthin(slice, NULL);
 
   //2D distance map
   Stack *dist = Stack_Bwdist_L_U16P(slice, NULL, 0);
+  uint16_t *distArray = (uint16_t*) C_Stack::array8(dist);
+  size_t voxelNumber = C_Stack::voxelNumber(dist);
+  for (size_t i = 0; i < voxelNumber; ++i) {
+    if (skel->array[i] == 0) {
+      distArray[i] = 0;
+    }
+  }
+
+#ifdef _DEBUG_2
+  C_Stack::write(GET_TEST_DATA_DIR + "/test2.tif", dist);
+#endif
+
+//  Stack *locmax = Stack_Locmax(dist, NULL);
+#if 0
+  Stack *locmax = Stack_Local_Max(dist, NULL, STACK_LOCMAX_CENTER);
+  for (size_t i = 0; i < voxelNumber; ++i) {
+    if (locmax->array[i] == 0) {
+      skel->array[i] = 0;
+    }
+  }
+
+  C_Stack::kill(locmax);
+#endif
+
+  ZStackProcessor::ShrinkSkeleton(skel, 3);
+
+#ifdef _DEBUG_2
+  C_Stack::write(GET_TEST_DATA_DIR + "/test3.tif", skel);
+#endif
 
   size_t index = C_Stack::closestForegroundPixel(skel, x(tn) - x1, y(tn) - y1, 0);
 
@@ -1396,7 +1456,9 @@ bool SwcTreeNode::fitSignal(Swc_Tree_Node *tn, const Stack *stack,
   double r2 = C_Stack::value(dist, index);
 
   if (r2 > 0) {
-    if (Geo3d_Dist_Sqr(nx, ny, 0, x(tn) - x1, y(tn) - y1, 0) <= r2 * 2) {
+    if (Geo3d_Dist_Sqr(nx, ny, 0, x(tn) - x1, y(tn) - y1, 0) <= (r2 + 3) * (r2 + 3)) {
+      Stack_Label_Object_Dist_N(skel, NULL, index, 1, 2, 3, 8);
+
       SwcTreeNode::setRadius(tn, sqrt(r2));
       SwcTreeNode::setX(tn, nx + x1);
       SwcTreeNode::setY(tn, ny + y1);

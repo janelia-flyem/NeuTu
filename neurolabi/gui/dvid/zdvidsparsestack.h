@@ -54,6 +54,8 @@ public:
 
   bool isEmpty() const;
 
+  ZDvidSparseStack* getCrop(const ZIntCuboid &box) const;
+
 
 private:
   void initBlockGrid();

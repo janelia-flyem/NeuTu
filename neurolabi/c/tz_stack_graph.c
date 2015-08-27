@@ -49,6 +49,8 @@ void Default_Stack_Graph_Workspace(Stack_Graph_Workspace *sgw)
     sgw->intensity = NULL;
     sgw->virtualVertex = -1;
     sgw->including_signal_border = FALSE;
+    sgw->greyFactor = 1.0;
+    sgw->greyOffset = 0.0;
   }
 }
 
@@ -278,6 +280,54 @@ double Stack_Voxel_Weight_Sr(void *argv)
   return weight;
 }
 
+double Stack_Voxel_Weight_Srb(void *argv)
+{
+  double v1 = ((double*) argv)[1];
+  double v2 = ((double*) argv)[2];
+  double d = ((double*) argv)[0];
+
+  double thre = ((double*) argv)[3];
+  if (tz_isnan(thre)) {
+    thre = 60.0;
+  }
+  
+  double scale = ((double*) argv)[4];
+  if (tz_isnan(scale)) {
+    scale = 5.0;
+  }
+
+  double weight = d * 
+    (1.0 / (1.0 + exp((thre - v1)/scale)) 
+     + 1.0 / (1.0 + exp((thre - v2)/scale)) 
+     + 0.1);
+
+  return weight;
+}
+
+double Stack_Voxel_Weight_Srw(void *argv)
+{
+  double v1 = ((double*) argv)[1];
+  double v2 = ((double*) argv)[2];
+  double d = ((double*) argv)[0];
+
+  double thre = ((double*) argv)[3];
+  if (tz_isnan(thre)) {
+    thre = 60.0;
+  }
+
+  double scale = ((double*) argv)[4];
+  if (tz_isnan(scale)) {
+    scale = 5.0;
+  }
+
+  double weight = sqrt(d) *
+    (1.0 / (1.0 + exp((thre - v1)/scale))
+     + 1.0 / (1.0 + exp((thre - v2)/scale))
+     + 0.0001);
+
+  return weight;
+}
+
 double Stack_Voxel_Weight_C(void *argv)
 {
   double v1 = ((double*) argv)[1];
@@ -394,8 +444,20 @@ Graph* Stack_Graph(const Stack *stack, int conn, const int *range,
   return graph;
 }
 
-Graph* Stack_Graph_W(const Stack *stack, Stack_Graph_Workspace *sgw)
+static double stack_intensity(double v, Stack_Graph_Workspace *sgw)
 {
+  v = v * sgw->greyFactor + sgw->greyOffset;
+  if (v < 0) {
+    v = 0;
+  }
+
+  return v;
+}
+
+Graph* Stack_Graph_W(const Stack *signal, Stack_Graph_Workspace *sgw)
+{
+  const Stack *stack = signal;
+
   int x, y, z;
   int offset = 0;
   int is_in_bound[26];
@@ -471,6 +533,10 @@ Graph* Stack_Graph_W(const Stack *stack, Stack_Graph_Workspace *sgw)
 	  sgw->argv[2] = \
 	  Get_Stack_Pixel((Stack *)stack, nx + x_offset[i], \
 	      ny + y_offset[i], nz + z_offset[i], 0); \
+      if (sgw->greyFactor != 1.0 || sgw->greyOffset != 0.0) {\
+         sgw->argv[1] = stack_intensity(sgw->argv[1], sgw); \
+         sgw->argv[2] = stack_intensity(sgw->argv[2], sgw); \
+      } \
 	  weight = sgw->wf(sgw->argv); \
 	} \
 	Graph_Add_Weighted_Edge(graph, offset, offset + neighbor[i], \
@@ -689,6 +755,11 @@ int* Stack_Graph_Shortest_Path(const Stack *stack, int start[], int end[],
 	if (checked[updating_vertex] != 1) {
 	  v1 = Stack_Array_Value(stack, cur_vertex);
 	  v2 = Stack_Array_Value(stack, updating_vertex);
+      if (sgw->greyFactor != 1.0 || sgw->greyOffset != 0.0) {
+        v1 = stack_intensity(v1, sgw);
+        v2 = stack_intensity(v2, sgw);
+      }
+
 	  d = neighbor_dist[j];
 	  double weight = sgw->wf(argv);
 	  tmpdist = weight + dist[cur_vertex];
@@ -711,6 +782,10 @@ int* Stack_Graph_Shortest_Path(const Stack *stack, int start[], int end[],
 	  if (checked[updating_vertex] != 1) {
 	    v1 = Stack_Array_Value(stack, cur_vertex);
 	    v2 = Stack_Array_Value(stack, updating_vertex);
+        if (sgw->greyFactor != 1.0 || sgw->greyOffset != 0.0) {
+          v1 = stack_intensity(v1, sgw);;
+          v2 = stack_intensity(v2, sgw);;
+        }
 	    d = neighbor_dist[j];
 	    double weight = sgw->wf(argv);
 	    tmpdist = weight + dist[cur_vertex];

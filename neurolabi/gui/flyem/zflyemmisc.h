@@ -11,6 +11,7 @@ class ZStackDoc;
 class Z3DWindow;
 class ZDvidTarget;
 class ZDvidReader;
+class ZStackViewParam;
 
 namespace ZFlyEmMisc {
 void NormalizeSimmat(ZMatrix &simmat);
@@ -19,6 +20,10 @@ Z3DGraph* MakeBoundBoxGraph(const ZDvidInfo &dvidInfo);
 Z3DGraph* MakePlaneGraph(ZStackDoc *doc, const ZDvidInfo &dvidInfo);
 //void Decorate3DWindow(Z3DWindow *window, const ZDvidInfo &dvidInfo);
 //void Decorate3DWindow(Z3DWindow *window, const ZDvidReader &reader);
+void Decorate3dBodyWindow(Z3DWindow *window, const ZDvidInfo &dvidInfo,
+                          const ZStackViewParam &viewParam);
+void Decorate3dBodyWindowPlane(Z3DWindow *window, const ZDvidInfo &dvidInfo,
+                               const ZStackViewParam &viewParam);
 
 class HackathonEvaluator {
 public:

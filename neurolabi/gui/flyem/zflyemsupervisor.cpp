@@ -6,18 +6,20 @@
 #include "dvid/zdvidbufferreader.h"
 #include "dvid/zdvidurl.h"
 
-const std::string ZFlyEmSupervisor::m_server = "emdata2.int.janelia.org:9100";
-
 ZFlyEmSupervisor::ZFlyEmSupervisor(QObject *parent) :
   QObject(parent)
 {
   m_userName = NeuTube::GetUserName();
+  m_server = "emdata2.int.janelia.org:9100";
 }
 
 
 void ZFlyEmSupervisor::setDvidTarget(const ZDvidTarget &target)
 {
   m_dvidTarget = target;
+  if (!target.getSupervisor().empty()) {
+    setSever(m_dvidTarget.getSupervisor());
+  }
 }
 
 const ZDvidTarget& ZFlyEmSupervisor::getDvidTarget() const
@@ -32,6 +34,10 @@ void ZFlyEmSupervisor::setUserName(const std::string userName)
 
 bool ZFlyEmSupervisor::checkIn(uint64_t bodyId)
 {
+  if (m_server.empty()) {
+    return false;
+  }
+
   ZDvidWriter writer;
   writer.writeUrl(getCheckinUrl(bodyId), "PUT");
 
@@ -40,6 +46,10 @@ bool ZFlyEmSupervisor::checkIn(uint64_t bodyId)
 
 bool ZFlyEmSupervisor::checkInAdmin(uint64_t bodyId)
 {
+  if (m_server.empty()) {
+    return false;
+  }
+
   ZDvidWriter writer;
   writer.writeUrl(getCheckinUrl(getUuid(), bodyId, getOwner(bodyId)), "PUT");
 
@@ -48,6 +58,10 @@ bool ZFlyEmSupervisor::checkInAdmin(uint64_t bodyId)
 
 bool ZFlyEmSupervisor::checkOut(uint64_t bodyId)
 {
+  if (m_server.empty()) {
+    return false;
+  }
+
   ZDvidWriter writer;
   writer.writeUrl(getCheckoutUrl(bodyId), "PUT");
 
@@ -162,4 +176,9 @@ std::string ZFlyEmSupervisor::getOwner(uint64_t bodyId) const
 bool ZFlyEmSupervisor::isLocked(uint64_t bodyId) const
 {
   return !getOwner(bodyId).empty();
+}
+
+void ZFlyEmSupervisor::setSever(const std::string &server)
+{
+  m_server = server;
 }

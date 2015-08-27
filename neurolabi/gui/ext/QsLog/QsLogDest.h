@@ -29,6 +29,7 @@
 #include "QsLogLevel.h"
 #include <QSharedPointer>
 #include <QtGlobal>
+
 class QString;
 class QObject;
 

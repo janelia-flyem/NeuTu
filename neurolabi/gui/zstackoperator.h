@@ -9,6 +9,7 @@ class ZMouseEventRecorder;
 class ZStroke2d;
 class ZObject3d;
 class ZStackObject;
+class ZStackDoc;
 
 class ZStackOperator
 {
@@ -63,12 +64,18 @@ public:
     OP_OBJECT3D_LOCATE_FOCUS,
     OP_OBJECT3D_SCAN_LOCATE_FOCUS,
     OP_STACK_LOCATE_SLICE, OP_STACK_VIEW_PROJECTION,
-    OP_STACK_VIEW_SLICE, OP_RECT_ROI_INIT,
-    OP_RECT_ROI_UPDATE,
+    OP_STACK_VIEW_SLICE,
+
+    OP_RECT_ROI_INIT,
+    OP_RECT_ROI_UPDATE, OP_RECT_ROI_TO_CUBOID, OP_RECT_ROI_ACCEPT,
+
     OP_OBJECT3D_SCAN_SELECT_SINGLE, OP_OBJECT3D_SCAN_SELECT_MULTIPLE,
     OP_OBJECT_SELECT_SINGLE, OP_OBJECT_SELECT_MULTIPLE,
     OP_DVID_SPARSE_STACK_LOCATE_FOCUS,
     OP_OBJECT_TOGGLE_TMP_RESULT_VISIBILITY,
+
+    OP_ACTIVE_STROKE_INCREASE_SIZE, OP_ACTIVE_STROKE_DECREASE_SIZE,
+    OP_ACTIVE_STROKE_ESTIMATE_SIZE,
 
     OP_BOOKMARK_ENTER_ADD_MODE, OP_BOOKMARK_DELETE, OP_BOOKMARK_ADD_NEW,
     OP_BOOKMARK_ANNOTATE
@@ -99,41 +106,10 @@ public:
   template <typename T>
   T* getHitObject() const;
 
-//  ZStackObject* getHitObject() const {
-//    return m_hitObject;
-//  }
-/*
-  inline ZStroke2d* getHitStroke2d() const {
-    return m_hitStroke;
-  }
-
-  inline ZObject3d* getHitObj3d() const {
-    return m_hitObj3d;
-  }
-*/
-  /*
-  inline void setHitSwcNode(Swc_Tree_Node *tn) {
-    m_hitNode = tn;
-  }
-*/
   inline void setHitObject(ZStackObject *obj) {
     m_hitObject = obj;
   }
 
-  /*
-  inline void setHitStroke2d(ZStroke2d *stroke) {
-    m_hitStroke = stroke;
-  }
-
-  inline void setHitObj3d(ZObject3d *obj) {
-    m_hitObj3d = obj;
-  }
-
-
-  inline void setHitPuncta(int index) {
-    m_punctaIndex = index;
-  }
-*/
   inline int getPunctaIndex() const {
     return m_punctaIndex;
   }
@@ -158,6 +134,8 @@ public:
   }
 
   void setPressedButtons(const Qt::MouseButtons &buttons);
+
+  static bool IsOperable(EOperation op, const ZStackDoc *doc);
 
 private:
   EOperation m_op;

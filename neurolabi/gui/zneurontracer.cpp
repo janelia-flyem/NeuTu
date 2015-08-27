@@ -19,6 +19,7 @@
 #include "zobject3darray.h"
 #include "tz_objdetect.h"
 #include "zjsonobject.h"
+#include "zswctree.h"
 
 ZNeuronTraceSeeder::ZNeuronTraceSeeder()
 {
@@ -377,6 +378,10 @@ void ZNeuronTracer::init()
   m_mask = NULL;
   m_baseMask = NULL;
 
+  m_bcAdjust = false;
+  m_greyFactor = 1.0;
+  m_greyOffset = 0.0;
+
   config();
 }
 
@@ -543,6 +548,9 @@ Swc_Tree* ZNeuronTracer::trace(double x1, double y1, double z1, double r1,
   }
 
   ZStackGraph stackGraph;
+  if (m_resolution[2] / m_resolution[0] > 3.0) {
+    stackGraph.setZMargin(2);
+  }
   stackGraph.updateRange(x1, y1, z1, x2, y2, z2,
                          C_Stack::width(m_stack),
                          C_Stack::height(m_stack),
@@ -550,25 +558,6 @@ Swc_Tree* ZNeuronTracer::trace(double x1, double y1, double z1, double r1,
   if (stackGraph.getRoiVolume() > MAX_P2P_TRACE_VOLUME) {
     return NULL;
   }
-
-  /*
-  if (ZPoint(x1, y1, z1).distanceTo(x2, y2, z2) > MAX_P2P_TRACE_DISTANCE) {
-    return NULL;
-  }
-  */
-
-  /*
-  int start[3];
-  int end[3];
-
-  start[0] = iround(x1);
-  start[1] = iround(y1);
-  start[2] = iround(z1);
-  end[0] = iround(x2);
-  end[1] = iround(y2);
-  end[2] = iround(z2);
-  */
-
 
   stackGraph.setResolution(m_resolution);
 
@@ -596,6 +585,13 @@ Swc_Tree* ZNeuronTracer::trace(double x1, double y1, double z1, double r1,
         m_stack, box.getFirstCorner().getX(), box.getFirstCorner().getY(),
         box.getFirstCorner().getZ(), box.getWidth(), box.getHeight(),
         box.getDepth(), NULL);
+
+  /*
+  if (m_bcAdjust) {
+    Stack_Scale(partial, 0, m_greyFactor, m_greyOffset);
+  }
+  */
+
   if (m_usingEdgePath) {
     Stack *partialEdge = C_Stack::computeGradient(partial);
     C_Stack::kill(partial);
@@ -649,7 +645,7 @@ Swc_Tree* ZNeuronTracer::trace(double x1, double y1, double z1, double r1,
 
     path = stackGraph.computeShortestPath(
           m_stack, startIndex, endIndex, m_vertexOption);
-
+//    C_Stack::kill(stackField);
 
     for (size_t i = path.size(); i > 0; --i) {
       int x, y, z;

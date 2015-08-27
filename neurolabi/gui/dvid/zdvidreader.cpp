@@ -32,7 +32,9 @@ ZDvidReader::ZDvidReader(QObject *parent) :
   m_eventLoop = new QEventLoop(this);
 //  m_dvidClient = new ZDvidClient(this);
   m_timer = new QTimer(this);
+#if defined(_ENABLE_LIBDVIDCPP_)
   m_service = NULL;
+#endif
   //m_timer->setInterval(1000);
 
   m_isReadingDone = false;
@@ -48,7 +50,9 @@ ZDvidReader::ZDvidReader(QObject *parent) :
 
 ZDvidReader::~ZDvidReader()
 {
+#if defined(_ENABLE_LIBDVIDCPP_)
   delete m_service;
+#endif
 }
 
 void ZDvidReader::slotTest()

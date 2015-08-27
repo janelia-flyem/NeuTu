@@ -15,26 +15,26 @@ void ZTileManagerView::paintEvent(QPaintEvent *event)
    QGraphicsView::paintEvent(event);
 
    if (swcVisible) {
-       ZPainter viewPainter(this->viewport());
+     ZPainter viewPainter(this->viewport());
 
-       QTransform transform;
-       float scale = getParentWindow()->getScaleFactor();
+     QTransform transform;
+     float scale = getParentWindow()->getScaleFactor();
 
-       QScrollBar* vSc;
-       vSc = this->verticalScrollBar();
-       QScrollBar* hSc;
-       hSc = this->horizontalScrollBar();
-       transform.translate(-hSc->value(),-vSc->value());
+     QScrollBar* vSc;
+     vSc = this->verticalScrollBar();
+     QScrollBar* hSc;
+     hSc = this->horizontalScrollBar();
+     transform.translate(-hSc->value(),-vSc->value());
 
-       transform.scale(scale, scale);
-       viewPainter.setTransform(transform);
+     transform.scale(scale, scale);
+     viewPainter.setTransform(transform);
 
-       QList<ZSwcTree*> swcList = getParentWindow()->getDocument()->getSwcList();
-       foreach (ZSwcTree *swc, swcList ) {
-           if (swc != NULL) {
-               swc->display(viewPainter,-1, ZStackObject::SOLID);
-           }
+     QList<ZSwcTree*> swcList = getParentWindow()->getDocument()->getSwcList();
+     foreach (ZSwcTree *swc, swcList ) {
+       if (swc != NULL) {
+         swc->display(viewPainter,-1, ZStackObject::SOLID);
        }
+     }
    }
 }
 

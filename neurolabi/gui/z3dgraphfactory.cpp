@@ -27,8 +27,8 @@ Z3DGraph* Z3DGraphFactory::MakeGrid(
 
   Z3DGraphEdge edge;
   edge.useNodeColor(true);
-  edge.setShape(GRAPH_CYLINDER);
-  edge.setWidth(lineWidth);
+  edge.setShape(GRAPH_LINE);
+  edge.setWidth(lineWidth / 4.0);
 
   edge.setConnection(0, 1);
   graph->addEdge(edge);
@@ -59,7 +59,7 @@ Z3DGraph* Z3DGraphFactory::MakeGrid(
        y += interval) {
     node1.setY(y);
     node2.setY(y);
-    graph->addEdge(node1, node2);
+    graph->addEdge(node1, node2, GRAPH_LINE);
   }
 
   node1.setCenter(rect.getFirstX(), rect.getFirstY(), rect.getZ());
@@ -69,7 +69,7 @@ Z3DGraph* Z3DGraphFactory::MakeGrid(
        x += interval) {
     node1.setX(x);
     node2.setX(x);
-    graph->addEdge(node1, node2);
+    graph->addEdge(node1, node2, GRAPH_LINE);
   }
 
   return graph;

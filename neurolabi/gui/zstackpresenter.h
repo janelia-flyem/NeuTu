@@ -332,6 +332,8 @@ signals:
   void labelSliceSelectionChanged();
   void objectVisibleTurnedOn();
   void exitingRectEdit();
+  void acceptingRectRoi();
+  void rectRoiUpdated();
 
 protected:
   void init();
@@ -347,6 +349,7 @@ protected:
   EMouseEventProcessStatus processMouseReleaseForStroke(
       QMouseEvent *event, const ZPoint &positionInStack);
 
+  bool processKeyPressEventForActiveStroke(QKeyEvent *event);
   bool processKeyPressEventForSwc(QKeyEvent *event);
   bool processKeyPressEventForStroke(QKeyEvent *event);
   bool processKeyPressEventForStack(QKeyEvent *event);
@@ -361,6 +364,8 @@ protected:
   void process(const ZStackOperator &op);
 
   void acceptActiveStroke();
+  void acceptRectRoi();
+  virtual void processRectRoiUpdate();
 
 protected:
   //ZStackFrame *m_parent;
@@ -444,6 +449,7 @@ protected:
   ZSingleSwcNodeActionActivator m_singleSwcNodeActionActivator;
   int m_skipMouseReleaseEvent;
 
+  ZKeyOperationMap m_activeStrokeOperationMap;
   ZKeyOperationMap m_swcKeyOperationMap;
   ZKeyOperationMap m_stackKeyOperationMap;
 

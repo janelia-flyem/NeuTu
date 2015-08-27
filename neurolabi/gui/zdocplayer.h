@@ -10,6 +10,7 @@
 #include "c_stack.h"
 #include "zuncopyable.h"
 #include "z3dgraph.h"
+#include "zsharedpointer.h"
 
 class ZStack;
 class ZStroke2d;
@@ -273,6 +274,17 @@ public:
   QString getTypeName() const { return "DvidSparsevolSlice"; }
   void updateData(const ZStackViewParam &viewParam) const;
   ZDvidSparsevolSlice *getCompleteData() const;
+};
+
+/************************************************/
+class ZCuboidRoiPlayer : public ZDocPlayer
+{
+public:
+  ZCuboidRoiPlayer(ZStackObject *data = NULL);
+
+public:
+  QString getTypeName() const { return "CuboidRoi"; }
+  Z3DGraph get3DGraph() const;
 };
 
 #endif // ZDOCPLAYER_H

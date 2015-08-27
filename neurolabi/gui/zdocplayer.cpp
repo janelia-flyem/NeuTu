@@ -522,5 +522,17 @@ void ZDvidSparsevolSlicePlayer::updateData(const ZStackViewParam &viewParam) con
   }
 }
 
+////////////////////////////
+
+Z3DGraph ZCuboidRoiPlayer::get3DGraph() const
+{
+  Z3DGraph graph;
+
+  if (getData() != NULL) {
+
+  }
+
+  return graph;
+}
 
 

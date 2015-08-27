@@ -176,6 +176,9 @@ void ZStackFrame::constructFrame(ZSharedPointer<ZStackDoc> doc)
   createPresenter();
   updateDocument();
 
+  if (document()->getTag() == NeuTube::Document::BIOCYTIN_PROJECTION) {
+    m_presenter->setViewMode(ZInteractiveContext::VIEW_OBJECT_PROJECT);
+  }
   setView(m_view);
   //m_view->prepareDocument();
   m_presenter->prepareView();
@@ -309,8 +312,10 @@ void ZStackFrame::updateDocSignalSlot(FConnectAction connectAction)
   connect(m_doc.get(), SIGNAL(thresholdChanged(int)), m_view, SLOT(setThreshold(int)));
   connect(m_view, SIGNAL(viewChanged(ZStackViewParam)),
           this, SLOT(notifyViewChanged(ZStackViewParam)));
-  connect(presenter(), SIGNAL(exitingRectEdit()),
+  /*
+  connect(presenter(), SIGNAL(rectRoiUpdated()),
         m_doc.get(), SLOT(processRectRoiUpdate()));
+        */
 }
 
 void ZStackFrame::updateSignalSlot(FConnectAction connectAction)
@@ -321,65 +326,6 @@ void ZStackFrame::updateSignalSlot(FConnectAction connectAction)
   connectAction(m_view, SIGNAL(currentSliceChanged(int)),
           m_presenter, SLOT(processSliceChangeEvent(int)));
 }
-
-#if 0
-#define UPDATE_DOC_SIGNAL_SLOT(connect) \
-  connect(m_doc.get(), SIGNAL(locsegChainSelected(ZLocsegChain*)), \
-      this, SLOT(setLocsegChainInfo(ZLocsegChain*)));\
-  connect(m_doc.get(), SIGNAL(stackLoaded()), this, SIGNAL(stackLoaded()));\
-  connect(m_doc.get(), SIGNAL(stackModified()),\
-          m_view, SLOT(updateChannelControl()));\
-  connect(m_doc.get(), SIGNAL(stackModified()),\
-          m_view, SLOT(updateThresholdSlider()));\
-  connect(m_doc.get(), SIGNAL(stackModified()),\
-          m_view, SLOT(updateSlider()));\
-  connect(m_doc.get(), SIGNAL(stackModified()),\
-          m_presenter, SLOT(updateStackBc()));\
-  connect(m_doc.get(), SIGNAL(stackModified()),\
-          m_view, SLOT(updateView()));\
-  connect(m_doc.get(), SIGNAL(objectModified()), m_view, SLOT(paintObject()));\
-  connect(m_doc.get(), SIGNAL(objectModified(ZStackObject::ETarget)), \
-          m_view, SLOT(paintObject(ZStackObject::ETarget)));\
-  connect(m_doc.get(), SIGNAL(objectModified()), m_view, SLOT(paintObject()));\
-  connect(m_doc.get(), SIGNAL(objectModified(QSet<ZStackObject::ETarget>)), \
-          m_view, SLOT(paintObject(QSet<ZStackObject::ETarget>)));\
-  connect(m_doc.get(), SIGNAL(cleanChanged(bool)),\
-          this, SLOT(changeWindowTitle(bool)));\
-  connect(m_doc.get(), SIGNAL(holdSegChanged()), m_view, SLOT(paintObject()));\
-  connect(m_doc.get(), SIGNAL(chainSelectionChanged(QList<ZLocsegChain*>,\
-          QList<ZLocsegChain*>)),\
-          m_view, SLOT(paintObject()));\
-  connect(m_doc.get(), SIGNAL(swcTreeNodeSelectionChanged()),\
-          this, SLOT(updateSwcExtensionHint()));\
-  connect(m_doc.get(), SIGNAL(swcTreeNodeSelectionChanged(\
-                                QList<Swc_Tree_Node*>,QList<Swc_Tree_Node*>)),\
-          m_view, SLOT(paintObject()));\
-  connect(m_doc.get(), SIGNAL(objectSelectionChanged(\
-                                QList<ZStackObject*>,QList<ZStackObject*>)),\
-          m_view, SLOT(paintObject(QList<ZStackObject*>,QList<ZStackObject*>)));\
-  connect(m_doc.get(), SIGNAL(punctaSelectionChanged(QList<ZPunctum*>,QList<ZPunctum*>)),\
-          m_view, SLOT(paintObject()));\
-  connect(m_doc.get(), SIGNAL(chainVisibleStateChanged(ZLocsegChain*,bool)),\
-          m_view, SLOT(paintObject()));\
-  connect(m_doc.get(), SIGNAL(swcVisibleStateChanged(ZSwcTree*,bool)),\
-          m_view, SLOT(paintObject()));\
-  connect(m_doc.get(), SIGNAL(punctumVisibleStateChanged()),\
-          m_view, SLOT(paintObject()));\
-  connect(m_doc.get(), SIGNAL(statusMessageUpdated(QString)),\
-          this, SLOT(notifyUser(QString)));\
-  connect(m_doc.get(), SIGNAL(stackTargetModified()), m_view, SLOT(paintStack()));\
-  connect(m_doc.get(), SIGNAL(thresholdChanged(int)), m_view, SLOT(setThreshold(int)));\
-  connect(m_view, SIGNAL(viewChanged(ZStackViewParam)), \
-          this, SLOT(notifyViewChanged(ZStackViewParam))); \
-  connect(presenter(), SIGNAL(exitingRectEdit()), \
-        m_doc.get(), SLOT(processRectRoiUpdate()));
-
-#define UPDATE_SIGNAL_SLOT(connect) \
-  UPDATE_DOC_SIGNAL_SLOT(connect) \
-  connect(this, SIGNAL(stackLoaded()), this, SLOT(setupDisplay()));\
-  connect(m_view, SIGNAL(currentSliceChanged(int)),\
-          m_presenter, SLOT(processSliceChangeEvent(int)));
-#endif
 
 bool ZStackFrame::connectFunc(const QObject* obj1, const char *signal,
                               const QObject *obj2, const char *slot)
@@ -430,7 +376,9 @@ void ZStackFrame::updateDocument()
     if (m_presenter != NULL) {
       m_presenter->optimizeStackBc();
     }
+  }
 
+  if (m_doc->hasStack()) {
     if (m_view != NULL) {
       m_view->reset();
     }
@@ -888,6 +836,7 @@ void ZStackFrame::clearDecoration()
 void ZStackFrame::setBc(double greyScale, double greyOffset, int channel)
 {
   presenter()->setStackBc(greyScale, greyOffset, channel);
+  document()->setStackBc(greyScale, greyOffset, channel);
 }
 
 void ZStackFrame::synchronizeSetting()
@@ -1538,11 +1487,11 @@ void ZStackFrame::importMask(const QString &filePath)
       } else {
         delete obj;
         report("Loading mask failed", "Cannot convert the image into mask",
-               ZMessageReporter::Error);
+               NeuTube::MSG_ERROR);
       }
     } else {
       report("Loading mask failed", "Must be single 8-bit image",
-             ZMessageReporter::Error);
+             NeuTube::MSG_ERROR);
     }
     delete stack;
   }

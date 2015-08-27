@@ -346,6 +346,7 @@ void setOne(Mc_Stack *stack);
 std::vector<size_t> getNeighborIndices(
     const Stack *stack, const std::vector<size_t> &indexArray,
     int conn, double value);
+size_t countForegoundNeighbor(const Stack *stack, size_t index, int conn);
 
 
 double min(const Mc_Stack *stack);
@@ -395,6 +396,7 @@ bool isBinary(const Stack *stack);
 
 
 Image* makeMinProjZ(const Stack* stack, int minZ, int maxZ);
+Image* makeMaxProjZ(const Stack* stack, int minZ, int maxZ);
 
 //Paint routines
 void drawPatch(Stack *canvas, const Stack *patch,

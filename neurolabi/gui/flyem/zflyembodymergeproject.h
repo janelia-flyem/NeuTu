@@ -22,6 +22,8 @@ class ZFlyEmNeuron;
 class ZIntPoint;
 class ZStackDocReader;
 class ZArray;
+class Z3DMainWindow;
+class Z3DTabWidget;
 class Z3DWindow;
 class ZStackDoc;
 class ZFlyEmBodyMerger;
@@ -175,6 +177,10 @@ private:
 private:
   ZFlyEmBodyMergeFrame *m_dataFrame;
   ZSharedPointer<ZStackDoc> m_doc;
+
+  Z3DMainWindow* m_bodyViewWindow;
+  Z3DTabWidget* m_bodyViewers;
+
   Z3DWindow *m_coarseBodyWindow;
   Z3DWindow *m_bodyWindow;
   ZDvidTarget m_dvidTarget;

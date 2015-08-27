@@ -10,16 +10,6 @@
     },
     {
       "address": "emdata1.int.janelia.org",
-      "port": 8500,
-      "uuid": "dcbd",
-      "name": "debug_MB_seg",
-      "comment": "MB seg debug (branched from ccf)",
-      "body_label": "bodies",
-      "label_block": "labels",
-      "user_name": ["zhaot"]
-    },
-    {
-      "address": "emdata1.int.janelia.org",
       "uuid": "2a3",
       "name": "FIB25-Hackathon (internal)",
       "background": 0,
@@ -76,16 +66,6 @@
     },
     {
       "address": "emdata1.int.janelia.org",
-      "port": 7000,
-      "uuid": "cf6e",
-      "name": "NEW MB-6",
-      "body_label": "bodies",
-      "label_block": "labels",
-      "comment": "Mushroom body MB-6 (7567 x 11140 x 14625)",
-      "user_name": "zhaot"
-    },
-    {
-      "address": "emdata1.int.janelia.org",
       "port": 8500,
       "uuid": "f94a",
       "name": "AL-7-split",
@@ -106,16 +86,6 @@
     {
       "address": "emdata1.int.janelia.org",
       "port": 8500,
-      "uuid": "6f15",
-      "name": "MB_seg_LOCKED",
-      "comment": "MB seg (branched from ccf)",
-      "body_label": "bodies",
-      "label_block": "labels",
-      "user_name": ["zhaot"]
-    },
-    {
-      "address": "emdata1.int.janelia.org",
-      "port": 8500,
       "uuid": "2635",
       "name": "MB_seg_TEST",
       "comment": "MB seg (branched from Shinya's node 6f15)",
@@ -131,7 +101,7 @@
       "comment": "MB seg (branched from Shinya's node 6f15)",
       "body_label": "bodies",
       "label_block": "labels",
-      "user_name": ["zhaot"]
+      "user_name": ["xxx"]
     },
     {
       "address": "emdata1.int.janelia.org",
@@ -141,7 +111,7 @@
       "comment": "MB seg (branched from Shinya's node 6f15)",
       "body_label": "bodies",
       "label_block": "labels",
-      "user_name": ["takemuras", "zhaot"]
+      "user_name": ["xxx"]
     },
     {
       "address": "emdata1.int.janelia.org",
@@ -181,6 +151,7 @@
       "comment": "MB seg (after runniing splits in node 6f15)",
       "body_label": "bodies",
       "label_block": "labels",
+      "librarian": "emdata2.int.janelia.org:9100",
       "user_name": ["zhaot"]
     },
     {
@@ -355,6 +326,16 @@
     {
       "address": "emdata1.int.janelia.org",
       "port": 8500,
+      "uuid": "d5f8",
+      "name": "MB_New_PR_Training",
+      "comment": "MB seg (branched from d1ea)",
+      "body_label": "bodies3",
+      "label_block": "labels3",
+      "user_name": ["changl", "zhaot"]
+    },
+    {
+      "address": "emdata1.int.janelia.org",
+      "port": 8500,
       "uuid": "4a55",
       "name": "MB_lauchies_Training",
       "comment": "MB seg (branched from ccf)",
@@ -445,7 +426,7 @@
     {
       "address": "emdata1.int.janelia.org",
       "port": 8500,
-      "uuid": "1c42",
+      "uuid": "4c83",
       "name": "MB_Synapse_Shift",
       "comment": "production synapse work",
       "body_label": "bodies3",
@@ -460,7 +441,7 @@
       "comment": "production orphan link with extended segmentation",
       "body_label": "bodies3",
       "label_block": "labels3",
-      "user_name": ["anicetor", "changl", "lauchies", "ogundeyio", "ordishc", "sigmundc", "shinomiyaa", "tranj", "rivlinp", "takemurasa", "zhaot", "takemuras"]
+      "user_name": ["xxx"]
     },
     {
       "address": "emdata1.int.janelia.org",

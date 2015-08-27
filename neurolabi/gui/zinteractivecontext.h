@@ -67,7 +67,8 @@ public:
 
   enum ViewMode {
     VIEW_NORMAL,
-    VIEW_PROJECT
+    VIEW_PROJECT,
+    VIEW_OBJECT_PROJECT
   };
 
   enum ExploreMode {
@@ -116,8 +117,13 @@ public:
   inline bool isTubeEditModeOff() const {
     return (m_tubeEditMode == TUBE_EDIT_OFF); }
   inline bool isExploreModeOff() const { return (m_exploreMode == EXPLORE_OFF); }
-  inline bool isProjectView() const { return m_viewMode == VIEW_PROJECT; }
+  inline bool isProjectView() const {
+    return m_viewMode == VIEW_PROJECT; }
+  inline bool isObjectProjectView() const {
+    return (m_viewMode == VIEW_OBJECT_PROJECT) || isProjectView(); }
   inline bool isNormalView() const { return m_viewMode == VIEW_NORMAL; }
+  inline bool isStackSliceView() const { return !isNormalView(); }
+  inline bool isObjectSliceView() const { return !isObjectProjectView(); }
   //inline bool is3DView() {return m_viewMode == VIEW_3D; }
   inline bool fittingSegment() { return m_traceMode == TRACE_SINGLE; }
   inline bool tracingTube() { return m_traceMode == TRACE_TUBE; }

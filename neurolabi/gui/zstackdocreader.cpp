@@ -46,14 +46,6 @@ bool ZStackDocReader::readFile(const QString &filePath)
   case ZFileType::DVID_OBJECT_FILE:
     loadStack(filePath);
     break;
-    /*
-  case ZFileType::FLYEM_NETWORK_FILE:
-    importFlyEmNetwork(filePath.toStdString().c_str());
-    break;
-  case ZFileType::SYNAPSE_ANNOTATON_FILE:
-    importSynapseAnnotation(filePath.toStdString());
-    break;
-    */
   case ZFileType::V3D_APO_FILE:
   case ZFileType::V3D_MARKER_FILE:
   case ZFileType::RAVELER_BOOKMARK:
