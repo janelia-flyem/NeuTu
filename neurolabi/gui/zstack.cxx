@@ -784,9 +784,22 @@ string ZStack::save(const string &filepath) const
   return resultFilePath;
 }
 
-void* ZStack::projection(ZSingleChannelStack::Proj_Mode mode, ZSingleChannelStack::Stack_Axis axis, int c)
+void* ZStack::projection(
+    ZSingleChannelStack::Proj_Mode mode, ZSingleChannelStack::Stack_Axis axis,
+    int c)
 {
   return singleChannelStack(c)->projection(mode, axis);
+}
+
+void* ZStack::projection(
+    NeuTube::EImageBackground bg, ZSingleChannelStack::Stack_Axis axis, int c)
+{
+  ZSingleChannelStack::Proj_Mode mode = ZSingleChannelStack::MAX_PROJ;
+  if (bg == NeuTube::IMAGE_BACKGROUND_BRIGHT) {
+    mode = ZSingleChannelStack::MIN_PROJ;
+  }
+
+  return projection(mode, axis, c);
 }
 
 double ZStack::value(int x, int y, int z, int c) const

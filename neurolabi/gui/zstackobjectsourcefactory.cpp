@@ -101,3 +101,8 @@ std::string ZStackObjectSourceFactory::MakeFlyEmPsdSource()
   return "#.FlyEMSynapse.Psd";
 }
 
+std::string ZStackObjectSourceFactory::MakeFlyEmSplitRoiSource()
+{
+  return "#.FlyEmSplitRoi";
+}
+

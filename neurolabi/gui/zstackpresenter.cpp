@@ -2073,6 +2073,24 @@ void ZStackPresenter::selectConnectedNode()
   buddyDocument()->selectConnectedNode();
 }
 
+void ZStackPresenter::processRectRoiUpdate()
+{
+  buddyDocument()->processRectRoiUpdate();
+}
+
+void ZStackPresenter::acceptRectRoi()
+{
+  ZStackObject *obj = buddyDocument()->getObjectGroup().findFirstSameSource(
+        ZStackObject::TYPE_RECT2D,
+        ZStackObjectSourceFactory::MakeRectRoiSource());
+  ZRect2d *rect = dynamic_cast<ZRect2d*>(obj);
+  if (rect != NULL) {
+    rect->setColor(QColor(255, 255, 255));
+  }
+  processRectRoiUpdate();
+//  exitRectEdit();
+}
+
 void ZStackPresenter::processEvent(ZInteractionEvent &event)
 {
   switch (event.getEvent()) {
@@ -2621,7 +2639,7 @@ void ZStackPresenter::process(const ZStackOperator &op)
     rect->setSource(ZStackObjectSourceFactory::MakeRectRoiSource());
     rect->setPenetrating(true);
     rect->setZ(buddyView()->getCurrentZ());
-    rect->setColor(255, 255, 255);
+    rect->setColor(255, 128, 128);
     buddyDocument()->executeAddObjectCommand(rect);
   }
     break;
@@ -2647,6 +2665,10 @@ void ZStackPresenter::process(const ZStackOperator &op)
       buddyDocument()->notifyObjectModified();
     }
   }
+    break;
+  case ZStackOperator::OP_RECT_ROI_ACCEPT:
+    acceptRectRoi();
+    exitRectEdit();
     break;
   case ZStackOperator::OP_START_MOVE_IMAGE:
     //if (buddyView()->imageWidget()->zoomRatio() > 1) {
@@ -2840,9 +2862,9 @@ void ZStackPresenter::acceptActiveStroke()
         Stack_Graph_Workspace *sgw = New_Stack_Graph_Workspace();
         if (buddyDocument()->getStackBackground() ==
             NeuTube::IMAGE_BACKGROUND_BRIGHT) {
-          sgw->wf = Stack_Voxel_Weight_Sr;
+          sgw->wf = Stack_Voxel_Weight;
         } else {
-          sgw->wf = Stack_Voxel_Weight_S;
+          sgw->wf = Stack_Voxel_Weight_I;
         }
 
         double pointDistance = Geo3d_Dist(start.x(), start.y(), 0,
@@ -2866,8 +2888,16 @@ void ZStackPresenter::acceptActiveStroke()
 
         //sgw->wf = Stack_Voxel_Weight;
 
-        Int_Arraylist *path = Stack_Route(
-              buddyDocument()->getStack()->c_stack(), source, target, sgw);
+        int channel = 0;
+        if (buddyDocument()->getTag() == NeuTube::Document::BIOCYTIN_PROJECTION) {
+          channel = 1;
+        }
+
+        Stack *stack = buddyDocument()->getStack()->c_stack(channel);
+        sgw->greyFactor = m_greyScale[channel];
+        sgw->greyOffset = m_greyOffset[channel];
+
+        Int_Arraylist *path = Stack_Route(stack, source, target, sgw);
 
         newStroke->clear();
 #ifdef _DEBUG_2

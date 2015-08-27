@@ -20,6 +20,11 @@ ZWindowFactory::ZWindowFactory()
   init();
 }
 
+ZWindowFactory::~ZWindowFactory()
+{
+
+}
+
 void ZWindowFactory::init()
 {
   m_parentWidget = NULL;
@@ -126,6 +131,8 @@ Z3DWindow* ZWindowFactory::make3DWindow(ZSharedPointer<ZStackDoc> doc,
     if (!isObjectViewVisible()) {
       window->hideObjectView();
     }
+
+    configure(window);
 //    doc->registerUser(window);
   }
 
@@ -157,6 +164,8 @@ Z3DWindow* ZWindowFactory::make3DWindow(ZScalableStack *stack)
     delete stack;
   }
 
+  configure(window);
+
   return window;
 }
 
@@ -173,4 +182,9 @@ void ZWindowFactory::setParentWidget(QWidget *parentWidget)
 void ZWindowFactory::setWindowGeometry(const QRect &rect)
 {
   m_windowGeometry = rect;
+}
+
+void ZWindowFactory::configure(Z3DWindow */*window*/)
+{
+
 }

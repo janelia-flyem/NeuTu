@@ -437,6 +437,7 @@ void ZFlyEmBody3dDoc::updateDvidInfo()
   }
 }
 
+/*
 void ZFlyEmBody3dDoc::updateFrame()
 {
   ZCuboid box;
@@ -448,6 +449,7 @@ void ZFlyEmBody3dDoc::updateFrame()
 
   addObject(graph, true);
 }
+*/
 
 void ZFlyEmBody3dDoc::printEventQueue() const
 {

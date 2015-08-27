@@ -49,6 +49,8 @@ void Default_Stack_Graph_Workspace(Stack_Graph_Workspace *sgw)
     sgw->intensity = NULL;
     sgw->virtualVertex = -1;
     sgw->including_signal_border = FALSE;
+    sgw->greyFactor = 1.0;
+    sgw->greyOffset = 0.0;
   }
 }
 
@@ -442,6 +444,16 @@ Graph* Stack_Graph(const Stack *stack, int conn, const int *range,
   return graph;
 }
 
+static double stack_intensity(double v, Stack_Graph_Workspace *sgw)
+{
+  v = v * sgw->greyFactor + sgw->greyOffset;
+  if (v < 0) {
+    v = 0;
+  }
+
+  return v;
+}
+
 Graph* Stack_Graph_W(const Stack *signal, Stack_Graph_Workspace *sgw)
 {
   const Stack *stack = signal;
@@ -521,6 +533,10 @@ Graph* Stack_Graph_W(const Stack *signal, Stack_Graph_Workspace *sgw)
 	  sgw->argv[2] = \
 	  Get_Stack_Pixel((Stack *)stack, nx + x_offset[i], \
 	      ny + y_offset[i], nz + z_offset[i], 0); \
+      if (sgw->greyFactor != 1.0 || sgw->greyOffset != 0.0) {\
+         sgw->argv[1] = stack_intensity(sgw->argv[1], sgw); \
+         sgw->argv[2] = stack_intensity(sgw->argv[2], sgw); \
+      } \
 	  weight = sgw->wf(sgw->argv); \
 	} \
 	Graph_Add_Weighted_Edge(graph, offset, offset + neighbor[i], \
@@ -739,6 +755,11 @@ int* Stack_Graph_Shortest_Path(const Stack *stack, int start[], int end[],
 	if (checked[updating_vertex] != 1) {
 	  v1 = Stack_Array_Value(stack, cur_vertex);
 	  v2 = Stack_Array_Value(stack, updating_vertex);
+      if (sgw->greyFactor != 1.0 || sgw->greyOffset != 0.0) {
+        v1 = stack_intensity(v1, sgw);
+        v2 = stack_intensity(v2, sgw);
+      }
+
 	  d = neighbor_dist[j];
 	  double weight = sgw->wf(argv);
 	  tmpdist = weight + dist[cur_vertex];
@@ -761,6 +782,10 @@ int* Stack_Graph_Shortest_Path(const Stack *stack, int start[], int end[],
 	  if (checked[updating_vertex] != 1) {
 	    v1 = Stack_Array_Value(stack, cur_vertex);
 	    v2 = Stack_Array_Value(stack, updating_vertex);
+        if (sgw->greyFactor != 1.0 || sgw->greyOffset != 0.0) {
+          v1 = stack_intensity(v1, sgw);;
+          v2 = stack_intensity(v2, sgw);;
+        }
 	    d = neighbor_dist[j];
 	    double weight = sgw->wf(argv);
 	    tmpdist = weight + dist[cur_vertex];

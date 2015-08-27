@@ -357,7 +357,7 @@ void ZPainter::drawLine(int x1, int y1, int x2, int y2)
 {
   bool painting = true;
   if (m_canvasRange.isValid()) {
-    QRect rect(QPoint(x1, y1), QPoint(x2, y2));
+    QRectF rect(QPoint(x1, y1), QPoint(x2, y2));
 
     if (!(rect.contains(m_canvasRange.topLeft()) ||
         rect.contains(m_canvasRange.bottomRight()) ||
@@ -374,21 +374,23 @@ void ZPainter::drawLine(int x1, int y1, int x2, int y2)
 //  drawLine(QPointF(x1, y1), QPointF(x2, y2));
 }
 
-void ZPainter::drawLine(const QPointF &pt1, const QPointF &pt2)
+bool ZPainter::isVisible(const QRectF &rect)
 {
-  bool painting = true;
+  bool visible = true;
   if (m_canvasRange.isValid()) {
-    QRectF rect(pt1, pt2);
-
-    if (!(rect.contains(m_canvasRange.topLeft()) ||
+    visible = rect.contains(m_canvasRange.topLeft()) ||
         rect.contains(m_canvasRange.bottomRight()) ||
-        m_canvasRange.contains(rect.topLeft().toPoint()) ||
-        m_canvasRange.contains(rect.bottomRight().toPoint()))) {
-      painting = false;
-    }
+        m_canvasRange.contains(rect.topLeft()) ||
+        m_canvasRange.contains(rect.bottomRight());
   }
 
-  if (painting) {
+  return visible;
+}
+
+void ZPainter::drawLine(const QPointF &pt1, const QPointF &pt2)
+{
+  QRectF rect(pt1, pt2);
+  if (isVisible(rect)) {
     m_painter.drawLine(pt1, pt2);
     setPainted(true);
   }
@@ -417,8 +419,10 @@ void ZPainter::drawLines(const std::vector<QLine> &lineArray)
 
 void ZPainter::drawEllipse(const QRectF & rectangle)
 {
-  m_painter.drawEllipse(rectangle);
-  setPainted(true);
+  if (isVisible(rectangle)) {
+    m_painter.drawEllipse(rectangle);
+    setPainted(true);
+  }
 //#if _QT_GUI_USED_
 //  QRectF rect = rectangle;
 //  rect.moveCenter(-QPointF(m_offset.x(), m_offset.y()));
@@ -428,23 +432,30 @@ void ZPainter::drawEllipse(const QRectF & rectangle)
 
 void ZPainter::drawEllipse(const QRect & rectangle)
 {
-  m_painter.drawEllipse(rectangle);
-  setPainted(true);
+  if (isVisible(QRectF(rectangle))) {
+    m_painter.drawEllipse(rectangle);
+    setPainted(true);
+  }
 //  drawEllipse(QRectF(rectangle));
 }
 
 void ZPainter::drawEllipse(int x, int y, int width, int height)
 {
-  m_painter.drawEllipse(x, y, width, height);
-  setPainted(true);
+  if (isVisible(QRectF(x, y, width, height))) {
+    m_painter.drawEllipse(x, y, width, height);
+    setPainted(true);
+  }
 
 //  drawEllipse(QPointF(x, y), width, height);
 }
 
 void ZPainter::drawEllipse(const QPointF & center, double rx, double ry)
 {
-  m_painter.drawEllipse(center, rx, ry);
-  setPainted(true);
+  if (isVisible(QRectF(center.x() - rx, center.y() - ry,
+                       rx + rx, ry + ry))) {
+    m_painter.drawEllipse(center, rx, ry);
+    setPainted(true);
+  }
 
 #if _QT_GUI_USED_
 //  QPointF newCenter = center - QPointF(m_offset.x(), m_offset.y());
@@ -456,9 +467,13 @@ void ZPainter::drawEllipse(const QPointF & center, double rx, double ry)
 
 void ZPainter::drawEllipse(const QPoint & center, int rx, int ry)
 {
-  m_painter.drawEllipse(center, rx, ry);
-  setPainted(true);
-//  drawEllipse(QPointF(center), rx, ry);
+  if (isVisible(QRectF(center.x() - rx, center.y() - ry,
+                       rx + rx, ry + ry))) {
+    m_painter.drawEllipse(center, rx, ry);
+    setPainted(true);
+  }
+
+  //  drawEllipse(QPointF(center), rx, ry);
 }
 
 void ZPainter::drawRect(const QRectF & rectangle)

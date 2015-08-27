@@ -99,10 +99,33 @@ Z3DMainWindow::~Z3DMainWindow()
 
 }
 
+void Z3DMainWindow::closeEvent(QCloseEvent *event)
+{
+  QMainWindow::closeEvent(event);
+
+  emit closed();
+}
+
+Z3DTabWidget* Z3DMainWindow::getCentralTab() const
+{
+  return dynamic_cast<Z3DTabWidget*>(centralWidget());
+}
+
+void Z3DMainWindow::setCurrentWidow(Z3DWindow *window)
+{
+  if (getCentralTab() != NULL) {
+    getCentralTab()->setCurrentWidget(window);
+  }
+}
+
 Z3DTabWidget::Z3DTabWidget(QWidget *parent) : QTabWidget(parent)
 {
-    setParent(parent);
-    QObject::connect(this,SIGNAL(currentChanged(int)),this,SLOT(tabSlotFunc(int)));
+//    setParent(parent);
+
+  setTabsClosable(true);
+
+  QObject::connect(this,SIGNAL(currentChanged(int)),this,SLOT(tabSlotFunc(int)));
+
 }
 
 QTabBar* Z3DTabWidget::tabBar()
@@ -114,6 +137,25 @@ void Z3DTabWidget::tabSlotFunc(int index)
 {
     // to do
     // this->tabBar()
+}
+
+void Z3DTabWidget::addWindow(Z3DWindow *window, const QString &title)
+{
+  if (window != NULL) {
+    addTab(window, title);
+//    setTabsClosable(true);
+
+    connect(this, SIGNAL(tabCloseRequested(int)),
+            this, SLOT(closeWindow(int)));
+  }
+}
+
+void Z3DTabWidget::closeWindow(int index)
+{
+  QWidget *w = widget(index);
+  if (w != NULL) {
+    w->close();
+  }
 }
 
 Z3DTabWidget::~Z3DTabWidget()

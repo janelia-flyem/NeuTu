@@ -27,7 +27,7 @@ ZStackSkeletonizer::ZStackSkeletonizer() : m_lengthThreshold(15.0),
   m_distanceThreshold(-1.0), m_rebase(false), m_interpolating(false),
   m_removingBorder(false), m_fillingHole(false), m_minObjSize(0),
   m_keepingSingleObject(false), m_level(0), m_connectingBranch(true),
-  m_usingOriginalSignal(false)
+  m_usingOriginalSignal(false), m_resampleSwc(true)
 {
   for (int i = 0; i < 3; ++i) {
     m_resolution[i] = 1.0;
@@ -752,8 +752,10 @@ ZSwcTree* ZStackSkeletonizer::makeSkeletonWithoutDs(Stack *stackData)
       reconnect(wholeTree);
     }
 
-    ZSwcResampler resampler;
-    resampler.optimalDownsample(wholeTree);
+    if (m_resampleSwc) {
+      ZSwcResampler resampler;
+      resampler.optimalDownsample(wholeTree);
+    }
 
     wholeTree->resortId();
   }

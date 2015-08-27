@@ -20,6 +20,7 @@ public slots:
 
 protected:
   void selectSwcNode(const ZRect2d &roi);
+  void processRectRoiUpdate();
 
 private:
   ZSharedPointer<ZStackDoc> m_parentDoc;

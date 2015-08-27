@@ -378,6 +378,10 @@ void ZNeuronTracer::init()
   m_mask = NULL;
   m_baseMask = NULL;
 
+  m_bcAdjust = false;
+  m_greyFactor = 1.0;
+  m_greyOffset = 0.0;
+
   config();
 }
 
@@ -581,6 +585,13 @@ Swc_Tree* ZNeuronTracer::trace(double x1, double y1, double z1, double r1,
         m_stack, box.getFirstCorner().getX(), box.getFirstCorner().getY(),
         box.getFirstCorner().getZ(), box.getWidth(), box.getHeight(),
         box.getDepth(), NULL);
+
+  /*
+  if (m_bcAdjust) {
+    Stack_Scale(partial, 0, m_greyFactor, m_greyOffset);
+  }
+  */
+
   if (m_usingEdgePath) {
     Stack *partialEdge = C_Stack::computeGradient(partial);
     C_Stack::kill(partial);

@@ -20,6 +20,7 @@ class ZWindowFactory
 {
 public:
   ZWindowFactory();
+  virtual ~ZWindowFactory();
 
   Z3DWindow* make3DWindow(ZStackDoc *doc,
                           Z3DWindow::EInitMode mode = Z3DWindow::INIT_NORMAL);
@@ -56,6 +57,11 @@ public:
     m_volumeMode = mode;
   }
 
+  void setDeleteOnClose(bool on) { m_deleteOnClose = on; }
+
+protected:
+  virtual void configure(Z3DWindow *window);
+
 private:
   void init();
 
@@ -68,6 +74,8 @@ private:
   bool m_showControlPanel;
   bool m_showObjectView;
   NeuTube3D::EVolumeRenderingMode m_volumeMode;
+
+  bool m_deleteOnClose;
 };
 
 #endif // ZWINDOWFACTORY_H

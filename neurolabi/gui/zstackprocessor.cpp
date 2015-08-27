@@ -889,3 +889,33 @@ void ZStackProcessor::RemoveBranchPoint(Stack *stack, int nnbr)
     }
   }
 }
+
+void ZStackProcessor::ShrinkSkeleton(Stack *stack, int level)
+{
+  for (int i = 0; i < level; ++i) {
+    ShrinkSkeleton(stack);
+  }
+}
+
+void ZStackProcessor::ShrinkSkeleton(Stack *stack)
+{
+  if (C_Stack::kind(stack) != GREY) {
+    return;
+  }
+
+  std::vector<size_t> indexArray;
+  size_t voxelNumber = C_Stack::voxelNumber(stack);
+  for (size_t i = 0; i < voxelNumber; ++i) {
+    if (stack->array[i] > 0) {
+      int count = C_Stack::countForegoundNeighbor(stack, i, 8);
+      if (count == 1) {
+        indexArray.push_back(i);
+      }
+    }
+  }
+
+  for (std::vector<size_t>::const_iterator iter = indexArray.begin();
+       iter != indexArray.end(); ++iter) {
+    stack->array[*iter] = 0;
+  }
+}

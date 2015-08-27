@@ -10,7 +10,7 @@ class ZWidgetMessage
 public:
   enum ETarget {
     TARGET_TEXT, TARGET_TEXT_APPENDING, TARGET_DIALOG, TARGET_STATUS_BAR,
-    TARGET_CUSTOM_AREA
+    TARGET_CUSTOM_AREA, TARGET_LOG_FILE
   };
 
 
@@ -23,6 +23,7 @@ public:
   static QString ToHtmlString(const QString &msg, NeuTube::EMessageType type);
   static QString ToHtmlString(const QStringList &msgList,
                               NeuTube::EMessageType type);
+  QString toPlainString() const;
 
   inline bool isAppending() const { return m_target == TARGET_TEXT_APPENDING; }
 

@@ -54,3 +54,12 @@ bool ZBiocytinProjectionDoc::executeDeleteSwcNodeCommand()
 
   return ZStackDoc::executeDeleteSwcNodeCommand();
 }
+
+void ZBiocytinProjectionDoc::processRectRoiUpdate()
+{
+  ZRect2d roi = getRect2dRoi();
+  if (roi.isValid()) {
+    selectSwcNode(roi);
+    removeRect2dRoi();
+  }
+}

@@ -875,11 +875,11 @@ void MainWindow::customizeActions()
   }
 
   m_ui->menuApplications->menuAction()->setVisible(hasApplication);
-  m_ui->actionMake_Projection->setVisible(false);
+//  m_ui->actionMake_Projection->setVisible(false);
   m_ui->actionTree_Preview->setVisible(false);
 
   if (NeutubeConfig::getInstance().getApplication() == "Biocytin") {
-    m_ui->actionMake_Projection->setVisible(true);
+//    m_ui->actionMake_Projection->setVisible(true);
     m_ui->actionUpdate->setVisible(false);
     m_ui->menuFilter->menuAction()->setVisible(false);
     m_ui->menuBinary_Morphology->menuAction()->setVisible(false);
@@ -1028,9 +1028,10 @@ void MainWindow::createToolBars()
     m_ui->toolBar->addAction(m_ui->actionImportFlyEmDatabase);
     m_ui->toolBar->addAction(m_ui->actionDVID_Bundle);
     //m_ui->toolBar->addAction(m_ui->actionDvid_Object);
-    m_ui->toolBar->addAction(m_ui->actionSplit_Body);
-    m_ui->toolBar->addAction(m_ui->actionMerge_Body_Project);
+//    m_ui->toolBar->addAction(m_ui->actionSplit_Body);
+//    m_ui->toolBar->addAction(m_ui->actionMerge_Body_Project);
     m_ui->toolBar->addAction(m_ui->actionFlyEmROI);
+    m_ui->toolBar->addSeparator();
     m_ui->toolBar->addAction(m_ui->actionProof);
 #ifdef _DEBUG_2
     m_ui->toolBar->addAction(m_ui->actionShape_Matching);
@@ -1504,6 +1505,7 @@ void MainWindow::openFileFunc2(const QString &fileName)
 
     emit progressAdvanced(0.3);
 
+    doc->moveToThread(QApplication::instance()->thread());
     emit docReady(doc);
 
     setCurrentFile(fileName);
@@ -1511,21 +1513,6 @@ void MainWindow::openFileFunc2(const QString &fileName)
     emit progressDone();
     reportFileOpenProblem(fileName, "Unrecognized file type.");
   }
-
-#if 0
-    reader = new ZStackDocReader;
-    //m_progressManager->notifyProgressAdvanced(0.2);
-    emit progressAdvanced(0.2);
-    if (reader->readFile(fileName) == false) {
-      delete reader;
-      reader = NULL;
-    }
-    emit progressAdvanced(0.3);
-   // m_progressManager->notifyProgressAdvanced(0.3);
-  }
-
-  emit docReaderReady(reader);
-#endif
 }
 
 ZStackDocReader* MainWindow::openFileFunc(const QString &fileName)
@@ -1561,7 +1548,7 @@ void MainWindow::openFile(const QStringList &fileNameList)
     m_progress->setValue(++currentProgress);
     m_progress->show();
 //    QFuture<ZStackDocReader*> res =
-        QtConcurrent::run(this, &MainWindow::openFileFunc, fileName);
+        QtConcurrent::run(this, &MainWindow::openFileFunc2, fileName);
    // res.waitForFinished();
   }
 }
@@ -1583,7 +1570,7 @@ void MainWindow::openFile(const QString &fileName)
   m_progress->show();
 
   //QFuture<ZStackDocReader*> res =
-  QtConcurrent::run(this, &MainWindow::openFileFunc, fileName);
+  QtConcurrent::run(this, &MainWindow::openFileFunc2, fileName);
 
 }
 
@@ -2129,7 +2116,7 @@ void MainWindow::about()
   if (!NeutubeConfig::getInstance().getApplication().empty()) {
     title += QString("<p>") +
         NeutubeConfig::getInstance().getApplication().c_str() + " Edition" +
-        " (191de9f9189e5dc973b0af6e9f6eb0a9823e090a)</p>";
+        " (2e0d273e90f4bf33b40b86c8854dfdde9438dbb3)</p>";
   }
   QString thirdPartyLib = QString("<p><a href=\"file:///%1/doc/ThirdPartyLibraries.txt\">Third Party Libraries</a></p>")
       .arg(QApplication::applicationDirPath());
@@ -4775,7 +4762,7 @@ void MainWindow::on_actionMake_Projection_triggered()
         ZStack *stack = *iter;
         ZStackFrame *newFrame =
             createStackFrame(stack, NeuTube::Document::BIOCYTIN_PROJECTION, frame);
-        newFrame->makeSwcProjection(frame->document().get());
+//        newFrame->makeSwcProjection(frame->document().get());
         newFrame->document()->setStackOffset(frame->document()->getStackOffset());
         addStackFrame(newFrame);
         presentStackFrame(newFrame);
@@ -4909,7 +4896,6 @@ void MainWindow::on_actionMask_SWC_triggered()
 
         Biocytin::SwcProcessor::breakZJump(wholeTree, 2.0);
         Biocytin::SwcProcessor::removeOrphan(wholeTree);
-        Biocytin::SwcProcessor::smoothZ(wholeTree);
         reporter.advance(0.1);
 
         skeletonizer.setConnectingBranch(true);
@@ -4951,6 +4937,7 @@ void MainWindow::on_actionMask_SWC_triggered()
           swcFrame->document()->estimateSwcRadius(wholeTree);
 
           Biocytin::SwcProcessor::smoothRadius(wholeTree);
+          Biocytin::SwcProcessor::smoothZ(wholeTree);
 
 #ifdef _DEBUG_2
         wholeTree->save(GET_DATA_DIR + "/test.swc");

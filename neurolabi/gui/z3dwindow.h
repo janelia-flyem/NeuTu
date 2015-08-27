@@ -44,7 +44,24 @@ class Z3DTriangleList;
 class QToolBar;
 class ZStroke2d;
 class ZStackViewParam;
+class Z3DWindow;
 //class Z3DRendererBase;
+
+class Z3DTabWidget : public QTabWidget
+{
+    Q_OBJECT
+public:
+    Z3DTabWidget(QWidget* parent = 0);
+    ~Z3DTabWidget();
+    QTabBar* tabBar();
+
+    void addWindow(Z3DWindow *window, const QString &title);
+
+public slots:
+    void tabSlotFunc(int index);
+    void closeWindow(int index);
+
+};
 
 class Z3DMainWindow : public QMainWindow
 {
@@ -53,21 +70,18 @@ public:
     Z3DMainWindow(QWidget* parent = 0);
     ~Z3DMainWindow();
 
+    void closeEvent(QCloseEvent *event);
+
+    void setCurrentWidow(Z3DWindow *window);
+
+private:
+    Z3DTabWidget* getCentralTab() const;
+
 public:
     QToolBar *toolBar;
-};
 
-class Z3DTabWidget : public QTabWidget
-{
-    Q_OBJECT
-public:
-    Z3DTabWidget(QWidget* parent);
-    ~Z3DTabWidget();
-    QTabBar* tabBar();
-
-public slots:
-    void tabSlotFunc(int index);
-
+signals:
+    void closed();
 };
 
 class Z3DWindow : public QMainWindow

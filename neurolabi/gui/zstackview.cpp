@@ -913,7 +913,7 @@ void ZStackView::paintSingleChannelStackMip(ZStack *stack)
 {
   Image_Array ima;
   ima.array = (uint8*) stack->projection(
-        ZSingleChannelStack::MAX_PROJ, ZSingleChannelStack::Z_AXIS);
+        buddyDocument()->getStackBackground(), ZSingleChannelStack::Z_AXIS);
 
   switch (stack->kind()) {
   case GREY:
@@ -957,11 +957,12 @@ void ZStackView::paintMultipleChannelStackMip(ZStack *stack)
       if (m_chVisibleState[i]->get()) {
         Image_Array ima;
         ima.array8 = (uint8*) stack->projection(
-              ZSingleChannelStack::MAX_PROJ, ZSingleChannelStack::Z_AXIS, i);
-        stackData8.push_back(ZImage::DataSource<uint8_t>(ima.array8,
-                                                         buddyPresenter()->greyScale(i),
-                                                         buddyPresenter()->greyOffset(i),
-                                                         stack->getChannelColor(i)));
+              buddyDocument()->getStackBackground(), ZSingleChannelStack::Z_AXIS, i);
+        stackData8.push_back(
+              ZImage::DataSource<uint8_t>(ima.array8,
+                                          buddyPresenter()->greyScale(i),
+                                          buddyPresenter()->greyOffset(i),
+                                          stack->getChannelColor(i)));
       }
     }
     m_image->setData(stackData8, 255, usingMt);
@@ -973,7 +974,7 @@ void ZStackView::paintMultipleChannelStackMip(ZStack *stack)
       if (m_chVisibleState[i]->get()) {
         Image_Array ima;
         ima.array16 = (uint16*) stack->projection(
-              ZSingleChannelStack::MAX_PROJ, ZSingleChannelStack::Z_AXIS, i);
+              buddyDocument()->getStackBackground(), ZSingleChannelStack::Z_AXIS, i);
         stackData16.push_back(ZImage::DataSource<uint16_t>(ima.array16,
                                                            buddyPresenter()->greyScale(i),
                                                            buddyPresenter()->greyOffset(i),

@@ -45,6 +45,16 @@ QString ZWidgetMessage::toHtmlString() const
   return ToHtmlString(m_message, m_type);
 }
 
+QString ZWidgetMessage::toPlainString() const
+{
+  QString result;
+  foreach (const QString &str, m_message) {
+    result += str + " ";
+  }
+
+  return result;
+}
+
 QString ZWidgetMessage::ToHtmlString(
     const QStringList &msgList, NeuTube::EMessageType type)
 {

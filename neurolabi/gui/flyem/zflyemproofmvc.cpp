@@ -6,6 +6,7 @@
 #include <QInputDialog>
 #include <QPushButton>
 #include <QMainWindow>
+#include <QDesktopWidget>
 
 #include "flyem/zflyemproofdoc.h"
 #include "zstackview.h"
@@ -34,23 +35,75 @@
 #include "flyem/zflyembookmarkannotationdialog.h"
 #include "dialogs/flyembodyinfodialog.h"
 #include "dialogs/zflyemsplitcommitdialog.h"
+#include "flyem/zflyembodywindowfactory.h"
+#include "flyem/zflyemmisc.h"
+#include "zswcgenerator.h"
+#include "zflyembody3ddoc.h"
 
 ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
   ZStackMvc(parent)
 {
-  m_dvidDlg = new ZDvidDialog(this);
-  m_bodyInfoDlg = new FlyEmBodyInfoDialog(this);
-  m_supervisor = new ZFlyEmSupervisor(this);
-  m_splitCommitDlg = new ZFlyEmSplitCommitDialog(this);
-//  m_splitProject.attachBookmarkArray(&m_bookmarkArray);
-//  m_mergeProject.attachBookmarkArray(&m_bookmarkArray);
-
-  qRegisterMetaType<ZDvidTarget>("ZDvidTarget");
+  init();
 }
 
 ZFlyEmProofMvc::~ZFlyEmProofMvc()
 {
   exitCurrentDoc();
+
+  delete m_bodyViewWindow;
+//  delete m_coarseBodyWindow;
+//  delete m_bodyWindow;
+//  delete m_splitWindow;
+}
+
+void ZFlyEmProofMvc::init()
+{
+  m_dvidDlg = new ZDvidDialog(this);
+  m_bodyInfoDlg = new FlyEmBodyInfoDialog(this);
+  m_supervisor = new ZFlyEmSupervisor(this);
+  m_splitCommitDlg = new ZFlyEmSplitCommitDialog(this);
+
+  qRegisterMetaType<ZDvidTarget>("ZDvidTarget");
+
+  initBodyWindow();
+}
+
+void ZFlyEmProofMvc::initBodyWindow()
+{
+  m_bodyViewWindow = new Z3DMainWindow(this);
+  m_bodyViewWindow->setWindowTitle(QString::fromUtf8("3D Body View"));
+  m_bodyViewWindow->setAttribute(Qt::WA_DeleteOnClose, false);
+
+  m_bodyViewers = new Z3DTabWidget(m_bodyViewWindow);
+  m_bodyViewers->setAttribute(Qt::WA_DeleteOnClose, false);
+
+  QSizePolicy sizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
+  m_bodyViewers->setSizePolicy(sizePolicy);
+
+  QVBoxLayout* bvLayout = new QVBoxLayout;
+
+  QWidget *toolWidget = new QWidget(m_bodyViewWindow->toolBar);
+  bvLayout->addWidget(toolWidget);
+
+
+  bvLayout->addWidget(m_bodyViewers);
+
+  m_bodyViewWindow->setLayout(bvLayout);
+  m_bodyViewWindow->setCentralWidget(m_bodyViewers);
+  m_bodyViewWindow->resize(QDesktopWidget().availableGeometry(0).size()*0.7);
+
+  connect(m_bodyViewWindow, SIGNAL(closed()), this, SLOT(closeAllBodyWindow()));
+
+  m_bodyWindowFactory =
+      QSharedPointer<ZWindowFactory>(new ZFlyEmBodyWindowFactory);
+  m_bodyWindowFactory->setDeleteOnClose(true);
+  m_bodyWindowFactory->setControlPanelVisible(false);
+  m_bodyWindowFactory->setObjectViewVisible(false);
+
+
+  m_coarseBodyWindow = NULL;
+  m_bodyWindow = NULL;
+  m_splitWindow = NULL;
 }
 
 ZFlyEmProofMvc* ZFlyEmProofMvc::Make(
@@ -73,6 +126,197 @@ ZFlyEmProofMvc* ZFlyEmProofMvc::Make(const ZDvidTarget &target)
   mvc->setDvidTarget(target);
 
   return mvc;
+}
+
+void ZFlyEmProofMvc::detachCoarseBodyWindow()
+{
+  m_coarseBodyWindow = NULL;
+}
+
+void ZFlyEmProofMvc::detachBodyWindow()
+{
+  m_bodyWindow = NULL;
+}
+
+void ZFlyEmProofMvc::detachSplitWindow()
+{
+  m_splitWindow = NULL;
+}
+
+void ZFlyEmProofMvc::setWindowSignalSlot(Z3DWindow *window)
+{
+  if (window != NULL) {
+    if (window == m_coarseBodyWindow) {
+      connect(window, SIGNAL(destroyed()), this,
+              SLOT(detachCoarseBodyWindow()));
+    } else if (window == m_bodyWindow) {
+      connect(window, SIGNAL(destroyed()), this, SLOT(detachBodyWindow()));
+    } else if (window == m_splitWindow) {
+      connect(window, SIGNAL(destroyed()), this, SLOT(detachSplitWindow()));
+    }
+    connect(window, SIGNAL(locating2DViewTriggered(ZStackViewParam)),
+            this->getView(), SLOT(setView(ZStackViewParam)));
+  }
+}
+
+void ZFlyEmProofMvc::makeCoarseBodyWindow()
+{
+  ZStackDoc *doc = new ZStackDoc;
+
+  getProgressSignal()->startProgress("Showing 3D coarse body ...");
+
+  getProgressSignal()->advanceProgress(0.1);
+
+  m_coarseBodyWindow = m_bodyWindowFactory->make3DWindow(doc);
+
+  setWindowSignalSlot(m_coarseBodyWindow);
+  ZFlyEmMisc::Decorate3dBodyWindow(
+        m_coarseBodyWindow, m_dvidInfo,
+        getView()->getViewParameter());
+  m_coarseBodyWindow->setYZView();
+
+  getProgressSignal()->advanceProgress(0.4);
+
+//  update3DBodyView(false, true);
+
+  getProgressSignal()->endProgress();
+}
+
+void ZFlyEmProofMvc::makeBodyWindow()
+{
+  ZFlyEmBody3dDoc *doc = new ZFlyEmBody3dDoc;
+  doc->setDvidTarget(getDvidTarget());
+//  doc->updateFrame();
+  doc->setDataDoc(m_doc);
+
+  m_bodyWindow = m_bodyWindowFactory->make3DWindow(doc);
+  setWindowSignalSlot(m_bodyWindow);
+
+  if (m_doc->getParentMvc() != NULL) {
+    ZFlyEmMisc::Decorate3dBodyWindow(
+          m_bodyWindow, m_dvidInfo,
+          m_doc->getParentMvc()->getView()->getViewParameter());
+  }
+}
+
+void ZFlyEmProofMvc::updateCoarseBodyWindow()
+{
+  updateCoarseBodyWindow(false, false);
+}
+
+void ZFlyEmProofMvc::updateBodyWindow()
+{
+  if (m_bodyWindow != NULL) {
+    std::set<uint64_t> bodySet =
+        getCompleteDocument()->getSelectedBodySet(NeuTube::BODY_LABEL_ORIGINAL);
+    ZFlyEmBody3dDoc *doc =
+        dynamic_cast<ZFlyEmBody3dDoc*>(m_bodyWindow->getDocument());
+    if (doc != NULL){
+      doc->addBodyChangeEvent(bodySet.begin(), bodySet.end());
+    }
+  }
+}
+
+void ZFlyEmProofMvc::updateCoarseBodyWindow(
+    bool showingWindow, bool resettingCamera)
+{
+  if (m_coarseBodyWindow != NULL) {
+    std::set<std::string> currentBodySourceSet;
+    std::set<uint64_t> selectedMapped =
+        getCompleteDocument()->getSelectedBodySet(NeuTube::BODY_LABEL_MAPPED);
+
+
+    for (std::set<uint64_t>::const_iterator iter = selectedMapped.begin();
+         iter != selectedMapped.end(); ++iter) {
+      currentBodySourceSet.insert(
+            ZStackObjectSourceFactory::MakeFlyEmBodySource(*iter));
+    }
+
+    std::set<std::string> oldBodySourceSet;
+    QList<ZSwcTree*> bodyList = m_coarseBodyWindow->getDocument()->getSwcList();
+    for (QList<ZSwcTree*>::iterator iter = bodyList.begin();
+         iter != bodyList.end(); ++iter) {
+      ZSwcTree *tree = *iter;
+      if (currentBodySourceSet.count(tree->getSource()) == 0) {
+        m_coarseBodyWindow->getDocument()->removeObject(
+              dynamic_cast<ZStackObject*>(tree), true);
+      } else {
+        oldBodySourceSet.insert(tree->getSource());
+      }
+    }
+
+    m_coarseBodyWindow->getDocument()->beginObjectModifiedMode(
+          ZStackDoc::OBJECT_MODIFIED_CACHE);
+
+
+    ZDvidReader reader;
+    reader.open(getDvidTarget());
+
+//    ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
+
+    /*
+    if (m_doc->getParentMvc() != NULL) {
+      ZFlyEmMisc::Decorate3dBodyWindow(
+            m_coarseBodyWindow, m_dvidInfo,
+            m_doc->getParentMvc()->getView()->getViewParameter());
+    }
+    */
+
+    for (std::set<uint64_t>::const_iterator iter = selectedMapped.begin();
+         iter != selectedMapped.end(); ++iter) {
+      uint64_t label = *iter;
+      std::string source = ZStackObjectSourceFactory::MakeFlyEmBodySource(label);
+      if (oldBodySourceSet.count(source) == 0) {
+        ZObject3dScan body;
+
+        QList<uint64_t> bodyList = getCompleteDocument()->getMergedSource(label);
+//        bodyList.append(label);
+
+        for (int i = 0; i < bodyList.size(); ++i) {
+          body.concat(reader.readCoarseBody(bodyList[i]));
+        }
+
+        if (!body.isEmpty()) {
+          ZDvidLabelSlice *labelSlice = getCompleteDocument()->getDvidLabelSlice();
+          if (labelSlice != NULL) {
+            body.setColor(labelSlice->getColor(
+                            label, NeuTube::BODY_LABEL_MAPPED));
+          }
+
+          body.setAlpha(255);
+          ZSwcTree *tree = ZSwcGenerator::createSurfaceSwc(body);
+          tree->translate(-m_dvidInfo.getStartBlockIndex());
+          tree->rescale(m_dvidInfo.getBlockSize().getX(),
+                        m_dvidInfo.getBlockSize().getY(),
+                        m_dvidInfo.getBlockSize().getZ());
+          tree->translate(m_dvidInfo.getStartCoordinates());
+          tree->setSource(source);
+          m_coarseBodyWindow->getDocument()->addObject(tree, true);
+        }
+      }
+    }
+//    m_bodyWindow->getDocument()->blockSignals(false);
+//    m_bodyWindow->getDocument()->notifySwcModified();
+    m_coarseBodyWindow->getDocument()->endObjectModifiedMode();
+    m_coarseBodyWindow->getDocument()->notifyObjectModified();
+
+    if (showingWindow) {
+      m_bodyViewWindow->show();
+      m_bodyViewWindow->raise();
+    }
+
+    if (resettingCamera) {
+      m_coarseBodyWindow->resetCameraCenter();
+    }
+  }
+}
+
+void ZFlyEmProofMvc::updateBodyWindowPlane(
+    Z3DWindow *window, const ZStackViewParam &viewParam)
+{
+  if (window != NULL) {
+    ZFlyEmMisc::Decorate3dBodyWindowPlane(window, m_dvidInfo, viewParam);
+  }
 }
 
 ZFlyEmProofDoc* ZFlyEmProofMvc::getCompleteDocument() const
@@ -129,6 +373,8 @@ void ZFlyEmProofMvc::clear()
     getPresenter()->clearData();
 //    getView()->imageWidget();
   }
+
+  m_dvidInfo.clear();
 }
 
 void ZFlyEmProofMvc::exitCurrentDoc()
@@ -205,6 +451,11 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
     m_mergeProject.syncWithDvid();
     getProgressSignal()->advanceProgress(0.2);
 
+    ZDvidReader reader;
+    if (reader.open(target)) {
+      m_dvidInfo = reader.readGrayScaleInfo();
+    }
+
     if (getSupervisor() != NULL) {
       getSupervisor()->setDvidTarget(target);
     }
@@ -212,7 +463,6 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
     getCompleteDocument()->downloadSynapse();
     getCompleteDocument()->downloadBookmark();
     getProgressSignal()->advanceProgress(0.5);
-
 
     emit dvidTargetChanged(target);
   }
@@ -275,8 +525,8 @@ void ZFlyEmProofMvc::customInit()
           this, SLOT(processViewChange()));
   connect(getCompletePresenter(), SIGNAL(goingToBody()),
           this, SLOT(goToBody()));
-  connect(getCompletePresenter(), SIGNAL(labelSliceSelectionChanged()),
-          this, SLOT(processLabelSliceSelectionChange()));
+//  connect(getCompletePresenter(), SIGNAL(labelSliceSelectionChanged()),
+//          this, SLOT(processLabelSliceSelectionChange()));
 
   connect(getDocument().get(), SIGNAL(activeViewModified()),
           this, SLOT(processViewChange()));
@@ -288,6 +538,11 @@ void ZFlyEmProofMvc::customInit()
           &m_mergeProject, SLOT(update3DBodyViewDeep()));
   connect(getCompleteDocument(), SIGNAL(bodyUnmerged()),
           &m_mergeProject, SLOT(update3DBodyViewDeep()));
+
+  connect(getCompleteDocument(), SIGNAL(bodyMerged()),
+          this, SLOT(updateCoarseBodyWindow()));
+  connect(getCompleteDocument(), SIGNAL(bodyUnmerged()),
+          this, SLOT(updateCoarseBodyWindow()));
 
   connect(getCompleteDocument(), SIGNAL(bodyMerged()),
           &m_mergeProject, SLOT(saveMergeOperation()));
@@ -310,6 +565,8 @@ void ZFlyEmProofMvc::customInit()
   connect(getDocument().get(),
           SIGNAL(objectSelectorChanged(ZStackObjectSelector)),
           this, SLOT(processSelectionChange(ZStackObjectSelector)));
+  connect(getCompleteDocument(), SIGNAL(bodySelectionChanged()),
+          this, SLOT(updateBodySelection()));
 
 
   m_splitProject.setDocument(getDocument());
@@ -498,7 +755,9 @@ void ZFlyEmProofMvc::updateBodySelection()
     ZDvidLabelSlice *slice = getCompleteDocument()->getDvidLabelSlice();
     const std::set<uint64_t> &selected = slice->getSelectedOriginal();
     m_mergeProject.setSelection(selected, NeuTube::BODY_LABEL_ORIGINAL);
-    m_mergeProject.update3DBodyView();
+    updateCoarseBodyWindow(false, false);
+    updateBodyWindow();
+//    m_mergeProject.update3DBodyView();
     if (getCompletePresenter()->isHighlight()) {
       m_mergeProject.highlightSelectedObject(true);
     } else {
@@ -602,12 +861,17 @@ void ZFlyEmProofMvc::checkOutBody()
         } else {
           std::string owner = getSupervisor()->getOwner(bodyId);
           if (owner.empty()) {
-            owner = "unknown user";
+            emit messageGenerated(
+                  ZWidgetMessage(
+                    QString("Failed to lock body %1. Is the librarian sever (%2) ready?").
+                    arg(bodyId).arg(getDvidTarget().getSupervisor().c_str()),
+                    NeuTube::MSG_ERROR));
+          } else {
+            emit messageGenerated(
+                  ZWidgetMessage(
+                    QString("Failed to lock body %1 because it has been locked by %2").
+                    arg(bodyId).arg(owner.c_str()), NeuTube::MSG_ERROR));
           }
-          emit messageGenerated(
-                ZWidgetMessage(
-                  QString("Failed to lock body %1 because it has been locked by %2").
-                  arg(bodyId).arg(owner.c_str()), NeuTube::MSG_ERROR));
         }
       }
     }
@@ -669,12 +933,18 @@ void ZFlyEmProofMvc::annotateBody()
         if (getSupervisor() != NULL) {
           std::string owner = getSupervisor()->getOwner(bodyId);
           if (owner.empty()) {
-            owner = "unknown user";
+//            owner = "unknown user";
+            emit messageGenerated(
+                  ZWidgetMessage(
+                    QString("Failed to lock body %1. Is the librarian sever (%2) ready?").
+                    arg(bodyId).arg(getDvidTarget().getSupervisor().c_str()),
+                    NeuTube::MSG_ERROR));
+          } else {
+            emit messageGenerated(
+                  ZWidgetMessage(
+                    QString("Failed to start annotation. %1 has been locked by %2").
+                    arg(bodyId).arg(owner.c_str()), NeuTube::MSG_ERROR));
           }
-          emit messageGenerated(
-                ZWidgetMessage(
-                  QString("Failed to start annotation. %1 has been locked by %2").
-                  arg(bodyId).arg(owner.c_str()), NeuTube::MSG_ERROR));
         }
       }
     } else {
@@ -856,7 +1126,12 @@ void ZFlyEmProofMvc::launchSplit(uint64_t bodyId)
     } else {
       std::string owner = getSupervisor()->getOwner(bodyId);
       if (owner.empty()) {
-        owner = "unknown user";
+//        owner = "unknown user";
+        emit messageGenerated(
+              ZWidgetMessage(
+                QString("Failed to lock body %1. Is the librarian sever (%2) ready?").
+                arg(bodyId).arg(getDvidTarget().getSupervisor().c_str()),
+                NeuTube::MSG_ERROR));
       }
       emit messageGenerated(
             ZWidgetMessage(
@@ -926,6 +1201,7 @@ void ZFlyEmProofMvc::switchSplitBody(uint64_t bodyId)
          m_splitProject.clear();
          getDocument()->removeObject(ZStackObjectRole::ROLE_SEED);
          getDocument()->removeObject(ZStackObjectRole::ROLE_TMP_RESULT);
+         getCompleteDocument()->setSelectedBody(bodyId, NeuTube::BODY_LABEL_ORIGINAL);
          launchSplit(bodyId);
        }
     }
@@ -947,7 +1223,8 @@ void ZFlyEmProofMvc::processMessageSlot(const QString &message)
 
 void ZFlyEmProofMvc::showBodyQuickView()
 {
-  m_splitProject.showBodyQuickView();
+  showFineBody3d();
+//  m_splitProject.showBodyQuickView();
 }
 
 void ZFlyEmProofMvc::showSplitQuickView()
@@ -967,12 +1244,53 @@ void ZFlyEmProofMvc::showSplit3d()
 
 void ZFlyEmProofMvc::showCoarseBody3d()
 {
-  m_mergeProject.showCoarseBody3d();
+  if (m_coarseBodyWindow == NULL) {
+    makeCoarseBodyWindow();
+    m_bodyViewers->addWindow(m_coarseBodyWindow, "Coarse Body View");
+  }
+
+  updateCoarseBodyWindow(false, true);
+
+  m_bodyViewWindow->show();
+  m_bodyViewWindow->raise();
+
+//  m_mergeProject.showCoarseBody3d();
 }
 
 void ZFlyEmProofMvc::showFineBody3d()
 {
-  m_mergeProject.showBody3d();
+//  m_mergeProject.showBody3d();
+  if (m_bodyWindow == NULL) {
+    makeBodyWindow();
+    m_bodyViewers->addWindow(m_bodyWindow, "Body View");
+    updateBodyWindow();
+    m_bodyWindow->setYZView();
+  }
+
+  m_bodyViewWindow->setCurrentWidow(m_bodyWindow);
+  m_bodyViewWindow->show();
+  m_bodyViewWindow->raise();
+}
+
+/*
+void ZFlyEmProofMvc::closeBodyWindow(int index)
+{
+  closeBodyWindow(m_coarseBodyWindow);
+}
+*/
+
+void ZFlyEmProofMvc::closeBodyWindow(Z3DWindow *window)
+{
+  if (window != NULL) {
+    window->close();
+  }
+}
+
+void ZFlyEmProofMvc::closeAllBodyWindow()
+{
+  closeBodyWindow(m_coarseBodyWindow);
+  closeBodyWindow(m_bodyWindow);
+  closeBodyWindow(m_splitWindow);
 }
 
 void ZFlyEmProofMvc::setDvidLabelSliceSize(int width, int height)
@@ -1390,6 +1708,9 @@ void ZFlyEmProofMvc::processViewChangeCustom(const ZStackViewParam &viewParam)
 {
   m_mergeProject.update3DBodyViewPlane(viewParam);
   m_splitProject.update3DViewPlane();
+
+  updateBodyWindowPlane(m_coarseBodyWindow, viewParam);
+  updateBodyWindowPlane(m_bodyWindow, viewParam);
 }
 
 void ZFlyEmProofMvc::recordCheckedBookmark(const QString &key, bool checking)

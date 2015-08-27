@@ -1133,6 +1133,11 @@ size_t Stack_Level_Mask2(const Stack *stack, Stack *out, int level)
   return foreground_size;
 }
 
+void Stack_Scale(Stack *stack, int c, double factor, double offset)
+{
+  Scale_Stack(stack, c, factor, offset);
+}
+
 void Stretch_Stack_Value(Stack *stack)
 {
   if (Stack_Channel_Number(stack) > 1) {
@@ -3770,20 +3775,40 @@ Stack* Stack_Median_Filter_N(const Stack *stack, int conn, Stack *out)
   Stack_Neighbor_Offset(conn, width, height, neighbor);
   int offset = 0;
   int nvoxel = Stack_Voxel_Number(stack);
-  uint16_t *stack_array = (uint16_t*) stack->array;
-  uint16_t *out_array = (uint16_t*) out->array;
-  for (offset = 0; offset < nvoxel; offset++) {
-    int nbound = Stack_Neighbor_Bound_Test_I(conn, width, height, depth, offset,
-	is_in_bound);
-    if (nbound == conn) {
-      value[0] = stack_array[offset];
-      int j;
-      for (j = 1; j <= conn; j++) {
-	value[j] = stack_array[offset + neighbor[j-1]];
+
+  if (stack->kind == GREY16) {
+    uint16_t *stack_array = (uint16_t*) stack->array;
+    uint16_t *out_array = (uint16_t*) out->array;
+    for (offset = 0; offset < nvoxel; offset++) {
+      int nbound = Stack_Neighbor_Bound_Test_I(conn, width, height, depth, offset,
+          is_in_bound);
+      if (nbound == conn) {
+        value[0] = stack_array[offset];
+        int j;
+        for (j = 1; j <= conn; j++) {
+          value[j] = stack_array[offset + neighbor[j-1]];
+        }
+        darray_qsort(value, NULL, conn+1);
+        //darray_print2(value, conn+1, 1);
+        out_array[offset] = value[conn / 2];
       }
-      darray_qsort(value, NULL, conn+1);
-      //darray_print2(value, conn+1, 1);
-      out_array[offset] = value[conn / 2];
+    }
+  } else if (stack->kind == GREY) {
+    uint8_t *stack_array = (uint8_t*) stack->array;
+    uint8_t *out_array = (uint8_t*) out->array;
+    for (offset = 0; offset < nvoxel; offset++) {
+      int nbound = Stack_Neighbor_Bound_Test_I(conn, width, height, depth, offset,
+          is_in_bound);
+      if (nbound == conn) {
+        value[0] = stack_array[offset];
+        int j;
+        for (j = 1; j <= conn; j++) {
+          value[j] = stack_array[offset + neighbor[j-1]];
+        }
+        darray_qsort(value, NULL, conn+1);
+        //darray_print2(value, conn+1, 1);
+        out_array[offset] = value[conn / 2];
+      }
     }
   }
 

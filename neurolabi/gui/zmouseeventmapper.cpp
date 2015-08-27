@@ -168,7 +168,8 @@ ZStackOperator ZMouseEventLeftButtonReleaseMapper::getOperation(
         op.setOperation(ZStackOperator::OP_STROKE_ADD_NEW);
         break;
       case ZInteractiveContext::INTERACT_RECT_DRAW:
-        op.setOperation(ZStackOperator::OP_EXIT_EDIT_MODE);
+        op.setOperation(ZStackOperator::OP_RECT_ROI_ACCEPT);
+//        op.setOperation(ZStackOperator::OP_EXIT_EDIT_MODE);
         break;
       case ZInteractiveContext::INTERACT_ADD_BOOKMARK:
         op.setOperation(ZStackOperator::OP_BOOKMARK_ADD_NEW);
@@ -237,13 +238,13 @@ ZStackOperator ZMouseEventLeftButtonReleaseMapper::getOperation(
         if (event.getModifiers() == Qt::ControlModifier) {
           op.setOperation(ZStackOperator::OP_SWC_EXTEND);
         } else {
-          if (event.getModifiers() == Qt::ShiftModifier) {
-            if (op.getHitObject() != NULL) {
-              if (op.getHitObject()->isSelectable()) {
-                processSelectionOperation(op, event);
-              }
+          if (op.getHitObject() != NULL) {
+            if (op.getHitObject()->isSelectable()) {
+              processSelectionOperation(op, event);
             }
-          } else {
+          }
+
+          if (op.isNull()) {
             op.setOperation(ZStackOperator::OP_SWC_SMART_EXTEND);
           }
         }
