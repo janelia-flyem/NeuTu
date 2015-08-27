@@ -69,6 +69,9 @@ public:
   uint64_t getBodyId(const ZIntPoint &pt);
 
   std::set<uint64_t> getSelectedBodySet(NeuTube::EBodyLabelType labelType) const;
+  void setSelectedBody(
+      std::set<uint64_t> &selected, NeuTube::EBodyLabelType labelType);
+  void setSelectedBody(uint64_t bodyId, NeuTube::EBodyLabelType labelType);
 
   bool isSplittable(uint64_t bodyId) const;
 
@@ -107,6 +110,7 @@ signals:
   void bodyUnmerged();
   void userBookmarkModified();
   void bodyIsolated(uint64_t bodyId);
+  void bodySelectionChanged();
 
 public slots:
   void updateDvidLabelObject();

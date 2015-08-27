@@ -525,8 +525,8 @@ void ZFlyEmProofMvc::customInit()
           this, SLOT(processViewChange()));
   connect(getCompletePresenter(), SIGNAL(goingToBody()),
           this, SLOT(goToBody()));
-  connect(getCompletePresenter(), SIGNAL(labelSliceSelectionChanged()),
-          this, SLOT(processLabelSliceSelectionChange()));
+//  connect(getCompletePresenter(), SIGNAL(labelSliceSelectionChanged()),
+//          this, SLOT(processLabelSliceSelectionChange()));
 
   connect(getDocument().get(), SIGNAL(activeViewModified()),
           this, SLOT(processViewChange()));
@@ -565,6 +565,8 @@ void ZFlyEmProofMvc::customInit()
   connect(getDocument().get(),
           SIGNAL(objectSelectorChanged(ZStackObjectSelector)),
           this, SLOT(processSelectionChange(ZStackObjectSelector)));
+  connect(getCompleteDocument(), SIGNAL(bodySelectionChanged()),
+          this, SLOT(updateBodySelection()));
 
 
   m_splitProject.setDocument(getDocument());
@@ -1183,6 +1185,7 @@ void ZFlyEmProofMvc::switchSplitBody(uint64_t bodyId)
          m_splitProject.clear();
          getDocument()->removeObject(ZStackObjectRole::ROLE_SEED);
          getDocument()->removeObject(ZStackObjectRole::ROLE_TMP_RESULT);
+         getCompleteDocument()->setSelectedBody(bodyId, NeuTube::BODY_LABEL_ORIGINAL);
          launchSplit(bodyId);
        }
     }

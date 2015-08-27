@@ -78,6 +78,24 @@ void ZFlyEmProofDoc::connectSignalSlot()
           this, SLOT(saveCustomBookmarkSlot()));
 }
 
+void ZFlyEmProofDoc::setSelectedBody(
+    std::set<uint64_t> &selected, NeuTube::EBodyLabelType labelType)
+{
+  if (getDvidLabelSlice() != NULL) {
+    getDvidLabelSlice()->setSelection(selected, labelType);
+
+    emit bodySelectionChanged();
+  }
+}
+
+void ZFlyEmProofDoc::setSelectedBody(
+    uint64_t bodyId, NeuTube::EBodyLabelType labelType)
+{
+  std::set<uint64_t> selected;
+  selected.insert(bodyId);
+  setSelectedBody(selected, labelType);
+}
+
 std::set<uint64_t> ZFlyEmProofDoc::getSelectedBodySet(
     NeuTube::EBodyLabelType labelType) const
 {
