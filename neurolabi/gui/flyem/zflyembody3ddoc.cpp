@@ -243,17 +243,16 @@ void ZFlyEmBody3dDoc::processEventFunc()
   m_eventQueue.clear();
   m_eventQueueMutex.unlock();
 
-#ifdef _DEBUG_
   if (!m_actionMap.isEmpty()) {
-    std::cout << "====Processing Event====" << std::endl;
     emit messageGenerated(ZWidgetMessage("Syncing 3D Body view ..."));
+
+    std::cout << "====Processing Event====" << std::endl;
     for (QMap<uint64_t, BodyEvent>::const_iterator iter = m_actionMap.begin();
          iter != m_actionMap.end(); ++iter) {
       const BodyEvent &event = iter.value();
       event.print();
     }
   }
-#endif
 
   for (QMap<uint64_t, BodyEvent>::const_iterator iter = m_actionMap.begin();
        iter != m_actionMap.end(); ++iter) {
@@ -261,10 +260,8 @@ void ZFlyEmBody3dDoc::processEventFunc()
     processEventFunc(event);
   }
 
-#ifdef _DEBUG_
   emit messageGenerated(ZWidgetMessage("3D Body view updated."));
   std::cout << "====Processing done====" << std::endl;
-#endif
 }
 
 void ZFlyEmBody3dDoc::processEvent()
